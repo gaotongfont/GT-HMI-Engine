@@ -30,7 +30,7 @@ gui框架
 1. 移植 `driver/, sources/, src/` 到目标项目中;
 2. 在 `driver` 文件夹中, 适配底层 `lcd`, `input`, `file system` 的驱动;
 3. 配置 `gt_conf.h`, `gt_conf_widgets.h` 宏开关;
-4. 开始使用.
+4. 可以开始使用.
 
 #### 参与贡献
 
