@@ -14,7 +14,7 @@ gui框架
 | sources/ | gui 内部使用的images素材 |
 | test/ | 单元测试代码 |
 | src/ | gui 框架代码 |
-| \|-prj_config.h | 配置 |
+| \|-gt_conf.h | 配置 |
 | \|-core/ | gui 核心代码 |
 | \|-extra/ | 拓展控件 |
 | \|-font/ | 字体 |
@@ -22,16 +22,15 @@ gui框架
 | \|-others/ | 不好分类的代码 |
 | \|-utils/ | 工具类 |
 | \|-widgets/ | 控件 |
-| \|-\|-widgets_config.h | 控件开关宏 |
-| \|-\|-btn/ | 按键控件 |
-| \|-\|-.../ | 控件 |
+| \|-\|-gt_conf_widgets.h | 控件开关宏 |
 
 
 #### 使用说明
 
 1. 移植 `driver/, sources/, src/` 到目标项目中;
 2. 在 `driver` 文件夹中, 适配底层 `lcd`, `input`, `file system` 的驱动;
-3. 
+3. 配置 `gt_conf.h`, `gt_conf_widgets.h` 宏开关;
+4. 开始使用.
 
 #### 参与贡献
 

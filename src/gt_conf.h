@@ -1,13 +1,13 @@
 /**
- * @file widgets_config.h
+ * @file gt_conf.h
  * @author Feyoung
  * @brief 
  * @version 0.1
- * @date 2022-05-11 14:44:16
+ * @date 2022-05-11 14:43:24
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
  */
-#ifndef _WIDGETS_CONFIG_H_
-#define _WIDGETS_CONFIG_H_
+#ifndef _GT_CONF_H_
+#define _GT_CONF_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,4 +37,4 @@ extern "C" {
 } /*extern "C"*/
 #endif
 
-#endif //!_WIDGETS_CONFIG_H_
+#endif //!_GT_CONF_H_
