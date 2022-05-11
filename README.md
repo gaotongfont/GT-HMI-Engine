@@ -6,18 +6,32 @@ gui框架
 #### 软件架构
 软件架构说明
 
+| 目录 | 说明 |
+| :--- | :--- |
+| doc/ | 相关文档说明资料 |
+| driver/ | 底层驱动相关的移植代码 |
+| examples/ | 控件调用示例 |
+| sources/ | gui 内部使用的images素材 |
+| test/ | 单元测试代码 |
+| src/ | gui 框架代码 |
+| \|-prj_config.h | 配置 |
+| \|-core/ | gui 核心代码 |
+| \|-extra/ | 拓展控件 |
+| \|-font/ | 字体 |
+| \|-hal/ | 中间件, 中间层 |
+| \|-others/ | 不好分类的代码 |
+| \|-utils/ | 工具类 |
+| \|-widgets/ | 控件 |
+| \|-\|-widgets_config.h | 控件开关宏 |
+| \|-\|-btn/ | 按键控件 |
+| \|-\|-.../ | 控件 |
 
-#### 安装教程
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
 
 #### 使用说明
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1. 移植 `driver/, sources/, src/` 到目标项目中;
+2. 在 `driver` 文件夹中, 适配底层 `lcd`, `input`, `file system` 的驱动;
+3. 
 
 #### 参与贡献
 
@@ -25,13 +39,3 @@ gui框架
 2.  新建 Feat_xxx 分支
 3.  提交代码
 4.  新建 Pull Request
-
-
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
