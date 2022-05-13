@@ -14,9 +14,9 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-#include "../gt_conf.h"
-
-
+#include "../others/gt_color.h"
+#include "../others/gt_types.h"
+#include "gt_obj_class.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -32,35 +32,25 @@ typedef struct gt_area_s {
     uint16_t h;
 }gt_area_st;
 
-typedef struct gt_style_s {
-    gt_color_t bcolor;
-    gt_color_t fcolor;
 
-    uint16_t radius;
-
-    uint16_t pad_top;
-    uint16_t pad_bottom;
-    uint16_t pad_left;
-    uint16_t pad_right;
-
-    uint16_t margin_top;
-    uint16_t margin_bottom;
-    uint16_t margin_left;
-    uint16_t margin_right;
-
-    uint16_t border;
-    gt_color_t border_color;
-}gt_style_st;
-
-typedef struct gt_obj_s {
-    struct gt_obj_s *parent;
-    void * class;
+typedef struct _gt_obj_s {
+    struct _gt_obj_s * parent;
+    struct _gt_obj_s ** child;
+    uint16_t cnt_child;
+    const gt_obj_class_st * class;
+#if GT_USE_USER_DATA
     void * user_data;
+#endif
     gt_area_st area;
-    gt_style_st style;
+    style_widget_t style;
 }gt_obj_st;
 
 
+/* private typedef  */
+typedef struct _gt_style_s
+{
+    uint8_t selected;
+}_gt_style_obj_st;
 
 
 /* macros ---------------------------------------------------------------*/
