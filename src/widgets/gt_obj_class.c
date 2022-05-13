@@ -53,7 +53,7 @@ gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * paren
     gt_memset_0(obj, is);
 
     if(parent == NULL){
-        GT_LOGI(GT_LOG_TAG_GUI, "create class type is screen");
+        GT_LOGV(GT_LOG_TAG_GUI, "create class type is screen");
     }
 
     return obj;

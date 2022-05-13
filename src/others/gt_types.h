@@ -25,13 +25,14 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 typedef void * style_widget_t;
-typedef enum gt_obj_type_e{
-    GT_TYPE_OBJ = 0,
-    GT_TYPE_BTN = 1,
-    GT_TYPE_LAB = 2,
-    GT_TYPE_TEXTAREA = 3,
+typedef enum type_widget_e{
+    GT_TYPE_OBJ = 0,        //base obj type
+    GT_TYPE_BTN = 1,        //button type
+    GT_TYPE_LAB = 2,        //label type
+    GT_TYPE_TEXTAREA = 3,   //textarea type
+    
 
-    GT_TYPE_TOTAL,
+    GT_TYPE_TOTAL,          //count total of type
 }gt_obj_type_et;
 
 /* macros ---------------------------------------------------------------*/
