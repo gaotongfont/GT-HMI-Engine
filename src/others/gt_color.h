@@ -3,7 +3,7 @@
  * @author yongg
  * @brief 
  * @version 0.1
- * @date 2022-05-11 16:53:42
+ * @date 2022-05-13 10:13:45
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_COLOR_H_
@@ -14,12 +14,23 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-
-
+#include "stdint.h"
+#include "../gt_conf.h"
+#include "gt_types.h"
 
 /* define ---------------------------------------------------------------*/
 
-
+#if GT_COLOR_DEPTH == 1
+#define GT_COLOR_SIZE 8
+#elif GT_COLOR_DEPTH == 8
+#define GT_COLOR_SIZE 8
+#elif GT_COLOR_DEPTH == 16
+#define GT_COLOR_SIZE 16
+#elif GT_COLOR_DEPTH == 32
+#define GT_COLOR_SIZE 32
+#else
+#error "Invalid GT_COLOR_DEPTH in lv_conf.h! Set it to 1, 8, 16 or 32!"
+#endif
 
 /* typedef --------------------------------------------------------------*/
 typedef union {
@@ -66,9 +77,8 @@ typedef union {
     uint32_t full;
 } gt_color32_t;
 
-typedef GT_CONCAT3(uint, GT_COLOR_SIZE, _t)         gt_color_int_t;
-typedef GT_CONCAT3(gt_color, GT_COLOR_DEPTH, _t)    gt_color_t;
-
+typedef GT_CONCAT3(uint, GT_COLOR_SIZE, _t) gt_color_int_t;
+typedef GT_CONCAT3(gt_color, GT_COLOR_DEPTH, _t) gt_color_t;
 
 
 /* macros ---------------------------------------------------------------*/
