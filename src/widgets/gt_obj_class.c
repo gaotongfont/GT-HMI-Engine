@@ -10,7 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "gt_obj_class.h"
 #include "gt_obj.h"
-#include "gt_mem.h"
+#include "../core/gt_mem.h"
 #include "../others/gt_types.h"
 
 
