@@ -47,12 +47,16 @@ static void _deinit_cb(gt_obj_st * obj, gt_obj_class_st * class){}
 
 
 
-gt_obj_st *gt_obj_create(gt_obj_st *parent){
+gt_obj_st *gt_obj_create(gt_obj_st * parent){
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);    
     GT_LOGV(GT_LOG_TAG_GUI, "create obj type:%d", *MY_CLASS.type);
     return obj;
 }
 
+void gt_obj_del(gt_obj_st * obj){
+    GT_LOGV(GT_LOG_TAG_GUI, "create obj:%p", obj);
+    gt_mem_free(obj);
+}
 
 
 

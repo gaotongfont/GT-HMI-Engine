@@ -28,6 +28,7 @@ extern "C" {
 #include "src/core/gt_event.h"
 #include "src/core/gt_disp.h"
 #include "src/core/gt_mem.h"
+#include "src/core/gt_style.h"
 
 /* hal */
 #include "src/hal/gt_hal_disp.h"

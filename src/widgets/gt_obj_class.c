@@ -12,7 +12,8 @@
 #include "gt_obj.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_types.h"
-
+#include "../hal/gt_hal.h"
+#include "stdint.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -53,7 +54,32 @@ gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * paren
     gt_memset_0(obj, is);
 
     if(parent == NULL){
-        GT_LOGV(GT_LOG_TAG_GUI, "create class type is screen");
+        GT_LOGV(GT_LOG_TAG_GUI, "create a screen");
+        gt_disp_st * disp = gt_disp_get_default();
+        
+        if(disp == NULL){
+            GT_LOGW(GT_LOG_TAG_GUI, "disp is null, please init disp");
+            return NULL;
+        }
+
+        if(disp->screens == NULL){
+            disp->screens = gt_mem_malloc( sizeof(gt_obj_st *) );
+            disp->screens[disp->cnt_scr++] = obj;
+        }else{
+            disp->screens = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr+1) );
+            disp->screens[disp->cnt_scr++] = obj;
+        }
+
+    }else{
+        GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj");
+        if( parent->child == NULL ){
+            parent->child = gt_mem_malloc(sizeof(gt_obj_st *));
+            parent->child[0] = obj;
+            parent->cnt_child = 1;
+        }else{
+            parent->child = gt_mem_realloc(parent->child, sizeof(gt_obj_st *) * (parent->cnt_child+1) );
+            parent->child[parent->cnt_child++] = obj;
+        }
     }
 
     return obj;

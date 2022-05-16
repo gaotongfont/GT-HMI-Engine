@@ -59,7 +59,7 @@ typedef struct _gt_style_s
 
 /* global functions / API interface -------------------------------------*/
 gt_obj_st *gt_obj_create(gt_obj_st *parent);
-
+void gt_obj_del(gt_obj_st * obj);
 
 
 #ifdef __cplusplus

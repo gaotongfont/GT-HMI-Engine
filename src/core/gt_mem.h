@@ -14,8 +14,8 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-
-
+#include "stdint.h"
+#include "../widgets/gt_obj.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -31,6 +31,7 @@ extern "C" {
 
 /* global functions / API interface -------------------------------------*/
 void * gt_mem_malloc(uint32_t size);
+void * gt_mem_realloc(void * ptr, uint32_t size);
 void gt_mem_free(void * ptr);
 
 void gt_memcpy(void *dst, void *src, uint32_t size);

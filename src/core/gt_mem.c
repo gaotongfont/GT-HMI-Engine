@@ -8,15 +8,17 @@
  */
 
 /* include --------------------------------------------------------------*/
-
+#include "gt_mem.h"
+#include "stdint.h"
 #include "string.h"
+#include "stdlib.h"
 
 /* private define -------------------------------------------------------*/
 
 
 
 /* private typedef ------------------------------------------------------*/
-typedef unsigned long long uint32_t;
+
 
 
 /* static variables -----------------------------------------------------*/
@@ -32,8 +34,17 @@ typedef unsigned long long uint32_t;
 
 
 /* global functions / API interface -------------------------------------*/
-void * gt_mem_malloc(uint32_t size){}
-void gt_mem_free(void * ptr){}
+void * gt_mem_malloc(uint32_t size){
+    return malloc(size);
+}
+
+void * gt_mem_realloc(void * ptr, uint32_t size){
+
+}
+
+void gt_mem_free(void * ptr){
+    free(ptr);
+}
 
 void gt_memcpy(void *dst, void *src, uint32_t size){
     memcpy(dst, src, size);
