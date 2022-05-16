@@ -24,6 +24,14 @@ gui框架
 | \|-widgets/ | 控件 |
 | \|-\|-gt_conf_widgets.h | 控件开关宏 |
 
+#### 编译库
+
+1. vscode 安装 **cmake**, **cmake tool** 插件;
+
+2. `Ctrl + shift + p`, 在输入框, 配置 `>CMake` 的 **kits** 工具链, 依次执行 `>CMake Configure`, `>CMake build`;
+
+3. `lib, a` 文件存放在 `{default_word_space}/build/lib` 文件夹下.
+
 
 #### 使用说明
 
