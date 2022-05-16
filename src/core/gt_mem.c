@@ -12,9 +12,14 @@
 #include "stdint.h"
 #include "string.h"
 #include "stdlib.h"
+#include "../gt_conf.h"
+#include "../others/gt_log.h"
 
 /* private define -------------------------------------------------------*/
 
+#define _DEFAULT_MALLOC_FUNC    malloc
+#define _DEFAULT_CALLOC_FUNC    calloc
+#define _DEFAULT_FREE_FUNC      free
 
 
 /* private typedef ------------------------------------------------------*/
@@ -22,8 +27,15 @@
 
 
 /* static variables -----------------------------------------------------*/
-
-
+/**
+ * @brief 映射底层函数接口
+ *  [!]禁止使用`realloc`方法, 分配内存.
+ */
+static gt_mem_hooks_st _self = {
+    .malloc_hooks = _DEFAULT_MALLOC_FUNC,
+    .calloc_hooks = _DEFAULT_CALLOC_FUNC,
+    .free_hooks = _DEFAULT_FREE_FUNC,
+};
 
 /* macros ---------------------------------------------------------------*/
 
@@ -32,23 +44,89 @@
 /* static functions -----------------------------------------------------*/
 
 
-
-/* global functions / API interface -------------------------------------*/
-void * gt_mem_malloc(uint32_t size){
-    return malloc(size);
+/**
+ * @brief 申请内存
+ * 
+ * @param size 内存大小, 总的字节数
+ * @return void* 返回内存地址
+ */
+static void *_gt_malloc_hooks(size_t size)
+{
+    void * ptr = _self.malloc_hooks(size);
+#ifdef GT_LOGD
+    GT_LOGD(GT_LOG_TAG_MEM, "\t--- malloc addr: 0x%p, size: 0x%x ---", ptr, size);
+#endif
+    return ptr;
 }
 
-void * gt_mem_realloc(void * ptr, uint32_t size){
+/**
+ * @brief 申请内存
+ * 
+ * @param count 
+ * @param per_size 
+ * @return void* 
+ */
+static void *_gt_calloc_hooks(size_t count, size_t per_size)
+{
+    void * ptr = _self.calloc_hooks(count, per_size);
+#ifdef GT_LOGD
+    GT_LOGD(GT_LOG_TAG_MEM, "\t--- calloc addr: 0x%p, size: 0x%x ---", ptr, count * per_size);
+#endif
+    return ptr;
+}
+
+/**
+ * @brief 释放内存
+ * 
+ * @param ptr 
+ */
+static void _gt_free_hooks(void * ptr)
+{
+#ifdef GT_LOGD
+    GT_LOGD(GT_LOG_TAG_MEM, "\t--- free addr: 0x%p ---", ptr);
+#endif
+    _self.free_hooks(ptr);
+}
+
+
+/* global functions / API interface -------------------------------------*/
+/**
+ * @brief 设置
+ * 
+ * @param hooks 需要重映射的函数接口
+ * @return uint8_t 0: 正常退出
+ */
+uint8_t gt_mem_init(struct gt_mem_hooks_s *hooks)
+{
+    if (!hooks) {
+        return 1;
+    }
+
+    _self.malloc_hooks = hooks->malloc_hooks ? hooks->malloc_hooks : _DEFAULT_MALLOC_FUNC;
+    _self.calloc_hooks = hooks->calloc_hooks ? hooks->calloc_hooks : _DEFAULT_CALLOC_FUNC;
+    _self.free_hooks   = hooks->free_hooks   ? hooks->free_hooks   : _DEFAULT_FREE_FUNC;
+
+    return 0;
+}
+
+void * gt_mem_malloc(size_t size){
+    return _gt_malloc_hooks(size);
+}
+
+void * gt_mem_realloc(void * ptr, size_t size){
 
 }
 
 void gt_mem_free(void * ptr){
-    free(ptr);
+    _gt_free_hooks(ptr);
 }
 
-void gt_memcpy(void *dst, void *src, uint32_t size){
+void gt_memcpy(void * dst, void * src, size_t size){
     memcpy(dst, src, size);
 }
-void gt_memset_0(void * ptr, uint32_t size){}
+
+void gt_memset_0(void * ptr, size_t size){
+    memset(ptr, 0x00, size);
+}
 
 /* end ------------------------------------------------------------------*/

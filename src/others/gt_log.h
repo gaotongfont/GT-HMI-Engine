@@ -46,6 +46,7 @@ extern "C" {
 /* TAG ------------------------------------------------------------------*/
 
 #define GT_LOG_TAG_CHECK        "CHECK"
+#define GT_LOG_TAG_MEM          "MEM"
 #define GT_LOG_TAG_FLASH        "FLASH"
 #define GT_LOG_TAG_LCD          "LCD"
 #define GT_LOG_TAG_TP           "TP"
