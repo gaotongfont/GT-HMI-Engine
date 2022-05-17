@@ -1,13 +1,13 @@
 /**
  * @file gt_disp.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-11 14:59:50
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
  */
 
-/* include --------------------------------------------------------------*/
+ /* include --------------------------------------------------------------*/
 #include "../gt_conf.h"
 #include "../widgets/gt_obj.h"
 
@@ -18,12 +18,11 @@
 
 
 /* private typedef ------------------------------------------------------*/
-typedef struct gt_disp_s
-{
-    gt_obj_st *src;     //header
+typedef struct gt_disp_s {
+    gt_obj_st * scr;     //header
 }gt_disp_st;
 
-static gt_disp_st *disp;
+static gt_disp_st * disp;
 
 
 
@@ -41,15 +40,16 @@ static gt_disp_st *disp;
 
 
 /* global functions / API interface -------------------------------------*/
-void
-gt_disp_set_src(gt_obj_st *src){
-    disp->src = src;
+void gt_disp_set_src(gt_obj_st * scr) {
+    disp->scr = scr;
 }
 
-gt_obj_st *
-gt_disp_get_src(){
-    return disp->src;
+gt_obj_st * gt_disp_get_scr() {
+    return disp->scr;
 }
 
+void gt_load_scr(gt_obj_st * scr) {
+
+}
 
 /* end ------------------------------------------------------------------*/

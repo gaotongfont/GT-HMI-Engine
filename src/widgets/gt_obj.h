@@ -17,6 +17,7 @@ extern "C" {
 #include "../others/gt_color.h"
 #include "../others/gt_types.h"
 #include "gt_obj_class.h"
+#include "../core/gt_event.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -32,6 +33,10 @@ typedef struct gt_area_s {
     uint16_t h;
 }gt_area_st;
 
+typedef struct _gt_obj_event_attr_s{
+    gt_event_cb_t cb;
+    void * user_data;
+}gt_obj_event_attr_st;
 
 typedef struct _gt_obj_s {
     struct _gt_obj_s * parent;
@@ -43,11 +48,13 @@ typedef struct _gt_obj_s {
 #endif
     gt_area_st area;
     style_widget_t style;
+    gt_obj_event_attr_st * event_attr;
+    uint8_t cnt_event;
 }gt_obj_st;
 
 
 /* private typedef  */
-typedef struct _gt_style_s
+typedef struct _gt_style_obj_s
 {
     uint8_t selected;
 }_gt_style_obj_st;

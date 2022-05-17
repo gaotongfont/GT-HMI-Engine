@@ -1,7 +1,7 @@
 /**
  * @file gt_disp.h
  * @author yongg (your@email.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-11 15:05:29
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-
+#include "../widgets/gt_obj.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -30,7 +30,7 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
-
+void gt_load_scr(gt_obj_st * scr);
 
 
 #ifdef __cplusplus

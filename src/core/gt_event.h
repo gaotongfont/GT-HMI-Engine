@@ -23,6 +23,8 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+struct _gt_obj_s;
+
 typedef enum gt_event_type_e{
     GT_EVENT_TYPE_ALL = 0,
 
@@ -85,14 +87,20 @@ typedef enum gt_event_type_e{
                                       before the class default event processing */
 }gt_event_type_et;
 
+typedef struct{
+    struct _gt_obj_s * target;
+    gt_event_type_et code;
+    void * user_data;
+}gt_event_st;
+
+typedef void (* gt_event_cb_t)(gt_event_st * e);
 
 /* macros ---------------------------------------------------------------*/
 
 
 
 /* global functions / API interface -------------------------------------*/
-
-
+void gt_obj_add_event_cb(struct _gt_obj_s * obj, gt_event_cb_t event, void * user_data);
 
 #ifdef __cplusplus
 } /*extern "C"*/

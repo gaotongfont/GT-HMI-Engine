@@ -1,13 +1,13 @@
 /**
  * @file gt_obj_class.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-12 10:34:19
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
  */
 
-/* include --------------------------------------------------------------*/
+ /* include --------------------------------------------------------------*/
 #include "gt_obj_class.h"
 #include "gt_obj.h"
 #include "../core/gt_mem.h"
@@ -32,52 +32,52 @@
 
 
 /* static functions -----------------------------------------------------*/
-static uint32_t get_instance_size(const gt_obj_class_st * class){
+static uint32_t get_instance_size(const gt_obj_class_st * class) {
     return class->size_instance;
 }
 
-static uint32_t get_style_size(const gt_obj_class_st * class){
+static uint32_t get_style_size(const gt_obj_class_st * class) {
     return class->size_style;
 }
 
 
 /* global functions / API interface -------------------------------------*/
-gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * parent){
+gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * parent) {
     uint32_t is = get_instance_size(class);
     gt_obj_st * obj = gt_mem_malloc(is);
     obj->class = class;
     obj->parent = parent;
-    
+
     uint32_t ss = get_style_size(class);
     obj->style = gt_mem_malloc(ss);
 
     gt_memset_0(obj, is);
 
-    if(parent == NULL){
+    if (parent == NULL) {
         GT_LOGV(GT_LOG_TAG_GUI, "create a screen");
         gt_disp_st * disp = gt_disp_get_default();
-        
-        if(disp == NULL){
+
+        if (disp == NULL) {
             GT_LOGW(GT_LOG_TAG_GUI, "disp is null, please init disp");
             return NULL;
         }
 
-        if(disp->screens == NULL){
-            disp->screens = gt_mem_malloc( sizeof(gt_obj_st *) );
+        if (disp->screens == NULL) {
+            disp->screens = gt_mem_malloc(sizeof(gt_obj_st *));
             disp->screens[disp->cnt_scr++] = obj;
-        }else{
-            disp->screens = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr+1) );
+        } else {
+            disp->screens = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr + 1));
             disp->screens[disp->cnt_scr++] = obj;
         }
 
-    }else{
+    } else {
         GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj");
-        if( parent->child == NULL ){
+        if (parent->child == NULL) {
             parent->child = gt_mem_malloc(sizeof(gt_obj_st *));
             parent->child[0] = obj;
             parent->cnt_child = 1;
-        }else{
-            parent->child = gt_mem_realloc(parent->child, sizeof(gt_obj_st *) * (parent->cnt_child+1) );
+        } else {
+            parent->child = gt_mem_realloc(parent->child, sizeof(gt_obj_st *) * (parent->cnt_child + 1));
             parent->child[parent->cnt_child++] = obj;
         }
     }
@@ -85,7 +85,7 @@ gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * paren
     return obj;
 }
 
-gt_obj_type_et gt_obj_class_get_type(struct _gt_obj_s * obj){
+gt_obj_type_et gt_obj_class_get_type(struct _gt_obj_s * obj) {
     return obj->class->type;
 }
 
