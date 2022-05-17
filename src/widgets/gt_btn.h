@@ -14,14 +14,20 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-
-
+#include "gt_obj.h"
+#include "gt_obj_class.h"
 
 /* define ---------------------------------------------------------------*/
 
 
 
 /* typedef --------------------------------------------------------------*/
+typedef struct _gt_style_btn_s
+{
+    char * text;
+    
+    uint8_t selected;
+}_gt_style_btn_st;
 
 
 
@@ -30,8 +36,9 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
-
-
+gt_obj_st * gt_btn_create(gt_obj_st * parent){
+    
+}
 
 #ifdef __cplusplus
 } /*extern "C"*/

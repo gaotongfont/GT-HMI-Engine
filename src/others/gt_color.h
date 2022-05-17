@@ -32,6 +32,18 @@ extern "C" {
 #error "Invalid GT_COLOR_DEPTH in lv_conf.h! Set it to 1, 8, 16 or 32!"
 #endif
 
+/*********************************************/
+/*                  color                    */
+/*********************************************/
+#define GT_COLOR_WHITE       888
+#define GT_COLOR_BLACK      88
+#define GT_COLOR_RED         8
+#define GT_COLOR_GREEN       8
+#define GT_COLOR_BLUE        8
+
+
+
+
 /* typedef --------------------------------------------------------------*/
 typedef union {
     uint8_t full; /*must be declared first to set all bits of byte via initializer list*/
