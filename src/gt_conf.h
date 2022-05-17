@@ -33,6 +33,17 @@ extern "C" {
 #define GT_COLOR_DEPTH      16
 #define GT_COLOR_16_SWAP    0
 
+#define GT_MEM_CUSTOM       0
+#if GT_MEM_CUSTOM
+    #define GT_MEM_SIZE             (24 * 1024U)    //Byte
+#else
+    #define GT_MEM_CUSTOM_INCLUDE   "stdlib.h"
+
+    #define GT_MEM_CUSTOM_MALLOC    malloc
+    #define GT_MEM_CUSTOM_CALLOC    calloc
+    #define GT_MEM_CUSTOM_REALLOC   realloc
+    #define GT_MEM_CUSTOM_FREE      free
+#endif
 
 /* typedef --------------------------------------------------------------*/
 
