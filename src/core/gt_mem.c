@@ -147,9 +147,10 @@ uint8_t gt_mem_init(struct gt_mem_hooks_s *hooks)
         return 1;
     }
 
-    _self.malloc_hooks = hooks->malloc_hooks ? hooks->malloc_hooks : _DEFAULT_MALLOC_FUNC;
-    _self.calloc_hooks = hooks->calloc_hooks ? hooks->calloc_hooks : _DEFAULT_CALLOC_FUNC;
-    _self.free_hooks   = hooks->free_hooks   ? hooks->free_hooks   : _DEFAULT_FREE_FUNC;
+    _self.malloc_hooks  = hooks->malloc_hooks   ? hooks->malloc_hooks   : _DEFAULT_MALLOC_FUNC;
+    _self.calloc_hooks  = hooks->calloc_hooks   ? hooks->calloc_hooks   : _DEFAULT_CALLOC_FUNC;
+    _self.realloc_hooks = hooks->realloc_hooks  ? hooks->realloc_hooks  : _DEFAULT_REALLOC_FUNC;
+    _self.free_hooks    = hooks->free_hooks     ? hooks->free_hooks     : _DEFAULT_FREE_FUNC;
 
     return 0;
 }
