@@ -33,8 +33,13 @@ extern "C" {
 #define GT_COLOR_DEPTH      16
 #define GT_COLOR_16_SWAP    0
 
+/**
+ * @brief memory mode. 1: array as memory pool; 0:  c library api.
+ */
 #define GT_MEM_CUSTOM       0
 #if GT_MEM_CUSTOM
+    #define GT_MEM_CUSTOM_INCLUDE   "../others/gt_tlsf.h"
+
     #define GT_MEM_SIZE             (24 * 1024U)    //Byte
 #else
     #define GT_MEM_CUSTOM_INCLUDE   "stdlib.h"

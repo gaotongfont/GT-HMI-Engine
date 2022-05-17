@@ -13,6 +13,7 @@
 #include "string.h"
 #include "../gt_conf.h"
 #include "../others/gt_log.h"
+#include GT_MEM_CUSTOM_INCLUDE
 
 /* private define -------------------------------------------------------*/
 
@@ -22,24 +23,22 @@
     #define _DEFAULT_REALLOC_FUNC   gt_tlsf_realloc
     #define _DEFAULT_FREE_FUNC      gt_tlsf_free
 #else
-    #include GT_MEM_CUSTOM_INCLUDE
-
     #ifdef GT_MEM_CUSTOM_MALLOC
         #define _DEFAULT_MALLOC_FUNC        GT_MEM_CUSTOM_MALLOC
     #else
         #define _DEFAULT_MALLOC_FUNC        malloc
     #endif
 
-    #ifdef GT_MEM_CUSTOM_REALLOC
-        #define _DEFAULT_REALLOC_FUNC       GT_MEM_CUSTOM_REALLOC
-    #else
-        #define _DEFAULT_REALLOC_FUNC       realloc
-    #endif
-
     #ifdef GT_MEM_CUSTOM_CALLOC
         #define _DEFAULT_CALLOC_FUNC        GT_MEM_CUSTOM_CALLOC
     #else
         #define _DEFAULT_CALLOC_FUNC        calloc
+    #endif
+
+    #ifdef GT_MEM_CUSTOM_REALLOC
+        #define _DEFAULT_REALLOC_FUNC       GT_MEM_CUSTOM_REALLOC
+    #else
+        #define _DEFAULT_REALLOC_FUNC       realloc
     #endif
 
     #ifdef GT_MEM_CUSTOM_FREE
