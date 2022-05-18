@@ -155,7 +155,8 @@ uint8_t gt_mem_init(struct gt_mem_hooks_s *hooks)
     return 0;
 }
 
-void * gt_mem_malloc(size_t size){
+void * gt_mem_malloc(size_t size)
+{
     return _gt_malloc_hooks(size);
 }
 
@@ -164,19 +165,23 @@ void * gt_mem_calloc(size_t count, size_t per_size)
     return _gt_calloc_hooks(count, per_size);
 }
 
-void * gt_mem_realloc(void * ptr, size_t size){
+void * gt_mem_realloc(void * ptr, size_t size)
+{
     return _gt_realloc_hooks(ptr, size);
 }
 
-void gt_mem_free(void * ptr){
+void gt_mem_free(void * ptr)
+{
     _gt_free_hooks(ptr);
 }
 
-void gt_memcpy(void * dst, void * src, size_t size){
+void gt_memcpy(void * dst, void * src, size_t size)
+{
     memcpy(dst, src, size);
 }
 
-void gt_memset_0(void * ptr, size_t size){
+void gt_memset_0(void * ptr, size_t size)
+{
     memset(ptr, 0x00, size);
 }
 
