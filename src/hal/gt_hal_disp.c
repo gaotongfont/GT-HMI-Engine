@@ -11,6 +11,7 @@
 #include "gt_hal_disp.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_color.h"
+#include "../gt_conf.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -21,6 +22,7 @@
 
 
 /* static variables -----------------------------------------------------*/
+static gt_color_t * graph_buf1, * graph_buf2, * graph_bufa;
 static gt_disp_st * disp_p;
 
 
@@ -53,6 +55,7 @@ void gt_disp_drv_register(gt_disp_drv_st * drv){
 }
 
 
+
 /*************************************/
 /*                disp               */
 /*************************************/
@@ -65,6 +68,62 @@ gt_disp_st * gt_disp_get_default(){
     return disp_p;
 }
 
+uint16_t gt_disp_get_res_hor(gt_disp_st * disp){
+    if( NULL == disp ) disp = gt_disp_get_default();
+    if( NULL == disp ) return 0;
+    switch( disp->drv->rotated ){
+        case GT_ROTATED_90:
+        case GT_ROTATED_270:
+            return disp->drv->res_ver;
+            break;
+        default:
+            return disp->drv->res_hor;
+            break;
+    }
+}
+uint16_t gt_disp_get_res_ver(gt_disp_st * disp){
+    if( NULL == disp ) disp = gt_disp_get_default();
+    if( NULL == disp ) return 0;
+    switch( disp->drv->rotated ){
+        case GT_ROTATED_90:
+        case GT_ROTATED_270:
+            return disp->drv->res_hor;
+            break;
+        default:
+            return disp->drv->res_ver;
+            break;
+    }
+}
 
+void gt_disp_graph_buf_init(gt_color_t *buf1, gt_color_t *buf2, gt_color_t *bufa){
+
+#if (GT_REFRESH_STYLE == GT_REFRESH_STYLE_0)
+    GT_LOGV(GT_LOG_TAG_GUI, "use refresh style 0");
+#elif (GT_REFRESH_STYLE == GT_REFRESH_STYLE_1)
+    GT_LOGV(GT_LOG_TAG_GUI, "use refresh style 1");
+    graph_buf1 = buf1;
+#elif (GT_REFRESH_STYLE == GT_REFRESH_STYLE_2)
+    GT_LOGV(GT_LOG_TAG_GUI, "use refresh style 2");
+    graph_buf1 = buf1;
+    graph_buf2 = buf2;
+#elif (GT_REFRESH_STYLE == GT_REFRESH_STYLE_3)
+    GT_LOGV(GT_LOG_TAG_GUI, "use refresh style 3");
+    graph_bufa = bufa;
+#else
+    GT_LOGV(GT_LOG_TAG_GUI, "use refresh style 0");
+#endif
+
+}
+
+
+gt_color_t * gt_disp_graph_get_buf1(){
+    return graph_buf1;
+}
+gt_color_t * gt_disp_graph_get_buf2(){
+    return graph_buf2;
+}
+gt_color_t * gt_disp_graph_get_bufa(){
+    return graph_bufa;
+}
 
 /* end ------------------------------------------------------------------*/
