@@ -30,11 +30,16 @@ extern "C" {
 #include "src/core/gt_mem.h"
 #include "src/core/gt_style.h"
 
+/* font */
+#include "src/font/gt_font.h"
+
 /* hal */
 #include "src/hal/gt_hal_disp.h"
+#include "src/hal/gt_hal_inpdev.h"
 
 /* widgets */
 #include "src/widgets/gt_obj.h"
+#include "src/widgets/gt_btn.h"
 
 /* other */
 #include "src/others/gt_color.h"

@@ -26,12 +26,31 @@ extern "C" {
 #define GT_SCREEN_WIDTH     320
 #define GT_SCREEN_HEIGHT    240
 
+/* GT_REFRESH_STYLE type don't change */
+#define GT_REFRESH_STYLE_0      0   /* no cache buf, It is suitable for MCU with low refresh requirements and low performance */
+#define GT_REFRESH_STYLE_1      1   /* cache 10 lines buf, It is suitable for MCU with low refresh requirements and low performance */
+#define GT_REFRESH_STYLE_2      2   /* cache 10+10 lines buf, It is suitable for MCU with high refresh requirements and high performance */
+#define GT_REFRESH_STYLE_3      3   /* cache all screen buf,It is suitable for MCU with high refresh requirements and high performance */
+
+/* user: screen refresh style */
+#define GT_REFRESH_STYLE        GT_REFRESH_STYLE_3
+
 /* user: obj contain user_data: 1 yes, 0 no */
 #define GT_USE_USER_DATA    1
 
 /* user: color depth: 1(1 byte per pixel), 8(RGB332), 16(RGB565), 32(ARGB8888) */
 #define GT_COLOR_DEPTH      16
 #define GT_COLOR_16_SWAP    0
+
+/* user: event handler timer */
+#define GT_EVENT_TIMER_PER  30
+
+/* user: enable widgets */
+#define GT_ENABLE_WIDGET_BTN            1
+#define GT_ENABLE_WIDGET_TEXTAREA       1
+#define GT_ENABLE_WIDGET_LABEL          1
+#define GT_ENABLE_WIDGET_INPUT          1
+#define GT_ENABLE_WIDGET_IMG            1
 
 /**
  * @brief memory mode. 1: array as memory pool; 0:  c library api.
