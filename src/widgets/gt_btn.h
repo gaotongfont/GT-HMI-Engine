@@ -24,9 +24,19 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_style_btn_s
 {
-    char * text;
+    gt_color_t color_selected;
+    gt_color_t color_unselected;
     
-    uint8_t selected;
+    gt_size_t radius;
+
+    gt_size_t border_width;
+    gt_color_t border_bcolor;
+    gt_color_t border_fcolor;
+
+    char * text;
+
+    gt_size_t isfill:1;
+    gt_size_t selected:1;
 }_gt_style_btn_st;
 
 
@@ -36,9 +46,11 @@ typedef struct _gt_style_btn_s
 
 
 /* global functions / API interface -------------------------------------*/
-gt_obj_st * gt_btn_create(gt_obj_st * parent){
-    
-}
+gt_obj_st * gt_btn_create(gt_obj_st * parent);
+void gt_btn_style_set_color_selected(gt_obj_st * btn, gt_color_t color);
+void gt_btn_style_set_color_unselected(gt_obj_st * btn, gt_color_t color);
+void gt_btn_style_set_selected(gt_obj_st * btn, uint8_t selected);
+void gt_btn_style_set_text(gt_obj_st * btn, char *text);
 
 #ifdef __cplusplus
 } /*extern "C"*/
