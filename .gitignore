@@ -7,3 +7,5 @@
 build/
 obj/
 bin/
+
+.cache/
