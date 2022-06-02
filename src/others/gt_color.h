@@ -32,6 +32,20 @@ extern "C" {
 #error "Invalid GT_COLOR_DEPTH in lv_conf.h! Set it to 1, 8, 16 or 32!"
 #endif
 
+#define GT_COLOR_CLR_BUF(obj_buf, len, val)         do{int idx=0;while(idx<len){obj_buf[idx].full=val; idx++;}}while(0)
+#define GT_COLOR_CPY_BUF(dst, src,len, val)         do{int idx=0;while(idx<len){dst[idx].full=src[idx].full;idx++;}}while(0)
+#define GT_COLOR_SET_BUF(obj_buf, x, y, w, h, val)  (obj_buf[ (int)((y)*(w) + (x)) ].full = val)
+#define GT_COLOR_GET_BUF(obj_buf, x, y, w, h)       (obj_buf[ (int)((y)*(w) + (x)) ].full)
+
+#define GT_COLOR_SET(obj,val)           (obj.full=val)
+#define GT_COLOR_GET(obj)               (obj.full)
+#define GT_COLOR_SET_R(obj,r)           (obj.ch.red=r)
+#define GT_COLOR_GET_R(obj)           	(obj.ch.red)
+#define GT_COLOR_SET_G(obj,g)           (obj.ch.green=g)
+#define GT_COLOR_GET_G(obj)           	(obj.ch.green)
+#define GT_COLOR_SET_B(obj,b)           (obj.ch.blue=b)
+#define GT_COLOR_GET_B(obj)           	(obj.ch.blue)
+#define GT_COLOR_SET_RGB(obj,r,g,b)     {obj.ch.red=(r);obj.ch.green=(g);obj.ch.blue=(b);}
 /*********************************************/
 /*                  color                    */
 /*********************************************/
