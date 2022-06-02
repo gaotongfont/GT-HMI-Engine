@@ -25,6 +25,9 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 typedef void * style_widget_t;
+
+typedef int16_t gt_size_t;
+
 typedef enum type_widget_e{
     GT_TYPE_OBJ = 0,        //base obj type
     GT_TYPE_BTN = 1,        //button type
@@ -35,6 +38,10 @@ typedef enum type_widget_e{
     GT_TYPE_TOTAL,          //count total of type
 }gt_obj_type_et;
 
+typedef enum{
+    GT_RES_FAIL = -1,
+    GT_RES_OK = 0,
+}gt_res_t;
 /* macros ---------------------------------------------------------------*/
 
 

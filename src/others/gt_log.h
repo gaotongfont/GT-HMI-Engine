@@ -41,7 +41,7 @@ extern "C" {
 
 
 //字库相关能显示的调试信息等级
-#define GT_LOG_LEVEL_DEFALUT    GT_LOG_LEVEL_DEBUG
+#define GT_LOG_LEVEL_DEFALUT    GT_LOG_LEVEL_VERBOSE
 
 /* TAG ------------------------------------------------------------------*/
 
@@ -169,6 +169,28 @@ extern "C" {
         }                                                                                   \
     }while(0)
 
+#define GT_LOG_COLOR_ARR(_arr, _start, _len)      	\
+	do{																								\
+		int i=_start;																		\
+		printf("\n");																		\
+		while(i<_len+_start){														\
+			printf("%s[%d]=%04x  ",#_arr,i,_arr[i].full);								\
+			i++;																					\
+		}																								\
+		printf("\n");																		\
+	}while(0);																
+
+
+#define GT_LOG_ARR(_arr, _start, _len)  \
+    do{																								\
+		int i=_start;																		\
+		printf("\n");																		\
+		while(i<_len+_start){														\
+			printf("%s[%d]=%02x  ",#_arr,i,_arr[i]);								\
+			i++;																					\
+		}																								\
+		printf("\n");																		\
+	}while(0);	
 
 #ifdef __cplusplus
 } /*extern "C"*/
