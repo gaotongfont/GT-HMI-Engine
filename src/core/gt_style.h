@@ -30,7 +30,7 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_obj_set_style_area(gt_obj_st * obj, gt_area_st * area);
+void gt_obj_set_style_area(gt_obj_st * obj, gt_area_st area);
 void gt_obj_set_style_pos(gt_obj_st * obj, uint16_t x, uint16_t y);
 void gt_obj_set_style_x(gt_obj_st * obj, uint16_t x);
 void gt_obj_set_style_y(gt_obj_st * obj, uint16_t y);

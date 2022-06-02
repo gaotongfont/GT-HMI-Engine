@@ -34,8 +34,12 @@
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_obj_set_style_area(gt_obj_st * obj, gt_area_st * area){
-    gt_memcpy(&obj->area, area, sizeof(gt_area_st));
+void gt_obj_set_style_area(gt_obj_st * obj, gt_area_st area){
+    // gt_memcpy(&obj->area, area, 8);//sizeof(gt_area_st)
+    gt_obj_set_style_x(obj, area.x);
+    gt_obj_set_style_y(obj, area.y);
+    gt_obj_set_style_w(obj, area.w);
+    gt_obj_set_style_h(obj, area.h);
 }
 
 void gt_obj_set_style_pos(gt_obj_st * obj, uint16_t x, uint16_t y){
