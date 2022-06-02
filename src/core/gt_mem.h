@@ -15,6 +15,7 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "stdint.h"
+#include "../others/gt_types.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -52,7 +53,7 @@ void gt_mem_free(void * ptr);
 
 void gt_memcpy(void *dst, void *src, size_t size);
 void gt_memset_0(void * ptr, size_t size);
-
+void gt_memset(void * ptr, uint8_t val, size_t size);
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

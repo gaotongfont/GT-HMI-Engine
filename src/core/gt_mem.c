@@ -185,4 +185,10 @@ void gt_memset_0(void * ptr, size_t size)
     memset(ptr, 0x00, size);
 }
 
+void gt_memset(void * ptr, uint8_t val, size_t size)
+{
+    memset(ptr, val, size);
+}
+
+
 /* end ------------------------------------------------------------------*/
