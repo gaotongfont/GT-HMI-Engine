@@ -24,18 +24,31 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+typedef struct gt_line_s{
+    gt_size_t xs;
+    gt_size_t ys;
+    gt_size_t xe;
+    gt_size_t ye;
+}gt_line_st;
 
+typedef struct _gt_point_s
+{
+    gt_size_t x;
+    gt_size_t y;
+}gt_point_st;
 
 typedef struct gt_area_s {
-    uint16_t x;
-    uint16_t y;
+    gt_size_t x;
+    gt_size_t y;
     uint16_t w;
     uint16_t h;
 }gt_area_st;
 
+
 typedef struct _gt_obj_event_attr_s{
     gt_event_cb_t cb;
     void * user_data;
+    gt_event_type_et filter;
 }gt_obj_event_attr_st;
 
 typedef struct _gt_obj_s {
@@ -68,6 +81,8 @@ typedef struct _gt_style_obj_s
 gt_obj_st *gt_obj_create(gt_obj_st *parent);
 void gt_obj_del(gt_obj_st * obj);
 
+
+void gt_init_area(gt_area_st * area, gt_size_t x, gt_size_t y, gt_size_t w, gt_size_t h);
 
 #ifdef __cplusplus
 } /*extern "C"*/

@@ -43,15 +43,22 @@ static uint32_t get_style_size(const gt_obj_class_st * class) {
 
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * parent) {
+    
+    if ( parent->class->type == class->type ){
+        GT_LOGV(GT_LOG_TAG_GUI, "cannot create an object of the same type as the parent object onto the parent object");
+        return NULL;
+    }
+
     uint32_t is = get_instance_size(class);
     gt_obj_st * obj = gt_mem_malloc(is);
+
+	gt_memset_0(obj, is);
+	
     obj->class = class;
     obj->parent = parent;
 
     uint32_t ss = get_style_size(class);
     obj->style = gt_mem_malloc(ss);
-
-    gt_memset_0(obj, is);
 
     if (parent == NULL) {
         GT_LOGV(GT_LOG_TAG_GUI, "create a screen");
@@ -69,9 +76,12 @@ gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * paren
             disp->screens = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr + 1));
             disp->screens[disp->cnt_scr++] = obj;
         }
-
+        obj->area.x = 0;
+        obj->area.y = 0;
+        obj->area.w = gt_disp_get_res_hor(NULL);
+        obj->area.h = gt_disp_get_res_ver(NULL);
     } else {
-        GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj");
+        GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj");        
         if (parent->child == NULL) {
             parent->child = gt_mem_malloc(sizeof(gt_obj_st *));
             parent->child[0] = obj;
