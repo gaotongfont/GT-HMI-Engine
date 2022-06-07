@@ -56,6 +56,7 @@ extern "C" {
  * @brief memory mode. 1: array as memory pool; 0:  c library api.
  */
 #define GT_MEM_CUSTOM       0
+
 #if GT_MEM_CUSTOM
     #define GT_MEM_CUSTOM_INCLUDE   "../others/gt_tlsf.h"
 
@@ -68,6 +69,15 @@ extern "C" {
     #define GT_MEM_CUSTOM_REALLOC   realloc
     #define GT_MEM_CUSTOM_FREE      free
 #endif
+
+
+
+/* Compiler prefix for a big array declaration in RAM */
+#define GT_ATTRIBUTE_LARGE_RAM_ARRAY
+
+
+
+
 
 /* typedef --------------------------------------------------------------*/
 

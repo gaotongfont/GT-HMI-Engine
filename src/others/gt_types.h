@@ -19,9 +19,19 @@ extern "C" {
 #include "gt_log.h"
 
 /* define ---------------------------------------------------------------*/
-#define _GT_CONCAT3(x, y, z) x ## y ## z
-#define GT_CONCAT3(x, y, z) _GT_CONCAT3(x, y, z)
 
+// If __UINTPTR_MAX__ or UINTPTR_MAX are available, use them to determine arch size
+#if defined(__UINTPTR_MAX__) && __UINTPTR_MAX__ > 0xFFFFFFFF
+#define GT_ARCH_64
+
+#elif defined(UINTPTR_MAX) && UINTPTR_MAX > 0xFFFFFFFF
+#define GT_ARCH_64
+
+// Otherwise use compiler-dependent means to determine arch size
+#elif defined(_WIN64) || defined(__x86_64__) || defined(__ppc64__) || defined (__aarch64__)
+#define GT_ARCH_64
+
+#endif
 
 /* typedef --------------------------------------------------------------*/
 typedef void * style_widget_t;
@@ -44,6 +54,8 @@ typedef enum{
 }gt_res_t;
 /* macros ---------------------------------------------------------------*/
 
+#define _GT_CONCAT3(x, y, z) x ## y ## z
+#define GT_CONCAT3(x, y, z) _GT_CONCAT3(x, y, z)
 
 
 /* global functions / API interface -------------------------------------*/

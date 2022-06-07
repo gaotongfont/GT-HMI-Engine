@@ -15,7 +15,7 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "stdint.h"
-#include "../others/gt_types.h"
+#include "../gt_conf.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -23,31 +23,17 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 
-/**
- * @brief 指针
- */
-typedef struct gt_mem_hooks_s {
-    void * ( * malloc_hooks)(size_t size);
-    void * ( * calloc_hooks)(size_t count, size_t per_size);
-    void * ( * realloc_hooks)(void * ptr, size_t size);
-    void   ( * free_hooks)(void *ptr);
-}gt_mem_hooks_st;
+
 
 /* macros ---------------------------------------------------------------*/
 
 
 
 /* global functions / API interface -------------------------------------*/
-/**
- * @brief 初始化内存
- * 
- * @param hooks 
- * @return uint8_t 
- */
-uint8_t gt_mem_init(struct gt_mem_hooks_s *hooks);
+void gt_mem_init(void);
+void gt_mem_deinit(void);
 
 void * gt_mem_malloc(size_t size);
-void * gt_mem_calloc(size_t count, size_t per_size);
 void * gt_mem_realloc(void * ptr, size_t size);
 void gt_mem_free(void * ptr);
 
