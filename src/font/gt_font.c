@@ -36,7 +36,7 @@ uint8_t utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 	} else if (utf8[0] < 0xE0) {
 		*res = ((utf8[0] & 0x1F) << 6) | (utf8[1] & 0x3F);
 		return 2;
-	} else if (utf8[0] < 0xF0) {
+	} else itf (utf8[0] < 0xF0) {
 		*res = ((utf8[0] & 0x0F) << 12) | ((utf8[1] & 0x3F) << 6) | (utf8[2] & 0x3F);
 		return 3;
 	} else if (0xF0 == (utf8[0] & 0xF0)) {
@@ -46,37 +46,38 @@ uint8_t utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 	return 0;
 }
 
-extern unsigned long GT_GetChinese(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
-extern unsigned long GT_GetJapanese(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
-extern unsigned long GT_GetKorean(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
-extern unsigned long GT_GetCyrillic(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
+// extern unsigned long GT_GetChinese(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
+// extern unsigned long GT_GetJapanese(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
+// extern unsigned long GT_GetKorean(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
+// extern unsigned long GT_GetCyrillic(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
 
 #define GT_USE_FONT_NUM     4
 
 void * read_func_arr[] = {
-    GT_GetChinese,
-    GT_GetJapanese,
-    GT_GetKorean,
-    GT_GetCyrillic,
+    // GT_GetChinese,
+    // GT_GetJapanese,
+    // GT_GetKorean,
+    // GT_GetCyrillic,
 };
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_font_get_text(gt_font_st * font){
+void gt_font_get_text(gt_font_st * font)
+{
     uint32_t idx = 0, unicode, len, fidx = 0, ridx = 0, temp = 0;
     unsigned long (* read)(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
-    while(idx < font->len){
+    while(idx < font->len) {
         len = utf8_to_unicode(&font->utf8[idx], &unicode);
         /* get font data */
-        while( fidx < GT_USE_FONT_NUM ){
+        while( fidx < GT_USE_FONT_NUM ) {
             read = read_func_arr[fidx];
-            if( NULL == read ){ 
+            if( NULL == read ) { 
                 fidx++;
                 continue;
             }
             temp = read(unicode, font->style, &font->res[ridx]);
             ridx += temp;
-            if( 0 != temp){
+            if(0 != temp) {
                 break;
             }
             fidx++;
