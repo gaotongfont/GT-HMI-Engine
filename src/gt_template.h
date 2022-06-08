@@ -21,17 +21,28 @@ extern "C" {
 #include "stdlib.h"
 
 /* core */
-#include "src/core/gt_tick.h"
 #include "src/core/gt_handler.h"
 #include "src/core/gt_graph_base.h"
 #include "src/core/gt_fs.h"
 #include "src/core/gt_event.h"
 #include "src/core/gt_disp.h"
-#include "src/core/gt_color.h"
 #include "src/core/gt_mem.h"
+#include "src/core/gt_style.h"
+
+/* font */
+#include "src/font/gt_font.h"
+
+/* hal */
+#include "src/hal/gt_hal_disp.h"
+#include "src/hal/gt_hal_indev.h"
+#include "src/hal/gt_hal_tick.h"
 
 /* widgets */
 #include "src/widgets/gt_obj.h"
+#include "src/widgets/gt_btn.h"
+
+/* other */
+#include "src/others/gt_color.h"
 
 /* define ---------------------------------------------------------------*/
 

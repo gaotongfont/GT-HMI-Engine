@@ -21,7 +21,6 @@ extern "C" {
 #include "stdlib.h"
 
 /* core */
-#include "src/core/gt_tick.h"
 #include "src/core/gt_handler.h"
 #include "src/core/gt_graph_base.h"
 #include "src/core/gt_fs.h"
@@ -35,7 +34,8 @@ extern "C" {
 
 /* hal */
 #include "src/hal/gt_hal_disp.h"
-#include "src/hal/gt_hal_inpdev.h"
+#include "src/hal/gt_hal_indev.h"
+#include "src/hal/gt_hal_tick.h"
 
 /* widgets */
 #include "src/widgets/gt_obj.h"

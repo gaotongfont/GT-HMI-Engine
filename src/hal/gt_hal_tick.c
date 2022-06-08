@@ -1,5 +1,5 @@
 /**
- * @file gt_tick.c
+ * @file gt_hal_tick.c
  * @author yongg
  * @brief 
  * @version 0.1
@@ -8,7 +8,7 @@
  */
 
 /* include --------------------------------------------------------------*/
-#include "gt_tick.h"
+#include "gt_hal_tick.h"
 #include "stdint.h"
 
 /* private define -------------------------------------------------------*/

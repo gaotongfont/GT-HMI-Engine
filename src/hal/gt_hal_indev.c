@@ -1,5 +1,5 @@
 /**
- * @file gt_hal_inpdev.c
+ * @file gt_hal_indev.c
  * @author yongg
  * @brief 
  * @version 0.1
@@ -8,7 +8,7 @@
  */
 
 /* include --------------------------------------------------------------*/
-#include "gt_hal_inpdev.h"
+#include "gt_hal_indev.h"
 #include "../others/gt_log.h"
 #include "../core/gt_mem.h"
 /* private define -------------------------------------------------------*/
@@ -33,7 +33,7 @@ static gt_indev_st * indev;
 
 /* global functions / API interface -------------------------------------*/
 void gt_indev_drv_init(gt_indev_drv_st * drv){
-
+        
 }
 
 gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv){

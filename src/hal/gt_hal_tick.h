@@ -6,8 +6,8 @@
  * @date 2022-05-19 17:26:21
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
  */
-#ifndef _GT_TICK_H_
-#define _GT_TICK_H_
+#ifndef _GT_HAL_TICK_H_
+#define _GT_HAL_TICK_H_
 
 #ifdef __cplusplus
 extern "C" {
