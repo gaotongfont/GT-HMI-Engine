@@ -18,11 +18,7 @@
 
 
 /* private typedef ------------------------------------------------------*/
-typedef struct gt_disp_s {
-    gt_obj_st * scr;     //header
-}gt_disp_st;
 
-static gt_disp_st * disp;
 
 
 
@@ -41,11 +37,11 @@ static gt_disp_st * disp;
 
 /* global functions / API interface -------------------------------------*/
 void gt_disp_set_src(gt_obj_st * scr) {
-    disp->scr = scr;
+    // disp->scr = scr;
 }
 
 gt_obj_st * gt_disp_get_scr() {
-    return disp->scr;
+    // return disp->scr;
 }
 
 static void _obj_foreach(gt_obj_st * parent){
