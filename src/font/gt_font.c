@@ -9,8 +9,9 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_font.h"
-
-
+// #include "gtzk.h"
+#include "stdint.h"
+#include "../others/gt_log.h"
 /* private define -------------------------------------------------------*/
 
 
@@ -36,7 +37,7 @@ uint8_t utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 	} else if (utf8[0] < 0xE0) {
 		*res = ((utf8[0] & 0x1F) << 6) | (utf8[1] & 0x3F);
 		return 2;
-	} else itf (utf8[0] < 0xF0) {
+	} else if (utf8[0] < 0xF0) {
 		*res = ((utf8[0] & 0x0F) << 12) | ((utf8[1] & 0x3F) << 6) | (utf8[2] & 0x3F);
 		return 3;
 	} else if (0xF0 == (utf8[0] & 0xF0)) {
@@ -51,10 +52,12 @@ uint8_t utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 // extern unsigned long GT_GetKorean(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
 // extern unsigned long GT_GetCyrillic(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
 
-#define GT_USE_FONT_NUM     4
+#define GT_USE_FONT_NUM     2
 
 void * read_func_arr[] = {
+	NULL
     // GT_GetChinese,
+    // GT_GetASCII,
     // GT_GetJapanese,
     // GT_GetKorean,
     // GT_GetCyrillic,
@@ -62,20 +65,26 @@ void * read_func_arr[] = {
 
 
 /* global functions / API interface -------------------------------------*/
+
 void gt_font_get_text(gt_font_st * font)
 {
     uint32_t idx = 0, unicode, len, fidx = 0, ridx = 0, temp = 0;
     unsigned long (* read)(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
+    GT_LOGV(GT_LOG_TAG_GUI, "text:%s", font->utf8);
     while(idx < font->len) {
         len = utf8_to_unicode(&font->utf8[idx], &unicode);
         /* get font data */
         while( fidx < GT_USE_FONT_NUM ) {
             read = read_func_arr[fidx];
-            if( NULL == read ) { 
+            if( !read ) { 
                 fidx++;
                 continue;
             }
-            temp = read(unicode, font->style, &font->res[ridx]);
+            if( unicode < 0x80 ){
+                temp = read(unicode, font->style_en, &font->res[ridx]);
+            }else{
+                temp = read(unicode, font->style_cn, &font->res[ridx]);
+            }
             ridx += temp;
             if(0 != temp) {
                 break;

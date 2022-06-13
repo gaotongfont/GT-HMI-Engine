@@ -24,7 +24,8 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_font_s
 {
-    uint32_t style;     /* set: font style */
+    uint32_t style_cn;     /* set: font style */
+    uint32_t style_en;     /* set: font style */
     uint8_t * utf8;     /* set: text: utf8 code arr */
     uint8_t size;       /* set: font size */
     uint16_t len;       /* set: utf8 arr len */
