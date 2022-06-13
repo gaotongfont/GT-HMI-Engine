@@ -60,6 +60,12 @@ typedef struct _gt_indev_drv_s
 #if GT_USE_USER_DATA
     void * user_data;
 #endif
+    
+    gt_size_t limit_timers_long_press;           /* long press timers */
+    gt_size_t limit_pixel_gesture_ver;          /* move pixel trigger once event */
+    gt_size_t limit_pixel_gesture_hor;          /* move pixel trigger once event */
+    gt_size_t limit_pixel_scroll;               /* scroll pixel trigger scroll event */
+
 }gt_indev_drv_st;
 
 typedef struct _gt_indev_proc_s
@@ -98,10 +104,8 @@ typedef struct _gt_indev_proc_s
 typedef struct _gt_indev_s
 {
     gt_indev_drv_st * drv;
-    gt_indev_proc_st proc;          /* Save all input device data */
+    gt_indev_proc_st proc;          /* Save all input device data */   
 
-    gt_size_t cnt_repeat;           /* repeat key down times */
-    gt_size_t cnt_gesture;          /* move distance trigger once event */
 }gt_indev_st;
 
 
@@ -110,7 +114,7 @@ typedef struct _gt_indev_s
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_indev_drv_init();
+void gt_indev_drv_init(gt_indev_drv_st * drv);
 gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv);
 gt_indev_st * gt_indev_get_default();
 

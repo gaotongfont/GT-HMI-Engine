@@ -33,7 +33,12 @@ static gt_indev_st * indev;
 
 /* global functions / API interface -------------------------------------*/
 void gt_indev_drv_init(gt_indev_drv_st * drv){
-        
+    drv->type = GT_INDEV_TYPE_NONE;
+
+    drv->limit_pixel_gesture_hor = GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR;
+    drv->limit_pixel_gesture_ver = GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_VER;
+    drv->limit_pixel_scroll = GT_CFG_DEFAULT_POINT_SCROLL_PIXEL;
+    drv->limit_timers_long_press = GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS;
 }
 
 gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv){

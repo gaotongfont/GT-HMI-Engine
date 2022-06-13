@@ -76,8 +76,20 @@ extern "C" {
 #define GT_ATTRIBUTE_LARGE_RAM_ARRAY
 
 
+/* ui default style */
+#define GT_STYLE_UI_SIMPLE     0
+#define GT_STYLE_UI_DARK       1
+#define GT_STYLE_UI_BRIGHT     2
 
+/* default gesture repeat */
+#define GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS      15  /* 30ms*15=450ms repeat trigger once event */
+#define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR     (GT_SCREEN_WIDTH/3)
+#define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_VER     (GT_SCREEN_HEIGHT/3)
+#define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL           (20)
 
+#define GT_CFG_DEFAULT_BUTTON_
+
+#define GT_CFG_DEFAULT_KEYPAD_
 
 /* typedef --------------------------------------------------------------*/
 
