@@ -26,12 +26,12 @@ extern "C" {
 #define GT_DOT_SET_BIT(buf,x,y,w,h,bitval)				    \
 	do{													    \
 		if(bitval)										    \
-			GT_SET_BIT(buf[(y)*((w)/8)+((x)/8)], 1<<(7-((x)%8)) );	\
-		else											    \
-			GT_CLR_BIT(buf[(y)*((w)/8)+((x)/8)], 1<<(7-((x)%8)) );	\
-	}while(0);											    \
+			GT_SET_BIT(buf[(y)*((w)>>3)+((x)>>3)], 1<<(7-((x)%8)) );	\
+		else											                \
+			GT_CLR_BIT(buf[(y)*((w)>>3)+((x)>>3)], 1<<(7-((x)%8)) );	\
+	}while(0);											                \
 
-#define GT_DOT_GET_BIT(buf,x,y,w,h)		((buf[(y)*((w)/8)+((x)/8)]>>(7-((x)%8)))&0x01)
+#define GT_DOT_GET_BIT(buf,x,y,w,h)		((buf[(y)*((w)>>3)+((x)>>3)]>>(7-((x)%8)))&0x01)
 
 
 /* typedef --------------------------------------------------------------*/

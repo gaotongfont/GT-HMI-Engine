@@ -35,12 +35,12 @@ typedef enum{
 
 
 /* static functions -----------------------------------------------------*/
-void _gt_graph_get_gray(gt_color_t * color_out, gt_color_t color1, gt_color_t color2, gt_gray_t gray, gt_size_t step)
+void _gt_graph_get_gray(gt_color_t * color_out, gt_color_t color_from, gt_color_t color_to, gt_gray_t gray, gt_size_t step)
 {
 	uint8_t r,g,b;	
-	r = GT_COLOR_GET_R(color1) + (GT_COLOR_GET_R(color2) - GT_COLOR_GET_R(color1))*step/gray;
-	g = GT_COLOR_GET_G(color1) + (GT_COLOR_GET_G(color2) - GT_COLOR_GET_G(color1))*step/gray;
-	b = GT_COLOR_GET_B(color1) + (GT_COLOR_GET_B(color2) - GT_COLOR_GET_B(color1))*step/gray;
+	r = GT_COLOR_GET_R(color_from) + (GT_COLOR_GET_R(color_to) - GT_COLOR_GET_R(color_from))*step/gray;
+	g = GT_COLOR_GET_G(color_from) + (GT_COLOR_GET_G(color_to) - GT_COLOR_GET_G(color_from))*step/gray;
+	b = GT_COLOR_GET_B(color_from) + (GT_COLOR_GET_B(color_to) - GT_COLOR_GET_B(color_from))*step/gray;
 	color_out->ch.red = r;
 	color_out->ch.green = g;
 	color_out->ch.blue = b;
