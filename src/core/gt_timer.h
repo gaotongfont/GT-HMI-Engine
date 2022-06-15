@@ -36,10 +36,10 @@ typedef void ( * gt_timer_cb_t)(struct _gt_timer_s *);
  * @brief
  */
 typedef struct _gt_timer_s {
-    uint32_t period;    // when run to 0 milliseconds, this timer should be run
-    uint32_t last_run;  // last timestamp of the last run
+    uint32_t period;        // when run to 0 milliseconds, this timer should be run
+    uint32_t last_run;      // last timestamp of the last run
     gt_timer_cb_t timer_cb; // timer callback
-    void * user_data;   // custom user data
+    void * user_data;       // custom user data
     int32_t repeat_count;   // 1: One time; -1 : infinity; n > 0: repeat time
     uint32_t paused : 1;
 }_gt_timer_st;

@@ -15,16 +15,19 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "gt_list.h"
-
+#include "stdint.h"
 
 /* define ---------------------------------------------------------------*/
 
 
 
 /* typedef --------------------------------------------------------------*/
+typedef uint8_t _gt_node_t;
 
 typedef struct _gt_ll_s {
-
+    uint32_t count;
+    _gt_node_t * head;
+    struct gt_list_head list;
 }_gt_ll_st;
 
 

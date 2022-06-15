@@ -1,7 +1,7 @@
 /**
  * @file gt_conf.h
  * @author Feyoung
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-11 14:43:24
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -55,7 +55,7 @@ extern "C" {
 /**
  * @brief memory mode. 1: array as memory pool; 0:  c library api.
  */
-#define GT_MEM_CUSTOM       0
+#define GT_MEM_CUSTOM       01
 
 #if GT_MEM_CUSTOM
     #define GT_MEM_CUSTOM_INCLUDE   "../others/gt_tlsf.h"

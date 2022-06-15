@@ -1,7 +1,7 @@
 /**
  * @file gt_mem.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-12 10:46:48
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -100,7 +100,7 @@ static gt_mem_hooks_st _self = {
 
 /**
  * @brief 申请内存
- * 
+ *
  * @param size 内存大小, 总的字节数
  * @return void* 返回内存地址
  */
@@ -120,10 +120,10 @@ static void *_gt_malloc_hooks(size_t size)
 
 /**
  * @brief 申请内存
- * 
- * @param old_ptr 
- * @param size 
- * @return void* 
+ *
+ * @param old_ptr
+ * @param size
+ * @return void*
  */
 static void *_gt_realloc_hooks(void * old_ptr, size_t size)
 {
@@ -141,8 +141,8 @@ static void *_gt_realloc_hooks(void * old_ptr, size_t size)
 
 /**
  * @brief 释放内存
- * 
- * @param ptr 
+ *
+ * @param ptr
  */
 static void _gt_free_hooks(void * ptr)
 {

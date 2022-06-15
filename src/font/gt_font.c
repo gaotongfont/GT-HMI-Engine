@@ -1,7 +1,7 @@
 /**
  * @file gt_font.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-01 11:22:22
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -41,7 +41,7 @@ uint8_t utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 		*res = ((utf8[0] & 0x0F) << 12) | ((utf8[1] & 0x3F) << 6) | (utf8[2] & 0x3F);
 		return 3;
 	} else if (0xF0 == (utf8[0] & 0xF0)) {
-		*res = ((utf8[0] & 0x07) << 18) | ((utf8[1] & 0x3F) << 12) | ((utf8[2] & 0x3F) << 6) | (utf8[3] & 0x3F); 
+		*res = ((utf8[0] & 0x07) << 18) | ((utf8[1] & 0x3F) << 12) | ((utf8[2] & 0x3F) << 6) | (utf8[3] & 0x3F);
 		return 4;
 	}
 	return 0;
@@ -69,14 +69,14 @@ void * read_func_arr[] = {
 void gt_font_get_text(gt_font_st * font)
 {
     uint32_t idx = 0, unicode, len, fidx = 0, ridx = 0, temp = 0;
-    unsigned long (* read)(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
+    unsigned long (* read)(unsigned long, unsigned int, unsigned char*);
     GT_LOGV(GT_LOG_TAG_GUI, "text:%s", font->utf8);
     while(idx < font->len) {
         len = utf8_to_unicode(&font->utf8[idx], &unicode);
         /* get font data */
         while( fidx < GT_USE_FONT_NUM ) {
             read = read_func_arr[fidx];
-            if( !read ) { 
+            if( !read ) {
                 fidx++;
                 continue;
             }
