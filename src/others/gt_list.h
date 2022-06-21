@@ -5,6 +5,7 @@
 #ifndef _GT_LIST_H_
 #define _GT_LIST_H_
 
+#include "gt_defs.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -362,7 +363,7 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
  * Note, that list is expected to be not empty.
  */
 #define gt_list_first_entry(ptr, type, member) \
-	list_entry((ptr)->next, type, member)
+	gt_list_entry((ptr)->next, type, member)
 
 /**
  * gt_list_last_entry - get the last element from a list
@@ -373,7 +374,7 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
  * Note, that list is expected to be not empty.
  */
 #define gt_list_last_entry(ptr, type, member) \
-	list_entry((ptr)->prev, type, member)
+	gt_list_entry((ptr)->prev, type, member)
 
 /**
  * gt_list_first_entry_or_null - get the first element from a list
@@ -392,7 +393,7 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
  * @member: the name of the gt_list_head within the struct.
  */
 #define gt_list_next_entry(pos, member) \
-	list_entry((pos)->member.next, typeof(*(pos)), member)
+	gt_list_entry((pos)->member.next, typeof(*(pos)), member)
 
 /**
  * gt_list_prev_entry - get the prev element in list
@@ -400,7 +401,7 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
  * @member: the name of the gt_list_head within the struct.
  */
 #define gt_list_prev_entry(pos, member) \
-	list_entry((pos)->member.prev, typeof(*(pos)), member)
+	gt_list_entry((pos)->member.prev, typeof(*(pos)), member)
 
 /**
  * gt_list_for_each    -   iterate over a list
