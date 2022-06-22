@@ -30,7 +30,7 @@ extern "C" {
 #define GT_REFRESH_STYLE_0      0   /* no cache buf, It is suitable for MCU with low refresh requirements and low performance */
 #define GT_REFRESH_STYLE_1      1   /* cache 10 lines buf, It is suitable for MCU with low refresh requirements and low performance */
 #define GT_REFRESH_STYLE_2      2   /* cache 10+10 lines buf, It is suitable for MCU with high refresh requirements and high performance */
-#define GT_REFRESH_STYLE_3      3   /* cache all screen buf,It is suitable for MCU with high refresh requirements and high performance */
+#define GT_REFRESH_STYLE_3      3   /* cache all screen buf, It is suitable for MCU with high refresh requirements and high performance */
 
 /* user: screen refresh style */
 #define GT_REFRESH_STYLE        GT_REFRESH_STYLE_3
@@ -45,6 +45,10 @@ extern "C" {
 /* user: Timer task handler timer [ms] */
 #define GT_TASK_PERIOD_TIME_EVENT   30
 #define GT_TASK_PERIOD_TIME_ANIM    30
+
+/* user: virt file device setting */
+#define GT_VF_FLASH_SIZE    0x800000    //flash size 8*1024*1024   8M
+#define GT_VF_FLASH_START   0x000000    //start addr default 0x0000000
 
 /* user: enable widgets */
 #define GT_ENABLE_WIDGET_BTN            1
