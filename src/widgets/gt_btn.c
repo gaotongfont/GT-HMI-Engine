@@ -22,8 +22,8 @@
 
 
 /* static variables -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj, gt_obj_class_st * class);
-static void _deinit_cb(gt_obj_st * obj, gt_obj_class_st * class);
+static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
+static void _deinit_cb(gt_obj_st * obj,const gt_obj_class_st * class);
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e);
 
 const gt_obj_class_st gt_btn_class = {
@@ -41,13 +41,13 @@ const gt_obj_class_st gt_btn_class = {
 
 
 /* static functions -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj, gt_obj_class_st * class) {
+static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
     /* code */
     
     GT_LOGV(GT_LOG_TAG_GUI, "end init_cb");
 }
-static void _deinit_cb(gt_obj_st * obj, gt_obj_class_st * class) {
+static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     /* code */
 
