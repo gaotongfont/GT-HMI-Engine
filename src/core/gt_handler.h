@@ -1,7 +1,7 @@
 /**
  * @file gt_handler.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-11 15:07:33
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -31,7 +31,9 @@ extern "C" {
 
 /* global functions / API interface -------------------------------------*/
 
+void gt_init(void);
 
+void gt_task_handler(void);
 
 #ifdef __cplusplus
 } /*extern "C"*/

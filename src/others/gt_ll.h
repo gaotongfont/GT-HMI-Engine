@@ -25,9 +25,9 @@ extern "C" {
 typedef uint8_t _gt_node_t;
 
 typedef struct _gt_ll_s {
-    uint32_t count;
+    uint32_t instance;  /* timer struct align */
     _gt_node_t * head;
-    struct gt_list_head list;
+    _gt_node_t * next;
 }_gt_ll_st;
 
 
@@ -41,7 +41,9 @@ typedef struct _gt_ll_s {
 
 /* global functions / API interface -------------------------------------*/
 
+void _gt_ll_root_init(_gt_ll_st * root, uint32_t size);
 
+void _gt_ll_insert_head(_gt_ll_st * root, _gt_node_t * head);
 
 #ifdef __cplusplus
 } /*extern "C"*/

@@ -16,6 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "stdint.h"
 #include "../gt_conf.h"
+#include "../others/gt_list.h"
 
 
 
@@ -42,6 +43,7 @@ typedef struct _gt_timer_s {
     void * user_data;       // custom user data
     int32_t repeat_count;   // 1: One time; -1 : infinity; n > 0: repeat time
     uint32_t paused : 1;
+    struct gt_list_head list;
 }_gt_timer_st;
 
 /* macros ---------------------------------------------------------------*/
@@ -53,6 +55,10 @@ typedef struct _gt_timer_s {
 
 
 /* global functions / API interface -------------------------------------*/
+
+void _gt_timer_init(void);
+
+_gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * user_data);
 
 void gt_timer_handler(void);
 

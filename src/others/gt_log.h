@@ -1,7 +1,7 @@
 /**
  * @file gt_log.h
  * @author Feyoung
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-04-25 10:43:59
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -48,6 +48,7 @@ extern "C" {
 #define GT_LOG_TAG_CHECK        "CHECK"
 #define GT_LOG_TAG_MEM          "MEM"
 #define GT_LOG_TAG_FLASH        "FLASH"
+#define GT_LOG_TAG_LIST         "LIST"
 #define GT_LOG_TAG_LCD          "LCD"
 #define GT_LOG_TAG_TP           "TP"
 #define GT_LOG_TAG_TIM          "TIM"
@@ -178,7 +179,7 @@ extern "C" {
 			i++;																					\
 		}																								\
 		printf("\n");																		\
-	}while(0);																
+	}while(0);
 
 
 #define GT_LOG_ARR(_arr, _start, _len)  \
@@ -190,7 +191,7 @@ extern "C" {
 			i++;																					\
 		}																								\
 		printf("\n");																		\
-	}while(0);	
+	}while(0);
 
 #ifdef __cplusplus
 } /*extern "C"*/

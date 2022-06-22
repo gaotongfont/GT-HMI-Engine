@@ -1,7 +1,7 @@
 /**
  * @file gt_hal_disp.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-13 09:52:03
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -12,6 +12,7 @@
 #include "../core/gt_mem.h"
 #include "../others/gt_color.h"
 #include "../gt_conf.h"
+#include "../others/gt_log.h"
 
 /* private define -------------------------------------------------------*/
 

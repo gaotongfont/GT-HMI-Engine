@@ -16,6 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_ll.h"
 #include "../core/gt_timer.h"
+#include "../others/gt_list.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -27,13 +28,13 @@ extern "C" {
 
 #define _GT_GC_ITERATE_LIST(_f)    \
     _GT_GC_ROOT_PREFIX(_f, _gt_timer_st *, _gt_timer_act)       \
-    _GT_GC_ROOT_PREFIX(_f, _gt_ll_st, _gt_timer_ll)             \
+    _GT_GC_ROOT_PREFIX(_f, struct gt_list_head, _gt_timer_ll)          \
 
 
 _GT_GC_ITERATE_LIST(_GT_GC_FUNC_EXTERN)
 #define _GT_ROOT _GT_GC_ITERATE_LIST(_GT_GC_FUNC_DEFINED)
 
-#define _GT_GC_GET_ROOT(_name) _name
+#define _GT_GC_GET_ROOT(_name)  _name
 
 /* typedef --------------------------------------------------------------*/
 

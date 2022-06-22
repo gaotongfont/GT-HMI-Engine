@@ -1,15 +1,17 @@
 /**
  * @file gt_handler.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-11 15:03:23
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
  */
 
-/* include --------------------------------------------------------------*/
+ /* include --------------------------------------------------------------*/
 #include "../gt_conf.h"
-
+#include "gt_mem.h"
+#include "gt_timer.h"
+#include "../others/gt_anim.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -33,11 +35,22 @@
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_task_handler(){
-    
-    while(1){
 
-    }
+/**
+ * @brief gt gui init
+ */
+void gt_init(void)
+{
+    gt_mem_init();
+
+    _gt_timer_init();
+
+    _gt_anim_init();
+}
+
+void gt_task_handler(void)
+{
+    return gt_timer_handler();
 }
 
 

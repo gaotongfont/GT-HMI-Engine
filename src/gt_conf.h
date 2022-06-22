@@ -42,8 +42,9 @@ extern "C" {
 #define GT_COLOR_DEPTH      16
 #define GT_COLOR_16_SWAP    0
 
-/* user: event handler timer */
-#define GT_EVENT_TIMER_PER  30
+/* user: Timer task handler timer [ms] */
+#define GT_TASK_PERIOD_TIME_EVENT   30
+#define GT_TASK_PERIOD_TIME_ANIM    30
 
 /* user: enable widgets */
 #define GT_ENABLE_WIDGET_BTN            1

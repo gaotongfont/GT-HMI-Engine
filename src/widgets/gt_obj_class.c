@@ -14,6 +14,7 @@
 #include "../others/gt_types.h"
 #include "../hal/gt_hal.h"
 #include "stdint.h"
+#include "../others/gt_log.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -43,7 +44,7 @@ static uint32_t get_style_size(const gt_obj_class_st * class) {
 
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * parent) {
-    
+
     if ( parent->class->type == class->type ){
         GT_LOGV(GT_LOG_TAG_GUI, "cannot create an object of the same type as the parent object onto the parent object");
         return NULL;
@@ -53,7 +54,7 @@ gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * paren
     gt_obj_st * obj = gt_mem_malloc(is);
 
 	gt_memset_0(obj, is);
-	
+
     obj->class = class;
     obj->parent = parent;
 
@@ -81,7 +82,7 @@ gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * paren
         obj->area.w = gt_disp_get_res_hor(NULL);
         obj->area.h = gt_disp_get_res_ver(NULL);
     } else {
-        GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj");        
+        GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj");
         if (parent->child == NULL) {
             parent->child = gt_mem_malloc(sizeof(gt_obj_st *));
             parent->child[0] = obj;
