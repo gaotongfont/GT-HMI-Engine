@@ -16,7 +16,7 @@
 #include "../others/gt_log.h"
 #include "../hal/gt_hal_tick.h"
 
-
+#include "stdafx.h"
 /* private define -------------------------------------------------------*/
 
 
@@ -63,12 +63,12 @@ static inline void _gt_timer_for_each_exec(void)
     uint32_t     start_time = 0;
 
     gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_timer_ll), list) {
-        if (!ptr->paused) {
+        if (ptr->paused) {
             continue;
         }
 
         start_time = gt_tick_get();
-        period     = start_time - ptr->last_run - 1;
+        period     = start_time - ptr->last_run;
 
         if (period < ptr->period) {
             continue;
@@ -76,8 +76,8 @@ static inline void _gt_timer_for_each_exec(void)
 
         if (ptr->timer_cb) {
             ptr->timer_cb(ptr);
+            GT_LOGV(GT_LOG_TAG_TIM, "[%d, %d, %d, +%d]", , start_time, ptr->last_run, gt_tick_get() - ptr->last_run);
             ptr->last_run = gt_tick_get();
-            GT_LOGV(GT_LOG_TAG_TIM, "[%d, %d, +%d]", start_time, ptr->last_run, ptr->last_run - start_time);
         }
     }
 }
