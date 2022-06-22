@@ -28,6 +28,7 @@ extern "C" {
 #include "src/core/gt_disp.h"
 #include "src/core/gt_mem.h"
 #include "src/core/gt_style.h"
+#include "src/core/gt_obj_pos.h"
 
 /* font */
 #include "src/font/gt_font.h"
@@ -35,6 +36,7 @@ extern "C" {
 /* hal */
 #include "src/hal/gt_hal_disp.h"
 #include "src/hal/gt_hal_indev.h"
+#include "src/hal/gt_hal_vf.h"
 #include "src/hal/gt_hal_tick.h"
 
 /* widgets */
@@ -43,7 +45,7 @@ extern "C" {
 
 /* other */
 #include "src/others/gt_color.h"
-
+#include "src/others/gt_log.h"
 
 
 /* define ---------------------------------------------------------------*/
