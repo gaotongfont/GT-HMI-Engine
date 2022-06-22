@@ -46,14 +46,15 @@ typedef struct _gt_disp_s
 {
     gt_disp_drv_st * drv;
 
-    gt_obj_st ** screens;   //Array of screen
-    gt_obj_st *  scr_act;    //Active screen
-    gt_obj_st *  scr_pre;    //Preview Screen,Only save one layer
-    gt_obj_st *  scr_next;   //Next Screen,Only save one layer
+    gt_obj_st ** screens;       //Array of screen
+    gt_obj_st *  scr_act;       //Active screen
+    gt_obj_st *  scr_pre;       //Preview Screen,Only save one layer
+    gt_obj_st *  scr_next;      //Next Screen,Only save one layer
 
-    uint16_t cnt_scr;       //Count screens nub
-    uint16_t status;
+    uint16_t cnt_scr;           //Count screens nub
+    uint16_t status;            //
 
+    gt_area_st area_act;        //Location of physical screen on virtual screen
 }gt_disp_st;
 
 
