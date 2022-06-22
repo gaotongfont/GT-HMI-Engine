@@ -16,7 +16,6 @@
 #include "../others/gt_log.h"
 #include "../hal/gt_hal_tick.h"
 
-#include "stdafx.h"
 /* private define -------------------------------------------------------*/
 
 
@@ -76,7 +75,7 @@ static inline void _gt_timer_for_each_exec(void)
 
         if (ptr->timer_cb) {
             ptr->timer_cb(ptr);
-            GT_LOGV(GT_LOG_TAG_TIM, "[%d, %d, %d, +%d]", , start_time, ptr->last_run, gt_tick_get() - ptr->last_run);
+            GT_LOGV(GT_LOG_TAG_TIM, "[%d, %d, +%d]", start_time, ptr->last_run, gt_tick_get() - ptr->last_run);
             ptr->last_run = gt_tick_get();
         }
     }

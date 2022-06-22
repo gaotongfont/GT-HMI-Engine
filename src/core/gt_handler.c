@@ -50,7 +50,7 @@ void gt_init(void)
 
 void gt_task_handler(void)
 {
-    return gt_timer_handler();
+    gt_timer_handler();
 }
 
 
