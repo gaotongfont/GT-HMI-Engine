@@ -25,7 +25,7 @@
 /**
  * @brief timer task list ready to run
  */
-static bool _gt_timer_task_ready_flag = false;
+static GT_ATTRIBUTE_LARGE_RAM_ARRAY bool _gt_timer_task_ready_flag = false;
 
 
 /* static variables -----------------------------------------------------*/
