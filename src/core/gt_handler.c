@@ -70,7 +70,7 @@ void gt_task_handler(void)
     if (!_gt_init_is_done()) {
         return ;
     }
-    gt_timer_handler();
+    _gt_timer_handler();
 }
 
 

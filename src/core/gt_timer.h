@@ -34,7 +34,7 @@ struct _gt_timer_s;
 typedef void ( * gt_timer_cb_t)(struct _gt_timer_s *);
 
 /**
- * @brief
+ * @brief timer control block
  */
 typedef struct _gt_timer_s {
     uint32_t period;        // when run to 0 milliseconds, this timer should be run
@@ -56,11 +56,47 @@ typedef struct _gt_timer_s {
 
 /* global functions / API interface -------------------------------------*/
 
+/**
+ * @brief init the list header
+ */
 void _gt_timer_init(void);
 
+/**
+ * @brief Create timer node, which will be used to deal with callback.
+ *
+ * @param callback  function which will be called when timer count to 0.
+ * @param period    timers when callback will be called.
+ * @param user_data user custom data.
+ */
 _gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * user_data);
 
-void gt_timer_handler(void);
+/**
+ * @brief Timer scheduler to handle timer list task
+ */
+void _gt_timer_handler(void);
+
+/**
+ * @brief get laster create timer from timer task list
+ *
+ * @return _gt_timer_st* The newly created entry object
+ */
+_gt_timer_st * _gt_timer_get_laster_timer(void);
+
+/**
+ * @brief timer repeat times
+ *
+ * @param timer timer control block
+ * @param repeat task repeat times and remove it from timer list
+ */
+void _gt_timer_set_repeat_count(_gt_timer_st * timer, int32_t repeat);
+
+/**
+ * @brief set timer task period
+ *
+ * @param timer timer control block
+ * @param period task time when period time to run
+ */
+void _gt_timer_set_period(_gt_timer_st * timer, uint32_t period);
 
 
 #ifdef __cplusplus
