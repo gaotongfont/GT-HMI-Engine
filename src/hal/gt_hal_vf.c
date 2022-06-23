@@ -1,7 +1,7 @@
 /**
  * @file gt_hal_vf.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-20 17:58:48
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -10,7 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "gt_hal_vf.h"
 #include "../core/gt_mem.h"
-#include "gt_log.h"
+#include "../others/gt_log.h"
 #include "stdbool.h"
 #include "string.h"
 
@@ -84,7 +84,7 @@ static void _close_cb(struct _gt_vf_drv_s * drv, void * fp){
 
 static gt_vf_res_e _read_cb(struct _gt_vf_drv_s * drv, void * fp, uint8_t * data, uint32_t len){
     gt_vfp_st * _vfp = fp;
-    
+
     if( _state != GT_VF_RES_READY ){
         GT_LOGV(GT_LOG_TAG_GUI, "drv is busy");
         return GT_VF_RES_BUSY;
@@ -99,7 +99,7 @@ static gt_vf_res_e _read_cb(struct _gt_vf_drv_s * drv, void * fp, uint8_t * data
         GT_LOGW(GT_LOG_TAG_GUI, "fp is null");
         return GT_VF_RES_NULL;
     }
-    
+
     /* set state busy */
     _state = GT_VF_RES_BUSY;
 
@@ -143,7 +143,7 @@ static gt_vf_res_e _write_cb(struct _gt_vf_drv_s * drv, void * fp, uint8_t * dat
     uint32_t addr = _vfp->start + _vfp->pos + vfdev->addr_start;
     // uint8_t data_write[4] = {0x02, addr>>16, addr>>8, addr>>0 };
     // drv->rw_cb(data_write, 4, data, 0);
-    
+
     /* write enable */
     // 0x06
     /*  */

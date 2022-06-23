@@ -1,7 +1,7 @@
 /**
  * @file gt_port_vf.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-22 09:58:01
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -10,6 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "gt_port_vf.h"
 #include "../gt.h"
+#include "../src/others/gt_log.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -37,7 +38,6 @@ static gt_vfs_st virt_file_sys[] ={
     {NULL,0,0,0,0}
 };
 static gt_vf_drv_st drv_vf;
-
 
 /* macros ---------------------------------------------------------------*/
 

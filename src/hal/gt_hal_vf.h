@@ -1,7 +1,7 @@
 /**
  * @file gt_hal_vf.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-20 17:58:44
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -99,7 +99,7 @@ typedef struct _gt_vf_drv_s{
 
 
 /***********************************************************************
- * @brief virt file system deveice
+ * @brief virt file system device
  ***********************************************************************/
 typedef struct _gt_vf_s{
     gt_vf_drv_st * drv;
@@ -116,22 +116,22 @@ typedef struct _gt_vf_s{
 
 /**
  * @brief init virt file system
- * 
+ *
  * @param vfs gt_vfs_st arr,pic files messages
  */
 void gt_vf_init(gt_vfs_st * vfs);
 
 /**
  * @brief register virt file system drv
- * 
+ *
  * @param drv gt_vf_drv_st device, user need only set _gt_vf_rw
  */
 void gt_vf_drv_register(gt_vf_drv_st * drv);
 
 /**
  * @brief get default virt file system dev
- * 
- * @return gt_vf_st * 
+ *
+ * @return gt_vf_st *
  */
 gt_vf_st * gt_vf_get_default(void);
 
