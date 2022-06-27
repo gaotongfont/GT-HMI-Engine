@@ -30,7 +30,8 @@
 
 
 /* static functions -----------------------------------------------------*/
-void  gt_indev_handler_point(gt_indev_st * indev) {
+void gt_indev_handler_point(gt_indev_st * indev)
+{
     static uint8_t flag_key_down = 0, cnt_key_down_continue = 0;
 
     gt_indev_data_st data_indev;
@@ -86,7 +87,35 @@ void  gt_indev_handler_point(gt_indev_st * indev) {
     if (indev->proc.data.point.count_point != 0 && indev->proc.data.point.count_point % indev->drv->limit_timers_long_press == 0) {
         /* trigger an touch event */
         indev->proc.data.point.count_point = 0;
-        GT_LOGV(GT_LOG_TAG_GUI, "trigger an event\n");
+        GT_LOGV(GT_LOG_TAG_GUI, "continue mode trigger an touch event");
+    }
+}
+
+void gt_indev_handler_button(gt_indev_st * indev)
+{
+    static uint8_t flag_key_down = 0, cnt_key_down_continue = 0;
+
+    gt_indev_data_st data_indev;
+    indev->drv->read_cb(indev->drv, &data_indev);
+
+    indev->proc.state = data_indev.state;
+    if (indev->proc.state == GT_INDEV_STATE_PRESSED) {
+        if (!flag_key_down) {
+            flag_key_down = 1;
+            indev->proc.data.button.id = data_indev.btn_id;
+            GT_LOGV(GT_LOG_TAG_GUI, "keydown the key id[%d]", indev->proc.data.button.id);
+        }
+        indev->proc.data.button.count_keydown++;
+    }
+    else {
+        flag_key_down = 0;
+        indev->proc.data.button.count_keydown = 0;
+    }
+
+    if (indev->proc.data.button.count_keydown != 0 && indev->proc.data.button.count_keydown % indev->drv->limit_timers_long_press == 0) {
+        /* trigger an button event:continue mode */
+        indev->proc.data.button.count_keydown = 0;
+        GT_LOGV(GT_LOG_TAG_GUI, "continue mode trigger an button event, key id[%d]",indev->proc.data.button.id );
     }
 }
 
@@ -103,6 +132,26 @@ gt_dir_et gt_indev_get_gesture(const gt_indev_st * indev) {
     return indev->proc.data.point.gesture;
 }
 
-
+void gt_indev_handler()
+{
+    gt_indev_st * indev;
+    uint8_t i, cnt_indev;
+    cnt_indev = gt_indev_get_dev_num();
+    for(i=0; i<cnt_indev; i++){
+        indev = gt_indev_get_dev_by_nub(i);
+        switch(indev->drv->type){
+            case GT_INDEV_TYPE_POINTER:
+                gt_indev_handler_point(indev);
+                break;
+            case GT_INDEV_TYPE_BUTTON:
+                gt_indev_handler_button(indev);
+                break;
+            case GT_INDEV_TYPE_KEYPAD:
+                break;
+            default:
+                break;
+        }
+    }
+}
 
 /* end ------------------------------------------------------------------*/

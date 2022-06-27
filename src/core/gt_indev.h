@@ -32,7 +32,7 @@ extern "C" {
 /* global functions / API interface -------------------------------------*/
 void gt_indev_get_point(const gt_indev_st * indev, gt_point_st * point);
 gt_dir_et gt_indev_get_gesture(const gt_indev_st * indev);
-
+void gt_indev_handler();
 
 #ifdef __cplusplus
 } /*extern "C"*/
