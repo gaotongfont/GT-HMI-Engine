@@ -34,6 +34,8 @@ static gt_color_t bufa[240*90];
 
 
 /* global functions / API interface -------------------------------------*/
+
+
 extern void _flush_cb(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
 
 void gt_port_disp_init(){

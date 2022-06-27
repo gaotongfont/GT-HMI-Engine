@@ -30,7 +30,7 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_port_disp_init();
+void gt_port_disp_init(void);
 
 
 #ifdef __cplusplus
