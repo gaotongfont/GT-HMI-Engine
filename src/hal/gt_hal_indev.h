@@ -89,6 +89,7 @@ typedef struct _gt_indev_proc_s
         struct _button
         {
             uint16_t id;
+            uint16_t count_keydown;
         }button;
         
         struct _keypad
@@ -116,7 +117,9 @@ typedef struct _gt_indev_s
 /* global functions / API interface -------------------------------------*/
 void gt_indev_drv_init(gt_indev_drv_st * drv);
 gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv);
-gt_indev_st * gt_indev_get_default();
+gt_indev_st * gt_indev_get_default(void);
+gt_indev_st * gt_indev_get_dev_by_nub(uint8_t nub);
+uint8_t gt_indev_get_dev_num(void);
 
 #ifdef __cplusplus
 } /*extern "C"*/

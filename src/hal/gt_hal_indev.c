@@ -11,8 +11,11 @@
 #include "gt_hal_indev.h"
 #include "../others/gt_log.h"
 #include "../core/gt_mem.h"
-/* private define -------------------------------------------------------*/
 
+#include "../core/gt_indev.h"
+
+/* private define -------------------------------------------------------*/
+#define _CNT_INDEV_MAX  5
 
 
 /* private typedef ------------------------------------------------------*/
@@ -21,6 +24,8 @@
 
 /* static variables -----------------------------------------------------*/
 static gt_indev_st * indev;
+static gt_indev_st * indev_act[_CNT_INDEV_MAX];
+static uint8_t cnt_indev = 0;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -28,6 +33,10 @@ static gt_indev_st * indev;
 
 
 /* static functions -----------------------------------------------------*/
+static void _gt_indev_task_handler(struct _gt_timer_s * timer)
+{
+    gt_indev_handler();
+}
 
 
 
@@ -37,14 +46,16 @@ void gt_indev_drv_init(gt_indev_drv_st * drv){
 
     drv->limit_pixel_gesture_hor = GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR;
     drv->limit_pixel_gesture_ver = GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_VER;
-    drv->limit_pixel_scroll = GT_CFG_DEFAULT_POINT_SCROLL_PIXEL;
+    drv->limit_pixel_scroll      = GT_CFG_DEFAULT_POINT_SCROLL_PIXEL;
     drv->limit_timers_long_press = GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS;
 }
 
 gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv){
-    if(indev == NULL){
-        indev = gt_mem_malloc(sizeof(gt_indev_st));
+    if(indev_act[cnt_indev] == NULL){
+        indev_act[cnt_indev] = gt_mem_malloc(sizeof(gt_indev_st));
     }
+
+    GT_LOGV(GT_LOG_TAG_GUI, "addr:%p", indev_act[cnt_indev]);
 
     if(drv->read_cb == NULL){
         GT_LOGW(GT_LOG_TAG_GUI, "[error]drv read_cb is null,please check!");
@@ -53,12 +64,36 @@ gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv){
 
     GT_LOGV(GT_LOG_TAG_GUI, "register indev type:%d", drv->type);
 
-    indev->drv = drv;
-    return indev;
+    indev_act[cnt_indev]->drv = drv;
+
+    if( cnt_indev == 0 ){
+        _gt_timer_create(_gt_indev_task_handler, GT_TASK_PERIOD_TIME_EVENT, NULL);
+    }
+    cnt_indev++;
+    
+    return indev_act[cnt_indev];
+}
+
+void gt_indev_set_default(gt_indev_st * _indev){
+    indev = _indev;
 }
 
 gt_indev_st * gt_indev_get_default(){
     return indev;
 }
+
+gt_indev_st * gt_indev_get_dev_by_nub(uint8_t nub){
+    if( nub >= _CNT_INDEV_MAX ){
+        GT_LOGW(GT_LOG_TAG_GUI, "nub is over number max of indev");
+        return NULL;
+    }
+    return indev_act[nub];
+}
+
+uint8_t gt_indev_get_dev_num(){
+    return cnt_indev;
+}
+
+
 
 /* end ------------------------------------------------------------------*/
