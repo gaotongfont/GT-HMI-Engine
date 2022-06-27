@@ -27,7 +27,7 @@ typedef enum{
 }gt_gray_t;
 
 /* static variables -----------------------------------------------------*/
-
+static gt_color_t * color;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -64,9 +64,23 @@ void _gt_graph_dot_to_color(uint8_t *dot, gt_color_t *color,gt_size_t w, gt_size
 	}
 }
 
+void _gt_graph_dot_to_color_no_bcolor(uint8_t *dot, gt_color_t *color,gt_size_t w, gt_size_t h, gt_color_t fcolor)
+{
+	int i,idx, len,cnt=0;
+	idx = 0;
+	len = (w/8*h);
+	while( idx < len ) {
+		for(i=7; i>=0; i--) {
+			if( (dot[idx]>>i)&0x01 ) {
+				GT_COLOR_SET(color[cnt], GT_COLOR_GET(fcolor));
+			}
+			cnt++;
+		}
+		idx++;
+	}
+}
 
-// #include "lcd.h"
-// #include "delay.h"
+
 void _gt_graph_dot_to_gray(uint8_t *dot, gt_size_t w, gt_size_t h, gt_gray_t level_gray)
 {
 	int len,idx,i,_x,_y,_w, _h;
@@ -111,7 +125,6 @@ void _gt_graph_dot_to_gray(uint8_t *dot, gt_size_t w, gt_size_t h, gt_gray_t lev
 		_y+=level_gray;
 	}
 }
-
 
 static unsigned char dep1[]={0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,5};//4bit//{0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4};//4bit
 static unsigned char dep2[]={0,1,1,2};//2bit 
@@ -666,6 +679,11 @@ void _gt_graph_dot_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 }
 #endif
 
+gt_color_t * gt_graph_get_default()
+{
+	return color;
+}
+
 /* cache in buf, no draw*/
 void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 {
@@ -756,6 +774,100 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area)
 	GT_COLOR_SET(bcolor, GT_COLOR_GET(rect_attr->bcolor));
 	GT_COLOR_SET(fcolor, GT_COLOR_GET(rect_attr->fcolor));
 	
+	gt_size_t w,h;
+	w = area->w;
+	h = area->h;
+	
+	if(color){
+		gt_mem_free(color);
+	}
+	color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
+
+	uint32_t x,y, x1,y1, x2,y2, idx = 0, all = w * h, w_null, x21, idxb1, idxb2;
+	x1 = border_width;
+	x2 = w - border_width;
+
+	y1 = border_width;
+	y2 = h - border_width;
+	x21 = x2 - x1;
+	if(isfill){
+		//draw center
+		y = y1;
+		idx = border_width * w;
+		while( y <= y2 ){
+			x = x1;
+			idx+=border_width;
+			while( x < x2 ){
+				GT_COLOR_SET(color[idx], GT_COLOR_GET(fcolor));
+				idx++;
+				x++;
+			}
+			idx+=border_width;
+			y++;
+		}
+	}
+
+	//draw up border
+	y = 0;
+	idx = 0;
+	idxb1 = border_width * w;
+	while(idx < idxb1){
+		GT_COLOR_SET(color[idx], GT_COLOR_GET(border_color));
+		idx++;
+	}
+	//draw bottom border
+	y = y2;
+	idx = w * y2;
+	
+	while( idx < all ){
+		GT_COLOR_SET(color[idx], GT_COLOR_GET(border_color));
+		idx++;
+	}
+	y = y1;
+	idx = border_width * w;
+	while( y < y2 ){
+		//draw left border
+		x = 0;
+		while( x < border_width ){
+			GT_COLOR_SET(color[idx], GT_COLOR_GET(border_color));
+			idx++;
+			x++;
+		}
+
+		//draw right border
+		x = 0;
+		idx += x21;
+		while( x < border_width ){
+			GT_COLOR_SET(color[idx], GT_COLOR_GET(border_color));
+			idx++;
+			x++;
+		}
+		y++;
+	}
+	
+	extern void _flush_cb(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
+
+	// _flush_cb(NULL, area, color);
+}
+
+
+void gt_graph_dot_draw_to_color(uint8_t * dot, gt_color_t * color, gt_area_st area_color, uint8_t w, uint8_t h, gt_color_t fcolor)
+{
+	uint16_t x,_y,_x, idx = 0,_temp;
+	int _j;
+	
+	for(_y=0; _y<16; _y++){
+		_temp = 0;
+		for(_x=0; _x<2; _x++){
+			for(_j=7; _j>=0; _j--){
+				if( (dot[idx] >>_j)&0x01 ){
+					GT_COLOR_SET_BUF(color, area_color.x+_temp, area_color.y+_y, area_color.w, area_color.h, GT_COLOR_GET(fcolor));
+				}
+				_temp++;
+			}
+			idx++;
+		}		
+	}
 }
 
 /* end ------------------------------------------------------------------*/
