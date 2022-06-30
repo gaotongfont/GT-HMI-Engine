@@ -48,6 +48,8 @@ uint8_t utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 }
 
 // extern unsigned long GT_GetChinese(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
+// extern unsigned long GT_GetASCII(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
+
 // extern unsigned long GT_GetJapanese(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
 // extern unsigned long GT_GetKorean(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
 // extern unsigned long GT_GetCyrillic(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
@@ -55,12 +57,12 @@ uint8_t utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 #define GT_USE_FONT_NUM     2
 
 void * read_func_arr[] = {
-	NULL
     // GT_GetChinese,
     // GT_GetASCII,
     // GT_GetJapanese,
     // GT_GetKorean,
     // GT_GetCyrillic,
+	NULL
 };
 
 
@@ -68,30 +70,32 @@ void * read_func_arr[] = {
 
 void gt_font_get_text(gt_font_st * font)
 {
-    uint32_t idx = 0, unicode, len, fidx = 0, ridx = 0, temp = 0;
+    uint32_t idx = 0, unicode, len, idx_func = 0, idx_read = 0, temp = 0;
+
     unsigned long (* read)(unsigned long, unsigned int, unsigned char*);
     GT_LOGV(GT_LOG_TAG_GUI, "text:%s", font->utf8);
     while(idx < font->len) {
+        
         len = utf8_to_unicode(&font->utf8[idx], &unicode);
         /* get font data */
-        while( fidx < GT_USE_FONT_NUM ) {
-            read = read_func_arr[fidx];
-            if( !read ) {
-                fidx++;
+        while( idx_func < GT_USE_FONT_NUM ) {
+            read = read_func_arr[idx_func];
+            if( !read ) { 
+                idx_func++;
                 continue;
             }
             if( unicode < 0x80 ){
-                temp = read(unicode, font->style_en, &font->res[ridx]);
+                temp = read(unicode, font->style_en, &font->res[idx_read]);
             }else{
-                temp = read(unicode, font->style_cn, &font->res[ridx]);
+                temp = read(unicode, font->style_cn, &font->res[idx_read]);
             }
-            ridx += temp;
+            idx_read += temp;
             if(0 != temp) {
                 break;
             }
-            fidx++;
+            idx_func++;
         }
-        fidx = 0;
+        idx_func = 0;
         idx+=len;
     }
 }

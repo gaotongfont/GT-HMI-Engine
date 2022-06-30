@@ -22,6 +22,12 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+typedef struct _gt_font_res_s{
+    uint8_t * dot;
+    uint8_t w;
+    uint8_t h;
+}gt_font_res_st;
+
 typedef struct _gt_font_s
 {
     uint32_t style_cn;     /* set: font style */
