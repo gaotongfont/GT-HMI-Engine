@@ -109,9 +109,10 @@ typedef struct _gt_attr_arch_s
 /* global functions / API interface -------------------------------------*/
 
 gt_color_t * gt_graph_get_default(void);
+void gt_graph_set_default(gt_color_t *);
 void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area);
 void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area );
-void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area );
+void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * color );
 void gt_graph_arch(gt_attr_arch_st * arch_attr, gt_area_st * area );
 void _gt_graph_dot_circle(gt_attr_circle_st * circle_attr, gt_area_st * area);
 #ifdef __cplusplus

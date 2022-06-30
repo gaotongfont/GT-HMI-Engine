@@ -17,6 +17,7 @@ extern "C" {
 #include "stdint.h"
 #include "../gt_conf.h"
 #include "gt_types.h"
+#include "../widgets/gt_obj.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -113,6 +114,17 @@ typedef GT_CONCAT3(gt_color, GT_COLOR_DEPTH, _t) gt_color_t;
 
 /* global functions / API interface -------------------------------------*/
 
+/**
+ * @brief Copy from the area of the src to the area of the dst 
+ * 
+ * @param dst dst : gt_color_t arr
+ * @param area_dst dst's pos: area_dst.x, area_dst.y, dst's size: area_dst.w,area_dst.h
+ * @param src src : gt_color_t arr
+ * @param area_src src's pos: area_src.x, area_src.y, src's size: area_src.w,area_src.h
+ * @param w copy width from src
+ * @param h copy height from src
+ */
+void gt_color_area_copy(gt_color_t *dst, struct _gt_area_s area_dst, gt_color_t * src, struct _gt_area_s area_src, gt_size_t w, gt_size_t h);
 
 
 #ifdef __cplusplus

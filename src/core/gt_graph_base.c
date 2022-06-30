@@ -684,6 +684,10 @@ gt_color_t * gt_graph_get_default()
 	return color;
 }
 
+void gt_graph_set_default(gt_color_t * _color){
+	color = _color;
+}
+
 /* cache in buf, no draw*/
 void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 {
@@ -761,7 +765,7 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area)
 
 }
 
-void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area)
+void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * color)
 {
 	gt_size_t isfill, radius, border_width;
 	gt_color_t bcolor, fcolor, border_color;
@@ -778,10 +782,10 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area)
 	w = area->w;
 	h = area->h;
 	
-	if(color){
-		gt_mem_free(color);
-	}
-	color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
+	// if( color != NULL ){
+	// 	gt_mem_free(color);
+	// }
+	// color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
 
 	uint32_t x,y, x1,y1, x2,y2, idx = 0, all = w * h, w_null, x21, idxb1, idxb2;
 	x1 = border_width;
@@ -790,22 +794,16 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area)
 	y1 = border_width;
 	y2 = h - border_width;
 	x21 = x2 - x1;
+	
+	//draw center
 	if(isfill){
-		//draw center
-		y = y1;
-		idx = border_width * w;
-		while( y <= y2 ){
-			x = x1;
-			idx+=border_width;
-			while( x < x2 ){
-				GT_COLOR_SET(color[idx], GT_COLOR_GET(fcolor));
-				idx++;
-				x++;
-			}
-			idx+=border_width;
-			y++;
+		while(idx < all){
+			GT_COLOR_SET(color[idx++], GT_COLOR_GET(fcolor));
 		}
 	}
+	return;
+
+	/* bug, no fix */
 
 	//draw up border
 	y = 0;
@@ -833,7 +831,6 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area)
 			idx++;
 			x++;
 		}
-
 		//draw right border
 		x = 0;
 		idx += x21;
@@ -844,10 +841,6 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area)
 		}
 		y++;
 	}
-	
-	extern void _flush_cb(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
-
-	// _flush_cb(NULL, area, color);
 }
 
 

@@ -32,6 +32,10 @@ extern "C" {
 /* global functions / API interface -------------------------------------*/
 void gt_load_scr(gt_obj_st * scr);
 
+void gt_disp_set_scr(gt_obj_st * scr);
+gt_obj_st * gt_disp_get_scr(void);
+
+void gt_disp_load_scr(gt_obj_st * scr);
 
 #ifdef __cplusplus
 } /*extern "C"*/

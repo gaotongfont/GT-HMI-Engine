@@ -11,7 +11,8 @@
 #include "../gt_conf.h"
 #include "../widgets/gt_obj.h"
 #include "../others/gt_log.h"
-
+#include "gt_obj_pos.h"
+#include "../hal/gt_hal_disp.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -36,39 +37,64 @@
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_disp_set_src(gt_obj_st * scr) {
-    // disp->scr = scr;
+void gt_disp_set_scr(gt_obj_st * scr) {
+    gt_disp_st * disp = gt_disp_get_default();
+    if( NULL == disp ){
+        return;
+    }
+    disp->scr_act = scr;
 }
 
 gt_obj_st * gt_disp_get_scr() {
-    // return disp->scr;
+    gt_disp_st * disp = gt_disp_get_default();
+    if( NULL == disp ){
+        return;
+    }
+    return disp->scr_act;
 }
 
-static void _obj_foreach(gt_obj_st * parent){
-    uint16_t idx = 0;
-    gt_obj_st * _obj_temp = NULL;
-    const gt_obj_class_st * _class = parent->class;
-    while( idx < parent->cnt_child ){
-        _obj_temp = parent->child[idx];
-
-        _obj_temp->class = _class;
-        _obj_temp->class->_init_cb(_obj_temp, _class );
-
-        if( _obj_temp->cnt_child != 0 ){
-            _obj_foreach(_obj_temp);
-        }
+/**
+ * @brief foreach obj send draw start event
+ * 
+ * @param obj parent
+ */
+void _gt_disp_load_obj_foreach(gt_obj_st * obj)
+{
+    int idx = 0;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+    while( idx < obj->cnt_child ) {
+        _gt_disp_load_obj_foreach( obj->child[idx] );
         idx++;
     }
 }
 
-void gt_load_scr(gt_obj_st * scr) {
-    if( scr->class->type != GT_TYPE_OBJ ){
-		GT_LOGV(GT_LOG_TAG_GUI, "this is not a screen obj->%d",scr->class->type);
+/**
+ * @brief display screen
+ * 
+ * @param scr screen obj
+ */
+void gt_disp_load_scr(gt_obj_st * scr)
+{
+    gt_disp_set_scr(scr);
+    gt_disp_st * disp = gt_disp_get_default();
+    if( !disp ){
         return;
     }
-    _obj_foreach(scr);
+    _gt_disp_load_obj_foreach(scr);
 }
 
+void gt_disp_scr_by_10_lines(){
+    static uint16_t y_offset = 0;
+    
+    while( y_offset < GT_SCREEN_HEIGHT ){
+        /* 1.check obj is visible */
+        
+        /* 2.copy obj color to disp area color */
+
+        /* 3.disp 10 lines to screen */
+		
+    }
+}
 
 
 
