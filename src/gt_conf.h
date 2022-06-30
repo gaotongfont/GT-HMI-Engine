@@ -60,12 +60,14 @@ extern "C" {
 /**
  * @brief memory mode. 1: array as memory pool; 0:  c library api.
  */
-#define GT_MEM_CUSTOM       0
+#define GT_MEM_CUSTOM       01
 
 #if GT_MEM_CUSTOM
     #define GT_MEM_CUSTOM_INCLUDE   "../others/gt_tlsf.h"
 
     #define GT_MEM_SIZE             (24 * 1024U)    //Byte
+
+    #define gt_tlsf_assert(_expr)      (NULL)
 #else
     #define GT_MEM_CUSTOM_INCLUDE   "stdlib.h"
 
@@ -97,7 +99,7 @@ extern "C" {
 #define GT_CFG_DEFAULT_KEYPAD_
 
 
-/* default event mask bitnum */
+/* default event mask bit num */
 #define GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX           16
 
 /* typedef --------------------------------------------------------------*/
