@@ -23,8 +23,8 @@ extern "C" {
 /* define ---------------------------------------------------------------*/
 
 /* user: screen width and height config */
-#define GT_SCREEN_WIDTH     320
-#define GT_SCREEN_HEIGHT    240
+#define GT_SCREEN_WIDTH     800
+#define GT_SCREEN_HEIGHT    480
 
 /* GT_REFRESH_STYLE type don't change */
 #define GT_REFRESH_STYLE_0      0   /* no cache buf, It is suitable for MCU with low refresh requirements and low performance */
@@ -60,7 +60,7 @@ extern "C" {
 /**
  * @brief memory mode. 1: array as memory pool; 0:  c library api.
  */
-#define GT_MEM_CUSTOM       01
+#define GT_MEM_CUSTOM       0
 
 #if GT_MEM_CUSTOM
     #define GT_MEM_CUSTOM_INCLUDE   "../others/gt_tlsf.h"
@@ -95,6 +95,10 @@ extern "C" {
 #define GT_CFG_DEFAULT_BUTTON_
 
 #define GT_CFG_DEFAULT_KEYPAD_
+
+
+/* default event mask bitnum */
+#define GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX           16
 
 /* typedef --------------------------------------------------------------*/
 
