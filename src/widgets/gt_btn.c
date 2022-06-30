@@ -1,7 +1,7 @@
 /**
  * @file gt_btn.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-11 15:03:35
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -44,26 +44,26 @@ const gt_obj_class_st gt_btn_class = {
 
 /**
  * @brief obj init cb
- * 
- * @param obj 
+ *
+ * @param obj
  */
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
     /* code */
-    
+
     GT_LOGV(GT_LOG_TAG_GUI, "end init_cb");
 }
 
 /**
  * @brief obj deinit cb
- * 
+ *
  * @param obj
  */
 static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     /* code */
 
-    GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");      
+    GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
 }
 
 static void _gt_btn_init_widget(gt_obj_st * btn) {
@@ -81,7 +81,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
 
     radius = style->radius;
     border_w = style->border_width;
-		
+
     btn->cache.cache_color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
     if( style->selected ){
         GT_COLOR_SET(fcolor, GT_COLOR_GET(style->color_selected));
@@ -115,8 +115,8 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
 
 /**
  * @brief obj event handler cb
- * 
- * @param obj 
+ *
+ * @param obj
  * @param e event
  */
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
@@ -136,7 +136,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
             GT_LOGV(GT_LOG_TAG_GUI, "child delete");
             break;
-        
+
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
             GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             gt_btn_style_set_selected(obj, 1);
@@ -167,7 +167,7 @@ static void _gt_btn_init_style(gt_obj_st * btn, _gt_style_btn_st * style_btn) {
     GT_COLOR_SET(style_btn->color_selected, 0xF800);    //default color_selected
     GT_COLOR_SET(style_btn->color_unselected, 0x1537);  //default color_unselected
     style_btn->text = gt_mem_malloc(sizeof("btn"));
-    gt_memcpy(style_btn->text, "btn", sizeof("btn"));
+    strcpy(style_btn->text, "btn");
     style_btn->selected = 0;
 
     btn->cache.cached = GT_UNCACHED;
@@ -182,7 +182,7 @@ static void _gt_btn_init_style(gt_obj_st * btn, _gt_style_btn_st * style_btn) {
 
 /**
  * @brief create a btn obj
- * 
+ *
  * @param parent btn's parent element
  * @return gt_obj_st* btn obj
  */
