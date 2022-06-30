@@ -77,6 +77,7 @@ typedef struct _gt_indev_proc_s
         {
             gt_point_st point_act;      /* current point of touch input device */
             gt_point_st point_last;     /* last point of touch input device */
+            gt_point_st point_temp;     /* used to judge gesture */
             gt_dir_et gesture;          /* gesture of touch input device */
 
             struct _gt_obj_s * obj_act;     /* The object being pressed */

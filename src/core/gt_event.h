@@ -26,34 +26,31 @@ extern "C" {
 struct _gt_obj_s;
 
 typedef enum gt_event_type_e{
-    GT_EVENT_TYPE_NONE = 0,
+    GT_EVENT_TYPE_NONE = 0x0000,
 
     /** Input device events*/
-    GT_EVENT_TYPE_INPUT_CLICKING,
-    GT_EVENT_TYPE_INPUT_PROCESS,
-    GT_EVENT_TYPE_INPUT_PROCESSED,
+    GT_EVENT_TYPE_INPUT_CLICKING    = 1<<0,     /* clicking */
+    GT_EVENT_TYPE_INPUT_PROCESS     = 1<<1,     /* click need handler */
+    GT_EVENT_TYPE_INPUT_PROCESSED   = 1<<2,     /* click handler finish */
+    GT_EVENT_TYPE_INPUT_SCROLL      = 1<<3,
 
+    /* update value */
+    GT_EVENT_TYPE_UPDATE_VALUE      = 1<<4,             /* value update, need to redraw */
+    GT_EVENT_TYPE_UPDATE_STYLE      = 1<<5,
 
     /** Drawing events*/
-    GT_EVENT_TYPE_DRAW_START,                /* need to start draw widget */
-    GT_EVENT_TYPE_DRAW_END,                  /* draw widget ok */
-
-    /** Special events*/
-    GT_EVENT_TYPE_UPDATE_VALUE,              /* value update, need to redraw */
-    GT_EVENT_TYPE_SCROLL,
+    GT_EVENT_TYPE_DRAW_START        = 1<<6,             /* need to start draw widget */
+    GT_EVENT_TYPE_DRAW_END          = 1<<7,             /* draw widget ok */
 
     /** Other events*/
-    GT_EVENT_TYPE_CHANGE_CHILD_REMOVE,       /* remove child but not delete child */
-    GT_EVENT_TYPE_CHANGE_CHILD_REMOVED,      /* remove child finish */
-    GT_EVENT_TYPE_CHANGE_CHILD_DELETE,       /* delete child */
-    GT_EVENT_TYPE_CHANGE_CHILD_DELETED,      /* delete child finish */
-    GT_EVENT_TYPE_CHANGE_SIZE,               /* size was changed */
-    GT_EVENT_TYPE_CHANGE_STYLE,              /* style was changed */
+    GT_EVENT_TYPE_CHANGE_CHILD_REMOVE   = 1<<8,         /* remove child but not delete child */
+    GT_EVENT_TYPE_CHANGE_CHILD_REMOVED  = 1<<9,         /* remove child finish */
+    GT_EVENT_TYPE_CHANGE_CHILD_DELETE   = 1<<10,        /* delete child */
+    GT_EVENT_TYPE_CHANGE_CHILD_DELETED  = 1<<11,        /* delete child finish */
 
-
-    _GT_EVENT_TYPE_TOTAL,                    /* count event number */
+    _GT_EVENT_TYPE_TOTAL = 11,                          /* count event number */
     
-    GT_EVENT_TYPE_ALL = 0xFF,
+    GT_EVENT_TYPE_ALL = 0xFFFFFFF,
 }gt_event_type_et;
 
 typedef struct _gt_event_s{
@@ -74,6 +71,7 @@ gt_event_type_et gt_event_get_code(gt_event_st * e);
 
 gt_res_t gt_event_send(struct _gt_obj_s * parent, gt_event_type_et event, void * user_data);
 
+void _gt_event_init(void);
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

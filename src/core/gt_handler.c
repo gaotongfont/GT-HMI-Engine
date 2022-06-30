@@ -13,7 +13,7 @@
 #include "gt_timer.h"
 #include "stdbool.h"
 #include "../others/gt_anim.h"
-
+#include "gt_event.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -61,6 +61,7 @@ void gt_init(void)
 
     _gt_anim_init();
 
+    _gt_event_init();
 
     _gt_init_set_flag(true);
 }

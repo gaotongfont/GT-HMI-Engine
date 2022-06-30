@@ -14,6 +14,8 @@
 #include "../others/gt_log.h"
 #include "gt_mem.h"
 #include "stdlib.h"
+#include "gt_timer.h"
+#include "gt_disp.h"
 /* private define -------------------------------------------------------*/
 
 
@@ -66,8 +68,8 @@ gt_event_type_et gt_event_get_code(gt_event_st * e){
     return e->code;
 }
 
-
-gt_res_t gt_event_send(gt_obj_st * parent, gt_event_type_et event, void * user_data){
+/* 1th version--unuse */
+gt_res_t gt_event_send_0(gt_obj_st * parent, gt_event_type_et event, void * user_data){
     gt_event_st *e, _e;
     int idx_child = 0, idx_event = 0;
     gt_event_type_et filter = event;
@@ -88,7 +90,82 @@ gt_res_t gt_event_send(gt_obj_st * parent, gt_event_type_et event, void * user_d
         }
         idx_event++;
     }
+		return GT_RES_OK;
 }
 
+/* 2th version--use */
+gt_res_t gt_event_send(gt_obj_st * parent, gt_event_type_et event, void * parms){
+    if( !parent ){
+        GT_LOGD(GT_LOG_TAG_GUI, "parent is null");
+        return GT_RES_FAIL;
+    }
+    // add event to obj----sys event,process draw,del,create...need long time
+    parent->event_mask |= event;
+    
+    // foreach parent's event_attr----user event,immediately process the user events
+    int idx = 0;
+    gt_obj_event_attr_st * event_attr;
+    gt_event_st e;
+    while( idx < parent->cnt_event ){
+        GT_LOGD(GT_LOG_TAG_GUI, "cnt:%d--idx:%d", parent->cnt_event, idx);
+        event_attr = gt_obj_get_event_attr(parent, idx);//&parent->event_attr[idx];
+        if( NULL == event_attr ){
+            continue;
+        }
+        if(event_attr->filter == GT_EVENT_TYPE_ALL || event_attr->filter == event ) {
+            e.target    = parent;
+            e.code      = event;
+            e.user_data = event_attr->user_data;
+            event_attr->cb(&e);
+        }
+        idx++;
+    }
+	return GT_RES_OK;
+}
+
+void _gt_event_handler_event_mask(gt_obj_st * obj){
+    int idx = 0;
+    uint32_t event_code;
+    gt_event_st e;
+    while(idx < GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX){
+        event_code = obj->event_mask & (1<<idx);
+        if( event_code ){
+            e.target = obj;
+            e.code = (gt_event_type_et)event_code;
+            e.user_data = NULL;
+            obj->class->_event_cb(obj, &e);
+            obj->event_mask &= ~(1<<idx);
+        }
+        idx++;
+    }
+}
+
+void _gt_timer_event_cb(struct _gt_timer_s * timer){
+    // GT_LOGV(GT_LOG_TAG_GUI, "timer event cb start");
+
+    /* step1: get top layer screen */
+    gt_obj_st * scr = gt_disp_get_scr();
+    if( NULL == scr ){
+        GT_LOGW(GT_LOG_TAG_GUI, "no screen");
+        return;
+    }
+
+    /* step2: foreach obj event_mask and process */
+    _gt_event_handler_event_mask(scr);
+
+    int idx_child = 0;
+    gt_obj_st * obj_temp = NULL;
+    while( idx_child < scr->cnt_child ){
+		obj_temp = scr->child[idx_child];
+        _gt_event_handler_event_mask( obj_temp );
+        idx_child++;
+    }
+
+    // GT_LOGV(GT_LOG_TAG_GUI, "timer event cb end");
+}
+
+void _gt_event_init(){
+    _gt_timer_create(_gt_timer_event_cb, GT_TASK_PERIOD_TIME_EVENT, NULL);
+}
 
 /* end ------------------------------------------------------------------*/

@@ -74,7 +74,7 @@ static inline void _gt_timer_for_each_exec(void)
         }
 
         start_time = gt_tick_get();
-        period     = start_time - ptr->last_run;
+        period     = start_time - ptr->last_run - 1;
 
         if (period < ptr->period) {
             continue;
@@ -90,7 +90,7 @@ static inline void _gt_timer_for_each_exec(void)
             }
 
             ptr->timer_cb(ptr);
-            GT_LOGV(GT_LOG_TAG_TIM, "[%d, %d, +%d]", start_time, ptr->last_run, gt_tick_get() - ptr->last_run);
+            // GT_LOGV(GT_LOG_TAG_TIM, "[%d, %d, +%d]", start_time, ptr->last_run, gt_tick_get() - ptr->last_run);
             ptr->last_run = gt_tick_get();
         }
     }
@@ -131,7 +131,7 @@ _gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * 
 void _gt_timer_handler(void)
 {
     if (!_gt_timer_task_is_ready()) {
-        return ;
+        return;
     }
     _gt_timer_for_each_exec();
 }

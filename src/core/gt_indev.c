@@ -12,6 +12,8 @@
 #include "../hal/gt_hal_indev.h"
 #include "../hal/gt_hal_disp.h"
 #include "../others/gt_log.h"
+#include "gt_disp.h"
+#include "gt_obj_pos.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -33,61 +35,109 @@
 void gt_indev_handler_point(gt_indev_st * indev)
 {
     static uint8_t flag_key_down = 0, cnt_key_down_continue = 0;
-
     gt_indev_data_st data_indev;
+
+    gt_obj_st * obj_click_last = NULL;
+    gt_obj_st * obj_touch = NULL;
+    gt_obj_st * scr = gt_disp_get_scr();
+    int idx = 0;
+
+    /* call user hard interface */
     indev->drv->read_cb(indev->drv, &data_indev);
 
+    /* process point data */
     indev->proc.state = data_indev.state;
+
+    /* have one touch event */
     if (indev->proc.state == GT_INDEV_STATE_PRESSED) {
+        /* first key down */
         if (!flag_key_down) {
             flag_key_down = 1;
+            /* save first pressed point */
             indev->proc.data.point.point_act.x = data_indev.point.x;
             indev->proc.data.point.point_act.y = data_indev.point.y;
-        }
-        else {
+
+            /* save pressed point for scroll process */
+            indev->proc.data.point.point_temp.x = data_indev.point.x;
+            indev->proc.data.point.point_temp.y = data_indev.point.y;
+
+            /* save pressed obj */
+            indev->proc.data.point.obj_act = gt_find_clicked_obj_by_point(scr, &data_indev.point);
+            /* send clicking event to pressed obj */
+            gt_event_send(indev->proc.data.point.obj_act, GT_EVENT_TYPE_INPUT_CLICKING, NULL);
+        }else {
+            /* last pressed point */
             indev->proc.data.point.point_last.x = data_indev.point.x;
             indev->proc.data.point.point_last.y = data_indev.point.y;
         }
+        
+        indev->proc.data.point.obj_last = gt_find_clicked_obj_by_point(scr, &data_indev.point);
+        
+        if( indev->proc.data.point.obj_act != indev->proc.data.point.obj_last ){
+            gt_event_send(indev->proc.data.point.obj_act, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
+            indev->proc.data.point.obj_act = indev->proc.data.point.obj_last;
+            gt_event_send(indev->proc.data.point.obj_act, GT_EVENT_TYPE_INPUT_CLICKING, NULL);
+        }
         indev->proc.data.point.count_point++;
     }
+    /* no touch */
     else {
+        if( flag_key_down ){
+            if( indev->proc.data.point.obj_last ){
+                gt_event_send( indev->proc.data.point.obj_last, GT_EVENT_TYPE_INPUT_PROCESS, NULL);
+            }
+        }
         flag_key_down = 0;
         indev->proc.data.point.count_point = 0;
+
+        return GT_RES_OK;
     }
 
-    /* find touch obj */
-//    gt_obj_st * obj = gt_;
-
+    /* gesture */
     int ver = 0, hor = 0;
     if (indev->proc.data.point.count_point > 3) {
-        ver = indev->proc.data.point.point_last.y - indev->proc.data.point.point_act.y;
-        hor = indev->proc.data.point.point_last.x - indev->proc.data.point.point_act.x;
+        
+        ver = indev->proc.data.point.point_last.y - indev->proc.data.point.point_temp.y;
+        hor = indev->proc.data.point.point_last.x - indev->proc.data.point.point_temp.x;
 
         if (ver < -indev->drv->limit_pixel_gesture_ver) {
-            GT_LOGV(GT_LOG_TAG_GUI, "slide up\n");
+            GT_LOGD(GT_LOG_TAG_GUI, "slide up\n");
             indev->proc.data.point.gesture = GT_DIR_UP;
         }
         else if (ver > indev->drv->limit_pixel_gesture_ver) {
-            GT_LOGV(GT_LOG_TAG_GUI, "slide down\n");
+            GT_LOGD(GT_LOG_TAG_GUI, "slide down\n");
             indev->proc.data.point.gesture = GT_DIR_DOWN;
         }
         else if (hor < -indev->drv->limit_pixel_gesture_hor) {
-            GT_LOGV(GT_LOG_TAG_GUI, "slide left\n");
+            GT_LOGD(GT_LOG_TAG_GUI, "slide left\n");
             indev->proc.data.point.gesture = GT_DIR_LEFT;
         }
         else if (hor > indev->drv->limit_pixel_gesture_hor) {
-            GT_LOGV(GT_LOG_TAG_GUI, "slide right\n");
+            GT_LOGD(GT_LOG_TAG_GUI, "slide right\n");
             indev->proc.data.point.gesture = GT_DIR_RIGHT;
         }
         else {
             indev->proc.data.point.gesture = GT_DIR_NONE;
         }
+
+        if( indev->proc.data.point.gesture != GT_DIR_NONE ){
+            indev->proc.data.point.point_temp.x = indev->proc.data.point.point_last.x;
+            indev->proc.data.point.point_temp.y = indev->proc.data.point.point_last.y;
+        }
+
+    }
+
+    /* if have gesture,no process click event */
+    if( indev->proc.data.point.gesture != GT_DIR_NONE ){
+        GT_LOGD(GT_LOG_TAG_GUI, "send scroll code");
+        gt_event_send(indev->proc.data.point.obj_last, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
+        return;
     }
 
     if (indev->proc.data.point.count_point != 0 && indev->proc.data.point.count_point % indev->drv->limit_timers_long_press == 0) {
         /* trigger an touch event */
         indev->proc.data.point.count_point = 0;
-        GT_LOGV(GT_LOG_TAG_GUI, "continue mode trigger an touch event");
+        GT_LOGD(GT_LOG_TAG_GUI, "continue mode trigger an touch event");
     }
 }
 
