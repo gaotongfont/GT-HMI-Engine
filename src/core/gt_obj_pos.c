@@ -107,8 +107,46 @@ void gt_obj_get_valid_area(gt_obj_st * obj, gt_area_st * area_act, gt_area_st *a
     }else{
         area_valid->h = __Y2(area_disp) - __Y2(area_obj) - area_valid->y;
     }
-
 }
 
+
+/**
+ * @brief check obj was clicked
+ * 
+ * @param obj check obj
+ * @param point click point
+ * @return true clicked
+ * @return false not clicked
+ */
+bool gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point ){
+    bool ret = false;
+    if( (point->x >= obj->area.x) && (point->x <= (obj->area.x + obj->area.w)) ){
+        if( (point->y >= obj->area.y) && (point->y <= (obj->area.y + obj->area.h)) ){
+            ret = true;
+        }
+    }
+    return ret;
+}
+
+/**
+ * @brief find smallest clicked obj from parent
+ * 
+ * @param parent parent obj
+ * @param point click point
+ * @return gt_obj_st* smallest and clicked obj in parent
+ */
+gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point){
+    uint8_t idx = 0;
+    gt_obj_st * obj_clicked = parent;
+    while( idx < parent->cnt_child ){
+        if( gt_obj_check_is_clicked(parent->child[idx], point) ){
+            if( parent->child[idx] ){
+                obj_clicked = parent->child[idx];
+            }
+        }
+        idx++;
+    }
+    return obj_clicked;
+}
 
 /* end ------------------------------------------------------------------*/

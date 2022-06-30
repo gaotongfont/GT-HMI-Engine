@@ -42,9 +42,14 @@ void gt_obj_set_style_area(gt_obj_st * obj, gt_area_st area){
     gt_obj_set_style_h(obj, area.h);
 }
 
-void gt_obj_set_style_pos(gt_obj_st * obj, uint16_t x, uint16_t y){
+void gt_obj_set_style_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y){
     gt_obj_set_style_x(obj, x);
     gt_obj_set_style_y(obj, y);
+}
+
+void gt_obj_set_style_size(gt_obj_st * obj, uint16_t w, uint16_t h){
+    gt_obj_set_style_w(obj,w);
+    gt_obj_set_style_h(obj,h);
 }
 
 void gt_obj_set_style_x(gt_obj_st * obj, uint16_t x){

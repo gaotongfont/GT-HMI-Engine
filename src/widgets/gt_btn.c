@@ -41,58 +41,29 @@ const gt_obj_class_st gt_btn_class = {
 
 
 /* static functions -----------------------------------------------------*/
+
+/**
+ * @brief obj init cb
+ * 
+ * @param obj 
+ */
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
     /* code */
     
     GT_LOGV(GT_LOG_TAG_GUI, "end init_cb");
 }
+
+/**
+ * @brief obj deinit cb
+ * 
+ * @param obj
+ */
 static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     /* code */
 
-    GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
-}
-
-static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
-    switch(code) {
-        case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
-            break;
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-            break;
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-            break;
-        
-        case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
-            GT_LOGV(GT_LOG_TAG_GUI, "process");
-            break;
-        case GT_EVENT_TYPE_INPUT_PROCESSED: /*  */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
-            break;
-        default:
-            break;
-    }
-}
-
-
-static void _gt_btn_init_style(gt_obj_st * btn, _gt_style_btn_st * style_btn) {
-    GT_COLOR_SET(style_btn->color_selected, 0x1537);    //default color_selected
-    GT_COLOR_SET(style_btn->color_unselected, 0xFFFF);  //default color_unselected
-    style_btn->text = gt_mem_malloc(sizeof("btn"));
-    gt_memcpy(style_btn->text, "btn", sizeof("btn"));    
-    style_btn->selected = 0;
+    GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");      
 }
 
 static void _gt_btn_init_widget(gt_obj_st * btn) {
@@ -101,6 +72,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     gt_size_t radius,border_w;   //widget attr
     gt_attr_line_st _line;
     gt_area_st _area;
+    gt_color_t fcolor;
 
     x = btn->area.x;
     y = btn->area.y;
@@ -109,16 +81,111 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
 
     radius = style->radius;
     border_w = style->border_width;
+		
+    btn->cache.cache_color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
+    if( style->selected ){
+        GT_COLOR_SET(fcolor, GT_COLOR_GET(style->color_selected));
+    }else{
+        GT_COLOR_SET(fcolor, GT_COLOR_GET(style->color_unselected));
+    }
+
+
+    gt_attr_rect_st rect_attr;
+    GT_COLOR_SET(rect_attr.fcolor, GT_COLOR_GET(fcolor));
+    rect_attr.isfill = 1;
+    GT_COLOR_SET(rect_attr.bcolor, GT_COLOR_GET(fcolor));
+
+    gt_area_st area = {
+        .w = w,
+        .h = h,
+        .x = x,
+        .y = y
+    };
 
     if(radius == 0) {
-
+        gt_color_t * color_p = btn->cache.cache_color;
+        gt_graph_rect(&rect_attr, &area, color_p);
+        extern void _flush_cb(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
+        _flush_cb(NULL, &area, color_p);
     }else{
 
+    }
+	gt_mem_free(btn->cache.cache_color);
+}
+
+/**
+ * @brief obj event handler cb
+ * 
+ * @param obj 
+ * @param e event
+ */
+static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
+    gt_event_type_et code = gt_event_get_code(e);
+    switch(code) {
+        case GT_EVENT_TYPE_DRAW_START:
+            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
+            _gt_btn_init_widget(obj);
+            break;
+        case GT_EVENT_TYPE_DRAW_END:
+            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
+            break;
+
+        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
+            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
+			break;
+        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
+            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
+            break;
+        
+        case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
+            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
+            gt_btn_style_set_selected(obj, 1);
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            break;
+        case GT_EVENT_TYPE_INPUT_SCROLL:
+            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
+            break;
+
+        case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
+            GT_LOGV(GT_LOG_TAG_GUI, "process");
+            /* code here */
+
+            gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
+            break;
+        case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
+            GT_LOGV(GT_LOG_TAG_GUI, "processed");
+            gt_btn_style_set_selected(obj, 0);
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            break;
+        default:
+            break;
     }
 }
 
 
+static void _gt_btn_init_style(gt_obj_st * btn, _gt_style_btn_st * style_btn) {
+    GT_COLOR_SET(style_btn->color_selected, 0xF800);    //default color_selected
+    GT_COLOR_SET(style_btn->color_unselected, 0x1537);  //default color_unselected
+    style_btn->text = gt_mem_malloc(sizeof("btn"));
+    gt_memcpy(style_btn->text, "btn", sizeof("btn"));
+    style_btn->selected = 0;
+
+    btn->cache.cached = GT_UNCACHED;
+    btn->cache.visible = GT_VISIBLE_UNSET;
+    btn->cache.cache_color = NULL;
+}
+
+
+
+
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief create a btn obj
+ * 
+ * @param parent btn's parent element
+ * @return gt_obj_st* btn obj
+ */
 gt_obj_st * gt_btn_create(gt_obj_st * parent) {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
     _gt_btn_init_style(obj, (_gt_style_btn_st *)&obj->style);
@@ -136,7 +203,7 @@ void gt_btn_style_set_color_unselected(gt_obj_st * btn, gt_color_t color) {
 }
 
 void gt_btn_style_set_selected(gt_obj_st * btn, uint8_t selected) {
-    _gt_style_btn_st * style = btn->style;
+    _gt_style_btn_st * style = &btn->style;
     style->selected = selected!=0?1:0;
 }
 

@@ -14,10 +14,11 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-#include "../others/gt_color.h"
 #include "../others/gt_types.h"
+#include "../others/gt_color.h"
 #include "gt_obj_class.h"
 #include "../core/gt_event.h"
+
 
 /* define ---------------------------------------------------------------*/
 
@@ -37,9 +38,9 @@ typedef struct _gt_point_s
     gt_size_t y;
 }gt_point_st;
 
-typedef struct gt_area_s {
-    gt_size_t x;
+typedef struct _gt_area_s {
     gt_size_t y;
+    gt_size_t x;
     uint16_t w;
     uint16_t h;
 }gt_area_st;
@@ -51,6 +52,17 @@ typedef struct _gt_obj_event_attr_s{
     gt_event_type_et filter;
 }gt_obj_event_attr_st;
 
+typedef enum{
+    GT_VISIBLE_UNSET,
+    GT_VISIBLE,
+    GT_INVISIBLE,
+}gt_visible_e;
+
+typedef enum{
+    GT_UNCACHED,
+    GT_CACHED,
+}gt_cache_e;
+
 typedef struct _gt_obj_s {
     struct _gt_obj_s * parent;
     struct _gt_obj_s ** child;
@@ -60,9 +72,19 @@ typedef struct _gt_obj_s {
     void * user_data;
 #endif
     gt_area_st area;
-    style_widget_t style;
     gt_obj_event_attr_st * event_attr;
     uint8_t cnt_event;
+
+    uint32_t event_mask;     /* send event code add this mask */
+
+    style_widget_t style;
+
+   struct{
+        uint8_t visible:2;  /* obj visible state, @gt_visible_e */
+        uint8_t cached:1;   /* obj cache state, @gt_cache_e */
+        void ** cache_color;       /* cache obj color */
+   }cache;
+	 
 }gt_obj_st;
 
 

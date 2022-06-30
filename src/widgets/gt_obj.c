@@ -24,10 +24,12 @@
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
 static void _deinit_cb(gt_obj_st * obj,const gt_obj_class_st * class);
+static void _event_cb(gt_obj_st * obj,const gt_obj_class_st * class);
 
 const gt_obj_class_st gt_obj_class = {
     ._init_cb = _init_cb,
     ._deinit_cb = _deinit_cb,
+    ._event_cb = _event_cb,
     .type = OBJ_TYPE,
     .size_instance = (sizeof(gt_obj_st)),
     .size_style = (sizeof(_gt_style_obj_st))
@@ -53,6 +55,10 @@ static void _deinit_cb(gt_obj_st * obj,const gt_obj_class_st * class)
     /* code */
 
     GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
+}
+
+static void _event_cb(gt_obj_st * obj,const gt_obj_class_st * class){
+    
 }
 
 

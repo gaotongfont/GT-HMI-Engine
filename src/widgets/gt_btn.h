@@ -35,8 +35,8 @@ typedef struct _gt_style_btn_s
 
     char * text;
 
-    gt_size_t isfill:1;
-    gt_size_t selected:1;
+    uint8_t isfill:1;
+    uint8_t selected:1;
 }_gt_style_btn_st;
 
 

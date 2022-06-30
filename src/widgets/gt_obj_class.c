@@ -45,10 +45,11 @@ static uint32_t get_style_size(const gt_obj_class_st * class) {
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * parent) {
 
-    if ( parent->class->type == class->type ){
-        GT_LOGV(GT_LOG_TAG_GUI, "cannot create an object of the same type as the parent object onto the parent object");
-        return NULL;
-    }
+    /* bug no fix,hardfault */
+    // if ( parent->class->type == class->type ){
+    //     GT_LOGV(GT_LOG_TAG_GUI, "cannot create an object of the same type as the parent object onto the parent object");
+    //     return NULL;
+    // }
 
     uint32_t is = get_instance_size(class);
     gt_obj_st * obj = gt_mem_malloc(is);
@@ -70,12 +71,13 @@ gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * paren
             return NULL;
         }
 
-        if (disp->screens == NULL) {
+        if (disp->screens == NULL || disp->cnt_scr == 0 ) {
             disp->screens = gt_mem_malloc(sizeof(gt_obj_st *));
             disp->screens[disp->cnt_scr++] = obj;
         } else {
+            // gt_mem_realloc can't operate NULL ptr
             disp->screens = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr + 1));
-            disp->screens[disp->cnt_scr++] = obj;
+            disp->screens[disp->cnt_scr++] = 0;
         }
         obj->area.x = 0;
         obj->area.y = 0;
@@ -83,7 +85,7 @@ gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * paren
         obj->area.h = gt_disp_get_res_ver(NULL);
     } else {
         GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj");
-        if (parent->child == NULL) {
+        if (parent->child == NULL || parent->cnt_child == 0 ) {
             parent->child = gt_mem_malloc(sizeof(gt_obj_st *));
             parent->child[0] = obj;
             parent->cnt_child = 1;
@@ -92,7 +94,6 @@ gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * paren
             parent->child[parent->cnt_child++] = obj;
         }
     }
-
     return obj;
 }
 
