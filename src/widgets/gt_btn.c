@@ -67,9 +67,9 @@ static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
 }
 
 static void _gt_btn_init_widget(gt_obj_st * btn) {
-    _gt_style_btn_st * style = (_gt_style_btn_st *)&btn->style;
-    gt_size_t x, y, w, h;   //base attr
-    gt_size_t radius,border_w;   //widget attr
+    _gt_style_btn_st * style = btn->style;
+    gt_size_t x, y, w, h;           //base attr
+    gt_size_t radius,border_w;      //widget attr
     gt_attr_line_st _line;
     gt_area_st _area;
     gt_color_t fcolor;
@@ -88,7 +88,6 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     }else{
         GT_COLOR_SET(fcolor, GT_COLOR_GET(style->color_unselected));
     }
-
 
     gt_attr_rect_st rect_attr;
     GT_COLOR_SET(rect_attr.fcolor, GT_COLOR_GET(fcolor));
@@ -163,16 +162,15 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 }
 
 
-static void _gt_btn_init_style(gt_obj_st * btn, _gt_style_btn_st * style_btn) {
-    GT_COLOR_SET(style_btn->color_selected, 0xF800);    //default color_selected
-    GT_COLOR_SET(style_btn->color_unselected, 0x1537);  //default color_unselected
-    style_btn->text = gt_mem_malloc(sizeof("btn"));
-    strcpy(style_btn->text, "btn");
-    style_btn->selected = 0;
-
-    btn->cache.cached = GT_UNCACHED;
-    btn->cache.visible = GT_VISIBLE_UNSET;
-    btn->cache.cache_color = NULL;
+static void _gt_btn_init_style(gt_obj_st * btn) {
+    _gt_style_btn_st * _style = btn->style;
+    _style->selected = 0;
+    GT_LOGD(GT_LOG_TAG_GUI, "btn:%p,style:%p", btn, _style);
+    _style->radius = 0;
+    _style->text = gt_mem_malloc(sizeof("btn"));
+    strcpy(_style->text, "btn");
+	GT_COLOR_SET(_style->color_selected, 0xF800);    //default color_selected
+    GT_COLOR_SET(_style->color_unselected, 0x1537);  //default color_unselected
 }
 
 
@@ -188,7 +186,7 @@ static void _gt_btn_init_style(gt_obj_st * btn, _gt_style_btn_st * style_btn) {
  */
 gt_obj_st * gt_btn_create(gt_obj_st * parent) {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_btn_init_style(obj, (_gt_style_btn_st *)&obj->style);
+    _gt_btn_init_style(obj);
     return obj;
 }
 
@@ -203,7 +201,7 @@ void gt_btn_style_set_color_unselected(gt_obj_st * btn, gt_color_t color) {
 }
 
 void gt_btn_style_set_selected(gt_obj_st * btn, uint8_t selected) {
-    _gt_style_btn_st * style = &btn->style;
+    _gt_style_btn_st * style = btn->style;
     style->selected = selected!=0?1:0;
 }
 

@@ -15,6 +15,7 @@
 #include "../hal/gt_hal.h"
 #include "stdint.h"
 #include "../others/gt_log.h"
+#include "../others/gt_assert.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -45,11 +46,11 @@ static uint32_t get_style_size(const gt_obj_class_st * class) {
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * parent) {
 
-    /* bug no fix,hardfault */
-    // if ( parent->class->type == class->type ){
-    //     GT_LOGV(GT_LOG_TAG_GUI, "cannot create an object of the same type as the parent object onto the parent object");
-    //     return NULL;
-    // }
+    /* check type */
+    if ( parent && parent->class->type == class->type ){
+        GT_LOGV(GT_LOG_TAG_GUI, "cannot create an object of the same type as the parent object onto the parent object");
+        return NULL;
+    }
 
     uint32_t is = get_instance_size(class);
     gt_obj_st * obj = gt_mem_malloc(is);

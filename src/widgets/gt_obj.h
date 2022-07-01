@@ -79,13 +79,13 @@ typedef struct _gt_obj_s {
 
     style_widget_t style;
 
-   struct{
+    struct{
         uint8_t visible:2;  /* obj visible state, @gt_visible_e */
         uint8_t cached:1;   /* obj cache state, @gt_cache_e */
-        void ** cache_color;       /* cache obj color */
-   }cache;
-	 
-}gt_obj_st;
+        void * cache_color;       /* cache obj color */
+    }cache;
+    
+} gt_obj_st;
 
 
 /* private typedef  */

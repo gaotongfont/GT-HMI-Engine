@@ -33,10 +33,10 @@ typedef struct _gt_style_btn_s
     gt_color_t border_bcolor;
     gt_color_t border_fcolor;
 
-    char * text;
 
-    uint8_t isfill:1;
-    uint8_t selected:1;
+    uint32_t isfill:1;
+    uint32_t selected:1;
+    char * text;
 }_gt_style_btn_st;
 
 
