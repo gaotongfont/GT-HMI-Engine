@@ -1,7 +1,7 @@
 /**
  * @file gt_port_disp.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-22 14:41:30
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -22,7 +22,7 @@
 /* static variables -----------------------------------------------------*/
 static gt_disp_drv_st drv;
 
-static gt_color_t bufa[240*90];
+static gt_color_t _buf_all[1024];
 
 
 /* macros ---------------------------------------------------------------*/
@@ -46,8 +46,8 @@ void gt_port_disp_init(){
 	drv.rotated = GT_ROTATED_0;
 
 	gt_disp_drv_register(&drv);
-	
-	gt_disp_graph_buf_init(NULL, NULL, bufa);
+
+	gt_disp_graph_buf_init(NULL, NULL, _buf_all);
 }
 
 

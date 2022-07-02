@@ -1,7 +1,7 @@
 /**
  * @file gt_assert.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-01 10:06:11
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -20,7 +20,7 @@ extern "C" {
 /* define ---------------------------------------------------------------*/
 
 /* check null assert */
-#define GT_ASSERT(p)    {if(!p)while(1){}}
+#define GT_ASSERT(p)    { if(!p) while(1){} }
 
 
 /* typedef --------------------------------------------------------------*/

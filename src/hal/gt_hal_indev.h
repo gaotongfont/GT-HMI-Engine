@@ -1,7 +1,7 @@
 /**
  * @file gt_hal_indev.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-19 17:33:48
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -60,7 +60,7 @@ typedef struct _gt_indev_drv_s
 #if GT_USE_USER_DATA
     void * user_data;
 #endif
-    
+
     gt_size_t limit_timers_long_press;           /* long press timers */
     gt_size_t limit_pixel_gesture_ver;          /* move pixel trigger once event */
     gt_size_t limit_pixel_gesture_hor;          /* move pixel trigger once event */
@@ -83,7 +83,7 @@ typedef struct _gt_indev_proc_s
             struct _gt_obj_s * obj_act;     /* The object being pressed */
             struct _gt_obj_s * obj_last;    /* The object of last point */
             struct _gt_obj_s * obj_scroll;  /* The object of gesture */
-            
+
             gt_size_t count_point;
         }point;
 
@@ -92,21 +92,21 @@ typedef struct _gt_indev_proc_s
             uint16_t id;
             uint16_t count_keydown;
         }button;
-        
+
         struct _keypad
         {
             uint16_t id;
         }keypad;
-        
+
     }data;
-    
+
 }gt_indev_proc_st;
 
 
 typedef struct _gt_indev_s
 {
     gt_indev_drv_st * drv;
-    gt_indev_proc_st proc;          /* Save all input device data */   
+    gt_indev_proc_st proc;          /* Save all input device data */
 
 }gt_indev_st;
 
@@ -126,4 +126,4 @@ uint8_t gt_indev_get_dev_num(void);
 } /*extern "C"*/
 #endif
 
-#endif //!_GT_HAL_INPDEV_H_
+#endif //!_GT_HAL_INDEV_H_

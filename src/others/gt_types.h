@@ -51,6 +51,15 @@ typedef enum{
     GT_RES_FAIL = -1,
     GT_RES_OK = 0,
 }gt_res_t;
+
+typedef struct _gt_area_s {
+    gt_size_t x;
+    gt_size_t y;
+    uint16_t w;
+    uint16_t h;
+}gt_area_st;
+
+
 /* macros ---------------------------------------------------------------*/
 
 #define _GT_CONCAT3(x, y, z) x ## y ## z

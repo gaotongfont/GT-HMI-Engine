@@ -1,7 +1,7 @@
 /**
  * @file gt_graph_base.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-11 15:07:30
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -63,13 +63,13 @@ typedef struct _gt_attr_rect_s
 
     gt_color_t fcolor;
     gt_color_t bcolor;
-    
+
     gt_color_t border_color;
     gt_size_t border_width;
 
     gt_size_t radius;
 
-    uint8_t isfill:1;
+    uint8_t is_fill:1;
 }gt_attr_rect_st;
 
 
@@ -84,7 +84,7 @@ typedef struct _gt_attr_circle_s
     gt_size_t border_width;
     gt_color_t border_color;
 
-    uint8_t isfill:1;
+    uint8_t is_fill:1;
 }gt_attr_circle_st;
 
 

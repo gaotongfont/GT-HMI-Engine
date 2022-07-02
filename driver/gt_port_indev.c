@@ -1,7 +1,7 @@
 /**
  * @file gt_port_indev.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-22 14:33:01
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_port_indev.h"
+#include "../src/hal/gt_hal_indev.h"
 #include "../gt.h"
 
 /* private define -------------------------------------------------------*/
@@ -36,7 +37,7 @@ static gt_indev_drv_st indev_drv_button;
 extern void read_cb(struct _gt_indev_drv_s * indev_drv, gt_indev_data_st * data);
 extern void read_cb_btn(struct _gt_indev_drv_s * indev_drv, gt_indev_data_st * data);
 
-void gt_port_indev_init()
+void gt_port_indev_init(void)
 {
     /* register a touch screen dev */
 	gt_indev_drv_init(&indev_drv_pointer);

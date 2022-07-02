@@ -1,7 +1,7 @@
 /**
  * @file gt_fs.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-01 14:07:08
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -31,7 +31,10 @@
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_fs_init_drv();
+void gt_fs_init_drv()
+{
+
+}
 
 
 /* end ------------------------------------------------------------------*/

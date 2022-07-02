@@ -37,7 +37,7 @@
 
 static void _gt_anim_task_handler(struct _gt_timer_s * timer)
 {
-    GT_LOGD(GT_LOG_TAG_GUI, "call back");
+    // GT_LOGD(GT_LOG_TAG_GUI, "call back");
 }
 
 

@@ -1,7 +1,7 @@
 /**
  * @file gt_hal_disp.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-13 09:51:55
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -36,7 +36,7 @@ typedef struct _gt_disp_drv_s
 
     gt_color_t bcolor;
     gt_color_t fcolor;
-    
+
     void (* flush_cb)(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
 
     uint16_t rotated: 2;
@@ -78,7 +78,7 @@ uint16_t gt_disp_get_res_ver(gt_disp_st * disp);
 void gt_disp_graph_buf_init(gt_color_t *buf1, gt_color_t *buf2, gt_color_t *bufa);
 gt_color_t * gt_disp_graph_get_buf1(void);
 gt_color_t * gt_disp_graph_get_buf2(void);
-gt_color_t * gt_disp_graph_get_bufa(void);
+gt_color_t * gt_disp_graph_get_buf_all(void);
 
 #ifdef __cplusplus
 } /*extern "C"*/

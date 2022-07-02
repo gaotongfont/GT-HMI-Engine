@@ -23,7 +23,7 @@
 
 
 /* static variables -----------------------------------------------------*/
-static gt_color_t * graph_buf1, * graph_buf2, * graph_bufa;
+static gt_color_t * graph_buf1, * graph_buf2, * graph_buf_all;
 static gt_disp_st * disp_p;
 
 
@@ -39,12 +39,14 @@ static gt_disp_st * disp_p;
 /*************************************/
 /*                drv               */
 /*************************************/
-void gt_disp_drv_init(gt_disp_drv_st * drv){
+void gt_disp_drv_init(gt_disp_drv_st * drv)
+{
     drv->res_hor = GT_SCREEN_WIDTH;
     drv->res_ver = GT_SCREEN_HEIGHT;
 }
 
-void gt_disp_drv_register(gt_disp_drv_st * drv){
+void gt_disp_drv_register(gt_disp_drv_st * drv)
+{
     if( disp_p == NULL ){
         disp_p = gt_mem_malloc(sizeof(gt_disp_st));
     }
@@ -60,16 +62,19 @@ void gt_disp_drv_register(gt_disp_drv_st * drv){
 /*************************************/
 /*                disp               */
 /*************************************/
-void gt_disp_set_default(gt_disp_st * disp){
+void gt_disp_set_default(gt_disp_st * disp)
+{
     disp_p = disp;
 }
 
 
-gt_disp_st * gt_disp_get_default(){
+gt_disp_st * gt_disp_get_default()
+{
     return disp_p;
 }
 
-uint16_t gt_disp_get_res_hor(gt_disp_st * disp){
+uint16_t gt_disp_get_res_hor(gt_disp_st * disp)
+{
     if( NULL == disp ) disp = gt_disp_get_default();
     if( NULL == disp ) return 0;
     switch( disp->drv->rotated ){
@@ -82,7 +87,8 @@ uint16_t gt_disp_get_res_hor(gt_disp_st * disp){
             break;
     }
 }
-uint16_t gt_disp_get_res_ver(gt_disp_st * disp){
+uint16_t gt_disp_get_res_ver(gt_disp_st * disp)
+{
     if( NULL == disp ) disp = gt_disp_get_default();
     if( NULL == disp ) return 0;
     switch( disp->drv->rotated ){
@@ -96,7 +102,8 @@ uint16_t gt_disp_get_res_ver(gt_disp_st * disp){
     }
 }
 
-void gt_disp_graph_buf_init(gt_color_t *buf1, gt_color_t *buf2, gt_color_t *bufa){
+void gt_disp_graph_buf_init(gt_color_t *buf1, gt_color_t *buf2, gt_color_t *buf_all)
+{
 
 #if (GT_REFRESH_STYLE == GT_REFRESH_STYLE_0)
     GT_LOGV(GT_LOG_TAG_GUI, "use refresh style 0");
@@ -109,7 +116,7 @@ void gt_disp_graph_buf_init(gt_color_t *buf1, gt_color_t *buf2, gt_color_t *bufa
     graph_buf2 = buf2;
 #elif (GT_REFRESH_STYLE == GT_REFRESH_STYLE_3)
     GT_LOGV(GT_LOG_TAG_GUI, "use refresh style 3");
-    graph_bufa = bufa;
+    graph_buf_all = buf_all;
 #else
     GT_LOGV(GT_LOG_TAG_GUI, "use refresh style 0");
 #endif
@@ -117,14 +124,19 @@ void gt_disp_graph_buf_init(gt_color_t *buf1, gt_color_t *buf2, gt_color_t *bufa
 }
 
 
-gt_color_t * gt_disp_graph_get_buf1(){
+gt_color_t * gt_disp_graph_get_buf1()
+{
     return graph_buf1;
 }
-gt_color_t * gt_disp_graph_get_buf2(){
+
+gt_color_t * gt_disp_graph_get_buf2()
+{
     return graph_buf2;
 }
-gt_color_t * gt_disp_graph_get_bufa(){
-    return graph_bufa;
+
+gt_color_t * gt_disp_graph_get_buf_all()
+{
+    return graph_buf_all;
 }
 
 /* end ------------------------------------------------------------------*/

@@ -1,7 +1,7 @@
 /**
  * @file gt_math.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-23 16:42:15
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -36,10 +36,10 @@ double gt_sin(double angle){
     return sin( angle * __GT_ARCH_VAL );
 }
 double gt_cos(double angle){
-
+    return 0;
 }
 double gt_tan(double angle){
-
+    return 0;
 }
 
 double gt_square(double n){

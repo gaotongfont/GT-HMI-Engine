@@ -1,7 +1,7 @@
 /**
  * @file gt_hal_indev.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-19 17:35:39
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -11,6 +11,7 @@
 #include "gt_hal_indev.h"
 #include "../others/gt_log.h"
 #include "../core/gt_mem.h"
+#include "../core/gt_timer.h"
 
 #include "../core/gt_indev.h"
 
@@ -70,7 +71,7 @@ gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv){
         _gt_timer_create(_gt_indev_task_handler, GT_TASK_PERIOD_TIME_EVENT, NULL);
     }
     cnt_indev++;
-    
+
     return indev_act[cnt_indev];
 }
 

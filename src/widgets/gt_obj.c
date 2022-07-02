@@ -23,8 +23,8 @@
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
-static void _deinit_cb(gt_obj_st * obj,const gt_obj_class_st * class);
-static void _event_cb(gt_obj_st * obj,const gt_obj_class_st * class);
+static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class);
+static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e);
 
 const gt_obj_class_st gt_obj_class = {
     ._init_cb = _init_cb,
@@ -41,7 +41,7 @@ const gt_obj_class_st gt_obj_class = {
 
 
 /* static functions -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj,const gt_obj_class_st * class)
+static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class)
 {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
     /* code */
@@ -49,7 +49,7 @@ static void _init_cb(gt_obj_st * obj,const gt_obj_class_st * class)
     GT_LOGV(GT_LOG_TAG_GUI, "end init_cb");
 }
 
-static void _deinit_cb(gt_obj_st * obj,const gt_obj_class_st * class)
+static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class)
 {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     /* code */
@@ -57,8 +57,9 @@ static void _deinit_cb(gt_obj_st * obj,const gt_obj_class_st * class)
     GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
 }
 
-static void _event_cb(gt_obj_st * obj,const gt_obj_class_st * class){
-    
+static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
+{
+
 }
 
 

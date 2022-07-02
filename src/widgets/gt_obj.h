@@ -1,7 +1,7 @@
 /**
  * @file gt_obj.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-11 15:08:01
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -37,14 +37,6 @@ typedef struct _gt_point_s
     gt_size_t x;
     gt_size_t y;
 }gt_point_st;
-
-typedef struct _gt_area_s {
-    gt_size_t y;
-    gt_size_t x;
-    uint16_t w;
-    uint16_t h;
-}gt_area_st;
-
 
 typedef struct _gt_obj_event_attr_s{
     gt_event_cb_t cb;
@@ -84,7 +76,7 @@ typedef struct _gt_obj_s {
         uint8_t cached:1;   /* obj cache state, @gt_cache_e */
         void * cache_color;       /* cache obj color */
     }cache;
-    
+
 } gt_obj_st;
 
 

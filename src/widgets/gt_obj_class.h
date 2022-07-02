@@ -1,7 +1,7 @@
 /**
  * @file gt_obj_class.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-12 10:34:16
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -15,6 +15,7 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "../others/gt_types.h"
+#include "../core/gt_event.h"
 
 /* define ---------------------------------------------------------------*/
 struct _gt_obj_s;
@@ -23,7 +24,7 @@ struct _gt_event_s;
 /* typedef --------------------------------------------------------------*/
 /**
  * @brief interface for other widgets
- * 
+ *
  */
 typedef struct _gt_obj_class_s
 {

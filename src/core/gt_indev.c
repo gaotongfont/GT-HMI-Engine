@@ -70,9 +70,9 @@ void gt_indev_handler_point(gt_indev_st * indev)
             indev->proc.data.point.point_last.x = data_indev.point.x;
             indev->proc.data.point.point_last.y = data_indev.point.y;
         }
-        
+
         indev->proc.data.point.obj_last = gt_find_clicked_obj_by_point(scr, &data_indev.point);
-        
+
         if( indev->proc.data.point.obj_act != indev->proc.data.point.obj_last ){
             gt_event_send(indev->proc.data.point.obj_act, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
             indev->proc.data.point.obj_act = indev->proc.data.point.obj_last;
@@ -90,13 +90,13 @@ void gt_indev_handler_point(gt_indev_st * indev)
         flag_key_down = 0;
         indev->proc.data.point.count_point = 0;
 
-        return GT_RES_OK;
+        return ;
     }
 
     /* gesture */
     int ver = 0, hor = 0;
     if (indev->proc.data.point.count_point > 3) {
-        
+
         ver = indev->proc.data.point.point_last.y - indev->proc.data.point.point_temp.y;
         hor = indev->proc.data.point.point_last.x - indev->proc.data.point.point_temp.x;
 

@@ -91,7 +91,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
 
     gt_attr_rect_st rect_attr;
     GT_COLOR_SET(rect_attr.fcolor, GT_COLOR_GET(fcolor));
-    rect_attr.isfill = 1;
+    rect_attr.is_fill = 1;
     GT_COLOR_SET(rect_attr.bcolor, GT_COLOR_GET(fcolor));
 
     gt_area_st area = {
@@ -104,8 +104,8 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     if(radius == 0) {
         gt_color_t * color_p = btn->cache.cache_color;
         gt_graph_rect(&rect_attr, &area, color_p);
-        extern void _flush_cb(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
-        _flush_cb(NULL, &area, color_p);
+        // extern void _flush_cb(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
+        // _flush_cb(NULL, &area, color_p);
     }else{
 
     }
@@ -162,7 +162,8 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 }
 
 
-static void _gt_btn_init_style(gt_obj_st * btn) {
+static void _gt_btn_init_style(gt_obj_st * btn)
+{
     _gt_style_btn_st * _style = btn->style;
     _style->selected = 0;
     GT_LOGD(GT_LOG_TAG_GUI, "btn:%p,style:%p", btn, _style);

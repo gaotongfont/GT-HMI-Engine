@@ -1,7 +1,7 @@
 /**
  * @file gt_graph_base.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-11 15:02:43
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -37,7 +37,7 @@ static gt_color_t * color;
 /* static functions -----------------------------------------------------*/
 void _gt_graph_get_gray(gt_color_t * color_out, gt_color_t color_from, gt_color_t color_to, gt_gray_t gray, gt_size_t step)
 {
-	uint8_t r,g,b;	
+	uint8_t r,g,b;
 	r = GT_COLOR_GET_R(color_from) + (GT_COLOR_GET_R(color_to) - GT_COLOR_GET_R(color_from))*step/gray;
 	g = GT_COLOR_GET_G(color_from) + (GT_COLOR_GET_G(color_to) - GT_COLOR_GET_G(color_from))*step/gray;
 	b = GT_COLOR_GET_B(color_from) + (GT_COLOR_GET_B(color_to) - GT_COLOR_GET_B(color_from))*step/gray;
@@ -83,13 +83,11 @@ void _gt_graph_dot_to_color_no_bcolor(uint8_t *dot, gt_color_t *color,gt_size_t 
 
 void _gt_graph_dot_to_gray(uint8_t *dot, gt_size_t w, gt_size_t h, gt_gray_t level_gray)
 {
-	int len,idx,i,_x,_y,_w, _h;
-	uint8_t val,color2b;
+	int _x,_y,_w, _h;
 	int bit_idx;
-	uint8_t bit_mask,bit_cnt,bit_step, _bit_cnt,bit_x,bit_y;
-	int __x,__y;
+	uint8_t bit_mask,bit_cnt,bit_step,bit_x,bit_y;
 	uint8_t *out=dot, *p;
-	float d1,d2,weight1=0.5,weight2=0.5;
+	float d1,weight=0.5;
 
 	bit_idx = 8;
 	switch ( level_gray ) {
@@ -100,7 +98,6 @@ void _gt_graph_dot_to_gray(uint8_t *dot, gt_size_t w, gt_size_t h, gt_gray_t lev
 		default: break;
 	}
 
-	idx = 0;
 	_x = 0;
 	_y = 0;
 	_w = (w*level_gray)/8;
@@ -114,7 +111,7 @@ void _gt_graph_dot_to_gray(uint8_t *dot, gt_size_t w, gt_size_t h, gt_gray_t lev
 				bit_idx = bit_idx-bit_step;
 				d1 = 0;
 				for(bit_y=0; bit_y<bit_cnt; bit_y++) {
-					d1 += ((*p>>bit_idx)&bit_mask)*weight1;
+					d1 += ((*p>>bit_idx)&bit_mask)*weight;
 					p+=_w;
 				}
 				*out = *out&(~bit_mask<<bit_idx) | ((int)d1<<bit_idx);
@@ -127,8 +124,8 @@ void _gt_graph_dot_to_gray(uint8_t *dot, gt_size_t w, gt_size_t h, gt_gray_t lev
 }
 
 static unsigned char dep1[]={0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,5};//4bit//{0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4};//4bit
-static unsigned char dep2[]={0,1,1,2};//2bit 
-static unsigned char dep3[]={0,1,1,2,1,3,2,3};//3bit//dep3[]={0,1,1,2,1,3,2,5};//3bit  
+static unsigned char dep2[]={0,1,1,2};//2bit
+static unsigned char dep3[]={0,1,1,2,1,3,2,3};//3bit//dep3[]={0,1,1,2,1,3,2,5};//3bit
 void _gt_graph_dot_to_gray0(uint8_t *OutPutData ,gt_size_t width,gt_size_t High,unsigned char Grade)
 {
 	unsigned int oldwidth,newwidth,height,thick,width2;		//newwidth
@@ -136,7 +133,7 @@ void _gt_graph_dot_to_gray0(uint8_t *OutPutData ,gt_size_t width,gt_size_t High,
 	unsigned int  d1,d2,d3,d4,d5;   				//d6,d7,d8,d9;
 	unsigned char width_mult;
 	unsigned long ser;	//i=0;
-		
+
 	height 		= High;
 	width_mult=	Grade;
 	oldwidth 	=	width;
@@ -144,11 +141,11 @@ void _gt_graph_dot_to_gray0(uint8_t *OutPutData ,gt_size_t width,gt_size_t High,
 	if(width_mult==2)	//2bit
 	{
 			oldwidth=(oldwidth+7)/8*2;//
-			for(thick=0;thick<height;thick++)//逐行扫描 
+			for(thick=0;thick<height;thick++)//逐行扫描
 			{
 				ptr1=OutPutData+width2*thick*2;
 				ptr2=ptr1+width2;
-				ptr5=OutPutData+oldwidth*thick;		
+				ptr5=OutPutData+oldwidth*thick;
 				for(ser=0;ser<width2;ser++)
 				{
 					d1=dep2[((*ptr1>>6)&0x03)];
@@ -162,19 +159,19 @@ void _gt_graph_dot_to_gray0(uint8_t *OutPutData ,gt_size_t width,gt_size_t High,
 					d5=d1+d2;
 					if(d5>=3)d5=3;
 					*ptr5=((*ptr5)&0xCF)|(d5<<4);
-					
+
 					d1=dep2[((*ptr1>>2)&0x03)];
 					d2=dep2[((*ptr2>>2)&0x03)];
 					d5=d1+d2;
 					if(d5>=3)d5=3;
 					*ptr5=((*ptr5)&0xF3)|(d5<<2);
-					
+
 					d1=dep2[((*ptr1)&0x03)];
 					d2=dep2[((*ptr2)&0x03)];
 					d5=d1+d2;
 					if(d5>=3)d5=3;
 					*ptr5=((*ptr5)&0xFC)|(d5);
-					
+
 					ptr1++;
 					ptr2++;
 					ptr5++;
@@ -193,7 +190,7 @@ void _gt_graph_dot_to_gray0(uint8_t *OutPutData ,gt_size_t width,gt_size_t High,
 	else if(width_mult==4)	//4bit
 	{
 		oldwidth=(oldwidth+7)/8*4;//
-		for(thick=0;thick<height;thick++)//逐行扫描 
+		for(thick=0;thick<height;thick++)//逐行扫描
 		{
 			ptr1=OutPutData+width2*thick*4;//
 			ptr2=ptr1+width2;//
@@ -210,7 +207,7 @@ void _gt_graph_dot_to_gray0(uint8_t *OutPutData ,gt_size_t width,gt_size_t High,
 				if(d5>=16)
 					d5=15;
 				*ptr5=(d5<<4)&0xF0;
-				
+
 				d1=dep1[(*ptr1&0x0F)];
 				d2=dep1[(*ptr2&0x0F)];
 				d3=dep1[(*ptr3&0x0F)];
@@ -219,7 +216,7 @@ void _gt_graph_dot_to_gray0(uint8_t *OutPutData ,gt_size_t width,gt_size_t High,
 				if(d5>=16)
 					d5=15;
 				*ptr5=*ptr5|d5;
-				
+
 				ptr1++;
 				ptr2++;
 				ptr3++;
@@ -244,8 +241,8 @@ void _gt_graph_gray_to_color(uint8_t *gray, gt_color_t *color,gt_size_t w, gt_si
 	int i, idx, len, cnt=0;
 	int bit_step, bit_cnt, bit_idx;
 	uint8_t bit_mask;
-	uint8_t r,g,b;
-	float weight, temp;
+	uint8_t r, g, b;
+	float temp;
 	gt_color_t _color;
 	idx = 0;
 	bit_idx = 8;
@@ -284,7 +281,7 @@ void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 	void (*flush)(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
     flush = disp->drv->flush_cb;
 
-	gt_color_t * bufa = gt_disp_graph_get_bufa();
+	gt_color_t * bufa = gt_disp_graph_get_buf_all();
 	gt_color_t fcolor, bcolor, border_color, color_temp;
 
 	GT_COLOR_SET(fcolor, GT_COLOR_GET(circle_attr->fcolor));
@@ -292,27 +289,27 @@ void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 	GT_COLOR_SET(border_color, GT_COLOR_GET(circle_attr->border_color));
 
 	float _x,_y,r, x2, y2, r2,border_width;
-	int w,h, isfill, idx;
+	int w,h, is_fill, idx;
 
 	border_width = circle_attr->border_width;
-	
+
 	r = circle_attr->radius;
 	w = 2*r;
 	h = 2*r;
 	r2 = gt_square(r);
 
-	isfill = circle_attr->isfill;
+	is_fill = circle_attr->is_fill;
 
 	GT_COLOR_CLR_BUF(bufa, w*h, GT_COLOR_GET(bcolor));
-	
+
 	for(_x=-r; _x<r; _x++) {
 		x2 = gt_square(_x);
 		for(_y=-r; _y<r; _y++) {
 			y2 = gt_square(_y);
 			if( sqrt(x2+y2) > (sqrt(r2)-border_width) && x2+y2 < r2 ) {
-				GT_COLOR_SET_BUF(bufa, _x+r, _y+r, w, h, GT_COLOR_GET(border_color));				
-			}else if( isfill && (x2+y2 < r2)) {
-				GT_COLOR_SET_BUF(bufa, _x+r, _y+r, w, h, GT_COLOR_GET(fcolor));				
+				GT_COLOR_SET_BUF(bufa, _x+r, _y+r, w, h, GT_COLOR_GET(border_color));
+			}else if( is_fill && (x2+y2 < r2)) {
+				GT_COLOR_SET_BUF(bufa, _x+r, _y+r, w, h, GT_COLOR_GET(fcolor));
 			}
 		}
 	}
@@ -354,9 +351,9 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area)
 	void (*flush)(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
     flush = disp->drv->flush_cb;
 
-	gt_color_t * bufa = gt_disp_graph_get_bufa();
+	gt_color_t * bufa = gt_disp_graph_get_buf_all();
 	gt_color_t fcolor;
-	gt_color_t bcolor; 
+	gt_color_t bcolor;
 	GT_COLOR_SET(fcolor, GT_COLOR_GET(line_attr->fcolor));
 	GT_COLOR_SET(bcolor, GT_COLOR_GET(line_attr->bcolor));
     int idx = 0, all = 0;
@@ -366,7 +363,7 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area)
 	x1 = line_attr->x_1;
 	y1 = line_attr->y_1;
 
-	x2 = line_attr->x_2;	
+	x2 = line_attr->x_2;
 	y2 = line_attr->y_2;
 
 	int w,h;
@@ -383,7 +380,7 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area)
 	_y = 0;
 	for(_x=0; _x<w; _x++) {
 		_y+=step_y;
-		GT_COLOR_SET_BUF(bufa, _x,_y, w, h, GT_COLOR_GET(fcolor));		
+		GT_COLOR_SET_BUF(bufa, _x,_y, w, h, GT_COLOR_GET(fcolor));
 	}
 
 	gt_area_st _area;
@@ -402,16 +399,16 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area)
     void (*flush)(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
     flush = disp->drv->flush_cb;
 
-    gt_color_t * bufa = gt_disp_graph_get_bufa();
+    gt_color_t * bufa = gt_disp_graph_get_buf_all();
     int idx = 0;
-    
 
-    // fill backgroup
-    if(rect_attr->isfill) {
+
+    // fill background
+    if(rect_attr->is_fill) {
         while(idx < area->w * area->h) {
             GT_COLOR_SET(bufa[idx], GT_COLOR_GET(rect_attr->color));
             idx++;
-        }				
+        }
         flush(disp->drv, area, bufa);
     }
 
@@ -424,7 +421,7 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area)
             idx--;
         }
         gt_area_st _area;
-        
+
         //up
         _area.h = rect_attr->border_width; _area.w = area->w; _area.x = area->x; _area.y = area->y;
         flush(disp->drv, &_area, bufa);
@@ -456,9 +453,9 @@ void gt_graph_arch(gt_attr_arch_st * arch_attr, gt_area_st * area)
         return;
     }
 
-    flush = disp->drv->flush_cb;    
+    flush = disp->drv->flush_cb;
 
-    gt_color_t * bufa = gt_disp_graph_get_bufa();
+    gt_color_t * bufa = gt_disp_graph_get_buf_all();
 
     gt_color_t fcolor;
     gt_color_t bcolor;
@@ -485,7 +482,7 @@ void gt_graph_arch(gt_attr_arch_st * arch_attr, gt_area_st * area)
     }
 
 	if(angle_start == angle_end) {return;}
-	
+
 	if(angle_end > 360)angle_end=360;
 
 	if(angle_end < angle_start) {
@@ -550,7 +547,7 @@ void gt_graph_arch(gt_attr_arch_st * arch_attr, gt_area_st * area)
 	}
 
 	if( angle_start <= 270 && angle_end > 180 ) {
-		
+
 		if(angle_start <= 180) {
 			_y=0;
 			_y_temp = _y;
@@ -562,9 +559,9 @@ void gt_graph_arch(gt_attr_arch_st * arch_attr, gt_area_st * area)
 		if(angle_end >= 270) {
 			_ry=r;
 		}else{
-			pix_h = gt_sin(angle_end-180)*r;		
+			pix_h = gt_sin(angle_end-180)*r;
 			_ry = pix_h;
-		}		
+		}
 
 		for(_x=0; _x<=r; _x++) {
 			x2 = _x*_x;
@@ -587,12 +584,12 @@ void gt_graph_arch(gt_attr_arch_st * arch_attr, gt_area_st * area)
 			pix_h = gt_sin(360 - angle_start)*r;
 			_ry = pix_h;
 		}
-		
+
 		if(angle_end >= 360) {
 			_y=0;
 			_y_temp = _y;
 		}else{
-			pix_h = gt_sin(360 - angle_end)*r;		
+			pix_h = gt_sin(360 - angle_end)*r;
 			_y_temp = pix_h;
 		}
 
@@ -626,7 +623,7 @@ void _gt_graph_dot_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 	void (*flush)(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
     flush = disp->drv->flush_cb;
 
-	gt_color_t * bufa = gt_disp_graph_get_bufa();
+	gt_color_t * bufa = gt_disp_graph_get_buf_all();
 	gt_color_t fcolor, bcolor, border_color;
 
 	GT_COLOR_SET(fcolor, GT_COLOR_GET(circle_attr->fcolor));
@@ -634,12 +631,12 @@ void _gt_graph_dot_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 	GT_COLOR_SET(border_color, GT_COLOR_GET(circle_attr->border_color));
 
 	int w,h,r,_x,_y,_r,_w,_h;
-	int border_width, isfill, idx, gray;
+	int border_width, is_fill, idx, gray;
 	int x2, y2, r2;
 	gray = GT_GRAY_4;
 
 	border_width = circle_attr->border_width;
-	isfill = circle_attr->isfill;
+	is_fill = circle_attr->is_fill;
 	r = circle_attr->radius;
 	w = 2*r;
 	h = 2*r;
@@ -647,11 +644,11 @@ void _gt_graph_dot_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 	_r = r*gray;
 	_w = w*gray;
 	_h = h*gray;
-	
-	GT_COLOR_CLR_BUF(bufa, _w*_h, GT_COLOR_GET(bcolor));	
-	
+
+	GT_COLOR_CLR_BUF(bufa, _w*_h, GT_COLOR_GET(bcolor));
+
 	uint8_t buf_dot[GT_SCREEN_HEIGHT * (GT_SCREEN_WIDTH/8)];
-	
+
 	// create circle dot data
 	r2 = gt_square(_r);
 	for(_y=-_r; _y<_r; _y++) {
@@ -661,7 +658,7 @@ void _gt_graph_dot_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 			if( sqrt(x2+y2) > (sqrt(r2)-border_width*gray) && (x2+y2) < r2 ) {
 				GT_DOT_SET_BIT(buf_dot, _x+_r, _y+_r, _w, _h, 1);
 				LCD_DrawPoint(_x+r*gray, _y+r*gray);
-			}else if( isfill && ( (x2+y2) < r2) ) {
+			}else if( is_fill && ( (x2+y2) < r2) ) {
 				LCD_DrawPoint(_x+r*gray, _y+r*gray);
 				GT_DOT_SET_BIT(buf_dot, _x+_r, _y+_r, _w, _h, 1);
 			}
@@ -695,10 +692,10 @@ void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 	gt_color_t border_color, fcolor;
 	gt_size_t _x, _y, r;
 	uint16_t _w, _h, border_width;
-	uint8_t isfill;
+	uint8_t is_fill;
 	float x2,y2,r2;
-	gt_color_t * bufa = gt_disp_graph_get_bufa();
-	
+	gt_color_t * bufa = gt_disp_graph_get_buf_all();
+
 	_w = area->w;
 	_h = area->h;
 
@@ -707,7 +704,7 @@ void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 	border_width = circle_attr->border_width;
 	border_color = circle_attr->border_color;
 	fcolor = circle_attr->fcolor;
-	isfill = circle_attr->isfill;
+	is_fill = circle_attr->is_fill;
 
 	r2 = gt_square(r);
 	for(_y=-r; _y<r; _y++) {
@@ -716,7 +713,7 @@ void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 			x2 = gt_square(_x);
 			if( sqrt(x2+y2) > (sqrt(r2)-border_width) && x2+y2 < r2 ) {
 				GT_COLOR_SET_BUF(bufa, _x+r, _y+r, _w, _h, GT_COLOR_GET(border_color));
-			}else if( isfill && (x2+y2 < r2) ) {
+			}else if( is_fill && (x2+y2 < r2) ) {
 				GT_COLOR_SET_BUF(bufa, _x+r, _y+r, _w, _h, GT_COLOR_GET(fcolor));
 			}
 		}
@@ -725,7 +722,7 @@ void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 
 void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area)
 {
-	gt_color_t * bufa = gt_disp_graph_get_bufa();
+	gt_color_t * bufa = gt_disp_graph_get_buf_all();
 	gt_color_t fcolor;
 	gt_color_t bcolor;
 	GT_COLOR_SET(fcolor, GT_COLOR_GET(line_attr->fcolor));
@@ -737,13 +734,13 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area)
 	x1 = line_attr->x_1;
 	y1 = line_attr->y_1;
 
-	x2 = line_attr->x_2;	
+	x2 = line_attr->x_2;
 	y2 = line_attr->y_2;
 
 	int w,h,_w,_h,x_start,y_start;
 	w = area->w;
 	h = area->h;
-	
+
 	_w = gt_abs(x1-x2);
 	_h = gt_abs(y1-y2);
 	float step_y = (_h)/(_w), step_x = _w/_h;
@@ -755,33 +752,33 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area)
 	_y = y_start;
 	for(_x=x_start; _x<(_w+x_start); _x++) {
 		_y+=step_y;
-		GT_COLOR_SET_BUF(bufa, _x,_y, w, h, GT_COLOR_GET(fcolor));		
+		GT_COLOR_SET_BUF(bufa, _x,_y, w, h, GT_COLOR_GET(fcolor));
 	}
 
 	for(_y=y_start; _y<(_h+y_start); _y++) {
 		_x+=step_x;
-		GT_COLOR_SET_BUF(bufa, _x,_y, w, h, GT_COLOR_GET(fcolor));		
+		GT_COLOR_SET_BUF(bufa, _x,_y, w, h, GT_COLOR_GET(fcolor));
 	}
 
 }
 
 void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * color)
 {
-	gt_size_t isfill, radius, border_width;
+	gt_size_t is_fill, radius, border_width;
 	gt_color_t bcolor, fcolor, border_color;
 
-	isfill = rect_attr->isfill;
+	is_fill = rect_attr->is_fill;
 	radius = rect_attr->radius;
 	border_width = rect_attr->border_width;
 	GT_COLOR_SET(border_color, GT_COLOR_GET(rect_attr->border_color));
 
 	GT_COLOR_SET(bcolor, GT_COLOR_GET(rect_attr->bcolor));
 	GT_COLOR_SET(fcolor, GT_COLOR_GET(rect_attr->fcolor));
-	
+
 	gt_size_t w,h;
 	w = area->w;
 	h = area->h;
-	
+
 	// if( color != NULL ){
 	// 	gt_mem_free(color);
 	// }
@@ -794,16 +791,16 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 	y1 = border_width;
 	y2 = h - border_width;
 	x21 = x2 - x1;
-	
+
 	//draw center
-	if(isfill){
+	if(is_fill){
 		while(idx < all){
 			GT_COLOR_SET(color[idx++], GT_COLOR_GET(fcolor));
 		}
 	}
 	return;
 
-	/* bug, no fix */
+	/* FIXME */
 
 	//draw up border
 	y = 0;
@@ -816,7 +813,7 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 	//draw bottom border
 	y = y2;
 	idx = w * y2;
-	
+
 	while( idx < all ){
 		GT_COLOR_SET(color[idx], GT_COLOR_GET(border_color));
 		idx++;
@@ -843,12 +840,12 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 	}
 }
 
-
+// FIXIT
 void gt_graph_dot_draw_to_color(uint8_t * dot, gt_color_t * color, gt_area_st area_color, uint8_t w, uint8_t h, gt_color_t fcolor)
 {
 	uint16_t x,_y,_x, idx = 0,_temp;
 	int _j;
-	
+
 	for(_y=0; _y<16; _y++){
 		_temp = 0;
 		for(_x=0; _x<2; _x++){
@@ -859,7 +856,7 @@ void gt_graph_dot_draw_to_color(uint8_t * dot, gt_color_t * color, gt_area_st ar
 				_temp++;
 			}
 			idx++;
-		}		
+		}
 	}
 }
 
