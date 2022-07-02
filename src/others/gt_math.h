@@ -1,7 +1,7 @@
 /**
  * @file gt_math.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-23 16:42:24
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -15,12 +15,24 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "math.h"
-
+#include "stdint.h"
 
 
 /* define ---------------------------------------------------------------*/
 
+/**
+ * @brief use default float calculate trigonometric value,
+ *  otherwise calculate trigonometric value by sin table value.
+ * ! [internal use only]
+ */
+// #define _USE_TRIGON_FLOAT
 
+/**
+ * @brief calculate the angle return from the true value, such as:
+ *  30 * sin(30) = 15 ==>
+ *      14 = GT_MATH_GET_TRIGON_VAL(30 * gt_sin(30))    [approximate value]
+ */
+#define GT_MATH_GET_TRIGON_VAL(_value) (_value >> 15)
 
 /* typedef --------------------------------------------------------------*/
 
@@ -32,9 +44,13 @@ extern "C" {
 
 /* global functions / API interface -------------------------------------*/
 
+#ifdef _USE_TRIGON_FLOAT
 double gt_sin(double angle);
 double gt_cos(double angle);
-double gt_tan(double angle);
+#else
+int16_t gt_sin(int16_t angle);
+int16_t gt_cos(int16_t angle);
+#endif
 
 double gt_square(double n);
 
