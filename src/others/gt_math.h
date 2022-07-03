@@ -25,7 +25,7 @@ extern "C" {
  *  otherwise calculate trigonometric value by sin table value.
  * ! [internal use only]
  */
-// #define _USE_TRIGON_FLOAT
+#define _USE_TRIGON_FLOAT 0
 
 /**
  * @brief calculate the angle return from the true value, such as:
@@ -44,7 +44,7 @@ extern "C" {
 
 /* global functions / API interface -------------------------------------*/
 
-#ifdef _USE_TRIGON_FLOAT
+#if _USE_TRIGON_FLOAT
 double gt_sin(double angle);
 double gt_cos(double angle);
 #else

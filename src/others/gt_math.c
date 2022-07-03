@@ -45,7 +45,7 @@ static const GT_ATTRIBUTE_LARGE_RAM_ARRAY int16_t _gt_sin_90_table[] = {
 
 
 /* global functions / API interface -------------------------------------*/
-#ifdef _USE_TRIGON_FLOAT
+#if _USE_TRIGON_FLOAT
 double gt_sin(double angle)
 {
     return sin( angle * __GT_ARCH_VAL );
