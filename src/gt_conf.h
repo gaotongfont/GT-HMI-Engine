@@ -35,6 +35,9 @@ extern "C" {
 /* user: screen refresh style */
 #define GT_REFRESH_STYLE        GT_REFRESH_STYLE_3
 
+/* screen refresh flush pre time lines count [default: 10] */
+#define GT_REFRESH_FLUSH_LINE_PRE_TIME   10
+
 /* user: obj contain user_data: 1 yes, 0 no */
 #define GT_USE_USER_DATA    1
 

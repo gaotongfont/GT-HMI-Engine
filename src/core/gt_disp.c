@@ -134,7 +134,10 @@ void gt_disp_load_scr(gt_obj_st * scr)
     }
     _gt_disp_send_draw_event_foreach(scr);
 
-    int y = 0;
+    uint16_t y = 0;
+    uint32_t idx = 0;
+    uint32_t len = GT_SCREEN_WIDTH * GT_REFRESH_FLUSH_LINE_PRE_TIME;
+
     disp->area_act.x = 0;
     disp->area_act.y = 0;
     disp->area_act.h = GT_SCREEN_HEIGHT;
@@ -142,18 +145,18 @@ void gt_disp_load_scr(gt_obj_st * scr)
 
     disp->area_disp.x = 0;
     disp->area_disp.w = GT_SCREEN_WIDTH;
-    disp->area_disp.h = 10;
-    int idx = 0;
+    disp->area_disp.h = GT_REFRESH_FLUSH_LINE_PRE_TIME;
+
     while( y < GT_SCREEN_HEIGHT ){
-        y+=10;
+        y+=GT_REFRESH_FLUSH_LINE_PRE_TIME;
         idx = 0;
-        while( idx < GT_SCREEN_WIDTH * 10 ){
+        while( idx < len ){
             GT_COLOR_SET(disp->vbd_color[idx], 0xFFFF);
             idx++;
         }
         _gt_disp_check_and_copy_foreach(scr);
         disp->drv->flush_cb(disp->drv, &disp->area_disp, disp->vbd_color);
-        disp->area_disp.y += 10;
+        disp->area_disp.y += GT_REFRESH_FLUSH_LINE_PRE_TIME;
     }
 }
 
@@ -171,7 +174,7 @@ void gt_disp_obj_by_10_lines( gt_obj_st * obj ){
     disp->area_disp.x = disp->area_act.x;
     disp->area_disp.y = disp->area_act.y;
     disp->area_disp.w = disp->area_act.w;
-    disp->area_disp.h = 10;
+    disp->area_disp.h = GT_REFRESH_FLUSH_LINE_PRE_TIME;
 
     int idx = 0;
     gt_obj_st * scr = obj;

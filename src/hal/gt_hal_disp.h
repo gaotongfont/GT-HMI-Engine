@@ -54,7 +54,7 @@ typedef struct _gt_disp_s
     uint16_t cnt_scr;           //Count screens nub
     uint16_t status;            //
 
-    
+
     /* flush */
     gt_area_st area_act;        //Location of physical screen on virtual screen
     gt_area_st area_disp;       //10 lines area, Objects in this area will be copied to vbd_color
@@ -79,10 +79,10 @@ gt_disp_st * gt_disp_get_default(void);
 uint16_t gt_disp_get_res_hor(gt_disp_st * disp);
 uint16_t gt_disp_get_res_ver(gt_disp_st * disp);
 
-void gt_disp_graph_buf_init(gt_color_t *buf1, gt_color_t *buf2, gt_color_t *bufa);
-gt_color_t * gt_disp_graph_get_buf1(void);
-gt_color_t * gt_disp_graph_get_buf2(void);
-gt_color_t * gt_disp_graph_get_buf_all(void);
+void gt_disp_graph_buf_init(gt_color_t *buf1, gt_color_t *buf2, gt_color_t *buf_all);
+
+gt_color_t * gt_disp_graph_get_buf_default(void);
+gt_color_t * gt_disp_graph_get_buf_backup(void);
 
 #ifdef __cplusplus
 } /*extern "C"*/

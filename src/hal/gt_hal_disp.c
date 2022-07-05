@@ -23,7 +23,14 @@
 
 
 /* static variables -----------------------------------------------------*/
-static gt_color_t * graph_buf1, * graph_buf2, * graph_buf_all;
+#if (GT_REFRESH_STYLE_1 == GT_REFRESH_STYLE)
+    static gt_color_t * graph_buf1;
+#elif (GT_REFRESH_STYLE_2 == GT_REFRESH_STYLE)
+    static gt_color_t * graph_buf1, * graph_buf2;
+#elif (GT_REFRESH_STYLE_3 == GT_REFRESH_STYLE)
+    static gt_color_t * graph_buf_all;
+#endif
+
 static gt_disp_st * disp_p;
 
 
@@ -54,7 +61,7 @@ void gt_disp_drv_register(gt_disp_drv_st * drv)
         GT_LOGW(GT_LOG_TAG_GUI,"flush_cb is null");
         return;
     }
-    disp_p->vbd_color = graph_buf1;
+    disp_p->vbd_color = gt_disp_graph_get_buf_default();
     disp_p->drv = drv;
 }
 
@@ -125,19 +132,31 @@ void gt_disp_graph_buf_init(gt_color_t *buf1, gt_color_t *buf2, gt_color_t *buf_
 }
 
 
-gt_color_t * gt_disp_graph_get_buf1()
+/**
+ * @brief get default using buffer
+ *
+ * @return gt_color_t*
+ */
+gt_color_t * gt_disp_graph_get_buf_default(void)
 {
+#if (GT_REFRESH_STYLE_1 == GT_REFRESH_STYLE)
     return graph_buf1;
-}
-
-gt_color_t * gt_disp_graph_get_buf2()
-{
-    return graph_buf2;
-}
-
-gt_color_t * gt_disp_graph_get_buf_all()
-{
+#elif (GT_REFRESH_STYLE_2 == GT_REFRESH_STYLE)
+    return graph_buf1;
+#elif (GT_REFRESH_STYLE_3 == GT_REFRESH_STYLE)
     return graph_buf_all;
+#else
+    return NULL;
+#endif
+}
+
+gt_color_t * gt_disp_graph_get_buf_backup(void)
+{
+#if (GT_REFRESH_STYLE_2 == GT_REFRESH_STYLE)
+    return graph_buf2;
+#else
+    return NULL;
+#endif
 }
 
 /* end ------------------------------------------------------------------*/

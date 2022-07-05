@@ -281,7 +281,7 @@ void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 	void (*flush)(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
     flush = disp->drv->flush_cb;
 
-	gt_color_t * bufa = gt_disp_graph_get_buf_all();
+	gt_color_t * bufa = gt_disp_graph_get_buf_default();
 	gt_color_t fcolor, bcolor, border_color, color_temp;
 
 	GT_COLOR_SET(fcolor, GT_COLOR_GET(circle_attr->fcolor));
@@ -351,7 +351,7 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area)
 	void (*flush)(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
     flush = disp->drv->flush_cb;
 
-	gt_color_t * bufa = gt_disp_graph_get_buf_all();
+	gt_color_t * bufa = gt_disp_graph_get_buf_default();
 	gt_color_t fcolor;
 	gt_color_t bcolor;
 	GT_COLOR_SET(fcolor, GT_COLOR_GET(line_attr->fcolor));
@@ -399,7 +399,7 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area)
     void (*flush)(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
     flush = disp->drv->flush_cb;
 
-    gt_color_t * bufa = gt_disp_graph_get_buf_all();
+    gt_color_t * bufa = gt_disp_graph_get_buf_default();
     int idx = 0;
 
 
@@ -455,7 +455,7 @@ void gt_graph_arch(gt_attr_arch_st * arch_attr, gt_area_st * area)
 
     flush = disp->drv->flush_cb;
 
-    gt_color_t * bufa = gt_disp_graph_get_buf_all();
+    gt_color_t * bufa = gt_disp_graph_get_buf_default();
 
     gt_color_t fcolor;
     gt_color_t bcolor;
@@ -623,7 +623,7 @@ void _gt_graph_dot_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 	void (*flush)(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
     flush = disp->drv->flush_cb;
 
-	gt_color_t * bufa = gt_disp_graph_get_buf_all();
+	gt_color_t * bufa = gt_disp_graph_get_buf_default();
 	gt_color_t fcolor, bcolor, border_color;
 
 	GT_COLOR_SET(fcolor, GT_COLOR_GET(circle_attr->fcolor));
@@ -688,13 +688,12 @@ void gt_graph_set_default(gt_color_t * _color){
 /* cache in buf, no draw*/
 void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 {
-	uint8_t buf_dot[GT_SCREEN_WIDTH/8 * GT_SCREEN_HEIGHT];
 	gt_color_t border_color, fcolor;
 	gt_size_t _x, _y, r;
 	uint16_t _w, _h, border_width;
 	uint8_t is_fill;
 	float x2,y2,r2;
-	gt_color_t * bufa = gt_disp_graph_get_buf_all();
+	gt_color_t * bufa = gt_disp_graph_get_buf_default();
 
 	_w = area->w;
 	_h = area->h;
@@ -720,9 +719,19 @@ void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 	}
 }
 
+void gt_graph_circle_refactor(gt_attr_circle_st * circle_attr, gt_area_st * area)
+{
+	gt_memset(gt_disp_graph_get_buf_default(), 0, area->w * area->h << 1);
+
+	gt_color_t * buf = gt_disp_graph_get_buf_default();
+
+
+
+}
+
 void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area)
 {
-	gt_color_t * bufa = gt_disp_graph_get_buf_all();
+	gt_color_t * bufa = gt_disp_graph_get_buf_default();
 	gt_color_t fcolor;
 	gt_color_t bcolor;
 	GT_COLOR_SET(fcolor, GT_COLOR_GET(line_attr->fcolor));
