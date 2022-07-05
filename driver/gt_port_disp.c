@@ -31,7 +31,7 @@ static gt_color_t buf1[GT_SCREEN_WIDTH * 10];
 static gt_color_t buf1[GT_SCREEN_WIDTH * 10];
 static gt_color_t buf2[GT_SCREEN_WIDTH * 10];
 #elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_3)
-static gt_color_t bufa[GT_SCREEN_WIDTH * GT_SCREEN_HEIGHT];
+static gt_color_t buf_all[GT_SCREEN_WIDTH * GT_SCREEN_HEIGHT];
 #endif
 
 /* macros ---------------------------------------------------------------*/
@@ -49,13 +49,11 @@ extern void _flush_cb(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t
 
 void gt_port_disp_init(){
     gt_disp_drv_init(&drv);
-	drv.res_hor = GT_SCREEN_HEIGHT;
+	drv.res_hor = GT_SCREEN_WIDTH;
 	drv.res_ver = GT_SCREEN_HEIGHT;
 	drv.flush_cb = _flush_cb;
 	drv.rotated = GT_ROTATED_0;
 
-	gt_disp_drv_register(&drv);
-	
 #if(GT_REFRESH_STYLE == GT_REFRESH_STYLE_0)
 
 #elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_1)
@@ -63,8 +61,10 @@ void gt_port_disp_init(){
 #elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_2)
 	gt_disp_graph_buf_init(buf1, buf2, NULL);
 #elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_3)
-	gt_disp_graph_buf_init(NULL, NULL, bufa);
+	gt_disp_graph_buf_init(NULL, NULL, buf_all);
 #endif
+
+	gt_disp_drv_register(&drv);
 }
 
 
