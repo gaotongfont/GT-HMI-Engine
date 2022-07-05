@@ -31,7 +31,7 @@ static gt_disp_drv_st drv;
 	static gt_color_t buf1[GT_SCREEN_WIDTH * GT_REFRESH_FLUSH_LINE_PRE_TIME];
 	static gt_color_t buf2[GT_SCREEN_WIDTH * GT_REFRESH_FLUSH_LINE_PRE_TIME];
 #elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_3)
-	static gt_color_t buf_all[GT_SCREEN_WIDTH * GT_SCREEN_HEIGHT] __attribute__((at(0X68000000)));
+	static gt_color_t buf_all[GT_SCREEN_WIDTH * GT_SCREEN_HEIGHT];
 #endif
 
 /* macros ---------------------------------------------------------------*/
