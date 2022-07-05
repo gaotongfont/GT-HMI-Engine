@@ -73,20 +73,20 @@ void gt_check_obj_visible_and_copy(gt_obj_st * obj)
     gt_area_st area_valib;
     gt_disp_st * disp = gt_disp_get_default();
     if( !gt_obj_is_visible(obj) ){
-        GT_LOGD(GT_LOG_TAG_GUI, "obj not visible");
+        // GT_LOGD(GT_LOG_TAG_GUI, "obj not visible");
         return;
     }
     GT_LOGD(GT_LOG_TAG_GUI, "obj visible");
     obj->class->_init_cb(obj, obj->class);
 
-    GT_LOGD(GT_LOG_TAG_GUI, "obj->x:%d,y:%d,w:%d,h:%d====disp->x:%d,y:%d,w:%d,h:%d", 
-        obj->area.x, obj->area.y, obj->area.w, obj->area.h, 
-        disp->area_disp.x, disp->area_disp.y, disp->area_disp.w, disp->area_disp.h);    
-    
+    GT_LOGD(GT_LOG_TAG_GUI, "obj->x:%d,y:%d,w:%d,h:%d====disp->x:%d,y:%d,w:%d,h:%d",
+        obj->area.x, obj->area.y, obj->area.w, obj->area.h,
+        disp->area_disp.x, disp->area_disp.y, disp->area_disp.w, disp->area_disp.h);
+
     gt_obj_get_valid_area(obj, &disp->area_disp, &area_valib);
 
     GT_LOGD(GT_LOG_TAG_GUI, "area_valib:x:%d,y:%d,w:%d,h:%d", area_valib.x, area_valib.y, area_valib.w, area_valib.h);
-    
+
     gt_area_st area_cpy_dst = {
         .x = obj->area.x,
         .y = 0,
@@ -102,7 +102,7 @@ void gt_check_obj_visible_and_copy(gt_obj_st * obj)
     if( obj->area.y > disp->area_disp.y ){
         area_cpy_dst.y = obj->area.y - disp->area_disp.y;
     }
-	
+
     gt_color_area_copy(disp->vbd_color, area_cpy_dst, obj->cache.cache_color, area_cpy_src, area_valib.w, area_valib.h);
     obj->class->_deinit_cb(obj, obj->class);
 }
@@ -133,7 +133,7 @@ void gt_disp_load_scr(gt_obj_st * scr)
         return;
     }
     _gt_disp_send_draw_event_foreach(scr);
-    
+
     int y = 0;
     disp->area_act.x = 0;
     disp->area_act.y = 0;
@@ -145,15 +145,15 @@ void gt_disp_load_scr(gt_obj_st * scr)
     disp->area_disp.h = 10;
     int idx = 0;
     while( y < GT_SCREEN_HEIGHT ){
-        disp->area_disp.y += 10;
         y+=10;
         idx = 0;
         while( idx < GT_SCREEN_WIDTH * 10 ){
-            disp->vbd_color[idx].full = 0xFFFF;
+            GT_COLOR_SET(disp->vbd_color[idx], 0xFFFF);
             idx++;
         }
         _gt_disp_check_and_copy_foreach(scr);
         disp->drv->flush_cb(disp->drv, &disp->area_disp, disp->vbd_color);
+        disp->area_disp.y += 10;
     }
 }
 
@@ -183,7 +183,7 @@ void gt_disp_obj_by_10_lines( gt_obj_st * obj ){
         /* foreach all obj */
         while( idx < scr->cnt_child ){
             /* 1.check obj is visible */
-        
+
             /* 2.copy obj color to disp area color */
 
             /* 3.disp 10 lines to screen */
