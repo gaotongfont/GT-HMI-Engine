@@ -10,6 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "gt_port_disp.h"
 #include "../gt.h"
+#include "../src/gt_conf.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -22,8 +23,16 @@
 /* static variables -----------------------------------------------------*/
 static gt_disp_drv_st drv;
 
-static gt_color_t _buf_all[1024];
+#if(GT_REFRESH_STYLE == GT_REFRESH_STYLE_0)
 
+#elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_1)
+static gt_color_t buf1[GT_SCREEN_WIDTH * 10];
+#elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_2)
+static gt_color_t buf1[GT_SCREEN_WIDTH * 10];
+static gt_color_t buf2[GT_SCREEN_WIDTH * 10];
+#elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_3)
+static gt_color_t bufa[GT_SCREEN_WIDTH * GT_SCREEN_HEIGHT];
+#endif
 
 /* macros ---------------------------------------------------------------*/
 
@@ -46,8 +55,16 @@ void gt_port_disp_init(){
 	drv.rotated = GT_ROTATED_0;
 
 	gt_disp_drv_register(&drv);
+	
+#if(GT_REFRESH_STYLE == GT_REFRESH_STYLE_0)
 
-	gt_disp_graph_buf_init(NULL, NULL, _buf_all);
+#elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_1)
+	gt_disp_graph_buf_init(NULL, NULL, buf1);
+#elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_2)
+	gt_disp_graph_buf_init(buf1, buf2, NULL);
+#elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_3)
+	gt_disp_graph_buf_init(NULL, NULL, bufa);
+#endif
 }
 
 
