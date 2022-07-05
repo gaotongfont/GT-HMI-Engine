@@ -54,6 +54,7 @@ void gt_disp_drv_register(gt_disp_drv_st * drv)
         GT_LOGW(GT_LOG_TAG_GUI,"flush_cb is null");
         return;
     }
+    disp_p->vbd_color = graph_buf1;
     disp_p->drv = drv;
 }
 

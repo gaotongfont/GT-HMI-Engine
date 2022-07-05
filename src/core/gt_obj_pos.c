@@ -51,7 +51,7 @@ bool gt_obj_is_visible(gt_obj_st * obj){
 
     gt_area_st area_obj, area_disp;
     
-    gt_area_copy( &area_disp, &disp->area_act );
+    gt_area_copy( &area_disp, &disp->area_disp );
     gt_area_copy( &area_obj, &obj->area );
 
     if( (area_obj.x + area_obj.w) < area_disp.x ){
@@ -72,8 +72,9 @@ bool gt_obj_is_visible(gt_obj_st * obj){
 }
 
 void gt_obj_get_valid_area(gt_obj_st * obj, gt_area_st * area_act, gt_area_st *area_valid){
-    gt_disp_st * disp = gt_disp_get_default();
-    gt_area_st area_disp, area_obj;
+    int x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+		
+	gt_area_st area_disp, area_obj;
     
     gt_area_copy(&area_disp, area_act);
     gt_area_copy(&area_obj, &obj->area);
@@ -82,6 +83,51 @@ void gt_obj_get_valid_area(gt_obj_st * obj, gt_area_st * area_act, gt_area_st *a
     #define __X2(area)    (area.x+area.w)
     #define __Y1(area)    (area.y)
     #define __Y2(area)    (area.y+area.h)
+
+
+    if( __X1(area_disp) <= __X1(area_obj) ){
+        area_valid->x = 0;
+    }else{
+        area_valid->x = __X1(area_disp) - __X1(area_obj);
+    }
+
+    if( __Y1(area_disp) <= __Y1(area_obj) ){
+        area_valid->y = 0;
+    }else{
+        area_valid->y = __Y1(area_disp) - __Y1(area_obj);
+    }
+
+    if( __X2(area_disp) >= __X2(area_obj) ){
+        if( __X1(area_disp) <= __X1(area_obj) ){
+            area_valid->w = area_obj.w;
+        }else{
+            area_valid->w = __X2(area_obj) - __X1(area_disp);
+        }
+    }else{
+        if( __X1(area_disp) <= __X1(area_obj) ){
+            area_valid->w = __X2(area_disp) - __X1(area_obj);
+        }else{
+            area_valid->w = area_disp.w;
+        }
+    }
+
+    if( __Y2(area_disp) >= __Y2(area_obj) ){
+        if( __Y1(area_disp) <= __Y1(area_obj) ){
+            area_valid->h = area_obj.h;
+        }else{
+            area_valid->h = __Y2(area_obj) - __Y1(area_disp);
+        }
+    }else{
+			if( __Y1(area_disp) <= __Y1(area_obj) ){
+            area_valid->h = __Y2(area_disp) - __Y1(area_obj);
+        }else{
+            area_valid->h = area_disp.h;
+        }
+		}
+		
+		
+
+    return;
 
     if( __X1(area_disp) >= __X1(area_obj) ){
         area_valid->x = __X1(area_disp) - __X1(area_obj);
@@ -98,14 +144,13 @@ void gt_obj_get_valid_area(gt_obj_st * obj, gt_area_st * area_act, gt_area_st *a
     if( __X2(area_disp) > __X2(area_obj) ){
         area_valid->w = area_obj.w;
     }else{
-        GT_LOGV(GT_LOG_TAG_GUI, "%d,%d,%d", __X2(area_disp), __X1(area_obj), area_valid->x);
         area_valid->w = __X2(area_disp) - __X1(area_obj) - area_valid->x;
     }
     
     if( __Y2(area_disp) > __Y2(area_obj) ){
         area_valid->h = area_obj.h;
     }else{
-        area_valid->h = __Y2(area_disp) - __Y2(area_obj) - area_valid->y;
+        area_valid->h = __Y2(area_obj) - __Y2(area_disp) - area_valid->y;
     }
 }
 

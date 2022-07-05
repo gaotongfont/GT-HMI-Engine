@@ -54,7 +54,11 @@ typedef struct _gt_disp_s
     uint16_t cnt_scr;           //Count screens nub
     uint16_t status;            //
 
+    
+    /* flush */
     gt_area_st area_act;        //Location of physical screen on virtual screen
+    gt_area_st area_disp;       //10 lines area, Objects in this area will be copied to vbd_color
+    gt_color_t * vbd_color;     //save 10 lines visible pic, this will flush to phy screen
 }gt_disp_st;
 
 

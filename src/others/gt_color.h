@@ -19,6 +19,7 @@ extern "C" {
 #include "gt_types.h"
 #include "../widgets/gt_obj.h"
 
+
 /* define ---------------------------------------------------------------*/
 
 #if GT_COLOR_DEPTH == 1
@@ -124,7 +125,8 @@ typedef GT_CONCAT3(gt_color, GT_COLOR_DEPTH, _t) gt_color_t;
  * @param w copy width from src
  * @param h copy height from src
  */
-void gt_color_area_copy(gt_color_t *dst, struct _gt_area_s area_dst, gt_color_t * src, struct _gt_area_s area_src, gt_size_t w, gt_size_t h);
+typedef struct _gt_area_s gt_area_st;
+void gt_color_area_copy(gt_color_t *dst, gt_area_st area_dst, gt_color_t * src, gt_area_st area_src, gt_size_t w, gt_size_t h);
 
 
 #ifdef __cplusplus

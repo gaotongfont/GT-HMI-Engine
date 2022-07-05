@@ -13,6 +13,7 @@
 #include "../others/gt_log.h"
 #include "string.h"
 #include "../core/gt_graph_base.h"
+#include "../core/gt_obj_pos.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_BTN
@@ -41,30 +42,6 @@ const gt_obj_class_st gt_btn_class = {
 
 
 /* static functions -----------------------------------------------------*/
-
-/**
- * @brief obj init cb
- *
- * @param obj
- */
-static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-    /* code */
-
-    GT_LOGV(GT_LOG_TAG_GUI, "end init_cb");
-}
-
-/**
- * @brief obj deinit cb
- *
- * @param obj
- */
-static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
-    /* code */
-
-    GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
-}
 
 static void _gt_btn_init_widget(gt_obj_st * btn) {
     _gt_style_btn_st * style = btn->style;
@@ -113,6 +90,31 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
 }
 
 /**
+ * @brief obj init btn widget cb
+ *
+ * @param obj
+ */
+static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
+    GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
+    /* code */
+    _gt_btn_init_widget(obj);
+    GT_LOGV(GT_LOG_TAG_GUI, "end init_cb");
+}
+
+/**
+ * @brief obj deinit cb
+ *
+ * @param obj
+ */
+static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
+    GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
+    /* code */
+    gt_mem_free(obj->cache.cache_color);
+    GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
+}
+
+
+/**
  * @brief obj event handler cb
  *
  * @param obj
@@ -125,6 +127,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             _gt_btn_init_widget(obj);
             break;
+
         case GT_EVENT_TYPE_DRAW_END:
             GT_LOGV(GT_LOG_TAG_GUI, "end draw");
             break;
@@ -132,6 +135,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
             GT_LOGV(GT_LOG_TAG_GUI, "child remove");
 			break;
+
         case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
             GT_LOGV(GT_LOG_TAG_GUI, "child delete");
             break;
@@ -141,6 +145,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             gt_btn_style_set_selected(obj, 1);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
+
         case GT_EVENT_TYPE_INPUT_SCROLL:
             GT_LOGV(GT_LOG_TAG_GUI, "scroll");
             break;
@@ -151,11 +156,13 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
             break;
+
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
             gt_btn_style_set_selected(obj, 0);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
+
         default:
             break;
     }
@@ -165,12 +172,12 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 static void _gt_btn_init_style(gt_obj_st * btn)
 {
     _gt_style_btn_st * _style = btn->style;
-    _style->selected = 0;
-    GT_LOGD(GT_LOG_TAG_GUI, "btn:%p,style:%p", btn, _style);
-    _style->radius = 0;
+    
     _style->text = gt_mem_malloc(sizeof("btn"));
     strcpy(_style->text, "btn");
-	GT_COLOR_SET(_style->color_selected, 0xF800);    //default color_selected
+    _style->radius = 0;
+	_style->selected = 0;
+    GT_COLOR_SET(_style->color_selected, 0xF800);    //default color_selected
     GT_COLOR_SET(_style->color_unselected, 0x1537);  //default color_unselected
 }
 
