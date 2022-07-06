@@ -34,7 +34,7 @@
 
 /* global functions / API interface -------------------------------------*/
 void gt_color_change(gt_color_t color1, gt_color_t color2){
-    uint8_t r,g,b;
+    
 }
 
 /**

@@ -34,13 +34,10 @@
 /* static functions -----------------------------------------------------*/
 void gt_indev_handler_point(gt_indev_st * indev)
 {
-    static uint8_t flag_key_down = 0, cnt_key_down_continue = 0;
+    static uint8_t flag_key_down = 0; //cnt_key_down_continue = 0;
     gt_indev_data_st data_indev;
 
-    gt_obj_st * obj_click_last = NULL;
-    gt_obj_st * obj_touch = NULL;
     gt_obj_st * scr = gt_disp_get_scr();
-    int idx = 0;
 
     /* call user hard interface */
     indev->drv->read_cb(indev->drv, &data_indev);
@@ -143,7 +140,7 @@ void gt_indev_handler_point(gt_indev_st * indev)
 
 void gt_indev_handler_button(gt_indev_st * indev)
 {
-    static uint8_t flag_key_down = 0, cnt_key_down_continue = 0;
+    static uint8_t flag_key_down = 0;
 
     gt_indev_data_st data_indev;
     indev->drv->read_cb(indev->drv, &data_indev);

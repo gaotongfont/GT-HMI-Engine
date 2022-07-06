@@ -114,7 +114,7 @@ void _gt_disp_check_and_copy_foreach(gt_obj_st * obj)
         if( obj->child[idx]->cnt_child != 0 ){
             _gt_disp_check_and_copy_foreach( obj->child[idx] );
         }
-        // delay_ms(50);
+        
         gt_check_obj_visible_and_copy(obj->child[idx]);
         idx++;
     }
@@ -132,7 +132,7 @@ void gt_disp_load_scr(gt_obj_st * scr)
     if( !disp ){
         return;
     }
-    _gt_disp_send_draw_event_foreach(scr);
+    // _gt_disp_send_draw_event_foreach(scr);
 
     uint16_t y = 0;
     uint32_t idx = 0;
@@ -163,7 +163,7 @@ void gt_disp_load_scr(gt_obj_st * scr)
 
 
 void gt_disp_obj_by_10_lines( gt_obj_st * obj ){
-    static uint16_t y_offset = 0;
+    
     gt_disp_st * disp = gt_disp_get_default();
 
     if( obj->class->type == 0 ){

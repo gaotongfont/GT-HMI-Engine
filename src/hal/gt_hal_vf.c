@@ -80,8 +80,9 @@ static void * _open_cb(struct _gt_vf_drv_s * drv, char * name){
 
 static void _close_cb(struct _gt_vf_drv_s * drv, void * fp){
     /* code */
+    drv->seek_cb(drv, fp, 0, GT_VF_SEEK_SET);
 }
-
+ 
 static gt_vf_res_e _read_cb(struct _gt_vf_drv_s * drv, void * fp, uint8_t * data, uint32_t len){
     gt_vfp_st * _vfp = fp;
 
@@ -118,8 +119,6 @@ static gt_vf_res_e _read_cb(struct _gt_vf_drv_s * drv, void * fp, uint8_t * data
 static gt_vf_res_e _write_cb(struct _gt_vf_drv_s * drv, void * fp, uint8_t * data, uint32_t len){
     gt_vfp_st * _vfp = fp;
 
-    GT_LOGV(GT_LOG_TAG_GUI, "write_cb is null");
-    return GT_VF_RES_FAIL;
 
     if( !drv ){
         GT_LOGW(GT_LOG_TAG_GUI, "drv is null,err code[%d]", GT_VF_RES_HW_ERR);
@@ -140,7 +139,7 @@ static gt_vf_res_e _write_cb(struct _gt_vf_drv_s * drv, void * fp, uint8_t * dat
     _state = GT_VF_RES_BUSY;
 
     /* start read */
-    uint32_t addr = _vfp->start + _vfp->pos + vfdev->addr_start;
+    // uint32_t addr = _vfp->start + _vfp->pos + vfdev->addr_start;
     // uint8_t data_write[4] = {0x02, addr>>16, addr>>8, addr>>0 };
     // drv->rw_cb(data_write, 4, data, 0);
 
@@ -214,6 +213,7 @@ void gt_vf_init(gt_vfs_st * vfs){
 }
 
 void gt_vf_drv_register(gt_vf_drv_st * drv){
+#if 0
     gt_vf_drv_st * _drv = vfdev->drv;
     _drv = drv;
     vfdev->drv = drv;
@@ -223,6 +223,15 @@ void gt_vf_drv_register(gt_vf_drv_st * drv){
     _drv->write_cb = _write_cb;
     _drv->seek_cb = _seek_cb;
     _drv->tell_cb = _tell_cb;
+#else
+    drv->open_cb = _open_cb;
+    drv->close_cb = _close_cb;
+    drv->read_cb = _read_cb;
+    drv->write_cb = _write_cb;
+    drv->seek_cb = _seek_cb;
+    drv->tell_cb = _tell_cb;
+    vfdev->drv = drv;
+#endif
     if( !_vfs ){
         _state = GT_VF_RES_DEINIT;
     }else{

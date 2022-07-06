@@ -56,7 +56,9 @@ uint8_t utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 
 #define GT_USE_FONT_NUM     2
 
-void * read_func_arr[] = {
+typedef unsigned long(* read_func_t)(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
+
+read_func_t read_func_arr[] = {
     // GT_GetChinese,
     // GT_GetASCII,
     // GT_GetJapanese,
@@ -100,5 +102,13 @@ void gt_font_get_text(gt_font_st * font)
     }
 }
 
+uint32_t gt_font_count_word(char * utf8, uint32_t len){
+    uint32_t idx = 0, cnt = 0, unicode;
+    while(idx < len){
+        idx += utf8_to_unicode((uint8_t *)&utf8[idx], &unicode);
+        cnt++;
+    }
+    return cnt;
+}
 
 /* end ------------------------------------------------------------------*/

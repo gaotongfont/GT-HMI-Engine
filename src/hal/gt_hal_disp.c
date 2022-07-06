@@ -89,10 +89,10 @@ uint16_t gt_disp_get_res_hor(gt_disp_st * disp)
         case GT_ROTATED_90:
         case GT_ROTATED_270:
             return disp->drv->res_ver;
-            break;
+            
         default:
             return disp->drv->res_hor;
-            break;
+            
     }
 }
 uint16_t gt_disp_get_res_ver(gt_disp_st * disp)
@@ -102,11 +102,9 @@ uint16_t gt_disp_get_res_ver(gt_disp_st * disp)
     switch( disp->drv->rotated ){
         case GT_ROTATED_90:
         case GT_ROTATED_270:
-            return disp->drv->res_hor;
-            break;
+            return disp->drv->res_hor;           
         default:
             return disp->drv->res_ver;
-            break;
     }
 }
 

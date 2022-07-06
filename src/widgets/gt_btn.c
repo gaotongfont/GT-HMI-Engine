@@ -46,9 +46,8 @@ const gt_obj_class_st gt_btn_class = {
 static void _gt_btn_init_widget(gt_obj_st * btn) {
     _gt_style_btn_st * style = btn->style;
     gt_size_t x, y, w, h;           //base attr
-    gt_size_t radius,border_w;      //widget attr
-    gt_attr_line_st _line;
-    gt_area_st _area;
+    gt_size_t radius;      //widget attr
+    
     gt_color_t fcolor;
 
     x = btn->area.x;
@@ -57,7 +56,6 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     h = btn->area.h;
 
     radius = style->radius;
-    border_w = style->border_width;
 
     btn->cache.cache_color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
     if( style->selected ){
@@ -86,7 +84,6 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     }else{
 
     }
-	gt_mem_free(btn->cache.cache_color);
 }
 
 /**

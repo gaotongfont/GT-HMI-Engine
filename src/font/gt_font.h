@@ -47,6 +47,7 @@ typedef struct _gt_font_s
 /* global functions / API interface -------------------------------------*/
 void gt_font_get_text(gt_font_st * font);
 
+uint32_t gt_font_count_word(char * utf8, uint32_t len);
 
 #ifdef __cplusplus
 } /*extern "C"*/

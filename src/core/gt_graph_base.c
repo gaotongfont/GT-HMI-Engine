@@ -123,125 +123,13 @@ void _gt_graph_dot_to_gray(uint8_t *dot, gt_size_t w, gt_size_t h, gt_gray_t lev
 	}
 }
 
-static unsigned char dep1[]={0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,5};//4bit//{0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4};//4bit
-static unsigned char dep2[]={0,1,1,2};//2bit
-static unsigned char dep3[]={0,1,1,2,1,3,2,3};//3bit//dep3[]={0,1,1,2,1,3,2,5};//3bit
-void _gt_graph_dot_to_gray0(uint8_t *OutPutData ,gt_size_t width,gt_size_t High,unsigned char Grade)
-{
-	unsigned int oldwidth,newwidth,height,thick,width2;		//newwidth
-	unsigned char *ptr1,*ptr2,*ptr3,*ptr4,*ptr5;	//    *ptr6,*ptr7,*ptr8,*ptr9;
-	unsigned int  d1,d2,d3,d4,d5;   				//d6,d7,d8,d9;
-	unsigned char width_mult;
-	unsigned long ser;	//i=0;
-
-	height 		= High;
-	width_mult=	Grade;
-	oldwidth 	=	width;
-	width2=(width*Grade+7)/8;
-	if(width_mult==2)	//2bit
-	{
-			oldwidth=(oldwidth+7)/8*2;//
-			for(thick=0;thick<height;thick++)//逐行扫描
-			{
-				ptr1=OutPutData+width2*thick*2;
-				ptr2=ptr1+width2;
-				ptr5=OutPutData+oldwidth*thick;
-				for(ser=0;ser<width2;ser++)
-				{
-					d1=dep2[((*ptr1>>6)&0x03)];
-					d2=dep2[((*ptr2>>6)&0x03)];
-					d5=d1+d2;
-					if(d5>=3)d5=3;
-					*ptr5=((*ptr5) & 0x3F)|(d5<<6);
-
-					d1=dep2[((*ptr1>>4)&0x03)];
-					d2=dep2[((*ptr2>>4)&0x03)];
-					d5=d1+d2;
-					if(d5>=3)d5=3;
-					*ptr5=((*ptr5)&0xCF)|(d5<<4);
-
-					d1=dep2[((*ptr1>>2)&0x03)];
-					d2=dep2[((*ptr2>>2)&0x03)];
-					d5=d1+d2;
-					if(d5>=3)d5=3;
-					*ptr5=((*ptr5)&0xF3)|(d5<<2);
-
-					d1=dep2[((*ptr1)&0x03)];
-					d2=dep2[((*ptr2)&0x03)];
-					d5=d1+d2;
-					if(d5>=3)d5=3;
-					*ptr5=((*ptr5)&0xFC)|(d5);
-
-					ptr1++;
-					ptr2++;
-					ptr5++;
-				}
-			}
-			if(oldwidth>width2)
-			{
-				for(thick=0;thick<height;thick++)
-				{
-					for(ser=0;ser<(oldwidth-width2);ser++)
-					OutPutData[oldwidth*thick+width2+ser]=0;
-				}
-			}
-			newwidth=oldwidth*height;
-	}
-	else if(width_mult==4)	//4bit
-	{
-		oldwidth=(oldwidth+7)/8*4;//
-		for(thick=0;thick<height;thick++)//逐行扫描
-		{
-			ptr1=OutPutData+width2*thick*4;//
-			ptr2=ptr1+width2;//
-			ptr3=ptr2+width2;
-			ptr4=ptr3+width2;
-			ptr5=OutPutData+oldwidth*thick;
-			for(ser=0;ser<width2;ser++)
-			{
-				d1=dep1[((*ptr1>>4)&0x0F)];
-				d2=dep1[((*ptr2>>4)&0x0F)];
-				d3=dep1[((*ptr3>>4)&0x0F)];
-				d4=dep1[((*ptr4>>4)&0x0F)];
-				d5=d1+d2+d3+d4;
-				if(d5>=16)
-					d5=15;
-				*ptr5=(d5<<4)&0xF0;
-
-				d1=dep1[(*ptr1&0x0F)];
-				d2=dep1[(*ptr2&0x0F)];
-				d3=dep1[(*ptr3&0x0F)];
-				d4=dep1[(*ptr4&0x0F)];
-				d5=d1+d2+d3+d4;
-				if(d5>=16)
-					d5=15;
-				*ptr5=*ptr5|d5;
-
-				ptr1++;
-				ptr2++;
-				ptr3++;
-				ptr4++;
-				ptr5++;
-			}
-		}
-		if(oldwidth>width2)
-		{
-			for(thick=0;thick<height;thick++)
-			{
-				for(ser=0;ser<(oldwidth-width2);ser++)
-				OutPutData[oldwidth*thick+width2+ser]=0;
-			}
-		}
-		newwidth=oldwidth*height;
-	}
-}
 
 void _gt_graph_gray_to_color(uint8_t *gray, gt_color_t *color,gt_size_t w, gt_size_t h, gt_color_t fcolor, gt_color_t bcolor, gt_gray_t level_gray)
 {
 	int i, idx, len, cnt=0;
 	int bit_step, bit_cnt, bit_idx;
 	uint8_t bit_mask;
-	uint8_t r, g, b;
+	
 	float temp;
 	gt_color_t _color;
 	idx = 0;
@@ -254,14 +142,13 @@ void _gt_graph_gray_to_color(uint8_t *gray, gt_color_t *color,gt_size_t w, gt_si
 		default: break;
 	}
 	len = (w*h)/bit_cnt;
-	r = GT_COLOR_GET_R(fcolor);	g = GT_COLOR_GET_G(fcolor);	b = GT_COLOR_GET_B(fcolor);
 
 	while( idx < len ) {
 		bit_idx = 8;
 		for(i=1; i<=bit_cnt; i++) {
 			bit_idx = bit_idx-bit_step;
 			temp = (gray[idx]>>bit_idx) & bit_mask;
-			_gt_graph_get_gray(&_color, bcolor, fcolor, bit_mask, temp);
+			_gt_graph_get_gray(&_color, bcolor, fcolor, (gt_gray_t)bit_mask, temp);
 			GT_COLOR_SET(color[cnt], GT_COLOR_GET(_color));
 			cnt++;
 		}
@@ -733,10 +620,8 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area)
 {
 	gt_color_t * bufa = gt_disp_graph_get_buf_default();
 	gt_color_t fcolor;
-	gt_color_t bcolor;
+
 	GT_COLOR_SET(fcolor, GT_COLOR_GET(line_attr->fcolor));
-	GT_COLOR_SET(bcolor, GT_COLOR_GET(line_attr->bcolor));
-    int idx = 0, all = 0;
 
 	float x1,x2,y1,y2;		//two point get a line
 
@@ -773,15 +658,14 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area)
 
 void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * color)
 {
-	gt_size_t is_fill, radius, border_width;
-	gt_color_t bcolor, fcolor, border_color;
+	gt_size_t is_fill, border_width;
+	gt_color_t fcolor, border_color;
 
 	is_fill = rect_attr->is_fill;
-	radius = rect_attr->radius;
+	
 	border_width = rect_attr->border_width;
 	GT_COLOR_SET(border_color, GT_COLOR_GET(rect_attr->border_color));
 
-	GT_COLOR_SET(bcolor, GT_COLOR_GET(rect_attr->bcolor));
 	GT_COLOR_SET(fcolor, GT_COLOR_GET(rect_attr->fcolor));
 
 	gt_size_t w,h;
@@ -793,7 +677,7 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 	// }
 	// color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
 
-	uint32_t x,y, x1,y1, x2,y2, idx = 0, all = w * h, w_null, x21, idxb1, idxb2;
+	uint32_t x,y, x1,y1, x2,y2, idx = 0, all = w * h, x21, idxb1;
 	x1 = border_width;
 	x2 = w - border_width;
 
@@ -852,7 +736,7 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 // FIXIT
 void gt_graph_dot_draw_to_color(uint8_t * dot, gt_color_t * color, gt_area_st area_color, uint8_t w, uint8_t h, gt_color_t fcolor)
 {
-	uint16_t x,_y,_x, idx = 0,_temp;
+	uint16_t _y,_x, idx = 0,_temp;
 	int _j;
 
 	for(_y=0; _y<16; _y++){
