@@ -366,7 +366,7 @@ typedef struct control_t
 } control_t;
 
 /* A type used for casting when doing pointer arithmetic. */
-typedef ptrdiff_t tlsfptr_t;
+typedef size_t tlsfptr_t;	// ptrdiff_t
 
 /*
 ** block_header_t member functions.
@@ -915,7 +915,7 @@ void gt_tlsf_walk_pool(pool_t pool, gt_tlsf_walker walker, void* user)
 {
 	gt_tlsf_walker pool_walker = walker ? walker : default_walker;
 	block_header_t* block =
-		offset_to_block(pool, -(int)block_header_overhead);
+		offset_to_block(pool, -(size_t)block_header_overhead);
 
 	while (block && !block_is_last(block))
 	{
@@ -1039,7 +1039,7 @@ pool_t gt_tlsf_add_pool(gt_tlsf_t tlsf, void* mem, size_t bytes)
 void gt_tlsf_remove_pool(gt_tlsf_t tlsf, pool_t pool)
 {
 	control_t* control = gt_tlsf_cast(control_t*, tlsf);
-	block_header_t* block = offset_to_block(pool, -(int)block_header_overhead);
+	block_header_t* block = offset_to_block(pool, -(size_t)block_header_overhead);
 
 	int fl = 0, sl = 0;
 
