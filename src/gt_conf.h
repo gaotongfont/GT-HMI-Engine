@@ -17,9 +17,6 @@ extern "C" {
 
 
 
-
-
-
 /* define ---------------------------------------------------------------*/
 
 /* user: screen width and height config */
@@ -70,7 +67,7 @@ extern "C" {
 
     #define GT_MEM_SIZE             (24 * 1024U)    //Byte
 
-    #define gt_tlsf_assert(_expr)      (NULL)
+    #define gt_tlsf_assert(_expr)   ( (void)0 )
 #else
     #define GT_MEM_CUSTOM_INCLUDE   "stdlib.h"
 
