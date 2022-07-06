@@ -40,8 +40,9 @@ typedef int16_t gt_size_t;
 typedef enum type_widget_e{
     GT_TYPE_OBJ = 0,        //base obj type
     GT_TYPE_BTN = 1,        //button type
-    GT_TYPE_LAB = 2,        //label type
-    GT_TYPE_TEXTAREA = 3,   //textarea type
+    GT_TYPE_IMG = 2,        //img type
+    GT_TYPE_LAB = 3,        //label type
+    GT_TYPE_TEXTAREA = 4,   //textarea type
 
 
     GT_TYPE_TOTAL,          //count total of type
