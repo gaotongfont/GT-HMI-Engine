@@ -23,9 +23,9 @@ extern "C" {
 #define GT_SET_BIT(byte, bit)	( byte |= (bit) )
 #define GT_CLR_BIT(byte, bit)	( byte &= ~(bit) )
 
-#define GT_DOT_SET_BIT(buf,x,y,w,h,bitval)				    \
+#define GT_DOT_SET_BIT(buf,x,y,w,h,bit_val)				    \
 	do{													    \
-		if(bitval)										    \
+		if(bit_val)										    \
 			GT_SET_BIT(buf[(y)*((w)>>3)+((x)>>3)], 1<<(7-((x)%8)) );	\
 		else											                \
 			GT_CLR_BIT(buf[(y)*((w)>>3)+((x)>>3)], 1<<(7-((x)%8)) );	\
@@ -35,7 +35,7 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef enum{
+typedef enum {
     GT_BLEND_MODE_NORMAL,     /**< Simply mix according to the opacity value*/
     GT_BLEND_MODE_ADDITIVE,   /**< Add the respective color channels*/
     GT_BLEND_MODE_SUBTRACTIVE,/**< Subtract the foreground from the background*/
@@ -102,6 +102,7 @@ typedef struct _gt_attr_arch_s
 
     gt_size_t border_width;
 }gt_attr_arch_st;
+
 /* macros ---------------------------------------------------------------*/
 
 
@@ -111,8 +112,6 @@ typedef struct _gt_attr_arch_s
 gt_color_t * gt_graph_get_default(void);
 void gt_graph_set_default(gt_color_t *);
 void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area);
-
-void gt_graph_circle_refactor(gt_attr_circle_st * circle_attr, gt_area_st * area);
 
 void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area );
 void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * color );

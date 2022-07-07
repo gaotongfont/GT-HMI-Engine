@@ -8,11 +8,14 @@
  */
 
 /* include --------------------------------------------------------------*/
+#include "stdlib.h"
+#include "stdbool.h"
+
 #include "gt_graph_base.h"
 #include "../hal/gt_hal_disp.h"
 #include "gt_mem.h"
 #include "../others/gt_math.h"
-#include "stdlib.h"
+#include "../others/gt_log.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -24,6 +27,8 @@ typedef enum{
 	GT_GRAY_2 = 2,
 	GT_GRAY_4 = 4,
 	GT_GRAY_8 = 8,
+
+	GT_GRAY_MAX_COUNT,
 }gt_gray_t;
 
 /* static variables -----------------------------------------------------*/
@@ -129,7 +134,7 @@ void _gt_graph_gray_to_color(uint8_t *gray, gt_color_t *color,gt_size_t w, gt_si
 	int i, idx, len, cnt=0;
 	int bit_step, bit_cnt, bit_idx;
 	uint8_t bit_mask;
-	
+
 	float temp;
 	gt_color_t _color;
 	idx = 0;
@@ -572,48 +577,43 @@ void gt_graph_set_default(gt_color_t * _color){
 	color = _color;
 }
 
-/* cache in buf, no draw*/
 void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 {
-	gt_color_t border_color, fcolor;
-	gt_size_t _x, _y, r;
-	uint16_t _w, _h, border_width;
-	uint8_t is_fill;
-	float x2,y2,r2;
-	gt_color_t * bufa = gt_disp_graph_get_buf_default();
+	gt_size_t x, y, r, theta;
+	gt_size_t w, h, idx;
+	gt_color_t fcolor;
+	gt_color_t * buf = gt_disp_graph_get_buf_default();
+	bool is_fill = circle_attr->is_fill;
 
-	_w = area->w;
-	_h = area->h;
+	w = area->w;
+	h = area->h;
+
+	gt_memset(buf, 0xff, w * h << 1);
 
 	r = circle_attr->radius;
-
-	border_width = circle_attr->border_width;
-	border_color = circle_attr->border_color;
 	fcolor = circle_attr->fcolor;
-	is_fill = circle_attr->is_fill;
 
-	r2 = gt_square(r);
-	for(_y=-r; _y<r; _y++) {
-		y2 = gt_square(_y);
-		for(_x=-r; _x<r; _x++) {
-			x2 = gt_square(_x);
-			if( sqrt(x2+y2) > (sqrt(r2)-border_width) && x2+y2 < r2 ) {
-				GT_COLOR_SET_BUF(bufa, _x+r, _y+r, _w, _h, GT_COLOR_GET(border_color));
-			}else if( is_fill && (x2+y2 < r2) ) {
-				GT_COLOR_SET_BUF(bufa, _x+r, _y+r, _w, _h, GT_COLOR_GET(fcolor));
+	for (theta = 0; theta < 360; theta++) {
+		x = GT_MATH_GET_TRIGON_VAL(gt_cos(theta) * r) + r;
+		y = GT_MATH_GET_TRIGON_VAL(gt_sin(theta) * r) + r;
+		GT_COLOR_SET_BUF(buf, x, y, w, h, GT_COLOR_GET(fcolor));
+
+		if (!is_fill) {
+			continue;
+		}
+
+		if (x < r) {
+			idx = y * w + x;
+			for (; x < r; x++) {
+				GT_COLOR_SET(buf[idx++], GT_COLOR_GET(fcolor));
+			}
+		} else {
+			idx = y * w + x;
+			for (; x >= r; x--) {
+				GT_COLOR_SET(buf[idx--], GT_COLOR_GET(fcolor));
 			}
 		}
 	}
-}
-
-void gt_graph_circle_refactor(gt_attr_circle_st * circle_attr, gt_area_st * area)
-{
-	gt_memset(gt_disp_graph_get_buf_default(), 0, area->w * area->h << 1);
-
-	gt_color_t * buf = gt_disp_graph_get_buf_default();
-
-
-
 }
 
 void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area)
@@ -662,7 +662,7 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 	gt_color_t fcolor, border_color;
 
 	is_fill = rect_attr->is_fill;
-	
+
 	border_width = rect_attr->border_width;
 	GT_COLOR_SET(border_color, GT_COLOR_GET(rect_attr->border_color));
 

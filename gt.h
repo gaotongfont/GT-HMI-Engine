@@ -1,7 +1,7 @@
 /**
  * @file gt.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-11 18:22:31
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -42,6 +42,7 @@ extern "C" {
 /* widgets */
 #include "src/widgets/gt_obj.h"
 #include "src/widgets/gt_btn.h"
+#include "src/widgets/gt_img.h"
 
 /* other */
 #include "src/others/gt_color.h"
