@@ -14,6 +14,8 @@
 #include "string.h"
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
+#include "../font/gt_font.h"
+#include "../others/gt_assert.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_BTN
@@ -64,6 +66,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
         GT_COLOR_SET(fcolor, GT_COLOR_GET(style->color_unselected));
     }
 
+    /* base shape */
     gt_attr_rect_st rect_attr;
     GT_COLOR_SET(rect_attr.fcolor, GT_COLOR_GET(fcolor));
     rect_attr.is_fill = 1;
@@ -75,15 +78,52 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
         .x = x,
         .y = y
     };
-
-    if(radius == 0) {
-        gt_color_t * color_p = btn->cache.cache_color;
-        gt_graph_rect(&rect_attr, &area, color_p);
-        // extern void _flush_cb(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
-        // _flush_cb(NULL, &area, color_p);
+		gt_color_t * color_p = (gt_color_t *)btn->cache.cache_color;
+    if(radius == 0) {        
+        gt_graph_rect(&rect_attr, &area, color_p);       
     }else{
 
     }
+
+    /* font */
+    uint32_t cnt_word = gt_font_count_word(style->text, strlen(style->text));
+    uint8_t fp[1024];
+    gt_font_st font = {
+        .style_cn = 1,
+        .style_en = 2,
+        .res = fp,
+        .utf8 = (uint8_t *)style->text,
+        .len = strlen(style->text),
+        .size = GT_FONT_SIZE_16x16,
+    };
+    uint32_t w_font = gt_font_get_string_width(&font);
+    gt_font_get_string_dot(&font);
+
+    int16_t x_start = (w - w_font)>>1;
+    int16_t y_start = (h - GT_FONT_SIZE_16x16)>>1;
+
+    GT_LOGD(GT_LOG_TAG_GUI, "x:%d,wf:%d,w:%d", x_start, w_font, w);
+    if( x_start < 0 ){
+        x_start = 0;
+    }
+    if( y_start < 0 ){
+        y_start = 0;
+    }
+
+    // fill to shape
+    uint16_t idx_dot = 0;
+    area.x = x_start;
+    area.y = y_start;
+    gt_color_t color_font;
+    color_font.full = 0xFFFF;
+
+    while( (x_start+font.size) < w ){
+        area.x = x_start;
+        gt_graph_dot_draw_to_color(&font.res[idx_dot], color_p, area, font.size, font.size, color_font);     
+        x_start += gt_font_get_next_word_width(&font, !idx_dot);
+        idx_dot += (font.size>>3)*font.size;
+    }
+    
 }
 
 /**
@@ -121,41 +161,45 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
+            GT_LOGD(GT_LOG_TAG_GUI, "start draw");
             _gt_btn_init_widget(obj);
+            extern void _flush_cb(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
+            _flush_cb(NULL, &obj->area, obj->cache.cache_color);
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
+            GT_LOGD(GT_LOG_TAG_GUI, "end draw");
+            gt_mem_free(obj->cache.cache_color);
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
+            GT_LOGD(GT_LOG_TAG_GUI, "child remove");
 			break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
+            GT_LOGD(GT_LOG_TAG_GUI, "child delete");
             break;
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
+            GT_LOGD(GT_LOG_TAG_GUI, "clicking");
             gt_btn_style_set_selected(obj, 1);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
+            GT_LOGD(GT_LOG_TAG_GUI, "scroll");
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
-            GT_LOGV(GT_LOG_TAG_GUI, "process");
+            GT_LOGD(GT_LOG_TAG_GUI, "process");
             /* code here */
 
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
+            GT_LOGD(GT_LOG_TAG_GUI, "processed");
             gt_btn_style_set_selected(obj, 0);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
@@ -174,7 +218,7 @@ static void _gt_btn_init_style(gt_obj_st * btn)
     strcpy(_style->text, "btn");
     _style->radius = 0;
 	_style->selected = 0;
-    GT_COLOR_SET(_style->color_selected, 0xF800);    //default color_selected
+    GT_COLOR_SET(_style->color_selected, 0x1C1A);    //default color_selected
     GT_COLOR_SET(_style->color_unselected, 0x1537);  //default color_unselected
 }
 
@@ -195,25 +239,34 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent) {
     return obj;
 }
 
-void gt_btn_style_set_color_selected(gt_obj_st * btn, gt_color_t color) {
+void gt_btn_style_set_color_selected(gt_obj_st * btn, gt_color_t color)
+{
     _gt_style_btn_st * style = btn->style;
     GT_COLOR_SET(style->color_selected, GT_COLOR_GET(color));
 }
 
-void gt_btn_style_set_color_unselected(gt_obj_st * btn, gt_color_t color) {
+void gt_btn_style_set_color_unselected(gt_obj_st * btn, gt_color_t color)
+{
     _gt_style_btn_st * style = btn->style;
     GT_COLOR_SET(style->color_unselected, GT_COLOR_GET(color));
 }
 
-void gt_btn_style_set_selected(gt_obj_st * btn, uint8_t selected) {
+void gt_btn_style_set_selected(gt_obj_st * btn, uint8_t selected)
+{
     _gt_style_btn_st * style = btn->style;
     style->selected = selected!=0?1:0;
 }
 
-void gt_btn_style_set_text(gt_obj_st * btn, char *text) {
-    _gt_style_btn_st * style = btn->style;
-    gt_mem_realloc(style->text, strlen(text));
-    gt_memcpy(style->text, text, strlen(text));
+void gt_btn_style_set_text(gt_obj_st * btn, char * text)
+{
+    _gt_style_btn_st * style = btn->style;    
+    if( NULL != style->text ){
+        gt_mem_free(style->text);
+    }
+    uint16_t size = strlen(text);
+    style->text = gt_mem_malloc(size+1);
+    gt_memcpy(style->text, text, size);
+    style->text[size] = 0;
 }
 
 /* end ------------------------------------------------------------------*/

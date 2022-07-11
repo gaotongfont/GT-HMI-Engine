@@ -15,6 +15,8 @@
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
 #include "../core/gt_vf.h"
+#include "string.h"
+#include "../others/gt_assert.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_IMG
@@ -46,7 +48,7 @@ const gt_obj_class_st gt_img_class = {
 
 static void _gt_img_init_widget(gt_obj_st * img)
 {
-//    _gt_style_img_st * style = img->style;
+   _gt_style_img_st * style = img->style;
     gt_size_t w, h;
 
     w = img->area.w;
@@ -54,7 +56,7 @@ static void _gt_img_init_widget(gt_obj_st * img)
 
     img->cache.cache_color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
     
-    gt_vf_read_img(".\\1.BMP", img->cache.cache_color);
+    gt_vf_read_img(style->src, img->cache.cache_color);
 }
 
 /**
@@ -92,41 +94,43 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
+            GT_LOGD(GT_LOG_TAG_GUI, "start draw");
             _gt_img_init_widget(obj);
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
+            GT_LOGD(GT_LOG_TAG_GUI, "end draw");
+            gt_mem_free(obj->cache.cache_color);
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
+            GT_LOGD(GT_LOG_TAG_GUI, "child remove");
 			break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
+            GT_LOGD(GT_LOG_TAG_GUI, "child delete");
             break;
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
+            GT_LOGD(GT_LOG_TAG_GUI, "clicking");
             gt_img_style_set_selected(obj, 1);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
+            GT_LOGD(GT_LOG_TAG_GUI, "scroll");
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
-            GT_LOGV(GT_LOG_TAG_GUI, "process");
+            GT_LOGD(GT_LOG_TAG_GUI, "process");
             /* code here */
 
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
+            GT_LOGD(GT_LOG_TAG_GUI, "processed");
             gt_img_style_set_selected(obj, 0);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
@@ -142,6 +146,7 @@ static void _gt_img_init_style(gt_obj_st * img)
     _gt_style_img_st * _style = img->style;
     
 	_style->selected = 0;
+    _style->src = NULL;
     GT_COLOR_SET(_style->color_selected, 0xF800);    //default color_selected
     GT_COLOR_SET(_style->color_unselected, 0x1537);  //default color_unselected
 }
@@ -178,5 +183,13 @@ void gt_img_style_set_selected(gt_obj_st * img, uint8_t selected) {
     style->selected = selected!=0?1:0;
 }
 
-
+void gt_img_style_set_src(gt_obj_st * img, char * src){
+    GT_ASSERT_NULL(img);
+    _gt_style_img_st * style = (_gt_style_img_st *)img->style;
+    if( NULL == style->src ){
+        gt_mem_free(style->src);
+    }
+    style->src = gt_mem_malloc( strlen(src) );
+    strcpy(style->src, src);
+}
 /* end ------------------------------------------------------------------*/

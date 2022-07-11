@@ -213,17 +213,7 @@ void gt_vf_init(gt_vfs_st * vfs){
 }
 
 void gt_vf_drv_register(gt_vf_drv_st * drv){
-#if 0
-    gt_vf_drv_st * _drv = vfdev->drv;
-    _drv = drv;
-    vfdev->drv = drv;
-    _drv->open_cb = _open_cb;
-    _drv->close_cb = _close_cb;
-    _drv->read_cb = _read_cb;
-    _drv->write_cb = _write_cb;
-    _drv->seek_cb = _seek_cb;
-    _drv->tell_cb = _tell_cb;
-#else
+
     drv->open_cb = _open_cb;
     drv->close_cb = _close_cb;
     drv->read_cb = _read_cb;
@@ -231,7 +221,6 @@ void gt_vf_drv_register(gt_vf_drv_st * drv){
     drv->seek_cb = _seek_cb;
     drv->tell_cb = _tell_cb;
     vfdev->drv = drv;
-#endif
     if( !_vfs ){
         _state = GT_VF_RES_DEINIT;
     }else{

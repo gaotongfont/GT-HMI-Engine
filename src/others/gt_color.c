@@ -42,7 +42,7 @@ void gt_color_change(gt_color_t color1, gt_color_t color2){
  * 
  * @param dst dst color *
  * @param area_dst dst color pos and size(.x.y dst start pos, .w.h dst size)
- * @param src 
+ * @param src src color *
  * @param area_src src color pos and size(.x.y src start pos, .w.h src size)
  * @param w how much width copy from src
  * @param h how much height copy from src

@@ -51,6 +51,10 @@ typedef enum{
     GT_VF_RES_NULL,
 }gt_vf_res_e;
 
+typedef enum _gt_vf_type_e{
+    GT_VF_TYPE_FLASH,
+    GT_VF_TYPE_ARRAY,
+}gt_vf_type_et;
 
 /**********************************************************************
  * @brief virt file drv open_cb return type
@@ -59,6 +63,9 @@ typedef struct _gt_vfp_s{
     uint32_t start;
     uint32_t end;
     uint32_t pos;
+
+    uint8_t type;   //file type flash or array,this can be @gt_vf_type_et
+
     union {
         struct{
             uint32_t w;

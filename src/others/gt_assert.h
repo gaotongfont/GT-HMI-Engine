@@ -19,9 +19,15 @@ extern "C" {
 
 /* define ---------------------------------------------------------------*/
 
-/* check null assert */
-#define GT_ASSERT(p)    { if(!p) while(1){} }
+#define GT_ASSERT_ENABLE    1
 
+
+/* check null assert */
+#if GT_ASSERT_ENABLE==1
+#define GT_ASSERT_NULL(p)    { if(!p) while(1){} }
+#else
+#define GT_ASSERT_NULL(p)    { }
+#endif
 
 /* typedef --------------------------------------------------------------*/
 

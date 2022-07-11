@@ -39,12 +39,6 @@ void gt_vf_read_img(const char * path, uint8_t * res){
     gt_vf_st * vf_dev = gt_vf_get_default();
     gt_vfp_st * vfp = vf_dev->drv->open_cb(vf_dev->drv, (char *)path);
     vf_dev->drv->read_cb(vf_dev->drv, vfp, res, vfp->msg.pic.w * vfp->msg.pic.h * sizeof(gt_color_t) );
-    // int idx = 0;
-    // while( idx < 31*13*2 ){
-    //     printf("0x%02x, ", res[idx]);
-    //     idx++;
-    // }
-    // delay_ms(1000);
 }
 
 
