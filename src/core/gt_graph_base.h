@@ -117,6 +117,8 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area );
 void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * color );
 void gt_graph_arch(gt_attr_arch_st * arch_attr, gt_area_st * area );
 void _gt_graph_dot_circle(gt_attr_circle_st * circle_attr, gt_area_st * area);
+
+void gt_graph_dot_draw_to_color(uint8_t * dot, gt_color_t * color, gt_area_st area_color, uint8_t w, uint8_t h, gt_color_t fcolor);
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
