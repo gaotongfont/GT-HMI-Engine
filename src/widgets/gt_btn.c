@@ -79,8 +79,8 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
         .y = y
     };
 		gt_color_t * color_p = (gt_color_t *)btn->cache.cache_color;
-    if(radius == 0) {        
-        gt_graph_rect(&rect_attr, &area, color_p);       
+    if(radius == 0) {
+        gt_graph_rect(&rect_attr, &area, color_p);
     }else{
 
     }
@@ -102,7 +102,6 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     int16_t x_start = (w - w_font)>>1;
     int16_t y_start = (h - GT_FONT_SIZE_16x16)>>1;
 
-    GT_LOGD(GT_LOG_TAG_GUI, "x:%d,wf:%d,w:%d", x_start, w_font, w);
     if( x_start < 0 ){
         x_start = 0;
     }
@@ -117,7 +116,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     gt_color_t color_font;
     color_font.full = 0xFFFF;
 
-    while( (x_start+font.size) < w ){
+    while( cnt_word-- && (x_start+font.size) < w ){
         area.x = x_start;
         gt_graph_dot_draw_to_color(&font.res[idx_dot], color_p, area, font.size, font.size, color_font);     
         x_start += gt_font_get_next_word_width(&font, !idx_dot);
@@ -164,7 +163,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
             _gt_btn_init_widget(obj);
             extern void _flush_cb(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
-            _flush_cb(NULL, &obj->area, obj->cache.cache_color);
+            _flush_cb(NULL, &obj->area, (gt_color_t *)obj->cache.cache_color);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
@@ -259,14 +258,20 @@ void gt_btn_style_set_selected(gt_obj_st * btn, uint8_t selected)
 
 void gt_btn_style_set_text(gt_obj_st * btn, char * text)
 {
-    _gt_style_btn_st * style = btn->style;    
+    _gt_style_btn_st * style = btn->style;
     if( NULL != style->text ){
         gt_mem_free(style->text);
     }
     uint16_t size = strlen(text);
     style->text = gt_mem_malloc(size+1);
+    gt_memset(style->text, 0, size+1);
     gt_memcpy(style->text, text, size);
-    style->text[size] = 0;
+}
+
+char * gt_btn_style_get_text(gt_obj_st * btn){
+    GT_ASSERT_NULL(btn);
+    _gt_style_btn_st * style = btn->style;
+    return style->text;
 }
 
 /* end ------------------------------------------------------------------*/

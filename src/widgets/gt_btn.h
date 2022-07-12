@@ -51,6 +51,7 @@ void gt_btn_style_set_color_selected(gt_obj_st * btn, gt_color_t color);
 void gt_btn_style_set_color_unselected(gt_obj_st * btn, gt_color_t color);
 void gt_btn_style_set_selected(gt_obj_st * btn, uint8_t selected);
 void gt_btn_style_set_text(gt_obj_st * btn, char *text);
+char * gt_btn_style_get_text(gt_obj_st * btn);
 
 #ifdef __cplusplus
 } /*extern "C"*/
