@@ -337,7 +337,7 @@ void gt_graph_dot_draw_to_color(uint8_t * dot, gt_color_t * color, gt_area_st ar
 	_h = area_color.y + h;
 	_w = w >> 3;
 
-	for(y = area_color.y; y < (_h-1); y++){
+	for(y = area_color.y; y < (_h); y++){
 		temp = 0;
 		for(x = 0; x < _w; x++){
 			for(j = 7; j >= 0; j--){			

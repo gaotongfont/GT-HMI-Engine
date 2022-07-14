@@ -76,13 +76,21 @@ void gt_check_obj_visible_and_copy(gt_obj_st * obj)
         // GT_LOGD(GT_LOG_TAG_GUI, "obj not visible");
         return;
     }
+    
     GT_LOGD(GT_LOG_TAG_GUI, "obj visible");
-    obj->class->_init_cb(obj, obj->class);
 
     GT_LOGD(GT_LOG_TAG_GUI, "obj->x:%d,y:%d,w:%d,h:%d====disp->x:%d,y:%d,w:%d,h:%d",
         obj->area.x, obj->area.y, obj->area.w, obj->area.h,
         disp->area_disp.x, disp->area_disp.y, disp->area_disp.w, disp->area_disp.h);
 
+    if( obj->class->type == GT_TYPE_IMG || obj->class->type == GT_TYPE_TEXTAREA ){
+        obj->create_type = GT_CREATE_TYPE_PART;
+        gt_area_copy(&obj->area_part, &disp->area_disp);
+    }
+    
+    obj->class->_init_cb(obj, obj->class);
+
+    
     gt_obj_get_valid_area(obj, &disp->area_disp, &area_valib);
 
     GT_LOGD(GT_LOG_TAG_GUI, "area_valib:x:%d,y:%d,w:%d,h:%d", area_valib.x, area_valib.y, area_valib.w, area_valib.h);
@@ -143,6 +151,7 @@ void gt_disp_load_scr(gt_obj_st * scr)
     disp->area_act.h = GT_SCREEN_HEIGHT;
     disp->area_act.w = GT_SCREEN_WIDTH;
 
+    disp->area_disp.y = 0;
     disp->area_disp.x = 0;
     disp->area_disp.w = GT_SCREEN_WIDTH;
     disp->area_disp.h = GT_REFRESH_FLUSH_LINE_PRE_TIME;
