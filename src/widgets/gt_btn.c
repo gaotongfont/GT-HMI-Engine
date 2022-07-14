@@ -78,7 +78,8 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
         .x = x,
         .y = y
     };
-		gt_color_t * color_p = (gt_color_t *)btn->cache.cache_color;
+	
+    gt_color_t * color_p = (gt_color_t *)btn->cache.cache_color;
     if(radius == 0) {
         gt_graph_rect(&rect_attr, &area, color_p);
     }else{
@@ -88,6 +89,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     /* font */
     uint32_t cnt_word = gt_font_count_word(style->text, strlen(style->text));
     uint8_t fp[1024];
+    gt_memset(fp, 0, 1024);
     gt_font_st font = {
         .style_cn = 1,
         .style_en = 2,
@@ -118,7 +120,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
 
     while( cnt_word-- && (x_start+font.size) < w ){
         area.x = x_start;
-        gt_graph_dot_draw_to_color(&font.res[idx_dot], color_p, area, font.size, font.size, color_font);     
+        gt_graph_dot_draw_to_color(&font.res[idx_dot], color_p, area, font.size, font.size, color_font);
         x_start += gt_font_get_next_word_width(&font, !idx_dot);
         idx_dot += (font.size>>3)*font.size;
     }
@@ -232,7 +234,8 @@ static void _gt_btn_init_style(gt_obj_st * btn)
  * @param parent btn's parent element
  * @return gt_obj_st* btn obj
  */
-gt_obj_st * gt_btn_create(gt_obj_st * parent) {
+gt_obj_st * gt_btn_create(gt_obj_st * parent)
+{
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
     _gt_btn_init_style(obj);
     return obj;
