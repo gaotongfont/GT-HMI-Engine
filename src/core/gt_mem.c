@@ -80,6 +80,8 @@ typedef struct gt_mem_hooks_s {
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY MEM_UNIT _mem_pool_int[GT_MEM_SIZE / sizeof(MEM_UNIT)];
 
 static gt_tlsf_t _tlsf;
+
+static size_t _addr_start = 0, _addr_end = 0;
 #else
 /**
  * @brief 映射底层函数接口
@@ -167,6 +169,8 @@ void gt_mem_init(void)
 #if GT_MEM_CUSTOM
     _tlsf = gt_tlsf_create_with_pool((void *)_mem_pool_int, GT_MEM_SIZE);
 	GT_LOGV(GT_LOG_TAG_MEM, "\t--- addr: 0x%p -> 0x%x, size: 0x%x(%d) ---", _mem_pool_int, (size_t)_mem_pool_int + GT_MEM_SIZE, GT_MEM_SIZE, GT_MEM_SIZE);
+    _addr_start = _mem_pool_int;
+    _addr_end = (size_t)_mem_pool_int + GT_MEM_SIZE;
 #endif
 }
 
@@ -205,5 +209,14 @@ void gt_memset(void * ptr, uint8_t val, size_t size)
     memset(ptr, val, size);
 }
 
-
+void gt_mem_check_used(void){
+    char * addr_now = gt_mem_malloc(1024);
+		if( !addr_now ){
+			GT_LOGI(GT_LOG_TAG_MEM, "mem is less 1024byte");
+			return;
+		}
+    float used = (float)((size_t)addr_now - _addr_start) / (float)( _addr_end - _addr_start );
+    gt_mem_free(addr_now);
+    GT_LOGI(GT_LOG_TAG_MEM, "used:%.2f%%",used*100);
+}
 /* end ------------------------------------------------------------------*/

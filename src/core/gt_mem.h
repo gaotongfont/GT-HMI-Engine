@@ -41,6 +41,8 @@ void gt_mem_free(void * ptr);
 void gt_memcpy(void *dst, void *src, size_t size);
 void gt_memset_0(void * ptr, size_t size);
 void gt_memset(void * ptr, uint8_t val, size_t size);
+
+void gt_mem_check_used(void);
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
