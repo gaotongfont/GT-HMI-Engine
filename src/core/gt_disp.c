@@ -13,6 +13,7 @@
 #include "../others/gt_log.h"
 #include "gt_obj_pos.h"
 #include "../hal/gt_hal_disp.h"
+#include "gt_disp.h"
 /* private define -------------------------------------------------------*/
 
 
@@ -96,7 +97,7 @@ void gt_check_obj_visible_and_copy(gt_obj_st * obj)
     GT_LOGD(GT_LOG_TAG_GUI, "area_valib:x:%d,y:%d,w:%d,h:%d", area_valib.x, area_valib.y, area_valib.w, area_valib.h);
 
     gt_area_st area_cpy_dst = {
-        .x = obj->area.x,
+        .x = obj->area.x - disp->area_disp.x,
         .y = 0,
         .w = disp->area_disp.w,
         .h = disp->area_disp.h
@@ -111,7 +112,11 @@ void gt_check_obj_visible_and_copy(gt_obj_st * obj)
         area_cpy_dst.y = obj->area.y - disp->area_disp.y;
     }
 
-    gt_color_area_copy(disp->vbd_color, area_cpy_dst, obj->cache.cache_color, area_cpy_src, area_valib.w, area_valib.h);
+    if( area_cpy_dst.x < 0 ){
+        area_cpy_dst.x = 0;
+    }
+
+    gt_color_area_copy(disp->vbd_color, area_cpy_dst, (gt_color_t *)obj->cache.cache_color, area_cpy_src, area_valib.w, area_valib.h);
     obj->class->_deinit_cb(obj, obj->class);
 }
 
@@ -146,62 +151,109 @@ void gt_disp_load_scr(gt_obj_st * scr)
     uint32_t idx = 0;
     uint32_t len = GT_SCREEN_WIDTH * GT_REFRESH_FLUSH_LINE_PRE_TIME;
 
-    disp->area_act.x = 0;
-    disp->area_act.y = 0;
+    // disp->area_act.x = 0;
+    // disp->area_act.y = 0;
     disp->area_act.h = GT_SCREEN_HEIGHT;
     disp->area_act.w = GT_SCREEN_WIDTH;
 
-    disp->area_disp.y = 0;
-    disp->area_disp.x = 0;
+    disp->area_disp.y = disp->area_act.y;//0;
+    disp->area_disp.x = disp->area_act.x;//0;
     disp->area_disp.w = GT_SCREEN_WIDTH;
     disp->area_disp.h = GT_REFRESH_FLUSH_LINE_PRE_TIME;
 
+    y = 0;
     while( y < GT_SCREEN_HEIGHT ){
-        y+=GT_REFRESH_FLUSH_LINE_PRE_TIME;
         idx = 0;
         while( idx < len ){
             GT_COLOR_SET(disp->vbd_color[idx], 0xFFFF);
             idx++;
         }
+        
+        // use virt screen check obj visible area
+        disp->area_disp.y = disp->area_act.y + y;
+        disp->area_disp.x = disp->area_act.x;
         _gt_disp_check_and_copy_foreach(scr);
+
+        // phy screen use area is from W x H
+        disp->area_disp.y = y;
+        disp->area_disp.x = 0;
         disp->drv->flush_cb(disp->drv, &disp->area_disp, disp->vbd_color);
-        disp->area_disp.y += GT_REFRESH_FLUSH_LINE_PRE_TIME;
+        y += GT_REFRESH_FLUSH_LINE_PRE_TIME;
     }
 }
 
 
+void gt_disp_set_area_act(gt_area_st * area){
+    gt_disp_st * disp_dev = gt_disp_get_default();
+    gt_area_copy(&disp_dev->area_act, area);
+}
 
-void gt_disp_obj_by_10_lines( gt_obj_st * obj ){
+gt_area_st * gt_disp_get_area_act(){
+    gt_disp_st * disp_dev = gt_disp_get_default();
+    return &disp_dev->area_act;
+}
+
+void gt_disp_scroll_area_act(gt_dir_e dir, int16_t dist){
+    gt_area_st * area = gt_disp_get_area_act();
     
-    gt_disp_st * disp = gt_disp_get_default();
-
-    if( obj->class->type == 0 ){
-        /* if obj type is screen */
-        // disp->area_act
+    if( dir == GT_DIR_VER ) {
+        area->y += dist;
+    }else if( dir == GT_DIR_HOR ){
+        area->x += dist;
     }
 
-    disp->area_disp.x = disp->area_act.x;
-    disp->area_disp.y = disp->area_act.y;
-    disp->area_disp.w = disp->area_act.w;
-    disp->area_disp.h = GT_REFRESH_FLUSH_LINE_PRE_TIME;
-
-    int idx = 0;
-    gt_obj_st * scr = obj;
-    while( disp->area_disp.y < (disp->area_act.y + disp->area_act.h) ){
-        if( (disp->area_disp.y + disp->area_disp.h) > (disp->area_act.y + disp->area_act.h) ){
-            disp->area_disp.h = (disp->area_act.y + disp->area_act.h) - disp->area_disp.y;
-        }
-
-        /* foreach all obj */
-        while( idx < scr->cnt_child ){
-            /* 1.check obj is visible */
-
-            /* 2.copy obj color to disp area color */
-
-            /* 3.disp 10 lines to screen */
-        }
+    if(area->x < 0){
+        area->x = 0;
     }
+    if(area->y < 0){
+        area->y = 0;
+    }
+
+    if( area->x > GT_SCREEN_WIDTH * 2 ){
+        area->x = GT_SCREEN_WIDTH * 2;
+    }
+    if( area->y > GT_SCREEN_HEIGHT * 2 ){
+        area->y = GT_SCREEN_HEIGHT * 2;
+    } 
+    gt_disp_load_scr(gt_disp_get_scr());
 }
 
+void gt_disp_obj(gt_obj_st * obj){
+    gt_area_st * area = gt_disp_get_area_act();
+    gt_area_st area_valid;
+    gt_obj_get_valid_area(obj, area, &area_valid);
+ 
+    gt_disp_st * disp_dev = gt_disp_get_default();
+    
+    gt_area_st area_src = {
+        .x = area_valid.x,
+        .y = area_valid.y,
+        .w = obj->area.w,
+        .h = obj->area.h
+    }, area_dst = {
+        .x = 0,
+        .y = 0,//area_valid.y,
+        .w = area_valid.w,//obj->area.w,
+        .h = area_valid.h//obj->area.h
+    }, area_show = {
+        .w = area_valid.w,
+        .h = area_valid.h
+    };
+    
+    if( obj->area.y < disp_dev->area_act.y ){
+        area_show.y = 0;
+    }else{
+        area_show.y = obj->area.y - disp_dev->area_act.y;
+    }
+
+    if( obj->area.x < disp_dev->area_act.x ){
+        area_show.x = 0;
+    }else{
+        area_show.x = obj->area.x - disp_dev->area_act.x;
+    }
+    gt_color_t * color_p = (gt_color_t *)obj->cache.cache_color;
+    gt_color_area_copy(disp_dev->vbd_color, area_dst,  color_p, area_src, area_valid.w, area_valid.h);
+    disp_dev->drv->flush_cb(disp_dev->drv, &area_show, disp_dev->vbd_color);
+}
 
 /* end ------------------------------------------------------------------*/
