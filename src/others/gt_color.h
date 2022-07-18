@@ -34,8 +34,8 @@ extern "C" {
 #error "Invalid GT_COLOR_DEPTH in lv_conf.h! Set it to 1, 8, 16 or 32!"
 #endif
 
-#define GT_COLOR_CLR_BUF(obj_buf, len, val)         do{int idx=0;while(idx<len){obj_buf[idx].full=val; idx++;}}while(0)
-#define GT_COLOR_CPY_BUF(dst, src,len, val)         do{int idx=0;while(idx<len){dst[idx].full=src[idx].full;idx++;}}while(0)
+#define GT_COLOR_CLR_BUF(obj_buf, len, val)         do{int __idx__=0;while(__idx__<len){obj_buf[__idx__].full=val; __idx__++;}}while(0)
+#define GT_COLOR_CPY_BUF(dst, src,len, val)         do{int __idx__=0;while(__idx__<len){dst[__idx__].full=src[__idx__].full;__idx__++;}}while(0)
 #define GT_COLOR_SET_BUF(obj_buf, x, y, w, h, val)  (obj_buf[ (int)((y)*(w) + (x)) ].full = val)
 #define GT_COLOR_GET_BUF(obj_buf, x, y, w, h)       (obj_buf[ (int)((y)*(w) + (x)) ].full)
 

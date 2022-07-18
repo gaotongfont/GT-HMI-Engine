@@ -243,7 +243,7 @@ uint32_t gt_font_count_word(char * utf8, uint32_t len)
 uint32_t gt_font_get_string_width(gt_font_st * font)
 {
 
-	uint32_t idx = 0, cnt = 0, unicode, width = 0, temp;
+	uint32_t idx = 0, unicode, width = 0, temp;
     
     while( idx < font->len ){
         temp = utf8_to_unicode(&font->utf8[idx], &unicode);

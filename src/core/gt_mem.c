@@ -169,7 +169,7 @@ void gt_mem_init(void)
 #if GT_MEM_CUSTOM
     _tlsf = gt_tlsf_create_with_pool((void *)_mem_pool_int, GT_MEM_SIZE);
 	GT_LOGV(GT_LOG_TAG_MEM, "\t--- addr: 0x%p -> 0x%x, size: 0x%x(%d) ---", _mem_pool_int, (size_t)_mem_pool_int + GT_MEM_SIZE, GT_MEM_SIZE, GT_MEM_SIZE);
-    _addr_start = _mem_pool_int;
+    _addr_start = (size_t)_mem_pool_int;
     _addr_end = (size_t)_mem_pool_int + GT_MEM_SIZE;
 #endif
 }

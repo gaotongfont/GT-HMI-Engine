@@ -22,8 +22,19 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+typedef enum _gt_text_align_e
+{ 
+    GT_TEXT_ALIGN_LEFT,
+    GT_TEXT_ALIGN_RIGHT,
+    GT_TEXT_ALIGN_CENTER,
+}gt_text_align_et;
 
-
+typedef enum _gt_text_long_mode_e
+{
+    GT_TEXT_LONG_MODE_WRAP,
+    GT_TEXT_LONG_MODE_DOT,
+    GT_TEXT_LONG_MODE_SCROLL,
+}gt_text_long_mode_et;
 
 /* macros ---------------------------------------------------------------*/
 
