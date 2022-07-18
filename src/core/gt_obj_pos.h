@@ -55,7 +55,7 @@ bool gt_obj_is_visible(gt_obj_st * obj);
  * 
  * @param obj obj
  * @param area_act disp area active
- * @param area_valid valid area
+ * @param area_valid valid area(x:start cpy x pos, y:start cpy y pos, w:how much cpy width,h:how much cpy height)
  */
 void gt_obj_get_valid_area(gt_obj_st * obj, gt_area_st * area_act, gt_area_st *area_valid);
 
