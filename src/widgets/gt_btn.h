@@ -26,13 +26,13 @@ typedef struct _gt_style_btn_s
 {
     gt_color_t color_selected;
     gt_color_t color_unselected;
+    gt_color_t color_font;
 
     gt_size_t radius;
 
     gt_size_t border_width;
     gt_color_t border_bcolor;
     gt_color_t border_fcolor;
-
 
     uint32_t is_fill:1;
     uint32_t selected:1;
@@ -52,6 +52,7 @@ void gt_btn_style_set_color_unselected(gt_obj_st * btn, gt_color_t color);
 void gt_btn_style_set_selected(gt_obj_st * btn, uint8_t selected);
 void gt_btn_style_set_text(gt_obj_st * btn, char *text);
 char * gt_btn_style_get_text(gt_obj_st * btn);
+void gt_btn_style_set_font_color(gt_obj_st * btn, gt_color_t color);
 
 #ifdef __cplusplus
 } /*extern "C"*/

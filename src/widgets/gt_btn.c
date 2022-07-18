@@ -51,6 +51,20 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     gt_size_t radius;      //widget attr
     
     gt_color_t fcolor;
+    uint8_t fp[1024];
+    gt_font_st font = {
+        .style_cn = 1,
+        .style_en = 2,
+        .res = fp,
+        .utf8 = (uint8_t *)style->text,
+        .len = strlen(style->text),
+        .size = GT_FONT_SIZE_16x16,
+    };
+    // set default size
+    if( btn->area.w == 0 || btn->area.h == 0){
+        btn->area.w = gt_font_get_string_width(&font)+20;
+        btn->area.h = GT_FONT_SIZE_16x16+4;
+    }
 
     x = btn->area.x;
     y = btn->area.y;
@@ -88,16 +102,8 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
 
     /* font */
     uint32_t cnt_word = gt_font_count_word(style->text, strlen(style->text));
-    uint8_t fp[1024];
     gt_memset(fp, 0, 1024);
-    gt_font_st font = {
-        .style_cn = 1,
-        .style_en = 2,
-        .res = fp,
-        .utf8 = (uint8_t *)style->text,
-        .len = strlen(style->text),
-        .size = GT_FONT_SIZE_16x16,
-    };
+    
     uint32_t w_font = gt_font_get_string_width(&font);
     gt_font_get_string_dot(&font);
 
@@ -115,13 +121,11 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     uint16_t idx_dot = 0;
     area.x = x_start;
     area.y = y_start;
-    gt_color_t color_font;
-    color_font.full = 0xFFFF;
+    
 
     while( cnt_word-- && (x_start+font.size) < w ){
         area.x = x_start;
-        gt_graph_dot_draw_to_color(&font.res[idx_dot], color_p, area, font.size, font.size, color_font);
-        x_start += gt_font_get_next_word_width(&font, !idx_dot);
+        gt_graph_dot_draw_to_color(&font.res[idx_dot], color_p, area, font.size, font.size, style->color_font);        x_start += gt_font_get_next_word_width(&font, !idx_dot);
         idx_dot += (font.size>>3)*font.size;
     }
     
@@ -164,8 +168,10 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
             _gt_btn_init_widget(obj);
-            extern void _flush_cb(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
-            _flush_cb(NULL, &obj->area, (gt_color_t *)obj->cache.cache_color);
+
+            extern void gt_disp_obj(gt_obj_st * obj);
+            gt_disp_obj(obj);
+
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
@@ -219,6 +225,7 @@ static void _gt_btn_init_style(gt_obj_st * btn)
     strcpy(_style->text, "btn");
     _style->radius = 0;
 	_style->selected = 0;
+    GT_COLOR_SET(_style->color_font, 0xFFFF);        //default color_font
     GT_COLOR_SET(_style->color_selected, 0x1C1A);    //default color_selected
     GT_COLOR_SET(_style->color_unselected, 0x1537);  //default color_unselected
 }
@@ -277,4 +284,8 @@ char * gt_btn_style_get_text(gt_obj_st * btn){
     return style->text;
 }
 
+void gt_btn_style_set_font_color(gt_obj_st * btn, gt_color_t color){
+    _gt_style_btn_st * style = btn->style;
+    GT_COLOR_SET(style->color_font, GT_COLOR_GET(color));
+}
 /* end ------------------------------------------------------------------*/
