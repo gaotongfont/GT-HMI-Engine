@@ -55,6 +55,11 @@ typedef enum{
     GT_CACHED,
 }gt_cache_e;
 
+typedef enum{
+    GT_CREATE_TYPE_FULL,
+    GT_CREATE_TYPE_PART,
+}gt_create_type_e;
+
 typedef struct _gt_obj_s {
     struct _gt_obj_s * parent;
     struct _gt_obj_s ** child;
@@ -63,11 +68,16 @@ typedef struct _gt_obj_s {
 #if GT_USE_USER_DATA
     void * user_data;
 #endif
-    gt_area_st area;
+    
+    gt_area_st area;                    /* base area */
+    gt_area_st area_part;               /* part create area */
+    gt_area_st area_back;               /* backup area */
+    gt_create_type_e create_type;       /* the obj is part create? */
+
     gt_obj_event_attr_st * event_attr;
     uint8_t cnt_event;
 
-    uint32_t event_mask;     /* send event code add this mask */
+    uint32_t event_mask;                /* send event code add this mask */
 
     style_widget_t style;
 

@@ -59,7 +59,47 @@ static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class)
 
 static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
 {
+    gt_event_type_et code = gt_event_get_code(e);
+    switch(code) {
+        case GT_EVENT_TYPE_DRAW_START:
+            GT_LOGD(GT_LOG_TAG_GUI, "start draw");
+            break;
 
+        case GT_EVENT_TYPE_DRAW_END:
+            GT_LOGD(GT_LOG_TAG_GUI, "end draw");
+            break;
+
+        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
+            GT_LOGD(GT_LOG_TAG_GUI, "child remove");
+			break;
+
+        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
+            GT_LOGD(GT_LOG_TAG_GUI, "child delete");
+            break;
+
+        case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
+            GT_LOGD(GT_LOG_TAG_GUI, "clicking");
+            break;
+
+        case GT_EVENT_TYPE_INPUT_SCROLL:
+            GT_LOGD(GT_LOG_TAG_GUI, "obj scroll");            
+            break;
+
+        case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
+            GT_LOGD(GT_LOG_TAG_GUI, "process");
+            /* code here */
+
+            gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
+            break;
+
+        case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
+            GT_LOGD(GT_LOG_TAG_GUI, "processed");
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            break;
+
+        default:
+            break;
+    }
 }
 
 
@@ -74,9 +114,10 @@ gt_obj_st * gt_obj_create(gt_obj_st * parent)
     return obj;
 }
 
+// need fix
 void gt_obj_del(gt_obj_st * obj)
 {
-    GT_LOGV(GT_LOG_TAG_GUI, "create obj:%p", obj);
+    GT_LOGV(GT_LOG_TAG_GUI, "del obj:%p", obj);
     gt_mem_free(obj);
 }
 
