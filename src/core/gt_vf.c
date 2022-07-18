@@ -48,6 +48,11 @@ void gt_vf_read_img_offset(const char * path, uint8_t * res, uint32_t offset, ui
     vf_dev->drv->read_cb(vf_dev->drv, vfp, res, len);
 }
 
-
+void gt_vf_read_img_wh(const char * path, uint16_t * w, uint16_t * h){
+    gt_vf_st * vf_dev = gt_vf_get_default();
+    gt_vfp_st * vfp = vf_dev->drv->open_cb(vf_dev->drv, (char *)path);
+    *w = vfp->msg.pic.w;
+    *h = vfp->msg.pic.h;
+}
 
 /* end ------------------------------------------------------------------*/

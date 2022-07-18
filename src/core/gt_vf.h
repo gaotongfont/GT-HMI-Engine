@@ -32,7 +32,7 @@ extern "C" {
 /* global functions / API interface -------------------------------------*/
 void gt_vf_read_img(const char * path, uint8_t * res);
 void gt_vf_read_img_offset(const char * path, uint8_t * res, uint32_t offset, uint32_t len);
-
+void gt_vf_read_img_wh(const char * path, uint16_t * w, uint16_t * h);
 
 
 #ifdef __cplusplus
