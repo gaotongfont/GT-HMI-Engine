@@ -48,8 +48,12 @@ const gt_obj_class_st gt_img_class = {
 
 static void _gt_img_init_widget(gt_obj_st * img)
 {
-   _gt_style_img_st * style = img->style;
+    _gt_style_img_st * style = img->style;
     gt_size_t w, h;
+
+    if(img->area.w == 0 || img->area.h == 0){
+        gt_vf_read_img_wh(style->src, &img->area.w, &img->area.h);
+    }
 
     if( GT_CREATE_TYPE_PART == img->create_type ){
         // area_disp has been cpy to img->area_part
@@ -77,7 +81,9 @@ static void _gt_img_init_widget(gt_obj_st * img)
     }else{
         w = img->area.w;
         h = img->area.h;
-
+        if( img->cache.cache_color ){
+            gt_mem_free(img->cache.cache_color);
+        }
         img->cache.cache_color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
         
         gt_vf_read_img(style->src, img->cache.cache_color);
@@ -125,7 +131,9 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
-            _gt_img_init_widget(obj);
+            // _gt_img_init_widget(obj);
+            // extern void gt_disp_obj(gt_obj_st * obj);
+            // gt_disp_obj(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
