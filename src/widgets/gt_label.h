@@ -25,6 +25,7 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_style_label_s{
+    gt_color_t color_font;
     char * text;
 }_gt_style_label_st;
 

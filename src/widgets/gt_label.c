@@ -51,7 +51,12 @@ static void _gt_label_init_widget(gt_obj_st * label) {
     
     if( 0 == label->area.w || 0 == label->area.h ){
         label->area.h = 20;
-        label->area.w =  (strlen(style->text)+1) * 16;
+        gt_font_st font = {
+            .utf8 = (uint8_t *)style->text,
+            .len = strlen(style->text),
+            .size = 16
+        };
+        label->area.w =  gt_font_get_string_width(&font) + 20;
     }
 
     x = label->area.x;
@@ -99,13 +104,11 @@ static void _gt_label_init_widget(gt_obj_st * label) {
     // fill to shape
     uint16_t idx_dot = 0;
     area.x = x_start;
-    area.y = y_start;
-    gt_color_t color_font;
-    color_font.full = 0x0000;
+    area.y = y_start;   
 
     while( cnt_word-- && (x_start+font.size) < w ){
         area.x = x_start;
-        gt_graph_dot_draw_to_color(&font.res[idx_dot], color_p, area, font.size, font.size, color_font);     
+        gt_graph_dot_draw_to_color(&font.res[idx_dot], color_p, area, font.size, font.size, style->color_font);
         x_start += gt_font_get_next_word_width(&font, !idx_dot);
         idx_dot += (font.size>>3)*font.size;
     }
@@ -148,14 +151,21 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
             _gt_label_init_widget(obj);
-            extern void _flush_cb(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
-            _flush_cb(NULL, &obj->area, (gt_color_t *)obj->cache.cache_color);
+
+            extern void gt_disp_obj(gt_obj_st * obj);
+            gt_disp_obj(obj);
+            
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
             GT_LOGD(GT_LOG_TAG_GUI, "end draw");
             gt_mem_free(obj->cache.cache_color);
+            break;
+
+        case GT_EVENT_TYPE_UPDATE_VALUE:
+            GT_LOGD(GT_LOG_TAG_GUI, "value update");
+            
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
@@ -168,7 +178,6 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
             GT_LOGD(GT_LOG_TAG_GUI, "clicking");
-            
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
@@ -201,6 +210,8 @@ static void _gt_label_init_style(gt_obj_st * label)
     
     _style->text = gt_mem_malloc(sizeof("label"));
     strcpy(_style->text, "label");
+    
+    GT_COLOR_SET(_style->color_font, 0x0000);
 }
 
 
@@ -231,6 +242,7 @@ void gt_label_style_set_text(gt_obj_st * label, char * text)
     style->text = gt_mem_malloc(size+1);
     gt_memset(style->text, 0, size+1);
     gt_memcpy(style->text, text, size);
+    gt_event_send(label, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
 char * gt_label_style_get_text(gt_obj_st * label){
@@ -239,4 +251,8 @@ char * gt_label_style_get_text(gt_obj_st * label){
     return style->text;
 }
 
+void gt_label_style_set_font_color(gt_obj_st * label, gt_color_t color){
+    _gt_style_label_st * style = label->style;    
+    GT_COLOR_SET(style->color_font, GT_COLOR_GET(color));
+}
 /* end ------------------------------------------------------------------*/
