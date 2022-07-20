@@ -1,7 +1,7 @@
 /**
  * @file gt_color.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-13 10:13:45
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -34,6 +34,7 @@ extern "C" {
 #error "Invalid GT_COLOR_DEPTH in lv_conf.h! Set it to 1, 8, 16 or 32!"
 #endif
 
+#define GT_COLOR_GET_OBJ(_buf, x, y, w, h)          (_buf[ (int)( (y) * (w) + x) ])
 #define GT_COLOR_CLR_BUF(obj_buf, len, val)         do{int __idx__=0;while(__idx__<len){obj_buf[__idx__].full=val; __idx__++;}}while(0)
 #define GT_COLOR_CPY_BUF(dst, src,len, val)         do{int __idx__=0;while(__idx__<len){dst[__idx__].full=src[__idx__].full;__idx__++;}}while(0)
 #define GT_COLOR_SET_BUF(obj_buf, x, y, w, h, val)  (obj_buf[ (int)((y)*(w) + (x)) ].full = val)
@@ -116,8 +117,8 @@ typedef GT_CONCAT3(gt_color, GT_COLOR_DEPTH, _t) gt_color_t;
 /* global functions / API interface -------------------------------------*/
 
 /**
- * @brief Copy from the area of the src to the area of the dst 
- * 
+ * @brief Copy from the area of the src to the area of the dst
+ *
  * @param dst dst : gt_color_t arr
  * @param area_dst dst's pos: area_dst.x, area_dst.y, dst's size: area_dst.w,area_dst.h
  * @param src src : gt_color_t arr

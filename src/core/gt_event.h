@@ -1,7 +1,7 @@
 /**
  * @file gt_event.h
  * @author yongg (your@email.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-11 14:57:40
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -49,7 +49,7 @@ typedef enum gt_event_type_e{
     GT_EVENT_TYPE_CHANGE_CHILD_DELETED  = 1<<11,        /* delete child finish */
 
     _GT_EVENT_TYPE_TOTAL = 11,                          /* count event number */
-    
+
     GT_EVENT_TYPE_ALL = 0xFFFFFFF,
 }gt_event_type_et;
 
