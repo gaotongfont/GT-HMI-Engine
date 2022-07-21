@@ -232,7 +232,7 @@ static inline void _gt_graph_set_arc_0_to_45_direct_gray(
 {
 	gt_point_st from, to;
 	gt_size_t size = r > _RADIUS_SPLIT_SIZE ? 2 : 1;
-	// return ;
+
 	if (last.y == coord.y) {
 		--count;
 	}
@@ -291,7 +291,7 @@ static inline void _gt_graph_set_arc_45_to_90_direct_gray(
 {
 	gt_point_st from, to;
 	gt_size_t size = r > _RADIUS_SPLIT_SIZE ? 2 : 1;
-	gt_size_t offset = r >= 10 ? 1 : 0;
+	gt_size_t offset = r > 16 ? 1 : 0;
 
 	if (last.x == coord.x) {
 		--count;
@@ -593,11 +593,8 @@ static void _gt_graph_arc_45_90(
 		else if (r > _RADIUS_SPLIT_SIZE) {
 			_GT_GRAPH_FILL_POINTS(1, coord.x - 1, coord.y, coord.x - 1, coord.y - 1);
 		}
-		else if (r > 10) {
-			_GT_GRAPH_FILL_POINTS(1, coord.x, coord.y, coord.x + 1, coord.y);
-		}
-		else {
-			_GT_GRAPH_FILL_POINTS(3, coord.x, coord.y, coord.x + 1, coord.y);
+		else if (r < 10) {
+			_GT_GRAPH_FILL_POINTS(3, coord.x + 1, coord.y, coord.x + 1, coord.y);
 		}
 	}
 }
