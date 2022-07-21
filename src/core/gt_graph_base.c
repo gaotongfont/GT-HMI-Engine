@@ -42,16 +42,6 @@ static gt_color_t * color;
 
 
 /* static functions -----------------------------------------------------*/
-void _gt_graph_get_gray(gt_color_t * color_out, gt_color_t color_from, gt_color_t color_to, gt_gray_t gray, gt_size_t step)
-{
-	uint8_t r,g,b;
-	r = GT_COLOR_GET_R(color_from) + (GT_COLOR_GET_R(color_to) - GT_COLOR_GET_R(color_from))*step/gray;
-	g = GT_COLOR_GET_G(color_from) + (GT_COLOR_GET_G(color_to) - GT_COLOR_GET_G(color_from))*step/gray;
-	b = GT_COLOR_GET_B(color_from) + (GT_COLOR_GET_B(color_to) - GT_COLOR_GET_B(color_from))*step/gray;
-	color_out->ch.red = r;
-	color_out->ch.green = g;
-	color_out->ch.blue = b;
-}
 
 void _gt_graph_dot_to_color(uint8_t *dot, gt_color_t *color,gt_size_t w, gt_size_t h, gt_color_t fcolor, gt_color_t bcolor)
 {
@@ -155,7 +145,7 @@ void _gt_graph_gray_to_color(uint8_t *gray, gt_color_t *color,gt_size_t w, gt_si
 		for(i=1; i<=bit_cnt; i++) {
 			bit_idx = bit_idx-bit_step;
 			temp = (gray[idx]>>bit_idx) & bit_mask;
-			_gt_graph_get_gray(&_color, bcolor, fcolor, (gt_gray_t)bit_mask, temp);
+			gt_graph_get_gray(&_color, bcolor, fcolor, bit_mask, temp);
 			GT_COLOR_SET(color[cnt], GT_COLOR_GET(_color));
 			cnt++;
 		}
@@ -165,6 +155,14 @@ void _gt_graph_gray_to_color(uint8_t *gray, gt_color_t *color,gt_size_t w, gt_si
 
 /* global functions / API interface -------------------------------------*/
 
+uint32_t gt_graph_get_gray(gt_color_t * color_out, gt_color_t color_from, gt_color_t color_to, gt_size_t gray, gt_size_t step)
+{
+	color_out->ch.red   = (GT_COLOR_GET_R(color_to) - GT_COLOR_GET_R(color_from)) * step / gray + GT_COLOR_GET_R(color_from);
+	color_out->ch.green = (GT_COLOR_GET_G(color_to) - GT_COLOR_GET_G(color_from)) * step / gray + GT_COLOR_GET_G(color_from);
+	color_out->ch.blue  = (GT_COLOR_GET_B(color_to) - GT_COLOR_GET_B(color_from)) * step / gray + GT_COLOR_GET_B(color_from);
+
+	return color_out->full;
+}
 gt_color_t * gt_graph_get_default()
 {
 	return color;
@@ -407,11 +405,11 @@ static void _gt_graph_arc_0_45(
 	gt_size_t  diff_x  = 0, diff_y = 0, remark_col;
 	uint8_t    count   = 0;
 
-	w          = area->w;
-	h          = area->h;
-	r          = circle_attr->radius;
-	fcolor     = circle_attr->fcolor;
-	remark_col = GT_MATH_GET_TRIGON_VAL(gt_cos(0) * r) + r;
+	w            = area->w;
+	h            = area->h;
+	r            = circle_attr->radius;
+	fcolor       = circle_attr->fcolor;
+	remark_col   = GT_MATH_GET_TRIGON_VAL(gt_cos(0) * r) + r;
 
 	if (45 == end_angle && r > _RADIUS_SPLIT_SIZE) {
 		end_angle += 2;
@@ -484,7 +482,7 @@ static void _gt_graph_arc_0_45(
 
 #define _GT_GRAPH_FILL_POINTS(_step, _p1_x, _p1_y, _p2_x, _p2_y) \
 	do {	\
-		_gt_graph_get_gray(&tmp_color,	\
+		gt_graph_get_gray(&tmp_color,	\
 			GT_COLOR_GET_OBJ(buf, coord.x, coord.y, w, h),	\
 			bcolor,	\
 			GT_GRAY_4, _step);	\
@@ -596,7 +594,6 @@ static void _gt_graph_arc_45_90(
 			_GT_GRAPH_FILL_POINTS(1, coord.x - 1, coord.y, coord.x - 1, coord.y - 1);
 		}
 		else {
-			GT_COLOR_SET(bcolor, 0xffff);
 			_GT_GRAPH_FILL_POINTS(3, coord.x, coord.y, coord.x + 1, coord.y);
 		}
 	}
@@ -618,6 +615,8 @@ void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 	w = area->w;
 	h = area->h;
 	r = circle_attr->radius;
+
+	GT_COLOR_CLR_BUF(buf, w * h, GT_COLOR_GET(circle_attr->bcolor));
 
 	_gt_graph_arc_0_45(buf, circle_attr, area, 0, 45);
 	_gt_graph_arc_45_90(buf, circle_attr, area, 45, 90);
@@ -765,7 +764,7 @@ void gt_graph_dot_draw_to_color(uint8_t * dot, gt_color_t * color, gt_area_st ar
 	for(y = area_color.y; y < (_h); y++){
 		temp = 0;
 		for(x = 0; x < _w; x++){
-			for(j = 7; j >= 0; j--){			
+			for(j = 7; j >= 0; j--){
 				if( (dot[idx] >> j) & 0x01 ){
 					GT_COLOR_SET_BUF(color, area_color.x + temp, y, area_color.w, area_color.h, GT_COLOR_GET(fcolor));
 				}

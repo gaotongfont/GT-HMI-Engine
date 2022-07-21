@@ -12,6 +12,7 @@
 #include "stdlib.h"
 #include "stdbool.h"
 #include "gt_log.h"
+#include "../core/gt_graph_base.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -50,28 +51,30 @@ static uint8_t _gt_set_trans_gray_hor(gt_color_t * buffer, gt_area_st * area, gt
         return 0;
     }
 
+    if (!step) {
+        return 0;
+    }
+
     gt_color_t from = GT_COLOR_GET_OBJ(buffer, coord->x, coord->y, area->w, NULL);
     gt_color_t to   = GT_COLOR_GET_OBJ(buffer, step + coord->x, coord->y, area->w, NULL);
     gt_color_t * ptr;
 
     gt_size_t i, cnt = 0;
-    gt_size_t div = step;
+    gt_size_t div = abs(step);
 
     if (step > 0) {
         for (i = 0; i < step; i++) {
             ++cnt;
-            ptr           = &GT_COLOR_GET_OBJ(buffer, coord->x + i, coord->y, area->w, area->h);
-            ptr->ch.red   = ( GT_COLOR_GET_R(to) - GT_COLOR_GET_R(from) ) * cnt / div + GT_COLOR_GET_R(from);
-            ptr->ch.green = ( GT_COLOR_GET_G(to) - GT_COLOR_GET_G(from) ) * cnt / div + GT_COLOR_GET_G(from);
-            ptr->ch.blue  = ( GT_COLOR_GET_B(to) - GT_COLOR_GET_B(from) ) * cnt / div + GT_COLOR_GET_B(from);
+            ptr = &GT_COLOR_GET_OBJ(buffer, coord->x + i, coord->y, area->w, area->h);
+            gt_graph_get_gray(ptr, from, to, div, cnt);
         }
     } else {
-        for (i = step; i < 0; i++) {
-            ++cnt;
-            ptr           = &GT_COLOR_GET_OBJ(buffer, coord->x + i, coord->y, area->w, area->h);
-            ptr->ch.red   = ( GT_COLOR_GET_R(to) - GT_COLOR_GET_R(from) ) * cnt / div + GT_COLOR_GET_R(from);
-            ptr->ch.green = ( GT_COLOR_GET_G(to) - GT_COLOR_GET_G(from) ) * cnt / div + GT_COLOR_GET_G(from);
-            ptr->ch.blue  = ( GT_COLOR_GET_B(to) - GT_COLOR_GET_B(from) ) * cnt / div + GT_COLOR_GET_B(from);
+        cnt = div;
+        coord->x += step;
+        for (i = 0; i < div; i++) {
+            --cnt;
+            ptr = &GT_COLOR_GET_OBJ(buffer, coord->x + i, coord->y, area->w, area->h);
+            gt_graph_get_gray(ptr, from, to, div, cnt);
         }
     }
 
@@ -93,28 +96,30 @@ static uint8_t _gt_set_trans_gray_ver(gt_color_t * buffer, gt_area_st * area, gt
         return 0;
     }
 
+    if (!step) {
+        return 0;
+    }
+
     gt_color_t from = GT_COLOR_GET_OBJ(buffer, coord->x, coord->y, area->w, NULL);
     gt_color_t to   = GT_COLOR_GET_OBJ(buffer, coord->x, step + coord->y, area->w, NULL);
     gt_color_t * ptr;
 
     gt_size_t i, cnt = 0;
-    gt_size_t div = step;
+    gt_size_t div = abs(step);
 
     if (step > 0) {
-        for (i = 0; i < step; i++) {
+        for (i = 0; i < div; i++) {
             ++cnt;
-            ptr           = &GT_COLOR_GET_OBJ(buffer, coord->x, coord->y + i, area->w, area->h);
-            ptr->ch.red   = ( GT_COLOR_GET_R(to) - GT_COLOR_GET_R(from) ) * cnt / div + GT_COLOR_GET_R(from);
-            ptr->ch.green = ( GT_COLOR_GET_G(to) - GT_COLOR_GET_G(from) ) * cnt / div + GT_COLOR_GET_G(from);
-            ptr->ch.blue  = ( GT_COLOR_GET_B(to) - GT_COLOR_GET_B(from) ) * cnt / div + GT_COLOR_GET_B(from);
+            ptr = &GT_COLOR_GET_OBJ(buffer, coord->x, coord->y + i, area->w, area->h);
+            gt_graph_get_gray(ptr, from, to, div, cnt);
         }
     } else {
-        for (i = step; i < 0; i++) {
-            ++cnt;
-            ptr           = &GT_COLOR_GET_OBJ(buffer, coord->x, coord->y + i, area->w, area->h);
-            ptr->ch.red   = ( GT_COLOR_GET_R(to) - GT_COLOR_GET_R(from) ) * cnt / div + GT_COLOR_GET_R(from);
-            ptr->ch.green = ( GT_COLOR_GET_G(to) - GT_COLOR_GET_G(from) ) * cnt / div + GT_COLOR_GET_G(from);
-            ptr->ch.blue  = ( GT_COLOR_GET_B(to) - GT_COLOR_GET_B(from) ) * cnt / div + GT_COLOR_GET_B(from);
+        cnt = div;
+        coord->y += step;
+        for (i = 0; i < div; i++) {
+            --cnt;
+            ptr = &GT_COLOR_GET_OBJ(buffer, coord->x, coord->y + i, area->w, area->h);
+            gt_graph_get_gray(ptr, from, to, div, cnt);
         }
     }
 
