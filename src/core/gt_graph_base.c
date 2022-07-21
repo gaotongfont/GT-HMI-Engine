@@ -590,8 +590,11 @@ static void _gt_graph_arc_45_90(
 		if (_RADIUS_SPLIT_SIZE == r) {
 			_GT_GRAPH_FILL_POINTS(1, coord.x, coord.y, coord.x + 1, coord.y - 1);
 		}
-		if (r > _RADIUS_SPLIT_SIZE) {
+		else if (r > _RADIUS_SPLIT_SIZE) {
 			_GT_GRAPH_FILL_POINTS(1, coord.x - 1, coord.y, coord.x - 1, coord.y - 1);
+		}
+		else if (r > 10) {
+			_GT_GRAPH_FILL_POINTS(1, coord.x, coord.y, coord.x + 1, coord.y);
 		}
 		else {
 			_GT_GRAPH_FILL_POINTS(3, coord.x, coord.y, coord.x + 1, coord.y);
