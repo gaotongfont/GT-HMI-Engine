@@ -626,11 +626,11 @@ void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
 		for (x = 0; x < r; x++) {
 			color = GT_COLOR_GET_OBJ(buf, r + x, y, w, h);
 			// left bottom
-			GT_COLOR_SET_BUF(buf, r - x, y, w, h, GT_COLOR_GET(color));
+			GT_COLOR_SET_BUF(buf, r - x - 1, y, w, h, GT_COLOR_GET(color));
 			// left top
-			GT_COLOR_SET_BUF(buf, r - x, h - y, w, h, GT_COLOR_GET(color));
+			GT_COLOR_SET_BUF(buf, r - x - 1, h - y - 1, w, h, GT_COLOR_GET(color));
 			// right top
-			GT_COLOR_SET_BUF(buf, r + x, h - y, w, h, GT_COLOR_GET(color));
+			GT_COLOR_SET_BUF(buf, r + x, h - y - 1, w, h, GT_COLOR_GET(color));
 		}
 	}
 }
