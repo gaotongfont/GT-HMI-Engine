@@ -68,8 +68,8 @@ typedef void (* gt_event_cb_t)(gt_event_st * e);
 /* global functions / API interface -------------------------------------*/
 void gt_obj_add_event_cb(struct _gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data);
 gt_event_type_et gt_event_get_code(gt_event_st * e);
-
 gt_res_t gt_event_send(struct _gt_obj_s * parent, gt_event_type_et event, void * user_data);
+void gt_event_clr_mask(struct _gt_obj_s * parent);
 
 void _gt_event_init(void);
 #ifdef __cplusplus

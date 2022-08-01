@@ -127,7 +127,7 @@ void _gt_disp_check_and_copy_foreach(gt_obj_st * obj)
         if( obj->child[idx]->cnt_child != 0 ){
             _gt_disp_check_and_copy_foreach( obj->child[idx] );
         }
-        
+
         gt_check_obj_visible_and_copy(obj->child[idx]);
         idx++;
     }
@@ -180,6 +180,10 @@ void gt_disp_load_scr(gt_obj_st * scr)
         disp->drv->flush_cb(disp->drv, &disp->area_disp, disp->vbd_color);
         y += GT_REFRESH_FLUSH_LINE_PRE_TIME;
     }
+
+    // here must clr all obj pre event_mask
+    extern void gt_event_clr_mask(gt_obj_st * parent);
+    gt_event_clr_mask(scr);
 }
 
 

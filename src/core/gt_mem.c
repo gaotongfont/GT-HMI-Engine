@@ -210,13 +210,16 @@ void gt_memset(void * ptr, uint8_t val, size_t size)
 }
 
 void gt_mem_check_used(void){
+#if GT_MEM_CUSTOM
     char * addr_now = gt_mem_malloc(1024);
-		if( !addr_now ){
-			GT_LOGI(GT_LOG_TAG_MEM, "mem is less 1024byte");
-			return;
-		}
+    if( !addr_now ){
+        GT_LOGI(GT_LOG_TAG_MEM, "mem is less 1024byte");
+        return;
+    }
     float used = (float)((size_t)addr_now - _addr_start) / (float)( _addr_end - _addr_start );
     gt_mem_free(addr_now);
     GT_LOGI(GT_LOG_TAG_MEM, "used:%.2f%%",used*100);
+    printf("used:%.2f%%\n",used*100);
+#endif
 }
 /* end ------------------------------------------------------------------*/

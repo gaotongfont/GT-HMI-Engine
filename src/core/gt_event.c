@@ -100,6 +100,10 @@ gt_res_t gt_event_send(gt_obj_st * parent, gt_event_type_et event, void * parms)
         return GT_RES_FAIL;
     }
     // add event to obj----sys event,process draw,del,create...need long time
+    if( parent->event_mask&event ){
+        GT_LOGD(GT_LOG_TAG_GUI, "parent is exist the event");
+        return GT_RES_FAIL;
+    }
     parent->event_mask |= event;
     
     // foreach parent's event_attr----user event,immediately process the user events
@@ -107,9 +111,9 @@ gt_res_t gt_event_send(gt_obj_st * parent, gt_event_type_et event, void * parms)
     gt_obj_event_attr_st * event_attr;
     gt_event_st e;
     while( idx < parent->cnt_event ){
-        GT_LOGD(GT_LOG_TAG_GUI, "cnt:%d--idx:%d", parent->cnt_event, idx);
         event_attr = gt_obj_get_event_attr(parent, idx);//&parent->event_attr[idx];
         if( NULL == event_attr ){
+            idx++;
             continue;
         }
         if(event_attr->filter == GT_EVENT_TYPE_ALL || event_attr->filter == event ) {
@@ -140,6 +144,23 @@ void _gt_event_handler_event_mask(gt_obj_st * obj){
     }
 }
 
+
+static void _gt_obj_foreach_event_cb(gt_obj_st * parent){
+    _gt_event_handler_event_mask(parent);
+    
+    int idx_child = 0;
+    gt_obj_st * obj_temp = NULL;
+    while( idx_child < parent->cnt_child ){
+		obj_temp = parent->child[idx_child];
+
+        if( 0 != obj_temp->cnt_child ){
+            _gt_obj_foreach_event_cb(obj_temp);
+        }
+        _gt_event_handler_event_mask( obj_temp );
+        idx_child++;
+    }
+}
+
 void _gt_timer_event_cb(struct _gt_timer_s * timer){
     // GT_LOGV(GT_LOG_TAG_GUI, "timer event cb start");
 
@@ -151,15 +172,7 @@ void _gt_timer_event_cb(struct _gt_timer_s * timer){
     }
 
     /* step2: foreach obj event_mask and process */
-    _gt_event_handler_event_mask(scr);
-
-    int idx_child = 0;
-    gt_obj_st * obj_temp = NULL;
-    while( idx_child < scr->cnt_child ){
-		obj_temp = scr->child[idx_child];
-        _gt_event_handler_event_mask( obj_temp );
-        idx_child++;
-    }
+    _gt_obj_foreach_event_cb(scr);
 
     // GT_LOGV(GT_LOG_TAG_GUI, "timer event cb end");
 }
@@ -167,5 +180,20 @@ void _gt_timer_event_cb(struct _gt_timer_s * timer){
 void _gt_event_init(){
     _gt_timer_create(_gt_timer_event_cb, GT_TASK_PERIOD_TIME_EVENT, NULL);
 }
+
+/**
+ * @brief clr all obj mask
+ * 
+ * @param parent 
+ */
+void gt_event_clr_mask(gt_obj_st * parent)
+{
+    int idx = 0;
+    parent->event_mask = 0;
+    while(idx < parent->cnt_child){
+        gt_event_clr_mask( parent->child[idx++] );
+    }
+}
+
 
 /* end ------------------------------------------------------------------*/

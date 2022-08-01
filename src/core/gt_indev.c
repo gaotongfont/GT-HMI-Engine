@@ -60,7 +60,10 @@ void gt_indev_handler_point(gt_indev_st * indev)
 
             /* save pressed obj */
             indev->proc.data.point.obj_act = gt_find_clicked_obj_by_point(scr, &data_indev.point);
+            indev->proc.data.point.obj_scroll = indev->proc.data.point.obj_act;
+            
             /* send clicking event to pressed obj */
+            _gt_obj_set_process_point(indev->proc.data.point.obj_act, &indev->proc.data.point.point_act);
             gt_event_send(indev->proc.data.point.obj_act, GT_EVENT_TYPE_INPUT_CLICKING, NULL);
         }else {
             /* last pressed point */
@@ -71,12 +74,16 @@ void gt_indev_handler_point(gt_indev_st * indev)
         indev->proc.data.point.obj_last = gt_find_clicked_obj_by_point(scr, &data_indev.point);
 
         if( indev->proc.data.point.obj_act != indev->proc.data.point.obj_last ){
-            gt_event_send(indev->proc.data.point.obj_act, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
-            indev->proc.data.point.obj_act = indev->proc.data.point.obj_last;
+            gt_event_send(indev->proc.data.point.obj_act, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);            
+            indev->proc.data.point.obj_act = indev->proc.data.point.obj_last;                        
+        }else{
+            gt_point_st point_ret;
+            gt_obj_get_click_point_by_phy_point(indev->proc.data.point.obj_act, &indev->proc.data.point.point_last,&point_ret);
+            _gt_obj_set_process_point(indev->proc.data.point.obj_act, &point_ret);
             gt_event_send(indev->proc.data.point.obj_act, GT_EVENT_TYPE_INPUT_CLICKING, NULL);
         }
         indev->proc.data.point.count_point++;
-        
+
     }
     /* no touch */
     else {
@@ -125,8 +132,8 @@ void gt_indev_handler_point(gt_indev_st * indev)
         
     }
     
-    /* if the two obj is diff, default set scroll screen */
-    if( gt_disp_get_scr() == indev->proc.data.point.obj_last ){
+    /* scroll screen */
+    if( gt_disp_get_scr() == indev->proc.data.point.obj_scroll ){
         if( ver > indev->drv->limit_pixel_scroll || ver < -indev->drv->limit_pixel_scroll ){
             gt_disp_scroll_area_act(GT_DIR_VER, ver/-2);
         }else if( hor > indev->drv->limit_pixel_scroll || hor < -indev->drv->limit_pixel_scroll ) {
@@ -134,6 +141,15 @@ void gt_indev_handler_point(gt_indev_st * indev)
         }
         indev->proc.data.point.point_last.x = data_indev.point.x;
         indev->proc.data.point.point_last.y = data_indev.point.y;
+        return;
+    }else{
+        if( ver > indev->drv->limit_pixel_scroll || ver < -indev->drv->limit_pixel_scroll ){
+            _gt_obj_set_process_scroll_xy(indev->proc.data.point.obj_scroll, 0, ver);
+            gt_event_send(indev->proc.data.point.obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
+        }else if( hor > indev->drv->limit_pixel_scroll || hor < -indev->drv->limit_pixel_scroll ) {
+            _gt_obj_set_process_scroll_xy(indev->proc.data.point.obj_scroll, hor, 0);
+            gt_event_send(indev->proc.data.point.obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
+        }
         return;
     }
 
@@ -183,10 +199,29 @@ void gt_indev_handler_button(gt_indev_st * indev)
 
 /* global functions / API interface -------------------------------------*/
 
-
-void gt_indev_get_point(const gt_indev_st * indev, gt_point_st * point) {
+/**
+ * @brief get click first point
+ * 
+ * @param indev indev
+ * @param point click first point
+ */
+void gt_indev_get_point_act(const gt_indev_st * indev, gt_point_st * point)
+{
     point->x = indev->proc.data.point.point_act.x;
     point->y = indev->proc.data.point.point_act.y;
+}
+
+/**
+ * @brief get clicking last point
+ * 
+ * @param indev idnev
+ * @param point clicking last point
+ */
+void gt_indev_get_point_last(const gt_indev_st * indev, gt_point_st * point)
+{
+    point->x = indev->proc.data.point.point_last.x;
+    point->y = indev->proc.data.point.point_last.y;
+    printf("1111:x:%d,y:%d\n", point->x, point->y);
 }
 
 gt_dir_et gt_indev_get_gesture(const gt_indev_st * indev) {
