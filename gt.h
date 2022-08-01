@@ -29,6 +29,7 @@ extern "C" {
 #include "src/core/gt_mem.h"
 #include "src/core/gt_style.h"
 #include "src/core/gt_obj_pos.h"
+#include "src/core/gt_timer.h"
 
 /* font */
 #include "src/font/gt_font.h"
@@ -43,6 +44,15 @@ extern "C" {
 #include "src/widgets/gt_obj.h"
 #include "src/widgets/gt_btn.h"
 #include "src/widgets/gt_img.h"
+#include "src/widgets/gt_label.h"
+#include "src/widgets/gt_checkbox.h"
+#include "src/widgets/gt_radio.h"
+#include "src/widgets/gt_input.h"
+#include "src/widgets/gt_group.h"
+#include "src/widgets/gt_switch.h"
+#include "src/widgets/gt_scrollbar.h"
+#include "src/widgets/gt_processbar.h"
+#include "src/widgets/gt_listview.h"
 
 /* other */
 #include "src/others/gt_color.h"

@@ -65,7 +65,7 @@ static void _gt_label_init_widget(gt_obj_st * label) {
     h = label->area.h;
 
     label->cache.cache_color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
-    gt_color_t * color_p = (gt_color_t *)label->cache.cache_color;
+    gt_color_t * color_widget_p = (gt_color_t *)label->cache.cache_color;
     gt_area_st area = {
         .w = w,
         .h = h,
@@ -108,7 +108,7 @@ static void _gt_label_init_widget(gt_obj_st * label) {
 
     while( cnt_word-- && (x_start+font.size) < w ){
         area.x = x_start;
-        gt_graph_dot_draw_to_color(&font.res[idx_dot], color_p, area, font.size, font.size, style->color_font);
+        gt_graph_dot_draw_to_color(&font.res[idx_dot], color_widget_p, area, font.size, font.size, style->color_font);
         x_start += gt_font_get_next_word_width(&font, !idx_dot);
         idx_dot += (font.size>>3)*font.size;
     }
@@ -150,11 +150,12 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
-            _gt_label_init_widget(obj);
+            if( 0 && gt_obj_check_scr(obj) ){
+                _gt_label_init_widget(obj);
 
-            extern void gt_disp_obj(gt_obj_st * obj);
-            gt_disp_obj(obj);
-            
+                extern void gt_disp_obj(gt_obj_st * obj);
+                gt_disp_obj(obj);
+            }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
@@ -165,7 +166,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_UPDATE_VALUE:
             GT_LOGD(GT_LOG_TAG_GUI, "value update");
-            
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */

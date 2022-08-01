@@ -1,6 +1,6 @@
 /**
  * @file gt_label.h
- * @author your name (your@email.com)
+ * @author yongg
  * @brief 
  * @version 0.1
  * @date 2022-07-13 11:55:38

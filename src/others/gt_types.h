@@ -43,7 +43,15 @@ typedef enum type_widget_e{
     GT_TYPE_IMG = 2,        //img type
     GT_TYPE_LAB = 3,        //label type
     GT_TYPE_TEXTAREA = 4,   //textarea type
-
+    GT_TYPE_CANVAS = 5,     //canvas
+    GT_TYPE_OPTION = 6,     //option
+    GT_TYPE_GROUP = 7,      //group
+    GT_TYPE_CHECKBOX = 8,   //checkbox
+    GT_TYPE_RADIO = 9,      //radiobox
+    GT_TYPE_INPUT = 10,     //input
+    GT_TYPE_SWITCH = 11,    //switch
+    GT_TYPE_SCROLLBAR = 12, //scroll bar
+    GT_TYPE_PROCESSBAR = 13,//processbar
 
     GT_TYPE_TOTAL,          //count total of type
 }gt_obj_type_et;

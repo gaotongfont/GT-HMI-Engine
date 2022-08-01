@@ -13,6 +13,7 @@
 #include "../widgets/gt_obj.h"
 #include "../others/gt_log.h"
 #include "gt_disp.h"
+#include "gt_indev.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -146,6 +147,27 @@ bool gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point ){
     return ret;
 }
 
+static gt_obj_st * _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st * point){
+    int idx = 0;
+    gt_obj_st * obj_clicked = NULL, * obj_temp = NULL;
+    while( idx < parent->cnt_child ){            
+        if( 0 != parent->child[idx]->cnt_child ){            
+            obj_temp = _gt_obj_foreach_clicked(parent->child[idx], point);
+            if( obj_temp ){
+                obj_clicked = obj_temp;
+                return obj_clicked;
+            }
+        }
+        if( gt_obj_check_is_clicked(parent->child[idx], point) ){
+            if( parent->child[idx] ){
+                obj_clicked = parent->child[idx];
+            }
+        }
+        idx++;
+    }
+    return obj_clicked;
+}
+
 /**
  * @brief find smallest clicked obj from parent
  * 
@@ -155,13 +177,19 @@ bool gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point ){
  */
 gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point){
     uint8_t idx = 0;
-    gt_obj_st * obj_clicked = parent;
+    gt_obj_st * obj_clicked = parent, * obj_temp = NULL;
     gt_area_st * area = gt_disp_get_area_act();
     gt_point_st _point = {
         .x = point->x + area->x,
         .y = point->y + area->y
     };
+    obj_temp = _gt_obj_foreach_clicked(parent, &_point);
+    if( obj_temp ){
+        obj_clicked = obj_temp;
+    }
+    return obj_clicked;
     
+	// old func: no foreach all obj
     while( idx < parent->cnt_child ){
         if( gt_obj_check_is_clicked(parent->child[idx], &_point) ){
             if( parent->child[idx] ){
@@ -173,4 +201,73 @@ gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point
     return obj_clicked;
 }
 
+/**
+ * @brief check obj is in the disp screen now
+ * 
+ * @param obj need check obj
+ * @return true yes
+ * @return false no
+ */
+bool gt_obj_check_scr(gt_obj_st * obj)
+{
+    gt_obj_st * scr_now = gt_disp_get_scr();
+
+    gt_obj_st * scr_obj = obj->parent;
+    while( scr_obj->parent ){
+        scr_obj = scr_obj->parent;
+    }
+    if( scr_now == scr_obj ){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+/**
+ * @brief set obj process point data
+ * 
+ * @param obj obj
+ * @param point point ptr
+ */
+void _gt_obj_set_process_point(gt_obj_st * obj, gt_point_st * point){
+    obj->process_attr->point.x = point->x;
+    obj->process_attr->point.y = point->y;
+}
+
+/**
+ * @brief set obj process scroll xy
+ * 
+ * @param obj 
+ * @param x_scroll 
+ * @param y_scroll 
+ */
+void _gt_obj_set_process_scroll_xy(gt_obj_st * obj, gt_size_t x_scroll, gt_size_t y_scroll)
+{
+    obj->process_attr->x_scroll = x_scroll;
+    obj->process_attr->y_scroll = y_scroll;
+}
+
+/**
+ * @brief Get the point of the clicked obj
+ * 
+ * @param obj click obj
+ * @param point_ret point data
+ */
+void gt_obj_get_click_point_by_phy_point(gt_obj_st * obj, gt_point_st * point_phy, gt_point_st * point_ret)
+{
+    gt_point_st point;
+    point.x = point_phy->x;
+    point.y = point_phy->y;
+
+    // cal last point in virt screen pos
+    gt_area_st * area_act_p = gt_disp_get_area_act();
+    gt_area_st area_act;
+    gt_area_copy(&area_act, area_act_p);
+
+    point.x += area_act.x;
+    point.y += area_act.y;
+
+    point_ret->x = point.x - obj->area.x;
+    point_ret->y = point.y - obj->area.y;
+}
 /* end ------------------------------------------------------------------*/

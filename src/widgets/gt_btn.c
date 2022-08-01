@@ -62,8 +62,8 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     };
     // set default size
     if( btn->area.w == 0 || btn->area.h == 0){
-        btn->area.w = gt_font_get_string_width(&font)+20;
-        btn->area.h = GT_FONT_SIZE_16x16+4;
+        btn->area.w = gt_font_get_string_width(&font)+32;
+        btn->area.h = GT_FONT_SIZE_16x16+16;
     }
 
     x = btn->area.x;
@@ -82,6 +82,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
 
     /* base shape */
     gt_attr_rect_st rect_attr;
+    gt_graph_init_rect_attr(&rect_attr);
     GT_COLOR_SET(rect_attr.fcolor, GT_COLOR_GET(fcolor));
     rect_attr.is_fill = 1;
     GT_COLOR_SET(rect_attr.bcolor, GT_COLOR_GET(fcolor));
@@ -93,12 +94,43 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
         .y = y
     };
 	
-    gt_color_t * color_p = (gt_color_t *)btn->cache.cache_color;
-    if(radius == 0) {
-        gt_graph_rect(&rect_attr, &area, color_p);
-    }else{
+    gt_color_t * color_widget_p = (gt_color_t *)btn->cache.cache_color;
 
+    gt_attr_circle_st circle_attr = {
+        .is_fill = 1,
+        .fcolor.full = GT_COLOR_GET(fcolor),
+        .bcolor.full = 0xFFFF,
+		.border_color.full = GT_COLOR_GET(fcolor),
+        .border_width = 1,
+        .radius = h/2,
+    };
+
+    if(0 && radius == 0) {
+        gt_graph_rect(&rect_attr, &area, color_widget_p);
+    }else{
+        gt_graph_rect(&rect_attr, &area, color_widget_p);
+
+        gt_area_st area_circle = {
+            .x = 0, .y = 0, .w = h, .h = h
+        };
+        gt_color_t * color_circle = gt_mem_malloc(h * h * sizeof(gt_color_t));
+        gt_memset(color_circle, 0xFF, h * h * sizeof(gt_color_t));
+        gt_graph_circle(&circle_attr, &area_circle, color_circle);
+        
+        gt_area_st _area_dst = {
+            .x = 0, .y = 0, .w = w, .h = h,
+        }, _area_src = {
+            .x = 0, .y = 0, .w = h, .h = h
+        };
+        gt_color_area_copy(color_widget_p, _area_dst, color_circle, _area_src, h/2, h);
+
+        _area_src.x = h/2;
+        _area_dst.x = w - (h/2);
+        gt_color_area_copy(color_widget_p, _area_dst, color_circle, _area_src, h/2, h);
+	    gt_mem_free(color_circle);
     }
+
+
 
     /* font */
     uint32_t cnt_word = gt_font_count_word(style->text, strlen(style->text));
@@ -122,10 +154,11 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     area.x = x_start;
     area.y = y_start;
     
-
+    // need to refactor here, to func
     while( cnt_word-- && (x_start+font.size) < w ){
         area.x = x_start;
-        gt_graph_dot_draw_to_color(&font.res[idx_dot], color_p, area, font.size, font.size, style->color_font);        x_start += gt_font_get_next_word_width(&font, !idx_dot);
+        gt_graph_dot_draw_to_color(&font.res[idx_dot], color_widget_p, area, font.size, font.size, style->color_font);
+        x_start += gt_font_get_next_word_width(&font, !idx_dot);
         idx_dot += (font.size>>3)*font.size;
     }
     
@@ -167,11 +200,11 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
-            _gt_btn_init_widget(obj);
-
-            extern void gt_disp_obj(gt_obj_st * obj);
-            gt_disp_obj(obj);
-
+            if( gt_obj_check_scr(obj) ){
+                _gt_btn_init_widget(obj);
+                extern void gt_disp_obj(gt_obj_st * obj);
+                gt_disp_obj(obj);
+            }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
@@ -275,7 +308,7 @@ void gt_btn_style_set_text(gt_obj_st * btn, char * text)
     uint16_t size = strlen(text);
     style->text = gt_mem_malloc(size+1);
     gt_memset(style->text, 0, size+1);
-    gt_memcpy(style->text, text, size);
+    gt_memcpy(style->text, text, size);    
 }
 
 char * gt_btn_style_get_text(gt_obj_st * btn){

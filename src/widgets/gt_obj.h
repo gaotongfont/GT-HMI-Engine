@@ -18,7 +18,7 @@ extern "C" {
 #include "../others/gt_color.h"
 #include "gt_obj_class.h"
 #include "../core/gt_event.h"
-
+#include "stdbool.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -44,6 +44,15 @@ typedef struct _gt_obj_event_attr_s{
     gt_event_type_et filter;
 }gt_obj_event_attr_st;
 
+/**
+ * @brief save all indev\disp\others dev data
+ */
+typedef struct _gt_obj_process_attr_s{
+    gt_point_st point;      //click point(note: the point is for obj)
+    gt_size_t x_scroll;     //scroll x distance
+    gt_size_t y_scroll;     //scroll y distance
+}gt_obj_process_attr_st;
+
 typedef enum{
     GT_VISIBLE_UNSET,
     GT_VISIBLE,
@@ -68,6 +77,8 @@ typedef struct _gt_obj_s {
 #if GT_USE_USER_DATA
     void * user_data;
 #endif
+
+    gt_obj_process_attr_st * process_attr;
     
     gt_area_st area;                    /* base area */
     gt_area_st area_part;               /* part create area */

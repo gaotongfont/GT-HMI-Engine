@@ -43,7 +43,17 @@ static gt_color_t * color;
 
 /* static functions -----------------------------------------------------*/
 
-void _gt_graph_dot_to_color(uint8_t *dot, gt_color_t *color,gt_size_t w, gt_size_t h, gt_color_t fcolor, gt_color_t bcolor)
+/**
+ * @brief dot data change to color
+ * 
+ * @param dot input dot array
+ * @param color output color array
+ * @param w array width
+ * @param h array height
+ * @param fcolor foreground
+ * @param bcolor background
+ */
+void _gt_graph_dot_to_color(uint8_t * dot, gt_color_t * color,gt_size_t w, gt_size_t h, gt_color_t fcolor, gt_color_t bcolor)
 {
 	int i,idx, len,cnt=0;
 	idx = 0;
@@ -61,6 +71,15 @@ void _gt_graph_dot_to_color(uint8_t *dot, gt_color_t *color,gt_size_t w, gt_size
 	}
 }
 
+/**
+ * @brief dot change to color(no set background)
+ * 
+ * @param dot input dot array
+ * @param color output color arry
+ * @param w array width
+ * @param h array height
+ * @param fcolor foreground
+ */
 void _gt_graph_dot_to_color_no_bcolor(uint8_t *dot, gt_color_t *color,gt_size_t w, gt_size_t h, gt_color_t fcolor)
 {
 	int i,idx, len,cnt=0;
@@ -77,7 +96,14 @@ void _gt_graph_dot_to_color_no_bcolor(uint8_t *dot, gt_color_t *color,gt_size_t 
 	}
 }
 
-
+/**
+ * @brief dot data change to gray data
+ * 
+ * @param dot input dot array => output gray array
+ * @param w array width
+ * @param h array height
+ * @param level_gray gray level
+ */
 void _gt_graph_dot_to_gray(uint8_t *dot, gt_size_t w, gt_size_t h, gt_gray_t level_gray)
 {
 	int _x,_y,_w, _h;
@@ -121,7 +147,7 @@ void _gt_graph_dot_to_gray(uint8_t *dot, gt_size_t w, gt_size_t h, gt_gray_t lev
 }
 
 
-void _gt_graph_gray_to_color(uint8_t *gray, gt_color_t *color,gt_size_t w, gt_size_t h, gt_color_t fcolor, gt_color_t bcolor, gt_gray_t level_gray)
+void _gt_graph_gray_to_color(uint8_t *gray, gt_color_t *color,gt_size_t w, gt_size_t h, gt_color_t fcolor, gt_color_t bcolor, gt_size_t level_gray)
 {
 	int i, idx, len, cnt=0;
 	int bit_step, bit_cnt, bit_idx;
@@ -163,6 +189,28 @@ uint32_t gt_graph_get_gray(gt_color_t * color_out, gt_color_t color_from, gt_col
 
 	return color_out->full;
 }
+/**
+ * @brief init rect_attr
+ * 
+ * @param rect_attr 
+ */
+void gt_graph_init_rect_attr(gt_attr_rect_st * rect_attr)
+{
+	gt_memset(rect_attr, 0, sizeof(gt_attr_rect_st));
+}
+void gt_graph_init_line_attr(gt_attr_line_st * line_attr)
+{
+	gt_memset(line_attr, 0, sizeof(gt_attr_line_st));
+}
+void gt_graph_init_arch_attr(gt_attr_arch_st * arch_attr)
+{
+	gt_memset(arch_attr, 0, sizeof(gt_attr_arch_st));
+}
+void gt_graph_init_circle_attr(gt_attr_circle_st * circle_attr)
+{
+	gt_memset(circle_attr, 0, sizeof(gt_attr_circle_st));
+}
+
 gt_color_t * gt_graph_get_default()
 {
 	return color;
@@ -636,9 +684,10 @@ static void _gt_graph_arc_45_90(
  * @param circle_attr circle attribute
  * @param area display area
  */
-void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area)
+void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area, gt_color_t * color_buf)
 {
-	gt_color_t * buf   = gt_disp_graph_get_buf_default();
+	// gt_color_t * buf   = gt_disp_graph_get_buf_default();
+	gt_color_t * buf = color_buf;
 	gt_size_t x, y, r;
 	gt_size_t w, h;
 	gt_color_t color;
@@ -708,24 +757,19 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area)
 
 void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * color)
 {
-	gt_size_t is_fill, border_width;
+	uint16_t is_fill, border_width;
 	gt_color_t fcolor, border_color;
 
 	is_fill = rect_attr->is_fill;
 
 	border_width = rect_attr->border_width;
 	GT_COLOR_SET(border_color, GT_COLOR_GET(rect_attr->border_color));
-
+	
 	GT_COLOR_SET(fcolor, GT_COLOR_GET(rect_attr->fcolor));
 
 	gt_size_t w,h;
 	w = area->w;
 	h = area->h;
-
-	// if( color != NULL ){
-	// 	gt_mem_free(color);
-	// }
-	// color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
 
 	uint32_t x,y, x1,y1, x2,y2, idx = 0, all = w * h, x21, idxb1;
 	x1 = border_width;
@@ -741,8 +785,7 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 			GT_COLOR_SET(color[idx++], GT_COLOR_GET(fcolor));
 		}
 	}
-	return;
-
+	
 	//draw up border
 	y = 0;
 	idx = 0;
@@ -751,14 +794,16 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 		GT_COLOR_SET(color[idx], GT_COLOR_GET(border_color));
 		idx++;
 	}
+	
 	//draw bottom border
 	y = y2;
 	idx = w * y2;
-
 	while( idx < all ){
 		GT_COLOR_SET(color[idx], GT_COLOR_GET(border_color));
 		idx++;
 	}
+
+	
 	y = y1;
 	idx = border_width * w;
 	while( y < y2 ){

@@ -67,8 +67,6 @@ typedef struct _gt_attr_rect_s
     gt_color_t border_color;
     gt_size_t border_width;
 
-    gt_size_t radius;
-
     uint8_t is_fill:1;
 }gt_attr_rect_st;
 
@@ -77,8 +75,7 @@ typedef struct _gt_attr_circle_s
 {
     gt_color_t fcolor;
     gt_color_t bcolor;
-
-
+    
     gt_size_t radius;
 
     gt_size_t border_width;
@@ -108,11 +105,15 @@ typedef struct _gt_attr_arch_s
 
 
 /* global functions / API interface -------------------------------------*/
+void gt_graph_init_rect_attr(gt_attr_rect_st * rect_attr);
+void gt_graph_init_line_attr(gt_attr_line_st * line_attr);
+void gt_graph_init_arch_attr(gt_attr_arch_st * arch_attr);
+void gt_graph_init_circle_attr(gt_attr_circle_st * circle_attr);
 
 uint32_t gt_graph_get_gray(gt_color_t * color_out, gt_color_t color_from, gt_color_t color_to, gt_size_t gray, gt_size_t step);
 gt_color_t * gt_graph_get_default(void);
 void gt_graph_set_default(gt_color_t *);
-void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area);
+void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area, gt_color_t * color_buf);
 
 void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area );
 void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * color );
