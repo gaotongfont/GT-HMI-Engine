@@ -345,34 +345,68 @@ static inline void _gt_graph_set_arc_45_to_90_direct_gray(
 	gt_point_st from, to;
 	gt_size_t size = r > _RADIUS_SPLIT_SIZE ? 2 : 1;
 	gt_size_t offset = r > 16 ? 1 : 0;
-	gt_size_t cover = border_width > 1 ? 1 : 0;
+	gt_size_t cover = border_width > 1 ? 0 : 1;
 
-	// outside of outline
-	if (last.y == remark_row) {
-		from.x = ( (r >> 4) ? (r >> 4) : 1 ) + last.x;
-		from.y = last.y;
-		to.x = r;
+	--border_width;
+
+	// if (coord.x == last.x) {
+	// 	--count;
+	// }
+	// inside of outline
+#if 01
+	if (coord.y == remark_row) {
+		from.x = last.x;
+		from.y = last.y - border_width;
+		to.x = r - 1;
+		to.y = from.y;
+	} else {
+		from.x = last.x - 1;
+		from.y = last.y - border_width - cover;
+		to.x = from.x + count;
+		to.y = from.y;
+	}
+#else
+	if (coord.y == remark_row) {
+		from.x = last.x;
+		from.y = last.y - border_width;
+		to.x = r - 1;
 		to.y = from.y;
 	} else {
 		from.x = last.x;
-		from.y = last.y;
-		to.x = last.x + count + size + offset;
+		from.y = last.y - border_width;
+		to.x = from.x + count;
 		to.y = from.y;
 	}
+#endif
 	gt_anti_aliasing_div(buf, area, &from, &to);
 
-	// inside of outline
-	if (last.y == remark_row) {
-		from.x = last.x + 1;
-		from.y = last.y - border_width;
+	// outside of outline
+#if 01
+	if (coord.y == remark_row) {
+		from.x = coord.x + ( (r >> 4) ? (r >> 4) : 1 );
+		from.y = coord.y;
 		to.x = r;
 		to.y = from.y;
 	} else {
 		from.x = last.x;
-		from.y = last.y - border_width;
-		to.x = last.x + count;
+		from.y = last.y;
+		to.x = from.x + count + size;
 		to.y = from.y;
 	}
+#else
+	if (coord.y == remark_row) {
+		from.x = last.x + ( (r >> 4) ? (r >> 4) : 1 );
+		from.y = coord.y;
+		to.x = r;
+		to.y = from.y;
+	}
+	else {
+		from.x = coord.x;
+		from.y = coord.y;
+		to.x = coord.x + count + size;
+		to.y = from.y;
+	}
+#endif
 	gt_anti_aliasing_div(buf, area, &from, &to);
 }
 
@@ -605,16 +639,14 @@ static void _gt_graph_arc_45_90(
 		diff_y = abs(diff_y);
 		// fill space points
 		if (remark_row == coord.y) {
-			_gt_graph_set_arc_45_to_90_direct_gray(buf, area, r, coord, last, border_width, remark_row, count);
-			// finally line
+			x = coord.x - r + 1;
 			tmp.x = coord.x;
 			tmp.y = coord.y;
-			x = abs(tmp.x - r);
 			while (x--) {
-				--tmp.x;
 				_gt_graph_fill_line(buf, circle_attr, tmp, w, h, false);
+				--tmp.x;
 			}
-			_gt_graph_set_arc_45_to_90_direct_gray(buf, area, r, tmp, coord, border_width, remark_row, count);
+			_gt_graph_set_arc_45_to_90_direct_gray(buf, area, r, coord, last, border_width, remark_row, count);
 			break;
 		}
 		else if (diff_x && start_angle != theta) {
@@ -642,6 +674,7 @@ static void _gt_graph_arc_45_90(
 						--tmp.x;
 						_gt_graph_fill_line(buf, circle_attr, tmp, w, h, false);
 					}
+
 					_gt_graph_set_arc_45_to_90_direct_gray(buf, area, r, tmp, last, border_width, remark_row, y ? div : count);
 					last.x = tmp.x;
 					last.y = tmp.y;
@@ -699,7 +732,15 @@ void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area, gt_colo
 	GT_COLOR_CLR_BUF(buf, w * h, GT_COLOR_GET(circle_attr->bcolor));
 
 	_gt_graph_arc_0_45(buf, circle_attr, area, 0, 45);
-	_gt_graph_arc_45_90(buf, circle_attr, area, 45, 90);
+	// _gt_graph_arc_45_90(buf, circle_attr, area, 45, 90);
+
+	// 45 ~ 90 degrees
+	for (y = r; y < h; y++) {
+		for (x = w - y; x < w; x++) {
+			color = GT_COLOR_GET_OBJ(buf, x, y, w, h);
+			GT_COLOR_SET_BUF(buf, y, x, w, h, GT_COLOR_GET(color));
+		}
+	}
 
 	// copy area
 	for (y = r; y < h; y++) {

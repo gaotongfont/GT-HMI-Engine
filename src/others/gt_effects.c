@@ -64,18 +64,19 @@ static uint8_t _gt_set_trans_gray_hor(gt_color_t * buffer, gt_area_st * area, gt
 
     if (step > 0) {
         for (i = 0; i < step; i++) {
-            ++cnt;
             ptr = &GT_COLOR_GET_OBJ(buffer, coord->x + i, coord->y, area->w, area->h);
             gt_graph_get_gray(ptr, from, to, div, cnt);
+            ++cnt;
         }
     } else {
         cnt = div;
         coord->x += step;
         for (i = 0; i < div; i++) {
-            --cnt;
             ptr = &GT_COLOR_GET_OBJ(buffer, coord->x + i + 1, coord->y, area->w, area->h);
             gt_graph_get_gray(ptr, from, to, div, cnt);
+            --cnt;
         }
+        coord->x -= step;
     }
 
     return cnt;
@@ -121,6 +122,7 @@ static uint8_t _gt_set_trans_gray_ver(gt_color_t * buffer, gt_area_st * area, gt
             ptr = &GT_COLOR_GET_OBJ(buffer, coord->x, coord->y + i + 1, area->w, area->h);
             gt_graph_get_gray(ptr, from, to, div, cnt);
         }
+        coord->y -= step;
     }
 
     return cnt;
