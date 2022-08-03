@@ -822,9 +822,10 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 
 	//draw center
 	if(is_fill){
-		while(idx < all){
-			GT_COLOR_SET(color[idx++], GT_COLOR_GET(fcolor));
-		}
+		// while(idx < all){
+		// 	GT_COLOR_SET(color[idx++], GT_COLOR_GET(fcolor));
+		// }
+		gt_color_fill(color, all, fcolor);
 	}
 	
 	//draw up border
@@ -843,7 +844,6 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 		GT_COLOR_SET(color[idx], GT_COLOR_GET(border_color));
 		idx++;
 	}
-
 	
 	y = y1;
 	idx = border_width * w;
@@ -865,9 +865,75 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 		}
 		y++;
 	}
+
+	if( 0 != rect_attr->radius ){
+		gt_attr_circle_st circle_attr = {
+			.is_fill = is_fill,
+			.radius = rect_attr->radius,
+			.bcolor = rect_attr->bcolor,
+			.fcolor = rect_attr->fcolor,
+			.border_color = rect_attr->border_color,
+			.border_width = rect_attr->border_width
+		};
+		gt_area_st area_circle = {
+			.w = circle_attr.radius * 2,
+			.h = circle_attr.radius * 2,
+		};
+		gt_color_t * color_circle = gt_mem_malloc(area_circle.w * area_circle.h * sizeof(gt_color_t));
+		gt_graph_circle(&circle_attr, &area_circle, color_circle);
+		
+		gt_disp_st * disp = gt_disp_get_default();
+		area_circle.x = 0;
+		area_circle.y = 0;
+		disp->drv->flush_cb(NULL, &area_circle, color_circle);
+		
+		gt_area_st area_dst = {
+			.x = 0,
+			.y = 0,
+			.w = area->w,
+			.h = area->h,
+		}, area_src = {
+			.x = 0,
+			.y = 0,
+			.w = area_circle.w,
+			.h = area_circle.h,
+		};
+		// cpy left-up radius
+		gt_color_area_copy(color, area_dst, color_circle, area_src, circle_attr.radius, circle_attr.radius);
+
+		// cpy left-down radius
+		area_dst.y = area->h - rect_attr->radius;
+		area_src.y = circle_attr.radius;
+		gt_color_area_copy(color, area_dst, color_circle, area_src, circle_attr.radius, circle_attr.radius);
+
+		// cpy right-up radius
+		area_dst.y = 0;
+		area_dst.x = area->w - rect_attr->radius;
+		area_src.y = 0;
+		area_src.x = circle_attr.radius;
+		gt_color_area_copy(color, area_dst, color_circle, area_src, circle_attr.radius, circle_attr.radius);
+
+		// cpy right-down radius
+		area_dst.y = area->h - rect_attr->radius;
+		area_dst.x = area->w - rect_attr->radius;
+		area_src.y = circle_attr.radius;
+		area_src.x = circle_attr.radius;
+		gt_color_area_copy(color, area_dst, color_circle, area_src, circle_attr.radius, circle_attr.radius);
+		
+		gt_mem_free(color_circle);
+	}
 }
 
-
+/**
+ * @brief draw dot to color_arr
+ * 
+ * @param dot dot arr
+ * @param color color_arr
+ * @param area_color pos and size of color_arr
+ * @param w dot width
+ * @param h dot height
+ * @param fcolor fcolor
+ */
 void gt_graph_dot_draw_to_color(uint8_t * dot, gt_color_t * color, gt_area_st area_color, uint8_t w, uint8_t h, gt_color_t fcolor)
 {
 	uint16_t y, x, idx = 0, temp;

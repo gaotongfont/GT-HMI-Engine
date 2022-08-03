@@ -67,6 +67,8 @@ typedef struct _gt_attr_rect_s
     gt_color_t border_color;
     gt_size_t border_width;
 
+    gt_size_t radius;
+
     uint8_t is_fill:1;
 }gt_attr_rect_st;
 
