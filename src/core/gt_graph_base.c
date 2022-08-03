@@ -882,11 +882,6 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 		gt_color_t * color_circle = gt_mem_malloc(area_circle.w * area_circle.h * sizeof(gt_color_t));
 		gt_graph_circle(&circle_attr, &area_circle, color_circle);
 		
-		gt_disp_st * disp = gt_disp_get_default();
-		area_circle.x = 0;
-		area_circle.y = 0;
-		disp->drv->flush_cb(NULL, &area_circle, color_circle);
-		
 		gt_area_st area_dst = {
 			.x = 0,
 			.y = 0,
