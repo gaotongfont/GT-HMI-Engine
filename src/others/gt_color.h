@@ -128,6 +128,7 @@ typedef GT_CONCAT3(gt_color, GT_COLOR_DEPTH, _t) gt_color_t;
  */
 typedef struct _gt_area_s gt_area_st;
 void gt_color_area_copy(gt_color_t *dst, gt_area_st area_dst, gt_color_t * src, gt_area_st area_src, gt_size_t w, gt_size_t h);
+void gt_color_fill(gt_color_t * color_arr, int len, gt_color_t color);
 
 
 #ifdef __cplusplus

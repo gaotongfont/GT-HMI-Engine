@@ -56,4 +56,18 @@ void gt_color_area_copy(gt_color_t *dst, gt_area_st area_dst, gt_color_t * src, 
     }
 }
 
+/**
+ * @brief fill color to color_arr
+ * 
+ * @param color_arr 
+ * @param len 
+ * @param color 
+ */
+void gt_color_fill(gt_color_t * color_arr, int len, gt_color_t color)
+{
+    int idx = 0;
+    while( idx < len ){
+        GT_COLOR_SET( color_arr[idx++], GT_COLOR_GET(color) );
+    }
+}
 /* end ------------------------------------------------------------------*/
