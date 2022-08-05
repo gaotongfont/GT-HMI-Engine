@@ -49,7 +49,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     _gt_style_btn_st * style = btn->style;
     gt_size_t x, y, w, h;           //base attr
     gt_size_t radius;      //widget attr
-    
+
     gt_color_t fcolor;
     uint8_t fp[1024];
     gt_font_st font = {
@@ -93,7 +93,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
         .x = x,
         .y = y
     };
-	
+
     gt_color_t * color_widget_p = (gt_color_t *)btn->cache.cache_color;
 
     gt_attr_circle_st circle_attr = {
@@ -117,7 +117,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     //     gt_color_t * color_circle = gt_mem_malloc(h * h * sizeof(gt_color_t));
     //     gt_memset(color_circle, 0xFF, h * h * sizeof(gt_color_t));
     //     gt_graph_circle(&circle_attr, &area_circle, color_circle);
-        
+
     //     gt_area_st _area_dst = {
     //         .x = 0, .y = 0, .w = w, .h = h,
     //     }, _area_src = {
@@ -137,7 +137,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     /* font */
     uint32_t cnt_word = gt_font_count_word(style->text, strlen(style->text));
     gt_memset(fp, 0, 1024);
-    
+
     uint32_t w_font = gt_font_get_string_width(&font);
     gt_font_get_string_dot(&font);
 
@@ -155,7 +155,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     uint16_t idx_dot = 0;
     area.x = x_start;
     area.y = y_start;
-    
+
     // need to refactor here, to func
     while( cnt_word-- && (x_start+font.size) < w ){
         area.x = x_start;
@@ -163,7 +163,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
         x_start += gt_font_get_next_word_width(&font, !idx_dot);
         idx_dot += (font.size>>3)*font.size;
     }
-    
+
 }
 
 /**
@@ -255,7 +255,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 static void _gt_btn_init_style(gt_obj_st * btn)
 {
     _gt_style_btn_st * _style = btn->style;
-    
+
     _style->text = gt_mem_malloc(sizeof("btn"));
     strcpy(_style->text, "btn");
     _style->radius = 0;
@@ -310,7 +310,7 @@ void gt_btn_style_set_text(gt_obj_st * btn, char * text)
     uint16_t size = strlen(text);
     style->text = gt_mem_malloc(size+1);
     gt_memset(style->text, 0, size+1);
-    gt_memcpy(style->text, text, size);    
+    gt_memcpy(style->text, text, size);
 }
 
 char * gt_btn_style_get_text(gt_obj_st * btn){

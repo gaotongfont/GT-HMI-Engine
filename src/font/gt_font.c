@@ -158,8 +158,6 @@ extern unsigned long GT_GetLatin(unsigned long fontcode, unsigned int font_optio
 // extern unsigned long GT_GetKorean(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
 // extern unsigned long GT_GetCyrillic(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
 
-#define GT_USE_FONT_NUM     2
-
 typedef unsigned long(* read_func_t)(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
 
 read_func_t read_func_arr[] = {
@@ -183,12 +181,15 @@ void gt_font_get_string_dot(gt_font_st * font)
     uint32_t idx = 0, unicode, len, idx_func = 0, idx_read = 0, temp = 0;
     uint8_t data[64];
     unsigned long (* read)(unsigned long, unsigned int, unsigned char*);
+    uint16_t count_func = sizeof(read_func_arr) / sizeof(read_func_t);
+
+
     GT_LOGV(GT_LOG_TAG_GUI, "text:%s", font->utf8);
     while(idx < font->len) {
 
         len = utf8_to_unicode(&font->utf8[idx], &unicode);
         /* get font data */
-        while( idx_func < GT_USE_FONT_NUM ) {
+        while( idx_func < count_func ) {
             read = read_func_arr[idx_func];
             if( !read ) {
                 idx_func++;

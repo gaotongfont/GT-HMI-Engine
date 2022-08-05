@@ -77,7 +77,7 @@ void gt_check_obj_visible_and_copy(gt_obj_st * obj)
         // GT_LOGD(GT_LOG_TAG_GUI, "obj not visible");
         return;
     }
-    
+
     GT_LOGD(GT_LOG_TAG_GUI, "obj visible");
 
     GT_LOGD(GT_LOG_TAG_GUI, "obj->x:%d,y:%d,w:%d,h:%d====disp->x:%d,y:%d,w:%d,h:%d",
@@ -88,10 +88,9 @@ void gt_check_obj_visible_and_copy(gt_obj_st * obj)
         obj->create_type = GT_CREATE_TYPE_PART;
         gt_area_copy(&obj->area_part, &disp->area_disp);
     }
-    
+
     obj->class->_init_cb(obj, obj->class);
 
-    
     gt_obj_get_valid_area(obj, &disp->area_disp, &area_valib);
 
     GT_LOGD(GT_LOG_TAG_GUI, "area_valib:x:%d,y:%d,w:%d,h:%d", area_valib.x, area_valib.y, area_valib.w, area_valib.h);
@@ -168,7 +167,7 @@ void gt_disp_load_scr(gt_obj_st * scr)
             GT_COLOR_SET(disp->vbd_color[idx], 0xFFFF);
             idx++;
         }
-        
+
         // use virt screen check obj visible area
         disp->area_disp.y = disp->area_act.y + y;
         disp->area_disp.x = disp->area_act.x;
@@ -199,7 +198,7 @@ gt_area_st * gt_disp_get_area_act(){
 
 void gt_disp_scroll_area_act(gt_dir_e dir, int16_t dist){
     gt_area_st * area = gt_disp_get_area_act();
-    
+
     if( dir == GT_DIR_VER ) {
         area->y += dist;
     }else if( dir == GT_DIR_HOR ){
@@ -218,7 +217,7 @@ void gt_disp_scroll_area_act(gt_dir_e dir, int16_t dist){
     }
     if( area->y > GT_SCREEN_HEIGHT * 2 ){
         area->y = GT_SCREEN_HEIGHT * 2;
-    } 
+    }
     gt_disp_load_scr(gt_disp_get_scr());
 }
 
@@ -226,9 +225,9 @@ void gt_disp_obj(gt_obj_st * obj){
     gt_area_st * area = gt_disp_get_area_act();
     gt_area_st area_valid;
     gt_obj_get_valid_area(obj, area, &area_valid);
- 
+
     gt_disp_st * disp_dev = gt_disp_get_default();
-    
+
     gt_area_st area_src = {
         .x = area_valid.x,
         .y = area_valid.y,
@@ -243,7 +242,7 @@ void gt_disp_obj(gt_obj_st * obj){
         .w = area_valid.w,
         .h = area_valid.h
     };
-    
+
     if( obj->area.y < disp_dev->area_act.y ){
         area_show.y = 0;
     }else{
