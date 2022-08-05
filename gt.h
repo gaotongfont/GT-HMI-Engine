@@ -41,19 +41,57 @@ extern "C" {
 #include "src/hal/gt_hal_tick.h"
 
 /* widgets */
+#include "src/widgets/gt_conf_widgets.h"
+
 #include "src/widgets/gt_obj.h"
+
+#if GT_CFG_ENABLE_BTN == 1
 #include "src/widgets/gt_btn.h"
-#include "src/widgets/gt_img.h"
-#include "src/widgets/gt_label.h"
+#endif
+
+#if GT_CFG_ENABLE_CHECKBOX == 1
 #include "src/widgets/gt_checkbox.h"
-#include "src/widgets/gt_radio.h"
-#include "src/widgets/gt_input.h"
+#endif
+
+#if GT_CFG_ENABLE_GROUP == 1
 #include "src/widgets/gt_group.h"
-#include "src/widgets/gt_switch.h"
-#include "src/widgets/gt_scrollbar.h"
-#include "src/widgets/gt_processbar.h"
-#include "src/widgets/gt_listview.h"
+#endif
+
+#if GT_CFG_ENABLE_IMG == 1
+#include "src/widgets/gt_img.h"
+#endif
+
+#if GT_CFG_ENABLE_INPUT == 1
+#include "src/widgets/gt_input.h"
+#endif
+
+#if GT_CFG_ENABLE_KEYPAD == 1
 #include "src/widgets/gt_keypad.h"
+#endif
+
+#if GT_CFG_ENABLE_LABEL == 1
+#include "src/widgets/gt_label.h"
+#endif
+
+#if GT_CFG_ENABLE_LISTVIEW == 1
+#include "src/widgets/gt_listview.h"
+#endif
+
+#if GT_CFG_ENABLE_PROCESSBAR == 1
+#include "src/widgets/gt_processbar.h"
+#endif
+
+#if GT_CFG_ENABLE_RADIO == 1
+#include "src/widgets/gt_radio.h"
+#endif
+
+#if GT_CFG_ENABLE_SCROLLBAR == 1
+#include "src/widgets/gt_scrollbar.h"
+#endif
+
+#if GT_CFG_ENABLE_SWITCH == 1
+#include "src/widgets/gt_switch.h"
+#endif
 
 /* other */
 #include "src/others/gt_color.h"

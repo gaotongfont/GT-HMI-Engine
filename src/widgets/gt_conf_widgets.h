@@ -18,6 +18,19 @@ extern "C" {
 
 
 /* define ---------------------------------------------------------------*/
+#define GT_CFG_ENABLE_BTN               1
+#define GT_CFG_ENABLE_CHECKBOX          0
+#define GT_CFG_ENABLE_GROUP             0
+#define GT_CFG_ENABLE_IMG               0
+#define GT_CFG_ENABLE_INPUT             0
+#define GT_CFG_ENABLE_KEYPAD            0
+#define GT_CFG_ENABLE_LABEL             0
+#define GT_CFG_ENABLE_LISTVIEW          0
+#define GT_CFG_ENABLE_PROCESSBAR        0
+#define GT_CFG_ENABLE_RADIO             0
+#define GT_CFG_ENABLE_SCROLLBAR         0
+#define GT_CFG_ENABLE_SWITCH            0
+#define GT_CFG_ENABLE_TEXTAREA          0
 
 
 
