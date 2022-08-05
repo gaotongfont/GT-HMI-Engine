@@ -354,7 +354,6 @@ void gt_listview_style_add_item(gt_obj_st * listview, char * item)
 
 void gt_listview_style_set_selected_item_by_idx(gt_obj_st * listview, int idx){
     _gt_style_listview_st * style = listview->style;
-    printf("cnt:%d\n", style->cnt);
     if( idx >= style->cnt ){
         return;
     }

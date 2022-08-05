@@ -64,10 +64,10 @@ static void _gt_img_init_widget(gt_obj_st * img)
         area_temp.x = img->area.x;
         area_temp.w = img->area.w;
         area_temp.h = img->area.h;
-
+        area_temp.h = area_valid.h;
         if( area_valid.y >= 0 ){
             area_temp.y = img->area.y + area_valid.y;
-            area_temp.h = img->area.h - area_valid.y;
+            // area_temp.h = img->area.h - area_valid.y;
         }
         gt_area_copy(&img->area_back, &img->area);
         gt_area_copy(&img->area, &area_temp);
@@ -75,7 +75,6 @@ static void _gt_img_init_widget(gt_obj_st * img)
         w = area_temp.w;
         h = area_valid.h;
         img->cache.cache_color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
-        
         gt_vf_read_img_offset(style->src, img->cache.cache_color, area_temp.w * area_valid.y * sizeof(gt_color_t), w * h * sizeof(gt_color_t) );
 
     }else{

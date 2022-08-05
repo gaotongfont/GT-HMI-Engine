@@ -52,6 +52,7 @@ typedef enum type_widget_e{
     GT_TYPE_SWITCH = 11,    //switch
     GT_TYPE_SCROLLBAR = 12, //scroll bar
     GT_TYPE_PROCESSBAR = 13,//processbar
+    GT_TYPE_KEYPAD = 14,    //keypad
 
     GT_TYPE_TOTAL,          //count total of type
 }gt_obj_type_et;

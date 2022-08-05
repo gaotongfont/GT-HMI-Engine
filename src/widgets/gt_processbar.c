@@ -65,7 +65,8 @@ static void _gt_processbar_init_widget(gt_obj_st * processbar) {
         .border_width = h/4,
         .fcolor.full = GT_COLOR_GET(style->color_ina),
         .bcolor.full = GT_COLOR_GET(style->bcolor),
-        .border_color.full = GT_COLOR_GET(style->bcolor)
+        .border_color.full = GT_COLOR_GET(style->bcolor),
+        .radius = h/2,
     };
     processbar->cache.cache_color = gt_mem_malloc(w * h * sizeof(gt_color_t));
     gt_color_t * color_widget_p = (gt_color_t *)processbar->cache.cache_color;
@@ -74,13 +75,18 @@ static void _gt_processbar_init_widget(gt_obj_st * processbar) {
     };
 
     gt_graph_rect(&rect_attr, &area_rect, color_widget_p);
+
+    if( style->pos == style->start ){
+        return;
+    }
+
     gt_attr_circle_st circle_attr = {
         .is_fill = 1,
         .border_width = 0,
         .border_color.full = GT_COLOR_GET(style->color_ina),
         .bcolor.full = GT_COLOR_GET(style->bcolor),
         .fcolor.full = GT_COLOR_GET(style->color_ina),
-        .radius = h/4,        
+        .radius = h/4,
     };
     gt_color_t * color_circle_p = gt_mem_malloc(circle_attr.radius * 2 * circle_attr.radius * 2 * sizeof(gt_color_t) );
     gt_area_st area_circle = {
@@ -88,24 +94,13 @@ static void _gt_processbar_init_widget(gt_obj_st * processbar) {
     };
     gt_graph_circle(&circle_attr, &area_circle, color_circle_p);
 
-    // left gray color circle
     gt_area_st area_dst = {
         .x = 0, .y = (h/4), .w = w, .h = h
     };
     gt_area_st area_src = {
         .x = 0, .y = 0, .w = area_circle.w, .h = area_circle.h
     };
-    gt_color_area_copy(color_widget_p, area_dst, color_circle_p, area_src, area_src.w/2, area_src.h);    
-    
-    // right gray color circle
-    area_src.x = area_src.w/2;
-    area_dst.x = w - area_src.w/2;
-    gt_color_area_copy(color_widget_p, area_dst, color_circle_p, area_src, area_src.w/2, area_src.h);
 
-    if( style->pos == style->start ){
-        gt_mem_free(color_circle_p);
-        return;
-    }
     if( style->pos == 0 ){
         goto lab_end;
     }
@@ -134,6 +129,7 @@ static void _gt_processbar_init_widget(gt_obj_st * processbar) {
     gt_color_t * color_rect = gt_mem_malloc( w_pos * area_src.h * sizeof(gt_color_t) );
     area_rect.w = w_pos;
     area_rect.h = area_src.h;
+    rect_attr.radius = 0;
     gt_graph_rect(&rect_attr, &area_rect, color_rect);
 
     area_src.x = 0;
@@ -207,8 +203,9 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
                 extern void gt_disp_obj(gt_obj_st * obj);
                 gt_disp_obj(obj);
+                
             }
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
+            // gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_DRAW_END:

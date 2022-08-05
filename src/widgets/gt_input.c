@@ -68,7 +68,9 @@ static void _gt_input_init_widget(gt_obj_st * input) {
     GT_COLOR_SET(rect_attr.fcolor, 0xFFFF);
     GT_COLOR_SET(rect_attr.bcolor, 0xFFFF);
     rect_attr.border_width = 2;
+    rect_attr.radius = h/4;
     GT_COLOR_SET(rect_attr.border_color, 0x0000);
+
     gt_color_t * color_widget_p = (gt_color_t *)input->cache.cache_color;
     gt_graph_rect(&rect_attr, &input->area, color_widget_p);
 

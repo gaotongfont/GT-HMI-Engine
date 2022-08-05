@@ -84,7 +84,13 @@ void gt_check_obj_visible_and_copy(gt_obj_st * obj)
         obj->area.x, obj->area.y, obj->area.w, obj->area.h,
         disp->area_disp.x, disp->area_disp.y, disp->area_disp.w, disp->area_disp.h);
 
-    if( obj->class->type == GT_TYPE_IMG || obj->class->type == GT_TYPE_TEXTAREA ){
+    gt_obj_type_et list_create_part_type[] = {
+        GT_TYPE_IMG,
+        GT_TYPE_TEXTAREA,
+        GT_TYPE_KEYPAD,
+        0
+    };
+    if( obj->class->type != 0 && strchr(list_create_part_type, obj->class->type) != NULL ){
         obj->create_type = GT_CREATE_TYPE_PART;
         gt_area_copy(&obj->area_part, &disp->area_disp);
     }
@@ -148,20 +154,20 @@ void gt_disp_load_scr(gt_obj_st * scr)
 
     uint16_t y = 0;
     uint32_t idx = 0;
-    uint32_t len = GT_SCREEN_WIDTH * GT_REFRESH_FLUSH_LINE_PRE_TIME;
+    uint32_t len = disp->drv->res_hor * GT_REFRESH_FLUSH_LINE_PRE_TIME;
 
     // disp->area_act.x = 0;
     // disp->area_act.y = 0;
-    disp->area_act.h = GT_SCREEN_HEIGHT;
-    disp->area_act.w = GT_SCREEN_WIDTH;
+    disp->area_act.h = disp->drv->res_ver;
+    disp->area_act.w = disp->drv->res_hor;
 
     disp->area_disp.y = disp->area_act.y;//0;
     disp->area_disp.x = disp->area_act.x;//0;
-    disp->area_disp.w = GT_SCREEN_WIDTH;
+    disp->area_disp.w = disp->drv->res_hor;
     disp->area_disp.h = GT_REFRESH_FLUSH_LINE_PRE_TIME;
 
     y = 0;
-    while( y < GT_SCREEN_HEIGHT ){
+    while( y < disp->drv->res_hor ){
         idx = 0;
         while( idx < len ){
             GT_COLOR_SET(disp->vbd_color[idx], 0xFFFF);
@@ -228,35 +234,37 @@ void gt_disp_obj(gt_obj_st * obj){
 
     gt_disp_st * disp_dev = gt_disp_get_default();
 
-    gt_area_st area_src = {
-        .x = area_valid.x,
-        .y = area_valid.y,
-        .w = obj->area.w,
-        .h = obj->area.h
-    }, area_dst = {
-        .x = 0,
-        .y = 0,//area_valid.y,
-        .w = area_valid.w,//obj->area.w,
-        .h = area_valid.h//obj->area.h
-    }, area_show = {
-        .w = area_valid.w,
-        .h = area_valid.h
-    };
+    if( 1 ){
+        gt_area_st area_src = {
+            .x = area_valid.x,
+            .y = area_valid.y,
+            .w = obj->area.w,
+            .h = obj->area.h
+        }, area_dst = {
+            .x = 0,
+            .y = 0,//area_valid.y,
+            .w = area_valid.w,//obj->area.w,
+            .h = area_valid.h//obj->area.h
+        }, area_show = {
+            .w = area_valid.w,
+            .h = area_valid.h
+        };
+        
+        if( obj->area.y < disp_dev->area_act.y ){
+            area_show.y = 0;
+        }else{
+            area_show.y = obj->area.y - disp_dev->area_act.y;
+        }
 
-    if( obj->area.y < disp_dev->area_act.y ){
-        area_show.y = 0;
-    }else{
-        area_show.y = obj->area.y - disp_dev->area_act.y;
+        if( obj->area.x < disp_dev->area_act.x ){
+            area_show.x = 0;
+        }else{
+            area_show.x = obj->area.x - disp_dev->area_act.x;
+        }
+        gt_color_t * color_p = (gt_color_t *)obj->cache.cache_color;
+        gt_color_area_copy(disp_dev->vbd_color, area_dst,  color_p, area_src, area_valid.w, area_valid.h);
+        disp_dev->drv->flush_cb(disp_dev->drv, &area_show, disp_dev->vbd_color);
     }
-
-    if( obj->area.x < disp_dev->area_act.x ){
-        area_show.x = 0;
-    }else{
-        area_show.x = obj->area.x - disp_dev->area_act.x;
-    }
-    gt_color_t * color_p = (gt_color_t *)obj->cache.cache_color;
-    gt_color_area_copy(disp_dev->vbd_color, area_dst,  color_p, area_src, area_valid.w, area_valid.h);
-    disp_dev->drv->flush_cb(disp_dev->drv, &area_show, disp_dev->vbd_color);
 }
 
 /* end ------------------------------------------------------------------*/

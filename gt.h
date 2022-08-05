@@ -53,6 +53,7 @@ extern "C" {
 #include "src/widgets/gt_scrollbar.h"
 #include "src/widgets/gt_processbar.h"
 #include "src/widgets/gt_listview.h"
+#include "src/widgets/gt_keypad.h"
 
 /* other */
 #include "src/others/gt_color.h"
