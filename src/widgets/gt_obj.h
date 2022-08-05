@@ -92,8 +92,9 @@ typedef struct _gt_obj_s {
 
     style_widget_t style;
 
+    uint8_t visible;  /* obj visible state, @gt_visible_e */
+
     struct{
-        uint8_t visible;  /* obj visible state, @gt_visible_e */
         uint8_t cached;   /* obj cache state, @gt_cache_e */
         uint8_t * cache_color;       /* cache obj color */
     }cache;
