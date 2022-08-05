@@ -49,11 +49,37 @@ bool gt_obj_is_visible(gt_obj_st * obj){
     if( !disp ){
         GT_LOGW( GT_LOG_TAG_GUI, "disp is null" );
     }
+    if( GT_INVISIBLE == obj->visible ){
+        return false;
+    }
 
     gt_area_st area_obj, area_disp;
     
     gt_area_copy( &area_disp, &disp->area_disp );
     gt_area_copy( &area_obj, &obj->area );
+
+    if( (area_obj.x + area_obj.w) < area_disp.x ){
+        return false;
+    }
+
+    if( (area_obj.y + area_obj.h) < area_disp.y ){
+        return false;
+    }
+
+    if( area_obj.x > (area_disp.x + area_disp.w) ){
+        return false;
+    }
+    if( area_obj.y > (area_disp.y + area_disp.h) ){
+        return false;
+    }
+    return true;
+}
+
+bool gt_obj_check_visible(gt_obj_st * obj, gt_area_st area)
+{
+    gt_area_st area_obj, area_disp;
+    gt_area_copy(&area_disp, &area);
+    gt_area_copy(&area_obj, &obj->area);
 
     if( (area_obj.x + area_obj.w) < area_disp.x ){
         return false;

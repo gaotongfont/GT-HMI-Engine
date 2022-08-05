@@ -71,8 +71,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     w = btn->area.w;
     h = btn->area.h;
 
-    radius = style->radius;
-
+    radius = h/4;//style->radius;
     btn->cache.cache_color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
     if( style->selected ){
         GT_COLOR_SET(fcolor, GT_COLOR_GET(style->color_selected));
@@ -85,7 +84,8 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     gt_graph_init_rect_attr(&rect_attr);
     GT_COLOR_SET(rect_attr.fcolor, GT_COLOR_GET(fcolor));
     rect_attr.is_fill = 1;
-    GT_COLOR_SET(rect_attr.bcolor, GT_COLOR_GET(fcolor));
+    rect_attr.radius = radius;
+    GT_COLOR_SET(rect_attr.bcolor, 0xFFFF);
 
     gt_area_st area = {
         .w = w,
@@ -102,33 +102,35 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
         .bcolor.full = 0xFFFF,
 		.border_color.full = GT_COLOR_GET(fcolor),
         .border_width = 1,
-        .radius = h/2,
+        .radius = h/4,
     };
 
-    if(0 && radius == 0) {
-        gt_graph_rect(&rect_attr, &area, color_widget_p);
-    }else{
-        gt_graph_rect(&rect_attr, &area, color_widget_p);
+    gt_graph_rect(&rect_attr, &area, color_widget_p);
+    // if(0 && radius == 0) {
+    //     gt_graph_rect(&rect_attr, &area, color_widget_p);
+    // }else{
+    //     gt_graph_rect(&rect_attr, &area, color_widget_p);
 
-        gt_area_st area_circle = {
-            .x = 0, .y = 0, .w = h, .h = h
-        };
-        gt_color_t * color_circle = gt_mem_malloc(h * h * sizeof(gt_color_t));
-        gt_memset(color_circle, 0xFF, h * h * sizeof(gt_color_t));
-        gt_graph_circle(&circle_attr, &area_circle, color_circle);
+    //     gt_area_st area_circle = {
+    //         .x = 0, .y = 0, .w = h, .h = h
+    //     };
+    //     gt_color_t * color_circle = gt_mem_malloc(h * h * sizeof(gt_color_t));
+    //     gt_memset(color_circle, 0xFF, h * h * sizeof(gt_color_t));
+    //     gt_graph_circle(&circle_attr, &area_circle, color_circle);
         
-        gt_area_st _area_dst = {
-            .x = 0, .y = 0, .w = w, .h = h,
-        }, _area_src = {
-            .x = 0, .y = 0, .w = h, .h = h
-        };
-        gt_color_area_copy(color_widget_p, _area_dst, color_circle, _area_src, h/2, h);
+    //     gt_area_st _area_dst = {
+    //         .x = 0, .y = 0, .w = w, .h = h,
+    //     }, _area_src = {
+    //         .x = 0, .y = 0, .w = h, .h = h
+    //     };
+    //     gt_color_area_copy(color_widget_p, _area_dst, color_circle, _area_src, h/2, h);
 
-        _area_src.x = h/2;
-        _area_dst.x = w - (h/2);
-        gt_color_area_copy(color_widget_p, _area_dst, color_circle, _area_src, h/2, h);
-	    gt_mem_free(color_circle);
-    }
+    //     _area_src.x = h/2;
+    //     _area_dst.x = w - (h/2);
+    //     gt_color_area_copy(color_widget_p, _area_dst, color_circle, _area_src, h/2, h);
+	//     gt_mem_free(color_circle);
+    // }
+
 
 
 

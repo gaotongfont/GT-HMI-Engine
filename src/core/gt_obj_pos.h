@@ -51,6 +51,17 @@ void gt_area_copy(gt_area_st * dst, gt_area_st * src);
 bool gt_obj_is_visible(gt_obj_st * obj);
 
 /**
+ * @brief check the obj is visible in area
+ * 
+ * @param obj 
+ * @param area_disp 
+ * @return true 
+ * @return false 
+ */
+bool gt_obj_check_visible(gt_obj_st * obj, gt_area_st area);
+
+
+/**
  * @brief gets the area of the object within the display area
  * 
  * @param obj obj
