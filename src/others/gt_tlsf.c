@@ -1238,6 +1238,9 @@ void* gt_tlsf_realloc(gt_tlsf_t tlsf, void* ptr, size_t size)
 		const size_t cursize = block_size(block);
 		const size_t combined = cursize + block_size(next) + block_header_overhead;
 		const size_t adjust = adjust_request_size(size, ALIGN_SIZE);
+		if (size > cursize && 0 == adjust) {
+			return NULL;
+		}
 
 		gt_tlsf_assert(!block_is_free(block) && "block already marked as free");
 
