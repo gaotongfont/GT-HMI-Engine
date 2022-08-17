@@ -19,14 +19,28 @@ extern "C" {
 
 /* define ---------------------------------------------------------------*/
 
-#define GT_ASSERT_ENABLE    1
+#define GT_USE_ASSERT_ENABLE    1
+#define GT_USE_ASSERT_MALLOC    1
+
+#define GT_ASSERT_MSG(expr, msg)                                \
+    do {                                                        \
+        if (!(expr)) {                                          \
+            GT_LOGE(GT_LOG_TAG_ASSERT, "%s, %s.", #expr, msg);  \
+        }                                                       \
+    } while (0)
 
 
 /* check null assert */
-#if GT_ASSERT_ENABLE==1
-#define GT_ASSERT_NULL(p)    { if(!p) while(1){} }
+#if GT_USE_ASSERT_ENABLE
+    #define GT_ASSERT_NULL(p)       { if(!p) while(1){} }
 #else
-#define GT_ASSERT_NULL(p)    { }
+    #define GT_ASSERT_NULL(p)
+#endif
+
+#if GT_USE_ASSERT_MALLOC
+    #define GT_ASSERT_MALLOC(expr)  GT_ASSERT_MSG(NULL != expr, "out of memory")
+#else
+    #define GT_ASSERT_MALLOC(expr)
 #endif
 
 /* typedef --------------------------------------------------------------*/

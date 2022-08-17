@@ -38,28 +38,28 @@ typedef void * style_widget_t;
 typedef int16_t gt_size_t;
 
 typedef enum type_widget_e{
-    GT_TYPE_OBJ = 0,        //base obj type
-    GT_TYPE_BTN = 1,        //button type
-    GT_TYPE_IMG = 2,        //img type
-    GT_TYPE_LAB = 3,        //label type
-    GT_TYPE_TEXTAREA = 4,   //textarea type
-    GT_TYPE_CANVAS = 5,     //canvas
-    GT_TYPE_OPTION = 6,     //option
-    GT_TYPE_GROUP = 7,      //group
-    GT_TYPE_CHECKBOX = 8,   //checkbox
-    GT_TYPE_RADIO = 9,      //radiobox
-    GT_TYPE_INPUT = 10,     //input
-    GT_TYPE_SWITCH = 11,    //switch
-    GT_TYPE_SCROLLBAR = 12, //scroll bar
-    GT_TYPE_PROCESSBAR = 13,//processbar
-    GT_TYPE_KEYPAD = 14,    //keypad
+    GT_TYPE_OBJ        = 0,      //base obj type
+    GT_TYPE_BTN        = 1,      //button type
+    GT_TYPE_IMG        = 2,      //img type
+    GT_TYPE_LAB        = 3,      //label type
+    GT_TYPE_TEXTAREA   = 4,      //textarea type
+    GT_TYPE_CANVAS     = 5,      //canvas
+    GT_TYPE_OPTION     = 6,      //option
+    GT_TYPE_GROUP      = 7,      //group
+    GT_TYPE_CHECKBOX   = 8,      //checkbox
+    GT_TYPE_RADIO      = 9,      //radio box
+    GT_TYPE_INPUT      = 10,     //input
+    GT_TYPE_SWITCH     = 11,     //switch
+    GT_TYPE_SCROLLBAR  = 12,     //scroll bar
+    GT_TYPE_PROCESSBAR = 13,     //progress bar
+    GT_TYPE_KEYPAD     = 14,     //keypad
 
     GT_TYPE_TOTAL,          //count total of type
 }gt_obj_type_et;
 
 typedef enum{
     GT_RES_FAIL = -1,
-    GT_RES_OK = 0,
+    GT_RES_OK   = 0,
 }gt_res_t;
 
 typedef struct _gt_area_s {
