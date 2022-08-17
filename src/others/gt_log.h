@@ -41,7 +41,7 @@ extern "C" {
 
 
 //字库相关能显示的调试信息等级
-#define GT_LOG_LEVEL_DEFALUT    GT_LOG_LEVEL_VERBOSE
+#define GT_LOG_LEVEL_DEFALUT    GT_LOG_LEVEL_DEBUG
 
 /* TAG ------------------------------------------------------------------*/
 
@@ -64,6 +64,7 @@ extern "C" {
 #define GT_LOG_TAG_BOOT         "BOOT"
 #define GT_LOG_TAG_LV           "LVGL"
 #define GT_LOG_TAG_GUI          "GUI"
+#define GT_LOG_TAG_ASSERT       "ASSERT"
 
 #define GT_LOG_TAG_TEST         "TEST"
 
