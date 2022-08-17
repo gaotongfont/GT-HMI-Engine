@@ -1,7 +1,7 @@
 /**
  * @file gt_tick.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-19 17:26:21
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -34,6 +34,7 @@ void gt_tick_inc(uint32_t ms);
 
 uint32_t gt_tick_get(void);
 
+uint32_t gt_tick_elapse(uint32_t prev_tick);
 
 #ifdef __cplusplus
 } /*extern "C"*/
