@@ -70,7 +70,6 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
 static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     /* code */
-    gt_mem_free(obj->cache.cache_color);
     GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
 }
 
@@ -92,7 +91,6 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_DRAW_END:
             GT_LOGD(GT_LOG_TAG_GUI, "end draw");
-            gt_mem_free(obj->cache.cache_color);
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */

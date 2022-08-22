@@ -54,7 +54,6 @@ typedef struct _gt_obj_process_attr_s{
 }gt_obj_process_attr_st;
 
 typedef enum{
-    GT_VISIBLE_UNSET,
     GT_VISIBLE,
     GT_INVISIBLE,
 }gt_visible_e;
@@ -69,36 +68,29 @@ typedef enum{
     GT_CREATE_TYPE_PART,
 }gt_create_type_e;
 
+struct _gt_draw_ctx_t;
 typedef struct _gt_obj_s {
     struct _gt_obj_s * parent;
     struct _gt_obj_s ** child;
-    uint16_t cnt_child;
     const gt_obj_class_st * class;
 #if GT_USE_USER_DATA
     void * user_data;
 #endif
-
-    gt_obj_process_attr_st * process_attr;
+    gt_obj_event_attr_st * event_attr;
+    struct _gt_draw_ctx_t * draw_ctx;
+    gt_obj_process_attr_st process_attr;
+    
+    uint32_t event_mask;                /* send event code add this mask */
+    
+    uint16_t cnt_child;
+    uint8_t cnt_event;
+    uint8_t opa_bg;
     
     gt_area_st area;                    /* base area */
-    gt_area_st area_part;               /* part create area */
-    gt_area_st area_back;               /* backup area */
-    gt_create_type_e create_type;       /* the obj is part create? */
-
-    gt_obj_event_attr_st * event_attr;
-    uint8_t cnt_event;
-
-    uint32_t event_mask;                /* send event code add this mask */
 
     style_widget_t style;
 
     uint8_t visible;  /* obj visible state, @gt_visible_e */
-
-    struct{
-        uint8_t cached;   /* obj cache state, @gt_cache_e */
-        uint8_t * cache_color;       /* cache obj color */
-    }cache;
-
 } gt_obj_st;
 
 

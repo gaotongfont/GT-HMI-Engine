@@ -1,6 +1,6 @@
 /**
  * @file gt_hal.h
- * @author your name (your@email.com)
+ * @author yongg
  * @brief 
  * @version 0.1
  * @date 2022-05-16 14:18:45

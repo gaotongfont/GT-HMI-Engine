@@ -26,10 +26,8 @@ typedef struct _gt_style_keypad_s
 {
     char * keypad;
     char code_selected;
-    gt_color_t bcolor;  //background color
-    gt_color_t fcolor;  //keybackground color
+    gt_color_t bg_color;  //background color
     gt_color_t color_font;  //font color
-    
 }_gt_style_keypad_st;
 
 

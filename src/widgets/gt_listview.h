@@ -24,9 +24,9 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_style_list_s
 {
-    gt_color_t fcolor_selected;
-    gt_color_t fcolor_unselected;
-    gt_color_t bcolor;
+    gt_color_t fg_color_selected;
+    gt_color_t fg_color_unselected;
+    gt_color_t bg_color;
     gt_color_t color_font_selected;
     gt_color_t color_font_unselected;
     gt_color_t color_border;

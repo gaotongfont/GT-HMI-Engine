@@ -101,7 +101,7 @@ gt_res_t gt_event_send(gt_obj_st * parent, gt_event_type_et event, void * parms)
     }
     // add event to obj----sys event,process draw,del,create...need long time
     if( parent->event_mask&event ){
-        GT_LOGD(GT_LOG_TAG_GUI, "parent is exist the event");
+        GT_LOGD(GT_LOG_TAG_GUI, "parent is exist the event code:%d", event);
         return GT_RES_FAIL;
     }
     parent->event_mask |= event;

@@ -36,6 +36,7 @@ extern "C" {
 #else
     #define GT_ASSERT_NULL(p)
 #endif
+    #define GT_ASSERT(p)        {}
 
 #if GT_USE_ASSERT_MALLOC
     #define GT_ASSERT_MALLOC(expr)  GT_ASSERT_MSG(NULL != expr, "out of memory")

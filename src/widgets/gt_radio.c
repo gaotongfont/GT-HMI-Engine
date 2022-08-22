@@ -16,7 +16,7 @@
 #include "../core/gt_obj_pos.h"
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
-
+#include "../core/gt_draw.h"
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_RADIO
 #define MY_CLASS    &gt_radio_class
@@ -62,11 +62,13 @@ static void _gt_radio_init_widget(gt_obj_st * radio) {
         .len = strlen(style->text),
         .size = GT_FONT_SIZE_16x16,
     };
+
+    
     
     // set default size
     if( radio->area.w == 0 || radio->area.h == 0){
         radio->area.w = gt_font_get_string_width(&font)+24;
-        radio->area.h = GT_FONT_SIZE_16x16+8;
+        radio->area.h = GT_FONT_SIZE_16x16+4;
     }
     sel_width = font.size;
 
@@ -76,104 +78,43 @@ static void _gt_radio_init_widget(gt_obj_st * radio) {
     h = radio->area.h;
 
 
-    radio->cache.cache_color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
+    gt_attr_rect_st rect_attr = {
+        .is_fill        = 0,
+        .border_width   = 2,
+        .border_color   = gt_color_make(0xA0,0xA0,0xA0),
+        .bg_opa         = GT_OPA_COVER,
+        .bg_color       = gt_color_make(0xA0,0xA0,0xA0),
+        .radius         = h>>1,
+    };
     
-    /* base shape */
-#if 0    
-    fcolor.full = 0x0000;
-    gt_attr_rect_st rect_attr;
-    gt_graph_init_rect_attr(&rect_attr);
+    gt_area_st area_base = radio->area;
+    area_base.h = h;
+    area_base.w = area_base.h;
+    draw_bg(radio->draw_ctx, &rect_attr, &area_base);
+
     if( style->selected == 1 ){
+        gt_area_st area_sel = area_base;
+        area_sel.y += rect_attr.border_width<<1;
+        area_sel.x += rect_attr.border_width<<1;
+        area_sel.w -= rect_attr.border_width<<2;
+        area_sel.h -= rect_attr.border_width<<2;
+        rect_attr.radius = area_sel.h>>1;
         rect_attr.is_fill = 1;
-        rect_attr.border_width = 0;
-        GT_COLOR_SET(rect_attr.fcolor, 0x0000);
-        GT_COLOR_SET(rect_attr.bcolor, 0x0000);
-        GT_COLOR_SET(rect_attr.border_color, 0x0000);
-    }else{
-        rect_attr.is_fill = 1;
-        rect_attr.border_width = 2;
-        GT_COLOR_SET(rect_attr.fcolor, 0xFFFF);
-        GT_COLOR_SET(rect_attr.bcolor, 0x0000);
-        GT_COLOR_SET(rect_attr.border_color, 0x0000);
-    }
-#endif
-    gt_attr_circle_st circle_attr;
-    gt_graph_init_circle_attr(&circle_attr);
-    if( style->selected == 1 ){
-        circle_attr.is_fill = 1;
-        circle_attr.border_width = 0;
-        circle_attr.radius = 8;
-        GT_COLOR_SET(circle_attr.fcolor, 0x0000);
-        GT_COLOR_SET(circle_attr.bcolor, 0xFFFF);
-        GT_COLOR_SET(circle_attr.border_color, 0x0000);
-    }else{
-        circle_attr.is_fill = 0;
-        circle_attr.border_width = 2;
-        circle_attr.radius = 8;
-        GT_COLOR_SET(circle_attr.fcolor, 0x0000);
-        GT_COLOR_SET(circle_attr.bcolor, 0xFFFF);
-        GT_COLOR_SET(circle_attr.border_color, 0x0000);
+        rect_attr.bg_color = gt_color_make(0xA0,0xA0,0xA0);
+        draw_bg(radio->draw_ctx, &rect_attr, &area_sel);
     }
 
-    gt_area_st area = {
-        .w = w, .h = h, .x = x, .y = y
+    gt_attr_font_st font_attr = {
+        .font = &font,
+        .space_x = 0,
+        .space_y = 0,
+        .font_color = color_font,
+        .align = GT_ALIGN_LEFT,
     };
-	
-    gt_color_t * color_widget_p = (gt_color_t *)radio->cache.cache_color;
-    gt_memset(color_widget_p, 0xFF, w * h * sizeof(gt_color_t));
-
-    gt_color_t * color_p1 = gt_mem_malloc( sel_width * sel_width * sizeof(gt_color_t) );
-    gt_memset(color_p1, 0xFF,  sel_width * sel_width * sizeof(gt_color_t) );
-    gt_area_st area1 = {
-        .w = sel_width,
-        .h = sel_width,
-    };
-    
-    // gt_graph_rect(&rect_attr, &area1, color_p1);
-    gt_graph_circle(&circle_attr, &area1, color_p1);
-    gt_area_st area_dst = {
-        .x = 0,
-        .y = ((h - font.size)>>1) + (font.size - sel_width),
-        .w = w,
-        .h = h
-    }, area_src = {
-        .x = 0,
-        .y = 0,
-        .w = sel_width,
-        .h = sel_width
-    };
-    gt_color_area_copy(color_widget_p, area_dst, color_p1, area_src, sel_width, sel_width);
-    gt_mem_free(color_p1);
-
-
-    /* font */
-    uint32_t cnt_word = gt_font_count_word(style->text, strlen(style->text));
-    gt_memset(fp, 0, 1024);
-    
-    uint32_t w_font = gt_font_get_string_width(&font);
-    gt_font_get_string_dot(&font);
-
-    int16_t x_start = sel_width + 2;
-    int16_t y_start = (h - GT_FONT_SIZE_16x16)>>1;
-
-    if( x_start < 0 ){
-        x_start = 0;
-    }
-    if( y_start < 0 ){
-        y_start = 0;
-    }
-
-    // fill to shape
-    uint16_t idx_dot = 0;
-    area.x = x_start;
-    area.y = y_start;
-
-    while( cnt_word-- && (x_start+font.size) < w ){
-        area.x = x_start;
-        gt_graph_dot_draw_to_color(&font.res[idx_dot], color_widget_p, area, font.size, font.size, color_font);
-		x_start += gt_font_get_next_word_width(&font, !idx_dot);
-        idx_dot += (font.size>>3)*font.size;
-    }
+    gt_area_st area_font = radio->area;
+    area_font.x += area_base.h;
+    area_font.w = w + 60;
+    draw_text(radio->draw_ctx, &font_attr, &area_font);
 }
 
 /**
@@ -196,7 +137,6 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
 static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     /* code */
-    gt_mem_free(obj->cache.cache_color);
     GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
 }
 
@@ -212,18 +152,15 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
-            if( gt_obj_check_scr(obj) ){
-                _gt_radio_init_widget(obj);
-
-                extern void gt_disp_obj(gt_obj_st * obj);
-                gt_disp_obj(obj);
+            if( gt_obj_check_scr(obj) ){               
+                extern void gt_disp_ref_area(gt_area_st * area);
+                gt_disp_ref_area(&obj->area);
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
             GT_LOGD(GT_LOG_TAG_GUI, "end draw");
-            gt_mem_free(obj->cache.cache_color);
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */

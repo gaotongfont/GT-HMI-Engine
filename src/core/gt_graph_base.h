@@ -33,7 +33,7 @@ extern "C" {
 
 #define GT_DOT_GET_BIT(buf,x,y,w,h)		((buf[(y)*((w)>>3)+((x)>>3)]>>(7-((x)%8)))&0x01)
 
-
+#define GT_RADIUS_MIN   3
 /* typedef --------------------------------------------------------------*/
 typedef enum {
     GT_BLEND_MODE_NORMAL,     /**< Simply mix according to the opacity value*/
@@ -46,8 +46,8 @@ typedef enum {
 typedef struct _gt_attr_line_s
 {
     gt_blend_mode_et blend_mode;
-    gt_color_t fcolor;
-    gt_color_t bcolor;
+    gt_color_t fg_color;
+    gt_color_t bg_color;
     gt_size_t width;
 
     gt_size_t x_1;
@@ -60,14 +60,21 @@ typedef struct _gt_attr_line_s
 typedef struct _gt_attr_rect_s
 {
     // gt_blend_mode_et blend_mode;
+    gt_size_t radius;
 
-    gt_color_t fcolor;
-    gt_color_t bcolor;
+    gt_color_t fg_color;
 
+    gt_color_t bg_color;
+    gt_opt_t bg_opa;
+
+    // bg img
+    void * bg_img_src;
+    gt_opt_t bg_img_opa; 
+
+    // border
     gt_color_t border_color;
     gt_size_t border_width;
-
-    gt_size_t radius;
+    gt_opa_t border_opa;
 
     uint8_t is_fill:1;
 }gt_attr_rect_st;
@@ -75,8 +82,8 @@ typedef struct _gt_attr_rect_s
 
 typedef struct _gt_attr_circle_s
 {
-    gt_color_t fcolor;
-    gt_color_t bcolor;
+    gt_color_t fg_color;
+    gt_color_t bg_color;
     
     gt_size_t radius;
 
@@ -92,8 +99,8 @@ typedef struct _gt_attr_circle_s
 typedef struct _gt_attr_arch_s
 {
     gt_blend_mode_et blend_mode;
-    gt_color_t fcolor;
-    gt_color_t bcolor;
+    gt_color_t fg_color;
+    gt_color_t bg_color;
 
     gt_size_t radius;
     gt_size_t angle_start;
@@ -122,7 +129,9 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 void gt_graph_arch(gt_attr_arch_st * arch_attr, gt_area_st * area );
 void _gt_graph_dot_circle(gt_attr_circle_st * circle_attr, gt_area_st * area);
 
-void gt_graph_dot_draw_to_color(uint8_t * dot, gt_color_t * color, gt_area_st area_color, uint8_t w, uint8_t h, gt_color_t fcolor);
+void gt_graph_dot_draw_to_color(uint8_t * dot, gt_color_t * color, gt_area_st area_color, uint8_t w, uint8_t h, gt_color_t fg_color);
+void gt_graph_dot_to_gray(uint8_t *dot, uint8_t *out, gt_size_t w, gt_size_t h, uint8_t level_gray);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

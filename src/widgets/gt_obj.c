@@ -64,7 +64,7 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
             break;
-
+            
         case GT_EVENT_TYPE_DRAW_END:
             GT_LOGD(GT_LOG_TAG_GUI, "end draw");
             break;
@@ -88,7 +88,6 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
             GT_LOGD(GT_LOG_TAG_GUI, "process");
             /* code here */
-
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
             break;
 

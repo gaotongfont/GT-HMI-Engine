@@ -30,6 +30,7 @@ extern "C" {
 #include "src/core/gt_style.h"
 #include "src/core/gt_obj_pos.h"
 #include "src/core/gt_timer.h"
+#include "src/core/gt_draw.h"
 
 /* font */
 #include "src/font/gt_font.h"
@@ -42,8 +43,11 @@ extern "C" {
 
 /* widgets */
 #include "src/widgets/gt_conf_widgets.h"
-
 #include "src/widgets/gt_obj.h"
+
+/* draw */
+#include "src/extra/draw/gt_draw_blend.h"
+
 
 #if GT_CFG_ENABLE_BTN == 1
 #include "src/widgets/gt_btn.h"

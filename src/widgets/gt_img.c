@@ -51,43 +51,15 @@ static void _gt_img_init_widget(gt_obj_st * img)
     _gt_style_img_st * style = img->style;
     gt_size_t w, h;
 
-    if(img->area.w == 0 || img->area.h == 0){
-        gt_vf_read_img_wh(style->src, &img->area.w, &img->area.h);
-    }
+    /* get img width and height, must ! */
+    gt_vf_read_img_wh(style->src, &img->area.w, &img->area.h);
 
-    if( GT_CREATE_TYPE_PART == img->create_type ){
-        // area_disp has been cpy to img->area_part
-        gt_area_st area_valid;
-        gt_area_st area_temp;
-        gt_obj_get_valid_area(img, &img->area_part, &area_valid);
-
-        area_temp.x = img->area.x;
-        area_temp.w = img->area.w;
-        area_temp.h = img->area.h;
-        area_temp.h = area_valid.h;
-        if( area_valid.y >= 0 ){
-            area_temp.y = img->area.y + area_valid.y;
-            // area_temp.h = img->area.h - area_valid.y;
-        }
-        gt_area_copy(&img->area_back, &img->area);
-        gt_area_copy(&img->area, &area_temp);
-
-        w = area_temp.w;
-        h = area_valid.h;
-        img->cache.cache_color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
-        gt_vf_read_img_offset(style->src, img->cache.cache_color, area_temp.w * area_valid.y * sizeof(gt_color_t), w * h * sizeof(gt_color_t) );
-
-    }else{
-        w = img->area.w;
-        h = img->area.h;
-        if( img->cache.cache_color ){
-            gt_mem_free(img->cache.cache_color);
-        }
-        img->cache.cache_color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
-        
-        gt_vf_read_img(style->src, img->cache.cache_color);
-    }
-    
+    gt_attr_rect_st dsc = {
+        .bg_img_src = style->src,
+        .bg_opa = GT_OPA_COVER
+    };
+    /* start draw img */
+    draw_bg_img(img->draw_ctx, &dsc, &img->area);
 }
 
 /**
@@ -109,12 +81,7 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
  */
 static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
-    /* code */
-    gt_mem_free(obj->cache.cache_color);
-    if( GT_CREATE_TYPE_PART == obj->create_type ){
-        gt_area_copy(&obj->area, &obj->area_back);
-        obj->create_type = GT_CREATE_TYPE_FULL;
-    }
+    /* code */    
     GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
 }
 
@@ -131,16 +98,14 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
             if( gt_obj_check_scr(obj) ){
-            // _gt_img_init_widget(obj);
-            // extern void gt_disp_obj(gt_obj_st * obj);
-            // gt_disp_obj(obj);
+                extern void gt_disp_ref_area(gt_area_st * area);
+                gt_disp_ref_area(&obj->area);
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGD(GT_LOG_TAG_GUI, "end draw");
-            gt_mem_free(obj->cache.cache_color);
+            GT_LOGD(GT_LOG_TAG_GUI, "end draw");            
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */

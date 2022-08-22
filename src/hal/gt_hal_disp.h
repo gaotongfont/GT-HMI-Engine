@@ -34,8 +34,8 @@ typedef struct _gt_disp_drv_s
     uint16_t res_hor;
     uint16_t res_ver;
 
-    gt_color_t bcolor;
-    gt_color_t fcolor;
+    gt_color_t bg_color;
+    gt_color_t fg_color;
 
     void (* flush_cb)(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
 

@@ -16,7 +16,7 @@
 #include "../core/gt_obj_pos.h"
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
-
+#include "../core/gt_draw.h"
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_SCROLLBAR
 #define MY_CLASS    &gt_scrollbar_class
@@ -47,7 +47,7 @@ const gt_obj_class_st gt_scrollbar_class = {
 
 static void _gt_scrollbar_init_widget(gt_obj_st * scrollbar) {
     _gt_style_scrollbar_st * style = scrollbar->style;
-    gt_size_t x, y, w, h;
+    gt_size_t w, h;
     
     // set default size
     if( !scrollbar->area.w || !scrollbar->area.h ){
@@ -55,116 +55,52 @@ static void _gt_scrollbar_init_widget(gt_obj_st * scrollbar) {
         scrollbar->area.h = 16;
     };
 
-    x = scrollbar->area.x;
-    y = scrollbar->area.y;
     w = scrollbar->area.w;
     h = scrollbar->area.h;
 
     gt_attr_rect_st rect_attr = {
         .is_fill = 1,
-        .border_width = h/4,
-        .fcolor.full = GT_COLOR_GET(style->color_ina),
-        .bcolor.full = GT_COLOR_GET(style->bcolor),
-        .border_color.full = GT_COLOR_GET(style->bcolor)
+        .radius = h>>1,
+        .bg_color = style->color_ina,
+        .border_color = style->bg_color,
+        .bg_opa = GT_OPA_COVER
     };
-    scrollbar->cache.cache_color = gt_mem_malloc(w * h * sizeof(gt_color_t));
-    gt_color_t * color_widget_p = (gt_color_t *)scrollbar->cache.cache_color;
-    gt_area_st area_rect = {
-        .w = w, .h = h,
-    };
-
-    gt_graph_rect(&rect_attr, &area_rect, color_widget_p);
-
-    gt_attr_circle_st circle_attr = {
-        .is_fill = 1,
-        .border_width = 0,
-        .border_color.full = GT_COLOR_GET(style->color_ina),
-        .bcolor.full = GT_COLOR_GET(style->bcolor),
-        .fcolor.full = GT_COLOR_GET(style->color_ina),
-        .radius = h/4,        
-    };
-    gt_color_t * color_circle = gt_mem_malloc(circle_attr.radius * 2 * circle_attr.radius * 2 * sizeof(gt_color_t) );
-    gt_area_st area_circle = {
-        .w = circle_attr.radius * 2, .h = circle_attr.radius * 2,
-    };
-    gt_graph_circle(&circle_attr, &area_circle, color_circle);
-
-    // left gray color circle
-    gt_area_st area_dst = {
-        .x = 0, .y = (h/4), .w = w, .h = h
-    };
-    gt_area_st area_src = {
-        .x = 0, .y = 0, .w = area_circle.w, .h = area_circle.h
-    };
-    gt_color_area_copy(color_widget_p, area_dst, color_circle, area_src, area_src.w/2, area_src.h);    
     
-    // right gray color circle
-    area_src.x = area_src.w/2;
-    area_dst.x = w - area_src.w/2;
-    gt_color_area_copy(color_widget_p, area_dst, color_circle, area_src, area_src.w/2, area_src.h);
 
-    // left blue color circle
-    GT_COLOR_SET(circle_attr.fcolor, GT_COLOR_GET(style->color_act));
-    gt_graph_circle(&circle_attr, &area_circle, color_circle);
-    area_src.x = 0;
-    area_dst.x = 0;
-    gt_color_area_copy(color_widget_p, area_dst, color_circle, area_src, area_src.w/2, area_src.h);
 
-    // circle finish
-    // free ptr
-    gt_mem_free(color_circle);
+    /* 1 base shape */
+    gt_area_st area_base = scrollbar->area;
+    area_base.h -= h/3;
+    area_base.y += (h/3)>>1;
+    draw_bg(scrollbar->draw_ctx, &rect_attr, &area_base);
 
+    /* 2 val shape */
     // rect val
     int all_pos = style->end - style->start;
     int w_pos = ((float)style->pos/(float)all_pos) * (float)w;
-    w_pos = w_pos - area_src.w/2;
-    if( w_pos < 0 ){
-        w_pos = 1;
+    gt_area_st area_val = area_base;
+    area_val.w = w_pos;
+    rect_attr.bg_color = style->color_act;
+    if( w_pos > (h>>1) ){
+        // w_pos = (h>>1);
+        draw_bg(scrollbar->draw_ctx, &rect_attr, &area_val);
     }
-    
-    rect_attr.border_width = 0;
-    GT_COLOR_SET(rect_attr.fcolor, GT_COLOR_GET(style->color_act));
-    gt_color_t * color_rect = gt_mem_malloc( w_pos * area_src.h * sizeof(gt_color_t) );
-    area_rect.w = w_pos;
-    area_rect.h = area_src.h;
-    gt_graph_rect(&rect_attr, &area_rect, color_rect);
 
-    area_src.x = 0;
-    area_src.w = w_pos;
-    area_dst.x = area_src.h/2;
-    gt_color_area_copy(color_widget_p, area_dst, color_rect, area_src, w_pos, area_src.h);
-    
-    //rect finish
-    // free ptr
-    gt_mem_free(color_rect);
-
-    //pos circle
-    circle_attr.is_fill = 1;
-    circle_attr.radius = h/2;
-    GT_COLOR_SET(circle_attr.fcolor, GT_COLOR_GET(style->color_act));
-    GT_COLOR_SET(circle_attr.bcolor, GT_COLOR_GET(style->bcolor));
-    
-    area_circle.w = h;
-    area_circle.h = h;
-    color_circle = gt_mem_malloc( area_circle.w * area_circle.h * sizeof(gt_color_t) );
-    gt_graph_circle(&circle_attr, &area_circle, color_circle);
-
-    area_src.x = 1;
-    area_src.w = area_circle.w;
-    area_src.h = area_circle.h;
-    area_dst.x = w_pos - h/3;
-    area_dst.y = 0;
-    if( area_dst.x > (w - (area_circle.w-1)) ){
-        area_dst.x = (w - (area_circle.w-1));
+    /* big big big operate circle */
+    gt_area_st area_big_circle = area_val;
+    area_big_circle.h = h;
+    rect_attr.radius = area_big_circle.h>>1;
+    area_big_circle.y = scrollbar->area.y;
+    area_big_circle.x = scrollbar->area.x + (w_pos - (h>>1));
+    area_big_circle.w = area_big_circle.h;
+    if( w_pos > (scrollbar->area.w - area_big_circle.h ) ){
+        area_big_circle.x = scrollbar->area.x + (scrollbar->area.w - area_big_circle.h);
     }
-    if( area_dst.x < 0 ){
-        area_dst.x = 0;
+    if( area_big_circle.x < scrollbar->area.x ){
+        area_big_circle.x = scrollbar->area.x;
     }
-    gt_color_area_copy(color_widget_p, area_dst, color_circle, area_src, area_circle.w-2, area_circle.h);
+    draw_bg(scrollbar->draw_ctx, &rect_attr, &area_big_circle);
 
-    // pos circle finish
-    // free ptr
-    gt_mem_free(color_circle);
 }
 
 /**
@@ -187,7 +123,6 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
 static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     /* code */
-    gt_mem_free(obj->cache.cache_color);
     GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
 }
 
@@ -200,22 +135,21 @@ static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
  */
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
-    gt_point_st * point_click = NULL;
+    gt_point_st point_click;
+    int _pos;
+    float pos;
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
             if( gt_obj_check_scr(obj) ){
-                _gt_scrollbar_init_widget(obj);
-
-                extern void gt_disp_obj(gt_obj_st * obj);
-                gt_disp_obj(obj);
+                extern void gt_disp_ref_area(gt_area_st * area);
+                gt_disp_ref_area(&obj->area);
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
             GT_LOGD(GT_LOG_TAG_GUI, "end draw");
-            gt_mem_free(obj->cache.cache_color);
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
@@ -238,10 +172,10 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
             GT_LOGD(GT_LOG_TAG_GUI, "process");
             /* code here */
-            point_click->x = obj->process_attr->point.x;
-            point_click->y = obj->process_attr->point.y;
-            int _pos = point_click->x;
-            float pos = ((float)_pos)/((float)obj->area.w);
+            point_click.x = obj->process_attr.point.x;
+            point_click.y = obj->process_attr.point.y;
+            _pos = point_click.x;
+            pos = ((float)_pos)/((float)obj->area.w);
             pos = pos * (float)gt_scrollbar_style_get_total(obj);
             pos += gt_scrollbar_style_get_start(obj);
             gt_scrollbar_style_set_pos(obj, (int)pos);
@@ -263,7 +197,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 static void _gt_scrollbar_init_style(gt_obj_st * scrollbar)
 {
     _gt_style_scrollbar_st * style = scrollbar->style;
-    GT_COLOR_SET(style->bcolor, 0xFFFF);
+    GT_COLOR_SET(style->bg_color, 0xFFFF);
     GT_COLOR_SET(style->color_act, 0x0516);
     GT_COLOR_SET(style->color_ina, 0xC619);
     style->start = 0;

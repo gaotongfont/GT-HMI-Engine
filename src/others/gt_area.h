@@ -1,0 +1,57 @@
+/**
+ * @file gt_area.h
+ * @author yongg
+ * @brief 
+ * @version 0.1
+ * @date 2022-08-11 09:34:53
+ * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ */
+#ifndef _GT_AREA_H_
+#define _GT_AREA_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* include --------------------------------------------------------------*/
+#include "stdint.h"
+#include "gt_types.h"
+#include "gt_math.h"
+
+
+/* define ---------------------------------------------------------------*/
+#define AREA_X1(area)   (area->x)
+#define AREA_X2(area)   (area->x + area->w)
+#define AREA_Y1(area)   (area->y)
+#define AREA_Y2(area)   (area->y + area->h)
+#define AREA_W(area)   (area->w)
+#define AREA_H(area)   (area->h)
+
+
+/* typedef --------------------------------------------------------------*/
+
+
+
+/* macros ---------------------------------------------------------------*/
+
+
+
+/* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief calc two areas intersect
+ * 
+ * @param area1 
+ * @param area2 
+ * @param area_res area intersect point and size 
+ * @return true two areas intersect
+ * @return false two areas not intersect
+ */
+bool gt_area_intersect(const gt_area_st * area_back, const gt_area_st * area_fore, gt_area_st * area_res);
+
+
+#ifdef __cplusplus
+} /*extern "C"*/
+#endif
+
+#endif //!_GT_AREA_H_

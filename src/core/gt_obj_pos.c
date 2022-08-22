@@ -256,8 +256,8 @@ bool gt_obj_check_scr(gt_obj_st * obj)
  * @param point point ptr
  */
 void _gt_obj_set_process_point(gt_obj_st * obj, gt_point_st * point){
-    obj->process_attr->point.x = point->x;
-    obj->process_attr->point.y = point->y;
+    obj->process_attr.point.x = point->x;
+    obj->process_attr.point.y = point->y;
 }
 
 /**
@@ -269,8 +269,8 @@ void _gt_obj_set_process_point(gt_obj_st * obj, gt_point_st * point){
  */
 void _gt_obj_set_process_scroll_xy(gt_obj_st * obj, gt_size_t x_scroll, gt_size_t y_scroll)
 {
-    obj->process_attr->x_scroll = x_scroll;
-    obj->process_attr->y_scroll = y_scroll;
+    obj->process_attr.x_scroll = x_scroll;
+    obj->process_attr.y_scroll = y_scroll;
 }
 
 /**

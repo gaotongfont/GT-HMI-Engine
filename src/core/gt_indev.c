@@ -38,6 +38,7 @@ void gt_indev_handler_point(gt_indev_st * indev)
     gt_indev_data_st data_indev;
 
     gt_obj_st * scr = gt_disp_get_scr();
+    gt_point_st point_ret;
 
     /* call user hard interface */
     indev->drv->read_cb(indev->drv, &data_indev);
@@ -63,8 +64,11 @@ void gt_indev_handler_point(gt_indev_st * indev)
             indev->proc.data.point.obj_scroll = indev->proc.data.point.obj_act;
             
             /* send clicking event to pressed obj */
-            _gt_obj_set_process_point(indev->proc.data.point.obj_act, &indev->proc.data.point.point_act);
+            // _gt_obj_set_process_point(indev->proc.data.point.obj_act, &indev->proc.data.point.point_act);
+            gt_obj_get_click_point_by_phy_point(indev->proc.data.point.obj_act, &data_indev.point,&point_ret);
+            _gt_obj_set_process_point(indev->proc.data.point.obj_act, &point_ret);
             gt_event_send(indev->proc.data.point.obj_act, GT_EVENT_TYPE_INPUT_CLICKING, NULL);
+            return;
         }else {
             /* last pressed point */
             indev->proc.data.point.point_last.x = data_indev.point.x;
@@ -77,13 +81,11 @@ void gt_indev_handler_point(gt_indev_st * indev)
             gt_event_send(indev->proc.data.point.obj_act, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);            
             indev->proc.data.point.obj_act = indev->proc.data.point.obj_last;                        
         }else{
-            gt_point_st point_ret;
             gt_obj_get_click_point_by_phy_point(indev->proc.data.point.obj_act, &indev->proc.data.point.point_last,&point_ret);
             _gt_obj_set_process_point(indev->proc.data.point.obj_act, &point_ret);
             gt_event_send(indev->proc.data.point.obj_act, GT_EVENT_TYPE_INPUT_CLICKING, NULL);
         }
         indev->proc.data.point.count_point++;
-
     }
     /* no touch */
     else {

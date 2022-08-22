@@ -24,13 +24,15 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_style_scrollbar_s
 {
-    gt_size_t start;
-    gt_size_t end;
-    gt_size_t pos;
     gt_color_t color_act;
     gt_color_t color_ina;
 
-    gt_color_t bcolor;
+    gt_color_t bg_color;
+    
+    gt_size_t start;
+    gt_size_t end;
+    gt_size_t pos;
+    
 }_gt_style_scrollbar_st;
 
 

@@ -16,6 +16,7 @@
 #include "../core/gt_obj_pos.h"
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
+#include "../core/gt_draw.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_INPUT
@@ -57,31 +58,19 @@ static void _gt_input_init_widget(gt_obj_st * input) {
     w = input->area.w;
     h = input->area.h;
 
-    if( input->cache.cache_color ){
-        gt_mem_free(input->cache.cache_color);
-    }
-    input->cache.cache_color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
-    
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.is_fill = 1;
-    GT_COLOR_SET(rect_attr.fcolor, 0xFFFF);
-    GT_COLOR_SET(rect_attr.bcolor, 0xFFFF);
+    rect_attr.is_fill = 0;
     rect_attr.border_width = 2;
     rect_attr.radius = h/4;
-    GT_COLOR_SET(rect_attr.border_color, 0x0000);
+    rect_attr.bg_color = gt_color_black();
+    rect_attr.border_color = gt_color_black();
 
-    gt_color_t * color_widget_p = (gt_color_t *)input->cache.cache_color;
-    gt_graph_rect(&rect_attr, &input->area, color_widget_p);
+    /* draw base shape */
+    draw_bg(input->draw_ctx, &rect_attr, &input->area);
 
-    /* font */
-    
-    uint16_t cnt_word = 0;
-    uint16_t x_start = 2, y_start = (h - GT_FONT_SIZE_16x16)>>1;
-    // if input value is null
+    /* draw font */
     gt_font_st font;
-    uint8_t fp[1024];
-    gt_memset(fp, 0, 1024);
     gt_color_t color_font;
     if( !style->value ){
         font.style_cn = 1;
@@ -89,8 +78,6 @@ static void _gt_input_init_widget(gt_obj_st * input) {
         font.utf8 = style->placeholder;
         font.len = strlen(style->placeholder);
         font.size = GT_FONT_SIZE_16x16;
-        font.res = fp;
-        
         color_font.full = 0x8410;
     }
     // if input value is not null
@@ -100,27 +87,19 @@ static void _gt_input_init_widget(gt_obj_st * input) {
         font.utf8 = style->value;
         font.len = strlen(style->value);
         font.size = GT_FONT_SIZE_16x16;
-        font.res = fp;
-        color_font.full = 0x0000;
-
     }
-    
-    cnt_word = gt_font_count_word(font.utf8, strlen(font.utf8));
-    gt_font_get_string_dot(&font);
-    gt_area_st area = {
-        .w = w,
-        .h = h,
-        .x = x_start,
-        .y = y_start
+    gt_attr_font_st font_attr = {
+        .font = &font,
+        .align = GT_ALIGN_LEFT,
+        .space_x = 0,
+        .space_y = 0,
+        .font_color = color_font,
     };
-    uint16_t idx_dot = 0;
     
-    while( cnt_word-- && (x_start+font.size) < w ){
-        area.x = x_start;
-        gt_graph_dot_draw_to_color(&font.res[idx_dot], color_widget_p, area, font.size, font.size, color_font);
-        x_start += gt_font_get_next_word_width(&font, !idx_dot);
-        idx_dot += (font.size>>3)*font.size;
-    }
+    gt_area_st area_font = input->area;
+    area_font.x += 4;
+    draw_text(input->draw_ctx, &font_attr, &area_font);
+  
 }
 
 /**
@@ -143,7 +122,6 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
 static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     /* code */
-    gt_mem_free(obj->cache.cache_color);
     GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
 }
 
@@ -160,17 +138,14 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
             if( gt_obj_check_scr(obj) ){
-                _gt_input_init_widget(obj);
-
-                extern void gt_disp_obj(gt_obj_st * obj);
-                gt_disp_obj(obj);
+                extern void gt_disp_ref_area(gt_area_st * area);
+                gt_disp_ref_area(&obj->area);
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
             GT_LOGD(GT_LOG_TAG_GUI, "end draw");
-            gt_mem_free(obj->cache.cache_color);
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */

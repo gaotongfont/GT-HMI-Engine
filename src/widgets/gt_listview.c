@@ -16,7 +16,7 @@
 #include "../core/gt_obj_pos.h"
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
-
+#include "../core/gt_draw.h"
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_BTN
 #define MY_CLASS    &gt_listview_class
@@ -89,7 +89,7 @@ static void _gt_listview_init_widget(gt_obj_st * listview) {
     // set default size
     if( listview->area.w == 0 || listview->area.h == 0 ){
         listview->area.w = 72;
-        listview->area.h = 24 * style->idx_show_cnt;
+        listview->area.h = 30 * style->idx_show_cnt;
     }
 
     // can not set area.h less than items numb * font size
@@ -105,103 +105,60 @@ static void _gt_listview_init_widget(gt_obj_st * listview) {
     gt_attr_rect_st rect_attr = {
         .is_fill = 1,
         .border_width = 2,
+        .bg_opa = GT_OPA_COVER
     };
-    GT_COLOR_SET(rect_attr.border_color, GT_COLOR_GET(style->color_border));
-    GT_COLOR_SET(rect_attr.fcolor, GT_COLOR_GET(style->fcolor_unselected));
-    GT_COLOR_SET(rect_attr.bcolor, GT_COLOR_GET(style->bcolor));
+    rect_attr.border_color  = style->color_border;
+    rect_attr.fg_color      = style->fg_color_unselected;
+    rect_attr.bg_color      = style->bg_color;
     
     gt_area_st area_rect = {
         .w = w, .h = h
     };
-    listview->cache.cache_color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
-    gt_color_t * color_widget_p = (gt_color_t *)listview->cache.cache_color;
-    gt_graph_rect(&rect_attr, &area_rect, color_widget_p);
 
-    uint8_t fp[1024];
-    uint16_t cnt_word;
-    uint32_t w_font;
-    int16_t x_start;
-    int16_t y_start;
-    uint16_t idx_dot = 0;
-
-    uint8_t idx_start = style->idx_show_start;
-    uint8_t idx_end = style->idx_show_start + (style->idx_show_cnt==1?1:style->idx_show_cnt);
-
-    gt_color_t color_font;
-
-    gt_area_st area = {
-        .w = w, .h = h,
-    };
-
+    uint8_t fp[64];
     gt_font_st font = {
         .style_cn = 1, .style_en = 2, .res = fp, .size = GT_FONT_SIZE_16x16, 
     };
 
+    gt_attr_font_st font_attr = {
+        .font = &font,
+        .space_x = 0,
+        .space_y = 0,
+        .align = GT_ALIGN_CENTER,
+        .font_color = gt_color_black()
+    };
     uint16_t __h = h/style->idx_show_cnt;
-    gt_color_t * color_rect_p = gt_mem_malloc( w * __h * sizeof(gt_color_t) );
-    gt_area_st _area_rect = {
-        .w = w, .h = __h,
-    };
+    uint8_t idx_start = style->idx_show_start;
+    uint8_t idx_end = style->idx_show_start + (style->idx_show_cnt==1?1:style->idx_show_cnt);
+    gt_color_t color_font;
 
-    gt_area_st area_dst = {
-        .x = 0, .y = 0, .w = w, .h = h
-    };
-    gt_area_st area_src = {
-        .x = 0, .y = 0, .w = w, .h = __h
-    };
-
+    gt_area_st area_item = listview->area,  area_font;
+    area_item.h = area_item.h/style->idx_show_cnt;
+    uint16_t width_font = 0;
     while( idx_start < idx_end ){
         if( idx_start == style->idx_selected ){            
-            GT_COLOR_SET(rect_attr.border_color, GT_COLOR_GET(style->color_border));
-            GT_COLOR_SET(rect_attr.fcolor, GT_COLOR_GET(style->fcolor_selected));
-            GT_COLOR_SET(rect_attr.bcolor, GT_COLOR_GET(style->bcolor));
-            GT_COLOR_SET(color_font, GT_COLOR_GET(style->color_font_selected));
+            rect_attr.border_color = style->color_border;
+            rect_attr.bg_color = style->fg_color_selected;
+            color_font = style->color_font_selected;
         }else{
-            GT_COLOR_SET(rect_attr.border_color, GT_COLOR_GET(style->color_border));
-            GT_COLOR_SET(rect_attr.fcolor, GT_COLOR_GET(style->fcolor_unselected));
-            GT_COLOR_SET(rect_attr.bcolor, GT_COLOR_GET(style->bcolor));
-            GT_COLOR_SET(color_font, GT_COLOR_GET(style->color_font_unselected));
+            rect_attr.border_color = style->color_border;
+            rect_attr.bg_color = style->fg_color_unselected;
+            color_font = style->color_font_unselected;
         }
-        gt_graph_rect(&rect_attr, &_area_rect, color_rect_p);
+        
+        draw_bg(listview->draw_ctx, &rect_attr, &area_item);
+        
 
-        gt_memset(fp, 0, 1024);
+        area_font = area_item;
         font.utf8 = (uint8_t *)style->item[idx_start];
         font.len = strlen(style->item[idx_start]);
-        cnt_word = gt_font_count_word( (char *)font.utf8, font.len );
-        w_font = gt_font_get_string_width(&font);
-        gt_font_get_string_dot(&font);
+        width_font = gt_font_get_string_width(&font);
+        draw_text(listview->draw_ctx, &font_attr, &area_font);
 
-        x_start = (w - w_font)>>1;
-        y_start = (__h - GT_FONT_SIZE_16x16)>>1;
-        
-        if( x_start < 0 ){
-            x_start = 0;
-        }
-        if( y_start < 0 ){
-            y_start = 0;
-        }
-
-        // fill to shape
-        
-        area_rect.x = x_start;
-        area_rect.y = y_start;
-        idx_dot = 0;
-        while( cnt_word-- && (x_start+font.size) < w ){
-            area_rect.x = x_start;
-            gt_graph_dot_draw_to_color(&font.res[idx_dot], color_rect_p, area_rect, font.size, font.size, color_font);
-            x_start += gt_font_get_next_word_width(&font, !idx_dot);
-            idx_dot += (font.size>>3)*font.size;
-        }
-        
-        // copy item color to color_widget
-        area_dst.y = (idx_start - style->idx_show_start) * area_src.h;
-        gt_color_area_copy(color_widget_p, area_dst, color_rect_p, area_src, area_src.w, area_src.h);
-        
+        area_item.y += area_item.h;
         idx_start++;
     }
-    
-    // finish
-    gt_mem_free(color_rect_p);
+  
 }
 
 /**
@@ -224,7 +181,6 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
 static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     /* code */
-    gt_mem_free(obj->cache.cache_color);
     GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
 }
 
@@ -240,17 +196,15 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
-            if( gt_obj_check_scr(obj) ){
-                _gt_listview_init_widget(obj);
-                extern void gt_disp_obj(gt_obj_st * obj);
-                gt_disp_obj(obj);
+            if( gt_obj_check_scr(obj) ){        
+                extern void gt_disp_ref_area(gt_area_st * area);
+                gt_disp_ref_area(&obj->area);
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
             GT_LOGD(GT_LOG_TAG_GUI, "end draw");
-            gt_mem_free(obj->cache.cache_color);
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
@@ -269,8 +223,8 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_SCROLL:
             GT_LOGD(GT_LOG_TAG_GUI, "scroll");
             printf("list--scroll\n");
-            printf("scroll y:%d\n", obj->process_attr->y_scroll);
-            _gt_listview_style_update_by_scroll_y(obj, obj->process_attr->y_scroll);
+            printf("scroll y:%d\n", obj->process_attr.y_scroll);
+            _gt_listview_style_update_by_scroll_y(obj, obj->process_attr.y_scroll);
             
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
@@ -280,7 +234,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             printf("list--process\n");
             /* code here */
 
-            _gt_listview_style_update_by_click_point(obj, obj->process_attr->point);
+            _gt_listview_style_update_by_click_point(obj, obj->process_attr.point);
 
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
             break;
@@ -303,10 +257,10 @@ static void _gt_listview_init_style(gt_obj_st * listview)
     gt_memset(style, 0, sizeof(_gt_style_listview_st));
     GT_COLOR_SET(style->color_font_selected, 0xFFFF);
     GT_COLOR_SET(style->color_font_unselected, 0x0000);
-    GT_COLOR_SET(style->bcolor, 0xFFFF);
+    GT_COLOR_SET(style->bg_color, 0xFFFF);
     GT_COLOR_SET(style->color_border, 0xD6FC);
-    GT_COLOR_SET(style->fcolor_selected, 0x0516);
-    GT_COLOR_SET(style->fcolor_unselected, 0xFFFF);
+    GT_COLOR_SET(style->fg_color_selected, 0x0516);
+    GT_COLOR_SET(style->fg_color_unselected, 0xFFFF);
     style->idx_show_cnt = 5;
 }
 

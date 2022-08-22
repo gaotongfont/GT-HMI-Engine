@@ -30,7 +30,7 @@ extern "C" {
 #define GT_REFRESH_STYLE_3      3   /* cache all screen buf, It is suitable for MCU with high refresh requirements and high performance */
 
 /* user: screen refresh style */
-#define GT_REFRESH_STYLE        GT_REFRESH_STYLE_3
+#define GT_REFRESH_STYLE        GT_REFRESH_STYLE_2
 
 /* screen refresh flush pre time lines count [default: 10] */
 #define GT_REFRESH_FLUSH_LINE_PRE_TIME   10
@@ -65,7 +65,7 @@ extern "C" {
 #if GT_MEM_CUSTOM
     #define GT_MEM_CUSTOM_INCLUDE   "../others/gt_tlsf.h"
 
-    #define GT_MEM_SIZE             (24 * 1024U)    //Byte
+    #define GT_MEM_SIZE             (16 * 1024U)    //Byte
 
     #define gt_tlsf_assert(_expr)   ( (void)0 )
 #else

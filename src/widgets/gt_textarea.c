@@ -49,35 +49,6 @@ static void _gt_textarea_init_widget(gt_obj_st * textarea) {
     _gt_style_textarea_st * style = textarea->style;
     gt_size_t w, h;
 
-    if( GT_CREATE_TYPE_PART == textarea->create_type ){
-        // area_disp has been cpy to textarea->area_part
-        gt_area_st area_valid;
-        gt_area_st area_temp;
-        gt_obj_get_valid_area(textarea, &textarea->area_part, &area_valid);
-
-        area_temp.x = textarea->area.x;
-        area_temp.w = textarea->area.w;
-        area_temp.h = textarea->area.h;
-
-        if( area_valid.y >= 0 ){
-            area_temp.y = textarea->area.y + area_valid.y;
-            area_temp.h = textarea->area.h - area_valid.y;
-        }
-        gt_area_copy(&textarea->area_back, &textarea->area);
-        gt_area_copy(&textarea->area, &area_temp);
-
-        w = area_temp.w;
-        h = area_valid.h;
-        textarea->cache.cache_color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
-        
-
-    }else{
-        w = textarea->area.w;
-        h = textarea->area.h;
-
-        textarea->cache.cache_color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
-        
-    }
 }
 
 /**
@@ -105,11 +76,6 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
 static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     /* code */
-    gt_mem_free(obj->cache.cache_color);
-    if( GT_CREATE_TYPE_PART == obj->create_type ){
-        obj->create_type = GT_CREATE_TYPE_FULL;
-        gt_area_copy(&obj->area, &obj->area_back);
-    }
     GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
 }
 
@@ -125,15 +91,12 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
-            _gt_textarea_init_widget(obj);
-            extern void _flush_cb(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
-            _flush_cb(NULL, &obj->area, (gt_color_t *)obj->cache.cache_color);
+           
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
             GT_LOGD(GT_LOG_TAG_GUI, "end draw");
-            gt_mem_free(obj->cache.cache_color);
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */

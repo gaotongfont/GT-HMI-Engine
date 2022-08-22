@@ -16,6 +16,7 @@
 #include "../core/gt_obj_pos.h"
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
+#include "../core/gt_draw.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_PROCESSBAR
@@ -61,104 +62,26 @@ static void _gt_processbar_init_widget(gt_obj_st * processbar) {
     h = processbar->area.h;
 
     gt_attr_rect_st rect_attr = {
-        .is_fill = 1,
-        .border_width = h/4,
-        .fcolor.full = GT_COLOR_GET(style->color_ina),
-        .bcolor.full = GT_COLOR_GET(style->bcolor),
-        .border_color.full = GT_COLOR_GET(style->bcolor),
-        .radius = h/2,
-    };
-    processbar->cache.cache_color = gt_mem_malloc(w * h * sizeof(gt_color_t));
-    gt_color_t * color_widget_p = (gt_color_t *)processbar->cache.cache_color;
-    gt_area_st area_rect = {
-        .w = w, .h = h,
+        .is_fill        = 1,
+        .bg_color       = style->color_ina,
+        .border_color   = style->color_ina,
+        .radius         = h/2,
+        .bg_opa         = GT_OPA_COVER,
     };
 
-    gt_graph_rect(&rect_attr, &area_rect, color_widget_p);
 
-    if( style->pos == style->start ){
-        return;
-    }
+    gt_area_st area_base = processbar->area;
+    draw_bg(processbar->draw_ctx, &rect_attr, &area_base);
 
-    gt_attr_circle_st circle_attr = {
-        .is_fill = 1,
-        .border_width = 0,
-        .border_color.full = GT_COLOR_GET(style->color_ina),
-        .bcolor.full = GT_COLOR_GET(style->bcolor),
-        .fcolor.full = GT_COLOR_GET(style->color_ina),
-        .radius = h/4,
-    };
-    gt_color_t * color_circle_p = gt_mem_malloc(circle_attr.radius * 2 * circle_attr.radius * 2 * sizeof(gt_color_t) );
-    gt_area_st area_circle = {
-        .w = circle_attr.radius * 2, .h = circle_attr.radius * 2,
-    };
-    gt_graph_circle(&circle_attr, &area_circle, color_circle_p);
-
-    gt_area_st area_dst = {
-        .x = 0, .y = (h/4), .w = w, .h = h
-    };
-    gt_area_st area_src = {
-        .x = 0, .y = 0, .w = area_circle.w, .h = area_circle.h
-    };
-
-    if( style->pos == 0 ){
-        goto lab_end;
-    }
-
-    // left blue color circle
-    GT_COLOR_SET(circle_attr.fcolor, GT_COLOR_GET(style->color_act));
-    gt_graph_circle(&circle_attr, &area_circle, color_circle_p);
-    area_src.x = 0;
-    area_dst.x = 0;
-    gt_color_area_copy(color_widget_p, area_dst, color_circle_p, area_src, area_src.w/2, area_src.h);
-
-    // circle finish
-    // free ptr
-    gt_mem_free(color_circle_p);
-
-    // rect val
+    gt_area_st area_val = area_base;
     int all_pos = style->end - style->start;
     int w_pos = ((float)style->pos/(float)all_pos) * (float)w;
-    w_pos = w_pos - area_src.w/2;
-    if( w_pos < 0 ){
-        w_pos = 1;
+    w_pos = w_pos;
+    rect_attr.bg_color = style->color_act,
+    area_val.w = w_pos;
+    if( w_pos > area_val.h ){
+        draw_bg(processbar->draw_ctx, &rect_attr, &area_val);
     }
-    
-    rect_attr.border_width = 0;
-    GT_COLOR_SET(rect_attr.fcolor, GT_COLOR_GET(style->color_act));
-    gt_color_t * color_rect = gt_mem_malloc( w_pos * area_src.h * sizeof(gt_color_t) );
-    area_rect.w = w_pos;
-    area_rect.h = area_src.h;
-    rect_attr.radius = 0;
-    gt_graph_rect(&rect_attr, &area_rect, color_rect);
-
-    area_src.x = 0;
-    area_src.w = w_pos;
-    area_dst.x = area_src.h/2;
-	if( (w_pos-area_src.h/4) > 0 ){
-        gt_color_area_copy(color_widget_p, area_dst, color_rect, area_src, w_pos-area_src.h/4, area_src.h);
-    }
-    //rect finish
-    // free ptr
-    gt_mem_free(color_rect);
-
-    // right blue circle
-    GT_COLOR_SET(circle_attr.fcolor, GT_COLOR_GET(style->color_act));    
-    GT_COLOR_SET(circle_attr.bcolor, GT_COLOR_GET(style->color_ina));
-    if( style->pos >= style->end ){
-        GT_COLOR_SET(circle_attr.bcolor, GT_COLOR_GET(style->bcolor));
-    }
-    color_circle_p = gt_mem_malloc( area_circle.w * area_circle.h * sizeof(gt_color_t) );
-    gt_graph_circle(&circle_attr, &area_circle, color_circle_p);
-    area_src.w = area_circle.w;
-    area_src.x = area_src.w/2;
-    area_dst.x = w_pos ;
-    gt_color_area_copy(color_widget_p, area_dst, color_circle_p, area_src, area_src.w/2, area_src.h);
-
-    // circle finish
-    // free ptr
-lab_end:
-    gt_mem_free(color_circle_p);
 }
 
 /**
@@ -181,7 +104,6 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
 static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     /* code */
-    gt_mem_free(obj->cache.cache_color);
     GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
 }
 
@@ -199,18 +121,14 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
             if( gt_obj_check_scr(obj) ){
-                _gt_processbar_init_widget(obj);
-
-                extern void gt_disp_obj(gt_obj_st * obj);
-                gt_disp_obj(obj);
-                
+                extern void gt_disp_ref_area(gt_area_st * area);
+                gt_disp_ref_area(&obj->area);
             }
             // gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
             GT_LOGD(GT_LOG_TAG_GUI, "end draw");
-            gt_mem_free(obj->cache.cache_color);
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
@@ -252,7 +170,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 static void _gt_processbar_init_style(gt_obj_st * processbar)
 {
     _gt_style_processbar_st * style = processbar->style;
-    GT_COLOR_SET(style->bcolor, 0xFFFF);
+    GT_COLOR_SET(style->bg_color, 0xFFFF);
     GT_COLOR_SET(style->color_act, 0x0516);
     GT_COLOR_SET(style->color_ina, 0xC619);
     style->start = 0;

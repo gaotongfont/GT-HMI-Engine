@@ -9,7 +9,6 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_font.h"
-// #include "gtzk.h"
 #include "stdint.h"
 #include "stdbool.h"
 #include "../others/gt_log.h"
@@ -17,6 +16,13 @@
 /* private define -------------------------------------------------------*/
 
 #define _GT_ENABLE_GTZK 0
+
+#if _GT_ENABLE_GTZK == 1
+#include "gtzk.h"
+
+extern unsigned long GT_GetChinese(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
+extern unsigned long GT_GetLatin(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
+#endif
 
 /* private typedef ------------------------------------------------------*/
 
@@ -148,10 +154,6 @@ uint8_t utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 	return 0;
 }
 
-#if _GT_ENABLE_GTZK == 1
-extern unsigned long GT_GetChinese(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
-extern unsigned long GT_GetLatin(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
-#endif
 // extern unsigned long GT_GetASCII(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
 
 // extern unsigned long GT_GetJapanese(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
@@ -225,6 +227,13 @@ void gt_font_get_string_dot(gt_font_st * font)
     }
 }
 
+/**
+ * @brief 
+ * 
+ * @param utf8 
+ * @param len 
+ * @return uint32_t 
+ */
 uint32_t gt_font_count_word(char * utf8, uint32_t len)
 {
     uint32_t idx = 0, cnt = 0, unicode;
@@ -284,10 +293,15 @@ uint8_t gt_font_get_next_word_width(gt_font_st * font, uint8_t is_head){
         idx = 0;
     }
     while( i <= idx ){
-        idx_utf8 += utf8_to_unicode(&font->utf8[idx_utf8], &unicode);
+        idx_utf8 += utf8_to_unicode((uint8_t *)&font->utf8[idx_utf8], &unicode);
         i++;
     }
     idx++;
     return gt_font_get_one_word_width(unicode, font->size);
+}
+
+
+void gt_dot_to_mask_buf(uint8_t * dot, uint8_t * mask_buf, uint16_t w, uint16_t h){
+    
 }
 /* end ------------------------------------------------------------------*/

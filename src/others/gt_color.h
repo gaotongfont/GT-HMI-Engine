@@ -18,9 +18,32 @@ extern "C" {
 #include "../gt_conf.h"
 #include "gt_types.h"
 #include "../widgets/gt_obj.h"
-
+#include "gt_math.h"
+#include "gt_assert.h"
 
 /* define ---------------------------------------------------------------*/
+
+enum {
+    GT_OPA_TRANSP = 0,
+    GT_OPA_0      = 0,
+    GT_OPA_10     = 25,
+    GT_OPA_20     = 51,
+    GT_OPA_30     = 76,
+    GT_OPA_40     = 102,
+    GT_OPA_50     = 127,
+    GT_OPA_60     = 153,
+    GT_OPA_70     = 178,
+    GT_OPA_80     = 204,
+    GT_OPA_90     = 229,
+    GT_OPA_100    = 255,
+    GT_OPA_COVER  = 255,
+};
+
+#define GT_OPA_MIN 2    /*Opacities below this will be transparent*/
+#define GT_OPA_MAX 253  /*Opacities above this will fully cover GT */
+
+
+
 
 #if GT_COLOR_DEPTH == 1
 #define GT_COLOR_SIZE 8
@@ -31,7 +54,7 @@ extern "C" {
 #elif GT_COLOR_DEPTH == 32
 #define GT_COLOR_SIZE 32
 #else
-#error "Invalid GT_COLOR_DEPTH in lv_conf.h! Set it to 1, 8, 16 or 32!"
+#error "Invalid GT_COLOR_DEPTH in GT_conf.h! Set it to 1, 8, 16 or 32!"
 #endif
 
 #define GT_COLOR_GET_OBJ(_buf, x, y, w, h)          (_buf[ (int)( (y) * (w) + x) ])
@@ -42,13 +65,99 @@ extern "C" {
 
 #define GT_COLOR_SET(obj,val)           (obj.full=val)
 #define GT_COLOR_GET(obj)               (obj.full)
-#define GT_COLOR_SET_R(obj,r)           (obj.ch.red=r)
-#define GT_COLOR_GET_R(obj)           	(obj.ch.red)
-#define GT_COLOR_SET_G(obj,g)           (obj.ch.green=g)
-#define GT_COLOR_GET_G(obj)           	(obj.ch.green)
-#define GT_COLOR_SET_B(obj,b)           (obj.ch.blue=b)
-#define GT_COLOR_GET_B(obj)           	(obj.ch.blue)
+// #define GT_COLOR_SET_R(obj,r)           (obj.ch.red=r)
+// #define GT_COLOR_GET_R(obj)           	(obj.ch.red)
+// #define GT_COLOR_SET_G(obj,g)           (obj.ch.green=g)
+// #define GT_COLOR_GET_G(obj)           	(obj.ch.green)
+// #define GT_COLOR_SET_B(obj,b)           (obj.ch.blue=b)
+// #define GT_COLOR_GET_B(obj)           	(obj.ch.blue)
 #define GT_COLOR_SET_RGB(obj,r,g,b)     {obj.ch.red=(r);obj.ch.green=(g);obj.ch.blue=(b);}
+
+
+
+/*---------------------------------------
+ * Macros for all existing color depths
+ * to set/get values of the color channels
+ *------------------------------------------*/
+# define GT_COLOR_SET_R1(c, v) (c).ch.red = (uint8_t)((v) & 0x1)
+# define GT_COLOR_SET_G1(c, v) (c).ch.green = (uint8_t)((v) & 0x1)
+# define GT_COLOR_SET_B1(c, v) (c).ch.blue = (uint8_t)((v) & 0x1)
+# define GT_COLOR_SET_A1(c, v) do {} while(0)
+
+# define GT_COLOR_GET_R1(c) (c).ch.red
+# define GT_COLOR_GET_G1(c) (c).ch.green
+# define GT_COLOR_GET_B1(c) (c).ch.blue
+# define GT_COLOR_GET_A1(c) 0xFF
+
+# define _GT_COLOR_ZERO_INITIALIZER1 {0x00}
+# define GT_COLOR_MAKE1(r8, g8, b8)  {(uint8_t)((b8 >> 7) | (g8 >> 7) | (r8 >> 7))}
+
+# define GT_COLOR_SET_R8(c, v) (c).ch.red = (uint8_t)((v) & 0x7U)
+# define GT_COLOR_SET_G8(c, v) (c).ch.green = (uint8_t)((v) & 0x7U)
+# define GT_COLOR_SET_B8(c, v) (c).ch.blue = (uint8_t)((v) & 0x3U)
+# define GT_COLOR_SET_A8(c, v) do {} while(0)
+
+# define GT_COLOR_GET_R8(c) (c).ch.red
+# define GT_COLOR_GET_G8(c) (c).ch.green
+# define GT_COLOR_GET_B8(c) (c).ch.blue
+# define GT_COLOR_GET_A8(c) 0xFF
+
+# define _GT_COLOR_ZERO_INITIALIZER8 {{0x00, 0x00, 0x00}}
+# define GT_COLOR_MAKE8(r8, g8, b8) {{(uint8_t)((b8 >> 6) & 0x3U), (uint8_t)((g8 >> 5) & 0x7U), (uint8_t)((r8 >> 5) & 0x7U)}}
+
+# define GT_COLOR_SET_R16(c, v) (c).ch.red = (uint8_t)((v) & 0x1FU)
+#if GT_COLOR_16_SWAP == 0
+# define GT_COLOR_SET_G16(c, v) (c).ch.green = (uint8_t)((v) & 0x3FU)
+#else
+# define GT_COLOR_SET_G16(c, v) {(c).ch.green_h = (uint8_t)(((v) >> 3) & 0x7); (c).ch.green_l = (uint8_t)((v) & 0x7);}
+#endif
+# define GT_COLOR_SET_B16(c, v) (c).ch.blue = (uint8_t)((v) & 0x1FU)
+# define GT_COLOR_SET_A16(c, v) do {} while(0)
+
+# define GT_COLOR_GET_R16(c) (c).ch.red
+#if GT_COLOR_16_SWAP == 0
+# define GT_COLOR_GET_G16(c) (c).ch.green
+#else
+# define GT_COLOR_GET_G16(c) (((c).ch.green_h << 3) + (c).ch.green_l)
+#endif
+# define GT_COLOR_GET_B16(c) (c).ch.blue
+# define GT_COLOR_GET_A16(c) 0xFF
+
+#if GT_COLOR_16_SWAP == 0
+# define _GT_COLOR_ZERO_INITIALIZER16  {{0x00, 0x00, 0x00}}
+# define GT_COLOR_MAKE16(r8, g8, b8) {{(uint8_t)((b8 >> 3) & 0x1FU), (uint8_t)((g8 >> 2) & 0x3FU), (uint8_t)((r8 >> 3) & 0x1FU)}}
+#else
+# define _GT_COLOR_ZERO_INITIALIZER16 {{0x00, 0x00, 0x00, 0x00}}
+# define GT_COLOR_MAKE16(r8, g8, b8) {{(uint8_t)((g8 >> 5) & 0x7U), (uint8_t)((r8 >> 3) & 0x1FU), (uint8_t)((b8 >> 3) & 0x1FU), (uint8_t)((g8 >> 2) & 0x7U)}}
+#endif
+
+# define GT_COLOR_SET_R32(c, v) (c).ch.red = (uint8_t)((v) & 0xFF)
+# define GT_COLOR_SET_G32(c, v) (c).ch.green = (uint8_t)((v) & 0xFF)
+# define GT_COLOR_SET_B32(c, v) (c).ch.blue = (uint8_t)((v) & 0xFF)
+# define GT_COLOR_SET_A32(c, v) (c).ch.alpha = (uint8_t)((v) & 0xFF)
+
+# define GT_COLOR_GET_R32(c) (c).ch.red
+# define GT_COLOR_GET_G32(c) (c).ch.green
+# define GT_COLOR_GET_B32(c) (c).ch.blue
+# define GT_COLOR_GET_A32(c) (c).ch.alpha
+
+# define _GT_COLOR_ZERO_INITIALIZER32  {{0x00, 0x00, 0x00, 0x00}}
+# define GT_COLOR_MAKE32(r8, g8, b8) {{b8, g8, r8, 0xff}} /*Fix 0xff alpha*/
+
+/*---------------------------------------
+ * Macros for the current color depth
+ * to set/get values of the color channels
+ *------------------------------------------*/
+#define GT_COLOR_SET_R(c, v) GT_CONCAT(GT_COLOR_SET_R, GT_COLOR_DEPTH)(c, v)
+#define GT_COLOR_SET_G(c, v) GT_CONCAT(GT_COLOR_SET_G, GT_COLOR_DEPTH)(c, v)
+#define GT_COLOR_SET_B(c, v) GT_CONCAT(GT_COLOR_SET_B, GT_COLOR_DEPTH)(c, v)
+#define GT_COLOR_SET_A(c, v) GT_CONCAT(GT_COLOR_SET_A, GT_COLOR_DEPTH)(c, v)
+
+#define GT_COLOR_GET_R(c) GT_CONCAT(GT_COLOR_GET_R, GT_COLOR_DEPTH)(c)
+#define GT_COLOR_GET_G(c) GT_CONCAT(GT_COLOR_GET_G, GT_COLOR_DEPTH)(c)
+#define GT_COLOR_GET_B(c) GT_CONCAT(GT_COLOR_GET_B, GT_COLOR_DEPTH)(c)
+#define GT_COLOR_GET_A(c) GT_CONCAT(GT_COLOR_GET_A, GT_COLOR_DEPTH)(c)
+
 /*********************************************/
 /*                  color                    */
 /*********************************************/
@@ -58,8 +167,24 @@ extern "C" {
 #define GT_COLOR_GREEN       8
 #define GT_COLOR_BLUE        8
 
+#if GT_COLOR_16_SWAP == 0
+# define _GT_COLOR_ZERO_INITIALIZER16  {{0x00, 0x00, 0x00}}
+# define GT_COLOR_MAKE16(r8, g8, b8) {{(uint8_t)((b8 >> 3) & 0x1FU), (uint8_t)((g8 >> 2) & 0x3FU), (uint8_t)((r8 >> 3) & 0x1FU)}}
+#else
+# define _GT_COLOR_ZERO_INITIALIZER16 {{0x00, 0x00, 0x00, 0x00}}
+# define GT_COLOR_MAKE16(r8, g8, b8) {{(uint8_t)((g8 >> 5) & 0x7U), (uint8_t)((r8 >> 3) & 0x1FU), (uint8_t)((b8 >> 3) & 0x1FU), (uint8_t)((g8 >> 2) & 0x7U)}}
+#endif
+
+# define _GT_COLOR_ZERO_INITIALIZER32  {{0x00, 0x00, 0x00, 0x00}}
+# define GT_COLOR_MAKE32(r8, g8, b8) {{b8, g8, r8, 0xff}} /*Fix 0xff alpha*/
+
+#define _GT_COLOR_ZERO_INITIALIZER GT_CONCAT(_GT_COLOR_ZERO_INITIALIZER, GT_COLOR_DEPTH)
+#define GT_COLOR_MAKE(r8, g8, b8) GT_CONCAT(GT_COLOR_MAKE, GT_COLOR_DEPTH)(r8, g8, b8)
 
 
+/* Adjust color mix functions rounding. GPUs might calculate color mix (blending) differently.
+ * 0: round down, 64: round up from x.75, 128: round up from half, 192: round up from x.25, 254: round up */
+#define GT_COLOR_MIX_ROUND_OFS (GT_COLOR_DEPTH == 32 ? 0: 128)
 
 /* typedef --------------------------------------------------------------*/
 typedef union {
@@ -109,9 +234,192 @@ typedef union {
 typedef GT_CONCAT3(uint, GT_COLOR_SIZE, _t) gt_color_int_t;
 typedef GT_CONCAT3(gt_color, GT_COLOR_DEPTH, _t) gt_color_t;
 
+typedef uint8_t gt_opa_t;
+
 
 /* macros ---------------------------------------------------------------*/
 
+/* static functions / API inteface-------------------------------------- */
+static inline gt_color_t gt_color_make(uint8_t r, uint8_t g, uint8_t b)
+{
+    return (gt_color_t)GT_COLOR_MAKE(r, g, b);
+}
+
+static inline gt_color_t gt_color_hex(uint32_t c)
+{
+    return gt_color_make((uint8_t)((c >> 16) & 0xFF), (uint8_t)((c >> 8) & 0xFF), (uint8_t)(c & 0xFF));
+}
+
+static inline uint32_t gt_color_to32(gt_color_t color)
+{
+#if GT_COLOR_DEPTH == 1
+    if(color.full == 0)
+        return 0xFF000000;
+    else
+        return 0xFFFFFFFF;
+#elif GT_COLOR_DEPTH == 8
+    gt_color32_t ret;
+    GT_COLOR_SET_R32(ret, GT_COLOR_GET_R(color) * 36); /*(2^8 - 1)/(2^3 - 1) = 255/7 = 36*/
+    GT_COLOR_SET_G32(ret, GT_COLOR_GET_G(color) * 36); /*(2^8 - 1)/(2^3 - 1) = 255/7 = 36*/
+    GT_COLOR_SET_B32(ret, GT_COLOR_GET_B(color) * 85); /*(2^8 - 1)/(2^2 - 1) = 255/3 = 85*/
+    GT_COLOR_SET_A32(ret, 0xFF);
+    return ret.full;
+#elif GT_COLOR_DEPTH == 16
+    /**
+     * The floating point math for conversion is:
+     *  valueto = valuefrom * ( (2^bitsto - 1) / (float)(2^bitsfrom - 1) )
+     * The faster integer math for conversion is:
+     *  valueto = ( valuefrom * multiplier + adder ) >> divisor
+     *   multiplier = FLOOR( ( (2^bitsto - 1) << divisor ) / (float)(2^bitsfrom - 1) )
+     *
+     * Find the first divisor where ( adder >> divisor ) <= 0
+     *
+     * 5-bit to 8-bit: ( 31 * multiplier + adder ) >> divisor = 255
+     * divisor  multiplier  adder  min (0)  max (31)
+     *       0           8      7        7       255
+     *       1          16     14        7       255
+     *       2          32     28        7       255
+     *       3          65     25        3       255
+     *       4         131     19        1       255
+     *       5         263      7        0       255
+     *
+     * 6-bit to 8-bit: 255 = ( 63 * multiplier + adder ) >> divisor
+     * divisor  multiplier  adder  min (0)  max (63)
+     *       0           4      3        3       255
+     *       1           8      6        3       255
+     *       2          16     12        3       255
+     *       3          32     24        3       255
+     *       4          64     48        3       255
+     *       5         129     33        1       255
+     *       6         259      3        0       255
+     */
+
+    gt_color32_t ret;
+    GT_COLOR_SET_R32(ret, (GT_COLOR_GET_R(color) * 263 + 7) >> 5);
+    GT_COLOR_SET_G32(ret, (GT_COLOR_GET_G(color) * 259 + 3) >> 6);
+    GT_COLOR_SET_B32(ret, (GT_COLOR_GET_B(color) * 263 + 7) >> 5);
+    GT_COLOR_SET_A32(ret, 0xFF);
+    return ret.full;
+#elif GT_COLOR_DEPTH == 32
+    return color.full;
+#endif
+}
+
+/**
+ * Get the brightness of a color
+ * @param color a color
+ * @return the brightness [0..255]
+ */
+static inline uint8_t gt_color_brightness(gt_color_t color)
+{
+    gt_color32_t c32;
+    c32.full        = gt_color_to32(color);
+    uint16_t bright = (uint16_t)(3u * GT_COLOR_GET_R32(c32) + GT_COLOR_GET_B32(c32) + 4u * GT_COLOR_GET_G32(c32));
+    return (uint8_t)(bright >> 3);
+}
+
+static inline gt_color_t gt_color_white(void){ return gt_color_make(0xff, 0xff, 0xff);  }
+static inline gt_color_t gt_color_black(void){ return gt_color_make(0x00, 0x00, 0x00);  }
+static inline gt_color_t gt_color_red(void){ return gt_color_make(0xFF, 0x00, 0x00);  }
+static inline gt_color_t gt_color_yellow(void){ return gt_color_make(0xFF, 0xFF, 0x00);  }
+static inline gt_color_t gt_color_blue(void){ return gt_color_make(0x00, 0x00, 0xFF);  }
+
+static inline gt_color_t gt_color_orange(void){ return gt_color_make(0xFF, 0xA5, 0x00);  }
+
+
+/**
+ * Mix two colors with a given ratio.
+ * @param c1 the first color to mix (usually the foreground)
+ * @param c2 the second color to mix (usually the background)
+ * @param mix The ratio of the colors. 0: full `c2`, 255: full `c1`, 127: half `c1` and half`c2`
+ * @return the mixed color
+ */
+static inline gt_color_t gt_color_mix(gt_color_t c1, gt_color_t c2, uint8_t mix)
+{
+    gt_color_t ret;
+
+#if GT_COLOR_DEPTH == 16 && GT_COLOR_16_SWAP == 1
+    /*Source: https://stackoverflow.com/a/50012418/1999969*/
+    mix = (mix + 4) >> 3;
+    uint32_t bg = (uint32_t)((uint32_t)c2.full | ((uint32_t)c2.full << 16)) &
+                  0x7E0F81F; /*0b00000111111000001111100000011111*/
+    uint32_t fg = (uint32_t)((uint32_t)c1.full | ((uint32_t)c1.full << 16)) & 0x7E0F81F;
+    uint32_t result = ((((fg - bg) * mix) >> 5) + bg) & 0x7E0F81F;
+    ret.full = (uint16_t)((result >> 16) | result);
+#elif GT_COLOR_DEPTH != 1
+    /*GT_COLOR_DEPTH == 8, 16 or 32*/
+    GT_COLOR_SET_R(ret, GT_UDIV255((uint16_t)GT_COLOR_GET_R(c1) * mix + GT_COLOR_GET_R(c2) *
+                                   (255 - mix) + GT_COLOR_MIX_ROUND_OFS));
+    GT_COLOR_SET_G(ret, GT_UDIV255((uint16_t)GT_COLOR_GET_G(c1) * mix + GT_COLOR_GET_G(c2) *
+                                   (255 - mix) + GT_COLOR_MIX_ROUND_OFS));
+    GT_COLOR_SET_B(ret, GT_UDIV255((uint16_t)GT_COLOR_GET_B(c1) * mix + GT_COLOR_GET_B(c2) *
+                                   (255 - mix) + GT_COLOR_MIX_ROUND_OFS));
+    GT_COLOR_SET_A(ret, 0xFF);
+#else
+    /*GT_COLOR_DEPTH == 1*/
+    ret.full = mix > GT_OPA_50 ? c1.full : c2.full;
+#endif
+
+    return ret;
+}
+
+/**
+ * Mix two colors. Both color can have alpha value.
+ * @param bg_color background color
+ * @param bg_opa alpha of the background color
+ * @param fg_color foreground color
+ * @param fg_opa alpha of the foreground color
+ * @param res_color the result color
+ * @param res_opa the result opacity
+ */
+static inline void gt_color_mix_with_alpha(gt_color_t bg_color, gt_opa_t bg_opa,
+                                            gt_color_t fg_color, gt_opa_t fg_opa,
+                                            gt_color_t * res_color, gt_opa_t * res_opa)
+{
+    /*Pick the foreground if it's fully opaque or the Background is fully transparent*/
+    if(fg_opa >= GT_OPA_MAX || bg_opa <= GT_OPA_MIN) {
+        res_color->full = fg_color.full;
+        *res_opa = fg_opa;
+    }
+    /*Transparent foreground: use the Background*/
+    else if(fg_opa <= GT_OPA_MIN) {
+        res_color->full = bg_color.full;
+        *res_opa = bg_opa;
+    }
+    /*Opaque background: use simple mix*/
+    else if(bg_opa >= GT_OPA_MAX) {
+        *res_color = gt_color_mix(fg_color, bg_color, fg_opa);
+        *res_opa = GT_OPA_COVER;
+    }
+    /*Both colors have alpha. Expensive calculation need to be applied*/
+    else {
+        /*Save the parameters and the result. If they will be asked again don't compute again*/
+        static gt_opa_t fg_opa_save     = 0;
+        static gt_opa_t bg_opa_save     = 0;
+        static gt_color_t fg_color_save = _GT_COLOR_ZERO_INITIALIZER;
+        static gt_color_t bg_color_save = _GT_COLOR_ZERO_INITIALIZER;
+        static gt_color_t res_color_saved = _GT_COLOR_ZERO_INITIALIZER;
+        static gt_opa_t res_opa_saved = 0;
+
+        if(fg_opa != fg_opa_save || bg_opa != bg_opa_save || fg_color.full != fg_color_save.full ||
+           bg_color.full != bg_color_save.full) {
+            fg_opa_save        = fg_opa;
+            bg_opa_save        = bg_opa;
+            fg_color_save.full = fg_color.full;
+            bg_color_save.full = bg_color.full;
+            /*Info:
+             * https://en.wikipedia.org/wiki/Alpha_compositing#Analytical_derivation_of_the_over_operator*/
+            res_opa_saved = 255 - ((uint16_t)((uint16_t)(255 - fg_opa) * (255 - bg_opa)) >> 8);
+            GT_ASSERT(res_opa_saved != 0);
+            gt_opa_t ratio = (uint16_t)((uint16_t)fg_opa * 255) / res_opa_saved;
+            res_color_saved = gt_color_mix(fg_color, bg_color, ratio);
+
+        }
+
+        res_color->full = res_color_saved.full;
+        *res_opa = res_opa_saved;
+    }
+}
 
 
 /* global functions / API interface -------------------------------------*/

@@ -16,7 +16,7 @@
 #include "../core/gt_obj_pos.h"
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
-
+#include "../core/gt_draw.h"
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_LAB
 #define MY_CLASS    &gt_label_class
@@ -64,22 +64,8 @@ static void _gt_label_init_widget(gt_obj_st * label) {
     w = label->area.w;
     h = label->area.h;
 
-    label->cache.cache_color = gt_mem_malloc( w * h * sizeof(gt_color_t) );
-    gt_color_t * color_widget_p = (gt_color_t *)label->cache.cache_color;
-    gt_area_st area = {
-        .w = w,
-        .h = h,
-        .x = x,
-        .y = y
-    };
-    /* base shape */
-    // set bcolor
-    gt_memset(label->cache.cache_color, 0xFF, w * h * sizeof(gt_color_t));
-   
-    /* font */
-    uint32_t cnt_word = gt_font_count_word(style->text, strlen(style->text));
-    uint8_t fp[1024];
-    gt_memset(fp, 0, 1024);
+    uint8_t fp[64];
+    gt_memset(fp, 0, 64);
     gt_font_st font = {
         .style_cn = 1,
         .style_en = 2,
@@ -88,30 +74,17 @@ static void _gt_label_init_widget(gt_obj_st * label) {
         .len = strlen(style->text),
         .size = GT_FONT_SIZE_16x16,
     };
-    uint32_t w_font = gt_font_get_string_width(&font);
-    gt_font_get_string_dot(&font);
 
-    int16_t x_start = (w - w_font)>>1;
-    int16_t y_start = (h - GT_FONT_SIZE_16x16)>>1;
-
-    if( x_start < 0 ){
-        x_start = 0;
-    }
-    if( y_start < 0 ){
-        y_start = 0;
-    }
-
-    // fill to shape
-    uint16_t idx_dot = 0;
-    area.x = x_start;
-    area.y = y_start;   
-
-    while( cnt_word-- && (x_start+font.size) < w ){
-        area.x = x_start;
-        gt_graph_dot_draw_to_color(&font.res[idx_dot], color_widget_p, area, font.size, font.size, style->color_font);
-        x_start += gt_font_get_next_word_width(&font, !idx_dot);
-        idx_dot += (font.size>>3)*font.size;
-    }
+    /*draw font*/
+    gt_attr_font_st font_attr = {
+        .font = &font,
+        .font_color = style->color_font,
+        .space_x = 0,
+        .space_y = 0,
+        .align = GT_ALIGN_LEFT
+    };
+    draw_text(label->draw_ctx, &font_attr, &label->area);
+   
 }
 
 /**
@@ -134,7 +107,6 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
 static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     /* code */
-    gt_mem_free(obj->cache.cache_color);
     GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
 }
 
@@ -151,17 +123,14 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
             if( 0 && gt_obj_check_scr(obj) ){
-                _gt_label_init_widget(obj);
-
-                extern void gt_disp_obj(gt_obj_st * obj);
-                gt_disp_obj(obj);
+                extern void gt_disp_ref_area(gt_area_st * area);
+                gt_disp_ref_area(&obj->area);
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
             GT_LOGD(GT_LOG_TAG_GUI, "end draw");
-            gt_mem_free(obj->cache.cache_color);
             break;
 
         case GT_EVENT_TYPE_UPDATE_VALUE:

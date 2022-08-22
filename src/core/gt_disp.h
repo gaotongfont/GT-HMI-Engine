@@ -27,6 +27,11 @@ typedef enum{
     GT_DIR_HOR,
 }gt_dir_e;
 
+typedef struct _gt_draw_board_s{
+    gt_area_st area;
+    gt_color_t * ctx;
+}gt_draw_board_st;
+
 /* macros ---------------------------------------------------------------*/
 
 
@@ -38,6 +43,7 @@ void gt_disp_set_scr(gt_obj_st * scr);
 gt_obj_st * gt_disp_get_scr(void);
 
 void gt_disp_load_scr(gt_obj_st * scr);
+void gt_disp_ref_area(const gt_area_st * coords);
 
 gt_area_st * gt_disp_get_area_act(void);
 

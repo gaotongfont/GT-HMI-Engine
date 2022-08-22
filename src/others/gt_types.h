@@ -15,7 +15,7 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "stdint.h"
-
+#include "stdbool.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -70,15 +70,19 @@ typedef struct _gt_area_s {
 }gt_area_st;
 
 
+typedef uint8_t gt_opt_t;
+
 /* macros ---------------------------------------------------------------*/
 
 #define _GT_CONCAT3(x, y, z) x ## y ## z
 #define GT_CONCAT3(x, y, z) _GT_CONCAT3(x, y, z)
 
+#define _GT_CONCAT(x, y) x ## y
+#define GT_CONCAT(x, y) _GT_CONCAT(x, y)
 
 /* global functions / API interface -------------------------------------*/
 
-
+static inline uint32_t gt_area_get_size(gt_area_st area){ return (area.w  * area.h); }
 
 #ifdef __cplusplus
 } /*extern "C"*/

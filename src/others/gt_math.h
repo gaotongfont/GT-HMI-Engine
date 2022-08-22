@@ -34,6 +34,13 @@ extern "C" {
  */
 #define GT_MATH_GET_TRIGON_VAL(_value) (_value >> 15)
 
+
+#define GT_UDIV255(x) (((x) * 0x8081U) >> 0x17)
+
+
+#define GT_MIN(a,b) ((a) > (b) ? (b) : (a))
+#define GT_MAX(a,b) ((a) > (b) ? (a) : (b))
+
 /* typedef --------------------------------------------------------------*/
 
 
@@ -55,6 +62,7 @@ int16_t gt_cos(int16_t angle);
 double gt_square(double n);
 
 double gt_abs(double n);
+
 
 
 
