@@ -2,10 +2,12 @@ project(src)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/*/*.h
+    ${PROJECT_SOURCE_DIR}/*/*/*.h
 )
 
 file(GLOB SRC_FILES
     ${PROJECT_SOURCE_DIR}/*/*.c
+    ${PROJECT_SOURCE_DIR}/*/*/*.c
 )
 
 message(STATUS "Src code: [${SRC_FILES}]")
