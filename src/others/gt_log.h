@@ -41,7 +41,7 @@ extern "C" {
 
 
 //字库相关能显示的调试信息等级
-#define GT_LOG_LEVEL_DEFALUT    GT_LOG_LEVEL_DEBUG
+#define GT_LOG_LEVEL_DEFALUT    5//GT_LOG_LEVEL_DEBUG
 
 /* TAG ------------------------------------------------------------------*/
 

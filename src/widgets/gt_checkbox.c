@@ -54,12 +54,12 @@ static void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     uint8_t fp[64];
     uint32_t cnt_word = 0;
     gt_font_st font = {
-        .style_cn = 1,
-        .style_en = 2,
+        .style_cn = style->font_style_cn,
+        .style_en = style->font_style_en,
         .res = fp,
         .utf8 = style->text,
         .len = strlen(style->text),
-        .size = GT_FONT_SIZE_16x16,
+        .size = style->font_size,
     };
     
     // set default size
@@ -205,9 +205,19 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_checkbox_init_style(gt_obj_st * checkbox)
 {
-    _gt_style_checkbox_st * _style = checkbox->style;
-    _style->text = gt_mem_malloc(sizeof("checkbox"));
-    gt_memcpy(_style->text, "checkbox", sizeof("checkbox"));
+    _gt_style_checkbox_st * style = NULL;
+    
+    checkbox->style = gt_mem_malloc(sizeof(_gt_style_checkbox_st));
+    style = checkbox->style;
+
+    gt_memset(style, 0, sizeof(_gt_style_checkbox_st));
+
+    style->text = gt_mem_malloc(sizeof("checkbox"));
+    gt_memcpy(style->text, "checkbox", sizeof("checkbox"));
+
+    style->font_style_cn    = GT_CFG_DEFAULT_FONT_STYLE_CN;
+    style->font_style_en    = GT_CFG_DEFAULT_FONT_STYLE_EN;
+    style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
 }
 
 

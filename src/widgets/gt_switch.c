@@ -178,7 +178,13 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_switcher_init_style(gt_obj_st * switcher)
 {
-    _gt_style_switcher_st * style = switcher->style;
+    _gt_style_switcher_st * style = NULL;
+    
+    switcher->style = gt_mem_malloc(sizeof(_gt_style_switcher_st));
+    style = switcher->style;
+    
+    gt_memset(style,0,sizeof(_gt_style_switcher_st));
+
     GT_COLOR_SET(style->color_close, 0xC619);
     GT_COLOR_SET(style->color_open, 0x0516);
     gt_switch_style_set_state(switcher, 0);

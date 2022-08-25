@@ -40,7 +40,7 @@ typedef struct _gt_draw_ctx_t{
 
 /* global functions / API interface -------------------------------------*/
 void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords);
-void draw_text(gt_draw_ctx_t * draw_ctx,const gt_attr_font_st * dsc, const gt_area_st * coords);
+gt_area_st draw_text(gt_draw_ctx_t * draw_ctx,const gt_attr_font_st * dsc, const gt_area_st * coords);
 void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords);
 
 

@@ -24,6 +24,7 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_style_keypad_s
 {
+    gt_obj_st * target;
     char * keypad;
     char code_selected;
     gt_color_t bg_color;  //background color
@@ -45,6 +46,7 @@ typedef struct _gt_keypad_map_s
 
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_keypad_create(gt_obj_st * parent);
+void gt_keypad_style_set_target(gt_obj_st * keypad, gt_obj_st * ta);
 
 
 

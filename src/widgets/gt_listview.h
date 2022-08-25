@@ -36,6 +36,11 @@ typedef struct _gt_style_list_s
     gt_size_t cnt;
     gt_size_t idx_show_start;  //When displaying the contents of the list, start from the first few options
     gt_size_t idx_show_cnt;    //When displaying the contents of the list, end of options
+
+    uint8_t font_style_cn;
+    uint8_t font_style_en;
+    uint8_t font_size;
+    
     char ** item;
 }_gt_style_listview_st;
 

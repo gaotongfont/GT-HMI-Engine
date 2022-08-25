@@ -169,13 +169,20 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_processbar_init_style(gt_obj_st * processbar)
 {
-    _gt_style_processbar_st * style = processbar->style;
-    GT_COLOR_SET(style->bg_color, 0xFFFF);
+    _gt_style_processbar_st * style = NULL;
+    
+    processbar->style = gt_mem_malloc(sizeof(_gt_style_processbar_st));
+    style = processbar->style;
+
+    gt_memset(style, 0, sizeof(_gt_style_processbar_st));
+
+    style->bg_color = gt_color_make(0xFF,0xFF, 0xFF);
     GT_COLOR_SET(style->color_act, 0x0516);
     GT_COLOR_SET(style->color_ina, 0xC619);
     style->start = 0;
     style->end = 100;
     style->pos = 50;
+
 }
 
 

@@ -197,7 +197,7 @@ uint32_t gt_graph_get_gray(gt_color_t * color_out, gt_color_t color_from, gt_col
 void gt_graph_init_rect_attr(gt_attr_rect_st * rect_attr)
 {
 	gt_memset(rect_attr, 0, sizeof(gt_attr_rect_st));
-	rect_attr->bg_color = gt_color_white();
+	rect_attr->bg_color = gt_color_black();
 	rect_attr->bg_opa = GT_OPA_COVER;
 	rect_attr->border_color = gt_color_black();
 	rect_attr->border_opa = GT_OPA_COVER;

@@ -67,12 +67,12 @@ static void _gt_label_init_widget(gt_obj_st * label) {
     uint8_t fp[64];
     gt_memset(fp, 0, 64);
     gt_font_st font = {
-        .style_cn = 1,
-        .style_en = 2,
+        .style_cn = style->font_style_cn,
+        .style_en = style->font_style_en,
         .res = fp,
         .utf8 = (uint8_t *)style->text,
         .len = strlen(style->text),
-        .size = GT_FONT_SIZE_16x16,
+        .size = style->font_size,
     };
 
     /*draw font*/
@@ -176,12 +176,21 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_label_init_style(gt_obj_st * label)
 {
-    _gt_style_label_st * _style = label->style;
+    _gt_style_label_st * style = NULL;
     
-    _style->text = gt_mem_malloc(sizeof("label"));
-    strcpy(_style->text, "label");
+    label->style = gt_mem_malloc(sizeof(_gt_style_label_st));
+    style = label->style;
+
+    gt_memset(style, 0, sizeof(_gt_style_label_st));
     
-    GT_COLOR_SET(_style->color_font, 0x0000);
+    style->text = gt_mem_malloc(sizeof("label"));
+    gt_memcpy(style->text, "label\0", sizeof("label"));
+    
+    style->color_font = gt_color_make(0x00,0x00,0x00);
+
+    style->font_style_cn    = GT_CFG_DEFAULT_FONT_STYLE_CN;
+    style->font_style_en    = GT_CFG_DEFAULT_FONT_STYLE_EN;
+    style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
 }
 
 
@@ -204,6 +213,7 @@ gt_obj_st * gt_label_create(gt_obj_st * parent) {
 
 void gt_label_style_set_text(gt_obj_st * label, char * text)
 {
+
     _gt_style_label_st * style = label->style;
     if( NULL != style->text ){
         gt_mem_free(style->text);

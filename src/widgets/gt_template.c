@@ -72,7 +72,6 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
 static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     /* code */
-    gt_mem_free(obj->cache.cache_color);
     GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
 }
 
@@ -89,10 +88,8 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
             if( gt_obj_check_scr(obj) ){
-                _gt_template_init_widget(obj);
-
-                extern void gt_disp_obj(gt_obj_st * obj);
-                gt_disp_obj(obj);
+                extern void gt_disp_ref_area(gt_area_st * area);
+                gt_disp_ref_area(&obj->area);
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
@@ -138,7 +135,12 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_template_init_style(gt_obj_st * template)
 {
-    _gt_style_template_st * _style = template->style;   
+    _gt_style_template_st * style = NULL;
+    
+    template->style = gt_mem_malloc(sizeof(_gt_style_template_st));
+    style = template->style;
+
+    gt_memset(style,0,sizeof(_gt_style_template_st));
 }
 
 

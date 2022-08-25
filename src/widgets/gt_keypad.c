@@ -94,7 +94,7 @@ gt_keypad_map_st map_keypad[] = {
     ',',{START + (W / 2) + (W + SPACE) * 7 + START + (W / 2 + SPACE) * 2, START + (H + SPACE) << 1, W >> 1, H},
     0x08,{START + W / 2 + (W + SPACE) * 7 + START + (W / 2 + SPACE) * 3, START + (H + SPACE) << 1, W, H},
 
-    0x81,{START + 0, START + (H + SPACE) * 3, (W * 1.5), H}, //space
+    '@',{START + 0, START + (H + SPACE) * 3, (W * 1.5), H}, //space
     '<',{START + (W / 2) + W + SPACE + (W + SPACE) * 0, START + (H + SPACE) * 3, (W * 1.5), H},
     ' ',{START + (W)+W + SPACE + (W + SPACE) * 1, START + (H + SPACE) * 3, (W + SPACE) * 4, H},
     '>',{START + (W / 2) + W + SPACE + 2 + (W + SPACE) * 5.5, START + (H + SPACE) * 3, (W * 1.5), H},
@@ -188,6 +188,17 @@ gt_area_st _gt_keypad_get_code_area(char code)
         idx++;
     }
     return area;
+}
+
+static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
+{
+    GT_ASSERT(keypad);
+
+    _gt_style_keypad_st * style = keypad->style;
+    extern void gt_input_style_append_value(gt_obj_st * input, char * value);
+    if( style->code_selected >= 0x20 && style->code_selected < 0x80 ){
+        gt_input_style_append_value(style->target, &style->code_selected);
+    }
 }
 
 const unsigned char gImage_enter_16x16[128] = { /* 0X10,0X04,0X00,0X10,0X00,0X10, */
@@ -347,6 +358,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             area = _gt_keypad_get_code_area( _gt_keypad_get_code_selected(obj) );           
             area.y += obj->area.y;
             gt_disp_ref_area(&area);
+            _gt_keypad_input_event_cb(obj);
         }
         break;
 
@@ -377,7 +389,13 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_keypad_init_style(gt_obj_st * keypad)
 {
-    _gt_style_keypad_st * style = keypad->style;
+    _gt_style_keypad_st * style = NULL;
+    
+    keypad->style = gt_mem_malloc(sizeof(_gt_style_keypad_st));
+    style = keypad->style;
+
+    gt_memset(style, 0, sizeof(_gt_style_keypad_st));
+
     int cnt_btn_map = sizeof(map_keypad) / sizeof(gt_keypad_map_st);
     int idx = 0;
     gt_area_st area_key;
@@ -415,6 +433,18 @@ gt_obj_st * gt_keypad_create(gt_obj_st * parent)
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
     _gt_keypad_init_style(obj);
     return obj;
+}
+
+/**
+ * @brief set keypad input obj,keypad input character will add to ta
+ * 
+ * @param keypad 
+ * @param ta 
+ */
+void gt_keypad_style_set_target(gt_obj_st * keypad, gt_obj_st * ta)
+{
+    _gt_style_keypad_st * style = keypad->style;
+    style->target = ta;
 }
 
 /* end ------------------------------------------------------------------*/

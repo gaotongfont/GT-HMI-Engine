@@ -97,6 +97,10 @@ extern "C" {
 #include "src/widgets/gt_switch.h"
 #endif
 
+#if GT_CFG_ENABLE_TEXTAREA == 1
+#include "src/widgets/gt_textarea.h"
+#endif
+
 /* other */
 #include "src/others/gt_color.h"
 #include "src/others/gt_log.h"

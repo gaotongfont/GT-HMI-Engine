@@ -32,8 +32,13 @@ typedef struct _gt_style_btn_s
     gt_size_t radius;
     gt_size_t border_width;
 
-    uint32_t is_fill:1;
-    uint32_t selected:1;
+    uint8_t font_style_cn;
+    uint8_t font_style_en;
+    uint8_t font_size;
+    
+    uint8_t is_fill:1;
+    uint8_t selected:1;
+    
     char * text;
 }_gt_style_btn_st;
 

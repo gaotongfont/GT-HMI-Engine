@@ -147,12 +147,17 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_img_init_style(gt_obj_st * img)
 {
-    _gt_style_img_st * _style = img->style;
+    _gt_style_img_st * style = NULL;
     
-	_style->selected = 0;
-    _style->src = NULL;
-    GT_COLOR_SET(_style->color_selected, 0xF800);    //default color_selected
-    GT_COLOR_SET(_style->color_unselected, 0x1537);  //default color_unselected
+    img->style = gt_mem_malloc(sizeof(_gt_style_img_st));
+    style = img->style;
+
+    gt_memset(style, 0, sizeof(_gt_style_img_st));
+    
+	style->selected = 0;
+    style->src = NULL;
+    GT_COLOR_SET(style->color_selected, 0xF800);    //default color_selected
+    GT_COLOR_SET(style->color_unselected, 0x1537);  //default color_unselected
 }
 
 

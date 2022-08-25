@@ -129,8 +129,13 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_group_init_style(gt_obj_st * group)
 {
-    _gt_style_group_st * style = group->style;
+    _gt_style_group_st * style = NULL;
+    
+    group->style = gt_mem_malloc(sizeof(_gt_style_group_st));
+    style = group->style;
+
     gt_memset(style, 0, sizeof(_gt_style_group_st));
+
 }
 
 

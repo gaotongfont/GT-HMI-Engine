@@ -30,7 +30,7 @@ extern "C" {
 #define GT_CFG_ENABLE_RADIO             1
 #define GT_CFG_ENABLE_SCROLLBAR         1
 #define GT_CFG_ENABLE_SWITCH            1
-#define GT_CFG_ENABLE_TEXTAREA          0
+#define GT_CFG_ENABLE_TEXTAREA          1
 
 
 

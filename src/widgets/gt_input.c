@@ -62,7 +62,7 @@ static void _gt_input_init_widget(gt_obj_st * input) {
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.is_fill = 0;
     rect_attr.border_width = 2;
-    rect_attr.radius = h/4;
+    rect_attr.radius = 4;
     rect_attr.bg_color = gt_color_black();
     rect_attr.border_color = gt_color_black();
 
@@ -73,24 +73,25 @@ static void _gt_input_init_widget(gt_obj_st * input) {
     gt_font_st font;
     gt_color_t color_font;
     if( !style->value ){
-        font.style_cn = 1;
-        font.style_en = 2;
+        font.style_cn = style->font_style_cn;
+        font.style_en = style->font_style_en;
         font.utf8 = style->placeholder;
         font.len = strlen(style->placeholder);
-        font.size = GT_FONT_SIZE_16x16;
+        font.size = style->font_size;
         color_font.full = 0x8410;
     }
     // if input value is not null
     else{
-        font.style_cn = 1;
-        font.style_en = 2;
+        font.style_cn = style->font_style_cn;
+        font.style_en = style->font_style_en;
         font.utf8 = style->value;
         font.len = strlen(style->value);
-        font.size = GT_FONT_SIZE_16x16;
+        font.size = style->font_size;
+        color_font = gt_color_make(0x00,0x00,0x00);
     }
     gt_attr_font_st font_attr = {
         .font = &font,
-        .align = GT_ALIGN_LEFT,
+        .align = GT_ALIGN_NONE,
         .space_x = 0,
         .space_y = 0,
         .font_color = color_font,
@@ -99,7 +100,6 @@ static void _gt_input_init_widget(gt_obj_st * input) {
     gt_area_st area_font = input->area;
     area_font.x += 4;
     draw_text(input->draw_ctx, &font_attr, &area_font);
-  
 }
 
 /**
@@ -184,9 +184,18 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_input_init_style(gt_obj_st * input)
 {
-    _gt_style_input_st * style = input->style;
+    _gt_style_input_st * style = NULL;
+    
+    input->style = gt_mem_malloc(sizeof(_gt_style_input_st));
+    style = input->style;
+
     gt_memset(style, 0, sizeof(_gt_style_input_st));
+
     gt_input_style_set_placeholder(input, "please input");
+
+    style->font_style_cn    = GT_CFG_DEFAULT_FONT_STYLE_CN;
+    style->font_style_en    = GT_CFG_DEFAULT_FONT_STYLE_EN;
+    style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
 }
 
 
@@ -245,6 +254,7 @@ void gt_input_style_append_value(gt_obj_st * input, char * value)
         gt_memcpy(&style->value[len_src], value, len);
         style->value[len + len_src] = 0;
     }
+    gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 /**

@@ -99,6 +99,11 @@ extern "C" {
 #define GT_CFG_DEFAULT_KEYPAD_
 
 
+/* default font style and size */
+#define GT_CFG_DEFAULT_FONT_STYLE_CN    1
+#define GT_CFG_DEFAULT_FONT_STYLE_EN    2
+#define GT_CFG_DEFAULT_FONT_SIZE        16
+
 /* default event mask bit num */
 #define GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX           16
 

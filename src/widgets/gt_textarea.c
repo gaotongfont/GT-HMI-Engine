@@ -16,6 +16,7 @@
 #include "../core/gt_obj_pos.h"
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
+#include "../core/gt_draw.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_TEXTAREA
@@ -47,8 +48,48 @@ const gt_obj_class_st gt_textarea_class = {
 
 static void _gt_textarea_init_widget(gt_obj_st * textarea) {
     _gt_style_textarea_st * style = textarea->style;
-    gt_size_t w, h;
+    int idx = 0;
 
+    gt_font_st font = {
+        .size = style->font_size,
+        .style_cn   = style->font_style_cn,
+        .style_en   = style->font_style_en
+    };
+
+    gt_attr_font_st font_attr = {
+        .font       = &font,
+        .space_x    = style->space_x,
+        .space_y    = style->space_y,
+        .align      = GT_ALIGN_NONE,        
+    };
+
+    gt_area_st area_font = textarea->area, area_temp;
+
+    gt_attr_rect_st rect_attr;
+    gt_graph_init_rect_attr(&rect_attr);
+    rect_attr.radius = 4;
+    rect_attr.border_width = 2;
+    rect_attr.is_fill = 0;
+    rect_attr.bg_color = gt_color_make(0x88, 0x88,0x88);
+    rect_attr.border_color = gt_color_make(0x88, 0x88,0x88);
+
+
+    draw_bg(textarea->draw_ctx, &rect_attr, &textarea->area);
+
+    area_font.x += 4;
+    area_font.y += 4;
+    area_font.w -= 4;
+    area_font.h -= 4;
+    while( idx < style->cnt_txts ){
+        font.utf8               = style->txts[idx].text;
+        font.len                = style->txts[idx].len;
+        font_attr.style         = style->txts[idx].mask_style;
+        font_attr.font_color    = style->txts[idx].color;
+        area_temp = draw_text(textarea->draw_ctx, &font_attr, &area_font);
+        font_attr.start_x       = area_temp.x;
+        font_attr.start_y       = area_temp.y;
+        idx++;
+    }
 }
 
 /**
@@ -91,7 +132,10 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
-           
+            if( gt_obj_check_scr(obj) ){
+                extern void gt_disp_ref_area(gt_area_st * area);
+                gt_disp_ref_area(&obj->area);
+            }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
@@ -138,10 +182,16 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_textarea_init_style(gt_obj_st * textarea)
 {
-    _gt_style_textarea_st * _style = textarea->style;
+    _gt_style_textarea_st * style = NULL;
     
-    _style->text = gt_mem_malloc(sizeof("textarea"));
-    strcpy(_style->text, "textarea");
+    textarea->style = gt_mem_malloc(sizeof(_gt_style_textarea_st));
+    style = textarea->style;
+
+    gt_memset(style, 0, sizeof(_gt_style_textarea_st ));
+
+    style->font_style_cn    = GT_CFG_DEFAULT_FONT_STYLE_CN;
+    style->font_style_en    = GT_CFG_DEFAULT_FONT_STYLE_EN;
+    style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
 }
 
 
@@ -164,19 +214,41 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
 void gt_textarea_style_set_text(gt_obj_st * textarea, char * text)
 {
     _gt_style_textarea_st * style = textarea->style;
-    if( NULL != style->text ){
-        gt_mem_free(style->text);
-    }
-    uint16_t size = strlen(text);
-    style->text = gt_mem_malloc(size+1);
-    gt_memset(style->text, 0, size+1);
-    gt_memcpy(style->text, text, size);
+    
 }
 
 char * gt_textarea_style_get_text(gt_obj_st * textarea){
     GT_ASSERT_NULL(textarea);
     _gt_style_textarea_st * style = textarea->style;
-    return style->text;
 }
 
+
+void gt_textarea_style_add_str(gt_obj_st * textarea, char * str, uint8_t style_mask, gt_color_t color)
+{
+    _gt_style_textarea_st * style = textarea->style;
+    if( style->cnt_txts == 0 ){
+        style->txts  = gt_mem_malloc( sizeof(_gt_txt_st) );
+        style->txts[0].len  = strlen(str);
+        style->txts[0].text = gt_mem_malloc(style->txts[0].len);
+        gt_memcpy(style->txts[0].text, str, style->txts[0].len);
+        style->txts[0].mask_style = style_mask;
+        style->txts[0].color = color;
+        style->cnt_txts = 1;
+    }else{
+        style->txts  = gt_mem_realloc(style->txts, (style->cnt_txts + 1) * sizeof(_gt_txt_st) );
+        style->txts[style->cnt_txts].len  = strlen(str);
+        style->txts[style->cnt_txts].text = gt_mem_malloc(style->txts[style->cnt_txts].len);
+        gt_memcpy(style->txts[style->cnt_txts].text, str, style->txts[style->cnt_txts].len);
+        style->txts[style->cnt_txts].mask_style = style_mask;
+        style->txts[style->cnt_txts].color = color;
+        style->cnt_txts++;
+    }
+}
+
+void gt_textarea_style_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t space_y)
+{
+    _gt_style_textarea_st * style = textarea->style;
+    style->space_x = space_x;
+    style->space_y = space_y;
+}
 /* end ------------------------------------------------------------------*/

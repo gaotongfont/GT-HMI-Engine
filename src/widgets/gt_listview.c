@@ -117,7 +117,10 @@ static void _gt_listview_init_widget(gt_obj_st * listview) {
 
     uint8_t fp[64];
     gt_font_st font = {
-        .style_cn = 1, .style_en = 2, .res = fp, .size = GT_FONT_SIZE_16x16, 
+        .style_cn = style->font_style_cn,
+        .style_en = style->font_style_en, 
+        .res = fp, 
+        .size = style->font_size, 
     };
 
     gt_attr_font_st font_attr = {
@@ -253,8 +256,13 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_listview_init_style(gt_obj_st * listview)
 {
-    _gt_style_listview_st * style = listview->style;
+    _gt_style_listview_st * style = NULL;
+    
+    listview->style = gt_mem_malloc(sizeof(_gt_style_listview_st));
+    style = listview->style;
+
     gt_memset(style, 0, sizeof(_gt_style_listview_st));
+
     GT_COLOR_SET(style->color_font_selected, 0xFFFF);
     GT_COLOR_SET(style->color_font_unselected, 0x0000);
     GT_COLOR_SET(style->bg_color, 0xFFFF);
@@ -262,6 +270,10 @@ static void _gt_listview_init_style(gt_obj_st * listview)
     GT_COLOR_SET(style->fg_color_selected, 0x0516);
     GT_COLOR_SET(style->fg_color_unselected, 0xFFFF);
     style->idx_show_cnt = 5;
+
+    style->font_style_cn    = GT_CFG_DEFAULT_FONT_STYLE_CN;
+    style->font_style_en    = GT_CFG_DEFAULT_FONT_STYLE_EN;
+    style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
 }
 
 

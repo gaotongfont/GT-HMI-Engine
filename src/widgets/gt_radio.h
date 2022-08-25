@@ -25,6 +25,11 @@ extern "C" {
 typedef struct _gt_style_radio_s
 {
     uint8_t selected;
+    
+    uint8_t font_style_cn;
+    uint8_t font_style_en;
+    uint8_t font_size;
+
     char * text;
 }_gt_style_radio_st;
 

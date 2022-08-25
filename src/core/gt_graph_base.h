@@ -33,7 +33,7 @@ extern "C" {
 
 #define GT_DOT_GET_BIT(buf,x,y,w,h)		((buf[(y)*((w)>>3)+((x)>>3)]>>(7-((x)%8)))&0x01)
 
-#define GT_RADIUS_MIN   3
+#define GT_RADIUS_MIN   2
 /* typedef --------------------------------------------------------------*/
 typedef enum {
     GT_BLEND_MODE_NORMAL,     /**< Simply mix according to the opacity value*/

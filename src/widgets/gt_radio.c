@@ -55,12 +55,12 @@ static void _gt_radio_init_widget(gt_obj_st * radio) {
     
     uint8_t fp[1024];
     gt_font_st font = {
-        .style_cn = 1,
-        .style_en = 2,
+        .style_cn = style->font_style_cn,
+        .style_en = style->font_style_en,
         .res = fp,
         .utf8 = (uint8_t *)style->text,
         .len = strlen(style->text),
-        .size = GT_FONT_SIZE_16x16,
+        .size = style->font_size,
     };
 
     
@@ -208,9 +208,19 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_radio_init_style(gt_obj_st * radio)
 {
-    _gt_style_radio_st * _style = radio->style;
-    _style->text = gt_mem_malloc(sizeof("radio"));
-    gt_memcpy(_style->text, "radio", sizeof("radio"));
+    _gt_style_radio_st * style = NULL;
+    
+    radio->style = gt_mem_malloc(sizeof(_gt_style_radio_st));
+    style = radio->style;
+
+    gt_memset(style,0,sizeof(_gt_style_radio_st));
+
+    style->text = gt_mem_malloc(sizeof("radio"));
+    gt_memcpy(style->text, "radio", sizeof("radio"));
+
+    style->font_style_cn    = GT_CFG_DEFAULT_FONT_STYLE_CN;
+    style->font_style_en    = GT_CFG_DEFAULT_FONT_STYLE_EN;
+    style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
 }
 
 

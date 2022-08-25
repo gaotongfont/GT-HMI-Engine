@@ -196,7 +196,13 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_scrollbar_init_style(gt_obj_st * scrollbar)
 {
-    _gt_style_scrollbar_st * style = scrollbar->style;
+    _gt_style_scrollbar_st * style = NULL;
+    
+    scrollbar->style = gt_mem_malloc(sizeof(_gt_style_scrollbar_st));
+    style = scrollbar->style;
+
+    gt_memset(style,0,sizeof(_gt_style_scrollbar_st));
+
     GT_COLOR_SET(style->bg_color, 0xFFFF);
     GT_COLOR_SET(style->color_act, 0x0516);
     GT_COLOR_SET(style->color_ina, 0xC619);

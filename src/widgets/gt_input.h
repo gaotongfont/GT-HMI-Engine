@@ -27,6 +27,11 @@ typedef struct _gt_style_input_s
     uint16_t pos_selected_start;
     uint16_t pos_selected_end;
     uint16_t pos_cursor;
+
+    uint8_t font_style_cn;
+    uint8_t font_style_en;
+    uint8_t font_size;
+    
     char * value;
     char * placeholder;
 }_gt_style_input_st;

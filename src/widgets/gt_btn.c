@@ -55,12 +55,12 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     gt_color_t fg_color;
     uint8_t fp[64];
     gt_font_st font = {
-        .style_cn = 1,
-        .style_en = 2,
-        .res = fp,
-        .utf8 = (uint8_t *)style->text,
-        .len = strlen(style->text),
-        .size = GT_FONT_SIZE_16x16,
+        .style_cn   = style->font_style_cn,
+        .style_en   = style->font_style_en,
+        .res        = fp,
+        .utf8       = (uint8_t *)style->text,
+        .len        = strlen(style->text),
+        .size       = style->font_size,
     };
     uint8_t width_font = gt_font_get_string_width(&font);
     // set default size
@@ -197,15 +197,24 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_btn_init_style(gt_obj_st * btn)
 {
-    _gt_style_btn_st * _style = btn->style;
+    _gt_style_btn_st * style = NULL;
+    
+    btn->style = gt_mem_malloc(sizeof(_gt_style_btn_st));
+    style = btn->style;
 
-    _style->text = gt_mem_malloc(sizeof("btn"));
-    strcpy(_style->text, "btn");
-    _style->radius = 0;
-	_style->selected = 0;
-    GT_COLOR_SET(_style->color_font, 0xFFFF);        //default color_font
-    GT_COLOR_SET(_style->color_selected, 0x1C1A);    //default color_selected
-    GT_COLOR_SET(_style->color_unselected, 0x1537);  //default color_unselected
+    gt_memset(style, 0, sizeof(_gt_style_btn_st));
+    
+    style->text = gt_mem_malloc(sizeof("btn"));
+    strcpy(style->text, "btn");
+    style->radius = 0;
+	style->selected = 0;
+    style->color_font = gt_color_white();        //default color_font
+    GT_COLOR_SET(style->color_selected, 0x1C1A);    //default color_selected
+    GT_COLOR_SET(style->color_unselected, 0x1537);  //default color_unselected
+    
+    style->font_style_cn    = GT_CFG_DEFAULT_FONT_STYLE_CN;
+    style->font_style_en    = GT_CFG_DEFAULT_FONT_STYLE_EN;
+    style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
 }
 
 
