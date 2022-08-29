@@ -81,9 +81,9 @@ static void _gt_radio_init_widget(gt_obj_st * radio) {
     gt_attr_rect_st rect_attr = {
         .is_fill        = 0,
         .border_width   = 2,
-        .border_color   = gt_color_make(0xA0,0xA0,0xA0),
+        .border_color   = gt_color_hex(0xA0A0A0),
         .bg_opa         = GT_OPA_COVER,
-        .bg_color       = gt_color_make(0xA0,0xA0,0xA0),
+        .bg_color       = gt_color_hex(0xA0A0A0),
         .radius         = h>>1,
     };
     
@@ -100,7 +100,7 @@ static void _gt_radio_init_widget(gt_obj_st * radio) {
         area_sel.h -= rect_attr.border_width<<2;
         rect_attr.radius = area_sel.h>>1;
         rect_attr.is_fill = 1;
-        rect_attr.bg_color = gt_color_make(0xA0,0xA0,0xA0);
+        rect_attr.bg_color = gt_color_hex(0xA0A0A0);
         draw_bg(radio->draw_ctx, &rect_attr, &area_sel);
     }
 

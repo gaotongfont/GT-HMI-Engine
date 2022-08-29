@@ -30,7 +30,7 @@ typedef struct _gt_style_label_s{
     uint8_t font_style_cn;
     uint8_t font_style_en;
     uint8_t font_size;
-    
+
     char * text;
 }_gt_style_label_st;
 
@@ -43,6 +43,7 @@ typedef struct _gt_style_label_s{
 gt_obj_st * gt_label_create(gt_obj_st * parent);
 void gt_label_style_set_text(gt_obj_st * label, char * text);
 char * gt_label_style_get_text(gt_obj_st * label);
+void gt_label_style_set_font_color(gt_obj_st * label, gt_color_t color);
 
 #ifdef __cplusplus
 } /*extern "C"*/

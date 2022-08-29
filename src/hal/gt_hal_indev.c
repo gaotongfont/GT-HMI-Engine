@@ -43,6 +43,9 @@ static void _gt_indev_task_handler(struct _gt_timer_s * timer)
 
 /* global functions / API interface -------------------------------------*/
 void gt_indev_drv_init(gt_indev_drv_st * drv){
+    
+    gt_memset(drv, 0, sizeof(gt_indev_drv_st));
+    
     drv->type = GT_INDEV_TYPE_NONE;
 
     drv->limit_pixel_gesture_hor = GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR;

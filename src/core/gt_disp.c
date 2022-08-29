@@ -173,10 +173,14 @@ void gt_disp_ref_area(const gt_area_st * coords)
     uint16_t dist = 0;
     if( disp->area_act.y > area.y ){
         dist = disp->area_act.y - area.y;
-        area.y = area.y + dist;
+        area.y += dist;
         area.h -= dist;
     }
-    
+    if( disp->area_act.x > area.x ){
+        dist = disp->area_act.x - area.x;
+        area.x += dist;
+        area.w -= dist;
+    }
 
     uint16_t line = GT_REFRESH_FLUSH_LINE_PRE_TIME;
     if( (area.w * area.h) <= (line * GT_SCREEN_WIDTH) ){

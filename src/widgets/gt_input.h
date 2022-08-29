@@ -32,6 +32,8 @@ typedef struct _gt_style_input_s
     uint8_t font_style_en;
     uint8_t font_size;
     
+    gt_point_st point_pos;
+
     char * value;
     char * placeholder;
 }_gt_style_input_st;
@@ -48,6 +50,12 @@ gt_obj_st * gt_input_create(gt_obj_st * parent);
 void gt_input_style_set_value(gt_obj_st * input, char * value);
 void gt_input_style_append_value(gt_obj_st * input, char * value);
 void gt_input_style_set_placeholder(gt_obj_st * input, const char * placeholder);
+void gt_input_style_del_value(gt_obj_st * input);
+
+void gt_input_style_move_left_pos_cursor(gt_obj_st * input);
+void gt_input_style_move_right_pos_cursor(gt_obj_st * input);
+
+
 
 #ifdef __cplusplus
 } /*extern "C"*/

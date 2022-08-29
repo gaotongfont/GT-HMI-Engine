@@ -61,8 +61,9 @@ typedef struct _gt_attr_font_s{
 
     uint8_t space_x;
     uint8_t space_y;
-    uint16_t start_x;
-    uint16_t start_y;
+    
+    uint16_t start_x;   /*draw text start x from coords,if not need,must set 0*/
+    uint16_t start_y;   /*draw text start y from coords,if not need,must set 0*/
 
     gt_align_et align;
     uint8_t style;      /*font style value @gt_font_style_et*/

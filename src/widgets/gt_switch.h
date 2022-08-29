@@ -39,6 +39,7 @@ typedef struct _gt_style_switcher_s
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_switch_create(gt_obj_st * parent);
 void gt_switch_style_set_state(gt_obj_st * switcher, bool state);
+bool gt_switch_style_get_state(gt_obj_st * switcher);
 
 #ifdef __cplusplus
 } /*extern "C"*/

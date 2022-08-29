@@ -22,22 +22,48 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+enum {
+    GT_KEYPAD_MODE_LOWER,
+    GT_KEYPAD_MODE_UPPER,
+    GT_KEYPAD_MODE_NUMBER,
+    GT_KEYPAD_MODE_OTHER,
+};
+
+struct _gt_keypad_map_s;
+typedef struct _gt_keypad_info_s
+{
+    /* data */
+    uint8_t mode;       /*this mode can set GT_KEYPAD_MODE_XX*/
+    uint8_t cnt_lines;  /*record how many lines of the keypad*/
+    uint8_t per_line[6];/*record the per of the total width of a line */
+    struct _gt_keypad_map_s * map;
+}_gt_keypad_info_st;
+
+
 typedef struct _gt_style_keypad_s
 {
     gt_obj_st * target;
     char * keypad;
-    char code_selected;
+    char * kv_selected;
     gt_color_t bg_color;  //background color
     gt_color_t color_font;  //font color
+
+    /*press flag*/
+    uint8_t state;   /*press:1,release:0*/
+    uint8_t cnt_keydown_timers;
+
+    _gt_keypad_info_st info;
 }_gt_style_keypad_st;
 
-
+/**
+ * @brief Record key information
+ * 
+ */
 typedef struct _gt_keypad_map_s
 {
-    char ch;
-    gt_area_st area;
+    char * kv;
+    uint8_t w;
 }gt_keypad_map_st;
-
 
 
 /* macros ---------------------------------------------------------------*/
@@ -47,6 +73,7 @@ typedef struct _gt_keypad_map_s
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_keypad_create(gt_obj_st * parent);
 void gt_keypad_style_set_target(gt_obj_st * keypad, gt_obj_st * ta);
+void gt_keypad_style_set_map(gt_obj_st * keypad,  gt_keypad_map_st * map);
 
 
 

@@ -102,6 +102,8 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
         area_dst.x = 0;
     }
 
+    // printf("dsc:x:%d,y:%d,w:%d,h:%d\n", area_dsc.x, area_dsc.y, area_dsc.w, area_dsc.h);
+    // printf("src:x:%d,y:%d,w:%d,h:%d\n", area_src.x, area_src.y, area_src.w, area_src.h);
     // from area_src cpy to area_dst
     int idx_dst = area_dst.y * area_dst.w + area_dst.x;
     int idx_src = area_src.y * area_src.w + area_src.x;

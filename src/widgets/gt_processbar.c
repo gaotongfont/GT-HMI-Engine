@@ -176,7 +176,7 @@ static void _gt_processbar_init_style(gt_obj_st * processbar)
 
     gt_memset(style, 0, sizeof(_gt_style_processbar_st));
 
-    style->bg_color = gt_color_make(0xFF,0xFF, 0xFF);
+    style->bg_color = gt_color_hex(0xFFFFFF);
     GT_COLOR_SET(style->color_act, 0x0516);
     GT_COLOR_SET(style->color_ina, 0xC619);
     style->start = 0;

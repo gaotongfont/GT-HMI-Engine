@@ -213,7 +213,8 @@ void gt_switch_style_set_state(gt_obj_st * switcher, bool state){
     style->state = state;
 }
 
-bool gt_switch_style_get_state(gt_obj_st * switcher){
+bool gt_switch_style_get_state(gt_obj_st * switcher)
+{
     _gt_style_switcher_st * style = switcher->style;
     return style->state;
 }

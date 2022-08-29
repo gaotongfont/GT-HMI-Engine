@@ -17,6 +17,10 @@
 
 #define GT_CFG_USE_FONT_16_ASCII    1
 
+/* Symbol */
+#define GT_CFG_USE_SYMBOL_16x16     1
+
+
 
 #define _GT_ENABLE_GTZK 01
 

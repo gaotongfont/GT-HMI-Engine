@@ -49,6 +49,7 @@ extern "C" {
  */
 bool gt_area_intersect(const gt_area_st * area_back, const gt_area_st * area_fore, gt_area_st * area_res);
 
+void gt_area_printf(gt_area_st area);
 
 #ifdef __cplusplus
 } /*extern "C"*/

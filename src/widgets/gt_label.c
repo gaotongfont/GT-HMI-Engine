@@ -186,7 +186,7 @@ static void _gt_label_init_style(gt_obj_st * label)
     style->text = gt_mem_malloc(sizeof("label"));
     gt_memcpy(style->text, "label\0", sizeof("label"));
     
-    style->color_font = gt_color_make(0x00,0x00,0x00);
+    style->color_font = gt_color_hex(0x00);
 
     style->font_style_cn    = GT_CFG_DEFAULT_FONT_STYLE_CN;
     style->font_style_en    = GT_CFG_DEFAULT_FONT_STYLE_EN;
@@ -225,14 +225,16 @@ void gt_label_style_set_text(gt_obj_st * label, char * text)
     gt_event_send(label, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
-char * gt_label_style_get_text(gt_obj_st * label){
+char * gt_label_style_get_text(gt_obj_st * label)
+{
     GT_ASSERT_NULL(label);
     _gt_style_label_st * style = label->style;
     return style->text;
 }
 
-void gt_label_style_set_font_color(gt_obj_st * label, gt_color_t color){
+void gt_label_style_set_font_color(gt_obj_st * label, gt_color_t color)
+{
     _gt_style_label_st * style = label->style;    
-    GT_COLOR_SET(style->color_font, GT_COLOR_GET(color));
+    style->color_font = color;
 }
 /* end ------------------------------------------------------------------*/

@@ -34,6 +34,7 @@ extern "C" {
 
 /* font */
 #include "src/font/gt_font.h"
+#include "src/font/gt_symbol.h"
 
 /* hal */
 #include "src/hal/gt_hal_disp.h"
@@ -67,11 +68,10 @@ extern "C" {
 
 #if GT_CFG_ENABLE_INPUT == 1
 #include "src/widgets/gt_input.h"
-#endif
-
-#if GT_CFG_ENABLE_KEYPAD == 1
 #include "src/widgets/gt_keypad.h"
 #endif
+
+
 
 #if GT_CFG_ENABLE_LABEL == 1
 #include "src/widgets/gt_label.h"
@@ -104,7 +104,7 @@ extern "C" {
 /* other */
 #include "src/others/gt_color.h"
 #include "src/others/gt_log.h"
-
+#include "src/others/gt_txt.h"
 
 /* define ---------------------------------------------------------------*/
 

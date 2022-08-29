@@ -30,7 +30,7 @@ typedef enum gt_event_type_e{
 
     /** Input device events*/
     GT_EVENT_TYPE_INPUT_CLICKING    = 1<<0,     /* clicking */
-    GT_EVENT_TYPE_INPUT_PROCESS     = 1<<1,     /* click need handler */
+    GT_EVENT_TYPE_INPUT_PROCESS     = 1<<1,     /* release,click need handler */
     GT_EVENT_TYPE_INPUT_PROCESSED   = 1<<2,     /* click handler finish */
     GT_EVENT_TYPE_INPUT_SCROLL      = 1<<3,
 

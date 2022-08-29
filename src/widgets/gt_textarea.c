@@ -70,8 +70,8 @@ static void _gt_textarea_init_widget(gt_obj_st * textarea) {
     rect_attr.radius = 4;
     rect_attr.border_width = 2;
     rect_attr.is_fill = 0;
-    rect_attr.bg_color = gt_color_make(0x88, 0x88,0x88);
-    rect_attr.border_color = gt_color_make(0x88, 0x88,0x88);
+    rect_attr.bg_color = gt_color_hex(0x888888);
+    rect_attr.border_color = gt_color_hex(0x888888);
 
 
     draw_bg(textarea->draw_ctx, &rect_attr, &textarea->area);

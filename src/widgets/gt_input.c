@@ -17,6 +17,7 @@
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
+#include "../others/gt_txt.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_INPUT
@@ -85,9 +86,9 @@ static void _gt_input_init_widget(gt_obj_st * input) {
         font.style_cn = style->font_style_cn;
         font.style_en = style->font_style_en;
         font.utf8 = style->value;
-        font.len = strlen(style->value);
+        font.len = style->pos_cursor;
         font.size = style->font_size;
-        color_font = gt_color_make(0x00,0x00,0x00);
+        color_font = gt_color_hex(0x000000);
     }
     gt_attr_font_st font_attr = {
         .font = &font,
@@ -99,7 +100,30 @@ static void _gt_input_init_widget(gt_obj_st * input) {
     
     gt_area_st area_font = input->area;
     area_font.x += 4;
-    draw_text(input->draw_ctx, &font_attr, &area_font);
+    gt_area_st area_res = draw_text(input->draw_ctx, &font_attr, &area_font);
+
+    /*draw cursor*/
+    gt_graph_init_rect_attr(&rect_attr);
+    rect_attr.is_fill = 1;
+    rect_attr.bg_color = gt_color_hex(0x666666);
+    area_res.w = 2;
+    area_res.h = style->font_size;
+    draw_bg(input->draw_ctx, &rect_attr, &area_res);
+
+    /*draw text after cursor*/
+    if( style->value && style->pos_cursor != strlen(style->value) ){
+        font.utf8 = &style->value[style->pos_cursor];
+        font.len = strlen(&style->value[style->pos_cursor]);
+        font.size = style->font_size;
+        color_font = gt_color_hex(0x000000);
+
+        font_attr.font = &font,
+        font_attr.font_color = color_font,
+
+        font_attr.start_x = area_res.x + 4;
+        font_attr.start_y = area_res.y;
+        draw_text(input->draw_ctx, &font_attr, &area_font);
+    }
 }
 
 /**
@@ -232,6 +256,8 @@ void gt_input_style_set_value(gt_obj_st * input, char * value)
     style->value = gt_mem_malloc( len + 1 );
     gt_memcpy(style->value, value, len);
     style->value[len] = 0;
+    
+    style->pos_cursor = len;
 }
 
 /**
@@ -248,15 +274,39 @@ void gt_input_style_append_value(gt_obj_st * input, char * value)
         style->value = gt_mem_malloc(len+1);
         gt_memcpy(style->value, value, len);
         style->value[len] = 0;
+        style->pos_cursor = len;
     }else{
-        uint16_t len_src = strlen(style->value);
-        style->value = gt_mem_realloc(style->value, len + len_src + 1);
-        gt_memcpy(&style->value[len_src], value, len);
-        style->value[len + len_src] = 0;
+        // uint16_t len_src = strlen(style->value);
+        // style->value = gt_mem_realloc(style->value, len + len_src + 1);
+        // gt_memcpy(&style->value[len_src], value, len);
+        // style->value[len + len_src] = 0;
+        gt_txt_ins(style->value, style->pos_cursor, value);
+        style->pos_cursor += strlen(value);
     }
+    
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+void gt_input_style_del_value(gt_obj_st * input)
+{
+    _gt_style_input_st * style = input->style;
+    if( style->value == NULL ){
+        return;
+    }
+    if( strlen(style->value) == 1 ){
+        gt_mem_free(style->value);
+        style->pos_cursor = 0;
+        style->value = NULL;
+        goto lab_end;
+    }
+    if( style->pos_cursor <= 0 ){
+        return;
+    }
+    gt_txt_cut(style->value, style->pos_cursor - 1, style->pos_cursor);
+    style->pos_cursor -= 1;
+lab_end:
+    gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+}
 /**
  * @brief set placeholder value
  * 
@@ -275,4 +325,21 @@ void gt_input_style_set_placeholder(gt_obj_st * input, const char * placeholder)
     style->placeholder[len] = 0;
 }
 
+
+void gt_input_style_move_left_pos_cursor(gt_obj_st * input)
+{
+    _gt_style_input_st * style = input->style;
+    if( style->pos_cursor > 0 ){
+        style->pos_cursor--;
+    }
+    gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+void gt_input_style_move_right_pos_cursor(gt_obj_st * input)
+{
+    _gt_style_input_st * style = input->style;
+    if( style->pos_cursor < strlen(style->value) ){
+        style->pos_cursor++;
+    }
+    gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+}
 /* end ------------------------------------------------------------------*/

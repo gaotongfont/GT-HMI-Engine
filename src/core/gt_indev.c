@@ -78,12 +78,14 @@ void gt_indev_handler_point(gt_indev_st * indev)
         indev->proc.data.point.obj_last = gt_find_clicked_obj_by_point(scr, &data_indev.point);
 
         if( indev->proc.data.point.obj_act != indev->proc.data.point.obj_last ){
-            gt_event_send(indev->proc.data.point.obj_act, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);            
+            gt_event_send(indev->proc.data.point.obj_act, GT_EVENT_TYPE_INPUT_PROCESS, NULL);            
             indev->proc.data.point.obj_act = indev->proc.data.point.obj_last;                        
         }else{
             gt_obj_get_click_point_by_phy_point(indev->proc.data.point.obj_act, &indev->proc.data.point.point_last,&point_ret);
             _gt_obj_set_process_point(indev->proc.data.point.obj_act, &point_ret);
-            gt_event_send(indev->proc.data.point.obj_act, GT_EVENT_TYPE_INPUT_CLICKING, NULL);
+            if( indev->proc.data.point.count_point > indev->drv->limit_timers_long_press ){
+                gt_event_send(indev->proc.data.point.obj_act, GT_EVENT_TYPE_INPUT_CLICKING, NULL);
+            }
         }
         indev->proc.data.point.count_point++;
     }

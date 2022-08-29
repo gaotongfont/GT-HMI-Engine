@@ -88,5 +88,8 @@ bool gt_area_intersect(const gt_area_st * area_back, const gt_area_st * area_for
     return true;
 }
 
-
+void gt_area_printf(gt_area_st area)
+{
+    printf("gui:" "x:%d,y:%d,w:%d,h:%d\n", area.x, area.y, area.w, area.h);
+}
 /* end ------------------------------------------------------------------*/

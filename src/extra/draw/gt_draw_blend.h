@@ -32,14 +32,14 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_draw_blend_dsc_s{
-    gt_area_st * dst_area;
-    gt_color_t * dst_buf;
+    gt_area_st  * dst_area;  /*must set, dst area*/
+    gt_color_t  * dst_buf;   /*unnecessary, blend dst color*/
 
-    gt_opa_t * mask_buf;
-    gt_color_t color_fill;
+    gt_opa_t    * mask_buf;    /*opa buf*/
+    gt_color_t  color_fill;  /*blend color*/
 
-    gt_area_st * mask_area;
-    gt_opt_t opa;
+    gt_area_st  * mask_area; /*not set*/
+    gt_opt_t    opa;           /*must*/
 }gt_draw_blend_dsc_st;
 
 struct _gt_draw_ctx_t;
@@ -50,7 +50,6 @@ struct _gt_draw_ctx_t;
 /* global functions / API interface -------------------------------------*/
 void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc);
 void gt_draw_blend_basic(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc);
-
 
 
 #ifdef __cplusplus
