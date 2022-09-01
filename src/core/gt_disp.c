@@ -39,7 +39,7 @@ typedef enum{
 
 /* static functions -----------------------------------------------------*/
 static bool _gt_disp_get_state(gt_disp_st * disp)
-{   
+{
     if( disp == NULL ){
         return GT_BUSY;
     }
@@ -50,7 +50,7 @@ static bool _gt_disp_get_state(gt_disp_st * disp)
 }
 
 static void _gt_disp_set_state(gt_disp_st * disp, uint8_t state)
-{   
+{
     if( disp == NULL ){
         return;
     }
@@ -169,7 +169,7 @@ void gt_disp_load_scr(gt_obj_st * scr)
 		gt_color_t fill_color;
 		fill_color.full = 0xFFFF;
     while( y < disp->drv->res_hor ){
-        
+
         gt_color_fill(disp->vbd_color, len, fill_color);
 
         // use virt screen check obj visible area
@@ -225,7 +225,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
     uint32_t idx = 0;
     uint32_t len = area.w * line;
 
- 
+
     disp->area_disp.y = area.y;//0;
     disp->area_disp.x = area.x;//0;
     disp->area_disp.w = area.w;
@@ -233,11 +233,11 @@ void gt_disp_ref_area(const gt_area_st * coords)
 
     y = 0;
     gt_color_t color_fill;
-    color_fill.full = 0xFFFF; 
+    color_fill.full = 0xFFFF;
 
 
     while( y < area.h ){
-        
+
         gt_color_fill(disp->vbd_color, len, color_fill);
 
         // use virt screen check obj visible area
@@ -248,9 +248,9 @@ void gt_disp_ref_area(const gt_area_st * coords)
         // phy screen use area is from W x H
         disp->area_disp.y = disp->area_disp.y - disp->area_act.y;
         disp->area_disp.x = area.x - disp->area_act.x;
-        
+
         disp->drv->flush_cb(disp->drv, &disp->area_disp, disp->vbd_color);
-        
+
         y += line;
         if( (y + line) > (area.y + area.h) ){
             area.h = area.h - y;
@@ -318,7 +318,7 @@ void gt_disp_obj(gt_obj_st * obj){
             .w = area_valid.w,
             .h = area_valid.h
         };
-        
+
         if( obj->area.y < disp_dev->area_act.y ){
             area_show.y = 0;
         }else{
@@ -338,10 +338,10 @@ void gt_disp_obj(gt_obj_st * obj){
 
 /**
  * @brief disp screen
- * 
+ *
  */
 void _gt_disp_area(){
-    
+
 }
 
 /* end ------------------------------------------------------------------*/

@@ -1,7 +1,7 @@
 /**
  * @file gt_qrcode.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-08-24 16:37:09
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -50,7 +50,7 @@ static void _gt_qrcode_init_widget(gt_obj_st * qrcode) {
     char * val = style->value;
 
     /**/
-    
+
 }
 
 /**
@@ -86,7 +86,7 @@ static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
     switch(code) {
-        case GT_EVENT_TYPE_DRAW_START:
+        case GT_EVENT_TYPE_DRAW_START: {
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
             if( gt_obj_check_scr(obj) ){
                 extern void gt_disp_ref_area(gt_area_st * area);
@@ -94,40 +94,39 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
-
-        case GT_EVENT_TYPE_DRAW_END:
+        }
+        case GT_EVENT_TYPE_DRAW_END: {
             GT_LOGD(GT_LOG_TAG_GUI, "end draw");
-            gt_mem_free(obj->cache.cache_color);
             break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
+        }
+        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: {/* remove child from screen but not delete */
             GT_LOGD(GT_LOG_TAG_GUI, "child remove");
 			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
+        }
+        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: {/* delete child */
             GT_LOGD(GT_LOG_TAG_GUI, "child delete");
             break;
-
-        case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
+        }
+        case GT_EVENT_TYPE_INPUT_CLICKING: {  /* add clicking style and process clicking event */
             GT_LOGD(GT_LOG_TAG_GUI, "clicking");
 
             break;
-
-        case GT_EVENT_TYPE_INPUT_SCROLL:
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL: {
             GT_LOGD(GT_LOG_TAG_GUI, "scroll");
             break;
-
-        case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
+        }
+        case GT_EVENT_TYPE_INPUT_PROCESS: {  /* remove clicking style and process click event */
             GT_LOGD(GT_LOG_TAG_GUI, "process");
             /* code here */
 
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
             break;
-
-        case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
+        }
+        case GT_EVENT_TYPE_INPUT_PROCESSED: {/* click event finish */
             GT_LOGD(GT_LOG_TAG_GUI, "processed");
             break;
-
+        }
         default:
             break;
     }
@@ -137,11 +136,11 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 static void _gt_qrcode_init_style(gt_obj_st * qrcode)
 {
     _gt_style_qrcode_st * style = NULL;
-    
-    qrcode->style = gt_mem_malloc(sizeof(_gt_style_qrcode_st));
-    style = qrcode->style;  
 
-    
+    qrcode->style = gt_mem_malloc(sizeof(_gt_style_qrcode_st));
+    style = qrcode->style;
+
+
 }
 
 

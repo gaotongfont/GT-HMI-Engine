@@ -15,8 +15,8 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "stdint.h"
-#include "gt_color.h"
 #include "../core/gt_style.h"
+#include "../others/gt_color.h"
 
 
 /* define ---------------------------------------------------------------*/

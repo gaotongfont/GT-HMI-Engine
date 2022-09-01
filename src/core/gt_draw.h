@@ -1,7 +1,7 @@
 /**
  * @file gt_draw.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-08-09 18:29:16
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

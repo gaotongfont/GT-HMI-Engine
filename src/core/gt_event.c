@@ -16,6 +16,7 @@
 #include "stdlib.h"
 #include "gt_timer.h"
 #include "gt_disp.h"
+#include "stdbool.h"
 /* private define -------------------------------------------------------*/
 
 
@@ -68,7 +69,7 @@ gt_event_type_et gt_event_get_code(gt_event_st * e){
     return e->code;
 }
 
-/* 1th version--unuse */
+/* 1th version--unused */
 gt_res_t gt_event_send_0(gt_obj_st * parent, gt_event_type_et event, void * user_data){
     gt_event_st *e, _e;
     int idx_child = 0, idx_event = 0;
@@ -105,7 +106,7 @@ gt_res_t gt_event_send(gt_obj_st * parent, gt_event_type_et event, void * parms)
         return GT_RES_FAIL;
     }
     parent->event_mask |= event;
-    
+
     // foreach parent's event_attr----user event,immediately process the user events
     int idx = 0;
     gt_obj_event_attr_st * event_attr;
@@ -147,7 +148,7 @@ void _gt_event_handler_event_mask(gt_obj_st * obj){
 
 static void _gt_obj_foreach_event_cb(gt_obj_st * parent){
     _gt_event_handler_event_mask(parent);
-    
+
     int idx_child = 0;
     gt_obj_st * obj_temp = NULL;
     while( idx_child < parent->cnt_child ){
@@ -160,6 +161,10 @@ static void _gt_obj_foreach_event_cb(gt_obj_st * parent){
         idx_child++;
     }
 }
+/**
+ * @brief only printf once time 'no screen'
+ */
+static GT_ATTRIBUTE_LARGE_RAM_ARRAY bool _is_print_no_screen_flag = 0;
 
 void _gt_timer_event_cb(struct _gt_timer_s * timer){
     // GT_LOGV(GT_LOG_TAG_GUI, "timer event cb start");
@@ -167,7 +172,11 @@ void _gt_timer_event_cb(struct _gt_timer_s * timer){
     /* step1: get top layer screen */
     gt_obj_st * scr = gt_disp_get_scr();
     if( NULL == scr ){
+        if (_is_print_no_screen_flag) {
+            return ;
+        }
         GT_LOGW(GT_LOG_TAG_GUI, "no screen");
+        _is_print_no_screen_flag = true;
         return;
     }
 
@@ -183,8 +192,8 @@ void _gt_event_init(){
 
 /**
  * @brief clr all obj mask
- * 
- * @param parent 
+ *
+ * @param parent
  */
 void gt_event_clr_mask(gt_obj_st * parent)
 {

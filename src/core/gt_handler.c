@@ -14,6 +14,8 @@
 #include "stdbool.h"
 #include "../others/gt_anim.h"
 #include "gt_event.h"
+#include "../extra/gt_extra.h"
+#include "../core/gt_img_decoder.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -62,6 +64,10 @@ void gt_init(void)
     _gt_anim_init();
 
     _gt_event_init();
+
+    _gt_img_decoder_init();
+
+    _gt_extra_init();
 
     _gt_init_set_flag(true);
 }

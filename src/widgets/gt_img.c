@@ -14,9 +14,10 @@
 #include "string.h"
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
-#include "../core/gt_vf.h"
+#include "../core/gt_fs.h"
 #include "string.h"
 #include "../others/gt_assert.h"
+#include "../core/gt_draw.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_IMG
@@ -52,7 +53,7 @@ static void _gt_img_init_widget(gt_obj_st * img)
     gt_size_t w, h;
 
     /* get img width and height, must ! */
-    gt_vf_read_img_wh(style->src, &img->area.w, &img->area.h);
+    gt_fs_read_img_wh(style->src, &img->area.w, &img->area.h);
 
     gt_attr_rect_st dsc = {
         .bg_img_src = style->src,
@@ -81,7 +82,7 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
  */
 static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
-    /* code */    
+    /* code */
     GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
 }
 
@@ -105,7 +106,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGD(GT_LOG_TAG_GUI, "end draw");            
+            GT_LOGD(GT_LOG_TAG_GUI, "end draw");
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
@@ -148,12 +149,12 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 static void _gt_img_init_style(gt_obj_st * img)
 {
     _gt_style_img_st * style = NULL;
-    
+
     img->style = gt_mem_malloc(sizeof(_gt_style_img_st));
     style = img->style;
 
     gt_memset(style, 0, sizeof(_gt_style_img_st));
-    
+
 	style->selected = 0;
     style->src = NULL;
     GT_COLOR_SET(style->color_selected, 0xF800);    //default color_selected

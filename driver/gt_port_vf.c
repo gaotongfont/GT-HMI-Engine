@@ -22,13 +22,13 @@
 
 
 /* static variables -----------------------------------------------------*/
-gt_vfs_st virt_file_sys[] ={
+static const gt_vfs_st virt_file_sys[] ={
 	/*name, w, h, addr, size*/
     {"1.png",400,157,0,0},
     {"2.png",400,160,125600,0},
     {"3.png",400,299,253600,0},
     // {NULL,0,0,0,0},
-    
+
     // {"1.BMP",31,13,0,0},
     // {"10.BMP",31,13,806,0},
     // {"11.BMP",31,13,1612,0},
@@ -69,7 +69,7 @@ gt_vfs_st virt_file_sys[] ={
     {NULL,0,0,0,0},
     {NULL,0,0,0,0}
 };
-static gt_vf_drv_st drv_vf;
+static gt_fs_drv_st drv_vf;
 
 /* macros ---------------------------------------------------------------*/
 
@@ -80,12 +80,30 @@ static gt_vf_drv_st drv_vf;
 
 /* global functions / API interface -------------------------------------*/
 
-extern void spi_wr(uint8_t *dw, uint32_t lw, uint8_t *dr, uint32_t lr);
+#if GT_USE_MODE_FLASH
+/**
+ * @brief [flash] write or read data from flash
+ *
+ * @param data_write the data to be written
+ * @param len_write the length of the data to be written
+ * @param data_read the data to be read from flash
+ * @param len_read the length need to read from flash
+ *
+ * @return uint32_t The number of bytes data read back preferentially,
+ *      otherwise the number of bytes written successfully.
+ */
+extern uint32_t spi_wr(uint8_t const * const data_write, uint32_t len_write, uint8_t * data_read, uint32_t len_read);
 
-void gt_port_vf_init(){
+#endif
+void gt_port_vf_init(void)
+{
     gt_vf_init(virt_file_sys);
+#if GT_USE_MODE_FLASH
 	drv_vf.rw_cb = spi_wr;
-	gt_vf_drv_register(&drv_vf);
+#else
+	drv_vf.rw_cb = NULL;
+#endif
+    gt_vf_drv_register(&drv_vf);
 }
 
 

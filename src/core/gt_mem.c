@@ -174,9 +174,14 @@ void gt_mem_init(void)
 #endif
 }
 
+/**
+ * @brief destroy the memory pool
+ */
 void gt_mem_deinit(void)
 {
-
+#if GT_MEM_CUSTOM
+    gt_tlsf_destroy(_tlsf);
+#endif
 }
 
 void * gt_mem_malloc(size_t size)
@@ -194,19 +199,24 @@ void gt_mem_free(void * ptr)
     _gt_free_hooks(ptr);
 }
 
-void gt_memcpy(void * dst, void * src, size_t size)
+void * gt_memcpy(void * dst, const void * src, size_t size)
 {
-    memcpy(dst, src, size);
+    return memcpy(dst, src, size);
 }
 
-void gt_memset_0(void * ptr, size_t size)
+void * gt_memset_0(void * ptr, size_t size)
 {
-    memset(ptr, 0x00, size);
+    return memset(ptr, 0x00, size);
 }
 
-void gt_memset(void * ptr, uint8_t val, size_t size)
+void * gt_memset(void * ptr, uint8_t val, size_t size)
 {
-    memset(ptr, val, size);
+    return memset(ptr, val, size);
+}
+
+int gt_memcmp(const void * dst, const void * src, size_t size)
+{
+    return memcmp(dst, src, size);
 }
 
 void gt_mem_check_used(void){

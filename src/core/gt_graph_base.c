@@ -75,7 +75,7 @@ void _gt_graph_dot_to_color(uint8_t * dot, gt_color_t * color,gt_size_t w, gt_si
  * @brief dot change to color(no set background)
  *
  * @param dot input dot array
- * @param color output color arry
+ * @param color output color array
  * @param w array width
  * @param h array height
  * @param fg_color foreground
@@ -957,7 +957,7 @@ static void draw_bg(const gt_area_st * area, const gt_area_st * clip, gt_attr_re
 
 /**
  * @brief draw rect func
- * 
+ *
  * @param area disp area
  * @param clip rect visible area
  * @param attr rect attr
@@ -974,10 +974,10 @@ void gt_rect(const gt_area_st * area, const gt_area_st * clip, gt_attr_rect_st *
 //	gt_disp_st * disp = gt_disp_get_default();
 //	gt_color_t * color_buf_p = disp->vbd_color;// 10 lines color buf
 
-//	
+//
 //	//
 //	if( attr->radius == 0 ){
-//		
+//
 //	}
 //}
 /* end ------------------------------------------------------------------*/

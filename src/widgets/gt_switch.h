@@ -1,7 +1,7 @@
 /**
  * @file gt_switch.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-21 14:34:33
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

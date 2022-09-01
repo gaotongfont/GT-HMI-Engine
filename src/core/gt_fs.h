@@ -1,9 +1,9 @@
 /**
  * @file gt_fs.h
  * @author yongg
- * @brief 
+ * @brief file system implementation for hal layer devices.
  * @version 0.1
- * @date 2022-06-01 14:07:18
+ * @date 2022-07-05 19:15:04
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_FS_H_
@@ -15,6 +15,9 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "stdint.h"
+#include "../hal/gt_hal_fs.h"
+#include "../hal/gt_hal_vf.h"
+#include "../hal/gt_hal_src.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -22,30 +25,7 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef enum _gt_fs_res_s
-{
-    GT_FS_RES_OK,
-    GT_FS_RES_ERR,
-    GT_FS_RES_NOT_EXIST,
-    GT_FS_RES_OUT_OF_MEM,
-    GT_FS_RES_NOT_INIT,
-}gt_fs_res_et;
 
-
-typedef struct _gt_fs_virt_s
-{
-    char * path;
-    uint32_t size;
-}gt_fs_virt_st;
-
-typedef struct _gt_fs_drv_s
-{   
-    char letter;
-    void * (*open_cb)(struct _gt_fs_drv_s * drv, char * path);
-    gt_fs_res_et (*close_cb)(struct _gt_fs_drv_s * drv, void * fp);
-    gt_fs_res_et (*read_cb)(struct _gt_fs_drv_s * drv, void * fp, void * buf, uint32_t len, uint32_t *rlen);
-    gt_fs_res_et (*write_cb)(struct _gt_fs_drv_s * drv, void * fp, void * buf, uint32_t len, uint32_t *rlen);
-}gt_fs_drv_st;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -54,7 +34,31 @@ typedef struct _gt_fs_drv_s
 
 /* global functions / API interface -------------------------------------*/
 
+/**
+ * @brief get source file type @ref gt_fs_type_et
+ *
+ * @param src
+ * @return gt_fs_type_et
+ */
+gt_fs_type_et gt_fs_get_src_type(const void * src);
 
+gt_fs_fp_st * gt_fs_get_fp(void);
+
+gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode);
+
+gt_fs_res_et gt_fs_read(uint8_t * out, uint32_t size, uint32_t * ret_len);
+
+gt_fs_res_et gt_fs_seek(uint32_t offset, gt_fs_whence_et whence);
+
+gt_fs_res_et gt_fs_tell(uint32_t * pos);
+
+gt_fs_res_et gt_fs_write(uint8_t * buffer, uint32_t len, uint32_t * ret_len);
+
+gt_fs_res_et gt_fs_read_img(uint8_t * res);
+gt_fs_res_et gt_fs_read_img_offset(uint8_t * res, uint32_t offset, uint32_t len);
+gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h);
+
+void gt_fs_close(void);
 
 #ifdef __cplusplus
 } /*extern "C"*/

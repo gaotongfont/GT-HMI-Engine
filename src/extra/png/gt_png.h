@@ -1,25 +1,26 @@
 /**
- * @file gt_vf.h
- * @author yongg
- * @brief 
+ * @file gt_png.h
+ * @author Feyoung
+ * @brief
  * @version 0.1
- * @date 2022-07-05 19:15:04
+ * @date 2022-08-10 15:48:21
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
  */
-#ifndef _GT_VF_H_
-#define _GT_VF_H_
+#ifndef _GT_PNG_H_
+#define _GT_PNG_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-#include "stdint.h"
-#include "../others/gt_types.h"
+#include "../../gt_conf.h"
+
+#if GT_USE_PNG
 
 /* define ---------------------------------------------------------------*/
-
-
+#define LODEPNG_NO_COMPILE_ENCODER
+// #define LODEPNG_NO_COMPILE_ERROR_TEXT
 
 /* typedef --------------------------------------------------------------*/
 
@@ -29,14 +30,19 @@ extern "C" {
 
 
 
-/* global functions / API interface -------------------------------------*/
-gt_res_t gt_vf_read_img(const char * path, uint8_t * res);
-gt_res_t gt_vf_read_img_offset(const char * path, uint8_t * res, uint32_t offset, uint32_t len);
-gt_res_t gt_vf_read_img_wh(const char * path, uint16_t * w, uint16_t * h);
+/* class ----------------------------------------------------------------*/
 
+
+
+/* global functions / API interface -------------------------------------*/
+
+void gt_png_init(void);
+
+
+#endif   /* GT_USE_PNG */
 
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
 
-#endif //!_GT_VF_H_
+#endif //!_GT_PNG_H_

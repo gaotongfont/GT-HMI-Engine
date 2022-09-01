@@ -1,7 +1,7 @@
 /**
  * @file gt_template.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-18 13:55:59
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -48,8 +48,8 @@ const gt_obj_class_st gt_template_class = {
 static void _gt_template_init_widget(gt_obj_st * template) {
     _gt_style_template_st * style = template->style;
     gt_size_t x, y, w, h;           //base attr
-    
-    
+
+
 }
 
 /**
@@ -96,7 +96,6 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_DRAW_END:
             GT_LOGD(GT_LOG_TAG_GUI, "end draw");
-            gt_mem_free(obj->cache.cache_color);
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
@@ -136,7 +135,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 static void _gt_template_init_style(gt_obj_st * template)
 {
     _gt_style_template_st * style = NULL;
-    
+
     template->style = gt_mem_malloc(sizeof(_gt_style_template_st));
     style = template->style;
 

@@ -60,6 +60,7 @@ typedef enum type_widget_e{
 typedef enum{
     GT_RES_FAIL = -1,
     GT_RES_OK   = 0,
+    GT_RES_INV  = 1,
 }gt_res_t;
 
 typedef struct _gt_area_s {
@@ -79,6 +80,8 @@ typedef uint8_t gt_opt_t;
 
 #define _GT_CONCAT(x, y) x ## y
 #define GT_CONCAT(x, y) _GT_CONCAT(x, y)
+
+#define GT_UNUSED(_val) ((void)_val)
 
 /* global functions / API interface -------------------------------------*/
 

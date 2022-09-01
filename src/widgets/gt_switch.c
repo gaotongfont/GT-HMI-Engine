@@ -1,7 +1,7 @@
 /**
  * @file gt_switch.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-21 14:34:25
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -70,7 +70,6 @@ static void _gt_switcher_init_widget(gt_obj_st * switcher)
     rect_attr.border_color = fg_color;
     rect_attr.radius = switcher->area.h>>1;
     rect_attr.border_width = 0;
-    
 
     draw_bg(switcher->draw_ctx, &rect_attr, &switcher->area);
 
@@ -88,7 +87,6 @@ static void _gt_switcher_init_widget(gt_obj_st * switcher)
     rect_attr.border_width = 0;
     rect_attr.bg_color = gt_color_white();
     draw_bg(switcher->draw_ctx, &rect_attr, &area_circle);
-
 }
 
 /**
@@ -134,7 +132,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGD(GT_LOG_TAG_GUI, "end draw");            
+            GT_LOGD(GT_LOG_TAG_GUI, "end draw");
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */

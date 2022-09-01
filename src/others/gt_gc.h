@@ -27,8 +27,9 @@ extern "C" {
 #define _GT_GC_ROOT_PREFIX(_f, _type, _name)   _f(_type, _name)
 
 #define _GT_GC_ITERATE_LIST(_f)    \
-    _GT_GC_ROOT_PREFIX(_f, _gt_timer_st *, _gt_timer_act)       \
+    _GT_GC_ROOT_PREFIX(_f, _gt_timer_st *, _gt_timer_act)              \
     _GT_GC_ROOT_PREFIX(_f, struct gt_list_head, _gt_timer_ll)          \
+    _GT_GC_ROOT_PREFIX(_f, struct gt_list_head, _gt_img_decoder_ll)    \
 
 
 _GT_GC_ITERATE_LIST(_GT_GC_FUNC_EXTERN)

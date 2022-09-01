@@ -12,6 +12,7 @@
 #include "stdbool.h"
 
 #include "gt_graph_base.h"
+#include "gt_obj_pos.h"
 #include "../hal/gt_hal_disp.h"
 #include "gt_mem.h"
 #include "../others/gt_math.h"
@@ -19,12 +20,12 @@
 #include "../others/gt_effects.h"
 #include "../widgets/gt_obj.h"
 #include "gt_draw.h"
-#include "../../extra/draw/gt_draw_blend.h"
+#include "../extra/draw/gt_draw_blend.h"
 #include "../others/gt_color.h"
 #include "../others/gt_area.h"
-#include "gt_vf.h"
+#include "gt_fs.h"
 
-#include "gt_symbol.h"
+#include "../font/gt_symbol.h"
 /* private define -------------------------------------------------------*/
 
 
@@ -87,23 +88,23 @@ void gt_draw_rect(gt_draw_ctx_t * ctx, gt_attr_rect_st * attr, gt_area_st * coor
 
 /*  static func --------------------------------------------------------*/
 /**
- * @brief draw rect backgrounp
- * 
- * @param draw_ctx 
- * @param dsc 
- * @param coords 
+ * @brief draw rect background
+ *
+ * @param draw_ctx
+ * @param dsc
+ * @param coords
  */
 void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
 {
     if (dsc->bg_opa <= GT_OPA_MIN) return;
 
     gt_area_st bg_coords, area_res;
-    gt_area_copy(&bg_coords, coords);
+    gt_area_copy(&bg_coords, (gt_area_st *)coords);
 
     if( !gt_area_intersect(draw_ctx->buf_area, &bg_coords, &area_res) ){
         return;
     }
-    
+
     static uint8_t radius_pre = 0;
     static gt_color_t * color_circle_p = NULL;
     static uint8_t * mask_left_up = NULL;
@@ -147,7 +148,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
             color_circle_p = gt_mem_malloc(mem_size);
             mask_left_up = gt_mem_malloc(radius * radius);
         }
-        
+
         gt_attr_circle_st circle_attr = {
             .fg_color       = gt_color_white(),
             .bg_color       = gt_color_black(),
@@ -156,16 +157,14 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
             .border_color   = gt_color_white(),
             .is_fill        = dsc->is_fill,
         };
-       
+
         gt_area_st circle_area = {
             .w = radius << 1,
             .h = radius << 1
         };
         gt_graph_circle(&circle_attr, &circle_area, color_circle_p);
-        
-        
         // get circle mask
-        uint8_t * mask = color_circle_p;
+        uint8_t * mask = (uint8_t * )color_circle_p;
         uint8_t x, y;
         int idx = 0, all = circle_area.w * circle_area.h;
         while (idx < all) {
@@ -193,11 +192,11 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
             }
         }
 
-        // 1:draw left-up arch        
+        // 1:draw left-up arch
         gt_draw_blend(draw_ctx, &blend_dsc);
 
         // 2:draw right_up arch
-        uint8_t * mask_right_up = color_circle_p;
+        uint8_t * mask_right_up = (uint8_t * )color_circle_p;
         gt_mirror_hor_u8(mask_right_up, mask_left_up, radius, radius);
 
         area_mask.x = (coords->x + coords->w) - radius;
@@ -227,7 +226,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         blend_dsc.mask_buf      = NULL;
         blend_dsc.dst_buf       = NULL;
         blend_dsc.color_fill    = dsc->border_color;
-        
+
         // 1:draw up border
         area_mask.x = coords->x + radius;
         area_mask.y = coords->y;
@@ -256,13 +255,13 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         area_mask.h = coords->h - (radius << 1);
         gt_draw_blend(draw_ctx, &blend_dsc);
     }
-    
+
     /* draw rect */
     if (dsc->is_fill) {
         blend_dsc.mask_buf = NULL;
         blend_dsc.dst_buf = NULL;
         blend_dsc.color_fill = dsc->bg_color;
-        
+
         // 1:draw up rect
         area_mask.x = coords->x + radius;
         area_mask.y = coords->y + border_width;
@@ -314,7 +313,6 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         mask_buf = gt_mem_malloc(dsc->font->size * dsc->font->size);
         mask_line = gt_mem_malloc( dsc->font->size*2 );
     }
-    uint8_t * temp = NULL;
     uint32_t idx = 0;
     gt_font_st _font = {
         .res        = data,
@@ -323,7 +321,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         .style_en   = dsc->font->style_en,
     };
 
-    
+
     gt_area_st area_font_style;
     uint16_t width_font = gt_font_get_string_width(dsc->font);
 
@@ -359,44 +357,41 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         .color_fill = dsc->font_color,
         .opa        = GT_OPA_COVER,
     };
-    
-    
     gt_memset(mask_line, 0xFF, dsc->font->size*2);
 
     blend_dsc_style = blend_dsc;
     blend_dsc_style.color_fill  = gt_color_black();
     blend_dsc_style.mask_buf    = mask_line;
 
-    
+
     gt_area_st area_res;
     int idx_bit = 0,idx_mask_buf = 0;
     uint8_t width;
     uint16_t size_mask = dsc->font->size * dsc->font->size, size_fres = size_mask / 8, idx_res = 0;
-    
+
     /* foreach text */
     while( idx < len_text ){
         gt_memset(_font.res, 0, size_fres);
 
         _font.utf8 = &text[idx];
         _font.len = utf8_to_unicode(&text[idx], &unicode);
-                
 
         if( _font.utf8[0] == '\n' ){
             idx += _font.len;
             goto _lab_next_line;
         }
-        
+
 
         width = gt_font_get_one_word_width(unicode, dsc->font->size);
 
-        if( !gt_area_intersect(draw_ctx->buf_area, &area_font, &area_res) ){            
+        if( !gt_area_intersect(draw_ctx->buf_area, &area_font, &area_res) ){
             goto _lab_nex_word;
         }
 
         if( !gt_symbol_check_by_unicode(unicode) ){
-           
+
             gt_font_get_string_dot(&_font);
-            
+
             // dot to mask_buf
             idx_mask_buf = 0;
             idx_res = 0;
@@ -413,7 +408,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
                 idx_res++;
             }
         }else{
-            temp = gt_symbol_get_mask_buf(_font.utf8);
+            const uint8_t * temp = gt_symbol_get_mask_buf(_font.utf8);
             if( temp == NULL ){
                 area_font.x += width + dsc->space_x;
                 idx += _font.len;
@@ -425,7 +420,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         gt_draw_blend(draw_ctx, &blend_dsc);
 
         /* use style */
-        if( dsc->style & GT_FONT_STYLE_UNDERLINE ){            
+        if( dsc->style & GT_FONT_STYLE_UNDERLINE ){
             area_font_style = area_font;
             area_font_style.y += dsc->font->size + 1;
             area_font_style.h = 2;
@@ -443,7 +438,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             blend_dsc_style.dst_area = &area_font_style;
             gt_draw_blend(draw_ctx, &blend_dsc_style);
         }
-        
+
         _lab_nex_word:
         area_font.x += width + dsc->space_x;
         idx += _font.len;
@@ -493,20 +488,21 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
         .mask_area = &mask_area,
         .opa = GT_OPA_COVER
     };
-    uint16_t w,h, y = 0;
-    
+    uint16_t w, h, y = 0;
+
     /* img src type */
     // gt_img_get_type(dsc->bg_img_src);
     switch(GT_IMG_TYPE_RGB565_PNG){
         case GT_IMG_TYPE_RGB565_PNG:
-            if( gt_vf_read_img_wh(dsc->bg_img_src, &w, &h) == GT_RES_FAIL){
+            if( gt_fs_read_img_wh(dsc->bg_img_src, &w, &h) == GT_RES_FAIL){
                 break;
             }
             gt_area_st area_res;
             gt_color_t * color_img_line_p = gt_mem_malloc( w * sizeof(gt_color_t) );
             uint8_t * mask_buf = gt_mem_malloc( w );
             uint16_t idx = 0;
-            
+            gt_fs_fp_st * fp = gt_fs_open(dsc->bg_img_src, GT_FS_MODE_RD);
+
             /* line by line to blend */
             while(y < h){
                 if( !gt_area_intersect(draw_ctx->buf_area, &dst_area, &area_res) ){
@@ -517,7 +513,7 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
                 dst_area.y++;
                 mask_area.y++;
                 /* read img one line */
-                gt_vf_read_img_offset(dsc->bg_img_src, color_img_line_p, y * w * sizeof(gt_color_t), w * sizeof(gt_color_t));
+                gt_fs_read_img_offset((uint8_t * )color_img_line_p, y * w * sizeof(gt_color_t), w * sizeof(gt_color_t));
 
                 /* change color to mask buf */
                 idx = 0;
@@ -528,7 +524,7 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
                         mask_buf[idx] = 0x00;
                     }
                     idx++;
-                } 
+                }
                 blend_dsc.mask_buf = NULL;//mask_buf;
                 blend_dsc.dst_buf = color_img_line_p;
 
@@ -536,15 +532,16 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
                 gt_draw_blend(draw_ctx, &blend_dsc);
                 y++;
             }
-            
+
             gt_mem_free(color_img_line_p);
             gt_mem_free(mask_buf);
+            gt_fs_close();
             break;
         default:
             break;
     }
-    
-    
+
+
 }
 
 /* end ------------------------------------------------------------------*/

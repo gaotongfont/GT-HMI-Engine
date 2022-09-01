@@ -62,7 +62,7 @@ extern "C" {
 #define GT_LOG_TAG_QUEUE        "QUEUE"
 #define GT_LOG_TAG_FAULT        "FAULT"
 #define GT_LOG_TAG_BOOT         "BOOT"
-#define GT_LOG_TAG_LV           "LVGL"
+#define GT_LOG_TAG_EXTRA        "EXTRA"
 #define GT_LOG_TAG_GUI          "GUI"
 #define GT_LOG_TAG_ASSERT       "ASSERT"
 

@@ -1,7 +1,7 @@
 /**
  * @file gt_draw_blend.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-08-10 19:43:10
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -47,9 +47,9 @@
 /* global functions / API interface -------------------------------------*/
 /**
  * @brief blend fore_color buf to back_color draw ctx
- * 
+ *
  * @param draw_ctx draw contentex
- * @param dsc 
+ * @param dsc
  */
 void gt_draw_blend(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc)
 {
@@ -71,7 +71,7 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
     if( dsc->mask_buf == NULL ){
         mask = false;
     }
-		
+
 	gt_area_st area_res;
     if( !gt_area_intersect(draw_ctx->buf_area, dsc->dst_area, &area_res) ){
         return;
@@ -82,7 +82,7 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
     gt_area_st area_draw, area_dsc;
     gt_area_copy(&area_draw, draw_ctx->buf_area);
     gt_area_copy(&area_dsc, dsc->dst_area);
-    
+
     gt_area_st area_dst = {
         .x = area_dsc.x - area_draw.x,
         .y = 0,
@@ -121,7 +121,7 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
                 for(x = 0; x < area_src.w; x++){
                     gt_color_mix_with_alpha(
                         color_dst_p[idx_dst],   GT_OPA_COVER,
-                        color_src_p[idx_src],   dsc->opa, 
+                        color_src_p[idx_src],   dsc->opa,
                         &color_dst_p[idx_dst],  &opa_res);
                     idx_dst++;
                     idx_src++;
@@ -136,7 +136,7 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
                 for(x = 0; x < area_src.w; x++){
                     gt_color_mix_with_alpha(
                         color_dst_p[idx_dst],   GT_OPA_COVER,
-                        dsc->color_fill,        dsc->opa, 
+                        dsc->color_fill,        dsc->opa,
                         &color_dst_p[idx_dst],  &opa_res);
                     idx_dst++;
                     idx_src++;
@@ -163,7 +163,7 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
                 idx_src += step_src_line;
             }
         }
-        // fill dsc->color_fill 
+        // fill dsc->color_fill
         else{
             for(y = 0; y < area_src.h; y++){
                 for(x = 0; x < area_src.w; x++){

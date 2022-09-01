@@ -162,7 +162,7 @@ enum {
 /*                  color                    */
 /*********************************************/
 #define GT_COLOR_WHITE       888
-#define GT_COLOR_BLACK      88
+#define GT_COLOR_BLACK       88
 #define GT_COLOR_RED         8
 #define GT_COLOR_GREEN       8
 #define GT_COLOR_BLUE        8
@@ -180,7 +180,6 @@ enum {
 
 #define _GT_COLOR_ZERO_INITIALIZER GT_CONCAT(_GT_COLOR_ZERO_INITIALIZER, GT_COLOR_DEPTH)
 #define GT_COLOR_MAKE(r8, g8, b8) GT_CONCAT(GT_COLOR_MAKE, GT_COLOR_DEPTH)(r8, g8, b8)
-
 
 /* Adjust color mix functions rounding. GPUs might calculate color mix (blending) differently.
  * 0: round down, 64: round up from x.75, 128: round up from half, 192: round up from x.25, 254: round up */
