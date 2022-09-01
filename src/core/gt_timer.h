@@ -71,6 +71,14 @@ void _gt_timer_init(void);
 _gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * user_data);
 
 /**
+ * @brief Del timer node
+ * 
+ * @param timer timer ptr
+ */
+void _gt_timer_del(_gt_timer_st * timer);
+
+
+/**
  * @brief Timer scheduler to handle timer list task
  */
 void _gt_timer_handler(void);

@@ -131,7 +131,7 @@ static uint8_t _gt_font_latin_get_width(uint32_t unicode, uint8_t font_size)
         0x1EA0UL, 0x1EFFUL,
     };
     uint32_t idx = __get_idx(code, 6, unicode);
-    uint8_t width = 0;
+    uint8_t width = font_size;
     switch( font_size ){
         case 16:
             width = latin_16x16_width[idx];
@@ -170,7 +170,7 @@ uint8_t utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 // extern unsigned long GT_GetKorean(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
 // extern unsigned long GT_GetCyrillic(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
 
-typedef unsigned long(* read_func_t)(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
+typedef unsigned long(* read_func_t)(unsigned long , unsigned int , unsigned char* );
 
 read_func_t read_func_arr[] = {
 #if _GT_ENABLE_GTZK == 1
@@ -192,7 +192,7 @@ read_func_t read_func_arr[] = {
 void gt_font_get_string_dot(gt_font_st * font)
 {
     uint32_t idx = 0, unicode, len, idx_func = 0, idx_read = 0, temp = 0;
-    uint8_t data[64];
+    uint8_t data[256];
     unsigned long (* read)(unsigned long, unsigned int, unsigned char*);
     uint16_t count_func = sizeof(read_func_arr) / sizeof(read_func_t);
 

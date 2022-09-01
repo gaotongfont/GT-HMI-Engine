@@ -65,7 +65,7 @@ static void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     // set default size
     if( checkbox->area.w == 0 || checkbox->area.h == 0){
         checkbox->area.w = gt_font_get_string_width(&font)+32;
-        checkbox->area.h = GT_FONT_SIZE_16x16+4;
+        checkbox->area.h = style->font_size+4;
     }
     sel_width = font.size - 3;
 

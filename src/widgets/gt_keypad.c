@@ -367,6 +367,7 @@ static void _gt_keypad_init_widget(gt_obj_st * keypad)
         .size = GT_CFG_DEFAULT_FONT_SIZE,
     };
 
+
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.is_fill = 1;

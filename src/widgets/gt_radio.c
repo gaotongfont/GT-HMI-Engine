@@ -68,7 +68,7 @@ static void _gt_radio_init_widget(gt_obj_st * radio) {
     // set default size
     if( radio->area.w == 0 || radio->area.h == 0){
         radio->area.w = gt_font_get_string_width(&font)+24;
-        radio->area.h = GT_FONT_SIZE_16x16+4;
+        radio->area.h = style->font_size+4;
     }
     sel_width = font.size;
 

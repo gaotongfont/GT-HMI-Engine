@@ -138,11 +138,11 @@ void gt_indev_handler_point(gt_indev_st * indev)
     
     /* scroll screen */
     if( gt_disp_get_scr() == indev->proc.data.point.obj_scroll ){
-        if( ver > indev->drv->limit_pixel_scroll || ver < -indev->drv->limit_pixel_scroll ){
-            gt_disp_scroll_area_act(GT_DIR_VER, ver/-2);
-        }else if( hor > indev->drv->limit_pixel_scroll || hor < -indev->drv->limit_pixel_scroll ) {
-            gt_disp_scroll_area_act(GT_DIR_HOR, hor/-2);
-        }
+        // if( ver > indev->drv->limit_pixel_scroll || ver < -indev->drv->limit_pixel_scroll ){
+            // gt_disp_scroll_area_act(GT_DIR_VER, ver/-2);
+        // }else if( hor > indev->drv->limit_pixel_scroll || hor < -indev->drv->limit_pixel_scroll ) {
+        //     gt_disp_scroll_area_act(GT_DIR_HOR, hor/-2);
+        // }
         indev->proc.data.point.point_last.x = data_indev.point.x;
         indev->proc.data.point.point_last.y = data_indev.point.y;
         return;

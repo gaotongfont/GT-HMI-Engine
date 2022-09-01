@@ -88,8 +88,8 @@ static void _gt_listview_init_widget(gt_obj_st * listview) {
     
     // set default size
     if( listview->area.w == 0 || listview->area.h == 0 ){
-        listview->area.w = 72;
-        listview->area.h = 30 * style->idx_show_cnt;
+        listview->area.w = style->font_size * 8;
+        listview->area.h = style->font_size+16 * style->idx_show_cnt;
     }
 
     // can not set area.h less than items numb * font size

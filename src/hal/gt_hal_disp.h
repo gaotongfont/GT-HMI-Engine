@@ -40,6 +40,7 @@ typedef struct _gt_disp_drv_s
     void (* flush_cb)(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
 
     uint16_t rotated: 2;
+    uint16_t busy:1;
 }gt_disp_drv_st;
 
 typedef struct _gt_disp_s

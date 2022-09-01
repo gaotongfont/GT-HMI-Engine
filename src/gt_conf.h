@@ -50,13 +50,6 @@ extern "C" {
 #define GT_VF_FLASH_SIZE    0x800000    //flash size 8*1024*1024   8M
 #define GT_VF_FLASH_START   0x000000    //start addr default 0x0000000
 
-/* user: enable widgets */
-#define GT_ENABLE_WIDGET_BTN            1
-#define GT_ENABLE_WIDGET_TEXTAREA       1
-#define GT_ENABLE_WIDGET_LABEL          1
-#define GT_ENABLE_WIDGET_INPUT          1
-#define GT_ENABLE_WIDGET_IMG            1
-
 /**
  * @brief memory mode. 1: array as memory pool; 0:  c library api.
  */
@@ -65,7 +58,7 @@ extern "C" {
 #if GT_MEM_CUSTOM
     #define GT_MEM_CUSTOM_INCLUDE   "../others/gt_tlsf.h"
 
-    #define GT_MEM_SIZE             (16 * 1024U)    //Byte
+    #define GT_MEM_SIZE             (24 * 1024U)    //Byte
 
     #define gt_tlsf_assert(_expr)   ( (void)0 )
 #else
@@ -101,7 +94,7 @@ extern "C" {
 
 /* default font style and size */
 #define GT_CFG_DEFAULT_FONT_STYLE_CN    1
-#define GT_CFG_DEFAULT_FONT_STYLE_EN    2
+#define GT_CFG_DEFAULT_FONT_STYLE_EN    4
 #define GT_CFG_DEFAULT_FONT_SIZE        16
 
 /* default event mask bit num */

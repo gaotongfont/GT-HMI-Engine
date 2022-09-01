@@ -22,7 +22,10 @@
 
 /* private typedef ------------------------------------------------------*/
 
-
+typedef enum{
+    GT_NOT_BUSY,
+    GT_BUSY,
+}gt_busy_et;
 
 
 
@@ -35,7 +38,27 @@
 
 
 /* static functions -----------------------------------------------------*/
+static bool _gt_disp_get_state(gt_disp_st * disp)
+{   
+    if( disp == NULL ){
+        return GT_BUSY;
+    }
+    if( disp->drv == NULL ){
+        return GT_BUSY;
+    }
+    return disp->drv->busy;
+}
 
+static void _gt_disp_set_state(gt_disp_st * disp, uint8_t state)
+{   
+    if( disp == NULL ){
+        return;
+    }
+    if( disp->drv == NULL ){
+        return;
+    }
+    disp->drv->busy = state;
+}
 
 
 /* global functions / API interface -------------------------------------*/
@@ -82,9 +105,9 @@ void gt_check_obj_visible_and_copy(gt_obj_st * obj)
 
     GT_LOGV(GT_LOG_TAG_GUI, "obj visible");
 
-    GT_LOGV(GT_LOG_TAG_GUI, "obj->x:%d,y:%d,w:%d,h:%d====disp->x:%d,y:%d,w:%d,h:%d",
-        obj->area.x, obj->area.y, obj->area.w, obj->area.h,
-        disp->area_disp.x, disp->area_disp.y, disp->area_disp.w, disp->area_disp.h);
+    // GT_LOGV(GT_LOG_TAG_GUI, "obj->x:%d,y:%d,w:%d,h:%d====disp->x:%d,y:%d,w:%d,h:%d",
+    //     obj->area.x, obj->area.y, obj->area.w, obj->area.h,
+    //     disp->area_disp.x, disp->area_disp.y, disp->area_disp.w, disp->area_disp.h);
 
     gt_draw_ctx_t draw_ctx = {
         .buf        = disp->vbd_color,
@@ -121,6 +144,11 @@ void gt_disp_load_scr(gt_obj_st * scr)
     if( !disp ){
         return;
     }
+    if( _gt_disp_get_state(disp) == GT_BUSY ){
+        GT_LOGD(GT_LOG_TAG_GUI, "disp is busy");
+        return;
+    }
+    _gt_disp_set_state(disp, GT_BUSY);
     // _gt_disp_send_draw_event_foreach(scr);
 
     uint16_t y = 0;
@@ -155,7 +183,7 @@ void gt_disp_load_scr(gt_obj_st * scr)
         disp->drv->flush_cb(disp->drv, &disp->area_disp, disp->vbd_color);
         y += GT_REFRESH_FLUSH_LINE_PRE_TIME;
     }
-
+    _gt_disp_set_state(disp, GT_NOT_BUSY);
     // here must clr all obj pre event_mask---->if not clr event_mask,obj will be next time handler the event
     // extern void gt_event_clr_mask(gt_obj_st * parent);
     // gt_event_clr_mask(scr);
@@ -166,6 +194,13 @@ void gt_disp_ref_area(const gt_area_st * coords)
     gt_disp_st * disp = gt_disp_get_default();
 	gt_obj_st * scr = gt_disp_get_scr();
     gt_area_st area;
+
+    if( _gt_disp_get_state(disp) == GT_BUSY ){
+        GT_LOGD(GT_LOG_TAG_GUI, "disp is busy");
+        return;
+    }
+    _gt_disp_set_state(disp, GT_BUSY);
+
     gt_area_copy(&area, coords);
     if(disp == NULL){
         return;
@@ -221,6 +256,8 @@ void gt_disp_ref_area(const gt_area_st * coords)
             area.h = area.h - y;
         }
     }
+
+    _gt_disp_set_state(disp, GT_NOT_BUSY);
 }
 
 

@@ -66,7 +66,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     // set default size
     if( btn->area.w == 0 || btn->area.h == 0){
         btn->area.w = width_font + 32;
-        btn->area.h = GT_FONT_SIZE_16x16+16;
+        btn->area.h = style->font_size+16;
     }
 
     x = btn->area.x;
@@ -210,7 +210,7 @@ static void _gt_btn_init_style(gt_obj_st * btn)
 	style->selected = 0;
     style->color_font = gt_color_white();        //default color_font
     style->color_selected = gt_color_hex(0x1C82D0);    //default color_selected
-    style->color_unselected = gt_color_make(0x17A7BF);  //default color_unselected
+    style->color_unselected = gt_color_hex(0x17A7BF);  //default color_unselected
     
     style->font_style_cn    = GT_CFG_DEFAULT_FONT_STYLE_CN;
     style->font_style_en    = GT_CFG_DEFAULT_FONT_STYLE_EN;

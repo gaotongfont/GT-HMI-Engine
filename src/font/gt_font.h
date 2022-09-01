@@ -24,6 +24,19 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+
+typedef unsigned long(* get_dot_bitmap_t)(unsigned long , unsigned int , unsigned char* );
+typedef unsigned int (* get_vec_bitmap_t)(unsigned char *,unsigned char ,unsigned long ,unsigned char ,unsigned char , unsigned char );
+typedef struct _gt_font_style_s{
+    get_dot_bitmap_t get_dot_bitmap;
+    get_vec_bitmap_t get_vec_bitmap;
+
+    uint32_t width:8;
+    uint32_t height:8;
+    uint32_t is_vec:1;
+    uint32_t is_nor:1;
+}gt_font_style_st;
+
 typedef enum{
     GT_FONT_SIZE_8x8    = 8,
     GT_FONT_SIZE_16x16  = 16,

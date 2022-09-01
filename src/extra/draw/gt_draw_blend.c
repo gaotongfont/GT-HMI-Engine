@@ -76,7 +76,9 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
     if( !gt_area_intersect(draw_ctx->buf_area, dsc->dst_area, &area_res) ){
         return;
     }
-		
+    if( area_res.w == 0 || area_res.h == 0 ){
+        return;
+    }
     gt_area_st area_draw, area_dsc;
     gt_area_copy(&area_draw, draw_ctx->buf_area);
     gt_area_copy(&area_dsc, dsc->dst_area);
@@ -93,7 +95,7 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
         .h = area_res.h
     };
 
-    GT_LOGV(GT_LOG_TAG_GUI ,"x:%d,y:%d,w:%d,h:%d\n", area_res.x, area_res.y, area_res.w, area_res.h);
+    // GT_LOGD(GT_LOG_TAG_GUI ,"x:%d,y:%d,w:%d,h:%d\n", area_res.x, area_res.y, area_res.w, area_res.h);
 
     if( area_dsc.y > area_draw.y ){
         area_dst.y = area_dsc.y - area_draw.y;
@@ -102,8 +104,6 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
         area_dst.x = 0;
     }
 
-    // printf("dsc:x:%d,y:%d,w:%d,h:%d\n", area_dsc.x, area_dsc.y, area_dsc.w, area_dsc.h);
-    // printf("src:x:%d,y:%d,w:%d,h:%d\n", area_src.x, area_src.y, area_src.w, area_src.h);
     // from area_src cpy to area_dst
     int idx_dst = area_dst.y * area_dst.w + area_dst.x;
     int idx_src = area_src.y * area_src.w + area_src.x;

@@ -54,7 +54,7 @@ static void _gt_label_init_widget(gt_obj_st * label) {
         gt_font_st font = {
             .utf8 = (uint8_t *)style->text,
             .len = strlen(style->text),
-            .size = 16
+            .size = style->font_size
         };
         label->area.w =  gt_font_get_string_width(&font) + 20;
     }

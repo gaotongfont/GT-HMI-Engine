@@ -97,8 +97,16 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
 {
     if (dsc->bg_opa <= GT_OPA_MIN) return;
 
-    gt_area_st bg_coords;
+    gt_area_st bg_coords, area_res;
     gt_area_copy(&bg_coords, coords);
+
+    if( !gt_area_intersect(draw_ctx->buf_area, &bg_coords, &area_res) ){
+        return;
+    }
+    
+    static uint8_t radius_pre = 0;
+    static gt_color_t * color_circle_p = NULL;
+    static uint8_t * mask_left_up = NULL;
 
     // calc radius
     uint8_t radius = GT_MIN(bg_coords.w >> 1, bg_coords.h >> 1);
@@ -129,7 +137,17 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
     /* draw circle */
     if (radius > GT_RADIUS_MIN) {
         uint32_t mem_size = (radius << 1) * (radius << 1) * sizeof(gt_color_t);
-        gt_color_t * color_circle_p = gt_mem_malloc(mem_size);
+        if( radius != radius_pre ){
+            radius_pre = radius;
+            /*free*/
+            gt_mem_free(color_circle_p);
+            gt_mem_free(mask_left_up);
+
+            /*malloc*/
+            color_circle_p = gt_mem_malloc(mem_size);
+            mask_left_up = gt_mem_malloc(radius * radius);
+        }
+        
         gt_attr_circle_st circle_attr = {
             .fg_color       = gt_color_white(),
             .bg_color       = gt_color_black(),
@@ -145,6 +163,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         };
         gt_graph_circle(&circle_attr, &circle_area, color_circle_p);
         
+        
         // get circle mask
         uint8_t * mask = color_circle_p;
         uint8_t x, y;
@@ -155,7 +174,6 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         }
 
         // get circle left mask
-        uint8_t * mask_left_up = gt_mem_malloc(radius * radius);
         blend_dsc.mask_buf = mask_left_up;
         idx = 0;
         uint32_t idx_circle = 0;
@@ -202,8 +220,6 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         blend_dsc.mask_buf = mask_left_down;
         gt_draw_blend(draw_ctx, &blend_dsc);
 
-        gt_mem_free(mask_left_up);
-        gt_mem_free(color_circle_p);
     }
 
     /* draw border */
@@ -274,7 +290,8 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
 
 gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, const gt_area_st * coords)
 {
-    
+    static uint8_t * mask_buf = NULL, * data = NULL, font_size_pre = 0, * mask_line = NULL;
+
     gt_area_st area_font = {
         .x = coords->x, .y = coords->y, .w = dsc->font->size, .h = dsc->font->size,
     };
@@ -285,8 +302,18 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     int w = coords->w, h = coords->h, x = coords->x, y = coords->y;
     uint8_t * text = dsc->font->utf8;
     uint32_t len_text = dsc->font->len, unicode = 0;
-    uint8_t * data = gt_mem_malloc(dsc->font->size * dsc->font->size / 8);
-    uint8_t * mask_buf = gt_mem_malloc(dsc->font->size * dsc->font->size);
+    if( font_size_pre != dsc->font->size ){
+        font_size_pre = dsc->font->size;
+        /*free*/
+        gt_mem_free(data);
+        gt_mem_free(mask_buf);
+        gt_mem_free(mask_line);
+
+        /*malloc*/
+        data = gt_mem_malloc(dsc->font->size * dsc->font->size / 8);
+        mask_buf = gt_mem_malloc(dsc->font->size * dsc->font->size);
+        mask_line = gt_mem_malloc( dsc->font->size*2 );
+    }
     uint8_t * temp = NULL;
     uint32_t idx = 0;
     gt_font_st _font = {
@@ -333,7 +360,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         .opa        = GT_OPA_COVER,
     };
     
-    uint8_t * mask_line = gt_mem_malloc( dsc->font->size*2 );
+    
     gt_memset(mask_line, 0xFF, dsc->font->size*2);
 
     blend_dsc_style = blend_dsc;
@@ -341,24 +368,31 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     blend_dsc_style.mask_buf    = mask_line;
 
     
-
+    gt_area_st area_res;
     int idx_bit = 0,idx_mask_buf = 0;
     uint8_t width;
-    uint16_t size_fres = dsc->font->size * dsc->font->size / 8, idx_res = 0;
+    uint16_t size_mask = dsc->font->size * dsc->font->size, size_fres = size_mask / 8, idx_res = 0;
+    
     /* foreach text */
     while( idx < len_text ){
         gt_memset(_font.res, 0, size_fres);
 
         _font.utf8 = &text[idx];
-        
+        _font.len = utf8_to_unicode(&text[idx], &unicode);
+                
+
         if( _font.utf8[0] == '\n' ){
             idx += _font.len;
             goto _lab_next_line;
         }
-
-        _font.len = utf8_to_unicode(&text[idx], &unicode);
-        width = gt_font_get_one_word_width(unicode, dsc->font->size);
         
+
+        width = gt_font_get_one_word_width(unicode, dsc->font->size);
+
+        if( !gt_area_intersect(draw_ctx->buf_area, &area_font, &area_res) ){            
+            goto _lab_nex_word;
+        }
+
         if( !gt_symbol_check_by_unicode(unicode) ){
            
             gt_font_get_string_dot(&_font);
@@ -388,8 +422,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             gt_memcpy(mask_buf, temp, 256);
         }
 
-        gt_draw_blend_basic(draw_ctx, &blend_dsc);
-
+        gt_draw_blend(draw_ctx, &blend_dsc);
 
         /* use style */
         if( dsc->style & GT_FONT_STYLE_UNDERLINE ){            
@@ -399,7 +432,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             area_font_style.w = width;
             blend_dsc_style.color_fill = gt_color_black();
             blend_dsc_style.dst_area = &area_font_style;
-            gt_draw_blend_basic(draw_ctx, &blend_dsc_style);
+            gt_draw_blend(draw_ctx, &blend_dsc_style);
         }
         if( dsc->style & GT_FONT_STYLE_STRIKETHROUGH ){
             blend_dsc_style.color_fill = gt_color_red();
@@ -408,15 +441,15 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             area_font_style.h = 2;
             area_font_style.w = width;
             blend_dsc_style.dst_area = &area_font_style;
-            gt_draw_blend_basic(draw_ctx, &blend_dsc_style);
+            gt_draw_blend(draw_ctx, &blend_dsc_style);
         }
         
+        _lab_nex_word:
         area_font.x += width + dsc->space_x;
         idx += _font.len;
 
         /* check whether the boundary is reached */
         if( (area_font.x + area_font.w + dsc->space_x) > (coords->x + coords->w) ){
-        
         _lab_next_line:
             area_font.x = coords->x;
             area_font.y += area_font.h + dsc->space_y;
@@ -427,9 +460,9 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
 
     }
 
-    gt_mem_free(data);
-    gt_mem_free(mask_buf);
-    gt_mem_free(mask_line);
+    // gt_mem_free(data);
+    // gt_mem_free(mask_buf);
+    // gt_mem_free(mask_line);
 
     return area_font;
 }

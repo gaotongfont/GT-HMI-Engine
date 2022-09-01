@@ -128,6 +128,12 @@ _gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * 
     return timer;
 }
 
+void _gt_timer_del(_gt_timer_st * timer)
+{
+    if( timer )
+        _gt_timer_remove_task(timer);
+}
+
 void _gt_timer_handler(void)
 {
     if (!_gt_timer_task_is_ready()) {

@@ -46,14 +46,38 @@ const gt_obj_class_st gt_input_class = {
 
 
 /* static functions -----------------------------------------------------*/
+static void _gt_input_cursor_anim(gt_obj_st * input)
+{
+    static bool flag = 0;
+    _gt_style_input_st * style = input->style;
+    gt_area_st area = {
+        .x = style->point_pos.x,
+        .y = style->point_pos.y,
+        .w = 2,
+        .h = style->font_size
+    };
+
+    gt_attr_rect_st rect_attr;
+    gt_graph_init_rect_attr(&rect_attr);
+    rect_attr.is_fill = 1;
+    rect_attr.bg_color = gt_color_hex(0x666666);
+    // if( flag ){
+    //     flag = 0;
+    //     rect_attr.bg_opa = GT_OPA_COVER;
+    // }else{
+    //     flag = 1;
+    //     rect_attr.bg_opa = GT_OPA_TRANSP;
+    // }
+    draw_bg(input->draw_ctx, &rect_attr, &area);
+}
 
 static void _gt_input_init_widget(gt_obj_st * input) {
     _gt_style_input_st * style = input->style;
     gt_size_t x, y, w, h;           //base attr
 
     if( 0 == input->area.w || 0 == input->area.h ){
-        input->area.w = 128;
-        input->area.h = 24;
+        input->area.w = style->font_size * 8;
+        input->area.h = style->font_size;
     }
 
     w = input->area.w;
@@ -103,12 +127,16 @@ static void _gt_input_init_widget(gt_obj_st * input) {
     gt_area_st area_res = draw_text(input->draw_ctx, &font_attr, &area_font);
 
     /*draw cursor*/
-    gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.is_fill = 1;
-    rect_attr.bg_color = gt_color_hex(0x666666);
-    area_res.w = 2;
-    area_res.h = style->font_size;
-    draw_bg(input->draw_ctx, &rect_attr, &area_res);
+    style->point_pos.x = area_res.x;
+    style->point_pos.y = area_res.y;
+    // gt_graph_init_rect_attr(&rect_attr);
+    // rect_attr.is_fill = 1;
+    // rect_attr.bg_color = gt_color_hex(0x666666);
+    // area_res.w = 2;
+    // area_res.h = style->font_size;
+    // draw_bg(input->draw_ctx, &rect_attr, &area_res);
+    if( style->value )
+        _gt_input_cursor_anim(input);
 
     /*draw text after cursor*/
     if( style->value && style->pos_cursor != strlen(style->value) ){
