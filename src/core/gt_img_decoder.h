@@ -106,7 +106,7 @@ void gt_img_decoder_register(_gt_img_decoder_st * decoder);
 gt_res_t gt_img_decoder_get_info(const char * name, _gt_img_info_st * header);
 gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name, gt_size_t frame_id);
 gt_res_t gt_img_decoder_read_line(_gt_img_dsc_st * dsc, gt_size_t x, gt_size_t y, gt_size_t len, uint8_t * buf);
-gt_res_t gt_img_decoder_close(_gt_img_dsc_st * dsc);
+gt_res_t gt_img_decoder_close(struct _gt_img_decoder_s * decoder, _gt_img_dsc_st * dsc);
 
 void gt_img_decoder_set_info_cb(_gt_img_decoder_st * decoder, gt_img_decoder_get_info_t info_cb);
 void gt_img_decoder_set_open_cb(_gt_img_decoder_st * decoder, gt_img_decoder_open_t open_cb);

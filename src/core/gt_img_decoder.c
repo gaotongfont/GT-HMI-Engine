@@ -151,7 +151,19 @@ void gt_img_decoder_register(_gt_img_decoder_st * decoder)
 
 gt_res_t gt_img_decoder_get_info(const char * name, _gt_img_info_st * header)
 {
+    _gt_img_decoder_st * ptr = NULL;
 
+    gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), list) {
+        if (NULL == ptr->info_cb) {
+            continue;
+        }
+
+        if (ptr->info_cb(ptr, name, header)) {
+            continue;
+        }
+
+        break;
+    }
 
     return GT_RES_OK;
 }
@@ -165,10 +177,22 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name, gt_s
             continue;
         }
 
+        if (ptr->info_cb(ptr, name, &dsc->header)) {
+            continue;
+        }
+
         if (ptr->open_cb(ptr, dsc)) {
             continue;
         }
 
+        gt_memset_0(&dsc->header, sizeof(_gt_img_info_st));
+
+        dsc->decoder = ptr;
+        dsc->frame_id = frame_id;
+        dsc->src = (void * )name;
+        dsc->msg = NULL;
+
+        break;
     }
 
     return GT_RES_OK;
@@ -176,12 +200,23 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name, gt_s
 
 gt_res_t gt_img_decoder_read_line(_gt_img_dsc_st * dsc, gt_size_t x, gt_size_t y, gt_size_t len, uint8_t * buf)
 {
+    if (NULL == dsc->decoder->read_line_cb) {
+        return GT_RES_INV;
+    }
+
+    if (dsc->decoder->read_line_cb(dsc->decoder, dsc, x, y, len, buf)) {
+        return GT_RES_INV;
+    }
+
     return GT_RES_OK;
 }
 
-gt_res_t gt_img_decoder_close(_gt_img_dsc_st * dsc)
+gt_res_t gt_img_decoder_close(struct _gt_img_decoder_s * decoder, _gt_img_dsc_st * dsc)
 {
-    return GT_RES_OK;
+    if (NULL == dsc->decoder->close_cb) {
+        return GT_RES_OK;
+    }
+    return dsc->decoder->close_cb(decoder, dsc);
 }
 
 void gt_img_decoder_set_info_cb(_gt_img_decoder_st * decoder, gt_img_decoder_get_info_t info_cb)
