@@ -73,8 +73,8 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
             is_find = true;
             break;
         }
-        ++idx;
         addr += dev->sys[idx].size;
+        ++idx;
     }
 
     if (!is_find) {

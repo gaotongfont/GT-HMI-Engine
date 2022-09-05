@@ -183,6 +183,10 @@ gt_fs_fp_st * gt_fs_get_fp(void)
 gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode)
 {
     gt_fs_drv_st * drv = gt_fs_get_default_drv(path);
+
+    if (!drv) {
+        return NULL;
+    }
     gt_fs_fp_st * fp = drv->open_cb(drv, (char *)path, mode);
 
     _gt_fs_file_occupied_increase();

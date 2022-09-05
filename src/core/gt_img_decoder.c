@@ -181,6 +181,7 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name, gt_s
             continue;
         }
 
+        dsc->src = (void * )name;
         if (ptr->open_cb(ptr, dsc)) {
             continue;
         }
@@ -189,7 +190,6 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name, gt_s
 
         dsc->decoder = ptr;
         dsc->frame_id = frame_id;
-        dsc->src = (void * )name;
         dsc->msg = NULL;
 
         break;
