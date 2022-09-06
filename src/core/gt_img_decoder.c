@@ -149,6 +149,11 @@ void gt_img_decoder_register(_gt_img_decoder_st * decoder)
     gt_list_add(&decoder->list, &_GT_GC_GET_ROOT(_gt_img_decoder_ll));
 }
 
+gt_img_decoder_type_em gt_img_decoder_get_type(_gt_img_info_st * header)
+{
+    return header->type;
+}
+
 gt_res_t gt_img_decoder_get_info(const char * name, _gt_img_info_st * header)
 {
     _gt_img_decoder_st * ptr = NULL;

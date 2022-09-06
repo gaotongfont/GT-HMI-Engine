@@ -30,7 +30,7 @@ typedef struct gt_src_s {
     char * name;
     gt_size_t w;
     gt_size_t h;
-    uint8_t color_depth;    //! unused
+    uint8_t * img;
     uint32_t size;
 }gt_src_st;
 
@@ -49,11 +49,9 @@ typedef struct gt_src_s {
  * @brief The resource is initialized to the working mode of an array
  *
  * @param src_sys Resource File System Management
- * @param data An Array that stores file data which consists of multiple
- *             files.
- * @param data_len The length of the data bytes.
+ * @param sys_count The length of the sys array.
  */
-void gt_src_init(const gt_src_st * const src_sys, const uint8_t * const data, uint32_t data_len);
+void gt_src_init(const gt_src_st * const src_sys, uint32_t sys_count);
 
 /**
  * @brief Get the driver from the resource mode.

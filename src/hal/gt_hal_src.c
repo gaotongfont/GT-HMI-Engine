@@ -24,8 +24,7 @@
 typedef struct {
     gt_fs_drv_st drv;
     const gt_src_st * sys;    // source icon file list
-    const uint8_t * data;     // source data buffer
-    uint32_t data_len;
+    gt_size_t sys_count;
 }_gt_src_dev_st;
 
 
@@ -59,7 +58,6 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
 {
     uint16_t idx = 0;
     bool is_find = false;
-    uint32_t addr = 0;
     _gt_src_dev_st * dev = _get_dev();
 
     GT_UNUSED(drv);
@@ -73,8 +71,10 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
             is_find = true;
             break;
         }
-        addr += dev->sys[idx].size;
-        ++idx;
+
+        if (++idx > dev->sys_count) {
+            break;
+        }
     }
 
     if (!is_find) {
@@ -82,16 +82,13 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
         return NULL;
     }
 
-    if (addr > dev->data_len) {
-        return NULL;
-    }
-
     gt_fs_fp_st * fp = _gt_hal_fp_init();
-    fp->start = addr;
-    fp->end = fp->start + dev->sys[idx].size;
+    fp->start = 0;
+    fp->end = dev->sys[idx].size;
     fp->type = GT_FS_TYPE_ARRAY;
     fp->mode = mode;
     fp->pos = fp->start;
+    fp->buffer = (void * )dev->sys[idx].img;
 
     return (void * )fp;
 }
@@ -106,8 +103,9 @@ static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * dat
     gt_fs_res_et ret = GT_RES_OK;
     _gt_src_dev_st * dev = _get_dev();
     gt_fs_fp_st * file_p = (gt_fs_fp_st * )fp;
+    const uint8_t *buffer = (const uint8_t * )file_p->buffer;
 
-    gt_memcpy(data, &dev->data[file_p->pos], len);
+    gt_memcpy(data, &buffer[file_p->pos], len);
     drv->seek_cb(drv, file_p, len, GT_FS_SEEK_CUR);
     *ret_len = len;
 
@@ -170,17 +168,16 @@ static void _gt_src_drv_register(gt_fs_drv_st * drv)
  * @brief Initializes the array mode file management system
  *
  * @param src_sys The list of resources system.
- * @param data The buffer which contains the resources details data.
- * @param data_len The length of the buffer.
+ * @param sys_count The length of the sys array.
  */
-void gt_src_init(const gt_src_st * const src_sys, const uint8_t * const data, uint32_t data_len)
+void gt_src_init(const gt_src_st * const src_sys, uint32_t sys_count)
 {
-    if (!data) {
+    if (!src_sys) {
         GT_LOGW(GT_LOG_TAG_DATA, "src array is NULL, init failed.");
         return ;
     }
 
-    if (!data_len) {
+    if (!sys_count) {
         GT_LOGW(GT_LOG_TAG_DATA, "src array length is 0, init failed.");
         return ;
     }
@@ -195,8 +192,7 @@ void gt_src_init(const gt_src_st * const src_sys, const uint8_t * const data, ui
     }
 
     _self->sys = (const gt_src_st * )src_sys;
-    _self->data = (const uint8_t * )data;
-    _self->data_len = data_len;
+    _self->sys_count = sys_count;
 
     _gt_src_drv_register(&_self->drv);
 }

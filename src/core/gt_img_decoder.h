@@ -26,6 +26,12 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+typedef enum {
+    GT_IMG_DECODER_TYPE_PNG = 0,
+
+    GT_IMG_DECODER_TYPE_COUNT,
+}gt_img_decoder_type_em;
+
 
 typedef enum gt_img_color_format_e {
     GT_IMG_CF_UNKNOWN = 0,
@@ -42,6 +48,7 @@ typedef struct _gt_img_info_s {
     uint32_t reserved : 3;
     uint32_t w : 12;
     uint32_t h : 12;
+    uint8_t type;
 }_gt_img_info_st;
 
 /**
@@ -103,6 +110,7 @@ void _gt_img_decoder_init(void);
 _gt_img_decoder_st * gt_img_decoder_create(void);
 void gt_img_decoder_register(_gt_img_decoder_st * decoder);
 
+gt_img_decoder_type_em gt_img_decoder_get_type(_gt_img_info_st * header);
 gt_res_t gt_img_decoder_get_info(const char * name, _gt_img_info_st * header);
 gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name, gt_size_t frame_id);
 gt_res_t gt_img_decoder_read_line(_gt_img_dsc_st * dsc, gt_size_t x, gt_size_t y, gt_size_t len, uint8_t * buf);

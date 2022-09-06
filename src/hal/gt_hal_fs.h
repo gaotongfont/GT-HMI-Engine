@@ -80,7 +80,7 @@ typedef struct _gt_fs_fp_s{
         }txt;
     }msg;
     void * file_fp;  //! unused  FILE * fp; for  SD Card
-    void * buffer;  //! unused
+    void * buffer;
 }gt_fs_fp_st;
 
 /**

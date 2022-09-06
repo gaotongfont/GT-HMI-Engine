@@ -91,7 +91,18 @@ static void _gt_png_color_convert_depth(uint8_t * image, uint32_t size)
         image[i << 1]       = color;
     }
 #endif
+}
 
+static void _set_png_width_height(_gt_img_info_st * header, gt_size_t width, gt_size_t height)
+{
+    header->w = width;
+    header->h = height;
+}
+
+static void _set_png_type(_gt_img_info_st * header)
+{
+    header->type = GT_IMG_DECODER_TYPE_PNG;
+    header->color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;
 }
 
 static gt_res_t _gt_png_info(struct _gt_img_decoder_s * decoder, const void * src, _gt_img_info_st * header)
@@ -133,9 +144,8 @@ static gt_res_t _gt_png_info(struct _gt_img_decoder_s * decoder, const void * sr
         goto err_lb;
     }
 
-    header->w = _get_32bit_int(tmp_buffer);
-    header->h = _get_32bit_int(&tmp_buffer[4]);
-    header->color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;
+    _set_png_width_height(header, _get_32bit_int(tmp_buffer), _get_32bit_int(&tmp_buffer[4]));
+    _set_png_type(header);
 
 err_lb:
     gt_fs_close();
@@ -173,11 +183,10 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
     _gt_png_color_convert_depth(img, png_width * png_height);
 
     dsc->img = img;
-    dsc->header.w = png_width;
-    dsc->header.h = png_height;
+    _set_png_width_height(&dsc->header, png_width, png_height);
+    _set_png_type(&dsc->header);
 
     gt_mem_free(png_data);
-
     return ret;
 }
 
