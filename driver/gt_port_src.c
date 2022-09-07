@@ -99,7 +99,7 @@ static const gt_src_st _src_icon_sys[] = {
  */
 void gt_port_src_init(void)
 {
-    gt_src_init(_src_icon_sys, arr_data, sizeof(arr_data));
+    gt_src_init(_src_icon_sys, sizeof(_src_icon_sys));
 }
 
 
