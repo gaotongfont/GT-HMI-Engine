@@ -153,12 +153,6 @@ static gt_fs_drv_st * gt_fs_get_default_drv(char const * path)
 
 /* global functions / API interface -------------------------------------*/
 
-/**
- * @brief recognize the file type
- *
- * @param src the path or file name
- * @return gt_fs_type_et
- */
 gt_fs_type_et gt_fs_get_src_type(const void * src)
 {
     gt_fs_type_et ret = GT_FS_TYPE_UNKNOWN;
@@ -197,14 +191,6 @@ gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode)
     return fp;
 }
 
-/**
- * @brief
- *
- * @param out
- * @param size
- * @param ret_len
- * @return gt_fs_res_et
- */
 gt_fs_res_et gt_fs_read(uint8_t * out, uint32_t size, uint32_t * ret_len)
 {
     gt_fs_drv_st * drv = _gt_fs_get_drv();
