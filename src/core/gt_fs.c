@@ -223,20 +223,6 @@ gt_fs_res_et gt_fs_write(uint8_t * buffer, uint32_t len, uint32_t * ret_len)
     return drv->write_cb(drv, fp, buffer, len, ret_len);
 }
 
-gt_fs_res_et gt_fs_read_img(uint8_t * res)
-{
-    gt_fs_drv_st * drv = _gt_fs_get_drv();
-    gt_fs_fp_st * fp = gt_fs_get_fp();
-    uint32_t ret_len = 0;
-
-    if (fp == NULL) {
-        return GT_RES_FAIL;
-    }
-    drv->read_cb(drv, fp, res, fp->msg.pic.w * fp->msg.pic.h * sizeof(gt_color_t), &ret_len);
-
-    return GT_RES_OK;
-}
-
 gt_fs_res_et gt_fs_read_img_offset(uint8_t * res, uint32_t offset, uint32_t len)
 {
     gt_fs_drv_st * drv = _gt_fs_get_drv();

@@ -95,10 +95,32 @@ gt_fs_res_et gt_fs_tell(uint32_t * pos);
  */
 gt_fs_res_et gt_fs_write(uint8_t * buffer, uint32_t len, uint32_t * ret_len);
 
-gt_fs_res_et gt_fs_read_img(uint8_t * res);
+/**
+ * @brief Gets data of the specified length in bytes from the start of the
+ *      file content.
+ *      Must be called after gt_fs_open().
+ *
+ * @param res The buffer save data from file content
+ * @param offset The offset in the file content
+ * @param len The number bytes of buffer length, which need to be read
+ * @return gt_fs_res_et The result status
+ */
 gt_fs_res_et gt_fs_read_img_offset(uint8_t * res, uint32_t offset, uint32_t len);
+
+/**
+ * @brief Get the image width and height, by the full path of file name.
+ *
+ * @param path The full path of file name
+ * @param w Get image width value
+ * @param h Get image height value
+ * @return gt_fs_res_et The result status
+ */
 gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h);
 
+/**
+ * @brief Close the file operation handler, which need to
+ *      be called after gt_fs_open().
+ */
 void gt_fs_close(void);
 
 #ifdef __cplusplus
