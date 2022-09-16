@@ -18,12 +18,17 @@ extern "C" {
 
 
 /* define ---------------------------------------------------------------*/
+
+/**
+ * @brief Configure whether the widgets is enabled
+ * 
+ */
 #define GT_CFG_ENABLE_BTN               1
 #define GT_CFG_ENABLE_CHECKBOX          1
 #define GT_CFG_ENABLE_GROUP             1
 #define GT_CFG_ENABLE_IMG               1
 #define GT_CFG_ENABLE_INPUT             1
-// #define GT_CFG_ENABLE_KEYPAD            1    /*the keypad must exist with input widget*/
+// #define GT_CFG_ENABLE_KEYPAD            1    /**the keypad must exist with input widget*/
 #define GT_CFG_ENABLE_LABEL             1
 #define GT_CFG_ENABLE_LISTVIEW          1
 #define GT_CFG_ENABLE_PROCESSBAR        1

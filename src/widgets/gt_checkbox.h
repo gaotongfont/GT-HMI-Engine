@@ -38,11 +38,42 @@ typedef struct _gt_style_checkbox_s
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief create checkbox obj
+ * 
+ * @param parent checkbox's parent obj
+ * @return gt_obj_st* checkbox obj ptr
+ */
 gt_obj_st * gt_checkbox_create(gt_obj_st * parent);
+
+/**
+ * @brief set the checkbox as selected
+ * 
+ * @param checkbox checkbox obj
+ */
 void gt_checkbox_style_set_selceted(gt_obj_st * checkbox);
+
+/**
+ * @brief set the checkbox as unselected
+ * 
+ * @param checkbox checkbox obj
+ */
 void gt_checkbox_style_set_unselceted(gt_obj_st * checkbox);
+
+/**
+ * @brief get the checkbox selected state
+ * 
+ * @param checkbox checkbox obj
+ */
 uint8_t gt_checkbox_style_get_selceted_state(gt_obj_st * checkbox);
 
+/**
+ * @brief set the checkbox text
+ * 
+ * @param checkbox checkbox obj
+ * @param text text
+ */
 void gt_checkbox_style_set_text(gt_obj_st * checkbox, char * text);
 
 #ifdef __cplusplus

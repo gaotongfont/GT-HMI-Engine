@@ -40,11 +40,42 @@ typedef struct _gt_style_radio_s
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief create radio obj
+ * 
+ * @param parent radio's parent obj
+ * @return gt_obj_st* radio obj ptr
+ */
 gt_obj_st * gt_radio_create(gt_obj_st * parent);
+
+/**
+ * @brief set radio state to selected
+ * 
+ * @param radio radio obj
+ */
 void gt_radio_style_set_selceted(gt_obj_st * radio);
+
+/**
+ * @brief set radio state to unselected
+ * 
+ * @param radio radio obj
+ */
 void gt_radio_style_set_unselceted(gt_obj_st * radio);
+
+/**
+ * @brief get radio state
+ * 
+ * @param radio radio obj
+ */
 uint8_t gt_radio_style_get_selceted_state(gt_obj_st * radio);
 
+/**
+ * @brief set radio text
+ * 
+ * @param radio radio obj
+ * @param text text
+ */
 void gt_radio_style_set_text(gt_obj_st * radio, char * text);
 
 

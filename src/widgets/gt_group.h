@@ -34,6 +34,13 @@ typedef struct _gt_style_group_s
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief create group obj
+ * 
+ * @param parent group's parent obj
+ * @return gt_obj_st* group obj ptr
+ */
 gt_obj_st * gt_group_create(gt_obj_st * parent);
 
 

@@ -45,14 +45,58 @@ typedef struct _gt_style_input_s
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief create input obj
+ * 
+ * @param parent input's parent obj
+ * @return gt_obj_st* input obj ptr
+ */
 gt_obj_st * gt_input_create(gt_obj_st * parent);
 
+/**
+ * @brief set input obj value
+ * 
+ * @param input input obj
+ * @param value value
+ */
 void gt_input_style_set_value(gt_obj_st * input, char * value);
+
+/**
+ * @brief append content at the end
+ * 
+ * @param input input obj
+ * @param value content
+ */
 void gt_input_style_append_value(gt_obj_st * input, char * value);
+
+/**
+ * @brief set input obj palceholder
+ * 
+ * @param input input obj
+ * @param placeholder palceholder content
+ */
 void gt_input_style_set_placeholder(gt_obj_st * input, const char * placeholder);
+
+/**
+ * @brief delete a value in the input obj at pos
+ * 
+ * @param input input obj
+ */
 void gt_input_style_del_value(gt_obj_st * input);
 
+/**
+ * @brief move the cursor one position to the left
+ * 
+ * @param input input obj
+ */
 void gt_input_style_move_left_pos_cursor(gt_obj_st * input);
+
+/**
+ * @brief move the cursor one position to the right
+ * 
+ * @param input input obj
+ */
 void gt_input_style_move_right_pos_cursor(gt_obj_st * input);
 
 

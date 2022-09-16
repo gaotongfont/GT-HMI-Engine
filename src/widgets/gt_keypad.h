@@ -71,8 +71,29 @@ typedef struct _gt_keypad_map_s
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief create keypad obj
+ * 
+ * @param parent keypad's parent obj
+ * @return gt_obj_st* keypad obj
+ */
 gt_obj_st * gt_keypad_create(gt_obj_st * parent);
+
+/**
+ * @brief set obj for keyboard input
+ * 
+ * @param keypad keypad obj
+ * @param ta obj for keyboard input
+ */
 void gt_keypad_style_set_target(gt_obj_st * keypad, gt_obj_st * ta);
+
+/**
+ * @brief set keypad map,this can remap keypad
+ * 
+ * @param keypad keypad obj
+ * @param map map
+ */
 void gt_keypad_style_set_map(gt_obj_st * keypad,  gt_keypad_map_st * map);
 
 

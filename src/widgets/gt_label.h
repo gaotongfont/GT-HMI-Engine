@@ -40,9 +40,37 @@ typedef struct _gt_style_label_s{
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief create label obj
+ * 
+ * @param parent label's parent obj
+ * @return gt_obj_st* label obj ptr
+ */
 gt_obj_st * gt_label_create(gt_obj_st * parent);
+
+/**
+ * @brief set label obj text
+ * 
+ * @param label label obj
+ * @param text text
+ */
 void gt_label_style_set_text(gt_obj_st * label, char * text);
+
+/**
+ * @brief get label text
+ * 
+ * @param label label obj
+ * @return char* label's text
+ */
 char * gt_label_style_get_text(gt_obj_st * label);
+
+/**
+ * @brief set label font color
+ * 
+ * @param label label obj
+ * @param color color
+ */
 void gt_label_style_set_font_color(gt_obj_st * label, gt_color_t color);
 
 #ifdef __cplusplus

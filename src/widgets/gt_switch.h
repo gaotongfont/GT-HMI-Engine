@@ -37,8 +37,30 @@ typedef struct _gt_style_switcher_s
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief create switch obj
+ * 
+ * @param parent switch's parent obj
+ * @return gt_obj_st* switch obj ptr
+ */
 gt_obj_st * gt_switch_create(gt_obj_st * parent);
+
+/**
+ * @brief set switch state
+ * 
+ * @param switcher switch obj ptr
+ * @param state true:open,false:close
+ */
 void gt_switch_style_set_state(gt_obj_st * switcher, bool state);
+
+/**
+ * @brief get switch state
+ * 
+ * @param switcher switch obj ptr
+ * @return true open
+ * @return false close
+ */
 bool gt_switch_style_get_state(gt_obj_st * switcher);
 
 #ifdef __cplusplus

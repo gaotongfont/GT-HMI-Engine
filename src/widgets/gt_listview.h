@@ -51,10 +51,45 @@ typedef struct _gt_style_list_s
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief create listview obj
+ * 
+ * @param parent listview's parent obj
+ * @return gt_obj_st* listview obj ptr
+ */
 gt_obj_st * gt_listview_create(gt_obj_st * parent);
+
+/**
+ * @brief add item to listview obj
+ * 
+ * @param list listview obj
+ * @param item item
+ */
 void gt_list_style_add_item(gt_obj_st * list, char * item);
+
+/**
+ * @brief set the listview selected item by index
+ * 
+ * @param listview listview obj
+ * @param idx index
+ */
 void gt_listview_style_set_selected_item_by_idx(gt_obj_st * listview, int idx);
+
+/**
+ * @brief get cnt of listview all items
+ * 
+ * @param listview listview
+ * @return gt_size_t cnt of count items
+ */
 gt_size_t gt_listview_style_get_list_items_cnt(gt_obj_st * listview);
+
+/**
+ * @brief get listview selected index
+ * 
+ * @param listview 
+ * @return gt_size_t 
+ */
 gt_size_t gt_listview_style_get_idx_selected(gt_obj_st * listview);
 
 

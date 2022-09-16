@@ -52,7 +52,7 @@ typedef struct _gt_style_textarea_s{
 /**
  * @brief create a textarea obj
  *
- * @param parent textarea's parent element
+ * @param parent textarea's parent obj
  * @return gt_obj_st* textarea obj
  */
 gt_obj_st * gt_textarea_create(gt_obj_st * parent);

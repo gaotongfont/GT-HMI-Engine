@@ -42,14 +42,64 @@ typedef struct _gt_style_scrollbar_s
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief create scrollbar obj
+ * 
+ * @param parent scrollbar's parent obj
+ * @return gt_obj_st* scrollbar obj ptr
+ */
 gt_obj_st * gt_scrollbar_create(gt_obj_st * parent);
 
+/**
+ * @brief set scrollbar pos
+ * 
+ * @param scrollbar scrollbar obj ptr
+ * @param pos pos between start and end
+ */
 void gt_scrollbar_style_set_pos(gt_obj_st * scrollbar, gt_size_t pos);
+
+/**
+ * @brief set scrollbar start and end pos
+ * 
+ * @param scrollbar scrollbar obj 
+ * @param start start pos
+ * @param end end pos
+ */
 void gt_scrollbar_style_set_start_end(gt_obj_st * scrollbar, gt_size_t start, gt_size_t end);
+
+/**
+ * @brief get scrollbar pos
+ * 
+ * @param scrollbar scrollbar obj ptr
+ * @return gt_size_t scrollbar pos
+ */
 gt_size_t gt_scrollbar_style_get_pos(gt_obj_st * scrollbar);
+
+/**
+ * @brief get scrollbar start pos
+ * 
+ * @param scrollbar scrollbar obj ptr
+ * @return gt_size_t scrollbar start pos
+ */
 gt_size_t gt_scrollbar_style_get_start(gt_obj_st * scrollbar);
+
+/**
+ * @brief get scrollbar end pos
+ * 
+ * @param scrollbar scrollbar obj ptr
+ * @return gt_size_t scrollbar end pos
+ */
 gt_size_t gt_scrollbar_style_get_end(gt_obj_st * scrollbar);
+
+/**
+ * @brief get scrollbar start-end pos
+ * 
+ * @param scrollbar scrollbar obj ptr
+ * @return gt_size_t scrollbar start-end distance
+ */
 gt_size_t gt_scrollbar_style_get_total(gt_obj_st * scrollbar);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

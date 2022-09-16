@@ -106,7 +106,15 @@ typedef struct _gt_style_obj_s
 
 
 /* global functions / API interface -------------------------------------*/
+/**
+ * @brief create obj, recommend the obj will as screen obj
+ * 
+ * @param parent obj's parent obj
+ * @return gt_obj_st* obj ptr
+ */
 gt_obj_st *gt_obj_create(gt_obj_st *parent);
+
+
 void gt_obj_del(gt_obj_st * obj);
 
 

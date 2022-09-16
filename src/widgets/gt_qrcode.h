@@ -34,6 +34,13 @@ typedef struct _gt_style_qrcode_s
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief create qrcode obj
+ * 
+ * @param parent qrcode's parent obj
+ * @return gt_obj_st* qrcode obj ptr
+ */
 gt_obj_st * gt_qrcode_create(gt_obj_st * parent);
 
 
