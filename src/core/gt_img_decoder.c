@@ -1,7 +1,8 @@
 /**
  * @file gt_img_decoder.c
  * @author Feyoung
- * @brief default
+ * @brief The image decoder which need to register the image file type by
+ *      extra file type.
  * @version 0.1
  * @date 2022-08-10 19:52:55
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -108,9 +109,6 @@ static gt_res_t _gt_img_decoder_built_in_close(struct _gt_img_decoder_s * decode
 
 /* global functions / API interface -------------------------------------*/
 
-/**
- * @brief init decoder collection
- */
 void _gt_img_decoder_init(void)
 {
     GT_INIT_LIST_HEAD(&_GT_GC_GET_ROOT(_gt_img_decoder_ll));
@@ -127,11 +125,6 @@ void _gt_img_decoder_init(void)
     gt_img_decoder_register(decoder);
 }
 
-/**
- * @brief create a gt_img decoder object
- *
- * @return _gt_img_decoder_st* decoder malloc memory pointer
- */
 _gt_img_decoder_st * gt_img_decoder_create(void)
 {
     _gt_img_decoder_st * decoder = (_gt_img_decoder_st * )gt_mem_malloc(sizeof(_gt_img_decoder_st));
@@ -195,7 +188,6 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name, gt_s
 
         dsc->decoder = ptr;
         dsc->frame_id = frame_id;
-        dsc->msg = NULL;
 
         break;
     }
