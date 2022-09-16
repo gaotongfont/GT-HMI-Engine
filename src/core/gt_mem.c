@@ -161,9 +161,7 @@ static void _gt_free_hooks(void * ptr)
 
 
 /* global functions / API interface -------------------------------------*/
-/**
- * @brief 初始化内容
- */
+
 void gt_mem_init(void)
 {
 #if GT_MEM_CUSTOM
@@ -174,9 +172,6 @@ void gt_mem_init(void)
 #endif
 }
 
-/**
- * @brief destroy the memory pool
- */
 void gt_mem_deinit(void)
 {
 #if GT_MEM_CUSTOM
