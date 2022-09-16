@@ -27,21 +27,27 @@ extern "C" {
  * @brief virt file drv operate result
  */
 typedef enum {
-    GT_FS_RES_FAIL = -1,
-    GT_FS_RES_OK,
-    GT_FS_RES_HW_ERR,
-    GT_FS_RES_NOT_EX,
-    GT_FS_RES_DEINIT,
-    GT_FS_RES_BUSY,
-    GT_FS_RES_READY,
-    GT_FS_RES_NULL,
+    GT_FS_RES_FAIL = -1,    /**< failed to open file */
+    GT_FS_RES_OK,           /**< file was successfully opened */
+    GT_FS_RES_HW_ERR,       /**< file system hardware errors */
+    GT_FS_RES_NOT_EX,       /**< file system not exists */
+    GT_FS_RES_DEINIT,       /**< file system deinit */
+    GT_FS_RES_BUSY,         /**< file operation is busy */
+    GT_FS_RES_READY,        /**< file system ready */
+    GT_FS_RES_NULL,         /**< file is null */
 }gt_fs_res_et;
 
+/**
+ * @brief virtual file system write or read mode.
+ */
 typedef enum {
-    GT_FS_MODE_WR = 1,
-    GT_FS_MODE_RD = 2,
+    GT_FS_MODE_WR = 1,  /**< file system write and read mode */
+    GT_FS_MODE_RD = 2,  /**< file system read only mode */
 }gt_fs_mode_et;
 
+/**
+ * @brief file system type enum.
+ */
 typedef enum gt_fs_type_e {
     GT_FS_TYPE_UNKNOWN = -1,
     GT_FS_TYPE_FLASH   = 0,
@@ -50,7 +56,7 @@ typedef enum gt_fs_type_e {
 }gt_fs_type_et;
 
 /**
- * @brief default drive label
+ * @brief The drive letter of the hard disk
  */
 typedef enum gt_fs_label_e {
     GT_FS_LABEL_FLASH = 'f',
@@ -79,7 +85,7 @@ typedef struct _gt_fs_fp_s{
             uint32_t encoding;
         }txt;
     }msg;
-    void * file_fp;  //! unused  FILE * fp; for  SD Card
+    void * file_fp;     // unused  FILE * fp; for  SD Card
     void * buffer;
 }gt_fs_fp_st;
 
