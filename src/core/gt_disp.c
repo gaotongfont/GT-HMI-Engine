@@ -1,7 +1,7 @@
 /**
  * @file gt_disp.c
  * @author yongg
- * @brief
+ * @brief Display implementation for the screen.
  * @version 0.1
  * @date 2022-05-11 14:59:50
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -60,30 +60,12 @@ static void _gt_disp_set_state(gt_disp_st * disp, uint8_t state)
     disp->drv->busy = state;
 }
 
-
-/* global functions / API interface -------------------------------------*/
-void gt_disp_set_scr(gt_obj_st * scr) {
-    gt_disp_st * disp = gt_disp_get_default();
-    if( NULL == disp ){
-        return;
-    }
-    disp->scr_act = scr;
-}
-
-gt_obj_st * gt_disp_get_scr() {
-    gt_disp_st * disp = gt_disp_get_default();
-    if( NULL == disp ){
-        return NULL;
-    }
-    return disp->scr_act;
-}
-
 /**
  * @brief foreach obj send draw start event
  *
  * @param obj parent
  */
-void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
+static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
 {
     int idx = 0;
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -93,8 +75,7 @@ void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
     }
 }
 
-
-void gt_check_obj_visible_and_copy(gt_obj_st * obj)
+static void gt_check_obj_visible_and_copy(gt_obj_st * obj)
 {
     gt_area_st area_valib;
     gt_disp_st * disp = gt_disp_get_default();
@@ -119,7 +100,7 @@ void gt_check_obj_visible_and_copy(gt_obj_st * obj)
     obj->class->_deinit_cb(obj, obj->class);
 }
 
-void _gt_disp_check_and_copy_foreach(gt_obj_st * obj)
+static void _gt_disp_check_and_copy_foreach(gt_obj_st * obj)
 {
     int idx = 0;
     while( idx < obj->cnt_child ) {
@@ -132,11 +113,25 @@ void _gt_disp_check_and_copy_foreach(gt_obj_st * obj)
     }
 }
 
-/**
- * @brief display screen
- *
- * @param scr screen obj
- */
+/* global functions / API interface -------------------------------------*/
+
+void gt_disp_set_scr(gt_obj_st * scr) {
+    gt_disp_st * disp = gt_disp_get_default();
+    if( NULL == disp ){
+        return;
+    }
+    disp->scr_act = scr;
+}
+
+gt_obj_st * gt_disp_get_scr() {
+    gt_disp_st * disp = gt_disp_get_default();
+    if( NULL == disp ){
+        return NULL;
+    }
+    return disp->scr_act;
+}
+
+
 void gt_disp_load_scr(gt_obj_st * scr)
 {
     gt_disp_set_scr(scr);
@@ -201,7 +196,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
     }
     _gt_disp_set_state(disp, GT_BUSY);
 
-    gt_area_copy(&area, coords);
+    gt_area_copy(&area, (gt_area_st *)coords);
     if(disp == NULL){
         return;
     }
@@ -336,12 +331,5 @@ void gt_disp_obj(gt_obj_st * obj){
     }
 }
 
-/**
- * @brief disp screen
- *
- */
-void _gt_disp_area(){
-
-}
 
 /* end ------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 /**
  * @file gt_event.h
- * @author yongg (your@email.com)
+ * @author yongg
  * @brief Object implementation for the event handler
  * @version 0.1
  * @date 2022-05-11 14:57:40
