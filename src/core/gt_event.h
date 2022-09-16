@@ -1,7 +1,7 @@
 /**
  * @file gt_event.h
  * @author yongg (your@email.com)
- * @brief
+ * @brief Object implementation for the event handler
  * @version 0.1
  * @date 2022-05-11 14:57:40
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -26,7 +26,7 @@ extern "C" {
 struct _gt_obj_s;
 
 /**
- * @brief
+ * @brief The event type enum definition
  */
 typedef enum gt_event_type_e{
     GT_EVENT_TYPE_NONE = 0x0000,
@@ -62,6 +62,11 @@ typedef struct _gt_event_s{
     void * user_data;
 }gt_event_st;
 
+/**
+ * @brief The event handler callback function pointer
+ *
+ * @param e An object describing the content of the event
+ */
 typedef void (* gt_event_cb_t)(gt_event_st * e);
 
 /* macros ---------------------------------------------------------------*/
@@ -69,12 +74,44 @@ typedef void (* gt_event_cb_t)(gt_event_st * e);
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief Adding an event to an object
+ *
+ * @param obj Which object need to add event callback
+ * @param event The callback function
+ * @param filter The event type enum @ref gt_event_type_e
+ * @param user_data User data [default or unused: NULL]
+ */
 void gt_obj_add_event_cb(struct _gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data);
+
+/**
+ * @brief Get the code value for the event
+ *
+ * @param e The structure of the event
+ * @return gt_event_type_et get newly code value @ref gt_event_type_e
+ */
 gt_event_type_et gt_event_get_code(gt_event_st * e);
+
+/**
+ * @brief Send an event code to the object kernel.
+ *
+ * @param parent Object which want to be notified
+ * @param event The event code to send
+ * @param user_data User data [default or unused: NULL]
+ * @return gt_res_t The result status @ref gt_res_t
+ */
 gt_res_t gt_event_send(struct _gt_obj_s * parent, gt_event_type_et event, void * user_data);
+
+/**
+ * @brief clean the object events
+ *
+ * @param parent Object which want to change
+ */
 void gt_event_clr_mask(struct _gt_obj_s * parent);
 
 void _gt_event_init(void);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

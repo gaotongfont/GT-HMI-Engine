@@ -1,7 +1,7 @@
 /**
  * @file gt_mem.h
  * @author yongg
- * @brief
+ * @brief Memory / Memory pool management services
  * @version 0.1
  * @date 2022-05-12 10:47:00
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

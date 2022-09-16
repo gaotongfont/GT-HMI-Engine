@@ -1,7 +1,7 @@
 /**
  * @file gt_event.c
  * @author yongg
- * @brief
+ * @brief Object implementation for the event handler
  * @version 0.1
  * @date 2022-05-11 15:02:33
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -190,11 +190,6 @@ void _gt_event_init(){
     _gt_timer_create(_gt_timer_event_cb, GT_TASK_PERIOD_TIME_EVENT, NULL);
 }
 
-/**
- * @brief clr all obj mask
- *
- * @param parent
- */
 void gt_event_clr_mask(gt_obj_st * parent)
 {
     int idx = 0;
