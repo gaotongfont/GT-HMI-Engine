@@ -1,5 +1,5 @@
 /**
- * @file list.h
+ * @file gt_list.h
  * @brief double list
  */
 #ifndef _GT_LIST_H_
@@ -59,8 +59,8 @@ static __always_inline void __gt_list_add(struct gt_list_head *newl,
 
 /**
  * gt_list_add - add a new entry
- * @new: new entry to be added
- * @head: list head to add it after
+ * @param new: new entry to be added
+ * @param head list head to add it after
  *
  * Insert a new entry after the specified head.
  * This is good for implementing stacks.
@@ -73,8 +73,8 @@ static __always_inline void gt_list_add(struct gt_list_head *newl, struct gt_lis
 
 /**
  * gt_gt_list_add_tail - add a new entry
- * @new: new entry to be added
- * @head: list head to add it before
+ * @param new: new entry to be added
+ * @param head list head to add it before
  *
  * Insert a new entry before the specified head.
  * This is useful for implementing queues.
@@ -99,7 +99,7 @@ static __always_inline void __gt_list_del(struct gt_list_head *prev, struct gt_l
 
 /**
  * gt_list_del - deletes entry from list.
- * @entry: the element to delete from the list.
+ * @param entry the element to delete from the list.
  * Note: gt_list_empty() on entry does not return true after this, the entry is
  * in an undefined state.
  */
@@ -118,7 +118,7 @@ static __always_inline void gt_list_del(struct gt_list_head *entry)
 /**
  * gt_list_replace - replace old entry by new one
  * @old : the element to be replaced
- * @new : the new element to insert
+ * @param new : the new element to insert
  *
  * If @old was empty, it will be overwritten.
  */
@@ -139,7 +139,7 @@ static __always_inline void gt_list_replace_init(struct gt_list_head *old,
 
 /**
  * gt_list_del_init - deletes entry from list and reinitialize it.
- * @entry: the element to delete from the list.
+ * @param entry the element to delete from the list.
  */
 static __always_inline void gt_list_del_init(struct gt_list_head *entry)
 {
@@ -149,8 +149,8 @@ static __always_inline void gt_list_del_init(struct gt_list_head *entry)
 
 /**
  * gt_list_move - delete from one list and add as another's head
- * @list: the entry to move
- * @head: the head that will precede our entry
+ * @param list the entry to move
+ * @param head the head that will precede our entry
  */
 static __always_inline void gt_list_move(struct gt_list_head *list, struct gt_list_head *head)
 {
@@ -160,8 +160,8 @@ static __always_inline void gt_list_move(struct gt_list_head *list, struct gt_li
 
 /**
  * gt_list_move_tail - delete from one list and add as another's tail
- * @list: the entry to move
- * @head: the head that will follow our entry
+ * @param list the entry to move
+ * @param head the head that will follow our entry
  */
 static __always_inline void gt_list_move_tail(struct gt_list_head *list,
                                            struct gt_list_head *head)
@@ -172,8 +172,8 @@ static __always_inline void gt_list_move_tail(struct gt_list_head *list,
 
 /**
  * gt_list_is_last - tests whether @list is the last entry in list @head
- * @list: the entry to test
- * @head: the head of the list
+ * @param list the entry to test
+ * @param head the head of the list
  */
 static __always_inline int gt_list_is_last(const struct gt_list_head *list,
                                         const struct gt_list_head *head)
@@ -183,7 +183,7 @@ static __always_inline int gt_list_is_last(const struct gt_list_head *list,
 
 /**
  * gt_list_empty - tests whether a list is empty
- * @head: the list to test.
+ * @param head the list to test.
  */
 static __always_inline int gt_list_empty(const struct gt_list_head *head)
 {
@@ -192,7 +192,7 @@ static __always_inline int gt_list_empty(const struct gt_list_head *head)
 
 /**
  * gt_list_empty_careful - tests whether a list is empty and not being modified
- * @head: the list to test
+ * @param head the list to test
  *
  * Description:
  * tests whether a list is empty _and_ checks that no other CPU might be
@@ -211,7 +211,7 @@ static __always_inline int gt_list_empty_careful(const struct gt_list_head *head
 
 /**
  * gt_list_rotate_left - rotate the list to the left
- * @head: the head of the list
+ * @param head the head of the list
  */
 static __always_inline void gt_list_rotate_left(struct gt_list_head *head)
 {
@@ -225,7 +225,7 @@ static __always_inline void gt_list_rotate_left(struct gt_list_head *head)
 
 /**
  * gt_list_is_singular - tests whether a list has just one entry.
- * @head: the list to test.
+ * @param head the list to test.
  */
 static __always_inline int gt_list_is_singular(const struct gt_list_head *head)
 {
@@ -247,9 +247,9 @@ static __always_inline void __gt_list_cut_position(struct gt_list_head *list,
 
 /**
  * gt_list_cut_position - cut a list into two
- * @list: a new list to add all removed entries
- * @head: a list with entries
- * @entry: an entry within head, could be the head itself
+ * @param list a new list to add all removed entries
+ * @param head a list with entries
+ * @param entry an entry within head, could be the head itself
  *  and if so we won't cut the list
  *
  * This helper moves the initial part of @head, up to and
@@ -290,8 +290,8 @@ static __always_inline void __gt_list_splice(const struct gt_list_head *list,
 
 /**
  * gt_list_splice - join two lists, this is designed for stacks
- * @list: the new list to add.
- * @head: the place to add it in the first list.
+ * @param list the new list to add.
+ * @param head the place to add it in the first list.
  */
 static __always_inline void gt_list_splice(const struct gt_list_head *list,
                                         struct gt_list_head *head)
@@ -302,8 +302,8 @@ static __always_inline void gt_list_splice(const struct gt_list_head *list,
 
 /**
  * gt_list_splice_tail - join two lists, each list being a queue
- * @list: the new list to add.
- * @head: the place to add it in the first list.
+ * @param list the new list to add.
+ * @param head the place to add it in the first list.
  */
 static __always_inline void gt_list_splice_tail(struct gt_list_head *list,
                                              struct gt_list_head *head)
@@ -314,8 +314,8 @@ static __always_inline void gt_list_splice_tail(struct gt_list_head *list,
 
 /**
  * gt_list_splice_init - join two lists and reinitialise the emptied list.
- * @list: the new list to add.
- * @head: the place to add it in the first list.
+ * @param list the new list to add.
+ * @param head the place to add it in the first list.
  *
  * The list at @list is reinitialised
  */
@@ -330,8 +330,8 @@ static __always_inline void gt_list_splice_init(struct gt_list_head *list,
 
 /**
  * gt_list_splice_tail_init - join two lists and reinitialise the emptied list
- * @list: the new list to add.
- * @head: the place to add it in the first list.
+ * @param list the new list to add.
+ * @param head the place to add it in the first list.
  *
  * Each of the lists is a queue.
  * The list at @list is reinitialised
@@ -347,18 +347,18 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
 
 /**
  * gt_list_entry - get the struct for this entry
- * @ptr:    the &struct gt_list_head pointer.
- * @type:   the type of the struct this is embedded in.
- * @member: the name of the gt_list_head within the struct.
+ * @param ptr    the &struct gt_list_head pointer.
+ * @param type   the type of the struct this is embedded in.
+ * @param member the name of the gt_list_head within the struct.
  */
 #define gt_list_entry(ptr, type, member) \
 	container_of(ptr, type, member)
 
 /**
  * gt_list_first_entry - get the first element from a list
- * @ptr:    the list head to take the element from.
- * @type:   the type of the struct this is embedded in.
- * @member: the name of the gt_list_head within the struct.
+ * @param ptr    the list head to take the element from.
+ * @param type   the type of the struct this is embedded in.
+ * @param member the name of the gt_list_head within the struct.
  *
  * Note, that list is expected to be not empty.
  */
@@ -367,9 +367,9 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
 
 /**
  * gt_list_last_entry - get the last element from a list
- * @ptr:    the list head to take the element from.
- * @type:   the type of the struct this is embedded in.
- * @member: the name of the gt_list_head within the struct.
+ * @param ptr    the list head to take the element from.
+ * @param type   the type of the struct this is embedded in.
+ * @param member the name of the gt_list_head within the struct.
  *
  * Note, that list is expected to be not empty.
  */
@@ -378,9 +378,9 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
 
 /**
  * gt_list_first_entry_or_null - get the first element from a list
- * @ptr:    the list head to take the element from.
- * @type:   the type of the struct this is embedded in.
- * @member: the name of the gt_list_head within the struct.
+ * @param ptr    the list head to take the element from.
+ * @param type   the type of the struct this is embedded in.
+ * @param member the name of the gt_list_head within the struct.
  *
  * Note that if the list is empty, it returns NULL.
  */
@@ -389,41 +389,41 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
 
 /**
  * gt_list_next_entry - get the next element in list
- * @pos:    the type * to cursor
- * @member: the name of the gt_list_head within the struct.
+ * @param pos    the type * to cursor
+ * @param member the name of the gt_list_head within the struct.
  */
 #define gt_list_next_entry(pos, member) \
 	gt_list_entry((pos)->member.next, typeof(*(pos)), member)
 
 /**
  * gt_list_prev_entry - get the prev element in list
- * @pos:    the type * to cursor
- * @member: the name of the gt_list_head within the struct.
+ * @param pos    the type * to cursor
+ * @param member the name of the gt_list_head within the struct.
  */
 #define gt_list_prev_entry(pos, member) \
 	gt_list_entry((pos)->member.prev, typeof(*(pos)), member)
 
 /**
  * gt_list_for_each    -   iterate over a list
- * @pos:    the &struct gt_list_head to use as a loop cursor.
- * @head:   the head for your list.
+ * @param pos    the &struct gt_list_head to use as a loop cursor.
+ * @param head   the head for your list.
  */
 #define gt_list_for_each(pos, head) \
 	for (pos = (head)->next; pos != (head); pos = pos->next)
 
 /**
  * gt_list_for_each_prev   -   iterate over a list backwards
- * @pos:    the &struct gt_list_head to use as a loop cursor.
- * @head:   the head for your list.
+ * @param pos    the &struct gt_list_head to use as a loop cursor.
+ * @param head   the head for your list.
  */
 #define gt_list_for_each_prev(pos, head) \
 	for (pos = (head)->prev; pos != (head); pos = pos->prev)
 
 /**
  * gt_list_for_each_safe - iterate over a list safe against removal of list entry
- * @pos:    the &struct gt_list_head to use as a loop cursor.
- * @n:      another &struct gt_list_head to use as temporary storage
- * @head:   the head for your list.
+ * @param pos    the &struct gt_list_head to use as a loop cursor.
+ * @param n      another &struct gt_list_head to use as temporary storage
+ * @param head   the head for your list.
  */
 #define gt_list_for_each_safe(pos, n, head) \
 	for (pos = (head)->next, n = pos->next; pos != (head); \
@@ -431,9 +431,9 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
 
 /**
  * gt_list_for_each_prev_safe - iterate over a list backwards safe against removal of list entry
- * @pos:    the &struct gt_list_head to use as a loop cursor.
- * @n:      another &struct gt_list_head to use as temporary storage
- * @head:   the head for your list.
+ * @param pos    the &struct gt_list_head to use as a loop cursor.
+ * @param n      another &struct gt_list_head to use as temporary storage
+ * @param head   the head for your list.
  */
 #define gt_list_for_each_prev_safe(pos, n, head) \
 	for (pos = (head)->prev, n = pos->prev; \
@@ -442,9 +442,9 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
 
 /**
  * gt_list_for_each_entry  -   iterate over list of given type
- * @pos:    the type * to use as a loop cursor.
- * @head:   the head for your list.
- * @member: the name of the gt_list_head within the struct.
+ * @param pos    the type * to use as a loop cursor.
+ * @param head   the head for your list.
+ * @param member the name of the gt_list_head within the struct.
  */
 #define gt_list_for_each_entry(pos, head, member)              \
 	for (pos = gt_list_first_entry(head, typeof(*pos), member);    \
@@ -453,9 +453,9 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
 
 /**
  * gt_list_for_each_entry_reverse - iterate backwards over list of given type.
- * @pos:    the type * to use as a loop cursor.
- * @head:   the head for your list.
- * @member: the name of the gt_list_head within the struct.
+ * @param pos    the type * to use as a loop cursor.
+ * @param head   the head for your list.
+ * @param member the name of the gt_list_head within the struct.
  */
 #define gt_list_for_each_entry_reverse(pos, head, member)          \
 	for (pos = gt_list_last_entry(head, typeof(*pos), member);     \
@@ -464,9 +464,9 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
 
 /**
  * gt_list_prepare_entry - prepare a pos entry for use in gt_list_for_each_entry_continue()
- * @pos:    the type * to use as a start point
- * @head:   the head of the list
- * @member: the name of the gt_list_head within the struct.
+ * @param pos    the type * to use as a start point
+ * @param head   the head of the list
+ * @param member the name of the gt_list_head within the struct.
  *
  * Prepares a pos entry for use as a start point in gt_list_for_each_entry_continue().
  */
@@ -475,9 +475,9 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
 
 /**
  * gt_list_for_each_entry_continue - continue iteration over list of given type
- * @pos:    the type * to use as a loop cursor.
- * @head:   the head for your list.
- * @member: the name of the gt_list_head within the struct.
+ * @param pos    the type * to use as a loop cursor.
+ * @param head   the head for your list.
+ * @param member the name of the gt_list_head within the struct.
  *
  * Continue to iterate over list of given type, continuing after
  * the current position.
@@ -489,9 +489,9 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
 
 /**
  * gt_list_for_each_entry_continue_reverse - iterate backwards from the given point
- * @pos:    the type * to use as a loop cursor.
- * @head:   the head for your list.
- * @member: the name of the gt_list_head within the struct.
+ * @param pos    the type * to use as a loop cursor.
+ * @param head   the head for your list.
+ * @param member the name of the gt_list_head within the struct.
  *
  * Start to iterate over list of given type backwards, continuing after
  * the current position.
@@ -503,9 +503,9 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
 
 /**
  * gt_list_for_each_entry_from - iterate over list of given type from the current point
- * @pos:    the type * to use as a loop cursor.
- * @head:   the head for your list.
- * @member: the name of the gt_list_head within the struct.
+ * @param pos    the type * to use as a loop cursor.
+ * @param head   the head for your list.
+ * @param member the name of the gt_list_head within the struct.
  *
  * Iterate over list of given type, continuing from current position.
  */
@@ -515,10 +515,10 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
 
 /**
  * gt_list_for_each_entry_safe - iterate over list of given type safe against removal of list entry
- * @pos:    the type * to use as a loop cursor.
- * @n:      another type * to use as temporary storage
- * @head:   the head for your list.
- * @member: the name of the gt_list_head within the struct.
+ * @param pos    the type * to use as a loop cursor.
+ * @param n      another type * to use as temporary storage
+ * @param head   the head for your list.
+ * @param member the name of the gt_list_head within the struct.
  */
 #define gt_list_for_each_entry_safe(pos, n, head, member)          \
 	for (pos = gt_list_first_entry(head, typeof(*pos), member),    \
@@ -528,10 +528,10 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
 
 /**
  * gt_list_for_each_entry_safe_continue - continue list iteration safe against removal
- * @pos:    the type * to use as a loop cursor.
- * @n:      another type * to use as temporary storage
- * @head:   the head for your list.
- * @member: the name of the gt_list_head within the struct.
+ * @param pos    the type * to use as a loop cursor.
+ * @param n      another type * to use as temporary storage
+ * @param head   the head for your list.
+ * @param member the name of the gt_list_head within the struct.
  *
  * Iterate over list of given type, continuing after current point,
  * safe against removal of list entry.
@@ -544,10 +544,10 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
 
 /**
  * gt_list_for_each_entry_safe_from - iterate over list from current point safe against removal
- * @pos:    the type * to use as a loop cursor.
- * @n:      another type * to use as temporary storage
- * @head:   the head for your list.
- * @member: the name of the gt_list_head within the struct.
+ * @param pos    the type * to use as a loop cursor.
+ * @param n      another type * to use as temporary storage
+ * @param head   the head for your list.
+ * @param member the name of the gt_list_head within the struct.
  *
  * Iterate over list of given type from current point, safe against
  * removal of list entry.
@@ -559,10 +559,10 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
 
 /**
  * gt_list_for_each_entry_safe_reverse - iterate backwards over list safe against removal
- * @pos:    the type * to use as a loop cursor.
- * @n:      another type * to use as temporary storage
- * @head:   the head for your list.
- * @member: the name of the gt_list_head within the struct.
+ * @param pos    the type * to use as a loop cursor.
+ * @param n      another type * to use as temporary storage
+ * @param head   the head for your list.
+ * @param member the name of the gt_list_head within the struct.
  *
  * Iterate backwards over list of given type, safe against removal
  * of list entry.
@@ -575,9 +575,9 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
 
 /**
  * gt_list_safe_reset_next - reset a stale gt_list_for_each_entry_safe loop
- * @pos:    the loop cursor used in the gt_list_for_each_entry_safe loop
- * @n:      temporary storage used in gt_list_for_each_entry_safe
- * @member: the name of the gt_list_head within the struct.
+ * @param pos    the loop cursor used in the gt_list_for_each_entry_safe loop
+ * @param n      temporary storage used in gt_list_for_each_entry_safe
+ * @param member the name of the gt_list_head within the struct.
  *
  * gt_list_safe_reset_next is not safe to use in general if the list may be
  * modified concurrently (eg. the lock is dropped in the loop body). An

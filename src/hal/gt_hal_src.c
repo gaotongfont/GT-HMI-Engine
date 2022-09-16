@@ -164,12 +164,6 @@ static void _gt_src_drv_register(gt_fs_drv_st * drv)
 
 /* global functions / API interface -------------------------------------*/
 
-/**
- * @brief Initializes the array mode file management system
- *
- * @param src_sys The list of resources system.
- * @param sys_count The length of the sys array.
- */
 void gt_src_init(const gt_src_st * const src_sys, uint32_t sys_count)
 {
     if (!src_sys) {

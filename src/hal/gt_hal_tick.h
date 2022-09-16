@@ -1,5 +1,5 @@
 /**
- * @file gt_tick.h
+ * @file gt_hal_tick.h
  * @author yongg
  * @brief
  * @version 0.1

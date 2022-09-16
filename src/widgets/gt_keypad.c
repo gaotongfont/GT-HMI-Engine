@@ -110,7 +110,7 @@ gt_keypad_map_st map_keypad[] = {
 
 
 gt_keypad_map_st map_keypad3[] = {
-    
+
     #define SPACE       6
     #define W           (((GT_SCREEN_WIDTH-4)/10) - 2)
     #define H           (((((GT_SCREEN_HEIGHT>>1))-4)/4)-2)
@@ -120,7 +120,7 @@ gt_keypad_map_st map_keypad3[] = {
     #define START_Y_L1    2
     #define START_X_L2    (2+(W>>1))
     #define START_Y_L2    (2 + H + SPACE)
-    
+
     'q',  {START_X_L1 + WS * 0,  START_Y_L1,  W, H },
     'w',  {START_X_L1 + WS * 1,  START_Y_L1,  W, H },
     'e',  {START_X_L1 + WS * 2,  START_Y_L1,  W, H },
@@ -142,7 +142,7 @@ gt_keypad_map_st map_keypad3[] = {
     'k',  {START_X_L2 + WS * 7,  START_Y_L2,  W, H },
     'l',  {START_X_L2 + WS * 8,  START_Y_L2,  W, H },
 };
-#endif 
+#endif
 
 gt_keypad_map_st map_keypad_mode_lower[] = {
     "1#",5,   "q",4,  "w",4,  "e",4,  "r",4,  "t",4,  "y",4,  "u",4,  "i",4,  "o",4,  "p",4,  GT_SYMBOL_BACKSPACE,7,  "\n",0,
@@ -173,7 +173,7 @@ gt_keypad_map_st map_keypad_mode_number[] = {
 static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char * kv);
 static void _gt_keypad_update_map(gt_obj_st * keypad, gt_keypad_map_st * map);
 
-static char * _gt_keypad_get_click_kv(gt_obj_st * obj) 
+static char * _gt_keypad_get_click_kv(gt_obj_st * obj)
 {
     _gt_style_keypad_st * style = obj->style;
     gt_keypad_map_st * map = style->info.map;
@@ -183,7 +183,7 @@ static char * _gt_keypad_get_click_kv(gt_obj_st * obj)
         area_key = _gt_keypad_get_key_area(obj, map[idx].kv);
         area_key.y -= obj->area.y;
         area_key.x -= obj->area.x;
-        
+
         if ((area_key.x < obj->process_attr.point.x) &&
             ((area_key.x + area_key.w) > obj->process_attr.point.x) &&
             (area_key.y < obj->process_attr.point.y) &&
@@ -210,8 +210,8 @@ static char * _gt_keypad_get_kv_selected(gt_obj_st * keypad)
 
 /**
  * @brief set keypad keydown state
- * 
- * @param keypad 
+ *
+ * @param keypad
  * @param state 0:release,1:press
  */
 static void _gt_keypad_set_state(gt_obj_st * keypad, uint8_t state)
@@ -239,23 +239,23 @@ static uint8_t _gt_keypad_get_cnt_keydown(gt_obj_st * keypad)
 
 /**
  * @brief get abs area of key
- * 
+ *
  * @param keypad keypad obj
  * @param kv the key keyvalue
- * @return gt_area_st 
+ * @return gt_area_st
  */
 static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char * kv)
 {
+    gt_area_st area_key = {
+        .x = 0,.y = 0,.w = 0,.h = 0
+    };
     if( NULL == kv ){
-        return;
+        return area_key;
     }
     _gt_style_keypad_st * style = keypad->style;
     gt_keypad_map_st * map_keypad = style->info.map;
     int idx = 0;
-    gt_area_st area_key = {
-        .x = 0,.y = 0,.w = 0,.h = 0
-    };   
-    
+
     uint16_t ys = keypad->area.y;
     uint8_t h_key = (keypad->area.h / (style->info.cnt_lines+1)) - SPACE_Y;
     uint8_t per_one_width = (keypad->area.w / style->info.per_line[0]);
@@ -266,9 +266,9 @@ static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char * kv)
     area_key.y = keypad->area.y + SPACE_Y;
     area_key.x = keypad->area.x + SPACE_X;
     while ( map_keypad[idx].kv != NULL ) {
-        
+
         area_key.w = map_keypad[idx].w * per_one_width - SPACE_X;
-        
+
         if( map_keypad[idx+1].kv && strcmp(map_keypad[idx+1].kv, "\n") == 0 ){
             if( (area_key.x + area_key.w) > (keypad->area.x + keypad->area.w - SPACE_X) ){
                 area_key.w = (keypad->area.x + keypad->area.w - SPACE_X) - area_key.x;
@@ -300,7 +300,7 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
     GT_ASSERT(keypad);
 
     _gt_style_keypad_st * style = keypad->style;
-    
+
     if( style->kv_selected == NULL ){
         return;
     }
@@ -314,7 +314,7 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
     else if(strcmp(style->kv_selected, GT_SYMBOL_BACKSPACE) == 0 ){
         gt_input_style_del_value(style->target);
     }
-    
+
     else if( strcmp(style->kv_selected, GT_SYMBOL_LEFT) == 0 ){
         gt_input_style_move_left_pos_cursor(style->target);
     }
@@ -322,7 +322,7 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
         gt_input_style_move_right_pos_cursor(style->target);
     }
     else if( strcmp(style->kv_selected, GT_SYMBOL_NEW_LINE) == 0 ){
-        gt_input_style_append_value(style->target, "\n");    
+        gt_input_style_append_value(style->target, "\n");
     }else{
         gt_input_style_append_value(style->target, style->kv_selected);
     }
@@ -397,7 +397,7 @@ static void _gt_keypad_init_widget(gt_obj_st * keypad)
     area_key.y = keypad->area.y + SPACE_Y;
     area_key.x = keypad->area.x + SPACE_X;
     while ( map_keypad[idx].kv != NULL ) {
-        
+
         rect_attr.bg_color = gt_color_hex(0xFFFFFF);
         if( _gt_keypad_check_key_is_ctl(map_keypad[idx].kv) ){
             rect_attr.bg_color = gt_color_hex(0x9699a1);
@@ -411,7 +411,7 @@ static void _gt_keypad_init_widget(gt_obj_st * keypad)
         }
 
         area_key.w = map_keypad[idx].w * per_one_width - SPACE_X;
-        
+
         if( (map_keypad[idx+1].kv && strcmp(map_keypad[idx+1].kv, "\n") == 0) || map_keypad[idx+1].kv == NULL ){
             if( (area_key.x + area_key.w) > (keypad->area.x + keypad->area.w - SPACE_X) ){
                 area_key.w = (keypad->area.x + keypad->area.w - SPACE_X) - area_key.x;
@@ -504,7 +504,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         GT_LOGD(GT_LOG_TAG_GUI, "clicking");
         if (gt_obj_check_scr(obj)) {
             _gt_keypad_set_kv_selected(obj, _gt_keypad_get_click_kv(obj));
-            area = _gt_keypad_get_key_area(obj, _gt_keypad_get_kv_selected(obj) );           
+            area = _gt_keypad_get_key_area(obj, _gt_keypad_get_kv_selected(obj) );
             // area.y += obj->area.y;
             gt_disp_ref_area(&area);
             _gt_keypad_input_event_cb(obj);
@@ -537,7 +537,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 static void _gt_keypad_init_style(gt_obj_st * keypad)
 {
     _gt_style_keypad_st * style = NULL;
-    
+
     keypad->style = gt_mem_malloc(sizeof(_gt_style_keypad_st));
     style = keypad->style;
 
@@ -571,7 +571,7 @@ static void _gt_keypad_update_map(gt_obj_st * keypad, gt_keypad_map_st * map)
     uint8_t cnt_lines = 0, cnt_keys = 0, per_all = 0;
     while( map[idx].kv != NULL ){
         cnt_keys++;
-        per_all += map[idx].w;        
+        per_all += map[idx].w;
         if( strcmp(map[idx].kv, "\n") == 0 ){
             style->info.per_line[cnt_lines] = per_all;
             cnt_lines++;
@@ -603,9 +603,9 @@ gt_obj_st * gt_keypad_create(gt_obj_st * parent)
 
 /**
  * @brief set keypad input obj,keypad input character will add to ta
- * 
- * @param keypad 
- * @param ta 
+ *
+ * @param keypad
+ * @param ta
  */
 void gt_keypad_style_set_target(gt_obj_st * keypad, gt_obj_st * ta)
 {
@@ -616,9 +616,9 @@ void gt_keypad_style_set_target(gt_obj_st * keypad, gt_obj_st * ta)
 
 /**
  * @brief set keypad of map
- * 
- * @param keypad 
- * @param map 
+ *
+ * @param keypad
+ * @param map
  */
 void gt_keypad_style_set_map(gt_obj_st * keypad,  gt_keypad_map_st * map)
 {

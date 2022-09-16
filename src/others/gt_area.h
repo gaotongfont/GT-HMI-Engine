@@ -1,7 +1,7 @@
 /**
  * @file gt_area.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-08-11 09:34:53
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -40,12 +40,12 @@ extern "C" {
 
 /**
  * @brief calc two areas intersect
- * 
- * @param area1 
- * @param area2 
- * @param area_res area intersect point and size 
- * @return true two areas intersect
- * @return false two areas not intersect
+ *
+ * @param area_back background area
+ * @param area_fore foreground area
+ * @param area_res area intersect point and size
+ * @return true two areas intersect,
+ *      false two areas not intersect
  */
 bool gt_area_intersect(const gt_area_st * area_back, const gt_area_st * area_fore, gt_area_st * area_res);
 

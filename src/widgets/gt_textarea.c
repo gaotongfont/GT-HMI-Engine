@@ -60,7 +60,7 @@ static void _gt_textarea_init_widget(gt_obj_st * textarea) {
         .font       = &font,
         .space_x    = style->space_x,
         .space_y    = style->space_y,
-        .align      = GT_ALIGN_NONE,        
+        .align      = GT_ALIGN_NONE,
     };
 
     gt_area_st area_font = textarea->area, area_temp;
@@ -153,7 +153,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
             GT_LOGD(GT_LOG_TAG_GUI, "clicking");
-            
+
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
@@ -170,7 +170,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
             GT_LOGD(GT_LOG_TAG_GUI, "processed");
-            
+
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
@@ -183,7 +183,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 static void _gt_textarea_init_style(gt_obj_st * textarea)
 {
     _gt_style_textarea_st * style = NULL;
-    
+
     textarea->style = gt_mem_malloc(sizeof(_gt_style_textarea_st));
     style = textarea->style;
 
@@ -199,12 +199,6 @@ static void _gt_textarea_init_style(gt_obj_st * textarea)
 
 /* global functions / API interface -------------------------------------*/
 
-/**
- * @brief create a textarea obj
- *
- * @param parent textarea's parent element
- * @return gt_obj_st* textarea obj
- */
 gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
     _gt_textarea_init_style(obj);
@@ -214,7 +208,7 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
 void gt_textarea_style_set_text(gt_obj_st * textarea, char * text)
 {
     _gt_style_textarea_st * style = textarea->style;
-    
+
 }
 
 char * gt_textarea_style_get_text(gt_obj_st * textarea){

@@ -27,22 +27,22 @@ extern "C" {
  * @brief virt file drv operate result
  */
 typedef enum {
-    GT_FS_RES_FAIL = -1,    /**< failed to open file */
-    GT_FS_RES_OK,           /**< file was successfully opened */
-    GT_FS_RES_HW_ERR,       /**< file system hardware errors */
-    GT_FS_RES_NOT_EX,       /**< file system not exists */
-    GT_FS_RES_DEINIT,       /**< file system deinit */
-    GT_FS_RES_BUSY,         /**< file operation is busy */
-    GT_FS_RES_READY,        /**< file system ready */
-    GT_FS_RES_NULL,         /**< file is null */
+    GT_FS_RES_FAIL = -1,    /// failed to open file
+    GT_FS_RES_OK,           /// file was successfully opened
+    GT_FS_RES_HW_ERR,       /// file system hardware errors
+    GT_FS_RES_NOT_EX,       /// file system not exists
+    GT_FS_RES_DEINIT,       /// file system deinit
+    GT_FS_RES_BUSY,         /// file operation is busy
+    GT_FS_RES_READY,        /// file system ready
+    GT_FS_RES_NULL,         /// file is null
 }gt_fs_res_et;
 
 /**
  * @brief virtual file system write or read mode.
  */
 typedef enum {
-    GT_FS_MODE_WR = 1,  /**< file system write and read mode */
-    GT_FS_MODE_RD = 2,  /**< file system read only mode */
+    GT_FS_MODE_WR = 1,  /// file system write and read mode
+    GT_FS_MODE_RD = 2,  /// file system read only mode
 }gt_fs_mode_et;
 
 /**
@@ -93,9 +93,9 @@ typedef struct _gt_fs_fp_s{
  * @brief seek set pos type
  */
 typedef enum {
-    GT_FS_SEEK_SET = 0x00,      /**< Set the position from absolutely (from the start of file)*/
-    GT_FS_SEEK_CUR = 0x01,      /**< Set the position from the current position*/
-    GT_FS_SEEK_END = 0x02,      /**< Set the position from the end of the file*/
+    GT_FS_SEEK_SET = 0x00,      /// Set the position from absolutely (from the start of file)
+    GT_FS_SEEK_CUR = 0x01,      /// Set the position from the current position
+    GT_FS_SEEK_END = 0x02,      /// Set the position from the end of the file
 }gt_fs_whence_et;
 
 typedef struct _gt_fs_dir_s {
@@ -113,12 +113,12 @@ typedef struct _gt_fs_drv_s {
      * @brief write or read data from flash
      * ! [user set: spi read write func]
      *
-     * @param data_write the data to be written
-     * @param len_write the length of the data to be written
-     * @param data_read the data to be read from flash
-     * @param len_read the length need to read from flash
+     * param data_write the data to be written
+     * param len_write the length of the data to be written
+     * param data_read the data to be read from flash
+     * param len_read the length need to read from flash
      *
-     * @return uint32_t The number of bytes data read back preferentially,
+     * return uint32_t The number of bytes data read back preferentially,
      *      otherwise the number of bytes written successfully.
      */
     uint32_t ( * rw_cb)(uint8_t * data_write, uint32_t len_write, uint8_t * data_read, uint32_t len_read);

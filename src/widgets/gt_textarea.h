@@ -1,7 +1,7 @@
 /**
  * @file gt_textarea.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-13 09:47:27
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -38,7 +38,7 @@ typedef struct _gt_style_textarea_s{
     uint8_t font_style_cn;
     uint8_t font_style_en;
     uint8_t font_size;
-    
+
     _gt_txt_st * txts;
 }_gt_style_textarea_st;
 
@@ -50,29 +50,29 @@ typedef struct _gt_style_textarea_s{
 /* global functions / API interface -------------------------------------*/
 
 /**
- * @brief create textarea widget
- * 
- * @param parent 
- * @return gt_obj_st* textarea widget pointer
+ * @brief create a textarea obj
+ *
+ * @param parent textarea's parent element
+ * @return gt_obj_st* textarea obj
  */
 gt_obj_st * gt_textarea_create(gt_obj_st * parent);
 
 /**
  * @brief add string to textarea widget with style
- * 
+ *
  * @param textarea obj pointer
  * @param str text
- * @param style font style @gt_font_style_et
+ * @param style font style @ref gt_font_style_et
  * @param color font color
  */
 void gt_textarea_style_add_str(gt_obj_st * textarea, char * str, uint8_t style, gt_color_t color);
 
 /**
  * @brief set textarea space
- * 
+ *
  * @param textarea obj pointer
- * @param space_x 
- * @param space_y 
+ * @param space_x
+ * @param space_y
  */
 void gt_textarea_style_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t space_y);
 

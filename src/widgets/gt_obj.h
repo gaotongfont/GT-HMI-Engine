@@ -45,7 +45,7 @@ typedef struct _gt_obj_event_attr_s{
 }gt_obj_event_attr_st;
 
 /**
- * @brief save all indev\disp\others dev data
+ * @brief save all indev/disp/others dev data
  */
 typedef struct _gt_obj_process_attr_s{
     gt_point_st point;      //click point(note: the point is for obj)
@@ -79,13 +79,13 @@ typedef struct _gt_obj_s {
     gt_obj_event_attr_st * event_attr;
     struct _gt_draw_ctx_t * draw_ctx;
     gt_obj_process_attr_st process_attr;
-    
+
     uint32_t event_mask;                /* send event code add this mask */
-    
+
     uint16_t cnt_child;
     uint8_t cnt_event;
     uint8_t opa_bg;
-    
+
     gt_area_st area;                    /* base area */
 
     style_widget_t style;

@@ -31,43 +31,43 @@ extern "C" {
  * @brief Support extra image decoder type
  */
 typedef enum {
-    GT_IMG_DECODER_TYPE_PNG = 0,    /**< supports png type image */
+    GT_IMG_DECODER_TYPE_PNG = 0,    /// supports png type image
 
-    GT_IMG_DECODER_TYPE_COUNT,      /**< totally supports type count */
+    GT_IMG_DECODER_TYPE_COUNT,      /// totally supports type count
 }gt_img_decoder_type_em;
 
 /**
  * @brief Image color format type
  */
 typedef enum gt_img_color_format_e {
-    GT_IMG_CF_UNKNOWN = 0,      /**< Unknown color format */
+    GT_IMG_CF_UNKNOWN = 0,      /// Unknown color format
 
-    GT_IMG_CF_TRUE_COLOR,       /**< RGB888 */
-    GT_IMG_CF_TRUE_COLOR_ALPHA, /**< ARGB8888 / RGBA 8888 */
+    GT_IMG_CF_TRUE_COLOR,       /// RGB888
+    GT_IMG_CF_TRUE_COLOR_ALPHA, /// ARGB8888 / RGBA 8888
 }gt_img_color_format_et;
 
 /**
  * @brief image header info
  */
 typedef struct _gt_img_info_s {
-    uint32_t color_format : 5;  /**< @ref gt_img_color_format_et */
+    uint32_t color_format : 5;  /// @ref gt_img_color_format_et
     uint32_t reserved : 3;
     uint32_t w : 12;
     uint32_t h : 12;
-    uint8_t type;               /**< record this decoder image type */
+    uint8_t type;               /// record this decoder image type
 }_gt_img_info_st;
 
 /**
  * @brief describe image info
  */
 typedef struct _gt_img_dsc_s {
-    struct _gt_img_decoder_s * decoder; /**< iamge decoder */
-    void * src;                 /**< path or destination of image */
-    _gt_img_info_st header;     /**< the header information of image */
-    gt_size_t frame_id;         /**< frame sequence number of the frame animation, [default: 0] */
-    gt_fs_type_et type;         /**< file driver type, such as: SD, Flash... */
-    uint8_t * img;              /**< temp buffer which is used to save image data */
-    void * user_data;           /**< user data */
+    struct _gt_img_decoder_s * decoder; /// iamge decoder
+    void * src;                 /// path or destination of image
+    _gt_img_info_st header;     /// the header information of image
+    gt_size_t frame_id;         /// frame sequence number of the frame animation, [default: 0]
+    gt_fs_type_et type;         /// file driver type, such as: SD, Flash...
+    uint8_t * img;              /// temp buffer which is used to save image data
+    void * user_data;           /// user data
 }_gt_img_dsc_st;
 
 struct _gt_img_decoder_s;
@@ -94,10 +94,10 @@ typedef gt_res_t ( * gt_img_decoder_close_t)(struct _gt_img_decoder_s * decoder,
  * @brief callback function
  */
 typedef struct _gt_img_decoder_s {
-    gt_img_decoder_get_info_t info_cb;          /**< get image base information */
-    gt_img_decoder_open_t open_cb;              /**< open image file and create file object */
-    gt_img_decoder_read_line_t read_line_cb;    /**< read image data */
-    gt_img_decoder_close_t close_cb;            /**< close image file object */
+    gt_img_decoder_get_info_t info_cb;          /// get image base information
+    gt_img_decoder_open_t open_cb;              /// open image file and create file object
+    gt_img_decoder_read_line_t read_line_cb;    /// read image data
+    gt_img_decoder_close_t close_cb;            /// close image file object
 
     struct gt_list_head list;   // GUI system used, Do not modify!
 }_gt_img_decoder_st;

@@ -1,7 +1,7 @@
 /**
  * @file gt_obj_pos.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-15 14:34:36
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -54,7 +54,7 @@ bool gt_obj_is_visible(gt_obj_st * obj){
     }
 
     gt_area_st area_obj, area_disp;
-    
+
     gt_area_copy( &area_disp, &disp->area_disp );
     gt_area_copy( &area_obj, &obj->area );
 
@@ -99,12 +99,12 @@ bool gt_obj_check_visible(gt_obj_st * obj, gt_area_st area)
 }
 
 void gt_obj_get_valid_area(gt_obj_st * obj, gt_area_st * area_act, gt_area_st *area_valid)
-{		
+{
 	gt_area_st area_disp, area_obj;
-    
+
     gt_area_copy(&area_disp, area_act);
     gt_area_copy(&area_obj, &obj->area);
-    
+
     #define __X1(area)    (area.x)
     #define __X2(area)    (area.x+area.w)
     #define __Y1(area)    (area.y)
@@ -150,19 +150,11 @@ void gt_obj_get_valid_area(gt_obj_st * obj, gt_area_st * area_act, gt_area_st *a
             area_valid->h = area_disp.h;
         }
 	}
-		
+
     return;
 }
 
 
-/**
- * @brief check obj was clicked
- * 
- * @param obj check obj
- * @param point click point
- * @return true clicked
- * @return false not clicked
- */
 bool gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point ){
     bool ret = false;
     if( (point->x >= obj->area.x) && (point->x <= (obj->area.x + obj->area.w)) ){
@@ -176,8 +168,8 @@ bool gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point ){
 static gt_obj_st * _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st * point){
     int idx = 0;
     gt_obj_st * obj_clicked = NULL, * obj_temp = NULL;
-    while( idx < parent->cnt_child ){            
-        if( 0 != parent->child[idx]->cnt_child ){            
+    while( idx < parent->cnt_child ){
+        if( 0 != parent->child[idx]->cnt_child ){
             obj_temp = _gt_obj_foreach_clicked(parent->child[idx], point);
             if( obj_temp ){
                 obj_clicked = obj_temp;
@@ -194,13 +186,6 @@ static gt_obj_st * _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st * poi
     return obj_clicked;
 }
 
-/**
- * @brief find smallest clicked obj from parent
- * 
- * @param parent parent obj
- * @param point click point
- * @return gt_obj_st* smallest and clicked obj in parent
- */
 gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point){
     uint8_t idx = 0;
     gt_obj_st * obj_clicked = parent, * obj_temp = NULL;
@@ -214,7 +199,7 @@ gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point
         obj_clicked = obj_temp;
     }
     return obj_clicked;
-    
+
 	// old func: no foreach all obj
     while( idx < parent->cnt_child ){
         if( gt_obj_check_is_clicked(parent->child[idx], &_point) ){
@@ -227,13 +212,6 @@ gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point
     return obj_clicked;
 }
 
-/**
- * @brief check obj is in the disp screen now
- * 
- * @param obj need check obj
- * @return true yes
- * @return false no
- */
 bool gt_obj_check_scr(gt_obj_st * obj)
 {
     gt_obj_st * scr_now = gt_disp_get_scr();
@@ -251,7 +229,7 @@ bool gt_obj_check_scr(gt_obj_st * obj)
 
 /**
  * @brief set obj process point data
- * 
+ *
  * @param obj obj
  * @param point point ptr
  */
@@ -262,10 +240,10 @@ void _gt_obj_set_process_point(gt_obj_st * obj, gt_point_st * point){
 
 /**
  * @brief set obj process scroll xy
- * 
- * @param obj 
- * @param x_scroll 
- * @param y_scroll 
+ *
+ * @param obj
+ * @param x_scroll
+ * @param y_scroll
  */
 void _gt_obj_set_process_scroll_xy(gt_obj_st * obj, gt_size_t x_scroll, gt_size_t y_scroll)
 {
@@ -275,8 +253,9 @@ void _gt_obj_set_process_scroll_xy(gt_obj_st * obj, gt_size_t x_scroll, gt_size_
 
 /**
  * @brief Get the point of the clicked obj
- * 
+ *
  * @param obj click obj
+ * @param point_phy point data
  * @param point_ret point data
  */
 void gt_obj_get_click_point_by_phy_point(gt_obj_st * obj, gt_point_st * point_phy, gt_point_st * point_ret)
