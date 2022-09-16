@@ -53,7 +53,7 @@ static gt_color_t * color;
  * @param fg_color foreground
  * @param bg_color background
  */
-void _gt_graph_dot_to_color(uint8_t * dot, gt_color_t * color,gt_size_t w, gt_size_t h, gt_color_t fg_color, gt_color_t bg_color)
+static void _gt_graph_dot_to_color(uint8_t * dot, gt_color_t * color,gt_size_t w, gt_size_t h, gt_color_t fg_color, gt_color_t bg_color)
 {
 	int i,idx, len,cnt=0;
 	idx = 0;
@@ -80,7 +80,7 @@ void _gt_graph_dot_to_color(uint8_t * dot, gt_color_t * color,gt_size_t w, gt_si
  * @param h array height
  * @param fg_color foreground
  */
-void _gt_graph_dot_to_color_no_bg_color(uint8_t *dot, gt_color_t *color,gt_size_t w, gt_size_t h, gt_color_t fg_color)
+static void _gt_graph_dot_to_color_no_bg_color(uint8_t *dot, gt_color_t *color,gt_size_t w, gt_size_t h, gt_color_t fg_color)
 {
 	int i,idx, len,cnt=0;
 	idx = 0;
@@ -96,58 +96,8 @@ void _gt_graph_dot_to_color_no_bg_color(uint8_t *dot, gt_color_t *color,gt_size_
 	}
 }
 
-/**
- * @brief dot data change to gray data
- *
- * @param dot input dot array => output gray array
- * @param w array width
- * @param h array height
- * @param level_gray gray level
- */
-void gt_graph_dot_to_gray(uint8_t *dot, uint8_t *out, gt_size_t w, gt_size_t h, uint8_t level_gray)
-{
-	int _x,_y,_w, _h;
-	int bit_idx;
-	uint8_t bit_mask,bit_cnt,bit_step,bit_x,bit_y;
-	uint8_t *p;
-	float d1,weight=0.5;
 
-	bit_idx = 8;
-	switch ( level_gray ) {
-		case GT_GRAY_1: bit_step = 1; bit_cnt = 8; bit_mask = 0x01; break;
-		case GT_GRAY_2:	bit_step = 2; bit_cnt = 4; bit_mask = 0x03; break;
-		case GT_GRAY_4:	bit_step = 4; bit_cnt = 2; bit_mask = 0x0F; break;
-		case GT_GRAY_8:	bit_step = 8; bit_cnt = 1; bit_mask = 0xFF; break;
-		default: break;
-	}
-
-	_x = 0;
-	_y = 0;
-	_w = (w*level_gray)/8;
-	_h = h*level_gray;
-
-	while(_y<_h) {
-		while(_x<_w) {
-			bit_idx = 8;
-			for(bit_x=0; bit_x<bit_cnt; bit_x++) {
-				p = dot+(_y*_w);
-				bit_idx = bit_idx-bit_step;
-				d1 = 0;
-				for(bit_y=0; bit_y<bit_cnt; bit_y++) {
-					d1 += ((*p>>bit_idx)&bit_mask)*weight;
-					p+=_w;
-				}
-				*out = *out&(~bit_mask<<bit_idx) | ((int)d1<<bit_idx);
-			}
-			out++;
-			_x++;
-		}
-		_y+=level_gray;
-	}
-}
-
-
-void _gt_graph_gray_to_color(uint8_t *gray, gt_color_t *color,gt_size_t w, gt_size_t h, gt_color_t fg_color, gt_color_t bg_color, gt_size_t level_gray)
+static void _gt_graph_gray_to_color(uint8_t *gray, gt_color_t *color,gt_size_t w, gt_size_t h, gt_color_t fg_color, gt_color_t bg_color, gt_size_t level_gray)
 {
 	int i, idx, len, cnt=0;
 	int bit_step, bit_cnt, bit_idx;
@@ -177,51 +127,6 @@ void _gt_graph_gray_to_color(uint8_t *gray, gt_color_t *color,gt_size_t w, gt_si
 		}
 		idx++;
 	}
-}
-
-/* global functions / API interface -------------------------------------*/
-
-uint32_t gt_graph_get_gray(gt_color_t * color_out, gt_color_t color_from, gt_color_t color_to, gt_size_t gray, gt_size_t step)
-{
-	color_out->ch.red   = (GT_COLOR_GET_R(color_to) - GT_COLOR_GET_R(color_from)) * step / gray + GT_COLOR_GET_R(color_from);
-	color_out->ch.green = (GT_COLOR_GET_G(color_to) - GT_COLOR_GET_G(color_from)) * step / gray + GT_COLOR_GET_G(color_from);
-	color_out->ch.blue  = (GT_COLOR_GET_B(color_to) - GT_COLOR_GET_B(color_from)) * step / gray + GT_COLOR_GET_B(color_from);
-
-	return color_out->full;
-}
-/**
- * @brief init rect_attr
- *
- * @param rect_attr
- */
-void gt_graph_init_rect_attr(gt_attr_rect_st * rect_attr)
-{
-	gt_memset(rect_attr, 0, sizeof(gt_attr_rect_st));
-	rect_attr->bg_color = gt_color_black();
-	rect_attr->bg_opa = GT_OPA_COVER;
-	rect_attr->border_color = gt_color_black();
-	rect_attr->border_opa = GT_OPA_COVER;
-}
-void gt_graph_init_line_attr(gt_attr_line_st * line_attr)
-{
-	gt_memset(line_attr, 0, sizeof(gt_attr_line_st));
-}
-void gt_graph_init_arch_attr(gt_attr_arch_st * arch_attr)
-{
-	gt_memset(arch_attr, 0, sizeof(gt_attr_arch_st));
-}
-void gt_graph_init_circle_attr(gt_attr_circle_st * circle_attr)
-{
-	gt_memset(circle_attr, 0, sizeof(gt_attr_circle_st));
-}
-
-gt_color_t * gt_graph_get_default()
-{
-	return color;
-}
-
-void gt_graph_set_default(gt_color_t * _color){
-	color = _color;
 }
 
 /**
@@ -714,12 +619,88 @@ static void _gt_graph_arc_45_90(
 	}
 }
 
-/**
- * @brief draw a circle
- *
- * @param circle_attr circle attribute
- * @param area display area
- */
+/* global functions / API interface -------------------------------------*/
+
+void gt_graph_dot_to_gray(uint8_t *dot, uint8_t *out, gt_size_t w, gt_size_t h, uint8_t level_gray)
+{
+	int _x,_y,_w, _h;
+	int bit_idx;
+	uint8_t bit_mask,bit_cnt,bit_step,bit_x,bit_y;
+	uint8_t *p;
+	float d1,weight=0.5;
+
+	bit_idx = 8;
+	switch ( level_gray ) {
+		case GT_GRAY_1: bit_step = 1; bit_cnt = 8; bit_mask = 0x01; break;
+		case GT_GRAY_2:	bit_step = 2; bit_cnt = 4; bit_mask = 0x03; break;
+		case GT_GRAY_4:	bit_step = 4; bit_cnt = 2; bit_mask = 0x0F; break;
+		case GT_GRAY_8:	bit_step = 8; bit_cnt = 1; bit_mask = 0xFF; break;
+		default: break;
+	}
+
+	_x = 0;
+	_y = 0;
+	_w = (w*level_gray)/8;
+	_h = h*level_gray;
+
+	while(_y<_h) {
+		while(_x<_w) {
+			bit_idx = 8;
+			for(bit_x=0; bit_x<bit_cnt; bit_x++) {
+				p = dot+(_y*_w);
+				bit_idx = bit_idx-bit_step;
+				d1 = 0;
+				for(bit_y=0; bit_y<bit_cnt; bit_y++) {
+					d1 += ((*p>>bit_idx)&bit_mask)*weight;
+					p+=_w;
+				}
+				*out = *out&(~bit_mask<<bit_idx) | ((int)d1<<bit_idx);
+			}
+			out++;
+			_x++;
+		}
+		_y+=level_gray;
+	}
+}
+
+uint32_t gt_graph_get_gray(gt_color_t * color_out, gt_color_t color_from, gt_color_t color_to, gt_size_t gray, gt_size_t step)
+{
+	color_out->ch.red   = (GT_COLOR_GET_R(color_to) - GT_COLOR_GET_R(color_from)) * step / gray + GT_COLOR_GET_R(color_from);
+	color_out->ch.green = (GT_COLOR_GET_G(color_to) - GT_COLOR_GET_G(color_from)) * step / gray + GT_COLOR_GET_G(color_from);
+	color_out->ch.blue  = (GT_COLOR_GET_B(color_to) - GT_COLOR_GET_B(color_from)) * step / gray + GT_COLOR_GET_B(color_from);
+
+	return color_out->full;
+}
+
+void gt_graph_init_rect_attr(gt_attr_rect_st * rect_attr)
+{
+	gt_memset(rect_attr, 0, sizeof(gt_attr_rect_st));
+	rect_attr->bg_color = gt_color_black();
+	rect_attr->bg_opa = GT_OPA_COVER;
+	rect_attr->border_color = gt_color_black();
+	rect_attr->border_opa = GT_OPA_COVER;
+}
+void gt_graph_init_line_attr(gt_attr_line_st * line_attr)
+{
+	gt_memset(line_attr, 0, sizeof(gt_attr_line_st));
+}
+void gt_graph_init_arch_attr(gt_attr_arch_st * arch_attr)
+{
+	gt_memset(arch_attr, 0, sizeof(gt_attr_arch_st));
+}
+void gt_graph_init_circle_attr(gt_attr_circle_st * circle_attr)
+{
+	gt_memset(circle_attr, 0, sizeof(gt_attr_circle_st));
+}
+
+gt_color_t * gt_graph_get_default()
+{
+	return color;
+}
+
+void gt_graph_set_default(gt_color_t * _color){
+	color = _color;
+}
 void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area, gt_color_t * color_buf)
 {
 	// gt_color_t * buf   = gt_disp_graph_get_buf_default();
@@ -919,16 +900,6 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 	}
 }
 
-/**
- * @brief draw dot to color_arr
- *
- * @param dot dot arr
- * @param color color_arr
- * @param area_color pos and size of color_arr
- * @param w dot width
- * @param h dot height
- * @param fg_color fg_color
- */
 void gt_graph_dot_draw_to_color(uint8_t * dot, gt_color_t * color, gt_area_st area_color, uint8_t w, uint8_t h, gt_color_t fg_color)
 {
 	uint16_t y, x, idx = 0, temp;
