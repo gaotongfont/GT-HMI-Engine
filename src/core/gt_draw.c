@@ -1,7 +1,7 @@
 /**
  * @file gt_draw.c
  * @author yongg
- * @brief
+ * @brief Interface functions for drawing text and images
  * @version 0.1
  * @date 2022-08-09 18:29:24
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -42,7 +42,7 @@
 
 
 /* static functions -----------------------------------------------------*/
-void gt_mirror_hor_u8(uint8_t * dst, uint8_t * src, uint32_t w, uint32_t h)
+static void gt_mirror_hor_u8(uint8_t * dst, uint8_t * src, uint32_t w, uint32_t h)
 {
     int x, y, idx_dst = 0, idx_src = 0;
     for (y = 0; y < h; y++) {
@@ -55,7 +55,7 @@ void gt_mirror_hor_u8(uint8_t * dst, uint8_t * src, uint32_t w, uint32_t h)
     }
 }
 
-void gt_mirror_ver_u8(uint8_t * dst, uint8_t * src, uint32_t w, uint32_t h)
+static void gt_mirror_ver_u8(uint8_t * dst, uint8_t * src, uint32_t w, uint32_t h)
 {
     int x, y, idx_dst = 0, idx_src = 0;
     for (y = 0; y < h; y++) {
@@ -84,16 +84,6 @@ void gt_draw_rect(gt_draw_ctx_t * ctx, gt_attr_rect_st * attr, gt_area_st * coor
 
 }
 
-
-
-/*  static func --------------------------------------------------------*/
-/**
- * @brief draw rect background
- *
- * @param draw_ctx
- * @param dsc
- * @param coords
- */
 void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
 {
     if (dsc->bg_opa <= GT_OPA_MIN) return;

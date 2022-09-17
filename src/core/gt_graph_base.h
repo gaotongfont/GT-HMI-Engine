@@ -1,7 +1,7 @@
 /**
  * @file gt_graph_base.h
  * @author yongg
- * @brief
+ * @brief Low-level rendering interface
  * @version 0.1
  * @date 2022-05-11 15:07:30
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -35,6 +35,10 @@ extern "C" {
 
 #define GT_RADIUS_MIN   2
 /* typedef --------------------------------------------------------------*/
+
+/**
+ * @brief blend mode type
+ */
 typedef enum {
     GT_BLEND_MODE_NORMAL,     ///< Simply mix according to the opacity value
     GT_BLEND_MODE_ADDITIVE,   ///< Add the respective color channels
@@ -43,70 +47,78 @@ typedef enum {
     GT_BLEND_MODE_REPLACE,    ///< Replace background with foreground in the area
 }gt_blend_mode_et;
 
+/**
+ * @brief line attribute information
+ */
 typedef struct _gt_attr_line_s
 {
-    gt_blend_mode_et blend_mode;
-    gt_color_t fg_color;
-    gt_color_t bg_color;
-    gt_size_t width;
+    gt_blend_mode_et blend_mode;    ///< mode  type
+    gt_color_t fg_color;            ///< fore color
+    gt_color_t bg_color;            ///< background color
+    gt_size_t width;                ///< line width
 
-    gt_size_t x_1;
-    gt_size_t y_1;
+    gt_size_t x_1;                  ///< start point position
+    gt_size_t y_1;                  ///< start point position
 
-    gt_size_t x_2;
-    gt_size_t y_2;
+    gt_size_t x_2;                  ///< end point position
+    gt_size_t y_2;                  ///< end point position
 }gt_attr_line_st;
 
+/**
+ * @brief rectangle attribute information
+ */
 typedef struct _gt_attr_rect_s
 {
     // gt_blend_mode_et blend_mode;
-    gt_size_t radius;
+    gt_size_t radius;           ///< radius value
 
-    gt_color_t fg_color;
+    gt_color_t fg_color;        ///< foreground color
 
-    gt_color_t bg_color;
-    gt_opt_t bg_opa;
+    gt_color_t bg_color;        ///< background color
+    gt_opt_t bg_opa;            ///< background opacity
 
     // bg img
-    void * bg_img_src;
-    gt_opt_t bg_img_opa;
+    void * bg_img_src;          ///< image source
+    gt_opt_t bg_img_opa;        ///< image opacity
 
     // border
-    gt_color_t border_color;
-    gt_size_t border_width;
-    gt_opa_t border_opa;
+    gt_color_t border_color;    ///< border color
+    gt_size_t border_width;     ///< border width in pixels
+    gt_opa_t border_opa;        ///< border opacity
 
-    uint8_t is_fill:1;
+    uint8_t is_fill:1;          ///< fill inside area by fg_color
 }gt_attr_rect_st;
 
-
+/**
+ * @brief circle attribute information
+ */
 typedef struct _gt_attr_circle_s
 {
-    gt_color_t fg_color;
-    gt_color_t bg_color;
+    gt_color_t fg_color;        ///< fore color
+    gt_color_t bg_color;        ///< background color
 
-    gt_size_t radius;
+    gt_size_t radius;           ///< radius value
 
-    gt_size_t border_width;
-    gt_color_t border_color;
+    gt_size_t border_width;     ///< border width
+    gt_color_t border_color;    ///< border color
 
-    uint8_t is_fill:1;
+    uint8_t is_fill:1;          ///< fill inside area by fg_color
 }gt_attr_circle_st;
 
-
-
-
+/**
+ * @brief arch attribute information
+ */
 typedef struct _gt_attr_arch_s
 {
-    gt_blend_mode_et blend_mode;
-    gt_color_t fg_color;
-    gt_color_t bg_color;
+    gt_blend_mode_et blend_mode;    ///<  blend mode
+    gt_color_t fg_color;            ///< fore color
+    gt_color_t bg_color;            ///< background color
 
-    gt_size_t radius;
-    gt_size_t angle_start;
-    gt_size_t angle_end;
+    gt_size_t radius;               ///< radius value
+    gt_size_t angle_start;          ///< The start angle
+    gt_size_t angle_end;            ///< The end angle
 
-    gt_size_t border_width;
+    gt_size_t border_width;         ///< border width
 }gt_attr_arch_st;
 
 /* macros ---------------------------------------------------------------*/
@@ -120,12 +132,50 @@ typedef struct _gt_attr_arch_s
  * @param rect_attr
  */
 void gt_graph_init_rect_attr(gt_attr_rect_st * rect_attr);
+
+/**
+ * @brief
+ *
+ * @param line_attr
+ */
 void gt_graph_init_line_attr(gt_attr_line_st * line_attr);
+
+/**
+ * @brief init line attribute object
+ *
+ * @param arch_attr
+ */
 void gt_graph_init_arch_attr(gt_attr_arch_st * arch_attr);
+
+/**
+ * @brief init circle attribute object
+ *
+ * @param circle_attr
+ */
 void gt_graph_init_circle_attr(gt_attr_circle_st * circle_attr);
 
+/**
+ * @brief Get gary between two colors
+ *
+ * @param color_out The return color value
+ * @param color_from
+ * @param color_to
+ * @param gray
+ * @param step The level of gray value
+ * @return uint32_t The color value
+ */
 uint32_t gt_graph_get_gray(gt_color_t * color_out, gt_color_t color_from, gt_color_t color_to, gt_size_t gray, gt_size_t step);
+
+/**
+ * @brief Get default display buffer
+ *
+ * @return gt_color_t*
+ */
 gt_color_t * gt_graph_get_default(void);
+
+/**
+ * @brief Set default display buffer
+ */
 void gt_graph_set_default(gt_color_t *);
 
 /**
@@ -137,10 +187,32 @@ void gt_graph_set_default(gt_color_t *);
  */
 void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area, gt_color_t * color_buf);
 
+/**
+ * @brief draw a line
+ *
+ * @param line_attr line attribute
+ * @param area  display area
+ */
 void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area );
+
+/**
+ * @brief Draw a rectangle
+ *
+ * @param rect_attr
+ * @param area
+ * @param color
+ */
 void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * color );
+
+/**
+ * @brief Draw a arch
+ *
+ * @param arch_attr
+ * @param area
+ */
 void gt_graph_arch(gt_attr_arch_st * arch_attr, gt_area_st * area );
-void _gt_graph_dot_circle(gt_attr_circle_st * circle_attr, gt_area_st * area);
+
+// void _gt_graph_dot_circle(gt_attr_circle_st * circle_attr, gt_area_st * area); // undefined
 
 /**
  * @brief draw dot to color_arr
