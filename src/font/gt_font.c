@@ -247,13 +247,6 @@ lab_next_word:
     }
 }
 
-/**
- * @brief 
- * 
- * @param utf8 
- * @param len 
- * @return uint32_t 
- */
 uint32_t gt_font_count_word(char * utf8, uint32_t len)
 {
     uint32_t idx = 0, cnt = 0, unicode;
@@ -264,12 +257,6 @@ uint32_t gt_font_count_word(char * utf8, uint32_t len)
     return cnt;
 }
 
-/**
- * @brief get string all width
- *
- * @param font string msg
- * @return uint32_t all width
- */
 uint32_t gt_font_get_string_width(gt_font_st * font)
 {
 
@@ -298,13 +285,6 @@ uint8_t gt_font_get_one_word_width(uint32_t unicode, uint8_t font_size){
     }
 }
 
-/**
- * @brief get next word width from font_st
- *
- * @param font font msg
- * @param is_head this can be 0:start from cur, 1:start from head
- * @return uint8_t next word width
- */
 uint8_t gt_font_get_next_word_width(gt_font_st * font, uint8_t is_head){
     static uint16_t idx = 0;
     uint16_t i = 0, idx_utf8 = 0;
@@ -322,7 +302,7 @@ uint8_t gt_font_get_next_word_width(gt_font_st * font, uint8_t is_head){
 
 
 void gt_dot_to_mask_buf(uint8_t * dot, uint8_t * mask_buf, uint16_t w, uint16_t h){
-    
+
 }
 
 

@@ -27,22 +27,22 @@ extern "C" {
  * @brief virt file drv operate result
  */
 typedef enum {
-    GT_FS_RES_FAIL = -1,    /// failed to open file
-    GT_FS_RES_OK,           /// file was successfully opened
-    GT_FS_RES_HW_ERR,       /// file system hardware errors
-    GT_FS_RES_NOT_EX,       /// file system not exists
-    GT_FS_RES_DEINIT,       /// file system deinit
-    GT_FS_RES_BUSY,         /// file operation is busy
-    GT_FS_RES_READY,        /// file system ready
-    GT_FS_RES_NULL,         /// file is null
+    GT_FS_RES_FAIL = -1,    ///< failed to open file
+    GT_FS_RES_OK,           ///< file was successfully opened
+    GT_FS_RES_HW_ERR,       ///< file system hardware errors
+    GT_FS_RES_NOT_EX,       ///< file system not exists
+    GT_FS_RES_DEINIT,       ///< file system deinit
+    GT_FS_RES_BUSY,         ///< file operation is busy
+    GT_FS_RES_READY,        ///< file system ready
+    GT_FS_RES_NULL,         ///< file is null
 }gt_fs_res_et;
 
 /**
  * @brief virtual file system write or read mode.
  */
 typedef enum {
-    GT_FS_MODE_WR = 1,  /// file system write and read mode
-    GT_FS_MODE_RD = 2,  /// file system read only mode
+    GT_FS_MODE_WR = 1,  ///< file system write and read mode
+    GT_FS_MODE_RD = 2,  ///< file system read only mode
 }gt_fs_mode_et;
 
 /**
@@ -72,8 +72,8 @@ typedef struct _gt_fs_fp_s{
     uint32_t end;
     uint32_t pos;
 
-    gt_fs_type_et type;     //file type flash or array,this can be @ref gt_fs_type_et
-    gt_fs_mode_et mode;     //file mode
+    gt_fs_type_et type;     ///< file type flash or array,this can be @ref gt_fs_type_et
+    gt_fs_mode_et mode;     ///< file mode
 
     union {
         struct {
@@ -85,7 +85,7 @@ typedef struct _gt_fs_fp_s{
             uint32_t encoding;
         }txt;
     }msg;
-    void * file_fp;     // unused  FILE * fp; for  SD Card
+    void * file_fp;     ///< unused  FILE * fp; for  SD Card
     void * buffer;
 }gt_fs_fp_st;
 
@@ -93,9 +93,9 @@ typedef struct _gt_fs_fp_s{
  * @brief seek set pos type
  */
 typedef enum {
-    GT_FS_SEEK_SET = 0x00,      /// Set the position from absolutely (from the start of file)
-    GT_FS_SEEK_CUR = 0x01,      /// Set the position from the current position
-    GT_FS_SEEK_END = 0x02,      /// Set the position from the end of the file
+    GT_FS_SEEK_SET = 0x00,      ///< Set the position from absolutely (from the start of file)
+    GT_FS_SEEK_CUR = 0x01,      ///< Set the position from the current position
+    GT_FS_SEEK_END = 0x02,      ///< Set the position from the end of the file
 }gt_fs_whence_et;
 
 typedef struct _gt_fs_dir_s {

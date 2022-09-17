@@ -36,11 +36,11 @@ extern "C" {
 #define GT_RADIUS_MIN   2
 /* typedef --------------------------------------------------------------*/
 typedef enum {
-    GT_BLEND_MODE_NORMAL,     /// Simply mix according to the opacity value
-    GT_BLEND_MODE_ADDITIVE,   /// Add the respective color channels
-    GT_BLEND_MODE_SUBTRACTIVE,/// Subtract the foreground from the background
-    GT_BLEND_MODE_MULTIPLY,   /// Multiply the foreground and background
-    GT_BLEND_MODE_REPLACE,    /// Replace background with foreground in the area
+    GT_BLEND_MODE_NORMAL,     ///< Simply mix according to the opacity value
+    GT_BLEND_MODE_ADDITIVE,   ///< Add the respective color channels
+    GT_BLEND_MODE_SUBTRACTIVE,///< Subtract the foreground from the background
+    GT_BLEND_MODE_MULTIPLY,   ///< Multiply the foreground and background
+    GT_BLEND_MODE_REPLACE,    ///< Replace background with foreground in the area
 }gt_blend_mode_et;
 
 typedef struct _gt_attr_line_s

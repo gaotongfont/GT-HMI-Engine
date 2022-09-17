@@ -32,26 +32,26 @@ typedef enum gt_event_type_e{
     GT_EVENT_TYPE_NONE = 0x0000,
 
     /* Input device events */
-    GT_EVENT_TYPE_INPUT_CLICKING    = 1<<0,             /// clicking
-    GT_EVENT_TYPE_INPUT_PROCESS     = 1<<1,             /// release,click need handler
-    GT_EVENT_TYPE_INPUT_PROCESSED   = 1<<2,             /// click handler finish
+    GT_EVENT_TYPE_INPUT_CLICKING    = 1<<0,             ///< clicking
+    GT_EVENT_TYPE_INPUT_PROCESS     = 1<<1,             ///< release,click need handler
+    GT_EVENT_TYPE_INPUT_PROCESSED   = 1<<2,             ///< click handler finish
     GT_EVENT_TYPE_INPUT_SCROLL      = 1<<3,
 
     /* update value */
-    GT_EVENT_TYPE_UPDATE_VALUE      = 1<<4,             /// value update, need to redraw
+    GT_EVENT_TYPE_UPDATE_VALUE      = 1<<4,             ///< value update, need to redraw
     GT_EVENT_TYPE_UPDATE_STYLE      = 1<<5,
 
     /* Drawing events */
-    GT_EVENT_TYPE_DRAW_START        = 1<<6,             /// need to start draw widget
-    GT_EVENT_TYPE_DRAW_END          = 1<<7,             /// draw widget ok
+    GT_EVENT_TYPE_DRAW_START        = 1<<6,             ///< need to start draw widget
+    GT_EVENT_TYPE_DRAW_END          = 1<<7,             ///< draw widget ok
 
     /* Other events */
-    GT_EVENT_TYPE_CHANGE_CHILD_REMOVE   = 1<<8,         /// remove child but not delete child
-    GT_EVENT_TYPE_CHANGE_CHILD_REMOVED  = 1<<9,         /// remove child finish
-    GT_EVENT_TYPE_CHANGE_CHILD_DELETE   = 1<<10,        /// delete child
-    GT_EVENT_TYPE_CHANGE_CHILD_DELETED  = 1<<11,        /// delete child finish
+    GT_EVENT_TYPE_CHANGE_CHILD_REMOVE   = 1<<8,         ///< remove child but not delete child
+    GT_EVENT_TYPE_CHANGE_CHILD_REMOVED  = 1<<9,         ///< remove child finish
+    GT_EVENT_TYPE_CHANGE_CHILD_DELETE   = 1<<10,        ///< delete child
+    GT_EVENT_TYPE_CHANGE_CHILD_DELETED  = 1<<11,        ///< delete child finish
 
-    _GT_EVENT_TYPE_TOTAL = 11,                          /// count event number
+    _GT_EVENT_TYPE_TOTAL = 11,                          ///< count event number
 
     GT_EVENT_TYPE_ALL = 0xFFFFFFF,
 }gt_event_type_et;

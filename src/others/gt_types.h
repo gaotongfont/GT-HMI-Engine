@@ -37,37 +37,46 @@ typedef void * style_widget_t;
 
 typedef int16_t gt_size_t;
 
-typedef enum type_widget_e{
-    GT_TYPE_OBJ        = 0,      //base obj type
-    GT_TYPE_BTN        = 1,      //button type
-    GT_TYPE_IMG        = 2,      //img type
-    GT_TYPE_LAB        = 3,      //label type
-    GT_TYPE_TEXTAREA   = 4,      //textarea type
-    GT_TYPE_CANVAS     = 5,      //canvas
-    GT_TYPE_OPTION     = 6,      //option
-    GT_TYPE_GROUP      = 7,      //group
-    GT_TYPE_CHECKBOX   = 8,      //checkbox
-    GT_TYPE_RADIO      = 9,      //radio box
-    GT_TYPE_INPUT      = 10,     //input
-    GT_TYPE_SWITCH     = 11,     //switch
-    GT_TYPE_SCROLLBAR  = 12,     //scroll bar
-    GT_TYPE_PROCESSBAR = 13,     //progress bar
-    GT_TYPE_KEYPAD     = 14,     //keypad
+/**
+ * @brief widget type enum definition
+ */
+typedef enum type_widget_e {
+    GT_TYPE_OBJ         = 0,        ///< base obj type
+    GT_TYPE_BTN         = 1,        ///< button type
+    GT_TYPE_IMG         = 2,        ///< img type
+    GT_TYPE_LAB         = 3,        ///< label type
+    GT_TYPE_TEXTAREA    = 4,        ///< textarea type
+    GT_TYPE_CANVAS      = 5,        ///< canvas
+    GT_TYPE_OPTION      = 6,        ///< option
+    GT_TYPE_GROUP       = 7,        ///< group
+    GT_TYPE_CHECKBOX    = 8,        ///< checkbox
+    GT_TYPE_RADIO       = 9,        ///< radio box
+    GT_TYPE_INPUT       = 10,       ///< input
+    GT_TYPE_SWITCH      = 11,       ///< switch
+    GT_TYPE_SCROLLBAR   = 12,       ///< scroll bar
+    GT_TYPE_PROCESS_BAR = 13,       ///< progress bar
+    GT_TYPE_KEYPAD      = 14,       ///< keypad
 
-    GT_TYPE_TOTAL,          //count total of type
+    GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;
 
-typedef enum{
-    GT_RES_FAIL = -1,
-    GT_RES_OK   = 0,
-    GT_RES_INV  = 1,
+/**
+ * @brief return status
+ */
+typedef enum {
+    GT_RES_FAIL = -1,   ///< failed
+    GT_RES_OK   = 0,    ///< success
+    GT_RES_INV  = 1,    ///< invalid
 }gt_res_t;
 
+/**
+ * @brief area information
+ */
 typedef struct _gt_area_s {
-    gt_size_t x;
-    gt_size_t y;
-    uint16_t w;
-    uint16_t h;
+    gt_size_t x;    ///< x position
+    gt_size_t y;    ///< y position
+    uint16_t w;     ///< The width of area
+    uint16_t h;     ///< The height of area
 }gt_area_st;
 
 
