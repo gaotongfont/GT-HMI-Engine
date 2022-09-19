@@ -90,6 +90,9 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
     fp->pos = fp->start;
     fp->buffer = (void * )dev->sys[idx].img;
 
+    fp->msg.pic.w = dev->sys[idx].w;
+    fp->msg.pic.h = dev->sys[idx].h;
+
     return (void * )fp;
 }
 

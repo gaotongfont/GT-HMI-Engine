@@ -146,6 +146,9 @@ static gt_res_t _gt_png_info(struct _gt_img_decoder_s * decoder, const void * sr
 
     _set_png_width_height(header, _get_32bit_int(tmp_buffer), _get_32bit_int(&tmp_buffer[4]));
     _set_png_type(header);
+    fp->msg.pic.w = header->w;
+    fp->msg.pic.h = header->h;
+    fp->msg.pic.type = 1;   // GT_IMG_TYPE_RGB565_PNG
 
 err_lb:
     gt_fs_close();

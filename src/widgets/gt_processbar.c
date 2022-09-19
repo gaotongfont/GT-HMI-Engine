@@ -1,7 +1,7 @@
 /**
  * @file gt_processbar.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-22 14:13:10
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -19,7 +19,7 @@
 #include "../core/gt_draw.h"
 
 /* private define -------------------------------------------------------*/
-#define OBJ_TYPE    GT_TYPE_PROCESSBAR
+#define OBJ_TYPE    GT_TYPE_PROCESS_BAR
 #define MY_CLASS    &gt_processbar_class
 
 /* private typedef ------------------------------------------------------*/
@@ -49,7 +49,7 @@ const gt_obj_class_st gt_processbar_class = {
 static void _gt_processbar_init_widget(gt_obj_st * processbar) {
     _gt_style_processbar_st * style = processbar->style;
     gt_size_t x, y, w, h;
-    
+
     // set default size
     if( !processbar->area.w || !processbar->area.h ){
         processbar->area.w = 100;
@@ -140,7 +140,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             break;
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
-            GT_LOGD(GT_LOG_TAG_GUI, "clicking");           
+            GT_LOGD(GT_LOG_TAG_GUI, "clicking");
 
             break;
 
@@ -170,7 +170,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 static void _gt_processbar_init_style(gt_obj_st * processbar)
 {
     _gt_style_processbar_st * style = NULL;
-    
+
     processbar->style = gt_mem_malloc(sizeof(_gt_style_processbar_st));
     style = processbar->style;
 
@@ -205,7 +205,7 @@ gt_obj_st * gt_processbar_create(gt_obj_st * parent)
 
 /**
  * @brief set scorllbar pos
- * 
+ *
  * @param processbar scorllbar
  * @param pos pos
  */
