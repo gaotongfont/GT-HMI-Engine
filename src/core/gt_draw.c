@@ -26,6 +26,8 @@
 #include "gt_fs.h"
 
 #include "../font/gt_symbol.h"
+
+#include "gt_img_decoder.h"
 /* private define -------------------------------------------------------*/
 
 
@@ -479,20 +481,24 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
         .opa = GT_OPA_COVER
     };
     uint16_t w, h, y = 0;
+    if( gt_fs_read_img_wh(dsc->bg_img_src, &w, &h) == GT_RES_FAIL){
+        return;
+    }
+    gt_fs_fp_st * fp = gt_fs_open(dsc->bg_img_src, GT_FS_MODE_RD);
+
+    _gt_img_dsc_st dsc_img;
+    
+    gt_img_decoder_open(&dsc_img, dsc->bg_img_src, 0);
+    gt_area_st area_res;
+    gt_color_t * color_img_line_p = NULL;
+    uint8_t * mask_buf = NULL;
+    uint16_t idx = 0, idx_mask = 0, px_size = sizeof(gt_color_t)+1, end = w * px_size;
 
     /* img src type */
     // gt_img_get_type(dsc->bg_img_src);
-    switch(GT_IMG_TYPE_RGB565_PNG){
-        case GT_IMG_TYPE_RGB565_PNG:
-            if( gt_fs_read_img_wh(dsc->bg_img_src, &w, &h) == GT_RES_FAIL){
-                break;
-            }
-            gt_area_st area_res;
-            gt_color_t * color_img_line_p = gt_mem_malloc( w * sizeof(gt_color_t) );
-            uint8_t * mask_buf = gt_mem_malloc( w );
-            uint16_t idx = 0;
-            gt_fs_fp_st * fp = gt_fs_open(dsc->bg_img_src, GT_FS_MODE_RD);
-
+    switch(dsc_img.header.type){
+        
+        case GT_IMG_DECODER_TYPE_PNG:            
             /* line by line to blend */
             while(y < h){
                 if( !gt_area_intersect(draw_ctx->buf_area, &dst_area, &area_res) ){
@@ -500,38 +506,58 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
                     dst_area.y++;
                     continue;
                 }
-                dst_area.y++;
-                mask_area.y++;
-                /* read img one line */
-                gt_fs_read_img_offset((uint8_t * )color_img_line_p, y * w * sizeof(gt_color_t), w * sizeof(gt_color_t));
+                /*read one line color data*/
+                color_img_line_p = &dsc_img.img[y * w * sizeof(gt_color_t)];
+                mask_buf = &dsc_img.alpha[y * w];
 
-                /* change color to mask buf */
-                idx = 0;
-                while(idx < w){
-                    if( color_img_line_p[idx].full ){
-                        mask_buf[idx] = 0xFF;
-                    }else{
-                        mask_buf[idx] = 0x00;
-                    }
-                    idx++;
-                }
-                blend_dsc.mask_buf = NULL;//mask_buf;
+                blend_dsc.mask_buf = mask_buf;
                 blend_dsc.dst_buf = color_img_line_p;
 
                 /* blend to bg */
                 gt_draw_blend(draw_ctx, &blend_dsc);
                 y++;
-            }
+                dst_area.y++;
+                mask_area.y++;
+            }            
+            break;
+        default:// gt format
+            uint32_t offset = 0, len = w * sizeof(gt_color_t);
+            color_img_line_p = gt_mem_malloc( w * sizeof(gt_color_t) );
+            mask_buf = gt_mem_malloc(w);
+            while(y < h){
+                if( !gt_area_intersect(draw_ctx->buf_area, &dst_area, &area_res) ){
+                    y++;
+                    dst_area.y++;
+                    continue;
+                }
+                /*read one line color data*/
+                
+                gt_fs_read_img_offset(color_img_line_p, offset, len);
+				idx = 0;
+                while( idx < w ){
+                    if( color_img_line_p[idx].full ){
+                        mask_buf[idx] = 0xFF;
+                    }else{
+                        mask_buf[idx] = 0;
+                    }
+					idx++;
+                }
+                
+                blend_dsc.mask_buf = mask_buf;
+                blend_dsc.dst_buf = color_img_line_p;
 
+                /* blend to bg */
+                gt_draw_blend(draw_ctx, &blend_dsc);
+                y++;
+                dst_area.y++;
+                mask_area.y++;
+                offset += len;
+            }
             gt_mem_free(color_img_line_p);
             gt_mem_free(mask_buf);
-            gt_fs_close();
-            break;
-        default:
             break;
     }
-
-
+    gt_img_decoder_close(dsc_img.decoder, &dsc_img);
 }
 
 /* end ------------------------------------------------------------------*/

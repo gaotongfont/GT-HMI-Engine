@@ -122,6 +122,9 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             gt_img_style_set_selected(obj, 1);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
+        case GT_EVENT_TYPE_UPDATE_VALUE:
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
             GT_LOGD(GT_LOG_TAG_GUI, "scroll");
@@ -196,10 +199,12 @@ void gt_img_style_set_selected(gt_obj_st * img, uint8_t selected) {
 void gt_img_style_set_src(gt_obj_st * img, char * src){
     GT_ASSERT_NULL(img);
     _gt_style_img_st * style = (_gt_style_img_st *)img->style;
-    if( NULL == style->src ){
+    if( NULL != style->src ){
         gt_mem_free(style->src);
     }
     style->src = gt_mem_malloc( strlen(src) );
     strcpy(style->src, src);
+
+    gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 /* end ------------------------------------------------------------------*/

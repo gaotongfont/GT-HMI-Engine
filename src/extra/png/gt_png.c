@@ -57,7 +57,7 @@ static uint32_t _get_32bit_int(const char * buffer)
  * @param image
  * @param size
  */
-static void _gt_png_color_convert_depth(uint8_t * image, uint32_t size)
+static void _gt_png_color_convert_depth(uint8_t * image, uint8_t * alpha, uint32_t size)
 {
 #if GT_COLOR_DEPTH == 32
     GT_UNUSED(image);
@@ -65,12 +65,12 @@ static void _gt_png_color_convert_depth(uint8_t * image, uint32_t size)
 #elif GT_COLOR_DEPTH == 16
     gt_color32_t * img_argb = (gt_color32_t * )image;
     gt_color_t color;
-    uint32_t i;
+    uint32_t i,idx=0;
     for (i = 0; i < size; i++) {
         color = gt_color_make(GT_COLOR_GET_R32(img_argb[i]), GT_COLOR_GET_G32(img_argb[i]), GT_COLOR_GET_B32(img_argb[i]));
-        image[i * 3 + 2] = GT_COLOR_GET_A32(img_argb[i]);
-        image[i * 3 + 1] = GT_COLOR_GET(color)>> 8;
-        image[i * 3]     = GT_COLOR_GET(color) & 0xff;
+        image[idx++] = GT_COLOR_GET(color) & 0xff;
+        image[idx++] = GT_COLOR_GET(color) >> 8;
+        alpha[i]     = GT_COLOR_GET_A32(img_argb[i]);
     }
 #elif GT_COLOR_DEPTH == 8
     gt_color32_t * img_argb = (gt_color32_t * )image;
@@ -161,34 +161,31 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
     gt_res_t ret = GT_RES_OK;
 
     const uint8_t * path = (uint8_t * )dsc->src;
-
     if (!is_png_file(path)) {
         ret = GT_RES_INV;
         return ret;
     }
 
     int32_t png_size   = 0;
-    uint8_t * img      = NULL;
     uint8_t * png_data = NULL;
     unsigned int png_width = 0, png_height = 0;
-
+    
     ret = lodepng_load_file(&png_data, (size_t * )&png_size, dsc->src);
     if (!ret) {
-        ret = lodepng_decode32(&img, &png_width, &png_height, png_data, png_size);
+        ret = lodepng_decode32(&dsc->img, &png_width, &png_height, png_data, png_size);
     }
-
     if (ret) {
 #ifndef LODEPNG_NO_COMPILE_ERROR_TEXT
         GT_LOGE(GT_LOG_TAG_EXTRA, "err code: %d: %s", ret, lodepng_error_text(ret));
 #endif
     }
-
-    _gt_png_color_convert_depth(img, png_width * png_height);
-
-    dsc->img = img;
-    _set_png_width_height(&dsc->header, png_width, png_height);
-    _set_png_type(&dsc->header);
-
+    
+    dsc->alpha = gt_mem_malloc(png_width * png_height);
+    _gt_png_color_convert_depth(dsc->img, dsc->alpha, png_width * png_height);
+    
+    dsc->header.w = png_width;
+    dsc->header.h = png_height;
+    
     gt_mem_free(png_data);
     return ret;
 }
@@ -204,7 +201,8 @@ static gt_res_t _gt_png_read_line(struct _gt_img_decoder_s * decoder, struct _gt
     GT_UNUSED(buffer);
 
     // TODO
-
+    gt_memcpy(buffer, &dsc->img[dsc->header.w *y*sizeof(gt_color_t)], len);
+   
     return GT_RES_OK;
 }
 
@@ -215,6 +213,10 @@ static gt_res_t _gt_png_close(struct _gt_img_decoder_s * decoder, struct _gt_img
     if (dsc->img) {
         gt_mem_free(dsc->img);
         dsc->img = NULL;
+    }
+    if( dsc->alpha ){
+        gt_mem_free(dsc->alpha);
+        dsc->alpha = NULL;
     }
 
     return GT_RES_OK;

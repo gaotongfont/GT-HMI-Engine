@@ -68,6 +68,7 @@ typedef struct _gt_img_dsc_s {
     gt_size_t frame_id;         ///< frame sequence number of the frame animation, [default: 0]
     gt_fs_type_et type;         ///< file driver type, such as: SD, Flash...
     uint8_t * img;              ///< temp buffer which is used to save image data
+    uint8_t * alpha;            ///< temp buffer which is used to save alpha data
     void * user_data;           ///< user data
 }_gt_img_dsc_st;
 
