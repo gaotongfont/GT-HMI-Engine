@@ -522,28 +522,28 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
             break;
         default:// gt format
             uint32_t offset = 0, len = w * sizeof(gt_color_t);
-            color_img_line_p = gt_mem_malloc( w * sizeof(gt_color_t) );
+            color_img_line_p = gt_mem_malloc( len );
             mask_buf = gt_mem_malloc(w);
             while(y < h){
                 if( !gt_area_intersect(draw_ctx->buf_area, &dst_area, &area_res) ){
                     y++;
                     dst_area.y++;
+                    offset += len;
                     continue;
                 }
                 /*read one line color data*/
-                
                 gt_fs_read_img_offset(color_img_line_p, offset, len);
-				idx = 0;
+                idx = 0;
                 while( idx < w ){
                     if( color_img_line_p[idx].full ){
                         mask_buf[idx] = 0xFF;
                     }else{
                         mask_buf[idx] = 0;
                     }
-					idx++;
+                    idx++;
                 }
                 
-                blend_dsc.mask_buf = mask_buf;
+                blend_dsc.mask_buf = NULL;//mask_buf;
                 blend_dsc.dst_buf = color_img_line_p;
 
                 /* blend to bg */
