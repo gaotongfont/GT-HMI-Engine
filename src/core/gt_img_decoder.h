@@ -31,7 +31,8 @@ extern "C" {
  * @brief Support extra image decoder type
  */
 typedef enum {
-    GT_IMG_DECODER_TYPE_PNG = 0,    ///< supports png type image
+    GT_IMG_DECODER_TYPE_NONE = 0,   ///< Not supported yet
+    GT_IMG_DECODER_TYPE_PNG,        ///< supports png type image
 
     GT_IMG_DECODER_TYPE_COUNT,      ///< totally supports type count
 }gt_img_decoder_type_em;
@@ -54,7 +55,7 @@ typedef struct _gt_img_info_s {
     uint32_t reserved : 3;
     uint32_t w : 12;
     uint32_t h : 12;
-    uint8_t type;               ///< record this decoder image type
+    uint8_t type;               ///< record this decoder image type @ref gt_img_decoder_type_em
 }_gt_img_info_st;
 
 /**
