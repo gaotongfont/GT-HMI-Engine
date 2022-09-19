@@ -80,7 +80,7 @@ static gt_res_t _gt_img_decoder_built_in_read_line(struct _gt_img_decoder_s * de
     if (!fp) {
         return GT_RES_INV;
     }
-    uint16_t line_pixel = (dsc->header.w * dsc->header.h) * y;
+    uint16_t line_pixel = dsc->header.w * y;
     uint32_t offset = ( line_pixel + x ) * sizeof(gt_color_t);
 
     if (gt_fs_seek(offset, GT_FS_SEEK_SET)) {
@@ -183,8 +183,6 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name, gt_s
         if (ptr->open_cb(ptr, dsc)) {
             continue;
         }
-
-        gt_memset_0(&dsc->header, sizeof(_gt_img_info_st));
 
         dsc->decoder = ptr;
         dsc->frame_id = frame_id;

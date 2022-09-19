@@ -144,6 +144,8 @@ static gt_res_t _gt_png_info(struct _gt_img_decoder_s * decoder, const void * sr
         goto err_lb;
     }
 
+    gt_memset_0(header, sizeof(_gt_img_info_st));
+
     _set_png_width_height(header, _get_32bit_int(tmp_buffer), _get_32bit_int(&tmp_buffer[4]));
     _set_png_type(header);
     fp->msg.pic.w = header->w;
@@ -169,7 +171,7 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
     int32_t png_size   = 0;
     uint8_t * png_data = NULL;
     unsigned int png_width = 0, png_height = 0;
-    
+
     ret = lodepng_load_file(&png_data, (size_t * )&png_size, dsc->src);
     if (!ret) {
         ret = lodepng_decode32(&dsc->img, &png_width, &png_height, png_data, png_size);
@@ -179,13 +181,13 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
         GT_LOGE(GT_LOG_TAG_EXTRA, "err code: %d: %s", ret, lodepng_error_text(ret));
 #endif
     }
-    
+
     dsc->alpha = gt_mem_malloc(png_width * png_height);
     _gt_png_color_convert_depth(dsc->img, dsc->alpha, png_width * png_height);
-    
+
     dsc->header.w = png_width;
     dsc->header.h = png_height;
-    
+
     gt_mem_free(png_data);
     return ret;
 }
@@ -193,16 +195,8 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
 static gt_res_t _gt_png_read_line(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc,
                                     gt_size_t x, gt_size_t y, gt_size_t len, uint8_t * buffer)
 {
-    GT_UNUSED(decoder);
-    GT_UNUSED(x);
-    GT_UNUSED(dsc);
-    GT_UNUSED(y);
-    GT_UNUSED(len);
-    GT_UNUSED(buffer);
-
-    // TODO
     gt_memcpy(buffer, &dsc->img[dsc->header.w *y*sizeof(gt_color_t)], len);
-   
+
     return GT_RES_OK;
 }
 
