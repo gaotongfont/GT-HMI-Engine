@@ -1,7 +1,7 @@
 /**
  * @file gt_handler.h
  * @author yongg
- * @brief
+ * @brief GUI task management interface
  * @version 0.1
  * @date 2022-05-11 15:07:33
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -31,8 +31,14 @@ extern "C" {
 
 /* global functions / API interface -------------------------------------*/
 
+/**
+ * @brief GT-GUI all init
+ */
 void gt_init(void);
 
+/**
+ * @brief GT-GUI task handler function called by task
+ */
 void gt_task_handler(void);
 
 #ifdef __cplusplus

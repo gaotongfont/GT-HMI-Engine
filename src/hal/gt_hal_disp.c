@@ -89,10 +89,10 @@ uint16_t gt_disp_get_res_hor(gt_disp_st * disp)
         case GT_ROTATED_90:
         case GT_ROTATED_270:
             return disp->drv->res_ver;
-            
+
         default:
             return disp->drv->res_hor;
-            
+
     }
 }
 uint16_t gt_disp_get_res_ver(gt_disp_st * disp)
@@ -102,7 +102,7 @@ uint16_t gt_disp_get_res_ver(gt_disp_st * disp)
     switch( disp->drv->rotated ){
         case GT_ROTATED_90:
         case GT_ROTATED_270:
-            return disp->drv->res_hor;           
+            return disp->drv->res_hor;
         default:
             return disp->drv->res_ver;
     }
@@ -130,11 +130,6 @@ void gt_disp_graph_buf_init(gt_color_t *buf1, gt_color_t *buf2, gt_color_t *buf_
 }
 
 
-/**
- * @brief get default using buffer
- *
- * @return gt_color_t*
- */
 gt_color_t * gt_disp_graph_get_buf_default(void)
 {
 #if (GT_REFRESH_STYLE_1 == GT_REFRESH_STYLE)

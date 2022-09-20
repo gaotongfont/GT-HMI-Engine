@@ -1,7 +1,7 @@
 /**
  * @file gt_indev.h
  * @author yongg
- * @brief 
+ * @brief input device handler
  * @version 0.1
  * @date 2022-06-06 14:06:12
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -30,10 +30,34 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief get click first point
+ *
+ * @param indev input device
+ * @param point click first point
+ */
 void gt_indev_get_point_act(const gt_indev_st * indev, gt_point_st * point);
+
+/**
+ * @brief get clicking last point
+ *
+ * @param indev input device
+ * @param point clicking last point
+ */
 void gt_indev_get_point_last(const gt_indev_st * indev, gt_point_st * point);
 
+/**
+ * @brief Get the gesture of the input device
+ *
+ * @param indev input device
+ * @return gt_dir_et Direction of gesture
+ */
 gt_dir_et gt_indev_get_gesture(const gt_indev_st * indev);
+
+/**
+ * @brief Input processing handle
+ */
 void gt_indev_handler(void);
 
 #ifdef __cplusplus

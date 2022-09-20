@@ -22,27 +22,37 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+/**
+ * @brief rotation angle
+ */
 typedef enum {
-    GT_ROTATED_0,
-    GT_ROTATED_90,
-    GT_ROTATED_180,
-    GT_ROTATED_270
+    GT_ROTATED_0,   ///< normally angle
+    GT_ROTATED_90,  ///< 90 degrees rotation angle
+    GT_ROTATED_180, ///< 180 degrees rotation angle
+    GT_ROTATED_270  ///< 270 degrees rotation angle
 }gt_rotated_et;
 
+/**
+ * @brief display driver information
+ */
 typedef struct _gt_disp_drv_s
 {
-    uint16_t res_hor;
-    uint16_t res_ver;
+    uint16_t res_hor;   ///< horizontal resolution
+    uint16_t res_ver;   ///< vertical resolution
 
-    gt_color_t bg_color;
-    gt_color_t fg_color;
+    gt_color_t bg_color;    ///< background color
+    gt_color_t fg_color;    ///< foreground color
 
+    /// @brief display flush callback
     void (* flush_cb)(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
 
-    uint16_t rotated: 2;
-    uint16_t busy:1;
+    uint16_t rotated: 2;    ///< display rotation @ref gt_rotated_et
+    uint16_t busy:1;        ///< display busy state
 }gt_disp_drv_st;
 
+/**
+ * @brief display description
+ */
 typedef struct _gt_disp_s
 {
     gt_disp_drv_st * drv;
@@ -76,13 +86,43 @@ void gt_disp_set_default(gt_disp_st * disp);
 
 gt_disp_st * gt_disp_get_default(void);
 
-
+/**
+ * @brief Get horizontal resolution value
+ *
+ * @param disp The display structure
+ * @return uint16_t horizontal resolution value
+ */
 uint16_t gt_disp_get_res_hor(gt_disp_st * disp);
+
+/**
+ * @brief Get vertical resolution value
+ *
+ * @param disp The display structure
+ * @return uint16_t vertical resolution value
+ */
 uint16_t gt_disp_get_res_ver(gt_disp_st * disp);
 
+/**
+ * @brief Register display screen buffer
+ *
+ * @param buf1 display screen buffer
+ * @param buf2 backup display screen buffer
+ * @param buf_all display screen full buffer
+ */
 void gt_disp_graph_buf_init(gt_color_t *buf1, gt_color_t *buf2, gt_color_t *buf_all);
 
+/**
+ * @brief get default using buffer
+ *
+ * @return gt_color_t* The buffer which active display screen
+ */
 gt_color_t * gt_disp_graph_get_buf_default(void);
+
+/**
+ * @brief Get backup color buffer, if used double screen buffer.
+ *
+ * @return gt_color_t* The buffer which save display color
+ */
 gt_color_t * gt_disp_graph_get_buf_backup(void);
 
 #ifdef __cplusplus

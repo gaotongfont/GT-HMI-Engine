@@ -36,6 +36,9 @@ extern "C" {
 
 /* global functions / API interface -------------------------------------*/
 
+/**
+ * @brief PNG image decoder init, register to list.
+ */
 void gt_png_init(void);
 
 

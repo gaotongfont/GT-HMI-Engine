@@ -1,7 +1,7 @@
 /**
  * @file gt_obj_scroll.c
  * @author yongg
- * @brief 
+ * @brief Scroll bar animation
  * @version 0.1
  * @date 2022-08-31 14:25:17
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -30,7 +30,7 @@
 /* static functions -----------------------------------------------------*/
 static _gt_obj_scroll_anim(_gt_timer_st * timer)
 {
-    
+
 }
 
 

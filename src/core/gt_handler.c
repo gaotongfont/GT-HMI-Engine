@@ -1,7 +1,7 @@
 /**
  * @file gt_handler.c
  * @author yongg
- * @brief
+ * @brief GUI task management interface
  * @version 0.1
  * @date 2022-05-11 15:03:23
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -48,9 +48,6 @@ static bool _gt_init_is_done(void)
 
 /* global functions / API interface -------------------------------------*/
 
-/**
- * @brief gt gui init
- */
 void gt_init(void)
 {
     if (_gt_init_is_done()) {

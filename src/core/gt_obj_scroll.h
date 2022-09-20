@@ -1,7 +1,7 @@
 /**
  * @file gt_obj_scroll.h
  * @author yongg
- * @brief 
+ * @brief Scroll bar animation
  * @version 0.1
  * @date 2022-08-31 14:25:09
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -37,7 +37,7 @@ typedef enum{
 
 /**
  * @brief scroll obj to position x,y
- * 
+ *
  * @param obj obj
  * @param x x coordinate of virtual screen object
  * @param y y coordinate of virtual screen object
@@ -47,7 +47,7 @@ void gt_obj_scroll_to(struct _gt_obj_s * obj, gt_size_t x, gt_size_t y, gt_anim_
 
 /**
  * @brief scroll obj to position x
- * 
+ *
  * @param obj obj
  * @param x x coordinate of virtual screen object
  * @param en enable scroll anim
@@ -56,7 +56,7 @@ void gt_obj_scroll_to_x(struct _gt_obj_s * obj, gt_size_t x, gt_anim_enable_et e
 
 /**
  * @brief scroll obj to position y
- * 
+ *
  * @param obj obj
  * @param y y coordinate of virtual screen object
  * @param en enable scroll anim
