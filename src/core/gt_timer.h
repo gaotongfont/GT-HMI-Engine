@@ -106,6 +106,14 @@ void _gt_timer_set_repeat_count(_gt_timer_st * timer, int32_t repeat);
  */
 void _gt_timer_set_period(_gt_timer_st * timer, uint32_t period);
 
+/**
+ * @brief set timer task paused state
+ * 
+ * @param timer timer control block
+ * @param state paused state 0:run, 1:paused
+ */
+void _gt_timer_set_paused(_gt_timer_st * timer, bool state);
+
 
 #ifdef __cplusplus
 } /*extern "C"*/
