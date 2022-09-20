@@ -1,7 +1,7 @@
 /**
  * @file gt_timer.h
  * @author Feyoung
- * @brief
+ * @brief GUI task timer interface implementation
  * @version 0.1
  * @date 2022-06-14 14:19:29
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -57,6 +57,13 @@ typedef struct _gt_timer_s {
 /* global functions / API interface -------------------------------------*/
 
 /**
+ * @brief
+ *
+ * @return uint32_t
+ */
+uint32_t gt_timer_get_idle(void);
+
+/**
  * @brief init the list header
  */
 void _gt_timer_init(void);
@@ -72,7 +79,7 @@ _gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * 
 
 /**
  * @brief Del timer node
- * 
+ *
  * @param timer timer ptr
  */
 void _gt_timer_del(_gt_timer_st * timer);

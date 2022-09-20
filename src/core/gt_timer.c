@@ -1,7 +1,7 @@
 /**
  * @file gt_timer.c
  * @author Feyoung
- * @brief
+ * @brief GUI task timer interface implementation
  * @version 0.1
  * @date 2022-06-14 14:18:54
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -17,7 +17,7 @@
 #include "../hal/gt_hal_tick.h"
 
 /* private define -------------------------------------------------------*/
-
+#define _IDLE_PERIOD    500 /* [ms] */
 
 
 /* private typedef ------------------------------------------------------*/
@@ -27,6 +27,8 @@
  */
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY bool _gt_timer_task_ready_flag = false;
 
+
+static uint32_t idle_last = 0;
 
 /* static variables -----------------------------------------------------*/
 
@@ -61,20 +63,19 @@ static void _gt_timer_remove_task(_gt_timer_st *ptr)
 /**
  * @brief execute the timer tasks list
  */
-static inline void _gt_timer_for_each_exec(void)
+static inline uint32_t _gt_timer_for_each_exec(void)
 {
     _gt_timer_st * ptr        = NULL;
     _gt_timer_st * backup_ptr = NULL;
     uint32_t     period       = 0;
-    uint32_t     start_time   = 0;
+    uint32_t     start_time   = gt_tick_get();
 
     gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_timer_ll), list) {
         if (ptr->paused) {
             continue;
         }
 
-        start_time = gt_tick_get();
-        period     = start_time - ptr->last_run - 1;
+        period = start_time - ptr->last_run - 1;
 
         if (period < ptr->period) {
             continue;
@@ -94,10 +95,17 @@ static inline void _gt_timer_for_each_exec(void)
             ptr->last_run = gt_tick_get();
         }
     }
+
+    return start_time;
 }
 
 
 /* global functions / API interface -------------------------------------*/
+
+uint32_t gt_timer_get_idle(void)
+{
+    return idle_last;
+}
 
 void _gt_timer_init(void)
 {
@@ -139,7 +147,19 @@ void _gt_timer_handler(void)
     if (!_gt_timer_task_is_ready()) {
         return;
     }
-    _gt_timer_for_each_exec();
+    uint32_t handler_start = _gt_timer_for_each_exec();
+
+    static uint32_t busy_time = 0;
+    static uint32_t idle_period_start = 0;
+
+    busy_time += gt_tick_elapse(handler_start);
+    uint32_t idle_period_time = gt_tick_elapse(idle_period_start);
+    if (idle_period_time >= _IDLE_PERIOD) {
+        idle_last = (busy_time * 100) / idle_period_time;
+        idle_last = idle_last > 100 ? 0 : 100 - idle_last;
+        busy_time = 0;
+        idle_period_start = gt_tick_get();
+    }
 }
 
 _gt_timer_st * _gt_timer_get_laster_timer(void)
