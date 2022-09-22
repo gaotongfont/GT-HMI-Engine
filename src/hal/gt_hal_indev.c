@@ -42,10 +42,11 @@ static void _gt_indev_task_handler(struct _gt_timer_s * timer)
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_indev_drv_init(gt_indev_drv_st * drv){
-    
+void gt_indev_drv_init(gt_indev_drv_st * drv)
+{
+
     gt_memset(drv, 0, sizeof(gt_indev_drv_st));
-    
+
     drv->type = GT_INDEV_TYPE_NONE;
 
     drv->limit_pixel_gesture_hor = GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR;
@@ -54,7 +55,8 @@ void gt_indev_drv_init(gt_indev_drv_st * drv){
     drv->limit_timers_long_press = GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS;
 }
 
-gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv){
+gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv)
+{
     if(indev_act[cnt_indev] == NULL){
         indev_act[cnt_indev] = gt_mem_malloc(sizeof(gt_indev_st));
     }
@@ -78,23 +80,27 @@ gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv){
     return indev_act[cnt_indev];
 }
 
-void gt_indev_set_default(gt_indev_st * _indev){
+void gt_indev_set_default(gt_indev_st * _indev)
+{
     indev = _indev;
 }
 
-gt_indev_st * gt_indev_get_default(){
+gt_indev_st * gt_indev_get_default()
+{
     return indev;
 }
 
-gt_indev_st * gt_indev_get_dev_by_nub(uint8_t nub){
-    if( nub >= _CNT_INDEV_MAX ){
-        GT_LOGW(GT_LOG_TAG_GUI, "nub is over number max of indev");
+gt_indev_st * gt_indev_get_dev_by_idx(uint8_t idx)
+{
+    if( idx >= _CNT_INDEV_MAX ){
+        GT_LOGW(GT_LOG_TAG_GUI, "idx is over number max of indev");
         return NULL;
     }
-    return indev_act[nub];
+    return indev_act[idx];
 }
 
-uint8_t gt_indev_get_dev_num(){
+uint8_t gt_indev_get_dev_count()
+{
     return cnt_indev;
 }
 

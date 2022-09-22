@@ -1,7 +1,7 @@
 /**
  * @file gt_hal_vf.h
  * @author yongg
- * @brief
+ * @brief flash resource management implementation
  * @version 0.1
  * @date 2022-06-20 17:58:44
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -30,20 +30,20 @@ extern "C" {
  * @brief virt file system file message
  */
 typedef struct _gt_vfs_s {
-    char * name;
-    gt_size_t w;
-    gt_size_t h;
-    uint32_t addr;
-    uint32_t size;
+    char * name;    ///< path or file name
+    gt_size_t w;    ///< width
+    gt_size_t h;    ///< height
+    uint32_t addr;  ///< address which resource data save
+    uint32_t size;  ///< the resource size
 }gt_vfs_st;
 
 /**
  * @brief virt file system device
  */
 typedef struct _gt_vf_s {
-    gt_fs_drv_st * drv;
-    uint32_t addr_max;
-    uint32_t addr_start;
+    gt_fs_drv_st * drv;     ///< file descriptor  driver
+    uint32_t addr_max;      ///< flash max address range
+    uint32_t addr_start;    ///< resource begin address in flash
 }gt_vf_st;
 
 /* macros ---------------------------------------------------------------*/

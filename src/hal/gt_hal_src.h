@@ -1,7 +1,7 @@
 /**
  * @file gt_hal_src.h
  * @author Feyoung
- * @brief
+ * @brief Hal layer source file system implementation, arrays form management.
  * @version 0.1
  * @date 2022-08-19 15:25:28
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -26,12 +26,15 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 
+/**
+ * @brief material management
+ */
 typedef struct gt_src_s {
-    char * name;
-    gt_size_t w;
-    gt_size_t h;
-    uint8_t * img;
-    uint32_t size;
+    char * name;    ///< path or name
+    gt_size_t w;    ///< width
+    gt_size_t h;    ///< height
+    uint8_t * img;  ///< The pointer of image data
+    uint32_t size;  ///< image data count of byte.
 }gt_src_st;
 
 

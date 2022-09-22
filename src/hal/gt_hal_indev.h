@@ -1,7 +1,7 @@
 /**
  * @file gt_hal_indev.h
  * @author yongg
- * @brief
+ * @brief Hal layer implementation for input devices
  * @version 0.1
  * @date 2022-05-19 17:33:48
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -26,7 +26,6 @@ extern "C" {
 
 /**
  * @brief input device type enum
- *
  */
 typedef enum _gt_indev_type_e {
     GT_INDEV_TYPE_NONE,        ///< nothing input dev
@@ -138,11 +137,42 @@ typedef struct _gt_indev_s
 
 
 /* global functions / API interface -------------------------------------*/
+/**
+ * @brief input device init
+ *
+ * @param drv input device
+ */
 void gt_indev_drv_init(gt_indev_drv_st * drv);
+
+/**
+ * @brief input device register into core.
+ *
+ * @param drv input device
+ * @return gt_indev_st*
+ */
 gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv);
+
+/**
+ * @brief Get default input device
+ *
+ * @return gt_indev_st*
+ */
 gt_indev_st * gt_indev_get_default(void);
-gt_indev_st * gt_indev_get_dev_by_nub(uint8_t nub);
-uint8_t gt_indev_get_dev_num(void);
+
+/**
+ * @brief Get input device by number
+ *
+ * @param idx index of input device
+ * @return gt_indev_st*
+ */
+gt_indev_st * gt_indev_get_dev_by_idx(uint8_t idx);
+
+/**
+ * @brief Get input device count
+ *
+ * @return uint8_t
+ */
+uint8_t gt_indev_get_dev_count(void);
 
 #ifdef __cplusplus
 } /*extern "C"*/

@@ -1,6 +1,6 @@
 /**
  * @file gt_list.h
- * @brief double list
+ * @brief double linked list
  */
 #ifndef _GT_LIST_H_
 #define _GT_LIST_H_

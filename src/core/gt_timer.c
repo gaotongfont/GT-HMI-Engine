@@ -10,7 +10,6 @@
  /* include --------------------------------------------------------------*/
 #include "gt_timer.h"
 #include "stdint.h"
-#include "stdbool.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_gc.h"
 #include "../others/gt_log.h"
@@ -179,7 +178,7 @@ void _gt_timer_set_period(_gt_timer_st * timer, uint32_t period)
 
 void _gt_timer_set_paused(_gt_timer_st * timer, bool state)
 {
-    timer->paused = state;
+    timer->paused = (uint8_t)state;
 }
 
 /* end ------------------------------------------------------------------*/

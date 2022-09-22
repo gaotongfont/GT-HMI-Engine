@@ -224,9 +224,9 @@ void gt_indev_handler()
 {
     gt_indev_st * indev;
     uint8_t i, cnt_indev;
-    cnt_indev = gt_indev_get_dev_num();
+    cnt_indev = gt_indev_get_dev_count();
     for(i=0; i<cnt_indev; i++){
-        indev = gt_indev_get_dev_by_nub(i);
+        indev = gt_indev_get_dev_by_idx(i);
         switch(indev->drv->type){
             case GT_INDEV_TYPE_POINTER:
                 gt_indev_handler_point(indev);

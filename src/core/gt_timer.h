@@ -15,6 +15,7 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "stdint.h"
+#include "stdbool.h"
 #include "../gt_conf.h"
 #include "../others/gt_list.h"
 
@@ -115,7 +116,7 @@ void _gt_timer_set_period(_gt_timer_st * timer, uint32_t period);
 
 /**
  * @brief set timer task paused state
- * 
+ *
  * @param timer timer control block
  * @param state paused state 0:run, 1:paused
  */

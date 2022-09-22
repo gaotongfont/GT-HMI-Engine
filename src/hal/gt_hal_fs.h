@@ -1,7 +1,7 @@
 /**
  * @file gt_hal_fs.h
  * @author Feyoung
- * @brief
+ * @brief file system implementation
  * @version 0.1
  * @date 2022-08-22 14:31:34
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -98,9 +98,12 @@ typedef enum {
     GT_FS_SEEK_END = 0x02,      ///< Set the position from the end of the file
 }gt_fs_whence_et;
 
+/**
+ * @brief file system directory info structure
+ */
 typedef struct _gt_fs_dir_s {
-    char * dir_d;
-    struct _gt_fs_drv_s * drv;
+    char * dir_d;               ///< directory name
+    struct _gt_fs_drv_s * drv;  ///< driver
 }gt_fs_dir_st;
 
 /**

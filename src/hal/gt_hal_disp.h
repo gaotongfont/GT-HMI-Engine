@@ -1,7 +1,7 @@
 /**
  * @file gt_hal_disp.h
  * @author yongg
- * @brief
+ * @brief GUI display hal layer driver
  * @version 0.1
  * @date 2022-05-13 09:51:55
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
