@@ -46,6 +46,11 @@ static bool _gt_init_is_done(void)
     return _gt_init_done_flag;
 }
 
+static void _gt_port_init(){
+	gt_port_disp_init();
+    gt_port_indev_init();
+	gt_port_vf_init();
+}
 /* global functions / API interface -------------------------------------*/
 
 void gt_init(void)
@@ -67,6 +72,8 @@ void gt_init(void)
     _gt_extra_init();
 
     _gt_init_set_flag(true);
+
+    _gt_port_init();
 }
 
 void gt_task_handler(void)
