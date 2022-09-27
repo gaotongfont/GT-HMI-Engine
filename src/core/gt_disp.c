@@ -215,7 +215,10 @@ void gt_disp_ref_area(const gt_area_st * coords)
     uint16_t line = GT_REFRESH_FLUSH_LINE_PRE_TIME;
     if( (area.w * area.h) <= (line * GT_SCREEN_WIDTH) ){
         line = area.h;
+    }else{
+        line = (line * GT_SCREEN_WIDTH)/area.w;
     }
+    printf("----line:%d\n", line);
     uint16_t y = 0;
     uint32_t idx = 0;
     uint32_t len = area.w * line;
@@ -247,8 +250,8 @@ void gt_disp_ref_area(const gt_area_st * coords)
         disp->drv->flush_cb(disp->drv, &disp->area_disp, disp->vbd_color);
 
         y += line;
-        if( (y + line) > (area.y + area.h) ){
-            area.h = area.h - y;
+        if( (y) > (area.y + area.h) ){
+            disp->area_disp.h = area.h - y;
         }
     }
 

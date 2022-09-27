@@ -220,12 +220,10 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
             GT_LOGD(GT_LOG_TAG_GUI, "clicking");
-            printf("list--clicking\n");
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
             GT_LOGD(GT_LOG_TAG_GUI, "scroll");
-            printf("list--scroll\n");
             printf("scroll y:%d\n", obj->process_attr.y_scroll);
             _gt_listview_style_update_by_scroll_y(obj, obj->process_attr.y_scroll);
 
@@ -234,7 +232,6 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
             GT_LOGD(GT_LOG_TAG_GUI, "process");
-            printf("list--process\n");
             /* code here */
 
             _gt_listview_style_update_by_click_point(obj, obj->process_attr.point);
