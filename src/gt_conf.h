@@ -30,10 +30,18 @@ extern "C" {
 #define GT_REFRESH_STYLE_3      3   /* cache all screen buf, It is suitable for MCU with high refresh requirements and high performance */
 
 /* user: screen refresh style */
-#define GT_REFRESH_STYLE        GT_REFRESH_STYLE_2
+#define GT_REFRESH_STYLE        GT_REFRESH_STYLE_1
 
 /* screen refresh flush pre time lines count [default: 10] */
+#if GT_REFRESH_STYLE == GT_REFRESH_STYLE_1
+#define GT_REFRESH_FLUSH_LINE_PRE_TIME   24
+#elif GT_REFRESH_STYLE == GT_REFRESH_STYLE_2
 #define GT_REFRESH_FLUSH_LINE_PRE_TIME   10
+#elif GT_REFRESH_STYLE == GT_REFRESH_STYLE_3
+#define GT_REFRESH_FLUSH_LINE_PRE_TIME   GT_SCREEN_HEIGHT
+#else
+#define GT_REFRESH_FLUSH_LINE_PRE_TIME   10
+#endif
 
 /* user: obj contain user_data: 1 yes, 0 no */
 #define GT_USE_USER_DATA    1

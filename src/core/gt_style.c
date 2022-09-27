@@ -83,6 +83,7 @@ uint16_t gt_obj_get_style_h(gt_obj_st * obj){
 void gt_obj_set_visible(gt_obj_st * obj, gt_visible_e is_visble)
 {
     obj->visible = is_visble;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 /* end ------------------------------------------------------------------*/

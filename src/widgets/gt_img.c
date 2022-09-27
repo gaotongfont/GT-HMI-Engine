@@ -202,8 +202,9 @@ void gt_img_style_set_src(gt_obj_st * img, char * src){
     if( NULL != style->src ){
         gt_mem_free(style->src);
     }
-    style->src = gt_mem_malloc( strlen(src) );
+    style->src = gt_mem_malloc( strlen(src) + 1 );
     strcpy(style->src, src);
+    style->src[strlen(src)] = 0;
 
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
