@@ -105,6 +105,13 @@ static void _set_png_type(_gt_img_info_st * header)
     header->color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;
 }
 
+static void _set_fp_info(gt_fs_fp_st * fp, _gt_img_info_st * header)
+{
+    fp->msg.pic.w = header->w;
+    fp->msg.pic.h = header->h;
+    fp->msg.pic.type = 1;   // GT_IMG_TYPE_RGB565_PNG, is not alpha
+}
+
 static gt_res_t _gt_png_info(struct _gt_img_decoder_s * decoder, const void * src, _gt_img_info_st * header)
 {
     gt_res_t ret = GT_RES_OK;
@@ -148,9 +155,7 @@ static gt_res_t _gt_png_info(struct _gt_img_decoder_s * decoder, const void * sr
 
     _set_png_width_height(header, _get_32bit_int(tmp_buffer), _get_32bit_int(&tmp_buffer[4]));
     _set_png_type(header);
-    fp->msg.pic.w = header->w;
-    fp->msg.pic.h = header->h;
-    fp->msg.pic.type = 1;   // GT_IMG_TYPE_RGB565_PNG
+    _set_fp_info(fp, header);
 
 err_lb:
     gt_fs_close();
@@ -188,6 +193,9 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
     dsc->header.w = png_width;
     dsc->header.h = png_height;
 
+    gt_fs_fp_st * fp = gt_fs_get_fp();
+    _set_fp_info(fp, &dsc->header);
+
     gt_mem_free(png_data);
     return ret;
 }
@@ -203,6 +211,8 @@ static gt_res_t _gt_png_read_line(struct _gt_img_decoder_s * decoder, struct _gt
 static gt_res_t _gt_png_close(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc)
 {
     GT_UNUSED(decoder);
+
+    gt_fs_close();
 
     if (dsc->img) {
         gt_mem_free(dsc->img);

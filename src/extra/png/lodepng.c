@@ -380,7 +380,7 @@ static unsigned lodepng_buffer_file(unsigned char* out, size_t size, const char*
   if (!fp) { return 78; }
 
   gt_fs_read(out, size, (uint32_t * )&read_size);
-  gt_fs_close();
+  // gt_fs_close();
 
   if (read_size != size) { return 78; }
   return 0;
@@ -403,7 +403,7 @@ unsigned lodepng_save_file(const unsigned char* buffer, size_t buffersize, const
 
   if (!fp) { return 79; }
   gt_fs_write((uint8_t * )buffer, buffersize, (uint32_t * )&ret_size);
-  gt_fs_close();
+  // gt_fs_close();
   return 0;
 }
 
