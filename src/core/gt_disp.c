@@ -161,8 +161,8 @@ void gt_disp_load_scr(gt_obj_st * scr)
     disp->area_disp.h = GT_REFRESH_FLUSH_LINE_PRE_TIME;
 
     y = 0;
-		gt_color_t fill_color;
-		fill_color.full = 0xFFFF;
+	gt_color_t fill_color;
+	fill_color = gt_screen_get_bgcolor(scr);
     while( y < disp->drv->res_hor ){
 
         gt_color_fill(disp->vbd_color, len, fill_color);
@@ -218,7 +218,6 @@ void gt_disp_ref_area(const gt_area_st * coords)
     }else{
         line = (line * GT_SCREEN_WIDTH)/area.w;
     }
-    printf("----line:%d\n", line);
     uint16_t y = 0;
     uint32_t idx = 0;
     uint32_t len = area.w * line;
@@ -231,8 +230,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
 
     y = 0;
     gt_color_t color_fill;
-    color_fill.full = 0xFFFF;
-
+    color_fill = gt_screen_get_bgcolor(gt_disp_get_scr());
 
     while( y < area.h ){
 

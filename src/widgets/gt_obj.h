@@ -95,10 +95,7 @@ typedef struct _gt_obj_s {
 
 
 /* private typedef  */
-typedef struct _gt_style_obj_s
-{
-    uint8_t selected;
-}_gt_style_obj_st;
+
 
 
 /* macros ---------------------------------------------------------------*/
@@ -119,6 +116,8 @@ void gt_obj_del(gt_obj_st * obj);
 
 
 void gt_init_area(gt_area_st * area, gt_size_t x, gt_size_t y, gt_size_t w, gt_size_t h);
+
+
 
 #ifdef __cplusplus
 } /*extern "C"*/

@@ -12,6 +12,7 @@
 #include "gt_obj_class.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
+#include "../core/gt_style.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -19,7 +20,11 @@
 #define MY_CLASS    &gt_obj_class
 
 /* private typedef ------------------------------------------------------*/
-
+typedef struct _gt_style_obj_s
+{
+    uint8_t selected;
+    gt_color_t bgcolor;
+}_gt_style_obj_st;
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
@@ -41,6 +46,12 @@ const gt_obj_class_st gt_obj_class = {
 
 
 /* static functions -----------------------------------------------------*/
+static void _gt_obj_init_style(gt_obj_st * obj)
+{
+    _gt_style_obj_st * style = obj->style;
+    style->bgcolor = gt_color_hex(0xFFFFFF);
+}
+
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class)
 {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
@@ -109,6 +120,7 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
 gt_obj_st * gt_obj_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    _gt_obj_init_style(obj);
     GT_LOGV(GT_LOG_TAG_GUI, "create obj type:%d", *MY_CLASS.type);
     return obj;
 }
@@ -120,6 +132,22 @@ void gt_obj_del(gt_obj_st * obj)
     gt_mem_free(obj);
 }
 
+void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color)
+{
+    if( obj->class->type != GT_TYPE_OBJ ){
+        return;
+    }
+    _gt_style_obj_st * style = obj->style;    
+    style->bgcolor = color;
+}
 
+gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj)
+{
+    if( obj->class->type != GT_TYPE_OBJ ){
+        return;
+    }
+    _gt_style_obj_st * style = obj->style;    
+    return style->bgcolor;
+}
 
 /* end ------------------------------------------------------------------*/
