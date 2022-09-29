@@ -109,7 +109,7 @@ static void _set_fp_info(gt_fs_fp_st * fp, _gt_img_info_st * header)
 {
     fp->msg.pic.w = header->w;
     fp->msg.pic.h = header->h;
-    fp->msg.pic.type = 1;   // GT_IMG_TYPE_RGB565_PNG, is not alpha
+    fp->msg.pic.is_alpha = 1;   // GT_IMG_TYPE_RGB565_PNG, is not alpha
 }
 
 static gt_res_t _gt_png_info(struct _gt_img_decoder_s * decoder, const void * src, _gt_img_info_st * header)
@@ -212,8 +212,6 @@ static gt_res_t _gt_png_close(struct _gt_img_decoder_s * decoder, struct _gt_img
 {
     GT_UNUSED(decoder);
 
-    gt_fs_close();
-
     if (dsc->img) {
         gt_mem_free(dsc->img);
         dsc->img = NULL;
@@ -222,6 +220,7 @@ static gt_res_t _gt_png_close(struct _gt_img_decoder_s * decoder, struct _gt_img
         gt_mem_free(dsc->alpha);
         dsc->alpha = NULL;
     }
+    gt_fs_close();
 
     return GT_RES_OK;
 }

@@ -176,6 +176,7 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name, gt_s
         }
 
         if (ptr->info_cb(ptr, name, &dsc->header)) {
+            gt_memset(&dsc->header, 0, sizeof(_gt_img_info_st));
             continue;
         }
 

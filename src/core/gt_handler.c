@@ -50,6 +50,7 @@ static void _gt_port_init(){
 	gt_port_disp_init();
     gt_port_indev_init();
 	gt_port_vf_init();
+    gt_port_src_init();
 }
 /* global functions / API interface -------------------------------------*/
 
