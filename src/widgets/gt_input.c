@@ -77,7 +77,7 @@ static void _gt_input_init_widget(gt_obj_st * input) {
 
     if( 0 == input->area.w || 0 == input->area.h ){
         input->area.w = style->font_size * 8;
-        input->area.h = style->font_size;
+        input->area.h = style->font_size + 4;
     }
 
     w = input->area.w;
@@ -85,6 +85,7 @@ static void _gt_input_init_widget(gt_obj_st * input) {
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
+    rect_attr.bg_opa = input->opa;
     rect_attr.is_fill = 0;
     rect_attr.border_width = 2;
     rect_attr.radius = 4;
@@ -120,6 +121,7 @@ static void _gt_input_init_widget(gt_obj_st * input) {
         .space_x = 0,
         .space_y = 0,
         .font_color = color_font,
+        .opa = input->opa,
     };
     
     gt_area_st area_font = input->area;

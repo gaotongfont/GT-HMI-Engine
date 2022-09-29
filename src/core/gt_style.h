@@ -50,6 +50,8 @@ void gt_obj_set_style_y(gt_obj_st * obj, uint16_t y);
 void gt_obj_set_style_w(gt_obj_st * obj, uint16_t w);
 void gt_obj_set_style_h(gt_obj_st * obj, uint16_t h);
 
+void gt_obj_set_style_opa(gt_obj_st * obj, gt_opa_t opa);
+
 uint16_t gt_obj_get_style_x(gt_obj_st * obj);
 uint16_t gt_obj_get_style_y(gt_obj_st * obj);
 uint16_t gt_obj_get_style_w(gt_obj_st * obj);

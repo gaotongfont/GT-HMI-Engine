@@ -66,7 +66,7 @@ static void _gt_processbar_init_widget(gt_obj_st * processbar) {
         .bg_color       = style->color_ina,
         .border_color   = style->color_ina,
         .radius         = h/2,
-        .bg_opa         = GT_OPA_COVER,
+        .bg_opa         = processbar->opa,
     };
 
 

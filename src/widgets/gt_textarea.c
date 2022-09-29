@@ -61,6 +61,7 @@ static void _gt_textarea_init_widget(gt_obj_st * textarea) {
         .space_x    = style->space_x,
         .space_y    = style->space_y,
         .align      = GT_ALIGN_NONE,
+        .opa        = textarea->opa,
     };
 
     gt_area_st area_font = textarea->area, area_temp;
@@ -72,7 +73,7 @@ static void _gt_textarea_init_widget(gt_obj_st * textarea) {
     rect_attr.is_fill = 0;
     rect_attr.bg_color = gt_color_hex(0x888888);
     rect_attr.border_color = gt_color_hex(0x888888);
-
+    rect_attr.bg_opa = textarea->opa;
 
     draw_bg(textarea->draw_ctx, &rect_attr, &textarea->area);
 

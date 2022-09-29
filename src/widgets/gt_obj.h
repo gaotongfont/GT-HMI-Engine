@@ -84,7 +84,7 @@ typedef struct _gt_obj_s {
 
     uint16_t cnt_child;
     uint8_t cnt_event;
-    uint8_t opa_bg;
+    uint8_t opa;
 
     gt_area_st area;                    /* base area */
 

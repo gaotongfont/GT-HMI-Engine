@@ -77,6 +77,7 @@ static void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     /* base shape */
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
+    rect_attr.bg_opa = checkbox->opa;
     if( style->selected == 1 ){
         rect_attr.is_fill = 1;
         rect_attr.border_width = 0;
@@ -100,11 +101,12 @@ static void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
 
     /* font */
     gt_attr_font_st font_dsc = {
-        .font = &font,
-        .space_x = 0,
-        .space_y = 0,
-        .font_color = gt_color_black(),
-        .align = GT_ALIGN_LEFT,
+        .font           = &font,
+        .space_x        = 0,
+        .space_y        = 0,
+        .font_color     = gt_color_black(),
+        .align          = GT_ALIGN_LEFT,
+        .opa            = checkbox->opa,
     };
     area.x += h;
     draw_text(checkbox->draw_ctx, &font_dsc, &area);

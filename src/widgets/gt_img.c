@@ -57,7 +57,7 @@ static void _gt_img_init_widget(gt_obj_st * img)
 
     gt_attr_rect_st dsc = {
         .bg_img_src = style->src,
-        .bg_opa = GT_OPA_COVER
+        .bg_opa = img->opa,
     };
     /* start draw img */
     draw_bg_img(img->draw_ctx, &dsc, &img->area);

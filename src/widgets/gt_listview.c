@@ -105,7 +105,7 @@ static void _gt_listview_init_widget(gt_obj_st * listview) {
     gt_attr_rect_st rect_attr = {
         .is_fill = 1,
         .border_width = 2,
-        .bg_opa = GT_OPA_COVER
+        .bg_opa = listview->opa,
     };
     rect_attr.border_color  = style->color_border;
     rect_attr.fg_color      = style->fg_color_unselected;
@@ -117,18 +117,19 @@ static void _gt_listview_init_widget(gt_obj_st * listview) {
 
     uint8_t fp[64];
     gt_font_st font = {
-        .style_cn = style->font_style_cn,
-        .style_en = style->font_style_en,
-        .res = fp,
-        .size = style->font_size,
+        .style_cn   = style->font_style_cn,
+        .style_en   = style->font_style_en,
+        .res        = fp,
+        .size       = style->font_size,
     };
 
     gt_attr_font_st font_attr = {
-        .font = &font,
-        .space_x = 0,
-        .space_y = 0,
-        .align = GT_ALIGN_CENTER,
-        .font_color = gt_color_black()
+        .font       = &font,
+        .space_x    = 0,
+        .space_y    = 0,
+        .align      = GT_ALIGN_CENTER,
+        .font_color = gt_color_black(),
+        .opa        = listview->opa,
     };
     uint16_t __h = h/style->idx_show_cnt;
     uint8_t idx_start = style->idx_show_start;

@@ -63,7 +63,7 @@ static void _gt_scrollbar_init_widget(gt_obj_st * scrollbar) {
         .radius = h>>1,
         .bg_color = style->color_ina,
         .border_color = style->bg_color,
-        .bg_opa = GT_OPA_COVER
+        .bg_opa = scrollbar->opa,
     };
     
 

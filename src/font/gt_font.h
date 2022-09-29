@@ -88,6 +88,7 @@ typedef struct _gt_attr_font_s {
 
     gt_align_et align;  ///< Alignment
     uint8_t style;      ///< font style value @ref gt_font_style_et
+    gt_opa_t opa;       ///< font opa value @GT_OPA_X
 }gt_attr_font_st;
 
 

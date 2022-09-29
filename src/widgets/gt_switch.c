@@ -70,6 +70,7 @@ static void _gt_switcher_init_widget(gt_obj_st * switcher)
     rect_attr.border_color = fg_color;
     rect_attr.radius = switcher->area.h>>1;
     rect_attr.border_width = 0;
+    rect_attr.bg_opa = switcher->opa;
 
     draw_bg(switcher->draw_ctx, &rect_attr, &switcher->area);
 

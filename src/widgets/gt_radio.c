@@ -82,9 +82,9 @@ static void _gt_radio_init_widget(gt_obj_st * radio) {
         .is_fill        = 0,
         .border_width   = 2,
         .border_color   = gt_color_hex(0xA0A0A0),
-        .bg_opa         = GT_OPA_COVER,
+        .bg_opa         = radio->opa,
         .bg_color       = gt_color_hex(0xA0A0A0),
-        .radius         = h>>1,
+        .radius         = h>>1,        
     };
     
     gt_area_st area_base = radio->area;
@@ -110,6 +110,7 @@ static void _gt_radio_init_widget(gt_obj_st * radio) {
         .space_y = 0,
         .font_color = color_font,
         .align = GT_ALIGN_LEFT,
+        .opa = radio->opa,
     };
     gt_area_st area_font = radio->area;
     area_font.x += area_base.h;

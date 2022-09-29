@@ -347,7 +347,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         .mask_buf   = mask_buf,
         .dst_area   = &area_font,
         .color_fill = dsc->font_color,
-        .opa        = GT_OPA_COVER,
+        .opa        = dsc->opa,
     };
     gt_memset(mask_line, 0xFF, dsc->font->size*2);
 
@@ -478,7 +478,7 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
     gt_draw_blend_dsc_st blend_dsc = {
         .dst_area = &dst_area,
         .mask_area = &mask_area,
-        .opa = GT_OPA_COVER
+        .opa = dsc->bg_opa
     };
     uint16_t w, h, y = 0;
     uint32_t addr_start_alpha = 0;
@@ -497,8 +497,6 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
     uint32_t offset = 0, len = 0;
 
     addr_start_alpha = w * h * sizeof(gt_color_t);
-
-    // printf("%s--%d\n",dsc->bg_img_src, fp->msg.pic.is_alpha);
     /* img src type */
     // gt_img_get_type(dsc->bg_img_src);
     switch(dsc_img.header.type){

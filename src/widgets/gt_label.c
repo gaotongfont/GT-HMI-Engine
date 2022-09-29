@@ -81,7 +81,8 @@ static void _gt_label_init_widget(gt_obj_st * label) {
         .font_color = style->color_font,
         .space_x = 0,
         .space_y = 0,
-        .align = GT_ALIGN_LEFT
+        .align = GT_ALIGN_LEFT,
+        .opa = label->opa,
     };
     draw_text(label->draw_ctx, &font_attr, &label->area);
    

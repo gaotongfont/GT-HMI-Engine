@@ -60,6 +60,8 @@ gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * paren
     obj->class = class;
     obj->parent = parent;
 
+    obj->opa = GT_OPA_100;
+
     uint32_t ss = get_style_size(class);
     obj->style = gt_mem_malloc(ss);
 
