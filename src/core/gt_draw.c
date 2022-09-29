@@ -481,6 +481,7 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
         .opa = GT_OPA_COVER
     };
     uint16_t w, h, y = 0;
+    uint32_t addr_start_alpha = 0;
     if( gt_fs_read_img_wh(dsc->bg_img_src, &w, &h) == GT_RES_FAIL){
         return;
     }
@@ -495,6 +496,9 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
     uint16_t idx = 0, idx_mask = 0, px_size = sizeof(gt_color_t)+1, end = w * px_size;
     uint32_t offset = 0, len = 0;
 
+    addr_start_alpha = w * h * sizeof(gt_color_t);
+
+    // printf("%s--%d\n",dsc->bg_img_src, fp->msg.pic.is_alpha);
     /* img src type */
     // gt_img_get_type(dsc->bg_img_src);
     switch(dsc_img.header.type){
@@ -534,17 +538,14 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
                 }
                 /*read one line color data*/
                 gt_fs_read_img_offset((uint8_t *)color_img_line_p, offset, len);
-                idx = 0;
-                while( idx < w ){
-                    if( color_img_line_p[idx].full ){
-                        mask_buf[idx] = 0xFF;
-                    }else{
-                        mask_buf[idx] = 0;
-                    }
-                    idx++;
+                if( fp->msg.pic.is_alpha == 1 ){//png
+                    gt_fs_read_img_offset((uint8_t *)mask_buf, addr_start_alpha, w);
+                    addr_start_alpha += w;
+                    blend_dsc.mask_buf = mask_buf;
+                }else{//bmp
+                    blend_dsc.mask_buf = NULL;
                 }
 
-                blend_dsc.mask_buf = NULL;//mask_buf;
                 blend_dsc.dst_buf = color_img_line_p;
 
                 /* blend to bg */

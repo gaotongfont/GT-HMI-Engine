@@ -45,6 +45,7 @@ static void _gt_vf_set_fp_by_list(gt_fs_fp_st * fp, gt_vfs_st const * const item
     fp->pos = 0;
     fp->msg.pic.w = item->w;
     fp->msg.pic.h = item->h;
+    fp->msg.pic.is_alpha = item->is_alpha;
 }
 
 static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode)

@@ -92,6 +92,8 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
 
     fp->msg.pic.w = dev->sys[idx].w;
     fp->msg.pic.h = dev->sys[idx].h;
+    fp->msg.pic.is_alpha = dev->sys[idx].is_alpha;
+
 
     return (void * )fp;
 }

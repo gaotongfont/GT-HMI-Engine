@@ -79,7 +79,7 @@ typedef struct _gt_fs_fp_s{
         struct {
             gt_size_t w;
             gt_size_t h;
-            uint8_t type;
+            uint8_t is_alpha;
         }pic;
         struct {
             uint32_t encoding;

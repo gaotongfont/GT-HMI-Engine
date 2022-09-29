@@ -35,6 +35,7 @@ typedef struct _gt_vfs_s {
     gt_size_t h;    ///< height
     uint32_t addr;  ///< address which resource data save
     uint32_t size;  ///< the resource size
+    uint8_t is_alpha;   ///< is not alpha chanle
 }gt_vfs_st;
 
 /**
