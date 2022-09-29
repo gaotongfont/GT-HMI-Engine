@@ -534,6 +534,7 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
                     y++;
                     dst_area.y++;
                     offset += len;
+                    addr_start_alpha += w;
                     continue;
                 }
                 /*read one line color data*/
