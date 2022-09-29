@@ -175,7 +175,6 @@ void gt_disp_load_scr(gt_obj_st * scr)
         // phy screen use area is from W x H
         disp->area_disp.y = y;
         disp->area_disp.x = 0;
-        printf("ax:%d,y:%d,dx:%d,y:%d\n", disp->area_act.x,disp->area_act.y, disp->area_disp.x, disp->area_disp.y);
         disp->drv->flush_cb(disp->drv, &disp->area_disp, disp->vbd_color);
         y += GT_REFRESH_FLUSH_LINE_PRE_TIME;
     }
