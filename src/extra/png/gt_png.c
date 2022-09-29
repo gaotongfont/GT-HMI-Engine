@@ -137,6 +137,7 @@ static gt_res_t _gt_png_info(struct _gt_img_decoder_s * decoder, const void * sr
         goto err_lb;
     }
     if (gt_memcmp(tmp_buffer, magic, sizeof(magic))) {
+        ret = GT_RES_INV;
         goto err_lb;
     }
     /**
