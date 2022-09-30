@@ -36,7 +36,7 @@ extern "C" {
 #define GT_CFG_ENABLE_SCROLLBAR         1
 #define GT_CFG_ENABLE_SWITCH            1
 #define GT_CFG_ENABLE_TEXTAREA          1
-#define GT_CFG_ENABLE_IMGBTN            0
+#define GT_CFG_ENABLE_IMGBTN            1
 
 
 

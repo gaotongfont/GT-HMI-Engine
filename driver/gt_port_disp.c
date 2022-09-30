@@ -57,7 +57,7 @@ void gt_port_disp_init(){
 #if(GT_REFRESH_STYLE == GT_REFRESH_STYLE_0)
 
 #elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_1)
-	gt_disp_graph_buf_init(NULL, NULL, buf1);
+	gt_disp_graph_buf_init(buf1, NULL, NULL);
 #elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_2)
 	gt_disp_graph_buf_init(buf1, buf2, NULL);
 #elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_3)

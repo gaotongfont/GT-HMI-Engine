@@ -101,6 +101,10 @@ extern "C" {
 #include "src/widgets/gt_textarea.h"
 #endif
 
+#if GT_CFG_ENABLE_IMGBTN == 1
+#include "src/widgets/gt_imgbtn.h"
+#endif
+
 /* other */
 #include "src/others/gt_color.h"
 #include "src/others/gt_log.h"
