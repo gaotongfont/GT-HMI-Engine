@@ -1,7 +1,7 @@
 /**
  * @file gt_port_src.h
  * @author Feyoung
- * @brief
+ * @brief Array resource management implementation
  * @version 0.1
  * @date 2022-08-31 11:26:54
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

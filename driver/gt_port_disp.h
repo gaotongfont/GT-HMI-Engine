@@ -1,7 +1,7 @@
 /**
  * @file gt_port_disp.h
  * @author yongg
- * @brief 
+ * @brief The Interface of the display screen
  * @version 0.1
  * @date 2022-06-22 14:41:38
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -30,6 +30,10 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief display buffer init
+ */
 void gt_port_disp_init(void);
 
 

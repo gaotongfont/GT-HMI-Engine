@@ -1,7 +1,7 @@
 /**
  * @file gt_style.h
  * @author yonogg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-12 18:37:46
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -23,7 +23,7 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 typedef enum _gt_align_e
-{ 
+{
     GT_ALIGN_NONE = -1,
     GT_ALIGN_LEFT,
     GT_ALIGN_RIGHT,
@@ -57,7 +57,7 @@ uint16_t gt_obj_get_style_y(gt_obj_st * obj);
 uint16_t gt_obj_get_style_w(gt_obj_st * obj);
 uint16_t gt_obj_get_style_h(gt_obj_st * obj);
 
-void gt_obj_set_visible(gt_obj_st * obj, gt_visible_e is_visble);
+void gt_obj_set_visible(gt_obj_st * obj, gt_visible_e is_visible);
 void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color);
 gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj);
 

@@ -116,7 +116,10 @@ extern "C" {
  */
 #define GT_USE_PNG              01
 
-
+/**
+ * @brief use examples demo
+ */
+#define GT_USE_EXAMPLES         01
 
 
 /* typedef --------------------------------------------------------------*/

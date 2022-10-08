@@ -1,7 +1,7 @@
 /**
  * @file gt_style.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-12 18:37:55
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -84,9 +84,9 @@ uint16_t gt_obj_get_style_h(gt_obj_st * obj){
     return _get_area_prop(obj, h);
 }
 
-void gt_obj_set_visible(gt_obj_st * obj, gt_visible_e is_visble)
+void gt_obj_set_visible(gt_obj_st * obj, gt_visible_e is_visible)
 {
-    obj->visible = is_visble;
+    obj->visible = is_visible;
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

@@ -1,7 +1,7 @@
 /**
  * @file gt_port_indev.h
  * @author yongg
- * @brief 
+ * @brief input device implementation
  * @version 0.1
  * @date 2022-06-22 14:32:51
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -30,6 +30,10 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief input device initialization
+ */
 void gt_port_indev_init(void);
 
 
