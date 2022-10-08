@@ -1,7 +1,7 @@
 /**
  * @file gt_input.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-20 13:37:26
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -123,7 +123,7 @@ static void _gt_input_init_widget(gt_obj_st * input) {
         .font_color = color_font,
         .opa = input->opa,
     };
-    
+
     gt_area_st area_font = input->area;
     area_font.x += 4;
     gt_area_st area_res = draw_text(input->draw_ctx, &font_attr, &area_font);
@@ -239,7 +239,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 static void _gt_input_init_style(gt_obj_st * input)
 {
     _gt_style_input_st * style = NULL;
-    
+
     input->style = gt_mem_malloc(sizeof(_gt_style_input_st));
     style = input->style;
 
@@ -272,7 +272,7 @@ gt_obj_st * gt_input_create(gt_obj_st * parent)
 
 /**
  * @brief set input value
- * 
+ *
  * @param input input obj
  * @param value set data value
  */
@@ -286,13 +286,13 @@ void gt_input_style_set_value(gt_obj_st * input, char * value)
     style->value = gt_mem_malloc( len + 1 );
     gt_memcpy(style->value, value, len);
     style->value[len] = 0;
-    
+
     style->pos_cursor = len;
 }
 
 /**
  * @brief append value to input obj value
- * 
+ *
  * @param input input obj
  * @param value append data value
  */
@@ -313,7 +313,7 @@ void gt_input_style_append_value(gt_obj_st * input, char * value)
         gt_txt_ins(style->value, style->pos_cursor, value);
         style->pos_cursor += strlen(value);
     }
-    
+
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -339,7 +339,7 @@ lab_end:
 }
 /**
  * @brief set placeholder value
- * 
+ *
  * @param input input obj
  * @param placeholder placeholder value
  */

@@ -1,7 +1,7 @@
 /**
  * @file gt_checkbox.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-18 14:11:47
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -61,7 +61,7 @@ static void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
         .len = strlen(style->text),
         .size = style->font_size,
     };
-    
+
     // set default size
     if( checkbox->area.w == 0 || checkbox->area.h == 0){
         checkbox->area.w = gt_font_get_string_width(&font)+32;
@@ -186,10 +186,10 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
             GT_LOGD(GT_LOG_TAG_GUI, "process");
             /* code here */
-            if( gt_checkbox_style_get_selceted_state(obj) ){
-                gt_checkbox_style_set_unselceted(obj);
+            if( gt_checkbox_style_get_selected_state(obj) ){
+                gt_checkbox_style_set_unselected(obj);
             }else{
-                gt_checkbox_style_set_selceted(obj);
+                gt_checkbox_style_set_selected(obj);
             }
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
             break;
@@ -208,7 +208,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 static void _gt_checkbox_init_style(gt_obj_st * checkbox)
 {
     _gt_style_checkbox_st * style = NULL;
-    
+
     checkbox->style = gt_mem_malloc(sizeof(_gt_style_checkbox_st));
     style = checkbox->style;
 
@@ -240,16 +240,16 @@ gt_obj_st * gt_checkbox_create(gt_obj_st * parent)
     return obj;
 }
 
-void gt_checkbox_style_set_selceted(gt_obj_st * checkbox){
+void gt_checkbox_style_set_selected(gt_obj_st * checkbox){
     _gt_style_checkbox_st * style = checkbox->style;
     style->selected = 1;
 }
-void gt_checkbox_style_set_unselceted(gt_obj_st * checkbox){
+void gt_checkbox_style_set_unselected(gt_obj_st * checkbox){
     _gt_style_checkbox_st * style = checkbox->style;
     style->selected = 0;
 }
 
-uint8_t gt_checkbox_style_get_selceted_state(gt_obj_st * checkbox){
+uint8_t gt_checkbox_style_get_selected_state(gt_obj_st * checkbox){
     _gt_style_checkbox_st * style = checkbox->style;
     return style->selected;
 }

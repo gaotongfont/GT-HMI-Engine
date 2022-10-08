@@ -1,7 +1,7 @@
 /**
  * @file gt_input.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-20 13:37:30
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -31,7 +31,7 @@ typedef struct _gt_style_input_s
     uint8_t font_style_cn;
     uint8_t font_style_en;
     uint8_t font_size;
-    
+
     gt_point_st point_pos;
 
     char * value;
@@ -48,7 +48,7 @@ typedef struct _gt_style_input_s
 
 /**
  * @brief create input obj
- * 
+ *
  * @param parent input's parent obj
  * @return gt_obj_st* input obj ptr
  */
@@ -56,7 +56,7 @@ gt_obj_st * gt_input_create(gt_obj_st * parent);
 
 /**
  * @brief set input obj value
- * 
+ *
  * @param input input obj
  * @param value value
  */
@@ -64,37 +64,37 @@ void gt_input_style_set_value(gt_obj_st * input, char * value);
 
 /**
  * @brief append content at the end
- * 
+ *
  * @param input input obj
  * @param value content
  */
 void gt_input_style_append_value(gt_obj_st * input, char * value);
 
 /**
- * @brief set input obj palceholder
- * 
+ * @brief set input obj placeholder
+ *
  * @param input input obj
- * @param placeholder palceholder content
+ * @param placeholder placeholder content
  */
 void gt_input_style_set_placeholder(gt_obj_st * input, const char * placeholder);
 
 /**
  * @brief delete a value in the input obj at pos
- * 
+ *
  * @param input input obj
  */
 void gt_input_style_del_value(gt_obj_st * input);
 
 /**
  * @brief move the cursor one position to the left
- * 
+ *
  * @param input input obj
  */
 void gt_input_style_move_left_pos_cursor(gt_obj_st * input);
 
 /**
  * @brief move the cursor one position to the right
- * 
+ *
  * @param input input obj
  */
 void gt_input_style_move_right_pos_cursor(gt_obj_st * input);

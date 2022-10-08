@@ -113,7 +113,7 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
     gt_color_t * color_dst_p = draw_ctx->buf, * color_src_p = dsc->dst_buf;
     gt_opa_t opa_res;
 	int x,y;
-    // use dsc->opa to blend backgrounp
+    // use dsc->opa to blend background
     if( !mask ){
         // fill dsc->dst_buf use opa
         if( dsc->dst_buf ){
@@ -146,7 +146,7 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
             }
         }
     }
-    // use dsc->mask_buff to blend backgrounp
+    // use dsc->mask_buff to blend background
     else{
         // use dsc->mask_buf fill dsc->dst_buf to draw_ctx->buf
         if( NULL != dsc->dst_buf ){

@@ -35,7 +35,7 @@ typedef struct gt_src_s {
     gt_size_t h;    ///< height
     uint8_t * img;  ///< The pointer of image data
     uint32_t size;  ///< image data count of byte.
-    uint8_t is_alpha;   ///< is not alpha chanle
+    uint8_t is_alpha;   ///< is not alpha channel
 }gt_src_st;
 
 
