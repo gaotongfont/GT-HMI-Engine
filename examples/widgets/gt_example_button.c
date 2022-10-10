@@ -11,6 +11,7 @@
 #include "../gt_examples.h"
 #include "../../src/core/gt_event.h"
 #include "../../src/widgets/gt_btn.h"
+#include "../../src/widgets/gt_label.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -39,8 +40,12 @@
 static void btn_click_cb(gt_event_st * e)
 {
 	static int cnt_idx = 0;
+	char buffer[100];
 
-	printf("clicking %d\n", ++cnt_idx);
+	memset(buffer, 0, sizeof(buffer));
+	sprintf(buffer, "btn %d", ++cnt_idx);
+	printf("%s\n", buffer);
+	gt_btn_style_set_text(e->target, buffer);
 }
 
 
