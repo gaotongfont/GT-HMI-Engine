@@ -46,6 +46,8 @@ void gt_example_button(void);
 
 void gt_examples_checkbox(void);
 
+void gt_examples_img(void);
+
 void gt_example_input(void);
 
 #endif  /* !GT_USE_EXAMPLES */
