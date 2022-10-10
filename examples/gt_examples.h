@@ -52,6 +52,8 @@ void gt_examples_img(void);
 
 void gt_example_input(void);
 
+void gt_examples_label(void);
+
 #endif  /* !GT_USE_EXAMPLES */
 
 #ifdef __cplusplus
