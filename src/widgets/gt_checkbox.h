@@ -1,7 +1,7 @@
 /**
  * @file gt_checkbox.h
  * @author yongg
- * @brief
+ * @brief checkbox element
  * @version 0.1
  * @date 2022-07-18 14:11:44
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

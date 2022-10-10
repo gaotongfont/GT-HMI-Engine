@@ -1,7 +1,7 @@
 /**
  * @file gt_obj_class.h
  * @author yongg
- * @brief
+ * @brief object class information
  * @version 0.1
  * @date 2022-05-12 10:34:16
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

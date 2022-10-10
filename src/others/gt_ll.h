@@ -1,7 +1,7 @@
 /**
  * @file gt_ll.h
  * @author Feyoung
- * @brief
+ * @brief unused
  * @version 0.1
  * @date 2022-06-14 20:53:51
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

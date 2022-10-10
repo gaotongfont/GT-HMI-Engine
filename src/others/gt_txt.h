@@ -1,7 +1,7 @@
 /**
  * @file gt_txt.h
  * @author yongg
- * @brief 
+ * @brief content implementation
  * @version 0.1
  * @date 2022-08-26 14:56:04
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

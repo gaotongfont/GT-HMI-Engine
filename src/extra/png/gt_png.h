@@ -1,7 +1,7 @@
 /**
  * @file gt_png.h
  * @author Feyoung
- * @brief
+ * @brief png implementation
  * @version 0.1
  * @date 2022-08-10 15:48:21
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

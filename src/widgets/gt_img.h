@@ -1,7 +1,7 @@
 /**
  * @file gt_img.h
  * @author yongg
- * @brief 
+ * @brief image display control
  * @version 0.1
  * @date 2022-07-05 17:36:46
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -49,7 +49,7 @@ void gt_img_style_set_color_selected(gt_obj_st * img, gt_color_t color);
 
 /**
  * @brief  create img obj
- * 
+ *
  * @param parent img's parent obj
  * @return gt_obj_st* img obj ptr
  */
@@ -57,7 +57,7 @@ gt_obj_st * gt_img_create(gt_obj_st * parent);
 
 /**
  * @brief set the path of the img
- * 
+ *
  * @param img img obj
  * @param src path of img
  */

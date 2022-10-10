@@ -1,7 +1,7 @@
 /**
  * @file gt_symbol.h
  * @author yongg
- * @brief 
+ * @brief Common symbols list
  * @version 0.1
  * @date 2022-08-25 17:55:56
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

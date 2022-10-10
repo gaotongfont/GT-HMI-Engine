@@ -1,7 +1,7 @@
 /**
  * @file gt_qrcode.h
  * @author yongg
- * @brief 
+ * @brief The QrCode implementation
  * @version 0.1
  * @date 2022-08-24 16:37:06
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -37,7 +37,7 @@ typedef struct _gt_style_qrcode_s
 
 /**
  * @brief create qrcode obj
- * 
+ *
  * @param parent qrcode's parent obj
  * @return gt_obj_st* qrcode obj ptr
  */

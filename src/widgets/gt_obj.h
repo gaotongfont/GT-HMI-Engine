@@ -1,7 +1,7 @@
 /**
  * @file gt_obj.h
  * @author yongg
- * @brief
+ * @brief Base object implementation
  * @version 0.1
  * @date 2022-05-11 15:08:01
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -105,7 +105,7 @@ typedef struct _gt_obj_s {
 /* global functions / API interface -------------------------------------*/
 /**
  * @brief create obj, recommend the obj will as screen obj
- * 
+ *
  * @param parent obj's parent obj
  * @return gt_obj_st* obj ptr
  */

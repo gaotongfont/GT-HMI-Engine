@@ -1,7 +1,7 @@
 /**
  * @file gt_group.h
  * @author yongg
- * @brief 
+ * @brief The group of members control
  * @version 0.1
  * @date 2022-07-20 15:51:11
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -37,7 +37,7 @@ typedef struct _gt_style_group_s
 
 /**
  * @brief create group obj
- * 
+ *
  * @param parent group's parent obj
  * @return gt_obj_st* group obj ptr
  */

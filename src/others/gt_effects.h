@@ -1,7 +1,7 @@
 /**
  * @file gt_effects.h
  * @author Feyoung
- * @brief
+ * @brief The effect of control
  * @version 0.1
  * @date 2022-07-05 18:59:47
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

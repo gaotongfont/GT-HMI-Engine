@@ -1,7 +1,7 @@
 /**
  * @file gt_gc.h
  * @author Feyoung
- * @brief
+ * @brief The global call
  * @version 0.1
  * @date 2022-06-14 16:56:57
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

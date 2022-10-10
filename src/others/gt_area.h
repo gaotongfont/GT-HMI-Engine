@@ -1,7 +1,7 @@
 /**
  * @file gt_area.h
  * @author yongg
- * @brief
+ * @brief display area interface
  * @version 0.1
  * @date 2022-08-11 09:34:53
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

@@ -1,7 +1,7 @@
 /**
  * @file gt_types.h
  * @author yongg
- * @brief
+ * @brief The global data type defined
  * @version 0.1
  * @date 2022-05-12 16:27:54
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

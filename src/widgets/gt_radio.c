@@ -1,7 +1,7 @@
 /**
  * @file gt_radio.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-20 15:29:04
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -52,7 +52,7 @@ static void _gt_radio_init_widget(gt_obj_st * radio) {
     gt_color_t color_font;
 
     GT_COLOR_SET(color_font, 0x0000);   //radio font color;
-    
+
     uint8_t fp[1024];
     gt_font_st font = {
         .style_cn = style->font_style_cn,
@@ -63,8 +63,8 @@ static void _gt_radio_init_widget(gt_obj_st * radio) {
         .size = style->font_size,
     };
 
-    
-    
+
+
     // set default size
     if( radio->area.w == 0 || radio->area.h == 0){
         radio->area.w = gt_font_get_string_width(&font)+24;
@@ -84,9 +84,9 @@ static void _gt_radio_init_widget(gt_obj_st * radio) {
         .border_color   = gt_color_hex(0xA0A0A0),
         .bg_opa         = radio->opa,
         .bg_color       = gt_color_hex(0xA0A0A0),
-        .radius         = h>>1,        
+        .radius         = h>>1,
     };
-    
+
     gt_area_st area_base = radio->area;
     area_base.h = h;
     area_base.w = area_base.h;
@@ -153,7 +153,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
-            if( gt_obj_check_scr(obj) ){               
+            if( gt_obj_check_scr(obj) ){
                 extern void gt_disp_ref_area(gt_area_st * area);
                 gt_disp_ref_area(&obj->area);
             }
@@ -188,11 +188,11 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             int idx = 0;
             while( idx < obj->parent->cnt_child ){
                 if( obj->parent->child[idx]->class->type == GT_TYPE_RADIO ){
-                    gt_radio_style_set_unselceted(obj->parent->child[idx++]);
+                    gt_radio_style_set_unselected(obj->parent->child[idx++]);
                 }
             }
-            gt_radio_style_set_selceted(obj);
-            
+            gt_radio_style_set_selected(obj);
+
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
             break;
 
@@ -210,7 +210,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 static void _gt_radio_init_style(gt_obj_st * radio)
 {
     _gt_style_radio_st * style = NULL;
-    
+
     radio->style = gt_mem_malloc(sizeof(_gt_style_radio_st));
     style = radio->style;
 
@@ -242,17 +242,17 @@ gt_obj_st * gt_radio_create(gt_obj_st * parent)
     return obj;
 }
 
-void gt_radio_style_set_selceted(gt_obj_st * radio){
+void gt_radio_style_set_selected(gt_obj_st * radio){
     _gt_style_radio_st * style = radio->style;
     style->selected = 1;
 }
-void gt_radio_style_set_unselceted(gt_obj_st * radio){
+void gt_radio_style_set_unselected(gt_obj_st * radio){
     _gt_style_radio_st * style = radio->style;
     style->selected = 0;
     gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-uint8_t gt_radio_style_get_selceted_state(gt_obj_st * radio){
+uint8_t gt_radio_style_get_selected_state(gt_obj_st * radio){
     _gt_style_radio_st * style = radio->style;
     return style->selected;
 }

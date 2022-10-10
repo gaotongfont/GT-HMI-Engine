@@ -1,7 +1,7 @@
 /**
  * @file gt_math.h
  * @author yongg
- * @brief
+ * @brief Math library
  * @version 0.1
  * @date 2022-05-23 16:42:24
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

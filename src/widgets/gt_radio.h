@@ -1,7 +1,7 @@
 /**
  * @file gt_radio.h
  * @author yongg
- * @brief 
+ * @brief The implementation of the radio
  * @version 0.1
  * @date 2022-07-20 15:29:01
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -25,7 +25,7 @@ extern "C" {
 typedef struct _gt_style_radio_s
 {
     uint8_t selected;
-    
+
     uint8_t font_style_cn;
     uint8_t font_style_en;
     uint8_t font_size;
@@ -43,7 +43,7 @@ typedef struct _gt_style_radio_s
 
 /**
  * @brief create radio obj
- * 
+ *
  * @param parent radio's parent obj
  * @return gt_obj_st* radio obj ptr
  */
@@ -51,28 +51,28 @@ gt_obj_st * gt_radio_create(gt_obj_st * parent);
 
 /**
  * @brief set radio state to selected
- * 
+ *
  * @param radio radio obj
  */
-void gt_radio_style_set_selceted(gt_obj_st * radio);
+void gt_radio_style_set_selected(gt_obj_st * radio);
 
 /**
  * @brief set radio state to unselected
- * 
+ *
  * @param radio radio obj
  */
-void gt_radio_style_set_unselceted(gt_obj_st * radio);
+void gt_radio_style_set_unselected(gt_obj_st * radio);
 
 /**
  * @brief get radio state
- * 
+ *
  * @param radio radio obj
  */
-uint8_t gt_radio_style_get_selceted_state(gt_obj_st * radio);
+uint8_t gt_radio_style_get_selected_state(gt_obj_st * radio);
 
 /**
  * @brief set radio text
- * 
+ *
  * @param radio radio obj
  * @param text text
  */

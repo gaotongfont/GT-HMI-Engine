@@ -1,7 +1,7 @@
 /**
  * @file gt_input.h
  * @author yongg
- * @brief
+ * @brief The area to input content or password
  * @version 0.1
  * @date 2022-07-20 13:37:30
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

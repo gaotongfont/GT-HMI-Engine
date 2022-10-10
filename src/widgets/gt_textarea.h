@@ -1,7 +1,7 @@
 /**
  * @file gt_textarea.h
  * @author yongg
- * @brief
+ * @brief Controllers for the text area
  * @version 0.1
  * @date 2022-07-13 09:47:27
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

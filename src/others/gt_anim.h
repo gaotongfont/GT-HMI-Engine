@@ -1,7 +1,7 @@
 /**
  * @file gt_anim.h
  * @author Feyoung
- * @brief
+ * @brief Animation-related logic implementation
  * @version 0.1
  * @date 2022-06-21 17:59:48
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

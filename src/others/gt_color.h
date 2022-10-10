@@ -1,7 +1,7 @@
 /**
  * @file gt_color.h
  * @author yongg
- * @brief
+ * @brief THe color implementation
  * @version 0.1
  * @date 2022-05-13 10:13:45
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.

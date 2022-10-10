@@ -1,7 +1,7 @@
 /**
  * @file gt_log.h
  * @author Feyoung
- * @brief
+ * @brief The gui log information
  * @version 0.1
  * @date 2022-04-25 10:43:59
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
