@@ -67,7 +67,6 @@ static const gt_vfs_st virt_file_sys[] ={
     {"tianpin.png",80,80,358600,0},
     {"xiaochaorou.png",80,80,371400,0},
     {NULL,0,0,0,0},
-    {NULL,0,0,0,0}
 };
 static gt_fs_drv_st drv_vf;
 

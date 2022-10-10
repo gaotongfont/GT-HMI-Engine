@@ -1,7 +1,7 @@
 /**
  * @file gt_port_vf.h
  * @author yongg
- * @brief 
+ * @brief Flash Resource management implementation
  * @version 0.1
  * @date 2022-06-22 09:58:13
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -30,6 +30,9 @@ extern "C" {
 
 /* global functions / API interface -------------------------------------*/
 
+/**
+ * @brief Flash resource management initialization
+ */
 void gt_port_vf_init(void);
 
 

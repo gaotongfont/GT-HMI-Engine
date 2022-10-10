@@ -354,7 +354,8 @@ gt_size_t gt_listview_style_get_idx_selected(gt_obj_st * listview)
     return style->idx_selected;
 }
 
-char * gt_listview_style_get_slected_item_text(gt_obj_st * listview){
+char * gt_listview_style_get_selected_item_text(gt_obj_st * listview)
+{
     _gt_style_listview_st * style = listview->style;
     return style->item[style->idx_selected];
 }
