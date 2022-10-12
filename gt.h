@@ -81,8 +81,8 @@ extern "C" {
 #include "src/widgets/gt_listview.h"
 #endif
 
-#if GT_CFG_ENABLE_PROCESSBAR == 1
-#include "src/widgets/gt_processbar.h"
+#if GT_CFG_ENABLE_PROGRESS_BAR == 1
+#include "src/widgets/gt_progress_bar.h"
 #endif
 
 #if GT_CFG_ENABLE_RADIO == 1
