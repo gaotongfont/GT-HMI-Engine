@@ -7,6 +7,7 @@ include_directories(
 
 file(GLOB SRC_FILES
     ${PROJECT_SOURCE_DIR}/*/*.c
+    ${PROJECT_SOURCE_DIR}/../driver/*.c
     ${PROJECT_SOURCE_DIR}/*/*/*.c
 )
 

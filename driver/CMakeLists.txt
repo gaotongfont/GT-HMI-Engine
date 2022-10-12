@@ -5,6 +5,6 @@ include_directories(
 )
 
 set(SOURCES
-    ${PROJECT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/*.c
 )
 
