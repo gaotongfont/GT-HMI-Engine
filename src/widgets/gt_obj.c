@@ -75,7 +75,7 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
             break;
-            
+
         case GT_EVENT_TYPE_DRAW_END:
             GT_LOGD(GT_LOG_TAG_GUI, "end draw");
             break;
@@ -93,7 +93,7 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGD(GT_LOG_TAG_GUI, "obj scroll");            
+            GT_LOGD(GT_LOG_TAG_GUI, "obj scroll");
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
@@ -137,16 +137,16 @@ void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color)
     if( obj->class->type != GT_TYPE_OBJ ){
         return;
     }
-    _gt_style_obj_st * style = obj->style;    
+    _gt_style_obj_st * style = obj->style;
     style->bgcolor = color;
 }
 
 gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj)
 {
     if( obj->class->type != GT_TYPE_OBJ ){
-        return;
+        return *(gt_color_t*)0;
     }
-    _gt_style_obj_st * style = obj->style;    
+    _gt_style_obj_st * style = obj->style;
     return style->bgcolor;
 }
 

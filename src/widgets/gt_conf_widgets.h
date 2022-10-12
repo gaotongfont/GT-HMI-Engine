@@ -1,7 +1,7 @@
 /**
  * @file gt_conf_widgets.h
  * @author Feyoung
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-11 16:18:14
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -21,7 +21,7 @@ extern "C" {
 
 /**
  * @brief Configure whether the widgets is enabled
- * 
+ *
  */
 #define GT_CFG_ENABLE_BTN               1
 #define GT_CFG_ENABLE_CHECKBOX          1
@@ -31,7 +31,7 @@ extern "C" {
 // #define GT_CFG_ENABLE_KEYPAD            1    /**the keypad must exist with input widget*/
 #define GT_CFG_ENABLE_LABEL             1
 #define GT_CFG_ENABLE_LISTVIEW          1
-#define GT_CFG_ENABLE_PROCESSBAR        1
+#define GT_CFG_ENABLE_PROGRESS_BAR      1
 #define GT_CFG_ENABLE_RADIO             1
 #define GT_CFG_ENABLE_SCROLLBAR         1
 #define GT_CFG_ENABLE_SWITCH            1
