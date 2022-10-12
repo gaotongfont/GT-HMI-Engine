@@ -2649,12 +2649,12 @@ static const uint8_t _src_png_160x46_img[] = {
 
 
 static const gt_src_st _src_icon_sys[] = {
-    {".1.bmp", 4, 4, _src_bmp_img, 16},
-    {".2.png", 32, 32, _src_png_file_img, 619},
-    {".50x50.png", 50, 50, _src_png_50x50_img, 5425},   //need 54K ram
-    // {".100x50.png", 100, 50, _src_png_100x50_img, 9847},
-    // {".180x32.png", 180, 32, _src_png_180x32_img, 10628},
-    // {".160x46.png", 160, 46, _src_png_160x46_img, 14924},
+    {"./1.bmp", 4, 4, _src_bmp_img, 16},
+    {"./2.png", 32, 32, _src_png_file_img, 619},
+    {"./50x50.png", 50, 50, _src_png_50x50_img, 5425},   //need 54K ram
+    // {"./100x50.png", 100, 50, _src_png_100x50_img, 9847},
+    // {"./180x32.png", 180, 32, _src_png_180x32_img, 10628},
+    // {"./160x46.png", 160, 46, _src_png_160x46_img, 14924},
     {NULL, 0, 0, 0},
 };
 #else
@@ -2824,8 +2824,8 @@ static const uint8_t src_button[5616] = {
 
 static const gt_src_st _src_icon_sys[] =
 {
-	{".:Arc.gt",48,39,src_Arc,5616,1},
-	{".:button.png",48,39,src_button,5616,1},
+	{"./Arc.gt",48,39,src_Arc,5616,1},
+	{"./button.png",48,39,src_button,5616,1},
     {NULL, 0, 0, 0},
 };
 #endif
