@@ -76,6 +76,21 @@ void gt_textarea_style_add_str(gt_obj_st * textarea, char * str, uint8_t style, 
  */
 void gt_textarea_style_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t space_y);
 
+/**
+ * @brief set textarea chinese font style
+ * 
+ * @param textarea obj pointer
+ * @param font_style_cn chinese font style
+ */
+void gt_textarea_style_set_font_style_en(gt_obj_st * textarea, uint8_t font_style_cn);
+
+/**
+ * @brief set textarea english font style
+ * 
+ * @param textarea obj pointer
+ * @param font_style_cn english font style
+ */
+void gt_textarea_style_set_font_style_en(gt_obj_st * textarea, uint8_t font_style_en);
 
 
 #ifdef __cplusplus

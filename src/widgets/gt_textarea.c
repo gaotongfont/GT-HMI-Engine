@@ -246,4 +246,16 @@ void gt_textarea_style_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t 
     style->space_x = space_x;
     style->space_y = space_y;
 }
+
+void gt_textarea_style_set_font_style_cn(gt_obj_st * textarea, uint8_t font_style_cn)
+{
+    _gt_style_textarea_st * style = textarea->style;
+    style->font_style_cn = font_style_cn;
+}
+
+void gt_textarea_style_set_font_style_en(gt_obj_st * textarea, uint8_t font_style_en)
+{
+    _gt_style_textarea_st * style = textarea->style;
+    style->font_style_en = font_style_en;
+}
 /* end ------------------------------------------------------------------*/
