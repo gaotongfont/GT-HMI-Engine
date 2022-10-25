@@ -290,6 +290,12 @@ void gt_input_style_set_value(gt_obj_st * input, char * value)
     style->pos_cursor = len;
 }
 
+char * gt_input_style_get_value(gt_obj_st * input)
+{
+    _gt_style_input_st * style = input->style;
+    return style->value;
+}
+
 /**
  * @brief append value to input obj value
  *

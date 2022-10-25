@@ -383,6 +383,7 @@ static void _gt_keypad_init_widget(gt_obj_st * keypad)
         .space_y = 0,
         .align = GT_ALIGN_CENTER,
         .font_color = style->color_font,
+        .opa = GT_OPA_100,
     };
 
     gt_area_st area_key, area_bg;

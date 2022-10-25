@@ -63,6 +63,15 @@ gt_obj_st * gt_input_create(gt_obj_st * parent);
 void gt_input_style_set_value(gt_obj_st * input, char * value);
 
 /**
+ * @brief get input obj value
+ * 
+ * @param input input obj
+ * @return char* value of input
+ */
+char * gt_input_style_get_value(gt_obj_st * input);
+
+
+/**
  * @brief append content at the end
  *
  * @param input input obj
