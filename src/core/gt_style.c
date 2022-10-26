@@ -47,8 +47,11 @@ void gt_obj_set_style_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y){
 }
 
 void gt_obj_set_style_size(gt_obj_st * obj, uint16_t w, uint16_t h){
-    gt_obj_set_style_w(obj,w);
-    gt_obj_set_style_h(obj,h);
+    gt_area_st area = obj->area;
+    area.w = w;
+    area.h = h;
+    gt_obj_size_change(obj, &area);
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
 void gt_obj_set_style_x(gt_obj_st * obj, uint16_t x){
@@ -90,4 +93,38 @@ void gt_obj_set_visible(gt_obj_st * obj, gt_visible_e is_visible)
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+
+void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new)
+{
+    extern void gt_disp_ref_area(gt_area_st * area);
+
+    gt_area_st area_old = obj->area;
+    gt_area_st area;
+    if( area_new->x <= area_old.x ){
+        area.x = area_new->x;
+    }else{
+        area.x = area_old.x;
+    }
+
+    if( area_new->y <= area_old.y ){
+        area.y = area_new->y;
+    }else{
+        area.y = area_old.y;
+    }
+
+    /* need refactor */
+    if( area_new->w <= area_old.w ){
+        area.w = area_old.w;
+    }else{
+        area.w = area_new->w;
+    }
+
+    if( area_new->h <= area_old.h ){
+        area.h = area_old.h;
+    }else{
+        area.h = area_new->h;
+    }
+    obj->area = *area_new;
+    gt_disp_ref_area(&area);
+}
 /* end ------------------------------------------------------------------*/

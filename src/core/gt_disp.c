@@ -189,7 +189,9 @@ void gt_disp_ref_area(const gt_area_st * coords)
     gt_disp_st * disp = gt_disp_get_default();
 	gt_obj_st * scr = gt_disp_get_scr();
     gt_area_st area;
-
+    if( scr == NULL ){
+        return;
+    }
     if( _gt_disp_get_state(disp) == GT_BUSY ){
         GT_LOGD(GT_LOG_TAG_GUI, "disp is busy");
         return;
