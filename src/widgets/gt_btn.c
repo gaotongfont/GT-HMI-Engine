@@ -95,10 +95,10 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     gt_area_st area = {
         .w = w, .h = h, .x = x, .y = y
     };
-    
+
     // 1:base shape
     draw_bg(btn->draw_ctx, &rect_attr, &area);
-    
+
     // 2:font
     gt_attr_font_st font_attr = {
         .font           = &font,
@@ -109,7 +109,7 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
         .opa            = btn->opa,
     };
     draw_text(btn->draw_ctx, &font_attr, &area);
-    
+
     return;
 
 }
@@ -191,6 +191,12 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
+        case GT_EVENT_TYPE_INPUT_PROCESS_LOST:
+            GT_LOGD(GT_LOG_TAG_GUI, "process lost");
+            gt_btn_style_set_selected(obj, 0);
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            break;
+
         default:
             break;
     }
@@ -200,12 +206,12 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 static void _gt_btn_init_style(gt_obj_st * btn)
 {
     _gt_style_btn_st * style = NULL;
-    
+
     btn->style = gt_mem_malloc(sizeof(_gt_style_btn_st));
     style = btn->style;
 
     gt_memset(style, 0, sizeof(_gt_style_btn_st));
-    
+
     style->text = gt_mem_malloc(sizeof("btn"));
     strcpy(style->text, "btn");
     style->radius = 0;
@@ -213,7 +219,7 @@ static void _gt_btn_init_style(gt_obj_st * btn)
     style->color_font = gt_color_white();        //default color_font
     style->color_selected = gt_color_hex(0x1C82D0);    //default color_selected
     style->color_unselected = gt_color_hex(0x17A7BF);  //default color_unselected
-    
+
     style->font_style_cn    = GT_CFG_DEFAULT_FONT_STYLE_CN;
     style->font_style_en    = GT_CFG_DEFAULT_FONT_STYLE_EN;
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
