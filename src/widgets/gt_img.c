@@ -95,6 +95,7 @@ static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
  */
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
+    gt_area_st area;
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
@@ -123,7 +124,10 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         case GT_EVENT_TYPE_UPDATE_VALUE:
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            // gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            area = obj->area;
+            gt_fs_read_img_wh(gt_img_style_get_src(obj), &area.w, &area.h);
+            gt_obj_size_change(obj, &area);
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
@@ -207,5 +211,10 @@ void gt_img_style_set_src(gt_obj_st * img, char * src){
     style->src[strlen(src)] = 0;
 
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+char * gt_img_style_get_src(gt_obj_st * img){
+    _gt_style_img_st * style = (_gt_style_img_st *)img->style;
+    return style->src;
 }
 /* end ------------------------------------------------------------------*/
