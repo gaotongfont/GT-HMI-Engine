@@ -90,7 +90,7 @@ static inline uint32_t _gt_timer_for_each_exec(void)
             }
 
             ptr->timer_cb(ptr);
-            // GT_LOGV(GT_LOG_TAG_TIM, "[%d, %d, +%d]", start_time, ptr->last_run, gt_tick_get() - ptr->last_run);
+            // GT_LOGD(GT_LOG_TAG_TIM, "[%d, %d, +%d]", ptr->last_run, start_time, gt_tick_get() - ptr->last_run);
             ptr->last_run = gt_tick_get();
         }
     }
@@ -156,6 +156,7 @@ void _gt_timer_handler(void)
     if (idle_period_time >= _IDLE_PERIOD) {
         idle_last = (busy_time * 100) / idle_period_time;
         idle_last = idle_last > 100 ? 0 : 100 - idle_last;
+        // GT_LOGD(GT_LOG_TAG_GUI, "CPU used: %d/100\n", 100 - idle_last);
         busy_time = 0;
         idle_period_start = gt_tick_get();
     }
