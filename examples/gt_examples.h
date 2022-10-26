@@ -56,6 +56,8 @@ void gt_examples_label(void);
 
 void gt_examples_listview(void);
 
+void gt_examples_progress_bar(void);
+
 #endif  /* !GT_USE_EXAMPLES */
 
 #ifdef __cplusplus
