@@ -269,14 +269,12 @@ gt_area_st * gt_disp_get_area_act(){
     return &disp_dev->area_act;
 }
 
-void gt_disp_scroll_area_act(gt_dir_e dir, int16_t dist){
+void gt_disp_scroll_area_act(uint16_t dist_x, int16_t dist_y)
+{
     gt_area_st * area = gt_disp_get_area_act();
 
-    if( dir == GT_DIR_VER ) {
-        area->y += dist;
-    }else if( dir == GT_DIR_HOR ){
-        area->x += dist;
-    }
+    area->x += dist_x;
+    area->y += dist_y;
 
     if(area->x < 0){
         area->x = 0;
@@ -285,11 +283,11 @@ void gt_disp_scroll_area_act(gt_dir_e dir, int16_t dist){
         area->y = 0;
     }
 
-    if( area->x > GT_SCREEN_WIDTH * 2 ){
-        area->x = GT_SCREEN_WIDTH * 2;
+    if( area->x > (GT_SCREEN_WIDTH << 1) ){
+        area->x = GT_SCREEN_WIDTH << 1;
     }
-    if( area->y > GT_SCREEN_HEIGHT * 2 ){
-        area->y = GT_SCREEN_HEIGHT * 2;
+    if( area->y > GT_SCREEN_HEIGHT << 1 ){
+        area->y = GT_SCREEN_HEIGHT << 1;
     }
     gt_disp_load_scr(gt_disp_get_scr());
 }

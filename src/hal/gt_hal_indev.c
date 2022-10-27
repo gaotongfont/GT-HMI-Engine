@@ -59,6 +59,7 @@ gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv)
 {
     if(indev_act[cnt_indev] == NULL){
         indev_act[cnt_indev] = gt_mem_malloc(sizeof(gt_indev_st));
+        gt_memset_0(indev_act[cnt_indev], sizeof(gt_indev_st));
     }
 
     GT_LOGV(GT_LOG_TAG_GUI, "addr:%p", indev_act[cnt_indev]);
@@ -73,7 +74,7 @@ gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv)
     indev_act[cnt_indev]->drv = drv;
 
     if( cnt_indev == 0 ){
-        _gt_timer_create(_gt_indev_task_handler, GT_TASK_PERIOD_TIME_EVENT, NULL);
+        _gt_timer_create(_gt_indev_task_handler, GT_TASK_PERIOD_TIME_INDEV, NULL);
     }
     cnt_indev++;
 

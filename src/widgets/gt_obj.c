@@ -10,6 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
+#include "../core/gt_disp.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "../core/gt_style.h"
@@ -94,6 +95,7 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
             GT_LOGD(GT_LOG_TAG_GUI, "obj scroll");
+            gt_disp_scroll_area_act(-e->target->process_attr.x_scroll, -e->target->process_attr.y_scroll);
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */

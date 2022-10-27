@@ -1,7 +1,7 @@
 /**
  * @file gt_conf.h
  * @author Feyoung
- * @brief
+ * @brief Configuration infomation for the GT GUI
  * @version 0.1
  * @date 2022-05-11 14:43:24
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -30,7 +30,7 @@ extern "C" {
 #define GT_REFRESH_STYLE_3      3   /* cache all screen buf, It is suitable for MCU with high refresh requirements and high performance */
 
 /* user: screen refresh style */
-#define GT_REFRESH_STYLE        GT_REFRESH_STYLE_1
+#define GT_REFRESH_STYLE        GT_REFRESH_STYLE_3
 
 /* screen refresh flush pre time lines count [default: 10] */
 #if GT_REFRESH_STYLE == GT_REFRESH_STYLE_1
@@ -51,6 +51,7 @@ extern "C" {
 #define GT_COLOR_16_SWAP    0
 
 /* user: Timer task handler timer [ms] */
+#define GT_TASK_PERIOD_TIME_INDEV   30
 #define GT_TASK_PERIOD_TIME_EVENT   30
 #define GT_TASK_PERIOD_TIME_ANIM    30
 
@@ -93,7 +94,7 @@ extern "C" {
 #define GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS      15  /* 30ms*15=450ms repeat trigger once event */
 #define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR     (GT_SCREEN_WIDTH/3)
 #define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_VER     (GT_SCREEN_HEIGHT/3)
-#define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL           (20)
+#define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL           (5)
 
 #define GT_CFG_DEFAULT_BUTTON_
 

@@ -95,8 +95,8 @@ typedef struct _gt_indev_proc_s
         struct _point
         {
             gt_point_st point_act;      ///< current point of touch input device
-            gt_point_st point_last;     ///< last point of touch input device
-            gt_point_st point_temp;     ///< used to judge gesture
+            gt_point_st point_newly;     ///< last point of touch input device
+            gt_point_st point_last;     ///< used to judge gesture
             gt_dir_et gesture;          ///< gesture of touch input device
 
             struct _gt_obj_s * obj_act;     ///< The object being pressed
@@ -134,7 +134,23 @@ typedef struct _gt_indev_s
 
 /* macros ---------------------------------------------------------------*/
 
+static inline void _gt_indev_point_set_value(gt_point_st * point, gt_size_t x, gt_size_t y) {
+    point->x = x;
+    point->y = y;
+}
 
+static inline bool _gt_indev_point_equal(gt_point_st const * const dst, gt_point_st const * const src) {
+    if (dst == src) {
+        return true;
+    }
+    if (dst->x != src->x) {
+        return false;
+    }
+    if (dst->y != src->y) {
+        return false;
+    }
+    return true;
+}
 
 /* global functions / API interface -------------------------------------*/
 /**

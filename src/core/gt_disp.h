@@ -93,7 +93,7 @@ void gt_disp_set_area_act(gt_area_st * area);
  * @param dir Direction of scroll direction
  * @param dist The distance to scroll direction
  */
-void gt_disp_scroll_area_act(gt_dir_e dir, int16_t dist);
+void gt_disp_scroll_area_act(uint16_t dist_x, int16_t dist_y);
 
 #ifdef __cplusplus
 } /*extern "C"*/

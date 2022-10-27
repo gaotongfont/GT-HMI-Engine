@@ -40,12 +40,12 @@ extern "C" {
 void gt_indev_get_point_act(const gt_indev_st * indev, gt_point_st * point);
 
 /**
- * @brief get clicking last point
+ * @brief get clicking newly point
  *
  * @param indev input device
- * @param point clicking last point
+ * @param point clicking newly point
  */
-void gt_indev_get_point_last(const gt_indev_st * indev, gt_point_st * point);
+void gt_indev_get_point_newly(const gt_indev_st * indev, gt_point_st * point);
 
 /**
  * @brief Get the gesture of the input device

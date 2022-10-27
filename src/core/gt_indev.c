@@ -12,6 +12,7 @@
 #include "../hal/gt_hal_indev.h"
 #include "../hal/gt_hal_disp.h"
 #include "../others/gt_log.h"
+#include "../others/gt_math.h"
 #include "gt_disp.h"
 #include "gt_obj_pos.h"
 
@@ -65,12 +66,7 @@ void gt_indev_handler_point(gt_indev_st * indev)
     if (!flag_key_down) {
         flag_key_down = 1;
         /* save first pressed point */
-        point_p->point_act.x = data_indev.point.x;
-        point_p->point_act.y = data_indev.point.y;
-
-        /* save pressed point for scroll process */
-        point_p->point_temp.x = data_indev.point.x;
-        point_p->point_temp.y = data_indev.point.y;
+        _gt_indev_point_set_value(&point_p->point_act, data_indev.point.x, data_indev.point.y);
 
         /* save pressed obj */
         point_p->obj_act = gt_find_clicked_obj_by_point(scr, &data_indev.point);
@@ -84,26 +80,30 @@ void gt_indev_handler_point(gt_indev_st * indev)
     }
 
     /* last pressed point */
-    point_p->point_last.x = data_indev.point.x;
-    point_p->point_last.y = data_indev.point.y;
+    _gt_indev_point_set_value(&point_p->point_last, point_p->point_newly.x, point_p->point_newly.y);
+    _gt_indev_point_set_value(&point_p->point_newly, data_indev.point.x, data_indev.point.y);
+    ++point_p->count_point;
 
     point_p->obj_last = gt_find_clicked_obj_by_point(scr, &data_indev.point);
 
     if (point_p->obj_act == point_p->obj_last) {
-        gt_obj_get_click_point_by_phy_point(point_p->obj_act, &point_p->point_last,&point_ret);
+        gt_obj_get_click_point_by_phy_point(point_p->obj_act, &point_p->point_newly,&point_ret);
         _gt_obj_set_process_point(point_p->obj_act, &point_ret);
-        if( point_p->count_point > indev->drv->limit_timers_long_press ){
+        if( point_p->count_point >= indev->drv->limit_timers_long_press ){
             gt_event_send(point_p->obj_act, GT_EVENT_TYPE_INPUT_CLICKING, NULL);
         }
     }
-    point_p->count_point++;
+
+    if (_gt_indev_point_equal(&point_p->point_newly, &point_p->point_last)) {
+        goto long_press_lb;
+    }
 
     /* gesture */
-    int ver = 0, hor = 0;
+    gt_size_t ver = 0, hor = 0;
     if (point_p->count_point > 3) {
 
-        ver = point_p->point_last.y - point_p->point_temp.y;
-        hor = point_p->point_last.x - point_p->point_temp.x;
+        hor = point_p->point_newly.x - point_p->point_last.x;
+        ver = point_p->point_newly.y - point_p->point_last.y;
 
         if (ver < -indev->drv->limit_pixel_gesture_ver) {
             GT_LOGD(GT_LOG_TAG_GUI, "slide up\n");
@@ -126,42 +126,27 @@ void gt_indev_handler_point(gt_indev_st * indev)
         }
 
         if( point_p->gesture != GT_DIR_NONE ){
-            point_p->point_temp.x = point_p->point_last.x;
-            point_p->point_temp.y = point_p->point_last.y;
+            _gt_indev_point_set_value(&point_p->point_last, point_p->point_newly.x, point_p->point_newly.y);
         }
     }
 
     /* scroll screen */
-    if( gt_disp_get_scr() == point_p->obj_scroll ){
-        if( ver > indev->drv->limit_pixel_scroll || ver < -indev->drv->limit_pixel_scroll ){
-            gt_disp_scroll_area_act(GT_DIR_VER, ver/-2);
-        }else if( hor > indev->drv->limit_pixel_scroll || hor < -indev->drv->limit_pixel_scroll ) {
-            gt_disp_scroll_area_act(GT_DIR_HOR, hor/-2);
-        }
-        point_p->point_last.x = data_indev.point.x;
-        point_p->point_last.y = data_indev.point.y;
-        return;
-    }else{
-        if( ver > indev->drv->limit_pixel_scroll || ver < -indev->drv->limit_pixel_scroll ){
-            _gt_obj_set_process_scroll_xy(point_p->obj_scroll, 0, ver);
-        }else if( hor > indev->drv->limit_pixel_scroll || hor < -indev->drv->limit_pixel_scroll ) {
-            _gt_obj_set_process_scroll_xy(point_p->obj_scroll, hor, 0);
-        } else {
-            return;
-        }
+    if ((gt_size_t)gt_abs(ver) > indev->drv->limit_pixel_scroll ||
+        (gt_size_t)gt_abs(hor) > indev->drv->limit_pixel_scroll) {
+        _gt_obj_set_process_scroll_xy(point_p->obj_scroll, hor, ver);
         gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
-        return;
     }
-
+    if( gt_disp_get_scr() == point_p->obj_scroll ){
+        _gt_indev_point_set_value(&point_p->point_newly, data_indev.point.x, data_indev.point.y);
+    }
     /* if have gesture,no process click event */
-    if( point_p->gesture != GT_DIR_NONE ){
-
+    if(GT_DIR_NONE != point_p->gesture) {
         GT_LOGD(GT_LOG_TAG_GUI, "send scroll code");
         gt_event_send(point_p->obj_last, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
-        return;
     }
 
-    if (point_p->count_point != 0 && point_p->count_point % indev->drv->limit_timers_long_press == 0) {
+long_press_lb:
+    if ( 0 == (point_p->count_point % indev->drv->limit_timers_long_press) ) {
         /* trigger an touch event */
         point_p->count_point = 0;
         GT_LOGD(GT_LOG_TAG_GUI, "continue mode trigger an touch event");
@@ -205,10 +190,10 @@ void gt_indev_get_point_act(const gt_indev_st * indev, gt_point_st * point)
     point->y = indev->proc.data.point.point_act.y;
 }
 
-void gt_indev_get_point_last(const gt_indev_st * indev, gt_point_st * point)
+void gt_indev_get_point_newly(const gt_indev_st * indev, gt_point_st * point)
 {
-    point->x = indev->proc.data.point.point_last.x;
-    point->y = indev->proc.data.point.point_last.y;
+    point->x = indev->proc.data.point.point_newly.x;
+    point->y = indev->proc.data.point.point_newly.y;
     printf("1111:x:%d,y:%d\n", point->x, point->y);
 }
 
