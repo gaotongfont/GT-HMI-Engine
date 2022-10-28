@@ -61,6 +61,8 @@ void gt_obj_set_visible(gt_obj_st * obj, gt_visible_e is_visible);
 void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color);
 gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj);
 void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new);
+void gt_obj_pos_change(gt_obj_st * obj, gt_area_st * area_new);
+void gt_obj_area_change(gt_obj_st * obj, gt_area_st * area_new);
 
 #ifdef __cplusplus
 } /*extern "C"*/

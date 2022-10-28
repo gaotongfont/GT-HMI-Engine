@@ -35,15 +35,15 @@
 
 /* global functions / API interface -------------------------------------*/
 void gt_obj_set_style_area(gt_obj_st * obj, gt_area_st area){
-    gt_obj_set_style_x(obj, area.x);
-    gt_obj_set_style_y(obj, area.y);
-    gt_obj_set_style_w(obj, area.w);
-    gt_obj_set_style_h(obj, area.h);
+    gt_obj_area_change(obj, area);
 }
 
 void gt_obj_set_style_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y){
-    gt_obj_set_style_x(obj, x);
-    gt_obj_set_style_y(obj, y);
+    gt_area_st area = obj->area;
+    area.x = x;
+    area.y = y;
+    gt_obj_pos_change(obj, &area);
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
 void gt_obj_set_style_size(gt_obj_st * obj, uint16_t w, uint16_t h){
@@ -124,6 +124,82 @@ void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new)
     }else{
         area.h = area_new->h;
     }
+    obj->area = *area_new;
+    gt_disp_ref_area(&area);
+}
+
+void gt_obj_pos_change(gt_obj_st * obj, gt_area_st * area_new)
+{
+    extern void gt_disp_ref_area(gt_area_st * area);
+
+    gt_area_st area_old = obj->area;
+    gt_area_st area;
+
+    if( area_new->x <= area_old.x ){
+        area.x = area_new->x;
+    }else{
+        area.x = area_old.x;
+    }
+
+    if( area_new->y <= area_old.y ){
+        area.y = area_new->y;
+    }else{
+        area.y = area_old.y;
+    }
+
+    int y2_old = area_old.y + area_old.h, x2_old = area_old.x + area_old.w;
+    int y2_new = area_new->y + area_new->h, x2_new = area_new->x + area_new->w;
+    
+    if( y2_old <= y2_new ){
+        area.h = y2_new-area.y;
+    }else{
+        area.h = y2_old-area.y;
+    }
+
+    if( x2_old <= x2_new ){
+        area.w = x2_new-area.x;
+    }else{
+        area.w = x2_old-area.x;
+    }
+
+    obj->area = *area_new;
+    gt_disp_ref_area(&area);
+}
+
+void gt_obj_area_change(gt_obj_st * obj, gt_area_st * area_new)
+{
+    extern void gt_disp_ref_area(gt_area_st * area);
+
+    gt_area_st area_old = obj->area;
+    gt_area_st area;
+
+    if( area_new->x <= area_old.x ){
+        area.x = area_new->x;
+    }else{
+        area.x = area_old.x;
+    }
+
+    if( area_new->y <= area_old.y ){
+        area.y = area_new->y;
+    }else{
+        area.y = area_old.y;
+    }
+
+    int y2_old = area_old.y + area_old.h, x2_old = area_old.x + area_old.w;
+    int y2_new = area_new->y + area_new->h, x2_new = area_new->x + area_new->w;
+    
+    if( y2_old <= y2_new ){
+        area.h = y2_new-area.y;
+    }else{
+        area.h = y2_old-area.y;
+    }
+
+    if( x2_old <= x2_new ){
+        area.w = x2_new-area.x;
+    }else{
+        area.w = x2_old-area.x;
+    }
+
     obj->area = *area_new;
     gt_disp_ref_area(&area);
 }
