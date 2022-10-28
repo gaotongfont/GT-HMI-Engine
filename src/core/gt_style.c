@@ -35,7 +35,7 @@
 
 /* global functions / API interface -------------------------------------*/
 void gt_obj_set_style_area(gt_obj_st * obj, gt_area_st area){
-    gt_obj_area_change(obj, area);
+    gt_obj_area_change(obj, &area);
 }
 
 void gt_obj_set_style_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y){
