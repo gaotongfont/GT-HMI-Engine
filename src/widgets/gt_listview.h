@@ -6,8 +6,8 @@
  * @date 2022-07-18 13:39:51
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
  */
-#ifndef _GT_LIST_H_
-#define _GT_LIST_H_
+#ifndef _GT_LISTVIEW_H_
+#define _GT_LISTVIEW_H_
 
 #ifdef __cplusplus
 extern "C" {
