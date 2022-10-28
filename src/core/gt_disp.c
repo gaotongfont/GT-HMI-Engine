@@ -180,8 +180,8 @@ void gt_disp_load_scr(gt_obj_st * scr)
     }
     _gt_disp_set_state(disp, GT_NOT_BUSY);
     // here must clr all obj pre event_mask---->if not clr event_mask,obj will be next time handler the event
-    // extern void gt_event_clr_mask(gt_obj_st * parent);
-    // gt_event_clr_mask(scr);
+    extern void gt_event_clr_mask(gt_obj_st * parent);
+    gt_event_clr_mask(scr);
 }
 
 void gt_disp_ref_area(const gt_area_st * coords)

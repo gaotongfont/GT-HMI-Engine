@@ -96,12 +96,12 @@ typedef gt_res_t ( * gt_img_decoder_close_t)(struct _gt_img_decoder_s * decoder,
  * @brief callback function
  */
 typedef struct _gt_img_decoder_s {
+    struct gt_list_head list;   // GUI system used, Do not modify!
+
     gt_img_decoder_get_info_t info_cb;          ///< get image base information
     gt_img_decoder_open_t open_cb;              ///< open image file and create file object
     gt_img_decoder_read_line_t read_line_cb;    ///< read image data
     gt_img_decoder_close_t close_cb;            ///< close image file object
-
-    struct gt_list_head list;   // GUI system used, Do not modify!
 }_gt_img_decoder_st;
 
 
