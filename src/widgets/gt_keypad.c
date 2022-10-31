@@ -198,8 +198,18 @@ static char * _gt_keypad_get_click_kv(gt_obj_st * obj)
 
 static void _gt_keypad_set_kv_selected(gt_obj_st * keypad, char * kv)
 {
+    extern void gt_disp_ref_area(gt_area_st * area);
+
     _gt_style_keypad_st * style = keypad->style;
+    gt_area_st area;
+    char * kv_old = style->kv_selected;
     style->kv_selected = kv;
+    if( kv_old != NULL ){
+        area = _gt_keypad_get_key_area(keypad, kv_old);
+        gt_disp_ref_area(&area);
+    }
+    area = _gt_keypad_get_key_area(keypad, kv);
+    gt_disp_ref_area(&area);
 }
 
 static char * _gt_keypad_get_kv_selected(gt_obj_st * keypad)
@@ -505,9 +515,6 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         GT_LOGD(GT_LOG_TAG_GUI, "clicking");
         if (gt_obj_check_scr(obj)) {
             _gt_keypad_set_kv_selected(obj, _gt_keypad_get_click_kv(obj));
-            area = _gt_keypad_get_key_area(obj, _gt_keypad_get_kv_selected(obj) );
-            // area.y += obj->area.y;
-            gt_disp_ref_area(&area);
             _gt_keypad_input_event_cb(obj);
         }
         break;
@@ -521,12 +528,11 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         /* code here */
         gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
         break;
-
+    case GT_EVENT_TYPE_INPUT_PROCESS_LOST:
     case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
         GT_LOGD(GT_LOG_TAG_GUI, "processed");
         if(gt_obj_check_scr(obj)) {
             _gt_keypad_set_kv_selected(obj, NULL);
-            gt_disp_ref_area(&area);
         }
         break;
 
