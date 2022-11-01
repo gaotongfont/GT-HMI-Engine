@@ -147,11 +147,11 @@ void gt_disp_load_scr(gt_obj_st * scr)
     }
 
     _gt_disp_set_state(disp, GT_BUSY);
+    _gt_disp_refr_reset_areas();
 
     if( scr_old != scr ){
         disp->area_act.x = 0;
         disp->area_act.y = 0;
-        _gt_disp_refr_reset_areas();
         gt_event_clr_mask(scr_old);
         gt_event_clr_mask(scr);
     }
@@ -253,8 +253,6 @@ void gt_disp_ref_area(const gt_area_st * coords)
     gt_color_t color_fill;
     color_fill = gt_screen_get_bgcolor(gt_disp_get_scr());
 
-    extern uint32_t gt_tick_get();
-    uint32_t start = gt_tick_get();
     while( y < area.h ){
 
         gt_color_fill(disp->vbd_color, len, color_fill);
@@ -267,9 +265,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
         // phy screen use area is from W x H
         disp->area_disp.y = disp->area_disp.y - disp->area_act.y;
         disp->area_disp.x = area.x - disp->area_act.x;
-        start = gt_tick_get();
         disp->drv->flush_cb(disp->drv, &disp->area_disp, disp->vbd_color);
-        printf("--%dms\n", gt_tick_get() - start);
         y += line;
         if( (y) > (area.y + area.h) ){
             disp->area_disp.h = area.h - y;

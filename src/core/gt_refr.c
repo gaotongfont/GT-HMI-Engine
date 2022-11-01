@@ -49,7 +49,7 @@ void gt_refr_timer()
         return;
     }
     gt_area_st * area = NULL;
-    while( _gt_disp_refr_check() ){
+    if( _gt_disp_refr_check() ){
         cnt_refr++;
         area = _gt_disp_refr_get_area();
         // GT_LOGD(GT_LOG_TAG_GUI, "x:%d,y:%d,w:%d,h:%d", area->x, area->y, area->w, area->h);
