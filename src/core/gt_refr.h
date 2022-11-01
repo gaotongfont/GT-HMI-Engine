@@ -30,8 +30,8 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_refr_obj(gt_obj_st * );
-void gt_refr_area_part();
+void gt_refr_timer();
+
 
 
 #ifdef __cplusplus

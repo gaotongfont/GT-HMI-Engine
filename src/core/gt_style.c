@@ -96,7 +96,7 @@ void gt_obj_set_visible(gt_obj_st * obj, gt_visible_e is_visible)
 
 void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new)
 {
-    extern void gt_disp_ref_area(gt_area_st * area);
+    extern void _gt_disp_refr_append_area(gt_area_st * area);
 
     gt_area_st area_old = obj->area;
     gt_area_st area;
@@ -125,12 +125,12 @@ void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new)
         area.h = area_new->h;
     }
     obj->area = *area_new;
-    gt_disp_ref_area(&area);
+    _gt_disp_refr_append_area(&area);
 }
 
 void gt_obj_pos_change(gt_obj_st * obj, gt_area_st * area_new)
 {
-    extern void gt_disp_ref_area(gt_area_st * area);
+    extern void _gt_disp_refr_append_area(gt_area_st * area);
 
     gt_area_st area_old = obj->area;
     gt_area_st area;
@@ -163,12 +163,12 @@ void gt_obj_pos_change(gt_obj_st * obj, gt_area_st * area_new)
     }
 
     obj->area = *area_new;
-    gt_disp_ref_area(&area);
+    _gt_disp_refr_append_area(&area);
 }
 
 void gt_obj_area_change(gt_obj_st * obj, gt_area_st * area_new)
 {
-    extern void gt_disp_ref_area(gt_area_st * area);
+    extern void _gt_disp_refr_append_area(gt_area_st * area);
 
     gt_area_st area_old = obj->area;
     gt_area_st area;
@@ -201,6 +201,6 @@ void gt_obj_area_change(gt_obj_st * obj, gt_area_st * area_new)
     }
 
     obj->area = *area_new;
-    gt_disp_ref_area(&area);
+    _gt_disp_refr_append_area(&area);
 }
 /* end ------------------------------------------------------------------*/

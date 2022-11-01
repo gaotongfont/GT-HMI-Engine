@@ -134,27 +134,40 @@ gt_obj_st * gt_disp_get_scr() {
 
 void gt_disp_load_scr(gt_obj_st * scr)
 {
-    gt_disp_set_scr(scr);
+    gt_obj_st * scr_old = gt_disp_get_scr();
     gt_disp_st * disp = gt_disp_get_default();
+    extern void gt_event_clr_mask(gt_obj_st * parent);
     if( !disp ){
         return;
     }
+
     if( _gt_disp_get_state(disp) == GT_BUSY ){
         GT_LOGD(GT_LOG_TAG_GUI, "disp is busy");
         return;
     }
+
     _gt_disp_set_state(disp, GT_BUSY);
+
+    if( scr_old != scr ){
+        disp->area_act.x = 0;
+        disp->area_act.y = 0;
+        _gt_disp_refr_reset_areas();
+        gt_event_clr_mask(scr_old);
+        gt_event_clr_mask(scr);
+    }
+    gt_disp_set_scr(scr);
+    
+    
     // _gt_disp_send_draw_event_foreach(scr);
 
     uint16_t y = 0;
     uint32_t idx = 0;
     uint32_t len = disp->drv->res_hor * GT_REFRESH_FLUSH_LINE_PRE_TIME;
 
-    // disp->area_act.x = 0;
-    // disp->area_act.y = 0;
     disp->area_act.h = disp->drv->res_ver;
     disp->area_act.w = disp->drv->res_hor;
 
+    #if 0
     disp->area_disp.y = disp->area_act.y;
     disp->area_disp.x = disp->area_act.x;
     disp->area_disp.w = disp->drv->res_hor;
@@ -178,10 +191,16 @@ void gt_disp_load_scr(gt_obj_st * scr)
         disp->drv->flush_cb(disp->drv, &disp->area_disp, disp->vbd_color);
         y += GT_REFRESH_FLUSH_LINE_PRE_TIME;
     }
+    #else
+    _gt_disp_refr_append_area(&disp->area_act);
+    #endif
     _gt_disp_set_state(disp, GT_NOT_BUSY);
     // here must clr all obj pre event_mask---->if not clr event_mask,obj will be next time handler the event
-    extern void gt_event_clr_mask(gt_obj_st * parent);
-    gt_event_clr_mask(scr);
+    // if( scr_old != scr ){
+    //     disp->area_act.x = 0;
+    //     disp->area_act.y = 0;
+    //     gt_event_clr_mask(scr);
+    // }
 }
 
 void gt_disp_ref_area(const gt_area_st * coords)
@@ -234,6 +253,8 @@ void gt_disp_ref_area(const gt_area_st * coords)
     gt_color_t color_fill;
     color_fill = gt_screen_get_bgcolor(gt_disp_get_scr());
 
+    extern uint32_t gt_tick_get();
+    uint32_t start = gt_tick_get();
     while( y < area.h ){
 
         gt_color_fill(disp->vbd_color, len, color_fill);
@@ -246,15 +267,15 @@ void gt_disp_ref_area(const gt_area_st * coords)
         // phy screen use area is from W x H
         disp->area_disp.y = disp->area_disp.y - disp->area_act.y;
         disp->area_disp.x = area.x - disp->area_act.x;
-
+        start = gt_tick_get();
         disp->drv->flush_cb(disp->drv, &disp->area_disp, disp->vbd_color);
-
+        printf("--%dms\n", gt_tick_get() - start);
         y += line;
         if( (y) > (area.y + area.h) ){
             disp->area_disp.h = area.h - y;
         }
     }
-
+    
     _gt_disp_set_state(disp, GT_NOT_BUSY);
 }
 

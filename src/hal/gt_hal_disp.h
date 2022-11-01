@@ -20,7 +20,6 @@ extern "C" {
 /* define ---------------------------------------------------------------*/
 
 
-
 /* typedef --------------------------------------------------------------*/
 /**
  * @brief rotation angle
@@ -65,6 +64,11 @@ typedef struct _gt_disp_s
     uint16_t cnt_scr;           //Count screens nub
     uint16_t status;            //
 
+    struct {
+        gt_area_st areas[_GT_REFR_AREA_MAX];   // ptr of area
+        uint8_t  idx_w;         // index of write now    
+        uint8_t  idx_r;         // index of read now
+    }refr;
 
     /* flush */
     gt_area_st area_act;        //Location of physical screen on virtual screen
@@ -125,6 +129,20 @@ gt_color_t * gt_disp_graph_get_buf_default(void);
  */
 gt_color_t * gt_disp_graph_get_buf_backup(void);
 
+
+void _gt_disp_refr_reset_areas();
+
+void _gt_disp_refr_append_area(gt_area_st * area);
+/**
+ * @brief check disp need refresh area?
+ * 
+ * @param disp disp
+ * @return uint8_t 0:none, !0:yes
+ */
+uint8_t _gt_disp_refr_check();
+void _gt_disp_refr_idx_w_inc();
+void _gt_disp_refr_idx_r_inc();
+gt_area_st * _gt_disp_refr_get_area();
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

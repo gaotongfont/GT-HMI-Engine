@@ -20,8 +20,8 @@ extern "C" {
 /* define ---------------------------------------------------------------*/
 
 /* user: screen width and height config */
-#define GT_SCREEN_WIDTH     800
-#define GT_SCREEN_HEIGHT    480
+#define GT_SCREEN_WIDTH     480
+#define GT_SCREEN_HEIGHT    800
 
 /* GT_REFRESH_STYLE type don't change */
 #define GT_REFRESH_STYLE_0      0   /* no cache buf, It is suitable for MCU with low refresh requirements and low performance */
@@ -34,7 +34,7 @@ extern "C" {
 
 /* screen refresh flush pre time lines count [default: 10] */
 #if GT_REFRESH_STYLE == GT_REFRESH_STYLE_1
-#define GT_REFRESH_FLUSH_LINE_PRE_TIME   24
+#define GT_REFRESH_FLUSH_LINE_PRE_TIME   40
 #elif GT_REFRESH_STYLE == GT_REFRESH_STYLE_2
 #define GT_REFRESH_FLUSH_LINE_PRE_TIME   10
 #elif GT_REFRESH_STYLE == GT_REFRESH_STYLE_3
@@ -42,6 +42,9 @@ extern "C" {
 #else
 #define GT_REFRESH_FLUSH_LINE_PRE_TIME   10
 #endif
+
+/* user: refr max area */
+#define _GT_REFR_AREA_MAX   32
 
 /* user: obj contain user_data: 1 yes, 0 no */
 #define GT_USE_USER_DATA    1
@@ -51,9 +54,11 @@ extern "C" {
 #define GT_COLOR_16_SWAP    0
 
 /* user: Timer task handler timer [ms] */
-#define GT_TASK_PERIOD_TIME_INDEV   30
-#define GT_TASK_PERIOD_TIME_EVENT   30
+#define GT_TASK_PERIOD_TIME_INDEV   10
+#define GT_TASK_PERIOD_TIME_EVENT   20
 #define GT_TASK_PERIOD_TIME_ANIM    30
+#define GT_TASK_PERIOD_TIME_REFR    30
+
 
 /* user: virt file device setting */
 #define GT_VF_FLASH_SIZE    0x800000    //flash size 8*1024*1024   8M

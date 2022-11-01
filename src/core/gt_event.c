@@ -192,6 +192,9 @@ void _gt_event_init(){
 
 void gt_event_clr_mask(gt_obj_st * parent)
 {
+    if( parent == NULL ){
+        return;
+    }
     int idx = 0;
     parent->event_mask = 0;
     while(idx < parent->cnt_child){

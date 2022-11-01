@@ -197,8 +197,8 @@ static char * _gt_keypad_get_click_kv(gt_obj_st * obj)
 
 
 static void _gt_keypad_set_kv_selected(gt_obj_st * keypad, char * kv)
-{
-    extern void gt_disp_ref_area(gt_area_st * area);
+{    
+    extern void _gt_disp_refr_append_area(gt_area_st * area);
 
     _gt_style_keypad_st * style = keypad->style;
     gt_area_st area;
@@ -206,10 +206,10 @@ static void _gt_keypad_set_kv_selected(gt_obj_st * keypad, char * kv)
     style->kv_selected = kv;
     if( kv_old != NULL ){
         area = _gt_keypad_get_key_area(keypad, kv_old);
-        gt_disp_ref_area(&area);
+        _gt_disp_refr_append_area(&area);
     }
     area = _gt_keypad_get_key_area(keypad, kv);
-    gt_disp_ref_area(&area);
+    _gt_disp_refr_append_area(&area);
 }
 
 static char * _gt_keypad_get_kv_selected(gt_obj_st * keypad)
@@ -484,7 +484,8 @@ static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
  * @param e event
  */
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
-    extern void gt_disp_ref_area(gt_area_st * area);
+    extern void _gt_disp_refr_append_area(gt_area_st * area);
+
     gt_event_type_et code = gt_event_get_code(e);
 
     static gt_area_st area;
@@ -492,9 +493,8 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     switch (code) {
     case GT_EVENT_TYPE_DRAW_START:
         GT_LOGD(GT_LOG_TAG_GUI, "start draw");
-        if( gt_obj_check_scr(obj) ){
-            extern void gt_disp_ref_area(gt_area_st * area);
-            gt_disp_ref_area(&obj->area);
+        if( gt_obj_check_scr(obj) ){            
+            _gt_disp_refr_append_area(&obj->area);
         }
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
         break;

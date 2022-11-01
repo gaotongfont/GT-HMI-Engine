@@ -74,11 +74,11 @@ static void _gt_listview_style_update_by_scroll_y(gt_obj_st * obj, gt_size_t y_s
 {
     int idx_start   = _gt_listview_style_get_idx_start(obj);
     int cnt_show    = _gt_listview_style_get_show_cnt(obj);
-    int h_item      = (obj->area.h/cnt_show);
-    int _cnt_dis_start = -1 * (y_scroll/h_item);
-    int idx_selected = idx_start + _cnt_dis_start;
-
-    gt_listview_style_set_selected_item_by_idx(obj, idx_selected);
+    // int h_item      = (obj->area.h/cnt_show);
+    // int _cnt_dis_start = -1 * (y_scroll/h_item);
+    // int idx_selected = idx_start + _cnt_dis_start;
+    
+    gt_listview_style_set_selected_item_by_idx(obj, idx_start);
 }
 
 
@@ -196,13 +196,13 @@ static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
  * @param e event
  */
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
+    extern void _gt_disp_refr_append_area(gt_area_st * area);
     gt_event_type_et code = gt_event_get_code(e);
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
             if( gt_obj_check_scr(obj) ){
-                extern void gt_disp_ref_area(gt_area_st * area);
-                gt_disp_ref_area(&obj->area);
+                _gt_disp_refr_append_area(&obj->area);
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
@@ -319,9 +319,11 @@ void gt_listview_style_add_item(gt_obj_st * listview, char * item)
 void gt_listview_style_set_selected_item_by_idx(gt_obj_st * listview, int idx){
     _gt_style_listview_st * style = listview->style;
     if( idx >= style->cnt ){
+        // idx = style->cnt - 1;
         return;
     }
     if( idx < 0 ){
+        // idx = 0;
         return;
     }
     style->idx_selected = idx;
