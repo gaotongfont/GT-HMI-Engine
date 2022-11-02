@@ -37,6 +37,8 @@ extern "C" {
 #define GT_CFG_ENABLE_SWITCH            1
 #define GT_CFG_ENABLE_TEXTAREA          1
 #define GT_CFG_ENABLE_IMGBTN            1
+#define GT_CFG_ENABLE_RECT              1
+
 
 
 
