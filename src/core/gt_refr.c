@@ -13,6 +13,7 @@
 #include "../gt_conf.h"
 #include "../widgets/gt_obj.h"
 #include "../others/gt_log.h"
+#include "../others/gt_area.h"
 #include "gt_obj_pos.h"
 #include "../hal/gt_hal_disp.h"
 #include "gt_disp.h"
@@ -41,18 +42,20 @@
 
 
 /* global functions / API interface -------------------------------------*/
-volatile uint32_t cnt_refr = 0;
 void gt_refr_timer()
 {
     gt_disp_st * disp = gt_disp_get_default();
+    gt_area_st * area = NULL;
+    gt_area_st area_res;
     if( disp == NULL ){
         return;
     }
-    gt_area_st * area = NULL;
     if( _gt_disp_refr_check() ){
-        cnt_refr++;
         area = _gt_disp_refr_get_area();
-        // GT_LOGD(GT_LOG_TAG_GUI, "x:%d,y:%d,w:%d,h:%d", area->x, area->y, area->w, area->h);
+        if( gt_area_intersect(&disp->area_act, area, &area_res) == false ){
+            _gt_disp_refr_idx_r_inc();
+            return;
+        }
         gt_disp_ref_area( area );
         _gt_disp_refr_idx_r_inc();
     }
