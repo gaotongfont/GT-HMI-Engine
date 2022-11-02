@@ -33,6 +33,8 @@ typedef struct _gt_style_scrollbar_s
     gt_size_t end;
     gt_size_t pos;
 
+    uint8_t dir;    //0 hor, 1 ver
+    uint8_t step;
 }_gt_style_scrollbar_st;
 
 
@@ -100,6 +102,17 @@ gt_size_t gt_scrollbar_style_get_end(gt_obj_st * scrollbar);
  */
 gt_size_t gt_scrollbar_style_get_total(gt_obj_st * scrollbar);
 
+void gt_scrollbar_style_set_color_act(gt_obj_st * scrollbar, gt_color_t color);
+void gt_scrollbar_style_set_color_ina(gt_obj_st * scrollbar, gt_color_t color);
+void gt_scrollbar_style_set_color_bg(gt_obj_st * scrollbar, gt_color_t color);
+
+
+
+void gt_scrollbar_style_set_dir(gt_obj_st * scrollbar, uint8_t dir);
+uint8_t gt_scrollbar_style_get_dir(gt_obj_st * scrollbar);
+
+void gt_scrollbar_style_set_step(gt_obj_st * scrollbar, uint8_t step);
+uint8_t gt_scrollbar_style_get_step(gt_obj_st * scrollbar);
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

@@ -60,7 +60,7 @@ static void _gt_scrollbar_init_widget(gt_obj_st * scrollbar) {
 
     gt_attr_rect_st rect_attr = {
         .is_fill = 1,
-        .radius = h>>1,
+        .radius = h>>2,
         .bg_color = style->color_ina,
         .border_color = style->bg_color,
         .bg_opa = scrollbar->opa,
@@ -70,37 +70,75 @@ static void _gt_scrollbar_init_widget(gt_obj_st * scrollbar) {
 
     /* 1 base shape */
     gt_area_st area_base = scrollbar->area;
-    area_base.h -= h/3;
-    area_base.y += (h/3)>>1;
+    if( style->dir == 0 ){
+        area_base.h -= h>>1;
+        area_base.y += (h>>1)>>1;
+        rect_attr.radius = area_base.h>>1;
+    }else{
+        area_base.w -= w>>1;
+        area_base.x += (w>>1)>>1;
+        rect_attr.radius = area_base.w>>1;
+    }
+    
     draw_bg(scrollbar->draw_ctx, &rect_attr, &area_base);
 
     /* 2 val shape */
     // rect val
     int all_pos = style->end - style->start;
-    int w_pos = ((float)style->pos/(float)all_pos) * (float)w;
+    int dist = 0;
     gt_area_st area_val = area_base;
-    area_val.w = w_pos;
+    if( style->dir == 0 ){
+        dist = ((float)style->pos/(float)all_pos) * (float)w;
+        area_val.w = dist;
+    }else{
+        dist = ((float)style->pos/(float)all_pos) * (float)h;
+        area_val.h = dist;
+    }
+    
     rect_attr.bg_color = style->color_act;
-    if( w_pos > (h>>1) ){
-        // w_pos = (h>>1);
-        draw_bg(scrollbar->draw_ctx, &rect_attr, &area_val);
+    if( style->dir == 0 ){
+        if( dist > (h>>1) ){
+            draw_bg(scrollbar->draw_ctx, &rect_attr, &area_val);
+        }
+    }else{
+        if( dist > (w>>1) ){
+            draw_bg(scrollbar->draw_ctx, &rect_attr, &area_val);
+        }
     }
 
     /* big big big operate circle */
-    gt_area_st area_big_circle = area_val;
-    area_big_circle.h = h;
-    rect_attr.radius = area_big_circle.h>>1;
+    gt_area_st area_big_circle = scrollbar->area;
+    if( style->dir == 0 ){
+        rect_attr.radius = area_big_circle.h>>1;
+    }else{
+        rect_attr.radius = area_big_circle.w>>1;
+    }
     area_big_circle.y = scrollbar->area.y;
-    area_big_circle.x = scrollbar->area.x + (w_pos - (h>>1));
+    area_big_circle.x = scrollbar->area.x;
+    if( style->dir == 0 ){
+        area_big_circle.h = h;
+        area_big_circle.x += (dist - (h>>1));
+    }else{
+        area_big_circle.h = w;
+        area_big_circle.y += (dist - (w>>1));
+    }
     area_big_circle.w = area_big_circle.h;
-    if( w_pos > (scrollbar->area.w - area_big_circle.h ) ){
-        area_big_circle.x = scrollbar->area.x + (scrollbar->area.w - area_big_circle.h);
+    if( style->dir == 0 ){
+        if( dist > (scrollbar->area.w - area_big_circle.h ) ){
+            area_big_circle.x = scrollbar->area.x + (scrollbar->area.w - area_big_circle.h);
+        }
+    }else{
+        if( dist > (scrollbar->area.h - area_big_circle.h ) ){
+            area_big_circle.y = scrollbar->area.y + (scrollbar->area.h - area_big_circle.h);
+        }
     }
     if( area_big_circle.x < scrollbar->area.x ){
         area_big_circle.x = scrollbar->area.x;
     }
+    if( area_big_circle.y < scrollbar->area.y ){
+        area_big_circle.y = scrollbar->area.y;
+    }
     draw_bg(scrollbar->draw_ctx, &rect_attr, &area_big_circle);
-
 }
 
 /**
@@ -167,15 +205,30 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
             GT_LOGD(GT_LOG_TAG_GUI, "scroll");
+            pos = gt_scrollbar_style_get_pos(obj);
+            if( gt_scrollbar_style_get_dir(obj) == 0 ){
+                pos += obj->process_attr.x_scroll;
+            }else{
+                pos += obj->process_attr.y_scroll;
+            }
+            gt_scrollbar_style_set_pos(obj, (int)pos);
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
-
+        
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
             GT_LOGD(GT_LOG_TAG_GUI, "process");
             /* code here */
             point_click.x = obj->process_attr.point.x;
             point_click.y = obj->process_attr.point.y;
-            _pos = point_click.x;
-            pos = ((float)_pos)/((float)obj->area.w);
+            if( gt_scrollbar_style_get_dir(obj) == 0 ){
+                _pos = point_click.x;
+                pos = ((float)_pos)/((float)obj->area.w);
+            }else{
+                _pos = point_click.y;
+                pos = ((float)_pos)/((float)obj->area.h);
+            }
+            
+           
             pos = pos * (float)gt_scrollbar_style_get_total(obj);
             pos += gt_scrollbar_style_get_start(obj);
             gt_scrollbar_style_set_pos(obj, (int)pos);
@@ -203,12 +256,14 @@ static void _gt_scrollbar_init_style(gt_obj_st * scrollbar)
 
     gt_memset(style,0,sizeof(_gt_style_scrollbar_st));
 
-    GT_COLOR_SET(style->bg_color, 0xFFFF);
+    style->bg_color =  gt_color_white();
     GT_COLOR_SET(style->color_act, 0x0516);
     GT_COLOR_SET(style->color_ina, 0xC619);
     style->start = 0;
     style->end = 100;
     style->pos = 50;
+    style->dir = 0;
+    style->step = 1;
 }
 
 
@@ -244,7 +299,7 @@ void gt_scrollbar_style_set_pos(gt_obj_st * scrollbar, gt_size_t pos)
     }else if( pos > style->end ){
         style->pos = style->end;
     }else{
-        style->pos = pos;
+        style->pos = ( (pos / style->step) * style->step );
     }
     gt_event_send(scrollbar, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -279,4 +334,44 @@ gt_size_t gt_scrollbar_style_get_total(gt_obj_st * scrollbar)
     _gt_style_scrollbar_st * style = (_gt_style_scrollbar_st *)scrollbar->style;
     return ( style->end - style->start);
 }
+
+void gt_scrollbar_style_set_color_act(gt_obj_st * scrollbar, gt_color_t color)
+{
+    _gt_style_scrollbar_st * style = scrollbar->style;
+    style->color_act = color;
+}
+void gt_scrollbar_style_set_color_ina(gt_obj_st * scrollbar, gt_color_t color)
+{
+    _gt_style_scrollbar_st * style = scrollbar->style;
+    style->color_ina = color;
+}
+void gt_scrollbar_style_set_color_bg(gt_obj_st * scrollbar, gt_color_t color)
+{
+    _gt_style_scrollbar_st * style = scrollbar->style;
+    style->bg_color = color;
+}
+
+void gt_scrollbar_style_set_dir(gt_obj_st * scrollbar, uint8_t dir)
+{
+    _gt_style_scrollbar_st * style = (_gt_style_scrollbar_st *)scrollbar->style;
+    style->dir = dir;
+}
+uint8_t gt_scrollbar_style_get_dir(gt_obj_st * scrollbar)
+{
+    _gt_style_scrollbar_st * style = (_gt_style_scrollbar_st *)scrollbar->style;
+    return ( style->dir);
+}
+
+void gt_scrollbar_style_set_step(gt_obj_st * scrollbar, uint8_t step)
+{
+    _gt_style_scrollbar_st * style = (_gt_style_scrollbar_st *)scrollbar->style;
+    style->step = step;
+}
+
+uint8_t gt_scrollbar_style_get_step(gt_obj_st * scrollbar)
+{
+    _gt_style_scrollbar_st * style = (_gt_style_scrollbar_st *)scrollbar->style;
+    return ( style->step);
+}
+
 /* end ------------------------------------------------------------------*/
