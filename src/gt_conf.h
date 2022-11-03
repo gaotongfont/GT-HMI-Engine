@@ -20,8 +20,8 @@ extern "C" {
 /* define ---------------------------------------------------------------*/
 
 /* user: screen width and height config */
-#define GT_SCREEN_WIDTH     480
-#define GT_SCREEN_HEIGHT    800
+#define GT_SCREEN_WIDTH     800
+#define GT_SCREEN_HEIGHT    480
 
 /* GT_REFRESH_STYLE type don't change */
 #define GT_REFRESH_STYLE_0      0   /* no cache buf, It is suitable for MCU with low refresh requirements and low performance */
@@ -96,10 +96,10 @@ extern "C" {
 #define GT_STYLE_UI_BRIGHT     2
 
 /* default gesture repeat */
-#define GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS      15  /* 30ms*15=450ms repeat trigger once event */
+#define GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS      100  /* ms repeat trigger once event */
 #define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR     (GT_SCREEN_WIDTH/3)
 #define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_VER     (GT_SCREEN_HEIGHT/3)
-#define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL           (5)
+#define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL           (2)
 
 #define GT_CFG_DEFAULT_BUTTON_
 

@@ -11,6 +11,7 @@
 #include "gt_indev.h"
 #include "../hal/gt_hal_indev.h"
 #include "../hal/gt_hal_disp.h"
+#include "../hal/gt_hal_tick.h"
 #include "../others/gt_log.h"
 #include "../others/gt_math.h"
 #include "gt_disp.h"
@@ -36,6 +37,7 @@
 void gt_indev_handler_point(gt_indev_st * indev)
 {
     static uint8_t flag_key_down = 0;
+    static uint32_t last_run = 0;
     gt_indev_data_st data_indev;
 
     gt_obj_st * scr = gt_disp_get_scr();
@@ -65,6 +67,7 @@ void gt_indev_handler_point(gt_indev_st * indev)
     /* first key down */
     if (!flag_key_down) {
         flag_key_down = 1;
+        last_run = gt_tick_get();
         /* save first pressed point */
         _gt_indev_point_set_value(&point_p->point_act, data_indev.point.x, data_indev.point.y);
 
@@ -89,7 +92,8 @@ void gt_indev_handler_point(gt_indev_st * indev)
     if (point_p->obj_act == point_p->obj_last) {
         gt_obj_get_click_point_by_phy_point(point_p->obj_act, &point_p->point_newly,&point_ret);
         _gt_obj_set_process_point(point_p->obj_act, &point_ret);
-        if( point_p->count_point >= indev->drv->limit_timers_long_press ){
+        if( (gt_tick_get()-last_run) >= indev->drv->limit_timers_long_press ){
+            last_run = gt_tick_get();
             gt_event_send(point_p->obj_act, GT_EVENT_TYPE_INPUT_CLICKING, NULL);
         }
     }
@@ -156,7 +160,7 @@ long_press_lb:
 void gt_indev_handler_button(gt_indev_st * indev)
 {
     static uint8_t flag_key_down = 0;
-
+    static uint32_t last_run = 0;
     gt_indev_data_st data_indev;
     indev->drv->read_cb(indev->drv, &data_indev);
 
@@ -164,6 +168,7 @@ void gt_indev_handler_button(gt_indev_st * indev)
     if (indev->proc.state == GT_INDEV_STATE_PRESSED) {
         if (!flag_key_down) {
             flag_key_down = 1;
+            last_run = gt_tick_get();
             indev->proc.data.button.id = data_indev.btn_id;
             GT_LOGV(GT_LOG_TAG_GUI, "keydown the key id[%d]", indev->proc.data.button.id);
         }
@@ -174,7 +179,7 @@ void gt_indev_handler_button(gt_indev_st * indev)
         indev->proc.data.button.count_keydown = 0;
     }
 
-    if (indev->proc.data.button.count_keydown != 0 && indev->proc.data.button.count_keydown % indev->drv->limit_timers_long_press == 0) {
+    if (indev->proc.data.button.count_keydown != 0 && (gt_tick_get() - last_run) % indev->drv->limit_timers_long_press == 0) {
         /* trigger an button event:continue mode */
         indev->proc.data.button.count_keydown = 0;
         GT_LOGV(GT_LOG_TAG_GUI, "continue mode trigger an button event, key id[%d]",indev->proc.data.button.id );
