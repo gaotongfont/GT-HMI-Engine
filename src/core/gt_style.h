@@ -37,6 +37,12 @@ typedef enum _gt_text_long_mode_e
     GT_TEXT_LONG_MODE_SCROLL,
 }gt_text_long_mode_et;
 
+typedef enum{
+    GT_BAR_DIR_HOR_L2R,
+    GT_BAR_DIR_HOR_R2L,
+    GT_BAR_DIR_VER_U2D,
+    GT_BAR_DIR_VER_D2U,
+}gt_bar_dir_et;
 /* macros ---------------------------------------------------------------*/
 
 
