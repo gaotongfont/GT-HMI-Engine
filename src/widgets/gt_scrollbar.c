@@ -48,7 +48,8 @@ const gt_obj_class_st gt_scrollbar_class = {
 static void _gt_scrollbar_init_widget(gt_obj_st * scrollbar) {
     _gt_style_scrollbar_st * style = scrollbar->style;
     gt_size_t w, h;
-    
+    int all_pos = style->end - style->start;
+    int dist = 0, dist_min;
     // set default size
     if( !scrollbar->area.w || !scrollbar->area.h ){
         scrollbar->area.w = 100;
@@ -70,11 +71,11 @@ static void _gt_scrollbar_init_widget(gt_obj_st * scrollbar) {
 
     /* 1 base shape */
     gt_area_st area_base = scrollbar->area;
-    if( style->dir == 0 ){
+    if( style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L ){
         area_base.h -= h>>1;
         area_base.y += (h>>1)>>1;
         rect_attr.radius = area_base.h>>1;
-    }else{
+    }else if( style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U ){
         area_base.w -= w>>1;
         area_base.x += (w>>1)>>1;
         rect_attr.radius = area_base.w>>1;
@@ -84,61 +85,77 @@ static void _gt_scrollbar_init_widget(gt_obj_st * scrollbar) {
 
     /* 2 val shape */
     // rect val
-    int all_pos = style->end - style->start;
-    int dist = 0;
+    
     gt_area_st area_val = area_base;
-    if( style->dir == 0 ){
+    if( style->dir == GT_BAR_DIR_HOR_L2R ){
+        dist = ((float)style->pos/(float)all_pos) * (float)w;
+        area_val.w = dist;        
+    }else if( style->dir == GT_BAR_DIR_HOR_R2L ){
         dist = ((float)style->pos/(float)all_pos) * (float)w;
         area_val.w = dist;
-    }else{
+        area_val.x += (area_base.w - dist);
+    }else if( style->dir == GT_BAR_DIR_VER_U2D ){
         dist = ((float)style->pos/(float)all_pos) * (float)h;
         area_val.h = dist;
+    }else if( style->dir == GT_BAR_DIR_VER_D2U ){
+        dist = ((float)style->pos/(float)all_pos) * (float)h;
+        area_val.h = dist;
+        area_val.y += (area_base.h - dist);
+    }else{
+        return;
     }
-    
     rect_attr.bg_color = style->color_act;
-    if( style->dir == 0 ){
-        if( dist > (h>>1) ){
-            draw_bg(scrollbar->draw_ctx, &rect_attr, &area_val);
-        }
+    if( style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L ){
+        dist_min = (h>>1);
+    }else if( style->dir == GT_BAR_DIR_VER_D2U || style->dir == GT_BAR_DIR_VER_U2D ){
+        dist_min = (w>>1);
     }else{
-        if( dist > (w>>1) ){
-            draw_bg(scrollbar->draw_ctx, &rect_attr, &area_val);
-        }
     }
-
+            
+    if( dist > dist_min ){
+        draw_bg(scrollbar->draw_ctx, &rect_attr, &area_val);
+    }
     /* big big big operate circle */
+    #if 1
     gt_area_st area_big_circle = scrollbar->area;
-    if( style->dir == 0 ){
-        rect_attr.radius = area_big_circle.h>>1;
-    }else{
-        rect_attr.radius = area_big_circle.w>>1;
-    }
+   
     area_big_circle.y = scrollbar->area.y;
     area_big_circle.x = scrollbar->area.x;
-    if( style->dir == 0 ){
+    if( style->dir == GT_BAR_DIR_HOR_L2R ){
         area_big_circle.h = h;
         area_big_circle.x += (dist - (h>>1));
-    }else{
+    }else if( style->dir == GT_BAR_DIR_HOR_R2L ){
+        area_big_circle.h = h;
+        area_big_circle.x = (area_val.x - (h>>1));
+    }else if( style->dir == GT_BAR_DIR_VER_U2D ){
         area_big_circle.h = w;
         area_big_circle.y += (dist - (w>>1));
+    }else if( style->dir == GT_BAR_DIR_VER_D2U ){
+        area_big_circle.h = w;
+        area_big_circle.y = (area_val.y - (w>>1));
     }
     area_big_circle.w = area_big_circle.h;
-    if( style->dir == 0 ){
-        if( dist > (scrollbar->area.w - area_big_circle.h ) ){
-            area_big_circle.x = scrollbar->area.x + (scrollbar->area.w - area_big_circle.h);
+    rect_attr.radius = area_big_circle.w>>1;
+    // limit big circle overflow
+    if( style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L ){
+        if( area_big_circle.x < scrollbar->area.x ){
+            area_big_circle.x = scrollbar->area.x;
         }
-    }else{
-        if( dist > (scrollbar->area.h - area_big_circle.h ) ){
-            area_big_circle.y = scrollbar->area.y + (scrollbar->area.h - area_big_circle.h);
+        if( area_big_circle.x > (scrollbar->area.x + scrollbar->area.w - area_big_circle.w) ){
+            area_big_circle.x = scrollbar->area.x + scrollbar->area.w - area_big_circle.w;
+        }
+    }else if( style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U ){
+        if( area_big_circle.y < scrollbar->area.y ){
+            area_big_circle.y = scrollbar->area.y;
+        }
+        if( area_big_circle.y > (scrollbar->area.y + scrollbar->area.h - area_big_circle.h) ){
+            area_big_circle.y = scrollbar->area.y + scrollbar->area.h - area_big_circle.h;
         }
     }
-    if( area_big_circle.x < scrollbar->area.x ){
-        area_big_circle.x = scrollbar->area.x;
-    }
-    if( area_big_circle.y < scrollbar->area.y ){
-        area_big_circle.y = scrollbar->area.y;
-    }
+    
     draw_bg(scrollbar->draw_ctx, &rect_attr, &area_big_circle);
+
+    #endif
 }
 
 /**
@@ -206,10 +223,14 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_SCROLL:
             GT_LOGD(GT_LOG_TAG_GUI, "scroll");
             pos = gt_scrollbar_style_get_pos(obj);
-            if( gt_scrollbar_style_get_dir(obj) == 0 ){
+            if( gt_scrollbar_style_get_dir(obj) == GT_BAR_DIR_HOR_L2R ){
                 pos += obj->process_attr.x_scroll;
-            }else{
+            }else if( gt_scrollbar_style_get_dir(obj) == GT_BAR_DIR_HOR_R2L ){
+                pos -= obj->process_attr.x_scroll;
+            }else if( gt_scrollbar_style_get_dir(obj) == GT_BAR_DIR_VER_U2D ){
                 pos += obj->process_attr.y_scroll;
+            }else if( gt_scrollbar_style_get_dir(obj) == GT_BAR_DIR_VER_D2U ){
+                pos -= obj->process_attr.y_scroll;
             }
             gt_scrollbar_style_set_pos(obj, (int)pos);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -220,11 +241,17 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             /* code here */
             point_click.x = obj->process_attr.point.x;
             point_click.y = obj->process_attr.point.y;
-            if( gt_scrollbar_style_get_dir(obj) == 0 ){
+            if( gt_scrollbar_style_get_dir(obj) == GT_BAR_DIR_HOR_L2R ){
                 _pos = point_click.x;
                 pos = ((float)_pos)/((float)obj->area.w);
-            }else{
+            }else if( gt_scrollbar_style_get_dir(obj) == GT_BAR_DIR_HOR_R2L ){
+                _pos = obj->area.w - point_click.x;
+                pos = ((float)_pos)/((float)obj->area.w);
+            }else if( gt_scrollbar_style_get_dir(obj) == GT_BAR_DIR_VER_U2D ){
                 _pos = point_click.y;
+                pos = ((float)_pos)/((float)obj->area.w);
+            }else if( gt_scrollbar_style_get_dir(obj) == GT_BAR_DIR_VER_D2U ){
+                _pos = obj->area.h - point_click.y;
                 pos = ((float)_pos)/((float)obj->area.h);
             }
             
@@ -299,7 +326,7 @@ void gt_scrollbar_style_set_pos(gt_obj_st * scrollbar, gt_size_t pos)
     }else if( pos > style->end ){
         style->pos = style->end;
     }else{
-        style->pos = ( (pos / style->step) * style->step );
+        style->pos = ( (int)(pos / style->step) * ((int)(style->step)) );
     }
     gt_event_send(scrollbar, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -351,12 +378,12 @@ void gt_scrollbar_style_set_color_bg(gt_obj_st * scrollbar, gt_color_t color)
     style->bg_color = color;
 }
 
-void gt_scrollbar_style_set_dir(gt_obj_st * scrollbar, uint8_t dir)
+void gt_scrollbar_style_set_dir(gt_obj_st * scrollbar, gt_bar_dir_et dir)
 {
     _gt_style_scrollbar_st * style = (_gt_style_scrollbar_st *)scrollbar->style;
     style->dir = dir;
 }
-uint8_t gt_scrollbar_style_get_dir(gt_obj_st * scrollbar)
+gt_bar_dir_et gt_scrollbar_style_get_dir(gt_obj_st * scrollbar)
 {
     _gt_style_scrollbar_st * style = (_gt_style_scrollbar_st *)scrollbar->style;
     return ( style->dir);

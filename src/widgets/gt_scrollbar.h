@@ -16,12 +16,14 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
-
+#include "../core/gt_style.h"
 /* define ---------------------------------------------------------------*/
 
 
 
 /* typedef --------------------------------------------------------------*/
+
+
 typedef struct _gt_style_scrollbar_s
 {
     gt_color_t color_act;
@@ -33,7 +35,7 @@ typedef struct _gt_style_scrollbar_s
     gt_size_t end;
     gt_size_t pos;
 
-    uint8_t dir;    //0 hor, 1 ver
+    gt_bar_dir_et dir;    //0 hor, 1 ver
     uint8_t step;
 }_gt_style_scrollbar_st;
 
@@ -108,8 +110,8 @@ void gt_scrollbar_style_set_color_bg(gt_obj_st * scrollbar, gt_color_t color);
 
 
 
-void gt_scrollbar_style_set_dir(gt_obj_st * scrollbar, uint8_t dir);
-uint8_t gt_scrollbar_style_get_dir(gt_obj_st * scrollbar);
+void gt_scrollbar_style_set_dir(gt_obj_st * scrollbar, gt_bar_dir_et dir);
+gt_bar_dir_et gt_scrollbar_style_get_dir(gt_obj_st * scrollbar);
 
 void gt_scrollbar_style_set_step(gt_obj_st * scrollbar, uint8_t step);
 uint8_t gt_scrollbar_style_get_step(gt_obj_st * scrollbar);
