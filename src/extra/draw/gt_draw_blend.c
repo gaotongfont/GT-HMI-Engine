@@ -56,10 +56,10 @@ void gt_draw_blend(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc)
     if( dsc->opa <= GT_OPA_MIN ) return;
 
     // calc intersect area
-    gt_area_st area_res;
-    if( !gt_area_intersect(draw_ctx->buf_area, dsc->dst_area, &area_res) ){
-        return;
-    }
+    // gt_area_st area_res;
+    // if( !gt_area_intersect(draw_ctx->buf_area, dsc->dst_area, &area_res) ){
+    //     return;
+    // }
 
     // if two area intersect
     gt_draw_blend_basic(draw_ctx, dsc);
@@ -68,9 +68,6 @@ void gt_draw_blend(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc)
 void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc)
 {
     bool mask = true;   // use mask blend
-    if( dsc->mask_buf == NULL ){
-        mask = false;
-    }
 
 	gt_area_st area_res;
     if( !gt_area_intersect(draw_ctx->buf_area, dsc->dst_area, &area_res) ){
@@ -78,6 +75,9 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
     }
     if( area_res.w == 0 || area_res.h == 0 ){
         return;
+    }
+    if( dsc->mask_buf == NULL ){
+        mask = false;
     }
     gt_area_st area_draw, area_dsc;
     gt_area_copy(&area_draw, draw_ctx->buf_area);
@@ -150,32 +150,62 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
     else{
         // use dsc->mask_buf fill dsc->dst_buf to draw_ctx->buf
         if( NULL != dsc->dst_buf ){
-            for(y = 0; y < area_src.h; y++){
-                for(x = 0; x < area_src.w; x++){
-                    gt_color_mix_with_alpha(
-                        color_dst_p[idx_dst],   GT_OPA_COVER,
-                        color_src_p[idx_src],   dsc->mask_buf[idx_src],
-                        &color_dst_p[idx_dst],  &opa_res);
-                    idx_dst++;
-                    idx_src++;
+            if( dsc->opa == GT_OPA_COVER ){
+                for(y = 0; y < area_src.h; y++){
+                    for(x = 0; x < area_src.w; x++){
+                        gt_color_mix_with_alpha(
+                            color_dst_p[idx_dst],   GT_OPA_COVER,
+                            color_src_p[idx_src],   dsc->mask_buf[idx_src],
+                            &color_dst_p[idx_dst],  &opa_res);
+                        idx_dst++;
+                        idx_src++;
+                    }
+                    idx_dst += step_dst_line;
+                    idx_src += step_src_line;
                 }
-                idx_dst += step_dst_line;
-                idx_src += step_src_line;
+            }else{
+                for(y = 0; y < area_src.h; y++){
+                    for(x = 0; x < area_src.w; x++){                        
+                        gt_color_mix_with_alpha(
+                            color_dst_p[idx_dst],   GT_OPA_COVER,
+                            color_src_p[idx_src],   ((gt_per_255(dsc->mask_buf[idx_src]) * dsc->opa )>>15),
+                            &color_dst_p[idx_dst],  &opa_res);
+                        idx_dst++;
+                        idx_src++;
+                    }
+                    idx_dst += step_dst_line;
+                    idx_src += step_src_line;
+                }
             }
         }
         // fill dsc->color_fill
         else{
-            for(y = 0; y < area_src.h; y++){
-                for(x = 0; x < area_src.w; x++){
-                    gt_color_mix_with_alpha(
-                        color_dst_p[idx_dst],   GT_OPA_COVER,
-                        dsc->color_fill,        dsc->mask_buf[idx_src],
-                        &color_dst_p[idx_dst],  &opa_res);
-                    idx_dst++;
-                    idx_src++;
+            if( dsc->opa == GT_OPA_COVER ){
+                for(y = 0; y < area_src.h; y++){
+                    for(x = 0; x < area_src.w; x++){
+                        gt_color_mix_with_alpha(
+                            color_dst_p[idx_dst],   GT_OPA_COVER,
+                            dsc->color_fill,        dsc->mask_buf[idx_src],
+                            &color_dst_p[idx_dst],  &opa_res);
+                        idx_dst++;
+                        idx_src++;
+                    }
+                    idx_dst += step_dst_line;
+                    idx_src += step_src_line;
                 }
-                idx_dst += step_dst_line;
-                idx_src += step_src_line;
+            }else{
+                for(y = 0; y < area_src.h; y++){
+                    for(x = 0; x < area_src.w; x++){
+                        gt_color_mix_with_alpha(
+                            color_dst_p[idx_dst],   GT_OPA_COVER,
+                            dsc->color_fill,        ((gt_per_255(dsc->mask_buf[idx_src]) * dsc->opa )>>15),
+                            &color_dst_p[idx_dst],  &opa_res);
+                        idx_dst++;
+                        idx_src++;
+                    }
+                    idx_dst += step_dst_line;
+                    idx_src += step_src_line;
+                }
             }
         }
     }
