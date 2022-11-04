@@ -17,6 +17,7 @@
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
+#include "../core/gt_fs.h"
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_SCROLLBAR
 #define MY_CLASS    &gt_scrollbar_class
@@ -56,6 +57,9 @@ static void _gt_scrollbar_init_widget(gt_obj_st * scrollbar) {
         scrollbar->area.h = 16;
     };
 
+    if( style->tag_visible && style->tag && style->area_base.w != 0 && style->area_base.h != 0){
+        scrollbar->area = style->area_base;
+    }
     w = scrollbar->area.w;
     h = scrollbar->area.h;
 
@@ -66,8 +70,6 @@ static void _gt_scrollbar_init_widget(gt_obj_st * scrollbar) {
         .border_color = style->bg_color,
         .bg_opa = scrollbar->opa,
     };
-    
-
 
     /* 1 base shape */
     gt_area_st area_base = scrollbar->area;
@@ -105,20 +107,34 @@ static void _gt_scrollbar_init_widget(gt_obj_st * scrollbar) {
         return;
     }
     rect_attr.bg_color = style->color_act;
+
+    uint16_t _w,_h;
+    bool isTag = false;
+    if( style->tag != NULL ){
+        if( !gt_fs_read_img_wh(style->tag, &_w, &_h) ){
+            w = _w;
+            h = _h;
+            isTag = true;
+        }
+    }
+
     if( style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L ){
         dist_min = (h>>1);
     }else if( style->dir == GT_BAR_DIR_VER_D2U || style->dir == GT_BAR_DIR_VER_U2D ){
         dist_min = (w>>1);
-    }else{
     }
+
+    
             
     if( dist > dist_min ){
         draw_bg(scrollbar->draw_ctx, &rect_attr, &area_val);
     }
     /* big big big operate circle */
-    #if 1
+    if( !style->tag_visible ){
+        return;
+    }
     gt_area_st area_big_circle = scrollbar->area;
-   
+
     area_big_circle.y = scrollbar->area.y;
     area_big_circle.x = scrollbar->area.x;
     if( style->dir == GT_BAR_DIR_HOR_L2R ){
@@ -152,10 +168,29 @@ static void _gt_scrollbar_init_widget(gt_obj_st * scrollbar) {
             area_big_circle.y = scrollbar->area.y + scrollbar->area.h - area_big_circle.h;
         }
     }
-    
-    draw_bg(scrollbar->draw_ctx, &rect_attr, &area_big_circle);
-
-    #endif
+    if( isTag == false ){
+        draw_bg(scrollbar->draw_ctx, &rect_attr, &area_big_circle);
+    }else{
+        rect_attr.bg_img_src = style->tag;
+        area_big_circle.w = w;
+        area_big_circle.h = h;
+        if( style->area_base.w == 0 || style->area_base.h == 0 ){
+            style->area_base = scrollbar->area;
+        }
+        if( scrollbar->area.w < w ){
+            int wof = w - scrollbar->area.w;
+            scrollbar->area.w = w;
+            scrollbar->area.x = scrollbar->area.x - (wof>>1);
+            area_big_circle.x = scrollbar->area.x;
+        }
+        if( scrollbar->area.h < h ){
+            int hof = h - scrollbar->area.h;
+            scrollbar->area.h = h;
+            scrollbar->area.y = scrollbar->area.y - (hof>>1);
+            area_big_circle.y = scrollbar->area.y;
+        }
+        draw_bg_img(scrollbar->draw_ctx, &rect_attr, &area_big_circle);
+    }
 }
 
 /**
@@ -249,7 +284,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
                 pos = ((float)_pos)/((float)obj->area.w);
             }else if( gt_scrollbar_style_get_dir(obj) == GT_BAR_DIR_VER_U2D ){
                 _pos = point_click.y;
-                pos = ((float)_pos)/((float)obj->area.w);
+                pos = ((float)_pos)/((float)obj->area.h);
             }else if( gt_scrollbar_style_get_dir(obj) == GT_BAR_DIR_VER_D2U ){
                 _pos = obj->area.h - point_click.y;
                 pos = ((float)_pos)/((float)obj->area.h);
@@ -291,6 +326,7 @@ static void _gt_scrollbar_init_style(gt_obj_st * scrollbar)
     style->pos = 50;
     style->dir = 0;
     style->step = 1;
+    style->tag_visible = true;
 }
 
 
@@ -401,4 +437,21 @@ uint8_t gt_scrollbar_style_get_step(gt_obj_st * scrollbar)
     return ( style->step);
 }
 
+void gt_scrollbar_style_set_tag(gt_obj_st * scrollbar, char * src)
+{
+    _gt_style_scrollbar_st * style = (_gt_style_scrollbar_st *)scrollbar->style;
+    if( style->tag != NULL ){
+        gt_mem_free(style->tag);
+    }        
+    style->tag = gt_mem_malloc(strlen(src) + 1);        
+
+    gt_memcpy(style->tag, src, strlen(src));
+    style->tag[strlen(src)] = 0;
+}
+
+void gt_scrollbar_style_set_tag_visible(gt_obj_st * scrollbar, bool visible)
+{
+    _gt_style_scrollbar_st * style = (_gt_style_scrollbar_st *)scrollbar->style;
+    style->tag_visible = visible;
+}
 /* end ------------------------------------------------------------------*/

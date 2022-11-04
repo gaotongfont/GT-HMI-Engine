@@ -35,8 +35,13 @@ typedef struct _gt_style_scrollbar_s
     gt_size_t end;
     gt_size_t pos;
 
-    gt_bar_dir_et dir;    //0 hor, 1 ver
+    gt_bar_dir_et dir;
     uint8_t step;
+
+    gt_area_st area_base;
+
+    bool tag_visible;
+    char * tag;             //img src
 }_gt_style_scrollbar_st;
 
 
@@ -115,6 +120,9 @@ gt_bar_dir_et gt_scrollbar_style_get_dir(gt_obj_st * scrollbar);
 
 void gt_scrollbar_style_set_step(gt_obj_st * scrollbar, uint8_t step);
 uint8_t gt_scrollbar_style_get_step(gt_obj_st * scrollbar);
+void gt_scrollbar_style_set_tag(gt_obj_st * scrollbar, char * src);
+void gt_scrollbar_style_set_tag_visible(gt_obj_st * scrollbar, bool visible);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
