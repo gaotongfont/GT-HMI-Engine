@@ -63,7 +63,7 @@ double gt_square(double n);
 
 double gt_abs(double n);
 
-
+uint32_t gt_per_255(uint8_t n);
 
 
 #ifdef __cplusplus
