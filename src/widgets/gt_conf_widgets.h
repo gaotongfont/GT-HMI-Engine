@@ -33,7 +33,7 @@ extern "C" {
 #define GT_CFG_ENABLE_LISTVIEW          1
 #define GT_CFG_ENABLE_PROGRESS_BAR      1
 #define GT_CFG_ENABLE_RADIO             1
-#define GT_CFG_ENABLE_SCROLLBAR         1
+#define GT_CFG_ENABLE_SLIDER            1
 #define GT_CFG_ENABLE_SWITCH            1
 #define GT_CFG_ENABLE_TEXTAREA          1
 #define GT_CFG_ENABLE_IMGBTN            1

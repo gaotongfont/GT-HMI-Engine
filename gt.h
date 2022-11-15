@@ -89,8 +89,8 @@ extern "C" {
 #include "src/widgets/gt_radio.h"
 #endif
 
-#if GT_CFG_ENABLE_SCROLLBAR == 1
-#include "src/widgets/gt_scrollbar.h"
+#if GT_CFG_ENABLE_SLIDER == 1
+#include "src/widgets/gt_slider.h"
 #endif
 
 #if GT_CFG_ENABLE_SWITCH == 1
