@@ -60,12 +60,12 @@ void gt_examples_img(void)
 
     image = gt_img_create(_screen);
     gt_img_style_set_src(image, "./2.png");
-	gt_obj_set_style_pos(image, 0, 0);
+	gt_obj_style_set_pos(image, 0, 0);
     gt_obj_add_event_cb(image, _image_one_cb, GT_EVENT_TYPE_INPUT_PROCESS, NULL);
 
     image2 = gt_img_create(_screen);
     gt_img_style_set_src(image2, "./50x50.png");
-	gt_obj_set_style_pos(image2, 0, 100);
+	gt_obj_style_set_pos(image2, 0, 100);
     gt_obj_add_event_cb(image2, _image_two_cb, GT_EVENT_TYPE_INPUT_PROCESS, NULL);
 
     gt_disp_load_scr(_screen);

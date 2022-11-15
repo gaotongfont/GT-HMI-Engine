@@ -176,13 +176,11 @@ static void _gt_progress_bar_init_style(gt_obj_st * progress_bar)
 
     gt_memset(style, 0, sizeof(_gt_style_progress_bar_st));
 
-    style->bg_color = gt_color_hex(0xFFFFFF);
-    GT_COLOR_SET(style->color_act, 0x0516);
-    GT_COLOR_SET(style->color_ina, 0xC619);
+    style->color_act = gt_color_make(0x12,0xFF,0x12);
+    style->color_ina = gt_color_make(0x90,0x93,0x99);
     style->start = 0;
     style->end = 100;
     style->pos = 50;
-
 }
 
 
@@ -219,7 +217,6 @@ void gt_progress_bar_style_set_pos(gt_obj_st * progress_bar, gt_size_t pos)
     }else{
         style->pos = pos;
     }
-    printf("pos:%d\n", pos);
     gt_event_send(progress_bar, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

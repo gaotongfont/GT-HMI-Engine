@@ -52,8 +52,8 @@ void gt_example_input(void)
 
     gt_obj_st * input = gt_input_create(screen);
     gt_input_style_set_placeholder(input, "This is placeholder content.");
-	gt_obj_set_style_pos(input, 0, 0);
-	gt_obj_set_style_size(input, 180, 80);
+	gt_obj_style_set_pos(input, 0, 0);
+	gt_obj_style_set_size(input, 180, 80);
 	gt_obj_add_event_cb(input, _click_cb, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
 
     gt_disp_load_scr(screen);

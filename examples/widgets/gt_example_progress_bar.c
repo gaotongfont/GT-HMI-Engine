@@ -55,8 +55,8 @@ void gt_examples_progress_bar(void)
     gt_progress_bar_style_set_start_end(progress_bar, 0, 200);
     gt_progress_bar_style_set_pos(progress_bar, value);
 
-	gt_obj_set_style_pos(progress_bar, 0, 60);
-    gt_obj_set_style_size(progress_bar, 380, 40);
+	gt_obj_style_set_pos(progress_bar, 0, 60);
+    gt_obj_style_set_size(progress_bar, 380, 40);
     gt_obj_add_event_cb(progress_bar, _progress_bar_event_cb, GT_EVENT_TYPE_INPUT_CLICKING, NULL);
 
     gt_disp_load_scr(screen);

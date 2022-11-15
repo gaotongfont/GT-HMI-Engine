@@ -51,9 +51,9 @@ static void _gt_textarea_init_widget(gt_obj_st * textarea) {
     int idx = 0;
 
     gt_font_st font = {
-        .size = style->font_size,
-        .style_cn   = style->font_style_cn,
-        .style_en   = style->font_style_en
+        .size       = style->font_size,
+        .style_cn   = style->font_family_cn,
+        .style_en   = style->font_family_en
     };
 
     gt_attr_font_st font_attr = {
@@ -190,8 +190,8 @@ static void _gt_textarea_init_style(gt_obj_st * textarea)
 
     gt_memset(style, 0, sizeof(_gt_style_textarea_st ));
 
-    style->font_style_cn    = GT_CFG_DEFAULT_FONT_STYLE_CN;
-    style->font_style_en    = GT_CFG_DEFAULT_FONT_STYLE_EN;
+    style->font_family_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
+    style->font_family_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
 }
 
@@ -218,7 +218,7 @@ char * gt_textarea_style_get_text(gt_obj_st * textarea){
 }
 
 
-void gt_textarea_style_add_str(gt_obj_st * textarea, char * str, uint8_t style_mask, gt_color_t color)
+void gt_textarea_style_add_str(gt_obj_st * textarea, char * str, gt_font_style_et style_mask, gt_color_t color)
 {
     _gt_style_textarea_st * style = textarea->style;
     if( style->cnt_txts == 0 ){
@@ -247,15 +247,15 @@ void gt_textarea_style_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t 
     style->space_y = space_y;
 }
 
-void gt_textarea_style_set_font_style_cn(gt_obj_st * textarea, uint8_t font_style_cn)
+void gt_textarea_style_set_font_family_cn(gt_obj_st * textarea, gt_family_t family)
 {
     _gt_style_textarea_st * style = textarea->style;
-    style->font_style_cn = font_style_cn;
+    style->font_family_cn = family;
 }
 
-void gt_textarea_style_set_font_style_en(gt_obj_st * textarea, uint8_t font_style_en)
+void gt_textarea_style_set_font_family_en(gt_obj_st * textarea, gt_family_t family)
 {
     _gt_style_textarea_st * style = textarea->style;
-    style->font_style_en = font_style_en;
+    style->font_family_en = family;
 }
 /* end ------------------------------------------------------------------*/

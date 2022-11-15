@@ -105,7 +105,7 @@ typedef struct _gt_attr_font_s {
  * @param res unicode encoding
  * @return uint8_t THe number length bytes of utf-8 encoding
  */
-uint8_t utf8_to_unicode(uint8_t * utf8,uint32_t *res);
+uint8_t _gt_utf8_to_unicode(uint8_t * utf8,uint32_t *res);
 
 /**
  * @brief Get the character data of a string

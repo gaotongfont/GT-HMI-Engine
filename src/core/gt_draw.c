@@ -366,7 +366,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         gt_memset(_font.res, 0, size_fres);
 
         _font.utf8 = &text[idx];
-        _font.len = utf8_to_unicode(&text[idx], &unicode);
+        _font.len = _gt_utf8_to_unicode(&text[idx], &unicode);
 
         if( _font.utf8[0] == '\n' ){
             idx += _font.len;

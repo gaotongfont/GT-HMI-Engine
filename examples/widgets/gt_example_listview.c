@@ -52,8 +52,8 @@ void gt_examples_listview(void)
         gt_listview_style_add_item(listview, names[i]);
     }
     gt_listview_style_set_selected_item_by_idx(listview, 2);
-	gt_obj_set_style_pos(listview, 0, 0);
-    gt_obj_set_style_size(listview, 120, 60);
+	gt_obj_style_set_pos(listview, 0, 0);
+    gt_obj_style_set_size(listview, 120, 60);
     gt_obj_add_event_cb(listview, _listview_event_cb, GT_EVENT_TYPE_INPUT_PROCESS, NULL);
 
     gt_disp_load_scr(screen);

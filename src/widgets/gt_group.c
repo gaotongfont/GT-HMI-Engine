@@ -47,7 +47,6 @@ const gt_obj_class_st gt_group_class = {
 
 static void _gt_group_init_widget(gt_obj_st * group) {
     _gt_style_group_st * style = group->style;
-    gt_size_t x, y, w, h;           //base attr
 }
 
 /**

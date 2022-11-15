@@ -57,20 +57,20 @@ static void _gt_switcher_init_widget(gt_obj_st * switcher)
         switcher->area.h = 24;
     }
 
-    if( style->state ){
-        GT_COLOR_SET(fg_color, GT_COLOR_GET(style->color_open));
+    if( gt_obj_style_get_state(switcher) != GT_STATE_NONE ){
+        fg_color = style->color_act;
     }else{
-        GT_COLOR_SET(fg_color, GT_COLOR_GET(style->color_close));
+        fg_color = style->color_ina;
     }
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.is_fill = 1;
-    rect_attr.bg_color = fg_color;
-    rect_attr.border_color = fg_color;
-    rect_attr.radius = switcher->area.h>>1;
-    rect_attr.border_width = 0;
-    rect_attr.bg_opa = switcher->opa;
+    rect_attr.is_fill       = 1;
+    rect_attr.bg_color      = fg_color;
+    rect_attr.border_color  = fg_color;
+    rect_attr.radius        = switcher->area.h>>1;
+    rect_attr.border_width  = 0;
+    rect_attr.bg_opa        = switcher->opa;
 
     draw_bg(switcher->draw_ctx, &rect_attr, &switcher->area);
 
@@ -79,14 +79,14 @@ static void _gt_switcher_init_widget(gt_obj_st * switcher)
     area_circle.y += 4;
     area_circle.h -= 8;
     area_circle.w = area_circle.h;
-    if( style->state ){
+    if( gt_obj_style_get_state(switcher) != GT_STATE_NONE ){
         area_circle.x += (switcher->area.w - area_circle.w - 4);
     }else{
         area_circle.x += 4;
     }
-    rect_attr.radius = area_circle.h>>1;
-    rect_attr.border_width = 0;
-    rect_attr.bg_color = gt_color_white();
+    rect_attr.radius        = area_circle.h>>1;
+    rect_attr.border_width  = 0;
+    rect_attr.bg_color      = style->color_point;
     draw_bg(switcher->draw_ctx, &rect_attr, &area_circle);
 }
 
@@ -156,10 +156,10 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
             GT_LOGD(GT_LOG_TAG_GUI, "process");
             /* code here */
-            if( gt_switch_style_get_state(obj) ){
-                gt_switch_style_set_state(obj, 0);
+            if( gt_obj_style_get_state(obj) ){
+                gt_obj_style_set_state(obj, GT_STATE_NONE);
             }else{
-                gt_switch_style_set_state(obj, 1);
+                gt_obj_style_set_state(obj, GT_STATE_PRESSED);
             }
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
             break;
@@ -184,12 +184,10 @@ static void _gt_switcher_init_style(gt_obj_st * switcher)
     
     gt_memset(style,0,sizeof(_gt_style_switcher_st));
 
-    GT_COLOR_SET(style->color_close, 0xC619);
-    GT_COLOR_SET(style->color_open, 0x0516);
-    gt_switch_style_set_state(switcher, 0);
+    style->color_ina    = gt_color_hex(0x909399);
+    style->color_act    = gt_color_hex(0x00FF00);
+    style->color_point  = gt_color_hex(0x409EFF);
 }
-
-
 
 
 /* global functions / API interface -------------------------------------*/
@@ -207,16 +205,20 @@ gt_obj_st * gt_switch_create(gt_obj_st * parent)
     return obj;
 }
 
-void gt_switch_style_set_state(gt_obj_st * switcher, bool state){
-    _gt_style_switcher_st * style = switcher->style;
-    style->state = state;
-}
-
-bool gt_switch_style_get_state(gt_obj_st * switcher)
+void gt_switch_style_set_color_act(gt_obj_st * switcher, gt_color_t color)
 {
     _gt_style_switcher_st * style = switcher->style;
-    return style->state;
+    style->color_act = color;
 }
-
+void gt_switch_style_set_color_ina(gt_obj_st * switcher, gt_color_t color)
+{
+    _gt_style_switcher_st * style = switcher->style;
+    style->color_ina = color;
+}
+void gt_switch_style_set_color_point(gt_obj_st * switcher, gt_color_t color)
+{
+    _gt_style_switcher_st * style = switcher->style;
+    style->color_point = color;
+}
 
 /* end ------------------------------------------------------------------*/

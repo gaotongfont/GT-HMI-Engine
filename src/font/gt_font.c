@@ -22,7 +22,7 @@
 
 
 
-#define _GT_ENABLE_GTZK 01
+#define _GT_ENABLE_GTZK 0
 
 #if _GT_ENABLE_GTZK == 1
 #include "gtzk.h"
@@ -146,7 +146,7 @@ static uint8_t _gt_font_latin_get_width(uint32_t unicode, uint8_t font_size)
 }
 
 
-uint8_t utf8_to_unicode(uint8_t * utf8,uint32_t *res)
+uint8_t _gt_utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 {
 	if (utf8[0] < 0x80) {
 		*res = utf8[0];
@@ -169,6 +169,9 @@ uint8_t utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 // extern unsigned long GT_GetJapanese(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
 // extern unsigned long GT_GetKorean(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
 // extern unsigned long GT_GetCyrillic(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
+unsigned long _gt_font_default(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer){
+
+}
 
 typedef unsigned long(* read_func_t)(unsigned long , unsigned int , unsigned char* );
 
@@ -178,6 +181,7 @@ read_func_t read_func_arr[] = {
     GT_GetLatin,
     GT_GetASCII,
 #endif
+    _gt_font_default,
     // GT_GetASCII,
     // GT_GetJapanese,
     // GT_GetKorean,
@@ -197,10 +201,10 @@ void gt_font_get_string_dot(gt_font_st * font)
     uint16_t count_func = sizeof(read_func_arr) / sizeof(read_func_t);
 
 
-    GT_LOGV(GT_LOG_TAG_GUI, "text:%s", font->utf8);
+    // GT_LOGV(GT_LOG_TAG_GUI, "text:%s", font->utf8);
     while(idx < font->len) {
 
-        len = utf8_to_unicode(&font->utf8[idx], &unicode);
+        len = _gt_utf8_to_unicode(&font->utf8[idx], &unicode);
         /* get font data */
         while( idx_func < count_func ) {
             read = read_func_arr[idx_func];
@@ -251,7 +255,7 @@ uint32_t gt_font_count_word(char * utf8, uint32_t len)
 {
     uint32_t idx = 0, cnt = 0, unicode;
     while(idx < len){
-        idx += utf8_to_unicode((uint8_t *)&utf8[idx], &unicode);
+        idx += _gt_utf8_to_unicode((uint8_t *)&utf8[idx], &unicode);
         cnt++;
     }
     return cnt;
@@ -263,7 +267,7 @@ uint32_t gt_font_get_string_width(gt_font_st * font)
 	uint32_t idx = 0, unicode, width = 0, temp;
 
     while( idx < font->len ){
-        temp = utf8_to_unicode(&font->utf8[idx], &unicode);
+        temp = _gt_utf8_to_unicode(&font->utf8[idx], &unicode);
         idx += temp;
         if( _gt_font_latin_check(unicode) ){
             //the unicode is latin, need get width
@@ -293,7 +297,7 @@ uint8_t gt_font_get_next_word_width(gt_font_st * font, uint8_t is_head){
         idx = 0;
     }
     while( i <= idx ){
-        idx_utf8 += utf8_to_unicode((uint8_t *)&font->utf8[idx_utf8], &unicode);
+        idx_utf8 += _gt_utf8_to_unicode((uint8_t *)&font->utf8[idx_utf8], &unicode);
         i++;
     }
     idx++;
@@ -478,7 +482,7 @@ static const uint8_t ascii_16[] = {
     //o
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x1e,0x00,0x3f,0x00,0x73,0x80,0x61,0x80,0x61,0x80,0x61,0x80,0x73,0x80,0x3f,0x00,0x1e,0x00,0x00,0x00,
     //p
-    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x6e,0x00,0x7f,0x00,0x73,0x80,0x61,0x80,0x61,0x80,0x61,0x80,0x73,0x80,0x7f,0x00,0x6e,0x00,0x60,0x00,0x60,0x00,0x00,0x00,
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x6e,0x00,0x7f,0x00,0x73,0x80,0x61,0x80,0x61,0x80,0x61,0x80,0x7f,0x00,0x6e,0x00,0x60,0x00,0x60,0x00,
     //q
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x1d,0x80,0x3f,0x80,0x73,0x80,0x61,0x80,0x61,0x80,0x61,0x80,0x73,0x80,0x3f,0x80,0x1d,0x80,0x01,0x80,0x01,0x80,0x00,0x00,
     //r

@@ -53,11 +53,11 @@ static void _gt_rect_init_widget(gt_obj_st * rect) {
         return;
     }
     gt_attr_rect_st rect_attr = {
-        .is_fill        = style->is_full,
+        .is_fill        = style->fill,
         .border_width   = style->border,
-        .border_color   = style->color_bd,
+        .border_color   = style->color_border,
         .bg_opa         = rect->opa,
-        .bg_color       = style->color_bg,
+        .bg_color       = style->color_background,
         .radius         = style->radius,
     };
 
@@ -153,10 +153,10 @@ static void _gt_rect_init_style(gt_obj_st * rect)
 
     gt_memset(style,0,sizeof(_gt_style_rect_st));
 
-    style->is_full = 1;
-    style->radius = 0;
-    style->color_bg = gt_color_black();
-    style->color_bd = gt_color_black();
+    style->fill     = 1;
+    style->radius   = 0;
+    style->color_background = gt_color_black();
+    style->color_border     = gt_color_black();
 }
 
 
@@ -179,12 +179,12 @@ gt_obj_st * gt_rect_create(gt_obj_st * parent)
 void gt_rect_style_set_bg_color(gt_obj_st * rect, gt_color_t color)
 {
     _gt_style_rect_st * style = rect->style;
-    style->color_bg = color;
+    style->color_background = color;
 }
-void gt_rect_style_set_border_color(gt_obj_st * rect, gt_color_t color)
+void gt_rect_style_set_color_border(gt_obj_st * rect, gt_color_t color)
 {
     _gt_style_rect_st * style = rect->style;
-    style->color_bd = color;
+    style->color_border = color;
 }
 void gt_rect_style_set_radius(gt_obj_st * rect, uint16_t radius)
 {
@@ -196,10 +196,10 @@ void gt_rect_style_set_border(gt_obj_st * rect, uint16_t border)
     _gt_style_rect_st * style = rect->style;
     style->border = border;
 }
-void gt_rect_style_set_full(gt_obj_st * rect, uint8_t if_full)
+void gt_rect_style_set_fill(gt_obj_st * rect, uint8_t fill)
 {
     _gt_style_rect_st * style = rect->style;
-    style->is_full = if_full;
+    style->fill = fill;
 }
 
 /* end ------------------------------------------------------------------*/

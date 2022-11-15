@@ -61,8 +61,8 @@ void gt_example_button(void)
 	gt_disp_set_scr(screen);
 
     gt_obj_st * btn = gt_btn_create(screen);
-	gt_obj_set_style_pos(btn, 0, 30);
-	gt_obj_set_style_size(btn, 80, 40);
+	gt_obj_style_set_pos(btn, 0, 30);
+	gt_obj_style_set_size(btn, 80, 40);
 	gt_obj_add_event_cb(btn, btn_click_cb, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
 
     gt_disp_load_scr(screen);

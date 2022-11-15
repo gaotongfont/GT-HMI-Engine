@@ -55,7 +55,7 @@ static int _gt_listview_style_get_idx_start(gt_obj_st * listview)
 static int _gt_listview_style_get_show_cnt(gt_obj_st * listview)
 {
     _gt_style_listview_st * style = listview->style;
-    return style->idx_show_cnt;
+    return style->cnt_show;
 }
 
 static void _gt_listview_style_update_by_click_point(gt_obj_st * obj, gt_point_st point)
@@ -89,12 +89,12 @@ static void _gt_listview_init_widget(gt_obj_st * listview) {
     // set default size
     if( listview->area.w == 0 || listview->area.h == 0 ){
         listview->area.w = style->font_size * 8;
-        listview->area.h = style->font_size+16 * style->idx_show_cnt;
+        listview->area.h = style->font_size+16 * style->cnt_show;
     }
 
     // can not set area.h less than items numb * font size
-    if( listview->area.h < (GT_FONT_SIZE_16x16 * style->idx_show_cnt) ){
-        listview->area.h = (GT_FONT_SIZE_16x16+2) * style->idx_show_cnt;
+    if( listview->area.h < (style->font_size * style->cnt_show) ){
+        listview->area.h = (style->font_size+2) * style->cnt_show;
     }
 
     x = listview->area.x;
@@ -103,13 +103,13 @@ static void _gt_listview_init_widget(gt_obj_st * listview) {
     h = listview->area.h;
 
     gt_attr_rect_st rect_attr = {
-        .is_fill = 1,
-        .border_width = 2,
-        .bg_opa = listview->opa,
+        .is_fill        = 1,
+        .border_width   = 2,
+        .bg_opa         = listview->opa,
     };
-    rect_attr.border_color  = style->color_border;
-    rect_attr.fg_color      = style->fg_color_unselected;
-    rect_attr.bg_color      = style->bg_color;
+    rect_attr.border_color  = style->border_color;
+    rect_attr.fg_color      = style->color_ina;
+    rect_attr.bg_color      = style->color_background;
 
     gt_area_st area_rect = {
         .w = w, .h = h
@@ -117,8 +117,8 @@ static void _gt_listview_init_widget(gt_obj_st * listview) {
 
     uint8_t fp[64];
     gt_font_st font = {
-        .style_cn   = style->font_style_cn,
-        .style_en   = style->font_style_en,
+        .style_cn   = style->font_family_cn,
+        .style_en   = style->font_family_en,
         .res        = fp,
         .size       = style->font_size,
     };
@@ -131,30 +131,35 @@ static void _gt_listview_init_widget(gt_obj_st * listview) {
         .font_color = gt_color_black(),
         .opa        = listview->opa,
     };
-    uint16_t __h = h/style->idx_show_cnt;
+    uint16_t __h = h/style->cnt_show;
     uint8_t idx_start = style->idx_show_start;
-    uint8_t idx_end = style->idx_show_start + (style->idx_show_cnt==1?1:style->idx_show_cnt);
+    uint8_t idx_end = style->idx_show_start + (style->cnt_show==1?1:style->cnt_show);
     gt_color_t color_font;
 
     gt_area_st area_item = listview->area,  area_font;
-    area_item.h = area_item.h/style->idx_show_cnt;
+    area_item.h = area_item.h/style->cnt_show;
     uint16_t width_font = 0;
+
+    if( idx_end > (idx_start + style->cnt) ){
+        idx_end = idx_start + style->cnt;
+    }
+
     while( idx_start < idx_end ){
         if( idx_start == style->idx_selected ){
-            rect_attr.border_color = style->color_border;
-            rect_attr.bg_color = style->fg_color_selected;
-            color_font = style->color_font_selected;
+            rect_attr.border_color  = style->border_color;
+            rect_attr.bg_color      = style->color_act;
+            color_font              = style->font_color_act;
         }else{
-            rect_attr.border_color = style->color_border;
-            rect_attr.bg_color = style->fg_color_unselected;
-            color_font = style->color_font_unselected;
+            rect_attr.border_color  = style->border_color;
+            rect_attr.bg_color      = style->color_ina;
+            color_font              = style->font_color_ina;
         }
 
         draw_bg(listview->draw_ctx, &rect_attr, &area_item);
 
 
         area_font = area_item;
-        font.utf8 = (uint8_t *)style->item[idx_start];
+        font.utf8 = style->item[idx_start];
         font.len = strlen(style->item[idx_start]);
         width_font = gt_font_get_string_width(&font);
         draw_text(listview->draw_ctx, &font_attr, &area_font);
@@ -261,17 +266,17 @@ static void _gt_listview_init_style(gt_obj_st * listview)
 
     gt_memset(style, 0, sizeof(_gt_style_listview_st));
 
-    GT_COLOR_SET(style->color_font_selected, 0xFFFF);
-    GT_COLOR_SET(style->color_font_unselected, 0x0000);
-    GT_COLOR_SET(style->bg_color, 0xFFFF);
-    GT_COLOR_SET(style->color_border, 0xD6FC);
-    GT_COLOR_SET(style->fg_color_selected, 0x0516);
-    GT_COLOR_SET(style->fg_color_unselected, 0xFFFF);
-    style->idx_show_cnt = 5;
+    style->font_color_act   = gt_color_hex(0xFFFFFF);
+    style->font_color_ina   = gt_color_hex(0x000000);
+    style->color_background = gt_color_hex(0xFFFFFF);
+    style->border_color     = gt_color_hex(0x909399);
+    style->color_act        = gt_color_hex(0x409EFF);
+    style->color_ina        = gt_color_hex(0xFFFFFF);
+    style->cnt_show = 5;
 
-    style->font_style_cn    = GT_CFG_DEFAULT_FONT_STYLE_CN;
-    style->font_style_en    = GT_CFG_DEFAULT_FONT_STYLE_EN;
-    style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
+    style->font_family_cn       = GT_CFG_DEFAULT_FONT_FAMILY_CN;
+    style->font_family_en       = GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    style->font_size            = GT_CFG_DEFAULT_FONT_SIZE;
 }
 
 
@@ -328,13 +333,13 @@ void gt_listview_style_set_selected_item_by_idx(gt_obj_st * listview, int idx){
     }
     style->idx_selected = idx;
 
-    if( style->idx_selected >= (style->idx_show_cnt/2) ){
-        style->idx_show_start = style->idx_selected - (style->idx_show_cnt/2);
+    if( style->idx_selected >= (style->cnt_show/2) ){
+        style->idx_show_start = style->idx_selected - (style->cnt_show/2);
     }
 
-    if( (style->idx_show_start + style->idx_show_cnt) > style->cnt ){
-        if( style->cnt >= style->idx_show_cnt ){
-            style->idx_show_start = style->cnt - style->idx_show_cnt;
+    if( (style->idx_show_start + style->cnt_show) > style->cnt ){
+        if( style->cnt >= style->cnt_show ){
+            style->idx_show_start = style->cnt - style->cnt_show;
         }else{
             style->idx_show_start = 0;
         }

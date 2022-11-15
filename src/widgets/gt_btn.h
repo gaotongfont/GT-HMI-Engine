@@ -24,21 +24,18 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_style_btn_s
 {
-    gt_color_t color_selected;
-    gt_color_t color_unselected;
-    gt_color_t color_font;
-    gt_color_t border_bg_color;
+    gt_color_t color_background;
+    gt_color_t color_pressed;
 
-    gt_size_t radius;
-    gt_size_t border_width;
+    gt_color_t      font_color;
+    uint8_t         font_size;
+    gt_family_t     font_family_cn;
+    gt_family_t     font_family_en;
 
-    uint8_t font_style_cn;
-    uint8_t font_style_en;
-    uint8_t font_size;
+    gt_size_t   radius;
 
-    uint8_t is_fill:1;
-    uint8_t selected:1;
-
+    uint8_t     fill;
+    
     char * text;
 }_gt_style_btn_st;
 
@@ -64,7 +61,7 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent);
  * @param btn button obj
  * @param color selected color
  */
-void gt_btn_style_set_color_selected(gt_obj_st * btn, gt_color_t color);
+void gt_btn_style_set_color_pressed(gt_obj_st * btn, gt_color_t color);
 
 /**
  * @brief set the color when the button is unselected
@@ -72,15 +69,7 @@ void gt_btn_style_set_color_selected(gt_obj_st * btn, gt_color_t color);
  * @param btn button obj
  * @param color unselected color
  */
-void gt_btn_style_set_color_unselected(gt_obj_st * btn, gt_color_t color);
-
-/**
- * @brief set button obj state
- *
- * @param btn button obj
- * @param selected 0:unselected,!0:selected
- */
-void gt_btn_style_set_selected(gt_obj_st * btn, uint8_t selected);
+void gt_btn_style_set_color_background(gt_obj_st * btn, gt_color_t color);
 
 /**
  * @brief set button text

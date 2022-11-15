@@ -24,13 +24,12 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_style_radio_s
 {
-    uint8_t selected;
-
-    uint8_t font_style_cn;
-    uint8_t font_style_en;
-    uint8_t font_size;
-
-    char * text;
+    gt_color_t  font_color;
+    gt_family_t font_family_cn;
+    gt_family_t font_family_en;
+    uint8_t     font_size;
+    uint8_t     selected;
+    char *      text;
 }_gt_style_radio_st;
 
 
@@ -78,6 +77,9 @@ uint8_t gt_radio_style_get_selected_state(gt_obj_st * radio);
  */
 void gt_radio_style_set_text(gt_obj_st * radio, char * text);
 
+void gt_radio_style_set_font_color(gt_obj_st * radio, gt_color_t color);
+void gt_radio_style_set_font_family_cn(gt_obj_st * radio, gt_family_t family);
+void gt_radio_style_set_font_family_en(gt_obj_st * radio, gt_family_t family);
 
 #ifdef __cplusplus
 } /*extern "C"*/

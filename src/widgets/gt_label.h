@@ -25,11 +25,11 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_style_label_s{
-    gt_color_t color_font;
+    gt_color_t  font_color;
 
-    uint8_t font_style_cn;
-    uint8_t font_style_en;
-    uint8_t font_size;
+    gt_family_t font_family_cn;
+    gt_family_t font_family_en;
+    uint8_t     font_size;
 
     char * text;
 }_gt_style_label_st;
@@ -72,6 +72,10 @@ char * gt_label_style_get_text(gt_obj_st * label);
  * @param color color
  */
 void gt_label_style_set_font_color(gt_obj_st * label, gt_color_t color);
+
+void gt_label_style_set_font_family_cn(gt_obj_st * label, gt_family_t family);
+void gt_label_style_set_font_family_en(gt_obj_st * label, gt_family_t family);
+
 
 #ifdef __cplusplus
 } /*extern "C"*/

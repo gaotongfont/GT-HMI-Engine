@@ -56,17 +56,8 @@ typedef struct _gt_obj_process_attr_s{
 typedef enum{
     GT_VISIBLE,
     GT_INVISIBLE,
-}gt_visible_e;
+}gt_visible_et;
 
-typedef enum{
-    GT_UNCACHED,
-    GT_CACHED,
-}gt_cache_e;
-
-typedef enum{
-    GT_CREATE_TYPE_FULL,
-    GT_CREATE_TYPE_PART,
-}gt_create_type_e;
 
 struct _gt_draw_ctx_t;
 typedef struct _gt_obj_s {
@@ -90,7 +81,10 @@ typedef struct _gt_obj_s {
 
     style_widget_t style;
 
-    uint8_t visible;  /* obj visible state, @gt_visible_e */
+    gt_state_et state;  /* obj state */
+
+    uint8_t     visible:1;  /* obj visible state, @gt_visible_e */
+    uint8_t     focus:1;    /* obj focus state 0:no focus, 1:focus */
 } gt_obj_st;
 
 

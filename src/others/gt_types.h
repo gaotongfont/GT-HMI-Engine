@@ -80,8 +80,15 @@ typedef struct _gt_area_s {
     uint16_t h;     ///< The height of area
 }gt_area_st;
 
+typedef enum
+{
+    GT_STATE_NONE,
+    GT_STATE_PRESSED,   // pressed
+}gt_state_et;
 
+typedef uint8_t gt_family_t;
 typedef uint8_t gt_opt_t;
+
 
 /* macros ---------------------------------------------------------------*/
 

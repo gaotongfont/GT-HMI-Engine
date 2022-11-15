@@ -49,16 +49,15 @@ const gt_obj_class_st gt_btn_class = {
 static void _gt_btn_init_widget(gt_obj_st * btn) {
     _gt_style_btn_st * style = btn->style;
     gt_size_t x, y, w, h;           //base attr
-    gt_size_t radius;      //widget attr
-
+    gt_size_t radius;               //widget attr
 
     gt_color_t fg_color;
     uint8_t fp[64];
     gt_font_st font = {
-        .style_cn   = style->font_style_cn,
-        .style_en   = style->font_style_en,
+        .style_cn   = style->font_family_cn,
+        .style_en   = style->font_family_en,
         .res        = fp,
-        .utf8       = (uint8_t *)style->text,
+        .utf8       = style->text,
         .len        = strlen(style->text),
         .size       = style->font_size,
     };
@@ -68,23 +67,21 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
         btn->area.w = width_font + 32;
         btn->area.h = style->font_size+16;
     }
-
-    x = btn->area.x;
-    y = btn->area.y;
-    w = btn->area.w;
-    h = btn->area.h;
-
-    radius = h/4;
-    if( style->selected ){
-        fg_color = style->color_selected;
+    if( style->radius == 0 ){
+        radius = btn->area.h/4;
     }else{
-        fg_color = style->color_unselected;
+        radius = style->radius;
+    }
+    if( gt_obj_style_get_state(btn) != GT_STATE_NONE ){
+        fg_color = style->color_pressed;
+    }else{
+        fg_color = style->color_background;
     }
 
     /* base shape */
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.is_fill       = 1;
+    rect_attr.is_fill       = style->fill;
     rect_attr.radius        = radius;
     rect_attr.bg_opa        = btn->opa;
     rect_attr.border_width  = 0;
@@ -92,10 +89,8 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
     rect_attr.bg_color      = fg_color;
     rect_attr.border_color  = fg_color;
 
-    gt_area_st area = {
-        .w = w, .h = h, .x = x, .y = y
-    };
-
+    gt_area_st area = btn->area;
+    // gt_area_copy(&area, btn->area);
     // 1:base shape
     draw_bg(btn->draw_ctx, &rect_attr, &area);
 
@@ -104,14 +99,13 @@ static void _gt_btn_init_widget(gt_obj_st * btn) {
         .font           = &font,
         .space_x        = 0,
         .space_y        = 0,
-        .font_color     = style->color_font,
+        .font_color     = style->font_color,
         .align          = GT_ALIGN_CENTER,
         .opa            = btn->opa,
     };
     draw_text(btn->draw_ctx, &font_attr, &area);
 
     return;
-
 }
 
 /**
@@ -171,7 +165,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
             GT_LOGD(GT_LOG_TAG_GUI, "clicking");
-            gt_btn_style_set_selected(obj, 1);
+            gt_obj_style_set_state(obj, GT_STATE_PRESSED);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
@@ -188,13 +182,13 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
             GT_LOGD(GT_LOG_TAG_GUI, "processed");
-            gt_btn_style_set_selected(obj, 0);
+            gt_obj_style_set_state(obj, GT_STATE_NONE);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESS_LOST:
             GT_LOGD(GT_LOG_TAG_GUI, "process lost");
-            gt_btn_style_set_selected(obj, 0);
+            gt_obj_style_set_state(obj, GT_STATE_NONE);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
@@ -215,14 +209,13 @@ static void _gt_btn_init_style(gt_obj_st * btn)
 
     style->text = gt_mem_malloc(sizeof("btn"));
     strcpy(style->text, "btn");
-    style->radius = 0;
-	style->selected = 0;
-    style->color_font = gt_color_white();        //default color_font
-    style->color_selected = gt_color_hex(0x1C82D0);    //default color_selected
-    style->color_unselected = gt_color_hex(0x17A7BF);  //default color_unselected
-
-    style->font_style_cn    = GT_CFG_DEFAULT_FONT_STYLE_CN;
-    style->font_style_en    = GT_CFG_DEFAULT_FONT_STYLE_EN;
+    style->radius           = 0;
+    style->color_pressed    = gt_color_hex(0x1C82D0);    //default color_selected
+    style->color_background = gt_color_hex(0x17A7BF);  //default color_unselected
+    style->fill             = 1;
+    style->font_color       = gt_color_white();        //default color_font
+    style->font_family_cn   = GT_CFG_DEFAULT_FONT_FAMILY_CN;
+    style->font_family_en   = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
 }
 
@@ -244,22 +237,16 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent)
     return obj;
 }
 
-void gt_btn_style_set_color_selected(gt_obj_st * btn, gt_color_t color)
+void gt_btn_style_set_color_pressed(gt_obj_st * btn, gt_color_t color)
 {
     _gt_style_btn_st * style = btn->style;
-    GT_COLOR_SET(style->color_selected, GT_COLOR_GET(color));
+    style->color_pressed = color;
 }
 
-void gt_btn_style_set_color_unselected(gt_obj_st * btn, gt_color_t color)
+void gt_btn_style_set_color_background(gt_obj_st * btn, gt_color_t color)
 {
     _gt_style_btn_st * style = btn->style;
-    GT_COLOR_SET(style->color_unselected, GT_COLOR_GET(color));
-}
-
-void gt_btn_style_set_selected(gt_obj_st * btn, uint8_t selected)
-{
-    _gt_style_btn_st * style = btn->style;
-    style->selected = selected!=0?1:0;
+    style->color_background = color;
 }
 
 void gt_btn_style_set_text(gt_obj_st * btn, char * text)
@@ -270,8 +257,8 @@ void gt_btn_style_set_text(gt_obj_st * btn, char * text)
     }
     uint16_t size = strlen(text);
     style->text = gt_mem_malloc(size+1);
-    gt_memset(style->text, 0, size+1);
     gt_memcpy(style->text, text, size);
+    style->text[size] = 0;
 }
 
 char * gt_btn_style_get_text(gt_obj_st * btn){
@@ -282,6 +269,32 @@ char * gt_btn_style_get_text(gt_obj_st * btn){
 
 void gt_btn_style_set_font_color(gt_obj_st * btn, gt_color_t color){
     _gt_style_btn_st * style = btn->style;
-    GT_COLOR_SET(style->color_font, GT_COLOR_GET(color));
+    style->font_color = color;
 }
+
+void gt_btn_style_set_font_size(gt_obj_st * btn, uint8_t size)
+{
+    _gt_style_btn_st * style = btn->style;
+    style->font_size = size;
+}
+
+void gt_btn_style_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn)
+{
+    _gt_style_btn_st * style = btn->style;
+    style->font_family_cn = font_family_cn;
+}
+
+void gt_btn_style_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en)
+{
+    _gt_style_btn_st * style = btn->style;
+    style->font_family_en = font_family_en;
+}
+
+void gt_btn_style_set_radius(gt_obj_st * btn, uint8_t radius)
+{
+    _gt_style_btn_st * style = btn->style;
+    style->radius = radius;
+}
+
+
 /* end ------------------------------------------------------------------*/

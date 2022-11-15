@@ -48,27 +48,31 @@ typedef enum{
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_obj_set_style_area(gt_obj_st * obj, gt_area_st area);
-void gt_obj_set_style_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y);
-void gt_obj_set_style_size(gt_obj_st * obj, uint16_t w, uint16_t h);
-void gt_obj_set_style_x(gt_obj_st * obj, uint16_t x);
-void gt_obj_set_style_y(gt_obj_st * obj, uint16_t y);
-void gt_obj_set_style_w(gt_obj_st * obj, uint16_t w);
-void gt_obj_set_style_h(gt_obj_st * obj, uint16_t h);
+void gt_obj_style_set_area(gt_obj_st * obj, gt_area_st area);
+void gt_obj_style_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y);
+void gt_obj_style_set_size(gt_obj_st * obj, uint16_t w, uint16_t h);
+void gt_obj_style_set_x(gt_obj_st * obj, uint16_t x);
+void gt_obj_style_set_y(gt_obj_st * obj, uint16_t y);
+void gt_obj_style_set_w(gt_obj_st * obj, uint16_t w);
+void gt_obj_style_set_h(gt_obj_st * obj, uint16_t h);
 
-void gt_obj_set_style_opa(gt_obj_st * obj, gt_opa_t opa);
+void gt_obj_style_set_opa(gt_obj_st * obj, gt_opa_t opa);
 
-uint16_t gt_obj_get_style_x(gt_obj_st * obj);
-uint16_t gt_obj_get_style_y(gt_obj_st * obj);
-uint16_t gt_obj_get_style_w(gt_obj_st * obj);
-uint16_t gt_obj_get_style_h(gt_obj_st * obj);
+uint16_t gt_obj_style_get_x(gt_obj_st * obj);
+uint16_t gt_obj_style_get_y(gt_obj_st * obj);
+uint16_t gt_obj_style_get_w(gt_obj_st * obj);
+uint16_t gt_obj_style_get_h(gt_obj_st * obj);
 
-void gt_obj_set_visible(gt_obj_st * obj, gt_visible_e is_visible);
+void gt_obj_set_visible(gt_obj_st * obj, gt_visible_et is_visible);
 void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color);
 gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj);
 void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new);
 void gt_obj_pos_change(gt_obj_st * obj, gt_area_st * area_new);
 void gt_obj_area_change(gt_obj_st * obj, gt_area_st * area_new);
+
+
+void gt_obj_style_set_state(gt_obj_st * obj, gt_state_et state);
+gt_state_et gt_obj_style_get_state(gt_obj_st * obj);
 
 #ifdef __cplusplus
 } /*extern "C"*/

@@ -120,7 +120,6 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
             GT_LOGD(GT_LOG_TAG_GUI, "clicking");
-            gt_img_style_set_selected(obj, 1);
             // gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         case GT_EVENT_TYPE_UPDATE_VALUE:
@@ -143,7 +142,6 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
             GT_LOGD(GT_LOG_TAG_GUI, "processed");
-            gt_img_style_set_selected(obj, 0);
             // gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
@@ -161,11 +159,6 @@ static void _gt_img_init_style(gt_obj_st * img)
     style = img->style;
 
     gt_memset(style, 0, sizeof(_gt_style_img_st));
-
-	style->selected = 0;
-    style->src = NULL;
-    GT_COLOR_SET(style->color_selected, 0xF800);    //default color_selected
-    GT_COLOR_SET(style->color_unselected, 0x1537);  //default color_unselected
 }
 
 
@@ -185,20 +178,6 @@ gt_obj_st * gt_img_create(gt_obj_st * parent) {
     return obj;
 }
 
-void gt_img_style_set_color_selected(gt_obj_st * img, gt_color_t color) {
-    _gt_style_img_st * style = img->style;
-    GT_COLOR_SET(style->color_selected, GT_COLOR_GET(color));
-}
-
-void gt_img_style_set_color_unselected(gt_obj_st * img, gt_color_t color) {
-    _gt_style_img_st * style = img->style;
-    GT_COLOR_SET(style->color_unselected, GT_COLOR_GET(color));
-}
-
-void gt_img_style_set_selected(gt_obj_st * img, uint8_t selected) {
-    _gt_style_img_st * style = img->style;
-    style->selected = selected!=0?1:0;
-}
 
 void gt_img_style_set_src(gt_obj_st * img, char * src){
     GT_ASSERT_NULL(img);

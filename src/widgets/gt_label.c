@@ -47,42 +47,36 @@ const gt_obj_class_st gt_label_class = {
 
 static void _gt_label_init_widget(gt_obj_st * label) {
     _gt_style_label_st * style = label->style;
-    gt_size_t x, y, w, h;           //base attr
     
     if( 0 == label->area.w || 0 == label->area.h ){
         label->area.h = 20;
         gt_font_st font = {
-            .utf8 = (uint8_t *)style->text,
-            .len = strlen(style->text),
-            .size = style->font_size
+            .utf8   = (uint8_t *)style->text,
+            .len    = strlen(style->text),
+            .size   = style->font_size
         };
         label->area.w =  gt_font_get_string_width(&font) + 20;
     }
 
-    x = label->area.x;
-    y = label->area.y;
-    w = label->area.w;
-    h = label->area.h;
-
     uint8_t fp[64];
     gt_memset(fp, 0, 64);
     gt_font_st font = {
-        .style_cn = style->font_style_cn,
-        .style_en = style->font_style_en,
-        .res = fp,
-        .utf8 = (uint8_t *)style->text,
-        .len = strlen(style->text),
-        .size = style->font_size,
+        .style_cn   = style->font_family_cn,
+        .style_en   = style->font_family_en,
+        .res        = fp,
+        .utf8       = (uint8_t *)style->text,
+        .len        = strlen(style->text),
+        .size       = style->font_size,
     };
 
     /*draw font*/
     gt_attr_font_st font_attr = {
-        .font = &font,
-        .font_color = style->color_font,
-        .space_x = 0,
-        .space_y = 0,
-        .align = GT_ALIGN_LEFT,
-        .opa = label->opa,
+        .font       = &font,
+        .font_color = style->font_color,
+        .space_x    = 0,
+        .space_y    = 0,
+        .align      = GT_ALIGN_LEFT,
+        .opa        = label->opa,
     };
     draw_text(label->draw_ctx, &font_attr, &label->area);
    
@@ -187,11 +181,11 @@ static void _gt_label_init_style(gt_obj_st * label)
     style->text = gt_mem_malloc(sizeof("label"));
     gt_memcpy(style->text, "label\0", sizeof("label"));
     
-    style->color_font = gt_color_hex(0x00);
+    style->font_color        = gt_color_hex(0x00);
 
-    style->font_style_cn    = GT_CFG_DEFAULT_FONT_STYLE_CN;
-    style->font_style_en    = GT_CFG_DEFAULT_FONT_STYLE_EN;
-    style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
+    style->font_family_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
+    style->font_family_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    style->font_size         = GT_CFG_DEFAULT_FONT_SIZE;
 }
 
 
@@ -236,6 +230,18 @@ char * gt_label_style_get_text(gt_obj_st * label)
 void gt_label_style_set_font_color(gt_obj_st * label, gt_color_t color)
 {
     _gt_style_label_st * style = label->style;    
-    style->color_font = color;
+    style->font_color = color;
 }
+
+void gt_label_style_set_font_family_cn(gt_obj_st * label, gt_family_t family)
+{
+    _gt_style_label_st * style = label->style;
+    style->font_family_cn = family;
+}
+void gt_label_style_set_font_family_en(gt_obj_st * label, gt_family_t family)
+{
+    _gt_style_label_st * style = label->style;
+    style->font_family_en = family;
+}
+
 /* end ------------------------------------------------------------------*/

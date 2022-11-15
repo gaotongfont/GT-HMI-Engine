@@ -24,11 +24,11 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_style_rect_s
 {
-    gt_color_t color_bg;
-    gt_color_t color_bd;
-    uint16_t radius;
-    uint16_t border;
-    uint8_t is_full;
+    gt_color_t  color_background;
+    gt_color_t  color_border;
+    uint16_t    radius;
+    uint16_t    border;
+    uint8_t     fill;
 }_gt_style_rect_st;
 
 
@@ -47,8 +47,8 @@ typedef struct _gt_style_rect_s
  */
 gt_obj_st * gt_rect_create(gt_obj_st * parent);
 
-void gt_rect_style_set_bg_color(gt_obj_st * rect, gt_color_t color);
-void gt_rect_style_set_border_color(gt_obj_st * rect, gt_color_t color);
+void gt_rect_style_set_color_background(gt_obj_st * rect, gt_color_t color);
+void gt_rect_style_set_color_border(gt_obj_st * rect, gt_color_t color);
 void gt_rect_style_set_radius(gt_obj_st * rect, uint16_t radius);
 void gt_rect_style_set_border(gt_obj_st * rect, uint16_t border);
 void gt_rect_style_set_full(gt_obj_st * rect, uint8_t is_full);

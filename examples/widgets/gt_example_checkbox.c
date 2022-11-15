@@ -49,8 +49,8 @@ void gt_examples_checkbox(void)
 
     gt_obj_st * checkbox = gt_checkbox_create(screen);
     gt_checkbox_style_set_text(checkbox, "Enabled");
-	gt_obj_set_style_pos(checkbox, 0, 0);
-	gt_obj_set_style_size(checkbox, 80, 20);
+	gt_obj_style_set_pos(checkbox, 0, 0);
+	gt_obj_style_set_size(checkbox, 80, 20);
 	gt_obj_add_event_cb(checkbox, _gt_check_event_cb, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
 
     gt_disp_load_scr(screen);

@@ -16,7 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
-
+#include "../font/gt_font.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -24,10 +24,10 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_txt_s{
-    char * text;
-    uint16_t len;
-    uint8_t mask_style;
-    gt_color_t color;
+    char *      text;
+    uint16_t    len;
+    uint8_t     mask_style;
+    gt_color_t  color;
 }_gt_txt_st;
 
 typedef struct _gt_style_textarea_s{
@@ -35,9 +35,9 @@ typedef struct _gt_style_textarea_s{
     uint8_t space_x;
     uint8_t space_y;
 
-    uint8_t font_style_cn;
-    uint8_t font_style_en;
-    uint8_t font_size;
+    gt_family_t font_family_cn;
+    gt_family_t font_family_en;
+    uint8_t     font_size;
 
     _gt_txt_st * txts;
 }_gt_style_textarea_st;
@@ -62,10 +62,10 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent);
  *
  * @param textarea obj pointer
  * @param str text
- * @param style font style @ref gt_font_style_et
+ * @param style font style @ref gt_font_family_et
  * @param color font color
  */
-void gt_textarea_style_add_str(gt_obj_st * textarea, char * str, uint8_t style, gt_color_t color);
+void gt_textarea_style_add_str(gt_obj_st * textarea, char * str, gt_font_style_et style, gt_color_t color);
 
 /**
  * @brief set textarea space
@@ -80,17 +80,17 @@ void gt_textarea_style_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t 
  * @brief set textarea chinese font style
  * 
  * @param textarea obj pointer
- * @param font_style_cn chinese font style
+ * @param font_family_cn chinese font style
  */
-void gt_textarea_style_set_font_style_en(gt_obj_st * textarea, uint8_t font_style_cn);
+void gt_textarea_style_set_font_family_cn(gt_obj_st * textarea, gt_family_t family);
 
 /**
  * @brief set textarea english font style
  * 
  * @param textarea obj pointer
- * @param font_style_cn english font style
+ * @param font_family_cn english font style
  */
-void gt_textarea_style_set_font_style_en(gt_obj_st * textarea, uint8_t font_style_en);
+void gt_textarea_style_set_font_family_en(gt_obj_st * textarea, gt_family_t family);
 
 
 #ifdef __cplusplus

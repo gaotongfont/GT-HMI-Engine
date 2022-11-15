@@ -24,22 +24,23 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_style_list_s
 {
-    gt_color_t fg_color_selected;
-    gt_color_t fg_color_unselected;
-    gt_color_t bg_color;
-    gt_color_t color_font_selected;
-    gt_color_t color_font_unselected;
-    gt_color_t color_border;
-    uint16_t border_width;
+    gt_color_t  font_color_act;
+    gt_color_t  font_color_ina;
+    gt_family_t font_family_cn;
+    gt_family_t font_family_en;
+    uint8_t     font_size;
+
+    gt_color_t color_act;
+    gt_color_t color_ina;
+    gt_color_t color_background;
+    
+    gt_color_t border_color;
+    uint16_t   border_width;
 
     gt_size_t idx_selected;
-    gt_size_t cnt;
     gt_size_t idx_show_start;  //When displaying the contents of the list, start from the first few options
-    gt_size_t idx_show_cnt;    //When displaying the contents of the list, end of options
-
-    uint8_t font_style_cn;
-    uint8_t font_style_en;
-    uint8_t font_size;
+    gt_size_t cnt;
+    gt_size_t cnt_show;    //When displaying the contents of the list, end of options
 
     char ** item;
 }_gt_style_listview_st;

@@ -25,13 +25,7 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_style_img_s
 {
-    gt_color_t color_selected;
-    gt_color_t color_unselected;
-
-    uint32_t selected;
-
     char * src;         // img src, It can be a virt file name/path or an array of C
-
 }_gt_style_img_st;
 
 
@@ -41,11 +35,6 @@ typedef struct _gt_style_img_s
 
 
 /* global functions / API interface -------------------------------------*/
-
-// Useless
-void gt_img_style_set_selected(gt_obj_st * img, uint8_t selected);
-void gt_img_style_set_color_unselected(gt_obj_st * img, gt_color_t color);
-void gt_img_style_set_color_selected(gt_obj_st * img, gt_color_t color);
 
 /**
  * @brief  create img obj

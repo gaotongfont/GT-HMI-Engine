@@ -54,8 +54,8 @@ static void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     uint8_t fp[64];
     uint32_t cnt_word = 0;
     gt_font_st font = {
-        .style_cn = style->font_style_cn,
-        .style_en = style->font_style_en,
+        .style_cn = style->font_family_cn,
+        .style_en = style->font_family_en,
         .res = fp,
         .utf8 = style->text,
         .len = strlen(style->text),
@@ -78,20 +78,18 @@ static void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.bg_opa = checkbox->opa;
-    if( style->selected == 1 ){
+    if( checkbox->state == GT_STATE_PRESSED ){
         rect_attr.is_fill = 1;
         rect_attr.border_width = 0;
-        GT_COLOR_SET(rect_attr.bg_color, 0x0516);
-        GT_COLOR_SET(rect_attr.border_color, 0x0516);
+        rect_attr.bg_color = gt_color_hex(0x409EFF);
+        rect_attr.border_color = gt_color_hex(0x409EFF);
     }else{
         rect_attr.is_fill = 1;
         rect_attr.border_width = 2;
-        GT_COLOR_SET(rect_attr.bg_color, 0xFFFF);
-        GT_COLOR_SET(rect_attr.border_color, 0x0516);
+        rect_attr.bg_color = gt_color_white();
+        rect_attr.border_color = gt_color_hex(0x409EFF);
     }
-    gt_area_st area = {
-        .w = w, .h = h, .x = x, .y = y
-    };
+    gt_area_st area = checkbox->area;
 
     gt_area_st area_box = area;
     area_box.w = h;
@@ -186,10 +184,10 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
             GT_LOGD(GT_LOG_TAG_GUI, "process");
             /* code here */
-            if( gt_checkbox_style_get_selected_state(obj) ){
-                gt_checkbox_style_set_unselected(obj);
+            if( gt_obj_style_get_state(obj) != GT_STATE_NONE ){
+                gt_obj_style_set_state(obj, GT_STATE_NONE);
             }else{
-                gt_checkbox_style_set_selected(obj);
+                gt_obj_style_set_state(obj, GT_STATE_PRESSED);
             }
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
             break;
@@ -217,8 +215,8 @@ static void _gt_checkbox_init_style(gt_obj_st * checkbox)
     style->text = gt_mem_malloc(sizeof("checkbox"));
     gt_memcpy(style->text, "checkbox", sizeof("checkbox"));
 
-    style->font_style_cn    = GT_CFG_DEFAULT_FONT_STYLE_CN;
-    style->font_style_en    = GT_CFG_DEFAULT_FONT_STYLE_EN;
+    style->font_family_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
+    style->font_family_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
 }
 
@@ -240,19 +238,6 @@ gt_obj_st * gt_checkbox_create(gt_obj_st * parent)
     return obj;
 }
 
-void gt_checkbox_style_set_selected(gt_obj_st * checkbox){
-    _gt_style_checkbox_st * style = checkbox->style;
-    style->selected = 1;
-}
-void gt_checkbox_style_set_unselected(gt_obj_st * checkbox){
-    _gt_style_checkbox_st * style = checkbox->style;
-    style->selected = 0;
-}
-
-uint8_t gt_checkbox_style_get_selected_state(gt_obj_st * checkbox){
-    _gt_style_checkbox_st * style = checkbox->style;
-    return style->selected;
-}
 
 void gt_checkbox_style_set_text(gt_obj_st * checkbox, char * text){
     _gt_style_checkbox_st * style = checkbox->style;
@@ -263,4 +248,20 @@ void gt_checkbox_style_set_text(gt_obj_st * checkbox, char * text){
     gt_memcpy(style->text, text, strlen(text));
     style->text[strlen(text)] = 0;
 }
+void gt_checkbox_style_get_text(gt_obj_st * checkbox, char * text){
+    _gt_style_checkbox_st * style = checkbox->style;
+    return style->text;
+}
+
+void gt_checkbox_style_set_font_family_cn(gt_obj_st * checkbox, gt_family_t family)
+{
+    _gt_style_checkbox_st * style = checkbox->style;
+    style->font_family_cn = family;
+}
+void gt_checkbox_style_set_font_family_en(gt_obj_st * checkbox, gt_family_t family)
+{
+    _gt_style_checkbox_st * style = checkbox->style;
+    style->font_family_en = family;
+}
+
 /* end ------------------------------------------------------------------*/

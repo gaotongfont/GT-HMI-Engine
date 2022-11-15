@@ -247,8 +247,8 @@ static void _gt_input_init_style(gt_obj_st * input)
 
     gt_input_style_set_placeholder(input, "please input");
 
-    style->font_style_cn    = GT_CFG_DEFAULT_FONT_STYLE_CN;
-    style->font_style_en    = GT_CFG_DEFAULT_FONT_STYLE_EN;
+    style->font_style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
+    style->font_style_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
 }
 
@@ -312,10 +312,6 @@ void gt_input_style_append_value(gt_obj_st * input, char * value)
         style->value[len] = 0;
         style->pos_cursor = len;
     }else{
-        // uint16_t len_src = strlen(style->value);
-        // style->value = gt_mem_realloc(style->value, len + len_src + 1);
-        // gt_memcpy(&style->value[len_src], value, len);
-        // style->value[len + len_src] = 0;
         gt_txt_ins(style->value, style->pos_cursor, value);
         style->pos_cursor += strlen(value);
     }
