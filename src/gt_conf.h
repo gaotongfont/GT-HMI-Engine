@@ -72,7 +72,7 @@ extern "C" {
 #if GT_MEM_CUSTOM
     #define GT_MEM_CUSTOM_INCLUDE   "../others/gt_tlsf.h"
 
-    #define GT_MEM_SIZE             (24 * 1024U)    //Byte
+    #define GT_MEM_SIZE             (64 * 1024U)    //Byte
 
     #define gt_tlsf_assert(_expr)   ( (void)0 )
 #else
@@ -107,8 +107,8 @@ extern "C" {
 
 
 /* default font style and size */
-#define GT_CFG_DEFAULT_FONT_STYLE_CN    1
-#define GT_CFG_DEFAULT_FONT_STYLE_EN    4
+#define GT_CFG_DEFAULT_FONT_FAMILY_CN    1
+#define GT_CFG_DEFAULT_FONT_FAMILY_EN    4
 #define GT_CFG_DEFAULT_FONT_SIZE        16
 
 /* default event mask bit num */

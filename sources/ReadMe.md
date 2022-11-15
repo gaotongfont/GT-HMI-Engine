@@ -274,9 +274,9 @@ GUI 移植的基本步骤，关键是对driver文件夹中的底层驱动进行�
 
 2. 调用控件样式相关的接口，修改控件显示样式效果，如：
 
-    gt_obj_set_style_pos() 修改控件显示的位置；
+    gt_obj_style_set_pos() 修改控件显示的位置；
 
-    gt_obj_set_style_size() 设置控件的显示大小；
+    gt_obj_style_set_size() 设置控件的显示大小；
 
 3. 调用事件相关的函数接口，给目标控件增加响应式事务的处理回调事务；
 
