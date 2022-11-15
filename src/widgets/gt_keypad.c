@@ -193,9 +193,7 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
     if( style->kv_selected == NULL ){
         return;
     }
-    if( style->target == NULL ){
-        return;
-    }
+    
     if( strcmp(style->kv_selected, "ABC") == 0 ){
         _gt_keypad_update_map(keypad, map_keypad_mode_upper);
     }else if( strcmp(style->kv_selected, "1#") == 0 ){
@@ -203,7 +201,12 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
     }else if( strcmp(style->kv_selected, "abc") == 0 ){
         _gt_keypad_update_map(keypad, map_keypad_mode_lower);
     }
-    else if(strcmp(style->kv_selected, GT_SYMBOL_BACKSPACE) == 0 ){
+    
+    if( style->target == NULL ){
+        return;
+    }
+    
+    if(strcmp(style->kv_selected, GT_SYMBOL_BACKSPACE) == 0 ){
         gt_input_style_del_value(style->target);
     }
 
@@ -261,11 +264,13 @@ static void _gt_keypad_init_widget(gt_obj_st * keypad)
     };
 
     gt_attr_rect_st rect_attr;
+    gt_graph_init_rect_attr(&rect_attr);
     rect_attr.is_fill       = 1;
     rect_attr.border_opa    = keypad->opa;
     rect_attr.border_width  = 0;
     rect_attr.radius        = 4;
     rect_attr.bg_color      = style->color_board;
+
     draw_bg(keypad->draw_ctx, &rect_attr, &keypad->area);
     
     gt_attr_font_st font_attr = {
