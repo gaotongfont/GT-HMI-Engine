@@ -89,7 +89,7 @@ static void _gt_radio_init_widget(gt_obj_st * radio) {
     area_base.w = area_base.h;
     draw_bg(radio->draw_ctx, &rect_attr, &area_base);
 
-    if( style->selected == 1 ){
+    if( gt_obj_style_get_state(radio) != GT_STATE_NONE ){
         gt_area_st area_sel = area_base;
         area_sel.y += rect_attr.border_width<<1;
         area_sel.x += rect_attr.border_width<<1;
@@ -235,21 +235,10 @@ void gt_radio_style_set_selected(gt_obj_st * radio){
     gt_obj_st * obj = radio;
     while( obj->parent->class->type == GT_TYPE_GROUP && idx < obj->parent->cnt_child ){
         if( obj->parent->child[idx]->class->type == GT_TYPE_RADIO ){
-            gt_radio_style_set_unselected(obj->parent->child[idx++]);
+            gt_obj_style_set_state(obj->parent->child[idx++], GT_STATE_NONE);
         }
     }
-    _gt_style_radio_st * style = radio->style;
-    style->selected = 1;
-}
-void gt_radio_style_set_unselected(gt_obj_st * radio){
-    _gt_style_radio_st * style = radio->style;
-    style->selected = 0;
-    gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
-}
-
-uint8_t gt_radio_style_get_selected_state(gt_obj_st * radio){
-    _gt_style_radio_st * style = radio->style;
-    return style->selected;
+    gt_obj_style_set_state(obj, GT_STATE_PRESSED);
 }
 
 void gt_radio_style_set_text(gt_obj_st * radio, char * text){

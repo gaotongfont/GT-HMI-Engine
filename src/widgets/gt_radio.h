@@ -28,7 +28,6 @@ typedef struct _gt_style_radio_s
     gt_family_t font_family_cn;
     gt_family_t font_family_en;
     uint8_t     font_size;
-    uint8_t     selected;
     char *      text;
 }_gt_style_radio_st;
 
@@ -54,20 +53,6 @@ gt_obj_st * gt_radio_create(gt_obj_st * parent);
  * @param radio radio obj
  */
 void gt_radio_style_set_selected(gt_obj_st * radio);
-
-/**
- * @brief set radio state to unselected
- *
- * @param radio radio obj
- */
-void gt_radio_style_set_unselected(gt_obj_st * radio);
-
-/**
- * @brief get radio state
- *
- * @param radio radio obj
- */
-uint8_t gt_radio_style_get_selected_state(gt_obj_st * radio);
 
 /**
  * @brief set radio text

@@ -28,8 +28,9 @@ typedef struct _gt_style_input_s
     uint16_t pos_selected_end;
     uint16_t pos_cursor;
 
-    uint8_t font_style_cn;
-    uint8_t font_style_en;
+    gt_color_t font_color;
+    gt_family_t font_family_cn;
+    gt_family_t font_family_en;
     uint8_t font_size;
 
     gt_point_st point_pos;
@@ -108,6 +109,9 @@ void gt_input_style_move_left_pos_cursor(gt_obj_st * input);
  */
 void gt_input_style_move_right_pos_cursor(gt_obj_st * input);
 
+void gt_input_style_set_font_color(gt_obj_st * input, gt_color_t color);
+void gt_input_style_set_font_family_cn(gt_obj_st * input, gt_family_t family);
+void gt_input_style_set_font_family_en(gt_obj_st * input, gt_family_t family);
 
 
 #ifdef __cplusplus

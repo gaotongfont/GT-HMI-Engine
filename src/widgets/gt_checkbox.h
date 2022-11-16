@@ -56,6 +56,7 @@ gt_obj_st * gt_checkbox_create(gt_obj_st * parent);
 void gt_checkbox_style_set_text(gt_obj_st * checkbox, char * text);
 void gt_checkbox_style_get_text(gt_obj_st * checkbox, char * text);
 
+void gt_checkbox_style_set_font_color(gt_obj_st * checkbox, gt_color_t color);
 void gt_checkbox_style_set_font_family_cn(gt_obj_st * checkbox, gt_family_t family);
 void gt_checkbox_style_set_font_family_en(gt_obj_st * checkbox, gt_family_t family);
 #ifdef __cplusplus

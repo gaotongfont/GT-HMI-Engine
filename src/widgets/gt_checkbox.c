@@ -263,5 +263,9 @@ void gt_checkbox_style_set_font_family_en(gt_obj_st * checkbox, gt_family_t fami
     _gt_style_checkbox_st * style = checkbox->style;
     style->font_family_en = family;
 }
-
+void gt_checkbox_style_set_font_color(gt_obj_st * checkbox, gt_color_t color)
+{
+    _gt_style_checkbox_st * style = checkbox->style;
+    style->font_color = color;
+}
 /* end ------------------------------------------------------------------*/

@@ -99,8 +99,8 @@ static void _gt_input_init_widget(gt_obj_st * input) {
     gt_font_st font;
     gt_color_t color_font;
     if( !style->value ){
-        font.style_cn = style->font_style_cn;
-        font.style_en = style->font_style_en;
+        font.style_cn = style->font_family_cn;
+        font.style_en = style->font_family_en;
         font.utf8 = style->placeholder;
         font.len = strlen(style->placeholder);
         font.size = style->font_size;
@@ -108,8 +108,8 @@ static void _gt_input_init_widget(gt_obj_st * input) {
     }
     // if input value is not null
     else{
-        font.style_cn = style->font_style_cn;
-        font.style_en = style->font_style_en;
+        font.style_cn = style->font_family_cn;
+        font.style_en = style->font_family_en;
         font.utf8 = style->value;
         font.len = style->pos_cursor;
         font.size = style->font_size;
@@ -247,9 +247,9 @@ static void _gt_input_init_style(gt_obj_st * input)
 
     gt_input_style_set_placeholder(input, "please input");
 
-    style->font_style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
-    style->font_style_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
+    style->font_family_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
+    style->font_family_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    style->font_size         = GT_CFG_DEFAULT_FONT_SIZE;
 }
 
 
@@ -373,5 +373,21 @@ void gt_input_style_move_right_pos_cursor(gt_obj_st * input)
         style->pos_cursor++;
     }
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_input_style_set_font_color(gt_obj_st * input, gt_color_t color)
+{
+    _gt_style_input_st * style = input->style;
+    style->font_color = color;
+}
+void gt_input_style_set_font_family_cn(gt_obj_st * input, gt_family_t family)
+{
+    _gt_style_input_st * style = input->style;
+    style->font_family_cn = family;
+}
+void gt_input_style_set_font_family_en(gt_obj_st * input, gt_family_t family)
+{
+    _gt_style_input_st * style = input->style;
+    style->font_family_en = family;
 }
 /* end ------------------------------------------------------------------*/
