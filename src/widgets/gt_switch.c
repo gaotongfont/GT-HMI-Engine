@@ -184,9 +184,9 @@ static void _gt_switcher_init_style(gt_obj_st * switcher)
     
     gt_memset(style,0,sizeof(_gt_style_switcher_st));
 
-    style->color_ina    = gt_color_hex(0x909399);
-    style->color_act    = gt_color_hex(0x00FF00);
-    style->color_point  = gt_color_hex(0x409EFF);
+    style->color_ina    = gt_color_hex(0xebeef5);
+    style->color_act    = gt_color_hex(0x13ce66);
+    style->color_point  = gt_color_hex(0xffffff);
 }
 
 

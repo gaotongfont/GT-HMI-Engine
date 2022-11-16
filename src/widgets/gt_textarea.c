@@ -247,6 +247,10 @@ void gt_textarea_style_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t 
     style->space_y = space_y;
 }
 
+void gt_textarea_style_set_font_color(gt_obj_st * textarea, gt_color_t color)
+{
+
+}
 void gt_textarea_style_set_font_family_cn(gt_obj_st * textarea, gt_family_t family)
 {
     _gt_style_textarea_st * style = textarea->style;

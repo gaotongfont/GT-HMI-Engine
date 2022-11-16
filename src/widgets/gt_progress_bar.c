@@ -176,8 +176,8 @@ static void _gt_progress_bar_init_style(gt_obj_st * progress_bar)
 
     gt_memset(style, 0, sizeof(_gt_style_progress_bar_st));
 
-    style->color_act = gt_color_make(0x12,0xFF,0x12);
-    style->color_ina = gt_color_make(0x90,0x93,0x99);
+    style->color_act = gt_color_hex(0x409eff);
+    style->color_ina = gt_color_hex(0xebeef5);
     style->start = 0;
     style->end = 100;
     style->pos = 50;

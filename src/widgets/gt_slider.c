@@ -318,8 +318,8 @@ static void _gt_slider_init_style(gt_obj_st * slider)
 
     gt_memset(style,0,sizeof(_gt_style_slider_st));
 
-    style->color_act = gt_color_hex(0x67C23A);
-    style->color_ina = gt_color_hex(0x909399);
+    style->color_act = gt_color_hex(0x409eff);
+    style->color_ina = gt_color_hex(0xebeef5);
     style->start = 0;
     style->end = 100;
     style->pos = 50;
