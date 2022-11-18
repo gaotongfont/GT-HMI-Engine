@@ -43,6 +43,7 @@ void gt_indev_handler_point(gt_indev_st * indev)
     gt_obj_st * scr = gt_disp_get_scr();
     gt_point_st point_ret;
     struct _point * point_p = &indev->proc.data.point;
+    gt_size_t ver = 0, hor = 0;
 
     /* call user hard interface */
     indev->drv->read_cb(indev->drv, &data_indev);
@@ -103,7 +104,6 @@ void gt_indev_handler_point(gt_indev_st * indev)
     }
 
     /* gesture */
-    gt_size_t ver = 0, hor = 0;
     if (point_p->count_point > 3) {
 
         hor = point_p->newly.x - point_p->last.x;

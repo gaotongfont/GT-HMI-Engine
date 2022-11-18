@@ -230,12 +230,12 @@ gt_fs_res_et gt_fs_read_img_offset(uint8_t * res, uint32_t offset, uint32_t len)
     uint32_t ret_len = 0;
 
     if (fp == NULL) {
-        return GT_RES_FAIL;
+        return GT_FS_RES_FAIL;
     }
     drv->seek_cb(drv, fp, offset, GT_FS_SEEK_SET);
     drv->read_cb(drv, fp, res, len, &ret_len);
 
-    return GT_RES_OK;
+    return GT_FS_RES_OK;
 }
 
 gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h)
@@ -246,14 +246,14 @@ gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h)
     gt_fs_fp_st * fp = gt_fs_open(path, GT_FS_MODE_RD);
 
     if (!fp) {
-        return GT_RES_FAIL;
+        return GT_FS_RES_FAIL;
     }
     *w = fp->msg.pic.w;
     *h = fp->msg.pic.h;
 
     gt_fs_close();
 
-    return GT_RES_OK;
+    return GT_FS_RES_OK;
 }
 
 void gt_fs_close(void)

@@ -205,7 +205,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_textarea_init_style(gt_obj_st * textarea)
 {
-    _gt_style_textarea_st * style = (_gt_style_textarea_st *) textarea->style;
+    _gt_style_textarea_st * style = (_gt_style_textarea_st *)textarea->style;
 
     gt_memset(style, 0, sizeof(_gt_style_textarea_st ));
 
@@ -231,6 +231,7 @@ void gt_textarea_style_set_text(gt_obj_st * textarea, char * text)
 char * gt_textarea_style_get_text(gt_obj_st * textarea){
     GT_ASSERT_NULL(textarea);
     _gt_style_textarea_st * style = textarea->style;
+    /* code */
 }
 
 

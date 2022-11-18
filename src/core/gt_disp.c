@@ -77,7 +77,6 @@ static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
 
 static void gt_check_obj_visible_and_copy(gt_obj_st * obj)
 {
-    gt_area_st area_valib;
     gt_disp_st * disp = gt_disp_get_default();
     if( !gt_obj_is_visible(obj) ){
         // GT_LOGD(GT_LOG_TAG_GUI, "obj not visible");
@@ -157,20 +156,17 @@ void gt_disp_load_scr(gt_obj_st * scr)
 
     // _gt_disp_send_draw_event_foreach(scr);
 
-    uint16_t y = 0;
-    uint32_t idx = 0;
-    uint32_t len = disp->drv->res_hor * GT_REFRESH_FLUSH_LINE_PRE_TIME;
-
     disp->area_act.h = disp->drv->res_ver;
     disp->area_act.w = disp->drv->res_hor;
 
     #if 0
+    uint32_t len = disp->drv->res_hor * GT_REFRESH_FLUSH_LINE_PRE_TIME;
     disp->area_disp.y = disp->area_act.y;
     disp->area_disp.x = disp->area_act.x;
     disp->area_disp.w = disp->drv->res_hor;
     disp->area_disp.h = GT_REFRESH_FLUSH_LINE_PRE_TIME;
 
-    y = 0;
+    uint16_t y = 0;
 	gt_color_t fill_color;
 	fill_color = gt_screen_get_bgcolor(scr);
     while( y < disp->drv->res_ver ){
@@ -236,17 +232,15 @@ void gt_disp_ref_area(const gt_area_st * coords)
     }else{
         line = (line * GT_SCREEN_WIDTH)/area.w;
     }
-    uint16_t y = 0;
-    uint32_t idx = 0;
-    uint32_t len = area.w * line;
 
+    uint16_t y = 0;
+    uint32_t len = area.w * line;
 
     disp->area_disp.y = area.y;//0;
     disp->area_disp.x = area.x;//0;
     disp->area_disp.w = area.w;
     disp->area_disp.h = line;
 
-    y = 0;
     gt_color_t color_fill;
     color_fill = gt_screen_get_bgcolor(gt_disp_get_scr());
 

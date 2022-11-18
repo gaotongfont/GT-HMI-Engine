@@ -179,7 +179,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
             idx = 0;
             all = radius * radius;
             while (idx < all) {
-                mask_left_up[idx] = mask_left_up[idx] * ((float)dsc->bg_opa / 255.0);
+                mask_left_up[idx] = mask_left_up[idx] * ((double)dsc->bg_opa / 255.0);
                 idx++;
             }
         }
@@ -291,7 +291,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         return area_font;
     }
     int w = coords->w, h = coords->h, x = coords->x, y = coords->y;
-    uint8_t * text = dsc->font->utf8;
+    uint8_t * text = (uint8_t * )dsc->font->utf8;
     uint32_t len_text = dsc->font->len, unicode = 0;
     if( font_size_pre != dsc->font->size ){
         font_size_pre = dsc->font->size;
@@ -365,7 +365,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     while( idx < len_text ){
         gt_memset(_font.res, 0, size_fres);
 
-        _font.utf8 = &text[idx];
+        _font.utf8 = (char * )&text[idx];
         _font.len = _gt_utf8_to_unicode(&text[idx], &unicode);
 
         if( _font.utf8[0] == '\n' ){

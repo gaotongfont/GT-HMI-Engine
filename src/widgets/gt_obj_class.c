@@ -50,11 +50,11 @@ static gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st * self)
     gt_obj_st * ret_p = NULL;
 
     if (NULL == disp || 0 == disp->cnt_scr) {
-        return ;
+        return ret_p;
     }
 
     if (NULL == disp->screens) {
-        return ;
+        return ret_p;
     }
 
     // find out self index
@@ -66,7 +66,7 @@ static gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st * self)
         }
     }
     if (-1 == idx) {
-        return ;
+        return ret_p;
     }
 
     // release screen count, later data is moved to the front
