@@ -66,7 +66,7 @@ typedef struct _gt_disp_s
 
     struct {
         gt_area_st areas[_GT_REFR_AREA_MAX];   // ptr of area
-        uint8_t  idx_w;         // index of write now    
+        uint8_t  idx_w;         // index of write now
         uint8_t  idx_r;         // index of read now
     }refr;
 
@@ -130,19 +130,19 @@ gt_color_t * gt_disp_graph_get_buf_default(void);
 gt_color_t * gt_disp_graph_get_buf_backup(void);
 
 
-void _gt_disp_refr_reset_areas();
+void _gt_disp_refr_reset_areas(void);
 
 void _gt_disp_refr_append_area(gt_area_st * area);
 /**
  * @brief check disp need refresh area?
- * 
+ *
  * @param disp disp
  * @return uint8_t 0:none, !0:yes
  */
-uint8_t _gt_disp_refr_check();
-void _gt_disp_refr_idx_w_inc();
-void _gt_disp_refr_idx_r_inc();
-gt_area_st * _gt_disp_refr_get_area();
+uint8_t _gt_disp_refr_check(void);
+void _gt_disp_refr_idx_w_inc(void);
+void _gt_disp_refr_idx_r_inc(void);
+gt_area_st * _gt_disp_refr_get_area(void);
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

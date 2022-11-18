@@ -41,8 +41,9 @@ static gt_disp_st * disp_p;
 
 
 /* static functions -----------------------------------------------------*/
-static void _gt_disp_task_handler()
+static void _gt_disp_task_handler(struct _gt_timer_s * timer)
 {
+    GT_UNUSED(timer);
     uint32_t start = gt_tick_get();
     gt_refr_timer();
     if( (gt_tick_get() - start) > 1 )
@@ -165,7 +166,7 @@ gt_color_t * gt_disp_graph_get_buf_backup(void)
 }
 
 
-void _gt_disp_refr_reset_areas()
+void _gt_disp_refr_reset_areas(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
 
@@ -177,14 +178,14 @@ void _gt_disp_refr_append_area(gt_area_st * area)
 {
     gt_disp_st * disp = gt_disp_get_default();
     disp->refr.areas[disp->refr.idx_w] = *area;
-    _gt_disp_refr_idx_w_inc(disp);
+    _gt_disp_refr_idx_w_inc();
 }
-uint8_t _gt_disp_refr_check()
+uint8_t _gt_disp_refr_check(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
     return disp->refr.idx_w != disp->refr.idx_r;
 }
-void _gt_disp_refr_idx_w_inc()
+void _gt_disp_refr_idx_w_inc(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
     disp->refr.idx_w++;
@@ -192,7 +193,7 @@ void _gt_disp_refr_idx_w_inc()
         disp->refr.idx_w = 0;
     }
 }
-void _gt_disp_refr_idx_r_inc()
+void _gt_disp_refr_idx_r_inc(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
     disp->refr.idx_r++;
@@ -200,7 +201,7 @@ void _gt_disp_refr_idx_r_inc()
         disp->refr.idx_r = 0;
     }
 }
-gt_area_st * _gt_disp_refr_get_area()
+gt_area_st * _gt_disp_refr_get_area(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
     return &disp->refr.areas[disp->refr.idx_r];

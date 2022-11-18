@@ -1,7 +1,7 @@
 /**
  * @file gt_refr.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-08-12 10:04:48
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -42,7 +42,7 @@
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_refr_timer()
+void gt_refr_timer(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
     gt_area_st * area = NULL;
