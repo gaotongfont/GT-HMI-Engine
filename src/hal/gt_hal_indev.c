@@ -34,7 +34,7 @@ static uint8_t cnt_indev = 0;
 
 
 /* static functions -----------------------------------------------------*/
-static void _gt_indev_task_handler(struct _gt_timer_s * timer)
+static void inline _gt_indev_task_handler(struct _gt_timer_s * timer)
 {
     gt_indev_handler();
 }
