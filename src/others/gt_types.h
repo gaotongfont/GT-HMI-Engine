@@ -82,9 +82,14 @@ typedef struct _gt_area_s {
 
 typedef enum
 {
-    GT_STATE_NONE,
+    GT_STATE_NONE = 0,
     GT_STATE_PRESSED,   // pressed
 }gt_state_et;
+
+typedef enum {
+    GT_STATE_UNSELECTED = -1,   // widget init default status
+    GT_STATE_SELECTED,          // 0 or > 0: the index of selected item.
+}gt_state_selected_et;
 
 typedef uint8_t gt_family_t;
 typedef uint8_t gt_opt_t;
