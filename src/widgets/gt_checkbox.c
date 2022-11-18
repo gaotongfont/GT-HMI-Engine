@@ -258,7 +258,7 @@ void gt_checkbox_style_set_text(gt_obj_st * checkbox, char * text){
     gt_memcpy(style->text, text, strlen(text));
     style->text[strlen(text)] = 0;
 }
-void gt_checkbox_style_get_text(gt_obj_st * checkbox, char * text){
+char * gt_checkbox_style_get_text(gt_obj_st * checkbox, char * text){
     _gt_style_checkbox_st * style = checkbox->style;
     return style->text;
 }
