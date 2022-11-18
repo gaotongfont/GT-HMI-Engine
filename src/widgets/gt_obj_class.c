@@ -85,11 +85,11 @@ static gt_obj_st * _gt_obj_class_destroy_from_parent(gt_obj_st * self)
     gt_obj_st * ret_p = NULL;
 
     if (NULL == parent) {
-        return ;
+        return ret_p;
     }
 
     if (NULL == parent->child || 0 == parent->cnt_child) {
-        return ;
+        return ret_p;
     }
 
     for (i = parent->cnt_child - 1; i >= 0; i--) {
