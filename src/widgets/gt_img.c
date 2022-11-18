@@ -90,6 +90,11 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
+    if (NULL != (*style_p)->src) {
+        gt_mem_free((*style_p)->src);
+        (*style_p)->src = NULL;
+    }
+
     gt_mem_free(*style_p);
     *style_p = NULL;
 }
