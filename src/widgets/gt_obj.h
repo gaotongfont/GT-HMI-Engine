@@ -65,7 +65,7 @@ typedef struct _gt_obj_s {
     struct _gt_obj_s ** child;
     const gt_obj_class_st * class;
 #if GT_USE_USER_DATA
-    void * user_data;
+    void * user_data;                   /* Notice: must be manual free memory, when memory is not used it! */
 #endif
     gt_obj_event_attr_st * event_attr;
     struct _gt_draw_ctx_t * draw_ctx;
@@ -106,7 +106,7 @@ typedef struct _gt_obj_s {
 gt_obj_st *gt_obj_create(gt_obj_st *parent);
 
 
-void gt_obj_del(gt_obj_st * obj);
+void gt_obj_destroy(gt_obj_st * obj);
 
 
 void gt_init_area(gt_area_st * area, gt_size_t x, gt_size_t y, gt_size_t w, gt_size_t h);

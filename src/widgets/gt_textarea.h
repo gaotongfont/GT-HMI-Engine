@@ -31,7 +31,7 @@ typedef struct _gt_txt_s{
 }_gt_txt_st;
 
 typedef struct _gt_style_textarea_s{
-    uint16_t cnt_txts;
+    uint16_t cnt_contents;
     uint8_t space_x;
     uint8_t space_y;
 
@@ -39,7 +39,7 @@ typedef struct _gt_style_textarea_s{
     gt_family_t font_family_en;
     uint8_t     font_size;
 
-    _gt_txt_st * txts;
+    _gt_txt_st * contents;
 }_gt_style_textarea_st;
 
 
@@ -78,7 +78,7 @@ void gt_textarea_style_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t 
 
 /**
  * @brief set textarea chinese font style
- * 
+ *
  * @param textarea obj pointer
  * @param font_family_cn chinese font style
  */
@@ -86,7 +86,7 @@ void gt_textarea_style_set_font_family_cn(gt_obj_st * textarea, gt_family_t fami
 
 /**
  * @brief set textarea english font style
- * 
+ *
  * @param textarea obj pointer
  * @param font_family_cn english font style
  */

@@ -27,7 +27,7 @@
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
-static void _deinit_cb(gt_obj_st * obj,const gt_obj_class_st * class);
+static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e);
 
 const gt_obj_class_st gt_progress_bar_class = {
@@ -91,9 +91,8 @@ static void _gt_progress_bar_init_widget(gt_obj_st * progress_bar) {
  */
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-    /* code */
+
     _gt_progress_bar_init_widget(obj);
-    GT_LOGV(GT_LOG_TAG_GUI, "end init_cb");
 }
 
 /**
@@ -101,10 +100,20 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
  *
  * @param obj
  */
-static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
+static void _deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
-    /* code */
-    GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
+
+    if (NULL == obj) {
+        return ;
+    }
+
+    _gt_style_progress_bar_st ** style_p = (_gt_style_progress_bar_st * )&obj->style;
+    if (NULL == *style_p) {
+        return ;
+    }
+
+    gt_mem_free(*style_p);
+    *style_p = NULL;
 }
 
 
@@ -169,10 +178,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_progress_bar_init_style(gt_obj_st * progress_bar)
 {
-    _gt_style_progress_bar_st * style = NULL;
-
-    progress_bar->style = gt_mem_malloc(sizeof(_gt_style_progress_bar_st));
-    style = progress_bar->style;
+    _gt_style_progress_bar_st * style = (_gt_style_progress_bar_st *)progress_bar->style;
 
     gt_memset(style, 0, sizeof(_gt_style_progress_bar_st));
 

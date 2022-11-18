@@ -96,8 +96,6 @@ static void gt_check_obj_visible_and_copy(gt_obj_st * obj)
     };
     obj->draw_ctx = &draw_ctx;
     obj->class->_init_cb(obj, obj->class);
-
-    obj->class->_deinit_cb(obj, obj->class);
 }
 
 static void _gt_disp_check_and_copy_foreach(gt_obj_st * obj)
@@ -156,8 +154,7 @@ void gt_disp_load_scr(gt_obj_st * scr)
         gt_event_clr_mask(scr);
     }
     gt_disp_set_scr(scr);
-    
-    
+
     // _gt_disp_send_draw_event_foreach(scr);
 
     uint16_t y = 0;
@@ -271,7 +268,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
             disp->area_disp.h = area.h - y;
         }
     }
-    
+
     _gt_disp_set_state(disp, GT_NOT_BUSY);
 }
 

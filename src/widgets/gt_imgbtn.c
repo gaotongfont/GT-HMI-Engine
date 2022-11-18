@@ -28,7 +28,7 @@
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
-static void _deinit_cb(gt_obj_st * obj,const gt_obj_class_st * class);
+static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e);
 
 const gt_obj_class_st gt_imgbtn_class = {
@@ -48,7 +48,7 @@ const gt_obj_class_st gt_imgbtn_class = {
 /* static functions -----------------------------------------------------*/
 static void _gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src){
     _gt_style_imgbtn_st * style = imgbtn->style;
-    
+
     if( src == NULL ){
         style->src = style->src_base;
     }else{
@@ -80,9 +80,8 @@ static void _gt_imgbtn_init_widget(gt_obj_st * imgbtn)
  */
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-    /* code */
+
     _gt_imgbtn_init_widget(obj);
-    GT_LOGV(GT_LOG_TAG_GUI, "end init_cb");
 }
 
 /**
@@ -90,10 +89,35 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
  *
  * @param obj
  */
-static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
+static void _deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
-    /* code */
-    GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
+    if (NULL == obj) {
+        return ;
+    }
+
+    _gt_style_imgbtn_st ** style_p = (_gt_style_imgbtn_st *)&obj->style;
+    if (NULL == *style_p) {
+        return ;
+    }
+
+    if (NULL != (*style_p)->src_press) {
+        gt_mem_free((*style_p)->src_press);
+        (*style_p)->src_press = NULL;
+    }
+
+    if (NULL != (*style_p)->src_release) {
+        gt_mem_free((*style_p)->src_release);
+        (*style_p)->src_release = NULL;
+    }
+
+    if (NULL != (*style_p)->src_base) {
+        gt_mem_free((*style_p)->src_base);
+        (*style_p)->src_base = NULL;
+    }
+
+    (*style_p)->src = NULL;
+    gt_mem_free(*style_p);
+    *style_p = NULL;
 }
 
 
@@ -162,10 +186,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_imgbtn_init_style(gt_obj_st * imgbtn)
 {
-    _gt_style_imgbtn_st * style = NULL;
-
-    imgbtn->style = gt_mem_malloc(sizeof(_gt_style_imgbtn_st));
-    style = imgbtn->style;
+    _gt_style_imgbtn_st * style = (_gt_style_imgbtn_st * )imgbtn->style;
 
     gt_memset(style, 0, sizeof(_gt_style_imgbtn_st));
 

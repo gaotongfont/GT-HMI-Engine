@@ -29,7 +29,7 @@ typedef struct _gt_style_obj_s
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
-static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class);
+static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e);
 
 const gt_obj_class_st gt_obj_class = {
@@ -57,16 +57,11 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class)
 {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
     /* code */
-
-    GT_LOGV(GT_LOG_TAG_GUI, "end init_cb");
 }
 
-static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class)
+static void _deinit_cb(gt_obj_st * obj)
 {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
-    /* code */
-
-    GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
 }
 
 static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
@@ -127,11 +122,27 @@ gt_obj_st * gt_obj_create(gt_obj_st * parent)
     return obj;
 }
 
-// need fix
-void gt_obj_del(gt_obj_st * obj)
+void gt_obj_destroy(gt_obj_st * obj)
 {
-    GT_LOGV(GT_LOG_TAG_GUI, "del obj:%p", obj);
-    gt_mem_free(obj);
+    GT_LOGV(GT_LOG_TAG_GUI, "destroy obj:%p", obj);
+
+    // release children memory and remove itself from parent children array
+    gt_obj_st * self = gt_obj_class_destroy(obj);
+
+    if (NULL == self) {
+        return ;
+    }
+
+    if (NULL == self->style) {
+        goto obj_lb;
+    }
+
+style_lb:
+    obj->class->_deinit_cb(obj);
+    self->style = NULL;
+obj_lb:
+    gt_mem_free(self);
+    self = NULL;
 }
 
 void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color)

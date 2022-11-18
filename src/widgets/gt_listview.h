@@ -33,14 +33,15 @@ typedef struct _gt_style_list_s
     gt_color_t color_act;
     gt_color_t color_ina;
     gt_color_t color_background;
-    
+
     gt_color_t border_color;
     uint16_t   border_width;
 
-    gt_size_t idx_selected;
+    gt_size_t idx_selected; // -1: init status; 0 or > 0: normal select status;
     gt_size_t idx_show_start;  //When displaying the contents of the list, start from the first few options
     gt_size_t cnt;
     gt_size_t cnt_show;    //When displaying the contents of the list, end of options
+    gt_size_t content_offset_y;
 
     char ** item;
 }_gt_style_listview_st;

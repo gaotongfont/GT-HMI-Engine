@@ -1,7 +1,7 @@
 /**
  * @file gt_group.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-20 15:51:14
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -26,7 +26,7 @@
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
-static void _deinit_cb(gt_obj_st * obj,const gt_obj_class_st * class);
+static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e);
 
 const gt_obj_class_st gt_group_class = {
@@ -56,9 +56,8 @@ static void _gt_group_init_widget(gt_obj_st * group) {
  */
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-    /* code */
+
     _gt_group_init_widget(obj);
-    GT_LOGV(GT_LOG_TAG_GUI, "end init_cb");
 }
 
 /**
@@ -66,10 +65,9 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
  *
  * @param obj
  */
-static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
+static void _deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     /* code */
-    GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
 }
 
 
@@ -128,10 +126,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_group_init_style(gt_obj_st * group)
 {
-    _gt_style_group_st * style = NULL;
-    
-    group->style = gt_mem_malloc(sizeof(_gt_style_group_st));
-    style = group->style;
+    _gt_style_group_st * style = (_gt_style_group_st * )group->style;
 
     gt_memset(style, 0, sizeof(_gt_style_group_st));
 

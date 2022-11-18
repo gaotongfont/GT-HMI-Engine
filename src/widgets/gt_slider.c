@@ -1,7 +1,7 @@
 /**
  * @file gt_slider.c
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-21 19:53:32
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -27,7 +27,7 @@
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
-static void _deinit_cb(gt_obj_st * obj,const gt_obj_class_st * class);
+static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e);
 
 const gt_obj_class_st gt_slider_class = {
@@ -82,16 +82,16 @@ static void _gt_slider_init_widget(gt_obj_st * slider) {
         area_base.x += (w>>1)>>1;
         rect_attr.radius = area_base.w>>1;
     }
-    
+
     draw_bg(slider->draw_ctx, &rect_attr, &area_base);
 
     /* 2 val shape */
     // rect val
-    
+
     gt_area_st area_val = area_base;
     if( style->dir == GT_BAR_DIR_HOR_L2R ){
         dist = ((float)style->pos/(float)all_pos) * (float)w;
-        area_val.w = dist;        
+        area_val.w = dist;
     }else if( style->dir == GT_BAR_DIR_HOR_R2L ){
         dist = ((float)style->pos/(float)all_pos) * (float)w;
         area_val.w = dist;
@@ -124,8 +124,8 @@ static void _gt_slider_init_widget(gt_obj_st * slider) {
         dist_min = (w>>1);
     }
 
-    
-            
+
+
     if( dist > dist_min ){
         draw_bg(slider->draw_ctx, &rect_attr, &area_val);
     }
@@ -200,9 +200,8 @@ static void _gt_slider_init_widget(gt_obj_st * slider) {
  */
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-    /* code */
+
     _gt_slider_init_widget(obj);
-    GT_LOGV(GT_LOG_TAG_GUI, "end init_cb");
 }
 
 /**
@@ -210,10 +209,24 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
  *
  * @param obj
  */
-static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
+static void _deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
-    /* code */
-    GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
+    if (NULL == obj) {
+        return ;
+    }
+
+    _gt_style_slider_st ** style_p = (_gt_style_slider_st *)&obj->style;
+    if (NULL == *style_p) {
+        return ;
+    }
+
+    if (NULL != (*style_p)->tag) {
+        gt_mem_free((*style_p)->tag);
+        (*style_p)->tag = NULL;
+    }
+
+    gt_mem_free(*style_p);
+    *style_p = NULL;
 }
 
 
@@ -251,7 +264,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             break;
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
-            GT_LOGD(GT_LOG_TAG_GUI, "clicking");           
+            GT_LOGD(GT_LOG_TAG_GUI, "clicking");
 
             break;
 
@@ -270,7 +283,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             gt_slider_style_set_pos(obj, (int)pos);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
-        
+
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
             GT_LOGD(GT_LOG_TAG_GUI, "process");
             /* code here */
@@ -289,8 +302,8 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
                 _pos = obj->area.h - point_click.y;
                 pos = ((float)_pos)/((float)obj->area.h);
             }
-            
-           
+
+
             pos = pos * (float)gt_slider_style_get_total(obj);
             pos += gt_slider_style_get_start(obj);
             gt_slider_style_set_pos(obj, (int)pos);
@@ -311,10 +324,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_slider_init_style(gt_obj_st * slider)
 {
-    _gt_style_slider_st * style = NULL;
-    
-    slider->style = gt_mem_malloc(sizeof(_gt_style_slider_st));
-    style = slider->style;
+    _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
 
     gt_memset(style,0,sizeof(_gt_style_slider_st));
 
@@ -349,7 +359,7 @@ gt_obj_st * gt_slider_create(gt_obj_st * parent)
 
 /**
  * @brief set scorllbar pos
- * 
+ *
  * @param slider scorllbar
  * @param pos pos
  */
@@ -436,8 +446,8 @@ void gt_slider_style_set_tag(gt_obj_st * slider, char * src)
     _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
     if( style->tag != NULL ){
         gt_mem_free(style->tag);
-    }        
-    style->tag = gt_mem_malloc(strlen(src) + 1);        
+    }
+    style->tag = gt_mem_malloc(strlen(src) + 1);
 
     gt_memcpy(style->tag, src, strlen(src));
     style->tag[strlen(src)] = 0;

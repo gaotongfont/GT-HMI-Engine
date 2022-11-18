@@ -27,7 +27,7 @@
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
-static void _deinit_cb(gt_obj_st * obj,const gt_obj_class_st * class);
+static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e);
 
 const gt_obj_class_st gt_textarea_class = {
@@ -81,11 +81,11 @@ static void _gt_textarea_init_widget(gt_obj_st * textarea) {
     area_font.y += 4;
     area_font.w -= 4;
     area_font.h -= 4;
-    while( idx < style->cnt_txts ){
-        font.utf8               = style->txts[idx].text;
-        font.len                = style->txts[idx].len;
-        font_attr.style         = style->txts[idx].mask_style;
-        font_attr.font_color    = style->txts[idx].color;
+    while( idx < style->cnt_contents ){
+        font.utf8               = style->contents[idx].text;
+        font.len                = style->contents[idx].len;
+        font_attr.style         = style->contents[idx].mask_style;
+        font_attr.font_color    = style->contents[idx].color;
         area_temp = draw_text(textarea->draw_ctx, &font_attr, &area_font);
         font_attr.start_x       = area_temp.x;
         font_attr.start_y       = area_temp.y;
@@ -105,9 +105,8 @@ static void _gt_textarea_init_widget(gt_obj_st * textarea) {
 
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-    /* code */
+
     _gt_textarea_init_widget(obj);
-    GT_LOGV(GT_LOG_TAG_GUI, "end init_cb");
 }
 
 /**
@@ -115,10 +114,34 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
  *
  * @param obj
  */
-static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
+static void _deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
-    /* code */
-    GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
+    if (NULL == obj) {
+        return ;
+    }
+
+    _gt_style_textarea_st ** style_p = (_gt_style_textarea_st * )&obj->style;
+    if (NULL == *style_p) {
+        return ;
+    }
+
+    if (NULL != (*style_p)->contents) {
+        gt_size_t i = (*style_p)->cnt_contents - 1;
+        for (; i >= 0; i--) {
+            if (NULL == (*style_p)->contents[i].text) {
+                continue;
+            }
+            gt_mem_free((*style_p)->contents[i].text);
+            (*style_p)->contents[i].text = NULL;
+            (*style_p)->contents[i].len = 0;
+        }
+
+        gt_mem_free((*style_p)->contents);
+        (*style_p)->contents = NULL;
+    }
+
+    gt_mem_free(*style_p);
+    *style_p = NULL;
 }
 
 
@@ -180,13 +203,9 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-
 static void _gt_textarea_init_style(gt_obj_st * textarea)
 {
-    _gt_style_textarea_st * style = NULL;
-
-    textarea->style = gt_mem_malloc(sizeof(_gt_style_textarea_st));
-    style = textarea->style;
+    _gt_style_textarea_st * style = (_gt_style_textarea_st *) textarea->style;
 
     gt_memset(style, 0, sizeof(_gt_style_textarea_st ));
 
@@ -194,9 +213,6 @@ static void _gt_textarea_init_style(gt_obj_st * textarea)
     style->font_family_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
 }
-
-
-
 
 /* global functions / API interface -------------------------------------*/
 
@@ -221,22 +237,22 @@ char * gt_textarea_style_get_text(gt_obj_st * textarea){
 void gt_textarea_style_add_str(gt_obj_st * textarea, char * str, gt_font_style_et style_mask, gt_color_t color)
 {
     _gt_style_textarea_st * style = textarea->style;
-    if( style->cnt_txts == 0 ){
-        style->txts  = gt_mem_malloc( sizeof(_gt_txt_st) );
-        style->txts[0].len  = strlen(str);
-        style->txts[0].text = gt_mem_malloc(style->txts[0].len);
-        gt_memcpy(style->txts[0].text, str, style->txts[0].len);
-        style->txts[0].mask_style = style_mask;
-        style->txts[0].color = color;
-        style->cnt_txts = 1;
+    if( style->cnt_contents == 0 ){
+        style->contents  = gt_mem_malloc( sizeof(_gt_txt_st) );
+        style->contents[0].len  = strlen(str);
+        style->contents[0].text = gt_mem_malloc(style->contents[0].len);
+        gt_memcpy(style->contents[0].text, str, style->contents[0].len);
+        style->contents[0].mask_style = style_mask;
+        style->contents[0].color = color;
+        style->cnt_contents = 1;
     }else{
-        style->txts  = gt_mem_realloc(style->txts, (style->cnt_txts + 1) * sizeof(_gt_txt_st) );
-        style->txts[style->cnt_txts].len  = strlen(str);
-        style->txts[style->cnt_txts].text = gt_mem_malloc(style->txts[style->cnt_txts].len);
-        gt_memcpy(style->txts[style->cnt_txts].text, str, style->txts[style->cnt_txts].len);
-        style->txts[style->cnt_txts].mask_style = style_mask;
-        style->txts[style->cnt_txts].color = color;
-        style->cnt_txts++;
+        style->contents  = gt_mem_realloc(style->contents, (style->cnt_contents + 1) * sizeof(_gt_txt_st) );
+        style->contents[style->cnt_contents].len  = strlen(str);
+        style->contents[style->cnt_contents].text = gt_mem_malloc(style->contents[style->cnt_contents].len);
+        gt_memcpy(style->contents[style->cnt_contents].text, str, style->contents[style->cnt_contents].len);
+        style->contents[style->cnt_contents].mask_style = style_mask;
+        style->contents[style->cnt_contents].color = color;
+        style->cnt_contents++;
     }
 }
 

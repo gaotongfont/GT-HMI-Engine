@@ -26,7 +26,7 @@
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
-static void _deinit_cb(gt_obj_st * obj,const gt_obj_class_st * class);
+static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e);
 
 const gt_obj_class_st gt_qrcode_class = {
@@ -60,9 +60,8 @@ static void _gt_qrcode_init_widget(gt_obj_st * qrcode) {
  */
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-    /* code */
+
     _gt_qrcode_init_widget(obj);
-    GT_LOGV(GT_LOG_TAG_GUI, "end init_cb");
 }
 
 /**
@@ -70,10 +69,9 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
  *
  * @param obj
  */
-static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
+static void _deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     /* code */
-    GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
 }
 
 
@@ -135,12 +133,9 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_qrcode_init_style(gt_obj_st * qrcode)
 {
-    _gt_style_qrcode_st * style = NULL;
+    _gt_style_qrcode_st * style = (_gt_style_qrcode_st * )qrcode->style;
 
-    qrcode->style = gt_mem_malloc(sizeof(_gt_style_qrcode_st));
-    style = qrcode->style;
-
-
+    /* code */
 }
 
 

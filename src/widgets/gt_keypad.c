@@ -33,7 +33,7 @@
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
-static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class);
+static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e);
 
 const gt_obj_class_st gt_keypad_class = {
@@ -99,7 +99,7 @@ static char * _gt_keypad_get_click_kv(gt_obj_st * obj)
 
 
 static void _gt_keypad_set_kv_selected(gt_obj_st * keypad, char * kv)
-{    
+{
     extern void _gt_disp_refr_append_area(gt_area_st * area);
 
     _gt_style_keypad_st * style = keypad->style;
@@ -184,7 +184,7 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
     GT_ASSERT(keypad);
     _gt_style_keypad_st * style = keypad->style;
     if( style->info.handler_cb != NULL ){
-        void (* handler_cb)(gt_obj_st * ); 
+        void (* handler_cb)(gt_obj_st * );
         handler_cb = style->info.handler_cb;
         handler_cb(keypad);
         return;
@@ -193,7 +193,7 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
     if( style->kv_selected == NULL ){
         return;
     }
-    
+
     if( strcmp(style->kv_selected, "ABC") == 0 ){
         _gt_keypad_update_map(keypad, map_keypad_mode_upper);
     }else if( strcmp(style->kv_selected, "1#") == 0 ){
@@ -201,11 +201,11 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
     }else if( strcmp(style->kv_selected, "abc") == 0 ){
         _gt_keypad_update_map(keypad, map_keypad_mode_lower);
     }
-    
+
     if( style->target == NULL ){
         return;
     }
-    
+
     if(strcmp(style->kv_selected, GT_SYMBOL_BACKSPACE) == 0 ){
         gt_input_style_del_value(style->target);
     }
@@ -256,7 +256,7 @@ static void _gt_keypad_init_widget(gt_obj_st * keypad)
     gt_color_t color, * color_widget_p = NULL;
 
     gt_keypad_map_st * map_keypad = style->info.map;
-    
+
     gt_font_st font = {
         .style_cn   = style->font_family_cn,
         .style_en   = style->font_family_en,
@@ -271,7 +271,7 @@ static void _gt_keypad_init_widget(gt_obj_st * keypad)
     rect_attr.bg_color      = style->color_board;
 
     draw_bg(keypad->draw_ctx, &rect_attr, &keypad->area);
-    
+
     gt_attr_font_st font_attr = {
         .font       = &font,
         .space_x    = 0,
@@ -343,9 +343,8 @@ static void _gt_keypad_init_widget(gt_obj_st * keypad)
  */
 static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-    /* code */
+
     _gt_keypad_init_widget(obj);
-    GT_LOGV(GT_LOG_TAG_GUI, "end init_cb");
 }
 
 /**
@@ -353,10 +352,19 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
  *
  * @param obj
  */
-static void _deinit_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
+static void _deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
-    /* code */
-    GT_LOGV(GT_LOG_TAG_GUI, "end deinit_cb");
+    if (NULL == obj) {
+        return ;
+    }
+
+    _gt_style_keypad_st ** style_p = (_gt_style_keypad_st *)&obj->style;
+    if (NULL == *style_p) {
+        return ;
+    }
+
+    gt_mem_free(*style_p);
+    *style_p = NULL;
 }
 
 
@@ -376,7 +384,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     switch (code) {
     case GT_EVENT_TYPE_DRAW_START:
         GT_LOGD(GT_LOG_TAG_GUI, "start draw");
-        if( gt_obj_check_scr(obj) ){            
+        if( gt_obj_check_scr(obj) ){
             _gt_disp_refr_append_area(&obj->area);
         }
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
@@ -426,10 +434,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_keypad_init_style(gt_obj_st * keypad)
 {
-    _gt_style_keypad_st * style = NULL;
-
-    keypad->style = gt_mem_malloc(sizeof(_gt_style_keypad_st));
-    style = keypad->style;
+    _gt_style_keypad_st * style = (_gt_style_keypad_st * )keypad->style;
 
     gt_memset(style, 0, sizeof(_gt_style_keypad_st));
     _gt_keypad_update_map(keypad, map_keypad_mode_lower);
