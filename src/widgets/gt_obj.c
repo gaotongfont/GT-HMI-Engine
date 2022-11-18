@@ -124,7 +124,12 @@ gt_obj_st * gt_obj_create(gt_obj_st * parent)
 
 void gt_obj_destroy(gt_obj_st * obj)
 {
-    GT_LOGV(GT_LOG_TAG_GUI, "destroy obj:%p", obj);
+    GT_LOGV(GT_LOG_TAG_GUI, "Want to destroy obj: 0x%p", obj);
+
+    if (gt_event_is_locked() && gt_event_get_locked_obj() == obj) {
+        GT_LOGW(GT_LOG_TAG_GUI, "Disables the removal of the control itself in the callback.");
+        return ;
+    }
 
     // release children memory and remove itself from parent children array
     gt_obj_st * self = gt_obj_class_destroy(obj);

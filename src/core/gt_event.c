@@ -27,6 +27,15 @@
 
 /* static variables -----------------------------------------------------*/
 
+/**
+ * @brief Records the locked state when the event is executed.
+ */
+static bool _gt_event_is_locked = false;
+
+/**
+ * @brief The object records the locked state when the event is executed.
+ */
+static gt_obj_st * _gt_event_obj_locked = NULL;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -34,6 +43,24 @@
 
 
 /* static functions -----------------------------------------------------*/
+static inline void _gt_event_locked(void) {
+    _gt_event_is_locked = true;
+}
+
+static inline void _gt_event_unlocked(void) {
+    _gt_event_is_locked = false;
+}
+
+static void _gt_event_locked_obj(gt_obj_st * obj) {
+    _gt_event_locked();
+    _gt_event_obj_locked = obj;
+}
+
+static void _gt_event_unlocked_obj(void) {
+    _gt_event_unlocked();
+    _gt_event_obj_locked = NULL;
+}
+
 static gt_obj_event_attr_st * gt_obj_get_event_attr(gt_obj_st * obj, uint8_t idx){
     if( 0 == obj->cnt_event ){
         return NULL;
@@ -70,6 +97,7 @@ gt_event_type_et gt_event_get_code(gt_event_st * e){
 }
 
 /* 1th version--unused */
+#if 0
 gt_res_t gt_event_send_0(gt_obj_st * parent, gt_event_type_et event, void * user_data){
     gt_event_st *e, _e;
     int idx_child = 0, idx_event = 0;
@@ -93,6 +121,7 @@ gt_res_t gt_event_send_0(gt_obj_st * parent, gt_event_type_et event, void * user
     }
 		return GT_RES_OK;
 }
+#endif
 
 /* 2th version--use */
 gt_res_t gt_event_send(gt_obj_st * parent, gt_event_type_et event, void * parms){
@@ -132,17 +161,22 @@ void _gt_event_handler_event_mask(gt_obj_st * obj){
     int idx = 0;
     uint32_t event_code;
     gt_event_st e;
+
+    e.target = obj;
+    e.user_data = NULL;
+    _gt_event_locked_obj(obj);
+
     while(idx < GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX){
         event_code = obj->event_mask & (1<<idx);
         if( event_code ){
-            e.target = obj;
             e.code = (gt_event_type_et)event_code;
-            e.user_data = NULL;
             obj->class->_event_cb(obj, &e);
             obj->event_mask &= ~(1<<idx);
         }
         idx++;
     }
+
+    _gt_event_unlocked_obj();
 }
 
 
@@ -202,5 +236,14 @@ void gt_event_clr_mask(gt_obj_st * parent)
     }
 }
 
+bool gt_event_is_locked(void)
+{
+    return _gt_event_is_locked;
+}
+
+struct gt_obj_s * gt_event_get_locked_obj(void)
+{
+    return _gt_event_obj_locked;
+}
 
 /* end ------------------------------------------------------------------*/

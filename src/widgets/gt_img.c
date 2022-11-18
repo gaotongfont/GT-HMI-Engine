@@ -99,7 +99,6 @@ static void _deinit_cb(gt_obj_st * obj) {
     *style_p = NULL;
 }
 
-
 /**
  * @brief obj event handler cb
  *

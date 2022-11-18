@@ -113,6 +113,21 @@ void gt_event_clr_mask(struct _gt_obj_s * parent);
 
 void _gt_event_init(void);
 
+/**
+ * @brief if called event handler it will be locked, otherwise it will unlocked
+ *
+ * @return true Currently executing event
+ * @return false No event is currently being handled
+ */
+bool gt_event_is_locked(void);
+
+/**
+ * @brief An object that is locked when handling an event
+ *
+ * @return struct gt_obj_s*
+ */
+struct gt_obj_s * gt_event_get_locked_obj(void);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
