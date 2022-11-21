@@ -57,7 +57,7 @@ void gt_indev_handler_point(gt_indev_st * indev)
             return;    /* no touch */
         }
         gt_event_type_et event_type = (point_p->obj_act == point_p->obj_last) ? \
-            GT_EVENT_TYPE_INPUT_PROCESS : GT_EVENT_TYPE_INPUT_PROCESS_LOST;
+            GT_EVENT_TYPE_INPUT_PROCESSED : GT_EVENT_TYPE_INPUT_PROCESS_LOST;
 
         gt_event_send(point_p->obj_act, event_type, NULL);
         flag_key_down = 0;
