@@ -328,7 +328,7 @@ void gt_input_style_append_value(gt_obj_st * input, char * value)
         style->value[len] = 0;
         style->pos_cursor = len;
     }else{
-        gt_txt_ins(style->value, style->pos_cursor, value);
+        style->value = gt_txt_ins(style->value, style->pos_cursor, value);
         style->pos_cursor += strlen(value);
     }
 
@@ -350,7 +350,7 @@ void gt_input_style_del_value(gt_obj_st * input)
     if( style->pos_cursor <= 0 ){
         return;
     }
-    gt_txt_cut(style->value, style->pos_cursor - 1, style->pos_cursor);
+    style->value = gt_txt_cut(style->value, style->pos_cursor - 1, style->pos_cursor);
     style->pos_cursor -= 1;
 lab_end:
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);

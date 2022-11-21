@@ -31,8 +31,8 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_txt_ins(char * dst, uint32_t pos, char * src);
-void gt_txt_cut(char * dst, uint32_t pos_start, uint32_t pos_end);
+char * gt_txt_ins(char * dst, uint32_t pos, char * src);
+char * gt_txt_cut(char * dst, uint32_t pos_start, uint32_t pos_end);
 
 
 #ifdef __cplusplus
