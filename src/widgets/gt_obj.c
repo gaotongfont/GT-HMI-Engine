@@ -10,6 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
+#include "../core/gt_timer.h"
 #include "../core/gt_disp.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
@@ -109,22 +110,14 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
     }
 }
 
-
-/* global functions / API interface -------------------------------------*/
-
-
-
-gt_obj_st * gt_obj_create(gt_obj_st * parent)
+/**
+ * @brief destroy the object by core timer handler
+ *
+ * @param timer
+ */
+void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
 {
-    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_obj_init_style(obj);
-    GT_LOGV(GT_LOG_TAG_GUI, "create obj type:%d", *MY_CLASS.type);
-    return obj;
-}
-
-void gt_obj_destroy(gt_obj_st * obj)
-{
-    GT_LOGV(GT_LOG_TAG_GUI, "Want to destroy obj: 0x%p", obj);
+    gt_obj_st * obj = (gt_obj_st * )timer->user_data;
 
     if (gt_event_is_locked() && gt_event_get_locked_obj() == obj) {
         GT_LOGW(GT_LOG_TAG_GUI, "Disables the removal of the control itself in the callback.");
@@ -142,12 +135,32 @@ void gt_obj_destroy(gt_obj_st * obj)
         goto obj_lb;
     }
 
-style_lb:
     obj->class->_deinit_cb(obj);
     self->style = NULL;
 obj_lb:
     gt_mem_free(self);
     self = NULL;
+}
+
+/* global functions / API interface -------------------------------------*/
+
+
+
+gt_obj_st * gt_obj_create(gt_obj_st * parent)
+{
+    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    _gt_obj_init_style(obj);
+    GT_LOGV(GT_LOG_TAG_GUI, "create obj type:%d", *MY_CLASS.type);
+    return obj;
+}
+
+void gt_obj_destroy(gt_obj_st * obj)
+{
+    GT_LOGV(GT_LOG_TAG_GUI, "Want to destroy obj: 0x%p", obj);
+
+    // create a temp timer once task to destroy the object
+    _gt_timer_st * tmp_timer = _gt_timer_create(_gt_obj_destroy_handler_cb, 100, obj);
+    _gt_timer_set_repeat_count(tmp_timer, 1);
 }
 
 void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color)

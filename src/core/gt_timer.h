@@ -43,7 +43,7 @@ typedef struct _gt_timer_s {
     uint32_t last_run;      // last timestamp of the last run
     gt_timer_cb_t timer_cb; // timer callback
     void * user_data;       // custom user data
-    int32_t repeat_count;   // 1: One time; -1 : infinity; n > 0: repeat time
+    int32_t repeat_count;   // -1 : infinity; n > 0: repeat time;such as: 1 -> it will run in One time;
     uint32_t paused : 1;
 }_gt_timer_st;
 
