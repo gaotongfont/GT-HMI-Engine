@@ -92,13 +92,17 @@ static void _gt_indev_handler_point(gt_indev_st * indev)
 
     /* first key down */
     if (!flag_key_down) {
+        gt_size_t x = data_indev.point.x, y = data_indev.point.y;
         flag_key_down = 1;
         last_run = gt_tick_get();
         /* save first pressed point */
-        _gt_indev_point_set_value(&point_p->act, data_indev.point.x, data_indev.point.y);
+        _gt_indev_point_set_value(&point_p->act, x, y);
+        _gt_indev_point_set_value(&point_p->last, x, y);
+        _gt_indev_point_set_value(&point_p->newly, x, y);
+        ++point_p->count_point;
 
         /* save pressed obj */
-        point_p->obj_act = gt_find_clicked_obj_by_point(scr, &data_indev.point);
+        point_p->obj_act = gt_find_clicked_obj_by_point(scr, &point_p->act);
         point_p->obj_last = point_p->obj_act;
         point_p->obj_scroll = point_p->obj_act;
 #if _GT_INDEV_USE_REMARK
@@ -106,7 +110,7 @@ static void _gt_indev_handler_point(gt_indev_st * indev)
 #endif
 
         /* send clicking event to pressed obj */
-        gt_obj_get_click_point_by_phy_point(point_p->obj_act, &data_indev.point,&point_ret);
+        gt_obj_get_click_point_by_phy_point(point_p->obj_act, &point_p->act,&point_ret);
         _gt_obj_set_process_point(point_p->obj_act, &point_ret);
         gt_event_send(point_p->obj_act, GT_EVENT_TYPE_INPUT_CLICKING, NULL);
         return;
