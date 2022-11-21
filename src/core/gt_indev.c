@@ -18,7 +18,7 @@
 #include "gt_obj_pos.h"
 
 /* private define -------------------------------------------------------*/
-
+#define _GT_INDEV_USE_REMARK    0
 
 
 /* private typedef ------------------------------------------------------*/
@@ -26,7 +26,9 @@
 
 
 /* static variables -----------------------------------------------------*/
-
+#if _GT_INDEV_USE_REMARK
+static gt_obj_st * _remark_act_obj = NULL;
+#endif
 
 
 /* macros ---------------------------------------------------------------*/
@@ -34,7 +36,21 @@
 
 
 /* static functions -----------------------------------------------------*/
-void gt_indev_handler_point(gt_indev_st * indev)
+#if _GT_INDEV_USE_REMARK
+static inline void _gt_indev_remark_active_obj(const gt_obj_st * const obj) {
+    _remark_act_obj = obj;
+}
+
+static inline bool _gt_indev_is_equal_remark_active_obj(const gt_obj_st * const obj) {
+    return obj == _remark_act_obj;
+}
+
+static inline gt_obj_st * _gt_indev_get_remark_active_obj(void) {
+    return _remark_act_obj;
+}
+#endif
+
+static void _gt_indev_handler_point(gt_indev_st * indev)
 {
     static uint8_t flag_key_down = 0;
     static uint32_t last_run = 0;
@@ -56,12 +72,20 @@ void gt_indev_handler_point(gt_indev_st * indev)
         if (!flag_key_down) {
             return;    /* no touch */
         }
+#if _GT_INDEV_USE_REMARK
+    if (!_gt_indev_is_equal_remark_active_obj(point_p->obj_act)) {
+        point_p->obj_act = _gt_indev_get_remark_active_obj();
+    }
+#endif
         gt_event_type_et event_type = (point_p->obj_act == point_p->obj_last) ? \
             GT_EVENT_TYPE_INPUT_PROCESSED : GT_EVENT_TYPE_INPUT_PROCESS_LOST;
 
         gt_event_send(point_p->obj_act, event_type, NULL);
         flag_key_down = 0;
         point_p->count_point = 0;
+#if _GT_INDEV_USE_REMARK
+        _gt_indev_remark_active_obj(NULL);
+#endif
         return;
     }
 
@@ -76,6 +100,9 @@ void gt_indev_handler_point(gt_indev_st * indev)
         point_p->obj_act = gt_find_clicked_obj_by_point(scr, &data_indev.point);
         point_p->obj_last = point_p->obj_act;
         point_p->obj_scroll = point_p->obj_act;
+#if _GT_INDEV_USE_REMARK
+        _gt_indev_remark_active_obj(point_p->obj_act);
+#endif
 
         /* send clicking event to pressed obj */
         gt_obj_get_click_point_by_phy_point(point_p->obj_act, &data_indev.point,&point_ret);
@@ -158,7 +185,7 @@ long_press_lb:
     }
 }
 
-void gt_indev_handler_button(gt_indev_st * indev)
+static void _gt_indev_handler_button(gt_indev_st * indev)
 {
     static uint8_t flag_key_down = 0;
     static uint32_t last_run = 0;
@@ -215,10 +242,10 @@ void gt_indev_handler()
         indev = gt_indev_get_dev_by_idx(i);
         switch(indev->drv->type){
             case GT_INDEV_TYPE_POINTER:
-                gt_indev_handler_point(indev);
+                _gt_indev_handler_point(indev);
                 break;
             case GT_INDEV_TYPE_BUTTON:
-                gt_indev_handler_button(indev);
+                _gt_indev_handler_button(indev);
                 break;
             case GT_INDEV_TYPE_KEYPAD:
                 break;
