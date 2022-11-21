@@ -74,6 +74,7 @@ void gt_indev_handler_point(gt_indev_st * indev)
 
         /* save pressed obj */
         point_p->obj_act = gt_find_clicked_obj_by_point(scr, &data_indev.point);
+        point_p->obj_last = point_p->obj_act;
         point_p->obj_scroll = point_p->obj_act;
 
         /* send clicking event to pressed obj */
@@ -199,7 +200,6 @@ void gt_indev_get_point_newly(const gt_indev_st * indev, gt_point_st * point)
 {
     point->x = indev->proc.data.point.newly.x;
     point->y = indev->proc.data.point.newly.y;
-    printf("1111:x:%d,y:%d\n", point->x, point->y);
 }
 
 gt_dir_et gt_indev_get_gesture(const gt_indev_st * indev) {
