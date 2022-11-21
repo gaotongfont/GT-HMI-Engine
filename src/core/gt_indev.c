@@ -18,6 +18,9 @@
 #include "gt_obj_pos.h"
 
 /* private define -------------------------------------------------------*/
+/**
+ * @brief
+ */
 #define _GT_INDEV_USE_REMARK    0
 
 
@@ -73,9 +76,10 @@ static void _gt_indev_handler_point(gt_indev_st * indev)
             return;    /* no touch */
         }
 #if _GT_INDEV_USE_REMARK
-    if (!_gt_indev_is_equal_remark_active_obj(point_p->obj_act)) {
-        point_p->obj_act = _gt_indev_get_remark_active_obj();
-    }
+        if (!_gt_indev_is_equal_remark_active_obj(point_p->obj_act)) {
+            point_p->obj_act = _gt_indev_get_remark_active_obj();
+        }
+        _gt_indev_remark_active_obj(NULL);
 #endif
         gt_event_type_et event_type = (point_p->obj_act == point_p->obj_last) ? \
             GT_EVENT_TYPE_INPUT_PROCESSED : GT_EVENT_TYPE_INPUT_PROCESS_LOST;
@@ -83,9 +87,6 @@ static void _gt_indev_handler_point(gt_indev_st * indev)
         gt_event_send(point_p->obj_act, event_type, NULL);
         flag_key_down = 0;
         point_p->count_point = 0;
-#if _GT_INDEV_USE_REMARK
-        _gt_indev_remark_active_obj(NULL);
-#endif
         return;
     }
 
