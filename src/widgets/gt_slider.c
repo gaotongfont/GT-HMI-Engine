@@ -264,23 +264,23 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             break;
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
-            GT_LOGD(GT_LOG_TAG_GUI, "clicking");
-
+            GT_LOGD(GT_LOG_TAG_GUI, "clicking");           
+            gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESS, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
             GT_LOGD(GT_LOG_TAG_GUI, "scroll");
-            pos = gt_slider_style_get_pos(obj);
+            _pos = gt_slider_style_get_pos(obj);
             if( gt_slider_style_get_dir(obj) == GT_BAR_DIR_HOR_L2R ){
-                pos += obj->process_attr.x_scroll;
+                _pos += obj->process_attr.x_scroll;
             }else if( gt_slider_style_get_dir(obj) == GT_BAR_DIR_HOR_R2L ){
-                pos -= obj->process_attr.x_scroll;
+                _pos -= obj->process_attr.x_scroll;
             }else if( gt_slider_style_get_dir(obj) == GT_BAR_DIR_VER_U2D ){
-                pos += obj->process_attr.y_scroll;
+                _pos += obj->process_attr.y_scroll;
             }else if( gt_slider_style_get_dir(obj) == GT_BAR_DIR_VER_D2U ){
-                pos -= obj->process_attr.y_scroll;
+                _pos -= obj->process_attr.y_scroll;
             }
-            gt_slider_style_set_pos(obj, (int)pos);
+            gt_slider_style_set_pos(obj, _pos);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
