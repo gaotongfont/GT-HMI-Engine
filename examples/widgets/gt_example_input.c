@@ -48,7 +48,6 @@ void gt_example_input(void)
 {
     gt_obj_st * screen;
     screen = gt_obj_create(NULL);
-	gt_disp_set_scr(screen);
 
     gt_obj_st * input = gt_input_create(screen);
     gt_input_style_set_placeholder(input, "This is placeholder content.");

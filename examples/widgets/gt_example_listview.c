@@ -45,7 +45,6 @@ void gt_examples_listview(void)
 
     gt_obj_st * screen;
     screen = gt_obj_create(NULL);
-	gt_disp_set_scr(screen);
 
     gt_obj_st * listview = gt_listview_create(screen);
     for (i = 0; i < length; i++) {

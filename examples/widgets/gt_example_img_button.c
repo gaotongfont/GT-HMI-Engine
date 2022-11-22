@@ -42,7 +42,6 @@ void gt_examples_img_button(void)
 {
     gt_obj_st * screen;
     screen = gt_obj_create(NULL);
-	gt_disp_set_scr(screen);
 
     gt_obj_st * image_btn = gt_imgbtn_create(screen);
     gt_imgbtn_style_set_src(image_btn, "./2.png");
