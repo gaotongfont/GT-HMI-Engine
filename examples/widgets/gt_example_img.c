@@ -56,7 +56,6 @@ static void _image_two_cb(gt_event_st * e) {
 void gt_examples_img(void)
 {
     _screen = gt_obj_create(NULL);
-	gt_disp_set_scr(_screen);
 
     image = gt_img_create(_screen);
     gt_img_style_set_src(image, "./2.png");

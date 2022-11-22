@@ -49,7 +49,6 @@ void gt_examples_progress_bar(void)
     gt_obj_st * screen;
 
     screen = gt_obj_create(NULL);
-	gt_disp_set_scr(screen);
 
     gt_obj_st * progress_bar = gt_progress_bar_create(screen);
     gt_progress_bar_style_set_start_end(progress_bar, 0, 200);

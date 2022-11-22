@@ -58,7 +58,6 @@ void gt_example_button(void)
 {
     gt_obj_st * screen;
     screen = gt_obj_create(NULL);
-	gt_disp_set_scr(screen);
 
     gt_obj_st * btn = gt_btn_create(screen);
 	gt_obj_style_set_pos(btn, 0, 30);
