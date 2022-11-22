@@ -99,6 +99,9 @@ static gt_obj_st * _gt_obj_class_destroy_from_parent(gt_obj_st * self)
             break;
         }
     }
+    if (-1 == idx) {
+        return ret_p;
+    }
     if (idx != parent->cnt_child--) {
         gt_memcpy(&parent->child[idx], &parent->child[idx + 1], (parent->cnt_child - idx) * sizeof(gt_obj_st * ));
     }
@@ -106,7 +109,7 @@ static gt_obj_st * _gt_obj_class_destroy_from_parent(gt_obj_st * self)
     return ret_p;
 }
 
-static bool _gt_obj_class_destroy_children(gt_obj_st * self)
+static bool _gt_obj_class_destroy_children(gt_obj_st * self, bool is_root)
 {
     gt_size_t i = 0;
 
@@ -121,13 +124,15 @@ static bool _gt_obj_class_destroy_children(gt_obj_st * self)
 
         self->draw_ctx = NULL;
         self->class = NULL;
-        gt_mem_free(self);
-        self = NULL;
+        if (!is_root) {
+            gt_mem_free(self);
+            self = NULL;
+        }
         return true;
     }
 
     for (i = self->cnt_child - 1; i >= 0; i--) {
-        if (_gt_obj_class_destroy_children(self->child[i])) {
+        if (_gt_obj_class_destroy_children(self->child[i], false)) {
             self->child[i] = NULL;
         }
     }
@@ -181,7 +186,6 @@ gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * paren
         obj->area.w = gt_disp_get_res_hor(NULL);
         obj->area.h = gt_disp_get_res_ver(NULL);
     } else {
-        GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj");
         if (parent->child == NULL || parent->cnt_child == 0 ) {
             parent->child = gt_mem_malloc(sizeof(gt_obj_st *));
             parent->child[0] = obj;
@@ -190,6 +194,7 @@ gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * paren
             parent->child = gt_mem_realloc(parent->child, sizeof(gt_obj_st *) * (parent->cnt_child + 1));
             parent->child[parent->cnt_child++] = obj;
         }
+        GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj: %p, parent: %p, parent child: %p, count: %d", parent->child[parent->cnt_child - 1], parent, parent->child, parent->cnt_child);
     }
     return obj;
 }
@@ -198,7 +203,7 @@ struct _gt_obj_s * gt_obj_class_destroy(struct _gt_obj_s * self)
 {
     gt_obj_st * ret_p = NULL;
 
-    _gt_obj_class_destroy_children(self);
+    _gt_obj_class_destroy_children(self, true);
 
     if (NULL == self->parent) {
         ret_p = _gt_obj_class_destroy_screen(self);

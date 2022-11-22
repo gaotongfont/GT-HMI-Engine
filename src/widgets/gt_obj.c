@@ -121,6 +121,7 @@ void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
 
     if (gt_event_is_locked() && gt_event_get_locked_obj() == obj) {
         GT_LOGW(GT_LOG_TAG_GUI, "Disables the removal of the control itself in the callback.");
+        _gt_timer_set_repeat_count(timer, 1);   // retry to destroy object
         return ;
     }
 
