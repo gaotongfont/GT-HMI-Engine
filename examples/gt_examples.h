@@ -42,7 +42,7 @@ extern "C" {
 
 #if GT_USE_EXAMPLES
 
-void gt_example_button(void);
+void gt_examples_button(void);
 
 void gt_examples_checkbox(void);
 

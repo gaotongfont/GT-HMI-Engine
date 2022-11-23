@@ -54,7 +54,7 @@ static void btn_click_cb(gt_event_st * e)
 /**
  * @brief create a button, and click it will printf touch count.
  */
-void gt_example_button(void)
+void gt_examples_button(void)
 {
     gt_obj_st * screen;
     screen = gt_obj_create(NULL);
