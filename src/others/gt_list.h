@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-#if 01
+#if 0
     #define __always_inline
 #else
 	#define __always_inline inline
