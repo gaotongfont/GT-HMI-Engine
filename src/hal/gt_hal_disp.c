@@ -174,17 +174,20 @@ void _gt_disp_refr_reset_areas(void)
     disp->refr.idx_r = 0;
     disp->refr.idx_w = 0;
 }
+
 void _gt_disp_refr_append_area(gt_area_st * area)
 {
     gt_disp_st * disp = gt_disp_get_default();
     disp->refr.areas[disp->refr.idx_w] = *area;
     _gt_disp_refr_idx_w_inc();
 }
+
 uint8_t _gt_disp_refr_check(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
     return disp->refr.idx_w != disp->refr.idx_r;
 }
+
 void _gt_disp_refr_idx_w_inc(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
@@ -193,6 +196,7 @@ void _gt_disp_refr_idx_w_inc(void)
         disp->refr.idx_w = 0;
     }
 }
+
 void _gt_disp_refr_idx_r_inc(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
@@ -201,6 +205,7 @@ void _gt_disp_refr_idx_r_inc(void)
         disp->refr.idx_r = 0;
     }
 }
+
 gt_area_st * _gt_disp_refr_get_area(void)
 {
     gt_disp_st * disp = gt_disp_get_default();

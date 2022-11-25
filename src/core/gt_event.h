@@ -93,14 +93,6 @@ gt_event_type_et inline gt_event_get_code(gt_event_st * e){
 void gt_obj_add_event_cb(struct _gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data);
 
 /**
- * @brief Get the code value for the event
- *
- * @param e The structure of the event
- * @return gt_event_type_et get newly code value @ref gt_event_type_e
- */
-gt_event_type_et gt_event_get_code(gt_event_st * e);
-
-/**
  * @brief Send an event code to the object kernel.
  *
  * @param parent Object which want to be notified

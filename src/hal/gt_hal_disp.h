@@ -58,12 +58,15 @@ typedef struct _gt_disp_s
 
     gt_obj_st ** screens;       //Array of screen
     gt_obj_st *  scr_act;       //Active screen
+#if 0
+    // unused
     gt_obj_st *  scr_pre;       //Preview Screen,Only save one layer
     gt_obj_st *  scr_next;      //Next Screen,Only save one layer
-
+#endif
     uint16_t cnt_scr;           //Count screens nub
     uint16_t status;            //
 
+    // round-robin queue
     struct {
         gt_area_st areas[_GT_REFR_AREA_MAX];   // ptr of area
         uint8_t  idx_w;         // index of write now
