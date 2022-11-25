@@ -74,7 +74,13 @@ typedef void (* gt_event_cb_t)(gt_event_st * e);
 
 #define GT_EVENT_GET_MASK_SHIFT_BIT(_event_type)    (1 << (_event_type))
 
-gt_event_type_et inline gt_event_get_code(gt_event_st * e){
+/**
+ * @brief Get the code value for the event
+ *
+ * @param e The structure of the event
+ * @return gt_event_type_et get newly code value @ref gt_event_type_e
+ */
+gt_event_type_et inline gt_event_get_code(gt_event_st * e) {
     return e->code;
 }
 
