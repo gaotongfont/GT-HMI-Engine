@@ -42,6 +42,8 @@ extern "C" {
 
 #if GT_USE_EXAMPLES
 
+void gt_examples_anim1(void);
+
 void gt_examples_button(void);
 
 void gt_examples_checkbox(void);
