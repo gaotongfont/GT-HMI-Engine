@@ -134,7 +134,7 @@ void gt_obj_add_event_cb(gt_obj_st * obj, gt_event_cb_t event, gt_event_type_et 
     GT_LOGD(GT_LOG_TAG_GUI, "end add event cb:%d", obj->cnt_event);
 }
 
-gt_res_t gt_event_send(gt_obj_st * parent, gt_event_type_et event, void * parms){
+gt_res_t gt_event_send(struct _gt_obj_s * parent, gt_event_type_et event, void * parms){
     if( !parent ){
         GT_LOGD(GT_LOG_TAG_GUI, "parent is null");
         return GT_RES_FAIL;

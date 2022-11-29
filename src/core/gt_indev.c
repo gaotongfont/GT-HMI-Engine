@@ -238,7 +238,7 @@ gt_dir_et gt_indev_get_gesture(const gt_indev_st * indev) {
     return indev->proc.data.point.gesture;
 }
 
-void gt_indev_handler()
+void gt_indev_handler(void)
 {
     gt_indev_st * indev;
     uint8_t i, cnt_indev;

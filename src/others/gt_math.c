@@ -14,6 +14,8 @@
 
 /* private define -------------------------------------------------------*/
 
+#define _GT_MATH_GET_BEZIER_SHIFT_VALUE(_value)     ((_value) >> GT_MATH_BEZIER_VAL_SHIFT)
+
 #ifdef _USE_FLOAT
 #define __GT_ARCH_VAL  0.0174532925    //==PI/180
 #else
@@ -29,7 +31,7 @@ static const GT_ATTRIBUTE_LARGE_RAM_ARRAY int16_t _gt_sin_90_table[] = {
 
 #if 1
 static const uint32_t _gt_tab_per_255[] = {
-    0, 129, 257, 386, 514, 643, 771, 900, 1028, 1157, 1285, 1414, 1542, 1671, 1799, 1928, 2056, 
+    0, 129, 257, 386, 514, 643, 771, 900, 1028, 1157, 1285, 1414, 1542, 1671, 1799, 1928, 2056,
     2185, 2313, 2442, 2570, 2699, 2827, 2956, 3084, 3213, 3341, 3470, 3598, 3727, 3855, 3984, 4112,
     4241, 4369, 4498, 4626, 4755, 4883, 5012, 5140, 5269, 5397, 5526, 5654, 5783, 5911, 6040, 6168,
     6297, 6425, 6554, 6682, 6811, 6939, 7068, 7196, 7325, 7453, 7582, 7710, 7839, 7967, 8096, 8224,
@@ -139,8 +141,41 @@ double gt_abs(double n)
     return abs(n);
 }
 
-
-uint32_t gt_per_255(uint8_t n){
+uint32_t gt_per_255(uint8_t n)
+{
     return _gt_tab_per_255[n];
+}
+
+int32_t gt_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max)
+{
+    if (in_max >= in_min) {
+        if (x >= in_max) return out_max;
+        if (x <= in_min) return out_min;
+    }
+    if (in_max <= in_min) {
+        if (x >= in_min) return out_min;
+        if (x <= in_max) return out_max;
+    }
+
+    int32_t in_delta  = in_max - in_min;
+    int32_t out_delta = out_max - out_min;
+
+    return ( ((x - in_min) * out_delta) / in_delta ) + out_min;
+}
+
+uint32_t gt_bezier3(uint32_t t, uint32_t p0, uint32_t p1, uint32_t p2, uint32_t p3)
+{
+    uint32_t t_res  = (GT_MATH_BEZIER_VAL_RESOLUTION - t);
+    uint32_t t_res2 = _GT_MATH_GET_BEZIER_SHIFT_VALUE(t_res * t_res);
+    uint32_t t_res3 = _GT_MATH_GET_BEZIER_SHIFT_VALUE(t_res2 * t_res);
+    uint32_t t2     = _GT_MATH_GET_BEZIER_SHIFT_VALUE(t * t);
+    uint32_t t3     = _GT_MATH_GET_BEZIER_SHIFT_VALUE(t2 * t);
+
+    uint32_t v1 = _GT_MATH_GET_BEZIER_SHIFT_VALUE(p0 * t_res3);
+    uint32_t v2 = _GT_MATH_GET_BEZIER_SHIFT_VALUE(_GT_MATH_GET_BEZIER_SHIFT_VALUE(3 * p1 * t_res2));
+    uint32_t v3 = _GT_MATH_GET_BEZIER_SHIFT_VALUE(_GT_MATH_GET_BEZIER_SHIFT_VALUE(3 * p2 * t2 * t_res));
+    uint32_t v4 = _GT_MATH_GET_BEZIER_SHIFT_VALUE(p3 * t3);
+
+    return v1 + v2 + v3 + v4;
 }
 /* end ------------------------------------------------------------------*/

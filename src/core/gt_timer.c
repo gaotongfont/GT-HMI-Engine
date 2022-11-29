@@ -55,6 +55,9 @@ static inline bool _gt_timer_task_is_ready(void)
 
 static void _gt_timer_remove_task(_gt_timer_st *ptr)
 {
+    if (NULL == ptr) {
+        return ;
+    }
     gt_list_del(&ptr->list);
     gt_mem_free(ptr);
 }
@@ -106,7 +109,7 @@ uint32_t gt_timer_get_idle(void)
     return idle_last;
 }
 
-void _gt_timer_init(void)
+void _gt_timer_core_init(void)
 {
     GT_INIT_LIST_HEAD(&_GT_GC_GET_ROOT(_gt_timer_ll));
 }

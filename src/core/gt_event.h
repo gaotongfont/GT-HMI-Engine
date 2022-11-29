@@ -103,10 +103,10 @@ void gt_obj_add_event_cb(struct _gt_obj_s * obj, gt_event_cb_t event, gt_event_t
  *
  * @param parent Object which want to be notified
  * @param event The event code to send
- * @param user_data User data [default or unused: NULL]
+ * @param parms User data [default or unused: NULL]
  * @return gt_res_t The result status @ref gt_res_t
  */
-gt_res_t gt_event_send(struct _gt_obj_s * parent, gt_event_type_et event, void * user_data);
+gt_res_t gt_event_send(struct _gt_obj_s * parent, gt_event_type_et event, void * parms);
 
 /**
  * @brief clean the object events

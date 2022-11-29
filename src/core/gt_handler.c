@@ -46,7 +46,7 @@ static bool _gt_init_is_done(void)
     return _gt_init_done_flag;
 }
 
-static void _gt_port_init()
+static void _gt_port_init(void)
 {
     gt_port_disp_init();
     gt_port_indev_init();
@@ -63,11 +63,11 @@ void gt_init(void)
 
     gt_mem_init();
 
-    _gt_timer_init();
-
-    _gt_anim_init();
+    _gt_timer_core_init();
 
     _gt_event_init();
+
+    _gt_anim_core_init();
 
     _gt_img_decoder_init();
 

@@ -14,20 +14,110 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-
+#include "stdbool.h"
+#include "./gt_list.h"
+#include "../widgets/gt_obj.h"
 
 
 /* define ---------------------------------------------------------------*/
-
+#define GT_ANIM_REPEAT_INFINITE     (0xFFFF)
+#define GT_ANIM_PLAYTIME_INFINITE   (0xFFFFFFFF)
 
 
 /* typedef --------------------------------------------------------------*/
+/**
+ * @brief anim path type enum
+ */
+typedef enum {
+    GT_ANIM_PATH_TYPE_LINEAR = 0,   /* default type/mode */
+    GT_ANIM_PATH_TYPE_OVERSHOOT,
 
+    /* get path type max count */
+    GT_ANIM_PATH_TYPE_COUNT,
+}gt_anim_path_type_em;
+
+
+struct gt_anim_s;
+
+typedef int32_t ( * gt_anim_path_cb_t)(const struct gt_anim_s *);
+
+
+/**
+ * @brief animation trace
+ * param 1: the object of animate
+ * param 2: the value to set
+ */
+typedef void ( * gt_anim_exec_cb_t)(gt_obj_st *, int32_t);
+typedef void ( * gt_anim_ready_cb_t)(struct gt_anim_s *);
+typedef void ( * gt_anim_start_cb_t)(struct gt_anim_s *);
+typedef int32_t ( * gt_anim_get_value_cb_t)(struct gt_anim_s *);
+
+/**
+ * @brief anim control block
+ */
+typedef struct gt_anim_s {
+    struct gt_list_head list;
+    gt_obj_st * target;
+    gt_anim_exec_cb_t exec_cb;
+    gt_anim_ready_cb_t ready_cb;
+    gt_anim_start_cb_t start_cb;
+    gt_anim_path_cb_t _path_cb; /* Warn: animation system used - user should not modified it */
+
+    int32_t time;
+    int32_t time_act;
+
+    int32_t value_start;
+    int32_t value_current;
+    int32_t value_end;
+
+    int32_t playback_time;
+    uint32_t playback_delay;
+    uint32_t repeat_delay;
+    uint16_t repeat_count;
+    gt_anim_path_type_em type;
+
+    /* Warn: anim core system used these - user should not modified it */
+    uint8_t run_already     : 1;
+    uint8_t playback_status : 1;
+}gt_anim_st;
 
 
 /* macros ---------------------------------------------------------------*/
 
+/**
+ * @brief Set animation which widget wants to animate.
+ *
+ * @param anim animation description
+ * @param target widget object
+ */
+static inline void gt_anim_set_target(gt_anim_st * anim, gt_obj_st * const target) {
+    anim->target = target;
+}
 
+static inline void gt_anim_set_time(gt_anim_st * anim, uint32_t time) {
+    anim->time = time;
+}
+
+static inline void gt_anim_set_value(gt_anim_st * anim, int32_t start, int32_t end) {
+    anim->value_start = start;
+    anim->value_end   = end;
+}
+
+static inline void gt_anim_set_playback(gt_anim_st * anim, bool enabled) {
+    anim->time = enabled ? 1 : 0;
+}
+
+static inline void gt_anim_set_start_cb(gt_anim_st * anim, gt_anim_start_cb_t start_cb) {
+    anim->start_cb = start_cb;
+}
+
+static inline void gt_anim_set_ready_cb(gt_anim_st * anim, gt_anim_ready_cb_t ready_cb) {
+    anim->ready_cb = ready_cb;
+}
+
+static inline void gt_anim_set_exec_cb(gt_anim_st * anim, gt_anim_exec_cb_t exec_cb) {
+    anim->exec_cb = exec_cb;
+}
 
 /* class ----------------------------------------------------------------*/
 
@@ -35,8 +125,19 @@ extern "C" {
 
 /* global functions / API interface -------------------------------------*/
 
-void _gt_anim_init(void);
+/**
+ * @brief initialize the animation timer by core
+ */
+void _gt_anim_core_init(void);
 
+/**
+ * @brief initialize the animation object
+ *
+ * @param anim
+ */
+void gt_anim_init(gt_anim_st * anim);
+
+void gt_anim_set_path_type(gt_anim_st * anim, gt_anim_path_type_em type);
 
 #ifdef __cplusplus
 } /*extern "C"*/

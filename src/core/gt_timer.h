@@ -67,7 +67,7 @@ uint32_t gt_timer_get_idle(void);
 /**
  * @brief init the list header
  */
-void _gt_timer_init(void);
+void _gt_timer_core_init(void);
 
 /**
  * @brief Create timer node, which will be used to deal with callback.
