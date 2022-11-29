@@ -194,7 +194,7 @@ void gt_anim_init(gt_anim_st * anim)
     GT_INIT_LIST_HEAD(&anim->list);
     anim->time = 500;
     anim->time_act = 0;
-    anim->_path_cb = _gt_anim_path_overshoot;
+    anim->_path_cb = _gt_anim_path_linear;
 }
 
 void gt_anim_start(const gt_anim_st * anim)
