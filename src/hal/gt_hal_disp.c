@@ -205,7 +205,13 @@ void _gt_disp_refr_append_area(gt_area_st * area)
         if (is_on) {
             gt_area_join(&res_area, &area_p[idx], &area_p[idx_newly]);
             disp->refr.areas[idx] = res_area;
+
+    // printf(" result => [%d] %d, %d, %d, %d\n",
+    //     idx, disp->refr.areas[idx].x, disp->refr.areas[idx].y,
+    //     disp->refr.areas[idx].x + disp->refr.areas[idx].w, disp->refr.areas[idx].y + disp->refr.areas[idx].h);
+
             disp->refr.joined[idx_newly] = 1;
+            // break;
         }
         idx = _gt_disp_area_get_idx(++idx);
     }
@@ -243,7 +249,6 @@ gt_area_st * _gt_disp_refr_get_area(void)
         _gt_disp_refr_area_pop();
         idx = _gt_disp_area_get_idx(++idx);
     }
-    disp->refr.idx_r = idx;
 
     return &disp->refr.areas[idx];
 }

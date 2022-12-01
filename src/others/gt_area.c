@@ -108,6 +108,9 @@ bool gt_area_is_on(gt_area_st * a1_p, gt_area_st * a2_p)
     if (dis_x > w_max || dis_y > h_max) {
         return false;
     }
+    // printf("area1: (%d, %d, %d, %d), area2: (%d, %d, %d, %d)\n",
+    //     a1_p->x, a1_p->y, a1_p->x + a1_p->w, a1_p->y + a1_p->h,
+    //     a2_p->x, a2_p->y, a2_p->x + a2_p->w, a2_p->y + a2_p->h);
     return true;
 }
 
