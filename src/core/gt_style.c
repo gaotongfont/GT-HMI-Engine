@@ -59,7 +59,10 @@ void gt_obj_style_set_x(gt_obj_st * obj, uint16_t x) {
 }
 
 void gt_obj_style_set_y(gt_obj_st * obj, uint16_t y) {
-    _set_area_prop_val(obj, y, y);
+    // _set_area_prop_val(obj, y, y);
+    gt_area_st area = obj->area;
+    area.y = y;
+    gt_obj_pos_change(obj, &area);
 }
 
 void gt_obj_style_set_w(gt_obj_st * obj, uint16_t w) {

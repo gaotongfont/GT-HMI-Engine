@@ -48,7 +48,7 @@
 /**
  * @brief blend fore_color buf to back_color draw ctx
  *
- * @param draw_ctx draw contentex
+ * @param draw_ctx draw content
  * @param dsc
  */
 void gt_draw_blend(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc)
@@ -57,7 +57,7 @@ void gt_draw_blend(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc)
 
     // calc intersect area
     // gt_area_st area_res;
-    // if( !gt_area_intersect(draw_ctx->buf_area, dsc->dst_area, &area_res) ){
+    // if( !gt_area_intersect_screen(draw_ctx->buf_area, dsc->dst_area, &area_res) ){
     //     return;
     // }
 
@@ -70,7 +70,7 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
     bool mask = true;   // use mask blend
 
 	gt_area_st area_res;
-    if( !gt_area_intersect(draw_ctx->buf_area, dsc->dst_area, &area_res) ){
+    if( !gt_area_intersect_screen(draw_ctx->buf_area, dsc->dst_area, &area_res) ){
         return;
     }
     if( area_res.w == 0 || area_res.h == 0 ){
@@ -165,7 +165,7 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
                 }
             }else{
                 for(y = 0; y < area_src.h; y++){
-                    for(x = 0; x < area_src.w; x++){                        
+                    for(x = 0; x < area_src.w; x++){
                         gt_color_mix_with_alpha(
                             color_dst_p[idx_dst],   GT_OPA_COVER,
                             color_src_p[idx_src],   ((gt_per_255(dsc->mask_buf[idx_src]) * dsc->opa )>>15),

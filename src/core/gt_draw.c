@@ -93,7 +93,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
     gt_area_st bg_coords, area_res;
     gt_area_copy(&bg_coords, (gt_area_st *)coords);
 
-    if( !gt_area_intersect(draw_ctx->buf_area, &bg_coords, &area_res) ){
+    if( !gt_area_intersect_screen(draw_ctx->buf_area, &bg_coords, &area_res) ){
         return;
     }
 
@@ -178,9 +178,9 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         if (dsc->bg_opa > GT_OPA_MIN) {
             idx = 0;
             all = radius * radius;
+            double tmp_opa = (double)dsc->bg_opa / 255.0;
             while (idx < all) {
-                mask_left_up[idx] = mask_left_up[idx] * ((double)dsc->bg_opa / 255.0);
-                idx++;
+                mask_left_up[idx++] *= tmp_opa;
             }
         }
 
@@ -290,7 +290,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     if( dsc->font->len == 0 ){
         return area_font;
     }
-    int w = coords->w, h = coords->h, x = coords->x, y = coords->y;
+    gt_size_t w = coords->w, h = coords->h;
     uint8_t * text = (uint8_t * )dsc->font->utf8;
     uint32_t len_text = dsc->font->len, unicode = 0;
     if( font_size_pre != dsc->font->size ){
@@ -376,7 +376,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
 
         width = gt_font_get_one_word_width(unicode, dsc->font->size);
 
-        if( !gt_area_intersect(draw_ctx->buf_area, &area_font, &area_res) ){
+        if( !gt_area_intersect_screen(draw_ctx->buf_area, &area_font, &area_res) ){
             goto _lab_nex_word;
         }
 
@@ -493,7 +493,6 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
     gt_area_st area_res;
     gt_color_t * color_img_line_p = NULL;
     uint8_t * mask_buf = NULL;
-    uint16_t idx = 0, idx_mask = 0, px_size = sizeof(gt_color_t)+1, end = w * px_size;
     uint32_t offset = 0, len = 0;
 
     addr_start_alpha = w * h * sizeof(gt_color_t);
@@ -504,7 +503,7 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
         case GT_IMG_DECODER_TYPE_PNG:
             /* line by line to blend */
             while(y < h){
-                if( !gt_area_intersect(draw_ctx->buf_area, &dst_area, &area_res) ){
+                if( !gt_area_intersect_screen(draw_ctx->buf_area, &dst_area, &area_res) ){
                     y++;
                     dst_area.y++;
                     continue;
@@ -528,7 +527,7 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
             color_img_line_p = gt_mem_malloc( len );
             mask_buf = gt_mem_malloc(w);
             while(y < h){
-                if( !gt_area_intersect(draw_ctx->buf_area, &dst_area, &area_res) ){
+                if( !gt_area_intersect_screen(draw_ctx->buf_area, &dst_area, &area_res) ){
                     y++;
                     dst_area.y++;
                     offset += len;

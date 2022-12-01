@@ -38,7 +38,7 @@ void gt_tick_inc(uint32_t ms)
     _tick += ms;
 }
 
-uint32_t gt_tick_get()
+uint32_t gt_tick_get(void)
 {
     uint32_t ret;
 

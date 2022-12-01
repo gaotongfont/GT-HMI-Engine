@@ -15,6 +15,7 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "stdint.h"
+#include "stdbool.h"
 #include "gt_types.h"
 #include "gt_math.h"
 
@@ -47,7 +48,10 @@ extern "C" {
  * @return true two areas intersect,
  *      false two areas not intersect
  */
-bool gt_area_intersect(const gt_area_st * area_back, const gt_area_st * area_fore, gt_area_st * area_res);
+bool gt_area_intersect_screen(const gt_area_st * area_back, const gt_area_st * area_fore, gt_area_st * area_res);
+
+bool gt_area_is_on(gt_area_st * a1_p, gt_area_st * a2_p);
+void gt_area_join(gt_area_st * res, const gt_area_st * const src, const gt_area_st * const dst);
 
 void gt_area_printf(gt_area_st area);
 

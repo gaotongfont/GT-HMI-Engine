@@ -68,9 +68,10 @@ typedef struct _gt_disp_s
 
     // round-robin queue
     struct {
-        gt_area_st areas[_GT_REFR_AREA_MAX];   // ptr of area
-        uint8_t  idx_w;         // index of write now
-        uint8_t  idx_r;         // index of read now
+        gt_area_st areas[_GT_REFR_AREA_MAX];    // ptr of area
+        uint8_t joined[_GT_REFR_AREA_MAX];      //the area is not joined into before area: 1: is joined into before.
+        uint8_t idx_w;                          // index of write now
+        uint8_t idx_r;                          // index of read now
     }refr;
 
     /* flush */
@@ -143,8 +144,8 @@ void _gt_disp_refr_append_area(gt_area_st * area);
  * @return uint8_t 0:none, !0:yes
  */
 uint8_t _gt_disp_refr_check(void);
-void _gt_disp_refr_idx_w_inc(void);
-void _gt_disp_refr_idx_r_inc(void);
+void _gt_disp_refr_area_push(void);
+void _gt_disp_refr_area_pop(void);
 gt_area_st * _gt_disp_refr_get_area(void);
 #ifdef __cplusplus
 } /*extern "C"*/

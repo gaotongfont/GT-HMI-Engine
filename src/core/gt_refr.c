@@ -52,12 +52,12 @@ void gt_refr_timer(void)
     }
     if( _gt_disp_refr_check() ){
         area = _gt_disp_refr_get_area();
-        if( gt_area_intersect(&disp->area_act, area, &area_res) == false ){
-            _gt_disp_refr_idx_r_inc();
+        if( gt_area_intersect_screen(&disp->area_act, area, &area_res) == false ){
+            _gt_disp_refr_area_pop();
             return;
         }
         gt_disp_ref_area( area );
-        _gt_disp_refr_idx_r_inc();
+        _gt_disp_refr_area_pop();
     }
 }
 

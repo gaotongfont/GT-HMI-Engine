@@ -16,6 +16,7 @@
 #include "../core/gt_refr.h"
 #include "../core/gt_timer.h"
 #include "../hal/gt_hal_tick.h"
+#include "../others/gt_area.h"
 /* private define -------------------------------------------------------*/
 
 
@@ -41,6 +42,11 @@ static gt_disp_st * disp_p;
 
 
 /* static functions -----------------------------------------------------*/
+
+static inline gt_size_t _gt_disp_area_get_idx(gt_size_t idx) {
+    return idx == _GT_REFR_AREA_MAX ? 0 : idx;
+}
+
 static void _gt_disp_task_handler(struct _gt_timer_s * timer)
 {
     GT_UNUSED(timer);
@@ -171,6 +177,7 @@ void _gt_disp_refr_reset_areas(void)
     gt_disp_st * disp = gt_disp_get_default();
 
     gt_memset(disp->refr.areas, 0, sizeof(gt_area_st) * _GT_REFR_AREA_MAX);
+    gt_memset_0(disp->refr.joined, sizeof(uint8_t) * _GT_REFR_AREA_MAX);
     disp->refr.idx_r = 0;
     disp->refr.idx_w = 0;
 }
@@ -178,8 +185,30 @@ void _gt_disp_refr_reset_areas(void)
 void _gt_disp_refr_append_area(gt_area_st * area)
 {
     gt_disp_st * disp = gt_disp_get_default();
+    gt_area_st * area_p = &disp->refr.areas[0];
+    gt_area_st res_area;
+    gt_size_t i = 0;
+    gt_size_t idx, idx_newly;
+    gt_size_t len = disp->refr.idx_w < disp->refr.idx_r ? _GT_REFR_AREA_MAX : 0;
+    bool is_on = false;
+
     disp->refr.areas[disp->refr.idx_w] = *area;
-    _gt_disp_refr_idx_w_inc();
+    _gt_disp_refr_area_push();
+
+    idx = disp->refr.idx_r;
+    idx_newly = (disp->refr.idx_w ? disp->refr.idx_w : _GT_REFR_AREA_MAX) - 1;
+    len += idx_newly - idx; /* except the newly one */
+
+    // joined the newly area into before area
+    for (i = 0; i < len; i++) {
+        is_on = gt_area_is_on(&area_p[idx], &area_p[idx_newly]);
+        if (is_on) {
+            gt_area_join(&res_area, &area_p[idx], &area_p[idx_newly]);
+            disp->refr.areas[idx] = res_area;
+            disp->refr.joined[idx_newly] = 1;
+        }
+        idx = _gt_disp_area_get_idx(++idx);
+    }
 }
 
 uint8_t _gt_disp_refr_check(void)
@@ -188,28 +217,35 @@ uint8_t _gt_disp_refr_check(void)
     return disp->refr.idx_w != disp->refr.idx_r;
 }
 
-void _gt_disp_refr_idx_w_inc(void)
+void _gt_disp_refr_area_push(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
-    disp->refr.idx_w++;
-    if( disp->refr.idx_w == _GT_REFR_AREA_MAX ){
-        disp->refr.idx_w = 0;
-    }
+    disp->refr.idx_w = _gt_disp_area_get_idx(++disp->refr.idx_w);
 }
 
-void _gt_disp_refr_idx_r_inc(void)
+void _gt_disp_refr_area_pop(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
-    disp->refr.idx_r++;
-    if( disp->refr.idx_r == _GT_REFR_AREA_MAX ){
-        disp->refr.idx_r = 0;
-    }
+    disp->refr.idx_r = _gt_disp_area_get_idx(++disp->refr.idx_r);
 }
 
 gt_area_st * _gt_disp_refr_get_area(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
-    return &disp->refr.areas[disp->refr.idx_r];
+    gt_size_t i = 0;
+    gt_size_t idx = disp->refr.idx_r;
+    gt_size_t len = (disp->refr.idx_w < idx ? _GT_REFR_AREA_MAX : 0) + disp->refr.idx_w - idx;
+
+    while(++i < len) {
+        if (!disp->refr.joined[idx]) {
+            break;
+        }
+        _gt_disp_refr_area_pop();
+        idx = _gt_disp_area_get_idx(++idx);
+    }
+    disp->refr.idx_r = idx;
+
+    return &disp->refr.areas[idx];
 }
 
 

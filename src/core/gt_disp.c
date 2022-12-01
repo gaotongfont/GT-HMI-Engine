@@ -67,7 +67,7 @@ static void _gt_disp_set_state(gt_disp_st * disp, uint8_t state)
  */
 static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
 {
-    int idx = 0;
+    int16_t idx = 0;
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
     while( idx < obj->cnt_child ) {
         _gt_disp_send_draw_event_foreach( obj->child[idx] );
@@ -99,7 +99,7 @@ static void gt_check_obj_visible_and_copy(gt_obj_st * obj)
 
 static void _gt_disp_check_and_copy_foreach(gt_obj_st * obj)
 {
-    int idx = 0;
+    int16_t idx = 0;
     while( idx < obj->cnt_child ) {
         if( obj->child[idx]->cnt_child != 0 ){
             _gt_disp_check_and_copy_foreach( obj->child[idx] );
@@ -204,6 +204,10 @@ void gt_disp_ref_area(const gt_area_st * coords)
     if( scr == NULL ){
         return;
     }
+    if(disp == NULL){
+        return;
+    }
+
     if( _gt_disp_get_state(disp) == GT_BUSY ){
         GT_LOGD(GT_LOG_TAG_GUI, "disp is busy");
         return;
@@ -211,9 +215,6 @@ void gt_disp_ref_area(const gt_area_st * coords)
     _gt_disp_set_state(disp, GT_BUSY);
 
     gt_area_copy(&area, (gt_area_st *)coords);
-    if(disp == NULL){
-        return;
-    }
     uint16_t dist = 0;
     if( disp->area_act.y > area.y ){
         dist = disp->area_act.y - area.y;
@@ -236,8 +237,8 @@ void gt_disp_ref_area(const gt_area_st * coords)
     uint16_t y = 0;
     uint32_t len = area.w * line;
 
-    disp->area_disp.y = area.y;//0;
-    disp->area_disp.x = area.x;//0;
+    disp->area_disp.x = area.x;
+    disp->area_disp.y = area.y;
     disp->area_disp.w = area.w;
     disp->area_disp.h = line;
 
