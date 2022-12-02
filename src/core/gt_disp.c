@@ -204,10 +204,6 @@ void gt_disp_ref_area(const gt_area_st * coords)
     if( scr == NULL ){
         return;
     }
-    if(disp == NULL){
-        return;
-    }
-
     if( _gt_disp_get_state(disp) == GT_BUSY ){
         GT_LOGD(GT_LOG_TAG_GUI, "disp is busy");
         return;
@@ -243,7 +239,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
     disp->area_disp.h = line;
 
     gt_color_t color_fill;
-    color_fill = gt_screen_get_bgcolor(gt_disp_get_scr());
+    color_fill = gt_screen_get_bgcolor(scr);
 
     while( y < area.h ){
 
