@@ -264,7 +264,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             break;
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
-            GT_LOGD(GT_LOG_TAG_GUI, "clicking");           
+            GT_LOGD(GT_LOG_TAG_GUI, "clicking");
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESS, NULL);
             break;
 
@@ -411,17 +411,20 @@ void gt_slider_style_set_color_act(gt_obj_st * slider, gt_color_t color)
 {
     _gt_style_slider_st * style = slider->style;
     style->color_act = color;
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_slider_style_set_color_ina(gt_obj_st * slider, gt_color_t color)
 {
     _gt_style_slider_st * style = slider->style;
     style->color_ina = color;
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_slider_style_set_dir(gt_obj_st * slider, gt_bar_dir_et dir)
 {
     _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
     style->dir = dir;
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 gt_bar_dir_et gt_slider_style_get_dir(gt_obj_st * slider)
 {
@@ -439,6 +442,7 @@ uint8_t gt_slider_style_get_step(gt_obj_st * slider)
 {
     _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
     return ( style->step);
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_slider_style_set_tag(gt_obj_st * slider, char * src)
@@ -451,11 +455,13 @@ void gt_slider_style_set_tag(gt_obj_st * slider, char * src)
 
     gt_memcpy(style->tag, src, strlen(src));
     style->tag[strlen(src)] = 0;
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_slider_style_set_tag_visible(gt_obj_st * slider, bool visible)
 {
     _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
     style->tag_visible = visible;
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 /* end ------------------------------------------------------------------*/

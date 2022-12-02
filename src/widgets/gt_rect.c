@@ -185,26 +185,31 @@ void gt_rect_style_set_bg_color(gt_obj_st * rect, gt_color_t color)
 {
     _gt_style_rect_st * style = rect->style;
     style->color_background = color;
+    gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_rect_style_set_color_border(gt_obj_st * rect, gt_color_t color)
 {
     _gt_style_rect_st * style = rect->style;
     style->color_border = color;
+    gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_rect_style_set_radius(gt_obj_st * rect, uint16_t radius)
 {
     _gt_style_rect_st * style = rect->style;
     style->radius = radius;
+    gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_rect_style_set_border(gt_obj_st * rect, uint16_t border)
 {
     _gt_style_rect_st * style = rect->style;
     style->border = border;
+    gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_rect_style_set_fill(gt_obj_st * rect, uint8_t fill)
 {
     _gt_style_rect_st * style = rect->style;
     style->fill = fill;
+    gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 /* end ------------------------------------------------------------------*/

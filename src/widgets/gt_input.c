@@ -304,6 +304,7 @@ void gt_input_style_set_value(gt_obj_st * input, char * value)
     style->value[len] = 0;
 
     style->pos_cursor = len;
+    gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 char * gt_input_style_get_value(gt_obj_st * input)
@@ -371,6 +372,8 @@ void gt_input_style_set_placeholder(gt_obj_st * input, const char * placeholder)
     style->placeholder = gt_mem_malloc( len + 1 );
     gt_memcpy(style->placeholder, placeholder, len);
     style->placeholder[len] = 0;
+
+    gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 
@@ -395,6 +398,7 @@ void gt_input_style_set_font_color(gt_obj_st * input, gt_color_t color)
 {
     _gt_style_input_st * style = input->style;
     style->font_color = color;
+    gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_input_style_set_font_family_cn(gt_obj_st * input, gt_family_t family)
 {

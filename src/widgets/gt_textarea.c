@@ -226,6 +226,7 @@ void gt_textarea_style_set_text(gt_obj_st * textarea, char * text)
 {
     _gt_style_textarea_st * style = textarea->style;
 
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 char * gt_textarea_style_get_text(gt_obj_st * textarea){
@@ -262,11 +263,14 @@ void gt_textarea_style_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t 
     _gt_style_textarea_st * style = textarea->style;
     style->space_x = space_x;
     style->space_y = space_y;
+
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_textarea_style_set_font_color(gt_obj_st * textarea, gt_color_t color)
 {
 
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_textarea_style_set_font_family_cn(gt_obj_st * textarea, gt_family_t family)
 {

@@ -102,7 +102,6 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_DRAW_END:
             GT_LOGD(GT_LOG_TAG_GUI, "end draw");
-            gt_mem_free(obj->cache.cache_color);
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */

@@ -215,6 +215,7 @@ gt_obj_st * gt_imgbtn_create(gt_obj_st * parent) {
 void gt_imgbtn_style_set_selected(gt_obj_st * imgbtn, uint8_t selected) {
     _gt_style_imgbtn_st * style = imgbtn->style;
     style->selected = selected!=0?1:0;
+    gt_event_send(imgbtn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_imgbtn_style_set_src(gt_obj_st * imgbtn, char * src){

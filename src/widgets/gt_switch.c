@@ -214,16 +214,19 @@ void gt_switch_style_set_color_act(gt_obj_st * switcher, gt_color_t color)
 {
     _gt_style_switcher_st * style = switcher->style;
     style->color_act = color;
+    gt_event_send(switcher, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_switch_style_set_color_ina(gt_obj_st * switcher, gt_color_t color)
 {
     _gt_style_switcher_st * style = switcher->style;
     style->color_ina = color;
+    gt_event_send(switcher, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_switch_style_set_color_point(gt_obj_st * switcher, gt_color_t color)
 {
     _gt_style_switcher_st * style = switcher->style;
     style->color_point = color;
+    gt_event_send(switcher, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 /* end ------------------------------------------------------------------*/

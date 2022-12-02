@@ -512,6 +512,7 @@ void gt_keypad_style_set_target(gt_obj_st * keypad, gt_obj_st * ta)
 {
     _gt_style_keypad_st * style = keypad->style;
     style->target = ta;
+    gt_event_send(keypad, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 
@@ -554,6 +555,7 @@ void gt_keypad_style_set_font_color(gt_obj_st * keypad, gt_color_t color)
 {
     _gt_style_keypad_st * style = keypad->style;
     style->font_color = color;
+    gt_event_send(keypad, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_keypad_style_set_font_family_cn(gt_obj_st * keypad, gt_family_t family)

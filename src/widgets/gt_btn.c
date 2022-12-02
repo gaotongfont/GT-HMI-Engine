@@ -252,12 +252,14 @@ void gt_btn_style_set_color_pressed(gt_obj_st * btn, gt_color_t color)
 {
     _gt_style_btn_st * style = btn->style;
     style->color_pressed = color;
+    gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_btn_style_set_color_background(gt_obj_st * btn, gt_color_t color)
 {
     _gt_style_btn_st * style = btn->style;
     style->color_background = color;
+    gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_btn_style_set_text(gt_obj_st * btn, char * text)
@@ -270,6 +272,7 @@ void gt_btn_style_set_text(gt_obj_st * btn, char * text)
     style->text = gt_mem_malloc(size+1);
     gt_memcpy(style->text, text, size);
     style->text[size] = 0;
+    gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 char * gt_btn_style_get_text(gt_obj_st * btn){
@@ -281,6 +284,7 @@ char * gt_btn_style_get_text(gt_obj_st * btn){
 void gt_btn_style_set_font_color(gt_obj_st * btn, gt_color_t color){
     _gt_style_btn_st * style = btn->style;
     style->font_color = color;
+    gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_btn_style_set_font_size(gt_obj_st * btn, uint8_t size)
@@ -305,6 +309,7 @@ void gt_btn_style_set_radius(gt_obj_st * btn, uint8_t radius)
 {
     _gt_style_btn_st * style = btn->style;
     style->radius = radius;
+    gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 

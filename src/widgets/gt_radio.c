@@ -249,6 +249,7 @@ void gt_radio_style_set_selected(gt_obj_st * radio){
         }
     }
     gt_obj_style_set_state(obj, GT_STATE_PRESSED);
+    gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_radio_style_set_text(gt_obj_st * radio, char * text){
@@ -265,6 +266,7 @@ void gt_radio_style_set_font_color(gt_obj_st * radio, gt_color_t color)
 {
     _gt_style_radio_st * style = radio->style;
     style->font_color = color;
+    gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_radio_style_set_font_family_cn(gt_obj_st * radio, gt_family_t family)
 {
