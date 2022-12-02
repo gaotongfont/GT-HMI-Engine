@@ -46,7 +46,7 @@ const gt_obj_class_st gt_progress_bar_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static void _gt_progress_bar_init_widget(gt_obj_st * progress_bar) {
+static inline void _gt_progress_bar_init_widget(gt_obj_st * progress_bar) {
     _gt_style_progress_bar_st * style = progress_bar->style;
     gt_size_t x, y, w, h;
 

@@ -71,7 +71,7 @@ static void _gt_input_cursor_anim(gt_obj_st * input)
     draw_bg(input->draw_ctx, &rect_attr, &area);
 }
 
-static void _gt_input_init_widget(gt_obj_st * input) {
+static inline void _gt_input_init_widget(gt_obj_st * input) {
     _gt_style_input_st * style = input->style;
     gt_size_t x, y, w, h;           //base attr
 

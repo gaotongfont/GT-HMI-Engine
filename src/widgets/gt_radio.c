@@ -45,7 +45,7 @@ const gt_obj_class_st gt_radio_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static void _gt_radio_init_widget(gt_obj_st * radio) {
+static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     _gt_style_radio_st * style = radio->style;
     gt_size_t x, y, w, h;
     uint8_t sel_width = 0;

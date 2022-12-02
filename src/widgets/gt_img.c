@@ -47,7 +47,7 @@ const gt_obj_class_st gt_img_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static void _gt_img_init_widget(gt_obj_st * img)
+static inline void _gt_img_init_widget(gt_obj_st * img)
 {
     _gt_style_img_st * style = img->style;
     gt_size_t w, h;

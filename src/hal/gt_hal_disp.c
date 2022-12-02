@@ -89,11 +89,6 @@ void gt_disp_drv_register(gt_disp_drv_st * drv)
 /*************************************/
 /*                disp               */
 /*************************************/
-void gt_disp_set_default(gt_disp_st * disp)
-{
-    disp_p = disp;
-}
-
 
 gt_disp_st * gt_disp_get_default(void)
 {

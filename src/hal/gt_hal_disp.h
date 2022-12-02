@@ -90,8 +90,6 @@ void gt_disp_drv_init(gt_disp_drv_st * disp_drv);
 void gt_disp_drv_deinit(void);
 
 void gt_disp_drv_register(gt_disp_drv_st *drv);
-void gt_disp_set_default(gt_disp_st * disp);
-
 gt_disp_st * gt_disp_get_default(void);
 
 /**

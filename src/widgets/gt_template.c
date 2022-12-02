@@ -45,7 +45,7 @@ const gt_obj_class_st gt_template_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static void _gt_template_init_widget(gt_obj_st * template) {
+static inline void _gt_template_init_widget(gt_obj_st * template) {
     _gt_style_template_st * style = template->style;
     gt_size_t x, y, w, h;           //base attr
 

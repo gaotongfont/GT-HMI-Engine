@@ -46,7 +46,7 @@ const gt_obj_class_st gt_checkbox_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
+static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     _gt_style_checkbox_st * style = checkbox->style;
     gt_size_t x, y, w, h;           //base attr
     uint8_t sel_width = 0;

@@ -249,7 +249,7 @@ static bool _gt_keypad_check_key_is_ctl(char * kv){
     return false;
 }
 
-static void _gt_keypad_init_widget(gt_obj_st * keypad)
+static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
 {
     _gt_style_keypad_st * style = keypad->style;
     int idx = 0, cnt_temp = 0;

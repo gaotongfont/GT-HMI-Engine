@@ -46,7 +46,7 @@ const gt_obj_class_st gt_slider_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static void _gt_slider_init_widget(gt_obj_st * slider) {
+static inline void _gt_slider_init_widget(gt_obj_st * slider) {
     _gt_style_slider_st * style = slider->style;
     gt_size_t w, h;
     int all_pos = style->end - style->start;

@@ -45,7 +45,7 @@ const gt_obj_class_st gt_qrcode_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static void _gt_qrcode_init_widget(gt_obj_st * qrcode) {
+static inline void _gt_qrcode_init_widget(gt_obj_st * qrcode) {
     _gt_style_qrcode_st * style = qrcode->style;
     char * val = style->value;
 

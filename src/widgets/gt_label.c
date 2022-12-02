@@ -45,7 +45,7 @@ const gt_obj_class_st gt_label_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static void _gt_label_init_widget(gt_obj_st * label) {
+static inline void _gt_label_init_widget(gt_obj_st * label) {
     _gt_style_label_st * style = label->style;
 
     if( 0 == label->area.w || 0 == label->area.h ){

@@ -104,7 +104,7 @@ static void _gt_listview_style_update(gt_obj_st * listview)
     style->idx_selected = 0;
 }
 
-static void _gt_listview_init_widget(gt_obj_st * listview) {
+static inline void _gt_listview_init_widget(gt_obj_st * listview) {
     _gt_style_listview_st * style = (_gt_style_listview_st * )listview->style;
     gt_size_t x, y, w, h;
 

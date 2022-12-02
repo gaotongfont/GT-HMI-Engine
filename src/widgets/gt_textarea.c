@@ -46,7 +46,7 @@ const gt_obj_class_st gt_textarea_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static void _gt_textarea_init_widget(gt_obj_st * textarea) {
+static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
     _gt_style_textarea_st * style = textarea->style;
     int idx = 0;
 

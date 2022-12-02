@@ -46,7 +46,7 @@ const gt_obj_class_st gt_btn_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static void _gt_btn_init_widget(gt_obj_st * btn) {
+static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     _gt_style_btn_st * style = btn->style;
     gt_size_t x, y, w, h;           //base attr
     gt_size_t radius;               //widget attr

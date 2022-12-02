@@ -56,7 +56,7 @@ static void _gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src){
     }
 }
 
-static void _gt_imgbtn_init_widget(gt_obj_st * imgbtn)
+static inline void _gt_imgbtn_init_widget(gt_obj_st * imgbtn)
 {
     _gt_style_imgbtn_st * style = imgbtn->style;
     gt_size_t w, h;
