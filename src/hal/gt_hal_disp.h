@@ -147,6 +147,7 @@ uint8_t _gt_disp_refr_check(void);
 void _gt_disp_refr_area_push(void);
 void _gt_disp_refr_area_pop(void);
 gt_area_st * _gt_disp_refr_get_area(void);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

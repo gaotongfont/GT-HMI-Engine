@@ -96,22 +96,15 @@ bool gt_area_intersect_screen(const gt_area_st * area_scr, const gt_area_st * ar
 
 bool gt_area_is_on(gt_area_st * a1_p, gt_area_st * a2_p)
 {
-    gt_size_t dis_x = gt_abs(a2_p->x - a1_p->x);
-    gt_size_t dis_y = gt_abs(a2_p->y - a1_p->y);
-    gt_size_t w_max = GT_MAX(a1_p->w, a2_p->w);
-    gt_size_t h_max = GT_MAX(a1_p->h, a2_p->h);
+    gt_size_t a1_x2 = AREA_X2(a1_p);
+    gt_size_t a1_y2 = AREA_Y2(a1_p);
+    gt_size_t a2_x2 = AREA_X2(a2_p);
+    gt_size_t a2_y2 = AREA_Y2(a2_p);
 
-    if (!w_max || !h_max) {
-        return false;
+    if ( (AREA_X1(a1_p) <= a2_x2) &&  (a1_x2 >= AREA_X1(a2_p)) && (AREA_Y1(a1_p) <= a2_y2) && (a1_y2 >= AREA_Y1(a2_p)) ) {
+        return true;
     }
-
-    if (dis_x > w_max || dis_y > h_max) {
-        return false;
-    }
-    // printf("area1: (%d, %d, %d, %d), area2: (%d, %d, %d, %d)\n",
-    //     a1_p->x, a1_p->y, a1_p->x + a1_p->w, a1_p->y + a1_p->h,
-    //     a2_p->x, a2_p->y, a2_p->x + a2_p->w, a2_p->y + a2_p->h);
-    return true;
+    return false;
 }
 
 void gt_area_join(gt_area_st * res, const gt_area_st * const src, const gt_area_st * const dst)
