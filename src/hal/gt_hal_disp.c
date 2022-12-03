@@ -10,6 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "gt_hal_disp.h"
 #include "../core/gt_mem.h"
+#include "../core/gt_obj_pos.h"
 #include "../others/gt_color.h"
 #include "../gt_conf.h"
 #include "../others/gt_log.h"
@@ -196,6 +197,7 @@ void _gt_disp_refr_append_area(gt_area_st * area)
 
     // joined the newly area into before area
     for (i = 0; i < len; i++) {
+        printf("--- %d/%d idx: %d, joined: %d\n", i, len, idx, disp->refr.joined[idx]);
         if (disp->refr.joined[idx]) {
             idx = _gt_disp_area_get_idx(++idx);
             continue;
@@ -203,7 +205,7 @@ void _gt_disp_refr_append_area(gt_area_st * area)
         is_on = gt_area_is_on(&area_p[idx], &area_p[idx_newly]);
         if (is_on) {
             gt_area_join(&res_area, &area_p[idx], &area_p[idx_newly]);
-            disp->refr.areas[idx] = res_area;
+            gt_area_copy(&disp->refr.areas[idx], res_area);
             disp->refr.joined[idx_newly] = 1;
         }
         idx = _gt_disp_area_get_idx(++idx);
@@ -244,7 +246,8 @@ gt_area_st * _gt_disp_refr_get_area(void)
         _gt_disp_refr_area_pop();
         idx = _gt_disp_area_get_idx(++idx);
     }
-
+    printf(">>> %d, %d, %d, %d\n",
+        disp->refr.areas[idx].x, disp->refr.areas[idx].y, disp->refr.areas[idx].w, disp->refr.areas[idx].h);
     return &disp->refr.areas[idx];
 }
 
