@@ -48,10 +48,13 @@ void gt_refr_timer(void)
     gt_area_st * area = NULL;
     gt_area_st area_res;
     if( disp == NULL ){
-        return;
+        return ;
     }
     if( _gt_disp_refr_check() ){
         area = _gt_disp_refr_get_area();
+        if ( !area ) {
+            return ;
+        }
         if( gt_area_intersect_screen(&disp->area_act, area, &area_res) == false ){
             _gt_disp_refr_area_pop();
             return;
