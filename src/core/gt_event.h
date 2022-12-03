@@ -31,28 +31,28 @@ struct _gt_obj_s;
 typedef enum gt_event_type_e{
     GT_EVENT_TYPE_NONE = -1,
 
-    /* Drawing events */
-    GT_EVENT_TYPE_DRAW_START = 0,       ///< need to start draw widget
-    GT_EVENT_TYPE_DRAW_END,             ///< draw widget ok
+    /* Input device events */
+    GT_EVENT_TYPE_INPUT_CLICKING    = 0,        ///< clicking
+    GT_EVENT_TYPE_INPUT_PROCESS,                ///< release,click need handler
+    GT_EVENT_TYPE_INPUT_PROCESSED,              ///< click handler finish
+    GT_EVENT_TYPE_INPUT_SCROLL,
+    GT_EVENT_TYPE_INPUT_PROCESS_LOST,           ///< move off and lost handler
 
     /* update value */
-    GT_EVENT_TYPE_UPDATE_VALUE,         ///< value update, need to redraw
+    GT_EVENT_TYPE_UPDATE_VALUE,                 ///< value update, need to redraw
     GT_EVENT_TYPE_UPDATE_STYLE,
 
-    /* Input device events */
-    GT_EVENT_TYPE_INPUT_CLICKING,       ///< clicking
-    GT_EVENT_TYPE_INPUT_PROCESS,        ///< release,click need handler
-    GT_EVENT_TYPE_INPUT_PROCESSED,      ///< click handler finish
-    GT_EVENT_TYPE_INPUT_SCROLL,
-    GT_EVENT_TYPE_INPUT_PROCESS_LOST,   ///< move off and lost handler
+    /* Drawing events */
+    GT_EVENT_TYPE_DRAW_START,                   ///< need to start draw widget
+    GT_EVENT_TYPE_DRAW_END,                     ///< draw widget ok
 
     /* Other events */
-    GT_EVENT_TYPE_CHANGE_CHILD_REMOVE,  ///< remove child but not delete child
-    GT_EVENT_TYPE_CHANGE_CHILD_REMOVED, ///< remove child finish
-    GT_EVENT_TYPE_CHANGE_CHILD_DELETE,  ///< delete child
-    GT_EVENT_TYPE_CHANGE_CHILD_DELETED, ///< delete child finish
+    GT_EVENT_TYPE_CHANGE_CHILD_REMOVE,          ///< remove child but not delete child
+    GT_EVENT_TYPE_CHANGE_CHILD_REMOVED,         ///< remove child finish
+    GT_EVENT_TYPE_CHANGE_CHILD_DELETE,          ///< delete child
+    GT_EVENT_TYPE_CHANGE_CHILD_DELETED,         ///< delete child finish
 
-    _GT_EVENT_TYPE_TOTAL,               ///< count event number
+    _GT_EVENT_TYPE_TOTAL,                       ///< count event number
 
     GT_EVENT_TYPE_ALL = 0xFFFFFFF,
 }gt_event_type_et;

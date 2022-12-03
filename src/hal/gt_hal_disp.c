@@ -196,7 +196,6 @@ void _gt_disp_refr_append_area(gt_area_st * area)
 
     // joined the newly area into before area
     for (i = 0; i < len; i++) {
-        printf("--- %d/%d idx: %d, joined: %d, new joined: %d\n", i, len, idx, disp->refr.joined[idx], disp->refr.joined[idx_newly]);
         if (disp->refr.joined[idx]) {
             idx = _gt_disp_area_get_idx(++idx);
             continue;
@@ -206,7 +205,6 @@ void _gt_disp_refr_append_area(gt_area_st * area)
             gt_area_join(&res_area, &area_p[idx], &area_p[idx_newly]);
             gt_area_copy(&disp->refr.areas[idx], &res_area);
             disp->refr.joined[idx_newly] = 1;
-            printf("  -> newly joined update to: %d\n", disp->refr.joined[idx_newly]);
         }
         idx = _gt_disp_area_get_idx(++idx);
     }
@@ -241,9 +239,7 @@ gt_area_st * _gt_disp_refr_get_area(void)
     gt_size_t idx = disp->refr.idx_r;
     gt_size_t len = (disp->refr.idx_w < idx ? _GT_REFR_AREA_MAX : 0) + disp->refr.idx_w - idx;
 
-    printf("==== idx(r): %d, len: %d, w: %d\n", idx, len, disp->refr.idx_w);
     while(i++ < len) {
-        printf("  %d/%d, idx: %d\n", i, len, idx);
         if (!disp->refr.joined[idx]) {
             goto get_area_lb;
         }
@@ -251,11 +247,8 @@ gt_area_st * _gt_disp_refr_get_area(void)
         idx = _gt_disp_area_get_idx(++idx);
     }
 
-    printf("===== NULL !!!!!\n");
     return NULL;
 get_area_lb:
-    printf(">>>%d. [%d] %d, %d, %d, %d\n", idx, len,
-        disp->refr.areas[idx].x, disp->refr.areas[idx].y, disp->refr.areas[idx].w, disp->refr.areas[idx].h);
     return &disp->refr.areas[idx];
 }
 
