@@ -102,7 +102,7 @@ bool gt_area_is_on(gt_area_st * a1_p, gt_area_st * a2_p)
     gt_size_t a2_y2 = AREA_Y2(a2_p);
 
     if ( (AREA_X1(a1_p) <= a2_x2) &&  (a1_x2 >= AREA_X1(a2_p)) && (AREA_Y1(a1_p) <= a2_y2) && (a1_y2 >= AREA_Y1(a2_p)) ) {
-        printf("area: (%d, %d) -> (%d, %d); new area: (%d, %d) -> (%d, %d)\n"
+        printf("area: (%d, %d) -> (%d, %d); new area: (%d, %d) -> (%d, %d)\n",
             AREA_X1(a1_p), AREA_Y1(a1_p), a1_x2, a1_y2, AREA_X1(a2_p), AREA_Y1(a2_p), a2_x2, a2_y2);
         return true;
     }

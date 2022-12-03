@@ -189,10 +189,9 @@ void _gt_disp_refr_append_area(gt_area_st * area)
     bool is_on = false;
 
     disp->refr.areas[disp->refr.idx_w] = *area;
-    _gt_disp_refr_area_push();
 
     idx = disp->refr.idx_r;
-    idx_newly = (disp->refr.idx_w ? disp->refr.idx_w : _GT_REFR_AREA_MAX) - 1;
+    idx_newly = disp->refr.idx_w ? disp->refr.idx_w : (_GT_REFR_AREA_MAX - 1);
     len += idx_newly - idx; /* except the newly one */
 
     // joined the newly area into before area
@@ -205,11 +204,13 @@ void _gt_disp_refr_append_area(gt_area_st * area)
         is_on = gt_area_is_on(&area_p[idx], &area_p[idx_newly]);
         if (is_on) {
             gt_area_join(&res_area, &area_p[idx], &area_p[idx_newly]);
-            gt_area_copy(&disp->refr.areas[idx], res_area);
+            gt_area_copy(&disp->refr.areas[idx], &res_area);
             disp->refr.joined[idx_newly] = 1;
         }
         idx = _gt_disp_area_get_idx(++idx);
     }
+
+    _gt_disp_refr_area_push();
 }
 
 uint8_t _gt_disp_refr_check(void)
@@ -246,7 +247,7 @@ gt_area_st * _gt_disp_refr_get_area(void)
         _gt_disp_refr_area_pop();
         idx = _gt_disp_area_get_idx(++idx);
     }
-    printf(">>> %d, %d, %d, %d\n",
+    printf(">>>%d. %d, %d, %d, %d\n", idx,
         disp->refr.areas[idx].x, disp->refr.areas[idx].y, disp->refr.areas[idx].w, disp->refr.areas[idx].h);
     return &disp->refr.areas[idx];
 }
