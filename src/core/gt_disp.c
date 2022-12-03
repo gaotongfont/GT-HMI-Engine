@@ -75,7 +75,7 @@ static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
     }
 }
 
-static void gt_check_obj_visible_and_copy(gt_obj_st * obj)
+static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj)
 {
     gt_disp_st * disp = gt_disp_get_default();
     if( !gt_obj_is_visible(obj) ){
@@ -83,7 +83,7 @@ static void gt_check_obj_visible_and_copy(gt_obj_st * obj)
         return;
     }
 
-    GT_LOGV(GT_LOG_TAG_GUI, "obj visible");
+    // GT_LOGV(GT_LOG_TAG_GUI, "obj visible");
 
     // GT_LOGV(GT_LOG_TAG_GUI, "obj->x:%d,y:%d,w:%d,h:%d====disp->x:%d,y:%d,w:%d,h:%d",
     //     obj->area.x, obj->area.y, obj->area.w, obj->area.h,

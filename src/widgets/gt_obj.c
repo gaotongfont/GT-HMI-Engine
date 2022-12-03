@@ -10,6 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
+#include "../core/gt_obj_pos.h"
 #include "../core/gt_timer.h"
 #include "../core/gt_disp.h"
 #include "../core/gt_mem.h"
@@ -71,11 +72,20 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
+            // if( gt_obj_check_scr(obj) ){
+            //     _gt_disp_refr_append_area(&obj->area);
+            // }
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
             GT_LOGD(GT_LOG_TAG_GUI, "end draw");
             break;
+
+        case GT_EVENT_TYPE_UPDATE_STYLE: {
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            break;
+        }
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
             GT_LOGD(GT_LOG_TAG_GUI, "child remove");
