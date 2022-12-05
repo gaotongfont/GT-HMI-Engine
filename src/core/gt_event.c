@@ -35,7 +35,7 @@ static bool _gt_event_is_locked = false;
 /**
  * @brief The object records the locked state when the event is executed.
  */
-static gt_obj_st * _gt_event_obj_locked = NULL;
+static struct _gt_obj_s * _gt_event_obj_locked = NULL;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -53,7 +53,7 @@ static inline void _gt_event_unlocked(void) {
 
 static inline void _gt_event_locked_obj(gt_obj_st * obj) {
     _gt_event_locked();
-    _gt_event_obj_locked = obj;
+    _gt_event_obj_locked = (struct _gt_obj_s *)obj;
 }
 
 static inline void _gt_event_unlocked_obj(void) {
