@@ -45,6 +45,7 @@ typedef enum gt_event_type_e{
     /* Drawing events */
     GT_EVENT_TYPE_DRAW_START,                   ///< need to start draw widget
     GT_EVENT_TYPE_DRAW_END,                     ///< draw widget ok
+    GT_EVENT_TYPE_DRAW_REDRAW,
 
     /* Other events */
     GT_EVENT_TYPE_CHANGE_CHILD_REMOVE,          ///< remove child but not delete child

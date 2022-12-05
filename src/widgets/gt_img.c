@@ -139,8 +139,13 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             area = obj->area;
             gt_fs_read_img_wh(gt_img_style_get_src(obj), &area.w, &area.h);
             gt_obj_size_change(obj, &area);
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
+            break;
+
+        case GT_EVENT_TYPE_DRAW_REDRAW: {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
+        }
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
             GT_LOGD(GT_LOG_TAG_GUI, "scroll");
