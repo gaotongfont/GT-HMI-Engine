@@ -301,7 +301,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         gt_mem_free(mask_line);
 
         /*malloc*/
-        data = gt_mem_malloc(dsc->font->size * dsc->font->size / 8);
+        data = gt_mem_malloc(dsc->font->size * dsc->font->size >> 3);
         mask_buf = gt_mem_malloc(dsc->font->size * dsc->font->size);
         mask_line = gt_mem_malloc( dsc->font->size*2 );
     }
@@ -359,7 +359,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     gt_area_st area_res;
     int idx_bit = 0,idx_mask_buf = 0;
     uint8_t width;
-    uint16_t size_mask = dsc->font->size * dsc->font->size, size_fres = size_mask / 8, idx_res = 0;
+    uint16_t size_mask = dsc->font->size * dsc->font->size, size_fres = size_mask >> 3, idx_res = 0;
 
     /* foreach text */
     while( idx < len_text ){

@@ -1597,7 +1597,7 @@ static unsigned encodeLZ77(uivector* out, Hash* hash,
   size_t pos;
   unsigned i, error = 0;
   /*for large window lengths, assume the user wants no compression loss. Otherwise, max hash chain length speedup.*/
-  unsigned maxchainlength = windowsize >= 8192 ? windowsize : windowsize / 8u;
+  unsigned maxchainlength = windowsize >= 8192 ? windowsize : windowsize >> 3u;
   unsigned maxlazymatch = windowsize >= 8192 ? MAX_SUPPORTED_DEFLATE_LENGTH : 64;
 
   unsigned usezeros = 1; /*not sure if setting it to false for windowsize < 8192 is better or worse*/
@@ -2086,7 +2086,7 @@ static unsigned lodepng_deflatev(ucvector* out, const unsigned char* in, size_t 
   else if(settings->btype == 1) blocksize = insize;
   else /*if(settings->btype == 2)*/ {
     /*on PNGs, deflate blocks of 65-262k seem to give most dense encoding*/
-    blocksize = insize / 8u + 8;
+    blocksize = insize >> 3u + 8;
     if(blocksize < 65536) blocksize = 65536;
     if(blocksize > 262144) blocksize = 262144;
   }
@@ -2793,7 +2793,7 @@ unsigned lodepng_can_have_alpha(const LodePNGColorMode* info) {
 static size_t lodepng_get_raw_size_lct(unsigned w, unsigned h, LodePNGColorType colortype, unsigned bitdepth) {
   size_t bpp = lodepng_get_bpp_lct(colortype, bitdepth);
   size_t n = (size_t)w * (size_t)h;
-  return ((n / 8u) * bpp) + ((n & 7u) * bpp + 7u) / 8u;
+  return ((n >> 3u) * bpp) + ((n & 7u) * bpp + 7u) >> 3u;
 }
 
 size_t lodepng_get_raw_size(unsigned w, unsigned h, const LodePNGColorMode* color) {
@@ -2808,8 +2808,8 @@ and in addition has one extra byte per line: the filter byte. So this gives a la
 result than lodepng_get_raw_size. Set h to 1 to get the size of 1 row including filter byte. */
 static size_t lodepng_get_raw_size_idat(unsigned w, unsigned h, unsigned bpp) {
   /* + 1 for the filter byte, and possibly plus padding bits per line. */
-  /* Ignoring casts, the expression is equal to (w * bpp + 7) / 8 + 1, but avoids overflow of w * bpp */
-  size_t line = ((size_t)(w / 8u) * bpp) + 1u + ((w & 7u) * bpp + 7u) / 8u;
+  /* Ignoring casts, the expression is equal to (w * bpp + 7) >> 3 + 1, but avoids overflow of w * bpp */
+  size_t line = ((size_t)(w >> 3u) * bpp) + 1u + ((w & 7u) * bpp + 7u) >> 3u;
   return (size_t)h * line;
 }
 
@@ -2831,9 +2831,9 @@ static int lodepng_pixel_overflow(unsigned w, unsigned h,
   if(lodepng_mulofl((size_t)w, (size_t)h, &numpixels)) return 1;
   if(lodepng_mulofl(numpixels, 8, &total)) return 1; /* bit pointer with 8-bit color, or 8 bytes per channel color */
 
-  /* Bytes per scanline with the expression "(w / 8u) * bpp) + ((w & 7u) * bpp + 7u) / 8u" */
-  if(lodepng_mulofl((size_t)(w / 8u), bpp, &line)) return 1;
-  if(lodepng_addofl(line, ((w & 7u) * bpp + 7u) / 8u, &line)) return 1;
+  /* Bytes per scanline with the expression "(w >> 3u) * bpp) + ((w & 7u) * bpp + 7u) >> 3u" */
+  if(lodepng_mulofl((size_t)(w >> 3u), bpp, &line)) return 1;
+  if(lodepng_addofl(line, ((w & 7u) * bpp + 7u) >> 3u, &line)) return 1;
 
   if(lodepng_addofl(line, 5, &line)) return 1; /* 5 bytes overhead per line: 1 filterbyte, 4 for Adam7 worst case */
   if(lodepng_mulofl(line, h, &total)) return 1; /* Total bytes in worst case */
@@ -3099,8 +3099,8 @@ static void addColorBits(unsigned char* out, size_t index, unsigned bits, unsign
   unsigned p = index & m;
   in &= (1u << bits) - 1u; /*filter out any other bits of the input value*/
   in = in << (bits * (m - p));
-  if(p == 0) out[index * bits / 8u] = in;
-  else out[index * bits / 8u] |= in;
+  if(p == 0) out[index * bits >> 3u] = in;
+  else out[index * bits >> 3u] |= in;
 }
 
 typedef struct ColorTree ColorTree;
@@ -4023,11 +4023,11 @@ static void Adam7_getpassvalues(unsigned passw[7], unsigned passh[7], size_t fil
   for(i = 0; i != 7; ++i) {
     /*if passw[i] is 0, it's 0 bytes, not 1 (no filtertype-byte)*/
     filter_passstart[i + 1] = filter_passstart[i]
-                            + ((passw[i] && passh[i]) ? passh[i] * (1u + (passw[i] * bpp + 7u) / 8u) : 0);
+                            + ((passw[i] && passh[i]) ? passh[i] * (1u + (passw[i] * bpp + 7u) >> 3u) : 0);
     /*bits padded if needed to fill full byte at end of each scanline*/
-    padded_passstart[i + 1] = padded_passstart[i] + passh[i] * ((passw[i] * bpp + 7u) / 8u);
+    padded_passstart[i + 1] = padded_passstart[i] + passh[i] * ((passw[i] * bpp + 7u) >> 3u);
     /*only padded at end of reduced image*/
-    passstart[i + 1] = passstart[i] + (passh[i] * passw[i] * bpp + 7u) / 8u;
+    passstart[i + 1] = passstart[i] + (passh[i] * passw[i] * bpp + 7u) >> 3u;
   }
 }
 
@@ -4245,7 +4245,7 @@ static unsigned unfilter(unsigned char* out, const unsigned char* in, unsigned w
   unsigned char* prevline = 0;
 
   /*bytewidth is used for filtering, is 1 when bpp < 8, number of bytes per pixel otherwise*/
-  size_t bytewidth = (bpp + 7u) / 8u;
+  size_t bytewidth = (bpp + 7u) >> 3u;
   /*the width of a scanline in bytes, not including the filter type*/
   size_t linebytes = lodepng_get_raw_size_idat(w, 1, bpp) - 1u;
 
@@ -4283,7 +4283,7 @@ static void Adam7_deinterlace(unsigned char* out, const unsigned char* in, unsig
   if(bpp >= 8) {
     for(i = 0; i != 7; ++i) {
       unsigned x, y, b;
-      size_t bytewidth = bpp / 8u;
+      size_t bytewidth = bpp >> 3u;
       for(y = 0; y < passh[i]; ++y)
       for(x = 0; x < passw[i]; ++x) {
         size_t pixelinstart = passstart[i] + (y * passw[i] + x) * bytewidth;
@@ -4353,9 +4353,9 @@ static unsigned postProcessScanlines(unsigned char* out, unsigned char* in,
   if(bpp == 0) return 31; /*error: invalid colortype*/
 
   if(info_png->interlace_method == 0) {
-    if(bpp < 8 && w * bpp != ((w * bpp + 7u) / 8u) * 8u) {
+    if(bpp < 8 && w * bpp != ((w * bpp + 7u) >> 3u) * 8u) {
       CERROR_TRY_RETURN(unfilter(in, in, w, h, bpp));
-      removePaddingBits(out, in, w * bpp, ((w * bpp + 7u) / 8u) * 8u, h);
+      removePaddingBits(out, in, w * bpp, ((w * bpp + 7u) >> 3u) * 8u, h);
     }
     /*we can immediately filter into the out buffer, no other steps needed*/
     else CERROR_TRY_RETURN(unfilter(out, in, w, h, bpp));
@@ -4373,7 +4373,7 @@ static unsigned postProcessScanlines(unsigned char* out, unsigned char* in,
         /*remove padding bits in scanlines; after this there still may be padding
         bits between the different reduced images: each reduced image still starts nicely at a byte*/
         removePaddingBits(&in[passstart[i]], &in[padded_passstart[i]], passw[i] * bpp,
-                          ((passw[i] * bpp + 7u) / 8u) * 8u, passh[i]);
+                          ((passw[i] * bpp + 7u) >> 3u) * 8u, passh[i]);
       }
     }
 
@@ -5569,7 +5569,7 @@ static unsigned filter(unsigned char* out, const unsigned char* in, unsigned w, 
                        const LodePNGColorMode* color, const LodePNGEncoderSettings* settings) {
   /*
   For PNG filter method 0
-  out must be a buffer with as size: h + (w * h * bpp + 7u) / 8u, because there are
+  out must be a buffer with as size: h + (w * h * bpp + 7u) >> 3u, because there are
   the scanlines with 1 extra byte per scanline
   */
 
@@ -5578,7 +5578,7 @@ static unsigned filter(unsigned char* out, const unsigned char* in, unsigned w, 
   size_t linebytes = lodepng_get_raw_size_idat(w, 1, bpp) - 1u;
 
   /*bytewidth is used for filtering, is 1 when bpp < 8, number of bytes per pixel otherwise*/
-  size_t bytewidth = (bpp + 7u) / 8u;
+  size_t bytewidth = (bpp + 7u) >> 3u;
   const unsigned char* prevline = 0;
   unsigned x, y;
   unsigned error = 0;
@@ -5799,7 +5799,7 @@ static void Adam7_interlace(unsigned char* out, const unsigned char* in, unsigne
   if(bpp >= 8) {
     for(i = 0; i != 7; ++i) {
       unsigned x, y, b;
-      size_t bytewidth = bpp / 8u;
+      size_t bytewidth = bpp >> 3u;
       for(y = 0; y < passh[i]; ++y)
       for(x = 0; x < passw[i]; ++x) {
         size_t pixelinstart = ((ADAM7_IY[i] + y * ADAM7_DY[i]) * w + ADAM7_IX[i] + x * ADAM7_DX[i]) * bytewidth;
@@ -5842,17 +5842,17 @@ static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const 
   unsigned error = 0;
 
   if(info_png->interlace_method == 0) {
-    *outsize = h + (h * ((w * bpp + 7u) / 8u)); /*image size plus an extra byte per scanline + possible padding bits*/
+    *outsize = h + (h * ((w * bpp + 7u) >> 3u)); /*image size plus an extra byte per scanline + possible padding bits*/
     *out = (unsigned char*)lodepng_malloc(*outsize);
     if(!(*out) && (*outsize)) error = 83; /*alloc fail*/
 
     if(!error) {
       /*non multiple of 8 bits per scanline, padding bits needed per scanline*/
-      if(bpp < 8 && w * bpp != ((w * bpp + 7u) / 8u) * 8u) {
-        unsigned char* padded = (unsigned char*)lodepng_malloc(h * ((w * bpp + 7u) / 8u));
+      if(bpp < 8 && w * bpp != ((w * bpp + 7u) >> 3u) * 8u) {
+        unsigned char* padded = (unsigned char*)lodepng_malloc(h * ((w * bpp + 7u) >> 3u));
         if(!padded) error = 83; /*alloc fail*/
         if(!error) {
-          addPaddingBits(padded, in, ((w * bpp + 7u) / 8u) * 8u, w * bpp, h);
+          addPaddingBits(padded, in, ((w * bpp + 7u) >> 3u) * 8u, w * bpp, h);
           error = filter(*out, padded, w, h, &info_png->color, settings);
         }
         lodepng_free(padded);
@@ -5884,7 +5884,7 @@ static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const 
           unsigned char* padded = (unsigned char*)lodepng_malloc(padded_passstart[i + 1] - padded_passstart[i]);
           if(!padded) ERROR_BREAK(83); /*alloc fail*/
           addPaddingBits(padded, &adam7[passstart[i]],
-                         ((passw[i] * bpp + 7u) / 8u) * 8u, passw[i] * bpp, passh[i]);
+                         ((passw[i] * bpp + 7u) >> 3u) * 8u, passw[i] * bpp, passh[i]);
           error = filter(&(*out)[filter_passstart[i]], padded,
                          passw[i], passh[i], &info_png->color, settings);
           lodepng_free(padded);
@@ -6101,7 +6101,7 @@ unsigned lodepng_encode(unsigned char** out, size_t* outsize,
 #endif /*LODEPNG_COMPILE_ANCILLARY_CHUNKS*/
   if(!lodepng_color_mode_equal(&state->info_raw, &info.color)) {
     unsigned char* converted;
-    size_t size = ((size_t)w * (size_t)h * (size_t)lodepng_get_bpp(&info.color) + 7u) / 8u;
+    size_t size = ((size_t)w * (size_t)h * (size_t)lodepng_get_bpp(&info.color) + 7u) >> 3u;
 
     converted = (unsigned char*)lodepng_malloc(size);
     if(!converted && size) state->error = 83; /*alloc fail*/
