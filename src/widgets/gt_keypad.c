@@ -181,10 +181,10 @@ static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char * kv)
 
 static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
 {
-    GT_ASSERT(keypad);
+    keypad_handler_cb_t handler_cb;
+
     _gt_style_keypad_st * style = keypad->style;
     if( style->info.handler_cb != NULL ){
-        void (* handler_cb)(gt_obj_st * );
         handler_cb = style->info.handler_cb;
         handler_cb(keypad);
         return;
