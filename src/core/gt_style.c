@@ -9,6 +9,7 @@
 
  /* include --------------------------------------------------------------*/
 #include "gt_style.h"
+#include "../hal/gt_hal_disp.h"
 #include "gt_mem.h"
 #include "string.h"
 
@@ -100,8 +101,6 @@ void gt_obj_set_visible(gt_obj_st * obj, gt_visible_et is_visible)
 
 void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new)
 {
-    extern void _gt_disp_refr_append_area(gt_area_st * area);
-
     gt_area_st area_old = obj->area;
     gt_area_st area;
     if (area_new->x <= area_old.x) {
@@ -130,12 +129,11 @@ void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new)
     }
     obj->area = *area_new;
     _gt_disp_refr_append_area(&area);
+
 }
 
 void gt_obj_pos_change(gt_obj_st * obj, gt_area_st * area_new)
 {
-    extern void _gt_disp_refr_append_area(gt_area_st * area);
-
     gt_area_st area_old = obj->area;
     gt_area_st area;
 
@@ -172,8 +170,6 @@ void gt_obj_pos_change(gt_obj_st * obj, gt_area_st * area_new)
 
 void gt_obj_area_change(gt_obj_st * obj, gt_area_st * area_new)
 {
-    extern void _gt_disp_refr_append_area(gt_area_st * area);
-
     gt_area_st area_old = obj->area;
     gt_area_st area;
 

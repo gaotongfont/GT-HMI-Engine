@@ -10,6 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "gt_btn.h"
 #include "../core/gt_mem.h"
+#include "../hal/gt_hal_disp.h"
 #include "../others/gt_log.h"
 #include "string.h"
 #include "../core/gt_graph_base.h"
@@ -68,7 +69,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
         btn->area.h = style->font_size+16;
     }
     if( style->radius == 0 ){
-        radius = btn->area.h/4;
+        radius = btn->area.h >> 2;
     }else{
         radius = style->radius;
     }
@@ -154,7 +155,6 @@ static void _deinit_cb(gt_obj_st * obj) {
  */
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
-    extern void _gt_disp_refr_append_area(gt_area_st * area);
 
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:

@@ -152,17 +152,18 @@ static inline void _gt_fill_circle_inside_line(
 	gt_size_t h)
 {
 	uint16_t idx;
+	gt_size_t x = coord.x;
+	gt_size_t y = coord.y;
 	gt_size_t r = circle_attr->radius;
 	gt_color_t color = circle_attr->fg_color;
 
-	if (coord.x < r) {
-		idx = coord.y * w + coord.x;
-		for (; coord.x < r; coord.x++) {
+	idx = y * w + x;
+	if (x < r) {
+		for (; x < r; x++) {
 			GT_COLOR_SET(buf[idx++], GT_COLOR_GET(color));
 		}
 	} else {
-		idx = coord.y * w + coord.x;
-		for (; coord.x >= r; coord.x--) {
+		for (; x >= r; x--) {
 			GT_COLOR_SET(buf[idx--], GT_COLOR_GET(color));
 		}
 	}

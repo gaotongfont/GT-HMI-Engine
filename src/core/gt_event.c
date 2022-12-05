@@ -71,20 +71,52 @@ static gt_obj_event_attr_st * gt_obj_get_event_attr(gt_obj_st * obj, uint8_t idx
     return &obj->event_attr[idx];
 }
 
+static void _gt_event_handler_event_mask(gt_obj_st * obj){
+    if (!obj->event_mask) {
+        return ;
+    }
+
+    uint32_t mask_shift = obj->event_mask;
+    uint16_t idx = 0;
+    uint16_t count = _GT_EVENT_TYPE_TOTAL;
+    uint16_t event_code;
+    gt_event_st e;
+
+    e.target = obj;
+    e.user_data = obj->user_data;
+
+    if (GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX < _GT_EVENT_TYPE_TOTAL) {
+        count = GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX;
+    }
+
+    _gt_event_locked_obj(obj);
+
+    while (idx < count) {
+        event_code =  GT_EVENT_GET_MASK_SHIFT_BIT(idx) & mask_shift;
+        if( event_code ){
+            e.code = idx;
+            obj->class->_event_cb(obj, &e);
+            obj->event_mask &= ~GT_EVENT_GET_MASK_SHIFT_BIT(e.code);
+        }
+        idx++;
+    }
+
+    _gt_event_unlocked_obj();
+}
 
 static void _gt_obj_foreach_event_cb(gt_obj_st * parent){
     _gt_event_handler_event_mask(parent);
 
-    int idx_child = 0;
+    uint16_t idx_child = 0, count = parent->cnt_child;
     gt_obj_st * obj_temp = NULL;
 
-    while( idx_child < parent->cnt_child ){
-		obj_temp = parent->child[idx_child];
-
+    while( idx_child < count ){
+        obj_temp = parent->child[idx_child];
         if( obj_temp->cnt_child ){
             _gt_obj_foreach_event_cb(obj_temp);
+        } else {
+            _gt_event_handler_event_mask(obj_temp);
         }
-        _gt_event_handler_event_mask(obj_temp);
         idx_child++;
     }
 }
@@ -94,7 +126,7 @@ static void _gt_obj_foreach_event_cb(gt_obj_st * parent){
  */
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY bool _is_print_no_screen_flag = 0;
 
-void _gt_timer_event_cb(struct _gt_timer_s * timer){
+static void _gt_timer_event_cb(struct _gt_timer_s * timer){
     // GT_LOGV(GT_LOG_TAG_GUI, "timer event cb start");
 
     /* step1: get top layer screen */
@@ -165,33 +197,6 @@ gt_res_t gt_event_send(struct _gt_obj_s * parent, gt_event_type_et event, void *
         idx++;
     }
 	return GT_RES_OK;
-}
-
-void _gt_event_handler_event_mask(gt_obj_st * obj){
-    int idx = 0, count = _GT_EVENT_TYPE_TOTAL;
-    uint32_t event_code;
-    gt_event_st e;
-
-    e.target = obj;
-    e.user_data = NULL;
-
-    if (GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX < _GT_EVENT_TYPE_TOTAL) {
-        count = GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX;
-    }
-
-    _gt_event_locked_obj(obj);
-
-    while(idx < GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX){
-        event_code =  GT_EVENT_GET_MASK_SHIFT_BIT(idx) & obj->event_mask;
-        if( event_code ){
-            e.code = idx;
-            obj->class->_event_cb(obj, &e);
-            obj->event_mask &= ~GT_EVENT_GET_MASK_SHIFT_BIT(e.code);
-        }
-        idx++;
-    }
-
-    _gt_event_unlocked_obj();
 }
 
 void _gt_event_init(){
