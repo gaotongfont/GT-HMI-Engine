@@ -28,7 +28,7 @@
 
 
 /* static functions -----------------------------------------------------*/
-static _gt_obj_scroll_anim(_gt_timer_st * timer)
+static void _gt_obj_scroll_anim(_gt_timer_st * timer)
 {
 
 }
