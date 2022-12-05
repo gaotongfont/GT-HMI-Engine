@@ -220,7 +220,7 @@ bool gt_event_is_locked(void)
     return _gt_event_is_locked;
 }
 
-struct gt_obj_s * gt_event_get_locked_obj(void)
+struct _gt_obj_s * gt_event_get_locked_obj(void)
 {
     return _gt_event_obj_locked;
 }

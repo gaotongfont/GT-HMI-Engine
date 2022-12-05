@@ -131,7 +131,7 @@ bool gt_event_is_locked(void);
  *
  * @return struct gt_obj_s*
  */
-struct gt_obj_s * gt_event_get_locked_obj(void);
+struct _gt_obj_s * gt_event_get_locked_obj(void);
 
 #ifdef __cplusplus
 } /*extern "C"*/
