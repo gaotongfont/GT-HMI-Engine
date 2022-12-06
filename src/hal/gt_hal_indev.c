@@ -58,18 +58,22 @@ void gt_indev_drv_init(gt_indev_drv_st * drv)
 
 gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv)
 {
-    if(indev_act[cnt_indev] == NULL){
-        indev_act[cnt_indev] = gt_mem_malloc(sizeof(gt_indev_st));
-        gt_memset_0(indev_act[cnt_indev], sizeof(gt_indev_st));
+    if (!drv) {
+        GT_LOGW(GT_LOG_TAG_GUI, "[error]drv is null,please check!");
+        return NULL;
     }
-
-    GT_LOGV(GT_LOG_TAG_GUI, "addr:%p", indev_act[cnt_indev]);
 
     if(drv->read_cb == NULL){
         GT_LOGW(GT_LOG_TAG_GUI, "[error]drv read_cb is null,please check!");
         return NULL;
     }
 
+    if(indev_act[cnt_indev] == NULL){
+        indev_act[cnt_indev] = gt_mem_malloc(sizeof(gt_indev_st));
+        gt_memset_0(indev_act[cnt_indev], sizeof(gt_indev_st));
+    }
+
+    GT_LOGV(GT_LOG_TAG_GUI, "addr:%p", indev_act[cnt_indev]);
     GT_LOGV(GT_LOG_TAG_GUI, "register indev type:%d", drv->type);
 
     indev_act[cnt_indev]->drv = drv;
@@ -101,7 +105,7 @@ gt_indev_st * gt_indev_get_dev_by_idx(uint8_t idx)
     return indev_act[idx];
 }
 
-uint8_t gt_indev_get_dev_count()
+uint8_t gt_indev_get_dev_count(void)
 {
     return cnt_indev;
 }
