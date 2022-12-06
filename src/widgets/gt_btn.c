@@ -132,7 +132,7 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_style_btn_st ** style_p = (_gt_style_btn_st * )&obj->style;
+    _gt_style_btn_st ** style_p = (_gt_style_btn_st ** )&obj->style;
     if (NULL == *style_p) {
         return ;
     }
