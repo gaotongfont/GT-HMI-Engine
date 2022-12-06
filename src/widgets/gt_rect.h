@@ -1,7 +1,7 @@
 /**
  * @file gt_rect.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-11-02 09:50:08
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -47,11 +47,11 @@ typedef struct _gt_style_rect_s
  */
 gt_obj_st * gt_rect_create(gt_obj_st * parent);
 
-void gt_rect_style_set_color_background(gt_obj_st * rect, gt_color_t color);
+void gt_rect_style_set_bg_color(gt_obj_st * rect, gt_color_t color);
 void gt_rect_style_set_color_border(gt_obj_st * rect, gt_color_t color);
 void gt_rect_style_set_radius(gt_obj_st * rect, uint16_t radius);
 void gt_rect_style_set_border(gt_obj_st * rect, uint16_t border);
-void gt_rect_style_set_full(gt_obj_st * rect, uint8_t is_full);
+void gt_rect_style_set_fill(gt_obj_st * rect, uint8_t is_full);
 
 #ifdef __cplusplus
 } /*extern "C"*/
