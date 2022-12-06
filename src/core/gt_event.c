@@ -76,6 +76,10 @@ static void _gt_event_handler_event_mask(gt_obj_st * obj){
         return ;
     }
 
+    // if (NULL == obj->class || NULL == obj->class->_event_cb) {
+    //     return ;
+    // }
+
     uint32_t mask_shift = obj->event_mask;
     uint16_t idx = 0;
     uint16_t count = _GT_EVENT_TYPE_TOTAL;
@@ -178,6 +182,7 @@ gt_res_t gt_event_send(struct _gt_obj_s * parent, gt_event_type_et event, void *
     }
     parent->event_mask |= GT_EVENT_GET_MASK_SHIFT_BIT(event);
 
+    _gt_event_handler_event_mask(parent);
     // foreach parent's event_attr----user event,immediately process the user events
     int idx = 0;
     gt_obj_event_attr_st * event_attr;
