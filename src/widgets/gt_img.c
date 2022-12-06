@@ -197,9 +197,9 @@ gt_obj_st * gt_img_create(gt_obj_st * parent) {
 void gt_img_style_set_src(gt_obj_st * img, char * src){
     GT_ASSERT_NULL(img);
     _gt_style_img_st * style = (_gt_style_img_st *)img->style;
-    // if (!strcmp(src, style->src)) {
-    //     return ;
-    // }
+    if (!strcmp(src, style->src)) {
+        return ;
+    }
 
     if( NULL != style->src ){
         gt_mem_free(style->src);

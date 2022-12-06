@@ -71,14 +71,15 @@ static gt_obj_event_attr_st * gt_obj_get_event_attr(gt_obj_st * obj, uint8_t idx
     return &obj->event_attr[idx];
 }
 
-static void _gt_event_handler_event_mask(gt_obj_st * obj){
+static gt_res_t _gt_event_handler_event_mask(gt_obj_st * obj)
+{
     if (!obj->event_mask) {
-        return ;
+        return GT_RES_INV;
     }
 
-    // if (NULL == obj->class || NULL == obj->class->_event_cb) {
-    //     return ;
-    // }
+    if (NULL == obj->class || NULL == obj->class->_event_cb) {
+        return GT_RES_OK;
+    }
 
     uint32_t mask_shift = obj->event_mask;
     uint16_t idx = 0;
@@ -106,6 +107,8 @@ static void _gt_event_handler_event_mask(gt_obj_st * obj){
     }
 
     _gt_event_unlocked_obj();
+
+    return GT_RES_OK;
 }
 
 static void _gt_obj_foreach_event_cb(gt_obj_st * parent){

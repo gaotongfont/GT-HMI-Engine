@@ -188,10 +188,9 @@ void _gt_disp_refr_append_area(gt_area_st * area)
     gt_size_t len = disp->refr.idx_w < disp->refr.idx_r ? _GT_REFR_AREA_MAX : 0;
     bool is_on = false;
 
-    disp->refr.areas[disp->refr.idx_w] = *area;
-
     idx = disp->refr.idx_r;
-    idx_newly = disp->refr.idx_w ? disp->refr.idx_w : (_GT_REFR_AREA_MAX - 1);
+    idx_newly = disp->refr.idx_w;
+    disp->refr.areas[idx_newly] = *area;
     len += idx_newly - idx; /* except the newly one */
 
     // joined the newly area into before area
