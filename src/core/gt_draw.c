@@ -365,7 +365,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         }
 
 
-        width = gt_font_get_one_word_width(unicode, dsc->font->size);
+        width = gt_font_get_one_word_width(unicode, dsc->font);
 
         if( !gt_area_intersect_screen(draw_ctx->buf_area, &area_font, &area_res) ){
             goto _lab_nex_word;
