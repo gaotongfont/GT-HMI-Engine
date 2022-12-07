@@ -60,6 +60,7 @@ typedef struct _gt_font_s
     uint32_t style_en;     ///< set: font style
     char * utf8;     ///< set: text: utf8 code arr
     uint8_t size;       ///< set: font size
+    uint8_t gray;       ///< set: font gray
     uint16_t len;       ///< set: utf8 arr len
     uint8_t * res;      ///< get: font data
 }gt_font_st;
@@ -135,10 +136,10 @@ uint32_t gt_font_get_string_width(gt_font_st * font);
  * @brief Get the width of a character
  *
  * @param unicode The unicode encoding of the character
- * @param font_size The font size of character
+ * @param font string msg
  * @return uint8_t The width of the character
  */
-uint8_t gt_font_get_one_word_width(uint32_t unicode, uint8_t font_size);
+uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font);
 
 /**
  * @brief get next word width from font_st

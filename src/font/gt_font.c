@@ -15,7 +15,7 @@
 #include "../core/gt_mem.h"
 /* private define -------------------------------------------------------*/
 
-#define GT_CFG_USE_FONT_16_ASCII    1
+#define GT_CFG_USE_FONT_16_ASCII    01
 
 /* Symbol */
 #define GT_CFG_USE_SYMBOL_16x16     1
@@ -25,12 +25,11 @@
 #define _GT_ENABLE_GTZK 0
 
 #if _GT_ENABLE_GTZK == 1
-#include "gtzk.h"
-
-extern unsigned long GT_GetChinese(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
-extern unsigned long GT_GetLatin(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
-extern unsigned long GT_GetASCII(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
-
+    #include "demo.h"
+    extern int GT_Get_Font_Width(unsigned long fontcode, unsigned int font_option, unsigned int size , unsigned int gray , unsigned char* pBits);
+    extern int GT_Get_Font_Heigth(unsigned long fontcode, unsigned int font_option, unsigned int size , unsigned int gray);
+    extern char GT_Check_Is_Vec(unsigned int font_option);
+    extern struct gt_font_func_s* GT_Get_Font_Func_S(unsigned int style);
 #endif
 
 /* private typedef ------------------------------------------------------*/
@@ -164,89 +163,124 @@ uint8_t _gt_utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 	return 0;
 }
 
-// extern unsigned long GT_GetASCII(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
+/**
+ * @brief 判断编码是外文（style_en）还是中日韩(style_cn)
+ * 
+ * @param unicode unicode编码
+ * @return int 0 - style_cn  else-style_en
+ */
+static int _gt_is_style_cn_or_en(uint32_t unicode)
+{
+    // ascii
+    if(unicode >= 0x20 && unicode <= 0x7F)
+    {
+        return 1;
+    }
+    // latin
+    else if(  (unicode >= 0x0100 && unicode <= 0x024F)
+            ||(unicode >= 0x1E00 && unicode <= 0x1EFF)
+            )
+    {
+        return 2;
+    }
+    // greek and coptic
+    else if(unicode >= 0x0370 && unicode <= 0x03FF)
+    {
+        return 3;
+    }
+    // cyrillic
+    else if(unicode >= 0x0400 && unicode <= 0x04FF)
+    {
+        return 4;
+    }
+    // hebrew
+    else if(unicode >= 0x0590 && unicode <= 0x05FF)
+    {
+        return 5;
+    }
+    // arabic
+    else if(  (unicode >= 0x0600 && unicode <= 0x06FF)
+            ||(unicode >= 0xFB50 && unicode <= 0xFDFF)
+            ||(unicode >= 0xFE70 && unicode <= 0xFEFF)
+            )
+    {
+        return 6;
+    }
+    // thai
+    else if(unicode >= 0x0E00 && unicode <= 0x0E7F)
+    {
+        return 7;
+    }
 
-// extern unsigned long GT_GetJapanese(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
-// extern unsigned long GT_GetKorean(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
-// extern unsigned long GT_GetCyrillic(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer);
-unsigned long _gt_font_default(unsigned long fontcode, unsigned int font_option, unsigned char* pbuffer){
-
+    return 0;
 }
-
-typedef unsigned long(* read_func_t)(unsigned long , unsigned int , unsigned char* );
-
-read_func_t read_func_arr[] = {
-#if _GT_ENABLE_GTZK == 1
-    GT_GetChinese,
-    GT_GetLatin,
-    GT_GetASCII,
-#endif
-    _gt_font_default,
-    // GT_GetASCII,
-    // GT_GetJapanese,
-    // GT_GetKorean,
-    // GT_GetCyrillic,
-	NULL
-};
-
 
 /* global functions / API interface -------------------------------------*/
 
 
 void gt_font_get_string_dot(gt_font_st * font)
 {
-    uint32_t idx = 0, unicode, len, idx_func = 0, idx_read = 0, temp = 0;
-    uint8_t data[256];
-    unsigned long (* read)(unsigned long, unsigned int, unsigned char*);
-    uint16_t count_func = sizeof(read_func_arr) / sizeof(read_func_t);
-
+    uint32_t idx = 0, unicode, len, font_style = 0, idx_read = 0, temp = 0;
 
     // GT_LOGV(GT_LOG_TAG_GUI, "text:%s", font->utf8);
     while(idx < font->len) {
-
         len = _gt_utf8_to_unicode(&font->utf8[idx], &unicode);
-        /* get font data */
-        while( idx_func < count_func ) {
-            read = read_func_arr[idx_func];
-            if( !read ) {
-                idx_func++;
+
+#if _GT_ENABLE_GTZK == 1
+        struct gt_font_func_s* font_func;
+
+        font_style = _gt_is_style_cn_or_en(unicode) ? font->style_en : font->style_cn;
+
+        font_func = GT_Get_Font_Func_S(font_style);
+        if(!font_func)
+        {
+            goto default_font;
+        }
+        if(!GT_Check_Is_Vec(font_style))
+        {
+            // 点阵
+            if(!font_func->func.read_dot_font)
+            {
+                idx+=len;
                 continue;
             }
-            if( unicode < 0x80 ){
-#if GT_CFG_USE_FONT_16_ASCII == 1
-                if( unicode >= 0x20 && font->size == 16 ){
-                    temp = 32;
-                    gt_memcpy(&font->res[idx_read], &ascii_16[ (unicode-0x20)<<5 ], 32);
-                    goto lab_next_word;
-                }
-#endif
-                temp = read(unicode, font->style_en, data);
-                if( 0 == temp ){
-                    idx_func++;
-                    continue;
-                }
-                temp -= 2;
-                gt_memcpy(&font->res[idx_read], &data[2], temp-2);
-
-            }else if( _gt_font_latin_check(unicode) ){
-                temp = read(unicode, font->style_en, data);
-                if( 0 == temp ){
-                    idx_func++;
-                    continue;
-                }
-                temp -= 2;
-                gt_memcpy(&font->res[idx_read], &data[2], temp-2);
-            }else{
-                temp = read(unicode, font->style_cn, &font->res[idx_read]);
+            temp = font_func->func.read_dot_font(unicode , font_style , &font->res[idx_read]);
+            if(temp == 0)
+            {
+                idx+=len;
+                continue;
             }
-lab_next_word:
-            idx_read += temp;
-            if(0 != temp) {
-                break;
-            }
-            idx_func++;
+            goto lab_next_word;
         }
-        idx_func = 0;
+        else
+        {
+            // 矢量
+            if(!font_func->func.read_vec_font)
+            {
+                idx+=len;
+                continue;
+            }
+            temp = font_func->func.read_vec_font(&font->res[idx_read], font_style , unicode , font->size , font->gray);
+            if(temp == 0)
+            {
+                idx+=len;
+                continue;
+            }
+            goto lab_next_word;
+        }
+#endif
+
+default_font:
+        font_style = _gt_is_style_cn_or_en(unicode);
+        if(1 == font_style)
+        {
+#if GT_CFG_USE_FONT_16_ASCII == 1
+            temp = 32;
+            gt_memcpy(&font->res[idx_read], &ascii_16[ (unicode-0x20)<<5 ], 32);
+#endif
+        }
+lab_next_word:
+        idx_read += temp;
         idx+=len;
     }
 }
@@ -263,30 +297,32 @@ uint32_t gt_font_count_word(char * utf8, uint32_t len)
 
 uint32_t gt_font_get_string_width(gt_font_st * font)
 {
-
 	uint32_t idx = 0, unicode, width = 0, temp;
 
     while( idx < font->len ){
         temp = _gt_utf8_to_unicode(&font->utf8[idx], &unicode);
         idx += temp;
-        if( _gt_font_latin_check(unicode) ){
-            //the unicode is latin, need get width
-           width += _gt_font_latin_get_width( unicode, font->size );
-        }else{
-            //the unicode is chinese or other
-            width += font->size;
-        }
+        width += gt_font_get_one_word_width(unicode , font);
     }
     return width;
 }
 
 
-uint8_t gt_font_get_one_word_width(uint32_t unicode, uint8_t font_size){
-    if( _gt_font_latin_check(unicode) ){
-        return _gt_font_latin_get_width(unicode, font_size);
-    }else{
-        return font_size;
+uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
+{
+
+#if _GT_ENABLE_GTZK == 1
+
+    int width = GT_Get_Font_Width(unicode , _gt_is_style_cn_or_en(unicode) ? font->style_en : font->style_cn , 
+                                    font->size , font->gray , font->res);
+    if(!width){
+        return font->size;
     }
+    return width;
+#else
+    return font->size;
+#endif
+
 }
 
 uint8_t gt_font_get_next_word_width(gt_font_st * font, uint8_t is_head){
@@ -301,7 +337,7 @@ uint8_t gt_font_get_next_word_width(gt_font_st * font, uint8_t is_head){
         i++;
     }
     idx++;
-    return gt_font_get_one_word_width(unicode, font->size);
+    return gt_font_get_one_word_width(unicode, font);
 }
 
 
