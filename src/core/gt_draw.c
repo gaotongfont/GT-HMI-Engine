@@ -175,15 +175,6 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
             idx_circle += radius;
         }
 
-        if (dsc->bg_opa > GT_OPA_MIN) {
-            idx = 0;
-            all = radius * radius;
-            double tmp_opa = (double)dsc->bg_opa / 255.0;
-            while (idx < all) {
-                mask_left_up[idx++] *= tmp_opa;
-            }
-        }
-
         // 1:draw left-up arch
         gt_draw_blend(draw_ctx, &blend_dsc);
 
