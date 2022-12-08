@@ -204,10 +204,10 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
 
     }
 
+    blend_dsc.mask_buf      = NULL;
+    blend_dsc.dst_buf       = NULL;
     /* draw border */
     if (border_width > 0) {
-        blend_dsc.mask_buf      = NULL;
-        blend_dsc.dst_buf       = NULL;
         blend_dsc.color_fill    = dsc->border_color;
 
         // 1:draw up border
@@ -218,10 +218,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         gt_draw_blend(draw_ctx, &blend_dsc);
 
         // 2:draw bottom border
-        area_mask.x = coords->x + radius;
         area_mask.y = (coords->y + coords->h) - border_width;
-        area_mask.w = coords->w - (radius << 1);
-        area_mask.h = border_width;
         gt_draw_blend(draw_ctx, &blend_dsc);
 
         // 3 draw left border
@@ -233,16 +230,11 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
 
         // 4 draw right border
         area_mask.x = (coords->x + coords->w) - border_width;
-        area_mask.y = coords->y + radius;
-        area_mask.w = border_width;
-        area_mask.h = coords->h - (radius << 1);
         gt_draw_blend(draw_ctx, &blend_dsc);
     }
 
     /* draw rect */
     if (dsc->is_fill) {
-        blend_dsc.mask_buf = NULL;
-        blend_dsc.dst_buf = NULL;
         blend_dsc.color_fill = dsc->bg_color;
 
         // 1:draw up rect
@@ -258,7 +250,6 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         area_mask.w = coords->w - (border_width<<1);
         area_mask.h = coords->h - (radius > border_width ? (radius << 1) : (border_width << 1));
         gt_draw_blend(draw_ctx, &blend_dsc);
-
 
         // 3:draw bottom rect
         area_mask.x = coords->x + radius;
