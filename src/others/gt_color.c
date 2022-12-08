@@ -35,11 +35,12 @@
 /* global functions / API interface -------------------------------------*/
 
 void gt_color_area_copy(gt_color_t *dst, gt_area_st area_dst, gt_color_t * src, gt_area_st area_src, gt_size_t w, gt_size_t h){
-    int _h = 0;
-    for(_h=0; _h<h; _h++){
-        gt_memcpy( &dst[ (_h+area_dst.y) * area_dst.w + area_dst.x ],
-                   &src[ (_h+area_src.y) * area_src.w + area_src.x ],
-                   w * sizeof(gt_color_t) );
+    uint32_t line = 0;
+    uint16_t len = w * sizeof(gt_color_t);
+    for (line = 0; line < h; line++) {
+        gt_memcpy( &dst[ (line+area_dst.y) * area_dst.w + area_dst.x ],
+                   &src[ (line+area_src.y) * area_src.w + area_src.x ],
+                   len );
     }
 }
 
