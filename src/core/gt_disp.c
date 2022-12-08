@@ -77,11 +77,11 @@ static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
 
 static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj)
 {
-    gt_disp_st * disp = gt_disp_get_default();
     if( !gt_obj_is_visible(obj) ){
         // GT_LOGD(GT_LOG_TAG_GUI, "obj not visible");
         return;
     }
+    gt_disp_st * disp = gt_disp_get_default();
 
     // GT_LOGV(GT_LOG_TAG_GUI, "obj visible");
 
@@ -100,12 +100,15 @@ static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj)
 static void _gt_disp_check_and_copy_foreach(gt_obj_st * obj)
 {
     int16_t idx = 0;
+    gt_obj_st * child_p = NULL;
+
     while( idx < obj->cnt_child ) {
-        if( obj->child[idx]->cnt_child != 0 ){
-            _gt_disp_check_and_copy_foreach( obj->child[idx] );
+        child_p = obj->child[idx];
+        if( child_p->cnt_child != 0 ){
+            _gt_disp_check_and_copy_foreach(child_p);
         }
 
-        gt_check_obj_visible_and_copy(obj->child[idx]);
+        gt_check_obj_visible_and_copy(child_p);
         idx++;
     }
 }
@@ -238,20 +241,17 @@ void gt_disp_ref_area(const gt_area_st * coords)
     disp->area_disp.w = area.w;
     disp->area_disp.h = line;
 
-    gt_color_t color_fill;
-    color_fill = gt_screen_get_bgcolor(scr);
+    gt_color_t color_fill = gt_screen_get_bgcolor(scr);
 
     while( y < area.h ){
 
         gt_color_fill(disp->vbd_color, len, color_fill);
 
         // use virt screen check obj visible area
-        disp->area_disp.y = area.y + y;
-        disp->area_disp.x = area.x;
         _gt_disp_check_and_copy_foreach(scr);
 
         // phy screen use area is from W x H
-        disp->area_disp.y = disp->area_disp.y - disp->area_act.y;
+        disp->area_disp.y -= disp->area_act.y;
         disp->area_disp.x = area.x - disp->area_act.x;
         disp->drv->flush_cb(disp->drv, &disp->area_disp, disp->vbd_color);
         y += line;
@@ -297,7 +297,8 @@ void gt_disp_scroll_area_act(uint16_t dist_x, int16_t dist_y)
     gt_disp_load_scr(gt_disp_get_scr());
 }
 
-void gt_disp_obj(gt_obj_st * obj){
+void gt_disp_obj(gt_obj_st * obj)
+{
     gt_area_st * area = gt_disp_get_area_act();
     gt_area_st area_valid;
     gt_obj_get_valid_area(obj, area, &area_valid);
