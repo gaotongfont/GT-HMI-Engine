@@ -91,9 +91,10 @@ static gt_fs_drv_st drv_vf;
  * @return uint32_t The number of bytes data read back preferentially,
  *      otherwise the number of bytes written successfully.
  */
-extern uint32_t spi_wr(uint8_t const * const data_write, uint32_t len_write, uint8_t * data_read, uint32_t len_read);
+extern uint32_t spi_wr(uint8_t * data_write, uint32_t len_write, uint8_t * data_read, uint32_t len_read);
 
 #endif
+
 void gt_port_vf_init(void)
 {
     gt_vf_init(virt_file_sys);

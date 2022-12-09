@@ -47,7 +47,8 @@ static gt_disp_drv_st drv;
 
 extern void _flush_cb(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
 
-void gt_port_disp_init(){
+void gt_port_disp_init(void)
+{
     gt_disp_drv_init(&drv);
 	drv.res_hor = GT_SCREEN_WIDTH;
 	drv.res_ver = GT_SCREEN_HEIGHT;
