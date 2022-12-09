@@ -25,7 +25,7 @@
 
 
 /* static variables -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
+static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e);
 
@@ -206,7 +206,7 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
  *
  * @param obj
  */
-static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
+static void _init_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
 
     _gt_listview_init_widget(obj);
@@ -219,7 +219,7 @@ static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
  */
 static void _deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "listview start deinit_cb");
-    _gt_style_listview_st ** style_p = (_gt_style_listview_st * )&obj->style;
+    _gt_style_listview_st ** style_p = (_gt_style_listview_st ** )&obj->style;
 
     // release item memory
 

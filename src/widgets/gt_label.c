@@ -25,7 +25,7 @@
 
 
 /* static variables -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
+static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e);
 
@@ -87,7 +87,7 @@ static inline void _gt_label_init_widget(gt_obj_st * label) {
  *
  * @param obj
  */
-static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
+static void _init_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
 
     _gt_label_init_widget(obj);
@@ -104,7 +104,7 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_style_label_st ** style_p = (_gt_style_label_st * )&obj->style;
+    _gt_style_label_st ** style_p = (_gt_style_label_st ** )&obj->style;
     if (NULL == *style_p) {
         return ;
     }

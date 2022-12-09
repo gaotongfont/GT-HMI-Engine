@@ -30,7 +30,7 @@ typedef struct _gt_style_obj_s
 }_gt_style_obj_st;
 
 /* static variables -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
+static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e);
 
@@ -55,7 +55,7 @@ static void _gt_obj_init_style(gt_obj_st * obj)
     style->bgcolor = gt_color_hex(0xFFFFFF);
 }
 
-static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class)
+static void _init_cb(gt_obj_st * obj)
 {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
     /* code */

@@ -19,17 +19,17 @@
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_BTN
-#define MY_CLASS    &gt_qrcode_class
+#define MY_CLASS    &gt_qr_code_class
 
 /* private typedef ------------------------------------------------------*/
 
 
 /* static variables -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
+static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_qrcode_class = {
+const gt_obj_class_st gt_qr_code_class = {
     ._init_cb = _init_cb,
     ._deinit_cb = _deinit_cb,
     ._event_cb = _event_cb,
@@ -45,23 +45,23 @@ const gt_obj_class_st gt_qrcode_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static inline void _gt_qrcode_init_widget(gt_obj_st * qrcode) {
-    _gt_style_qrcode_st * style = qrcode->style;
-    char * val = style->value;
+static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
+    // _gt_style_qrcode_st * style = qr_code->style;
+    // char * val = style->value;
 
     /**/
 
 }
 
 /**
- * @brief obj init qrcode widget cb
+ * @brief obj init qr_code widget cb
  *
  * @param obj
  */
-static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
+static void _init_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
 
-    _gt_qrcode_init_widget(obj);
+    _gt_qr_code_init_widget(obj);
 }
 
 /**
@@ -131,9 +131,9 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 }
 
 
-static void _gt_qrcode_init_style(gt_obj_st * qrcode)
+static void _gt_qrcode_init_style(gt_obj_st * qr_code)
 {
-    _gt_style_qrcode_st * style = (_gt_style_qrcode_st * )qrcode->style;
+    // _gt_style_qrcode_st * style = (_gt_style_qrcode_st * )qr_code->style;
 
     /* code */
 }
@@ -144,10 +144,10 @@ static void _gt_qrcode_init_style(gt_obj_st * qrcode)
 /* global functions / API interface -------------------------------------*/
 
 /**
- * @brief create a qrcode obj
+ * @brief create a qr_code obj
  *
- * @param parent qrcode's parent element
- * @return gt_obj_st* qrcode obj
+ * @param parent qr_code's parent element
+ * @return gt_obj_st* qr_code obj
  */
 gt_obj_st * gt_qrcode_create(gt_obj_st * parent)
 {

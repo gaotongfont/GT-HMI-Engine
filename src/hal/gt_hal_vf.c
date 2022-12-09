@@ -208,7 +208,7 @@ static gt_fs_res_et _tell_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t * po
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_vf_init(gt_vfs_st * vfs)
+void gt_vf_init(const gt_vfs_st * vfs)
 {
     _vfs = vfs;
 

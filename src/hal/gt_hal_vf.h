@@ -58,7 +58,7 @@ typedef struct _gt_vf_s {
  *
  * @param vfs gt_vfs_st arr,pic files messages
  */
-void gt_vf_init(gt_vfs_st * vfs);
+void gt_vf_init(const gt_vfs_st * vfs);
 
 /**
  * @brief register virt file system drv

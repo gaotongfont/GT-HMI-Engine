@@ -18,6 +18,7 @@
 #include "string.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
+#include "../core/gt_event.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_IMG
@@ -27,7 +28,7 @@
 
 
 /* static variables -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class);
+static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e);
 
@@ -68,7 +69,7 @@ static inline void _gt_img_init_widget(gt_obj_st * img)
  *
  * @param obj
  */
-static void _init_cb(gt_obj_st * obj, const gt_obj_class_st * class) {
+static void _init_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
 
     _gt_img_init_widget(obj);
@@ -85,7 +86,7 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_style_img_st ** style_p = (_gt_style_img_st * )&obj->style;
+    _gt_style_img_st ** style_p = (_gt_style_img_st ** )&obj->style;
     if (NULL == *style_p) {
         return ;
     }
