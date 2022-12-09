@@ -191,7 +191,7 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name, gt_s
         break;
     }
 
-    return GT_RES_OK;
+    return dsc->decoder ? GT_RES_OK : GT_RES_FAIL;
 }
 
 gt_res_t gt_img_decoder_read_line(_gt_img_dsc_st * dsc, gt_size_t x, gt_size_t y, gt_size_t len, uint8_t * buf)

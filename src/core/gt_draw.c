@@ -437,6 +437,12 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
     if( dsc->bg_img_src == NULL ) return;
     if( dsc->bg_opa < GT_OPA_MIN ) return;
 
+    _gt_img_dsc_st dsc_img;
+    if ( GT_RES_FAIL == gt_img_decoder_open(&dsc_img, dsc->bg_img_src, 0)) {
+        GT_LOGW(GT_LOG_TAG_DATA, "Open image decoder failed\n");
+        return ;
+    }
+
     gt_area_st dst_area, mask_area;
     dst_area = *coords;
     dst_area.h = 1;
@@ -447,22 +453,18 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
         .mask_area = &mask_area,
         .opa = dsc->bg_opa
     };
-    uint16_t w, h, y = 0;
+
     uint32_t addr_start_alpha = 0;
-    if( gt_fs_read_img_wh(dsc->bg_img_src, &w, &h) == GT_RES_FAIL){
-        return;
-    }
-
-    _gt_img_dsc_st dsc_img;
-    gt_img_decoder_open(&dsc_img, dsc->bg_img_src, 0);
-    gt_area_st area_res;
-    gt_color_t * color_img_line_p = NULL;
-    uint8_t * mask_buf = NULL;
     uint32_t offset = 0, len = 0;
+    gt_color_t * color_img_line_p = NULL;
+    uint16_t w, h, y = 0;
+    gt_area_st area_res;
+    uint8_t * mask_buf = NULL;
 
+    w = dsc_img.header.w;
+    h = dsc_img.header.h;
     addr_start_alpha = w * h * sizeof(gt_color_t);
     /* img src type */
-    // gt_img_get_type(dsc->bg_img_src);
     switch(dsc_img.header.type){
 
         case GT_IMG_DECODER_TYPE_PNG: {
