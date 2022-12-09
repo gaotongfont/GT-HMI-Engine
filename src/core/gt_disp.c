@@ -75,7 +75,7 @@ static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
     }
 }
 
-static void gt_check_obj_visible_and_copy(gt_obj_st * obj)
+static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj)
 {
     if( !gt_obj_is_visible(obj) ){
         // GT_LOGD(GT_LOG_TAG_GUI, "obj not visible");
@@ -247,6 +247,8 @@ void gt_disp_ref_area(const gt_area_st * coords)
 
         gt_color_fill(disp->vbd_color, len, color_fill);
 
+        disp->area_disp.y = area.y + y;
+        disp->area_disp.x = area.x;
         // use virt screen check obj visible area
         _gt_disp_check_and_copy_foreach(scr);
 
