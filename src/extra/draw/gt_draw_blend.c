@@ -51,7 +51,7 @@
  * @param draw_ctx draw content
  * @param dsc
  */
-void gt_draw_blend(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc)
+void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc)
 {
     if( dsc->opa <= GT_OPA_MIN ) return;
 
@@ -65,15 +65,15 @@ void gt_draw_blend(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc)
     gt_draw_blend_basic(draw_ctx, dsc);
 }
 
-void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc)
+void gt_draw_blend_basic(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc)
 {
     bool mask = true;   // use mask blend
 
-	gt_area_st area_res;
-    if( !gt_area_intersect_screen(draw_ctx->buf_area, dsc->dst_area, &area_res) ){
+	gt_area_st area_src = {0, 0, 0, 0};
+    if( !gt_area_intersect_screen(draw_ctx->buf_area, dsc->dst_area, &area_src) ){
         return;
     }
-    if( area_res.w == 0 || area_res.h == 0 ){
+    if( area_src.w == 0 || area_src.h == 0 ){
         return;
     }
     if( dsc->mask_buf == NULL ){
@@ -88,14 +88,9 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
         .y = 0,
         .w = area_draw.w,
         .h = area_draw.h
-    }, area_src = {
-        .x = area_res.x,
-        .y = area_res.y,
-        .w = area_res.w,
-        .h = area_res.h
     };
 
-    // GT_LOGD(GT_LOG_TAG_GUI ,"x:%d,y:%d,w:%d,h:%d\n", area_res.x, area_res.y, area_res.w, area_res.h);
+    // GT_LOGD(GT_LOG_TAG_GUI ,"x:%d,y:%d,w:%d,h:%d\n", area_src.x, area_src.y, area_src.w, area_src.h);
 
     if( area_dsc.y > area_draw.y ){
         area_dst.y = area_dsc.y - area_draw.y;
@@ -112,7 +107,7 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
 
     gt_color_t * color_dst_p = draw_ctx->buf, * color_src_p = dsc->dst_buf;
     gt_opa_t opa_res;
-	int x,y;
+	gt_size_t x,y;
     // use dsc->opa to blend background
     if( !mask ){
         // fill dsc->dst_buf use opa
@@ -146,7 +141,7 @@ void gt_draw_blend_basic(gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * 
             }
         }
     }
-    // use dsc->mask_buff to blend background
+    // use dsc->mask_buf to blend background
     else{
         // use dsc->mask_buf fill dsc->dst_buf to draw_ctx->buf
         if( NULL != dsc->dst_buf ){

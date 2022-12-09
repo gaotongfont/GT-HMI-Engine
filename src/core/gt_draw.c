@@ -493,7 +493,15 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
 
             len = w * sizeof(gt_color_t);
             color_img_line_p = gt_mem_malloc( len );
+            if (!color_img_line_p) { break; }
+
             mask_buf = gt_mem_malloc(w);
+            if (!mask_buf) {
+                gt_mem_free(color_img_line_p);
+                break;
+            }
+
+            blend_dsc.mask_buf = NULL;  /* default: bmp */
             while(y < h){
                 if( !gt_area_intersect_screen(draw_ctx->buf_area, &dst_area, &area_res) ){
                     y++;
@@ -504,12 +512,10 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
                 }
                 /*read one line color data*/
                 gt_fs_read_img_offset((uint8_t *)color_img_line_p, offset, len);
-                if( fp->msg.pic.is_alpha == 1 ){//png
+                if( fp->msg.pic.is_alpha == 1 ) {    //png
                     gt_fs_read_img_offset((uint8_t *)mask_buf, addr_start_alpha, w);
                     addr_start_alpha += w;
                     blend_dsc.mask_buf = mask_buf;
-                }else{//bmp
-                    blend_dsc.mask_buf = NULL;
                 }
 
                 blend_dsc.dst_buf = color_img_line_p;
