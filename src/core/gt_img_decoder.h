@@ -85,12 +85,12 @@ typedef gt_res_t ( * gt_img_decoder_open_t)(struct _gt_img_decoder_s * decoder, 
 /**
  * @brief function pointer to read line data from image data
  */
-typedef gt_res_t ( * gt_img_decoder_read_line_t)(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc,
+typedef gt_res_t ( * gt_img_decoder_read_line_t)(struct _gt_img_dsc_s * dsc,
                                                 gt_size_t x, gt_size_t y, gt_size_t len, uint8_t * buffer);
 /**
  * @brief function pointer to close image file
  */
-typedef gt_res_t ( * gt_img_decoder_close_t)(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc);
+typedef gt_res_t ( * gt_img_decoder_close_t)(struct _gt_img_dsc_s * dsc);
 
 /**
  * @brief callback function
@@ -178,11 +178,10 @@ gt_res_t gt_img_decoder_read_line(_gt_img_dsc_st * dsc, gt_size_t x, gt_size_t y
  * @brief Close an open file object. After the function successful be called, the
  *      file object is no longer valid and it can be discarded.
  *
- * @param decoder The image decoder pointer
  * @param dsc need to be closed file object
  * @return gt_res_t The return status
  */
-gt_res_t gt_img_decoder_close(struct _gt_img_decoder_s * decoder, _gt_img_dsc_st * dsc);
+gt_res_t gt_img_decoder_close(_gt_img_dsc_st * dsc);
 
 /**
  * @brief Set the information callback function pointer into image decoder object.

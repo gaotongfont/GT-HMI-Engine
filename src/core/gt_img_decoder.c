@@ -47,6 +47,7 @@
  */
 static gt_res_t _gt_img_decoder_built_in_info(struct _gt_img_decoder_s * decoder, const void * src, _gt_img_info_st * header)
 {
+    GT_UNUSED(decoder);
     gt_fs_fp_st * fp = gt_fs_open(src, GT_FS_MODE_RD);
     if (!fp) {
         return GT_RES_INV;
@@ -61,7 +62,6 @@ static gt_res_t _gt_img_decoder_built_in_info(struct _gt_img_decoder_s * decoder
 static gt_res_t _gt_img_decoder_built_in_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc)
 {
     GT_UNUSED(decoder);
-
     gt_fs_fp_st * fp = gt_fs_open(dsc->src, GT_FS_MODE_RD);
     if (!fp) {
         return GT_RES_INV;
@@ -73,7 +73,7 @@ static gt_res_t _gt_img_decoder_built_in_open(struct _gt_img_decoder_s * decoder
     return GT_RES_OK;
 }
 
-static gt_res_t _gt_img_decoder_built_in_read_line(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc,
+static gt_res_t _gt_img_decoder_built_in_read_line(struct _gt_img_dsc_s * dsc,
                                                 gt_size_t x, gt_size_t y, gt_size_t len, uint8_t * buffer)
 {
     gt_fs_fp_st * fp = gt_fs_get_fp();
@@ -95,9 +95,8 @@ static gt_res_t _gt_img_decoder_built_in_read_line(struct _gt_img_decoder_s * de
     return GT_RES_OK;
 }
 
-static gt_res_t _gt_img_decoder_built_in_close(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc)
+static gt_res_t _gt_img_decoder_built_in_close(struct _gt_img_dsc_s * dsc)
 {
-    GT_UNUSED(decoder);
     GT_UNUSED(dsc);
 
     gt_fs_close();
@@ -143,7 +142,7 @@ void gt_img_decoder_register(_gt_img_decoder_st * decoder)
 
 gt_img_decoder_type_em gt_img_decoder_get_type(_gt_img_info_st * header)
 {
-    return header->type;
+    return (gt_img_decoder_type_em)header->type;
 }
 
 gt_res_t gt_img_decoder_get_info(const char * name, _gt_img_info_st * header)
@@ -168,6 +167,8 @@ gt_res_t gt_img_decoder_get_info(const char * name, _gt_img_info_st * header)
 gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name, gt_size_t frame_id)
 {
     _gt_img_decoder_st * ptr = NULL;
+    dsc->decoder = NULL;    /* reset image dsc struct */
+    dsc->src = NULL;
 
     gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), list) {
         if (NULL == ptr->open_cb || NULL == ptr->info_cb) {
@@ -195,23 +196,27 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name, gt_s
 
 gt_res_t gt_img_decoder_read_line(_gt_img_dsc_st * dsc, gt_size_t x, gt_size_t y, gt_size_t len, uint8_t * buf)
 {
+    if (NULL == dsc || NULL == dsc->decoder) {
+        return GT_RES_INV;
+    }
+
     if (NULL == dsc->decoder->read_line_cb) {
         return GT_RES_INV;
     }
 
-    if (dsc->decoder->read_line_cb(dsc->decoder, dsc, x, y, len, buf)) {
+    if (dsc->decoder->read_line_cb(dsc, x, y, len, buf)) {
         return GT_RES_INV;
     }
 
     return GT_RES_OK;
 }
 
-gt_res_t gt_img_decoder_close(struct _gt_img_decoder_s * decoder, _gt_img_dsc_st * dsc)
+gt_res_t gt_img_decoder_close(_gt_img_dsc_st * dsc)
 {
     if (NULL == dsc->decoder->close_cb) {
         return GT_RES_OK;
     }
-    return dsc->decoder->close_cb(decoder, dsc);
+    return dsc->decoder->close_cb(dsc);
 }
 
 void gt_img_decoder_set_info_cb(_gt_img_decoder_st * decoder, gt_img_decoder_get_info_t info_cb)

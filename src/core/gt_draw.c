@@ -429,23 +429,8 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
 
     }
 
-    // gt_mem_free(data);
-    // gt_mem_free(mask_buf);
-    // gt_mem_free(mask_line);
-
     return area_font;
 }
-
-enum{
-    GT_IMG_TYPE_FILE_PNG,
-    GT_IMG_TYPE_RGB565_PNG,
-    GT_IMG_TYPE_RGBA8888_PNG,
-
-    GT_IMG_TYPE_FILE_BMP,
-    GT_IMG_TYPE_RGB565_BMP,
-    GT_IMG_TYPE_RGBA8888_BMP,
-};
-
 
 void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
 {
@@ -467,10 +452,8 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
     if( gt_fs_read_img_wh(dsc->bg_img_src, &w, &h) == GT_RES_FAIL){
         return;
     }
-    gt_fs_fp_st * fp = gt_fs_open(dsc->bg_img_src, GT_FS_MODE_RD);
 
     _gt_img_dsc_st dsc_img;
-
     gt_img_decoder_open(&dsc_img, dsc->bg_img_src, 0);
     gt_area_st area_res;
     gt_color_t * color_img_line_p = NULL;
@@ -482,7 +465,7 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
     // gt_img_get_type(dsc->bg_img_src);
     switch(dsc_img.header.type){
 
-        case GT_IMG_DECODER_TYPE_PNG:
+        case GT_IMG_DECODER_TYPE_PNG: {
             /* line by line to blend */
             while(y < h){
                 if( !gt_area_intersect_screen(draw_ctx->buf_area, &dst_area, &area_res) ){
@@ -490,12 +473,10 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
                     dst_area.y++;
                     continue;
                 }
+                len = y * w;
                 /*read one line color data*/
-                color_img_line_p = (gt_color_t *)&dsc_img.img[y * w * sizeof(gt_color_t)];
-                mask_buf = &dsc_img.alpha[y * w];
-
-                blend_dsc.mask_buf = mask_buf;
-                blend_dsc.dst_buf = color_img_line_p;
+                blend_dsc.mask_buf = &dsc_img.alpha[len];
+                blend_dsc.dst_buf = (gt_color_t *)&dsc_img.img[len * sizeof(gt_color_t)];
 
                 /* blend to bg */
                 gt_draw_blend(draw_ctx, &blend_dsc);
@@ -504,7 +485,12 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
                 mask_area.y++;
             }
             break;
-        default:// gt format
+        }
+        default: {
+            // gt format
+            gt_fs_fp_st * fp = gt_fs_get_fp();
+            if (!fp) { break; }
+
             len = w * sizeof(gt_color_t);
             color_img_line_p = gt_mem_malloc( len );
             mask_buf = gt_mem_malloc(w);
@@ -538,8 +524,12 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
             gt_mem_free(color_img_line_p);
             gt_mem_free(mask_buf);
             break;
+        }
     }
-    gt_img_decoder_close(dsc_img.decoder, &dsc_img);
+
+    if (dsc_img.decoder) {
+        gt_img_decoder_close(&dsc_img);
+    }
 }
 
 /* end ------------------------------------------------------------------*/

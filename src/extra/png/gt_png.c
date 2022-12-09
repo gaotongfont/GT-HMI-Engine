@@ -201,7 +201,7 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
     return ret;
 }
 
-static gt_res_t _gt_png_read_line(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc,
+static gt_res_t _gt_png_read_line(struct _gt_img_dsc_s * dsc,
                                     gt_size_t x, gt_size_t y, gt_size_t len, uint8_t * buffer)
 {
     gt_memcpy(buffer, &dsc->img[dsc->header.w *y*sizeof(gt_color_t)], len);
@@ -209,10 +209,8 @@ static gt_res_t _gt_png_read_line(struct _gt_img_decoder_s * decoder, struct _gt
     return GT_RES_OK;
 }
 
-static gt_res_t _gt_png_close(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc)
+static gt_res_t _gt_png_close(struct _gt_img_dsc_s * dsc)
 {
-    GT_UNUSED(decoder);
-
     if (dsc->img) {
         gt_mem_free(dsc->img);
         dsc->img = NULL;

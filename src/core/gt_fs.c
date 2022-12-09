@@ -259,7 +259,9 @@ gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h)
 void gt_fs_close(void)
 {
     _gt_fs_dsc_st * dsc = _gt_fs_get_dsc();
-    dsc->drv->close_cb(dsc->drv, dsc->fp);
+    if (dsc->drv->close_cb) {
+        dsc->drv->close_cb(dsc->drv, dsc->fp);
+    }
 
     _gt_fs_free_dsc();
 }
