@@ -75,16 +75,6 @@ typedef void (* gt_event_cb_t)(gt_event_st * e);
 
 #define GT_EVENT_GET_MASK_SHIFT_BIT(_event_type)    (1 << (_event_type))
 
-/**
- * @brief Get the code value for the event
- *
- * @param e The structure of the event
- * @return gt_event_type_et get newly code value @ref gt_event_type_e
- */
-gt_event_type_et inline gt_event_get_code(gt_event_st * e) {
-    return e->code;
-}
-
 
 
 /* global functions / API interface -------------------------------------*/
@@ -132,6 +122,14 @@ bool gt_event_is_locked(void);
  * @return struct gt_obj_s*
  */
 struct _gt_obj_s * gt_event_get_locked_obj(void);
+
+/**
+ * @brief Get the code value for the event
+ *
+ * @param e The structure of the event
+ * @return gt_event_type_et get newly code value @ref gt_event_type_e
+ */
+gt_event_type_et gt_event_get_code(gt_event_st * e);
 
 #ifdef __cplusplus
 } /*extern "C"*/

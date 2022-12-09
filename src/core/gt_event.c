@@ -233,4 +233,8 @@ struct _gt_obj_s * gt_event_get_locked_obj(void)
     return _gt_event_obj_locked;
 }
 
+gt_event_type_et gt_event_get_code(gt_event_st * e) {
+    return e->code;
+}
+
 /* end ------------------------------------------------------------------*/

@@ -331,7 +331,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         .color_fill = dsc->font_color,
         .opa        = dsc->opa,
     };
-    gt_memset(mask_line, 0xFF, dsc->font->size*2);
+    gt_memset(mask_line, 0xFF, dsc->font->size << 1);
 
     blend_dsc_style = blend_dsc;
     blend_dsc_style.color_fill  = gt_color_black();
