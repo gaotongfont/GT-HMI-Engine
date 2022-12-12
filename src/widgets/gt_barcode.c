@@ -96,6 +96,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     rect_attr.data_gray = style->pdat;
     rect_attr.gray = 1;
 
+    GT_LOGD(GT_LOG_TAG_UI , "barcode gray = %d" , rect_attr.gray);
     // 1:base shape
     draw_bg(barcode->draw_ctx, &rect_attr, &barcode->area);
 }
@@ -230,6 +231,20 @@ gt_obj_st * gt_barcode_create(gt_obj_st * parent) {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
     _gt_barcode_init_style(obj);
     return obj;
+}
+
+void gt_barcode_style_set_code_text(gt_obj_st * barcode , char* code)
+{
+    _gt_style_barcode_st * style = barcode->style;
+    if( NULL != style->barcode)
+    {
+        gt_mem_free(style->barcode);
+    }
+    uint16_t size = strlen(code);
+    style->barcode = gt_mem_malloc(size+1);
+    gt_memcpy(style->barcode, code, size);
+    style->barcode[size] = '\0';
+    // gt_event_send(barcode, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_barcode_style_set_type(gt_obj_st * barcode , gt_family_t family)

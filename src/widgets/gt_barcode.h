@@ -16,7 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
-#include "../hal/gt_hal_barcode.h"
+#include "../extra/barcode/gt_barcode_src.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -39,6 +39,7 @@ typedef barcode_st _gt_style_barcode_st;
  */
 gt_obj_st * gt_barcode_create(gt_obj_st * parent);
 
+void gt_barcode_style_set_code_text(gt_obj_st * barcode , char* code);
 void gt_barcode_style_set_type(gt_obj_st * barcode , gt_family_t family);
 void gt_barcode_style_set_hri_type(gt_obj_st * barcode , gt_family_t family);
 void gt_barcode_style_set_mode_w(gt_obj_st * barcode , uint8_t value);

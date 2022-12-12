@@ -41,7 +41,6 @@ extern "C" {
 #include "src/hal/gt_hal_indev.h"
 #include "src/hal/gt_hal_vf.h"
 #include "src/hal/gt_hal_tick.h"
-#include "src/hal/gt_hal_barcode.h"
 
 
 /* widgets */
@@ -50,6 +49,9 @@ extern "C" {
 
 /* draw */
 #include "src/extra/draw/gt_draw_blend.h"
+
+/* barcode */
+#include "src/extra/barcode/gt_barcode_src.h"
 
 
 #if GT_CFG_ENABLE_BTN == 1

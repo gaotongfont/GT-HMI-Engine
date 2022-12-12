@@ -8,7 +8,7 @@
  */
 
 /* include --------------------------------------------------------------*/
-#include "gt_hal_barcode.h"
+#include "../extra/barcode/gt_barcode_src.h"
 #include "string.h"
 #include "stdio.h"
 
@@ -3653,7 +3653,7 @@ int gt_barcode_get(barcode_st * p_code)
     default:
         return 0;
     }
-
+    
     return ret;
 
 ERR_RET:
