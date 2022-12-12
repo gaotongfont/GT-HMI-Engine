@@ -41,6 +41,8 @@ extern "C" {
 #include "src/hal/gt_hal_indev.h"
 #include "src/hal/gt_hal_vf.h"
 #include "src/hal/gt_hal_tick.h"
+#include "src/hal/gt_hal_barcode.h"
+
 
 /* widgets */
 #include "src/widgets/gt_conf_widgets.h"
@@ -107,6 +109,10 @@ extern "C" {
 
 #if GT_CFG_ENABLE_RECT == 1
 #include "src/widgets/gt_rect.h"
+#endif
+
+#if GT_CFG_ENABLE_BARCODE == 1
+#include "src/widgets/gt_barcode.h"
 #endif
 
 /* other */

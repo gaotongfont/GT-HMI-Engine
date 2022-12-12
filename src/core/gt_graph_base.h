@@ -86,6 +86,10 @@ typedef struct _gt_attr_rect_s
     gt_size_t border_width;     ///< border width in pixels
     gt_opa_t border_opa;        ///< border opacity
 
+    // Dot matrix data
+    uint8_t gray;
+    uint8_t* data_gray;
+
     uint8_t is_fill:1;          ///< fill inside area by fg_color
 }gt_attr_rect_st;
 

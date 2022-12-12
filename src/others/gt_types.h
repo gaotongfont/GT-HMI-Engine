@@ -57,6 +57,7 @@ typedef enum type_widget_e {
     GT_TYPE_PROCESS_BAR = 13,       ///< progress bar
     GT_TYPE_KEYPAD      = 14,       ///< keypad
     GT_TYPE_IMGBTN      = 15,       ///< imgbtn
+    GT_TYPE_BARCODE     = 16,       ///< barcode
 
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;

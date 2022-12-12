@@ -127,6 +127,47 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
     if (radius <= GT_RADIUS_MIN) {
         radius = 0;
     }
+    
+    // Dot matrix data
+    if(dsc->gray != 0)
+    {
+        if(!dsc->data_gray)
+        {
+            return ;
+        }
+        uint8_t * mask_buf = NULL ;
+        uint32_t len = bg_coords.w * bg_coords.h , index = 0 , buf_idx = 0;
+        char idx_bit = 0;
+        mask_buf = gt_mem_malloc(len);
+        blend_dsc.mask_buf = mask_buf;
+        blend_dsc.mask_area->w = coords->w;
+        blend_dsc.mask_area->h = coords->h;
+
+        len = len >> 3;
+        buf_idx = 0;
+        index = 0;
+        while( index < len ){
+            
+            for(idx_bit = 0 ; idx_bit < 8 ;idx_bit++)
+            {
+                if( (dsc->data_gray[index] << idx_bit )&0x80 ){
+                    mask_buf[buf_idx++] = 0xFF;
+                }else{
+                    mask_buf[buf_idx++] = 0x00;
+                }
+            }
+            index++;
+        }
+        gt_draw_blend(draw_ctx , &blend_dsc);
+
+        if(mask_buf)
+        {
+            gt_mem_free(mask_buf);
+        }
+        mask_buf = NULL;
+        return ;
+    }
+
     /* draw circle */
     if (radius > GT_RADIUS_MIN) {
         uint32_t mem_size = (radius << 1) * (radius << 1) * sizeof(gt_color_t);
