@@ -79,7 +79,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     // 获取数据
     if(!gt_barcode_get(style))
     {
-        GT_LOGD(GT_LOG_TAG_GUI , "barcode type = %d ,dot_w = %d , dot_h = %d" , style->type , style->ret_param.dot_w , style->ret_param.dot_h);
+        GT_LOGE(GT_LOG_TAG_GUI , "barcode err type = %d ,dot_w = %d , dot_h = %d" , style->type , style->ret_param.dot_w , style->ret_param.dot_h);
         return ;
     }
 
