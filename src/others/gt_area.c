@@ -29,9 +29,40 @@
 
 /* static functions -----------------------------------------------------*/
 
+static inline bool _gt_area_is_outside_area(
+    gt_size_t a1_x1, gt_size_t a1_y1, gt_size_t a1_x2, gt_size_t a1_y2,
+    gt_size_t a2_x1, gt_size_t a2_y1, gt_size_t a2_x2, gt_size_t a2_y2) {
+
+    if ( a1_x2 < a2_x1 ) { return true; }
+
+    if ( a1_y2 < a2_y1 ) { return true; }
+
+    if ( a1_x1 > a2_x2 ) { return true; }
+
+    if ( a1_y1 > a2_y2 ) { return true; }
+
+    return false;
+}
 
 
 /* global functions / API interface -------------------------------------*/
+bool gt_area_is_intersect_screen(const gt_area_st * area_scr, const gt_area_st * area_fore)
+{
+    gt_size_t fore_x2 = AREA_X2(area_fore);
+    gt_size_t fore_y2 = AREA_Y2(area_fore);
+
+    gt_size_t scr_x2 = AREA_X2(area_scr);
+    gt_size_t scr_y2 = AREA_Y2(area_scr);
+
+    if (_gt_area_is_outside_area(
+        AREA_X1(area_scr), AREA_Y1(area_scr), scr_x2, scr_y2,
+        AREA_X1(area_fore), AREA_Y1(area_fore), fore_x2, fore_y2)) {
+        return false;
+    }
+
+    return true;
+}
+
 bool gt_area_intersect_screen(const gt_area_st * area_scr, const gt_area_st * area_fore, gt_area_st * area_res)
 {
     gt_size_t fore_x2 = AREA_X2(area_fore);
@@ -40,24 +71,18 @@ bool gt_area_intersect_screen(const gt_area_st * area_scr, const gt_area_st * ar
     gt_size_t scr_x2 = AREA_X2(area_scr);
     gt_size_t scr_y2 = AREA_Y2(area_scr);
 
-    if( scr_x2 < AREA_X1(area_fore) ){
-        return false;
-    }
-
-    if( scr_y2 < AREA_Y1(area_fore) ){
-        return false;
-    }
-
-    if( AREA_X1(area_scr) > fore_x2 ){
-        return false;
-    }
-
-    if( AREA_Y1(area_scr) > fore_y2 ){
+    if (_gt_area_is_outside_area(
+        AREA_X1(area_scr), AREA_Y1(area_scr), scr_x2, scr_y2,
+        AREA_X1(area_fore), AREA_Y1(area_fore), fore_x2, fore_y2)) {
         return false;
     }
 
     // calc area_res pos and width and height
     AREA_X1(area_res) = 0;
+    AREA_Y1(area_res) = 0;
+    AREA_W(area_res)  = 0;
+    AREA_H(area_res)  = 0;
+
     if( AREA_X1(area_fore) < AREA_X1(area_scr) ){
         AREA_X1(area_res) = AREA_X1(area_scr) - AREA_X1(area_fore);
 
@@ -74,7 +99,6 @@ bool gt_area_intersect_screen(const gt_area_st * area_scr, const gt_area_st * ar
         }
     }
 
-    AREA_Y1(area_res) = 0;
     if( AREA_Y1(area_fore) < AREA_Y1(area_scr) ){
         AREA_Y1(area_res) = AREA_Y1(area_scr) - AREA_Y1(area_fore);
 

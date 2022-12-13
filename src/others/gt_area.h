@@ -39,6 +39,7 @@ extern "C" {
 
 /* global functions / API interface -------------------------------------*/
 
+bool gt_area_is_intersect_screen(const gt_area_st * area_scr, const gt_area_st * area_fore);
 /**
  * @brief calc two areas intersect
  *
