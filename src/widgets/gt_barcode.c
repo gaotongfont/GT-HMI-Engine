@@ -54,27 +54,20 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     bar_uint32_t buf_size = 0;
 
     // 获取长宽
-    if(!gt_get_barcode_w_and_h(style))
+    if(!gt_barcode_get_w_and_h(style))
     {
         if(style->ret_param.dot_w == 0 || style->ret_param.dot_h == 0)
         {
             GT_LOGE(GT_LOG_TAG_GUI , "barcode err dot_w = %d , dot_h = %d" , style->ret_param.dot_w , style->ret_param.dot_h);
             return ;
         }
-
-        buf_size = (style->ret_param.dot_w * style->ret_param.dot_h) >> 3;
-        if(buf_size > style->pdat_size)
-        {
-            if(style->pdat)
-            {
-                gt_mem_free(style->pdat);
-            }
-            style->pdat = gt_mem_malloc(buf_size);
-            style->pdat_size = buf_size;
-        }
     }
     barcode->area.w = style->ret_param.dot_w;
     barcode->area.h = style->ret_param.dot_h;
+    buf_size = (barcode->area.w * barcode->area.h) >> 3;
+    style->pdat = gt_mem_malloc(buf_size);
+    style->pdat_size = buf_size;
+    GT_LOGD(GT_LOG_TAG_GUI , "barcode dot_w = %d , dot_h = %d , buf_size = %d" , barcode->area.w , barcode->area.h , style->pdat_size);
 
     // 获取数据
     if(!gt_barcode_get(style))
@@ -82,7 +75,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
         GT_LOGE(GT_LOG_TAG_GUI , "barcode err type = %d ,dot_w = %d , dot_h = %d" , style->type , style->ret_param.dot_w , style->ret_param.dot_h);
         return ;
     }
-
+    
     /* base shape */
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
@@ -99,6 +92,10 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     GT_LOGD(GT_LOG_TAG_UI , "barcode gray = %d" , rect_attr.gray);
     // 1:base shape
     draw_bg(barcode->draw_ctx, &rect_attr, &barcode->area);
+
+    gt_mem_free(style->pdat);
+    style->pdat = NULL;
+    style->pdat_size = 0;
 }
 
 /**
@@ -217,8 +214,7 @@ static void _gt_barcode_init_style(gt_obj_st * barcode)
     style->mode_w = 2;
     style->mode_h = 64;
     style->upc_e_sys = 0;
-    style->pdat_size = 1;
-    style->pdat = gt_mem_malloc(1);
+    style->pdat_size = 0;
 }
 /* global functions / API interface -------------------------------------*/
 /**

@@ -136,12 +136,13 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
             return ;
         }
         uint8_t * mask_buf = NULL ;
-        uint32_t len = bg_coords.w * bg_coords.h , index = 0 , buf_idx = 0;
+        uint32_t len = coords->w * coords->h , index = 0 , buf_idx = 0;
         char idx_bit = 0;
         mask_buf = gt_mem_malloc(len);
         blend_dsc.mask_buf = mask_buf;
         blend_dsc.mask_area->w = coords->w;
         blend_dsc.mask_area->h = coords->h;
+        GT_LOGD(GT_LOG_TAG_GUI , "dsc->gray = %d , w = %d , h = %d , buf_size = %d" ,dsc->gray , blend_dsc.mask_area->w , blend_dsc.mask_area->h , len);
 
         len = len >> 3;
         buf_idx = 0;

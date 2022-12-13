@@ -854,6 +854,8 @@ static int _ean13_handler(_code_st * p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
     
+    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
+
     _get_bracode_scope(p_barcode);
 
     memset(p_row , 0 , sizeof(_row_st));
@@ -1229,6 +1231,8 @@ static int _ean8_handler(_code_st * p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
     
+    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
+
     _get_bracode_scope(p_barcode);
 
     memset(p_row , 0 , sizeof(_row_st));
@@ -1359,8 +1363,6 @@ static int _get_ean8(_code_st * p_barcode)
         p_barcode->left_blank_none += (temp - ((temp >> 1)));
         p_barcode->right_blank_none += (temp >> 1);
     }
-
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
 
     // return _ean8_handler(p_barcode);
     return 1;
@@ -1638,6 +1640,8 @@ static int _upc_a_handler(_code_st* p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
     
+    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
+
     _get_bracode_scope(p_barcode);
 
     memset(p_row , 0 , sizeof(_row_st));
@@ -1950,6 +1954,8 @@ static int _upce_handler(_code_st * p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
     
+    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
+
     _get_bracode_scope(p_barcode);
 
     memset(p_row , 0 , sizeof(_row_st));
@@ -2204,6 +2210,8 @@ static int _itf_handler(_code_st * p_barcode)
 
     if(NULL == p_barcode)
         goto ERR_RET;
+    
+    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
     
     _get_bracode_scope(p_barcode);
 
@@ -2495,6 +2503,7 @@ static int _codabar_handler(_code_st * p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
     
+    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
     _get_bracode_scope(p_barcode);
 
     memset(p_row , 0 , sizeof(_row_st));
@@ -2881,6 +2890,7 @@ static int _code128_handler(_code_st * p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
     
+    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
     _get_bracode_scope(p_barcode);
 
     memset(p_row , 0 , sizeof(_row_st));
@@ -3178,6 +3188,7 @@ static int _code93_handler(_code_st * p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
     
+    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
     _get_bracode_scope(p_barcode);
 
     memset(p_row , 0 , sizeof(_row_st));
@@ -3397,6 +3408,7 @@ static int _code39_handler(_code_st * p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
     
+    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
     _get_bracode_scope(p_barcode);
 
     memset(p_row , 0 , sizeof(_row_st));
@@ -3661,7 +3673,7 @@ ERR_RET:
     return 0;
 }
 
-int gt_get_barcode_w_and_h(barcode_st * p_code)
+int gt_barcode_get_w_and_h(barcode_st * p_code)
 {
     bar_uint8_t ret = 0;
     if(NULL == p_code)
@@ -3678,8 +3690,8 @@ int gt_get_barcode_w_and_h(barcode_st * p_code)
     if(NULL == _p_barcode->p_code->barcode)
         goto ERR_RET;
 
-    if(NULL == _p_barcode->p_code->pdat)
-        goto ERR_RET;
+    // if(NULL == _p_barcode->p_code->pdat)
+    //     goto ERR_RET;
 
     switch (_p_barcode->p_code->type)
     {

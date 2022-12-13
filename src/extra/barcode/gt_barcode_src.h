@@ -6,8 +6,8 @@
  * @date 2022-06-16 13:44:03
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
  */
-#ifndef _GT_HAL_BARCODE_H_
-#define _GT_HAL_BARCODE_H_
+#ifndef _GT_BARCODE_SRC_H_
+#define _GT_BARCODE_SRC_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -88,7 +88,7 @@ typedef struct
 /* global functions / API interface -------------------------------------*/
 int gt_barcode_get(barcode_st * p_code);
 
-int gt_get_barcode_w_and_h(barcode_st * p_code);
+int gt_barcode_get_w_and_h(barcode_st * p_code);
 
 #ifdef __cplusplus
 } /*extern "C"*/
