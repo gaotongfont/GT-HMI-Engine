@@ -95,6 +95,7 @@ uint16_t gt_obj_style_get_h(gt_obj_st * obj) {
 void gt_obj_set_visible(gt_obj_st * obj, gt_visible_et is_visible)
 {
     obj->visible = is_visible;
+    _gt_disp_refr_append_area(&obj->area);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
