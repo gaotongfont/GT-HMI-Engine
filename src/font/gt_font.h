@@ -56,13 +56,13 @@ typedef struct _gt_font_res_s{
  */
 typedef struct _gt_font_s
 {
-    uint32_t style_cn;     ///< set: font style
-    uint32_t style_en;     ///< set: font style
-    char * utf8;     ///< set: text: utf8 code arr
-    uint8_t size;       ///< set: font size
-    uint8_t gray;       ///< set: font gray
-    uint16_t len;       ///< set: utf8 arr len
+    char * utf8;        ///< set: text: utf8 code arr
     uint8_t * res;      ///< get: font data
+    uint32_t style_cn;  ///< set: font style
+    uint32_t style_en;  ///< set: font style
+    uint16_t len;       ///< set: utf8 arr len
+    uint8_t size;       ///< set: font size
+    uint8_t gray;     ///< set: font gray
 }gt_font_st;
 
 /**
@@ -81,11 +81,11 @@ typedef struct _gt_attr_font_s {
     gt_font_st * font;      ///< Resource for font information
     gt_color_t font_color;  ///< The color of the font fore display
 
-    uint8_t space_x;    ///< The width of the space between characters
-    uint8_t space_y;    ///< The distance between rows
-
     uint16_t start_x;   ///< draw text start x from coords,if not need,must set 0
     uint16_t start_y;   ///< draw text start y from coords,if not need,must set 0
+
+    uint8_t space_x;    ///< The width of the space between characters
+    uint8_t space_y;    ///< The distance between rows
 
     gt_align_et align;  ///< Alignment
     uint8_t style;      ///< font style value @ref gt_font_style_et

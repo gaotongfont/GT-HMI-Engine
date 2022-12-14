@@ -35,11 +35,11 @@ typedef struct _gt_draw_blend_dsc_s{
     gt_area_st  * dst_area;  /*must set, dst area*/
     gt_color_t  * dst_buf;   /*unnecessary, blend dst color*/
 
-    gt_opa_t    * mask_buf;    /*opa buf*/
+    gt_area_st  * mask_area; /*not set*/
+    gt_opa_t    * mask_buf;  /*opa buf*/
     gt_color_t  color_fill;  /*blend color*/
 
-    gt_area_st  * mask_area; /*not set*/
-    gt_opt_t    opa;           /*must*/
+    gt_opt_t    opa;         /*must*/
 }gt_draw_blend_dsc_st;
 
 struct _gt_draw_ctx_t;

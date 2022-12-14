@@ -28,8 +28,8 @@ typedef enum{
 }gt_dir_e;
 
 typedef struct _gt_draw_board_s{
-    gt_area_st area;
     gt_color_t * ctx;
+    gt_area_st area;
 }gt_draw_board_st;
 
 /* macros ---------------------------------------------------------------*/

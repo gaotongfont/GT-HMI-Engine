@@ -60,8 +60,8 @@ typedef enum gt_event_type_e{
 
 typedef struct _gt_event_s{
     struct _gt_obj_s * target;
-    gt_event_type_et code;
     void * user_data;
+    gt_event_type_et code;
 }gt_event_st;
 
 /**

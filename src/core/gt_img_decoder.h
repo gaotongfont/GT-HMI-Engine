@@ -64,12 +64,12 @@ typedef struct _gt_img_info_s {
 typedef struct _gt_img_dsc_s {
     struct _gt_img_decoder_s * decoder; ///< iamge decoder
     void * src;                 ///< path or destination of image
+    uint8_t * img;              ///< temp buffer which is used to save image data
+    void * user_data;           ///< user data
     _gt_img_info_st header;     ///< the header information of image
     gt_size_t frame_id;         ///< frame sequence number of the frame animation, [default: 0]
     gt_fs_type_et type;         ///< file driver type, such as: SD, Flash...
-    uint8_t * img;              ///< temp buffer which is used to save image data
     uint8_t * alpha;            ///< temp buffer which is used to save alpha data
-    void * user_data;           ///< user data
 }_gt_img_dsc_st;
 
 struct _gt_img_decoder_s;

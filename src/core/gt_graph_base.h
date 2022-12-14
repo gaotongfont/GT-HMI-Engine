@@ -69,6 +69,10 @@ typedef struct _gt_attr_line_s
  */
 typedef struct _gt_attr_rect_s
 {
+    // bg img
+    void * bg_img_src;          ///< image source
+    gt_opt_t bg_img_opa;        ///< image opacity
+
     // gt_blend_mode_et blend_mode;
     gt_size_t radius;           ///< radius value
 
@@ -77,10 +81,6 @@ typedef struct _gt_attr_rect_s
     gt_color_t bg_color;        ///< background color
     gt_opt_t bg_opa;            ///< background opacity
 
-    // bg img
-    void * bg_img_src;          ///< image source
-    gt_opt_t bg_img_opa;        ///< image opacity
-
     // border
     gt_color_t border_color;    ///< border color
     gt_size_t border_width;     ///< border width in pixels
@@ -88,7 +88,7 @@ typedef struct _gt_attr_rect_s
 
     // Dot matrix data
     uint8_t gray;
-    uint8_t* data_gray;
+    uint8_t * data_gray;
 
     uint8_t is_fill:1;          ///< fill inside area by fg_color
 }gt_attr_rect_st;
@@ -114,7 +114,6 @@ typedef struct _gt_attr_circle_s
  */
 typedef struct _gt_attr_arch_s
 {
-    gt_blend_mode_et blend_mode;    ///<  blend mode
     gt_color_t fg_color;            ///< fore color
     gt_color_t bg_color;            ///< background color
 
@@ -123,6 +122,7 @@ typedef struct _gt_attr_arch_s
     gt_size_t angle_end;            ///< The end angle
 
     gt_size_t border_width;         ///< border width
+    gt_blend_mode_et blend_mode;    ///<  blend mode
 }gt_attr_arch_st;
 
 /* macros ---------------------------------------------------------------*/
