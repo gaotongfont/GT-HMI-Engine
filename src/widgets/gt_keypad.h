@@ -35,12 +35,13 @@ typedef void (* keypad_handler_cb_t)(gt_obj_st * );
 struct _gt_keypad_map_s;
 typedef struct _gt_keypad_info_s
 {
+    keypad_handler_cb_t handler_cb;
+    struct _gt_keypad_map_s * map;
+
     /* data */
     uint8_t mode;       /*this mode can set GT_KEYPAD_MODE_XX*/
     uint8_t cnt_lines;  /*record how many lines of the keypad*/
     uint8_t per_line[32];/*record the per of the total width of a line */
-    keypad_handler_cb_t handler_cb;
-    struct _gt_keypad_map_s * map;
 }_gt_keypad_info_st;
 
 

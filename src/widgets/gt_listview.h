@@ -24,11 +24,7 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_style_list_s
 {
-    gt_color_t  font_color_act;
-    gt_color_t  font_color_ina;
-    gt_family_t font_family_cn;
-    gt_family_t font_family_en;
-    uint8_t     font_size;
+    char ** item;
 
     gt_color_t color_act;
     gt_color_t color_ina;
@@ -43,7 +39,11 @@ typedef struct _gt_style_list_s
     gt_size_t cnt_show;    //When displaying the contents of the list, end of options
     gt_size_t content_offset_y;
 
-    char ** item;
+    gt_color_t  font_color_act;
+    gt_color_t  font_color_ina;
+    uint8_t     font_size;
+    gt_family_t font_family_cn;
+    gt_family_t font_family_en;
 }_gt_style_listview_st;
 
 

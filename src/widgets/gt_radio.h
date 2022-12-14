@@ -24,11 +24,11 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_style_radio_s
 {
+    char *      text;
     gt_color_t  font_color;
     gt_family_t font_family_cn;
     gt_family_t font_family_en;
     uint8_t     font_size;
-    char *      text;
 }_gt_style_radio_st;
 
 

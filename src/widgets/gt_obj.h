@@ -65,15 +65,15 @@ typedef struct _gt_obj_s {
     struct _gt_draw_ctx_t * draw_ctx;
     gt_obj_process_attr_st process_attr;
 
+    style_widget_t style;
+
+    gt_area_st area;                    /* base area */
+
     uint32_t event_mask;                /* send event code add this mask */
 
     uint16_t cnt_child;
     uint8_t cnt_event;
     uint8_t opa;
-
-    gt_area_st area;                    /* base area */
-
-    style_widget_t style;
 
     gt_state_et state;  /* obj state */
 

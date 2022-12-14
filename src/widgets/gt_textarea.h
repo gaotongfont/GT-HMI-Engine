@@ -25,21 +25,21 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_txt_s{
     char *      text;
+    gt_color_t  color;
     uint16_t    len;
     uint8_t     mask_style;
-    gt_color_t  color;
 }_gt_txt_st;
 
 typedef struct _gt_style_textarea_s{
+    _gt_txt_st * contents;
     uint16_t cnt_contents;
+
     uint8_t space_x;
     uint8_t space_y;
 
     gt_family_t font_family_cn;
     gt_family_t font_family_en;
     uint8_t     font_size;
-
-    _gt_txt_st * contents;
 }_gt_style_textarea_st;
 
 

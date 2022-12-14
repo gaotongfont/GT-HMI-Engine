@@ -43,11 +43,11 @@ enum qrcode_version_e
 
 typedef struct _gt_style_qrcode_s
 {
+    uint16_t str_len;
     uint8_t * str;
     uint8_t ec_level;
     uint8_t mask_patt;
     gt_family_t version;
-    uint16_t str_len;
 }_gt_style_qrcode_st;
 
 

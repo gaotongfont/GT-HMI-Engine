@@ -26,6 +26,9 @@ extern "C" {
 
 typedef struct _gt_style_slider_s
 {
+    char * tag;             //img src
+    gt_area_st area_base;
+
     gt_color_t color_act;
     gt_color_t color_ina;
 
@@ -36,10 +39,7 @@ typedef struct _gt_style_slider_s
     gt_bar_dir_et dir;
     uint8_t step;
 
-    gt_area_st area_base;
-
     bool tag_visible;
-    char * tag;             //img src
 }_gt_style_slider_st;
 
 

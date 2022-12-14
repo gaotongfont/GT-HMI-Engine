@@ -24,19 +24,19 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_style_input_s
 {
+    char * value;
+    char * placeholder;
+
     uint16_t pos_selected_start;
     uint16_t pos_selected_end;
     uint16_t pos_cursor;
 
-    gt_color_t font_color;
-    gt_family_t font_family_cn;
-    gt_family_t font_family_en;
-    uint8_t font_size;
-
     gt_point_st point_pos;
 
-    char * value;
-    char * placeholder;
+    gt_color_t font_color;
+    uint8_t font_size;
+    gt_family_t font_family_cn;
+    gt_family_t font_family_en;
 }_gt_style_input_st;
 
 
@@ -65,7 +65,7 @@ void gt_input_style_set_value(gt_obj_st * input, char * value);
 
 /**
  * @brief get input obj value
- * 
+ *
  * @param input input obj
  * @return char* value of input
  */

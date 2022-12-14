@@ -24,19 +24,19 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_style_btn_s
 {
+    char * text;
+
     gt_color_t color_background;
     gt_color_t color_pressed;
+
+    gt_size_t   radius;
 
     gt_color_t      font_color;
     uint8_t         font_size;
     gt_family_t     font_family_cn;
     gt_family_t     font_family_en;
 
-    gt_size_t   radius;
-
     uint8_t     fill;
-    
-    char * text;
 }_gt_style_btn_st;
 
 
