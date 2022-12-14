@@ -137,6 +137,11 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         uint32_t len = coords->w * coords->h , index = 0 , buf_idx = 0;
         char idx_bit = 0;
         mask_buf = gt_mem_malloc(len);
+        if(NULL == mask_buf)
+        {
+            GT_LOGE(GT_LOG_TAG_GUI , "mask buf malloc err!" );
+            return ;
+        }
         blend_dsc.mask_buf = mask_buf;
         blend_dsc.mask_area->w = coords->w;
         blend_dsc.mask_area->h = coords->h;

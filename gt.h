@@ -50,10 +50,6 @@ extern "C" {
 /* draw */
 #include "src/extra/draw/gt_draw_blend.h"
 
-/* barcode */
-#include "src/extra/barcode/gt_barcode_src.h"
-
-
 #if GT_CFG_ENABLE_BTN == 1
 #include "src/widgets/gt_btn.h"
 #endif
@@ -114,7 +110,14 @@ extern "C" {
 #endif
 
 #if GT_CFG_ENABLE_BARCODE == 1
+/* barcode */
+#include "src/extra/barcode/gt_barcode_src.h"
 #include "src/widgets/gt_barcode.h"
+#endif
+
+#if GT_CFG_ENABLE_QRCODE == 1
+#include "src/extra/qrcode/gt_qrcode_src.h"
+#include "src/widgets/gt_qrcode.h"
 #endif
 
 /* other */

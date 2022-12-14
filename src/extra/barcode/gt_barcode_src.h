@@ -14,9 +14,9 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "../../widgets/gt_conf_widgets.h"
 
-
-
+#if GT_CFG_ENABLE_BARCODE == 1
 /* define ---------------------------------------------------------------*/
 #define EAN13_BARCODE_EN        1
 #define EAN8_BARCODE_EN         1
@@ -89,6 +89,9 @@ typedef struct
 int gt_barcode_get(barcode_st * p_code);
 
 int gt_barcode_get_w_and_h(barcode_st * p_code);
+
+#endif
+/* */
 
 #ifdef __cplusplus
 } /*extern "C"*/

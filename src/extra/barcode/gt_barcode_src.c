@@ -12,6 +12,7 @@
 #include "string.h"
 #include "stdio.h"
 
+#if GT_CFG_ENABLE_BARCODE == 1
 /* private define -------------------------------------------------------*/
 #define BARCODE_MIN_H       (32)    // 最小高度
 #define BARCODE_BLANK_SIZE  (4)     // 上下留白
@@ -3762,8 +3763,8 @@ ERR_RET:
     return 0;
 
 }
-
-
+#endif
+/* */
 /* end of file ----------------------------------------------------------*/
 
 

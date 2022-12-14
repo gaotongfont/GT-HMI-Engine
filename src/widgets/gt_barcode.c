@@ -17,6 +17,9 @@
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
+
+#if GT_CFG_ENABLE_BARCODE == 1
+
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_BARCODE
 #define MY_CLASS    &gt_barcode_class
@@ -66,6 +69,10 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     barcode->area.h = style->ret_param.dot_h;
     buf_size = (barcode->area.w * barcode->area.h) >> 3;
     style->pdat = gt_mem_malloc(buf_size);
+    if( NULL == style->pdat )
+    {
+        return ;
+    }
     style->pdat_size = buf_size;
     GT_LOGD(GT_LOG_TAG_GUI , "barcode dot_w = %d , dot_h = %d , buf_size = %d" , barcode->area.w , barcode->area.h , style->pdat_size);
 
@@ -88,7 +95,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     rect_attr.border_color  = gt_color_black();
     rect_attr.data_gray = style->pdat;
     rect_attr.gray = 1;
-
+    
     GT_LOGD(GT_LOG_TAG_UI , "barcode gray = %d" , rect_attr.gray);
     // 1:base shape
     draw_bg(barcode->draw_ctx, &rect_attr, &barcode->area);
@@ -273,6 +280,8 @@ void gt_barcode_style_set_upc_e_sys_code(gt_obj_st * barcode , uint8_t value)
     style->upc_e_sys = value;
 }
 
+#endif
+/* */
 /* end of file ----------------------------------------------------------*/
 
 

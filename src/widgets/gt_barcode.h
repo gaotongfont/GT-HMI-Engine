@@ -17,7 +17,9 @@ extern "C" {
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "../extra/barcode/gt_barcode_src.h"
+#include "gt_conf_widgets.h"
 
+#if GT_CFG_ENABLE_BARCODE == 1
 /* define ---------------------------------------------------------------*/
 
 
@@ -46,6 +48,8 @@ void gt_barcode_style_set_mode_w(gt_obj_st * barcode , uint8_t value);
 void gt_barcode_style_set_mode_h(gt_obj_st * barcode , uint8_t value);
 void gt_barcode_style_set_upc_e_sys_code(gt_obj_st * barcode , uint8_t value);
 
+
+#endif
 
 #ifdef __cplusplus
 } /*extern "C"*/
