@@ -261,11 +261,12 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
     };
 
     gt_attr_rect_st rect_attr;
-    rect_attr.is_fill       = 1;
-    rect_attr.bg_opa        = keypad->opa;
-    rect_attr.border_width  = 0;
-    rect_attr.radius        = 4;
-    rect_attr.bg_color      = style->color_board;
+    gt_graph_init_rect_attr(&rect_attr);
+    rect_attr.is_fill      = 1;
+    rect_attr.bg_opa       = keypad->opa;
+    rect_attr.border_width = 0;
+    rect_attr.radius       = 4;
+    rect_attr.bg_color     = style->color_board;
 
     draw_bg(keypad->draw_ctx, &rect_attr, &keypad->area);
 

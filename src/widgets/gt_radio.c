@@ -75,14 +75,14 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     h = radio->area.h;
 
 
-    gt_attr_rect_st rect_attr = {
-        .is_fill        = 0,
-        .border_width   = 2,
-        .border_color   = gt_color_hex(0xA0A0A0),
-        .bg_opa         = radio->opa,
-        .bg_color       = gt_color_hex(0xA0A0A0),
-        .radius         = h>>1,
-    };
+    gt_attr_rect_st rect_attr;
+    gt_graph_init_rect_attr(&rect_attr);
+    rect_attr.is_fill        = 0;
+    rect_attr.border_width   = 2;
+    rect_attr.border_color   = gt_color_hex(0xA0A0A0);
+    rect_attr.bg_opa         = radio->opa;
+    rect_attr.bg_color       = gt_color_hex(0xA0A0A0);
+    rect_attr.radius         = h>>1;
 
     gt_area_st area_base = radio->area;
     area_base.h = h;
