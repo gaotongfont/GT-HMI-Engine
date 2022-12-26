@@ -55,12 +55,6 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
 {
     if( dsc->opa <= GT_OPA_MIN ) return;
 
-    // calc intersect area
-    // gt_area_st area_res;
-    // if( !gt_area_intersect_screen(draw_ctx->buf_area, dsc->dst_area, &area_res) ){
-    //     return;
-    // }
-
     // if two area intersect
     gt_draw_blend_basic(draw_ctx, dsc);
 }

@@ -704,7 +704,6 @@ void gt_graph_set_default(gt_color_t * _color){
 }
 void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area, gt_color_t * color_buf)
 {
-	// gt_color_t * buf   = gt_disp_graph_get_buf_default();
 	gt_color_t * buf = color_buf;
 	gt_size_t x, y, r;
 	gt_size_t w, h;

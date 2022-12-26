@@ -125,7 +125,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
     if (radius <= GT_RADIUS_MIN) {
         radius = 0;
     }
-    
+
     // Dot matrix data
     if(dsc->gray != 0)
     {
@@ -137,9 +137,8 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         uint32_t len = coords->w * coords->h , index = 0 , buf_idx = 0;
         char idx_bit = 0;
         mask_buf = gt_mem_malloc(len);
-        if(NULL == mask_buf)
-        {
-            GT_LOGE(GT_LOG_TAG_GUI , "mask buf malloc err!" );
+        if(NULL == mask_buf) {
+            GT_LOGE(GT_LOG_TAG_GUI , "mask buf malloc %d err, w: %d, h: %d!", len, coords->w, coords->h);
             return ;
         }
         blend_dsc.mask_buf = mask_buf;
@@ -151,7 +150,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         buf_idx = 0;
         index = 0;
         while( index < len ){
-            
+
             for(idx_bit = 0 ; idx_bit < 8 ;idx_bit++)
             {
                 if( (dsc->data_gray[index] << idx_bit )&0x80 ){
@@ -201,9 +200,9 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         };
         gt_graph_circle(&circle_attr, &circle_area, color_circle_p);
         // get circle mask
+        uint32_t idx = 0, all = circle_area.w * circle_area.h >> 1; // half of circle
         uint8_t * mask = (uint8_t * )color_circle_p;
-        uint8_t x, y;
-        int idx = 0, all = circle_area.w * circle_area.h;
+        uint16_t x, y;
         while (idx < all) {
             mask[idx] = gt_color_brightness(color_circle_p[idx]);
             idx++;
@@ -239,7 +238,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         blend_dsc.mask_buf = mask_right_down;
         gt_draw_blend(draw_ctx, &blend_dsc);
 
-        // 4:draw right_up arch
+        // 4:draw left_down arch
         uint8_t * mask_left_down = mask_right_up;
         gt_mirror_hor_u8(mask_left_down, mask_right_down, radius, radius);
 
