@@ -28,8 +28,18 @@
 
 #define SPACE_Y 5
 #define SPACE_X 5
+
+#define _GT_KEYPAD_TAG_NEW_LINE     "\n"
+#define _GT_KEYPAD_TAG_UPPERCASE    "ABC"
+#define _GT_KEYPAD_TAG_DOWNCASE     "abc"
+#define _GT_KEYPAD_TAG_NUMBER       "1#"
+
 /* private typedef ------------------------------------------------------*/
 
+typedef struct {
+    char * key;
+    const gt_keypad_map_st * map;
+}_gt_keypad_kv_list_st;
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
@@ -46,25 +56,45 @@ const gt_obj_class_st gt_keypad_class = {
 };
 
 
-gt_keypad_map_st map_keypad_mode_lower[] = {
-    "1#",5,   "q",4,  "w",4,  "e",4,  "r",4,  "t",4,  "y",4,  "u",4,  "i",4,  "o",4,  "p",4,  GT_SYMBOL_BACKSPACE,7,  "\n",0,
-    "ABC",6,  "a",3,  "s",3,  "d",3,  "f",3,  "g",3,  "h",3,  "j",3,  "k",3,  "l",3,  GT_SYMBOL_NEW_LINE,7, "\n",0,
-    "_",1,    "-",1,  "z",1,  "x",1,  "c",1,  "v",1,  "b",1,  "n",1,  "m",1,  ".",1,  ",",1,  ":",1,  "\n",0,
+GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_keypad_map_st _map_keypad_mode_lower[] = {
+    _GT_KEYPAD_TAG_NUMBER,5,   "q",4,  "w",4,  "e",4,  "r",4,  "t",4,  "y",4,  "u",4,  "i",4,  "o",4,  "p",4,  GT_SYMBOL_BACKSPACE,7,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    _GT_KEYPAD_TAG_UPPERCASE,6,  "a",3,  "s",3,  "d",3,  "f",3,  "g",3,  "h",3,  "j",3,  "k",3,  "l",3,  GT_SYMBOL_NEW_LINE,7, _GT_KEYPAD_TAG_NEW_LINE,0,
+    "_",1,    "-",1,  "z",1,  "x",1,  "c",1,  "v",1,  "b",1,  "n",1,  "m",1,  ".",1,  ",",1,  ":",1,  _GT_KEYPAD_TAG_NEW_LINE,0,
     GT_SYMBOL_KEYBOARD,2,  GT_SYMBOL_LEFT,2,  " ",6,  GT_SYMBOL_RIGHT,2,  GT_SYMBOL_OK,2, NULL,0
 };
 
-gt_keypad_map_st map_keypad_mode_upper[] = {
-    "1#",5,   "Q",4,  "W",4,  "E",4,  "R",4,  "T",4,  "Y",4,  "U",4,  "I",4,  "O",4,  "P",4,  GT_SYMBOL_BACKSPACE,7,  "\n",0,
-    "abc",6,  "A",3,  "S",3,  "D",3,  "F",3,  "G",3,  "H",3,  "J",3,  "K",3,  "L",3,  GT_SYMBOL_NEW_LINE,7, "\n",0,
-    "_",1,    "-",1,  "Z",1,  "X",1,  "C",1,  "V",1,  "B",1,  "N",1,  "M",1,  ".",1,  ",",1,  ":",1,  "\n",0,
+GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_keypad_map_st _map_keypad_mode_upper[] = {
+    _GT_KEYPAD_TAG_NUMBER,5,   "Q",4,  "W",4,  "E",4,  "R",4,  "T",4,  "Y",4,  "U",4,  "I",4,  "O",4,  "P",4,  GT_SYMBOL_BACKSPACE,7,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    _GT_KEYPAD_TAG_DOWNCASE,6,  "A",3,  "S",3,  "D",3,  "F",3,  "G",3,  "H",3,  "J",3,  "K",3,  "L",3,  GT_SYMBOL_NEW_LINE,7, _GT_KEYPAD_TAG_NEW_LINE,0,
+    "_",1,    "-",1,  "Z",1,  "X",1,  "C",1,  "V",1,  "B",1,  "N",1,  "M",1,  ".",1,  ",",1,  ":",1,  _GT_KEYPAD_TAG_NEW_LINE,0,
     GT_SYMBOL_KEYBOARD,2,  GT_SYMBOL_LEFT,2,  " ",6,  GT_SYMBOL_RIGHT,2,  GT_SYMBOL_OK,2, NULL,0
 };
 
-gt_keypad_map_st map_keypad_mode_number[] = {
-    "1",1, "2",1, "3",1, "4",1, "5",1, "6",1, "7",1, "8",1, "9",1, "0",1, GT_SYMBOL_BACKSPACE,2, "\n",0,
-    "abc",2, "+",1, "-",1, "/",1, "*",1, "=",1, "%",1, "!",1, "?",1, "#",1, "<",1, ">",1, "\n",0,
-    "\\",1,  "@",1, "$",1, "(",1, ")",1, "{",1, "}",1, "[",1, "]",1, ";",1, "\"",1, "'",1, "\n",0,
+GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_keypad_map_st _map_keypad_mode_number[] = {
+    "1",1, "2",1, "3",1, "4",1, "5",1, "6",1, "7",1, "8",1, "9",1, "0",1, GT_SYMBOL_BACKSPACE,2, _GT_KEYPAD_TAG_NEW_LINE,0,
+    _GT_KEYPAD_TAG_DOWNCASE,2, "+",1, "-",1, "/",1, "*",1, "=",1, "%",1, "!",1, "?",1, "#",1, "<",1, ">",1, _GT_KEYPAD_TAG_NEW_LINE,0,
+    "\\",1,  "@",1, "$",1, "(",1, ")",1, "{",1, "}",1, "[",1, "]",1, ";",1, "\"",1, "'",1, _GT_KEYPAD_TAG_NEW_LINE,0,
     GT_SYMBOL_KEYBOARD,2, GT_SYMBOL_LEFT,2, " ",6, GT_SYMBOL_RIGHT,2, GT_SYMBOL_OK,2, NULL,0
+};
+
+GT_ATTRIBUTE_LARGE_RAM_ARRAY static const char * _gt_keypad_ctrl_key_list[] = {
+    GT_SYMBOL_NEW_LINE,
+    GT_SYMBOL_KEYBOARD,
+    GT_SYMBOL_LEFT,
+    GT_SYMBOL_RIGHT,
+    GT_SYMBOL_OK,
+    GT_SYMBOL_BACKSPACE,
+    _GT_KEYPAD_TAG_UPPERCASE,
+    _GT_KEYPAD_TAG_DOWNCASE,
+    _GT_KEYPAD_TAG_NUMBER,
+    NULL,
+};
+
+GT_ATTRIBUTE_LARGE_RAM_ARRAY static const _gt_keypad_kv_list_st _gt_keypad_switch_ctrl_key_list[] = {
+    { _GT_KEYPAD_TAG_UPPERCASE, _map_keypad_mode_upper },
+    { _GT_KEYPAD_TAG_DOWNCASE,  _map_keypad_mode_lower },
+    { _GT_KEYPAD_TAG_NUMBER,    _map_keypad_mode_number },
+    { NULL, NULL },
 };
 
 /* macros ---------------------------------------------------------------*/
@@ -106,7 +136,7 @@ static void _gt_keypad_set_kv_selected(gt_obj_st * keypad, char * kv)
     gt_area_st area;
     char * kv_old = style->kv_selected;
     style->kv_selected = kv;
-    if( kv_old != NULL ){
+    if( kv_old != kv ){
         area = _gt_keypad_get_key_area(keypad, kv_old);
         _gt_disp_refr_append_area(&area);
     }
@@ -153,7 +183,7 @@ static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char * kv)
 
         area_key.w = map_keypad[idx].w * per_one_width - SPACE_X;
 
-        if( map_keypad[idx+1].kv && strcmp(map_keypad[idx+1].kv, "\n") == 0 ){
+        if( map_keypad[idx+1].kv && strcmp(map_keypad[idx+1].kv, _GT_KEYPAD_TAG_NEW_LINE) == 0 ){
             if( (area_key.x + area_key.w) > (keypad->area.x + keypad->area.w - SPACE_X) ){
                 area_key.w = (keypad->area.x + keypad->area.w - SPACE_X) - area_key.x;
             }
@@ -167,7 +197,7 @@ static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char * kv)
 
         idx++;
         area_key.x += area_key.w + SPACE_X;
-        if( map_keypad[idx].kv && strcmp(map_keypad[idx].kv, "\n") == 0 ){
+        if( map_keypad[idx].kv && strcmp(map_keypad[idx].kv, _GT_KEYPAD_TAG_NEW_LINE) == 0 ){
             area_key.x = keypad->area.x + SPACE_X;
             area_key.y += h_key + SPACE_Y;
             line++;
@@ -177,6 +207,34 @@ static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char * kv)
     }
     gt_memset(&area_key, 0, sizeof(gt_area_st));
     return area_key;
+}
+
+/**
+ * @brief The control button is pressed and lifted to perform effect switching
+ *
+ * @param keypad
+ * @param update_map true: handle update keypad map; false: get matching state
+ * @return true  match ctrl key
+ * @return false no match ctrl key
+ */
+static bool _gt_keypad_is_switch_ctrl_key_pressed(gt_obj_st * keypad, const bool update_map)
+{
+    _gt_style_keypad_st * style = keypad->style;
+    _gt_keypad_kv_list_st * list_p = _gt_keypad_switch_ctrl_key_list;
+    uint16_t idx = 0;
+    bool ret = false;
+
+    while(list_p[idx].key) {
+        if (0 == strcmp(style->kv_selected, list_p[idx].key) ) {
+            if (update_map) {
+                _gt_keypad_update_map(keypad, list_p[idx].map);
+            }
+            ret = true;
+            break;
+        }
+        ++idx;
+    }
+    return ret;
 }
 
 static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
@@ -191,22 +249,17 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
         return;
     }
 
-    if( strcmp(style->kv_selected, "ABC") == 0 ){
-        _gt_keypad_update_map(keypad, map_keypad_mode_upper);
-    }else if( strcmp(style->kv_selected, "1#") == 0 ){
-        _gt_keypad_update_map(keypad, map_keypad_mode_number);
-    }else if( strcmp(style->kv_selected, "abc") == 0 ){
-        _gt_keypad_update_map(keypad, map_keypad_mode_lower);
+    if (_gt_keypad_is_switch_ctrl_key_pressed(keypad, false)) {
+        return;
     }
 
-    if( style->target == NULL ){
+    if(style->target == NULL){
         return;
     }
 
     if(strcmp(style->kv_selected, GT_SYMBOL_BACKSPACE) == 0 ){
         gt_input_style_del_value(style->target);
     }
-
     else if( strcmp(style->kv_selected, GT_SYMBOL_LEFT) == 0 ){
         gt_input_style_move_left_pos_cursor(style->target);
     }
@@ -214,7 +267,7 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
         gt_input_style_move_right_pos_cursor(style->target);
     }
     else if( strcmp(style->kv_selected, GT_SYMBOL_NEW_LINE) == 0 ){
-        gt_input_style_append_value(style->target, "\n");
+        gt_input_style_append_value(style->target, _GT_KEYPAD_TAG_NEW_LINE);
     }else{
         gt_input_style_append_value(style->target, style->kv_selected);
     }
@@ -224,21 +277,9 @@ static bool _gt_keypad_check_key_is_ctl(char * kv){
     if( kv == NULL ){
         return false;
     }
-    char * list[] = {
-        GT_SYMBOL_NEW_LINE,
-        GT_SYMBOL_KEYBOARD,
-        GT_SYMBOL_LEFT,
-        GT_SYMBOL_RIGHT,
-        GT_SYMBOL_OK,
-        GT_SYMBOL_BACKSPACE,
-        "ABC",
-        "abc",
-        "1#",
-        NULL,
-    };
     int idx = 0;
-    while( list[idx] != NULL ){
-        if( strcmp(list[idx], kv) == 0 ){
+    while( _gt_keypad_ctrl_key_list[idx] != NULL ){
+        if( strcmp(_gt_keypad_ctrl_key_list[idx], kv) == 0 ){
             return true;
         }
         idx++;
@@ -306,7 +347,7 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
 
         area_key.w = map_keypad[idx].w * per_one_width - SPACE_X;
 
-        if( (map_keypad[idx+1].kv && strcmp(map_keypad[idx+1].kv, "\n") == 0) || map_keypad[idx+1].kv == NULL ){
+        if( (map_keypad[idx+1].kv && strcmp(map_keypad[idx+1].kv, _GT_KEYPAD_TAG_NEW_LINE) == 0) || map_keypad[idx+1].kv == NULL ){
             if( (area_key.x + area_key.w) > (keypad->area.x + keypad->area.w - SPACE_X) ){
                 area_key.w = (keypad->area.x + keypad->area.w - SPACE_X) - area_key.x;
             }
@@ -324,7 +365,7 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
 
         area_key.x += area_key.w + SPACE_X;
 
-        if(map_keypad[idx].kv && strcmp(map_keypad[idx].kv, "\n") == 0 ){
+        if(map_keypad[idx].kv && strcmp(map_keypad[idx].kv, _GT_KEYPAD_TAG_NEW_LINE) == 0 ){
             area_key.x = keypad->area.x + SPACE_X;
             area_key.y += h_key + SPACE_Y;
             line++;
@@ -407,7 +448,10 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             _gt_keypad_input_event_cb(obj);
         }
         break;
-
+    case GT_EVENT_TYPE_DRAW_REDRAW: {
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+        break;
+    }
     case GT_EVENT_TYPE_INPUT_SCROLL:
         GT_LOGD(GT_LOG_TAG_GUI, "scroll");
         break;
@@ -421,6 +465,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
         GT_LOGD(GT_LOG_TAG_GUI, "processed");
         if(gt_obj_check_scr(obj)) {
+            _gt_keypad_is_switch_ctrl_key_pressed(obj, true);
             _gt_keypad_set_kv_selected(obj, NULL);
         }
         break;
@@ -435,7 +480,7 @@ static void _gt_keypad_init_style(gt_obj_st * keypad)
     _gt_style_keypad_st * style = (_gt_style_keypad_st * )keypad->style;
 
     gt_memset(style, 0, sizeof(_gt_style_keypad_st));
-    _gt_keypad_update_map(keypad, map_keypad_mode_lower);
+    _gt_keypad_update_map(keypad, _map_keypad_mode_lower);
 
     keypad->area.w = GT_SCREEN_WIDTH;
     keypad->area.h = GT_SCREEN_HEIGHT>>1;
@@ -456,22 +501,22 @@ static void _gt_keypad_update_map(gt_obj_st * keypad, gt_keypad_map_st * map)
 {
     _gt_style_keypad_st * style = keypad->style;
     style->info.map = map;
-    if( map == map_keypad_mode_lower ){
+    if( map == _map_keypad_mode_lower ){
         style->info.mode = GT_KEYPAD_MODE_LOWER;
-    }else if( map == map_keypad_mode_upper ){
+    }else if( map == _map_keypad_mode_upper ){
         style->info.mode = GT_KEYPAD_MODE_UPPER;
-    }else if( map == map_keypad_mode_number ){
+    }else if( map == _map_keypad_mode_number ){
         style->info.mode = GT_KEYPAD_MODE_NUMBER;
     }else{
         style->info.mode = GT_KEYPAD_MODE_OTHER;
     }
 
-    int idx = 0;
+    uint16_t idx = 0;
     uint8_t cnt_lines = 0, cnt_keys = 0, per_all = 0;
     while( map[idx].kv != NULL ){
         cnt_keys++;
         per_all += map[idx].w;
-        if( strcmp(map[idx].kv, "\n") == 0 ){
+        if( strcmp(map[idx].kv, _GT_KEYPAD_TAG_NEW_LINE) == 0 ){
             style->info.per_line[cnt_lines] = per_all;
             cnt_lines++;
             per_all = 0;
