@@ -30,6 +30,9 @@ extern "C" {
  */
 typedef enum {
     GT_ANIM_PATH_TYPE_LINEAR = 0,   /* default type/mode */
+    GT_ANIM_PATH_TYPE_EASE_IN,
+    GT_ANIM_PATH_TYPE_EASE_OUT,
+    GT_ANIM_PATH_TYPE_EASE_IN_OUT,
     GT_ANIM_PATH_TYPE_OVERSHOOT,
 
     /* get path type max count */

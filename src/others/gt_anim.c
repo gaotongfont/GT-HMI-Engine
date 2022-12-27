@@ -71,6 +71,39 @@ static int32_t _gt_anim_path_linear(const struct gt_anim_s * anim) {
     return value;
 }
 
+static int32_t _gt_anim_path_ease_in(const struct gt_anim_s * anim) {
+    int32_t t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION);
+    int32_t step = gt_bezier3(t, 0, 50, 100, GT_MATH_BEZIER_VAL_RESOLUTION);
+
+    int32_t value = (anim->value_end - anim->value_start) * step;
+    value >>= GT_MATH_BEZIER_VAL_SHIFT;
+    value += anim->value_start;
+
+    return value;
+}
+
+static int32_t _gt_anim_path_ease_out(const struct gt_anim_s * anim) {
+    int32_t t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION);
+    int32_t step = gt_bezier3(t, 0, 900, 950, GT_MATH_BEZIER_VAL_RESOLUTION);
+
+    int32_t value = (anim->value_end - anim->value_start) * step;
+    value >>= GT_MATH_BEZIER_VAL_SHIFT;
+    value += anim->value_start;
+
+    return value;
+}
+
+static int32_t _gt_anim_path_ease_in_out(const struct gt_anim_s * anim) {
+    int32_t t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION);
+    int32_t step = gt_bezier3(t, 0, 50, 950, GT_MATH_BEZIER_VAL_RESOLUTION);
+
+    int32_t value = (anim->value_end - anim->value_start) * step;
+    value >>= GT_MATH_BEZIER_VAL_SHIFT;
+    value += anim->value_start;
+
+    return 0;
+}
+
 static int32_t _gt_anim_path_overshoot(const struct gt_anim_s * anim) {
     int32_t t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION);
     int32_t step = gt_bezier3(t, 0, 1000, 1300, GT_MATH_BEZIER_VAL_RESOLUTION);
@@ -224,6 +257,18 @@ void gt_anim_start(const gt_anim_st * anim)
 void gt_anim_set_path_type(gt_anim_st * anim, gt_anim_path_type_em type)
 {
     switch(type) {
+        case GT_ANIM_PATH_TYPE_EASE_IN: {
+            anim->_path_cb = _gt_anim_path_ease_in;
+            break;
+        }
+        case GT_ANIM_PATH_TYPE_EASE_OUT: {
+            anim->_path_cb = _gt_anim_path_ease_out;
+            break;
+        }
+        case GT_ANIM_PATH_TYPE_EASE_IN_OUT: {
+            anim->_path_cb = _gt_anim_path_ease_in_out;
+            break;
+        }
         case GT_ANIM_PATH_TYPE_OVERSHOOT: {
             anim->_path_cb = _gt_anim_path_overshoot;
             break;
