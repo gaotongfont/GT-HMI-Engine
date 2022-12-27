@@ -100,8 +100,8 @@ static gt_res_t _gt_event_handler_event_mask(gt_obj_st * obj)
         event_code =  GT_EVENT_GET_MASK_SHIFT_BIT(idx) & mask_shift;
         if( event_code ){
             e.code = idx;
-            obj->class->_event_cb(obj, &e);
             obj->event_mask &= ~GT_EVENT_GET_MASK_SHIFT_BIT(e.code);
+            obj->class->_event_cb(obj, &e);
         }
         idx++;
     }

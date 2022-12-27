@@ -37,11 +37,21 @@
 /* private typedef ------------------------------------------------------*/
 
 typedef struct {
-    char * key;
+    const char * key;
     const gt_keypad_map_st * map;
+    const uint8_t mode;     /* keypad mode */
 }_gt_keypad_kv_list_st;
 
 /* static variables -----------------------------------------------------*/
+enum _gt_keypad_mode_e {
+    GT_KEYPAD_MODE_LOWER = 0,
+    GT_KEYPAD_MODE_UPPER,
+    GT_KEYPAD_MODE_NUMBER,
+    GT_KEYPAD_MODE_OTHER,
+
+    GT_KEYPAD_MODE_TOTAL_SIZE,
+};
+
 static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e);
@@ -90,11 +100,10 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const char * _gt_keypad_ctrl_key_list[] = {
     NULL,
 };
 
-GT_ATTRIBUTE_LARGE_RAM_ARRAY static const _gt_keypad_kv_list_st _gt_keypad_switch_ctrl_key_list[] = {
-    { _GT_KEYPAD_TAG_UPPERCASE, _map_keypad_mode_upper },
-    { _GT_KEYPAD_TAG_DOWNCASE,  _map_keypad_mode_lower },
-    { _GT_KEYPAD_TAG_NUMBER,    _map_keypad_mode_number },
-    { NULL, NULL },
+GT_ATTRIBUTE_LARGE_RAM_ARRAY static const _gt_keypad_kv_list_st _gt_keypad_mode_key_mapping_list[] = {
+    { _GT_KEYPAD_TAG_UPPERCASE, _map_keypad_mode_upper, GT_KEYPAD_MODE_UPPER },
+    { _GT_KEYPAD_TAG_DOWNCASE,  _map_keypad_mode_lower, GT_KEYPAD_MODE_LOWER },
+    { _GT_KEYPAD_TAG_NUMBER,    _map_keypad_mode_number, GT_KEYPAD_MODE_NUMBER },
 };
 
 /* macros ---------------------------------------------------------------*/
@@ -210,21 +219,21 @@ static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char * kv)
 }
 
 /**
- * @brief The control button is pressed and lifted to perform effect switching
+ * @brief The keypad mapping control button is pressed and lifted to perform effect switching
  *
  * @param keypad
  * @param update_map true: handle update keypad map; false: get matching state
  * @return true  match ctrl key
  * @return false no match ctrl key
  */
-static bool _gt_keypad_is_switch_ctrl_key_pressed(gt_obj_st * keypad, const bool update_map)
+static bool _gt_keypad_is_switch_key_mapping_pressed(gt_obj_st * keypad, const bool update_map)
 {
     _gt_style_keypad_st * style = keypad->style;
-    _gt_keypad_kv_list_st * list_p = _gt_keypad_switch_ctrl_key_list;
-    uint16_t idx = 0;
+    _gt_keypad_kv_list_st * list_p = _gt_keypad_mode_key_mapping_list;
+    uint16_t idx = 0, len = sizeof(_gt_keypad_mode_key_mapping_list) / sizeof(_gt_keypad_kv_list_st);
     bool ret = false;
 
-    while(list_p[idx].key) {
+    while(idx < len) {
         if (0 == strcmp(style->kv_selected, list_p[idx].key) ) {
             if (update_map) {
                 _gt_keypad_update_map(keypad, list_p[idx].map);
@@ -235,6 +244,25 @@ static bool _gt_keypad_is_switch_ctrl_key_pressed(gt_obj_st * keypad, const bool
         ++idx;
     }
     return ret;
+}
+
+static uint8_t _gt_keypad_change_mode(gt_obj_st * keypad, gt_keypad_map_st const * const map)
+{
+    _gt_style_keypad_st * style = keypad->style;
+    _gt_keypad_kv_list_st * list_p = _gt_keypad_mode_key_mapping_list;
+    uint16_t idx = 0, len = sizeof(_gt_keypad_mode_key_mapping_list) / sizeof(_gt_keypad_kv_list_st);
+
+    style->info.mode = GT_KEYPAD_MODE_OTHER;
+
+    while(idx < len) {
+        if (map == list_p[idx].map) {
+            style->info.mode = list_p[idx].mode;
+            break;
+        }
+        ++idx;
+    }
+
+    return style->info.mode;
 }
 
 static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
@@ -249,7 +277,7 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
         return;
     }
 
-    if (_gt_keypad_is_switch_ctrl_key_pressed(keypad, false)) {
+    if (_gt_keypad_is_switch_key_mapping_pressed(keypad, false)) {
         return;
     }
 
@@ -465,7 +493,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
         GT_LOGD(GT_LOG_TAG_GUI, "processed");
         if(gt_obj_check_scr(obj)) {
-            _gt_keypad_is_switch_ctrl_key_pressed(obj, true);
+            _gt_keypad_is_switch_key_mapping_pressed(obj, true);
             _gt_keypad_set_kv_selected(obj, NULL);
         }
         break;
@@ -495,21 +523,11 @@ static void _gt_keypad_init_style(gt_obj_st * keypad)
     style->color_ctrl   = gt_color_hex(0x9699a1);
 }
 
-
-
 static void _gt_keypad_update_map(gt_obj_st * keypad, gt_keypad_map_st * map)
 {
     _gt_style_keypad_st * style = keypad->style;
     style->info.map = map;
-    if( map == _map_keypad_mode_lower ){
-        style->info.mode = GT_KEYPAD_MODE_LOWER;
-    }else if( map == _map_keypad_mode_upper ){
-        style->info.mode = GT_KEYPAD_MODE_UPPER;
-    }else if( map == _map_keypad_mode_number ){
-        style->info.mode = GT_KEYPAD_MODE_NUMBER;
-    }else{
-        style->info.mode = GT_KEYPAD_MODE_OTHER;
-    }
+    _gt_keypad_change_mode(keypad, map);
 
     uint16_t idx = 0;
     uint8_t cnt_lines = 0, cnt_keys = 0, per_all = 0;

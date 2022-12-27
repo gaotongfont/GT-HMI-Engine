@@ -22,13 +22,6 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-enum {
-    GT_KEYPAD_MODE_LOWER,
-    GT_KEYPAD_MODE_UPPER,
-    GT_KEYPAD_MODE_NUMBER,
-    GT_KEYPAD_MODE_OTHER,
-};
-
 typedef void (* keypad_handler_cb_t)(gt_obj_st * );
 
 
