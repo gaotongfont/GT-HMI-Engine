@@ -101,7 +101,7 @@ static int32_t _gt_anim_path_ease_in_out(const struct gt_anim_s * anim) {
     value >>= GT_MATH_BEZIER_VAL_SHIFT;
     value += anim->value_start;
 
-    return 0;
+    return value;
 }
 
 static int32_t _gt_anim_path_overshoot(const struct gt_anim_s * anim) {
@@ -113,6 +113,56 @@ static int32_t _gt_anim_path_overshoot(const struct gt_anim_s * anim) {
     value += anim->value_start;
 
     return value;
+}
+
+static int32_t _gt_anim_path_bounce(const struct gt_anim_s * anim) {
+    int32_t t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION);
+    int32_t diff = anim->value_end - anim->value_start;
+
+    /*3 bounces has 5 parts: 3 down and 2 up. One part is t / 5 long*/
+    if (t < 408) {
+        /* go down */
+        t = (t * 2500) >> _GT_ANIM_PATH_SHIFT;
+    }
+    else if (t < 614) { /* [408, 614) */
+        t -= 408;
+        t *= 5;
+        t = _GT_ANIM_PATH_RESOLUTION - t;
+        diff /= 20;
+    }
+    else if (t < 819) { /* [614, 819) */
+        /* fall back */
+        t -= 614;
+        t *= 5;     /* [0..1024] range */
+        diff /= 20;
+    }
+    else if (t < 921) { /* [819, 921) */
+        t -= 819;
+        t *= 10;
+        t = _GT_ANIM_PATH_RESOLUTION - t;
+        diff /= 40;
+    }
+    else if (t < _GT_ANIM_PATH_RESOLUTION) {   /* [921, _GT_ANIM_PATH_RESOLUTION) */
+        t -= 921;
+        t *= 10;
+        diff /= 40;
+    }
+
+    if (t > _GT_ANIM_PATH_RESOLUTION) { t = _GT_ANIM_PATH_RESOLUTION; }
+    if (t < 0) { t = 0; }
+    int32_t step = gt_bezier3(t, GT_MATH_BEZIER_VAL_RESOLUTION, 800, 500, 0);
+
+    int32_t value = step * diff;
+    value >>= GT_MATH_BEZIER_VAL_SHIFT;
+
+    return (anim->value_end - value);
+}
+
+static int32_t _gt_anim_path_step(const struct gt_anim_s * anim) {
+    if (anim->time_act < anim->time) {
+        return anim->value_start;
+    }
+    return anim->value_end;
 }
 
 static void _gt_anim_ready_handler(gt_anim_st * anim) {
@@ -272,6 +322,13 @@ void gt_anim_set_path_type(gt_anim_st * anim, gt_anim_path_type_em type)
         case GT_ANIM_PATH_TYPE_OVERSHOOT: {
             anim->_path_cb = _gt_anim_path_overshoot;
             break;
+        }
+        case GT_ANIM_PATH_TYPE_BOUNCE: {
+            anim->_path_cb = _gt_anim_path_bounce;
+            break;
+        }
+        case GT_ANIM_PATH_TYPE_STEP: {
+            anim->_path_cb = _gt_anim_path_step;
         }
         case GT_ANIM_PATH_TYPE_LINEAR:
         default: {

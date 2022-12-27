@@ -34,6 +34,8 @@ typedef enum {
     GT_ANIM_PATH_TYPE_EASE_OUT,
     GT_ANIM_PATH_TYPE_EASE_IN_OUT,
     GT_ANIM_PATH_TYPE_OVERSHOOT,
+    GT_ANIM_PATH_TYPE_BOUNCE,
+    GT_ANIM_PATH_TYPE_STEP,
 
     /* get path type max count */
     GT_ANIM_PATH_TYPE_COUNT,
