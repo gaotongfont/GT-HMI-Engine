@@ -265,6 +265,20 @@ static uint8_t _gt_keypad_change_mode(gt_obj_st * keypad, gt_keypad_map_st const
     return style->info.mode;
 }
 
+static bool _gt_keypad_check_key_is_ctl(char * kv){
+    if( kv == NULL ){
+        return false;
+    }
+    int idx = 0;
+    while( _gt_keypad_ctrl_key_list[idx] != NULL ){
+        if( strcmp(_gt_keypad_ctrl_key_list[idx], kv) == 0 ){
+            return true;
+        }
+        idx++;
+    }
+    return false;
+}
+
 static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
 {
     _gt_style_keypad_st * style = keypad->style;
@@ -297,22 +311,10 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
     else if( strcmp(style->kv_selected, GT_SYMBOL_NEW_LINE) == 0 ){
         gt_input_style_append_value(style->target, _GT_KEYPAD_TAG_NEW_LINE);
     }else{
-        gt_input_style_append_value(style->target, style->kv_selected);
-    }
-}
-
-static bool _gt_keypad_check_key_is_ctl(char * kv){
-    if( kv == NULL ){
-        return false;
-    }
-    int idx = 0;
-    while( _gt_keypad_ctrl_key_list[idx] != NULL ){
-        if( strcmp(_gt_keypad_ctrl_key_list[idx], kv) == 0 ){
-            return true;
+        if (!_gt_keypad_check_key_is_ctl(style->kv_selected)) {
+            gt_input_style_append_value(style->target, style->kv_selected);
         }
-        idx++;
     }
-    return false;
 }
 
 static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
