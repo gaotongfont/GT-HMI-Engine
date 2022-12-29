@@ -87,10 +87,10 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.bg_opa = input->opa;
     rect_attr.is_fill = 0;
-    rect_attr.border_width = 2;
+    rect_attr.border_width = style->border_width;
     rect_attr.radius = 4;
     rect_attr.bg_color = gt_color_black();
-    rect_attr.border_color = gt_color_black();
+    rect_attr.border_color = style->border_color;
 
     /* draw base shape */
     draw_bg(input->draw_ctx, &rect_attr, &input->area);
@@ -113,7 +113,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         font.utf8 = style->value;
         font.len = style->pos_cursor;
         font.size = style->font_size;
-        color_font = gt_color_hex(0x000000);
+        color_font = style->font_color;
     }
     gt_attr_font_st font_attr = {
         .font = &font,
@@ -263,9 +263,12 @@ static void _gt_input_init_style(gt_obj_st * input)
 
     gt_input_style_set_placeholder(input, "please input");
 
-    style->font_family_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
-    style->font_family_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    style->font_size         = GT_CFG_DEFAULT_FONT_SIZE;
+    style->font_family_cn = GT_CFG_DEFAULT_FONT_FAMILY_CN;
+    style->font_family_en = GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    style->font_size      = GT_CFG_DEFAULT_FONT_SIZE;
+    style->font_color     = gt_color_black();
+    style->border_width   = 2;
+    style->border_color   = gt_color_black();
 }
 
 
@@ -376,7 +379,6 @@ void gt_input_style_set_placeholder(gt_obj_st * input, const char * placeholder)
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-
 void gt_input_style_move_left_pos_cursor(gt_obj_st * input)
 {
     _gt_style_input_st * style = input->style;
@@ -400,14 +402,31 @@ void gt_input_style_set_font_color(gt_obj_st * input, gt_color_t color)
     style->font_color = color;
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
+
 void gt_input_style_set_font_family_cn(gt_obj_st * input, gt_family_t family)
 {
     _gt_style_input_st * style = input->style;
     style->font_family_cn = family;
 }
+
 void gt_input_style_set_font_family_en(gt_obj_st * input, gt_family_t family)
 {
     _gt_style_input_st * style = input->style;
     style->font_family_en = family;
 }
+
+void gt_input_style_set_border_width(gt_obj_st * input, gt_size_t width)
+{
+    _gt_style_input_st * style = input->style;
+    style->border_width = width;
+    gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_input_style_set_border_color(gt_obj_st * input, gt_color_t color)
+{
+    _gt_style_input_st * style = input->style;
+    style->border_color = color;
+    gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 /* end ------------------------------------------------------------------*/

@@ -32,6 +32,8 @@ typedef struct _gt_style_input_s
     uint16_t pos_cursor;
 
     gt_point_st point_pos;
+    gt_size_t border_width;
+    gt_color_t border_color;
 
     gt_color_t font_color;
     uint8_t font_size;
@@ -113,6 +115,8 @@ void gt_input_style_set_font_color(gt_obj_st * input, gt_color_t color);
 void gt_input_style_set_font_family_cn(gt_obj_st * input, gt_family_t family);
 void gt_input_style_set_font_family_en(gt_obj_st * input, gt_family_t family);
 
+void gt_input_style_set_border_width(gt_obj_st * input, gt_size_t width);
+void gt_input_style_set_border_color(gt_obj_st * input, gt_color_t color);
 
 #ifdef __cplusplus
 } /*extern "C"*/
