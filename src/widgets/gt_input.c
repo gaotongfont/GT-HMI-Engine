@@ -104,7 +104,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         font.utf8 = style->placeholder;
         font.len = strlen(style->placeholder);
         font.size = style->font_size;
-        color_font.full = 0x8410;
+        color_font = gt_color_hex(0x808080);
     }
     // if input value is not null
     else{
@@ -125,7 +125,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     };
 
     gt_area_st area_font = input->area;
-    area_font.x += 4;
+    area_font.x += style->border_width + 2;
     gt_area_st area_res = draw_text(input->draw_ctx, &font_attr, &area_font);
 
     /*draw cursor*/
@@ -150,7 +150,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         font_attr.font = &font,
         font_attr.font_color = color_font,
 
-        font_attr.start_x = area_res.x + 4;
+        font_attr.start_x = area_res.x + style->border_width + 2;
         font_attr.start_y = area_res.y;
         draw_text(input->draw_ctx, &font_attr, &area_font);
     }
@@ -359,12 +359,7 @@ void gt_input_style_del_value(gt_obj_st * input)
 lab_end:
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
-/**
- * @brief set placeholder value
- *
- * @param input input obj
- * @param placeholder placeholder value
- */
+
 void gt_input_style_set_placeholder(gt_obj_st * input, const char * placeholder)
 {
     _gt_style_input_st * style = input->style;
