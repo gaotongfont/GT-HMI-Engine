@@ -145,7 +145,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         font.utf8 = &style->value[style->pos_cursor];
         font.len = strlen(&style->value[style->pos_cursor]);
         font.size = style->font_size;
-        color_font = gt_color_hex(0x000000);
+        color_font = style->font_color;
 
         font_attr.font = &font,
         font_attr.font_color = color_font,
