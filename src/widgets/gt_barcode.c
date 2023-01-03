@@ -24,7 +24,9 @@
 #define OBJ_TYPE    GT_TYPE_BARCODE
 #define MY_CLASS    &gt_barcode_class
 
-
+// 
+#define BARCODE_READ_MODE       (0) // 1 -- read all  0 - read tow line
+#define BAECODE_LINE_NUMB       (10)
 /* private typedef ------------------------------------------------------*/
 
 
@@ -53,33 +55,49 @@ const gt_obj_class_st gt_barcode_class = {
 
 /* static functions -----------------------------------------------------*/
 static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
-    _gt_style_barcode_st * style = barcode->style;
+    _gt_style_barcode_st style_src;
+    _gt_style_barcode_st * style = &style_src; // = barcode->style;
     bar_uint32_t buf_size = 0;
+    gt_area_st area;
+    
+    gt_memcpy(style , barcode->style , sizeof(_gt_style_barcode_st));
 
+#if (!BARCODE_READ_MODE)
+    gt_size_t x = 0, y = 0, w  = 0, h = 0 , i = 0;
+    h = style->mode_h;
+    if(h < BAECODE_LINE_NUMB) 
+        h = BAECODE_LINE_NUMB;
+    style->mode_h = 1;
+#endif
     // 获取长宽
     if(!gt_barcode_get_w_and_h(style))
     {
         if(style->ret_param.dot_w == 0 || style->ret_param.dot_h == 0)
         {
-            GT_LOGE(GT_LOG_TAG_GUI , "barcode err dot_w = %d , dot_h = %d" , style->ret_param.dot_w , style->ret_param.dot_h);
+            GT_LOGE(GT_LOG_TAG_GUI , "area err dot_w = %d , dot_h = %d" , style->ret_param.dot_w , style->ret_param.dot_h);
             return ;
         }
     }
-    barcode->area.w = style->ret_param.dot_w;
-    barcode->area.h = style->ret_param.dot_h;
-    buf_size = (barcode->area.w * barcode->area.h) >> 3;
+    area.w = style->ret_param.dot_w;
+    area.h = style->ret_param.dot_h;
+#if (BARCODE_READ_MODE)
+    buf_size = (area.w * area.h) >> 3;
+#else
+    buf_size = (area.w * (area.h > BAECODE_LINE_NUMB ? area.h : BAECODE_LINE_NUMB)) >> 3;
+#endif
     style->pdat = gt_mem_malloc(buf_size);
+
     if( NULL == style->pdat )
     {
         return ;
     }
     style->pdat_size = buf_size;
-    GT_LOGD(GT_LOG_TAG_GUI , "barcode dot_w = %d , dot_h = %d , buf_size = %d" , barcode->area.w , barcode->area.h , style->pdat_size);
+    GT_LOGD(GT_LOG_TAG_GUI , "area dot_w = %d , dot_h = %d , buf_size = %d" , area.w , area.h , style->pdat_size);
 
     // 获取数据
     if(!gt_barcode_get(style))
     {
-        GT_LOGE(GT_LOG_TAG_GUI , "barcode err type = %d ,dot_w = %d , dot_h = %d" , style->type , style->ret_param.dot_w , style->ret_param.dot_h);
+        GT_LOGE(GT_LOG_TAG_GUI , "area err type = %d ,dot_w = %d , dot_h = %d" , style->type , style->ret_param.dot_w , style->ret_param.dot_h);
         return ;
     }
     
@@ -97,9 +115,47 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     rect_attr.gray = 1;
     
     GT_LOGD(GT_LOG_TAG_UI , "barcode gray = %d" , rect_attr.gray);
+#if (BARCODE_READ_MODE)
+    // area
+    barcode->area.w = area.w;
+    barcode->area.h = area.h;
+    area.x = barcode->area.x;
+    area.y = barcode->area.y;
     // 1:base shape
-    draw_bg(barcode->draw_ctx, &rect_attr, &barcode->area);
+    draw_bg(barcode->draw_ctx, &rect_attr, &area);
+#else
+// area
+    barcode->area.w = area.w;
+    barcode->area.h = h;
+    area.x = barcode->area.x;
+    area.y = barcode->area.y;
+    area.h = BAECODE_LINE_NUMB;
 
+    for(i = 1 ; i < BAECODE_LINE_NUMB ; i++)
+    {
+        memmove(&style->pdat[i * (area.w >> 3)] , &style->pdat[0] , area.w >> 3);
+    }
+
+    int count = h / BAECODE_LINE_NUMB;
+    if(h%BAECODE_LINE_NUMB)
+    {
+        count++;
+    }
+
+    for(i = 0 ; i < count ; i++)
+    {   
+        if((h%BAECODE_LINE_NUMB) && (i == count-1))
+        {
+            area.h = h%BAECODE_LINE_NUMB;
+            draw_bg(barcode->draw_ctx, &rect_attr, &area);
+            area.y += area.h;
+            continue;
+        }
+        draw_bg(barcode->draw_ctx, &rect_attr, &area);
+        area.y += BAECODE_LINE_NUMB;
+    }
+
+#endif
     gt_mem_free(style->pdat);
     style->pdat = NULL;
     style->pdat_size = 0;
