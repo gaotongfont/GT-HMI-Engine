@@ -303,6 +303,50 @@ void gt_anim_start(const gt_anim_st * anim)
     _gt_anim_change_list();
 }
 
+bool gt_anim_del(gt_obj_st * target, gt_anim_exec_cb_t exec_cb)
+{
+    bool ret = false;
+    gt_anim_st * ptr        = NULL;
+    gt_anim_st * backup_ptr = NULL;
+
+    if (gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
+        return ;
+    }
+
+    gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), list) {
+        if ((ptr->target == target || NULL == ptr->target) && (ptr->exec_cb == exec_cb || NULL == ptr->exec_cb)) {
+            gt_list_del(&ptr->list);
+            _gt_anim_change_list();
+            gt_mem_free(ptr);
+            ret = true;
+        }
+    }
+
+    return ret;
+}
+
+void gt_anim_del_all(void)
+{
+    bool ret = false;
+    gt_anim_st * ptr        = NULL;
+    gt_anim_st * backup_ptr = NULL;
+
+    if (gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
+        return ;
+    }
+
+    gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), list) {
+        if (ptr) {
+            gt_list_del(&ptr->list);
+            gt_mem_free(ptr);
+            ret = true;
+        }
+    }
+
+    if (ret) {
+        _gt_anim_change_list();
+    }
+}
 
 void gt_anim_set_path_type(gt_anim_st * anim, gt_anim_path_type_em type)
 {

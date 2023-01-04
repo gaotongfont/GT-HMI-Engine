@@ -142,6 +142,34 @@ void _gt_anim_core_init(void);
  */
 void gt_anim_init(gt_anim_st * anim);
 
+/**
+ * @brief Which animation object start to run
+ *
+ * @param anim The animation object
+ */
+void gt_anim_start(const gt_anim_st * anim);
+
+/**
+ * @brief delete animation object in core
+ *
+ * @param target Which animation object want to be deleted
+ * @param exec_cb Which animation object exec callback function want to be deleted
+ * @return true Delete animation object successfully
+ * @return False Delete animation object failed
+ */
+bool gt_anim_del(gt_obj_st * target, gt_anim_exec_cb_t exec_cb);
+
+/**
+ * @brief Delete all animation object
+ */
+void gt_anim_del_all(void);
+
+/**
+ * @brief Set the animation object path type
+ *
+ * @param anim Which animation object
+ * @param type @ref gt_anim_path_type_em
+ */
 void gt_anim_set_path_type(gt_anim_st * anim, gt_anim_path_type_em type);
 
 #ifdef __cplusplus
