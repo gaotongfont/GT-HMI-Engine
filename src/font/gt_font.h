@@ -19,6 +19,14 @@ extern "C" {
 #include "../others/gt_color.h"
 
 
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    #include "demo.h"
+    extern int GT_Get_Font_Width(unsigned long fontcode, unsigned int font_option, unsigned int size , unsigned int gray , unsigned char* pBits);
+    extern int GT_Get_Font_Heigth(unsigned long fontcode, unsigned int font_option, unsigned int size , unsigned int gray);
+    extern char GT_Check_Is_Vec(unsigned int font_option);
+    extern struct gt_font_func_s* GT_Get_Font_Func_S(unsigned int style);
+#endif
+
 /* define ---------------------------------------------------------------*/
 #define __GT_CHECK_NAME_IS_SAME(_name1, _name2)     (strcmp(#_name1,#_name2)==0)
 

@@ -40,6 +40,7 @@ extern "C" {
 #define GT_CFG_ENABLE_RECT              1
 #define GT_CFG_ENABLE_BARCODE           1
 #define GT_CFG_ENABLE_QRCODE            1
+#define GT_CFG_ENABLE_ZK_FONT           0
 
 
 
