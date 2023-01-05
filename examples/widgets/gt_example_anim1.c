@@ -68,7 +68,7 @@ static void btn_click_cb(gt_event_st * e)
         gt_anim_set_value(&anim, 400, 30);
         gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_OVERSHOOT);
     }
-	gt_anim_start(anim);
+	gt_anim_start(&anim);
 }
 
 
