@@ -426,13 +426,13 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
                 idx_res++;
             }
         }else{
-            const uint8_t * temp = gt_symbol_get_mask_buf(_font.utf8);
+            const uint8_t * temp = gt_symbol_get_mask_buf(_font.utf8 , _font.size);
             if( temp == NULL ){
                 area_font.x += width + dsc->space_x;
                 idx += _font.len;
                 continue;
             }
-            gt_memcpy(mask_buf, temp, 256);
+            gt_memcpy(mask_buf, temp, _font.size*_font.size);
         }
 
         gt_draw_blend(draw_ctx, &blend_dsc);

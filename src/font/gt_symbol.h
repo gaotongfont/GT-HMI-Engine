@@ -19,11 +19,12 @@ extern "C" {
 
 
 /* define ---------------------------------------------------------------*/
+#define GT_CFG_USE_SYMBOL_ENABLE     1
+#define GT_CFG_USE_SYMBOL_16x16	     1
+#define GT_CFG_USE_SYMBOL_24x24	     1
 
-#define GT_CFG_USE_SYMBOL_16x16	1
 
-
-#if	GT_CFG_USE_SYMBOL_16x16	 == 1
+#if	GT_CFG_USE_SYMBOL_ENABLE	 == 1
 #if !defined GT_SYMBOL_AUDIO
 #define GT_SYMBOL_AUDIO           "\xEF\x80\x81" /*61441, 0xF001*/
 #endif
@@ -264,6 +265,14 @@ extern "C" {
 #define GT_SYMBOL_NEW_LINE        "\xEF\xA2\xA2" /*63650, 0xF8A2*/
 #endif
 
+#if !defined GT_SYMBOL_EN
+#define GT_SYMBOL_EN               "\xEF\xA2\xA3" /*63651, 0xF8A3*/
+#endif
+
+#if !defined GT_SYMBOL_SPELL
+#define GT_SYMBOL_SPELL             "\xEF\xA2\xA4" /*63652, 0xF8A4*/
+#endif
+
 #endif
 
 /* typedef --------------------------------------------------------------*/
@@ -279,7 +288,7 @@ typedef struct _gt_symbol_s{
 
 /* global functions / API interface -------------------------------------*/
 bool gt_symbol_check_by_unicode(uint32_t unicode);
-const uint8_t * gt_symbol_get_mask_buf(char * utf8);
+const uint8_t * gt_symbol_get_mask_buf(char * utf8 , uint8_t size);
 
 
 #ifdef __cplusplus
