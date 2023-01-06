@@ -171,13 +171,15 @@ static gt_obj_st * _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st * poi
     while( idx < parent->cnt_child ){
         if( 0 != parent->child[idx]->cnt_child ){
             obj_temp = _gt_obj_foreach_clicked(parent->child[idx], point);
-            if( obj_temp ){
+            if( obj_temp && GT_VISIBLE == obj_temp->visible ){
                 obj_clicked = obj_temp;
                 return obj_clicked;
+            } else {
+                obj_clicked = NULL;
             }
         }
         if( gt_obj_check_is_clicked(parent->child[idx], point) ){
-            if( parent->child[idx] ){
+            if( parent->child[idx] && parent->child[idx]->visible ){
                 obj_clicked = parent->child[idx];
             }
         }
@@ -200,6 +202,7 @@ gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point
     }
     return obj_clicked;
 
+#if 0
 	// old func: no foreach all obj
     while( idx < parent->cnt_child ){
         if( gt_obj_check_is_clicked(parent->child[idx], &_point) ){
@@ -210,6 +213,7 @@ gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point
         idx++;
     }
     return obj_clicked;
+#endif
 }
 
 bool gt_obj_check_scr(gt_obj_st * obj)
