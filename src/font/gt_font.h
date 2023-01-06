@@ -17,10 +17,10 @@ extern "C" {
 #include "stdint.h"
 #include "../core/gt_style.h"
 #include "../others/gt_color.h"
-
+#include "../widgets/gt_conf_widgets.h"
+#include "../../driver/gt_port_font.h"
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
-    #include "demo.h"
     extern int GT_Get_Font_Width(unsigned long fontcode, unsigned int font_option, unsigned int size , unsigned int gray , unsigned char* pBits);
     extern int GT_Get_Font_Heigth(unsigned long fontcode, unsigned int font_option, unsigned int size , unsigned int gray);
     extern char GT_Check_Is_Vec(unsigned int font_option);
