@@ -155,8 +155,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
             GT_LOGD(GT_LOG_TAG_GUI, "clicking");
-            _gt_imgbtn_set_src(obj, style->src_press);
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            
             break;
         case GT_EVENT_TYPE_UPDATE_VALUE:
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -168,9 +167,11 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
             GT_LOGD(GT_LOG_TAG_GUI, "process");
+            _gt_imgbtn_set_src(obj, style->src_press);
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             /* code here */
-            _gt_imgbtn_set_src(obj, style->src_release);
-            gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
+            // _gt_imgbtn_set_src(obj, style->src_release);
+            // gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */

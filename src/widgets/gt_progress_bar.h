@@ -97,6 +97,9 @@ gt_size_t gt_progress_bar_style_get_end(gt_obj_st * progress_bar);
 gt_size_t gt_progress_bar_style_get_total(gt_obj_st * progress_bar);
 
 
+void gt_progress_bar_style_set_color_act(gt_obj_st * progress_bar, gt_color_t color);
+void gt_progress_bar_style_set_color_ina(gt_obj_st * progress_bar, gt_color_t color);
+
 
 #ifdef __cplusplus
 } /*extern "C"*/
