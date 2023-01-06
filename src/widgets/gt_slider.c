@@ -287,6 +287,12 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
             GT_LOGD(GT_LOG_TAG_GUI, "process");
             /* code here */
+            gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
+            break;
+
+        case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
+            GT_LOGD(GT_LOG_TAG_GUI, "processed");
+
             point_click.x = obj->process_attr.point.x;
             point_click.y = obj->process_attr.point.y;
             if( gt_slider_style_get_dir(obj) == GT_BAR_DIR_HOR_L2R ){
@@ -303,16 +309,9 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
                 pos = ((float)_pos)/((float)obj->area.h);
             }
 
-
             pos = pos * (float)gt_slider_style_get_total(obj);
             pos += gt_slider_style_get_start(obj);
             gt_slider_style_set_pos(obj, (int)pos);
-            gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
-            GT_LOGD(GT_LOG_TAG_GUI, "processed");
-
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
