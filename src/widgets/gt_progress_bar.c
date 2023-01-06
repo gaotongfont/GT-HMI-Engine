@@ -260,11 +260,11 @@ gt_size_t gt_progress_bar_style_get_total(gt_obj_st * progress_bar)
 void gt_progress_bar_style_set_color_act(gt_obj_st * progress_bar, gt_color_t color){
     _gt_style_progress_bar_st * style = (_gt_style_progress_bar_st *)progress_bar->style;
     style->color_act = color;
-    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+    gt_event_send(progress_bar, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_progress_bar_style_set_color_ina(gt_obj_st * progress_bar, gt_color_t color){
     _gt_style_progress_bar_st * style = (_gt_style_progress_bar_st *)progress_bar->style;
     style->color_ina = color;
-    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+    gt_event_send(progress_bar, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 /* end ------------------------------------------------------------------*/
