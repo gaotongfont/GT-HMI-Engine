@@ -164,16 +164,16 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
             GT_LOGD(GT_LOG_TAG_GUI, "process");
             /* code here */
-            if( gt_obj_style_get_state(obj) ){
-                gt_obj_style_set_state(obj, GT_STATE_NONE);
-            }else{
-                gt_obj_style_set_state(obj, GT_STATE_PRESSED);
-            }
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
             GT_LOGD(GT_LOG_TAG_GUI, "processed");
+            if( gt_obj_style_get_state(obj) ){
+                gt_obj_style_set_state(obj, GT_STATE_NONE);
+            }else{
+                gt_obj_style_set_state(obj, GT_STATE_PRESSED);
+            }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 

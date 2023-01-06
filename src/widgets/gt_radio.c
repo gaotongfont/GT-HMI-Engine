@@ -193,12 +193,12 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
             GT_LOGD(GT_LOG_TAG_GUI, "process");
             /* code here */
-            gt_radio_style_set_selected(obj);
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
             GT_LOGD(GT_LOG_TAG_GUI, "processed");
+            gt_radio_style_set_selected(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
