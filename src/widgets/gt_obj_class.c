@@ -159,10 +159,10 @@ gt_obj_st * gt_obj_class_create(const gt_obj_class_st * class, gt_obj_st * paren
     gt_obj_st * obj = gt_mem_malloc(is);
 	gt_memset_0(obj, is);
 
-    obj->class = class;
-    obj->parent = parent;
-    obj->opa = GT_OPA_100;
-    obj->style = gt_mem_malloc(get_style_size(class));
+    obj->class   = class;
+    obj->parent  = parent;
+    obj->opa     = GT_OPA_100;
+    obj->style   = gt_mem_malloc(get_style_size(class));
     obj->visible = GT_VISIBLE;
 
     if (parent == NULL) {

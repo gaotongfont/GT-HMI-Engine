@@ -1,7 +1,7 @@
 /**
  * @file gt_port_font.h
  * @author Yang (your@email.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2023-01-05 17:58:25
  * @copyright Copyright (c) 2014-2023, Company Genitop. Co., Ltd.
@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-#include "../../explorer_stm32f4/HARDWARE/GT_ZK/zk/demo.h"
+// #include "../../explorer_stm32f4/HARDWARE/GT_ZK/zk/demo.h"
 
 
 /* define ---------------------------------------------------------------*/
