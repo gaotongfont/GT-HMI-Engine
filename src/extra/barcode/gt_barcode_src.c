@@ -1,14 +1,14 @@
 /**
  * @file barcode.c
  * @author Yang (your@email.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-06-16 13:44:09
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
-#include "../extra/barcode/gt_barcode_src.h"
+#include "gt_barcode_src.h"
 #include "string.h"
 #include "stdio.h"
 
@@ -52,7 +52,7 @@ typedef struct
 
     bar_uint16_t one_code_size;        // 数据符一个模块大小
 
-    bar_uint8_t len;                  // 条码长度 
+    bar_uint8_t len;                  // 条码长度
 
     bar_uint8_t wide_module;          // 宽模块
     bar_uint8_t narrow_module;        // 窄模块
@@ -66,57 +66,57 @@ const static bar_uint8_t _wide_module_size[] = {2 , 2 , 5 , 8 , 10 , 13 , 15};
 
 
 /* static variables -----------------------------------------------------*/
-static const bar_uint8_t _ASCII_5x7[] = 
+static const bar_uint8_t _ASCII_5x7[] =
 {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x20, 0x20, 0x20, 0x00, 0x00, 0x20, 0x00, 
-    0x50, 0x50, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x50, 0x50, 0xF8, 0x50, 0xF8, 0x50, 0x50, 0x00, 
-    0x20, 0x78, 0xA0, 0x70, 0x28, 0xF0, 0x20, 0x00, 0xC0, 0xC8, 0x10, 0x20, 0x40, 0x98, 0x18, 0x00, 
-    0x60, 0x90, 0xA0, 0x40, 0xA8, 0x90, 0x68, 0x00, 0x60, 0x20, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x10, 0x20, 0x40, 0x40, 0x40, 0x20, 0x10, 0x00, 0x40, 0x20, 0x10, 0x10, 0x10, 0x20, 0x40, 0x00, 
-    0x00, 0x20, 0xA8, 0x70, 0xA8, 0x20, 0x00, 0x00, 0x00, 0x20, 0x20, 0xF8, 0x20, 0x20, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x60, 0x20, 0x40, 0x00, 0x00, 0x00, 0x00, 0xF8, 0x00, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x60, 0x60, 0x00, 0x00, 0x08, 0x10, 0x20, 0x40, 0x80, 0x00, 0x00, 
-    0x70, 0x88, 0x98, 0xA8, 0xC8, 0x88, 0x70, 0x00, 0x20, 0x60, 0x20, 0x20, 0x20, 0x20, 0x70, 0x00, 
-    0x70, 0x88, 0x08, 0x10, 0x20, 0x40, 0xF8, 0x00, 0xF8, 0x10, 0x20, 0x10, 0x08, 0x88, 0x70, 0x00, 
-    0x10, 0x30, 0x50, 0x90, 0xF8, 0x10, 0x10, 0x00, 0xF8, 0x80, 0xF0, 0x08, 0x08, 0x88, 0x70, 0x00, 
-    0x30, 0x40, 0x80, 0xF0, 0x88, 0x88, 0x70, 0x00, 0xF8, 0x08, 0x10, 0x20, 0x40, 0x40, 0x40, 0x00, 
-    0x70, 0x88, 0x88, 0x70, 0x88, 0x88, 0x70, 0x00, 0x70, 0x88, 0x88, 0x78, 0x08, 0x10, 0x60, 0x00, 
-    0x00, 0x60, 0x60, 0x00, 0x60, 0x60, 0x00, 0x00, 0x00, 0x60, 0x60, 0x00, 0x60, 0x20, 0x40, 0x00, 
-    0x10, 0x20, 0x40, 0x80, 0x40, 0x20, 0x10, 0x00, 0x00, 0x00, 0xF8, 0x00, 0xF8, 0x00, 0x00, 0x00, 
-    0x40, 0x20, 0x10, 0x08, 0x10, 0x20, 0x40, 0x00, 0x70, 0x88, 0x08, 0x10, 0x20, 0x00, 0x20, 0x00, 
-    0x70, 0x88, 0x08, 0x68, 0xA8, 0xA8, 0x70, 0x00, 0x70, 0x88, 0x88, 0x88, 0xF8, 0x88, 0x88, 0x00, 
-    0xF0, 0x88, 0x88, 0xF0, 0x88, 0x88, 0xF0, 0x00, 0x70, 0x88, 0x80, 0x80, 0x80, 0x88, 0x70, 0x00, 
-    0xE0, 0x90, 0x88, 0x88, 0x88, 0x90, 0xE0, 0x00, 0xF8, 0x80, 0x80, 0xF0, 0x80, 0x80, 0xF8, 0x00, 
-    0xF8, 0x80, 0x80, 0xF0, 0x80, 0x80, 0x80, 0x00, 0x70, 0x88, 0x80, 0xB8, 0x88, 0x88, 0x78, 0x00, 
-    0x88, 0x88, 0x88, 0xF8, 0x88, 0x88, 0x88, 0x00, 0x70, 0x20, 0x20, 0x20, 0x20, 0x20, 0x70, 0x00, 
-    0x38, 0x10, 0x10, 0x10, 0x10, 0x90, 0x60, 0x00, 0x88, 0x90, 0xA0, 0xC0, 0xA0, 0x90, 0x88, 0x00, 
-    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0xF8, 0x00, 0x88, 0xD8, 0xA8, 0xA8, 0x88, 0x88, 0x88, 0x00, 
-    0x88, 0x88, 0xC8, 0xA8, 0x98, 0x88, 0x88, 0x00, 0x70, 0x88, 0x88, 0x88, 0x88, 0x88, 0x70, 0x00, 
-    0xF0, 0x88, 0x88, 0xF0, 0x80, 0x80, 0x80, 0x00, 0x70, 0x88, 0x88, 0x88, 0xA8, 0x90, 0x68, 0x00, 
-    0xF0, 0x88, 0x88, 0xF0, 0xA0, 0x90, 0x88, 0x00, 0x78, 0x80, 0x80, 0x70, 0x08, 0x08, 0xF0, 0x00, 
-    0xF8, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x00, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x70, 0x00, 
-    0x88, 0x88, 0x88, 0x88, 0x88, 0x50, 0x20, 0x00, 0x88, 0x88, 0x88, 0xA8, 0xA8, 0xA8, 0x50, 0x00, 
-    0x88, 0x88, 0x50, 0x20, 0x50, 0x88, 0x88, 0x00, 0x88, 0x88, 0x88, 0x50, 0x20, 0x20, 0x20, 0x00, 
-    0xF8, 0x08, 0x10, 0x20, 0x40, 0x80, 0xF8, 0x00, 0x70, 0x40, 0x40, 0x40, 0x40, 0x40, 0x70, 0x00, 
-    0x00, 0x80, 0x40, 0x20, 0x10, 0x08, 0x00, 0x00, 0x70, 0x10, 0x10, 0x10, 0x10, 0x10, 0x70, 0x00, 
-    0x20, 0x50, 0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF8, 0x00, 
-    0x80, 0x40, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x70, 0x08, 0x78, 0x88, 0x78, 0x00, 
-    0x80, 0x80, 0x80, 0xF0, 0x88, 0x88, 0xF0, 0x00, 0x00, 0x00, 0x78, 0x80, 0x80, 0x80, 0x78, 0x00, 
-    0x08, 0x08, 0x08, 0x78, 0x88, 0x88, 0x78, 0x00, 0x00, 0x00, 0x70, 0x88, 0xF8, 0x80, 0x78, 0x00, 
-    0x10, 0x28, 0x20, 0x70, 0x20, 0x20, 0x20, 0x00, 0x00, 0x00, 0x78, 0x88, 0x78, 0x08, 0xF0, 0x00, 
-    0x80, 0x80, 0x80, 0xF0, 0x88, 0x88, 0x88, 0x00, 0x00, 0x20, 0x00, 0x20, 0x20, 0x20, 0x20, 0x00, 
-    0x10, 0x00, 0x10, 0x10, 0x10, 0x90, 0x60, 0x00, 0x80, 0x80, 0x90, 0xA0, 0xC0, 0xA0, 0x90, 0x00, 
-    0x60, 0x20, 0x20, 0x20, 0x20, 0x20, 0x70, 0x00, 0x00, 0x00, 0xD8, 0xA8, 0xA8, 0xA8, 0x88, 0x00, 
-    0x00, 0x00, 0xB0, 0xC8, 0x88, 0x88, 0x88, 0x00, 0x00, 0x00, 0x70, 0x88, 0x88, 0x88, 0x70, 0x00, 
-    0x00, 0x00, 0xF0, 0x88, 0xF0, 0x80, 0x80, 0x00, 0x00, 0x00, 0x78, 0x88, 0x78, 0x08, 0x08, 0x00, 
-    0x00, 0x00, 0xB0, 0xC8, 0x80, 0x80, 0x80, 0x00, 0x00, 0x00, 0x78, 0x80, 0x70, 0x08, 0xF0, 0x00, 
-    0x20, 0x20, 0xF8, 0x20, 0x20, 0x28, 0x10, 0x00, 0x00, 0x00, 0x88, 0x88, 0x88, 0x88, 0x70, 0x00, 
-    0x00, 0x00, 0x88, 0x88, 0x88, 0x50, 0x20, 0x00, 0x00, 0x00, 0x88, 0x88, 0xA8, 0xA8, 0x50, 0x00, 
-    0x00, 0x00, 0x88, 0x50, 0x20, 0x50, 0x88, 0x00, 0x00, 0x00, 0x88, 0x50, 0x20, 0x20, 0x40, 0x00, 
-    0x00, 0x00, 0xF8, 0x10, 0x20, 0x40, 0xF8, 0x00, 0x30, 0x40, 0x40, 0x80, 0x40, 0x40, 0x30, 0x00, 
-    0x20, 0x20, 0x20, 0x00, 0x20, 0x20, 0x20, 0x00, 0x60, 0x10, 0x10, 0x08, 0x10, 0x10, 0x60, 0x00, 
-    0x08, 0x70, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x20, 0x20, 0x20, 0x00, 0x00, 0x20, 0x00,
+    0x50, 0x50, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x50, 0x50, 0xF8, 0x50, 0xF8, 0x50, 0x50, 0x00,
+    0x20, 0x78, 0xA0, 0x70, 0x28, 0xF0, 0x20, 0x00, 0xC0, 0xC8, 0x10, 0x20, 0x40, 0x98, 0x18, 0x00,
+    0x60, 0x90, 0xA0, 0x40, 0xA8, 0x90, 0x68, 0x00, 0x60, 0x20, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x10, 0x20, 0x40, 0x40, 0x40, 0x20, 0x10, 0x00, 0x40, 0x20, 0x10, 0x10, 0x10, 0x20, 0x40, 0x00,
+    0x00, 0x20, 0xA8, 0x70, 0xA8, 0x20, 0x00, 0x00, 0x00, 0x20, 0x20, 0xF8, 0x20, 0x20, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x60, 0x20, 0x40, 0x00, 0x00, 0x00, 0x00, 0xF8, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x60, 0x60, 0x00, 0x00, 0x08, 0x10, 0x20, 0x40, 0x80, 0x00, 0x00,
+    0x70, 0x88, 0x98, 0xA8, 0xC8, 0x88, 0x70, 0x00, 0x20, 0x60, 0x20, 0x20, 0x20, 0x20, 0x70, 0x00,
+    0x70, 0x88, 0x08, 0x10, 0x20, 0x40, 0xF8, 0x00, 0xF8, 0x10, 0x20, 0x10, 0x08, 0x88, 0x70, 0x00,
+    0x10, 0x30, 0x50, 0x90, 0xF8, 0x10, 0x10, 0x00, 0xF8, 0x80, 0xF0, 0x08, 0x08, 0x88, 0x70, 0x00,
+    0x30, 0x40, 0x80, 0xF0, 0x88, 0x88, 0x70, 0x00, 0xF8, 0x08, 0x10, 0x20, 0x40, 0x40, 0x40, 0x00,
+    0x70, 0x88, 0x88, 0x70, 0x88, 0x88, 0x70, 0x00, 0x70, 0x88, 0x88, 0x78, 0x08, 0x10, 0x60, 0x00,
+    0x00, 0x60, 0x60, 0x00, 0x60, 0x60, 0x00, 0x00, 0x00, 0x60, 0x60, 0x00, 0x60, 0x20, 0x40, 0x00,
+    0x10, 0x20, 0x40, 0x80, 0x40, 0x20, 0x10, 0x00, 0x00, 0x00, 0xF8, 0x00, 0xF8, 0x00, 0x00, 0x00,
+    0x40, 0x20, 0x10, 0x08, 0x10, 0x20, 0x40, 0x00, 0x70, 0x88, 0x08, 0x10, 0x20, 0x00, 0x20, 0x00,
+    0x70, 0x88, 0x08, 0x68, 0xA8, 0xA8, 0x70, 0x00, 0x70, 0x88, 0x88, 0x88, 0xF8, 0x88, 0x88, 0x00,
+    0xF0, 0x88, 0x88, 0xF0, 0x88, 0x88, 0xF0, 0x00, 0x70, 0x88, 0x80, 0x80, 0x80, 0x88, 0x70, 0x00,
+    0xE0, 0x90, 0x88, 0x88, 0x88, 0x90, 0xE0, 0x00, 0xF8, 0x80, 0x80, 0xF0, 0x80, 0x80, 0xF8, 0x00,
+    0xF8, 0x80, 0x80, 0xF0, 0x80, 0x80, 0x80, 0x00, 0x70, 0x88, 0x80, 0xB8, 0x88, 0x88, 0x78, 0x00,
+    0x88, 0x88, 0x88, 0xF8, 0x88, 0x88, 0x88, 0x00, 0x70, 0x20, 0x20, 0x20, 0x20, 0x20, 0x70, 0x00,
+    0x38, 0x10, 0x10, 0x10, 0x10, 0x90, 0x60, 0x00, 0x88, 0x90, 0xA0, 0xC0, 0xA0, 0x90, 0x88, 0x00,
+    0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0xF8, 0x00, 0x88, 0xD8, 0xA8, 0xA8, 0x88, 0x88, 0x88, 0x00,
+    0x88, 0x88, 0xC8, 0xA8, 0x98, 0x88, 0x88, 0x00, 0x70, 0x88, 0x88, 0x88, 0x88, 0x88, 0x70, 0x00,
+    0xF0, 0x88, 0x88, 0xF0, 0x80, 0x80, 0x80, 0x00, 0x70, 0x88, 0x88, 0x88, 0xA8, 0x90, 0x68, 0x00,
+    0xF0, 0x88, 0x88, 0xF0, 0xA0, 0x90, 0x88, 0x00, 0x78, 0x80, 0x80, 0x70, 0x08, 0x08, 0xF0, 0x00,
+    0xF8, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x00, 0x88, 0x88, 0x88, 0x88, 0x88, 0x88, 0x70, 0x00,
+    0x88, 0x88, 0x88, 0x88, 0x88, 0x50, 0x20, 0x00, 0x88, 0x88, 0x88, 0xA8, 0xA8, 0xA8, 0x50, 0x00,
+    0x88, 0x88, 0x50, 0x20, 0x50, 0x88, 0x88, 0x00, 0x88, 0x88, 0x88, 0x50, 0x20, 0x20, 0x20, 0x00,
+    0xF8, 0x08, 0x10, 0x20, 0x40, 0x80, 0xF8, 0x00, 0x70, 0x40, 0x40, 0x40, 0x40, 0x40, 0x70, 0x00,
+    0x00, 0x80, 0x40, 0x20, 0x10, 0x08, 0x00, 0x00, 0x70, 0x10, 0x10, 0x10, 0x10, 0x10, 0x70, 0x00,
+    0x20, 0x50, 0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF8, 0x00,
+    0x80, 0x40, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x70, 0x08, 0x78, 0x88, 0x78, 0x00,
+    0x80, 0x80, 0x80, 0xF0, 0x88, 0x88, 0xF0, 0x00, 0x00, 0x00, 0x78, 0x80, 0x80, 0x80, 0x78, 0x00,
+    0x08, 0x08, 0x08, 0x78, 0x88, 0x88, 0x78, 0x00, 0x00, 0x00, 0x70, 0x88, 0xF8, 0x80, 0x78, 0x00,
+    0x10, 0x28, 0x20, 0x70, 0x20, 0x20, 0x20, 0x00, 0x00, 0x00, 0x78, 0x88, 0x78, 0x08, 0xF0, 0x00,
+    0x80, 0x80, 0x80, 0xF0, 0x88, 0x88, 0x88, 0x00, 0x00, 0x20, 0x00, 0x20, 0x20, 0x20, 0x20, 0x00,
+    0x10, 0x00, 0x10, 0x10, 0x10, 0x90, 0x60, 0x00, 0x80, 0x80, 0x90, 0xA0, 0xC0, 0xA0, 0x90, 0x00,
+    0x60, 0x20, 0x20, 0x20, 0x20, 0x20, 0x70, 0x00, 0x00, 0x00, 0xD8, 0xA8, 0xA8, 0xA8, 0x88, 0x00,
+    0x00, 0x00, 0xB0, 0xC8, 0x88, 0x88, 0x88, 0x00, 0x00, 0x00, 0x70, 0x88, 0x88, 0x88, 0x70, 0x00,
+    0x00, 0x00, 0xF0, 0x88, 0xF0, 0x80, 0x80, 0x00, 0x00, 0x00, 0x78, 0x88, 0x78, 0x08, 0x08, 0x00,
+    0x00, 0x00, 0xB0, 0xC8, 0x80, 0x80, 0x80, 0x00, 0x00, 0x00, 0x78, 0x80, 0x70, 0x08, 0xF0, 0x00,
+    0x20, 0x20, 0xF8, 0x20, 0x20, 0x28, 0x10, 0x00, 0x00, 0x00, 0x88, 0x88, 0x88, 0x88, 0x70, 0x00,
+    0x00, 0x00, 0x88, 0x88, 0x88, 0x50, 0x20, 0x00, 0x00, 0x00, 0x88, 0x88, 0xA8, 0xA8, 0x50, 0x00,
+    0x00, 0x00, 0x88, 0x50, 0x20, 0x50, 0x88, 0x00, 0x00, 0x00, 0x88, 0x50, 0x20, 0x20, 0x40, 0x00,
+    0x00, 0x00, 0xF8, 0x10, 0x20, 0x40, 0xF8, 0x00, 0x30, 0x40, 0x40, 0x80, 0x40, 0x40, 0x30, 0x00,
+    0x20, 0x20, 0x20, 0x00, 0x20, 0x20, 0x20, 0x00, 0x60, 0x10, 0x10, 0x08, 0x10, 0x10, 0x60, 0x00,
+    0x08, 0x70, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+
 };
 
 /* macros ---------------------------------------------------------------*/
@@ -126,10 +126,10 @@ static const bar_uint8_t _ASCII_5x7[] =
 /* static functions -----------------------------------------------------*/
 /**
  * @brief 得到文字
- * 
+ *
  * @param fontcode  文字编码
  * @param buf       文字buf
- * @return int 
+ * @return int
  */
 static int _get_font(bar_uint8_t fontcode , bar_uint8_t* buf)
 {
@@ -145,15 +145,15 @@ static int _is_number(char c)
 {
     if(c >= 0x30  && c <= 0x39)
         return 1;
-    
+
     return 0;
 }
 
 /**
  * @brief 字符串是数字组成
- * 
+ *
  * @param str 字符串
- * @return int 
+ * @return int
  */
 static int _is_number_string(char* str)
 {
@@ -178,7 +178,7 @@ static int _is_code93_or_39_char(char c)
     if((c >= 0x30  && c <= 0x39)||(c >= 65  && c <=90)||
         (c==32)||(c==36)||(c==37)||(c==42||(c==43)|(c>=45	&&	c<=47)))
         return 1;
-    
+
     return 0;
 }
 
@@ -187,7 +187,7 @@ static int _is_code93_or_39_string(char* str)
     int i  , ret = 0;
     for(i = 0 ; i < strlen(str) ; i++)
     {
-        
+
         if(_is_code93_or_39_char(str[i]))
         {
             ret = 1;
@@ -203,16 +203,16 @@ static int _is_code93_or_39_string(char* str)
 
 /**
  * @brief 设置黑点
- * 
+ *
  * @param p_row     行参数
  * @param point     点的位置
- * @return int 
+ * @return int
  */
 static int _set_point( _row_st* p_row , bar_uint16_t point)
 {
     // if(NULL == p_row)
     //     return 0;
-    
+
     // if(NULL == p_row->pdat)
     //     return 0;
 
@@ -226,17 +226,17 @@ static int _set_point( _row_st* p_row , bar_uint16_t point)
 
 /**
  * @brief 设置白点
- * 
- * @param p_row 
- * @param point 
- * @return int 
+ *
+ * @param p_row
+ * @param point
+ * @return int
  */
 static int _reset_point( _row_st* p_row , bar_uint16_t point)
 {
 
     // if(NULL == p_row)
     //     return 0;
-    
+
     // if(point > (p_row->row_byte << 3))
     //     return 0;
 
@@ -250,9 +250,9 @@ static int _reset_point( _row_st* p_row , bar_uint16_t point)
 
 /**
  * @brief 得到起始行与结束行
- * 
- * @param p_barcode 
- * @return int 
+ *
+ * @param p_barcode
+ * @return int
  */
 static int _get_bracode_scope(_code_st* p_barcode)
 {
@@ -303,10 +303,10 @@ static int _get_bracode_scope(_code_st* p_barcode)
 
 /**
  * @brief 左侧空白区设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @return int
  */
 static int _left_blank_none_set(_code_st * p_barcode , _row_st* p_row)
 {
@@ -322,10 +322,10 @@ static int _left_blank_none_set(_code_st * p_barcode , _row_st* p_row)
 
 /**
  * @brief 右侧空白区设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @return int
  */
 static int _right_blank_none_set(_code_st * p_barcode , _row_st* p_row)
 {
@@ -342,11 +342,11 @@ static int _right_blank_none_set(_code_st * p_barcode , _row_st* p_row)
 
 /**
  * @brief 起始符设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @param dat 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @param dat
+ * @return int
  */
 static int _start_code_set(_code_st * p_barcode , _row_st* p_row , bar_uint32_t dat)
 {
@@ -365,11 +365,11 @@ static int _start_code_set(_code_st * p_barcode , _row_st* p_row , bar_uint32_t 
 
 /**
  * @brief 结束符设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @param dat 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @param dat
+ * @return int
  */
 static int _end_code_set(_code_st * p_barcode , _row_st* p_row , bar_uint32_t dat)
 {
@@ -388,11 +388,11 @@ static int _end_code_set(_code_st * p_barcode , _row_st* p_row , bar_uint32_t da
 
 /**
  * @brief 中间间隔符设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @param dat 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @param dat
+ * @return int
  */
 static int _separator_code_set(_code_st * p_barcode , _row_st* p_row , bar_uint32_t dat)
 {
@@ -410,11 +410,11 @@ static int _separator_code_set(_code_st * p_barcode , _row_st* p_row , bar_uint3
 
 /**
  * @brief 数据设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @param dat 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @param dat
+ * @return int
  */
 static int _data_set(_code_st * p_barcode , _row_st* p_row , bar_uint32_t dat)
 {
@@ -474,7 +474,7 @@ static int _2_of_5_data_set(_code_st * p_barcode , _row_st* p_row , bar_uint32_t
 static int _codxx_data_set(_code_st * p_barcode , _row_st* p_row , bar_uint32_t dat1 , bar_uint8_t count)
 {
     bar_uint32_t i , j ;
-    
+
     int (*p_fun)(_row_st* , bar_uint16_t);
 
     for(i = 1 ; i <= count ; i++)
@@ -497,7 +497,7 @@ static int _codxx_data_set(_code_st * p_barcode , _row_st* p_row , bar_uint32_t 
                     return 0;
             }
         }
-    
+
     }
     return 1;
 }
@@ -517,12 +517,12 @@ static int _interval_code_set(_code_st * p_barcode , _row_st* p_row)
 
 /**
  * @brief 文字设置
- * 
- * @param p_row 
- * @param w 
- * @param h 
- * @param font_buf 
- * @return int 
+ *
+ * @param p_row
+ * @param w
+ * @param h
+ * @param font_buf
+ * @return int
  */
 static int _font_point_put(_row_st* p_row , bar_uint16_t w , bar_uint16_t h , bar_uint8_t *font_buf)
 {
@@ -537,7 +537,7 @@ static int _font_point_put(_row_st* p_row , bar_uint16_t w , bar_uint16_t h , ba
             for(j = 0 ; j < 8 ;j++)
             {
                 // 超出宽度不打点
-                if((n+1)*j >= w)    
+                if((n+1)*j >= w)
                     break;
                 ret = (font_buf[i*((w + 7)/8) + n] << j) & 0x80 ? _set_point(p_row , pos++) : _reset_point(p_row , pos++);
                 if(0 == ret)
@@ -553,10 +553,10 @@ static int _font_point_put(_row_st* p_row , bar_uint16_t w , bar_uint16_t h , ba
 
 /**
  * @brief 得到字符串中的字符
- * 
- * @param str 
- * @param numb 
- * @return char 
+ *
+ * @param str
+ * @param numb
+ * @return char
  */
 static char _get_string_char(char* str , bar_uint32_t numb)
 {
@@ -590,14 +590,14 @@ static char _get_code93_or_39_string_index(char* str , bar_uint32_t numb)
     {
         //$
         return 39;
-    } 
+    }
     else if(str[numb] == 0x2F)
     {
         // /
         return 40;
-    } 
+    }
     else if(str[numb] == 0x2B)
-    { 
+    {
         // +
         return 41;
     }
@@ -620,11 +620,11 @@ static const bar_uint8_t _ean13_code_type_c[10] = {0x72, 0x66, 0x6C, 0x42, 0x5C,
 
 /**
  * @brief ean13 文字设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @param y 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @param y
+ * @return int
  */
 static int _ean13_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t y)
 {
@@ -648,13 +648,13 @@ static int _ean13_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t y
         return 0;
 
     pos = p_row->pos;
-    p_row->pos += p_barcode->start_code * p_barcode->p_code->mode_w + w + p_barcode->p_code->mode_w*2; 
+    p_row->pos += p_barcode->start_code * p_barcode->p_code->mode_w + w + p_barcode->p_code->mode_w*2;
     // 左数据
     for(i = 1; i <= 6; i++)
     {
         c = _get_string_char(p_barcode->p_code->barcode , i);
         if(!_get_font(c + 0x30 , temp_buf))
-            return 0; 
+            return 0;
         p_row->pdat = p_barcode->p_code->pdat + (y * p_row->row_byte);
         if(!_font_point_put(p_row , w , h , temp_buf))
             return 0;
@@ -684,16 +684,16 @@ static int _ean13_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t y
 
 /**
  * @brief ean13 文字位置设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @return int
  */
 static int _ean13_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 {
     bar_uint32_t i;
     // 上
-    if( GT_FAMILY_BARCODE_HRI_TYPE_UP == p_barcode->p_code->hri_type || 
+    if( GT_FAMILY_BARCODE_HRI_TYPE_UP == p_barcode->p_code->hri_type ||
         GT_FAMILY_BARCODE_HRI_TYPE_ALL == p_barcode->p_code->hri_type)
     {
         p_row->pdat = p_barcode->p_code->pdat + ((p_barcode->start-BARCODE_BLANK_SIZE) * p_row->row_byte);
@@ -707,7 +707,7 @@ static int _ean13_hri_type_set(_code_st * p_barcode , _row_st* p_row)
         p_row->pos += (p_barcode->right_data_code+p_barcode->check_code) * p_barcode->p_code->mode_w;
         if(!_end_code_set(p_barcode , p_row , 0x05))
             return 0;
-        
+
         for(i = 1 ; i < BARCODE_BLANK_SIZE ; i++)
         {
             memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
@@ -733,7 +733,7 @@ static int _ean13_hri_type_set(_code_st * p_barcode , _row_st* p_row)
         p_row->pos += (p_barcode->right_data_code+p_barcode->check_code) * p_barcode->p_code->mode_w;
         if(!_end_code_set(p_barcode , p_row , 0x05))
             return 0;
-        
+
         for(i = 1 ; i < BARCODE_BLANK_SIZE ; i++)
         {
             memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
@@ -748,10 +748,10 @@ static int _ean13_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 
 /**
  * @brief ean13 校验码设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @return int
  */
 static int _ean13_check_code_set(_code_st * p_barcode , _row_st* p_row)
 {
@@ -777,21 +777,21 @@ static int _ean13_check_code_set(_code_st * p_barcode , _row_st* p_row)
     p_barcode->p_code->ret_param.check_numb = 10 - cc;
     if(10 == p_barcode->p_code->ret_param.check_numb)
         p_barcode->p_code->ret_param.check_numb = 0;
-    
+
     code_type = _ean13_code_type_c[p_barcode->p_code->ret_param.check_numb];
 
     if(!_data_set(p_barcode , p_row , code_type))
         return 0;
-    
+
     return 1;
 }
 
 /**
  * @brief ean13 左侧数据符设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @return int
  */
 static int _ean13_left_data_code_set(_code_st * p_barcode , _row_st* p_row)
 {
@@ -817,10 +817,10 @@ static int _ean13_left_data_code_set(_code_st * p_barcode , _row_st* p_row)
 
 /**
  * @brief ean13 右侧数据符设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @return int
  */
 static int _ean13_right_data_code_set(_code_st * p_barcode , _row_st* p_row)
 {
@@ -833,7 +833,7 @@ static int _ean13_right_data_code_set(_code_st * p_barcode , _row_st* p_row)
     {
         --tmp;
         code_type = _ean13_code_type_c[ _get_string_char(p_barcode->p_code->barcode , c_n++) ];
-        
+
         if(!_data_set( p_barcode , p_row , code_type ))
             return 0;
     }
@@ -843,9 +843,9 @@ static int _ean13_right_data_code_set(_code_st * p_barcode , _row_st* p_row)
 
 /**
  * @brief ean13 条码处理
- * 
- * @param p_barcode 
- * @return int 
+ *
+ * @param p_barcode
+ * @return int
  */
 static int _ean13_handler(_code_st * p_barcode)
 {
@@ -854,7 +854,7 @@ static int _ean13_handler(_code_st * p_barcode)
 
     if(NULL == p_barcode)
         goto ERR_RET;
-    
+
     memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
 
     _get_bracode_scope(p_barcode);
@@ -865,7 +865,7 @@ static int _ean13_handler(_code_st * p_barcode)
     p_row->pdat = p_barcode->p_code->pdat + (p_barcode->start * p_row->row_byte);
     if(NULL == p_row->pdat)
         goto ERR_RET;
-    
+
     // 左空白
     if(!_left_blank_none_set(p_barcode , p_row))
         goto ERR_RET;
@@ -936,9 +936,9 @@ ERR_RET:
 
 /**
  * @brief 得到 ean13条码
- * 
- * @param p_barcode 
- * @return int 
+ *
+ * @param p_barcode
+ * @return int
  */
 static int _get_ean13(_code_st * p_barcode)
 {
@@ -963,7 +963,7 @@ static int _get_ean13(_code_st * p_barcode)
     p_barcode->one_code_size = 7;
 
     p_barcode->p_code->mode_w = p_barcode->p_code->mode_w ? p_barcode->p_code->mode_w : 2 ;
-    
+
     // 计算显示宽高
     p_barcode->p_code->ret_param.dot_w =  ((p_barcode->p_code->mode_w * temp + 7 ) >> 3 ) << 3;
     p_barcode->p_code->ret_param.dot_h =  p_barcode->p_code->mode_h;
@@ -1010,10 +1010,10 @@ static const bar_uint8_t _ean8_code_type_c[10] = {0x72, 0x66, 0x6C, 0x42, 0x5C, 
 
 /**
  * @brief ean8 左侧数据符设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @return int
  */
 static int _ean8_left_data_code_set(_code_st * p_barcode , _row_st* p_row)
 {
@@ -1036,10 +1036,10 @@ static int _ean8_left_data_code_set(_code_st * p_barcode , _row_st* p_row)
 
 /**
  * @brief ean8 右侧数据符设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @return int
  */
 static int _ean8_right_data_code_set(_code_st * p_barcode , _row_st* p_row)
 {
@@ -1052,7 +1052,7 @@ static int _ean8_right_data_code_set(_code_st * p_barcode , _row_st* p_row)
     {
         --tmp;
         code_type = _ean8_code_type_c[ _get_string_char(p_barcode->p_code->barcode , c_n++) ];
-        
+
         if(!_data_set( p_barcode , p_row , code_type ))
             return 0;
     }
@@ -1062,10 +1062,10 @@ static int _ean8_right_data_code_set(_code_st * p_barcode , _row_st* p_row)
 
 /**
  * @brief ean8 校验码设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @return int
  */
 static int _ean8_check_code_set(_code_st * p_barcode , _row_st* p_row)
 {
@@ -1089,22 +1089,22 @@ static int _ean8_check_code_set(_code_st * p_barcode , _row_st* p_row)
     p_barcode->p_code->ret_param.check_numb = 10 - cc;
     if(10 == p_barcode->p_code->ret_param.check_numb)
         p_barcode->p_code->ret_param.check_numb = 0;
-    
+
     code_type = _ean8_code_type_c[p_barcode->p_code->ret_param.check_numb];
 
     if(!_data_set(p_barcode , p_row , code_type))
         return 0;
-    
+
     return 1;
 }
 
 /**
  * @brief ean8 文字设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @param y 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @param y
+ * @return int
  */
 static int _ean8_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t y)
 {
@@ -1125,11 +1125,11 @@ static int _ean8_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t y)
     {
         c = _get_string_char(p_barcode->p_code->barcode , i);
         if(!_get_font(c + 0x30 , temp_buf))
-            return 0; 
+            return 0;
         p_row->pdat = p_barcode->p_code->pdat + (y * p_row->row_byte);
         if(!_font_point_put(p_row , w , h , temp_buf))
             return 0;
-        
+
         p_row->pos += p_barcode->one_code_size * p_barcode->p_code->mode_w;
     }
 
@@ -1155,17 +1155,17 @@ static int _ean8_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t y)
 
 /**
  * @brief ean8 文字位置设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @return int
  */
 static int _ean8_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 {
-    
+
     bar_uint32_t i;
     // 上
-    if( GT_FAMILY_BARCODE_HRI_TYPE_UP == p_barcode->p_code->hri_type || 
+    if( GT_FAMILY_BARCODE_HRI_TYPE_UP == p_barcode->p_code->hri_type ||
         GT_FAMILY_BARCODE_HRI_TYPE_ALL == p_barcode->p_code->hri_type)
     {
         p_row->pdat = p_barcode->p_code->pdat + ((p_barcode->start-BARCODE_BLANK_SIZE) * p_row->row_byte);
@@ -1179,7 +1179,7 @@ static int _ean8_hri_type_set(_code_st * p_barcode , _row_st* p_row)
         p_row->pos += (p_barcode->right_data_code+p_barcode->check_code) * p_barcode->p_code->mode_w;
         if(!_end_code_set(p_barcode , p_row , 0x05))
             return 0;
-        
+
         for(i = 1 ; i < BARCODE_BLANK_SIZE ; i++)
         {
             memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
@@ -1220,9 +1220,9 @@ static int _ean8_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 
 /**
  * @brief ean8 条码处理
- * 
- * @param p_barcode 
- * @return int 
+ *
+ * @param p_barcode
+ * @return int
  */
 static int _ean8_handler(_code_st * p_barcode)
 {
@@ -1231,7 +1231,7 @@ static int _ean8_handler(_code_st * p_barcode)
 
     if(NULL == p_barcode)
         goto ERR_RET;
-    
+
     memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
 
     _get_bracode_scope(p_barcode);
@@ -1313,9 +1313,9 @@ ERR_RET:
 
 /**
  * @brief 得到 ean8 条码
- * 
- * @param p_barcode 
- * @return int 
+ *
+ * @param p_barcode
+ * @return int
  */
 static int _get_ean8(_code_st * p_barcode)
 {
@@ -1340,11 +1340,11 @@ static int _get_ean8(_code_st * p_barcode)
     p_barcode->one_code_size = 7;
 
     p_barcode->p_code->mode_w = p_barcode->p_code->mode_w ? p_barcode->p_code->mode_w : 2 ;
-    
+
     // 计算显示宽高
     p_barcode->p_code->ret_param.dot_w =  ((p_barcode->p_code->mode_w * temp + 7 ) >> 3 ) << 3;
     p_barcode->p_code->ret_param.dot_h = p_barcode->p_code->mode_h;
-    
+
     if(p_barcode->p_code->mode_h < BARCODE_MIN_H)
     {
         p_barcode->p_code->ret_param.dot_h = 2;
@@ -1394,7 +1394,7 @@ static int _upca_left_data_code_set(_code_st * p_barcode , _row_st* p_row)
     tmp = p_barcode->left_data_code / p_barcode->one_code_size;
 
     len = p_barcode->len < 11 ? 11 - p_barcode->len : 0 ;
-    
+
     for(i = 0 ; i < tmp ; i++)
     {
         if(i < len)
@@ -1420,7 +1420,7 @@ static int _upca_right_data_code_set(_code_st * p_barcode , _row_st* p_row)
     char c ;
     bar_uint32_t len = 0;
     tmp = p_barcode->right_data_code / p_barcode->one_code_size;
-    
+
     len = p_barcode->len < 11 ? 11 - p_barcode->len : 0 ;
 
     for(i = c_n; i < tmp+c_n ; i++)
@@ -1450,7 +1450,7 @@ static int _upca_check_code_set(_code_st * p_barcode , _row_st* p_row)
 
     for(i = 0 ; i < 11 ; i++)
     {
-        if(i < len) 
+        if(i < len)
             continue;
         if(i%2)
         {
@@ -1467,12 +1467,12 @@ static int _upca_check_code_set(_code_st * p_barcode , _row_st* p_row)
     p_barcode->p_code->ret_param.check_numb = 10 - cc;
     if(10 == p_barcode->p_code->ret_param.check_numb)
         p_barcode->p_code->ret_param.check_numb = 0;
-    
+
     code_type = _upca_code_type_c[p_barcode->p_code->ret_param.check_numb];
 
     if(!_data_set(p_barcode , p_row , code_type))
         return 0;
-    
+
     return 1;
 }
 
@@ -1507,11 +1507,11 @@ static int _upca_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t y)
     {
         c = i < len ? 0 : _get_string_char(p_barcode->p_code->barcode , i-len);
         if(!_get_font(c + 0x30 , temp_buf))
-            return 0; 
+            return 0;
         p_row->pdat = p_barcode->p_code->pdat + (y * p_row->row_byte);
         if(!_font_point_put(p_row , w , h , temp_buf))
             return 0;
-        
+
         p_row->pos += p_barcode->one_code_size * p_barcode->p_code->mode_w;
     }
 
@@ -1544,7 +1544,7 @@ static int _upca_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t y)
 
 static int _upca_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 {
-    
+
     bar_uint32_t i , len = 0;
     bar_uint8_t code_type , c = 0;
     len = p_barcode->len < 11 ? 11 - p_barcode->len : 0 ;
@@ -1563,7 +1563,7 @@ static int _upca_hri_type_set(_code_st * p_barcode , _row_st* p_row)
         if(!_data_set( p_barcode , p_row , code_type ))
             return 0;
         p_row->pos -= p_barcode->one_code_size * p_barcode->p_code->mode_w;
-        // 
+        //
         p_row->pos += p_barcode->left_data_code * p_barcode->p_code->mode_w;
         if(!_separator_code_set(p_barcode , p_row , 0x0A))
             return 0;
@@ -1603,7 +1603,7 @@ static int _upca_hri_type_set(_code_st * p_barcode , _row_st* p_row)
         if(!_data_set( p_barcode , p_row , code_type ))
             return 0;
         p_row->pos -= p_barcode->one_code_size * p_barcode->p_code->mode_w;
-        // 
+        //
         p_row->pos += p_barcode->left_data_code * p_barcode->p_code->mode_w;
         if(!_separator_code_set(p_barcode , p_row , 0x0A))
             return 0;
@@ -1640,7 +1640,7 @@ static int _upc_a_handler(_code_st* p_barcode)
 
     if(NULL == p_barcode)
         goto ERR_RET;
-    
+
     memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
 
     _get_bracode_scope(p_barcode);
@@ -1683,7 +1683,7 @@ static int _upc_a_handler(_code_st* p_barcode)
     // 右空白
     if(!_right_blank_none_set(p_barcode , p_row))
         goto ERR_RET;
-    
+
     // 第二行数据
     if(p_barcode->p_code->ret_param.is_two_lines_data)
     {
@@ -1698,7 +1698,7 @@ static int _upc_a_handler(_code_st* p_barcode)
         if(!_data_set( p_barcode , p_row , code_type ))
             return 0;
         p_row->pos -= p_barcode->one_code_size * p_barcode->p_code->mode_w;
-        // 
+        //
         p_row->pos += p_barcode->left_data_code * p_barcode->p_code->mode_w;
         if(!_separator_code_set(p_barcode , p_row , 0x0A))
             return 0;
@@ -1712,7 +1712,7 @@ static int _upc_a_handler(_code_st* p_barcode)
 
         if(!_end_code_set(p_barcode , p_row , 0x05))
             return 0;
-        
+
         return 1;
     }
     // 绘制范围类的数据
@@ -1755,7 +1755,7 @@ static int _get_upc_a(_code_st* p_barcode)
     p_barcode->one_code_size = 7;
 
     p_barcode->p_code->mode_w = p_barcode->p_code->mode_w ? p_barcode->p_code->mode_w : 2 ;
-    
+
     // 计算显示宽高
     p_barcode->p_code->ret_param.dot_w =  ((p_barcode->p_code->mode_w * temp + 7 ) >> 3 ) << 3;
     p_barcode->p_code->ret_param.dot_h =  p_barcode->p_code->mode_h;
@@ -1810,7 +1810,7 @@ static int _upce_get_check_numb(_code_st * p_barcode)
         if(i % 2)
         {
             c1 += _get_string_char(p_barcode->p_code->barcode , i);
-        } 
+        }
         else
         {
             c2 += _get_string_char(p_barcode->p_code->barcode , i);
@@ -1828,7 +1828,7 @@ static int _upce_data_code_set(_code_st * p_barcode , _row_st* p_row)
 {
     bar_uint32_t i ,  tmp = 0;
     bar_uint8_t type = 0 , code_type = 0 , c = 0;
-    
+
     // 计算check numb
     _upce_get_check_numb(p_barcode);
 
@@ -1869,7 +1869,7 @@ static int _upce_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t y)
     if(!_font_point_put(p_row , w , h , temp_buf))
         return 0;
 
-    p_row->pos += p_barcode->start_code * p_barcode->p_code->mode_w + w + p_barcode->p_code->mode_w*2; 
+    p_row->pos += p_barcode->start_code * p_barcode->p_code->mode_w + w + p_barcode->p_code->mode_w*2;
     pos = p_row->pos;
     // 左数据
     for(i = 0; i < 6; i++)
@@ -1877,7 +1877,7 @@ static int _upce_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t y)
         p_row->pdat = p_barcode->p_code->pdat + (y * p_row->row_byte);
         c = _get_string_char(p_barcode->p_code->barcode , i);
         if(!_get_font(c + 0x30 , temp_buf))
-            return 0; 
+            return 0;
         if(!_font_point_put(p_row , w , h , temp_buf))
             return 0;
         p_row->pos += p_barcode->left_data_code / p_barcode->one_code_size * p_barcode->p_code->mode_w + p_barcode->p_code->mode_w;
@@ -1900,7 +1900,7 @@ static int _upce_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 {
     bar_uint32_t i;
     // 上
-    if( GT_FAMILY_BARCODE_HRI_TYPE_UP == p_barcode->p_code->hri_type || 
+    if( GT_FAMILY_BARCODE_HRI_TYPE_UP == p_barcode->p_code->hri_type ||
         GT_FAMILY_BARCODE_HRI_TYPE_ALL == p_barcode->p_code->hri_type)
     {
         p_row->pdat = p_barcode->p_code->pdat + ((p_barcode->start-BARCODE_BLANK_SIZE) * p_row->row_byte);
@@ -1911,7 +1911,7 @@ static int _upce_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 
         if(!_end_code_set(p_barcode , p_row , 0x15))
             return 0;
-        
+
         for(i = 1 ; i < BARCODE_BLANK_SIZE ; i++)
         {
             memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
@@ -1930,11 +1930,11 @@ static int _upce_hri_type_set(_code_st * p_barcode , _row_st* p_row)
         p_row->pos = p_barcode->left_blank_none;
         if(!_start_code_set(p_barcode , p_row , 0x05))
             return 0;
-        
+
         p_row->pos += p_barcode->left_data_code * p_barcode->p_code->mode_w;
         if(!_end_code_set(p_barcode , p_row , 0x15))
             return 0;
-        
+
         for(i = 1 ; i < BARCODE_BLANK_SIZE ; i++)
         {
             memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
@@ -1954,7 +1954,7 @@ static int _upce_handler(_code_st * p_barcode)
 
     if(NULL == p_barcode)
         goto ERR_RET;
-    
+
     memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
 
     _get_bracode_scope(p_barcode);
@@ -1965,7 +1965,7 @@ static int _upce_handler(_code_st * p_barcode)
     p_row->pdat = p_barcode->p_code->pdat + (p_barcode->start * p_row->row_byte);
     if(NULL == p_row->pdat)
         goto ERR_RET;
-    
+
     // 左空白
     if(!_left_blank_none_set(p_barcode , p_row))
         goto ERR_RET;
@@ -1977,7 +1977,7 @@ static int _upce_handler(_code_st * p_barcode)
     // 数据
     if(!_upce_data_code_set(p_barcode , p_row))
         goto ERR_RET;
-    
+
     // 结束符
     if(!_end_code_set(p_barcode , p_row , 0x15))
         goto ERR_RET;
@@ -1985,7 +1985,7 @@ static int _upce_handler(_code_st * p_barcode)
     // 右空白
     if(!_right_blank_none_set(p_barcode , p_row))
         goto ERR_RET;
-    
+
     // 第二行数据
     if(p_barcode->p_code->ret_param.is_two_lines_data)
     {
@@ -1994,7 +1994,7 @@ static int _upce_handler(_code_st * p_barcode)
         p_row->pos = p_barcode->left_blank_none;
         if(!_start_code_set(p_barcode , p_row , 0x05))
             return 0;
-        
+
         p_row->pos += p_barcode->left_data_code * p_barcode->p_code->mode_w;
         if(!_end_code_set(p_barcode , p_row , 0x15))
             return 0;
@@ -2037,7 +2037,7 @@ static int _get_upc_e(_code_st* p_barcode)
     p_barcode->end_code = 6;
     p_barcode->right_blank_none = 9;
     temp = 69; // 实际值为上述变量相加
-    
+
     p_barcode->one_code_size = 7;
 
     // 系统字符
@@ -2088,7 +2088,7 @@ static const bar_uint8_t _itf_code_type_a[10] = {0x06, 0x11, 0x09, 0x18, 0x05, 0
 
 static int _itf_data_code_set(_code_st * p_barcode , _row_st* p_row)
 {
-    bar_uint32_t i , offset = 0 , dat1 , dat2; 
+    bar_uint32_t i , offset = 0 , dat1 , dat2;
     bar_uint8_t c1 , c2;
     offset = p_barcode->len % 2;
 
@@ -2112,7 +2112,7 @@ static int _itf_data_code_set(_code_st * p_barcode , _row_st* p_row)
 
 static int _itf_bearer_bar_set(_code_st * p_barcode , _row_st* p_row)
 {
-    bar_uint32_t i ; 
+    bar_uint32_t i ;
 
     if(p_barcode->start < p_barcode->itf_bearer_bar)
         return 0;
@@ -2175,7 +2175,7 @@ static int _itf_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t y)
             return 0;
         if(!_font_point_put(p_row , w , h , temp_buf))
             return 0;
-        
+
         p_row->pos += w + 2 ;
     }
 
@@ -2185,7 +2185,7 @@ static int _itf_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t y)
 static int _itf_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 {
     // 上
-    if( GT_FAMILY_BARCODE_HRI_TYPE_UP == p_barcode->p_code->hri_type || 
+    if( GT_FAMILY_BARCODE_HRI_TYPE_UP == p_barcode->p_code->hri_type ||
         GT_FAMILY_BARCODE_HRI_TYPE_ALL == p_barcode->p_code->hri_type)
     {
 
@@ -2211,9 +2211,9 @@ static int _itf_handler(_code_st * p_barcode)
 
     if(NULL == p_barcode)
         goto ERR_RET;
-    
+
     memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
-    
+
     _get_bracode_scope(p_barcode);
 
     memset(p_row , 0 , sizeof(_row_st));
@@ -2241,8 +2241,8 @@ static int _itf_handler(_code_st * p_barcode)
     // 右空白区
     if(!_right_blank_none_set(p_barcode , p_row))
         goto ERR_RET;
-    
-    // 
+
+    //
     if(p_barcode->p_code->ret_param.is_two_lines_data)
     {
         for(i = p_barcode->start + 1 ; i < p_barcode->p_code->ret_param.dot_h ; i++)
@@ -2298,7 +2298,7 @@ static int _get_itf(_code_st* p_barcode)
     p_barcode->right_blank_none = 10 +  p_barcode->itf_bearer_bar;
     // 实际值为上述变量相加
     temp = p_barcode->left_blank_none + p_barcode->start_code + p_barcode->left_data_code + p_barcode->end_code + p_barcode->right_blank_none;
-    
+
     p_barcode->p_code->mode_w = p_barcode->p_code->mode_w ? p_barcode->p_code->mode_w : 2 ;
     // 计算显示宽高
     p_barcode->p_code->ret_param.dot_w =  ((p_barcode->p_code->mode_w * temp + 7 ) >> 3 ) << 3;
@@ -2309,7 +2309,7 @@ static int _get_itf(_code_st* p_barcode)
         p_barcode->p_code->ret_param.dot_h = 2;
         p_barcode->p_code->ret_param.is_two_lines_data = 1;
     }
-    
+
     // 需要的字节数超出buf
     if((( p_barcode->p_code->ret_param.dot_w *  p_barcode->p_code->ret_param.dot_h) >> 3) >  p_barcode->p_code->pdat_size)
         return 0;
@@ -2362,7 +2362,7 @@ static int _is_ABCD(char c)
 {
     if(c >= 0x41 && c <= 0x44)
         return 1;
-    
+
     return 0;
 }
 
@@ -2423,7 +2423,7 @@ static int _is_string_ture_of_barocde(char* str , bar_uint16_t* p_wide_count , b
 
 static int _codabar_data_code_set(_code_st * p_barcode , _row_st* p_row)
 {
-    bar_uint32_t i ; 
+    bar_uint32_t i ;
     bar_uint8_t c1 , code_type= 0;
 
     for(i = 0 ; i < p_barcode->len  ; i++)
@@ -2438,7 +2438,7 @@ static int _codabar_data_code_set(_code_st * p_barcode , _row_st* p_row)
             if(!_interval_code_set(p_barcode , p_row))
                 return 0;
         }
-        
+
     }
 
     return 1;
@@ -2469,7 +2469,7 @@ static int _codabar_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t
             return 0;
         if(!_font_point_put(p_row , w , h , temp_buf))
             return 0;
-        
+
         p_row->pos += w + 2 ;
     }
 
@@ -2479,7 +2479,7 @@ static int _codabar_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t
 static int _codabar_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 {
     // 上
-    if( GT_FAMILY_BARCODE_HRI_TYPE_UP == p_barcode->p_code->hri_type || 
+    if( GT_FAMILY_BARCODE_HRI_TYPE_UP == p_barcode->p_code->hri_type ||
         GT_FAMILY_BARCODE_HRI_TYPE_ALL == p_barcode->p_code->hri_type)
     {
         if(!_codabar_font_set( p_barcode , p_row , BARCODE_BLANK_SIZE>>1))
@@ -2503,7 +2503,7 @@ static int _codabar_handler(_code_st * p_barcode)
 
     if(NULL == p_barcode)
         goto ERR_RET;
-    
+
     memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
     _get_bracode_scope(p_barcode);
 
@@ -2513,11 +2513,11 @@ static int _codabar_handler(_code_st * p_barcode)
     p_row->pdat = p_barcode->p_code->pdat + (p_barcode->start * p_row->row_byte);
     if(NULL == p_row->pdat)
         goto ERR_RET;
-    
+
     // 左空白区
     if(!_left_blank_none_set(p_barcode , p_row))
         goto ERR_RET;
-    
+
     // 数据符
     if(!_codabar_data_code_set(p_barcode , p_row))
         goto ERR_RET;
@@ -2526,7 +2526,7 @@ static int _codabar_handler(_code_st * p_barcode)
     if(!_right_blank_none_set(p_barcode , p_row))
         goto ERR_RET;
 
-    // 
+    //
     if(p_barcode->p_code->ret_param.is_two_lines_data)
     {
         for(i = p_barcode->start + 1 ; i < p_barcode->p_code->ret_param.dot_h ; i++)
@@ -2535,7 +2535,7 @@ static int _codabar_handler(_code_st * p_barcode)
         }
         return 1;
     }
-    
+
     // 绘制范围类的数据
     for(i = p_barcode->start+1; i < p_barcode->end ; i++)
     {
@@ -2572,9 +2572,9 @@ static int _get_codabar(_code_st* p_barcode)
     // 超宽 强制为 2
     if(p_barcode->p_code->mode_w > 6)
         p_barcode->p_code->mode_w = 2;
-    
+
     p_barcode->p_code->mode_w = p_barcode->p_code->mode_w ? p_barcode->p_code->mode_w : 2 ;
-    
+
     // 模块宽度 双模块使用
     p_barcode->narrow_module = p_barcode->p_code->mode_w;
     p_barcode->wide_module = _wide_module_size[p_barcode->p_code->mode_w];
@@ -2765,12 +2765,12 @@ static int _code128_data_set(_code_st * p_barcode , _row_st* p_row)
             code_type = _code128_code_type_a[_CODE128_CODE_A];
             if(!_data_set( p_barcode , p_row , code_type ))
                 return 0;
-            
+
             index = _get_code128_index(p_barcode , i);
             code_type = _code128_code_type_a[index];
             if(!_data_set( p_barcode , p_row , code_type ))
                 return 0;
-            
+
             return 1;
         }
         index = _get_code128_index(p_barcode , i);
@@ -2795,14 +2795,14 @@ static int _code_128_check_set(_code_st * p_barcode , _row_st* p_row)
     else if( GT_FAMILY_BARCODE_TYPE_CODE128B == p_barcode->p_code->type)
     {
         c = _CODE128_START_B;
-        
+
     }
     else // if(GT_FAMILY_BARCODE_TYPE_CODE128C == p_barcode->p_code->type)
     {
         c = _CODE128_START_C;
         offset = 2;
     }
-        
+
     for(i = 0 ; i < p_barcode->len; i+=offset)
     {
 
@@ -2813,7 +2813,7 @@ static int _code_128_check_set(_code_st * p_barcode , _row_st* p_row)
 
             index = _get_code128_index(p_barcode , i);
             c += index * ((i/offset)+1 + 1);
-            
+
             break;
         }
         index = _get_code128_index(p_barcode , i);
@@ -2821,11 +2821,11 @@ static int _code_128_check_set(_code_st * p_barcode , _row_st* p_row)
     }
     p_barcode->p_code->ret_param.check_numb = c % 103;
 
-    // 
+    //
     code_type = _code128_code_type_a[p_barcode->p_code->ret_param.check_numb];
     if(!_data_set( p_barcode , p_row , code_type ))
         return 0;
-    
+
     return 1;
 }
 
@@ -2854,7 +2854,7 @@ static int _code128_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t
             return 0;
         if(!_font_point_put(p_row , w , h , temp_buf))
             return 0;
-        
+
         p_row->pos += w + 2 ;
     }
 
@@ -2865,7 +2865,7 @@ static int _code128_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 {
 
     // 上
-    if( GT_FAMILY_BARCODE_HRI_TYPE_UP == p_barcode->p_code->hri_type || 
+    if( GT_FAMILY_BARCODE_HRI_TYPE_UP == p_barcode->p_code->hri_type ||
         GT_FAMILY_BARCODE_HRI_TYPE_ALL == p_barcode->p_code->hri_type)
     {
         if(!_code128_font_set( p_barcode , p_row , BARCODE_BLANK_SIZE>>1))
@@ -2890,7 +2890,7 @@ static int _code128_handler(_code_st * p_barcode)
 
     if(NULL == p_barcode)
         goto ERR_RET;
-    
+
     memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
     _get_bracode_scope(p_barcode);
 
@@ -2900,7 +2900,7 @@ static int _code128_handler(_code_st * p_barcode)
     p_row->pdat = p_barcode->p_code->pdat + (p_barcode->start * p_row->row_byte);
     if(NULL == p_row->pdat)
         goto ERR_RET;
-    
+
     // 左空白
     if(!_left_blank_none_set(p_barcode , p_row))
         goto ERR_RET;
@@ -2930,7 +2930,7 @@ static int _code128_handler(_code_st * p_barcode)
     // 右空白
     if(!_right_blank_none_set(p_barcode , p_row))
         goto ERR_RET;
-    
+
     // 第二行数据
     if(p_barcode->p_code->ret_param.is_two_lines_data)
     {
@@ -2988,7 +2988,7 @@ static int _get_code128(_code_st * p_barcode)
     temp = p_barcode->left_blank_none + p_barcode->start_code + p_barcode->left_data_code + p_barcode->check_code + p_barcode->end_code + p_barcode->right_blank_none;
 
     p_barcode->p_code->mode_w = p_barcode->p_code->mode_w ? p_barcode->p_code->mode_w : 2 ;
-    
+
     // 计算显示宽高
     p_barcode->p_code->ret_param.dot_w =  ((p_barcode->p_code->mode_w * temp + 7 ) >> 3 ) << 3;
     p_barcode->p_code->ret_param.dot_h =  p_barcode->p_code->mode_h;
@@ -3040,10 +3040,10 @@ static const bar_uint32_t _code93_logic_type[47] =  {
 
 /**
  * @brief code93 数据符设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @return int
  */
 static int _code93_data_code_set(_code_st * p_barcode , _row_st* p_row)
 {
@@ -3070,7 +3070,7 @@ static int _code93_check_code_set(_code_st * p_barcode , _row_st* p_row)
 	unsigned char A=0,K=0;
     bar_uint32_t check_C=0;
     bar_uint32_t check_K=0;
-    
+
     A = p_barcode->len > 20 ? p_barcode->len - 20 : p_barcode->len;
     K = (p_barcode->len + 1) > 15 ? p_barcode->len + 1 - 15 : p_barcode->len+1;
 
@@ -3102,17 +3102,17 @@ static int _code93_check_code_set(_code_st * p_barcode , _row_st* p_row)
         return 0;
     if(!_data_set(p_barcode , p_row , _code93_logic_type[check_K]))
         return 0;
-    
+
     return 1;
-    
+
 }
 /**
  * @brief ean8 文字设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @param y 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @param y
+ * @return int
  */
 static int _code93_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t y)
 {
@@ -3134,27 +3134,27 @@ static int _code93_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t 
         p_row->pdat = p_barcode->p_code->pdat + (y * p_row->row_byte);
 
         if(!_get_font(p_barcode->p_code->barcode[i] , temp_buf))
-            return 0; 
-        
+            return 0;
+
         if(!_font_point_put(p_row , w , h , temp_buf))
             return 0;
-        
+
         p_row->pos += w + 2 ;
     }
-		
+
     return 1;
 }
 /**
  * @brief ean8 文字位置设置
- * 
- * @param p_barcode 
- * @param p_row 
- * @return int 
+ *
+ * @param p_barcode
+ * @param p_row
+ * @return int
  */
 static int _code93_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 {
     // 上
-    if( GT_FAMILY_BARCODE_HRI_TYPE_UP == p_barcode->p_code->hri_type || 
+    if( GT_FAMILY_BARCODE_HRI_TYPE_UP == p_barcode->p_code->hri_type ||
         GT_FAMILY_BARCODE_HRI_TYPE_ALL == p_barcode->p_code->hri_type)
     {
         p_row->pdat = p_barcode->p_code->pdat + ((p_barcode->start-BARCODE_BLANK_SIZE) * p_row->row_byte);
@@ -3177,9 +3177,9 @@ static int _code93_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 }
 /**
  * @brief code93 条码处理
- * 
- * @param p_barcode 
- * @return int 
+ *
+ * @param p_barcode
+ * @return int
  */
 static int _code93_handler(_code_st * p_barcode)
 {
@@ -3188,7 +3188,7 @@ static int _code93_handler(_code_st * p_barcode)
 
     if(NULL == p_barcode)
         goto ERR_RET;
-    
+
     memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
     _get_bracode_scope(p_barcode);
 
@@ -3214,7 +3214,7 @@ static int _code93_handler(_code_st * p_barcode)
     // 校验符
     if(!_code93_check_code_set(p_barcode , p_row))
         goto ERR_RET;
-	
+
     // 结束符
     if(!_end_code_set(p_barcode , p_row , 0x2BD))  //0x015E
         goto ERR_RET;
@@ -3224,7 +3224,7 @@ static int _code93_handler(_code_st * p_barcode)
         goto ERR_RET;
 
     if(p_barcode->p_code->ret_param.is_two_lines_data)
-    { 
+    {
         for(i = p_barcode->start + 1 ; i < p_barcode->p_code->ret_param.dot_h ; i++)
         {
             memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
@@ -3250,9 +3250,9 @@ ERR_RET:
 
 /**
  * @brief 得到 ean93条码
- * 
- * @param p_barcode 
- * @return int 
+ *
+ * @param p_barcode
+ * @return int
  */
 static int _get_code93(_code_st * p_barcode)
 {
@@ -3263,7 +3263,7 @@ static int _get_code93(_code_st * p_barcode)
         goto ERR_RET;
     if( !_is_code93_or_39_string(p_barcode->p_code->barcode))
             goto ERR_RET;
-    
+
     p_barcode->one_code_size = 9;
 
     p_barcode->left_blank_none = 6;
@@ -3276,7 +3276,7 @@ static int _get_code93(_code_st * p_barcode)
     temp = p_barcode->left_blank_none + p_barcode->start_code + p_barcode->left_data_code + p_barcode->check_code + p_barcode->end_code + p_barcode->right_blank_none;
 
     p_barcode->p_code->mode_w = p_barcode->p_code->mode_w ? p_barcode->p_code->mode_w : 2 ;
-    
+
     // 计算显示宽高
     p_barcode->p_code->ret_param.dot_w =  ((p_barcode->p_code->mode_w * temp + 7) >> 3) << 3;
     p_barcode->p_code->ret_param.dot_h = p_barcode->p_code->mode_h;         //100bit
@@ -3313,7 +3313,7 @@ ERR_RET:
     return 0;
 }
 
-#endif 
+#endif
 
 /* code39  ---------------------------------------------------------------*/
 #if CODE39_BARCODE_EN
@@ -3329,18 +3329,18 @@ static const bar_uint16_t _code39_code_type_a[43] = {
 
 static int _code39_data_code_set(_code_st * p_barcode , _row_st* p_row)
 {
-    bar_uint32_t i ; 
+    bar_uint32_t i ;
     bar_uint16_t c1 , code_type= 0;
 
     for(i = 0 ; i < p_barcode->len  ; i++)
     {
-        
+
         c1 = _get_code93_or_39_string_index(p_barcode->p_code->barcode , i);
         code_type = _code39_code_type_a[c1];
 
         if(!_codxx_data_set(p_barcode , p_row , code_type , 9))
             return 0;
-        
+
         // 字符间隔
         if(!_interval_code_set(p_barcode , p_row))
             return 0;
@@ -3374,7 +3374,7 @@ static int _code39_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t 
             return 0;
         if(!_font_point_put(p_row , w , h , temp_buf))
             return 0;
-        
+
         p_row->pos += w + 2 ;
     }
 
@@ -3384,7 +3384,7 @@ static int _code39_font_set(_code_st * p_barcode , _row_st* p_row ,bar_uint32_t 
 static int _code39_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 {
     // 上
-    if( GT_FAMILY_BARCODE_HRI_TYPE_UP == p_barcode->p_code->hri_type || 
+    if( GT_FAMILY_BARCODE_HRI_TYPE_UP == p_barcode->p_code->hri_type ||
         GT_FAMILY_BARCODE_HRI_TYPE_ALL == p_barcode->p_code->hri_type)
     {
         if(!_code39_font_set( p_barcode , p_row , BARCODE_BLANK_SIZE>>1))
@@ -3408,7 +3408,7 @@ static int _code39_handler(_code_st * p_barcode)
 
     if(NULL == p_barcode)
         goto ERR_RET;
-    
+
     memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
     _get_bracode_scope(p_barcode);
 
@@ -3418,11 +3418,11 @@ static int _code39_handler(_code_st * p_barcode)
     p_row->pdat = p_barcode->p_code->pdat + (p_barcode->start * p_row->row_byte);
     if(NULL == p_row->pdat)
         goto ERR_RET;
-    
+
     // 左空白区
     if(!_left_blank_none_set(p_barcode , p_row))
         goto ERR_RET;
-    
+
     // 起始符
     if(!_codxx_data_set(p_barcode , p_row , _CODE39_START , 9))
         return 0;
@@ -3442,7 +3442,7 @@ static int _code39_handler(_code_st * p_barcode)
     if(!_right_blank_none_set(p_barcode , p_row))
         goto ERR_RET;
 
-    // 
+    //
     if(p_barcode->p_code->ret_param.is_two_lines_data)
     {
         for(i = p_barcode->start + 1 ; i < p_barcode->p_code->ret_param.dot_h ; i++)
@@ -3451,7 +3451,7 @@ static int _code39_handler(_code_st * p_barcode)
         }
         return 1;
     }
-    
+
     // 绘制范围类的数据
     for(i = p_barcode->start+1; i < p_barcode->end ; i++)
     {
@@ -3484,9 +3484,9 @@ static int _get_code39(_code_st* p_barcode)
     // 超宽 强制为 2
     if(p_barcode->p_code->mode_w > 6)
         p_barcode->p_code->mode_w = 2;
-    
+
     p_barcode->p_code->mode_w = p_barcode->p_code->mode_w ? p_barcode->p_code->mode_w : 2 ;
-    
+
     // 模块宽度 双模块使用
     p_barcode->narrow_module = p_barcode->p_code->mode_w;
     p_barcode->wide_module = _wide_module_size[p_barcode->p_code->mode_w];
@@ -3543,26 +3543,26 @@ ERR_RET:
 }
 #endif
 /* global functions / API interface -------------------------------------*/
-/** 
+/**
  * @brief 得到条码
- * 
- * @param p_code 
- * @return int 
+ *
+ * @param p_code
+ * @return int
  */
 int gt_barcode_get(barcode_st * p_code)
 {
     bar_uint8_t ret = 0;
     if(NULL == p_code)
         goto ERR_RET;
-    
+
     // 清空返回值 防止客户输入出现错误
     memset(&p_code->ret_param , 0 , sizeof(barcoed_ret_param_st));
 
     // 清空 _p_barcode
     memset(_p_barcode , 0 , sizeof(_code_st));
-    
-    _p_barcode->p_code = p_code; 
-    
+
+    _p_barcode->p_code = p_code;
+
     if(NULL == _p_barcode->p_code->barcode)
         goto ERR_RET;
 
@@ -3666,7 +3666,7 @@ int gt_barcode_get(barcode_st * p_code)
     default:
         return 0;
     }
-    
+
     return ret;
 
 ERR_RET:
@@ -3679,15 +3679,15 @@ int gt_barcode_get_w_and_h(barcode_st * p_code)
     bar_uint8_t ret = 0;
     if(NULL == p_code)
         goto ERR_RET;
-    
+
     // 清空返回值 防止客户输入出现错误
     memset(&p_code->ret_param , 0 , sizeof(barcoed_ret_param_st));
 
     // 清空 _p_barcode
     memset(_p_barcode , 0 , sizeof(_code_st));
-    
-    _p_barcode->p_code = p_code; 
-    
+
+    _p_barcode->p_code = p_code;
+
     if(NULL == _p_barcode->p_code->barcode)
         goto ERR_RET;
 

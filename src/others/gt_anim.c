@@ -310,7 +310,7 @@ bool gt_anim_del(gt_obj_st * target, gt_anim_exec_cb_t exec_cb)
     gt_anim_st * backup_ptr = NULL;
 
     if (gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
-        return ;
+        return ret;
     }
 
     gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), list) {
