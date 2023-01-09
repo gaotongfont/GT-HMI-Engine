@@ -1,7 +1,7 @@
 /**
  * @file gt_barcode.c
  * @author Yang (your@email.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-12-09 13:40:14
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -24,7 +24,7 @@
 #define OBJ_TYPE    GT_TYPE_BARCODE
 #define MY_CLASS    &gt_barcode_class
 
-// 
+//
 #define BARCODE_READ_MODE       (0) // 1 -- read all  0 - read tow line
 #define BAECODE_LINE_NUMB       (10)
 /* private typedef ------------------------------------------------------*/
@@ -59,13 +59,13 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     _gt_style_barcode_st * style = &style_src; // = barcode->style;
     bar_uint32_t buf_size = 0;
     gt_area_st area;
-    
+
     gt_memcpy(style , barcode->style , sizeof(_gt_style_barcode_st));
 
 #if (!BARCODE_READ_MODE)
     gt_size_t x = 0, y = 0, w  = 0, h = 0 , i = 0;
     h = style->mode_h;
-    if(h < BAECODE_LINE_NUMB) 
+    if(h < BAECODE_LINE_NUMB)
         h = BAECODE_LINE_NUMB;
     style->mode_h = 1;
 #endif
@@ -100,7 +100,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
         GT_LOGE(GT_LOG_TAG_GUI , "area err type = %d ,dot_w = %d , dot_h = %d" , style->type , style->ret_param.dot_w , style->ret_param.dot_h);
         return ;
     }
-    
+
     /* base shape */
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
@@ -113,7 +113,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     rect_attr.border_color  = gt_color_black();
     rect_attr.data_gray = style->pdat;
     rect_attr.gray = 1;
-    
+
     GT_LOGD(GT_LOG_TAG_UI , "barcode gray = %d" , rect_attr.gray);
 #if (BARCODE_READ_MODE)
     // area
@@ -143,7 +143,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     }
 
     for(i = 0 ; i < count ; i++)
-    {   
+    {
         if((h%BAECODE_LINE_NUMB) && (i == count-1))
         {
             area.h = h%BAECODE_LINE_NUMB;
@@ -201,7 +201,7 @@ static void _deinit_cb(gt_obj_st * obj) {
 
     gt_mem_free(*style_p);
     *style_p = NULL;
-    
+
 }
 
 /**
