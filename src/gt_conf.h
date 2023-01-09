@@ -119,6 +119,8 @@ extern "C" {
 #define GT_USE_MODE_FLASH       01
 #define GT_USE_MODE_SD          01
 
+#define GT_USE_DISPLAY_PREF_MSG 01
+
 /**
  * @brief use lodepng
  */
