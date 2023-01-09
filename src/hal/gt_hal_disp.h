@@ -87,7 +87,7 @@ typedef struct _gt_disp_s
 
 /* global functions / API interface -------------------------------------*/
 void gt_disp_drv_init(gt_disp_drv_st * disp_drv);
-void gt_disp_drv_deinit(void);
+// void gt_disp_drv_deinit(void);
 
 void gt_disp_drv_register(gt_disp_drv_st *drv);
 gt_disp_st * gt_disp_get_default(void);

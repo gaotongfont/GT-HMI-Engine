@@ -51,10 +51,7 @@ static inline gt_size_t _gt_disp_area_get_idx(gt_size_t idx) {
 static void _gt_disp_task_handler(struct _gt_timer_s * timer)
 {
     GT_UNUSED(timer);
-    uint32_t start = gt_tick_get();
     gt_refr_timer();
-    if( (gt_tick_get() - start) > 1 )
-        GT_LOGD(GT_LOG_TAG_GUI, "refr timer: %d ms", gt_tick_get() - start );
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -208,7 +205,11 @@ void _gt_disp_refr_append_area(gt_area_st * area)
         idx = _gt_disp_area_get_idx(++idx);
     }
 
-    _gt_disp_refr_area_push();
+    if (disp->refr.joined[idx_newly]) {
+        disp->refr.joined[idx_newly] = 0;
+    } else {
+        _gt_disp_refr_area_push();
+    }
 }
 
 uint8_t _gt_disp_refr_check(void)
