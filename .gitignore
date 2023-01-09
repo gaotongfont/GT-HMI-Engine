@@ -9,3 +9,14 @@ obj/
 bin/
 
 .cache/
+
+# ignore "gui-win" makefile list
+driver/gt_driver.mk
+examples/gt_examples.mk
+src/core/gt_core.mk
+src/extra/gt_extra.mk
+src/font/gt_font.mk
+src/hal/gt_hal.mk
+src/others/gt_others.mk
+src/widgets/gt_widgets.mk
+gui.mk
