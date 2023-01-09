@@ -51,6 +51,10 @@ void gt_refr_timer(void)
         return ;
     }
     if( _gt_disp_refr_check() ){
+#if GT_USE_DISPLAY_PREF_MSG
+        uint32_t start = gt_tick_get();
+#endif
+
         area = _gt_disp_refr_get_area();
         if ( !area ) {
             return ;
@@ -61,6 +65,11 @@ void gt_refr_timer(void)
         }
         gt_disp_ref_area( area );
         _gt_disp_refr_area_pop();
+
+#if GT_USE_DISPLAY_PREF_MSG
+        if( (gt_tick_get() - start) > 1 )
+            GT_LOGD(GT_LOG_TAG_GUI, "refr timer: %d ms", gt_tick_get() - start );
+#endif
     }
 }
 
