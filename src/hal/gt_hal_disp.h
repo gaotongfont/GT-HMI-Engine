@@ -131,9 +131,16 @@ gt_color_t * gt_disp_graph_get_buf_default(void);
  */
 gt_color_t * gt_disp_graph_get_buf_backup(void);
 
-
+/**
+ * @brief reset the invalid redraw areas message queue
+ */
 void _gt_disp_refr_reset_areas(void);
 
+/**
+ * @brief Add invalid redraw areas into message queue
+ *
+ * @param area The redraw area
+ */
 void _gt_disp_refr_append_area(gt_area_st * area);
 /**
  * @brief check disp need refresh area?
@@ -142,8 +149,22 @@ void _gt_disp_refr_append_area(gt_area_st * area);
  * @return uint8_t 0:none, !0:yes
  */
 uint8_t _gt_disp_refr_check(void);
+
+/**
+ * @brief Invalid redraw areas message queue set next index
+ */
 void _gt_disp_refr_area_push(void);
+
+/**
+ * @brief Invalid redraw areas message queue get the last index
+ */
 void _gt_disp_refr_area_pop(void);
+
+/**
+ * @brief Get the laster invalid redraw areas from message queue
+ *
+ * @return gt_area_st* The invalid redraw areas
+ */
 gt_area_st * _gt_disp_refr_get_area(void);
 
 #ifdef __cplusplus
