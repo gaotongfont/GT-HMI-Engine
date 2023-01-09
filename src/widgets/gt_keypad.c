@@ -234,7 +234,7 @@ static bool _gt_keypad_is_switch_key_mapping_pressed(gt_obj_st * keypad, const b
     bool ret = false;
 
     while(idx < len) {
-        if (0 == strcmp(style->kv_selected, list_p[idx].key) ) {
+        if (NULL != style->kv_selected && 0 == strcmp(style->kv_selected, list_p[idx].key) ) {
             if (update_map) {
                 _gt_keypad_update_map(keypad, list_p[idx].map);
             }
