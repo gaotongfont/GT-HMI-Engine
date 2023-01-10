@@ -174,9 +174,7 @@ static gt_obj_st * _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st * poi
             if( obj_temp && GT_VISIBLE == obj_temp->visible ){
                 obj_clicked = obj_temp;
                 return obj_clicked;
-            } else {
-                obj_clicked = NULL;
-            }
+            } 
         }
         if( gt_obj_check_is_clicked(parent->child[idx], point) ){
             if( parent->child[idx] && GT_VISIBLE == parent->child[idx]->visible ){
