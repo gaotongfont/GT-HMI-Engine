@@ -233,8 +233,11 @@ static bool _gt_keypad_is_switch_key_mapping_pressed(gt_obj_st * keypad, const b
     uint16_t idx = 0, len = sizeof(_gt_keypad_mode_key_mapping_list) / sizeof(_gt_keypad_kv_list_st);
     bool ret = false;
 
+    if (NULL == style->kv_selected) {
+        return ret;
+    }
     while(idx < len) {
-        if (NULL != style->kv_selected && 0 == strcmp(style->kv_selected, list_p[idx].key) ) {
+        if ( 0 == strcmp(style->kv_selected, list_p[idx].key) ) {
             if (update_map) {
                 _gt_keypad_update_map(keypad, list_p[idx].map);
             }
