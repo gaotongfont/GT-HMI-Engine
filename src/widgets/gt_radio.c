@@ -92,7 +92,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
 
     gt_color_t color = gt_color_white();
 
-    if( 1 || (gt_obj_style_get_state(radio) != GT_STATE_NONE) ){
+    if( gt_obj_style_get_state(radio) != GT_STATE_NONE ){
         color = gt_color_hex(0x808080);
     }
 
@@ -250,8 +250,9 @@ void gt_radio_style_set_selected(gt_obj_st * radio){
     gt_obj_st * obj = radio;
     while( obj->parent->class->type == GT_TYPE_GROUP && idx < obj->parent->cnt_child ){
         if( obj->parent->child[idx]->class->type == GT_TYPE_RADIO ){
-            gt_obj_style_set_state(obj->parent->child[idx++], GT_STATE_NONE);
-            gt_event_send(obj->parent->child[idx++], GT_EVENT_TYPE_DRAW_START, NULL);
+            gt_obj_style_set_state(obj->parent->child[idx], GT_STATE_NONE);
+            gt_event_send(obj->parent->child[idx], GT_EVENT_TYPE_DRAW_START, NULL);
+            idx++;
         }
     }
     gt_obj_style_set_state(obj, GT_STATE_PRESSED);
