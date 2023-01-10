@@ -273,6 +273,14 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
                     by--;
                 }
                 gt_mem_free(mask_hid);
+            }else if( radius_hid == 2){
+                mask_left_up[ radius * radius - 1 ] = 0;
+                mask_left_up[ (radius-1) * radius - 1 ] = 0;
+                mask_left_up[ (radius-1) * radius - 2 ] = 0;
+                mask_left_up[ (radius-1) * radius + radius - 1 ] = 0;
+                mask_left_up[ (radius-1) * radius + radius - 2 ] = 0;
+            }else if( radius_hid == 1){
+                mask_left_up[ radius * radius - 1 ] = 0;
             }
             blend_dsc.mask_buf = mask_left_up;
         }
