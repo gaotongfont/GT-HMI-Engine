@@ -77,7 +77,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     gt_area_st area_base = radio->area;
     area_base.h = 16;
     area_base.w = area_base.h;
-    area_base.y += (radio->area.h - area_base.h -2);
+    area_base.y += (radio->area.h - area_base.h - 3);
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
