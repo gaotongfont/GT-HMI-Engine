@@ -83,7 +83,16 @@ void gt_draw_rect(gt_draw_ctx_t * ctx, gt_attr_rect_st * attr, gt_area_st * coor
 
     // draw_outline(draw_ctx, dsc, coords);
 }
-
+static const uint8_t radius3[9] = {0X00,0X24,0X69,0X24,0X6D,0X6D,0X69,0X6D,0X6D};
+static const uint8_t radius4[16] = {0X00,0X00,0X49,0XAF,0X00,0X6D,0XFF,0XFF,0X49,0XFF,0XFF,0xFF,0XAF,0XFF,0XFF,0XFF};
+static const uint8_t radius5[25] = {0X00,0X00,0X49,0XB6,0XFF,0X00,0X92,0XFF,0XFF,0XFF,0X49,0XFF,0XFF,0XFF,0XFF,0XB6,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF};
+static const uint8_t radius6[36] = {0X00,0X00,0X00,0X6D,0XDB,0XFF,0X00,0X00,0XDB,0XFF,0XFF,0XFF,0X00,0XDB,0XFF,0XFF,0XFF,0XFF,0X6D,0XFF,0XFF,0XFF,0XFF,0XFF,0XDB,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF};
+static const uint8_t radius7[49] = {0X00,0X00,0X00,0X00,0X92,0XDB,0XFF,0X00,0X00,0X49,0XFF,0XFF,0XFF,0XFF,0X00,0X49,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X92,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XDB,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF};
+static const uint8_t radius8[64] = {0X00,0X00,0X00,0X00,0X24,0X92,0XDB,0XFF,0X00,0X00,0X00,0X92,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0XB6,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X92,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X24,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X92,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XDB,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF};
+static const uint8_t radius9[81] = {0X00,0X00,0X00,0X00,0X00,0X49,0X92,0XDB,0XFF,0X00,0X00,0X00,0X24,0XB6,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0X24,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X24,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0XDB,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X49,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X92,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XDB,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF};
+static const uint8_t radius10[100] = {0X00,0X00,0X00,0X00,0X00,0X00,0X49,0XB6,0XDB,0XFF,0X00,0X00,0X00,0X00,0X49,0XDB,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0X00,0X92,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0X92,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X49,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X49,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XB6,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF};
+static const uint8_t radius11[121] = {0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X6D,0XB6,0XFF,0XFF,0X00,0X00,0X00,0X00,0X00,0X6D,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0X00,0X24,0XDB,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0X00,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0XDB,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X6D,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X6D,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XB6,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF};
+static const uint8_t radius12[144] = {0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X6D,0XB6,0XFF,0XFF,0X00,0X00,0X00,0X00,0X00,0X00,0XB6,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0X00,0X00,0X49,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0X00,0X6D,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0X49,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0XB6,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X6D,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XB6,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF};
 void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
 {
     if (dsc->bg_opa <= GT_OPA_MIN) return;
@@ -198,25 +207,50 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
             .w = radius << 1,
             .h = radius << 1
         };
-        gt_graph_circle(&circle_attr, &circle_area, color_circle_p);
-        // get circle mask
-        uint32_t idx = 0, all = circle_area.w * circle_area.h >> 1; // half of circle
-        uint8_t * mask = (uint8_t * )color_circle_p;
-        uint16_t x, y;
-        while (idx < all) {
-            mask[idx] = gt_color_brightness(color_circle_p[idx]);
-            idx++;
-        }
-
-        // get circle left mask
-        blend_dsc.mask_buf = mask_left_up;
-        idx = 0;
-        uint32_t idx_circle = 0;
-        for (y = 0; y < radius; y++) {
-            for (x = 0; x < radius; x++) {
-                mask_left_up[idx++] = mask[idx_circle++];
+        if(radius > 12 ){
+            gt_graph_circle(&circle_attr, &circle_area, color_circle_p);
+            // get circle mask
+            uint32_t idx = 0, all = circle_area.w * circle_area.h >> 1; // half of circle
+            uint8_t * mask = (uint8_t * )color_circle_p;
+            uint16_t x, y;
+            while (idx < all) {
+                mask[idx] = gt_color_brightness(color_circle_p[idx]);
+                idx++;
             }
-            idx_circle += radius;
+
+            // get circle left mask
+            blend_dsc.mask_buf = mask_left_up;
+            idx = 0;
+            uint32_t idx_circle = 0;
+            for (y = 0; y < radius; y++) {
+                for (x = 0; x < radius; x++) {
+                    mask_left_up[idx++] = mask[idx_circle++];
+                }
+                idx_circle += radius;
+            }
+        }else{
+            if( radius == 3 ){
+                gt_memcpy(mask_left_up, (uint8_t *)radius3, 9);
+            }else if( radius == 4 ){
+                gt_memcpy(mask_left_up, (uint8_t *)radius4, 16);
+            }else if( radius == 5 ){
+                gt_memcpy(mask_left_up, (uint8_t *)radius5, 25);
+            }else if( radius == 6 ){
+                gt_memcpy(mask_left_up, (uint8_t *)radius6, 36);
+            }else if( radius == 7 ){
+                gt_memcpy(mask_left_up, (uint8_t *)radius7, 49);
+            }else if( radius == 8 ){
+                gt_memcpy(mask_left_up, (uint8_t *)radius8, 64);
+            }else if( radius == 9 ){
+                gt_memcpy(mask_left_up, (uint8_t *)radius9, 81);
+            }else if( radius == 10 ){
+                gt_memcpy(mask_left_up, (uint8_t *)radius10, 100);
+            }else if( radius == 11 ){
+                gt_memcpy(mask_left_up, (uint8_t *)radius11, 121);
+            }else if( radius == 12 ){
+                gt_memcpy(mask_left_up, (uint8_t *)radius12, 144);
+            }
+            blend_dsc.mask_buf = mask_left_up;
         }
 
         // 1:draw left-up arch
