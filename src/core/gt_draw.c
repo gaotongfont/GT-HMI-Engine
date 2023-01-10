@@ -255,32 +255,34 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
             gt_memcpy(mask_left_up, radius_dat[radius].ptr, radius_dat[radius].size);
 
             int radius_hid = radius - dsc->border_width;
-            if( dsc->border_width != 0 && radius_hid >= 3 && dsc->border_width < radius ){
-                uint8_t * mask_hid = gt_mem_malloc( radius_hid * radius_hid );
-                gt_memcpy(mask_hid, radius_dat[radius_hid].ptr, radius_dat[radius_hid].size);
+            if( dsc->is_fill == false ){
+                if( dsc->border_width != 0 && radius_hid >= 3 && dsc->border_width < radius ){
+                    uint8_t * mask_hid = gt_mem_malloc( radius_hid * radius_hid );
+                    gt_memcpy(mask_hid, radius_dat[radius_hid].ptr, radius_dat[radius_hid].size);
 
-                int bidx = 0, sidx = 0;
-                int by = radius;
-                for( int sy = radius_hid - 1; sy > 0; sy-- ){
-                    bidx = (by * radius) - 1;
-                    sidx = (sy * radius_hid) -1;
-                    for( int sx = radius_hid-1; sx >= 0; sx--){
-                        // mask_left_up[ bidx-- ] = (255 - mask_hid[sidx--]);
-                        if( mask_hid[sidx--] != 0 ){
-                            mask_left_up[ bidx-- ] = 0;
+                    int bidx = 0, sidx = 0;
+                    int by = radius;
+                    for( int sy = radius_hid - 1; sy > 0; sy-- ){
+                        bidx = (by * radius) - 1;
+                        sidx = (sy * radius_hid) -1;
+                        for( int sx = radius_hid-1; sx >= 0; sx--){
+                            // mask_left_up[ bidx-- ] = (255 - mask_hid[sidx--]);
+                            if( mask_hid[sidx--] != 0 ){
+                                mask_left_up[ bidx-- ] = 0;
+                            }
                         }
+                        by--;
                     }
-                    by--;
+                    gt_mem_free(mask_hid);
+                }else if( radius_hid == 2){
+                    mask_left_up[ radius * radius - 1 ] = 0;
+                    mask_left_up[ (radius-1) * radius - 1 ] = 0;
+                    mask_left_up[ (radius-1) * radius - 2 ] = 0;
+                    mask_left_up[ (radius-1) * radius + radius - 1 ] = 0;
+                    mask_left_up[ (radius-1) * radius + radius - 2 ] = 0;
+                }else if( radius_hid == 1){
+                    mask_left_up[ radius * radius - 1 ] = 0;
                 }
-                gt_mem_free(mask_hid);
-            }else if( radius_hid == 2){
-                mask_left_up[ radius * radius - 1 ] = 0;
-                mask_left_up[ (radius-1) * radius - 1 ] = 0;
-                mask_left_up[ (radius-1) * radius - 2 ] = 0;
-                mask_left_up[ (radius-1) * radius + radius - 1 ] = 0;
-                mask_left_up[ (radius-1) * radius + radius - 2 ] = 0;
-            }else if( radius_hid == 1){
-                mask_left_up[ radius * radius - 1 ] = 0;
             }
             blend_dsc.mask_buf = mask_left_up;
         }
