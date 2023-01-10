@@ -99,6 +99,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     rect_attr.is_fill       = 1;
     rect_attr.border_color  = color;
     rect_attr.bg_color      = color;
+    rect_attr.border_width  = 0;
     area_base.h -= 6;
     area_base.w -= 6;
     area_base.x += 3;
