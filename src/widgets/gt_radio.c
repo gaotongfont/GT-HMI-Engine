@@ -74,32 +74,36 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     w = radio->area.w;
     h = radio->area.h;
 
+    gt_area_st area_base = radio->area;
+    area_base.h = 16;
+    area_base.w = area_base.h;
+    area_base.y += (radio->area.h - area_base.h -2);
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.is_fill        = 0;
-    rect_attr.border_width   = 2;
+    rect_attr.border_width   = 1;
     rect_attr.border_color   = gt_color_hex(0xA0A0A0);
     rect_attr.bg_opa         = radio->opa;
     rect_attr.bg_color       = gt_color_hex(0xA0A0A0);
-    rect_attr.radius         = h>>1;
-
-    gt_area_st area_base = radio->area;
-    area_base.h = h;
-    area_base.w = area_base.h;
+    rect_attr.radius         = area_base.h>>1;
+    
     draw_bg(radio->draw_ctx, &rect_attr, &area_base);
 
-    if( gt_obj_style_get_state(radio) != GT_STATE_NONE ){
-        gt_area_st area_sel = area_base;
-        area_sel.y += rect_attr.border_width<<1;
-        area_sel.x += rect_attr.border_width<<1;
-        area_sel.w -= rect_attr.border_width<<2;
-        area_sel.h -= rect_attr.border_width<<2;
-        rect_attr.radius = area_sel.h>>1;
-        rect_attr.is_fill = 1;
-        rect_attr.bg_color = gt_color_make(0xA0,0xA0,0xA0);
-        draw_bg(radio->draw_ctx, &rect_attr, &area_sel);
+    gt_color_t color = gt_color_white();
+
+    if( 1 || (gt_obj_style_get_state(radio) != GT_STATE_NONE) ){
+        color = gt_color_hex(0x808080);
     }
+
+    rect_attr.is_fill       = 1;
+    rect_attr.border_color  = color;
+    rect_attr.bg_color      = color;
+    area_base.h -= 6;
+    area_base.w -= 6;
+    area_base.x += 3;
+    area_base.y += 3;
+    draw_bg(radio->draw_ctx, &rect_attr, &area_base);
 
     gt_attr_font_st font_attr = {
         .font       = &font,
@@ -110,7 +114,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
         .opa        = radio->opa,
     };
     gt_area_st area_font = radio->area;
-    area_font.x += area_base.h;
+    area_font.x += (area_base.w + 6);
     area_font.w = w + 60;
     draw_text(radio->draw_ctx, &font_attr, &area_font);
 }
@@ -246,6 +250,7 @@ void gt_radio_style_set_selected(gt_obj_st * radio){
     while( obj->parent->class->type == GT_TYPE_GROUP && idx < obj->parent->cnt_child ){
         if( obj->parent->child[idx]->class->type == GT_TYPE_RADIO ){
             gt_obj_style_set_state(obj->parent->child[idx++], GT_STATE_NONE);
+            gt_event_send(obj->parent->child[idx++], GT_EVENT_TYPE_DRAW_START, NULL);
         }
     }
     gt_obj_style_set_state(obj, GT_STATE_PRESSED);
