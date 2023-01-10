@@ -93,6 +93,29 @@ static const uint8_t radius9[81] = {0X00,0X00,0X00,0X00,0X00,0X49,0X92,0XDB,0XFF
 static const uint8_t radius10[100] = {0X00,0X00,0X00,0X00,0X00,0X00,0X49,0XB6,0XDB,0XFF,0X00,0X00,0X00,0X00,0X49,0XDB,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0X00,0X92,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0X92,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X49,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X49,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XB6,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF};
 static const uint8_t radius11[121] = {0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X6D,0XB6,0XFF,0XFF,0X00,0X00,0X00,0X00,0X00,0X6D,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0X00,0X24,0XDB,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0X00,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0XDB,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X6D,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X6D,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XB6,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF};
 static const uint8_t radius12[144] = {0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X6D,0XB6,0XFF,0XFF,0X00,0X00,0X00,0X00,0X00,0X00,0XB6,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0X00,0X00,0X49,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0X00,0X6D,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0X49,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0X00,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0XB6,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X00,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X6D,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XB6,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF};
+typedef struct _gt_radius_dat
+{
+    /* data */
+    uint8_t radius;
+    const uint8_t * ptr;
+    uint8_t size;
+}_gt_radius_dat;
+
+_gt_radius_dat radius_dat[] = {
+    {0, radius3, 9},
+    {1, radius3, 9},
+    {2, radius3, 9},
+    {3, radius3, 9},
+    {4, radius4, 16},
+    {5, radius5, 25},
+    {6, radius6, 36},
+    {7, radius7, 49},
+    {8, radius8, 64},
+    {9, radius9, 81},
+    {10, radius10, 100},
+    {11, radius11, 121},
+    {12, radius12, 144}
+};
 void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
 {
     if (dsc->bg_opa <= GT_OPA_MIN) return;
@@ -229,26 +252,27 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
                 idx_circle += radius;
             }
         }else{
-            if( radius == 3 ){
-                gt_memcpy(mask_left_up, (uint8_t *)radius3, 9);
-            }else if( radius == 4 ){
-                gt_memcpy(mask_left_up, (uint8_t *)radius4, 16);
-            }else if( radius == 5 ){
-                gt_memcpy(mask_left_up, (uint8_t *)radius5, 25);
-            }else if( radius == 6 ){
-                gt_memcpy(mask_left_up, (uint8_t *)radius6, 36);
-            }else if( radius == 7 ){
-                gt_memcpy(mask_left_up, (uint8_t *)radius7, 49);
-            }else if( radius == 8 ){
-                gt_memcpy(mask_left_up, (uint8_t *)radius8, 64);
-            }else if( radius == 9 ){
-                gt_memcpy(mask_left_up, (uint8_t *)radius9, 81);
-            }else if( radius == 10 ){
-                gt_memcpy(mask_left_up, (uint8_t *)radius10, 100);
-            }else if( radius == 11 ){
-                gt_memcpy(mask_left_up, (uint8_t *)radius11, 121);
-            }else if( radius == 12 ){
-                gt_memcpy(mask_left_up, (uint8_t *)radius12, 144);
+            gt_memcpy(mask_left_up, radius_dat[radius].ptr, radius_dat[radius].size);
+
+            int radius_hid = radius - dsc->border_width;
+            if( dsc->border_width != 0 && radius_hid >= 3 && dsc->border_width < radius ){
+                uint8_t * mask_hid = gt_mem_malloc( radius_hid * radius_hid );
+                gt_memcpy(mask_hid, radius_dat[radius_hid].ptr, radius_dat[radius_hid].size);
+
+                int bidx = 0, sidx = 0;
+                int by = radius;
+                for( int sy = radius_hid - 1; sy > 0; sy-- ){
+                    bidx = (by * radius) - 1;
+                    sidx = (sy * radius_hid) -1;
+                    for( int sx = radius_hid-1; sx >= 0; sx--){
+                        // mask_left_up[ bidx-- ] = (255 - mask_hid[sidx--]);
+                        if( mask_hid[sidx--] != 0 ){
+                            mask_left_up[ bidx-- ] = 0;
+                        }
+                    }
+                    by--;
+                }
+                gt_mem_free(mask_hid);
             }
             blend_dsc.mask_buf = mask_left_up;
         }
