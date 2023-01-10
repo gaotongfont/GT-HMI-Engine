@@ -416,4 +416,10 @@ char * gt_listview_style_get_selected_item_text(gt_obj_st * listview)
     _gt_style_listview_st * style = listview->style;
     return style->item[style->idx_selected];
 }
+
+void gt_listview_style_set_cnt_show(gt_obj_st * listview, uint8_t cnt_show)
+{
+    _gt_style_listview_st * style = listview->style;
+    style->cnt_show = cnt_show;
+}
 /* end ------------------------------------------------------------------*/

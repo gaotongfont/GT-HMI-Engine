@@ -93,8 +93,9 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     gt_area_st area = checkbox->area;
 
     gt_area_st area_box = area;
-    area_box.w = h;
-    area_box.h = h;
+    area_box.w = 14;
+    area_box.h = 14;
+    area_box.y = area.y + (area.h - area_box.h - 2);
     /* base shape */
     draw_bg(checkbox->draw_ctx, &rect_attr, &area_box);
 
@@ -107,7 +108,7 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
         .align          = GT_ALIGN_LEFT,
         .opa            = checkbox->opa,
     };
-    area.x += h;
+    area.x += (area_box.w + 2);
     draw_text(checkbox->draw_ctx, &font_dsc, &area);
 
     if( 0 ){

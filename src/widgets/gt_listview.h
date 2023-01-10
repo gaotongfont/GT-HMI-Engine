@@ -102,6 +102,13 @@ gt_size_t gt_listview_style_get_idx_selected(gt_obj_st * listview);
  */
 char * gt_listview_style_get_selected_item_text(gt_obj_st * listview);
 
+/**
+ * @brief set listview show items number
+ * @param listview
+ * @param cnt_show 
+ */
+void gt_listview_style_set_cnt_show(gt_obj_st * listview, uint8_t cnt_show);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
