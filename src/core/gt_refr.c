@@ -16,6 +16,7 @@
 #include "../others/gt_area.h"
 #include "gt_obj_pos.h"
 #include "../hal/gt_hal_disp.h"
+#include "../hal/gt_hal_tick.h"
 #include "gt_disp.h"
 #include "../extra/draw/gt_draw_blend.h"
 #include "../core/gt_draw.h"
