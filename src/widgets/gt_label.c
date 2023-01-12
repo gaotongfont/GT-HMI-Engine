@@ -131,7 +131,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
-            if( 0 && gt_obj_check_scr(obj) ){
+            if( gt_obj_check_scr(obj) ){
                 _gt_disp_refr_append_area(&obj->area);
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);

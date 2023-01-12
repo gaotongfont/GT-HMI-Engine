@@ -95,6 +95,14 @@ char * gt_btn_style_get_text(gt_obj_st * btn);
  */
 void gt_btn_style_set_font_color(gt_obj_st * btn, gt_color_t color);
 
+/**
+ * @brief set btn radius
+ * 
+ * @param btn button obj
+ * @param radius radius size
+ */
+void gt_btn_style_set_radius(gt_obj_st * btn, uint8_t radius);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
