@@ -74,28 +74,28 @@ typedef struct gt_anim_param_s {
  * [Core using: User do not modified]
  */
 typedef struct gt_anim_s {
-    struct gt_list_head list;
-    gt_obj_st * target;
-    gt_anim_exec_cb_t exec_cb;
-    gt_anim_ready_cb_t ready_cb;
-    gt_anim_start_cb_t start_cb;
+    struct gt_list_head list;       /* Do not modified it, Core need to use it */
+    gt_obj_st * target;             // Target object
+    gt_anim_exec_cb_t exec_cb;      // The path execution callback which object run
+    gt_anim_ready_cb_t ready_cb;    // When the animation done need to be executed
+    gt_anim_start_cb_t start_cb;    // When the animation starts need to be executed
     gt_anim_path_cb_t _path_cb; /* Warn: animation system used - user should not modified it */
     void * data;
 
     int32_t tick_create;        // create this animation tick timer
     int32_t time_delay_start;   // The animation is executed after this delay [ms]
-    int32_t time;
-    int32_t time_act;
+    int32_t time;               // remark animation running total time [ms]
+    int32_t time_act;           // remark active animation time [0 -> time ms]
 
-    int32_t value_start;
-    int32_t value_current;
-    int32_t value_end;
+    int32_t value_start;        // The status value from the beginning
+    int32_t value_current;      // The current value between start and end
+    int32_t value_end;          // The status value to the end
 
-    int32_t playback_time;
-    uint32_t playback_delay;
-    uint32_t repeat_delay;
-    uint16_t repeat_count;
-    gt_anim_path_type_em type;
+    int32_t playback_time;      // Playback time [ms]
+    uint32_t playback_delay;    // Delay ms to playback animation [ms]
+    uint32_t repeat_delay;      // The time to repeat playback animation [ms]
+    uint16_t repeat_count;      // The number of times to repeat playback animation
+    gt_anim_path_type_em type;  // The path which is animation object to run
 
     /* Warn: anim core system used these - user should not modified it */
     uint8_t run_already     : 1;
