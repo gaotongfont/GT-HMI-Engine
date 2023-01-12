@@ -239,7 +239,6 @@ static void _gt_anim_task_handler(struct _gt_timer_s * timer)
     gt_anim_st * backup_ptr = NULL;
 
     _is_run_same_time = _is_run_same_time ? false : true;
-
 refresh_lb:
     gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), list) {
         _is_list_change = false;
@@ -247,8 +246,7 @@ refresh_lb:
         if (ptr->run_already == _is_run_same_time) {
             continue;
         }
-        if (ptr->time_delay_start > 0) {
-            ptr->time_delay_start -= time_gone;
+        if (gt_tick_elapse(ptr->tick_create) < ptr->time_delay_start) {
             if (ptr->time_delay_start > 0) {
                 continue;
             }
@@ -280,7 +278,6 @@ refresh_lb:
             _gt_anim_ready_handler(ptr);
         }
 
-        _gt_anim_clr_act();
         if (_is_list_change) {
             break;
         }
@@ -290,6 +287,7 @@ refresh_lb:
         _is_list_change = false;
         goto refresh_lb;
     }
+    _gt_anim_clr_act();
     _time_last_run = gt_tick_get();
 }
 
@@ -377,6 +375,7 @@ void gt_anim_start(const gt_anim_st * anim)
     }
 
     gt_memcpy(new_obj, anim, sizeof(gt_anim_st));
+    new_obj->tick_create = gt_tick_get();
 
     if (new_obj->list.next != &new_obj->list || new_obj->list.prev != &new_obj->list) {
         GT_INIT_LIST_HEAD(&new_obj->list);

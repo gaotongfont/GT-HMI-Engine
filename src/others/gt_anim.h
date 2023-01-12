@@ -82,6 +82,7 @@ typedef struct gt_anim_s {
     gt_anim_path_cb_t _path_cb; /* Warn: animation system used - user should not modified it */
     void * data;
 
+    int32_t tick_create;        // create this animation tick timer
     int32_t time_delay_start;   // The animation is executed after this delay [ms]
     int32_t time;
     int32_t time_act;
