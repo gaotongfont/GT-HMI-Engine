@@ -11,11 +11,14 @@
 #include "gt_anim.h"
 #include "../core/gt_timer.h"
 #include "../core/gt_mem.h"
+#include "../core/gt_style.h"
 #include "../hal/gt_hal_tick.h"
 #include "../others/gt_gc.h"
 #include "../others/gt_log.h"
 #include "../others/gt_types.h"
 #include "../others/gt_math.h"
+#include "../widgets/gt_obj.h"
+#include "../core/gt_obj_pos.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -32,6 +35,7 @@ static _gt_timer_st * _anim_timer = NULL;
 static uint32_t _time_last_run    = 0;
 static bool _is_list_change       = false;
 static bool _is_run_same_time     = false;
+static gt_anim_st * _anim_act     = NULL;
 
 /* macros ---------------------------------------------------------------*/
 
@@ -42,6 +46,27 @@ static bool _is_run_same_time     = false;
 
 
 /* static functions -----------------------------------------------------*/
+
+static inline void _gt_anim_set_act(gt_anim_st * anim) {
+    _anim_act = anim;
+}
+
+static inline gt_anim_st * _gt_anim_get_act(void) {
+    return _anim_act;
+}
+
+static inline void _gt_anim_clr_act(void) {
+    _anim_act = NULL;
+}
+
+static inline bool _gt_anim_free_data(gt_anim_st * anim) {
+    if (!anim || !anim->data) {
+        return false;
+    }
+    gt_mem_free(anim->data);
+    anim->data = NULL;
+    return true;
+}
 
 static inline _gt_timer_st * _gt_anim_get_timer(void) {
     return _anim_timer;
@@ -174,7 +199,8 @@ static void _gt_anim_ready_handler(gt_anim_st * anim) {
         gt_list_del(&anim->list);
         _gt_anim_change_list();
 
-        if (anim->ready_cb) anim->ready_cb(anim);
+        if (anim->ready_cb) { anim->ready_cb(anim); }
+        _gt_anim_free_data(anim);
         gt_mem_free(anim);
         return ;
     }
@@ -221,7 +247,16 @@ refresh_lb:
         if (ptr->run_already == _is_run_same_time) {
             continue;
         }
+        if (ptr->time_delay_start > 0) {
+            ptr->time_delay_start -= time_gone;
+            if (ptr->time_delay_start > 0) {
+                continue;
+            }
+            ptr->time_delay_start = 0;
+        }
+
         ptr->run_already = _is_run_same_time ? 1 : 0;
+        _gt_anim_set_act(ptr);
 
         if (ptr->time_act <= 0 && ptr->start_cb) {
             ptr->start_cb(ptr);
@@ -245,6 +280,7 @@ refresh_lb:
             _gt_anim_ready_handler(ptr);
         }
 
+        _gt_anim_clr_act();
         if (_is_list_change) {
             break;
         }
@@ -257,8 +293,53 @@ refresh_lb:
     _time_last_run = gt_tick_get();
 }
 
+static void _default_exec_cb(gt_obj_st * obj, int32_t value)
+{
+    gt_anim_st * anim = _gt_anim_get_act();
+    gt_point_st * point = (gt_point_st * )gt_anim_get_data();
+
+    gt_obj_style_set_pos(obj, \
+        ((point[1].x - point[0].x) * anim->value_current / anim->value_end) + point[0].x, \
+        ((point[1].y - point[0].y) * anim->value_current / anim->value_end) + point[0].y);
+}
 
 /* global functions / API interface -------------------------------------*/
+
+void * gt_anim_get_data(void)
+{
+    gt_anim_st * anim = _gt_anim_get_act();
+    return anim->data;
+}
+
+void gt_anim_param_init(gt_anim_param_st * param)
+{
+    param->dst.x = 0;
+    param->dst.y = 0;
+    param->time_delay_start = 0;
+    param->time_anim_exec = 500;
+    param->type = GT_ANIM_PATH_TYPE_LINEAR;
+}
+
+void gt_anim_pos_move(gt_obj_st * obj, gt_anim_param_st * param)
+{
+    gt_anim_st anim;
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_value(&anim, 0, 100);
+    gt_anim_set_path_type(&anim, param->type);
+    gt_anim_set_time(&anim, param->time_anim_exec);
+    gt_anim_set_time_delay_start(&anim, param->time_delay_start);
+
+    gt_anim_set_exec_cb(&anim, _default_exec_cb);
+
+    gt_point_st * point = gt_mem_malloc(sizeof(gt_point_st) << 1);
+    point[0].x = obj->area.x;
+    point[0].y = obj->area.y;
+    point[1].x = param->dst.x;
+    point[1].y = param->dst.y;
+    gt_anim_set_data(&anim, (void * )point);
+    gt_anim_start(&anim);
+}
 
 void _gt_anim_core_init(void)
 {
@@ -275,9 +356,11 @@ void gt_anim_init(gt_anim_st * anim)
 
     gt_memset_0(anim, sizeof(gt_anim_st));
     GT_INIT_LIST_HEAD(&anim->list);
+    anim->time_delay_start = 0;
     anim->time = 500;
     anim->time_act = 0;
     anim->_path_cb = _gt_anim_path_linear;
+    anim->data = NULL;
 }
 
 void gt_anim_start(const gt_anim_st * anim)
@@ -317,6 +400,7 @@ bool gt_anim_del(gt_obj_st * target, gt_anim_exec_cb_t exec_cb)
         if ((ptr->target == target || NULL == ptr->target) && (ptr->exec_cb == exec_cb || NULL == ptr->exec_cb)) {
             gt_list_del(&ptr->list);
             _gt_anim_change_list();
+            _gt_anim_free_data(ptr);
             gt_mem_free(ptr);
             ret = true;
         }
@@ -338,6 +422,7 @@ void gt_anim_del_all(void)
     gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), list) {
         if (ptr) {
             gt_list_del(&ptr->list);
+            _gt_anim_free_data(ptr);
             gt_mem_free(ptr);
             ret = true;
         }

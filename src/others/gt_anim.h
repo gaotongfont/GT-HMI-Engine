@@ -17,6 +17,7 @@ extern "C" {
 #include "stdbool.h"
 #include "./gt_list.h"
 #include "../widgets/gt_obj.h"
+#include "../others/gt_types.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -58,7 +59,19 @@ typedef void ( * gt_anim_start_cb_t)(struct gt_anim_s *);
 typedef int32_t ( * gt_anim_get_value_cb_t)(struct gt_anim_s *);
 
 /**
+ * @brief animation param data
+ * User defined parameters @ref gt_anim_pos_move()
+ */
+typedef struct gt_anim_param_s {
+    gt_point_st dst;            // destination position
+    int32_t time_delay_start;   // The animation is executed after this delay [ms]
+    int32_t time_anim_exec;     // Animation execution time [ms]
+    gt_anim_path_type_em type;  // path type
+}gt_anim_param_st;
+
+/**
  * @brief anim control block
+ * [Core using: User do not modified]
  */
 typedef struct gt_anim_s {
     struct gt_list_head list;
@@ -67,7 +80,9 @@ typedef struct gt_anim_s {
     gt_anim_ready_cb_t ready_cb;
     gt_anim_start_cb_t start_cb;
     gt_anim_path_cb_t _path_cb; /* Warn: animation system used - user should not modified it */
+    void * data;
 
+    int32_t time_delay_start;   // The animation is executed after this delay [ms]
     int32_t time;
     int32_t time_act;
 
@@ -99,8 +114,12 @@ static inline void gt_anim_set_target(gt_anim_st * anim, gt_obj_st * const targe
     anim->target = target;
 }
 
-static inline void gt_anim_set_time(gt_anim_st * anim, uint32_t time) {
-    anim->time = time;
+static inline void gt_anim_set_time_delay_start(gt_anim_st * anim, int32_t time_ms) {
+    anim->time_delay_start = time_ms;
+}
+
+static inline void gt_anim_set_time(gt_anim_st * anim, int32_t time_ms) {
+    anim->time = time_ms;
 }
 
 static inline void gt_anim_set_value(gt_anim_st * anim, int32_t start, int32_t end) {
@@ -124,11 +143,76 @@ static inline void gt_anim_set_exec_cb(gt_anim_st * anim, gt_anim_exec_cb_t exec
     anim->exec_cb = exec_cb;
 }
 
+/**
+ * @brief Set User Animation data
+ *
+ * @param anim
+ * @param data
+ */
+static inline void gt_anim_set_data(gt_anim_st * anim, void * data) {
+    anim->data = data;
+}
+
+/**
+ * @brief Set Object animation param time
+ *
+ * @param param
+ * @param time_delay_start The time which delay to start animation [ms]
+ * @param time_anim  The time which animation playing the whole time
+ */
+static inline void gt_anim_param_set_time(gt_anim_param_st * param, int32_t time_delay_start_ms, int32_t time_anim_ms) {
+    param->time_delay_start = time_delay_start_ms;
+    param->time_anim_exec = time_anim_ms;
+}
+
+/**
+ * @brief Set Object animation param, which position the object want to move.
+ *
+ * @param param
+ * @param x The destination x position
+ * @param y The destination y position
+ */
+static inline void gt_anim_param_set_dst_point(gt_anim_param_st * param, gt_size_t x, gt_size_t y) {
+    param->dst.x = x;
+    param->dst.y = y;
+}
+
+/**
+ * @brief Set object path type animation param
+ *
+ * @param param
+ * @param type @ref gt_anim_path_type_em
+ */
+static inline void gt_anim_param_set_path_type(gt_anim_param_st * param, gt_anim_path_type_em type) {
+    param->type = type;
+}
 /* class ----------------------------------------------------------------*/
 
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief Get User animation Data
+ *
+ * @return void* The data
+ */
+void * gt_anim_get_data(void);
+
+/**
+ * @brief The animation base value init
+ *
+ * @param param The pointer to Param
+ */
+void gt_anim_param_init(gt_anim_param_st * param);
+
+/**
+ * @brief Set the widget want to move a new position animation
+ *
+ * @param obj
+ * @param param The param which describe object animation
+ */
+void gt_anim_pos_move(gt_obj_st * obj, gt_anim_param_st * param);
 
 /**
  * @brief initialize the animation timer by core
