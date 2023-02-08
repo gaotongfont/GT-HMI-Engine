@@ -18,6 +18,7 @@
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
 #include "../font/gt_symbol.h"
+#include "gt_conf_widgets.h"
 
 #include "gt_input.h"
 
@@ -29,10 +30,14 @@
 #define SPACE_Y 5
 #define SPACE_X 5
 
+#define _GT_KEYPAD_TAG_SPACE        " "
 #define _GT_KEYPAD_TAG_NEW_LINE     "\n"
 #define _GT_KEYPAD_TAG_UPPERCASE    "ABC"
 #define _GT_KEYPAD_TAG_DOWNCASE     "abc"
-#define _GT_KEYPAD_TAG_NUMBER       "1#"
+#define _GT_KEYPAD_TAG_NUMBER       "#+="
+
+#define _GT_KEYPASD_ICON_SIZE       (24)
+#define _GT_KEYPASD_SPELL_NUMB      (9)
 
 /* private typedef ------------------------------------------------------*/
 
@@ -43,10 +48,26 @@ typedef struct {
 }_gt_keypad_kv_list_st;
 
 /* static variables -----------------------------------------------------*/
+#define _GT_SPELL_ASCII_MAX_NUMB (8)
+#define _GT_SPELL_CHINESE_MAX_NUMB (8)
+static uint8_t _gt_spell_ascii_numb = 0;
+static uint8_t _gt_spell_chinese_numb = 0;
+static uint8_t _gt_spell_ascii[_GT_SPELL_ASCII_MAX_NUMB];
+static uint8_t _gt_spell_chinese[_GT_SPELL_CHINESE_MAX_NUMB][_GT_SPELL_CHINESE_MAX_NUMB];
+
+#if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
+    static py_info_st *_gt_spell_info = NULL;
+#endif
+
+static const unsigned char _gt_spell[_GT_KEYPASD_SPELL_NUMB][8] = {
+    "spell_0" , "spell_1" , "spell_2" , "spell_3" , "spell_4" , "spell_5" , "spell_6" , "spell_7" , "spell_8",
+};
+
 enum _gt_keypad_mode_e {
     GT_KEYPAD_MODE_LOWER = 0,
     GT_KEYPAD_MODE_UPPER,
     GT_KEYPAD_MODE_NUMBER,
+    GT_KEYPAD_MODE_SPELL,
     GT_KEYPAD_MODE_OTHER,
 
     GT_KEYPAD_MODE_TOTAL_SIZE,
@@ -67,24 +88,39 @@ const gt_obj_class_st gt_keypad_class = {
 
 
 GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_keypad_map_st _map_keypad_mode_lower[] = {
-    _GT_KEYPAD_TAG_NUMBER,5,   "q",4,  "w",4,  "e",4,  "r",4,  "t",4,  "y",4,  "u",4,  "i",4,  "o",4,  "p",4,  GT_SYMBOL_BACKSPACE,7,  _GT_KEYPAD_TAG_NEW_LINE,0,
-    _GT_KEYPAD_TAG_UPPERCASE,6,  "a",3,  "s",3,  "d",3,  "f",3,  "g",3,  "h",3,  "j",3,  "k",3,  "l",3,  GT_SYMBOL_NEW_LINE,7, _GT_KEYPAD_TAG_NEW_LINE,0,
-    "_",1,    "-",1,  "z",1,  "x",1,  "c",1,  "v",1,  "b",1,  "n",1,  "m",1,  ".",1,  ",",1,  ":",1,  _GT_KEYPAD_TAG_NEW_LINE,0,
-    GT_SYMBOL_KEYBOARD,2,  GT_SYMBOL_LEFT,2,  " ",6,  GT_SYMBOL_RIGHT,2,  GT_SYMBOL_OK,2, NULL,0
+    _gt_spell[0],1,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    "1",5,  "2",4,  "3",4,  "4",4, "5",4,  "6",4, "7",4,  "8",4,  "9",4,  "0",5, _GT_KEYPAD_TAG_NEW_LINE,0,
+    "q",5,  "w",4,  "e",4,  "r",4,  "t",4,  "y",4,  "u",4,  "i",4,  "o",4,  "p",5,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    _GT_KEYPAD_TAG_NUMBER,5,  "a",4,  "s",4,  "d",4,  "f",4,  "g",4,  "h",4,  "j",4,  "k",4,  "l",5,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    _GT_KEYPAD_TAG_UPPERCASE,7,  "z",4,  "x",4,  "c",4,  "v",4,  "b",4,  "n",4,  "m",4, GT_SYMBOL_BACKSPACE,7,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    GT_SYMBOL_KEYBOARD,7,  GT_SYMBOL_LEFT,6,  GT_SYMBOL_EN,10,  GT_SYMBOL_RIGHT,6,  GT_SYMBOL_OK,6, GT_SYMBOL_NEW_LINE,7, NULL,0
 };
 
 GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_keypad_map_st _map_keypad_mode_upper[] = {
-    _GT_KEYPAD_TAG_NUMBER,5,   "Q",4,  "W",4,  "E",4,  "R",4,  "T",4,  "Y",4,  "U",4,  "I",4,  "O",4,  "P",4,  GT_SYMBOL_BACKSPACE,7,  _GT_KEYPAD_TAG_NEW_LINE,0,
-    _GT_KEYPAD_TAG_DOWNCASE,6,  "A",3,  "S",3,  "D",3,  "F",3,  "G",3,  "H",3,  "J",3,  "K",3,  "L",3,  GT_SYMBOL_NEW_LINE,7, _GT_KEYPAD_TAG_NEW_LINE,0,
-    "_",1,    "-",1,  "Z",1,  "X",1,  "C",1,  "V",1,  "B",1,  "N",1,  "M",1,  ".",1,  ",",1,  ":",1,  _GT_KEYPAD_TAG_NEW_LINE,0,
-    GT_SYMBOL_KEYBOARD,2,  GT_SYMBOL_LEFT,2,  " ",6,  GT_SYMBOL_RIGHT,2,  GT_SYMBOL_OK,2, NULL,0
+    _gt_spell[0],1,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    "1",5,  "2",4,  "3",4,  "4",4, "5",4,  "6",4, "7",4,  "8",4,  "9",4,  "0",5, _GT_KEYPAD_TAG_NEW_LINE,0,
+    "Q",5,  "W",4,  "E",4,  "R",4,  "T",4,  "Y",4,  "U",4,  "I",4,  "O",4,  "P",5,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    _GT_KEYPAD_TAG_NUMBER,5,  "A",4,  "S",4,  "D",4,  "F",4,  "G",4,  "H",4,  "J",4,  "K",4,  "L",5,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    _GT_KEYPAD_TAG_DOWNCASE,7,  "Z",4,  "X",4,  "C",4,  "V",4,  "B",4,  "N",4,  "M",4, GT_SYMBOL_BACKSPACE,7,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    GT_SYMBOL_KEYBOARD,7,  GT_SYMBOL_LEFT,6,  GT_SYMBOL_EN,10,  GT_SYMBOL_RIGHT,6,  GT_SYMBOL_OK,6, GT_SYMBOL_NEW_LINE,7, NULL,0
 };
 
 GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_keypad_map_st _map_keypad_mode_number[] = {
-    "1",1, "2",1, "3",1, "4",1, "5",1, "6",1, "7",1, "8",1, "9",1, "0",1, GT_SYMBOL_BACKSPACE,2, _GT_KEYPAD_TAG_NEW_LINE,0,
-    _GT_KEYPAD_TAG_DOWNCASE,2, "+",1, "-",1, "/",1, "*",1, "=",1, "%",1, "!",1, "?",1, "#",1, "<",1, ">",1, _GT_KEYPAD_TAG_NEW_LINE,0,
-    "\\",1,  "@",1, "$",1, "(",1, ")",1, "{",1, "}",1, "[",1, "]",1, ";",1, "\"",1, "'",1, _GT_KEYPAD_TAG_NEW_LINE,0,
-    GT_SYMBOL_KEYBOARD,2, GT_SYMBOL_LEFT,2, " ",6, GT_SYMBOL_RIGHT,2, GT_SYMBOL_OK,2, NULL,0
+    _gt_spell[0],1,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    "!",5,  "@",4,  "#",4,  "$",4,  "%",4,  "^",4,  "&",4,  "*",4,  "(",4,  ")",5,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    "-",5,  "+",4,  "=",4,  "_",4, "{",4,  "}",4, "[",4,  "]",4,  "\\",5,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    _GT_KEYPAD_TAG_NUMBER,5,  ";",4,  ":",4,  "\"",4,  "\'",4,  "~",4,  "`",4,  "/ ",4,  " |",5,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    _GT_KEYPAD_TAG_UPPERCASE,6,  ",",6,  ".",6,  "?",6,  "<",6,  ">",6,  GT_SYMBOL_BACKSPACE,6,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    GT_SYMBOL_KEYBOARD,7,  GT_SYMBOL_LEFT,6,  GT_SYMBOL_EN,10,  GT_SYMBOL_RIGHT,6,  GT_SYMBOL_OK,6,  GT_SYMBOL_NEW_LINE,7,  NULL,0
+};
+
+GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_keypad_map_st _map_keypad_mode_spell[] = {
+    _gt_spell[0],1,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    GT_SYMBOL_PREV,5,  _gt_spell[1],4,  _gt_spell[2],4,  _gt_spell[3],4,  _gt_spell[4],4,  _gt_spell[5],4,  _gt_spell[6],4,  _gt_spell[7],4,  _gt_spell[8],4,  GT_SYMBOL_NEXT,5, _GT_KEYPAD_TAG_NEW_LINE,0,
+    "q",5,  "w",4,  "e",4,  "r",4,  "t",4,  "y",4,  "u",4,  "i",4,  "o",4,  "p",5,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    _GT_KEYPAD_TAG_NUMBER,5,  "a",4,  "s",4,  "d",4,  "f",4,  "g",4,  "h",4,  "j",4,  "k",4,  "l",5,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    _GT_KEYPAD_TAG_UPPERCASE,7,  "z",4,  "x",4,  "c",4,  "v",4,  "b",4,  "n",4,  "m",4, GT_SYMBOL_BACKSPACE,7,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    GT_SYMBOL_KEYBOARD,7,  GT_SYMBOL_LEFT,6,  GT_SYMBOL_SPELL,10,  GT_SYMBOL_RIGHT,6,  GT_SYMBOL_OK,6,  GT_SYMBOL_NEW_LINE,7,  NULL,0
 };
 
 GT_ATTRIBUTE_LARGE_RAM_ARRAY static const char * _gt_keypad_ctrl_key_list[] = {
@@ -97,13 +133,32 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const char * _gt_keypad_ctrl_key_list[] = {
     _GT_KEYPAD_TAG_UPPERCASE,
     _GT_KEYPAD_TAG_DOWNCASE,
     _GT_KEYPAD_TAG_NUMBER,
+    GT_SYMBOL_NEXT ,
+    GT_SYMBOL_PREV ,
     NULL,
 };
+
+GT_ATTRIBUTE_LARGE_RAM_ARRAY static const char * _gt_keypad_icon_key_list[] = {
+
+    GT_SYMBOL_NEW_LINE ,
+    GT_SYMBOL_EN ,
+    GT_SYMBOL_SPELL ,
+    GT_SYMBOL_BACKSPACE ,
+    GT_SYMBOL_LEFT ,
+    GT_SYMBOL_RIGHT ,
+    GT_SYMBOL_NEXT ,
+    GT_SYMBOL_PREV ,
+    GT_SYMBOL_KEYBOARD ,
+    GT_SYMBOL_OK ,
+    NULL,
+};
+
 
 GT_ATTRIBUTE_LARGE_RAM_ARRAY static const _gt_keypad_kv_list_st _gt_keypad_mode_key_mapping_list[] = {
     { _GT_KEYPAD_TAG_UPPERCASE, _map_keypad_mode_upper, GT_KEYPAD_MODE_UPPER },
     { _GT_KEYPAD_TAG_DOWNCASE,  _map_keypad_mode_lower, GT_KEYPAD_MODE_LOWER },
     { _GT_KEYPAD_TAG_NUMBER,    _map_keypad_mode_number, GT_KEYPAD_MODE_NUMBER },
+    { GT_SYMBOL_KEYBOARD, _map_keypad_mode_spell, GT_KEYPAD_MODE_SPELL },
 };
 
 /* macros ---------------------------------------------------------------*/
@@ -113,6 +168,64 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const _gt_keypad_kv_list_st _gt_keypad_mode_
 /* static functions -----------------------------------------------------*/
 static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char * kv);
 static void _gt_keypad_update_map(gt_obj_st * keypad, gt_keypad_map_st * map);
+
+static uint8_t* _gt_spell_get_text( uint8_t index , uint8_t mode)
+{
+    if(index == 0)
+    {
+        if((_gt_spell_ascii_numb>0) && (GT_KEYPAD_MODE_SPELL == mode))
+        {
+            return _gt_spell_ascii;
+        }
+        return "";
+    }
+    
+    if(_gt_spell_chinese_numb)
+    {
+        return _gt_spell_chinese[index-1];
+    }
+    return "";
+}
+
+static int _gt_get_spell_index(char * kv ,  uint8_t mode)
+{
+    int idx = 0;
+
+    if( kv == NULL){
+        return -1;
+    }
+
+    for ( idx = 0; idx < _GT_KEYPASD_SPELL_NUMB; idx++)
+    {
+        if( strcmp(_gt_spell[idx], kv) == 0 ){
+            return idx;
+        }
+    }
+
+    return -1;
+}
+
+static uint8_t* _gt_keypad_get_spell_text(char * kv ,  uint8_t mode)
+{
+    if( kv == NULL){
+        return NULL;
+    }
+
+    int idx = -1;
+
+    idx = _gt_get_spell_index(kv , mode);
+
+    if(idx < 0)
+    {
+        return NULL;
+    }
+#if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
+    return _gt_spell_get_text(idx , mode);
+#else
+    return "";
+#endif
+
+}
 
 static char * _gt_keypad_get_click_kv(gt_obj_st * obj)
 {
@@ -180,7 +293,7 @@ static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char * kv)
     int idx = 0;
 
     uint16_t ys = keypad->area.y;
-    uint8_t h_key = (keypad->area.h / (style->info.cnt_lines+1)) - SPACE_Y;
+    uint8_t h_key = ((keypad->area.h - SPACE_Y)/ (style->info.cnt_lines+1)) - SPACE_Y;
     uint8_t per_one_width = (keypad->area.w / style->info.per_line[0]);
     uint8_t line = 0;
     uint8_t r, g, b;
@@ -282,6 +395,147 @@ static bool _gt_keypad_check_key_is_ctl(char * kv){
     return false;
 }
 
+static bool _gt_keypad_check_key_is_icon(char * kv){
+    if( kv == NULL ){
+        return false;
+    }
+    int idx = 0;
+    while( _gt_keypad_icon_key_list[idx] != NULL ){
+        if( strcmp(_gt_keypad_icon_key_list[idx], kv) == 0 ){
+            return true;
+        }
+        idx++;
+    }
+    return false;
+}
+
+static void _gt_keypad_spell_event_cb(gt_obj_st * keypad)
+{
+    _gt_style_keypad_st * style = keypad->style;
+    uint8_t i = 0 , len , *tmp_str = NULL;
+    uint32_t unicode ;
+
+    if( style->info.handler_cb != NULL ){
+        style->info.handler_cb(keypad);
+        return;
+    }
+
+    if( style->kv_selected == NULL ){
+        return;
+    }
+
+    if (_gt_keypad_is_switch_key_mapping_pressed(keypad, false)) {
+        return;
+    }
+
+    if(style->target == NULL){
+        return;
+    }
+
+
+    if( strcmp(style->kv_selected, GT_SYMBOL_EN) == 0 ||
+        strcmp(style->kv_selected, GT_SYMBOL_SPELL) == 0)
+    {
+        gt_input_style_append_value(style->target, _GT_KEYPAD_TAG_SPACE);
+    }
+    else if(strcmp(style->kv_selected, GT_SYMBOL_BACKSPACE) == 0 ){
+        if(_gt_spell_ascii_numb > 0){
+#if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
+            _gt_spell_ascii[--_gt_spell_ascii_numb] = '\0';
+            goto SPELL_GET;
+#endif
+        }
+        else{
+            gt_input_style_del_value(style->target);
+        }
+    }
+    else if( strcmp(style->kv_selected, GT_SYMBOL_LEFT) == 0 ){
+        gt_input_style_move_left_pos_cursor(style->target);
+    }
+    else if( strcmp(style->kv_selected, GT_SYMBOL_RIGHT) == 0 ){
+        gt_input_style_move_right_pos_cursor(style->target);
+    }
+    else if( strcmp(style->kv_selected, GT_SYMBOL_NEW_LINE) == 0 ){
+        gt_input_style_append_value(style->target, _GT_KEYPAD_TAG_NEW_LINE);
+    }
+    else if( strcmp(style->kv_selected, GT_SYMBOL_PREV) == 0 ){
+#if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
+        if(gt_pinyin_last_page(_gt_spell_info)){
+            goto  SPELL_CODE_CONV;
+        }
+#endif
+    }
+    else if( strcmp(style->kv_selected, GT_SYMBOL_NEXT) == 0 ){
+#if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
+        if(gt_pinyin_next_page(_gt_spell_info)){
+            goto  SPELL_CODE_CONV;
+        }
+#endif
+    }
+    else{
+        if (!_gt_keypad_check_key_is_ctl(style->kv_selected)) {
+
+            if((strcmp(style->kv_selected , _gt_spell[0]) == 0))
+            {
+                return ;
+            }
+            
+            tmp_str = _gt_keypad_get_spell_text(style->kv_selected , style->info.mode);
+            if(tmp_str)
+            {
+                gt_input_style_append_value(style->target, tmp_str);
+
+#if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
+                int tmp_index = _gt_get_spell_index(style->kv_selected , style->info.mode);
+                if(tmp_index <= 0 || tmp_index > _gt_spell_chinese_numb)
+                {
+                    return ;
+                }
+                gt_pinyin_select_text(_gt_spell_info , tmp_index , NULL);
+                _gt_spell_ascii_numb = _gt_spell_info->content->ascii_numb;
+
+                goto  SPELL_CODE_CONV;
+#endif
+            }
+
+#if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
+            // 拼音输入法
+            if(_gt_spell_ascii_numb >= _GT_SPELL_ASCII_MAX_NUMB - 1)
+            {
+                return ;
+            }
+
+
+            _gt_spell_ascii[_gt_spell_ascii_numb++] = *style->kv_selected;
+            _gt_spell_ascii[_gt_spell_ascii_numb] = '\0';
+
+SPELL_GET:
+            //
+            if(!gt_pinyin_full_keyboard_get(_gt_spell_ascii))
+            {
+                _gt_spell_chinese_numb = _gt_spell_info->content->chinese_numb;
+                gt_event_send(keypad, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
+                return ;
+            }
+
+SPELL_CODE_CONV:
+            _gt_spell_chinese_numb = _gt_spell_info->content->chinese_numb;
+            gt_memset_0(_gt_spell_chinese , _GT_SPELL_CHINESE_MAX_NUMB * _GT_SPELL_CHINESE_MAX_NUMB);
+            for(i = 0 ; i < _gt_spell_chinese_numb ; i++)
+            {
+                unicode = GBKToUnicode((((uint32_t)_gt_spell_info->content->chinese[2*i]) << 8) |_gt_spell_info->content->chinese[2*i+1]);
+                len = gt_unicode_to_utf8(_gt_spell_chinese[i] , unicode);
+                _gt_spell_chinese[i][len]='\0';
+                GT_LOGD(GT_LOG_TAG_GUI , "gbk = %s, unicode = 0x%X, len = %d, utf8[%d][0] = 0x%x, utf8[1] = 0x%x, utf8[2] = 0x%x," ,\
+                _gt_spell_info->content->chinese , unicode , len , i , _gt_spell_chinese[i][0], _gt_spell_chinese[i][1],_gt_spell_chinese[i][2]);
+            }
+            gt_event_send(keypad, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
+#endif
+        }
+    }
+
+}
+
 static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
 {
     _gt_style_keypad_st * style = keypad->style;
@@ -302,7 +556,19 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
         return;
     }
 
-    if(strcmp(style->kv_selected, GT_SYMBOL_BACKSPACE) == 0 ){
+    if(GT_KEYPAD_MODE_SPELL ==  style->info.mode)
+    {
+        _gt_keypad_spell_event_cb(keypad);
+        return ;
+    }
+
+    
+    if( strcmp(style->kv_selected, GT_SYMBOL_EN) == 0 ||
+        strcmp(style->kv_selected, GT_SYMBOL_SPELL) == 0)
+    {
+        gt_input_style_append_value(style->target, _GT_KEYPAD_TAG_SPACE);
+    }
+    else if(strcmp(style->kv_selected, GT_SYMBOL_BACKSPACE) == 0 ){
         gt_input_style_del_value(style->target);
     }
     else if( strcmp(style->kv_selected, GT_SYMBOL_LEFT) == 0 ){
@@ -313,8 +579,15 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
     }
     else if( strcmp(style->kv_selected, GT_SYMBOL_NEW_LINE) == 0 ){
         gt_input_style_append_value(style->target, _GT_KEYPAD_TAG_NEW_LINE);
-    }else{
+    }
+    else{
         if (!_gt_keypad_check_key_is_ctl(style->kv_selected)) {
+            uint8_t* tmp_str = _gt_keypad_get_spell_text(style->kv_selected , style->info.mode);
+            if(tmp_str)
+            {
+                gt_input_style_append_value(style->target, tmp_str);
+                return ;
+            }
             gt_input_style_append_value(style->target, style->kv_selected);
         }
     }
@@ -356,7 +629,7 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
     gt_area_st area_key, area_bg;
 
     uint16_t ys = keypad->area.y;
-    uint8_t h_key = ( (keypad->area.h ) / (style->info.cnt_lines+1)) - SPACE_Y;
+    uint8_t h_key = ( (keypad->area.h - SPACE_Y) / (style->info.cnt_lines+1)) - SPACE_Y;
     uint8_t per_one_width = (keypad->area.w / style->info.per_line[0]);
     uint8_t line = 0;
     uint8_t r, g, b;
@@ -367,8 +640,13 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
     while ( map_keypad[idx].kv != NULL ) {
 
         rect_attr.bg_color = style->color_key;
+        font_attr.font->size = style->font_size;
         if( _gt_keypad_check_key_is_ctl(map_keypad[idx].kv) ){
             rect_attr.bg_color = style->color_ctrl;
+        }
+
+        if(_gt_keypad_check_key_is_icon(map_keypad[idx].kv)){
+            font_attr.font->size = _GT_KEYPASD_ICON_SIZE;
         }
 
         if ( _gt_keypad_get_kv_selected(keypad) && strcmp( map_keypad[idx].kv, _gt_keypad_get_kv_selected(keypad)) == 0  ){
@@ -388,12 +666,22 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
                 area_key.w += ((keypad->area.x + keypad->area.w - SPACE_X) - (area_key.x + area_key.w));
             }
         }
+
         draw_bg(keypad->draw_ctx, &rect_attr, &area_key);
 
         font.utf8 = map_keypad[idx].kv;
         font.len = strlen(map_keypad[idx].kv);
+        uint8_t* tmp_str = _gt_keypad_get_spell_text(map_keypad[idx].kv , style->info.mode);
+        if(tmp_str) 
+        {
+            font.utf8 = tmp_str;
+            font.len = strlen(tmp_str);
+
+            GT_LOGD(GT_LOG_TAG_GUI , "utf8 = %s , len = %d" , font.utf8 , font.len);
+        }
 
         draw_text(keypad->draw_ctx, &font_attr, &area_key);
+
         idx++;
 
         area_key.x += area_key.w + SPACE_X;
@@ -406,6 +694,7 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
             per_one_width = (keypad->area.w / style->info.per_line[line]);
         }
     }
+
 }
 
 /**
@@ -437,6 +726,28 @@ static void _deinit_cb(gt_obj_st * obj) {
 
     gt_mem_free(*style_p);
     *style_p = NULL;
+
+#if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
+
+    if(_gt_spell_info && _gt_spell_info->py_cache)
+    {
+        gt_mem_free(_gt_spell_info->py_cache);
+        _gt_spell_info->py_cache = NULL;
+    }
+
+    if(_gt_spell_info && _gt_spell_info->content)
+    {
+        gt_mem_free(_gt_spell_info->content);
+        _gt_spell_info->content = NULL;
+    }
+
+    if(_gt_spell_info)
+    {
+        gt_mem_free(_gt_spell_info);
+        _gt_spell_info = NULL;
+    }
+#endif
+
 }
 
 
@@ -523,14 +834,42 @@ static void _gt_keypad_init_style(gt_obj_st * keypad)
     style->font_family_en  = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size       = GT_CFG_DEFAULT_FONT_SIZE;
 
-    style->color_board  = gt_color_hex(0xA8A8A8);
-    style->color_key    = gt_color_hex(0xFFFFFF);
-    style->color_ctrl   = gt_color_hex(0x9699a1);
+    style->color_board  = gt_color_hex(0x242424);
+    style->color_key    = gt_color_hex(0x646464);
+    style->color_ctrl   = gt_color_hex(0x3E3E3E);
+
+#if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
+    // 初始化拼音输入法
+    _gt_spell_info = (py_info_st*)gt_mem_malloc(sizeof(py_info_st));
+    if(NULL == _gt_spell_info)
+    {
+        GT_LOGE(GT_LOG_TAG_GUI , "spell info malloc err!");
+        return ;
+    }
+    _gt_spell_info->content = (py_content_st*)gt_mem_malloc(sizeof(py_content_st));
+    if(NULL == _gt_spell_info->content)
+    {
+        GT_LOGE(GT_LOG_TAG_GUI , "spell info content malloc err!");
+        return ;
+    }
+    _gt_spell_info->py_cache = (unsigned char*)gt_mem_malloc(1218);
+    if(NULL == _gt_spell_info->py_cache)
+    {
+        GT_LOGE(GT_LOG_TAG_GUI , "spell info py_cache malloc err!");
+        return ;
+    }
+    gt_pinyin_init(_gt_spell_info);
+#endif
+
 }
 
 static void _gt_keypad_update_map(gt_obj_st * keypad, gt_keypad_map_st * map)
 {
     _gt_style_keypad_st * style = keypad->style;
+    if(style->info.map == map)
+    {
+        return ;
+    }
     style->info.map = map;
     _gt_keypad_change_mode(keypad, map);
 
@@ -549,6 +888,9 @@ static void _gt_keypad_update_map(gt_obj_st * keypad, gt_keypad_map_st * map)
     style->info.per_line[cnt_lines] = per_all;
     style->info.cnt_lines = cnt_lines;
 
+    _gt_spell_ascii_numb = 0;
+    _gt_spell_chinese_numb = 0;
+    
     gt_event_send(keypad, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

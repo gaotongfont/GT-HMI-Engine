@@ -131,7 +131,56 @@ static uint8_t _gt_font_latin_get_width(uint32_t unicode, uint8_t font_size)
     return width;
 
 }
+/**
+ * @brief unicode encoding convert to utf-8 encoding
+ *
+ * @param utf8 utf-8 encoding
+ * @param unicode unicode encoding
+ * @return uint8_t THe number length bytes of utf-8 encoding
+ */
+uint8_t gt_unicode_to_utf8(uint8_t* utf8 , uint32_t unicode)
+{
+    if(NULL == utf8){
+        return 0;
+    }
 
+    if(unicode <= 0x007FUL){
+        *utf8 = (unicode & 0x7F);
+        return 1;
+    }
+    else if( unicode >= 0x0080UL && unicode <= 0x07FFUL ){
+        *(utf8+1) = (unicode & 0x3F) | 0x80;
+        *utf8     = ((unicode >> 6) & 0x1F) | 0xC0;
+        return 2;
+    }
+    else if ( unicode >= 0x0800UL && unicode <= 0xFFFFUL ){
+        *(utf8+3) = (unicode & 0x3F) | 0x80;
+        *(utf8+2) = ((unicode >>  6) & 0x3F) | 0x80;
+        *(utf8+1) = ((unicode >> 12) & 0x3F) | 0x80;
+        *utf8     = ((unicode >> 18) & 0x07) | 0xF0;
+        return 4;
+    }
+    else if ( unicode >= 0x200000UL && unicode <= 0x3FFFFFFUL )
+    {
+        *(utf8+4) = (unicode & 0x3F) | 0x80;
+        *(utf8+3) = ((unicode >>  6) & 0x3F) | 0x80;
+        *(utf8+2) = ((unicode >> 12) & 0x3F) | 0x80;
+        *(utf8+1) = ((unicode >> 18) & 0x3F) | 0x80;
+        *utf8     = ((unicode >> 24) & 0x03) | 0xF8;
+        return 5;
+    }
+    else if ( unicode >= 0x4000000UL && unicode <= 0x7FFFFFFFUL )
+    {
+        *(utf8+5) = (unicode & 0x3F) | 0x80;
+        *(utf8+4) = ((unicode >>  6) & 0x3F) | 0x80;
+        *(utf8+3) = ((unicode >> 12) & 0x3F) | 0x80;
+        *(utf8+2) = ((unicode >> 18) & 0x3F) | 0x80;
+        *(utf8+1) = ((unicode >> 24) & 0x3F) | 0x80;
+        *utf8     = ((unicode >> 30) & 0x01) | 0xFC;
+        return 6;
+    }
+    return 0;
+}
 
 uint8_t _gt_utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 {
