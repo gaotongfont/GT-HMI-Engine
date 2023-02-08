@@ -117,6 +117,15 @@ typedef struct _gt_attr_font_s {
 uint8_t _gt_utf8_to_unicode(uint8_t * utf8,uint32_t *res);
 
 /**
+ * @brief unicode encoding convert to utf-8 encoding
+ *
+ * @param utf8 utf-8 encoding
+ * @param unicode unicode encoding
+ * @return uint8_t THe number length bytes of utf-8 encoding
+ */
+uint8_t gt_unicode_to_utf8(uint8_t* utf8 , uint32_t unicode);
+
+/**
  * @brief Get the character data of a string
  *
  * @param font font basic information
