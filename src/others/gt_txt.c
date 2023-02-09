@@ -10,8 +10,8 @@
 /* include --------------------------------------------------------------*/
 #include "gt_txt.h"
 #include "../core/gt_mem.h"
-
-
+#include "../font/gt_font.h"
+#include "gt_log.h"
 /* private define -------------------------------------------------------*/
 
 
@@ -31,8 +31,51 @@
 /* static functions -----------------------------------------------------*/
 
 
+static char gt_txt_string_del(char * str , uint32_t del_txt_pos)
+{
+    uint32_t len = 0 , len_str = strlen(str);
+    int32_t idx = del_txt_pos;
 
+    len = gt_txt_check_char_numb(str , &idx);
+    
+    if(!len){
+        return 0 ;
+    }
+
+    if(len_str > del_txt_pos){
+        gt_memcpy( &str[idx] , &str[idx+len], len_str - (idx+len) ) ;
+    }
+    gt_memset(&str[len_str - len], 0, len);
+    len_str = strlen(str);
+    str = (char * )gt_mem_realloc(str, len_str + 1);
+    str[len_str] = '\0';
+
+    return len;
+
+}
 /* global functions / API interface -------------------------------------*/
+
+uint8_t gt_txt_check_char_numb(char * dst , int32_t* pos )
+{
+    uint32_t len = 0 , len_str = *pos ;
+    int32_t *idx = pos;
+    
+    while ((*idx) >= 0)
+    {
+        len = gt_utf8_check_char( &dst[*idx]);
+
+        if(!len)
+        {
+            --(*idx);
+            continue;
+        }
+        
+        break;
+    }
+
+    return len;
+}
+
 
 /**
  * @brief insert src to the pos position in dst
@@ -70,7 +113,7 @@ char * gt_txt_ins(char * dst, uint32_t pos, char * src)
  * @param pos_start position start
  * @param pos_end position end
  */
-char * gt_txt_cut(char * dst, uint32_t pos_start, uint32_t pos_end)
+char gt_txt_cut(char * dst, uint32_t pos_start, uint32_t pos_end)
 {
     uint32_t len_dst = strlen(dst);
     uint32_t ps,pe;
@@ -93,6 +136,7 @@ char * gt_txt_cut(char * dst, uint32_t pos_start, uint32_t pos_end)
         pe = len_dst;
     }
 
+#if 0
     if (len_dst > pe) {
         gt_memcpy(&dst[ps], &dst[pe], len_dst - pe);
     }
@@ -100,7 +144,9 @@ char * gt_txt_cut(char * dst, uint32_t pos_start, uint32_t pos_end)
     len_dst = strlen(dst);
     dst = (char * )gt_mem_realloc(dst, len_dst + 1);
     dst[len_dst] = '\0';
-
-    return dst;
+    return 1;
+#else
+    return gt_txt_string_del(dst , ps);
+#endif
 }
 /* end ------------------------------------------------------------------*/

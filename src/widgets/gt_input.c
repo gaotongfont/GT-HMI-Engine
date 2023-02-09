@@ -354,8 +354,11 @@ void gt_input_style_del_value(gt_obj_st * input)
     if( style->pos_cursor <= 0 ){
         return;
     }
-    style->value = gt_txt_cut(style->value, style->pos_cursor - 1, style->pos_cursor);
-    style->pos_cursor -= 1;
+    // style->value = gt_txt_cut(style->value, style->pos_cursor - 1, style->pos_cursor);
+    // style->pos_cursor -= 1;
+
+    style->pos_cursor -= gt_txt_cut(style->value, style->pos_cursor - 1, style->pos_cursor);
+
 lab_end:
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -377,16 +380,22 @@ void gt_input_style_set_placeholder(gt_obj_st * input, const char * placeholder)
 void gt_input_style_move_left_pos_cursor(gt_obj_st * input)
 {
     _gt_style_input_st * style = input->style;
+    int32_t d_pos = style->pos_cursor - 1;
     if( style->pos_cursor > 0 ){
-        style->pos_cursor--;
+        d_pos = gt_txt_check_char_numb(style->value , &d_pos);
+        style->pos_cursor -= d_pos;
+        // style->pos_cursor--;
     }
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_input_style_move_right_pos_cursor(gt_obj_st * input)
 {
     _gt_style_input_st * style = input->style;
+    int32_t d_pos = style->pos_cursor;
     if( style->pos_cursor < strlen(style->value) ){
-        style->pos_cursor++;
+        d_pos = gt_txt_check_char_numb(style->value , &d_pos);
+        style->pos_cursor += d_pos;
+        // style->pos_cursor++;
     }
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }

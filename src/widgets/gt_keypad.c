@@ -526,8 +526,6 @@ SPELL_CODE_CONV:
                 unicode = GBKToUnicode((((uint32_t)_gt_spell_info->content->chinese[2*i]) << 8) |_gt_spell_info->content->chinese[2*i+1]);
                 len = gt_unicode_to_utf8(_gt_spell_chinese[i] , unicode);
                 _gt_spell_chinese[i][len]='\0';
-                GT_LOGD(GT_LOG_TAG_GUI , "gbk = %s, unicode = 0x%X, len = %d, utf8[%d][0] = 0x%x, utf8[1] = 0x%x, utf8[2] = 0x%x," ,\
-                _gt_spell_info->content->chinese , unicode , len , i , _gt_spell_chinese[i][0], _gt_spell_chinese[i][1],_gt_spell_chinese[i][2]);
             }
             gt_event_send(keypad, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
 #endif
@@ -676,8 +674,6 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
         {
             font.utf8 = tmp_str;
             font.len = strlen(tmp_str);
-
-            GT_LOGD(GT_LOG_TAG_GUI , "utf8 = %s , len = %d" , font.utf8 , font.len);
         }
 
         draw_text(keypad->draw_ctx, &font_attr, &area_key);
