@@ -36,8 +36,8 @@
 #define _GT_KEYPAD_TAG_DOWNCASE     "abc"
 #define _GT_KEYPAD_TAG_NUMBER       "#+="
 
-#define _GT_KEYPASD_ICON_SIZE       (24)
-#define _GT_KEYPASD_SPELL_NUMB      (9)
+#define _GT_KEYPADS_ICON_SIZE       (24)
+#define _GT_KEYPADS_SPELL_NUMB      (9)
 
 /* private typedef ------------------------------------------------------*/
 
@@ -59,7 +59,7 @@ static uint8_t _gt_spell_chinese[_GT_SPELL_CHINESE_MAX_NUMB][_GT_SPELL_CHINESE_M
     static py_info_st *_gt_spell_info = NULL;
 #endif
 
-static const unsigned char _gt_spell[_GT_KEYPASD_SPELL_NUMB][8] = {
+static const unsigned char _gt_spell[_GT_KEYPADS_SPELL_NUMB][8] = {
     "spell_0" , "spell_1" , "spell_2" , "spell_3" , "spell_4" , "spell_5" , "spell_6" , "spell_7" , "spell_8",
 };
 
@@ -195,7 +195,7 @@ static int _gt_get_spell_index(char * kv ,  uint8_t mode)
         return -1;
     }
 
-    for ( idx = 0; idx < _GT_KEYPASD_SPELL_NUMB; idx++)
+    for ( idx = 0; idx < _GT_KEYPADS_SPELL_NUMB; idx++)
     {
         if( strcmp(_gt_spell[idx], kv) == 0 ){
             return idx;
@@ -644,7 +644,7 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
         }
 
         if(_gt_keypad_check_key_is_icon(map_keypad[idx].kv)){
-            font_attr.font->size = _GT_KEYPASD_ICON_SIZE;
+            font_attr.font->size = _GT_KEYPADS_ICON_SIZE;
         }
 
         if ( _gt_keypad_get_kv_selected(keypad) && strcmp( map_keypad[idx].kv, _gt_keypad_get_kv_selected(keypad)) == 0  ){
