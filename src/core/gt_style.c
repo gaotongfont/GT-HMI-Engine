@@ -15,7 +15,7 @@
 
 /* private define -------------------------------------------------------*/
 #define _set_style_prop_val(obj, prop, val)     (obj->style->prop = val)
-#define _set_area_prop_val(obj, prop, val)      (obj->area.prop = val)
+// #define _set_area_prop_val(obj, prop, val)      (obj->area.prop = val)  // unused
 #define _get_area_prop(obj, prop)               (obj->area.prop)
 
 /* private typedef ------------------------------------------------------*/
@@ -56,22 +56,27 @@ void gt_obj_style_set_size(gt_obj_st * obj, uint16_t w, uint16_t h) {
 }
 
 void gt_obj_style_set_x(gt_obj_st * obj, uint16_t x) {
-    _set_area_prop_val(obj, x, x);
+    gt_area_st area = obj->area;
+    area.x = x;
+    gt_obj_pos_change(obj, &area);
 }
 
 void gt_obj_style_set_y(gt_obj_st * obj, uint16_t y) {
-    // _set_area_prop_val(obj, y, y);
     gt_area_st area = obj->area;
     area.y = y;
     gt_obj_pos_change(obj, &area);
 }
 
 void gt_obj_style_set_w(gt_obj_st * obj, uint16_t w) {
-    _set_area_prop_val(obj, w, w);
+    gt_area_st area = obj->area;
+    area.w = w;
+    gt_obj_pos_change(obj, &area);
 }
 
 void gt_obj_style_set_h(gt_obj_st * obj, uint16_t h) {
-    _set_area_prop_val(obj, h, h);
+    gt_area_st area = obj->area;
+    area.h = h;
+    gt_obj_pos_change(obj, &area);
 }
 
 void gt_obj_style_set_opa(gt_obj_st * obj, gt_opa_t opa) {
