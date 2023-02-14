@@ -59,24 +59,28 @@ void gt_obj_style_set_x(gt_obj_st * obj, uint16_t x) {
     gt_area_st area = obj->area;
     area.x = x;
     gt_obj_pos_change(obj, &area);
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
 void gt_obj_style_set_y(gt_obj_st * obj, uint16_t y) {
     gt_area_st area = obj->area;
     area.y = y;
     gt_obj_pos_change(obj, &area);
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
 void gt_obj_style_set_w(gt_obj_st * obj, uint16_t w) {
     gt_area_st area = obj->area;
     area.w = w;
     gt_obj_pos_change(obj, &area);
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
 void gt_obj_style_set_h(gt_obj_st * obj, uint16_t h) {
     gt_area_st area = obj->area;
     area.h = h;
     gt_obj_pos_change(obj, &area);
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
 void gt_obj_style_set_opa(gt_obj_st * obj, gt_opa_t opa) {
