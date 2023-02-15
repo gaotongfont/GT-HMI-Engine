@@ -121,7 +121,7 @@ char gt_txt_cut(char * dst, uint32_t pos_start, uint32_t pos_end)
     uint32_t ps,pe;
 
     if (!dst) {
-        return dst;
+        return 0;
     }
 
     if( pos_start > pos_end ){
@@ -132,7 +132,7 @@ char gt_txt_cut(char * dst, uint32_t pos_start, uint32_t pos_end)
         pe = pos_end;
     }
     if( ps > len_dst ){
-        return dst;
+        return 0;
     }
     if( pe > len_dst ){
         pe = len_dst;
