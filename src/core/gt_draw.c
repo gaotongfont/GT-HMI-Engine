@@ -566,9 +566,10 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
 
     uint32_t addr_start_alpha = 0;
     uint32_t offset = 0, len = 0;
-    gt_color_t * color_img_line_p = NULL;
+    static uint32_t pre_len = 0, pre_w = 0;
+    static gt_color_t * color_img_line_p = NULL;
+    static uint8_t * mask_buf = NULL;
     uint16_t w, h, y = 0;
-    uint8_t * mask_buf = NULL;
 
     w = dsc_img.header.w;
     h = dsc_img.header.h;
@@ -600,13 +601,25 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
             uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
 
             len = w * sizeof(gt_color_t);
-            color_img_line_p = gt_mem_malloc( len );
+            if( pre_len != len ){
+                pre_len = len;
+                if( !color_img_line_p ){
+                    gt_mem_free(color_img_line_p);
+                }
+                color_img_line_p = gt_mem_malloc( len );
+            }
             if (!color_img_line_p) { break; }
 
             if (is_mask) {
-                mask_buf = gt_mem_malloc(w);
+                if( pre_w != w ){
+                    pre_w = w;
+                    if( !mask_buf ){
+                        gt_mem_free(mask_buf);
+                    }
+                    mask_buf = gt_mem_malloc(w);
+                }
                 if (!mask_buf) {
-                    gt_mem_free(color_img_line_p);
+                    // gt_mem_free(color_img_line_p);
                     break;
                 }
                 blend_dsc.mask_buf = mask_buf;
@@ -632,10 +645,10 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
                 offset += len;
             }
 
-            gt_mem_free(color_img_line_p);
-            if (is_mask) {
-                gt_mem_free(mask_buf);
-            }
+            // gt_mem_free(color_img_line_p);
+            // if (is_mask) {
+            //     gt_mem_free(mask_buf);
+            // }
             break;
         }
     }
