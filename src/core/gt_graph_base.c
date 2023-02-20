@@ -780,6 +780,33 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area)
 
 }
 
+void gt_bresenham_line(int x0, int y0, int x1, int y1,gt_color_t fg_color)
+{
+	gt_color_t * bufa = gt_disp_graph_get_buf_default();
+
+	int dx =  abs(x1-x0), sx = x0<x1 ? 1 : -1;
+	int dy = -abs(y1-y0), sy = y0<y1 ? 1 : -1; 
+	int err = dx+dy, e2; /* error value e_xy */
+
+	for(;;){  /* loop */
+		GT_COLOR_SET_BUF(bufa, x0,y0, GT_SCREEN_WIDTH, GT_SCREEN_HEIGHT, GT_COLOR_GET(fg_color));
+
+		if (x0==x1 && y0==y1){
+			break;
+		}
+		e2 = err << 1;
+
+		if (e2 >= dy) { /* e_xy+e_x > 0 */
+			err += dy;
+			x0 += sx; 
+		} 
+		if (e2 <= dx) {/* e_xy+e_y < 0 */
+			err += dx;
+			y0 += sy; 
+		} 
+	}
+}
+
 void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * color)
 {
 	uint16_t is_fill, border_width;

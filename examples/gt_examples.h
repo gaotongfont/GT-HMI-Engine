@@ -44,6 +44,8 @@ extern "C" {
 
 void gt_examples_anim1(void);
 
+void gt_examples_line(void);
+
 void gt_examples_button(void);
 
 void gt_examples_checkbox(void);

@@ -91,6 +91,8 @@ typedef struct _gt_attr_rect_s
     uint8_t * data_gray;
 
     uint8_t is_fill:1;          ///< fill inside area by fg_color
+    uint8_t is_line;            ///< use straight line  
+    gt_attr_line_st  * line;     ///< use straight line
 }gt_attr_rect_st;
 
 /**
@@ -198,6 +200,15 @@ void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area, gt_colo
  * @param area  display area
  */
 void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area );
+
+/**
+ * @brief use bresenham algorithm create a line obj
+ *
+ * @param x0 y0 start point
+ * @param x1 y1 end point
+ * @param fg_color line color
+ */
+void gt_bresenham_line(int x0, int y0, int x1, int y1,gt_color_t fg_color);
 
 /**
  * @brief Draw a rectangle

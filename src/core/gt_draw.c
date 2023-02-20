@@ -83,6 +83,8 @@ void gt_draw_rect(gt_draw_ctx_t * ctx, gt_attr_rect_st * attr, gt_area_st * coor
 
     // draw_outline(draw_ctx, dsc, coords);
 }
+static const uint8_t radius1[9] = {0X24,0X69,0X24,0X69,0xFF,0x69,0x24,0x69,0x24};
+static const uint8_t radius2[16] = {0X24,0X69,0X69,0X24, 0x69,0x6D,0x6D,0X69, 0X69,0x6D,0x6D,0X69, 0X24,0X69,0X69,0X24};
 static const uint8_t radius3[9] = {0X00,0X24,0X69,0X24,0X6D,0X6D,0X69,0X6D,0X6D};
 static const uint8_t radius4[16] = {0X00,0X00,0X49,0XAF,0X00,0X6D,0XFF,0XFF,0X49,0XFF,0XFF,0xFF,0XAF,0XFF,0XFF,0XFF};
 static const uint8_t radius5[25] = {0X00,0X00,0X49,0XB6,0XFF,0X00,0X92,0XFF,0XFF,0XFF,0X49,0XFF,0XFF,0XFF,0XFF,0XB6,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF};
@@ -102,9 +104,9 @@ typedef struct _gt_radius_dat
 }_gt_radius_dat;
 
 _gt_radius_dat radius_dat[] = {
-    {0, radius3, 9},
-    {1, radius3, 9},
-    {2, radius3, 9},
+    {0, radius1, 9},
+    {1, radius1, 9},
+    {2, radius2, 16},
     {3, radius3, 9},
     {4, radius4, 16},
     {5, radius5, 25},
@@ -116,6 +118,81 @@ _gt_radius_dat radius_dat[] = {
     {11, radius11, 121},
     {12, radius12, 144}
 };
+
+void gt_draw_arch(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st  *blend_dsc,uint8_t *mask_left_up,uint8_t *mask_right_up,const gt_area_st * coords)
+{
+    gt_size_t x = blend_dsc->mask_area->x;
+    uint8_t radius = blend_dsc->mask_area->w;
+    uint8_t * mask_right_down = mask_left_up;
+    uint8_t * mask_left_down = mask_right_up;
+
+    // draw whole circle
+    if(radius <= GT_RADIUS_MIN){
+        blend_dsc->mask_area->w = (radius == 2) ? 4: 3;
+        blend_dsc->mask_area->h = blend_dsc->mask_area->w;
+        gt_draw_blend(draw_ctx, blend_dsc);
+        return;
+    }
+    // 1:draw left-up arch
+    gt_draw_blend(draw_ctx, blend_dsc);
+
+    // 2:draw right_up arch
+    gt_mirror_hor_u8(mask_right_up, mask_left_up, radius, radius);
+    blend_dsc->mask_area->x += coords->w - radius;
+    blend_dsc->mask_buf = mask_right_up;
+    gt_draw_blend(draw_ctx, blend_dsc);
+
+    // 3:draw right_down arch
+    gt_mirror_ver_u8(mask_right_down, mask_right_up, radius, radius);
+    blend_dsc->mask_area->y += coords->h - radius;
+    blend_dsc->mask_buf = mask_right_down;
+    gt_draw_blend(draw_ctx, blend_dsc);
+
+    // 4:draw left_down arch
+    gt_mirror_hor_u8(mask_left_down, mask_right_down, radius, radius);
+    blend_dsc->mask_area->x = x;
+    blend_dsc->mask_buf = mask_left_down;
+    gt_draw_blend(draw_ctx, blend_dsc);
+
+    //Recovery Data
+    gt_mirror_ver_u8(mask_left_up, mask_left_down, radius, radius);
+    blend_dsc->mask_buf = mask_left_up;
+}
+
+void gt_draw_line(gt_attr_line_st * line_attr, gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st * blend_dsc,uint8_t *mask_left_up,uint8_t *mask_right_up,const gt_area_st * coords)
+{
+	int x1,x2,y1,y2;		//two point get a line
+
+	x1 = line_attr->x_1;
+	y1 = line_attr->y_1;
+
+	x2 = line_attr->x_2;
+	y2 = line_attr->y_2;
+
+	int dx =  abs(x2-x1), sx = x1<x2 ? 1 : -1;
+	int dy = -abs(y2-y1), sy = y1<y2 ? 1 : -1; 
+	int err = dx+dy, e2; /* error value e_xy */
+
+	for(;;){  /* loop */
+		if (x1==x2 && y1==y2){
+			break;
+		}
+		e2 = err << 1;
+
+		if (e2 >= dy) { /* e_xy+e_x > 0 */
+			err += dy;
+			x1 += sx; 
+		} 
+		if (e2 <= dx) {/* e_xy+e_y < 0 */
+			err += dx;
+			y1 += sy; 
+		}
+        blend_dsc->mask_area->x = x1;
+        blend_dsc->mask_area->y = y1;
+        gt_draw_arch(draw_ctx,blend_dsc,mask_left_up,mask_right_up,coords);
+	}
+}
+
 void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
 {
     if (dsc->bg_opa <= GT_OPA_MIN) return;
@@ -154,9 +231,6 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         .dst_area   = &area_mask
     };
 
-    if (radius <= GT_RADIUS_MIN) {
-        radius = 0;
-    }
 
     // Dot matrix data
     if(dsc->gray != 0)
@@ -203,117 +277,110 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         return ;
     }
 
-    /* draw circle */
-    if (radius > GT_RADIUS_MIN) {
-        uint32_t mem_size = (radius << 1) * (radius << 1) * sizeof(gt_color_t);
-        if( radius != radius_pre ){
-            radius_pre = radius;
-            /*free*/
-            gt_mem_free(color_circle_p);
-            gt_mem_free(mask_left_up);
+    /* draw circle or draw a line*/
+    if(radius > 0 ){
+        if (radius <= GT_RADIUS_MIN)   //Get the whole circle info 
+        {
+            if( radius != radius_pre ){
+                radius_pre = radius;
+                /*free*/
+                gt_mem_free(color_circle_p);
+                gt_mem_free(mask_left_up);
 
-            /*malloc*/
-            color_circle_p = gt_mem_malloc(mem_size);
-            mask_left_up = gt_mem_malloc(radius * radius);
-        }
-
-        gt_attr_circle_st circle_attr = {
-            .fg_color       = gt_color_white(),
-            .bg_color       = gt_color_black(),
-            .radius         = radius,
-            .border_width   = border_width,
-            .border_color   = gt_color_white(),
-            .is_fill        = dsc->is_fill,
-        };
-
-        gt_area_st circle_area = {
-            .w = radius << 1,
-            .h = radius << 1
-        };
-        if(radius > 12 ){
-            gt_graph_circle(&circle_attr, &circle_area, color_circle_p);
-            // get circle mask
-            uint32_t idx = 0, all = circle_area.w * circle_area.h >> 1; // half of circle
-            uint8_t * mask = (uint8_t * )color_circle_p;
-            uint16_t x, y;
-            while (idx < all) {
-                mask[idx] = gt_color_brightness(color_circle_p[idx]);
-                idx++;
+                /*malloc*/
+                color_circle_p = gt_mem_malloc(radius_dat[radius].size);;
+                mask_left_up = gt_mem_malloc(radius_dat[radius].size);
             }
-
-            // get circle left mask
-            blend_dsc.mask_buf = mask_left_up;
-            idx = 0;
-            uint32_t idx_circle = 0;
-            for (y = 0; y < radius; y++) {
-                for (x = 0; x < radius; x++) {
-                    mask_left_up[idx++] = mask[idx_circle++];
-                }
-                idx_circle += radius;
-            }
-        }else{
             gt_memcpy(mask_left_up, radius_dat[radius].ptr, radius_dat[radius].size);
-
-            int radius_hid = radius - dsc->border_width;
-            if( dsc->is_fill == false ){
-                if( dsc->border_width != 0 && radius_hid >= 3 && dsc->border_width < radius ){
-                    uint8_t * mask_hid = gt_mem_malloc( radius_hid * radius_hid );
-                    gt_memcpy(mask_hid, radius_dat[radius_hid].ptr, radius_dat[radius_hid].size);
-
-                    int bidx = 0, sidx = 0;
-                    int by = radius;
-                    for( int sy = radius_hid - 1; sy > 0; sy-- ){
-                        bidx = (by * radius) - 1;
-                        sidx = (sy * radius_hid) -1;
-                        for( int sx = radius_hid-1; sx >= 0; sx--){
-                            // mask_left_up[ bidx-- ] = (255 - mask_hid[sidx--]);
-                            if( mask_hid[sidx--] != 0 ){
-                                mask_left_up[ bidx-- ] = 0;
-                            }
-                        }
-                        by--;
-                    }
-                    gt_mem_free(mask_hid);
-                }else if( radius_hid == 2){
-                    mask_left_up[ radius * radius - 1 ] = 0;
-                    mask_left_up[ (radius-1) * radius - 1 ] = 0;
-                    mask_left_up[ (radius-1) * radius - 2 ] = 0;
-                    mask_left_up[ (radius-1) * radius + radius - 1 ] = 0;
-                    mask_left_up[ (radius-1) * radius + radius - 2 ] = 0;
-                }else if( radius_hid == 1){
-                    mask_left_up[ radius * radius - 1 ] = 0;
-                }
-            }
             blend_dsc.mask_buf = mask_left_up;
+        }else {//Get a quarter circle info
+            uint32_t mem_size = (radius << 1) * (radius << 1) * sizeof(gt_color_t);
+            if( radius != radius_pre ){
+                radius_pre = radius;
+                /*free*/
+                gt_mem_free(color_circle_p);
+                gt_mem_free(mask_left_up);
+
+                /*malloc*/
+                color_circle_p = gt_mem_malloc(mem_size);
+                mask_left_up = gt_mem_malloc(radius * radius);
+            }
+            if(radius > 12 ){
+                gt_attr_circle_st circle_attr = {
+                    .fg_color       = gt_color_white(),
+                    .bg_color       = gt_color_black(),
+                    .radius         = radius,
+                    .border_width   = border_width,
+                    .border_color   = gt_color_white(),
+                    .is_fill        = dsc->is_fill,
+                };
+
+                gt_area_st circle_area = {
+                    .w = radius << 1,
+                    .h = radius << 1
+                };
+                gt_graph_circle(&circle_attr, &circle_area, color_circle_p);
+                // get circle mask
+                uint32_t idx = 0, all = circle_area.w * circle_area.h >> 1; // half of circle
+                uint8_t * mask = (uint8_t * )color_circle_p;
+                uint16_t x, y;
+                while (idx < all) {
+                    mask[idx] = gt_color_brightness(color_circle_p[idx]);
+                    idx++;
+                }
+
+                // get circle left mask
+                blend_dsc.mask_buf = mask_left_up;
+                idx = 0;
+                uint32_t idx_circle = 0;
+                for (y = 0; y < radius; y++) {
+                    for (x = 0; x < radius; x++) {
+                        mask_left_up[idx++] = mask[idx_circle++];
+                    }
+                    idx_circle += radius;
+                }
+            }else{
+                gt_memcpy(mask_left_up, radius_dat[radius].ptr, radius_dat[radius].size);
+
+                int radius_hid = radius - dsc->border_width;
+                if( dsc->is_fill == false ){
+                    if( dsc->border_width != 0 && radius_hid >= 3 && dsc->border_width < radius ){
+                        uint8_t * mask_hid = gt_mem_malloc( radius_hid * radius_hid );
+                        gt_memcpy(mask_hid, radius_dat[radius_hid].ptr, radius_dat[radius_hid].size);
+
+                        int bidx = 0, sidx = 0;
+                        int by = radius;
+                        for( int sy = radius_hid - 1; sy > 0; sy-- ){
+                            bidx = (by * radius) - 1;
+                            sidx = (sy * radius_hid) -1;
+                            for( int sx = radius_hid-1; sx >= 0; sx--){
+                                // mask_left_up[ bidx-- ] = (255 - mask_hid[sidx--]);
+                                if( mask_hid[sidx--] != 0 ){
+                                    mask_left_up[ bidx-- ] = 0;
+                                }
+                            }
+                            by--;
+                        }
+                        gt_mem_free(mask_hid);
+                    }else if( radius_hid == 2){
+                        mask_left_up[ radius * radius - 1 ] = 0;
+                        mask_left_up[ (radius-1) * radius - 1 ] = 0;
+                        mask_left_up[ (radius-1) * radius - 2 ] = 0;
+                        mask_left_up[ (radius-1) * radius + radius - 1 ] = 0;
+                        mask_left_up[ (radius-1) * radius + radius - 2 ] = 0;
+                    }else if( radius_hid == 1){
+                        mask_left_up[ radius * radius - 1 ] = 0;
+                    }
+                }
+                blend_dsc.mask_buf = mask_left_up;
+            }
+		}
+        /* draw circle */
+        gt_draw_arch(draw_ctx,&blend_dsc,mask_left_up,(uint8_t *)color_circle_p,coords);
+
+        if(dsc->is_line) {  /* draw line */
+            gt_draw_line(dsc->line,draw_ctx, &blend_dsc,mask_left_up,(uint8_t *)color_circle_p,coords);
         }
-
-        // 1:draw left-up arch
-        gt_draw_blend(draw_ctx, &blend_dsc);
-
-        // 2:draw right_up arch
-        uint8_t * mask_right_up = (uint8_t * )color_circle_p;
-        gt_mirror_hor_u8(mask_right_up, mask_left_up, radius, radius);
-
-        area_mask.x = (coords->x + coords->w) - radius;
-        blend_dsc.mask_buf = mask_right_up;
-        gt_draw_blend(draw_ctx, &blend_dsc);
-
-        // 3:draw right_down arch
-        uint8_t * mask_right_down = mask_left_up;
-        gt_mirror_ver_u8(mask_right_down, mask_right_up, radius, radius);
-
-        area_mask.y = (coords->y + coords->h) - radius;
-        blend_dsc.mask_buf = mask_right_down;
-        gt_draw_blend(draw_ctx, &blend_dsc);
-
-        // 4:draw left_down arch
-        uint8_t * mask_left_down = mask_right_up;
-        gt_mirror_hor_u8(mask_left_down, mask_right_down, radius, radius);
-
-        area_mask.x = coords->x;
-        blend_dsc.mask_buf = mask_left_down;
-        gt_draw_blend(draw_ctx, &blend_dsc);
-
     }
 
     blend_dsc.mask_buf      = NULL;
