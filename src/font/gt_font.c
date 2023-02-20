@@ -211,7 +211,7 @@ uint8_t _gt_utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 uint8_t gt_utf8_check_char(char * utf8)
 {
     uint32_t len = strlen(utf8);
-    
+
     if(len >= 1 && utf8[0] < 0x80){
         return 1;
     }
@@ -240,7 +240,7 @@ uint8_t gt_utf8_check_char(char * utf8)
 
 /**
  * @brief 判断编码是外文（style_en）还是中日韩(style_cn)
- * 
+ *
  * @param unicode unicode编码
  * @return int 0 - style_cn  else-style_en
  */
@@ -388,14 +388,13 @@ uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
 
-    int width = GT_Get_Font_Width(unicode , _gt_is_style_cn_or_en(unicode) ? font->style_en : font->style_cn , 
+    int width = GT_Get_Font_Width(unicode , _gt_is_style_cn_or_en(unicode) ? font->style_en : font->style_cn ,
                                     font->size , font->gray , font->res);
     if(!width){
-        if(_gt_font_latin_check(unicode))
-    {
-        return _gt_font_latin_get_width(unicode , font->size);
-    }
-    return font->size;
+        if(_gt_font_latin_check(unicode)) {
+            return _gt_font_latin_get_width(unicode , font->size);
+        }
+        return font->size;
     }
     return width;
 #else

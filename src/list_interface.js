@@ -1,3 +1,6 @@
+/**
+ * all interfaces for gui widgets style function
+ */
 export var list_interface = {
     "com":{
         "pos":
@@ -8,6 +11,9 @@ export var list_interface = {
 
         "spec.opa":
         'gt_obj_style_set_opa(?,GT_OPA_?);',
+
+        "text.fontStyleSize":
+        'gt_?_style_set_font_size(?, ?);',
 
         "text.fontStyleCn":
         'gt_?_style_set_font_family_cn(?,?);',
@@ -26,7 +32,10 @@ export var list_interface = {
         'gt_btn_style_set_text(?,"?");',
 
         "color.bgcolor":
-        'gt_btn_style_set_color_background(?,gt_color_hex(?));'
+        'gt_btn_style_set_color_background(?,gt_color_hex(?));',
+
+        "btn.radius":
+        "gt_btn_style_set_radius(?,?);",
     },
     "checkbox":{
         "text.value":
@@ -97,17 +106,62 @@ export var list_interface = {
         'gt_slider_style_set_tag_visible(?,?);',
 
         'bar.tag':
-        'gt_slider_style_set_tag(?,"?");'
+        'gt_slider_style_set_tag(?,"?");',
+
+        'bar.orientation':
+        'gt_slider_style_set_dir(?,?);'
+    },
+    "switcher":{
+        "switch.colorAct":
+        'gt_switch_style_set_color_act(?,gt_color_hex(?));',
+
+        "switch.colorIna":
+        'gt_switch_style_set_color_ina(?,gt_color_hex(?));',
+
+        "switch.colorPoint":
+        'gt_switch_style_set_color_point(?,gt_color_hex(?));',
     },
     "rect":{
-        "radius":
+        "rect.radius":
         'gt_rect_style_set_radius(?,?);',
 
-        "color.bgcolor":
-        "gt_rect_style_set_bg_color(?,gt_color_hex(?));"
+        "rect.isFill":
+        'gt_rect_style_set_fill(?,?);',
+
+        "rect.border":
+        'gt_rect_style_set_border(?,?);',
+
+        "rect.bgcolor":
+        "gt_rect_style_set_bg_color(?,gt_color_hex(?));",
+
+        "rect.borderColor":
+        "gt_rect_style_set_color_border(?,gt_color_hex(?));"
+    },
+    "textarea":{
+        "textarea.items":
+        'gt_textarea_style_add_str(?,"?",?,gt_color_hex(?));',
+    },
+    "listview":{
+        "listview.max":
+        'gt_listview_style_set_cnt_show(?,?);',
+
+        "listview.items":
+        'gt_listview_style_add_item(?,"?");',
     },
     "screen":{
         "color.bgcolor":
         'gt_screen_set_bgcolor(?,gt_color_hex(?));',
+    },
+
+
+    //////anim
+    "anim":{
+        "pos":
+        'static gt_anim_param_st param;\n' +
+        '\tgt_anim_param_init(&param);\n' +
+        '\tgt_anim_param_set_time(&param, ?, ?);\n' +
+        '\tgt_anim_param_set_dst_point(&param, ?, ?);\n' +
+        '\tgt_anim_param_set_path_type(&param, GT_ANIM_PATH_TYPE_OVERSHOOT);\n' +
+        '\tgt_anim_pos_move(?, &param);\n'
     },
 }

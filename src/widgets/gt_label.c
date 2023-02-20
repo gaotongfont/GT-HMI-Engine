@@ -244,6 +244,11 @@ void gt_label_style_set_font_color(gt_obj_st * label, gt_color_t color)
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+void gt_label_style_set_font_size(gt_obj_st * label, uint8_t size)
+{
+    _gt_style_label_st * style = label->style;
+    style->font_size = size;
+}
 void gt_label_style_set_font_family_cn(gt_obj_st * label, gt_family_t family)
 {
     _gt_style_label_st * style = label->style;

@@ -475,23 +475,26 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         }
 
         if( !gt_symbol_check_by_unicode(unicode) ){
-
+            if (width < dsc->font->size) {
+                gt_memset(mask_buf, 0, dsc->font->size * dsc->font->size);
+            }
             gt_font_get_string_dot(&_font);
 
             // dot to mask_buf
             idx_mask_buf = 0;
             idx_res = 0;
-            while( idx_res < size_fres ){
-                idx_bit = 7;
-                while( idx_bit >= 0 ){
-                    if( (_font.res[idx_res] >> idx_bit)&0x1 ){
-                        mask_buf[idx_mask_buf++] = 0xFF;
-                    }else{
-                        mask_buf[idx_mask_buf++] = 0x00;
+            uint8_t byte_width = (width + 7) >> 3;
+            for (uint16_t font_y = 0, font_x = 0; font_y < dsc->font->size; font_y++) {
+                for (font_x = 0; font_x < byte_width; font_x++) {
+                    idx_bit = 7;
+                    while (idx_bit >= 0) {
+                        mask_buf[idx_mask_buf + (font_x << 3) + (7 - idx_bit)] =  ((_font.res[idx_res] >> idx_bit) & 0x01) ? 0xFF : 0x00;
+                        // mask_buf[idx_mask_buf + (font_x << 3) + (7 - idx_bit)] =  0xFF;
+                        --idx_bit;
                     }
-                    idx_bit--;
+                    ++idx_res;
                 }
-                idx_res++;
+                idx_mask_buf += dsc->font->size;
             }
         }else{
             const uint8_t * temp = gt_symbol_get_mask_buf(_font.utf8 , _font.size);

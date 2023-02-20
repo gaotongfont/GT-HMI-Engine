@@ -922,10 +922,6 @@ void gt_graph_dot_draw_to_color(uint8_t * dot, gt_color_t * color, gt_area_st ar
 	}
 }
 
-
-
-static void draw_bg(const gt_area_st * area, const gt_area_st * clip, gt_attr_rect_st * attr);
-
 /**
  * @brief draw rect func
  *
