@@ -551,6 +551,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             idx_mask_buf = 0;
             idx_res = 0;
             uint8_t byte_width = (width + 7) >> 3;
+            // uint8_t byte_width = dsc->font->size >> 3;
             for (uint16_t font_y = 0, font_x = 0; font_y < dsc->font->size; font_y++) {
                 for (font_x = 0; font_x < byte_width; font_x++) {
                     idx_bit = 7;
@@ -635,10 +636,9 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
 
     uint32_t addr_start_alpha = 0;
     uint32_t offset = 0, len = 0;
-    static uint32_t pre_len = 0, pre_w = 0;
-    static gt_color_t * color_img_line_p = NULL;
-    static uint8_t * mask_buf = NULL;
+    gt_color_t * color_img_line_p = NULL;
     uint16_t w, h, y = 0;
+    uint8_t * mask_buf = NULL;
 
     w = dsc_img.header.w;
     h = dsc_img.header.h;
@@ -670,25 +670,13 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
             uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
 
             len = w * sizeof(gt_color_t);
-            if( pre_len != len ){
-                pre_len = len;
-                if( !color_img_line_p ){
-                    gt_mem_free(color_img_line_p);
-                }
-                color_img_line_p = gt_mem_malloc( len );
-            }
+            color_img_line_p = gt_mem_malloc( len );
             if (!color_img_line_p) { break; }
 
             if (is_mask) {
-                if( pre_w != w ){
-                    pre_w = w;
-                    if( !mask_buf ){
-                        gt_mem_free(mask_buf);
-                    }
-                    mask_buf = gt_mem_malloc(w);
-                }
+                mask_buf = gt_mem_malloc(w);
                 if (!mask_buf) {
-                    // gt_mem_free(color_img_line_p);
+                    gt_mem_free(color_img_line_p);
                     break;
                 }
                 blend_dsc.mask_buf = mask_buf;
@@ -714,10 +702,10 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
                 offset += len;
             }
 
-            // gt_mem_free(color_img_line_p);
-            // if (is_mask) {
-            //     gt_mem_free(mask_buf);
-            // }
+            gt_mem_free(color_img_line_p);
+            if (is_mask) {
+                gt_mem_free(mask_buf);
+            }
             break;
         }
     }
