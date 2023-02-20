@@ -120,6 +120,10 @@ extern "C" {
 #include "src/widgets/gt_qrcode.h"
 #endif
 
+#if GT_CFG_ENABLE_LINE == 1
+#include "src/widgets/gt_line.h"
+#endif
+
 /* other */
 #include "src/others/gt_color.h"
 #include "src/others/gt_log.h"
