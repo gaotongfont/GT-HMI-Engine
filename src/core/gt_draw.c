@@ -489,7 +489,6 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
                     idx_bit = 7;
                     while (idx_bit >= 0) {
                         mask_buf[idx_mask_buf + (font_x << 3) + (7 - idx_bit)] =  ((_font.res[idx_res] >> idx_bit) & 0x01) ? 0xFF : 0x00;
-                        // mask_buf[idx_mask_buf + (font_x << 3) + (7 - idx_bit)] =  0xFF;
                         --idx_bit;
                     }
                     ++idx_res;
