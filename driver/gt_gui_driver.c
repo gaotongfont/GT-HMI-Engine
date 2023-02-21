@@ -1,5 +1,5 @@
 ﻿#include "gt_gui_driver.h"
-#include "string.h"
+#include <string.h>
 const struct gt_font_func_s gt_get_font_func[] = {
 };
 /*------------------------------------------------------------------ Separation -----------------------------------------------------------------*/
@@ -134,9 +134,9 @@ struct gt_font_func_s* GT_Get_Font_Func_S(unsigned int style)
 {
     return NULL;
 }
-
 unsigned char GT_Get_Font_Type(unsigned int style)
 {
     return 0;
 }
+
 /*------------------------------------------------------------------ end of file -----------------------------------------------------------------*/
