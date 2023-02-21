@@ -20,7 +20,6 @@
 #include "../others/gt_effects.h"
 #include "../widgets/gt_obj.h"
 #include "gt_draw.h"
-#include "../extra/draw/gt_draw_blend.h"
 #include "../others/gt_color.h"
 #include "../others/gt_area.h"
 #include "gt_fs.h"
@@ -170,7 +169,7 @@ void gt_draw_line(gt_attr_line_st * line_attr, gt_draw_ctx_t * draw_ctx, gt_draw
 	y2 = line_attr->y_2;
 
 	int dx =  abs(x2-x1), sx = x1<x2 ? 1 : -1;
-	int dy = -abs(y2-y1), sy = y1<y2 ? 1 : -1; 
+	int dy = -abs(y2-y1), sy = y1<y2 ? 1 : -1;
 	int err = dx+dy, e2; /* error value e_xy */
 
 	for(;;){  /* loop */
@@ -181,11 +180,11 @@ void gt_draw_line(gt_attr_line_st * line_attr, gt_draw_ctx_t * draw_ctx, gt_draw
 
 		if (e2 >= dy) { /* e_xy+e_x > 0 */
 			err += dy;
-			x1 += sx; 
-		} 
+			x1 += sx;
+		}
 		if (e2 <= dx) {/* e_xy+e_y < 0 */
 			err += dx;
-			y1 += sy; 
+			y1 += sy;
 		}
         blend_dsc->mask_area->x = x1;
         blend_dsc->mask_area->y = y1;
@@ -279,7 +278,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
 
     /* draw circle or draw a line*/
     if(radius > 0 ){
-        if (radius <= GT_RADIUS_MIN)   //Get the whole circle info 
+        if (radius <= GT_RADIUS_MIN)   //Get the whole circle info
         {
             if( radius != radius_pre ){
                 radius_pre = radius;
@@ -550,8 +549,8 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             // dot to mask_buf
             idx_mask_buf = 0;
             idx_res = 0;
-            uint8_t byte_width = (width + 7) >> 3;
-            // uint8_t byte_width = dsc->font->size >> 3;
+            // uint8_t byte_width = (width + 7) >> 3;
+            uint8_t byte_width = dsc->font->size >> 3;
             for (uint16_t font_y = 0, font_x = 0; font_y < dsc->font->size; font_y++) {
                 for (font_x = 0; font_x < byte_width; font_x++) {
                     idx_bit = 7;

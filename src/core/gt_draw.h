@@ -16,6 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_graph_base.h"
 #include "../font/gt_font.h"
+#include "../extra/draw/gt_draw_blend.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -46,7 +47,7 @@ typedef struct _gt_draw_ctx_t{
 /* global functions / API interface -------------------------------------*/
 /**
  * @brief Draw a circle
- * 
+ *
  * @param draw_ctx callback function
  * @param blend_dsc draw blend dsc structures
  * @param mask_left_up circle left_up data buff
@@ -57,7 +58,7 @@ void gt_draw_arch(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st  *blend_dsc,uin
 
 /**
  * @brief use bresenham algorithm draw a line by circle
- * 
+ *
  * @param line_attr line attribute
  * @param draw_ctx callback function
  * @param blend_dsc draw blend dsc structures

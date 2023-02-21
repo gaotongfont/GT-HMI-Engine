@@ -179,7 +179,7 @@ static uint8_t* _gt_spell_get_text( uint8_t index , uint8_t mode)
         }
         return "";
     }
-    
+
     if(_gt_spell_chinese_numb)
     {
         return _gt_spell_chinese[index-1];
@@ -479,7 +479,7 @@ static void _gt_keypad_spell_event_cb(gt_obj_st * keypad)
             {
                 return ;
             }
-            
+
             tmp_str = _gt_keypad_get_spell_text(style->kv_selected , style->info.mode);
             if(tmp_str)
             {
@@ -560,7 +560,7 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
         return ;
     }
 
-    
+
     if( strcmp(style->kv_selected, GT_SYMBOL_EN) == 0 ||
         strcmp(style->kv_selected, GT_SYMBOL_SPELL) == 0)
     {
@@ -670,7 +670,7 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
         font.utf8 = map_keypad[idx].kv;
         font.len = strlen(map_keypad[idx].kv);
         uint8_t* tmp_str = _gt_keypad_get_spell_text(map_keypad[idx].kv , style->info.mode);
-        if(tmp_str) 
+        if(tmp_str)
         {
             font.utf8 = tmp_str;
             font.len = strlen(tmp_str);
@@ -886,7 +886,7 @@ static void _gt_keypad_update_map(gt_obj_st * keypad, gt_keypad_map_st * map)
 
     _gt_spell_ascii_numb = 0;
     _gt_spell_chinese_numb = 0;
-    
+
     gt_event_send(keypad, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

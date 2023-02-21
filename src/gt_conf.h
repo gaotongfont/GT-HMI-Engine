@@ -131,6 +131,7 @@ extern "C" {
  */
 #define GT_USE_EXAMPLES         01
 
+#define GT_CONFIG_GUI_DRIVER_LIB    0
 
 /* typedef --------------------------------------------------------------*/
 
