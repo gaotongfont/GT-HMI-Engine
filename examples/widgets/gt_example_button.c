@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "../gt_examples.h"
+#include "string.h"
 #include "../../src/core/gt_event.h"
 #include "../../src/widgets/gt_btn.h"
 #include "../../src/widgets/gt_label.h"

@@ -544,13 +544,14 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             if (width < dsc->font->size) {
                 gt_memset(mask_buf, 0, dsc->font->size * dsc->font->size);
             }
-            gt_font_get_string_dot(&_font);
+            uint16_t ret_style = gt_font_get_string_dot(&_font);
 
             // dot to mask_buf
             idx_mask_buf = 0;
             idx_res = 0;
-            // uint8_t byte_width = (width + 7) >> 3;
-            uint8_t byte_width = dsc->font->size >> 3;
+            uint8_t byte_width = \
+                (GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH == GT_Get_Font_Type(ret_style)) ? (dsc->font->size >> 3) : ((width + 7) >> 3);
+
             for (uint16_t font_y = 0, font_x = 0; font_y < dsc->font->size; font_y++) {
                 for (font_x = 0; font_x < byte_width; font_x++) {
                     idx_bit = 7;

@@ -25,10 +25,21 @@ extern "C" {
     #include "../../driver/gt_gui_driver.h"
 #endif /* GT_CONFIG_GUI_DRIVER_LIB */
 
+    /**
+     * @brief GT_Get_Font_Type() return value
+     */
+    typedef enum {
+        GT_FONT_TYPE_FLAG_NONE                          = 0,
+        GT_FONT_TYPE_FLAG_DOT_MATRIX           = 1,
+        GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH = 2,
+        GT_FONT_TYPE_FLAG_VEC                  = 3,
+    }gt_font_type_em;
+
     extern int GT_Get_Font_Width(unsigned long fontcode, unsigned int font_option, unsigned int size , unsigned int gray , unsigned char* pBits);
     extern int GT_Get_Font_Height(unsigned long fontcode, unsigned int font_option, unsigned int size , unsigned int gray);
     extern char GT_Check_Is_Vec(unsigned int font_option);
     extern struct gt_font_func_s* GT_Get_Font_Func_S(unsigned int style);
+    extern unsigned char GT_Get_Font_Type(unsigned int style);
 #endif
 
 /* define ---------------------------------------------------------------*/
@@ -135,8 +146,9 @@ uint8_t gt_utf8_check_char(char * utf8);
  * @brief Get the character data of a string
  *
  * @param font font basic information
+ * @return font type value enum
  */
-void gt_font_get_string_dot(gt_font_st * font);
+uint16_t gt_font_get_string_dot(gt_font_st * font);
 
 /**
  * @brief Count the number of characters in a string based on the utf-8 encoding

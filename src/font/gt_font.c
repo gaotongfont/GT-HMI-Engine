@@ -293,7 +293,7 @@ static int _gt_is_style_cn_or_en(uint32_t unicode)
 /* global functions / API interface -------------------------------------*/
 
 
-void gt_font_get_string_dot(gt_font_st * font)
+uint16_t gt_font_get_string_dot(gt_font_st * font)
 {
     uint32_t idx = 0, unicode, len, font_style = 0, idx_read = 0, temp = 0;
 
@@ -358,6 +358,7 @@ lab_next_word:
         idx_read += temp;
         idx+=len;
     }
+    return font_style;
 }
 
 uint32_t gt_font_count_word(char * utf8, uint32_t len)
