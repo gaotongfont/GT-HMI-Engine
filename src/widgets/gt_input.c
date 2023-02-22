@@ -88,7 +88,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     rect_attr.bg_opa = input->opa;
     rect_attr.is_fill = 0;
     rect_attr.border_width = style->border_width;
-    rect_attr.radius = 4;
+    rect_attr.radius = (0 == style->border_width) ? 0 : 4;
     rect_attr.bg_color = gt_color_black();
     rect_attr.border_color = style->border_color;
 
