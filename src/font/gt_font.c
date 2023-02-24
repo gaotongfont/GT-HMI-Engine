@@ -296,6 +296,7 @@ static int _gt_is_style_cn_or_en(uint32_t unicode)
 uint16_t gt_font_get_string_dot(gt_font_st * font)
 {
     uint32_t idx = 0, unicode, len, font_style = 0, idx_read = 0, temp = 0;
+    uint16_t ret = GT_FONT_TYPE_FLAG_NONE;
 
     // GT_LOGV(GT_LOG_TAG_GUI, "text:%s", font->utf8);
     while(idx < font->len) {
@@ -341,6 +342,7 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
                 idx+=len;
                 continue;
             }
+            ret = font_func->type;
             goto lab_next_word;
         }
 #endif
@@ -352,13 +354,14 @@ default_font:
 #if GT_CFG_USE_FONT_16_ASCII == 1
             temp = 32;
             gt_memcpy(&font->res[idx_read], &ascii_16[ (unicode-0x20)<<5 ], 32);
+            ret = GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH;
 #endif
         }
 lab_next_word:
         idx_read += temp;
         idx+=len;
     }
-    return font_style;
+    return ret;
 }
 
 uint32_t gt_font_count_word(char * utf8, uint32_t len)

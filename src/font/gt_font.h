@@ -20,21 +20,20 @@ extern "C" {
 #include "../widgets/gt_conf_widgets.h"
 #include "../../driver/gt_port_font.h"
 
+/**
+ * @brief GT_Get_Font_Type() return value
+ */
+typedef enum {
+    GT_FONT_TYPE_FLAG_NONE                 = 0,
+    GT_FONT_TYPE_FLAG_DOT_MATRIX           = 1,
+    GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH = 2,
+    GT_FONT_TYPE_FLAG_VEC                  = 3,
+}gt_font_type_em;
+
 #if GT_CFG_ENABLE_ZK_FONT == 1
 #ifdef GT_CONFIG_GUI_DRIVER_LIB
     #include "../../driver/gt_gui_driver.h"
 #endif /* GT_CONFIG_GUI_DRIVER_LIB */
-
-    /**
-     * @brief GT_Get_Font_Type() return value
-     */
-    typedef enum {
-        GT_FONT_TYPE_FLAG_NONE                          = 0,
-        GT_FONT_TYPE_FLAG_DOT_MATRIX           = 1,
-        GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH = 2,
-        GT_FONT_TYPE_FLAG_VEC                  = 3,
-    }gt_font_type_em;
-
     extern int GT_Get_Font_Width(unsigned long fontcode, unsigned int font_option, unsigned int size , unsigned int gray , unsigned char* pBits);
     extern int GT_Get_Font_Height(unsigned long fontcode, unsigned int font_option, unsigned int size , unsigned int gray);
     extern char GT_Check_Is_Vec(unsigned int font_option);
