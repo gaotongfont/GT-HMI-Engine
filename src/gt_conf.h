@@ -109,8 +109,8 @@ extern "C" {
 
 
 /* default font style and size */
-#define GT_CFG_DEFAULT_FONT_FAMILY_CN    1
-#define GT_CFG_DEFAULT_FONT_FAMILY_EN    4
+#define GT_CFG_DEFAULT_FONT_FAMILY_CN    254
+#define GT_CFG_DEFAULT_FONT_FAMILY_EN    255
 #define GT_CFG_DEFAULT_FONT_SIZE        16
 
 /* default event mask bit num */
