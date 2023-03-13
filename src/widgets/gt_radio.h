@@ -63,6 +63,7 @@ void gt_radio_style_set_selected(gt_obj_st * radio);
 void gt_radio_style_set_text(gt_obj_st * radio, char * text);
 
 void gt_radio_style_set_font_color(gt_obj_st * radio, gt_color_t color);
+void gt_radio_style_set_font_size(gt_obj_st * radio, uint8_t size);
 void gt_radio_style_set_font_family_cn(gt_obj_st * radio, gt_family_t family);
 void gt_radio_style_set_font_family_en(gt_obj_st * radio, gt_family_t family);
 

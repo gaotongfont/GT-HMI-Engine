@@ -87,7 +87,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     rect_attr.bg_opa         = radio->opa;
     rect_attr.bg_color       = gt_color_hex(0xA0A0A0);
     rect_attr.radius         = area_base.h>>1;
-    
+
     draw_bg(radio->draw_ctx, &rect_attr, &area_base);
 
     gt_color_t color = gt_color_white();
@@ -275,15 +275,24 @@ void gt_radio_style_set_font_color(gt_obj_st * radio, gt_color_t color)
     style->font_color = color;
     gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
 }
+
+void gt_radio_style_set_font_size(gt_obj_st * radio, uint8_t size)
+{
+    _gt_style_radio_st * style = radio->style;
+    style->font_size = size;
+}
+
 void gt_radio_style_set_font_family_cn(gt_obj_st * radio, gt_family_t family)
 {
     _gt_style_radio_st * style = radio->style;
     style->font_family_cn = family;
 }
+
 void gt_radio_style_set_font_family_en(gt_obj_st * radio, gt_family_t family)
 {
     _gt_style_radio_st * style = radio->style;
     style->font_family_en = family;
 }
+
 
 /* end ------------------------------------------------------------------*/
