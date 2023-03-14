@@ -973,4 +973,9 @@ void gt_keypad_style_set_font_family_en(gt_obj_st * keypad, gt_family_t family)
     style->font_family_en = family;
 }
 
+void gt_keypad_style_set_font_size(gt_obj_st * keypad, uint8_t size)
+{
+    _gt_style_keypad_st * style = keypad->style;
+    style->font_size = size;
+}
 /* end ------------------------------------------------------------------*/

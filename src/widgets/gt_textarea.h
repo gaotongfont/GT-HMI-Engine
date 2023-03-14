@@ -93,6 +93,9 @@ void gt_textarea_style_set_font_family_cn(gt_obj_st * textarea, gt_family_t fami
 void gt_textarea_style_set_font_family_en(gt_obj_st * textarea, gt_family_t family);
 
 void gt_textarea_style_set_font_color(gt_obj_st * textarea, gt_color_t color);
+
+void gt_textarea_style_set_font_size(gt_obj_st * textarea, uint8_t size);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

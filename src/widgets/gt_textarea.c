@@ -98,11 +98,6 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
  *
  * @param obj
  */
-
-
-
-
-
 static void _init_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
 
@@ -282,5 +277,11 @@ void gt_textarea_style_set_font_family_en(gt_obj_st * textarea, gt_family_t fami
 {
     _gt_style_textarea_st * style = textarea->style;
     style->font_family_en = family;
+}
+
+void gt_textarea_style_set_font_size(gt_obj_st * textarea, uint8_t size)
+{
+    _gt_style_textarea_st * style = textarea->style;
+    style->font_size = size;
 }
 /* end ------------------------------------------------------------------*/

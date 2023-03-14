@@ -419,6 +419,12 @@ void gt_input_style_set_font_family_en(gt_obj_st * input, gt_family_t family)
     style->font_family_en = family;
 }
 
+void gt_input_style_set_font_size(gt_obj_st * input, uint8_t size)
+{
+    _gt_style_input_st * style = input->style;
+    style->font_size = size;
+}
+
 void gt_input_style_set_border_width(gt_obj_st * input, gt_size_t width)
 {
     _gt_style_input_st * style = input->style;

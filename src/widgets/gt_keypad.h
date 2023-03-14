@@ -102,6 +102,7 @@ void gt_keypad_style_set_color_ctrl_key(gt_obj_st * keypad, gt_color_t color);
 void gt_keypad_style_set_font_color(gt_obj_st * keypad, gt_color_t color);
 void gt_keypad_style_set_font_family_cn(gt_obj_st * keypad, gt_family_t family);
 void gt_keypad_style_set_font_family_en(gt_obj_st * keypad, gt_family_t family);
+void gt_keypad_style_set_font_size(gt_obj_st * keypad, uint8_t size);
 
 #ifdef __cplusplus
 } /*extern "C"*/

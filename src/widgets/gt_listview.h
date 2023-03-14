@@ -109,6 +109,13 @@ char * gt_listview_style_get_selected_item_text(gt_obj_st * listview);
  */
 void gt_listview_style_set_cnt_show(gt_obj_st * listview, uint8_t cnt_show);
 
+/**
+ * @brief set listview show font size
+ * @param listview
+ * @param size 
+ */
+void gt_listview_style_set_font_size(gt_obj_st * listview, uint8_t size);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
