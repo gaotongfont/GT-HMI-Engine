@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-// #include "../../explorer_stm32f4/HARDWARE/GT_ZK/zk/demo.h"
+#include "./gt_gui_driver.h"
 
 
 /* define ---------------------------------------------------------------*/
