@@ -326,6 +326,7 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
                 idx+=len;
                 continue;
             }
+            ret = font_func->type;
             goto lab_next_word;
         }
         else
