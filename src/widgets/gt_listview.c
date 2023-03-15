@@ -428,4 +428,11 @@ void gt_listview_style_set_font_size(gt_obj_st * listview, uint8_t size)
     _gt_style_listview_st * style = listview->style;
     style->font_size = size;
 }
+
+void gt_listview_style_set_font_color(gt_obj_st * listview, gt_color_t color)
+{
+    _gt_style_listview_st * style = listview->style;
+    style->font_color_act = color;
+}
+
 /* end ------------------------------------------------------------------*/
