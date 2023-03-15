@@ -62,7 +62,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     
     // set default size
     if( radio->area.w == 0 || radio->area.h == 0){
-        radio->area.w = style->font_size+4;
+        radio->area.w = style->font_size+4 + strlen(style->text)*8;
         radio->area.h = style->font_size+4;
 
     }
@@ -74,10 +74,15 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     h = radio->area.h;
 
     gt_area_st area_base = radio->area;
-    area_base.h = radio->area.h - 4;
-    area_base.w = area_base.h;
-    area_base.y += (radio->area.h - area_base.h - 4);
-
+    area_base.w = style->font_size+4;
+    area_base.h = area_base.w;
+    // area_base.y = radio->area.y + ((radio->area.h - area_base.h) >> 1);
+    area_base.x = radio->area.x;
+    // font
+    gt_area_st area_font = radio->area;
+    area_font.x = area_base.x + (area_base.w + 2);
+    area_font.y += 2;
+    //
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.is_fill        = 0;
@@ -110,13 +115,10 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
         .space_x    = 0,
         .space_y    = 0,
         .font_color = style->font_color,
-        .align      = GT_ALIGN_LEFT,
+        .align      = GT_ALIGN_NONE,
         .opa        = radio->opa,
     };
-    gt_area_st area_font = radio->area;
-    area_font.y = radio->area.y - 3;
-    area_font.x = radio->area.x + radio->area.w ;
-    area_font.w = radio->area.w + strlen(font_attr.font->utf8)*font_attr.font->size;
+    
     draw_text(radio->draw_ctx, &font_attr, &area_font);
 }
 

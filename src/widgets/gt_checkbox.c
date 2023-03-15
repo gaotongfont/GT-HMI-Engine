@@ -65,7 +65,7 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
 
     // set default size
     if( checkbox->area.w == 0 || checkbox->area.h == 0){
-        checkbox->area.w = gt_font_get_string_width(&font)+32;
+        checkbox->area.w = style->font_size+4 + strlen(style->text)*8;;
         checkbox->area.h = style->font_size+4;
     }
     sel_width = font.size - 3;
@@ -93,10 +93,12 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     gt_area_st area = checkbox->area;
 
     gt_area_st area_box = area;
-    area_box.w = 14;
-    area_box.h = 14;
-    area_box.y = area.y + (area.h - area_box.h - 3);
-    /* base shape */
+    area_box.w = style->font_size+4;
+    area_box.h = area_box.w;
+    // area_box.y = area.y + ((area.h - area_box.h) >> 1);
+    area_box.x = area.x;
+
+   /* base shape */
     draw_bg(checkbox->draw_ctx, &rect_attr, &area_box);
 
     /* font */
@@ -105,10 +107,11 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
         .space_x        = 0,
         .space_y        = 0,
         .font_color     = gt_color_black(),
-        .align          = GT_ALIGN_LEFT,
+        .align          = GT_ALIGN_NONE,
         .opa            = checkbox->opa,
     };
     area.x += (area_box.w + 2);
+    area.y += 2;
     draw_text(checkbox->draw_ctx, &font_dsc, &area);
 
     if( 0 ){
