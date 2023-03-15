@@ -42,7 +42,7 @@
 /* global functions / API interface -------------------------------------*/
 
 /**
- * @brief create a line, and click it will printf touch count.
+ * @brief create a line.
  */
 void gt_examples_line(void)
 {
