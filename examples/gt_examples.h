@@ -54,6 +54,8 @@ void gt_examples_img(void);
 
 void gt_example_input(void);
 
+void gt_examples_keyboard(void);
+
 void gt_examples_label(void);
 
 void gt_examples_line(void);
