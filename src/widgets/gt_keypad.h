@@ -18,8 +18,8 @@ extern "C" {
 #include "gt_obj_class.h"
 
 /* define ---------------------------------------------------------------*/
-
-
+#define KEYPAD_W    300
+#define KEYPAD_H    170
 
 /* typedef --------------------------------------------------------------*/
 typedef void (* keypad_handler_cb_t)(gt_obj_st * );

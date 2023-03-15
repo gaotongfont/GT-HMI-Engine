@@ -110,7 +110,7 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_keypad_map_st _map_keypad_mode_numb
     "!",5,  "@",4,  "#",4,  "$",4,  "%",4,  "^",4,  "&",4,  "*",4,  "(",4,  ")",5,  _GT_KEYPAD_TAG_NEW_LINE,0,
     "-",5,  "+",4,  "=",4,  "_",4, "{",4,  "}",4, "[",4,  "]",4,  "\\",5,  _GT_KEYPAD_TAG_NEW_LINE,0,
     _GT_KEYPAD_TAG_NUMBER,5,  ";",4,  ":",4,  "\"",4,  "\'",4,  "~",4,  "`",4,  "/ ",4,  " |",5,  _GT_KEYPAD_TAG_NEW_LINE,0,
-    _GT_KEYPAD_TAG_UPPERCASE,6,  ",",6,  ".",6,  "?",6,  "<",6,  ">",6,  GT_SYMBOL_BACKSPACE,6,  _GT_KEYPAD_TAG_NEW_LINE,0,
+    _GT_KEYPAD_TAG_UPPERCASE,8,  ",",6,  ".",6,  "?",6,  "<",6,  ">",6,  GT_SYMBOL_BACKSPACE,8,  _GT_KEYPAD_TAG_NEW_LINE,0,
     GT_SYMBOL_KEYBOARD,7,  GT_SYMBOL_LEFT,6,  GT_SYMBOL_EN,10,  GT_SYMBOL_RIGHT,6,  GT_SYMBOL_OK,6,  GT_SYMBOL_NEW_LINE,7,  NULL,0
 };
 
@@ -822,8 +822,8 @@ static void _gt_keypad_init_style(gt_obj_st * keypad)
     gt_memset(style, 0, sizeof(_gt_style_keypad_st));
     _gt_keypad_update_map(keypad, _map_keypad_mode_lower);
 
-    keypad->area.w = GT_SCREEN_WIDTH;
-    keypad->area.h = GT_SCREEN_HEIGHT>>1;
+    keypad->area.w = GT_SCREEN_WIDTH > KEYPAD_W ? KEYPAD_W : GT_SCREEN_WIDTH;
+    keypad->area.h = GT_SCREEN_HEIGHT > KEYPAD_H ? KEYPAD_H : GT_SCREEN_HEIGHT;
 
     style->font_color      = gt_color_hex(0);
     style->font_family_cn  = GT_CFG_DEFAULT_FONT_FAMILY_CN;
