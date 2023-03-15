@@ -243,7 +243,7 @@ void gt_imgbtn_style_set_src_press(gt_obj_st * imgbtn, char * src){
     strcpy(style->src_press, src);
     style->src_press[strlen(src)] = 0;
 
-    gt_event_send(imgbtn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    gt_event_send(imgbtn, GT_EVENT_TYPE_INPUT_CLICKING, NULL);
 }
 
 void gt_imgbtn_style_set_src_release(gt_obj_st * imgbtn, char * src){
@@ -255,6 +255,7 @@ void gt_imgbtn_style_set_src_release(gt_obj_st * imgbtn, char * src){
     style->src_release = gt_mem_malloc( strlen(src) + 1 );
     strcpy(style->src_release, src);
     style->src_release[strlen(src)] = 0;
+    style->src = style->src_release;
 
     gt_event_send(imgbtn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
