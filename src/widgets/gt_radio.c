@@ -254,8 +254,8 @@ void gt_radio_style_set_selected(gt_obj_st * radio){
         if( obj->parent->child[idx]->class->type == GT_TYPE_RADIO ){
             gt_obj_style_set_state(obj->parent->child[idx], GT_STATE_NONE);
             gt_event_send(obj->parent->child[idx], GT_EVENT_TYPE_DRAW_START, NULL);
-            idx++;
         }
+        idx++;
     }
     gt_obj_style_set_state(obj, GT_STATE_PRESSED);
     gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
