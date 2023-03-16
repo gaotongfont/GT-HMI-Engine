@@ -226,9 +226,11 @@ void gt_imgbtn_style_set_src(gt_obj_st * imgbtn, char * src){
     if( NULL != style->src_base ){
         gt_mem_free(style->src_base);
     }
-    style->src_base = gt_mem_malloc( strlen(src) + 1 );
+    uint16_t len = src == NULL ? 0 : strlen(src);
+
+    style->src_base = gt_mem_malloc( len + 1 );
     strcpy(style->src_base, src);
-    style->src_base[strlen(src)] = 0;
+    style->src_base[len] = 0;
     style->src = style->src_base;
     gt_event_send(imgbtn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
@@ -239,9 +241,11 @@ void gt_imgbtn_style_set_src_press(gt_obj_st * imgbtn, char * src){
     if( NULL != style->src_press ){
         gt_mem_free(style->src_press);
     }
-    style->src_press = gt_mem_malloc( strlen(src) + 1 );
+    uint16_t len = src == NULL ? 0 : strlen(src);
+
+    style->src_press = gt_mem_malloc( len + 1 );
     strcpy(style->src_press, src);
-    style->src_press[strlen(src)] = 0;
+    style->src_press[len] = 0;
 
     gt_event_send(imgbtn, GT_EVENT_TYPE_INPUT_CLICKING, NULL);
 }
@@ -252,9 +256,10 @@ void gt_imgbtn_style_set_src_release(gt_obj_st * imgbtn, char * src){
     if( NULL != style->src_release ){
         gt_mem_free(style->src_release);
     }
-    style->src_release = gt_mem_malloc( strlen(src) + 1 );
+    uint16_t len = src == NULL ? 0 : strlen(src);
+    style->src_release = gt_mem_malloc( len + 1 );
     strcpy(style->src_release, src);
-    style->src_release[strlen(src)] = 0;
+    style->src_release[len] = 0;
     style->src = style->src_release;
 
     gt_event_send(imgbtn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);

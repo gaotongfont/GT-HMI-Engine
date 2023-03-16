@@ -299,7 +299,7 @@ void gt_barcode_style_set_code_text(gt_obj_st * barcode , char* code)
     {
         gt_mem_free(style->barcode);
     }
-    uint16_t size = strlen(code);
+    uint16_t size = code == NULL ? 0 : strlen(code);
     style->barcode = gt_mem_malloc(size+1);
     gt_memcpy(style->barcode, code, size);
     style->barcode[size] = '\0';

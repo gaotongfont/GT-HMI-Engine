@@ -266,9 +266,10 @@ void gt_radio_style_set_text(gt_obj_st * radio, char * text){
     if( style->text ){
         gt_mem_free(style->text);
     }
-    style->text = gt_mem_malloc(strlen(text)+1);
-    gt_memcpy(style->text, text, strlen(text));
-    style->text[strlen(text)] = 0;
+    uint16_t len = text == NULL ? 0 : strlen(text);
+    style->text = gt_mem_malloc(len+1);
+    gt_memcpy(style->text, text, len);
+    style->text[len] = 0;
 }
 
 void gt_radio_style_set_font_color(gt_obj_st * radio, gt_color_t color)

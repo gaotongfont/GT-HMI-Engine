@@ -269,7 +269,7 @@ void gt_btn_style_set_text(gt_obj_st * btn, char * text)
     if( NULL != style->text ){
         gt_mem_free(style->text);
     }
-    uint16_t size = strlen(text);
+    uint16_t size = text == NULL ? 0 : strlen(text);
     style->text = gt_mem_malloc(size+1);
     gt_memcpy(style->text, text, size);
     style->text[size] = 0;

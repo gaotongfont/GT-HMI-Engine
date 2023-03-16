@@ -259,9 +259,10 @@ void gt_checkbox_style_set_text(gt_obj_st * checkbox, char * text){
     if( style->text ){
         gt_mem_free(style->text);
     }
-    style->text = gt_mem_malloc(strlen(text)+1);
-    gt_memcpy(style->text, text, strlen(text));
-    style->text[strlen(text)] = 0;
+    uint16_t len = text == NULL ? 0 : strlen(text);
+    style->text = gt_mem_malloc(len+1);
+    gt_memcpy(style->text, text, len);
+    style->text[len] = 0;
     gt_event_send(checkbox, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 char * gt_checkbox_style_get_text(gt_obj_st * checkbox, char * text){

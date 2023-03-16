@@ -341,7 +341,7 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
 void gt_listview_style_add_item(gt_obj_st * listview, char * item)
 {
     _gt_style_listview_st * style = listview->style;
-    int len_item = strlen(item);
+    int len_item = item == NULL ? 0 : strlen(item);
     if( style->cnt == 0 ){
         style->item = gt_mem_malloc(sizeof(char *));
 

@@ -301,7 +301,7 @@ void gt_input_style_set_value(gt_obj_st * input, char * value)
     if( style->placeholder ){
         gt_mem_free(style->value);
     }
-    uint16_t len = strlen(value);
+    uint16_t len = value == NULL ? 0 : strlen(value);
     style->value = gt_mem_malloc( len + 1 );
     gt_memcpy(style->value, value, len);
     style->value[len] = 0;
@@ -325,7 +325,7 @@ char * gt_input_style_get_value(gt_obj_st * input)
 void gt_input_style_append_value(gt_obj_st * input, char * value)
 {
     _gt_style_input_st * style = input->style;
-    uint16_t len = strlen(value);
+    uint16_t len = value == NULL ? 0 : strlen(value);
     if( !style->value ){
         style->value = gt_mem_malloc(len+1);
         gt_memcpy(style->value, value, len);
@@ -333,7 +333,7 @@ void gt_input_style_append_value(gt_obj_st * input, char * value)
         style->pos_cursor = len;
     }else{
         style->value = gt_txt_ins(style->value, style->pos_cursor, value);
-        style->pos_cursor += strlen(value);
+        style->pos_cursor += value == NULL ? 0 : strlen(value);
     }
 
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);

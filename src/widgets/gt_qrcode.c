@@ -276,7 +276,7 @@ void gt_qrcode_style_set_str(gt_obj_st * qr_code , char* str)
     {
         gt_mem_free(style->str);
     }
-    uint16_t size = strlen(str);
+    uint16_t size = str == NULL ? 0 : strlen(str);
     style->str = gt_mem_malloc(size + 1);
     gt_memcpy(style->str, str, size);
     style->str[size] = '\0';
