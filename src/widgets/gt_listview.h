@@ -123,6 +123,12 @@ void gt_listview_style_set_font_size(gt_obj_st * listview, uint8_t size);
  * @param color
  */
 void gt_listview_style_set_font_color(gt_obj_st * listview, gt_color_t color);
+
+
+void gt_listview_style_set_font_family_en(gt_obj_st * listview, gt_family_t family);
+void gt_listview_style_set_font_family_cn(gt_obj_st * listview, gt_family_t family);
+
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
