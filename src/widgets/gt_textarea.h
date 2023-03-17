@@ -37,6 +37,7 @@ typedef struct _gt_style_textarea_s{
     uint8_t space_x;
     uint8_t space_y;
 
+    gt_color_t color_background;
     gt_family_t font_family_cn;
     gt_family_t font_family_en;
     uint8_t     font_size;
@@ -58,6 +59,14 @@ typedef struct _gt_style_textarea_s{
 gt_obj_st * gt_textarea_create(gt_obj_st * parent);
 
 /**
+ * @brief set string to textarea widget
+ *
+ * @param textarea obj pointer
+ * @param text set text content
+ */
+void gt_textarea_style_set_text(gt_obj_st * textarea, char * text);
+
+/**
  * @brief add string to textarea widget with style
  *
  * @param textarea obj pointer
@@ -77,6 +86,30 @@ void gt_textarea_style_add_str(gt_obj_st * textarea, char * str, gt_font_style_e
 void gt_textarea_style_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t space_y);
 
 /**
+ * @brief set textarea fonts size
+ *
+ * @param textarea obj pointer
+ * @param size  font size
+ */
+void gt_textarea_style_set_font_size(gt_obj_st * textarea, uint8_t size);
+
+/**
+ * @brief set textarea font color
+ *
+ * @param textarea obj pointer
+ * @param color  font color
+ */
+void gt_textarea_style_set_font_color(gt_obj_st * textarea, gt_color_t color);
+
+/**
+ * @brief set textarea background color
+ *
+ * @param textarea obj pointer
+ * @param color  font color
+ */
+void gt_textarea_style_set_bg_color(gt_obj_st * textarea, gt_color_t color);
+
+/**
  * @brief set textarea chinese font style
  *
  * @param textarea obj pointer
@@ -92,9 +125,6 @@ void gt_textarea_style_set_font_family_cn(gt_obj_st * textarea, gt_family_t fami
  */
 void gt_textarea_style_set_font_family_en(gt_obj_st * textarea, gt_family_t family);
 
-void gt_textarea_style_set_font_color(gt_obj_st * textarea, gt_color_t color);
-
-void gt_textarea_style_set_font_size(gt_obj_st * textarea, uint8_t size);
 
 #ifdef __cplusplus
 } /*extern "C"*/
