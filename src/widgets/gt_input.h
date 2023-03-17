@@ -35,6 +35,7 @@ typedef struct _gt_style_input_s
     gt_size_t border_width;
     gt_color_t border_color;
 
+		gt_color_t bg_color;
     gt_color_t font_color;
     uint8_t font_size;
     gt_family_t font_family_cn;
@@ -116,6 +117,7 @@ void gt_input_style_set_font_family_cn(gt_obj_st * input, gt_family_t family);
 void gt_input_style_set_font_family_en(gt_obj_st * input, gt_family_t family);
 void gt_input_style_set_font_size(gt_obj_st * input, uint8_t size);
 
+void gt_input_style_set_bg_color(gt_obj_st * input, gt_color_t color);
 void gt_input_style_set_border_width(gt_obj_st * input, gt_size_t width);
 void gt_input_style_set_border_color(gt_obj_st * input, gt_color_t color);
 
