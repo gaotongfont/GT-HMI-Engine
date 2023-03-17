@@ -86,10 +86,10 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.bg_opa = input->opa;
-    rect_attr.is_fill = 0;
+    rect_attr.is_fill = 1;
     rect_attr.border_width = style->border_width;
     rect_attr.radius = (0 == style->border_width) ? 0 : 4;
-    rect_attr.bg_color = gt_color_black();
+    rect_attr.bg_color = style->bg_color;
     rect_attr.border_color = style->border_color;
 
     /* draw base shape */
@@ -269,6 +269,7 @@ static void _gt_input_init_style(gt_obj_st * input)
     style->font_color     = gt_color_black();
     style->border_width   = 2;
     style->border_color   = gt_color_black();
+	style->bg_color 			= gt_color_hex(0xffffff);
 }
 
 
@@ -397,6 +398,13 @@ void gt_input_style_move_right_pos_cursor(gt_obj_st * input)
         style->pos_cursor += d_pos;
         // style->pos_cursor++;
     }
+    gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_input_style_set_bg_color(gt_obj_st * input, gt_color_t color)
+{
+	_gt_style_input_st * style = input->style;
+    style->bg_color = color;
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
