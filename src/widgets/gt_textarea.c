@@ -70,8 +70,8 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.radius = 4;
     rect_attr.border_width = 2;
-    rect_attr.is_fill = 0;
-    rect_attr.bg_color = gt_color_hex(0x888888);
+    rect_attr.is_fill = 1;
+    rect_attr.bg_color = style->color_background;
     rect_attr.border_color = gt_color_hex(0x888888);
     rect_attr.bg_opa = textarea->opa;
 
@@ -207,7 +207,7 @@ static void _gt_textarea_init_style(gt_obj_st * textarea)
     style->font_family_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
     style->font_family_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
-    style->color_background = gt_color_hex(0x888888);
+    style->color_background = gt_color_white();
 }
 
 /* global functions / API interface -------------------------------------*/
