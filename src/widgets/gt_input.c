@@ -269,7 +269,7 @@ static void _gt_input_init_style(gt_obj_st * input)
     style->font_color     = gt_color_black();
     style->border_width   = 2;
     style->border_color   = gt_color_black();
-	style->bg_color 			= gt_color_hex(0xffffff);
+	style->bg_color 	  = gt_color_hex(0xffffff);
 }
 
 
