@@ -16,6 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
+#include "../core/gt_style.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -29,6 +30,7 @@ typedef struct _gt_style_progress_bar_s
     gt_size_t start;
     gt_size_t end;
     gt_size_t pos;
+    gt_bar_dir_et dir;
 }_gt_style_progress_bar_st;
 
 
@@ -100,6 +102,8 @@ gt_size_t gt_progress_bar_style_get_total(gt_obj_st * progress_bar);
 void gt_progress_bar_style_set_color_act(gt_obj_st * progress_bar, gt_color_t color);
 void gt_progress_bar_style_set_color_ina(gt_obj_st * progress_bar, gt_color_t color);
 
+void gt_progress_bar_style_set_dir(gt_obj_st * progress_bar, gt_bar_dir_et dir);
+gt_bar_dir_et gt_progress_bar_style_get_dir(gt_obj_st * progress_bar);
 
 #ifdef __cplusplus
 } /*extern "C"*/

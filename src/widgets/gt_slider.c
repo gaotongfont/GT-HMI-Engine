@@ -87,7 +87,6 @@ static inline void _gt_slider_init_widget(gt_obj_st * slider) {
 
     /* 2 val shape */
     // rect val
-
     gt_area_st area_val = area_base;
     if( style->dir == GT_BAR_DIR_HOR_L2R ){
         dist = ((float)style->pos/(float)all_pos) * (float)w;
@@ -123,8 +122,6 @@ static inline void _gt_slider_init_widget(gt_obj_st * slider) {
     }else if( style->dir == GT_BAR_DIR_VER_D2U || style->dir == GT_BAR_DIR_VER_U2D ){
         dist_min = (w>>1);
     }
-
-
 
     if( dist > dist_min ){
         draw_bg(slider->draw_ctx, &rect_attr, &area_val);
@@ -425,10 +422,11 @@ void gt_slider_style_set_dir(gt_obj_st * slider, gt_bar_dir_et dir)
     style->dir = dir;
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
+
 gt_bar_dir_et gt_slider_style_get_dir(gt_obj_st * slider)
 {
     _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
-    return ( style->dir);
+    return style->dir;
 }
 
 void gt_slider_style_set_step(gt_obj_st * slider, uint8_t step)

@@ -191,7 +191,7 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
         }
 
         draw_bg(listview->draw_ctx, &rect_attr, &area_item);
-        
+
         area_font = area_item;
         font.utf8 = style->item[idx_start];
         font.len = strlen(style->item[idx_start]);
