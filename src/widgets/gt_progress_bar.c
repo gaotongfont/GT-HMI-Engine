@@ -73,11 +73,9 @@ static inline void _gt_progress_bar_init_widget(gt_obj_st * progress_bar) {
 
     gt_area_st area_base = progress_bar->area;
     if( style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L ){
-        area_base.h -= h>>1;
         area_base.y += (h>>1)>>1;
         rect_attr.radius = area_base.h>>1;
     }else if( style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U ){
-        area_base.w -= w>>1;
         area_base.x += (w>>1)>>1;
         rect_attr.radius = area_base.w>>1;
     }
