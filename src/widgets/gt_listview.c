@@ -74,6 +74,11 @@ static void _gt_listview_style_update_by_scroll_y(gt_obj_st * obj, gt_size_t y_s
 {
     _gt_style_listview_st * style = obj->style;
 
+    if(style->cnt < style->cnt_show)
+    {
+        return;
+    }
+
     int idx_start   = style->idx_show_start;
     int cnt_show    = style->cnt_show;
     int h_item      = (obj->area.h/cnt_show);
@@ -171,7 +176,9 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
     if( idx_end > (idx_start + style->cnt) ){
         idx_end = idx_start + style->cnt;
     }
-    
+    // 外框
+    draw_bg(listview->draw_ctx, &rect_attr, &listview->area);
+    // item
     while( idx_start < idx_end ){
         if( idx_start == style->idx_selected ){
             rect_attr.border_color  = style->border_color;
