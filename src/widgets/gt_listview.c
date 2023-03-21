@@ -196,6 +196,7 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
         font.utf8 = style->item[idx_start];
         font.len = strlen(style->item[idx_start]);
         width_font = gt_font_get_string_width(&font);
+        font_attr.font_color = color_font;
         draw_text(listview->draw_ctx, &font_attr, &area_font);
         area_item.y += area_item.h;
         idx_start++;
@@ -429,7 +430,7 @@ void gt_listview_style_set_font_size(gt_obj_st * listview, uint8_t size)
 void gt_listview_style_set_font_color(gt_obj_st * listview, gt_color_t color)
 {
     _gt_style_listview_st * style = listview->style;
-    style->font_color_act = color;
+    style->font_color_ina = color;
 }
 
 void gt_listview_style_set_font_family_en(gt_obj_st * listview, gt_family_t family)
