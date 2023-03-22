@@ -458,10 +458,10 @@ static void _gt_graph_arc_0_45(
 				div = diff_y / diff_x;
 				div = div ? div : 1;
 
-				--tmp.x;
 				if (tmp.x != coord.x) {
 					_gt_graph_fill_line(buf, circle_attr, tmp, w, h, true);
 				}
+				--tmp.x;
 
 				for (x = 0; x < diff_x; x++) {
 					for (y = 1; y < div; y++) {
