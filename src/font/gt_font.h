@@ -85,6 +85,7 @@ typedef struct _gt_font_s
     uint16_t len;       ///< set: utf8 arr len
     uint8_t size;       ///< set: font size
     uint8_t gray;     ///< set: font gray
+    uint8_t encoding; ///< set: font encoding
 }gt_font_st;
 
 /**
@@ -115,6 +116,17 @@ typedef struct _gt_attr_font_s {
 }gt_attr_font_st;
 
 
+typedef enum _gt_encoding_s {
+
+    GT_ENCODING_UTF8 = 0,
+    GT_ENCODING_GB ,
+}gt_encoding_st;
+
+typedef enum _gt_encoding_convert_s {
+
+    UTF8_2_GB = 0,
+    GB_2_UTF8 ,
+}gt_encoding_convert_st;
 /* macros ---------------------------------------------------------------*/
 
 
@@ -150,15 +162,6 @@ uint8_t gt_utf8_check_char(char * utf8);
 uint16_t gt_font_get_string_dot(gt_font_st * font);
 
 /**
- * @brief Count the number of characters in a string based on the utf-8 encoding
- *
- * @param utf8 utf8 encoding array
- * @param len The size of the utf-8 encoding array in bytes
- * @return uint32_t The number of characters
- */
-uint32_t gt_font_count_word(char * utf8, uint32_t len);
-
-/**
  * @brief get string all width
  *
  * @param font string msg
@@ -184,6 +187,13 @@ uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font);
  */
 uint8_t gt_font_get_next_word_width(gt_font_st * font, uint8_t is_head);
 
+
+void gt_project_encoding_set(gt_encoding_st charset);
+gt_encoding_st gt_project_encoding_get(void);
+uint8_t gt_font_one_char_code_len_get(uint8_t * utf8,uint32_t *res , uint8_t encoding);
+uint8_t gt_encoding_table_one_char(uint8_t *src ,uint8_t* dst , gt_encoding_convert_st tab );
+uint8_t _gt_gb_font_one_char_code_len_get(uint8_t * utf8,uint32_t *res);
+uint8_t gt_gb_check_char(const uint8_t *dst , uint16_t pos , uint32_t* fontcode);
 
 #ifdef __cplusplus
 } /*extern "C"*/

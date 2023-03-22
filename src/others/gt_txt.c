@@ -57,12 +57,20 @@ static char gt_txt_string_del(char * str , uint32_t del_txt_pos)
 
 uint8_t gt_txt_check_char_numb(char * dst , int32_t* pos )
 {
-    uint32_t len = 0 , len_str = *pos ;
+    uint32_t len = 0 , pos_s = *pos ;
     int32_t *idx = pos;
-    
     while ((*idx) >= 0)
     {
-        len = gt_utf8_check_char( &dst[*idx]);
+        if(GT_ENCODING_UTF8 == gt_project_encoding_get())
+        {
+            len = gt_utf8_check_char( &dst[*idx]);
+        }
+        else if(GT_ENCODING_GB == gt_project_encoding_get())
+        {
+            len = gt_gb_check_char(dst , *pos , NULL);
+            *pos -= (len-1);
+            return len;
+        }
 
         if(!len)
         {

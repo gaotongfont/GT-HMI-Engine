@@ -97,6 +97,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
 
     /* draw font */
     gt_font_st font;
+    font.encoding = gt_project_encoding_get();
     gt_color_t color_font;
     if( !style->value ){
         font.style_cn = style->font_family_cn;
@@ -338,6 +339,38 @@ void gt_input_style_append_value(gt_obj_st * input, char * value)
     }
 
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_input_style_append_value_encoding(gt_obj_st * input, char * value , uint8_t encoding)
+{
+    if(encoding == gt_project_encoding_get())
+    {
+        gt_input_style_append_value(input , value);
+        return ;
+    }
+
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    _gt_style_input_st * style = input->style;
+    uint16_t len = value == NULL ? 0 : strlen(value);
+    uint16_t idx = 0;
+    char *tmp_str = gt_mem_malloc(len + 1);
+
+    while(idx < len)
+    {   
+        gt_memset_0(tmp_str, len+1);
+        if(encoding == GT_ENCODING_UTF8){
+            idx += gt_encoding_table_one_char(&value[idx] , tmp_str , UTF8_2_GB);
+        }
+        else if(encoding = GT_ENCODING_GB){
+            idx += gt_encoding_table_one_char(&value[idx] , tmp_str , GB_2_UTF8);
+        }
+        tmp_str[strlen(tmp_str)] = '\0';
+        gt_input_style_append_value(input , tmp_str);
+    }
+
+    gt_mem_free(tmp_str);
+    tmp_str = NULL;
+#endif
 }
 
 void gt_input_style_del_value(gt_obj_st * input)

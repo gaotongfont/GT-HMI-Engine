@@ -155,6 +155,7 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
         .res        = fp,
         .size       = style->font_size,
     };
+    font.encoding = gt_project_encoding_get();
 
     gt_attr_font_st font_attr = {
         .font       = &font,

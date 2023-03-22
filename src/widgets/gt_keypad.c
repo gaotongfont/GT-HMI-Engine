@@ -483,7 +483,14 @@ static void _gt_keypad_spell_event_cb(gt_obj_st * keypad)
             tmp_str = _gt_keypad_get_spell_text(style->kv_selected , style->info.mode);
             if(tmp_str)
             {
-                gt_input_style_append_value(style->target, tmp_str);
+                if(GT_ENCODING_UTF8 == gt_project_encoding_get())
+                {
+                    gt_input_style_append_value(style->target, tmp_str);
+                }
+                else
+                {
+                    gt_input_style_append_value_encoding(style->target, tmp_str , GT_ENCODING_UTF8);
+                }
 
 #if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
                 int tmp_index = _gt_get_spell_index(style->kv_selected , style->info.mode);
@@ -497,7 +504,7 @@ static void _gt_keypad_spell_event_cb(gt_obj_st * keypad)
                 goto  SPELL_CODE_CONV;
 #endif
             }
-
+            GT_LOGD(GT_LOG_TAG_GUI , "ascii_numb = %d , chinese_numb = %d" , _gt_spell_ascii_numb, _gt_spell_chinese_numb );
 #if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
             // 拼音输入法
             if(_gt_spell_ascii_numb >= _GT_SPELL_ASCII_MAX_NUMB - 1)
@@ -523,9 +530,11 @@ SPELL_CODE_CONV:
             gt_memset_0(_gt_spell_chinese , _GT_SPELL_CHINESE_MAX_NUMB * _GT_SPELL_CHINESE_MAX_NUMB);
             for(i = 0 ; i < _gt_spell_chinese_numb ; i++)
             {
+
                 unicode = GBKToUnicode((((uint32_t)_gt_spell_info->content->chinese[2*i]) << 8) |_gt_spell_info->content->chinese[2*i+1]);
                 len = gt_unicode_to_utf8(_gt_spell_chinese[i] , unicode);
                 _gt_spell_chinese[i][len]='\0';
+
             }
             gt_event_send(keypad, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
 #endif
@@ -604,7 +613,7 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
         .style_en   = style->font_family_en,
         .size       = style->font_size,
     };
-
+    font.encoding = GT_ENCODING_UTF8;
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.is_fill      = 1;

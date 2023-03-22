@@ -68,6 +68,7 @@ static inline void _gt_label_init_widget(gt_obj_st * label) {
         .len        = strlen(style->text),
         .size       = style->font_size,
     };
+    font.encoding = gt_project_encoding_get();
 
     /*draw font*/
     gt_attr_font_st font_attr = {

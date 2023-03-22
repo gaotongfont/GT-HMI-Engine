@@ -63,6 +63,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
         .len        = strlen(style->text),
         .size       = style->font_size,
     };
+    font.encoding = gt_project_encoding_get();
     uint8_t width_font = gt_font_get_string_width(&font);
     // set default size
     if( btn->area.w == 0 || btn->area.h == 0){
@@ -160,7 +161,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
-            if( gt_obj_check_scr(obj) ){
+            if( gt_obj_check_scr(obj) && obj->opa > GT_OPA_MIN){
                 _gt_disp_refr_append_area(&obj->area);
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);

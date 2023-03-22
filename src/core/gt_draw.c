@@ -501,6 +501,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         .size       = dsc->font->size,
         .style_cn   = dsc->font->style_cn,
         .style_en   = dsc->font->style_en,
+        .encoding   = dsc->font->encoding,
     };
 
 
@@ -562,13 +563,12 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         gt_memset(_font.res, 0, size_fres);
 
         _font.utf8 = (char * )&text[idx];
-        _font.len = _gt_utf8_to_unicode(&text[idx], &unicode);
-
+        // _font.len = _gt_utf8_to_unicode(&text[idx], &unicode);
+        _font.len = gt_font_one_char_code_len_get(&text[idx], &unicode , _font.encoding);
         if( _font.utf8[0] == '\n' ){
             idx += _font.len;
             goto _lab_next_line;
         }
-
 
         width = gt_font_get_one_word_width(unicode, dsc->font);
 

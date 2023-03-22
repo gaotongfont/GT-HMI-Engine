@@ -59,6 +59,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
         .len        = strlen(style->text),
         .size       = style->font_size,
     };
+    font.encoding = gt_project_encoding_get();
     
     // set default size
     if( radio->area.w == 0 || radio->area.h == 0){

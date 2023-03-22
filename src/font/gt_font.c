@@ -42,7 +42,7 @@ uint8_t latin_16x16_width[] = {
 
 
 /* macros ---------------------------------------------------------------*/
-
+static gt_encoding_st _gt_project_encoding = GT_ENCODING_UTF8;
 
 
 /* static functions -----------------------------------------------------*/
@@ -131,6 +131,38 @@ static uint8_t _gt_font_latin_get_width(uint32_t unicode, uint8_t font_size)
     return width;
 
 }
+
+uint8_t _gt_gb_font_one_char_code_len_get(uint8_t * utf8,uint32_t *res)
+{
+    if(NULL == utf8 ) return 0;
+
+    int len = strlen(utf8);
+
+    if(len >= 1 && utf8[0] <= 0x7F){
+        if(res){
+            *res = utf8[0];
+        }
+        return 1;
+    }
+    else if( len >=4 && \
+    (((utf8[0] << 8 | utf8[1]) == 0x8139) || ((utf8[0] << 8 | utf8[1]) >= 0x8230 && (utf8[0] << 8 | utf8[1]) <= 0x8235))
+    )
+    {
+        if(res){
+            *res = utf8[0] << 24 | utf8[1] << 16 | utf8[2] << 8 | utf8[3] << 0;
+        }
+        return 4;
+    }
+    else if(len >= 2){
+        if(res){
+            *res = utf8[0] << 8 | utf8[1] << 0;
+        }
+        return 2;
+    }
+    
+    return len;
+}
+
 /**
  * @brief unicode encoding convert to utf-8 encoding
  *
@@ -189,6 +221,7 @@ uint8_t gt_unicode_to_utf8(uint8_t* utf8 , uint32_t unicode)
     return 0;
 }
 
+
 uint8_t _gt_utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 {
 	if (utf8[0] < 0x80) {
@@ -205,6 +238,53 @@ uint8_t _gt_utf8_to_unicode(uint8_t * utf8,uint32_t *res)
 		return 4;
 	}
 	return 0;
+}
+
+
+uint8_t gt_font_one_char_code_len_get(uint8_t * utf8,uint32_t *res , uint8_t encoding)
+{
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    GT_Set_Chinese_Charset_Type(encoding);
+#endif
+    if(GT_ENCODING_UTF8 == encoding)
+    {
+        return _gt_utf8_to_unicode(utf8 , res);
+    }
+    else if(GT_ENCODING_GB == encoding)
+    {  
+        return _gt_gb_font_one_char_code_len_get(utf8 , res);
+    }
+    
+    return 0;
+}
+
+uint8_t gt_encoding_table_one_char(uint8_t *src ,uint8_t* dst , gt_encoding_convert_st tab )
+{
+    uint32_t fontcode , len = 0;
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    if(UTF8_2_GB == tab)
+    {
+        // utf8_to_unicode
+        len = _gt_utf8_to_unicode(src , &fontcode);
+        // unicode to gb
+        fontcode = UnicodeToGBK(fontcode);
+        int tmp_len = _gt_gb_font_one_char_code_len_get((uint8_t*)src , NULL);
+        int tmp_i = 0;
+        for(tmp_i = 0; tmp_i < tmp_len; tmp_i++)
+        {
+            dst[tmp_len -1 - tmp_i] = fontcode >> (tmp_i*8);
+        }
+    }
+    else if(GB_2_UTF8 == tab)
+    {   
+        len = _gt_gb_font_one_char_code_len_get(src , &fontcode);
+        // gb to unicode
+        fontcode =  GBKToUnicode(fontcode);
+        // unicode to utf8
+        gt_unicode_to_utf8(dst , fontcode);
+    }
+#endif
+    return len;
 }
 
 
@@ -238,14 +318,48 @@ uint8_t gt_utf8_check_char(char * utf8)
     return 0;
 }
 
+uint8_t gt_gb_check_char(const uint8_t *dst , uint16_t pos , uint32_t* fontcode)
+{
+
+    if(NULL == dst) return 0;
+    uint16_t pos_s = 0 ,len = 0 , idx = 0 , str_len = 0;
+
+    str_len = strlen(dst);    
+    while (idx < str_len)
+    {
+        len = _gt_gb_font_one_char_code_len_get(&dst[idx], fontcode);
+
+        if(idx == pos)
+        {
+            return len;
+        }
+        if(pos >= pos_s && pos < idx+len)
+        {
+            return len;
+        }
+        pos_s = idx;
+        idx+=len;
+    }
+
+    return 0;
+}
+
 /**
  * @brief 判断编码是外文（style_en）还是中日韩(style_cn)
  *
  * @param unicode unicode编码
  * @return int 0 - style_cn  else-style_en
  */
-static int _gt_is_style_cn_or_en(uint32_t unicode)
+static int _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding)
 {
+    if(GT_ENCODING_GB == encoding)
+    {
+        if(unicode <= 0x7F)
+        {
+            return 1;
+        }
+        return 0;
+    }
     // ascii
     if(unicode >= 0x20 && unicode <= 0x7F)
     {
@@ -300,12 +414,13 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
 
     // GT_LOGV(GT_LOG_TAG_GUI, "text:%s", font->utf8);
     while(idx < font->len) {
-        len = _gt_utf8_to_unicode(&font->utf8[idx], &unicode);
+        // len = _gt_utf8_to_unicode(&font->utf8[idx], &unicode);
+        len = gt_font_one_char_code_len_get(&font->utf8[idx], &unicode , font->encoding);
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
         struct gt_font_func_s* font_func;
 
-        font_style = _gt_is_style_cn_or_en(unicode) ? font->style_en : font->style_cn;
+        font_style = _gt_is_style_cn_or_en(unicode , font->encoding) ? font->style_en : font->style_cn;
 
         font_func = GT_Get_Font_Func_S(font_style);
         if(!font_func)
@@ -349,7 +464,7 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
 #endif
 
 default_font:
-        font_style = _gt_is_style_cn_or_en(unicode);
+        font_style = _gt_is_style_cn_or_en(unicode , font->encoding);
         if(1 == font_style)
         {
 #if GT_CFG_USE_FONT_16_ASCII == 1
@@ -365,23 +480,14 @@ lab_next_word:
     return ret;
 }
 
-uint32_t gt_font_count_word(char * utf8, uint32_t len)
-{
-    uint32_t idx = 0, cnt = 0, unicode;
-    while(idx < len){
-        idx += _gt_utf8_to_unicode((uint8_t *)&utf8[idx], &unicode);
-        cnt++;
-    }
-    return cnt;
-}
 
 uint32_t gt_font_get_string_width(gt_font_st * font)
 {
-	uint32_t idx = 0, unicode, width = 0, temp;
+	uint32_t idx = 0, unicode, width = 0;
 
     while( idx < font->len ){
-        temp = _gt_utf8_to_unicode(&font->utf8[idx], &unicode);
-        idx += temp;
+        //  idx += _gt_utf8_to_unicode(&font->utf8[idx], &unicode);
+        idx += gt_font_one_char_code_len_get(&font->utf8[idx], &unicode, font->encoding);
         width += gt_font_get_one_word_width(unicode , font);
     }
     return width;
@@ -393,7 +499,7 @@ uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
 
-    int width = GT_Get_Font_Width(unicode , _gt_is_style_cn_or_en(unicode) ? font->style_en : font->style_cn ,
+    int width = GT_Get_Font_Width(unicode , _gt_is_style_cn_or_en(unicode , font->encoding) ? font->style_en : font->style_cn ,
                                     font->size , font->gray , font->res);
     if(!width){
         if(_gt_font_latin_check(unicode)) {
@@ -420,7 +526,8 @@ uint8_t gt_font_get_next_word_width(gt_font_st * font, uint8_t is_head){
         idx = 0;
     }
     while( i <= idx ){
-        idx_utf8 += _gt_utf8_to_unicode((uint8_t *)&font->utf8[idx_utf8], &unicode);
+        // idx_utf8 += _gt_utf8_to_unicode((uint8_t *)&font->utf8[idx_utf8], &unicode);
+        idx_utf8 += gt_font_one_char_code_len_get((uint8_t *)&font->utf8[idx_utf8], &unicode, font->encoding);
         i++;
     }
     idx++;
@@ -433,8 +540,15 @@ void gt_dot_to_mask_buf(uint8_t * dot, uint8_t * mask_buf, uint16_t w, uint16_t 
 }
 
 
+void gt_project_encoding_set(gt_encoding_st charset)
+{
+    _gt_project_encoding = charset;
+}
 
-
+gt_encoding_st gt_project_encoding_get(void)
+{
+    return _gt_project_encoding;
+}
 
 
 

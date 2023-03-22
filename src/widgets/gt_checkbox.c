@@ -62,6 +62,7 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
         .len = strlen(style->text),
         .size = style->font_size,
     };
+    font.encoding = gt_project_encoding_get();
 
     // set default size
     if( checkbox->area.w == 0 || checkbox->area.h == 0){
