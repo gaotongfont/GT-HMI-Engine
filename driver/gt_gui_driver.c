@@ -1,5 +1,30 @@
 ﻿#include "gt_gui_driver.h"
 #include <string.h>
+
+typedef enum _gt_font_charset_s {
+    GT_CHARSET_UTF8 = 0,
+    GT_CHARSET_GB ,
+}gt_font_charset_st;
+static gt_font_charset_st gt_font_chinese_encoding = GT_CHARSET_UTF8;
+void GT_Set_Chinese_Charset_Type(unsigned char charset)
+{
+    gt_font_chinese_encoding = charset;
+}
+unsigned char GT_Get_Chinese_Charset_Type(void)
+{
+    return gt_font_chinese_encoding;
+}
+
+unsigned int GBKToUnicode(unsigned int fontcode)
+{
+    return 0;
+}
+unsigned int UnicodeToGBK(unsigned int fontcode)
+{
+    return 0;
+}
+
+
 const struct gt_font_func_s gt_get_font_func[] = {
 };
 /*------------------------------------------------------------------ Separation -----------------------------------------------------------------*/

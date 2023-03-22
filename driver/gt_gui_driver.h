@@ -342,6 +342,8 @@ char GT_Check_Is_Vec(unsigned int font_option);
  */
 struct gt_font_func_s* GT_Get_Font_Func_S(unsigned int style);
 unsigned char GT_Get_Font_Type(unsigned int style);
+unsigned char GT_Get_Chinese_Charset_Type(void);
+void GT_Set_Chinese_Charset_Type(unsigned char charset);
 
 #ifdef __cplusplus
 } /*extern "C"*/
