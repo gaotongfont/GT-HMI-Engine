@@ -234,11 +234,10 @@ void gt_textarea_style_set_text(gt_obj_st * textarea, char * text)
         len = strlen(text);
     }
     style->contents  = gt_mem_malloc( sizeof(_gt_txt_st) );
-    style->contents[0].len  = len + 1;
+    style->contents[0].len  = len;
     style->contents[0].text = gt_mem_malloc(style->contents[0].len);
     gt_memcpy(style->contents[0].text, text, len);
-    style->contents[0].text[len] = 0;
-    style->contents[style->cnt_contents].mask_style = style_mask;
+    style->contents[0].mask_style = style_mask;
     style->contents[0].color = color;
     style->cnt_contents = 1;
 
