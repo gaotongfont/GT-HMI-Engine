@@ -127,6 +127,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
 
     gt_area_st area_font = input->area;
     area_font.x += style->border_width + 2;
+    area_font.y += style->border_width + 2;
     gt_area_st area_res = draw_text(input->draw_ctx, &font_attr, &area_font);
 
     /*draw cursor*/
@@ -300,7 +301,7 @@ gt_obj_st * gt_input_create(gt_obj_st * parent)
 void gt_input_style_set_value(gt_obj_st * input, char * value)
 {
     _gt_style_input_st * style = input->style;
-    if( style->placeholder ){
+    if( style->value ){
         gt_mem_free(style->value);
     }
     uint16_t len = value == NULL ? 0 : strlen(value);
