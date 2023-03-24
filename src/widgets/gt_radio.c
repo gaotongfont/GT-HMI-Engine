@@ -83,6 +83,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     gt_area_st area_font = radio->area;
     area_font.x = area_base.x + (area_base.w + 2);
     area_font.y += 2;
+    area_font.w = w > area_base.w ? w - area_base.w : 0;
     //
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
