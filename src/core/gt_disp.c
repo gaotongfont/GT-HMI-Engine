@@ -104,11 +104,12 @@ static void _gt_disp_check_and_copy_foreach(gt_obj_st * obj)
 
     while( idx < obj->cnt_child ) {
         child_p = obj->child[idx];
+        gt_check_obj_visible_and_copy(child_p);
+
         if( child_p->cnt_child != 0 ){
             _gt_disp_check_and_copy_foreach(child_p);
         }
 
-        gt_check_obj_visible_and_copy(child_p);
         ++idx;
     }
 }
