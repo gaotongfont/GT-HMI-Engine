@@ -95,7 +95,7 @@ void gt_draw_blend_basic(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_d
 
     // from area_src cpy to area_dst
     int idx_dst = area_dst.y * area_dst.w + area_dst.x;
-    int idx_src = area_src.y * area_src.w + area_src.x;
+    int idx_src = area_src.y * area_dsc.w + area_src.x;
     int step_dst_line = area_dst.w - area_src.w;
     int step_src_line = area_dsc.w - area_src.w;
 
