@@ -432,38 +432,49 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         // 3 draw left border
         area_mask.x = coords->x;
         area_mask.y = coords->y + radius;
-        area_mask.w = border_width;
+        area_mask.w = (false == is_radius_more_than_border) ? radius : border_width;
         area_mask.h = coords->h - (radius << 1);
         gt_draw_blend(draw_ctx, &blend_dsc);
 
         // 4 draw right border
-        area_mask.x = (coords->x + coords->w) - border_width;
+        area_mask.x = (coords->x + coords->w) - (false == is_radius_more_than_border ? radius : border_width);
         gt_draw_blend(draw_ctx, &blend_dsc);
+
+        if(false == is_radius_more_than_border){
+            area_mask.x = coords->x + radius;
+            area_mask.y = coords->y + border_width;
+            area_mask.w = border_width - radius;
+            area_mask.h = coords->h - (border_width << 1);
+            gt_draw_blend(draw_ctx, &blend_dsc);
+
+            area_mask.x = (coords->x + coords->w) - border_width;
+            gt_draw_blend(draw_ctx, &blend_dsc);
+        }
+
     }
 
     /* draw rect */
     if (dsc->is_fill) {
         blend_dsc.color_fill = dsc->bg_color;
 
-        // 1:draw up rect
-        area_mask.x = coords->x + radius;
-        area_mask.y = coords->y + border_width;
-        area_mask.w = coords->w - (radius << 1);
-		area_mask.h = radius > border_width ? radius - border_width : 0;
-        gt_draw_blend(draw_ctx, &blend_dsc);
+        if(true == is_radius_more_than_border) {
+            // 1:draw up rect
+            area_mask.x = coords->x + radius;
+            area_mask.y = coords->y + border_width;
+            area_mask.w = coords->w - (radius << 1);
+            area_mask.h = radius - border_width;
+            gt_draw_blend(draw_ctx, &blend_dsc);
 
-        // 2:draw center rect
+            // 2:draw bottom rect
+            area_mask.y = coords->y + coords->h - radius;
+            gt_draw_blend(draw_ctx, &blend_dsc);
+        }
+
+        // 3:draw center rect
         area_mask.x = coords->x + border_width;
-        area_mask.y = coords->y + (radius > border_width ? radius : border_width);
+        area_mask.y = coords->y + (true == is_radius_more_than_border ? radius : border_width);
         area_mask.w = coords->w - (border_width<<1);
-        area_mask.h = coords->h - (radius > border_width ? (radius << 1) : (border_width << 1));
-        gt_draw_blend(draw_ctx, &blend_dsc);
-
-        // 3:draw bottom rect
-        area_mask.x = coords->x + radius;
-        area_mask.y = area_mask.y + area_mask.h;
-        area_mask.w = coords->w - (radius << 1);
-        area_mask.h = (coords->y + coords->h - border_width) - area_mask.y;
+        area_mask.h = coords->h - (true == is_radius_more_than_border ? (radius << 1) : (border_width << 1));
         gt_draw_blend(draw_ctx, &blend_dsc);
     }
 }
