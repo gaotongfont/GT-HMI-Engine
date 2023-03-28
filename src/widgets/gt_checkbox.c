@@ -49,7 +49,6 @@ const gt_obj_class_st gt_checkbox_class = {
 
 static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     _gt_style_checkbox_st * style = checkbox->style;
-    gt_size_t x, y, w, h;           //base attr
     uint8_t sel_width = 0;
     gt_color_t fg_color;
     uint8_t fp[64];
@@ -66,15 +65,10 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
 
     // set default size
     if( checkbox->area.w == 0 || checkbox->area.h == 0){
-        checkbox->area.w = style->font_size+4 + strlen(style->text)*8;;
+        checkbox->area.w = style->font_size+4 + strlen(style->text)*11;
         checkbox->area.h = style->font_size+4;
     }
     sel_width = font.size - 3;
-
-    x = checkbox->area.x;
-    y = checkbox->area.y;
-    w = checkbox->area.w;
-    h = checkbox->area.h;
 
     /* base shape */
     gt_attr_rect_st rect_attr;
@@ -113,6 +107,7 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     };
     area.x += (area_box.w + 2);
     area.y += 2;
+    area.w = area.w >  area_box.w ? (area.w - area_box.w) : 0;
     draw_text(checkbox->draw_ctx, &font_dsc, &area);
 
     if( 0 ){

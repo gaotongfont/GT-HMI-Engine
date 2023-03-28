@@ -47,7 +47,6 @@ const gt_obj_class_st gt_radio_class = {
 
 static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     _gt_style_radio_st * style = radio->style;
-    gt_size_t x, y, w, h;
     uint8_t sel_width = 0;
 
     uint8_t fp[64];
@@ -63,16 +62,11 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     
     // set default size
     if( radio->area.w == 0 || radio->area.h == 0){
-        radio->area.w = style->font_size+4 + strlen(style->text)*8;
+        radio->area.w = style->font_size+4 + strlen(style->text)*11;
         radio->area.h = style->font_size+4;
 
     }
     sel_width = font.size;
-
-    x = radio->area.x;
-    y = radio->area.y;
-    w = radio->area.w;
-    h = radio->area.h;
 
     gt_area_st area_base = radio->area;
     area_base.w = style->font_size+4;
@@ -83,7 +77,8 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     gt_area_st area_font = radio->area;
     area_font.x = area_base.x + (area_base.w + 2);
     area_font.y += 2;
-    area_font.w = w > area_base.w ? w - area_base.w : 0;
+    area_font.w = radio->area.w > area_base.w ? (radio->area.w - area_base.w) : 0;
+
     //
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
