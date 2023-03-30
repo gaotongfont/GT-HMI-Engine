@@ -757,7 +757,7 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
                     gt_fs_read_img_offset((uint8_t *)color_img_line_p, offset, len);
                     if(is_mask) {    //png
                         gt_fs_read_img_offset((uint8_t *)mask_buf, addr_start_alpha, w);
-                        addr_start_alpha += w;
+                        // addr_start_alpha += w;
                     }
                     /* blend to bg */
                     gt_draw_blend(draw_ctx, &blend_dsc);
@@ -766,6 +766,7 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
                 ++dst_area.y;
                 ++mask_area.y;
                 offset += len;
+                addr_start_alpha += w;
             }
 
             gt_mem_free(color_img_line_p);
