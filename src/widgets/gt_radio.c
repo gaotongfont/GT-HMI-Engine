@@ -47,7 +47,6 @@ const gt_obj_class_st gt_radio_class = {
 
 static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     _gt_style_radio_st * style = radio->style;
-    uint8_t sel_width = 0;
 
     uint8_t fp[64];
     gt_font_st font = {
@@ -66,7 +65,6 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
         radio->area.h = style->font_size+4;
 
     }
-    sel_width = font.size;
 
     gt_area_st area_base = radio->area;
     area_base.w = style->font_size+4;

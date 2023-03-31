@@ -121,7 +121,6 @@ static void _gt_listview_style_update(gt_obj_st * listview)
 
 static inline void _gt_listview_init_widget(gt_obj_st * listview) {
     _gt_style_listview_st * style = (_gt_style_listview_st * )listview->style;
-    gt_size_t x, y, w, h;
 
     _gt_listview_style_update(listview);
 
@@ -129,11 +128,6 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
     if (gt_abs(listview->process_attr.y_scroll) > GT_CFG_DEFAULT_POINT_SCROLL_PIXEL_INVALID) {
         listview->process_attr.y_scroll = listview->process_attr.y_scroll > 0 ? 16 : -16;
     }
-
-    x = listview->area.x;
-    y = listview->area.y;
-    w = listview->area.w;
-    h = listview->area.h;
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
@@ -144,9 +138,6 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
     rect_attr.fg_color      = style->color_ina;
     rect_attr.bg_color      = style->color_background;
 
-    gt_area_st area_rect = {
-        .w = w, .h = h
-    };
 
     uint8_t fp[64];
     gt_font_st font = {
@@ -165,14 +156,13 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
         .font_color = gt_color_black(),
         .opa        = listview->opa,
     };
-    uint16_t __h = h/style->cnt_show;
     uint8_t idx_start = style->idx_show_start;
     uint8_t idx_end = style->idx_show_start + (style->cnt_show==1?1:style->cnt_show);
     gt_color_t color_font;
 
     gt_area_st area_item = listview->area,  area_font;
     area_item.h = area_item.h/style->cnt_show;
-    uint16_t width_font = 0;
+    // uint16_t width_font = 0;
 
     if( idx_end > (idx_start + style->cnt) ){
         idx_end = idx_start + style->cnt;
@@ -196,7 +186,7 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
         area_font = area_item;
         font.utf8 = style->item[idx_start];
         font.len = strlen(style->item[idx_start]);
-        width_font = gt_font_get_string_width(&font);
+        // width_font = gt_font_get_string_width(&font);
         font_attr.font_color = color_font;
         draw_text(listview->draw_ctx, &font_attr, &area_font);
         area_item.y += area_item.h;
@@ -223,7 +213,7 @@ static void _init_cb(gt_obj_st * obj) {
  */
 static void _deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "listview start deinit_cb");
-    _gt_style_listview_st ** style_p = (_gt_style_listview_st ** )&obj->style;
+    // _gt_style_listview_st ** style_p = (_gt_style_listview_st ** )&obj->style;
 
     // release item memory
 

@@ -49,7 +49,6 @@ const gt_obj_class_st gt_switcher_class = {
 static inline void _gt_switcher_init_widget(gt_obj_st * switcher)
 {
     _gt_style_switcher_st * style = switcher->style;
-    gt_size_t x, y, w, h;           //base attr
     gt_color_t fg_color;
     // set default size
     if( switcher->area.w == 0 || switcher->area.h == 0){

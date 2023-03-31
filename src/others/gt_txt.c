@@ -57,7 +57,7 @@ static char gt_txt_string_del(char * str , uint32_t del_txt_pos)
 
 uint8_t gt_txt_check_char_numb(char * dst , int32_t* pos )
 {
-    uint32_t len = 0 , pos_s = *pos ;
+    uint32_t len = 0 ;
     int32_t *idx = pos;
     while ((*idx) >= 0)
     {

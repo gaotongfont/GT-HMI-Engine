@@ -35,7 +35,7 @@
 int gt_qrcode_init(unsigned char version , unsigned char* qrdata_buff , unsigned char* qrcodedata_buff);
 
 /*******************************************
-ascii&汉字二维码函数 /*unsigned char
+ascii&汉字二维码函数 unsigned char
 //str: 编码的数组, length: 该数组的大小
 *******************************************/  
 unsigned char gt_qrcode_get(unsigned char CodeMode,unsigned char ECLevel,unsigned char MaskNub, unsigned char *str,long unsigned int length);

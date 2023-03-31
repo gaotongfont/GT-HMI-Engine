@@ -51,7 +51,6 @@ const gt_obj_class_st gt_img_class = {
 static inline void _gt_img_init_widget(gt_obj_st * img)
 {
     _gt_style_img_st * style = img->style;
-    gt_size_t w, h;
 
     /* get img width and height, must ! */
     gt_fs_read_img_wh(style->src, &img->area.w, &img->area.h);
