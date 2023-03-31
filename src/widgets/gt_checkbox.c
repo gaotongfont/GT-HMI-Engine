@@ -49,10 +49,7 @@ const gt_obj_class_st gt_checkbox_class = {
 
 static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     _gt_style_checkbox_st * style = checkbox->style;
-    uint8_t sel_width = 0;
-    gt_color_t fg_color;
     uint8_t fp[64];
-    uint32_t cnt_word = 0;
     gt_font_st font = {
         .style_cn = style->font_family_cn,
         .style_en = style->font_family_en,
@@ -68,7 +65,6 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
         checkbox->area.w = style->font_size+4 + strlen(style->text)*11;
         checkbox->area.h = style->font_size+4;
     }
-    sel_width = font.size - 3;
 
     /* base shape */
     gt_attr_rect_st rect_attr;
@@ -110,13 +106,13 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     area.w = area.w >  area_box.w ? (area.w - area_box.w) : 0;
     draw_text(checkbox->draw_ctx, &font_dsc, &area);
 
-    if( 0 ){
-        const unsigned char gImage_dui[50] = { /* 0X10,0X04,0X00,0X0A,0X00,0X0A, */
-        0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X2F,0XFF,
-        0XFF,0XFF,0XF4,0X0F,0XFF,0XFF,0XFF,0X00,0XFF,0XE1,0X0E,0XE1,0X0E,0XFF,0XFE,0X11,
-        0X11,0XDF,0XFF,0XFF,0XF1,0X1E,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
-        0XFF,0XFF,};
-    }
+    // if( 0 ){
+    //     const unsigned char gImage_dui[50] = { /* 0X10,0X04,0X00,0X0A,0X00,0X0A, */
+    //     0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X2F,0XFF,
+    //     0XFF,0XFF,0XF4,0X0F,0XFF,0XFF,0XFF,0X00,0XFF,0XE1,0X0E,0XE1,0X0E,0XFF,0XFE,0X11,
+    //     0X11,0XDF,0XFF,0XFF,0XF1,0X1E,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
+    //     0XFF,0XFF,};
+    // }
 }
 
 /**

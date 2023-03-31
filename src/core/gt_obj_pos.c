@@ -187,7 +187,7 @@ static gt_obj_st * _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st * poi
 }
 
 gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point){
-    uint8_t idx = 0;
+    // uint8_t idx = 0;
     gt_obj_st * obj_clicked = parent, * obj_temp = NULL;
     gt_area_st * area = gt_disp_get_area_act();
     gt_point_st _point = {

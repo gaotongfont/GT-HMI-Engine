@@ -105,7 +105,7 @@ static void _close_cb(struct _gt_fs_drv_s * drv, void * fp)
 
 static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len)
 {
-    gt_fs_res_et ret = GT_RES_OK;
+    gt_fs_res_et ret = GT_FS_RES_OK;
     _gt_src_dev_st * dev = _get_dev();
     gt_fs_fp_st * file_p = (gt_fs_fp_st * )fp;
     const uint8_t *buffer = (const uint8_t * )file_p->buffer;
@@ -122,7 +122,7 @@ static gt_fs_res_et _seek_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos,
     gt_fs_fp_st * file_p = (gt_fs_fp_st * )fp;
 
     if (!file_p) {
-        return GT_RES_FAIL;
+        return GT_FS_RES_FAIL;
     }
 
     switch (whence) {
@@ -142,14 +142,14 @@ static gt_fs_res_et _seek_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos,
         break;
     }
 
-    return GT_RES_OK;
+    return GT_FS_RES_OK;
 }
 
 static gt_fs_res_et _tell_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t * pos)
 {
     *pos = ((gt_fs_fp_st * )fp)->pos;
 
-    return GT_RES_OK;
+    return GT_FS_RES_OK;
 }
 
 static void _gt_src_drv_register(gt_fs_drv_st * drv)

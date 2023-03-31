@@ -46,8 +46,8 @@ const gt_obj_class_st gt_option_class = {
 /* static functions -----------------------------------------------------*/
 
 static inline void _gt_option_init_widget(gt_obj_st * option) {
-    _gt_style_option_st * style = option->style;
-    gt_size_t x, y, w, h;           //base attr
+    // _gt_style_option_st * style = option->style;
+    // gt_size_t x, y, w, h;           //base attr
 
 
 }
@@ -139,7 +139,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_option_init_style(gt_obj_st * option)
 {
-    _gt_style_option_st * _style = option->style;
+    // _gt_style_option_st * _style = option->style;
 }
 
 

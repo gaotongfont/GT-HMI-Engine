@@ -48,7 +48,7 @@ const gt_obj_class_st gt_input_class = {
 /* static functions -----------------------------------------------------*/
 static void _gt_input_cursor_anim(gt_obj_st * input)
 {
-    static bool flag = 0;
+    // static bool flag = 0;
     _gt_style_input_st * style = input->style;
     gt_area_st area = {
         .x = style->point_pos.x,
@@ -73,15 +73,12 @@ static void _gt_input_cursor_anim(gt_obj_st * input)
 
 static inline void _gt_input_init_widget(gt_obj_st * input) {
     _gt_style_input_st * style = input->style;
-    gt_size_t x, y, w, h;           //base attr
 
     if( 0 == input->area.w || 0 == input->area.h ){
         input->area.w = style->font_size * 8;
         input->area.h = style->font_size + 4;
     }
 
-    w = input->area.w;
-    h = input->area.h;
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
@@ -351,7 +348,6 @@ void gt_input_style_append_value_encoding(gt_obj_st * input, char * value , uint
     }
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
-    _gt_style_input_st * style = input->style;
     uint16_t len = value == NULL ? 0 : strlen(value);
     uint16_t idx = 0;
     char *tmp_str = gt_mem_malloc(len + 1);
@@ -362,7 +358,7 @@ void gt_input_style_append_value_encoding(gt_obj_st * input, char * value , uint
         if(encoding == GT_ENCODING_UTF8){
             idx += gt_encoding_table_one_char(&value[idx] , tmp_str , UTF8_2_GB);
         }
-        else if(encoding = GT_ENCODING_GB){
+        else if(encoding == GT_ENCODING_GB){
             idx += gt_encoding_table_one_char(&value[idx] , tmp_str , GB_2_UTF8);
         }
         tmp_str[strlen(tmp_str)] = '\0';

@@ -60,7 +60,6 @@ static void _gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src){
 static inline void _gt_imgbtn_init_widget(gt_obj_st * imgbtn)
 {
     _gt_style_imgbtn_st * style = imgbtn->style;
-    gt_size_t w, h;
 
     /* get imgbtn width and height, must ! */
     gt_fs_read_img_wh(style->src, &imgbtn->area.w, &imgbtn->area.h);

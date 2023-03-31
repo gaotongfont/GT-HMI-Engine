@@ -45,7 +45,6 @@ static void _progress_bar_event_cb(gt_event_st * e)
 /* global functions / API interface -------------------------------------*/
 void gt_examples_progress_bar(void)
 {
-    int i = 0;
     gt_obj_st * screen;
 
     screen = gt_obj_create(NULL);

@@ -309,17 +309,18 @@ void gt_disp_obj(gt_obj_st * obj)
     gt_disp_st * disp_dev = gt_disp_get_default();
 
     if( 1 ){
-        gt_area_st area_src = {
-            .x = area_valid.x,
-            .y = area_valid.y,
-            .w = obj->area.w,
-            .h = obj->area.h
-        }, area_dst = {
-            .x = 0,
-            .y = 0,//area_valid.y,
-            .w = area_valid.w,//obj->area.w,
-            .h = area_valid.h//obj->area.h
-        }, area_show = {
+        // gt_area_st area_src = {
+        //     .x = area_valid.x,
+        //     .y = area_valid.y,
+        //     .w = obj->area.w,
+        //     .h = obj->area.h
+        // }, area_dst = {
+        //     .x = 0,
+        //     .y = 0,//area_valid.y,
+        //     .w = area_valid.w,//obj->area.w,
+        //     .h = area_valid.h//obj->area.h
+        // };
+        gt_area_st area_show = {
             .w = area_valid.w,
             .h = area_valid.h
         };

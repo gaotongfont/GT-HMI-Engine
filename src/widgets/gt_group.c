@@ -47,7 +47,7 @@ const gt_obj_class_st gt_group_class = {
 /* static functions -----------------------------------------------------*/
 
 static inline void _gt_group_init_widget(gt_obj_st * group) {
-    _gt_style_group_st * style = group->style;
+    // _gt_style_group_st * style = group->style;
 }
 
 /**

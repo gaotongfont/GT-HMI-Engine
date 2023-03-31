@@ -292,11 +292,9 @@ static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char * kv)
     gt_keypad_map_st * map_keypad = style->info.map;
     int idx = 0;
 
-    uint16_t ys = keypad->area.y;
     uint8_t h_key = ((keypad->area.h - SPACE_Y)/ (style->info.cnt_lines+1)) - SPACE_Y;
     uint8_t per_one_width = (keypad->area.w / style->info.per_line[0]);
     uint8_t line = 0;
-    uint8_t r, g, b;
 
     area_key.h = h_key;
     area_key.y = keypad->area.y + SPACE_Y;
@@ -603,8 +601,7 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
 static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
 {
     _gt_style_keypad_st * style = keypad->style;
-    int idx = 0, cnt_temp = 0;
-    gt_color_t color, * color_widget_p = NULL;
+    int idx = 0;
 
     gt_keypad_map_st * map_keypad = style->info.map;
 
@@ -633,9 +630,8 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
         .opa        = keypad->opa,
     };
 
-    gt_area_st area_key, area_bg;
+    gt_area_st area_key;
 
-    uint16_t ys = keypad->area.y;
     uint8_t h_key = ( (keypad->area.h - SPACE_Y) / (style->info.cnt_lines+1)) - SPACE_Y;
     uint8_t per_one_width = (keypad->area.w / style->info.per_line[0]);
     uint8_t line = 0;
@@ -767,8 +763,6 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
     gt_event_type_et code = gt_event_get_code(e);
 
-    static gt_area_st area;
-    static char code_pre = 0;
     switch (code) {
     case GT_EVENT_TYPE_DRAW_START:
         GT_LOGD(GT_LOG_TAG_GUI, "start draw");

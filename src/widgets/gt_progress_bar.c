@@ -48,8 +48,10 @@ const gt_obj_class_st gt_progress_bar_class = {
 
 static inline void _gt_progress_bar_init_widget(gt_obj_st * progress_bar) {
     _gt_style_progress_bar_st * style = progress_bar->style;
-    gt_size_t x, y, w, h;
+    gt_size_t w, h;
     int dist = 0, dist_min = 0;
+    int all_pos = style->end - style->start;
+    int current_pos = style->pos - style->start;
 
     // set default size
     if( !progress_bar->area.w || !progress_bar->area.h ){
@@ -57,8 +59,6 @@ static inline void _gt_progress_bar_init_widget(gt_obj_st * progress_bar) {
         progress_bar->area.h = 16;
     };
 
-    x = progress_bar->area.x;
-    y = progress_bar->area.y;
     w = progress_bar->area.w;
     h = progress_bar->area.h;
 
@@ -72,43 +72,36 @@ static inline void _gt_progress_bar_init_widget(gt_obj_st * progress_bar) {
 
 
     gt_area_st area_base = progress_bar->area;
+    gt_area_st area_val = progress_bar->area;
+
     if( style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L ){
-        area_base.y += (h>>1)>>1;
-        rect_attr.radius = area_base.h>>1;
+        dist = ((float)current_pos/(float)all_pos) * (float)w;
+        area_val.w = dist;
+        area_base.w -= 2;
+        if(style->dir == GT_BAR_DIR_HOR_L2R){
+            area_base.x += 2;
+        }else{
+            area_val.x += (w - dist);
+        }
     }else if( style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U ){
-        area_base.x += (w>>1)>>1;
-        rect_attr.radius = area_base.w>>1;
+        dist = ((float)current_pos/(float)all_pos) * (float)h;
+        area_val.h = dist;
+        area_base.h -= 2;
+        rect_attr.radius = w >> 1;
+
+        if (style->dir == GT_BAR_DIR_VER_U2D){
+            area_base.y += 2;
+        }else{
+            area_val.y += (h - dist);
+        }
     }
-
-    draw_bg(progress_bar->draw_ctx, &rect_attr, &area_base);
-
-    gt_area_st area_val = area_base;
-    int all_pos = style->end - style->start;
-    if( style->dir == GT_BAR_DIR_HOR_L2R ){
-        dist = ((float)style->pos/(float)all_pos) * (float)w;
-        area_val.w = dist;
-    }else if( style->dir == GT_BAR_DIR_HOR_R2L ){
-        dist = ((float)style->pos/(float)all_pos) * (float)w;
-        area_val.w = dist;
-        area_val.x += (area_base.w - dist);
-    }else if( style->dir == GT_BAR_DIR_VER_U2D ){
-        dist = ((float)style->pos/(float)all_pos) * (float)h;
-        area_val.h = dist;
-    }else if( style->dir == GT_BAR_DIR_VER_D2U ){
-        dist = ((float)style->pos/(float)all_pos) * (float)h;
-        area_val.h = dist;
-        area_val.y += (area_base.h - dist);
-    }else{
-        return;
+    if(style->pos < style->end){
+        draw_bg(progress_bar->draw_ctx, &rect_attr, &area_base);
     }
     rect_attr.bg_color = style->color_act;
 
-    if( style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L ){
-        dist_min = (h>>1);
-    }else if( style->dir == GT_BAR_DIR_VER_D2U || style->dir == GT_BAR_DIR_VER_U2D ){
-        dist_min = (w>>1);
-    }
-    if( dist > dist_min ){
+    dist_min = rect_attr.radius;
+    if( dist >= dist_min ){
         draw_bg(progress_bar->draw_ctx, &rect_attr, &area_val);
     }
 }
@@ -155,7 +148,6 @@ static void _deinit_cb(gt_obj_st * obj) {
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     extern void _gt_disp_refr_append_area(gt_area_st * area);
     gt_event_type_et code = gt_event_get_code(e);
-    gt_point_st * point_click = NULL;
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGD(GT_LOG_TAG_GUI, "start draw");
@@ -216,7 +208,7 @@ static void _gt_progress_bar_init_style(gt_obj_st * progress_bar)
     style->start = 0;
     style->end = 100;
     style->pos = 50;
-    style->dir = 0;
+    style->dir = GT_BAR_DIR_HOR_L2R;
 }
 
 
