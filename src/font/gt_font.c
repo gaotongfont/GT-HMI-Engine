@@ -400,6 +400,11 @@ static int _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding)
     {
         return 7;
     }
+    // Currency Symbols
+    else if(0x20AC == unicode ) // || 0xFFE5 == unicode)
+    {
+        return 8;
+    }
 
     return 0;
 }
@@ -421,6 +426,12 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
         struct gt_font_func_s* font_func;
 
         font_style = _gt_is_style_cn_or_en(unicode , font->encoding) ? font->style_en : font->style_cn;
+        
+        // is zzzf font ￥ 
+        if((0xFFE5 == unicode) && (font->style_en >= 102  && font->style_en <= 129))
+        {
+            font_style = font->style_en;
+        }
 
         font_func = GT_Get_Font_Func_S(font_style);
         if(!font_func)
