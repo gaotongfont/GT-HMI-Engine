@@ -457,6 +457,9 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
         }
         else
         {
+            if(!font->gray){
+                font->gray = 1;
+            }
             // 矢量
             if(!font_func->func.read_vec_font)
             {
