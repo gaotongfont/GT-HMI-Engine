@@ -47,23 +47,6 @@ typedef struct _gt_style_switcher_s
  */
 gt_obj_st * gt_switch_create(gt_obj_st * parent);
 
-/**
- * @brief set switch state
- *
- * @param switcher switch obj ptr
- * @param state true:open,false:close
- */
-void gt_switch_style_set_state(gt_obj_st * switcher, bool state);
-
-/**
- * @brief get switch state
- *
- * @param switcher switch obj ptr
- * @return true open
- * @return false close
- */
-bool gt_switch_style_get_state(gt_obj_st * switcher);
-
 void gt_switch_style_set_color_act(gt_obj_st * switcher, gt_color_t color);
 void gt_switch_style_set_color_ina(gt_obj_st * switcher, gt_color_t color);
 void gt_switch_style_set_color_point(gt_obj_st * switcher, gt_color_t color);
