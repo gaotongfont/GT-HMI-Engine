@@ -497,7 +497,7 @@ lab_next_word:
 
 uint32_t gt_font_get_string_width(gt_font_st * font)
 {
-	uint32_t idx = 0, unicode, width = 0;
+	uint32_t idx = 0, unicode = 0, width = 0 , tmp = 0;
 
     while( idx < font->len ){
         //  idx += _gt_utf8_to_unicode(&font->utf8[idx], &unicode);
@@ -512,10 +512,14 @@ uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
 {
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
-
-    int width = GT_Get_Font_Width(unicode , _gt_is_style_cn_or_en(unicode , font->encoding) ? font->style_en : font->style_cn ,
-                                    font->size , font->gray , font->res);
-    if(!width){
+    int width = 0; 
+    if(0 == font->gray){
+        font->gray = 1;
+    }
+    int option = _gt_is_style_cn_or_en(unicode , font->encoding) ? font->style_en : font->style_cn;
+    width = GT_Get_Font_Width(unicode , option , font->size , font->gray , font->res);
+    
+    if(0 == width){
         if(_gt_font_latin_check(unicode)) {
             return _gt_font_latin_get_width(unicode , font->size);
         }

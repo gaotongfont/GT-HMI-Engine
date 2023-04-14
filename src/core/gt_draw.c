@@ -537,7 +537,10 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
 
 
     gt_area_st area_font_style;
-    uint16_t width_font = gt_font_get_string_width(dsc->font);
+    gt_memset(_font.res, 0, dsc->font->size * dsc->font->size>>3);
+
+    _font.len = strlen(_font.utf8);
+    uint16_t width_font = gt_font_get_string_width(&_font);
 
     /*text align*/
     switch( dsc->align ){
@@ -601,7 +604,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             goto _lab_next_line;
         }
 
-        width = gt_font_get_one_word_width(unicode, dsc->font);
+        width = gt_font_get_one_word_width(unicode, &_font);
 
         if( !gt_area_intersect_screen(draw_ctx->buf_area, &area_font, &area_res) ){
             goto _lab_nex_word;
@@ -616,8 +619,11 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             // dot to mask_buf
             idx_mask_buf = 0;
             idx_res = 0;
-            uint8_t byte_width = \
-                (GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH == ret_style) ? (dsc->font->size >> 3) : ((width + 7) >> 3);
+            uint8_t byte_width = (width + 7) >> 3 ;
+            if((GT_FONT_TYPE_FLAG_VEC == ret_style) || (GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH) == ret_style)
+            {
+                byte_width = dsc->font->size >> 3;
+            }
             for (uint16_t font_y = 0, font_x = 0; font_y < dsc->font->size; font_y++) {
                 for (font_x = 0; font_x < byte_width; font_x++) {
                     idx_bit = 7;

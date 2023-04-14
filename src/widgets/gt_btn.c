@@ -63,10 +63,9 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
         .size       = style->font_size,
     };
     font.encoding = gt_project_encoding_get();
-    uint8_t width_font = gt_font_get_string_width(&font);
     // set default size
     if( btn->area.w == 0 || btn->area.h == 0){
-        btn->area.w = width_font + 32;
+        btn->area.w = font.size*strlen(font.utf8) + 32;
         btn->area.h = style->font_size+16;
     }
     if( style->radius == 0 ){
