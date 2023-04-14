@@ -82,6 +82,7 @@ char * gt_input_style_get_value(gt_obj_st * input);
  * @param value content
  */
 void gt_input_style_append_value(gt_obj_st * input, char * value);
+void gt_input_style_append_value_encoding(gt_obj_st * input, char * value , uint8_t encoding);
 
 /**
  * @brief set input obj placeholder
