@@ -353,7 +353,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
                     need_draw_circle = true;
                 }
                 if(border_width != 0){ //need draw border ring with border_color
-                    if(need_draw_circle == true){   //have 
+                    if(need_draw_circle == true){   //have
                         // get circle mask
                         gt_graph_circle(&circle_attr, &circle_area, color_circle_p);
                         // get circle left mask
@@ -399,7 +399,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
                 gt_draw_arch(draw_ctx,&blend_dsc,mask_left_up,(uint8_t *)color_circle_p,coords);
             }else if(border_width == 0 && dsc->is_fill == true){     /* draw all circle with fill bg_color*/
                 gt_draw_arch(draw_ctx,&blend_dsc,mask_left_up,(uint8_t *)color_circle_p,coords);
-            }else { 
+            }else {
                 if(border_width != 0){ /* draw border ring with border_color */
                     blend_dsc.color_fill = dsc->border_color;
                     uint16_t radius_hid = radius - border_width;
@@ -528,6 +528,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     }
     uint32_t idx = 0;
     gt_font_st _font = {
+        .utf8       = dsc->font->utf8,
         .res        = data,
         .size       = dsc->font->size,
         .style_cn   = dsc->font->style_cn,
