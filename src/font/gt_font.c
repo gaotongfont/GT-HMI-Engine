@@ -350,7 +350,7 @@ uint8_t gt_gb_check_char(const uint8_t *dst , uint16_t pos , uint32_t* fontcode)
  * @param unicode unicode编码
  * @return int 0 - style_cn  else-style_en
  */
-static int _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding)
+int _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding)
 {
     if(GT_ENCODING_GB == encoding)
     {
@@ -400,10 +400,15 @@ static int _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding)
     {
         return 7;
     }
+    // hindi
+    else if(unicode >=0x0900 && unicode<=0x097F)
+    {
+        return 8;
+    }
     // Currency Symbols
     else if(0x20AC == unicode ) // || 0xFFE5 == unicode)
     {
-        return 8;
+        return 0xFFFF;
     }
 
     return 0;
@@ -436,6 +441,7 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
         font_func = GT_Get_Font_Func_S(font_style);
         if(!font_func)
         {
+            GT_LOGD( GT_LOG_TAG_GUI, "font func is null");
             goto default_font;
         }
         if(!GT_Check_Is_Vec(font_style))
@@ -446,6 +452,7 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
                 idx+=len;
                 continue;
             }
+            GT_LOGD( GT_LOG_TAG_GUI, " unicode = 0x%X , font_style = %d " , unicode , font_style);
             temp = font_func->func.read_dot_font(unicode , font_style , &font->res[idx_read]);
             if(temp == 0)
             {

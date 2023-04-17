@@ -195,6 +195,8 @@ uint8_t gt_encoding_table_one_char(uint8_t *src ,uint8_t* dst , gt_encoding_conv
 uint8_t _gt_gb_font_one_char_code_len_get(uint8_t * utf8,uint32_t *res);
 uint8_t gt_gb_check_char(const uint8_t *dst , uint16_t pos , uint32_t* fontcode);
 
+int _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
