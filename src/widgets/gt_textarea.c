@@ -54,6 +54,7 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
         .size       = style->font_size,
         .style_cn   = style->font_family_cn,
         .style_en   = style->font_family_en,
+        .gray       = style->font_gray,
     };
     font.encoding = gt_project_encoding_get();
     gt_attr_font_st font_attr = {
@@ -208,6 +209,7 @@ static void _gt_textarea_init_style(gt_obj_st * textarea)
     style->font_family_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
     style->color_background = gt_color_white();
+    style->font_gray        = 1;
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -289,7 +291,11 @@ void gt_textarea_style_set_font_size(gt_obj_st * textarea, uint8_t size)
     style->font_size = size;
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
-
+void gt_textarea_style_set_font_gray(gt_obj_st * textarea, uint8_t gray)
+{
+    _gt_style_textarea_st * style = textarea->style;
+    style->font_gray = gray;
+}
 void gt_textarea_style_set_font_color(gt_obj_st * textarea, gt_color_t color)
 {
     _gt_style_textarea_st * style = textarea->style;

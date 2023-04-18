@@ -48,16 +48,6 @@ const gt_obj_class_st gt_label_class = {
 static inline void _gt_label_init_widget(gt_obj_st * label) {
     _gt_style_label_st * style = label->style;
 
-    if( 0 == label->area.w || 0 == label->area.h ){
-        label->area.h = 20;
-        gt_font_st font = {
-            .utf8   = (uint8_t *)style->text,
-            .len    = strlen(style->text),
-            .size   = style->font_size
-        };
-        label->area.w = font.size * strlen(font.utf8);
-    }
-
     uint8_t fp[64];
     gt_memset(fp, 0, 64);
     gt_font_st font = {
@@ -67,9 +57,15 @@ static inline void _gt_label_init_widget(gt_obj_st * label) {
         .utf8       = (uint8_t *)style->text,
         .len        = strlen(style->text),
         .size       = style->font_size,
+        .gray       = style->font_gray,
     };
     font.encoding = gt_project_encoding_get();
 
+    if( 0 == label->area.w || 0 == label->area.h ){
+        label->area.h = 20;
+        label->area.w = font.size * strlen(font.utf8);
+    }
+    
     /*draw font*/
     gt_attr_font_st font_attr = {
         .font       = &font,
@@ -197,6 +193,7 @@ static void _gt_label_init_style(gt_obj_st * label)
     style->font_family_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
     style->font_family_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size         = GT_CFG_DEFAULT_FONT_SIZE;
+    style->font_gray         = 1;
 }
 
 
@@ -250,6 +247,13 @@ void gt_label_style_set_font_size(gt_obj_st * label, uint8_t size)
     _gt_style_label_st * style = label->style;
     style->font_size = size;
 }
+
+void gt_label_style_set_font_gray(gt_obj_st * label, uint8_t gray)
+{
+    _gt_style_label_st * style = label->style;
+    style->font_gray = gray;
+}
+
 void gt_label_style_set_font_family_cn(gt_obj_st * label, gt_family_t family)
 {
     _gt_style_label_st * style = label->style;

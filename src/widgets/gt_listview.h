@@ -44,6 +44,7 @@ typedef struct _gt_style_list_s
     uint8_t     font_size;
     gt_family_t font_family_cn;
     gt_family_t font_family_en;
+    uint8_t     font_gray;
 }_gt_style_listview_st;
 
 
@@ -115,7 +116,7 @@ void gt_listview_style_set_cnt_show(gt_obj_st * listview, uint8_t cnt_show);
  * @param size
  */
 void gt_listview_style_set_font_size(gt_obj_st * listview, uint8_t size);
-
+void gt_listview_style_set_font_gray(gt_obj_st * listview, uint8_t gray);
 /**
  * @brief Set listview active font color
  *

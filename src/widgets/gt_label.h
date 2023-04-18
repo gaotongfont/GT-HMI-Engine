@@ -31,6 +31,7 @@ typedef struct _gt_style_label_s{
     uint8_t     font_size;
     gt_family_t font_family_cn;
     gt_family_t font_family_en;
+    uint8_t     font_gray;
 }_gt_style_label_st;
 
 
@@ -73,6 +74,7 @@ char * gt_label_style_get_text(gt_obj_st * label);
 void gt_label_style_set_font_color(gt_obj_st * label, gt_color_t color);
 
 void gt_label_style_set_font_size(gt_obj_st * label, uint8_t size);
+void gt_label_style_set_font_gray(gt_obj_st * label, uint8_t gray);
 void gt_label_style_set_font_family_cn(gt_obj_st * label, gt_family_t family);
 void gt_label_style_set_font_family_en(gt_obj_st * label, gt_family_t family);
 

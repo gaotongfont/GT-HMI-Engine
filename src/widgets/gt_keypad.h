@@ -50,6 +50,7 @@ typedef struct _gt_style_keypad_s
     gt_family_t font_family_cn;
     gt_family_t font_family_en;
     uint8_t     font_size;
+    uint8_t     font_gray;
 
     _gt_keypad_info_st info;
 }_gt_style_keypad_st;
@@ -103,6 +104,7 @@ void gt_keypad_style_set_font_color(gt_obj_st * keypad, gt_color_t color);
 void gt_keypad_style_set_font_family_cn(gt_obj_st * keypad, gt_family_t family);
 void gt_keypad_style_set_font_family_en(gt_obj_st * keypad, gt_family_t family);
 void gt_keypad_style_set_font_size(gt_obj_st * keypad, uint8_t size);
+void gt_keypad_style_set_font_gray(gt_obj_st * keypad, uint8_t gray);
 
 #ifdef __cplusplus
 } /*extern "C"*/

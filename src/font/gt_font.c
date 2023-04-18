@@ -42,7 +42,7 @@ uint8_t latin_16x16_width[] = {
 
 
 /* macros ---------------------------------------------------------------*/
-static gt_encoding_st _gt_project_encoding = GT_ENCODING_UTF8;
+static gt_encoding_et _gt_project_encoding = GT_ENCODING_UTF8;
 
 
 /* static functions -----------------------------------------------------*/
@@ -258,7 +258,7 @@ uint8_t gt_font_one_char_code_len_get(uint8_t * utf8,uint32_t *res , uint8_t enc
     return 0;
 }
 
-uint8_t gt_encoding_table_one_char(uint8_t *src ,uint8_t* dst , gt_encoding_convert_st tab )
+uint8_t gt_encoding_table_one_char(uint8_t *src ,uint8_t* dst , gt_encoding_convert_et tab )
 {
     uint32_t fontcode , len = 0;
 #if GT_CFG_ENABLE_ZK_FONT == 1
@@ -350,42 +350,42 @@ uint8_t gt_gb_check_char(const uint8_t *dst , uint16_t pos , uint32_t* fontcode)
  * @param unicode unicode编码
  * @return int 0 - style_cn  else-style_en
  */
-int _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding)
+gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding)
 {
     if(GT_ENCODING_GB == encoding)
     {
         if(unicode <= 0x7F)
         {
-            return 1;
+            return STYLE_EN_ASCII;
         }
-        return 0;
+        return STYLE_CN;
     }
     // ascii
     if(unicode >= 0x20 && unicode <= 0x7F)
     {
-        return 1;
+        return STYLE_EN_ASCII;
     }
     // latin
     else if(  (unicode >= 0x0100 && unicode <= 0x024F)
             ||(unicode >= 0x1E00 && unicode <= 0x1EFF)
             )
     {
-        return 2;
+        return STYLE_EN_LATIN;
     }
     // greek and coptic
     else if(unicode >= 0x0370 && unicode <= 0x03FF)
     {
-        return 3;
+        return STYLE_EN_GREKK;
     }
     // cyrillic
     else if(unicode >= 0x0400 && unicode <= 0x04FF)
     {
-        return 4;
+        return STYLE_EN_CYRILLIC;
     }
     // hebrew
     else if(unicode >= 0x0590 && unicode <= 0x05FF)
     {
-        return 5;
+        return STYLE_EN_HEBREW;
     }
     // arabic
     else if(  (unicode >= 0x0600 && unicode <= 0x06FF)
@@ -393,25 +393,42 @@ int _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding)
             ||(unicode >= 0xFE70 && unicode <= 0xFEFF)
             )
     {
-        return 6;
+        return STYLE_EN_ARABIC;
     }
     // thai
     else if(unicode >= 0x0E00 && unicode <= 0x0E7F)
     {
-        return 7;
+        return STYLE_EN_THAI;
     }
     // hindi
     else if(unicode >=0x0900 && unicode<=0x097F)
     {
-        return 8;
+        return STYLE_EN_HIDIN;
     }
     // Currency Symbols
     else if(0x20AC == unicode ) // || 0xFFE5 == unicode)
     {
-        return 0xFFFF;
+        return STYLE_EN_Currency;
     }
 
-    return 0;
+    return STYLE_CN;
+}
+
+bool gt_style_en_data_is_convertor(uint32_t unicode , uint8_t encoding)
+{
+    gt_font_style_en_cn_et style_laug = _gt_is_style_cn_or_en(unicode , encoding);
+
+    switch(style_laug)
+    {
+        case STYLE_EN_HEBREW:
+        case STYLE_EN_ARABIC:
+        case STYLE_EN_THAI:
+        case STYLE_EN_HIDIN:
+            return true;
+        default:
+            break;
+    }
+    return false;
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -441,7 +458,6 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
         font_func = GT_Get_Font_Func_S(font_style);
         if(!font_func)
         {
-            GT_LOGD( GT_LOG_TAG_GUI, "font func is null");
             goto default_font;
         }
         if(!GT_Check_Is_Vec(font_style))
@@ -452,7 +468,6 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
                 idx+=len;
                 continue;
             }
-            GT_LOGD( GT_LOG_TAG_GUI, " unicode = 0x%X , font_style = %d " , unicode , font_style);
             temp = font_func->func.read_dot_font(unicode , font_style , &font->res[idx_read]);
             if(temp == 0)
             {
@@ -464,9 +479,6 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
         }
         else
         {
-            if(!font->gray){
-                font->gray = 1;
-            }
             // 矢量
             if(!font_func->func.read_vec_font)
             {
@@ -520,9 +532,6 @@ uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
     int width = 0; 
-    if(0 == font->gray){
-        font->gray = 1;
-    }
     int option = _gt_is_style_cn_or_en(unicode , font->encoding) ? font->style_en : font->style_cn;
     width = GT_Get_Font_Width(unicode , option , font->size , font->gray , font->res);
     
@@ -565,12 +574,12 @@ void gt_dot_to_mask_buf(uint8_t * dot, uint8_t * mask_buf, uint16_t w, uint16_t 
 }
 
 
-void gt_project_encoding_set(gt_encoding_st charset)
+void gt_project_encoding_set(gt_encoding_et charset)
 {
     _gt_project_encoding = charset;
 }
 
-gt_encoding_st gt_project_encoding_get(void)
+gt_encoding_et gt_project_encoding_get(void)
 {
     return _gt_project_encoding;
 }

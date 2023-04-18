@@ -57,6 +57,7 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
         .utf8 = style->text,
         .len = strlen(style->text),
         .size = style->font_size,
+        .gray       = style->font_gray,
     };
     font.encoding = gt_project_encoding_get();
 
@@ -226,6 +227,7 @@ static void _gt_checkbox_init_style(gt_obj_st * checkbox)
     style->font_family_en   = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_color       = gt_color_black();
+    style->font_gray        = 1;
 }
 
 
@@ -280,7 +282,11 @@ void gt_checkbox_style_set_font_size(gt_obj_st * checkbox, uint8_t size)
     _gt_style_checkbox_st * style = checkbox->style;
     style->font_size = size;
 }
-
+void gt_checkbox_style_set_font_gray(gt_obj_st * checkbox, uint8_t gray)
+{
+    _gt_style_checkbox_st * style = checkbox->style;
+    style->font_gray = gray;
+}
 void gt_checkbox_style_set_font_color(gt_obj_st * checkbox, gt_color_t color)
 {
     _gt_style_checkbox_st * style = checkbox->style;

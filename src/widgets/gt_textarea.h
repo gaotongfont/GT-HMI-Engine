@@ -41,6 +41,7 @@ typedef struct _gt_style_textarea_s{
     gt_family_t font_family_cn;
     gt_family_t font_family_en;
     uint8_t     font_size;
+    uint8_t     font_gray;
 }_gt_style_textarea_st;
 
 
@@ -92,6 +93,7 @@ void gt_textarea_style_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t 
  * @param size  font size
  */
 void gt_textarea_style_set_font_size(gt_obj_st * textarea, uint8_t size);
+void gt_textarea_style_set_font_gray(gt_obj_st * textarea, uint8_t gray);
 
 /**
  * @brief set textarea font color

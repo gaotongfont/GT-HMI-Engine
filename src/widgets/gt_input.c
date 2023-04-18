@@ -103,6 +103,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         font.len = strlen(style->placeholder);
         font.size = style->font_size;
         color_font = gt_color_hex(0x808080);
+        font.gray = style->font_gray;
     }
     // if input value is not null
     else{
@@ -112,6 +113,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         font.len = style->pos_cursor;
         font.size = style->font_size;
         color_font = style->font_color;
+        font.gray = style->font_gray;
     }
     gt_attr_font_st font_attr = {
         .font = &font,
@@ -269,6 +271,7 @@ static void _gt_input_init_style(gt_obj_st * input)
     style->border_width   = 2;
     style->border_color   = gt_color_black();
 	style->bg_color 	  = gt_color_hex(0xffffff);
+    style->font_gray        = 1;
 }
 
 
@@ -462,7 +465,11 @@ void gt_input_style_set_font_size(gt_obj_st * input, uint8_t size)
     _gt_style_input_st * style = input->style;
     style->font_size = size;
 }
-
+void gt_input_style_set_font_gray(gt_obj_st * input, uint8_t gray)
+{
+    _gt_style_input_st * style = input->style;
+    style->font_gray = gray;
+}
 void gt_input_style_set_border_width(gt_obj_st * input, gt_size_t width)
 {
     _gt_style_input_st * style = input->style;

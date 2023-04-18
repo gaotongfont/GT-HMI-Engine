@@ -61,6 +61,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
         .utf8       = style->text,
         .len        = strlen(style->text),
         .size       = style->font_size,
+        .gray       = style->font_gray,
     };
     font.encoding = gt_project_encoding_get();
     // set default size
@@ -228,6 +229,7 @@ static void _gt_btn_init_style(gt_obj_st * btn)
     style->font_family_cn   = GT_CFG_DEFAULT_FONT_FAMILY_CN;
     style->font_family_en   = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
+    style->font_gray        = 1;
 }
 
 
@@ -291,6 +293,12 @@ void gt_btn_style_set_font_size(gt_obj_st * btn, uint8_t size)
 {
     _gt_style_btn_st * style = btn->style;
     style->font_size = size;
+}
+
+void gt_btn_style_set_font_gray(gt_obj_st * btn, uint8_t gray)
+{
+    _gt_style_btn_st * style = btn->style;
+    style->font_gray = gray;
 }
 
 void gt_btn_style_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn)
