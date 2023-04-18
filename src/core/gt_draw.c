@@ -592,7 +592,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
 
     }
     else{
-	    ArBic_Convertor(text, text_len, _font.res, 16, _font.style_en , 0);  	//W排置
+	    // ArBic_Convertor(text, text_len, _font.res, 16, _font.style_en , 0);  	//W排置
     }
 
     //disp
@@ -748,7 +748,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             uint8_t font_gray = 1;
             if( (GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH) == ret_style)
             {
-                byte_width = _font.size >> 3;
+                byte_width = (_font.size + 7) >> 3;
             }
             else if((GT_FONT_TYPE_FLAG_VEC == ret_style))
             {
