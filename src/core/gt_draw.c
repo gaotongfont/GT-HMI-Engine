@@ -325,6 +325,16 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
             /*malloc*/
             color_circle_p = gt_mem_malloc(mem_size);
             mask_left_up = gt_mem_malloc(radius * radius);
+            if (NULL == color_circle_p) {
+                gt_mem_free(mask_left_up);
+                radius_pre = 0;
+                return ;
+            }
+            if (NULL == mask_left_up) {
+                gt_mem_free(color_circle_p);
+                radius_pre = 0;
+                return ;
+            }
         }
         if(radius > 12 ){
             gt_attr_circle_st circle_attr = {
@@ -505,7 +515,7 @@ static void _push_mask_buf(unsigned char *mask_buf , unsigned char *font_buf , u
     int idx_bit = 0,idx_mask_buf = 0 , idx_res = 0;
     uint16_t font_y = 0, font_x = 0;
     uint8_t tmp_c = 0;
-    
+
     if(2 == font_gray || 4 == font_gray){
         for ( font_y = 0; font_y < font_size; font_y++) {
             for (font_x = 0; font_x < byte_width; font_x++) {
@@ -555,8 +565,8 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
     _font.len = strlen(_font.utf8);
 
     GT_LOGD(GT_LOG_TAG_GUI , "utf8 : %s , _font.len = %d" , _font.utf8 , _font.len);
-    
-    // 
+
+    //
     idx = gt_font_one_char_code_len_get(&_font.utf8[idx], &unicode , _font.encoding);
     font_luag = _gt_is_style_cn_or_en(unicode , _font.encoding);
     text_len = 1;
@@ -571,7 +581,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
     len = idx;
     GT_LOGD(GT_LOG_TAG_GUI , "text_len = %d , idx = %d" , text_len , idx);
 
-    // 
+    //
     text = (uint32_t*)gt_mem_malloc(text_len * sizeof(uint32_t));
     idx = 0;
     i = 0;
@@ -722,7 +732,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             goto _lab_next_line;
         }
 
-        // 
+        //
         // if(gt_style_en_data_is_convertor(unicode , _font.encoding)){
 
         //     idx += _draw_text_convertor(draw_ctx , &blend_dsc , _font , idx);
@@ -763,7 +773,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
                 {
                     byte_width = (((_font.size + 15) >> 4) << 4) >> 3;
                 }
-                
+
             }
             _push_mask_buf(mask_buf , _font.res , _font.size , font_gray , byte_width);
         }else{
