@@ -24,6 +24,11 @@
  */
 #define USE_MEM_TRACE_DEBUG     0
 
+/**
+ * @brief Display max memory remark address
+ */
+#define USE_MEM_MAX_REMARK      0
+
 #if USE_MEM_TRACE_DEBUG
 #include "stdio.h"
 #include "unistd.h"
@@ -107,7 +112,7 @@ static gt_mem_hooks_st _self = {
 };
 #endif
 
-#if USE_MEM_TRACE_DEBUG
+#if USE_MEM_MAX_REMARK
 static MEM_UNIT _max_addr = 0;
 #endif
 
@@ -212,7 +217,9 @@ void * _mem_malloc(size_t size, uint8_t * file_name, size_t line)
     fprintf(fp, "[+]%s:%d %p %x(%d)\n", file_name, line, ret, size, size);
     fflush(fp);
     fclose(fp);
+#endif
 
+#if USE_MEM_MAX_REMARK
     if ((MEM_UNIT)ret > _max_addr) {
         _max_addr = (MEM_UNIT)ret;
         GT_LOGD(GT_LOG_TAG_MEM, ">>>>>> max addr: 0x%p <<<<<<", _max_addr);
@@ -248,7 +255,9 @@ void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
     fprintf(fp, "[++]%s:%d %p 0x%x(%d)", file_name, line, ret, size, size);
     fflush(fp);
     fclose(fp);
+#endif
 
+#if USE_MEM_MAX_REMARK
     if ((MEM_UNIT)ret > _max_addr) {
         _max_addr = (MEM_UNIT)ret;
         GT_LOGD(GT_LOG_TAG_MEM, ">>>>>> max addr: 0x%p <<<<<<", _max_addr);
