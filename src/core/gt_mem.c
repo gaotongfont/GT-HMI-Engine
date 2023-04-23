@@ -8,19 +8,33 @@
  */
 
 /* include --------------------------------------------------------------*/
-#include "gt_mem.h"
 #include "stdint.h"
 #include "string.h"
+#include "gt_mem.h"
 #include "../gt_conf.h"
 #include "../others/gt_log.h"
+
 #include GT_MEM_CUSTOM_INCLUDE
 
 
 /* private define -------------------------------------------------------*/
+/**
+ * @brief [TRACE] Memory trace debug, using to debug memory leak
+ *
+ */
+#define USE_MEM_TRACE_DEBUG     0
 
+#if USE_MEM_TRACE_DEBUG
+#include "stdio.h"
+#include "unistd.h"
 
+#define MEM_TRACE_PATH          "./runtimes/mem"
+#define MEM_TRACE_FAILED_PATH   "./runtimes/mem/failed.log"
+#define MEM_TRACE_LOG_PATH      "./runtimes/mem/success.log"
+#endif
 
 /* private typedef ------------------------------------------------------*/
+
 
 
 /* static variables -----------------------------------------------------*/
@@ -91,6 +105,10 @@ static gt_mem_hooks_st _self = {
     .realloc_hooks  = _DEFAULT_REALLOC_FUNC,
     .free_hooks     = _DEFAULT_FREE_FUNC,
 };
+#endif
+
+#if USE_MEM_TRACE_DEBUG
+static MEM_UNIT _max_addr = 0;
 #endif
 
 /* macros ---------------------------------------------------------------*/
@@ -179,24 +197,99 @@ void gt_mem_deinit(void)
 #endif
 }
 
-void * gt_mem_malloc(size_t size)
+void * _mem_malloc(size_t size, uint8_t * file_name, size_t line)
 {
-    return _gt_malloc_hooks(size);
+    void * ret = _gt_malloc_hooks(size);
+#if USE_MEM_TRACE_DEBUG
+    uint8_t buffer[128] = "";
+    sprintf((char *)buffer, "%s/%p.mem\0", MEM_TRACE_PATH, ret);
+    FILE * fp = fopen(buffer, "w");
+    if (NULL == fp) {
+        GT_LOGE(GT_LOG_TAG_MEM, "fopen failed: %s", buffer);
+        return ret;
+    }
+
+    fprintf(fp, "[+]%s:%d %p %x(%d)\n", file_name, line, ret, size, size);
+    fflush(fp);
+    fclose(fp);
+
+    if ((MEM_UNIT)ret > _max_addr) {
+        _max_addr = (MEM_UNIT)ret;
+        GT_LOGD(GT_LOG_TAG_MEM, ">>>>>> max addr: 0x%p <<<<<<", _max_addr);
+    }
+#endif
+    return ret;
 }
 
-void * gt_mem_realloc(void * ptr, size_t size)
+void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
 {
-    return _gt_realloc_hooks(ptr, size);
+    void * ret = _gt_realloc_hooks(ptr, size);
+#if USE_MEM_TRACE_DEBUG
+    uint8_t buffer[128] = "";
+    FILE * fp = NULL;
+
+    // 删除之前内存记录
+    sprintf((char *)buffer, "%s/%p.mem\0", MEM_TRACE_PATH, ptr);
+    if (unlink(buffer) < 0) {
+        fp = fopen(MEM_TRACE_FAILED_PATH, "a");
+        fprintf(fp, "[++]%s:%d addr: %p -> %p, size: 0x%x(%d)\n", file_name, line, ptr, ret, size, size);
+        fflush(fp);
+        fclose(fp);
+        fp = NULL;
+    }
+
+    sprintf((char *)buffer, "%s/%p.mem\0", MEM_TRACE_PATH, ret);
+    fp = fopen(buffer, "w");
+    if (NULL == fp) {
+        GT_LOGE(GT_LOG_TAG_MEM, "fopen failed: %s", buffer);
+        return ret;
+    }
+
+    fprintf(fp, "[++]%s:%d %p 0x%x(%d)", file_name, line, ret, size, size);
+    fflush(fp);
+    fclose(fp);
+
+    if ((MEM_UNIT)ret > _max_addr) {
+        _max_addr = (MEM_UNIT)ret;
+        GT_LOGD(GT_LOG_TAG_MEM, ">>>>>> max addr: 0x%p <<<<<<", _max_addr);
+    }
+#endif
+    return ret;
 }
 
-void gt_mem_free(void * ptr)
+void _mem_free(void * ptr, uint8_t * file_name, size_t line)
 {
+#if USE_MEM_TRACE_DEBUG
+    uint8_t buffer[128] = "";
+    FILE * fp = NULL;
+
+    // 删除之前内存记录
+    sprintf((char *)buffer, "%s/%p.mem\0", MEM_TRACE_PATH, ptr);
+    if (unlink(buffer) < 0) {
+        fp = fopen(MEM_TRACE_FAILED_PATH, "a");
+        fprintf(fp, "[-]%s:%d addr: %p\n", file_name, line, ptr);
+        fflush(fp);
+        fclose(fp);
+        fp = NULL;
+    } else {
+        fp = fopen(MEM_TRACE_LOG_PATH, "a");
+        fprintf(fp, "[o]%s:%d addr: %p\n", file_name, line, ptr);
+        fflush(fp);
+        fclose(fp);
+        fp = NULL;
+    }
+#endif
     _gt_free_hooks(ptr);
 }
 
 void * gt_memcpy(void * dst, const void * src, size_t size)
 {
     return memcpy(dst, src, size);
+}
+
+void * gt_memmove(void * dst, const void * src, size_t size)
+{
+    return memmove(dst, src, size);
 }
 
 void * gt_memset_0(void * ptr, size_t size)

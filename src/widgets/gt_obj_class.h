@@ -53,15 +53,12 @@ struct _gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct _gt
 
 /**
  * @brief delete control widget; Reclaim the memory of child controls.
- *  [The memory you have requested must be freed by yourself]
  *
  * @param self
- * @return struct _gt_obj_s*
  */
-struct _gt_obj_s * gt_obj_class_destroy(struct _gt_obj_s * self);
+void _gt_obj_class_destroy(struct _gt_obj_s * self);
 
 gt_obj_type_et gt_obj_class_get_type(struct _gt_obj_s * obj);
-void gt_obj_class_set_type(struct _gt_obj_s * obj, gt_obj_type_et type);
 
 #ifdef __cplusplus
 } /*extern "C"*/

@@ -48,7 +48,8 @@ void gt_mem_deinit(void);
  * @param size Want to malloc memory size [byte]
  * @return void* The buffer pointer which malloc successfully
  */
-void * gt_mem_malloc(size_t size);
+// void * _mem_malloc(size_t size);
+void * _mem_malloc(size_t size, uint8_t * file_name, size_t line);
 
 /**
  * @brief Realloc memory buffer size
@@ -57,14 +58,16 @@ void * gt_mem_malloc(size_t size);
  * @param size Realloc memory size [byte]
  * @return void* The buffer pointer which malloc successfully
  */
-void * gt_mem_realloc(void * ptr, size_t size);
+// void * gt_mem_realloc(void * ptr, size_t size);
+void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line);
 
 /**
  * @brief Free memory which malloc by gt_mem_malloc() or gt_mem_realloc().
  *
  * @param ptr The memory buffer address
  */
-void gt_mem_free(void * ptr);
+// void gt_mem_free(void * ptr);
+void _mem_free(void * ptr, uint8_t * file_name, size_t line);
 
 /**
  * @brief Memory data copy from src to dst, which size was given.
@@ -75,6 +78,16 @@ void gt_mem_free(void * ptr);
  * @return void* The destination address
  */
 void * gt_memcpy(void *dst, const void *src, size_t size);
+
+/**
+ * @brief Memory data copy from src to dst, which size was given.
+ *
+ * @param dst destination address, which want to save data buffer
+ * @param src source address
+ * @param size The buffer size need to be copy [byte]
+ * @return void*
+ */
+void * gt_memmove(void * dst, const void * src, size_t size);
 
 /**
  * @brief Memory buffer byte all set to zero.
@@ -106,6 +119,11 @@ void * gt_memset(void * ptr, uint8_t val, size_t size);
 int gt_memcmp(const void * dst, const void * src, size_t size);
 
 void gt_mem_check_used(void);
+
+
+#define gt_mem_malloc(size) _mem_malloc(size, __FILE__, __LINE__)
+#define gt_mem_realloc(ptr, size) _mem_realloc(ptr, size, __FILE__, __LINE__)
+#define gt_mem_free(ptr) _mem_free(ptr, __FILE__, __LINE__)
 
 #ifdef __cplusplus
 } /*extern "C"*/

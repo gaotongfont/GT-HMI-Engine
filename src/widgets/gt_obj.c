@@ -121,7 +121,8 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
 }
 
 /**
- * @brief destroy the object by core timer handler
+ * @brief destroy the object by core timer handler,
+ * Free the memory of the object and its children.
  *
  * @param timer
  */
@@ -136,21 +137,7 @@ void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
     }
 
     // release children memory and remove itself from parent children array
-    gt_obj_st * self = gt_obj_class_destroy(obj);
-
-    if (NULL == self) {
-        return ;
-    }
-
-    if (NULL == self->style) {
-        goto obj_lb;
-    }
-
-    obj->class->_deinit_cb(obj);
-    self->style = NULL;
-obj_lb:
-    gt_mem_free(self);
-    self = NULL;
+    _gt_obj_class_destroy(obj);
 }
 
 /* global functions / API interface -------------------------------------*/
