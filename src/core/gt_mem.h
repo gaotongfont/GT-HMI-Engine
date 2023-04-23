@@ -48,7 +48,6 @@ void gt_mem_deinit(void);
  * @param size Want to malloc memory size [byte]
  * @return void* The buffer pointer which malloc successfully
  */
-// void * _mem_malloc(size_t size);
 void * _mem_malloc(size_t size, uint8_t * file_name, size_t line);
 
 /**
@@ -58,7 +57,6 @@ void * _mem_malloc(size_t size, uint8_t * file_name, size_t line);
  * @param size Realloc memory size [byte]
  * @return void* The buffer pointer which malloc successfully
  */
-// void * gt_mem_realloc(void * ptr, size_t size);
 void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line);
 
 /**
@@ -66,7 +64,6 @@ void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line);
  *
  * @param ptr The memory buffer address
  */
-// void gt_mem_free(void * ptr);
 void _mem_free(void * ptr, uint8_t * file_name, size_t line);
 
 /**
