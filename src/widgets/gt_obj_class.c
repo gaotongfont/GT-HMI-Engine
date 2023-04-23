@@ -181,13 +181,13 @@ struct _gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct _gt
     }
 
     uint32_t is = get_instance_size(class);
-    gt_obj_st * obj = gt_mem_malloc(is);    // FIX: memory leak
+    gt_obj_st * obj = gt_mem_malloc(is);
 	gt_memset_0(obj, is);
 
     obj->class   = class;
     obj->parent  = parent;
     obj->opa     = GT_OPA_100;
-    obj->style   = gt_mem_malloc(get_style_size(class));    // FIX: memory leak
+    obj->style   = gt_mem_malloc(get_style_size(class));
     obj->visible = GT_VISIBLE;
 
     if (parent == NULL) {
