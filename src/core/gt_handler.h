@@ -19,7 +19,18 @@ extern "C" {
 
 /* define ---------------------------------------------------------------*/
 
-
+/**
+ * @brief 主版本号
+ */
+#define GT_HMI_ENGINE_MAJOR_VERSION 0
+/**
+ * @brief 次版本号
+ */
+#define GT_HMI_ENGINE_MINOR_VERSION 0
+/**
+ * @brief 修订号
+ */
+#define GT_HMI_ENGINE_PATCH_VERSION 2
 
 /* typedef --------------------------------------------------------------*/
 
