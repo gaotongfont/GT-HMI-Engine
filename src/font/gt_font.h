@@ -110,7 +110,7 @@ typedef struct _gt_attr_font_s {
     uint8_t space_x;    ///< The width of the space between characters
     uint8_t space_y;    ///< The distance between rows
 
-    gt_align_et align;  ///< Alignment
+    uint8_t align;      ///< Alignment @ gt_align_et
     uint8_t style;      ///< font style value @ref gt_font_style_et
     gt_opa_t opa;       ///< font opa value @GT_OPA_X
 }gt_attr_font_st;
@@ -210,6 +210,9 @@ uint8_t gt_gb_check_char(const uint8_t *dst , uint16_t pos , uint32_t* fontcode)
 
 gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding);
 bool gt_style_en_data_is_convertor(uint32_t unicode , uint8_t encoding);
+unsigned short gt_font_get_word_width_figure_up(unsigned char *p,unsigned int zfhigh,unsigned int zfwidth);
+uint8_t gt_font_type_get(unsigned int font_style);
+unsigned int gt_font_data_convertor(unsigned int* unicode , unsigned int u_len , unsigned char* data , gt_font_style_en_cn_et font_luag , gt_font_st font);
 
 #ifdef __cplusplus
 } /*extern "C"*/

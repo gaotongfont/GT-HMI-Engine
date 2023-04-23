@@ -117,7 +117,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     }
     gt_attr_font_st font_attr = {
         .font = &font,
-        .align = GT_ALIGN_NONE,
+        .align = style->font_align,
         .space_x = 0,
         .space_y = 0,
         .font_color = color_font,
@@ -272,6 +272,7 @@ static void _gt_input_init_style(gt_obj_st * input)
     style->border_color   = gt_color_black();
 	style->bg_color 	  = gt_color_hex(0xffffff);
     style->font_gray        = 1;
+    style->font_align = GT_ALIGN_NONE;
 }
 
 
@@ -469,6 +470,11 @@ void gt_input_style_set_font_gray(gt_obj_st * input, uint8_t gray)
 {
     _gt_style_input_st * style = input->style;
     style->font_gray = gray;
+}
+void gt_input_style_set_font_align(gt_obj_st * input, uint8_t align)
+{
+    _gt_style_input_st * style = input->style;
+    style->font_align = align;
 }
 void gt_input_style_set_border_width(gt_obj_st * input, gt_size_t width)
 {

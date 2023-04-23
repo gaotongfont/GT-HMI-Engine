@@ -36,6 +36,7 @@ typedef struct _gt_style_btn_s
     gt_family_t     font_family_cn;
     gt_family_t     font_family_en;
     uint8_t         font_gray;
+    uint8_t     font_align;
     uint8_t     fill;
 }_gt_style_btn_st;
 
@@ -97,6 +98,7 @@ void gt_btn_style_set_font_color(gt_obj_st * btn, gt_color_t color);
 
 void gt_btn_style_set_font_size(gt_obj_st * btn, uint8_t size);
 void gt_btn_style_set_font_gray(gt_obj_st * btn, uint8_t gray);
+void gt_btn_style_set_font_align(gt_obj_st * btn, uint8_t align);
 void gt_btn_style_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn);
 void gt_btn_style_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en);
 /**

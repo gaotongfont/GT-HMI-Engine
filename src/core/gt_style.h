@@ -24,10 +24,12 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef enum _gt_align_e
 {
-    GT_ALIGN_NONE = -1,
+    GT_ALIGN_NONE = 0,
     GT_ALIGN_LEFT,
     GT_ALIGN_RIGHT,
     GT_ALIGN_CENTER,
+
+    GT_ALIGN_REVERSE = 0x80,    //end of enum
 }gt_align_et;
 
 typedef enum _gt_text_long_mode_e

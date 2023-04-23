@@ -626,7 +626,7 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
         .font       = &font,
         .space_x    = 0,
         .space_y    = 0,
-        .align      = GT_ALIGN_CENTER,
+        .align      = style->font_align,
         .font_color = style->font_color,
         .opa        = keypad->opa,
     };
@@ -838,6 +838,7 @@ static void _gt_keypad_init_style(gt_obj_st * keypad)
     style->color_key    = gt_color_hex(0x646464);
     style->color_ctrl   = gt_color_hex(0x3E3E3E);
     style->font_gray    = 1;
+    style->font_align = GT_ALIGN_CENTER;
 
 #if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
     // 初始化拼音输入法
@@ -988,5 +989,9 @@ void gt_keypad_style_set_font_gray(gt_obj_st * keypad, uint8_t gray)
     _gt_style_keypad_st * style = keypad->style;
     style->font_gray = gray;
 }
-
+void gt_keypad_style_set_font_align(gt_obj_st * keypad, uint8_t align)
+{
+    _gt_style_keypad_st * style = keypad->style;
+    style->font_align = align;
+}
 /* end ------------------------------------------------------------------*/

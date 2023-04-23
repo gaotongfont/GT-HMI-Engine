@@ -102,7 +102,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
         .space_x        = 0,
         .space_y        = 0,
         .font_color     = style->font_color,
-        .align          = GT_ALIGN_CENTER,
+        .align          = style->font_align,
         .opa            = btn->opa,
     };
     draw_text(btn->draw_ctx, &font_attr, &area);
@@ -230,6 +230,7 @@ static void _gt_btn_init_style(gt_obj_st * btn)
     style->font_family_en   = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_gray        = 1;
+    style->font_align = GT_ALIGN_CENTER;
 }
 
 
@@ -299,6 +300,12 @@ void gt_btn_style_set_font_gray(gt_obj_st * btn, uint8_t gray)
 {
     _gt_style_btn_st * style = btn->style;
     style->font_gray = gray;
+}
+
+void gt_btn_style_set_font_align(gt_obj_st * btn, uint8_t align)
+{
+    _gt_style_btn_st * style = btn->style;
+    style->font_align = align;
 }
 
 void gt_btn_style_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn)

@@ -72,7 +72,7 @@ static inline void _gt_label_init_widget(gt_obj_st * label) {
         .font_color = style->font_color,
         .space_x    = 0,
         .space_y    = 0,
-        .align      = GT_ALIGN_LEFT,
+        .align      = style->font_align,
         .opa        = label->opa,
     };
     draw_text(label->draw_ctx, &font_attr, &label->area);
@@ -194,6 +194,7 @@ static void _gt_label_init_style(gt_obj_st * label)
     style->font_family_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size         = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_gray         = 1;
+    style->font_align = GT_ALIGN_LEFT;
 }
 
 
@@ -252,6 +253,12 @@ void gt_label_style_set_font_gray(gt_obj_st * label, uint8_t gray)
 {
     _gt_style_label_st * style = label->style;
     style->font_gray = gray;
+}
+
+void gt_label_style_set_font_align(gt_obj_st * label, uint8_t align)
+{
+    _gt_style_label_st * style = label->style;
+    style->font_align = align;
 }
 
 void gt_label_style_set_font_family_cn(gt_obj_st * label, gt_family_t family)

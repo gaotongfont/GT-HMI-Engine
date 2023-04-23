@@ -420,7 +420,7 @@ bool gt_style_en_data_is_convertor(uint32_t unicode , uint8_t encoding)
 
     switch(style_laug)
     {
-        case STYLE_EN_HEBREW:
+        // case STYLE_EN_HEBREW:
         case STYLE_EN_ARABIC:
         case STYLE_EN_THAI:
         case STYLE_EN_HIDIN:
@@ -513,6 +513,24 @@ lab_next_word:
     return ret;
 }
 
+uint8_t gt_font_type_get(unsigned int style)
+{
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    return GT_Get_Font_Type(style);
+#else
+    return 0;
+#endif
+}
+
+unsigned int gt_font_data_convertor(unsigned int* unicode , unsigned int u_len , unsigned char* data , gt_font_style_en_cn_et font_luag , gt_font_st font)
+{
+    unsigned int len = 0;
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    len = GT_Font_Convertor(unicode , u_len , font.style_en , data);
+#endif
+    return len;
+}
+
 
 uint32_t gt_font_get_string_width(gt_font_st * font)
 {
@@ -529,6 +547,9 @@ uint32_t gt_font_get_string_width(gt_font_st * font)
 
 uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
 {
+    if(unicode == 0x20){
+        return font->size >> 1;
+    }
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
     int width = 0; 
@@ -568,6 +589,32 @@ uint8_t gt_font_get_next_word_width(gt_font_st * font, uint8_t is_head){
     return gt_font_get_one_word_width(unicode, font);
 }
 
+
+unsigned short gt_font_get_word_width_figure_up(unsigned char *p,unsigned int zfhigh,unsigned int zfwidth)
+{
+	//unsigned char *q;
+	unsigned long i,j,tem=0,witdh1=0,k;//w=0,
+  //q=p;
+	for (i=0;i<zfhigh;i++)
+	{
+		for (j=0;j<zfwidth/8;j++)
+		{
+			tem=*(p+i*(zfwidth/8)+j);
+			for (k=0;k<8;k++)
+			{
+				if (((tem<<k)&0x80)==0x80)
+				{
+					if(witdh1<=j*8+k)
+						witdh1=j*8+k;
+				}
+			}
+		}
+	}
+	if(witdh1)
+		return witdh1+1;
+	else
+		return witdh1;
+}
 
 void gt_dot_to_mask_buf(uint8_t * dot, uint8_t * mask_buf, uint16_t w, uint16_t h){
 

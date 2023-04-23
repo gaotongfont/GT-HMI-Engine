@@ -61,7 +61,7 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
         .font       = &font,
         .space_x    = style->space_x,
         .space_y    = style->space_y,
-        .align      = GT_ALIGN_NONE,
+        .align      = style->font_align,
         .opa        = textarea->opa,
     };
 
@@ -210,6 +210,7 @@ static void _gt_textarea_init_style(gt_obj_st * textarea)
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
     style->color_background = gt_color_white();
     style->font_gray        = 1;
+    style->font_align = GT_ALIGN_NONE;
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -295,6 +296,11 @@ void gt_textarea_style_set_font_gray(gt_obj_st * textarea, uint8_t gray)
 {
     _gt_style_textarea_st * style = textarea->style;
     style->font_gray = gray;
+}
+void gt_textarea_style_set_font_align(gt_obj_st * textarea, uint8_t align)
+{
+    _gt_style_textarea_st * style = textarea->style;
+    style->font_align = align;
 }
 void gt_textarea_style_set_font_color(gt_obj_st * textarea, gt_color_t color)
 {

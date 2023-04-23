@@ -111,7 +111,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
         .space_x    = 0,
         .space_y    = 0,
         .font_color = style->font_color,
-        .align      = GT_ALIGN_NONE,
+        .align      = style->font_align,
         .opa        = radio->opa,
     };
     
@@ -224,6 +224,7 @@ static void _gt_radio_init_style(gt_obj_st * radio)
     style->font_family_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size         = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_gray         = 1;
+    style->font_align = GT_ALIGN_NONE;
 }
 
 
@@ -285,6 +286,11 @@ void gt_radio_style_set_font_gray(gt_obj_st * radio, uint8_t gray)
 {
     _gt_style_radio_st * style = radio->style;
     style->font_gray = gray;
+}
+void gt_radio_style_set_font_align(gt_obj_st * radio, uint8_t align)
+{
+    _gt_style_radio_st * style = radio->style;
+    style->font_align = align;
 }
 void gt_radio_style_set_font_family_cn(gt_obj_st * radio, gt_family_t family)
 {

@@ -32,6 +32,7 @@ typedef struct _gt_style_label_s{
     gt_family_t font_family_cn;
     gt_family_t font_family_en;
     uint8_t     font_gray;
+    uint8_t     font_align;
 }_gt_style_label_st;
 
 

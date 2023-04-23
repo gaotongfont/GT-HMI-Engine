@@ -153,7 +153,7 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
         .font       = &font,
         .space_x    = 0,
         .space_y    = 0,
-        .align      = GT_ALIGN_CENTER,
+        .align      = style->font_align,
         .font_color = gt_color_black(),
         .opa        = listview->opa,
     };
@@ -317,6 +317,7 @@ static void _gt_listview_init_style(gt_obj_st * listview)
     style->font_family_en       = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size            = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_gray            = 1;
+    style->font_align = GT_ALIGN_CENTER;
 }
 
 
@@ -422,6 +423,11 @@ void gt_listview_style_set_font_gray(gt_obj_st * listview, uint8_t gray)
 {
     _gt_style_listview_st * style = listview->style;
     style->font_gray = gray;
+}
+void gt_listview_style_set_font_align(gt_obj_st * listview, uint8_t align)
+{
+    _gt_style_listview_st * style = listview->style;
+    style->font_align = align;
 }
 void gt_listview_style_set_font_color(gt_obj_st * listview, gt_color_t color)
 {

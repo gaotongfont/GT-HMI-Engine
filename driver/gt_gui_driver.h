@@ -345,6 +345,8 @@ unsigned char GT_Get_Font_Type(unsigned int style);
 unsigned char GT_Get_Chinese_Charset_Type(void);
 void GT_Set_Chinese_Charset_Type(unsigned char charset);
 
+unsigned int GT_Font_Convertor(unsigned int *unicode , unsigned int u_len , unsigned int font_option , unsigned char * dat);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

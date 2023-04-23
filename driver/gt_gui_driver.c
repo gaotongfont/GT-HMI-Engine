@@ -164,4 +164,17 @@ unsigned char GT_Get_Font_Type(unsigned int style)
     return 0;
 }
 
+unsigned int GT_Font_Convertor(unsigned int* unicode, unsigned int u_len, unsigned int font_option, unsigned char* dat)
+{
+    unsigned int len = 0;
+
+    switch (font_option)
+    {
+        default: 
+            break;
+    }
+
+    return len;
+}
+
 /*------------------------------------------------------------------ end of file -----------------------------------------------------------------*/

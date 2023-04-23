@@ -99,7 +99,7 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
         .space_x        = 0,
         .space_y        = 0,
         .font_color     = style->font_color,
-        .align          = GT_ALIGN_NONE,
+        .align          = style->font_align,
         .opa            = checkbox->opa,
     };
     area.x += (area_box.w + 2);
@@ -228,6 +228,7 @@ static void _gt_checkbox_init_style(gt_obj_st * checkbox)
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_color       = gt_color_black();
     style->font_gray        = 1;
+    style->font_align = GT_ALIGN_NONE;
 }
 
 
@@ -286,6 +287,11 @@ void gt_checkbox_style_set_font_gray(gt_obj_st * checkbox, uint8_t gray)
 {
     _gt_style_checkbox_st * style = checkbox->style;
     style->font_gray = gray;
+}
+void gt_checkbox_style_set_font_align(gt_obj_st * checkbox, uint8_t align)
+{
+    _gt_style_checkbox_st * style = checkbox->style;
+    style->font_align = align;
 }
 void gt_checkbox_style_set_font_color(gt_obj_st * checkbox, gt_color_t color)
 {

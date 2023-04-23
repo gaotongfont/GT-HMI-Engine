@@ -30,6 +30,7 @@ typedef struct _gt_style_checkbox_s
     gt_family_t font_family_en;
     uint8_t     font_size;
     uint8_t     font_gray;
+    uint8_t     font_align;
 }_gt_style_checkbox_st;
 
 
@@ -62,6 +63,7 @@ void gt_checkbox_style_set_font_family_cn(gt_obj_st * checkbox, gt_family_t fami
 void gt_checkbox_style_set_font_family_en(gt_obj_st * checkbox, gt_family_t family);
 void gt_checkbox_style_set_font_size(gt_obj_st * checkbox, uint8_t size);
 void gt_checkbox_style_set_font_gray(gt_obj_st * checkbox, uint8_t gray);
+void gt_checkbox_style_set_font_align(gt_obj_st * checkbox, uint8_t align);
 
 #ifdef __cplusplus
 } /*extern "C"*/
