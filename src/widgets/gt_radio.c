@@ -59,7 +59,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
         .gray       = style->font_gray,
     };
     font.encoding = gt_project_encoding_get();
-    
+
     // set default size
     if( radio->area.w == 0 || radio->area.h == 0){
         radio->area.w = style->font_size+4 + strlen(style->text)*11;
@@ -114,7 +114,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
         .align      = style->font_align,
         .opa        = radio->opa,
     };
-    
+
     draw_text(radio->draw_ctx, &font_attr, &area_font);
 }
 
@@ -218,6 +218,7 @@ static void _gt_radio_init_style(gt_obj_st * radio)
     gt_memset(style,0,sizeof(_gt_style_radio_st));
 
     style->text = gt_mem_malloc(sizeof("radio"));
+    GT_CHECK_BACK(style->text);
     gt_memcpy(style->text, "radio\0", sizeof("radio"));
 
     style->font_family_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
@@ -266,6 +267,7 @@ void gt_radio_style_set_text(gt_obj_st * radio, char * text){
     }
     uint16_t len = text == NULL ? 0 : strlen(text);
     style->text = gt_mem_malloc(len+1);
+    GT_CHECK_BACK(style->text);
     gt_memcpy(style->text, text, len);
     style->text[len] = 0;
 }

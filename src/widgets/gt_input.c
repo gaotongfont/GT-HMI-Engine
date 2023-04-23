@@ -307,6 +307,7 @@ void gt_input_style_set_value(gt_obj_st * input, char * value)
     }
     uint16_t len = value == NULL ? 0 : strlen(value);
     style->value = gt_mem_malloc( len + 1 );
+    GT_CHECK_BACK(style->value);
     gt_memcpy(style->value, value, len);
     style->value[len] = 0;
 
@@ -332,6 +333,7 @@ void gt_input_style_append_value(gt_obj_st * input, char * value)
     uint16_t len = value == NULL ? 0 : strlen(value);
     if( !style->value ){
         style->value = gt_mem_malloc(len+1);
+        GT_CHECK_BACK(style->value);
         gt_memcpy(style->value, value, len);
         style->value[len] = 0;
         style->pos_cursor = len;
@@ -355,9 +357,10 @@ void gt_input_style_append_value_encoding(gt_obj_st * input, char * value , uint
     uint16_t len = value == NULL ? 0 : strlen(value);
     uint16_t idx = 0;
     char *tmp_str = gt_mem_malloc(len + 1);
+    GT_CHECK_BACK(tmp_str);
 
     while(idx < len)
-    {   
+    {
         gt_memset_0(tmp_str, len+1);
         if(encoding == GT_ENCODING_UTF8){
             idx += gt_encoding_table_one_char(&value[idx] , tmp_str , UTF8_2_GB);
@@ -406,6 +409,7 @@ void gt_input_style_set_placeholder(gt_obj_st * input, const char * placeholder)
     }
     uint16_t len = strlen(placeholder);
     style->placeholder = gt_mem_malloc( len + 1 );
+    GT_CHECK_BACK(style->placeholder);
     gt_memcpy(style->placeholder, placeholder, len);
     style->placeholder[len] = 0;
 

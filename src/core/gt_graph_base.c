@@ -785,7 +785,7 @@ void gt_bresenham_line(int x0, int y0, int x1, int y1,gt_color_t fg_color)
 	gt_color_t * bufa = gt_disp_graph_get_buf_default();
 
 	int dx =  abs(x1-x0), sx = x0<x1 ? 1 : -1;
-	int dy = -abs(y1-y0), sy = y0<y1 ? 1 : -1; 
+	int dy = -abs(y1-y0), sy = y0<y1 ? 1 : -1;
 	int err = dx+dy, e2; /* error value e_xy */
 
 	for(;;){  /* loop */
@@ -798,12 +798,12 @@ void gt_bresenham_line(int x0, int y0, int x1, int y1,gt_color_t fg_color)
 
 		if (e2 >= dy) { /* e_xy+e_x > 0 */
 			err += dy;
-			x0 += sx; 
-		} 
+			x0 += sx;
+		}
 		if (e2 <= dx) {/* e_xy+e_y < 0 */
 			err += dx;
-			y0 += sy; 
-		} 
+			y0 += sy;
+		}
 	}
 }
 
@@ -888,6 +888,7 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 			.h = circle_attr.radius * 2,
 		};
 		gt_color_t * color_circle = gt_mem_malloc(area_circle.w * area_circle.h * sizeof(gt_color_t));
+		GT_CHECK_BACK(color_circle);
 		gt_graph_circle(&circle_attr, &area_circle, color_circle);
 
 		gt_area_st area_dst = {

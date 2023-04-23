@@ -200,6 +200,7 @@ static void get_graph_circle_ring_buff(uint16_t radius,uint16_t border_width,uin
     int radius_hid = radius - border_width;
     if( radius_hid >= 3){
         uint8_t * mask_hid = gt_mem_malloc( radius_hid * radius_hid );
+        GT_CHECK_BACK(mask_hid);
         gt_memcpy(mask_hid, radius_dat[radius_hid].ptr, radius_dat[radius_hid].size);
 
         int bidx = 0, sidx = 0;
@@ -279,10 +280,8 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         uint32_t len = coords->w * coords->h , index = 0 , buf_idx = 0;
         char idx_bit = 0;
         mask_buf = gt_mem_malloc(len);
-        if(NULL == mask_buf) {
-            GT_LOGE(GT_LOG_TAG_GUI , "mask buf malloc %d err, w: %d, h: %d!", len, coords->w, coords->h);
-            return ;
-        }
+        GT_CHECK_BACK(mask_buf);
+
         blend_dsc.mask_buf = mask_buf;
         blend_dsc.mask_area->w = coords->w;
         blend_dsc.mask_area->h = coords->h;
@@ -780,8 +779,11 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
 
         /*malloc*/
         data = gt_mem_malloc(font_dot_w * font_dot_w >> 3); // (dsc->font->size * dsc->font->size >> 3);
+        GT_CHECK(data, area_font);
         mask_buf = gt_mem_malloc(font_dot_w * font_dot_w);
+        GT_CHECK(mask_buf, area_font);
         mask_line = gt_mem_malloc( _font.size*2 );
+        GT_CHECK(mask_line, area_font);
     }
 #else
     /*malloc*/

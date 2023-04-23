@@ -148,6 +148,18 @@ extern "C" {
 /**
  * @brief 变量检查, 并跳出函数.
  * @param _value 检查对象
+ */
+#define GT_CHECK_BACK(_value)                                                               \
+    do {                                                                                    \
+        if (!_value) {                                                                      \
+            GT_LOGE(GT_LOG_TAG_CHECK, "[%s] value check failed!", #_value);                 \
+            return ;                                                                        \
+        }                                                                                   \
+    }while(0)
+
+/**
+ * @brief 变量检查, 并跳出函数.
+ * @param _value 检查对象
  * @param _ret_code 检查失败, 返回的错误码
  */
 #define GT_CHECK(_value, _ret_code)                                                         \

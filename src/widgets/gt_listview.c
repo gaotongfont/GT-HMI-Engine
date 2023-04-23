@@ -345,16 +345,20 @@ void gt_listview_style_add_item(gt_obj_st * listview, char * item)
     int len_item = item == NULL ? 0 : strlen(item);
     if( style->cnt == 0 ){
         style->item = gt_mem_malloc(sizeof(char *));
+        GT_CHECK_BACK(style->item);
 
         style->item[0] = gt_mem_malloc( len_item + 1 );
+        GT_CHECK_BACK(style->item[0]);
         gt_memcpy(style->item[0], item, len_item);
         style->item[0][len_item] = 0;
 
         style->cnt = 1;
     }else{
         style->item = gt_mem_realloc(style->item, (style->cnt+1) * sizeof(char *));
+        GT_CHECK_BACK(style->item);
 
         style->item[style->cnt] = gt_mem_malloc( len_item + 1 );
+        GT_CHECK_BACK(style->item[style->cnt]);
         gt_memcpy(style->item[style->cnt], item, len_item);
         style->item[style->cnt][len_item] = 0;
 

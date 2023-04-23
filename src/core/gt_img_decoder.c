@@ -113,7 +113,7 @@ void _gt_img_decoder_init(void)
     GT_INIT_LIST_HEAD(&_GT_GC_GET_ROOT(_gt_img_decoder_ll));
 
     _gt_img_decoder_st * decoder = gt_img_decoder_create();
-    GT_CHECK(decoder, (void)0);
+    GT_CHECK_BACK(decoder);
 
     gt_img_decoder_set_info_cb(decoder, _gt_img_decoder_built_in_info);
     gt_img_decoder_set_open_cb(decoder, _gt_img_decoder_built_in_open);

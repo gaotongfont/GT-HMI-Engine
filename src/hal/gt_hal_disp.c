@@ -69,6 +69,7 @@ void gt_disp_drv_register(gt_disp_drv_st * drv)
 {
     if( disp_p == NULL ){
         disp_p = gt_mem_malloc(sizeof(gt_disp_st));
+        GT_CHECK_BACK(disp_p);
         disp_p->refr.idx_r = 0;
         disp_p->refr.idx_w = 0;
     }

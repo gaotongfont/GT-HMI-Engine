@@ -220,6 +220,7 @@ static void _gt_btn_init_style(gt_obj_st * btn)
     gt_memset(style, 0, sizeof(_gt_style_btn_st));
 
     style->text = gt_mem_malloc(sizeof("btn"));
+    GT_CHECK_BACK(style->text);
     strcpy(style->text, "btn");
     style->radius           = 0;
     style->color_pressed    = gt_color_hex(0x1C82D0);    //default color_selected
@@ -273,6 +274,7 @@ void gt_btn_style_set_text(gt_obj_st * btn, char * text)
     }
     uint16_t size = text == NULL ? 0 : strlen(text);
     style->text = gt_mem_malloc(size+1);
+    GT_CHECK_BACK(style->text);
     gt_memcpy(style->text, text, size);
     style->text[size] = 0;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);

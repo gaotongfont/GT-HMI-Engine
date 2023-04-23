@@ -214,6 +214,7 @@ void gt_vf_init(const gt_vfs_st * vfs)
 
     if( !_vf_dev ){
         _vf_dev = gt_mem_malloc( sizeof(gt_vf_st) );
+        GT_CHECK_BACK(_vf_dev);
     }
 
     /* set _vf_dev msg */
