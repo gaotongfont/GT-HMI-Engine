@@ -58,11 +58,6 @@ static void _gt_timer_remove_task(_gt_timer_st *ptr)
     if (NULL == ptr) {
         return ;
     }
-    if (ptr->user_data) {
-        GT_LOGW(GT_LOG_TAG_MEM, "Timer task user data not free, and try to free it...");
-        gt_mem_free(ptr->user_data);
-        ptr->user_data = NULL;
-    }
     gt_list_del(&ptr->list);
     gt_mem_free(ptr);
 }
