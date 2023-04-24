@@ -565,7 +565,7 @@ static void _gt_gray_and_dot_width_get(uint8_t* gray , uint8_t* dot_width , gt_f
         {
             byte_width = (((font.size + 15) >> 4) << 4) >> 3;
         }
-        
+
     }
     *gray = font_gray ;
     *dot_width = byte_width;
@@ -593,7 +593,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
     }
     _font.utf8 = &(dsc->font->utf8[index]);
     _font.len = strlen(_font.utf8);
-    // 
+    //
     idx = gt_font_one_char_code_len_get(&_font.utf8[idx], &unicode , _font.encoding);
     font_luag = _gt_is_style_cn_or_en(unicode , _font.encoding);
     text_len = 1;
@@ -607,7 +607,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
         text_len++;
     }
     len = idx;
-    // 
+    //
     text = (unsigned int*)gt_mem_malloc(text_len * sizeof(unsigned int));
     if(NULL == text){
         GT_LOGE(GT_LOG_TAG_GUI, "text malloc failed , size: %d" , text_len * sizeof(unsigned int));
@@ -633,7 +633,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
     else{
         font_dot_w = (((_font.size + 7) >> 3) << 3);
     }
-    // 
+    //
     if(STYLE_EN_HIDIN == font_luag){
         one_font_size = 48;
     }
@@ -657,7 +657,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
     idx = 0;
     _font.res = &font_buf[font_buf_len - one_font_size];
     while(idx < text_len)
-    {   
+    {
         if(STYLE_EN_THAI == font_luag && 32 == _font.size){
             one_font_size = 66;
             width = font_buf[idx * one_font_size + 1];
@@ -693,14 +693,14 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
             byte_width = (width + 7) >> 3 ;
             font_gray = 1;
             _gt_gray_and_dot_width_get(&font_gray , &byte_width , _font , ret_style);
-            
+
             gt_memset_0(blend_dsc->mask_buf , _font.size * _font.size);
             _push_mask_buf(blend_dsc->mask_buf, &font_buf[idx * one_font_size] , _font.size , font_gray , byte_width);
-            // 
+            //
         }
         gt_draw_blend(draw_ctx, blend_dsc);
 
-    _lab_nex_word:
+_lab_nex_word:
         if(0x80 != (dsc->align & 0x80)){
             if((GT_FONT_TYPE_FLAG_DOT_MATRIX == ret_style) && \
                 ((STYLE_EN_HIDIN == font_luag) || (STYLE_EN_THAI == font_luag && 48 == _font.size)))
@@ -714,7 +714,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
         if(0x80 != (dsc->align & 0x80)){
             /* check whether the boundary is reached */
             if( (blend_dsc->dst_area->x + blend_dsc->dst_area->w + dsc->space_x) > (coords->x + coords->w) ){
-        _lab_next_line:
+_lab_next_line:
                 // blend_dsc->dst_area->x = coords->x;
                 blend_dsc->dst_area->x = start_x;
                 blend_dsc->dst_area->y += blend_dsc->dst_area->h + dsc->space_y;
@@ -723,7 +723,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
                 }
             }
         }
-    
+
     }
 
 _ret_handle:
@@ -875,7 +875,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             goto _lab_next_line;
         }
 
-        // convertor 
+        // convertor
         if(gt_style_en_data_is_convertor(unicode , _font.encoding)){
 
             idx += _draw_text_convertor(draw_ctx , &blend_dsc , _font , idx , dsc , coords , start_x);
@@ -978,6 +978,101 @@ _ret_handler:
     return area_font;
 }
 
+
+static void _filling_by_png_file(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
+    uint16_t w, h, y = 0;
+    w = dsc_img->header.w;
+    h = dsc_img->header.h;
+
+    /* line by line to blend */
+    blend_dsc->mask_buf = &dsc_img->alpha[0];
+    blend_dsc->dst_buf = (gt_color_t *)&dsc_img->img[0];
+    while(y < h){
+        if( gt_area_is_intersect_screen(draw_ctx->buf_area, blend_dsc->dst_area) ){
+            /* blend to bg */
+            gt_draw_blend(draw_ctx, blend_dsc);
+        }
+        blend_dsc->dst_buf += w;
+        blend_dsc->mask_buf += w;
+
+        ++blend_dsc->dst_area->y;
+        ++blend_dsc->mask_area->y;
+        ++y;
+    }
+}
+/**
+ * @brief GT-HMI Engine Image format
+ *
+ * @param draw_ctx
+ * @param blend_dsc
+ * @param dsc_img
+ */
+static void _filling_by_default(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
+    uint32_t offset = 0, len = 0;
+    uint32_t addr_start_alpha = 0;
+    gt_color_t * color_img_line_p = NULL;
+    uint16_t w, h, y = 0;
+    uint8_t * mask_buf = NULL;
+
+    w = dsc_img->header.w;
+    h = dsc_img->header.h;
+    addr_start_alpha = w * h * sizeof(gt_color_t);
+
+    gt_fs_fp_st * fp = gt_fs_get_fp();
+    if (!fp) {
+        GT_LOGW(GT_LOG_TAG_GUI, "gt_fs_get_fp failed");
+        return;
+    }
+    uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
+
+    len = w * sizeof(gt_color_t);
+    color_img_line_p = gt_mem_malloc( len );
+    if (!color_img_line_p) {
+        GT_LOGW(GT_LOG_TAG_GUI, "Per-line buffer malloc failed");
+        return;
+    }
+
+    if (is_mask) {
+        mask_buf = gt_mem_malloc(w);
+        if (!mask_buf) {
+            goto line_lb;
+        }
+        blend_dsc->mask_buf = mask_buf;
+    } else {
+        blend_dsc->mask_buf = NULL;  /* default: bmp */
+    }
+    blend_dsc->dst_buf = color_img_line_p;
+
+    while(y < h){
+        if (gt_area_is_intersect_screen(draw_ctx->buf_area, blend_dsc->dst_area)) {
+            /*read one line color data*/
+            gt_fs_read_img_offset((uint8_t *)color_img_line_p, offset, len);
+            if(is_mask) {    //png
+                gt_fs_read_img_offset((uint8_t *)mask_buf, addr_start_alpha, w);
+            }
+            /* blend to bg */
+            gt_draw_blend(draw_ctx, blend_dsc);
+        }
+        offset += len;
+        addr_start_alpha += w;
+
+        ++blend_dsc->dst_area->y;
+        ++blend_dsc->mask_area->y;
+        ++y;
+    }
+
+    if (is_mask) {
+        gt_mem_free(mask_buf);
+        mask_buf = NULL;
+    }
+
+line_lb:
+    if (color_img_line_p) {
+        gt_mem_free(color_img_line_p);
+        color_img_line_p = NULL;
+    }
+}
+
 void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
 {
     if( dsc->bg_img_src == NULL ) return;
@@ -998,79 +1093,14 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
         .opa = dsc->bg_opa
     };
 
-    uint32_t addr_start_alpha = 0;
-    uint32_t offset = 0, len = 0;
-    gt_color_t * color_img_line_p = NULL;
-    uint16_t w, h, y = 0;
-    uint8_t * mask_buf = NULL;
-
-    w = dsc_img.header.w;
-    h = dsc_img.header.h;
-    addr_start_alpha = w * h * sizeof(gt_color_t);
     /* img src type */
     switch(dsc_img.header.type) {
-
         case GT_IMG_DECODER_TYPE_PNG: {
-            /* line by line to blend */
-            blend_dsc.mask_buf = &dsc_img.alpha[0];
-            blend_dsc.dst_buf = (gt_color_t *)&dsc_img.img[0];
-            while(y < h){
-                if( gt_area_is_intersect_screen(draw_ctx->buf_area, &dst_area) ){
-                    /* blend to bg */
-                    gt_draw_blend(draw_ctx, &blend_dsc);
-                }
-                blend_dsc.mask_buf += w;
-                blend_dsc.dst_buf += w;
-                ++y;
-                ++dst_area.y;
-                ++mask_area.y;
-            }
+            _filling_by_png_file(draw_ctx, &blend_dsc, &dsc_img);
             break;
         }
         default: {
-            // gt format
-            gt_fs_fp_st * fp = gt_fs_get_fp();
-            if (!fp) { break; }
-            uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
-
-            len = w * sizeof(gt_color_t);
-            color_img_line_p = gt_mem_malloc( len );
-            if (!color_img_line_p) { break; }
-
-            if (is_mask) {
-                mask_buf = gt_mem_malloc(w);
-                if (!mask_buf) {
-                    gt_mem_free(color_img_line_p);
-                    break;
-                }
-                blend_dsc.mask_buf = mask_buf;
-            } else {
-                blend_dsc.mask_buf = NULL;  /* default: bmp */
-            }
-            blend_dsc.dst_buf = color_img_line_p;
-
-            while(y < h){
-                if (gt_area_is_intersect_screen(draw_ctx->buf_area, &dst_area)) {
-                    /*read one line color data*/
-                    gt_fs_read_img_offset((uint8_t *)color_img_line_p, offset, len);
-                    if(is_mask) {    //png
-                        gt_fs_read_img_offset((uint8_t *)mask_buf, addr_start_alpha, w);
-                        // addr_start_alpha += w;
-                    }
-                    /* blend to bg */
-                    gt_draw_blend(draw_ctx, &blend_dsc);
-                }
-                ++y;
-                ++dst_area.y;
-                ++mask_area.y;
-                offset += len;
-                addr_start_alpha += w;
-            }
-
-            gt_mem_free(color_img_line_p);
-            if (is_mask) {
-                gt_mem_free(mask_buf);
-            }
+            _filling_by_default(draw_ctx, &blend_dsc, &dsc_img);
             break;
         }
     }
