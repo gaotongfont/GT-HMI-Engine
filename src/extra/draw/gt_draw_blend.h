@@ -14,16 +14,8 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-#include "stdlib.h"
-#include "stdbool.h"
-
 #include "../../core/gt_graph_base.h"
 #include "../../hal/gt_hal_disp.h"
-#include "../../others/gt_math.h"
-#include "../../others/gt_log.h"
-#include "../../others/gt_effects.h"
-#include "../../widgets/gt_obj.h"
-#include "gt_draw_blend.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -32,14 +24,14 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_draw_blend_dsc_s{
-    gt_area_st  * dst_area;  /*must set, dst area*/
-    gt_color_t  * dst_buf;   /*unnecessary, blend dst color*/
+    gt_area_st  * dst_area;  /** dst area, draw temp cache */
+    gt_color_t  * dst_buf;   /** blend dst color */
 
-    gt_area_st  * mask_area; /*not set*/
-    gt_opa_t    * mask_buf;  /*opa buf*/
+    gt_area_st  * mask_area; /** alpha data display area */
+    gt_opa_t    * mask_buf;  /** opa / alpha buffer */
     gt_color_t  color_fill;  /*blend color*/
 
-    gt_opt_t    opa;         /*must*/
+    gt_opt_t    opa;         /** value of the overall opacity */
 }gt_draw_blend_dsc_st;
 
 struct _gt_draw_ctx_t;

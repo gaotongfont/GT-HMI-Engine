@@ -1085,7 +1085,7 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
     }
 
     gt_area_st dst_area = *coords, mask_area = *coords;
-    dst_area.h = 1;
+    dst_area.h = 1;         /** 每次只填充一行的数据量 */
 
     gt_draw_blend_dsc_st blend_dsc = {
         .dst_buf = NULL,
