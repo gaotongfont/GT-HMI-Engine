@@ -978,7 +978,13 @@ _ret_handler:
     return area_font;
 }
 
-
+/**
+ * @brief PNG File Format
+ *
+ * @param draw_ctx
+ * @param blend_dsc
+ * @param dsc_img
+ */
 static void _filling_by_png_file(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     uint16_t w, h, y = 0;
     w = dsc_img->header.w;
@@ -1010,10 +1016,8 @@ static void _filling_by_png_file(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st 
 static void _filling_by_default(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     uint32_t offset = 0, len = 0;
     uint32_t addr_start_alpha = 0;
-    gt_color_t * color_img_line_p = NULL;
-    uint16_t w, h, y = 0;
     uint8_t * mask_buf = NULL;
-
+    uint16_t w, h, y = 0;
     w = dsc_img->header.w;
     h = dsc_img->header.h;
     addr_start_alpha = w * h * sizeof(gt_color_t);
@@ -1023,32 +1027,28 @@ static void _filling_by_default(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st *
         GT_LOGW(GT_LOG_TAG_GUI, "gt_fs_get_fp failed");
         return;
     }
-    uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
 
     len = w * sizeof(gt_color_t);
-    color_img_line_p = gt_mem_malloc( len );
-    if (!color_img_line_p) {
+    blend_dsc->dst_buf = gt_mem_malloc( len );
+    if (!blend_dsc->dst_buf) {
         GT_LOGW(GT_LOG_TAG_GUI, "Per-line buffer malloc failed");
         return;
     }
 
+    uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
     if (is_mask) {
-        mask_buf = gt_mem_malloc(w);
-        if (!mask_buf) {
+        blend_dsc->mask_buf = gt_mem_malloc(w);
+        if (!blend_dsc->mask_buf) {
             goto line_lb;
         }
-        blend_dsc->mask_buf = mask_buf;
-    } else {
-        blend_dsc->mask_buf = NULL;  /* default: bmp */
     }
-    blend_dsc->dst_buf = color_img_line_p;
 
     while(y < h){
         if (gt_area_is_intersect_screen(draw_ctx->buf_area, blend_dsc->dst_area)) {
             /*read one line color data*/
-            gt_fs_read_img_offset((uint8_t *)color_img_line_p, offset, len);
+            gt_fs_read_img_offset((uint8_t *)blend_dsc->dst_buf, offset, len);
             if(is_mask) {    //png
-                gt_fs_read_img_offset((uint8_t *)mask_buf, addr_start_alpha, w);
+                gt_fs_read_img_offset((uint8_t *)blend_dsc->mask_buf, addr_start_alpha, w);
             }
             /* blend to bg */
             gt_draw_blend(draw_ctx, blend_dsc);
@@ -1062,14 +1062,14 @@ static void _filling_by_default(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st *
     }
 
     if (is_mask) {
-        gt_mem_free(mask_buf);
-        mask_buf = NULL;
+        gt_mem_free(blend_dsc->mask_buf);
+        blend_dsc->mask_buf = NULL;
     }
 
 line_lb:
-    if (color_img_line_p) {
-        gt_mem_free(color_img_line_p);
-        color_img_line_p = NULL;
+    if (blend_dsc->dst_buf) {
+        gt_mem_free(blend_dsc->dst_buf);
+        blend_dsc->dst_buf = NULL;
     }
 }
 
@@ -1088,6 +1088,8 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
     dst_area.h = 1;
 
     gt_draw_blend_dsc_st blend_dsc = {
+        .dst_buf = NULL,
+        .mask_buf = NULL,
         .dst_area = &dst_area,
         .mask_area = &mask_area,
         .opa = dsc->bg_opa
