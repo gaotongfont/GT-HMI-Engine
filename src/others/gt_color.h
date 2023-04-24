@@ -469,45 +469,46 @@ static inline void gt_color_mix_with_alpha(gt_color_t bg_color, gt_opa_t bg_opa,
     if(fg_opa >= GT_OPA_MAX || bg_opa <= GT_OPA_MIN) {
         res_color->full = fg_color.full;
         *res_opa = fg_opa;
+        return ;
     }
     /*Transparent foreground: use the Background*/
-    else if(fg_opa <= GT_OPA_MIN) {
+    if(fg_opa <= GT_OPA_MIN) {
         res_color->full = bg_color.full;
         *res_opa = bg_opa;
+        return ;
     }
     /*Opaque background: use simple mix*/
-    else if(bg_opa >= GT_OPA_MAX) {
+    if(bg_opa >= GT_OPA_MAX) {
         *res_color = gt_color_mix(fg_color, bg_color, fg_opa);
         *res_opa = GT_OPA_COVER;
+        return;
     }
+
     /*Both colors have alpha. Expensive calculation need to be applied*/
-    else {
-        /*Save the parameters and the result. If they will be asked again don't compute again*/
-        static gt_opa_t fg_opa_save     = 0;
-        static gt_opa_t bg_opa_save     = 0;
-        static gt_color_t fg_color_save = _GT_COLOR_ZERO_INITIALIZER;
-        static gt_color_t bg_color_save = _GT_COLOR_ZERO_INITIALIZER;
-        static gt_color_t res_color_saved = _GT_COLOR_ZERO_INITIALIZER;
-        static gt_opa_t res_opa_saved = 0;
+    /*Save the parameters and the result. If they will be asked again don't compute again*/
+    static gt_opa_t fg_opa_save       = 0;
+    static gt_opa_t bg_opa_save       = 0;
+    static gt_color_t fg_color_save   = _GT_COLOR_ZERO_INITIALIZER;
+    static gt_color_t bg_color_save   = _GT_COLOR_ZERO_INITIALIZER;
+    static gt_color_t res_color_saved = _GT_COLOR_ZERO_INITIALIZER;
+    static gt_opa_t res_opa_saved     = 0;
 
-        if(fg_opa != fg_opa_save || bg_opa != bg_opa_save || fg_color.full != fg_color_save.full ||
-           bg_color.full != bg_color_save.full) {
-            fg_opa_save        = fg_opa;
-            bg_opa_save        = bg_opa;
-            fg_color_save.full = fg_color.full;
-            bg_color_save.full = bg_color.full;
-            /*Info:
-             * https://en.wikipedia.org/wiki/Alpha_compositing#Analytical_derivation_of_the_over_operator*/
-            res_opa_saved = 255 - ((uint16_t)((uint16_t)(255 - fg_opa) * (255 - bg_opa)) >> 8);
-            GT_ASSERT(res_opa_saved != 0);
-            gt_opa_t ratio = (uint16_t)((uint16_t)fg_opa * 255) / res_opa_saved;
-            res_color_saved = gt_color_mix(fg_color, bg_color, ratio);
-
-        }
-
-        res_color->full = res_color_saved.full;
-        *res_opa = res_opa_saved;
+    if (fg_opa != fg_opa_save || bg_opa != bg_opa_save ||
+        fg_color.full != fg_color_save.full ||
+        bg_color.full != bg_color_save.full) {
+        fg_opa_save        = fg_opa;
+        bg_opa_save        = bg_opa;
+        fg_color_save.full = fg_color.full;
+        bg_color_save.full = bg_color.full;
+        /** Info: https://en.wikipedia.org/wiki/Alpha_compositing#Analytical_derivation_of_the_over_operator */
+        res_opa_saved = 255 - ((uint16_t)((uint16_t)(255 - fg_opa) * (255 - bg_opa)) >> 8);
+        GT_ASSERT(res_opa_saved != 0);
+        gt_opa_t ratio = (uint16_t)((uint16_t)fg_opa * 255) / res_opa_saved;
+        res_color_saved = gt_color_mix(fg_color, bg_color, ratio);
     }
+
+    res_color->full = res_color_saved.full;
+    *res_opa = res_opa_saved;
 }
 
 
