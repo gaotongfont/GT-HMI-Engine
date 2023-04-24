@@ -56,11 +56,6 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
     if( dsc->opa <= GT_OPA_MIN ) return;
 
     // if two area intersect
-    gt_draw_blend_basic(draw_ctx, dsc);
-}
-
-void gt_draw_blend_basic(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc)
-{
     bool mask = true;   // use mask blend
 
 	gt_area_st area_src = {0, 0, 0, 0};

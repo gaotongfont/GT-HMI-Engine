@@ -49,7 +49,6 @@ struct _gt_draw_ctx_t;
 
 /* global functions / API interface -------------------------------------*/
 void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc);
-void gt_draw_blend_basic(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc);
 
 
 #ifdef __cplusplus
