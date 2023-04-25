@@ -182,7 +182,9 @@ struct _gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct _gt
 
     uint32_t is = get_instance_size(class);
     gt_obj_st * obj = gt_mem_malloc(is);
-    GT_CHECK(obj, NULL);
+    if (!obj) {
+        return NULL;
+    }
     gt_memset_0(obj, is);
 
     obj->class   = class;
@@ -190,7 +192,9 @@ struct _gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct _gt
     obj->opa     = GT_OPA_100;
     obj->style   = gt_mem_malloc(get_style_size(class));
     obj->visible = GT_VISIBLE;
-    GT_CHECK(obj->style, NULL);
+    if (!obj->style) {
+        goto obj_lb;
+    }
 
     if (parent == NULL) {
         GT_LOGV(GT_LOG_TAG_GUI, "create a screen");
@@ -203,12 +207,16 @@ struct _gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct _gt
 
         if (disp->screens == NULL || disp->cnt_scr == 0 ) {
             disp->screens = gt_mem_malloc(sizeof(gt_obj_st *));
-            GT_CHECK(disp->screens, NULL);
+            if (!disp->screens) {
+                goto style_lb;
+            }
             disp->screens[disp->cnt_scr++] = obj;
         } else {
             // gt_mem_realloc can't operate NULL ptr
             disp->screens = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr + 1));
-            GT_CHECK(disp->screens, NULL);
+            if (!disp->screens) {
+                goto style_lb;
+            }
             disp->screens[disp->cnt_scr++] = obj;
         }
         obj->area.x = 0;
@@ -218,17 +226,28 @@ struct _gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct _gt
     } else {
         if (parent->child == NULL || parent->cnt_child == 0 ) {
             parent->child = gt_mem_malloc(sizeof(gt_obj_st *));
-            GT_CHECK(parent->child, NULL);
+            if (!parent->child) {
+                goto style_lb;
+            }
             parent->child[0] = obj;
             parent->cnt_child = 1;
         } else {
             parent->child = gt_mem_realloc(parent->child, sizeof(gt_obj_st *) * (parent->cnt_child + 1));
-            GT_CHECK(parent->child, NULL);
+            if (!parent->child) {
+                goto style_lb;
+            }
             parent->child[parent->cnt_child++] = obj;
         }
         GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj: %p, parent: %p, parent child: %p, count: %d", parent->child[parent->cnt_child - 1], parent, parent->child, parent->cnt_child);
     }
+
     return obj;
+
+style_lb:
+    gt_mem_free(obj->style);
+obj_lb:
+    gt_mem_free(obj);
+    return NULL;
 }
 
 /**

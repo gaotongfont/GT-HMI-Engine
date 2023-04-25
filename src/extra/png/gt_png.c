@@ -189,7 +189,10 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
     }
 
     dsc->alpha = gt_mem_malloc(png_width * png_height);
-    GT_CHECK(dsc->alpha, GT_RES_FAIL);
+    if (!dsc->alpha) {
+        ret = GT_RES_FAIL;
+        goto png_lb;
+    }
     _gt_png_color_convert_depth(dsc->img, dsc->alpha, png_width * png_height);
 
     dsc->header.w = png_width;
@@ -198,6 +201,7 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
     gt_fs_fp_st * fp = gt_fs_get_fp();
     _set_fp_info(fp, &dsc->header);
 
+png_lb:
     gt_mem_free(png_data);
     return ret;
 }

@@ -70,7 +70,9 @@ gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv)
 
     if(indev_act[cnt_indev] == NULL){
         indev_act[cnt_indev] = gt_mem_malloc(sizeof(gt_indev_st));
-        GT_CHECK(indev_act[cnt_indev], NULL);
+        if (!indev_act[cnt_indev]) {
+            return NULL;
+        }
         gt_memset_0(indev_act[cnt_indev], sizeof(gt_indev_st));
     }
 

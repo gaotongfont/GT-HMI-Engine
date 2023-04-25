@@ -777,11 +777,17 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
 
         /*malloc*/
         data = gt_mem_malloc(font_dot_w * font_dot_w >> 3); // (dsc->font->size * dsc->font->size >> 3);
-        GT_CHECK(data, area_font);
+        if(NULL == data){
+            goto _ret_handler;
+        }
         mask_buf = gt_mem_malloc(font_dot_w * font_dot_w);
-        GT_CHECK(mask_buf, area_font);
+        if(NULL == mask_buf){
+            goto _ret_handler;
+        }
         mask_line = gt_mem_malloc( _font.size*2 );
-        GT_CHECK(mask_line, area_font);
+        if(NULL == mask_line){
+            goto _ret_handler;
+        }
     }
 #else
     /*malloc*/
@@ -962,17 +968,15 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     }
 
 _ret_handler:
-    /*free*/
-    if(NULL != data){
-        gt_mem_free(data);
+    if(NULL != mask_line){
+        gt_mem_free(mask_line);
     }
     if(NULL != mask_buf){
         gt_mem_free(mask_buf);
     }
-    if(NULL != mask_line){
-        gt_mem_free(mask_line);
+    if(NULL != data){
+        gt_mem_free(data);
     }
-
     return area_font;
 }
 

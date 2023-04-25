@@ -125,7 +125,9 @@ void _gt_img_decoder_init(void)
 _gt_img_decoder_st * gt_img_decoder_create(void)
 {
     _gt_img_decoder_st * decoder = (_gt_img_decoder_st * )gt_mem_malloc(sizeof(_gt_img_decoder_st));
-    GT_CHECK(decoder, NULL);
+    if (!decoder) {
+        return NULL;
+    }
 
     gt_memset(decoder, 0, sizeof(_gt_img_decoder_st));
 

@@ -116,10 +116,13 @@ void _gt_timer_core_init(void)
 
 _gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * user_data)
 {
-    GT_CHECK(callback, NULL);
-
+    if (!callback) {
+        return NULL;
+    }
     _gt_timer_st * timer = gt_mem_malloc(sizeof(_gt_timer_st));
-    GT_CHECK(timer, NULL);
+    if (!timer) {
+        return NULL;
+    }
 
     timer->period       = period;
     timer->last_run     = gt_tick_get();
