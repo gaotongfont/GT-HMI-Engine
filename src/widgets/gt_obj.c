@@ -137,7 +137,18 @@ void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
     }
 
     // release children memory and remove itself from parent children array
+#if GT_USE_DISPLAY_PREF_DESTROY
+    uint32_t start = gt_tick_get();
+    GT_LOGD(GT_LOG_TAG_MEM, "destroy obj: 0x%p", obj);
+#endif
+
     _gt_obj_class_destroy(obj);
+
+#if GT_USE_DISPLAY_PREF_DESTROY
+    if( (gt_tick_get() - start) > 1 ) {
+        GT_LOGD(GT_LOG_TAG_MEM, "destroy object timer: %d ms", gt_tick_get() - start);
+    }
+#endif
 }
 
 /* global functions / API interface -------------------------------------*/

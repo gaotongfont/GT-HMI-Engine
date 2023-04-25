@@ -59,8 +59,8 @@ extern "C" {
 #define GT_TASK_PERIOD_TIME_ANIM    30
 #define GT_TASK_PERIOD_TIME_REFR    30
 
-/** Free object memory after 100ms timer */
-#define GT_TASK_PERIOD_TIME_DESTROY 30
+/** Free object memory after N ms timer */
+#define GT_TASK_PERIOD_TIME_DESTROY 300
 
 /* user: virt file device setting */
 #define GT_VF_FLASH_SIZE    0x800000    //flash size 8*1024*1024   8M
@@ -121,7 +121,11 @@ extern "C" {
 #define GT_USE_MODE_FLASH       01
 #define GT_USE_MODE_SD          01
 
-#define GT_USE_DISPLAY_PREF_MSG 01
+/** display refresh times */
+#define GT_USE_DISPLAY_PREF_MSG         0
+
+/** display destroy object times */
+#define GT_USE_DISPLAY_PREF_DESTROY     0
 
 /**
  * @brief use lodepng
