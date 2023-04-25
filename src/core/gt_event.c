@@ -158,7 +158,6 @@ void gt_obj_add_event_cb(gt_obj_st * obj, gt_event_cb_t event, gt_event_type_et 
     GT_LOGD(GT_LOG_TAG_GUI, "start add event cb:%d", obj->cnt_event);
     if( NULL == obj->event_attr ){
         obj->event_attr =  gt_mem_malloc(sizeof(gt_obj_event_attr_st));
-        GT_CHECK_BACK(obj->event_attr);
         obj->event_attr[0].cb = event;
         obj->event_attr[0].user_data = user_data;
         obj->event_attr[0].filter = filter;

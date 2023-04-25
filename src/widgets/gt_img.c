@@ -206,7 +206,6 @@ void gt_img_style_set_src(gt_obj_st * img, char * src){
     }
     uint16_t len = src == NULL ? 0 : strlen(src);
     style->src = gt_mem_malloc( len + 1 );
-    GT_CHECK_BACK(style->src);
     strcpy(style->src, src);
     style->src[len] = 0;
 

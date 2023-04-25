@@ -218,7 +218,6 @@ static void _gt_radio_init_style(gt_obj_st * radio)
     gt_memset(style,0,sizeof(_gt_style_radio_st));
 
     style->text = gt_mem_malloc(sizeof("radio"));
-    GT_CHECK_BACK(style->text);
     gt_memcpy(style->text, "radio\0", sizeof("radio"));
 
     style->font_family_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
@@ -267,7 +266,6 @@ void gt_radio_style_set_text(gt_obj_st * radio, char * text){
     }
     uint16_t len = text == NULL ? 0 : strlen(text);
     style->text = gt_mem_malloc(len+1);
-    GT_CHECK_BACK(style->text);
     gt_memcpy(style->text, text, len);
     style->text[len] = 0;
 }

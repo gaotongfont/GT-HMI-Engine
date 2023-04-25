@@ -449,8 +449,6 @@ void gt_slider_style_set_tag(gt_obj_st * slider, char * src)
         gt_mem_free(style->tag);
     }
     style->tag = gt_mem_malloc(strlen(src) + 1);
-    GT_CHECK_BACK(style->tag);
-
     gt_memcpy(style->tag, src, strlen(src));
     style->tag[strlen(src)] = 0;
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);

@@ -232,7 +232,6 @@ void gt_imgbtn_style_set_src(gt_obj_st * imgbtn, char * src){
     uint16_t len = src == NULL ? 0 : strlen(src);
 
     style->src_base = gt_mem_malloc( len + 1 );
-    GT_CHECK_BACK(style->src_base);
     strcpy(style->src_base, src);
     style->src_base[len] = 0;
     style->src = style->src_base;
@@ -248,7 +247,6 @@ void gt_imgbtn_style_set_src_press(gt_obj_st * imgbtn, char * src){
     uint16_t len = src == NULL ? 0 : strlen(src);
 
     style->src_press = gt_mem_malloc( len + 1 );
-    GT_CHECK_BACK(style->src_press);
     strcpy(style->src_press, src);
     style->src_press[len] = 0;
 
@@ -263,7 +261,6 @@ void gt_imgbtn_style_set_src_release(gt_obj_st * imgbtn, char * src){
     }
     uint16_t len = src == NULL ? 0 : strlen(src);
     style->src_release = gt_mem_malloc( len + 1 );
-    GT_CHECK_BACK(style->src_release);
     strcpy(style->src_release, src);
     style->src_release[len] = 0;
 

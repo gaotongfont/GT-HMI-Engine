@@ -888,7 +888,6 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 			.h = circle_attr.radius * 2,
 		};
 		gt_color_t * color_circle = gt_mem_malloc(area_circle.w * area_circle.h * sizeof(gt_color_t));
-		GT_CHECK_BACK(color_circle);
 		gt_graph_circle(&circle_attr, &area_circle, color_circle);
 
 		gt_area_st area_dst = {

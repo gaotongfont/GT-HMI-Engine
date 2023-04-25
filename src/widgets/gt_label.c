@@ -186,7 +186,6 @@ static void _gt_label_init_style(gt_obj_st * label)
     gt_memset(style, 0, sizeof(_gt_style_label_st));
 
     style->text = gt_mem_malloc(sizeof("label"));
-    GT_CHECK_BACK(style->text);
     gt_memcpy(style->text, "label\0", sizeof("label"));
 
     style->font_color        = gt_color_hex(0x00);
@@ -225,7 +224,6 @@ void gt_label_style_set_text(gt_obj_st * label, char * text)
     }
     uint16_t size = text == NULL ? 0 : strlen(text);
     style->text = gt_mem_malloc(size+1);
-    GT_CHECK_BACK(style->text);
     gt_memset(style->text, 0, size+1);
     gt_memcpy(style->text, text, size);
     gt_event_send(label, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
