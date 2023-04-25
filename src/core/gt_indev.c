@@ -55,17 +55,23 @@ static inline gt_obj_st * _gt_indev_get_remark_active_obj(void) {
 
 static void _gt_indev_handler_point(gt_indev_st * indev)
 {
+    gt_indev_data_st data_indev;
+
+    /* call user hard interface */
+    indev->drv->read_cb(indev->drv, &data_indev);
+
+    if (data_indev.point.x > GT_SCREEN_WIDTH || data_indev.point.y > GT_SCREEN_HEIGHT) {
+        // GT_LOGW(GT_LOG_TAG_TP, "point out of range: x:%d, y:%d", data_indev.point.x, data_indev.point.y);
+        return;
+    }
+
     static uint8_t flag_key_down = 0;
     static uint32_t last_run = 0;
-    gt_indev_data_st data_indev;
 
     gt_obj_st * scr = gt_disp_get_scr();
     gt_point_st point_ret;
     struct _point * point_p = &indev->proc.data.point;
     gt_size_t ver = 0, hor = 0;
-
-    /* call user hard interface */
-    indev->drv->read_cb(indev->drv, &data_indev);
 
     /* process point data */
     indev->proc.state = data_indev.state;
