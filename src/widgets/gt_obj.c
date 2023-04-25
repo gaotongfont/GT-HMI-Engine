@@ -158,7 +158,7 @@ void gt_obj_destroy(gt_obj_st * obj)
     if (!obj) { return ; }
 
     // create a temp timer once task to destroy the object
-    _gt_timer_st * tmp_timer = _gt_timer_create(_gt_obj_destroy_handler_cb, 30, obj);
+    _gt_timer_st * tmp_timer = _gt_timer_create(_gt_obj_destroy_handler_cb, GT_TASK_PERIOD_TIME_DESTROY, obj);
     _gt_timer_set_repeat_count(tmp_timer, 1);
 }
 

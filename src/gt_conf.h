@@ -59,6 +59,8 @@ extern "C" {
 #define GT_TASK_PERIOD_TIME_ANIM    30
 #define GT_TASK_PERIOD_TIME_REFR    30
 
+/** Free object memory after 100ms timer */
+#define GT_TASK_PERIOD_TIME_DESTROY 30
 
 /* user: virt file device setting */
 #define GT_VF_FLASH_SIZE    0x800000    //flash size 8*1024*1024   8M

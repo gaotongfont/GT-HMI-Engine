@@ -93,7 +93,7 @@ static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj)
         .buf        = disp->vbd_color,
         .buf_area   = &disp->area_disp,
     };
-    obj->draw_ctx = &draw_ctx;
+    obj->draw_ctx = (struct _gt_draw_ctx_t * )&draw_ctx;
     obj->class->_init_cb(obj);
 }
 
@@ -215,14 +215,13 @@ void gt_disp_ref_area(const gt_area_st * coords)
     _gt_disp_set_state(disp, GT_BUSY);
 
     gt_area_copy(&area, (gt_area_st *)coords);
-    uint16_t dist = 0;
     if( disp->area_act.y > area.y ){
-        dist = disp->area_act.y - area.y;
+        uint16_t dist = disp->area_act.y - area.y;
         area.y += dist;
         area.h -= dist;
     }
     if( disp->area_act.x > area.x ){
-        dist = disp->area_act.x - area.x;
+        uint16_t dist = disp->area_act.x - area.x;
         area.x += dist;
         area.w -= dist;
     }
