@@ -138,7 +138,7 @@ static void *_gt_malloc_hooks(size_t size)
 #endif
 
 #ifdef GT_LOGV
-    GT_LOGV(GT_LOG_TAG_MEM, "\t--- malloc addr: 0x%p, size: 0x%x ---", ptr, size);
+    GT_LOGV(GT_LOG_TAG_MEM, "\t--- malloc addr: %p, size: 0x%x ---", ptr, size);
 #endif
     return ptr;
 }
@@ -159,7 +159,7 @@ static void *_gt_realloc_hooks(void * old_ptr, size_t size)
 #endif
 
 #ifdef GT_LOGV
-    GT_LOGV(GT_LOG_TAG_MEM, "\t--- realloc addr: 0x%p -> 0x%p, size: 0x%x ---", old_ptr, ptr, size);
+    GT_LOGV(GT_LOG_TAG_MEM, "\t--- realloc addr: %p -> %p, size: 0x%x ---", old_ptr, ptr, size);
 #endif
     return ptr;
 }
@@ -172,7 +172,7 @@ static void *_gt_realloc_hooks(void * old_ptr, size_t size)
 static void _gt_free_hooks(void * ptr)
 {
 #ifdef GT_LOGV
-    GT_LOGV(GT_LOG_TAG_MEM, "\t--- free addr: 0x%p ---", ptr);
+    GT_LOGV(GT_LOG_TAG_MEM, "\t--- free addr: %p ---", ptr);
 #endif
 
 #if GT_MEM_CUSTOM
@@ -189,7 +189,7 @@ void gt_mem_init(void)
 {
 #if GT_MEM_CUSTOM
     _tlsf = gt_tlsf_create_with_pool((void *)_mem_pool_int, GT_MEM_SIZE);
-	GT_LOGV(GT_LOG_TAG_MEM, "\t--- addr: 0x%p -> 0x%x, size: 0x%x(%d) ---", _mem_pool_int, (MEM_UNIT)_mem_pool_int + GT_MEM_SIZE, GT_MEM_SIZE, GT_MEM_SIZE);
+	GT_LOGV(GT_LOG_TAG_MEM, "\t--- addr: %p -> %x, size: 0x%x(%d) ---", _mem_pool_int, (MEM_UNIT)_mem_pool_int + GT_MEM_SIZE, GT_MEM_SIZE, GT_MEM_SIZE);
     _addr_start = (MEM_UNIT)_mem_pool_int;
     _addr_end = (MEM_UNIT)_mem_pool_int + GT_MEM_SIZE;
 #endif
@@ -222,7 +222,7 @@ void * _mem_malloc(size_t size, uint8_t * file_name, size_t line)
 #if USE_MEM_MAX_REMARK
     if ((MEM_UNIT)ret > _max_addr) {
         _max_addr = (MEM_UNIT)ret;
-        GT_LOGD(GT_LOG_TAG_MEM, ">>>>>> max addr: 0x%p <<<<<<", _max_addr);
+        GT_LOGD(GT_LOG_TAG_MEM, ">>>>>> max addr: %p <<<<<<", _max_addr);
     }
 #endif
     return ret;
@@ -260,7 +260,7 @@ void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
 #if USE_MEM_MAX_REMARK
     if ((MEM_UNIT)ret > _max_addr) {
         _max_addr = (MEM_UNIT)ret;
-        GT_LOGD(GT_LOG_TAG_MEM, ">>>>>> max addr: 0x%p <<<<<<", _max_addr);
+        GT_LOGD(GT_LOG_TAG_MEM, ">>>>>> max addr: %p <<<<<<", _max_addr);
     }
 #endif
     return ret;
