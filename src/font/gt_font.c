@@ -159,7 +159,7 @@ uint8_t _gt_gb_font_one_char_code_len_get(uint8_t * utf8,uint32_t *res)
         }
         return 2;
     }
-    
+
     return len;
 }
 
@@ -251,10 +251,10 @@ uint8_t gt_font_one_char_code_len_get(uint8_t * utf8,uint32_t *res , uint8_t enc
         return _gt_utf8_to_unicode(utf8 , res);
     }
     else if(GT_ENCODING_GB == encoding)
-    {  
+    {
         return _gt_gb_font_one_char_code_len_get(utf8 , res);
     }
-    
+
     return 0;
 }
 
@@ -276,7 +276,7 @@ uint8_t gt_encoding_table_one_char(uint8_t *src ,uint8_t* dst , gt_encoding_conv
         }
     }
     else if(GB_2_UTF8 == tab)
-    {   
+    {
         len = _gt_gb_font_one_char_code_len_get(src , &fontcode);
         // gb to unicode
         fontcode =  GBKToUnicode(fontcode);
@@ -324,7 +324,7 @@ uint8_t gt_gb_check_char(const uint8_t *dst , uint16_t pos , uint32_t* fontcode)
     if(NULL == dst) return 0;
     uint16_t pos_s = 0 ,len = 0 , idx = 0 , str_len = 0;
 
-    str_len = strlen(dst);    
+    str_len = strlen(dst);
     while (idx < str_len)
     {
         len = _gt_gb_font_one_char_code_len_get(&dst[idx], fontcode);
@@ -448,8 +448,8 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
         struct gt_font_func_s* font_func;
 
         font_style = _gt_is_style_cn_or_en(unicode , font->encoding) ? font->style_en : font->style_cn;
-        
-        // is zzzf font ￥ 
+
+        // is zzzf font ￥
         if((0xFFE5 == unicode) && (font->style_en >= 102  && font->style_en <= 129))
         {
             font_style = font->style_en;
@@ -526,7 +526,7 @@ unsigned int gt_font_data_convertor(unsigned int* unicode , unsigned int u_len ,
 {
     unsigned int len = 0;
 #if GT_CFG_ENABLE_ZK_FONT == 1
-    len = GT_Font_Convertor(unicode , u_len , font.style_en , data);
+    // len = GT_Font_Convertor(unicode , u_len , font.style_en , data);
 #endif
     return len;
 }
@@ -552,10 +552,10 @@ uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
     }
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
-    int width = 0; 
+    int width = 0;
     int option = _gt_is_style_cn_or_en(unicode , font->encoding) ? font->style_en : font->style_cn;
     width = GT_Get_Font_Width(unicode , option , font->size , font->gray , font->res);
-    
+
     if(0 == width){
         if(_gt_font_latin_check(unicode)) {
             return _gt_font_latin_get_width(unicode , font->size);
