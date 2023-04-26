@@ -181,7 +181,7 @@ gt_res_t gt_event_send(struct _gt_obj_s * parent, gt_event_type_et event, void *
     }
     parent->event_mask |= GT_EVENT_GET_MASK_SHIFT_BIT(event);
 
-    _gt_event_handler_event_mask(parent);
+    // _gt_event_handler_event_mask(parent);    // FIXIT: 2023-04-26 21:19:52 HardFault when 10.1 INC
     if ( !parent->cnt_event ) {
         return GT_RES_OK;
     }
