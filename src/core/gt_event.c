@@ -150,27 +150,23 @@ static void _gt_timer_event_cb(struct _gt_timer_s * timer){
     /* step2: foreach obj event_mask and process */
     _gt_obj_foreach_event_cb(scr);
 
-    // GT_LOGV(GT_LOG_TAG_GUI, "timer event cb end");
+    // GT_LOGV(GT_LOG_TAG_GUI, "timer event cb end, %p", scr);
 }
 
 /* global functions / API interface -------------------------------------*/
 void gt_obj_add_event_cb(gt_obj_st * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data){
-    GT_LOGD(GT_LOG_TAG_GUI, "start add event cb:%d", obj->cnt_event);
-    if( NULL == obj->event_attr ){
+    GT_LOGV(GT_LOG_TAG_GUI, "start add event cb:%d", obj->cnt_event);
+    if ( NULL == obj->event_attr ) {
         obj->event_attr =  gt_mem_malloc(sizeof(gt_obj_event_attr_st));
-        obj->event_attr[0].cb = event;
-        obj->event_attr[0].user_data = user_data;
-        obj->event_attr[0].filter = filter;
-        obj->cnt_event = 1;
+        obj->cnt_event = 0;
+    } else {
+        obj->event_attr = gt_mem_realloc( obj->event_attr, (obj->cnt_event + 1) * sizeof(gt_obj_event_attr_st) );
     }
-    else{
-        obj->event_attr = gt_mem_realloc( obj->event_attr, (obj->cnt_event+1) * sizeof(gt_obj_event_attr_st) );
-        obj->event_attr[obj->cnt_event].cb = event;
-        obj->event_attr[obj->cnt_event].user_data = user_data;
-        obj->event_attr[obj->cnt_event].filter = filter;
-        obj->cnt_event++;
-    }
-    GT_LOGD(GT_LOG_TAG_GUI, "end add event cb:%d", obj->cnt_event);
+    obj->event_attr[obj->cnt_event].cb = event;
+    obj->event_attr[obj->cnt_event].filter = filter;
+    obj->event_attr[obj->cnt_event].user_data = user_data;
+    ++obj->cnt_event;
+    GT_LOGV(GT_LOG_TAG_GUI, "end add event cb:%d", obj->cnt_event);
 }
 
 gt_res_t gt_event_send(struct _gt_obj_s * parent, gt_event_type_et event, void * parms){
@@ -190,22 +186,20 @@ gt_res_t gt_event_send(struct _gt_obj_s * parent, gt_event_type_et event, void *
         return GT_RES_OK;
     }
     // foreach parent's event_attr----user event,immediately process the user events
-    int idx = 0;
+    uint16_t idx = 0;
     gt_obj_event_attr_st * event_attr;
     gt_event_st e;
-    while( idx < parent->cnt_event ){
-        event_attr = gt_obj_get_event_attr(parent, idx);
-        if( NULL == event_attr ){
-            idx++;
+    while ( idx < parent->cnt_event ) {
+        event_attr = gt_obj_get_event_attr(parent, idx++);
+        if ( NULL == event_attr ) {
             continue;
         }
-        if(event_attr->filter == GT_EVENT_TYPE_ALL || event_attr->filter == event ) {
+        if ( event == event_attr->filter || GT_EVENT_TYPE_ALL == event_attr->filter ) {
             e.target    = parent;
             e.code      = event;
             e.user_data = event_attr->user_data;
             event_attr->cb(&e);
         }
-        idx++;
     }
 	return GT_RES_OK;
 }

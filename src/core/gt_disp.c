@@ -163,41 +163,8 @@ void gt_disp_load_scr(gt_obj_st * scr)
     disp->area_act.h = disp->drv->res_ver;
     disp->area_act.w = disp->drv->res_hor;
 
-    #if 0
-    uint32_t len = disp->drv->res_hor * GT_REFRESH_FLUSH_LINE_PRE_TIME;
-    disp->area_disp.y = disp->area_act.y;
-    disp->area_disp.x = disp->area_act.x;
-    disp->area_disp.w = disp->drv->res_hor;
-    disp->area_disp.h = GT_REFRESH_FLUSH_LINE_PRE_TIME;
-
-    uint16_t y = 0;
-	gt_color_t fill_color;
-	fill_color = gt_screen_get_bgcolor(scr);
-    while( y < disp->drv->res_ver ){
-
-        gt_color_fill(disp->vbd_color, len, fill_color);
-
-        // use virt screen check obj visible area
-        disp->area_disp.y = disp->area_act.y + y;
-        disp->area_disp.x = disp->area_act.x;
-        _gt_disp_check_and_copy_foreach(scr);
-
-        // phy screen use area is from W x H
-        disp->area_disp.y = y;
-        disp->area_disp.x = 0;
-        disp->drv->flush_cb(disp->drv, &disp->area_disp, disp->vbd_color);
-        y += GT_REFRESH_FLUSH_LINE_PRE_TIME;
-    }
-    #else
     _gt_disp_refr_append_area(&disp->area_act);
-    #endif
     _gt_disp_set_state(disp, GT_NOT_BUSY);
-    // here must clr all obj pre event_mask---->if not clr event_mask,obj will be next time handler the event
-    // if( scr_old != scr ){
-    //     disp->area_act.x = 0;
-    //     disp->area_act.y = 0;
-    //     gt_event_clr_mask(scr);
-    // }
 }
 
 void gt_disp_ref_area(const gt_area_st * coords)
