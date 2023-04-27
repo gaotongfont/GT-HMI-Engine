@@ -132,7 +132,7 @@ typedef enum _gt_font_style_en_cn_e {
     STYLE_CN = 0,
     STYLE_EN_ASCII ,
     STYLE_EN_LATIN ,
-    STYLE_EN_GREKK , 
+    STYLE_EN_GREKK ,
     STYLE_EN_CYRILLIC,
     STYLE_EN_HEBREW ,
     STYLE_EN_ARABIC ,
@@ -205,7 +205,7 @@ void gt_project_encoding_set(gt_encoding_et charset);
 gt_encoding_et gt_project_encoding_get(void);
 uint8_t gt_font_one_char_code_len_get(uint8_t * utf8,uint32_t *res , uint8_t encoding);
 uint8_t gt_encoding_table_one_char(uint8_t *src ,uint8_t* dst , gt_encoding_convert_et tab );
-uint8_t _gt_gb_font_one_char_code_len_get(uint8_t * utf8,uint32_t *res);
+uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const utf8, uint32_t *res);
 uint8_t gt_gb_check_char(const uint8_t *dst , uint16_t pos , uint32_t* fontcode);
 
 gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding);

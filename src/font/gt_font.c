@@ -132,7 +132,7 @@ static uint8_t _gt_font_latin_get_width(uint32_t unicode, uint8_t font_size)
 
 }
 
-uint8_t _gt_gb_font_one_char_code_len_get(uint8_t * utf8,uint32_t *res)
+uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const utf8, uint32_t *res)
 {
     if(NULL == utf8 ) return 0;
 
