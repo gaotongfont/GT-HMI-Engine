@@ -166,8 +166,8 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const _gt_keypad_kv_list_st _gt_keypad_mode_
 
 
 /* static functions -----------------------------------------------------*/
-static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char * kv);
-static void _gt_keypad_update_map(gt_obj_st * keypad, gt_keypad_map_st * map);
+static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char const * const kv);
+static void _gt_keypad_update_map(gt_obj_st * keypad, gt_keypad_map_st const * const map);
 
 static uint8_t* _gt_spell_get_text( uint8_t index , uint8_t mode)
 {
@@ -187,7 +187,7 @@ static uint8_t* _gt_spell_get_text( uint8_t index , uint8_t mode)
     return "";
 }
 
-static int _gt_get_spell_index(char * kv ,  uint8_t mode)
+static int _gt_get_spell_index(char const * const kv ,  uint8_t mode)
 {
     int idx = 0;
 
@@ -205,7 +205,7 @@ static int _gt_get_spell_index(char * kv ,  uint8_t mode)
     return -1;
 }
 
-static uint8_t* _gt_keypad_get_spell_text(char * kv ,  uint8_t mode)
+static uint8_t* _gt_keypad_get_spell_text(char const * const kv ,  uint8_t mode)
 {
     if( kv == NULL){
         return NULL;
@@ -227,7 +227,7 @@ static uint8_t* _gt_keypad_get_spell_text(char * kv ,  uint8_t mode)
 
 }
 
-static char * _gt_keypad_get_click_kv(gt_obj_st * obj)
+static char const * const _gt_keypad_get_click_kv(gt_obj_st * obj)
 {
     _gt_style_keypad_st * style = obj->style;
     gt_keypad_map_st * map = style->info.map;
@@ -250,14 +250,14 @@ static char * _gt_keypad_get_click_kv(gt_obj_st * obj)
 }
 
 
-static void _gt_keypad_set_kv_selected(gt_obj_st * keypad, char * kv)
+static void _gt_keypad_set_kv_selected(gt_obj_st * keypad, char const * const kv)
 {
     extern void _gt_disp_refr_append_area(gt_area_st * area);
 
     _gt_style_keypad_st * style = keypad->style;
     gt_area_st area;
     char * kv_old = style->kv_selected;
-    style->kv_selected = kv;
+    style->kv_selected = (char * )kv;
     if( kv_old != kv ){
         area = _gt_keypad_get_key_area(keypad, kv_old);
         _gt_disp_refr_append_area(&area);
@@ -280,7 +280,7 @@ static char * _gt_keypad_get_kv_selected(gt_obj_st * keypad)
  * @param kv the key keyvalue
  * @return gt_area_st
  */
-static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char * kv)
+static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char const * const kv)
 {
     gt_area_st area_key = {
         .x = 0,.y = 0,.w = 0,.h = 0
@@ -340,7 +340,7 @@ static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char * kv)
 static bool _gt_keypad_is_switch_key_mapping_pressed(gt_obj_st * keypad, const bool update_map)
 {
     _gt_style_keypad_st * style = keypad->style;
-    _gt_keypad_kv_list_st * list_p = _gt_keypad_mode_key_mapping_list;
+    _gt_keypad_kv_list_st const * list_p = _gt_keypad_mode_key_mapping_list;
     uint16_t idx = 0, len = sizeof(_gt_keypad_mode_key_mapping_list) / sizeof(_gt_keypad_kv_list_st);
     bool ret = false;
 
@@ -363,7 +363,7 @@ static bool _gt_keypad_is_switch_key_mapping_pressed(gt_obj_st * keypad, const b
 static uint8_t _gt_keypad_change_mode(gt_obj_st * keypad, gt_keypad_map_st const * const map)
 {
     _gt_style_keypad_st * style = keypad->style;
-    _gt_keypad_kv_list_st * list_p = _gt_keypad_mode_key_mapping_list;
+    _gt_keypad_kv_list_st const * list_p = _gt_keypad_mode_key_mapping_list;
     uint16_t idx = 0, len = sizeof(_gt_keypad_mode_key_mapping_list) / sizeof(_gt_keypad_kv_list_st);
 
     style->info.mode = GT_KEYPAD_MODE_OTHER;
@@ -379,7 +379,7 @@ static uint8_t _gt_keypad_change_mode(gt_obj_st * keypad, gt_keypad_map_st const
     return style->info.mode;
 }
 
-static bool _gt_keypad_check_key_is_ctl(char * kv){
+static bool _gt_keypad_check_key_is_ctl(char const * const kv){
     if( kv == NULL ){
         return false;
     }
@@ -393,7 +393,7 @@ static bool _gt_keypad_check_key_is_ctl(char * kv){
     return false;
 }
 
-static bool _gt_keypad_check_key_is_icon(char * kv){
+static bool _gt_keypad_check_key_is_icon(char const * const kv){
     if( kv == NULL ){
         return false;
     }
@@ -673,7 +673,7 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
 
         draw_bg(keypad->draw_ctx, &rect_attr, &area_key);
 
-        font.utf8 = map_keypad[idx].kv;
+        font.utf8 = (char * )map_keypad[idx].kv;
         font.len = strlen(map_keypad[idx].kv);
         uint8_t* tmp_str = _gt_keypad_get_spell_text(map_keypad[idx].kv , style->info.mode);
         if(tmp_str)
@@ -865,14 +865,14 @@ static void _gt_keypad_init_style(gt_obj_st * keypad)
 
 }
 
-static void _gt_keypad_update_map(gt_obj_st * keypad, gt_keypad_map_st * map)
+static void _gt_keypad_update_map(gt_obj_st * keypad, gt_keypad_map_st const * map)
 {
     _gt_style_keypad_st * style = keypad->style;
     if(style->info.map == map)
     {
         return ;
     }
-    style->info.map = map;
+    style->info.map = (struct _gt_keypad_map_s * )map;
     _gt_keypad_change_mode(keypad, map);
 
     uint16_t idx = 0;

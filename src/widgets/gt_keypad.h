@@ -62,7 +62,7 @@ typedef struct _gt_style_keypad_s
  */
 typedef struct _gt_keypad_map_s
 {
-    char * kv;
+    char const * const kv;
     uint8_t w;
 }gt_keypad_map_st;
 
