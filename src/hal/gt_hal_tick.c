@@ -40,7 +40,7 @@ void gt_tick_inc(uint32_t ms)
 
 uint32_t gt_tick_get(void)
 {
-    uint32_t ret;
+    uint32_t ret = 0;
 
     do {
         tick_irq_flag = 1;

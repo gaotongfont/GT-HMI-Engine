@@ -210,7 +210,7 @@ uint8_t gt_gb_check_char(const uint8_t *dst , uint16_t pos , uint32_t* fontcode)
 
 gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding);
 bool gt_style_en_data_is_convertor(uint32_t unicode , uint8_t encoding);
-unsigned short gt_font_get_word_width_figure_up(unsigned char *p,unsigned int zfhigh,unsigned int zfwidth);
+uint16_t gt_font_get_word_width_figure_up(uint8_t *p, uint16_t height, uint16_t width);
 uint8_t gt_font_type_get(unsigned int font_style);
 unsigned int gt_font_data_convertor(unsigned int* unicode , unsigned int u_len , unsigned char* data , gt_font_style_en_cn_et font_luag , gt_font_st font);
 

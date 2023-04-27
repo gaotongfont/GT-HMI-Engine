@@ -47,7 +47,7 @@ const gt_obj_class_st gt_textarea_class = {
 /* static functions -----------------------------------------------------*/
 
 static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
-    _gt_style_textarea_st * style = textarea->style;
+    _gt_style_textarea_st * style = (_gt_style_textarea_st * )textarea->style;
     int idx = 0;
 
     gt_font_st font = {
@@ -223,7 +223,7 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
 
 void gt_textarea_style_set_text(gt_obj_st * textarea, char * text)
 {
-    _gt_style_textarea_st * style = textarea->style;
+    _gt_style_textarea_st * style = (_gt_style_textarea_st * )textarea->style;
     uint8_t style_mask = GT_FONT_STYLE_NONE;
     gt_color_t color = gt_color_black();
     uint16_t len = 0;
@@ -249,15 +249,14 @@ void gt_textarea_style_set_text(gt_obj_st * textarea, char * text)
 
 char * gt_textarea_style_get_text(gt_obj_st * textarea,uint16_t idx)
 {
-    GT_ASSERT_NULL(textarea);
-    _gt_style_textarea_st * style = textarea->style;
+    _gt_style_textarea_st * style = (_gt_style_textarea_st * )textarea->style;
     return style->contents[idx].text;
 }
 
 
 void gt_textarea_style_add_str(gt_obj_st * textarea, char * str, gt_font_style_et style_mask, gt_color_t color)
 {
-    _gt_style_textarea_st * style = textarea->style;
+    _gt_style_textarea_st * style = (_gt_style_textarea_st * )textarea->style;
     if( style->cnt_contents == 0 ){
         style->contents  = gt_mem_malloc( sizeof(_gt_txt_st) );
         style->contents[0].len  = strlen(str);
@@ -279,7 +278,7 @@ void gt_textarea_style_add_str(gt_obj_st * textarea, char * str, gt_font_style_e
 
 void gt_textarea_style_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t space_y)
 {
-    _gt_style_textarea_st * style = textarea->style;
+    _gt_style_textarea_st * style = (_gt_style_textarea_st * )textarea->style;
     style->space_x = space_x;
     style->space_y = space_y;
 
@@ -288,23 +287,23 @@ void gt_textarea_style_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t 
 
 void gt_textarea_style_set_font_size(gt_obj_st * textarea, uint8_t size)
 {
-    _gt_style_textarea_st * style = textarea->style;
+    _gt_style_textarea_st * style = (_gt_style_textarea_st * )textarea->style;
     style->font_size = size;
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_textarea_style_set_font_gray(gt_obj_st * textarea, uint8_t gray)
 {
-    _gt_style_textarea_st * style = textarea->style;
+    _gt_style_textarea_st * style = (_gt_style_textarea_st * )textarea->style;
     style->font_gray = gray;
 }
 void gt_textarea_style_set_font_align(gt_obj_st * textarea, uint8_t align)
 {
-    _gt_style_textarea_st * style = textarea->style;
+    _gt_style_textarea_st * style = (_gt_style_textarea_st * )textarea->style;
     style->font_align = align;
 }
 void gt_textarea_style_set_font_color(gt_obj_st * textarea, gt_color_t color)
 {
-    _gt_style_textarea_st * style = textarea->style;
+    _gt_style_textarea_st * style = (_gt_style_textarea_st * )textarea->style;
     uint16_t idx = 0;
     while( idx < style->cnt_contents ){
         style->contents[idx].color = color;
@@ -315,20 +314,20 @@ void gt_textarea_style_set_font_color(gt_obj_st * textarea, gt_color_t color)
 
 void gt_textarea_style_set_bg_color(gt_obj_st * textarea, gt_color_t color)
 {
-    _gt_style_textarea_st * style = textarea->style;
+    _gt_style_textarea_st * style = (_gt_style_textarea_st * )textarea->style;
     style->color_background = color;
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_textarea_style_set_font_family_cn(gt_obj_st * textarea, gt_family_t family)
 {
-    _gt_style_textarea_st * style = textarea->style;
+    _gt_style_textarea_st * style = (_gt_style_textarea_st * )textarea->style;
     style->font_family_cn = family;
 }
 
 void gt_textarea_style_set_font_family_en(gt_obj_st * textarea, gt_family_t family)
 {
-    _gt_style_textarea_st * style = textarea->style;
+    _gt_style_textarea_st * style = (_gt_style_textarea_st * )textarea->style;
     style->font_family_en = family;
 }
 

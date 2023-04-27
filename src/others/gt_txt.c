@@ -33,11 +33,11 @@
 
 static char gt_txt_string_del(char * str , uint32_t del_txt_pos)
 {
-    uint32_t len = 0 , len_str = strlen(str);
+    uint32_t len = 0 , len_str = str ? strlen(str) : 0;
     int32_t idx = del_txt_pos;
 
     len = gt_txt_check_char_numb(str , &idx);
-    
+
     if(!len){
         return 0 ;
     }
@@ -77,7 +77,7 @@ uint8_t gt_txt_check_char_numb(char * dst , int32_t* pos )
             --(*idx);
             continue;
         }
-        
+
         break;
     }
 
@@ -125,10 +125,10 @@ char * gt_txt_ins(char * dst, uint32_t pos, char * src)
  */
 char gt_txt_cut(char * dst, uint32_t pos_start, uint32_t pos_end)
 {
-    uint32_t len_dst = strlen(dst);
+    uint32_t len_dst = dst ? strlen(dst) : 0;
     uint32_t ps,pe;
 
-    if (!dst) {
+    if (!len_dst) {
         return 0;
     }
 

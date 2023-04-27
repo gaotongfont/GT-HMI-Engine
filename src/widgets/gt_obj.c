@@ -182,7 +182,7 @@ void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color)
 gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj)
 {
     if( obj->class->type != GT_TYPE_OBJ ){
-        return *(gt_color_t*)0;
+        return gt_color_make(0, 0, 0);
     }
     _gt_style_obj_st * style = obj->style;
     return style->bgcolor;

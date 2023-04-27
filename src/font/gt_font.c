@@ -590,30 +590,29 @@ uint8_t gt_font_get_next_word_width(gt_font_st * font, uint8_t is_head){
 }
 
 
-unsigned short gt_font_get_word_width_figure_up(unsigned char *p,unsigned int zfhigh,unsigned int zfwidth)
+uint16_t gt_font_get_word_width_figure_up(uint8_t *p, uint16_t height, uint16_t width)
 {
-	//unsigned char *q;
-	unsigned long i,j,tem=0,witdh1=0,k;//w=0,
-  //q=p;
-	for (i=0;i<zfhigh;i++)
-	{
-		for (j=0;j<zfwidth/8;j++)
-		{
-			tem=*(p+i*(zfwidth/8)+j);
-			for (k=0;k<8;k++)
-			{
-				if (((tem<<k)&0x80)==0x80)
-				{
-					if(witdh1<=j*8+k)
-						witdh1=j*8+k;
+	uint16_t i, j, ret_width=0, k;
+    uint16_t byte_width = 0;
+    uint8_t tem = 0;
+    byte_width = width >> 3;
+
+	for (i = 0; i < height; i++) {
+		for (j = 0; j < byte_width; j++) {
+			tem = p[i * byte_width + j];
+			for (k = 0; k < 8; k++) {
+				if ( ( (tem << k) & 0x80 ) != 0x80 ) {
+                    continue;
 				}
+                if(ret_width > ((j << 3) + k)) {
+                    continue;
+                }
+                ret_width = (j << 3) + k;
 			}
 		}
 	}
-	if(witdh1)
-		return witdh1+1;
-	else
-		return witdh1;
+
+    return ret_width ? ret_width + 1 : ret_width;
 }
 
 void gt_dot_to_mask_buf(uint8_t * dot, uint8_t * mask_buf, uint16_t w, uint16_t h){
