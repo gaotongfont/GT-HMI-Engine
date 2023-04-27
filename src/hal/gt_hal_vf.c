@@ -25,9 +25,9 @@
 
 /* static variables -----------------------------------------------------*/
 
-static gt_vf_st * _vf_dev;
-static gt_vfs_st * _vfs;
-static gt_fs_res_et _state;
+static gt_vf_st * _vf_dev = NULL;
+static gt_vfs_st const * _vfs = NULL;
+static gt_fs_res_et _state = GT_FS_RES_FAIL;
 
 
 /* macros ---------------------------------------------------------------*/
