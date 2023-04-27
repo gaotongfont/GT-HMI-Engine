@@ -36,6 +36,7 @@ typedef struct _gt_style_slider_s
     gt_size_t end;
     gt_size_t pos;
 
+    uint16_t offset;
     gt_bar_dir_et dir;
     uint8_t step;
 
