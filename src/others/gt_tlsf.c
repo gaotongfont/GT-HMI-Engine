@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include "gt_tlsf.h"
+#include "../core/gt_mem.h"
 
 #if GT_MEM_CUSTOM
 
@@ -1254,7 +1255,7 @@ void* gt_tlsf_realloc(gt_tlsf_t tlsf, void* ptr, size_t size)
 			if (p)
 			{
 				const size_t minsize = gt_tlsf_min(cursize, size);
-				memcpy(p, ptr, minsize);
+				gt_memcpy(p, ptr, minsize);
 				gt_tlsf_free(tlsf, ptr);
 			}
 		}

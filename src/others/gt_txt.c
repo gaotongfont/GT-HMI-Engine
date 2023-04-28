@@ -107,9 +107,9 @@ char * gt_txt_ins(char * dst, uint32_t pos, char * src)
     /*move chars*/
     if (len_dst > pos) {
         // gt_memcpy(&dst[ pos + len_src ], &dst[pos], len_dst - pos);
-        memmove(&dst[ pos + len_src ], &dst[pos], len_dst - pos);
+        gt_memmove(&dst[ pos + len_src ], &dst[pos], len_dst - pos);
     }
-    memmove(&dst[pos], src, len_src);
+    gt_memmove(&dst[pos], src, len_src);
     // gt_memcpy(&dst[pos], src, len_src);
     dst[len_all] = '\0';
 

@@ -133,7 +133,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
 
     for(i = 1 ; i < BAECODE_LINE_NUMB ; i++)
     {
-        memmove(&style->pdat[i * (area.w >> 3)] , &style->pdat[0] , area.w >> 3);
+        gt_memmove(&style->pdat[i * (area.w >> 3)] , &style->pdat[0] , area.w >> 3);
     }
 
     int count = h / BAECODE_LINE_NUMB;

@@ -135,7 +135,7 @@ static int _get_font(bar_uint8_t fontcode , bar_uint8_t* buf)
 {
     if( fontcode >= 0x20 && fontcode <= 0x7E )
     {
-        memmove(buf , &_ASCII_5x7[(fontcode - 0x20)*8] , 8);
+        gt_memmove(buf , &_ASCII_5x7[(fontcode - 0x20)*8] , 8);
         return 1;
     }
     return 0;
@@ -710,7 +710,7 @@ static int _ean13_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 
         for(i = 1 ; i < BARCODE_BLANK_SIZE ; i++)
         {
-            memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
+            gt_memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
         }
 
         if(!_ean13_font_set( p_barcode , p_row , BARCODE_BLANK_SIZE>>1))
@@ -736,7 +736,7 @@ static int _ean13_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 
         for(i = 1 ; i < BARCODE_BLANK_SIZE ; i++)
         {
-            memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
+            gt_memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
         }
 
         if(!_ean13_font_set( p_barcode , p_row , p_barcode->end+(BARCODE_BLANK_SIZE>>1)))
@@ -855,11 +855,11 @@ static int _ean13_handler(_code_st * p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
 
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
 
     _get_bracode_scope(p_barcode);
 
-    memset(p_row , 0 , sizeof(_row_st));
+    gt_memset(p_row , 0 , sizeof(_row_st));
     p_row->row_byte =  p_barcode->p_code->ret_param.dot_w >> 3 ;
     p_row->pos = 0;
     p_row->pdat = p_barcode->p_code->pdat + (p_barcode->start * p_row->row_byte);
@@ -920,7 +920,7 @@ static int _ean13_handler(_code_st * p_barcode)
     // 绘制范围类的数据
     for(i = p_barcode->start ; i < p_barcode->end;i++)
     {
-        memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat ,  p_row->row_byte);
+        gt_memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat ,  p_row->row_byte);
     }
 
     // 文字
@@ -988,7 +988,7 @@ static int _get_ean13(_code_st * p_barcode)
         p_barcode->right_blank_none += (temp >> 1);
     }
 
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size);
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size);
 
     // return _ean13_handler(p_barcode);
     return 1;
@@ -1182,7 +1182,7 @@ static int _ean8_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 
         for(i = 1 ; i < BARCODE_BLANK_SIZE ; i++)
         {
-            memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
+            gt_memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
         }
 
         if(!_ean8_font_set( p_barcode , p_row , BARCODE_BLANK_SIZE>>1))
@@ -1208,7 +1208,7 @@ static int _ean8_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 
         for(i = 1 ; i < BARCODE_BLANK_SIZE ; i++)
         {
-            memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
+            gt_memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
         }
 
         if(!_ean8_font_set( p_barcode , p_row , p_barcode->end+(BARCODE_BLANK_SIZE>>1)))
@@ -1232,11 +1232,11 @@ static int _ean8_handler(_code_st * p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
 
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
 
     _get_bracode_scope(p_barcode);
 
-    memset(p_row , 0 , sizeof(_row_st));
+    gt_memset(p_row , 0 , sizeof(_row_st));
     p_row->row_byte =  p_barcode->p_code->ret_param.dot_w >> 3 ;
     p_row->pos = 0;
     p_row->pdat = p_barcode->p_code->pdat + (p_barcode->start * p_row->row_byte);
@@ -1297,7 +1297,7 @@ static int _ean8_handler(_code_st * p_barcode)
     // 绘制范围类的数据
     for(i = p_barcode->start ; i < p_barcode->end;i++)
     {
-        memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat ,  p_row->row_byte);
+        gt_memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat ,  p_row->row_byte);
     }
 
     // 文字
@@ -1581,7 +1581,7 @@ static int _upca_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 
         for(i = 1 ; i < BARCODE_BLANK_SIZE ; i++)
         {
-            memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
+            gt_memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
         }
 
         if(!_upca_font_set( p_barcode , p_row , BARCODE_BLANK_SIZE>>1))
@@ -1621,7 +1621,7 @@ static int _upca_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 
         for(i = 1 ; i < BARCODE_BLANK_SIZE ; i++)
         {
-            memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
+            gt_memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
         }
 
         if(!_upca_font_set( p_barcode , p_row , p_barcode->end+(BARCODE_BLANK_SIZE>>1)))
@@ -1641,11 +1641,11 @@ static int _upc_a_handler(_code_st* p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
 
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
 
     _get_bracode_scope(p_barcode);
 
-    memset(p_row , 0 , sizeof(_row_st));
+    gt_memset(p_row , 0 , sizeof(_row_st));
     p_row->row_byte =  p_barcode->p_code->ret_param.dot_w >> 3 ;
     p_row->pos = 0;
     p_row->pdat = p_barcode->p_code->pdat + (p_barcode->start * p_row->row_byte);
@@ -1718,7 +1718,7 @@ static int _upc_a_handler(_code_st* p_barcode)
     // 绘制范围类的数据
     for(i = p_barcode->start ; i < p_barcode->end;i++)
     {
-        memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat ,  p_row->row_byte);
+        gt_memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat ,  p_row->row_byte);
     }
 
     // 文字
@@ -1780,7 +1780,7 @@ static int _get_upc_a(_code_st* p_barcode)
         p_barcode->right_blank_none += (temp >> 1);
     }
 
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size);
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size);
 
     // return _upc_a_handler(p_barcode);
     return 1;
@@ -1914,7 +1914,7 @@ static int _upce_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 
         for(i = 1 ; i < BARCODE_BLANK_SIZE ; i++)
         {
-            memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
+            gt_memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
         }
 
         if(!_upce_font_set( p_barcode , p_row , BARCODE_BLANK_SIZE>>1))
@@ -1937,7 +1937,7 @@ static int _upce_hri_type_set(_code_st * p_barcode , _row_st* p_row)
 
         for(i = 1 ; i < BARCODE_BLANK_SIZE ; i++)
         {
-            memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
+            gt_memmove(p_row->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
         }
 
         if(!_upce_font_set( p_barcode , p_row , p_barcode->end+(BARCODE_BLANK_SIZE>>1)))
@@ -1955,11 +1955,11 @@ static int _upce_handler(_code_st * p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
 
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
 
     _get_bracode_scope(p_barcode);
 
-    memset(p_row , 0 , sizeof(_row_st));
+    gt_memset(p_row , 0 , sizeof(_row_st));
     p_row->row_byte =  p_barcode->p_code->ret_param.dot_w >> 3 ;
     p_row->pos = 0;
     p_row->pdat = p_barcode->p_code->pdat + (p_barcode->start * p_row->row_byte);
@@ -2004,7 +2004,7 @@ static int _upce_handler(_code_st * p_barcode)
     // 绘制范围类的数据
     for(i = p_barcode->start ; i < p_barcode->end;i++)
     {
-        memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat ,  p_row->row_byte);
+        gt_memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat ,  p_row->row_byte);
     }
 
     // 文字
@@ -2069,7 +2069,7 @@ static int _get_upc_e(_code_st* p_barcode)
         p_barcode->right_blank_none += (temp >> 1);
     }
     // 清空 buf
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size);
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size);
 
     // return _upce_handler(p_barcode);
     return 1;
@@ -2134,14 +2134,14 @@ static int _itf_bearer_bar_set(_code_st * p_barcode , _row_st* p_row)
     for(i = 0 ; i < p_barcode->itf_bearer_bar ; i++)
     {
         p_row->pdat = p_barcode->p_code->pdat + ((p_barcode->start - p_barcode->itf_bearer_bar + i) * p_row->row_byte);
-        memset(p_row->pdat , 0xFF , p_row->row_byte);
+        gt_memset(p_row->pdat , 0xFF , p_row->row_byte);
     }
 
     // 下
     for(i = 0 ; i < p_barcode->itf_bearer_bar ; i++)
     {
         p_row->pdat = p_barcode->p_code->pdat + ((p_barcode->end + i) * p_row->row_byte);
-        memset(p_row->pdat , 0xFF , p_row->row_byte);
+        gt_memset(p_row->pdat , 0xFF , p_row->row_byte);
     }
 
     return 1;
@@ -2212,11 +2212,11 @@ static int _itf_handler(_code_st * p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
 
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
 
     _get_bracode_scope(p_barcode);
 
-    memset(p_row , 0 , sizeof(_row_st));
+    gt_memset(p_row , 0 , sizeof(_row_st));
     p_row->row_byte =  p_barcode->p_code->ret_param.dot_w >> 3 ;
     p_row->pos = 0;
     p_row->pdat = p_barcode->p_code->pdat + (p_barcode->start * p_row->row_byte);
@@ -2247,7 +2247,7 @@ static int _itf_handler(_code_st * p_barcode)
     {
         for(i = p_barcode->start + 1 ; i < p_barcode->p_code->ret_param.dot_h ; i++)
         {
-            memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
+            gt_memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
         }
         return 1;
     }
@@ -2259,7 +2259,7 @@ static int _itf_handler(_code_st * p_barcode)
     // 绘制范围类的数据
     for(i = p_barcode->start+1; i < p_barcode->end ; i++)
     {
-        memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_barcode->p_code->pdat + (p_barcode->start*p_row->row_byte) ,  p_row->row_byte);
+        gt_memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_barcode->p_code->pdat + (p_barcode->start*p_row->row_byte) ,  p_row->row_byte);
     }
 
     // 文字
@@ -2325,7 +2325,7 @@ static int _get_itf(_code_st* p_barcode)
         p_barcode->right_blank_none += (temp >> 1);
     }
     // 清空 buf
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size);
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size);
 
     // return _itf_handler(p_barcode);
     return 1;
@@ -2504,10 +2504,10 @@ static int _codabar_handler(_code_st * p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
 
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
     _get_bracode_scope(p_barcode);
 
-    memset(p_row , 0 , sizeof(_row_st));
+    gt_memset(p_row , 0 , sizeof(_row_st));
     p_row->row_byte =  p_barcode->p_code->ret_param.dot_w >> 3 ;
     p_row->pos = 0;
     p_row->pdat = p_barcode->p_code->pdat + (p_barcode->start * p_row->row_byte);
@@ -2531,7 +2531,7 @@ static int _codabar_handler(_code_st * p_barcode)
     {
         for(i = p_barcode->start + 1 ; i < p_barcode->p_code->ret_param.dot_h ; i++)
         {
-            memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
+            gt_memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
         }
         return 1;
     }
@@ -2539,7 +2539,7 @@ static int _codabar_handler(_code_st * p_barcode)
     // 绘制范围类的数据
     for(i = p_barcode->start+1; i < p_barcode->end ; i++)
     {
-        memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_barcode->p_code->pdat + (p_barcode->start*p_row->row_byte) ,  p_row->row_byte);
+        gt_memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_barcode->p_code->pdat + (p_barcode->start*p_row->row_byte) ,  p_row->row_byte);
     }
 
     // 文字
@@ -2615,7 +2615,7 @@ static int _get_codabar(_code_st* p_barcode)
     }
 
     // 清空 buf
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size);
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size);
 
     // return _codabar_handler(p_barcode);
     return 1;
@@ -2891,10 +2891,10 @@ static int _code128_handler(_code_st * p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
 
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
     _get_bracode_scope(p_barcode);
 
-    memset(p_row , 0 , sizeof(_row_st));
+    gt_memset(p_row , 0 , sizeof(_row_st));
     p_row->row_byte =  p_barcode->p_code->ret_param.dot_w >> 3 ;
     p_row->pos = 0;
     p_row->pdat = p_barcode->p_code->pdat + (p_barcode->start * p_row->row_byte);
@@ -2936,7 +2936,7 @@ static int _code128_handler(_code_st * p_barcode)
     {
         for(i = p_barcode->start + 1 ; i < p_barcode->p_code->ret_param.dot_h ; i++)
         {
-            memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
+            gt_memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
         }
         return 1;
     }
@@ -2944,7 +2944,7 @@ static int _code128_handler(_code_st * p_barcode)
     // 绘制范围类的数据
     for(i = p_barcode->start ; i < p_barcode->end;i++)
     {
-        memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat ,  p_row->row_byte);
+        gt_memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat ,  p_row->row_byte);
     }
 
     // 文字
@@ -3013,7 +3013,7 @@ static int _get_code128(_code_st * p_barcode)
         p_barcode->right_blank_none += (temp >> 1);
     }
 
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size);
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size);
 
     // return _code128_handler(p_barcode);
     return 1;
@@ -3189,10 +3189,10 @@ static int _code93_handler(_code_st * p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
 
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
     _get_bracode_scope(p_barcode);
 
-    memset(p_row , 0 , sizeof(_row_st));
+    gt_memset(p_row , 0 , sizeof(_row_st));
     p_row->row_byte =  p_barcode->p_code->ret_param.dot_w >> 3 ;     //11byte
     p_row->pos = 0;
     p_row->pdat = p_barcode->p_code->pdat+(p_barcode->start*p_row->row_byte);
@@ -3227,14 +3227,14 @@ static int _code93_handler(_code_st * p_barcode)
     {
         for(i = p_barcode->start + 1 ; i < p_barcode->p_code->ret_param.dot_h ; i++)
         {
-            memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
+            gt_memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
         }
         return 1;
     }
     // 绘制范围类的数据
     for(i = p_barcode->start ; i < p_barcode->end;i++)
     {
-        memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat ,  p_row->row_byte);
+        gt_memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat ,  p_row->row_byte);
     }
 
     // 文字
@@ -3301,7 +3301,7 @@ static int _get_code93(_code_st * p_barcode)
         p_barcode->right_blank_none += (temp >> 1);								//10bit
     }
 
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
 
     // return _code93_handler(p_barcode);
     return 1;
@@ -3409,10 +3409,10 @@ static int _code39_handler(_code_st * p_barcode)
     if(NULL == p_barcode)
         goto ERR_RET;
 
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size );
     _get_bracode_scope(p_barcode);
 
-    memset(p_row , 0 , sizeof(_row_st));
+    gt_memset(p_row , 0 , sizeof(_row_st));
     p_row->row_byte =  p_barcode->p_code->ret_param.dot_w >> 3 ;
     p_row->pos = 0;
     p_row->pdat = p_barcode->p_code->pdat + (p_barcode->start * p_row->row_byte);
@@ -3447,7 +3447,7 @@ static int _code39_handler(_code_st * p_barcode)
     {
         for(i = p_barcode->start + 1 ; i < p_barcode->p_code->ret_param.dot_h ; i++)
         {
-            memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
+            gt_memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_row->pdat , p_row->row_byte);
         }
         return 1;
     }
@@ -3455,7 +3455,7 @@ static int _code39_handler(_code_st * p_barcode)
     // 绘制范围类的数据
     for(i = p_barcode->start+1; i < p_barcode->end ; i++)
     {
-        memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_barcode->p_code->pdat + (p_barcode->start*p_row->row_byte) ,  p_row->row_byte);
+        gt_memmove(p_barcode->p_code->pdat + (i * p_row->row_byte) , p_barcode->p_code->pdat + (p_barcode->start*p_row->row_byte) ,  p_row->row_byte);
     }
 
     // 文字
@@ -3530,7 +3530,7 @@ static int _get_code39(_code_st* p_barcode)
     }
 
     // 清空 buf
-    memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size);
+    gt_memset(p_barcode->p_code->pdat , 0 , p_barcode->p_code->pdat_size);
 
     // return _code39_handler(p_barcode);
     return 1;
@@ -3556,10 +3556,10 @@ int gt_barcode_get(barcode_st * p_code)
         goto ERR_RET;
 
     // 清空返回值 防止客户输入出现错误
-    memset(&p_code->ret_param , 0 , sizeof(barcoed_ret_param_st));
+    gt_memset(&p_code->ret_param , 0 , sizeof(barcoed_ret_param_st));
 
     // 清空 _p_barcode
-    memset(_p_barcode , 0 , sizeof(_code_st));
+    gt_memset(_p_barcode , 0 , sizeof(_code_st));
 
     _p_barcode->p_code = p_code;
 
@@ -3681,10 +3681,10 @@ int gt_barcode_get_w_and_h(barcode_st * p_code)
         goto ERR_RET;
 
     // 清空返回值 防止客户输入出现错误
-    memset(&p_code->ret_param , 0 , sizeof(barcoed_ret_param_st));
+    gt_memset(&p_code->ret_param , 0 , sizeof(barcoed_ret_param_st));
 
     // 清空 _p_barcode
-    memset(_p_barcode , 0 , sizeof(_code_st));
+    gt_memset(_p_barcode , 0 , sizeof(_code_st));
 
     _p_barcode->p_code = p_code;
 

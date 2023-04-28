@@ -142,6 +142,7 @@ void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
 #endif
 
     _gt_obj_class_destroy(obj);
+    timer->user_data = NULL;
 
 #if GT_USE_DISPLAY_PREF_DESTROY
     GT_LOGI(GT_LOG_TAG_MEM, "destroy obj: %p, used: %d ms", obj, gt_tick_get() - start);

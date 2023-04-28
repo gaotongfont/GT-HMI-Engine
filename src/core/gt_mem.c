@@ -293,6 +293,12 @@ void _mem_free(void * ptr, uint8_t * file_name, size_t line)
 
 void * gt_memcpy(void * dst, const void * src, size_t size)
 {
+    if (NULL == dst || NULL == src) {
+        return NULL;
+    }
+    if (0 == size) {
+        return dst;
+    }
     return memcpy(dst, src, size);
 }
 

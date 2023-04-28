@@ -10,6 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "gt_symbol.h"
 #include "string.h"
+#include "../core/gt_mem.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -604,7 +605,7 @@ const uint8_t * gt_symbol_get_mask_buf(char * utf8 , uint8_t size)
 
     while (idx < cnt)
     {
-        if( memcmp(utf8, tmp_symbol[idx].utf8, 3) == 0 ){
+        if( gt_memcmp(utf8, tmp_symbol[idx].utf8, 3) == 0 ){
             return tmp_symbol[idx].mask_buf;
         }
         idx++;

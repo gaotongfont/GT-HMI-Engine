@@ -109,6 +109,9 @@ static gt_obj_st * _gt_obj_class_destroy_from_parent(gt_obj_st * self)
 }
 
 static void _gt_obj_class_destroy_property(gt_obj_st * self) {
+    if (NULL == self) {
+        return;
+    }
     // free event attribute
     if (NULL != self->event_attr) {
         gt_mem_free(self->event_attr);
