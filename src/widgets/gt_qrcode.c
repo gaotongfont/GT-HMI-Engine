@@ -37,12 +37,12 @@ static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e);
 
 const gt_obj_class_st gt_qr_code_class = {
-    ._init_cb = _init_cb,
-    ._deinit_cb = _deinit_cb,
-    ._event_cb = _event_cb,
-    .type = OBJ_TYPE,
-    .size_instance = (sizeof(gt_obj_st)),
-    .size_style = (sizeof(_gt_style_qrcode_st))
+    ._init_cb      = _init_cb,
+    ._deinit_cb    = _deinit_cb,
+    ._event_cb     = _event_cb,
+    .type          = OBJ_TYPE,
+    .size_instance = sizeof(gt_obj_st),
+    .size_style    = sizeof(_gt_style_qrcode_st)
 };
 
 
@@ -96,7 +96,7 @@ static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
         GT_LOGE(GT_LOG_TAG_GUI , "qrcode init err!");
         goto err_ret;
     }
-    
+
     gt_memset_0(qr_data_buff , _QRDataBuf_SIZE);
     gt_memset_0(qr_code_buff , _QRCodeDataBuf_SIZE);
 
@@ -105,7 +105,7 @@ static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
         GT_LOGE(GT_LOG_TAG_GUI , "get qrcode data err!");
         goto err_ret;
     }
-    
+
     /* base shape */
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
@@ -121,20 +121,20 @@ static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
 
     qr_code->area.w = 4 * style->version + 17;
     qr_code->area.h = ((qr_code->area.w + 7) >> 3) << 3;
-    
+
     if(  ((qr_code->area.h * qr_code->area.h) >> 3 ) > _QRCodeDataBuf_SIZE )
     {
         GT_LOGE(GT_LOG_TAG_GUI , "get qrcode buff size is small!");
         goto err_ret;
     }
-    
+
     gt_memset_0(qr_code_buff , _QRCodeDataBuf_SIZE);
     _Data_ReMap(qr_code_buff,qr_data_buff, qr_code->area.w, qr_code->area.h, 0 );
-    
+
     qr_code->area.w = ((qr_code->area.w + 7) >> 3) << 3;
     GT_LOGD( GT_LOG_TAG_GUI,"qrcode w = %d , h = %d" , qr_code->area.w , qr_code->area.h);
 
-    // 
+    //
     gt_mem_free(qr_data_buff);
     qr_data_buff = NULL;
 

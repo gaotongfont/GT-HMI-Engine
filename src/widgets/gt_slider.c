@@ -35,8 +35,8 @@ const gt_obj_class_st gt_slider_class = {
     ._deinit_cb     = _deinit_cb,
     ._event_cb      = _event_cb,
     .type           = OBJ_TYPE,
-    .size_instance  = (sizeof(gt_obj_st)),
-    .size_style     = (sizeof(_gt_style_slider_st))
+    .size_instance  = sizeof(gt_obj_st),
+    .size_style     = sizeof(_gt_style_slider_st)
 };
 
 
@@ -48,7 +48,7 @@ const gt_obj_class_st gt_slider_class = {
 static uint16_t _gt_slider_style_get_offset(gt_obj_st * slider)
 {
     _gt_style_slider_st * style = slider->style;
-    
+
     return style->offset;
 }
 
@@ -165,10 +165,10 @@ static inline void _gt_slider_init_widget(gt_obj_st * slider) {
         draw_bg(slider->draw_ctx, &rect_attr, &area_val);
     }
 
-    // 
+    //
     _tmp_pos = (float)style->offset / _tmp_pos;
     style->pos = (gt_size_t)(_tmp_pos * (style->end-style->start)) + style->start;
-    
+
     /* visible or not */
     if( !style->tag_visible ){
         return;
