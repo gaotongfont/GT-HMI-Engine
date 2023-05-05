@@ -225,7 +225,6 @@ static const gt_vfs_st virt_file_sys[] = {
 >
 > gt_conf.h -> GUI框架配置信息
 >
-> gt_template.h -> 头文件包含
 >
 
 GUI 内核层相关的逻辑代码，以及支持实现功能的第三方算法库。
