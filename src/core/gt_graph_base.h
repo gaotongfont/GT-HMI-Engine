@@ -79,7 +79,7 @@ typedef struct _gt_attr_rect_s
     gt_color_t fg_color;        ///< foreground color
 
     gt_color_t bg_color;        ///< background color
-    gt_opt_t bg_opa;            ///< background opacity
+    gt_opt_t bg_opa;            ///< background opacity @ref gt_color.h
 
     // border
     gt_color_t border_color;    ///< border color
@@ -91,7 +91,7 @@ typedef struct _gt_attr_rect_s
     uint8_t * data_gray;
 
     uint8_t is_fill:1;          ///< fill inside area by fg_color
-    uint8_t is_line;            ///< use straight line  
+    uint8_t is_line;            ///< use straight line
     gt_attr_line_st  * line;     ///< use straight line
 }gt_attr_rect_st;
 
