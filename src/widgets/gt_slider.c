@@ -280,7 +280,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
     float pos;
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGD(GT_LOG_TAG_GUI, "start draw");
+            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             if( gt_obj_check_scr(obj) ){
                 _gt_disp_refr_append_area(&obj->area);
             }
@@ -288,24 +288,24 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGD(GT_LOG_TAG_GUI, "end draw");
+            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGD(GT_LOG_TAG_GUI, "child remove");
+            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
 			break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGD(GT_LOG_TAG_GUI, "child delete");
+            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
             break;
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
-            GT_LOGD(GT_LOG_TAG_GUI, "clicking");
+            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESS, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGD(GT_LOG_TAG_GUI, "scroll");
+            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
             _pos = 0;
             if( gt_slider_style_get_dir(obj) == GT_BAR_DIR_HOR_L2R ){
                 _pos += obj->process_attr.x_scroll;
@@ -321,13 +321,13 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
-            GT_LOGD(GT_LOG_TAG_GUI, "process");
+            GT_LOGV(GT_LOG_TAG_GUI, "process");
             /* code here */
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
-            GT_LOGD(GT_LOG_TAG_GUI, "processed");
+            GT_LOGV(GT_LOG_TAG_GUI, "processed");
 
             point_click.x = obj->process_attr.point.x;
             point_click.y = obj->process_attr.point.y;

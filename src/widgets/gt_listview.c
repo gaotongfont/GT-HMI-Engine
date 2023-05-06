@@ -235,7 +235,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGD(GT_LOG_TAG_GUI, "start draw");
+            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             if( gt_obj_check_scr(obj) ){
                 _gt_disp_refr_append_area(&obj->area);
             }
@@ -243,50 +243,50 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGD(GT_LOG_TAG_GUI, "end draw");
+            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGD(GT_LOG_TAG_GUI, "child remove");
+            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
 			break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGD(GT_LOG_TAG_GUI, "child delete");
+            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
             break;
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
-            GT_LOGD(GT_LOG_TAG_GUI, "clicking");
+            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGD(GT_LOG_TAG_GUI, "scroll");
+            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
             _gt_listview_style_update_by_scroll_y(obj, obj->process_attr.y_scroll);
 
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
-            GT_LOGD(GT_LOG_TAG_GUI, "process");
+            GT_LOGV(GT_LOG_TAG_GUI, "process");
             /* code here */
 
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
-            GT_LOGD(GT_LOG_TAG_GUI, "processed");
+            GT_LOGV(GT_LOG_TAG_GUI, "processed");
             _gt_listview_style_update_by_click_point(obj, obj->process_attr.point);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESS_LOST: {
-            GT_LOGD(GT_LOG_TAG_GUI, "process lost");
+            GT_LOGV(GT_LOG_TAG_GUI, "process lost");
 
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         }
 
         case GT_EVENT_TYPE_UPDATE_STYLE: {
-            GT_LOGD(GT_LOG_TAG_GUI, "pdate style");
+            GT_LOGV(GT_LOG_TAG_GUI, "pdate style");
             _gt_listview_style_update(obj);
             break;
         }
