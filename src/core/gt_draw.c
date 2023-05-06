@@ -239,7 +239,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
     gt_area_st bg_coords, area_res;
     gt_area_copy(&bg_coords, (gt_area_st *)coords);
 
-    if( !gt_area_intersect_screen(draw_ctx->buf_area, &bg_coords, &area_res) ){
+    if( !gt_area_intersect_screen(&draw_ctx->buf_area, &bg_coords, &area_res) ){
         return;
     }
 
@@ -679,7 +679,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
             }
         }
 
-        if( !gt_area_is_intersect_screen(draw_ctx->buf_area, blend_dsc->dst_area) ){
+        if( !gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area) ){
             goto _lab_nex_word;
         }
 
@@ -899,7 +899,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             }
         }
 
-        if( !gt_area_intersect_screen(draw_ctx->buf_area, &area_font, &area_res) ){
+        if( !gt_area_intersect_screen(&draw_ctx->buf_area, &area_font, &area_res) ){
             goto _lab_nex_word;
         }
 
@@ -996,7 +996,7 @@ static void _filling_by_png_file(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st 
     blend_dsc->mask_buf = &dsc_img->alpha[0];
     blend_dsc->dst_buf = (gt_color_t *)&dsc_img->img[0];
     while(y < h){
-        if( gt_area_is_intersect_screen(draw_ctx->buf_area, blend_dsc->dst_area) ){
+        if( gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area) ){
             /* blend to bg */
             gt_draw_blend(draw_ctx, blend_dsc);
         }
@@ -1046,7 +1046,7 @@ static void _filling_by_default(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st *
     }
 
     while(y < h){
-        if (gt_area_is_intersect_screen(draw_ctx->buf_area, blend_dsc->dst_area)) {
+        if (gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area)) {
             /*read one line color data*/
             gt_fs_read_img_offset((uint8_t *)blend_dsc->dst_buf, offset, len);
             if(is_mask) {    //png

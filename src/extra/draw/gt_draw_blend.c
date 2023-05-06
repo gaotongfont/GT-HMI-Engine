@@ -57,7 +57,7 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
 
     /** 绘制区域和显示屏buffer的交集区域 */
     gt_area_st area_intersect = { 0, 0, 0, 0 };
-    if (!gt_area_intersect_screen(draw_ctx->buf_area, dsc->dst_area, &area_intersect)) {
+    if (!gt_area_intersect_screen(&draw_ctx->buf_area, dsc->dst_area, &area_intersect)) {
         return;
     }
     if (area_intersect.w == 0 || area_intersect.h == 0) {
@@ -66,7 +66,7 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
 
     gt_area_st area_draw, area_dsc;
     /** 显示屏的显示区域 */
-    gt_area_copy(&area_draw, draw_ctx->buf_area);
+    gt_area_copy(&area_draw, &draw_ctx->buf_area);
     /** 图片当前处理的显示区域 */
     gt_area_copy(&area_dsc, dsc->dst_area);
 

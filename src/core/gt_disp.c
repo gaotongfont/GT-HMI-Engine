@@ -78,20 +78,17 @@ static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
 static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj)
 {
     if( !gt_obj_is_visible(obj) ){
-        // GT_LOGD(GT_LOG_TAG_GUI, "obj not visible");
         return;
     }
     gt_disp_st * disp = gt_disp_get_default();
 
-    // GT_LOGV(GT_LOG_TAG_GUI, "obj visible");
-
-    // GT_LOGV(GT_LOG_TAG_GUI, "obj->x:%d,y:%d,w:%d,h:%d====disp->x:%d,y:%d,w:%d,h:%d",
+    // GT_LOGV(GT_LOG_TAG_GUI, "obj->x:%d, y:%d, w:%d, h:%d ==> disp->x:%d, y:%d, w:%d, h:%d",
     //     obj->area.x, obj->area.y, obj->area.w, obj->area.h,
     //     disp->area_disp.x, disp->area_disp.y, disp->area_disp.w, disp->area_disp.h);
 
     gt_draw_ctx_t draw_ctx = {
         .buf        = disp->vbd_color,
-        .buf_area   = &disp->area_disp,
+        .buf_area   = disp->area_disp,
     };
     obj->draw_ctx = (struct _gt_draw_ctx_t * )&draw_ctx;
     obj->class->_init_cb(obj);
@@ -210,7 +207,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
 
     gt_color_t color_fill = gt_screen_get_bgcolor(scr);
 
-    while( y < area.h ){
+    while( y < area.h ) {
 
         gt_color_fill(disp->vbd_color, len, color_fill);
 
@@ -224,7 +221,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
         disp->area_disp.x = area.x - disp->area_act.x;
         disp->drv->flush_cb(disp->drv, &disp->area_disp, disp->vbd_color);
         y += line;
-        if( (y) > (area.y + area.h) ){
+        if( y > (area.y + area.h) ){
             disp->area_disp.h = area.h - y;
         }
     }

@@ -69,9 +69,9 @@ static inline void _gt_imgbtn_init_widget(gt_obj_st * imgbtn)
         .bg_opa = imgbtn->opa
     };
 
-    if(imgbtn->area.w > imgbtn->draw_ctx->buf_area->w || imgbtn->area.h > imgbtn->draw_ctx->buf_area->h){
-        imgbtn->draw_ctx->buf_area->w = imgbtn->area.w;
-        imgbtn->draw_ctx->buf_area->h = imgbtn->area.h;
+    if(imgbtn->area.w > imgbtn->draw_ctx->buf_area.w || imgbtn->area.h > imgbtn->draw_ctx->buf_area.h){
+        imgbtn->draw_ctx->buf_area.w = imgbtn->area.w;
+        imgbtn->draw_ctx->buf_area.h = imgbtn->area.h;
     }
     /* start draw imgbtn */
     draw_bg_img(imgbtn->draw_ctx, &dsc, &imgbtn->area);

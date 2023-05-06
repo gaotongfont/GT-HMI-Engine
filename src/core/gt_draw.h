@@ -29,7 +29,7 @@ extern "C" {
  */
 typedef struct _gt_draw_ctx_t{
     void * buf;     ///< save the temp buffer
-    gt_area_st * buf_area;  ///< display area
+    gt_area_st buf_area;  ///< display area
 
     /// draw base graph
     void (*draw_rect)(struct _gt_draw_ctx_t * ctx, gt_attr_rect_st * attr, gt_area_st * area);
