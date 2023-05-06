@@ -124,6 +124,10 @@ extern "C" {
 #include "src/widgets/gt_line.h"
 #endif
 
+#if GT_CFG_ENABLE_PLAYER
+#include "src/widgets/gt_player.h"
+#endif
+
 /* other */
 #include "src/others/gt_color.h"
 #include "src/others/gt_log.h"
