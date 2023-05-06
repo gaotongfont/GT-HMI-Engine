@@ -50,77 +50,77 @@ extern "C" {
 /* draw */
 #include "src/extra/draw/gt_draw_blend.h"
 
-#if GT_CFG_ENABLE_BTN == 1
+#if GT_CFG_ENABLE_BTN
 #include "src/widgets/gt_btn.h"
 #endif
 
-#if GT_CFG_ENABLE_CHECKBOX == 1
+#if GT_CFG_ENABLE_CHECKBOX
 #include "src/widgets/gt_checkbox.h"
 #endif
 
-#if GT_CFG_ENABLE_GROUP == 1
+#if GT_CFG_ENABLE_GROUP
 #include "src/widgets/gt_group.h"
 #endif
 
-#if GT_CFG_ENABLE_IMG == 1
+#if GT_CFG_ENABLE_IMG
 #include "src/widgets/gt_img.h"
 #endif
 
-#if GT_CFG_ENABLE_INPUT == 1
+#if GT_CFG_ENABLE_INPUT
 #include "src/widgets/gt_input.h"
 #include "src/widgets/gt_keypad.h"
 #endif
 
 
 
-#if GT_CFG_ENABLE_LABEL == 1
+#if GT_CFG_ENABLE_LABEL
 #include "src/widgets/gt_label.h"
 #endif
 
-#if GT_CFG_ENABLE_LISTVIEW == 1
+#if GT_CFG_ENABLE_LISTVIEW
 #include "src/widgets/gt_listview.h"
 #endif
 
-#if GT_CFG_ENABLE_PROGRESS_BAR == 1
+#if GT_CFG_ENABLE_PROGRESS_BAR
 #include "src/widgets/gt_progress_bar.h"
 #endif
 
-#if GT_CFG_ENABLE_RADIO == 1
+#if GT_CFG_ENABLE_RADIO
 #include "src/widgets/gt_radio.h"
 #endif
 
-#if GT_CFG_ENABLE_SLIDER == 1
+#if GT_CFG_ENABLE_SLIDER
 #include "src/widgets/gt_slider.h"
 #endif
 
-#if GT_CFG_ENABLE_SWITCH == 1
+#if GT_CFG_ENABLE_SWITCH
 #include "src/widgets/gt_switch.h"
 #endif
 
-#if GT_CFG_ENABLE_TEXTAREA == 1
+#if GT_CFG_ENABLE_TEXTAREA
 #include "src/widgets/gt_textarea.h"
 #endif
 
-#if GT_CFG_ENABLE_IMGBTN == 1
+#if GT_CFG_ENABLE_IMGBTN
 #include "src/widgets/gt_imgbtn.h"
 #endif
 
-#if GT_CFG_ENABLE_RECT == 1
+#if GT_CFG_ENABLE_RECT
 #include "src/widgets/gt_rect.h"
 #endif
 
-#if GT_CFG_ENABLE_BARCODE == 1
+#if GT_CFG_ENABLE_BARCODE
 /* barcode */
 #include "src/extra/barcode/gt_barcode_src.h"
 #include "src/widgets/gt_barcode.h"
 #endif
 
-#if GT_CFG_ENABLE_QRCODE == 1
+#if GT_CFG_ENABLE_QRCODE
 #include "src/extra/qrcode/gt_qrcode_src.h"
 #include "src/widgets/gt_qrcode.h"
 #endif
 
-#if GT_CFG_ENABLE_LINE == 1
+#if GT_CFG_ENABLE_LINE
 #include "src/widgets/gt_line.h"
 #endif
 

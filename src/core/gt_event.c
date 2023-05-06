@@ -154,7 +154,7 @@ static void _gt_timer_event_cb(struct _gt_timer_s * timer){
 }
 
 /* global functions / API interface -------------------------------------*/
-void gt_obj_add_event_cb(gt_obj_st * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data){
+void gt_obj_add_event_cb(struct _gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data){
     GT_LOGV(GT_LOG_TAG_GUI, "start add event cb:%d", obj->cnt_event);
     if ( NULL == obj->event_attr ) {
         obj->event_attr =  gt_mem_malloc(sizeof(gt_obj_event_attr_st));
@@ -176,7 +176,7 @@ gt_res_t gt_event_send(struct _gt_obj_s * parent, gt_event_type_et event, void *
     }
     // add event to obj----sys event,process draw,del,create...need long time
     if( parent->event_mask & GT_EVENT_GET_MASK_SHIFT_BIT(event) ){
-        GT_LOGD(GT_LOG_TAG_GUI, "parent is exist the event code:%d", event);
+        GT_LOGV(GT_LOG_TAG_GUI, "parent is exist the event code:%d", event);
         return GT_RES_FAIL;
     }
     parent->event_mask |= GT_EVENT_GET_MASK_SHIFT_BIT(event);
