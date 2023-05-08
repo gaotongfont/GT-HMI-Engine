@@ -41,6 +41,8 @@ const gt_obj_class_st gt_player_class = {
 };
 
 
+static void _turn_prev_item(gt_obj_st * obj, bool is_loop);
+static void _turn_next_item(gt_obj_st * obj, bool is_loop);
 /* macros ---------------------------------------------------------------*/
 
 
@@ -60,6 +62,63 @@ static inline void * _get_src(_gt_style_player_st * style) {
     return style->target.list[style->target.index]->src;
 }
 
+/**
+ * @brief Lock the player callback  handler
+ *
+ * @param style
+ * @return true Set lock status success
+ * @return false Unable to set lock status
+ */
+static inline bool _lock(_gt_style_player_st * style) {
+    if (NULL == style) {
+        return false;
+    }
+    if (style->reg.lock) {
+        return false;
+    }
+    style->reg.lock = true;
+    return true;
+}
+
+/**
+ * @brief Unlock the player callback handler
+ *
+ * @param style
+ * @return true Set unlock status success
+ * @return false Unable to set unlock status
+ */
+static inline bool _unlock(_gt_style_player_st * style) {
+    if (NULL == style) {
+        return false;
+    }
+    if (!style->reg.lock) {
+        return false;
+    }
+    style->reg.lock = false;
+    return true;
+}
+
+/**
+ * @brief Get The player display direction
+ *
+ * @param style
+ * @return true Go next item direction
+ * @return false Go previous item direction
+ */
+static inline bool _is_dir_next(_gt_style_player_st * style) {
+    return style->reg.dir ? false : true;
+}
+
+/**
+ * @brief Set the player display direction
+ *
+ * @param style
+ * @param is_next true: Go next item direction; false: Go previous item direction
+ */
+static inline void _set_dir(_gt_style_player_st * style, bool is_next) {
+    style->reg.dir = is_next ? 0 : 1;
+}
+
 static inline void _default_init(gt_obj_st * obj, _gt_style_player_st * style) {
     void * src = _get_src(style);
     gt_fs_read_img_wh((char * )src, &obj->area.w, &obj->area.h);
@@ -74,6 +133,7 @@ static inline void _default_init(gt_obj_st * obj, _gt_style_player_st * style) {
 
 static void _init_cb(gt_obj_st * obj) {
     _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
+    _unlock(style);
     switch (style->reg.type)
     {
         default:
@@ -81,6 +141,20 @@ static void _init_cb(gt_obj_st * obj) {
             break;
     }
 
+}
+
+/**
+ * @brief Deinit the player timer object, and free the memory
+ *
+ * @param style
+ */
+static void _destroy_timer(_gt_style_player_st * style) {
+    if ( !style->timer ) {
+        return ;
+    }
+    _gt_timer_set_paused(style->timer, true);
+    _gt_timer_del(style->timer);
+    style->timer = NULL;
 }
 
 /**
@@ -126,6 +200,7 @@ static void _deinit_cb(gt_obj_st * obj) {
             break;
     }
 
+    _destroy_timer(*style_p);
     gt_mem_free(*style_p);
     *style_p = NULL;
 }
@@ -147,6 +222,10 @@ static void _invalid_area(gt_obj_st * obj, _gt_style_player_st * style) {
     }
 }
 
+static inline bool _is_mode_equal(_gt_style_player_st * style, _gt_player_mode_et mode) {
+    return style->reg.mode == mode;
+}
+
 /**
  * @brief Turn to the previous item
  *
@@ -162,10 +241,22 @@ static void _turn_prev_item(gt_obj_st * obj, bool is_loop) {
     }
     if (style->target.index > 0) {
         --style->target.index;
-    } else {
-        if (!is_loop) { return ; }
-        style->target.index = style->target.count - 1;
+        _invalid_area(obj, style);
+        return ;
     }
+    if (_is_mode_equal(style, GT_PLAYER_MODE_ONCE)) {
+        _destroy_timer(style);
+        return ;
+    }
+    if (_is_mode_equal(style, GT_PLAYER_MODE_PLAYBACK)) {
+        gt_player_dir_toggle(obj);
+        _turn_next_item(obj, is_loop);
+        return ;
+    }
+    if (!is_loop) {
+        return ;
+    }
+    style->target.index = style->target.count - 1;
     _invalid_area(obj, style);
 }
 
@@ -184,19 +275,40 @@ static void _turn_next_item(gt_obj_st * obj, bool is_loop) {
     }
     if (style->target.index + 1 < style->target.count) {
         ++style->target.index;
-    } else {
-        if (!is_loop) { return ; }
-        style->target.index = 0;
+        _invalid_area(obj, style);
+        return ;
     }
+    if (_is_mode_equal(style, GT_PLAYER_MODE_ONCE)) {
+        _destroy_timer(style);
+        return ;
+    }
+    if (_is_mode_equal(style, GT_PLAYER_MODE_PLAYBACK)) {
+        gt_player_dir_toggle(obj);
+        _turn_prev_item(obj, is_loop);
+        return ;
+    }
+
+    if (!is_loop) {
+        return ;
+    }
+    style->target.index = 0;
     _invalid_area(obj, style);
 }
 
 static inline void _change_item_handler(gt_obj_st * obj, bool is_next) {
+    if (NULL == obj) {
+        return ;
+    }
+    if (NULL == obj->style) {
+        return ;
+    }
+
     _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
     bool is_loop = true;
 
     switch (style->reg.mode)
     {
+        case GT_PLAYER_MODE_NONE:
         case GT_PLAYER_MODE_ONCE: {
             is_loop = false;
             break;
@@ -290,6 +402,36 @@ static inline void _remove_item(_gt_style_player_st * style, uint16_t idx) {
     style->target.list = gt_mem_realloc(style->target.list, style->target.count *  sizeof(_gt_player_item_st));
 }
 
+static void _auto_play_callback(struct _gt_timer_s * timer) {
+    gt_obj_st * obj = (gt_obj_st * )_gt_timer_get_user_data(timer);
+    if (NULL == obj) {
+        return;
+    }
+    _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
+    if (!_lock(style)) {
+        /** The callback has been executed, waiting for it to be displayed */
+        return ;
+    }
+
+    _change_item_handler(obj, _is_dir_next(style));
+}
+
+static inline void _set_play_status(_gt_style_player_st * style, bool is_play) {
+    if (NULL == style) {
+        return ;
+    }
+    if (!style->timer) {
+        return ;
+    }
+    if (NULL == style->target.list) {
+        return ;
+    }
+    if (style->target.count < 2) {
+        return ;
+    }
+    _gt_timer_set_paused(style->timer, is_play ? false : true);
+}
+
 /* global functions / API interface -------------------------------------*/
 
 gt_obj_st * gt_player_create(gt_obj_st * parent)
@@ -315,6 +457,30 @@ void gt_player_set_mode(gt_obj_st * obj, _gt_player_mode_et mode)
         return ;
     }
     ((_gt_style_player_st * )(obj->style))->reg.mode = mode;
+}
+
+void gt_player_set_auto_play_period(gt_obj_st * obj, uint32_t period)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    if (NULL == obj->style) {
+        return ;
+    }
+    _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
+    style->reg.auto_play = period ? 1 : 0;
+
+    if (!style->reg.auto_play) {
+        _destroy_timer(style);
+        return ;
+    }
+
+    if (style->timer) {
+        _gt_timer_set_period(style->timer, period);
+        return ;
+    }
+    style->timer = _gt_timer_create(_auto_play_callback, period, (void * )obj);
+    _set_play_status(style, false);
 }
 
 /**
@@ -406,6 +572,33 @@ void gt_player_turn_next(gt_obj_st * obj)
     return _change_item_handler(obj, true);
 }
 
+void gt_player_play(gt_obj_st * obj)
+{
+    _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
+    _set_play_status(style, true);
+}
+
+void gt_player_stop(gt_obj_st * obj)
+{
+    _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
+    _set_play_status(style, false);
+}
+
+void gt_player_toggle(gt_obj_st * obj)
+{
+    _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
+    if (!style->timer) {
+        return ;
+    }
+    bool is_stop = _gt_timer_get_paused(style->timer);
+    _set_play_status(style, is_stop ? true : false);
+}
+
+void gt_player_dir_toggle(gt_obj_st * obj)
+{
+    _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
+    _set_dir(style, _is_dir_next(style) ? false : true);
+}
 
 #endif /** GT_CFG_ENABLE_PLAYER */
 /* end ------------------------------------------------------------------*/
