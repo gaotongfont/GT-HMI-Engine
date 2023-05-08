@@ -571,6 +571,7 @@ uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_siz
 void gt_player_turn_prev(gt_obj_st * obj)
 {
     if (_is_type_none((_gt_style_player_st * )obj->style)) {
+        GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
     }
     return _change_item_handler(obj, false);
@@ -579,6 +580,7 @@ void gt_player_turn_prev(gt_obj_st * obj)
 void gt_player_turn_next(gt_obj_st * obj)
 {
     if (_is_type_none((_gt_style_player_st * )obj->style)) {
+        GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
     }
     return _change_item_handler(obj, true);
@@ -588,6 +590,7 @@ void gt_player_play(gt_obj_st * obj)
 {
     _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
     if (_is_type_none(style)) {
+        GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
     }
     _set_play_status(style, true);
@@ -597,6 +600,7 @@ void gt_player_stop(gt_obj_st * obj)
 {
     _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
     if (_is_type_none(style)) {
+        GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
     }
     _set_play_status(style, false);
@@ -606,6 +610,7 @@ void gt_player_toggle(gt_obj_st * obj)
 {
     _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
     if (_is_type_none(style)) {
+        GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
     }
     if (!style->timer) {
@@ -619,6 +624,7 @@ void gt_player_dir_toggle(gt_obj_st * obj)
 {
     _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
     if (_is_type_none(style)) {
+        GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
     }
     _set_dir(style, _is_dir_next(style) ? false : true);
