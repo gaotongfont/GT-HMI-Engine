@@ -73,6 +73,10 @@ static inline uint32_t _gt_timer_for_each_exec(void)
     uint32_t     start_time   = gt_tick_get();
 
     gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_timer_ll), list) {
+        if (!ptr->repeat_count) {
+            _gt_timer_remove_task(ptr);
+            continue;
+        }
         if (ptr->paused) {
             continue;
         }
@@ -87,9 +91,6 @@ static inline uint32_t _gt_timer_for_each_exec(void)
 
             if (ptr->repeat_count > 0) {
                 --ptr->repeat_count;
-            } else if (!ptr->repeat_count) {
-                _gt_timer_remove_task(ptr);
-                continue;
             }
 
             ptr->timer_cb(ptr);
@@ -177,11 +178,17 @@ _gt_timer_st * _gt_timer_get_laster_timer(void)
 
 void _gt_timer_set_repeat_count(_gt_timer_st * timer, int32_t repeat)
 {
+    if (!timer) {
+        return ;
+    }
     timer->repeat_count = repeat;
 }
 
 int32_t _gt_timer_get_repeat_count(_gt_timer_st * timer)
 {
+    if (!timer) {
+        return 0;
+    }
     return timer->repeat_count;
 }
 

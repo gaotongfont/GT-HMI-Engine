@@ -45,7 +45,7 @@ typedef struct _gt_timer_s {
     void * user_data;       // custom user data
 
     /* 1 << 31: paused, 1bit; 31bit: repeat_count */
-    int32_t repeat_count;   // -1 : infinity; n > 0: repeat time;such as: 1 -> it will run in One time;
+    int32_t repeat_count: 31;   // -1 : infinity; n > 0: repeat time;such as: 1 -> it will run in One time;
     uint32_t paused : 1;
 }_gt_timer_st;
 
