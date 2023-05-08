@@ -124,22 +124,20 @@ _gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * 
     if (!timer) {
         return NULL;
     }
+    GT_LOGV(GT_LOG_TAG_TIM, ">>> period: %d <<<", period);
+
+    GT_INIT_LIST_HEAD(&timer->list);
 
     timer->period          = period;
-    timer->last_run        = gt_tick_get();
     timer->timer_cb        = callback;
     timer->user_data       = user_data;
     timer->repeat_count    = -1;
     timer->paused          = 0;
     timer->pause_time_diff = 0;
-    GT_INIT_LIST_HEAD(&timer->list);
+    timer->last_run        = gt_tick_get();
 
     gt_list_add(&timer->list, &_GT_GC_GET_ROOT(_gt_timer_ll));
-
     _gt_timer_task_set_ready_flag(true);
-
-    GT_LOGV(GT_LOG_TAG_TIM, ">>> period: %d <<<", period);
-
     return timer;
 }
 
@@ -203,6 +201,9 @@ void _gt_timer_set_paused(_gt_timer_st * timer, bool state)
     if (state) {
         /** remark current time more then last run time */
         timer->pause_time_diff = gt_tick_get() - timer->last_run;
+        if (timer->pause_time_diff > timer->period) {
+            timer->pause_time_diff = 0;
+        }
     } else {
         /** reset last run timestamp to now */
         timer->last_run = gt_tick_get() - timer->pause_time_diff;
