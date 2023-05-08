@@ -27,13 +27,15 @@ extern "C" {
 
 /**
  * @brief The register bit length of the player
+ * uint16_t reg;
  */
-#define _GT_PLAYER_BIT_TYPE_LENGTH      4
-#define _GT_PLAYER_BIT_MODE_LENGTH      4
+#define _GT_PLAYER_BIT_TYPE_LENGTH      3
+#define _GT_PLAYER_BIT_MODE_LENGTH      3
 #define _GT_PLAYER_BIT_STATUS_LENGTH    2
 #define _GT_PLAYER_BIT_AUTO_LENGTH      1
 #define _GT_PLAYER_BIT_LOCK_LENGTH      1
 #define _GT_PLAYER_BIT_DIR_LENGTH       1
+#define _GT_PLAYER_BIT_RESERVED_LENGTH  5
 
 
 #define _GET_BIT_SHIFT_SIZE(_val)       (1 << (_val))
@@ -52,7 +54,8 @@ extern "C" {
  * @brief The object played by the player
  */
 typedef enum _gt_player_type_e {
-    GT_PLAYER_TYPE_IMG = 0,     ///< image object
+    GT_PLAYER_TYPE_NONE = 0,     ///< none object, do nothing
+    GT_PLAYER_TYPE_IMG,          ///< image object
 
     GT_PLAYER_TYPE_MAX_COUNT,
 }_gt_player_type_et;
@@ -96,7 +99,7 @@ typedef struct _gt_player_reg_s {
     uint16_t auto_play: _GT_PLAYER_BIT_AUTO_LENGTH;     ///< 0: manual, 1: auto
     uint16_t lock: _GT_PLAYER_BIT_LOCK_LENGTH;          ///< lock the player callback handler, 0: unlock, 1: lock
     uint16_t dir: _GT_PLAYER_BIT_DIR_LENGTH;            ///< direction of the player, 0: forward, 1: backward
-    uint16_t reserved: 3;
+    uint16_t reserved: _GT_PLAYER_BIT_RESERVED_LENGTH;  ///< reserved bit length
 }_gt_player_reg_st;
 
 typedef struct _gt_style_player_s {

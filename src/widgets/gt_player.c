@@ -226,6 +226,10 @@ static inline bool _is_mode_equal(_gt_style_player_st * style, _gt_player_mode_e
     return style->reg.mode == mode;
 }
 
+static inline bool _is_type_none(_gt_style_player_st * style) {
+    return style->reg.type == GT_PLAYER_TYPE_NONE;
+}
+
 /**
  * @brief Turn to the previous item
  *
@@ -448,6 +452,9 @@ void gt_player_set_type(gt_obj_st * obj, _gt_player_type_et type)
     if (type >= GT_PLAYER_TYPE_MAX_COUNT || type < 0) {
         return ;
     }
+    if (_GET_BIT_SHIFT_SIZE((uint16_t)type) > GT_PLAYER_TYPE_MAX_COUNT) {
+        type = GT_PLAYER_TYPE_NONE;
+    }
     ((_gt_style_player_st * )(obj->style))->reg.type = type;
 }
 
@@ -474,7 +481,6 @@ void gt_player_set_auto_play_period(gt_obj_st * obj, uint32_t period)
         _destroy_timer(style);
         return ;
     }
-
     if (style->timer) {
         _gt_timer_set_period(style->timer, period);
         return ;
@@ -564,29 +570,44 @@ uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_siz
 
 void gt_player_turn_prev(gt_obj_st * obj)
 {
+    if (_is_type_none((_gt_style_player_st * )obj->style)) {
+        return ;
+    }
     return _change_item_handler(obj, false);
 }
 
 void gt_player_turn_next(gt_obj_st * obj)
 {
+    if (_is_type_none((_gt_style_player_st * )obj->style)) {
+        return ;
+    }
     return _change_item_handler(obj, true);
 }
 
 void gt_player_play(gt_obj_st * obj)
 {
     _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
+    if (_is_type_none(style)) {
+        return ;
+    }
     _set_play_status(style, true);
 }
 
 void gt_player_stop(gt_obj_st * obj)
 {
     _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
+    if (_is_type_none(style)) {
+        return ;
+    }
     _set_play_status(style, false);
 }
 
 void gt_player_toggle(gt_obj_st * obj)
 {
     _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
+    if (_is_type_none(style)) {
+        return ;
+    }
     if (!style->timer) {
         return ;
     }
@@ -597,6 +618,9 @@ void gt_player_toggle(gt_obj_st * obj)
 void gt_player_dir_toggle(gt_obj_st * obj)
 {
     _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
+    if (_is_type_none(style)) {
+        return ;
+    }
     _set_dir(style, _is_dir_next(style) ? false : true);
 }
 
