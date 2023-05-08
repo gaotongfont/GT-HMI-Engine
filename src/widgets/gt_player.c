@@ -102,8 +102,8 @@ static inline bool _unlock(_gt_style_player_st * style) {
  * @brief Get The player display direction
  *
  * @param style
- * @return true Go next item direction
- * @return false Go previous item direction
+ * @return true : Go next item direction;
+ * @return false : Go previous item direction;
  */
 static inline bool _is_dir_next(_gt_style_player_st * style) {
     return style->reg.dir ? false : true;
@@ -463,6 +463,9 @@ void gt_player_set_mode(gt_obj_st * obj, _gt_player_mode_et mode)
     if (mode >= GT_PLAYER_MODE_MAX_COUNT || mode < 0) {
         return ;
     }
+    if (_GET_BIT_SHIFT_SIZE((uint16_t)mode) > GT_PLAYER_MODE_MAX_COUNT) {
+        mode = GT_PLAYER_MODE_NONE;
+    }
     ((_gt_style_player_st * )(obj->style))->reg.mode = mode;
 }
 
@@ -489,12 +492,6 @@ void gt_player_set_auto_play_period(gt_obj_st * obj, uint32_t period)
     _set_play_status(style, false);
 }
 
-/**
- * @brief Remove item from player object by item
- *
- * @param obj
- * @param item
- */
 void gt_player_remove_item(gt_obj_st * obj, void * item)
 {
     if (NULL == obj) {
@@ -522,12 +519,6 @@ void gt_player_remove_item(gt_obj_st * obj, void * item)
     _remove_item(style, idx);
 }
 
-/**
- * @brief Remove item from player object by index
- *
- * @param style
- * @param idx
- */
 void gt_player_remove_item_by_index(gt_obj_st * obj, uint16_t idx) {
     if (NULL == obj) {
         return ;
@@ -567,6 +558,24 @@ uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_siz
     return _add_item(obj, item, item_byte_size);
 }
 #endif
+
+void gt_player_set_index(gt_obj_st * obj, gt_size_t index)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
+    if (NULL == style) {
+        return ;
+    }
+    if (NULL == style->target.list) {
+        return ;
+    }
+    if (index + 1 > style->target.count) {
+        return ;
+    }
+    style->target.index = (-1 == index) ? (style->target.count - 1) : index;
+}
 
 void gt_player_turn_prev(gt_obj_st * obj)
 {
@@ -628,6 +637,15 @@ void gt_player_dir_toggle(gt_obj_st * obj)
         return ;
     }
     _set_dir(style, _is_dir_next(style) ? false : true);
+}
+
+bool gt_player_dir_is_forward(gt_obj_st * obj)
+{
+    if (NULL == obj) {
+        return false;
+    }
+    _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
+    return _is_dir_next(style);
 }
 
 #endif /** GT_CFG_ENABLE_PLAYER */
