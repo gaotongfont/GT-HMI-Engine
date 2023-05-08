@@ -109,6 +109,13 @@ _gt_timer_st * _gt_timer_get_laster_timer(void);
 void _gt_timer_set_repeat_count(_gt_timer_st * timer, int32_t repeat);
 
 /**
+ * @brief Get timer repeat times
+ *
+ * @param timer
+ * @return int32_t
+ */
+int32_t _gt_timer_get_repeat_count(_gt_timer_st * timer);
+/**
  * @brief set timer task period
  *
  * @param timer timer control block
@@ -124,6 +131,30 @@ void _gt_timer_set_period(_gt_timer_st * timer, uint32_t period);
  */
 void _gt_timer_set_paused(_gt_timer_st * timer, bool state);
 
+/**
+ * @brief Get timer task paused state
+ *
+ * @param timer
+ * @return true timer is paused
+ * @return false timer is running
+ */
+bool _gt_timer_get_paused(_gt_timer_st * timer);
+
+/**
+ * @brief Get timer user data
+ *
+ * @param timer
+ * @return void*
+ */
+void * _gt_timer_get_user_data(_gt_timer_st * timer);
+
+/**
+ * @brief Set timer user data
+ *
+ * @param timer
+ * @param user_data
+ */
+void _gt_timer_set_user_data(_gt_timer_st * timer, void * user_data);
 
 #ifdef __cplusplus
 } /*extern "C"*/

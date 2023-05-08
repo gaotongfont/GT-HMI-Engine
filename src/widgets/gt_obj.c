@@ -128,7 +128,7 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
  */
 void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
 {
-    gt_obj_st * obj = (gt_obj_st * )timer->user_data;
+    gt_obj_st * obj = (gt_obj_st * )_gt_timer_get_user_data(timer);
 
     if (gt_event_is_locked() && gt_event_get_locked_obj() == obj) {
         GT_LOGW(GT_LOG_TAG_GUI, "Disables the removal of the control itself in the callback.");
@@ -142,7 +142,7 @@ void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
 #endif
 
     _gt_obj_class_destroy(obj);
-    timer->user_data = NULL;
+    _gt_timer_set_user_data(timer, NULL);
 
 #if GT_USE_DISPLAY_PREF_DESTROY
     GT_LOGI(GT_LOG_TAG_MEM, "destroy obj: %p, used: %d ms", obj, gt_tick_get() - start);

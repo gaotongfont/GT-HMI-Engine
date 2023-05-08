@@ -143,8 +143,10 @@ _gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * 
 
 void _gt_timer_del(_gt_timer_st * timer)
 {
-    if( timer )
-        _gt_timer_remove_task(timer);
+    if( !timer ) {
+        return;
+    }
+    _gt_timer_set_repeat_count(timer, 0);   /** remove timer by core handler */
 }
 
 void _gt_timer_handler(void)
@@ -178,6 +180,11 @@ void _gt_timer_set_repeat_count(_gt_timer_st * timer, int32_t repeat)
     timer->repeat_count = repeat;
 }
 
+int32_t _gt_timer_get_repeat_count(_gt_timer_st * timer)
+{
+    return timer->repeat_count;
+}
+
 void _gt_timer_set_period(_gt_timer_st * timer, uint32_t period)
 {
     timer->period = period;
@@ -186,6 +193,21 @@ void _gt_timer_set_period(_gt_timer_st * timer, uint32_t period)
 void _gt_timer_set_paused(_gt_timer_st * timer, bool state)
 {
     timer->paused = (uint8_t)state;
+}
+
+bool _gt_timer_get_paused(_gt_timer_st * timer)
+{
+    return (bool)timer->paused;
+}
+
+void _gt_timer_set_user_data(_gt_timer_st * timer, void * user_data)
+{
+    timer->user_data = user_data;
+}
+
+void * _gt_timer_get_user_data(_gt_timer_st * timer)
+{
+    return timer->user_data;
 }
 
 /* end ------------------------------------------------------------------*/
