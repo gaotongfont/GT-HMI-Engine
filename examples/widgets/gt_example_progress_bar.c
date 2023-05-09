@@ -36,8 +36,8 @@ static int value = 0;
 /* static functions -----------------------------------------------------*/
 static void _progress_bar_event_cb(gt_event_st * e)
 {
-    gt_progress_bar_style_set_pos(e->target, ++value);
-    if (value > gt_progress_bar_style_get_total(e->target)) {
+    gt_progress_bar_set_pos(e->target, ++value);
+    if (value > gt_progress_bar_get_total(e->target)) {
         value = 0;
     }
 }
@@ -50,8 +50,8 @@ void gt_examples_progress_bar(void)
     screen = gt_obj_create(NULL);
 
     gt_obj_st * progress_bar = gt_progress_bar_create(screen);
-    gt_progress_bar_style_set_start_end(progress_bar, 0, 200);
-    gt_progress_bar_style_set_pos(progress_bar, value);
+    gt_progress_bar_set_start_end(progress_bar, 0, 200);
+    gt_progress_bar_set_pos(progress_bar, value);
 
 	gt_obj_style_set_pos(progress_bar, 0, 60);
     gt_obj_style_set_size(progress_bar, 380, 40);

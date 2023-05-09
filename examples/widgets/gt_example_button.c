@@ -46,7 +46,7 @@ static void btn_click_cb(gt_event_st * e)
 	memset(buffer, 0, sizeof(buffer));
 	sprintf(buffer, "btn %d", ++cnt_idx);
 	printf("%s\n", buffer);
-	gt_btn_style_set_text(e->target, buffer);
+	gt_btn_set_text(e->target, buffer);
 }
 
 

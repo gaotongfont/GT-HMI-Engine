@@ -54,7 +54,7 @@ void gt_examples_keyboard(void)
     gt_obj_st* input = gt_input_create(screen);
     gt_obj_style_set_pos(input , 0 , 55);
     gt_obj_style_set_size(input , 300 , 25);
-    gt_keypad_style_set_target(keyboard , input);
+    gt_keypad_set_target(keyboard , input);
 
 
     gt_disp_load_scr(screen);

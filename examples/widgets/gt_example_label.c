@@ -43,7 +43,7 @@ void gt_examples_label(void)
     screen = gt_obj_create(NULL);
 
     gt_obj_st * label = gt_label_create(screen);
-    gt_label_style_set_text(label, "This is label test.");
+    gt_label_set_text(label, "This is label test.");
 	gt_obj_style_set_pos(label, 0, 0);
 
     gt_disp_load_scr(screen);

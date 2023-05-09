@@ -41,14 +41,14 @@ static gt_obj_st * image2 = NULL;
 static void _image_one_cb(gt_event_st * e) {
     printf("image one cb\n");
     static int _cnt_1 = 0;
-    gt_img_style_set_src(image, (_cnt_1++ % 2) ? "./2.png" : "./50x50.png");
+    gt_img_set_src(image, (_cnt_1++ % 2) ? "./2.png" : "./50x50.png");
     gt_disp_load_scr(_screen);
 }
 
 static void _image_two_cb(gt_event_st * e) {
     printf("image two cb\n");
     static int _cnt_2 = 0;
-    gt_img_style_set_src(image2, (_cnt_2++ % 2) ? "./50x50.png" : "./2.png");
+    gt_img_set_src(image2, (_cnt_2++ % 2) ? "./50x50.png" : "./2.png");
     gt_disp_load_scr(_screen);
 }
 /* global functions / API interface -------------------------------------*/
@@ -58,12 +58,12 @@ void gt_examples_img(void)
     _screen = gt_obj_create(NULL);
 
     image = gt_img_create(_screen);
-    gt_img_style_set_src(image, "./2.png");
+    gt_img_set_src(image, "./2.png");
 	gt_obj_style_set_pos(image, 0, 0);
     gt_obj_add_event_cb(image, _image_one_cb, GT_EVENT_TYPE_INPUT_PROCESS, NULL);
 
     image2 = gt_img_create(_screen);
-    gt_img_style_set_src(image2, "./50x50.png");
+    gt_img_set_src(image2, "./50x50.png");
 	gt_obj_style_set_pos(image2, 0, 100);
     gt_obj_add_event_cb(image2, _image_two_cb, GT_EVENT_TYPE_INPUT_PROCESS, NULL);
 

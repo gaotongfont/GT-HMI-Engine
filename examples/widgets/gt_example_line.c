@@ -51,10 +51,10 @@ void gt_examples_line(void)
 
     gt_obj_st * line = gt_line_create(screen);
 
-	gt_line_style_set_color(line,gt_color_blue());
-	gt_line_style_set_line_width(line,1);
-	gt_line_style_set_start_point(line,100,100);
-	gt_line_style_set_end_point(line,400,133);
+	gt_line_set_color(line,gt_color_blue());
+	gt_line_set_line_width(line,1);
+	gt_line_set_start_point(line,100,100);
+	gt_line_set_end_point(line,400,133);
     gt_disp_load_scr(screen);
 }
 

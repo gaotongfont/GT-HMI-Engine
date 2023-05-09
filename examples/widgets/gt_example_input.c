@@ -38,7 +38,7 @@
 
 static void _click_cb(gt_event_st * e)
 {
-    gt_input_style_append_value(e->target, "test ");
+    gt_input_append_value(e->target, "test ");
 }
 
 
@@ -50,7 +50,7 @@ void gt_example_input(void)
     screen = gt_obj_create(NULL);
 
     gt_obj_st * input = gt_input_create(screen);
-    gt_input_style_set_placeholder(input, "This is placeholder content.");
+    gt_input_set_placeholder(input, "This is placeholder content.");
 	gt_obj_style_set_pos(input, 0, 0);
 	gt_obj_style_set_size(input, 180, 80);
 	gt_obj_add_event_cb(input, _click_cb, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
