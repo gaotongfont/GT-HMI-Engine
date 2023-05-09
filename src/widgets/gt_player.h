@@ -174,6 +174,8 @@ uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_siz
  */
 void gt_player_set_index(gt_obj_st * obj, gt_size_t index);
 
+uint16_t gt_player_get_item_count(gt_obj_st * obj);
+
 void gt_player_turn_prev(gt_obj_st * obj);
 void gt_player_turn_next(gt_obj_st * obj);
 

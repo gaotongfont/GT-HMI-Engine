@@ -577,6 +577,11 @@ void gt_player_set_index(gt_obj_st * obj, gt_size_t index)
     style->target.index = (-1 == index) ? (style->target.count - 1) : index;
 }
 
+uint16_t gt_player_get_item_count(gt_obj_st * obj)
+{
+    return ((_gt_style_player_st * )obj->style)->target.count;
+}
+
 void gt_player_turn_prev(gt_obj_st * obj)
 {
     if (_is_type_none((_gt_style_player_st * )obj->style)) {
