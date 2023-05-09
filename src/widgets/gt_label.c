@@ -17,6 +17,7 @@
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
+
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_LAB
 #define MY_CLASS    &gt_label_class
@@ -215,18 +216,28 @@ gt_obj_st * gt_label_create(gt_obj_st * parent) {
 }
 
 
-void gt_label_style_set_text(gt_obj_st * label, char * text)
+void gt_label_style_set_text(gt_obj_st * label, const char * fmt, ...)
 {
+    va_list args;
+    va_list args2;
+    va_start(args, fmt);
+    va_copy(args2, args);
 
     _gt_style_label_st * style = (_gt_style_label_st * )label->style;
     if( NULL != style->text ){
         gt_mem_free(style->text);
     }
-    uint16_t size = text == NULL ? 0 : strlen(text);
-    style->text = gt_mem_malloc(size+1);
-    gt_memset(style->text, 0, size+1);
-    gt_memcpy(style->text, text, size);
+    uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(NULL, 0, fmt, args) + 1);
+    if (!size) {
+        goto free_lb;
+    }
+    style->text = gt_mem_malloc(size);
+    vsnprintf(style->text, size, fmt, args2);
     gt_event_send(label, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+
+free_lb:
+    va_end(args2);
+    va_end(args);
 }
 
 char * gt_label_style_get_text(gt_obj_st * label)

@@ -16,7 +16,8 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
-
+#include "stdarg.h"
+#include "stdlib.h"
 /* define ---------------------------------------------------------------*/
 
 
@@ -76,9 +77,9 @@ void gt_btn_style_set_color_background(gt_obj_st * btn, gt_color_t color);
  * @brief set button text
  *
  * @param btn button obj
- * @param text text
+ * @param fmt text format
  */
-void gt_btn_style_set_text(gt_obj_st * btn, char *text);
+void gt_btn_style_set_text(gt_obj_st * btn, const char * fmt, ...);
 
 /**
  * @brief get button text

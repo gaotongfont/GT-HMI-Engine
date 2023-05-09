@@ -16,6 +16,8 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
+#include "stdarg.h"
+#include "stdlib.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -53,10 +55,10 @@ gt_obj_st * gt_checkbox_create(gt_obj_st * parent);
  * @brief set the checkbox text
  *
  * @param checkbox checkbox obj
- * @param text text
+ * @param fmt text format
  */
-void gt_checkbox_style_set_text(gt_obj_st * checkbox, char * text);
-char * gt_checkbox_style_get_text(gt_obj_st * checkbox, char * text);
+void gt_checkbox_style_set_text(gt_obj_st * checkbox, const char * fmt, ...);
+char * gt_checkbox_style_get_text(gt_obj_st * checkbox);
 
 void gt_checkbox_style_set_font_color(gt_obj_st * checkbox, gt_color_t color);
 void gt_checkbox_style_set_font_family_cn(gt_obj_st * checkbox, gt_family_t family);

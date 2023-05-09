@@ -259,15 +259,28 @@ void gt_radio_style_set_selected(gt_obj_st * radio){
     gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_radio_style_set_text(gt_obj_st * radio, char * text){
+void gt_radio_style_set_text(gt_obj_st * radio, const char * fmt, ...)
+{
+    va_list args;
+    va_list args2;
+    va_start(args, fmt);
+    va_copy(args2, args);
+
     _gt_style_radio_st * style = radio->style;
     if( style->text ){
         gt_mem_free(style->text);
     }
-    uint16_t len = text == NULL ? 0 : strlen(text);
-    style->text = gt_mem_malloc(len+1);
-    gt_memcpy(style->text, text, len);
-    style->text[len] = 0;
+    uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(NULL, 0, fmt, args) + 1);
+    if (!size) {
+        goto free_lb;
+    }
+    style->text = gt_mem_malloc(size);
+    vsnprintf(style->text, size, fmt, args2);
+    gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
+
+free_lb:
+    va_end(args2);
+    va_end(args);
 }
 
 void gt_radio_style_set_font_color(gt_obj_st * radio, gt_color_t color)

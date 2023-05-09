@@ -16,6 +16,8 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
+#include "stdarg.h"
+#include "stdlib.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -60,9 +62,9 @@ void gt_radio_style_set_selected(gt_obj_st * radio);
  * @brief set radio text
  *
  * @param radio radio obj
- * @param text text
+ * @param fmt text format
  */
-void gt_radio_style_set_text(gt_obj_st * radio, char * text);
+void gt_radio_style_set_text(gt_obj_st * radio, const char * fmt, ...);
 
 void gt_radio_style_set_font_color(gt_obj_st * radio, gt_color_t color);
 void gt_radio_style_set_font_size(gt_obj_st * radio, uint8_t size);

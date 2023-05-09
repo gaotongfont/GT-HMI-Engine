@@ -16,6 +16,9 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
+#include "stdio.h"
+#include "stdarg.h"
+#include "stdlib.h"
 
 
 
@@ -54,9 +57,9 @@ gt_obj_st * gt_label_create(gt_obj_st * parent);
  * @brief set label obj text
  *
  * @param label label obj
- * @param text text
+ * @param fmt text format
  */
-void gt_label_style_set_text(gt_obj_st * label, char * text);
+void gt_label_style_set_text(gt_obj_st * label, const char * fmt, ...);
 
 /**
  * @brief get label text

@@ -299,19 +299,27 @@ gt_obj_st * gt_input_create(gt_obj_st * parent)
  * @param input input obj
  * @param value set data value
  */
-void gt_input_style_set_value(gt_obj_st * input, char * value)
+void gt_input_style_set_value(gt_obj_st * input, const char * fmt, ...)
 {
+    va_list args;
+    va_list args2;
+    va_start(args, fmt);
+    va_copy(args2, args);
+
     _gt_style_input_st * style = input->style;
     if( style->value ){
         gt_mem_free(style->value);
     }
-    uint16_t len = value == NULL ? 0 : strlen(value);
-    style->value = gt_mem_malloc( len + 1 );
-    gt_memcpy(style->value, value, len);
-    style->value[len] = 0;
+    uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(NULL, 0, fmt, args) + 1);
+    style->value = gt_mem_malloc(size);
+    vsnprintf(style->value, size, fmt, args2);
 
-    style->pos_cursor = len;
+    style->pos_cursor = size - 1;
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+
+free_lb:
+    va_end(args2);
+    va_end(args);
 }
 
 char * gt_input_style_get_value(gt_obj_st * input)

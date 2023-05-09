@@ -16,6 +16,8 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
+#include "stdarg.h"
+#include "stdlib.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -64,9 +66,9 @@ gt_obj_st * gt_input_create(gt_obj_st * parent);
  * @brief set input obj value
  *
  * @param input input obj
- * @param value value
+ * @param fmt value string format
  */
-void gt_input_style_set_value(gt_obj_st * input, char * value);
+void gt_input_style_set_value(gt_obj_st * input, const char * fmt, ...);
 
 /**
  * @brief get input obj value

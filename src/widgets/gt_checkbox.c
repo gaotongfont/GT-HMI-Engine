@@ -250,18 +250,31 @@ gt_obj_st * gt_checkbox_create(gt_obj_st * parent)
 }
 
 
-void gt_checkbox_style_set_text(gt_obj_st * checkbox, char * text){
+void gt_checkbox_style_set_text(gt_obj_st * checkbox, const char * fmt, ...)
+{
+    va_list args;
+    va_list args2;
+    va_start(args, fmt);
+    va_copy(args2, args);
+
     _gt_style_checkbox_st * style = checkbox->style;
     if( style->text ){
         gt_mem_free(style->text);
     }
-    uint16_t len = text == NULL ? 0 : strlen(text);
-    style->text = gt_mem_malloc(len+1);
-    gt_memcpy(style->text, text, len);
-    style->text[len] = 0;
+    uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(NULL, 0, fmt, args) + 1);
+    if (!size) {
+        goto free_lb;
+    }
+    style->text = gt_mem_malloc(size);
+    vsnprintf(style->text, size, fmt, args2);
     gt_event_send(checkbox, GT_EVENT_TYPE_DRAW_START, NULL);
+
+free_lb:
+    va_end(args2);
+    va_end(args);
 }
-char * gt_checkbox_style_get_text(gt_obj_st * checkbox, char * text){
+char * gt_checkbox_style_get_text(gt_obj_st * checkbox)
+{
     _gt_style_checkbox_st * style = checkbox->style;
     return style->text;
 }
