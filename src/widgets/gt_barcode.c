@@ -46,7 +46,7 @@ const gt_obj_class_st gt_barcode_class = {
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_instance = sizeof(gt_obj_st),
-    .size_style    = sizeof(_gt_style_barcode_st)
+    .size_style    = sizeof(_gt_barcode_st)
 };
 
 /* macros ---------------------------------------------------------------*/
@@ -55,12 +55,12 @@ const gt_obj_class_st gt_barcode_class = {
 
 /* static functions -----------------------------------------------------*/
 static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
-    _gt_style_barcode_st style_src;
-    _gt_style_barcode_st * style = &style_src; // = barcode->style;
+    _gt_barcode_st style_src;
+    _gt_barcode_st * style = &style_src; // = barcode->style;
     bar_uint32_t buf_size = 0;
     gt_area_st area;
 
-    gt_memcpy(style , barcode->style , sizeof(_gt_style_barcode_st));
+    gt_memcpy(style , barcode->style , sizeof(_gt_barcode_st));
 
 #if (!BARCODE_READ_MODE)
     gt_size_t x = 0, y = 0, w  = 0, h = 0 , i = 0;
@@ -184,7 +184,7 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_style_barcode_st ** style_p = (_gt_style_barcode_st ** )&obj->style;
+    _gt_barcode_st ** style_p = (_gt_barcode_st ** )&obj->style;
     if (NULL == *style_p) {
         return ;
     }
@@ -268,8 +268,8 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_barcode_init_style(gt_obj_st * barcode)
 {
-    _gt_style_barcode_st * style = barcode->style;
-    gt_memset(style, 0, sizeof(_gt_style_barcode_st));
+    _gt_barcode_st * style = barcode->style;
+    gt_memset(style, 0, sizeof(_gt_barcode_st));
     style->barcode = gt_mem_malloc(sizeof("123456789012"));
     gt_memcpy(style->barcode, "123456789012\0", sizeof("123456789012"));
     style->hri_type = GT_FAMILY_BARCODE_HRI_TYPE_DOWN;
@@ -294,7 +294,7 @@ gt_obj_st * gt_barcode_create(gt_obj_st * parent) {
 
 void gt_barcode_set_code_text(gt_obj_st * barcode , char* code)
 {
-    _gt_style_barcode_st * style = barcode->style;
+    _gt_barcode_st * style = barcode->style;
     if( NULL != style->barcode)
     {
         gt_mem_free(style->barcode);
@@ -308,31 +308,31 @@ void gt_barcode_set_code_text(gt_obj_st * barcode , char* code)
 
 void gt_barcode_set_type(gt_obj_st * barcode , gt_family_t family)
 {
-    _gt_style_barcode_st * style = barcode->style;
+    _gt_barcode_st * style = barcode->style;
     style->type = family;
 }
 
 void gt_barcode_set_hri_type(gt_obj_st * barcode , gt_family_t family)
 {
-    _gt_style_barcode_st * style = barcode->style;
+    _gt_barcode_st * style = barcode->style;
     style->hri_type = family;
 }
 
 void gt_barcode_set_mode_w(gt_obj_st * barcode , uint8_t value)
 {
-    _gt_style_barcode_st * style = barcode->style;
+    _gt_barcode_st * style = barcode->style;
     style->mode_w = value;
 }
 
 void gt_barcode_set_mode_h(gt_obj_st * barcode , uint8_t value)
 {
-    _gt_style_barcode_st * style = barcode->style;
+    _gt_barcode_st * style = barcode->style;
     style->mode_h = value;
 }
 
 void gt_barcode_set_upc_e_sys_code(gt_obj_st * barcode , uint8_t value)
 {
-    _gt_style_barcode_st * style = barcode->style;
+    _gt_barcode_st * style = barcode->style;
     style->upc_e_sys = value;
 }
 

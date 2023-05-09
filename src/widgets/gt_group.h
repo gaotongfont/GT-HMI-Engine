@@ -22,10 +22,10 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct _gt_style_group_s
+typedef struct _gt_group_s
 {
     char * group;
-}_gt_style_group_st;
+}_gt_group_st;
 
 
 

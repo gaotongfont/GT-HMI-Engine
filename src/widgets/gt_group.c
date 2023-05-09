@@ -36,7 +36,7 @@ const gt_obj_class_st gt_group_class = {
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_instance = sizeof(gt_obj_st),
-    .size_style    = sizeof(_gt_style_group_st)
+    .size_style    = sizeof(_gt_group_st)
 };
 
 
@@ -47,7 +47,7 @@ const gt_obj_class_st gt_group_class = {
 /* static functions -----------------------------------------------------*/
 
 static inline void _gt_group_init_widget(gt_obj_st * group) {
-    // _gt_style_group_st * style = group->style;
+    // _gt_group_st * style = group->style;
 }
 
 /**
@@ -127,9 +127,9 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_group_init_style(gt_obj_st * group)
 {
-    _gt_style_group_st * style = (_gt_style_group_st * )group->style;
+    _gt_group_st * style = (_gt_group_st * )group->style;
 
-    gt_memset(style, 0, sizeof(_gt_style_group_st));
+    gt_memset(style, 0, sizeof(_gt_group_st));
 
 }
 

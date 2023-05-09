@@ -42,7 +42,7 @@ const gt_obj_class_st gt_qr_code_class = {
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_instance = sizeof(gt_obj_st),
-    .size_style    = sizeof(_gt_style_qrcode_st)
+    .size_style    = sizeof(_gt_qrcode_st)
 };
 
 
@@ -85,7 +85,7 @@ static void _Data_ReMap(unsigned char* getdate,unsigned char* putdata, unsigned 
 
 
 static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
-    _gt_style_qrcode_st * style = qr_code->style;
+    _gt_qrcode_st * style = qr_code->style;
     unsigned char *qr_data_buff = NULL;
     unsigned char *qr_code_buff = NULL;
 
@@ -235,10 +235,10 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_qrcode_init_style(gt_obj_st * qr_code)
 {
-    _gt_style_qrcode_st * style = (_gt_style_qrcode_st * )qr_code->style;
+    _gt_qrcode_st * style = (_gt_qrcode_st * )qr_code->style;
     /* code */
     // http://www.gaotongfont.cn/
-    gt_memset(style, 0, sizeof(_gt_style_qrcode_st));
+    gt_memset(style, 0, sizeof(_gt_qrcode_st));
     style->str = gt_mem_malloc(strlen("http://www.gaotongfont.cn/")+1);
     gt_memcpy(style->str, "http://www.gaotongfont.cn/" , strlen("http://www.gaotongfont.cn/")+1);
     style->str_len = strlen(style->str);
@@ -265,13 +265,13 @@ gt_obj_st * gt_qrcode_create(gt_obj_st * parent)
 
 void gt_qrcode_set_version(gt_obj_st * qr_code , gt_family_t family)
 {
-    _gt_style_qrcode_st * style = qr_code->style;
+    _gt_qrcode_st * style = qr_code->style;
     style->version = family;
 }
 
 void gt_qrcode_set_str(gt_obj_st * qr_code , char* str)
 {
-    _gt_style_qrcode_st * style = qr_code->style;
+    _gt_qrcode_st * style = qr_code->style;
     if( NULL != style->str)
     {
         gt_mem_free(style->str);

@@ -22,7 +22,7 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct _gt_style_option_s
+typedef struct _gt_option_s
 {
     char ** option;
     gt_color_t color_selected;
@@ -30,7 +30,7 @@ typedef struct _gt_style_option_s
     gt_color_t color_back;
     uint8_t cnt;
     uint8_t idx;
-}_gt_style_option_st;
+}_gt_option_st;
 
 
 

@@ -30,7 +30,7 @@ typedef struct _gt_txt_s{
     uint8_t     mask_style;
 }_gt_txt_st;
 
-typedef struct _gt_style_textarea_s{
+typedef struct _gt_textarea_s{
     _gt_txt_st * contents;
     uint16_t cnt_contents;
 
@@ -43,7 +43,7 @@ typedef struct _gt_style_textarea_s{
     uint8_t     font_size;
     uint8_t     font_gray;
     uint8_t     font_align;
-}_gt_style_textarea_st;
+}_gt_textarea_st;
 
 
 /* macros ---------------------------------------------------------------*/

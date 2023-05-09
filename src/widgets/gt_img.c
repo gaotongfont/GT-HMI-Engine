@@ -38,7 +38,7 @@ const gt_obj_class_st gt_img_class = {
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_instance = sizeof(gt_obj_st),
-    .size_style    = sizeof(_gt_style_img_st)
+    .size_style    = sizeof(_gt_img_st)
 };
 
 
@@ -50,7 +50,7 @@ const gt_obj_class_st gt_img_class = {
 
 static inline void _gt_img_init_widget(gt_obj_st * img)
 {
-    _gt_style_img_st * style = img->style;
+    _gt_img_st * style = img->style;
 
     /* get img width and height, must ! */
     gt_fs_read_img_wh(style->src, &img->area.w, &img->area.h);
@@ -85,7 +85,7 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_style_img_st ** style_p = (_gt_style_img_st ** )&obj->style;
+    _gt_img_st ** style_p = (_gt_img_st ** )&obj->style;
     if (NULL == *style_p) {
         return ;
     }
@@ -171,9 +171,9 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_img_init_style(gt_obj_st * img)
 {
-    _gt_style_img_st * style = (_gt_style_img_st * )img->style;
+    _gt_img_st * style = (_gt_img_st * )img->style;
 
-    gt_memset(style, 0, sizeof(_gt_style_img_st));
+    gt_memset(style, 0, sizeof(_gt_img_st));
 }
 
 
@@ -195,7 +195,7 @@ gt_obj_st * gt_img_create(gt_obj_st * parent) {
 
 
 void gt_img_set_src(gt_obj_st * img, char * src){
-    _gt_style_img_st * style = (_gt_style_img_st *)img->style;
+    _gt_img_st * style = (_gt_img_st *)img->style;
     if (NULL != style->src && !strcmp(src, style->src)) {
         return ;
     }
@@ -212,7 +212,7 @@ void gt_img_set_src(gt_obj_st * img, char * src){
 }
 
 char * gt_img_get_src(gt_obj_st * img){
-    _gt_style_img_st * style = (_gt_style_img_st *)img->style;
+    _gt_img_st * style = (_gt_img_st *)img->style;
     return style->src;
 }
 /* end ------------------------------------------------------------------*/

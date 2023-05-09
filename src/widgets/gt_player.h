@@ -102,11 +102,11 @@ typedef struct _gt_player_reg_s {
     uint16_t reserved: _GT_PLAYER_BIT_RESERVED_LENGTH;  ///< reserved bit length
 }_gt_player_reg_st;
 
-typedef struct _gt_style_player_s {
+typedef struct _gt_player_s {
     _gt_player_reg_st reg;
     _gt_player_obj_st target;
     _gt_timer_st * timer;
-}_gt_style_player_st;
+}_gt_player_st;
 
 
 /* macros ---------------------------------------------------------------*/

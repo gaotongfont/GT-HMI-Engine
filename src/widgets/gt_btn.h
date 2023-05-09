@@ -23,7 +23,7 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct _gt_style_btn_s
+typedef struct _gt_btn_s
 {
     char * text;
 
@@ -39,7 +39,7 @@ typedef struct _gt_style_btn_s
     uint8_t         font_gray;
     uint8_t     font_align;
     uint8_t     fill;
-}_gt_style_btn_st;
+}_gt_btn_st;
 
 
 

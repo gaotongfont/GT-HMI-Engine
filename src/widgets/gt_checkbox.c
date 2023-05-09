@@ -37,7 +37,7 @@ const gt_obj_class_st gt_checkbox_class = {
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_instance = sizeof(gt_obj_st),
-    .size_style    = sizeof(_gt_style_checkbox_st)
+    .size_style    = sizeof(_gt_checkbox_st)
 };
 
 
@@ -48,7 +48,7 @@ const gt_obj_class_st gt_checkbox_class = {
 /* static functions -----------------------------------------------------*/
 
 static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
-    _gt_style_checkbox_st * style = checkbox->style;
+    _gt_checkbox_st * style = checkbox->style;
     uint8_t fp[64];
     gt_font_st font = {
         .style_cn = style->font_family_cn,
@@ -138,7 +138,7 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_style_checkbox_st ** style_p = (_gt_style_checkbox_st ** )&obj->style;
+    _gt_checkbox_st ** style_p = (_gt_checkbox_st ** )&obj->style;
     if (NULL == *style_p) {
         return ;
     }
@@ -216,9 +216,9 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_checkbox_init_style(gt_obj_st * checkbox)
 {
-    _gt_style_checkbox_st * style = (_gt_style_checkbox_st * )checkbox->style;
+    _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox->style;
 
-    gt_memset(style, 0, sizeof(_gt_style_checkbox_st));
+    gt_memset(style, 0, sizeof(_gt_checkbox_st));
 
     style->text = gt_mem_malloc(sizeof("checkbox"));
     gt_memcpy(style->text, "checkbox", sizeof("checkbox"));
@@ -257,7 +257,7 @@ void gt_checkbox_set_text(gt_obj_st * checkbox, const char * fmt, ...)
     va_start(args, fmt);
     va_copy(args2, args);
 
-    _gt_style_checkbox_st * style = checkbox->style;
+    _gt_checkbox_st * style = checkbox->style;
     if( style->text ){
         gt_mem_free(style->text);
     }
@@ -275,40 +275,40 @@ free_lb:
 }
 char * gt_checkbox_get_text(gt_obj_st * checkbox)
 {
-    _gt_style_checkbox_st * style = checkbox->style;
+    _gt_checkbox_st * style = checkbox->style;
     return style->text;
 }
 
 void gt_checkbox_set_font_family_cn(gt_obj_st * checkbox, gt_family_t family)
 {
-    _gt_style_checkbox_st * style = checkbox->style;
+    _gt_checkbox_st * style = checkbox->style;
     style->font_family_cn = family;
 }
 
 void gt_checkbox_set_font_family_en(gt_obj_st * checkbox, gt_family_t family)
 {
-    _gt_style_checkbox_st * style = checkbox->style;
+    _gt_checkbox_st * style = checkbox->style;
     style->font_family_en = family;
 }
 
 void gt_checkbox_set_font_size(gt_obj_st * checkbox, uint8_t size)
 {
-    _gt_style_checkbox_st * style = checkbox->style;
+    _gt_checkbox_st * style = checkbox->style;
     style->font_size = size;
 }
 void gt_checkbox_set_font_gray(gt_obj_st * checkbox, uint8_t gray)
 {
-    _gt_style_checkbox_st * style = checkbox->style;
+    _gt_checkbox_st * style = checkbox->style;
     style->font_gray = gray;
 }
 void gt_checkbox_set_font_align(gt_obj_st * checkbox, uint8_t align)
 {
-    _gt_style_checkbox_st * style = checkbox->style;
+    _gt_checkbox_st * style = checkbox->style;
     style->font_align = align;
 }
 void gt_checkbox_set_font_color(gt_obj_st * checkbox, gt_color_t color)
 {
-    _gt_style_checkbox_st * style = checkbox->style;
+    _gt_checkbox_st * style = checkbox->style;
     style->font_color = color;
     gt_event_send(checkbox, GT_EVENT_TYPE_DRAW_START, NULL);
 }

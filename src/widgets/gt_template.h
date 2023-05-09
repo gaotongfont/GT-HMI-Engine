@@ -1,7 +1,7 @@
 /**
  * @file gt_template.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-07-18 13:55:20
  * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
@@ -22,10 +22,10 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct _gt_style_template_s
+typedef struct _gt_template_s
 {
     char * template;
-}_gt_style_template_st;
+}_gt_template_st;
 
 
 

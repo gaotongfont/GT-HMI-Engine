@@ -23,7 +23,7 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct _gt_style_progress_bar_s
+typedef struct _gt_progress_bar_s
 {
     gt_color_t color_act;
     gt_color_t color_ina;
@@ -31,7 +31,7 @@ typedef struct _gt_style_progress_bar_s
     gt_size_t end;
     gt_size_t pos;
     gt_bar_dir_et dir;
-}_gt_style_progress_bar_st;
+}_gt_progress_bar_st;
 
 
 

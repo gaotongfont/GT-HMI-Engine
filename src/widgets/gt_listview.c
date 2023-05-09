@@ -35,7 +35,7 @@ const gt_obj_class_st gt_listview_class = {
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_instance = sizeof(gt_obj_st),
-    .size_style    = sizeof(_gt_style_listview_st)
+    .size_style    = sizeof(_gt_listview_st)
 };
 
 
@@ -48,13 +48,13 @@ const gt_obj_class_st gt_listview_class = {
 
 static int _gt_listview_get_idx_start(gt_obj_st * listview)
 {
-    _gt_style_listview_st * style = listview->style;
+    _gt_listview_st * style = listview->style;
     return style->idx_show_start;
 }
 
 static int _gt_listview_get_show_cnt(gt_obj_st * listview)
 {
-    _gt_style_listview_st * style = listview->style;
+    _gt_listview_st * style = listview->style;
     return style->cnt_show;
 }
 
@@ -72,7 +72,7 @@ static void _gt_listview_update_by_click_point(gt_obj_st * obj, gt_point_st poin
 
 static void _gt_listview_update_by_scroll_y(gt_obj_st * obj, gt_size_t y_scroll)
 {
-    _gt_style_listview_st * style = obj->style;
+    _gt_listview_st * style = obj->style;
 
     if(style->cnt < style->cnt_show)
     {
@@ -102,7 +102,7 @@ static void _gt_listview_update_by_scroll_y(gt_obj_st * obj, gt_size_t y_scroll)
 
 static void _gt_listview_update(gt_obj_st * listview)
 {
-    _gt_style_listview_st * style = (_gt_style_listview_st*)(listview->style);
+    _gt_listview_st * style = (_gt_listview_st*)(listview->style);
 
     // set default size
     if( listview->area.w == 0 || listview->area.h == 0 ){
@@ -120,7 +120,7 @@ static void _gt_listview_update(gt_obj_st * listview)
 }
 
 static inline void _gt_listview_init_widget(gt_obj_st * listview) {
-    _gt_style_listview_st * style = (_gt_style_listview_st * )listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview->style;
 
     _gt_listview_update(listview);
 
@@ -213,7 +213,7 @@ static void _init_cb(gt_obj_st * obj) {
  */
 static void _deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "listview start deinit_cb");
-    // _gt_style_listview_st ** style_p = (_gt_style_listview_st ** )&obj->style;
+    // _gt_listview_st ** style_p = (_gt_listview_st ** )&obj->style;
 
     // release item memory
 
@@ -299,9 +299,9 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_listview_init_style(gt_obj_st * listview)
 {
-    _gt_style_listview_st * style = listview->style;
+    _gt_listview_st * style = listview->style;
 
-    gt_memset(style, 0, sizeof(_gt_style_listview_st));
+    gt_memset(style, 0, sizeof(_gt_listview_st));
 
     style->font_color_act   = gt_color_hex(0xFFFFFF);
     style->font_color_ina   = gt_color_hex(0x000000);
@@ -341,7 +341,7 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
 
 void gt_listview_add_item(gt_obj_st * listview, char * item)
 {
-    _gt_style_listview_st * style = listview->style;
+    _gt_listview_st * style = listview->style;
     int len_item = item == NULL ? 0 : strlen(item);
     if( style->cnt == 0 ){
         style->item = gt_mem_malloc(sizeof(char *));
@@ -361,7 +361,7 @@ void gt_listview_add_item(gt_obj_st * listview, char * item)
 }
 
 void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, int idx){
-    _gt_style_listview_st * style = listview->style;
+    _gt_listview_st * style = listview->style;
     if( idx >= style->cnt ){
         // idx = style->cnt - 1;
         return;
@@ -390,58 +390,58 @@ void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, int idx){
 
 gt_size_t gt_listview_get_list_items_cnt(gt_obj_st * listview)
 {
-    _gt_style_listview_st * style = listview->style;
+    _gt_listview_st * style = listview->style;
     return style->cnt;
 }
 
 gt_size_t gt_listview_get_idx_selected(gt_obj_st * listview)
 {
-    _gt_style_listview_st * style = listview->style;
+    _gt_listview_st * style = listview->style;
     return style->idx_selected;
 }
 
 char * gt_listview_get_selected_item_text(gt_obj_st * listview)
 {
-    _gt_style_listview_st * style = listview->style;
+    _gt_listview_st * style = listview->style;
     return style->item[style->idx_selected];
 }
 
 void gt_listview_set_cnt_show(gt_obj_st * listview, uint8_t cnt_show)
 {
-    _gt_style_listview_st * style = listview->style;
+    _gt_listview_st * style = listview->style;
     style->cnt_show = cnt_show;
 }
 
 void gt_listview_set_font_size(gt_obj_st * listview, uint8_t size)
 {
-    _gt_style_listview_st * style = listview->style;
+    _gt_listview_st * style = listview->style;
     style->font_size = size;
 }
 void gt_listview_set_font_gray(gt_obj_st * listview, uint8_t gray)
 {
-    _gt_style_listview_st * style = listview->style;
+    _gt_listview_st * style = listview->style;
     style->font_gray = gray;
 }
 void gt_listview_set_font_align(gt_obj_st * listview, uint8_t align)
 {
-    _gt_style_listview_st * style = listview->style;
+    _gt_listview_st * style = listview->style;
     style->font_align = align;
 }
 void gt_listview_set_font_color(gt_obj_st * listview, gt_color_t color)
 {
-    _gt_style_listview_st * style = listview->style;
+    _gt_listview_st * style = listview->style;
     style->font_color_ina = color;
 }
 
 void gt_listview_set_font_family_en(gt_obj_st * listview, gt_family_t family)
 {
-    _gt_style_listview_st * style = listview->style;
+    _gt_listview_st * style = listview->style;
     style->font_family_en = family;
 }
 
 void gt_listview_set_font_family_cn(gt_obj_st * listview, gt_family_t family)
 {
-    _gt_style_listview_st * style = listview->style;
+    _gt_listview_st * style = listview->style;
     style->font_family_cn = family;
 }
 

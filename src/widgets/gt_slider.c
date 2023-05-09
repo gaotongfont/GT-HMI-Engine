@@ -36,7 +36,7 @@ const gt_obj_class_st gt_slider_class = {
     ._event_cb      = _event_cb,
     .type           = OBJ_TYPE,
     .size_instance  = sizeof(gt_obj_st),
-    .size_style     = sizeof(_gt_style_slider_st)
+    .size_style     = sizeof(_gt_slider_st)
 };
 
 
@@ -47,14 +47,14 @@ const gt_obj_class_st gt_slider_class = {
 /* static functions -----------------------------------------------------*/
 static uint16_t _gt_slider_get_offset(gt_obj_st * slider)
 {
-    _gt_style_slider_st * style = slider->style;
+    _gt_slider_st * style = slider->style;
 
     return style->offset;
 }
 
 static void _gt_slider_set_offset(gt_obj_st * slider , int offset)
 {
-    _gt_style_slider_st * style = slider->style;
+    _gt_slider_st * style = slider->style;
 
     if( (offset > slider->area.w) && (style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L) ){
         style->offset = slider->area.w;
@@ -78,7 +78,7 @@ static void _gt_slider_add_offset(gt_obj_st * slider , int value)
 }
 
 static inline void _gt_slider_init_widget(gt_obj_st * slider) {
-    _gt_style_slider_st * style = slider->style;
+    _gt_slider_st * style = slider->style;
     gt_size_t w, h;
     // int all_pos = style->end - style->start;
     float _tmp_pos;
@@ -251,7 +251,7 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_style_slider_st ** style_p = (_gt_style_slider_st ** )&obj->style;
+    _gt_slider_st ** style_p = (_gt_slider_st ** )&obj->style;
     if (NULL == *style_p) {
         return ;
     }
@@ -352,9 +352,9 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_slider_init_style(gt_obj_st * slider)
 {
-    _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
+    _gt_slider_st * style = (_gt_slider_st *)slider->style;
 
-    gt_memset(style,0,sizeof(_gt_style_slider_st));
+    gt_memset(style,0,sizeof(_gt_slider_st));
 
     style->color_act = gt_color_hex(0x409eff);
     style->color_ina = gt_color_hex(0xebeef5);
@@ -394,7 +394,7 @@ gt_obj_st * gt_slider_create(gt_obj_st * parent)
  */
 void gt_slider_set_pos(gt_obj_st * slider, gt_size_t pos)
 {
-    _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
+    _gt_slider_st * style = (_gt_slider_st *)slider->style;
     float max = 0 , offset = 0;
     if( pos < style->start ){
         style->pos = style->start;
@@ -422,51 +422,51 @@ void gt_slider_set_pos(gt_obj_st * slider, gt_size_t pos)
 
 void gt_slider_set_start_end(gt_obj_st * slider, gt_size_t start, gt_size_t end)
 {
-    _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
+    _gt_slider_st * style = (_gt_slider_st *)slider->style;
     style->start = start;
     style->end = end;
 }
 
 gt_size_t gt_slider_get_pos(gt_obj_st * slider)
 {
-    _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
+    _gt_slider_st * style = (_gt_slider_st *)slider->style;
     return style->pos;
 }
 
 gt_size_t gt_slider_get_start(gt_obj_st * slider)
 {
-    _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
+    _gt_slider_st * style = (_gt_slider_st *)slider->style;
     return style->start;
 }
 
 gt_size_t gt_slider_get_end(gt_obj_st * slider)
 {
-    _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
+    _gt_slider_st * style = (_gt_slider_st *)slider->style;
     return style->end;
 }
 
 gt_size_t gt_slider_get_total(gt_obj_st * slider)
 {
-    _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
+    _gt_slider_st * style = (_gt_slider_st *)slider->style;
     return ( style->end - style->start);
 }
 
 void gt_slider_set_color_act(gt_obj_st * slider, gt_color_t color)
 {
-    _gt_style_slider_st * style = slider->style;
+    _gt_slider_st * style = slider->style;
     style->color_act = color;
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_slider_set_color_ina(gt_obj_st * slider, gt_color_t color)
 {
-    _gt_style_slider_st * style = slider->style;
+    _gt_slider_st * style = slider->style;
     style->color_ina = color;
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_slider_set_dir(gt_obj_st * slider, gt_bar_dir_et dir)
 {
-    _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
+    _gt_slider_st * style = (_gt_slider_st *)slider->style;
     style->dir = dir;
     // gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
     gt_slider_set_pos(slider, style->pos);
@@ -474,25 +474,25 @@ void gt_slider_set_dir(gt_obj_st * slider, gt_bar_dir_et dir)
 
 gt_bar_dir_et gt_slider_get_dir(gt_obj_st * slider)
 {
-    _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
+    _gt_slider_st * style = (_gt_slider_st *)slider->style;
     return style->dir;
 }
 
 void gt_slider_set_step(gt_obj_st * slider, uint8_t step)
 {
-    _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
+    _gt_slider_st * style = (_gt_slider_st *)slider->style;
     style->step = step;
 }
 
 uint8_t gt_slider_get_step(gt_obj_st * slider)
 {
-    _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
+    _gt_slider_st * style = (_gt_slider_st *)slider->style;
     return ( style->step);
 }
 
 void gt_slider_set_tag(gt_obj_st * slider, char * src)
 {
-    _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
+    _gt_slider_st * style = (_gt_slider_st *)slider->style;
     if( style->tag != NULL ){
         gt_mem_free(style->tag);
     }
@@ -504,7 +504,7 @@ void gt_slider_set_tag(gt_obj_st * slider, char * src)
 
 void gt_slider_set_tag_visible(gt_obj_st * slider, bool visible)
 {
-    _gt_style_slider_st * style = (_gt_style_slider_st *)slider->style;
+    _gt_slider_st * style = (_gt_slider_st *)slider->style;
     style->tag_visible = visible;
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }

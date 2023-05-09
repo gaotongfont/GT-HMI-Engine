@@ -35,7 +35,7 @@ const gt_obj_class_st gt_template_class = {
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_instance = sizeof(gt_obj_st),
-    .size_style    = sizeof(_gt_style_template_st)
+    .size_style    = sizeof(_gt_template_st)
 };
 
 
@@ -46,7 +46,7 @@ const gt_obj_class_st gt_template_class = {
 /* static functions -----------------------------------------------------*/
 
 static inline void _gt_template_init_widget(gt_obj_st * template) {
-    // _gt_style_template_st * style = template->style;
+    // _gt_template_st * style = template->style;
     // gt_size_t x, y, w, h;           //base attr
 
 
@@ -74,7 +74,7 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_style_template_st ** style_p = (_gt_style_template_st ** )&obj->style;
+    _gt_template_st ** style_p = (_gt_template_st ** )&obj->style;
     if (NULL == *style_p) {
         return ;
     }
@@ -147,9 +147,9 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_template_init_style(gt_obj_st * template)
 {
-    _gt_style_template_st * style = (_gt_style_template_st * )template->style;
+    _gt_template_st * style = (_gt_template_st * )template->style;
 
-    gt_memset(style,0,sizeof(_gt_style_template_st));
+    gt_memset(style,0,sizeof(_gt_template_st));
 }
 
 

@@ -22,7 +22,7 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct _gt_style_list_s
+typedef struct _gt_list_s
 {
     char ** item;
 
@@ -46,7 +46,7 @@ typedef struct _gt_style_list_s
     gt_family_t font_family_en;
     uint8_t     font_gray;
     uint8_t     font_align;
-}_gt_style_listview_st;
+}_gt_listview_st;
 
 
 

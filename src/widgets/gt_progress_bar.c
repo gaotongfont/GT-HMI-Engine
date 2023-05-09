@@ -36,7 +36,7 @@ const gt_obj_class_st gt_progress_bar_class = {
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_instance = sizeof(gt_obj_st),
-    .size_style    = sizeof(_gt_style_progress_bar_st)
+    .size_style    = sizeof(_gt_progress_bar_st)
 };
 
 
@@ -47,7 +47,7 @@ const gt_obj_class_st gt_progress_bar_class = {
 /* static functions -----------------------------------------------------*/
 
 static inline void _gt_progress_bar_init_widget(gt_obj_st * progress_bar) {
-    _gt_style_progress_bar_st * style = progress_bar->style;
+    _gt_progress_bar_st * style = progress_bar->style;
     gt_size_t w, h;
     int dist = 0, dist_min = 0;
     int all_pos = style->end - style->start;
@@ -129,7 +129,7 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_style_progress_bar_st ** style_p = (_gt_style_progress_bar_st ** )&obj->style;
+    _gt_progress_bar_st ** style_p = (_gt_progress_bar_st ** )&obj->style;
     if (NULL == *style_p) {
         return ;
     }
@@ -199,9 +199,9 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_progress_bar_init_style(gt_obj_st * progress_bar)
 {
-    _gt_style_progress_bar_st * style = (_gt_style_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
 
-    gt_memset(style, 0, sizeof(_gt_style_progress_bar_st));
+    gt_memset(style, 0, sizeof(_gt_progress_bar_st));
 
     style->color_act = gt_color_hex(0x409eff);
     style->color_ina = gt_color_hex(0xebeef5);
@@ -237,7 +237,7 @@ gt_obj_st * gt_progress_bar_create(gt_obj_st * parent)
  */
 void gt_progress_bar_set_pos(gt_obj_st * progress_bar, gt_size_t pos)
 {
-    _gt_style_progress_bar_st * style = (_gt_style_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     if( pos < style->start ){
         style->pos = style->start;
     }else if( pos > style->end ){
@@ -250,57 +250,57 @@ void gt_progress_bar_set_pos(gt_obj_st * progress_bar, gt_size_t pos)
 
 void gt_progress_bar_set_start_end(gt_obj_st * progress_bar, gt_size_t start, gt_size_t end)
 {
-    _gt_style_progress_bar_st * style = (_gt_style_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     style->start = start;
     style->end = end;
 }
 
 gt_size_t gt_progress_bar_get_pos(gt_obj_st * progress_bar)
 {
-    _gt_style_progress_bar_st * style = (_gt_style_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     return style->pos;
 }
 
 gt_size_t gt_progress_bar_get_start(gt_obj_st * progress_bar)
 {
-    _gt_style_progress_bar_st * style = (_gt_style_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     return style->start;
 }
 
 gt_size_t gt_progress_bar_get_end(gt_obj_st * progress_bar)
 {
-    _gt_style_progress_bar_st * style = (_gt_style_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     return style->end;
 }
 
 gt_size_t gt_progress_bar_get_total(gt_obj_st * progress_bar)
 {
-    _gt_style_progress_bar_st * style = (_gt_style_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     return ( style->end - style->start);
 }
 
 void gt_progress_bar_set_color_act(gt_obj_st * progress_bar, gt_color_t color){
-    _gt_style_progress_bar_st * style = (_gt_style_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     style->color_act = color;
     gt_event_send(progress_bar, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_progress_bar_set_color_ina(gt_obj_st * progress_bar, gt_color_t color){
-    _gt_style_progress_bar_st * style = (_gt_style_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     style->color_ina = color;
     gt_event_send(progress_bar, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_progress_bar_set_dir(gt_obj_st * progress_bar, gt_bar_dir_et dir)
 {
-    _gt_style_progress_bar_st * style = (_gt_style_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     style->dir = dir;
     gt_event_send(progress_bar, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 gt_bar_dir_et gt_progress_bar_get_dir(gt_obj_st * progress_bar)
 {
-    _gt_style_progress_bar_st * style = (_gt_style_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     return style->dir;
 }
 

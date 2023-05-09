@@ -24,7 +24,7 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct _gt_style_checkbox_s
+typedef struct _gt_checkbox_s
 {
     char *      text;
     gt_color_t  font_color;
@@ -33,7 +33,7 @@ typedef struct _gt_style_checkbox_s
     uint8_t     font_size;
     uint8_t     font_gray;
     uint8_t     font_align;
-}_gt_style_checkbox_st;
+}_gt_checkbox_st;
 
 
 

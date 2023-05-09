@@ -24,7 +24,7 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 
 
-typedef struct _gt_style_slider_s
+typedef struct _gt_slider_s
 {
     char * tag;             //img src
     gt_area_st area_base;
@@ -41,7 +41,7 @@ typedef struct _gt_style_slider_s
     uint8_t step;
 
     bool tag_visible;
-}_gt_style_slider_st;
+}_gt_slider_st;
 
 
 

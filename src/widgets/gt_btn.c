@@ -38,7 +38,7 @@ const gt_obj_class_st gt_btn_class = {
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_instance = sizeof(gt_obj_st),
-    .size_style    = sizeof(_gt_style_btn_st)
+    .size_style    = sizeof(_gt_btn_st)
 };
 
 
@@ -49,7 +49,7 @@ const gt_obj_class_st gt_btn_class = {
 /* static functions -----------------------------------------------------*/
 
 static inline void _gt_btn_init_widget(gt_obj_st * btn) {
-    _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
     gt_size_t radius;               //widget attr
 
     gt_color_t fg_color;
@@ -133,7 +133,7 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_style_btn_st ** style_p = (_gt_style_btn_st ** )&obj->style;
+    _gt_btn_st ** style_p = (_gt_btn_st ** )&obj->style;
     if (NULL == *style_p) {
         return ;
     }
@@ -215,9 +215,9 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_btn_init_style(gt_obj_st * btn)
 {
-    _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
 
-    gt_memset(style, 0, sizeof(_gt_style_btn_st));
+    gt_memset(style, 0, sizeof(_gt_btn_st));
 
     style->text = gt_mem_malloc(sizeof("btn"));
     strcpy(style->text, "btn");
@@ -253,14 +253,14 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent)
 
 void gt_btn_set_color_pressed(gt_obj_st * btn, gt_color_t color)
 {
-    _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
     style->color_pressed = color;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_btn_set_color_background(gt_obj_st * btn, gt_color_t color)
 {
-    _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
     style->color_background = color;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -272,7 +272,7 @@ void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...)
     va_start(args, fmt);
     va_copy(args2, args);
 
-    _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
     if( NULL != style->text ){
         gt_mem_free(style->text);
     }
@@ -290,49 +290,49 @@ free_lb:
 }
 
 char * gt_btn_get_text(gt_obj_st * btn){
-    _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
     return style->text;
 }
 
 void gt_btn_set_font_color(gt_obj_st * btn, gt_color_t color){
-    _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
     style->font_color = color;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_btn_set_font_size(gt_obj_st * btn, uint8_t size)
 {
-    _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
     style->font_size = size;
 }
 
 void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray)
 {
-    _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
     style->font_gray = gray;
 }
 
 void gt_btn_set_font_align(gt_obj_st * btn, uint8_t align)
 {
-    _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
     style->font_align = align;
 }
 
 void gt_btn_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn)
 {
-    _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
     style->font_family_cn = font_family_cn;
 }
 
 void gt_btn_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en)
 {
-    _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
     style->font_family_en = font_family_en;
 }
 
 void gt_btn_set_radius(gt_obj_st * btn, uint8_t radius)
 {
-    _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
     style->radius = radius;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }

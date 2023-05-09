@@ -36,7 +36,7 @@ const gt_obj_class_st gt_label_class = {
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_instance = sizeof(gt_obj_st),
-    .size_style    = sizeof(_gt_style_label_st)
+    .size_style    = sizeof(_gt_label_st)
 };
 
 
@@ -47,7 +47,7 @@ const gt_obj_class_st gt_label_class = {
 /* static functions -----------------------------------------------------*/
 
 static inline void _gt_label_init_widget(gt_obj_st * label) {
-    _gt_style_label_st * style = (_gt_style_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label->style;
 
     uint8_t fp[64];
     gt_memset(fp, 0, 64);
@@ -102,7 +102,7 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_style_label_st ** style_p = (_gt_style_label_st ** )&obj->style;
+    _gt_label_st ** style_p = (_gt_label_st ** )&obj->style;
     if (NULL == *style_p) {
         return ;
     }
@@ -182,9 +182,9 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_label_init_style(gt_obj_st * label)
 {
-    _gt_style_label_st * style = (_gt_style_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label->style;
 
-    gt_memset(style, 0, sizeof(_gt_style_label_st));
+    gt_memset(style, 0, sizeof(_gt_label_st));
 
     style->text = gt_mem_malloc(sizeof("label"));
     gt_memcpy(style->text, "label\0", sizeof("label"));
@@ -223,7 +223,7 @@ void gt_label_set_text(gt_obj_st * label, const char * fmt, ...)
     va_start(args, fmt);
     va_copy(args2, args);
 
-    _gt_style_label_st * style = (_gt_style_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label->style;
     if( NULL != style->text ){
         gt_mem_free(style->text);
     }
@@ -245,42 +245,42 @@ char * gt_label_get_text(gt_obj_st * label)
     if (!label) {
         return NULL;
     }
-    return ((_gt_style_label_st * )label->style)->text;
+    return ((_gt_label_st * )label->style)->text;
 }
 
 void gt_label_set_font_color(gt_obj_st * label, gt_color_t color)
 {
-    _gt_style_label_st * style = (_gt_style_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label->style;
     style->font_color = color;
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_label_set_font_size(gt_obj_st * label, uint8_t size)
 {
-    _gt_style_label_st * style = (_gt_style_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label->style;
     style->font_size = size;
 }
 
 void gt_label_set_font_gray(gt_obj_st * label, uint8_t gray)
 {
-    _gt_style_label_st * style = (_gt_style_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label->style;
     style->font_gray = gray;
 }
 
 void gt_label_set_font_align(gt_obj_st * label, uint8_t align)
 {
-    _gt_style_label_st * style = (_gt_style_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label->style;
     style->font_align = align;
 }
 
 void gt_label_set_font_family_cn(gt_obj_st * label, gt_family_t family)
 {
-    _gt_style_label_st * style = (_gt_style_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label->style;
     style->font_family_cn = family;
 }
 void gt_label_set_font_family_en(gt_obj_st * label, gt_family_t family)
 {
-    _gt_style_label_st * style = (_gt_style_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label->style;
     style->font_family_en = family;
 }
 

@@ -38,7 +38,7 @@ typedef struct _gt_keypad_info_s
 }_gt_keypad_info_st;
 
 
-typedef struct _gt_style_keypad_s
+typedef struct _gt_keypad_s
 {
     gt_obj_st * target;
     char *      kv_selected;
@@ -54,7 +54,7 @@ typedef struct _gt_style_keypad_s
     uint8_t     font_align;
 
     _gt_keypad_info_st info;
-}_gt_style_keypad_st;
+}_gt_keypad_st;
 
 /**
  * @brief Record key information

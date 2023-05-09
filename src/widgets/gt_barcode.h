@@ -25,7 +25,7 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef barcode_st _gt_style_barcode_st;
+typedef barcode_st _gt_barcode_st;
 
 
 /* macros ---------------------------------------------------------------*/
