@@ -32,13 +32,13 @@ export function hmiLabel2guiLabel(label){
 export var list_interface = {
     "com":{
         "pos":
-        'gt_obj_style_set_pos(?,?,?);',
+        'gt_obj_set_pos(?,?,?);',
 
         "size":
-        'gt_obj_style_set_size(?,?,?);',
+        'gt_obj_set_size(?,?,?);',
 
         "spec.opa":
-        'gt_obj_style_set_opa(?,GT_OPA_?);',
+        'gt_obj_set_opa(?,GT_OPA_?);',
 
         "text.fontStyleSize":
         'gt_?_set_font_size(?, ?);',
@@ -70,7 +70,7 @@ export var list_interface = {
         'gt_checkbox_set_text(?,"?");',
 
         "box.checked":
-        'gt_obj_style_set_state(?,?);',
+        'gt_obj_set_state(?,?);',
     },
     "img":{
         "image.url":
@@ -157,7 +157,7 @@ export var list_interface = {
         'gt_switch_set_color_point(?,gt_color_hex(?));',
 
         "switch.choice":
-        'gt_obj_style_set_state(?,?);',
+        'gt_obj_set_state(?,?);',
     },
     "rect":{
         "rect.radius":

@@ -200,10 +200,10 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
-            if( gt_obj_style_get_state(obj) != GT_STATE_NONE ){
-                gt_obj_style_set_state(obj, GT_STATE_NONE);
+            if( gt_obj_get_state(obj) != GT_STATE_NONE ){
+                gt_obj_set_state(obj, GT_STATE_NONE);
             }else{
-                gt_obj_style_set_state(obj, GT_STATE_PRESSED);
+                gt_obj_set_state(obj, GT_STATE_PRESSED);
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;

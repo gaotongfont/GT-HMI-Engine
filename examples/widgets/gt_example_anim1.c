@@ -42,8 +42,8 @@
 
 static void _btn_exec_cb(gt_obj_st * obj, int32_t value)
 {
-	// gt_obj_style_set_y(obj, value);
-	gt_obj_style_set_pos(obj, obj->area.x, value);
+	// gt_obj_set_y(obj, value);
+	gt_obj_set_pos(obj, obj->area.x, value);
 	printf("_btn_exec_cb: %d\n", value);
 }
 
@@ -84,8 +84,8 @@ void gt_examples_anim1(void)
     screen = gt_obj_create(NULL);
 
     gt_obj_st * btn = gt_btn_create(screen);
-	gt_obj_style_set_pos(btn, 0, 30);
-	gt_obj_style_set_size(btn, 200, 100);
+	gt_obj_set_pos(btn, 0, 30);
+	gt_obj_set_size(btn, 200, 100);
 	gt_obj_add_event_cb(btn, btn_click_cb, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
 
     gt_disp_load_scr(screen);

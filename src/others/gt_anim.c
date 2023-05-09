@@ -299,7 +299,7 @@ static void _default_exec_cb(gt_obj_st * obj, int32_t value)
     gt_anim_st * anim = _gt_anim_get_act();
     gt_point_st * point = (gt_point_st * )gt_anim_get_data();
 
-    gt_obj_style_set_pos(obj, \
+    gt_obj_set_pos(obj, \
         ((point[1].x - point[0].x) * anim->value_current / anim->value_end) + point[0].x, \
         ((point[1].y - point[0].y) * anim->value_current / anim->value_end) + point[0].y);
 }

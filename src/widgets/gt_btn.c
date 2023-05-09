@@ -74,7 +74,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     }else{
         radius = style->radius;
     }
-    if( gt_obj_style_get_state(btn) != GT_STATE_NONE ){
+    if( gt_obj_get_state(btn) != GT_STATE_NONE ){
         fg_color = style->color_pressed;
     }else{
         fg_color = style->color_background;
@@ -180,7 +180,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
             GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-            gt_obj_style_set_state(obj, GT_STATE_PRESSED);
+            gt_obj_set_state(obj, GT_STATE_PRESSED);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
@@ -197,13 +197,13 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
-            gt_obj_style_set_state(obj, GT_STATE_NONE);
+            gt_obj_set_state(obj, GT_STATE_NONE);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESS_LOST:
             GT_LOGV(GT_LOG_TAG_GUI, "process lost");
-            gt_obj_style_set_state(obj, GT_STATE_NONE);
+            gt_obj_set_state(obj, GT_STATE_NONE);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 

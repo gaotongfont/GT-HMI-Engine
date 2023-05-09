@@ -56,7 +56,7 @@ static inline void _gt_switcher_init_widget(gt_obj_st * switcher)
         switcher->area.h = 24;
     }
 
-    if( gt_obj_style_get_state(switcher) != GT_STATE_NONE ){
+    if( gt_obj_get_state(switcher) != GT_STATE_NONE ){
         fg_color = style->color_act;
     }else{
         fg_color = style->color_ina;
@@ -78,7 +78,7 @@ static inline void _gt_switcher_init_widget(gt_obj_st * switcher)
     area_circle.y += 4;
     area_circle.h -= 8;
     area_circle.w = area_circle.h;
-    if( gt_obj_style_get_state(switcher) != GT_STATE_NONE ){
+    if( gt_obj_get_state(switcher) != GT_STATE_NONE ){
         area_circle.x += (switcher->area.w - area_circle.w - 4);
     }else{
         area_circle.x += 4;
@@ -168,10 +168,10 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
-            if( gt_obj_style_get_state(obj) ){
-                gt_obj_style_set_state(obj, GT_STATE_NONE);
+            if( gt_obj_get_state(obj) ){
+                gt_obj_set_state(obj, GT_STATE_NONE);
             }else{
-                gt_obj_style_set_state(obj, GT_STATE_PRESSED);
+                gt_obj_set_state(obj, GT_STATE_PRESSED);
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;

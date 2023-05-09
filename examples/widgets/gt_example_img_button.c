@@ -47,7 +47,7 @@ void gt_examples_img_button(void)
     gt_imgbtn_set_src(image_btn, "./2.png");
     gt_imgbtn_set_src_press(image_btn, "./1.bmp");
     gt_imgbtn_set_src_release(image_btn, "./2.png");
-	gt_obj_style_set_pos(image_btn, 100, 100);
+	gt_obj_set_pos(image_btn, 100, 100);
 
     gt_disp_load_scr(screen);
 }
