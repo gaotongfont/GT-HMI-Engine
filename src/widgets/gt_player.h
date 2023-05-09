@@ -177,6 +177,14 @@ gt_size_t gt_player_get_index(gt_obj_st * obj);
 
 uint16_t gt_player_get_item_count(gt_obj_st * obj);
 
+/**
+ * @brief Get current item percentage of the player
+ *
+ * @param obj
+ * @return float
+ */
+float gt_player_get_percentage(gt_obj_st * obj);
+
 void gt_player_turn_prev(gt_obj_st * obj);
 void gt_player_turn_next(gt_obj_st * obj);
 

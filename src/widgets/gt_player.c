@@ -587,6 +587,18 @@ uint16_t gt_player_get_item_count(gt_obj_st * obj)
     return ((_gt_style_player_st * )obj->style)->target.count;
 }
 
+float gt_player_get_percentage(gt_obj_st * obj)
+{
+    _gt_style_player_st * style = (_gt_style_player_st * )obj->style;
+    if (!style->target.count) {
+        return 0.0;
+    }
+    if (style->target.index + 1 > style->target.count) {
+        return 0.0;
+    }
+    return (style->target.index + 1) * 100.0 / style->target.count;
+}
+
 void gt_player_turn_prev(gt_obj_st * obj)
 {
     if (_is_type_none((_gt_style_player_st * )obj->style)) {
