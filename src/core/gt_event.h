@@ -23,7 +23,7 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-struct _gt_obj_s;
+struct gt_obj_s;
 
 /**
  * @brief The event type enum definition
@@ -59,7 +59,7 @@ typedef enum gt_event_type_e{
 }gt_event_type_et;
 
 typedef struct _gt_event_s{
-    struct _gt_obj_s * target;
+    struct gt_obj_s * target;
     void * user_data;
     gt_event_type_et code;
 }gt_event_st;
@@ -87,7 +87,7 @@ typedef void (* gt_event_cb_t)(gt_event_st * e);
  * @param filter The event type enum @ref gt_event_type_e
  * @param user_data User data [default or unused: NULL]
  */
-void gt_obj_add_event_cb(struct _gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data);
+void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data);
 
 /**
  * @brief Send an event code to the object kernel.
@@ -97,14 +97,14 @@ void gt_obj_add_event_cb(struct _gt_obj_s * obj, gt_event_cb_t event, gt_event_t
  * @param parms User data [default or unused: NULL]
  * @return gt_res_t The result status @ref gt_res_t
  */
-gt_res_t gt_event_send(struct _gt_obj_s * parent, gt_event_type_et event, void * parms);
+gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * parms);
 
 /**
  * @brief clean the object events
  *
  * @param parent Object which want to change
  */
-void gt_event_clr_mask(struct _gt_obj_s * parent);
+void gt_event_clr_mask(struct gt_obj_s * parent);
 
 void _gt_event_init(void);
 
@@ -121,7 +121,7 @@ bool gt_event_is_locked(void);
  *
  * @return struct gt_obj_s*
  */
-struct _gt_obj_s * gt_event_get_locked_obj(void);
+struct gt_obj_s * gt_event_get_locked_obj(void);
 
 /**
  * @brief Get the code value for the event

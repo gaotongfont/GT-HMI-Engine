@@ -35,18 +35,18 @@ static void _gt_obj_scroll_anim(_gt_timer_st * timer)
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_obj_scroll_to(struct _gt_obj_s * obj, gt_size_t x, gt_size_t y, gt_anim_enable_et en)
+void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t x, gt_size_t y, gt_anim_enable_et en)
 {
 
 }
 
-void gt_obj_scroll_to_x(struct _gt_obj_s * obj, gt_size_t x, gt_anim_enable_et en)
+void gt_obj_scroll_to_x(struct gt_obj_s * obj, gt_size_t x, gt_anim_enable_et en)
 {
 
 }
 
 
-void gt_obj_scroll_to_y(struct _gt_obj_s * obj, gt_size_t x, gt_anim_enable_et en)
+void gt_obj_scroll_to_y(struct gt_obj_s * obj, gt_size_t x, gt_anim_enable_et en)
 {
 
 }

@@ -18,7 +18,7 @@ extern "C" {
 #include "../core/gt_event.h"
 
 /* define ---------------------------------------------------------------*/
-struct _gt_obj_s;
+struct gt_obj_s;
 struct _gt_event_s;
 
 /* typedef --------------------------------------------------------------*/
@@ -28,9 +28,9 @@ struct _gt_event_s;
  */
 typedef struct _gt_obj_class_s
 {
-    void (*_init_cb)(struct _gt_obj_s *);
-    void (*_deinit_cb)(struct _gt_obj_s *);
-    void (*_event_cb)(struct _gt_obj_s *, struct _gt_event_s *);
+    void (*_init_cb)(struct gt_obj_s *);
+    void (*_deinit_cb)(struct gt_obj_s *);
+    void (*_event_cb)(struct gt_obj_s *, struct _gt_event_s *);
     gt_obj_type_et type;
     uint16_t size_instance;     //used: malloc free
     uint16_t size_style;        //used: malloc free
@@ -47,18 +47,18 @@ typedef struct _gt_obj_class_s
  * @brief
  *
  * @param parent
- * @return struct _gt_obj_s*
+ * @return struct gt_obj_s*
  */
-struct _gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct _gt_obj_s * parent);
+struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_obj_s * parent);
 
 /**
  * @brief delete control widget; Reclaim the memory of child controls.
  *
  * @param self
  */
-void _gt_obj_class_destroy(struct _gt_obj_s * self);
+void _gt_obj_class_destroy(struct gt_obj_s * self);
 
-gt_obj_type_et gt_obj_class_get_type(struct _gt_obj_s * obj);
+gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj);
 
 #ifdef __cplusplus
 } /*extern "C"*/

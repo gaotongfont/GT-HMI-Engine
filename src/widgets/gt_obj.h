@@ -54,9 +54,9 @@ typedef enum{
 
 
 struct _gt_draw_ctx_t;
-typedef struct _gt_obj_s {
-    struct _gt_obj_s * parent;
-    struct _gt_obj_s ** child;
+typedef struct gt_obj_s {
+    struct gt_obj_s * parent;
+    struct gt_obj_s ** child;
     const gt_obj_class_st * class;
 #if GT_USE_USER_DATA
     void * user_data;                   /* Notice: must be manual free memory, when memory is not used it! */

@@ -175,7 +175,7 @@ static bool _gt_obj_class_destroy_children(gt_obj_st * self, bool is_root)
 }
 
 /* global functions / API interface -------------------------------------*/
-struct _gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct _gt_obj_s * parent) {
+struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_obj_s * parent) {
 
     /* check type */
     if ( parent && parent->class->type == class->type ){
@@ -258,7 +258,7 @@ obj_lb:
  *
  * @param self The target object which want to be delete from memory
  */
-void _gt_obj_class_destroy(struct _gt_obj_s * self)
+void _gt_obj_class_destroy(struct gt_obj_s * self)
 {
     gt_obj_st * ret_p = NULL;
 
@@ -283,7 +283,7 @@ void _gt_obj_class_destroy(struct _gt_obj_s * self)
     }
 }
 
-gt_obj_type_et gt_obj_class_get_type(struct _gt_obj_s * obj) {
+gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj) {
     return obj->class->type;
 }
 

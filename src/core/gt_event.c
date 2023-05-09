@@ -35,7 +35,7 @@ static bool _gt_event_is_locked = false;
 /**
  * @brief The object records the locked state when the event is executed.
  */
-static struct _gt_obj_s * _gt_event_obj_locked = NULL;
+static struct gt_obj_s * _gt_event_obj_locked = NULL;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -53,7 +53,7 @@ static inline void _gt_event_unlocked(void) {
 
 static inline void _gt_event_locked_obj(gt_obj_st * obj) {
     _gt_event_locked();
-    _gt_event_obj_locked = (struct _gt_obj_s *)obj;
+    _gt_event_obj_locked = (struct gt_obj_s *)obj;
 }
 
 static inline void _gt_event_unlocked_obj(void) {
@@ -154,7 +154,7 @@ static void _gt_timer_event_cb(struct _gt_timer_s * timer){
 }
 
 /* global functions / API interface -------------------------------------*/
-void gt_obj_add_event_cb(struct _gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data){
+void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data){
     GT_LOGV(GT_LOG_TAG_GUI, "start add event cb:%d", obj->cnt_event);
     if ( NULL == obj->event_attr ) {
         obj->event_attr =  gt_mem_malloc(sizeof(gt_obj_event_attr_st));
@@ -169,7 +169,7 @@ void gt_obj_add_event_cb(struct _gt_obj_s * obj, gt_event_cb_t event, gt_event_t
     GT_LOGV(GT_LOG_TAG_GUI, "end add event cb:%d", obj->cnt_event);
 }
 
-gt_res_t gt_event_send(struct _gt_obj_s * parent, gt_event_type_et event, void * parms){
+gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * parms){
     if( !parent ){
         GT_LOGD(GT_LOG_TAG_GUI, "parent is null");
         return GT_RES_FAIL;
@@ -225,7 +225,7 @@ bool gt_event_is_locked(void)
     return _gt_event_is_locked;
 }
 
-struct _gt_obj_s * gt_event_get_locked_obj(void)
+struct gt_obj_s * gt_event_get_locked_obj(void)
 {
     return _gt_event_obj_locked;
 }
