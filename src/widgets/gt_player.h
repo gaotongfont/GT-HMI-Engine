@@ -173,6 +173,7 @@ uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_siz
  * @param index -1: last one; >=0: index number
  */
 void gt_player_set_index(gt_obj_st * obj, gt_size_t index);
+gt_size_t gt_player_get_index(gt_obj_st * obj);
 
 uint16_t gt_player_get_item_count(gt_obj_st * obj);
 
