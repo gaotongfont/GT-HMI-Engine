@@ -161,19 +161,19 @@ export var list_interface = {
     },
     "rect":{
         "rect.radius":
-        'gt_rect_style_set_radius(?,?);',
+        'gt_rect_set_radius(?,?);',
 
         "rect.isFill":
-        'gt_rect_style_set_fill(?,?);',
+        'gt_rect_set_fill(?,?);',
 
         "rect.border":
-        'gt_rect_style_set_border(?,?);',
+        'gt_rect_set_border(?,?);',
 
         "rect.bgcolor":
         "gt_rect_set_bg_color(?,gt_color_hex(?));",
 
         "rect.borderColor":
-        "gt_rect_style_set_color_border(?,gt_color_hex(?));",
+        "gt_rect_set_color_border(?,gt_color_hex(?));",
 
         /* event */
         "color.bgcolor":
