@@ -47,7 +47,7 @@ typedef struct _gt_style_rect_s
  */
 gt_obj_st * gt_rect_create(gt_obj_st * parent);
 
-void gt_rect_style_set_bg_color(gt_obj_st * rect, gt_color_t color);
+void gt_rect_set_bg_color(gt_obj_st * rect, gt_color_t color);
 void gt_rect_style_set_color_border(gt_obj_st * rect, gt_color_t color);
 void gt_rect_style_set_radius(gt_obj_st * rect, uint16_t radius);
 void gt_rect_style_set_border(gt_obj_st * rect, uint16_t border);

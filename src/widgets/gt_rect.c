@@ -181,7 +181,7 @@ gt_obj_st * gt_rect_create(gt_obj_st * parent)
     _gt_rect_init_style(obj);
     return obj;
 }
-void gt_rect_style_set_bg_color(gt_obj_st * rect, gt_color_t color)
+void gt_rect_set_bg_color(gt_obj_st * rect, gt_color_t color)
 {
     _gt_style_rect_st * style = rect->style;
     style->color_background = color;

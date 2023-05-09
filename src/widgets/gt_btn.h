@@ -63,7 +63,7 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent);
  * @param btn button obj
  * @param color selected color
  */
-void gt_btn_style_set_color_pressed(gt_obj_st * btn, gt_color_t color);
+void gt_btn_set_color_pressed(gt_obj_st * btn, gt_color_t color);
 
 /**
  * @brief set the color when the button is unselected
@@ -71,7 +71,7 @@ void gt_btn_style_set_color_pressed(gt_obj_st * btn, gt_color_t color);
  * @param btn button obj
  * @param color unselected color
  */
-void gt_btn_style_set_color_background(gt_obj_st * btn, gt_color_t color);
+void gt_btn_set_color_background(gt_obj_st * btn, gt_color_t color);
 
 /**
  * @brief set button text
@@ -79,7 +79,7 @@ void gt_btn_style_set_color_background(gt_obj_st * btn, gt_color_t color);
  * @param btn button obj
  * @param fmt text format
  */
-void gt_btn_style_set_text(gt_obj_st * btn, const char * fmt, ...);
+void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...);
 
 /**
  * @brief get button text
@@ -87,7 +87,7 @@ void gt_btn_style_set_text(gt_obj_st * btn, const char * fmt, ...);
  * @param btn button obj
  * @return char* button text
  */
-char * gt_btn_style_get_text(gt_obj_st * btn);
+char * gt_btn_get_text(gt_obj_st * btn);
 
 /**
  * @brief set button font color
@@ -95,20 +95,20 @@ char * gt_btn_style_get_text(gt_obj_st * btn);
  * @param btn button obj
  * @param color font color
  */
-void gt_btn_style_set_font_color(gt_obj_st * btn, gt_color_t color);
+void gt_btn_set_font_color(gt_obj_st * btn, gt_color_t color);
 
-void gt_btn_style_set_font_size(gt_obj_st * btn, uint8_t size);
-void gt_btn_style_set_font_gray(gt_obj_st * btn, uint8_t gray);
-void gt_btn_style_set_font_align(gt_obj_st * btn, uint8_t align);
-void gt_btn_style_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn);
-void gt_btn_style_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en);
+void gt_btn_set_font_size(gt_obj_st * btn, uint8_t size);
+void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray);
+void gt_btn_set_font_align(gt_obj_st * btn, uint8_t align);
+void gt_btn_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn);
+void gt_btn_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en);
 /**
  * @brief set btn radius
  *
  * @param btn button obj
  * @param radius radius size
  */
-void gt_btn_style_set_radius(gt_obj_st * btn, uint8_t radius);
+void gt_btn_set_radius(gt_obj_st * btn, uint8_t radius);
 
 #ifdef __cplusplus
 } /*extern "C"*/

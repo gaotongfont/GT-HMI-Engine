@@ -68,7 +68,7 @@ gt_obj_st * gt_input_create(gt_obj_st * parent);
  * @param input input obj
  * @param fmt value string format
  */
-void gt_input_style_set_value(gt_obj_st * input, const char * fmt, ...);
+void gt_input_set_value(gt_obj_st * input, const char * fmt, ...);
 
 /**
  * @brief get input obj value
@@ -76,7 +76,7 @@ void gt_input_style_set_value(gt_obj_st * input, const char * fmt, ...);
  * @param input input obj
  * @return char* value of input
  */
-char * gt_input_style_get_value(gt_obj_st * input);
+char * gt_input_get_value(gt_obj_st * input);
 
 
 /**
@@ -85,8 +85,8 @@ char * gt_input_style_get_value(gt_obj_st * input);
  * @param input input obj
  * @param value content
  */
-void gt_input_style_append_value(gt_obj_st * input, char * value);
-void gt_input_style_append_value_encoding(gt_obj_st * input, char * value , uint8_t encoding);
+void gt_input_append_value(gt_obj_st * input, char * value);
+void gt_input_append_value_encoding(gt_obj_st * input, char * value , uint8_t encoding);
 
 /**
  * @brief set input obj placeholder
@@ -94,39 +94,39 @@ void gt_input_style_append_value_encoding(gt_obj_st * input, char * value , uint
  * @param input input obj
  * @param placeholder placeholder content
  */
-void gt_input_style_set_placeholder(gt_obj_st * input, const char * placeholder);
+void gt_input_set_placeholder(gt_obj_st * input, const char * placeholder);
 
 /**
  * @brief delete a value in the input obj at pos
  *
  * @param input input obj
  */
-void gt_input_style_del_value(gt_obj_st * input);
+void gt_input_del_value(gt_obj_st * input);
 
 /**
  * @brief move the cursor one position to the left
  *
  * @param input input obj
  */
-void gt_input_style_move_left_pos_cursor(gt_obj_st * input);
+void gt_input_move_left_pos_cursor(gt_obj_st * input);
 
 /**
  * @brief move the cursor one position to the right
  *
  * @param input input obj
  */
-void gt_input_style_move_right_pos_cursor(gt_obj_st * input);
+void gt_input_move_right_pos_cursor(gt_obj_st * input);
 
-void gt_input_style_set_font_color(gt_obj_st * input, gt_color_t color);
-void gt_input_style_set_font_family_cn(gt_obj_st * input, gt_family_t family);
-void gt_input_style_set_font_family_en(gt_obj_st * input, gt_family_t family);
-void gt_input_style_set_font_size(gt_obj_st * input, uint8_t size);
-void gt_input_style_set_font_gray(gt_obj_st * input, uint8_t gray);
-void gt_input_style_set_font_align(gt_obj_st * input, uint8_t align);
+void gt_input_set_font_color(gt_obj_st * input, gt_color_t color);
+void gt_input_set_font_family_cn(gt_obj_st * input, gt_family_t family);
+void gt_input_set_font_family_en(gt_obj_st * input, gt_family_t family);
+void gt_input_set_font_size(gt_obj_st * input, uint8_t size);
+void gt_input_set_font_gray(gt_obj_st * input, uint8_t gray);
+void gt_input_set_font_align(gt_obj_st * input, uint8_t align);
 
-void gt_input_style_set_bg_color(gt_obj_st * input, gt_color_t color);
-void gt_input_style_set_border_width(gt_obj_st * input, gt_size_t width);
-void gt_input_style_set_border_color(gt_obj_st * input, gt_color_t color);
+void gt_input_set_bg_color(gt_obj_st * input, gt_color_t color);
+void gt_input_set_border_width(gt_obj_st * input, gt_size_t width);
+void gt_input_set_border_color(gt_obj_st * input, gt_color_t color);
 
 #ifdef __cplusplus
 } /*extern "C"*/

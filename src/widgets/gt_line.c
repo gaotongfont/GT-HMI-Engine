@@ -191,27 +191,27 @@ gt_obj_st * gt_line_create(gt_obj_st * parent)
     _gt_line_init_style(obj);
     return obj;
 }
-void gt_line_style_set_color(gt_obj_st * line, gt_color_t color)
+void gt_line_set_color(gt_obj_st * line, gt_color_t color)
 {
     gt_attr_line_st * style = line->style;
     style->fg_color = color;
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
-void gt_line_style_set_start_point(gt_obj_st * line, uint16_t xs, uint16_t ys)
+void gt_line_set_start_point(gt_obj_st * line, uint16_t xs, uint16_t ys)
 {
     gt_attr_line_st * style = line->style;
     style->x_1 = xs;
     style->y_1 = ys;
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
-void gt_line_style_set_end_point(gt_obj_st * line, uint16_t xe, uint16_t ye)
+void gt_line_set_end_point(gt_obj_st * line, uint16_t xe, uint16_t ye)
 {
     gt_attr_line_st * style = line->style;
     style->x_2 = xe;
     style->y_2 = ye;
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
-void gt_line_style_set_line_width(gt_obj_st * line, uint16_t line_width)
+void gt_line_set_line_width(gt_obj_st * line, uint16_t line_width)
 {
     gt_attr_line_st * style = line->style;
     style->width = line_width;

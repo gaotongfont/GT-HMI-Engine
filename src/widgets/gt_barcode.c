@@ -292,7 +292,7 @@ gt_obj_st * gt_barcode_create(gt_obj_st * parent) {
     return obj;
 }
 
-void gt_barcode_style_set_code_text(gt_obj_st * barcode , char* code)
+void gt_barcode_set_code_text(gt_obj_st * barcode , char* code)
 {
     _gt_style_barcode_st * style = barcode->style;
     if( NULL != style->barcode)
@@ -306,31 +306,31 @@ void gt_barcode_style_set_code_text(gt_obj_st * barcode , char* code)
     // gt_event_send(barcode, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_barcode_style_set_type(gt_obj_st * barcode , gt_family_t family)
+void gt_barcode_set_type(gt_obj_st * barcode , gt_family_t family)
 {
     _gt_style_barcode_st * style = barcode->style;
     style->type = family;
 }
 
-void gt_barcode_style_set_hri_type(gt_obj_st * barcode , gt_family_t family)
+void gt_barcode_set_hri_type(gt_obj_st * barcode , gt_family_t family)
 {
     _gt_style_barcode_st * style = barcode->style;
     style->hri_type = family;
 }
 
-void gt_barcode_style_set_mode_w(gt_obj_st * barcode , uint8_t value)
+void gt_barcode_set_mode_w(gt_obj_st * barcode , uint8_t value)
 {
     _gt_style_barcode_st * style = barcode->style;
     style->mode_w = value;
 }
 
-void gt_barcode_style_set_mode_h(gt_obj_st * barcode , uint8_t value)
+void gt_barcode_set_mode_h(gt_obj_st * barcode , uint8_t value)
 {
     _gt_style_barcode_st * style = barcode->style;
     style->mode_h = value;
 }
 
-void gt_barcode_style_set_upc_e_sys_code(gt_obj_st * barcode , uint8_t value)
+void gt_barcode_set_upc_e_sys_code(gt_obj_st * barcode , uint8_t value)
 {
     _gt_style_barcode_st * style = barcode->style;
     style->upc_e_sys = value;

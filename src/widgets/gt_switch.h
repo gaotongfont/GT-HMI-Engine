@@ -47,9 +47,9 @@ typedef struct _gt_style_switcher_s
  */
 gt_obj_st * gt_switch_create(gt_obj_st * parent);
 
-void gt_switch_style_set_color_act(gt_obj_st * switcher, gt_color_t color);
-void gt_switch_style_set_color_ina(gt_obj_st * switcher, gt_color_t color);
-void gt_switch_style_set_color_point(gt_obj_st * switcher, gt_color_t color);
+void gt_switch_set_color_act(gt_obj_st * switcher, gt_color_t color);
+void gt_switch_set_color_ina(gt_obj_st * switcher, gt_color_t color);
+void gt_switch_set_color_point(gt_obj_st * switcher, gt_color_t color);
 
 #ifdef __cplusplus
 } /*extern "C"*/

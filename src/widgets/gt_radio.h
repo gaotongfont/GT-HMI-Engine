@@ -56,7 +56,7 @@ gt_obj_st * gt_radio_create(gt_obj_st * parent);
  *
  * @param radio radio obj
  */
-void gt_radio_style_set_selected(gt_obj_st * radio);
+void gt_radio_set_selected(gt_obj_st * radio);
 
 /**
  * @brief set radio text
@@ -64,14 +64,14 @@ void gt_radio_style_set_selected(gt_obj_st * radio);
  * @param radio radio obj
  * @param fmt text format
  */
-void gt_radio_style_set_text(gt_obj_st * radio, const char * fmt, ...);
+void gt_radio_set_text(gt_obj_st * radio, const char * fmt, ...);
 
-void gt_radio_style_set_font_color(gt_obj_st * radio, gt_color_t color);
-void gt_radio_style_set_font_size(gt_obj_st * radio, uint8_t size);
-void gt_radio_style_set_font_gray(gt_obj_st * radio, uint8_t gray);
-void gt_radio_style_set_font_align(gt_obj_st * radio, uint8_t align);
-void gt_radio_style_set_font_family_cn(gt_obj_st * radio, gt_family_t family);
-void gt_radio_style_set_font_family_en(gt_obj_st * radio, gt_family_t family);
+void gt_radio_set_font_color(gt_obj_st * radio, gt_color_t color);
+void gt_radio_set_font_size(gt_obj_st * radio, uint8_t size);
+void gt_radio_set_font_gray(gt_obj_st * radio, uint8_t gray);
+void gt_radio_set_font_align(gt_obj_st * radio, uint8_t align);
+void gt_radio_set_font_family_cn(gt_obj_st * radio, gt_family_t family);
+void gt_radio_set_font_family_en(gt_obj_st * radio, gt_family_t family);
 
 #ifdef __cplusplus
 } /*extern "C"*/

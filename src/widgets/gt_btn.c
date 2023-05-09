@@ -251,21 +251,21 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent)
     return obj;
 }
 
-void gt_btn_style_set_color_pressed(gt_obj_st * btn, gt_color_t color)
+void gt_btn_set_color_pressed(gt_obj_st * btn, gt_color_t color)
 {
     _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
     style->color_pressed = color;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_btn_style_set_color_background(gt_obj_st * btn, gt_color_t color)
+void gt_btn_set_color_background(gt_obj_st * btn, gt_color_t color)
 {
     _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
     style->color_background = color;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_btn_style_set_text(gt_obj_st * btn, const char * fmt, ...)
+void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...)
 {
     va_list args;
     va_list args2;
@@ -289,48 +289,48 @@ free_lb:
     va_end(args);
 }
 
-char * gt_btn_style_get_text(gt_obj_st * btn){
+char * gt_btn_get_text(gt_obj_st * btn){
     _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
     return style->text;
 }
 
-void gt_btn_style_set_font_color(gt_obj_st * btn, gt_color_t color){
+void gt_btn_set_font_color(gt_obj_st * btn, gt_color_t color){
     _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
     style->font_color = color;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_btn_style_set_font_size(gt_obj_st * btn, uint8_t size)
+void gt_btn_set_font_size(gt_obj_st * btn, uint8_t size)
 {
     _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
     style->font_size = size;
 }
 
-void gt_btn_style_set_font_gray(gt_obj_st * btn, uint8_t gray)
+void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray)
 {
     _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
     style->font_gray = gray;
 }
 
-void gt_btn_style_set_font_align(gt_obj_st * btn, uint8_t align)
+void gt_btn_set_font_align(gt_obj_st * btn, uint8_t align)
 {
     _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
     style->font_align = align;
 }
 
-void gt_btn_style_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn)
+void gt_btn_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn)
 {
     _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
     style->font_family_cn = font_family_cn;
 }
 
-void gt_btn_style_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en)
+void gt_btn_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en)
 {
     _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
     style->font_family_en = font_family_en;
 }
 
-void gt_btn_style_set_radius(gt_obj_st * btn, uint8_t radius)
+void gt_btn_set_radius(gt_obj_st * btn, uint8_t radius)
 {
     _gt_style_btn_st * style = (_gt_style_btn_st * )btn->style;
     style->radius = radius;

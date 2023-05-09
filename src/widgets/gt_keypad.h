@@ -86,7 +86,7 @@ gt_obj_st * gt_keypad_create(gt_obj_st * parent);
  * @param keypad keypad obj
  * @param ta obj for keyboard input
  */
-void gt_keypad_style_set_target(gt_obj_st * keypad, gt_obj_st * ta);
+void gt_keypad_set_target(gt_obj_st * keypad, gt_obj_st * ta);
 
 /**
  * @brief set keypad map,this can remap keypad
@@ -94,19 +94,19 @@ void gt_keypad_style_set_target(gt_obj_st * keypad, gt_obj_st * ta);
  * @param keypad keypad obj
  * @param map map
  */
-void gt_keypad_style_set_map(gt_obj_st * keypad,  gt_keypad_map_st * map);
-void gt_keypad_style_set_handler_cb(gt_obj_st * keypad, keypad_handler_cb_t cb);
+void gt_keypad_set_map(gt_obj_st * keypad,  gt_keypad_map_st * map);
+void gt_keypad_set_handler_cb(gt_obj_st * keypad, keypad_handler_cb_t cb);
 
-void gt_keypad_style_set_color_board(gt_obj_st * keypad, gt_color_t color);
-void gt_keypad_style_set_color_key(gt_obj_st * keypad, gt_color_t color);
-void gt_keypad_style_set_color_ctrl_key(gt_obj_st * keypad, gt_color_t color);
+void gt_keypad_set_color_board(gt_obj_st * keypad, gt_color_t color);
+void gt_keypad_set_color_key(gt_obj_st * keypad, gt_color_t color);
+void gt_keypad_set_color_ctrl_key(gt_obj_st * keypad, gt_color_t color);
 
-void gt_keypad_style_set_font_color(gt_obj_st * keypad, gt_color_t color);
-void gt_keypad_style_set_font_family_cn(gt_obj_st * keypad, gt_family_t family);
-void gt_keypad_style_set_font_family_en(gt_obj_st * keypad, gt_family_t family);
-void gt_keypad_style_set_font_size(gt_obj_st * keypad, uint8_t size);
-void gt_keypad_style_set_font_gray(gt_obj_st * keypad, uint8_t gray);
-void gt_keypad_style_set_font_align(gt_obj_st * keypad, uint8_t align);
+void gt_keypad_set_font_color(gt_obj_st * keypad, gt_color_t color);
+void gt_keypad_set_font_family_cn(gt_obj_st * keypad, gt_family_t family);
+void gt_keypad_set_font_family_en(gt_obj_st * keypad, gt_family_t family);
+void gt_keypad_set_font_size(gt_obj_st * keypad, uint8_t size);
+void gt_keypad_set_font_gray(gt_obj_st * keypad, uint8_t gray);
+void gt_keypad_set_font_align(gt_obj_st * keypad, uint8_t align);
 
 #ifdef __cplusplus
 } /*extern "C"*/

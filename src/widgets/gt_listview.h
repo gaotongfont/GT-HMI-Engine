@@ -70,7 +70,7 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent);
  * @param list listview obj
  * @param item item
  */
-void gt_listview_style_add_item(gt_obj_st * list, char * item);
+void gt_listview_add_item(gt_obj_st * list, char * item);
 
 /**
  * @brief set the listview selected item by index
@@ -78,7 +78,7 @@ void gt_listview_style_add_item(gt_obj_st * list, char * item);
  * @param listview listview obj
  * @param idx index
  */
-void gt_listview_style_set_selected_item_by_idx(gt_obj_st * listview, int idx);
+void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, int idx);
 
 /**
  * @brief get cnt of listview all items
@@ -86,7 +86,7 @@ void gt_listview_style_set_selected_item_by_idx(gt_obj_st * listview, int idx);
  * @param listview listview
  * @return gt_size_t cnt of count items
  */
-gt_size_t gt_listview_style_get_list_items_cnt(gt_obj_st * listview);
+gt_size_t gt_listview_get_list_items_cnt(gt_obj_st * listview);
 
 /**
  * @brief get listview selected index
@@ -94,7 +94,7 @@ gt_size_t gt_listview_style_get_list_items_cnt(gt_obj_st * listview);
  * @param listview
  * @return gt_size_t
  */
-gt_size_t gt_listview_style_get_idx_selected(gt_obj_st * listview);
+gt_size_t gt_listview_get_idx_selected(gt_obj_st * listview);
 
 /**
  * @brief get listview selected item content
@@ -102,34 +102,34 @@ gt_size_t gt_listview_style_get_idx_selected(gt_obj_st * listview);
  * @param listview
  * @return char* the content value of the selected item
  */
-char * gt_listview_style_get_selected_item_text(gt_obj_st * listview);
+char * gt_listview_get_selected_item_text(gt_obj_st * listview);
 
 /**
  * @brief set listview show items number
  * @param listview
  * @param cnt_show
  */
-void gt_listview_style_set_cnt_show(gt_obj_st * listview, uint8_t cnt_show);
+void gt_listview_set_cnt_show(gt_obj_st * listview, uint8_t cnt_show);
 
 /**
  * @brief set listview show font size
  * @param listview
  * @param size
  */
-void gt_listview_style_set_font_size(gt_obj_st * listview, uint8_t size);
-void gt_listview_style_set_font_gray(gt_obj_st * listview, uint8_t gray);
-void gt_listview_style_set_font_align(gt_obj_st * listview, uint8_t align);
+void gt_listview_set_font_size(gt_obj_st * listview, uint8_t size);
+void gt_listview_set_font_gray(gt_obj_st * listview, uint8_t gray);
+void gt_listview_set_font_align(gt_obj_st * listview, uint8_t align);
 /**
  * @brief Set listview active font color
  *
  * @param listview
  * @param color
  */
-void gt_listview_style_set_font_color(gt_obj_st * listview, gt_color_t color);
+void gt_listview_set_font_color(gt_obj_st * listview, gt_color_t color);
 
 
-void gt_listview_style_set_font_family_en(gt_obj_st * listview, gt_family_t family);
-void gt_listview_style_set_font_family_cn(gt_obj_st * listview, gt_family_t family);
+void gt_listview_set_font_family_en(gt_obj_st * listview, gt_family_t family);
+void gt_listview_set_font_family_cn(gt_obj_st * listview, gt_family_t family);
 
 
 #ifdef __cplusplus

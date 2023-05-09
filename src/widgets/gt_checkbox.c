@@ -250,7 +250,7 @@ gt_obj_st * gt_checkbox_create(gt_obj_st * parent)
 }
 
 
-void gt_checkbox_style_set_text(gt_obj_st * checkbox, const char * fmt, ...)
+void gt_checkbox_set_text(gt_obj_st * checkbox, const char * fmt, ...)
 {
     va_list args;
     va_list args2;
@@ -273,40 +273,40 @@ free_lb:
     va_end(args2);
     va_end(args);
 }
-char * gt_checkbox_style_get_text(gt_obj_st * checkbox)
+char * gt_checkbox_get_text(gt_obj_st * checkbox)
 {
     _gt_style_checkbox_st * style = checkbox->style;
     return style->text;
 }
 
-void gt_checkbox_style_set_font_family_cn(gt_obj_st * checkbox, gt_family_t family)
+void gt_checkbox_set_font_family_cn(gt_obj_st * checkbox, gt_family_t family)
 {
     _gt_style_checkbox_st * style = checkbox->style;
     style->font_family_cn = family;
 }
 
-void gt_checkbox_style_set_font_family_en(gt_obj_st * checkbox, gt_family_t family)
+void gt_checkbox_set_font_family_en(gt_obj_st * checkbox, gt_family_t family)
 {
     _gt_style_checkbox_st * style = checkbox->style;
     style->font_family_en = family;
 }
 
-void gt_checkbox_style_set_font_size(gt_obj_st * checkbox, uint8_t size)
+void gt_checkbox_set_font_size(gt_obj_st * checkbox, uint8_t size)
 {
     _gt_style_checkbox_st * style = checkbox->style;
     style->font_size = size;
 }
-void gt_checkbox_style_set_font_gray(gt_obj_st * checkbox, uint8_t gray)
+void gt_checkbox_set_font_gray(gt_obj_st * checkbox, uint8_t gray)
 {
     _gt_style_checkbox_st * style = checkbox->style;
     style->font_gray = gray;
 }
-void gt_checkbox_style_set_font_align(gt_obj_st * checkbox, uint8_t align)
+void gt_checkbox_set_font_align(gt_obj_st * checkbox, uint8_t align)
 {
     _gt_style_checkbox_st * style = checkbox->style;
     style->font_align = align;
 }
-void gt_checkbox_style_set_font_color(gt_obj_st * checkbox, gt_color_t color)
+void gt_checkbox_set_font_color(gt_obj_st * checkbox, gt_color_t color)
 {
     _gt_style_checkbox_st * style = checkbox->style;
     style->font_color = color;

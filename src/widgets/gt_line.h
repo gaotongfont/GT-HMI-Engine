@@ -37,10 +37,10 @@ extern "C" {
  */
 gt_obj_st * gt_line_create(gt_obj_st * parent);
 
-void gt_line_style_set_color(gt_obj_st * line, gt_color_t color);
-void gt_line_style_set_start_point(gt_obj_st * line, uint16_t xs, uint16_t ys);
-void gt_line_style_set_end_point(gt_obj_st * line, uint16_t xe, uint16_t ye);
-void gt_line_style_set_line_width(gt_obj_st * line, uint16_t line_width);
+void gt_line_set_color(gt_obj_st * line, gt_color_t color);
+void gt_line_set_start_point(gt_obj_st * line, uint16_t xs, uint16_t ys);
+void gt_line_set_end_point(gt_obj_st * line, uint16_t xe, uint16_t ye);
+void gt_line_set_line_width(gt_obj_st * line, uint16_t line_width);
 
 
 #ifdef __cplusplus

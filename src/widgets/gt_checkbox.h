@@ -57,15 +57,15 @@ gt_obj_st * gt_checkbox_create(gt_obj_st * parent);
  * @param checkbox checkbox obj
  * @param fmt text format
  */
-void gt_checkbox_style_set_text(gt_obj_st * checkbox, const char * fmt, ...);
-char * gt_checkbox_style_get_text(gt_obj_st * checkbox);
+void gt_checkbox_set_text(gt_obj_st * checkbox, const char * fmt, ...);
+char * gt_checkbox_get_text(gt_obj_st * checkbox);
 
-void gt_checkbox_style_set_font_color(gt_obj_st * checkbox, gt_color_t color);
-void gt_checkbox_style_set_font_family_cn(gt_obj_st * checkbox, gt_family_t family);
-void gt_checkbox_style_set_font_family_en(gt_obj_st * checkbox, gt_family_t family);
-void gt_checkbox_style_set_font_size(gt_obj_st * checkbox, uint8_t size);
-void gt_checkbox_style_set_font_gray(gt_obj_st * checkbox, uint8_t gray);
-void gt_checkbox_style_set_font_align(gt_obj_st * checkbox, uint8_t align);
+void gt_checkbox_set_font_color(gt_obj_st * checkbox, gt_color_t color);
+void gt_checkbox_set_font_family_cn(gt_obj_st * checkbox, gt_family_t family);
+void gt_checkbox_set_font_family_en(gt_obj_st * checkbox, gt_family_t family);
+void gt_checkbox_set_font_size(gt_obj_st * checkbox, uint8_t size);
+void gt_checkbox_set_font_gray(gt_obj_st * checkbox, uint8_t gray);
+void gt_checkbox_set_font_align(gt_obj_st * checkbox, uint8_t align);
 
 #ifdef __cplusplus
 } /*extern "C"*/

@@ -216,7 +216,7 @@ gt_obj_st * gt_label_create(gt_obj_st * parent) {
 }
 
 
-void gt_label_style_set_text(gt_obj_st * label, const char * fmt, ...)
+void gt_label_set_text(gt_obj_st * label, const char * fmt, ...)
 {
     va_list args;
     va_list args2;
@@ -240,7 +240,7 @@ free_lb:
     va_end(args);
 }
 
-char * gt_label_style_get_text(gt_obj_st * label)
+char * gt_label_get_text(gt_obj_st * label)
 {
     if (!label) {
         return NULL;
@@ -248,37 +248,37 @@ char * gt_label_style_get_text(gt_obj_st * label)
     return ((_gt_style_label_st * )label->style)->text;
 }
 
-void gt_label_style_set_font_color(gt_obj_st * label, gt_color_t color)
+void gt_label_set_font_color(gt_obj_st * label, gt_color_t color)
 {
     _gt_style_label_st * style = (_gt_style_label_st * )label->style;
     style->font_color = color;
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_label_style_set_font_size(gt_obj_st * label, uint8_t size)
+void gt_label_set_font_size(gt_obj_st * label, uint8_t size)
 {
     _gt_style_label_st * style = (_gt_style_label_st * )label->style;
     style->font_size = size;
 }
 
-void gt_label_style_set_font_gray(gt_obj_st * label, uint8_t gray)
+void gt_label_set_font_gray(gt_obj_st * label, uint8_t gray)
 {
     _gt_style_label_st * style = (_gt_style_label_st * )label->style;
     style->font_gray = gray;
 }
 
-void gt_label_style_set_font_align(gt_obj_st * label, uint8_t align)
+void gt_label_set_font_align(gt_obj_st * label, uint8_t align)
 {
     _gt_style_label_st * style = (_gt_style_label_st * )label->style;
     style->font_align = align;
 }
 
-void gt_label_style_set_font_family_cn(gt_obj_st * label, gt_family_t family)
+void gt_label_set_font_family_cn(gt_obj_st * label, gt_family_t family)
 {
     _gt_style_label_st * style = (_gt_style_label_st * )label->style;
     style->font_family_cn = family;
 }
-void gt_label_style_set_font_family_en(gt_obj_st * label, gt_family_t family)
+void gt_label_set_font_family_en(gt_obj_st * label, gt_family_t family)
 {
     _gt_style_label_st * style = (_gt_style_label_st * )label->style;
     style->font_family_en = family;

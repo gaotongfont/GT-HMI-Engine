@@ -262,7 +262,7 @@ static void _gt_input_init_style(gt_obj_st * input)
 
     gt_memset(style, 0, sizeof(_gt_style_input_st));
 
-    gt_input_style_set_placeholder(input, "please input");
+    gt_input_set_placeholder(input, "please input");
 
     style->font_family_cn = GT_CFG_DEFAULT_FONT_FAMILY_CN;
     style->font_family_en = GT_CFG_DEFAULT_FONT_FAMILY_EN;
@@ -299,7 +299,7 @@ gt_obj_st * gt_input_create(gt_obj_st * parent)
  * @param input input obj
  * @param value set data value
  */
-void gt_input_style_set_value(gt_obj_st * input, const char * fmt, ...)
+void gt_input_set_value(gt_obj_st * input, const char * fmt, ...)
 {
     va_list args;
     va_list args2;
@@ -322,7 +322,7 @@ free_lb:
     va_end(args);
 }
 
-char * gt_input_style_get_value(gt_obj_st * input)
+char * gt_input_get_value(gt_obj_st * input)
 {
     _gt_style_input_st * style = input->style;
     return style->value;
@@ -334,7 +334,7 @@ char * gt_input_style_get_value(gt_obj_st * input)
  * @param input input obj
  * @param value append data value
  */
-void gt_input_style_append_value(gt_obj_st * input, char * value)
+void gt_input_append_value(gt_obj_st * input, char * value)
 {
     _gt_style_input_st * style = input->style;
     uint16_t len = value == NULL ? 0 : strlen(value);
@@ -351,11 +351,11 @@ void gt_input_style_append_value(gt_obj_st * input, char * value)
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_input_style_append_value_encoding(gt_obj_st * input, char * value , uint8_t encoding)
+void gt_input_append_value_encoding(gt_obj_st * input, char * value , uint8_t encoding)
 {
     if(encoding == gt_project_encoding_get())
     {
-        gt_input_style_append_value(input , value);
+        gt_input_append_value(input , value);
         return ;
     }
 
@@ -374,7 +374,7 @@ void gt_input_style_append_value_encoding(gt_obj_st * input, char * value , uint
             idx += gt_encoding_table_one_char(&value[idx] , tmp_str , GB_2_UTF8);
         }
         tmp_str[strlen(tmp_str)] = '\0';
-        gt_input_style_append_value(input , tmp_str);
+        gt_input_append_value(input , tmp_str);
     }
 
     gt_mem_free(tmp_str);
@@ -382,7 +382,7 @@ void gt_input_style_append_value_encoding(gt_obj_st * input, char * value , uint
 #endif
 }
 
-void gt_input_style_del_value(gt_obj_st * input)
+void gt_input_del_value(gt_obj_st * input)
 {
     _gt_style_input_st * style = input->style;
     if( style->value == NULL ){
@@ -406,7 +406,7 @@ lab_end:
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_input_style_set_placeholder(gt_obj_st * input, const char * placeholder)
+void gt_input_set_placeholder(gt_obj_st * input, const char * placeholder)
 {
     _gt_style_input_st * style = input->style;
     if( style->placeholder ){
@@ -420,7 +420,7 @@ void gt_input_style_set_placeholder(gt_obj_st * input, const char * placeholder)
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_input_style_move_left_pos_cursor(gt_obj_st * input)
+void gt_input_move_left_pos_cursor(gt_obj_st * input)
 {
     _gt_style_input_st * style = input->style;
     int32_t d_pos = style->pos_cursor - 1;
@@ -431,7 +431,7 @@ void gt_input_style_move_left_pos_cursor(gt_obj_st * input)
     }
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
-void gt_input_style_move_right_pos_cursor(gt_obj_st * input)
+void gt_input_move_right_pos_cursor(gt_obj_st * input)
 {
     _gt_style_input_st * style = input->style;
     int32_t d_pos = style->pos_cursor;
@@ -443,55 +443,55 @@ void gt_input_style_move_right_pos_cursor(gt_obj_st * input)
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_input_style_set_bg_color(gt_obj_st * input, gt_color_t color)
+void gt_input_set_bg_color(gt_obj_st * input, gt_color_t color)
 {
 	_gt_style_input_st * style = input->style;
     style->bg_color = color;
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_input_style_set_font_color(gt_obj_st * input, gt_color_t color)
+void gt_input_set_font_color(gt_obj_st * input, gt_color_t color)
 {
     _gt_style_input_st * style = input->style;
     style->font_color = color;
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_input_style_set_font_family_cn(gt_obj_st * input, gt_family_t family)
+void gt_input_set_font_family_cn(gt_obj_st * input, gt_family_t family)
 {
     _gt_style_input_st * style = input->style;
     style->font_family_cn = family;
 }
 
-void gt_input_style_set_font_family_en(gt_obj_st * input, gt_family_t family)
+void gt_input_set_font_family_en(gt_obj_st * input, gt_family_t family)
 {
     _gt_style_input_st * style = input->style;
     style->font_family_en = family;
 }
 
-void gt_input_style_set_font_size(gt_obj_st * input, uint8_t size)
+void gt_input_set_font_size(gt_obj_st * input, uint8_t size)
 {
     _gt_style_input_st * style = input->style;
     style->font_size = size;
 }
-void gt_input_style_set_font_gray(gt_obj_st * input, uint8_t gray)
+void gt_input_set_font_gray(gt_obj_st * input, uint8_t gray)
 {
     _gt_style_input_st * style = input->style;
     style->font_gray = gray;
 }
-void gt_input_style_set_font_align(gt_obj_st * input, uint8_t align)
+void gt_input_set_font_align(gt_obj_st * input, uint8_t align)
 {
     _gt_style_input_st * style = input->style;
     style->font_align = align;
 }
-void gt_input_style_set_border_width(gt_obj_st * input, gt_size_t width)
+void gt_input_set_border_width(gt_obj_st * input, gt_size_t width)
 {
     _gt_style_input_st * style = input->style;
     style->border_width = width;
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_input_style_set_border_color(gt_obj_st * input, gt_color_t color)
+void gt_input_set_border_color(gt_obj_st * input, gt_color_t color)
 {
     _gt_style_input_st * style = input->style;
     style->border_color = color;

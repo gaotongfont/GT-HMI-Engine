@@ -50,15 +50,15 @@ gt_obj_st * gt_img_create(gt_obj_st * parent);
  * @param img img obj
  * @param src path of img
  */
-void gt_img_style_set_src(gt_obj_st * img, char * src);
+void gt_img_set_src(gt_obj_st * img, char * src);
 
 /**
  * @brief get img src of path
- * 
+ *
  * @param img img obj
  * @return char* src of img
  */
-char * gt_img_style_get_src(gt_obj_st * img);
+char * gt_img_get_src(gt_obj_st * img);
 
 #ifdef __cplusplus
 } /*extern "C"*/

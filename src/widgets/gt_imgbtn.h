@@ -55,7 +55,7 @@ gt_obj_st * gt_imgbtn_create(gt_obj_st * parent);
  * @param imgbtn imgbtn obj
  * @param src path of imgbtn
  */
-void gt_imgbtn_style_set_src(gt_obj_st * imgbtn, char * src);
+void gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src);
 
 /**
  * @brief set the path of imgbtn of press
@@ -63,7 +63,7 @@ void gt_imgbtn_style_set_src(gt_obj_st * imgbtn, char * src);
  * @param imgbtn
  * @param src
  */
-void gt_imgbtn_style_set_src_press(gt_obj_st * imgbtn, char * src);
+void gt_imgbtn_set_src_press(gt_obj_st * imgbtn, char * src);
 
 /**
  * @brief set the path of imgbtn of release
@@ -71,7 +71,7 @@ void gt_imgbtn_style_set_src_press(gt_obj_st * imgbtn, char * src);
  * @param imgbtn
  * @param src
  */
-void gt_imgbtn_style_set_src_release(gt_obj_st * imgbtn, char * src);
+void gt_imgbtn_set_src_release(gt_obj_st * imgbtn, char * src);
 
 
 #ifdef __cplusplus

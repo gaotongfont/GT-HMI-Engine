@@ -59,7 +59,7 @@ gt_obj_st * gt_label_create(gt_obj_st * parent);
  * @param label label obj
  * @param fmt text format
  */
-void gt_label_style_set_text(gt_obj_st * label, const char * fmt, ...);
+void gt_label_set_text(gt_obj_st * label, const char * fmt, ...);
 
 /**
  * @brief get label text
@@ -67,7 +67,7 @@ void gt_label_style_set_text(gt_obj_st * label, const char * fmt, ...);
  * @param label label obj
  * @return char* label's text
  */
-char * gt_label_style_get_text(gt_obj_st * label);
+char * gt_label_get_text(gt_obj_st * label);
 
 /**
  * @brief set label font color
@@ -75,12 +75,12 @@ char * gt_label_style_get_text(gt_obj_st * label);
  * @param label label obj
  * @param color color
  */
-void gt_label_style_set_font_color(gt_obj_st * label, gt_color_t color);
+void gt_label_set_font_color(gt_obj_st * label, gt_color_t color);
 
-void gt_label_style_set_font_size(gt_obj_st * label, uint8_t size);
-void gt_label_style_set_font_gray(gt_obj_st * label, uint8_t gray);
-void gt_label_style_set_font_family_cn(gt_obj_st * label, gt_family_t family);
-void gt_label_style_set_font_family_en(gt_obj_st * label, gt_family_t family);
+void gt_label_set_font_size(gt_obj_st * label, uint8_t size);
+void gt_label_set_font_gray(gt_obj_st * label, uint8_t gray);
+void gt_label_set_font_family_cn(gt_obj_st * label, gt_family_t family);
+void gt_label_set_font_family_en(gt_obj_st * label, gt_family_t family);
 
 
 #ifdef __cplusplus

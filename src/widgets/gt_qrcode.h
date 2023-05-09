@@ -65,8 +65,8 @@ typedef struct _gt_style_qrcode_s
  */
 gt_obj_st * gt_qrcode_create(gt_obj_st * parent);
 
-void gt_qrcode_style_set_version(gt_obj_st * qr_code , gt_family_t family);
-void gt_qrcode_style_set_str(gt_obj_st * qr_code , char* str);
+void gt_qrcode_set_version(gt_obj_st * qr_code , gt_family_t family);
+void gt_qrcode_set_str(gt_obj_st * qr_code , char* str);
 
 
 

@@ -201,7 +201,7 @@ static void _event_cb(struct _gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
-            gt_radio_style_set_selected(obj);
+            gt_radio_set_selected(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
@@ -245,7 +245,7 @@ gt_obj_st * gt_radio_create(gt_obj_st * parent)
     return obj;
 }
 
-void gt_radio_style_set_selected(gt_obj_st * radio){
+void gt_radio_set_selected(gt_obj_st * radio){
     int idx = 0;
     gt_obj_st * obj = radio;
     while( obj->parent->class->type == GT_TYPE_GROUP && idx < obj->parent->cnt_child ){
@@ -259,7 +259,7 @@ void gt_radio_style_set_selected(gt_obj_st * radio){
     gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_radio_style_set_text(gt_obj_st * radio, const char * fmt, ...)
+void gt_radio_set_text(gt_obj_st * radio, const char * fmt, ...)
 {
     va_list args;
     va_list args2;
@@ -283,35 +283,35 @@ free_lb:
     va_end(args);
 }
 
-void gt_radio_style_set_font_color(gt_obj_st * radio, gt_color_t color)
+void gt_radio_set_font_color(gt_obj_st * radio, gt_color_t color)
 {
     _gt_style_radio_st * style = radio->style;
     style->font_color = color;
     gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_radio_style_set_font_size(gt_obj_st * radio, uint8_t size)
+void gt_radio_set_font_size(gt_obj_st * radio, uint8_t size)
 {
     _gt_style_radio_st * style = radio->style;
     style->font_size = size;
 }
-void gt_radio_style_set_font_gray(gt_obj_st * radio, uint8_t gray)
+void gt_radio_set_font_gray(gt_obj_st * radio, uint8_t gray)
 {
     _gt_style_radio_st * style = radio->style;
     style->font_gray = gray;
 }
-void gt_radio_style_set_font_align(gt_obj_st * radio, uint8_t align)
+void gt_radio_set_font_align(gt_obj_st * radio, uint8_t align)
 {
     _gt_style_radio_st * style = radio->style;
     style->font_align = align;
 }
-void gt_radio_style_set_font_family_cn(gt_obj_st * radio, gt_family_t family)
+void gt_radio_set_font_family_cn(gt_obj_st * radio, gt_family_t family)
 {
     _gt_style_radio_st * style = radio->style;
     style->font_family_cn = family;
 }
 
-void gt_radio_style_set_font_family_en(gt_obj_st * radio, gt_family_t family)
+void gt_radio_set_font_family_en(gt_obj_st * radio, gt_family_t family)
 {
     _gt_style_radio_st * style = radio->style;
     style->font_family_en = family;
