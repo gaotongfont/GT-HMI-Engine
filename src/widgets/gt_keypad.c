@@ -605,10 +605,11 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
     gt_keypad_map_st * map_keypad = style->info.map;
 
     gt_font_st font = {
-        .style_cn   = style->font_family_cn,
-        .style_en   = style->font_family_en,
-        .size       = style->font_size,
-        .gray       = style->font_gray,
+        .style_cn = style->font_family_cn,
+        .style_en = style->font_family_en,
+        .size     = style->font_size,
+        .gray     = style->font_gray,
+        .res      = NULL,
     };
     font.encoding = GT_ENCODING_UTF8;
     gt_attr_rect_st rect_attr;

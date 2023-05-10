@@ -48,15 +48,14 @@ const gt_obj_class_st gt_checkbox_class = {
 
 static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     _gt_checkbox_st * style = checkbox->style;
-    uint8_t fp[64];
     gt_font_st font = {
         .style_cn = style->font_family_cn,
         .style_en = style->font_family_en,
-        .res = fp,
-        .utf8 = style->text,
-        .len = strlen(style->text),
-        .size = style->font_size,
-        .gray       = style->font_gray,
+        .res      = NULL,
+        .utf8     = style->text,
+        .len      = strlen(style->text),
+        .size     = style->font_size,
+        .gray     = style->font_gray,
     };
     font.encoding = gt_project_encoding_get();
 

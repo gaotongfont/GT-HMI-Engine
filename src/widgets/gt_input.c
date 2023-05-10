@@ -94,7 +94,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     /* draw font */
     gt_font_st font;
     font.encoding = gt_project_encoding_get();
-    gt_color_t color_font;
+    gt_color_t color_font = {0};
     if( !style->value ){
         font.style_cn = style->font_family_cn;
         font.style_en = style->font_family_en;

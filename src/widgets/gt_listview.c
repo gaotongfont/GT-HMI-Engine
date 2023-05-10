@@ -137,12 +137,10 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
     rect_attr.fg_color      = style->color_ina;
     rect_attr.bg_color      = style->color_background;
 
-
-    uint8_t fp[64];
     gt_font_st font = {
         .style_cn   = style->font_family_cn,
         .style_en   = style->font_family_en,
-        .res        = fp,
+        .res        = NULL,
         .size       = style->font_size,
         .gray       = style->font_gray,
     };

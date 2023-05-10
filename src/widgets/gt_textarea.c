@@ -54,6 +54,7 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
         .style_cn   = style->font_family_cn,
         .style_en   = style->font_family_en,
         .gray       = style->font_gray,
+        .res        = NULL,
     };
     font.encoding = gt_project_encoding_get();
     gt_attr_font_st font_attr = {

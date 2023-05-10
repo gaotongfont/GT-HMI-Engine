@@ -47,11 +47,10 @@ const gt_obj_class_st gt_radio_class = {
 static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     _gt_radio_st * style = radio->style;
 
-    uint8_t fp[64];
     gt_font_st font = {
         .style_cn   = style->font_family_cn,
         .style_en   = style->font_family_en,
-        .res        = fp,
+        .res        = NULL,
         .utf8       = style->text,
         .len        = strlen(style->text),
         .size       = style->font_size,

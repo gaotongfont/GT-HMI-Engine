@@ -52,11 +52,10 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     gt_size_t radius;               //widget attr
 
     gt_color_t fg_color;
-    uint8_t fp[64];
     gt_font_st font = {
         .style_cn   = style->font_family_cn,
         .style_en   = style->font_family_en,
-        .res        = fp,
+        .res        = NULL,
         .utf8       = style->text,
         .len        = strlen(style->text),
         .size       = style->font_size,

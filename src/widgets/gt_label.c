@@ -48,12 +48,10 @@ const gt_obj_class_st gt_label_class = {
 static inline void _gt_label_init_widget(gt_obj_st * label) {
     _gt_label_st * style = (_gt_label_st * )label->style;
 
-    uint8_t fp[64];
-    gt_memset(fp, 0, 64);
     gt_font_st font = {
         .style_cn   = style->font_family_cn,
         .style_en   = style->font_family_en,
-        .res        = fp,
+        .res        = NULL,
         .utf8       = (uint8_t *)style->text,
         .len        = strlen(style->text),
         .size       = style->font_size,

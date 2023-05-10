@@ -759,6 +759,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         .style_cn   = dsc->font->style_cn,
         .style_en   = dsc->font->style_en,
         .encoding   = dsc->font->encoding,
+        .res        = NULL,
     };
     _font.gray = dsc->font->gray == 0 ? 1 : dsc->font->gray;
 
