@@ -340,7 +340,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
                 .radius         = radius,
                 .border_width   = border_width,
                 .border_color   = gt_color_white(),
-                .is_fill        = dsc->is_fill,
+                .reg.is_fill    = dsc->reg.is_fill,
             };
 
             gt_area_st circle_area = {
@@ -352,11 +352,11 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
             uint8_t need_draw_circle = false;
             if(false == is_radius_more_than_border){    /* draw circle with border_color*/
                 blend_dsc.color_fill = dsc->border_color;
-                circle_attr.is_fill = true;
+                circle_attr.reg.is_fill = true;
                 need_draw_circle = true;
             }else{
-                if(dsc->is_fill == true){   /* draw circle with fill bg_color*/
-                    circle_attr.is_fill = true;
+                if(dsc->reg.is_fill == true){   /* draw circle with fill bg_color*/
+                    circle_attr.reg.is_fill = true;
                     need_draw_circle = true;
                 }
                 if(border_width != 0){ //need draw border ring with border_color
@@ -378,7 +378,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
                     blend_dsc.mask_area->x = coords->x;
                     blend_dsc.mask_area->y = coords->y;
                     blend_dsc.color_fill = dsc->border_color;
-                    circle_attr.is_fill = false;
+                    circle_attr.reg.is_fill = false;
                     need_draw_circle = true;
                 }
             }
@@ -404,7 +404,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
             if(false == is_radius_more_than_border){    /* draw all circle with border_color*/
                 blend_dsc.color_fill = dsc->border_color;
                 gt_draw_arch(draw_ctx,&blend_dsc,mask_left_up,(uint8_t *)color_circle_p,coords);
-            }else if(border_width == 0 && dsc->is_fill == true){     /* draw all circle with fill bg_color*/
+            }else if(border_width == 0 && dsc->reg.is_fill == true){     /* draw all circle with fill bg_color*/
                 gt_draw_arch(draw_ctx,&blend_dsc,mask_left_up,(uint8_t *)color_circle_p,coords);
             }else {
                 if(border_width != 0){ /* draw border ring with border_color */
@@ -414,7 +414,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
                     get_graph_circle_ring_buff(radius,border_width,mask_left_up,mask_temp);
                     gt_draw_arch(draw_ctx,&blend_dsc,mask_left_up,(uint8_t *)color_circle_p,coords);
 
-                    if(dsc->is_fill == true){   /* draw circle remove ring with fill bg_color*/
+                    if(dsc->reg.is_fill == true){   /* draw circle remove ring with fill bg_color*/
                         blend_dsc.mask_area->x = coords->x + border_width;
                         blend_dsc.mask_area->y = coords->y + border_width;
                         blend_dsc.mask_area->w = radius_hid;
@@ -434,7 +434,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
             }
         }
 
-        if(dsc->is_line) {  /* draw line */
+        if(dsc->reg.is_line) {  /* draw line */
             gt_draw_line(dsc->line,draw_ctx, &blend_dsc,mask_left_up,(uint8_t *)color_circle_p,coords);
         }
     }
@@ -481,7 +481,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
     }
 
     /* draw rect */
-    if (dsc->is_fill) {
+    if (dsc->reg.is_fill) {
         blend_dsc.color_fill = dsc->bg_color;
 
         if(true == is_radius_more_than_border) {

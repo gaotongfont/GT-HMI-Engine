@@ -81,7 +81,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     /* base shape */
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.is_fill       = style->fill;
+    rect_attr.reg.is_fill   = style->reg.fill;
     rect_attr.radius        = radius;
     rect_attr.bg_opa        = btn->opa;
     rect_attr.border_width  = 0;
@@ -222,7 +222,7 @@ static void _gt_btn_init_style(gt_obj_st * btn)
     style->radius           = 0;
     style->color_pressed    = gt_color_hex(0x1C82D0);    //default color_selected
     style->color_background = gt_color_hex(0x17A7BF);  //default color_unselected
-    style->fill             = 1;
+    style->reg.fill         = 1;
     style->font_color       = gt_color_white();        //default color_font
     style->font_family_cn   = GT_CFG_DEFAULT_FONT_FAMILY_CN;
     style->font_family_en   = GT_CFG_DEFAULT_FONT_FAMILY_EN;

@@ -37,22 +37,10 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 
 /**
- * @brief blend mode type
- */
-typedef enum {
-    GT_BLEND_MODE_NORMAL,     ///< Simply mix according to the opacity value
-    GT_BLEND_MODE_ADDITIVE,   ///< Add the respective color channels
-    GT_BLEND_MODE_SUBTRACTIVE,///< Subtract the foreground from the background
-    GT_BLEND_MODE_MULTIPLY,   ///< Multiply the foreground and background
-    GT_BLEND_MODE_REPLACE,    ///< Replace background with foreground in the area
-}gt_blend_mode_et;
-
-/**
  * @brief line attribute information
  */
 typedef struct _gt_attr_line_s
 {
-    gt_blend_mode_et blend_mode;    ///< mode  type
     gt_color_t fg_color;            ///< fore color
     gt_color_t bg_color;            ///< background color
     gt_size_t width;                ///< line width
@@ -64,6 +52,12 @@ typedef struct _gt_attr_line_s
     gt_size_t y_2;                  ///< end point position
 }gt_attr_line_st;
 
+typedef struct _gt_attr_rect_reg_s {
+    uint8_t is_fill : 1;    ///< fill inside area by fg_color
+    uint8_t is_line : 1;    ///< use straight line
+    uint8_t reserved : 6;   ///< reserved
+}_gt_attr_rect_reg_st;
+
 /**
  * @brief rectangle attribute information
  */
@@ -71,29 +65,32 @@ typedef struct _gt_attr_rect_s
 {
     // bg img
     void * bg_img_src;          ///< image source
-    gt_opt_t bg_img_opa;        ///< image opacity
+    gt_attr_line_st  * line;     ///< use straight line
 
-    // gt_blend_mode_et blend_mode;
-    gt_size_t radius;           ///< radius value
+    // Dot matrix data
+    uint8_t * data_gray;
+    uint8_t gray;
 
     gt_color_t fg_color;        ///< foreground color
-
     gt_color_t bg_color;        ///< background color
-    gt_opt_t bg_opa;            ///< background opacity @ref gt_color.h
 
     // border
     gt_color_t border_color;    ///< border color
     gt_size_t border_width;     ///< border width in pixels
+
+    gt_size_t radius;           ///< radius value
+
+    gt_opt_t bg_img_opa;        ///< image opacity
+    gt_opt_t bg_opa;            ///< background opacity @ref gt_color.h
     gt_opa_t border_opa;        ///< border opacity
 
-    // Dot matrix data
-    uint8_t gray;
-    uint8_t * data_gray;
-
-    uint8_t is_fill:1;          ///< fill inside area by fg_color
-    uint8_t is_line;            ///< use straight line
-    gt_attr_line_st  * line;     ///< use straight line
+    _gt_attr_rect_reg_st reg;
 }gt_attr_rect_st;
+
+typedef struct _gt_attr_circle_reg_s {
+    uint8_t is_fill : 1;    ///< fill inside area by fg_color
+    uint8_t reserved : 7;   ///< reserved
+}_gt_attr_circle_reg_st;
 
 /**
  * @brief circle attribute information
@@ -108,7 +105,7 @@ typedef struct _gt_attr_circle_s
     gt_size_t border_width;     ///< border width
     gt_color_t border_color;    ///< border color
 
-    uint8_t is_fill:1;          ///< fill inside area by fg_color
+    _gt_attr_circle_reg_st reg;
 }gt_attr_circle_st;
 
 /**
@@ -124,7 +121,6 @@ typedef struct _gt_attr_arch_s
     gt_size_t angle_end;            ///< The end angle
 
     gt_size_t border_width;         ///< border width
-    gt_blend_mode_et blend_mode;    ///<  blend mode
 }gt_attr_arch_st;
 
 /* macros ---------------------------------------------------------------*/

@@ -380,7 +380,7 @@ static inline void _gt_graph_fill_line(
     gt_size_t h,
 	bool is_hor)
 {
-	if (circle_attr->is_fill) {
+	if (circle_attr->reg.is_fill) {
 		_gt_fill_circle_inside_line(buf, circle_attr, coord, w, h);
 	}
 	if (is_hor) {
@@ -410,7 +410,7 @@ static void _gt_graph_arc_0_45(
 	gt_point_st coord, last, tmp;
 	gt_size_t w, h;
 	gt_size_t border_width = circle_attr->border_width;
-	// bool       is_fill = circle_attr->is_fill;
+	// bool       is_fill = circle_attr->reg.is_fill;
 	gt_size_t  diff_x  = 0, diff_y = 0, remark_col;
 	uint8_t    count   = 0;
 
@@ -812,7 +812,7 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 	uint16_t is_fill, border_width;
 	gt_color_t fg_color, border_color;
 
-	is_fill = rect_attr->is_fill;
+	is_fill = rect_attr->reg.is_fill;
 
 	border_width = rect_attr->border_width;
 	GT_COLOR_SET(border_color, GT_COLOR_GET(rect_attr->border_color));
@@ -876,7 +876,7 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 
 	if( 0 != rect_attr->radius ){
 		gt_attr_circle_st circle_attr = {
-			.is_fill = is_fill,
+			.reg.is_fill = is_fill,
 			.radius = rect_attr->radius,
 			.bg_color = rect_attr->bg_color,
 			.fg_color = rect_attr->fg_color,

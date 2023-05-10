@@ -58,7 +58,7 @@ static void _gt_input_cursor_anim(gt_obj_st * input)
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.is_fill = 1;
+    rect_attr.reg.is_fill = 1;
     rect_attr.bg_color = gt_color_hex(0x666666);
     // if( flag ){
     //     flag = 0;
@@ -82,7 +82,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.bg_opa = input->opa;
-    rect_attr.is_fill = 1;
+    rect_attr.reg.is_fill = 1;
     rect_attr.border_width = style->border_width;
     rect_attr.radius = (0 == style->border_width) ? 0 : 4;
     rect_attr.bg_color = style->bg_color;
@@ -132,7 +132,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     style->point_pos.x = area_res.x;
     style->point_pos.y = area_res.y;
     // gt_graph_init_rect_attr(&rect_attr);
-    // rect_attr.is_fill = 1;
+    // rect_attr.reg.is_fill = 1;
     // rect_attr.bg_color = gt_color_hex(0x666666);
     // area_res.w = 2;
     // area_res.h = style->font_size;

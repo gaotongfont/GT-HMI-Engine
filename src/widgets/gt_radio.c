@@ -79,7 +79,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     //
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.is_fill        = 0;
+    rect_attr.reg.is_fill    = 0;
     rect_attr.border_width   = 1;
     rect_attr.border_color   = gt_color_hex(0xA0A0A0);
     rect_attr.bg_opa         = radio->opa;
@@ -94,7 +94,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
         color = gt_color_hex(0x808080);
     }
 
-    rect_attr.is_fill       = 1;
+    rect_attr.reg.is_fill   = 1;
     rect_attr.border_color  = color;
     rect_attr.bg_color      = color;
     rect_attr.border_width  = 0;

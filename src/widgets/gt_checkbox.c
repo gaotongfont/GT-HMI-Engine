@@ -70,12 +70,12 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.bg_opa = checkbox->opa;
     if( checkbox->state == GT_STATE_PRESSED ){
-        rect_attr.is_fill = 1;
+        rect_attr.reg.is_fill = 1;
         rect_attr.border_width = 0;
         rect_attr.bg_color = gt_color_hex(0x409EFF);
         rect_attr.border_color = gt_color_hex(0x409EFF);
     }else{
-        rect_attr.is_fill = 1;
+        rect_attr.reg.is_fill = 1;
         rect_attr.border_width = 2;
         rect_attr.bg_color = gt_color_white();
         rect_attr.border_color = gt_color_hex(0x409EFF);

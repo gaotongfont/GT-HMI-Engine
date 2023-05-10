@@ -71,7 +71,7 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.radius = 4;
     rect_attr.border_width = 2;
-    rect_attr.is_fill = 1;
+    rect_attr.reg.is_fill = 1;
     rect_attr.bg_color = style->color_background;
     rect_attr.border_color = gt_color_hex(0x888888);
     rect_attr.bg_opa = textarea->opa;

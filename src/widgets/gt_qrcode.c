@@ -108,7 +108,7 @@ static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
     /* base shape */
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.is_fill       = 1;
+    rect_attr.reg.is_fill   = 1;
     rect_attr.radius        = 0;
     rect_attr.bg_opa        = GT_OPA_100;
     rect_attr.border_width  = 0;

@@ -130,7 +130,7 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.is_fill        = 1;
+    rect_attr.reg.is_fill    = 1;
     rect_attr.border_width   = 2;
     rect_attr.bg_opa         = listview->opa;
     rect_attr.border_color  = style->border_color;

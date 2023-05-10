@@ -62,11 +62,11 @@ static inline void _gt_line_init_widget(gt_obj_st * line) {
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.is_fill        = true;
+    rect_attr.reg.is_fill    = true;
     rect_attr.border_width   = 0;
     rect_attr.radius         = r;
-    rect_attr.is_line        = true;
-    rect_attr.fg_color        = gt_color_black();
+    rect_attr.reg.is_line    = true;
+    rect_attr.fg_color       = gt_color_black();
     rect_attr.bg_color       = style->fg_color;
     gt_area_st area_base = line->area;
 

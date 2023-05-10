@@ -23,6 +23,13 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+
+typedef struct _gt_btn_reg_s {
+    uint8_t fill: 1;
+    uint8_t agent: 1;
+    uint8_t reserved: 6;
+}_gt_btn_reg_st;
+
 typedef struct _gt_btn_s
 {
     char * text;
@@ -39,6 +46,7 @@ typedef struct _gt_btn_s
     uint8_t         font_gray;
     uint8_t     font_align;
     uint8_t     fill;
+    _gt_btn_reg_st reg;
 }_gt_btn_st;
 
 

@@ -53,7 +53,7 @@ static inline void _gt_rect_init_widget(gt_obj_st * rect) {
     }
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.is_fill        = style->fill;
+    rect_attr.reg.is_fill    = style->fill;
     rect_attr.border_width   = style->border;
     rect_attr.border_color   = style->color_border;
     rect_attr.bg_opa         = rect->opa;

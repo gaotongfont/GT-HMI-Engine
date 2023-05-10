@@ -63,7 +63,7 @@ static inline void _gt_progress_bar_init_widget(gt_obj_st * progress_bar) {
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.is_fill        = 1;
+    rect_attr.reg.is_fill    = 1;
     rect_attr.bg_color       = style->color_ina;
     rect_attr.border_color   = style->color_ina;
     rect_attr.radius         = h >> 1;
