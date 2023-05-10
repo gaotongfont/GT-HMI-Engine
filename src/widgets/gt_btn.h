@@ -26,13 +26,19 @@ extern "C" {
 
 typedef struct _gt_btn_reg_s {
     uint8_t fill: 1;
-    uint8_t agent: 1;
-    uint8_t reserved: 6;
+    uint8_t reserved: 7;
 }_gt_btn_reg_st;
+
+typedef struct _gt_btn_content_s {
+    char ** list;
+    uint8_t count;
+    uint8_t index;
+}_gt_btn_content_st;
 
 typedef struct _gt_btn_s
 {
     char * text;
+    _gt_btn_content_st * contents;
 
     gt_color_t color_background;
     gt_color_t color_pressed;
@@ -117,6 +123,10 @@ void gt_btn_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en);
  * @param radius radius size
  */
 void gt_btn_set_radius(gt_obj_st * btn, uint8_t radius);
+
+bool gt_btn_add_state_content(gt_obj_st * btn, const char * str);
+
+bool gt_btn_remove_state_content(gt_obj_st * btn, const char * str);
 
 #ifdef __cplusplus
 } /*extern "C"*/
