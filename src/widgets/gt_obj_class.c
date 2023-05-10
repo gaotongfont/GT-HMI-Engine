@@ -34,8 +34,8 @@
 
 
 /* static functions -----------------------------------------------------*/
-static uint32_t get_instance_size(const gt_obj_class_st * class) {
-    return class->size_instance;
+static uint32_t get_instance_size(void) {
+    return sizeof(gt_obj_st);
 }
 
 static uint32_t get_style_size(const gt_obj_class_st * class) {
@@ -183,7 +183,7 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
         return NULL;
     }
 
-    uint32_t is = get_instance_size(class);
+    uint32_t is = get_instance_size();
     gt_obj_st * obj = gt_mem_malloc(is);
     if (!obj) {
         return NULL;

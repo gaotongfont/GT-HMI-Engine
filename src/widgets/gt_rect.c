@@ -35,7 +35,6 @@ const gt_obj_class_st gt_rect_class = {
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
-    .size_instance = sizeof(gt_obj_st),
     .size_style    = sizeof(_gt_rect_st)
 };
 
