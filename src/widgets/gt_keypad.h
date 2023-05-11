@@ -95,7 +95,7 @@ void gt_keypad_set_target(gt_obj_st * keypad, gt_obj_st * ta);
  * @param map map
  */
 void gt_keypad_set_map(gt_obj_st * keypad,  gt_keypad_map_st * map);
-void gt_keypad_set_handler_cb(gt_obj_st * keypad, keypad_handler_cb_t cb);
+void gt_keypad_set_handler_cb(gt_obj_st * keypad, keypad_handler_cb_t callback);
 
 void gt_keypad_set_color_board(gt_obj_st * keypad, gt_color_t color);
 void gt_keypad_set_color_key(gt_obj_st * keypad, gt_color_t color);

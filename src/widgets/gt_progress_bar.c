@@ -106,7 +106,7 @@ static inline void _gt_progress_bar_init_widget(gt_obj_st * progress_bar) {
 }
 
 /**
- * @brief obj init progress_bar widget cb
+ * @brief obj init progress_bar widget call back
  *
  * @param obj
  */
@@ -117,7 +117,7 @@ static void _init_cb(gt_obj_st * obj) {
 }
 
 /**
- * @brief obj deinit cb
+ * @brief obj deinit call back
  *
  * @param obj
  */
@@ -139,7 +139,7 @@ static void _deinit_cb(gt_obj_st * obj) {
 
 
 /**
- * @brief obj event handler cb
+ * @brief obj event handler call back
  *
  * @param obj
  * @param e event

@@ -78,7 +78,7 @@ static inline void _gt_label_init_widget(gt_obj_st * label) {
 }
 
 /**
- * @brief obj init label widget cb
+ * @brief obj init label widget call back
  *
  * @param obj
  */
@@ -89,7 +89,7 @@ static void _init_cb(gt_obj_st * obj) {
 }
 
 /**
- * @brief obj deinit cb
+ * @brief obj deinit call back
  *
  * @param obj
  */
@@ -115,7 +115,7 @@ static void _deinit_cb(gt_obj_st * obj) {
 
 
 /**
- * @brief obj event handler cb
+ * @brief obj event handler call back
  *
  * @param obj
  * @param e event

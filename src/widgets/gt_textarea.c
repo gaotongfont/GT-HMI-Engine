@@ -95,7 +95,7 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
 }
 
 /**
- * @brief obj init textarea widget cb
+ * @brief obj init textarea widget call back
  *
  * @param obj
  */
@@ -106,7 +106,7 @@ static void _init_cb(gt_obj_st * obj) {
 }
 
 /**
- * @brief obj deinit cb
+ * @brief obj deinit call back
  *
  * @param obj
  */
@@ -142,7 +142,7 @@ static void _deinit_cb(gt_obj_st * obj) {
 
 
 /**
- * @brief obj event handler cb
+ * @brief obj event handler call back
  *
  * @param obj
  * @param e event

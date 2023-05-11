@@ -117,7 +117,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
 }
 
 /**
- * @brief obj init radio widget cb
+ * @brief obj init radio widget call back
  *
  * @param obj
  */
@@ -128,7 +128,7 @@ static void _init_cb(gt_obj_st * obj) {
 }
 
 /**
- * @brief obj deinit cb
+ * @brief obj deinit call back
  *
  * @param obj
  */
@@ -154,7 +154,7 @@ static void _deinit_cb(gt_obj_st * obj) {
 
 
 /**
- * @brief obj event handler cb
+ * @brief obj event handler call back
  *
  * @param obj
  * @param e event

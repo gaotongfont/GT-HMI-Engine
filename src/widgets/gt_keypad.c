@@ -700,7 +700,7 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
 }
 
 /**
- * @brief obj init keypad widget cb
+ * @brief obj init keypad widget call back
  *
  * @param obj
  */
@@ -711,7 +711,7 @@ static void _init_cb(gt_obj_st * obj) {
 }
 
 /**
- * @brief obj deinit cb
+ * @brief obj deinit call back
  *
  * @param obj
  */
@@ -754,7 +754,7 @@ static void _deinit_cb(gt_obj_st * obj) {
 
 
 /**
- * @brief obj event handler cb
+ * @brief obj event handler call back
  *
  * @param obj
  * @param e event
@@ -939,10 +939,10 @@ void gt_keypad_set_map(gt_obj_st * keypad,  gt_keypad_map_st * map)
     _gt_keypad_update_map(keypad, style->info.map);
 }
 
-void gt_keypad_set_handler_cb(gt_obj_st * keypad, keypad_handler_cb_t cb)
+void gt_keypad_set_handler_cb(gt_obj_st * keypad, keypad_handler_cb_t callback)
 {
     _gt_keypad_st * style = keypad->style;
-    style->info.handler_cb = cb;
+    style->info.handler_cb = callback;
 }
 
 
