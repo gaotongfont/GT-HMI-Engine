@@ -134,7 +134,7 @@ static void _gt_obj_foreach_event_cb(gt_obj_st * parent){
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY bool _is_print_no_screen_flag = 0;
 
 static void _gt_timer_event_cb(struct _gt_timer_s * timer){
-    // GT_LOGV(GT_LOG_TAG_GUI, "timer event cb start");
+    // GT_LOGV(GT_LOG_TAG_GUI, "timer event call back start");
 
     /* step1: get top layer screen */
     gt_obj_st * scr = gt_disp_get_scr();
@@ -150,23 +150,23 @@ static void _gt_timer_event_cb(struct _gt_timer_s * timer){
     /* step2: foreach obj event_mask and process */
     _gt_obj_foreach_event_cb(scr);
 
-    // GT_LOGV(GT_LOG_TAG_GUI, "timer event cb end, %p", scr);
+    // GT_LOGV(GT_LOG_TAG_GUI, "timer event call back end, %p", scr);
 }
 
 /* global functions / API interface -------------------------------------*/
 void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data){
-    GT_LOGV(GT_LOG_TAG_GUI, "start add event cb:%d", obj->cnt_event);
+    GT_LOGV(GT_LOG_TAG_GUI, "start event count:%d", obj->cnt_event);
     if ( NULL == obj->event_attr ) {
         obj->event_attr =  gt_mem_malloc(sizeof(gt_obj_event_attr_st));
         obj->cnt_event = 0;
     } else {
         obj->event_attr = gt_mem_realloc( obj->event_attr, (obj->cnt_event + 1) * sizeof(gt_obj_event_attr_st) );
     }
-    obj->event_attr[obj->cnt_event].cb = event;
+    obj->event_attr[obj->cnt_event].event_cb = event;
     obj->event_attr[obj->cnt_event].filter = filter;
     obj->event_attr[obj->cnt_event].user_data = user_data;
     ++obj->cnt_event;
-    GT_LOGV(GT_LOG_TAG_GUI, "end add event cb:%d", obj->cnt_event);
+    GT_LOGV(GT_LOG_TAG_GUI, "end event count:%d", obj->cnt_event);
 }
 
 gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * parms){
@@ -198,7 +198,7 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
             e.target    = parent;
             e.code      = event;
             e.user_data = event_attr->user_data;
-            event_attr->cb(&e);
+            event_attr->event_cb(&e);
         }
     }
 	return GT_RES_OK;

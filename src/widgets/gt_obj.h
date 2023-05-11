@@ -33,7 +33,7 @@ typedef struct _gt_point_s
 }gt_point_st;
 
 typedef struct _gt_obj_event_attr_s{
-    gt_event_cb_t cb;
+    gt_event_cb_t event_cb;
     void * user_data;
     gt_event_type_et filter;
 }gt_obj_event_attr_st;
