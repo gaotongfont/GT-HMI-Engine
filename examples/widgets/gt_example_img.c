@@ -39,14 +39,14 @@ static gt_obj_st * image2 = NULL;
 /* static functions -----------------------------------------------------*/
 
 static void _image_one_cb(gt_event_st * e) {
-    printf("image one cb\n");
+    printf("image one call back\n");
     static int _cnt_1 = 0;
     gt_img_set_src(image, (_cnt_1++ % 2) ? "./2.png" : "./50x50.png");
     gt_disp_load_scr(_screen);
 }
 
 static void _image_two_cb(gt_event_st * e) {
-    printf("image two cb\n");
+    printf("image two call back\n");
     static int _cnt_2 = 0;
     gt_img_set_src(image2, (_cnt_2++ % 2) ? "./50x50.png" : "./2.png");
     gt_disp_load_scr(_screen);
