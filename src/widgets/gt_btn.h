@@ -124,9 +124,43 @@ void gt_btn_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en);
  */
 void gt_btn_set_radius(gt_obj_st * btn, uint8_t radius);
 
+/**
+ * @brief Button add switching status text content
+ *
+ * @param btn button obj
+ * @param str
+ * @return true Add successfully
+ * @return false Add failed
+ */
 bool gt_btn_add_state_content(gt_obj_st * btn, const char * str);
 
+/**
+ * @brief Button remove switching status text content
+ *
+ * @param btn
+ * @param str
+ * @return true remove successfully
+ * @return false remove failed
+ */
 bool gt_btn_remove_state_content(gt_obj_st * btn, const char * str);
+
+/**
+ * @brief Button clear switching status text content
+ *
+ * @param obj
+ * @return true Clear all successfully
+ * @return false Clear all failed
+ */
+bool gt_btn_clear_all_state_content(gt_obj_st * btn);
+
+/**
+ * @brief Get current content index
+ *
+ * @param obj
+ * @return int16_t current content index: -1: no content
+ */
+int16_t gt_btn_get_state_content_index(gt_obj_st * obj);
+
 
 #ifdef __cplusplus
 } /*extern "C"*/

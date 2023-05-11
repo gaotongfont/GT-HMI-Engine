@@ -109,7 +109,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
 }
 
 /**
- * @brief obj init btn widget cb
+ * @brief obj init btn widget call back
  *
  * @param obj
  */
@@ -134,7 +134,7 @@ static void _free_contents(_gt_btn_content_st * ptr) {
 }
 
 /**
- * @brief obj deinit cb
+ * @brief obj deinit call back
  *
  * @param obj
  */
@@ -186,7 +186,7 @@ static inline bool _turn_next_content(gt_obj_st * obj)
 
 
 /**
- * @brief obj event handler cb
+ * @brief obj event handler call back
  *
  * @param obj
  * @param e event
@@ -482,6 +482,42 @@ free_lb:
     *ptr = NULL;
 
     return true;
+}
+
+bool gt_btn_clear_all_state_content(gt_obj_st * obj)
+{
+    if (NULL == obj) {
+        return false;
+    }
+
+    _gt_btn_st ** style_p = (_gt_btn_st ** )&obj->style;
+    if (NULL == *style_p) {
+        return false;
+    }
+
+    if (NULL == (*style_p)->contents) {
+        return false;
+    }
+
+    _free_contents((*style_p)->contents);
+    (*style_p)->contents = NULL;
+    return true;
+}
+
+int16_t gt_btn_get_state_content_index(gt_obj_st * obj)
+{
+    if (!obj) {
+        return -1;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )obj->style;
+    if (!style) {
+        return -1;
+    }
+    _gt_btn_content_st ** ptr = &style->contents;
+    if (NULL == *ptr) {
+        return -1;
+    }
+    return (*ptr)->index;
 }
 
 
