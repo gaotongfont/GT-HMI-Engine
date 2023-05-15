@@ -126,7 +126,8 @@ enum {
     GT_OPA_98     = 249,
     GT_OPA_99     = 252,
     GT_OPA_100    = 255,
-    GT_OPA_COVER  = 255,
+    GT_OPA_HALF   = GT_OPA_50,
+    GT_OPA_COVER  = GT_OPA_100,
 };
 
 #define GT_OPA_MIN 2    /*Opacities below this will be transparent*/

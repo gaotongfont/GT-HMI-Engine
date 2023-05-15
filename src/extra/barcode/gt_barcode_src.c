@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_barcode_src.h"
+#include "../../core/gt_mem.h"
 #include "string.h"
 #include "stdio.h"
 
