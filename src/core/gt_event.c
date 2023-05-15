@@ -10,6 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "../gt_conf.h"
 #include "gt_event.h"
+#include "./gt_style.h"
 #include "../widgets/gt_obj.h"
 #include "../others/gt_log.h"
 #include "gt_mem.h"
@@ -83,14 +84,14 @@ static gt_res_t _gt_event_handler_event_mask(gt_obj_st * obj)
 
     uint32_t mask_shift = obj->event_mask;
     uint16_t idx = 0;
-    uint16_t count = _GT_EVENT_TYPE_TOTAL;
+    uint16_t count = _GT_EVENT_TYPE_TOTAL_COUNT;
     uint16_t event_code;
     gt_event_st e;
 
     e.target = obj;
     e.user_data = obj->user_data;
 
-    if (GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX < _GT_EVENT_TYPE_TOTAL) {
+    if (GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX < _GT_EVENT_TYPE_TOTAL_COUNT) {
         count = GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX;
     }
 
@@ -153,6 +154,10 @@ static void _gt_timer_event_cb(struct _gt_timer_s * timer){
     // GT_LOGV(GT_LOG_TAG_GUI, "timer event call back end, %p", scr);
 }
 
+static inline bool _is_input_event(gt_event_type_et event) {
+    return (event < _GT_EVENT_TYPE_INPUT_BEGIN || event > _GT_EVENT_TYPE_INPUT_END) ? false : true;
+}
+
 /* global functions / API interface -------------------------------------*/
 void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data){
     GT_LOGV(GT_LOG_TAG_GUI, "start event count:%d", obj->cnt_event);
@@ -179,6 +184,10 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
         GT_LOGV(GT_LOG_TAG_GUI, "parent is exist the event code:%d", event);
         return GT_RES_FAIL;
     }
+    if (gt_obj_is_disabled(parent) && _is_input_event(event)) {
+        return GT_RES_INV;
+    }
+
     parent->event_mask |= GT_EVENT_GET_MASK_SHIFT_BIT(event);
     if (gt_event_is_locked()) {
         return GT_RES_OK;

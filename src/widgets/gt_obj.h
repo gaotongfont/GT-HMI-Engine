@@ -26,13 +26,12 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 
-typedef struct _gt_point_s
-{
+typedef struct _gt_point_s {
     gt_size_t x;
     gt_size_t y;
 }gt_point_st;
 
-typedef struct _gt_obj_event_attr_s{
+typedef struct _gt_obj_event_attr_s {
     gt_event_cb_t user_cb;
     void * user_data;
     gt_event_type_et filter;
@@ -41,17 +40,21 @@ typedef struct _gt_obj_event_attr_s{
 /**
  * @brief save all indev/disp/others dev data
  */
-typedef struct _gt_obj_process_attr_s{
+typedef struct _gt_obj_process_attr_s {
     gt_point_st point;      //click point(note: the point is for obj)
     gt_size_t x_scroll;     //scroll x distance
     gt_size_t y_scroll;     //scroll y distance
 }gt_obj_process_attr_st;
 
-typedef enum{
-    GT_VISIBLE,
-    GT_INVISIBLE,
+typedef enum {
+    GT_VISIBLE = 0,
+    GT_INVISIBLE = 1,
 }gt_visible_et;
 
+typedef enum {
+    GT_ENABLED = 0,
+    GT_DISABLED = 1,
+}gt_disabled_et;
 
 struct _gt_draw_ctx_t;
 typedef struct gt_obj_s {

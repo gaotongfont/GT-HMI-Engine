@@ -108,6 +108,18 @@ void gt_obj_set_visible(gt_obj_st * obj, gt_visible_et is_visible)
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+void gt_obj_set_disabled(gt_obj_st * obj, gt_disabled_et is_disabled)
+{
+    obj->disabled = is_disabled ? 1 : 0;
+    obj->opa = obj->disabled ? GT_OPA_60 : GT_OPA_COVER;
+    _gt_disp_refr_append_area(&obj->area);
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+bool gt_obj_is_disabled(gt_obj_st * obj)
+{
+    return obj->disabled;
+}
 
 void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new)
 {

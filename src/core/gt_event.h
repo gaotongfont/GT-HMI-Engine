@@ -32,28 +32,56 @@ typedef enum gt_event_type_e{
     GT_EVENT_TYPE_NONE = -1,
 
     /* Input device events */
-    GT_EVENT_TYPE_INPUT_CLICKING    = 0,        ///< clicking
-    GT_EVENT_TYPE_INPUT_PROCESS,                ///< release,click need handler
-    GT_EVENT_TYPE_INPUT_PROCESSED,              ///< click handler finish
+    _GT_EVENT_TYPE_INPUT_BEGIN = 0,
+    /* =================== input event defined here Begin =================== */
+    GT_EVENT_TYPE_INPUT_CLICKING = _GT_EVENT_TYPE_INPUT_BEGIN,        ///< clicking
+    GT_EVENT_TYPE_INPUT_PROCESS,                                      ///< release,click need handler
+    GT_EVENT_TYPE_INPUT_PROCESSED,                                    ///< click handler finish
     GT_EVENT_TYPE_INPUT_SCROLL,
-    GT_EVENT_TYPE_INPUT_PROCESS_LOST,           ///< move off and lost handler
+    GT_EVENT_TYPE_INPUT_PROCESS_LOST,                                 ///< move off and lost handler
+
+    /** ... */
+
+    /* =================== input event defined here End =================== */
+    _GT_EVENT_TYPE_INPUT_END,
+    _GT_EVENT_TYPE_UPDATE_BEGIN = _GT_EVENT_TYPE_INPUT_END,
+    /* =================== update event defined here Begin =================== */
 
     /* update value */
-    GT_EVENT_TYPE_UPDATE_VALUE,                 ///< value update, need to redraw
+    GT_EVENT_TYPE_UPDATE_VALUE = _GT_EVENT_TYPE_UPDATE_BEGIN,         ///< value update, need to redraw
     GT_EVENT_TYPE_UPDATE_STYLE,
 
+    /** ... */
+
+    /* =================== update event defined here End =================== */
+    _GT_EVENT_TYPE_UPDATE_END,
+    _GT_EVENT_TYPE_DRAW_BEGIN = _GT_EVENT_TYPE_UPDATE_END,
+    /* =================== draw event defined here Begin =================== */
+
     /* Drawing events */
-    GT_EVENT_TYPE_DRAW_START,                   ///< need to start draw widget
-    GT_EVENT_TYPE_DRAW_END,                     ///< draw widget ok
+    GT_EVENT_TYPE_DRAW_START = _GT_EVENT_TYPE_DRAW_BEGIN,             ///< need to start draw widget
+    GT_EVENT_TYPE_DRAW_END,                                           ///< draw widget ok
     GT_EVENT_TYPE_DRAW_REDRAW,
 
-    /* Other events */
-    GT_EVENT_TYPE_CHANGE_CHILD_REMOVE,          ///< remove child but not delete child
-    GT_EVENT_TYPE_CHANGE_CHILD_REMOVED,         ///< remove child finish
-    GT_EVENT_TYPE_CHANGE_CHILD_DELETE,          ///< delete child
-    GT_EVENT_TYPE_CHANGE_CHILD_DELETED,         ///< delete child finish
+    /** ... */
 
-    _GT_EVENT_TYPE_TOTAL,                       ///< count event number
+    /* =================== draw event defined here End =================== */
+    _GT_EVENT_TYPE_DRAW_END,
+    _GT_EVENT_TYPE_CHANGE_BEGIN = _GT_EVENT_TYPE_DRAW_END,
+    /* =================== change event defined here Begin =================== */
+
+    /* CHANGE events */
+    GT_EVENT_TYPE_CHANGE_CHILD_REMOVE = _GT_EVENT_TYPE_CHANGE_BEGIN,  ///< remove child but not delete child
+    GT_EVENT_TYPE_CHANGE_CHILD_REMOVED,                               ///< remove child finish
+    GT_EVENT_TYPE_CHANGE_CHILD_DELETE,                                ///< delete child
+    GT_EVENT_TYPE_CHANGE_CHILD_DELETED,                               ///< delete child finish
+
+    /** ... */
+
+    /* =================== change event defined here End =================== */
+    _GT_EVENT_TYPE_CHANGE_END,
+
+    _GT_EVENT_TYPE_TOTAL_COUNT = _GT_EVENT_TYPE_CHANGE_END,           ///< count event number
 
     GT_EVENT_TYPE_ALL = 0xFFFFFFF,
 }gt_event_type_et;
