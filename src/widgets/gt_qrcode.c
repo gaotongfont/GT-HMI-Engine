@@ -11,6 +11,7 @@
 #include "gt_qrcode.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
+#include "../core/gt_draw.h"
 #include "string.h"
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
