@@ -26,7 +26,7 @@ extern "C" {
 /**
  * @brief 次版本号
  */
-#define GT_HMI_ENGINE_MINOR_VERSION 1
+#define GT_HMI_ENGINE_MINOR_VERSION 2
 /**
  * @brief 修订号
  */
