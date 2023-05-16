@@ -5,6 +5,9 @@
 extern "C" {
 #endif
 
+#include "stdint.h"
+#include "stdbool.h"
+#include "stddef.h"
 /* 外部函数声明 */
 extern unsigned long r_dat_bat(unsigned long address, unsigned long DataLen, unsigned char* pBuff);
 /*------------------------------------------------------------------  数据地址  -----------------------------------------------------------------*/
@@ -345,7 +348,27 @@ unsigned char GT_Get_Font_Type(unsigned int style);
 unsigned char GT_Get_Chinese_Charset_Type(void);
 void GT_Set_Chinese_Charset_Type(unsigned char charset);
 
-unsigned int GT_Font_Convertor(unsigned int *unicode , unsigned int u_len , unsigned int font_option , unsigned char * dat);
+typedef struct font_convertor_s
+{
+    uint16_t *fontcode ;
+    uint16_t fontsize ;
+    uint16_t font_option ;
+
+    uint8_t fontgray;
+    uint8_t * data ;
+
+    bool is_rev ; // false is normal, true is reverse
+    bool is_vec ;
+
+    uint32_t code_len ;
+    uint32_t data_len ; // Minimum three-character data storage length
+
+    int (*read_dot_font)(unsigned long , unsigned int , unsigned char*);
+    int (*read_vec_font)(unsigned char* , unsigned int ,unsigned long ,unsigned int , unsigned char);
+}font_convertor_st;
+
+int GT_Font_Code_Transform(font_convertor_st *convert);
+int GT_Get_Font_Convertor_Data(font_convertor_st *convert , uint32_t pos);
 
 #ifdef __cplusplus
 } /*extern "C"*/

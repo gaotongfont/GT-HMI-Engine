@@ -164,17 +164,42 @@ unsigned char GT_Get_Font_Type(unsigned int style)
     return 0;
 }
 
-unsigned int GT_Font_Convertor(unsigned int* unicode, unsigned int u_len, unsigned int font_option, unsigned char* dat)
+int GT_Font_Code_Transform(font_convertor_st* convert)
 {
     unsigned int len = 0;
 
-    switch (font_option)
+    if (NULL == convert)
     {
+        return len;
+    }
+
+    len = convert->code_len;
+    switch (convert->font_option)
+    {
+
         default: 
             break;
     }
 
     return len;
 }
+int GT_Get_Font_Convertor_Data(font_convertor_st* convert, uint32_t pos)
+{
+    unsigned int len = 0;
 
+    if (NULL == convert)
+    {
+        return len;
+    }
+
+    len = convert->code_len;
+    switch (convert->font_option)
+    {
+
+        default: 
+            break;
+    }
+
+    return len;
+}
 /*------------------------------------------------------------------ end of file -----------------------------------------------------------------*/
