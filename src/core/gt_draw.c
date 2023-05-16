@@ -556,14 +556,10 @@ static void _gt_gray_and_dot_width_get(uint8_t* gray , uint8_t* dot_width , gt_f
         if(1 != font_gray){
             byte_width = ((((font.size * font_gray + 15) >> 4) << 4) / font_gray + 7) >> 3;
         }
-        else if(24 == font.size){
-            byte_width = font.size >> 3;
-        }
         else
         {
             byte_width = (((font.size + 15) >> 4) << 4) >> 3;
         }
-
     }
     *gray = font_gray ;
     *dot_width = byte_width;
@@ -574,7 +570,8 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
                                     uint32_t index  , const gt_attr_font_st * dsc, const gt_area_st * coords , gt_size_t start_x)
 {
     uint32_t len = 0 , idx = 0 , i , font_dot_w = 0;
-    uint32_t unicode , *text = NULL , text_len = 0;
+    uint32_t unicode , text_len = 0;
+    uint16_t *text = NULL;
     gt_font_style_en_cn_et font_luag = 0;
     gt_font_st _font = {
         .size = fonts.size,
@@ -584,6 +581,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
         .encoding = fonts.encoding,
         .res = NULL,
     };
+
     i = (NULL == dsc->font->utf8) ? 0 : strlen(dsc->font->utf8);
     if(i < index)
     {
@@ -598,7 +596,10 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
     while(idx < _font.len)
     {
         i = gt_font_one_char_code_len_get(&_font.utf8[idx], &unicode, _font.encoding);
-        if(font_luag != _gt_is_style_cn_or_en(unicode, _font.encoding)){
+        if(unicode == 0x20 && (font_luag == STYLE_EN_ARABIC)){
+
+        }
+        else if(font_luag != _gt_is_style_cn_or_en(unicode, _font.encoding)){
             break;
         }
         idx += i;
@@ -616,7 +617,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
     while(i < text_len)
     {
         idx += gt_font_one_char_code_len_get(&_font.utf8[idx], &unicode, _font.encoding);
-        text[i] = unicode;
+        text[i] = (uint16_t)unicode;
         ++i;
     }
 
@@ -624,13 +625,14 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
     uint8_t width , byte_width, font_gray, x_offset;
     uint32_t one_font_size = 0;
     uint8_t* font_buf = NULL;
-
+    uint32_t font_buf_len = 0;
     if(ret_style == GT_FONT_TYPE_FLAG_VEC){
-        font_dot_w = (((_font.size + 15) >> 4) << 4) * _font.gray;
+        font_dot_w = (((_font.size * _font.gray + 15) >> 4) << 4) ;
     }
     else{
         font_dot_w = (((_font.size + 7) >> 3) << 3);
     }
+    // GT_LOGD(GT_LOG_TAG_GUI , "font_dot_w = %d , fontsize = %d , fontgray = %d" , font_dot_w , _font.size  , _font.gray );
     //
     if(STYLE_EN_HIDIN == font_luag){
         one_font_size = 48;
@@ -643,32 +645,59 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
         }
     }
     //
-    uint32_t font_buf_len = one_font_size * (text_len+1);
+    if(STYLE_EN_HIDIN == font_luag){
+        font_buf_len = one_font_size * (text_len+1);
+    }
+    else{
+        font_buf_len = one_font_size * 3;
+    }
+    // GT_LOGD(GT_LOG_TAG_GUI , "one_font_size = %d , font_buf_len = %d text_len = %d" , one_font_size , font_buf_len ,text_len);
+
     font_buf = (uint8_t*)gt_mem_malloc(font_buf_len);
     if(NULL == font_buf){
         GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed , size: %d" , font_buf_len);
         goto _ret_handle;
     }
     gt_memset_0(font_buf , font_buf_len);
-    text_len = gt_font_data_convertor(text , text_len , font_buf , font_luag , _font);
+
+    font_convertor_st convertor = {
+        .fontcode = text ,
+        .code_len = text_len ,
+        .fontsize = _font.size ,
+        .fontgray = _font.gray ,
+        .font_option = _font.style_en ,
+        .data = font_buf ,
+        .data_len = font_buf_len ,
+        .is_rev = 0x80 == (dsc->align & 0x80) ? 0 : 1 ,
+        .is_vec = ret_style == GT_FONT_TYPE_FLAG_VEC ? 1 : 0 ,
+    };
+
+    text_len = gt_font_code_transform(&convertor);
 
     idx = 0;
+    i = 1;
+
     _font.res = &font_buf[font_buf_len - one_font_size];
+
     while(idx < text_len)
     {
-        if(STYLE_EN_THAI == font_luag && 32 == _font.size){
-            one_font_size = 66;
-            width = font_buf[idx * one_font_size + 1];
+        if(STYLE_EN_HIDIN == font_luag){
+            width = gt_font_get_word_width_figure_up(&convertor.data[idx * one_font_size] , 16 , 24 , 1);
+            i = 1;
         }
-        else{
-            width = gt_font_get_one_word_width(text[idx] , &_font);
-        }
-        if(0x80 == (dsc->align & 0x80)){
-            if((GT_FONT_TYPE_FLAG_DOT_MATRIX == ret_style) && \
-                ((STYLE_EN_HIDIN == font_luag) || (STYLE_EN_THAI == font_luag && 48 == _font.size)))
-            {
-                width = gt_font_get_word_width_figure_up(&font_buf[idx * one_font_size] , _font.size , width);
+        else
+        {
+            if(0x20 == convertor.fontcode[idx]){
+                gt_memset_0(&convertor.data[0] , one_font_size);
+                width = convertor.fontsize >> 1;
             }
+            else{
+                i = gt_font_convertor_data_get(&convertor , idx);
+                width = gt_font_get_word_width_figure_up(&convertor.data[0] , font_dot_w , convertor.fontsize , convertor.fontgray);
+            }
+        }
+        // // 
+        if(0x80 == (dsc->align & 0x80)){
             blend_dsc->dst_area->x -= width + dsc->space_x;
             if( blend_dsc->dst_area->x < coords->x ){
                 blend_dsc->dst_area->x = start_x - width;
@@ -683,31 +712,29 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
             goto _lab_nex_word;
         }
 
-        if(STYLE_EN_THAI == font_luag && 32 == _font.size){
+        if(STYLE_EN_HIDIN == font_luag){
+            byte_width = 2 ;
+            font_gray = 1;
             gt_memset_0(blend_dsc->mask_buf, _font.size * _font.size);
-            _push_mask_buf(blend_dsc->mask_buf, &font_buf[idx * one_font_size+2], 32, 1, 2);
+            _push_mask_buf(blend_dsc->mask_buf, &convertor.data[idx * one_font_size], _font.size, font_gray, byte_width);
         }
         else{
-            byte_width = (width + 7) >> 3 ;
+            byte_width = (gt_font_get_one_word_width(convertor.fontcode[idx] , &_font) + 7 ) >> 3;
             font_gray = 1;
             _gt_gray_and_dot_width_get(&font_gray , &byte_width , _font , ret_style);
-
             gt_memset_0(blend_dsc->mask_buf, _font.size * _font.size);
-            _push_mask_buf(blend_dsc->mask_buf, &font_buf[idx * one_font_size], _font.size, font_gray, byte_width);
-            //
+            _push_mask_buf(blend_dsc->mask_buf, &convertor.data[0], _font.size, font_gray, byte_width);
         }
+        // GT_LOGD( GT_LOG_TAG_GUI , "[%d]width = %d byte_width = %d , font_gray = %d , _font.size = %d" , idx , width , byte_width , font_gray , _font.size );
+        
         gt_draw_blend(draw_ctx, blend_dsc);
 
 _lab_nex_word:
         if(0x80 != (dsc->align & 0x80)){
-            if((GT_FONT_TYPE_FLAG_DOT_MATRIX == ret_style) && \
-                ((STYLE_EN_HIDIN == font_luag) || (STYLE_EN_THAI == font_luag && 48 == _font.size)))
-            {
-                width = gt_font_get_word_width_figure_up(&font_buf[idx * one_font_size], _font.size, width);
-            }
             blend_dsc->dst_area->x += width + dsc->space_x;
         }
-        idx++;
+
+        idx += i;
 
         if(0x80 != (dsc->align & 0x80)){
             /* check whether the boundary is reached */
@@ -721,7 +748,6 @@ _lab_next_line:
                 }
             }
         }
-
     }
 
 _ret_handle:

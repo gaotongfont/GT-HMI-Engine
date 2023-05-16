@@ -522,13 +522,33 @@ uint8_t gt_font_type_get(unsigned int style)
 #endif
 }
 
-unsigned int gt_font_data_convertor(unsigned int* unicode , unsigned int u_len , unsigned char* data , gt_font_style_en_cn_et font_luag , gt_font_st font)
+int gt_font_code_transform(font_convertor_st *convert)
 {
-    unsigned int len = 0;
+unsigned int len = 0;
 #if GT_CFG_ENABLE_ZK_FONT == 1
-    // len = GT_Font_Convertor(unicode , u_len , font.style_en , data);
+    struct gt_font_func_s* font_func;
+    font_func = GT_Get_Font_Func_S(convert->font_option);
+
+    if(GT_Check_Is_Vec(convert->font_option)){
+        convert->read_vec_font = font_func->func.read_vec_font;
+    }
+    else
+    {
+        convert->read_dot_font = font_func->func.read_dot_font;
+    }
+
+    len = GT_Font_Code_Transform(convert);
 #endif
     return len;
+}
+
+int gt_font_convertor_data_get(font_convertor_st *convert , uint32_t pos)
+{
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    return GT_Get_Font_Convertor_Data(convert , pos);
+#else
+    return 0;
+#endif
 }
 
 
@@ -589,31 +609,51 @@ uint8_t gt_font_get_next_word_width(gt_font_st * font, uint8_t is_head){
     return gt_font_get_one_word_width(unicode, font);
 }
 
-
-uint16_t gt_font_get_word_width_figure_up(uint8_t *p, uint16_t height, uint16_t width)
+/**
+ * @brief 得到灰度文字的宽度 
+ * 
+ * @param data 文字数据
+ * @param dot_w 文字宽度 * 灰度 ： 例如：48x48大小的文字 dot_w = 48*gray
+ * @param dot_h 文字高度 	例如：48x48大小的文字 dot_h = 48
+ * @param gray 取值: 1 / 2 / 4
+ * @return int 实际文字宽度
+ */
+uint16_t gt_font_get_word_width_figure_up(const uint8_t* data , uint16_t dot_w , uint16_t dot_h , uint8_t gray)
 {
-	uint16_t i, j, ret_width=0, k;
-    uint16_t byte_width = 0;
-    uint8_t tem = 0;
-    byte_width = width >> 3;
-
-	for (i = 0; i < height; i++) {
-		for (j = 0; j < byte_width; j++) {
-			tem = p[i * byte_width + j];
-			for (k = 0; k < 8; k++) {
-				if ( ( (tem << k) & 0x80 ) != 0x80 ) {
-                    continue;
-				}
-                if(ret_width > ((j << 3) + k)) {
-                    continue;
-                }
-                ret_width = (j << 3) + k;
-			}
-		}
+	uint16_t byte_w , i ;
+	int j  ,len ;
+	uint8_t tmp = 0;
+    if(gray != 1 && gray != 2 && gray != 4){
+		return dot_w / gray;
 	}
 
-    return ret_width ? ret_width + 1 : ret_width;
+    byte_w = (dot_w + 7) >> 3;
+
+	for(j = byte_w-1;j >= 0 ; j--)
+	{
+		tmp = 0;
+		for(i = 0 ; i < dot_h ; i++)
+		{
+			tmp |= data[i*byte_w + j];
+		}
+		if(0 != tmp)
+		{
+			for(i = 0 ; i < 8 ;i++){
+				if((tmp >> i)&0x01){
+					break;
+				}
+			}
+			
+            len = (j * (8 >> (gray>>1))) + ((8-i)>>(gray>>1));
+
+			return len ;
+		}
+	}
 }
+
+
+
+
 
 void gt_dot_to_mask_buf(uint8_t * dot, uint8_t * mask_buf, uint16_t w, uint16_t h){
 
