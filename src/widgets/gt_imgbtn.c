@@ -56,6 +56,11 @@ static void _gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src){
     }
 }
 
+static char * _gt_imgbtn_get_src(gt_obj_st * obj) {
+    _gt_imgbtn_st * style = obj->style;
+    return style->src;
+}
+
 static inline void _gt_imgbtn_init_widget(gt_obj_st * imgbtn)
 {
     _gt_imgbtn_st * style = imgbtn->style;
@@ -123,6 +128,16 @@ static void _deinit_cb(gt_obj_st * obj) {
     *style_p = NULL;
 }
 
+static void _invalid_area(gt_obj_st * obj) {
+    char * src = _gt_imgbtn_get_src(obj);
+    uint16_t w = 0, h = 0;
+    gt_fs_read_img_wh(src, &w, &h);
+    obj->area.w = GT_MAX(obj->area.w, w);
+    obj->area.h = GT_MAX(obj->area.h, h);
+    if (gt_obj_check_scr(obj)) {
+        _gt_disp_refr_append_area(&obj->area);
+    }
+}
 
 /**
  * @brief obj event handler call back
@@ -136,27 +151,25 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGD(GT_LOG_TAG_GUI, "imagebtn start draw");
-            if( gt_obj_check_scr(obj) ){
-                _gt_disp_refr_append_area(&obj->area);
-            }
+            GT_LOGV(GT_LOG_TAG_GUI, "imagebtn start draw");
+            _invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGD(GT_LOG_TAG_GUI, "imagebtn end draw");
+            GT_LOGV(GT_LOG_TAG_GUI, "imagebtn end draw");
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGD(GT_LOG_TAG_GUI, "imagebtn child remove");
+            GT_LOGV(GT_LOG_TAG_GUI, "imagebtn child remove");
 			break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGD(GT_LOG_TAG_GUI, "imagebtn child delete");
+            GT_LOGV(GT_LOG_TAG_GUI, "imagebtn child delete");
             break;
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
-            GT_LOGD(GT_LOG_TAG_GUI, "imagebtn clicking");
+            GT_LOGV(GT_LOG_TAG_GUI, "imagebtn clicking");
             _gt_imgbtn_set_src(obj, style->src_press);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
@@ -165,19 +178,15 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGD(GT_LOG_TAG_GUI, "imagebtn scroll");
+            GT_LOGV(GT_LOG_TAG_GUI, "imagebtn scroll");
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
-            GT_LOGD(GT_LOG_TAG_GUI, "imagebtn process");
-
-            /* code here */
-            // _gt_imgbtn_set_src(obj, style->src_release);
-            // gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
+            GT_LOGV(GT_LOG_TAG_GUI, "imagebtn process");
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
-            GT_LOGD(GT_LOG_TAG_GUI, "imagebtn processed");
+            GT_LOGV(GT_LOG_TAG_GUI, "imagebtn processed");
             _gt_imgbtn_set_src(obj, style->src_base);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
