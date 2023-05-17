@@ -40,15 +40,6 @@ extern "C" {
 
 #define _GET_BIT_SHIFT_SIZE(_val)       (1 << (_val))
 
-/**
- * @brief The max type count of the player
- */
-#define _GT_PLAYER_TYPE_MAX_LIMIT_SIZE  _GET_BIT_SHIFT_SIZE(_GT_PLAYER_BIT_TYPE_LENGTH)
-/**
- * @brief The max mode count of the player
- */
-#define _GT_PLAYER_MODE_MAX_LIMIT_SIZE  _GET_BIT_SHIFT_SIZE(_GT_PLAYER_BIT_MODE_LENGTH)
-
 /* typedef --------------------------------------------------------------*/
 /**
  * @brief The object played by the player
