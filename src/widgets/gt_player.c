@@ -451,7 +451,7 @@ void gt_player_set_type(gt_obj_st * obj, _gt_player_type_et type)
     if (type >= GT_PLAYER_TYPE_MAX_COUNT || type < 0) {
         return ;
     }
-    if (_GET_BIT_SHIFT_SIZE((uint16_t)type) > GT_PLAYER_TYPE_MAX_COUNT) {
+    if (type > _GET_BIT_SHIFT_SIZE(_GT_PLAYER_BIT_TYPE_LENGTH)) {
         type = GT_PLAYER_TYPE_NONE;
     }
     ((_gt_player_st * )(obj->style))->reg.type = type;
@@ -462,7 +462,7 @@ void gt_player_set_mode(gt_obj_st * obj, _gt_player_mode_et mode)
     if (mode >= GT_PLAYER_MODE_MAX_COUNT || mode < 0) {
         return ;
     }
-    if (_GET_BIT_SHIFT_SIZE((uint16_t)mode) > GT_PLAYER_MODE_MAX_COUNT) {
+    if (mode > _GET_BIT_SHIFT_SIZE(_GT_PLAYER_BIT_MODE_LENGTH)) {
         mode = GT_PLAYER_MODE_NONE;
     }
     ((_gt_player_st * )(obj->style))->reg.mode = mode;
