@@ -610,8 +610,8 @@ uint8_t gt_font_get_next_word_width(gt_font_st * font, uint8_t is_head){
 }
 
 /**
- * @brief 得到灰度文字的宽度 
- * 
+ * @brief 得到灰度文字的宽度
+ *
  * @param data 文字数据
  * @param dot_w 文字宽度 * 灰度 ： 例如：48x48大小的文字 dot_w = 48*gray
  * @param dot_h 文字高度 	例如：48x48大小的文字 dot_h = 48
@@ -643,7 +643,7 @@ uint16_t gt_font_get_word_width_figure_up(const uint8_t* data , uint16_t dot_w ,
 					break;
 				}
 			}
-			
+
             len = (j * (8 >> (gray>>1))) + ((8-i)>>(gray>>1));
 
 			return len ;
