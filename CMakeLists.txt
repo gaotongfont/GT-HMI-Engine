@@ -2,6 +2,9 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(gt_gui)
 
+file(GLOB_RECURSE SRC_LIST "driver" "gt_gui_driver.c")
+add_library(gt_gui_driver ${SRC_LIST})
+
 file(GLOB_RECURSE SRC_LIST "src" "*.c") #递归搜索
 add_library(gt_gui ${SRC_LIST})
 
