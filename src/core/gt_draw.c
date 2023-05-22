@@ -696,7 +696,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
                 width = gt_font_get_word_width_figure_up(&convertor.data[0] , font_dot_w , convertor.fontsize , convertor.fontgray);
             }
         }
-        // // 
+
         if(0x80 == (dsc->align & 0x80)){
             blend_dsc->dst_area->x -= width + dsc->space_x;
             if( blend_dsc->dst_area->x < coords->x ){
@@ -726,7 +726,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
             _push_mask_buf(blend_dsc->mask_buf, &convertor.data[0], _font.size, font_gray, byte_width);
         }
         // GT_LOGD( GT_LOG_TAG_GUI , "[%d]width = %d byte_width = %d , font_gray = %d , _font.size = %d" , idx , width , byte_width , font_gray , _font.size );
-        
+
         gt_draw_blend(draw_ctx, blend_dsc);
 
 _lab_nex_word:
@@ -826,7 +826,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     if(NULL == mask_buf){
         goto _ret_handler;
     }
-    mask_line = gt_mem_malloc( _font.size*2 );
+    mask_line = gt_mem_malloc( _font.size << 1 );
     if(NULL == mask_line){
         goto _ret_handler;
     }
