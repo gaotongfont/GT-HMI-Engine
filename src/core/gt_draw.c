@@ -572,7 +572,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
     uint32_t len = 0 , idx = 0 , i , font_dot_w = 0;
     uint32_t unicode , text_len = 0;
     uint16_t *text = NULL;
-    gt_font_style_en_cn_et font_luag = 0;
+    gt_font_style_en_cn_et language = 0;
     gt_font_st _font = {
         .size = fonts.size,
         .gray = fonts.gray,
@@ -591,15 +591,15 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
     _font.len = strlen(_font.utf8);
     //
     idx = gt_font_one_char_code_len_get(&_font.utf8[idx], &unicode, _font.encoding);
-    font_luag = _gt_is_style_cn_or_en(unicode, _font.encoding);
+    language = _gt_is_style_cn_or_en(unicode, _font.encoding);
     text_len = 1;
     while(idx < _font.len)
     {
         i = gt_font_one_char_code_len_get(&_font.utf8[idx], &unicode, _font.encoding);
-        if(unicode == 0x20 && (font_luag == STYLE_EN_ARABIC)){
+        if(unicode == 0x20 && (language == STYLE_EN_ARABIC)){
 
         }
-        else if(font_luag != _gt_is_style_cn_or_en(unicode, _font.encoding)){
+        else if(language != _gt_is_style_cn_or_en(unicode, _font.encoding)){
             break;
         }
         idx += i;
@@ -607,9 +607,9 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
     }
     len = idx;
     //
-    text = (uint32_t*)gt_mem_malloc(text_len * sizeof(uint32_t));
+    text = (uint16_t*)gt_mem_malloc(text_len * sizeof(uint16_t));
     if(NULL == text){
-        GT_LOGE(GT_LOG_TAG_GUI, "text malloc failed , size: %ld", text_len * sizeof(uint32_t));
+        GT_LOGE(GT_LOG_TAG_GUI, "text malloc failed , size: %ld", text_len * sizeof(uint16_t));
         goto _ret_handle;
     }
     idx = 0;
@@ -634,7 +634,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
     }
     // GT_LOGD(GT_LOG_TAG_GUI , "font_dot_w = %d , fontsize = %d , fontgray = %d" , font_dot_w , _font.size  , _font.gray );
     //
-    if(STYLE_EN_HINDI == font_luag){
+    if(STYLE_EN_HINDI == language){
         one_font_size = 48;
     }
     else{
@@ -645,7 +645,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
         }
     }
     //
-    if(STYLE_EN_HINDI == font_luag){
+    if(STYLE_EN_HINDI == language){
         font_buf_len = one_font_size * (text_len+1);
     }
     else{
@@ -681,7 +681,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
 
     while(idx < text_len)
     {
-        if(STYLE_EN_HINDI == font_luag){
+        if(STYLE_EN_HINDI == language){
             width = gt_font_get_word_width_figure_up(&convertor.data[idx * one_font_size] , 16 , 24 , 1);
             i = 1;
         }
@@ -712,7 +712,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
             goto _lab_nex_word;
         }
 
-        if(STYLE_EN_HINDI == font_luag){
+        if(STYLE_EN_HINDI == language){
             byte_width = 2 ;
             font_gray = 1;
             gt_memset_0(blend_dsc->mask_buf, _font.size * _font.size);
