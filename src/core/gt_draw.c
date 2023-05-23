@@ -40,6 +40,9 @@
 
 /* macros ---------------------------------------------------------------*/
 
+static inline bool _is_align_reverse(uint8_t align) {
+    return (align & GT_ALIGN_REVERSE) ? true : false;
+}
 
 
 /* static functions -----------------------------------------------------*/
@@ -668,7 +671,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
         .font_option = _font.style_en ,
         .data = font_buf ,
         .data_len = font_buf_len ,
-        .is_rev = 0x80 == (dsc->align & 0x80) ? 0 : 1 ,
+        .is_rev = _is_align_reverse(dsc->align),
         .is_vec = ret_style == GT_FONT_TYPE_FLAG_VEC ? 1 : 0 ,
     };
 
@@ -697,7 +700,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
             }
         }
 
-        if(0x80 == (dsc->align & 0x80)){
+        if(_is_align_reverse(dsc->align)) {
             blend_dsc->dst_area->x -= width + dsc->space_x;
             if( blend_dsc->dst_area->x < coords->x ){
                 blend_dsc->dst_area->x = start_x - width;
@@ -730,13 +733,13 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
         gt_draw_blend(draw_ctx, blend_dsc);
 
 _lab_nex_word:
-        if(0x80 != (dsc->align & 0x80)){
+        if(!_is_align_reverse(dsc->align)) {
             blend_dsc->dst_area->x += width + dsc->space_x;
         }
 
         idx += i;
 
-        if(0x80 != (dsc->align & 0x80)){
+        if(!_is_align_reverse(dsc->align)) {
             /* check whether the boundary is reached */
             if( (blend_dsc->dst_area->x + blend_dsc->dst_area->w + dsc->space_x) > (coords->x + coords->w) ){
 _lab_next_line:
@@ -840,7 +843,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     uint16_t width_font = gt_font_get_string_width(&_font);
 
     /*text align*/
-    switch( dsc->align & 0x7F){
+    switch( dsc->align & 0x7F ) {
         case GT_ALIGN_NONE:
             break;
         case GT_ALIGN_LEFT:
@@ -865,7 +868,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             break;
     }
 
-    if(0x80 == (dsc->align & 0x80)){
+    if(_is_align_reverse(dsc->align)) {
         area_font.x = (coords->x + coords->w) - (area_font.x - coords->x);// - area_font.w;
     }
 
@@ -915,7 +918,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
 
         width = gt_font_get_one_word_width(unicode, &_font);
 
-        if(0x80 == (dsc->align & 0x80)){
+        if(_is_align_reverse(dsc->align)) {
             area_font.x -= width + dsc->space_x;
             if( area_font.x < coords->x ){
                 area_font.x = start_x - width;
@@ -975,13 +978,13 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         }
 
         _lab_nex_word:
-        if(0x80 != (dsc->align & 0x80)){
+        if(!_is_align_reverse(dsc->align)) {
             area_font.x += width + dsc->space_x;
         }
         idx += _font.len;
 
         /* check whether the boundary is reached */
-        if(0x80 != (dsc->align & 0x80)){
+        if(!_is_align_reverse(dsc->align)) {
             if( (area_font.x + area_font.w + dsc->space_x) > (coords->x + coords->w) ){
             _lab_next_line:
                 // area_font.x = coords->x;
