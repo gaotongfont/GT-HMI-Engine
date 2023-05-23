@@ -288,7 +288,7 @@ uint8_t gt_encoding_table_one_char(uint8_t *src ,uint8_t* dst , gt_encoding_conv
 }
 
 
-uint8_t gt_utf8_check_char(char * utf8)
+uint8_t gt_utf8_check_char(uint8_t * utf8)
 {
     uint32_t len = strlen(utf8);
 

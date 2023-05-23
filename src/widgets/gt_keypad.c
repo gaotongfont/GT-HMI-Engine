@@ -172,14 +172,14 @@ static uint8_t* _gt_spell_get_text( uint8_t index , uint8_t mode)
 {
     if(index == 0)
     {
-        if((_gt_spell_ascii_numb>0) && (GT_KEYPAD_MODE_SPELL == mode))
+        if((_gt_spell_ascii_numb > 0) && (GT_KEYPAD_MODE_SPELL == mode))
         {
             return _gt_spell_ascii;
         }
         return "";
     }
 
-    if(_gt_spell_chinese_numb)
+    if((_gt_spell_chinese_numb > 0 ) && (GT_KEYPAD_MODE_SPELL == mode))
     {
         return _gt_spell_chinese[index-1];
     }
@@ -495,13 +495,14 @@ static void _gt_keypad_spell_event_cb(gt_obj_st * keypad)
                 {
                     return ;
                 }
-                gt_pinyin_select_text(_gt_spell_info , tmp_index , NULL);
+                uint8_t tmp_text[2];
+                gt_pinyin_select_text(_gt_spell_info , tmp_index , tmp_text);
                 _gt_spell_ascii_numb = _gt_spell_info->content->ascii_numb;
 
                 goto  SPELL_CODE_CONV;
 #endif
             }
-            GT_LOGD(GT_LOG_TAG_GUI , "ascii_numb = %d , chinese_numb = %d" , _gt_spell_ascii_numb, _gt_spell_chinese_numb );
+
 #if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
             // 拼音输入法
             if(_gt_spell_ascii_numb >= _GT_SPELL_ASCII_MAX_NUMB - 1)
@@ -532,7 +533,7 @@ SPELL_CODE_CONV:
                 len = gt_unicode_to_utf8(_gt_spell_chinese[i] , unicode);
                 _gt_spell_chinese[i][len]='\0';
 
-            }
+            }        
             gt_event_send(keypad, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
 #endif
         }
@@ -601,6 +602,7 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
 {
     _gt_keypad_st * style = keypad->style;
     int idx = 0;
+    uint8_t* tmp_str = NULL;
 
     gt_keypad_map_st * map_keypad = style->info.map;
 
@@ -675,7 +677,9 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
 
         font.utf8 = (char * )map_keypad[idx].kv;
         font.len = strlen(map_keypad[idx].kv);
-        uint8_t* tmp_str = _gt_keypad_get_spell_text(map_keypad[idx].kv , style->info.mode);
+
+        tmp_str = _gt_keypad_get_spell_text(map_keypad[idx].kv , style->info.mode);
+        
         if(tmp_str)
         {
             font.utf8 = tmp_str;
@@ -839,6 +843,10 @@ static void _gt_keypad_init_style(gt_obj_st * keypad)
     style->color_ctrl   = gt_color_hex(0x3E3E3E);
     style->font_gray    = 1;
     style->font_align = GT_ALIGN_CENTER;
+
+    _gt_spell_ascii_numb = 0;
+    _gt_spell_chinese_numb = 0;
+    gt_memset_0(_gt_spell_ascii , _GT_SPELL_ASCII_MAX_NUMB);
 
 #if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
     // 初始化拼音输入法

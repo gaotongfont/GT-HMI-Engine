@@ -164,7 +164,7 @@ uint8_t _gt_utf8_to_unicode(uint8_t * utf8,uint32_t *res);
  */
 uint8_t gt_unicode_to_utf8(uint8_t* utf8 , uint32_t unicode);
 
-uint8_t gt_utf8_check_char(char * utf8);
+uint8_t gt_utf8_check_char(uint8_t * utf8);
 
 /**
  * @brief Get the character data of a string
