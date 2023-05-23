@@ -132,12 +132,12 @@ typedef enum _gt_font_style_en_cn_e {
     STYLE_CN = 0,
     STYLE_EN_ASCII ,
     STYLE_EN_LATIN ,
-    STYLE_EN_GREKK ,
+    STYLE_EN_GREEK ,
     STYLE_EN_CYRILLIC,
     STYLE_EN_HEBREW ,
     STYLE_EN_ARABIC ,
     STYLE_EN_THAI ,
-    STYLE_EN_HIDIN ,
+    STYLE_EN_HINDI ,
     STYLE_EN_Currency ,
 }gt_font_style_en_cn_et;
 /* macros ---------------------------------------------------------------*/

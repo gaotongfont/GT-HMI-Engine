@@ -375,7 +375,7 @@ gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding
     // greek and coptic
     else if(unicode >= 0x0370 && unicode <= 0x03FF)
     {
-        return STYLE_EN_GREKK;
+        return STYLE_EN_GREEK;
     }
     // cyrillic
     else if(unicode >= 0x0400 && unicode <= 0x04FF)
@@ -403,7 +403,7 @@ gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding
     // hindi
     else if(unicode >=0x0900 && unicode<=0x097F)
     {
-        return STYLE_EN_HIDIN;
+        return STYLE_EN_HINDI;
     }
     // Currency Symbols
     else if(0x20AC == unicode ) // || 0xFFE5 == unicode)
@@ -423,7 +423,7 @@ bool gt_style_en_data_is_convertor(uint32_t unicode , uint8_t encoding)
         // case STYLE_EN_HEBREW:
         case STYLE_EN_ARABIC:
         case STYLE_EN_THAI:
-        case STYLE_EN_HIDIN:
+        case STYLE_EN_HINDI:
             return true;
         default:
             break;
