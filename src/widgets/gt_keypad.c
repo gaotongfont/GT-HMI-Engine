@@ -533,7 +533,7 @@ SPELL_CODE_CONV:
                 len = gt_unicode_to_utf8(_gt_spell_chinese[i] , unicode);
                 _gt_spell_chinese[i][len]='\0';
 
-            }        
+            }
             gt_event_send(keypad, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
 #endif
         }
@@ -679,7 +679,7 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
         font.len = strlen(map_keypad[idx].kv);
 
         tmp_str = _gt_keypad_get_spell_text(map_keypad[idx].kv , style->info.mode);
-        
+
         if(tmp_str)
         {
             font.utf8 = tmp_str;
