@@ -314,11 +314,6 @@ void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...)
     }
     style->text = gt_mem_malloc(size);
     vsnprintf(style->text, size, fmt, args2);
-
-    /** set first item */
-    if (!style->contents) {
-        gt_btn_add_state_content(btn, style->text);
-    }
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 
 free_lb:
@@ -388,7 +383,11 @@ bool gt_btn_add_state_content(gt_obj_st * btn, const char * str)
     }
 
     _contents_init(style);
-    return _gt_vector_add_item(&style->contents, (void *)str, strlen(str) + 1);
+    /** set first item */
+    if (_gt_vector_get_count(style->contents) <= 0) {
+        _gt_vector_add_item(&style->contents, (void *)style->text, strlen(style->text));
+    }
+    return _gt_vector_add_item(&style->contents, (void *)str, strlen(str));
 }
 
 bool gt_btn_remove_state_content(gt_obj_st * btn, const char * str)
