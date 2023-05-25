@@ -60,7 +60,6 @@ bool _gt_vector_add_free_item_cb(_gt_vector_st ** vector_p, _gt_vector_free_item
 bool _gt_vector_add_equal_item_cb(_gt_vector_st ** vector_p, _gt_vector_equal_item_cb_t equal_item_cb)
 {
     if (NULL == vector_p) {
-        printf("vector_p is null\n");
         return false;
     }
     if (NULL == equal_item_cb) {
