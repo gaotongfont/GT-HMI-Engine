@@ -18,6 +18,8 @@ extern "C" {
 #include "gt_obj_class.h"
 #include "stdarg.h"
 #include "stdlib.h"
+#include "../utils/gt_vector.h"
+
 /* define ---------------------------------------------------------------*/
 
 
@@ -29,16 +31,10 @@ typedef struct _gt_btn_reg_s {
     uint8_t reserved: 7;
 }_gt_btn_reg_st;
 
-typedef struct _gt_btn_content_s {
-    char ** list;
-    uint8_t count;
-    uint8_t index;
-}_gt_btn_content_st;
-
 typedef struct _gt_btn_s
 {
     char * text;
-    _gt_btn_content_st * contents;
+    _gt_vector_st * contents;
 
     gt_color_t color_background;
     gt_color_t color_pressed;

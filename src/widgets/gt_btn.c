@@ -119,18 +119,8 @@ static void _init_cb(gt_obj_st * obj) {
     _gt_btn_init_widget(obj);
 }
 
-static void _free_contents(_gt_btn_content_st * ptr) {
-    gt_size_t i = ptr->count - 1;
-    for (; i >= 0; i--) {
-        if (!ptr->list[i]) {
-            continue;
-        }
-        gt_mem_free(ptr->list[i]);
-        ptr->list[i] = NULL;
-    }
-    gt_mem_free(ptr->list);
-    ptr->list = NULL;
-    gt_mem_free(ptr);
+static void _free_contents(_gt_vector_st ** ptr) {
+    _gt_vector_free(ptr);
 }
 
 /**
@@ -151,7 +141,7 @@ static void _deinit_cb(gt_obj_st * obj) {
     }
 
     if (NULL != (*style_p)->contents) {
-        _free_contents((*style_p)->contents);
+        _free_contents(&(*style_p)->contents);
         (*style_p)->contents = NULL;
     }
 
@@ -171,16 +161,7 @@ static inline bool _turn_next_content(gt_obj_st * obj)
         return false;
     }
 
-    _gt_btn_content_st * ptr = style->contents;
-    if (NULL == ptr->list) {
-        return false;
-    }
-
-    if (++ptr->index >= ptr->count) {
-        ptr->index = 0;
-    }
-
-    gt_btn_set_text(obj, ptr->list[ptr->index]);
+    gt_btn_set_text(obj, _gt_vector_turn_next(style->contents));
     return true;
 }
 
@@ -271,6 +252,21 @@ static void _gt_btn_init_style(gt_obj_st * btn)
     style->font_align = GT_ALIGN_CENTER;
 }
 
+static bool _contents_free_cb(void * item) {
+    gt_mem_free(item);
+}
+
+static bool _contents_equal_cb(void * item, void * target) {
+    return strcmp(item, target) ? false : true;
+}
+
+static void _contents_init(_gt_btn_st * style) {
+    if (style->contents) {
+        return;
+    }
+    _gt_vector_add_free_item_cb(&style->contents, _contents_free_cb);
+    _gt_vector_add_equal_item_cb(&style->contents, _contents_equal_cb);
+}
 
 /* global functions / API interface -------------------------------------*/
 
@@ -385,52 +381,9 @@ bool gt_btn_add_state_content(gt_obj_st * btn, const char * str)
     if (!str || !strlen(str)) {
         return false;
     }
-    _gt_btn_content_st ** ptr = &style->contents;
-    uint16_t len = 0;
-    if (NULL == *ptr) {
-        *ptr = gt_mem_malloc(sizeof(_gt_btn_content_st));
-        if (NULL == *ptr) {
-            return false;
-        }
-        gt_memset(*ptr, 0, sizeof(_gt_btn_content_st));
-        (*ptr)->list = gt_mem_malloc(sizeof(char *) << 1);
-        if (NULL == (*ptr)->list) {
-            goto ptr_lb;
-        }
-        // save current text
-        len = strlen(style->text) + 1;
-        (*ptr)->list[(*ptr)->count] = gt_mem_malloc(len);
-        if (NULL == (*ptr)->list[(*ptr)->count]) {
-            goto list_lb;
-        }
-        gt_memcpy((*ptr)->list[(*ptr)->count++], style->text, len);
-    } else {
-        (*ptr)->list = gt_mem_realloc((*ptr)->list, sizeof(char *) * ((*ptr)->count + 1));
-        if (NULL == (*ptr)->list) {
-            goto ptr_lb;
-        }
-    }
 
-    // new string text
-    len = strlen(str) + 1;
-    (*ptr)->list[(*ptr)->count] = gt_mem_malloc(len);
-    if (NULL == (*ptr)->list[(*ptr)->count]) {
-        goto roll_back_lb;
-    }
-    gt_memcpy((*ptr)->list[(*ptr)->count++], str, len);
-
-    return true;
-
-roll_back_lb:
-    gt_mem_realloc((*ptr)->list, sizeof(char *) * (*ptr)->count);
-list_lb:
-    gt_mem_free((*ptr)->list);
-    (*ptr)->list = NULL;
-ptr_lb:
-    gt_mem_free(*ptr);
-    *ptr = NULL;
-
-    return false;
+    _contents_init(style);
+    return _gt_vector_add_item(&style->contents, (void *)str, strlen(str) + 1);
 }
 
 bool gt_btn_remove_state_content(gt_obj_st * btn, const char * str)
@@ -445,63 +398,13 @@ bool gt_btn_remove_state_content(gt_obj_st * btn, const char * str)
     if (!str || !strlen(str)) {
         return false;
     }
-    _gt_btn_content_st ** ptr = &style->contents;
-    if (NULL == *ptr) {
-        return false;
-    }
-    if (0 == (*ptr)->count) {
-        return false;
-    }
-    uint16_t i = 0;
-    for (; i < (*ptr)->count; i++) {
-        if (0 == strcmp((*ptr)->list[i], str)) {
-            break;
-        }
-    }
-    if (i == (*ptr)->count) {
-        return false;
-    }
-    gt_mem_free((*ptr)->list[i]);
-    (*ptr)->list[i] = NULL;
-    if (i != (*ptr)->count - 1) {
-        gt_memmove(&(*ptr)->list[i], &(*ptr)->list[i + 1], sizeof(char *) * ((*ptr)->count - i - 1));
-    }
-    (*ptr)->list = gt_mem_realloc((*ptr)->list, sizeof(char *) * ((*ptr)->count - 1));
-    --(*ptr)->count;
-    if (NULL == (*ptr)->list || 0 == (*ptr)->count) {
-        goto free_lb;
-    }
-    if ((*ptr)->index >= (*ptr)->count) {
-        --(*ptr)->index;
-    }
-
-    return true;
-
-free_lb:
-    gt_mem_free(*ptr);
-    *ptr = NULL;
-
-    return true;
+    return _gt_vector_remove_item(&style->contents, (void * )str);
 }
 
 bool gt_btn_clear_all_state_content(gt_obj_st * obj)
 {
-    if (NULL == obj) {
-        return false;
-    }
-
-    _gt_btn_st ** style_p = (_gt_btn_st ** )&obj->style;
-    if (NULL == *style_p) {
-        return false;
-    }
-
-    if (NULL == (*style_p)->contents) {
-        return false;
-    }
-
-    _free_contents((*style_p)->contents);
-    (*style_p)->contents = NULL;
-    return true;
+    _gt_btn_st * style = (_gt_btn_st * )obj->style;
+    return _gt_vector_clear_all_items(style->contents);
 }
 
 int16_t gt_btn_get_state_content_index(gt_obj_st * obj)
@@ -510,14 +413,7 @@ int16_t gt_btn_get_state_content_index(gt_obj_st * obj)
         return -1;
     }
     _gt_btn_st * style = (_gt_btn_st * )obj->style;
-    if (!style) {
-        return -1;
-    }
-    _gt_btn_content_st ** ptr = &style->contents;
-    if (NULL == *ptr) {
-        return -1;
-    }
-    return (*ptr)->index;
+    return _gt_vector_get_index(style->contents);
 }
 
 
