@@ -314,6 +314,11 @@ void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...)
     }
     style->text = gt_mem_malloc(size);
     vsnprintf(style->text, size, fmt, args2);
+
+    /** set first item */
+    if (!style->contents) {
+        gt_btn_add_state_content(btn, style->text);
+    }
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 
 free_lb:
