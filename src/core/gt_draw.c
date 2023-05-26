@@ -630,12 +630,11 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
     uint8_t* font_buf = NULL;
     uint32_t font_buf_len = 0;
     if(ret_style == GT_FONT_TYPE_FLAG_VEC){
-        font_dot_w = (((_font.size * _font.gray + 15) >> 4) << 4) ;
+        font_dot_w = (((_font.size * _font.gray + 15) >> 4) << 4);
     }
     else{
         font_dot_w = (((_font.size + 7) >> 3) << 3);
     }
-    // GT_LOGD(GT_LOG_TAG_GUI , "font_dot_w = %d , fontsize = %d , fontgray = %d" , font_dot_w , _font.size  , _font.gray );
     //
     if(STYLE_EN_HINDI == language){
         one_font_size = 48;
@@ -654,6 +653,10 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
     else{
         font_buf_len = one_font_size * 3;
     }
+    if(_font.gray != 1){
+        font_dot_w = ((font_dot_w / _font.gray) + 7 ) >> 3 << 3;
+    }
+    // GT_LOGD(GT_LOG_TAG_GUI , "font_dot_w = %d , fontsize = %d , fontgray = %d" , font_dot_w , _font.size  , _font.gray );
     // GT_LOGD(GT_LOG_TAG_GUI , "one_font_size = %d , font_buf_len = %d text_len = %d" , one_font_size , font_buf_len ,text_len);
 
     font_buf = (uint8_t*)gt_mem_malloc(font_buf_len);
@@ -671,7 +674,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
         .font_option = _font.style_en ,
         .data = font_buf ,
         .data_len = font_buf_len ,
-        .is_rev = _is_align_reverse(dsc->align),
+        .is_rev = _is_align_reverse(dsc->align) ? 0 : 1,
         .is_vec = ret_style == GT_FONT_TYPE_FLAG_VEC ? 1 : 0 ,
     };
 
@@ -679,9 +682,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
 
     idx = 0;
     i = 1;
-
     _font.res = &font_buf[font_buf_len - one_font_size];
-
     while(idx < text_len)
     {
         if(STYLE_EN_HINDI == language){
@@ -690,12 +691,14 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
         }
         else
         {
+            gt_memset_0(&convertor.data[0] , font_buf_len);
+
             if(0x20 == convertor.fontcode[idx]){
-                gt_memset_0(&convertor.data[0] , one_font_size);
                 width = convertor.fontsize >> 1;
             }
             else{
                 i = gt_font_convertor_data_get(&convertor , idx);
+                
                 width = gt_font_get_word_width_figure_up(&convertor.data[0] , font_dot_w , convertor.fontsize , convertor.fontgray);
             }
         }

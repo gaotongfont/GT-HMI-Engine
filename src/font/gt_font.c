@@ -613,7 +613,7 @@ uint8_t gt_font_get_next_word_width(gt_font_st * font, uint8_t is_head){
  * @brief 得到灰度文字的宽度
  *
  * @param data 文字数据
- * @param dot_w 文字宽度 * 灰度 ： 例如：48x48大小的文字 dot_w = 48*gray
+ * @param dot_w 文字宽度    例如：48x48大小的文字 dot_w = 48
  * @param dot_h 文字高度 	例如：48x48大小的文字 dot_h = 48
  * @param gray 取值: 1 / 2 / 4
  * @return int 实际文字宽度
@@ -623,12 +623,13 @@ uint16_t gt_font_get_word_width_figure_up(const uint8_t* data , uint16_t dot_w ,
 	uint16_t byte_w , i ;
 	int j  ,len ;
 	uint8_t tmp = 0;
-    if(gray != 1 && gray != 2 && gray != 4){
-		return dot_w / gray;
+
+	if(gray != 1 && gray != 2 && gray != 4){
+		return dot_w;
 	}
 
-    byte_w = (dot_w + 7) >> 3;
-
+    byte_w = ((dot_w + 7) >> 3) * gray;
+	
 	for(j = byte_w-1;j >= 0 ; j--)
 	{
 		tmp = 0;
@@ -644,11 +645,15 @@ uint16_t gt_font_get_word_width_figure_up(const uint8_t* data , uint16_t dot_w ,
 				}
 			}
 
-            len = (j * (8 >> (gray>>1))) + ((8-i)>>(gray>>1));
+			len = (j * (8 >> (gray>>1))) + ((8-i)>>(gray>>1));
 
+			// GT_LOGD( GT_LOG_TAG_GUI, "[%d] byte_w = %d , tmp = 0x%02X , len = %d i = %d\r\n", j , byte_w , tmp , len, i);
+            
 			return len ;
 		}
 	}
+
+	return dot_w;
 }
 
 

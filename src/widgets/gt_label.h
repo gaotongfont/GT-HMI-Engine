@@ -79,6 +79,7 @@ void gt_label_set_font_color(gt_obj_st * label, gt_color_t color);
 
 void gt_label_set_font_size(gt_obj_st * label, uint8_t size);
 void gt_label_set_font_gray(gt_obj_st * label, uint8_t gray);
+void gt_label_set_font_align(gt_obj_st * label, uint8_t align);
 void gt_label_set_font_family_cn(gt_obj_st * label, gt_family_t family);
 void gt_label_set_font_family_en(gt_obj_st * label, gt_family_t family);
 
