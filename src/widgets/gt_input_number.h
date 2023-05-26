@@ -46,7 +46,13 @@ gt_obj_st * gt_input_number_create(gt_obj_st * parent);
  */
 void gt_input_number_set_value(gt_obj_st * obj, double value);
 
-
+/**
+ * @brief The value is preceded by a 0 to the number of characters displayed
+ *  example: value is "100.50", fill zero front is "4", then display "0100.50".
+ *
+ * @param obj
+ * @param enabled true: enabled; false: disabled
+ */
 void gt_input_number_set_fill_zero_front(gt_obj_st * obj, bool enabled);
 
 /**
@@ -73,18 +79,23 @@ void gt_input_number_set_min(gt_obj_st * obj, double min);
  *          click down button, value is "100.40".
  *
  * @param obj
- * @param step
+ * @param step number of change per modification
  */
 void gt_input_number_set_step(gt_obj_st * obj, double step);
 
 /**
- * @brief
+ * @brief Increment the value of step to the current value
  *
  * @param obj
  */
-void gt_input_number_increase(gt_obj_st * obj);
+double gt_input_number_increase(gt_obj_st * obj);
 
-void gt_input_number_decrease(gt_obj_st * obj);
+/**
+ * @brief The current value reduces the value of step
+ *
+ * @param obj
+ */
+double gt_input_number_decrease(gt_obj_st * obj);
 
 /**
  * @brief Sets the number of characters displayed in an integer data segment

@@ -162,20 +162,21 @@ void gt_input_number_set_step(gt_obj_st * obj, double step)
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
-void gt_input_number_increase(gt_obj_st * obj)
+double gt_input_number_increase(gt_obj_st * obj)
 {
     _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
     style->value += style->step;
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    return style->value;
 }
 
-void gt_input_number_decrease(gt_obj_st * obj)
+double gt_input_number_decrease(gt_obj_st * obj)
 {
     _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
     style->value -= style->step;
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    return style->value;
 }
-
 
 void gt_input_number_set_display_integer_length(gt_obj_st * obj, uint8_t length)
 {
