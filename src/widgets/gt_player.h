@@ -25,20 +25,6 @@ extern "C" {
  */
 #define _GT_PLAYER_USE_CUSTOM_POS       0
 
-/**
- * @brief The register bit length of the player
- * uint16_t reg;
- */
-#define _GT_PLAYER_BIT_TYPE_LENGTH      3
-#define _GT_PLAYER_BIT_MODE_LENGTH      3
-#define _GT_PLAYER_BIT_STATUS_LENGTH    2
-#define _GT_PLAYER_BIT_AUTO_LENGTH      1
-#define _GT_PLAYER_BIT_LOCK_LENGTH      1
-#define _GT_PLAYER_BIT_DIR_LENGTH       1
-#define _GT_PLAYER_BIT_RESERVED_LENGTH  5
-
-
-#define _GET_BIT_SHIFT_SIZE(_val)       (1 << (_val))
 
 /* typedef --------------------------------------------------------------*/
 /**
@@ -49,7 +35,7 @@ typedef enum _gt_player_type_e {
     GT_PLAYER_TYPE_IMG,          ///< image object
 
     GT_PLAYER_TYPE_MAX_COUNT,
-}_gt_player_type_et;
+}gt_player_type_et;
 
 /**
  * @brief work mode of the player
@@ -61,44 +47,7 @@ typedef enum _gt_player_mode_e {
     GT_PLAYER_MODE_PLAYBACK,    ///< playback mode
 
     GT_PLAYER_MODE_MAX_COUNT,
-}_gt_player_mode_et;
-
-typedef struct _gt_player_item_s {
-    void * src;
-    uint16_t test;
-#if _GT_PLAYER_USE_CUSTOM_POS
-    gt_area_st area;
-#endif
-}_gt_player_item_st;
-
-/**
- * @brief process object
- */
-typedef struct _gt_player_obj_s {
-    gt_size_t index;                ///< the current index of item list
-    uint16_t count;                 ///< the count of items
-    _gt_player_item_st ** list;      ///< the list of items
-}_gt_player_obj_st;
-
-/**
- * @brief control's register
- */
-typedef struct _gt_player_reg_s {
-    uint16_t type: _GT_PLAYER_BIT_TYPE_LENGTH;          ///< @ref _gt_player_type_et
-    uint16_t mode: _GT_PLAYER_BIT_MODE_LENGTH;          ///< @ref _gt_player_mode_et
-    uint16_t status: _GT_PLAYER_BIT_STATUS_LENGTH;      ///< status of the player; play, pause, stop
-    uint16_t auto_play: _GT_PLAYER_BIT_AUTO_LENGTH;     ///< 0: manual, 1: auto
-    uint16_t lock: _GT_PLAYER_BIT_LOCK_LENGTH;          ///< lock the player callback handler, 0: unlock, 1: lock
-    uint16_t dir: _GT_PLAYER_BIT_DIR_LENGTH;            ///< direction of the player, 0: forward, 1: backward
-    uint16_t reserved: _GT_PLAYER_BIT_RESERVED_LENGTH;  ///< reserved bit length
-}_gt_player_reg_st;
-
-typedef struct _gt_player_s {
-    _gt_player_reg_st reg;
-    _gt_player_obj_st target;
-    _gt_timer_st * timer;
-}_gt_player_st;
-
+}gt_player_mode_et;
 
 /* macros ---------------------------------------------------------------*/
 
@@ -115,17 +64,17 @@ gt_obj_st * gt_player_create(gt_obj_st * parent);
  * @brief Set the player's type, Must be called before the player run
  *
  * @param obj
- * @param type @ref _gt_player_type_et
+ * @param type @ref gt_player_type_et
  */
-void gt_player_set_type(gt_obj_st * obj, _gt_player_type_et type);
+void gt_player_set_type(gt_obj_st * obj, gt_player_type_et type);
 
 /**
  * @brief Set the player's mode
  *
  * @param obj
- * @param mode @ref _gt_player_mode_et
+ * @param mode @ref gt_player_mode_et
  */
-void gt_player_set_mode(gt_obj_st * obj, _gt_player_mode_et mode);
+void gt_player_set_mode(gt_obj_st * obj, gt_player_mode_et mode);
 
 /**
  * @brief

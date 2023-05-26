@@ -23,6 +23,27 @@
 #define MY_CLASS    &gt_textarea_class
 
 /* private typedef ------------------------------------------------------*/
+typedef struct _gt_txt_s{
+    char *      text;
+    gt_color_t  color;
+    uint16_t    len;
+    uint8_t     mask_style;
+}_gt_txt_st;
+
+typedef struct _gt_textarea_s{
+    _gt_txt_st * contents;
+    uint16_t cnt_contents;
+
+    uint8_t space_x;
+    uint8_t space_y;
+
+    gt_color_t color_background;
+    gt_family_t font_family_cn;
+    gt_family_t font_family_en;
+    uint8_t     font_size;
+    uint8_t     font_gray;
+    uint8_t     font_align;
+}_gt_textarea_st;
 
 
 /* static variables -----------------------------------------------------*/

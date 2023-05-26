@@ -23,10 +23,6 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct _gt_img_s
-{
-    char * src;         // img src, It can be a virt file name/path or an array of C
-}_gt_img_st;
 
 
 

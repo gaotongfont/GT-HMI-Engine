@@ -27,16 +27,7 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct _gt_label_s{
-    char * text;
 
-    gt_color_t  font_color;
-    uint8_t     font_size;
-    gt_family_t font_family_cn;
-    gt_family_t font_family_en;
-    uint8_t     font_gray;
-    uint8_t     font_align;
-}_gt_label_st;
 
 
 /* macros ---------------------------------------------------------------*/

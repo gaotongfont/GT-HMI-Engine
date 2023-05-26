@@ -24,26 +24,6 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 
 
-typedef struct _gt_slider_s
-{
-    char * tag;             //img src
-    gt_area_st area_base;
-
-    gt_color_t color_act;
-    gt_color_t color_ina;
-
-    gt_size_t start;
-    gt_size_t end;
-    gt_size_t pos;
-
-    uint16_t offset;
-    gt_bar_dir_et dir;
-    uint8_t step;
-
-    bool tag_visible;
-}_gt_slider_st;
-
-
 
 /* macros ---------------------------------------------------------------*/
 

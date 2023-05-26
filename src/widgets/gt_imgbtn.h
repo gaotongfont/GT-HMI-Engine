@@ -24,18 +24,6 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct _gt_imgbtn_s
-{
-    char * src;
-    char * src_press;           ///< imgbtn src when press, It can be a virt file name/path or an array of C
-    char * src_release;         ///< imgbtn src when release
-    char * src_base;            ///< imgbtn src when nothing
-
-    _gt_vector_st * imgs;
-
-    uint8_t selected: 1;
-    uint8_t reserved: 7;
-}_gt_imgbtn_st;
 
 
 

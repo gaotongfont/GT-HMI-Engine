@@ -25,6 +25,30 @@
 #define MY_CLASS    &gt_btn_class
 
 /* private typedef ------------------------------------------------------*/
+typedef struct _gt_btn_reg_s {
+    uint8_t fill: 1;
+    uint8_t reserved: 7;
+}_gt_btn_reg_st;
+
+typedef struct _gt_btn_s
+{
+    char * text;
+    _gt_vector_st * contents;
+
+    gt_color_t color_background;
+    gt_color_t color_pressed;
+
+    gt_size_t   radius;
+
+    gt_color_t      font_color;
+    uint8_t         font_size;
+    gt_family_t     font_family_cn;
+    gt_family_t     font_family_en;
+    uint8_t         font_gray;
+    uint8_t     font_align;
+    uint8_t     fill;
+    _gt_btn_reg_st reg;
+}_gt_btn_st;
 
 
 /* static variables -----------------------------------------------------*/

@@ -22,8 +22,7 @@ extern "C" {
 /* define ---------------------------------------------------------------*/
 
 /* typedef --------------------------------------------------------------*/
-enum qrcode_version_e
-{
+typedef enum qrcode_version_e {
     GT_FAMILY_QRCODE_VERSION_3 = 3,
     GT_FAMILY_QRCODE_VERSION_4,
     GT_FAMILY_QRCODE_VERSION_5,
@@ -39,16 +38,8 @@ enum qrcode_version_e
     GT_FAMILY_QRCODE_VERSION_15,
     GT_FAMILY_QRCODE_VERSION_16,
     GT_FAMILY_QRCODE_VERSION_17
-};
+}gt_qr_code_version_em;
 
-typedef struct _gt_qrcode_s
-{
-    uint16_t str_len;
-    uint8_t * str;
-    uint8_t ec_level;
-    uint8_t mask_patt;
-    gt_family_t version;
-}_gt_qrcode_st;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -58,14 +49,14 @@ typedef struct _gt_qrcode_s
 /* global functions / API interface -------------------------------------*/
 
 /**
- * @brief create qrcode obj
+ * @brief create QRCode obj
  *
- * @param parent qrcode's parent obj
- * @return gt_obj_st* qrcode obj ptr
+ * @param parent QRCode's parent obj
+ * @return gt_obj_st* QRCode obj ptr
  */
 gt_obj_st * gt_qrcode_create(gt_obj_st * parent);
 
-void gt_qrcode_set_version(gt_obj_st * qr_code , gt_family_t family);
+void gt_qrcode_set_version(gt_obj_st * qr_code , gt_qr_code_version_em version);
 void gt_qrcode_set_str(gt_obj_st * qr_code , char* str);
 
 

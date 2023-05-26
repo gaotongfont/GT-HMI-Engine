@@ -23,7 +23,10 @@
 #define MY_CLASS    &gt_group_class
 
 /* private typedef ------------------------------------------------------*/
-
+typedef struct _gt_group_s
+{
+    char * group;
+}_gt_group_st;
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);

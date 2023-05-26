@@ -22,6 +22,15 @@
 #define MY_CLASS    &gt_option_class
 
 /* private typedef ------------------------------------------------------*/
+typedef struct _gt_option_s
+{
+    char ** option;
+    gt_color_t color_selected;
+    gt_color_t color_unselected;
+    gt_color_t color_back;
+    uint8_t cnt;
+    uint8_t idx;
+}_gt_option_st;
 
 
 /* static variables -----------------------------------------------------*/

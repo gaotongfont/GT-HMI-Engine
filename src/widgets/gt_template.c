@@ -22,6 +22,9 @@
 #define MY_CLASS    &gt_template_class
 
 /* private typedef ------------------------------------------------------*/
+typedef struct _gt_template_s {
+    char * template;
+}_gt_template_st;
 
 
 /* static variables -----------------------------------------------------*/

@@ -30,6 +30,14 @@
 #define _QRCodeDataBuf_SIZE   _QRDataBuf_SIZE  // (3706)
 
 /* private typedef ------------------------------------------------------*/
+typedef struct _gt_qrcode_s
+{
+    uint16_t str_len;
+    uint8_t * str;
+    uint8_t ec_level;
+    uint8_t mask_patt;
+    gt_family_t version;
+}_gt_qrcode_st;
 
 
 /* static variables -----------------------------------------------------*/
@@ -263,10 +271,10 @@ gt_obj_st * gt_qrcode_create(gt_obj_st * parent)
 }
 
 
-void gt_qrcode_set_version(gt_obj_st * qr_code , gt_family_t family)
+void gt_qrcode_set_version(gt_obj_st * qr_code , gt_qr_code_version_em version)
 {
     _gt_qrcode_st * style = qr_code->style;
-    style->version = family;
+    style->version = version;
 }
 
 void gt_qrcode_set_str(gt_obj_st * qr_code , char* str)

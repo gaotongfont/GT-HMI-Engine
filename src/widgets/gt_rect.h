@@ -22,14 +22,6 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct _gt_rect_s
-{
-    gt_color_t  color_background;
-    gt_color_t  color_border;
-    uint16_t    radius;
-    uint16_t    border;
-    uint8_t     fill;
-}_gt_rect_st;
 
 
 

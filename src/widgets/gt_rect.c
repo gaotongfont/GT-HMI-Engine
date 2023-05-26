@@ -8,7 +8,6 @@
  */
 
 /* include --------------------------------------------------------------*/
-/* include --------------------------------------------------------------*/
 #include "gt_rect.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
@@ -23,6 +22,14 @@
 #define MY_CLASS    &gt_rect_class
 
 /* private typedef ------------------------------------------------------*/
+typedef struct _gt_rect_s
+{
+    gt_color_t  color_background;
+    gt_color_t  color_border;
+    uint16_t    radius;
+    uint16_t    border;
+    uint8_t     fill;
+}_gt_rect_st;
 
 
 /* static variables -----------------------------------------------------*/

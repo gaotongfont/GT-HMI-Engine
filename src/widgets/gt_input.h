@@ -24,27 +24,6 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct _gt_input_s
-{
-    char * value;
-    char * placeholder;
-
-    uint16_t pos_selected_start;
-    uint16_t pos_selected_end;
-    uint16_t pos_cursor;
-
-    gt_point_st point_pos;
-    gt_size_t border_width;
-    gt_color_t border_color;
-
-		gt_color_t bg_color;
-    gt_color_t font_color;
-    uint8_t font_size;
-    gt_family_t font_family_cn;
-    gt_family_t font_family_en;
-    uint8_t     font_gray;
-    uint8_t     font_align;
-}_gt_input_st;
 
 
 

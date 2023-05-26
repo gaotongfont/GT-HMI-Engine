@@ -40,6 +40,35 @@
 #define _GT_KEYPADS_SPELL_NUMB      (9)
 
 /* private typedef ------------------------------------------------------*/
+typedef struct _gt_keypad_info_s
+{
+    keypad_handler_cb_t handler_cb;
+    struct _gt_keypad_map_s * map;
+
+    /* data */
+    uint8_t mode;       /*this mode can set GT_KEYPAD_MODE_XX*/
+    uint8_t cnt_lines;  /*record how many lines of the keypad*/
+    uint8_t per_line[32];/*record the per of the total width of a line */
+}_gt_keypad_info_st;
+
+
+typedef struct _gt_keypad_s
+{
+    gt_obj_st * target;
+    char *      kv_selected;
+    gt_color_t  color_board;  //board color
+    gt_color_t  color_key;  //key color
+    gt_color_t  color_ctrl;  //ctrl key color
+
+    gt_color_t  font_color;  //font color
+    gt_family_t font_family_cn;
+    gt_family_t font_family_en;
+    uint8_t     font_size;
+    uint8_t     font_gray;
+    uint8_t     font_align;
+
+    _gt_keypad_info_st info;
+}_gt_keypad_st;
 
 typedef struct {
     const char * key;

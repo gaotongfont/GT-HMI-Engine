@@ -23,6 +23,14 @@
 #define MY_CLASS    &gt_switcher_class
 
 /* private typedef ------------------------------------------------------*/
+typedef struct _gt_switcher_s
+{
+    gt_color_t color_act;
+    gt_color_t color_ina;
+    gt_color_t color_point;
+
+    bool state;             //switcher state ->true:open,false:close
+}_gt_switcher_st;
 
 
 /* static variables -----------------------------------------------------*/

@@ -22,10 +22,6 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct _gt_template_s
-{
-    char * template;
-}_gt_template_st;
 
 
 
