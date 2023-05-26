@@ -44,7 +44,7 @@ extern "C" {
 #define GT_CFG_ENABLE_ZK_SPELL          1
 #define GT_CFG_ENABLE_LINE              1
 #define GT_CFG_ENABLE_PLAYER            1
-
+#define GT_CFG_ENABLE_INPUT_NUMBER      1
 
 
 /* typedef --------------------------------------------------------------*/

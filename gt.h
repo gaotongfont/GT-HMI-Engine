@@ -128,6 +128,10 @@ extern "C" {
 #include "src/widgets/gt_player.h"
 #endif
 
+#if GT_CFG_ENABLE_INPUT_NUMBER
+#include "src/widgets/gt_input_number.h"
+#endif
+
 /* other */
 #include "src/others/gt_color.h"
 #include "src/others/gt_log.h"

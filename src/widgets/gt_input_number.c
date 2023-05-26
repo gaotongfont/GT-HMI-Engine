@@ -1,0 +1,221 @@
+/**
+ * @file gt_input_number.c
+ * @author Feyoung
+ * @brief
+ * @version 0.1
+ * @date 2023-05-26 11:50:41
+ * @copyright Copyright (c) 2014-2023, Company Genitop. Co., Ltd.
+ */
+
+/* include --------------------------------------------------------------*/
+#include "gt_input_number.h"
+#include "../core/gt_mem.h"
+#include "../others/gt_types.h"
+#include "./gt_label.h"
+#include "../core/gt_draw.h"
+#include "../core/gt_obj_pos.h"
+
+
+/* private define -------------------------------------------------------*/
+#define OBJ_TYPE    GT_TYPE_INPUT_NUMBER
+#define MY_CLASS    &gt_input_number_class
+
+#define _REG_DECIMAL_BIT_WIDTH      4
+#define _REG_FILL_ZERO_BIT_WIDTH    1   /** fill "0" before integer */
+#define _REG_RESERVED_BIT_WIDTH     3
+
+/* private typedef ------------------------------------------------------*/
+typedef struct _field_length_s {
+    uint8_t len_integer;
+    uint8_t len_decimal: _REG_DECIMAL_BIT_WIDTH;    /** 2: default */
+    uint8_t fill_zero: _REG_FILL_ZERO_BIT_WIDTH;    /** 0: default */
+    uint8_t reserved: _REG_RESERVED_BIT_WIDTH;
+}_field_reg_st;
+
+typedef struct _gt_input_number_s {
+    gt_obj_st * label;  /** @ref gt_label.h */
+
+    double value;
+    double step;
+    double min;
+    double max;
+    _field_reg_st reg;
+}_gt_input_number_st;
+
+
+/* static variables -----------------------------------------------------*/
+static void _init_cb(gt_obj_st * obj);
+static void _deinit_cb(gt_obj_st * obj);
+static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
+
+const gt_obj_class_st gt_input_number_class = {
+    ._init_cb      = _init_cb,
+    ._deinit_cb    = _deinit_cb,
+    ._event_cb     = _event_cb,
+    .type          = OBJ_TYPE,
+    .size_style    = sizeof(_gt_input_number_st)
+};
+
+/* macros ---------------------------------------------------------------*/
+
+
+
+/* class ----------------------------------------------------------------*/
+
+
+
+/* static functions -----------------------------------------------------*/
+static inline bool _is_fill_zero_front(_gt_input_number_st * style) {
+    return style->reg.fill_zero;
+}
+
+static void _init_cb(gt_obj_st * obj)
+{
+    _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
+    uint8_t buffer[16] = {0};
+    uint8_t idx = 0;
+    uint8_t append_len = style->reg.len_decimal ? (style->reg.len_decimal + 1) : style->reg.len_decimal;
+
+    buffer[idx++] = '%';
+    if (_is_fill_zero_front(style)) {
+        buffer[idx++] = '0';
+    }
+    sprintf(&buffer[idx], "%d.%dlf", style->reg.len_integer + append_len, style->reg.len_decimal);
+    gt_label_set_text(style->label, buffer, style->value);
+}
+
+static void _deinit_cb(gt_obj_st * obj)
+{
+    _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
+    gt_obj_destroy(style->label);
+
+    gt_mem_free(style);
+    obj->style = NULL;
+}
+
+static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
+{
+    _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
+    gt_event_type_et code = gt_event_get_code(e);
+
+    switch(code) {
+        case GT_EVENT_TYPE_DRAW_START:
+            if( gt_obj_check_scr(obj) ){
+                _gt_disp_refr_append_area(&obj->area);
+            }
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
+            break;
+        case GT_EVENT_TYPE_UPDATE_VALUE:
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            break;
+
+        default:
+            break;
+    }
+}
+
+
+/* global functions / API interface -------------------------------------*/
+
+gt_obj_st * gt_input_number_create(gt_obj_st * parent)
+{
+    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    if (NULL == obj) {
+        return NULL;
+    }
+    _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
+    gt_memset(style, 0, sizeof(_gt_input_number_st));
+    style->reg.len_decimal = 2;
+
+    style->label = gt_label_create(obj);
+    return obj;
+}
+
+void gt_input_number_set_fill_zero_front(gt_obj_st * obj, bool enabled)
+{
+    ((_gt_input_number_st * )obj->style)->reg.fill_zero = enabled ? 1 : 0;
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+void gt_input_number_set_value(gt_obj_st * obj, double value)
+{
+    ((_gt_input_number_st * )obj->style)->value = value;
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+void gt_input_number_set_max(gt_obj_st * obj, double max)
+{
+    ((_gt_input_number_st * )obj->style)->max = max;
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+void gt_input_number_set_min(gt_obj_st * obj, double min)
+{
+    ((_gt_input_number_st * )obj->style)->min = min;
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+void gt_input_number_set_step(gt_obj_st * obj, double step)
+{
+    ((_gt_input_number_st * )obj->style)->step = step;
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+void gt_input_number_increase(gt_obj_st * obj)
+{
+    _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
+    style->value += style->step;
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+void gt_input_number_decrease(gt_obj_st * obj)
+{
+    _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
+    style->value -= style->step;
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+
+void gt_input_number_set_display_integer_length(gt_obj_st * obj, uint8_t length)
+{
+    ((_gt_input_number_st * )obj->style)->reg.len_integer = length;
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+void gt_input_number_set_display_decimal_length(gt_obj_st * obj, uint8_t length)
+{
+    ((_gt_input_number_st * )obj->style)->reg.len_decimal = length;
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+void gt_input_number_set_font_color(gt_obj_st * obj, gt_color_t color)
+{
+    gt_label_set_font_color(((_gt_input_number_st * )obj->style)->label, color);
+}
+
+void gt_input_number_set_font_size(gt_obj_st * obj, uint8_t size)
+{
+    gt_label_set_font_size(((_gt_input_number_st * )obj->style)->label, size);
+}
+
+void gt_input_number_set_font_gray(gt_obj_st * obj, uint8_t gray)
+{
+    gt_label_set_font_gray(((_gt_input_number_st * )obj->style)->label, gray);
+}
+
+void gt_input_number_set_font_align(gt_obj_st * obj, uint8_t align)
+{
+    gt_label_set_font_align(((_gt_input_number_st * )obj->style)->label, align);
+}
+
+void gt_input_number_set_font_family_cn(gt_obj_st * obj, gt_family_t family)
+{
+    gt_label_set_font_family_cn(((_gt_input_number_st * )obj->style)->label, family);
+}
+
+void gt_input_number_set_font_family_en(gt_obj_st * obj, gt_family_t family)
+{
+    gt_label_set_font_family_en(((_gt_input_number_st * )obj->style)->label, family);
+}
+
+/* end ------------------------------------------------------------------*/
