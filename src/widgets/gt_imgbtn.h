@@ -16,6 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
+#include "../utils/gt_vector.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -25,12 +26,15 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_imgbtn_s
 {
-    uint32_t selected;
     char * src;
-
     char * src_press;           ///< imgbtn src when press, It can be a virt file name/path or an array of C
     char * src_release;         ///< imgbtn src when release
     char * src_base;            ///< imgbtn src when nothing
+
+    _gt_vector_st * imgs;
+
+    uint8_t selected: 1;
+    uint8_t reserved: 7;
 }_gt_imgbtn_st;
 
 
@@ -73,6 +77,42 @@ void gt_imgbtn_set_src_press(gt_obj_st * imgbtn, char * src);
  */
 void gt_imgbtn_set_src_release(gt_obj_st * imgbtn, char * src);
 
+/**
+ * @brief Add a state item to the imgbtn
+ *
+ * @param obj
+ * @param src path of image
+ * @return true success
+ * @return false failed
+ */
+bool gt_imgbtn_add_state_item(gt_obj_st * obj, char * src);
+
+/**
+ * @brief Remove a state item from the imgbtn
+ *
+ * @param obj
+ * @param src The target image item
+ * @return true success
+ * @return false failed
+ */
+bool gt_imgbtn_remove_state_item(gt_obj_st * obj, char * src);
+
+/**
+ * @brief Clear all state items of the imgbtn, but do not free vector
+ *
+ * @param obj
+ * @return true success
+ * @return false failed
+ */
+bool gt_imgbtn_clear_all_state_item(gt_obj_st * obj);
+
+/**
+ * @brief Get the item index of list
+ *
+ * @param obj
+ * @return int16_t -1: failed; >=0: success
+ */
+int16_t bt_imgbtn_get_state_item_index(gt_obj_st * obj);
 
 #ifdef __cplusplus
 } /*extern "C"*/

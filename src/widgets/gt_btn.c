@@ -154,8 +154,7 @@ static void _deinit_cb(gt_obj_st * obj) {
     *style_p = NULL;
 }
 
-static inline bool _turn_next_content(gt_obj_st * obj)
-{
+static bool _turn_next_content(gt_obj_st * obj) {
     _gt_btn_st * style = (_gt_btn_st * )obj->style;
     if (NULL == style->contents) {
         return false;
@@ -385,9 +384,9 @@ bool gt_btn_add_state_content(gt_obj_st * btn, const char * str)
     _contents_init(style);
     /** set first item */
     if (_gt_vector_get_count(style->contents) <= 0) {
-        _gt_vector_add_item(&style->contents, (void *)style->text, strlen(style->text));
+        _gt_vector_add_item(&style->contents, (void *)style->text, strlen(style->text) + 1);
     }
-    return _gt_vector_add_item(&style->contents, (void *)str, strlen(str));
+    return _gt_vector_add_item(&style->contents, (void *)str, strlen(str) + 1);
 }
 
 bool gt_btn_remove_state_content(gt_obj_st * btn, const char * str)
@@ -407,7 +406,13 @@ bool gt_btn_remove_state_content(gt_obj_st * btn, const char * str)
 
 bool gt_btn_clear_all_state_content(gt_obj_st * obj)
 {
+    if (NULL == obj) {
+        return false;
+    }
     _gt_btn_st * style = (_gt_btn_st * )obj->style;
+    if (NULL == style) {
+        return false;
+    }
     return _gt_vector_clear_all_items(style->contents);
 }
 
@@ -417,6 +422,9 @@ int16_t gt_btn_get_state_content_index(gt_obj_st * obj)
         return -1;
     }
     _gt_btn_st * style = (_gt_btn_st * )obj->style;
+    if (NULL == style) {
+        return -1;
+    }
     return _gt_vector_get_index(style->contents);
 }
 

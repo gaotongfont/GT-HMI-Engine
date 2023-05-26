@@ -34,6 +34,51 @@
 
 /* static functions -----------------------------------------------------*/
 
+/**
+ * @brief A free callback to the memory inside the element
+ *
+ * @param item The item to be freed
+ * @return true success
+ * @return false failed
+ */
+static bool _default_free_cb(void * item) {
+    gt_mem_free(item);
+}
+
+/**
+ * @brief String comparison is used by default
+ *
+ * @param item The item that in order from the list
+ * @param target The target content to be searched
+ * @return true find it out
+ * @return false not find it out
+ */
+static bool _default_equal_cb(void * item, void * target) {
+    return strcmp(item, target) ? false : true;
+}
+
+static void _add_default_callback(_gt_vector_st * vector) {
+    if (NULL == vector) {
+        return;
+    }
+    _gt_vector_add_free_item_cb(&vector, _default_free_cb);
+    _gt_vector_add_equal_item_cb(&vector, _default_equal_cb);
+}
+
+/**
+ * @brief Create a vector object
+ *
+ * @return _gt_vector_st* default object
+ */
+static inline _gt_vector_st * _gt_vector_create(void) {
+    _gt_vector_st * vector = (_gt_vector_st * )gt_mem_malloc(sizeof(_gt_vector_st));
+    if (NULL == vector) {
+        return NULL;
+    }
+    gt_memset(vector, 0, sizeof(_gt_vector_st));
+    _add_default_callback(vector);
+    return vector;
+}
 
 /* global functions / API interface -------------------------------------*/
 
@@ -47,11 +92,10 @@ bool _gt_vector_add_free_item_cb(_gt_vector_st ** vector_p, _gt_vector_free_item
     }
 
     if (NULL == *vector_p) {
-        *vector_p = (_gt_vector_st * )gt_mem_malloc(sizeof(_gt_vector_st));
+        *vector_p = _gt_vector_create();
         if (NULL == *vector_p) {
             return false;
         }
-        gt_memset(*vector_p, 0, sizeof(_gt_vector_st));
     }
 
     (*vector_p)->free_item_cb = free_item_cb;
@@ -67,11 +111,10 @@ bool _gt_vector_add_equal_item_cb(_gt_vector_st ** vector_p, _gt_vector_equal_it
     }
 
     if (NULL == *vector_p) {
-        *vector_p = (_gt_vector_st * )gt_mem_malloc(sizeof(_gt_vector_st));
+        *vector_p = _gt_vector_create();
         if (NULL == *vector_p) {
             return false;
         }
-        gt_memset(*vector_p, 0, sizeof(_gt_vector_st));
     }
 
     (*vector_p)->equal_item_cb = equal_item_cb;
@@ -87,11 +130,10 @@ bool _gt_vector_add_item(_gt_vector_st ** vector_p, void * item, uint16_t size)
     }
 
     if (NULL == *vector_p) {
-        *vector_p = (_gt_vector_st * )gt_mem_malloc(sizeof(_gt_vector_st));
+        *vector_p = _gt_vector_create();
         if (NULL == *vector_p) {
             return false;
         }
-        gt_memset(*vector_p, 0, sizeof(_gt_vector_st));
     }
 
     if (NULL == (*vector_p)->list) {
