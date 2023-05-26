@@ -81,6 +81,7 @@ static void _init_cb(gt_obj_st * obj)
         buffer[idx++] = '0';
     }
     sprintf(&buffer[idx], "%d.%dlf", style->reg.len_integer + append_len, style->reg.len_decimal);
+    gt_area_copy(&style->label->area, &obj->area);
     gt_label_set_text(style->label, buffer, style->value);
 }
 
