@@ -100,8 +100,8 @@ double gt_input_number_decrease(gt_obj_st * obj);
 /**
  * @brief Sets the number of characters displayed in an integer data segment
  *  example:
- *      value is "123456.7890", integer length set to 3:
- *      result is "456.7890".
+ *      value is "123.456", integer length set to 6, and set fill zero front it:
+ *      result is "000123.456", otherwise "123.456".
  *
  * @param obj
  * @param length 0: default, auto calculate; other: set length
