@@ -221,7 +221,7 @@ void _gt_event_init(){
     _gt_timer_create(_gt_timer_event_cb, GT_TASK_PERIOD_TIME_EVENT, NULL);
 }
 
-void gt_event_clr_mask(gt_obj_st * parent)
+void gt_event_clr_all_event(gt_obj_st * parent)
 {
     if( parent == NULL ){
         return;
@@ -229,7 +229,7 @@ void gt_event_clr_mask(gt_obj_st * parent)
     int idx = 0;
     parent->event_mask = 0;
     while(idx < parent->cnt_child){
-        gt_event_clr_mask( parent->child[idx++] );
+        gt_event_clr_all_event( parent->child[idx++] );
     }
 }
 

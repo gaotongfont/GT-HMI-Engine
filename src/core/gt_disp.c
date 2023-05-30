@@ -134,7 +134,7 @@ void gt_disp_load_scr(gt_obj_st * scr)
 {
     gt_obj_st * scr_old = gt_disp_get_scr();
     gt_disp_st * disp = gt_disp_get_default();
-    extern void gt_event_clr_mask(gt_obj_st * parent);
+
     if( !disp ){
         return;
     }
@@ -150,8 +150,8 @@ void gt_disp_load_scr(gt_obj_st * scr)
     if( scr_old != scr ){
         disp->area_act.x = 0;
         disp->area_act.y = 0;
-        gt_event_clr_mask(scr_old);
-        gt_event_clr_mask(scr);
+        gt_event_clr_all_event(scr_old);
+        gt_event_clr_all_event(scr);
     }
     gt_disp_set_scr(scr);
 

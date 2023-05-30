@@ -132,7 +132,7 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
  *
  * @param parent Object which want to change
  */
-void gt_event_clr_mask(struct gt_obj_s * parent);
+void gt_event_clr_all_event(struct gt_obj_s * parent);
 
 void _gt_event_init(void);
 
