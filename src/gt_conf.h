@@ -111,12 +111,12 @@ extern "C" {
 
 
 /* default font style and size */
-#define GT_CFG_DEFAULT_FONT_FAMILY_CN    254
-#define GT_CFG_DEFAULT_FONT_FAMILY_EN    255
-#define GT_CFG_DEFAULT_FONT_SIZE        16
+#define GT_CFG_DEFAULT_FONT_FAMILY_CN       254
+#define GT_CFG_DEFAULT_FONT_FAMILY_EN       255
+#define GT_CFG_DEFAULT_FONT_SIZE            16
 
 /* default event mask bit num */
-#define GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX           16
+#define GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX   16
 
 #define GT_USE_MODE_FLASH       01
 #define GT_USE_MODE_SD          01
@@ -135,9 +135,9 @@ extern "C" {
 /**
  * @brief use examples demo
  */
-#define GT_USE_EXAMPLES         01
+#define GT_USE_EXAMPLES             01
 
-#define GT_CONFIG_GUI_DRIVER_LIB    0
+#define GT_CONFIG_GUI_DRIVER_LIB    01
 
 /* typedef --------------------------------------------------------------*/
 
