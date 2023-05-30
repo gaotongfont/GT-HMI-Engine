@@ -18,7 +18,6 @@ extern "C" {
 #include "../core/gt_style.h"
 #include "../others/gt_color.h"
 #include "../widgets/gt_conf_widgets.h"
-#include "../../driver/gt_port_font.h"
 
 /**
  * @brief GT_Get_Font_Type() return value
