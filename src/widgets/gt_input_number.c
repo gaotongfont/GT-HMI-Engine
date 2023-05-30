@@ -14,6 +14,7 @@
 #include "./gt_label.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_obj_pos.h"
+#include "float.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -127,6 +128,8 @@ gt_obj_st * gt_input_number_create(gt_obj_st * parent)
     _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
     gt_memset(style, 0, sizeof(_gt_input_number_st));
     style->reg.len_decimal = 2;
+    style->max = DBL_MAX;
+    style->min = DBL_MIN;
 
     style->label = gt_label_create(obj);
     return obj;
@@ -140,7 +143,13 @@ void gt_input_number_set_fill_zero_front(gt_obj_st * obj, bool enabled)
 
 void gt_input_number_set_value(gt_obj_st * obj, double value)
 {
-    ((_gt_input_number_st * )obj->style)->value = value;
+    _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
+    style->value = value;
+    if (style->value > style->max) {
+        style->value = style->max;
+    } else if (style->value < style->min) {
+        style->value = style->min;
+    }
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
@@ -166,6 +175,9 @@ double gt_input_number_increase(gt_obj_st * obj)
 {
     _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
     style->value += style->step;
+    if (style->value > style->max) {
+        style->value = style->max;
+    }
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
     return style->value;
 }
@@ -174,6 +186,9 @@ double gt_input_number_decrease(gt_obj_st * obj)
 {
     _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
     style->value -= style->step;
+    if (style->value < style->min) {
+        style->value = style->min;
+    }
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
     return style->value;
 }
