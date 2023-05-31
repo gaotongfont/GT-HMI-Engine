@@ -19,17 +19,21 @@
 
 /* private define -------------------------------------------------------*/
 /**
+ * @brief printf memory log information by console
+ */
+#define USE_MEM_LOG_PRINT               0
+/**
  * @brief [TRACE] Memory trace debug, using to debug memory leak
  *
  */
-#define USE_MEM_TRACE_DEBUG     0
+#define USE_MEM_TRACE_DEBUG_BY_FILE     0
 
 /**
  * @brief Display max memory remark address
  */
-#define USE_MEM_MAX_REMARK      0
+#define USE_MEM_MAX_REMARK              0
 
-#if USE_MEM_TRACE_DEBUG
+#if USE_MEM_TRACE_DEBUG_BY_FILE
 #include "stdio.h"
 #include "unistd.h"
 
@@ -137,7 +141,7 @@ static void *_gt_malloc_hooks(size_t size)
     void * ptr = _self.malloc_hooks(size);
 #endif
 
-#ifdef GT_LOGV
+#if USE_MEM_LOG_PRINT
     GT_LOGV(GT_LOG_TAG_MEM, "\t--- malloc addr: %p, size: 0x%x ---", ptr, size);
 #endif
     return ptr;
@@ -158,7 +162,7 @@ static void *_gt_realloc_hooks(void * old_ptr, size_t size)
     void * ptr = _self.realloc_hooks(old_ptr, size);
 #endif
 
-#ifdef GT_LOGV
+#if USE_MEM_LOG_PRINT
     GT_LOGV(GT_LOG_TAG_MEM, "\t--- realloc addr: %p -> %p, size: 0x%x ---", old_ptr, ptr, size);
 #endif
     return ptr;
@@ -171,7 +175,7 @@ static void *_gt_realloc_hooks(void * old_ptr, size_t size)
  */
 static void _gt_free_hooks(void * ptr)
 {
-#ifdef GT_LOGV
+#if USE_MEM_LOG_PRINT
     GT_LOGV(GT_LOG_TAG_MEM, "\t--- free addr: %p ---", ptr);
 #endif
 
@@ -205,7 +209,7 @@ void gt_mem_deinit(void)
 void * _mem_malloc(size_t size, uint8_t * file_name, size_t line)
 {
     void * ret = _gt_malloc_hooks(size);
-#if USE_MEM_TRACE_DEBUG
+#if USE_MEM_TRACE_DEBUG_BY_FILE
     uint8_t buffer[128] = "";
     sprintf((char *)buffer, "%s/%p.mem\0", MEM_TRACE_PATH, ret);
     FILE * fp = fopen(buffer, "w");
@@ -231,7 +235,7 @@ void * _mem_malloc(size_t size, uint8_t * file_name, size_t line)
 void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
 {
     void * ret = _gt_realloc_hooks(ptr, size);
-#if USE_MEM_TRACE_DEBUG
+#if USE_MEM_TRACE_DEBUG_BY_FILE
     uint8_t buffer[128] = "";
     FILE * fp = NULL;
 
@@ -268,7 +272,7 @@ void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
 
 void _mem_free(void * ptr, uint8_t * file_name, size_t line)
 {
-#if USE_MEM_TRACE_DEBUG
+#if USE_MEM_TRACE_DEBUG_BY_FILE
     uint8_t buffer[128] = "";
     FILE * fp = NULL;
 
