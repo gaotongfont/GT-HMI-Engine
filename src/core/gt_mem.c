@@ -193,9 +193,21 @@ void gt_mem_init(void)
 {
 #if GT_MEM_CUSTOM
     _tlsf = gt_tlsf_create_with_pool((void *)_mem_pool_int, GT_MEM_SIZE);
-	GT_LOGD(GT_LOG_TAG_MEM, "\t--- addr: %p -> %p, size: 0x%x(%d) ---", _mem_pool_int, (MEM_UNIT)_mem_pool_int + GT_MEM_SIZE, GT_MEM_SIZE, GT_MEM_SIZE);
+	// GT_LOGD(GT_LOG_TAG_MEM, "\t--- addr: %p -> %p, size: 0x%x(%d) ---", _mem_pool_int, (MEM_UNIT)_mem_pool_int + GT_MEM_SIZE, GT_MEM_SIZE, GT_MEM_SIZE);
     _addr_start = (MEM_UNIT)_mem_pool_int;
     _addr_end = (MEM_UNIT)_mem_pool_int + GT_MEM_SIZE;
+	GT_LOGD(GT_LOG_TAG_MEM, "\t--- addr: %p -> %p, size: 0x%x(%d) ---", _addr_start, _addr_end, GT_MEM_SIZE, GT_MEM_SIZE);
+
+#if USE_MEM_TRACE_DEBUG_BY_FILE
+    uint8_t buffer[128] = {0};
+    FILE * fp = NULL;
+    fp = fopen(MEM_TRACE_LOG_PATH, "a");
+    fprintf(fp, "\t--- addr: %p -> %p, size: 0x%x(%d) ---\n", _addr_start, _addr_end, GT_MEM_SIZE, GT_MEM_SIZE);
+    fflush(fp);
+    fclose(fp);
+    fp = NULL;
+#endif
+
 #endif
 }
 
@@ -210,7 +222,7 @@ void * _mem_malloc(size_t size, uint8_t * file_name, size_t line)
 {
     void * ret = _gt_malloc_hooks(size);
 #if USE_MEM_TRACE_DEBUG_BY_FILE
-    uint8_t buffer[128] = "";
+    uint8_t buffer[128] = {0};
     sprintf((char *)buffer, "%s/%p.mem\0", MEM_TRACE_PATH, ret);
     FILE * fp = fopen(buffer, "w");
     if (NULL == fp) {
@@ -236,7 +248,7 @@ void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
 {
     void * ret = _gt_realloc_hooks(ptr, size);
 #if USE_MEM_TRACE_DEBUG_BY_FILE
-    uint8_t buffer[128] = "";
+    uint8_t buffer[128] = {0};
     FILE * fp = NULL;
 
     // 删除之前内存记录
@@ -273,7 +285,7 @@ void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
 void _mem_free(void * ptr, uint8_t * file_name, size_t line)
 {
 #if USE_MEM_TRACE_DEBUG_BY_FILE
-    uint8_t buffer[128] = "";
+    uint8_t buffer[128] = {0};
     FILE * fp = NULL;
 
     // 删除之前内存记录
