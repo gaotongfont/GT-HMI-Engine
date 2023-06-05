@@ -56,6 +56,15 @@ void gt_input_number_set_value(gt_obj_st * obj, double value);
 void gt_input_number_set_fill_zero_front(gt_obj_st * obj, bool enabled);
 
 /**
+ * @brief
+ *
+ * @param obj
+ * @return true
+ * @return false
+ */
+bool gt_input_number_get_fill_zero_front(gt_obj_st * obj);
+
+/**
  * @brief Maximum value that can be set
  *
  * @param obj

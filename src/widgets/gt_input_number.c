@@ -28,8 +28,8 @@
 /* private typedef ------------------------------------------------------*/
 typedef struct _field_length_s {
     uint8_t len_integer;
-    uint8_t len_decimal: _REG_DECIMAL_BIT_WIDTH;    /** 2: default */
-    uint8_t fill_zero: _REG_FILL_ZERO_BIT_WIDTH;    /** 0: default */
+    uint8_t len_decimal: _REG_DECIMAL_BIT_WIDTH;    /** 2: default, such as: 123.4567 -> 123.45 */
+    uint8_t fill_zero: _REG_FILL_ZERO_BIT_WIDTH;    /** 0: default disable; 1: enable. such as: 1 or 001 */
     uint8_t reserved: _REG_RESERVED_BIT_WIDTH;
 }_field_reg_st;
 
@@ -140,6 +140,11 @@ void gt_input_number_set_fill_zero_front(gt_obj_st * obj, bool enabled)
 {
     ((_gt_input_number_st * )obj->style)->reg.fill_zero = enabled ? 1 : 0;
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+bool gt_input_number_get_fill_zero_front(gt_obj_st * obj)
+{
+    return _is_fill_zero_front((_gt_input_number_st * )obj->style);
 }
 
 void gt_input_number_set_value(gt_obj_st * obj, double value)
