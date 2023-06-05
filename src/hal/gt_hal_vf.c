@@ -94,7 +94,7 @@ static void _close_cb(struct _gt_fs_drv_s * drv, void * fp)
 
 static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len)
 {
-    gt_fs_fp_st * vfp = fp;
+    gt_fs_fp_st * vfp = (gt_fs_fp_st * )fp;
 
     if( _state != GT_FS_RES_READY ){
         GT_LOGV(GT_LOG_TAG_GUI, "drv is busy");
@@ -110,13 +110,13 @@ static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * dat
         GT_LOGW(GT_LOG_TAG_GUI, "fp is null");
         return GT_FS_RES_NULL;
     }
+    uint32_t addr = vfp->pos;
+    uint8_t data_write[4] = {0x03, (uint8_t)(addr>>16), (uint8_t)(addr>>8), (uint8_t)addr };
 
     /* set state busy */
     _state = GT_FS_RES_BUSY;
 
     /* start read */
-    uint32_t addr = vfp->pos;
-    uint8_t data_write[4] = {0x03, (uint8_t)(addr>>16), (uint8_t)(addr>>8), (uint8_t)addr };
     *ret_len = drv->rw_cb(data_write, 4, data, len);
     drv->seek_cb(drv, vfp, len, GT_FS_SEEK_CUR);
 
