@@ -76,10 +76,6 @@ static char * _gt_imgbtn_get_src(gt_obj_st * obj) {
 static inline void _gt_imgbtn_init_widget(gt_obj_st * imgbtn)
 {
     _gt_imgbtn_st * style = imgbtn->style;
-
-    /* get imgbtn width and height, must ! */
-    gt_fs_read_img_wh(style->src, &imgbtn->area.w, &imgbtn->area.h);
-
     gt_attr_rect_st dsc = {
         .bg_img_src = style->src,
         .bg_opa = imgbtn->opa

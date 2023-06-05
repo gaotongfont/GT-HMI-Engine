@@ -48,22 +48,6 @@ const gt_obj_class_st gt_img_class = {
 
 
 /* static functions -----------------------------------------------------*/
-
-static inline void _gt_img_init_widget(gt_obj_st * img)
-{
-    _gt_img_st * style = img->style;
-
-    /* get img width and height, must ! */
-    gt_fs_read_img_wh(style->src, &img->area.w, &img->area.h);
-
-    gt_attr_rect_st dsc = {
-        .bg_img_src = style->src,
-        .bg_opa = img->opa,
-    };
-    /* start draw img */
-    draw_bg_img(img->draw_ctx, &dsc, &img->area);
-}
-
 /**
  * @brief obj init img widget call back
  *
@@ -72,7 +56,13 @@ static inline void _gt_img_init_widget(gt_obj_st * img)
 static void _init_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
 
-    _gt_img_init_widget(obj);
+    _gt_img_st * style = (_gt_img_st * )obj->style;
+    gt_attr_rect_st dsc = {
+        .bg_img_src = style->src,
+        .bg_opa = obj->opa,
+    };
+    /* start draw obj */
+    draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
 }
 
 /**
@@ -108,8 +98,8 @@ static void _deinit_cb(gt_obj_st * obj) {
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
-    extern void _gt_disp_refr_append_area(gt_area_st * area);
     gt_area_st area;
+
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGV(GT_LOG_TAG_GUI, "start draw");

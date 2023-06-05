@@ -171,8 +171,6 @@ static inline void _set_dir(_gt_player_st * style, bool is_next) {
 
 static inline void _default_init(gt_obj_st * obj, _gt_player_st * style) {
     void * src = _get_src(style);
-    gt_fs_read_img_wh((char * )src, &obj->area.w, &obj->area.h);
-
     gt_attr_rect_st dsc = {
         .bg_img_src = src,
         .bg_opa = GT_OPA_COVER,

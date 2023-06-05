@@ -698,7 +698,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
             }
             else{
                 i = gt_font_convertor_data_get(&convertor , idx);
-                
+
                 width = gt_font_get_word_width_figure_up(&convertor.data[0] , font_dot_w , convertor.fontsize , convertor.fontgray);
             }
         }
@@ -1108,7 +1108,7 @@ line_lb:
     }
 }
 
-void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
+void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_st * coords)
 {
     if( dsc->bg_img_src == NULL ) return;
     if( dsc->bg_opa < GT_OPA_MIN ) return;
@@ -1118,6 +1118,8 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt
         GT_LOGW(GT_LOG_TAG_DATA, "Open image decoder failed\n");
         return ;
     }
+    coords->w = dsc_img.header.w;
+    coords->h = dsc_img.header.h;
 
     gt_area_st dst_area = *coords, mask_area = *coords;
     dst_area.h = 1;         /** 每次只填充一行的数据量 */
