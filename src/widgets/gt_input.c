@@ -37,7 +37,7 @@ typedef struct _gt_input_s
     gt_size_t border_width;
     gt_color_t border_color;
 
-		gt_color_t bg_color;
+    gt_color_t bg_color;
     gt_color_t font_color;
     uint8_t font_size;
     gt_family_t font_family_cn;

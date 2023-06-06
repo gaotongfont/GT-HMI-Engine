@@ -15,6 +15,7 @@
 #include "../core/gt_draw.h"
 #include "../core/gt_obj_pos.h"
 #include "float.h"
+#include "../others/gt_log.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -77,6 +78,9 @@ static void _init_cb(gt_obj_st * obj)
     uint8_t idx = 0;
     uint8_t append_len = style->reg.len_decimal ? (style->reg.len_decimal + 1) : style->reg.len_decimal;
 
+    if (NULL == style->label) {
+        return;
+    }
     buffer[idx++] = '%';
     if (_is_fill_zero_front(style)) {
         buffer[idx++] = '0';
@@ -90,7 +94,7 @@ static void _init_cb(gt_obj_st * obj)
 static void _deinit_cb(gt_obj_st * obj)
 {
     _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
-    gt_obj_destroy(style->label);
+
 
     gt_mem_free(style);
     obj->style = NULL;
@@ -201,44 +205,74 @@ double gt_input_number_decrease(gt_obj_st * obj)
 
 void gt_input_number_set_display_integer_length(gt_obj_st * obj, uint8_t length)
 {
+    if (length > 64) {
+        length = 64;
+    }
     ((_gt_input_number_st * )obj->style)->reg.len_integer = length;
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
 void gt_input_number_set_display_decimal_length(gt_obj_st * obj, uint8_t length)
 {
+    if (length > 64) {
+        length = 64;
+    }
     ((_gt_input_number_st * )obj->style)->reg.len_decimal = length;
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
 void gt_input_number_set_font_color(gt_obj_st * obj, gt_color_t color)
 {
-    gt_label_set_font_color(((_gt_input_number_st * )obj->style)->label, color);
+    _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_color(style->label, color);
 }
 
 void gt_input_number_set_font_size(gt_obj_st * obj, uint8_t size)
 {
-    gt_label_set_font_size(((_gt_input_number_st * )obj->style)->label, size);
+    _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_size(style->label, size);
 }
 
 void gt_input_number_set_font_gray(gt_obj_st * obj, uint8_t gray)
 {
-    gt_label_set_font_gray(((_gt_input_number_st * )obj->style)->label, gray);
+    _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_gray(style->label, gray);
 }
 
 void gt_input_number_set_font_align(gt_obj_st * obj, uint8_t align)
 {
-    gt_label_set_font_align(((_gt_input_number_st * )obj->style)->label, align);
+    _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_align(style->label, align);
 }
 
 void gt_input_number_set_font_family_cn(gt_obj_st * obj, gt_family_t family)
 {
-    gt_label_set_font_family_cn(((_gt_input_number_st * )obj->style)->label, family);
+    _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_family_cn(style->label, family);
 }
 
 void gt_input_number_set_font_family_en(gt_obj_st * obj, gt_family_t family)
 {
-    gt_label_set_font_family_en(((_gt_input_number_st * )obj->style)->label, family);
+    _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_family_en(style->label, family);
 }
 
 /* end ------------------------------------------------------------------*/

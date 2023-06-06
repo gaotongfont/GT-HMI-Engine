@@ -113,7 +113,7 @@ double gt_input_number_decrease(gt_obj_st * obj);
  *      result is "000123.456", otherwise "123.456".
  *
  * @param obj
- * @param length 0: default, auto calculate; other: set length
+ * @param length 0: default, auto calculate; other: set length; [max: 64]
  */
 void gt_input_number_set_display_integer_length(gt_obj_st * obj, uint8_t length);
 
@@ -124,7 +124,7 @@ void gt_input_number_set_display_integer_length(gt_obj_st * obj, uint8_t length)
  *      result is "123456.78".
  *
  * @param obj
- * @param length 2: default; other: set length
+ * @param length 2: default; other: set length;  [max: 64]
  */
 void gt_input_number_set_display_decimal_length(gt_obj_st * obj, uint8_t length);
 

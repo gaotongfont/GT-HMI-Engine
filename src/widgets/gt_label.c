@@ -186,10 +186,24 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
+/* global functions / API interface -------------------------------------*/
 
-static void _gt_label_init_style(gt_obj_st * label)
-{
-    _gt_label_st * style = (_gt_label_st * )label->style;
+/**
+ * @brief create a label obj
+ *
+ * @param parent label's parent element
+ * @return gt_obj_st* label obj
+ */
+gt_obj_st * gt_label_create(gt_obj_st * parent) {
+    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    if (NULL == obj) {
+        return NULL;
+    }
+    _gt_label_st * style = (_gt_label_st * )obj->style;
+    if (NULL == style) {
+        gt_obj_destroy(obj);
+        return NULL;
+    }
 
     gt_memset(style, 0, sizeof(_gt_label_st));
 
@@ -202,23 +216,8 @@ static void _gt_label_init_style(gt_obj_st * label)
     style->font_family_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size         = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_gray         = 1;
-    style->font_align = GT_ALIGN_LEFT;
-}
+    style->font_align        = GT_ALIGN_LEFT;
 
-
-
-
-/* global functions / API interface -------------------------------------*/
-
-/**
- * @brief create a label obj
- *
- * @param parent label's parent element
- * @return gt_obj_st* label obj
- */
-gt_obj_st * gt_label_create(gt_obj_st * parent) {
-    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_label_init_style(obj);
     return obj;
 }
 

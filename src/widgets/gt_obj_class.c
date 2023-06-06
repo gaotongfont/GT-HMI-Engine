@@ -133,6 +133,15 @@ static void _gt_obj_class_destroy_property(gt_obj_st * self) {
     self->class = NULL;
 }
 
+static inline void _gt_obj_class_destroy_self(gt_obj_st * self) {
+    if (NULL == self) {
+        return;
+    }
+    _gt_obj_class_destroy_property(self);
+    gt_mem_free(self);
+    self = NULL;
+}
+
 /**
  * @brief Destroy the object and its child objects
  *
@@ -161,7 +170,7 @@ static bool _gt_obj_class_destroy_children(gt_obj_st * self, bool is_root)
     // release child object from bottom to top
     for (i = self->cnt_child - 1; i >= 0; i--) {
         if (_gt_obj_class_destroy_children(self->child[i], false)) {
-            self->child[i] = NULL;
+            self->child[i] = NULL;  /** can not repeat free memory here */
         }
     }
 
@@ -171,6 +180,10 @@ static bool _gt_obj_class_destroy_children(gt_obj_st * self, bool is_root)
         self->child = NULL;
     }
     self->cnt_child = 0;
+    if (!is_root) {
+        _gt_obj_class_destroy_self(self);
+        self = NULL;
+    }
     return false;
 }
 
@@ -276,11 +289,8 @@ void _gt_obj_class_destroy(struct gt_obj_s * self)
         }
     }
 
-    _gt_obj_class_destroy_property(self);
-    if (NULL != self) {
-        gt_mem_free(self);
-        self = NULL;
-    }
+    _gt_obj_class_destroy_self(self);
+    self = NULL;
 }
 
 gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj) {
