@@ -253,4 +253,12 @@ get_area_lb:
 }
 
 
+void gt_disp_invalid_area(gt_obj_st * obj)
+{
+    if( !gt_obj_check_scr(obj) ){
+        return;
+    }
+    _gt_disp_refr_append_area(&obj->area);
+}
+
 /* end ------------------------------------------------------------------*/
