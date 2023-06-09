@@ -81,7 +81,7 @@ static inline uint32_t _gt_timer_for_each_exec(void)
             continue;
         }
 
-        period = start_time - ptr->last_run;
+        period = gt_tick_get() - ptr->last_run;
 
         if (period < ptr->period) {
             continue;
