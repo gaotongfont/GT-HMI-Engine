@@ -62,6 +62,7 @@ typedef enum type_widget_e {
     GT_TYPE_LINE        = 18,       ///< line
     GT_TYPE_PLAYER      = 19,       ///< player
     GT_TYPE_INPUT_NUMBER= 20,       ///< input number
+    GT_TYPE_CLOCK       = 21,       ///< clock
 
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;

@@ -17,7 +17,7 @@
 #include "float.h"
 #include "../others/gt_log.h"
 
-
+#if GT_CFG_ENABLE_INPUT_NUMBER
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_INPUT_NUMBER
 #define MY_CLASS    &gt_input_number_class
@@ -107,12 +107,11 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
 
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
-            if( gt_obj_check_scr(obj) ){
-                _gt_disp_refr_append_area(&obj->area);
-            }
+            gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
         case GT_EVENT_TYPE_UPDATE_VALUE:
+        case GT_EVENT_TYPE_DRAW_REDRAW:
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
@@ -275,4 +274,5 @@ void gt_input_number_set_font_family_en(gt_obj_st * obj, gt_family_t family)
     gt_label_set_font_family_en(style->label, family);
 }
 
+#endif /** #if GT_CFG_ENABLE_INPUT_NUMBER */
 /* end ------------------------------------------------------------------*/
