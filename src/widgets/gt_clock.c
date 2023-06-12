@@ -30,14 +30,21 @@
 
 #define _SECOND_PERIOD_MS   1000
 
+#define _MAX_NEXT_DAY_BIT_WIDTH     4
+#define _MAX_ALERT_BIT_WIDTH        4
+
+#define _get_count_by_bit_width(_bit_width)     (1 << _bit_width)
+
 /* private typedef ------------------------------------------------------*/
 typedef struct _reg_s {
-    uint8_t mode             : 2;   /**  */
-    uint8_t is_running       : 1;
-    uint8_t is_12_mode       : 1;   /** 12hour mode, such as: 1: 00:25; 0: 13:25 */
-    uint8_t is_full_day      : 1;   /** finish the day */
-    uint8_t is_show_meridiem : 1;   /** display AM/PM format */
-    uint8_t reserved         : 2;
+    uint16_t mode             : 2;   /**  */
+    uint16_t is_running       : 1;
+    uint16_t is_12_mode       : 1;   /** 12hour mode, such as: 1: 00:25; 0: 13:25 */
+    uint16_t is_full_day      : 1;   /** finish the day */
+    uint16_t is_show_meridiem : 1;   /** display AM/PM format */
+    uint16_t len_next_day_cb  : _MAX_NEXT_DAY_BIT_WIDTH;
+    uint16_t len_alert_cb     : _MAX_ALERT_BIT_WIDTH;
+    uint16_t reserved         : 2;
 }_reg_st;
 
 typedef struct _next_day_s {
@@ -55,8 +62,8 @@ typedef struct _gt_clock_s {
     char * format;
 
     _gt_timer_st * timer;
-    _next_day_st next_day;
-    _alert_st alert;
+    _next_day_st ** next_day;
+    _alert_st ** alert;
 
     _reg_st reg;
 
@@ -201,10 +208,25 @@ static void _init_cb(gt_obj_st * obj) {
 
 static void _deinit_cb(gt_obj_st * obj) {
     _gt_clock_st * style = (_gt_clock_st * )obj->style;
+    gt_size_t i = 0;
 
     if (style->timer) {
         _gt_timer_del(style->timer);
         style->timer = NULL;
+    }
+
+    if (style->next_day) {
+        for (i = style->reg.len_next_day_cb - 1; i >= 0; i--) {
+            gt_mem_free(style->next_day[i]);
+            style->next_day[i] = NULL;
+        }
+    }
+
+    if (style->alert) {
+        for (i = style->reg.len_alert_cb - 1; i >= 0; i--) {
+            gt_mem_free(style->alert[i]);
+            style->alert[i] = NULL;
+        }
     }
 
     if (style->format) {
@@ -261,12 +283,15 @@ static inline bool _is_time_zero(gt_clock_time_st * time) {
 
 static void _go_next_sec(gt_obj_st * obj) {
     _gt_clock_st * clock = (_gt_clock_st *)obj->style;
+    uint8_t i = 0, len = 0;
 
     ++clock->time_current.second;
-    if (clock->alert.cb &&
+    if (clock->alert &&
         GT_CLOCK_MODE_TIME == clock->reg.mode &&
         _is_time_equal(&clock->time_current, &clock->time_setup)) {
-        clock->alert.cb(obj, clock->alert.user_data);
+        for (i = 0, len = clock->reg.len_alert_cb; i < len; i++) {
+            clock->alert[i]->cb(obj, clock->alert[i]->user_data);
+        }
     }
 
     if (_get_second(clock->time_current) < _SECOND_MAX_VALUE) {
@@ -284,23 +309,29 @@ static void _go_next_sec(gt_obj_st * obj) {
     }
     _set_hour(clock->time_current, 0);
 
-    if (GT_CLOCK_MODE_TIME == clock->reg.mode && clock->next_day.cb) {
-        clock->next_day.cb(obj, clock->next_day.user_data);
+    if (GT_CLOCK_MODE_TIME == clock->reg.mode && clock->next_day) {
+        for (i = 0, len = clock->reg.len_next_day_cb; i < len; i++) {
+            clock->next_day[i]->cb(obj, clock->next_day[i]->user_data);
+        }
     }
 }
 
 static bool _go_prev_sec(gt_obj_st * obj) {
     _gt_clock_st * clock = (_gt_clock_st *)obj->style;
+    uint8_t i = 0, len = 0;
+
     if (!_get_hour(clock->time_current) && !_get_minute(clock->time_current) && !_get_second(clock->time_current)) {
         /** return when value is 00:00:00 */
         return false;
     }
     if (_get_second(clock->time_current)) {
         --clock->time_current.second;
-        if (clock->alert.cb &&
+        if (clock->alert &&
             GT_CLOCK_MODE_COUNTDOWN == clock->reg.mode &&
             _is_time_zero(&clock->time_current)) {
-            clock->alert.cb(obj, clock->alert.user_data);
+            for (i = 0, len = clock->reg.len_alert_cb; i < len; i++) {
+                clock->alert[i]->cb(obj, clock->alert[i]->user_data);
+            }
         }
         return true;
     }
@@ -472,8 +503,26 @@ void gt_clock_set_next_day_cb(gt_obj_st * obj, gt_clock_next_day_cb next_day_cb,
     if (NULL == next_day_cb) {
         return;
     }
-    clock->next_day.cb = next_day_cb;
-    clock->next_day.user_data = user_data;
+    if (clock->reg.len_next_day_cb + 1 >= _get_count_by_bit_width(_MAX_NEXT_DAY_BIT_WIDTH)) {
+        return;
+    }
+
+    if (NULL == clock->next_day) {
+        clock->next_day = (_next_day_st ** )gt_mem_malloc(sizeof(_next_day_st ** ));
+    } else {
+        clock->next_day = (_next_day_st ** )gt_mem_realloc(clock->next_day, (clock->reg.len_next_day_cb + 1) + sizeof(_next_day_st ** ));
+    }
+    if (NULL == clock->next_day) {
+        return;
+    }
+    clock->next_day[clock->reg.len_next_day_cb] = (_next_day_st * )gt_mem_malloc(sizeof(_next_day_st));
+    if (NULL == clock->next_day[clock->reg.len_next_day_cb]) {
+        clock->next_day = (_next_day_st ** )gt_mem_realloc(clock->next_day, (clock->reg.len_next_day_cb) + sizeof(_next_day_st ** ));
+        return;
+    }
+    clock->next_day[clock->reg.len_next_day_cb]->cb = next_day_cb;
+    clock->next_day[clock->reg.len_next_day_cb]->user_data = user_data;
+    ++clock->reg.len_next_day_cb;
 }
 
 void gt_clock_set_alert_cb(gt_obj_st * obj, gt_clock_alert_cb alert_cb, void * user_data)
@@ -482,8 +531,26 @@ void gt_clock_set_alert_cb(gt_obj_st * obj, gt_clock_alert_cb alert_cb, void * u
     if (NULL == alert_cb) {
         return;
     }
-    clock->alert.cb = alert_cb;
-    clock->alert.user_data = user_data;
+    if (clock->reg.len_alert_cb + 1 >= _get_count_by_bit_width(_MAX_ALERT_BIT_WIDTH)) {
+        return;
+    }
+
+    if (NULL == clock->alert) {
+        clock->alert = (_alert_st ** )gt_mem_malloc(sizeof(_alert_st ** ));
+    } else {
+        clock->alert = (_alert_st ** )gt_mem_realloc(clock->alert, (clock->reg.len_alert_cb + 1) + sizeof(_alert_st ** ));
+    }
+    if (NULL == clock->alert) {
+        return;
+    }
+    clock->alert[clock->reg.len_alert_cb] = (_alert_st * )gt_mem_malloc(sizeof(_alert_st));
+    if (NULL == clock->alert[clock->reg.len_alert_cb]) {
+        clock->alert = (_alert_st ** )gt_mem_realloc(clock->alert, (clock->reg.len_alert_cb) + sizeof(_alert_st ** ));
+        return;
+    }
+    clock->alert[clock->reg.len_alert_cb]->cb = alert_cb;
+    clock->alert[clock->reg.len_alert_cb]->user_data = user_data;
+    ++clock->reg.len_alert_cb;
 }
 
 void gt_clock_start(gt_obj_st * obj)
