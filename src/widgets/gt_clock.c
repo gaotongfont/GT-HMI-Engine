@@ -206,28 +206,44 @@ static void _init_cb(gt_obj_st * obj) {
     gt_event_clr_all_event(style->label);
 }
 
+static inline void _remove_all_next_day_cb(_gt_clock_st * style) {
+    gt_size_t i = 0;
+
+    if (NULL == style->next_day) {
+        return ;
+    }
+    for (i = style->reg.len_next_day_cb - 1; i >= 0; i--) {
+        gt_mem_free(style->next_day[i]);
+        style->next_day[i] = NULL;
+    }
+    gt_mem_free(style->next_day);
+    style->next_day = NULL;
+}
+
+static inline void _remove_all_alert_cb(_gt_clock_st * style) {
+    gt_size_t i = 0;
+
+    if (NULL == style->alert) {
+        return ;
+    }
+    for (i = style->reg.len_alert_cb - 1; i >= 0; i--) {
+        gt_mem_free(style->alert[i]);
+        style->alert[i] = NULL;
+    }
+    gt_mem_free(style->alert);
+    style->alert = NULL;
+}
+
 static void _deinit_cb(gt_obj_st * obj) {
     _gt_clock_st * style = (_gt_clock_st * )obj->style;
-    gt_size_t i = 0;
 
     if (style->timer) {
         _gt_timer_del(style->timer);
         style->timer = NULL;
     }
 
-    if (style->next_day) {
-        for (i = style->reg.len_next_day_cb - 1; i >= 0; i--) {
-            gt_mem_free(style->next_day[i]);
-            style->next_day[i] = NULL;
-        }
-    }
-
-    if (style->alert) {
-        for (i = style->reg.len_alert_cb - 1; i >= 0; i--) {
-            gt_mem_free(style->alert[i]);
-            style->alert[i] = NULL;
-        }
-    }
+    _remove_all_alert_cb(style);
+    _remove_all_next_day_cb(style);
 
     if (style->format) {
         gt_mem_free(style->format);
@@ -551,6 +567,81 @@ void gt_clock_set_alert_cb(gt_obj_st * obj, gt_clock_alert_cb alert_cb, void * u
     clock->alert[clock->reg.len_alert_cb]->cb = alert_cb;
     clock->alert[clock->reg.len_alert_cb]->user_data = user_data;
     ++clock->reg.len_alert_cb;
+}
+
+void gt_clock_clr_all_next_day_cb(gt_obj_st * obj)
+{
+    _remove_all_next_day_cb((_gt_clock_st * )obj->style);
+}
+
+void gt_clock_clr_all_alert_cb(gt_obj_st * obj)
+{
+    _remove_all_alert_cb((_gt_clock_st * )obj->style);
+}
+
+bool gt_clock_remove_next_day_cb(gt_obj_st * obj, gt_clock_next_day_cb next_day_cb)
+{
+    _gt_clock_st * style = (_gt_clock_st * )obj->style;
+    gt_size_t i = 0;
+
+    if (NULL == obj || NULL == next_day_cb) {
+        return false;
+    }
+
+    if (NULL == style->next_day || 0 == style->reg.len_next_day_cb) {
+        return false;
+    }
+
+    for (i = style->reg.len_next_day_cb - 1; i >= 0; i--) {
+        if (next_day_cb == style->next_day[i]->cb) {
+            break;
+        }
+    }
+    if (i < 0) {
+        printf("not found next_day_cb\n");
+        return false;
+    }
+
+    gt_mem_free(style->next_day[i]);
+    style->next_day[i] = NULL;
+
+    if (i < --style->reg.len_next_day_cb) {
+        gt_memmove(&style->next_day[i], &style->next_day[i + 1], (style->reg.len_next_day_cb - i) * sizeof(_next_day_st * ));
+    }
+    style->next_day = (_next_day_st ** )gt_mem_realloc(style->next_day, (style->reg.len_next_day_cb) * sizeof(_next_day_st ** ));
+    return true;
+}
+
+bool gt_clock_remove_alert_cb(gt_obj_st * obj, gt_clock_alert_cb alert_cb)
+{
+    _gt_clock_st * style = (_gt_clock_st * )obj->style;
+    gt_size_t i = 0;
+
+    if (NULL == obj || NULL == alert_cb) {
+        return false;
+    }
+
+    if (NULL == style->alert || 0 == style->reg.len_alert_cb) {
+        return false;
+    }
+
+    for (i = style->reg.len_alert_cb - 1; i >= 0; i--) {
+        if (alert_cb == style->alert[i]->cb) {
+            break;
+        }
+    }
+    if (i < 0) {
+        return false;
+    }
+
+    gt_mem_free(style->alert[i]);
+    style->alert[i] = NULL;
+
+    if (i < --style->reg.len_alert_cb) {
+        gt_memmove(&style->alert[i], &style->alert[i + 1], (style->reg.len_alert_cb - i) * sizeof(_alert_st * ));
+    }
+    style->alert = (_alert_st ** )gt_mem_realloc(style->alert, (style->reg.len_alert_cb) * sizeof(_alert_st ** ));
+    return true;
 }
 
 void gt_clock_start(gt_obj_st * obj)

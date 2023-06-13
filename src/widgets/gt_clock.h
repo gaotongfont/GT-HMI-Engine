@@ -193,6 +193,40 @@ void gt_clock_set_next_day_cb(gt_obj_st * obj, gt_clock_next_day_cb next_day_cb,
 void gt_clock_set_alert_cb(gt_obj_st * obj, gt_clock_alert_cb alert_cb, void * user_data);
 
 /**
+ * @brief clear all next day callback function
+ *
+ * @param obj
+ */
+void gt_clock_clr_all_next_day_cb(gt_obj_st * obj);
+
+/**
+ * @brief clear all alert callback function
+ *
+ * @param obj
+ */
+void gt_clock_clr_all_alert_cb(gt_obj_st * obj);
+
+/**
+ * @brief Remove the specified next day callback function
+ *
+ * @param obj
+ * @param next_day_cb The callback function
+ * @return true The callback function is removed successfully
+ * @return false The callback function is not found or delete failed
+ */
+bool gt_clock_remove_next_day_cb(gt_obj_st * obj, gt_clock_next_day_cb next_day_cb);
+
+/**
+ * @brief Remove the specified alert callback function
+ *
+ * @param obj
+ * @param alert_cb The callback function
+ * @return true The callback function is removed successfully
+ * @return false The callback function is not found or delete failed
+ */
+bool gt_clock_remove_alert_cb(gt_obj_st * obj, gt_clock_alert_cb alert_cb);
+
+/**
  * @brief Run the clock using the default timer
  *
  * @param obj
