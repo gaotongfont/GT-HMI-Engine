@@ -48,7 +48,7 @@ typedef struct _reg_s {
 }_reg_st;
 
 typedef struct _next_day_s {
-    gt_clock_alert_cb cb;
+    gt_clock_next_day_cb cb;
     void * user_data;
 }_next_day_st;
 
@@ -669,13 +669,12 @@ void gt_clock_stop(gt_obj_st * obj)
 void gt_clock_toggle(gt_obj_st * obj)
 {
     _gt_clock_st * style = (_gt_clock_st * )obj->style;
-    style->reg.is_running = !style->reg.is_running;
 
     if (style->reg.is_running) {
-        gt_clock_start(obj);
+        gt_clock_stop(obj);
         return;
     }
-    gt_clock_stop(obj);
+    gt_clock_start(obj);
 }
 
 
