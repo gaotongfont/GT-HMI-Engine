@@ -202,6 +202,9 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
     gt_event_st e;
 
     _gt_event_handler_event_mask(parent);
+
+    _gt_event_locked_obj(parent);
+
     while ( idx < parent->cnt_event ) {
         event_attr = gt_obj_get_event_attr(parent, idx++);
         if ( NULL == event_attr ) {
@@ -214,6 +217,9 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
             event_attr->user_cb(&e);
         }
     }
+
+    _gt_event_unlocked_obj();
+
 	return GT_RES_OK;
 }
 
