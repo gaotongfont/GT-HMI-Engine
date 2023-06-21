@@ -73,18 +73,6 @@ static char * _gt_imgbtn_get_src(gt_obj_st * obj) {
     return style->src;
 }
 
-static inline void _gt_imgbtn_init_widget(gt_obj_st * imgbtn)
-{
-    _gt_imgbtn_st * style = imgbtn->style;
-    gt_attr_rect_st dsc = {
-        .bg_img_src = style->src,
-        .bg_opa = imgbtn->opa
-    };
-
-    /* start draw imgbtn */
-    draw_bg_img(imgbtn->draw_ctx, &dsc, &imgbtn->area);
-}
-
 /**
  * @brief obj init imgbtn widget call back
  *
@@ -93,7 +81,16 @@ static inline void _gt_imgbtn_init_widget(gt_obj_st * imgbtn)
 static void _init_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
 
-    _gt_imgbtn_init_widget(obj);
+    _gt_imgbtn_st * style = obj->style;
+    void * img = style->src_press && style->selected ? style->src_press : style->src;
+    gt_attr_rect_st dsc = {
+        .bg_img_src = img,
+        .bg_opa = obj->opa
+    };
+
+    /* start draw imgbtn */
+    draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
+    style->selected = 0;
 }
 
 /**
@@ -189,7 +186,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
             GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-            _gt_imgbtn_set_src(obj, style->src_press);
+            style->selected = 1;
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         case GT_EVENT_TYPE_UPDATE_VALUE:
@@ -206,6 +203,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
+            style->selected = 0;
             if (!_turn_next_image(obj)) {
                 _gt_imgbtn_set_src(obj, style->src_base);
             }

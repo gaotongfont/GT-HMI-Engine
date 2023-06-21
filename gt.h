@@ -50,6 +50,8 @@ extern "C" {
 /* draw */
 #include "src/extra/draw/gt_draw_blend.h"
 
+#include "src/others/gt_anim.h"
+
 #if GT_CFG_ENABLE_BTN
 #include "src/widgets/gt_btn.h"
 #endif

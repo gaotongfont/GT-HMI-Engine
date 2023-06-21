@@ -966,16 +966,16 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             area_font_style.y += _font.size + 1;
             area_font_style.h = 2;
             area_font_style.w = width;
-            blend_dsc_style.color_fill = gt_color_black();
+            blend_dsc_style.color_fill = dsc->font_color;
             blend_dsc_style.dst_area = &area_font_style;
             gt_draw_blend(draw_ctx, &blend_dsc_style);
         }
         if( dsc->style & GT_FONT_STYLE_STRIKETHROUGH ){
-            blend_dsc_style.color_fill = gt_color_red();
             area_font_style = area_font;
             area_font_style.y += (_font.size >> 1);
             area_font_style.h = 2;
             area_font_style.w = width;
+            blend_dsc_style.color_fill = dsc->font_color;
             blend_dsc_style.dst_area = &area_font_style;
             gt_draw_blend(draw_ctx, &blend_dsc_style);
         }

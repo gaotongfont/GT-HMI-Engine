@@ -74,7 +74,7 @@ extern "C" {
 #if GT_MEM_CUSTOM
     #define GT_MEM_CUSTOM_INCLUDE   "../others/gt_tlsf.h"
 
-    #define GT_MEM_SIZE             (64 * 1024U)    //Byte
+    #define GT_MEM_SIZE             (24 * 1024U)    //Byte
 
     #define gt_tlsf_assert(_expr)   ( (void)0 )
 #else
@@ -98,7 +98,7 @@ extern "C" {
 #define GT_STYLE_UI_BRIGHT     2
 
 /* default gesture repeat */
-#define GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS      100  /* ms repeat trigger once event */
+#define GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS      300  /* ms repeat trigger once event */
 #define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR     (GT_SCREEN_WIDTH/3)
 #define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_VER     (GT_SCREEN_HEIGHT/3)
 #define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL           (2)
