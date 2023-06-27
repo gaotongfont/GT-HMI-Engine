@@ -197,7 +197,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_DRAW_START: {
             GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             if( gt_obj_check_scr(obj) ){
-                extern void gt_disp_ref_area(gt_area_st * area);
                 gt_disp_ref_area(&obj->area);
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
