@@ -47,7 +47,6 @@ void gt_refr_timer(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
     gt_area_st * area = NULL;
-    gt_area_st area_res;
     if( disp == NULL ){
         return ;
     }
@@ -57,10 +56,13 @@ void gt_refr_timer(void)
 #endif
 
         area = _gt_disp_refr_get_area();
+        if (false == gt_area_check_legal(area)) {
+            // GT_LOGW("!!!", "area is illegal");
+        }
         if ( !area ) {
             return ;
         }
-        if( gt_area_intersect_screen(&disp->area_act, area, &area_res) == false ){
+        if (false == gt_area_is_intersect_screen(&disp->area_act, area)) {
             _gt_disp_refr_area_pop();
             return;
         }

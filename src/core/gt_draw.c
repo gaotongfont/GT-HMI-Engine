@@ -14,6 +14,7 @@
 #include "gt_graph_base.h"
 #include "gt_obj_pos.h"
 #include "../hal/gt_hal_disp.h"
+#include "./gt_disp.h"
 #include "gt_mem.h"
 #include "../others/gt_math.h"
 #include "../others/gt_log.h"
@@ -1122,8 +1123,8 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_
     coords->h = dsc_img.header.h;
 
     gt_area_st dst_area = *coords, mask_area = *coords;
-    gt_disp_st * disp = gt_disp_get_default();
-    gt_size_t screen_x_right = disp->area_act.x + GT_SCREEN_WIDTH;
+    gt_area_st * disp_act = gt_disp_get_area_act();
+    gt_size_t screen_x_right = disp_act->x + GT_SCREEN_WIDTH;
     if (screen_x_right < coords->x + coords->w) {
         dst_area.w = screen_x_right - coords->x;
         mask_area.w = dst_area.w;

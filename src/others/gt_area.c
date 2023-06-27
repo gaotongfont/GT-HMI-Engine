@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_area.h"
+#include "../gt_conf.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -160,6 +161,17 @@ void gt_area_join(gt_area_st * res, const gt_area_st * const src, const gt_area_
     res->y = min_y;
     res->w = max_x - min_x;
     res->h = max_y - min_y;
+}
+
+bool gt_area_check_legal(gt_area_st * area)
+{
+    if ( !(area->w > GT_SCREEN_WIDTH || area->h > GT_SCREEN_HEIGHT) ) {
+        return true;
+    }
+
+    area->w = GT_SCREEN_WIDTH;
+    area->h = GT_SCREEN_HEIGHT;
+    return false;
 }
 
 /* end ------------------------------------------------------------------*/

@@ -40,6 +40,13 @@ typedef enum{
 
 
 /* static functions -----------------------------------------------------*/
+/**
+ * @brief Is display busy
+ *
+ * @param disp
+ * @return true busy now
+ * @return false
+ */
 static bool _gt_disp_get_state(gt_disp_st * disp)
 {
     if( disp == NULL ){
@@ -172,22 +179,22 @@ void gt_disp_ref_area(const gt_area_st * coords)
 	gt_obj_st * scr = gt_disp_get_scr();
     gt_area_st area;
     uint16_t dist = 0;
-    if( scr == NULL ){
+    if ( scr == NULL ) {
         return;
     }
-    if( _gt_disp_get_state(disp) == GT_BUSY ){
+    if ( _gt_disp_get_state(disp) == GT_BUSY ) {
         GT_LOGD(GT_LOG_TAG_GUI, "disp is busy");
         return;
     }
     _gt_disp_set_state(disp, GT_BUSY);
 
     gt_area_copy(&area, (gt_area_st *)coords);
-    if( disp->area_act.y > area.y ){
+    if ( disp->area_act.y > area.y ) {
         dist = disp->area_act.y - area.y;
         area.y += dist;
         area.h -= dist;
     }
-    if( disp->area_act.x > area.x ){
+    if ( disp->area_act.x > area.x ) {
         dist = disp->area_act.x - area.x;
         area.x += dist;
         area.w -= dist;
@@ -197,13 +204,13 @@ void gt_disp_ref_area(const gt_area_st * coords)
     }
 
     uint16_t line = GT_REFRESH_FLUSH_LINE_PRE_TIME;
-    if( (area.w * area.h) <= (line * GT_SCREEN_WIDTH) ){
+    if ( (area.w * area.h) > (line * GT_SCREEN_WIDTH) ) {
+        line = (line * GT_SCREEN_WIDTH) / area.w;
+    } else {
         line = area.h;
-    }else{
-        line = (line * GT_SCREEN_WIDTH)/area.w;
     }
 
-    uint16_t y = 0;
+    gt_size_t y = 0;
     uint32_t len = area.w * line;
 
     disp->area_disp.x = area.x;
@@ -236,12 +243,14 @@ void gt_disp_ref_area(const gt_area_st * coords)
 }
 
 
-void gt_disp_set_area_act(gt_area_st * area){
+void gt_disp_set_area_act(gt_area_st * area)
+{
     gt_disp_st * disp_dev = gt_disp_get_default();
     gt_area_copy(&disp_dev->area_act, area);
 }
 
-gt_area_st * gt_disp_get_area_act(){
+gt_area_st * gt_disp_get_area_act(void)
+{
     gt_disp_st * disp_dev = gt_disp_get_default();
     return &disp_dev->area_act;
 }
