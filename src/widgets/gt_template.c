@@ -14,6 +14,7 @@
 #include "string.h"
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
+#include "../core/gt_disp.h"
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 

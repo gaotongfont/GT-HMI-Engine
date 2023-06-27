@@ -264,8 +264,8 @@ static void _invalid_area(gt_obj_st * obj, _gt_player_st * style) {
     uint16_t w = 0, h = 0;
     gt_fs_read_img_wh((char * )src, &w, &h);
     obj->area.w = GT_MAX(obj->area.w, w);
-    obj->area.h =  GT_MAX(obj->area.h, h);
-    if( gt_obj_check_scr(obj) ){
+    obj->area.h = GT_MAX(obj->area.h, h);
+    if ( gt_obj_check_scr(obj) ) {
         _gt_disp_refr_append_area(&obj->area);
     }
 }
