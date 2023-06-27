@@ -16,6 +16,8 @@
 #include "gt_disp.h"
 #include "../extra/draw/gt_draw_blend.h"
 #include "../core/gt_draw.h"
+#include "../others/gt_area.h"
+
 /* private define -------------------------------------------------------*/
 
 
@@ -169,6 +171,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
     gt_disp_st * disp = gt_disp_get_default();
 	gt_obj_st * scr = gt_disp_get_scr();
     gt_area_st area;
+    uint16_t dist = 0;
     if( scr == NULL ){
         return;
     }
@@ -180,14 +183,17 @@ void gt_disp_ref_area(const gt_area_st * coords)
 
     gt_area_copy(&area, (gt_area_st *)coords);
     if( disp->area_act.y > area.y ){
-        uint16_t dist = disp->area_act.y - area.y;
+        dist = disp->area_act.y - area.y;
         area.y += dist;
         area.h -= dist;
     }
     if( disp->area_act.x > area.x ){
-        uint16_t dist = disp->area_act.x - area.x;
+        dist = disp->area_act.x - area.x;
         area.x += dist;
         area.w -= dist;
+    } else if (disp->area_act.x + GT_SCREEN_WIDTH < area.x + area.w) {
+        area.x -= disp->area_act.x;
+        area.w -= area.x + area.w - (disp->area_act.x + GT_SCREEN_WIDTH);
     }
 
     uint16_t line = GT_REFRESH_FLUSH_LINE_PRE_TIME;

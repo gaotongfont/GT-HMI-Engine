@@ -51,6 +51,14 @@ bool gt_area_is_intersect_screen(const gt_area_st * screen, const gt_area_st * a
  */
 bool gt_area_intersect_screen(const gt_area_st * screen, const gt_area_st * area_fore, gt_area_st * area_res);
 
+/**
+ * @brief The inclusion relation of two regions
+ *
+ * @param a1_p The pointer of area
+ * @param a2_p The another pointer of area
+ * @return true
+ * @return false
+ */
 bool gt_area_is_on(gt_area_st * a1_p, gt_area_st * a2_p);
 void gt_area_join(gt_area_st * res, const gt_area_st * const src, const gt_area_st * const dst);
 

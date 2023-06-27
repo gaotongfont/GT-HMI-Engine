@@ -84,6 +84,7 @@ bool gt_area_intersect_screen(const gt_area_st * screen, const gt_area_st * area
     AREA_H(area_res)  = 0;
 
     if( AREA_X1(area_fore) < AREA_X1(screen) ){
+        /** fore over the area of the left of screen  */
         AREA_X1(area_res) = AREA_X1(screen) - AREA_X1(area_fore);
 
         if( fore_x2 < scr_x2 ){
@@ -100,6 +101,7 @@ bool gt_area_intersect_screen(const gt_area_st * screen, const gt_area_st * area
     }
 
     if( AREA_Y1(area_fore) < AREA_Y1(screen) ){
+        /** fore over the area of the top of screen */
         AREA_Y1(area_res) = AREA_Y1(screen) - AREA_Y1(area_fore);
 
         if( fore_y2 < scr_y2 ){
@@ -125,6 +127,16 @@ bool gt_area_is_on(gt_area_st * a1_p, gt_area_st * a2_p)
     gt_size_t a2_x2 = AREA_X2(a2_p);
     gt_size_t a2_y2 = AREA_Y2(a2_p);
 
+    /**
+     * a1_p/a2_p
+     * |-----------------|
+     * |  a2_p/a1_p      |
+     * |  |------|       |
+     * |  |      |       |
+     * |  |------|       |
+     * |                 |
+     * |-----------------|
+     */
     if ( (AREA_X1(a1_p) <= a2_x2) &&  (a1_x2 >= AREA_X1(a2_p)) && (AREA_Y1(a1_p) <= a2_y2) && (a1_y2 >= AREA_Y1(a2_p)) ) {
         return true;
     }

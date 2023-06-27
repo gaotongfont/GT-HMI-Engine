@@ -57,6 +57,7 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
 
     /** 绘制区域和显示屏buffer的交集区域 */
     gt_area_st area_intersect = { 0, 0, 0, 0 };
+    /** draw_ctx->buf_area: 图片显示区域; dsc->dst_area: 当前绘制区域 */
     if (!gt_area_intersect_screen(&draw_ctx->buf_area, dsc->dst_area, &area_intersect)) {
         return;
     }
