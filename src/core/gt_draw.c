@@ -531,6 +531,25 @@ static void _push_mask_buf(unsigned char *mask_buf , unsigned char *font_buf , u
             idx_mask_buf += font_size;
         }
     }
+    else if(3 == font_gray) {
+        for ( font_y = 0; font_y < font_size; font_y++) {
+            for (font_x = 0; font_x < byte_width; font_x++) {
+                tmp_c = font_buf[idx_res];
+                for( idx_bit = 0 ; idx_bit < 8 ; idx_bit++){
+                    if(2 == idx_bit % font_gray){
+                        tmp_c = (((tmp_c >> ((8 - font_gray) + (idx_bit >> 1))) << (idx_bit >> 1)) | ((font_buf[++idx_res] >> (8 - (idx_bit >> 1))))) << (8 - font_gray);
+                    }
+                    mask_buf[idx_mask_buf + (font_x << 3) + idx_bit] =  (tmp_c >> (8 - font_gray))  * ((0xFF/((0x01 << font_gray)-1)));
+                    tmp_c <<= font_gray;
+                    if(2 == idx_bit % font_gray){
+                        tmp_c = (font_buf[idx_res] << (idx_bit >> 1));
+                    }
+                }
+                ++idx_res;
+            }
+            idx_mask_buf += font_size;
+        }
+    }
     else{
         for ( font_y = 0; font_y < font_size; font_y++) {
             for (font_x = 0; font_x < byte_width; font_x++) {
@@ -947,8 +966,10 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             // dot to mask_buf
             uint8_t byte_width = (width + 7) >> 3 ;
             uint8_t font_gray = 1;
+
             _gt_gray_and_dot_width_get(&font_gray , &byte_width , _font , ret_style);
             _push_mask_buf(mask_buf , _font.res , _font.size , font_gray , byte_width);
+
         }else{
             const uint8_t * temp = gt_symbol_get_mask_buf(_font.utf8 , _font.size);
             if( temp == NULL ){

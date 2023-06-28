@@ -624,9 +624,9 @@ uint16_t gt_font_get_word_width_figure_up(const uint8_t* data , uint16_t dot_w ,
 	int j  ,len ;
 	uint8_t tmp = 0;
 
-	if(gray != 1 && gray != 2 && gray != 4){
-		return dot_w;
-	}
+	// if(gray < 1 || gray > 4){
+	// 	return dot_w;
+	// }
 
     byte_w = ((dot_w + 7) >> 3) * gray;
 
@@ -645,9 +645,13 @@ uint16_t gt_font_get_word_width_figure_up(const uint8_t* data , uint16_t dot_w ,
 				}
 			}
 
-			len = (j * (8 >> (gray>>1))) + ((8-i)>>(gray>>1));
-
-			// GT_LOGD( GT_LOG_TAG_GUI, "[%d] byte_w = %d , tmp = 0x%02X , len = %d i = %d\r\n", j , byte_w , tmp , len, i);
+            len = ((j / gray) * 8) + ((j%gray)*8+(8-i))/gray;
+            // GT_LOGD( GT_LOG_TAG_GUI, "[%d] byte_w = %d , tmp = 0x%02X , len = %d , i = %d , gray = %d , dot_w = %d\r\n", j , byte_w , tmp , len, i , gray , dot_w);
+            
+            // 
+            if(len >= dot_h){
+                continue;
+            }
 
 			return len ;
 		}
