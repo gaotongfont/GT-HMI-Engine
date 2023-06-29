@@ -274,6 +274,7 @@ void gt_disp_scroll_area_act(int16_t dist_x, int16_t dist_y)
     area->x += dist_x;
     area->y += dist_y;
 
+    /** Limit the range where the display can move */
     if (area->x < max_area->left) {
         area->x = max_area->left;
     } else if (area->x + area->w > max_area->right) {
@@ -284,6 +285,7 @@ void gt_disp_scroll_area_act(int16_t dist_x, int16_t dist_y)
         }
     }
 
+    /** Limit the range where the display can move */
     if (area->y < max_area->top) {
         area->y = max_area->top;
     } else if (area->y + area->h > max_area->bottom) {
