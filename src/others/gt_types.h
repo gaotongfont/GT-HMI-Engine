@@ -86,6 +86,13 @@ typedef struct _gt_area_s {
     uint16_t h;     ///< The height of area
 }gt_area_st;
 
+typedef struct _gt_area_abs_s {
+    gt_size_t left;
+    gt_size_t right;
+    gt_size_t top;
+    gt_size_t bottom;
+}gt_area_abs_st;
+
 typedef enum
 {
     GT_STATE_NONE = 0,

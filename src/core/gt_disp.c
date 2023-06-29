@@ -199,7 +199,12 @@ void gt_disp_ref_area(const gt_area_st * coords)
         area.x += dist;
         area.w -= dist;
     } else if (disp->area_act.x + GT_SCREEN_WIDTH < area.x + area.w) {
-        area.x -= disp->area_act.x;
+        if (disp->area_act.x > 0) {
+            area.x -= disp->area_act.x;
+        } else {
+            /** screen x < 0 */
+            area.x += disp->area_act.x;
+        }
         area.w -= area.x + area.w - (disp->area_act.x + GT_SCREEN_WIDTH);
     }
 
@@ -255,26 +260,40 @@ gt_area_st * gt_disp_get_area_act(void)
     return &disp_dev->area_act;
 }
 
-void gt_disp_scroll_area_act(uint16_t dist_x, int16_t dist_y)
+gt_area_abs_st * gt_disp_get_area_max(void)
+{
+    gt_disp_st * disp_dev = gt_disp_get_default();
+    return &disp_dev->area_max;
+}
+
+void gt_disp_scroll_area_act(int16_t dist_x, int16_t dist_y)
 {
     gt_area_st * area = gt_disp_get_area_act();
+    gt_area_abs_st * max_area = gt_disp_get_area_max();
 
     area->x += dist_x;
     area->y += dist_y;
 
-    if(area->x < 0){
-        area->x = 0;
-    }
-    if(area->y < 0){
-        area->y = 0;
+    if (area->x < max_area->left) {
+        area->x = max_area->left;
+    } else if (area->x + area->w > max_area->right) {
+        if (area->w < max_area->right) {
+            area->x = max_area->right - area->w;
+        } else if (area->x > 0) {
+            area->x = 0;
+        }
     }
 
-    if( area->x > (GT_SCREEN_WIDTH << 1) ){
-        area->x = GT_SCREEN_WIDTH << 1;
+    if (area->y < max_area->top) {
+        area->y = max_area->top;
+    } else if (area->y + area->h > max_area->bottom) {
+        if (area->h < max_area->bottom) {
+            area->y = max_area->bottom - area->h;
+        } else if (area->y > 0) {
+            area->y = 0;
+        }
     }
-    if( area->y > GT_SCREEN_HEIGHT << 1 ){
-        area->y = GT_SCREEN_HEIGHT << 1;
-    }
+
     gt_disp_load_scr(gt_disp_get_scr());
 }
 

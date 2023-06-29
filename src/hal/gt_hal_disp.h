@@ -77,6 +77,7 @@ typedef struct _gt_disp_s
     /* flush */
     gt_area_st area_act;        //Location of physical screen on virtual screen
     gt_area_st area_disp;       //10 lines area, Objects in this area will be copied to vbd_color
+    gt_area_abs_st area_max;    // max area of virtual screen
     gt_color_t * vbd_color;     //save 10 lines visible pic, this will flush to phy screen
 }gt_disp_st;
 
@@ -166,6 +167,13 @@ void _gt_disp_refr_area_pop(void);
  * @return gt_area_st* The invalid redraw areas
  */
 gt_area_st * _gt_disp_refr_get_area(void);
+
+/**
+ * @brief Update max screen can display area
+ *
+ * @param area widget area
+ */
+void _gt_disp_update_max_area(const gt_area_st * const area);
 
 /**
  * @brief Detects if the control intersects with the screen and sets the redrawn area

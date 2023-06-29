@@ -168,7 +168,7 @@ static void _gt_indev_handler_point(gt_indev_st * indev)
             point_p->gesture = GT_DIR_NONE;
         }
 
-        if( point_p->gesture != GT_DIR_NONE ){
+        if (point_p->gesture != GT_DIR_NONE) {
             _gt_indev_point_set_value(&point_p->last, point_p->newly.x, point_p->newly.y);
         }
     }

@@ -37,6 +37,7 @@
 /* global functions / API interface -------------------------------------*/
 void gt_obj_set_area(gt_obj_st * obj, gt_area_st area) {
     gt_obj_area_change(obj, &area);
+    _gt_disp_update_max_area(&area);
 }
 
 void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y) {
@@ -44,6 +45,7 @@ void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y) {
     area.x = x;
     area.y = y;
     gt_obj_pos_change(obj, &area);
+    _gt_disp_update_max_area(&area);
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -52,6 +54,7 @@ void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h) {
     area.w = w;
     area.h = h;
     gt_obj_size_change(obj, &area);
+    _gt_disp_update_max_area(&area);
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -59,6 +62,7 @@ void gt_obj_set_x(gt_obj_st * obj, uint16_t x) {
     gt_area_st area = obj->area;
     area.x = x;
     gt_obj_pos_change(obj, &area);
+    _gt_disp_update_max_area(&area);
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -66,6 +70,7 @@ void gt_obj_set_y(gt_obj_st * obj, uint16_t y) {
     gt_area_st area = obj->area;
     area.y = y;
     gt_obj_pos_change(obj, &area);
+    _gt_disp_update_max_area(&area);
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -73,6 +78,7 @@ void gt_obj_set_w(gt_obj_st * obj, uint16_t w) {
     gt_area_st area = obj->area;
     area.w = w;
     gt_obj_pos_change(obj, &area);
+    _gt_disp_update_max_area(&area);
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -80,6 +86,7 @@ void gt_obj_set_h(gt_obj_st * obj, uint16_t h) {
     gt_area_st area = obj->area;
     area.h = h;
     gt_obj_pos_change(obj, &area);
+    _gt_disp_update_max_area(&area);
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 

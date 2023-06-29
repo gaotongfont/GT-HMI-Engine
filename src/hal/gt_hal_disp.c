@@ -252,6 +252,27 @@ get_area_lb:
     return &disp->refr.areas[idx];
 }
 
+void _gt_disp_update_max_area(const gt_area_st * const area)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    gt_area_abs_st * max_area = &disp->area_max;
+
+    if (area->x < max_area->left) {
+        max_area->left = area->x;
+    }
+    if (area->y < max_area->top) {
+        max_area->top = area->y;
+    }
+    if (area->x + area->w > max_area->right) {
+        max_area->right = area->x + area->w;
+    }
+    if (area->y + area->h > max_area->bottom) {
+        max_area->bottom = area->y + area->h;
+    }
+}
+
+
+
 
 void gt_disp_invalid_area(gt_obj_st * obj)
 {

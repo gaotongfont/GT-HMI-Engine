@@ -1142,6 +1142,7 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_
     }
     coords->w = dsc_img.header.w;
     coords->h = dsc_img.header.h;
+    _gt_disp_update_max_area(coords);
 
     gt_area_st dst_area = *coords, mask_area = *coords;
     gt_area_st * disp_act = gt_disp_get_area_act();
