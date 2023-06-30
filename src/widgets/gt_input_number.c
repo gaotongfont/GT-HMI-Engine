@@ -136,6 +136,7 @@ gt_obj_st * gt_input_number_create(gt_obj_st * parent)
     style->min = DBL_MIN;
 
     style->label = gt_label_create(obj);
+    gt_label_set_text(style->label , "");
     return obj;
 }
 

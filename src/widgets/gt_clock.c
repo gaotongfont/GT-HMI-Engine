@@ -380,6 +380,7 @@ gt_obj_st * gt_clock_create(gt_obj_st * parent)
     gt_memset(style, 0, sizeof(_gt_clock_st));
 
     style->label = gt_label_create(obj);
+    gt_label_set_text(style->label , "");
     return obj;
 }
 
