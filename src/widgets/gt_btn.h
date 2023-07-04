@@ -87,6 +87,9 @@ void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray);
 void gt_btn_set_font_align(gt_obj_st * btn, uint8_t align);
 void gt_btn_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn);
 void gt_btn_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en);
+void gt_btn_set_font_thick_en(gt_obj_st * btn, uint8_t thick);
+void gt_btn_set_font_thick_cn(gt_obj_st * btn, uint8_t thick);
+
 /**
  * @brief set btn radius
  *

@@ -44,6 +44,8 @@ typedef struct _gt_input_s
     gt_family_t font_family_en;
     uint8_t     font_gray;
     uint8_t     font_align;
+    uint8_t     thick_en;
+    uint8_t     thick_cn;
 }_gt_input_st;
 
 
@@ -117,24 +119,24 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     font.encoding = gt_project_encoding_get();
     gt_color_t color_font = {0};
     if( !style->value ){
-        font.style_cn = style->font_family_cn;
-        font.style_en = style->font_family_en;
         font.utf8 = style->placeholder;
         font.len = strlen(style->placeholder);
-        font.size = style->font_size;
         color_font = gt_color_hex(0x808080);
-        font.gray = style->font_gray;
     }
     // if input value is not null
     else{
-        font.style_cn = style->font_family_cn;
-        font.style_en = style->font_family_en;
         font.utf8 = style->value;
         font.len = style->pos_cursor;
-        font.size = style->font_size;
         color_font = style->font_color;
-        font.gray = style->font_gray;
+        
     }
+    font.style_cn = style->font_family_cn;
+    font.style_en = style->font_family_en;
+    font.size = style->font_size;
+    font.gray = style->font_gray;
+    font.thick_cn   = style->thick_cn;
+    font.thick_en   = style->thick_en;
+
     gt_attr_font_st font_attr = {
         .font = &font,
         .align = style->font_align,
@@ -291,8 +293,10 @@ static void _gt_input_init_style(gt_obj_st * input)
     style->border_width   = 2;
     style->border_color   = gt_color_black();
 	style->bg_color 	  = gt_color_hex(0xffffff);
-    style->font_gray        = 1;
-    style->font_align = GT_ALIGN_NONE;
+    style->font_gray      = 1;
+    style->font_align     = GT_ALIGN_NONE;
+    style->thick_en       = style->font_size+6;
+    style->thick_cn       = style->font_size+6;
 }
 
 
@@ -516,6 +520,17 @@ void gt_input_set_border_color(gt_obj_st * input, gt_color_t color)
     _gt_input_st * style = input->style;
     style->border_color = color;
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_input_set_font_thick_en(gt_obj_st * input, uint8_t thick)
+{
+    _gt_input_st * style = (_gt_input_st * )input->style;
+    style->thick_en = thick;
+}
+void gt_input_set_font_thick_cn(gt_obj_st * input, uint8_t thick)
+{
+    _gt_input_st * style = (_gt_input_st * )input->style;
+    style->thick_cn = thick;
 }
 
 /* end ------------------------------------------------------------------*/

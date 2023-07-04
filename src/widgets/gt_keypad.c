@@ -66,7 +66,8 @@ typedef struct _gt_keypad_s
     uint8_t     font_size;
     uint8_t     font_gray;
     uint8_t     font_align;
-
+    uint8_t     thick_en;
+    uint8_t     thick_cn;
     _gt_keypad_info_st info;
 }_gt_keypad_st;
 
@@ -641,6 +642,8 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
         .size     = style->font_size,
         .gray     = style->font_gray,
         .res      = NULL,
+        .thick_cn   = style->thick_cn,
+        .thick_en   = style->thick_en,
     };
     font.encoding = GT_ENCODING_UTF8;
     gt_attr_rect_st rect_attr;
@@ -871,7 +874,9 @@ static void _gt_keypad_init_style(gt_obj_st * keypad)
     style->color_key    = gt_color_hex(0x646464);
     style->color_ctrl   = gt_color_hex(0x3E3E3E);
     style->font_gray    = 1;
-    style->font_align = GT_ALIGN_CENTER;
+    style->font_align   = GT_ALIGN_CENTER;
+    style->thick_en     = style->font_size+6;
+    style->thick_cn     = style->font_size+6;
 
     _gt_spell_ascii_numb = 0;
     _gt_spell_chinese_numb = 0;
@@ -1030,5 +1035,15 @@ void gt_keypad_set_font_align(gt_obj_st * keypad, uint8_t align)
 {
     _gt_keypad_st * style = keypad->style;
     style->font_align = align;
+}
+void gt_keypad_set_font_thick_en(gt_obj_st * keypad, uint8_t thick)
+{
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    style->thick_en = thick;
+}
+void gt_keypad_set_font_thick_cn(gt_obj_st * keypad, uint8_t thick)
+{
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    style->thick_cn = thick;
 }
 /* end ------------------------------------------------------------------*/

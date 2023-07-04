@@ -46,6 +46,8 @@ typedef struct _gt_list_s
     gt_family_t font_family_en;
     uint8_t     font_gray;
     uint8_t     font_align;
+    uint8_t     thick_en;
+    uint8_t     thick_cn;
 }_gt_listview_st;
 
 
@@ -168,6 +170,8 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
         .res        = NULL,
         .size       = style->font_size,
         .gray       = style->font_gray,
+        .thick_cn   = style->thick_cn,
+        .thick_en   = style->thick_en,
     };
     font.encoding = gt_project_encoding_get();
 
@@ -339,7 +343,9 @@ static void _gt_listview_init_style(gt_obj_st * listview)
     style->font_family_en       = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size            = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_gray            = 1;
-    style->font_align = GT_ALIGN_CENTER;
+    style->font_align           = GT_ALIGN_CENTER;
+    style->thick_en             = style->font_size+6;
+    style->thick_cn             = style->font_size+6;
 }
 
 
@@ -466,5 +472,14 @@ void gt_listview_set_font_family_cn(gt_obj_st * listview, gt_family_t family)
     _gt_listview_st * style = listview->style;
     style->font_family_cn = family;
 }
-
+void gt_listview_set_font_thick_en(gt_obj_st * listview, uint8_t thick)
+{
+    _gt_listview_st * style = (_gt_listview_st * )listview->style;
+    style->thick_en = thick;
+}
+void gt_listview_set_font_thick_cn(gt_obj_st * listview, uint8_t thick)
+{
+    _gt_listview_st * style = (_gt_listview_st * )listview->style;
+    style->thick_cn = thick;
+}
 /* end ------------------------------------------------------------------*/

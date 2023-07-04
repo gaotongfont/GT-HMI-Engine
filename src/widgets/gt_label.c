@@ -32,6 +32,8 @@ typedef struct _gt_label_s{
     gt_family_t font_family_en;
     uint8_t     font_gray;
     uint8_t     font_align;
+    uint8_t     thick_en;
+    uint8_t     thick_cn;
 }_gt_label_st;
 
 
@@ -66,6 +68,8 @@ static inline void _gt_label_init_widget(gt_obj_st * label) {
         .len        = strlen(style->text),
         .size       = style->font_size,
         .gray       = style->font_gray,
+        .thick_cn   = style->thick_cn,
+        .thick_en   = style->thick_en,
     };
     font.encoding = gt_project_encoding_get();
 
@@ -217,7 +221,8 @@ gt_obj_st * gt_label_create(gt_obj_st * parent) {
     style->font_size         = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_gray         = 1;
     style->font_align        = GT_ALIGN_LEFT;
-
+    style->thick_en          = style->font_size+6;
+    style->thick_cn          = style->font_size+6;
     return obj;
 }
 
@@ -288,6 +293,16 @@ void gt_label_set_font_family_en(gt_obj_st * label, gt_family_t family)
 {
     _gt_label_st * style = (_gt_label_st * )label->style;
     style->font_family_en = family;
+}
+void gt_label_set_font_thick_en(gt_obj_st * label, uint8_t thick)
+{
+    _gt_label_st * style = (_gt_label_st * )label->style;
+    style->thick_en = thick;
+}
+void gt_label_set_font_thick_cn(gt_obj_st * label, uint8_t thick)
+{
+    _gt_label_st * style = (_gt_label_st * )label->style;
+    style->thick_cn = thick;
 }
 
 /* end ------------------------------------------------------------------*/

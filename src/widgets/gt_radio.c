@@ -31,6 +31,8 @@ typedef struct _gt_radio_s
     uint8_t     font_size;
     uint8_t     font_gray;
     uint8_t     font_align;
+    uint8_t     thick_en;
+    uint8_t     thick_cn;
 }_gt_radio_st;
 
 
@@ -65,6 +67,8 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
         .len        = strlen(style->text),
         .size       = style->font_size,
         .gray       = style->font_gray,
+        .thick_cn   = style->thick_cn,
+        .thick_en   = style->thick_en,
     };
     font.encoding = gt_project_encoding_get();
 
@@ -232,7 +236,9 @@ static void _gt_radio_init_style(gt_obj_st * radio)
     style->font_family_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_size         = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_gray         = 1;
-    style->font_align = GT_ALIGN_NONE;
+    style->font_align        = GT_ALIGN_NONE;
+    style->thick_en          = style->font_size+6;
+    style->thick_cn          = style->font_size+6;
 }
 
 
@@ -325,5 +331,15 @@ void gt_radio_set_font_family_en(gt_obj_st * radio, gt_family_t family)
     style->font_family_en = family;
 }
 
+void gt_radio_set_font_thick_en(gt_obj_st * radio, uint8_t thick)
+{
+    _gt_radio_st * style = (_gt_radio_st * )radio->style;
+    style->thick_en = thick;
+}
+void gt_radio_set_font_thick_cn(gt_obj_st * radio, uint8_t thick)
+{
+    _gt_radio_st * style = (_gt_radio_st * )radio->style;
+    style->thick_cn = thick;
+}
 
 /* end ------------------------------------------------------------------*/

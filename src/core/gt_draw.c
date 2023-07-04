@@ -602,6 +602,8 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
         .style_cn = fonts.style_cn,
         .style_en = fonts.style_en,
         .encoding = fonts.encoding,
+        .thick_cn = fonts.thick_cn,
+        .thick_en = fonts.thick_en,
         .res = NULL,
     };
 
@@ -692,6 +694,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
         .fontsize = _font.size ,
         .fontgray = _font.gray ,
         .font_option = _font.style_en ,
+        .thick = _font.thick_en,
         .data = font_buf ,
         .data_len = font_buf_len ,
         .is_rev = _is_align_reverse(dsc->align) ? 0 : 1,
@@ -812,6 +815,8 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         .style_en   = dsc->font->style_en,
         .encoding   = dsc->font->encoding,
         .res        = NULL,
+        .thick_cn   = dsc->font->thick_cn,
+        .thick_en   = dsc->font->thick_en,
     };
     _font.gray = dsc->font->gray == 0 ? 1 : dsc->font->gray;
 

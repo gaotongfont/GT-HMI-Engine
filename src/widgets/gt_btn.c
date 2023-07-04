@@ -48,6 +48,8 @@ typedef struct _gt_btn_s
     uint8_t     font_align;
     uint8_t     fill;
     _gt_btn_reg_st reg;
+    uint8_t     thick_en;
+    uint8_t     thick_cn;
 }_gt_btn_st;
 
 
@@ -84,6 +86,8 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
         .len        = strlen(style->text),
         .size       = style->font_size,
         .gray       = style->font_gray,
+        .thick_cn   = style->thick_cn,
+        .thick_en   = style->thick_en,
     };
     font.encoding = gt_project_encoding_get();
     // set default size
@@ -273,6 +277,8 @@ static void _gt_btn_init_style(gt_obj_st * btn)
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_gray        = 1;
     style->font_align = GT_ALIGN_CENTER;
+    style->thick_en         = style->font_size+6;
+    style->thick_cn         = style->font_size+6;
 }
 
 static bool _contents_free_cb(void * item) {
@@ -452,5 +458,15 @@ int16_t gt_btn_get_state_content_index(gt_obj_st * obj)
     return _gt_vector_get_index(style->contents);
 }
 
+void gt_btn_set_font_thick_en(gt_obj_st * btn, uint8_t thick)
+{
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    style->thick_en = thick;
+}
+void gt_btn_set_font_thick_cn(gt_obj_st * btn, uint8_t thick)
+{
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    style->thick_cn = thick;
+}
 
 /* end ------------------------------------------------------------------*/

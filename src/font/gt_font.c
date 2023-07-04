@@ -485,7 +485,8 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
                 idx+=len;
                 continue;
             }
-            temp = font_func->func.read_vec_font(&font->res[idx_read], font_style , unicode , font->size , font->gray);
+            temp = font_func->func.read_vec_font(&font->res[idx_read], font_style , unicode , font->size , font->gray , \
+                                                font_style==font->style_cn ? font->thick_cn : font->thick_en);
             if(temp == 0)
             {
                 idx+=len;

@@ -43,6 +43,8 @@ typedef struct _gt_textarea_s{
     uint8_t     font_size;
     uint8_t     font_gray;
     uint8_t     font_align;
+    uint8_t     thick_en;
+    uint8_t     thick_cn;
 }_gt_textarea_st;
 
 
@@ -76,6 +78,8 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
         .style_en   = style->font_family_en,
         .gray       = style->font_gray,
         .res        = NULL,
+        .thick_cn   = style->thick_cn,
+        .thick_en   = style->thick_en,
     };
     font.encoding = gt_project_encoding_get();
     gt_attr_font_st font_attr = {
@@ -228,10 +232,12 @@ static void _gt_textarea_init_style(gt_obj_st * textarea)
 
     style->font_family_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
     style->font_family_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
-    style->color_background = gt_color_white();
-    style->font_gray        = 1;
-    style->font_align = GT_ALIGN_NONE;
+    style->font_size         = GT_CFG_DEFAULT_FONT_SIZE;
+    style->color_background  = gt_color_white();
+    style->font_gray         = 1;
+    style->font_align        = GT_ALIGN_NONE;
+    style->thick_en          = style->font_size+6;
+    style->thick_cn          = style->font_size+6;
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -352,4 +358,14 @@ void gt_textarea_set_font_family_en(gt_obj_st * textarea, gt_family_t family)
     style->font_family_en = family;
 }
 
+void gt_textarea_set_font_thick_en(gt_obj_st * textarea, uint8_t thick)
+{
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    style->thick_en = thick;
+}
+void gt_textarea_set_font_thick_cn(gt_obj_st * textarea, uint8_t thick)
+{
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    style->thick_cn = thick;
+}
 /* end ------------------------------------------------------------------*/
