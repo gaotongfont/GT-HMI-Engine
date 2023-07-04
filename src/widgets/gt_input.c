@@ -134,8 +134,8 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     font.style_en = style->font_family_en;
     font.size = style->font_size;
     font.gray = style->font_gray;
-    font.thick_cn   = style->thick_cn;
-    font.thick_en   = style->thick_en;
+    font.thick_en = style->thick_en == 0 ? style->font_size + 6: style->thick_en;
+    font.thick_cn = style->thick_cn == 0 ? style->font_size + 6: style->thick_cn;
 
     gt_attr_font_st font_attr = {
         .font = &font,
@@ -295,8 +295,8 @@ static void _gt_input_init_style(gt_obj_st * input)
 	style->bg_color 	  = gt_color_hex(0xffffff);
     style->font_gray      = 1;
     style->font_align     = GT_ALIGN_NONE;
-    style->thick_en       = style->font_size+6;
-    style->thick_cn       = style->font_size+6;
+    style->thick_en       = 0;
+    style->thick_cn       = 0;
 }
 
 

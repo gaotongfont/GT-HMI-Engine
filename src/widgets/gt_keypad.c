@@ -642,10 +642,11 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
         .size     = style->font_size,
         .gray     = style->font_gray,
         .res      = NULL,
-        .thick_cn   = style->thick_cn,
-        .thick_en   = style->thick_en,
     };
+    font.thick_en = style->thick_en == 0 ? style->font_size + 6: style->thick_en;
+    font.thick_cn = style->thick_cn == 0 ? style->font_size + 6: style->thick_cn;
     font.encoding = GT_ENCODING_UTF8;
+
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill  = 1;
@@ -875,8 +876,8 @@ static void _gt_keypad_init_style(gt_obj_st * keypad)
     style->color_ctrl   = gt_color_hex(0x3E3E3E);
     style->font_gray    = 1;
     style->font_align   = GT_ALIGN_CENTER;
-    style->thick_en     = style->font_size+6;
-    style->thick_cn     = style->font_size+6;
+    style->thick_en     = 0;
+    style->thick_cn     = 0;
 
     _gt_spell_ascii_numb = 0;
     _gt_spell_chinese_numb = 0;

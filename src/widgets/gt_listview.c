@@ -170,9 +170,9 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
         .res        = NULL,
         .size       = style->font_size,
         .gray       = style->font_gray,
-        .thick_cn   = style->thick_cn,
-        .thick_en   = style->thick_en,
     };
+    font.thick_en = style->thick_en == 0 ? style->font_size + 6: style->thick_en;
+    font.thick_cn = style->thick_cn == 0 ? style->font_size + 6: style->thick_cn;
     font.encoding = gt_project_encoding_get();
 
     gt_attr_font_st font_attr = {
@@ -344,8 +344,8 @@ static void _gt_listview_init_style(gt_obj_st * listview)
     style->font_size            = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_gray            = 1;
     style->font_align           = GT_ALIGN_CENTER;
-    style->thick_en             = style->font_size+6;
-    style->thick_cn             = style->font_size+6;
+    style->thick_en             = 0;
+    style->thick_cn             = 0;
 }
 
 

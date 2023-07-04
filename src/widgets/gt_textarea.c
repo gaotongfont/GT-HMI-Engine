@@ -78,9 +78,9 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
         .style_en   = style->font_family_en,
         .gray       = style->font_gray,
         .res        = NULL,
-        .thick_cn   = style->thick_cn,
-        .thick_en   = style->thick_en,
     };
+    font.thick_en = style->thick_en == 0 ? style->font_size + 6: style->thick_en;
+    font.thick_cn = style->thick_cn == 0 ? style->font_size + 6: style->thick_cn;
     font.encoding = gt_project_encoding_get();
     gt_attr_font_st font_attr = {
         .font       = &font,
@@ -236,8 +236,8 @@ static void _gt_textarea_init_style(gt_obj_st * textarea)
     style->color_background  = gt_color_white();
     style->font_gray         = 1;
     style->font_align        = GT_ALIGN_NONE;
-    style->thick_en          = style->font_size+6;
-    style->thick_cn          = style->font_size+6;
+    style->thick_en          = 0;
+    style->thick_cn          = 0;
 }
 
 /* global functions / API interface -------------------------------------*/
