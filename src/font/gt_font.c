@@ -431,6 +431,18 @@ bool gt_style_en_data_is_convertor(uint32_t unicode , uint8_t encoding)
     return false;
 }
 
+static bool _gt_number_symbol_font(uint32_t unicode)
+{
+    // 0123456789,.:'$€￥
+    if( unicode >= 0x30 && unicode <= 0x39 || \
+        0x3A == unicode || 0x2C == unicode || 0x2E == unicode || \
+        0x27 == unicode || 0x24 == unicode || 0xFFE5 == unicode || 0x20AC == unicode \
+    ){
+        return true;
+    }
+
+    return false;
+}
 /* global functions / API interface -------------------------------------*/
 
 
@@ -446,13 +458,12 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
         struct gt_font_func_s* font_func;
-
-        font_style = _gt_is_style_cn_or_en(unicode , font->encoding) ? font->style_en : font->style_cn;
-
-        // is zzzf font ￥
-        if((0xFFE5 == unicode) && (font->style_en >= 102  && font->style_en <= 129))
-        {
-            font_style = font->style_en;
+        
+        if(GT_CFG_DEFAULT_FONT_FAMILY_NUMB != font->style_numb && _gt_number_symbol_font(unicode)){
+            font_style = font->style_numb;
+        }
+        else{
+            font_style = _gt_is_style_cn_or_en(unicode , font->encoding) ? font->style_en : font->style_cn;
         }
 
         font_func = GT_Get_Font_Func_S(font_style);

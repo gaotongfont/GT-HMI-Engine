@@ -30,6 +30,7 @@ typedef struct _gt_checkbox_s
     gt_color_t  font_color;
     gt_family_t font_family_cn;
     gt_family_t font_family_en;
+    gt_family_t font_family_numb;
     uint8_t     font_size;
     uint8_t     font_gray;
     uint8_t     font_align;
@@ -62,6 +63,7 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     gt_font_st font = {
         .style_cn = style->font_family_cn,
         .style_en = style->font_family_en,
+        .style_numb = style->font_family_numb,
         .res      = NULL,
         .utf8     = style->text,
         .len      = strlen(style->text),
@@ -237,6 +239,7 @@ static void _gt_checkbox_init_style(gt_obj_st * checkbox)
 
     style->font_family_cn   = GT_CFG_DEFAULT_FONT_FAMILY_CN;
     style->font_family_en   = GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    style->font_family_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_color       = gt_color_black();
     style->font_gray        = 1;
@@ -303,6 +306,12 @@ void gt_checkbox_set_font_family_en(gt_obj_st * checkbox, gt_family_t family)
 {
     _gt_checkbox_st * style = checkbox->style;
     style->font_family_en = family;
+}
+
+void gt_checkbox_set_font_family_numb(gt_obj_st * checkbox, gt_family_t family)
+{
+    _gt_checkbox_st * style = checkbox->style;
+    style->font_family_numb = family;
 }
 
 void gt_checkbox_set_font_size(gt_obj_st * checkbox, uint8_t size)

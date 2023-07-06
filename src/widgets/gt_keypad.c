@@ -63,6 +63,7 @@ typedef struct _gt_keypad_s
     gt_color_t  font_color;  //font color
     gt_family_t font_family_cn;
     gt_family_t font_family_en;
+    gt_family_t font_family_numb;
     uint8_t     font_size;
     uint8_t     font_gray;
     uint8_t     font_align;
@@ -639,6 +640,7 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
     gt_font_st font = {
         .style_cn = style->font_family_cn,
         .style_en = style->font_family_en,
+        .style_numb = style->font_family_numb,
         .size     = style->font_size,
         .gray     = style->font_gray,
         .res      = NULL,
@@ -869,6 +871,7 @@ static void _gt_keypad_init_style(gt_obj_st * keypad)
     style->font_color      = gt_color_hex(0);
     style->font_family_cn  = GT_CFG_DEFAULT_FONT_FAMILY_CN;
     style->font_family_en  = GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    style->font_family_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
     style->font_size       = GT_CFG_DEFAULT_FONT_SIZE;
 
     style->color_board  = gt_color_hex(0x242424);
@@ -1020,6 +1023,12 @@ void gt_keypad_set_font_family_en(gt_obj_st * keypad, gt_family_t family)
 {
     _gt_keypad_st * style = keypad->style;
     style->font_family_en = family;
+}
+
+void gt_keypad_set_font_family_numb(gt_obj_st * keypad, gt_family_t family)
+{
+    _gt_keypad_st * style = keypad->style;
+    style->font_family_numb = family;
 }
 
 void gt_keypad_set_font_size(gt_obj_st * keypad, uint8_t size)

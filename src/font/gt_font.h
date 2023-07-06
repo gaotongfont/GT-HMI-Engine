@@ -81,6 +81,7 @@ typedef struct _gt_font_s
     uint8_t * res;      ///< get: font data
     uint32_t style_cn;  ///< set: font style
     uint32_t style_en;  ///< set: font style
+    uint32_t style_numb; ///< set: font style
     uint16_t len;       ///< set: utf8 arr len
     uint8_t size;       ///< set: font size
     uint8_t gray;       ///< set: font gray

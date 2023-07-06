@@ -142,6 +142,8 @@ void gt_input_number_set_font_family_cn(gt_obj_st * obj, gt_family_t family);
 
 void gt_input_number_set_font_family_en(gt_obj_st * obj, gt_family_t family);
 
+void gt_input_number_set_font_family_numb(gt_obj_st * obj, gt_family_t family);
+
 #endif /** #if GT_CFG_ENABLE_INPUT_NUMBER */
 
 #ifdef __cplusplus

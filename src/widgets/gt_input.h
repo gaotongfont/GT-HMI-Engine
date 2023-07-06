@@ -99,6 +99,7 @@ void gt_input_move_right_pos_cursor(gt_obj_st * input);
 void gt_input_set_font_color(gt_obj_st * input, gt_color_t color);
 void gt_input_set_font_family_cn(gt_obj_st * input, gt_family_t family);
 void gt_input_set_font_family_en(gt_obj_st * input, gt_family_t family);
+void gt_input_set_font_family_numb(gt_obj_st * input, gt_family_t family);
 void gt_input_set_font_size(gt_obj_st * input, uint8_t size);
 void gt_input_set_font_gray(gt_obj_st * input, uint8_t gray);
 void gt_input_set_font_align(gt_obj_st * input, uint8_t align);

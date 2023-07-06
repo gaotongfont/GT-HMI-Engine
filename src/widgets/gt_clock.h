@@ -253,6 +253,7 @@ void gt_clock_set_font_gray(gt_obj_st * obj, uint8_t gray);
 void gt_clock_set_font_align(gt_obj_st * obj, uint8_t align);
 void gt_clock_set_font_family_cn(gt_obj_st * obj, gt_family_t family);
 void gt_clock_set_font_family_en(gt_obj_st * obj, gt_family_t family);
+void gt_clock_set_font_family_numb(gt_obj_st * obj, gt_family_t family);
 
 
 #endif /** #if GT_CFG_ENABLE_CLOCK */

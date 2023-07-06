@@ -42,6 +42,7 @@ typedef struct _gt_input_s
     uint8_t font_size;
     gt_family_t font_family_cn;
     gt_family_t font_family_en;
+    gt_family_t font_family_numb;
     uint8_t     font_gray;
     uint8_t     font_align;
     uint8_t     thick_en;
@@ -132,6 +133,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     }
     font.style_cn = style->font_family_cn;
     font.style_en = style->font_family_en;
+    font.style_numb = style->font_family_numb;
     font.size = style->font_size;
     font.gray = style->font_gray;
     font.thick_en = style->thick_en == 0 ? style->font_size + 6: style->thick_en;
@@ -288,6 +290,7 @@ static void _gt_input_init_style(gt_obj_st * input)
 
     style->font_family_cn = GT_CFG_DEFAULT_FONT_FAMILY_CN;
     style->font_family_en = GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    style->font_family_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
     style->font_size      = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_color     = gt_color_black();
     style->border_width   = 2;
@@ -491,6 +494,12 @@ void gt_input_set_font_family_en(gt_obj_st * input, gt_family_t family)
 {
     _gt_input_st * style = input->style;
     style->font_family_en = family;
+}
+
+void gt_input_set_font_family_numb(gt_obj_st * input, gt_family_t family)
+{
+    _gt_input_st * style = input->style;
+    style->font_family_numb = family;
 }
 
 void gt_input_set_font_size(gt_obj_st * input, uint8_t size)

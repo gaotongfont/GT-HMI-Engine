@@ -44,6 +44,7 @@ typedef struct _gt_btn_s
     uint8_t         font_size;
     gt_family_t     font_family_cn;
     gt_family_t     font_family_en;
+    gt_family_t     font_family_numb;
     uint8_t         font_gray;
     uint8_t     font_align;
     uint8_t     fill;
@@ -81,6 +82,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     gt_font_st font = {
         .style_cn   = style->font_family_cn,
         .style_en   = style->font_family_en,
+        .style_numb = style->font_family_numb,
         .res        = NULL,
         .utf8       = style->text,
         .len        = strlen(style->text),
@@ -275,6 +277,7 @@ static void _gt_btn_init_style(gt_obj_st * btn)
     style->font_color       = gt_color_white();        //default color_font
     style->font_family_cn   = GT_CFG_DEFAULT_FONT_FAMILY_CN;
     style->font_family_en   = GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    style->font_family_numb = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_gray        = 1;
     style->font_align = GT_ALIGN_CENTER;
@@ -390,6 +393,12 @@ void gt_btn_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en)
 {
     _gt_btn_st * style = (_gt_btn_st * )btn->style;
     style->font_family_en = font_family_en;
+}
+
+void gt_btn_set_font_family_numb(gt_obj_st * btn, gt_family_t font_family_numb)
+{
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    style->font_family_numb = font_family_numb;
 }
 
 void gt_btn_set_radius(gt_obj_st * btn, uint8_t radius)
