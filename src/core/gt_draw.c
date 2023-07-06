@@ -766,8 +766,12 @@ _lab_nex_word:
         idx += i;
 
         if(!_is_align_reverse(dsc->align)) {
+            width = 0;
+            if(GT_ALIGN_RIGHT == (dsc->align & 0x7F)){
+                width = gt_font_get_one_word_width(convertor.fontcode[idx], &_font);
+            }
             /* check whether the boundary is reached */
-            if( (blend_dsc->dst_area->x + blend_dsc->dst_area->w + dsc->space_x) > (coords->x + coords->w) ){
+            if( (blend_dsc->dst_area->x + (width <= 0 ? blend_dsc->dst_area->w : width) + dsc->space_x) > (coords->x + coords->w) ){
 _lab_next_line:
                 // blend_dsc->dst_area->x = coords->x;
                 blend_dsc->dst_area->x = start_x;
@@ -1015,7 +1019,12 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
 
         /* check whether the boundary is reached */
         if(!_is_align_reverse(dsc->align)) {
-            if( (area_font.x + area_font.w + dsc->space_x) > (coords->x + coords->w) ){
+            width = 0;
+            if(GT_ALIGN_RIGHT == (dsc->align & 0x7F)){
+                gt_font_one_char_code_len_get(&text[idx], &unicode , _font.encoding);
+                width = gt_font_get_one_word_width(unicode, &_font);
+            }
+            if( (area_font.x + (width <= 0 ? area_font.w : width) + dsc->space_x) > (coords->x + coords->w) ){
             _lab_next_line:
                 // area_font.x = coords->x;
                 area_font.x = start_x;
