@@ -585,7 +585,15 @@ uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
     int width = 0;
-    int option = _gt_is_style_cn_or_en(unicode , font->encoding) ? font->style_en : font->style_cn;
+    int option = 0;
+    
+    if(GT_CFG_DEFAULT_FONT_FAMILY_NUMB != font->style_numb && _gt_number_symbol_font(unicode)){
+        option = font->style_numb;
+    }
+    else{
+        option = _gt_is_style_cn_or_en(unicode , font->encoding) ? font->style_en : font->style_cn;
+    }
+
     width = GT_Get_Font_Width(unicode , option , font->size , font->gray , font->res);
 
     if(0 == width){
