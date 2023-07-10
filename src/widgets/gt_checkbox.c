@@ -36,6 +36,8 @@ typedef struct _gt_checkbox_s
     uint8_t     font_align;
     uint8_t     thick_en;
     uint8_t     thick_cn;
+    uint8_t     space_x;
+    uint8_t     space_y;
 }_gt_checkbox_st;
 
 /* static variables -----------------------------------------------------*/
@@ -110,8 +112,8 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     /* font */
     gt_attr_font_st font_dsc = {
         .font           = &font,
-        .space_x        = 0,
-        .space_y        = 0,
+        .space_x        = style->space_x,
+        .space_y        = style->space_y,
         .font_color     = style->font_color,
         .align          = style->font_align,
         .opa            = checkbox->opa,
@@ -246,6 +248,8 @@ static void _gt_checkbox_init_style(gt_obj_st * checkbox)
     style->font_align = GT_ALIGN_NONE;
     style->thick_en         = 0;
     style->thick_cn         = 0;
+    style->space_x          = 0;
+    style->space_y          = 0;
 }
 
 
@@ -345,5 +349,10 @@ void gt_checkbox_set_font_thick_cn(gt_obj_st * checkbox, uint8_t thick)
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox->style;
     style->thick_cn = thick;
 }
-
+void gt_checkbox_set_space(gt_obj_st * checkbox, uint8_t space_x, uint8_t space_y)
+{
+    _gt_checkbox_st * style = checkbox->style;
+    style->space_x = space_x;
+    style->space_y = space_y;
+}
 /* end ------------------------------------------------------------------*/

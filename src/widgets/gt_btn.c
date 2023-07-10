@@ -51,6 +51,8 @@ typedef struct _gt_btn_s
     _gt_btn_reg_st reg;
     uint8_t     thick_en;
     uint8_t     thick_cn;
+    uint8_t     space_x;
+    uint8_t     space_y;
 }_gt_btn_st;
 
 
@@ -128,8 +130,8 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     // 2:font
     gt_attr_font_st font_attr = {
         .font           = &font,
-        .space_x        = 0,
-        .space_y        = 0,
+        .space_x        = style->space_x,
+        .space_y        = style->space_y,
         .font_color     = style->font_color,
         .align          = style->font_align,
         .opa            = btn->opa,
@@ -283,6 +285,8 @@ static void _gt_btn_init_style(gt_obj_st * btn)
     style->font_align = GT_ALIGN_CENTER;
     style->thick_en         = 0;
     style->thick_cn         = 0;
+    style->space_x          = 0;
+    style->space_y          = 0;
 }
 
 static bool _contents_free_cb(void * item) {
@@ -478,5 +482,10 @@ void gt_btn_set_font_thick_cn(gt_obj_st * btn, uint8_t thick)
     _gt_btn_st * style = (_gt_btn_st * )btn->style;
     style->thick_cn = thick;
 }
-
+void gt_btn_set_space(gt_obj_st * btn, uint8_t space_x, uint8_t space_y)
+{
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    style->space_x = space_x;
+    style->space_y = space_y;
+}
 /* end ------------------------------------------------------------------*/

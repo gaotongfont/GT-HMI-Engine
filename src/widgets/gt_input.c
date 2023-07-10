@@ -47,6 +47,8 @@ typedef struct _gt_input_s
     uint8_t     font_align;
     uint8_t     thick_en;
     uint8_t     thick_cn;
+    uint8_t     space_x;
+    uint8_t     space_y;
 }_gt_input_st;
 
 
@@ -142,8 +144,8 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     gt_attr_font_st font_attr = {
         .font = &font,
         .align = style->font_align,
-        .space_x = 0,
-        .space_y = 0,
+        .space_x = style->space_x,
+        .space_y = style->space_y,
         .font_color = color_font,
         .opa = input->opa,
     };
@@ -300,6 +302,8 @@ static void _gt_input_init_style(gt_obj_st * input)
     style->font_align     = GT_ALIGN_NONE;
     style->thick_en       = 0;
     style->thick_cn       = 0;
+    style->space_x        = 0;
+    style->space_y        = 0;
 }
 
 
@@ -540,6 +544,12 @@ void gt_input_set_font_thick_cn(gt_obj_st * input, uint8_t thick)
 {
     _gt_input_st * style = (_gt_input_st * )input->style;
     style->thick_cn = thick;
+}
+void gt_input_set_space(gt_obj_st * input, uint8_t space_x, uint8_t space_y)
+{
+    _gt_input_st * style = input->style;
+    style->space_x = space_x;
+    style->space_y = space_y;
 }
 
 /* end ------------------------------------------------------------------*/

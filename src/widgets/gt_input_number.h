@@ -148,6 +148,7 @@ void gt_input_number_set_font_thick_en(gt_obj_st * obj, uint8_t thick);
 
 void gt_input_number_set_font_thick_cn(gt_obj_st * obj, uint8_t thick);
 
+void gt_input_number_set_space(gt_obj_st * obj, uint8_t space_x, uint8_t space_y);
 
 #endif /** #if GT_CFG_ENABLE_INPUT_NUMBER */
 

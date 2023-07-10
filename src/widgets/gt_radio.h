@@ -65,6 +65,7 @@ void gt_radio_set_font_family_en(gt_obj_st * radio, gt_family_t family);
 void gt_radio_set_font_family_numb(gt_obj_st * radio, gt_family_t family);
 void gt_radio_set_font_thick_en(gt_obj_st * radio, uint8_t thick);
 void gt_radio_set_font_thick_cn(gt_obj_st * radio, uint8_t thick);
+void gt_radio_set_font_space_x(gt_obj_st * radio, uint8_t space_x, uint8_t space_y);
 
 #ifdef __cplusplus
 } /*extern "C"*/

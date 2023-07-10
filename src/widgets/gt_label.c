@@ -35,6 +35,8 @@ typedef struct _gt_label_s{
     uint8_t     font_align;
     uint8_t     thick_en;
     uint8_t     thick_cn;
+    uint8_t     space_x;
+    uint8_t     space_y;
 }_gt_label_st;
 
 
@@ -87,8 +89,8 @@ static inline void _gt_label_init_widget(gt_obj_st * label) {
     gt_attr_font_st font_attr = {
         .font       = &font,
         .font_color = style->font_color,
-        .space_x    = 0,
-        .space_y    = 0,
+        .space_x    = style->space_x,
+        .space_y    = style->space_y,
         .align      = style->font_align,
         .opa        = label->opa,
     };
@@ -229,6 +231,8 @@ gt_obj_st * gt_label_create(gt_obj_st * parent) {
     style->font_align        = GT_ALIGN_LEFT;
     style->thick_en          = 0;
     style->thick_cn          = 0;
+    style->space_x           = 0;
+    style->space_y           = 0;
     return obj;
 }
 
@@ -315,4 +319,11 @@ void gt_label_set_font_family_numb(gt_obj_st * label, gt_family_t family)
     _gt_label_st * style = (_gt_label_st * )label->style;
     style->font_family_numb = family;
 }
+void gt_label_set_space(gt_obj_st * label, uint8_t space_x, uint8_t space_y)
+{
+    _gt_label_st * style = (_gt_label_st * )label->style;
+    style->space_x = space_x;
+    style->space_y = space_y;
+}
+
 /* end ------------------------------------------------------------------*/

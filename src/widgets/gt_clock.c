@@ -760,5 +760,14 @@ void gt_clock_set_font_thick_cn(gt_obj_st * obj, uint8_t thick)
     gt_label_set_font_thick_cn(style->label, thick);
 }
 
+void gt_clock_set_space(gt_obj_st * obj, uint8_t space_x, uint8_t space_y)
+{
+    _gt_clock_st * style = (_gt_clock_st * )obj->style;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_space(style->label, space_x , space_y);
+}
+
 #endif /** #if GT_CFG_ENABLE_CLOCK */
 /* end ------------------------------------------------------------------*/

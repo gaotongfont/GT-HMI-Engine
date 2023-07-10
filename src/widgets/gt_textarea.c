@@ -241,6 +241,8 @@ static void _gt_textarea_init_style(gt_obj_st * textarea)
     style->font_align        = GT_ALIGN_NONE;
     style->thick_en          = 0;
     style->thick_cn          = 0;
+    style->space_x           = 0;
+    style->space_y           = 0;
 }
 
 /* global functions / API interface -------------------------------------*/
