@@ -496,7 +496,7 @@ void gt_listview_set_font_thick_cn(gt_obj_st * listview, uint8_t thick)
     _gt_listview_st * style = (_gt_listview_st * )listview->style;
     style->thick_cn = thick;
 }
-void gt_listview_set_font_space_x(gt_obj_st * listview, uint8_t space_x, uint8_t space_y)
+void gt_listview_set_space(gt_obj_st * listview, uint8_t space_x, uint8_t space_y)
 {
     _gt_listview_st * style = (_gt_listview_st * )listview->style;
     style->space_x = space_x;

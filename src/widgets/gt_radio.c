@@ -354,7 +354,7 @@ void gt_radio_set_font_thick_cn(gt_obj_st * radio, uint8_t thick)
     _gt_radio_st * style = (_gt_radio_st * )radio->style;
     style->thick_cn = thick;
 }
-void gt_radio_set_font_space_x(gt_obj_st * radio, uint8_t space_x, uint8_t space_y)
+void gt_radio_set_space(gt_obj_st * radio, uint8_t space_x, uint8_t space_y)
 {
     _gt_radio_st * style = (_gt_radio_st * )radio->style;
     style->space_x = space_x;
