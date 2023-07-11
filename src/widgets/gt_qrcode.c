@@ -18,7 +18,6 @@
 #include "../core/gt_disp.h"
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
-#include "../extra/qrcode/gt_qrcode_src.h"
 
 #if GT_CFG_ENABLE_QRCODE == 1
 /* private define -------------------------------------------------------*/
@@ -247,8 +246,8 @@ static void _gt_qrcode_init_style(gt_obj_st * qr_code)
     /* code */
     // http://www.gaotongfont.cn/
     gt_memset(style, 0, sizeof(_gt_qrcode_st));
-    style->str = gt_mem_malloc(strlen("http://www.gaotongfont.cn/")+1);
-    gt_memcpy(style->str, "http://www.gaotongfont.cn/" , strlen("http://www.gaotongfont.cn/")+1);
+    style->str = gt_mem_malloc(strlen("https://www.hmi.gaotongfont.cn/")+1);
+    gt_memcpy(style->str, "https://www.hmi.gaotongfont.cn/" , strlen("https://www.hmi.gaotongfont.cn/")+1);
     style->str_len = strlen(style->str);
     style->version = GT_FAMILY_QRCODE_VERSION_10;
     style->ec_level = ECLevel_H;

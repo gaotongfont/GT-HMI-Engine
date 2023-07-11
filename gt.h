@@ -113,12 +113,10 @@ extern "C" {
 
 #if GT_CFG_ENABLE_BARCODE
 /* barcode */
-#include "src/extra/barcode/gt_barcode_src.h"
 #include "src/widgets/gt_barcode.h"
 #endif
 
 #if GT_CFG_ENABLE_QRCODE
-#include "src/extra/qrcode/gt_qrcode_src.h"
 #include "src/widgets/gt_qrcode.h"
 #endif
 

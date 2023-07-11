@@ -16,10 +16,14 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
-#include "../extra/barcode/gt_barcode_src.h"
 #include "gt_conf_widgets.h"
 
 #if GT_CFG_ENABLE_BARCODE == 1
+
+#ifdef GT_CONFIG_GUI_DRIVER_LIB
+    #include "../../driver/gt_gui_driver.h"
+#endif /* GT_CONFIG_GUI_DRIVER_LIB */
+
 /* define ---------------------------------------------------------------*/
 
 
