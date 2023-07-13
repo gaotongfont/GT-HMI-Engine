@@ -38,8 +38,8 @@ extern "C" {
 #define GT_CFG_ENABLE_TEXTAREA          1
 #define GT_CFG_ENABLE_IMGBTN            1
 #define GT_CFG_ENABLE_RECT              1
-#define GT_CFG_ENABLE_BARCODE           0
-#define GT_CFG_ENABLE_QRCODE            0
+#define GT_CFG_ENABLE_BARCODE           1
+#define GT_CFG_ENABLE_QRCODE            1
 #define GT_CFG_ENABLE_ZK_FONT           1
 #define GT_CFG_ENABLE_ZK_SPELL          1
 #define GT_CFG_ENABLE_LINE              1
