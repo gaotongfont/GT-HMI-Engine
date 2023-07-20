@@ -390,6 +390,7 @@ void gt_clock_set_time(gt_obj_st * obj, uint8_t hour, uint8_t minute, uint8_t se
     _set_hour(clock->time_current, hour < _HOUR_MAX_VALUE ? hour : 0);
     _set_minute(clock->time_current, minute < _MINUTE_MAX_VALUE ? minute : 0);
     _set_second(clock->time_current, second < _SECOND_MAX_VALUE ? second : 0);
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
 void gt_clock_set_time_by_timestamp(gt_obj_st * obj, uint32_t timestamp)
