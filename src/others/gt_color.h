@@ -515,8 +515,6 @@ static inline void gt_color_mix_with_alpha(gt_color_t bg_color, gt_opa_t bg_opa,
 
 /* global functions / API interface -------------------------------------*/
 
-typedef struct _gt_area_s gt_area_st;
-
 /**
  * @brief Copy from the area of the src to the area of the dst
  *

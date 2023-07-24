@@ -43,6 +43,7 @@
  */
 static bool _default_free_cb(void * item) {
     gt_mem_free(item);
+    return true;
 }
 
 /**
@@ -99,6 +100,7 @@ bool _gt_vector_add_free_item_cb(_gt_vector_st ** vector_p, _gt_vector_free_item
     }
 
     (*vector_p)->free_item_cb = free_item_cb;
+    return true;
 }
 
 bool _gt_vector_add_equal_item_cb(_gt_vector_st ** vector_p, _gt_vector_equal_item_cb_t equal_item_cb)
@@ -118,6 +120,7 @@ bool _gt_vector_add_equal_item_cb(_gt_vector_st ** vector_p, _gt_vector_equal_it
     }
 
     (*vector_p)->equal_item_cb = equal_item_cb;
+    return true;
 }
 
 bool _gt_vector_add_item(_gt_vector_st ** vector_p, void * item, uint16_t size)

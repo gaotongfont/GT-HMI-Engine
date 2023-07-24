@@ -228,6 +228,7 @@ static void _gt_imgbtn_init_style(gt_obj_st * imgbtn)
 
 static bool _imgs_free_cb(void * item) {
     gt_mem_free(item);
+    return true;
 }
 
 static bool _imgs_equal_cb(void * item, void * target) {

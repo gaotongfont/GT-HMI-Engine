@@ -68,8 +68,8 @@ static inline void _gt_label_init_widget(gt_obj_st * label) {
         .style_en   = style->font_family_en,
         .style_numb = style->font_family_numb,
         .res        = NULL,
-        .utf8       = (uint8_t *)style->text,
-        .len        = strlen(style->text),
+        .utf8       = (char * )style->text,
+        .len        = strlen((char * )style->text),
         .size       = style->font_size,
         .gray       = style->font_gray,
     };

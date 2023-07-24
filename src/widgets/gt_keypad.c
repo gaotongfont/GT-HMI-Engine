@@ -92,7 +92,7 @@ static uint8_t _gt_spell_chinese[_GT_SPELL_CHINESE_MAX_NUMB][_GT_SPELL_CHINESE_M
     static py_info_st *_gt_spell_info = NULL;
 #endif
 
-static const unsigned char _gt_spell[_GT_KEYPADS_SPELL_NUMB][8] = {
+static const char _gt_spell[_GT_KEYPADS_SPELL_NUMB][8] = {
     "spell_0" , "spell_1" , "spell_2" , "spell_3" , "spell_4" , "spell_5" , "spell_6" , "spell_7" , "spell_8",
 };
 
@@ -209,14 +209,14 @@ static uint8_t* _gt_spell_get_text( uint8_t index , uint8_t mode)
         {
             return _gt_spell_ascii;
         }
-        return "";
+        return (uint8_t * )"";
     }
 
     if((_gt_spell_chinese_numb > 0 ) && (GT_KEYPAD_MODE_SPELL == mode))
     {
         return _gt_spell_chinese[index-1];
     }
-    return "";
+    return (uint8_t * )"";
 }
 
 static int _gt_get_spell_index(char const * const kv ,  uint8_t mode)
@@ -229,7 +229,7 @@ static int _gt_get_spell_index(char const * const kv ,  uint8_t mode)
 
     for ( idx = 0; idx < _GT_KEYPADS_SPELL_NUMB; idx++)
     {
-        if( strcmp(_gt_spell[idx], kv) == 0 ){
+        if( strcmp((const char * )_gt_spell[idx], kv) == 0 ){
             return idx;
         }
     }
@@ -254,7 +254,7 @@ static uint8_t* _gt_keypad_get_spell_text(char const * const kv ,  uint8_t mode)
 #if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
     return _gt_spell_get_text(idx , mode);
 #else
-    return "";
+    return (uint8_t * )"";
 #endif
 
 }
@@ -505,7 +505,7 @@ static void _gt_keypad_spell_event_cb(gt_obj_st * keypad)
     else{
         if (!_gt_keypad_check_key_is_ctl(style->kv_selected)) {
 
-            if((strcmp(style->kv_selected , _gt_spell[0]) == 0))
+            if((strcmp(style->kv_selected, (const char * )_gt_spell[0]) == 0))
             {
                 return ;
             }
@@ -515,11 +515,11 @@ static void _gt_keypad_spell_event_cb(gt_obj_st * keypad)
             {
                 if(GT_ENCODING_UTF8 == gt_project_encoding_get())
                 {
-                    gt_input_append_value(style->target, tmp_str);
+                    gt_input_append_value(style->target, (char * )tmp_str);
                 }
                 else
                 {
-                    gt_input_append_value_encoding(style->target, tmp_str , GT_ENCODING_UTF8);
+                    gt_input_append_value_encoding(style->target, (char * )tmp_str , GT_ENCODING_UTF8);
                 }
 
 #if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
@@ -620,10 +620,10 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
     }
     else{
         if (!_gt_keypad_check_key_is_ctl(style->kv_selected)) {
-            uint8_t* tmp_str = _gt_keypad_get_spell_text(style->kv_selected , style->info.mode);
+            uint8_t * tmp_str = _gt_keypad_get_spell_text(style->kv_selected , style->info.mode);
             if(tmp_str)
             {
-                gt_input_append_value(style->target, tmp_str);
+                gt_input_append_value(style->target, (char * )tmp_str);
                 return ;
             }
             gt_input_append_value(style->target, style->kv_selected);
@@ -719,8 +719,8 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
 
         if(tmp_str)
         {
-            font.utf8 = tmp_str;
-            font.len = strlen(tmp_str);
+            font.utf8 = (char * )tmp_str;
+            font.len = strlen((const char * )tmp_str);
         }
 
         draw_text(keypad->draw_ctx, &font_attr, &area_key);

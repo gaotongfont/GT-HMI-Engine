@@ -31,7 +31,7 @@
 /**
  * @brief Display max memory remark address
  */
-#define USE_MEM_MAX_REMARK              0
+#define USE_MEM_MAX_REMARK              01
 
 #if USE_MEM_TRACE_DEBUG_BY_FILE
 #include "stdio.h"

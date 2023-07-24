@@ -118,9 +118,9 @@ int gt_memcmp(const void * dst, const void * src, size_t size);
 void gt_mem_check_used(void);
 
 
-#define gt_mem_malloc(size) _mem_malloc(size, __FILE__, __LINE__)
-#define gt_mem_realloc(ptr, size) _mem_realloc(ptr, size, __FILE__, __LINE__)
-#define gt_mem_free(ptr) _mem_free(ptr, __FILE__, __LINE__)
+#define gt_mem_malloc(size) _mem_malloc(size, (uint8_t * )__FILE__, __LINE__)
+#define gt_mem_realloc(ptr, size) _mem_realloc(ptr, size, (uint8_t * )__FILE__, __LINE__)
+#define gt_mem_free(ptr) _mem_free(ptr, (uint8_t * )__FILE__, __LINE__)
 
 #ifdef __cplusplus
 } /*extern "C"*/
