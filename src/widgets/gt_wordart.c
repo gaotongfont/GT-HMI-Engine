@@ -93,8 +93,6 @@ static inline void _gt_wordart_init_widget(gt_obj_st * wordart)
         .h = wordart->area.h 
     };
 
-    GT_LOGD("--!!" , "style->item_number = %d" , style->item_number);
-
     if(0 == style->item_number){
         return ;
     }
@@ -104,14 +102,11 @@ static inline void _gt_wordart_init_widget(gt_obj_st * wordart)
     };
 
     uint32_t len = (NULL == style->text) ? 0 : strlen(style->text);
-    uint32_t i  = 0 , idx = 0 , coding = 0 ;
+    uint32_t idx = 0 , coding = 0 ;
     uint8_t tmp = 0;
 
-    GT_LOGD("--!!" , "style->text = %s , len = %d" , style->text, len);
-
-    for(i = 0 ; i < len ; i++){
+    for(idx = 0 ; idx < len ;){
         tmp = _gt_utf8_to_unicode(&style->text[idx] , &coding);
-        GT_LOGD("--!!" , "coding = %#X , tmp = %d" , coding, tmp);
         if(0 == tmp){
             return ;
         }
@@ -124,7 +119,6 @@ static inline void _gt_wordart_init_widget(gt_obj_st * wordart)
         
         dsc.bg_img_src = style->items[tmp].img;
 
-        GT_LOGD("--!!" , "area: x = %d, y = %d , w = %d, h = %d" ,area.x , area.y , area.w , area.h);
         //
         draw_bg_img(wordart->draw_ctx, &dsc, &area);
         area.x += area.w + style->space_x;
