@@ -136,7 +136,7 @@ double gt_square(double n)
     return pow(n,2);
 }
 
-double gt_abs(double n)
+int gt_abs(int n)
 {
     return abs(n);
 }

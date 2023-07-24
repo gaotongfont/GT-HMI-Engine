@@ -136,7 +136,7 @@ uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const utf8, uint32_t *
 {
     if(NULL == utf8 ) return 0;
 
-    int len = strlen(utf8);
+    int len = strlen((char * )utf8);
 
     if(len >= 1 && utf8[0] <= 0x7F){
         if(res){
@@ -290,7 +290,7 @@ uint8_t gt_encoding_table_one_char(uint8_t *src ,uint8_t* dst , gt_encoding_conv
 
 uint8_t gt_utf8_check_char(uint8_t * utf8)
 {
-    uint32_t len = strlen(utf8);
+    uint32_t len = strlen((char * )utf8);
 
     if(len >= 1 && utf8[0] < 0x80){
         return 1;
@@ -324,7 +324,7 @@ uint8_t gt_gb_check_char(const uint8_t *dst , uint16_t pos , uint32_t* fontcode)
     if(NULL == dst) return 0;
     uint16_t pos_s = 0 ,len = 0 , idx = 0 , str_len = 0;
 
-    str_len = strlen(dst);
+    str_len = strlen((char * )dst);
     while (idx < str_len)
     {
         len = _gt_gb_font_one_char_code_len_get(&dst[idx], fontcode);
@@ -454,11 +454,11 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
     // GT_LOGV(GT_LOG_TAG_GUI, "text:%s", font->utf8);
     while(idx < font->len) {
         // len = _gt_utf8_to_unicode(&font->utf8[idx], &unicode);
-        len = gt_font_one_char_code_len_get(&font->utf8[idx], &unicode , font->encoding);
+        len = gt_font_one_char_code_len_get((uint8_t * )&font->utf8[idx], &unicode , font->encoding);
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
         struct gt_font_func_s* font_func;
-        
+
         if(GT_CFG_DEFAULT_FONT_FAMILY_NUMB != font->style_numb && _gt_number_symbol_font(unicode)){
             font_style = font->style_numb;
         }
@@ -570,7 +570,7 @@ uint32_t gt_font_get_string_width(gt_font_st * font)
 
     while( idx < font->len ){
         //  idx += _gt_utf8_to_unicode(&font->utf8[idx], &unicode);
-        idx += gt_font_one_char_code_len_get(&font->utf8[idx], &unicode, font->encoding);
+        idx += gt_font_one_char_code_len_get((uint8_t * )&font->utf8[idx], &unicode, font->encoding);
         width += gt_font_get_one_word_width(unicode , font);
     }
     return width;
@@ -586,7 +586,7 @@ uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
 #if GT_CFG_ENABLE_ZK_FONT == 1
     int width = 0;
     int option = 0;
-    
+
     if(GT_CFG_DEFAULT_FONT_FAMILY_NUMB != font->style_numb && _gt_number_symbol_font(unicode)){
         option = font->style_numb;
     }
@@ -667,8 +667,8 @@ uint16_t gt_font_get_word_width_figure_up(const uint8_t* data , uint16_t dot_w ,
 
             len = ((j / gray) * 8) + ((j%gray)*8+(8-i))/gray;
             // GT_LOGD( GT_LOG_TAG_GUI, "[%d] byte_w = %d , tmp = 0x%02X , len = %d , i = %d , gray = %d , dot_w = %d\r\n", j , byte_w , tmp , len, i , gray , dot_w);
-            
-            // 
+
+            //
             if(len >= dot_h){
                 continue;
             }

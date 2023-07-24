@@ -616,12 +616,12 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
     _font.utf8 = &(dsc->font->utf8[index]);
     _font.len = strlen(_font.utf8);
     //
-    idx = gt_font_one_char_code_len_get(&_font.utf8[idx], &unicode, _font.encoding);
+    idx = gt_font_one_char_code_len_get((uint8_t * )&_font.utf8[idx], &unicode, _font.encoding);
     language = _gt_is_style_cn_or_en(unicode, _font.encoding);
     text_len = 1;
     while(idx < _font.len)
     {
-        i = gt_font_one_char_code_len_get(&_font.utf8[idx], &unicode, _font.encoding);
+        i = gt_font_one_char_code_len_get((uint8_t * )&_font.utf8[idx], &unicode, _font.encoding);
         if(unicode == 0x20 && (language == STYLE_EN_ARABIC)){
 
         }
@@ -635,14 +635,14 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
     //
     text = (uint16_t*)gt_mem_malloc(text_len * sizeof(uint16_t));
     if(NULL == text){
-        GT_LOGE(GT_LOG_TAG_GUI, "text malloc failed , size: %ld", text_len * sizeof(uint16_t));
+        GT_LOGE(GT_LOG_TAG_GUI, "text malloc failed , size: %d", text_len * sizeof(uint16_t));
         goto _ret_handle;
     }
     idx = 0;
     i = 0;
     while(i < text_len)
     {
-        idx += gt_font_one_char_code_len_get(&_font.utf8[idx], &unicode, _font.encoding);
+        idx += gt_font_one_char_code_len_get((uint8_t * )&_font.utf8[idx], &unicode, _font.encoding);
         text[i] = (uint16_t)unicode;
         ++i;
     }

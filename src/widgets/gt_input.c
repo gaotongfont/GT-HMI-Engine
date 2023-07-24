@@ -131,7 +131,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         font.utf8 = style->value;
         font.len = style->pos_cursor;
         color_font = style->font_color;
-        
+
     }
     font.style_cn = style->font_family_cn;
     font.style_en = style->font_family_en;
@@ -399,10 +399,10 @@ void gt_input_append_value_encoding(gt_obj_st * input, char * value , uint8_t en
     {
         gt_memset_0(tmp_str, len+1);
         if(encoding == GT_ENCODING_UTF8){
-            idx += gt_encoding_table_one_char(&value[idx] , tmp_str , UTF8_2_GB);
+            idx += gt_encoding_table_one_char((uint8_t * )&value[idx], (uint8_t * )tmp_str , UTF8_2_GB);
         }
         else if(encoding == GT_ENCODING_GB){
-            idx += gt_encoding_table_one_char(&value[idx] , tmp_str , GB_2_UTF8);
+            idx += gt_encoding_table_one_char((uint8_t * )&value[idx], (uint8_t * )tmp_str , GB_2_UTF8);
         }
         tmp_str[strlen(tmp_str)] = '\0';
         gt_input_append_value(input , tmp_str);

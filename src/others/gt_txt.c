@@ -63,11 +63,11 @@ uint8_t gt_txt_check_char_numb(char * dst , int32_t* pos )
     {
         if(GT_ENCODING_UTF8 == gt_project_encoding_get())
         {
-            len = gt_utf8_check_char( &dst[*idx]);
+            len = gt_utf8_check_char((uint8_t * )&dst[*idx]);
         }
         else if(GT_ENCODING_GB == gt_project_encoding_get())
         {
-            len = gt_gb_check_char(dst , *pos , NULL);
+            len = gt_gb_check_char((uint8_t * )dst , *pos , NULL);
             *pos -= (len-1);
             return len;
         }

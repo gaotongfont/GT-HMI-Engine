@@ -74,7 +74,7 @@ static inline bool _is_fill_zero_front(_gt_input_number_st * style) {
 static void _init_cb(gt_obj_st * obj)
 {
     _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
-    uint8_t buffer[16] = {0};
+    char buffer[16] = {0};
     uint8_t idx = 0;
     uint8_t append_len = style->reg.len_decimal ? (style->reg.len_decimal + 1) : style->reg.len_decimal;
 

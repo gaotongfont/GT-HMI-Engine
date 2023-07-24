@@ -291,6 +291,7 @@ static void _gt_btn_init_style(gt_obj_st * btn)
 
 static bool _contents_free_cb(void * item) {
     gt_mem_free(item);
+    return true;
 }
 
 static bool _contents_equal_cb(void * item, void * target) {

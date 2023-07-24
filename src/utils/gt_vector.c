@@ -177,7 +177,7 @@ bool _gt_vector_remove_item(_gt_vector_st ** vector_p, void * target)
     }
 
     for (i = 0; i < count; i++) {
-        if (-1 != (*vector_p)->equal_item_cb((*vector_p)->list[i], target)) {
+        if (true == (*vector_p)->equal_item_cb((*vector_p)->list[i], target) ) {
             break;
         }
     }

@@ -115,7 +115,7 @@ static void _set_fp_info(gt_fs_fp_st * fp, _gt_img_info_st * header)
 static gt_res_t _gt_png_info(struct _gt_img_decoder_s * decoder, const void * src, _gt_img_info_st * header)
 {
     gt_res_t ret = GT_RES_OK;
-    const uint8_t * path = (uint8_t * )src;
+    const char * path = (char * )src;
 
     if (!is_png_file(path)) {
         ret = GT_RES_INV;
@@ -154,7 +154,7 @@ static gt_res_t _gt_png_info(struct _gt_img_decoder_s * decoder, const void * sr
 
     gt_memset_0(header, sizeof(_gt_img_info_st));
 
-    _set_png_width_height(header, _get_32bit_int(tmp_buffer), _get_32bit_int(&tmp_buffer[4]));
+    _set_png_width_height(header, (gt_size_t)_get_32bit_int((char * )&tmp_buffer[0]), (gt_size_t)_get_32bit_int((char * )&tmp_buffer[4]));
     _set_png_type(header);
     _set_fp_info(fp, header);
 
@@ -168,7 +168,7 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
     GT_UNUSED(decoder);
     gt_res_t ret = GT_RES_OK;
 
-    const uint8_t * path = (uint8_t * )dsc->src;
+    const char * path = (char * )dsc->src;
     if (!is_png_file(path)) {
         ret = GT_RES_INV;
         return ret;

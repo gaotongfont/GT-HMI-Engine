@@ -64,7 +64,7 @@ int16_t gt_cos(int16_t angle);
 
 double gt_square(double n);
 
-double gt_abs(double n);
+int gt_abs(int n);
 
 uint32_t gt_per_255(uint8_t n);
 
