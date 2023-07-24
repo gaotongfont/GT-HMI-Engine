@@ -73,7 +73,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     {
         if(style->ret_param.dot_w == 0 || style->ret_param.dot_h == 0)
         {
-            GT_LOGE(GT_LOG_TAG_GUI , "area err dot_w = %d , dot_h = %d" , style->ret_param.dot_w , style->ret_param.dot_h);
+            GT_LOGE(GT_LOG_TAG_GUI , "get width err dot_w = %d , dot_h = %d" , style->ret_param.dot_w , style->ret_param.dot_h);
             return ;
         }
     }
@@ -96,7 +96,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     // 获取数据
     if(!gt_barcode_get(style))
     {
-        GT_LOGE(GT_LOG_TAG_GUI , "area err type = %d ,dot_w = %d , dot_h = %d" , style->type , style->ret_param.dot_w , style->ret_param.dot_h);
+        GT_LOGE(GT_LOG_TAG_GUI , "get barcode type = %d ,dot_w = %d , dot_h = %d" , style->type , style->ret_param.dot_w , style->ret_param.dot_h);
         return ;
     }
 

@@ -136,6 +136,10 @@ extern "C" {
 #include "src/widgets/gt_clock.h"
 #endif
 
+#if GT_CFG_ENABLE_WORDART
+#include "src/widgets/gt_wordart.h"
+#endif
+
 /* other */
 #include "src/others/gt_color.h"
 #include "src/others/gt_log.h"
