@@ -163,6 +163,12 @@ void gt_input_number_set_value(gt_obj_st * obj, double value)
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
+double gt_input_number_get_value(gt_obj_st * obj)
+{
+    _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
+    return style->value;
+}
+
 void gt_input_number_set_max(gt_obj_st * obj, double max)
 {
     ((_gt_input_number_st * )obj->style)->max = max;

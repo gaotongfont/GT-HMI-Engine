@@ -43,9 +43,17 @@ gt_obj_st * gt_input_number_create(gt_obj_st * parent);
  * @brief Set the default value, [default: 0]
  *
  * @param obj
- * @param value
+ * @param value The value to be set
  */
 void gt_input_number_set_value(gt_obj_st * obj, double value);
+
+/**
+ * @brief Get the current value
+ *
+ * @param obj
+ * @return double The current value
+ */
+double gt_input_number_get_value(gt_obj_st * obj);
 
 /**
  * @brief The value is preceded by a 0 to the number of characters displayed
