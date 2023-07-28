@@ -13,6 +13,7 @@
 #include "../others/gt_types.h"
 #include "./gt_label.h"
 #include "../core/gt_draw.h"
+#include "../core/gt_disp.h"
 #include "../core/gt_obj_pos.h"
 #include "float.h"
 #include "../others/gt_log.h"

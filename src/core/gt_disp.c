@@ -16,6 +16,7 @@
 #include "gt_disp.h"
 #include "../extra/draw/gt_draw_blend.h"
 #include "../core/gt_draw.h"
+#include "../core/gt_obj_pos.h"
 #include "../others/gt_area.h"
 
 /* private define -------------------------------------------------------*/
@@ -299,5 +300,12 @@ void gt_disp_scroll_area_act(int16_t dist_x, int16_t dist_y)
     gt_disp_load_scr(gt_disp_get_scr());
 }
 
+void gt_disp_invalid_area(gt_obj_st * obj)
+{
+    if( !gt_obj_check_scr(obj) ){
+        return;
+    }
+    _gt_disp_refr_append_area(&obj->area);
+}
 
 /* end ------------------------------------------------------------------*/

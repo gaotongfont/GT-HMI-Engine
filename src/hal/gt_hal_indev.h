@@ -38,7 +38,7 @@ typedef enum _gt_indev_type_e {
  * @brief button or touch pad, input status
  */
 typedef enum _gt_indev_state_e {
-    GT_INDEV_STATE_RELEASED,        ///< released
+    GT_INDEV_STATE_RELEASED = 0,        ///< released
     GT_INDEV_STATE_PRESSED,         ///< key down
 }gt_indev_state_et;
 

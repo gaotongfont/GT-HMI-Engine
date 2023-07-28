@@ -17,6 +17,7 @@
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
+#include "../core/gt_disp.h"
 #include "../core/gt_fs.h"
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_SCROLLBAR
@@ -290,7 +291,6 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param e event
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    extern void _gt_disp_refr_append_area(gt_area_st * area);
     gt_event_type_et code = gt_event_get_code(e);
     gt_point_st point_click;
     int _pos;
@@ -298,9 +298,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGV(GT_LOG_TAG_GUI, "start draw");
-            if( gt_obj_check_scr(obj) ){
-                _gt_disp_refr_append_area(&obj->area);
-            }
+            gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 

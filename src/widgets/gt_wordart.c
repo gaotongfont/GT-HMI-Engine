@@ -1,7 +1,7 @@
 /**
  * @file gt_wordart.c
  * @author Yang (your@email.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2023-07-21 14:10:32
  * @copyright Copyright (c) 2014-2023, Company Genitop. Co., Ltd.
@@ -17,6 +17,7 @@
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
+#include "../core/gt_disp.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_WORDART
@@ -77,7 +78,7 @@ static int _gt_wordart_items_find(_gt_wordart_st * style , uint32_t coding)
     return -1;
 }
 
-static inline void _gt_wordart_init_widget(gt_obj_st * wordart) 
+static inline void _gt_wordart_init_widget(gt_obj_st * wordart)
 {
     _gt_wordart_st * style = (_gt_wordart_st * )wordart->style;
 
@@ -90,7 +91,7 @@ static inline void _gt_wordart_init_widget(gt_obj_st * wordart)
         .x = wordart->area.x ,
         .y = wordart->area.y ,
         .w = wordart->area.w ,
-        .h = wordart->area.h 
+        .h = wordart->area.h
     };
 
     if(0 == style->item_number){
@@ -116,7 +117,7 @@ static inline void _gt_wordart_init_widget(gt_obj_st * wordart)
         if(tmp < 0){
             continue;
         }
-        
+
         dsc.bg_img_src = style->items[tmp].img;
 
         //
@@ -130,7 +131,7 @@ static inline void _gt_wordart_init_widget(gt_obj_st * wordart)
  *
  * @param obj
  */
-static void _init_cb(gt_obj_st * obj) 
+static void _init_cb(gt_obj_st * obj)
 {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
 
@@ -184,14 +185,11 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param e event
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    extern void _gt_disp_refr_append_area(gt_area_st * area);
     gt_event_type_et code = gt_event_get_code(e);
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGV(GT_LOG_TAG_GUI, "start draw");
-            if( gt_obj_check_scr(obj) ){
-                _gt_disp_refr_append_area(&obj->area);
-            }
+            gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
@@ -247,14 +245,14 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
  * @param parent wordart's parent element
  * @return gt_obj_st* wordart obj
  */
-gt_obj_st * gt_wordart_create(gt_obj_st * parent) 
+gt_obj_st * gt_wordart_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
 
     if (NULL == obj) {
         return obj;
     }
-    
+
     _gt_wordart_st * style = (_gt_wordart_st * )obj->style;
     gt_memset(style, 0, sizeof(_gt_wordart_st));
 

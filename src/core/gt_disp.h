@@ -95,6 +95,13 @@ void gt_disp_set_area_act(gt_area_st * area);
  */
 void gt_disp_scroll_area_act(int16_t dist_x, int16_t dist_y);
 
+/**
+ * @brief Detects if the control intersects with the screen and sets the redrawn area
+ *
+ * @param obj
+ */
+void gt_disp_invalid_area(gt_obj_st * obj);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

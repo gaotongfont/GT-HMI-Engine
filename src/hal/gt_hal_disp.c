@@ -10,10 +10,10 @@
 /* include --------------------------------------------------------------*/
 #include "gt_hal_disp.h"
 #include "../core/gt_mem.h"
-#include "../core/gt_obj_pos.h"
 #include "../others/gt_color.h"
 #include "../gt_conf.h"
 #include "../others/gt_log.h"
+#include "../core/gt_obj_pos.h"
 #include "../core/gt_refr.h"
 #include "../core/gt_timer.h"
 #include "../hal/gt_hal_tick.h"
@@ -274,12 +274,5 @@ void _gt_disp_update_max_area(const gt_area_st * const area)
 
 
 
-void gt_disp_invalid_area(gt_obj_st * obj)
-{
-    if( !gt_obj_check_scr(obj) ){
-        return;
-    }
-    _gt_disp_refr_append_area(&obj->area);
-}
 
 /* end ------------------------------------------------------------------*/

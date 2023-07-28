@@ -56,7 +56,6 @@ typedef enum {
     GT_DISABLED = 1,
 }gt_disabled_et;
 
-struct _gt_draw_ctx_t;
 typedef struct gt_obj_s {
     struct gt_obj_s * parent;
     struct gt_obj_s ** child;

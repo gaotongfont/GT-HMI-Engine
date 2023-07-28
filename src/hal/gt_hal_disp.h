@@ -175,12 +175,6 @@ gt_area_st * _gt_disp_refr_get_area(void);
  */
 void _gt_disp_update_max_area(const gt_area_st * const area);
 
-/**
- * @brief Detects if the control intersects with the screen and sets the redrawn area
- *
- * @param obj
- */
-void gt_disp_invalid_area(gt_obj_st * obj);
 
 #ifdef __cplusplus
 } /*extern "C"*/

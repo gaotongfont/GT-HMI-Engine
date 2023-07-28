@@ -13,6 +13,7 @@
 #include "../core/gt_mem.h"
 #include "../others/gt_types.h"
 #include "../core/gt_draw.h"
+#include "../core/gt_disp.h"
 #include "../core/gt_fs.h"
 #include "../others/gt_log.h"
 #include "../core/gt_obj_pos.h"
@@ -265,9 +266,7 @@ static void _invalid_area(gt_obj_st * obj, _gt_player_st * style) {
     gt_fs_read_img_wh((char * )src, &w, &h);
     obj->area.w = GT_MAX(obj->area.w, w);
     obj->area.h = GT_MAX(obj->area.h, h);
-    if ( gt_obj_check_scr(obj) ) {
-        _gt_disp_refr_append_area(&obj->area);
-    }
+    gt_disp_invalid_area(obj);
 }
 
 static inline bool _is_mode_equal(_gt_player_st * style, gt_player_mode_et mode) {
