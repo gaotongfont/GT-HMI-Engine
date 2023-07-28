@@ -299,47 +299,5 @@ void gt_disp_scroll_area_act(int16_t dist_x, int16_t dist_y)
     gt_disp_load_scr(gt_disp_get_scr());
 }
 
-void gt_disp_obj(gt_obj_st * obj)
-{
-    gt_area_st * area = gt_disp_get_area_act();
-    gt_area_st area_valid;
-    gt_obj_get_valid_area(obj, area, &area_valid);
-
-    gt_disp_st * disp_dev = gt_disp_get_default();
-
-    if( 1 ){
-        // gt_area_st area_src = {
-        //     .x = area_valid.x,
-        //     .y = area_valid.y,
-        //     .w = obj->area.w,
-        //     .h = obj->area.h
-        // }, area_dst = {
-        //     .x = 0,
-        //     .y = 0,//area_valid.y,
-        //     .w = area_valid.w,//obj->area.w,
-        //     .h = area_valid.h//obj->area.h
-        // };
-        gt_area_st area_show = {
-            .w = area_valid.w,
-            .h = area_valid.h
-        };
-
-        if( obj->area.y < disp_dev->area_act.y ){
-            area_show.y = 0;
-        }else{
-            area_show.y = obj->area.y - disp_dev->area_act.y;
-        }
-
-        if( obj->area.x < disp_dev->area_act.x ){
-            area_show.x = 0;
-        }else{
-            area_show.x = obj->area.x - disp_dev->area_act.x;
-        }
-//        gt_color_t * color_p = (gt_color_t *)obj->cache.cache_color;
-//        gt_color_area_copy(disp_dev->vbd_color, area_dst,  color_p, area_src, area_valid.w, area_valid.h);
-        disp_dev->drv->flush_cb(disp_dev->drv, &area_show, disp_dev->vbd_color);
-    }
-}
-
 
 /* end ------------------------------------------------------------------*/

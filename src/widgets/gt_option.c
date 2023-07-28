@@ -101,8 +101,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             if( gt_obj_check_scr(obj) ){
                 _gt_option_init_widget(obj);
-                extern void gt_disp_obj(gt_obj_st * obj);
-                gt_disp_obj(obj);
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
