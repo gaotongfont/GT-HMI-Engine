@@ -59,8 +59,8 @@ gt_obj_st * gt_qrcode_create(gt_obj_st * parent);
 void gt_qrcode_set_version(gt_obj_st * qr_code , gt_qr_code_version_em version);
 void gt_qrcode_set_str(gt_obj_st * qr_code , char* str);
 
-
-
+void gt_qrcode_set_background(gt_obj_st * qr_code , gt_color_t color);
+void gt_qrcode_set_forecolor(gt_obj_st * qr_code , gt_color_t color);
 
 #endif
 /* */

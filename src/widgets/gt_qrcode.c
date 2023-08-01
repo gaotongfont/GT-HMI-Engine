@@ -37,6 +37,8 @@ typedef struct _gt_qrcode_s
     uint8_t ec_level;
     uint8_t mask_patt;
     gt_family_t version;
+    gt_color_t fg_color;
+    gt_color_t bg_color;
 }_gt_qrcode_st;
 
 
@@ -122,33 +124,45 @@ static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
     rect_attr.bg_opa        = GT_OPA_100;
     rect_attr.border_width  = 0;
     rect_attr.fg_color      = gt_color_white();
-    rect_attr.bg_color      = gt_color_black();
     rect_attr.border_color  = gt_color_black();
-    rect_attr.gray = 1;
-    rect_attr.data_gray = qr_code_buff;
 
-    qr_code->area.w = 4 * style->version + 17;
-    qr_code->area.h = ((qr_code->area.w + 7) >> 3) << 3;
+    gt_area_st area;
 
-    if(  ((qr_code->area.h * qr_code->area.h) >> 3 ) > _QRCodeDataBuf_SIZE )
+    area.w = 4 * style->version + 17;
+    area.h = ((area.w + 7) >> 3) << 3;
+
+    qr_code->area.w = area.w+4;
+    qr_code->area.h = qr_code->area.w;
+
+    if(  ((area.h * area.h) >> 3 ) > _QRCodeDataBuf_SIZE )
     {
         GT_LOGE(GT_LOG_TAG_GUI , "get qrcode buff size is small!");
         goto err_ret;
     }
 
     gt_memset_0(qr_code_buff , _QRCodeDataBuf_SIZE);
-    _Data_ReMap(qr_code_buff,qr_data_buff, qr_code->area.w, qr_code->area.h, 0 );
+    _Data_ReMap(qr_code_buff,qr_data_buff, area.w, area.h, 0 );
 
-    qr_code->area.w = ((qr_code->area.w + 7) >> 3) << 3;
-    GT_LOGD( GT_LOG_TAG_GUI,"qrcode w = %d , h = %d" , qr_code->area.w , qr_code->area.h);
+    area.w = ((area.w + 7) >> 3) << 3;
+    GT_LOGD( GT_LOG_TAG_GUI,"qrcode w = %d , h = %d" , area.w , area.h);
 
     //
     gt_mem_free(qr_data_buff);
     qr_data_buff = NULL;
 
+    // draw background
+    rect_attr.bg_color      = style->bg_color;
+    draw_bg(qr_code->draw_ctx, &rect_attr, &qr_code->area);
+
+    // draw the qr code
+    rect_attr.bg_color      = style->fg_color;
+    rect_attr.gray = 1;
+    rect_attr.data_gray = qr_code_buff;
+    area.x = qr_code->area.x+2;
+    area.y = qr_code->area.y+2;
     GT_LOGD(GT_LOG_TAG_UI , "barcode gray = %d" , rect_attr.gray);
     // 1:base shape
-    draw_bg(qr_code->draw_ctx, &rect_attr, &qr_code->area);
+    draw_bg(qr_code->draw_ctx, &rect_attr, &area);
 
 err_ret:
     if(qr_data_buff)
@@ -252,6 +266,8 @@ static void _gt_qrcode_init_style(gt_obj_st * qr_code)
     style->version = GT_FAMILY_QRCODE_VERSION_10;
     style->ec_level = ECLevel_H;
     style->mask_patt = MaskPattern4;
+    style->bg_color = gt_color_white();
+    style->fg_color = gt_color_black();
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -288,6 +304,18 @@ void gt_qrcode_set_str(gt_obj_st * qr_code , char* str)
     gt_memcpy(style->str, str, size);
     style->str[size] = '\0';
     // gt_event_send(barcode, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_qrcode_set_background(gt_obj_st * qr_code , gt_color_t color)
+{
+    _gt_qrcode_st * style = qr_code->style;
+    style->bg_color = color;
+}
+
+void gt_qrcode_set_forecolor(gt_obj_st * qr_code , gt_color_t color)
+{
+    _gt_qrcode_st * style = qr_code->style;
+    style->fg_color = color;
 }
 
 #endif
