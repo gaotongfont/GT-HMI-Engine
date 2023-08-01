@@ -59,12 +59,14 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     _gt_barcode_st * style = &style_src; // = barcode->style;
     bar_uint32_t buf_size = 0;
     gt_area_st area;
-
+    gt_size_t h = 0;
+    
     gt_memcpy(style , barcode->style , sizeof(_gt_barcode_st));
 
-#if (!BARCODE_READ_MODE)
-    gt_size_t x = 0, y = 0, w  = 0, h = 0 , i = 0;
     h = style->mode_h;
+
+#if (!BARCODE_READ_MODE)
+    gt_size_t x = 0, y = 0, w  = 0, i = 0;
     if(h < BAECODE_LINE_NUMB)
         h = BAECODE_LINE_NUMB;
     style->mode_h = 1;
@@ -78,8 +80,12 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
             return ;
         }
     }
+    //
     area.w = style->ret_param.dot_w;
     area.h = style->ret_param.dot_h;
+    area.x = barcode->area.x;
+    area.y = barcode->area.y;
+    //
 #if (BARCODE_READ_MODE)
     buf_size = (area.w * area.h) >> 3;
 #else
@@ -106,29 +112,35 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill   = 1;
     rect_attr.radius        = 0;
-    rect_attr.bg_opa        = GT_OPA_100;
+    rect_attr.bg_opa        = GT_OPA_COVER;
     rect_attr.border_width  = 0;
     rect_attr.fg_color      = gt_color_white();
-    rect_attr.bg_color      = gt_color_black();
     rect_attr.border_color  = gt_color_black();
+
+    // Draw background
+    rect_attr.bg_color      = gt_color_white();
+    area.h = h;
+    draw_bg(barcode->draw_ctx, &rect_attr, &area);
+
+    // set barcode color
+    rect_attr.bg_color      = gt_color_black();
     rect_attr.data_gray = style->pdat;
     rect_attr.gray = 1;
+    // Barcode indent
+    area.y = barcode->area.y + 2;
+    h -=4;
 
-    GT_LOGD(GT_LOG_TAG_UI , "barcode gray = %d" , rect_attr.gray);
 #if (BARCODE_READ_MODE)
     // area
     barcode->area.w = area.w;
-    barcode->area.h = area.h;
-    area.x = barcode->area.x;
-    area.y = barcode->area.y;
+    barcode->area.h = h;
     // 1:base shape
     draw_bg(barcode->draw_ctx, &rect_attr, &area);
 #else
 // area
     barcode->area.w = area.w;
     barcode->area.h = h;
-    area.x = barcode->area.x;
-    area.y = barcode->area.y;
+    
     area.h = BAECODE_LINE_NUMB;
 
     for(i = 1 ; i < BAECODE_LINE_NUMB ; i++)
@@ -269,8 +281,8 @@ static void _gt_barcode_init_style(gt_obj_st * barcode)
 {
     _gt_barcode_st * style = barcode->style;
     gt_memset(style, 0, sizeof(_gt_barcode_st));
-    style->barcode = gt_mem_malloc(sizeof("123456789012"));
-    gt_memcpy(style->barcode, "123456789012\0", sizeof("123456789012"));
+    style->barcode = gt_mem_malloc(sizeof("1234567890128"));
+    gt_memcpy(style->barcode, "1234567890128\0", sizeof("1234567890128"));
     style->hri_type = GT_FAMILY_BARCODE_HRI_TYPE_DOWN;
     style->type = GT_FAMILY_BARCODE_TYPE_EAN_13;
     style->mode_w = 2;
