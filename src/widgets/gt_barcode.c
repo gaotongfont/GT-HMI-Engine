@@ -55,14 +55,12 @@ const gt_obj_class_st gt_barcode_class = {
 
 /* static functions -----------------------------------------------------*/
 static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
-    _gt_barcode_st style_src;
-    _gt_barcode_st * style = &style_src; // = barcode->style;
+
+    _gt_barcode_st * style = barcode->style; 
     bar_uint32_t buf_size = 0;
     gt_area_st area;
     gt_size_t h = 0;
     
-    gt_memcpy(style , barcode->style , sizeof(_gt_barcode_st));
-
     h = style->mode_h;
 
 #if (!BARCODE_READ_MODE)
@@ -77,7 +75,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
         if(style->ret_param.dot_w == 0 || style->ret_param.dot_h == 0)
         {
             GT_LOGE(GT_LOG_TAG_GUI , "get width err dot_w = %d , dot_h = %d" , style->ret_param.dot_w , style->ret_param.dot_h);
-            return ;
+            goto RET_FREE ;
         }
     }
     //
@@ -95,7 +93,8 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
 
     if( NULL == style->pdat )
     {
-        return ;
+        GT_LOGE(GT_LOG_TAG_GUI , "bracode malloc failed!!!");
+        goto RET_FREE ;
     }
     style->pdat_size = buf_size;
     GT_LOGD(GT_LOG_TAG_GUI , "area dot_w = %d , dot_h = %d , buf_size = %d" , area.w , area.h , style->pdat_size);
@@ -104,8 +103,10 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     if(!gt_barcode_get(style))
     {
         GT_LOGE(GT_LOG_TAG_GUI , "get barcode type = %d ,dot_w = %d , dot_h = %d" , style->type , style->ret_param.dot_w , style->ret_param.dot_h);
-        return ;
+        goto RET_FREE ;
     }
+    // 重新写入
+    style->mode_h = h;
 
     /* base shape */
     gt_attr_rect_st rect_attr;
@@ -168,8 +169,11 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     }
 
 #endif
-    gt_mem_free(style->pdat);
-    style->pdat = NULL;
+RET_FREE:
+    if(NULL != style->pdat){
+        gt_mem_free(style->pdat);
+        style->pdat = NULL;
+    }
     style->pdat_size = 0;
 }
 
@@ -281,8 +285,11 @@ static void _gt_barcode_init_style(gt_obj_st * barcode)
 {
     _gt_barcode_st * style = barcode->style;
     gt_memset(style, 0, sizeof(_gt_barcode_st));
-    style->barcode = gt_mem_malloc(sizeof("1234567890128"));
-    gt_memcpy(style->barcode, "1234567890128\0", sizeof("1234567890128"));
+
+    char *text = "1234567890128";
+    style->barcode = gt_mem_malloc(strlen(text)+1);
+    gt_memcpy(style->barcode, text , strlen(text));
+    style->barcode[strlen(text)+1] = '\0';
     style->hri_type = GT_FAMILY_BARCODE_HRI_TYPE_DOWN;
     style->type = GT_FAMILY_BARCODE_TYPE_EAN_13;
     style->mode_w = 2;
