@@ -289,7 +289,7 @@ void gt_wordart_add_item(gt_obj_st* wordart , uint32_t coding , char* img)
     _gt_wordart_st * style = (_gt_wordart_st * )wordart->style;
     uint32_t len = 0;
 
-    if(NULL == style->items || style->item_number > style->total){
+    if(NULL == style->items || style->item_number >= style->total){
         return ;
     }
     // if(NULL == style->items){
