@@ -97,8 +97,6 @@ gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point
  * @return false no
  */
 bool gt_obj_check_scr(gt_obj_st * obj);
-void _gt_obj_set_process_point(gt_obj_st * obj, gt_point_st * point);
-void _gt_obj_set_process_scroll_xy(gt_obj_st * obj, gt_size_t x_scroll, gt_size_t y_scroll);
 
 void gt_obj_get_click_point_by_phy_point(gt_obj_st * obj, gt_point_st * point_phy, gt_point_st * point_ret);
 

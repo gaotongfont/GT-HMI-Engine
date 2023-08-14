@@ -42,8 +42,7 @@ typedef struct _gt_obj_event_attr_s {
  */
 typedef struct _gt_obj_process_attr_s {
     gt_point_st point;      //click point(note: the point is for obj)
-    gt_size_t x_scroll;     //scroll x distance
-    gt_size_t y_scroll;     //scroll y distance
+    gt_point_st scroll;     //scroll distance
 }gt_obj_process_attr_st;
 
 typedef enum {

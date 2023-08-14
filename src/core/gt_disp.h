@@ -22,10 +22,21 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef enum{
+typedef enum {
     GT_DIR_VER,
     GT_DIR_HOR,
 }gt_dir_e;
+
+/**
+ * @brief The screen turn next screen animation type
+ */
+typedef enum {
+    GT_SCR_ANIM_TYPE_NONE = 0,
+    GT_SCR_ANIM_TYPE_MOVE_LEFT,
+    GT_SCR_ANIM_TYPE_MOVE_RIGHT,
+    GT_SCR_ANIM_TYPE_MOVE_UP,
+    GT_SCR_ANIM_TYPE_MOVE_DOWN,
+}gt_scr_anim_type_et;
 
 typedef struct _gt_draw_board_s{
     gt_color_t * ctx;
@@ -39,18 +50,15 @@ typedef struct _gt_draw_board_s{
 /* global functions / API interface -------------------------------------*/
 
 /**
- * @brief load active screen
- *
- * @param scr The screen which want to be loaded
- */
-void gt_load_scr(gt_obj_st * scr);
-
-/**
  * @brief Set display screen
  *
  * @param scr The screen which want to be loaded
  */
 void gt_disp_set_scr(gt_obj_st * scr);
+
+uint16_t gt_disp_get_ver_pixel(void);
+
+uint16_t gt_disp_get_hor_pixel(void);
 
 /**
  * @brief Get display screen

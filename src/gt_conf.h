@@ -97,13 +97,7 @@ extern "C" {
 #define GT_STYLE_UI_DARK       1
 #define GT_STYLE_UI_BRIGHT     2
 
-/* default gesture repeat */
-#define GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS      300  /* ms repeat trigger once event */
-#define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR     (GT_SCREEN_WIDTH/3)
-#define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_VER     (GT_SCREEN_HEIGHT/3)
-#define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL           (2)
-
-#define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL_INVALID   (80)
+#define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL_INVALID   80
 
 #define GT_CFG_DEFAULT_BUTTON_
 

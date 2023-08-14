@@ -182,7 +182,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             GT_LOGV(GT_LOG_TAG_GUI, "child delete");
             break;
 
-        case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
+        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
             GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             style->selected = 1;
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -195,11 +195,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             GT_LOGV(GT_LOG_TAG_GUI, "scroll");
             break;
 
-        case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
-            GT_LOGV(GT_LOG_TAG_GUI, "process");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
+        case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
             style->selected = 0;
             if (!_turn_next_image(obj)) {

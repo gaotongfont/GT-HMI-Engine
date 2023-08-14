@@ -10,10 +10,10 @@
 /* include --------------------------------------------------------------*/
 #include "gt_hal_disp.h"
 #include "../core/gt_mem.h"
+#include "../core/gt_obj_pos.h"
 #include "../others/gt_color.h"
 #include "../gt_conf.h"
 #include "../others/gt_log.h"
-#include "../core/gt_obj_pos.h"
 #include "../core/gt_refr.h"
 #include "../core/gt_timer.h"
 #include "../hal/gt_hal_tick.h"

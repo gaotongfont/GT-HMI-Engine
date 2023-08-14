@@ -53,7 +53,7 @@ void gt_example_input(void)
     gt_input_set_placeholder(input, "This is placeholder content.");
 	gt_obj_set_pos(input, 0, 0);
 	gt_obj_set_size(input, 180, 80);
-	gt_obj_add_event_cb(input, _click_cb, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
+	gt_obj_add_event_cb(input, _click_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
 
     gt_disp_load_scr(screen);
 }

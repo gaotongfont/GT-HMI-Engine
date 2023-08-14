@@ -14,6 +14,7 @@
 #include "string.h"
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
+#include "../core/gt_obj_scroll.h"
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
@@ -155,8 +156,8 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
     _gt_listview_update(listview);
 
     // limit invalid values
-    if (gt_abs(listview->process_attr.y_scroll) > GT_CFG_DEFAULT_POINT_SCROLL_PIXEL_INVALID) {
-        listview->process_attr.y_scroll = listview->process_attr.y_scroll > 0 ? 16 : -16;
+    if (gt_abs(listview->process_attr.scroll.y) > GT_CFG_DEFAULT_POINT_SCROLL_PIXEL_INVALID) {
+        listview->process_attr.scroll.y = listview->process_attr.scroll.y > 0 ? 16 : -16;
     }
 
     gt_attr_rect_st rect_attr;
@@ -282,25 +283,18 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             GT_LOGV(GT_LOG_TAG_GUI, "child delete");
             break;
 
-        case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
+        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
             GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
             GT_LOGV(GT_LOG_TAG_GUI, "scroll");
-            _gt_listview_update_by_scroll_y(obj, obj->process_attr.y_scroll);
+            _gt_listview_update_by_scroll_y(obj, gt_obj_scroll_get_y(obj));
 
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
-        case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
-            GT_LOGV(GT_LOG_TAG_GUI, "process");
-            /* code here */
-
-            gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
+        case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
             _gt_listview_update_by_click_point(obj, obj->process_attr.point);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);

@@ -56,11 +56,11 @@ const gt_obj_class_st gt_barcode_class = {
 /* static functions -----------------------------------------------------*/
 static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
 
-    _gt_barcode_st * style = barcode->style; 
+    _gt_barcode_st * style = barcode->style;
     bar_uint32_t buf_size = 0;
     gt_area_st area;
     gt_size_t h = 0;
-    
+
     h = style->mode_h;
 
 #if (!BARCODE_READ_MODE)
@@ -141,7 +141,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
 // area
     barcode->area.w = area.w;
     barcode->area.h = h;
-    
+
     area.h = BAECODE_LINE_NUMB;
 
     for(i = 1 ; i < BAECODE_LINE_NUMB ; i++)
@@ -254,7 +254,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             GT_LOGV(GT_LOG_TAG_GUI, "child delete");
             break;
 
-        case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
+        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
             GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
@@ -263,14 +263,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             GT_LOGV(GT_LOG_TAG_GUI, "scroll");
             break;
 
-        case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
-            GT_LOGV(GT_LOG_TAG_GUI, "process");
-            /* code here */
-
-            gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
+        case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
 
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);

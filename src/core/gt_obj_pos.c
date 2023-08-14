@@ -174,7 +174,7 @@ static gt_obj_st * _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st * poi
             if( obj_temp && GT_VISIBLE == obj_temp->visible ){
                 obj_clicked = obj_temp;
                 return obj_clicked;
-            } 
+            }
         }
         if( gt_obj_check_is_clicked(parent->child[idx], point) ){
             if( parent->child[idx] && GT_VISIBLE == parent->child[idx]->visible ){
@@ -230,30 +230,6 @@ bool gt_obj_check_scr(gt_obj_st * obj)
 }
 
 /**
- * @brief set obj process point data
- *
- * @param obj obj
- * @param point point ptr
- */
-void _gt_obj_set_process_point(gt_obj_st * obj, gt_point_st * point){
-    obj->process_attr.point.x = point->x;
-    obj->process_attr.point.y = point->y;
-}
-
-/**
- * @brief set obj process scroll xy
- *
- * @param obj
- * @param x_scroll
- * @param y_scroll
- */
-void _gt_obj_set_process_scroll_xy(gt_obj_st * obj, gt_size_t x_scroll, gt_size_t y_scroll)
-{
-    obj->process_attr.x_scroll = x_scroll;
-    obj->process_attr.y_scroll = y_scroll;
-}
-
-/**
  * @brief Get the point of the clicked obj
  *
  * @param obj click obj
@@ -277,4 +253,5 @@ void gt_obj_get_click_point_by_phy_point(gt_obj_st * obj, gt_point_st * point_ph
     point_ret->x = point.x - obj->area.x;
     point_ret->y = point.y - obj->area.y;
 }
+
 /* end ------------------------------------------------------------------*/

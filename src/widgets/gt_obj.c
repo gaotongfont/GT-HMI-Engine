@@ -91,22 +91,16 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
             GT_LOGV(GT_LOG_TAG_GUI, "child delete");
             break;
 
-        case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
+        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
             GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
             GT_LOGV(GT_LOG_TAG_GUI, "obj scroll");
-            gt_disp_scroll_area_act(-e->target->process_attr.x_scroll, -e->target->process_attr.y_scroll);
+            gt_disp_scroll_area_act(-e->target->process_attr.scroll.x, -e->target->process_attr.scroll.y);
             break;
 
-        case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
-            GT_LOGV(GT_LOG_TAG_GUI, "process");
-            /* code here */
-            gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
+        case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;

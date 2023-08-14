@@ -86,7 +86,7 @@ void gt_examples_anim1(void)
     gt_obj_st * btn = gt_btn_create(screen);
 	gt_obj_set_pos(btn, 0, 30);
 	gt_obj_set_size(btn, 200, 100);
-	gt_obj_add_event_cb(btn, btn_click_cb, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
+	gt_obj_add_event_cb(btn, btn_click_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
 
     gt_disp_load_scr(screen);
 }

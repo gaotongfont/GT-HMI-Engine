@@ -306,6 +306,14 @@ static void _default_exec_cb(gt_obj_st * obj, int32_t value)
 
 /* global functions / API interface -------------------------------------*/
 
+uint32_t gt_anim_speed_to_time(uint32_t speed, int32_t start, int32_t end)
+{
+    uint32_t d    = gt_abs(start - end);
+    uint32_t time = (d * 1000) / speed;
+
+    return time ? time : 1;
+}
+
 void * gt_anim_get_data(void)
 {
     gt_anim_st * anim = _gt_anim_get_act();

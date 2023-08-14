@@ -34,9 +34,9 @@ typedef enum gt_event_type_e{
     /* Input device events */
     _GT_EVENT_TYPE_INPUT_BEGIN = 0,
     /* =================== input event defined here Begin =================== */
-    GT_EVENT_TYPE_INPUT_CLICKING = _GT_EVENT_TYPE_INPUT_BEGIN,        ///< clicking
-    GT_EVENT_TYPE_INPUT_PROCESS,                                      ///< release,click need handler
-    GT_EVENT_TYPE_INPUT_PROCESSED,                                    ///< click handler finish
+    GT_EVENT_TYPE_INPUT_RELEASED = _GT_EVENT_TYPE_INPUT_BEGIN,        ///< release event
+    GT_EVENT_TYPE_INPUT_PRESSING,                                     ///< pressing
+    GT_EVENT_TYPE_INPUT_PRESSED,                                      ///< pressed
     GT_EVENT_TYPE_INPUT_SCROLL,
     GT_EVENT_TYPE_INPUT_PROCESS_LOST,                                 ///< move off and lost handler
 

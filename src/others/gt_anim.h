@@ -154,6 +154,8 @@ static inline void gt_anim_set_data(gt_anim_st * anim, void * data) {
     anim->data = data;
 }
 
+/* =================== Movement control of Widgets =================== */
+
 /**
  * @brief Set Object animation param time
  *
@@ -194,6 +196,16 @@ static inline void gt_anim_param_set_path_type(gt_anim_param_st * param, gt_anim
 /* global functions / API interface -------------------------------------*/
 
 /**
+ * @brief
+ *
+ * @param speed
+ * @param start
+ * @param end
+ * @return uint32_t [ms] The time which animation playing the whole time
+ */
+uint32_t gt_anim_speed_to_time(uint32_t speed, int32_t start, int32_t end);
+
+/**
  * @brief Get User animation Data
  *
  * @return void* The data
@@ -216,7 +228,7 @@ void gt_anim_param_init(gt_anim_param_st * param);
 void gt_anim_pos_move(gt_obj_st * obj, gt_anim_param_st * param);
 
 /**
- * @brief initialize the animation timer by core
+ * @brief [only kernel calling] initialize the animation timer by core
  */
 void _gt_anim_core_init(void);
 

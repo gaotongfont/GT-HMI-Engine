@@ -314,34 +314,28 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             GT_LOGV(GT_LOG_TAG_GUI, "child delete");
             break;
 
-        case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
+        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
             GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-            gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESS, NULL);
+            gt_event_send(obj, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
             GT_LOGV(GT_LOG_TAG_GUI, "scroll");
             _pos = 0;
             if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_L2R ){
-                _pos += obj->process_attr.x_scroll;
+                _pos += obj->process_attr.scroll.x;
             }else if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_R2L ){
-                _pos -= obj->process_attr.x_scroll;
+                _pos -= obj->process_attr.scroll.x;
             }else if( gt_slider_get_dir(obj) == GT_BAR_DIR_VER_U2D ){
-                _pos += obj->process_attr.y_scroll;
+                _pos += obj->process_attr.scroll.y;
             }else if( gt_slider_get_dir(obj) == GT_BAR_DIR_VER_D2U ){
-                _pos -= obj->process_attr.y_scroll;
+                _pos -= obj->process_attr.scroll.y;
             }
             _gt_slider_add_offset(obj , _pos);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
-        case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
-            GT_LOGV(GT_LOG_TAG_GUI, "process");
-            /* code here */
-            gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
+        case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
 
             point_click.x = obj->process_attr.point.x;

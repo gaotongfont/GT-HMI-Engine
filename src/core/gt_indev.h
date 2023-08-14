@@ -15,6 +15,7 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "../hal/gt_hal_indev.h"
+#include "./gt_timer.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -58,7 +59,7 @@ gt_dir_et gt_indev_get_gesture(const gt_indev_st * indev);
 /**
  * @brief Input processing handle
  */
-void gt_indev_handler(void);
+void gt_indev_handler(struct _gt_timer_s * timer);
 
 #ifdef __cplusplus
 } /*extern "C"*/

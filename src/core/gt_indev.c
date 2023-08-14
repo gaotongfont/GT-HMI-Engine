@@ -9,6 +9,7 @@
 
  /* include --------------------------------------------------------------*/
 #include "gt_indev.h"
+#include "stdbool.h"
 #include "../hal/gt_hal_indev.h"
 #include "../hal/gt_hal_disp.h"
 #include "../hal/gt_hal_tick.h"
@@ -16,6 +17,7 @@
 #include "../others/gt_math.h"
 #include "gt_disp.h"
 #include "gt_obj_pos.h"
+#include "gt_obj_scroll.h"
 
 /* private define -------------------------------------------------------*/
 /**
@@ -53,6 +55,171 @@ static inline gt_obj_st * _gt_indev_get_remark_active_obj(void) {
 }
 #endif
 
+static inline bool _is_scroll_vertical(gt_dir_et dir) {
+    return (GT_DIR_UP == dir || GT_DIR_DOWN == dir) ? true : false;
+}
+
+static gt_size_t _scroll_predict(gt_indev_st * indev, gt_size_t v)
+{
+    gt_size_t result = 0;
+    if (NULL == indev) {
+        return result;
+    }
+
+    gt_size_t limit_scroll_throw = indev->drv->limit_scroll_throw;
+    while(v) {
+        result += v;
+        v = (100 - limit_scroll_throw) * v / 100;
+    }
+
+    return result;
+}
+
+static gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
+    struct _point * point_p = &indev->proc.data.point;
+    gt_dir_et ret = point_p->gesture;
+    if (ret) {
+        /** Locked the first direction */
+        return ret;
+    }
+
+    if (gt_abs(point_p->scroll_sum.x) > gt_abs(point_p->scroll_sum.y)) {
+        if (point_p->scroll_sum.x > indev->drv->limit_pixel_scroll) {
+            ret = GT_DIR_RIGHT;
+        } else if (point_p->scroll_sum.x < -indev->drv->limit_pixel_scroll) {
+            ret = GT_DIR_LEFT;
+        }
+        point_p->scroll_throw.y = 0;
+    } else if (point_p->scroll_sum.x || point_p->scroll_sum.y) {
+        if (point_p->scroll_sum.y > indev->drv->limit_pixel_scroll) {
+            ret = GT_DIR_DOWN;
+        } else if (point_p->scroll_sum.y < -indev->drv->limit_pixel_scroll) {
+            ret = GT_DIR_UP;
+        }
+        point_p->scroll_throw.x = 0;
+    } else {
+        ret = GT_DIR_NONE;
+    }
+
+    return ret;
+}
+
+static void _indev_scroll_throw_handler(gt_indev_st * indev) {
+    struct _point * point_p = &indev->proc.data.point;
+    point_p->gesture = _get_scroll_dir(indev);
+
+    if((uint16_t)GT_DIR_NONE != point_p->gesture) {
+        gt_size_t dx = _scroll_predict(indev, point_p->scroll_throw.x);
+        gt_size_t dy = _scroll_predict(indev, point_p->scroll_throw.y);
+        gt_obj_scroll_to(point_p->obj_scroll, dx, dy, GT_ANIM_ON);
+    }
+}
+
+static void _indev_scroll_handler(gt_indev_st * indev) {
+    struct _point * point_p = &indev->proc.data.point;
+
+    point_p->scroll_sum.x += point_p->scroll_diff.x;
+    point_p->scroll_sum.y += point_p->scroll_diff.y;
+    point_p->gesture = _get_scroll_dir(indev);
+
+    if((uint16_t)GT_DIR_NONE != point_p->gesture) {
+        gt_size_t dx = 0;
+        gt_size_t dy = 0;
+        point_p->obj_scroll = point_p->obj_target;
+
+        if (_is_scroll_vertical(point_p->gesture)) {
+            dy = point_p->scroll_diff.y;
+            point_p->scroll_throw.x = 0;
+        } else {
+            dx = point_p->scroll_diff.x;
+            point_p->scroll_throw.y = 0;
+        }
+        gt_obj_scroll_to(point_p->obj_scroll, dx, dy, GT_ANIM_OFF);
+    }
+}
+
+static void _indev_released_handle(gt_indev_st * indev) {
+    struct _point * point_p = &indev->proc.data.point;
+    if (NULL == point_p->obj_target) {
+        return;
+    }
+
+#if _GT_INDEV_USE_REMARK
+    if (!_gt_indev_is_equal_remark_active_obj(point_p->obj_act)) {
+        point_p->obj_act = _gt_indev_get_remark_active_obj();
+    }
+    _gt_indev_remark_active_obj(NULL);
+#endif
+    gt_event_type_et event_type = (point_p->obj_act == point_p->obj_target) ? \
+        GT_EVENT_TYPE_INPUT_RELEASED : GT_EVENT_TYPE_INPUT_PROCESS_LOST;
+
+    gt_event_send(point_p->obj_target, event_type, NULL);
+    point_p->obj_act = NULL;
+    point_p->obj_target = NULL;
+
+    if (point_p->obj_scroll) {
+        _indev_scroll_throw_handler(indev);
+        point_p->obj_target = NULL;
+    }
+}
+
+static void _indev_pressed_handle(gt_indev_st * indev) {
+    gt_obj_st * scr = gt_disp_get_scr();
+    gt_point_st point_ret;
+    struct _point * point_p = &indev->proc.data.point;
+
+    if (NULL == point_p->obj_target) {
+        indev->proc.timestamp_long_press = gt_tick_get();
+
+        _gt_indev_point_set_value(&point_p->scroll_sum, 0, 0);
+        _gt_indev_point_set_value(&point_p->scroll_diff, 0, 0);
+        /* save pressed obj */
+        point_p->gesture = GT_DIR_NONE;
+        point_p->obj_act = gt_find_clicked_obj_by_point(scr, &point_p->newly);
+        point_p->obj_target = point_p->obj_act;
+#if _GT_INDEV_USE_REMARK
+        _gt_indev_remark_active_obj(point_p->obj_act);
+#endif
+
+        /* send clicking event to pressed obj */
+        gt_obj_get_click_point_by_phy_point(point_p->obj_act, &point_p->newly, &point_ret);
+        _gt_obj_set_process_point(point_p->obj_act, &point_ret);
+        gt_event_send(point_p->obj_act, GT_EVENT_TYPE_INPUT_PRESSED, NULL);
+    }
+
+    if (point_p->obj_target && point_p->obj_scroll) {
+        point_p->scroll_throw.x = 0;
+        point_p->scroll_throw.y = 0;
+        _indev_scroll_throw_handler(indev);
+    }
+    // GT_LOGE(">", "(%d, %d) (%d, %d)", point_p->newly.x, point_p->newly.y, point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
+
+    point_p->obj_act = gt_find_clicked_obj_by_point(scr, &point_p->newly);
+
+    if (point_p->obj_act == point_p->obj_target) {
+        gt_obj_get_click_point_by_phy_point(point_p->obj_target, &point_p->newly, &point_ret);
+        _gt_obj_set_process_point(point_p->obj_target, &point_ret);
+        if( (gt_tick_get() - indev->proc.timestamp_long_press) >= indev->drv->limit_timers_long_press ){
+            indev->proc.timestamp_long_press = gt_tick_get();
+            gt_event_send(point_p->obj_target, GT_EVENT_TYPE_INPUT_PRESSING, NULL);
+        }
+    }
+
+    point_p->scroll_diff.x = point_p->newly.x - point_p->last.x;
+    point_p->scroll_diff.y = point_p->newly.y - point_p->last.y;
+
+    point_p->scroll_throw.x = (point_p->scroll_throw.x * 4) >> 3;
+    point_p->scroll_throw.y = (point_p->scroll_throw.y * 4) >> 3;
+
+    point_p->scroll_throw.x += (point_p->scroll_diff.x * 4) >> 3;
+    point_p->scroll_throw.y += (point_p->scroll_diff.y * 4) >> 3;
+
+    if (NULL == point_p->obj_target) {
+        return;
+    }
+    _indev_scroll_handler(indev);
+}
+
 static void _gt_indev_handler_point(gt_indev_st * indev)
 {
     gt_indev_data_st data_indev;
@@ -64,136 +231,22 @@ static void _gt_indev_handler_point(gt_indev_st * indev)
         // GT_LOGW(GT_LOG_TAG_TP, "point out of range: x:%d, y:%d", data_indev.point.x, data_indev.point.y);
         return;
     }
-
-    static uint8_t flag_key_down = 0;
-    static uint32_t last_run = 0;
-
-    gt_obj_st * scr = gt_disp_get_scr();
-    gt_point_st point_ret;
     struct _point * point_p = &indev->proc.data.point;
-    gt_size_t ver = 0, hor = 0;
 
     /* process point data */
     indev->proc.state = data_indev.state;
+#if 1
+    _gt_indev_point_set_value(&point_p->newly, data_indev.point.x, data_indev.point.y);
+#endif
 
     /* have one touch event */
     if (GT_INDEV_STATE_RELEASED == indev->proc.state) {
-        if (!flag_key_down) {
-            return;    /* no touch */
-        }
-#if _GT_INDEV_USE_REMARK
-        if (!_gt_indev_is_equal_remark_active_obj(point_p->obj_act)) {
-            point_p->obj_act = _gt_indev_get_remark_active_obj();
-        }
-        _gt_indev_remark_active_obj(NULL);
-#endif
-        gt_event_type_et event_type = (point_p->obj_act == point_p->obj_last) ? \
-            GT_EVENT_TYPE_INPUT_PROCESSED : GT_EVENT_TYPE_INPUT_PROCESS_LOST;
-
-        gt_event_send(point_p->obj_act, event_type, NULL);
-        flag_key_down = 0;
-        point_p->count_point = 0;
-        return;
+        _indev_released_handle(indev);
+    } else {
+        _indev_pressed_handle(indev);
     }
 
-    /* first key down */
-    if (!flag_key_down) {
-        gt_size_t x = data_indev.point.x, y = data_indev.point.y;
-        flag_key_down = 1;
-        last_run = gt_tick_get();
-        /* save first pressed point */
-        _gt_indev_point_set_value(&point_p->act, x, y);
-        _gt_indev_point_set_value(&point_p->last, x, y);
-        _gt_indev_point_set_value(&point_p->newly, x, y);
-        ++point_p->count_point;
-
-        /* save pressed obj */
-        point_p->obj_act = gt_find_clicked_obj_by_point(scr, &point_p->act);
-        point_p->obj_last = point_p->obj_act;
-        point_p->obj_scroll = point_p->obj_act;
-#if _GT_INDEV_USE_REMARK
-        _gt_indev_remark_active_obj(point_p->obj_act);
-#endif
-
-        /* send clicking event to pressed obj */
-        gt_obj_get_click_point_by_phy_point(point_p->obj_act, &point_p->act,&point_ret);
-        _gt_obj_set_process_point(point_p->obj_act, &point_ret);
-        gt_event_send(point_p->obj_act, GT_EVENT_TYPE_INPUT_CLICKING, NULL);
-        return;
-    }
-
-    /* last pressed point */
     _gt_indev_point_set_value(&point_p->last, point_p->newly.x, point_p->newly.y);
-    _gt_indev_point_set_value(&point_p->newly, data_indev.point.x, data_indev.point.y);
-    ++point_p->count_point;
-
-    point_p->obj_last = gt_find_clicked_obj_by_point(scr, &data_indev.point);
-
-    if (point_p->obj_act == point_p->obj_last) {
-        gt_obj_get_click_point_by_phy_point(point_p->obj_act, &point_p->newly,&point_ret);
-        _gt_obj_set_process_point(point_p->obj_act, &point_ret);
-        if( (gt_tick_get()-last_run) >= indev->drv->limit_timers_long_press ){
-            last_run = gt_tick_get();
-            gt_event_send(point_p->obj_act, GT_EVENT_TYPE_INPUT_CLICKING, NULL);
-        }
-    }
-
-    if (_gt_indev_point_equal(&point_p->newly, &point_p->last)) {
-        goto long_press_lb;
-    }
-
-    /* gesture */
-    if (point_p->count_point > 3) {
-
-        hor = point_p->newly.x - point_p->last.x;
-        ver = point_p->newly.y - point_p->last.y;
-
-        if (ver < -indev->drv->limit_pixel_gesture_ver) {
-            GT_LOGD(GT_LOG_TAG_GUI, "slide up\n");
-            point_p->gesture = GT_DIR_UP;
-        }
-        else if (ver > indev->drv->limit_pixel_gesture_ver) {
-            GT_LOGD(GT_LOG_TAG_GUI, "slide down\n");
-            point_p->gesture = GT_DIR_DOWN;
-        }
-        else if (hor < -indev->drv->limit_pixel_gesture_hor) {
-            GT_LOGD(GT_LOG_TAG_GUI, "slide left\n");
-            point_p->gesture = GT_DIR_LEFT;
-        }
-        else if (hor > indev->drv->limit_pixel_gesture_hor) {
-            GT_LOGD(GT_LOG_TAG_GUI, "slide right\n");
-            point_p->gesture = GT_DIR_RIGHT;
-        }
-        else {
-            point_p->gesture = GT_DIR_NONE;
-        }
-
-        if (point_p->gesture != GT_DIR_NONE) {
-            _gt_indev_point_set_value(&point_p->last, point_p->newly.x, point_p->newly.y);
-        }
-    }
-
-    /* scroll screen */
-    if ((gt_size_t)gt_abs(ver) > indev->drv->limit_pixel_scroll ||
-        (gt_size_t)gt_abs(hor) > indev->drv->limit_pixel_scroll) {
-        _gt_obj_set_process_scroll_xy(point_p->obj_scroll, hor, ver);
-        gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
-    }
-    if( gt_disp_get_scr() == point_p->obj_scroll ){
-        _gt_indev_point_set_value(&point_p->newly, data_indev.point.x, data_indev.point.y);
-    }
-    /* if have gesture,no process click event */
-    if(GT_DIR_NONE != point_p->gesture) {
-        GT_LOGD(GT_LOG_TAG_GUI, "send scroll code");
-        gt_event_send(point_p->obj_last, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
-    }
-
-long_press_lb:
-    if ( 0 == (point_p->count_point % indev->drv->limit_timers_long_press) ) {
-        /* trigger an touch event */
-        point_p->count_point = 0;
-        GT_LOGD(GT_LOG_TAG_GUI, "continue mode trigger an touch event");
-    }
 }
 
 static void _gt_indev_handler_button(gt_indev_st * indev)
@@ -241,10 +294,10 @@ void gt_indev_get_point_newly(const gt_indev_st * indev, gt_point_st * point)
 }
 
 gt_dir_et gt_indev_get_gesture(const gt_indev_st * indev) {
-    return indev->proc.data.point.gesture;
+    return (gt_dir_et)indev->proc.data.point.gesture;
 }
 
-void gt_indev_handler(void)
+void gt_indev_handler(struct _gt_timer_s * timer)
 {
     gt_indev_st * indev;
     uint8_t i, cnt_indev;

@@ -18,6 +18,7 @@
 #include "../core/gt_draw.h"
 #include "../core/gt_obj_pos.h"
 #include "../others/gt_area.h"
+#include "../others/gt_anim.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -131,12 +132,30 @@ void gt_disp_set_scr(gt_obj_st * scr) {
     disp->scr_act = scr;
 }
 
-gt_obj_st * gt_disp_get_scr() {
+gt_obj_st * gt_disp_get_scr(void) {
     gt_disp_st * disp = gt_disp_get_default();
     if( NULL == disp ){
         return NULL;
     }
     return disp->scr_act;
+}
+
+uint16_t gt_disp_get_ver_pixel(void)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    if( NULL == disp ){
+        return 0;
+    }
+    return disp->drv->res_ver;
+}
+
+uint16_t gt_disp_get_hor_pixel(void)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    if( NULL == disp ){
+        return 0;
+    }
+    return disp->drv->res_hor;
 }
 
 
@@ -158,8 +177,8 @@ void gt_disp_load_scr(gt_obj_st * scr)
     _gt_disp_refr_reset_areas();
 
     if( scr_old != scr ){
-        disp->area_act.x = 0;
-        disp->area_act.y = 0;
+        disp->area_act.x = scr->area.x;
+        disp->area_act.y = scr->area.y;
         gt_event_clr_all_event(scr_old);
         gt_event_clr_all_event(scr);
     }
@@ -172,6 +191,11 @@ void gt_disp_load_scr(gt_obj_st * scr)
 
     _gt_disp_refr_append_area(&disp->area_act);
     _gt_disp_set_state(disp, GT_NOT_BUSY);
+}
+
+void gt_disp_load_scr_anim(gt_obj_st * src, gt_scr_anim_type_et type, uint32_t time, uint32_t delay, bool auto_del)
+{
+
 }
 
 void gt_disp_ref_area(const gt_area_st * coords)

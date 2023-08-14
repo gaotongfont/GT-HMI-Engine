@@ -20,6 +20,20 @@ extern "C" {
 
 /* define ---------------------------------------------------------------*/
 
+/* default gesture repeat */
+
+/* ms repeat trigger once event */
+#define GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS      300
+
+#define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR     (GT_SCREEN_WIDTH >> 4)
+
+#define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_VER     (GT_SCREEN_HEIGHT >> 4)
+
+#define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL           3
+
+/** Drag throw slow-down in [%]. Greater value: faster -> slow-down */
+#define GT_CFG_DEFAULT_POINT_SCROLL_THROW           10
+
 
 
 /* typedef --------------------------------------------------------------*/
@@ -46,11 +60,13 @@ typedef enum _gt_indev_state_e {
  * @brief direction definition enum
  */
 typedef enum{
-    GT_DIR_NONE,    ///< default
-    GT_DIR_UP,      ///< upward
-    GT_DIR_RIGHT,   ///< right
-    GT_DIR_DOWN,    ///< downward
-    GT_DIR_LEFT,    ///< left
+    GT_DIR_NONE = 0,  ///< default
+
+    GT_DIR_UP   ,     ///< upward
+    GT_DIR_DOWN ,     ///< downward
+
+    GT_DIR_LEFT ,     ///< left
+    GT_DIR_RIGHT,     ///< right
 }gt_dir_et;
 
 /**
@@ -64,6 +80,7 @@ typedef struct {
 
     gt_indev_state_et state; ///< GT_INDEV_STATE_REL or GT_INDEV_STATE_PR
 	uint8_t continue_reading:1;  ///< If set to true, the read callback is invoked again
+    uint8_t reserved:7;          ///< Reserved for future use
 } gt_indev_data_st;
 
 /**
@@ -80,7 +97,8 @@ typedef struct _gt_indev_drv_s
     gt_size_t limit_timers_long_press;          ///< long press timers
     gt_size_t limit_pixel_gesture_ver;          ///< move pixel trigger once event
     gt_size_t limit_pixel_gesture_hor;          ///< move pixel trigger once event
-    gt_size_t limit_pixel_scroll;               ///< scroll pixel trigger scroll event
+    uint8_t limit_pixel_scroll;               ///< scroll pixel trigger scroll event
+    uint8_t limit_scroll_throw;               ///< [%]
 
 }gt_indev_drv_st;
 
@@ -90,20 +108,26 @@ typedef struct _gt_indev_drv_s
 typedef struct _gt_indev_proc_s
 {
     gt_indev_state_et state;
+    uint32_t timestamp_long_press;
     union
     {
         struct _point
         {
-            gt_point_st act;            ///< current point of touch input device
+            gt_point_st act;            ///< the first point of touch input device
             gt_point_st newly;          ///< last point of touch input device
             gt_point_st last;           ///< used to judge gesture
-            gt_dir_et gesture;          ///< gesture of touch input device point
 
-            struct gt_obj_s * obj_act;     ///< The object being pressed
-            struct gt_obj_s * obj_last;    ///< The object of last point
+            gt_point_st scroll_diff;         ///< the distance between two coordinates
+            gt_point_st scroll_sum;          ///< the sum of distance
+            gt_point_st scroll_throw;       ///< used to judge scroll
+
+            struct gt_obj_s * obj_act;     ///< The object which is touching now
+            struct gt_obj_s * obj_target;    ///< The object of first touch
             struct gt_obj_s * obj_scroll;  ///< The object of gesture
 
-            gt_size_t count_point;
+            uint16_t gesture : 3;          ///< @ref gt_dir_et gesture of touch input device point
+            uint16_t count_point : 3;
+            uint16_t reserved : 10;
         }point;
 
         struct _button
@@ -124,11 +148,9 @@ typedef struct _gt_indev_proc_s
 /**
  * @brief input device information
  */
-typedef struct _gt_indev_s
-{
+typedef struct _gt_indev_s {
     gt_indev_drv_st * drv;
     gt_indev_proc_st proc;          ///< Save all input device data
-
 }gt_indev_st;
 
 

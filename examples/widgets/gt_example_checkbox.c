@@ -50,7 +50,7 @@ void gt_examples_checkbox(void)
     gt_checkbox_set_text(checkbox, "Enabled");
 	gt_obj_set_pos(checkbox, 0, 0);
 	gt_obj_set_size(checkbox, 80, 20);
-	gt_obj_add_event_cb(checkbox, _gt_check_event_cb, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
+	gt_obj_add_event_cb(checkbox, _gt_check_event_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
 
     gt_disp_load_scr(screen);
 }

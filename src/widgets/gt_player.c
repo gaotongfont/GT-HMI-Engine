@@ -390,10 +390,10 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_DRAW_REDRAW: {
             break;
         }
-        case GT_EVENT_TYPE_INPUT_PROCESSED: {
+        case GT_EVENT_TYPE_INPUT_RELEASED: {
             break;
         }
-        case GT_EVENT_TYPE_INPUT_CLICKING: {
+        case GT_EVENT_TYPE_INPUT_PRESSING: {
             break;
         }
         default:

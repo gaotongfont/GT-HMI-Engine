@@ -237,8 +237,10 @@ void gt_obj_set_state(gt_obj_st * obj, gt_state_et state)
 {
     obj->state = state;
 }
+
 gt_state_et gt_obj_get_state(gt_obj_st * obj)
 {
     return obj->state;
 }
+
 /* end ------------------------------------------------------------------*/

@@ -34,11 +34,6 @@ static uint8_t cnt_indev = 0;
 
 
 /* static functions -----------------------------------------------------*/
-static void inline _gt_indev_task_handler(struct _gt_timer_s * timer)
-{
-    GT_UNUSED(timer);
-    gt_indev_handler();
-}
 
 
 
@@ -50,10 +45,11 @@ void gt_indev_drv_init(gt_indev_drv_st * drv)
 
     drv->type = GT_INDEV_TYPE_NONE;
 
+    drv->limit_timers_long_press = GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS;
     drv->limit_pixel_gesture_hor = GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR;
     drv->limit_pixel_gesture_ver = GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_VER;
     drv->limit_pixel_scroll      = GT_CFG_DEFAULT_POINT_SCROLL_PIXEL;
-    drv->limit_timers_long_press = GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS;
+    drv->limit_scroll_throw      = GT_CFG_DEFAULT_POINT_SCROLL_THROW;
 }
 
 gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv)
@@ -82,7 +78,7 @@ gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv)
     indev_act[cnt_indev]->drv = drv;
 
     if( cnt_indev == 0 ){
-        _gt_timer_create(_gt_indev_task_handler, GT_TASK_PERIOD_TIME_INDEV, NULL);
+        _gt_timer_create(gt_indev_handler, GT_TASK_PERIOD_TIME_INDEV, (void *)indev_act);
     }
     cnt_indev++;
 

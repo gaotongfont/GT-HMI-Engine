@@ -210,7 +210,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             GT_LOGV(GT_LOG_TAG_GUI, "child delete");
             break;
 
-        case GT_EVENT_TYPE_INPUT_CLICKING:   /* add clicking style and process clicking event */
+        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
             GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
@@ -219,14 +219,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             GT_LOGV(GT_LOG_TAG_GUI, "scroll");
             break;
 
-        case GT_EVENT_TYPE_INPUT_PROCESS:   /* remove clicking style and process click event */
-            GT_LOGV(GT_LOG_TAG_GUI, "process");
-            /* code here */
-
-            gt_event_send(obj, GT_EVENT_TYPE_INPUT_PROCESSED, NULL);
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PROCESSED: /* click event finish */
+        case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
 
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -299,7 +292,7 @@ void gt_wordart_add_item(gt_obj_st* wordart , uint32_t coding , char* img)
     // else{
     //     // style->items = (_gt_wordart_item_st * )gt_mem_realloc( style->items , (style->item_number+1) * sizeof(_gt_wordart_item_st));
     // }
-    
+
     len = (NULL == img) ? 1 : strlen(img) + 1;
     style->items[style->item_number].img = gt_mem_malloc(len);
     if(NULL == style->items[style->item_number].img){
@@ -313,6 +306,7 @@ void gt_wordart_add_item(gt_obj_st* wordart , uint32_t coding , char* img)
 
 void gt_wordart_set_text(gt_obj_st * wordart, const char * fmt, ...)
 {
+    char buffer[8] = {0};
     va_list args;
     va_list args2;
     va_start(args, fmt);
@@ -323,8 +317,7 @@ void gt_wordart_set_text(gt_obj_st * wordart, const char * fmt, ...)
     if( NULL != style->text ){
         gt_mem_free(style->text);
     }
-    uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(NULL, 0, fmt, args) + 1);
-
+    uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(buffer, sizeof(buffer), fmt, args) + 1);
     if (!size) {
         goto free_lb;
     }
