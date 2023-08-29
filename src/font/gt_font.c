@@ -366,7 +366,7 @@ gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding
         return STYLE_EN_ASCII;
     }
     // latin
-    else if(  (unicode >= 0x0100 && unicode <= 0x024F)
+    else if(  (unicode >= 0x0080 && unicode <= 0x024F)
             ||(unicode >= 0x1E00 && unicode <= 0x1EFF)
             )
     {
