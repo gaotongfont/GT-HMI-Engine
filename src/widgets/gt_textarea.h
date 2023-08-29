@@ -93,6 +93,14 @@ void gt_textarea_set_font_color(gt_obj_st * textarea, gt_color_t color);
 void gt_textarea_set_bg_color(gt_obj_st * textarea, gt_color_t color);
 
 /**
+ * @brief set textarea background opacity
+ *
+ * @param textarea
+ * @param opa @ref gt_color.h GT_OPA_0 ~ GT_OPA_100: 0 ~ 100% display
+ */
+void gt_textarea_set_bg_opa(gt_obj_st * textarea, uint8_t opa);
+
+/**
  * @brief set textarea chinese font style
  *
  * @param textarea obj pointer

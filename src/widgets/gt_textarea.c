@@ -33,12 +33,14 @@ typedef struct _gt_txt_s{
 
 typedef struct _gt_textarea_s{
     _gt_txt_st * contents;
-    uint16_t cnt_contents;
+    uint16_t    cnt_contents;
 
-    uint8_t space_x;
-    uint8_t space_y;
+    gt_color_t  color_background;
+    uint8_t     bg_opa;     /* @ref gt_color.h */
 
-    gt_color_t color_background;
+    uint8_t     space_x;
+    uint8_t     space_y;
+
     gt_family_t font_family_cn;
     gt_family_t font_family_en;
     gt_family_t font_family_numb;
@@ -102,7 +104,7 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
     rect_attr.reg.is_fill = 1;
     rect_attr.bg_color = style->color_background;
     rect_attr.border_color = gt_color_hex(0x888888);
-    rect_attr.bg_opa = textarea->opa;
+    rect_attr.bg_opa = style->bg_opa;
 
     draw_bg(textarea->draw_ctx, &rect_attr, &textarea->area);
 
@@ -228,6 +230,7 @@ static void _gt_textarea_init_style(gt_obj_st * textarea)
     style->font_family_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
     style->font_size         = GT_CFG_DEFAULT_FONT_SIZE;
     style->color_background  = gt_color_white();
+    style->bg_opa            = 0;
     style->font_gray         = 1;
     style->font_align        = GT_ALIGN_NONE;
     style->thick_en          = 0;
@@ -339,6 +342,13 @@ void gt_textarea_set_bg_color(gt_obj_st * textarea, gt_color_t color)
 {
     _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
     style->color_background = color;
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_textarea_set_bg_opa(gt_obj_st * textarea, uint8_t opa)
+{
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    style->bg_opa = opa;
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
