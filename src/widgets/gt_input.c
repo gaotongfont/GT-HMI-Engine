@@ -83,6 +83,10 @@ static void _gt_input_cursor_anim(gt_obj_st * input)
         .h = style->font_size
     };
 
+    if(((area.y + area.h) > (input->area.y + input->area.h-style->border_width-2))){
+        return ;
+    }
+
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill = 1;
@@ -154,6 +158,9 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     gt_area_st area_font = input->area;
     area_font.x += style->border_width + 2;
     area_font.y += style->border_width + 2;
+    area_font.w -= 2 * (style->border_width + 2);
+    area_font.h -= 2 * (style->border_width + 2);
+
     gt_area_st area_res = draw_text(input->draw_ctx, &font_attr, &area_font);
 
     /*draw cursor*/
