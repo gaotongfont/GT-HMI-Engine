@@ -26,8 +26,14 @@ typedef enum _gt_align_e
 {
     GT_ALIGN_NONE = 0,
     GT_ALIGN_LEFT,
+    GT_ALIGN_LEFT_MID,
+    GT_ALIGN_LEFT_BOTTOM,
     GT_ALIGN_RIGHT,
+    GT_ALIGN_RIGHT_MID,
+    GT_ALIGN_RIGHT_BOTTOM,
     GT_ALIGN_CENTER,
+    GT_ALIGN_CENTER_MID,
+    GT_ALIGN_CENTER_BOTTOM,
 
     GT_ALIGN_REVERSE = 0x80,    //end of enum
 }gt_align_et;

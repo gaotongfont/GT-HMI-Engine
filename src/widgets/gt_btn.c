@@ -274,7 +274,7 @@ static void _gt_btn_init_style(gt_obj_st * btn)
     style->font_family_numb = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
     style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_gray        = 1;
-    style->font_align = GT_ALIGN_CENTER;
+    style->font_align = GT_ALIGN_CENTER_MID;
     style->thick_en         = 0;
     style->thick_cn         = 0;
     style->space_x          = 0;

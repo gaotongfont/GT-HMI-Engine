@@ -575,8 +575,63 @@ SPELL_CODE_CONV:
 
 }
 
-static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
-{
+static _gt_keypad_st * _get_checked_style(gt_obj_st * keypad) {
+    _gt_keypad_st * style = keypad->style;
+    if( style->info.handler_cb != NULL ){
+        style->info.handler_cb(keypad);
+        return NULL;
+    }
+
+    if( style->kv_selected == NULL ){
+        return NULL;
+    }
+
+    if (_gt_keypad_is_switch_key_mapping_pressed(keypad, false)) {
+        return NULL;
+    }
+
+    if(style->target == NULL) {
+        return NULL;
+    }
+
+    if(GT_KEYPAD_MODE_SPELL ==  style->info.mode) {
+        _gt_keypad_spell_event_cb(keypad);
+        return NULL;
+    }
+    return style;
+}
+
+static void _gt_keypad_input_event_continue_cb(gt_obj_st * keypad) {
+    _gt_keypad_st * style = _get_checked_style(keypad);
+    if (NULL == style) {
+        return;
+    }
+    if( strcmp(style->kv_selected, GT_SYMBOL_EN) == 0 ||
+        strcmp(style->kv_selected, GT_SYMBOL_SPELL) == 0)
+    {
+        gt_input_append_value(style->target, _GT_KEYPAD_TAG_SPACE);
+    }
+    else if(strcmp(style->kv_selected, GT_SYMBOL_BACKSPACE) == 0 ){
+        gt_input_del_value(style->target);
+    }
+    else if( strcmp(style->kv_selected, GT_SYMBOL_LEFT) == 0 ){
+        gt_input_move_left_pos_cursor(style->target);
+    }
+    else if( strcmp(style->kv_selected, GT_SYMBOL_RIGHT) == 0 ){
+        gt_input_move_right_pos_cursor(style->target);
+    }
+    else if( strcmp(style->kv_selected, GT_SYMBOL_NEW_LINE) == 0 ){
+        gt_input_append_value(style->target, _GT_KEYPAD_TAG_NEW_LINE);
+    }
+}
+
+static void _gt_keypad_input_event_cb(gt_obj_st * keypad) {
+#if 01
+    _gt_keypad_st * style = _get_checked_style(keypad);
+    if (NULL == style) {
+        return;
+    }
+#else
     _gt_keypad_st * style = keypad->style;
     if( style->info.handler_cb != NULL ){
         style->info.handler_cb(keypad);
@@ -591,16 +646,15 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad)
         return;
     }
 
-    if(style->target == NULL){
+    if(style->target == NULL) {
         return;
     }
 
-    if(GT_KEYPAD_MODE_SPELL ==  style->info.mode)
-    {
+    if(GT_KEYPAD_MODE_SPELL ==  style->info.mode) {
         _gt_keypad_spell_event_cb(keypad);
         return ;
     }
-
+#endif
 
     if( strcmp(style->kv_selected, GT_SYMBOL_EN) == 0 ||
         strcmp(style->kv_selected, GT_SYMBOL_SPELL) == 0)
@@ -824,7 +878,14 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         break;
 
     case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-        GT_LOGV(GT_LOG_TAG_GUI, "clicking");
+        GT_LOGV(GT_LOG_TAG_GUI, "PRESSING");
+        if (gt_obj_check_scr(obj)) {
+            _gt_keypad_set_kv_selected(obj, _gt_keypad_get_click_kv(obj));
+            _gt_keypad_input_event_continue_cb(obj);
+        }
+        break;
+    case GT_EVENT_TYPE_INPUT_PRESSED:
+        GT_LOGV(GT_LOG_TAG_GUI, "PRESSED");
         if (gt_obj_check_scr(obj)) {
             _gt_keypad_set_kv_selected(obj, _gt_keypad_get_click_kv(obj));
             _gt_keypad_input_event_cb(obj);
@@ -872,7 +933,7 @@ static void _gt_keypad_init_style(gt_obj_st * keypad)
     style->color_key    = gt_color_hex(0x646464);
     style->color_ctrl   = gt_color_hex(0x3E3E3E);
     style->font_gray    = 1;
-    style->font_align   = GT_ALIGN_CENTER;
+    style->font_align   = GT_ALIGN_CENTER_MID;
     style->thick_en     = 0;
     style->thick_cn     = 0;
     style->space_x      = 0;

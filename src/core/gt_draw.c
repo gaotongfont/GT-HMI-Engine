@@ -880,20 +880,31 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
 
     /*text align*/
     switch( dsc->align & 0x7F ) {
+        case GT_ALIGN_RIGHT_BOTTOM:
+            area_font.y = area_font.y + ((h - _font.size) >> 1);
+        case GT_ALIGN_RIGHT_MID:
+            area_font.y = area_font.y + ((h - _font.size) >> 1);
         case GT_ALIGN_RIGHT:
             if( width_font < w ){
                 area_font.x = area_font.x + (w - width_font - 8);
             }
-            // area_font.y = area_font.y + ((h - _font.size)>>1);
             break;
+        case GT_ALIGN_CENTER_BOTTOM:
+            area_font.y = area_font.y + ((h - _font.size) >> 1);
+        case GT_ALIGN_CENTER_MID:
+            area_font.y = area_font.y + ((h - _font.size) >> 1);
         case GT_ALIGN_CENTER:
             if(width_font < w) {
-                area_font.x = area_font.x + ((w - width_font)>>1);
+                area_font.x = area_font.x + ((w - width_font) >> 1);
             }
-            // area_font.y = area_font.y + ((h - _font.size)>>1);
             break;
-        case GT_ALIGN_NONE:
+        case GT_ALIGN_LEFT_BOTTOM:
+            area_font.y = area_font.y + ((h - _font.size) >> 1);
+        case GT_ALIGN_LEFT_MID:
+            area_font.y = area_font.y + ((h - _font.size) >> 1);
+            break;
         case GT_ALIGN_LEFT:
+        case GT_ALIGN_NONE:
         default:
             break;
     }
