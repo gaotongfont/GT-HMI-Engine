@@ -230,7 +230,7 @@ static void _gt_textarea_init_style(gt_obj_st * textarea)
     style->font_family_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
     style->font_size         = GT_CFG_DEFAULT_FONT_SIZE;
     style->color_background  = gt_color_white();
-    style->bg_opa            = 0;
+    style->bg_opa            = GT_OPA_100;
     style->font_gray         = 1;
     style->font_align        = GT_ALIGN_NONE;
     style->thick_en          = 0;
