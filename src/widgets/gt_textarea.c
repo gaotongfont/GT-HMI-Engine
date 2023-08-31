@@ -367,7 +367,7 @@ void gt_textarea_set_font_family_en(gt_obj_st * textarea, gt_family_t family)
 void gt_textarea_set_font_family_numb(gt_obj_st * textarea, gt_family_t family)
 {
     _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
-    style->font_family_cn = family;
+    style->font_family_numb = family;
 }
 
 void gt_textarea_set_font_thick_en(gt_obj_st * textarea, uint8_t thick)
