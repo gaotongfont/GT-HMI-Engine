@@ -913,12 +913,12 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         area_font.x = (coords->x + coords->w) - (area_font.x - coords->x);// - area_font.w;
     }
 
+    start_x = area_font.x;
+
     if( dsc->start_x || dsc->start_y ){
         area_font.x = dsc->start_x;
         area_font.y = dsc->start_y;
     }
-
-    start_x = area_font.x;
 
     gt_draw_blend_dsc_st blend_dsc_style;
     gt_draw_blend_dsc_st blend_dsc = {
