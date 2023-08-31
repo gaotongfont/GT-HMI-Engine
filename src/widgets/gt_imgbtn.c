@@ -181,7 +181,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
             GT_LOGV(GT_LOG_TAG_GUI, "child delete");
             break;
-
+        case GT_EVENT_TYPE_INPUT_PRESSED:
         case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
             GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             style->selected = 1;
