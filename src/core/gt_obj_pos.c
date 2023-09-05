@@ -48,6 +48,7 @@ bool gt_obj_is_visible(gt_obj_st * obj){
     gt_disp_st * disp = gt_disp_get_default();
     if( !disp ){
         GT_LOGW( GT_LOG_TAG_GUI, "disp is null" );
+        return false;
     }
     if( GT_INVISIBLE == obj->visible ){
         return false;
@@ -217,6 +218,9 @@ gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point
 bool gt_obj_check_scr(gt_obj_st * obj)
 {
     gt_obj_st * scr_now = gt_disp_get_scr();
+    if (scr_now == obj) {
+        return true;
+    }
 
     gt_obj_st * scr_obj = obj->parent;
     while( scr_obj->parent ){
@@ -224,9 +228,8 @@ bool gt_obj_check_scr(gt_obj_st * obj)
     }
     if( scr_now == scr_obj ){
         return true;
-    }else{
-        return false;
     }
+    return false;
 }
 
 /**

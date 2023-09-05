@@ -59,15 +59,15 @@ typedef enum{
 void gt_obj_set_area(gt_obj_st * obj, gt_area_st area);
 void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y);
 void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h);
-void gt_obj_set_x(gt_obj_st * obj, uint16_t x);
-void gt_obj_set_y(gt_obj_st * obj, uint16_t y);
+void gt_obj_set_x(gt_obj_st * obj, gt_size_t x);
+void gt_obj_set_y(gt_obj_st * obj, gt_size_t y);
 void gt_obj_set_w(gt_obj_st * obj, uint16_t w);
 void gt_obj_set_h(gt_obj_st * obj, uint16_t h);
 
 void gt_obj_set_opa(gt_obj_st * obj, gt_opa_t opa);
 
-uint16_t gt_obj_get_x(gt_obj_st * obj);
-uint16_t gt_obj_get_y(gt_obj_st * obj);
+gt_size_t gt_obj_get_x(gt_obj_st * obj);
+gt_size_t gt_obj_get_y(gt_obj_st * obj);
 uint16_t gt_obj_get_w(gt_obj_st * obj);
 uint16_t gt_obj_get_h(gt_obj_st * obj);
 

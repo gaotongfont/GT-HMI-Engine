@@ -58,7 +58,7 @@ void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h) {
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
-void gt_obj_set_x(gt_obj_st * obj, uint16_t x) {
+void gt_obj_set_x(gt_obj_st * obj, gt_size_t x) {
     gt_area_st area = obj->area;
     area.x = x;
     gt_obj_pos_change(obj, &area);
@@ -66,7 +66,7 @@ void gt_obj_set_x(gt_obj_st * obj, uint16_t x) {
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
-void gt_obj_set_y(gt_obj_st * obj, uint16_t y) {
+void gt_obj_set_y(gt_obj_st * obj, gt_size_t y) {
     gt_area_st area = obj->area;
     area.y = y;
     gt_obj_pos_change(obj, &area);
@@ -95,10 +95,10 @@ void gt_obj_set_opa(gt_obj_st * obj, gt_opa_t opa) {
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-uint16_t gt_obj_get_x(gt_obj_st * obj) {
+gt_size_t gt_obj_get_x(gt_obj_st * obj) {
     return _get_area_prop(obj, x);
 }
-uint16_t gt_obj_get_y(gt_obj_st * obj) {
+gt_size_t gt_obj_get_y(gt_obj_st * obj) {
     return _get_area_prop(obj, y);
 }
 uint16_t gt_obj_get_w(gt_obj_st * obj) {
