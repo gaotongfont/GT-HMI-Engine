@@ -72,7 +72,7 @@ static gt_obj_event_attr_st * gt_obj_get_event_attr(gt_obj_st * obj, uint8_t idx
     return &obj->event_attr[idx];
 }
 
-static gt_res_t _gt_event_handler_event_mask(gt_obj_st * obj)
+static gt_res_t _gt_event_handler_event_mask(gt_obj_st * obj , void * param)
 {
     if (!obj->event_mask) {
         return GT_RES_INV;
@@ -101,6 +101,7 @@ static gt_res_t _gt_event_handler_event_mask(gt_obj_st * obj)
         event_code =  GT_EVENT_GET_MASK_SHIFT_BIT(idx) & mask_shift;
         if( event_code ){
             e.code = idx;
+            e.param = param;
             obj->event_mask &= ~GT_EVENT_GET_MASK_SHIFT_BIT(e.code);
             obj->class->_event_cb(obj, &e);
         }
@@ -113,7 +114,7 @@ static gt_res_t _gt_event_handler_event_mask(gt_obj_st * obj)
 }
 
 static void _gt_obj_foreach_event_cb(gt_obj_st * parent){
-    _gt_event_handler_event_mask(parent);
+    _gt_event_handler_event_mask(parent , NULL);
 
     uint16_t idx_child = 0, count = parent->cnt_child;
     gt_obj_st * obj_temp = NULL;
@@ -123,7 +124,7 @@ static void _gt_obj_foreach_event_cb(gt_obj_st * parent){
         if( obj_temp->cnt_child ){
             _gt_obj_foreach_event_cb(obj_temp);
         } else {
-            _gt_event_handler_event_mask(obj_temp);
+            _gt_event_handler_event_mask(obj_temp , NULL);
         }
         idx_child++;
     }
@@ -201,7 +202,7 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
     gt_obj_event_attr_st * event_attr;
     gt_event_st e;
 
-    _gt_event_handler_event_mask(parent);
+    _gt_event_handler_event_mask(parent , parms);
 
     _gt_event_locked_obj(parent);
 
@@ -214,6 +215,7 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
             e.target    = parent;
             e.code      = event;
             e.user_data = event_attr->user_data;
+            e.param = parms;
             event_attr->user_cb(&e);
         }
     }

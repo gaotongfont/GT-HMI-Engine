@@ -36,6 +36,8 @@ static gt_obj_st * _remark_act_obj = NULL;
 #endif
 
 
+static gt_indev_param_st _indev_pa;
+
 /* macros ---------------------------------------------------------------*/
 
 
@@ -278,6 +280,77 @@ static void _gt_indev_handler_button(gt_indev_st * indev)
     }
 }
 
+static void _gt_indev_handler_keypad(gt_indev_st* indev)
+{
+    gt_indev_data_st data_indev;
+    static uint32_t last_key = GT_KEY_NONE;
+    gt_obj_st * scr = gt_disp_get_scr();
+
+    indev->drv->read_cb(indev->drv, &data_indev);
+    indev->proc.state = data_indev.state;
+    indev->proc.data.keypad.obj_target = gt_find_clicked_obj_by_focus(scr);
+
+    if(GT_INDEV_STATE_RELEASED == indev->proc.state){
+        if(indev->proc.data.keypad.count_keydown != 0 && GT_KEY_ENTER == indev->proc.data.keypad.key){
+            _indev_pa.param.keypad_key = GT_KEY_ENTER;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_RELEASED, &_indev_pa);
+        }
+        indev->proc.data.keypad.count_keydown = 0;
+        last_key = GT_KEY_NONE;
+        return ;
+    }
+    // 新的按键
+    if(GT_KEY_NONE == last_key || last_key != data_indev.key)
+    {
+        indev->proc.data.keypad.key = data_indev.key;
+        last_key = data_indev.key;
+        indev->proc.data.keypad.count_keydown = 0;
+        if(GT_KEY_NEXT == indev->proc.data.keypad.key){
+
+            gt_obj_next_focus_change(indev->proc.data.keypad.obj_target);
+            _indev_pa.param.keypad_key = GT_KEY_NEXT;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_pa);
+        }
+        else if(GT_KEY_PREV == indev->proc.data.keypad.key){
+            gt_obj_prev_focus_change(indev->proc.data.keypad.obj_target);
+            _indev_pa.param.keypad_key = GT_KEY_PREV;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_pa);
+        }
+        else{
+            _indev_pa.param.keypad_key = indev->proc.data.keypad.key;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_pa);
+            if(GT_KEY_ENTER == indev->proc.data.keypad.key){
+                gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSED, &_indev_pa);
+            }            
+        }
+        GT_LOGD(GT_LOG_TAG_GUI, "keypad the key = %#X  count_keydown = %d obj type = %d", indev->proc.data.keypad.key , indev->proc.data.keypad.count_keydown , indev->proc.data.keypad.obj_target->class->type);
+        return ;
+    }
+    // 长按
+    indev->proc.data.keypad.count_keydown++;
+    if(indev->proc.data.keypad.count_keydown >= (GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS / GT_TASK_PERIOD_TIME_EVENT)){
+        if(GT_KEY_NEXT == indev->proc.data.keypad.key){
+            gt_obj_next_focus_change(indev->proc.data.keypad.obj_target);
+            _indev_pa.param.keypad_key = GT_KEY_NEXT;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_pa);
+        }
+        else if(GT_KEY_PREV == indev->proc.data.keypad.key){
+            gt_obj_prev_focus_change(indev->proc.data.keypad.obj_target);
+            _indev_pa.param.keypad_key = GT_KEY_PREV;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_pa);
+        }
+        else{
+            _indev_pa.param.keypad_key = indev->proc.data.keypad.key;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_pa);
+            if(0 == indev->proc.data.keypad.count_keydown % (GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS / GT_TASK_PERIOD_TIME_EVENT)){
+                if(GT_KEY_ENTER == indev->proc.data.keypad.key){
+                    gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSING, &_indev_pa);
+                }
+            }
+        }
+        GT_LOGD(GT_LOG_TAG_GUI, "long , key = %#X  count_keydown = %d", indev->proc.data.keypad.key , indev->proc.data.keypad.count_keydown);
+    }
+}
 
 /* global functions / API interface -------------------------------------*/
 
@@ -312,6 +385,7 @@ void gt_indev_handler(struct _gt_timer_s * timer)
                 _gt_indev_handler_button(indev);
                 break;
             case GT_INDEV_TYPE_KEYPAD:
+                _gt_indev_handler_keypad(indev);
                 break;
             default:
                 break;

@@ -1202,4 +1202,21 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_
     }
 }
 
+
+void draw_foucs(gt_obj_st* obj , gt_size_t radius)
+{
+    gt_attr_rect_st rect_attr;
+    gt_graph_init_rect_attr(&rect_attr);
+    rect_attr.bg_opa = obj->opa;
+    rect_attr.radius = radius;
+    rect_attr.reg.is_fill = 0;
+    rect_attr.border_width = 1;
+    rect_attr.bg_color = gt_color_foucs();
+    rect_attr.border_color = gt_color_foucs();
+
+    if( obj->focus && GT_ENABLED == obj->focus_dis){
+        draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
+    }
+}
+
 /* end ------------------------------------------------------------------*/

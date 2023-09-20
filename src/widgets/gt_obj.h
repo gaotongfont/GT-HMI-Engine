@@ -80,6 +80,7 @@ typedef struct gt_obj_s {
     uint8_t focus    : 1;    /* obj focus state 0:no focus, 1:focus */
     uint8_t visible  : 1;    /* obj visible state, @gt_visible_e */
     uint8_t disabled : 1;    /* obj disabled state, 0:enable, 1:disable */
+    uint8_t focus_dis : 1;    /* obj focus enable , 0:enable, 1:disable*/
 }gt_obj_st;
 
 

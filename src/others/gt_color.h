@@ -536,6 +536,8 @@ void gt_color_area_copy(gt_color_t *dst, gt_area_st area_dst, gt_color_t * src, 
  */
 void gt_color_fill(gt_color_t * color_arr, int len, gt_color_t color);
 
+gt_color_t gt_color_foucs(void);
+void gt_color_foucs_set(uint32_t col);
 
 #ifdef __cplusplus
 } /*extern "C"*/

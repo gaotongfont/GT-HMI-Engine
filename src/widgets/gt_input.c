@@ -120,7 +120,8 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     rect_attr.border_color = style->border_color;
 
     /* draw base shape */
-    draw_bg(input->draw_ctx, &rect_attr, &input->area);
+    gt_area_st box_area = gt_area_reduce(input->area , 2);
+    draw_bg(input->draw_ctx, &rect_attr, &box_area);
 
     /* draw font */
     gt_font_st font;
@@ -155,12 +156,8 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         .opa = input->opa,
     };
 
-    gt_area_st area_font = input->area;
-    area_font.x += style->border_width + 2;
-    area_font.y += style->border_width + 2;
-    area_font.w -= 2 * (style->border_width + 2);
-    area_font.h -= 2 * (style->border_width + 2);
-
+    // 
+    gt_area_st area_font = gt_area_reduce(box_area , style->border_width + 2);
     gt_area_st area_res = draw_text(input->draw_ctx, &font_attr, &area_font);
 
     /*draw cursor*/
@@ -189,6 +186,8 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         font_attr.start_y = area_res.y;
         draw_text(input->draw_ctx, &font_attr, &area_font);
     }
+
+    draw_foucs(input , rect_attr.radius);
 }
 
 /**
@@ -380,6 +379,28 @@ void gt_input_append_value(gt_obj_st * input, char * value)
 
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
+
+void gt_input_append_char(gt_obj_st * input, char chr)
+{
+    _gt_input_st * style = input->style;
+    char tmp[2];
+    uint16_t len = 1;
+    tmp[0] = chr;
+    tmp[1] = '\0';
+    if( !style->value ){
+        style->value = gt_mem_malloc(len+1);
+        gt_memcpy(style->value, tmp, len);
+        style->value[len] = 0;
+        style->pos_cursor = len;
+    }
+    else{
+        style->value = gt_txt_ins(style->value, style->pos_cursor, tmp);
+        style->pos_cursor += 1;
+    }
+
+    gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 
 void gt_input_append_value_encoding(gt_obj_st * input, char * value , uint8_t encoding)
 {

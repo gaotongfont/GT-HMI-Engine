@@ -65,6 +65,7 @@ char * gt_input_get_value(gt_obj_st * input);
  * @param value content
  */
 void gt_input_append_value(gt_obj_st * input, char * value);
+void gt_input_append_char(gt_obj_st * input, char chr);
 void gt_input_append_value_encoding(gt_obj_st * input, char * value , uint8_t encoding);
 
 /**

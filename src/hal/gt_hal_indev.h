@@ -69,6 +69,23 @@ typedef enum{
     GT_DIR_RIGHT,     ///< right
 }gt_dir_et;
 
+typedef enum {
+    GT_KEY_UP        = 17,  /*0x11*/
+    GT_KEY_DOWN      = 18,  /*0x12*/
+    GT_KEY_RIGHT     = 19,  /*0x13*/
+    GT_KEY_LEFT      = 20,  /*0x14*/
+    GT_KEY_ESC       = 27,  /*0x1B*/
+    GT_KEY_DEL       = 127, /*0x7F*/
+    GT_KEY_BACKSPACE = 8,   /*0x08*/
+    GT_KEY_ENTER     = 10,  /*0x0A, '\n'*/
+    GT_KEY_NEXT      = 9,   /*0x09, '\t'*/
+    GT_KEY_PREV      = 11,  /*0x0B, '*/
+    GT_KEY_HOME      = 2,   /*0x02, STX*/
+    GT_KEY_END       = 3,   /*0x03, ETX*/
+
+    GT_KEY_NONE      = 0xFFFFFFF,
+}gt_key_et;
+
 /**
  * @brief Describes input device related data
  */
@@ -138,7 +155,10 @@ typedef struct _gt_indev_proc_s
 
         struct _keypad
         {
-            uint16_t id;
+            uint32_t key;
+            uint32_t count_keydown;
+            struct gt_obj_s * obj_target;    ///< The object of first touch
+
         }keypad;
 
     }data;
@@ -152,6 +172,15 @@ typedef struct _gt_indev_s {
     gt_indev_drv_st * drv;
     gt_indev_proc_st proc;          ///< Save all input device data
 }gt_indev_st;
+
+typedef struct _gt_indev_param_s{
+    union 
+    {
+        gt_point_st point;
+        uint16_t button_id;
+        uint32_t keypad_key;
+    }param;
+}gt_indev_param_st;
 
 
 /* macros ---------------------------------------------------------------*/

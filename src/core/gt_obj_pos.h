@@ -89,6 +89,10 @@ bool gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point );
  */
 gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point);
 
+gt_obj_st* gt_find_clicked_obj_by_focus(gt_obj_st * parent);
+void gt_obj_next_focus_change(gt_obj_st * cur_obj);
+void gt_obj_prev_focus_change(gt_obj_st * cur_obj);
+
 /**
  * @brief check obj is in the disp screen now
  *

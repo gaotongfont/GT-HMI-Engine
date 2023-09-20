@@ -14,7 +14,7 @@
 #include "../others/gt_log.h"
 #include "gt_disp.h"
 #include "gt_indev.h"
-
+#include "gt_style.h"
 /* private define -------------------------------------------------------*/
 
 
@@ -214,6 +214,158 @@ gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point
     return obj_clicked;
 #endif
 }
+
+gt_obj_st* _gt_obj_focus_clicked(gt_obj_st * parent)
+{
+    int idx = 0;
+    gt_obj_st * obj_clicked = NULL, * obj_temp = NULL;
+    while( idx < parent->cnt_child ){
+        if( 0 != parent->child[idx]->cnt_child ){
+            obj_temp = _gt_obj_focus_clicked(parent->child[idx]);
+            if(obj_temp){
+                obj_clicked = obj_temp;
+                return obj_clicked;
+            }
+        }
+
+        if(GT_ENABLED == parent->child[idx]->focus_dis && parent->child[idx]->focus){
+            obj_clicked = parent->child[idx];
+        }
+        idx++;
+    }
+    return obj_clicked;
+}
+
+gt_obj_st* gt_find_clicked_obj_by_focus(gt_obj_st * parent)
+{
+    gt_obj_st * obj_clicked = NULL;
+
+    obj_clicked = _gt_obj_focus_clicked(parent);
+
+    return obj_clicked ? obj_clicked : parent;
+}
+
+
+static gt_obj_st* _gt_obj_next_focus_get( gt_obj_st * parent , const gt_obj_st * cur_obj , bool flag)
+{
+    gt_obj_st * next = NULL;
+    int idx = 0;
+    bool tmp = flag;
+
+    tmp = parent == cur_obj ? true : false;
+
+    while (idx < parent->cnt_child)
+    {
+        if(tmp){
+            if(GT_ENABLED == parent->child[idx]->focus_dis){
+                return parent->child[idx];
+            }
+        }
+
+        next = _gt_obj_next_focus_get(parent->child[idx] , cur_obj , tmp);
+
+        if(cur_obj == parent->child[idx]){
+            tmp = true;
+        }
+
+        idx++;
+    }
+
+    return next;
+}
+
+static gt_obj_st* _gt_obj_prev_focus_get( const gt_obj_st * cur_obj)
+{
+    gt_obj_st * prev = NULL;
+    gt_obj_st *  parent = NULL;
+    bool flag = false;
+
+    parent = cur_obj->parent;
+    if(NULL == parent){
+        return NULL;
+    }
+
+    int idx = parent->cnt_child;
+    prev = cur_obj->parent;
+
+    while (idx >= 0)
+    {
+        if(flag){
+            if(GT_ENABLED == parent->child[idx]->focus_dis){
+                prev = parent->child[idx];
+                break;
+            }
+        }
+
+        if(cur_obj == parent->child[idx])
+        {
+            flag = true;
+        }
+        --idx;
+    }
+    
+    if(idx < 0){
+        prev =  _gt_obj_prev_focus_get(parent);
+    }
+    return prev;
+}
+
+void gt_obj_next_focus_change(gt_obj_st * cur_obj)
+{
+    if(NULL == cur_obj){
+        return;
+    }
+
+    gt_obj_st* parent = gt_disp_get_scr();
+
+    gt_obj_st* next = _gt_obj_next_focus_get(parent , cur_obj , false);
+
+    if(!next){
+        next = parent;
+    }
+
+    gt_obj_set_focus(cur_obj , false);
+    gt_obj_set_focus(next , true);
+}
+
+void gt_obj_prev_focus_change(gt_obj_st * cur_obj)
+{
+    if(NULL == cur_obj){
+        return;
+    }
+
+    gt_obj_st* parent = gt_disp_get_scr();
+    gt_obj_st* prev = NULL;
+    if(cur_obj == parent && parent->cnt_child > 0)
+    {   
+        if(parent->cnt_child == 0 && GT_ENABLED == parent->child[0]->focus_dis)
+        {
+            prev = parent->child[0];
+        }
+        else if(parent->cnt_child > 1)
+        {
+            if(GT_ENABLED == parent->child[parent->cnt_child-1]->focus_dis)
+            {
+                prev = parent->child[parent->cnt_child-1];
+            }
+            else if(parent->cnt_child > 2){
+                prev =  _gt_obj_prev_focus_get(parent->child[parent->cnt_child-2]);
+            }
+        }
+    }
+    else{
+        prev = _gt_obj_prev_focus_get(cur_obj);
+    }
+
+    if(!prev){
+        prev = parent;
+    }
+
+    gt_obj_set_focus(cur_obj , false);
+    gt_obj_set_focus(prev , true);
+}
+
+
 
 bool gt_obj_check_scr(gt_obj_st * obj)
 {

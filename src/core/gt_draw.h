@@ -89,7 +89,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx,const gt_attr_font_st * dsc, const
  */
 void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_st * coords);
 
-
+void draw_foucs(gt_obj_st* obj , gt_size_t radius);
 
 #ifdef __cplusplus
 } /*extern "C"*/

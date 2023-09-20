@@ -128,6 +128,33 @@ bool gt_obj_is_disabled(gt_obj_st * obj)
     return obj->disabled;
 }
 
+void gt_obj_set_focus(gt_obj_st * obj, bool is_focus)
+{
+    obj->focus = is_focus;
+    _gt_disp_refr_append_area(&obj->area);
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+bool gt_obj_is_focus(gt_obj_st * obj)
+{
+    return obj->focus;
+}
+
+void gt_obj_set_focus_disabled(gt_obj_st * obj, gt_disabled_et is_disabled)
+{
+    obj->focus_dis = is_disabled ? 1 : 0;
+    
+    if(GT_DISABLED == obj->focus_dis){
+        _gt_disp_refr_append_area(&obj->area);
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+    }
+}
+
+bool gt_obj_is_focus_disabled(gt_obj_st * obj)
+{
+    return obj->focus_dis;
+}
+
 void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new)
 {
     gt_area_st area_old = obj->area;

@@ -21,7 +21,7 @@
 
 
 /* static variables -----------------------------------------------------*/
-
+static uint32_t _foucs_color = 0x0078D7;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -51,4 +51,15 @@ void gt_color_fill(gt_color_t * color_arr, int len, gt_color_t color)
         GT_COLOR_SET( color_arr[idx++], GT_COLOR_GET(color) );
     }
 }
+
+gt_color_t gt_color_foucs(void)
+{
+    return gt_color_hex(_foucs_color);
+}
+
+void gt_color_foucs_set(uint32_t col)
+{
+    _foucs_color = col;
+}
+
 /* end ------------------------------------------------------------------*/

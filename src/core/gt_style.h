@@ -86,6 +86,13 @@ void gt_obj_area_change(gt_obj_st * obj, gt_area_st * area_new);
 void gt_obj_set_state(gt_obj_st * obj, gt_state_et state);
 gt_state_et gt_obj_get_state(gt_obj_st * obj);
 
+
+void gt_obj_set_focus(gt_obj_st * obj, bool is_focus);
+bool gt_obj_is_focus(gt_obj_st * obj);
+void gt_obj_set_focus_disabled(gt_obj_st * obj, gt_disabled_et is_disabled);
+bool gt_obj_is_focus_disabled(gt_obj_st * obj);
+
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

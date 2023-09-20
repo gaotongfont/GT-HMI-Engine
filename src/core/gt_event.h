@@ -39,7 +39,8 @@ typedef enum gt_event_type_e{
     GT_EVENT_TYPE_INPUT_PRESSED,                                      ///< pressed
     GT_EVENT_TYPE_INPUT_SCROLL,
     GT_EVENT_TYPE_INPUT_PROCESS_LOST,                                 ///< move off and lost handler
-
+    GT_EVENT_TYPE_INPUT_KEY,
+    GT_EVENT_TYPE_INPUT_FOCUSED,
     /** ... */
 
     /* =================== input event defined here End =================== */
@@ -89,6 +90,7 @@ typedef enum gt_event_type_e{
 typedef struct _gt_event_s{
     struct gt_obj_s * target;
     void * user_data;
+    void * param;
     gt_event_type_et code;
 }gt_event_st;
 
