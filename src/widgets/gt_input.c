@@ -19,7 +19,8 @@
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
 #include "../others/gt_txt.h"
-
+#include "../hal/gt_hal_indev.h"
+#include "../core/gt_indev.h"
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_INPUT
 #define MY_CLASS    &gt_input_class
@@ -72,10 +73,11 @@ const gt_obj_class_st gt_input_class = {
 
 
 /* static functions -----------------------------------------------------*/
-static void _gt_input_cursor_anim(gt_obj_st * input)
+static void _gt_input_cursor_anim(gt_obj_st * input , const gt_area_st* box_area)
 {
     // static bool flag = 0;
     _gt_input_st * style = input->style;
+    int tmp;
     gt_area_st area = {
         .x = style->point_pos.x,
         .y = style->point_pos.y,
@@ -83,21 +85,21 @@ static void _gt_input_cursor_anim(gt_obj_st * input)
         .h = style->font_size
     };
 
-    if(((area.y + area.h) > (input->area.y + input->area.h-style->border_width-2))){
-        return ;
+    tmp = ((area.y + area.h) - (box_area->y + box_area->h));
+
+    if(tmp > 0){
+        tmp = style->font_size - tmp;
+        if(tmp < (area.h-2)){
+            return ;
+        }
+        area.h = tmp;
     }
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill = 1;
     rect_attr.bg_color = gt_color_hex(0x666666);
-    // if( flag ){
-    //     flag = 0;
-    //     rect_attr.bg_opa = GT_OPA_COVER;
-    // }else{
-    //     flag = 1;
-    //     rect_attr.bg_opa = GT_OPA_TRANSP;
-    // }
+
     draw_bg(input->draw_ctx, &rect_attr, &area);
 }
 
@@ -106,7 +108,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
 
     if( 0 == input->area.w || 0 == input->area.h ){
         input->area.w = style->font_size * 8;
-        input->area.h = style->font_size + 4;
+        input->area.h = style->font_size + 16;
     }
 
 
@@ -169,8 +171,9 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     // area_res.w = 2;
     // area_res.h = style->font_size;
     // draw_bg(input->draw_ctx, &rect_attr, &area_res);
-    if( style->value )
-        _gt_input_cursor_anim(input);
+    if( style->value ){
+        _gt_input_cursor_anim(input , &area_font);
+    }
 
     /*draw text after cursor*/
     if( style->value && style->pos_cursor != strlen(style->value) ){
@@ -188,6 +191,49 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     }
 
     draw_foucs(input , rect_attr.radius);
+}
+
+static void _input_key_handler( gt_obj_st* obj, uint32_t key)
+{
+    printf("hanler key = %d\n", key);
+    switch (key)
+    {
+    case GT_KEY_UP:
+        break;
+    case GT_KEY_DOWN:
+        break;
+    case GT_KEY_RIGHT:
+        gt_input_move_right_pos_cursor(obj);
+        break;
+    case GT_KEY_LEFT:
+        gt_input_move_left_pos_cursor(obj);
+        break;
+    case GT_KEY_ESC:
+        break;
+    case GT_KEY_DEL:
+        break;
+    case GT_KEY_BACKSPACE:
+        gt_input_del_value(obj);
+        break;
+    case GT_KEY_ENTER:
+        gt_input_append_value(obj ,"\n");
+        break;
+    case GT_KEY_NEXT:
+        break;
+    case GT_KEY_PREV:
+        break;
+    case GT_KEY_HOME:
+        break;
+    case GT_KEY_END:
+        break;
+    case GT_KEY_NONE:
+        break;
+    default:
+        if(key >= 0x20 && key <= 0x7E){
+            gt_input_append_char(obj , key);
+        }
+        break;
+    }
 }
 
 /**
@@ -241,6 +287,8 @@ static void _deinit_cb(gt_obj_st * obj) {
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
+    uint32_t key = gt_indev_get_key();
+
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGV(GT_LOG_TAG_GUI, "start draw");
@@ -272,7 +320,10 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
             break;
-
+        case GT_EVENT_TYPE_INPUT_KEY:
+            GT_LOGV(GT_LOG_TAG_GUI, "input key");
+            _input_key_handler(obj, key);
+            break;
         default:
             break;
     }
@@ -382,23 +433,10 @@ void gt_input_append_value(gt_obj_st * input, char * value)
 
 void gt_input_append_char(gt_obj_st * input, char chr)
 {
-    _gt_input_st * style = input->style;
     char tmp[2];
-    uint16_t len = 1;
     tmp[0] = chr;
     tmp[1] = '\0';
-    if( !style->value ){
-        style->value = gt_mem_malloc(len+1);
-        gt_memcpy(style->value, tmp, len);
-        style->value[len] = 0;
-        style->pos_cursor = len;
-    }
-    else{
-        style->value = gt_txt_ins(style->value, style->pos_cursor, tmp);
-        style->pos_cursor += 1;
-    }
-
-    gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+    gt_input_append_value(input , tmp);
 }
 
 

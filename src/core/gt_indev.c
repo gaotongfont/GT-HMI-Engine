@@ -353,6 +353,10 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
 }
 
 /* global functions / API interface -------------------------------------*/
+uint32_t gt_indev_get_key(void)
+{
+    return _indev_pa.param.keypad_key;
+}
 
 void gt_indev_get_point_act(const gt_indev_st * indev, gt_point_st * point)
 {

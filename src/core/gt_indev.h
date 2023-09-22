@@ -61,6 +61,10 @@ gt_dir_et gt_indev_get_gesture(const gt_indev_st * indev);
  */
 void gt_indev_handler(struct _gt_timer_s * timer);
 
+
+uint32_t gt_indev_get_key(void);
+
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
