@@ -120,28 +120,25 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
 
     // Draw background
     rect_attr.bg_color      = gt_color_white();
-    area.h = h;
-    draw_bg(barcode->draw_ctx, &rect_attr, &area);
-
+    barcode->area.w = area.w + 4;
+    barcode->area.h = h;
+    // 
+    draw_bg(barcode->draw_ctx, &rect_attr, &barcode->area);
+    
     // set barcode color
     rect_attr.bg_color      = gt_color_black();
     rect_attr.data_gray = style->pdat;
     rect_attr.gray = 1;
-    // Barcode indent
-    area.y = barcode->area.y + 2;
-    h -=4;
-
+    
+    area.x = barcode->area.x + 2;
 #if (BARCODE_READ_MODE)
-    // area
-    barcode->area.w = area.w;
-    barcode->area.h = h;
     // 1:base shape
     draw_bg(barcode->draw_ctx, &rect_attr, &area);
 #else
-// area
-    barcode->area.w = area.w;
-    barcode->area.h = h;
 
+    // Barcode indent
+    area.y = barcode->area.y + 2;
+    h -=4;
     area.h = BAECODE_LINE_NUMB;
 
     for(i = 1 ; i < BAECODE_LINE_NUMB ; i++)
@@ -169,6 +166,10 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     }
 
 #endif
+
+    // foucs
+    draw_foucs(barcode , 0);
+
 RET_FREE:
     if(NULL != style->pdat){
         gt_mem_free(style->pdat);

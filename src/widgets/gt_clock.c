@@ -205,6 +205,10 @@ static void _init_cb(gt_obj_st * obj) {
     str = NULL;
 
     gt_event_clr_all_event(style->label);
+
+    // foucs
+    draw_foucs(obj , 0);
+    
 }
 
 static inline void _remove_all_next_day_cb(_gt_clock_st * style) {
@@ -381,6 +385,7 @@ gt_obj_st * gt_clock_create(gt_obj_st * parent)
     gt_memset(style, 0, sizeof(_gt_clock_st));
 
     style->label = gt_label_create(obj);
+    style->label->focus_dis = GT_DISABLED;
     gt_label_set_text(style->label , "");
     return obj;
 }

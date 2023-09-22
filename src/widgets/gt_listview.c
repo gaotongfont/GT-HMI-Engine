@@ -193,16 +193,17 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
     uint8_t idx_end = style->idx_show_start + (style->cnt_show==1?1:style->cnt_show);
     gt_color_t color_font;
 
-    gt_area_st area_item = listview->area,  area_font;
-    area_item.h = area_item.h/style->cnt_show;
-    // uint16_t width_font = 0;
 
     if( idx_end > (idx_start + style->cnt) ){
         idx_end = idx_start + style->cnt;
     }
+
+    gt_area_st area_item = gt_area_reduce(listview->area , REDUCE_DEFAULT),  area_font;
     // 外框
-    draw_bg(listview->draw_ctx, &rect_attr, &listview->area);
+    draw_bg(listview->draw_ctx, &rect_attr, &area_item);
+
     // item
+    area_item.h = area_item.h/style->cnt_show;
     while( idx_start < idx_end ){
         if( idx_start == style->idx_selected ){
             rect_attr.border_color  = style->border_color;
@@ -216,7 +217,7 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
 
         draw_bg(listview->draw_ctx, &rect_attr, &area_item);
 
-        area_font = area_item;
+        area_font = gt_area_reduce(area_item , REDUCE_DEFAULT);
         font.utf8 = style->item[idx_start];
         font.len = strlen(style->item[idx_start]);
         font_attr.font_color = color_font;
@@ -225,6 +226,8 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
         idx_start++;
     }
 
+    // foucs
+    draw_foucs(listview , 0);
 }
 
 /**

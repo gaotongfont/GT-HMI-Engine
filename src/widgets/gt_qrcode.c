@@ -130,8 +130,7 @@ static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
 
     area.w = 4 * style->version + 17;
     area.h = ((area.w + 7) >> 3) << 3;
-
-    qr_code->area.w = area.w+4;
+    qr_code->area.w = area.w + 8;
     qr_code->area.h = qr_code->area.w;
 
     if(  ((area.h * area.h) >> 3 ) > _QRCodeDataBuf_SIZE )
@@ -143,26 +142,29 @@ static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
     gt_memset_0(qr_code_buff , _QRCodeDataBuf_SIZE);
     _Data_ReMap(qr_code_buff,qr_data_buff, area.w, area.h, 0 );
 
-    area.w = ((area.w + 7) >> 3) << 3;
-    GT_LOGD( GT_LOG_TAG_GUI,"qrcode w = %d , h = %d" , area.w , area.h);
-
     //
     gt_mem_free(qr_data_buff);
     qr_data_buff = NULL;
 
+    gt_area_st box_area = gt_area_reduce(qr_code->area , REDUCE_DEFAULT);
     // draw background
     rect_attr.bg_color      = style->bg_color;
-    draw_bg(qr_code->draw_ctx, &rect_attr, &qr_code->area);
+    draw_bg(qr_code->draw_ctx, &rect_attr, &box_area);
 
+    area.w = ((area.w + 7) >> 3) << 3;
+    // GT_LOGD( GT_LOG_TAG_GUI,"qrcode w = %d , h = %d" , area.w , area.h);
     // draw the qr code
     rect_attr.bg_color      = style->fg_color;
     rect_attr.gray = 1;
     rect_attr.data_gray = qr_code_buff;
-    area.x = qr_code->area.x+2;
-    area.y = qr_code->area.y+2;
-    GT_LOGD(GT_LOG_TAG_UI , "barcode gray = %d" , rect_attr.gray);
+    area.x = box_area.x+2;
+    area.y = box_area.y+2;
+    // GT_LOGD(GT_LOG_TAG_UI , "barcode gray = %d" , rect_attr.gray);
     // 1:base shape
     draw_bg(qr_code->draw_ctx, &rect_attr, &area);
+
+    // foucs
+    draw_foucs(qr_code , 0);
 
 err_ret:
     if(qr_data_buff)

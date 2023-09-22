@@ -99,7 +99,7 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
         rect_attr.bg_color = gt_color_white();
         rect_attr.border_color = gt_color_hex(0x409EFF);
     }
-    gt_area_st area = checkbox->area;
+    gt_area_st area = gt_area_reduce(checkbox->area , REDUCE_DEFAULT);
 
     gt_area_st area_box = area;
     area_box.w = style->font_size+4;
@@ -124,13 +124,9 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     area.w = area.w >  area_box.w ? (area.w - area_box.w) : 0;
     draw_text(checkbox->draw_ctx, &font_dsc, &area);
 
-    // if( 0 ){
-    //     const unsigned char gImage_dui[50] = { /* 0X10,0X04,0X00,0X0A,0X00,0X0A, */
-    //     0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X2F,0XFF,
-    //     0XFF,0XFF,0XF4,0X0F,0XFF,0XFF,0XFF,0X00,0XFF,0XE1,0X0E,0XE1,0X0E,0XFF,0XFE,0X11,
-    //     0X11,0XDF,0XFF,0XFF,0XF1,0X1E,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
-    //     0XFF,0XFF,};
-    // }
+     // foucs
+    draw_foucs(checkbox , 0);
+
 }
 
 /**

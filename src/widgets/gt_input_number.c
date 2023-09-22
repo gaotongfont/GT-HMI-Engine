@@ -90,6 +90,9 @@ static void _init_cb(gt_obj_st * obj)
     gt_area_copy(&style->label->area, &obj->area);
     gt_label_set_text(style->label, buffer, style->value);
     gt_event_clr_all_event(style->label);
+
+    // foucs
+    draw_foucs(obj , 0);
 }
 
 static void _deinit_cb(gt_obj_st * obj)
@@ -137,6 +140,7 @@ gt_obj_st * gt_input_number_create(gt_obj_st * parent)
     style->min = DBL_MIN;
 
     style->label = gt_label_create(obj);
+    style->label->focus_dis = GT_DISABLED;
     gt_label_set_text(style->label , "");
     return obj;
 }

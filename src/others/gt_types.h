@@ -32,6 +32,8 @@ extern "C" {
 
 #endif
 
+#define REDUCE_DEFAULT     (2)
+
 /* typedef --------------------------------------------------------------*/
 typedef void * style_widget_t;
 

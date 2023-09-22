@@ -70,6 +70,9 @@ static inline void _gt_rect_init_widget(gt_obj_st * rect) {
 
     gt_area_st area_base = rect->area;
     draw_bg(rect->draw_ctx, &rect_attr, &area_base);
+
+    // foucs
+    draw_foucs(rect , 0);
 }
 
 /**

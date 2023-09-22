@@ -123,7 +123,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     rect_attr.bg_color      = fg_color;
     rect_attr.border_color  = fg_color;
 
-    gt_area_st area = btn->area;
+    gt_area_st area = gt_area_reduce(btn->area , REDUCE_DEFAULT);
     // gt_area_copy(&area, btn->area);
     // 1:base shape
     draw_bg(btn->draw_ctx, &rect_attr, &area);
@@ -139,6 +139,9 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     };
     draw_text(btn->draw_ctx, &font_attr, &area);
 
+    // foucs
+    draw_foucs(btn , radius);
+    
     return;
 }
 

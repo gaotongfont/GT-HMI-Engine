@@ -92,6 +92,9 @@ static void _init_cb(gt_obj_st * obj) {
     /* start draw imgbtn */
     draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
     style->selected = 0;
+
+    // foucs
+    draw_foucs(obj , 0);
 }
 
 /**

@@ -113,6 +113,9 @@ static inline void _gt_progress_bar_init_widget(gt_obj_st * progress_bar) {
     if( dist >= dist_min ){
         draw_bg(progress_bar->draw_ctx, &rect_attr, &area_val);
     }
+
+    // foucs
+    draw_foucs(progress_bar , 0);
 }
 
 /**

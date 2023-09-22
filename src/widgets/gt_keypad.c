@@ -920,6 +920,7 @@ static void _gt_keypad_init_style(gt_obj_st * keypad)
     gt_memset(style, 0, sizeof(_gt_keypad_st));
     _gt_keypad_update_map(keypad, _map_keypad_mode_lower);
 
+    keypad->focus_dis = GT_DISABLED;
     keypad->area.w = GT_SCREEN_WIDTH > KEYPAD_W ? KEYPAD_W : GT_SCREEN_WIDTH;
     keypad->area.h = GT_SCREEN_HEIGHT > KEYPAD_H ? KEYPAD_H : GT_SCREEN_HEIGHT;
 

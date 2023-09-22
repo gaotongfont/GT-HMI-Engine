@@ -86,6 +86,7 @@ static inline void _gt_label_init_widget(gt_obj_st * label) {
         label->area.w = font.size * strlen(font.utf8);
     }
 
+    gt_area_st box_area = gt_area_reduce(label->area , REDUCE_DEFAULT);
     /*draw font*/
     gt_attr_font_st font_attr = {
         .font       = &font,
@@ -95,8 +96,10 @@ static inline void _gt_label_init_widget(gt_obj_st * label) {
         .align      = style->font_align,
         .opa        = label->opa,
     };
-    draw_text(label->draw_ctx, &font_attr, &label->area);
+    draw_text(label->draw_ctx, &font_attr, &box_area);
 
+    // foucs
+    draw_foucs(label , 0);
 }
 
 /**

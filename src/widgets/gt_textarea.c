@@ -95,7 +95,8 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
         .opa        = textarea->opa,
     };
 
-    gt_area_st area_font = textarea->area, area_temp;
+    gt_area_st area_font , area_temp;
+    area_font = gt_area_reduce(textarea->area , REDUCE_DEFAULT);
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
@@ -106,12 +107,9 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
     rect_attr.border_color = gt_color_hex(0x888888);
     rect_attr.bg_opa = style->bg_opa;
 
-    draw_bg(textarea->draw_ctx, &rect_attr, &textarea->area);
+    draw_bg(textarea->draw_ctx, &rect_attr, &area_font);
 
-    area_font.x += 4;
-    area_font.y += 4;
-    area_font.w -= 4;
-    area_font.h -= 4;
+    area_font = gt_area_reduce(textarea->area , rect_attr.border_width + 2);
     while( idx < style->cnt_contents ){
         font.utf8               = style->contents[idx].text;
         font.len                = style->contents[idx].len;
@@ -122,6 +120,9 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
         font_attr.start_y       = area_temp.y;
         idx++;
     }
+
+    // foucs
+    draw_foucs(textarea , 0);
 }
 
 /**

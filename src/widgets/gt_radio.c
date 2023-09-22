@@ -84,7 +84,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
 
     }
 
-    gt_area_st area_base = radio->area;
+    gt_area_st area_base = gt_area_reduce(radio->area, REDUCE_DEFAULT);
     area_base.w = style->font_size+4;
     area_base.h = area_base.w;
     // area_base.y = radio->area.y + ((radio->area.h - area_base.h) >> 1);
@@ -133,6 +133,9 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     };
 
     draw_text(radio->draw_ctx, &font_attr, &area_font);
+
+    // foucs
+    draw_foucs(radio , 0);
 }
 
 /**

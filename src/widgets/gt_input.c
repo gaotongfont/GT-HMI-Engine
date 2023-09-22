@@ -120,7 +120,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     rect_attr.border_color = style->border_color;
 
     /* draw base shape */
-    gt_area_st box_area = gt_area_reduce(input->area , 2);
+    gt_area_st box_area = gt_area_reduce(input->area , REDUCE_DEFAULT);
     draw_bg(input->draw_ctx, &rect_attr, &box_area);
 
     /* draw font */
