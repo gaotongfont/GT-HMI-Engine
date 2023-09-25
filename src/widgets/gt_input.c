@@ -195,7 +195,6 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
 
 static void _input_key_handler( gt_obj_st* obj, uint32_t key)
 {
-    printf("hanler key = %d\n", key);
     switch (key)
     {
     case GT_KEY_UP:
