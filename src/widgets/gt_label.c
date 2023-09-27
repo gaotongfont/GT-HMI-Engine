@@ -98,8 +98,8 @@ static inline void _gt_label_init_widget(gt_obj_st * label) {
     };
     draw_text(label->draw_ctx, &font_attr, &box_area);
 
-    // foucs
-    draw_foucs(label , 0);
+    // focus
+    draw_focus(label , 0);
 }
 
 /**

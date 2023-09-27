@@ -139,8 +139,8 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     };
     draw_text(btn->draw_ctx, &font_attr, &area);
 
-    // foucs
-    draw_foucs(btn , radius);
+    // focus
+    draw_focus(btn , radius);
     
     return;
 }

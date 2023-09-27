@@ -206,8 +206,8 @@ static void _init_cb(gt_obj_st * obj) {
 
     gt_event_clr_all_event(style->label);
 
-    // foucs
-    draw_foucs(obj , 0);
+    // focus
+    draw_focus(obj , 0);
     
 }
 

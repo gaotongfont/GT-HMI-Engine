@@ -306,7 +306,6 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
         last_key = data_indev.key;
         indev->proc.data.keypad.count_keydown = 0;
         if(GT_KEY_NEXT == indev->proc.data.keypad.key){
-
             gt_obj_next_focus_change(indev->proc.data.keypad.obj_target);
             _indev_pa.param.keypad_key = GT_KEY_NEXT;
             gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_pa);
@@ -321,9 +320,9 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
             gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_pa);
             if(GT_KEY_ENTER == indev->proc.data.keypad.key){
                 gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSED, &_indev_pa);
-            }            
+            }
         }
-        GT_LOGD(GT_LOG_TAG_GUI, "keypad the key = %#X  count_keydown = %d obj type = %d", indev->proc.data.keypad.key , indev->proc.data.keypad.count_keydown , indev->proc.data.keypad.obj_target->class->type);
+        // GT_LOGD(GT_LOG_TAG_GUI, "keypad the key = %#X  count_keydown = %d obj type = %d", indev->proc.data.keypad.key , indev->proc.data.keypad.count_keydown , indev->proc.data.keypad.obj_target->class->type);
         return ;
     }
     // 长按
@@ -348,7 +347,7 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
                 }
             }
         }
-        GT_LOGD(GT_LOG_TAG_GUI, "long , key = %#X  count_keydown = %d", indev->proc.data.keypad.key , indev->proc.data.keypad.count_keydown);
+        // GT_LOGD(GT_LOG_TAG_GUI, "long , key = %#X  count_keydown = %d", indev->proc.data.keypad.key , indev->proc.data.keypad.count_keydown);
     }
 }
 

@@ -91,8 +91,8 @@ static void _init_cb(gt_obj_st * obj)
     gt_label_set_text(style->label, buffer, style->value);
     gt_event_clr_all_event(style->label);
 
-    // foucs
-    draw_foucs(obj , 0);
+    // focus
+    draw_focus(obj , 0);
 }
 
 static void _deinit_cb(gt_obj_st * obj)

@@ -114,8 +114,8 @@ static inline void _gt_progress_bar_init_widget(gt_obj_st * progress_bar) {
         draw_bg(progress_bar->draw_ctx, &rect_attr, &area_val);
     }
 
-    // foucs
-    draw_foucs(progress_bar , 0);
+    // focus
+    draw_focus(progress_bar , 0);
 }
 
 /**

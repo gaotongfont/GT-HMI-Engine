@@ -82,8 +82,8 @@ static inline void _gt_switcher_init_widget(gt_obj_st * switcher)
     gt_area_st box_area = gt_area_reduce(switcher->area , REDUCE_DEFAULT);
     draw_bg(switcher->draw_ctx, &rect_attr, &box_area);
 
-    // foucs
-    draw_foucs(switcher , rect_attr.radius);
+    // focus
+    draw_focus(switcher , rect_attr.radius);
 
     /* circle icon */
     gt_area_st area_circle = switcher->area;

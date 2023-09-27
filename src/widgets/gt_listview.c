@@ -226,8 +226,8 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
         idx_start++;
     }
 
-    // foucs
-    draw_foucs(listview , 0);
+    // focus
+    draw_focus(listview , 0);
 }
 
 /**

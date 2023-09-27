@@ -179,8 +179,8 @@ static inline void _default_init(gt_obj_st * obj, _gt_player_st * style) {
     /* start draw obj */
     draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
 
-    // foucs
-    draw_foucs(obj , 0);
+    // focus
+    draw_focus(obj , 0);
 }
 
 static void _init_cb(gt_obj_st * obj) {

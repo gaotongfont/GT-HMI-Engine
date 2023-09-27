@@ -121,8 +121,8 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
         idx++;
     }
 
-    // foucs
-    draw_foucs(textarea , 0);
+    // focus
+    draw_focus(textarea , 0);
 }
 
 /**

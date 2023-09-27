@@ -21,7 +21,7 @@
 
 
 /* static variables -----------------------------------------------------*/
-static uint32_t _foucs_color = 0x0078D7;
+static uint32_t _focus_color = 0x0078D7;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -52,14 +52,14 @@ void gt_color_fill(gt_color_t * color_arr, int len, gt_color_t color)
     }
 }
 
-gt_color_t gt_color_foucs(void)
+gt_color_t gt_color_focus(void)
 {
-    return gt_color_hex(_foucs_color);
+    return gt_color_hex(_focus_color);
 }
 
-void gt_color_foucs_set(uint32_t col)
+void gt_color_focus_set(uint32_t col)
 {
-    _foucs_color = col;
+    _focus_color = col;
 }
 
 /* end ------------------------------------------------------------------*/

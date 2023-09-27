@@ -190,7 +190,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         draw_text(input->draw_ctx, &font_attr, &area_font);
     }
 
-    draw_foucs(input , rect_attr.radius);
+    draw_focus(input , rect_attr.radius);
 }
 
 static void _input_key_handler( gt_obj_st* obj, uint32_t key)

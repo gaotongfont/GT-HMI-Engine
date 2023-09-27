@@ -134,8 +134,8 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
 
     draw_text(radio->draw_ctx, &font_attr, &area_font);
 
-    // foucs
-    draw_foucs(radio , 0);
+    // focus
+    draw_focus(radio , 0);
 }
 
 /**

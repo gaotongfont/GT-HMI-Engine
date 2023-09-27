@@ -163,16 +163,16 @@ static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
     // 1:base shape
     draw_bg(qr_code->draw_ctx, &rect_attr, &area);
 
-    // foucs
-    draw_foucs(qr_code , 0);
+    // focus
+    draw_focus(qr_code , 0);
 
 err_ret:
-    if(qr_data_buff)
+    if(NULL != qr_data_buff)
     {
         gt_mem_free(qr_data_buff);
         qr_data_buff = NULL;
     }
-    if(qr_code_buff)
+    if(NULL != qr_code_buff)
     {
         gt_mem_free(qr_code_buff);
         qr_code_buff = NULL;

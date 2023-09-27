@@ -246,8 +246,8 @@ static inline void _gt_slider_init_widget(gt_obj_st * slider) {
         draw_bg_img(slider->draw_ctx, &rect_attr, &area_big_circle);
     }
 
-    // foucs
-    draw_foucs(slider , 0);
+    // focus
+    draw_focus(slider , 0);
 }
 
 /**
