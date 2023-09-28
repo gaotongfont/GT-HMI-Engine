@@ -69,8 +69,7 @@ void gt_disp_drv_register(gt_disp_drv_st * drv)
 {
     if( disp_p == NULL ){
         disp_p = gt_mem_malloc(sizeof(gt_disp_st));
-        disp_p->refr.idx_r = 0;
-        disp_p->refr.idx_w = 0;
+        gt_memset(disp_p, 0, sizeof(gt_disp_st));
     }
     if(drv->flush_cb == NULL){
         GT_LOGW(GT_LOG_TAG_GUI,"flush_cb is null");
@@ -101,11 +100,10 @@ uint16_t gt_disp_get_res_hor(gt_disp_st * disp)
         case GT_ROTATED_90:
         case GT_ROTATED_270:
             return disp->drv->res_ver;
-
         default:
-            return disp->drv->res_hor;
-
+            break;
     }
+    return disp->drv->res_hor;
 }
 uint16_t gt_disp_get_res_ver(gt_disp_st * disp)
 {
@@ -116,8 +114,9 @@ uint16_t gt_disp_get_res_ver(gt_disp_st * disp)
         case GT_ROTATED_270:
             return disp->drv->res_hor;
         default:
-            return disp->drv->res_ver;
+            break;
     }
+    return disp->drv->res_ver;
 }
 
 void gt_disp_graph_buf_init(gt_color_t *buf1, gt_color_t *buf2, gt_color_t *buf_all)
@@ -271,6 +270,23 @@ void _gt_disp_update_max_area(const gt_area_st * const area)
     }
 }
 
+void _gt_disp_reload_max_area(gt_obj_st * scr)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    gt_area_abs_st * max_area = &disp->area_max;
+    gt_obj_st * obj = NULL;
+    gt_size_t i = 0;
+
+    max_area->left = 0;
+    max_area->top = 0;
+    max_area->right = gt_disp_get_res_hor(disp);
+    max_area->bottom = gt_disp_get_res_ver(disp);
+
+    for (i = 0; i < scr->cnt_child; i++) {
+        obj = scr->child[i];
+        _gt_disp_update_max_area(&obj->area);
+    }
+}
 
 
 

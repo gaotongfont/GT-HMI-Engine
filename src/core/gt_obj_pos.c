@@ -37,14 +37,16 @@
 
 /* global functions / API interface -------------------------------------*/
 
-void gt_area_copy(gt_area_st * dst, gt_area_st * src){
+void gt_area_copy(gt_area_st * dst, gt_area_st * src)
+{
     dst->x = src->x;
     dst->y = src->y;
     dst->w = src->w;
     dst->h = src->h;
 }
 
-bool gt_obj_is_visible(gt_obj_st * obj){
+bool gt_obj_is_visible(gt_obj_st * obj)
+{
     gt_disp_st * disp = gt_disp_get_default();
     if( !disp ){
         GT_LOGW( GT_LOG_TAG_GUI, "disp is null" );

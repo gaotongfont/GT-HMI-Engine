@@ -24,12 +24,20 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+
+typedef struct _gt_draw_valid_s {
+    gt_area_st area;    ///<The screen area
+    gt_point_st offset;
+}_gt_draw_valid_st;
+
+
 /**
  * @brief Draw object description
  */
 typedef struct _gt_draw_ctx_t{
     void * buf;     ///< save the temp buffer
-    gt_area_st buf_area;  ///< display area
+    gt_area_st buf_area;    ///< The display area
+    _gt_draw_valid_st * valid;
 }gt_draw_ctx_t;
 
 

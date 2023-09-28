@@ -62,10 +62,10 @@ void gt_refr_timer(void)
         if ( !area ) {
             return ;
         }
-        if (false == gt_area_is_intersect_screen(&disp->area_act, area)) {
-            _gt_disp_refr_area_pop();
-            return;
-        }
+        // if (false == gt_area_is_intersect_screen(&disp->area_act, area)) {
+        //     _gt_disp_refr_area_pop();
+        //     return;
+        // }
         gt_disp_ref_area( area );
         _gt_disp_refr_area_pop();
 
@@ -74,6 +74,8 @@ void gt_refr_timer(void)
             GT_LOGD(GT_LOG_TAG_GUI, "refr timer: %d ms", gt_tick_get() - start );
         }
 #endif
+    } else {
+        // gt_disp_invalid_area(NULL);
     }
 }
 

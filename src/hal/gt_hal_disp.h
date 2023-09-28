@@ -45,8 +45,9 @@ typedef struct _gt_disp_drv_s
     /// @brief display flush callback
     void (* flush_cb)(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
 
-    uint16_t rotated: 2;    ///< display rotation @ref gt_rotated_et
-    uint16_t busy:1;        ///< display busy state
+    uint8_t rotated: 2;    ///< display rotation @ref gt_rotated_et
+    uint8_t busy:1;        ///< display busy state
+    uint8_t reserved:5;    ///< reserved
 }gt_disp_drv_st;
 
 /**
@@ -56,15 +57,14 @@ typedef struct _gt_disp_s
 {
     gt_disp_drv_st * drv;
 
-    gt_obj_st ** screens;       //Array of screen
+    gt_obj_st *  scr_prev;      //Preview Screen,Only save one layer
     gt_obj_st *  scr_act;       //Active screen
 #if 0
     // unused
-    gt_obj_st *  scr_pre;       //Preview Screen,Only save one layer
     gt_obj_st *  scr_next;      //Next Screen,Only save one layer
 #endif
+    gt_obj_st ** screens;       //Array of screen
     uint16_t cnt_scr;           //Count screens nub
-    uint16_t status;            //
 
     // round-robin queue
     struct {
@@ -75,10 +75,14 @@ typedef struct _gt_disp_s
     }refr;
 
     /* flush */
-    gt_area_st area_act;        //Location of physical screen on virtual screen
-    gt_area_st area_disp;       //10 lines area, Objects in this area will be copied to vbd_color
-    gt_area_abs_st area_max;    // max area of virtual screen
-    gt_color_t * vbd_color;     //save 10 lines visible pic, this will flush to phy screen
+    gt_area_st     area_act;            //Location of physical screen on virtual screen
+    gt_area_st     area_disp;           //10 lines area, Objects in this area will be copied to vbd_color
+    gt_area_abs_st area_max;            // max area of virtual screen
+    gt_area_abs_st area_max_new_scr;    // loading screen max area of virtual screen
+    gt_color_t     * vbd_color;         //save 10 lines visible pic, this will flush to phy screen
+
+    uint8_t scr_anim_type : 4;          // @ref gt_scr_anim_type_et
+    uint8_t reserved      : 4;
 }gt_disp_st;
 
 
@@ -175,6 +179,7 @@ gt_area_st * _gt_disp_refr_get_area(void);
  */
 void _gt_disp_update_max_area(const gt_area_st * const area);
 
+void _gt_disp_reload_max_area(gt_obj_st * scr);
 
 #ifdef __cplusplus
 } /*extern "C"*/

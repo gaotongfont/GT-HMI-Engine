@@ -52,6 +52,18 @@ bool gt_area_is_intersect_screen(const gt_area_st * screen, const gt_area_st * a
 bool gt_area_intersect_screen(const gt_area_st * screen, const gt_area_st * area_fore, gt_area_st * area_res);
 
 /**
+ * @brief The intersection of two regions: area1 and area2,
+ *     the result is stored in area_res
+ *
+ * @param area1
+ * @param area2
+ * @param area_res
+ * @return true Have intersection
+ * @return false No intersection
+ */
+bool gt_area_cover_screen(const gt_area_st * area1, const gt_area_st * area2, gt_area_st * area_res);
+
+/**
  * @brief The inclusion relation of two regions
  *
  * @param a1_p The pointer of area

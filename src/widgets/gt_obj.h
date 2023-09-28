@@ -76,7 +76,9 @@ typedef struct gt_obj_s {
     uint8_t cnt_event;
     uint8_t opa;            /* @ref gt_color.h */
 
-    uint8_t state    : 5;    /* obj state @ref gt_state_et */
+    uint8_t state    : 3;    /* obj state @ref gt_state_et */
+    uint8_t using    : 1;    /* obj using state 0:using [Can not be free memory], 1:free */
+    uint8_t delate   : 1;    /* Prepare to free the current object 0:no delate, 1:delate */
     uint8_t focus    : 1;    /* obj focus state 0:no focus, 1:focus */
     uint8_t visible  : 1;    /* obj visible state, @gt_visible_e */
     uint8_t disabled : 1;    /* obj disabled state, 0:enable, 1:disable */

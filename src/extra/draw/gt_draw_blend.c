@@ -57,15 +57,8 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
 
     /** 绘制区域和显示屏buffer的交集区域 */
     gt_area_st area_intersect = { 0, 0, 0, 0 };
-    /** draw_ctx->buf_area: 图片显示区域; dsc->dst_area: 当前绘制区域 */
-    if (!gt_area_intersect_screen(&draw_ctx->buf_area, dsc->dst_area, &area_intersect)) {
-        return;
-    }
-    if (area_intersect.w == 0 || area_intersect.h == 0) {
-        return;
-    }
-
     gt_area_st area_draw, area_dsc;
+
     /** 显示屏的显示区域 */
     gt_area_copy(&area_draw, &draw_ctx->buf_area);
     /** 图片当前处理的显示区域 */
@@ -73,9 +66,31 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
 
     /** 当前重绘制起始坐标 */
     gt_point_st area_dst = {
-        .x = area_dsc.x < area_draw.x ? 0 : area_dsc.x - area_draw.x,
-        .y = area_dsc.y > area_draw.y ? area_dsc.y - area_draw.y : 0,
+        .x = area_dsc.x < area_draw.x ? 0 : (area_dsc.x - area_draw.x),
+        .y = area_dsc.y > area_draw.y ? (area_dsc.y - area_draw.y) : 0,
     };
+
+    if (draw_ctx->valid) {
+        /** 界面切换动画绘制区 */
+        gt_area_st area_valid;
+        gt_area_copy(&area_valid, &draw_ctx->valid->area);
+        if (draw_ctx->valid->offset.x && area_dst.x < draw_ctx->valid->offset.x) {
+            area_valid.x += draw_ctx->valid->offset.x;
+            area_valid.w -= draw_ctx->valid->offset.x;
+            area_dst.x = draw_ctx->valid->offset.x;
+        }
+        if (!gt_area_intersect_screen(&area_valid, dsc->dst_area, &area_intersect)) {
+            return;
+        }
+    } else {
+        /** draw_ctx->buf_area: 图片显示区域; dsc->dst_area: 当前绘制区域 */
+        if (!gt_area_intersect_screen(&draw_ctx->buf_area, dsc->dst_area, &area_intersect)) {
+            return;
+        }
+    }
+    if (area_intersect.w == 0 || area_intersect.h == 0) {
+        return;
+    }
 
     // from area_intersect cpy to area_dst
     uint32_t idx_dst = area_dst.y * area_draw.w + area_dst.x;

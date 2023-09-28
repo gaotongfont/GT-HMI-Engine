@@ -10,6 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "gt_area.h"
 #include "../gt_conf.h"
+#include "./gt_log.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -72,18 +73,18 @@ bool gt_area_intersect_screen(const gt_area_st * screen, const gt_area_st * area
     gt_size_t scr_x2 = AREA_X2(screen);
     gt_size_t scr_y2 = AREA_Y2(screen);
 
-    if (_gt_area_is_outside_area(
-        AREA_X1(screen), AREA_Y1(screen), scr_x2, scr_y2,
-        AREA_X1(area_fore), AREA_Y1(area_fore), fore_x2, fore_y2)) {
-        return false;
-    }
-
-    // calc area_res pos and width and height
     AREA_X1(area_res) = 0;
     AREA_Y1(area_res) = 0;
     AREA_W(area_res)  = 0;
     AREA_H(area_res)  = 0;
 
+    if (_gt_area_is_outside_area(
+        AREA_X1(screen), AREA_Y1(screen), scr_x2, scr_y2,
+        AREA_X1(area_fore), AREA_Y1(area_fore), fore_x2, fore_y2)) {
+            return false;
+    }
+
+    // calc area_res pos and width and height
     if( AREA_X1(area_fore) < AREA_X1(screen) ){
         /** fore over the area of the left of screen  */
         AREA_X1(area_res) = AREA_X1(screen) - AREA_X1(area_fore);
@@ -118,6 +119,31 @@ bool gt_area_intersect_screen(const gt_area_st * screen, const gt_area_st * area
         }
     }
 
+    return true;
+}
+
+bool gt_area_cover_screen(const gt_area_st * area1, const gt_area_st * area2, gt_area_st * area_res)
+{
+    gt_size_t a1_x2 = AREA_X2(area1);
+    gt_size_t a1_y2 = AREA_Y2(area1);
+
+    gt_size_t a2_x2 = AREA_X2(area2);
+    gt_size_t a2_y2 = AREA_Y2(area2);
+
+    AREA_X1(area_res) = 0;
+    AREA_Y1(area_res) = 0;
+    AREA_W(area_res) = 0;
+    AREA_H(area_res) = 0;
+
+    if (_gt_area_is_outside_area(
+        AREA_X1(area1), AREA_Y1(area1), a1_x2, a1_y2,
+        AREA_X1(area2), AREA_Y1(area2), a2_x2, a2_y2)) {
+        return false;
+    }
+    AREA_X1(area_res) = AREA_X1(area2) > AREA_X1(area1) ? AREA_X1(area2) : AREA_X1(area1);
+    AREA_Y1(area_res) = AREA_Y1(area2) > AREA_Y1(area1) ? AREA_Y1(area2) : AREA_Y1(area1);
+    AREA_W(area_res) = (AREA_X2(area1) < AREA_X2(area2) ? AREA_X2(area1) : AREA_X2(area2) ) - AREA_X1(area_res);
+    AREA_H(area_res) = (AREA_Y2(area1) < AREA_Y2(area2) ? AREA_Y2(area1) : AREA_Y2(area2) ) - AREA_Y1(area_res);
     return true;
 }
 

@@ -32,10 +32,17 @@ typedef enum {
  */
 typedef enum {
     GT_SCR_ANIM_TYPE_NONE = 0,
-    GT_SCR_ANIM_TYPE_MOVE_LEFT,
-    GT_SCR_ANIM_TYPE_MOVE_RIGHT,
-    GT_SCR_ANIM_TYPE_MOVE_UP,
-    GT_SCR_ANIM_TYPE_MOVE_DOWN,
+    GT_SCR_ANIM_TYPE_MOVE_LEFT,     // Move the interface to the left
+    GT_SCR_ANIM_TYPE_MOVE_RIGHT,    // Move the interface to the right
+    GT_SCR_ANIM_TYPE_MOVE_UP,       // Move the interface to the up
+    GT_SCR_ANIM_TYPE_MOVE_DOWN,     // Move the interface to the down
+
+    GT_SCR_ANIM_TYPE_COVER_LEFT,    // Cover the interface from the left
+    GT_SCR_ANIM_TYPE_COVER_RIGHT,   // Cover the interface from the right
+    GT_SCR_ANIM_TYPE_COVER_UP,      // Cover the interface from the up
+    GT_SCR_ANIM_TYPE_COVER_DOWN,    // Cover the interface from the down
+
+    GT_SCR_ANIM_TYPE_TOTAL,
 }gt_scr_anim_type_et;
 
 typedef struct _gt_draw_board_s{
@@ -56,10 +63,6 @@ typedef struct _gt_draw_board_s{
  */
 void gt_disp_set_scr(gt_obj_st * scr);
 
-uint16_t gt_disp_get_ver_pixel(void);
-
-uint16_t gt_disp_get_hor_pixel(void);
-
 /**
  * @brief Get display screen
  *
@@ -67,12 +70,16 @@ uint16_t gt_disp_get_hor_pixel(void);
  */
 gt_obj_st * gt_disp_get_scr(void);
 
+gt_obj_st * gt_disp_get_scr_prev(void);
+
 /**
  * @brief display screen
  *
  * @param scr screen obj
  */
 void gt_disp_load_scr(gt_obj_st * scr);
+
+void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t time, uint32_t delay, bool auto_del);
 
 /**
  * @brief Update the display area

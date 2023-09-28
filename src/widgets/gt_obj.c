@@ -80,6 +80,7 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
 
         case GT_EVENT_TYPE_UPDATE_STYLE: {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            gt_disp_invalid_area(obj);
             break;
         }
 
@@ -126,11 +127,17 @@ void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
         return ;
     }
 
+    if (obj->using) {
+        GT_LOGW("obj", "Try to delete an object that is in use.");
+        return;
+    }
+
     // release children memory and remove itself from parent children array
 #if GT_USE_DISPLAY_PREF_DESTROY
     uint32_t start = gt_tick_get();
 #endif
 
+    obj->delate = 0;
     _gt_obj_class_destroy(obj);
     _gt_timer_set_user_data(timer, NULL);
 
@@ -155,6 +162,7 @@ void gt_obj_destroy(gt_obj_st * obj)
 {
     // GT_LOGV(GT_LOG_TAG_GUI, "Want to destroy obj: 0x%p", obj);
     if (!obj) { return ; }
+    obj->delate = 1;
 
     // create a temp timer once task to destroy the object
     _gt_timer_st * tmp_timer = _gt_timer_create(_gt_obj_destroy_handler_cb, GT_TASK_PERIOD_TIME_DESTROY, obj);

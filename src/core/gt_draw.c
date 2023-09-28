@@ -1183,10 +1183,6 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_
     gt_area_st dst_area = *coords, mask_area = *coords;
     gt_area_st * disp_act = gt_disp_get_area_act();
     gt_size_t screen_x_right = disp_act->x + GT_SCREEN_WIDTH;
-    if (screen_x_right < coords->x + coords->w) {
-        dst_area.w = screen_x_right - coords->x;
-        mask_area.w = dst_area.w;
-    }
 
     dst_area.h = 1;         /** 每次只填充一行的数据量 */
 
