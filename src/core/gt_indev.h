@@ -33,6 +33,13 @@ extern "C" {
 /* global functions / API interface -------------------------------------*/
 
 /**
+ * @brief Get indev button key value
+ *
+ * @return uint32_t
+ */
+uint32_t gt_indev_get_key(void);
+
+/**
  * @brief get click first point
  *
  * @param indev input device
@@ -61,9 +68,20 @@ gt_dir_et gt_indev_get_gesture(const gt_indev_st * indev);
  */
 void gt_indev_handler(struct _gt_timer_s * timer);
 
+/**
+ * @brief disabled input device
+ *
+ * @param disabled 1: disabled, 0: enabled [default: 0]
+ */
+void gt_indev_set_disabled(bool disabled);
 
-uint32_t gt_indev_get_key(void);
-
+/**
+ * @brief
+ *
+ * @return true
+ * @return false
+ */
+bool gt_indev_is_disabled(void);
 
 #ifdef __cplusplus
 } /*extern "C"*/

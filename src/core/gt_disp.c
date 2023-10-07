@@ -20,6 +20,7 @@
 #include "../others/gt_area.h"
 #include "../others/gt_anim.h"
 #include "../core/gt_mem.h"
+#include "../core/gt_indev.h"
 
 #include "./gt_obj_scroll.h"
 
@@ -137,6 +138,9 @@ static void _scr_anim_start_cb(struct gt_anim_s * anim) {
     disp->scr_act          = anim->target;
     disp->scr_prev->area.x = 0;
     disp->scr_prev->area.y = 0;
+
+    /** Can not calling other event by all of input device */
+    gt_indev_set_disabled(true);
 }
 
 static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
@@ -152,6 +156,9 @@ static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     disp->scr_anim_type = GT_SCR_ANIM_TYPE_NONE;
     _gt_disp_reload_max_area(anim->target);
     gt_disp_invalid_area(disp->scr_act);
+
+    /** Enabled all of input device event */
+    gt_indev_set_disabled(false);
 }
 
 static void _scr_anim_del_ready_cb(struct gt_anim_s * anim) {

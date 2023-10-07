@@ -28,6 +28,11 @@
 
 /* private typedef ------------------------------------------------------*/
 
+typedef struct _indev_reg_s {
+    uint8_t disabled : 1;   /** 0: default set, normal; 1: temporary disability */
+    uint8_t reserved : 7;
+}_indev_reg_st;
+
 
 
 /* static variables -----------------------------------------------------*/
@@ -35,6 +40,9 @@
 static gt_obj_st * _remark_act_obj = NULL;
 #endif
 
+static _indev_reg_st _indev_reg = {
+    .disabled = 0,
+};
 
 static gt_indev_param_st _indev_pa;
 
@@ -377,6 +385,11 @@ void gt_indev_handler(struct _gt_timer_s * timer)
 {
     gt_indev_st * indev;
     uint8_t i, cnt_indev;
+
+    if (gt_indev_is_disabled()) {
+        return;
+    }
+
     cnt_indev = gt_indev_get_dev_count();
     for(i=0; i<cnt_indev; i++){
         indev = gt_indev_get_dev_by_idx(i);
@@ -394,6 +407,16 @@ void gt_indev_handler(struct _gt_timer_s * timer)
                 break;
         }
     }
+}
+
+void gt_indev_set_disabled(bool disabled)
+{
+    _indev_reg.disabled = disabled;
+}
+
+bool gt_indev_is_disabled(void)
+{
+    return _indev_reg.disabled;
 }
 
 /* end ------------------------------------------------------------------*/
