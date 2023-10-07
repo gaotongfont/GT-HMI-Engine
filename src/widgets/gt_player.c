@@ -9,7 +9,6 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_player.h"
-#include "stdbool.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_types.h"
 #include "../core/gt_draw.h"

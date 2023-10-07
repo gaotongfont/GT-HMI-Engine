@@ -14,6 +14,7 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "stdbool.h"
 #include "./gt_conf_widgets.h"
 #include "gt_obj.h"
 #include "../core/gt_timer.h"
