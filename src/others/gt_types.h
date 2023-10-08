@@ -129,19 +129,19 @@ static inline uint32_t gt_area_get_size(gt_area_st area){ return (area.w  * area
 
 /**
  * @brief area reduction
- * 
+ *
  * @param area gt_area_st
  * @param r_pix Reduced pixel
- * @return gt_area_st 
+ * @return gt_area_st
  */
 static inline gt_area_st gt_area_reduce(gt_area_st area , gt_size_t r_pix)
 {
-    gt_area_st _box_area_ = area;
-    _box_area_.x += r_pix;
-    _box_area_.y += r_pix;
-    _box_area_.w -= (r_pix << 1);
-    _box_area_.h -= (r_pix << 1);
-    return _box_area_ ; 
+    gt_area_st box_area = area;
+    box_area.x += r_pix;
+    box_area.y += r_pix;
+    box_area.w -= (r_pix << 1);
+    box_area.h -= (r_pix << 1);
+    return box_area;
 }
 
 #ifdef __cplusplus

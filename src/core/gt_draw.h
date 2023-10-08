@@ -28,6 +28,11 @@ extern "C" {
 typedef struct _gt_draw_valid_s {
     gt_area_st area;    ///<The screen area
     gt_point_st offset;
+    gt_area_st area_scr;
+    gt_point_st offset_scr;
+    uint8_t is_prev : 1;
+    uint8_t is_hor  : 1;
+    uint8_t reserved: 6;
 }_gt_draw_valid_st;
 
 

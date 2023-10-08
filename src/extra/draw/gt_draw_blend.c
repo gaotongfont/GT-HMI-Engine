@@ -73,11 +73,30 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
     if (draw_ctx->valid) {
         /** 界面切换动画绘制区 */
         gt_area_st area_valid;
-        gt_area_copy(&area_valid, &draw_ctx->valid->area);
-        if (draw_ctx->valid->offset.x && area_dst.x < draw_ctx->valid->offset.x) {
-            area_valid.x += draw_ctx->valid->offset.x;
-            area_valid.w -= draw_ctx->valid->offset.x;
-            area_dst.x = draw_ctx->valid->offset.x;
+        if (draw_ctx->valid->is_prev) {
+            /** prev screen display */
+            gt_area_copy(&area_valid, &draw_ctx->valid->area);
+            if (draw_ctx->valid->is_hor) {
+                if (draw_ctx->valid->offset.x && area_dst.x < draw_ctx->valid->offset.x) {
+                    area_valid.x += draw_ctx->valid->offset.x;
+                    area_valid.w -= draw_ctx->valid->offset.x;
+                    area_dst.x = draw_ctx->valid->offset.x;
+                }
+            }
+        } else {
+            /** new screen display */
+            gt_area_copy(&area_valid, &draw_ctx->valid->area_scr);
+            if (draw_ctx->valid->is_hor) {
+                area_valid.x += draw_ctx->valid->offset_scr.x;
+                if (draw_ctx->valid->offset_scr.x && area_dst.x < draw_ctx->valid->offset_scr.x) {
+                    area_dst.x = draw_ctx->valid->offset_scr.x;
+                }
+            } else {
+                area_valid.y -= draw_ctx->valid->offset_scr.y;
+                if (draw_ctx->valid->offset_scr.y && area_dst.y < draw_ctx->valid->offset_scr.y) {
+                    area_dst.y = draw_ctx->valid->offset_scr.y;
+                }
+            }
         }
         if (!gt_area_intersect_screen(&area_valid, dsc->dst_area, &area_intersect)) {
             return;

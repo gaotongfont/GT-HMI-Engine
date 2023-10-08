@@ -21,6 +21,7 @@ extern "C" {
 
 #if GT_CFG_ENABLE_PLAYER
 /* define ---------------------------------------------------------------*/
+
 /**
  * @brief The objects displayed use custom display position
  */

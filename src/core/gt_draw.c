@@ -1181,9 +1181,6 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_
     _gt_disp_update_max_area(coords);
 
     gt_area_st dst_area = *coords, mask_area = *coords;
-    gt_area_st * disp_act = gt_disp_get_area_act();
-    gt_size_t screen_x_right = disp_act->x + GT_SCREEN_WIDTH;
-
     dst_area.h = 1;         /** 每次只填充一行的数据量 */
 
     gt_draw_blend_dsc_st blend_dsc = {
