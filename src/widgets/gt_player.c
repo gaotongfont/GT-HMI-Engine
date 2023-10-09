@@ -654,7 +654,7 @@ void gt_player_turn_prev(gt_obj_st * obj)
         GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
     }
-    return _change_item_handler(obj, false);
+    _change_item_handler(obj, false);
 }
 
 void gt_player_turn_next(gt_obj_st * obj)
@@ -663,7 +663,7 @@ void gt_player_turn_next(gt_obj_st * obj)
         GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
     }
-    return _change_item_handler(obj, true);
+    _change_item_handler(obj, true);
 }
 
 void gt_player_play(gt_obj_st * obj)
