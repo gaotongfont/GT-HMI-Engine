@@ -72,7 +72,7 @@ static inline uint32_t _gt_timer_for_each_exec(void)
     uint32_t     period       = 0;
     uint32_t     start_time   = gt_tick_get();
 
-    gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_timer_ll), list) {
+    gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_timer_ll), _gt_timer_st, list) {
         if (!ptr->repeat_count) {
             _gt_timer_remove_task(ptr);
             continue;

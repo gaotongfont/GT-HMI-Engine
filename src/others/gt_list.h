@@ -392,16 +392,16 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
  * @param pos    the type * to cursor
  * @param member the name of the gt_list_head within the struct.
  */
-#define gt_list_next_entry(pos, member) \
-	gt_list_entry((pos)->member.next, typeof(*(pos)), member)
+#define gt_list_next_entry(pos, type_name, member) \
+	gt_list_entry((pos)->member.next, type_name, member)
 
 /**
  * gt_list_prev_entry - get the prev element in list
  * @param pos    the type * to cursor
  * @param member the name of the gt_list_head within the struct.
  */
-#define gt_list_prev_entry(pos, member) \
-	gt_list_entry((pos)->member.prev, typeof(*(pos)), member)
+#define gt_list_prev_entry(pos, type_name, member) \
+	gt_list_entry((pos)->member.prev, type_name, member)
 
 /**
  * gt_list_for_each    -   iterate over a list
@@ -446,10 +446,10 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
  * @param head   the head for your list.
  * @param member the name of the gt_list_head within the struct.
  */
-#define gt_list_for_each_entry(pos, head, member)              \
-	for (pos = gt_list_first_entry(head, typeof(*pos), member);    \
+#define gt_list_for_each_entry(pos, head, type_name, member)              \
+	for (pos = gt_list_first_entry(head, type_name, member);    \
 		 &pos->member != (head);                    \
-		 pos = gt_list_next_entry(pos, member))
+		 pos = gt_list_next_entry(pos, type_name, member))
 
 /**
  * gt_list_for_each_entry_reverse - iterate backwards over list of given type.
@@ -457,8 +457,8 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
  * @param head   the head for your list.
  * @param member the name of the gt_list_head within the struct.
  */
-#define gt_list_for_each_entry_reverse(pos, head, member)          \
-	for (pos = gt_list_last_entry(head, typeof(*pos), member);     \
+#define gt_list_for_each_entry_reverse(pos, head, type_name, member)          \
+	for (pos = gt_list_last_entry(head, type_name, member);     \
 	     &pos->member != (head);                    \
 	     pos = gt_list_prev_entry(pos, member))
 
@@ -470,8 +470,8 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
  *
  * Prepares a pos entry for use as a start point in gt_list_for_each_entry_continue().
  */
-#define gt_list_prepare_entry(pos, head, member) \
-	((pos) ? : gt_list_entry(head, typeof(*pos), member))
+#define gt_list_prepare_entry(pos, head, type_name, member) \
+	((pos) ? : gt_list_entry(head, type_name, member))
 
 /**
  * gt_list_for_each_entry_continue - continue iteration over list of given type
@@ -482,10 +482,10 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
  * Continue to iterate over list of given type, continuing after
  * the current position.
  */
-#define gt_list_for_each_entry_continue(pos, head, member)         \
-	for (pos = gt_list_next_entry(pos, member);            \
+#define gt_list_for_each_entry_continue(pos, head, type_name, member)         \
+	for (pos = gt_list_next_entry(pos, type_name, member);            \
 	     &pos->member != (head);                    \
-	     pos = gt_list_next_entry(pos, member))
+	     pos = gt_list_next_entry(pos, type_name, member))
 
 /**
  * gt_list_for_each_entry_continue_reverse - iterate backwards from the given point
@@ -509,9 +509,9 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
  *
  * Iterate over list of given type, continuing from current position.
  */
-#define gt_list_for_each_entry_from(pos, head, member)             \
+#define gt_list_for_each_entry_from(pos, head, type_name, member)             \
 	for (; &pos->member != (head);                  \
-	     pos = gt_list_next_entry(pos, member))
+	     pos = gt_list_next_entry(pos, type_name, member))
 
 /**
  * gt_list_for_each_entry_safe - iterate over list of given type safe against removal of list entry
@@ -520,11 +520,11 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
  * @param head   the head for your list.
  * @param member the name of the gt_list_head within the struct.
  */
-#define gt_list_for_each_entry_safe(pos, n, head, member)          \
-	for (pos = gt_list_first_entry(head, typeof(*pos), member),    \
-	    n = gt_list_next_entry(pos, member);           \
+#define gt_list_for_each_entry_safe(pos, n, head, type_name, member)          \
+	for (pos = gt_list_first_entry(head, type_name, member),    \
+	    n = gt_list_next_entry(pos, type_name, member);           \
 	     &pos->member != (head);                    \
-	     pos = n, n = gt_list_next_entry(n, member))
+	     pos = n, n = gt_list_next_entry(n, type_name, member))
 
 /**
  * gt_list_for_each_entry_safe_continue - continue list iteration safe against removal
@@ -536,11 +536,11 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
  * Iterate over list of given type, continuing after current point,
  * safe against removal of list entry.
  */
-#define gt_list_for_each_entry_safe_continue(pos, n, head, member)         \
-	for (pos = gt_list_next_entry(pos, member),                \
-	    n = gt_list_next_entry(pos, member);               \
+#define gt_list_for_each_entry_safe_continue(pos, n, head, type_name, member)         \
+	for (pos = gt_list_next_entry(pos, type_name, member),                \
+	    n = gt_list_next_entry(pos, type_name, member);               \
 	     &pos->member != (head);                        \
-	     pos = n, n = gt_list_next_entry(n, member))
+	     pos = n, n = gt_list_next_entry(n, type_name, member))
 
 /**
  * gt_list_for_each_entry_safe_from - iterate over list from current point safe against removal
@@ -552,10 +552,10 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
  * Iterate over list of given type from current point, safe against
  * removal of list entry.
  */
-#define gt_list_for_each_entry_safe_from(pos, n, head, member)             \
-	for (n = gt_list_next_entry(pos, member);                  \
+#define gt_list_for_each_entry_safe_from(pos, n, head, type_name, member)             \
+	for (n = gt_list_next_entry(pos, type_name, member);                  \
 	     &pos->member != (head);                        \
-	     pos = n, n = gt_list_next_entry(n, member))
+	     pos = n, n = gt_list_next_entry(n, type_name, member))
 
 /**
  * gt_list_for_each_entry_safe_reverse - iterate backwards over list safe against removal
@@ -567,8 +567,8 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
  * Iterate backwards over list of given type, safe against removal
  * of list entry.
  */
-#define gt_list_for_each_entry_safe_reverse(pos, n, head, member)      \
-	for (pos = gt_list_last_entry(head, typeof(*pos), member),     \
+#define gt_list_for_each_entry_safe_reverse(pos, n, head, type_name, member)      \
+	for (pos = gt_list_last_entry(head, type_name, member),     \
 	    n = gt_list_prev_entry(pos, member);           \
 	     &pos->member != (head);                    \
 	     pos = n, n = gt_list_prev_entry(n, member))
@@ -585,8 +585,8 @@ static __always_inline void gt_list_splice_tail_init(struct gt_list_head *list,
  * and gt_list_safe_reset_next is called after re-taking the lock and before
  * completing the current iteration of the loop body.
  */
-#define gt_list_safe_reset_next(pos, n, member)                \
-	n = gt_list_next_entry(pos, member)
+#define gt_list_safe_reset_next(pos, n, type_name, member)                \
+	n = gt_list_next_entry(pos, type_name, member)
 
 #ifdef __cplusplus
 }

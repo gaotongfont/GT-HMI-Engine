@@ -150,7 +150,7 @@ gt_res_t gt_img_decoder_get_info(const char * name, _gt_img_info_st * header)
 {
     _gt_img_decoder_st * ptr = NULL;
 
-    gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), list) {
+    gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
         if (NULL == ptr->info_cb) {
             continue;
         }
@@ -171,7 +171,7 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name, gt_s
     dsc->decoder = NULL;    /* reset image dsc struct */
     dsc->src = NULL;
 
-    gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), list) {
+    gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
         if (NULL == ptr->open_cb || NULL == ptr->info_cb) {
             continue;
         }
