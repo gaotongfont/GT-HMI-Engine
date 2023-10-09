@@ -300,7 +300,7 @@ static inline void _flush_scr_by_anim(gt_disp_st * disp, gt_area_st * area_flush
         valid->is_prev = true;
         disp->area_disp.x = disp->area_act.x + scr_prev->area.x;
         disp->area_disp.y = disp->area_act.y + scr_prev->area.y + area_flush->y;
-        gt_area_cover_screen(&disp->area_disp, offset_scr_prev_disp, &valid->area);
+        gt_area_cover_screen(&disp->area_disp, offset_scr_prev_disp, &valid->area_prev);
         _gt_disp_check_and_copy_foreach(scr_prev, valid);
 
         /** new screen */
@@ -542,9 +542,12 @@ void gt_disp_ref_area(const gt_area_st * coords)
     gt_area_st offset_scr_disp = scr->area;
     /** 活动窗口的偏移量 */
     _gt_draw_valid_st valid = {
-        .area   = {0, 0, 0, 0},
-        .offset = {0, 0},
-        .is_hor = false,
+        .area_prev   = {0, 0, 0, 0},
+        .offset_prev = {0, 0},
+        .area_scr    = {0, 0, 0, 0},
+        .offset_scr  = {0, 0},
+        .is_hor      = false,
+        .is_prev     = false,
     };
 
     _gt_disp_set_state(disp, GT_BUSY);
@@ -562,11 +565,11 @@ void gt_disp_ref_area(const gt_area_st * coords)
                 offset_scr_prev_disp.x = disp->area_act.x + scr_prev->area.x;
                 /** new screen */
                 offset_scr_disp.w = gt_abs(scr_prev->area.x);
-                valid.offset.x = gt_abs(scr_prev->area.x);
+                valid.offset_prev.x = gt_abs(scr_prev->area.x);
             } else if (GT_SCR_ANIM_TYPE_COVER_RIGHT == disp->scr_anim_type) {
                 /** prev screen, don't move */
                 offset_scr_prev_disp.x = disp->area_act.x;
-                valid.offset.x = scr->area.w;
+                valid.offset_prev.x = scr->area.w;
                 /** new screen */
                 offset_scr_disp.w = scr->area.w;
             } else if (GT_SCR_ANIM_TYPE_MOVE_LEFT == disp->scr_anim_type) {

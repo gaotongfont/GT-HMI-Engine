@@ -25,13 +25,18 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 
+/**
+ * @brief The displayable area of two interfaces on the same physical screen
+ */
 typedef struct _gt_draw_valid_s {
-    gt_area_st area;    ///<The screen area
-    gt_point_st offset;
-    gt_area_st area_scr;
-    gt_point_st offset_scr;
-    uint8_t is_prev : 1;
-    uint8_t is_hor  : 1;
+    gt_area_st area_prev;       ///<The prev screen absolute display area
+    gt_point_st offset_prev;    ///<prev screen display in relative position on the physical screen
+
+    gt_area_st area_scr;        ///<The current screen absolute display area
+    gt_point_st offset_scr;     ///<current screen display in relative position on the physical screen
+
+    uint8_t is_prev : 1;        ///<Whether the previous screen is valid
+    uint8_t is_hor  : 1;        ///<Toggle the effect of the screen, the direction is horizontal
     uint8_t reserved: 6;
 }_gt_draw_valid_st;
 

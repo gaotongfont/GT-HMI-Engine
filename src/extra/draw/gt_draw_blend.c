@@ -75,12 +75,12 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
         gt_area_st area_valid;
         if (draw_ctx->valid->is_prev) {
             /** prev screen display */
-            gt_area_copy(&area_valid, &draw_ctx->valid->area);
+            gt_area_copy(&area_valid, &draw_ctx->valid->area_prev);
             if (draw_ctx->valid->is_hor) {
-                if (draw_ctx->valid->offset.x && area_dst.x < draw_ctx->valid->offset.x) {
-                    area_valid.x += draw_ctx->valid->offset.x;
-                    area_valid.w -= draw_ctx->valid->offset.x;
-                    area_dst.x = draw_ctx->valid->offset.x;
+                if (draw_ctx->valid->offset_prev.x && area_dst.x < draw_ctx->valid->offset_prev.x) {
+                    area_valid.x += draw_ctx->valid->offset_prev.x;
+                    area_valid.w -= draw_ctx->valid->offset_prev.x;
+                    area_dst.x = draw_ctx->valid->offset_prev.x;
                 }
             }
         } else {
