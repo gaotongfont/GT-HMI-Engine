@@ -628,8 +628,8 @@ void gt_disp_ref_area(const gt_area_st * coords)
     _flush_scr_param_st param = {
         .disp = gt_disp_get_default(),
         .area_flush = {0, 0, scr_width, GT_REFRESH_FLUSH_LINE_PRE_TIME},
-        .scr =  gt_disp_get_scr(),
-        .scr_prev = gt_disp_get_scr_prev(),
+        .scr =  gt_disp_get_scr(),          // Only x, y, w, h animation changes are recorded
+        .scr_prev = gt_disp_get_scr_prev(), // Only x, y, w, h animation changes are recorded
         /** 旧界面在可视窗口中的区域 */
         .view_scr_abs = {0, 0, 0, 0},
         .view_scr_prev_abs = {0, 0, 0, 0},
