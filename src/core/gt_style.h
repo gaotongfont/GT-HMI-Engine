@@ -92,6 +92,14 @@ bool gt_obj_is_focus(gt_obj_st * obj);
 void gt_obj_set_focus_disabled(gt_obj_st * obj, gt_disabled_et is_disabled);
 bool gt_obj_is_focus_disabled(gt_obj_st * obj);
 
+/**
+ * @brief Set the obj's fixed state, The scrolling property depends on the parent class
+ *
+ * @param obj
+ * @param is_fixed true: fixed, false: unfixed
+ */
+void gt_obj_set_fixed(gt_obj_st * obj, bool is_fixed);
+bool gt_obj_get_fixed(gt_obj_st * obj);
 
 #ifdef __cplusplus
 } /*extern "C"*/

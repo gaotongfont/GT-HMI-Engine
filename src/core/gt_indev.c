@@ -85,6 +85,17 @@ static gt_size_t _scroll_predict(gt_indev_st * indev, gt_size_t v)
     return result;
 }
 
+static gt_obj_st * _search_not_fixed_by_parent_recursive(gt_obj_st * obj) {
+    gt_obj_st * ptr = obj;
+    while(ptr) {
+        if (false == ptr->fixed) {
+            break;
+        }
+        ptr = ptr->parent;
+    }
+    return ptr;
+}
+
 static gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
     struct _point * point_p = &indev->proc.data.point;
     gt_dir_et ret = point_p->gesture;
@@ -148,6 +159,13 @@ static void _indev_scroll_handler(gt_indev_st * indev) {
     }
 }
 
+static inline void _send_released_event(struct _point * point_p) {
+    gt_event_type_et event_type = (point_p->obj_act == point_p->obj_target) ? \
+        GT_EVENT_TYPE_INPUT_RELEASED : GT_EVENT_TYPE_INPUT_PROCESS_LOST;
+
+    gt_event_send(point_p->obj_target, event_type, NULL);
+}
+
 static void _indev_released_handle(gt_indev_st * indev) {
     struct _point * point_p = &indev->proc.data.point;
     if (NULL == point_p->obj_target) {
@@ -160,10 +178,7 @@ static void _indev_released_handle(gt_indev_st * indev) {
     }
     _gt_indev_remark_active_obj(NULL);
 #endif
-    gt_event_type_et event_type = (point_p->obj_act == point_p->obj_target) ? \
-        GT_EVENT_TYPE_INPUT_RELEASED : GT_EVENT_TYPE_INPUT_PROCESS_LOST;
-
-    gt_event_send(point_p->obj_target, event_type, NULL);
+    _send_released_event(point_p);
     point_p->obj_act = NULL;
     point_p->obj_target = NULL;
 
@@ -212,6 +227,13 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
         if( (gt_tick_get() - indev->proc.timestamp_long_press) >= indev->drv->limit_timers_long_press ){
             indev->proc.timestamp_long_press = gt_tick_get();
             gt_event_send(point_p->obj_target, GT_EVENT_TYPE_INPUT_PRESSING, NULL);
+        }
+    }
+    if (point_p->obj_target->fixed && point_p->obj_scroll) {
+        /** if widget fixed, then search it parent's widget to scroll */
+        if (point_p->obj_scroll == point_p->obj_target) {
+            point_p->obj_target = _search_not_fixed_by_parent_recursive(point_p->obj_target);
+            _send_released_event(point_p);
         }
     }
 

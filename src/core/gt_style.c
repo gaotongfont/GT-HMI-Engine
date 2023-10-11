@@ -143,7 +143,7 @@ bool gt_obj_is_focus(gt_obj_st * obj)
 void gt_obj_set_focus_disabled(gt_obj_st * obj, gt_disabled_et is_disabled)
 {
     obj->focus_dis = is_disabled ? 1 : 0;
-    
+
     if(GT_DISABLED == obj->focus_dis){
         _gt_disp_refr_append_area(&obj->area);
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -268,6 +268,16 @@ void gt_obj_set_state(gt_obj_st * obj, gt_state_et state)
 gt_state_et gt_obj_get_state(gt_obj_st * obj)
 {
     return obj->state;
+}
+
+void gt_obj_set_fixed(gt_obj_st * obj, bool is_fixed)
+{
+    obj->fixed = is_fixed;
+}
+
+bool gt_obj_get_fixed(gt_obj_st * obj)
+{
+    return obj->fixed;
 }
 
 /* end ------------------------------------------------------------------*/
