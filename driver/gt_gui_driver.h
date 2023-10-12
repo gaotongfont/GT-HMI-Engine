@@ -22,7 +22,7 @@ typedef struct gt_font_func_s
     union
     {
         int (*read_dot_font)(unsigned long , unsigned int , unsigned char*);
-        int (*read_vec_font)(unsigned char* , unsigned int ,unsigned long ,unsigned int , unsigned char);
+        int (*read_vec_font)(unsigned char* , unsigned int ,unsigned long ,unsigned int , unsigned char , unsigned char);
     }func;
     unsigned char type;
 }gt_font_func_st;
@@ -202,15 +202,16 @@ unsigned int get_width_func_vec(unsigned char *p,unsigned int zfwidth,unsigned i
 
 /**
  * @brief 得到矢量字库文字数据
- *
+ * 
  * @param pBits 数据存储
  * @param font_option 字体
  * @param fontcode 文字编码
  * @param fontsize 文字大小
  * @param fontgray 文字灰度
+ * @param thick    粗细
  * @return int 读取的数据个数
  */
-int GT_GetVec(unsigned char *pBits,unsigned int font_option ,unsigned long fontcode,unsigned int fontsize , unsigned char fontgray);
+int GT_GetVec(unsigned char *pBits,unsigned int font_option ,unsigned long fontcode,unsigned int fontsize , unsigned char fontgray, unsigned char thick);
 
 
 /**
@@ -241,7 +242,7 @@ unsigned int GBKToUnicode(unsigned int fontcode);
 /*-------------------------------------------------  pinyin  -------------------------------------------------*/
 
 /* define ---------------------------------------------------------------*/
-#define CHINESE_NUMB_MAX    (9)
+#define CHINESE_NUMB_MAX    (8)
 #define CHINESE_BUFF_MAX    (40)
 #define ASCII_BUFF_MAX      (30)
 
@@ -355,6 +356,7 @@ typedef struct font_convertor_s
     uint16_t font_option ;
 
     uint8_t fontgray;
+    uint8_t thick;
     uint8_t * data ;
 
     bool is_rev ; // false is normal, true is reverse
@@ -364,7 +366,7 @@ typedef struct font_convertor_s
     uint32_t data_len ; // Minimum three-character data storage length
 
     int (*read_dot_font)(unsigned long , unsigned int , unsigned char*);
-    int (*read_vec_font)(unsigned char* , unsigned int ,unsigned long ,unsigned int , unsigned char);
+    int (*read_vec_font)(unsigned char* , unsigned int ,unsigned long ,unsigned int , unsigned char , unsigned char);
 }font_convertor_st;
 
 int GT_Font_Code_Transform(font_convertor_st *convert);
