@@ -26,6 +26,7 @@ unsigned int UnicodeToGBK(unsigned int fontcode)
 
 
 const struct gt_font_func_s gt_get_font_func[] = {
+    {.option = 0 , .func.read_dot_font = NULL , .type = 1},
 };
 /*------------------------------------------------------------------ Separation -----------------------------------------------------------------*/
 /* global functions / API interface -------------------------------------*/
