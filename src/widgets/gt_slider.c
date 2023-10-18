@@ -252,6 +252,8 @@ static inline void _gt_slider_init_widget(gt_obj_st * slider) {
 
     // focus
     draw_focus(slider , 0);
+
+    GT_LOGV(GT_LOG_TAG_GUI , "pos = %d , offset = %d " , style->pos , style->offset);
 }
 
 /**
@@ -301,6 +303,14 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
     gt_point_st point_click = gt_indev_get_point();
     int _pos;
+    gt_obj_st * scr = gt_disp_get_scr();
+    if(NULL == scr){
+        return;
+    }
+
+    point_click.x += scr->area.x;
+    point_click.y += scr->area.y;
+
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGV(GT_LOG_TAG_GUI, "start draw");
@@ -339,7 +349,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             _gt_slider_add_offset(obj , _pos);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
-
+            
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
             if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_L2R ){
