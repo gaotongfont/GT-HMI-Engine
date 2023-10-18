@@ -125,15 +125,76 @@ static gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
     return ret;
 }
 
+/**
+ * @brief Touch gestures make the act of throwing
+ *
+ * @param indev
+ */
 static void _indev_scroll_throw_handler(gt_indev_st * indev) {
     struct _point * point_p = &indev->proc.data.point;
     point_p->gesture = _get_scroll_dir(indev);
+    gt_disp_st * disp = gt_disp_get_default();
 
-    if((uint16_t)GT_DIR_NONE != point_p->gesture) {
-        gt_size_t dx = _scroll_predict(indev, point_p->scroll_throw.x);
-        gt_size_t dy = _scroll_predict(indev, point_p->scroll_throw.y);
-        gt_obj_scroll_to(point_p->obj_scroll, dx, dy, GT_ANIM_ON);
+    if((uint16_t)GT_DIR_NONE == point_p->gesture) {
+        return ;
     }
+    gt_size_t dx = _scroll_predict(indev, point_p->scroll_throw.x);
+    gt_size_t dy = _scroll_predict(indev, point_p->scroll_throw.y);
+    gt_obj_st * obj_scroll = point_p->obj_scroll;
+
+    if (obj_scroll->absorb) {
+        if (false == obj_scroll->absorb_dir) {
+            gt_size_t x = obj_scroll->area.x + dx;
+            // left
+            if (x > disp->area_max.left) {
+                dx = -obj_scroll->area.x;
+            }
+            // right
+            else if (x + obj_scroll->area.w < disp->area_max.right) {
+                dx = disp->area_max.right - obj_scroll->area.w - obj_scroll->area.x;
+            }
+            else if (obj_scroll->scroll_snap_x) {
+                if (0 == dx) {
+                    // start algin
+                    dx = (x / obj_scroll->parent->area.w) * obj_scroll->parent->area.w - x;
+                    if (dx  > (obj_scroll->parent->area.w >> 1)) {
+                        dx -= obj_scroll->parent->area.w;
+                    }
+                }
+                else if ((uint16_t)GT_DIR_LEFT == point_p->gesture) {
+                    dx = ((x - obj_scroll->parent->area.w) / obj_scroll->parent->area.w) * obj_scroll->parent->area.w - obj_scroll->area.x;
+                } else if ((uint16_t)GT_DIR_RIGHT == point_p->gesture) {
+                    dx = (x / obj_scroll->parent->area.w) * obj_scroll->parent->area.w - obj_scroll->area.x;
+                }
+            }
+
+        } else {
+            gt_size_t y = obj_scroll->area.y + dy;
+            // top
+            if (y > disp->area_max.top) {
+                dy = -obj_scroll->area.y;
+            }
+            // bottom
+            else if (y + obj_scroll->area.h < disp->area_max.bottom) {
+                dy = disp->area_max.bottom - obj_scroll->area.h - obj_scroll->area.y;
+            }
+            else if (obj_scroll->scroll_snap_y) {
+                if (0 == dy) {
+                    // start algin
+                    dy = (y / obj_scroll->parent->area.y) * obj_scroll->parent->area.y - y;
+                    if (dy > (obj_scroll->parent->area.y >> 1)) {
+                        dy -= obj_scroll->parent->area.y;
+                    }
+                }
+                else if ((uint16_t)GT_DIR_UP == point_p->gesture) {
+                    dy = ((y - obj_scroll->parent->area.h) / obj_scroll->parent->area.h) * obj_scroll->parent->area.h - obj_scroll->area.y;
+                } else if ((uint16_t)GT_DIR_DOWN == point_p->gesture) {
+                    dy = (y / obj_scroll->parent->area.h) * obj_scroll->parent->area.h - obj_scroll->area.y;
+                }
+            }
+        }
+    }
+    gt_obj_scroll_to(obj_scroll, dx, dy, GT_ANIM_ON);
 }
 
 static void _indev_scroll_handler(gt_indev_st * indev) {

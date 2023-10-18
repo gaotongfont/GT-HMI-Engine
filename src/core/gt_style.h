@@ -51,6 +51,21 @@ typedef enum{
     GT_BAR_DIR_VER_U2D,
     GT_BAR_DIR_VER_D2U,
 }gt_bar_dir_et;
+
+/**
+ * @brief @see gt_obj_st
+ *
+ */
+typedef enum {
+    GT_OBJ_PROP_TYPE_VISIBLE = 0,
+    GT_OBJ_PROP_TYPE_DELATE,
+    GT_OBJ_PROP_TYPE_FOCUS,
+    GT_OBJ_PROP_TYPE_FOCUS_DISABLED,
+    GT_OBJ_PROP_TYPE_DISABLED,
+    GT_OBJ_PROP_TYPE_FIXED,
+    GT_OBJ_PROP_TYPE_OVERFLOW,
+}gt_obj_prop_type_em;
+
 /* macros ---------------------------------------------------------------*/
 
 
@@ -82,6 +97,9 @@ void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new);
 void gt_obj_pos_change(gt_obj_st * obj, gt_area_st * area_new);
 void gt_obj_area_change(gt_obj_st * obj, gt_area_st * area_new);
 
+void gt_obj_move_to(gt_obj_st * obj, gt_size_t x, gt_size_t y);
+void gt_obj_move_child_by(gt_obj_st * obj, gt_size_t dx, gt_size_t dy);
+void gt_obj_child_set_prop(gt_obj_st * obj, gt_obj_prop_type_em type, uint8_t val);
 
 void gt_obj_set_state(gt_obj_st * obj, gt_state_et state);
 gt_state_et gt_obj_get_state(gt_obj_st * obj);
@@ -100,6 +118,24 @@ bool gt_obj_is_focus_disabled(gt_obj_st * obj);
  */
 void gt_obj_set_fixed(gt_obj_st * obj, bool is_fixed);
 bool gt_obj_get_fixed(gt_obj_st * obj);
+
+/**
+ * @brief Control size beyond the scope of the screen, independent way to slide display
+ *
+ * @param obj
+ * @param is_overflow true: overflow, false: not overflow
+ */
+void gt_obj_set_overflow(gt_obj_st * obj, bool is_overflow);
+bool gt_obj_get_overflow(gt_obj_st * obj);
+
+void gt_obj_set_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir);
+gt_scroll_dir_et gt_obj_get_scroll_dir(gt_obj_st * obj);
+bool gt_obj_is_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir);
+
+void gt_obj_set_scroll_snap_x(gt_obj_st * obj, gt_scroll_snap_em snap);
+void gt_obj_set_scroll_snap_y(gt_obj_st * obj, gt_scroll_snap_em snap);
+gt_scroll_snap_em gt_obj_get_scroll_snap_x(gt_obj_st * obj);
+gt_scroll_snap_em gt_obj_get_scroll_snap_y(gt_obj_st * obj);
 
 #ifdef __cplusplus
 } /*extern "C"*/

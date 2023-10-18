@@ -97,7 +97,7 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "obj scroll");
+            // GT_LOGD(GT_LOG_TAG_GUI, "obj scroll: %d, %d", -e->target->process_attr.scroll.x, -e->target->process_attr.scroll.y);
             gt_disp_scroll_area_act(-e->target->process_attr.scroll.x, -e->target->process_attr.scroll.y);
             break;
 
@@ -156,6 +156,30 @@ gt_obj_st * gt_obj_create(gt_obj_st * parent)
     _gt_obj_init_style(obj);
     GT_LOGV(GT_LOG_TAG_GUI, "create obj type:%d", *MY_CLASS.type);
     return obj;
+}
+
+bool gt_obj_change_parent(gt_obj_st * obj, gt_obj_st * to)
+{
+    return _gt_obj_class_change_parent(obj, to);
+}
+
+bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent)
+{
+    if (NULL == parent || NULL == obj) {
+        return false;
+    }
+    uint16_t i, cnt = parent->cnt_child;
+    gt_obj_st * child = NULL;
+    for (i = 0; i < cnt; i++) {
+        child = parent->child[i];
+        if (child == obj) {
+            return true;
+        }
+        if (true == gt_obj_is_child(obj, child)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void gt_obj_destroy(gt_obj_st * obj)

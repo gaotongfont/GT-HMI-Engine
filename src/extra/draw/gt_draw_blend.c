@@ -82,6 +82,10 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
                     area_valid.w -= draw_ctx->valid->offset_prev.x;
                     area_dst.x = draw_ctx->valid->offset_prev.x;
                 }
+            } else {
+                if (draw_ctx->valid->offset_prev.y && area_dst.y < draw_ctx->valid->offset_prev.y) {
+                    area_dst.y = draw_ctx->valid->offset_prev.y;
+                }
             }
         } else {
             /** new screen display */

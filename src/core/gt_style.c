@@ -35,26 +35,42 @@
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_obj_set_area(gt_obj_st * obj, gt_area_st area) {
+void gt_obj_set_area(gt_obj_st * obj, gt_area_st area)
+{
     gt_obj_area_change(obj, &area);
-    _gt_disp_update_max_area(&area);
+    _gt_disp_update_max_area(&area, obj->overflow);
 }
 
-void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y) {
+void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)
+{
     gt_area_st area = obj->area;
     area.x = x;
     area.y = y;
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area);
+    _gt_disp_update_max_area(&area, obj->overflow);
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
+
+void gt_obj_move_to(gt_obj_st * obj, gt_size_t x, gt_size_t y)
+{
+    gt_area_st area = obj->area;
+    gt_size_t dx = x - area.x;
+    gt_size_t dy = y - area.y;
+    area.x = x;
+    area.y = y;
+    gt_obj_move_child_by(obj, dx, dy);
+    gt_obj_pos_change(obj, &area);
+    _gt_disp_update_max_area(&area, obj->overflow);
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
+}
+
 
 void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h) {
     gt_area_st area = obj->area;
     area.w = w;
     area.h = h;
     gt_obj_size_change(obj, &area);
-    _gt_disp_update_max_area(&area);
+    _gt_disp_update_max_area(&area, obj->overflow);
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -62,7 +78,7 @@ void gt_obj_set_x(gt_obj_st * obj, gt_size_t x) {
     gt_area_st area = obj->area;
     area.x = x;
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area);
+    _gt_disp_update_max_area(&area, obj->overflow);
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -70,7 +86,7 @@ void gt_obj_set_y(gt_obj_st * obj, gt_size_t y) {
     gt_area_st area = obj->area;
     area.y = y;
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area);
+    _gt_disp_update_max_area(&area, obj->overflow);
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -78,7 +94,7 @@ void gt_obj_set_w(gt_obj_st * obj, uint16_t w) {
     gt_area_st area = obj->area;
     area.w = w;
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area);
+    _gt_disp_update_max_area(&area, obj->overflow);
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -86,7 +102,7 @@ void gt_obj_set_h(gt_obj_st * obj, uint16_t h) {
     gt_area_st area = obj->area;
     area.h = h;
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area);
+    _gt_disp_update_max_area(&area, obj->overflow);
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -260,6 +276,69 @@ void gt_obj_area_change(gt_obj_st * obj, gt_area_st * area_new)
     _gt_disp_refr_append_area(&area);
 }
 
+void gt_obj_move_child_by(gt_obj_st * obj, gt_size_t dx, gt_size_t dy)
+{
+    uint16_t i = 0, cnt = obj->cnt_child;
+
+    if (false == gt_obj_get_overflow(obj)) {
+        return;
+    }
+
+    for (i = 0; i < cnt; i++) {
+        gt_obj_st * child = obj->child[i];
+        if (false == gt_obj_get_overflow(child)) {
+            continue;
+        }
+        if (gt_obj_is_scroll_dir(obj, GT_SCROLL_HORIZONTAL)) {
+            child->area.x += dx;
+        }
+        if (gt_obj_is_scroll_dir(obj, GT_SCROLL_VERTICAL)) {
+            child->area.y += dy;
+        }
+
+        gt_obj_move_child_by(child, dx, dy);
+    }
+}
+
+void gt_obj_child_set_prop(gt_obj_st * obj, gt_obj_prop_type_em type, uint8_t val)
+{
+    uint16_t i, cnt = obj->cnt_child;
+    for (i = 0; i < cnt; i++) {
+        gt_obj_st * child = obj->child[i];
+        switch (type) {
+            case GT_OBJ_PROP_TYPE_VISIBLE: {
+                gt_obj_set_visible(child, val);
+                break;
+            }
+            case GT_OBJ_PROP_TYPE_DELATE: {
+                child->delate = val;
+                break;
+            }
+            case GT_OBJ_PROP_TYPE_FOCUS: {
+                gt_obj_set_focus(child, val);
+                break;
+            }
+            case GT_OBJ_PROP_TYPE_FOCUS_DISABLED: {
+                gt_obj_set_focus_disabled(child, val);
+                break;
+            }
+            case GT_OBJ_PROP_TYPE_DISABLED: {
+                gt_obj_set_disabled(child, val);
+                break;
+            }
+            case GT_OBJ_PROP_TYPE_FIXED: {
+                gt_obj_set_fixed(child, val);
+                break;
+            }
+            case GT_OBJ_PROP_TYPE_OVERFLOW: {
+                gt_obj_set_overflow(child, val);
+                break;
+            }
+        }
+        gt_obj_child_set_prop(child, type, val);
+    }
+}
+
 void gt_obj_set_state(gt_obj_st * obj, gt_state_et state)
 {
     obj->state = state;
@@ -278,6 +357,56 @@ void gt_obj_set_fixed(gt_obj_st * obj, bool is_fixed)
 bool gt_obj_get_fixed(gt_obj_st * obj)
 {
     return obj->fixed;
+}
+
+void gt_obj_set_overflow(gt_obj_st * obj, bool is_overflow)
+{
+    obj->overflow = is_overflow;
+}
+
+bool gt_obj_get_overflow(gt_obj_st * obj)
+{
+    return obj->overflow;
+}
+
+void gt_obj_set_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir)
+{
+    if (dir < GT_SCROLL_DISABLE || dir > GT_SCROLL_ALL) {
+        obj->scroll_dir = GT_SCROLL_ALL;
+        return;
+    }
+
+    obj->scroll_dir = dir;
+}
+
+gt_scroll_dir_et gt_obj_get_scroll_dir(gt_obj_st * obj)
+{
+    return obj->scroll_dir;
+}
+
+bool gt_obj_is_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir)
+{
+    return (obj->scroll_dir & dir) ? true : false;
+}
+
+void gt_obj_set_scroll_snap_x(gt_obj_st * obj, gt_scroll_snap_em snap)
+{
+    obj->scroll_snap_x = snap;
+}
+
+void gt_obj_set_scroll_snap_y(gt_obj_st * obj, gt_scroll_snap_em snap)
+{
+    obj->scroll_snap_y = snap;
+}
+
+gt_scroll_snap_em gt_obj_get_scroll_snap_x(gt_obj_st * obj)
+{
+    return obj->scroll_snap_x;
+}
+
+gt_scroll_snap_em gt_obj_get_scroll_snap_y(gt_obj_st * obj)
+{
+    return obj->scroll_snap_y;
 }
 
 /* end ------------------------------------------------------------------*/

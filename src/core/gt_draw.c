@@ -289,7 +289,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         blend_dsc.mask_buf = mask_buf;
         blend_dsc.mask_area->w = coords->w;
         blend_dsc.mask_area->h = coords->h;
-        GT_LOGD(GT_LOG_TAG_GUI , "dsc->gray = %d , w = %d , h = %d , buf_size = %d" ,dsc->gray , blend_dsc.mask_area->w , blend_dsc.mask_area->h , len);
+        GT_LOGV(GT_LOG_TAG_GUI , "dsc->gray = %d , w = %d , h = %d , buf_size = %d" ,dsc->gray , blend_dsc.mask_area->w , blend_dsc.mask_area->h , len);
 
         len = len >> 3;
         buf_idx = 0;
@@ -1178,7 +1178,7 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_
     }
     coords->w = dsc_img.header.w;
     coords->h = dsc_img.header.h;
-    _gt_disp_update_max_area(coords);
+    _gt_disp_update_max_area(coords, true);
 
     gt_area_st dst_area = *coords, mask_area = *coords;
     dst_area.h = 1;         /** 每次只填充一行的数据量 */

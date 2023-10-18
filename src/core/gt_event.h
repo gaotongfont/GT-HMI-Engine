@@ -37,7 +37,9 @@ typedef enum gt_event_type_e{
     GT_EVENT_TYPE_INPUT_RELEASED = _GT_EVENT_TYPE_INPUT_BEGIN,        ///< release event
     GT_EVENT_TYPE_INPUT_PRESSING,                                     ///< pressing
     GT_EVENT_TYPE_INPUT_PRESSED,                                      ///< pressed
+    GT_EVENT_TYPE_INPUT_SCROLL_START,
     GT_EVENT_TYPE_INPUT_SCROLL,
+    GT_EVENT_TYPE_INPUT_SCROLL_END,
     GT_EVENT_TYPE_INPUT_PROCESS_LOST,                                 ///< move off and lost handler
     GT_EVENT_TYPE_INPUT_KEY,
     GT_EVENT_TYPE_INPUT_FOCUSED,
@@ -74,6 +76,7 @@ typedef enum gt_event_type_e{
     /* CHANGE events */
     GT_EVENT_TYPE_CHANGE_CHILD_REMOVE = _GT_EVENT_TYPE_CHANGE_BEGIN,  ///< remove child but not delete child
     GT_EVENT_TYPE_CHANGE_CHILD_REMOVED,                               ///< remove child finish
+    GT_EVENT_TYPE_CHANGE_CHILD_ADD,                                   ///< add child
     GT_EVENT_TYPE_CHANGE_CHILD_DELETE,                                ///< delete child
     GT_EVENT_TYPE_CHANGE_CHILD_DELETED,                               ///< delete child finish
 

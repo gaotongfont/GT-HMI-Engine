@@ -41,50 +41,55 @@ static void _scroll_by_raw(gt_obj_st * obj, int32_t x, int32_t y) {
 }
 
 static void _scroll_by_x(gt_obj_st * obj, int32_t x) {
-    _gt_obj_set_process_scroll_xy(obj, x, 0);
+    _gt_obj_set_process_scroll_xy(obj, x - obj->process_attr.scroll.x, 0);
     gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
 }
 
 static void _scroll_by_y(gt_obj_st * obj, int32_t y) {
-    _gt_obj_set_process_scroll_xy(obj, 0, y);
+    _gt_obj_set_process_scroll_xy(obj, 0, y - obj->process_attr.scroll.y);
     gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
 }
 
+void _scroll_ready_cb(struct gt_anim_s * anim) {
+    gt_event_send(anim->target, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
+}
+
 /* global functions / API interface -------------------------------------*/
-void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t x, gt_size_t y, gt_anim_enable_et en)
+void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim_enable_et en)
 {
     if (NULL == obj) {
         return;
     }
 
     if (GT_ANIM_ON == en) {
-        if (x) {
-            gt_anim_st anim;
-            int32_t d = gt_anim_speed_to_time((gt_disp_get_res_hor(NULL) * 2) >> 2, 0, x);
+        gt_anim_st anim;
+        gt_anim_init(&anim);
+        gt_anim_set_target(&anim, obj);
+        gt_anim_set_ready_cb(&anim, _scroll_ready_cb);
+        gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_EASE_OUT);
+
+        if (dx) {
+            int32_t d = gt_anim_speed_to_time((gt_disp_get_res_hor(NULL) * 2) >> 2, 0, dx);
             if (d < _SCROLL_ANIM_TIME_MIN) d = _SCROLL_ANIM_TIME_MIN;
             if (d > _SCROLL_ANIM_TIME_MAX) d = _SCROLL_ANIM_TIME_MAX;
 
-            gt_anim_init(&anim);
             gt_anim_set_time(&anim, d);
-            gt_anim_set_value(&anim, 0, x);
-            gt_anim_set_target(&anim, obj);
+            gt_anim_set_value(&anim, obj->process_attr.scroll.x, obj->process_attr.scroll.x + dx);
             gt_anim_set_exec_cb(&anim, _scroll_by_x);
-            gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_BOUNCE);
+            gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
             gt_anim_start(&anim);
         }
 
-        if (y) {
-            gt_anim_st anim;
-            int32_t d = gt_anim_speed_to_time((gt_disp_get_res_ver(NULL) * 2) >> 2, 0, y);
+        if (dy) {
+            // gt_anim_st anim;
+            int32_t d = gt_anim_speed_to_time((gt_disp_get_res_ver(NULL) * 2) >> 2, 0, dy);
             if (d < _SCROLL_ANIM_TIME_MIN) d = _SCROLL_ANIM_TIME_MIN;
             if (d > _SCROLL_ANIM_TIME_MAX) d = _SCROLL_ANIM_TIME_MAX;
 
-            gt_anim_init(&anim);
             gt_anim_set_time(&anim, d);
-            gt_anim_set_value(&anim, 0, y);
-            gt_anim_set_target(&anim, obj);
+            gt_anim_set_value(&anim, obj->process_attr.scroll.y, obj->process_attr.scroll.y + dy);
             gt_anim_set_exec_cb(&anim, _scroll_by_y);
-            gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_BOUNCE);
+            gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
             gt_anim_start(&anim);
         }
         return;
@@ -93,7 +98,11 @@ void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t x, gt_size_t y, gt_anim_e
     gt_anim_del(obj, _scroll_by_x);
     gt_anim_del(obj, _scroll_by_y);
 
-    _scroll_by_raw(obj, x, y);
+    gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
+
+    _scroll_by_raw(obj, dx, dy);
+
+    gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
 }
 
 void gt_obj_scroll_to_x(struct gt_obj_s * obj, gt_size_t x, gt_anim_enable_et en)
@@ -139,8 +148,8 @@ void _gt_obj_set_process_point(gt_obj_st * obj, gt_point_st * point){
  */
 void _gt_obj_set_process_scroll_xy(gt_obj_st * obj, gt_size_t x_scroll, gt_size_t y_scroll)
 {
-    obj->process_attr.scroll.x = x_scroll;
-    obj->process_attr.scroll.y = y_scroll;
+    obj->process_attr.scroll.x += x_scroll;
+    obj->process_attr.scroll.y += y_scroll;
 }
 
 /* end ------------------------------------------------------------------*/

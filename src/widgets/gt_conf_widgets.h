@@ -47,6 +47,7 @@ extern "C" {
 #define GT_CFG_ENABLE_INPUT_NUMBER      1
 #define GT_CFG_ENABLE_CLOCK             1
 #define GT_CFG_ENABLE_WORDART           1
+#define GT_CFG_ENABLE_VIEW_PAGER        1
 
 /* typedef --------------------------------------------------------------*/
 

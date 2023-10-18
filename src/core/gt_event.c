@@ -82,10 +82,9 @@ static gt_res_t _gt_event_handler_event_mask(gt_obj_st * obj , void * param)
         return GT_RES_OK;
     }
 
-    uint32_t mask_shift = obj->event_mask;
+    uint32_t mask_shift = obj->event_mask, event_code = 0;
     uint16_t idx = 0;
     uint16_t count = _GT_EVENT_TYPE_TOTAL_COUNT;
-    uint16_t event_code;
     gt_event_st e;
 
     e.target = obj;

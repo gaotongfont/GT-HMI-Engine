@@ -187,6 +187,26 @@ static bool _gt_obj_class_destroy_children(gt_obj_st * self, bool is_root)
     return false;
 }
 
+static inline bool _add_obj_to_parent(gt_obj_st * obj, gt_obj_st * parent) {
+    if (parent->child == NULL || parent->cnt_child == 0 ) {
+        parent->child = gt_mem_malloc(sizeof(gt_obj_st *));
+        if (!parent->child) {
+            return false;
+        }
+        parent->child[0] = obj;
+        parent->cnt_child = 1;
+    } else {
+        parent->child = gt_mem_realloc(parent->child, sizeof(gt_obj_st *) * (parent->cnt_child + 1));
+        if (!parent->child) {
+            return false;
+        }
+        parent->child[parent->cnt_child++] = obj;
+    }
+    GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj: %p, parent: %p, parent child: %p, count: %d", parent->child[parent->cnt_child - 1], parent, parent->child, parent->cnt_child);
+    gt_event_send(parent, GT_EVENT_TYPE_CHANGE_CHILD_ADD, obj);
+    return true;
+}
+
 /* global functions / API interface -------------------------------------*/
 struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_obj_s * parent) {
 
@@ -203,11 +223,19 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
     }
     gt_memset_0(obj, is);
 
-    obj->class   = class;
-    obj->parent  = parent;
-    obj->opa     = GT_OPA_100;
-    obj->style   = gt_mem_malloc(get_style_size(class));
-    obj->visible = GT_VISIBLE;
+    obj->class      = class;
+    obj->parent     = parent;
+    obj->opa        = GT_OPA_100;
+    obj->style      = gt_mem_malloc(get_style_size(class));
+    obj->visible    = GT_VISIBLE;
+    obj->scroll_dir = GT_SCROLL_ALL;
+
+    /** Inherit from the parent class */
+    if (parent) {
+        obj->overflow = parent->overflow;
+    }
+
+
     if (!obj->style) {
         goto obj_lb;
     }
@@ -240,21 +268,9 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
         obj->area.w = gt_disp_get_res_hor(NULL);
         obj->area.h = gt_disp_get_res_ver(NULL);
     } else {
-        if (parent->child == NULL || parent->cnt_child == 0 ) {
-            parent->child = gt_mem_malloc(sizeof(gt_obj_st *));
-            if (!parent->child) {
-                goto style_lb;
-            }
-            parent->child[0] = obj;
-            parent->cnt_child = 1;
-        } else {
-            parent->child = gt_mem_realloc(parent->child, sizeof(gt_obj_st *) * (parent->cnt_child + 1));
-            if (!parent->child) {
-                goto style_lb;
-            }
-            parent->child[parent->cnt_child++] = obj;
+        if (false == _add_obj_to_parent(obj, parent)) {
+            goto style_lb;
         }
-        GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj: %p, parent: %p, parent child: %p, count: %d", parent->child[parent->cnt_child - 1], parent, parent->child, parent->cnt_child);
     }
 
     return obj;
@@ -264,6 +280,14 @@ style_lb:
 obj_lb:
     gt_mem_free(obj);
     return NULL;
+}
+
+bool _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_obj_s * to)
+{
+    gt_obj_st * parent = _gt_obj_class_destroy_from_parent(obj);
+    obj->parent = to;
+
+    return _add_obj_to_parent(obj, to);
 }
 
 /**

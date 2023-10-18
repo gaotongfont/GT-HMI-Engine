@@ -40,11 +40,11 @@ typedef enum{
  * @brief scroll obj to position x,y
  *
  * @param obj obj
- * @param x x coordinate of virtual screen object
- * @param y y coordinate of virtual screen object
+ * @param dx x coordinate of virtual screen object
+ * @param dy y coordinate of virtual screen object
  * @param en enable scroll anim
  */
-void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t x, gt_size_t y, gt_anim_enable_et en);
+void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim_enable_et en);
 
 /**
  * @brief scroll obj to position x

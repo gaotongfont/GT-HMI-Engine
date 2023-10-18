@@ -176,8 +176,10 @@ gt_area_st * _gt_disp_refr_get_area(void);
  * @brief Update max screen can display area
  *
  * @param area widget area
+ * @param is_overflow true: widget can overflow the screen area size;
+ *                    false: widget can't overflow the screen area size, widget size will calculate by screen area size
  */
-void _gt_disp_update_max_area(const gt_area_st * const area);
+void _gt_disp_update_max_area(const gt_area_st * const area, bool is_overflow);
 
 void _gt_disp_reload_max_area(gt_obj_st * scr);
 

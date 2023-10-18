@@ -31,8 +31,10 @@ extern "C" {
 
 #define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL           3
 
-/** Drag throw slow-down in [%]. Greater value: faster -> slow-down */
+/** Drag throw slow-down in [%]. Greater value: faster(far)[0] -> slow-down[100] */
 #define GT_CFG_DEFAULT_POINT_SCROLL_THROW           10
+
+#define GT_CFG_DEFAULT_POINT_SCROLL_LIMIT           10
 
 
 
@@ -174,7 +176,7 @@ typedef struct _gt_indev_s {
 }gt_indev_st;
 
 typedef struct _gt_indev_param_s{
-    union 
+    union
     {
         gt_point_st point;
         uint16_t button_id;

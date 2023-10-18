@@ -51,6 +51,16 @@ typedef struct _gt_obj_class_s
 struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_obj_s * parent);
 
 /**
+ * @brief
+ *
+ * @param obj
+ * @param to
+ * @return true success
+ * @return false failed
+ */
+bool _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_obj_s * to);
+
+/**
  * @brief delete control widget; Reclaim the memory of child controls.
  *
  * @param self

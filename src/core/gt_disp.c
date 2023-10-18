@@ -433,6 +433,7 @@ static inline void _adapt_area_flush_ver(_flush_scr_param_st * param) {
         case GT_SCR_ANIM_TYPE_COVER_DOWN: {
             /** prev screen, don't move */
             param->view_scr_prev_abs.y = param->disp->area_act.y + param->scr_prev->area.y + param->scr->area.h;
+            param->valid.offset_prev.y = param->scr->area.h;
             /** new screen */
             param->view_scr_abs.h = param->disp->area_act.h - gt_abs(param->scr->area.y);
             break;
@@ -500,7 +501,7 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
             return;
         }
         gt_event_clr_all_event(scr_old);
-        gt_event_clr_all_event(scr);
+        // gt_event_clr_all_event(scr);     // TODO: why clear event?
     }
 
     scr->using = 1;
@@ -707,8 +708,8 @@ void gt_disp_scroll_area_act(int16_t dist_x, int16_t dist_y)
     gt_area_st * area = gt_disp_get_area_act();
     gt_area_abs_st * max_area = gt_disp_get_area_max();
 
-    area->x += dist_x;
-    area->y += dist_y;
+    area->x = dist_x;
+    area->y = dist_y;
 
     /** Limit the range where the display can move */
     if (area->x < max_area->left) {

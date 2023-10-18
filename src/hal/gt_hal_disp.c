@@ -251,10 +251,15 @@ get_area_lb:
     return &disp->refr.areas[idx];
 }
 
-void _gt_disp_update_max_area(const gt_area_st * const area)
+void _gt_disp_update_max_area(const gt_area_st * const area, bool is_overflow)
 {
     gt_disp_st * disp = gt_disp_get_default();
     gt_area_abs_st * max_area = &disp->area_max;
+
+    if (is_overflow) {
+        /** allow widget overflow screen display, can not scroll to over area */
+        return;
+    }
 
     if (area->x < max_area->left) {
         max_area->left = area->x;
@@ -284,7 +289,7 @@ void _gt_disp_reload_max_area(gt_obj_st * scr)
 
     for (i = 0; i < scr->cnt_child; i++) {
         obj = scr->child[i];
-        _gt_disp_update_max_area(&obj->area);
+        _gt_disp_update_max_area(&obj->area, obj->overflow);
     }
 }
 

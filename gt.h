@@ -140,6 +140,10 @@ extern "C" {
 #include "src/widgets/gt_wordart.h"
 #endif
 
+#if GT_CFG_ENABLE_VIEW_PAGER
+#include "src/widgets/gt_view_pager.h"
+#endif
+
 /* other */
 #include "src/others/gt_color.h"
 #include "src/others/gt_log.h"
