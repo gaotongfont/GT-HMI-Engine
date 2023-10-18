@@ -19,6 +19,7 @@
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
 #include "../core/gt_fs.h"
+#include "../core/gt_indev.h"
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_SCROLLBAR
 #define MY_CLASS    &gt_slider_class
@@ -91,8 +92,8 @@ static void _gt_slider_set_offset(gt_obj_st * slider , int offset)
 
 static void _gt_slider_add_offset(gt_obj_st * slider , int value)
 {
-    int tmp = value + _gt_slider_get_offset(slider);
-    _gt_slider_set_offset(slider , tmp);
+    // int tmp = value + _gt_slider_get_offset(slider);
+    _gt_slider_set_offset(slider , value);
 }
 
 static inline void _gt_slider_init_widget(gt_obj_st * slider) {
@@ -155,9 +156,12 @@ static inline void _gt_slider_init_widget(gt_obj_st * slider) {
         _tmp_pos = slider->area.h;
     }
     /* 1 draw base shape */
-    if(style->pos < style->end){
-        draw_bg(slider->draw_ctx, &rect_attr, &area_base);
-    }
+    // if(style->pos < style->end){
+    //     draw_bg(slider->draw_ctx, &rect_attr, &area_base);
+    // }
+
+    draw_bg(slider->draw_ctx, &rect_attr, &area_base);
+
     /* 2 draw val shape */
     rect_attr.bg_color = style->color_act;
     dist_min = rect_attr.radius;
@@ -295,9 +299,8 @@ static void _deinit_cb(gt_obj_st * obj) {
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
-    gt_point_st point_click;
+    gt_point_st point_click = gt_indev_get_point();
     int _pos;
-    float pos;
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGV(GT_LOG_TAG_GUI, "start draw");
@@ -324,15 +327,14 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
             GT_LOGV(GT_LOG_TAG_GUI, "scroll");
-            _pos = 0;
             if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_L2R ){
-                _pos += obj->process_attr.scroll.x;
+                _pos = point_click.x - obj->area.x;
             }else if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_R2L ){
-                _pos -= obj->process_attr.scroll.x;
+                _pos = obj->area.w - (point_click.x - obj->area.x);
             }else if( gt_slider_get_dir(obj) == GT_BAR_DIR_VER_U2D ){
-                _pos += obj->process_attr.scroll.y;
+                _pos = point_click.y - obj->area.y;
             }else if( gt_slider_get_dir(obj) == GT_BAR_DIR_VER_D2U ){
-                _pos -= obj->process_attr.scroll.y;
+                _pos = obj->area.h - (point_click.y - obj->area.y);
             }
             _gt_slider_add_offset(obj , _pos);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -340,17 +342,14 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
-
-            point_click.x = obj->process_attr.point.x;
-            point_click.y = obj->process_attr.point.y;
             if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_L2R ){
-                _pos = point_click.x;
+                _pos = point_click.x - obj->area.x;
             }else if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_R2L ){
-                _pos = obj->area.w - point_click.x;
+                _pos = obj->area.w - (point_click.x - obj->area.x);
             }else if( gt_slider_get_dir(obj) == GT_BAR_DIR_VER_U2D ){
-                _pos = point_click.y;
+                _pos = point_click.y - obj->area.y;
             }else if( gt_slider_get_dir(obj) == GT_BAR_DIR_VER_D2U ){
-                _pos = obj->area.h - point_click.y;
+                _pos = obj->area.h - (point_click.y - obj->area.y);
             }
             _gt_slider_set_offset(obj , _pos);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);

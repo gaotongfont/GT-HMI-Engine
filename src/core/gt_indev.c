@@ -268,6 +268,8 @@ static void _gt_indev_handler_point(gt_indev_st * indev)
     /* process point data */
     indev->proc.state = data_indev.state;
 #if 1
+    _indev_pa.param.point.x = data_indev.point.x;
+    _indev_pa.param.point.y = data_indev.point.y;
     _gt_indev_point_set_value(&point_p->newly, data_indev.point.x, data_indev.point.y);
 #endif
 
@@ -385,6 +387,11 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
 uint32_t gt_indev_get_key(void)
 {
     return _indev_pa.param.keypad_key;
+}
+
+gt_point_st gt_indev_get_point(void)
+{
+    return _indev_pa.param.point;
 }
 
 void gt_indev_get_point_act(const gt_indev_st * indev, gt_point_st * point)

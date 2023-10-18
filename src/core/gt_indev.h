@@ -38,6 +38,7 @@ extern "C" {
  * @return uint32_t
  */
 uint32_t gt_indev_get_key(void);
+gt_point_st gt_indev_get_point(void);
 
 /**
  * @brief get click first point
