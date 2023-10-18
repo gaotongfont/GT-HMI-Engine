@@ -50,11 +50,13 @@
 struct _reg_s {
     uint16_t count : _VIEW_PAGER_COUNT_BIT_WIDTH;
     uint16_t index : _VIEW_PAGER_COUNT_BIT_WIDTH;
-    uint16_t reserved : 8;
+    uint16_t glass : 1;     /** display background glass */
+    uint16_t reserved : 7;
 };
 
 typedef struct _gt_view_pager_s {
     struct _reg_s reg;
+    gt_color_t color_glass;
 }_gt_view_pager_st;
 
 
@@ -112,6 +114,12 @@ static void _draw_tip_bar(gt_obj_st * obj, gt_attr_rect_st * rect_attr) {
 static void _init_cb(gt_obj_st * obj) {
     gt_attr_rect_st rect_attr;
     gt_area_st area_bg = obj->area;
+    _gt_view_pager_st * style = (_gt_view_pager_st * )obj->style;
+    uint16_t i = 0, width = area_bg.w / style->reg.count;
+    uint16_t space = (width << 1) / 100;    /** 2% of screen width */
+
+    area_bg.x += (space >> 1);
+    area_bg.w = width - space;
     area_bg.h -= _TIP_BAR_HEIGHT;
 
     gt_graph_init_rect_attr(&rect_attr);
@@ -119,8 +127,13 @@ static void _init_cb(gt_obj_st * obj) {
     rect_attr.radius        = 10;
     rect_attr.bg_opa        = obj->opa;
     rect_attr.border_width  = 0;
-    rect_attr.bg_color      = gt_color_make(0xff, 0xff, 0xff);
-    draw_bg(obj->draw_ctx, &rect_attr, &area_bg);
+    rect_attr.bg_color      = style->color_glass;
+    if (style->reg.glass) {
+        for (i = 0; i < style->reg.count; i++) {
+            draw_bg(obj->draw_ctx, &rect_attr, &area_bg);
+            area_bg.x += width;
+        }
+    }
 
     _draw_tip_bar(obj, &rect_attr);
 }
@@ -184,8 +197,11 @@ gt_obj_st * gt_view_pager_create(gt_obj_st * parent)
     obj->area.w = gt_disp_get_res_hor(NULL);
     obj->area.h = gt_disp_get_res_ver(NULL);
     obj->opa = GT_OPA_30;
-
     obj->absorb = true;
+
+    style->reg.glass = true;
+    style->color_glass = gt_color_make(0xff, 0xff, 0xff);
+
     gt_obj_set_overflow(obj, true);
     gt_obj_set_scroll_dir(obj, GT_SCROLL_HORIZONTAL);
     gt_obj_set_scroll_snap_x(obj, GT_SCROLL_SNAP_START);
@@ -259,6 +275,28 @@ void gt_view_pager_fragment_add_widget(gt_obj_st * view_pager, uint8_t fragment_
     if (false == gt_area_is_on(&view_area, &child->area)) {
         child->area.x = (child->area.x % scr_width) + view_area.x;
     }
+}
+
+void gt_view_pager_set_glass(gt_obj_st * obj, bool enabled)
+{
+    _gt_view_pager_st * style = (_gt_view_pager_st * )obj->style;
+    style->reg.glass = enabled;
+}
+
+bool gt_view_pager_get_glass(gt_obj_st * obj)
+{
+    return ((_gt_view_pager_st * )obj->style)->reg.glass;
+}
+
+void gt_view_pager_set_glass_color(gt_obj_st * obj, gt_color_t color)
+{
+    _gt_view_pager_st * style = (_gt_view_pager_st * )obj->style;
+    style->color_glass = color;
+}
+
+gt_color_t gt_view_pager_get_glass_color(gt_obj_st * obj)
+{
+    return ((_gt_view_pager_st * )obj->style)->color_glass;
 }
 
 /* end ------------------------------------------------------------------*/

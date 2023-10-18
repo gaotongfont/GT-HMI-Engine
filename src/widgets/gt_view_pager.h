@@ -71,6 +71,23 @@ int8_t gt_view_pager_add_fragment(gt_obj_st * obj);
  */
 void gt_view_pager_fragment_add_widget(gt_obj_st * view_pager, uint8_t fragment_idx, gt_obj_st * child);
 
+/**
+ * @brief Enabled or disabled the background glass effect
+ *
+ * @param obj
+ * @param enabled
+ */
+void gt_view_pager_set_glass(gt_obj_st * obj, bool enabled);
+bool gt_view_pager_get_glass(gt_obj_st * obj);
+
+/**
+ * @brief Set background glass color
+ *
+ * @param obj
+ * @param color
+ */
+void gt_view_pager_set_glass_color(gt_obj_st * obj, gt_color_t color);
+gt_color_t gt_view_pager_get_glass_color(gt_obj_st * obj);
 
 #ifdef __cplusplus
 } /*extern "C"*/
