@@ -16,6 +16,7 @@
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "../core/gt_style.h"
+#include "../core/gt_disp.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -68,6 +69,8 @@ static void _deinit_cb(gt_obj_st * obj)
 static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
 {
     gt_event_type_et code = gt_event_get_code(e);
+    gt_area_abs_st * max_area_p = gt_disp_get_area_max();
+
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGV(GT_LOG_TAG_GUI, "start draw");
@@ -96,10 +99,29 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
             GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             break;
 
-        case GT_EVENT_TYPE_INPUT_SCROLL:
-            // GT_LOGD(GT_LOG_TAG_GUI, "obj scroll: %d, %d", -e->target->process_attr.scroll.x, -e->target->process_attr.scroll.y);
-            gt_disp_scroll_area_act(-e->target->process_attr.scroll.x, -e->target->process_attr.scroll.y);
+        case GT_EVENT_TYPE_INPUT_SCROLL_START: {
             break;
+        }
+
+        case GT_EVENT_TYPE_INPUT_SCROLL:
+            /** temp */
+            if (-obj->process_attr.scroll.x < max_area_p->left) {
+                obj->process_attr.scroll.x = -max_area_p->left;
+            }
+            else if (-obj->process_attr.scroll.x + obj->area.w > max_area_p->right) {
+                obj->process_attr.scroll.x = -max_area_p->right + obj->area.w;
+            }
+            if (-obj->process_attr.scroll.y < max_area_p->top) {
+                obj->process_attr.scroll.y = -max_area_p->top;
+            }else if (-obj->process_attr.scroll.y + obj->area.h > max_area_p->bottom) {
+                obj->process_attr.scroll.y = -max_area_p->bottom + obj->area.h;
+            }
+            gt_disp_scroll_area_act(-obj->process_attr.scroll.x, -obj->process_attr.scroll.y);
+            break;
+
+        case GT_EVENT_TYPE_INPUT_SCROLL_END: {
+            break;
+        }
 
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");

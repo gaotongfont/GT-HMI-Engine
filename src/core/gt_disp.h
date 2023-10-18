@@ -95,6 +95,8 @@ void gt_disp_ref_area(const gt_area_st * coords);
  */
 gt_area_st * gt_disp_get_area_act(void);
 
+gt_area_abs_st * gt_disp_get_area_max(void);
+
 /**
  * @brief Set active display area
  *
