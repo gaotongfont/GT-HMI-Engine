@@ -20,7 +20,10 @@
 #include "../../others/gt_color.h"
 
 /* private define -------------------------------------------------------*/
-
+/**
+ * @brief PNG file color order: 0: RGB; 1: BGR
+ */
+#define _COLOR_BYTE_REVERSE     01
 
 
 /* private typedef ------------------------------------------------------*/
@@ -67,7 +70,11 @@ static void _gt_png_color_convert_depth(uint8_t * image, uint8_t * alpha, uint32
     gt_color_t color;
     uint32_t i,idx=0;
     for (i = 0; i < size; i++) {
+#if _COLOR_BYTE_REVERSE
+        color = gt_color_make(GT_COLOR_GET_B32(img_argb[i]), GT_COLOR_GET_G32(img_argb[i]), GT_COLOR_GET_R32(img_argb[i]));
+#else
         color = gt_color_make(GT_COLOR_GET_R32(img_argb[i]), GT_COLOR_GET_G32(img_argb[i]), GT_COLOR_GET_B32(img_argb[i]));
+#endif
         image[idx++] = GT_COLOR_GET(color) & 0xff;
         image[idx++] = GT_COLOR_GET(color) >> 8;
         alpha[i]     = GT_COLOR_GET_A32(img_argb[i]);
@@ -77,7 +84,11 @@ static void _gt_png_color_convert_depth(uint8_t * image, uint8_t * alpha, uint32
     gt_color_t color;
     uint32_t i;
     for (i = 0; i < size; i++) {
+#if _COLOR_BYTE_REVERSE
+        color = gt_color_make(GT_COLOR_GET_B32(img_argb[i]), GT_COLOR_GET_G32(img_argb[i]), GT_COLOR_GET_R32(img_argb[i]));
+#else
         color = gt_color_make(GT_COLOR_GET_R32(img_argb[i]), GT_COLOR_GET_G32(img_argb[i]), GT_COLOR_GET_B32(img_argb[i]));
+#endif
         image[(i << 1) + 1] = GT_COLOR_GET_A32(img_argb[i]);
         image[i << 1]       = GT_COLOR_GET(color);
     }
@@ -86,7 +97,11 @@ static void _gt_png_color_convert_depth(uint8_t * image, uint8_t * alpha, uint32
     uint8_t color;
     uint32_t i;
     for (i = 0; i < size; i++) {
+#if _COLOR_BYTE_REVERSE
+        color = gt_color_make(GT_COLOR_GET_B32(img_argb[i]), GT_COLOR_GET_G32(img_argb[i]), GT_COLOR_GET_R32(img_argb[i]));
+#else
         color = GT_COLOR_GET_R32(img_argb[i]) | GT_COLOR_GET_G32(img_argb[i]) | GT_COLOR_GET_B32(img_argb[i]);
+#endif
         image[(i << 1) + 1] = GT_COLOR_GET_A32(img_argb[i]);
         image[i << 1]       = color;
     }
