@@ -379,8 +379,8 @@ static unsigned lodepng_buffer_file(unsigned char* out, size_t size, const char*
 
   if (!fp) { return 78; }
 
+  gt_fs_seek(0, GT_FS_SEEK_SET);
   gt_fs_read(out, size, (uint32_t * )&read_size);
-  // gt_fs_close();
 
   if (read_size != size) { return 78; }
   return 0;

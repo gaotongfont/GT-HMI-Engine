@@ -186,7 +186,7 @@ static gt_fs_res_et _seek_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos,
             _fp->pos += pos;
             break;
         case GT_FS_SEEK_END:
-            _fp->pos = _fp->end - pos;
+            _fp->pos = _fp->end - _fp->start - pos;
             break;
         default:
             break;
