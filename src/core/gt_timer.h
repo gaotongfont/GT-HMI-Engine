@@ -124,6 +124,8 @@ int32_t _gt_timer_get_repeat_count(_gt_timer_st * timer);
  */
 void _gt_timer_set_period(_gt_timer_st * timer, uint32_t period);
 
+uint32_t _gt_timer_get_period(_gt_timer_st * timer);
+
 /**
  * @brief set timer task paused state
  *

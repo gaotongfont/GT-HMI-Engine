@@ -16,6 +16,7 @@
 #include "../core/gt_fs.h"
 #include "../others/gt_log.h"
 #include "../core/gt_obj_pos.h"
+#include "../hal/gt_hal_tick.h"
 
 #if GT_CFG_ENABLE_PLAYER
 /* private define -------------------------------------------------------*/
@@ -32,7 +33,8 @@
 #define _GT_PLAYER_BIT_AUTO_LENGTH      1
 #define _GT_PLAYER_BIT_LOCK_LENGTH      1
 #define _GT_PLAYER_BIT_DIR_LENGTH       1
-#define _GT_PLAYER_BIT_RESERVED_LENGTH  5
+#define _GT_PLAYER_BIT_REAL_TIME_UPDATE_LENGTH 1
+#define _GT_PLAYER_BIT_RESERVED_LENGTH  4
 
 
 #define _GET_BIT_SHIFT_SIZE(_val)       (1 << (_val))
@@ -66,10 +68,12 @@ typedef struct _gt_player_reg_s {
     uint16_t auto_play: _GT_PLAYER_BIT_AUTO_LENGTH;     ///< 0: manual, 1: auto
     uint16_t lock: _GT_PLAYER_BIT_LOCK_LENGTH;          ///< lock the player callback handler, 0: unlock, 1: lock
     uint16_t dir: _GT_PLAYER_BIT_DIR_LENGTH;            ///< direction of the player, 0: forward, 1: backward
+    uint16_t real_time_update: _GT_PLAYER_BIT_REAL_TIME_UPDATE_LENGTH;  ///< 1: real time update, 0: update when the player is displayed
     uint16_t reserved: _GT_PLAYER_BIT_RESERVED_LENGTH;  ///< reserved bit length
 }_gt_player_reg_st;
 
 typedef struct _gt_player_s {
+    uint32_t last_player_tick;
     _gt_player_reg_st reg;
     _gt_player_obj_st target;
     _gt_timer_st * timer;
@@ -465,8 +469,14 @@ static void _auto_play_callback(struct _gt_timer_s * timer) {
         /** The callback has been executed, waiting for it to be displayed */
         return ;
     }
-
-    _change_item_handler(obj, _is_dir_next(style));
+    uint16_t count = 1;
+    if (style->reg.real_time_update) {
+        count = gt_tick_elapse(style->last_player_tick) / _gt_timer_get_period(timer);
+    }
+    for (uint16_t i = 0; i < count; i++) {
+        _change_item_handler(obj, _is_dir_next(style));
+    }
+    style->last_player_tick =  gt_tick_get();
 }
 
 static inline void _set_play_status(_gt_player_st * style, bool is_play) {
@@ -482,6 +492,7 @@ static inline void _set_play_status(_gt_player_st * style, bool is_play) {
     if (style->target.count < 2) {
         return ;
     }
+    style->last_player_tick = gt_tick_get();
     _gt_timer_set_paused(style->timer, is_play ? false : true);
 }
 
@@ -717,6 +728,24 @@ bool gt_player_dir_is_forward(gt_obj_st * obj)
     }
     _gt_player_st * style = (_gt_player_st * )obj->style;
     return _is_dir_next(style);
+}
+
+void gt_player_set_real_time_update(gt_obj_st * obj, bool is_real_time_update)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj->style;
+    style->reg.real_time_update = is_real_time_update;
+}
+
+bool gt_player_is_real_time_update(gt_obj_st * obj)
+{
+    if (NULL == obj) {
+        return false;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj->style;
+    return style->reg.real_time_update;
 }
 
 #endif /** GT_CFG_ENABLE_PLAYER */

@@ -137,6 +137,8 @@ void gt_player_toggle(gt_obj_st * obj);
 void gt_player_dir_toggle(gt_obj_st * obj);
 bool gt_player_dir_is_forward(gt_obj_st * obj);
 
+void gt_player_set_real_time_update(gt_obj_st * obj, bool is_real_time_update);
+bool gt_player_is_real_time_update(gt_obj_st * obj);
 
 #endif /** GT_CFG_ENABLE_PLAYER */
 #ifdef __cplusplus

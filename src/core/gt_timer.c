@@ -196,6 +196,11 @@ void _gt_timer_set_period(_gt_timer_st * timer, uint32_t period)
     timer->period = period;
 }
 
+uint32_t _gt_timer_get_period(_gt_timer_st * timer)
+{
+    return timer->period;
+}
+
 void _gt_timer_set_paused(_gt_timer_st * timer, bool state)
 {
     if (state) {
