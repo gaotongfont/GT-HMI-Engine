@@ -22,15 +22,15 @@ extern "C" {
 /**
  * @brief 主版本号
  */
-#define GT_HMI_ENGINE_MAJOR_VERSION 0
+#define GT_HMI_ENGINE_MAJOR_VERSION 1
 /**
  * @brief 次版本号
  */
-#define GT_HMI_ENGINE_MINOR_VERSION 2
+#define GT_HMI_ENGINE_MINOR_VERSION 0
 /**
  * @brief 修订号
  */
-#define GT_HMI_ENGINE_PATCH_VERSION 7
+#define GT_HMI_ENGINE_PATCH_VERSION 0
 
 /* typedef --------------------------------------------------------------*/
 
