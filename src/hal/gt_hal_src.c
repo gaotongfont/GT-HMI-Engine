@@ -147,7 +147,9 @@ static gt_fs_res_et _seek_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos,
 
 static gt_fs_res_et _tell_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t * pos)
 {
-    *pos = ((gt_fs_fp_st * )fp)->pos;
+    gt_fs_fp_st * file_p = (gt_fs_fp_st * )fp;
+
+    *pos = file_p->pos - file_p->start;
 
     return GT_FS_RES_OK;
 }

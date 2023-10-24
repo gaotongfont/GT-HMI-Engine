@@ -41,8 +41,9 @@ typedef enum {
  * @brief virtual file system write or read mode.
  */
 typedef enum {
-    GT_FS_MODE_WR = 1,  ///< file system write and read mode
-    GT_FS_MODE_RD = 2,  ///< file system read only mode
+    GT_FS_MODE_RD  = 0,     ///< file system read only mode
+    GT_FS_MODE_WD  = 1,     ///< file system write mode
+    GT_FS_MODE_WR  = 2,     ///< file system read and write mode
 }gt_fs_mode_et;
 
 /**

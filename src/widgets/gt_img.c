@@ -67,7 +67,6 @@ static void _init_cb(gt_obj_st * obj) {
 
     // focus
     draw_focus(obj , 0);
-
 }
 
 /**

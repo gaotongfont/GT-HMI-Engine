@@ -71,27 +71,15 @@
 
 
 /* private typedef ------------------------------------------------------*/
-// enum io_source_type {
-//     SJPEG_IO_SOURCE_C_ARRAY,
-//     SJPEG_IO_SOURCE_DISK,
-// };
-
 typedef struct {
-    // enum io_source_type type;
     gt_fs_fp_st * file;
     int16_t img_cache_x_res;
-    int16_t img_cache_y_res;
-    // uint32_t raw_sjpg_data_size;          //Num bytes pointed to by raw_sjpg_data.
-    // uint32_t raw_sjpg_data_next_read_pos; //Used for all types.
-
     uint8_t * img_cache_buff;
-    // uint8_t * raw_sjpg_data;              //Used when type==SJPEG_IO_SOURCE_C_ARRAY.
 } _device_st;
 
 
 typedef struct {
     uint8_t * sjpeg_data;
-    uint32_t sjpeg_data_size;
     int16_t sjpeg_x_res;
     int16_t sjpeg_y_res;
     int16_t sjpeg_total_frames;
@@ -119,12 +107,20 @@ typedef struct {
 
 
 /* static functions -----------------------------------------------------*/
-static bool _is_jpg(const uint8_t * raw_data, size_t len) {
-    uint8_t jpg_signature[] = {0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46};
-    if(len < sizeof(jpg_signature)) {
+static bool _is_jpg(const uint8_t * raw_data, const uint8_t * eod_data, size_t len) {
+    uint8_t jpg_soi[] = {0xFF, 0xD8};   /** Start of Image */
+    uint8_t jpg_eod[] = {0xFF, 0xD9};   /** End of Image */
+
+    if(len < sizeof(jpg_soi)) {
         return false;
     }
-    return (gt_memcmp(jpg_signature, raw_data, sizeof(jpg_signature)) == 0) ? true : false;
+    if (gt_memcmp(jpg_soi, raw_data, sizeof(jpg_soi))) {
+        return false;
+    }
+    if (gt_memcmp(jpg_eod, eod_data, sizeof(jpg_eod))) {
+        return false;
+    }
+    return true;
 }
 
 static inline void _sjpg_set_type(_gt_img_info_st * header) {
@@ -195,17 +191,20 @@ static gt_res_t _gt_sjpg_info(struct _gt_img_decoder_s * decoder, const void * s
     uint32_t ret_len = 0;
     bool is_jpg_flag = false;
     uint8_t buffer[22] = {0};
+    uint8_t buffer_eod[2] = {0};
     if (!fp) {
         return GT_RES_INV;
+    }
+    if (gt_fs_seek(2, GT_FS_SEEK_END)) {
+        goto err_lb;
+    }
+    if (gt_fs_read(buffer_eod, sizeof(buffer_eod), &ret_len)) {
+        goto err_lb;
     }
     if (gt_fs_seek(0, GT_FS_SEEK_SET)) {
         goto err_lb;
     }
     if (gt_fs_read(buffer, sizeof(buffer), &ret_len)) {
-        goto err_lb;
-    }
-    if (ret_len < 10) {
-        ret = GT_RES_INV;
         goto err_lb;
     }
 
@@ -220,7 +219,7 @@ static gt_res_t _gt_sjpg_info(struct _gt_img_decoder_s * decoder, const void * s
         header->w = (buffer[SJPEG_X_RES_OFFSET + 1] << 8) | buffer[SJPEG_X_RES_OFFSET];
         header->h = (buffer[SJPEG_y_RES_OFFSET + 1] << 8) | buffer[SJPEG_y_RES_OFFSET];
     }
-    else if (_is_jpg(buffer, ret_len)) {
+    else if (_is_jpg(buffer, buffer_eod, ret_len)) {
         uint8_t * work_buffer = gt_mem_malloc(TJPGD_WORK_BUFF_SIZE);
         if (!work_buffer) {
             ret = GT_RES_INV;
@@ -264,10 +263,17 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
     uint32_t ret_len = 0;
     gt_fs_res_et res = GT_FS_RES_OK;
     uint8_t buffer[22] = {0};
+    uint8_t buffer_eod[2] = {0};
     _sjpg_st * sjpg = NULL;
 
     if (!fp) {
         return GT_RES_INV;
+    }
+    if (gt_fs_seek(2, GT_FS_SEEK_END)) {
+        goto err_lb;
+    }
+    if (gt_fs_read(buffer_eod, sizeof(buffer_eod), &ret_len)) {
+        goto err_lb;
     }
     if (gt_fs_seek(0, GT_FS_SEEK_SET)) {
         goto err_lb;
@@ -288,8 +294,6 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
             }
             gt_memset(sjpg, 0, sizeof(_sjpg_st));
             dsc->user_data = sjpg;
-            gt_fs_seek(0, GT_FS_SEEK_END);
-            gt_fs_tell(&sjpg->sjpeg_data_size);
         }
         sjpg->sjpeg_x_res = (buffer[SJPEG_X_RES_OFFSET + 1] << 8) | buffer[SJPEG_X_RES_OFFSET];
         sjpg->sjpeg_y_res = (buffer[SJPEG_y_RES_OFFSET + 1] << 8) | buffer[SJPEG_y_RES_OFFSET];
@@ -309,7 +313,7 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
             sjpg->frame_base_offset[i] = (uint32_t)((buffer[1] << 8) | buffer[0]) + sjpg->frame_base_offset[i - 1];
         }
     }
-    else if (_is_jpg(buffer, ret_len)) {
+    else if (_is_jpg(buffer, buffer_eod, ret_len)) {
         sjpg = (_sjpg_st *)dsc->user_data;
         if (NULL == sjpg) {
             sjpg = gt_mem_malloc(sizeof(_sjpg_st));
@@ -318,8 +322,6 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
             }
             gt_memset(sjpg, 0, sizeof(_sjpg_st));
             dsc->user_data = sjpg;
-            gt_fs_seek(0, GT_FS_SEEK_END);
-            gt_fs_tell(&sjpg->sjpeg_data_size);
         }
         if (gt_fs_seek(0, GT_FS_SEEK_SET)) {
             goto err_lb;
@@ -366,7 +368,6 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
         goto err_lb;
     }
     sjpg->dev.img_cache_x_res = sjpg->sjpeg_x_res;
-    sjpg->dev.img_cache_y_res = sjpg->sjpeg_y_res;
     sjpg->dev.img_cache_buff = sjpg->frame_cache;
     sjpg->dev.file = fp;
 
