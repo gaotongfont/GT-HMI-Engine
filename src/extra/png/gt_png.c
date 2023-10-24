@@ -49,7 +49,7 @@ static inline bool is_png_file(const char * path)
     return strcmp(&path[strlen(path) - 3], "png") ? false : true;
 }
 
-static uint32_t _get_32bit_int(const char * buffer)
+static inline uint32_t _get_32bit_int(const char * buffer)
 {
     return ( (buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | buffer[3] );
 }

@@ -34,6 +34,8 @@ extern "C" {
 
 /* global functions / API interface -------------------------------------*/
 
+const char * gt_fs_get_ext(const char * path);
+
 /**
  * @brief get source file type @ref gt_fs_type_et
  *

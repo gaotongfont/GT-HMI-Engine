@@ -9,8 +9,14 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_extra.h"
-#include "./png/gt_png.h"
 
+#if GT_USE_PNG
+#include "./png/gt_png.h"
+#endif
+
+#if GT_USE_SJPG
+#include "./jpeg/gt_sjpg.h"
+#endif
 
 /* private define -------------------------------------------------------*/
 
@@ -46,6 +52,10 @@ void _gt_extra_init(void)
 
 #if GT_USE_PNG
     gt_png_init();
+#endif
+
+#if GT_USE_SJPG
+    gt_sjpg_init();
 #endif
 
 }

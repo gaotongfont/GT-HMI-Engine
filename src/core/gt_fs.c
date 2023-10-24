@@ -12,6 +12,7 @@
 #include "../others/gt_color.h"
 #include "../others/gt_log.h"
 #include "ctype.h"
+#include "string.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -152,6 +153,20 @@ static gt_fs_drv_st * gt_fs_get_default_drv(char const * path)
 
 
 /* global functions / API interface -------------------------------------*/
+
+const char * gt_fs_get_ext(const char * path)
+{
+    size_t i;
+    for (i = strlen(path); i > 0; i--) {
+        if ('.' == path[i]) {
+            return &path[i + 1];
+        }
+        else if ('/' == path[i] || '\\' == path[i] || ':' == path[i]) {
+            return "";
+        }
+    }
+    return "";
+}
 
 gt_fs_type_et gt_fs_get_src_type(const void * src)
 {

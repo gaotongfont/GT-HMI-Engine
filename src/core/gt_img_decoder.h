@@ -33,6 +33,7 @@ extern "C" {
 typedef enum {
     GT_IMG_DECODER_TYPE_NONE = 0,   ///< Not supported yet
     GT_IMG_DECODER_TYPE_PNG,        ///< supports png type image
+    GT_IMG_DECODER_TYPE_SJPG,       ///< supports jpg / sjpg / jpeg type image
 
     GT_IMG_DECODER_TYPE_COUNT,      ///< totally supports type count
 }gt_img_decoder_type_em;
@@ -75,7 +76,11 @@ typedef struct _gt_img_dsc_s {
 struct _gt_img_decoder_s;
 
 /**
- * @brief function pointer to decode image information
+ * @brief function pointer to decode image information, @ref _gt_img_info_st
+ * @param decoder image decoder
+ * @param src image file path
+ * @param header Get the result which is image header information, from src
+ * @return gt_res_t The return status
  */
 typedef gt_res_t ( * gt_img_decoder_get_info_t)(struct _gt_img_decoder_s * decoder, const void * src, _gt_img_info_st * header);
 /**

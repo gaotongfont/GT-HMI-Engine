@@ -122,10 +122,10 @@ extern "C" {
 /** display destroy object times */
 #define GT_USE_DISPLAY_PREF_DESTROY     0
 
-/**
- * @brief use lodepng
- */
+/** @brief use lodepng */
 #define GT_USE_PNG              01
+/** @brief use TJpgDec */
+#define GT_USE_SJPG             01
 
 /**
  * @brief use examples demo
