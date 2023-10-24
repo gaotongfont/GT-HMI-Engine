@@ -1,11 +1,18 @@
 /*----------------------------------------------*/
 /* TJpgDec System Configurations R0.03          */
 /*----------------------------------------------*/
+#include "../../gt_conf.h"
 
 #define	JD_SZBUF		512
 /* Specifies size of stream input buffer */
 
-#define JD_FORMAT		0
+#if GT_COLOR_DEPTH   == 32
+    #define JD_FORMAT		0
+#elif GT_COLOR_DEPTH == 16
+    #define JD_FORMAT		1
+#elif GT_COLOR_DEPTH == 8
+    #define JD_FORMAT		2
+#endif
 /* Specifies output pixel format.
 /  0: RGB888 (24-bit/pix)
 /  1: RGB565 (16-bit/pix)
@@ -24,7 +31,7 @@
 /  1: Enable
 */
 
-#define JD_FASTDECODE	0
+#define JD_FASTDECODE	01
 /* Optimization level
 /  0: Basic optimization. Suitable for 8/16-bit MCUs.
 /  1: + 32-bit barrel shifter. Suitable for 32-bit MCUs.

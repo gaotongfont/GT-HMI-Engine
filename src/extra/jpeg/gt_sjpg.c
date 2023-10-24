@@ -170,7 +170,7 @@ static size_t input_func(JDEC * jdec,uint8_t * buff, size_t len) {
 
 static int output_func(JDEC * jdec, void * bitmap, JRECT * rect) {
     uint8_t * buffer_p = (uint8_t * )bitmap;
-    uint8_t color_depth = 3;
+    uint8_t color_depth = sizeof(gt_color_t);
     _device_st * device = (_device_st *)jdec->device;
     int16_t x_res = device->img_cache_x_res;
     uint8_t * buffer_dst_p = device->img_cache_buff;
@@ -354,8 +354,9 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
     }
 
     /** common */
+    uint8_t color_depth = sizeof(gt_color_t);
     sjpg->sjpeg_cache_frame_index = -1;
-    sjpg->frame_cache = gt_mem_malloc(sjpg->sjpeg_x_res * sjpg->sjpeg_single_frame_height * 3);
+    sjpg->frame_cache = gt_mem_malloc(sjpg->sjpeg_x_res * sjpg->sjpeg_single_frame_height * color_depth);
     if (NULL == sjpg->frame_cache) {
         goto err_lb;
     }
@@ -387,6 +388,7 @@ static gt_res_t _gt_sjpg_read_line(struct _gt_img_dsc_s * dsc,
     JRESULT j_ret;
     int16_t req_frame_index = y / sjpg->sjpeg_single_frame_height;
     gt_fs_fp_st * fp = sjpg->dev.file;
+    uint8_t color_depth = sizeof(gt_color_t);
     if (NULL == fp) {
         return GT_RES_INV;
     }
@@ -404,7 +406,7 @@ static gt_res_t _gt_sjpg_read_line(struct _gt_img_dsc_s * dsc,
         }
         sjpg->sjpeg_cache_frame_index = req_frame_index;
     }
-    uint8_t * cache = (uint8_t *)&sjpg->frame_cache[(x + (y % sjpg->sjpeg_single_frame_height) * sjpg->sjpeg_x_res) * 3];
+    uint8_t * cache = (uint8_t *)&sjpg->frame_cache[(x + (y % sjpg->sjpeg_single_frame_height) * sjpg->sjpeg_x_res) * color_depth];
 
 #if GT_COLOR_DEPTH == 32
     for (uint32_t i = 0; i < len; i++) {
@@ -415,15 +417,7 @@ static gt_res_t _gt_sjpg_read_line(struct _gt_img_dsc_s * dsc,
         offset += 4;
     }
 #elif GT_COLOR_DEPTH == 16
-    uint16_t color = 0;
-    for (uint32_t i = 0; i < len; i+=2) {
-        color = (*cache++ & 0xf8) << 8;
-        color |= (*cache++ & 0xfc) << 3;
-        color |= (*cache++ >> 3);
-
-        buffer[i] = color & 0xff;
-        buffer[i + 1] = color >> 8;
-    }
+    gt_memcpy(buffer, cache, len);
 #elif GT_COLOR_DEPTH == 8
     uint8_t color = 0;
     for (uint32_t i = 0; i < len; i++) {
