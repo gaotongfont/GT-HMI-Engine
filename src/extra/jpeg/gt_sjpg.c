@@ -124,7 +124,7 @@ static bool _is_jpg(const uint8_t * raw_data, size_t len) {
     if(len < sizeof(jpg_signature)) {
         return false;
     }
-    return (gt_memcmp(jpg_signature, raw_data, sizeof(jpg_signature) - 1) == 0) ? true : false;
+    return (gt_memcmp(jpg_signature, raw_data, sizeof(jpg_signature)) == 0) ? true : false;
 }
 
 static inline void _sjpg_set_type(_gt_img_info_st * header) {
@@ -262,7 +262,7 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
     const char * path = (char * )dsc->src;
     gt_fs_fp_st * fp = gt_fs_open(path, GT_FS_MODE_RD);
     uint32_t ret_len = 0;
-    gt_fs_res_et res = GT_RES_OK;
+    gt_fs_res_et res = GT_FS_RES_OK;
     uint8_t buffer[22] = {0};
     _sjpg_st * sjpg = NULL;
 
@@ -279,6 +279,7 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
         goto err_lb;
     }
     if (0 == gt_memcmp(buffer, "_SJPG__", strlen("_SJPG__"))) {
+        // FIX: need to test
         sjpg = (_sjpg_st *)dsc->user_data;
         if (NULL == sjpg) {
             sjpg = gt_mem_malloc(sizeof(_sjpg_st));
@@ -299,7 +300,6 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
         if (NULL == sjpg->frame_base_offset) {
             goto err_lb;
         }
-        // TODO
         sjpg->frame_base_offset[0] = (SJPEG_FRAME_INFO_ARRAY_OFFSET + (sjpg->sjpeg_total_frames << 1));
         for (int16_t i = 1; i < sjpg->sjpeg_total_frames; i++) {
             res = gt_fs_read(buffer, 2, &ret_len);
