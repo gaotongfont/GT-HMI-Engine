@@ -1203,7 +1203,7 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_
     if( dsc->bg_opa < GT_OPA_MIN ) return;
 
     _gt_img_dsc_st dsc_img = {0};
-    if ( GT_RES_FAIL == gt_img_decoder_open(&dsc_img, dsc->bg_img_src, 0)) {
+    if ( GT_RES_FAIL == gt_img_decoder_open(&dsc_img, dsc->bg_img_src)) {
         GT_LOGW(GT_LOG_TAG_DATA, "Open image decoder failed\n");
         return ;
     }

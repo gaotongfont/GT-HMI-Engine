@@ -34,6 +34,7 @@ typedef enum {
     GT_IMG_DECODER_TYPE_NONE = 0,   ///< Not supported yet
     GT_IMG_DECODER_TYPE_PNG,        ///< supports png type image
     GT_IMG_DECODER_TYPE_SJPG,       ///< supports jpg / sjpg / jpeg type image
+    GT_IMG_DECODER_TYPE_RAM,        ///< supports ram type image
 
     GT_IMG_DECODER_TYPE_COUNT,      ///< totally supports type count
 }gt_img_decoder_type_em;
@@ -68,7 +69,6 @@ typedef struct _gt_img_dsc_s {
     uint8_t * img;              ///< temp buffer which is used to save image data
     void * customs_data;        ///< customs data
     _gt_img_info_st header;     ///< the header information of image
-    gt_size_t frame_id;         ///< frame sequence number of the frame animation, [default: 0]
     gt_fs_type_et type;         ///< file driver type, such as: SD, Flash...
     uint8_t * alpha;            ///< temp buffer which is used to save alpha data
 }_gt_img_dsc_st;
@@ -162,10 +162,9 @@ gt_res_t gt_img_decoder_get_info(const char * name, _gt_img_info_st * header);
  *
  * @param dsc The Description of the image file.
  * @param name The full path of file name
- * @param frame_id Animate of current frame number.[default or unused: 0]
  * @return gt_res_t The return status
  */
-gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name, gt_size_t frame_id);
+gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name);
 
 /**
  * @brief Image data read a row of data

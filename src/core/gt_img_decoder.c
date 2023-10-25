@@ -165,7 +165,7 @@ gt_res_t gt_img_decoder_get_info(const char * name, _gt_img_info_st * header)
     return GT_RES_OK;
 }
 
-gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name, gt_size_t frame_id)
+gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name)
 {
     _gt_img_decoder_st * ptr = NULL;
     dsc->decoder = NULL;    /* reset image dsc struct */
@@ -187,7 +187,6 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name, gt_s
         }
 
         dsc->decoder = ptr;
-        dsc->frame_id = frame_id;
 
         break;
     }
