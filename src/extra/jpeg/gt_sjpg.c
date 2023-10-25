@@ -189,12 +189,20 @@ static gt_res_t _gt_sjpg_info(struct _gt_img_decoder_s * decoder, const void * s
     gt_fs_fp_st * fp = gt_fs_open(src, GT_FS_MODE_RD);
     gt_res_t ret = GT_RES_OK;
     uint32_t ret_len = 0;
-    bool is_jpg_flag = false;
     uint8_t buffer[22] = {0};
     uint8_t buffer_eod[2] = {0};
     if (!fp) {
         return GT_RES_INV;
     }
+
+    const char * ext = gt_fs_get_ext(src);
+    if (gt_memcmp(ext, "jpg",  4) &&
+        gt_memcmp(ext, "jpeg", 5) &&
+        gt_memcmp(ext, "sjpg", 4)) {
+        ret = GT_RES_INV;
+        goto err_lb;
+    }
+
     if (gt_fs_seek(2, GT_FS_SEEK_END)) {
         goto err_lb;
     }
@@ -206,13 +214,6 @@ static gt_res_t _gt_sjpg_info(struct _gt_img_decoder_s * decoder, const void * s
     }
     if (gt_fs_read(buffer, sizeof(buffer), &ret_len)) {
         goto err_lb;
-    }
-
-    const char * ext = gt_fs_get_ext(src);
-    if (0 == gt_memcmp(ext, "sjpg", 4) ||
-        0 == gt_memcmp(ext, "jpg",  4) ||
-        0 == gt_memcmp(ext, "jpeg", 5)) {
-        is_jpg_flag = true;
     }
 
     if (0 == gt_memcmp(buffer, "_SJPG__", strlen("_SJPG__"))) {
@@ -243,16 +244,27 @@ static gt_res_t _gt_sjpg_info(struct _gt_img_decoder_s * decoder, const void * s
         header->w = jdec_hdc.width;
         header->h = jdec_hdc.height;
     }
-    else if (false == is_jpg_flag) {
-        ret = GT_RES_INV;
-        goto err_lb;
-    }
 
     _sjpg_set_type(header);
 
 err_lb:
     gt_fs_close();
     return ret;
+}
+
+static inline _sjpg_st * _malloc_sjpg_st(struct _gt_img_dsc_s * dsc) {
+    _sjpg_st * sjpg = (_sjpg_st *)dsc->customs_data;
+    if (sjpg) {
+        return sjpg;
+    }
+    /** first time malloc memory */
+    sjpg = gt_mem_malloc(sizeof(_sjpg_st));
+    if (NULL == sjpg) {
+        return NULL;
+    }
+    gt_memset(sjpg, 0, sizeof(_sjpg_st));
+    dsc->customs_data = sjpg;
+    return sjpg;
 }
 
 static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc)
@@ -286,14 +298,9 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
     }
     if (0 == gt_memcmp(buffer, "_SJPG__", strlen("_SJPG__"))) {
         // FIX: need to test
-        sjpg = (_sjpg_st *)dsc->user_data;
+        sjpg = _malloc_sjpg_st(dsc);
         if (NULL == sjpg) {
-            sjpg = gt_mem_malloc(sizeof(_sjpg_st));
-            if (NULL == sjpg) {
-                goto err_lb;
-            }
-            gt_memset(sjpg, 0, sizeof(_sjpg_st));
-            dsc->user_data = sjpg;
+            goto err_lb;
         }
         sjpg->sjpeg_x_res = (buffer[SJPEG_X_RES_OFFSET + 1] << 8) | buffer[SJPEG_X_RES_OFFSET];
         sjpg->sjpeg_y_res = (buffer[SJPEG_y_RES_OFFSET + 1] << 8) | buffer[SJPEG_y_RES_OFFSET];
@@ -314,14 +321,9 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
         }
     }
     else if (_is_jpg(buffer, buffer_eod, ret_len)) {
-        sjpg = (_sjpg_st *)dsc->user_data;
+        sjpg = _malloc_sjpg_st(dsc);
         if (NULL == sjpg) {
-            sjpg = gt_mem_malloc(sizeof(_sjpg_st));
-            if (NULL == sjpg) {
-                goto err_lb;
-            }
-            gt_memset(sjpg, 0, sizeof(_sjpg_st));
-            dsc->user_data = sjpg;
+            goto err_lb;
         }
         if (gt_fs_seek(0, GT_FS_SEEK_SET)) {
             goto err_lb;
@@ -375,7 +377,7 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
     return GT_RES_OK;
 err_lb:
     _sjpg_free(sjpg);
-    dsc->user_data = NULL;
+    dsc->customs_data = NULL;
     gt_fs_close();
     return ret;
 }
@@ -384,7 +386,7 @@ static gt_res_t _gt_sjpg_read_line(struct _gt_img_dsc_s * dsc,
                                    gt_size_t x, gt_size_t y,
                                    gt_size_t len, uint8_t * buffer)
 {
-    _sjpg_st * sjpg = (_sjpg_st *)dsc->user_data;
+    _sjpg_st * sjpg = (_sjpg_st *)dsc->customs_data;
     JRESULT j_ret;
     int16_t req_frame_index = y / sjpg->sjpeg_single_frame_height;
     gt_fs_fp_st * fp = sjpg->dev.file;
@@ -433,13 +435,13 @@ static gt_res_t _gt_sjpg_read_line(struct _gt_img_dsc_s * dsc,
 
 static gt_res_t _gt_sjpg_close(struct _gt_img_dsc_s * dsc)
 {
-    _sjpg_st * sjpg = (_sjpg_st *)dsc->user_data;
+    _sjpg_st * sjpg = (_sjpg_st *)dsc->customs_data;
     if (NULL == sjpg) {
         return GT_RES_OK;
     }
 
-    _sjpg_free((_sjpg_st *)dsc->user_data);
-    dsc->user_data = NULL;
+    _sjpg_free((_sjpg_st *)dsc->customs_data);
+    dsc->customs_data = NULL;
     gt_fs_close();
 
     return GT_RES_OK;
