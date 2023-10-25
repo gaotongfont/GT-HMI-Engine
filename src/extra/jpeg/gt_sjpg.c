@@ -161,7 +161,7 @@ static size_t input_func(JDEC * jdec,uint8_t * buff, size_t len) {
     if (!fp) {
         return 0;
     }
-    gt_fs_res_et res = buff ? gt_fs_read(buff, len, &ret_len) : gt_fs_seek(len, GT_FS_SEEK_CUR);
+    gt_fs_res_et res = buff ? gt_fs_read(fp, buff, len, &ret_len) : gt_fs_seek(fp, len, GT_FS_SEEK_CUR);
     if (res) {
         return 0;
     }
@@ -203,16 +203,16 @@ static gt_res_t _gt_sjpg_info(struct _gt_img_decoder_s * decoder, const void * s
         goto err_lb;
     }
 
-    if (gt_fs_seek(2, GT_FS_SEEK_END)) {
+    if (gt_fs_seek(fp, 2, GT_FS_SEEK_END)) {
         goto err_lb;
     }
-    if (gt_fs_read(buffer_eod, sizeof(buffer_eod), &ret_len)) {
+    if (gt_fs_read(fp, buffer_eod, sizeof(buffer_eod), &ret_len)) {
         goto err_lb;
     }
-    if (gt_fs_seek(0, GT_FS_SEEK_SET)) {
+    if (gt_fs_seek(fp, 0, GT_FS_SEEK_SET)) {
         goto err_lb;
     }
-    if (gt_fs_read(buffer, sizeof(buffer), &ret_len)) {
+    if (gt_fs_read(fp, buffer, sizeof(buffer), &ret_len)) {
         goto err_lb;
     }
 
@@ -226,7 +226,7 @@ static gt_res_t _gt_sjpg_info(struct _gt_img_decoder_s * decoder, const void * s
             ret = GT_RES_INV;
             goto err_lb;
         }
-        if (gt_fs_seek(0, GT_FS_SEEK_SET)) {
+        if (gt_fs_seek(fp, 0, GT_FS_SEEK_SET)) {
             gt_mem_free(work_buffer);
             ret = GT_RES_INV;
             goto err_lb;
@@ -248,7 +248,7 @@ static gt_res_t _gt_sjpg_info(struct _gt_img_decoder_s * decoder, const void * s
     _sjpg_set_type(header);
 
 err_lb:
-    gt_fs_close();
+    gt_fs_close(fp);
     return ret;
 }
 
@@ -271,26 +271,26 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
 {
     gt_res_t ret = GT_RES_INV;
     const char * path = (char * )dsc->src;
-    gt_fs_fp_st * fp = gt_fs_open(path, GT_FS_MODE_RD);
+    dsc->fp = gt_fs_open(path, GT_FS_MODE_RD);
     uint32_t ret_len = 0;
     gt_fs_res_et res = GT_FS_RES_OK;
     uint8_t buffer[22] = {0};
     uint8_t buffer_eod[2] = {0};
     _sjpg_st * sjpg = NULL;
 
-    if (!fp) {
+    if (!dsc->fp) {
         return GT_RES_INV;
     }
-    if (gt_fs_seek(2, GT_FS_SEEK_END)) {
+    if (gt_fs_seek(dsc->fp, 2, GT_FS_SEEK_END)) {
         goto err_lb;
     }
-    if (gt_fs_read(buffer_eod, sizeof(buffer_eod), &ret_len)) {
+    if (gt_fs_read(dsc->fp, buffer_eod, sizeof(buffer_eod), &ret_len)) {
         goto err_lb;
     }
-    if (gt_fs_seek(0, GT_FS_SEEK_SET)) {
+    if (gt_fs_seek(dsc->fp, 0, GT_FS_SEEK_SET)) {
         goto err_lb;
     }
-    if (gt_fs_read(buffer, sizeof(buffer), &ret_len)) {
+    if (gt_fs_read(dsc->fp, buffer, sizeof(buffer), &ret_len)) {
         goto err_lb;
     }
     if (ret_len < 10) {
@@ -313,7 +313,7 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
         }
         sjpg->frame_base_offset[0] = (SJPEG_FRAME_INFO_ARRAY_OFFSET + (sjpg->sjpeg_total_frames << 1));
         for (int16_t i = 1; i < sjpg->sjpeg_total_frames; i++) {
-            res = gt_fs_read(buffer, 2, &ret_len);
+            res = gt_fs_read(dsc->fp, buffer, 2, &ret_len);
             if (GT_FS_RES_OK != res || 2 != ret_len) {
                 goto err_lb;
             }
@@ -325,7 +325,7 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
         if (NULL == sjpg) {
             goto err_lb;
         }
-        if (gt_fs_seek(0, GT_FS_SEEK_SET)) {
+        if (gt_fs_seek(dsc->fp, 0, GT_FS_SEEK_SET)) {
             goto err_lb;
         }
 
@@ -335,7 +335,7 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
         }
         JDEC jdec_hdc = {0};
         _device_st dev = {
-            .file = fp,
+            .file = dsc->fp,
         };
         JRESULT j_ret = jd_prepare(&jdec_hdc, input_func, work_buffer, (size_t)TJPGD_WORK_BUFF_SIZE, (void *)&dev);
         gt_mem_free(work_buffer);
@@ -372,13 +372,13 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
     }
     sjpg->dev.img_cache_x_res = sjpg->sjpeg_x_res;
     sjpg->dev.img_cache_buff = sjpg->frame_cache;
-    sjpg->dev.file = fp;
+    sjpg->dev.file = dsc->fp;
 
     return GT_RES_OK;
 err_lb:
     _sjpg_free(sjpg);
     dsc->customs_data = NULL;
-    gt_fs_close();
+    gt_fs_close(dsc->fp);
     return ret;
 }
 
@@ -396,7 +396,7 @@ static gt_res_t _gt_sjpg_read_line(struct _gt_img_dsc_s * dsc,
     }
 
     if (req_frame_index != sjpg->sjpeg_cache_frame_index) {
-        gt_fs_seek((uint32_t)(sjpg->frame_base_offset[req_frame_index]), GT_FS_SEEK_SET);
+        gt_fs_seek(fp, (uint32_t)(sjpg->frame_base_offset[req_frame_index]), GT_FS_SEEK_SET);
 
         j_ret = jd_prepare(sjpg->jdec_hdc, input_func, sjpg->work_buf, (size_t)TJPGD_WORK_BUFF_SIZE, (void *)&sjpg->dev);
         if (JDR_OK != j_ret) {
@@ -440,9 +440,11 @@ static gt_res_t _gt_sjpg_close(struct _gt_img_dsc_s * dsc)
         return GT_RES_OK;
     }
 
+    // gt_fs_close(sjpg->dev.file);
     _sjpg_free((_sjpg_st *)dsc->customs_data);
     dsc->customs_data = NULL;
-    gt_fs_close();
+    gt_fs_close(dsc->fp);
+    dsc->fp = NULL;
 
     return GT_RES_OK;
 }

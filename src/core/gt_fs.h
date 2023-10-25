@@ -68,7 +68,7 @@ gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode);
  * @param ret_len The number of bytes actually read
  * @return gt_fs_res_et the result status
  */
-gt_fs_res_et gt_fs_read(uint8_t * out, uint32_t size, uint32_t * ret_len);
+gt_fs_res_et gt_fs_read(gt_fs_fp_st * fp, uint8_t * out, uint32_t size, uint32_t * ret_len);
 
 /**
  * @brief Set the cursor for the file
@@ -77,7 +77,7 @@ gt_fs_res_et gt_fs_read(uint8_t * out, uint32_t size, uint32_t * ret_len);
  * @param whence The position of the cursor relative to the file
  * @return gt_fs_res_et The result status
  */
-gt_fs_res_et gt_fs_seek(uint32_t offset, gt_fs_whence_et whence);
+gt_fs_res_et gt_fs_seek(gt_fs_fp_st * fp, uint32_t offset, gt_fs_whence_et whence);
 
 /**
  * @brief Get the cursor position from file content
@@ -85,7 +85,7 @@ gt_fs_res_et gt_fs_seek(uint32_t offset, gt_fs_whence_et whence);
  * @param pos The absolute offset in the file
  * @return gt_fs_res_et The result status
  */
-gt_fs_res_et gt_fs_tell(uint32_t * pos);
+gt_fs_res_et gt_fs_tell(gt_fs_fp_st * fp, uint32_t * pos);
 
 /**
  * @brief The content are ready to be written to the file
@@ -95,7 +95,7 @@ gt_fs_res_et gt_fs_tell(uint32_t * pos);
  * @param ret_len The number of bytes successfully written to the file
  * @return gt_fs_res_et The result status
  */
-gt_fs_res_et gt_fs_write(uint8_t * buffer, uint32_t len, uint32_t * ret_len);
+gt_fs_res_et gt_fs_write(gt_fs_fp_st * fp, uint8_t * buffer, uint32_t len, uint32_t * ret_len);
 
 /**
  * @brief Gets data of the specified length in bytes from the start of the
@@ -107,7 +107,7 @@ gt_fs_res_et gt_fs_write(uint8_t * buffer, uint32_t len, uint32_t * ret_len);
  * @param len The number bytes of buffer length, which need to be read
  * @return gt_fs_res_et The result status
  */
-gt_fs_res_et gt_fs_read_img_offset(uint8_t * res, uint32_t offset, uint32_t len);
+gt_fs_res_et gt_fs_read_img_offset(gt_fs_fp_st * fp, uint8_t * res, uint32_t offset, uint32_t len);
 
 /**
  * @brief Get the image width and height, by the full path of file name.
@@ -123,7 +123,7 @@ gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h);
  * @brief Close the file operation handler, which need to
  *      be called after gt_fs_open().
  */
-void gt_fs_close(void);
+void gt_fs_close(gt_fs_fp_st * fp);
 
 #ifdef __cplusplus
 } /*extern "C"*/

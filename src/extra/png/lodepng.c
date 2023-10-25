@@ -358,17 +358,17 @@ static long lodepng_filesize(const char* filename) {
 
   if (!fp) { return size; }
 
-  if (0 != gt_fs_seek(0, GT_FS_SEEK_END)) {
+  if (0 != gt_fs_seek(fp, 0, GT_FS_SEEK_END)) {
     goto ret_lb;
   }
 
-  gt_fs_tell((uint32_t * )&size);
+  gt_fs_tell(fp, (uint32_t * )&size);
   if (LONG_MAX == size) {
     size = -1;
   }
 
 ret_lb:
-  gt_fs_close();
+  gt_fs_close(fp);
   return size;
 }
 
@@ -379,9 +379,10 @@ static unsigned lodepng_buffer_file(unsigned char* out, size_t size, const char*
 
   if (!fp) { return 78; }
 
-  gt_fs_seek(0, GT_FS_SEEK_SET);
-  gt_fs_read(out, size, (uint32_t * )&read_size);
+  gt_fs_seek(fp, 0, GT_FS_SEEK_SET);
+  gt_fs_read(fp, out, size, (uint32_t * )&read_size);
 
+  gt_fs_close(fp);
   if (read_size != size) { return 78; }
   return 0;
 }
@@ -402,8 +403,8 @@ unsigned lodepng_save_file(const unsigned char* buffer, size_t buffersize, const
   long ret_size = 0;
 
   if (!fp) { return 79; }
-  gt_fs_write((uint8_t * )buffer, buffersize, (uint32_t * )&ret_size);
-  // gt_fs_close();
+  gt_fs_write(fp, (uint8_t * )buffer, buffersize, (uint32_t * )&ret_size);
+  gt_fs_close(fp);
   return 0;
 }
 

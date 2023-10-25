@@ -38,15 +38,6 @@ typedef struct _gt_vfs_s {
     uint8_t is_alpha;   ///< is not alpha channel
 }gt_vfs_st;
 
-/**
- * @brief virt file system device
- */
-typedef struct _gt_vf_s {
-    gt_fs_drv_st * drv;     ///< file descriptor  driver
-    uint32_t addr_max;      ///< flash max address range
-    uint32_t addr_start;    ///< resource begin address in flash
-}gt_vf_st;
-
 /* macros ---------------------------------------------------------------*/
 
 
@@ -65,7 +56,7 @@ void gt_vf_init(const gt_vfs_st * vfs);
  *
  * @param drv gt_fs_drv_st device, user need only set _gt_vf_rw
  */
-void gt_vf_drv_register(gt_fs_drv_st * drv);
+void gt_vf_drv_register(rw_cb_t rw_cb);
 
 /**
  * @brief get default virt file system dev

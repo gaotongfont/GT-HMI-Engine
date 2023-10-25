@@ -93,7 +93,7 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
     fp->msg.pic.w = dev->sys[idx].w;
     fp->msg.pic.h = dev->sys[idx].h;
     fp->msg.pic.is_alpha = dev->sys[idx].is_alpha;
-
+    fp->drv = &dev->drv;
 
     return (void * )fp;
 }
@@ -101,6 +101,7 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
 static void _close_cb(struct _gt_fs_drv_s * drv, void * fp)
 {
     drv->seek_cb(drv, fp, 0, GT_FS_SEEK_SET);
+    gt_mem_free(fp);
 }
 
 static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len)

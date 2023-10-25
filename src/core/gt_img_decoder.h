@@ -65,6 +65,7 @@ typedef struct _gt_img_info_s {
  */
 typedef struct _gt_img_dsc_s {
     struct _gt_img_decoder_s * decoder; ///< iamge decoder
+    gt_fs_fp_st * fp;           ///< file object
     void * src;                 ///< path or destination of image
     uint8_t * img;              ///< temp buffer which is used to save image data
     void * customs_data;        ///< customs data

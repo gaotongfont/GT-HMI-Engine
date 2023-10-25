@@ -145,10 +145,10 @@ static gt_res_t _gt_png_info(struct _gt_img_decoder_s * decoder, const void * sr
         return GT_RES_INV;
     }
 
-    if (gt_fs_seek(0, GT_FS_SEEK_SET)) {
+    if (gt_fs_seek(fp, 0, GT_FS_SEEK_SET)) {
         goto err_lb;
     }
-    if (gt_fs_read(tmp_buffer, 8, &ret_len)) {
+    if (gt_fs_read(fp, tmp_buffer, 8, &ret_len)) {
         goto err_lb;
     }
     if (gt_memcmp(tmp_buffer, magic, sizeof(magic))) {
@@ -160,10 +160,10 @@ static gt_res_t _gt_png_info(struct _gt_img_decoder_s * decoder, const void * sr
      * width: [16 ~ 20]
      * height: [20 ~ 24]
      */
-    if (gt_fs_seek(16, GT_FS_SEEK_SET)) {
+    if (gt_fs_seek(fp, 16, GT_FS_SEEK_SET)) {
         goto err_lb;
     }
-    if (gt_fs_read(tmp_buffer, 8, &ret_len)) {
+    if (gt_fs_read(fp, tmp_buffer, 8, &ret_len)) {
         goto err_lb;
     }
 
@@ -171,10 +171,9 @@ static gt_res_t _gt_png_info(struct _gt_img_decoder_s * decoder, const void * sr
 
     _set_png_width_height(header, (gt_size_t)_get_32bit_int((char * )&tmp_buffer[0]), (gt_size_t)_get_32bit_int((char * )&tmp_buffer[4]));
     _set_png_type(header);
-    _set_fp_info(fp, header);
 
 err_lb:
-    gt_fs_close();
+    gt_fs_close(fp);
     return ret;
 }
 
@@ -212,9 +211,7 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
 
     dsc->header.w = png_width;
     dsc->header.h = png_height;
-
-    gt_fs_fp_st * fp = gt_fs_get_fp();
-    _set_fp_info(fp, &dsc->header);
+    _set_fp_info(dsc->fp, &dsc->header);
 
 png_lb:
     gt_mem_free(png_data);
@@ -239,7 +236,6 @@ static gt_res_t _gt_png_close(struct _gt_img_dsc_s * dsc)
         gt_mem_free(dsc->alpha);
         dsc->alpha = NULL;
     }
-    gt_fs_close();
 
     return GT_RES_OK;
 }

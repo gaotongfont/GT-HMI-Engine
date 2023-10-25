@@ -41,11 +41,6 @@ static const _gt_vf_type_label_st _drive_label[] = {
     { GT_FS_TYPE_FLASH, GT_FS_LABEL_FLASH },
 };
 
-/**
- * @brief recoding now file descriptions
- */
-static GT_ATTRIBUTE_LARGE_RAM_ARRAY _gt_fs_dsc_st _self;
-
 static uint8_t file_occupied_count = 0;
 
 /* macros ---------------------------------------------------------------*/
@@ -74,32 +69,6 @@ static inline gt_fs_type_et _gt_fs_get_type(gt_size_t index)
 static inline gt_fs_label_et _gt_fs_get_label(gt_size_t index)
 {
     return _drive_label[index].label;
-}
-
-static inline _gt_fs_dsc_st * _gt_fs_get_dsc(void)
-{
-    return &_self;
-}
-
-static inline void _gt_fs_set_drv(gt_fs_drv_st * drv)
-{
-    _self.drv = drv;
-}
-
-static inline void _gt_fs_set_fp(gt_fs_fp_st * fp)
-{
-    _self.fp = fp;
-}
-
-static inline gt_fs_drv_st * _gt_fs_get_drv(void)
-{
-    return _self.drv;
-}
-
-static inline void _gt_fs_free_dsc(void)
-{
-    _self.drv = NULL;
-    _self.fp = NULL;
 }
 
 static inline void _gt_fs_file_occupied_increase(void)
@@ -184,11 +153,6 @@ gt_fs_type_et gt_fs_get_src_type(const void * src)
     return ret;
 }
 
-gt_fs_fp_st * gt_fs_get_fp(void)
-{
-    return _self.fp;
-}
-
 gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode)
 {
     gt_fs_drv_st * drv = gt_fs_get_default_drv(path);
@@ -200,48 +164,55 @@ gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode)
 
     _gt_fs_file_occupied_increase();
 
-    _gt_fs_set_drv(drv);
-    _gt_fs_set_fp(fp);
-
     return fp;
 }
 
-gt_fs_res_et gt_fs_read(uint8_t * out, uint32_t size, uint32_t * ret_len)
+gt_fs_res_et gt_fs_read(gt_fs_fp_st * fp, uint8_t * out, uint32_t size, uint32_t * ret_len)
 {
-    gt_fs_drv_st * drv = _gt_fs_get_drv();
-    gt_fs_fp_st * fp = gt_fs_get_fp();
+    gt_fs_drv_st * drv = fp->drv;
+    if (!fp) {
+        return GT_FS_RES_FAIL;
+    }
 
     return drv->read_cb(drv, fp, out, size, ret_len);
 }
 
-gt_fs_res_et gt_fs_seek(uint32_t offset, gt_fs_whence_et whence)
+gt_fs_res_et gt_fs_seek(gt_fs_fp_st * fp, uint32_t offset, gt_fs_whence_et whence)
 {
-    gt_fs_drv_st * drv = _gt_fs_get_drv();
-    gt_fs_fp_st * fp = gt_fs_get_fp();
+    gt_fs_drv_st * drv = fp->drv;
+    if (!fp) {
+        return GT_FS_RES_FAIL;
+    }
 
     return drv->seek_cb(drv, fp, offset, whence);
 }
 
-gt_fs_res_et gt_fs_tell(uint32_t * pos)
+gt_fs_res_et gt_fs_tell(gt_fs_fp_st * fp, uint32_t * pos)
 {
-    gt_fs_drv_st * drv = _gt_fs_get_drv();
-    gt_fs_fp_st * fp = gt_fs_get_fp();
+    gt_fs_drv_st * drv = fp->drv;
+    if (!fp) {
+        return GT_FS_RES_FAIL;
+    }
 
     return drv->tell_cb(drv, fp, pos);
 }
 
-gt_fs_res_et gt_fs_write(uint8_t * buffer, uint32_t len, uint32_t * ret_len)
+gt_fs_res_et gt_fs_write(gt_fs_fp_st * fp, uint8_t * buffer, uint32_t len, uint32_t * ret_len)
 {
-    gt_fs_drv_st * drv = _gt_fs_get_drv();
-    gt_fs_fp_st * fp = gt_fs_get_fp();
+    gt_fs_drv_st * drv = fp->drv;
+    if (!fp) {
+        return GT_FS_RES_FAIL;
+    }
 
     return drv->write_cb(drv, fp, buffer, len, ret_len);
 }
 
-gt_fs_res_et gt_fs_read_img_offset(uint8_t * res, uint32_t offset, uint32_t len)
+gt_fs_res_et gt_fs_read_img_offset(gt_fs_fp_st * fp, uint8_t * res, uint32_t offset, uint32_t len)
 {
-    gt_fs_drv_st * drv = _gt_fs_get_drv();
-    gt_fs_fp_st * fp = gt_fs_get_fp();
+    gt_fs_drv_st * drv = fp->drv;
+    if (!fp) {
+        return GT_FS_RES_FAIL;
+    }
     uint32_t ret_len = 0;
 
     if (fp == NULL) {
@@ -266,19 +237,20 @@ gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h)
     *w = fp->msg.pic.w;
     *h = fp->msg.pic.h;
 
-    gt_fs_close();
+    gt_fs_close(fp);
 
     return GT_FS_RES_OK;
 }
 
-void gt_fs_close(void)
+void gt_fs_close(gt_fs_fp_st * fp)
 {
-    _gt_fs_dsc_st * dsc = _gt_fs_get_dsc();
-    if (dsc->drv->close_cb) {
-        dsc->drv->close_cb(dsc->drv, dsc->fp);
+    if (NULL == fp) {
+        return;
     }
-
-    _gt_fs_free_dsc();
+    if (fp->drv->close_cb) {
+        fp->drv->close_cb(fp->drv, fp);
+    }
+    fp = NULL;
 }
 
 /* end ------------------------------------------------------------------*/

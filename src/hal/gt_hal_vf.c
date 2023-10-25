@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_hal_vf.h"
+#include "gt_hal_fs.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "../others/gt_types.h"
@@ -20,6 +21,15 @@
 
 
 /* private typedef ------------------------------------------------------*/
+
+/**
+ * @brief virt file system device
+ */
+typedef struct _gt_vf_s {
+    gt_fs_drv_st drv;     ///< file descriptor  driver
+    uint32_t addr_max;      ///< flash max address range
+    uint32_t addr_start;    ///< resource begin address in flash
+}gt_vf_st;
 
 
 
@@ -35,8 +45,6 @@ static gt_fs_res_et _state = GT_FS_RES_FAIL;
 
 
 /* static functions -----------------------------------------------------*/
-
-void (*_gt_vf_read)(uint8_t * data_write, uint32_t len_write, uint8_t * data_read, uint32_t len_read);
 
 static void _gt_vf_set_fp_by_list(gt_fs_fp_st * fp, gt_vfs_st const * const item)
 {
@@ -81,6 +89,7 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
     }
 
     _gt_vf_set_fp_by_list(vfp, &_vfs[idx]);
+    vfp->drv = gt_vf_get_drv();
 
     vfp->mode = mode;
     return vfp;
@@ -88,8 +97,9 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
 
 static void _close_cb(struct _gt_fs_drv_s * drv, void * fp)
 {
-    /* code */
     drv->seek_cb(drv, fp, 0, GT_FS_SEEK_SET);
+    ((gt_fs_fp_st *)fp)->drv = NULL;
+    gt_mem_free(fp);
 }
 
 static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len)
@@ -128,7 +138,7 @@ static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * dat
 
 static gt_fs_res_et _write_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len)
 {
-    gt_fs_fp_st * vfp = fp;
+    gt_fs_fp_st * vfp = (gt_fs_fp_st * )fp;
 
     if( !drv ){
         GT_LOGW(GT_LOG_TAG_GUI, "drv is null,err code[%d]", GT_FS_RES_HW_ERR);
@@ -170,7 +180,7 @@ static gt_fs_res_et _write_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * da
 
 static gt_fs_res_et _seek_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos, gt_fs_whence_et whence)
 {
-    gt_fs_fp_st * _fp = fp;
+    gt_fs_fp_st * _fp = (gt_fs_fp_st * )fp;
 
     if( !_fp ){
         GT_LOGW(GT_LOG_TAG_GUI, "fp  is null");
@@ -197,13 +207,28 @@ static gt_fs_res_et _seek_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos,
 
 static gt_fs_res_et _tell_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t * pos)
 {
-    gt_fs_fp_st * _fp = fp;
+    gt_fs_fp_st * _fp = (gt_fs_fp_st * )fp;
     if( !_fp ){
         GT_LOGW(GT_LOG_TAG_GUI, "fp is null");
         return GT_FS_RES_NULL;
     }
     *pos = _fp->pos - _fp->start;
     return GT_FS_RES_OK;
+}
+
+static void _gt_vf_drv_init(gt_fs_drv_st * drv)
+{
+    drv->letter       = GT_FS_LABEL_FLASH;
+
+    drv->open_cb      = _open_cb;
+    drv->close_cb     = _close_cb;
+    drv->read_cb      = _read_cb;
+    drv->write_cb     = _write_cb;
+    drv->seek_cb      = _seek_cb;
+    drv->tell_cb      = _tell_cb;
+    drv->dir_open_cb  = NULL;
+    drv->dir_read_cb  = NULL;
+    drv->dir_close_cb = NULL;
 }
 
 
@@ -220,49 +245,35 @@ void gt_vf_init(const gt_vfs_st * vfs)
     _vf_dev->addr_max = GT_VF_FLASH_START + GT_VF_FLASH_SIZE;
     _vf_dev->addr_start = GT_VF_FLASH_START;
 
-    if( !_vf_dev->drv ){
+    _gt_vf_drv_init(&_vf_dev->drv);
+
+    if( !_vf_dev->drv.rw_cb ){
         _state = GT_FS_RES_DEINIT;
     }else{
         _state = GT_FS_RES_READY;
     }
 }
 
-void gt_vf_drv_register(gt_fs_drv_st * drv)
+void gt_vf_drv_register(rw_cb_t rw_cb)
 {
-    drv->letter       = GT_FS_LABEL_FLASH;
+    gt_fs_drv_st * drv = gt_vf_get_drv();
+    drv->rw_cb = rw_cb;
 
-    drv->open_cb      = _open_cb;
-    drv->close_cb     = _close_cb;
-    drv->read_cb      = _read_cb;
-    drv->write_cb     = _write_cb;
-    drv->seek_cb      = _seek_cb;
-    drv->tell_cb      = _tell_cb;
-    drv->dir_open_cb  = NULL;
-    drv->dir_read_cb  = NULL;
-    drv->dir_close_cb = NULL;
-
-    _vf_dev->drv = drv;
-    if( !_vfs ){
+    if( !drv->rw_cb ){
         _state = GT_FS_RES_DEINIT;
     }else{
         _state = GT_FS_RES_READY;
     }
 }
 
-
-gt_fs_drv_st * gt_vf_get_drv()
+gt_fs_drv_st * gt_vf_get_drv(void)
 {
     if (!_vf_dev) {
         GT_LOGW(GT_LOG_TAG_GUI, "_vf_dev is not init");
         return NULL;
     }
 
-    if(!_vf_dev->drv) {
-        GT_LOGW(GT_LOG_TAG_GUI, "_vf_dev driver is not exists.");
-        return NULL;
-    }
-
-    return _vf_dev->drv;
+    return &_vf_dev->drv;
 }
 
 /* end ------------------------------------------------------------------*/

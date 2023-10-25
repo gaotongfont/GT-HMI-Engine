@@ -56,6 +56,8 @@ static gt_res_t _gt_img_decoder_built_in_info(struct _gt_img_decoder_s * decoder
     header->w = fp->msg.pic.w;
     header->h = fp->msg.pic.h;
 
+    gt_fs_close(fp);
+
     return GT_RES_OK;
 }
 
@@ -67,6 +69,7 @@ static gt_res_t _gt_img_decoder_built_in_open(struct _gt_img_decoder_s * decoder
         return GT_RES_INV;
     }
 
+    dsc->fp = fp;
     dsc->header.w = fp->msg.pic.w;
     dsc->header.h = fp->msg.pic.h;
 
@@ -76,19 +79,20 @@ static gt_res_t _gt_img_decoder_built_in_open(struct _gt_img_decoder_s * decoder
 static gt_res_t _gt_img_decoder_built_in_read_line(struct _gt_img_dsc_s * dsc,
                                                 gt_size_t x, gt_size_t y, gt_size_t len, uint8_t * buffer)
 {
-    gt_fs_fp_st * fp = gt_fs_get_fp();
+    // gt_fs_fp_st * fp = gt_fs_get_fp();
+    gt_fs_fp_st * fp = dsc->fp;
     if (!fp) {
         return GT_RES_INV;
     }
     uint16_t line_pixel = dsc->header.w * y;
     uint32_t offset = ( line_pixel + x ) * sizeof(gt_color_t);
 
-    if (gt_fs_seek(offset, GT_FS_SEEK_SET)) {
+    if (gt_fs_seek(fp, offset, GT_FS_SEEK_SET)) {
         return GT_RES_FAIL;
     }
 
     uint32_t ret_size = 0;
-    if (gt_fs_read(buffer, line_pixel * sizeof(gt_color_t), &ret_size)) {
+    if (gt_fs_read(fp, buffer, line_pixel * sizeof(gt_color_t), &ret_size)) {
         return GT_RES_FAIL;
     }
 
@@ -97,9 +101,7 @@ static gt_res_t _gt_img_decoder_built_in_read_line(struct _gt_img_dsc_s * dsc,
 
 static gt_res_t _gt_img_decoder_built_in_close(struct _gt_img_dsc_s * dsc)
 {
-    GT_UNUSED(dsc);
-
-    gt_fs_close();
+    gt_fs_close(dsc->fp);
 
     return GT_RES_OK;
 }

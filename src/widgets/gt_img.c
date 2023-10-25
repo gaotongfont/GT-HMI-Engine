@@ -181,6 +181,9 @@ gt_obj_st * gt_img_create(gt_obj_st * parent) {
 
 
 void gt_img_set_src(gt_obj_st * img, char * src){
+    if (GT_TYPE_IMG != gt_obj_class_get_type(img)) {
+        return ;
+    }
     _gt_img_st * style = (_gt_img_st *)img->style;
     if (NULL != style->src && !strcmp(src, style->src)) {
         return ;
@@ -188,6 +191,7 @@ void gt_img_set_src(gt_obj_st * img, char * src){
 
     if( NULL != style->src ){
         gt_mem_free(style->src);
+        style->src = NULL;
     }
     uint16_t len = src == NULL ? 0 : strlen(src);
     style->src = gt_mem_malloc( len + 1 );
@@ -198,6 +202,9 @@ void gt_img_set_src(gt_obj_st * img, char * src){
 }
 
 char * gt_img_get_src(gt_obj_st * img){
+    if (GT_TYPE_IMG != gt_obj_class_get_type(img)) {
+        return NULL;
+    }
     _gt_img_st * style = (_gt_img_st *)img->style;
     return style->src;
 }

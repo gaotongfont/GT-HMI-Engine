@@ -23,6 +23,8 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 
+typedef uint32_t ( * rw_cb_t)(uint8_t * data_write, uint32_t len_write, uint8_t * data_read, uint32_t len_read);
+
 /**
  * @brief virt file drv operate result
  */
@@ -66,31 +68,6 @@ typedef enum gt_fs_label_e {
 }gt_fs_label_et;
 
 /**
- * @brief virt file drv open_cb return type
- */
-typedef struct _gt_fs_fp_s{
-    uint32_t start;
-    uint32_t end;
-    uint32_t pos;
-
-    gt_fs_type_et type;     ///< file type flash or array,this can be @ref gt_fs_type_et
-    gt_fs_mode_et mode;     ///< file mode
-
-    union {
-        struct {
-            gt_size_t w;
-            gt_size_t h;
-            uint8_t is_alpha;
-        }pic;
-        struct {
-            uint32_t encoding;
-        }txt;
-    }msg;
-    void * file_fp;     ///< unused  FILE * fp; for  SD Card
-    void * buffer;
-}gt_fs_fp_st;
-
-/**
  * @brief seek set pos type
  */
 typedef enum {
@@ -125,7 +102,7 @@ typedef struct _gt_fs_drv_s {
      * return uint32_t The number of bytes data read back preferentially,
      *      otherwise the number of bytes written successfully.
      */
-    uint32_t ( * rw_cb)(uint8_t * data_write, uint32_t len_write, uint8_t * data_read, uint32_t len_read);
+    rw_cb_t rw_cb;
 
     /* do not change */
     void *( * open_cb)(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode);
@@ -139,6 +116,32 @@ typedef struct _gt_fs_drv_s {
     gt_fs_res_et ( * dir_read_cb )(struct _gt_fs_drv_s * drv, struct _gt_fs_dir_s * dir_p);
     gt_fs_res_et ( * dir_close_cb)(struct _gt_fs_dir_s * dir_p);
 }gt_fs_drv_st;
+
+/**
+ * @brief virt file drv open_cb return type
+ */
+typedef struct _gt_fs_fp_s {
+    uint32_t start;
+    uint32_t end;
+    uint32_t pos;
+
+    gt_fs_type_et type;     ///< file type flash or array,this can be @ref gt_fs_type_et
+    gt_fs_mode_et mode;     ///< file mode
+
+    union {
+        struct {
+            gt_size_t w;
+            gt_size_t h;
+            uint8_t is_alpha;
+        }pic;
+        struct {
+            uint32_t encoding;
+        }txt;
+    }msg;
+    void * file_fp;     ///< unused  FILE * fp; for  SD Card
+    gt_fs_drv_st * drv;
+    void * buffer;
+}gt_fs_fp_st;
 
 
 

@@ -1146,7 +1146,7 @@ static void _filling_by_default(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st *
     h = dsc_img->header.h;
     addr_start_alpha = w * h * sizeof(gt_color_t);
 
-    gt_fs_fp_st * fp = gt_fs_get_fp();
+    gt_fs_fp_st * fp = dsc_img->fp;
     if (!fp) {
         GT_LOGW(GT_LOG_TAG_GUI, "gt_fs_get_fp failed");
         return;
@@ -1170,9 +1170,9 @@ static void _filling_by_default(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st *
     while(y < h){
         if (gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area)) {
             /*read one line color data*/
-            gt_fs_read_img_offset((uint8_t *)blend_dsc->dst_buf, offset, len);
+            gt_fs_read_img_offset(fp, (uint8_t *)blend_dsc->dst_buf, offset, len);
             if(is_mask) {    //png
-                gt_fs_read_img_offset((uint8_t *)blend_dsc->mask_buf, addr_start_alpha, w);
+                gt_fs_read_img_offset(fp, (uint8_t *)blend_dsc->mask_buf, addr_start_alpha, w);
             }
             /* blend to bg */
             gt_draw_blend(draw_ctx, blend_dsc);
