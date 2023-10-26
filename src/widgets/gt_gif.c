@@ -88,7 +88,16 @@ static void _deinit_cb(gt_obj_st * obj) {
     if (NULL == *style_p) {
         return ;
     }
+    if (NULL != (*style_p)->timer) {
+        _gt_timer_set_paused((*style_p)->timer, true);
+        _gt_timer_del((*style_p)->timer);
+        (*style_p)->timer = NULL;
+    }
 
+    if (NULL != (*style_p)->gif) {
+        gd_close_gif((*style_p)->gif);
+        (*style_p)->gif = NULL;
+    }
 
     if (NULL != (*style_p)->src) {
         gt_mem_free((*style_p)->src);
@@ -264,6 +273,15 @@ void gt_gif_toggle(gt_obj_st * obj)
     }
     _gt_gif_st * style = (_gt_gif_st *)obj->style;
     _gt_timer_set_paused(style->timer, !_gt_timer_get_paused(style->timer));
+}
+
+void gt_gif_reset(gt_obj_st * obj)
+{
+    if (GT_TYPE_GIF != gt_obj_class_get_type(obj)) {
+        return ;
+    }
+    _gt_gif_st * style = (_gt_gif_st *)obj->style;
+    gd_rewind(style->gif);
 }
 
 #endif  /** GT_CFG_ENABLE_GIF */
