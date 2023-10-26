@@ -440,11 +440,12 @@ static gt_res_t _gt_sjpg_close(struct _gt_img_dsc_s * dsc)
         return GT_RES_OK;
     }
 
-    // gt_fs_close(sjpg->dev.file);
     _sjpg_free((_sjpg_st *)dsc->customs_data);
     dsc->customs_data = NULL;
-    gt_fs_close(dsc->fp);
-    dsc->fp = NULL;
+    if (dsc->fp) {
+        gt_fs_close(dsc->fp);
+        dsc->fp = NULL;
+    }
 
     return GT_RES_OK;
 }

@@ -211,7 +211,6 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
 
     dsc->header.w = png_width;
     dsc->header.h = png_height;
-    _set_fp_info(dsc->fp, &dsc->header);
 
 png_lb:
     gt_mem_free(png_data);
@@ -235,6 +234,10 @@ static gt_res_t _gt_png_close(struct _gt_img_dsc_s * dsc)
     if( dsc->alpha ){
         gt_mem_free(dsc->alpha);
         dsc->alpha = NULL;
+    }
+    if (dsc->fp) {
+        gt_fs_close(dsc->fp);
+        dsc->fp = NULL;
     }
 
     return GT_RES_OK;
