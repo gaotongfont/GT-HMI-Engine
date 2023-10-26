@@ -88,11 +88,6 @@ static void _deinit_cb(gt_obj_st * obj) {
     if (NULL == *style_p) {
         return ;
     }
-    if (NULL != (*style_p)->timer) {
-        _gt_timer_set_paused((*style_p)->timer, true);
-        _gt_timer_del((*style_p)->timer);
-        (*style_p)->timer = NULL;
-    }
 
     if (NULL != (*style_p)->gif) {
         gd_close_gif((*style_p)->gif);
@@ -102,6 +97,12 @@ static void _deinit_cb(gt_obj_st * obj) {
     if (NULL != (*style_p)->src) {
         gt_mem_free((*style_p)->src);
         (*style_p)->src = NULL;
+    }
+
+    if (NULL != (*style_p)->timer) {
+        _gt_timer_set_paused((*style_p)->timer, true);
+        _gt_timer_del((*style_p)->timer);
+        (*style_p)->timer = NULL;
     }
 
     gt_mem_free(*style_p);
