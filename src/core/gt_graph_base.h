@@ -18,6 +18,7 @@ extern "C" {
 #include "../others/gt_color.h"
 #include "../others/gt_types.h"
 #include "../widgets/gt_obj.h"
+#include "./gt_img_decoder.h"
 
 /* define ---------------------------------------------------------------*/
 #define GT_SET_BIT(byte, bit)	( byte |= (bit) )
@@ -64,8 +65,10 @@ typedef struct _gt_attr_rect_reg_s {
 typedef struct _gt_attr_rect_s
 {
     // bg img
-    void * bg_img_src;          ///< image source
+    void * bg_img_src;          ///< image source; NULL: using RAM image data
     gt_attr_line_st  * line;     ///< use straight line
+
+    _gt_img_dsc_st * ram_img;   ///< RAM image data, when bg_img_src is NULL
 
     // Dot matrix data
     uint8_t * data_gray;

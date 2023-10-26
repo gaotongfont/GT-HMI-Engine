@@ -126,6 +126,8 @@ extern "C" {
 #define GT_USE_PNG              01
 /** @brief use TJpgDec */
 #define GT_USE_SJPG             01
+/** @brief use gifDec */
+#define GT_USE_GIF              01
 
 /**
  * @brief use examples demo

@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "../../gt_conf.h"
 #include "../../others/gt_types.h"
+#include "../../core/gt_fs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,9 +26,10 @@ typedef struct gd_GCE {
 } gd_GCE;
 
 typedef struct gd_GIF {
-    int fd;
-    off_t anim_start;
-    uint16_t width, height;
+    gt_fs_fp_st * fd;
+    uint32_t anim_start;
+    uint16_t width;
+    uint16_t height;
     uint16_t depth;
     uint16_t loop_count;
     gd_GCE gce;
@@ -42,12 +44,12 @@ typedef struct gd_GIF {
     void (*application)(struct gd_GIF *gif, char id[8], char auth[3]);
     uint16_t fx, fy, fw, fh;
     uint8_t bgindex;
-    uint8_t *canvas, *frame;
+    uint8_t *canvas, *frame, *mask;
 } gd_GIF;
 
 gd_GIF *gd_open_gif(const char *fname);
 int gd_get_frame(gd_GIF *gif);
-void gd_render_frame(gd_GIF *gif, uint8_t *buffer);
+void gd_render_frame(gd_GIF *gif, uint8_t *buffer, uint8_t * mask);
 int gd_is_bgcolor(gd_GIF *gif, uint8_t color[3]);
 void gd_rewind(gd_GIF *gif);
 void gd_close_gif(gd_GIF *gif);

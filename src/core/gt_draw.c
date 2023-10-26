@@ -1130,6 +1130,32 @@ static void _filling_by_sjpg_file(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st
 }
 #endif
 
+static void _filling_by_ram_data(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
+    uint16_t w, h, y = 0;
+    w = dsc_img->header.w;
+    h = dsc_img->header.h;
+
+    blend_dsc->mask_buf = &dsc_img->alpha[0];
+    blend_dsc->dst_buf = (gt_color_t *)&dsc_img->img[0];
+    if (NULL == blend_dsc->dst_buf) {
+        GT_LOGW(GT_LOG_TAG_GUI, "Per-line buffer malloc failed");
+        return;
+    }
+
+    while(y < h){
+        if( gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area) ){
+            /* blend to bg */
+            gt_draw_blend(draw_ctx, blend_dsc);
+        }
+
+        blend_dsc->dst_buf += w;
+        blend_dsc->mask_buf += w;
+        ++blend_dsc->dst_area->y;
+        ++blend_dsc->mask_area->y;
+        ++y;
+    }
+}
+
 /**
  * @brief GT-HMI Engine Image format
  *
@@ -1199,11 +1225,18 @@ line_lb:
 
 void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_st * coords)
 {
-    if( dsc->bg_img_src == NULL ) return;
-    if( dsc->bg_opa < GT_OPA_MIN ) return;
+    // if( dsc->bg_img_src == NULL ) return;
+    // if( dsc->bg_opa < GT_OPA_MIN ) return;
 
     _gt_img_dsc_st dsc_img = {0};
-    if ( GT_RES_FAIL == gt_img_decoder_open(&dsc_img, dsc->bg_img_src)) {
+    if (NULL == dsc->bg_img_src) {
+        if (NULL == dsc->ram_img) {
+            return;
+        }
+        dsc_img = *dsc->ram_img;
+        // gt_memcpy(&dsc_img, dsc->ram_img, sizeof(_gt_img_dsc_st));
+    }
+    else if ( GT_RES_FAIL == gt_img_decoder_open(&dsc_img, dsc->bg_img_src)) {
         GT_LOGW(GT_LOG_TAG_DATA, "Open image decoder failed\n");
         return ;
     }
@@ -1236,6 +1269,10 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_
             break;
         }
 #endif
+        case GT_IMG_DECODER_TYPE_RAM: {
+            _filling_by_ram_data(draw_ctx, &blend_dsc, &dsc_img);
+            break;
+        }
         default: {
             _filling_by_default(draw_ctx, &blend_dsc, &dsc_img);
             break;

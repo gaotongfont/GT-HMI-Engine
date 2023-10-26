@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-
+#include "../gt_conf.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -48,6 +48,10 @@ extern "C" {
 #define GT_CFG_ENABLE_CLOCK             1
 #define GT_CFG_ENABLE_WORDART           1
 #define GT_CFG_ENABLE_VIEW_PAGER        1
+
+#if GT_USE_GIF
+#define GT_CFG_ENABLE_GIF               1
+#endif
 
 /* typedef --------------------------------------------------------------*/
 

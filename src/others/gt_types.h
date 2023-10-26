@@ -67,6 +67,7 @@ typedef enum type_widget_e {
     GT_TYPE_CLOCK       = 21,       ///< clock
     GT_TYPE_WORDART     = 22,       ///< wordard
     GT_TYPE_VIEW_PAGER  = 23,       ///< view pager
+    GT_TYPE_GIF         = 24,       ///< gif
 
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;
