@@ -124,7 +124,6 @@ _gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * 
     if (!timer) {
         return NULL;
     }
-    GT_LOGV(GT_LOG_TAG_TIM, ">>> period: %d <<<", period);
 
     GT_INIT_LIST_HEAD(&timer->list);
 

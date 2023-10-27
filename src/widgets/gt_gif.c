@@ -29,6 +29,9 @@
 
 
 /* private typedef ------------------------------------------------------*/
+/**
+ * @brief The gif object
+ */
 typedef struct _gt_gif_s {
     char * src;
     gd_GIF * gif;
@@ -122,11 +125,16 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_DRAW_END: {
             break;
         }
+        case GT_EVENT_TYPE_INPUT_SCROLL_START: {
+            break;
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL_END: {
+            break;
+        }
         default:
             break;
     }
 }
-
 
 static void _gif_next_frame_handler_cb(struct _gt_timer_s * timer) {
     gt_obj_st * obj = (gt_obj_st * )timer->user_data;
@@ -274,6 +282,15 @@ void gt_gif_toggle(gt_obj_st * obj)
     }
     _gt_gif_st * style = (_gt_gif_st *)obj->style;
     _gt_timer_set_paused(style->timer, !_gt_timer_get_paused(style->timer));
+}
+
+void gt_gif_is_play(gt_obj_st * obj)
+{
+    if (GT_TYPE_GIF != gt_obj_class_get_type(obj)) {
+        return ;
+    }
+    _gt_gif_st * style = (_gt_gif_st *)obj->style;
+    return !_gt_timer_get_paused(style->timer);
 }
 
 void gt_gif_reset(gt_obj_st * obj)

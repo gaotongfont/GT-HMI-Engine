@@ -76,13 +76,13 @@ gd_GIF *
 gd_open_gif(const char *fname)
 {
     uint8_t fdsz, aspect;
-    uint32_t i;
     uint8_t *bgcolor;
     uint8_t buffer[13] = {0};
     uint32_t size = 0;
 
     gd_GIF * gif = gt_mem_malloc(sizeof(gd_GIF));
     if (!gif) return NULL;
+    gt_memset(gif, 0, sizeof(gd_GIF));
 
     gif->fd = _gif_open(fname, GT_FS_MODE_RD);
     if (!gif->fd) {
@@ -125,23 +125,61 @@ gd_open_gif(const char *fname)
     /* Create gd_GIF Structure. */
     _gif_read(gif->fd, gif->gct.colors, 3 * gif->gct.size);
     gif->palette = &gif->gct;
+
+#if GT_COLOR_DEPTH == 32
+    gif->frame = gt_mem_malloc(size * 5);
+#elif GT_COLOR_DEPTH == 16
     gif->frame = gt_mem_malloc(size * 4);
+#elif GT_COLOR_DEPTH == 8 || GT_COLOR_DEPTH == 1
+    gif->frame = gt_mem_malloc(size * 3);
+#endif
     if (!gif->frame) {
         goto fail;
     }
+
     gif->canvas = &gif->frame[size];
+#if GT_COLOR_DEPTH == 32
+    gif->mask = &gif->frame[size * 4];
+#elif GT_COLOR_DEPTH == 16
     gif->mask = &gif->frame[size * 3];
+#elif GT_COLOR_DEPTH == 8 || GT_COLOR_DEPTH == 1
+    gif->mask = &gif->frame[size * 2];
+#endif
     if (gif->bgindex) {
         memset(gif->frame, gif->bgindex, size);
     }
-#if 01
     bgcolor = &gif->palette->colors[gif->bgindex * 3];
     if (bgcolor[0] || bgcolor[1] || bgcolor [2]) {
-        for (i = 0; i < size; i++) {
+        gt_color_t color;
+        for (uint32_t i = 0, cnt = 0; i < size; i++) {
+#if 01
+#if GT_COLOR_DEPTH == 32
+            cnt = i * 3;
+            gif->canvas[cnt]     = bgcolor[2];
+            gif->canvas[cnt + 1] = bgcolor[1];
+            gif->canvas[cnt + 2] = bgcolor[0];
+            gif->mask[i]         = GT_OPA_100;
+#elif GT_COLOR_DEPTH == 16
+            cnt = i << 1;
+            color = gt_color_make(bgcolor[0], bgcolor[1], bgcolor[2]);
+            gif->canvas[cnt]     = color.full & 0xff;
+            gif->canvas[cnt + 1] = color.full >> 8;
+            gif->mask[i]         = GT_OPA_100;
+#elif GT_COLOR_DEPTH == 8
+            color = gt_color_make(bgcolor[0], bgcolor[1], bgcolor[2]);
+            gif->canvas[i] = color.full;
+            gif->mask[i]   = GT_OPA_100;
+#elif GT_COLOR_DEPTH == 1
+            color = gt_color_make(bgcolor[0], bgcolor[1], bgcolor[2]);
+            gif->canvas[i] = color.full > 128 ? 1 : 0;
+            gif->mask[i]   = GT_OPA_100;
+#endif
+
+#else
             memcpy(&gif->canvas[i*3], bgcolor, 3);
+#endif
         }
     }
-#endif
     gif->anim_start = _gif_seek(gif->fd, 0, GT_FS_SEEK_CUR);
 
     return gif;
@@ -196,15 +234,18 @@ static void
 read_graphic_control_ext(gd_GIF *gif)
 {
     uint8_t rdit;
+    uint8_t buffer[4] = {0};
 
     /* Discard block size (always 0x04). */
     _gif_seek(gif->fd, 1, GT_FS_SEEK_CUR);
-    _gif_read(gif->fd, &rdit, 1);
+    _gif_read(gif->fd, buffer, sizeof(buffer));
+    rdit = buffer[0];
     gif->gce.disposal = (rdit >> 2) & 3;
     gif->gce.input = rdit & 2;
     gif->gce.transparency = rdit & 1;
-    gif->gce.delay = read_num(gif->fd);
-    _gif_read(gif->fd, &gif->gce.tindex, 1);
+    // gif->gce.delay = read_num(gif->fd);
+    gif->gce.delay = _get_uint16(&buffer[1]);
+    gif->gce.tindex = buffer[3];
     /* Skip block terminator. */
     _gif_seek(gif->fd, 1, GT_FS_SEEK_CUR);
 }
@@ -226,13 +267,16 @@ read_application_ext(gd_GIF *gif)
 {
     char app_id[8];
     char app_auth_code[3];
+    uint8_t buffer[11] = {0};
 
     /* Discard block size (always 0x0B). */
     _gif_seek(gif->fd, 1, GT_FS_SEEK_CUR);
+    _gif_read(gif->fd, buffer, sizeof(buffer));
     /* Application Identifier. */
-    _gif_read(gif->fd, app_id, 8);
+    gt_memcpy(app_id, buffer, sizeof(app_id));
     /* Application Authentication Code. */
-    _gif_read(gif->fd, app_auth_code, 3);
+    gt_memcpy(app_auth_code, &buffer[sizeof(app_id)], sizeof(app_auth_code));
+
     if (!strncmp(app_id, "NETSCAPE", sizeof(app_id))) {
         /* Discard block size (0x03) and constant byte (0x01). */
         _gif_seek(gif->fd, 2, GT_FS_SEEK_CUR);
@@ -435,8 +479,9 @@ read_image_data(gd_GIF *gif, int interlace)
             table->entries[table->nentries - 1].suffix = entry.suffix;
     }
     gt_mem_free(table);
-    if (key == stop)
+    if (key == stop) {
         _gif_read(gif->fd, &sub_len, 1); /* Must be zero! */
+    }
     _gif_seek(gif->fd, end, GT_FS_SEEK_SET);
     return 0;
 }
@@ -498,31 +543,23 @@ render_frame_rect(gd_GIF *gif, uint8_t *buffer, uint8_t * mask)
             buffer[cnt]     = color[2];
             buffer[cnt + 1] = color[1];
             buffer[cnt + 2] = color[0];
-            mask[i + k]     = 0xff;
+            mask[i + k]     = GT_OPA_100;
 #elif GT_COLOR_DEPTH == 16
-#if 0
-            cnt = i + k;
-            c = gt_color_make(color[0], color[1], color[2]);
-            buffer[cnt * 2]     = c.full & 0xff;
-            buffer[cnt * 2 + 1] = c.full >> 8;
-            mask[cnt]     = 0xff;
-#else
             cnt = (i + k) << 1;
             c = gt_color_make(color[0], color[1], color[2]);
             buffer[cnt]     = c.full & 0xff;
             buffer[cnt + 1] = c.full >> 8;
-            mask[i + k]     = 0xff;
-#endif
+            mask[i + k]     = GT_OPA_100;
 #elif GT_COLOR_DEPTH == 8
             cnt = i + k;
             color = gt_color_make(color[0], color[1], color[2]);
             buffer[cnt] = c.full;
-            mask[cnt]   = 0xff;
+            mask[cnt]   = GT_OPA_100;
 #elif GT_COLOR_DEPTH == 1
             cnt = (i + k) << 1;
             uint8_t b = ( color[0] | color[1] | color[2] );
             buffer[cnt] = b > 128 ? 1 : 0;
-            buffer[cnt] = 0xff;
+            buffer[cnt] = GT_OPA_100;
 
 #endif
             }
@@ -556,19 +593,11 @@ dispose(gd_GIF *gif)
             gif->canvas[cnt + 2] = bgcolor[0];
             gif->mask[i + k]     = opa;
 #elif GT_COLOR_DEPTH == 16
-#if 0
-            cnt = i + k;
-            color = gt_color_make(bgcolor[0], bgcolor[1], bgcolor[2]);
-            gif->canvas[cnt * 2]     = color.full & 0xff;
-            gif->canvas[cnt * 2 + 1] = color.full >> 8;
-            gif->mask[cnt]     = opa;
-#else
             cnt = (i + k) << 1;
             color = gt_color_make(bgcolor[0], bgcolor[1], bgcolor[2]);
             gif->canvas[cnt]     = color.full & 0xff;
             gif->canvas[cnt + 1] = color.full >> 8;
             gif->mask[i + k]     = opa;
-#endif
 #elif GT_COLOR_DEPTH == 8
             cnt = i + k;
             color = gt_color_make(bgcolor[0], bgcolor[1], bgcolor[2]);
@@ -576,7 +605,7 @@ dispose(gd_GIF *gif)
             gif->mask[cnt]   = opa;
 #elif GT_COLOR_DEPTH == 1
             cnt = i + k;
-            uint8_t b = ( bgcolor[0] | bgcolor[1] | bgcolor[2] );
+            uint8_t b = bgcolor[0] | bgcolor[1] | bgcolor[2];
             gif->canvas[cnt] = b > 128 ? 1 : 0;
             gif->mask[cnt]   = opa;
 #endif
@@ -634,8 +663,8 @@ gd_rewind(gd_GIF *gif)
 void
 gd_close_gif(gd_GIF *gif)
 {
-    _gif_close(gif->fd);
     gt_mem_free(gif->frame);
+    _gif_close(gif->fd);
     gt_mem_free(gif);
 }
 
