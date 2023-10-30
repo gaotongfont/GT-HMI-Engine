@@ -1071,37 +1071,6 @@ _ret_handler:
     return area_font;
 }
 
-#if GT_USE_PNG
-/**
- * @brief PNG File Format
- *
- * @param draw_ctx
- * @param blend_dsc
- * @param dsc_img
- */
-static void _filling_by_png_file(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
-    uint16_t w, h, y = 0;
-    w = dsc_img->header.w;
-    h = dsc_img->header.h;
-
-    /* line by line to blend */
-    blend_dsc->mask_buf = &dsc_img->alpha[0];
-    blend_dsc->dst_buf = (gt_color_t *)&dsc_img->img[0];
-    while(y < h){
-        if( gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area) ){
-            /* blend to bg */
-            gt_draw_blend(draw_ctx, blend_dsc);
-        }
-        blend_dsc->dst_buf += w;
-        blend_dsc->mask_buf += w;
-
-        ++blend_dsc->dst_area->y;
-        ++blend_dsc->mask_area->y;
-        ++y;
-    }
-}
-#endif
-
 #if GT_USE_SJPG
 static void _filling_by_sjpg_file(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     uint16_t w, h, y = 0;
@@ -1137,7 +1106,7 @@ static void _filling_by_ram_data(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st 
 
     blend_dsc->mask_buf = &dsc_img->alpha[0];
     blend_dsc->dst_buf = (gt_color_t *)&dsc_img->img[0];
-    if (NULL == blend_dsc->dst_buf) {
+    if (NULL == blend_dsc->dst_buf || NULL == blend_dsc->mask_buf) {
         GT_LOGW(GT_LOG_TAG_GUI, "Per-line buffer malloc failed");
         return;
     }
@@ -1259,7 +1228,7 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_
     switch(dsc_img.header.type) {
 #if GT_USE_PNG
         case GT_IMG_DECODER_TYPE_PNG: {
-            _filling_by_png_file(draw_ctx, &blend_dsc, &dsc_img);
+            _filling_by_ram_data(draw_ctx, &blend_dsc, &dsc_img);
             break;
         }
 #endif
