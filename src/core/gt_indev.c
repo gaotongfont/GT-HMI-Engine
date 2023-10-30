@@ -315,7 +315,12 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
 
 static void _gt_indev_handler_point(gt_indev_st * indev)
 {
-    gt_indev_data_st data_indev;
+    struct _point * point_p = &indev->proc.data.point;
+    gt_indev_data_st data_indev = {
+        .point.x = point_p->newly.x,
+        .point.y = point_p->newly.y,
+        .state = GT_INDEV_STATE_RELEASED,
+    };
 
     /* call user hard interface */
     indev->drv->read_cb(indev->drv, &data_indev);
@@ -324,7 +329,6 @@ static void _gt_indev_handler_point(gt_indev_st * indev)
         // GT_LOGW(GT_LOG_TAG_TP, "point out of range: x:%d, y:%d", data_indev.point.x, data_indev.point.y);
         return;
     }
-    struct _point * point_p = &indev->proc.data.point;
 
     /* process point data */
     indev->proc.state = data_indev.state;
