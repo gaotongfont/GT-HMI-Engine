@@ -27,7 +27,9 @@
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY bool _gt_timer_task_ready_flag = false;
 
 
+#if GT_USE_DISPLAY_PREF_IDLE
 static uint32_t idle_last = 0;
+#endif
 
 /* static variables -----------------------------------------------------*/
 
@@ -105,10 +107,12 @@ static inline uint32_t _gt_timer_for_each_exec(void)
 
 /* global functions / API interface -------------------------------------*/
 
+#if GT_USE_DISPLAY_PREF_IDLE
 uint32_t gt_timer_get_idle(void)
 {
     return idle_last;
 }
+#endif
 
 void _gt_timer_core_init(void)
 {
@@ -153,6 +157,7 @@ void _gt_timer_handler(void)
     if (!_gt_timer_task_is_ready()) {
         return;
     }
+#if GT_USE_DISPLAY_PREF_IDLE
     uint32_t handler_start = _gt_timer_for_each_exec();
 
     static uint32_t busy_time = 0;
@@ -163,10 +168,13 @@ void _gt_timer_handler(void)
     if (idle_period_time >= _IDLE_PERIOD) {
         idle_last = (busy_time * 100) / idle_period_time;
         idle_last = idle_last > 100 ? 0 : 100 - idle_last;
-        // GT_LOGD(GT_LOG_TAG_GUI, "CPU used: %d/100\n", 100 - idle_last);
+        GT_LOGD(GT_LOG_TAG_GUI, "CPU used: %d/100\n", 100 - idle_last);
         busy_time = 0;
         idle_period_start = gt_tick_get();
     }
+#else
+    _gt_timer_for_each_exec();
+#endif
 }
 
 _gt_timer_st * _gt_timer_get_laster_timer(void)

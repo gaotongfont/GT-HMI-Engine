@@ -60,12 +60,14 @@ typedef struct _gt_timer_s {
 
 /* global functions / API interface -------------------------------------*/
 
+#if GT_USE_DISPLAY_PREF_IDLE
 /**
  * @brief
  *
  * @return uint32_t
  */
 uint32_t gt_timer_get_idle(void);
+#endif
 
 /**
  * @brief init the list header

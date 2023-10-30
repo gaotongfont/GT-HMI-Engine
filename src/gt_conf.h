@@ -116,11 +116,14 @@ extern "C" {
 #define GT_USE_MODE_FLASH       01
 #define GT_USE_MODE_SD          01
 
-/** display refresh times */
+/** display refresh time */
 #define GT_USE_DISPLAY_PREF_MSG         0
 
-/** display destroy object times */
+/** display destroy object time */
 #define GT_USE_DISPLAY_PREF_DESTROY     0
+
+/** display idle time */
+#define GT_USE_DISPLAY_PREF_IDLE        0
 
 /** @brief use lodepng */
 #define GT_USE_PNG              01

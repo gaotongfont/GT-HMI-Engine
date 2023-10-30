@@ -1226,7 +1226,7 @@ line_lb:
 void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_st * coords)
 {
     // if( dsc->bg_img_src == NULL ) return;
-    // if( dsc->bg_opa < GT_OPA_MIN ) return;
+    if( dsc->bg_opa < GT_OPA_MIN ) return;
 
     _gt_img_dsc_st dsc_img = {0};
     if (NULL == dsc->bg_img_src) {
