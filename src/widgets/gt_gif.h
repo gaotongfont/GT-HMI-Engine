@@ -56,7 +56,7 @@ void gt_gif_stop(gt_obj_st * obj);
 
 void gt_gif_toggle(gt_obj_st * obj);
 
-void gt_gif_is_play(gt_obj_st * obj);
+bool gt_gif_is_play(gt_obj_st * obj);
 
 void gt_gif_reset(gt_obj_st * obj);
 

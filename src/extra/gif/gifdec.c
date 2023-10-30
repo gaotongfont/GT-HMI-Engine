@@ -34,6 +34,8 @@ typedef struct Table {
 
 
 /* =================== driver begin =================== */
+typedef uint32_t off_t;
+
 static inline gt_fs_fp_st * _gif_open(const char * path, gt_fs_mode_et mode) {
     return gt_fs_open(path, mode);
 }
