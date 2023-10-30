@@ -352,7 +352,10 @@ static void _gt_indev_handler_button(gt_indev_st * indev)
 {
     static uint8_t flag_key_down = 0;
     static uint32_t last_run = 0;
-    gt_indev_data_st data_indev;
+    gt_indev_data_st data_indev = {
+        .btn_id = indev->proc.data.button.id,
+        .state = GT_INDEV_STATE_RELEASED,
+    };
     indev->drv->read_cb(indev->drv, &data_indev);
 
     indev->proc.state = data_indev.state;
@@ -379,7 +382,10 @@ static void _gt_indev_handler_button(gt_indev_st * indev)
 
 static void _gt_indev_handler_keypad(gt_indev_st* indev)
 {
-    gt_indev_data_st data_indev;
+    gt_indev_data_st data_indev = {
+        .key = GT_KEY_NONE,
+        .state = GT_INDEV_STATE_RELEASED,
+    };
     static uint32_t last_key = GT_KEY_NONE;
     gt_obj_st * scr = gt_disp_get_scr();
 
