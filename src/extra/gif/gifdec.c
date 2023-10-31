@@ -34,8 +34,6 @@ typedef struct Table {
 
 
 /* =================== driver begin =================== */
-typedef uint32_t off_t;
-
 static inline gt_fs_fp_st * _gif_open(const char * path, gt_fs_mode_et mode) {
     return gt_fs_open(path, mode);
 }
@@ -210,7 +208,7 @@ read_plain_text_ext(gd_GIF *gif)
         uint8_t buffer[12] = {0};
         uint16_t tx, ty, tw, th;
         uint8_t cw, ch, fg, bg;
-        off_t sub_block;
+        uint32_t sub_block;
         _gif_seek(gif->fd, 1, GT_FS_SEEK_CUR); /* block size = 12 */
         _gif_read(gif->fd, buffer, sizeof(buffer));
         tx = _get_uint16(&buffer[0]);
@@ -256,7 +254,7 @@ static void
 read_comment_ext(gd_GIF *gif)
 {
     if (gif->comment) {
-        off_t sub_block = _gif_seek(gif->fd, 0, GT_FS_SEEK_CUR);
+        uint32_t sub_block = _gif_seek(gif->fd, 0, GT_FS_SEEK_CUR);
         gif->comment(gif);
         _gif_seek(gif->fd, sub_block, GT_FS_SEEK_SET);
     }
@@ -286,7 +284,7 @@ read_application_ext(gd_GIF *gif)
         /* Skip block terminator. */
         _gif_seek(gif->fd, 1, GT_FS_SEEK_CUR);
     } else if (gif->application) {
-        off_t sub_block = _gif_seek(gif->fd, 0, GT_FS_SEEK_CUR);
+        uint32_t sub_block = _gif_seek(gif->fd, 0, GT_FS_SEEK_CUR);
         gif->application(gif, app_id, app_auth_code);
         _gif_seek(gif->fd, sub_block, GT_FS_SEEK_SET);
         discard_sub_blocks(gif);
@@ -421,7 +419,7 @@ read_image_data(gd_GIF *gif, int interlace)
     int ret;
     Table *table;
     Entry entry;
-    off_t start, end;
+    uint32_t start, end;
 
     _gif_read(gif->fd, &byte, 1);
     key_size = (int) byte;
