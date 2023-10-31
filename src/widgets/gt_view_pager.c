@@ -263,18 +263,11 @@ void gt_view_pager_fragment_add_widget(gt_obj_st * view_pager, uint8_t fragment_
     if (false == gt_obj_is_child(child, view_pager)) {
         gt_obj_change_parent(child, view_pager);
         gt_obj_set_overflow(child, true);
+        gt_obj_child_set_prop(child, GT_OBJ_PROP_TYPE_FIXED, true);
     }
     uint16_t scr_width = gt_disp_get_res_hor(NULL);
 
-    gt_area_st view_area = {
-        .x = fragment_idx * scr_width,
-        .y = view_pager->area.y,
-        .w = scr_width,
-        .h = view_pager->area.h,
-    };
-    if (false == gt_area_is_on(&view_area, &child->area)) {
-        child->area.x = (child->area.x % scr_width) + view_area.x;
-    }
+    child->area.x = (child->area.x % scr_width) + fragment_idx * scr_width;
 }
 
 void gt_view_pager_set_glass(gt_obj_st * obj, bool enabled)
