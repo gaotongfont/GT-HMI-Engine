@@ -141,30 +141,33 @@ static void _indev_scroll_throw_handler(gt_indev_st * indev) {
     gt_size_t dx = _scroll_predict(indev, point_p->scroll_throw.x);
     gt_size_t dy = _scroll_predict(indev, point_p->scroll_throw.y);
     gt_obj_st * obj_scroll = point_p->obj_scroll;
+    uint16_t w_parent = obj_scroll->parent->area.w;
+    uint16_t h_parent = obj_scroll->parent->area.h;
 
     if (obj_scroll->absorb) {
         if (false == obj_scroll->absorb_dir) {
-            gt_size_t x = obj_scroll->area.x + dx;
-            // left
+            gt_size_t x = obj_scroll->area.x + dx;  /** target x position */
+            // outside the left
             if (x > disp->area_max.left) {
                 dx = -obj_scroll->area.x;
             }
-            // right
+            // outside the right
             else if (x + obj_scroll->area.w < disp->area_max.right) {
                 dx = disp->area_max.right - obj_scroll->area.w - obj_scroll->area.x;
             }
+            // inside
             else if (obj_scroll->scroll_snap_x) {
                 if (0 == dx) {
                     // start algin
-                    dx = (x / obj_scroll->parent->area.w) * obj_scroll->parent->area.w - x;
-                    if (dx  > (obj_scroll->parent->area.w >> 1)) {
-                        dx -= obj_scroll->parent->area.w;
+                    dx = (x / w_parent) * w_parent - x;
+                    if (dx % w_parent  > (w_parent >> 1)) {
+                        dx -= w_parent;
                     }
                 }
                 else if ((uint16_t)GT_DIR_LEFT == point_p->gesture) {
-                    dx = ((x - obj_scroll->parent->area.w) / obj_scroll->parent->area.w) * obj_scroll->parent->area.w - obj_scroll->area.x;
+                    dx = ((x - w_parent) / w_parent) * w_parent - obj_scroll->area.x;
                 } else if ((uint16_t)GT_DIR_RIGHT == point_p->gesture) {
-                    dx = (x / obj_scroll->parent->area.w) * obj_scroll->parent->area.w - obj_scroll->area.x;
+                    dx = (x / w_parent) * w_parent - obj_scroll->area.x;
                 }
             }
 
@@ -187,9 +190,9 @@ static void _indev_scroll_throw_handler(gt_indev_st * indev) {
                     }
                 }
                 else if ((uint16_t)GT_DIR_UP == point_p->gesture) {
-                    dy = ((y - obj_scroll->parent->area.h) / obj_scroll->parent->area.h) * obj_scroll->parent->area.h - obj_scroll->area.y;
+                    dy = ((y - h_parent) / h_parent) * h_parent - obj_scroll->area.y;
                 } else if ((uint16_t)GT_DIR_DOWN == point_p->gesture) {
-                    dy = (y / obj_scroll->parent->area.h) * obj_scroll->parent->area.h - obj_scroll->area.y;
+                    dy = (y / h_parent) * h_parent - obj_scroll->area.y;
                 }
             }
         }

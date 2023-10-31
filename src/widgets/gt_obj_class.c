@@ -202,7 +202,7 @@ static inline bool _add_obj_to_parent(gt_obj_st * obj, gt_obj_st * parent) {
         }
         parent->child[parent->cnt_child++] = obj;
     }
-    GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj: %p, parent: %p, parent child: %p, count: %d", parent->child[parent->cnt_child - 1], parent, parent->child, parent->cnt_child);
+    // GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj: %p, parent: %p, parent child: %p, count: %d", parent->child[parent->cnt_child - 1], parent, parent->child, parent->cnt_child);
     gt_event_send(parent, GT_EVENT_TYPE_CHANGE_CHILD_ADD, obj);
     return true;
 }
