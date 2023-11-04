@@ -248,7 +248,7 @@ static void _fill_color_ver(gt_disp_st * disp, gt_obj_st * top_scr, gt_obj_st * 
         } else {
             gt_color_fill(disp->vbd_color, len, top_color);
         }
-    } else if (cur_row > top_scr->area.h) {
+    } else if (cur_row >= top_scr->area.h) {
         gt_color_fill(disp->vbd_color, len, bottom_color);
     }
 }
