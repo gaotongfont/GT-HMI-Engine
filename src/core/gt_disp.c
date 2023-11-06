@@ -310,6 +310,17 @@ static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
         param->valid.is_prev = true;
         param->disp->area_disp.x = param->disp->area_act.x + param->scr_prev->area.x;
         param->disp->area_disp.y = param->disp->area_act.y + param->scr_prev->area.y + param->area_flush.y;
+
+#if GT_REFRESH_FLUSH_LINE_PRE_TIME != GT_SCREEN_HEIGHT
+        if (GT_SCR_ANIM_TYPE_MOVE_UP == param->disp->scr_anim_type || GT_SCR_ANIM_TYPE_COVER_UP == param->disp->scr_anim_type) {
+            if (param->area_flush.y + param->line > param->scr_prev->area.h) {
+                param->disp->area_disp.h = param->scr_prev->area.h % param->line;
+            } else {
+                param->disp->area_disp.h = param->line;
+            }
+        }
+#endif  /** GT_REFRESH_FLUSH_LINE_PRE_TIME != GT_SCREEN_HEIGHT */
+
         gt_area_cover_screen(&param->disp->area_disp, &param->view_scr_prev_abs, &param->valid.area_prev);
         _gt_disp_check_and_copy_foreach(param->scr_prev, &param->valid);
 
@@ -317,6 +328,22 @@ static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
         param->valid.is_prev = false;
         param->disp->area_disp.x = param->scr->area.x;
         param->disp->area_disp.y = param->scr->area.y + param->area_flush.y;
+
+#if GT_REFRESH_FLUSH_LINE_PRE_TIME != GT_SCREEN_HEIGHT
+        if (GT_SCR_ANIM_TYPE_MOVE_UP == param->disp->scr_anim_type || GT_SCR_ANIM_TYPE_COVER_UP == param->disp->scr_anim_type) {
+            param->disp->area_disp.h = param->area_flush.y + param->line;   // param->disp->area_act.h;
+
+            if (param->area_flush.y + param->line < param->scr_prev->area.h) {
+                /** Previous area, do not display current screen area */
+                param->disp->area_disp.h = 0;
+            } else {
+                /** The area between the previous screen area and the new screen area, or the only current screen area */
+                param->view_scr_abs.h = param->scr->area.h + param->area_flush.y;
+                param->valid.offset_scr.y = param->disp->area_disp.y;
+            }
+        }
+#endif  /** GT_REFRESH_FLUSH_LINE_PRE_TIME != GT_SCREEN_HEIGHT */
+
         gt_area_cover_screen(&param->disp->area_disp, &param->view_scr_abs, &param->valid.area_scr);
         _gt_disp_check_and_copy_foreach(param->scr, &param->valid);
 
@@ -402,12 +429,13 @@ static inline void _adapt_area_flush_hor(_flush_scr_param_st * param) {
  * @param param
  */
 static inline void _adapt_area_flush_ver(_flush_scr_param_st * param) {
+    param->valid.is_hor = false;
     param->scr_prev->area.h = param->disp->area_act.h - gt_abs(param->scr_prev->area.y);
     param->view_scr_prev_abs.h = param->scr_prev->area.h;
     switch (param->disp->scr_anim_type) {
         case GT_SCR_ANIM_TYPE_MOVE_UP: {
             /** prev screen */
-            param->view_scr_prev_abs.y = param->disp->area_act.y + param->scr_prev->area.y;
+            param->view_scr_prev_abs.y = param->disp->area_act.y + param->scr_prev->area.y; // area_act.y:原界面的偏移
             /** new screen */
             param->view_scr_abs.h = param->scr->area.h;
             param->valid.offset_scr.y = param->scr->area.y;
