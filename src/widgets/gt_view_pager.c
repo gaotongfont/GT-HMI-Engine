@@ -97,6 +97,7 @@ static void _draw_tip_bar(gt_obj_st * obj, gt_attr_rect_st * rect_attr) {
 
     rect_attr->bg_opa = GT_OPA_50;
 
+    // FIX obj->parent width when screen move left or right
     area_tip.x = ((obj->parent->area.w - total_width) >> 1) + _TIP_BAR_POINT_UNSELECT_OFFSET_X;
     for (i = 0; i < count; i++) {
         area_tip.w = _TIP_BAR_POINT_HEIGHT;
@@ -104,8 +105,11 @@ static void _draw_tip_bar(gt_obj_st * obj, gt_attr_rect_st * rect_attr) {
         area_tip.x += _TIP_BAR_POINT_SELECT_WIDTH;
     }
 
+    // FIX the same as previous
     area_tip.x = ((obj->parent->area.w - total_width) >> 1);
-    area_tip.x += -obj->process_attr.scroll.x * _TIP_BAR_POINT_SELECT_WIDTH / obj->parent->area.w;
+    if (obj->parent->area.w) {
+        area_tip.x += -obj->process_attr.scroll.x * _TIP_BAR_POINT_SELECT_WIDTH / obj->parent->area.w;
+    }
     area_tip.w = _TIP_BAR_POINT_HEIGHT << 1;
     rect_attr->bg_opa = GT_OPA_100;
     draw_bg(obj->draw_ctx, rect_attr, &area_tip);
@@ -113,7 +117,7 @@ static void _draw_tip_bar(gt_obj_st * obj, gt_attr_rect_st * rect_attr) {
 
 static void _init_cb(gt_obj_st * obj) {
     gt_attr_rect_st rect_attr;
-    gt_area_st area_bg = obj->area;
+    gt_area_st area_bg = obj->area;     //FIX obj->area is screen area when COVER DOWN the screen, the height will change to middle value
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj->style;
     uint16_t i = 0, width = area_bg.w / style->reg.count;
     uint16_t space = (width << 1) / 100;    /** 2% of screen width */

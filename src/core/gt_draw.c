@@ -289,7 +289,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         blend_dsc.mask_buf = mask_buf;
         blend_dsc.mask_area->w = coords->w;
         blend_dsc.mask_area->h = coords->h;
-        GT_LOGV(GT_LOG_TAG_GUI , "dsc->gray = %d , w = %d , h = %d , buf_size = %d" ,dsc->gray , blend_dsc.mask_area->w , blend_dsc.mask_area->h , len);
+        // GT_LOGV(GT_LOG_TAG_GUI , "dsc->gray = %d , w = %d , h = %d , buf_size = %d" ,dsc->gray , blend_dsc.mask_area->w , blend_dsc.mask_area->h , len);
 
         len = len >> 3;
         buf_idx = 0;

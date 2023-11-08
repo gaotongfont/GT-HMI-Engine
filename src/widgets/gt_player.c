@@ -177,7 +177,7 @@ static inline void _default_init(gt_obj_st * obj, _gt_player_st * style) {
     void * src = _get_src(style);
     gt_attr_rect_st dsc = {
         .bg_img_src = src,
-        .bg_opa = GT_OPA_COVER,
+        .bg_opa = obj->opa,
     };
     /* start draw obj */
     draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
