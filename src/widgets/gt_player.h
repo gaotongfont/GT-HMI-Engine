@@ -105,6 +105,14 @@ void gt_player_remove_item_by_index(gt_obj_st * obj, uint16_t idx);
 #if _GT_PLAYER_USE_CUSTOM_POS
 uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_size, gt_area_st * area);
 #else
+/**
+ * @brief Add the player project content
+ *
+ * @param obj
+ * @param item The item to be added
+ * @param item_byte_size The item memory size in bytes
+ * @return uint16_t The index of the item
+ */
 uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_size);
 #endif  /** !_GT_PLAYER_USE_CUSTOM_POS */
 
@@ -135,8 +143,21 @@ void gt_player_stop(gt_obj_st * obj);
 void gt_player_toggle(gt_obj_st * obj);
 
 void gt_player_dir_toggle(gt_obj_st * obj);
+/**
+ * @brief Is forward direction to play
+ *
+ * @param obj
+ * @return true Forward direction
+ * @return false Backward direction[default]
+ */
 bool gt_player_dir_is_forward(gt_obj_st * obj);
 
+/**
+ * @brief Set real-time jump mode refresh
+ *
+ * @param obj
+ * @param is_real_time_update true: enabled; false: disabled
+ */
 void gt_player_set_real_time_update(gt_obj_st * obj, bool is_real_time_update);
 bool gt_player_is_real_time_update(gt_obj_st * obj);
 
