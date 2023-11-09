@@ -74,7 +74,7 @@ typedef struct gt_anim_param_s {
  * [Core using: User do not modified]
  */
 typedef struct gt_anim_s {
-    struct gt_list_head list;       /* Do not modified it, Core need to use it */
+    struct _gt_list_head list;       /* Do not modified it, Core need to use it */
     gt_obj_st * target;             // Target object
     gt_anim_exec_cb_t exec_cb;      // The path execution callback which object run
     gt_anim_ready_cb_t ready_cb;    // When the animation done need to be executed

@@ -87,7 +87,7 @@ static void _gt_anim_change_list(void)
 }
 
 static void _gt_anim_free_task(gt_anim_st * anim) {
-    gt_list_del(&anim->list);
+    _gt_list_del(&anim->list);
     _gt_anim_change_list();
     _gt_anim_free_data(anim);
     gt_mem_free(anim);
@@ -243,7 +243,7 @@ static void _gt_anim_task_handler(struct _gt_timer_s * timer)
 
     _is_run_same_time = _is_run_same_time ? false : true;
 refresh_lb:
-    gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
+    _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         _is_list_change = false;
 
         if (ptr->run_already == _is_run_same_time) {
@@ -395,7 +395,7 @@ void gt_anim_start(const gt_anim_st * anim)
     }
 
     // remove before the same exec callback
-    gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
+    _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         if (new_obj->target != ptr->target) {
             continue;
         }
@@ -405,7 +405,7 @@ void gt_anim_start(const gt_anim_st * anim)
         _gt_anim_free_task(ptr);
     }
 
-    gt_list_add(&new_obj->list, &_GT_GC_GET_ROOT(_gt_anim_ll));
+    _gt_list_add(&new_obj->list, &_GT_GC_GET_ROOT(_gt_anim_ll));
     _gt_anim_change_list();
 }
 
@@ -419,7 +419,7 @@ bool gt_anim_del(gt_obj_st * target, gt_anim_exec_cb_t exec_cb)
         return ret;
     }
 
-    gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
+    _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         if ((ptr->target == target || NULL == ptr->target) && (ptr->exec_cb == exec_cb || NULL == ptr->exec_cb)) {
             _gt_anim_free_task(ptr);
             ret = true;
@@ -439,7 +439,7 @@ void gt_anim_del_all(void)
         return ;
     }
 
-    gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
+    _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         if (ptr) {
             _gt_anim_free_task(ptr);
             ret = true;

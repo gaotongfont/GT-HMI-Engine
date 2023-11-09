@@ -38,7 +38,7 @@ typedef void ( * gt_timer_cb_t)(struct _gt_timer_s *);
  * @brief timer control block
  */
 typedef struct _gt_timer_s {
-    struct gt_list_head list;
+    struct _gt_list_head list;
     uint32_t period;            // when run to 0 milliseconds, this timer should be run
     uint32_t last_run;          // last timestamp of the last run
     uint32_t pause_time_diff;   // The time elapsed since the last execution of the timer when it paused

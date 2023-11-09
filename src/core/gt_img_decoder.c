@@ -140,7 +140,7 @@ _gt_img_decoder_st * gt_img_decoder_create(void)
 
 void gt_img_decoder_register(_gt_img_decoder_st * decoder)
 {
-    gt_list_add(&decoder->list, &_GT_GC_GET_ROOT(_gt_img_decoder_ll));
+    _gt_list_add(&decoder->list, &_GT_GC_GET_ROOT(_gt_img_decoder_ll));
 }
 
 gt_img_decoder_type_em gt_img_decoder_get_type(_gt_img_info_st * header)
@@ -152,7 +152,7 @@ gt_res_t gt_img_decoder_get_info(const char * name, _gt_img_info_st * header)
 {
     _gt_img_decoder_st * ptr = NULL;
 
-    gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
+    _gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
         if (NULL == ptr->info_cb) {
             continue;
         }
@@ -173,7 +173,7 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name)
     dsc->decoder = NULL;    /* reset image dsc struct */
     dsc->src = NULL;
 
-    gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
+    _gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
         if (NULL == ptr->open_cb || NULL == ptr->info_cb) {
             continue;
         }
