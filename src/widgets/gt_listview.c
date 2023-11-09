@@ -24,7 +24,7 @@
 #define MY_CLASS    &gt_listview_class
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_list_s
+typedef struct _gt_listview_s
 {
     char ** item;
 
