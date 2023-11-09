@@ -112,7 +112,7 @@ static gt_res_t _gt_img_decoder_built_in_close(struct _gt_img_dsc_s * dsc)
 
 void _gt_img_decoder_init(void)
 {
-    GT_INIT_LIST_HEAD(&_GT_GC_GET_ROOT(_gt_img_decoder_ll));
+    _GT_INIT_LIST_HEAD(&_GT_GC_GET_ROOT(_gt_img_decoder_ll));
 
     _gt_img_decoder_st * decoder = gt_img_decoder_create();
 
@@ -133,7 +133,7 @@ _gt_img_decoder_st * gt_img_decoder_create(void)
 
     gt_memset(decoder, 0, sizeof(_gt_img_decoder_st));
 
-    GT_INIT_LIST_HEAD(&decoder->list);
+    _GT_INIT_LIST_HEAD(&decoder->list);
 
     return decoder;
 }

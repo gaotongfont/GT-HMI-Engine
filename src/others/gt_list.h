@@ -30,12 +30,12 @@ struct _gt_list_head {
 	struct _gt_list_head *next, *prev;
 };
 
-#define GT_LIST_HEAD_INIT(name) { &(name), &(name) }
+#define _GT_LIST_HEAD_INIT(name) { &(name), &(name) }
 
-#define GT_LIST_HEAD_DEF(name) \
-    struct _gt_list_head name = GT_LIST_HEAD_INIT(name)
+#define _GT_LIST_HEAD_DEF(name) \
+    struct _gt_list_head name = _GT_LIST_HEAD_INIT(name)
 
-static __always_inline void GT_INIT_LIST_HEAD(struct _gt_list_head *list)
+static __always_inline void _GT_INIT_LIST_HEAD(struct _gt_list_head *list)
 {
 	list->next = list;
 	list->prev = list;
@@ -134,7 +134,7 @@ static __always_inline void _gt_list_replace_init(struct _gt_list_head *old,
                                               struct _gt_list_head *newl)
 {
 	_gt_list_replace(old, newl);
-	GT_INIT_LIST_HEAD(old);
+	_GT_INIT_LIST_HEAD(old);
 }
 
 /**
@@ -144,7 +144,7 @@ static __always_inline void _gt_list_replace_init(struct _gt_list_head *old,
 static __always_inline void _gt_list_del_init(struct _gt_list_head *entry)
 {
 	__gt_list_del_entry(entry);
-	GT_INIT_LIST_HEAD(entry);
+	_GT_INIT_LIST_HEAD(entry);
 }
 
 /**
@@ -269,7 +269,7 @@ static __always_inline void _gt_list_cut_position(struct _gt_list_head *list,
 		(head->next != entry && head != entry))
 		return;
 	if (entry == head)
-		GT_INIT_LIST_HEAD(list);
+		_GT_INIT_LIST_HEAD(list);
 	else
 		__gt_list_cut_position(list, head, entry);
 }
@@ -324,7 +324,7 @@ static __always_inline void _gt_list_splice_init(struct _gt_list_head *list,
 {
 	if (!_gt_list_empty(list)) {
 		__gt_list_splice(list, head, head->next);
-		GT_INIT_LIST_HEAD(list);
+		_GT_INIT_LIST_HEAD(list);
 	}
 }
 
@@ -341,7 +341,7 @@ static __always_inline void _gt_list_splice_tail_init(struct _gt_list_head *list
 {
 	if (!_gt_list_empty(list)) {
 		__gt_list_splice(list, head->prev, head);
-		GT_INIT_LIST_HEAD(list);
+		_GT_INIT_LIST_HEAD(list);
 	}
 }
 

@@ -352,7 +352,7 @@ void gt_anim_pos_move(gt_obj_st * obj, gt_anim_param_st * param)
 
 void _gt_anim_core_init(void)
 {
-    GT_INIT_LIST_HEAD(&_GT_GC_GET_ROOT(_gt_anim_ll));
+    _GT_INIT_LIST_HEAD(&_GT_GC_GET_ROOT(_gt_anim_ll));
 
     _gt_anim_set_timer(_gt_timer_create(_gt_anim_task_handler, GT_TASK_PERIOD_TIME_ANIM, NULL));
     _gt_anim_change_list();
@@ -364,7 +364,7 @@ void gt_anim_init(gt_anim_st * anim)
     if (!anim) { return ; }
 
     gt_memset_0(anim, sizeof(gt_anim_st));
-    GT_INIT_LIST_HEAD(&anim->list);
+    _GT_INIT_LIST_HEAD(&anim->list);
     anim->time_delay_start = 0;
     anim->time = 500;
     anim->time_act = 0;
@@ -391,7 +391,7 @@ void gt_anim_start(const gt_anim_st * anim)
     new_obj->tick_create = gt_tick_get();
 
     if (new_obj->list.next != &new_obj->list || new_obj->list.prev != &new_obj->list) {
-        GT_INIT_LIST_HEAD(&new_obj->list);
+        _GT_INIT_LIST_HEAD(&new_obj->list);
     }
 
     // remove before the same exec callback

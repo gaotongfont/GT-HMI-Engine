@@ -116,7 +116,7 @@ uint32_t gt_timer_get_idle(void)
 
 void _gt_timer_core_init(void)
 {
-    GT_INIT_LIST_HEAD(&_GT_GC_GET_ROOT(_gt_timer_ll));
+    _GT_INIT_LIST_HEAD(&_GT_GC_GET_ROOT(_gt_timer_ll));
 }
 
 _gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * user_data)
@@ -129,7 +129,7 @@ _gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * 
         return NULL;
     }
 
-    GT_INIT_LIST_HEAD(&timer->list);
+    _GT_INIT_LIST_HEAD(&timer->list);
 
     timer->period          = period;
     timer->timer_cb        = callback;
