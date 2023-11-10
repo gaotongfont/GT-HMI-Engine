@@ -171,6 +171,9 @@ static void _gt_rect_init_style(gt_obj_st * rect)
 gt_obj_st * gt_rect_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    if (NULL == obj) {
+        return NULL;
+    }
     _gt_rect_init_style(obj);
     return obj;
 }

@@ -213,13 +213,13 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
     /* check type */
     if ( parent && parent->class->type == class->type ){
         GT_LOGV(GT_LOG_TAG_GUI, "cannot create an object of the same type as the parent object onto the parent object");
-        return NULL;
+        goto null_lb;
     }
 
     uint32_t is = get_instance_size();
     gt_obj_st * obj = gt_mem_malloc(is);
     if (!obj) {
-        return NULL;
+        goto null_lb;
     }
     gt_memset_0(obj, is);
 
@@ -246,7 +246,7 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
 
         if (disp == NULL) {
             GT_LOGW(GT_LOG_TAG_GUI, "disp is null, please init disp");
-            return NULL;
+            goto style_lb;
         }
 
         if (disp->screens == NULL || disp->cnt_scr == 0 ) {
@@ -279,6 +279,7 @@ style_lb:
     gt_mem_free(obj->style);
 obj_lb:
     gt_mem_free(obj);
+null_lb:
     return NULL;
 }
 
