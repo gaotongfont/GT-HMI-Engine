@@ -262,6 +262,7 @@ static void _deinit_cb(gt_obj_st * obj) {
         }
         gt_mem_free(style_p->item);
         style_p->item = NULL;
+        style_p->cnt = 0;
     }
 
 
