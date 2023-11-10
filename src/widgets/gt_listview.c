@@ -248,9 +248,21 @@ static void _init_cb(gt_obj_st * obj) {
  */
 static void _deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "listview start deinit_cb");
-    // _gt_listview_st ** style_p = (_gt_listview_st ** )&obj->style;
+    _gt_listview_st * style_p = (_gt_listview_st * )obj->style;
+    int16_t i = 0;
 
     // release item memory
+    if (style_p->item) {
+        for (i = style_p->cnt - 1; i >= 0; i--) {
+            if (NULL == style_p->item[i]) {
+                continue;
+            }
+            gt_mem_free(style_p->item[i]);
+            style_p->item[i] = NULL;
+        }
+        gt_mem_free(style_p->item);
+        style_p->item = NULL;
+    }
 
 
 
