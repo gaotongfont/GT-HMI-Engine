@@ -212,20 +212,21 @@ static void _indev_scroll_handler(gt_indev_st * indev) {
     point_p->scroll_sum.y += point_p->scroll_diff.y;
     point_p->gesture = _get_scroll_dir(indev);
 
-    if((uint16_t)GT_DIR_NONE != point_p->gesture) {
-        gt_size_t dx = 0;
-        gt_size_t dy = 0;
-        point_p->obj_scroll = point_p->obj_target;
-
-        if (_is_scroll_vertical(point_p->gesture)) {
-            dy = point_p->scroll_diff.y;
-            point_p->scroll_throw.x = 0;
-        } else {
-            dx = point_p->scroll_diff.x;
-            point_p->scroll_throw.y = 0;
-        }
-        gt_obj_scroll_to(point_p->obj_scroll, dx, dy, GT_ANIM_OFF);
+    if((uint16_t)GT_DIR_NONE == point_p->gesture) {
+        return;
     }
+    gt_size_t dx = 0;
+    gt_size_t dy = 0;
+    point_p->obj_scroll = point_p->obj_target;
+
+    if (_is_scroll_vertical(point_p->gesture)) {
+        dy = point_p->scroll_diff.y;
+        point_p->scroll_throw.x = 0;
+    } else {
+        dx = point_p->scroll_diff.x;
+        point_p->scroll_throw.y = 0;
+    }
+    gt_obj_scroll_to(point_p->obj_scroll, dx, dy, GT_ANIM_OFF);
 }
 
 static inline void _send_released_event(struct _point * point_p) {
@@ -282,6 +283,7 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
     }
 
     if (point_p->obj_target && point_p->obj_scroll) {
+        /** Reset scroll throw data, prepare for next throw. */
         point_p->scroll_throw.x = 0;
         point_p->scroll_throw.y = 0;
         _indev_scroll_throw_handler(indev);
