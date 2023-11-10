@@ -200,6 +200,11 @@ static void _indev_scroll_throw_handler(gt_indev_st * indev) {
     gt_obj_scroll_to(obj_scroll, dx, dy, GT_ANIM_ON);
 }
 
+/**
+ * @brief Scroll when pressing
+ *
+ * @param indev
+ */
 static void _indev_scroll_handler(gt_indev_st * indev) {
     struct _point * point_p = &indev->proc.data.point;
 
@@ -286,6 +291,7 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
     point_p->obj_act = gt_find_clicked_obj_by_point(scr, &point_p->newly);
 
     if (point_p->obj_act == point_p->obj_target) {
+        /** Hold for a long time to trigger multiple times */
         gt_obj_get_click_point_by_phy_point(point_p->obj_target, &point_p->newly, &point_ret);
         _gt_obj_set_process_point(point_p->obj_target, &point_ret);
         if( (gt_tick_get() - indev->proc.timestamp_long_press) >= indev->drv->limit_timers_long_press ){
@@ -304,11 +310,11 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
     point_p->scroll_diff.x = point_p->newly.x - point_p->last.x;
     point_p->scroll_diff.y = point_p->newly.y - point_p->last.y;
 
-    point_p->scroll_throw.x = (point_p->scroll_throw.x * 4) >> 3;
-    point_p->scroll_throw.y = (point_p->scroll_throw.y * 4) >> 3;
+    point_p->scroll_throw.x = point_p->scroll_throw.x >> 1;
+    point_p->scroll_throw.y = point_p->scroll_throw.y >> 1;
 
-    point_p->scroll_throw.x += (point_p->scroll_diff.x * 4) >> 3;
-    point_p->scroll_throw.y += (point_p->scroll_diff.y * 4) >> 3;
+    point_p->scroll_throw.x += point_p->scroll_diff.x >> 1;
+    point_p->scroll_throw.y += point_p->scroll_diff.y >> 1;
 
     if (NULL == point_p->obj_target) {
         return;
