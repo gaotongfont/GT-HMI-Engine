@@ -110,9 +110,10 @@ static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj, _gt_draw_valid
     gt_disp_st * disp = gt_disp_get_default();
 
     gt_draw_ctx_t draw_ctx = {
+        .valid    = valid_area,
+        .parent_area = (obj->inside && obj->parent) ? &obj->parent->area : NULL,
         .buf      = disp->vbd_color,
         .buf_area = disp->area_disp,
-        .valid    = valid_area,
     };
 
     obj->draw_ctx = (struct _gt_draw_ctx_t * )&draw_ctx;

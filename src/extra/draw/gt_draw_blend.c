@@ -253,19 +253,25 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
     if (dsc->opa <= GT_OPA_MIN) return;
 
     /** 绘制区域和显示屏buffer的交集区域 */
-    gt_area_st area_intersect = { 0, 0, 0, 0 };
-    gt_area_st area_draw, area_dsc;
+    gt_area_st area_intersect = {0};
+    gt_area_st area_draw = {0}, area_dsc = {0};
 
     /** 显示屏的显示区域 */
     gt_area_copy(&area_draw, &draw_ctx->buf_area);
     /** 图片当前处理的显示区域 */
     gt_area_copy(&area_dsc, dsc->dst_area);
+    uint16_t width_dsc = area_dsc.w;
 
     /** 当前重绘制起始坐标 */
     gt_point_st area_dst = {
         .x = area_dsc.x < area_draw.x ? 0 : (area_dsc.x - area_draw.x),
         .y = area_dsc.y > area_draw.y ? (area_dsc.y - area_draw.y) : 0,
     };
+
+    if (draw_ctx->parent_area) {
+        /** Be used when obj->inside true and object has its parent */
+        gt_area_cover_screen(dsc->dst_area, draw_ctx->parent_area, &area_dsc);
+    }
 
     if (draw_ctx->valid) {
         /** 界面切换动画绘制区 */
@@ -294,19 +300,19 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
                 area_valid.y -= draw_ctx->valid->offset_scr.y;
             }
         }
-        if (!gt_area_intersect_screen(&area_valid, dsc->dst_area, &area_intersect)) {
+        if (!gt_area_intersect_screen(&area_valid, &area_dsc, &area_intersect)) {
             return;
         }
     } else {
         /** draw_ctx->buf_area: 图片显示区域; dsc->dst_area: 当前绘制区域 */
-        if (!gt_area_intersect_screen(&draw_ctx->buf_area, dsc->dst_area, &area_intersect)) {
+        if (!gt_area_intersect_screen(&draw_ctx->buf_area, &area_dsc, &area_intersect)) {
             return;
         }
     }
 
     // from area_intersect cpy to area_dst
     uint32_t idx_dst = area_dst.y * area_draw.w + area_dst.x;
-    uint32_t idx_src = area_intersect.y * area_dsc.w + area_intersect.x;
+    uint32_t idx_src = area_intersect.y * width_dsc + area_intersect.x;
 
     if (area_dst.y + area_intersect.h > GT_REFRESH_FLUSH_LINE_PRE_TIME) {
         // over draw buffer size
@@ -342,14 +348,14 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
      *
      * 当前重绘制窗口, 相对显示屏的全区域每行相差的像素数目
      *  uint16_t step_dst_line = area_draw.w - area_intersect.w;
-     *  uint16_t step_src_line = area_dsc.w - area_intersect.w;
+     *  uint16_t step_src_line = width_dsc - area_intersect.w;
      */
     if (dsc->mask_buf) {
         _fill_opacity(color_dst_p, &area_intersect, area_draw.w - area_intersect.w,
-                        dsc->color_fill, dsc->opa, &dsc->mask_buf[idx_src], color_src_p, area_dsc.w - area_intersect.w);
+                        dsc->color_fill, dsc->opa, &dsc->mask_buf[idx_src], color_src_p, width_dsc - area_intersect.w);
     } else {
         _fill_no_opacity(color_dst_p, &area_intersect, area_draw.w - area_intersect.w,
-                            dsc->color_fill, dsc->opa, color_src_p, area_dsc.w - area_intersect.w);
+                            dsc->color_fill, dsc->opa, color_src_p, width_dsc - area_intersect.w);
     }
 
 }

@@ -107,7 +107,8 @@ typedef struct gt_obj_s {
     uint8_t absorb        : 1;    /* obj absorb state, 0:un-absorb, 1: Adsorption screen maximum boundary */
     uint8_t absorb_dir    : 1;    /* obj absorb direction(It only works when absorb is set to 1), 0: horizontal; 1: vertical */
     uint8_t overflow      : 1;    /* [Inheritable]obj overflow state, 0:un-overflow, 1:overflow (widget can out of screen area size) */
-    uint8_t reserved      : 5;
+    uint8_t inside        : 1;    /* obj display only limited to parent area, 0:un-inside, 1:inside (widget is inside screen area size) */
+    uint8_t reserved      : 4;
 
 }gt_obj_st;
 

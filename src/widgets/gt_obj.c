@@ -73,12 +73,10 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
 
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
             break;
 
         case GT_EVENT_TYPE_UPDATE_STYLE: {
@@ -88,15 +86,12 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
         }
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
 			break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
             break;
 
         case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL_START: {
@@ -124,7 +119,6 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
         }
 
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 

@@ -64,6 +64,7 @@ typedef enum {
     GT_OBJ_PROP_TYPE_DISABLED,
     GT_OBJ_PROP_TYPE_FIXED,
     GT_OBJ_PROP_TYPE_OVERFLOW,
+    GT_OBJ_PROP_TYPE_INSIDE,
 }gt_obj_prop_type_em;
 
 /* macros ---------------------------------------------------------------*/
@@ -127,6 +128,15 @@ bool gt_obj_get_fixed(gt_obj_st * obj);
  */
 void gt_obj_set_overflow(gt_obj_st * obj, bool is_overflow);
 bool gt_obj_get_overflow(gt_obj_st * obj);
+
+/**
+ * @brief The object only displays within the parent area
+ *
+ * @param obj
+ * @param is_inside true: enabled, false: disabled
+ */
+void gt_obj_set_inside(gt_obj_st * obj, bool is_inside);
+bool gt_obj_get_inside(gt_obj_st * obj);
 
 void gt_obj_set_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir);
 gt_scroll_dir_et gt_obj_get_scroll_dir(gt_obj_st * obj);

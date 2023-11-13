@@ -334,6 +334,12 @@ void gt_obj_child_set_prop(gt_obj_st * obj, gt_obj_prop_type_em type, uint8_t va
                 gt_obj_set_overflow(child, val);
                 break;
             }
+            case GT_OBJ_PROP_TYPE_INSIDE: {
+                gt_obj_set_inside(child, val);
+                break;
+            }
+            default:
+                break;
         }
         gt_obj_child_set_prop(child, type, val);
     }
@@ -367,6 +373,16 @@ void gt_obj_set_overflow(gt_obj_st * obj, bool is_overflow)
 bool gt_obj_get_overflow(gt_obj_st * obj)
 {
     return obj->overflow;
+}
+
+void gt_obj_set_inside(gt_obj_st * obj, bool is_inside)
+{
+    obj->inside = is_inside;
+}
+
+bool gt_obj_get_inside(gt_obj_st * obj)
+{
+    return obj->inside;
 }
 
 void gt_obj_set_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir)

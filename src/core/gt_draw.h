@@ -45,9 +45,12 @@ typedef struct _gt_draw_valid_s {
  * @brief Draw object description
  */
 typedef struct _gt_draw_ctx_t{
+    _gt_draw_valid_st * valid;  ///< Only be used in the screen animation mode
+    gt_area_st * parent_area; ///< The parent area, when obj->inside is true, obj display limited to parent area
+
     void * buf;     ///< save the temp buffer
     gt_area_st buf_area;    ///< The display area
-    _gt_draw_valid_st * valid;
+
 }gt_draw_ctx_t;
 
 
