@@ -141,7 +141,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
 
     // focus
     draw_focus(btn , radius);
-    
+
     return;
 }
 
@@ -228,6 +228,11 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
             GT_LOGV(GT_LOG_TAG_GUI, "child delete");
+            break;
+
+        case GT_EVENT_TYPE_INPUT_PRESSED:
+            gt_obj_set_state(obj, GT_STATE_PRESSED);
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
