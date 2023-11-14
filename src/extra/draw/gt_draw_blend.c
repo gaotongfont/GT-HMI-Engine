@@ -261,17 +261,27 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
     /** 图片当前处理的显示区域 */
     gt_area_copy(&area_dsc, dsc->dst_area);
     uint16_t width_dsc = area_dsc.w;
+    gt_point_st offset = {0};   /** src data buffer offset set */
+
+    if (draw_ctx->parent_area) {
+        /** Be used when obj->inside true and object has its parent */
+        gt_area_cover_screen(draw_ctx->parent_area, dsc->dst_area, &area_dsc);
+
+        if (draw_ctx->parent_area->x == area_dsc.x && dsc->dst_area->x < area_dsc.x) {
+            /** widget over left of parent display area */
+            offset.x = area_dsc.x - dsc->dst_area->x;
+        }
+        if (draw_ctx->parent_area->y == area_dsc.y && dsc->dst_area->y < area_dsc.y) {
+            /** widget over top of parent display area */
+            offset.y = area_dsc.y - dsc->dst_area->y;
+        }
+    }
 
     /** 当前重绘制起始坐标 */
     gt_point_st area_dst = {
         .x = area_dsc.x < area_draw.x ? 0 : (area_dsc.x - area_draw.x),
         .y = area_dsc.y > area_draw.y ? (area_dsc.y - area_draw.y) : 0,
     };
-
-    if (draw_ctx->parent_area) {
-        /** Be used when obj->inside true and object has its parent */
-        gt_area_cover_screen(dsc->dst_area, draw_ctx->parent_area, &area_dsc);
-    }
 
     if (draw_ctx->valid) {
         /** 界面切换动画绘制区 */
@@ -312,7 +322,7 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
 
     // from area_intersect cpy to area_dst
     uint32_t idx_dst = area_dst.y * area_draw.w + area_dst.x;
-    uint32_t idx_src = area_intersect.y * width_dsc + area_intersect.x;
+    uint32_t idx_src = (offset.y + area_intersect.y) * width_dsc + area_intersect.x + offset.x;
 
     if (area_dst.y + area_intersect.h > GT_REFRESH_FLUSH_LINE_PRE_TIME) {
         // over draw buffer size

@@ -159,6 +159,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
     case GT_EVENT_TYPE_CHANGE_CHILD_ADD: {
         gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);
+        gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_INSIDE, true);
         break;
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_START: {
@@ -268,6 +269,7 @@ void gt_view_pager_fragment_add_widget(gt_obj_st * view_pager, uint8_t fragment_
         gt_obj_change_parent(child, view_pager);
         gt_obj_set_overflow(child, true);
         gt_obj_child_set_prop(child, GT_OBJ_PROP_TYPE_FIXED, true);
+        gt_obj_child_set_prop(child, GT_OBJ_PROP_TYPE_INSIDE, true);
     }
     uint16_t scr_width = gt_disp_get_res_hor(NULL);
 
