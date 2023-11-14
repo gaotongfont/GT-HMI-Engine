@@ -273,8 +273,8 @@ static void _gt_btn_init_style(gt_obj_st * btn)
     style->text = gt_mem_malloc(sizeof("btn"));
     strcpy(style->text, "btn");
     style->radius           = 0;
-    style->color_pressed    = gt_color_hex(0x1C82D0);    //default color_selected
-    style->color_background = gt_color_hex(0x17A7BF);  //default color_unselected
+    style->color_pressed    = gt_color_hex(0x0097e6);    //default color_selected
+    style->color_background = gt_color_hex(0x00a8ff);  //default color_unselected
     style->reg.fill         = 1;
     style->font_color       = gt_color_white();        //default color_font
     style->font_family_cn   = GT_CFG_DEFAULT_FONT_FAMILY_CN;
