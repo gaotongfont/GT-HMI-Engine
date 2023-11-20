@@ -19,7 +19,7 @@
 #include "../others/gt_assert.h"
 
 /* private define -------------------------------------------------------*/
-#define OBJ_TYPE    GT_TYPE_BTN
+#define OBJ_TYPE    GT_TYPE_TEMPLATE
 #define MY_CLASS    &gt_template_class
 
 /* private typedef ------------------------------------------------------*/
@@ -48,13 +48,6 @@ const gt_obj_class_st gt_template_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static inline void _gt_template_init_widget(gt_obj_st * template) {
-    // _gt_template_st * style = template->style;
-    // gt_size_t x, y, w, h;           //base attr
-
-
-}
-
 /**
  * @brief obj init template widget call back
  *
@@ -63,7 +56,6 @@ static inline void _gt_template_init_widget(gt_obj_st * template) {
 static void _init_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
 
-    _gt_template_init_widget(obj);
 }
 
 /**

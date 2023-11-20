@@ -20,7 +20,7 @@
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
 /* private define -------------------------------------------------------*/
-#define OBJ_TYPE    GT_TYPE_BTN
+#define OBJ_TYPE    GT_TYPE_LISTVIEW
 #define MY_CLASS    &gt_listview_class
 
 /* private typedef ------------------------------------------------------*/
