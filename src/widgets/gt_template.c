@@ -9,6 +9,9 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_template.h"
+
+#if GT_CFG_ENABLE_TEMPLATE
+
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -157,4 +160,5 @@ gt_obj_st * gt_template_create(gt_obj_st * parent)
     return obj;
 }
 
+#endif  /** GT_CFG_ENABLE_TEMPLATE */
 /* end ------------------------------------------------------------------*/

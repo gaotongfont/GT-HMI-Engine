@@ -21,8 +21,10 @@ extern "C" {
 
 /**
  * @brief Configure whether the widgets is enabled
- *
+ *  such as: gt_template.c/h
  */
+#define GT_CFG_ENABLE_TEMPLATE          0
+
 #define GT_CFG_ENABLE_BTN               1
 #define GT_CFG_ENABLE_CHECKBOX          1
 #define GT_CFG_ENABLE_GROUP             1
