@@ -53,6 +53,8 @@ typedef struct _gt_listview_s
     uint8_t     thick_cn;
     uint8_t     space_x;
     uint8_t     space_y;
+
+    uint8_t     scrolling;  /** scrolling can not selected by mouse up */
 }_gt_listview_st;
 
 
@@ -103,7 +105,7 @@ static void _gt_listview_update_by_click_point(gt_obj_st * obj, gt_point_st poin
 
 static void _gt_listview_update_by_scroll_y(gt_obj_st * obj, gt_size_t y_scroll)
 {
-    _gt_listview_st * style = obj->style;
+    _gt_listview_st * style = (_gt_listview_st * )obj->style;
 
     if(style->cnt < style->cnt_show)
     {
@@ -111,10 +113,10 @@ static void _gt_listview_update_by_scroll_y(gt_obj_st * obj, gt_size_t y_scroll)
     }
 
     int idx_start   = style->idx_show_start;
-    int cnt_show    = style->cnt_show;
-    int h_item      = (obj->area.h/cnt_show);
-    style->content_offset_y += y_scroll;
-    idx_start = (obj->area.y - style->content_offset_y) / h_item + idx_start;
+    int h_item      = (obj->area.h / style->cnt_show);
+
+    style->content_offset_y = y_scroll;
+    idx_start = (-style->content_offset_y) / h_item;
 
     if(idx_start < 0)
     {
@@ -145,20 +147,12 @@ static void _gt_listview_update(gt_obj_st * listview)
     if( listview->area.h < (style->font_size * style->cnt_show) ){
         listview->area.h = (style->font_size + 2) * style->cnt_show;
     }
-
-    style->content_offset_y = listview->area.y;
-    // style->idx_selected = 0;
 }
 
 static inline void _gt_listview_init_widget(gt_obj_st * listview) {
     _gt_listview_st * style = (_gt_listview_st * )listview->style;
 
     _gt_listview_update(listview);
-
-    // limit invalid values
-    if (gt_abs(listview->process_attr.scroll.y) > GT_CFG_DEFAULT_POINT_SCROLL_PIXEL_INVALID) {
-        listview->process_attr.scroll.y = listview->process_attr.scroll.y > 0 ? 16 : -16;
-    }
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
@@ -279,52 +273,52 @@ static void _deinit_cb(gt_obj_st * obj) {
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
+    _gt_listview_st * style = (_gt_listview_st * )obj->style;
 
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
+        case GT_EVENT_TYPE_INPUT_SCROLL_START: {
+            style->scrolling = true;
             break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-            break;
+        }
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
+            if (gt_obj_scroll_get_y(obj) > 0) {
+                obj->process_attr.scroll.y = 0;
+            }
+            else if (-gt_obj_scroll_get_y(obj) > (obj->area.h / style->cnt_show) * (style->cnt - style->cnt_show)) {
+                obj->process_attr.scroll.y = -(obj->area.h / style->cnt_show) * (style->cnt - style->cnt_show);
+            }
             _gt_listview_update_by_scroll_y(obj, gt_obj_scroll_get_y(obj));
 
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
+        case GT_EVENT_TYPE_INPUT_PRESSED: {
+            style->scrolling = false;
+            break;
+        }
+
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
+            if (style->scrolling) {
+                style->scrolling = false;
+                break;
+            }
+            style->scrolling = false;
             _gt_listview_update_by_click_point(obj, obj->process_attr.point);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESS_LOST: {
-            GT_LOGV(GT_LOG_TAG_GUI, "process lost");
-
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         }
 
         case GT_EVENT_TYPE_UPDATE_STYLE: {
-            GT_LOGV(GT_LOG_TAG_GUI, "pdate style");
             _gt_listview_update(obj);
             break;
         }
@@ -337,7 +331,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_listview_init_style(gt_obj_st * listview)
 {
-    _gt_listview_st * style = listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview->style;
 
     gt_memset(style, 0, sizeof(_gt_listview_st));
 
@@ -349,7 +343,7 @@ static void _gt_listview_init_style(gt_obj_st * listview)
     style->color_ina        = gt_color_hex(0xFFFFFF);
     style->cnt_show = 5;
     style->idx_selected     = -1;
-    style->content_offset_y =  listview->area.y;
+    style->content_offset_y = 0;
 
     style->font_family_cn       = GT_CFG_DEFAULT_FONT_FAMILY_CN;
     style->font_family_en       = GT_CFG_DEFAULT_FONT_FAMILY_EN;
