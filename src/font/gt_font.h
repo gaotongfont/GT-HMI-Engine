@@ -72,6 +72,18 @@ typedef struct _gt_font_res_s{
     uint8_t h;
 }gt_font_res_st;
 
+typedef struct _gt_font_info_s{
+    uint16_t style_cn;  ///< set: font style
+    uint16_t style_en;  ///< set: font style
+    uint16_t style_fl;  ///< set: font style foreign language
+    uint16_t style_numb; ///< set: font style
+    uint8_t size;       ///< set: font size
+    uint8_t gray;       ///< set: font gray
+    uint8_t encoding;   ///< set: font encoding
+    uint8_t thick_en;   ///< set: font thick
+    uint8_t thick_cn;   ///< set: font thick
+}gt_font_info_st;
+
 /**
  * @brief THe font resource structure
  */
@@ -79,15 +91,8 @@ typedef struct _gt_font_s
 {
     char * utf8;        ///< set: text: utf8 code arr
     uint8_t * res;      ///< get: font data
-    uint32_t style_cn;  ///< set: font style
-    uint32_t style_en;  ///< set: font style
-    uint32_t style_numb; ///< set: font style
     uint16_t len;       ///< set: utf8 arr len
-    uint8_t size;       ///< set: font size
-    uint8_t gray;       ///< set: font gray
-    uint8_t encoding;   ///< set: font encoding
-    uint8_t thick_en;   ///< set: font thick
-    uint8_t thick_cn;   ///< set: font thick
+    gt_font_info_st info;
 }gt_font_st;
 
 /**

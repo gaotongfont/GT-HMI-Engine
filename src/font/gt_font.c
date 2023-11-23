@@ -454,16 +454,16 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
     // GT_LOGV(GT_LOG_TAG_GUI, "text:%s", font->utf8);
     while(idx < font->len) {
         // len = _gt_utf8_to_unicode(&font->utf8[idx], &unicode);
-        len = gt_font_one_char_code_len_get((uint8_t * )&font->utf8[idx], &unicode , font->encoding);
+        len = gt_font_one_char_code_len_get((uint8_t * )&font->utf8[idx], &unicode , font->info.encoding);
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
         struct gt_font_func_s* font_func;
 
-        if(GT_CFG_DEFAULT_FONT_FAMILY_NUMB != font->style_numb && _gt_number_symbol_font(unicode)){
-            font_style = font->style_numb;
+        if(GT_CFG_DEFAULT_FONT_FAMILY_NUMB != font->info.style_numb && _gt_number_symbol_font(unicode)){
+            font_style = font->info.style_numb;
         }
         else{
-            font_style = _gt_is_style_cn_or_en(unicode , font->encoding) ? font->style_en : font->style_cn;
+            font_style = _gt_is_style_cn_or_en(unicode , font->info.encoding) ? font->info.style_en : font->info.style_cn;
         }
 
         font_func = GT_Get_Font_Func_S(font_style);
@@ -496,8 +496,8 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
                 idx+=len;
                 continue;
             }
-            temp = font_func->func.read_vec_font(&font->res[idx_read], font_style , unicode , font->size , font->gray , \
-                                                font_style==font->style_cn ? font->thick_cn : font->thick_en);
+            temp = font_func->func.read_vec_font(&font->res[idx_read], font_style , unicode , font->info.size , font->info.gray , \
+                                                font_style==font->info.style_cn ? font->info.thick_cn : font->info.thick_en);
             if(temp == 0)
             {
                 idx+=len;
@@ -509,7 +509,7 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
 #endif
 
 default_font:
-        font_style = _gt_is_style_cn_or_en(unicode , font->encoding);
+        font_style = _gt_is_style_cn_or_en(unicode , font->info.encoding);
         if(1 == font_style)
         {
 #if GT_CFG_USE_FONT_16_ASCII == 1
@@ -570,7 +570,7 @@ uint32_t gt_font_get_string_width(gt_font_st * font)
 
     while( idx < font->len ){
         //  idx += _gt_utf8_to_unicode(&font->utf8[idx], &unicode);
-        idx += gt_font_one_char_code_len_get((uint8_t * )&font->utf8[idx], &unicode, font->encoding);
+        idx += gt_font_one_char_code_len_get((uint8_t * )&font->utf8[idx], &unicode, font->info.encoding);
         width += gt_font_get_one_word_width(unicode , font);
     }
     return width;
@@ -580,27 +580,27 @@ uint32_t gt_font_get_string_width(gt_font_st * font)
 uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
 {
     if(unicode == 0x20){
-        return font->size >> 1;
+        return font->info.size >> 1;
     }
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
     int width = 0;
     int option = 0;
 
-    if(GT_CFG_DEFAULT_FONT_FAMILY_NUMB != font->style_numb && _gt_number_symbol_font(unicode)){
-        option = font->style_numb;
+    if(GT_CFG_DEFAULT_FONT_FAMILY_NUMB != font->info.style_numb && _gt_number_symbol_font(unicode)){
+        option = font->info.style_numb;
     }
     else{
-        option = _gt_is_style_cn_or_en(unicode , font->encoding) ? font->style_en : font->style_cn;
+        option = _gt_is_style_cn_or_en(unicode , font->info.encoding) ? font->info.style_en : font->info.style_cn;
     }
 
-    width = GT_Get_Font_Width(unicode , option , font->size , font->gray , font->res);
+    width = GT_Get_Font_Width(unicode , option , font->info.size , font->info.gray , font->res);
 
     if(0 == width){
         if(_gt_font_latin_check(unicode)) {
-            return _gt_font_latin_get_width(unicode , font->size);
+            return _gt_font_latin_get_width(unicode , font->info.size);
         }
-        return font->size;
+        return font->info.size;
     }
     return width;
 #else
@@ -622,7 +622,7 @@ uint8_t gt_font_get_next_word_width(gt_font_st * font, uint8_t is_head){
     }
     while( i <= idx ){
         // idx_utf8 += _gt_utf8_to_unicode((uint8_t *)&font->utf8[idx_utf8], &unicode);
-        idx_utf8 += gt_font_one_char_code_len_get((uint8_t *)&font->utf8[idx_utf8], &unicode, font->encoding);
+        idx_utf8 += gt_font_one_char_code_len_get((uint8_t *)&font->utf8[idx_utf8], &unicode, font->info.encoding);
         i++;
     }
     idx++;
