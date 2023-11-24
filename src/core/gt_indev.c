@@ -143,17 +143,20 @@ static void _indev_scroll_throw_handler(gt_indev_st * indev) {
     gt_obj_st * obj_scroll = point_p->obj_scroll;
     uint16_t w_parent = obj_scroll->parent->area.w;
     uint16_t h_parent = obj_scroll->parent->area.h;
+    gt_size_t left = 0, right = GT_SCREEN_WIDTH;
+    gt_size_t top = 0, bottom = GT_SCREEN_HEIGHT;
 
     if (obj_scroll->absorb) {
         if (false == obj_scroll->absorb_dir) {
+            /** hor */
             gt_size_t x = obj_scroll->area.x + dx;  /** target x position */
             // outside the left
-            if (x > disp->area_max.left) {
+            if (x > left) {
                 dx = -obj_scroll->area.x;
             }
             // outside the right
-            else if (x + obj_scroll->area.w < disp->area_max.right) {
-                dx = disp->area_max.right - obj_scroll->area.w - obj_scroll->area.x;
+            else if (x + obj_scroll->area.w < right) {
+                dx = right - obj_scroll->area.w - obj_scroll->area.x;
             }
             // inside
             else if (obj_scroll->scroll_snap_x) {
@@ -172,14 +175,15 @@ static void _indev_scroll_throw_handler(gt_indev_st * indev) {
             }
 
         } else {
+            /** ver */
             gt_size_t y = obj_scroll->area.y + dy;
             // top
-            if (y > disp->area_max.top) {
+            if (y > top) {
                 dy = -obj_scroll->area.y;
             }
             // bottom
-            else if (y + obj_scroll->area.h < disp->area_max.bottom) {
-                dy = disp->area_max.bottom - obj_scroll->area.h - obj_scroll->area.y;
+            else if (y + obj_scroll->area.h < bottom) {
+                dy = bottom - obj_scroll->area.h - obj_scroll->area.y;
             }
             else if (obj_scroll->scroll_snap_y) {
                 if (0 == dy) {
@@ -288,7 +292,7 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
         point_p->scroll_throw.y = 0;
         _indev_scroll_throw_handler(indev);
     }
-    // GT_LOGE(">", "(%d, %d) (%d, %d)", point_p->newly.x, point_p->newly.y, point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
+    // GT_LOGD(">", "(%d, %d) (%d, %d)", point_p->newly.x, point_p->newly.y, point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
 
     point_p->obj_act = gt_find_clicked_obj_by_point(scr, &point_p->newly);
 
