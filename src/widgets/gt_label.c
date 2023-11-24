@@ -292,6 +292,13 @@ void gt_label_set_font_family_en(gt_obj_st * label, gt_family_t family)
     _gt_label_st * style = (_gt_label_st * )label->style;
     style->font_info.style_en = family;
 }
+
+void gt_label_set_font_family_fl(gt_obj_st * label, gt_family_t family)
+{
+    _gt_label_st * style = (_gt_label_st * )label->style;
+    style->font_info.style_fl = family;
+}
+
 void gt_label_set_font_thick_en(gt_obj_st * label, uint8_t thick)
 {
     _gt_label_st * style = (_gt_label_st * )label->style;

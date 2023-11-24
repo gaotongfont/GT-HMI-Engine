@@ -286,6 +286,15 @@ void gt_input_number_set_font_family_en(gt_obj_st * obj, gt_family_t family)
     gt_label_set_font_family_en(style->label, family);
 }
 
+void gt_input_number_set_font_family_fl(gt_obj_st * obj, gt_family_t family)
+{
+    _gt_input_number_st * style = (_gt_input_number_st * )obj->style;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_family_fl(style->label, family);
+}
+
 void gt_input_number_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
 {
     _gt_input_number_st * style = (_gt_input_number_st * )obj->style;

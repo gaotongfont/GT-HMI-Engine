@@ -469,7 +469,11 @@ void gt_listview_set_font_family_en(gt_obj_st * listview, gt_family_t family)
     _gt_listview_st * style = listview->style;
     style->font_info.style_en = family;
 }
-
+void gt_listview_set_font_family_fl(gt_obj_st * listview, gt_family_t family)
+{
+    _gt_listview_st * style = listview->style;
+    style->font_info.style_fl = family;
+}
 void gt_listview_set_font_family_cn(gt_obj_st * listview, gt_family_t family)
 {
     _gt_listview_st * style = listview->style;

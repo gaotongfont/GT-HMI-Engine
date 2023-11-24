@@ -740,6 +740,15 @@ void gt_clock_set_font_family_en(gt_obj_st * obj, gt_family_t family)
     gt_label_set_font_family_en(style->label, family);
 }
 
+void gt_clock_set_font_family_fl(gt_obj_st * obj, gt_family_t family)
+{
+    _gt_clock_st * style = (_gt_clock_st * )obj->style;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_family_fl(style->label, family);
+}
+
 void gt_clock_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
 {
     _gt_clock_st * style = (_gt_clock_st * )obj->style;

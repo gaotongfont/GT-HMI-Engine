@@ -355,7 +355,11 @@ void gt_textarea_set_font_family_en(gt_obj_st * textarea, gt_family_t family)
     _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
     style->font_info.style_en = family;
 }
-
+void gt_textarea_set_font_family_fl(gt_obj_st * textarea, gt_family_t family)
+{
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    style->font_info.style_fl = family;
+}
 void gt_textarea_set_font_family_numb(gt_obj_st * textarea, gt_family_t family)
 {
     _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;

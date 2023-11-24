@@ -651,7 +651,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
         ++i;
     }
 
-    uint8_t ret_style = gt_font_type_get(_font.info.style_en);
+    uint8_t ret_style = gt_font_type_get(_font.info.style_fl);
     uint8_t width , byte_width, font_gray, x_offset;
     uint32_t one_font_size = 0;
     uint8_t* font_buf = NULL;
@@ -698,7 +698,7 @@ static uint32_t _draw_text_convertor(gt_draw_ctx_t * draw_ctx , gt_draw_blend_ds
         .code_len = text_len ,
         .fontsize = _font.info.size ,
         .fontgray = _font.info.gray ,
-        .font_option = _font.info.style_en ,
+        .font_option = _font.info.style_fl ,
         .thick = _font.info.thick_en,
         .data = font_buf ,
         .data_len = font_buf_len ,

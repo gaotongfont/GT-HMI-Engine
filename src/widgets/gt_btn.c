@@ -394,6 +394,12 @@ void gt_btn_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en)
     style->font_info.style_en = font_family_en;
 }
 
+void gt_btn_set_font_family_fl(gt_obj_st * btn, gt_family_t font_family_fl)
+{
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    style->font_info.style_fl = font_family_fl;
+}
+
 void gt_btn_set_font_family_numb(gt_obj_st * btn, gt_family_t font_family_numb)
 {
     _gt_btn_st * style = (_gt_btn_st * )btn->style;

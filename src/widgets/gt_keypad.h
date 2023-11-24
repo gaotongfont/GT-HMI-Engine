@@ -73,6 +73,7 @@ void gt_keypad_set_color_ctrl_key(gt_obj_st * keypad, gt_color_t color);
 void gt_keypad_set_font_color(gt_obj_st * keypad, gt_color_t color);
 void gt_keypad_set_font_family_cn(gt_obj_st * keypad, gt_family_t family);
 void gt_keypad_set_font_family_en(gt_obj_st * keypad, gt_family_t family);
+void gt_keypad_set_font_family_fl(gt_obj_st * keypad, gt_family_t family);
 void gt_keypad_set_font_family_numb(gt_obj_st * keypad, gt_family_t family);
 void gt_keypad_set_font_size(gt_obj_st * keypad, uint8_t size);
 void gt_keypad_set_font_gray(gt_obj_st * keypad, uint8_t gray);

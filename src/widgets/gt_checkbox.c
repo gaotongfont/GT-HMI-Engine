@@ -293,6 +293,12 @@ void gt_checkbox_set_font_family_en(gt_obj_st * checkbox, gt_family_t family)
     style->font_info.style_en = family;
 }
 
+void gt_checkbox_set_font_family_fl(gt_obj_st * checkbox, gt_family_t family)
+{
+    _gt_checkbox_st * style = checkbox->style;
+    style->font_info.style_fl = family;
+}
+
 void gt_checkbox_set_font_family_numb(gt_obj_st * checkbox, gt_family_t family)
 {
     _gt_checkbox_st * style = checkbox->style;

@@ -1075,6 +1075,11 @@ void gt_keypad_set_font_family_en(gt_obj_st * keypad, gt_family_t family)
     _gt_keypad_st * style = keypad->style;
     style->font_info.style_en = family;
 }
+void gt_keypad_set_font_family_fl(gt_obj_st * keypad, gt_family_t family)
+{
+    _gt_keypad_st * style = keypad->style;
+    style->font_info.style_fl = family;
+}
 
 void gt_keypad_set_font_family_numb(gt_obj_st * keypad, gt_family_t family)
 {

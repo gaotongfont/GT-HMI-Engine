@@ -53,6 +53,7 @@ char * gt_checkbox_get_text(gt_obj_st * checkbox);
 void gt_checkbox_set_font_color(gt_obj_st * checkbox, gt_color_t color);
 void gt_checkbox_set_font_family_cn(gt_obj_st * checkbox, gt_family_t family);
 void gt_checkbox_set_font_family_en(gt_obj_st * checkbox, gt_family_t family);
+void gt_checkbox_set_font_family_fl(gt_obj_st * checkbox, gt_family_t family);
 void gt_checkbox_set_font_family_numb(gt_obj_st * checkbox, gt_family_t family);
 void gt_checkbox_set_font_size(gt_obj_st * checkbox, uint8_t size);
 void gt_checkbox_set_font_gray(gt_obj_st * checkbox, uint8_t gray);

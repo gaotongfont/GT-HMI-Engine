@@ -550,6 +550,12 @@ void gt_input_set_font_family_en(gt_obj_st * input, gt_family_t family)
     style->font_info.style_en = family;
 }
 
+void gt_input_set_font_family_fl(gt_obj_st * input, gt_family_t family)
+{
+    _gt_input_st * style = input->style;
+    style->font_info.style_fl = family;
+}
+
 void gt_input_set_font_family_numb(gt_obj_st * input, gt_family_t family)
 {
     _gt_input_st * style = input->style;

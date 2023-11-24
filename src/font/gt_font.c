@@ -443,6 +443,29 @@ static bool _gt_number_symbol_font(uint32_t unicode)
 
     return false;
 }
+
+static uint32_t _get_font_style(gt_font_st *font , uint32_t unicode)
+{
+    gt_font_style_en_cn_et style_type = 0;
+    uint32_t font_style ;
+    if(GT_CFG_DEFAULT_FONT_FAMILY_NUMB != font->info.style_numb && _gt_number_symbol_font(unicode)){
+        font_style = font->info.style_numb;
+    }
+    else{
+        style_type = _gt_is_style_cn_or_en(unicode , font->info.encoding);
+        if(STYLE_CN == style_type){
+            font_style = font->info.style_cn;
+        }
+        else if(STYLE_EN_ASCII == style_type){
+            font_style = font->info.style_en;
+        }
+        else{
+            font_style = font->info.style_fl;
+        }
+    }
+    return font_style;
+
+}
 /* global functions / API interface -------------------------------------*/
 
 
@@ -459,12 +482,7 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
 #if GT_CFG_ENABLE_ZK_FONT == 1
         struct gt_font_func_s* font_func;
 
-        if(GT_CFG_DEFAULT_FONT_FAMILY_NUMB != font->info.style_numb && _gt_number_symbol_font(unicode)){
-            font_style = font->info.style_numb;
-        }
-        else{
-            font_style = _gt_is_style_cn_or_en(unicode , font->info.encoding) ? font->info.style_en : font->info.style_cn;
-        }
+        font_style = _get_font_style(font , unicode);
 
         font_func = GT_Get_Font_Func_S(font_style);
         if(!font_func)
@@ -541,6 +559,10 @@ unsigned int len = 0;
     struct gt_font_func_s* font_func;
     font_func = GT_Get_Font_Func_S(convert->font_option);
 
+    if(NULL == font_func){
+        return len;
+    }
+
     if(GT_Check_Is_Vec(convert->font_option)){
         convert->read_vec_font = font_func->func.read_vec_font;
     }
@@ -587,12 +609,7 @@ uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
     int width = 0;
     int option = 0;
 
-    if(GT_CFG_DEFAULT_FONT_FAMILY_NUMB != font->info.style_numb && _gt_number_symbol_font(unicode)){
-        option = font->info.style_numb;
-    }
-    else{
-        option = _gt_is_style_cn_or_en(unicode , font->info.encoding) ? font->info.style_en : font->info.style_cn;
-    }
+    option = _get_font_style(font , unicode);
 
     width = GT_Get_Font_Width(unicode , option , font->info.size , font->info.gray , font->res);
 
