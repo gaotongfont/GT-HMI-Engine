@@ -90,7 +90,7 @@
  </tr>
  <tr>
   <td>sources/</td>
-  <td>gui 内部使用的 images 素材                                   </td>
+  <td>gui 内部使用的 images 素材&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
  </tr>
  <tr>
   <td>test/</td>
@@ -133,7 +133,7 @@
   <td>控件</td>
  </tr>
  <tr>
-  <td>|-|-gt_conf_widgets.h                      </td>
+  <td>|-|-gt_conf_widgets.h&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
   <td>控件开关宏 </td>
  </tr>
 </table>
@@ -350,8 +350,6 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn9, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn9, 8);
     gt_obj_add_event_cb(btn9, btn9_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-
-
     // btn10 
     btn10 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn10, 489, 158);
@@ -603,8 +601,6 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn9, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn9, 8);
     gt_obj_add_event_cb(btn9, btn9_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-
-
     // btn10 
     btn10 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn10, 495, 160);
