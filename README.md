@@ -21,7 +21,7 @@
 <br/>
 
 <div align="center">  
-<a href="https://www.hmi.gaotongfont.cn/kfgj">公司官网</a> | <a href="https://space.bilibili.com/3493293474188211/video">B 站教程</a> | <a href="https://www.gaotongfont.cn:8087/video/dl?mv=GT-HMI%20Engine%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8CV1.8-20231103183143.pdf">Engine 使用手册</a> | <a href="https://download.wezhan.cn/contents/sitefiles2062/10314814/files/754101..pdf?response-content-disposition=inline%3Bfilename%3DGT-HMI%2BDesigner%25e7%2594%25a8%25e6%2588%25b7%25e6%2589%258b%25e5%2586%258cV1.10.pdf&response-content-type=application%2Fpdf&auth_key=1700730759-bfb97452488845f2b091f51afa04f20f-0-ccdf533b36a868bf3306274d36c4644b">Designer 使用手册</a> | <a href="http://isite.baidu.com/site/wjz7qkrv/406a2b0c-f9c7-4a08-a47a-662e862b2af4?ch=48&wid=498ccd5c05334f21a2142ba3cf628964_0_0&field=&orderBy=&categoryId=undefined&title=%E8%81%94%E7%B3%BB%E6%88%91%E4%BB%AC">联系方式</a> | <a href="https://qun.qq.com/qqweb/qunpro/share?_wv=3&_wwv=128&appChannel=share&inviteCode=20igkt2UZnY&businessType=9&from=181074&biz=ka&mainSourceId=share&subSourceId=others&jumpsource=shorturl#/pc">QQ频道</a>
+<a href="https://www.hmi.gaotongfont.cn/kfgj">公司官网</a> | <a href="https://space.bilibili.com/3493293474188211/video">B 站教程</a> | <a href="https://www.gaotongfont.cn:8087/video/dl?mv=GT-HMI%20Engine%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8CV1.8-20231103183143.pdf">Engine 使用手册</a> | <a href="https://www.gaotongfont.cn:8087/video/dl?mv=GT-HMI%20Designer%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8CV1.10-20231103183232.pdf">Designer 使用手册</a> | <a href="http://isite.baidu.com/site/wjz7qkrv/406a2b0c-f9c7-4a08-a47a-662e862b2af4?ch=48&wid=498ccd5c05334f21a2142ba3cf628964_0_0&field=&orderBy=&categoryId=undefined&title=%E8%81%94%E7%B3%BB%E6%88%91%E4%BB%AC">联系方式</a> | <a href="https://qun.qq.com/qqweb/qunpro/share?_wv=3&_wwv=128&appChannel=share&inviteCode=20igkt2UZnY&businessType=9&from=181074&biz=ka&mainSourceId=share&subSourceId=others&jumpsource=shorturl#/pc">QQ频道</a>
 </div>
 
 <br/>
@@ -35,7 +35,6 @@
         GT-HMI（Human Machine Interface） 国产开源 GUI 框架及永久免费设计软件。它提供创建具有易于使用的图形元素，精美的视觉效果和低内存占用的嵌入式 GUI 所需的一切。针对国内市场及用户需求，使用习惯进行了优化设计，为国内工程师量身打造！
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;产品由中国高通 GENITOP 倾心打造，继承了中国高通 30 年的汉显技术及汉字技术积累。产品分为上位机 GT-HMI Designer 和下位机 GT-HMI Engine。
-
 
 <br/>
 
@@ -91,7 +90,7 @@
  </tr>
  <tr>
   <td>sources/</td>
-  <td>gui 内部使用的 images 素材&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+  <td>gui 内部使用的 images 素材                                   </td>
  </tr>
  <tr>
   <td>test/</td>
@@ -134,8 +133,8 @@
   <td>控件</td>
  </tr>
  <tr>
-  <td>|-|-gt_conf_widgets.h&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-  <td>控件开关宏&nbsp;</td>
+  <td>|-|-gt_conf_widgets.h                      </td>
+  <td>控件开关宏 </td>
  </tr>
 </table>
 
@@ -295,8 +294,6 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn4, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn4, 8);
     gt_obj_add_event_cb(btn4, btn4_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-
-
     // btn5 
     btn5 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn5, 263, 158);
@@ -311,8 +308,6 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn5, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn5, 8);
     gt_obj_add_event_cb(btn5, btn5_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-
-
     // btn7 
     btn7 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn7, 30, 238);
@@ -327,8 +322,6 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn7, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn7, 8);
     gt_obj_add_event_cb(btn7, btn7_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-
-
     // btn8 
     btn8 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn8, 263, 238);
@@ -343,8 +336,6 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn8, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn8, 8);
     gt_obj_add_event_cb(btn8, btn8_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-
-
     // btn9 
     btn9 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn9, 490, 238);
@@ -544,8 +535,6 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn4, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn4, 8);
     gt_obj_add_event_cb(btn4, btn4_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-
-
     // btn5 
     btn5 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn5, 265, 160);
@@ -563,8 +552,6 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn5, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn5, 8);
     gt_obj_add_event_cb(btn5, btn5_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-
-
     // btn7 
     btn7 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn7, 32, 240);
@@ -582,8 +569,6 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn7, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn7, 8);
     gt_obj_add_event_cb(btn7, btn7_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-
-
     // btn8 
     btn8 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn8, 267, 240);
@@ -601,8 +586,6 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn8, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn8, 8);
     gt_obj_add_event_cb(btn8, btn8_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-
-
     // btn9 
     btn9 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn9, 494, 240);
@@ -858,5 +841,3 @@ void gt_init_screen_home(void)
 </ul>
 
 <br/>
-
-
