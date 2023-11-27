@@ -167,6 +167,10 @@ static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     disp->area_act.x    = 0;
     disp->area_act.y    = 0;
     disp->scr_anim_type = GT_SCR_ANIM_TYPE_NONE;
+
+    disp->scr_act->area.w = gt_disp_get_res_hor(NULL);
+    disp->scr_act->area.h = gt_disp_get_res_ver(NULL);
+
     _gt_disp_reload_max_area(anim->target);
     gt_disp_invalid_area(disp->scr_act);
 
