@@ -282,6 +282,7 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
 
         /* send clicking event to pressed obj */
         gt_obj_get_click_point_by_phy_point(point_p->obj_act, &point_p->newly, &point_ret);
+        _gt_indev_point_set_value(&point_p->last, point_p->newly.x, point_p->newly.y);
         _gt_obj_set_process_point(point_p->obj_act, &point_ret);
         gt_event_send(point_p->obj_act, GT_EVENT_TYPE_INPUT_PRESSED, NULL);
     }
