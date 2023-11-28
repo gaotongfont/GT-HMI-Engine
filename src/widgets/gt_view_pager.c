@@ -142,6 +142,26 @@ static void _init_cb(gt_obj_st * obj) {
     _draw_tip_bar(obj, &rect_attr);
 }
 
+static void _unfixed_slider_widgets(gt_obj_st * parent) {
+    uint16_t idx, cnt = parent->cnt_child;
+    gt_obj_st * child = NULL;
+    for (idx = 0; idx < cnt; idx++) {
+        child = parent->child[idx];
+        if (GT_TYPE_SCROLLBAR != child->class->type) {
+            continue;
+        }
+        if (false == gt_obj_get_fixed(child)) {
+            continue;
+        }
+        gt_obj_set_fixed(child, false);
+
+        if (0 == child->cnt_child) {
+            continue;
+        }
+        _unfixed_slider_widgets(child);
+    }
+}
+
 static void _deinit_cb(gt_obj_st * obj) {
 
 }
@@ -160,6 +180,8 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     case GT_EVENT_TYPE_CHANGE_CHILD_ADD: {
         gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);
         gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_INSIDE, true);
+
+        _unfixed_slider_widgets(obj);
         break;
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_START: {

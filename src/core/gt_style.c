@@ -341,6 +341,9 @@ void gt_obj_child_set_prop(gt_obj_st * obj, gt_obj_prop_type_em type, uint8_t va
             default:
                 break;
         }
+        if (0 == child->cnt_child) {
+            continue;
+        }
         gt_obj_child_set_prop(child, type, val);
     }
 }
