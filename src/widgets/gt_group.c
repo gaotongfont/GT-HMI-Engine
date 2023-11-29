@@ -17,6 +17,7 @@
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_event.h"
+#include "../core/gt_disp.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_GROUP
@@ -93,6 +94,14 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             GT_LOGV(GT_LOG_TAG_GUI, "end draw");
             break;
 
+        case GT_EVENT_TYPE_UPDATE_STYLE: {
+            if (NULL == obj->parent) {
+                break;
+            }
+            gt_area_copy(&obj->area, &obj->parent->area);
+            break;
+        }
+
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
             GT_LOGV(GT_LOG_TAG_GUI, "child remove");
 			break;
@@ -125,7 +134,10 @@ static void _gt_group_init_style(gt_obj_st * group)
     _gt_group_st * style = (_gt_group_st * )group->style;
 
     gt_memset(style, 0, sizeof(_gt_group_st));
-
+    if (NULL == group->parent) {
+        return;
+    }
+    gt_area_copy(&group->area, &group->parent->area);
 }
 
 
