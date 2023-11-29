@@ -26,7 +26,6 @@
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_style_obj_s
 {
-    uint8_t selected;
     gt_color_t bgcolor;
 }_gt_style_obj_st;
 
