@@ -15,6 +15,7 @@
 #include "../core/gt_disp.h"
 #include "../others/gt_area.h"
 #include "../others/gt_log.h"
+#include "../core/gt_obj_pos.h"
 
 
 #if GT_CFG_ENABLE_VIEW_PAGER
@@ -162,6 +163,13 @@ static void _unfixed_slider_widgets(gt_obj_st * parent) {
     }
 }
 
+static inline void _init_child_prop(gt_obj_st * obj) {
+    gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);
+    gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_INSIDE, true);
+
+    _unfixed_slider_widgets(obj);
+}
+
 static void _deinit_cb(gt_obj_st * obj) {
 
 }
@@ -178,10 +186,8 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         break;
     }
     case GT_EVENT_TYPE_CHANGE_CHILD_ADD: {
-        gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);
-        gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_INSIDE, true);
-
-        _unfixed_slider_widgets(obj);
+        // NOTE change to last child when be reset prop
+        _init_child_prop(obj);
         break;
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_START: {
@@ -211,6 +217,14 @@ static inline bool _is_over_max_page(uint8_t val) {
 
 static void _update_max_width(gt_obj_st * obj, uint8_t fragment_count) {
     obj->area.w = gt_disp_get_res_hor(NULL) * fragment_count;
+}
+
+static bool _child_is_group(gt_obj_st * obj) {
+    return (GT_TYPE_GROUP == obj->class->type) ? true : false;
+}
+
+static void _child_set_group_area(gt_obj_st const * const view_pager, gt_obj_st * group) {
+    gt_area_copy(&group->area, &view_pager->area);
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -290,8 +304,10 @@ void gt_view_pager_fragment_add_widget(gt_obj_st * view_pager, uint8_t fragment_
     if (false == gt_obj_is_child(child, view_pager)) {
         gt_obj_change_parent(child, view_pager);
         gt_obj_set_overflow(child, true);
-        gt_obj_child_set_prop(child, GT_OBJ_PROP_TYPE_FIXED, true);
-        gt_obj_child_set_prop(child, GT_OBJ_PROP_TYPE_INSIDE, true);
+        _init_child_prop(child);
+    }
+    if (_child_is_group(child)) {
+        _child_set_group_area(view_pager, child);
     }
     uint16_t scr_width = gt_disp_get_res_hor(NULL);
 
