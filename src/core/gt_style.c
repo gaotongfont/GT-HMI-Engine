@@ -388,6 +388,16 @@ bool gt_obj_get_inside(gt_obj_st * obj)
     return obj->inside;
 }
 
+void gt_obj_set_virtual(gt_obj_st * obj, bool is_virtual)
+{
+    obj->virtual = is_virtual;
+}
+
+bool gt_obj_get_virtual(gt_obj_st * obj)
+{
+    return obj->virtual;
+}
+
 void gt_obj_set_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir)
 {
     if (dir < GT_SCROLL_DISABLE || dir > GT_SCROLL_ALL) {

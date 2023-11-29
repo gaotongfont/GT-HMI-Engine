@@ -108,7 +108,8 @@ typedef struct gt_obj_s {
     uint8_t absorb_dir    : 1;    /* obj absorb direction(It only works when absorb is set to 1), 0: horizontal; 1: vertical */
     uint8_t overflow      : 1;    /* [Inheritable]obj overflow state, 0:un-overflow, 1:overflow (widget can out of screen area size) */
     uint8_t inside        : 1;    /* obj display only limited to parent area, 0:un-inside, 1:inside (widget is inside screen area size) */
-    uint8_t reserved      : 4;
+    uint8_t virtual       : 1;    /* obj virtual state, 0:un-virtual[default], 1:virtual (widget is virtual logic, not entities) */
+    uint8_t reserved      : 3;
 
 }gt_obj_st;
 

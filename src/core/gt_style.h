@@ -138,6 +138,15 @@ bool gt_obj_get_overflow(gt_obj_st * obj);
 void gt_obj_set_inside(gt_obj_st * obj, bool is_inside);
 bool gt_obj_get_inside(gt_obj_st * obj);
 
+/**
+ * @brief Controls are virtual logic, not entities, and cannot receive touch responses
+ *
+ * @param obj
+ * @param is_virtual 0: un-virtual[default], 1: virtual
+ */
+void gt_obj_set_virtual(gt_obj_st * obj, bool is_virtual);
+bool gt_obj_get_virtual(gt_obj_st * obj);
+
 void gt_obj_set_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir);
 gt_scroll_dir_et gt_obj_get_scroll_dir(gt_obj_st * obj);
 bool gt_obj_is_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir);

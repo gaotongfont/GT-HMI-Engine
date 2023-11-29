@@ -160,6 +160,9 @@ void gt_obj_get_valid_area(gt_obj_st * obj, gt_area_st * area_act, gt_area_st *a
 
 bool gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point ){
     bool ret = false;
+    if (gt_obj_get_virtual(obj)) {
+        return ret;
+    }
     if( (point->x >= obj->area.x) && (point->x <= (obj->area.x + obj->area.w)) ){
         if( (point->y >= obj->area.y) && (point->y <= (obj->area.y + obj->area.h)) ){
             ret = true;
@@ -305,7 +308,7 @@ static gt_obj_st* _gt_obj_prev_focus_get( const gt_obj_st * cur_obj)
         }
         --idx;
     }
-    
+
     if(idx < 0){
         prev =  _gt_obj_prev_focus_get(parent);
     }
@@ -339,7 +342,7 @@ void gt_obj_prev_focus_change(gt_obj_st * cur_obj)
     gt_obj_st* parent = gt_disp_get_scr();
     gt_obj_st* prev = NULL;
     if(cur_obj == parent && parent->cnt_child > 0)
-    {   
+    {
         if(parent->cnt_child == 0 && GT_ENABLED == parent->child[0]->focus_dis)
         {
             prev = parent->child[0];

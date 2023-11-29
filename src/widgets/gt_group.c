@@ -134,10 +134,10 @@ static void _gt_group_init_style(gt_obj_st * group)
     _gt_group_st * style = (_gt_group_st * )group->style;
 
     gt_memset(style, 0, sizeof(_gt_group_st));
-    if (NULL == group->parent) {
-        return;
+    gt_obj_set_virtual(group, true);
+    if (group->parent) {
+        gt_area_copy(&group->area, &group->parent->area);
     }
-    gt_area_copy(&group->area, &group->parent->area);
 }
 
 
