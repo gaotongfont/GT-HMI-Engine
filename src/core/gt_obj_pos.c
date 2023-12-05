@@ -205,19 +205,6 @@ gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point
         obj_clicked = obj_temp;
     }
     return obj_clicked;
-
-#if 0
-	// old func: no foreach all obj
-    while( idx < parent->cnt_child ){
-        if( gt_obj_check_is_clicked(parent->child[idx], &_point) ){
-            if( parent->child[idx] ){
-                obj_clicked = parent->child[idx];
-            }
-        }
-        idx++;
-    }
-    return obj_clicked;
-#endif
 }
 
 gt_obj_st* _gt_obj_focus_clicked(gt_obj_st * parent)
