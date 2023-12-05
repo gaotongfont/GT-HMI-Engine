@@ -99,7 +99,7 @@ typedef struct gt_obj_s {
     uint8_t disabled      : 1;    /* obj disabled state, 0:enable, 1:disable */
 
     uint8_t focus_dis     : 1;    /* obj focus enable , 0:enable, 1:disable*/
-    uint8_t fixed         : 1;    /* obj fixed state, 0:unfixed, 1:fixed(Dependent on superclass properties) */
+    uint8_t fixed         : 1;    /* obj fixed state, 0:unfixed, 1:fixed then search it parent's widget to scroll(Dependent on superclass properties) */
     uint8_t scroll_dir    : 2;    /* @see gt_scroll_em (Bit Set) [default: GT_SCROLL_ALL] */
     uint8_t scroll_snap_x : 2;    /* Scroll the alignment position @see gt_scroll_snap_em */
     uint8_t scroll_snap_y : 2;    /* As scroll_snap_x */
