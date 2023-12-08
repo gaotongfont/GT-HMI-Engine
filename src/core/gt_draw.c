@@ -960,6 +960,7 @@ gt_area_st draw_text_split(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc
     }
 
     int font_disp_h = _font.info.size;
+
     while (idx < txt_len)
     {
         // out of range
@@ -1015,18 +1016,19 @@ gt_area_st draw_text_split(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc
                 continue;
             }
         }
-        // 
-    _disp_font:
-        // 
-        if(1 == idx_len && 1 == overlength && 0x20 == txt_2[0]){
-            // idx += idx_len;
-            idx_len = 0;
-            txt_2 = &txt[idx];
-            bidi_len = 0;
-            font_disp_h = _font.info.size;
-            continue;
-        }
 
+        // 
+        // if(1 == idx_len && 1 == overlength && 0x20 == txt_2[0]){
+        //     // idx += idx_len;
+        //     idx_len = 0;
+        //     txt_2 = &txt[idx];
+        //     bidi_len = 0;
+        //     font_disp_h = _font.info.size;
+        //     disp_w = coords->w;
+        //     continue;
+        // }
+    
+    _disp_font:
         if(overlength < 2){
             if(is_convertor_language(lan) && (idx < txt_len)){
                 if(bidi_max <= bidi_len){
@@ -1117,10 +1119,9 @@ gt_area_st draw_text_split(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc
                 area_font.x -= width;
             }
 
+            gt_memset(mask_buf, 0, mask_len);
             if( !gt_symbol_check_by_unicode(unicode) ){
-                if (width < _font.info.size) {
-                    gt_memset(mask_buf, 0, mask_len);
-                }
+                
                 gt_memset(_font.res, 0, data_len);
                 uint16_t ret_style = gt_font_get_string_dot(&_font);
 

@@ -994,7 +994,6 @@ uint32_t gt_font_split(gt_font_st *fonts , uint32_t width , uint32_t dot_w ,uint
         tmp_len = _gt_font_punctuation_split((const uint8_t*)&text[idx] , len - idx, fonts->info.encoding);
         _font.utf8 = &text[idx];
         _font.len = tmp_len;
-
         // 
         if(is_convertor_language(*lan)){
             tmp_w = _get_convertor_string_width(&_font , *lan , space , width - *ret_w, &ol_idx , &ol_w);
@@ -1004,7 +1003,8 @@ uint32_t gt_font_split(gt_font_st *fonts , uint32_t width , uint32_t dot_w ,uint
             // tmp_w = gt_font_get_string_width(&_font);
             _gt_font_en_in_this_range(&_font , (width - (*ret_w)) , space , &tmp_w , &ol_idx , &ol_w );
         }
-        if(*ret_w + tmp_w > width){
+
+        if((*ret_w + tmp_w > width) || (0x0A == _font.utf8[0])){
             if(0 == idx && width == dot_w){
                 len = ol_idx;
                 *ret_w = ol_w;
