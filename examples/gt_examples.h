@@ -64,6 +64,8 @@ void gt_examples_listview(void);
 
 void gt_examples_progress_bar(void);
 
+void gt_examples_roller(void);
+
 #endif  /* !GT_USE_EXAMPLES */
 
 #ifdef __cplusplus
