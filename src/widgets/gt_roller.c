@@ -57,6 +57,7 @@ typedef struct _gt_roller_s {
     uint8_t selected;                   // The index of selected item
     uint8_t count_total;                // The total count of items
     uint8_t count_of_show;              // The count of items to show within area
+    uint8_t line_space;                 // The space between lines
     _gt_roller_reg_st reg;
 }_gt_roller_st;
 
@@ -168,7 +169,7 @@ static void _scroll_text_handler(gt_obj_st * obj) {
         return;
     }
     obj->process_attr.scroll.y = _normal_limit_y(obj, gt_obj_scroll_get_y(obj));
-    gt_obj_set_pos(style->text, obj->area.x, obj->area.y + obj->process_attr.scroll.y);
+    gt_obj_set_pos(style->text, obj->area.x, obj->area.y + obj->process_attr.scroll.y + (style->line_space >> 1));
 }
 
 static void _scroll_snap(gt_obj_st * obj) {
@@ -284,7 +285,7 @@ static inline bool _set_mode(_gt_roller_st * style, gt_roller_mode_em mode) {
  *
  * @param obj
  */
-static void _resize_height(gt_obj_st * obj) {
+static void _resize_display_area_height(gt_obj_st * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj->style;
 
     if (NULL == style->text) {
@@ -302,6 +303,17 @@ static void _resize_height(gt_obj_st * obj) {
         style->count_total * (gt_label_get_font_size(style->text) + gt_label_get_space_y(style->text)));
 }
 
+static void _reset_scroll_size(gt_obj_st * obj) {
+    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    _calc_scroll_vertical_length(obj, gt_label_get_text(style->text));
+
+    _resize_display_area_height(obj);
+    /** set position and scroll default position, top margin half of space y size */
+
+    obj->process_attr.scroll.y = (style->count_of_show >> 1) * (obj->area.h / style->count_of_show);
+    _scroll_text_handler(obj);
+}
+
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_roller_create(gt_obj_st * parent)
 {
@@ -316,6 +328,7 @@ gt_obj_st * gt_roller_create(gt_obj_st * parent)
     }
     gt_memset(style, 0, sizeof(_gt_roller_st));
     style->count_of_show = 3;
+    style->line_space = 10;
 
     obj->area.w = 80;
     obj->area.h = 20 * style->count_of_show;
@@ -344,7 +357,7 @@ void gt_roller_set_display_item_count(gt_obj_st * obj, uint8_t count)
         style->count_of_show = count - ((0 == count % 2) ? 1 : 0);
     }
 
-    _resize_height(obj);
+    _resize_display_area_height(obj);
 }
 
 void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mode)
@@ -373,17 +386,11 @@ void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mo
             style->text = gt_label_create(obj);
         }
         gt_label_set_text(style->text, options);
-        gt_label_set_space(style->text, 0, 4);
+        gt_label_set_space(style->text, 0, style->line_space);
         gt_label_set_font_align(style->text, GT_ALIGN_CENTER);
 
-        _calc_scroll_vertical_length(obj, options);
         gt_obj_set_fixed(style->text, true);
-
-        _resize_height(obj);
-        /** set position and scroll default position, top margin half of space y size */
-
-        obj->process_attr.scroll.y = (style->count_of_show >> 1) * (obj->area.h / style->count_of_show);
-        _scroll_text_handler(obj);
+        _reset_scroll_size(obj);
         gt_obj_set_inside(style->text, true);
         gt_obj_set_scroll_dir(obj, GT_SCROLL_VERTICAL);
     }
@@ -457,6 +464,25 @@ uint8_t gt_roller_get_total_count(gt_obj_st * obj)
     return style->count_total;
 }
 
+void gt_roller_set_line_space(gt_obj_st * obj, uint8_t space)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+        return ;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    if (NULL == style) {
+        return ;
+    }
+    style->line_space = space;
+
+    if (NULL != style->text) {
+        gt_label_set_space(style->text, 0, style->line_space);
+        _reset_scroll_size(obj);
+    }
+}
 
 #endif  /** GT_CFG_ENABLE_ROLLER */
 /* end ------------------------------------------------------------------*/

@@ -65,6 +65,7 @@ void gt_examples_roller(void)
 	gt_roller_set_options(roller,
 		"test0\ntest1\ntest2\ntest3\ntest4\ntest5\ntest6\ntest7\ntest8\ntest9\ntest10",
 		GT_ROLLER_MODE_NORMAL);
+	// gt_roller_set_line_space(roller, 20);
 
 	gt_obj_st * prev = gt_btn_create(screen_home);
 	gt_obj_set_pos(prev, 0, 0);

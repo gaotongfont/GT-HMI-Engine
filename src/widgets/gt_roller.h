@@ -1,10 +1,11 @@
 /**
  * @file gt_roller.h
  * @author Feyoung
- * @brief
+ * @brief Roller widget When the selection is modified,
+ *      the GT_EVENT_TYPE_UPDATE_VALUE event of the current control is fired.
  * @version 0.1
  * @date 2023-11-21 10:47:07
- * @copyright Copyright (c) 2014-2023, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_ROLLER_H_
 #define _GT_ROLLER_H_
@@ -110,10 +111,18 @@ uint8_t gt_roller_go_next(gt_obj_st * obj);
 /**
  * @brief Get the total count of the roller options
  *
- * @param obj
+ * @param obj Roller object
  * @return uint8_t The count of options [Maximum: 256]
  */
 uint8_t gt_roller_get_total_count(gt_obj_st * obj);
+
+/**
+ * @brief Set the line space of the roller
+ *
+ * @param obj Roller object
+ * @param space value
+ */
+void gt_roller_set_line_space(gt_obj_st * obj, uint8_t space);
 
 #endif  /** GT_CFG_ENABLE_ROLLER */
 
