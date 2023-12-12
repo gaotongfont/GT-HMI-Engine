@@ -81,7 +81,6 @@ void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim
         }
 
         if (dy) {
-            // gt_anim_st anim;
             int32_t d = gt_anim_speed_to_time((gt_disp_get_res_ver(NULL) * 2) >> 2, 0, dy);
             if (d < _SCROLL_ANIM_TIME_MIN) d = _SCROLL_ANIM_TIME_MIN;
             if (d > _SCROLL_ANIM_TIME_MAX) d = _SCROLL_ANIM_TIME_MAX;

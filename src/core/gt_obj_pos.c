@@ -37,7 +37,7 @@
 
 /* global functions / API interface -------------------------------------*/
 
-void gt_area_copy(gt_area_st * dst, gt_area_st * src)
+void gt_area_copy(gt_area_st * dst, gt_area_st const * const src)
 {
     dst->x = src->x;
     dst->y = src->y;

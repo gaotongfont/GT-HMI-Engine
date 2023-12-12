@@ -39,7 +39,7 @@ extern "C" {
  * @param dst dst area
  * @param src src area
  */
-void gt_area_copy(gt_area_st * dst, gt_area_st * src);
+void gt_area_copy(gt_area_st * dst, gt_area_st const * const src);
 
 /**
  * @brief check the obj is visible

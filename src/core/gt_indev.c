@@ -18,6 +18,7 @@
 #include "gt_disp.h"
 #include "gt_obj_pos.h"
 #include "gt_obj_scroll.h"
+#include "gt_style.h"
 
 /* private define -------------------------------------------------------*/
 /**
@@ -226,9 +227,11 @@ static void _indev_scroll_handler(gt_indev_st * indev) {
     if (_is_scroll_vertical(point_p->gesture)) {
         dy = point_p->scroll_diff.y;
         point_p->scroll_throw.x = 0;
+        gt_obj_set_scroll_ud(point_p->obj_scroll, GT_DIR_DOWN == point_p->gesture ? true : false);
     } else {
         dx = point_p->scroll_diff.x;
         point_p->scroll_throw.y = 0;
+        gt_obj_set_scroll_lr(point_p->obj_scroll, GT_DIR_RIGHT == point_p->gesture ? true : false);
     }
     gt_obj_scroll_to(point_p->obj_scroll, dx, dy, GT_ANIM_OFF);
 }
@@ -254,12 +257,11 @@ static void _indev_released_handle(gt_indev_st * indev) {
 #endif
     _send_released_event(point_p);
     point_p->obj_act = NULL;
-    point_p->obj_target = NULL;
 
     if (point_p->obj_scroll) {
         _indev_scroll_throw_handler(indev);
-        point_p->obj_target = NULL;
     }
+    point_p->obj_target = NULL;
 }
 
 static void _indev_pressed_handle(gt_indev_st * indev) {

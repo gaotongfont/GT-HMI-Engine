@@ -243,8 +243,16 @@ void gt_anim_init(gt_anim_st * anim);
  * @brief Which animation object start to run
  *
  * @param anim The animation object
+ * @return gt_anim_st* The animation object which is insert to core
  */
-void gt_anim_start(const gt_anim_st * anim);
+gt_anim_st * gt_anim_start(const gt_anim_st * anim);
+
+/**
+ * @brief Reset the animation object create tick to restart to run
+ *
+ * @param anim The animation object
+ */
+void gt_anim_restart(gt_anim_st * anim);
 
 /**
  * @brief delete animation object in core

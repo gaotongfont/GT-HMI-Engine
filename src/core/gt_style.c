@@ -10,6 +10,7 @@
  /* include --------------------------------------------------------------*/
 #include "gt_style.h"
 #include "../hal/gt_hal_disp.h"
+#include "../others/gt_log.h"
 #include "gt_mem.h"
 #include "string.h"
 
@@ -416,6 +417,36 @@ gt_scroll_dir_et gt_obj_get_scroll_dir(gt_obj_st * obj)
 bool gt_obj_is_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir)
 {
     return (obj->scroll_dir & dir) ? true : false;
+}
+
+void gt_obj_set_scroll_lr(gt_obj_st * obj, bool is_scroll_right)
+{
+    obj->scroll_l_r = is_scroll_right;
+}
+
+bool gt_obj_is_scroll_left(gt_obj_st * obj)
+{
+    return 0 == obj->scroll_l_r ? true : false;
+}
+
+bool gt_obj_is_scroll_right(gt_obj_st * obj)
+{
+    return obj->scroll_l_r ? true : false;
+}
+
+void gt_obj_set_scroll_ud(gt_obj_st * obj, bool is_scroll_down)
+{
+    obj->scroll_u_d = is_scroll_down;
+}
+
+bool gt_obj_is_scroll_up(gt_obj_st * obj)
+{
+    return 0 == obj->scroll_u_d ? true : false;
+}
+
+bool gt_obj_is_scroll_down(gt_obj_st * obj)
+{
+    return obj->scroll_u_d ? true : false;
 }
 
 void gt_obj_set_scroll_snap_x(gt_obj_st * obj, gt_scroll_snap_em snap)

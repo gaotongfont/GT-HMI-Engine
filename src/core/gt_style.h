@@ -151,6 +151,26 @@ void gt_obj_set_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir);
 gt_scroll_dir_et gt_obj_get_scroll_dir(gt_obj_st * obj);
 bool gt_obj_is_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir);
 
+/**
+ * @brief Set object scroll horizontal left or right direction.
+ *
+ * @param obj
+ * @param is_scroll_right 0: left; 1: right
+ */
+void gt_obj_set_scroll_lr(gt_obj_st * obj, bool is_scroll_right);
+bool gt_obj_is_scroll_left(gt_obj_st * obj);
+bool gt_obj_is_scroll_right(gt_obj_st * obj);
+
+/**
+ * @brief Set object scroll vertical up or down direction.
+ *
+ * @param obj
+ * @param is_scroll_down 0: up; 1: down
+ */
+void gt_obj_set_scroll_ud(gt_obj_st * obj, bool is_scroll_down);
+bool gt_obj_is_scroll_up(gt_obj_st * obj);
+bool gt_obj_is_scroll_down(gt_obj_st * obj);
+
 void gt_obj_set_scroll_snap_x(gt_obj_st * obj, gt_scroll_snap_em snap);
 void gt_obj_set_scroll_snap_y(gt_obj_st * obj, gt_scroll_snap_em snap);
 gt_scroll_snap_em gt_obj_get_scroll_snap_x(gt_obj_st * obj);

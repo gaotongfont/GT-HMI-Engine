@@ -368,19 +368,21 @@ void gt_anim_init(gt_anim_st * anim)
     anim->time_delay_start = 0;
     anim->time = 500;
     anim->time_act = 0;
+    anim->value_start = 0;
+    anim->value_end = 100;
     anim->_path_cb = _gt_anim_path_linear;
     anim->data = NULL;
 }
 
-void gt_anim_start(const gt_anim_st * anim)
+gt_anim_st * gt_anim_start(const gt_anim_st * anim)
 {
-    if (!anim) { return ; }
+    if (!anim) { return NULL; }
 
     gt_anim_st * ptr        = NULL;
     gt_anim_st * backup_ptr = NULL;
     gt_anim_st * new_obj = (gt_anim_st * )gt_mem_malloc(sizeof(gt_anim_st));
     if (!new_obj) {
-        return ;
+        return NULL;
     }
 
     if (gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
@@ -407,6 +409,14 @@ void gt_anim_start(const gt_anim_st * anim)
 
     _gt_list_add(&new_obj->list, &_GT_GC_GET_ROOT(_gt_anim_ll));
     _gt_anim_change_list();
+
+    return new_obj;
+}
+
+void gt_anim_restart(gt_anim_st * anim)
+{
+    if (!anim) { return ; }
+    anim->tick_create = gt_tick_get();
 }
 
 bool gt_anim_del(gt_obj_st * target, gt_anim_exec_cb_t exec_cb)
