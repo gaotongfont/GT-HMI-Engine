@@ -280,4 +280,22 @@ void gt_label_set_space(gt_obj_st * label, uint8_t space_x, uint8_t space_y)
     style->space_y = space_y;
 }
 
+uint8_t gt_label_get_font_size(gt_obj_st * label)
+{
+    _gt_label_st * style = (_gt_label_st * )label->style;
+    return style->font_info.size;
+}
+
+uint8_t gt_label_get_space_x(gt_obj_st * label)
+{
+    _gt_label_st * style = (_gt_label_st * )label->style;
+    return style->space_x;
+}
+
+uint8_t gt_label_get_space_y(gt_obj_st * label)
+{
+    _gt_label_st * style = (_gt_label_st * )label->style;
+    return style->space_y;
+}
+
 /* end ------------------------------------------------------------------*/
