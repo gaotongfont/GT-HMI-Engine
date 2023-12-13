@@ -129,6 +129,7 @@ uint8_t gt_roller_get_total_count(gt_obj_st * obj);
  */
 void gt_roller_set_line_space(gt_obj_st * obj, uint8_t space);
 
+void gt_roller_set_font_color(gt_obj_st * obj, gt_color_t color);
 void gt_roller_set_font_size(gt_obj_st * obj, uint8_t size);
 void gt_roller_set_font_gray(gt_obj_st * obj, uint8_t gray);
 void gt_roller_set_font_align(gt_obj_st * obj, uint8_t align);

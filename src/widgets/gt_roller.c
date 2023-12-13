@@ -566,6 +566,24 @@ void gt_roller_set_line_space(gt_obj_st * obj, uint8_t space)
     }
 }
 
+void gt_roller_set_font_color(gt_obj_st * obj, gt_color_t color)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+        return ;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    if (NULL == style) {
+        return ;
+    }
+    if (NULL == style->text) {
+        return ;
+    }
+    gt_label_set_font_color(style->text, color);
+}
+
 void gt_roller_set_font_size(gt_obj_st * obj, uint8_t size)
 {
     if (NULL == obj) {
