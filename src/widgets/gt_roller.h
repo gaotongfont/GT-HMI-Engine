@@ -24,11 +24,16 @@ extern "C" {
 /* define ---------------------------------------------------------------*/
 
 /**
+ * @brief The number of pages of the project template is used to cache infinite churn
+ */
+#define GT_ROLLER_INFINITE_PAGES_COUNT  7
+
+/**
  * @brief Roller work mode
- *
  */
 typedef enum gt_roller_mode_e {
     GT_ROLLER_MODE_NORMAL   = 0,                /** Limited scrolling range */
+    GT_ROLLER_MODE_INFINITE,                    /** Infinite scrolling range */
 
     GT_ROLLER_MODE_MAX_COUNT = (1 << 2),        /** Up to 4 modes */
 }gt_roller_mode_em;
@@ -123,6 +128,16 @@ uint8_t gt_roller_get_total_count(gt_obj_st * obj);
  * @param space value
  */
 void gt_roller_set_line_space(gt_obj_st * obj, uint8_t space);
+
+void gt_roller_set_font_size(gt_obj_st * obj, uint8_t size);
+void gt_roller_set_font_gray(gt_obj_st * obj, uint8_t gray);
+void gt_roller_set_font_align(gt_obj_st * obj, uint8_t align);
+void gt_roller_set_font_family_cn(gt_obj_st * obj, gt_family_t family);
+void gt_roller_set_font_family_en(gt_obj_st * obj, gt_family_t family);
+void gt_roller_set_font_family_fl(gt_obj_st * obj, gt_family_t family);
+void gt_roller_set_font_family_numb(gt_obj_st * obj, gt_family_t family);
+void gt_roller_set_font_thick_en(gt_obj_st * obj, uint8_t thick);
+void gt_roller_set_font_thick_cn(gt_obj_st * obj, uint8_t thick);
 
 #endif  /** GT_CFG_ENABLE_ROLLER */
 

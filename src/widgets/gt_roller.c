@@ -1,7 +1,8 @@
 /**
  * @file gt_roller.c
  * @author Feyoung
- * @brief
+ * @brief Roller widget When the selection is modified,
+ *      the GT_EVENT_TYPE_UPDATE_VALUE event of the current control is fired.
  * @version 0.1
  * @date 2023-11-21 10:47:15
  * @copyright Copyright (c) 2014-2023, Company Genitop. Co., Ltd.
@@ -54,7 +55,7 @@ typedef struct _gt_roller_s {
     gt_obj_st * text;                   // Options text, free by class
     gt_anim_st * anim_snap;             // The anim object to scroll snap
     uint16_t scroll_vertical_length;    // The length of vertical scroll
-    uint8_t selected;                   // The index of selected item
+    uint16_t selected;                  // The index of selected item, Infinite mode need to calculate the real index
     uint8_t count_total;                // The total count of items
     uint8_t count_of_show;              // The count of items to show within area
     uint8_t line_space;                 // The space between lines
@@ -117,6 +118,27 @@ static void _deinit_cb(gt_obj_st * obj) {
 }
 
 /**
+ * @brief The index is calculated according to the actual number of items
+ *
+ * @param index The index of selected item
+ * @param total The total count of lines
+ * @return uint8_t The index of selected item
+ */
+static inline uint16_t _get_infinite_real_selected_index(gt_size_t index, uint16_t total) {
+    return index % (total / GT_ROLLER_INFINITE_PAGES_COUNT);
+}
+
+/**
+ * @brief Reset the change increment in infinite scroll mode
+ *
+ * @param total_length Total rolling distance
+ * @return uint16_t The increase in variation
+ */
+static inline uint16_t _get_infinite_scroll_increment(uint16_t total_length) {
+    return ((GT_ROLLER_INFINITE_PAGES_COUNT >> 1) * total_length) / GT_ROLLER_INFINITE_PAGES_COUNT;
+}
+
+/**
  * @brief Calc total line count and total height value
  *
  * @param obj
@@ -133,8 +155,13 @@ static void _calc_scroll_vertical_length(gt_obj_st * obj, char const * const opt
         }
     }
     style->count_total = count;
-    style->scroll_vertical_length = (count - style->count_of_show) *
-        (gt_label_get_font_size(style->text) + gt_label_get_space_y(style->text));
+    if (GT_ROLLER_MODE_INFINITE == style->reg.mode) {
+        style->scroll_vertical_length = count *
+            (gt_label_get_font_size(style->text) + gt_label_get_space_y(style->text));
+    } else {
+        style->scroll_vertical_length = (count - style->count_of_show) *
+            (gt_label_get_font_size(style->text) + gt_label_get_space_y(style->text));
+    }
 }
 
 /**
@@ -146,7 +173,6 @@ static void _calc_scroll_vertical_length(gt_obj_st * obj, char const * const opt
  */
 static gt_size_t _normal_limit_y(gt_obj_st * obj, gt_size_t val) {
     _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    uint8_t space_y = gt_label_get_space_y(style->text);
     gt_size_t ret_val = val;
     gt_size_t top_y = (style->count_of_show >> 1) * (obj->area.h / style->count_of_show);
     gt_size_t bottom_y = - style->scroll_vertical_length - top_y;
@@ -158,6 +184,18 @@ static gt_size_t _normal_limit_y(gt_obj_st * obj, gt_size_t val) {
         }
         else if (val < bottom_y) {
             ret_val = bottom_y;
+        }
+    }
+    else if (GT_ROLLER_MODE_INFINITE == style->reg.mode) {
+        top_y = -style->scroll_vertical_length / GT_ROLLER_INFINITE_PAGES_COUNT;
+        bottom_y = -style->scroll_vertical_length - top_y;
+
+        if (val > top_y) {
+            /** limit top, reset to bottom */
+            ret_val -= _get_infinite_scroll_increment(style->scroll_vertical_length);
+        }
+        else if (val < bottom_y) {
+            ret_val += _get_infinite_scroll_increment(style->scroll_vertical_length);
         }
     }
     return ret_val;
@@ -175,6 +213,11 @@ static void _scroll_text_handler(gt_obj_st * obj) {
 static void _scroll_snap(gt_obj_st * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj->style;
     gt_size_t scroll_y = gt_obj_scroll_get_y(obj);
+
+    if (GT_ROLLER_MODE_INFINITE == style->reg.mode) {
+        scroll_y = _normal_limit_y(obj, scroll_y);
+    }
+
     gt_size_t target_y = scroll_y;
     gt_size_t item_height = gt_label_get_font_size(style->text) + gt_label_get_space_y(style->text);
 
@@ -192,7 +235,6 @@ static void _scroll_snap(gt_obj_st * obj) {
             target_y -= (scroll_y % item_height) - item_height;
         }
     }
-#if 01
     if (gt_abs(target_y - scroll_y) >= item_height) {
         /** Do not scroll by anim when variation over item height */
         return;
@@ -201,7 +243,6 @@ static void _scroll_snap(gt_obj_st * obj) {
         /** Do not scroll by anim when target y equal to current scroll value */
         return;
     }
-#endif
     target_y = _normal_limit_y(obj, target_y);
     gt_obj_scroll_to_y(obj, target_y - scroll_y, GT_ANIM_ON);
 }
@@ -369,7 +410,6 @@ void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mo
         return;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    gt_size_t len = 0;
     if (NULL == style) {
         return;
     }
@@ -381,19 +421,43 @@ void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mo
     }
 
     if (GT_ROLLER_MODE_NORMAL == mode) {
-        len = strlen(options) + 1;
         if (NULL == style->text) {
             style->text = gt_label_create(obj);
         }
         gt_label_set_text(style->text, options);
-        gt_label_set_space(style->text, 0, style->line_space);
-        gt_label_set_font_align(style->text, GT_ALIGN_CENTER);
-
-        gt_obj_set_fixed(style->text, true);
-        _reset_scroll_size(obj);
-        gt_obj_set_inside(style->text, true);
-        gt_obj_set_scroll_dir(obj, GT_SCROLL_VERTICAL);
     }
+    else if (GT_ROLLER_MODE_INFINITE == mode) {
+        if (NULL == style->text) {
+            style->text = gt_label_create(obj);
+        }
+        gt_size_t len = strlen(options) + 1;
+        char * infinite_options = gt_mem_malloc(len * GT_ROLLER_INFINITE_PAGES_COUNT);
+        if (NULL == infinite_options) {
+            return;
+        }
+        for (uint16_t i = 0; i < GT_ROLLER_INFINITE_PAGES_COUNT; i++) {
+            gt_memcpy(&infinite_options[i * len], options, len);
+            infinite_options[(i + 1) * len - 1] = '\n';
+        }
+        infinite_options[GT_ROLLER_INFINITE_PAGES_COUNT * len - 1] = '\0';
+        gt_label_set_text(style->text, infinite_options);
+
+        if (infinite_options) {
+            gt_mem_free(infinite_options);
+            infinite_options = NULL;
+        }
+    }
+    else {
+        /** other unknown mode */
+        return;
+    }
+    gt_label_set_space(style->text, 0, style->line_space);
+    gt_label_set_font_align(style->text, GT_ALIGN_CENTER);
+
+    gt_obj_set_fixed(style->text, true);
+    _reset_scroll_size(obj);
+    gt_obj_set_inside(style->text, true);
+    gt_obj_set_scroll_dir(obj, GT_SCROLL_VERTICAL);
 }
 
 gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index)
@@ -412,10 +476,22 @@ gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index)
     if (NULL == style) {
         return GT_RES_FAIL;
     }
-    if (index > style->count_total) {
-        return GT_RES_FAIL;
-    }
     gt_size_t diff_count = index - style->selected;
+
+    if (GT_ROLLER_MODE_NORMAL == style->reg.mode) {
+        if (index > style->count_total) {
+            return GT_RES_FAIL;
+        }
+    } else if (GT_ROLLER_MODE_INFINITE == style->reg.mode) {
+        if (index > style->count_total / GT_ROLLER_INFINITE_PAGES_COUNT) {
+            return GT_RES_FAIL;
+        }
+        diff_count = index - _get_infinite_real_selected_index(style->selected, style->count_total);
+    }
+    if (0 == diff_count) {
+        /** avoid state can not change to done */
+        return GT_RES_OK;
+    }
     uint16_t item_height = style->text->area.h / style->count_total;
 
     style->reg.state = _SCROLL_SNAP_READY;
@@ -435,6 +511,9 @@ gt_size_t gt_roller_get_selected(gt_obj_st * obj)
     _gt_roller_st * style = (_gt_roller_st * )obj->style;
     if (NULL == style) {
         return -1;
+    }
+    if (GT_ROLLER_MODE_INFINITE == style->reg.mode) {
+        return _get_infinite_real_selected_index(style->selected, style->count_total);
     }
     return style->selected;
 }
@@ -461,6 +540,9 @@ uint8_t gt_roller_get_total_count(gt_obj_st * obj)
     if (NULL == style) {
         return 0;
     }
+    if (GT_ROLLER_MODE_INFINITE == style->reg.mode) {
+        return style->count_total / GT_ROLLER_INFINITE_PAGES_COUNT;
+    }
     return style->count_total;
 }
 
@@ -483,6 +565,169 @@ void gt_roller_set_line_space(gt_obj_st * obj, uint8_t space)
         _reset_scroll_size(obj);
     }
 }
+
+void gt_roller_set_font_size(gt_obj_st * obj, uint8_t size)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+        return ;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    if (NULL == style) {
+        return ;
+    }
+    if (NULL == style->text) {
+        return ;
+    }
+    gt_label_set_font_size(style->text, size);
+}
+
+void gt_roller_set_font_gray(gt_obj_st * obj, uint8_t gray)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+        return ;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    if (NULL == style) {
+        return ;
+    }
+    if (NULL == style->text) {
+        return ;
+    }
+    gt_label_set_font_gray(style->text, gray);
+}
+
+void gt_roller_set_font_align(gt_obj_st * obj, uint8_t align)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+        return ;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    if (NULL == style) {
+        return ;
+    }
+    if (NULL == style->text) {
+        return ;
+    }
+    gt_label_set_font_align(style->text, align);
+}
+
+void gt_roller_set_font_family_cn(gt_obj_st * obj, gt_family_t family)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+        return ;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    if (NULL == style) {
+        return ;
+    }
+    if (NULL == style->text) {
+        return ;
+    }
+    gt_label_set_font_family_cn(obj, family);
+}
+
+void gt_roller_set_font_family_en(gt_obj_st * obj, gt_family_t family)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+        return ;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    if (NULL == style) {
+        return ;
+    }
+    if (NULL == style->text) {
+        return ;
+    }
+    gt_label_set_font_family_en(obj, family);
+}
+
+void gt_roller_set_font_family_fl(gt_obj_st * obj, gt_family_t family)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+        return ;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    if (NULL == style) {
+        return ;
+    }
+    if (NULL == style->text) {
+        return ;
+    }
+    gt_label_set_font_family_fl(obj, family);
+}
+
+void gt_roller_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+        return ;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    if (NULL == style) {
+        return ;
+    }
+    if (NULL == style->text) {
+        return ;
+    }
+    gt_label_set_font_family_numb(obj, family);
+}
+
+void gt_roller_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+        return ;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    if (NULL == style) {
+        return ;
+    }
+    if (NULL == style->text) {
+        return ;
+    }
+    gt_label_set_font_thick_en(obj, thick);
+}
+
+void gt_roller_set_font_thick_cn(gt_obj_st * obj, uint8_t thick)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+        return ;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    if (NULL == style) {
+        return ;
+    }
+    if (NULL == style->text) {
+        return ;
+    }
+    gt_label_set_font_thick_cn(obj, thick);
+}
+
 
 #endif  /** GT_CFG_ENABLE_ROLLER */
 /* end ------------------------------------------------------------------*/
