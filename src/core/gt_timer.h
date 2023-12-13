@@ -4,7 +4,7 @@
  * @brief GUI task timer interface implementation
  * @version 0.1
  * @date 2022-06-14 14:19:29
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_TIMER_H_
 #define _GT_TIMER_H_

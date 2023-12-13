@@ -4,7 +4,7 @@
  * @brief The global call
  * @version 0.1
  * @date 2022-06-14 16:56:57
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_GC_H_
 #define _GT_GC_H_

@@ -4,7 +4,7 @@
  * @brief display area interface
  * @version 0.1
  * @date 2022-08-11 09:34:53
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_AREA_H_
 #define _GT_AREA_H_

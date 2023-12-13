@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-06-01 11:22:22
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -750,7 +750,7 @@ static uint32_t _gt_font_language_split(const uint8_t *str , uint32_t len , uint
         }
         idx += tmp;
     }
-    
+
     return idx;
 }
 
@@ -770,7 +770,7 @@ static uint32_t _gt_font_punctuation_split(const uint8_t *str , uint32_t len , u
         }
         idx += tmp;
     }
-    
+
     return idx;
 }
 
@@ -931,7 +931,7 @@ static uint32_t _get_convertor_string_width(const gt_font_st *fonts , uint8_t la
             }
         }
 
-        
+
         if(len < range_w && lan != STYLE_EN_ARABIC){
             if(NULL != ol_width){
                 *ol_width = len;
@@ -965,7 +965,7 @@ uint32_t gt_font_split(gt_font_st *fonts , uint32_t width , uint32_t dot_w ,uint
 
     *ret_w = 0;
     *lan_len = 0;
-    // 
+    //
     len = _gt_font_language_split((const uint8_t*)fonts->utf8, fonts->len , fonts->info.encoding , lan);
 
     if(0 == len){
@@ -990,11 +990,11 @@ uint32_t gt_font_split(gt_font_st *fonts , uint32_t width , uint32_t dot_w ,uint
     uint16_t ol_w = 0 , ol_idx = 0;
     while (idx < len)
     {
-        // 
+        //
         tmp_len = _gt_font_punctuation_split((const uint8_t*)&text[idx] , len - idx, fonts->info.encoding);
         _font.utf8 = &text[idx];
         _font.len = tmp_len;
-        // 
+        //
         if(is_convertor_language(*lan)){
             tmp_w = _get_convertor_string_width(&_font , *lan , space , width - *ret_w, &ol_idx , &ol_w);
         }
@@ -1072,12 +1072,12 @@ uint8_t right_to_left_lan_get(uint16_t style)
     case 73:
     case 141:
         return STYLE_EN_HEBREW;
-    
+
     case 74:
     case 75:
     case 76:
         return STYLE_EN_ARABIC;
-    
+
     default:
         break;
     }
@@ -1141,7 +1141,7 @@ bool gt_right_to_left_handler(const gt_font_st* fonts , uint8_t* ret_text , uint
         tmp++;
     }
     gt_bidi_st tmp_bidi;
-    
+
     while(bidi_s < bidi_e)
     {
         if(r2l_lan == STYLE_EN_ARABIC && bidi_len != alb_count){

@@ -4,7 +4,7 @@
  * @brief  Provide access to the system tick with 1 millisecond resolution
  * @version 0.1
  * @date 2022-05-19 17:26:21
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_HAL_TICK_H_
 #define _GT_HAL_TICK_H_

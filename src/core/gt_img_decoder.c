@@ -5,7 +5,7 @@
  *      extra file type.
  * @version 0.1
  * @date 2022-08-10 19:52:55
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/

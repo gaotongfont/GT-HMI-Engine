@@ -4,7 +4,7 @@
  * @brief Low-level rendering interface
  * @version 0.1
  * @date 2022-05-11 15:02:43
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/

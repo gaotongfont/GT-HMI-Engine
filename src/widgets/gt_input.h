@@ -4,7 +4,7 @@
  * @brief The area to input content or password
  * @version 0.1
  * @date 2022-07-20 13:37:30
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_INPUT_H_
 #define _GT_INPUT_H_

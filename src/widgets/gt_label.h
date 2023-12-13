@@ -4,7 +4,7 @@
  * @brief label for content description
  * @version 0.1
  * @date 2022-07-13 11:55:38
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_LABEL_H_
 #define _GT_LABEL_H_

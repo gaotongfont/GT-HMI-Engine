@@ -4,7 +4,7 @@
  * @brief image display control
  * @version 0.1
  * @date 2022-07-05 17:36:46
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_IMG_H_
 #define _GT_IMG_H_

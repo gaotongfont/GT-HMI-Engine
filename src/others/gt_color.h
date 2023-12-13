@@ -4,7 +4,7 @@
  * @brief THe color implementation
  * @version 0.1
  * @date 2022-05-13 10:13:45
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_COLOR_H_
 #define _GT_COLOR_H_

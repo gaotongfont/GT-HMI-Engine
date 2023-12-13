@@ -4,7 +4,7 @@
  * @brief The QRCode implementation
  * @version 0.1
  * @date 2022-08-24 16:37:06
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_QRCODE_H_
 #define _GT_QRCODE_H_

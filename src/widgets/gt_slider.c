@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-07-21 19:53:32
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -349,7 +349,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             _gt_slider_add_offset(obj , _pos);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
-            
+
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
             if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_L2R ){

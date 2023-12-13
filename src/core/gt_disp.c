@@ -4,7 +4,7 @@
  * @brief Display implementation for the screen.
  * @version 0.1
  * @date 2022-05-11 14:59:50
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
  /* include --------------------------------------------------------------*/

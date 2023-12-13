@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-07-18 13:39:15
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -43,7 +43,7 @@ typedef struct _gt_listview_s
 
     gt_color_t  font_color_act;
     gt_color_t  font_color_ina;
-    
+
     gt_font_info_st font_info;
 
     uint8_t     font_align;
@@ -162,7 +162,7 @@ static inline void _gt_listview_init_widget(gt_obj_st * listview) {
     gt_font_st font = {
         .info = style->font_info,
         .res  = NULL,
-        
+
     };
     font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;

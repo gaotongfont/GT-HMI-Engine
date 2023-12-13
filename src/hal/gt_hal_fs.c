@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-08-30 20:29:41
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/

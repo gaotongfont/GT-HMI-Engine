@@ -1,10 +1,10 @@
 /**
  * @file gt_hal.h
  * @author yongg
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-05-16 14:18:45
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_HAL_H_
 #define _GT_HAL_H_

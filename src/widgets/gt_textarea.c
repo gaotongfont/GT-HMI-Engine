@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-07-11 15:03:35
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -36,9 +36,9 @@ typedef struct _gt_textarea_s{
     uint16_t    cnt_contents;
 
     gt_color_t  color_background;
-    
+
     gt_font_info_st font_info;
-    
+
     uint8_t     bg_opa;     /* @ref gt_color.h */
     uint8_t     space_x;
     uint8_t     space_y;

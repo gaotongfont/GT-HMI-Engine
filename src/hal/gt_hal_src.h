@@ -4,7 +4,7 @@
  * @brief Hal layer source file system implementation, arrays form management.
  * @version 0.1
  * @date 2022-08-19 15:25:28
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_HAL_SRC_H_
 #define _GT_HAL_SRC_H_

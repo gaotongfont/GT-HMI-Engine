@@ -4,7 +4,7 @@
  * @brief Memory / Memory pool management services
  * @version 0.1
  * @date 2022-05-12 10:47:00
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_MEM_H_
 #define _GT_MEM_H_

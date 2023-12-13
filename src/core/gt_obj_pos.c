@@ -4,7 +4,7 @@
  * @brief Set object position function
  * @version 0.1
  * @date 2022-06-15 14:34:36
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/

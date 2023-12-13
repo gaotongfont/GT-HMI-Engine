@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-12-09 13:40:14
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -122,14 +122,14 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     rect_attr.bg_color      = gt_color_white();
     barcode->area.w = area.w + 4;
     barcode->area.h = h;
-    // 
+    //
     draw_bg(barcode->draw_ctx, &rect_attr, &barcode->area);
-    
+
     // set barcode color
     rect_attr.bg_color      = gt_color_black();
     rect_attr.data_gray = style->pdat;
     rect_attr.gray = 1;
-    
+
     area.x = barcode->area.x + 2;
 #if (BARCODE_READ_MODE)
     // 1:base shape

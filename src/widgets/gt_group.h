@@ -4,7 +4,7 @@
  * @brief The group of members control
  * @version 0.1
  * @date 2022-07-20 15:51:11
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_GROUP_H_
 #define _GT_GROUP_H_

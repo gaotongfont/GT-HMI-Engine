@@ -4,7 +4,7 @@
  * @brief code assertion
  * @version 0.1
  * @date 2022-07-01 10:06:11
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_ASSERT_H_
 #define _GT_ASSERT_H_

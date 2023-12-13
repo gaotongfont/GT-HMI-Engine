@@ -4,7 +4,7 @@
  * @brief GUI task timer interface implementation
  * @version 0.1
  * @date 2022-06-14 14:18:54
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
  /* include --------------------------------------------------------------*/

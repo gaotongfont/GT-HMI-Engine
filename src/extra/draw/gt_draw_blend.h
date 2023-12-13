@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-08-10 19:43:01
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_DRAW_BLEND_H_
 #define _GT_DRAW_BLEND_H_

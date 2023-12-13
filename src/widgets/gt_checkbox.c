@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-07-18 14:11:47
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -62,7 +62,7 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
         .res      = NULL,
         .utf8     = style->text,
         .len      = strlen(style->text),
-        
+
     };
     font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;

@@ -4,7 +4,7 @@
  * @brief Interface functions for drawing text and images
  * @version 0.1
  * @date 2022-08-09 18:29:16
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_DRAW_H_
 #define _GT_DRAW_H_

@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-07-20 13:37:26
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -41,7 +41,7 @@ typedef struct _gt_input_s
 
     gt_color_t bg_color;
     gt_color_t font_color;
-    
+
     gt_font_info_st font_info;
 
     uint8_t     font_align;
@@ -150,7 +150,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         .opa = input->opa,
     };
 
-    // 
+    //
     gt_area_st area_font = gt_area_reduce(box_area , style->border_width + 2);
     gt_area_st area_res = draw_text(input->draw_ctx, &font_attr, &area_font);
 

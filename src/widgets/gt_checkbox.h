@@ -4,7 +4,7 @@
  * @brief checkbox element
  * @version 0.1
  * @date 2022-07-18 14:11:44
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_CHECKBOX_H_
 #define _GT_CHECKBOX_H_

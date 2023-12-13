@@ -4,7 +4,7 @@
  * @brief Scroll bar animation
  * @version 0.1
  * @date 2022-08-31 14:25:09
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_OBJ_SCROLL_H_
 #define _GT_OBJ_SCROLL_H_

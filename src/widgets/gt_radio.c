@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-07-20 15:29:04
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -29,7 +29,7 @@ typedef struct _gt_radio_s
     gt_color_t  font_color;
 
     gt_font_info_st font_info;
-    
+
     uint8_t     font_align;
     uint8_t     space_x;
     uint8_t     space_y;
@@ -64,7 +64,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
         .res        = NULL,
         .utf8       = style->text,
         .len        = strlen(style->text),
-        
+
     };
     font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;

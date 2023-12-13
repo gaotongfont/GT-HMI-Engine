@@ -1,6 +1,6 @@
 # GT-GUI 快速上手移植手册
 
-Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+Copyright (c) 2014-present, Company Genitop. Co., Ltd.
 
 Genitop GUI 快速上手移植，运行框架的指南手册。
 

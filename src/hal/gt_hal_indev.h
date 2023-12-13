@@ -4,7 +4,7 @@
  * @brief Hal layer implementation for input devices
  * @version 0.1
  * @date 2022-05-19 17:33:48
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_HAL_INDEV_H_
 #define _GT_HAL_INDEV_H_

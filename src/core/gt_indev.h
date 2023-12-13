@@ -4,7 +4,7 @@
  * @brief input device handler
  * @version 0.1
  * @date 2022-06-06 14:06:12
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_INDEV_H_
 #define _GT_INDEV_H_

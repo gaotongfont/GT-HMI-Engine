@@ -4,7 +4,7 @@
  * @brief Set object position function
  * @version 0.1
  * @date 2022-06-15 14:34:27
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_OBJ_POS_H_
 #define _GT_OBJ_POS_H_

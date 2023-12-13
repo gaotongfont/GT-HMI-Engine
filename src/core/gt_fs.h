@@ -4,7 +4,7 @@
  * @brief file system implementation for hal layer devices.
  * @version 0.1
  * @date 2022-07-05 19:15:04
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_FS_H_
 #define _GT_FS_H_
