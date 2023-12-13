@@ -355,6 +355,17 @@ static void _reset_scroll_size(gt_obj_st * obj) {
     _scroll_text_handler(obj);
 }
 
+static gt_obj_st * _create_text(gt_obj_st * obj) {
+    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    if (style->text) {
+        return style->text;
+    }
+
+    style->text = gt_label_create(obj);
+    gt_label_set_font_align(style->text, GT_ALIGN_CENTER);
+    return style->text;
+}
+
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_roller_create(gt_obj_st * parent)
 {
@@ -421,15 +432,11 @@ void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mo
     }
 
     if (GT_ROLLER_MODE_NORMAL == mode) {
-        if (NULL == style->text) {
-            style->text = gt_label_create(obj);
-        }
+        _create_text(obj);
         gt_label_set_text(style->text, options);
     }
     else if (GT_ROLLER_MODE_INFINITE == mode) {
-        if (NULL == style->text) {
-            style->text = gt_label_create(obj);
-        }
+        _create_text(obj);
         gt_size_t len = strlen(options) + 1;
         char * infinite_options = gt_mem_malloc(len * GT_ROLLER_INFINITE_PAGES_COUNT);
         if (NULL == infinite_options) {
@@ -452,7 +459,6 @@ void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mo
         return;
     }
     gt_label_set_space(style->text, 0, style->line_space);
-    gt_label_set_font_align(style->text, GT_ALIGN_CENTER);
 
     gt_obj_set_fixed(style->text, true);
     _reset_scroll_size(obj);
@@ -560,10 +566,9 @@ void gt_roller_set_line_space(gt_obj_st * obj, uint8_t space)
     }
     style->line_space = space;
 
-    if (NULL != style->text) {
-        gt_label_set_space(style->text, 0, style->line_space);
-        _reset_scroll_size(obj);
-    }
+    _create_text(obj);
+    gt_label_set_space(style->text, 0, style->line_space);
+    _reset_scroll_size(obj);
 }
 
 void gt_roller_set_font_color(gt_obj_st * obj, gt_color_t color)
@@ -578,9 +583,7 @@ void gt_roller_set_font_color(gt_obj_st * obj, gt_color_t color)
     if (NULL == style) {
         return ;
     }
-    if (NULL == style->text) {
-        return ;
-    }
+    _create_text(obj);
     gt_label_set_font_color(style->text, color);
 }
 
@@ -596,9 +599,7 @@ void gt_roller_set_font_size(gt_obj_st * obj, uint8_t size)
     if (NULL == style) {
         return ;
     }
-    if (NULL == style->text) {
-        return ;
-    }
+    _create_text(obj);
     gt_label_set_font_size(style->text, size);
 }
 
@@ -614,9 +615,7 @@ void gt_roller_set_font_gray(gt_obj_st * obj, uint8_t gray)
     if (NULL == style) {
         return ;
     }
-    if (NULL == style->text) {
-        return ;
-    }
+    _create_text(obj);
     gt_label_set_font_gray(style->text, gray);
 }
 
@@ -632,9 +631,7 @@ void gt_roller_set_font_align(gt_obj_st * obj, uint8_t align)
     if (NULL == style) {
         return ;
     }
-    if (NULL == style->text) {
-        return ;
-    }
+    _create_text(obj);
     gt_label_set_font_align(style->text, align);
 }
 
@@ -650,10 +647,8 @@ void gt_roller_set_font_family_cn(gt_obj_st * obj, gt_family_t family)
     if (NULL == style) {
         return ;
     }
-    if (NULL == style->text) {
-        return ;
-    }
-    gt_label_set_font_family_cn(obj, family);
+    _create_text(obj);
+    gt_label_set_font_family_cn(style->text, family);
 }
 
 void gt_roller_set_font_family_en(gt_obj_st * obj, gt_family_t family)
@@ -668,10 +663,8 @@ void gt_roller_set_font_family_en(gt_obj_st * obj, gt_family_t family)
     if (NULL == style) {
         return ;
     }
-    if (NULL == style->text) {
-        return ;
-    }
-    gt_label_set_font_family_en(obj, family);
+    _create_text(obj);
+    gt_label_set_font_family_en(style->text, family);
 }
 
 void gt_roller_set_font_family_fl(gt_obj_st * obj, gt_family_t family)
@@ -686,10 +679,8 @@ void gt_roller_set_font_family_fl(gt_obj_st * obj, gt_family_t family)
     if (NULL == style) {
         return ;
     }
-    if (NULL == style->text) {
-        return ;
-    }
-    gt_label_set_font_family_fl(obj, family);
+    _create_text(obj);
+    gt_label_set_font_family_fl(style->text, family);
 }
 
 void gt_roller_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
@@ -704,10 +695,8 @@ void gt_roller_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
     if (NULL == style) {
         return ;
     }
-    if (NULL == style->text) {
-        return ;
-    }
-    gt_label_set_font_family_numb(obj, family);
+    _create_text(obj);
+    gt_label_set_font_family_numb(style->text, family);
 }
 
 void gt_roller_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
@@ -722,10 +711,8 @@ void gt_roller_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
     if (NULL == style) {
         return ;
     }
-    if (NULL == style->text) {
-        return ;
-    }
-    gt_label_set_font_thick_en(obj, thick);
+    _create_text(obj);
+    gt_label_set_font_thick_en(style->text, thick);
 }
 
 void gt_roller_set_font_thick_cn(gt_obj_st * obj, uint8_t thick)
@@ -740,10 +727,8 @@ void gt_roller_set_font_thick_cn(gt_obj_st * obj, uint8_t thick)
     if (NULL == style) {
         return ;
     }
-    if (NULL == style->text) {
-        return ;
-    }
-    gt_label_set_font_thick_cn(obj, thick);
+    _create_text(obj);
+    gt_label_set_font_thick_cn(style->text, thick);
 }
 
 
