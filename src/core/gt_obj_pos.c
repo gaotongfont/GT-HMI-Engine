@@ -171,25 +171,31 @@ bool gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point ){
     return ret;
 }
 
-static gt_obj_st * _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st * point){
-    int idx = 0;
-    gt_obj_st * obj_clicked = NULL, * obj_temp = NULL;
-    while( idx < parent->cnt_child ){
-        if( 0 != parent->child[idx]->cnt_child ){
-            obj_temp = _gt_obj_foreach_clicked(parent->child[idx], point);
-            if( obj_temp && GT_VISIBLE == obj_temp->visible ){
-                obj_clicked = obj_temp;
-                return obj_clicked;
-            }
-        }
-        if( gt_obj_check_is_clicked(parent->child[idx], point) ){
-            if( parent->child[idx] && GT_VISIBLE == parent->child[idx]->visible ){
-                obj_clicked = parent->child[idx];
-            }
-        }
-        idx++;
+/**
+ * @brief According to the point, find the clicked object from the
+ *      newer layer to the first layer.
+ *
+ * @param parent
+ * @param point
+ * @return gt_obj_st* The clicked object
+ */
+static gt_obj_st * _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st * point) {
+    gt_size_t idx = parent->cnt_child - 1;
+    gt_obj_st * obj_clicked = NULL;
+
+    if (false == gt_obj_check_is_clicked(parent, point)) {
+        return NULL;
     }
-    return obj_clicked;
+
+    while (idx > -1) {
+        obj_clicked = _gt_obj_foreach_clicked(parent->child[idx], point);
+        if (obj_clicked && GT_VISIBLE == obj_clicked->visible) {
+            return obj_clicked;
+        }
+        --idx;
+    }
+
+    return parent;
 }
 
 gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point){
