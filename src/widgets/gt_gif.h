@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2023-10-24 16:32:21
- * @copyright Copyright (c) 2014-2023, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_GIF_H_
 #define _GT_GIF_H_

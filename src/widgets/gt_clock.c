@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2023-06-05 15:22:14
- * @copyright Copyright (c) 2014-2023, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -208,7 +208,7 @@ static void _init_cb(gt_obj_st * obj) {
 
     // focus
     draw_focus(obj , 0);
-    
+
 }
 
 static inline void _remove_all_next_day_cb(_gt_clock_st * style) {

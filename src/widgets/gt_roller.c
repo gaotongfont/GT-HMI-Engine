@@ -5,7 +5,7 @@
  *      the GT_EVENT_TYPE_UPDATE_VALUE event of the current control is fired.
  * @version 0.1
  * @date 2023-11-21 10:47:15
- * @copyright Copyright (c) 2014-2023, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/

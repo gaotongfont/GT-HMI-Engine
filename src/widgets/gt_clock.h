@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2023-06-05 15:22:09
- * @copyright Copyright (c) 2014-2023, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_CLOCK_H_
 #define _GT_CLOCK_H_

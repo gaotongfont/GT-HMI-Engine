@@ -1,10 +1,10 @@
 /**
  * @file gt_wordart.h
  * @author Yang (your@email.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2023-07-21 14:10:24
- * @copyright Copyright (c) 2014-2023, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_WORDART_H_
 #define _GT_WORDART_H_
@@ -39,7 +39,7 @@ gt_obj_st * gt_wordart_create(gt_obj_st * parent) ;
 
 /**
  * @brief Example Initialize the maximum number of items
- * 
+ *
  * @param wordart obj
  * @param total maximum number
  */
@@ -47,7 +47,7 @@ void gt_wordart_items_init(gt_obj_st* wordart , uint32_t total);
 
 /**
  * @brief add item
- * 
+ *
  * @param wordart obj
  * @param coding unicode
  * @param img image

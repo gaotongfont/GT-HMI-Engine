@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2023-10-23 15:47:00
- * @copyright Copyright (c) 2014-2023, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 /** ----------------------------------------------------------------------------------------------------------------------------------
 *     Added normal JPG support [7/10/2020]
