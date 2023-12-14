@@ -176,6 +176,15 @@ void gt_obj_set_scroll_snap_y(gt_obj_st * obj, gt_scroll_snap_em snap);
 gt_scroll_snap_em gt_obj_get_scroll_snap_x(gt_obj_st * obj);
 gt_scroll_snap_em gt_obj_get_scroll_snap_y(gt_obj_st * obj);
 
+/**
+ * @brief Filter the maximum viewable screen range based on the properties of the control
+ *
+ * @param obj current object
+ * @return true Ignore to calculate the maximum viewable screen range
+ * @return false Need to calculate the maximum viewable screen range
+ */
+bool _gt_obj_is_ignore_calc_max_area(gt_obj_st * obj);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

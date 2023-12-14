@@ -39,7 +39,7 @@
 void gt_obj_set_area(gt_obj_st * obj, gt_area_st area)
 {
     gt_obj_area_change(obj, &area);
-    _gt_disp_update_max_area(&area, obj->overflow);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
 }
 
 void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)
@@ -48,7 +48,7 @@ void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)
     area.x = x;
     area.y = y;
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area, obj->overflow);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -61,7 +61,7 @@ void gt_obj_move_to(gt_obj_st * obj, gt_size_t x, gt_size_t y)
     area.y = y;
     gt_obj_move_child_by(obj, dx, dy);
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area, obj->overflow);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -71,7 +71,7 @@ void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h) {
     area.w = w;
     area.h = h;
     gt_obj_size_change(obj, &area);
-    _gt_disp_update_max_area(&area, obj->overflow);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -79,7 +79,7 @@ void gt_obj_set_x(gt_obj_st * obj, gt_size_t x) {
     gt_area_st area = obj->area;
     area.x = x;
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area, obj->overflow);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -87,7 +87,7 @@ void gt_obj_set_y(gt_obj_st * obj, gt_size_t y) {
     gt_area_st area = obj->area;
     area.y = y;
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area, obj->overflow);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -95,7 +95,7 @@ void gt_obj_set_w(gt_obj_st * obj, uint16_t w) {
     gt_area_st area = obj->area;
     area.w = w;
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area, obj->overflow);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -103,7 +103,7 @@ void gt_obj_set_h(gt_obj_st * obj, uint16_t h) {
     gt_area_st area = obj->area;
     area.h = h;
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area, obj->overflow);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -467,6 +467,15 @@ gt_scroll_snap_em gt_obj_get_scroll_snap_x(gt_obj_st * obj)
 gt_scroll_snap_em gt_obj_get_scroll_snap_y(gt_obj_st * obj)
 {
     return obj->scroll_snap_y;
+}
+
+bool _gt_obj_is_ignore_calc_max_area(gt_obj_st * obj)
+{
+    if (NULL == obj) { return true; }
+    if (obj->inside) { return true; }
+    if (obj->overflow) { return true; }
+
+    return false;
 }
 
 /* end ------------------------------------------------------------------*/
