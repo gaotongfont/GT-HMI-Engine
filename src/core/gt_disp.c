@@ -40,6 +40,7 @@ typedef enum{
  */
 typedef struct _flush_scr_param_s {
     gt_disp_st * disp;
+    gt_area_st area_dirty;         // The area of display dirty area.
     gt_area_st area_flush;         // The buffer or area of display flush area.
     gt_obj_st * scr;               // The current screen absolute display area
     gt_obj_st * scr_prev;          // The previous screen absolute display area
@@ -102,15 +103,20 @@ static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
     }
 }
 
-static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj, _gt_draw_valid_st * valid_area)
+static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param)
 {
+    if (false == gt_area_is_intersect_screen(&param->disp->area_disp, &obj->area)) {
+        return ;
+    }
+
     if( !gt_obj_is_visible(obj) ){
         return;
     }
-    gt_disp_st * disp = gt_disp_get_default();
+    gt_disp_st * disp = param->disp;
 
     gt_draw_ctx_t draw_ctx = {
-        .valid    = valid_area,
+        /** Page change animation */
+        .valid    = param->scr_prev ? &param->valid : NULL,
         .parent_area = (obj->inside && obj->parent) ? &obj->parent->area : NULL,
         .buf      = disp->vbd_color,
         .buf_area = disp->area_disp,
@@ -120,17 +126,17 @@ static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj, _gt_draw_valid
     obj->class->_init_cb(obj);
 }
 
-static void _gt_disp_check_and_copy_foreach(gt_obj_st * obj, _gt_draw_valid_st * valid_scr)
+static void _gt_disp_check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param)
 {
     int16_t idx = 0;
     gt_obj_st * child_p = NULL;
 
     while( idx < obj->cnt_child ) {
         child_p = obj->child[idx];
-        gt_check_obj_visible_and_copy(child_p, valid_scr);
+        gt_check_obj_visible_and_copy(child_p, param);
 
         if( child_p->cnt_child != 0 ){
-            _gt_disp_check_and_copy_foreach(child_p, valid_scr);
+            _gt_disp_check_and_copy_foreach(child_p, param);
         }
 
         ++idx;
@@ -362,7 +368,7 @@ static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
 #endif  /** GT_REFRESH_FLUSH_LINE_PRE_TIME != GT_SCREEN_HEIGHT */
 
         gt_area_cover_screen(&param->disp->area_disp, &param->view_scr_prev_abs, &param->valid.area_prev);
-        _gt_disp_check_and_copy_foreach(param->scr_prev, &param->valid);
+        _gt_disp_check_and_copy_foreach(param->scr_prev, param);
 
         /** new screen */
         _clear_buffer(param->disp, param->scr_prev, param->scr, param->area_flush.y, false);
@@ -392,7 +398,7 @@ static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
 #endif  /** GT_REFRESH_FLUSH_LINE_PRE_TIME != GT_SCREEN_HEIGHT */
 
         gt_area_cover_screen(&param->disp->area_disp, &param->view_scr_abs, &param->valid.area_scr);
-        _gt_disp_check_and_copy_foreach(param->scr, &param->valid);
+        _gt_disp_check_and_copy_foreach(param->scr, param);
 
         /** flush display by buffer area */
         param->disp->drv->flush_cb(param->disp->drv, &param->area_flush, param->disp->vbd_color);
@@ -412,13 +418,14 @@ static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
 static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     gt_color_t color_fill = gt_screen_get_bgcolor(param->scr);
     uint32_t len = param->disp->area_act.w * param->line;
+
     while(param->area_flush.y < param->disp->area_act.h) {
         gt_color_fill(param->disp->vbd_color, len, color_fill);
 
         param->disp->area_disp.x = param->scr->area.x;
         param->disp->area_disp.y = param->scr->area.y + param->area_flush.y;
 
-        _gt_disp_check_and_copy_foreach(param->scr, NULL);
+        _gt_disp_check_and_copy_foreach(param->scr, param);
 
         /** flush display by buffer area */
         param->disp->drv->flush_cb(param->disp->drv, &param->area_flush, param->disp->vbd_color);
@@ -703,6 +710,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
     uint16_t scr_width = gt_disp_get_res_hor(NULL);
     _flush_scr_param_st param = {
         .disp = gt_disp_get_default(),
+        .area_dirty = (gt_area_st)*coords,
         .area_flush = {0, 0, scr_width, GT_REFRESH_FLUSH_LINE_PRE_TIME},
         .scr =  gt_disp_get_scr(),          // Only x, y, w, h animation changes are recorded
         .scr_prev = gt_disp_get_scr_prev(), // Only x, y, w, h animation changes are recorded
