@@ -1541,7 +1541,6 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     blend_dsc_style.mask_buf    = mask_line;
 
 
-    gt_area_st area_res;
     uint8_t width;
     uint16_t size_mask = font_dot_w * font_dot_w, size_fres = size_mask >> 3, idx_res = 0;
 
@@ -1577,7 +1576,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             }
         }
 
-        if( !gt_area_intersect_screen(&draw_ctx->buf_area, &area_font, &area_res) ){
+        if( !gt_area_is_intersect_screen(&draw_ctx->buf_area, &area_font) ){
             goto _lab_nex_word;
         }
 
