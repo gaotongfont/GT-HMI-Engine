@@ -315,7 +315,7 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
         }
     } else {
         /** draw_ctx->buf_area: 图片显示区域; dsc->dst_area: 当前绘制区域 */
-        if (!gt_area_intersect_screen(&draw_ctx->buf_area, &area_dsc, &area_intersect)) {
+        if (!gt_area_intersect_screen(&area_draw, &area_dsc, &area_intersect)) {
             return;
         }
     }
