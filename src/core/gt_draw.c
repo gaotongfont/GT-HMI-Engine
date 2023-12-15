@@ -244,10 +244,10 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
 {
     if (dsc->bg_opa <= GT_OPA_MIN) return;
 
-    gt_area_st bg_coords, area_res;
+    gt_area_st bg_coords;
     gt_area_copy(&bg_coords, (gt_area_st *)coords);
 
-    if( !gt_area_intersect_screen(&draw_ctx->buf_area, &bg_coords, &area_res) ){
+    if( !gt_area_is_intersect_screen(&draw_ctx->buf_area, &bg_coords) ){
         return;
     }
 
