@@ -10,6 +10,7 @@
  /* include --------------------------------------------------------------*/
 #include "gt_style.h"
 #include "../hal/gt_hal_disp.h"
+#include "./gt_disp.h"
 #include "../others/gt_log.h"
 #include "gt_mem.h"
 #include "string.h"
@@ -128,7 +129,7 @@ uint16_t gt_obj_get_h(gt_obj_st * obj) {
 void gt_obj_set_visible(gt_obj_st * obj, gt_visible_et is_visible)
 {
     obj->visible = is_visible;
-    _gt_disp_refr_append_area(&obj->area);
+    gt_disp_invalid_area(obj);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -136,7 +137,7 @@ void gt_obj_set_disabled(gt_obj_st * obj, gt_disabled_et is_disabled)
 {
     obj->disabled = is_disabled ? 1 : 0;
     obj->opa = obj->disabled ? GT_OPA_60 : GT_OPA_COVER;
-    _gt_disp_refr_append_area(&obj->area);
+    gt_disp_invalid_area(obj);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -148,7 +149,7 @@ bool gt_obj_is_disabled(gt_obj_st * obj)
 void gt_obj_set_focus(gt_obj_st * obj, bool is_focus)
 {
     obj->focus = is_focus;
-    _gt_disp_refr_append_area(&obj->area);
+    gt_disp_invalid_area(obj);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -162,7 +163,7 @@ void gt_obj_set_focus_disabled(gt_obj_st * obj, gt_disabled_et is_disabled)
     obj->focus_dis = is_disabled ? 1 : 0;
 
     if(GT_DISABLED == obj->focus_dis){
-        _gt_disp_refr_append_area(&obj->area);
+        gt_disp_invalid_area(obj);
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
     }
 }
