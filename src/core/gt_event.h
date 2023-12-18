@@ -43,6 +43,10 @@ typedef enum gt_event_type_e{
     GT_EVENT_TYPE_INPUT_PROCESS_LOST,                                 ///< move off and lost handler
     GT_EVENT_TYPE_INPUT_KEY,
     GT_EVENT_TYPE_INPUT_FOCUSED,
+    GT_EVENT_TYPE_INPUT_SCROLL_UP,
+    GT_EVENT_TYPE_INPUT_SCROLL_DOWN,
+    GT_EVENT_TYPE_INPUT_SCROLL_LEFT,
+    GT_EVENT_TYPE_INPUT_SCROLL_RIGHT,
     /** ... */
 
     /* =================== input event defined here End =================== */
