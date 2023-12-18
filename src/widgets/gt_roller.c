@@ -111,6 +111,8 @@ static void _init_cb(gt_obj_st * obj) {
     rect_attr.bg_opa         = obj->opa;
 
     draw_bg(obj->draw_ctx, &rect_attr, &selected);
+
+    draw_focus(obj, 0);
 }
 
 static void _deinit_cb(gt_obj_st * obj) {
