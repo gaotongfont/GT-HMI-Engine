@@ -16,6 +16,7 @@
 #include "../others/gt_area.h"
 #include "../others/gt_log.h"
 #include "../core/gt_obj_pos.h"
+#include "../core/gt_obj_scroll.h"
 
 
 #if GT_CFG_ENABLE_VIEW_PAGER
@@ -148,7 +149,7 @@ static void _unfixed_slider_widgets(gt_obj_st * parent) {
     gt_obj_st * child = NULL;
     for (idx = 0; idx < cnt; idx++) {
         child = parent->child[idx];
-        if (GT_TYPE_SCROLLBAR != child->class->type) {
+        if (GT_TYPE_SLIDER != child->class->type) {
             continue;
         }
         if (false == gt_obj_get_fixed(child)) {
@@ -176,21 +177,16 @@ static void _deinit_cb(gt_obj_st * obj) {
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj->style;
+    gt_size_t value = 0;
 
     switch (e->code) {
     case GT_EVENT_TYPE_DRAW_START: {
         gt_disp_invalid_area(obj);
         break;
     }
-    case GT_EVENT_TYPE_DRAW_END: {
-        break;
-    }
     case GT_EVENT_TYPE_CHANGE_CHILD_ADD: {
         // NOTE change to last child when be reset prop
         _init_child_prop(obj);
-        break;
-    }
-    case GT_EVENT_TYPE_INPUT_SCROLL_START: {
         break;
     }
     case GT_EVENT_TYPE_INPUT_SCROLL: {
@@ -199,6 +195,22 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_END: {
         style->reg.index = gt_abs(obj->process_attr.scroll.x) / obj->parent->area.w;
+        break;
+    }
+    case GT_EVENT_TYPE_INPUT_SCROLL_UP:
+    case GT_EVENT_TYPE_INPUT_SCROLL_LEFT: {
+        value = gt_abs(obj->process_attr.scroll.x) / obj->parent->area.w;
+        if (value) {
+            gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - (value - 1) * obj->parent->area.w, GT_ANIM_ON);
+        }
+        break;
+    }
+    case GT_EVENT_TYPE_INPUT_SCROLL_DOWN:
+    case GT_EVENT_TYPE_INPUT_SCROLL_RIGHT: {
+        value = (gt_abs(obj->process_attr.scroll.x) + obj->parent->area.w - 1) / obj->parent->area.w;
+        if ((value + 1) < style->reg.count) {
+            gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - ((value + 1) * obj->parent->area.w), GT_ANIM_ON);
+        }
         break;
     }
     default:

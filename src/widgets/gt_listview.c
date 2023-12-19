@@ -269,17 +269,16 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     _gt_listview_st * style = (_gt_listview_st * )obj->style;
 
     switch(code) {
-        case GT_EVENT_TYPE_DRAW_START:
+        case GT_EVENT_TYPE_DRAW_START: {
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
-
+        }
         case GT_EVENT_TYPE_INPUT_SCROLL_START: {
             style->scrolling = true;
             break;
         }
-
-        case GT_EVENT_TYPE_INPUT_SCROLL:
+        case GT_EVENT_TYPE_INPUT_SCROLL: {
             if (gt_obj_scroll_get_y(obj) > 0) {
                 obj->process_attr.scroll.y = 0;
             }
@@ -290,13 +289,13 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
-
+        }
         case GT_EVENT_TYPE_INPUT_PRESSED: {
             style->scrolling = false;
             break;
         }
-
-        case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
+        case GT_EVENT_TYPE_INPUT_RELEASED: {
+            /* click event finish */
             if (style->scrolling) {
                 style->scrolling = false;
                 break;
@@ -305,14 +304,21 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             _gt_listview_update_by_click_point(obj, obj->process_attr.point);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
-
+        }
         case GT_EVENT_TYPE_INPUT_PROCESS_LOST: {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         }
-
         case GT_EVENT_TYPE_UPDATE_STYLE: {
             _gt_listview_update(obj);
+            break;
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL_LEFT:
+        case GT_EVENT_TYPE_INPUT_SCROLL_UP: {
+            break;
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL_RIGHT:
+        case GT_EVENT_TYPE_INPUT_SCROLL_DOWN: {
             break;
         }
 

@@ -55,7 +55,7 @@ typedef enum type_widget_e {
     GT_TYPE_RADIO       = 9,        ///< radio box
     GT_TYPE_INPUT       = 10,       ///< input
     GT_TYPE_SWITCH      = 11,       ///< switch
-    GT_TYPE_SCROLLBAR   = 12,       ///< scroll bar
+    GT_TYPE_SLIDER      = 12,       ///< slider
     GT_TYPE_PROCESS_BAR = 13,       ///< progress bar
     GT_TYPE_KEYPAD      = 14,       ///< keypad
     GT_TYPE_IMGBTN      = 15,       ///< imgbtn

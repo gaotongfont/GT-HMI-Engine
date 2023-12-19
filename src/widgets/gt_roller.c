@@ -310,6 +310,12 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code) {
         _ready_scroll_snap_anim(obj);
     }
+    else if (GT_EVENT_TYPE_INPUT_SCROLL_UP == code) {
+        gt_roller_go_prev(obj);
+    }
+    else if (GT_EVENT_TYPE_INPUT_SCROLL_DOWN == code) {
+        gt_roller_go_next(obj);
+    }
 }
 
 static inline bool _set_mode(_gt_roller_st * style, gt_roller_mode_em mode) {
