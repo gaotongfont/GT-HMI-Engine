@@ -71,16 +71,6 @@ bool gt_obj_check_visible(gt_obj_st * obj, gt_area_st area);
 void gt_obj_get_valid_area(gt_obj_st * obj, gt_area_st * area_act, gt_area_st *area_valid);
 
 /**
- * @brief check obj was clicked by point
- *
- * @param obj check obj
- * @param point click point
- * @return true clicked
- * @return false not clicked
- */
-bool gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point );
-
-/**
  * @brief find smallest clicked obj from parent
  *
  * @param parent parent obj
