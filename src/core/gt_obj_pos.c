@@ -208,6 +208,7 @@ static _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st
         .obj = NULL,
         .state = _CHECK_CLICKED_STATE_CONTINUE,
     };
+    _click_obj_ret_st ret;
 
     obj_clicked.state = gt_obj_check_is_clicked(parent, point);
     if (_CHECK_CLICKED_STATE_FAIL == obj_clicked.state) {
@@ -223,15 +224,20 @@ static _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st
 
     /** Continue to find out children which is clicked */
     while (idx > -1) {
-        obj_clicked = _gt_obj_foreach_clicked(parent->child[idx], point);
-        if (_CHECK_CLICKED_STATE_OK == obj_clicked.state) {
-            if (obj_clicked.obj && GT_VISIBLE == obj_clicked.obj->visible) {
-                return obj_clicked;
+        ret = _gt_obj_foreach_clicked(parent->child[idx], point);
+        if (_CHECK_CLICKED_STATE_OK == ret.state) {
+            if (ret.obj && GT_VISIBLE == ret.obj->visible) {
+                return ret;
             }
-        } else if (_CHECK_CLICKED_STATE_FAIL == obj_clicked.state) {
-            obj_clicked.state = _CHECK_CLICKED_STATE_CONTINUE;
+        } else if (_CHECK_CLICKED_STATE_FAIL == ret.state) {
+            ret.state = _CHECK_CLICKED_STATE_CONTINUE;
         }
         --idx;
+    }
+
+    if (gt_obj_get_overflow(parent) && _CHECK_CLICKED_STATE_OK == obj_clicked.state) {
+        obj_clicked.obj = parent;
+        return obj_clicked;
     }
 
     return obj_clicked;
