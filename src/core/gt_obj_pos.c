@@ -229,15 +229,12 @@ static _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st
             if (ret.obj && GT_VISIBLE == ret.obj->visible) {
                 return ret;
             }
-        } else if (_CHECK_CLICKED_STATE_FAIL == ret.state) {
-            ret.state = _CHECK_CLICKED_STATE_CONTINUE;
         }
         --idx;
     }
 
-    if (gt_obj_get_overflow(parent) && _CHECK_CLICKED_STATE_OK == obj_clicked.state) {
+    if (_CHECK_CLICKED_STATE_OK == obj_clicked.state) {
         obj_clicked.obj = parent;
-        return obj_clicked;
     }
 
     return obj_clicked;
