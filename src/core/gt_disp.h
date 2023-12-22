@@ -22,10 +22,6 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef enum {
-    GT_DIR_VER,
-    GT_DIR_HOR,
-}gt_dir_e;
 
 /**
  * @brief The screen turn next screen animation type
@@ -44,11 +40,6 @@ typedef enum {
 
     GT_SCR_ANIM_TYPE_TOTAL,
 }gt_scr_anim_type_et;
-
-typedef struct _gt_draw_board_s{
-    gt_color_t * ctx;
-    gt_area_st area;
-}gt_draw_board_st;
 
 /* macros ---------------------------------------------------------------*/
 

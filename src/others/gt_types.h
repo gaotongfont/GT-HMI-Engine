@@ -39,6 +39,10 @@ typedef void * style_widget_t;
 
 typedef int16_t gt_size_t;
 
+typedef uint8_t gt_family_t;
+typedef uint8_t gt_opt_t;
+
+
 /**
  * @brief widget type enum definition
  */
@@ -109,14 +113,6 @@ typedef enum
 
     GT_STATE_MAX_COUNT,
 }gt_state_et;
-
-typedef enum {
-    GT_STATE_UNSELECTED = -1,   // widget init default status
-    GT_STATE_SELECTED,          // 0 or > 0: the index of selected item.
-}gt_state_selected_et;
-
-typedef uint8_t gt_family_t;
-typedef uint8_t gt_opt_t;
 
 
 /* macros ---------------------------------------------------------------*/
