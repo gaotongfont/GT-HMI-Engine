@@ -264,7 +264,7 @@ static void _gt_btn_init_style(gt_obj_st * btn)
 
     style->text = gt_mem_malloc(sizeof("btn"));
     strcpy(style->text, "btn");
-    style->radius           = 0;
+    style->radius           = 4;
     style->color_pressed    = gt_color_hex(0x0097e6);    //default color_selected
     style->color_background = gt_color_hex(0x00a8ff);  //default color_unselected
     style->reg.fill         = 1;

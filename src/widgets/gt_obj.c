@@ -26,8 +26,7 @@
 #define MY_CLASS    &gt_obj_class
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_style_obj_s
-{
+typedef struct _gt_style_obj_s {
     gt_color_t bgcolor;
 }_gt_style_obj_st;
 
@@ -56,15 +55,10 @@ static void _gt_obj_init_style(gt_obj_st * obj)
     style->bgcolor = gt_color_hex(0xFFFFFF);
 }
 
-static void _init_cb(gt_obj_st * obj)
-{
-    GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-    /* code */
+static void _init_cb(gt_obj_st * obj) {
 }
 
-static void _deinit_cb(gt_obj_st * obj)
-{
-    GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
+static void _deinit_cb(gt_obj_st * obj) {
 }
 
 static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)

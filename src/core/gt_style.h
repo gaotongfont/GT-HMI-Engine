@@ -54,7 +54,6 @@ typedef enum{
 
 /**
  * @brief @see gt_obj_st
- *
  */
 typedef enum {
     GT_OBJ_PROP_TYPE_VISIBLE = 0,
