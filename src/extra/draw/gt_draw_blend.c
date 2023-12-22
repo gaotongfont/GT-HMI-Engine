@@ -62,14 +62,28 @@ static void _fill_no_opacity(
 
     // fill dsc->dst_buf use opa
     if (color_src_p) {
-        for (y = 0; y < h; y++) {
-            for (x = 0; x < w; x++) {
-                color_dst_p[idx_dst] = gt_color_mix(color_src_p[idx_src], color_dst_p[idx_dst], opa);
-                ++idx_dst;
-                ++idx_src;
+        if (opa < GT_OPA_MAX) {
+            for (y = 0; y < h; y++) {
+                for (x = 0; x < w; x++) {
+                    color_dst_p[idx_dst] = gt_color_mix(color_src_p[idx_src], color_dst_p[idx_dst], opa);
+                    ++idx_dst;
+                    ++idx_src;
+                }
+                idx_dst += step_dst_line;
+                idx_src += step_src_line;
             }
-            idx_dst += step_dst_line;
-            idx_src += step_src_line;
+        }
+        else {
+            for (y = 0; y < h; y++) {
+                for (x = 0; x < w; x++) {
+                    color_dst_p[idx_dst] = color_src_p[idx_src];
+                    ++idx_dst;
+                    ++idx_src;
+                }
+                idx_dst += step_dst_line;
+                idx_src += step_src_line;
+            }
+
         }
         return;
     }
