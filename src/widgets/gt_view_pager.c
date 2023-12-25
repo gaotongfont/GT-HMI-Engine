@@ -144,12 +144,30 @@ static void _init_cb(gt_obj_st * obj) {
     _draw_tip_bar(obj, &rect_attr);
 }
 
+/**
+ * @brief A filter which can be slide object
+ *
+ * @param obj
+ * @return true Can slide
+ * @return false
+ */
+static inline bool _is_slide_enabled(gt_obj_st * obj) {
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_SLIDER == type) {
+        return true;
+    }
+    else if (GT_TYPE_ROLLER == type) {
+        return true;
+    }
+    return false;
+}
+
 static void _unfixed_slider_widgets(gt_obj_st * parent) {
     uint16_t idx, cnt = parent->cnt_child;
     gt_obj_st * child = NULL;
     for (idx = 0; idx < cnt; idx++) {
         child = parent->child[idx];
-        if (GT_TYPE_SLIDER != child->class->type) {
+        if (false == _is_slide_enabled(child)) {
             continue;
         }
         if (false == gt_obj_get_fixed(child)) {
@@ -322,8 +340,9 @@ void gt_view_pager_fragment_add_widget(gt_obj_st * view_pager, uint8_t fragment_
         _child_set_group_area(view_pager, child);
     }
     uint16_t scr_width = gt_disp_get_res_hor(NULL);
+    uint16_t new_pos = (child->area.x % scr_width) + fragment_idx * scr_width;
 
-    child->area.x = (child->area.x % scr_width) + fragment_idx * scr_width;
+    gt_obj_move_to(child, new_pos, child->area.y);
 }
 
 void gt_view_pager_set_glass(gt_obj_st * obj, bool enabled)

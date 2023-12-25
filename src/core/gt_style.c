@@ -291,12 +291,8 @@ void gt_obj_move_child_by(gt_obj_st * obj, gt_size_t dx, gt_size_t dy)
         if (false == gt_obj_get_overflow(child)) {
             continue;
         }
-        if (gt_obj_is_scroll_dir(obj, GT_SCROLL_HORIZONTAL)) {
-            child->area.x += dx;
-        }
-        if (gt_obj_is_scroll_dir(obj, GT_SCROLL_VERTICAL)) {
-            child->area.y += dy;
-        }
+        child->area.x += dx;
+        child->area.y += dy;
 
         gt_obj_move_child_by(child, dx, dy);
     }
