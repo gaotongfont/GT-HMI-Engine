@@ -286,13 +286,15 @@ null_lb:
 struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_obj_s * to)
 {
     gt_obj_st * parent = obj->parent;
+    bool is_success = false;
 
-    if (false == _add_obj_to_parent(obj, to)) {
+    is_success = _add_obj_to_parent(obj, to);
+    if (false == is_success) {
         return parent;
     }
     obj->parent = to;
     _gt_obj_class_destroy_from_parent(obj);
-    return _add_obj_to_parent(obj, to) ? to : NULL;
+    return obj->parent;
 }
 
 /**
