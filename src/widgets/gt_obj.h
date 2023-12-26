@@ -138,9 +138,9 @@ gt_obj_st *gt_obj_create(gt_obj_st *parent);
  *
  * @param obj
  * @param to
- * @return bool true: success, false: failed
+ * @return struct gt_obj_s* Parent pointer, if NULL is failed
  */
-bool gt_obj_change_parent(gt_obj_st * obj, gt_obj_st * to);
+gt_obj_st * gt_obj_change_parent(gt_obj_st * obj, gt_obj_st * to);
 
 /**
  * @brief

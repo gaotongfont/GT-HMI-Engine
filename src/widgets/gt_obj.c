@@ -165,7 +165,7 @@ gt_obj_st * gt_obj_create(gt_obj_st * parent)
     return obj;
 }
 
-bool gt_obj_change_parent(gt_obj_st * obj, gt_obj_st * to)
+gt_obj_st * gt_obj_change_parent(gt_obj_st * obj, gt_obj_st * to)
 {
     return _gt_obj_class_change_parent(obj, to);
 }

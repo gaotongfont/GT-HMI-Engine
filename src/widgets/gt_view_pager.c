@@ -88,7 +88,7 @@ const gt_obj_class_st _gt_view_pager_class = {
 /* static functions -----------------------------------------------------*/
 static void _draw_tip_bar(gt_obj_st * obj, gt_attr_rect_st * rect_attr) {
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj->style;
-    uint8_t idx = style->reg.index;
+    uint8_t idx = (uint8_t)style->reg.index;
     uint8_t count = style->reg.count;
     uint16_t total_width = count * _TIP_BAR_POINT_SELECT_WIDTH;
     uint8_t i = 0;
@@ -327,14 +327,14 @@ void gt_view_pager_fragment_add_widget(gt_obj_st * view_pager, uint8_t fragment_
     if (OBJ_TYPE != view_pager->class->type) {
         return;
     }
-    _gt_view_pager_st * style = (_gt_view_pager_st * )view_pager->style;
+    // _gt_view_pager_st * style = (_gt_view_pager_st * )view_pager->style;
     if (_is_over_max_page(fragment_idx)) {
         return;
     }
     if (false == gt_obj_is_child(child, view_pager)) {
-        gt_obj_change_parent(child, view_pager);
+        gt_obj_st * parent = gt_obj_change_parent(child, view_pager);
         gt_obj_set_overflow(child, true);
-        _init_child_prop(child);
+        _init_child_prop(parent);
     }
     if (_child_is_group(child)) {
         _child_set_group_area(view_pager, child);

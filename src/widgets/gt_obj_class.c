@@ -283,12 +283,16 @@ null_lb:
     return NULL;
 }
 
-bool _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_obj_s * to)
+struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_obj_s * to)
 {
-    gt_obj_st * parent = _gt_obj_class_destroy_from_parent(obj);
-    obj->parent = to;
+    gt_obj_st * parent = obj->parent;
 
-    return _add_obj_to_parent(obj, to);
+    if (false == _add_obj_to_parent(obj, to)) {
+        return parent;
+    }
+    obj->parent = to;
+    _gt_obj_class_destroy_from_parent(obj);
+    return _add_obj_to_parent(obj, to) ? to : NULL;
 }
 
 /**
