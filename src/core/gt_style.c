@@ -471,6 +471,7 @@ bool _gt_obj_is_ignore_calc_max_area(gt_obj_st * obj)
     if (NULL == obj) { return true; }
     if (obj->inside) { return true; }
     if (obj->overflow) { return true; }
+    if (obj->virtual) { return true; }
 
     return false;
 }
