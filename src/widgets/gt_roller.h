@@ -81,13 +81,22 @@ void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mo
 void gt_roller_set_display_item_count(gt_obj_st * obj, uint8_t count);
 
 /**
- * @brief Set the selected item of the roller
+ * @brief Set the selected item of the roller immediately
  *
  * @param obj Roller object
  * @param index The index of the selected item [Begin with 0]
  * @return gt_res_t Set status
  */
 gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index);
+
+/**
+ * @brief Set the selected item of the roller by anim
+ *
+ * @param obj Roller object
+ * @param index The index of the selected item [Begin with 0]
+ * @return gt_res_t Set status
+ */
+gt_res_t gt_roller_set_selected_anim(gt_obj_st * obj, gt_size_t index);
 
 /**
  * @brief Get the index of the selected item [begin with 0]

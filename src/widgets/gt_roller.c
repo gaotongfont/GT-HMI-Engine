@@ -508,6 +508,46 @@ gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index)
     }
     uint16_t item_height = style->text->area.h / style->count_total;
 
+    obj->process_attr.scroll.y -= item_height * diff_count;
+    _scroll_text_handler(obj);
+
+    return GT_RES_OK;
+}
+
+gt_res_t gt_roller_set_selected_anim(gt_obj_st * obj, gt_size_t index)
+{
+    if (NULL == obj) {
+        return GT_RES_FAIL;
+    }
+    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+        return GT_RES_FAIL;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    if (_SCROLL_SNAP_READY == style->reg.state) {
+        /** Prevent intermediate animation events from being removed */
+        return GT_RES_INV;
+    }
+    if (NULL == style) {
+        return GT_RES_FAIL;
+    }
+    gt_size_t diff_count = index - style->selected;
+
+    if (GT_ROLLER_MODE_NORMAL == style->reg.mode) {
+        if (index > style->count_total) {
+            return GT_RES_FAIL;
+        }
+    } else if (GT_ROLLER_MODE_INFINITE == style->reg.mode) {
+        if (index > style->count_total / GT_ROLLER_INFINITE_PAGES_COUNT) {
+            return GT_RES_FAIL;
+        }
+        diff_count = index - _get_infinite_real_selected_index(style->selected, style->count_total);
+    }
+    if (0 == diff_count) {
+        /** avoid state can not change to done */
+        return GT_RES_OK;
+    }
+    uint16_t item_height = style->text->area.h / style->count_total;
+
     style->reg.state = _SCROLL_SNAP_READY;
     gt_obj_scroll_to_y(obj, -item_height * diff_count, GT_ANIM_ON);
 
