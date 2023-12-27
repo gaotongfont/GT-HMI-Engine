@@ -627,6 +627,12 @@ uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
 
     option = _get_font_style(font , unicode);
 
+    if(GT_Check_Is_Vec(option)){
+        uint32_t font_dot_w = (((font->info.size + 15) >> 4) << 4) * font->info.gray;
+        font_dot_w = (font_dot_w*font_dot_w) >> 3;
+        gt_memset(font->res , 0 , font_dot_w);
+    }
+
     width = GT_Get_Font_Width(unicode , option , font->info.size , font->info.gray , font->res);
 
     if(0 == width){
