@@ -292,8 +292,8 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
     if (false == is_success) {
         return parent;
     }
-    obj->parent = to;
     _gt_obj_class_destroy_from_parent(obj);
+    obj->parent = to;
     return obj->parent;
 }
 
