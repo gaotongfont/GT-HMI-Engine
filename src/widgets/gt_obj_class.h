@@ -66,6 +66,14 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
  */
 void _gt_obj_class_destroy(struct gt_obj_s * self);
 
+/**
+ * @brief
+ *
+ * @param obj
+ * @param parent
+ */
+void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_obj_s * parent);
+
 gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj);
 
 #ifdef __cplusplus

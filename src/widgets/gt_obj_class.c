@@ -11,6 +11,7 @@
 #include "gt_obj_class.h"
 #include "gt_obj.h"
 #include "../core/gt_mem.h"
+#include "../core/gt_style.h"
 #include "../others/gt_types.h"
 #include "../hal/gt_hal.h"
 #include "stdint.h"
@@ -231,10 +232,7 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
     obj->scroll_dir = GT_SCROLL_ALL;
 
     /** Inherit from the parent class */
-    if (parent) {
-        obj->overflow = parent->overflow;
-    }
-
+    _gt_obj_class_inherent_attr_from_parent(obj, parent);
 
     if (!obj->style) {
         goto obj_lb;
@@ -292,6 +290,7 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
     if (false == is_success) {
         return parent;
     }
+
     _gt_obj_class_destroy_from_parent(obj);
     obj->parent = to;
     return obj->parent;
@@ -323,6 +322,16 @@ void _gt_obj_class_destroy(struct gt_obj_s * self)
     _gt_obj_class_destroy_self(self);
     self = NULL;
 }
+
+void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_obj_s * parent)
+{
+    if (NULL == obj || NULL == parent) {
+        return;
+    }
+    gt_obj_set_overflow(obj, parent->overflow);
+    gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_OVERFLOW, parent->overflow);
+}
+
 
 gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj) {
     return obj->class->type;

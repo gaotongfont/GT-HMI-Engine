@@ -327,13 +327,12 @@ void gt_view_pager_fragment_add_widget(gt_obj_st * view_pager, uint8_t fragment_
     if (OBJ_TYPE != view_pager->class->type) {
         return;
     }
-    // _gt_view_pager_st * style = (_gt_view_pager_st * )view_pager->style;
     if (_is_over_max_page(fragment_idx)) {
         return;
     }
     if (false == gt_obj_is_child(child, view_pager)) {
         gt_obj_st * parent = gt_obj_change_parent(child, view_pager);
-        gt_obj_set_overflow(child, true);
+        _gt_obj_class_inherent_attr_from_parent(child, parent);
         _init_child_prop(parent);
     }
     if (_child_is_group(child)) {
