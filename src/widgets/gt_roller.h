@@ -107,6 +107,15 @@ gt_res_t gt_roller_set_selected_anim(gt_obj_st * obj, gt_size_t index);
 gt_size_t gt_roller_get_selected(gt_obj_st * obj);
 
 /**
+ * @brief Get the text of the selected item
+ *
+ * @param obj Roller object
+ * @param result The text of the selected item
+ * @return true Get success, false Get failed
+ */
+bool gt_roller_get_selected_text(gt_obj_st * obj, char * result);
+
+/**
  * @brief Go previous item
  *
  * @param obj Roller object

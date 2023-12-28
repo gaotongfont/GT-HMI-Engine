@@ -259,7 +259,12 @@ static void _scroll_anim_ready_handler(struct gt_anim_s * anim) {
     style->anim_snap = NULL;
 }
 
-static void _scroll_exec_cb(gt_obj_st * obj, int32_t y) {
+static void _scroll_exec_cb(gt_obj_st * obj, int32_t y) { }
+
+static void _notify_update_value_cb(gt_obj_st * obj, int32_t val) { }
+
+static void _notify_update_value_ready_cb(struct gt_anim_s * anim) {
+    gt_event_send(anim->target, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
 static void _select_target_item(gt_obj_st * obj) {
@@ -268,7 +273,16 @@ static void _select_target_item(gt_obj_st * obj) {
     uint16_t item_offset = gt_abs(obj->process_attr.scroll.y - (style->count_of_show >> 1) * item_height);
 
     style->selected = item_offset / item_height;
-    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+
+    gt_anim_st anim;
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_time(&anim, 0);
+    gt_anim_set_value(&anim, 0, 100);
+    gt_anim_set_time_delay_start(&anim, 10);
+    gt_anim_set_exec_cb(&anim, _notify_update_value_cb);
+    gt_anim_set_ready_cb(&anim, _notify_update_value_ready_cb);
+    gt_anim_start(&anim);
 }
 
 static void _ready_scroll_snap_anim(struct gt_obj_s * obj) {
@@ -570,6 +584,43 @@ gt_size_t gt_roller_get_selected(gt_obj_st * obj)
         return _get_infinite_real_selected_index(style->selected, style->count_total);
     }
     return style->selected;
+}
+
+bool gt_roller_get_selected_text(gt_obj_st * obj, char * result)
+{
+    if (NULL == obj) {
+        return false;
+    }
+    if (NULL == result) {
+        return false;
+    }
+    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+        return false;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    if (NULL == style) {
+        return false;
+    }
+    char * text = gt_label_get_text(style->text);
+    uint16_t offset = 0;
+    uint16_t i = 0, len = strlen(text), count = 0, remark_idx = 0;
+
+    for (i = 0; i < len; i++) {
+        if ('\n' == text[i]) {
+            ++count;
+            continue;
+        }
+
+        if (count == style->selected) {
+            result[offset++] = text[i];
+        }
+        else if (count > style->selected) {
+            break;
+        }
+    }
+    result[offset] = '\0';
+
+    return offset ? true : false;
 }
 
 uint8_t gt_roller_go_prev(gt_obj_st * obj)
