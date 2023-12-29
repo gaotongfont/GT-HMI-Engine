@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-05-11 15:03:35
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -28,14 +28,10 @@ typedef struct _gt_label_s{
     char * text;
 
     gt_color_t  font_color;
-    uint8_t     font_size;
-    gt_family_t font_family_cn;
-    gt_family_t font_family_en;
-    gt_family_t font_family_numb;
-    uint8_t     font_gray;
+
+    gt_font_info_st font_info;
+
     uint8_t     font_align;
-    uint8_t     thick_en;
-    uint8_t     thick_cn;
     uint8_t     space_x;
     uint8_t     space_y;
 }_gt_label_st;
@@ -61,32 +57,33 @@ const gt_obj_class_st gt_label_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static inline void _gt_label_init_widget(gt_obj_st * label) {
-    _gt_label_st * style = (_gt_label_st * )label->style;
+/**
+ * @brief obj init label widget call back
+ *
+ * @param obj
+ */
+static void _init_cb(gt_obj_st * obj) {
+    _gt_label_st * style = (_gt_label_st * )obj->style;
 
     gt_font_st font = {
-        .style_cn   = style->font_family_cn,
-        .style_en   = style->font_family_en,
-        .style_numb = style->font_family_numb,
+        .info       = style->font_info,
         .res        = NULL,
         .utf8       = (char * )style->text,
         .len        = strlen((char * )style->text),
-        .size       = style->font_size,
-        .gray       = style->font_gray,
     };
 
-    font.thick_en = style->thick_en == 0 ? style->font_size + 6: style->thick_en;
-    font.thick_cn = style->thick_cn == 0 ? style->font_size + 6: style->thick_cn;
+    font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
+    font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
 
 
-    font.encoding = gt_project_encoding_get();
+    font.info.encoding = gt_project_encoding_get();
 
-    if( 0 == label->area.w || 0 == label->area.h ){
-        label->area.h = 20;
-        label->area.w = font.size * strlen(font.utf8);
+    if( 0 == obj->area.w || 0 == obj->area.h ){
+        obj->area.h = 20;
+        obj->area.w = font.info.size * strlen(font.utf8);
     }
 
-    gt_area_st box_area = gt_area_reduce(label->area , REDUCE_DEFAULT);
+    gt_area_st box_area = gt_area_reduce(obj->area , REDUCE_DEFAULT);
     /*draw font*/
     gt_attr_font_st font_attr = {
         .font       = &font,
@@ -94,23 +91,12 @@ static inline void _gt_label_init_widget(gt_obj_st * label) {
         .space_x    = style->space_x,
         .space_y    = style->space_y,
         .align      = style->font_align,
-        .opa        = label->opa,
+        .opa        = obj->opa,
     };
-    draw_text(label->draw_ctx, &font_attr, &box_area);
+    draw_text(obj->draw_ctx, &font_attr, &box_area);
 
     // focus
-    draw_focus(label , 0);
-}
-
-/**
- * @brief obj init label widget call back
- *
- * @param obj
- */
-static void _init_cb(gt_obj_st * obj) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-
-    _gt_label_init_widget(obj);
+    draw_focus(obj , 0);
 }
 
 /**
@@ -147,47 +133,12 @@ static void _deinit_cb(gt_obj_st * obj) {
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
-    switch(code) {
-        case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
-            gt_disp_invalid_area(obj);
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
-            break;
 
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-
-        case GT_EVENT_TYPE_UPDATE_VALUE:
-            GT_LOGV(GT_LOG_TAG_GUI, "value update");
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            break;
-
-        case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
-
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            break;
-
-        default:
-            break;
+    if (GT_EVENT_TYPE_DRAW_START == code) {
+        gt_disp_invalid_area(obj);
+    }
+    else if (GT_EVENT_TYPE_UPDATE_VALUE == code) {
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
     }
 }
 
@@ -217,16 +168,17 @@ gt_obj_st * gt_label_create(gt_obj_st * parent) {
 
     style->font_color        = gt_color_hex(0x00);
 
-    style->font_family_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
-    style->font_family_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    style->font_family_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
-    style->font_size         = GT_CFG_DEFAULT_FONT_SIZE;
-    style->font_gray         = 1;
-    style->font_align        = GT_ALIGN_LEFT;
-    style->thick_en          = 0;
-    style->thick_cn          = 0;
-    style->space_x           = 0;
-    style->space_y           = 0;
+    style->font_info.style_cn   = GT_CFG_DEFAULT_FONT_FAMILY_CN;
+    style->font_info.style_en   = GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    style->font_info.style_fl   = GT_CFG_DEFAULT_FONT_FAMILY_FL;
+    style->font_info.style_numb = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
+    style->font_info.size       = GT_CFG_DEFAULT_FONT_SIZE;
+    style->font_info.gray       = 1;
+    style->font_align           = GT_ALIGN_LEFT;
+    style->font_info.thick_en   = 0;
+    style->font_info.thick_cn   = 0;
+    style->space_x              = 0;
+    style->space_y              = 0;
     return obj;
 }
 
@@ -274,13 +226,13 @@ void gt_label_set_font_color(gt_obj_st * label, gt_color_t color)
 void gt_label_set_font_size(gt_obj_st * label, uint8_t size)
 {
     _gt_label_st * style = (_gt_label_st * )label->style;
-    style->font_size = size;
+    style->font_info.size = size;
 }
 
 void gt_label_set_font_gray(gt_obj_st * label, uint8_t gray)
 {
     _gt_label_st * style = (_gt_label_st * )label->style;
-    style->font_gray = gray;
+    style->font_info.gray = gray;
 }
 
 void gt_label_set_font_align(gt_obj_st * label, uint8_t align)
@@ -292,33 +244,58 @@ void gt_label_set_font_align(gt_obj_st * label, uint8_t align)
 void gt_label_set_font_family_cn(gt_obj_st * label, gt_family_t family)
 {
     _gt_label_st * style = (_gt_label_st * )label->style;
-    style->font_family_cn = family;
+    style->font_info.style_cn = family;
 }
 void gt_label_set_font_family_en(gt_obj_st * label, gt_family_t family)
 {
     _gt_label_st * style = (_gt_label_st * )label->style;
-    style->font_family_en = family;
+    style->font_info.style_en = family;
 }
+
+void gt_label_set_font_family_fl(gt_obj_st * label, gt_family_t family)
+{
+    _gt_label_st * style = (_gt_label_st * )label->style;
+    style->font_info.style_fl = family;
+}
+
 void gt_label_set_font_thick_en(gt_obj_st * label, uint8_t thick)
 {
     _gt_label_st * style = (_gt_label_st * )label->style;
-    style->thick_en = thick;
+    style->font_info.thick_en = thick;
 }
 void gt_label_set_font_thick_cn(gt_obj_st * label, uint8_t thick)
 {
     _gt_label_st * style = (_gt_label_st * )label->style;
-    style->thick_cn = thick;
+    style->font_info.thick_cn = thick;
 }
 void gt_label_set_font_family_numb(gt_obj_st * label, gt_family_t family)
 {
     _gt_label_st * style = (_gt_label_st * )label->style;
-    style->font_family_numb = family;
+    style->font_info.style_numb = family;
 }
 void gt_label_set_space(gt_obj_st * label, uint8_t space_x, uint8_t space_y)
 {
     _gt_label_st * style = (_gt_label_st * )label->style;
     style->space_x = space_x;
     style->space_y = space_y;
+}
+
+uint8_t gt_label_get_font_size(gt_obj_st * label)
+{
+    _gt_label_st * style = (_gt_label_st * )label->style;
+    return style->font_info.size;
+}
+
+uint8_t gt_label_get_space_x(gt_obj_st * label)
+{
+    _gt_label_st * style = (_gt_label_st * )label->style;
+    return style->space_x;
+}
+
+uint8_t gt_label_get_space_y(gt_obj_st * label)
+{
+    _gt_label_st * style = (_gt_label_st * )label->style;
+    return style->space_y;
 }
 
 /* end ------------------------------------------------------------------*/

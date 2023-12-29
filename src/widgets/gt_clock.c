@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2023-06-05 15:22:14
- * @copyright Copyright (c) 2014-2023, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -208,7 +208,7 @@ static void _init_cb(gt_obj_st * obj) {
 
     // focus
     draw_focus(obj , 0);
-    
+
 }
 
 static inline void _remove_all_next_day_cb(_gt_clock_st * style) {
@@ -738,6 +738,15 @@ void gt_clock_set_font_family_en(gt_obj_st * obj, gt_family_t family)
         return;
     }
     gt_label_set_font_family_en(style->label, family);
+}
+
+void gt_clock_set_font_family_fl(gt_obj_st * obj, gt_family_t family)
+{
+    _gt_clock_st * style = (_gt_clock_st * )obj->style;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_family_fl(style->label, family);
 }
 
 void gt_clock_set_font_family_numb(gt_obj_st * obj, gt_family_t family)

@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2023-06-05 15:22:09
- * @copyright Copyright (c) 2014-2023, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_CLOCK_H_
 #define _GT_CLOCK_H_
@@ -253,6 +253,7 @@ void gt_clock_set_font_gray(gt_obj_st * obj, uint8_t gray);
 void gt_clock_set_font_align(gt_obj_st * obj, uint8_t align);
 void gt_clock_set_font_family_cn(gt_obj_st * obj, gt_family_t family);
 void gt_clock_set_font_family_en(gt_obj_st * obj, gt_family_t family);
+void gt_clock_set_font_family_fl(gt_obj_st * obj, gt_family_t family);
 void gt_clock_set_font_family_numb(gt_obj_st * obj, gt_family_t family);
 void gt_clock_set_font_thick_en(gt_obj_st * obj, uint8_t thick);
 void gt_clock_set_font_thick_cn(gt_obj_st * obj, uint8_t thick);

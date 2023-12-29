@@ -5,7 +5,7 @@
  *      extra file type.
  * @version 0.1
  * @date 2022-08-10 19:52:55
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -112,7 +112,7 @@ static gt_res_t _gt_img_decoder_built_in_close(struct _gt_img_dsc_s * dsc)
 
 void _gt_img_decoder_init(void)
 {
-    GT_INIT_LIST_HEAD(&_GT_GC_GET_ROOT(_gt_img_decoder_ll));
+    _GT_INIT_LIST_HEAD(&_GT_GC_GET_ROOT(_gt_img_decoder_ll));
 
     _gt_img_decoder_st * decoder = gt_img_decoder_create();
 
@@ -133,14 +133,14 @@ _gt_img_decoder_st * gt_img_decoder_create(void)
 
     gt_memset(decoder, 0, sizeof(_gt_img_decoder_st));
 
-    GT_INIT_LIST_HEAD(&decoder->list);
+    _GT_INIT_LIST_HEAD(&decoder->list);
 
     return decoder;
 }
 
 void gt_img_decoder_register(_gt_img_decoder_st * decoder)
 {
-    gt_list_add(&decoder->list, &_GT_GC_GET_ROOT(_gt_img_decoder_ll));
+    _gt_list_add(&decoder->list, &_GT_GC_GET_ROOT(_gt_img_decoder_ll));
 }
 
 gt_img_decoder_type_em gt_img_decoder_get_type(_gt_img_info_st * header)
@@ -152,7 +152,7 @@ gt_res_t gt_img_decoder_get_info(const char * name, _gt_img_info_st * header)
 {
     _gt_img_decoder_st * ptr = NULL;
 
-    gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
+    _gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
         if (NULL == ptr->info_cb) {
             continue;
         }
@@ -173,7 +173,7 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name)
     dsc->decoder = NULL;    /* reset image dsc struct */
     dsc->src = NULL;
 
-    gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
+    _gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
         if (NULL == ptr->open_cb || NULL == ptr->info_cb) {
             continue;
         }

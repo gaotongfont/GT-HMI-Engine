@@ -4,7 +4,7 @@
  * @brief The font support implementation
  * @version 0.1
  * @date 2022-06-01 11:22:06
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_FONT_H_
 #define _GT_FONT_H_
@@ -72,6 +72,18 @@ typedef struct _gt_font_res_s{
     uint8_t h;
 }gt_font_res_st;
 
+typedef struct _gt_font_info_s{
+    uint16_t style_cn;  ///< set: font style
+    uint16_t style_en;  ///< set: font style
+    uint16_t style_fl;  ///< set: font style foreign language
+    uint16_t style_numb; ///< set: font style
+    uint8_t size;       ///< set: font size
+    uint8_t gray;       ///< set: font gray
+    uint8_t encoding;   ///< set: font encoding
+    uint8_t thick_en;   ///< set: font thick
+    uint8_t thick_cn;   ///< set: font thick
+}gt_font_info_st;
+
 /**
  * @brief THe font resource structure
  */
@@ -79,15 +91,8 @@ typedef struct _gt_font_s
 {
     char * utf8;        ///< set: text: utf8 code arr
     uint8_t * res;      ///< get: font data
-    uint32_t style_cn;  ///< set: font style
-    uint32_t style_en;  ///< set: font style
-    uint32_t style_numb; ///< set: font style
     uint16_t len;       ///< set: utf8 arr len
-    uint8_t size;       ///< set: font size
-    uint8_t gray;       ///< set: font gray
-    uint8_t encoding;   ///< set: font encoding
-    uint8_t thick_en;   ///< set: font thick
-    uint8_t thick_cn;   ///< set: font thick
+    gt_font_info_st info;
 }gt_font_st;
 
 /**
@@ -142,6 +147,14 @@ typedef enum _gt_font_style_en_cn_e {
     STYLE_EN_HINDI ,
     STYLE_EN_Currency ,
 }gt_font_style_en_cn_et;
+
+typedef struct _gt_bidi_s
+{
+    uint16_t idx;
+    uint16_t len;
+    uint8_t flag;
+}gt_bidi_st;
+
 /* macros ---------------------------------------------------------------*/
 
 
@@ -217,6 +230,11 @@ uint8_t gt_font_type_get(unsigned int font_style);
 
 int gt_font_code_transform(font_convertor_st *convert);
 int gt_font_convertor_data_get(font_convertor_st *convert , uint32_t pos);
+
+uint32_t gt_font_split(gt_font_st *fonts , uint32_t width , uint32_t dot_w ,uint32_t space , uint32_t *ret_w , uint8_t *lan , uint32_t* lan_len);
+bool gt_right_to_left_handler(const gt_font_st* fonts , uint8_t* ret_text , uint8_t r2l_lan);
+bool is_convertor_language(gt_font_style_en_cn_et style_laug);
+uint8_t right_to_left_lan_get(uint16_t style);
 
 
 #ifdef __cplusplus

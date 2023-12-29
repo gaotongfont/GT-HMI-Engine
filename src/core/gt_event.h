@@ -4,7 +4,7 @@
  * @brief Object implementation for the event handler
  * @version 0.1
  * @date 2022-05-11 14:57:40
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_EVENT_TYPE_H_
 #define _GT_EVENT_TYPE_H_
@@ -43,6 +43,10 @@ typedef enum gt_event_type_e{
     GT_EVENT_TYPE_INPUT_PROCESS_LOST,                                 ///< move off and lost handler
     GT_EVENT_TYPE_INPUT_KEY,
     GT_EVENT_TYPE_INPUT_FOCUSED,
+    GT_EVENT_TYPE_INPUT_SCROLL_UP,
+    GT_EVENT_TYPE_INPUT_SCROLL_DOWN,
+    GT_EVENT_TYPE_INPUT_SCROLL_LEFT,
+    GT_EVENT_TYPE_INPUT_SCROLL_RIGHT,
     /** ... */
 
     /* =================== input event defined here End =================== */

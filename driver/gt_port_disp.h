@@ -4,7 +4,7 @@
  * @brief The Interface of the display screen
  * @version 0.1
  * @date 2022-06-22 14:41:38
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_PORT_DISP_H_
 #define _GT_PORT_DISP_H_

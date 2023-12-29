@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-05-13 09:52:03
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -251,12 +251,12 @@ get_area_lb:
     return &disp->refr.areas[idx];
 }
 
-void _gt_disp_update_max_area(const gt_area_st * const area, bool is_overflow)
+void _gt_disp_update_max_area(const gt_area_st * const area, bool is_ignore_calc)
 {
     gt_disp_st * disp = gt_disp_get_default();
     gt_area_abs_st * max_area = &disp->area_max;
 
-    if (is_overflow) {
+    if (is_ignore_calc) {
         /** allow widget overflow screen display, can not scroll to over area */
         return;
     }
@@ -289,7 +289,7 @@ void _gt_disp_reload_max_area(gt_obj_st * scr)
 
     for (i = 0; i < scr->cnt_child; i++) {
         obj = scr->child[i];
-        _gt_disp_update_max_area(&obj->area, obj->overflow);
+        _gt_disp_update_max_area(&obj->area, _gt_obj_is_ignore_calc_max_area(obj));
     }
 }
 

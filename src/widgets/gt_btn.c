@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-05-11 15:03:35
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -38,22 +38,17 @@ typedef struct _gt_btn_s
 
     gt_color_t color_background;
     gt_color_t color_pressed;
-
+    gt_color_t font_color;
     gt_size_t   radius;
 
-    gt_color_t      font_color;
-    uint8_t         font_size;
-    gt_family_t     font_family_cn;
-    gt_family_t     font_family_en;
-    gt_family_t     font_family_numb;
-    uint8_t         font_gray;
-    uint8_t     font_align;
-    uint8_t     fill;
+    gt_font_info_st font_info;
+
     _gt_btn_reg_st reg;
-    uint8_t     thick_en;
-    uint8_t     thick_cn;
+    uint8_t     fill;
+    uint8_t     font_align;
     uint8_t     space_x;
     uint8_t     space_y;
+
 }_gt_btn_st;
 
 
@@ -83,23 +78,20 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
 
     gt_color_t fg_color;
     gt_font_st font = {
-        .style_cn   = style->font_family_cn,
-        .style_en   = style->font_family_en,
-        .style_numb = style->font_family_numb,
         .res        = NULL,
         .utf8       = style->text,
         .len        = strlen(style->text),
-        .size       = style->font_size,
-        .gray       = style->font_gray,
+        .info       = style->font_info,
     };
-    font.thick_en = style->thick_en == 0 ? style->font_size + 6: style->thick_en;
-    font.thick_cn = style->thick_cn == 0 ? style->font_size + 6: style->thick_cn;
 
-    font.encoding = gt_project_encoding_get();
+    font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
+    font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
+
+    font.info.encoding = gt_project_encoding_get();
     // set default size
     if( btn->area.w == 0 || btn->area.h == 0){
-        btn->area.w = font.size*strlen(font.utf8) + 32;
-        btn->area.h = style->font_size+16;
+        btn->area.w = style->font_info.size*strlen(style->text) + 32;
+        btn->area.h = style->font_info.size+16;
     }
     if( style->radius == 0 ){
         radius = btn->area.h >> 2;
@@ -141,7 +133,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
 
     // focus
     draw_focus(btn , radius);
-    
+
     return;
 }
 
@@ -230,6 +222,11 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             GT_LOGV(GT_LOG_TAG_GUI, "child delete");
             break;
 
+        case GT_EVENT_TYPE_INPUT_PRESSED:
+            gt_obj_set_state(obj, GT_STATE_PRESSED);
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            break;
+
         case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
             GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             gt_obj_set_state(obj, GT_STATE_PRESSED);
@@ -267,19 +264,20 @@ static void _gt_btn_init_style(gt_obj_st * btn)
 
     style->text = gt_mem_malloc(sizeof("btn"));
     strcpy(style->text, "btn");
-    style->radius           = 0;
-    style->color_pressed    = gt_color_hex(0x1C82D0);    //default color_selected
-    style->color_background = gt_color_hex(0x17A7BF);  //default color_unselected
+    style->radius           = 4;
+    style->color_pressed    = gt_color_hex(0x0097e6);    //default color_selected
+    style->color_background = gt_color_hex(0x00a8ff);  //default color_unselected
     style->reg.fill         = 1;
     style->font_color       = gt_color_white();        //default color_font
-    style->font_family_cn   = GT_CFG_DEFAULT_FONT_FAMILY_CN;
-    style->font_family_en   = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    style->font_family_numb = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
-    style->font_size        = GT_CFG_DEFAULT_FONT_SIZE;
-    style->font_gray        = 1;
+    style->font_info.style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
+    style->font_info.style_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    style->font_info.style_fl    = GT_CFG_DEFAULT_FONT_FAMILY_FL;
+    style->font_info.style_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
+    style->font_info.size        = GT_CFG_DEFAULT_FONT_SIZE;
+    style->font_info.gray        = 1;
+    style->font_info.thick_en         = 0;
+    style->font_info.thick_cn         = 0;
     style->font_align = GT_ALIGN_CENTER_MID;
-    style->thick_en         = 0;
-    style->thick_cn         = 0;
     style->space_x          = 0;
     style->space_y          = 0;
 }
@@ -369,13 +367,13 @@ void gt_btn_set_font_color(gt_obj_st * btn, gt_color_t color){
 void gt_btn_set_font_size(gt_obj_st * btn, uint8_t size)
 {
     _gt_btn_st * style = (_gt_btn_st * )btn->style;
-    style->font_size = size;
+    style->font_info.size = size;
 }
 
 void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray)
 {
     _gt_btn_st * style = (_gt_btn_st * )btn->style;
-    style->font_gray = gray;
+    style->font_info.gray = gray;
 }
 
 void gt_btn_set_font_align(gt_obj_st * btn, uint8_t align)
@@ -387,19 +385,25 @@ void gt_btn_set_font_align(gt_obj_st * btn, uint8_t align)
 void gt_btn_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn)
 {
     _gt_btn_st * style = (_gt_btn_st * )btn->style;
-    style->font_family_cn = font_family_cn;
+    style->font_info.style_cn = font_family_cn;
 }
 
 void gt_btn_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en)
 {
     _gt_btn_st * style = (_gt_btn_st * )btn->style;
-    style->font_family_en = font_family_en;
+    style->font_info.style_en = font_family_en;
+}
+
+void gt_btn_set_font_family_fl(gt_obj_st * btn, gt_family_t font_family_fl)
+{
+    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    style->font_info.style_fl = font_family_fl;
 }
 
 void gt_btn_set_font_family_numb(gt_obj_st * btn, gt_family_t font_family_numb)
 {
     _gt_btn_st * style = (_gt_btn_st * )btn->style;
-    style->font_family_numb = font_family_numb;
+    style->font_info.style_numb = font_family_numb;
 }
 
 void gt_btn_set_radius(gt_obj_st * btn, uint8_t radius)
@@ -472,12 +476,12 @@ int16_t gt_btn_get_state_content_index(gt_obj_st * obj)
 void gt_btn_set_font_thick_en(gt_obj_st * btn, uint8_t thick)
 {
     _gt_btn_st * style = (_gt_btn_st * )btn->style;
-    style->thick_en = thick;
+    style->font_info.thick_en = thick;
 }
 void gt_btn_set_font_thick_cn(gt_obj_st * btn, uint8_t thick)
 {
     _gt_btn_st * style = (_gt_btn_st * )btn->style;
-    style->thick_cn = thick;
+    style->font_info.thick_cn = thick;
 }
 void gt_btn_set_space(gt_obj_st * btn, uint8_t space_x, uint8_t space_y)
 {

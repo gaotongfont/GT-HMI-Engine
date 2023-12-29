@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-07-22 14:13:10
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -55,8 +55,13 @@ const gt_obj_class_st gt_progress_bar_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static inline void _gt_progress_bar_init_widget(gt_obj_st * progress_bar) {
-    _gt_progress_bar_st * style = progress_bar->style;
+/**
+ * @brief obj init progress_bar widget call back
+ *
+ * @param obj
+ */
+static void _init_cb(gt_obj_st * progress_bar) {
+    _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar->style;
     gt_size_t w, h;
     int dist = 0, dist_min = 0;
     int all_pos = style->end - style->start;
@@ -119,17 +124,6 @@ static inline void _gt_progress_bar_init_widget(gt_obj_st * progress_bar) {
 }
 
 /**
- * @brief obj init progress_bar widget call back
- *
- * @param obj
- */
-static void _init_cb(gt_obj_st * obj) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-
-    _gt_progress_bar_init_widget(obj);
-}
-
-/**
  * @brief obj deinit call back
  *
  * @param obj
@@ -150,6 +144,27 @@ static void _deinit_cb(gt_obj_st * obj) {
     *style_p = NULL;
 }
 
+static void _scroll_dir_ver(gt_obj_st * obj, bool is_up) {
+    _gt_progress_bar_st * style = obj->style;
+    gt_size_t val = is_up ? 1 : -1;
+
+    if (GT_BAR_DIR_VER_U2D == style->dir) {
+        gt_progress_bar_set_pos(obj, gt_progress_bar_get_pos(obj) + val);
+    } else if (GT_BAR_DIR_VER_D2U == style->dir) {
+        gt_progress_bar_set_pos(obj, gt_progress_bar_get_pos(obj) - val);
+    }
+}
+
+static void _scroll_dir_hor(gt_obj_st * obj, bool is_right) {
+    _gt_progress_bar_st * style = obj->style;
+    gt_size_t val = is_right ? 1 : -1;
+
+    if (GT_BAR_DIR_HOR_L2R == style->dir) {
+        gt_progress_bar_set_pos(obj, gt_progress_bar_get_pos(obj) + val);
+    } else if (GT_BAR_DIR_HOR_R2L == style->dir) {
+        gt_progress_bar_set_pos(obj, gt_progress_bar_get_pos(obj) - val);
+    }
+}
 
 /**
  * @brief obj event handler call back
@@ -166,54 +181,31 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             // gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-
-            break;
-
-        case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
-            break;
-
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
-
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            break;
+
+        case GT_EVENT_TYPE_INPUT_SCROLL_UP:
+            _scroll_dir_ver(obj, true);
+            break;
+
+        case GT_EVENT_TYPE_INPUT_SCROLL_DOWN:
+            _scroll_dir_ver(obj, false);
+            break;
+
+        case GT_EVENT_TYPE_INPUT_SCROLL_LEFT:
+            _scroll_dir_hor(obj, false);
+            break;
+
+        case GT_EVENT_TYPE_INPUT_SCROLL_RIGHT:
+            _scroll_dir_hor(obj, true);
             break;
 
         default:
             break;
     }
 }
-
-
-static void _gt_progress_bar_init_style(gt_obj_st * progress_bar)
-{
-    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
-
-    gt_memset(style, 0, sizeof(_gt_progress_bar_st));
-
-    style->color_act = gt_color_hex(0x409eff);
-    style->color_ina = gt_color_hex(0xebeef5);
-    style->start = 0;
-    style->end = 100;
-    style->pos = 50;
-    style->dir = GT_BAR_DIR_HOR_L2R;
-}
-
-
 
 /* global functions / API interface -------------------------------------*/
 
@@ -226,7 +218,18 @@ static void _gt_progress_bar_init_style(gt_obj_st * progress_bar)
 gt_obj_st * gt_progress_bar_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_progress_bar_init_style(obj);
+
+    _gt_progress_bar_st * style = (_gt_progress_bar_st *)obj->style;
+
+    gt_memset(style, 0, sizeof(_gt_progress_bar_st));
+
+    style->color_act = gt_color_hex(0x409eff);
+    style->color_ina = gt_color_hex(0xebeef5);
+    style->start = 0;
+    style->end = 100;
+    style->pos = 50;
+    style->dir = GT_BAR_DIR_HOR_L2R;
+
     return obj;
 }
 
@@ -239,6 +242,12 @@ gt_obj_st * gt_progress_bar_create(gt_obj_st * parent)
  */
 void gt_progress_bar_set_pos(gt_obj_st * progress_bar, gt_size_t pos)
 {
+    if (NULL == progress_bar) {
+        return;
+    }
+    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+        return;
+    }
     _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     if( pos < style->start ){
         style->pos = style->start;
@@ -252,6 +261,12 @@ void gt_progress_bar_set_pos(gt_obj_st * progress_bar, gt_size_t pos)
 
 void gt_progress_bar_set_start_end(gt_obj_st * progress_bar, gt_size_t start, gt_size_t end)
 {
+    if (NULL == progress_bar) {
+        return;
+    }
+    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+        return;
+    }
     _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     style->start = start;
     style->end = end;
@@ -259,35 +274,73 @@ void gt_progress_bar_set_start_end(gt_obj_st * progress_bar, gt_size_t start, gt
 
 gt_size_t gt_progress_bar_get_pos(gt_obj_st * progress_bar)
 {
+    if (NULL == progress_bar) {
+        return 0;
+    }
+    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+        return 0;
+    }
     _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     return style->pos;
 }
 
 gt_size_t gt_progress_bar_get_start(gt_obj_st * progress_bar)
 {
+    if (NULL == progress_bar) {
+        return 0;
+    }
+    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+        return 0;
+    }
     _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     return style->start;
 }
 
 gt_size_t gt_progress_bar_get_end(gt_obj_st * progress_bar)
 {
+    if (NULL == progress_bar) {
+        return 0;
+    }
+    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+        return 0;
+    }
     _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     return style->end;
 }
 
 gt_size_t gt_progress_bar_get_total(gt_obj_st * progress_bar)
 {
+    if (NULL == progress_bar) {
+        return 0;
+    }
+    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+        return 0;
+    }
     _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     return ( style->end - style->start);
 }
 
-void gt_progress_bar_set_color_act(gt_obj_st * progress_bar, gt_color_t color){
+void gt_progress_bar_set_color_act(gt_obj_st * progress_bar, gt_color_t color)
+{
+    if (NULL == progress_bar) {
+        return;
+    }
+    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+        return;
+    }
     _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     style->color_act = color;
     gt_event_send(progress_bar, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_progress_bar_set_color_ina(gt_obj_st * progress_bar, gt_color_t color){
+void gt_progress_bar_set_color_ina(gt_obj_st * progress_bar, gt_color_t color)
+{
+    if (NULL == progress_bar) {
+        return;
+    }
+    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+        return;
+    }
     _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     style->color_ina = color;
     gt_event_send(progress_bar, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -295,6 +348,12 @@ void gt_progress_bar_set_color_ina(gt_obj_st * progress_bar, gt_color_t color){
 
 void gt_progress_bar_set_dir(gt_obj_st * progress_bar, gt_bar_dir_et dir)
 {
+    if (NULL == progress_bar) {
+        return;
+    }
+    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+        return;
+    }
     _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     style->dir = dir;
     gt_event_send(progress_bar, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -302,6 +361,12 @@ void gt_progress_bar_set_dir(gt_obj_st * progress_bar, gt_bar_dir_et dir)
 
 gt_bar_dir_et gt_progress_bar_get_dir(gt_obj_st * progress_bar)
 {
+    if (NULL == progress_bar) {
+        return 0;
+    }
+    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+        return 0;
+    }
     _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
     return style->dir;
 }

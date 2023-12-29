@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-08-01 14:05:01
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
  /* include --------------------------------------------------------------*/
@@ -60,18 +60,14 @@ typedef struct _gt_keypad_s
     gt_color_t  color_board;  //board color
     gt_color_t  color_key;  //key color
     gt_color_t  color_ctrl;  //ctrl key color
-
     gt_color_t  font_color;  //font color
-    gt_family_t font_family_cn;
-    gt_family_t font_family_en;
-    gt_family_t font_family_numb;
-    uint8_t     font_size;
-    uint8_t     font_gray;
+
+    gt_font_info_st font_info;
+
     uint8_t     font_align;
-    uint8_t     thick_en;
-    uint8_t     thick_cn;
     uint8_t     space_x;
     uint8_t     space_y;
+
     _gt_keypad_info_st info;
 }_gt_keypad_st;
 
@@ -695,16 +691,12 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
     gt_keypad_map_st * map_keypad = style->info.map;
 
     gt_font_st font = {
-        .style_cn = style->font_family_cn,
-        .style_en = style->font_family_en,
-        .style_numb = style->font_family_numb,
-        .size     = style->font_size,
-        .gray     = style->font_gray,
+        .info     = style->font_info,
         .res      = NULL,
     };
-    font.thick_en = style->thick_en == 0 ? style->font_size + 6: style->thick_en;
-    font.thick_cn = style->thick_cn == 0 ? style->font_size + 6: style->thick_cn;
-    font.encoding = GT_ENCODING_UTF8;
+    font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
+    font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
+    font.info.encoding = GT_ENCODING_UTF8;
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
@@ -738,13 +730,13 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
     while ( map_keypad[idx].kv != NULL ) {
 
         rect_attr.bg_color = style->color_key;
-        font_attr.font->size = style->font_size;
+        font_attr.font->info.size = style->font_info.size;
         if( _gt_keypad_check_key_is_ctl(map_keypad[idx].kv) ){
             rect_attr.bg_color = style->color_ctrl;
         }
 
         if(_gt_keypad_check_key_is_icon(map_keypad[idx].kv)){
-            font_attr.font->size = _GT_KEYPADS_ICON_SIZE;
+            font_attr.font->info.size = _GT_KEYPADS_ICON_SIZE;
         }
 
         if ( _gt_keypad_get_kv_selected(keypad) && strcmp( map_keypad[idx].kv, _gt_keypad_get_kv_selected(keypad)) == 0  ){
@@ -925,18 +917,19 @@ static void _gt_keypad_init_style(gt_obj_st * keypad)
     keypad->area.h = GT_SCREEN_HEIGHT > KEYPAD_H ? KEYPAD_H : GT_SCREEN_HEIGHT;
 
     style->font_color      = gt_color_hex(0);
-    style->font_family_cn  = GT_CFG_DEFAULT_FONT_FAMILY_CN;
-    style->font_family_en  = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    style->font_family_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
-    style->font_size       = GT_CFG_DEFAULT_FONT_SIZE;
+    style->font_info.style_cn  = GT_CFG_DEFAULT_FONT_FAMILY_CN;
+    style->font_info.style_en  = GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    style->font_info.style_fl    = GT_CFG_DEFAULT_FONT_FAMILY_FL;
+    style->font_info.style_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
+    style->font_info.size       = GT_CFG_DEFAULT_FONT_SIZE;
 
     style->color_board  = gt_color_hex(0x242424);
     style->color_key    = gt_color_hex(0x646464);
     style->color_ctrl   = gt_color_hex(0x3E3E3E);
-    style->font_gray    = 1;
+    style->font_info.gray    = 1;
     style->font_align   = GT_ALIGN_CENTER_MID;
-    style->thick_en     = 0;
-    style->thick_cn     = 0;
+    style->font_info.thick_en     = 0;
+    style->font_info.thick_cn     = 0;
     style->space_x      = 0;
     style->space_y      = 0;
 
@@ -1075,29 +1068,34 @@ void gt_keypad_set_font_color(gt_obj_st * keypad, gt_color_t color)
 void gt_keypad_set_font_family_cn(gt_obj_st * keypad, gt_family_t family)
 {
     _gt_keypad_st * style = keypad->style;
-    style->font_family_cn = family;
+    style->font_info.style_cn = family;
 }
 void gt_keypad_set_font_family_en(gt_obj_st * keypad, gt_family_t family)
 {
     _gt_keypad_st * style = keypad->style;
-    style->font_family_en = family;
+    style->font_info.style_en = family;
+}
+void gt_keypad_set_font_family_fl(gt_obj_st * keypad, gt_family_t family)
+{
+    _gt_keypad_st * style = keypad->style;
+    style->font_info.style_fl = family;
 }
 
 void gt_keypad_set_font_family_numb(gt_obj_st * keypad, gt_family_t family)
 {
     _gt_keypad_st * style = keypad->style;
-    style->font_family_numb = family;
+    style->font_info.style_numb = family;
 }
 
 void gt_keypad_set_font_size(gt_obj_st * keypad, uint8_t size)
 {
     _gt_keypad_st * style = keypad->style;
-    style->font_size = size;
+    style->font_info.size = size;
 }
 void gt_keypad_set_font_gray(gt_obj_st * keypad, uint8_t gray)
 {
     _gt_keypad_st * style = keypad->style;
-    style->font_gray = gray;
+    style->font_info.gray = gray;
 }
 void gt_keypad_set_font_align(gt_obj_st * keypad, uint8_t align)
 {
@@ -1107,12 +1105,12 @@ void gt_keypad_set_font_align(gt_obj_st * keypad, uint8_t align)
 void gt_keypad_set_font_thick_en(gt_obj_st * keypad, uint8_t thick)
 {
     _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
-    style->thick_en = thick;
+    style->font_info.thick_en = thick;
 }
 void gt_keypad_set_font_thick_cn(gt_obj_st * keypad, uint8_t thick)
 {
     _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
-    style->thick_cn = thick;
+    style->font_info.thick_cn = thick;
 }
 void gt_keypad_set_space(gt_obj_st * keypad, uint8_t space_x, uint8_t space_y)
 {

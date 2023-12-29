@@ -4,7 +4,7 @@
  * @brief button element
  * @version 0.1
  * @date 2022-05-11 18:39:54
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_BTN_H_
 #define _GT_BTN_H_
@@ -87,6 +87,7 @@ void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray);
 void gt_btn_set_font_align(gt_obj_st * btn, uint8_t align);
 void gt_btn_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn);
 void gt_btn_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en);
+void gt_btn_set_font_family_fl(gt_obj_st * btn, gt_family_t font_family_fl);
 void gt_btn_set_font_family_numb(gt_obj_st * btn, gt_family_t font_family_numb);
 void gt_btn_set_font_thick_en(gt_obj_st * btn, uint8_t thick);
 void gt_btn_set_font_thick_cn(gt_obj_st * btn, uint8_t thick);

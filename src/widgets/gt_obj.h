@@ -4,7 +4,7 @@
  * @brief Base object implementation
  * @version 0.1
  * @date 2022-05-11 15:08:01
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_OBJ_H_
 #define _GT_OBJ_H_
@@ -99,15 +99,19 @@ typedef struct gt_obj_s {
     uint8_t disabled      : 1;    /* obj disabled state, 0:enable, 1:disable */
 
     uint8_t focus_dis     : 1;    /* obj focus enable , 0:enable, 1:disable*/
-    uint8_t fixed         : 1;    /* obj fixed state, 0:unfixed, 1:fixed(Dependent on superclass properties) */
-    uint8_t scroll_dir    : 2;    /* @see gt_scroll_em (Bit Set) [default: GT_SCROLL_ALL] */
+    uint8_t fixed         : 1;    /* obj fixed state, 0:unfixed, 1:fixed then search it parent's widget to scroll(Dependent on superclass properties) */
+    uint8_t scroll_dir    : 2;    /* @see gt_scroll_dir_et [default: GT_SCROLL_ALL] */
+    uint8_t scroll_l_r    : 1;    /* Enabled when GT_SCROLL_HORIZONTAL or GT_SCROLL_ALL @see gt_scroll_dir_et */
+    uint8_t scroll_u_d    : 1;    /* Enabled when GT_SCROLL_VERTICAL or GT_SCROLL_ALL @see gt_scroll_dir_et */
     uint8_t scroll_snap_x : 2;    /* Scroll the alignment position @see gt_scroll_snap_em */
     uint8_t scroll_snap_y : 2;    /* As scroll_snap_x */
 
     uint8_t absorb        : 1;    /* obj absorb state, 0:un-absorb, 1: Adsorption screen maximum boundary */
     uint8_t absorb_dir    : 1;    /* obj absorb direction(It only works when absorb is set to 1), 0: horizontal; 1: vertical */
     uint8_t overflow      : 1;    /* [Inheritable]obj overflow state, 0:un-overflow, 1:overflow (widget can out of screen area size) */
-    uint8_t reserved      : 5;
+    uint8_t inside        : 1;    /* obj display only limited to parent area, 0:un-inside, 1:inside (widget is inside screen area size) */
+    uint8_t virtual       : 1;    /* obj virtual state, 0:un-virtual[default], 1:virtual (widget is virtual logic, not entities) */
+    uint8_t reserved      : 1;
 
 }gt_obj_st;
 
@@ -134,9 +138,9 @@ gt_obj_st *gt_obj_create(gt_obj_st *parent);
  *
  * @param obj
  * @param to
- * @return bool true: success, false: failed
+ * @return struct gt_obj_s* Parent pointer, if NULL is failed
  */
-bool gt_obj_change_parent(gt_obj_st * obj, gt_obj_st * to);
+gt_obj_st * gt_obj_change_parent(gt_obj_st * obj, gt_obj_st * to);
 
 /**
  * @brief

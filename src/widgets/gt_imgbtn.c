@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-05-11 15:03:35
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -91,7 +91,6 @@ static void _init_cb(gt_obj_st * obj) {
 
     /* start draw imgbtn */
     draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
-    style->selected = 0;
 
     // focus
     draw_focus(obj , 0);
@@ -168,44 +167,36 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             _invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-            break;
         case GT_EVENT_TYPE_INPUT_PRESSED:
         case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             style->selected = 1;
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
+
         case GT_EVENT_TYPE_UPDATE_VALUE:
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
             break;
 
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
             style->selected = 0;
             if (!_turn_next_image(obj)) {
                 _gt_imgbtn_set_src(obj, style->src_base);
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
+
+        case GT_EVENT_TYPE_INPUT_PROCESS_LOST: {
+            style->selected = 0;
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            break;
+        }
 
         default:
             break;

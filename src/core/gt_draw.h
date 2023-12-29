@@ -4,7 +4,7 @@
  * @brief Interface functions for drawing text and images
  * @version 0.1
  * @date 2022-08-09 18:29:16
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_DRAW_H_
 #define _GT_DRAW_H_
@@ -45,9 +45,12 @@ typedef struct _gt_draw_valid_s {
  * @brief Draw object description
  */
 typedef struct _gt_draw_ctx_t{
+    _gt_draw_valid_st * valid;  ///< Only be used in the screen animation mode
+    gt_area_st * parent_area; ///< The parent area, when obj->inside is true, obj display limited to parent area
+
     void * buf;     ///< save the temp buffer
     gt_area_st buf_area;    ///< The display area
-    _gt_draw_valid_st * valid;
+
 }gt_draw_ctx_t;
 
 

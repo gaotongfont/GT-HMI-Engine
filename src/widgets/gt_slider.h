@@ -4,7 +4,7 @@
  * @brief scroll-bar control
  * @version 0.1
  * @date 2022-07-21 19:53:55
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_SCROLLBAR_H_
 #define _GT_SCROLLBAR_H_

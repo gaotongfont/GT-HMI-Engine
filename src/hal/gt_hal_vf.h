@@ -4,7 +4,7 @@
  * @brief flash resource management implementation
  * @version 0.1
  * @date 2022-06-20 17:58:44
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_HAL_VF_H_
 #define _GT_HAL_VF_H_

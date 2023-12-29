@@ -4,7 +4,7 @@
  * @brief display area interface
  * @version 0.1
  * @date 2022-08-11 09:34:53
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_AREA_H_
 #define _GT_AREA_H_
@@ -40,8 +40,13 @@ extern "C" {
 /* global functions / API interface -------------------------------------*/
 
 bool gt_area_is_intersect_screen(const gt_area_st * screen, const gt_area_st * area_fore);
+
 /**
- * @brief calc two areas intersect
+ * @brief calc two areas intersect, the result is begin from area_fore offset value.
+ *      such as:
+ *          1. screen is (0, 0, 800, 480), area_fore is (10, 10, 100, 100), result: (0, 0, 100, 100)
+ *          2. screen is (0, 0, 800, 480), area_fore is (0, -20, 100, 100), result: (0, 20, 100, 80)
+ *      if two areas not intersect, the result is (0, 0, 0, 0)
  *
  * @param screen background area
  * @param area_fore foreground area

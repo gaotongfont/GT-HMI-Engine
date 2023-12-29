@@ -4,7 +4,7 @@
  * @brief object class information
  * @version 0.1
  * @date 2022-05-12 10:34:16
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_OBJ_CLASS_H_
 #define _GT_OBJ_CLASS_H_
@@ -51,14 +51,13 @@ typedef struct _gt_obj_class_s
 struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_obj_s * parent);
 
 /**
- * @brief
+ * @brief Change the parent of the control widget.
  *
  * @param obj
  * @param to
- * @return true success
- * @return false failed
+ * @return struct gt_obj_s* parent pointer
  */
-bool _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_obj_s * to);
+struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_obj_s * to);
 
 /**
  * @brief delete control widget; Reclaim the memory of child controls.
@@ -66,6 +65,14 @@ bool _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_obj_s * to);
  * @param self
  */
 void _gt_obj_class_destroy(struct gt_obj_s * self);
+
+/**
+ * @brief
+ *
+ * @param obj
+ * @param parent
+ */
+void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_obj_s * parent);
 
 gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj);
 

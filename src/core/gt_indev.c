@@ -4,7 +4,7 @@
  * @brief input device handler
  * @version 0.1
  * @date 2022-06-06 14:06:09
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
  /* include --------------------------------------------------------------*/
@@ -18,6 +18,7 @@
 #include "gt_disp.h"
 #include "gt_obj_pos.h"
 #include "gt_obj_scroll.h"
+#include "gt_style.h"
 
 /* private define -------------------------------------------------------*/
 /**
@@ -143,17 +144,20 @@ static void _indev_scroll_throw_handler(gt_indev_st * indev) {
     gt_obj_st * obj_scroll = point_p->obj_scroll;
     uint16_t w_parent = obj_scroll->parent->area.w;
     uint16_t h_parent = obj_scroll->parent->area.h;
+    gt_size_t left = 0, right = GT_SCREEN_WIDTH;
+    gt_size_t top = 0, bottom = GT_SCREEN_HEIGHT;
 
     if (obj_scroll->absorb) {
         if (false == obj_scroll->absorb_dir) {
+            /** hor */
             gt_size_t x = obj_scroll->area.x + dx;  /** target x position */
             // outside the left
-            if (x > disp->area_max.left) {
+            if (x > left) {
                 dx = -obj_scroll->area.x;
             }
             // outside the right
-            else if (x + obj_scroll->area.w < disp->area_max.right) {
-                dx = disp->area_max.right - obj_scroll->area.w - obj_scroll->area.x;
+            else if (x + obj_scroll->area.w < right) {
+                dx = right - obj_scroll->area.w - obj_scroll->area.x;
             }
             // inside
             else if (obj_scroll->scroll_snap_x) {
@@ -172,14 +176,15 @@ static void _indev_scroll_throw_handler(gt_indev_st * indev) {
             }
 
         } else {
+            /** ver */
             gt_size_t y = obj_scroll->area.y + dy;
             // top
-            if (y > disp->area_max.top) {
+            if (y > top) {
                 dy = -obj_scroll->area.y;
             }
             // bottom
-            else if (y + obj_scroll->area.h < disp->area_max.bottom) {
-                dy = disp->area_max.bottom - obj_scroll->area.h - obj_scroll->area.y;
+            else if (y + obj_scroll->area.h < bottom) {
+                dy = bottom - obj_scroll->area.h - obj_scroll->area.y;
             }
             else if (obj_scroll->scroll_snap_y) {
                 if (0 == dy) {
@@ -200,6 +205,11 @@ static void _indev_scroll_throw_handler(gt_indev_st * indev) {
     gt_obj_scroll_to(obj_scroll, dx, dy, GT_ANIM_ON);
 }
 
+/**
+ * @brief Scroll when pressing
+ *
+ * @param indev
+ */
 static void _indev_scroll_handler(gt_indev_st * indev) {
     struct _point * point_p = &indev->proc.data.point;
 
@@ -207,20 +217,23 @@ static void _indev_scroll_handler(gt_indev_st * indev) {
     point_p->scroll_sum.y += point_p->scroll_diff.y;
     point_p->gesture = _get_scroll_dir(indev);
 
-    if((uint16_t)GT_DIR_NONE != point_p->gesture) {
-        gt_size_t dx = 0;
-        gt_size_t dy = 0;
-        point_p->obj_scroll = point_p->obj_target;
-
-        if (_is_scroll_vertical(point_p->gesture)) {
-            dy = point_p->scroll_diff.y;
-            point_p->scroll_throw.x = 0;
-        } else {
-            dx = point_p->scroll_diff.x;
-            point_p->scroll_throw.y = 0;
-        }
-        gt_obj_scroll_to(point_p->obj_scroll, dx, dy, GT_ANIM_OFF);
+    if((uint16_t)GT_DIR_NONE == point_p->gesture) {
+        return;
     }
+    gt_size_t dx = 0;
+    gt_size_t dy = 0;
+    point_p->obj_scroll = point_p->obj_target;
+
+    if (_is_scroll_vertical(point_p->gesture)) {
+        dy = point_p->scroll_diff.y;
+        point_p->scroll_throw.x = 0;
+        gt_obj_set_scroll_ud(point_p->obj_scroll, GT_DIR_DOWN == point_p->gesture ? true : false);
+    } else {
+        dx = point_p->scroll_diff.x;
+        point_p->scroll_throw.y = 0;
+        gt_obj_set_scroll_lr(point_p->obj_scroll, GT_DIR_RIGHT == point_p->gesture ? true : false);
+    }
+    gt_obj_scroll_to(point_p->obj_scroll, dx, dy, GT_ANIM_OFF);
 }
 
 static inline void _send_released_event(struct _point * point_p) {
@@ -244,12 +257,11 @@ static void _indev_released_handle(gt_indev_st * indev) {
 #endif
     _send_released_event(point_p);
     point_p->obj_act = NULL;
-    point_p->obj_target = NULL;
 
     if (point_p->obj_scroll) {
         _indev_scroll_throw_handler(indev);
-        point_p->obj_target = NULL;
     }
+    point_p->obj_target = NULL;
 }
 
 static void _indev_pressed_handle(gt_indev_st * indev) {
@@ -272,20 +284,23 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
 
         /* send clicking event to pressed obj */
         gt_obj_get_click_point_by_phy_point(point_p->obj_act, &point_p->newly, &point_ret);
+        _gt_indev_point_set_value(&point_p->last, point_p->newly.x, point_p->newly.y);
         _gt_obj_set_process_point(point_p->obj_act, &point_ret);
         gt_event_send(point_p->obj_act, GT_EVENT_TYPE_INPUT_PRESSED, NULL);
     }
 
     if (point_p->obj_target && point_p->obj_scroll) {
+        /** Reset scroll throw data, prepare for next throw. */
         point_p->scroll_throw.x = 0;
         point_p->scroll_throw.y = 0;
         _indev_scroll_throw_handler(indev);
     }
-    // GT_LOGE(">", "(%d, %d) (%d, %d)", point_p->newly.x, point_p->newly.y, point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
+    // GT_LOGD(">", "(%d, %d) (%d, %d)", point_p->newly.x, point_p->newly.y, point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
 
     point_p->obj_act = gt_find_clicked_obj_by_point(scr, &point_p->newly);
 
     if (point_p->obj_act == point_p->obj_target) {
+        /** Hold for a long time to trigger multiple times */
         gt_obj_get_click_point_by_phy_point(point_p->obj_target, &point_p->newly, &point_ret);
         _gt_obj_set_process_point(point_p->obj_target, &point_ret);
         if( (gt_tick_get() - indev->proc.timestamp_long_press) >= indev->drv->limit_timers_long_press ){
@@ -304,11 +319,11 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
     point_p->scroll_diff.x = point_p->newly.x - point_p->last.x;
     point_p->scroll_diff.y = point_p->newly.y - point_p->last.y;
 
-    point_p->scroll_throw.x = (point_p->scroll_throw.x * 4) >> 3;
-    point_p->scroll_throw.y = (point_p->scroll_throw.y * 4) >> 3;
+    point_p->scroll_throw.x = (point_p->scroll_throw.x << 2) >> 3;
+    point_p->scroll_throw.y = (point_p->scroll_throw.y << 2) >> 3;
 
-    point_p->scroll_throw.x += (point_p->scroll_diff.x * 4) >> 3;
-    point_p->scroll_throw.y += (point_p->scroll_diff.y * 4) >> 3;
+    point_p->scroll_throw.x += (point_p->scroll_diff.x << 2) >> 3;
+    point_p->scroll_throw.y += (point_p->scroll_diff.y << 2) >> 3;
 
     if (NULL == point_p->obj_target) {
         return;

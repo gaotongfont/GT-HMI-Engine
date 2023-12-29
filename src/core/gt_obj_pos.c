@@ -4,7 +4,7 @@
  * @brief Set object position function
  * @version 0.1
  * @date 2022-06-15 14:34:36
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -20,7 +20,22 @@
 
 
 /* private typedef ------------------------------------------------------*/
+/**
+ * @brief The object click area check state
+ */
+typedef enum _check_clicked_state_e {
+    _CHECK_CLICKED_STATE_FAIL = 0,
+    _CHECK_CLICKED_STATE_CONTINUE,
+    _CHECK_CLICKED_STATE_OK,
+}_check_clicked_state_em;
 
+/**
+ * @brief The click object return struct
+ */
+typedef struct {
+    gt_obj_st * obj;
+    _check_clicked_state_em state;
+}_click_obj_ret_st;
 
 
 /* static variables -----------------------------------------------------*/
@@ -37,7 +52,7 @@
 
 /* global functions / API interface -------------------------------------*/
 
-void gt_area_copy(gt_area_st * dst, gt_area_st * src)
+void gt_area_copy(gt_area_st * dst, gt_area_st const * const src)
 {
     dst->x = src->x;
     dst->y = src->y;
@@ -157,64 +172,92 @@ void gt_obj_get_valid_area(gt_obj_st * obj, gt_area_st * area_act, gt_area_st *a
     return;
 }
 
+/**
+ * @brief check obj was clicked by point
+ *
+ * @param obj check obj
+ * @param point click point
+ * @return true clicked
+ * @return false not clicked
+ */
+static _check_clicked_state_em gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point ){
+    _check_clicked_state_em ret = _CHECK_CLICKED_STATE_FAIL;
 
-bool gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point ){
-    bool ret = false;
+    if (gt_obj_get_virtual(obj)) {
+        return _CHECK_CLICKED_STATE_CONTINUE;
+    }
     if( (point->x >= obj->area.x) && (point->x <= (obj->area.x + obj->area.w)) ){
         if( (point->y >= obj->area.y) && (point->y <= (obj->area.y + obj->area.h)) ){
-            ret = true;
+            ret = _CHECK_CLICKED_STATE_OK;
         }
     }
     return ret;
 }
 
-static gt_obj_st * _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st * point){
-    int idx = 0;
-    gt_obj_st * obj_clicked = NULL, * obj_temp = NULL;
-    while( idx < parent->cnt_child ){
-        if( 0 != parent->child[idx]->cnt_child ){
-            obj_temp = _gt_obj_foreach_clicked(parent->child[idx], point);
-            if( obj_temp && GT_VISIBLE == obj_temp->visible ){
-                obj_clicked = obj_temp;
-                return obj_clicked;
-            }
-        }
-        if( gt_obj_check_is_clicked(parent->child[idx], point) ){
-            if( parent->child[idx] && GT_VISIBLE == parent->child[idx]->visible ){
-                obj_clicked = parent->child[idx];
-            }
-        }
-        idx++;
+/**
+ * @brief According to the point, find the clicked object from the
+ *      newer layer to the first layer.
+ *
+ * @param parent
+ * @param point
+ * @return gt_obj_st* The clicked object
+ */
+static _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st * point) {
+    gt_size_t idx = parent->cnt_child - 1;
+    _click_obj_ret_st obj_clicked = {
+        .obj = NULL,
+        .state = _CHECK_CLICKED_STATE_CONTINUE,
+    };
+    _click_obj_ret_st ret;
+
+    obj_clicked.state = gt_obj_check_is_clicked(parent, point);
+    if (_CHECK_CLICKED_STATE_FAIL == obj_clicked.state) {
+        return obj_clicked;
     }
+    else if (_CHECK_CLICKED_STATE_OK == obj_clicked.state) {
+        if (0 == parent->cnt_child) {
+            /** The deepest one */
+            obj_clicked.obj = parent;
+            return obj_clicked;
+        }
+    }
+
+    /** Continue to find out children which is clicked */
+    while (idx > -1) {
+        ret = _gt_obj_foreach_clicked(parent->child[idx], point);
+        if (_CHECK_CLICKED_STATE_OK == ret.state) {
+            if (ret.obj && GT_VISIBLE == ret.obj->visible) {
+                return ret;
+            }
+        }
+        --idx;
+    }
+
+    if (_CHECK_CLICKED_STATE_OK == obj_clicked.state) {
+        obj_clicked.obj = parent;
+    }
+
     return obj_clicked;
 }
 
 gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point){
     // uint8_t idx = 0;
-    gt_obj_st * obj_clicked = parent, * obj_temp = NULL;
+    gt_obj_st * obj_clicked = parent;
+    _click_obj_ret_st obj_temp = {
+        .obj = NULL,
+        .state = _CHECK_CLICKED_STATE_FAIL
+    };
+
     gt_area_st * area = gt_disp_get_area_act();
     gt_point_st _point = {
         .x = point->x + area->x,
         .y = point->y + area->y
     };
     obj_temp = _gt_obj_foreach_clicked(parent, &_point);
-    if( obj_temp ){
-        obj_clicked = obj_temp;
+    if ( obj_temp.obj ) {
+        obj_clicked = obj_temp.obj;
     }
     return obj_clicked;
-
-#if 0
-	// old func: no foreach all obj
-    while( idx < parent->cnt_child ){
-        if( gt_obj_check_is_clicked(parent->child[idx], &_point) ){
-            if( parent->child[idx] ){
-                obj_clicked = parent->child[idx];
-            }
-        }
-        idx++;
-    }
-    return obj_clicked;
-#endif
 }
 
 gt_obj_st* _gt_obj_focus_clicked(gt_obj_st * parent)
@@ -305,7 +348,7 @@ static gt_obj_st* _gt_obj_prev_focus_get( const gt_obj_st * cur_obj)
         }
         --idx;
     }
-    
+
     if(idx < 0){
         prev =  _gt_obj_prev_focus_get(parent);
     }
@@ -339,7 +382,7 @@ void gt_obj_prev_focus_change(gt_obj_st * cur_obj)
     gt_obj_st* parent = gt_disp_get_scr();
     gt_obj_st* prev = NULL;
     if(cur_obj == parent && parent->cnt_child > 0)
-    {   
+    {
         if(parent->cnt_child == 0 && GT_ENABLED == parent->child[0]->focus_dis)
         {
             prev = parent->child[0];

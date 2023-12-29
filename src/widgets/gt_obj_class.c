@@ -4,13 +4,14 @@
  * @brief
  * @version 0.1
  * @date 2022-05-12 10:34:19
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
  /* include --------------------------------------------------------------*/
 #include "gt_obj_class.h"
 #include "gt_obj.h"
 #include "../core/gt_mem.h"
+#include "../core/gt_style.h"
 #include "../others/gt_types.h"
 #include "../hal/gt_hal.h"
 #include "stdint.h"
@@ -213,13 +214,13 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
     /* check type */
     if ( parent && parent->class->type == class->type ){
         GT_LOGV(GT_LOG_TAG_GUI, "cannot create an object of the same type as the parent object onto the parent object");
-        return NULL;
+        goto null_lb;
     }
 
     uint32_t is = get_instance_size();
     gt_obj_st * obj = gt_mem_malloc(is);
     if (!obj) {
-        return NULL;
+        goto null_lb;
     }
     gt_memset_0(obj, is);
 
@@ -231,10 +232,7 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
     obj->scroll_dir = GT_SCROLL_ALL;
 
     /** Inherit from the parent class */
-    if (parent) {
-        obj->overflow = parent->overflow;
-    }
-
+    _gt_obj_class_inherent_attr_from_parent(obj, parent);
 
     if (!obj->style) {
         goto obj_lb;
@@ -246,7 +244,7 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
 
         if (disp == NULL) {
             GT_LOGW(GT_LOG_TAG_GUI, "disp is null, please init disp");
-            return NULL;
+            goto style_lb;
         }
 
         if (disp->screens == NULL || disp->cnt_scr == 0 ) {
@@ -279,15 +277,23 @@ style_lb:
     gt_mem_free(obj->style);
 obj_lb:
     gt_mem_free(obj);
+null_lb:
     return NULL;
 }
 
-bool _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_obj_s * to)
+struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_obj_s * to)
 {
-    gt_obj_st * parent = _gt_obj_class_destroy_from_parent(obj);
-    obj->parent = to;
+    gt_obj_st * parent = obj->parent;
+    bool is_success = false;
 
-    return _add_obj_to_parent(obj, to);
+    is_success = _add_obj_to_parent(obj, to);
+    if (false == is_success) {
+        return parent;
+    }
+
+    _gt_obj_class_destroy_from_parent(obj);
+    obj->parent = to;
+    return obj->parent;
 }
 
 /**
@@ -316,6 +322,16 @@ void _gt_obj_class_destroy(struct gt_obj_s * self)
     _gt_obj_class_destroy_self(self);
     self = NULL;
 }
+
+void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_obj_s * parent)
+{
+    if (NULL == obj || NULL == parent) {
+        return;
+    }
+    gt_obj_set_overflow(obj, parent->overflow);
+    gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_OVERFLOW, parent->overflow);
+}
+
 
 gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj) {
     return obj->class->type;

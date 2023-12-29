@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-06-21 17:59:29
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -87,7 +87,7 @@ static void _gt_anim_change_list(void)
 }
 
 static void _gt_anim_free_task(gt_anim_st * anim) {
-    gt_list_del(&anim->list);
+    _gt_list_del(&anim->list);
     _gt_anim_change_list();
     _gt_anim_free_data(anim);
     gt_mem_free(anim);
@@ -243,7 +243,7 @@ static void _gt_anim_task_handler(struct _gt_timer_s * timer)
 
     _is_run_same_time = _is_run_same_time ? false : true;
 refresh_lb:
-    gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
+    _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         _is_list_change = false;
 
         if (ptr->run_already == _is_run_same_time) {
@@ -352,7 +352,7 @@ void gt_anim_pos_move(gt_obj_st * obj, gt_anim_param_st * param)
 
 void _gt_anim_core_init(void)
 {
-    GT_INIT_LIST_HEAD(&_GT_GC_GET_ROOT(_gt_anim_ll));
+    _GT_INIT_LIST_HEAD(&_GT_GC_GET_ROOT(_gt_anim_ll));
 
     _gt_anim_set_timer(_gt_timer_create(_gt_anim_task_handler, GT_TASK_PERIOD_TIME_ANIM, NULL));
     _gt_anim_change_list();
@@ -364,23 +364,25 @@ void gt_anim_init(gt_anim_st * anim)
     if (!anim) { return ; }
 
     gt_memset_0(anim, sizeof(gt_anim_st));
-    GT_INIT_LIST_HEAD(&anim->list);
+    _GT_INIT_LIST_HEAD(&anim->list);
     anim->time_delay_start = 0;
     anim->time = 500;
     anim->time_act = 0;
+    anim->value_start = 0;
+    anim->value_end = 100;
     anim->_path_cb = _gt_anim_path_linear;
     anim->data = NULL;
 }
 
-void gt_anim_start(const gt_anim_st * anim)
+gt_anim_st * gt_anim_start(const gt_anim_st * anim)
 {
-    if (!anim) { return ; }
+    if (!anim) { return NULL; }
 
     gt_anim_st * ptr        = NULL;
     gt_anim_st * backup_ptr = NULL;
     gt_anim_st * new_obj = (gt_anim_st * )gt_mem_malloc(sizeof(gt_anim_st));
     if (!new_obj) {
-        return ;
+        return NULL;
     }
 
     if (gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
@@ -391,11 +393,11 @@ void gt_anim_start(const gt_anim_st * anim)
     new_obj->tick_create = gt_tick_get();
 
     if (new_obj->list.next != &new_obj->list || new_obj->list.prev != &new_obj->list) {
-        GT_INIT_LIST_HEAD(&new_obj->list);
+        _GT_INIT_LIST_HEAD(&new_obj->list);
     }
 
     // remove before the same exec callback
-    gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
+    _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         if (new_obj->target != ptr->target) {
             continue;
         }
@@ -405,8 +407,16 @@ void gt_anim_start(const gt_anim_st * anim)
         _gt_anim_free_task(ptr);
     }
 
-    gt_list_add(&new_obj->list, &_GT_GC_GET_ROOT(_gt_anim_ll));
+    _gt_list_add(&new_obj->list, &_GT_GC_GET_ROOT(_gt_anim_ll));
     _gt_anim_change_list();
+
+    return new_obj;
+}
+
+void gt_anim_restart(gt_anim_st * anim)
+{
+    if (!anim) { return ; }
+    anim->tick_create = gt_tick_get();
 }
 
 bool gt_anim_del(gt_obj_st * target, gt_anim_exec_cb_t exec_cb)
@@ -419,7 +429,7 @@ bool gt_anim_del(gt_obj_st * target, gt_anim_exec_cb_t exec_cb)
         return ret;
     }
 
-    gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
+    _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         if ((ptr->target == target || NULL == ptr->target) && (ptr->exec_cb == exec_cb || NULL == ptr->exec_cb)) {
             _gt_anim_free_task(ptr);
             ret = true;
@@ -439,7 +449,7 @@ void gt_anim_del_all(void)
         return ;
     }
 
-    gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
+    _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         if (ptr) {
             _gt_anim_free_task(ptr);
             ret = true;

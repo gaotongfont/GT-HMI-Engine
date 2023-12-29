@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-05-11 15:03:47
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -14,9 +14,11 @@
 #include "../core/gt_timer.h"
 #include "../core/gt_disp.h"
 #include "../core/gt_mem.h"
-#include "../others/gt_log.h"
 #include "../core/gt_style.h"
 #include "../core/gt_disp.h"
+#include "../core/gt_obj_scroll.h"
+#include "../hal/gt_hal_disp.h"
+#include "../others/gt_log.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -24,9 +26,7 @@
 #define MY_CLASS    &gt_obj_class
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_style_obj_s
-{
-    uint8_t selected;
+typedef struct _gt_style_obj_s {
     gt_color_t bgcolor;
 }_gt_style_obj_st;
 
@@ -55,15 +55,10 @@ static void _gt_obj_init_style(gt_obj_st * obj)
     style->bgcolor = gt_color_hex(0xFFFFFF);
 }
 
-static void _init_cb(gt_obj_st * obj)
-{
-    GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-    /* code */
+static void _init_cb(gt_obj_st * obj) {
 }
 
-static void _deinit_cb(gt_obj_st * obj)
-{
-    GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
+static void _deinit_cb(gt_obj_st * obj) {
 }
 
 static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
@@ -72,38 +67,16 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
     gt_area_abs_st * max_area_p = gt_disp_get_area_max();
 
     switch(code) {
-        case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
+        case GT_EVENT_TYPE_DRAW_START: {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
-
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-
+        }
         case GT_EVENT_TYPE_UPDATE_STYLE: {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             gt_disp_invalid_area(obj);
             break;
         }
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_SCROLL_START: {
-            break;
-        }
-
-        case GT_EVENT_TYPE_INPUT_SCROLL:
+        case GT_EVENT_TYPE_INPUT_SCROLL: {
             /** temp */
             if (-obj->process_attr.scroll.x < max_area_p->left) {
                 obj->process_attr.scroll.x = -max_area_p->left;
@@ -118,16 +91,28 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
             }
             gt_disp_scroll_area_act(-obj->process_attr.scroll.x, -obj->process_attr.scroll.y);
             break;
-
-        case GT_EVENT_TYPE_INPUT_SCROLL_END: {
-            break;
         }
-
-        case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
+        case GT_EVENT_TYPE_INPUT_RELEASED: {
+            /* click event finish */
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
-
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL_UP: {
+            /** scroll 3/4 screen */
+            gt_obj_scroll_to_y(obj, (gt_disp_get_res_ver(NULL) * 3) >> 2, GT_ANIM_ON);
+            break;
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL_DOWN: {
+            gt_obj_scroll_to_y(obj, (-gt_disp_get_res_ver(NULL) * 3) >> 2, GT_ANIM_ON);
+            break;
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL_LEFT: {
+            gt_obj_scroll_to_x(obj, (gt_disp_get_res_hor(NULL) * 3) >> 2, GT_ANIM_ON);
+            break;
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL_RIGHT: {
+            gt_obj_scroll_to_x(obj, (-gt_disp_get_res_hor(NULL) * 3) >> 2, GT_ANIM_ON);
+        }
         default:
             break;
     }
@@ -180,7 +165,7 @@ gt_obj_st * gt_obj_create(gt_obj_st * parent)
     return obj;
 }
 
-bool gt_obj_change_parent(gt_obj_st * obj, gt_obj_st * to)
+gt_obj_st * gt_obj_change_parent(gt_obj_st * obj, gt_obj_st * to)
 {
     return _gt_obj_class_change_parent(obj, to);
 }

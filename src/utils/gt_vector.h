@@ -4,7 +4,7 @@
  * @brief widget extension properties vector
  * @version 0.1
  * @date 2023-05-23 19:59:57
- * @copyright Copyright (c) 2014-2023, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_VECTOR_H_
 #define _GT_VECTOR_H_

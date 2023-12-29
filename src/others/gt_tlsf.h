@@ -4,7 +4,7 @@
  * @brief TLSF [Two-Level Segregated Fit memory allocator]
  * @version 0.1
  * @date 2022-05-19 21:22:09
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_TLSF_H_
 #define _GT_TLSF_H_
@@ -19,10 +19,10 @@
 **
 ** This implementation was written to the specification
 ** of the document, therefore no GPL restrictions apply.
-** 
+**
 ** Copyright (c) 2006-2016, Matthew Conte
 ** All rights reserved.
-** 
+**
 ** Redistribution and use in source and binary forms, with or without
 ** modification, are permitted provided that the following conditions are met:
 **     * Redistributions of source code must retain the above copyright
@@ -33,7 +33,7 @@
 **     * Neither the name of the copyright holder nor the
 **       names of its contributors may be used to endorse or promote products
 **       derived from this software without specific prior written permission.
-** 
+**
 ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ** ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 ** WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE

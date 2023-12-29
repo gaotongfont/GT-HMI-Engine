@@ -4,7 +4,7 @@
  * @brief Configuration infomation for the GT GUI
  * @version 0.1
  * @date 2022-05-11 14:43:24
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_CONF_H_
 #define _GT_CONF_H_
@@ -105,13 +105,14 @@ extern "C" {
 
 
 /* default font style and size */
-#define GT_CFG_DEFAULT_FONT_FAMILY_CN       254
-#define GT_CFG_DEFAULT_FONT_FAMILY_EN       255
+#define GT_CFG_DEFAULT_FONT_FAMILY_CN       0xFFFE
+#define GT_CFG_DEFAULT_FONT_FAMILY_EN       0xFFFF
+#define GT_CFG_DEFAULT_FONT_FAMILY_FL       GT_CFG_DEFAULT_FONT_FAMILY_EN
 #define GT_CFG_DEFAULT_FONT_FAMILY_NUMB     GT_CFG_DEFAULT_FONT_FAMILY_EN
 #define GT_CFG_DEFAULT_FONT_SIZE            16
 
 /* default event mask bit num */
-#define GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX   19
+#define GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX   23
 
 #define GT_USE_MODE_FLASH       01
 #define GT_USE_MODE_SD          01

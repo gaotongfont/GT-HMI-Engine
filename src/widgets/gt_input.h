@@ -4,7 +4,7 @@
  * @brief The area to input content or password
  * @version 0.1
  * @date 2022-07-20 13:37:30
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_INPUT_H_
 #define _GT_INPUT_H_
@@ -100,6 +100,7 @@ void gt_input_move_right_pos_cursor(gt_obj_st * input);
 void gt_input_set_font_color(gt_obj_st * input, gt_color_t color);
 void gt_input_set_font_family_cn(gt_obj_st * input, gt_family_t family);
 void gt_input_set_font_family_en(gt_obj_st * input, gt_family_t family);
+void gt_input_set_font_family_fl(gt_obj_st * input, gt_family_t family);
 void gt_input_set_font_family_numb(gt_obj_st * input, gt_family_t family);
 void gt_input_set_font_size(gt_obj_st * input, uint8_t size);
 void gt_input_set_font_gray(gt_obj_st * input, uint8_t gray);

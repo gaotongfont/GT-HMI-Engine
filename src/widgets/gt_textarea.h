@@ -4,7 +4,7 @@
  * @brief Controllers for the text area
  * @version 0.1
  * @date 2022-07-13 09:47:27
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_TEXTAREA_H_
 #define _GT_TEXTAREA_H_
@@ -115,6 +115,7 @@ void gt_textarea_set_font_family_cn(gt_obj_st * textarea, gt_family_t family);
  * @param font_family_cn english font style
  */
 void gt_textarea_set_font_family_en(gt_obj_st * textarea, gt_family_t family);
+void gt_textarea_set_font_family_fl(gt_obj_st * textarea, gt_family_t family);
 void gt_textarea_set_font_family_numb(gt_obj_st * textarea, gt_family_t family);
 
 void gt_textarea_set_font_thick_en(gt_obj_st * textarea, uint8_t thick);

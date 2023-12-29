@@ -4,7 +4,7 @@
  * @brief The progress bar implementation
  * @version 0.1
  * @date 2022-07-22 14:13:28
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_PROGRESS_BAR_H_
 #define _GT_PROGRESS_BAR_H_

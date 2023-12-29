@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-05-11 18:22:31
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_H_
 #define _GT_H_
@@ -146,6 +146,10 @@ extern "C" {
 
 #if GT_CFG_ENABLE_GIF
 #include "src/widgets/gt_gif.h"
+#endif
+
+#if GT_CFG_ENABLE_ROLLER
+#include "src/widgets/gt_roller.h"
 #endif
 
 /* other */

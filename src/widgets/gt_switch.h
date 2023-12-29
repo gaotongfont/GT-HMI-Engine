@@ -4,7 +4,7 @@
  * @brief switch controller
  * @version 0.1
  * @date 2022-07-21 14:34:33
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_SWITCH_H_
 #define _GT_SWITCH_H_

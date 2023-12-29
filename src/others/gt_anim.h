@@ -4,7 +4,7 @@
  * @brief Animation-related logic implementation
  * @version 0.1
  * @date 2022-06-21 17:59:48
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_ANIM_H_
 #define _GT_ANIM_H_
@@ -74,7 +74,7 @@ typedef struct gt_anim_param_s {
  * [Core using: User do not modified]
  */
 typedef struct gt_anim_s {
-    struct gt_list_head list;       /* Do not modified it, Core need to use it */
+    struct _gt_list_head list;       /* Do not modified it, Core need to use it */
     gt_obj_st * target;             // Target object
     gt_anim_exec_cb_t exec_cb;      // The path execution callback which object run
     gt_anim_ready_cb_t ready_cb;    // When the animation done need to be executed
@@ -243,8 +243,16 @@ void gt_anim_init(gt_anim_st * anim);
  * @brief Which animation object start to run
  *
  * @param anim The animation object
+ * @return gt_anim_st* The animation object which is insert to core
  */
-void gt_anim_start(const gt_anim_st * anim);
+gt_anim_st * gt_anim_start(const gt_anim_st * anim);
+
+/**
+ * @brief Reset the animation object create tick to restart to run
+ *
+ * @param anim The animation object
+ */
+void gt_anim_restart(gt_anim_st * anim);
 
 /**
  * @brief delete animation object in core

@@ -4,7 +4,7 @@
  * @brief GUI task timer interface implementation
  * @version 0.1
  * @date 2022-06-14 14:19:29
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_TIMER_H_
 #define _GT_TIMER_H_
@@ -38,7 +38,7 @@ typedef void ( * gt_timer_cb_t)(struct _gt_timer_s *);
  * @brief timer control block
  */
 typedef struct _gt_timer_s {
-    struct gt_list_head list;
+    struct _gt_list_head list;
     uint32_t period;            // when run to 0 milliseconds, this timer should be run
     uint32_t last_run;          // last timestamp of the last run
     uint32_t pause_time_diff;   // The time elapsed since the last execution of the timer when it paused

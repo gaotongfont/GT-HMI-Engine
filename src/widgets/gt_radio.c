@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-07-20 15:29:04
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -23,18 +23,13 @@
 #define MY_CLASS    &gt_radio_class
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_radio_s
-{
+typedef struct _gt_radio_s {
     char *      text;
     gt_color_t  font_color;
-    gt_family_t font_family_cn;
-    gt_family_t font_family_en;
-    gt_family_t font_family_numb;
-    uint8_t     font_size;
-    uint8_t     font_gray;
+
+    gt_font_info_st font_info;
+
     uint8_t     font_align;
-    uint8_t     thick_en;
-    uint8_t     thick_cn;
     uint8_t     space_x;
     uint8_t     space_y;
 }_gt_radio_st;
@@ -64,28 +59,25 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     _gt_radio_st * style = radio->style;
 
     gt_font_st font = {
-        .style_cn   = style->font_family_cn,
-        .style_en   = style->font_family_en,
-        .style_numb = style->font_family_numb,
+        .info       = style->font_info,
         .res        = NULL,
         .utf8       = style->text,
         .len        = strlen(style->text),
-        .size       = style->font_size,
-        .gray       = style->font_gray,
+
     };
-    font.thick_en = style->thick_en == 0 ? style->font_size + 6: style->thick_en;
-    font.thick_cn = style->thick_cn == 0 ? style->font_size + 6: style->thick_cn;
-    font.encoding = gt_project_encoding_get();
+    font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
+    font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
+    font.info.encoding = gt_project_encoding_get();
 
     // set default size
     if( radio->area.w == 0 || radio->area.h == 0){
-        radio->area.w = style->font_size+4 + strlen(style->text)*11;
-        radio->area.h = style->font_size+4;
+        radio->area.w = style->font_info.size+4 + strlen(style->text)*11;
+        radio->area.h = style->font_info.size+4;
 
     }
 
     gt_area_st area_base = gt_area_reduce(radio->area, REDUCE_DEFAULT);
-    area_base.w = style->font_size+4;
+    area_base.w = style->font_info.size+4;
     area_base.h = area_base.w;
     // area_base.y = radio->area.y + ((radio->area.h - area_base.h) >> 1);
     area_base.x = radio->area.x;
@@ -185,33 +177,11 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
-            break;
-
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
             gt_radio_set_selected(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
@@ -231,14 +201,15 @@ static void _gt_radio_init_style(gt_obj_st * radio)
     style->text = gt_mem_malloc(sizeof("radio"));
     gt_memcpy(style->text, "radio\0", sizeof("radio"));
 
-    style->font_family_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
-    style->font_family_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    style->font_family_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
-    style->font_size         = GT_CFG_DEFAULT_FONT_SIZE;
-    style->font_gray         = 1;
+    style->font_info.style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
+    style->font_info.style_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    style->font_info.style_fl    = GT_CFG_DEFAULT_FONT_FAMILY_FL;
+    style->font_info.style_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
+    style->font_info.size         = GT_CFG_DEFAULT_FONT_SIZE;
+    style->font_info.gray         = 1;
     style->font_align        = GT_ALIGN_NONE;
-    style->thick_en          = 0;
-    style->thick_cn          = 0;
+    style->font_info.thick_en          = 0;
+    style->font_info.thick_cn          = 0;
     style->space_x           = 0;
     style->space_y           = 0;
 }
@@ -310,12 +281,12 @@ void gt_radio_set_font_color(gt_obj_st * radio, gt_color_t color)
 void gt_radio_set_font_size(gt_obj_st * radio, uint8_t size)
 {
     _gt_radio_st * style = radio->style;
-    style->font_size = size;
+    style->font_info.size = size;
 }
 void gt_radio_set_font_gray(gt_obj_st * radio, uint8_t gray)
 {
     _gt_radio_st * style = radio->style;
-    style->font_gray = gray;
+    style->font_info.gray = gray;
 }
 void gt_radio_set_font_align(gt_obj_st * radio, uint8_t align)
 {
@@ -325,30 +296,34 @@ void gt_radio_set_font_align(gt_obj_st * radio, uint8_t align)
 void gt_radio_set_font_family_cn(gt_obj_st * radio, gt_family_t family)
 {
     _gt_radio_st * style = radio->style;
-    style->font_family_cn = family;
+    style->font_info.style_cn = family;
 }
 
 void gt_radio_set_font_family_en(gt_obj_st * radio, gt_family_t family)
 {
     _gt_radio_st * style = radio->style;
-    style->font_family_en = family;
+    style->font_info.style_en = family;
 }
-
+void gt_radio_set_font_family_fl(gt_obj_st * radio, gt_family_t family)
+{
+    _gt_radio_st * style = radio->style;
+    style->font_info.style_fl = family;
+}
 void gt_radio_set_font_family_numb(gt_obj_st * radio, gt_family_t family)
 {
     _gt_radio_st * style = radio->style;
-    style->font_family_numb = family;
+    style->font_info.style_numb = family;
 }
 
 void gt_radio_set_font_thick_en(gt_obj_st * radio, uint8_t thick)
 {
     _gt_radio_st * style = (_gt_radio_st * )radio->style;
-    style->thick_en = thick;
+    style->font_info.thick_en = thick;
 }
 void gt_radio_set_font_thick_cn(gt_obj_st * radio, uint8_t thick)
 {
     _gt_radio_st * style = (_gt_radio_st * )radio->style;
-    style->thick_cn = thick;
+    style->font_info.thick_cn = thick;
 }
 void gt_radio_set_space(gt_obj_st * radio, uint8_t space_x, uint8_t space_y)
 {

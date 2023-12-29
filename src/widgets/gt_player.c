@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2023-05-04 14:22:18
- * @copyright Copyright (c) 2014-2023, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -177,7 +177,7 @@ static inline void _default_init(gt_obj_st * obj, _gt_player_st * style) {
     void * src = _get_src(style);
     gt_attr_rect_st dsc = {
         .bg_img_src = src,
-        .bg_opa = GT_OPA_COVER,
+        .bg_opa = obj->opa,
     };
     /* start draw obj */
     draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
@@ -189,6 +189,12 @@ static inline void _default_init(gt_obj_st * obj, _gt_player_st * style) {
 static void _init_cb(gt_obj_st * obj) {
     _gt_player_st * style = (_gt_player_st * )obj->style;
     _unlock(style);
+    if (0 == style->target.count) {
+        return;
+    }
+    if (NULL == style->target.list) {
+        return;
+    }
     switch (style->reg.type)
     {
         default:
@@ -267,6 +273,12 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param style
  */
 static void _invalid_area(gt_obj_st * obj, _gt_player_st * style) {
+    if (0 == style->target.count) {
+        return;
+    }
+    if (NULL == style->target.list) {
+        return;
+    }
     void * src = _get_src(style);
     uint16_t w = 0, h = 0;
     gt_fs_read_img_wh((char * )src, &w, &h);

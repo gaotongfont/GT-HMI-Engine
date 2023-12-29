@@ -4,7 +4,7 @@
  * @brief TLSF [Two-Level Segregated Fit memory allocator]
  * @version 0.1
  * @date 2022-05-19 21:22:09
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #include <assert.h>
 #include <limits.h>

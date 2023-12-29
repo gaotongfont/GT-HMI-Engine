@@ -5,7 +5,7 @@
  *      extra file type.
  * @version 0.1
  * @date 2022-08-10 19:52:48
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_IMG_DECODER_H_
 #define _GT_IMG_DECODER_H_
@@ -102,7 +102,7 @@ typedef gt_res_t ( * gt_img_decoder_close_t)(struct _gt_img_dsc_s * dsc);
  * @brief callback function
  */
 typedef struct _gt_img_decoder_s {
-    struct gt_list_head list;   // GUI system used, Do not modify!
+    struct _gt_list_head list;   // GUI system used, Do not modify!
 
     gt_img_decoder_get_info_t info_cb;          ///< get image base information
     gt_img_decoder_open_t open_cb;              ///< open image file and create file object

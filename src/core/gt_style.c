@@ -4,12 +4,14 @@
  * @brief
  * @version 0.1
  * @date 2022-05-12 18:37:55
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
  /* include --------------------------------------------------------------*/
 #include "gt_style.h"
 #include "../hal/gt_hal_disp.h"
+#include "./gt_disp.h"
+#include "../others/gt_log.h"
 #include "gt_mem.h"
 #include "string.h"
 
@@ -38,7 +40,7 @@
 void gt_obj_set_area(gt_obj_st * obj, gt_area_st area)
 {
     gt_obj_area_change(obj, &area);
-    _gt_disp_update_max_area(&area, obj->overflow);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
 }
 
 void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)
@@ -47,7 +49,7 @@ void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)
     area.x = x;
     area.y = y;
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area, obj->overflow);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -60,7 +62,7 @@ void gt_obj_move_to(gt_obj_st * obj, gt_size_t x, gt_size_t y)
     area.y = y;
     gt_obj_move_child_by(obj, dx, dy);
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area, obj->overflow);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -70,7 +72,7 @@ void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h) {
     area.w = w;
     area.h = h;
     gt_obj_size_change(obj, &area);
-    _gt_disp_update_max_area(&area, obj->overflow);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -78,7 +80,7 @@ void gt_obj_set_x(gt_obj_st * obj, gt_size_t x) {
     gt_area_st area = obj->area;
     area.x = x;
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area, obj->overflow);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -86,7 +88,7 @@ void gt_obj_set_y(gt_obj_st * obj, gt_size_t y) {
     gt_area_st area = obj->area;
     area.y = y;
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area, obj->overflow);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -94,7 +96,7 @@ void gt_obj_set_w(gt_obj_st * obj, uint16_t w) {
     gt_area_st area = obj->area;
     area.w = w;
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area, obj->overflow);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -102,7 +104,7 @@ void gt_obj_set_h(gt_obj_st * obj, uint16_t h) {
     gt_area_st area = obj->area;
     area.h = h;
     gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area, obj->overflow);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
@@ -127,7 +129,7 @@ uint16_t gt_obj_get_h(gt_obj_st * obj) {
 void gt_obj_set_visible(gt_obj_st * obj, gt_visible_et is_visible)
 {
     obj->visible = is_visible;
-    _gt_disp_refr_append_area(&obj->area);
+    gt_disp_invalid_area(obj);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -135,7 +137,7 @@ void gt_obj_set_disabled(gt_obj_st * obj, gt_disabled_et is_disabled)
 {
     obj->disabled = is_disabled ? 1 : 0;
     obj->opa = obj->disabled ? GT_OPA_60 : GT_OPA_COVER;
-    _gt_disp_refr_append_area(&obj->area);
+    gt_disp_invalid_area(obj);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -147,7 +149,7 @@ bool gt_obj_is_disabled(gt_obj_st * obj)
 void gt_obj_set_focus(gt_obj_st * obj, bool is_focus)
 {
     obj->focus = is_focus;
-    _gt_disp_refr_append_area(&obj->area);
+    gt_disp_invalid_area(obj);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -161,7 +163,7 @@ void gt_obj_set_focus_disabled(gt_obj_st * obj, gt_disabled_et is_disabled)
     obj->focus_dis = is_disabled ? 1 : 0;
 
     if(GT_DISABLED == obj->focus_dis){
-        _gt_disp_refr_append_area(&obj->area);
+        gt_disp_invalid_area(obj);
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
     }
 }
@@ -289,12 +291,8 @@ void gt_obj_move_child_by(gt_obj_st * obj, gt_size_t dx, gt_size_t dy)
         if (false == gt_obj_get_overflow(child)) {
             continue;
         }
-        if (gt_obj_is_scroll_dir(obj, GT_SCROLL_HORIZONTAL)) {
-            child->area.x += dx;
-        }
-        if (gt_obj_is_scroll_dir(obj, GT_SCROLL_VERTICAL)) {
-            child->area.y += dy;
-        }
+        child->area.x += dx;
+        child->area.y += dy;
 
         gt_obj_move_child_by(child, dx, dy);
     }
@@ -334,6 +332,15 @@ void gt_obj_child_set_prop(gt_obj_st * obj, gt_obj_prop_type_em type, uint8_t va
                 gt_obj_set_overflow(child, val);
                 break;
             }
+            case GT_OBJ_PROP_TYPE_INSIDE: {
+                gt_obj_set_inside(child, val);
+                break;
+            }
+            default:
+                break;
+        }
+        if (0 == child->cnt_child) {
+            continue;
         }
         gt_obj_child_set_prop(child, type, val);
     }
@@ -369,6 +376,26 @@ bool gt_obj_get_overflow(gt_obj_st * obj)
     return obj->overflow;
 }
 
+void gt_obj_set_inside(gt_obj_st * obj, bool is_inside)
+{
+    obj->inside = is_inside;
+}
+
+bool gt_obj_get_inside(gt_obj_st * obj)
+{
+    return obj->inside;
+}
+
+void gt_obj_set_virtual(gt_obj_st * obj, bool is_virtual)
+{
+    obj->virtual = is_virtual;
+}
+
+bool gt_obj_get_virtual(gt_obj_st * obj)
+{
+    return obj->virtual;
+}
+
 void gt_obj_set_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir)
 {
     if (dir < GT_SCROLL_DISABLE || dir > GT_SCROLL_ALL) {
@@ -389,6 +416,36 @@ bool gt_obj_is_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir)
     return (obj->scroll_dir & dir) ? true : false;
 }
 
+void gt_obj_set_scroll_lr(gt_obj_st * obj, bool is_scroll_right)
+{
+    obj->scroll_l_r = is_scroll_right;
+}
+
+bool gt_obj_is_scroll_left(gt_obj_st * obj)
+{
+    return 0 == obj->scroll_l_r ? true : false;
+}
+
+bool gt_obj_is_scroll_right(gt_obj_st * obj)
+{
+    return obj->scroll_l_r ? true : false;
+}
+
+void gt_obj_set_scroll_ud(gt_obj_st * obj, bool is_scroll_down)
+{
+    obj->scroll_u_d = is_scroll_down;
+}
+
+bool gt_obj_is_scroll_up(gt_obj_st * obj)
+{
+    return 0 == obj->scroll_u_d ? true : false;
+}
+
+bool gt_obj_is_scroll_down(gt_obj_st * obj)
+{
+    return obj->scroll_u_d ? true : false;
+}
+
 void gt_obj_set_scroll_snap_x(gt_obj_st * obj, gt_scroll_snap_em snap)
 {
     obj->scroll_snap_x = snap;
@@ -407,6 +464,16 @@ gt_scroll_snap_em gt_obj_get_scroll_snap_x(gt_obj_st * obj)
 gt_scroll_snap_em gt_obj_get_scroll_snap_y(gt_obj_st * obj)
 {
     return obj->scroll_snap_y;
+}
+
+bool _gt_obj_is_ignore_calc_max_area(gt_obj_st * obj)
+{
+    if (NULL == obj) { return true; }
+    if (obj->inside) { return true; }
+    if (obj->overflow) { return true; }
+    if (obj->virtual) { return true; }
+
+    return false;
 }
 
 /* end ------------------------------------------------------------------*/

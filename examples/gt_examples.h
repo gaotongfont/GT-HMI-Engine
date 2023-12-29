@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-09-28 11:40:52
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_EXAMPLES_H_
 #define _GT_EXAMPLES_H_
@@ -63,6 +63,8 @@ void gt_examples_line(void);
 void gt_examples_listview(void);
 
 void gt_examples_progress_bar(void);
+
+void gt_examples_roller(void);
 
 #endif  /* !GT_USE_EXAMPLES */
 

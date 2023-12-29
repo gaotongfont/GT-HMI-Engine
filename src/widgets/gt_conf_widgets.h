@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-05-11 16:18:14
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_CONF_WIDGETS_H_
 #define _GT_CONF_WIDGETS_H_
@@ -21,8 +21,10 @@ extern "C" {
 
 /**
  * @brief Configure whether the widgets is enabled
- *
+ *  such as: gt_template.c/h
  */
+#define GT_CFG_ENABLE_TEMPLATE          0
+
 #define GT_CFG_ENABLE_BTN               1
 #define GT_CFG_ENABLE_CHECKBOX          1
 #define GT_CFG_ENABLE_GROUP             1
@@ -48,6 +50,7 @@ extern "C" {
 #define GT_CFG_ENABLE_CLOCK             1
 #define GT_CFG_ENABLE_WORDART           1
 #define GT_CFG_ENABLE_VIEW_PAGER        1
+#define GT_CFG_ENABLE_ROLLER            1
 
 #if GT_USE_GIF
 #define GT_CFG_ENABLE_GIF               1

@@ -4,7 +4,7 @@
  * @brief The global data type defined
  * @version 0.1
  * @date 2022-05-12 16:27:54
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_TYPES_H_
 #define _GT_TYPES_H_
@@ -39,6 +39,10 @@ typedef void * style_widget_t;
 
 typedef int16_t gt_size_t;
 
+typedef uint8_t gt_family_t;
+typedef uint8_t gt_opt_t;
+
+
 /**
  * @brief widget type enum definition
  */
@@ -55,7 +59,7 @@ typedef enum type_widget_e {
     GT_TYPE_RADIO       = 9,        ///< radio box
     GT_TYPE_INPUT       = 10,       ///< input
     GT_TYPE_SWITCH      = 11,       ///< switch
-    GT_TYPE_SCROLLBAR   = 12,       ///< scroll bar
+    GT_TYPE_SLIDER      = 12,       ///< slider
     GT_TYPE_PROCESS_BAR = 13,       ///< progress bar
     GT_TYPE_KEYPAD      = 14,       ///< keypad
     GT_TYPE_IMGBTN      = 15,       ///< imgbtn
@@ -68,6 +72,10 @@ typedef enum type_widget_e {
     GT_TYPE_WORDART     = 22,       ///< wordard
     GT_TYPE_VIEW_PAGER  = 23,       ///< view pager
     GT_TYPE_GIF         = 24,       ///< gif
+    GT_TYPE_RECT        = 25,       ///< rect
+    GT_TYPE_LISTVIEW    = 26,       ///< listview
+    GT_TYPE_TEMPLATE    = 27,       ///< template
+    GT_TYPE_ROLLER      = 28,       ///< roller
 
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;
@@ -105,14 +113,6 @@ typedef enum
 
     GT_STATE_MAX_COUNT,
 }gt_state_et;
-
-typedef enum {
-    GT_STATE_UNSELECTED = -1,   // widget init default status
-    GT_STATE_SELECTED,          // 0 or > 0: the index of selected item.
-}gt_state_selected_et;
-
-typedef uint8_t gt_family_t;
-typedef uint8_t gt_opt_t;
 
 
 /* macros ---------------------------------------------------------------*/

@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2023-10-07 14:39:17
- * @copyright Copyright (c) 2014-2023, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
 /* include --------------------------------------------------------------*/
@@ -15,6 +15,8 @@
 #include "../core/gt_disp.h"
 #include "../others/gt_area.h"
 #include "../others/gt_log.h"
+#include "../core/gt_obj_pos.h"
+#include "../core/gt_obj_scroll.h"
 
 
 #if GT_CFG_ENABLE_VIEW_PAGER
@@ -86,7 +88,7 @@ const gt_obj_class_st _gt_view_pager_class = {
 /* static functions -----------------------------------------------------*/
 static void _draw_tip_bar(gt_obj_st * obj, gt_attr_rect_st * rect_attr) {
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj->style;
-    uint8_t idx = style->reg.index;
+    uint8_t idx = (uint8_t)style->reg.index;
     uint8_t count = style->reg.count;
     uint16_t total_width = count * _TIP_BAR_POINT_SELECT_WIDTH;
     uint8_t i = 0;
@@ -97,6 +99,7 @@ static void _draw_tip_bar(gt_obj_st * obj, gt_attr_rect_st * rect_attr) {
 
     rect_attr->bg_opa = GT_OPA_50;
 
+    // FIX obj->parent width when screen move left or right
     area_tip.x = ((obj->parent->area.w - total_width) >> 1) + _TIP_BAR_POINT_UNSELECT_OFFSET_X;
     for (i = 0; i < count; i++) {
         area_tip.w = _TIP_BAR_POINT_HEIGHT;
@@ -104,8 +107,11 @@ static void _draw_tip_bar(gt_obj_st * obj, gt_attr_rect_st * rect_attr) {
         area_tip.x += _TIP_BAR_POINT_SELECT_WIDTH;
     }
 
+    // FIX the same as previous
     area_tip.x = ((obj->parent->area.w - total_width) >> 1);
-    area_tip.x += -obj->process_attr.scroll.x * _TIP_BAR_POINT_SELECT_WIDTH / obj->parent->area.w;
+    if (obj->parent->area.w) {
+        area_tip.x += -obj->process_attr.scroll.x * _TIP_BAR_POINT_SELECT_WIDTH / obj->parent->area.w;
+    }
     area_tip.w = _TIP_BAR_POINT_HEIGHT << 1;
     rect_attr->bg_opa = GT_OPA_100;
     draw_bg(obj->draw_ctx, rect_attr, &area_tip);
@@ -113,7 +119,7 @@ static void _draw_tip_bar(gt_obj_st * obj, gt_attr_rect_st * rect_attr) {
 
 static void _init_cb(gt_obj_st * obj) {
     gt_attr_rect_st rect_attr;
-    gt_area_st area_bg = obj->area;
+    gt_area_st area_bg = obj->area;     //FIX obj->area is screen area when COVER DOWN the screen, the height will change to middle value
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj->style;
     uint16_t i = 0, width = area_bg.w / style->reg.count;
     uint16_t space = (width << 1) / 100;    /** 2% of screen width */
@@ -138,26 +144,67 @@ static void _init_cb(gt_obj_st * obj) {
     _draw_tip_bar(obj, &rect_attr);
 }
 
+/**
+ * @brief A filter which can be slide object
+ *
+ * @param obj
+ * @return true Can slide
+ * @return false
+ */
+static inline bool _is_slide_enabled(gt_obj_st * obj) {
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_SLIDER == type) {
+        return true;
+    }
+    else if (GT_TYPE_ROLLER == type) {
+        return true;
+    }
+    return false;
+}
+
+static void _unfixed_slider_widgets(gt_obj_st * parent) {
+    uint16_t idx, cnt = parent->cnt_child;
+    gt_obj_st * child = NULL;
+    for (idx = 0; idx < cnt; idx++) {
+        child = parent->child[idx];
+        if (false == _is_slide_enabled(child)) {
+            continue;
+        }
+        if (false == gt_obj_get_fixed(child)) {
+            continue;
+        }
+        gt_obj_set_fixed(child, false);
+
+        if (0 == child->cnt_child) {
+            continue;
+        }
+        _unfixed_slider_widgets(child);
+    }
+}
+
+static inline void _init_child_prop(gt_obj_st * obj) {
+    gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);
+    gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_INSIDE, true);
+
+    _unfixed_slider_widgets(obj);
+}
+
 static void _deinit_cb(gt_obj_st * obj) {
 
 }
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj->style;
+    gt_size_t value = 0;
 
     switch (e->code) {
     case GT_EVENT_TYPE_DRAW_START: {
         gt_disp_invalid_area(obj);
         break;
     }
-    case GT_EVENT_TYPE_DRAW_END: {
-        break;
-    }
     case GT_EVENT_TYPE_CHANGE_CHILD_ADD: {
-        gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);
-        break;
-    }
-    case GT_EVENT_TYPE_INPUT_SCROLL_START: {
+        // NOTE change to last child when be reset prop
+        _init_child_prop(obj);
         break;
     }
     case GT_EVENT_TYPE_INPUT_SCROLL: {
@@ -166,6 +213,22 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_END: {
         style->reg.index = gt_abs(obj->process_attr.scroll.x) / obj->parent->area.w;
+        break;
+    }
+    case GT_EVENT_TYPE_INPUT_SCROLL_UP:
+    case GT_EVENT_TYPE_INPUT_SCROLL_LEFT: {
+        value = gt_abs(obj->process_attr.scroll.x) / obj->parent->area.w;
+        if (value) {
+            gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - (value - 1) * obj->parent->area.w, GT_ANIM_ON);
+        }
+        break;
+    }
+    case GT_EVENT_TYPE_INPUT_SCROLL_DOWN:
+    case GT_EVENT_TYPE_INPUT_SCROLL_RIGHT: {
+        value = (gt_abs(obj->process_attr.scroll.x) + obj->parent->area.w - 1) / obj->parent->area.w;
+        if ((value + 1) < style->reg.count) {
+            gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - ((value + 1) * obj->parent->area.w), GT_ANIM_ON);
+        }
         break;
     }
     default:
@@ -184,6 +247,14 @@ static inline bool _is_over_max_page(uint8_t val) {
 
 static void _update_max_width(gt_obj_st * obj, uint8_t fragment_count) {
     obj->area.w = gt_disp_get_res_hor(NULL) * fragment_count;
+}
+
+static bool _child_is_group(gt_obj_st * obj) {
+    return (GT_TYPE_GROUP == obj->class->type) ? true : false;
+}
+
+static void _child_set_group_area(gt_obj_st const * const view_pager, gt_obj_st * group) {
+    gt_area_copy(&group->area, &view_pager->area);
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -256,18 +327,21 @@ void gt_view_pager_fragment_add_widget(gt_obj_st * view_pager, uint8_t fragment_
     if (OBJ_TYPE != view_pager->class->type) {
         return;
     }
-    _gt_view_pager_st * style = (_gt_view_pager_st * )view_pager->style;
     if (_is_over_max_page(fragment_idx)) {
         return;
     }
     if (false == gt_obj_is_child(child, view_pager)) {
-        gt_obj_change_parent(child, view_pager);
-        gt_obj_set_overflow(child, true);
-        gt_obj_child_set_prop(child, GT_OBJ_PROP_TYPE_FIXED, true);
+        gt_obj_st * parent = gt_obj_change_parent(child, view_pager);
+        _gt_obj_class_inherent_attr_from_parent(child, parent);
+        _init_child_prop(parent);
+    }
+    if (_child_is_group(child)) {
+        _child_set_group_area(view_pager, child);
     }
     uint16_t scr_width = gt_disp_get_res_hor(NULL);
+    uint16_t new_pos = (child->area.x % scr_width) + fragment_idx * scr_width;
 
-    child->area.x = (child->area.x % scr_width) + fragment_idx * scr_width;
+    gt_obj_move_to(child, new_pos, child->area.y);
 }
 
 void gt_view_pager_set_glass(gt_obj_st * obj, bool enabled)

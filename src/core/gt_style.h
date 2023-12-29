@@ -4,7 +4,7 @@
  * @brief
  * @version 0.1
  * @date 2022-05-12 18:37:46
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_STYLE_H_
 #define _GT_STYLE_H_
@@ -54,7 +54,6 @@ typedef enum{
 
 /**
  * @brief @see gt_obj_st
- *
  */
 typedef enum {
     GT_OBJ_PROP_TYPE_VISIBLE = 0,
@@ -64,6 +63,7 @@ typedef enum {
     GT_OBJ_PROP_TYPE_DISABLED,
     GT_OBJ_PROP_TYPE_FIXED,
     GT_OBJ_PROP_TYPE_OVERFLOW,
+    GT_OBJ_PROP_TYPE_INSIDE,
 }gt_obj_prop_type_em;
 
 /* macros ---------------------------------------------------------------*/
@@ -128,14 +128,61 @@ bool gt_obj_get_fixed(gt_obj_st * obj);
 void gt_obj_set_overflow(gt_obj_st * obj, bool is_overflow);
 bool gt_obj_get_overflow(gt_obj_st * obj);
 
+/**
+ * @brief The object only displays within the parent area
+ *
+ * @param obj
+ * @param is_inside true: enabled, false: disabled
+ */
+void gt_obj_set_inside(gt_obj_st * obj, bool is_inside);
+bool gt_obj_get_inside(gt_obj_st * obj);
+
+/**
+ * @brief Controls are virtual logic, not entities, and cannot receive touch responses
+ *
+ * @param obj
+ * @param is_virtual 0: un-virtual[default], 1: virtual
+ */
+void gt_obj_set_virtual(gt_obj_st * obj, bool is_virtual);
+bool gt_obj_get_virtual(gt_obj_st * obj);
+
 void gt_obj_set_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir);
 gt_scroll_dir_et gt_obj_get_scroll_dir(gt_obj_st * obj);
 bool gt_obj_is_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir);
+
+/**
+ * @brief Set object scroll horizontal left or right direction.
+ *
+ * @param obj
+ * @param is_scroll_right 0: left; 1: right
+ */
+void gt_obj_set_scroll_lr(gt_obj_st * obj, bool is_scroll_right);
+bool gt_obj_is_scroll_left(gt_obj_st * obj);
+bool gt_obj_is_scroll_right(gt_obj_st * obj);
+
+/**
+ * @brief Set object scroll vertical up or down direction.
+ *
+ * @param obj
+ * @param is_scroll_down 0: up; 1: down
+ */
+void gt_obj_set_scroll_ud(gt_obj_st * obj, bool is_scroll_down);
+bool gt_obj_is_scroll_up(gt_obj_st * obj);
+bool gt_obj_is_scroll_down(gt_obj_st * obj);
 
 void gt_obj_set_scroll_snap_x(gt_obj_st * obj, gt_scroll_snap_em snap);
 void gt_obj_set_scroll_snap_y(gt_obj_st * obj, gt_scroll_snap_em snap);
 gt_scroll_snap_em gt_obj_get_scroll_snap_x(gt_obj_st * obj);
 gt_scroll_snap_em gt_obj_get_scroll_snap_y(gt_obj_st * obj);
+
+/**
+ * @brief Filter the maximum viewable screen range based on the properties of the control
+ *
+ * @param obj current object
+ * @return true Ignore to calculate the maximum viewable screen range
+ * @return false Need to calculate the maximum viewable screen range
+ */
+bool _gt_obj_is_ignore_calc_max_area(gt_obj_st * obj);
 
 #ifdef __cplusplus
 } /*extern "C"*/

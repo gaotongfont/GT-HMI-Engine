@@ -4,7 +4,7 @@
  * @brief Set object position function
  * @version 0.1
  * @date 2022-06-15 14:34:27
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_OBJ_POS_H_
 #define _GT_OBJ_POS_H_
@@ -39,7 +39,7 @@ extern "C" {
  * @param dst dst area
  * @param src src area
  */
-void gt_area_copy(gt_area_st * dst, gt_area_st * src);
+void gt_area_copy(gt_area_st * dst, gt_area_st const * const src);
 
 /**
  * @brief check the obj is visible
@@ -69,16 +69,6 @@ bool gt_obj_check_visible(gt_obj_st * obj, gt_area_st area);
  * @param area_valid valid area(x:start cpy x pos, y:start cpy y pos, w:how much cpy width,h:how much cpy height)
  */
 void gt_obj_get_valid_area(gt_obj_st * obj, gt_area_st * area_act, gt_area_st *area_valid);
-
-/**
- * @brief check obj was clicked by point
- *
- * @param obj check obj
- * @param point click point
- * @return true clicked
- * @return false not clicked
- */
-bool gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point );
 
 /**
  * @brief find smallest clicked obj from parent

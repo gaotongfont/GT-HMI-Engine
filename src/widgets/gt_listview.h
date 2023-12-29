@@ -4,7 +4,7 @@
  * @brief list view
  * @version 0.1
  * @date 2022-07-18 13:39:51
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_LISTVIEW_H_
 #define _GT_LISTVIEW_H_
@@ -103,8 +103,9 @@ void gt_listview_set_font_align(gt_obj_st * listview, uint8_t align);
 void gt_listview_set_font_color(gt_obj_st * listview, gt_color_t color);
 
 
-void gt_listview_set_font_family_en(gt_obj_st * listview, gt_family_t family);
 void gt_listview_set_font_family_cn(gt_obj_st * listview, gt_family_t family);
+void gt_listview_set_font_family_en(gt_obj_st * listview, gt_family_t family);
+void gt_listview_set_font_family_fl(gt_obj_st * listview, gt_family_t family);
 void gt_listview_set_font_family_numb(gt_obj_st * listview, gt_family_t family);
 
 void gt_listview_set_font_thick_en(gt_obj_st * listview, uint8_t thick);

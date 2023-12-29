@@ -4,7 +4,7 @@
  * @brief GUI display hal layer driver
  * @version 0.1
  * @date 2022-05-13 09:51:55
- * @copyright Copyright (c) 2014-2022, Company Genitop. Co., Ltd.
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 #ifndef _GT_HAL_DISP_H_
 #define _GT_HAL_DISP_H_
@@ -42,7 +42,12 @@ typedef struct _gt_disp_drv_s
     gt_color_t bg_color;    ///< background color
     gt_color_t fg_color;    ///< foreground color
 
-    /// @brief display flush callback
+    /**
+     * @brief display flush callback
+     * @param drv display driver
+     * @param area
+     * @param color buffer
+     */
     void (* flush_cb)(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
 
     uint8_t rotated: 2;    ///< display rotation @ref gt_rotated_et
@@ -176,10 +181,11 @@ gt_area_st * _gt_disp_refr_get_area(void);
  * @brief Update max screen can display area
  *
  * @param area widget area
- * @param is_overflow true: widget can overflow the screen area size;
- *                    false: widget can't overflow the screen area size, widget size will calculate by screen area size
+ * @param is_ignore_calc is ignore calculate into the screen area size, @ref _gt_obj_is_ignore_calc_max_area()
+ *           true: widget do not calculate into the screen area size, widget size will not be used as max area size
+ *           false: widget calculate into the screen area size, widget size will be used as max area size;
  */
-void _gt_disp_update_max_area(const gt_area_st * const area, bool is_overflow);
+void _gt_disp_update_max_area(const gt_area_st * const area, bool is_ignore_calc);
 
 void _gt_disp_reload_max_area(gt_obj_st * scr);
 
