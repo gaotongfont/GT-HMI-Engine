@@ -125,10 +125,8 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
             GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-            // gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         case GT_EVENT_TYPE_UPDATE_VALUE:
-            // gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             area = obj->area;
             gt_fs_read_img_wh(gt_img_get_src(obj), &area.w, &area.h);
             gt_obj_size_change(obj, &area);
