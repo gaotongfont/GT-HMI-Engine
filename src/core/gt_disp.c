@@ -605,7 +605,7 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         disp->area_act.h = disp->drv->res_ver;
         disp->area_act.w = disp->drv->res_hor;
 
-        _gt_disp_refr_append_area(&disp->area_act);
+        gt_disp_ref_area(&disp->area_act);
 
         if (auto_del && scr_old && scr_old != scr) {
             gt_anim_st anim_del;

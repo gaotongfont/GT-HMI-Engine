@@ -42,7 +42,12 @@ typedef struct _gt_disp_drv_s
     gt_color_t bg_color;    ///< background color
     gt_color_t fg_color;    ///< foreground color
 
-    /// @brief display flush callback
+    /**
+     * @brief display flush callback
+     * @param drv display driver
+     * @param area
+     * @param color buffer
+     */
     void (* flush_cb)(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
 
     uint8_t rotated: 2;    ///< display rotation @ref gt_rotated_et
