@@ -206,16 +206,6 @@ uint32_t gt_font_get_string_width(gt_font_st * font);
  */
 uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font);
 
-/**
- * @brief get next word width from font_st
- *
- * @param font font msg
- * @param is_head this can be 0:start from cur, 1:start from head
- * @return uint8_t next word width
- */
-uint8_t gt_font_get_next_word_width(gt_font_st * font, uint8_t is_head);
-
-
 void gt_project_encoding_set(gt_encoding_et charset);
 gt_encoding_et gt_project_encoding_get(void);
 uint8_t gt_font_one_char_code_len_get(uint8_t * utf8,uint32_t *res , uint8_t encoding);
