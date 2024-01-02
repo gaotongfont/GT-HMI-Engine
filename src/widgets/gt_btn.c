@@ -39,7 +39,7 @@ typedef struct _gt_btn_s
     gt_color_t color_background;
     gt_color_t color_pressed;
     gt_color_t font_color;
-    gt_size_t   radius;
+    gt_size_t  radius;
 
     gt_font_info_st font_info;
 
