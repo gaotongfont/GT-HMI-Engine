@@ -190,7 +190,7 @@ uint8_t gt_utf8_check_char(uint8_t * utf8);
  * @brief Get the character data of a string
  *
  * @param font font basic information
- * @return font type value enum
+ * @return font type value enum @ref gt_font_type_em
  */
 uint16_t gt_font_get_string_dot(gt_font_st * font);
 
@@ -212,6 +212,15 @@ uint32_t gt_font_get_string_width(gt_font_st * font);
 uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font);
 
 _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, uint8_t font_style, uint8_t langue, uint32_t text_len);
+
+/**
+ * @brief Get max substring line width
+ *
+ * @param info
+ * @param text String
+ * @param space x space
+ * @return uint16_t The max width of the substring
+ */
 uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const char * const text, uint16_t space);
 
 void gt_project_encoding_set(gt_encoding_et charset);
@@ -224,6 +233,13 @@ uint8_t gt_gb_check_char(const uint8_t *dst , uint16_t pos , uint32_t* fontcode)
 gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding);
 bool gt_style_en_data_is_convertor(uint32_t unicode , uint8_t encoding);
 uint16_t gt_font_get_word_width_figure_up(const uint8_t* data , uint16_t dot_w , uint16_t dot_h , uint8_t gray);
+
+/**
+ * @brief Get the font type
+ *
+ * @param font_style
+ * @return uint8_t @ref gt_font_type_em
+ */
 uint8_t gt_font_type_get(unsigned int font_style);
 
 int gt_font_code_transform(font_convertor_st *convert);

@@ -609,7 +609,7 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
     }
 
     if (GT_FONT_TYPE_FLAG_VEC == font_style) {
-        res.dot_width = ((info->size * info->gray + 15) >> 4) << 4;
+        res.dot_width = (((info->size + 15) >> 4) << 4) * info->gray;
     } else {
         res.dot_width = ((info->size + 7) >> 3) << 3;
     }
@@ -643,6 +643,59 @@ uint32_t gt_font_get_string_width(gt_font_st * font)
     return width;
 }
 
+uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const char * const text, uint16_t space)
+{
+    uint32_t idx = 0, len = strlen(text), unicode = 0;
+    uint16_t max_width = 0, cur_line_width = 0;
+    gt_font_st temp_font = {
+        .info = *info,
+        .utf8 = (char * )text,
+        .len = len,
+        .res = NULL,
+    };
+    uint8_t count_byte = 0, word_width = 0;
+
+    if (NULL == text) {
+        return max_width;
+    }
+
+    uint8_t font_style = GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH;
+    if (GT_FONT_TYPE_FLAG_VEC == gt_font_type_get(info->style_cn) ||
+        GT_FONT_TYPE_FLAG_VEC == gt_font_type_get(info->style_en) ||
+        GT_FONT_TYPE_FLAG_VEC == gt_font_type_get(info->style_fl)) {
+        font_style = GT_FONT_TYPE_FLAG_VEC;
+    }
+
+    _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(info, font_style, 0, 0);
+
+    temp_font.res = gt_mem_malloc(font_size_res.font_buff_len);
+
+    while (idx < len)
+    {
+        count_byte = gt_font_one_char_code_len_get((uint8_t*)&text[idx], &unicode, info->encoding);
+        idx += count_byte;
+
+        if (0x0A == unicode || 0x00 == unicode) {
+            if (cur_line_width > max_width) {
+                max_width = cur_line_width;
+            }
+            cur_line_width = 0;
+            continue;
+        }
+        word_width = gt_font_get_one_word_width(unicode, &temp_font);
+        cur_line_width += word_width + space;
+    }
+
+    if (cur_line_width > max_width) {
+        max_width = cur_line_width;
+    }
+
+    if (temp_font.res) {
+        gt_mem_free(temp_font.res);
+        temp_font.res = NULL;
+    }
+    return max_width;
+}
 
 uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
 {
