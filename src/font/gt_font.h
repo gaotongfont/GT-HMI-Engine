@@ -148,12 +148,17 @@ typedef enum _gt_font_style_en_cn_e {
     STYLE_EN_Currency ,
 }gt_font_style_en_cn_et;
 
-typedef struct _gt_bidi_s
-{
+typedef struct _gt_bidi_s {
     uint16_t idx;
     uint16_t len;
     uint8_t flag;
 }gt_bidi_st;
+
+typedef struct _gt_font_size_res_s {
+    uint32_t font_buff_len;
+    uint16_t dot_width;
+    uint16_t font_per_size;
+}_gt_font_size_res_st;
 
 /* macros ---------------------------------------------------------------*/
 
@@ -205,6 +210,9 @@ uint32_t gt_font_get_string_width(gt_font_st * font);
  * @return uint8_t The width of the character
  */
 uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font);
+
+_gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, uint8_t font_style, uint8_t langue, uint32_t text_len);
+uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const char * const text, uint16_t space);
 
 void gt_project_encoding_set(gt_encoding_et charset);
 gt_encoding_et gt_project_encoding_get(void);
