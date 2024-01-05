@@ -85,6 +85,14 @@ uint8_t gt_label_get_font_size(gt_obj_st * label);
 uint8_t gt_label_get_space_x(gt_obj_st * label);
 uint8_t gt_label_get_space_y(gt_obj_st * label);
 
+/**
+ * @brief Get max substring line width
+ *
+ * @param label
+ * @return uint16_t max substring line width
+ */
+uint16_t gt_label_get_longest_line_substring_width(gt_obj_st * label);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

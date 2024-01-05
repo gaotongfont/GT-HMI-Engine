@@ -18,6 +18,7 @@
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
+#include "../font/gt_font.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_LAB
@@ -296,6 +297,22 @@ uint8_t gt_label_get_space_y(gt_obj_st * label)
 {
     _gt_label_st * style = (_gt_label_st * )label->style;
     return style->space_y;
+}
+
+uint16_t gt_label_get_longest_line_substring_width(gt_obj_st * label)
+{
+    if (NULL == label) {
+        return 0;
+    }
+    if (GT_TYPE_LAB != gt_obj_class_get_type(label)) {
+        return 0;
+    }
+    _gt_label_st * style = (_gt_label_st * )label->style;
+    if (NULL == style) {
+        return 0;
+    }
+
+    return gt_font_get_longest_line_substring_width(&style->font_info, style->text, style->space_x);
 }
 
 /* end ------------------------------------------------------------------*/
