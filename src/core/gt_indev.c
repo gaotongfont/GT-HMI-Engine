@@ -77,11 +77,15 @@ static gt_size_t _scroll_predict(gt_indev_st * indev, gt_size_t v)
         return result;
     }
 
-    uint32_t duration = gt_abs(gt_tick_get() - indev->proc.timestamp_start);
     gt_size_t limit_scroll_throw = indev->drv->limit_scroll_throw;
+    uint32_t duration = gt_abs(gt_tick_get() - indev->proc.timestamp_start);
     while(v) {
         result += v;
         v = (100 - limit_scroll_throw) * v / 100;
+    }
+
+    if (0 == duration) {
+        return result;
     }
 
     return (gt_size_t)(1000.0 * result / duration);
