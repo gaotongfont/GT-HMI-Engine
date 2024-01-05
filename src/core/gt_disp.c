@@ -519,22 +519,134 @@ static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
  */
 static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     gt_color_t color_fill = gt_screen_get_bgcolor(param->scr);
-    uint32_t len = param->disp->area_act.w * param->line;
 
     param->scr->area.x = param->disp->area_act.x;
     param->scr->area.y = param->disp->area_act.y;
 
-    while(param->area_flush.y < param->disp->area_act.h) {
+    if(gt_disp_get_res_hor(NULL) == param->area_flush.w && gt_disp_get_res_ver(NULL) == param->area_flush.h){
+        if(param->area_flush.x < 0 || (param->area_flush.x + param->area_flush.w > gt_disp_get_res_hor(NULL))){
+            param->area_flush.x = 0;
+        }
+        if(param->area_flush.y < 0 || (param->area_flush.y + param->area_flush.h > gt_disp_get_res_ver(NULL))){
+            param->area_flush.y = 0;
+        }
+    }
+    else{
+        // Calculate the area_flush x coordinates and width
+        if(param->disp->area_act.x == 0){
+            if(param->area_flush.x < 0){
+                param->area_flush.w = param->area_flush.w + param->area_flush.x;
+                param->area_flush.x = 0;
+            }
+            
+            if((param->area_flush.x % gt_disp_get_res_hor(NULL)) + param->area_flush.w > gt_disp_get_res_hor(NULL)){
+                param->area_flush.w = gt_disp_get_res_hor(NULL) - (param->area_flush.x % gt_disp_get_res_hor(NULL));
+            }
+        }
+        else if(param->disp->area_act.x > 0){
+            if(param->area_flush.x < 0){
+                param->area_flush.w = param->area_flush.w + param->area_flush.x;
+                param->area_flush.x = 0;
+            }
+
+            if(param->area_flush.x > 0){
+                param->area_flush.x = param->area_flush.x - param->disp->area_act.x;
+            }
+
+            if((param->area_flush.x % gt_disp_get_res_hor(NULL)) + param->area_flush.w > gt_disp_get_res_hor(NULL)){
+                param->area_flush.w = gt_disp_get_res_hor(NULL) - (param->area_flush.x % gt_disp_get_res_hor(NULL));
+            }
+
+        }
+        else if(param->disp->area_act.x < 0)
+        {
+            if(param->area_flush.x < 0){
+                param->area_flush.w = param->area_flush.w + param->area_flush.x - param->disp->area_act.x;
+                param->area_flush.x = 0;
+            }
+
+            if(param->area_flush.x > 0){
+                param->area_flush.x = param->area_flush.x - param->disp->area_act.x;
+            }
+
+            if((param->area_flush.x % gt_disp_get_res_hor(NULL)) + param->area_flush.w > gt_disp_get_res_hor(NULL)){
+                param->area_flush.w = gt_disp_get_res_hor(NULL) - (param->area_flush.x % gt_disp_get_res_hor(NULL));
+            }
+
+        }
+
+        // Calculate the area_flush y coordinates and height
+        if(param->disp->area_act.y == 0){
+            if(param->area_flush.y < 0){
+                param->area_flush.h = param->area_flush.h + param->area_flush.y;
+                param->area_flush.y = 0;
+            }
+
+            if((param->area_flush.y % gt_disp_get_res_ver(NULL)) + param->area_flush.h > gt_disp_get_res_ver(NULL)){
+                param->area_flush.h = gt_disp_get_res_ver(NULL) - (param->area_flush.y % gt_disp_get_res_ver(NULL));
+            }
+
+        }
+        else if(param->disp->area_act.y > 0){
+            if(param->area_flush.y < 0){
+                param->area_flush.h = param->area_flush.h + param->area_flush.y;
+                param->area_flush.y = 0;
+            }
+
+            if(param->area_flush.y > 0){
+                param->area_flush.y = param->area_flush.y - param->disp->area_act.y;
+            }
+
+            if((param->area_flush.y % gt_disp_get_res_ver(NULL)) + param->area_flush.h > gt_disp_get_res_ver(NULL)){
+                param->area_flush.h = gt_disp_get_res_ver(NULL) - (param->area_flush.y % gt_disp_get_res_ver(NULL));
+            }
+
+        }
+        else if(param->disp->area_act.y < 0)
+        {
+            if(param->area_flush.y < 0){
+                param->area_flush.h = param->area_flush.h + param->area_flush.y - param->disp->area_act.y;
+                param->area_flush.y = 0;
+            }
+
+            if(param->area_flush.y > 0){
+                param->area_flush.y = param->area_flush.y - param->disp->area_act.y;
+            }
+
+            if((param->area_flush.y % gt_disp_get_res_ver(NULL)) + param->area_flush.h > gt_disp_get_res_ver(NULL)){
+                param->area_flush.h = gt_disp_get_res_ver(NULL) - (param->area_flush.y % gt_disp_get_res_ver(NULL));
+            }
+        }
+    }
+    // 
+    uint16_t end_y = param->area_flush.y + param->area_flush.h;
+    param->disp->area_disp.x = param->area_flush.x + param->disp->area_act.x;
+    param->disp->area_disp.y = param->area_flush.y;
+    param->disp->area_disp.w = param->area_flush.w;
+    if(param->area_flush.h > param->line){
+        param->area_flush.h = param->line;
+    }
+    param->disp->area_disp.h = param->area_flush.h;
+
+    uint32_t len = param->disp->area_disp.w * param->disp->area_disp.h;
+
+    while (param->area_flush.y < end_y)
+    {
         gt_color_fill(param->disp->vbd_color, len, color_fill);
 
-        param->disp->area_disp.x = param->scr->area.x;
-        param->disp->area_disp.y = param->scr->area.y + param->area_flush.y;
-
+        param->disp->area_disp.y = param->area_flush.y + param->disp->area_act.y;
+        
         _gt_disp_check_and_copy_foreach(param->scr, param);
 
         /** flush display by buffer area */
         param->disp->drv->flush_cb(param->disp->drv, &param->area_flush, param->disp->vbd_color);
         param->area_flush.y += param->line;
+
+        if( end_y - param->area_flush.y < param->line){
+            param->area_flush.h = end_y - param->area_flush.y;
+            param->disp->area_disp.h = param->area_flush.h;
+        }
+
     }
 }
 
@@ -715,7 +827,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
     uint16_t scr_width = gt_disp_get_res_hor(NULL);
     _flush_scr_param_st param = {
         .disp = gt_disp_get_default(),
-        .area_dirty = (gt_area_st)*coords,
+        .area_dirty = *coords,
         .area_flush = {0, 0, scr_width, GT_REFRESH_FLUSH_LINE_PRE_TIME},
         .scr =  gt_disp_get_scr(),          // Only x, y, w, h animation changes are recorded
         .scr_prev = gt_disp_get_scr_prev(), // Only x, y, w, h animation changes are recorded
@@ -751,6 +863,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
     if (param.scr_prev) {
         _flush_scr_by_anim(&param);
     } else {
+        param.area_flush = param.area_dirty;
         _flush_scr_by_direct(&param);
     }
 
