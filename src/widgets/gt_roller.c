@@ -27,7 +27,8 @@
 #define OBJ_TYPE    GT_TYPE_ROLLER
 #define MY_CLASS    &gt_roller_class
 
-
+/** The width of redundancy */
+#define _REDUNDANCY_WIDTH   30
 
 /* private typedef ------------------------------------------------------*/
 /**
@@ -359,7 +360,7 @@ static void _resize_display_area_height(gt_obj_st * obj) {
         return;
     }
 
-    gt_obj_set_size(obj, gt_obj_get_w(obj),
+    gt_obj_set_size(obj, obj->area.w,
         (gt_label_get_font_size(style->text) + gt_label_get_space_y(style->text)) * style->count_of_show);
 
     gt_obj_set_size(style->text, obj->area.w,
@@ -386,6 +387,26 @@ static gt_obj_st * _create_text(gt_obj_st * obj) {
     style->text = gt_label_create(obj);
     gt_label_set_font_align(style->text, GT_ALIGN_CENTER);
     return style->text;
+}
+
+static void _resize_display_width(gt_obj_st * obj) {
+
+    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    if (NULL == style->text) {
+        return;
+    }
+    char * options = gt_label_get_text(style->text);
+    if (NULL == options || 0 == strlen(options)) {
+        return;
+    }
+    uint16_t max_width = gt_label_get_longest_line_substring_width(style->text);
+    max_width += _REDUNDANCY_WIDTH;
+
+    if (max_width <= obj->area.w) {
+        return;
+    }
+    gt_obj_set_size(obj, max_width, obj->area.h);
+    gt_obj_set_size(style->text, max_width, obj->area.h);
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -480,6 +501,7 @@ void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mo
         /** other unknown mode */
         return;
     }
+    _resize_display_width(obj);
     gt_label_set_space(style->text, 0, style->line_space);
 
     gt_obj_set_fixed(style->text, true);
@@ -668,6 +690,7 @@ void gt_roller_set_line_space(gt_obj_st * obj, uint8_t space)
     _create_text(obj);
     gt_label_set_space(style->text, 0, style->line_space);
     _reset_scroll_size(obj);
+    _resize_display_width(obj);
 }
 
 void gt_roller_set_font_color(gt_obj_st * obj, gt_color_t color)
@@ -700,6 +723,7 @@ void gt_roller_set_font_size(gt_obj_st * obj, uint8_t size)
     }
     _create_text(obj);
     gt_label_set_font_size(style->text, size);
+    _resize_display_width(obj);
 }
 
 void gt_roller_set_font_gray(gt_obj_st * obj, uint8_t gray)
@@ -716,6 +740,7 @@ void gt_roller_set_font_gray(gt_obj_st * obj, uint8_t gray)
     }
     _create_text(obj);
     gt_label_set_font_gray(style->text, gray);
+    _resize_display_width(obj);
 }
 
 void gt_roller_set_font_align(gt_obj_st * obj, uint8_t align)
@@ -748,6 +773,7 @@ void gt_roller_set_font_family_cn(gt_obj_st * obj, gt_family_t family)
     }
     _create_text(obj);
     gt_label_set_font_family_cn(style->text, family);
+    _resize_display_width(obj);
 }
 
 void gt_roller_set_font_family_en(gt_obj_st * obj, gt_family_t family)
@@ -764,6 +790,7 @@ void gt_roller_set_font_family_en(gt_obj_st * obj, gt_family_t family)
     }
     _create_text(obj);
     gt_label_set_font_family_en(style->text, family);
+    _resize_display_width(obj);
 }
 
 void gt_roller_set_font_family_fl(gt_obj_st * obj, gt_family_t family)
@@ -780,6 +807,7 @@ void gt_roller_set_font_family_fl(gt_obj_st * obj, gt_family_t family)
     }
     _create_text(obj);
     gt_label_set_font_family_fl(style->text, family);
+    _resize_display_width(obj);
 }
 
 void gt_roller_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
@@ -796,6 +824,7 @@ void gt_roller_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
     }
     _create_text(obj);
     gt_label_set_font_family_numb(style->text, family);
+    _resize_display_width(obj);
 }
 
 void gt_roller_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
@@ -812,6 +841,7 @@ void gt_roller_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
     }
     _create_text(obj);
     gt_label_set_font_thick_en(style->text, thick);
+    _resize_display_width(obj);
 }
 
 void gt_roller_set_font_thick_cn(gt_obj_st * obj, uint8_t thick)
@@ -828,6 +858,7 @@ void gt_roller_set_font_thick_cn(gt_obj_st * obj, uint8_t thick)
     }
     _create_text(obj);
     gt_label_set_font_thick_cn(style->text, thick);
+    _resize_display_width(obj);
 }
 
 
