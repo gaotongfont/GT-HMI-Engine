@@ -538,7 +538,7 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
                 param->area_flush.w = param->area_flush.w + param->area_flush.x;
                 param->area_flush.x = 0;
             }
-            
+
             if((param->area_flush.x % gt_disp_get_res_hor(NULL)) + param->area_flush.w > gt_disp_get_res_hor(NULL)){
                 param->area_flush.w = gt_disp_get_res_hor(NULL) - (param->area_flush.x % gt_disp_get_res_hor(NULL));
             }
@@ -618,7 +618,7 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
             }
         }
     }
-    // 
+    //
     uint16_t end_y = param->area_flush.y + param->area_flush.h;
     param->disp->area_disp.x = param->area_flush.x + param->disp->area_act.x;
     param->disp->area_disp.y = param->area_flush.y;
@@ -635,7 +635,7 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
         gt_color_fill(param->disp->vbd_color, len, color_fill);
 
         param->disp->area_disp.y = param->area_flush.y + param->disp->area_act.y;
-        
+
         _gt_disp_check_and_copy_foreach(param->scr, param);
 
         /** flush display by buffer area */

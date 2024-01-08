@@ -68,7 +68,7 @@ void gt_refr_timer(void)
         //     _gt_disp_refr_area_pop();
         //     return;
         // }
-        
+
         gt_disp_ref_area( area );
         _gt_disp_refr_area_pop();
 
