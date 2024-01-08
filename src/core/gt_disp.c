@@ -549,8 +549,12 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
                 param->area_flush.x = 0;
             }
 
-            if(param->area_flush.x > 0){
+            if(param->area_flush.x > param->disp->area_act.x){
                 param->area_flush.x = param->area_flush.x - param->disp->area_act.x;
+            }
+            else{
+                param->area_flush.w = (param->area_flush.w + param->area_flush.x) - param->disp->area_act.x;
+                param->area_flush.x = 0;
             }
 
             if((param->area_flush.x % gt_disp_get_res_hor(NULL)) + param->area_flush.w > gt_disp_get_res_hor(NULL)){
@@ -593,8 +597,12 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
                 param->area_flush.y = 0;
             }
 
-            if(param->area_flush.y > 0){
+            if(param->area_flush.y > param->disp->area_act.y){
                 param->area_flush.y = param->area_flush.y - param->disp->area_act.y;
+            }
+            else{
+                param->area_flush.h = (param->area_flush.h + param->area_flush.y) - param->disp->area_act.y;
+                param->area_flush.y = 0;
             }
 
             if((param->area_flush.y % gt_disp_get_res_ver(NULL)) + param->area_flush.h > gt_disp_get_res_ver(NULL)){
