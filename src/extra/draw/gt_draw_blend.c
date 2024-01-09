@@ -292,7 +292,7 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
     }
 
     /** 当前重绘制起始坐标 */
-    gt_point_st area_dst = {
+    gt_point_st flush_buffer_offset = {
         .x = area_dsc.x < area_draw.x ? 0 : (area_dsc.x - area_draw.x),
         .y = area_dsc.y > area_draw.y ? (area_dsc.y - area_draw.y) : 0,
     };
@@ -304,21 +304,28 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
             /** prev screen display */
             gt_area_copy(&area_valid, &draw_ctx->valid->area_prev);
             if (draw_ctx->valid->is_hor) {
-                if (draw_ctx->valid->offset_prev.x && area_dst.x < draw_ctx->valid->offset_prev.x) {
+                if (draw_ctx->valid->offset_prev.x && flush_buffer_offset.x < draw_ctx->valid->offset_prev.x) {
                     area_valid.x += draw_ctx->valid->offset_prev.x;
                     area_valid.w -= draw_ctx->valid->offset_prev.x;
-                    area_dst.x = draw_ctx->valid->offset_prev.x;
+                    flush_buffer_offset.x = draw_ctx->valid->offset_prev.x;
                 }
             } else {
-                area_valid.y -= draw_ctx->valid->offset_prev.y;
+                if (draw_ctx->valid->is_over_top &&
+                    draw_ctx->valid->offset_prev.y > 0 &&
+                    draw_ctx->valid->offset_prev.y - area_draw.y < draw_ctx->valid->offset_prev.y) {
+                    area_valid.y -= draw_ctx->valid->offset_prev.y - area_draw.y;
+                }
+                else {
+                    area_valid.y -= draw_ctx->valid->offset_prev.y;
+                }
             }
         } else {
             /** new screen display */
             gt_area_copy(&area_valid, &draw_ctx->valid->area_scr);
             if (draw_ctx->valid->is_hor) {
                 area_valid.x += draw_ctx->valid->offset_scr.x;
-                if (draw_ctx->valid->offset_scr.x && area_dst.x < draw_ctx->valid->offset_scr.x) {
-                    area_dst.x = draw_ctx->valid->offset_scr.x;
+                if (draw_ctx->valid->offset_scr.x && flush_buffer_offset.x < draw_ctx->valid->offset_scr.x) {
+                    flush_buffer_offset.x = draw_ctx->valid->offset_scr.x;
                 }
             } else {
                 area_valid.y -= draw_ctx->valid->offset_scr.y;
@@ -327,6 +334,17 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
         if (!gt_area_intersect_screen(&area_valid, &area_dsc, &area_intersect)) {
             return;
         }
+        /** anim move down */
+        if (draw_ctx->valid->is_over_top) {
+            if (area_dsc.y < 0 && area_dsc.h == area_intersect.y + area_intersect.h) {
+                if (area_valid.y - area_draw.y < area_intersect.y) {
+                    flush_buffer_offset.y += gt_abs(area_draw.y - area_valid.y);
+                }
+                else {
+                    flush_buffer_offset.y += gt_abs(area_intersect.y);
+                }
+            }
+        }
     } else {
         /** draw_ctx->buf_area: 图片显示区域; dsc->dst_area: 当前绘制区域 */
         if (!gt_area_intersect_screen(&area_draw, &area_dsc, &area_intersect)) {
@@ -334,16 +352,16 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
         }
     }
 
-    // from area_intersect cpy to area_dst
-    uint32_t idx_dst = area_dst.y * area_draw.w + area_dst.x;
+    // from area_intersect cpy to flush_buffer_offset
+    uint32_t idx_dst = flush_buffer_offset.y * area_draw.w + flush_buffer_offset.x;
     uint32_t idx_src = (offset.y + area_intersect.y) * width_dsc + area_intersect.x + offset.x;
 
-    if (area_dst.y + area_intersect.h > GT_REFRESH_FLUSH_LINE_PRE_TIME) {
+    if (flush_buffer_offset.y + area_intersect.h > GT_REFRESH_FLUSH_LINE_PRE_TIME) {
         // over draw buffer size
-        if (area_dst.y > GT_REFRESH_FLUSH_LINE_PRE_TIME) {
+        if (flush_buffer_offset.y > GT_REFRESH_FLUSH_LINE_PRE_TIME) {
             area_intersect.h = 0;
         } else {
-            area_intersect.h = GT_REFRESH_FLUSH_LINE_PRE_TIME - area_dst.y;
+            area_intersect.h = GT_REFRESH_FLUSH_LINE_PRE_TIME - flush_buffer_offset.y;
         }
     }
 

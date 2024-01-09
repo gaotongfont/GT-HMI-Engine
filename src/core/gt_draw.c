@@ -244,10 +244,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
 {
     if (dsc->bg_opa <= GT_OPA_MIN) return;
 
-    gt_area_st bg_coords;
-    gt_area_copy(&bg_coords, (gt_area_st *)coords);
-
-    if( !gt_area_is_intersect_screen(&draw_ctx->buf_area, &bg_coords) ){
+    if( !gt_area_is_intersect_screen(&draw_ctx->buf_area, coords) ){
         return;
     }
 
@@ -256,7 +253,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
     static uint8_t * mask_left_up = NULL;
 
     // calc radius
-    uint16_t radius = GT_MIN(bg_coords.w >> 1, bg_coords.h >> 1);
+    uint16_t radius = GT_MIN(coords->w >> 1, coords->h >> 1);
     radius = GT_MIN(radius, dsc->radius);
     uint16_t border_width = dsc->border_width;
     uint8_t is_radius_more_than_border = radius > border_width ? true : false;

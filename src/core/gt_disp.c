@@ -340,6 +340,7 @@ static inline void _adapt_area_flush_ver(_flush_scr_param_st * param) {
     param->view_scr_prev_abs.h = param->scr_prev->area.h;
     switch (param->disp->scr_anim_type) {
         case GT_SCR_ANIM_TYPE_MOVE_UP: {
+            param->valid.is_over_top = true;
             /** prev screen */
             param->view_scr_prev_abs.y = param->disp->area_act.y + param->scr_prev->area.y; // area_act.y:原界面的偏移
             /** new screen */
@@ -348,8 +349,13 @@ static inline void _adapt_area_flush_ver(_flush_scr_param_st * param) {
             break;
         }
         case GT_SCR_ANIM_TYPE_MOVE_DOWN: {
+            param->valid.is_over_top = true;
             /** prev screen */
             param->view_scr_prev_abs.y = param->disp->area_act.y + param->scr_prev->area.y + param->scr->area.h;
+            param->view_scr_prev_abs.h = param->disp->area_act.h;
+            if (param->disp->area_act.y > 0) {
+                param->valid.offset_prev.y = param->disp->area_act.y;
+            }
             /** new screen */
             param->view_scr_abs.h = param->scr->area.h;
             break;
