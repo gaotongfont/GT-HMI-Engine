@@ -123,6 +123,7 @@ static void _scroll_dir_ver(gt_obj_st * obj, bool is_up) {
     } else if (GT_BAR_DIR_VER_D2U == style->dir) {
         _gt_slider_set_offset(obj, _gt_slider_get_offset(obj) - val);
     }
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 static void _scroll_dir_hor(gt_obj_st * obj, bool is_right) {
@@ -134,6 +135,7 @@ static void _scroll_dir_hor(gt_obj_st * obj, bool is_right) {
     } else if (GT_BAR_DIR_HOR_R2L == style->dir) {
         _gt_slider_set_offset(obj, _gt_slider_get_offset(obj) - val);
     }
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 static inline void _gt_slider_init_widget(gt_obj_st * slider) {
