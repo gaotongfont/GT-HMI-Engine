@@ -30,9 +30,11 @@ typedef struct _gt_checkbox_s
     char *      text;
     gt_color_t  font_color;
     gt_font_info_st font_info;
-    uint8_t     font_align;
     uint8_t     space_x;
     uint8_t     space_y;
+
+    gt_point_st font_point_offset;
+
 }_gt_checkbox_st;
 
 /* static variables -----------------------------------------------------*/
@@ -107,12 +109,24 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
         .space_x        = style->space_x,
         .space_y        = style->space_y,
         .font_color     = style->font_color,
-        .align          = style->font_align,
+        .align          = GT_ALIGN_NONE,
         .opa            = checkbox->opa,
     };
-    area.x += (area_box.w + 2);
-    area.y += 2;
-    area.w = area.w >  area_box.w ? (area.w - area_box.w) : 0;
+    area.x += (area_box.w + 2) + style->font_point_offset.x;
+    if(area.x < area_box.x) {
+        area.x =  area_box.x;
+    }
+    area.y += 2 + style->font_point_offset.y;
+    if(area.y < area_box.y) {
+        area.y =  area_box.y;
+    }
+    area.w = area.w > area_box.w ? (area.w - area_box.w) : 0;
+
+    area.h = style->font_info.size;
+    if(area.y + area.h > checkbox->area.y + checkbox->area.h){
+        area.h = checkbox->area.y + checkbox->area.h - area.y;
+    }
+
     draw_text(checkbox->draw_ctx, &font_dsc, &area);
 
      // focus
@@ -225,7 +239,6 @@ static void _gt_checkbox_init_style(gt_obj_st * checkbox)
     style->font_info.size        = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_color       = gt_color_black();
     style->font_info.gray        = 1;
-    style->font_align = GT_ALIGN_NONE;
     style->font_info.thick_en         = 0;
     style->font_info.thick_cn         = 0;
     style->space_x          = 0;
@@ -315,11 +328,7 @@ void gt_checkbox_set_font_gray(gt_obj_st * checkbox, uint8_t gray)
     _gt_checkbox_st * style = checkbox->style;
     style->font_info.gray = gray;
 }
-void gt_checkbox_set_font_align(gt_obj_st * checkbox, uint8_t align)
-{
-    _gt_checkbox_st * style = checkbox->style;
-    style->font_align = align;
-}
+
 void gt_checkbox_set_font_color(gt_obj_st * checkbox, gt_color_t color)
 {
     _gt_checkbox_st * style = checkbox->style;
@@ -341,5 +350,23 @@ void gt_checkbox_set_space(gt_obj_st * checkbox, uint8_t space_x, uint8_t space_
     _gt_checkbox_st * style = checkbox->style;
     style->space_x = space_x;
     style->space_y = space_y;
+}
+
+void gt_checkbox_set_font_point_offset_x(gt_obj_st * checkbox , gt_size_t x)
+{
+    _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox->style;
+    style->font_point_offset.x = x;
+}
+
+void gt_checkbox_set_font_point_offset_y(gt_obj_st * checkbox , gt_size_t y)
+{
+    _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox->style;
+    style->font_point_offset.y = y;
+}
+
+void gt_checkbox_set_font_point_offset(gt_obj_st * checkbox , gt_size_t x , gt_size_t y)
+{
+    gt_checkbox_set_font_point_offset_x( checkbox , x);
+    gt_checkbox_set_font_point_offset_y( checkbox , y);
 }
 /* end ------------------------------------------------------------------*/
