@@ -148,7 +148,7 @@ static void _init_cb(gt_obj_st * obj) {
  * @brief A filter which can be slide object
  *
  * @param obj
- * @return true Can slide
+ * @return true Target object can slide or disable view pager scroll
  * @return false
  */
 static inline bool _is_slide_enabled(gt_obj_st * obj) {
@@ -157,6 +157,9 @@ static inline bool _is_slide_enabled(gt_obj_st * obj) {
         return true;
     }
     else if (GT_TYPE_ROLLER == type) {
+        return true;
+    }
+    else if (GT_TYPE_KEYPAD == type) {
         return true;
     }
     return false;
