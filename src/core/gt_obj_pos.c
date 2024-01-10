@@ -60,7 +60,7 @@ void gt_area_copy(gt_area_st * dst, gt_area_st const * const src)
     dst->h = src->h;
 }
 
-bool gt_obj_is_visible(gt_obj_st * obj)
+bool _gt_obj_is_disp_area_visible(gt_obj_st * obj)
 {
     gt_disp_st * disp = gt_disp_get_default();
     if( !disp ){

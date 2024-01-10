@@ -109,7 +109,7 @@ static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
         return ;
     }
 
-    if( !gt_obj_is_visible(obj) ){
+    if( !_gt_obj_is_disp_area_visible(obj) ){
         return;
     }
     gt_disp_st * disp = param->disp;

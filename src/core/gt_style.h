@@ -87,6 +87,7 @@ uint16_t gt_obj_get_w(gt_obj_st * obj);
 uint16_t gt_obj_get_h(gt_obj_st * obj);
 
 void gt_obj_set_visible(gt_obj_st * obj, gt_visible_et is_visible);
+bool gt_obj_get_visible(gt_obj_st * obj);
 void gt_obj_set_disabled(gt_obj_st * obj, gt_disabled_et is_disabled);
 bool gt_obj_is_disabled(gt_obj_st * obj);
 

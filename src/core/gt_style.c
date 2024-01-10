@@ -133,6 +133,11 @@ void gt_obj_set_visible(gt_obj_st * obj, gt_visible_et is_visible)
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+bool gt_obj_get_visible(gt_obj_st * obj)
+{
+    return obj->visible;
+}
+
 void gt_obj_set_disabled(gt_obj_st * obj, gt_disabled_et is_disabled)
 {
     obj->disabled = is_disabled ? 1 : 0;
