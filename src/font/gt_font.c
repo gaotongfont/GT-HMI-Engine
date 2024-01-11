@@ -13,6 +13,7 @@
 #include "stdbool.h"
 #include "../others/gt_log.h"
 #include "../core/gt_mem.h"
+#include "gt_symbol.h"
 /* private define -------------------------------------------------------*/
 
 #define GT_CFG_USE_FONT_16_ASCII    01
@@ -701,6 +702,10 @@ uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
 {
     if(unicode == 0x20){
         return font->info.size >> 1;
+    }
+
+    if(gt_symbol_check_by_unicode(unicode)){
+        return font->info.size;
     }
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
