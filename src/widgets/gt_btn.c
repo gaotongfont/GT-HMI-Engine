@@ -192,7 +192,7 @@ static bool _turn_next_content(gt_obj_st * obj) {
     return true;
 }
 
-static inline void _press_btn_handler(gt_obj_st * obj) {
+static void _press_btn_handler(gt_obj_st * obj) {
     if (GT_TYPE_GROUP == gt_obj_class_get_type(obj->parent)) {
         gt_obj_st * parent = obj->parent;
         /** reset group all btn state */
@@ -268,32 +268,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-static void _gt_btn_init_style(gt_obj_st * btn)
-{
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
-
-    gt_memset(style, 0, sizeof(_gt_btn_st));
-
-    style->text = gt_mem_malloc(sizeof("btn"));
-    strcpy(style->text, "btn");
-    style->radius           = 4;
-    style->color_pressed    = gt_color_hex(0x0097e6);    //default color_selected
-    style->color_background = gt_color_hex(0x00a8ff);  //default color_unselected
-    style->reg.fill         = 1;
-    style->font_color       = gt_color_white();        //default color_font
-    style->font_info.style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
-    style->font_info.style_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    style->font_info.style_fl    = GT_CFG_DEFAULT_FONT_FAMILY_FL;
-    style->font_info.style_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
-    style->font_info.size        = GT_CFG_DEFAULT_FONT_SIZE;
-    style->font_info.gray        = 1;
-    style->font_info.thick_en         = 0;
-    style->font_info.thick_cn         = 0;
-    style->font_align = GT_ALIGN_CENTER_MID;
-    style->space_x          = 0;
-    style->space_y          = 0;
-}
-
 static bool _contents_free_cb(void * item) {
     gt_mem_free(item);
     return true;
@@ -322,7 +296,28 @@ static void _contents_init(_gt_btn_st * style) {
 gt_obj_st * gt_btn_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_btn_init_style(obj);
+    _gt_btn_st * style = (_gt_btn_st * )obj->style;
+
+    gt_memset(style, 0, sizeof(_gt_btn_st));
+
+    style->text = gt_mem_malloc(sizeof("btn"));
+    strcpy(style->text, "btn");
+    style->radius           = 4;
+    style->color_pressed    = gt_color_hex(0x0097e6);    //default color_selected
+    style->color_background = gt_color_hex(0x00a8ff);  //default color_unselected
+    style->reg.fill         = 1;
+    style->font_color       = gt_color_white();        //default color_font
+    style->font_info.style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
+    style->font_info.style_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    style->font_info.style_fl    = GT_CFG_DEFAULT_FONT_FAMILY_FL;
+    style->font_info.style_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
+    style->font_info.size        = GT_CFG_DEFAULT_FONT_SIZE;
+    style->font_info.gray        = 1;
+    style->font_info.thick_en         = 0;
+    style->font_info.thick_cn         = 0;
+    style->font_align = GT_ALIGN_CENTER_MID;
+    style->space_x          = 0;
+    style->space_y          = 0;
     return obj;
 }
 
@@ -495,10 +490,23 @@ void gt_btn_set_font_thick_cn(gt_obj_st * btn, uint8_t thick)
     _gt_btn_st * style = (_gt_btn_st * )btn->style;
     style->font_info.thick_cn = thick;
 }
+
 void gt_btn_set_space(gt_obj_st * btn, uint8_t space_x, uint8_t space_y)
 {
     _gt_btn_st * style = (_gt_btn_st * )btn->style;
     style->space_x = space_x;
     style->space_y = space_y;
 }
+
+void gt_btn_set_selected(gt_obj_st * obj)
+{
+    if (NULL == obj) {
+        return;
+    }
+    if (GT_TYPE_BTN != gt_obj_class_get_type(obj)) {
+        return;
+    }
+    _press_btn_handler(obj);
+}
+
 /* end ------------------------------------------------------------------*/
