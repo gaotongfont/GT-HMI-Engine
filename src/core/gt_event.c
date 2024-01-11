@@ -192,7 +192,7 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
     if (gt_event_is_locked()) {
         return GT_RES_OK;
     }
-    if ( !parent->cnt_event ) {
+    if ( 0 == parent->cnt_event ) {
         return GT_RES_OK;
     }
 
