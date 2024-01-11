@@ -213,8 +213,10 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
 
     /* check type */
     if ( parent && parent->class->type == class->type ){
-        GT_LOGV(GT_LOG_TAG_GUI, "cannot create an object of the same type as the parent object onto the parent object");
-        goto null_lb;
+        if (GT_TYPE_OBJ != class->type) {
+            GT_LOGV(GT_LOG_TAG_GUI, "cannot create an object of the same type as the parent object onto the parent object");
+            goto null_lb;
+        }
     }
 
     uint32_t is = get_instance_size();
@@ -334,6 +336,9 @@ void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_ob
 
 
 gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj) {
+    if (NULL == obj || NULL == obj->class) {
+        return GT_TYPE_UNKNOWN;
+    }
     return obj->class->type;
 }
 

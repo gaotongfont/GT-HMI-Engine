@@ -109,4 +109,49 @@ gt_obj_st * gt_group_create(gt_obj_st * parent)
     return obj;
 }
 
+gt_obj_st * gt_group_get_active_obj(gt_obj_st * group, gt_obj_type_et type)
+{
+    if (NULL == group) {
+        return NULL;
+    }
+    if (GT_TYPE_GROUP != gt_obj_class_get_type(group)) {
+        return NULL;
+    }
+    for (uint16_t i = 0, cnt = group->cnt_child; i < cnt; i++) {
+        if (type != gt_obj_class_get_type(group->child[i])) {
+            continue;
+        }
+        if (GT_STATE_PRESSED == gt_obj_get_state(group->child[i])) {
+            return group->child[i];
+        }
+    }
+    return NULL;
+}
+
+bool gt_group_reset_selected_state(gt_obj_st * group, gt_obj_type_et type)
+{
+    if (NULL == group) {
+        return false;
+    }
+    if (GT_TYPE_GROUP != gt_obj_class_get_type(group)) {
+        return false;
+    }
+    gt_obj_st * first_obj = NULL;
+    for (uint16_t i = 0, cnt = group->cnt_child; i < cnt; i++) {
+        if (type != gt_obj_class_get_type(group->child[i])) {
+            continue;
+        }
+        if (NULL == first_obj) {
+            first_obj = group->child[i];
+        }
+        if (GT_STATE_NONE != gt_obj_get_state(group->child[i])) {
+            gt_obj_set_state(group->child[i], GT_STATE_NONE);
+            gt_event_send(group->child[i], GT_EVENT_TYPE_DRAW_START, NULL);
+        }
+    }
+    gt_obj_set_state(first_obj, GT_STATE_PRESSED);
+    gt_event_send(first_obj, GT_EVENT_TYPE_DRAW_START, NULL);
+    return true;
+}
+
 /* end ------------------------------------------------------------------*/

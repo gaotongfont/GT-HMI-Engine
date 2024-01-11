@@ -115,8 +115,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     rect_attr.bg_color      = fg_color;
     rect_attr.border_color  = fg_color;
 
-    gt_area_st area = gt_area_reduce(btn->area , REDUCE_DEFAULT);
-    // gt_area_copy(&area, btn->area);
+    gt_area_st area = gt_area_reduce(btn->area, REDUCE_DEFAULT);
     // 1:base shape
     draw_bg(btn->draw_ctx, &rect_attr, &area);
 
@@ -193,6 +192,41 @@ static bool _turn_next_content(gt_obj_st * obj) {
     return true;
 }
 
+static inline void _press_btn_handler(gt_obj_st * obj) {
+    if (GT_TYPE_GROUP == gt_obj_class_get_type(obj->parent)) {
+        gt_obj_st * parent = obj->parent;
+        /** reset group all btn state */
+        for (uint16_t i = 0, cnt = parent->cnt_child; i < cnt; i++) {
+            if (GT_TYPE_BTN != gt_obj_class_get_type(parent->child[i])) {
+                continue;
+            }
+            if (GT_STATE_NONE == gt_obj_get_state(parent->child[i])) {
+                continue;
+            }
+            gt_obj_set_state(parent->child[i], GT_STATE_NONE);
+            gt_event_send(parent->child[i], GT_EVENT_TYPE_DRAW_START, NULL);
+        }
+    }
+    gt_obj_set_state(obj, GT_STATE_PRESSED);
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+static inline void _released_btn_handler(gt_obj_st * obj) {
+    if (GT_TYPE_GROUP != gt_obj_class_get_type(obj->parent)) {
+        gt_obj_set_state(obj, GT_STATE_NONE);
+    }
+    if (!_turn_next_content(obj)) {
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+    }
+}
+
+static inline void _lost_focus_btn_handler(gt_obj_st *obj) {
+    if (GT_TYPE_GROUP != gt_obj_class_get_type(obj->parent)) {
+        gt_obj_set_state(obj, GT_STATE_NONE);
+    }
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 
 /**
  * @brief obj event handler call back
@@ -210,27 +244,9 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-            break;
-
         case GT_EVENT_TYPE_INPUT_PRESSED:
-            gt_obj_set_state(obj, GT_STATE_PRESSED);
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-            gt_obj_set_state(obj, GT_STATE_PRESSED);
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+        case GT_EVENT_TYPE_INPUT_PRESSING:
+            _press_btn_handler(obj);
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
@@ -239,16 +255,12 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
-            gt_obj_set_state(obj, GT_STATE_NONE);
-            if (!_turn_next_content(obj)) {
-                gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            }
+            _released_btn_handler(obj);
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESS_LOST:
             GT_LOGV(GT_LOG_TAG_GUI, "process lost");
-            gt_obj_set_state(obj, GT_STATE_NONE);
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            _lost_focus_btn_handler(obj);
             break;
 
         default:

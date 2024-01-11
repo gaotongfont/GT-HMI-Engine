@@ -47,6 +47,7 @@ typedef uint8_t gt_opt_t;
  * @brief widget type enum definition
  */
 typedef enum type_widget_e {
+    GT_TYPE_UNKNOWN     = -1,       ///< unknown type
     GT_TYPE_OBJ         = 0,        ///< base obj type
     GT_TYPE_BTN         = 1,        ///< button type
     GT_TYPE_IMG         = 2,        ///< img type
@@ -106,12 +107,12 @@ typedef struct _gt_area_abs_s {
     gt_size_t bottom;
 }gt_area_abs_st;
 
-typedef enum
-{
+/**
+ * @brief widget selected state
+ */
+typedef enum {
     GT_STATE_NONE = 0,
     GT_STATE_PRESSED,   // pressed
-
-    GT_STATE_MAX_COUNT,
 }gt_state_et;
 
 

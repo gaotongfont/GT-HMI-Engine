@@ -212,10 +212,18 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
+/* global functions / API interface -------------------------------------*/
 
-static void _gt_radio_init_style(gt_obj_st * radio)
+/**
+ * @brief create a radio obj
+ *
+ * @param parent radio's parent element
+ * @return gt_obj_st* radio obj
+ */
+gt_obj_st * gt_radio_create(gt_obj_st * parent)
 {
-    _gt_radio_st * style = (_gt_radio_st * )radio->style;
+    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    _gt_radio_st * style = (_gt_radio_st * )obj->style;
 
     gt_memset(style,0,sizeof(_gt_radio_st));
 
@@ -232,35 +240,22 @@ static void _gt_radio_init_style(gt_obj_st * radio)
     style->font_info.thick_cn          = 0;
     style->space_x           = 0;
     style->space_y           = 0;
-}
 
-
-
-
-/* global functions / API interface -------------------------------------*/
-
-/**
- * @brief create a radio obj
- *
- * @param parent radio's parent element
- * @return gt_obj_st* radio obj
- */
-gt_obj_st * gt_radio_create(gt_obj_st * parent)
-{
-    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_radio_init_style(obj);
     return obj;
 }
 
 void gt_radio_set_selected(gt_obj_st * radio){
     int idx = 0;
     gt_obj_st * obj = radio;
-    while( obj->parent->class->type == GT_TYPE_GROUP && idx < obj->parent->cnt_child ){
-        if( obj->parent->child[idx]->class->type == GT_TYPE_RADIO ){
-            gt_obj_set_state(obj->parent->child[idx], GT_STATE_NONE);
-            gt_event_send(obj->parent->child[idx], GT_EVENT_TYPE_DRAW_START, NULL);
+    if (GT_TYPE_GROUP == gt_obj_class_get_type(obj->parent)) {
+        while(  idx < obj->parent->cnt_child ){
+            if( GT_TYPE_RADIO == gt_obj_class_get_type(obj->parent->child[idx]) &&
+                GT_STATE_NONE != gt_obj_get_state(obj->parent->child[idx])) {
+                gt_obj_set_state(obj->parent->child[idx], GT_STATE_NONE);
+                gt_event_send(obj->parent->child[idx], GT_EVENT_TYPE_DRAW_START, NULL);
+            }
+            idx++;
         }
-        idx++;
     }
     gt_obj_set_state(obj, GT_STATE_PRESSED);
     gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
