@@ -32,7 +32,7 @@ extern "C" {
 #define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL           3
 
 /** Drag throw slow-down in [%]. Greater value: faster(far)[0] -> slow-down[100] */
-#define GT_CFG_DEFAULT_POINT_SCROLL_THROW           10
+#define GT_CFG_DEFAULT_POINT_SCROLL_THROW           30
 
 #define GT_CFG_DEFAULT_POINT_SCROLL_LIMIT           10
 
@@ -126,8 +126,10 @@ typedef struct _gt_indev_drv_s
  */
 typedef struct _gt_indev_proc_s
 {
-    gt_indev_state_et state;
+    uint32_t timestamp_start;
     uint32_t timestamp_long_press;
+
+    gt_indev_state_et state;
     union
     {
         struct _point
@@ -160,11 +162,8 @@ typedef struct _gt_indev_proc_s
             uint32_t key;
             uint32_t count_keydown;
             struct gt_obj_s * obj_target;    ///< The object of first touch
-
         }keypad;
-
     }data;
-
 }gt_indev_proc_st;
 
 /**

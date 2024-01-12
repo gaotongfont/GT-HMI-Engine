@@ -138,6 +138,12 @@ bool gt_btn_clear_all_state_content(gt_obj_st * btn);
  */
 int16_t gt_btn_get_state_content_index(gt_obj_st * obj);
 
+/**
+ * @brief Set the btn selected state
+ *
+ * @param obj
+ */
+void gt_btn_set_selected(gt_obj_st * obj);
 
 #ifdef __cplusplus
 } /*extern "C"*/

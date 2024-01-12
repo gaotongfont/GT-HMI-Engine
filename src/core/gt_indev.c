@@ -78,12 +78,17 @@ static gt_size_t _scroll_predict(gt_indev_st * indev, gt_size_t v)
     }
 
     gt_size_t limit_scroll_throw = indev->drv->limit_scroll_throw;
+    uint32_t duration = gt_abs(gt_tick_get() - indev->proc.timestamp_start);
     while(v) {
         result += v;
         v = (100 - limit_scroll_throw) * v / 100;
     }
 
-    return result;
+    if (0 == duration) {
+        return result;
+    }
+
+    return (gt_size_t)(1000.0 * result / duration);
 }
 
 static gt_obj_st * _search_not_fixed_by_parent_recursive(gt_obj_st * obj) {
@@ -134,14 +139,13 @@ static gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
 static void _indev_scroll_throw_handler(gt_indev_st * indev) {
     struct _point * point_p = &indev->proc.data.point;
     point_p->gesture = _get_scroll_dir(indev);
-    gt_disp_st * disp = gt_disp_get_default();
 
     if((uint16_t)GT_DIR_NONE == point_p->gesture) {
         return ;
     }
+    gt_obj_st * obj_scroll = point_p->obj_scroll;
     gt_size_t dx = _scroll_predict(indev, point_p->scroll_throw.x);
     gt_size_t dy = _scroll_predict(indev, point_p->scroll_throw.y);
-    gt_obj_st * obj_scroll = point_p->obj_scroll;
     uint16_t w_parent = obj_scroll->parent->area.w;
     uint16_t h_parent = obj_scroll->parent->area.h;
     gt_size_t left = 0, right = GT_SCREEN_WIDTH;
@@ -270,7 +274,8 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
     struct _point * point_p = &indev->proc.data.point;
 
     if (NULL == point_p->obj_target) {
-        indev->proc.timestamp_long_press = gt_tick_get();
+        indev->proc.timestamp_start = gt_tick_get();
+        indev->proc.timestamp_long_press = indev->proc.timestamp_start;
 
         _gt_indev_point_set_value(&point_p->scroll_sum, 0, 0);
         _gt_indev_point_set_value(&point_p->scroll_diff, 0, 0);
@@ -293,7 +298,6 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
         /** Reset scroll throw data, prepare for next throw. */
         point_p->scroll_throw.x = 0;
         point_p->scroll_throw.y = 0;
-        _indev_scroll_throw_handler(indev);
     }
     // GT_LOGD(">", "(%d, %d) (%d, %d)", point_p->newly.x, point_p->newly.y, point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
 

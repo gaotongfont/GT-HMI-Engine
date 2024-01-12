@@ -69,7 +69,7 @@ void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim
         gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_EASE_OUT);
 
         if (dx) {
-            int32_t d = gt_anim_speed_to_time((gt_disp_get_res_hor(NULL) * 2) >> 2, 0, dx);
+            int32_t d = gt_anim_speed_to_time(gt_disp_get_res_hor(NULL) >> 1, 0, dx);
             if (d < _SCROLL_ANIM_TIME_MIN) d = _SCROLL_ANIM_TIME_MIN;
             if (d > _SCROLL_ANIM_TIME_MAX) d = _SCROLL_ANIM_TIME_MAX;
 
@@ -81,7 +81,7 @@ void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim
         }
 
         if (dy) {
-            int32_t d = gt_anim_speed_to_time((gt_disp_get_res_ver(NULL) * 2) >> 2, 0, dy);
+            int32_t d = gt_anim_speed_to_time(gt_disp_get_res_ver(NULL) >> 1, 0, dy);
             if (d < _SCROLL_ANIM_TIME_MIN) d = _SCROLL_ANIM_TIME_MIN;
             if (d > _SCROLL_ANIM_TIME_MAX) d = _SCROLL_ANIM_TIME_MAX;
 

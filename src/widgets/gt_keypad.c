@@ -330,9 +330,9 @@ static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char const * const
     area_key.x = keypad->area.x + SPACE_X;
     while ( map_keypad[idx].kv != NULL ) {
 
-        area_key.w = map_keypad[idx].w * per_one_width - SPACE_X;
+         area_key.w = map_keypad[idx].w * per_one_width - SPACE_X;
 
-        if( map_keypad[idx+1].kv && strcmp(map_keypad[idx+1].kv, _GT_KEYPAD_TAG_NEW_LINE) == 0 ){
+        if( (map_keypad[idx+1].kv && strcmp(map_keypad[idx+1].kv, _GT_KEYPAD_TAG_NEW_LINE) == 0) || map_keypad[idx+1].kv == NULL ){
             if( (area_key.x + area_key.w) > (keypad->area.x + keypad->area.w - SPACE_X) ){
                 area_key.w = (keypad->area.x + keypad->area.w - SPACE_X) - area_key.x;
             }
@@ -340,6 +340,7 @@ static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char const * const
                 area_key.w += ((keypad->area.x + keypad->area.w - SPACE_X) - (area_key.x + area_key.w));
             }
         }
+
         if( strcmp(map_keypad[idx].kv, kv) == 0 ){
             return area_key;
         }
@@ -718,15 +719,8 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
     };
 
     gt_area_st area_key;
-
-    uint8_t h_key = ( (keypad->area.h - SPACE_Y) / (style->info.cnt_lines+1)) - SPACE_Y;
-    uint8_t per_one_width = (keypad->area.w / style->info.per_line[0]);
-    uint8_t line = 0;
     uint8_t r, g, b;
 
-    area_key.h = h_key;
-    area_key.y = keypad->area.y + SPACE_Y;
-    area_key.x = keypad->area.x + SPACE_X;
     while ( map_keypad[idx].kv != NULL ) {
 
         rect_attr.bg_color = style->color_key;
@@ -746,17 +740,7 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
             GT_COLOR_SET_RGB(rect_attr.bg_color, r, g, b);
         }
 
-        area_key.w = map_keypad[idx].w * per_one_width - SPACE_X;
-
-        if( (map_keypad[idx+1].kv && strcmp(map_keypad[idx+1].kv, _GT_KEYPAD_TAG_NEW_LINE) == 0) || map_keypad[idx+1].kv == NULL ){
-            if( (area_key.x + area_key.w) > (keypad->area.x + keypad->area.w - SPACE_X) ){
-                area_key.w = (keypad->area.x + keypad->area.w - SPACE_X) - area_key.x;
-            }
-            if( (area_key.x + area_key.w) < (keypad->area.x + keypad->area.w - SPACE_X) ){
-                area_key.w += ((keypad->area.x + keypad->area.w - SPACE_X) - (area_key.x + area_key.w));
-            }
-        }
-
+        area_key = _gt_keypad_get_key_area(keypad, map_keypad[idx].kv);
         draw_bg(keypad->draw_ctx, &rect_attr, &area_key);
 
         font.utf8 = (char * )map_keypad[idx].kv;
@@ -773,15 +757,8 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
         draw_text(keypad->draw_ctx, &font_attr, &area_key);
 
         idx++;
-
-        area_key.x += area_key.w + SPACE_X;
-
         if(map_keypad[idx].kv && strcmp(map_keypad[idx].kv, _GT_KEYPAD_TAG_NEW_LINE) == 0 ){
-            area_key.x = keypad->area.x + SPACE_X;
-            area_key.y += h_key + SPACE_Y;
-            line++;
             idx++;
-            per_one_width = (keypad->area.w / style->info.per_line[line]);
         }
     }
 
@@ -817,26 +794,26 @@ static void _deinit_cb(gt_obj_st * obj) {
     gt_mem_free(*style_p);
     *style_p = NULL;
 
-#if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
+// #if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
 
-    if(_gt_spell_info && _gt_spell_info->py_cache)
-    {
-        gt_mem_free(_gt_spell_info->py_cache);
-        _gt_spell_info->py_cache = NULL;
-    }
+//     if(_gt_spell_info && _gt_spell_info->py_cache)
+//     {
+//         gt_mem_free(_gt_spell_info->py_cache);
+//         _gt_spell_info->py_cache = NULL;
+//     }
 
-    if(_gt_spell_info && _gt_spell_info->content)
-    {
-        gt_mem_free(_gt_spell_info->content);
-        _gt_spell_info->content = NULL;
-    }
+//     if(_gt_spell_info && _gt_spell_info->content)
+//     {
+//         gt_mem_free(_gt_spell_info->content);
+//         _gt_spell_info->content = NULL;
+//     }
 
-    if(_gt_spell_info)
-    {
-        gt_mem_free(_gt_spell_info);
-        _gt_spell_info = NULL;
-    }
-#endif
+//     if(_gt_spell_info)
+//     {
+//         gt_mem_free(_gt_spell_info);
+//         _gt_spell_info = NULL;
+//     }
+// #endif
 
 }
 
@@ -938,26 +915,29 @@ static void _gt_keypad_init_style(gt_obj_st * keypad)
     gt_memset_0(_gt_spell_ascii , _GT_SPELL_ASCII_MAX_NUMB);
 
 #if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
-    // 初始化拼音输入法
-    _gt_spell_info = (py_info_st*)gt_mem_malloc(sizeof(py_info_st));
-    if(NULL == _gt_spell_info)
-    {
-        GT_LOGE(GT_LOG_TAG_GUI , "spell info malloc err!");
-        return ;
+
+    if(NULL == _gt_spell_info){
+        // 初始化拼音输入法
+        _gt_spell_info = (py_info_st*)gt_mem_malloc(sizeof(py_info_st));
+        if(NULL == _gt_spell_info)
+        {
+            GT_LOGE(GT_LOG_TAG_GUI , "spell info malloc err!");
+            return ;
+        }
+        _gt_spell_info->content = (py_content_st*)gt_mem_malloc(sizeof(py_content_st));
+        if(NULL == _gt_spell_info->content)
+        {
+            GT_LOGE(GT_LOG_TAG_GUI , "spell info content malloc err!");
+            return ;
+        }
+        _gt_spell_info->py_cache = (unsigned char*)gt_mem_malloc(1218);
+        if(NULL == _gt_spell_info->py_cache)
+        {
+            GT_LOGE(GT_LOG_TAG_GUI , "spell info py_cache malloc err!");
+            return ;
+        }
+        gt_pinyin_init(_gt_spell_info);
     }
-    _gt_spell_info->content = (py_content_st*)gt_mem_malloc(sizeof(py_content_st));
-    if(NULL == _gt_spell_info->content)
-    {
-        GT_LOGE(GT_LOG_TAG_GUI , "spell info content malloc err!");
-        return ;
-    }
-    _gt_spell_info->py_cache = (unsigned char*)gt_mem_malloc(1218);
-    if(NULL == _gt_spell_info->py_cache)
-    {
-        GT_LOGE(GT_LOG_TAG_GUI , "spell info py_cache malloc err!");
-        return ;
-    }
-    gt_pinyin_init(_gt_spell_info);
 #endif
 
 }

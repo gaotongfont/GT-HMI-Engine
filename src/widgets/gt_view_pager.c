@@ -145,13 +145,13 @@ static void _init_cb(gt_obj_st * obj) {
 }
 
 /**
- * @brief A filter which can be slide object
+ * @brief A filter which can be slide object child type
  *
  * @param obj
- * @return true Can slide
+ * @return true Target object can slide or disable view pager scroll
  * @return false
  */
-static inline bool _is_slide_enabled(gt_obj_st * obj) {
+static inline bool _ignore_view_pager_slider_control(gt_obj_st * obj) {
     gt_obj_type_et type = gt_obj_class_get_type(obj);
     if (GT_TYPE_SLIDER == type) {
         return true;
@@ -159,15 +159,23 @@ static inline bool _is_slide_enabled(gt_obj_st * obj) {
     else if (GT_TYPE_ROLLER == type) {
         return true;
     }
+    else if (GT_TYPE_KEYPAD == type) {
+        return true;
+    }
     return false;
 }
 
+/**
+ * @brief Set child unfixed property which can be slide itself or disable view pager scroll
+ *
+ * @param parent The target children
+ */
 static void _unfixed_slider_widgets(gt_obj_st * parent) {
     uint16_t idx, cnt = parent->cnt_child;
     gt_obj_st * child = NULL;
     for (idx = 0; idx < cnt; idx++) {
         child = parent->child[idx];
-        if (false == _is_slide_enabled(child)) {
+        if (false == _ignore_view_pager_slider_control(child)) {
             continue;
         }
         if (false == gt_obj_get_fixed(child)) {

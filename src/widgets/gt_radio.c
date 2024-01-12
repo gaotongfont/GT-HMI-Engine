@@ -29,9 +29,11 @@ typedef struct _gt_radio_s {
 
     gt_font_info_st font_info;
 
-    uint8_t     font_align;
     uint8_t     space_x;
     uint8_t     space_y;
+
+    gt_point_st font_point_offset;
+
 }_gt_radio_st;
 
 
@@ -73,7 +75,6 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     if( radio->area.w == 0 || radio->area.h == 0){
         radio->area.w = style->font_info.size+4 + strlen(style->text)*11;
         radio->area.h = style->font_info.size+4;
-
     }
 
     gt_area_st area_base = gt_area_reduce(radio->area, REDUCE_DEFAULT);
@@ -83,9 +84,19 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     area_base.x = radio->area.x;
     // font
     gt_area_st area_font = radio->area;
-    area_font.x = area_base.x + (area_base.w + 2);
-    area_font.y += 2;
+    area_font.x = area_base.x + (area_base.w + 2) + style->font_point_offset.x;
+    if(area_font.x < area_base.x) {
+        area_font.x =  area_base.x;
+    }
+    area_font.y = area_base.y + 2 + style->font_point_offset.y;
+    if(area_font.y < area_base.y){
+        area_font.y = area_base.y;
+    }
     area_font.w = radio->area.w > area_base.w ? (radio->area.w - area_base.w) : 0;
+    area_font.h = style->font_info.size;
+    if(area_font.y + area_font.h > radio->area.y + radio->area.h){
+        area_font.h = radio->area.y + radio->area.h - area_font.y;
+    }
 
     //
     gt_attr_rect_st rect_attr;
@@ -120,9 +131,19 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
         .space_x    = style->space_x,
         .space_y    = style->space_y,
         .font_color = style->font_color,
-        .align      = style->font_align,
+        .align      = GT_ALIGN_NONE,
         .opa        = radio->opa,
     };
+
+    area_font.x += style->font_point_offset.x;
+
+
+
+
+
+    area_font.y += style->font_point_offset.y;
+
+
 
     draw_text(radio->draw_ctx, &font_attr, &area_font);
 
@@ -191,10 +212,18 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
+/* global functions / API interface -------------------------------------*/
 
-static void _gt_radio_init_style(gt_obj_st * radio)
+/**
+ * @brief create a radio obj
+ *
+ * @param parent radio's parent element
+ * @return gt_obj_st* radio obj
+ */
+gt_obj_st * gt_radio_create(gt_obj_st * parent)
 {
-    _gt_radio_st * style = (_gt_radio_st * )radio->style;
+    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    _gt_radio_st * style = (_gt_radio_st * )obj->style;
 
     gt_memset(style,0,sizeof(_gt_radio_st));
 
@@ -207,40 +236,26 @@ static void _gt_radio_init_style(gt_obj_st * radio)
     style->font_info.style_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
     style->font_info.size         = GT_CFG_DEFAULT_FONT_SIZE;
     style->font_info.gray         = 1;
-    style->font_align        = GT_ALIGN_NONE;
     style->font_info.thick_en          = 0;
     style->font_info.thick_cn          = 0;
     style->space_x           = 0;
     style->space_y           = 0;
-}
 
-
-
-
-/* global functions / API interface -------------------------------------*/
-
-/**
- * @brief create a radio obj
- *
- * @param parent radio's parent element
- * @return gt_obj_st* radio obj
- */
-gt_obj_st * gt_radio_create(gt_obj_st * parent)
-{
-    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_radio_init_style(obj);
     return obj;
 }
 
 void gt_radio_set_selected(gt_obj_st * radio){
     int idx = 0;
     gt_obj_st * obj = radio;
-    while( obj->parent->class->type == GT_TYPE_GROUP && idx < obj->parent->cnt_child ){
-        if( obj->parent->child[idx]->class->type == GT_TYPE_RADIO ){
-            gt_obj_set_state(obj->parent->child[idx], GT_STATE_NONE);
-            gt_event_send(obj->parent->child[idx], GT_EVENT_TYPE_DRAW_START, NULL);
+    if (GT_TYPE_GROUP == gt_obj_class_get_type(obj->parent)) {
+        while(  idx < obj->parent->cnt_child ){
+            if( GT_TYPE_RADIO == gt_obj_class_get_type(obj->parent->child[idx]) &&
+                GT_STATE_NONE != gt_obj_get_state(obj->parent->child[idx])) {
+                gt_obj_set_state(obj->parent->child[idx], GT_STATE_NONE);
+                gt_event_send(obj->parent->child[idx], GT_EVENT_TYPE_DRAW_START, NULL);
+            }
+            idx++;
         }
-        idx++;
     }
     gt_obj_set_state(obj, GT_STATE_PRESSED);
     gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -288,11 +303,7 @@ void gt_radio_set_font_gray(gt_obj_st * radio, uint8_t gray)
     _gt_radio_st * style = radio->style;
     style->font_info.gray = gray;
 }
-void gt_radio_set_font_align(gt_obj_st * radio, uint8_t align)
-{
-    _gt_radio_st * style = radio->style;
-    style->font_align = align;
-}
+
 void gt_radio_set_font_family_cn(gt_obj_st * radio, gt_family_t family)
 {
     _gt_radio_st * style = radio->style;
@@ -330,6 +341,24 @@ void gt_radio_set_space(gt_obj_st * radio, uint8_t space_x, uint8_t space_y)
     _gt_radio_st * style = (_gt_radio_st * )radio->style;
     style->space_x = space_x;
     style->space_y = space_y;
+}
+
+void gt_radio_set_font_point_offset_x(gt_obj_st * radio , gt_size_t x)
+{
+    _gt_radio_st * style = (_gt_radio_st * )radio->style;
+    style->font_point_offset.x = x;
+}
+
+void gt_radio_set_font_point_offset_y(gt_obj_st * radio , gt_size_t y)
+{
+    _gt_radio_st * style = (_gt_radio_st * )radio->style;
+    style->font_point_offset.y = y;
+}
+
+void gt_radio_set_font_point_offset(gt_obj_st * radio , gt_size_t x , gt_size_t y)
+{
+    gt_radio_set_font_point_offset_x( radio , x);
+    gt_radio_set_font_point_offset_y( radio , y);
 }
 
 /* end ------------------------------------------------------------------*/

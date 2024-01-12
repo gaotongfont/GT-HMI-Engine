@@ -39,6 +39,24 @@ extern "C" {
  */
 gt_obj_st * gt_group_create(gt_obj_st * parent);
 
+/**
+ * @brief According to the type of the object, get the selected or active object
+ *
+ * @param group Group object
+ * @param type  Widget type enum
+ * @return gt_obj_st* The selected or active object
+ */
+gt_obj_st * gt_group_get_active_obj(gt_obj_st * group, gt_obj_type_et type);
+
+/**
+ * @brief According to the type of the object, only set the first one object active
+ *
+ * @param group
+ * @param type Widget type enum
+ * @return true set success
+ * @return false set failed
+ */
+bool gt_group_reset_selected_state(gt_obj_st * group, gt_obj_type_et type);
 
 #ifdef __cplusplus
 } /*extern "C"*/

@@ -159,7 +159,8 @@ static inline bool _is_input_event(gt_event_type_et event) {
 }
 
 /* global functions / API interface -------------------------------------*/
-void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data){
+void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data)
+{
     GT_LOGV(GT_LOG_TAG_GUI, "start event count:%d", obj->cnt_event);
     if ( NULL == obj->event_attr ) {
         obj->event_attr =  gt_mem_malloc(sizeof(gt_obj_event_attr_st));
@@ -174,7 +175,8 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
     GT_LOGV(GT_LOG_TAG_GUI, "end event count:%d", obj->cnt_event);
 }
 
-gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * parms){
+gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * parms)
+{
     if( !parent ){
         GT_LOGD(GT_LOG_TAG_GUI, "parent is null");
         return GT_RES_FAIL;
@@ -192,7 +194,7 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
     if (gt_event_is_locked()) {
         return GT_RES_OK;
     }
-    if ( !parent->cnt_event ) {
+    if ( 0 == parent->cnt_event ) {
         return GT_RES_OK;
     }
 
@@ -224,7 +226,8 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
 	return GT_RES_OK;
 }
 
-void _gt_event_init(){
+void _gt_event_init()
+{
     _gt_timer_create(_gt_timer_event_cb, GT_TASK_PERIOD_TIME_EVENT, NULL);
 }
 
@@ -250,7 +253,8 @@ struct gt_obj_s * gt_event_get_locked_obj(void)
     return _gt_event_obj_locked;
 }
 
-gt_event_type_et gt_event_get_code(gt_event_st * e) {
+gt_event_type_et gt_event_get_code(gt_event_st * e)
+{
     return e->code;
 }
 

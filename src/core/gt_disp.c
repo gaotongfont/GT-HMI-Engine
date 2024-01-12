@@ -109,7 +109,7 @@ static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
         return ;
     }
 
-    if( !gt_obj_is_visible(obj) ){
+    if( !_gt_obj_is_disp_area_visible(obj) ){
         return;
     }
     gt_disp_st * disp = param->disp;
@@ -285,6 +285,104 @@ static void _fill_color_ver(gt_disp_st * disp, gt_obj_st * top_scr, gt_obj_st * 
     }
 }
 
+/**
+ * @brief Horizontal animation direction, adapt to the display range of the interface
+ *
+ * @param param
+ */
+static inline void _adapt_area_flush_hor(_flush_scr_param_st * param) {
+    param->valid.is_hor = true;
+    param->scr_prev->area.w = param->disp->area_act.w - gt_abs(param->scr_prev->area.x);
+    switch (param->disp->scr_anim_type) {
+        case GT_SCR_ANIM_TYPE_MOVE_LEFT: {
+            /** new screen */
+            param->valid.offset_scr.x = param->scr_prev->area.w;
+            param->view_scr_abs.w = param->disp->area_act.w - param->scr_prev->area.w;
+            break;
+        }
+        case GT_SCR_ANIM_TYPE_COVER_RIGHT: {
+            /** prev screen, don't move */
+            param->view_scr_prev_abs.x = param->disp->area_act.x;
+            param->valid.offset_prev.x = param->scr->area.w;
+            /** new screen */
+            param->view_scr_abs.w = param->scr->area.w;
+            break;
+        }
+        case GT_SCR_ANIM_TYPE_COVER_LEFT: {
+            /** prev screen, don't move */
+            param->view_scr_prev_abs.w = param->disp->area_act.w - param->scr->area.w;
+            /** new screen */
+            param->view_scr_abs.w = param->scr->area.w;
+            param->valid.offset_scr.x = gt_abs(param->scr->area.x);
+            break;
+        }
+        case GT_SCR_ANIM_TYPE_MOVE_RIGHT: {
+            /** prev screen */
+            param->view_scr_prev_abs.x = param->disp->area_act.x + param->scr_prev->area.x;
+            /** new screen */
+            param->view_scr_abs.w = gt_abs(param->scr_prev->area.x);
+            param->valid.offset_prev.x = gt_abs(param->scr_prev->area.x);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+/**
+ * @brief In the direction of vertical animation, adapt to the display range of the interface
+ *
+ * @param param
+ */
+static inline void _adapt_area_flush_ver(_flush_scr_param_st * param) {
+    param->valid.is_hor = false;
+    param->scr_prev->area.h = param->disp->area_act.h - gt_abs(param->scr_prev->area.y);
+    param->view_scr_prev_abs.h = param->scr_prev->area.h;
+    switch (param->disp->scr_anim_type) {
+        case GT_SCR_ANIM_TYPE_MOVE_UP: {
+            param->valid.is_over_top = true;
+            /** prev screen */
+            param->view_scr_prev_abs.y = param->disp->area_act.y + param->scr_prev->area.y; // area_act.y:原界面的偏移
+            /** new screen */
+            param->view_scr_abs.h = param->scr->area.h;
+            param->valid.offset_scr.y = param->scr->area.y;
+            break;
+        }
+        case GT_SCR_ANIM_TYPE_MOVE_DOWN: {
+            param->valid.is_over_top = true;
+            /** prev screen */
+            param->view_scr_prev_abs.y = param->disp->area_act.y + param->scr_prev->area.y + param->scr->area.h;
+            param->view_scr_prev_abs.h = param->disp->area_act.h;
+            if (param->disp->area_act.y > 0) {
+                param->valid.offset_prev.y = param->disp->area_act.y;
+            }
+            /** new screen */
+            param->view_scr_abs.h = param->scr->area.h;
+            break;
+        }
+        case GT_SCR_ANIM_TYPE_COVER_UP: {
+            /** prev screen, don't move */
+            param->view_scr_prev_abs.y = param->disp->area_act.y;
+            param->view_scr_prev_abs.h = param->disp->area_act.h - param->scr->area.h;
+            param->scr_prev->area.h = param->view_scr_prev_abs.h;
+            /** new screen */
+            param->view_scr_abs.h = param->scr->area.h;
+            param->valid.offset_scr.y = param->scr->area.y;
+            break;
+        }
+        case GT_SCR_ANIM_TYPE_COVER_DOWN: {
+            /** prev screen, don't move */
+            param->view_scr_prev_abs.y = param->disp->area_act.y + param->scr_prev->area.y + param->scr->area.h;
+            param->valid.offset_prev.y = param->scr->area.h;
+            /** new screen */
+            param->view_scr_abs.h = param->disp->area_act.h - gt_abs(param->scr->area.y);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
 static inline void _clear_buffer(gt_disp_st * disp, gt_obj_st * prev_scr, gt_obj_st * cur_scr, gt_size_t cur_row, bool is_prev) {
 
     if (NULL == prev_scr) {
@@ -335,6 +433,16 @@ def_lb:
  * @param line Number of rows per refresh
  */
 static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
+    // 计算scr 在屏幕的显示区域
+    param->scr->area.w = param->disp->area_act.w - gt_abs(param->scr->area.x);
+    param->scr->area.h = param->disp->area_act.h - gt_abs(param->scr->area.y);
+    if (_is_anim_type_hor(param->disp->scr_anim_type)) {
+        _adapt_area_flush_hor(param);
+    }
+    if (_is_anim_type_ver(param->disp->scr_anim_type)) {
+        _adapt_area_flush_ver(param);
+    }
+
     while(param->area_flush.y < param->disp->area_act.h) {
         _clear_buffer(param->disp, param->scr_prev, param->scr, param->area_flush.y, true);
 
@@ -417,111 +525,142 @@ static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
  */
 static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     gt_color_t color_fill = gt_screen_get_bgcolor(param->scr);
-    uint32_t len = param->disp->area_act.w * param->line;
 
-    while(param->area_flush.y < param->disp->area_act.h) {
+    param->scr->area.x = param->disp->area_act.x;
+    param->scr->area.y = param->disp->area_act.y;
+
+    if(gt_disp_get_res_hor(NULL) == param->area_flush.w && gt_disp_get_res_ver(NULL) == param->area_flush.h){
+        if(param->area_flush.x < 0 || (param->area_flush.x + param->area_flush.w > gt_disp_get_res_hor(NULL))){
+            param->area_flush.x = 0;
+        }
+        if(param->area_flush.y < 0 || (param->area_flush.y + param->area_flush.h > gt_disp_get_res_ver(NULL))){
+            param->area_flush.y = 0;
+        }
+    }
+    else{
+        // Calculate the area_flush x coordinates and width
+        if(param->disp->area_act.x == 0){
+            if(param->area_flush.x < 0){
+                param->area_flush.w = param->area_flush.w + param->area_flush.x;
+                param->area_flush.x = 0;
+            }
+
+            if((param->area_flush.x % gt_disp_get_res_hor(NULL)) + param->area_flush.w > gt_disp_get_res_hor(NULL)){
+                param->area_flush.w = gt_disp_get_res_hor(NULL) - (param->area_flush.x % gt_disp_get_res_hor(NULL));
+            }
+        }
+        else if(param->disp->area_act.x > 0){
+            if(param->area_flush.x < 0){
+                param->area_flush.w = param->area_flush.w + param->area_flush.x;
+                param->area_flush.x = 0;
+            }
+
+            if(param->area_flush.x > param->disp->area_act.x){
+                param->area_flush.x = param->area_flush.x - param->disp->area_act.x;
+            }
+            else{
+                param->area_flush.w = (param->area_flush.w + param->area_flush.x) - param->disp->area_act.x;
+                param->area_flush.x = 0;
+            }
+
+            if((param->area_flush.x % gt_disp_get_res_hor(NULL)) + param->area_flush.w > gt_disp_get_res_hor(NULL)){
+                param->area_flush.w = gt_disp_get_res_hor(NULL) - (param->area_flush.x % gt_disp_get_res_hor(NULL));
+            }
+
+        }
+        else if(param->disp->area_act.x < 0)
+        {
+            if(param->area_flush.x < 0){
+                param->area_flush.w = param->area_flush.w + param->area_flush.x - param->disp->area_act.x;
+                param->area_flush.x = 0;
+            }
+
+            if(param->area_flush.x > 0){
+                param->area_flush.x = param->area_flush.x - param->disp->area_act.x;
+            }
+
+            if((param->area_flush.x % gt_disp_get_res_hor(NULL)) + param->area_flush.w > gt_disp_get_res_hor(NULL)){
+                param->area_flush.w = gt_disp_get_res_hor(NULL) - (param->area_flush.x % gt_disp_get_res_hor(NULL));
+            }
+
+        }
+
+        // Calculate the area_flush y coordinates and height
+        if(param->disp->area_act.y == 0){
+            if(param->area_flush.y < 0){
+                param->area_flush.h = param->area_flush.h + param->area_flush.y;
+                param->area_flush.y = 0;
+            }
+
+            if((param->area_flush.y % gt_disp_get_res_ver(NULL)) + param->area_flush.h > gt_disp_get_res_ver(NULL)){
+                param->area_flush.h = gt_disp_get_res_ver(NULL) - (param->area_flush.y % gt_disp_get_res_ver(NULL));
+            }
+
+        }
+        else if(param->disp->area_act.y > 0){
+            if(param->area_flush.y < 0){
+                param->area_flush.h = param->area_flush.h + param->area_flush.y;
+                param->area_flush.y = 0;
+            }
+
+            if(param->area_flush.y > param->disp->area_act.y){
+                param->area_flush.y = param->area_flush.y - param->disp->area_act.y;
+            }
+            else{
+                param->area_flush.h = (param->area_flush.h + param->area_flush.y) - param->disp->area_act.y;
+                param->area_flush.y = 0;
+            }
+
+            if((param->area_flush.y % gt_disp_get_res_ver(NULL)) + param->area_flush.h > gt_disp_get_res_ver(NULL)){
+                param->area_flush.h = gt_disp_get_res_ver(NULL) - (param->area_flush.y % gt_disp_get_res_ver(NULL));
+            }
+
+        }
+        else if(param->disp->area_act.y < 0)
+        {
+            if(param->area_flush.y < 0){
+                param->area_flush.h = param->area_flush.h + param->area_flush.y - param->disp->area_act.y;
+                param->area_flush.y = 0;
+            }
+
+            if(param->area_flush.y > 0){
+                param->area_flush.y = param->area_flush.y - param->disp->area_act.y;
+            }
+
+            if((param->area_flush.y % gt_disp_get_res_ver(NULL)) + param->area_flush.h > gt_disp_get_res_ver(NULL)){
+                param->area_flush.h = gt_disp_get_res_ver(NULL) - (param->area_flush.y % gt_disp_get_res_ver(NULL));
+            }
+        }
+    }
+    //
+    uint16_t end_y = param->area_flush.y + param->area_flush.h;
+    param->disp->area_disp.x = param->area_flush.x + param->disp->area_act.x;
+    param->disp->area_disp.y = param->area_flush.y;
+    param->disp->area_disp.w = param->area_flush.w;
+    if(param->area_flush.h > param->line){
+        param->area_flush.h = param->line;
+    }
+    param->disp->area_disp.h = param->area_flush.h;
+
+    uint32_t len = param->disp->area_disp.w * param->disp->area_disp.h;
+
+    while (param->area_flush.y < end_y)
+    {
         gt_color_fill(param->disp->vbd_color, len, color_fill);
 
-        param->disp->area_disp.x = param->scr->area.x;
-        param->disp->area_disp.y = param->scr->area.y + param->area_flush.y;
+        param->disp->area_disp.y = param->area_flush.y + param->disp->area_act.y;
 
         _gt_disp_check_and_copy_foreach(param->scr, param);
 
         /** flush display by buffer area */
         param->disp->drv->flush_cb(param->disp->drv, &param->area_flush, param->disp->vbd_color);
         param->area_flush.y += param->line;
-    }
-}
 
-/**
- * @brief Horizontal animation direction, adapt to the display range of the interface
- *
- * @param param
- */
-static inline void _adapt_area_flush_hor(_flush_scr_param_st * param) {
-    param->valid.is_hor = true;
-    param->scr_prev->area.w = param->disp->area_act.w - gt_abs(param->scr_prev->area.x);
-    switch (param->disp->scr_anim_type) {
-        case GT_SCR_ANIM_TYPE_MOVE_LEFT: {
-            /** new screen */
-            param->valid.offset_scr.x = param->scr_prev->area.w;
-            param->view_scr_abs.w = param->disp->area_act.w - param->scr_prev->area.w;
-            break;
+        if( end_y - param->area_flush.y < param->line){
+            param->area_flush.h = end_y - param->area_flush.y;
+            param->disp->area_disp.h = param->area_flush.h;
         }
-        case GT_SCR_ANIM_TYPE_COVER_RIGHT: {
-            /** prev screen, don't move */
-            param->view_scr_prev_abs.x = param->disp->area_act.x;
-            param->valid.offset_prev.x = param->scr->area.w;
-            /** new screen */
-            param->view_scr_abs.w = param->scr->area.w;
-            break;
-        }
-        case GT_SCR_ANIM_TYPE_COVER_LEFT: {
-            /** prev screen, don't move */
-            param->view_scr_prev_abs.w = param->disp->area_act.w - param->scr->area.w;
-            /** new screen */
-            param->view_scr_abs.w = param->scr->area.w;
-            param->valid.offset_scr.x = gt_abs(param->scr->area.x);
-            break;
-        }
-        case GT_SCR_ANIM_TYPE_MOVE_RIGHT: {
-            /** prev screen */
-            param->view_scr_prev_abs.x = param->disp->area_act.x + param->scr_prev->area.x;
-            /** new screen */
-            param->view_scr_abs.w = gt_abs(param->scr_prev->area.x);
-            param->valid.offset_prev.x = gt_abs(param->scr_prev->area.x);
-            break;
-        }
-        default:
-            break;
-    }
-}
 
-/**
- * @brief In the direction of vertical animation, adapt to the display range of the interface
- *
- * @param param
- */
-static inline void _adapt_area_flush_ver(_flush_scr_param_st * param) {
-    param->valid.is_hor = false;
-    param->scr_prev->area.h = param->disp->area_act.h - gt_abs(param->scr_prev->area.y);
-    param->view_scr_prev_abs.h = param->scr_prev->area.h;
-    switch (param->disp->scr_anim_type) {
-        case GT_SCR_ANIM_TYPE_MOVE_UP: {
-            /** prev screen */
-            param->view_scr_prev_abs.y = param->disp->area_act.y + param->scr_prev->area.y; // area_act.y:原界面的偏移
-            /** new screen */
-            param->view_scr_abs.h = param->scr->area.h;
-            param->valid.offset_scr.y = param->scr->area.y;
-            break;
-        }
-        case GT_SCR_ANIM_TYPE_MOVE_DOWN: {
-            /** prev screen */
-            param->view_scr_prev_abs.y = param->disp->area_act.y + param->scr_prev->area.y + param->scr->area.h;
-            /** new screen */
-            param->view_scr_abs.h = param->scr->area.h;
-            break;
-        }
-        case GT_SCR_ANIM_TYPE_COVER_UP: {
-            /** prev screen, don't move */
-            param->view_scr_prev_abs.y = param->disp->area_act.y;
-            param->view_scr_prev_abs.h = param->disp->area_act.h - param->scr->area.h;
-            param->scr_prev->area.h = param->view_scr_prev_abs.h;
-            /** new screen */
-            param->view_scr_abs.h = param->scr->area.h;
-            param->valid.offset_scr.y = param->scr->area.y;
-            break;
-        }
-        case GT_SCR_ANIM_TYPE_COVER_DOWN: {
-            /** prev screen, don't move */
-            param->view_scr_prev_abs.y = param->disp->area_act.y + param->scr_prev->area.y + param->scr->area.h;
-            param->valid.offset_prev.y = param->scr->area.h;
-            /** new screen */
-            param->view_scr_abs.h = param->disp->area_act.h - gt_abs(param->scr->area.y);
-            break;
-        }
-        default:
-            break;
     }
 }
 
@@ -568,10 +707,6 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         return;
     }
 
-    if( _gt_disp_get_state(disp) == GT_BUSY ){
-        GT_LOGD(GT_LOG_TAG_GUI, "disp is busy");
-        return;
-    }
     _gt_disp_refr_reset_areas();
     if (NULL == scr_old) {
         if (GT_SCR_ANIM_TYPE_NONE != type) {
@@ -588,7 +723,6 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
 
     scr->using = 1;
     disp->scr_anim_type = type;
-    _gt_disp_set_state(disp, GT_BUSY);
 
     if (GT_SCR_ANIM_TYPE_NONE == type) {
         if( scr_old != scr ){
@@ -700,9 +834,6 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
             scr_old->delate = 1;
         }
     }
-
-ret_lb:
-    _gt_disp_set_state(disp, GT_NOT_BUSY);
 }
 
 void gt_disp_ref_area(const gt_area_st * coords)
@@ -710,7 +841,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
     uint16_t scr_width = gt_disp_get_res_hor(NULL);
     _flush_scr_param_st param = {
         .disp = gt_disp_get_default(),
-        .area_dirty = (gt_area_st)*coords,
+        .area_dirty = *coords,
         .area_flush = {0, 0, scr_width, GT_REFRESH_FLUSH_LINE_PRE_TIME},
         .scr =  gt_disp_get_scr(),          // Only x, y, w, h animation changes are recorded
         .scr_prev = gt_disp_get_scr_prev(), // Only x, y, w, h animation changes are recorded
@@ -738,30 +869,15 @@ void gt_disp_ref_area(const gt_area_st * coords)
         GT_LOGD(GT_LOG_TAG_GUI, "disp is busy");
         return;
     }
-
     _gt_disp_set_state(param.disp, GT_BUSY);
 
-    // 计算scr_prev 在屏幕的显示区域
-    if (param.scr_prev) {
-        // 计算scr 在屏幕的显示区域
-        param.scr->area.w = param.disp->area_act.w - gt_abs(param.scr->area.x);
-        param.scr->area.h = param.disp->area_act.h - gt_abs(param.scr->area.y);
-        if (_is_anim_type_hor(param.disp->scr_anim_type)) {
-            _adapt_area_flush_hor(&param);
-        }
-        if (_is_anim_type_ver(param.disp->scr_anim_type)) {
-            _adapt_area_flush_ver(&param);
-        }
-    } else {
-        param.scr->area.x = param.disp->area_act.x;
-        param.scr->area.y = param.disp->area_act.y;
-    }
     param.disp->area_disp.w = scr_width;
     param.disp->area_disp.h = param.line;
 
     if (param.scr_prev) {
         _flush_scr_by_anim(&param);
     } else {
+        param.area_flush = param.area_dirty;
         _flush_scr_by_direct(&param);
     }
 

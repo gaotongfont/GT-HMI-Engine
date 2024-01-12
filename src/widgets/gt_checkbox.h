@@ -57,10 +57,13 @@ void gt_checkbox_set_font_family_fl(gt_obj_st * checkbox, gt_family_t family);
 void gt_checkbox_set_font_family_numb(gt_obj_st * checkbox, gt_family_t family);
 void gt_checkbox_set_font_size(gt_obj_st * checkbox, uint8_t size);
 void gt_checkbox_set_font_gray(gt_obj_st * checkbox, uint8_t gray);
-void gt_checkbox_set_font_align(gt_obj_st * checkbox, uint8_t align);
 void gt_checkbox_set_font_thick_en(gt_obj_st * checkbox, uint8_t thick);
 void gt_checkbox_set_font_thick_cn(gt_obj_st * checkbox, uint8_t thick);
 void gt_checkbox_set_space(gt_obj_st * checkbox, uint8_t space_x, uint8_t space_y);
+
+void gt_checkbox_set_font_point_offset_x(gt_obj_st * checkbox , gt_size_t x);
+void gt_checkbox_set_font_point_offset_y(gt_obj_st * checkbox , gt_size_t y);
+void gt_checkbox_set_font_point_offset(gt_obj_st * checkbox , gt_size_t x , gt_size_t y);
 
 #ifdef __cplusplus
 } /*extern "C"*/

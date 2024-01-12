@@ -56,16 +56,19 @@ void gt_refr_timer(void)
 #endif
 
         area = _gt_disp_refr_get_area();
-        if (false == gt_area_check_legal(area)) {
-            // GT_LOGW("!!!", "area is illegal");
-        }
         if ( !area ) {
             return ;
         }
+
+        // if (false == gt_area_check_legal(area)) {
+        //     GT_LOGW("!!!", "area is illegal");
+        // }
+
         // if (false == gt_area_is_intersect_screen(&disp->area_act, area)) {
         //     _gt_disp_refr_area_pop();
         //     return;
         // }
+
         gt_disp_ref_area( area );
         _gt_disp_refr_area_pop();
 

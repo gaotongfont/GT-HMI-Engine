@@ -39,7 +39,7 @@ typedef struct _gt_btn_s
     gt_color_t color_background;
     gt_color_t color_pressed;
     gt_color_t font_color;
-    gt_size_t   radius;
+    gt_size_t  radius;
 
     gt_font_info_st font_info;
 
@@ -115,8 +115,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     rect_attr.bg_color      = fg_color;
     rect_attr.border_color  = fg_color;
 
-    gt_area_st area = gt_area_reduce(btn->area , REDUCE_DEFAULT);
-    // gt_area_copy(&area, btn->area);
+    gt_area_st area = gt_area_reduce(btn->area, REDUCE_DEFAULT);
     // 1:base shape
     draw_bg(btn->draw_ctx, &rect_attr, &area);
 
@@ -193,6 +192,41 @@ static bool _turn_next_content(gt_obj_st * obj) {
     return true;
 }
 
+static void _press_btn_handler(gt_obj_st * obj) {
+    if (GT_TYPE_GROUP == gt_obj_class_get_type(obj->parent)) {
+        gt_obj_st * parent = obj->parent;
+        /** reset group all btn state */
+        for (uint16_t i = 0, cnt = parent->cnt_child; i < cnt; i++) {
+            if (GT_TYPE_BTN != gt_obj_class_get_type(parent->child[i])) {
+                continue;
+            }
+            if (GT_STATE_NONE == gt_obj_get_state(parent->child[i])) {
+                continue;
+            }
+            gt_obj_set_state(parent->child[i], GT_STATE_NONE);
+            gt_event_send(parent->child[i], GT_EVENT_TYPE_DRAW_START, NULL);
+        }
+    }
+    gt_obj_set_state(obj, GT_STATE_PRESSED);
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+static inline void _released_btn_handler(gt_obj_st * obj) {
+    if (GT_TYPE_GROUP != gt_obj_class_get_type(obj->parent)) {
+        gt_obj_set_state(obj, GT_STATE_NONE);
+    }
+    if (!_turn_next_content(obj)) {
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+    }
+}
+
+static inline void _lost_focus_btn_handler(gt_obj_st *obj) {
+    if (GT_TYPE_GROUP != gt_obj_class_get_type(obj->parent)) {
+        gt_obj_set_state(obj, GT_STATE_NONE);
+    }
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 
 /**
  * @brief obj event handler call back
@@ -210,27 +244,9 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-            break;
-
         case GT_EVENT_TYPE_INPUT_PRESSED:
-            gt_obj_set_state(obj, GT_STATE_PRESSED);
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-            gt_obj_set_state(obj, GT_STATE_PRESSED);
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+        case GT_EVENT_TYPE_INPUT_PRESSING:
+            _press_btn_handler(obj);
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
@@ -239,47 +255,17 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             GT_LOGV(GT_LOG_TAG_GUI, "processed");
-            gt_obj_set_state(obj, GT_STATE_NONE);
-            if (!_turn_next_content(obj)) {
-                gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            }
+            _released_btn_handler(obj);
             break;
 
         case GT_EVENT_TYPE_INPUT_PROCESS_LOST:
             GT_LOGV(GT_LOG_TAG_GUI, "process lost");
-            gt_obj_set_state(obj, GT_STATE_NONE);
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            _lost_focus_btn_handler(obj);
             break;
 
         default:
             break;
     }
-}
-
-static void _gt_btn_init_style(gt_obj_st * btn)
-{
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
-
-    gt_memset(style, 0, sizeof(_gt_btn_st));
-
-    style->text = gt_mem_malloc(sizeof("btn"));
-    strcpy(style->text, "btn");
-    style->radius           = 4;
-    style->color_pressed    = gt_color_hex(0x0097e6);    //default color_selected
-    style->color_background = gt_color_hex(0x00a8ff);  //default color_unselected
-    style->reg.fill         = 1;
-    style->font_color       = gt_color_white();        //default color_font
-    style->font_info.style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
-    style->font_info.style_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    style->font_info.style_fl    = GT_CFG_DEFAULT_FONT_FAMILY_FL;
-    style->font_info.style_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
-    style->font_info.size        = GT_CFG_DEFAULT_FONT_SIZE;
-    style->font_info.gray        = 1;
-    style->font_info.thick_en         = 0;
-    style->font_info.thick_cn         = 0;
-    style->font_align = GT_ALIGN_CENTER_MID;
-    style->space_x          = 0;
-    style->space_y          = 0;
 }
 
 static bool _contents_free_cb(void * item) {
@@ -310,7 +296,28 @@ static void _contents_init(_gt_btn_st * style) {
 gt_obj_st * gt_btn_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_btn_init_style(obj);
+    _gt_btn_st * style = (_gt_btn_st * )obj->style;
+
+    gt_memset(style, 0, sizeof(_gt_btn_st));
+
+    style->text = gt_mem_malloc(sizeof("btn"));
+    strcpy(style->text, "btn");
+    style->radius           = 4;
+    style->color_pressed    = gt_color_hex(0x0097e6);    //default color_selected
+    style->color_background = gt_color_hex(0x00a8ff);  //default color_unselected
+    style->reg.fill         = 1;
+    style->font_color       = gt_color_white();        //default color_font
+    style->font_info.style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
+    style->font_info.style_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    style->font_info.style_fl    = GT_CFG_DEFAULT_FONT_FAMILY_FL;
+    style->font_info.style_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
+    style->font_info.size        = GT_CFG_DEFAULT_FONT_SIZE;
+    style->font_info.gray        = 1;
+    style->font_info.thick_en         = 0;
+    style->font_info.thick_cn         = 0;
+    style->font_align = GT_ALIGN_CENTER_MID;
+    style->space_x          = 0;
+    style->space_y          = 0;
     return obj;
 }
 
@@ -483,10 +490,23 @@ void gt_btn_set_font_thick_cn(gt_obj_st * btn, uint8_t thick)
     _gt_btn_st * style = (_gt_btn_st * )btn->style;
     style->font_info.thick_cn = thick;
 }
+
 void gt_btn_set_space(gt_obj_st * btn, uint8_t space_x, uint8_t space_y)
 {
     _gt_btn_st * style = (_gt_btn_st * )btn->style;
     style->space_x = space_x;
     style->space_y = space_y;
 }
+
+void gt_btn_set_selected(gt_obj_st * obj)
+{
+    if (NULL == obj) {
+        return;
+    }
+    if (GT_TYPE_BTN != gt_obj_class_get_type(obj)) {
+        return;
+    }
+    _press_btn_handler(obj);
+}
+
 /* end ------------------------------------------------------------------*/
