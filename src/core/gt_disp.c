@@ -103,7 +103,14 @@ static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
     }
 }
 
-static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param)
+/**
+ * @brief Checked the obj is display area visible
+ *
+ * @param obj The object to be checked and copied
+ * @param param
+ * @param area_parent All parent displayable areas
+ */
+static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent)
 {
     if (false == gt_area_is_intersect_screen(&param->disp->area_disp, &obj->area)) {
         return ;
@@ -117,7 +124,7 @@ static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
     gt_draw_ctx_t draw_ctx = {
         /** Page change animation */
         .valid    = param->scr_prev ? &param->valid : NULL,
-        .parent_area = (obj->inside && obj->parent) ? &obj->parent->area : NULL,
+        .parent_area = obj->inside ? &area_parent : NULL,
         .buf      = disp->vbd_color,
         .buf_area = disp->area_disp,
     };
@@ -126,21 +133,40 @@ static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
     obj->class->_init_cb(obj);
 }
 
-static void _gt_disp_check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param)
+/**
+ * @brief
+ *
+ * @param obj The object to be checked and copied
+ * @param param
+ * @param area_parent All parent displayable areas
+ */
+static void _check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent)
 {
     int16_t idx = 0;
     gt_obj_st * child_p = NULL;
+    gt_area_st area_cross = area_parent;
+
+    if (GT_TYPE_SCREEN != gt_obj_class_get_type(obj)) {
+        if (false == gt_area_cover_screen(&area_parent, &obj->area, &area_cross)) {
+            return ;
+        }
+    }
 
     while( idx < obj->cnt_child ) {
         child_p = obj->child[idx];
-        gt_check_obj_visible_and_copy(child_p, param);
+        gt_check_obj_visible_and_copy(child_p, param, area_cross);
 
         if( child_p->cnt_child != 0 ){
-            _gt_disp_check_and_copy_foreach(child_p, param);
+            _check_and_copy_foreach(child_p, param, area_cross);
         }
 
         ++idx;
     }
+}
+
+static inline void _gt_disp_check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param) {
+    /** The screen display area */
+    _check_and_copy_foreach(obj, param, param->disp->area_disp);
 }
 
 static void _scr_anim_exec_x_cb(gt_obj_st * obj, int32_t x) {
