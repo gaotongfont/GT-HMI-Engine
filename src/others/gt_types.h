@@ -47,7 +47,8 @@ typedef uint8_t gt_opt_t;
  * @brief widget type enum definition
  */
 typedef enum type_widget_e {
-    GT_TYPE_UNKNOWN     = -1,       ///< unknown type
+    GT_TYPE_UNKNOWN     = -2,       ///< unknown type
+    GT_TYPE_SCREEN      = -1,       ///< screen type
     GT_TYPE_OBJ         = 0,        ///< base obj type
     GT_TYPE_BTN         = 1,        ///< button type
     GT_TYPE_IMG         = 2,        ///< img type
