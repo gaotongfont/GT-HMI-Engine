@@ -17,7 +17,6 @@ extern "C" {
 #include "stdint.h"
 #include "../gt_conf.h"
 #include "gt_types.h"
-#include "../widgets/gt_obj.h"
 #include "gt_math.h"
 #include "gt_assert.h"
 
