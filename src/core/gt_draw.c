@@ -1011,6 +1011,7 @@ gt_area_st draw_text_split(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc
         }
         idx_2 = 0;
         bidi_pos = 0;
+        area_font.h = font_disp_h;
         while (idx_2 < idx_len)
         {
             gt_memset(_font.res, 0, data_len);
@@ -1018,9 +1019,7 @@ gt_area_st draw_text_split(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc
             if(bidi_pos < bidi_len && idx_2 == bidi[bidi_pos].idx){
                 _font.utf8 = (char * )&txt_2[idx_2];
                 _font.len = bidi[bidi_pos].len;
-                blend_dsc.dst_area->h = font_disp_h;
                 draw_text_convertor_split(&_font , bidi[bidi_pos].flag , draw_ctx ,  &blend_dsc, dsc , font_disp_h , &blend_dsc_style , coords, (overlength < 2 ? 0 : 1));
-                blend_dsc.dst_area->h = _font.info.size;
                 bidi_pos++;
                 goto _disp_next_idx2;
             }
@@ -1113,6 +1112,7 @@ gt_area_st draw_text_split(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc
         // overlength = 0;
         bidi_len = 0;
         font_disp_h = _font.info.size;
+        area_font.h = _font.info.size;
     }
 
 _ret_handler:

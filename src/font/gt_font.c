@@ -1039,7 +1039,7 @@ uint32_t gt_font_split(gt_font_st *fonts , uint32_t width , uint32_t dot_w ,uint
             _gt_font_en_in_this_range(&_font , (width - (*ret_w)) , space , &tmp_w , &ol_idx , &ol_w );
         }
 
-        if(tmp_w > width && idx == 0){
+        if(tmp_w > width && 0 == ol_idx && 0 == idx){
             if(is_convertor_language(*lan)){
                 len = ol_idx;
                 *ret_w = ol_w;
