@@ -657,9 +657,11 @@ static uint32_t draw_text_convertor_split(const gt_font_st *fonts , uint8_t lan 
                 }
             }
         }
+        blend_dsc->dst_area->h = font_disp_h;
         if(STYLE_EN_HINDI == lan){
             byte_width = 2;
             font_gray = 1;
+            blend_dsc->dst_area->w = byte_width << 3;
             gt_draw_blend_text(draw_ctx, (const gt_draw_blend_dsc_st*)blend_dsc, _font.info.size, byte_width, font_gray , (const uint8_t*)&convertor.data[idx * font_size_res.font_per_size]);
 
         }
@@ -667,7 +669,7 @@ static uint32_t draw_text_convertor_split(const gt_font_st *fonts , uint8_t lan 
             byte_width = (gt_font_get_one_word_width(convertor.fontcode[idx] , &_font) + 7 ) >> 3;
             font_gray = 1;
             byte_width = _gt_gray_and_dot_byte_get(&font_gray , byte_width , _font , ret_style);
-
+            blend_dsc->dst_area->w = byte_width << 3;
             gt_draw_blend_text(draw_ctx, (const gt_draw_blend_dsc_st *)blend_dsc, _font.info.size, byte_width, font_gray , (const uint8_t*)&convertor.data[0]);
 
         }
@@ -1042,6 +1044,7 @@ gt_area_st draw_text_split(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc
                 uint8_t font_gray = 1;
 
                 byte_width = _gt_gray_and_dot_byte_get(&font_gray , width , _font , ret_style);
+                area_font.w = byte_width << 3;
                 gt_draw_blend_text(draw_ctx, &blend_dsc, _font.info.size, byte_width, font_gray , (const uint8_t*)_font.res);
 
             }else{
@@ -1113,6 +1116,8 @@ gt_area_st draw_text_split(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc
         bidi_len = 0;
         font_disp_h = _font.info.size;
         area_font.h = _font.info.size;
+        area_font.w = _font.info.size;
+
     }
 
 _ret_handler:
