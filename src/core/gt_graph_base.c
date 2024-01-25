@@ -664,9 +664,11 @@ void gt_graph_dot_to_gray(uint8_t *dot, uint8_t *out, gt_size_t w, gt_size_t h, 
 
 uint32_t gt_graph_get_gray(gt_color_t * color_out, gt_color_t color_from, gt_color_t color_to, gt_size_t gray, gt_size_t step)
 {
-	color_out->ch.red   = (GT_COLOR_GET_R(color_to) - GT_COLOR_GET_R(color_from)) * step / gray + GT_COLOR_GET_R(color_from);
-	color_out->ch.green = (GT_COLOR_GET_G(color_to) - GT_COLOR_GET_G(color_from)) * step / gray + GT_COLOR_GET_G(color_from);
-	color_out->ch.blue  = (GT_COLOR_GET_B(color_to) - GT_COLOR_GET_B(color_from)) * step / gray + GT_COLOR_GET_B(color_from);
+	*color_out = gt_color_make(
+		(GT_COLOR_GET_R(color_to) - GT_COLOR_GET_R(color_from)) * step / gray + GT_COLOR_GET_R(color_from),
+		(GT_COLOR_GET_G(color_to) - GT_COLOR_GET_G(color_from)) * step / gray + GT_COLOR_GET_G(color_from),
+		(GT_COLOR_GET_B(color_to) - GT_COLOR_GET_B(color_from)) * step / gray + GT_COLOR_GET_B(color_from)
+	);
 
 	return color_out->full;
 }
