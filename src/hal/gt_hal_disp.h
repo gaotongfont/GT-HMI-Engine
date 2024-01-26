@@ -21,6 +21,13 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+
+/**
+ * @brief init screen callback function
+ * @return gt_obj_st* screen object
+ */
+typedef gt_obj_st * (* gt_scr_init_func_cb_t)(void);
+
 /**
  * @brief rotation angle
  */
@@ -56,25 +63,34 @@ typedef struct _gt_disp_drv_s
 }gt_disp_drv_st;
 
 /**
+ * @brief Backoff screen info, only one screen(or single stack depth) can be recorded.
+ */
+typedef struct _gt_disp_stack_s {
+    gt_scr_init_func_cb_t init_func_cb;
+    gt_obj_st * need_backoff_scr;
+    uint32_t time;
+    uint32_t delay;
+}_gt_disp_stack_st;
+
+/**
  * @brief display description
  */
 typedef struct _gt_disp_s
 {
     gt_disp_drv_st * drv;
 
-    gt_obj_st *  scr_prev;      //Preview Screen,Only save one layer
-    gt_obj_st *  scr_act;       //Active screen
-#if 0
-    // unused
-    gt_obj_st *  scr_next;      //Next Screen,Only save one layer
-#endif
-    gt_obj_st ** screens;       //Array of screen
-    uint16_t cnt_scr;           //Count screens nub
+    gt_obj_st *  scr_prev;      // Preview Screen,Only save one layer
+    gt_obj_st *  scr_act;       // Active screen
+
+    _gt_disp_stack_st * stack;  // Set backoff screen, only one screen can be recorded.
+
+    gt_obj_st ** screens;       // Array of screen
+    uint16_t cnt_scr;           // Count screens nub
 
     // round-robin queue
     struct {
         gt_area_st areas[_GT_REFR_AREA_MAX];    // ptr of area
-        uint8_t joined[_GT_REFR_AREA_MAX];      //the area is not joined into before area: 1: is joined into before.
+        uint8_t joined[_GT_REFR_AREA_MAX];      // the area is not joined into before area: 1: is joined into before.
         uint8_t idx_w;                          // index of write now
         uint8_t idx_r;                          // index of read now
     }refr;

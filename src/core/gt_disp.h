@@ -15,7 +15,7 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "../widgets/gt_obj.h"
-
+#include "../hal/gt_hal_disp.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -109,6 +109,22 @@ void gt_disp_scroll_area_act(int16_t dist_x, int16_t dist_y);
  * @param obj
  */
 void gt_disp_invalid_area(gt_obj_st * obj);
+
+/**
+ * @brief Initialize the backoff page, and the depth of the backoff page is 1
+ *
+ * @param need_backoff_scr The screen which want to be backoff
+ * @param init_cb The callback function of the screen initialization
+ * @param time The time of the screen backoff animation
+ * @param delay The delay time of the screen backoff animation
+ */
+void gt_disp_set_backoff_scr(gt_obj_st * need_backoff_scr, gt_scr_init_func_cb_t init_cb, uint32_t time, uint32_t delay);
+
+/**
+ * @brief Return to the previous screen. The `gt_disp_set_backoff_scr()`
+ *      function needs to be executed before entering the current page
+ */
+void gt_disp_go_backoff_scr(void);
 
 #ifdef __cplusplus
 } /*extern "C"*/
