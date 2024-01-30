@@ -79,6 +79,7 @@ static void gt_mirror_ver_u8(uint8_t * dst, uint8_t * src, uint32_t w, uint32_t 
 
 
 /* global functions / API interface -------------------------------------*/
+#if 0
 void gt_draw_rect(gt_draw_ctx_t * ctx, gt_attr_rect_st * attr, gt_area_st * coords) {
 #if GT_DRAW_COMPLEX
     draw_shadow(draw_ctx, dsc, coords);
@@ -125,6 +126,7 @@ _gt_radius_dat radius_dat[] = {
     {11, radius11, 121},
     {12, radius12, 144}
 };
+#endif
 
 void gt_draw_arch(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st  *blend_dsc,uint8_t *mask_left_up,uint8_t *mask_right_up,const gt_area_st * coords)
 {
@@ -203,7 +205,7 @@ void gt_draw_line(gt_attr_line_st * line_attr, gt_draw_ctx_t * draw_ctx, gt_draw
         gt_draw_arch(draw_ctx,blend_dsc,mask_left_up,mask_right_up,coords);
 	}
 }
-
+#if 0
 static void get_graph_circle_ring_buff(uint16_t radius,uint16_t border_width,uint8_t * mask_left_up,uint8_t * mask_temp){
     gt_size_t radius_hid = radius - border_width;
     if( radius_hid >= 3){
@@ -239,7 +241,7 @@ static void get_graph_circle_ring_buff(uint16_t radius,uint16_t border_width,uin
         mask_left_up[ radius * radius - 1 ] = 0;
     }
 }
-
+#endif
 
 /* ----------------------------------------------------------------------------------------------------------- */
 static const uint8_t r_1[] = {0xB4,0x2D,0xDC,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0xDC,0x00,};
@@ -501,7 +503,7 @@ static void _gt_redius_put_mask_buf(const gt_radius_mask_st *r_mask , uint8_t* m
             aa_opa = _gt_get_next_line( r_mask, col, &len, &x_start);
             x_pos = R_DIR_TOP_LEFT == dir ? radius - x_start - 1 : x_start;
 
-            for(i = 0 ; i < len ; i++){
+            for(i = 0; i < len; i++){
                 tmp_opa = aa_opa[len - i - 1];
 
                 if(R_DIR_TOP_LEFT == dir && (x_pos - i >= 0 && x_pos - i < radius)){
@@ -528,7 +530,7 @@ static void _gt_redius_put_mask_buf(const gt_radius_mask_st *r_mask , uint8_t* m
             aa_opa = _gt_get_next_line( r_mask, col, &len, &x_start);
             x_pos = R_DIR_BOTTOM_LEFT == dir ? radius - x_start - 1 : x_start;
 
-            for(i = 0 ; i < len ; i++){
+            for(i = 0; i < len; i++){
                 tmp_opa = aa_opa[len - i - 1];
 
                 if(R_DIR_BOTTOM_LEFT == dir && (x_pos - i >= 0 && x_pos - i < radius)){
@@ -581,7 +583,7 @@ static bool _gt_draw_radius(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * ds
 
     gt_radius_mask_st radius_mask={0};
     gt_size_t in_radius = radius - border_width;
-    bool flag = false ;
+    bool flag = false;
 
 
     flag = _gt_get_radius_mask( &radius_mask, radius);
@@ -660,7 +662,7 @@ static bool _gt_draw_radius(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * ds
     }
 
     if(mask_buf){
-        gt_mem_free(mask_buf) ;
+        gt_mem_free(mask_buf);
         mask_buf = NULL;
     }
 
@@ -669,12 +671,11 @@ static bool _gt_draw_radius(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * ds
 radius_fail:
 
     if(mask_buf){
-        gt_mem_free(mask_buf) ;
+        gt_mem_free(mask_buf);
         mask_buf = NULL;
     }
 
     return false;
-
 }
 
 
@@ -700,7 +701,7 @@ static bool _gt_arc_mask_get(_gt_arc_mask_st * p)
     int i;
 
     if(false == p->outer){
-        for(i = 0 ; i < aa_len ; i++)
+        for(i = 0; i < aa_len; i++)
         {
             tmp_opa = aa_opa[aa_len - i - 1];
             if(pos_x_right + i >= 0 && pos_x_right + i < p->len) {
@@ -718,7 +719,7 @@ static bool _gt_arc_mask_get(_gt_arc_mask_st * p)
         gt_memset_0(&p->mask_line[0] , pos_x_left);
     }
     else{
-        for(i = 0 ; i < aa_len ; i++)
+        for(i = 0; i < aa_len; i++)
         {
             tmp_opa = 255 - aa_opa[aa_len - i - 1];
             if(pos_x_right + i >= 0 && pos_x_right + i < p->len) {
@@ -778,14 +779,14 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
     {
         if(!dsc->data_gray)
         {
-            return ;
+            return;
         }
-        uint8_t * mask_buf = NULL ;
+        uint8_t * mask_buf = NULL;
         uint32_t len = coords->w * coords->h , index = 0 , buf_idx = 0;
         char idx_bit = 0;
         mask_buf = gt_mem_malloc(len);
         if(!mask_buf){
-            return ;
+            return;
         }
         blend_dsc.mask_buf = mask_buf;
         blend_dsc.mask_area->w = coords->w;
@@ -797,8 +798,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         index = 0;
         while( index < len ){
 
-            for(idx_bit = 0 ; idx_bit < 8 ;idx_bit++)
-            {
+            for(idx_bit = 0; idx_bit < 8; idx_bit++) {
                 if( (dsc->data_gray[index] << idx_bit )&0x80 ){
                     mask_buf[buf_idx++] = 0xFF;
                 }else{
@@ -814,7 +814,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
             gt_mem_free(mask_buf);
         }
         mask_buf = NULL;
-        return ;
+        return;
     }
 
 #if 0
@@ -838,12 +838,12 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
             if (NULL == color_circle_p) {
                 gt_mem_free(mask_left_up);
                 radius_pre = 0;
-                return ;
+                return;
             }
             if (NULL == mask_left_up) {
                 gt_mem_free(color_circle_p);
                 radius_pre = 0;
-                return ;
+                return;
             }
         }
         if(radius > 12 ){
@@ -925,7 +925,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
                     uint16_t radius_hid = radius - border_width;
                     uint8_t * mask_temp = gt_mem_malloc(radius_hid * radius_hid);
                     if(NULL == mask_temp){
-                        return ;
+                        return;
                     }
                     get_graph_circle_ring_buff(radius,border_width,mask_left_up,mask_temp);
                     gt_draw_arch(draw_ctx,&blend_dsc,mask_left_up,(uint8_t *)color_circle_p,coords);
@@ -1058,7 +1058,7 @@ static uint16_t _gt_gray_and_dot_byte_get(uint8_t* gray , uint8_t width , gt_fon
         dot_byte = (width + 7) >> 3;
         font_gray = 1;
     }
-    *gray = font_gray ;
+    *gray = font_gray;
     return dot_byte;
 }
 
@@ -1290,9 +1290,8 @@ gt_area_st draw_text_split(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc
     gt_memset(mask_line, 0xFF, _font.info.size << 1);
     uint8_t style_space_y = (dsc->style == GT_FONT_STYLE_NONE) ? 0 : ((_font.info.size >> 4) ? (_font.info.size >> 4) : 1);
 
-    //
-    uint16_t idx = 0 , idx_2 = 0 , idx_step = 0, idx_len = 0, txt_len = dsc->font->len ;
-    uint16_t disp_w = coords->w ;
+    uint16_t idx = 0 , idx_2 = 0 , idx_step = 0, idx_len = 0, txt_len = dsc->font->len;
+    uint16_t disp_w = coords->w;
     uint16_t overlength_offset = ((coords->w / ((_font.info.size >> 1) + dsc->space_x) - 1) >> 1 << 1);
     uint8_t overlength = 0;
     uint32_t  unicode = 0 , ret_w = 0 , lan_len;
@@ -1551,7 +1550,7 @@ gt_area_st draw_text_split(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc
                 gt_memset(_font.res, 0, data_len);
                 uint16_t ret_style = gt_font_get_string_dot(&_font);
 
-                uint8_t byte_width = (width + 7) >> 3 ;
+                uint8_t byte_width = (width + 7) >> 3;
                 uint8_t font_gray = 1;
 
                 byte_width = _gt_gray_and_dot_byte_get(&font_gray , width , _font , ret_style);
@@ -1793,7 +1792,7 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_
     }
     else if ( GT_RES_FAIL == gt_img_decoder_open(&dsc_img, dsc->bg_img_src)) {
         GT_LOGW(GT_LOG_TAG_DATA, "Open image decoder failed\n");
-        return ;
+        return;
     }
     coords->w = dsc_img.header.w;
     coords->h = dsc_img.header.h;
