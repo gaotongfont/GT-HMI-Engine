@@ -591,7 +591,7 @@ static bool _gt_draw_radius(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * ds
 
     if(border_width > 0){
         blend_dsc.color_fill = dsc->border_color;
-        blend_dsc.opa = dsc->border_opa;
+        // blend_dsc.opa = dsc->border_opa;
     }
 
     // top-left
@@ -600,23 +600,23 @@ static bool _gt_draw_radius(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * ds
     area_mask.w = radius;
     area_mask.h = radius;
     gt_memset_0(mask_buf , radius * radius);
-    _gt_redius_put_mask_buf( &radius_mask , mask_buf , blend_dsc.opa , radius , R_DIR_TOP_LEFT);
+    _gt_redius_put_mask_buf( &radius_mask , mask_buf , 0xFF , radius , R_DIR_TOP_LEFT);
     gt_draw_blend(draw_ctx , &blend_dsc);
     // top-right
     area_mask.x = coords->x + coords->w - radius;
     gt_memset_0(mask_buf , radius * radius);
-    _gt_redius_put_mask_buf( &radius_mask , mask_buf , blend_dsc.opa , radius , R_DIR_TOP_RIGHT);
+    _gt_redius_put_mask_buf( &radius_mask , mask_buf , 0xFF , radius , R_DIR_TOP_RIGHT);
     gt_draw_blend(draw_ctx , &blend_dsc);
     // bottom-left
     area_mask.x = coords->x;
     area_mask.y = coords->y + coords->h - radius;
     gt_memset_0(mask_buf , radius * radius);
-    _gt_redius_put_mask_buf( &radius_mask , mask_buf , blend_dsc.opa , radius , R_DIR_BOTTOM_LEFT);
+    _gt_redius_put_mask_buf( &radius_mask , mask_buf , 0xFF , radius , R_DIR_BOTTOM_LEFT);
     gt_draw_blend(draw_ctx , &blend_dsc);
     // // bottom-right
     area_mask.x = coords->x + coords->w - radius;
     gt_memset_0(mask_buf , radius * radius);
-    _gt_redius_put_mask_buf( &radius_mask , mask_buf , blend_dsc.opa , radius , R_DIR_BOTTOM_RIGHT);
+    _gt_redius_put_mask_buf( &radius_mask , mask_buf , 0xFF , radius , R_DIR_BOTTOM_RIGHT);
     gt_draw_blend(draw_ctx , &blend_dsc);
     //
 
@@ -637,23 +637,23 @@ static bool _gt_draw_radius(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * ds
         area_mask.w = in_radius;
         area_mask.h = in_radius;
         gt_memset_0(mask_buf , radius * radius);
-        _gt_redius_put_mask_buf( &radius_mask , mask_buf , blend_dsc.opa , in_radius , R_DIR_TOP_LEFT);
+        _gt_redius_put_mask_buf( &radius_mask , mask_buf , 0xFF , in_radius , R_DIR_TOP_LEFT);
         gt_draw_blend(draw_ctx , &blend_dsc);
         // top-right
         area_mask.x = coords->x + coords->w - in_radius - border_width;
         gt_memset_0(mask_buf , radius * radius);
-        _gt_redius_put_mask_buf( &radius_mask , mask_buf , blend_dsc.opa , in_radius , R_DIR_TOP_RIGHT);
+        _gt_redius_put_mask_buf( &radius_mask , mask_buf , 0xFF , in_radius , R_DIR_TOP_RIGHT);
         gt_draw_blend(draw_ctx , &blend_dsc);
         // bottom-left
         area_mask.x = coords->x + border_width;
         area_mask.y = coords->y + coords->h - in_radius - border_width;
         gt_memset_0(mask_buf , radius * radius);
-        _gt_redius_put_mask_buf( &radius_mask , mask_buf , blend_dsc.opa , in_radius , R_DIR_BOTTOM_LEFT);
+        _gt_redius_put_mask_buf( &radius_mask , mask_buf , 0xFF , in_radius , R_DIR_BOTTOM_LEFT);
         gt_draw_blend(draw_ctx , &blend_dsc);
         // bottom-right
         area_mask.x = coords->x + coords->w - in_radius - border_width;
         gt_memset_0(mask_buf , radius * radius);
-        _gt_redius_put_mask_buf( &radius_mask , mask_buf , blend_dsc.opa , in_radius , R_DIR_BOTTOM_RIGHT);
+        _gt_redius_put_mask_buf( &radius_mask , mask_buf , 0xFF , in_radius , R_DIR_BOTTOM_RIGHT);
         gt_draw_blend(draw_ctx , &blend_dsc);
 
         _gt_radius_mask_free(&radius_mask, in_radius);
