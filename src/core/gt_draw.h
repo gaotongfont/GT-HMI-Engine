@@ -55,6 +55,30 @@ typedef struct _gt_draw_ctx_t{
 }gt_draw_ctx_t;
 
 
+typedef struct _gt_radius_mask_t{
+    uint8_t *buf;
+    uint8_t *opa;
+    uint16_t * opa_start;
+    uint16_t * x_start;
+}gt_radius_mask_st;
+
+typedef enum {
+    R_DIR_TOP_LEFT = 0,
+    R_DIR_TOP_RIGHT,
+    R_DIR_BOTTOM_LEFT,
+    R_DIR_BOTTOM_RIGHT
+}gt_radius_dir_et;
+
+typedef struct _gt_arc_mask_s{
+    gt_radius_mask_st* r_mask;
+    gt_opa_t* mask_line;
+    gt_area_st* arc_area;
+    uint16_t radius;
+    uint16_t s_x ;
+    uint16_t s_y ;
+    uint16_t len ;
+    uint16_t outer : 1;
+}_gt_arc_mask_st;
 /* macros ---------------------------------------------------------------*/
 
 

@@ -240,6 +240,506 @@ static void get_graph_circle_ring_buff(uint16_t radius,uint16_t border_width,uin
     }
 }
 
+
+/* ----------------------------------------------------------------------------------------------------------- */
+static const uint8_t r_1[] = {0xB4,0x2D,0xDC,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0xDC,0x00,};
+static const uint8_t r_2[] = {0x00,0xE0,0x50,0xE0,0x00,0x00,0x00,0x00,0x02,0x00,0x04,0x00,0x01,0x00,0x00,0x00,0x00,0x00,};
+static const uint8_t r_3[] = {0x00,0xF0,0x80,0x00,0x80,0xF0,0x00,0x00,0x00,0x00,0x02,0x00,0x03,0x00,0x06,0x00,0x02,0x00,0x02,0x00,0x00,0x00,0x00,0x00,};
+static const uint8_t r_4[] = {0x00,0xA0,0xF0,0xA0,0x00,0x00,0xAB,0x00,0x90,0x2E,0x00,0x00,0x01,0x00,0x02,0x00,0x03,0x00,0x04,0x00,0x04,0x00,0x03,0x00,0x02,0x00,0x01,0x00,0x00,0x00,};
+static const uint8_t r_5[] = {0x00,0xB0,0x40,0x80,0x40,0xB0,0x00,0x00,0x90,0x2E,0xBF,0x00,0x00,0x00,0x01,0x00,0x02,0x00,0x03,0x00,0x04,0x00,0x06,0x00,0x05,0x00,0x04,0x00,0x04,0x00,0x03,0x00,0x01,0x00,0x00,0x00,};
+static const uint8_t r_6[] = {0x00,0xC0,0x60,0x00,0xD0,0x10,0xD0,0x00,0x60,0xC0,0x00,0x00,0x04,0x05,0x00,0x00,0x01,0x00,0x02,0x00,0x03,0x00,0x05,0x00,0x07,0x00,0x0A,0x00,0x06,0x00,0x05,0x00,0x05,0x00,0x04,0x00,0x03,0x00,0x01,0x00,0x00,0x00,};
+static const uint8_t r_7[] = {0x00,0x00,0xD0,0x80,0x10,0xF0,0x40,0xF0,0x40,0xF0,0x10,0x80,0xD0,0x00,0x00,0x07,0x00,0x00,0x01,0x00,0x03,0x00,0x04,0x00,0x06,0x00,0x08,0x00,0x0A,0x00,0x0D,0x00,0x07,0x00,0x06,0x00,0x06,0x00,0x05,0x00,0x04,0x00,0x03,0x00,0x01,0x00,0x00,0x00,};
+static const uint8_t r_8[] = {0x00,0x00,0xD0,0x90,0x20,0x80,0xC0,0x80,0x20,0x90,0xD0,0x00,0x00,0x05,0x06,0x07,0x1F,0x00,0x00,0x00,0x01,0x00,0x03,0x00,0x04,0x00,0x05,0x00,0x06,0x00,0x07,0x00,0x08,0x00,0x0B,0x00,0x08,0x00,0x07,0x00,0x07,0x00,0x07,0x00,0x06,0x00,0x05,0x00,0x04,0x00,0x01,0x00,0x00,0x00,};
+static const uint8_t r_9[] = {0x00,0x00,0xE0,0xA0,0x40,0x00,0xC0,0x20,0xF0,0x40,0xF0,0x20,0xC0,0x00,0x40,0xA0,0xE0,0x00,0x00,0x1F,0x00,0x00,0x01,0x00,0x03,0x00,0x04,0x00,0x05,0x00,0x07,0x00,0x09,0x00,0x0B,0x00,0x0D,0x00,0x11,0x00,0x09,0x00,0x08,0x00,0x08,0x00,0x08,0x00,0x07,0x00,0x06,0x00,0x05,0x00,0x04,0x00,0x01,0x00,0x00,0x00,};
+static const uint8_t r_10[] = {0x00,0x00,0xE0,0xA0,0x50,0x00,0xE0,0x40,0x80,0x00,0x80,0x40,0xE0,0x00,0x50,0xA0,0xE0,0x00,0x00,0x1F,0x7F,0x7E,0x00,0x00,0x01,0x00,0x03,0x00,0x04,0x00,0x05,0x00,0x07,0x00,0x08,0x00,0x09,0x00,0x0B,0x00,0x0D,0x00,0x11,0x00,0x0A,0x00,0x09,0x00,0x09,0x00,0x09,0x00,0x08,0x00,0x08,0x00,0x07,0x00,0x06,0x00,0x04,0x00,0x01,0x00,0x00,0x00,};
+static const uint8_t r_11[] = {0x00,0x00,0xE0,0xB0,0x60,0x10,0xF0,0x80,0x00,0xD0,0xE0,0xD0,0x00,0x80,0xF0,0x10,0x60,0xB0,0xE0,0x00,0x00,0xBE,0x00,0x00,0x00,0x00,0x01,0x00,0x03,0x00,0x04,0x00,0x05,0x00,0x07,0x00,0x08,0x00,0x0A,0x00,0x0B,0x00,0x0C,0x00,0x0F,0x00,0x13,0x00,0x0B,0x00,0x0A,0x00,0x0A,0x00,0x0A,0x00,0x09,0x00,0x09,0x00,0x08,0x00,0x07,0x00,0x06,0x00,0x04,0x00,0x01,0x00,0x00,0x00,};
+static const uint8_t r_12[] = {0x00,0x00,0xE0,0xB0,0x70,0x20,0xA0,0x10,0xF0,0x40,0x70,0x40,0xF0,0x10,0xA0,0x20,0x70,0xB0,0xE0,0x00,0x00,0x56,0x00,0x00,0x50,0x2D,0x00,0x00,0x01,0x00,0x03,0x00,0x04,0x00,0x05,0x00,0x06,0x00,0x07,0x00,0x09,0x00,0x0A,0x00,0x0B,0x00,0x0D,0x00,0x0F,0x00,0x13,0x00,0x0C,0x00,0x0B,0x00,0x0B,0x00,0x0B,0x00,0x0B,0x00,0x0A,0x00,0x09,0x00,0x09,0x00,0x08,0x00,0x06,0x00,0x05,0x00,0x01,0x00,0x00,0x00,};
+static const uint8_t r_13[] = {0x00,0x00,0xF0,0xC0,0x70,0x20,0x00,0xC0,0x30,0x80,0x00,0xB0,0x10,0xB0,0x00,0x80,0x30,0xC0,0x00,0x20,0x70,0xC0,0xF0,0x00,0x00,0x2D,0xC2,0x00,0x00,0x00,0x01,0x00,0x03,0x00,0x04,0x00,0x05,0x00,0x06,0x00,0x08,0x00,0x09,0x00,0x0A,0x00,0x0C,0x00,0x0E,0x00,0x10,0x00,0x12,0x00,0x17,0x00,0x0D,0x00,0x0C,0x00,0x0C,0x00,0x0C,0x00,0x0C,0x00,0x0B,0x00,0x0B,0x00,0x0A,0x00,0x09,0x00,0x08,0x00,0x07,0x00,0x05,0x00,0x01,0x00,0x00,0x00,};
+static const uint8_t r_14[] = {0x00,0x00,0xF0,0xC0,0x80,0x30,0x00,0xE0,0x60,0x00,0xC0,0x20,0xF0,0xF0,0xF0,0x20,0xC0,0x00,0x60,0xE0,0x00,0x30,0x80,0xC0,0xF0,0x00,0x00,0x00,0xC0,0x00,0x00,0x00,0x01,0x00,0x03,0x00,0x04,0x00,0x05,0x00,0x06,0x00,0x08,0x00,0x09,0x00,0x0B,0x00,0x0D,0x00,0x0E,0x00,0x0F,0x00,0x11,0x00,0x14,0x00,0x19,0x00,0x0E,0x00,0x0D,0x00,0x0D,0x00,0x0D,0x00,0x0D,0x00,0x0C,0x00,0x0C,0x00,0x0B,0x00,0x0A,0x00,0x09,0x00,0x08,0x00,0x07,0x00,0x05,0x00,0x01,0x00,0x00,0x00,};
+static const uint8_t r_15[] = {0x00,0x00,0xF0,0xC0,0x90,0x50,0x00,0xE0,0x80,0x10,0xE0,0x40,0x80,0xA0,0x80,0x40,0xE0,0x10,0x80,0xE0,0x00,0x50,0x90,0xC0,0xF0,0x00,0x00,0x00,0xC0,0x00,0xB1,0x00,0x00,0x00,0x01,0x00,0x03,0x00,0x04,0x00,0x05,0x00,0x06,0x00,0x08,0x00,0x09,0x00,0x0B,0x00,0x0C,0x00,0x0D,0x00,0x0E,0x00,0x0F,0x00,0x11,0x00,0x14,0x00,0x19,0x00,0x0F,0x00,0x0E,0x00,0x0E,0x00,0x0E,0x00,0x0E,0x00,0x0D,0x00,0x0D,0x00,0x0C,0x00,0x0C,0x00,0x0B,0x00,0x0A,0x00,0x09,0x00,0x07,0x00,0x05,0x00,0x01,0x00,0x00,0x00,};
+static const uint8_t r_16[] = {0x00,0x00,0xC0,0x90,0x50,0x00,0xF0,0x90,0x20,0xF0,0x80,0x00,0xD0,0x10,0xD0,0x20,0xD0,0x10,0xD0,0x00,0x80,0xF0,0x20,0x90,0xF0,0x00,0x50,0x90,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x02,0x00,0x03,0x00,0x04,0x00,0x05,0x00,0x07,0x00,0x08,0x00,0x0A,0x00,0x0B,0x00,0x0D,0x00,0x0F,0x00,0x11,0x00,0x13,0x00,0x16,0x00,0x19,0x00,0x1D,0x00,0x10,0x00,0x10,0x00,0x0F,0x00,0x0F,0x00,0x0F,0x00,0x0E,0x00,0x0E,0x00,0x0D,0x00,0x0D,0x00,0x0C,0x00,0x0B,0x00,0x0A,0x00,0x09,0x00,0x07,0x00,0x05,0x00,0x02,0x00,0x00,0x00,};
+
+#define RADIUS_MAX  16
+static const uint8_t *small_radius_make[RADIUS_MAX+1] = {
+r_1 , r_1 , r_2 , r_3 , r_4 , r_5 , r_6 , r_7 , r_8 , r_9 , r_10, r_11, r_12, r_13, r_14, r_15, r_16
+};
+
+static void _gt_circ_init(gt_point_st * c, gt_size_t * tmp, uint16_t radius)
+{
+    c->x = radius;
+    c->y = 0;
+    *tmp = 1 - radius;
+}
+
+static bool _gt_circ_cont(gt_point_st * c)
+{
+    return c->y <= c->x ? true : false;
+}
+
+static void _gt_circ_next(gt_point_st * c, gt_size_t * tmp)
+{
+
+    if(*tmp <= 0) {
+        (*tmp) += 2 * c->y + 3; /*Change in decision criterion for y -> y+1*/
+    }
+    else {
+        (*tmp) += 2 * (c->y - c->x) + 5; /*Change for y -> y+1, x -> x-1*/
+        c->x--;
+    }
+    c->y++;
+}
+
+static void _gt_radius_mask_free(gt_radius_mask_st *r_mask , uint16_t radius)
+{
+    if( r_mask->buf && radius > RADIUS_MAX){
+        gt_mem_free(r_mask->buf);
+    }
+
+    r_mask->buf = NULL;
+    r_mask->opa = NULL;
+    r_mask->opa_start = NULL;
+    r_mask->x_start = NULL;
+}
+
+static bool _gt_get_radius_mask( gt_radius_mask_st *r_mask , uint16_t radius)
+{
+    if(!r_mask) return false;
+
+    if(0 == radius){
+        return true;
+    }
+
+    const uint32_t mask_size = radius * 2 + 2;
+
+    if(radius <= RADIUS_MAX){
+        r_mask->buf = (uint8_t*)small_radius_make[radius];
+        r_mask->opa = r_mask->buf;
+        r_mask->opa_start = (uint16_t*)(r_mask->buf + mask_size);
+        r_mask->x_start = (uint16_t*)(r_mask->buf + mask_size*2);
+        return true;
+    }
+
+    if(r_mask->buf) {
+        gt_mem_free(r_mask->buf);
+        r_mask->buf = NULL;
+    }
+
+    r_mask->buf = gt_mem_malloc(mask_size * 3);
+    if(!r_mask->buf){
+        GT_LOGE(GT_LOG_TAG_MEM , "radius malloc fail!!! size: %d" , mask_size * 3);
+        return false;
+    }
+    gt_memset_0(r_mask->buf , mask_size * 3);
+    r_mask->opa = r_mask->buf;
+    r_mask->opa_start = (uint16_t*)(r_mask->buf + mask_size);
+    r_mask->x_start = (uint16_t*)(r_mask->buf + mask_size*2);
+
+#if 0
+    /*Special case, handle manually*/
+    if(radius == 1) {
+        r_mask->opa[0] = 180;
+        r_mask->opa_start[0] = 0;
+        r_mask->opa_start[1] = 1;
+        r_mask->x_start[0] = 0;
+        return true;
+    }
+#endif
+
+    const uint32_t cir_xy_size = (radius + 1) * 2 * 2 * 2;
+    gt_size_t * cir_x = gt_mem_malloc(cir_xy_size);
+    if(!cir_x){
+        GT_LOGE(GT_LOG_TAG_MEM , "radius cir_x malloc fail!!! size: %d" , cir_xy_size);
+        gt_mem_free(r_mask->buf);
+        r_mask->buf = NULL;
+        return false;
+    }
+    gt_size_t * cir_y = &cir_x[(radius + 1) * 2];
+
+    uint32_t y_8th_cnt = 0;
+    gt_point_st cp;
+    gt_size_t tmp;
+    _gt_circ_init(&cp, &tmp, radius * 4);    /*Upscale by 4*/
+    int32_t i;
+
+    uint32_t x_int[4];
+    uint32_t x_fract[4];
+    gt_size_t cir_size = 0;
+    x_int[0] = cp.x >> 2;
+    x_fract[0] = 0;
+
+    /*Calculate an 1/8 circle*/
+    while(_gt_circ_cont(&cp)) {
+        /*Calculate 4 point of the circle */
+        for(i = 0; i < 4; i++) {
+            _gt_circ_next(&cp, &tmp);
+            if(_gt_circ_cont(&cp) == false) break;
+            x_int[i] = cp.x >> 2;
+            x_fract[i] = cp.x & 0x3;
+        }
+        if(i != 4) break;
+
+        /*All lines on the same x when downscaled*/
+        if(x_int[0] == x_int[3]) {
+            cir_x[cir_size] = x_int[0];
+            cir_y[cir_size] = y_8th_cnt;
+            r_mask->opa[cir_size] = x_fract[0] + x_fract[1] + x_fract[2] + x_fract[3];
+            r_mask->opa[cir_size] *= 16;
+            cir_size++;
+        }
+        /*Second line on new x when downscaled*/
+        else if(x_int[0] != x_int[1]) {
+            cir_x[cir_size] = x_int[0];
+            cir_y[cir_size] = y_8th_cnt;
+            r_mask->opa[cir_size] = x_fract[0];
+            r_mask->opa[cir_size] *= 16;
+            cir_size++;
+
+            cir_x[cir_size] = x_int[0] - 1;
+            cir_y[cir_size] = y_8th_cnt;
+            r_mask->opa[cir_size] = 1 * 4 + x_fract[1] + x_fract[2] + x_fract[3];;
+            r_mask->opa[cir_size] *= 16;
+            cir_size++;
+        }
+        /*Third line on new x when downscaled*/
+        else if(x_int[0] != x_int[2]) {
+            cir_x[cir_size] = x_int[0];
+            cir_y[cir_size] = y_8th_cnt;
+            r_mask->opa[cir_size] = x_fract[0] + x_fract[1];
+            r_mask->opa[cir_size] *= 16;
+            cir_size++;
+
+            cir_x[cir_size] = x_int[0] - 1;
+            cir_y[cir_size] = y_8th_cnt;
+            r_mask->opa[cir_size] = 2 * 4 + x_fract[2] + x_fract[3];;
+            r_mask->opa[cir_size] *= 16;
+            cir_size++;
+        }
+        /*Forth line on new x when downscaled*/
+        else {
+            cir_x[cir_size] = x_int[0];
+            cir_y[cir_size] = y_8th_cnt;
+            r_mask->opa[cir_size] = x_fract[0] + x_fract[1] + x_fract[2];
+            r_mask->opa[cir_size] *= 16;
+            cir_size++;
+
+            cir_x[cir_size] = x_int[0] - 1;
+            cir_y[cir_size] = y_8th_cnt;
+            r_mask->opa[cir_size] = 3 * 4 + x_fract[3];;
+            r_mask->opa[cir_size] *= 16;
+            cir_size++;
+        }
+
+        y_8th_cnt++;
+    }
+
+    /*The point on the 1/8 circle is special, calculate it manually*/
+    int32_t mid = radius * 723;
+    int32_t mid_int = mid >> 10;
+    if(cir_x[cir_size - 1] != mid_int || cir_y[cir_size - 1] != mid_int) {
+        int32_t tmp_val = mid - (mid_int << 10);
+        if(tmp_val <= 512) {
+            tmp_val = tmp_val * tmp_val * 2;
+            tmp_val = tmp_val >> (10 + 6);
+        }
+        else {
+            tmp_val = 1024 - tmp_val;
+            tmp_val = tmp_val * tmp_val * 2;
+            tmp_val = tmp_val >> (10 + 6);
+            tmp_val = 15 - tmp_val;
+        }
+
+        cir_x[cir_size] = mid_int;
+        cir_y[cir_size] = mid_int;
+        r_mask->opa[cir_size] = tmp_val;
+        r_mask->opa[cir_size] *= 16;
+        cir_size++;
+    }
+
+    /*Build the second octet by mirroring the first*/
+    for(i = cir_size - 2; i >= 0; i--, cir_size++) {
+        cir_x[cir_size] = cir_y[i];
+        cir_y[cir_size] = cir_x[i];
+        r_mask->opa[cir_size] = r_mask->opa[i];
+    }
+
+    gt_size_t y = 0;
+    i = 0;
+    r_mask->opa_start[0] = 0;
+    while(i < cir_size) {
+        r_mask->opa_start[y] = i;
+        r_mask->x_start[y] = cir_x[i];
+        for(; cir_y[i] == y && i < (int32_t)cir_size; i++) {
+            r_mask->x_start[y] = GT_MIN(r_mask->x_start[y], cir_x[i]);
+        }
+        y++;
+    }
+
+    gt_mem_free(cir_x);
+    cir_x = NULL;
+    return true;
+}
+
+static gt_opa_t* _gt_get_next_line(const gt_radius_mask_st *r_mask , uint16_t y , uint16_t*len , uint16_t* x_start)
+{
+    *len = r_mask->opa_start[y + 1] - r_mask->opa_start[y];
+    *x_start = r_mask->x_start[y];
+    return &r_mask->opa[r_mask->opa_start[y]];
+}
+
+static void _gt_redius_put_mask_buf(const gt_radius_mask_st *r_mask , uint8_t* mask_buf , gt_opa_t opa, uint16_t radius , gt_radius_dir_et dir)
+{
+
+    int i , col = 0 , x_pos = 0;
+    uint16_t len = 0 , x_start = 0;
+    gt_opa_t* aa_opa , tmp_opa;
+    uint8_t* buf = mask_buf;
+
+    if(R_DIR_TOP_LEFT ==  dir || R_DIR_TOP_RIGHT == dir){
+
+        for(col = radius - 1; col >= 0; col--){
+
+            aa_opa = _gt_get_next_line( r_mask, col, &len, &x_start);
+            x_pos = R_DIR_TOP_LEFT == dir ? radius - x_start - 1 : x_start;
+
+            for(i = 0 ; i < len ; i++){
+                tmp_opa = aa_opa[len - i - 1];
+
+                if(R_DIR_TOP_LEFT == dir && (x_pos - i >= 0 && x_pos - i < radius)){
+                    buf[x_pos - i] = (gt_per_255(tmp_opa) * opa) >> 15;
+                }
+                else if(R_DIR_TOP_RIGHT == dir && (x_pos + i >= 0 && x_pos + i < radius)){
+                    buf[x_pos + i] = (gt_per_255(tmp_opa) * opa) >> 15;
+                }
+            }
+
+            if(R_DIR_TOP_LEFT == dir){
+                x_pos = radius - x_start;
+                gt_memset(&buf[x_pos] , opa , radius - x_pos);
+            }
+            else{
+                gt_memset(&buf[0] , opa , x_start);
+            }
+            buf += radius;
+        }
+    }
+    else if(R_DIR_BOTTOM_LEFT ==  dir || R_DIR_BOTTOM_RIGHT == dir){
+        for(col = 0; col < radius; col++){
+
+            aa_opa = _gt_get_next_line( r_mask, col, &len, &x_start);
+            x_pos = R_DIR_BOTTOM_LEFT == dir ? radius - x_start - 1 : x_start;
+
+            for(i = 0 ; i < len ; i++){
+                tmp_opa = aa_opa[len - i - 1];
+
+                if(R_DIR_BOTTOM_LEFT == dir && (x_pos - i >= 0 && x_pos - i < radius)){
+                    buf[x_pos - i] = (gt_per_255(tmp_opa) * opa) >> 15;
+                }
+                else if(R_DIR_BOTTOM_RIGHT == dir && (x_pos + i >= 0 && x_pos + i < radius)){
+                    buf[x_pos + i] = (gt_per_255(tmp_opa) * opa) >> 15;
+                }
+            }
+
+            if(R_DIR_BOTTOM_LEFT == dir){
+                x_pos = radius - x_start;
+                gt_memset(&buf[x_pos] , opa , radius - x_pos);
+            }
+            else{
+                gt_memset(&buf[0] , opa , x_start);
+            }
+            buf += radius;
+        }
+    }
+}
+
+static bool _gt_draw_radius(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
+{
+    if(NULL == draw_ctx || NULL == dsc || NULL == coords) return false;
+
+    // calc radius
+    uint16_t radius = GT_MIN(coords->w >> 1, coords->h >> 1);
+    radius = GT_MIN(radius, dsc->radius);
+    uint16_t border_width = dsc->border_width;
+
+    if(0 == radius){
+        return true;
+    }
+
+    uint8_t *mask_buf = gt_mem_malloc(radius * radius);
+    if(!mask_buf){
+        GT_LOGE(GT_LOG_TAG_MEM , "draw radius malloc fail!!! size: %d" , radius*radius);
+        return false;
+    }
+
+    gt_area_st area_mask;
+    gt_draw_blend_dsc_st blend_dsc = {
+        .opa        = dsc->bg_opa,
+        .color_fill = dsc->bg_color,
+        .mask_area  = &area_mask,
+        .dst_area   = &area_mask,
+        .mask_buf    = mask_buf,
+    };
+
+    gt_radius_mask_st radius_mask={0};
+    gt_size_t in_radius = radius - border_width;
+    bool flag = false ;
+
+
+    flag = _gt_get_radius_mask( &radius_mask, radius);
+    if(!flag){
+        goto radius_fail;
+    }
+
+    if(border_width > 0){
+        blend_dsc.color_fill = dsc->border_color;
+        blend_dsc.opa = dsc->border_opa;
+    }
+
+    // top-left
+    area_mask.x = coords->x;
+    area_mask.y = coords->y;
+    area_mask.w = radius;
+    area_mask.h = radius;
+    gt_memset_0(mask_buf , radius * radius);
+    _gt_redius_put_mask_buf( &radius_mask , mask_buf , blend_dsc.opa , radius , R_DIR_TOP_LEFT);
+    gt_draw_blend(draw_ctx , &blend_dsc);
+    // top-right
+    area_mask.x = coords->x + coords->w - radius;
+    gt_memset_0(mask_buf , radius * radius);
+    _gt_redius_put_mask_buf( &radius_mask , mask_buf , blend_dsc.opa , radius , R_DIR_TOP_RIGHT);
+    gt_draw_blend(draw_ctx , &blend_dsc);
+    // bottom-left
+    area_mask.x = coords->x;
+    area_mask.y = coords->y + coords->h - radius;
+    gt_memset_0(mask_buf , radius * radius);
+    _gt_redius_put_mask_buf( &radius_mask , mask_buf , blend_dsc.opa , radius , R_DIR_BOTTOM_LEFT);
+    gt_draw_blend(draw_ctx , &blend_dsc);
+    // // bottom-right
+    area_mask.x = coords->x + coords->w - radius;
+    gt_memset_0(mask_buf , radius * radius);
+    _gt_redius_put_mask_buf( &radius_mask , mask_buf , blend_dsc.opa , radius , R_DIR_BOTTOM_RIGHT);
+    gt_draw_blend(draw_ctx , &blend_dsc);
+    //
+
+    _gt_radius_mask_free(&radius_mask, radius);
+
+    flag = false;
+    if(border_width > 0 && in_radius > 0){
+        flag = _gt_get_radius_mask( &radius_mask, in_radius);
+        if(!flag){
+            goto radius_fail;
+        }
+        blend_dsc.color_fill = dsc->bg_color;
+        blend_dsc.opa = dsc->bg_opa;
+
+        // top-left
+        area_mask.x = coords->x + border_width;
+        area_mask.y = coords->y + border_width;
+        area_mask.w = in_radius;
+        area_mask.h = in_radius;
+        gt_memset_0(mask_buf , radius * radius);
+        _gt_redius_put_mask_buf( &radius_mask , mask_buf , blend_dsc.opa , in_radius , R_DIR_TOP_LEFT);
+        gt_draw_blend(draw_ctx , &blend_dsc);
+        // top-right
+        area_mask.x = coords->x + coords->w - in_radius - border_width;
+        gt_memset_0(mask_buf , radius * radius);
+        _gt_redius_put_mask_buf( &radius_mask , mask_buf , blend_dsc.opa , in_radius , R_DIR_TOP_RIGHT);
+        gt_draw_blend(draw_ctx , &blend_dsc);
+        // bottom-left
+        area_mask.x = coords->x + border_width;
+        area_mask.y = coords->y + coords->h - in_radius - border_width;
+        gt_memset_0(mask_buf , radius * radius);
+        _gt_redius_put_mask_buf( &radius_mask , mask_buf , blend_dsc.opa , in_radius , R_DIR_BOTTOM_LEFT);
+        gt_draw_blend(draw_ctx , &blend_dsc);
+        // bottom-right
+        area_mask.x = coords->x + coords->w - in_radius - border_width;
+        gt_memset_0(mask_buf , radius * radius);
+        _gt_redius_put_mask_buf( &radius_mask , mask_buf , blend_dsc.opa , in_radius , R_DIR_BOTTOM_RIGHT);
+        gt_draw_blend(draw_ctx , &blend_dsc);
+
+        _gt_radius_mask_free(&radius_mask, in_radius);
+    }
+
+    if(mask_buf){
+        gt_mem_free(mask_buf) ;
+        mask_buf = NULL;
+    }
+
+    return true;
+
+radius_fail:
+
+    if(mask_buf){
+        gt_mem_free(mask_buf) ;
+        mask_buf = NULL;
+    }
+
+    return false;
+
+}
+
+
+static bool _gt_arc_mask_get(_gt_arc_mask_st * p)
+{
+    if(p->s_y > p->arc_area->h || p->s_x > p->arc_area->w){
+        return false;
+    }
+
+    uint16_t y = 0 , aa_len = 0 , x_start = 0;
+    if(p->s_y < p->radius){
+        y = p->radius - p->s_y - 1;
+    }
+    else{
+        y = p->s_y - (p->arc_area->h - p->radius);
+    }
+
+    gt_opa_t* aa_opa = _gt_get_next_line(p->r_mask , y , &aa_len , &x_start);
+    gt_opa_t  tmp_opa;
+    int k = p->s_x;
+    int pos_x_right = k + p->arc_area->w - p->radius + x_start;
+    int pos_x_left = k + p->radius - x_start - 1;
+    int i;
+
+    if(false == p->outer){
+        for(i = 0 ; i < aa_len ; i++)
+        {
+            tmp_opa = aa_opa[aa_len - i - 1];
+            if(pos_x_right + i >= 0 && pos_x_right + i < p->len) {
+                p->mask_line[pos_x_right + i] = (gt_per_255(tmp_opa) * p->mask_line[pos_x_right + i]) >> 15;
+            }
+            if(pos_x_left - i >= 0 && pos_x_left - i < p->len) {
+                p->mask_line[pos_x_left - i] = (gt_per_255(tmp_opa) * p->mask_line[pos_x_right + i]) >> 15;
+            }
+        }
+
+        pos_x_right = GT_MAX(0 , (GT_MIN(pos_x_right + aa_len , p->len)));
+        gt_memset_0(&p->mask_line[pos_x_right] , p->len -pos_x_right );
+
+        pos_x_left = GT_MAX(0 , (GT_MIN(pos_x_left - aa_len + 1  , p->len)));
+        gt_memset_0(&p->mask_line[0] , pos_x_left);
+    }
+    else{
+        for(i = 0 ; i < aa_len ; i++)
+        {
+            tmp_opa = 255 - aa_opa[aa_len - i - 1];
+            if(pos_x_right + i >= 0 && pos_x_right + i < p->len) {
+                p->mask_line[pos_x_right + i] = (gt_per_255(tmp_opa) * p->mask_line[pos_x_right + i]) >> 15;
+            }
+            if(pos_x_left - i >= 0 && pos_x_left - i < p->len) {
+                p->mask_line[pos_x_left - i] = (gt_per_255(tmp_opa) * p->mask_line[pos_x_right + i]) >> 15;
+            }
+        }
+
+        int clr_s = GT_MAX(0 , (GT_MIN(pos_x_left + 1 , p->len)));
+        int clr_len = GT_MAX(0 , (GT_MIN(pos_x_right - clr_s , p->len - clr_s)));
+        gt_memset_0(&p->mask_line[clr_s] , clr_len);
+    }
+
+    return true;
+}
+
+
+/* ----------------------------------------------------------------------------------------------------------- */
+
 void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
 {
     if (dsc->bg_opa <= GT_OPA_MIN) return;
@@ -317,6 +817,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         return ;
     }
 
+#if 0
     /* draw circle or draw a line*/
     if(radius > 0 ){
         uint32_t mem_size = (radius << 1) * (radius << 1) * sizeof(gt_color_t);
@@ -451,6 +952,16 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
 
         if(dsc->reg.is_line) {  /* draw line */
             gt_draw_line(dsc->line,draw_ctx, &blend_dsc,mask_left_up,(uint8_t *)color_circle_p,coords);
+        }
+    }
+
+
+#endif
+
+    if(radius > 0)
+    {
+        if(!_gt_draw_radius( draw_ctx , dsc , coords )){
+            radius = 0;
         }
     }
 
