@@ -88,6 +88,15 @@ static void _gt_disp_set_state(gt_disp_st * disp, uint8_t state)
     disp->drv->busy = state;
 }
 
+static gt_obj_st * _get_scr_prev(void)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    if( NULL == disp ){
+        return NULL;
+    }
+    return disp->scr_prev;
+}
+
 /**
  * @brief foreach obj send draw start event
  *
@@ -724,15 +733,6 @@ gt_obj_st * gt_disp_get_scr(void)
     return disp->scr_act;
 }
 
-gt_obj_st * gt_disp_get_scr_prev(void)
-{
-    gt_disp_st * disp = gt_disp_get_default();
-    if( NULL == disp ){
-        return NULL;
-    }
-    return disp->scr_prev;
-}
-
 void gt_disp_load_scr(gt_obj_st * scr)
 {
     gt_disp_load_scr_anim(scr, GT_SCR_ANIM_TYPE_NONE, 300, 0, true);
@@ -884,7 +884,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
         .area_dirty = *coords,
         .area_flush = {0, 0, scr_width, GT_REFRESH_FLUSH_LINE_PRE_TIME},
         .scr =  gt_disp_get_scr(),          // Only x, y, w, h animation changes are recorded
-        .scr_prev = gt_disp_get_scr_prev(), // Only x, y, w, h animation changes are recorded
+        .scr_prev = _get_scr_prev(), // Only x, y, w, h animation changes are recorded
         /** 旧界面在可视窗口中的区域 */
         .view_scr_abs = {0, 0, 0, 0},
         .view_scr_prev_abs = {0, 0, 0, 0},

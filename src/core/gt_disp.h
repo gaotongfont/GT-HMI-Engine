@@ -61,8 +61,6 @@ void gt_disp_set_scr(gt_obj_st * scr);
  */
 gt_obj_st * gt_disp_get_scr(void);
 
-gt_obj_st * gt_disp_get_scr_prev(void);
-
 /**
  * @brief display screen
  *
