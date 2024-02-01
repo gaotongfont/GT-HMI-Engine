@@ -782,10 +782,10 @@ static bool _gt_get_radius_mask_buf(gt_opa_t* mask_line , gt_size_t x , gt_size_
         {
             tmp_opa = aa_opa[aa_len - i - 1];
             if(pos_x_right + i >= 0 && pos_x_right + i < len) {
-                mask_line[pos_x_right + i] = (gt_per_255(tmp_opa) * mask_line[pos_x_right + i]) >> 15;
+                mask_line[pos_x_right + i] = tmp_opa; //(gt_per_255(tmp_opa) * mask_line[pos_x_right + i]) >> 15;
             }
             if(pos_x_left - i >= 0 && pos_x_left - i < len) {
-                mask_line[pos_x_left - i] = (gt_per_255(tmp_opa) * mask_line[pos_x_right + i]) >> 15;
+                mask_line[pos_x_left - i] = tmp_opa; //(gt_per_255(tmp_opa) * mask_line[pos_x_right - i]) >> 15;
             }
         }
 
@@ -800,10 +800,10 @@ static bool _gt_get_radius_mask_buf(gt_opa_t* mask_line , gt_size_t x , gt_size_
         {
             tmp_opa = 255 - aa_opa[aa_len - i - 1];
             if(pos_x_right + i >= 0 && pos_x_right + i < len) {
-                mask_line[pos_x_right + i] = (gt_per_255(tmp_opa) * mask_line[pos_x_right + i]) >> 15;
+                mask_line[pos_x_right + i] = tmp_opa; //(gt_per_255(tmp_opa) * mask_line[pos_x_right + i]) >> 15;
             }
             if(pos_x_left - i >= 0 && pos_x_left - i < len) {
-                mask_line[pos_x_left - i] = (gt_per_255(tmp_opa) * mask_line[pos_x_right + i]) >> 15;
+                mask_line[pos_x_left - i] = tmp_opa; //(gt_per_255(tmp_opa) * mask_line[pos_x_left - i]) >> 15;
             }
         }
 
@@ -880,11 +880,12 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
 
     gt_area_st area_bord = {0};
     gt_area_copy(&area_bord , coords);
+    uint16_t r_bd = GT_MIN(dsc->radius , (GT_MIN(area_bord.w >> 1 , area_bord.h >> 1)));
 
     gt_area_st area_bg = {0};
     area_bg = gt_area_reduce(area_bord , dsc->border_width);
 
-    uint16_t r_bg = (dsc->radius < dsc->border_width) ? 0 : dsc->radius - dsc->border_width;
+    uint16_t r_bg = (r_bd < dsc->border_width) ? 0 : r_bd - dsc->border_width;
     r_bg = GT_MIN(r_bg , (GT_MIN(area_bg.w >> 1 , area_bg.h >> 1)));
 
     // draw bg
@@ -936,7 +937,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
     blend_dsc.color_fill = dsc->border_color;
     // border opa should be used here, but there was no border opa before, so for compatibility, border opa is not used.
     // blend_dsc.opa = dsc->border_opa;
-    if(dsc->radius > 0){
+    if(r_bd > 0){
         gt_radius_mask_st in_r_mask = {0};
         if(!_gt_radius_mask_init(&in_r_mask , area_bg , r_bg , true)){
             GT_LOGE( GT_LOG_TAG_GUI ,"draw board radius init fail!!! radius = %d" , r_bg);
@@ -944,8 +945,8 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
         }
 
         gt_radius_mask_st out_r_mask = {0};
-        if(!_gt_radius_mask_init(&out_r_mask , area_bord , dsc->radius , false)){
-            GT_LOGE( GT_LOG_TAG_GUI ,"draw board radius init fail!!! radius = %d" , dsc->radius);
+        if(!_gt_radius_mask_init(&out_r_mask , area_bord , r_bd , false)){
+            GT_LOGE( GT_LOG_TAG_GUI ,"draw board radius init fail!!! radius = %d" , r_bd);
             return ;
         }
 
