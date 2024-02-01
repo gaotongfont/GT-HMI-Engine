@@ -60,6 +60,10 @@ typedef struct _gt_radius_mask_t{
     uint8_t *opa;
     uint16_t * opa_start;
     uint16_t * x_start;
+
+    gt_area_st area;
+    uint16_t radius;
+    uint8_t outer : 1; ///< 0: inner, 1: outer
 }gt_radius_mask_st;
 
 typedef enum {
@@ -69,16 +73,6 @@ typedef enum {
     R_DIR_BOTTOM_RIGHT
 }gt_radius_dir_et;
 
-typedef struct _gt_arc_mask_s{
-    gt_radius_mask_st* r_mask;
-    gt_opa_t* mask_line;
-    gt_area_st* arc_area;
-    uint16_t radius;
-    uint16_t s_x ;
-    uint16_t s_y ;
-    uint16_t len ;
-    uint16_t outer : 1;
-}_gt_arc_mask_st;
 /* macros ---------------------------------------------------------------*/
 
 
