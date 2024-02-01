@@ -54,7 +54,7 @@ typedef struct _gt_attr_line_s
 }gt_attr_line_st;
 
 typedef struct _gt_attr_rect_reg_s {
-    uint8_t is_fill : 1;    ///< fill inside area by fg_color
+    uint8_t is_fill : 1;    ///< fill inside area by bg_color
     uint8_t is_line : 1;    ///< use straight line
     uint8_t reserved : 6;   ///< reserved
 }_gt_attr_rect_reg_st;
@@ -203,11 +203,13 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area );
 /**
  * @brief use bresenham algorithm create a line obj
  *
- * @param x0 y0 start point
- * @param x1 y1 end point
+ * @param x0 start point
+ * @param y0 start point
+ * @param x1 end point
+ * @param y1 end point
  * @param fg_color line color
  */
-void gt_bresenham_line(int x0, int y0, int x1, int y1,gt_color_t fg_color);
+void gt_bresenham_line(gt_size_t x0, gt_size_t y0, gt_size_t x1, gt_size_t y1,gt_color_t fg_color);
 
 /**
  * @brief Draw a rectangle
@@ -217,16 +219,6 @@ void gt_bresenham_line(int x0, int y0, int x1, int y1,gt_color_t fg_color);
  * @param color
  */
 void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * color );
-
-/**
- * @brief Draw a arch
- *
- * @param arch_attr
- * @param area
- */
-void gt_graph_arch(gt_attr_arch_st * arch_attr, gt_area_st * area );
-
-// void _gt_graph_dot_circle(gt_attr_circle_st * circle_attr, gt_area_st * area); // undefined
 
 /**
  * @brief draw dot to color_arr

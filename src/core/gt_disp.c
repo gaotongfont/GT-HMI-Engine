@@ -88,6 +88,15 @@ static void _gt_disp_set_state(gt_disp_st * disp, uint8_t state)
     disp->drv->busy = state;
 }
 
+static gt_obj_st * _get_scr_prev(void)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    if( NULL == disp ){
+        return NULL;
+    }
+    return disp->scr_prev;
+}
+
 /**
  * @brief foreach obj send draw start event
  *
@@ -103,7 +112,14 @@ static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
     }
 }
 
-static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param)
+/**
+ * @brief Checked the obj is display area visible
+ *
+ * @param obj The object to be checked and copied
+ * @param param
+ * @param area_parent All parent displayable areas
+ */
+static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent)
 {
     if (false == gt_area_is_intersect_screen(&param->disp->area_disp, &obj->area)) {
         return ;
@@ -117,7 +133,7 @@ static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
     gt_draw_ctx_t draw_ctx = {
         /** Page change animation */
         .valid    = param->scr_prev ? &param->valid : NULL,
-        .parent_area = (obj->inside && obj->parent) ? &obj->parent->area : NULL,
+        .parent_area = obj->inside ? &area_parent : NULL,
         .buf      = disp->vbd_color,
         .buf_area = disp->area_disp,
     };
@@ -126,21 +142,43 @@ static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
     obj->class->_init_cb(obj);
 }
 
-static void _gt_disp_check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param)
+/**
+ * @brief
+ *
+ * @param obj The object to be checked and copied
+ * @param param
+ * @param area_parent All parent displayable areas
+ */
+static void _check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent)
 {
     int16_t idx = 0;
     gt_obj_st * child_p = NULL;
+    gt_area_st area_cross = area_parent;
+
+    if (GT_TYPE_SCREEN != gt_obj_class_get_type(obj)) {
+        if (false == gt_area_cover_screen(&area_parent, &obj->area, &area_cross)) {
+            if (GT_TYPE_GROUP != gt_obj_class_get_type(obj)) {
+                /** The Group ignores the area effects */
+                return ;
+            }
+        }
+    }
 
     while( idx < obj->cnt_child ) {
         child_p = obj->child[idx];
-        gt_check_obj_visible_and_copy(child_p, param);
+        gt_check_obj_visible_and_copy(child_p, param, area_cross);
 
         if( child_p->cnt_child != 0 ){
-            _gt_disp_check_and_copy_foreach(child_p, param);
+            _check_and_copy_foreach(child_p, param, area_cross);
         }
 
         ++idx;
     }
+}
+
+static inline void _gt_disp_check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param) {
+    /** The screen display area */
+    _check_and_copy_foreach(obj, param, param->disp->area_disp);
 }
 
 static void _scr_anim_exec_x_cb(gt_obj_st * obj, int32_t x) {
@@ -164,6 +202,13 @@ static void _scr_anim_start_cb(struct gt_anim_s * anim) {
 
 static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_disp_st * disp = gt_disp_get_default();
+    if (NULL == disp) {
+        return;
+    }
+    if (disp->stack && disp->stack->need_backoff_scr == disp->scr_prev) {
+        gt_mem_free(disp->stack);
+        disp->stack = NULL;
+    }
     if (disp->scr_prev && disp->scr_prev->delate) {
         disp->scr_prev->using = 0;
         gt_obj_destroy(disp->scr_prev);
@@ -172,7 +217,6 @@ static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     disp->scr_prev      = NULL;
     disp->area_act.x    = 0;
     disp->area_act.y    = 0;
-    disp->scr_anim_type = GT_SCR_ANIM_TYPE_NONE;
 
     disp->scr_act->area.w = gt_disp_get_res_hor(NULL);
     disp->scr_act->area.h = gt_disp_get_res_ver(NULL);
@@ -185,6 +229,11 @@ static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
 }
 
 static void _scr_anim_del_ready_cb(struct gt_anim_s * anim) {
+    gt_disp_st * disp = gt_disp_get_default();
+    if (disp && disp->stack && disp->stack->need_backoff_scr == anim->target) {
+        gt_mem_free(disp->stack);
+        disp->stack = NULL;
+    }
     anim->target->using = 0;
     gt_obj_destroy(anim->target);
 }
@@ -684,15 +733,6 @@ gt_obj_st * gt_disp_get_scr(void)
     return disp->scr_act;
 }
 
-gt_obj_st * gt_disp_get_scr_prev(void)
-{
-    gt_disp_st * disp = gt_disp_get_default();
-    if( NULL == disp ){
-        return NULL;
-    }
-    return disp->scr_prev;
-}
-
 void gt_disp_load_scr(gt_obj_st * scr)
 {
     gt_disp_load_scr_anim(scr, GT_SCR_ANIM_TYPE_NONE, 300, 0, true);
@@ -844,7 +884,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
         .area_dirty = *coords,
         .area_flush = {0, 0, scr_width, GT_REFRESH_FLUSH_LINE_PRE_TIME},
         .scr =  gt_disp_get_scr(),          // Only x, y, w, h animation changes are recorded
-        .scr_prev = gt_disp_get_scr_prev(), // Only x, y, w, h animation changes are recorded
+        .scr_prev = _get_scr_prev(), // Only x, y, w, h animation changes are recorded
         /** 旧界面在可视窗口中的区域 */
         .view_scr_abs = {0, 0, 0, 0},
         .view_scr_prev_abs = {0, 0, 0, 0},
@@ -948,6 +988,52 @@ void gt_disp_invalid_area(gt_obj_st * obj)
         return;
     }
     _gt_disp_refr_append_area(&obj->area);
+}
+
+void gt_disp_set_backoff_scr(gt_obj_st * need_backoff_scr, gt_scr_init_func_cb_t init_cb, uint32_t time, uint32_t delay)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    if (NULL == disp) {
+        return;
+    }
+    if (NULL == disp->stack) {
+        disp->stack = gt_mem_malloc(sizeof(_gt_disp_stack_st));
+        if (NULL == disp->stack) {
+            return;
+        }
+    }
+    disp->stack->need_backoff_scr = need_backoff_scr;
+    disp->stack->init_func_cb = init_cb;
+    disp->stack->time = time;
+    disp->stack->delay = delay;
+}
+
+void gt_disp_go_backoff_scr(void)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    if (NULL == disp) {
+        return;
+    }
+    _gt_disp_stack_st * prev_stack = disp->stack;
+    if (NULL == prev_stack) {
+        return;
+    }
+    gt_obj_st * step_back_scr = prev_stack->init_func_cb();
+    if (NULL == step_back_scr) {
+        return;
+    }
+    gt_scr_anim_type_et type = disp->scr_anim_type;
+
+    if (GT_SCR_ANIM_TYPE_MOVE_LEFT == type) { type = GT_SCR_ANIM_TYPE_MOVE_RIGHT; }
+    else if (GT_SCR_ANIM_TYPE_MOVE_RIGHT == type) { type = GT_SCR_ANIM_TYPE_MOVE_LEFT; }
+    else if (GT_SCR_ANIM_TYPE_MOVE_UP == type) { type = GT_SCR_ANIM_TYPE_MOVE_DOWN; }
+    else if (GT_SCR_ANIM_TYPE_MOVE_DOWN == type) { type =  GT_SCR_ANIM_TYPE_MOVE_UP; }
+    else if (GT_SCR_ANIM_TYPE_COVER_LEFT == type) { type = GT_SCR_ANIM_TYPE_COVER_RIGHT; }
+    else if (GT_SCR_ANIM_TYPE_COVER_RIGHT == type) { type = GT_SCR_ANIM_TYPE_COVER_LEFT; }
+    else if (GT_SCR_ANIM_TYPE_COVER_UP == type) { type = GT_SCR_ANIM_TYPE_COVER_DOWN; }
+    else if (GT_SCR_ANIM_TYPE_COVER_DOWN == type) { type = GT_SCR_ANIM_TYPE_COVER_UP; }
+
+    gt_disp_load_scr_anim(step_back_scr, type, prev_stack->time, prev_stack->delay, true);
 }
 
 /* end ------------------------------------------------------------------*/

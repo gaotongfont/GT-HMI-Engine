@@ -39,14 +39,14 @@ static gt_obj_st * image2 = NULL;
 /* static functions -----------------------------------------------------*/
 
 static void _image_one_cb(gt_event_st * e) {
-    printf("image one call back\n");
+    GT_LOGD(GT_LOG_TAG_EXTRA, "image one call back");
     static int _cnt_1 = 0;
     gt_img_set_src(image, (_cnt_1++ % 2) ? "./2.png" : "./50x50.png");
     gt_disp_load_scr(_screen);
 }
 
 static void _image_two_cb(gt_event_st * e) {
-    printf("image two call back\n");
+    GT_LOGD(GT_LOG_TAG_EXTRA, "image two call back");
     static int _cnt_2 = 0;
     gt_img_set_src(image2, (_cnt_2++ % 2) ? "./50x50.png" : "./2.png");
     gt_disp_load_scr(_screen);

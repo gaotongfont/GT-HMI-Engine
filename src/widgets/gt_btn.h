@@ -59,6 +59,22 @@ void gt_btn_set_color_pressed(gt_obj_st * btn, gt_color_t color);
 void gt_btn_set_color_background(gt_obj_st * btn, gt_color_t color);
 
 /**
+ * @brief set the border color
+ *
+ * @param btn button obj
+ * @param color border color
+ */
+void gt_btn_set_color_border(gt_obj_st * btn, gt_color_t);
+
+/**
+ * @brief set the border color
+ *
+ * @param btn button obj
+ * @param width border width
+ */
+void gt_btn_set_border_width(gt_obj_st * btn, uint8_t width);
+
+/**
  * @brief set button text
  *
  * @param btn button obj

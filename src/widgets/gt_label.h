@@ -16,7 +16,6 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
-#include "stdio.h"
 #include "stdarg.h"
 #include "stdlib.h"
 

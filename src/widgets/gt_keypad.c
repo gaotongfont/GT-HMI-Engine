@@ -18,6 +18,7 @@
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
+#include "../hal/gt_hal_disp.h"
 #include "../font/gt_symbol.h"
 #include "gt_conf_widgets.h"
 
@@ -281,8 +282,6 @@ static char const * const _gt_keypad_get_click_kv(gt_obj_st * obj)
 
 static void _gt_keypad_set_kv_selected(gt_obj_st * keypad, char const * const kv)
 {
-    extern void _gt_disp_refr_append_area(gt_area_st * area);
-
     _gt_keypad_st * style = keypad->style;
     gt_area_st area;
     char * kv_old = style->kv_selected;
@@ -598,88 +597,61 @@ static _gt_keypad_st * _get_checked_style(gt_obj_st * keypad) {
     return style;
 }
 
-static void _gt_keypad_input_event_continue_cb(gt_obj_st * keypad) {
-    _gt_keypad_st * style = _get_checked_style(keypad);
-    if (NULL == style) {
-        return;
-    }
+static bool _special_key_handler(_gt_keypad_st * style) {
     if( strcmp(style->kv_selected, GT_SYMBOL_EN) == 0 ||
-        strcmp(style->kv_selected, GT_SYMBOL_SPELL) == 0)
-    {
+        strcmp(style->kv_selected, GT_SYMBOL_SPELL) == 0) {
         gt_input_append_value(style->target, _GT_KEYPAD_TAG_SPACE);
     }
-    else if(strcmp(style->kv_selected, GT_SYMBOL_BACKSPACE) == 0 ){
+    else if(strcmp(style->kv_selected, GT_SYMBOL_BACKSPACE) == 0) {
         gt_input_del_value(style->target);
     }
-    else if( strcmp(style->kv_selected, GT_SYMBOL_LEFT) == 0 ){
+    else if(strcmp(style->kv_selected, GT_SYMBOL_LEFT) == 0) {
         gt_input_move_left_pos_cursor(style->target);
     }
-    else if( strcmp(style->kv_selected, GT_SYMBOL_RIGHT) == 0 ){
+    else if( strcmp(style->kv_selected, GT_SYMBOL_RIGHT) == 0 ) {
         gt_input_move_right_pos_cursor(style->target);
     }
-    else if( strcmp(style->kv_selected, GT_SYMBOL_NEW_LINE) == 0 ){
+    else if( strcmp(style->kv_selected, GT_SYMBOL_NEW_LINE) == 0 ) {
         gt_input_append_value(style->target, _GT_KEYPAD_TAG_NEW_LINE);
     }
+    else {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * @brief
+ *
+ * @param keypad
+ * @return true Normal process finish.
+ * @return false Need to go further processing.
+ */
+static bool _gt_keypad_input_event_continue_cb(gt_obj_st * keypad) {
+    _gt_keypad_st * style = _get_checked_style(keypad);
+    if (NULL == style) {
+        return true;
+    }
+    return _special_key_handler(style);
 }
 
 static void _gt_keypad_input_event_cb(gt_obj_st * keypad) {
-#if 01
     _gt_keypad_st * style = _get_checked_style(keypad);
     if (NULL == style) {
         return;
     }
-#else
-    _gt_keypad_st * style = keypad->style;
-    if( style->info.handler_cb != NULL ){
-        style->info.handler_cb(keypad);
+    if (_special_key_handler(style)) {
         return;
     }
 
-    if( style->kv_selected == NULL ){
-        return;
-    }
-
-    if (_gt_keypad_is_switch_key_mapping_pressed(keypad, false)) {
-        return;
-    }
-
-    if(style->target == NULL) {
-        return;
-    }
-
-    if(GT_KEYPAD_MODE_SPELL ==  style->info.mode) {
-        _gt_keypad_spell_event_cb(keypad);
-        return ;
-    }
-#endif
-
-    if( strcmp(style->kv_selected, GT_SYMBOL_EN) == 0 ||
-        strcmp(style->kv_selected, GT_SYMBOL_SPELL) == 0)
-    {
-        gt_input_append_value(style->target, _GT_KEYPAD_TAG_SPACE);
-    }
-    else if(strcmp(style->kv_selected, GT_SYMBOL_BACKSPACE) == 0 ){
-        gt_input_del_value(style->target);
-    }
-    else if( strcmp(style->kv_selected, GT_SYMBOL_LEFT) == 0 ){
-        gt_input_move_left_pos_cursor(style->target);
-    }
-    else if( strcmp(style->kv_selected, GT_SYMBOL_RIGHT) == 0 ){
-        gt_input_move_right_pos_cursor(style->target);
-    }
-    else if( strcmp(style->kv_selected, GT_SYMBOL_NEW_LINE) == 0 ){
-        gt_input_append_value(style->target, _GT_KEYPAD_TAG_NEW_LINE);
-    }
-    else{
-        if (!_gt_keypad_check_key_is_ctl(style->kv_selected)) {
-            uint8_t * tmp_str = _gt_keypad_get_spell_text(style->kv_selected , style->info.mode);
-            if(tmp_str)
-            {
-                gt_input_append_value(style->target, (char * )tmp_str);
-                return ;
-            }
-            gt_input_append_value(style->target, style->kv_selected);
+    if (!_gt_keypad_check_key_is_ctl(style->kv_selected)) {
+        uint8_t * tmp_str = _gt_keypad_get_spell_text(style->kv_selected , style->info.mode);
+        if(tmp_str)
+        {
+            gt_input_append_value(style->target, (char * )tmp_str);
+            return ;
         }
+        gt_input_append_value(style->target, style->kv_selected);
     }
 }
 
@@ -997,7 +969,16 @@ gt_obj_st * gt_keypad_create(gt_obj_st * parent)
  */
 void gt_keypad_set_target(gt_obj_st * keypad, gt_obj_st * ta)
 {
-    _gt_keypad_st * style = keypad->style;
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
+    if (NULL == ta) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->target = ta;
     gt_event_send(keypad, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -1011,89 +992,185 @@ void gt_keypad_set_target(gt_obj_st * keypad, gt_obj_st * ta)
  */
 void gt_keypad_set_map(gt_obj_st * keypad,  gt_keypad_map_st * map)
 {
-    _gt_keypad_st * style = keypad->style;
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->info.map = map;
     _gt_keypad_update_map(keypad, style->info.map);
 }
 
 void gt_keypad_set_handler_cb(gt_obj_st * keypad, keypad_handler_cb_t callback)
 {
-    _gt_keypad_st * style = keypad->style;
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->info.handler_cb = callback;
 }
 
 
 void gt_keypad_set_color_board(gt_obj_st * keypad, gt_color_t color)
 {
-    _gt_keypad_st * style = keypad->style;
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->color_board = color;
 }
 void gt_keypad_set_color_key(gt_obj_st * keypad, gt_color_t color)
 {
-    _gt_keypad_st * style = keypad->style;
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->color_key = color;
 }
 void gt_keypad_set_color_ctrl_key(gt_obj_st * keypad, gt_color_t color)
 {
-    _gt_keypad_st * style = keypad->style;
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->color_ctrl = color;
 }
 void gt_keypad_set_font_color(gt_obj_st * keypad, gt_color_t color)
 {
-    _gt_keypad_st * style = keypad->style;
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->font_color = color;
     gt_event_send(keypad, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_keypad_set_font_family_cn(gt_obj_st * keypad, gt_family_t family)
 {
-    _gt_keypad_st * style = keypad->style;
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->font_info.style_cn = family;
 }
 void gt_keypad_set_font_family_en(gt_obj_st * keypad, gt_family_t family)
 {
-    _gt_keypad_st * style = keypad->style;
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->font_info.style_en = family;
 }
 void gt_keypad_set_font_family_fl(gt_obj_st * keypad, gt_family_t family)
 {
-    _gt_keypad_st * style = keypad->style;
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->font_info.style_fl = family;
 }
 
 void gt_keypad_set_font_family_numb(gt_obj_st * keypad, gt_family_t family)
 {
-    _gt_keypad_st * style = keypad->style;
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->font_info.style_numb = family;
 }
 
 void gt_keypad_set_font_size(gt_obj_st * keypad, uint8_t size)
 {
-    _gt_keypad_st * style = keypad->style;
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->font_info.size = size;
 }
 void gt_keypad_set_font_gray(gt_obj_st * keypad, uint8_t gray)
 {
-    _gt_keypad_st * style = keypad->style;
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->font_info.gray = gray;
 }
 void gt_keypad_set_font_align(gt_obj_st * keypad, uint8_t align)
 {
-    _gt_keypad_st * style = keypad->style;
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->font_align = align;
 }
 void gt_keypad_set_font_thick_en(gt_obj_st * keypad, uint8_t thick)
 {
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->font_info.thick_en = thick;
 }
 void gt_keypad_set_font_thick_cn(gt_obj_st * keypad, uint8_t thick)
 {
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->font_info.thick_cn = thick;
 }
 void gt_keypad_set_space(gt_obj_st * keypad, uint8_t space_x, uint8_t space_y)
 {
+    if (NULL == keypad) {
+        return;
+    }
+    if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
+        return;
+    }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
     style->space_x = space_x;
     style->space_y = space_y;

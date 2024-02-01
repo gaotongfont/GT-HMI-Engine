@@ -19,15 +19,13 @@ extern "C" {
 
 /* define ---------------------------------------------------------------*/
 struct gt_obj_s;
-struct _gt_event_s;
+
 
 /* typedef --------------------------------------------------------------*/
 /**
  * @brief interface for other widgets
- *
  */
-typedef struct _gt_obj_class_s
-{
+typedef struct _gt_obj_class_s {
     void (*_init_cb)(struct gt_obj_s *);
     void (*_deinit_cb)(struct gt_obj_s *);
     void (*_event_cb)(struct gt_obj_s *, struct _gt_event_s *);
@@ -67,13 +65,19 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
 void _gt_obj_class_destroy(struct gt_obj_s * self);
 
 /**
- * @brief
+ * @brief Multiple properties that can be inherited from the superclass
  *
- * @param obj
- * @param parent
+ * @param obj The object to be inherited
+ * @param parent The parent object
  */
 void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_obj_s * parent);
 
+/**
+ * @brief Get widget type
+ *
+ * @param obj
+ * @return gt_obj_type_et @see gt_obj_type_et
+ */
 gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj);
 
 #ifdef __cplusplus

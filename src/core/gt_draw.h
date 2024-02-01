@@ -37,7 +37,7 @@ typedef struct _gt_draw_valid_s {
 
     uint8_t is_prev : 1;        ///<Whether the previous screen is valid
     uint8_t is_hor  : 1;        ///<Toggle the effect of the screen, the direction is horizontal
-    uint8_t is_over_top : 1;
+   uint8_t is_over_top : 1;     ///<Anim widget is over the top screen
     uint8_t reserved: 5;
 }_gt_draw_valid_st;
 

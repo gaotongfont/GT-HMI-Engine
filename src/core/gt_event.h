@@ -94,7 +94,7 @@ typedef enum gt_event_type_e{
     GT_EVENT_TYPE_ALL = 0xFFFFFFF,
 }gt_event_type_et;
 
-typedef struct _gt_event_s{
+typedef struct _gt_event_s {
     struct gt_obj_s * target;
     void * user_data;
     void * param;

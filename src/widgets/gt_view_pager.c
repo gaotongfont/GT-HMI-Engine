@@ -58,6 +58,7 @@ struct _reg_s {
 
 typedef struct _gt_view_pager_s {
     struct _reg_s reg;
+    uint16_t width;
     gt_color_t color_glass;
 }_gt_view_pager_st;
 
@@ -99,18 +100,16 @@ static void _draw_tip_bar(gt_obj_st * obj, gt_attr_rect_st * rect_attr) {
 
     rect_attr->bg_opa = GT_OPA_50;
 
-    // FIX obj->parent width when screen move left or right
-    area_tip.x = ((obj->parent->area.w - total_width) >> 1) + _TIP_BAR_POINT_UNSELECT_OFFSET_X;
+    area_tip.x = ((style->width - total_width) >> 1) + _TIP_BAR_POINT_UNSELECT_OFFSET_X;
     for (i = 0; i < count; i++) {
         area_tip.w = _TIP_BAR_POINT_HEIGHT;
         draw_bg(obj->draw_ctx, rect_attr, &area_tip);
         area_tip.x += _TIP_BAR_POINT_SELECT_WIDTH;
     }
 
-    // FIX the same as previous
-    area_tip.x = ((obj->parent->area.w - total_width) >> 1);
-    if (obj->parent->area.w) {
-        area_tip.x += -obj->process_attr.scroll.x * _TIP_BAR_POINT_SELECT_WIDTH / obj->parent->area.w;
+    area_tip.x = ((style->width - total_width) >> 1);
+    if (style->width) {
+        area_tip.x += -obj->process_attr.scroll.x * _TIP_BAR_POINT_SELECT_WIDTH / style->width;
     }
     area_tip.w = _TIP_BAR_POINT_HEIGHT << 1;
     rect_attr->bg_opa = GT_OPA_100;
@@ -119,7 +118,7 @@ static void _draw_tip_bar(gt_obj_st * obj, gt_attr_rect_st * rect_attr) {
 
 static void _init_cb(gt_obj_st * obj) {
     gt_attr_rect_st rect_attr;
-    gt_area_st area_bg = obj->area;     //FIX obj->area is screen area when COVER DOWN the screen, the height will change to middle value
+    gt_area_st area_bg = obj->area;
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj->style;
     uint16_t i = 0, width = area_bg.w / style->reg.count;
     uint16_t space = (width << 1) / 100;    /** 2% of screen width */
@@ -220,22 +219,22 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         break;
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_END: {
-        style->reg.index = gt_abs(obj->process_attr.scroll.x) / obj->parent->area.w;
+        style->reg.index = gt_abs(obj->process_attr.scroll.x) / style->width;
         break;
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_UP:
     case GT_EVENT_TYPE_INPUT_SCROLL_LEFT: {
-        value = gt_abs(obj->process_attr.scroll.x) / obj->parent->area.w;
+        value = gt_abs(obj->process_attr.scroll.x) / style->width;
         if (value) {
-            gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - (value - 1) * obj->parent->area.w, GT_ANIM_ON);
+            gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - (value - 1) * style->width, GT_ANIM_ON);
         }
         break;
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_DOWN:
     case GT_EVENT_TYPE_INPUT_SCROLL_RIGHT: {
-        value = (gt_abs(obj->process_attr.scroll.x) + obj->parent->area.w - 1) / obj->parent->area.w;
+        value = (gt_abs(obj->process_attr.scroll.x) + style->width - 1) / style->width;
         if ((value + 1) < style->reg.count) {
-            gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - ((value + 1) * obj->parent->area.w), GT_ANIM_ON);
+            gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - ((value + 1) * style->width), GT_ANIM_ON);
         }
         break;
     }
@@ -253,10 +252,6 @@ static inline bool _is_over_max_page(uint8_t val) {
     return ((val + 1) < _MAX_VIEW_PAGER_COUNT) ? false : true;
 }
 
-static void _update_max_width(gt_obj_st * obj, uint8_t fragment_count) {
-    obj->area.w = gt_disp_get_res_hor(NULL) * fragment_count;
-}
-
 static bool _child_is_group(gt_obj_st * obj) {
     return (GT_TYPE_GROUP == obj->class->type) ? true : false;
 }
@@ -271,9 +266,10 @@ gt_obj_st * gt_view_pager_create(gt_obj_st * parent)
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj->style;
     gt_memset(style, 0, sizeof(_gt_view_pager_st));
+    style->width = gt_disp_get_res_hor(NULL);
     obj->area.x = 0;
     obj->area.y = 0;
-    obj->area.w = gt_disp_get_res_hor(NULL);
+    obj->area.w = style->width;
     obj->area.h = gt_disp_get_res_ver(NULL);
     obj->opa = GT_OPA_30;
     obj->absorb = true;

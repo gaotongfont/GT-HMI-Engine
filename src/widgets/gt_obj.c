@@ -25,6 +25,9 @@
 #define OBJ_TYPE    GT_TYPE_OBJ
 #define MY_CLASS    &gt_obj_class
 
+#define OBJ_TYPE_SCREEN     GT_TYPE_SCREEN
+#define MY_CLASS_SCREEN     &gt_screen_class
+
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_style_obj_s {
     gt_color_t bgcolor;
@@ -35,7 +38,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e);
 
-const gt_obj_class_st gt_obj_class = {
+static const gt_obj_class_st gt_obj_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
@@ -43,18 +46,19 @@ const gt_obj_class_st gt_obj_class = {
     .size_style    = sizeof(_gt_style_obj_st)
 };
 
+static const gt_obj_class_st gt_screen_class = {
+    ._init_cb      = _init_cb,
+    ._deinit_cb    = _deinit_cb,
+    ._event_cb     = _event_cb,
+    .type          = GT_TYPE_SCREEN,
+    .size_style    = sizeof(_gt_style_obj_st)
+};
 
 /* macros ---------------------------------------------------------------*/
 
 
 
 /* static functions -----------------------------------------------------*/
-static void _gt_obj_init_style(gt_obj_st * obj)
-{
-    _gt_style_obj_st * style = obj->style;
-    style->bgcolor = gt_color_hex(0xFFFFFF);
-}
-
 static void _init_cb(gt_obj_st * obj) {
 }
 
@@ -160,9 +164,8 @@ void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
 
 gt_obj_st * gt_obj_create(gt_obj_st * parent)
 {
-    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_obj_init_style(obj);
-    GT_LOGV(GT_LOG_TAG_GUI, "create obj type:%d", *MY_CLASS.type);
+    gt_obj_st * obj = gt_obj_class_create(parent ? MY_CLASS : MY_CLASS_SCREEN, parent);
+    obj->bgcolor = gt_color_hex(0xFFFFFF);
     return obj;
 }
 
@@ -203,20 +206,18 @@ void gt_obj_destroy(gt_obj_st * obj)
 
 void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color)
 {
-    if( obj->class->type != GT_TYPE_OBJ ){
+    if( GT_TYPE_SCREEN != gt_obj_class_get_type(obj) ) {
         return;
     }
-    _gt_style_obj_st * style = obj->style;
-    style->bgcolor = color;
+    obj->bgcolor = color;
 }
 
 gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj)
 {
-    if( obj->class->type != GT_TYPE_OBJ ){
+    if( GT_TYPE_SCREEN != gt_obj_class_get_type(obj) ) {
         return gt_color_make(0, 0, 0);
     }
-    _gt_style_obj_st * style = obj->style;
-    return style->bgcolor;
+    return obj->bgcolor;
 }
 
 /* end ------------------------------------------------------------------*/

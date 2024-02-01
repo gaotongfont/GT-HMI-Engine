@@ -410,7 +410,6 @@ static void _gt_graph_arc_0_45(
 	gt_point_st coord, last, tmp;
 	gt_size_t w, h;
 	gt_size_t border_width = circle_attr->border_width;
-	// bool       is_fill = circle_attr->reg.is_fill;
 	gt_size_t  diff_x  = 0, diff_y = 0, remark_col;
 	uint8_t    count   = 0;
 
@@ -519,7 +518,6 @@ static void _gt_graph_arc_45_90(
 	gt_point_st coord, last, tmp;
 	gt_size_t w, h;
 	gt_size_t border_width = circle_attr->border_width;
-	// bool       is_fill = circle_attr->is_fill;
 	gt_size_t  diff_x  = 0, diff_y = 0, remark_row;
 	uint8_t    count   = 0;
 
@@ -666,9 +664,11 @@ void gt_graph_dot_to_gray(uint8_t *dot, uint8_t *out, gt_size_t w, gt_size_t h, 
 
 uint32_t gt_graph_get_gray(gt_color_t * color_out, gt_color_t color_from, gt_color_t color_to, gt_size_t gray, gt_size_t step)
 {
-	color_out->ch.red   = (GT_COLOR_GET_R(color_to) - GT_COLOR_GET_R(color_from)) * step / gray + GT_COLOR_GET_R(color_from);
-	color_out->ch.green = (GT_COLOR_GET_G(color_to) - GT_COLOR_GET_G(color_from)) * step / gray + GT_COLOR_GET_G(color_from);
-	color_out->ch.blue  = (GT_COLOR_GET_B(color_to) - GT_COLOR_GET_B(color_from)) * step / gray + GT_COLOR_GET_B(color_from);
+	*color_out = gt_color_make(
+		(GT_COLOR_GET_R(color_to) - GT_COLOR_GET_R(color_from)) * step / gray + GT_COLOR_GET_R(color_from),
+		(GT_COLOR_GET_G(color_to) - GT_COLOR_GET_G(color_from)) * step / gray + GT_COLOR_GET_G(color_from),
+		(GT_COLOR_GET_B(color_to) - GT_COLOR_GET_B(color_from)) * step / gray + GT_COLOR_GET_B(color_from)
+	);
 
 	return color_out->full;
 }
@@ -780,16 +780,18 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area)
 
 }
 
-void gt_bresenham_line(int x0, int y0, int x1, int y1,gt_color_t fg_color)
+void gt_bresenham_line(gt_size_t x0, gt_size_t y0, gt_size_t x1, gt_size_t y1,gt_color_t fg_color)
 {
-	gt_color_t * bufa = gt_disp_graph_get_buf_default();
+	gt_color_t * buf = gt_disp_graph_get_buf_default();
 
-	int dx =  abs(x1-x0), sx = x0<x1 ? 1 : -1;
-	int dy = -abs(y1-y0), sy = y0<y1 ? 1 : -1;
-	int err = dx+dy, e2; /* error value e_xy */
+	gt_size_t dx =  abs(x1-x0);
+	gt_size_t dy = -abs(y1-y0);
+	int32_t err = dx + dy, e2 = 0; /* error value e_xy */
+	int8_t sx = x0 < x1 ? 1 : -1;
+	int8_t sy = y0 < y1 ? 1 : -1;
 
-	for(;;){  /* loop */
-		GT_COLOR_SET_BUF(bufa, x0,y0, GT_SCREEN_WIDTH, GT_SCREEN_HEIGHT, GT_COLOR_GET(fg_color));
+	while(true) {
+		GT_COLOR_SET_BUF(buf, x0, y0, GT_SCREEN_WIDTH, GT_SCREEN_HEIGHT, GT_COLOR_GET(fg_color));
 
 		if (x0==x1 && y0==y1){
 			break;
@@ -810,14 +812,14 @@ void gt_bresenham_line(int x0, int y0, int x1, int y1,gt_color_t fg_color)
 void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * color)
 {
 	uint16_t is_fill, border_width;
-	gt_color_t fg_color, border_color;
+	gt_color_t bg_color, border_color;
 
 	is_fill = rect_attr->reg.is_fill;
 
 	border_width = rect_attr->border_width;
 	GT_COLOR_SET(border_color, GT_COLOR_GET(rect_attr->border_color));
 
-	GT_COLOR_SET(fg_color, GT_COLOR_GET(rect_attr->fg_color));
+	GT_COLOR_SET(bg_color, GT_COLOR_GET(rect_attr->bg_color));
 
 	gt_size_t w,h;
 	w = area->w;
@@ -833,7 +835,7 @@ void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * 
 
 	//draw center
 	if(is_fill){
-		gt_color_fill(color, all, fg_color);
+		gt_color_fill(color, all, bg_color);
 	}
 
 	//draw up border
@@ -949,29 +951,4 @@ void gt_graph_dot_draw_to_color(uint8_t * dot, gt_color_t * color, gt_area_st ar
 	}
 }
 
-/**
- * @brief draw rect func
- *
- * @param area disp area
- * @param clip rect visible area
- * @param attr rect attr
- */
-void gt_rect(const gt_area_st * area, const gt_area_st * clip, gt_attr_rect_st * attr)
-{
-	if( area->w < 1 || area->h < 1 ) return;
-
-//	draw_bg();
-}
-
-//void draw_bg(gt_draw_ctx_t * ctx, gt_attr_rect_st * attr, gt_area_st * area);
-//{
-//	gt_disp_st * disp = gt_disp_get_default();
-//	gt_color_t * color_buf_p = disp->vbd_color;// 10 lines color buf
-
-//
-//	//
-//	if( attr->radius == 0 ){
-//
-//	}
-//}
 /* end ------------------------------------------------------------------*/

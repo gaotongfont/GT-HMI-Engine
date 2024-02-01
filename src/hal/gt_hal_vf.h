@@ -15,7 +15,6 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "stdint.h"
-#include "stdio.h"
 #include "../others/gt_types.h"
 #include "gt_hal_fs.h"
 

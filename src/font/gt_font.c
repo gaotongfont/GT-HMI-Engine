@@ -628,7 +628,7 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
     }
 
     if(info->gray != 1){
-        res.dot_width = ((res.dot_width / info->gray) + 7 ) >> 3 << 3;
+        res.dot_width = (((((info->size * info->gray + 15) >> 4) << 4) / info->gray) >> 3) << 3;
     }
     return res;
 }
@@ -1039,7 +1039,18 @@ uint32_t gt_font_split(gt_font_st *fonts , uint32_t width , uint32_t dot_w ,uint
             _gt_font_en_in_this_range(&_font , (width - (*ret_w)) , space , &tmp_w , &ol_idx , &ol_w );
         }
 
-        if((*ret_w + tmp_w > width) || (0x0A == _font.utf8[0])){
+        if(tmp_w > width && 0 == ol_idx && 0 == idx){
+            if(is_convertor_language(*lan)){
+                len = ol_idx;
+                *ret_w = ol_w;
+            }
+            else{
+                *ret_w = tmp_w;
+                len = tmp_len;
+            }
+            goto _ret_dat;
+        }
+        else if((*ret_w + tmp_w > width) || (0x0A == _font.utf8[0])){
             if(0 == idx && width == dot_w){
                 len = ol_idx;
                 *ret_w = ol_w;

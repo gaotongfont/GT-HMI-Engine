@@ -42,7 +42,8 @@ struct _gt_draw_ctx_t;
 /* global functions / API interface -------------------------------------*/
 void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc);
 
-
+void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_dsc_st * dsc,
+                        uint16_t font_size, uint16_t dot_byte , uint8_t gray , const uint8_t* res);
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

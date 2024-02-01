@@ -82,6 +82,7 @@ typedef struct gt_obj_s {
     gt_obj_process_attr_st process_attr;
 
     style_widget_t style;
+    gt_color_t bgcolor;
 
     gt_area_st area;                    /* base area */
 
@@ -91,27 +92,27 @@ typedef struct gt_obj_s {
     uint8_t cnt_event;
     uint8_t opa;            /* @ref gt_color.h */
 
-    uint8_t state         : 3;    /* obj state @ref gt_state_et */
-    uint8_t using         : 1;    /* obj using state 0:using [Can not be free memory], 1:free */
-    uint8_t delate        : 1;    /* Prepare to free the current object 0:no delate, 1:delate */
-    uint8_t focus         : 1;    /* obj focus state 0:no focus, 1:focus */
-    uint8_t visible       : 1;    /* obj visible state, @gt_visible_e */
-    uint8_t disabled      : 1;    /* obj disabled state, 0:enable, 1:disable */
+    uint32_t state         : 3;    /* obj selected state @ref gt_state_et */
+    uint32_t using         : 1;    /* obj using state 0:using [Can not be free memory], 1:free */
+    uint32_t delate        : 1;    /* Prepare to free the current object 0:no delate, 1:delate */
+    uint32_t focus         : 1;    /* obj focus state 0:no focus, 1:focus */
+    uint32_t visible       : 1;    /* obj visible state, @gt_visible_e */
+    uint32_t disabled      : 1;    /* obj disabled state, 0:enable, 1:disable */
 
-    uint8_t focus_dis     : 1;    /* obj focus enable , 0:enable, 1:disable*/
-    uint8_t fixed         : 1;    /* obj fixed state, 0:unfixed, 1:fixed then search it parent's widget to scroll(Dependent on superclass properties) */
-    uint8_t scroll_dir    : 2;    /* @see gt_scroll_dir_et [default: GT_SCROLL_ALL] */
-    uint8_t scroll_l_r    : 1;    /* Enabled when GT_SCROLL_HORIZONTAL or GT_SCROLL_ALL @see gt_scroll_dir_et */
-    uint8_t scroll_u_d    : 1;    /* Enabled when GT_SCROLL_VERTICAL or GT_SCROLL_ALL @see gt_scroll_dir_et */
-    uint8_t scroll_snap_x : 2;    /* Scroll the alignment position @see gt_scroll_snap_em */
-    uint8_t scroll_snap_y : 2;    /* As scroll_snap_x */
+    uint32_t focus_dis     : 1;    /* obj focus enable , 0:enable, 1:disable*/
+    uint32_t fixed         : 1;    /* obj fixed state, 0:unfixed, 1:fixed then search it parent's widget to scroll(Dependent on superclass properties) */
+    uint32_t scroll_dir    : 2;    /* @see gt_scroll_dir_et [default: GT_SCROLL_ALL] */
+    uint32_t scroll_l_r    : 1;    /* Enabled when GT_SCROLL_HORIZONTAL or GT_SCROLL_ALL @see gt_scroll_dir_et */
+    uint32_t scroll_u_d    : 1;    /* Enabled when GT_SCROLL_VERTICAL or GT_SCROLL_ALL @see gt_scroll_dir_et */
+    uint32_t scroll_snap_x : 2;    /* Scroll the alignment position @see gt_scroll_snap_em */
+    uint32_t scroll_snap_y : 2;    /* As scroll_snap_x */
 
-    uint8_t absorb        : 1;    /* obj absorb state, 0:un-absorb, 1: Adsorption screen maximum boundary */
-    uint8_t absorb_dir    : 1;    /* obj absorb direction(It only works when absorb is set to 1), 0: horizontal; 1: vertical */
-    uint8_t overflow      : 1;    /* [Inheritable]obj overflow state, 0:un-overflow, 1:overflow (widget can out of screen area size) */
-    uint8_t inside        : 1;    /* obj display only limited to parent area, 0:un-inside, 1:inside (widget is inside screen area size) */
-    uint8_t virtual       : 1;    /* obj virtual state, 0:un-virtual[default], 1:virtual (widget is virtual logic, not entities) */
-    uint8_t reserved      : 1;
+    uint32_t absorb        : 1;    /* obj absorb state, 0:un-absorb, 1: Adsorption screen maximum boundary */
+    uint32_t absorb_dir    : 1;    /* obj absorb direction(It only works when absorb is set to 1), 0: horizontal; 1: vertical */
+    uint32_t overflow      : 1;    /* [Inheritable]obj overflow state, 0:un-overflow, 1:overflow (widget can out of screen area size) */
+    uint32_t inside        : 1;    /* obj display only limited to parent area, 0:un-inside, 1:inside (widget is inside screen area size) */
+    uint32_t virtual       : 1;    /* obj virtual state, 0:un-virtual[default], 1:virtual (widget is virtual logic, not entities) */
+    uint32_t reserved      : 9;
 
 }gt_obj_st;
 

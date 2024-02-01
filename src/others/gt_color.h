@@ -17,7 +17,6 @@ extern "C" {
 #include "stdint.h"
 #include "../gt_conf.h"
 #include "gt_types.h"
-#include "../widgets/gt_obj.h"
 #include "gt_math.h"
 #include "gt_assert.h"
 
@@ -156,20 +155,18 @@ enum {
 
 #define GT_COLOR_SET(obj,val)           (obj.full=val)
 #define GT_COLOR_GET(obj)               (obj.full)
-// #define GT_COLOR_SET_R(obj,r)           (obj.ch.red=r)
-// #define GT_COLOR_GET_R(obj)           	(obj.ch.red)
-// #define GT_COLOR_SET_G(obj,g)           (obj.ch.green=g)
-// #define GT_COLOR_GET_G(obj)           	(obj.ch.green)
-// #define GT_COLOR_SET_B(obj,b)           (obj.ch.blue=b)
-// #define GT_COLOR_GET_B(obj)           	(obj.ch.blue)
+
+#if GT_COLOR_DEPTH == 16 && GT_COLOR_16_SWAP == 1
+#define GT_COLOR_SET_RGB(obj,r,g,b)     {obj.ch.green_h=(g>>3);obj.ch.red=(r);obj.ch.blue=(b);obj.ch.green_l=(g & 0x7);}
+#else
 #define GT_COLOR_SET_RGB(obj,r,g,b)     {obj.ch.red=(r);obj.ch.green=(g);obj.ch.blue=(b);}
-
-
+#endif
 
 /*---------------------------------------
  * Macros for all existing color depths
  * to set/get values of the color channels
  *------------------------------------------*/
+#if GT_COLOR_DEPTH == 1
 # define GT_COLOR_SET_R1(c, v) (c).ch.red = (uint8_t)((v) & 0x1)
 # define GT_COLOR_SET_G1(c, v) (c).ch.green = (uint8_t)((v) & 0x1)
 # define GT_COLOR_SET_B1(c, v) (c).ch.blue = (uint8_t)((v) & 0x1)
@@ -183,6 +180,7 @@ enum {
 # define _GT_COLOR_ZERO_INITIALIZER1 {0x00}
 # define GT_COLOR_MAKE1(r8, g8, b8)  {(uint8_t)((b8 >> 7) | (g8 >> 7) | (r8 >> 7))}
 
+#elif GT_COLOR_DEPTH == 8
 # define GT_COLOR_SET_R8(c, v) (c).ch.red = (uint8_t)((v) & 0x7U)
 # define GT_COLOR_SET_G8(c, v) (c).ch.green = (uint8_t)((v) & 0x7U)
 # define GT_COLOR_SET_B8(c, v) (c).ch.blue = (uint8_t)((v) & 0x3U)
@@ -196,12 +194,13 @@ enum {
 # define _GT_COLOR_ZERO_INITIALIZER8 {{0x00, 0x00, 0x00}}
 # define GT_COLOR_MAKE8(r8, g8, b8) {{(uint8_t)((b8 >> 6) & 0x3U), (uint8_t)((g8 >> 5) & 0x7U), (uint8_t)((r8 >> 5) & 0x7U)}}
 
+#elif GT_COLOR_DEPTH == 16
 # define GT_COLOR_SET_R16(c, v) (c).ch.red = (uint8_t)((v) & 0x1FU)
 #if GT_COLOR_16_SWAP == 0
 # define GT_COLOR_SET_G16(c, v) (c).ch.green = (uint8_t)((v) & 0x3FU)
 #else
 # define GT_COLOR_SET_G16(c, v) {(c).ch.green_h = (uint8_t)(((v) >> 3) & 0x7); (c).ch.green_l = (uint8_t)((v) & 0x7);}
-#endif
+#endif  /** GT_COLOR_16_SWAP */
 # define GT_COLOR_SET_B16(c, v) (c).ch.blue = (uint8_t)((v) & 0x1FU)
 # define GT_COLOR_SET_A16(c, v) do {} while(0)
 
@@ -210,7 +209,7 @@ enum {
 # define GT_COLOR_GET_G16(c) (c).ch.green
 #else
 # define GT_COLOR_GET_G16(c) (((c).ch.green_h << 3) + (c).ch.green_l)
-#endif
+#endif  /** GT_COLOR_16_SWAP */
 # define GT_COLOR_GET_B16(c) (c).ch.blue
 # define GT_COLOR_GET_A16(c) 0xFF
 
@@ -220,7 +219,9 @@ enum {
 #else
 # define _GT_COLOR_ZERO_INITIALIZER16 {{0x00, 0x00, 0x00, 0x00}}
 # define GT_COLOR_MAKE16(r8, g8, b8) {{(uint8_t)((g8 >> 5) & 0x7U), (uint8_t)((r8 >> 3) & 0x1FU), (uint8_t)((b8 >> 3) & 0x1FU), (uint8_t)((g8 >> 2) & 0x7U)}}
-#endif
+#endif  /** GT_COLOR_16_SWAP */
+
+#endif  /** GT_COLOR_DEPTH */
 
 # define GT_COLOR_SET_R32(c, v) (c).ch.red = (uint8_t)((v) & 0xFF)
 # define GT_COLOR_SET_G32(c, v) (c).ch.green = (uint8_t)((v) & 0xFF)
@@ -252,12 +253,6 @@ enum {
 /*********************************************/
 /*                  color                    */
 /*********************************************/
-#define GT_COLOR_WHITE       888
-#define GT_COLOR_BLACK       88
-#define GT_COLOR_RED         8
-#define GT_COLOR_GREEN       8
-#define GT_COLOR_BLUE        8
-
 #if GT_COLOR_16_SWAP == 0
 # define _GT_COLOR_ZERO_INITIALIZER16  {{0x00, 0x00, 0x00}}
 # define GT_COLOR_MAKE16(r8, g8, b8) {{(uint8_t)((b8 >> 3) & 0x1FU), (uint8_t)((g8 >> 2) & 0x3FU), (uint8_t)((r8 >> 3) & 0x1FU)}}
@@ -413,6 +408,9 @@ static inline gt_color_t gt_color_black(void){ return gt_color_make(0x00, 0x00, 
 static inline gt_color_t gt_color_red(void){ return gt_color_make(0xFF, 0x00, 0x00);  }
 static inline gt_color_t gt_color_yellow(void){ return gt_color_make(0xFF, 0xFF, 0x00);  }
 static inline gt_color_t gt_color_blue(void){ return gt_color_make(0x00, 0x00, 0xFF);  }
+static inline gt_color_t gt_color_gray(void) { return gt_color_make(0x80, 0x80, 0x80); }
+static inline gt_color_t gt_color_dark_gray(void) { return gt_color_make(0x40, 0x40, 0x40); }
+static inline gt_color_t gt_color_bright_gray(void) { return gt_color_make(0xc0, 0xc0, 0xc0); }
 
 static inline gt_color_t gt_color_orange(void){ return gt_color_make(0xFF, 0xA5, 0x00);  }
 

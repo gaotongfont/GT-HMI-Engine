@@ -39,7 +39,9 @@ typedef struct _gt_btn_s
     gt_color_t color_background;
     gt_color_t color_pressed;
     gt_color_t font_color;
+    gt_color_t color_border;
     gt_size_t  radius;
+    gt_size_t border_width;
 
     gt_font_info_st font_info;
 
@@ -110,10 +112,10 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     rect_attr.reg.is_fill   = style->reg.fill;
     rect_attr.radius        = radius;
     rect_attr.bg_opa        = btn->opa;
-    rect_attr.border_width  = 0;
+    rect_attr.border_width  = style->border_width;
     rect_attr.fg_color      = fg_color;
     rect_attr.bg_color      = fg_color;
-    rect_attr.border_color  = fg_color;
+    rect_attr.border_color  = style->color_border;
 
     gt_area_st area = gt_area_reduce(btn->area, REDUCE_DEFAULT);
     // 1:base shape
@@ -128,6 +130,16 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
         .align          = style->font_align,
         .opa            = btn->opa,
     };
+    if (gt_obj_get_state(btn)) {
+        gt_color_t mask_color = gt_color_dark_gray();
+        gt_opa_t mask_opa = 0x40;
+
+        if (gt_color_brightness(style->font_color) < 128) {
+            mask_color = gt_color_bright_gray();
+            mask_opa   = 0xC0;
+        }
+        font_attr.font_color = gt_color_mix(style->font_color, mask_color, mask_opa);
+    }
     draw_text(btn->draw_ctx, &font_attr, &area);
 
     // focus
@@ -304,7 +316,9 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent)
     strcpy(style->text, "btn");
     style->radius           = 4;
     style->color_pressed    = gt_color_hex(0x0097e6);    //default color_selected
-    style->color_background = gt_color_hex(0x00a8ff);  //default color_unselected
+    style->color_background = gt_color_hex(0x00a8ff);    //default color_unselected
+    style->color_border     = gt_color_hex(0x00a8ff);    //default color_border
+    style->border_width     = 0;
     style->reg.fill         = 1;
     style->font_color       = gt_color_white();        //default color_font
     style->font_info.style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
@@ -332,6 +346,20 @@ void gt_btn_set_color_background(gt_obj_st * btn, gt_color_t color)
 {
     _gt_btn_st * style = (_gt_btn_st * )btn->style;
     style->color_background = color;
+    gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_btn_set_color_border(gt_obj_st *btn, gt_color_t color)
+{
+    _gt_btn_st * style = (_gt_btn_st *)btn->style;
+    style->color_border = color;
+    gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_btn_set_border_width(gt_obj_st * btn, uint8_t width)
+{
+    _gt_btn_st * style = (_gt_btn_st *)btn->style;
+    style->border_width = width;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
