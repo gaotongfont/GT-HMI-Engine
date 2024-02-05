@@ -42,7 +42,7 @@ typedef struct _gt_obj_event_attr_s {
  */
 typedef struct _gt_obj_process_attr_s {
     gt_point_st point;      //click point(note: the point is for obj)
-    gt_point_st scroll;     //scroll distance
+    gt_point_st scroll;     //scroll distance, default is 0
 }gt_obj_process_attr_st;
 
 typedef enum {
@@ -68,15 +68,17 @@ typedef enum {
     GT_SCROLL_SNAP_END,
 }gt_scroll_snap_em;
 
+typedef enum {
+    GT_OBJ_TRIGGER_MODE_HOLD_ON = 0,
+    GT_OBJ_TRIGGER_MODE_SWITCH  = 1,
+}gt_obj_trigger_mode_et;
 
 
 typedef struct gt_obj_s {
     struct gt_obj_s * parent;
     struct gt_obj_s ** child;
     const gt_obj_class_st * class;
-#if GT_USE_USER_DATA
-    void * user_data;                   /* Notice: must be manual free memory, when memory is not used it! */
-#endif
+
     gt_obj_event_attr_st * event_attr;
     struct _gt_draw_ctx_t * draw_ctx;
     gt_obj_process_attr_st process_attr;

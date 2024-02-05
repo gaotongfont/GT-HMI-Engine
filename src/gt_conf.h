@@ -46,9 +46,6 @@ extern "C" {
 /* user: refr max area */
 #define _GT_REFR_AREA_MAX   32
 
-/* user: obj contain user_data: 1 yes, 0 no */
-#define GT_USE_USER_DATA    1
-
 /* user: color depth: 1(1 byte per pixel), 8(RGB332), 16(RGB565), 32(ARGB8888) */
 #define GT_COLOR_DEPTH      16
 #define GT_COLOR_16_SWAP    0

@@ -72,6 +72,13 @@ static gt_obj_event_attr_st * gt_obj_get_event_attr(gt_obj_st * obj, uint8_t idx
     return &obj->event_attr[idx];
 }
 
+/**
+ * @brief
+ *
+ * @param obj
+ * @param param NOTE param only used for gt_event_send() func
+ * @return gt_res_t
+ */
 static gt_res_t _gt_event_handler_event_mask(gt_obj_st * obj , void * param)
 {
     if (!obj->event_mask) {
@@ -88,7 +95,6 @@ static gt_res_t _gt_event_handler_event_mask(gt_obj_st * obj , void * param)
     gt_event_st e;
 
     e.target = obj;
-    e.user_data = obj->user_data;
 
     if (GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX < _GT_EVENT_TYPE_TOTAL_COUNT) {
         count = GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX;
@@ -203,7 +209,7 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
     gt_obj_event_attr_st * event_attr;
     gt_event_st e;
 
-    _gt_event_handler_event_mask(parent , parms);
+    _gt_event_handler_event_mask(parent, parms);
 
     _gt_event_locked_obj(parent);
 

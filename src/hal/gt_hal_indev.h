@@ -109,9 +109,6 @@ typedef struct _gt_indev_drv_s
 {
     gt_indev_type_et type;
     void (*read_cb)(struct _gt_indev_drv_s * indev_drv, gt_indev_data_st * data);
-#if GT_USE_USER_DATA
-    void * user_data;
-#endif
 
     gt_size_t limit_timers_long_press;          ///< long press timers
     gt_size_t limit_pixel_gesture_ver;          ///< move pixel trigger once event
