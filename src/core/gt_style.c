@@ -34,6 +34,26 @@
 
 /* static functions -----------------------------------------------------*/
 
+static void gt_obj_move_child_by(gt_obj_st * obj, gt_size_t dx, gt_size_t dy)
+{
+    uint16_t i = 0, cnt = obj->cnt_child;
+
+    // if (false == gt_obj_get_overflow(obj)) {
+    //     return;
+    // }
+
+    for (i = 0; i < cnt; i++) {
+        gt_obj_st * child = obj->child[i];
+        // if (false == gt_obj_get_overflow(child)) {
+        //     continue;
+        // }
+        child->area.x += dx;
+        child->area.y += dy;
+
+        gt_obj_move_child_by(child, dx, dy);
+    }
+}
+
 
 
 /* global functions / API interface -------------------------------------*/
@@ -65,7 +85,6 @@ void gt_obj_move_to(gt_obj_st * obj, gt_size_t x, gt_size_t y)
     _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
-
 
 void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h) {
     gt_area_st area = obj->area;
@@ -281,26 +300,6 @@ void gt_obj_area_change(gt_obj_st * obj, gt_area_st * area_new)
 
     obj->area = *area_new;
     _gt_disp_refr_append_area(&area);
-}
-
-void gt_obj_move_child_by(gt_obj_st * obj, gt_size_t dx, gt_size_t dy)
-{
-    uint16_t i = 0, cnt = obj->cnt_child;
-
-    if (false == gt_obj_get_overflow(obj)) {
-        return;
-    }
-
-    for (i = 0; i < cnt; i++) {
-        gt_obj_st * child = obj->child[i];
-        if (false == gt_obj_get_overflow(child)) {
-            continue;
-        }
-        child->area.x += dx;
-        child->area.y += dy;
-
-        gt_obj_move_child_by(child, dx, dy);
-    }
 }
 
 void gt_obj_child_set_prop(gt_obj_st * obj, gt_obj_prop_type_em type, uint8_t val)

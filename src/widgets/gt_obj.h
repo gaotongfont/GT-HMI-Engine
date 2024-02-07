@@ -162,6 +162,21 @@ bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent);
  */
 void gt_obj_destroy(gt_obj_st * obj);
 
+/**
+ * @brief Set screen background color
+ *
+ * @param obj
+ * @param color
+ */
+void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color);
+
+/**
+ * @brief Get screen background color
+ *
+ * @param obj
+ * @return gt_color_t
+ */
+gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj);
 
 #ifdef __cplusplus
 } /*extern "C"*/

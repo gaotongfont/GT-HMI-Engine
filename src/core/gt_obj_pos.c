@@ -415,6 +415,12 @@ void gt_obj_prev_focus_change(gt_obj_st * cur_obj)
 bool gt_obj_check_scr(gt_obj_st * obj)
 {
     gt_obj_st * scr_now = gt_disp_get_scr();
+    if (NULL == scr_now) {
+        /** first time load screen */
+        if (GT_TYPE_SCREEN == gt_obj_class_get_type(obj)) {
+            return true;
+        }
+    }
     if (scr_now == obj) {
         return true;
     }

@@ -91,15 +91,11 @@ bool gt_obj_get_visible(gt_obj_st * obj);
 void gt_obj_set_disabled(gt_obj_st * obj, gt_disabled_et is_disabled);
 bool gt_obj_is_disabled(gt_obj_st * obj);
 
-void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color);
-gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj);
-
 void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new);
 void gt_obj_pos_change(gt_obj_st * obj, gt_area_st * area_new);
 void gt_obj_area_change(gt_obj_st * obj, gt_area_st * area_new);
 
 void gt_obj_move_to(gt_obj_st * obj, gt_size_t x, gt_size_t y);
-void gt_obj_move_child_by(gt_obj_st * obj, gt_size_t dx, gt_size_t dy);
 void gt_obj_child_set_prop(gt_obj_st * obj, gt_obj_prop_type_em type, uint8_t val);
 
 void gt_obj_set_state(gt_obj_st * obj, gt_state_et state);
