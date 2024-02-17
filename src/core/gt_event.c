@@ -218,7 +218,7 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
         if ( NULL == event_attr ) {
             continue;
         }
-        if ( event == event_attr->filter || GT_EVENT_TYPE_ALL == event_attr->filter ) {
+        if ( event == event_attr->filter ) {
             e.target    = parent;
             e.code      = event;
             e.user_data = event_attr->user_data;
