@@ -21,22 +21,15 @@ extern "C" {
 
 /* define ---------------------------------------------------------------*/
 
-#define _GT_GC_FUNC_DEFINED(_type, _name)   _type _name;
-#define _GT_GC_FUNC_EXTERN(_type, _name)   extern _type _name;
+typedef struct gt_gc_s {
+    struct _gt_list_head _gt_anim_ll;
+    struct _gt_list_head _gt_timer_ll;
+    struct _gt_list_head _gt_img_decoder_ll;
+}gt_gc_st;
 
-#define _GT_GC_ROOT_PREFIX(_f, _type, _name)   _f(_type, _name)
+extern gt_gc_st _gt_global_call;
 
-#define _GT_GC_ITERATE_LIST(_f)    \
-    _GT_GC_ROOT_PREFIX(_f, _gt_timer_st *, _gt_timer_act)              \
-    _GT_GC_ROOT_PREFIX(_f, struct _gt_list_head, _gt_anim_ll)           \
-    _GT_GC_ROOT_PREFIX(_f, struct _gt_list_head, _gt_timer_ll)          \
-    _GT_GC_ROOT_PREFIX(_f, struct _gt_list_head, _gt_img_decoder_ll)    \
-
-
-_GT_GC_ITERATE_LIST(_GT_GC_FUNC_EXTERN)
-#define _GT_ROOT _GT_GC_ITERATE_LIST(_GT_GC_FUNC_DEFINED)
-
-#define _GT_GC_GET_ROOT(_name)  _name
+#define _GT_GC_GET_ROOT(_name)  ((&_gt_global_call)->_name)
 
 /* typedef --------------------------------------------------------------*/
 
