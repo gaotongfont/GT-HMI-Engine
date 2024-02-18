@@ -215,6 +215,10 @@ static _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st
         return obj_clicked;
     }
     else if (_CHECK_CLICKED_STATE_OK == obj_clicked.state) {
+        if (parent->touch_parent) {
+            /** Selected parent object */
+            return obj_clicked;
+        }
         if (0 == parent->cnt_child) {
             /** The deepest one */
             obj_clicked.obj = parent;

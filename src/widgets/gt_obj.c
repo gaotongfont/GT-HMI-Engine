@@ -17,6 +17,8 @@
 #include "../core/gt_style.h"
 #include "../core/gt_disp.h"
 #include "../core/gt_obj_scroll.h"
+#include "../core/gt_graph_base.h"
+#include "../core/gt_draw.h"
 #include "../hal/gt_hal_disp.h"
 #include "../others/gt_log.h"
 
@@ -60,15 +62,87 @@ static const gt_obj_class_st gt_screen_class = {
 
 /* static functions -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj) {
+    gt_attr_rect_st rect_attr;
+    if (obj->mask_effect && obj->state) {
+        gt_graph_init_rect_attr(&rect_attr);
+        rect_attr.reg.is_fill    = true;
+        // rect_attr.border_width   = 2;
+        rect_attr.radius         = 2;
+        rect_attr.bg_opa         = 0x44;
+        rect_attr.border_color  = gt_color_hex(0x0000ff);
+        rect_attr.fg_color      = gt_color_hex(0x0000ff);
+        rect_attr.bg_color      = gt_color_hex(0x0000ff);
+        gt_area_st real_area = gt_area_reduce(obj->area, REDUCE_DEFAULT);
+        draw_bg(obj->draw_ctx, &rect_attr, &real_area);
+    }
+
+    if (obj->septal_line_y) {
+        gt_graph_init_rect_attr(&rect_attr);
+        rect_attr.reg.is_fill    = true;
+        rect_attr.radius         = 1;
+        rect_attr.bg_color      = gt_color_hex(0xc7c7c7);
+        rect_attr.bg_opa = 0x99;
+
+        // top line
+        gt_area_st line = {(obj->area.w >> 3) + obj->area.x, obj->area.y, obj->area.w - (obj->area.w >> 2), 1};
+        draw_bg(obj->draw_ctx, &rect_attr, &line);
+
+        // bottom line
+        line.y = obj->area.y + obj->area.h - 1;
+        draw_bg(obj->draw_ctx, &rect_attr, &line);
+    }
 }
 
 static void _deinit_cb(gt_obj_st * obj) {
 }
 
+static void _screen_scroll(gt_obj_st * obj) {
+    if (GT_TYPE_SCREEN != gt_obj_class_get_type(obj)) {
+        return;
+    }
+    gt_area_abs_st * max_area_p = gt_disp_get_area_max();
+
+    if (-obj->process_attr.scroll.x < max_area_p->left) {
+        obj->process_attr.scroll.x = -max_area_p->left;
+    }
+    else if (-obj->process_attr.scroll.x + obj->area.w > max_area_p->right) {
+        obj->process_attr.scroll.x = -max_area_p->right + obj->area.w;
+    }
+    if (-obj->process_attr.scroll.y < max_area_p->top) {
+        obj->process_attr.scroll.y = -max_area_p->top;
+    }else if (-obj->process_attr.scroll.y + obj->area.h > max_area_p->bottom) {
+        obj->process_attr.scroll.y = -max_area_p->bottom + obj->area.h;
+    }
+    gt_disp_scroll_area_act(-obj->process_attr.scroll.x, -obj->process_attr.scroll.y);
+}
+
+static void _masked_effect_handler(gt_obj_st * obj) {
+    if (false == obj->mask_effect) {
+        return;
+    }
+    gt_disp_invalid_area(obj);
+}
+
+static void _unmasked_effect_handler(gt_obj_st * obj) {
+    if (false == obj->mask_effect) {
+        return;
+    }
+    gt_disp_invalid_area(obj);
+}
+
+static void _change_state_by_trigger_mode(gt_obj_st * obj, bool is_pressed) {
+    if (obj->trigger_mode) {
+        if (false == is_pressed) {
+            gt_obj_set_state(obj, !gt_obj_get_state(obj));
+        }
+        return;
+    }
+    gt_obj_set_state(obj, is_pressed ? GT_STATE_PRESSED : GT_STATE_NONE);
+}
+
 static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
 {
     gt_event_type_et code = gt_event_get_code(e);
-    gt_area_abs_st * max_area_p = gt_disp_get_area_max();
 
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START: {
@@ -81,41 +155,44 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
             break;
         }
         case GT_EVENT_TYPE_INPUT_SCROLL: {
-            /** temp */
-            if (-obj->process_attr.scroll.x < max_area_p->left) {
-                obj->process_attr.scroll.x = -max_area_p->left;
-            }
-            else if (-obj->process_attr.scroll.x + obj->area.w > max_area_p->right) {
-                obj->process_attr.scroll.x = -max_area_p->right + obj->area.w;
-            }
-            if (-obj->process_attr.scroll.y < max_area_p->top) {
-                obj->process_attr.scroll.y = -max_area_p->top;
-            }else if (-obj->process_attr.scroll.y + obj->area.h > max_area_p->bottom) {
-                obj->process_attr.scroll.y = -max_area_p->bottom + obj->area.h;
-            }
-            gt_disp_scroll_area_act(-obj->process_attr.scroll.x, -obj->process_attr.scroll.y);
+            _screen_scroll(obj);
+            break;
+        }
+        case GT_EVENT_TYPE_INPUT_PRESSED: {
+            _change_state_by_trigger_mode(obj, true);
+            _masked_effect_handler(obj);
             break;
         }
         case GT_EVENT_TYPE_INPUT_RELEASED: {
-            /* click event finish */
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            _change_state_by_trigger_mode(obj, false);
+            _unmasked_effect_handler(obj);
+            /* TODO repeat event called? */
+            // gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         }
         case GT_EVENT_TYPE_INPUT_SCROLL_UP: {
             /** scroll 3/4 screen */
-            gt_obj_scroll_to_y(obj, (gt_disp_get_res_ver(NULL) * 3) >> 2, GT_ANIM_ON);
+            if (GT_TYPE_SCREEN == gt_obj_class_get_type(obj)) {
+                gt_obj_scroll_to_y(obj, (gt_disp_get_res_ver(NULL) * 3) >> 2, GT_ANIM_ON);
+            }
             break;
         }
         case GT_EVENT_TYPE_INPUT_SCROLL_DOWN: {
-            gt_obj_scroll_to_y(obj, (-gt_disp_get_res_ver(NULL) * 3) >> 2, GT_ANIM_ON);
+            if (GT_TYPE_SCREEN == gt_obj_class_get_type(obj)) {
+                gt_obj_scroll_to_y(obj, (-gt_disp_get_res_ver(NULL) * 3) >> 2, GT_ANIM_ON);
+            }
             break;
         }
         case GT_EVENT_TYPE_INPUT_SCROLL_LEFT: {
-            gt_obj_scroll_to_x(obj, (gt_disp_get_res_hor(NULL) * 3) >> 2, GT_ANIM_ON);
+            if (GT_TYPE_SCREEN == gt_obj_class_get_type(obj)) {
+                gt_obj_scroll_to_x(obj, (gt_disp_get_res_hor(NULL) * 3) >> 2, GT_ANIM_ON);
+            }
             break;
         }
         case GT_EVENT_TYPE_INPUT_SCROLL_RIGHT: {
-            gt_obj_scroll_to_x(obj, (-gt_disp_get_res_hor(NULL) * 3) >> 2, GT_ANIM_ON);
+            if (GT_TYPE_SCREEN == gt_obj_class_get_type(obj)) {
+                gt_obj_scroll_to_x(obj, (-gt_disp_get_res_hor(NULL) * 3) >> 2, GT_ANIM_ON);
+            }
         }
         default:
             break;
@@ -218,6 +295,25 @@ gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj)
         return gt_color_make(0, 0, 0);
     }
     return obj->bgcolor;
+}
+
+gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj)
+{
+    gt_obj_st * child = NULL;
+    gt_size_t bottom = -0x7fff;
+    gt_size_t temp = 0, min_y = 0x7fff;
+
+    for (gt_size_t i = 0, cnt = obj->cnt_child; i < cnt; i++) {
+        child = obj->child[i];
+        if (child->area.y < min_y) {
+            min_y = child->area.y;
+        }
+        temp = child->area.y + child->area.h;
+        if (temp > bottom) {
+            bottom = temp;
+        }
+    }
+    return -(bottom - min_y - obj->area.h);
 }
 
 /* end ------------------------------------------------------------------*/
