@@ -25,6 +25,7 @@ typedef struct gt_gc_s {
     struct _gt_list_head _gt_anim_ll;
     struct _gt_list_head _gt_timer_ll;
     struct _gt_list_head _gt_img_decoder_ll;
+    struct _gt_event_s * _gt_event_node_header_ll;
 }gt_gc_st;
 
 extern gt_gc_st _gt_global_call;

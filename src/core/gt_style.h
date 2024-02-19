@@ -181,6 +181,23 @@ gt_scroll_snap_em gt_obj_get_scroll_snap_y(gt_obj_st * obj);
  */
 bool _gt_obj_is_ignore_calc_max_area(gt_obj_st * obj);
 
+/**
+ * @brief Set control's event needs to be notified to the parent control
+ *
+ * @param obj
+ * @param is_bubble_notify true: enabled, false: disabled
+ */
+void gt_obj_set_bubble_notify(gt_obj_st * obj, bool is_bubble_notify);
+
+/**
+ * @brief Control's event needs to be notified to the parent control or not.
+ *
+ * @param obj
+ * @return true
+ * @return false
+ */
+bool gt_obj_is_bubble_notify(gt_obj_st * obj);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

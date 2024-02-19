@@ -480,4 +480,14 @@ bool _gt_obj_is_ignore_calc_max_area(gt_obj_st * obj)
     return false;
 }
 
+void gt_obj_set_bubble_notify(gt_obj_st * obj, bool is_bubble_notify)
+{
+    obj->bubble_notify = is_bubble_notify ? true : false;
+}
+
+bool gt_obj_is_bubble_notify(gt_obj_st * obj)
+{
+    return obj->bubble_notify;
+}
+
 /* end ------------------------------------------------------------------*/

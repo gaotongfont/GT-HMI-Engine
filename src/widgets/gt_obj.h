@@ -119,7 +119,8 @@ typedef struct gt_obj_s {
 
     uint32_t mask_effect   : 1;     /* default object  */
     uint32_t trigger_mode  : 1;     /* state toggle trigger mode @ref gt_obj_trigger_mode_et, 0:[default] hold-on; 1: switch */
-    uint32_t reserved      : 6;
+    uint32_t bubble_notify : 1;     /* The object event will bubble notify to parent, 0: [default] disabled; 1: enabled */
+    uint32_t reserved      : 5;
 
 }gt_obj_st;
 
@@ -140,6 +141,14 @@ typedef struct gt_obj_s {
  * @return gt_obj_st* obj ptr
  */
 gt_obj_st *gt_obj_create(gt_obj_st *parent);
+
+/**
+ * @brief Get widget parent object
+ *
+ * @param obj
+ * @return gt_obj_st*
+ */
+gt_obj_st * gt_obj_get_parent(gt_obj_st * obj);
 
 /**
  * @brief

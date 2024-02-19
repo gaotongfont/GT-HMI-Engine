@@ -29,10 +29,10 @@ struct gt_obj_s;
  * @brief The event type enum definition
  */
 typedef enum gt_event_type_e{
-    GT_EVENT_TYPE_NONE = -1,
+    GT_EVENT_TYPE_NONE = 0,
 
     /* Input device events */
-    _GT_EVENT_TYPE_INPUT_BEGIN = 0,
+    _GT_EVENT_TYPE_INPUT_BEGIN,
     /* =================== input event defined here Begin =================== */
     GT_EVENT_TYPE_INPUT_RELEASED = _GT_EVENT_TYPE_INPUT_BEGIN,        ///< release event
     GT_EVENT_TYPE_INPUT_PRESSING,                                     ///< pressing
@@ -95,7 +95,9 @@ typedef enum gt_event_type_e{
 }gt_event_type_et;
 
 typedef struct _gt_event_s {
+    struct _gt_event_s * prev;
     struct gt_obj_s * target;
+    struct gt_obj_s * origin;   /** origin control */
     void * user_data;
     void * param;               /** gt_event_send() param */
     gt_event_type_et code;
@@ -109,8 +111,6 @@ typedef struct _gt_event_s {
 typedef void (* gt_event_cb_t)(gt_event_st * e);
 
 /* macros ---------------------------------------------------------------*/
-
-#define GT_EVENT_GET_MASK_SHIFT_BIT(_event_type)    (1 << (_event_type))
 
 
 
@@ -142,23 +142,6 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
  * @param parent Object which want to change
  */
 void gt_event_clr_all_event(struct gt_obj_s * parent);
-
-void _gt_event_init(void);
-
-/**
- * @brief if called event handler it will be locked, otherwise it will unlocked
- *
- * @return true Currently executing event
- * @return false No event is currently being handled
- */
-bool gt_event_is_locked(void);
-
-/**
- * @brief An object that is locked when handling an event
- *
- * @return struct gt_obj_s*
- */
-struct gt_obj_s * gt_event_get_locked_obj(void);
 
 /**
  * @brief Get the code value for the event

@@ -69,8 +69,6 @@ void gt_init(void)
 
     _gt_timer_core_init();
 
-    _gt_event_init();
-
     _gt_anim_core_init();
 
     _gt_img_decoder_init();

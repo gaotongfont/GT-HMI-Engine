@@ -21,6 +21,7 @@
 #include "../core/gt_draw.h"
 #include "../hal/gt_hal_disp.h"
 #include "../others/gt_log.h"
+#include "../others/gt_gc.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -151,7 +152,6 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
         }
         case GT_EVENT_TYPE_UPDATE_STYLE: {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            gt_disp_invalid_area(obj);
             break;
         }
         case GT_EVENT_TYPE_INPUT_SCROLL: {
@@ -209,10 +209,14 @@ void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
 {
     gt_obj_st * obj = (gt_obj_st * )_gt_timer_get_user_data(timer);
 
-    if (gt_event_is_locked() && gt_event_get_locked_obj() == obj) {
-        GT_LOGW(GT_LOG_TAG_GUI, "Disables the removal of the control itself in the callback.");
-        _gt_timer_set_repeat_count(timer, 1);   // retry to destroy object
-        return ;
+    gt_event_st * ptr = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
+    while(ptr) {
+        if (ptr->target == obj) {
+            GT_LOGW(GT_LOG_TAG_GUI, "Disables the removal of the control itself within event list.");
+            _gt_timer_set_repeat_count(timer, 1);   // retry to destroy object
+            return ;
+        }
+        ptr = ptr->prev;
     }
 
     if (obj->using) {
@@ -244,6 +248,11 @@ gt_obj_st * gt_obj_create(gt_obj_st * parent)
     gt_obj_st * obj = gt_obj_class_create(parent ? MY_CLASS : MY_CLASS_SCREEN, parent);
     obj->bgcolor = gt_color_hex(0xFFFFFF);
     return obj;
+}
+
+gt_obj_st * gt_obj_get_parent(gt_obj_st * obj)
+{
+    return obj->parent;
 }
 
 gt_obj_st * gt_obj_change_parent(gt_obj_st * obj, gt_obj_st * to)
