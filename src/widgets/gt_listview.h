@@ -48,12 +48,20 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent);
 void gt_listview_add_item(gt_obj_st * list, char * item);
 
 /**
+ * @brief Set the listview item display height
+ *
+ * @param listview
+ * @param height
+ */
+void gt_listview_set_item_height(gt_obj_st * listview, uint16_t height);
+
+/**
  * @brief set the listview selected item by index
  *
  * @param listview listview obj
  * @param idx index
  */
-void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, int idx);
+void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, gt_size_t idx);
 
 /**
  * @brief get cnt of listview all items
@@ -78,13 +86,6 @@ gt_size_t gt_listview_get_idx_selected(gt_obj_st * listview);
  * @return char* the content value of the selected item
  */
 char * gt_listview_get_selected_item_text(gt_obj_st * listview);
-
-/**
- * @brief set listview show items number
- * @param listview
- * @param cnt_show
- */
-void gt_listview_set_cnt_show(gt_obj_st * listview, uint8_t cnt_show);
 
 /**
  * @brief set listview show font size
@@ -112,6 +113,7 @@ void gt_listview_set_font_thick_en(gt_obj_st * listview, uint8_t thick);
 void gt_listview_set_font_thick_cn(gt_obj_st * listview, uint8_t thick);
 
 void gt_listview_set_space(gt_obj_st * listview, uint8_t space_x, uint8_t space_y);
+
 
 #ifdef __cplusplus
 } /*extern "C"*/

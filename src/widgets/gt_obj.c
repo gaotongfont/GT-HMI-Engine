@@ -70,9 +70,9 @@ static void _init_cb(gt_obj_st * obj) {
         // rect_attr.border_width   = 2;
         rect_attr.radius         = 2;
         rect_attr.bg_opa         = 0x44;
-        rect_attr.border_color  = gt_color_hex(0x0000ff);
-        rect_attr.fg_color      = gt_color_hex(0x0000ff);
-        rect_attr.bg_color      = gt_color_hex(0x0000ff);
+        rect_attr.border_color  = gt_color_hex(0x308ac5);
+        rect_attr.fg_color      = gt_color_hex(0x308ac5);
+        rect_attr.bg_color      = gt_color_hex(0x308ac5);
         gt_area_st real_area = gt_area_reduce(obj->area, REDUCE_DEFAULT);
         draw_bg(obj->draw_ctx, &rect_attr, &real_area);
     }
