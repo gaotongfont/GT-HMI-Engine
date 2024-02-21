@@ -101,7 +101,7 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_line_st ** style_p = (_gt_line_st ** )&obj->style;
+    gt_attr_line_st ** style_p = (gt_attr_line_st ** )&obj->style;
     if (NULL == *style_p) {
         return ;
     }
@@ -163,9 +163,9 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_line_init_style(gt_obj_st * line)
 {
-    _gt_line_st * style = (_gt_line_st * )line->style;
+    gt_attr_line_st * style = (gt_attr_line_st * )line->style;
 
-    gt_memset(style,0,sizeof(_gt_line_st));
+    gt_memset(style,0,sizeof(gt_attr_line_st));
 
     style->width = 1;
     style->fg_color     = gt_color_black();
@@ -190,27 +190,27 @@ gt_obj_st * gt_line_create(gt_obj_st * parent)
 }
 void gt_line_set_color(gt_obj_st * line, gt_color_t color)
 {
-    _gt_line_st * style = line->style;
+    gt_attr_line_st * style = line->style;
     style->fg_color = color;
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 void gt_line_set_start_point(gt_obj_st * line, uint16_t xs, uint16_t ys)
 {
-    _gt_line_st * style = line->style;
+    gt_attr_line_st * style = line->style;
     style->x_1 = xs;
     style->y_1 = ys;
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 void gt_line_set_end_point(gt_obj_st * line, uint16_t xe, uint16_t ye)
 {
-    _gt_line_st * style = line->style;
+    gt_attr_line_st * style = line->style;
     style->x_2 = xe;
     style->y_2 = ye;
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 void gt_line_set_line_width(gt_obj_st * line, uint16_t line_width)
 {
-    _gt_line_st * style = line->style;
+    gt_attr_line_st * style = line->style;
     style->width = line_width;
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
