@@ -32,6 +32,9 @@ typedef struct _gt_listview_s {
     uint16_t item_height;       /** The height of item */
     gt_font_info_st font_info;
     gt_color_t font_color;
+    gt_align_et align;
+    uint8_t space_x;
+    uint8_t space_y;
 
     uint16_t selected_mode  : 1;
     uint16_t reserved       : 15;
@@ -231,6 +234,9 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
 
     style->item_height = style->font_info.size + (style->font_info.size >> 1);
     style->font_color = gt_color_hex(0x000000);
+    style->align = GT_ALIGN_CENTER_MID;
+    style->space_x = 0;
+    style->space_y = 0;
 
     style->selected_mode = 1;
 
@@ -270,7 +276,7 @@ void gt_listview_add_item(gt_obj_st * listview, char * item)
     gt_obj_st * lab = gt_label_create(obj);
     gt_area_copy(&lab->area, &obj->area);
     gt_obj_set_bubble_notify(lab, true);
-    gt_label_set_font_align(lab, GT_ALIGN_CENTER_MID);
+    gt_label_set_font_align(lab, style->align);
     gt_label_set_font_color(lab, style->font_color);
     gt_label_set_font_family_cn(lab, style->font_info.style_cn);
     gt_label_set_font_family_en(lab, style->font_info.style_en);
@@ -280,6 +286,7 @@ void gt_listview_add_item(gt_obj_st * listview, char * item)
     gt_label_set_font_gray(lab, style->font_info.gray);
     gt_label_set_font_thick_cn(lab, style->font_info.thick_cn);
     gt_label_set_font_thick_en(lab, style->font_info.thick_en);
+    gt_label_set_space(lab, style->space_x, style->space_y);
     gt_label_set_text(lab, item);
     lab->touch_parent = true;
 
@@ -365,59 +372,71 @@ char * gt_listview_get_selected_item_text(gt_obj_st * listview)
 void gt_listview_set_font_size(gt_obj_st * listview, uint8_t size)
 {
     _gt_listview_st * style = listview->style;
+    style->font_info.size = size;
     _set_label_prop_by_type(listview, _LABEL_FONT_SIZE, size);
 }
 void gt_listview_set_font_gray(gt_obj_st * listview, uint8_t gray)
 {
     _gt_listview_st * style = listview->style;
+    style->font_info.gray = gray;
     _set_label_prop_by_type(listview, _LABEL_FONT_SIZE, gray);
 }
 void gt_listview_set_font_align(gt_obj_st * listview, uint8_t align)
 {
     _gt_listview_st * style = listview->style;
+    style->align = align;
     _set_label_prop_by_type(listview, _LABEL_FONT_ALIGN, align);
 }
 void gt_listview_set_font_color(gt_obj_st * listview, gt_color_t color)
 {
     _gt_listview_st * style = listview->style;
+    style->font_color = color;
     _set_label_prop_by_type(listview, _LABEL_FONT_COLOR, color.full);
 }
 
 void gt_listview_set_font_family_en(gt_obj_st * listview, gt_family_t family)
 {
     _gt_listview_st * style = listview->style;
+    style->font_info.style_en = family;
     _set_label_prop_by_type(listview, _LABEL_FONT_EN, family);
 }
 void gt_listview_set_font_family_fl(gt_obj_st * listview, gt_family_t family)
 {
     _gt_listview_st * style = listview->style;
+    style->font_info.style_fl = family;
     _set_label_prop_by_type(listview, _LABEL_FONT_FL, family);
 }
 void gt_listview_set_font_family_cn(gt_obj_st * listview, gt_family_t family)
 {
     _gt_listview_st * style = listview->style;
+    style->font_info.style_cn = family;
     _set_label_prop_by_type(listview, _LABEL_FONT_CN, family);
 }
 
 void gt_listview_set_font_family_numb(gt_obj_st * listview, gt_family_t family)
 {
     _gt_listview_st * style = listview->style;
+    style->font_info.style_numb = family;
     _set_label_prop_by_type(listview, _LABEL_FONT_NUMB, family);
 }
 
 void gt_listview_set_font_thick_en(gt_obj_st * listview, uint8_t thick)
 {
     _gt_listview_st * style = (_gt_listview_st * )listview->style;
+    style->font_info.thick_en = thick;
     _set_label_prop_by_type(listview, _LABEL_FONT_THICK_EN, thick);
 }
 void gt_listview_set_font_thick_cn(gt_obj_st * listview, uint8_t thick)
 {
     _gt_listview_st * style = (_gt_listview_st * )listview->style;
+    style->font_info.thick_cn = thick;
     _set_label_prop_by_type(listview, _LABEL_FONT_THICK_CN, thick);
 }
 void gt_listview_set_space(gt_obj_st * listview, uint8_t space_x, uint8_t space_y)
 {
     _gt_listview_st * style = (_gt_listview_st * )listview->style;
+    style->space_x = space_x;
+    style->space_y = space_y;
     _set_label_prop_by_type(listview, _LABEL_FONT_SPACE, (space_x << 8) | space_y);
 }
 /* end ------------------------------------------------------------------*/
