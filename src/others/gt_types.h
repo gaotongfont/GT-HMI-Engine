@@ -39,7 +39,7 @@ typedef void * style_widget_t;
 
 typedef int16_t gt_size_t;
 
-typedef uint8_t gt_family_t;
+typedef uint16_t gt_family_t;
 typedef uint8_t gt_opt_t;
 
 
