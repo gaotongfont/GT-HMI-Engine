@@ -51,7 +51,7 @@ const gt_obj_class_st gt_line_class = {
 /* static functions -----------------------------------------------------*/
 
 static inline void _gt_line_init_widget(gt_obj_st * line) {
-    _gt_line_st * style = line->style;
+    gt_attr_line_st * style = line->style;
     uint8_t r = (style->width + 1) >> 1;
     line->area.x = style->x_1;
     line->area.y = style->y_1;
@@ -75,7 +75,7 @@ static inline void _gt_line_init_widget(gt_obj_st * line) {
     rect_attr.bg_color       = style->fg_color;
     gt_area_st area_base = line->area;
 
-    rect_attr.line = (gt_attr_line_st * )style;
+    rect_attr.line = style;
     draw_bg(line->draw_ctx, &rect_attr, &area_base);
 }
 
