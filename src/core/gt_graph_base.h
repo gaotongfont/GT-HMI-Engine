@@ -70,6 +70,7 @@ typedef struct _gt_attr_rect_s
 
     _gt_img_dsc_st * ram_img;   ///< RAM image data, when bg_img_src is NULL
 
+    gt_area_st* base_area;
     // Dot matrix data
     uint8_t * data_gray;
     uint8_t gray;

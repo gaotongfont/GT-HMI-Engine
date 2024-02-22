@@ -757,6 +757,7 @@ static bool _gt_get_radius_mask_buf(gt_opa_t* mask_line , gt_size_t x , gt_size_
         return false;
     }
 
+    if(p->radius <= 0) return false;
 
     //
     gt_size_t k = p->area.x - x;
@@ -782,10 +783,10 @@ static bool _gt_get_radius_mask_buf(gt_opa_t* mask_line , gt_size_t x , gt_size_
         {
             tmp_opa = aa_opa[aa_len - i - 1];
             if(pos_x_right + i >= 0 && pos_x_right + i < len) {
-                mask_line[pos_x_right + i] = tmp_opa; //(gt_per_255(tmp_opa) * mask_line[pos_x_right + i]) >> 15;
+                mask_line[pos_x_right + i] = GT_MIN(tmp_opa , mask_line[pos_x_right + i]); //(gt_per_255(tmp_opa) * mask_line[pos_x_right + i]) >> 15;
             }
             if(pos_x_left - i >= 0 && pos_x_left - i < len) {
-                mask_line[pos_x_left - i] = tmp_opa; //(gt_per_255(tmp_opa) * mask_line[pos_x_right - i]) >> 15;
+                mask_line[pos_x_left - i] = GT_MIN(tmp_opa , mask_line[pos_x_left - i]); //(gt_per_255(tmp_opa) * mask_line[pos_x_right - i]) >> 15;
             }
         }
 
@@ -800,10 +801,10 @@ static bool _gt_get_radius_mask_buf(gt_opa_t* mask_line , gt_size_t x , gt_size_
         {
             tmp_opa = 255 - aa_opa[aa_len - i - 1];
             if(pos_x_right + i >= 0 && pos_x_right + i < len) {
-                mask_line[pos_x_right + i] = tmp_opa; //(gt_per_255(tmp_opa) * mask_line[pos_x_right + i]) >> 15;
+                mask_line[pos_x_right + i] = GT_MIN(tmp_opa , mask_line[pos_x_right + i]); //(gt_per_255(tmp_opa) * mask_line[pos_x_right + i]) >> 15;
             }
             if(pos_x_left - i >= 0 && pos_x_left - i < len) {
-                mask_line[pos_x_left - i] = tmp_opa; //(gt_per_255(tmp_opa) * mask_line[pos_x_left - i]) >> 15;
+                mask_line[pos_x_left - i] = GT_MIN(tmp_opa , mask_line[pos_x_left - i]); //(gt_per_255(tmp_opa) * mask_line[pos_x_left - i]) >> 15;
             }
         }
 
@@ -897,8 +898,22 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
                 return ;
             }
 
+            gt_radius_mask_st r_cl_radius = {0};
+            if(dsc->base_area){
+                uint16_t r_cl = GT_MIN(dsc->radius , (GT_MIN(dsc->base_area->w >> 1 , dsc->base_area->h >> 1)));
+                if(!_gt_radius_mask_init(&r_cl_radius , *dsc->base_area , r_cl , false)){
+                    _gt_radius_mask_deinit(&r_bg_radius);
+                    GT_LOGE( GT_LOG_TAG_GUI ,"draw clipped radius init fail!!! radius = %d" , r_cl);
+                    return ;
+                }
+            }
+
             gt_opa_t* mask_bg_line = gt_mem_malloc(area_bg.w);
             if(mask_bg_line == NULL){
+                if(dsc->base_area) {
+                    _gt_radius_mask_deinit(&r_cl_radius);
+                }
+                _gt_radius_mask_deinit(&r_bg_radius);
                 GT_LOGE( GT_LOG_TAG_MEM ,"draw bg mask_line malloc is fail!!! size = %d" , area_bg.w);
                 return ;
             }
@@ -915,8 +930,15 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
             for(int i = 0 ; i < area_bg.h ; i++){
                 gt_memset(mask_bg_line , 0xFF , area_bg.w);
                 area_line.y = area_bg.y + i;
-                _gt_get_radius_mask_buf(mask_bg_line , area_line.x , area_line.y , area_bg.w , &r_bg_radius);
+                _gt_get_radius_mask_buf(mask_bg_line , area_line.x , area_line.y , area_line.w, &r_bg_radius);
+                if(dsc->base_area){
+                    _gt_get_radius_mask_buf(mask_bg_line , area_line.x , area_line.y , area_line.w, &r_cl_radius);
+                }
                 gt_draw_blend(draw_ctx, &blend_dsc);
+            }
+
+            if(dsc->base_area) {
+                _gt_radius_mask_deinit(&r_cl_radius);
             }
             _gt_radius_mask_deinit(&r_bg_radius);
             gt_mem_free(mask_bg_line);
@@ -935,7 +957,10 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
     gt_area_st area_bd;
     blend_dsc.dst_area = &area_bd;
     blend_dsc.color_fill = dsc->border_color;
-    // border opa should be used here, but there was no border opa before, so for compatibility, border opa is not used.
+    /*
+        border opa should be used here, but there was no border opa before,
+        so for compatibility, border opa is not used.
+    */
     // blend_dsc.opa = dsc->border_opa;
     if(r_bd > 0){
         gt_radius_mask_st in_r_mask = {0};
@@ -946,12 +971,15 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
 
         gt_radius_mask_st out_r_mask = {0};
         if(!_gt_radius_mask_init(&out_r_mask , area_bord , r_bd , false)){
+            _gt_radius_mask_deinit(&in_r_mask);
             GT_LOGE( GT_LOG_TAG_GUI ,"draw board radius init fail!!! radius = %d" , r_bd);
             return ;
         }
 
         gt_opa_t* mask_bd_line = gt_mem_malloc(area_bord.w);
         if(mask_bd_line == NULL){
+            _gt_radius_mask_deinit(&in_r_mask);
+            _gt_radius_mask_deinit(&out_r_mask);
             GT_LOGE( GT_LOG_TAG_MEM ,"draw board mask_line malloc is fail!!! size = %d" , area_bord.w);
             return ;
         }

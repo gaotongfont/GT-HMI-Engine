@@ -91,20 +91,20 @@ static void _init_cb(gt_obj_st * progress_bar) {
     if( style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L ){
         dist = ((float)current_pos/(float)all_pos) * (float)w;
         area_val.w = dist;
-        area_base.w -= 2;
+        // area_base.w -= 2;
         if(style->dir == GT_BAR_DIR_HOR_L2R){
-            area_base.x += 2;
+            // area_base.x += 2;
         }else{
             area_val.x += (w - dist);
         }
     }else if( style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U ){
         dist = ((float)current_pos/(float)all_pos) * (float)h;
         area_val.h = dist;
-        area_base.h -= 2;
+        // area_base.h -= 2;
         rect_attr.radius = w >> 1;
 
         if (style->dir == GT_BAR_DIR_VER_U2D){
-            area_base.y += 2;
+            // area_base.y += 2;
         }else{
             area_val.y += (h - dist);
         }
@@ -114,10 +114,11 @@ static void _init_cb(gt_obj_st * progress_bar) {
     }
     rect_attr.bg_color = style->color_act;
 
-    dist_min = rect_attr.radius;
-    if( dist >= dist_min ){
-        draw_bg(progress_bar->draw_ctx, &rect_attr, &area_val);
+    dist_min = rect_attr.radius << 1;
+    if(dist < dist_min){
+        rect_attr.base_area = &area_base;
     }
+    draw_bg(progress_bar->draw_ctx, &rect_attr, &area_val);
 
     // focus
     draw_focus(progress_bar , 0);
