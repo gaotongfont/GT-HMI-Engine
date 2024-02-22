@@ -118,6 +118,7 @@ static gt_mem_hooks_st _self = {
 
 #if USE_MEM_MAX_REMARK
 static MEM_UNIT _max_addr = 0;
+static MEM_UNIT _malloc_count = 0;
 #endif
 
 /* macros ---------------------------------------------------------------*/
@@ -237,7 +238,7 @@ void * _mem_malloc(size_t size, uint8_t * file_name, size_t line)
 #if USE_MEM_MAX_REMARK
     if ((MEM_UNIT)ret > _max_addr) {
         _max_addr = (MEM_UNIT)ret;
-        GT_LOGD(GT_LOG_TAG_MEM, ">>>>>> max addr: %p <<<<<<", _max_addr);
+        GT_LOGD(GT_LOG_TAG_MEM, ">>>>>> %d max addr: %p <<<<<<", ++_malloc_count, _max_addr);
     }
 #endif
     return ret;
@@ -275,7 +276,7 @@ void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
 #if USE_MEM_MAX_REMARK
     if ((MEM_UNIT)ret > _max_addr) {
         _max_addr = (MEM_UNIT)ret;
-        GT_LOGD(GT_LOG_TAG_MEM, ">>>>>> max addr: %p <<<<<<", _max_addr);
+        GT_LOGD(GT_LOG_TAG_MEM, ">>>>>> %d R max addr: %p <<<<<<", ++_malloc_count, _max_addr);
     }
 #endif
     return ret;
