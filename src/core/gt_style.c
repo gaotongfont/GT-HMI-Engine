@@ -154,6 +154,9 @@ void gt_obj_set_visible(gt_obj_st * obj, gt_visible_et is_visible)
 
 bool gt_obj_get_visible(gt_obj_st * obj)
 {
+    if (NULL == obj) {
+        return false;
+    }
     return obj->visible;
 }
 
@@ -352,51 +355,145 @@ void gt_obj_child_set_prop(gt_obj_st * obj, gt_obj_prop_type_em type, uint8_t va
 
 void gt_obj_set_state(gt_obj_st * obj, gt_state_et state)
 {
+    if (NULL == obj) {
+        return;
+    }
     obj->state = state;
 }
 
 gt_state_et gt_obj_get_state(gt_obj_st * obj)
 {
+    if (NULL == obj) {
+        return GT_STATE_NONE;
+    }
     return obj->state;
 }
 
 void gt_obj_set_fixed(gt_obj_st * obj, bool is_fixed)
 {
+    if (NULL == obj) {
+        return;
+    }
     obj->fixed = is_fixed;
 }
 
 bool gt_obj_get_fixed(gt_obj_st * obj)
 {
+    if (NULL == obj) {
+        return false;
+    }
     return obj->fixed;
 }
 
 void gt_obj_set_overflow(gt_obj_st * obj, bool is_overflow)
 {
+    if (NULL == obj) {
+        return;
+    }
     obj->overflow = is_overflow;
 }
 
 bool gt_obj_get_overflow(gt_obj_st * obj)
 {
+    if (NULL == obj) {
+        return false;
+    }
     return obj->overflow;
 }
 
 void gt_obj_set_inside(gt_obj_st * obj, bool is_inside)
 {
+    if (NULL == obj) {
+        return;
+    }
     obj->inside = is_inside;
 }
 
 bool gt_obj_get_inside(gt_obj_st * obj)
 {
+    if (NULL == obj) {
+        return false;
+    }
     return obj->inside;
+}
+
+void gt_obj_set_septal_line(gt_obj_st * obj, bool enabled)
+{
+    if (NULL == obj) {
+        return;
+    }
+    obj->septal_line_y = enabled;
+}
+
+bool gt_obj_get_septal_line(gt_obj_st * obj)
+{
+    if (NULL == obj) {
+        return false;
+    }
+    return obj->septal_line_y;
+}
+
+void gt_obj_set_mask_effect(gt_obj_st * obj, bool is_keep_alive)
+{
+    if (NULL == obj) {
+        return;
+    }
+    obj->mask_effect = is_keep_alive;
+}
+
+bool gt_obj_get_mask_effect(gt_obj_st * obj)
+{
+    if (NULL == obj) {
+        return false;
+    }
+    return obj->mask_effect;
+}
+
+void gt_obj_set_touch_parent(gt_obj_st * obj, bool is_touch_parent)
+{
+    if (NULL == obj) {
+        return;
+    }
+    obj->touch_parent = is_touch_parent;
+}
+
+bool gt_obj_get_touch_parent(gt_obj_st * obj)
+{
+    if (NULL == obj) {
+        return false;
+    }
+    return obj->touch_parent;
+}
+
+void gt_obj_set_trigger_mode(gt_obj_st * obj, gt_obj_trigger_mode_et is_trigger_mode)
+{
+    if (NULL == obj) {
+        return;
+    }
+    obj->trigger_mode = is_trigger_mode;
+}
+
+gt_obj_trigger_mode_et gt_obj_get_trigger_mode(gt_obj_st * obj)
+{
+    if (NULL == obj) {
+        return GT_OBJ_TRIGGER_MODE_HOLD_ON;
+    }
+    return obj->trigger_mode;
 }
 
 void gt_obj_set_virtual(gt_obj_st * obj, bool is_virtual)
 {
+    if (NULL == obj) {
+        return;
+    }
     obj->virtual = is_virtual;
 }
 
 bool gt_obj_get_virtual(gt_obj_st * obj)
 {
+    if (NULL == obj) {
+        return false;
+    }
     return obj->virtual;
 }
 

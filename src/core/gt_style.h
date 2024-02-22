@@ -135,6 +135,43 @@ void gt_obj_set_inside(gt_obj_st * obj, bool is_inside);
 bool gt_obj_get_inside(gt_obj_st * obj);
 
 /**
+ * @brief Draw the vertical septal line
+ *
+ * @param obj
+ * @param enabled true: enabled, false: disabled
+ */
+void gt_obj_set_septal_line(gt_obj_st * obj, bool enabled);
+bool gt_obj_get_septal_line(gt_obj_st * obj);
+
+void gt_obj_set_mask_effect(gt_obj_st * obj, bool is_keep_alive);
+bool gt_obj_get_mask_effect(gt_obj_st * obj);
+
+/**
+ * @brief touch event will be called to parent object
+ *
+ * @param obj
+ * @param is_touch_parent true: enabled, false: disabled
+ */
+void gt_obj_set_touch_parent(gt_obj_st * obj, bool is_touch_parent);
+bool gt_obj_get_touch_parent(gt_obj_st * obj);
+
+/**
+ * @brief state toggle trigger mode
+ *
+ * @param obj
+ * @param is_trigger_mode 0:[default] hold-on; 1: switch
+ */
+void gt_obj_set_trigger_mode(gt_obj_st * obj, gt_obj_trigger_mode_et is_trigger_mode);
+
+/**
+ * @brief
+ *
+ * @param obj
+ * @return gt_obj_trigger_mode_et 0:[default] hold-on; 1: switch
+ */
+gt_obj_trigger_mode_et gt_obj_get_trigger_mode(gt_obj_st * obj);
+
+/**
  * @brief Controls are virtual logic, not entities, and cannot receive touch responses
  *
  * @param obj

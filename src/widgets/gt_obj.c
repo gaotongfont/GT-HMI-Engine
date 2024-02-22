@@ -64,7 +64,7 @@ static const gt_obj_class_st gt_screen_class = {
 /* static functions -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj) {
     gt_attr_rect_st rect_attr;
-    if (obj->mask_effect && obj->state) {
+    if ( gt_obj_get_mask_effect(obj) && gt_obj_get_state(obj) ) {
         gt_graph_init_rect_attr(&rect_attr);
         rect_attr.reg.is_fill    = true;
         // rect_attr.border_width   = 2;
@@ -77,7 +77,7 @@ static void _init_cb(gt_obj_st * obj) {
         draw_bg(obj->draw_ctx, &rect_attr, &real_area);
     }
 
-    if (obj->septal_line_y) {
+    if (gt_obj_get_septal_line(obj)) {
         gt_graph_init_rect_attr(&rect_attr);
         rect_attr.reg.is_fill    = true;
         rect_attr.radius         = 1;
@@ -118,21 +118,21 @@ static void _screen_scroll(gt_obj_st * obj) {
 }
 
 static void _masked_effect_handler(gt_obj_st * obj) {
-    if (false == obj->mask_effect) {
+    if (false == gt_obj_get_mask_effect(obj)) {
         return;
     }
     gt_disp_invalid_area(obj);
 }
 
 static void _unmasked_effect_handler(gt_obj_st * obj) {
-    if (false == obj->mask_effect) {
+    if (false == gt_obj_get_mask_effect(obj)) {
         return;
     }
     gt_disp_invalid_area(obj);
 }
 
 static void _change_state_by_trigger_mode(gt_obj_st * obj, bool is_pressed) {
-    if (obj->trigger_mode) {
+    if (gt_obj_get_trigger_mode(obj)) {
         if (false == is_pressed) {
             gt_obj_set_state(obj, !gt_obj_get_state(obj));
         }

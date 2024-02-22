@@ -81,7 +81,7 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.bg_opa = checkbox->opa;
-    if( checkbox->state == GT_STATE_PRESSED ){
+    if( gt_obj_get_state(checkbox) == GT_STATE_PRESSED ){
         rect_attr.reg.is_fill = 1;
         rect_attr.border_width = 0;
         rect_attr.bg_color = gt_color_hex(0x409EFF);

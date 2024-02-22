@@ -144,7 +144,7 @@ static void _set_last_active_obj(gt_obj_st * listview, gt_obj_st * target) {
 }
 
 static void _reset_last_active_state(gt_obj_st * target) {
-    if (target->trigger_mode) {
+    if (gt_obj_get_trigger_mode(target)) {
         return;
     }
     gt_obj_set_state(target, false);
@@ -269,9 +269,9 @@ void gt_listview_add_item(gt_obj_st * listview, char * item)
     gt_obj_set_inside(obj, true);
     gt_obj_set_bubble_notify(obj, true);
     // TODO
-    obj->septal_line_y = true;
-    obj->mask_effect = true;
-    // obj->trigger_mode = true;
+    gt_obj_set_septal_line(obj, true);
+    gt_obj_set_mask_effect(obj, true);
+    // gt_obj_set_trigger_mode(obj, true);
 
     /** label */
     gt_obj_st * lab = gt_label_create(obj);
@@ -289,7 +289,7 @@ void gt_listview_add_item(gt_obj_st * listview, char * item)
     gt_label_set_font_thick_en(lab, style->font_info.thick_en);
     gt_label_set_space(lab, style->space_x, style->space_y);
     gt_label_set_text(lab, item);
-    lab->touch_parent = true;
+    gt_obj_set_touch_parent(lab, true);
 
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_INSIDE, true);

@@ -114,7 +114,7 @@ typedef struct gt_obj_s {
     uint32_t overflow      : 1;     /* [Inheritable]obj overflow state, 0:un-overflow, 1:overflow (widget can out of screen area size) */
     uint32_t inside        : 1;     /* obj display only limited to parent area, 0:un-inside, 1:inside (widget is inside screen area size) */
     uint32_t virtual       : 1;     /* obj virtual state, 0:un-virtual[default], 1:virtual (widget is virtual logic, not entities) */
-    uint32_t septal_line_y : 1;     /* obj vertical septal line state, 0:un-septal_line, 1:septal_line */
+    uint32_t septal_line_y : 1;     /* draw obj vertical septal line state, 0:un-septal_line, 1:septal_line */
 
     uint32_t mask_effect   : 1;     /* default object  */
     uint32_t trigger_mode  : 1;     /* state toggle trigger mode @ref gt_obj_trigger_mode_et, 0:[default] hold-on; 1: switch */
