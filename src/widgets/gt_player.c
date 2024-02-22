@@ -73,6 +73,7 @@ typedef struct _gt_player_reg_s {
 }_gt_player_reg_st;
 
 typedef struct _gt_player_s {
+    gt_obj_st obj;
     uint32_t last_player_tick;
     _gt_player_reg_st reg;
     _gt_player_obj_st target;
@@ -187,7 +188,7 @@ static inline void _default_init(gt_obj_st * obj, _gt_player_st * style) {
 }
 
 static void _init_cb(gt_obj_st * obj) {
-    _gt_player_st * style = (_gt_player_st * )obj->style;
+    _gt_player_st * style = (_gt_player_st * )obj;
     _unlock(style);
     if (0 == style->target.count) {
         return;
@@ -250,20 +251,14 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_player_st ** style_p = (_gt_player_st ** )&obj->style;
-    if (NULL == *style_p) {
-        return ;
-    }
-
-    switch ((*style_p)->reg.type) {
+    _gt_player_st * style_p = (_gt_player_st * )obj;
+    switch (style_p->reg.type) {
         default:
-            _destroy_type_default(*style_p);
+            _destroy_type_default(style_p);
             break;
     }
 
-    _destroy_timer(*style_p);
-    gt_mem_free(*style_p);
-    *style_p = NULL;
+    _destroy_timer(style_p);
 }
 
 /**
@@ -301,7 +296,7 @@ static inline bool _is_type_none(_gt_player_st * style) {
  * @param obj
  */
 static void _turn_prev_item(gt_obj_st * obj, bool is_loop) {
-    _gt_player_st * style = (_gt_player_st * )obj->style;
+    _gt_player_st * style = (_gt_player_st * )obj;
     if (NULL == style) {
         return ;
     }
@@ -335,7 +330,7 @@ static void _turn_prev_item(gt_obj_st * obj, bool is_loop) {
  * @param obj
  */
 static void _turn_next_item(gt_obj_st * obj, bool is_loop) {
-    _gt_player_st * style = (_gt_player_st * )obj->style;
+    _gt_player_st * style = (_gt_player_st * )obj;
     if (NULL == style) {
         return ;
     }
@@ -368,11 +363,7 @@ static inline void _change_item_handler(gt_obj_st * obj, bool is_next) {
     if (NULL == obj) {
         return ;
     }
-    if (NULL == obj->style) {
-        return ;
-    }
-
-    _gt_player_st * style = (_gt_player_st * )obj->style;
+    _gt_player_st * style = (_gt_player_st * )obj;
     bool is_loop = true;
 
     switch (style->reg.mode)
@@ -399,7 +390,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     {
         case GT_EVENT_TYPE_UPDATE_STYLE:
         case GT_EVENT_TYPE_DRAW_START: {
-            _invalid_area(obj, (_gt_player_st * )obj->style);
+            _invalid_area(obj, (_gt_player_st * )obj);
             break;
         }
         case GT_EVENT_TYPE_DRAW_END: {
@@ -435,7 +426,7 @@ static inline uint16_t _add_item(gt_obj_st * obj, void * item, uint16_t item_byt
         return 0;
     }
 
-    _gt_player_st * style = (_gt_player_st * )obj->style;
+    _gt_player_st * style = (_gt_player_st * )obj;
     if (NULL == style) {
         return 0;
     }
@@ -476,7 +467,7 @@ static void _auto_play_callback(struct _gt_timer_s * timer) {
     if (NULL == obj) {
         return;
     }
-    _gt_player_st * style = (_gt_player_st * )obj->style;
+    _gt_player_st * style = (_gt_player_st * )obj;
     if (!_lock(style)) {
         /** The callback has been executed, waiting for it to be displayed */
         return ;
@@ -513,8 +504,6 @@ static inline void _set_play_status(_gt_player_st * style, bool is_play) {
 gt_obj_st * gt_player_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_player_st * style = (_gt_player_st * )obj->style;
-    gt_memset(style, 0, sizeof(_gt_player_st));
 
     return obj;
 }
@@ -527,7 +516,7 @@ void gt_player_set_type(gt_obj_st * obj, gt_player_type_et type)
     if (type > _GET_BIT_SHIFT_SIZE(_GT_PLAYER_BIT_TYPE_LENGTH)) {
         type = GT_PLAYER_TYPE_NONE;
     }
-    ((_gt_player_st * )(obj->style))->reg.type = type;
+    ((_gt_player_st * )obj)->reg.type = type;
 }
 
 void gt_player_set_mode(gt_obj_st * obj, gt_player_mode_et mode)
@@ -538,7 +527,7 @@ void gt_player_set_mode(gt_obj_st * obj, gt_player_mode_et mode)
     if (mode > _GET_BIT_SHIFT_SIZE(_GT_PLAYER_BIT_MODE_LENGTH)) {
         mode = GT_PLAYER_MODE_NONE;
     }
-    ((_gt_player_st * )(obj->style))->reg.mode = mode;
+    ((_gt_player_st * )obj)->reg.mode = mode;
 }
 
 void gt_player_set_auto_play_period(gt_obj_st * obj, uint32_t period)
@@ -546,10 +535,7 @@ void gt_player_set_auto_play_period(gt_obj_st * obj, uint32_t period)
     if (NULL == obj) {
         return ;
     }
-    if (NULL == obj->style) {
-        return ;
-    }
-    _gt_player_st * style = (_gt_player_st * )obj->style;
+    _gt_player_st * style = (_gt_player_st * )obj;
     style->reg.auto_play = period ? 1 : 0;
 
     if (!style->reg.auto_play) {
@@ -573,11 +559,7 @@ void gt_player_remove_item(gt_obj_st * obj, void * item)
         return ;
     }
 
-    _gt_player_st * style = (_gt_player_st * )obj->style;
-    if (NULL == style) {
-        return ;
-    }
-
+    _gt_player_st * style = (_gt_player_st * )obj;
     if (NULL == style->target.list) {
         return ;
     }
@@ -596,11 +578,7 @@ void gt_player_remove_item_by_index(gt_obj_st * obj, uint16_t idx) {
         return ;
     }
 
-    _gt_player_st * style = (_gt_player_st * )obj->style;
-    if (NULL == style) {
-        return ;
-    }
-
+    _gt_player_st * style = (_gt_player_st * )obj;
     if (NULL == style->target.list) {
         return ;
     }
@@ -620,7 +598,7 @@ uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_siz
         return count;
     }
     uint16_t idx = count - 1;
-    _gt_player_st * style = (_gt_player_st * )obj->style;
+    _gt_player_st * style = (_gt_player_st * )obj;
     style->target.list[idx]->area = *area;
     return count;
 }
@@ -636,10 +614,7 @@ void gt_player_set_index(gt_obj_st * obj, gt_size_t index)
     if (NULL == obj) {
         return ;
     }
-    _gt_player_st * style = (_gt_player_st * )obj->style;
-    if (NULL == style) {
-        return ;
-    }
+    _gt_player_st * style = (_gt_player_st * )obj;
     if (NULL == style->target.list) {
         return ;
     }
@@ -651,17 +626,17 @@ void gt_player_set_index(gt_obj_st * obj, gt_size_t index)
 
 gt_size_t gt_player_get_index(gt_obj_st * obj)
 {
-    return ((_gt_player_st * )obj->style)->target.index;
+    return ((_gt_player_st * )obj)->target.index;
 }
 
 uint16_t gt_player_get_item_count(gt_obj_st * obj)
 {
-    return ((_gt_player_st * )obj->style)->target.count;
+    return ((_gt_player_st * )obj)->target.count;
 }
 
 float gt_player_get_percentage(gt_obj_st * obj)
 {
-    _gt_player_st * style = (_gt_player_st * )obj->style;
+    _gt_player_st * style = (_gt_player_st * )obj;
     if (!style->target.count) {
         return 0.0;
     }
@@ -673,7 +648,7 @@ float gt_player_get_percentage(gt_obj_st * obj)
 
 void gt_player_turn_prev(gt_obj_st * obj)
 {
-    if (_is_type_none((_gt_player_st * )obj->style)) {
+    if (_is_type_none((_gt_player_st * )obj)) {
         GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
     }
@@ -682,7 +657,7 @@ void gt_player_turn_prev(gt_obj_st * obj)
 
 void gt_player_turn_next(gt_obj_st * obj)
 {
-    if (_is_type_none((_gt_player_st * )obj->style)) {
+    if (_is_type_none((_gt_player_st * )obj)) {
         GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
     }
@@ -691,7 +666,7 @@ void gt_player_turn_next(gt_obj_st * obj)
 
 void gt_player_play(gt_obj_st * obj)
 {
-    _gt_player_st * style = (_gt_player_st * )obj->style;
+    _gt_player_st * style = (_gt_player_st * )obj;
     if (_is_type_none(style)) {
         GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
@@ -701,7 +676,7 @@ void gt_player_play(gt_obj_st * obj)
 
 void gt_player_stop(gt_obj_st * obj)
 {
-    _gt_player_st * style = (_gt_player_st * )obj->style;
+    _gt_player_st * style = (_gt_player_st * )obj;
     if (_is_type_none(style)) {
         GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
@@ -711,7 +686,7 @@ void gt_player_stop(gt_obj_st * obj)
 
 void gt_player_toggle(gt_obj_st * obj)
 {
-    _gt_player_st * style = (_gt_player_st * )obj->style;
+    _gt_player_st * style = (_gt_player_st * )obj;
     if (_is_type_none(style)) {
         GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
@@ -725,7 +700,7 @@ void gt_player_toggle(gt_obj_st * obj)
 
 void gt_player_dir_toggle(gt_obj_st * obj)
 {
-    _gt_player_st * style = (_gt_player_st * )obj->style;
+    _gt_player_st * style = (_gt_player_st * )obj;
     if (_is_type_none(style)) {
         GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
@@ -738,7 +713,7 @@ bool gt_player_dir_is_forward(gt_obj_st * obj)
     if (NULL == obj) {
         return false;
     }
-    _gt_player_st * style = (_gt_player_st * )obj->style;
+    _gt_player_st * style = (_gt_player_st * )obj;
     return _is_dir_next(style);
 }
 
@@ -747,7 +722,7 @@ void gt_player_set_real_time_update(gt_obj_st * obj, bool is_real_time_update)
     if (NULL == obj) {
         return ;
     }
-    _gt_player_st * style = (_gt_player_st * )obj->style;
+    _gt_player_st * style = (_gt_player_st * )obj;
     style->reg.real_time_update = is_real_time_update;
 }
 
@@ -756,7 +731,7 @@ bool gt_player_is_real_time_update(gt_obj_st * obj)
     if (NULL == obj) {
         return false;
     }
-    _gt_player_st * style = (_gt_player_st * )obj->style;
+    _gt_player_st * style = (_gt_player_st * )obj;
     return style->reg.real_time_update;
 }
 

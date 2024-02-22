@@ -26,8 +26,8 @@
 #define MY_CLASS    &gt_imgbtn_class
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_imgbtn_s
-{
+typedef struct _gt_imgbtn_s {
+    gt_obj_st obj;
     char * src;
     char * src_press;           ///< imgbtn src when press, It can be a virt file name/path or an array of C
     char * src_release;         ///< imgbtn src when release
@@ -60,7 +60,7 @@ const gt_obj_class_st gt_imgbtn_class = {
 
 /* static functions -----------------------------------------------------*/
 static void _gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src){
-    _gt_imgbtn_st * style = imgbtn->style;
+    _gt_imgbtn_st * style = (_gt_imgbtn_st * )imgbtn;
 
     if( src == NULL ){
         style->src = style->src_base;
@@ -70,7 +70,7 @@ static void _gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src){
 }
 
 static char * _gt_imgbtn_get_src(gt_obj_st * obj) {
-    _gt_imgbtn_st * style = obj->style;
+    _gt_imgbtn_st * style = (_gt_imgbtn_st * )obj;
     return style->src;
 }
 
@@ -82,7 +82,7 @@ static char * _gt_imgbtn_get_src(gt_obj_st * obj) {
 static void _init_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
 
-    _gt_imgbtn_st * style = obj->style;
+    _gt_imgbtn_st * style = (_gt_imgbtn_st * )obj;
     void * img = style->src_press && style->selected ? style->src_press : style->src;
     gt_attr_rect_st dsc = {
         .bg_img_src = img,
@@ -107,34 +107,28 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_imgbtn_st ** style_p = (_gt_imgbtn_st ** )&obj->style;
-    if (NULL == *style_p) {
-        return ;
+    _gt_imgbtn_st * style_p = (_gt_imgbtn_st * )obj;
+    if (NULL != style_p->imgs) {
+        _gt_vector_free(&style_p->imgs);
+        style_p->imgs = NULL;
     }
 
-    if (NULL != (*style_p)->imgs) {
-        _gt_vector_free(&(*style_p)->imgs);
-        (*style_p)->imgs = NULL;
+    if (NULL != style_p->src_press) {
+        gt_mem_free(style_p->src_press);
+        style_p->src_press = NULL;
     }
 
-    if (NULL != (*style_p)->src_press) {
-        gt_mem_free((*style_p)->src_press);
-        (*style_p)->src_press = NULL;
+    if (NULL != style_p->src_release) {
+        gt_mem_free(style_p->src_release);
+        style_p->src_release = NULL;
     }
 
-    if (NULL != (*style_p)->src_release) {
-        gt_mem_free((*style_p)->src_release);
-        (*style_p)->src_release = NULL;
+    if (NULL != style_p->src_base) {
+        gt_mem_free(style_p->src_base);
+        style_p->src_base = NULL;
     }
 
-    if (NULL != (*style_p)->src_base) {
-        gt_mem_free((*style_p)->src_base);
-        (*style_p)->src_base = NULL;
-    }
-
-    (*style_p)->src = NULL;
-    gt_mem_free(*style_p);
-    *style_p = NULL;
+    style_p->src = NULL;
 }
 
 static void _invalid_area(gt_obj_st * obj) {
@@ -147,7 +141,7 @@ static void _invalid_area(gt_obj_st * obj) {
 }
 
 static bool _turn_next_image(gt_obj_st * obj) {
-    _gt_imgbtn_st * style = (_gt_imgbtn_st * )obj->style;
+    _gt_imgbtn_st * style = (_gt_imgbtn_st * )obj;
     if (NULL == style->imgs) {
         return false;
     }
@@ -163,7 +157,7 @@ static bool _turn_next_image(gt_obj_st * obj) {
  * @param e event
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    _gt_imgbtn_st * style = obj->style;
+    _gt_imgbtn_st * style = (_gt_imgbtn_st * )obj;
     gt_event_type_et code = gt_event_get_code(e);
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
@@ -206,9 +200,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_imgbtn_init_style(gt_obj_st * imgbtn)
 {
-    _gt_imgbtn_st * style = (_gt_imgbtn_st * )imgbtn->style;
-
-    gt_memset(style, 0, sizeof(_gt_imgbtn_st));
+    _gt_imgbtn_st * style = (_gt_imgbtn_st * )imgbtn;
 
 	style->selected = 0;
     style->src = NULL;
@@ -244,14 +236,14 @@ gt_obj_st * gt_imgbtn_create(gt_obj_st * parent)
 
 void gt_imgbtn_style_set_selected(gt_obj_st * imgbtn, uint8_t selected)
 {
-    _gt_imgbtn_st * style = imgbtn->style;
+    _gt_imgbtn_st * style = (_gt_imgbtn_st * )imgbtn;
     style->selected = selected ? 1 : 0;
     gt_event_send(imgbtn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src)
 {
-    _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn->style;
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
     if( NULL != style->src_base ){
         gt_mem_free(style->src_base);
     }
@@ -266,7 +258,7 @@ void gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src)
 
 void gt_imgbtn_set_src_press(gt_obj_st * imgbtn, char * src)
 {
-    _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn->style;
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
     if( NULL != style->src_press ){
         gt_mem_free(style->src_press);
     }
@@ -281,7 +273,7 @@ void gt_imgbtn_set_src_press(gt_obj_st * imgbtn, char * src)
 
 void gt_imgbtn_set_src_release(gt_obj_st * imgbtn, char * src)
 {
-    _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn->style;
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
     if( NULL != style->src_release ){
         gt_mem_free(style->src_release);
     }
@@ -298,7 +290,7 @@ bool gt_imgbtn_add_state_item(gt_obj_st * obj, char * src)
     if (NULL == obj) {
         return false;
     }
-    _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj->style;
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
     if (NULL == style) {
         return false;
     }
@@ -319,7 +311,7 @@ bool gt_imgbtn_remove_state_item(gt_obj_st * obj, char * src)
     if (NULL == obj) {
         return false;
     }
-    _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj->style;
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
     if (NULL == style) {
         return false;
     }
@@ -334,7 +326,7 @@ bool gt_imgbtn_clear_all_state_item(gt_obj_st * obj)
     if (NULL == obj) {
         return false;
     }
-    _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj->style;
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
     if (NULL == style) {
         return false;
     }
@@ -346,7 +338,7 @@ int16_t bt_imgbtn_get_state_item_index(gt_obj_st * obj)
     if (NULL == obj) {
         return -1;
     }
-    _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj->style;
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
     if (NULL == style) {
         return -1;
     }

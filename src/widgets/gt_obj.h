@@ -83,7 +83,6 @@ typedef struct gt_obj_s {
     struct _gt_draw_ctx_t * draw_ctx;
     gt_obj_process_attr_st process_attr;
 
-    style_widget_t style;
     gt_color_t bgcolor;
 
     gt_area_st area;                    /* base area */

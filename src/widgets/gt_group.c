@@ -25,7 +25,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_group_s {
-    uint8_t reserved;
+    gt_obj_st obj;
 }_gt_group_st;
 
 /* static variables -----------------------------------------------------*/
@@ -99,9 +99,8 @@ gt_obj_st * gt_group_create(gt_obj_st * parent)
         return NULL;
     }
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_group_st * style = (_gt_group_st * )obj->style;
+    _gt_group_st * style = (_gt_group_st * )obj;
 
-    gt_memset(style, 0, sizeof(_gt_group_st));
     gt_obj_set_virtual(obj, true);
     if (obj->parent) {
         gt_area_copy(&obj->area, &obj->parent->area);

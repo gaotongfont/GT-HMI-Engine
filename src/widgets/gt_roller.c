@@ -53,6 +53,7 @@ typedef struct {
  * @brief Roller style struct
  */
 typedef struct _gt_roller_s {
+    gt_obj_st obj;
     gt_obj_st * text;                   // Options text, free by class
     gt_anim_st * anim_snap;             // The anim object to scroll snap
     uint16_t scroll_vertical_length;    // The length of vertical scroll
@@ -87,7 +88,7 @@ const gt_obj_class_st gt_roller_class = {
 
 /* static functions -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj) {
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill    = true;
@@ -148,7 +149,7 @@ static inline uint16_t _get_infinite_scroll_increment(uint16_t total_length) {
  * @param options The text of items
  */
 static void _calc_scroll_vertical_length(gt_obj_st * obj, char const * const options) {
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     gt_size_t len = strlen(options);
     gt_size_t count = 1;
     gt_size_t i = 0;
@@ -175,7 +176,7 @@ static void _calc_scroll_vertical_length(gt_obj_st * obj, char const * const opt
  * @return gt_size_t The real value where label be set to.
  */
 static gt_size_t _normal_limit_y(gt_obj_st * obj, gt_size_t val) {
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     gt_size_t ret_val = val;
     gt_size_t top_y = (style->count_of_show >> 1) * (obj->area.h / style->count_of_show);
     gt_size_t bottom_y = - style->scroll_vertical_length - top_y;
@@ -205,7 +206,7 @@ static gt_size_t _normal_limit_y(gt_obj_st * obj, gt_size_t val) {
 }
 
 static void _scroll_text_handler(gt_obj_st * obj) {
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     if (NULL == style->text) {
         return;
     }
@@ -214,7 +215,7 @@ static void _scroll_text_handler(gt_obj_st * obj) {
 }
 
 static void _scroll_snap(gt_obj_st * obj) {
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     gt_size_t scroll_y = gt_obj_scroll_get_y(obj);
 
     if (GT_ROLLER_MODE_INFINITE == style->reg.mode) {
@@ -251,7 +252,7 @@ static void _scroll_snap(gt_obj_st * obj) {
 }
 
 static void _scroll_anim_ready_handler(struct gt_anim_s * anim) {
-    _gt_roller_st * style = (_gt_roller_st * )anim->target->style;
+    _gt_roller_st * style = (_gt_roller_st * )anim->target;
     if (_SCROLL_SNAP_DONE == style->reg.state) {
         return ;
     }
@@ -269,7 +270,7 @@ static void _notify_update_value_ready_cb(struct gt_anim_s * anim) {
 }
 
 static void _select_target_item(gt_obj_st * obj) {
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     uint16_t item_height = style->text->area.h / style->count_total;
     uint16_t item_offset = gt_abs(obj->process_attr.scroll.y - (style->count_of_show >> 1) * item_height);
 
@@ -287,7 +288,7 @@ static void _select_target_item(gt_obj_st * obj) {
 }
 
 static void _ready_scroll_snap_anim(struct gt_obj_s * obj) {
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    _gt_roller_st * style = (_gt_roller_st * )obj;
 
     if (_SCROLL_SNAP_DONE == style->reg.state) {
         style->reg.state = _SCROLL_SNAP_NONE;
@@ -350,7 +351,7 @@ static inline bool _set_mode(_gt_roller_st * style, gt_roller_mode_em mode) {
  * @param obj
  */
 static void _resize_display_area_height(gt_obj_st * obj) {
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    _gt_roller_st * style = (_gt_roller_st * )obj;
 
     if (NULL == style->text) {
         return;
@@ -368,7 +369,7 @@ static void _resize_display_area_height(gt_obj_st * obj) {
 }
 
 static void _reset_scroll_size(gt_obj_st * obj) {
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     _calc_scroll_vertical_length(obj, gt_label_get_text(style->text));
 
     _resize_display_area_height(obj);
@@ -379,7 +380,7 @@ static void _reset_scroll_size(gt_obj_st * obj) {
 }
 
 static gt_obj_st * _create_text(gt_obj_st * obj) {
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     if (style->text) {
         return style->text;
     }
@@ -390,8 +391,7 @@ static gt_obj_st * _create_text(gt_obj_st * obj) {
 }
 
 static void _resize_display_width(gt_obj_st * obj) {
-
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     if (NULL == style->text) {
         return;
     }
@@ -416,12 +416,7 @@ gt_obj_st * gt_roller_create(gt_obj_st * parent)
     if (NULL == obj) {
         return NULL;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        gt_obj_destroy(obj);
-        return NULL;
-    }
-    gt_memset(style, 0, sizeof(_gt_roller_st));
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     style->count_of_show = 3;
     style->line_space = 10;
 
@@ -439,10 +434,7 @@ void gt_roller_set_display_item_count(gt_obj_st * obj, uint8_t count)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        return;
-    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     if (0 == count) {
         return;
     }
@@ -463,10 +455,7 @@ void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mo
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        return;
-    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     if (NULL == options) {
         return;
     }
@@ -518,13 +507,10 @@ gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return GT_RES_FAIL;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     if (_SCROLL_SNAP_READY == style->reg.state) {
         /** Prevent intermediate animation events from being removed */
         return GT_RES_INV;
-    }
-    if (NULL == style) {
-        return GT_RES_FAIL;
     }
     gt_size_t diff_count = index - style->selected;
 
@@ -558,13 +544,10 @@ gt_res_t gt_roller_set_selected_anim(gt_obj_st * obj, gt_size_t index)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return GT_RES_FAIL;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     if (_SCROLL_SNAP_READY == style->reg.state) {
         /** Prevent intermediate animation events from being removed */
         return GT_RES_INV;
-    }
-    if (NULL == style) {
-        return GT_RES_FAIL;
     }
     gt_size_t diff_count = index - style->selected;
 
@@ -598,10 +581,7 @@ gt_size_t gt_roller_get_selected(gt_obj_st * obj)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return -1;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        return -1;
-    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     if (GT_ROLLER_MODE_INFINITE == style->reg.mode) {
         return _get_infinite_real_selected_index(style->selected, style->count_total);
     }
@@ -619,10 +599,7 @@ bool gt_roller_get_selected_text(gt_obj_st * obj, char * result)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return false;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        return false;
-    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     char * text = gt_label_get_text(style->text);
     uint16_t offset = 0;
     uint16_t i = 0, len = strlen(text), count = 0, remark_idx = 0;
@@ -663,10 +640,7 @@ uint8_t gt_roller_get_total_count(gt_obj_st * obj)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return 0;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        return 0;
-    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     if (GT_ROLLER_MODE_INFINITE == style->reg.mode) {
         return style->count_total / GT_ROLLER_INFINITE_PAGES_COUNT;
     }
@@ -681,10 +655,7 @@ void gt_roller_set_line_space(gt_obj_st * obj, uint8_t space)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return ;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        return ;
-    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     style->line_space = space;
 
     _create_text(obj);
@@ -701,10 +672,7 @@ void gt_roller_set_font_color(gt_obj_st * obj, gt_color_t color)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return ;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        return ;
-    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     _create_text(obj);
     gt_label_set_font_color(style->text, color);
 }
@@ -717,10 +685,7 @@ void gt_roller_set_font_size(gt_obj_st * obj, uint8_t size)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return ;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        return ;
-    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     _create_text(obj);
     gt_label_set_font_size(style->text, size);
     _resize_display_width(obj);
@@ -734,10 +699,7 @@ void gt_roller_set_font_gray(gt_obj_st * obj, uint8_t gray)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return ;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        return ;
-    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     _create_text(obj);
     gt_label_set_font_gray(style->text, gray);
     _resize_display_width(obj);
@@ -751,10 +713,7 @@ void gt_roller_set_font_align(gt_obj_st * obj, uint8_t align)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return ;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        return ;
-    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     _create_text(obj);
     gt_label_set_font_align(style->text, align);
 }
@@ -767,10 +726,7 @@ void gt_roller_set_font_family_cn(gt_obj_st * obj, gt_family_t family)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return ;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        return ;
-    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     _create_text(obj);
     gt_label_set_font_family_cn(style->text, family);
     _resize_display_width(obj);
@@ -784,10 +740,7 @@ void gt_roller_set_font_family_en(gt_obj_st * obj, gt_family_t family)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return ;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        return ;
-    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     _create_text(obj);
     gt_label_set_font_family_en(style->text, family);
     _resize_display_width(obj);
@@ -801,10 +754,7 @@ void gt_roller_set_font_family_fl(gt_obj_st * obj, gt_family_t family)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return ;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        return ;
-    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     _create_text(obj);
     gt_label_set_font_family_fl(style->text, family);
     _resize_display_width(obj);
@@ -818,10 +768,7 @@ void gt_roller_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return ;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        return ;
-    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     _create_text(obj);
     gt_label_set_font_family_numb(style->text, family);
     _resize_display_width(obj);
@@ -835,10 +782,7 @@ void gt_roller_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return ;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        return ;
-    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     _create_text(obj);
     gt_label_set_font_thick_en(style->text, thick);
     _resize_display_width(obj);
@@ -852,10 +796,7 @@ void gt_roller_set_font_thick_cn(gt_obj_st * obj, uint8_t thick)
     if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
         return ;
     }
-    _gt_roller_st * style = (_gt_roller_st * )obj->style;
-    if (NULL == style) {
-        return ;
-    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
     _create_text(obj);
     gt_label_set_font_thick_cn(style->text, thick);
     _resize_display_width(obj);

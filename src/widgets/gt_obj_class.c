@@ -124,12 +124,6 @@ static void _gt_obj_class_destroy_property(gt_obj_st * self) {
         self->class->_deinit_cb(self);
     }
 
-    // free the malloc memory, normally it will be release by widget's _deinit_cb()
-    if (self->style) {
-        gt_mem_free(self->style);
-        self->style = NULL;
-    }
-
     self->draw_ctx = NULL;
     self->class = NULL;
 }
@@ -219,7 +213,7 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
         }
     }
 
-    uint32_t is = get_instance_size();
+    uint32_t is = get_style_size(class);
     gt_obj_st * obj = gt_mem_malloc(is);
     if (!obj) {
         goto null_lb;
@@ -229,16 +223,11 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
     obj->class      = class;
     obj->parent     = parent;
     obj->opa        = GT_OPA_100;
-    obj->style      = gt_mem_malloc(get_style_size(class));
     obj->visible    = GT_VISIBLE;
     obj->scroll_dir = GT_SCROLL_ALL;
 
     /** Inherit from the parent class */
     _gt_obj_class_inherent_attr_from_parent(obj, parent);
-
-    if (!obj->style) {
-        goto obj_lb;
-    }
 
     if (parent == NULL) {
         GT_LOGV(GT_LOG_TAG_GUI, "create a screen");
@@ -246,20 +235,20 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
 
         if (disp == NULL) {
             GT_LOGW(GT_LOG_TAG_GUI, "disp is null, please init disp");
-            goto style_lb;
+            goto obj_lb;
         }
 
         if (disp->screens == NULL || disp->cnt_scr == 0 ) {
             disp->screens = gt_mem_malloc(sizeof(gt_obj_st *));
             if (!disp->screens) {
-                goto style_lb;
+                goto obj_lb;
             }
             disp->screens[disp->cnt_scr++] = obj;
         } else {
             // gt_mem_realloc can't operate NULL ptr
             disp->screens = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr + 1));
             if (!disp->screens) {
-                goto style_lb;
+                goto obj_lb;
             }
             disp->screens[disp->cnt_scr++] = obj;
         }
@@ -269,14 +258,12 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
         obj->area.h = gt_disp_get_res_ver(NULL);
     } else {
         if (false == _add_obj_to_parent(obj, parent)) {
-            goto style_lb;
+            goto obj_lb;
         }
     }
 
     return obj;
 
-style_lb:
-    gt_mem_free(obj->style);
 obj_lb:
     gt_mem_free(obj);
 null_lb:

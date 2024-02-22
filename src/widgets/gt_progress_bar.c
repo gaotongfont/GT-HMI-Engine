@@ -24,8 +24,8 @@
 #define MY_CLASS    &gt_progress_bar_class
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_progress_bar_s
-{
+typedef struct _gt_progress_bar_s {
+    gt_obj_st obj;
     gt_color_t color_act;
     gt_color_t color_ina;
     gt_size_t start;
@@ -61,7 +61,7 @@ const gt_obj_class_st gt_progress_bar_class = {
  * @param obj
  */
 static void _init_cb(gt_obj_st * progress_bar) {
-    _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
     gt_size_t w, h;
     int dist = 0, dist_min = 0;
     int all_pos = style->end - style->start;
@@ -136,17 +136,10 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_progress_bar_st ** style_p = (_gt_progress_bar_st ** )&obj->style;
-    if (NULL == *style_p) {
-        return ;
-    }
-
-    gt_mem_free(*style_p);
-    *style_p = NULL;
 }
 
 static void _scroll_dir_ver(gt_obj_st * obj, bool is_up) {
-    _gt_progress_bar_st * style = obj->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st * )obj;
     gt_size_t val = is_up ? 1 : -1;
 
     if (GT_BAR_DIR_VER_U2D == style->dir) {
@@ -157,7 +150,7 @@ static void _scroll_dir_ver(gt_obj_st * obj, bool is_up) {
 }
 
 static void _scroll_dir_hor(gt_obj_st * obj, bool is_right) {
-    _gt_progress_bar_st * style = obj->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st * )obj;
     gt_size_t val = is_right ? 1 : -1;
 
     if (GT_BAR_DIR_HOR_L2R == style->dir) {
@@ -219,9 +212,7 @@ gt_obj_st * gt_progress_bar_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
 
-    _gt_progress_bar_st * style = (_gt_progress_bar_st *)obj->style;
-
-    gt_memset(style, 0, sizeof(_gt_progress_bar_st));
+    _gt_progress_bar_st * style = (_gt_progress_bar_st * )obj;
 
     style->color_act = gt_color_hex(0x409eff);
     style->color_ina = gt_color_hex(0xebeef5);
@@ -248,7 +239,7 @@ void gt_progress_bar_set_pos(gt_obj_st * progress_bar, gt_size_t pos)
     if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
         return;
     }
-    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
     if( pos < style->start ){
         style->pos = style->start;
     }else if( pos > style->end ){
@@ -267,7 +258,7 @@ void gt_progress_bar_set_start_end(gt_obj_st * progress_bar, gt_size_t start, gt
     if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
         return;
     }
-    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
     style->start = start;
     style->end = end;
 }
@@ -280,7 +271,7 @@ gt_size_t gt_progress_bar_get_pos(gt_obj_st * progress_bar)
     if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
         return 0;
     }
-    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
     return style->pos;
 }
 
@@ -292,7 +283,7 @@ gt_size_t gt_progress_bar_get_start(gt_obj_st * progress_bar)
     if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
         return 0;
     }
-    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
     return style->start;
 }
 
@@ -304,7 +295,7 @@ gt_size_t gt_progress_bar_get_end(gt_obj_st * progress_bar)
     if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
         return 0;
     }
-    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
     return style->end;
 }
 
@@ -316,7 +307,7 @@ gt_size_t gt_progress_bar_get_total(gt_obj_st * progress_bar)
     if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
         return 0;
     }
-    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
     return ( style->end - style->start);
 }
 
@@ -328,7 +319,7 @@ void gt_progress_bar_set_color_act(gt_obj_st * progress_bar, gt_color_t color)
     if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
         return;
     }
-    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
     style->color_act = color;
     gt_event_send(progress_bar, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -341,7 +332,7 @@ void gt_progress_bar_set_color_ina(gt_obj_st * progress_bar, gt_color_t color)
     if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
         return;
     }
-    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
     style->color_ina = color;
     gt_event_send(progress_bar, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -354,7 +345,7 @@ void gt_progress_bar_set_dir(gt_obj_st * progress_bar, gt_bar_dir_et dir)
     if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
         return;
     }
-    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
     style->dir = dir;
     gt_event_send(progress_bar, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -367,7 +358,7 @@ gt_bar_dir_et gt_progress_bar_get_dir(gt_obj_st * progress_bar)
     if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
         return 0;
     }
-    _gt_progress_bar_st * style = (_gt_progress_bar_st *)progress_bar->style;
+    _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
     return style->dir;
 }
 

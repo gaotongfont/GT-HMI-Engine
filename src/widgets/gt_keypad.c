@@ -42,8 +42,7 @@
 #define _GT_KEYPADS_SPELL_NUMB      (9)
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_keypad_info_s
-{
+typedef struct _gt_keypad_info_s {
     keypad_handler_cb_t handler_cb;
     struct _gt_keypad_map_s * map;
 
@@ -54,8 +53,8 @@ typedef struct _gt_keypad_info_s
 }_gt_keypad_info_st;
 
 
-typedef struct _gt_keypad_s
-{
+typedef struct _gt_keypad_s {
+    gt_obj_st obj;
     gt_obj_st * target;
     char *      kv_selected;
     gt_color_t  color_board;  //board color
@@ -259,7 +258,7 @@ static uint8_t* _gt_keypad_get_spell_text(char const * const kv ,  uint8_t mode)
 
 static char const * const _gt_keypad_get_click_kv(gt_obj_st * obj)
 {
-    _gt_keypad_st * style = obj->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )obj;
     gt_keypad_map_st * map = style->info.map;
     int idx = 0;
     gt_area_st area_key;
@@ -282,7 +281,7 @@ static char const * const _gt_keypad_get_click_kv(gt_obj_st * obj)
 
 static void _gt_keypad_set_kv_selected(gt_obj_st * keypad, char const * const kv)
 {
-    _gt_keypad_st * style = keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     gt_area_st area;
     char * kv_old = style->kv_selected;
     style->kv_selected = (char * )kv;
@@ -296,7 +295,7 @@ static void _gt_keypad_set_kv_selected(gt_obj_st * keypad, char const * const kv
 
 static char * _gt_keypad_get_kv_selected(gt_obj_st * keypad)
 {
-    _gt_keypad_st * style = keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     return style->kv_selected;
 }
 
@@ -316,7 +315,7 @@ static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char const * const
     if( NULL == kv ){
         return area_key;
     }
-    _gt_keypad_st * style = keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     gt_keypad_map_st * map_keypad = style->info.map;
     int idx = 0;
 
@@ -368,7 +367,7 @@ static gt_area_st _gt_keypad_get_key_area(gt_obj_st * keypad, char const * const
  */
 static bool _gt_keypad_is_switch_key_mapping_pressed(gt_obj_st * keypad, const bool update_map)
 {
-    _gt_keypad_st * style = keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     _gt_keypad_kv_list_st const * list_p = _gt_keypad_mode_key_mapping_list;
     uint16_t idx = 0, len = sizeof(_gt_keypad_mode_key_mapping_list) / sizeof(_gt_keypad_kv_list_st);
     bool ret = false;
@@ -391,7 +390,7 @@ static bool _gt_keypad_is_switch_key_mapping_pressed(gt_obj_st * keypad, const b
 
 static uint8_t _gt_keypad_change_mode(gt_obj_st * keypad, gt_keypad_map_st const * const map)
 {
-    _gt_keypad_st * style = keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     _gt_keypad_kv_list_st const * list_p = _gt_keypad_mode_key_mapping_list;
     uint16_t idx = 0, len = sizeof(_gt_keypad_mode_key_mapping_list) / sizeof(_gt_keypad_kv_list_st);
 
@@ -438,7 +437,7 @@ static bool _gt_keypad_check_key_is_icon(char const * const kv){
 
 static void _gt_keypad_spell_event_cb(gt_obj_st * keypad)
 {
-    _gt_keypad_st * style = keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     uint8_t i = 0 , len , *tmp_str = NULL;
     uint32_t unicode ;
 
@@ -572,7 +571,7 @@ SPELL_CODE_CONV:
 }
 
 static _gt_keypad_st * _get_checked_style(gt_obj_st * keypad) {
-    _gt_keypad_st * style = keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     if( style->info.handler_cb != NULL ){
         style->info.handler_cb(keypad);
         return NULL;
@@ -657,7 +656,7 @@ static void _gt_keypad_input_event_cb(gt_obj_st * keypad) {
 
 static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
 {
-    _gt_keypad_st * style = keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     int idx = 0;
     uint8_t* tmp_str = NULL;
 
@@ -758,35 +757,6 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_keypad_st ** style_p = (_gt_keypad_st ** )&obj->style;
-    if (NULL == *style_p) {
-        return ;
-    }
-
-    gt_mem_free(*style_p);
-    *style_p = NULL;
-
-// #if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
-
-//     if(_gt_spell_info && _gt_spell_info->py_cache)
-//     {
-//         gt_mem_free(_gt_spell_info->py_cache);
-//         _gt_spell_info->py_cache = NULL;
-//     }
-
-//     if(_gt_spell_info && _gt_spell_info->content)
-//     {
-//         gt_mem_free(_gt_spell_info->content);
-//         _gt_spell_info->content = NULL;
-//     }
-
-//     if(_gt_spell_info)
-//     {
-//         gt_mem_free(_gt_spell_info);
-//         _gt_spell_info = NULL;
-//     }
-// #endif
-
 }
 
 
@@ -856,9 +826,8 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_keypad_init_style(gt_obj_st * keypad)
 {
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
 
-    gt_memset(style, 0, sizeof(_gt_keypad_st));
     _gt_keypad_update_map(keypad, _map_keypad_mode_lower);
 
     keypad->focus_dis = GT_DISABLED;
@@ -916,9 +885,8 @@ static void _gt_keypad_init_style(gt_obj_st * keypad)
 
 static void _gt_keypad_update_map(gt_obj_st * keypad, gt_keypad_map_st const * map)
 {
-    _gt_keypad_st * style = keypad->style;
-    if(style->info.map == map)
-    {
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
+    if(style->info.map == map) {
         return ;
     }
     style->info.map = (struct _gt_keypad_map_s * )map;
@@ -978,7 +946,7 @@ void gt_keypad_set_target(gt_obj_st * keypad, gt_obj_st * ta)
     if (NULL == ta) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->target = ta;
     gt_event_send(keypad, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -998,7 +966,7 @@ void gt_keypad_set_map(gt_obj_st * keypad,  gt_keypad_map_st * map)
     if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->info.map = map;
     _gt_keypad_update_map(keypad, style->info.map);
 }
@@ -1011,7 +979,7 @@ void gt_keypad_set_handler_cb(gt_obj_st * keypad, keypad_handler_cb_t callback)
     if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->info.handler_cb = callback;
 }
 
@@ -1024,7 +992,7 @@ void gt_keypad_set_color_board(gt_obj_st * keypad, gt_color_t color)
     if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->color_board = color;
 }
 void gt_keypad_set_color_key(gt_obj_st * keypad, gt_color_t color)
@@ -1035,7 +1003,7 @@ void gt_keypad_set_color_key(gt_obj_st * keypad, gt_color_t color)
     if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->color_key = color;
 }
 void gt_keypad_set_color_ctrl_key(gt_obj_st * keypad, gt_color_t color)
@@ -1046,7 +1014,7 @@ void gt_keypad_set_color_ctrl_key(gt_obj_st * keypad, gt_color_t color)
     if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->color_ctrl = color;
 }
 void gt_keypad_set_font_color(gt_obj_st * keypad, gt_color_t color)
@@ -1057,7 +1025,7 @@ void gt_keypad_set_font_color(gt_obj_st * keypad, gt_color_t color)
     if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->font_color = color;
     gt_event_send(keypad, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -1070,7 +1038,7 @@ void gt_keypad_set_font_family_cn(gt_obj_st * keypad, gt_family_t family)
     if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->font_info.style_cn = family;
 }
 void gt_keypad_set_font_family_en(gt_obj_st * keypad, gt_family_t family)
@@ -1081,7 +1049,7 @@ void gt_keypad_set_font_family_en(gt_obj_st * keypad, gt_family_t family)
     if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->font_info.style_en = family;
 }
 void gt_keypad_set_font_family_fl(gt_obj_st * keypad, gt_family_t family)
@@ -1092,7 +1060,7 @@ void gt_keypad_set_font_family_fl(gt_obj_st * keypad, gt_family_t family)
     if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->font_info.style_fl = family;
 }
 
@@ -1104,7 +1072,7 @@ void gt_keypad_set_font_family_numb(gt_obj_st * keypad, gt_family_t family)
     if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->font_info.style_numb = family;
 }
 
@@ -1116,7 +1084,7 @@ void gt_keypad_set_font_size(gt_obj_st * keypad, uint8_t size)
     if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->font_info.size = size;
 }
 void gt_keypad_set_font_gray(gt_obj_st * keypad, uint8_t gray)
@@ -1127,7 +1095,7 @@ void gt_keypad_set_font_gray(gt_obj_st * keypad, uint8_t gray)
     if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->font_info.gray = gray;
 }
 void gt_keypad_set_font_align(gt_obj_st * keypad, uint8_t align)
@@ -1138,7 +1106,7 @@ void gt_keypad_set_font_align(gt_obj_st * keypad, uint8_t align)
     if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->font_align = align;
 }
 void gt_keypad_set_font_thick_en(gt_obj_st * keypad, uint8_t thick)
@@ -1149,7 +1117,7 @@ void gt_keypad_set_font_thick_en(gt_obj_st * keypad, uint8_t thick)
     if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->font_info.thick_en = thick;
 }
 void gt_keypad_set_font_thick_cn(gt_obj_st * keypad, uint8_t thick)
@@ -1160,7 +1128,7 @@ void gt_keypad_set_font_thick_cn(gt_obj_st * keypad, uint8_t thick)
     if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->font_info.thick_cn = thick;
 }
 void gt_keypad_set_space(gt_obj_st * keypad, uint8_t space_x, uint8_t space_y)
@@ -1171,7 +1139,7 @@ void gt_keypad_set_space(gt_obj_st * keypad, uint8_t space_x, uint8_t space_y)
     if (GT_TYPE_KEYPAD != gt_obj_class_get_type(keypad)) {
         return;
     }
-    _gt_keypad_st * style = (_gt_keypad_st * )keypad->style;
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     style->space_x = space_x;
     style->space_y = space_y;
 }

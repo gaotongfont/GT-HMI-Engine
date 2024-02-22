@@ -24,6 +24,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_rect_s {
+    gt_obj_st obj;
     gt_color_t  color_background;
     gt_color_t  color_border;
     uint16_t    radius;
@@ -53,7 +54,7 @@ const gt_obj_class_st gt_rect_class = {
 /* static functions -----------------------------------------------------*/
 
 static inline void _gt_rect_init_widget(gt_obj_st * rect) {
-    _gt_rect_st * style = rect->style;
+    _gt_rect_st * style = (_gt_rect_st * )rect;
 
     if( rect->area.w == 0 || rect->area.h == 0){
         return;
@@ -147,9 +148,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_rect_init_style(gt_obj_st * rect)
 {
-    _gt_rect_st * style = (_gt_rect_st * )rect->style;
-
-    gt_memset(style,0,sizeof(_gt_rect_st));
+    _gt_rect_st * style = (_gt_rect_st * )rect;
 
     style->fill     = 1;
     style->radius   = 0;
@@ -179,31 +178,31 @@ gt_obj_st * gt_rect_create(gt_obj_st * parent)
 }
 void gt_rect_set_bg_color(gt_obj_st * rect, gt_color_t color)
 {
-    _gt_rect_st * style = (_gt_rect_st * )rect->style;
+    _gt_rect_st * style = (_gt_rect_st * )rect;
     style->color_background = color;
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_rect_set_color_border(gt_obj_st * rect, gt_color_t color)
 {
-    _gt_rect_st * style = (_gt_rect_st * )rect->style;
+    _gt_rect_st * style = (_gt_rect_st * )rect;
     style->color_border = color;
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_rect_set_radius(gt_obj_st * rect, uint16_t radius)
 {
-    _gt_rect_st * style = (_gt_rect_st * )rect->style;
+    _gt_rect_st * style = (_gt_rect_st * )rect;
     style->radius = radius;
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_rect_set_border(gt_obj_st * rect, uint16_t border)
 {
-    _gt_rect_st * style = (_gt_rect_st * )rect->style;
+    _gt_rect_st * style = (_gt_rect_st * )rect;
     style->border = border;
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_rect_set_fill(gt_obj_st * rect, uint8_t fill)
 {
-    _gt_rect_st * style = (_gt_rect_st * )rect->style;
+    _gt_rect_st * style = (_gt_rect_st * )rect;
     style->fill = fill;
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }

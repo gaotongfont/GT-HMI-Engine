@@ -27,6 +27,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_img_s {
+    gt_obj_st obj;
     char * src;         // img src, It can be a virt file name/path or an array of C
 }_gt_img_st;
 
@@ -57,7 +58,7 @@ const gt_obj_class_st gt_img_class = {
 static void _init_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
 
-    _gt_img_st * style = (_gt_img_st * )obj->style;
+    _gt_img_st * style = (_gt_img_st * )obj;
     gt_attr_rect_st dsc = {
         .bg_img_src = style->src,
         .bg_opa = obj->opa,
@@ -80,18 +81,11 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_img_st ** style_p = (_gt_img_st ** )&obj->style;
-    if (NULL == *style_p) {
-        return ;
+    _gt_img_st * style_p = (_gt_img_st * )obj;
+    if (NULL != style_p->src) {
+        gt_mem_free(style_p->src);
+        style_p->src = NULL;
     }
-
-    if (NULL != (*style_p)->src) {
-        gt_mem_free((*style_p)->src);
-        (*style_p)->src = NULL;
-    }
-
-    gt_mem_free(*style_p);
-    *style_p = NULL;
 }
 
 /**
@@ -152,17 +146,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-
-static void _gt_img_init_style(gt_obj_st * img)
-{
-    _gt_img_st * style = (_gt_img_st * )img->style;
-
-    gt_memset(style, 0, sizeof(_gt_img_st));
-}
-
-
-
-
 /* global functions / API interface -------------------------------------*/
 
 /**
@@ -173,7 +156,8 @@ static void _gt_img_init_style(gt_obj_st * img)
  */
 gt_obj_st * gt_img_create(gt_obj_st * parent) {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_img_init_style(obj);
+
+
     return obj;
 }
 
@@ -182,7 +166,7 @@ void gt_img_set_src(gt_obj_st * img, char * src){
     if (GT_TYPE_IMG != gt_obj_class_get_type(img)) {
         return ;
     }
-    _gt_img_st * style = (_gt_img_st *)img->style;
+    _gt_img_st * style = (_gt_img_st *)img;
     if (NULL != style->src && !strcmp(src, style->src)) {
         return ;
     }
@@ -203,7 +187,7 @@ char * gt_img_get_src(gt_obj_st * img){
     if (GT_TYPE_IMG != gt_obj_class_get_type(img)) {
         return NULL;
     }
-    _gt_img_st * style = (_gt_img_st *)img->style;
+    _gt_img_st * style = (_gt_img_st *)img;
     return style->src;
 }
 /* end ------------------------------------------------------------------*/

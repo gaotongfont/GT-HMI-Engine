@@ -22,8 +22,8 @@
 #define MY_CLASS    &gt_option_class
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_option_s
-{
+typedef struct _gt_option_s {
+    gt_obj_st obj;
     char ** option;
     gt_color_t color_selected;
     gt_color_t color_unselected;
@@ -53,13 +53,6 @@ const gt_obj_class_st gt_option_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static inline void _gt_option_init_widget(gt_obj_st * option) {
-    // _gt_option_st * style = option->style;
-    // gt_size_t x, y, w, h;           //base attr
-
-
-}
-
 /**
  * @brief obj init option widget call back
  *
@@ -68,7 +61,6 @@ static inline void _gt_option_init_widget(gt_obj_st * option) {
 static void _init_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
 
-    _gt_option_init_widget(obj);
 }
 
 /**
@@ -82,9 +74,6 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    // if (NULL != obj->cache.cache_color) {
-    //     gt_mem_free(obj->cache.cache_color);
-    // }
 }
 
 
@@ -99,9 +88,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
             GT_LOGV(GT_LOG_TAG_GUI, "start draw");
-            if( gt_obj_check_scr(obj) ){
-                _gt_option_init_widget(obj);
-            }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
@@ -135,15 +121,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-
-static void _gt_option_init_style(gt_obj_st * option)
-{
-    // _gt_option_st * _style = option->style;
-}
-
-
-
-
 /* global functions / API interface -------------------------------------*/
 
 /**
@@ -155,7 +132,7 @@ static void _gt_option_init_style(gt_obj_st * option)
 gt_obj_st * gt_option_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_option_init_style(obj);
+
     return obj;
 }
 

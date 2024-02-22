@@ -33,7 +33,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_style_obj_s {
-    gt_color_t bgcolor;
+    gt_obj_st obj;
 }_gt_style_obj_st;
 
 /* static variables -----------------------------------------------------*/

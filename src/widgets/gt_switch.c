@@ -24,8 +24,8 @@
 #define MY_CLASS    &gt_switcher_class
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_switcher_s
-{
+typedef struct _gt_switcher_s {
+    gt_obj_st obj;
     gt_color_t color_act;
     gt_color_t color_ina;
     gt_color_t color_point;
@@ -56,7 +56,7 @@ const gt_obj_class_st gt_switcher_class = {
 
 static inline void _gt_switcher_init_widget(gt_obj_st * switcher)
 {
-    _gt_switcher_st * style = switcher->style;
+    _gt_switcher_st * style = (_gt_switcher_st * )switcher;
     gt_color_t fg_color;
     // set default size
     if( switcher->area.w == 0 || switcher->area.h == 0){
@@ -123,13 +123,6 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_switcher_st ** style_p = (_gt_switcher_st ** )&obj->style;
-    if (NULL == *style_p) {
-        return ;
-    }
-
-    gt_mem_free(*style_p);
-    *style_p = NULL;
 }
 
 
@@ -187,9 +180,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
 static void _gt_switcher_init_style(gt_obj_st * switcher)
 {
-    _gt_switcher_st * style = (_gt_switcher_st * )switcher->style;
-
-    gt_memset(style,0,sizeof(_gt_switcher_st));
+    _gt_switcher_st * style = (_gt_switcher_st * )switcher;
 
     style->color_ina    = gt_color_hex(0xebeef5);
     style->color_act    = gt_color_hex(0x13ce66);
@@ -214,19 +205,19 @@ gt_obj_st * gt_switch_create(gt_obj_st * parent)
 
 void gt_switch_set_color_act(gt_obj_st * switcher, gt_color_t color)
 {
-    _gt_switcher_st * style = switcher->style;
+    _gt_switcher_st * style = (_gt_switcher_st * )switcher;
     style->color_act = color;
     gt_event_send(switcher, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_switch_set_color_ina(gt_obj_st * switcher, gt_color_t color)
 {
-    _gt_switcher_st * style = switcher->style;
+    _gt_switcher_st * style = (_gt_switcher_st * )switcher;
     style->color_ina = color;
     gt_event_send(switcher, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_switch_set_color_point(gt_obj_st * switcher, gt_color_t color)
 {
-    _gt_switcher_st * style = switcher->style;
+    _gt_switcher_st * style = (_gt_switcher_st * )switcher;
     style->color_point = color;
     gt_event_send(switcher, GT_EVENT_TYPE_DRAW_START, NULL);
 }

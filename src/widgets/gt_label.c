@@ -25,7 +25,8 @@
 #define MY_CLASS    &gt_label_class
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_label_s{
+typedef struct _gt_label_s {
+    gt_obj_st obj;
     char * text;
 
     gt_color_t  font_color;
@@ -64,7 +65,7 @@ const gt_obj_class_st gt_label_class = {
  * @param obj
  */
 static void _init_cb(gt_obj_st * obj) {
-    _gt_label_st * style = (_gt_label_st * )obj->style;
+    _gt_label_st * style = (_gt_label_st * )obj;
 
     gt_font_st font = {
         .info       = style->font_info,
@@ -111,18 +112,11 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_label_st ** style_p = (_gt_label_st ** )&obj->style;
-    if (NULL == *style_p) {
-        return ;
+    _gt_label_st * style_p = (_gt_label_st * )obj;
+    if (NULL != style_p->text) {
+        gt_mem_free(style_p->text);
+        style_p->text = NULL;
     }
-
-    if (NULL != (*style_p)->text) {
-        gt_mem_free((*style_p)->text);
-        (*style_p)->text = NULL;
-    }
-
-    gt_mem_free(*style_p);
-    *style_p = NULL;
 }
 
 
@@ -156,13 +150,7 @@ gt_obj_st * gt_label_create(gt_obj_st * parent) {
     if (NULL == obj) {
         return NULL;
     }
-    _gt_label_st * style = (_gt_label_st * )obj->style;
-    if (NULL == style) {
-        gt_obj_destroy(obj);
-        return NULL;
-    }
-
-    gt_memset(style, 0, sizeof(_gt_label_st));
+    _gt_label_st * style = (_gt_label_st * )obj;
 
     style->text = gt_mem_malloc(sizeof("label"));
     gt_memcpy(style->text, "label\0", sizeof("label"));
@@ -192,7 +180,7 @@ void gt_label_set_text(gt_obj_st * label, const char * fmt, ...)
     va_start(args, fmt);
     va_copy(args2, args);
 
-    _gt_label_st * style = (_gt_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label;
     if( NULL != style->text ){
         gt_mem_free(style->text);
     }
@@ -214,88 +202,91 @@ char * gt_label_get_text(gt_obj_st * label)
     if (!label) {
         return NULL;
     }
-    return ((_gt_label_st * )label->style)->text;
+    return ((_gt_label_st * )label)->text;
 }
 
 void gt_label_set_font_color(gt_obj_st * label, gt_color_t color)
 {
-    _gt_label_st * style = (_gt_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label;
     style->font_color = color;
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_label_set_font_size(gt_obj_st * label, uint8_t size)
 {
-    _gt_label_st * style = (_gt_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.size = size;
 }
 
 void gt_label_set_font_gray(gt_obj_st * label, uint8_t gray)
 {
-    _gt_label_st * style = (_gt_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.gray = gray;
 }
 
 void gt_label_set_font_align(gt_obj_st * label, uint8_t align)
 {
-    _gt_label_st * style = (_gt_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label;
     style->font_align = align;
 }
 
 void gt_label_set_font_family_cn(gt_obj_st * label, gt_family_t family)
 {
-    _gt_label_st * style = (_gt_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.style_cn = family;
 }
 void gt_label_set_font_family_en(gt_obj_st * label, gt_family_t family)
 {
-    _gt_label_st * style = (_gt_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.style_en = family;
 }
 
 void gt_label_set_font_family_fl(gt_obj_st * label, gt_family_t family)
 {
-    _gt_label_st * style = (_gt_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.style_fl = family;
 }
 
 void gt_label_set_font_thick_en(gt_obj_st * label, uint8_t thick)
 {
-    _gt_label_st * style = (_gt_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.thick_en = thick;
 }
+
 void gt_label_set_font_thick_cn(gt_obj_st * label, uint8_t thick)
 {
-    _gt_label_st * style = (_gt_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.thick_cn = thick;
 }
+
 void gt_label_set_font_family_numb(gt_obj_st * label, gt_family_t family)
 {
-    _gt_label_st * style = (_gt_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.style_numb = family;
 }
+
 void gt_label_set_space(gt_obj_st * label, uint8_t space_x, uint8_t space_y)
 {
-    _gt_label_st * style = (_gt_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label;
     style->space_x = space_x;
     style->space_y = space_y;
 }
 
 uint8_t gt_label_get_font_size(gt_obj_st * label)
 {
-    _gt_label_st * style = (_gt_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label;
     return style->font_info.size;
 }
 
 uint8_t gt_label_get_space_x(gt_obj_st * label)
 {
-    _gt_label_st * style = (_gt_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label;
     return style->space_x;
 }
 
 uint8_t gt_label_get_space_y(gt_obj_st * label)
 {
-    _gt_label_st * style = (_gt_label_st * )label->style;
+    _gt_label_st * style = (_gt_label_st * )label;
     return style->space_y;
 }
 
@@ -307,11 +298,7 @@ uint16_t gt_label_get_longest_line_substring_width(gt_obj_st * label)
     if (GT_TYPE_LAB != gt_obj_class_get_type(label)) {
         return 0;
     }
-    _gt_label_st * style = (_gt_label_st * )label->style;
-    if (NULL == style) {
-        return 0;
-    }
-
+    _gt_label_st * style = (_gt_label_st * )label;
     return gt_font_get_longest_line_substring_width(&style->font_info, style->text, style->space_x);
 }
 

@@ -28,6 +28,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_listview_s {
+    gt_obj_st obj;
     gt_obj_st * last_active;
     uint16_t item_height;       /** The height of item */
     gt_font_info_st font_info;
@@ -82,7 +83,7 @@ const gt_obj_class_st gt_listview_class = {
  * @param obj
  */
 static void _init_cb(gt_obj_st * obj) {
-    _gt_listview_st * style = (_gt_listview_st * )obj->style;
+    _gt_listview_st * style = (_gt_listview_st * )obj;
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
@@ -120,7 +121,7 @@ static void _update_text_item_y(gt_obj_st * item, gt_size_t offset) {
 }
 
 static void _scrolling_handler(gt_obj_st * obj) {
-    _gt_listview_st * style = (_gt_listview_st * )obj->style;
+    _gt_listview_st * style = (_gt_listview_st * )obj;
     gt_size_t bottom = gt_obj_get_limit_bottom(obj);
 
     if (gt_obj_scroll_get_y(obj) > 0) {
@@ -138,7 +139,7 @@ static void _scrolling_handler(gt_obj_st * obj) {
 }
 
 static void _set_last_active_obj(gt_obj_st * listview, gt_obj_st * target) {
-    _gt_listview_st * style = (_gt_listview_st * )listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     style->last_active = target;
 }
 
@@ -222,7 +223,7 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
     obj->bgcolor = gt_color_hex(0xffffff);
 
-    _gt_listview_st * style = (_gt_listview_st * )obj->style;
+    _gt_listview_st * style = (_gt_listview_st * )obj;
     style->font_info.style_cn   = GT_CFG_DEFAULT_FONT_FAMILY_CN;
     style->font_info.style_en   = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     style->font_info.style_fl   = GT_CFG_DEFAULT_FONT_FAMILY_FL;
@@ -253,7 +254,7 @@ void gt_listview_add_item(gt_obj_st * listview, char * item)
     if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
         return;
     }
-    _gt_listview_st * style = (_gt_listview_st * )listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     gt_size_t item_offset = listview->area.y;
     if (listview->cnt_child) {
         item_offset = listview->child[listview->cnt_child - 1]->area.y + style->item_height;
@@ -296,7 +297,7 @@ void gt_listview_add_item(gt_obj_st * listview, char * item)
 
 void gt_listview_set_item_height(gt_obj_st * listview, uint16_t height)
 {
-    _gt_listview_st * style = (_gt_listview_st * )listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     style->item_height = height;
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -310,12 +311,12 @@ void gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * text)
     if (GT_TYPE_LISTVIEW != gt_obj_class_get_type(listview)) {
         return;
     }
-    _gt_listview_st * style = (_gt_listview_st * )listview->style;
-
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    // TODO
 }
 
 void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, gt_size_t idx) {
-    _gt_listview_st * style = listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     if (0 == listview->cnt_child) {
         return;
     }
@@ -329,13 +330,13 @@ void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, gt_size_t idx) {
 
 gt_size_t gt_listview_get_list_items_cnt(gt_obj_st * listview)
 {
-    _gt_listview_st * style = listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     return listview->cnt_child;
 }
 
 gt_size_t gt_listview_get_idx_selected(gt_obj_st * listview)
 {
-    _gt_listview_st * style = listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     gt_size_t idx = -1;
     if (NULL == style->last_active) {
         return idx;
@@ -352,7 +353,7 @@ gt_size_t gt_listview_get_idx_selected(gt_obj_st * listview)
 
 char * gt_listview_get_selected_item_text(gt_obj_st * listview)
 {
-    _gt_listview_st * style = listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     if (NULL == style->last_active) {
         return NULL;
     }
@@ -371,70 +372,70 @@ char * gt_listview_get_selected_item_text(gt_obj_st * listview)
 
 void gt_listview_set_font_size(gt_obj_st * listview, uint8_t size)
 {
-    _gt_listview_st * style = listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     style->font_info.size = size;
     _set_label_prop_by_type(listview, _LABEL_FONT_SIZE, size);
 }
 void gt_listview_set_font_gray(gt_obj_st * listview, uint8_t gray)
 {
-    _gt_listview_st * style = listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     style->font_info.gray = gray;
     _set_label_prop_by_type(listview, _LABEL_FONT_GRAY, gray);
 }
 void gt_listview_set_font_align(gt_obj_st * listview, uint8_t align)
 {
-    _gt_listview_st * style = listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     style->align = align;
     _set_label_prop_by_type(listview, _LABEL_FONT_ALIGN, align);
 }
 void gt_listview_set_font_color(gt_obj_st * listview, gt_color_t color)
 {
-    _gt_listview_st * style = listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     style->font_color = color;
     _set_label_prop_by_type(listview, _LABEL_FONT_COLOR, color.full);
 }
 
 void gt_listview_set_font_family_en(gt_obj_st * listview, gt_family_t family)
 {
-    _gt_listview_st * style = listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     style->font_info.style_en = family;
     _set_label_prop_by_type(listview, _LABEL_FONT_EN, family);
 }
 void gt_listview_set_font_family_fl(gt_obj_st * listview, gt_family_t family)
 {
-    _gt_listview_st * style = listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     style->font_info.style_fl = family;
     _set_label_prop_by_type(listview, _LABEL_FONT_FL, family);
 }
 void gt_listview_set_font_family_cn(gt_obj_st * listview, gt_family_t family)
 {
-    _gt_listview_st * style = listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     style->font_info.style_cn = family;
     _set_label_prop_by_type(listview, _LABEL_FONT_CN, family);
 }
 
 void gt_listview_set_font_family_numb(gt_obj_st * listview, gt_family_t family)
 {
-    _gt_listview_st * style = listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     style->font_info.style_numb = family;
     _set_label_prop_by_type(listview, _LABEL_FONT_NUMB, family);
 }
 
 void gt_listview_set_font_thick_en(gt_obj_st * listview, uint8_t thick)
 {
-    _gt_listview_st * style = (_gt_listview_st * )listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     style->font_info.thick_en = thick;
     _set_label_prop_by_type(listview, _LABEL_FONT_THICK_EN, thick);
 }
 void gt_listview_set_font_thick_cn(gt_obj_st * listview, uint8_t thick)
 {
-    _gt_listview_st * style = (_gt_listview_st * )listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     style->font_info.thick_cn = thick;
     _set_label_prop_by_type(listview, _LABEL_FONT_THICK_CN, thick);
 }
 void gt_listview_set_space(gt_obj_st * listview, uint8_t space_x, uint8_t space_y)
 {
-    _gt_listview_st * style = (_gt_listview_st * )listview->style;
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     style->space_x = space_x;
     style->space_y = space_y;
     _set_label_prop_by_type(listview, _LABEL_FONT_SPACE, (space_x << 8) | space_y);

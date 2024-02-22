@@ -31,6 +31,7 @@ typedef struct _gt_word_art_item_s {
 }_gt_word_art_item_st;
 
 typedef struct _gt_wor_dart_s {
+    gt_obj_st obj;
     _gt_word_art_item_st *items;
     uint32_t total;
     uint32_t item_number;
@@ -79,7 +80,7 @@ static int _gt_wordart_items_find(_gt_wor_dart_st * style , uint32_t coding)
 
 static inline void _gt_wordart_init_widget(gt_obj_st * wordart)
 {
-    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart->style;
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
 
     if(0 == wordart->area.w || 0 == wordart->area.h){
         wordart->area.w = 5;
@@ -148,33 +149,26 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_wor_dart_st ** style_p = (_gt_wor_dart_st ** )&obj->style;
-    if (NULL == *style_p) {
-        return ;
-    }
-
-    if(NULL != (*style_p)->items){
-        for(int i =  (*style_p)->item_number ; i >= 0 ; i--) {
-            if(NULL == (*style_p)->items[i].img)
+    _gt_wor_dart_st * style_p = (_gt_wor_dart_st * )obj;
+    if(NULL != style_p->items){
+        for(int i =  style_p->item_number ; i >= 0 ; i--) {
+            if(NULL == style_p->items[i].img)
             {
                 continue;
             }
-            gt_mem_free((*style_p)->items[i].img);
-            (*style_p)->items[i].img = NULL;
+            gt_mem_free(style_p->items[i].img);
+            style_p->items[i].img = NULL;
         }
 
-        gt_mem_free((*style_p)->items);
-        (*style_p)->items = NULL;
-        (*style_p)->item_number = 0;
+        gt_mem_free(style_p->items);
+        style_p->items = NULL;
+        style_p->item_number = 0;
     }
 
-    if(NULL != (*style_p)->text){
-        gt_mem_free((*style_p)->text);
-        (*style_p)->text = NULL;
+    if(NULL != style_p->text){
+        gt_mem_free(style_p->text);
+        style_p->text = NULL;
     }
-
-    gt_mem_free(*style_p);
-    *style_p = NULL;
 }
 
 /**
@@ -241,8 +235,7 @@ gt_obj_st * gt_wordart_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
 
-    _gt_wor_dart_st * style = (_gt_wor_dart_st * )obj->style;
-    gt_memset(style, 0, sizeof(_gt_wor_dart_st));
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )obj;
 
     style->total = 0;
     style->item_number = 0;
@@ -255,7 +248,7 @@ gt_obj_st * gt_wordart_create(gt_obj_st * parent)
 
 void gt_wordart_items_init(gt_obj_st* wordart , uint32_t total)
 {
-    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart->style;
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
 
     if(NULL != style->items){
         return;
@@ -278,7 +271,7 @@ void gt_wordart_add_item(gt_obj_st* wordart , uint32_t coding , char* img)
     if(NULL == wordart || NULL == img){
         return ;
     }
-    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart->style;
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
     uint32_t len = 0;
 
     if(NULL == style->items || style->item_number >= style->total){
@@ -311,7 +304,7 @@ void gt_wordart_set_text(gt_obj_st * wordart, const char * fmt, ...)
     va_start(args, fmt);
     va_copy(args2, args);
 
-    _gt_wor_dart_st * style = (_gt_wor_dart_st *)wordart->style;
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
 
     if( NULL != style->text ){
         gt_mem_free(style->text);
@@ -333,13 +326,13 @@ free_lb:
 
 char * gt_wordart_get_text(gt_obj_st * wordart)
 {
-    _gt_wor_dart_st * style = (_gt_wor_dart_st *)wordart->style;
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
     return style->text;
 }
 
 void gt_wordart_set_space(gt_obj_st * wordart, uint8_t space_x, uint8_t space_y)
 {
-    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart->style;
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
     style->space_x = space_x;
     style->space_y = space_y;
 }
