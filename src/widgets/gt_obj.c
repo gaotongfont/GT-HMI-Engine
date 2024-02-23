@@ -170,6 +170,11 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
             // gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         }
+        case GT_EVENT_TYPE_INPUT_PROCESS_LOST: {
+            _change_state_by_trigger_mode(obj, false);
+            _unmasked_effect_handler(obj);
+            break;
+        }
         case GT_EVENT_TYPE_INPUT_SCROLL_UP: {
             /** scroll 3/4 screen */
             if (GT_TYPE_SCREEN == gt_obj_class_get_type(obj)) {
@@ -323,6 +328,24 @@ gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj)
         }
     }
     return -(bottom - min_y - obj->area.h);
+}
+
+gt_size_t gt_obj_get_childs_max_height(gt_obj_st * parent)
+{
+    gt_obj_st * child = NULL;
+    gt_size_t min_y = 0x7fff;
+    gt_size_t max_y = -0x7fff;
+
+    for (gt_size_t i = 0, cnt = parent->cnt_child; i < cnt; i++) {
+        child = parent->child[i];
+        if (child->area.y < min_y) {
+            min_y = child->area.y;
+        }
+        if (child->area.y + child->area.h > max_y) {
+            max_y = child->area.y + child->area.h;
+        }
+    }
+    return max_y - min_y;
 }
 
 /* end ------------------------------------------------------------------*/

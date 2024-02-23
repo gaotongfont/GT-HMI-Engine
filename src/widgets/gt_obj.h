@@ -194,6 +194,8 @@ gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj);
 
 gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj);
 
+gt_size_t gt_obj_get_childs_max_height(gt_obj_st * parent);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

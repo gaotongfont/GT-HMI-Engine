@@ -96,7 +96,7 @@ static void _init_cb(gt_obj_st * obj) {
     rect_attr.border_color   = gt_color_hex(0xc7c7c7);
     rect_attr.bg_opa         = obj->opa;
     rect_attr.bg_color       = gt_color_white();
-    rect_attr.radius         = 2;
+    rect_attr.radius         = 4;
 
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
 

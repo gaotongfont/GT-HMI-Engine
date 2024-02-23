@@ -89,7 +89,7 @@ static void _init_cb(gt_obj_st * obj) {
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill    = true;
     rect_attr.border_width   = 2;
-    rect_attr.radius         = 2;
+    rect_attr.radius         = 4;
     rect_attr.bg_opa         = obj->opa;
     rect_attr.border_color  = gt_color_hex(0xc7c7c7);
     rect_attr.bg_color      = obj->bgcolor;
