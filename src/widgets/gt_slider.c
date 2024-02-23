@@ -27,7 +27,7 @@
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_slider_s {
     gt_obj_st obj;
-    char * tag;             //img src
+    char * tag;         //img src
     gt_area_st area_base;
 
     gt_color_t color_act;
@@ -39,7 +39,7 @@ typedef struct _gt_slider_s {
 
     uint16_t offset;
     gt_bar_dir_et dir;
-    uint8_t step;
+    uint8_t step;        // Increment/decrement per operation
 
     bool tag_visible;
 }_gt_slider_st;

@@ -96,7 +96,14 @@ gt_bar_dir_et gt_slider_get_dir(gt_obj_st * slider);
 
 
 uint8_t gt_slider_get_step(gt_obj_st * slider);
+/**
+ * @brief Increment/decrement per operation
+ *
+ * @param slider
+ * @param step
+ */
 void gt_slider_set_step(gt_obj_st * slider, uint8_t step);
+
 void gt_slider_set_tag(gt_obj_st * slider, char * src);
 void gt_slider_set_tag_visible(gt_obj_st * slider, bool visible);
 
