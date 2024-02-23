@@ -159,6 +159,9 @@ static inline bool _ignore_view_pager_slider_control(gt_obj_st * obj) {
     else if (GT_TYPE_ROLLER == type) {
         return true;
     }
+    else if (GT_TYPE_LISTVIEW == type) {
+        return true;
+    }
     else if (GT_TYPE_KEYPAD == type) {
         return true;
     }
