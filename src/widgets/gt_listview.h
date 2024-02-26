@@ -43,9 +43,11 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent);
  * @brief add item to listview obj
  *
  * @param list listview obj
- * @param item item
+ * @param text text
  */
-void gt_listview_add_item(gt_obj_st * list, char * item);
+void gt_listview_add_item(gt_obj_st * list, char * text);
+
+void gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * text);
 
 /**
  * @brief Set the listview item display height
@@ -86,6 +88,17 @@ gt_size_t gt_listview_get_idx_selected(gt_obj_st * listview);
  * @return char* the content value of the selected item
  */
 char * gt_listview_get_selected_item_text(gt_obj_st * listview);
+
+void gt_listview_set_border_color(gt_obj_st * listview, gt_color_t color);
+void gt_listview_set_border_width(gt_obj_st * listview, uint8_t width);
+
+/**
+ * @brief Sets the split line between each item to be displayed
+ *
+ * @param listview
+ * @param enabled true: Enabled; false: Disabled
+ */
+void gt_listview_set_septal_line(gt_obj_st * listview, bool enabled);
 
 /**
  * @brief set listview show font size

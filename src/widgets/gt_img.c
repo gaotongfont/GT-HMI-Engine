@@ -190,4 +190,37 @@ char * gt_img_get_src(gt_obj_st * img){
     _gt_img_st * style = (_gt_img_st *)img;
     return style->src;
 }
+
+uint16_t gt_img_get_width(gt_obj_st * img)
+{
+    if (NULL == img) {
+        return 0;
+    }
+    if (GT_TYPE_IMG != gt_obj_class_get_type(img)) {
+        return 0;
+    }
+    _gt_img_st * obj = (_gt_img_st * )img;
+    _gt_img_info_st info = {0};
+    if (GT_RES_OK != gt_img_decoder_get_info(obj->src, &info)) {
+        return 0;
+    }
+    return info.w;
+}
+
+uint16_t gt_img_get_height(gt_obj_st * img)
+{
+    if (NULL == img) {
+        return 0;
+    }
+    if (GT_TYPE_IMG != gt_obj_class_get_type(img)) {
+        return 0;
+    }
+    _gt_img_st * obj = (_gt_img_st * )img;
+    _gt_img_info_st info = {0};
+    if (GT_RES_OK != gt_img_decoder_get_info(obj->src, &info)) {
+        return 0;
+    }
+    return info.h;
+}
+
 /* end ------------------------------------------------------------------*/

@@ -56,6 +56,22 @@ void gt_img_set_src(gt_obj_st * img, char * src);
  */
 char * gt_img_get_src(gt_obj_st * img);
 
+/**
+ * @brief Gets the width of the image
+ *
+ * @param img
+ * @return uint16_t
+ */
+uint16_t gt_img_get_width(gt_obj_st * img);
+
+/**
+ * @brief Gets the height of the image
+ *
+ * @param img
+ * @return uint16_t
+ */
+uint16_t gt_img_get_height(gt_obj_st * img);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
