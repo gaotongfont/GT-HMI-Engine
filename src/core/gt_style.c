@@ -38,15 +38,8 @@ static void gt_obj_move_child_by(gt_obj_st * obj, gt_size_t dx, gt_size_t dy)
 {
     uint16_t i = 0, cnt = obj->cnt_child;
 
-    // if (false == gt_obj_get_overflow(obj)) {
-    //     return;
-    // }
-
     for (i = 0; i < cnt; i++) {
         gt_obj_st * child = obj->child[i];
-        // if (false == gt_obj_get_overflow(child)) {
-        //     continue;
-        // }
         child->area.x += dx;
         child->area.y += dy;
 
