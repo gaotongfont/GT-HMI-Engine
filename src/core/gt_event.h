@@ -83,6 +83,7 @@ typedef enum gt_event_type_e{
     GT_EVENT_TYPE_CHANGE_CHILD_ADD,                                   ///< add child
     GT_EVENT_TYPE_CHANGE_CHILD_DELETE,                                ///< delete child
     GT_EVENT_TYPE_CHANGE_CHILD_DELETED,                               ///< delete child finish
+    GT_EVENT_TYPE_CHANGE_DELETED,
 
     /** ... */
 
@@ -91,7 +92,7 @@ typedef enum gt_event_type_e{
 
     _GT_EVENT_TYPE_TOTAL_COUNT = _GT_EVENT_TYPE_CHANGE_END,           ///< count event number
 
-    GT_EVENT_TYPE_ALL = 0xFFFFFFF,
+    GT_EVENT_TYPE_ALL = 0xFFFF,
 }gt_event_type_et;
 
 typedef struct _gt_event_s {

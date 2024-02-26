@@ -113,15 +113,18 @@ static void _gt_obj_class_destroy_property(gt_obj_st * self) {
     if (NULL == self) {
         return;
     }
-    // free event attribute
-    if (NULL != self->event_attr) {
-        gt_mem_free(self->event_attr);
-        self->event_attr = NULL;
-    }
+
+    gt_event_send(self, GT_EVENT_TYPE_CHANGE_DELETED, NULL);
 
     // free obj custom style
     if (self->class->_deinit_cb) {
         self->class->_deinit_cb(self);
+    }
+
+    // free event attribute
+    if (NULL != self->event_attr) {
+        gt_mem_free(self->event_attr);
+        self->event_attr = NULL;
     }
 
     self->draw_ctx = NULL;
@@ -162,12 +165,16 @@ static bool _gt_obj_class_destroy_children(gt_obj_st * self, bool is_root)
         return true;
     }
 
+    gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETE, NULL);
+
     // release child object from bottom to top
     for (i = self->cnt_child - 1; i >= 0; i--) {
         if (_gt_obj_class_destroy_children(self->child[i], false)) {
             self->child[i] = NULL;  /** can not repeat free memory here */
         }
     }
+
+    gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETED, NULL);
 
     // release child array memory
     if (NULL != self->child) {
@@ -275,6 +282,8 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
     gt_obj_st * parent = obj->parent;
     bool is_success = false;
 
+    gt_event_send(parent, GT_EVENT_TYPE_CHANGE_CHILD_REMOVE, obj);
+
     is_success = _add_obj_to_parent(obj, to);
     if (false == is_success) {
         return parent;
@@ -282,6 +291,9 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
 
     _gt_obj_class_destroy_from_parent(obj);
     obj->parent = to;
+
+    gt_event_send(parent, GT_EVENT_TYPE_CHANGE_CHILD_REMOVED, obj);
+
     return obj->parent;
 }
 
