@@ -753,10 +753,10 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
             type = GT_SCR_ANIM_TYPE_NONE;
         }
     } else if (scr_old != scr) {
-        if (scr_old->using && scr->using) {
-            /** The program is already animating the interface switch, ignore new anim */
-            return;
-        }
+        // if (scr_old->using && scr->using) {
+        //     /** The program is already animating the interface switch, ignore new anim */
+        //     return;
+        // }
         gt_event_clr_all_event(scr_old);
         // gt_event_clr_all_event(scr);     // TODO: why clear event?
     }
