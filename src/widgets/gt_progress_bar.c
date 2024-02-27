@@ -115,11 +115,13 @@ static void _init_cb(gt_obj_st * progress_bar) {
     rect_attr.bg_color = style->color_act;
 
     dist_min = rect_attr.radius << 1;
-    if(dist < dist_min){
-        rect_attr.base_area = &area_base;
+    // When dist = 1, area_val is plotted as a line
+    if(dist > 1){
+        if(dist < dist_min){
+            rect_attr.base_area = &area_base;
+        }
+        draw_bg(progress_bar->draw_ctx, &rect_attr, &area_val);
     }
-    draw_bg(progress_bar->draw_ctx, &rect_attr, &area_val);
-
     // focus
     draw_focus(progress_bar , 0);
 }

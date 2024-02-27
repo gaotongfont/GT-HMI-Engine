@@ -54,6 +54,7 @@ void gt_obj_set_area(gt_obj_st * obj, gt_area_st area)
 {
     gt_obj_area_change(obj, &area);
     _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
 void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)

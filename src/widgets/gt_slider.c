@@ -20,6 +20,7 @@
 #include "../core/gt_disp.h"
 #include "../core/gt_fs.h"
 #include "../core/gt_indev.h"
+#include "gt_img.h"
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_SLIDER
 #define MY_CLASS    &gt_slider_class
@@ -27,8 +28,9 @@
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_slider_s {
     gt_obj_st obj;
-    char * tag;         //img src
-    gt_area_st area_base;
+
+    gt_obj_st *tag;
+    gt_obj_st *img;         //img src
 
     gt_color_t color_act;
     gt_color_t color_ina;
@@ -38,8 +40,9 @@ typedef struct _gt_slider_s {
     gt_size_t pos;
 
     uint16_t offset;
+    uint16_t size;
+    uint16_t tag_size;
     gt_bar_dir_et dir;
-    uint8_t step;        // Increment/decrement per operation
 
     bool tag_visible;
 }_gt_slider_st;
@@ -64,6 +67,41 @@ const gt_obj_class_st gt_slider_class = {
 
 
 /* static functions -----------------------------------------------------*/
+static uint16_t _gt_slider_get_tag_size(gt_obj_st * slider)
+{
+    _gt_slider_st * style = (_gt_slider_st * )slider;
+    uint16_t max = 0;
+    if(style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L){
+        max = slider->area.h;
+    }
+    else if(style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U){
+        max = slider->area.w;
+    }
+
+    return ((style->tag_size > 0 && style->tag_size <= max) ? style->tag_size : max);
+}
+
+static uint16_t _gt_slider_get_size(gt_obj_st * slider)
+{
+    _gt_slider_st * style = (_gt_slider_st * )slider;
+    uint16_t max = 0;
+    if(style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L){
+        max = slider->area.h;
+    }
+    else if(style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U){
+        max = slider->area.w;
+    }
+
+    if(style->size <= 0){
+        style->size =  max >> 1;
+    }
+    else if(style->size > max){
+        style->size = max;
+    }
+
+    return style->size;
+}
+
 static uint16_t _gt_slider_get_offset(gt_obj_st * slider)
 {
     _gt_slider_st * style = (_gt_slider_st * )slider;
@@ -76,6 +114,7 @@ static gt_size_t _calc_touch_point_pos(gt_obj_st * obj) {
     gt_obj_st * scr = gt_disp_get_scr();
     gt_point_st point_click = gt_indev_get_point();
     gt_size_t pos = 0;
+    float _tmp_pos = 0;
 
     if(NULL == scr){
         return style->offset;
@@ -99,12 +138,19 @@ static gt_size_t _calc_touch_point_pos(gt_obj_st * obj) {
 static void _gt_slider_set_offset(gt_obj_st * slider , int offset)
 {
     _gt_slider_st * style = (_gt_slider_st * )slider;
-
-    if( (offset > slider->area.w) && (style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L) ){
-        style->offset = slider->area.w;
+    uint16_t max_offset = 0;
+    uint16_t tag_size = _gt_slider_get_tag_size(slider);
+    if(style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L){
+        max_offset = slider->area.w - tag_size;
     }
-    else if( (offset > slider->area.h) && (style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U) ){
-        style->offset = slider->area.h;
+    else if(style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U){
+        max_offset = slider->area.h - tag_size;
+    }
+
+    offset -= (tag_size >> 1);
+
+    if(offset > max_offset){
+        style->offset = max_offset;
     }
     else if(offset < 0){
         style->offset = 0;
@@ -112,6 +158,8 @@ static void _gt_slider_set_offset(gt_obj_st * slider , int offset)
     else{
         style->offset = offset;
     }
+
+    style->pos = style->offset * (style->end - style->start) / max_offset + style->start;
 }
 
 static void _scroll_dir_ver(gt_obj_st * obj, bool is_up) {
@@ -140,160 +188,108 @@ static void _scroll_dir_hor(gt_obj_st * obj, bool is_right) {
 
 static inline void _gt_slider_init_widget(gt_obj_st * slider) {
     _gt_slider_st * style = (_gt_slider_st * )slider;
-    gt_size_t w, h;
-    // int all_pos = style->end - style->start;
-    float _tmp_pos;
-    int dist = 0, dist_min;
+    int dist = 0, dist_min = 0;
+
     // set default size
     if( !slider->area.w || !slider->area.h ){
         slider->area.w = 100;
-        slider->area.h = 20;
+        slider->area.h = 16;
     };
 
-    if( style->tag_visible && style->tag && style->area_base.w != 0 && style->area_base.h != 0){
-        slider->area = style->area_base;
-    }
-    w = slider->area.w;
-    h = slider->area.h;
+    uint16_t size = _gt_slider_get_size(slider);
+    uint16_t tag_size = _gt_slider_get_tag_size(slider);
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill    = 1;
-    rect_attr.radius         = h>>2;
-    rect_attr.bg_color       = style->color_ina;
-    rect_attr.border_color   = style->color_ina;
     rect_attr.bg_opa         = slider->opa;
-
-    gt_area_st area_base = slider->area;
-    gt_area_st area_val = slider->area;
-    /* 1 base shape */
-    if( style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L ){
-        area_base.y += rect_attr.radius;
-        area_base.w -= 2;
-        area_base.h -= h>>1;
-        dist = style->offset; // ((float)current_pos/(float)all_pos) * (float)w;
-        area_val.y = area_base.y;
-        area_val.w = dist;
-        area_val.h = area_base.h;
-        if(style->dir == GT_BAR_DIR_HOR_L2R){
-            area_base.x += 2;
-        }else{
-            area_val.x += (w - dist);
-        }
-        _tmp_pos = slider->area.w;
-    }else if( style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U ){
-        rect_attr.radius = w >> 2;
-        area_base.x += rect_attr.radius;
-        area_base.w -= w >> 1;
-        area_base.h -= 2;
-        dist = style->offset; // ((float)style->pos/(float)all_pos) * (float)h;
-        area_val.x = area_base.x;
-        area_val.w = area_base.w;
-        area_val.h = dist;
-        if (style->dir == GT_BAR_DIR_VER_U2D){
-            area_base.y += 2;
-        }else{
-            area_val.y += (h - dist);
-        }
-        _tmp_pos = slider->area.h;
-    }
-    /* 1 draw base shape */
-    // if(style->pos < style->end){
-    //     draw_bg(slider->draw_ctx, &rect_attr, &area_base);
-    // }
-
-    draw_bg(slider->draw_ctx, &rect_attr, &area_base);
-
-    /* 2 draw val shape */
-    rect_attr.bg_color = style->color_act;
-    dist_min = rect_attr.radius;
-    bool isTag = false;
-
-    if( style->tag_visible ){
-        uint16_t _w,_h;
-        if( style->tag != NULL ){
-            if( !gt_fs_read_img_wh(style->tag, &_w, &_h) ){
-                w = _w;
-                h = _h;
-                isTag = true;
-            }
-        }
-        if( style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L ){
-            dist_min = (h>>1);
-        }else if( style->dir == GT_BAR_DIR_VER_D2U || style->dir == GT_BAR_DIR_VER_U2D ){
-            dist_min = (w>>1);
-        }
-    }
-
-    if( dist >= dist_min ){
-        draw_bg(slider->draw_ctx, &rect_attr, &area_val);
-    }
-
+    rect_attr.bg_color       = style->color_ina;
     //
-    _tmp_pos = (float)style->offset / _tmp_pos;
-    style->pos = (gt_size_t)(_tmp_pos * (style->end-style->start)) + style->start;
+    gt_area_st area_base = {0}, area_val = {0} , tag_area = {0};
+
+    dist = style->offset;
+    rect_attr.radius = size >> 1;
+    if( style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L ){
+        area_base.x = slider->area.x + (tag_size >> 1);
+        area_base.w = slider->area.w - (tag_size);
+        area_base.y = slider->area.y + ((slider->area.h-size)>>1);
+        area_base.h = size;
+        //
+        tag_area.y = slider->area.y + ((slider->area.h-tag_size)>>1);
+        //
+        gt_area_copy(&area_val, &area_base);
+        area_val.w = dist;
+        if(style->dir == GT_BAR_DIR_HOR_R2L){
+            area_val.x += (area_base.w - dist);
+            tag_area.x = slider->area.x + slider->area.w - dist - tag_size;
+        }
+        else{
+            tag_area.x = slider->area.x + dist;
+        }
+
+    }else if( style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U ){
+        area_base.y = slider->area.y + (tag_size >> 1);
+        area_base.h = slider->area.h - (tag_size);
+        area_base.x = slider->area.x + ((slider->area.w-size)>>1);
+        area_base.w = size;
+        //
+        tag_area.x = slider->area.x + ((slider->area.w-tag_size)>>1);
+        //
+        gt_area_copy(&area_val, &area_base);
+        area_val.h = dist;
+        if (style->dir == GT_BAR_DIR_VER_D2U){
+            area_val.y += (area_base.h - dist);
+            tag_area.y = slider->area.y + slider->area.h - dist - tag_size;
+        }
+        else{
+            tag_area.y = slider->area.y + dist;
+        }
+    }
+    if(style->pos < style->end){
+        draw_bg(slider->draw_ctx, &rect_attr, &area_base);
+    }
+
+    rect_attr.bg_color = style->color_act;
+    dist_min = rect_attr.radius << 1;
+    /* When dist = 1, area_val is plotted as a line */
+    if(dist > 1){
+        if(dist < dist_min){
+            rect_attr.base_area = &area_base;
+        }
+        draw_bg(slider->draw_ctx, &rect_attr, &area_val);
+        rect_attr.base_area = NULL;
+    }
 
     /* visible or not */
     if( !style->tag_visible ){
-        return;
-    }
-    gt_area_st area_big_circle = slider->area;
-
-    /*get scale indication circle info*/
-    if( style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L ){
-        area_big_circle.y += (slider->area.h - h) >> 1;
-        area_big_circle.h = h;
-        area_big_circle.w = area_big_circle.h;
-        rect_attr.radius = area_big_circle.h >> 1;
-        if( style->dir == GT_BAR_DIR_HOR_L2R ){
-            area_big_circle.x += (dist - rect_attr.radius);
-        }else{
-            area_big_circle.x = (area_val.x - rect_attr.radius);
-        }
-        if( area_big_circle.x < slider->area.x ){
-            area_big_circle.x = slider->area.x;
-        }
-        if( area_big_circle.x > (slider->area.x + slider->area.w - area_big_circle.w) ){
-            area_big_circle.x = slider->area.x + slider->area.w - area_big_circle.w;
-        }
-    }else if( style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U ){
-        area_big_circle.x += (slider->area.w - w) >> 1;
-        area_big_circle.w = w;
-        area_big_circle.h = area_big_circle.w;
-        rect_attr.radius = area_big_circle.w >> 1;
-        if( style->dir == GT_BAR_DIR_VER_U2D ){
-            area_big_circle.y += (dist - rect_attr.radius);
-        }else{
-            area_big_circle.y = (area_val.y - rect_attr.radius);
-        }
-        if( area_big_circle.y < slider->area.y ){
-            area_big_circle.y = slider->area.y;
-        }
-        if( area_big_circle.y > (slider->area.y + slider->area.h - area_big_circle.h) ){
-            area_big_circle.y = slider->area.y + slider->area.h - area_big_circle.h;
-        }
-    }
-    /*draw scale indication circle or image*/
-    if( isTag == false ){
-        draw_bg(slider->draw_ctx, &rect_attr, &area_big_circle);
-    }else{
-        rect_attr.bg_img_src = style->tag;
-        // area_big_circle.w = w;
-        // area_big_circle.h = h;
-        style->area_base = slider->area;
-        if( slider->area.w < w ){
-            slider->area.w = w;
-            slider->area.x = area_big_circle.x;
-        }
-        if( slider->area.h < h ){
-            slider->area.h = h;
-            slider->area.y  = area_big_circle.y;
-        }
-        draw_bg_img(slider->draw_ctx, &rect_attr, &area_big_circle);
+        goto draw_focus;
     }
 
+    tag_area.w = tag_size;
+    tag_area.h = tag_size;
+    rect_attr.radius = tag_size >> 1;
+
+    // draw img tag
+    if(style->tag && style->img){
+        uint16_t _w = 0,_h = 0;
+        if( !gt_fs_read_img_wh(gt_img_get_src(style->img), &_w, &_h) ){
+            tag_area.w = _w > tag_size ? tag_size : _w;
+            tag_area.h = _h > tag_size ? tag_size : _h;
+            tag_area.x += (tag_size - tag_area.w) >> 1;
+            tag_area.y += (tag_size - tag_area.h) >> 1;
+        }
+        gt_obj_set_area(style->tag, tag_area);
+        gt_obj_set_area(style->img , tag_area);
+        goto draw_focus;
+    }
+
+    // draw tag
+    draw_bg(slider->draw_ctx, &rect_attr, &tag_area);
+
+draw_focus:
     // focus
     draw_focus(slider , 0);
+
 }
 
 /**
@@ -398,7 +394,6 @@ gt_obj_st * gt_slider_create(gt_obj_st * parent)
     style->end = 100;
     style->pos = 50;
     style->dir = GT_BAR_DIR_HOR_L2R;
-    style->step = 1;
     style->tag_visible = true;
     style->offset = 0;
 
@@ -420,29 +415,26 @@ void gt_slider_set_pos(gt_obj_st * slider, gt_size_t pos)
     if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
         return;
     }
-    _gt_slider_st * style = (_gt_slider_st *)slider;
-    float max = 0 , offset = 0;
+    _gt_slider_st * style = (_gt_slider_st * )slider;
+    uint16_t max = 0;
+
+    if( (style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L) ){
+        max = slider->area.w - (_gt_slider_get_tag_size(slider));
+    }
+    else if( (style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U) ){
+        max = slider->area.h - (_gt_slider_get_tag_size(slider));
+    }
+
     if( pos < style->start ){
         style->pos = style->start;
-        offset = 0;
+        style->offset = 0;
     }else if( pos > style->end ){
         style->pos = style->end;
-        offset = GT_MAX(slider->area.w , slider->area.h);
+        style->offset = max;
     }else{
-        style->pos = ( (int)(pos / style->step) * ((int)(style->step)) );
-        if( (style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L) ){
-            max = slider->area.w;
-
-        }
-        else if( (style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U) ){
-            max = slider->area.h;
-        }
-
-        offset = (float)(pos - style->start) / (style->end - style->start);
-        offset = max * offset;
+        style->pos = pos;
+        style->offset = style->pos * max / (style->end - style->start);
     }
-    _gt_slider_set_offset(slider , offset);
-
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -560,29 +552,6 @@ gt_bar_dir_et gt_slider_get_dir(gt_obj_st * slider)
     return style->dir;
 }
 
-void gt_slider_set_step(gt_obj_st * slider, uint8_t step)
-{
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
-        return;
-    }
-    _gt_slider_st * style = (_gt_slider_st *)slider;
-    style->step = step;
-}
-
-uint8_t gt_slider_get_step(gt_obj_st * slider)
-{
-    if (NULL == slider) {
-        return 0;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
-        return 0;
-    }
-    _gt_slider_st * style = (_gt_slider_st *)slider;
-    return style->step;
-}
 
 void gt_slider_set_tag(gt_obj_st * slider, char * src)
 {
@@ -593,13 +562,24 @@ void gt_slider_set_tag(gt_obj_st * slider, char * src)
         return;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
-    if( style->tag != NULL ){
-        gt_mem_free(style->tag);
+    if(NULL == style->tag){
+        style->tag = gt_obj_create(slider);
+        gt_obj_set_touch_parent(style->tag, true);
+        gt_obj_set_bubble_notify(style->tag, true);
+        gt_obj_set_inside(style->tag, true);
     }
-    style->tag = gt_mem_malloc(strlen(src) + 1);
-    gt_memcpy(style->tag, src, strlen(src));
-    style->tag[strlen(src)] = 0;
-    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+
+    if(style->tag && NULL == style->img){
+        style->img = gt_img_create(style->tag);
+        gt_obj_set_touch_parent(style->img, true);
+        gt_obj_set_bubble_notify(style->img, true);
+        gt_obj_set_inside(style->img, true);
+    }
+
+    if(style->img){
+        gt_img_set_src(style->img, src);
+        gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+    }
 }
 
 void gt_slider_set_tag_visible(gt_obj_st * slider, bool visible)
@@ -612,6 +592,31 @@ void gt_slider_set_tag_visible(gt_obj_st * slider, bool visible)
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
     style->tag_visible = visible;
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_slider_set_tag_size(gt_obj_st * slider , uint16_t size)
+{
+    if (NULL == slider) {
+        return;
+    }
+    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+        return;
+    }
+    _gt_slider_st * style = (_gt_slider_st * )slider;
+    style->tag_size = size;
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+void gt_slider_set_size(gt_obj_st * slider , uint16_t size)
+{
+    if (NULL == slider) {
+        return;
+    }
+    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+        return;
+    }
+    _gt_slider_st * style = (_gt_slider_st * )slider;
+    style->size = size;
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 /* end ------------------------------------------------------------------*/

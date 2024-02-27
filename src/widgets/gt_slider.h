@@ -106,6 +106,10 @@ void gt_slider_set_step(gt_obj_st * slider, uint8_t step);
 
 void gt_slider_set_tag(gt_obj_st * slider, char * src);
 void gt_slider_set_tag_visible(gt_obj_st * slider, bool visible);
+void gt_slider_set_tag_size(gt_obj_st * slider , uint16_t size);
+
+void gt_slider_set_size(gt_obj_st * slider , uint16_t size);
+
 
 #ifdef __cplusplus
 } /*extern "C"*/
