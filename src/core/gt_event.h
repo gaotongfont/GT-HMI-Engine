@@ -28,17 +28,18 @@ struct gt_obj_s;
 /**
  * @brief The event type enum definition
  */
-typedef enum gt_event_type_e{
+typedef enum gt_event_type_e {
+    /* =================== Core defined here begin =================== */
     GT_EVENT_TYPE_NONE = 0,
 
     /* Input device events */
     _GT_EVENT_TYPE_INPUT_BEGIN,
-    /* =================== input event defined here Begin =================== */
-    GT_EVENT_TYPE_INPUT_RELEASED = _GT_EVENT_TYPE_INPUT_BEGIN,        ///< release event
-    GT_EVENT_TYPE_INPUT_PRESSING,                                     ///< pressing
-    GT_EVENT_TYPE_INPUT_PRESSED,                                      ///< pressed
+
+    GT_EVENT_TYPE_INPUT_RELEASED = _GT_EVENT_TYPE_INPUT_BEGIN,     // release event
+    GT_EVENT_TYPE_INPUT_PRESSING,                                  // pressing
+    GT_EVENT_TYPE_INPUT_PRESSED,                                   // pressed
     GT_EVENT_TYPE_INPUT_LONG_PRESSED,
-    GT_EVENT_TYPE_INPUT_PRESS_LOST,                                   ///< move off and lost focus handler
+    GT_EVENT_TYPE_INPUT_PRESS_LOST,    // move off and lost focus handler
     GT_EVENT_TYPE_INPUT_SCROLL_START,
     GT_EVENT_TYPE_INPUT_SCROLL,
     GT_EVENT_TYPE_INPUT_SCROLL_END,
@@ -48,50 +49,35 @@ typedef enum gt_event_type_e{
     GT_EVENT_TYPE_INPUT_SCROLL_DOWN,
     GT_EVENT_TYPE_INPUT_SCROLL_LEFT,
     GT_EVENT_TYPE_INPUT_SCROLL_RIGHT,
-    /** ... */
 
-    /* =================== input event defined here End =================== */
     _GT_EVENT_TYPE_INPUT_END,
-    _GT_EVENT_TYPE_UPDATE_BEGIN = _GT_EVENT_TYPE_INPUT_END,
-    /* =================== update event defined here Begin =================== */
 
     /* update value */
-    GT_EVENT_TYPE_UPDATE_VALUE = _GT_EVENT_TYPE_UPDATE_BEGIN,         ///< value update, need to redraw
+    GT_EVENT_TYPE_UPDATE_VALUE = _GT_EVENT_TYPE_INPUT_END,   // value update, need to redraw
     GT_EVENT_TYPE_UPDATE_STYLE,
 
-    /** ... */
-
-    /* =================== update event defined here End =================== */
-    _GT_EVENT_TYPE_UPDATE_END,
-    _GT_EVENT_TYPE_DRAW_BEGIN = _GT_EVENT_TYPE_UPDATE_END,
-    /* =================== draw event defined here Begin =================== */
-
     /* Drawing events */
-    GT_EVENT_TYPE_DRAW_START = _GT_EVENT_TYPE_DRAW_BEGIN,             ///< need to start draw widget
-    GT_EVENT_TYPE_DRAW_END,                                           ///< draw widget ok
+    GT_EVENT_TYPE_DRAW_START,    // need to start draw widget
+    GT_EVENT_TYPE_DRAW_END,      // draw widget ok
     GT_EVENT_TYPE_DRAW_REDRAW,
 
-    /** ... */
-
-    /* =================== draw event defined here End =================== */
-    _GT_EVENT_TYPE_DRAW_END,
-    _GT_EVENT_TYPE_CHANGE_BEGIN = _GT_EVENT_TYPE_DRAW_END,
-    /* =================== change event defined here Begin =================== */
-
     /* CHANGE events */
-    GT_EVENT_TYPE_CHANGE_CHILD_REMOVE = _GT_EVENT_TYPE_CHANGE_BEGIN,  ///< remove child but not delete child
-    GT_EVENT_TYPE_CHANGE_CHILD_REMOVED,                               ///< remove child finish
-    GT_EVENT_TYPE_CHANGE_CHILD_ADD,                                   ///< add child
-    GT_EVENT_TYPE_CHANGE_CHILD_DELETE,                                ///< delete child
-    GT_EVENT_TYPE_CHANGE_CHILD_DELETED,                               ///< delete child finish
+    GT_EVENT_TYPE_CHANGE_CHILD_REMOVE,     // remove child but not delete child
+    GT_EVENT_TYPE_CHANGE_CHILD_REMOVED,    // remove child finish
+    GT_EVENT_TYPE_CHANGE_CHILD_ADD,        // add child
+    GT_EVENT_TYPE_CHANGE_CHILD_DELETE ,    // delete child
+    GT_EVENT_TYPE_CHANGE_CHILD_DELETED,    // delete child finish
     GT_EVENT_TYPE_CHANGE_DELETED,
 
-    /** ... */
+    /* =================== Core defined here end =================== */
 
-    /* =================== change event defined here End =================== */
-    _GT_EVENT_TYPE_CHANGE_END,
+    /* =================== User custom defined here begin =================== */
 
-    _GT_EVENT_TYPE_TOTAL_COUNT = _GT_EVENT_TYPE_CHANGE_END,           ///< count event number
+
+
+    /* =================== User custom defined here end =================== */
+
+    _GT_EVENT_TYPE_TOTAL_COUNT,    // count event number
 
     GT_EVENT_TYPE_ALL = 0xFFFF,
 }gt_event_type_et;
