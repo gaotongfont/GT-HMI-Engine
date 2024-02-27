@@ -170,7 +170,7 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
             // gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         }
-        case GT_EVENT_TYPE_INPUT_PROCESS_LOST: {
+        case GT_EVENT_TYPE_INPUT_PRESS_LOST: {
             _change_state_by_trigger_mode(obj, false);
             _unmasked_effect_handler(obj);
             break;

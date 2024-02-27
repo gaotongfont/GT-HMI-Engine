@@ -179,7 +179,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     else if (GT_EVENT_TYPE_INPUT_RELEASED == code) {
         _set_last_active_obj(obj, e->origin);
     }
-    else if (GT_EVENT_TYPE_INPUT_SCROLL_END) {
+    else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code) {
         _reset_last_active_state(obj, e->origin);
     }
 }

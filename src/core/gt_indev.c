@@ -30,7 +30,7 @@
 /* private typedef ------------------------------------------------------*/
 
 typedef struct _indev_reg_s {
-    uint8_t disabled : 1;   /** 0: default set, normal; 1: temporary disability */
+    uint8_t disabled : 1;   /** When screen anim used, 0: default set, normal; 1: temporary disability */
     uint8_t reserved : 7;
 }_indev_reg_st;
 
@@ -242,7 +242,7 @@ static void _indev_scroll_handler(gt_indev_st * indev) {
 
 static inline void _send_released_event(struct _point * point_p) {
     gt_event_type_et event_type = (point_p->obj_act == point_p->obj_target) ? \
-        GT_EVENT_TYPE_INPUT_RELEASED : GT_EVENT_TYPE_INPUT_PROCESS_LOST;
+        GT_EVENT_TYPE_INPUT_RELEASED : GT_EVENT_TYPE_INPUT_PRESS_LOST;
 
     gt_event_send(point_p->obj_target, event_type, NULL);
 }

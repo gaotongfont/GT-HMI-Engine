@@ -263,7 +263,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             _released_btn_handler(obj);
             break;
 
-        case GT_EVENT_TYPE_INPUT_PROCESS_LOST:
+        case GT_EVENT_TYPE_INPUT_PRESS_LOST:
             GT_LOGV(GT_LOG_TAG_GUI, "process lost");
             _lost_focus_btn_handler(obj);
             break;

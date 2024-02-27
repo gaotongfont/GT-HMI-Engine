@@ -810,7 +810,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         GT_LOGV(GT_LOG_TAG_GUI, "scroll");
         break;
 
-    case GT_EVENT_TYPE_INPUT_PROCESS_LOST:
+    case GT_EVENT_TYPE_INPUT_PRESS_LOST:
     case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
         GT_LOGV(GT_LOG_TAG_GUI, "processed");
         if(gt_obj_check_scr(obj)) {

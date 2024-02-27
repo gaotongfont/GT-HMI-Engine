@@ -37,10 +37,11 @@ typedef enum gt_event_type_e{
     GT_EVENT_TYPE_INPUT_RELEASED = _GT_EVENT_TYPE_INPUT_BEGIN,        ///< release event
     GT_EVENT_TYPE_INPUT_PRESSING,                                     ///< pressing
     GT_EVENT_TYPE_INPUT_PRESSED,                                      ///< pressed
+    GT_EVENT_TYPE_INPUT_LONG_PRESSED,
+    GT_EVENT_TYPE_INPUT_PRESS_LOST,                                   ///< move off and lost focus handler
     GT_EVENT_TYPE_INPUT_SCROLL_START,
     GT_EVENT_TYPE_INPUT_SCROLL,
     GT_EVENT_TYPE_INPUT_SCROLL_END,
-    GT_EVENT_TYPE_INPUT_PROCESS_LOST,                                 ///< move off and lost focus handler
     GT_EVENT_TYPE_INPUT_KEY,
     GT_EVENT_TYPE_INPUT_FOCUSED,
     GT_EVENT_TYPE_INPUT_SCROLL_UP,

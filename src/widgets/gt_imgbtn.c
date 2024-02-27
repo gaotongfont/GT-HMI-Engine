@@ -186,7 +186,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
-        case GT_EVENT_TYPE_INPUT_PROCESS_LOST: {
+        case GT_EVENT_TYPE_INPUT_PRESS_LOST: {
             style->selected = 0;
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
