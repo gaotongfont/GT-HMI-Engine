@@ -114,7 +114,6 @@ static gt_size_t _calc_touch_point_pos(gt_obj_st * obj) {
     gt_obj_st * scr = gt_disp_get_scr();
     gt_point_st point_click = gt_indev_get_point();
     gt_size_t pos = 0;
-    float _tmp_pos = 0;
 
     if(NULL == scr){
         return style->offset;
@@ -425,16 +424,19 @@ void gt_slider_set_pos(gt_obj_st * slider, gt_size_t pos)
         max = slider->area.h - (_gt_slider_get_tag_size(slider));
     }
 
-    if( pos < style->start ){
-        style->pos = style->start;
-        style->offset = 0;
-    }else if( pos > style->end ){
-        style->pos = style->end;
-        style->offset = max;
-    }else{
-        style->pos = pos;
-        style->offset = style->pos * max / (style->end - style->start);
+    // limit end and start
+    if (style->end < style->start) {
+        style->end = style->start;
     }
+
+    style->pos = pos;
+    if (style->pos < style->start) {
+        style->pos = style->start;
+    } else if (style->pos > style->end) {
+        style->pos = style->end;
+    }
+    style->offset = (style->pos - style->start) * max / (style->end - style->start);
+
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
