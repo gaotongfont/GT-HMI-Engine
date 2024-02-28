@@ -102,18 +102,11 @@ static uint16_t _gt_slider_get_size(gt_obj_st * slider)
     return style->size;
 }
 
-static uint16_t _gt_slider_get_offset(gt_obj_st * slider)
-{
-    _gt_slider_st * style = (_gt_slider_st * )slider;
-
-    return style->offset;
-}
-
 static gt_size_t _calc_touch_point_pos(gt_obj_st * obj) {
     _gt_slider_st * style = (_gt_slider_st * )obj;
     gt_obj_st * scr = gt_disp_get_scr();
     gt_point_st point_click = gt_indev_get_point();
-    gt_size_t pos = 0;
+    gt_size_t temp_offset = 0;
 
     if(NULL == scr){
         return style->offset;
@@ -123,18 +116,41 @@ static gt_size_t _calc_touch_point_pos(gt_obj_st * obj) {
     point_click.y += scr->area.y;
 
     if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_L2R ){
-        pos = point_click.x - obj->area.x;
+        temp_offset = point_click.x - obj->area.x;
     }else if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_R2L ){
-        pos = obj->area.w - (point_click.x - obj->area.x);
+        temp_offset = obj->area.w - (point_click.x - obj->area.x);
     }else if( gt_slider_get_dir(obj) == GT_BAR_DIR_VER_U2D ){
-        pos = point_click.y - obj->area.y;
+        temp_offset = point_click.y - obj->area.y;
     }else if( gt_slider_get_dir(obj) == GT_BAR_DIR_VER_D2U ){
-        pos = obj->area.h - (point_click.y - obj->area.y);
+        temp_offset = obj->area.h - (point_click.y - obj->area.y);
     }
-    return pos;
+    return temp_offset;
 }
 
-static void _gt_slider_set_offset(gt_obj_st * slider , int offset)
+static void _gt_slider_set_offset_by_pos(gt_obj_st * slider, gt_size_t pos)
+{
+    _gt_slider_st * style = (_gt_slider_st * )slider;
+
+    if (pos < style->start) {
+        pos = style->start;
+    } else if (pos > style->end) {
+        pos = style->end;
+    }
+    style->pos = pos;
+
+    uint16_t max = 0;
+
+    if( (style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L) ){
+        max = slider->area.w - (_gt_slider_get_tag_size(slider));
+    }
+    else if( (style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U) ){
+        max = slider->area.h - (_gt_slider_get_tag_size(slider));
+    }
+
+    style->offset = (style->pos - style->start) * max / (style->end - style->start);
+}
+
+static void _gt_slider_set_offset(gt_obj_st * slider , gt_size_t offset)
 {
     _gt_slider_st * style = (_gt_slider_st * )slider;
     uint16_t max_offset = 0;
@@ -166,9 +182,9 @@ static void _scroll_dir_ver(gt_obj_st * obj, bool is_up) {
     gt_size_t val = is_up ? 1 : -1;
 
     if (GT_BAR_DIR_VER_U2D == style->dir) {
-        _gt_slider_set_offset(obj, _gt_slider_get_offset(obj) + val);
+        _gt_slider_set_offset_by_pos(obj, style->pos + val);
     } else if (GT_BAR_DIR_VER_D2U == style->dir) {
-        _gt_slider_set_offset(obj, _gt_slider_get_offset(obj) - val);
+        _gt_slider_set_offset_by_pos(obj, style->pos - val);
     }
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -178,9 +194,9 @@ static void _scroll_dir_hor(gt_obj_st * obj, bool is_right) {
     gt_size_t val = is_right ? 1 : -1;
 
     if (GT_BAR_DIR_HOR_L2R == style->dir) {
-        _gt_slider_set_offset(obj, _gt_slider_get_offset(obj) + val);
+        _gt_slider_set_offset_by_pos(obj, style->pos + val);
     } else if (GT_BAR_DIR_HOR_R2L == style->dir) {
-        _gt_slider_set_offset(obj, _gt_slider_get_offset(obj) - val);
+        _gt_slider_set_offset_by_pos(obj, style->pos - val);
     }
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
