@@ -28,7 +28,7 @@
 #define MY_CLASS    &gt_roller_class
 
 /** The width of redundancy */
-#define _REDUNDANCY_WIDTH   4
+#define _REDUNDANCY_WIDTH   22
 
 /* private typedef ------------------------------------------------------*/
 /**
