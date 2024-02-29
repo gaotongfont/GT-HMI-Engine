@@ -43,7 +43,8 @@ typedef struct _gt_listview_s {
 
     uint8_t selected_mode  : 1;
     uint8_t septal_line    : 1;
-    uint8_t reserved       : 6;
+    uint8_t icon_right     : 1;
+    uint8_t reserved       : 5;
 }_gt_listview_st;
 
 
@@ -164,9 +165,12 @@ static void _reset_last_active_state(gt_obj_st * listview, gt_obj_st * target) {
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
 
-    if (GT_EVENT_TYPE_INPUT_SCROLL == code) {
+    if (GT_EVENT_TYPE_DRAW_START == code) {
+        gt_disp_invalid_area(obj);
+    }
+    else if (GT_EVENT_TYPE_INPUT_SCROLL == code) {
         if (gt_obj_get_childs_max_height(obj) < gt_obj_get_h(obj)) {
-            /**  */
+            /** all items can display with current page, reset scroll selected effect */
             _reset_last_active_state(obj, _get_last_active_obj(obj));
             _set_last_active_obj(obj, NULL);
             return;
@@ -221,6 +225,10 @@ static void _set_label_prop_by_type(gt_obj_st * listview, _label_prop_em type, i
     }
 }
 
+static inline uint16_t _get_scale_offset(gt_obj_st * item) {
+    return gt_obj_get_w(item) >> 2;
+}
+
 static gt_obj_st * _create_item_obj(gt_obj_st * listview) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
     gt_size_t item_offset = listview->area.y;
@@ -236,12 +244,36 @@ static gt_obj_st * _create_item_obj(gt_obj_st * listview) {
     gt_obj_set_fixed(obj, true);
     gt_obj_set_inside(obj, true);
     gt_obj_set_bubble_notify(obj, true);
-    // TODO
     gt_obj_set_septal_line(obj, style->septal_line);
     gt_obj_set_mask_effect(obj, true);
-    // gt_obj_set_trigger_mode(obj, true);
 
     return obj;
+}
+
+static void _center_icon_pos(gt_obj_st * icon, gt_obj_st * item, bool icon_right) {
+    uint16_t offset = _get_scale_offset(item);
+    gt_size_t x = gt_obj_get_x(item);
+
+    gt_area_copy(&icon->area, &item->area);
+    icon->area.w = offset;
+
+    if (icon_right) {
+        x += gt_obj_get_w(item) - offset;
+    }
+
+    icon->area.x = ((offset - gt_img_get_width(icon)) >> 1) + x;
+    icon->area.y = ((gt_obj_get_h(item) - gt_img_get_height(icon)) >> 1) + gt_obj_get_y(icon);
+}
+
+static void _set_label_pos(gt_obj_st * lab, gt_obj_st * item, bool icon_right) {
+    uint16_t offset = _get_scale_offset(item);
+
+    gt_area_copy(&lab->area, &item->area);
+    lab->area.w -= offset;
+
+    if (false == icon_right) {
+        lab->area.x += offset;
+    }
 }
 
 /**
@@ -253,19 +285,15 @@ static gt_obj_st * _create_item_obj(gt_obj_st * listview) {
  * @param img image path
  * @return gt_obj_st* icon object
  */
-static gt_obj_st * _create_item_icon(gt_obj_st * listview, gt_obj_st * obj, gt_area_st area, char * img) {
+static gt_obj_st * _create_item_icon(gt_obj_st * listview, gt_obj_st * obj, char * img) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
     gt_obj_st * icon = gt_img_create(obj);
 
-    gt_area_copy(&icon->area, &area);
     gt_img_set_src(icon, img);
-    gt_obj_set_pos(icon,
-        ((area.w - gt_img_get_width(icon)) >> 1) + gt_obj_get_x(icon),
-        ((area.h - gt_img_get_height(icon)) >> 1) + gt_obj_get_y(icon)
-    );
+    _center_icon_pos(icon, obj, style->icon_right);
 
-    gt_obj_set_bubble_notify(icon, true);
     gt_obj_set_touch_parent(icon, true);
+    gt_obj_set_bubble_notify(icon, true);
 
     return icon;
 }
@@ -279,12 +307,12 @@ static gt_obj_st * _create_item_icon(gt_obj_st * listview, gt_obj_st * obj, gt_a
  * @param text label text
  * @return gt_obj_st* label object
  */
-static gt_obj_st * _create_item_label(gt_obj_st * listview, gt_obj_st * obj, gt_area_st area, char * text) {
+static gt_obj_st * _create_item_label(gt_obj_st * listview, gt_obj_st * obj, char * text) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
     gt_obj_st * lab = gt_label_create(obj);
 
-    gt_area_copy(&lab->area, &area);
-    gt_obj_set_bubble_notify(lab, true);
+    _set_label_pos(lab, obj, style->icon_right);
+
     gt_label_set_font_align(lab, style->align);
     gt_label_set_font_color(lab, style->font_color);
     gt_label_set_font_family_cn(lab, style->font_info.style_cn);
@@ -298,8 +326,21 @@ static gt_obj_st * _create_item_label(gt_obj_st * listview, gt_obj_st * obj, gt_
     gt_label_set_space(lab, style->space_x, style->space_y);
     gt_label_set_text(lab, text);
     gt_obj_set_touch_parent(lab, true);
+    gt_obj_set_bubble_notify(lab, true);
 
     return lab;
+}
+
+static gt_obj_st * _get_obj_by_item(gt_obj_st * item, gt_obj_type_et type) {
+    gt_obj_st * ret = NULL;
+    for (gt_size_t i = 0, cnt = item->cnt_child; i < cnt; i++) {
+        if (type != gt_obj_class_get_type(item->child[i])) {
+            continue;
+        }
+        ret = item->child[i];
+        break;
+    }
+    return ret;
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -352,7 +393,7 @@ void gt_listview_add_item(gt_obj_st * listview, char * text)
         return;
     }
     gt_obj_st * obj = _create_item_obj(listview);
-    gt_obj_st * lab = _create_item_label(listview, obj, obj->area, text);
+    gt_obj_st * lab = _create_item_label(listview, obj, text);
 
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_INSIDE, true);
@@ -375,24 +416,44 @@ void gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * text)
         return;
     }
     gt_obj_st * obj = _create_item_obj(listview);
-    uint16_t offset = gt_obj_get_w(listview) >> 2;
+    uint16_t offset = _get_scale_offset(obj);
 
     if (img) {
-        gt_area_st area_icon = obj->area;
-        area_icon.w = offset;
-        gt_obj_st * icon = _create_item_icon(listview, obj, area_icon, img);
+        _create_item_icon(listview, obj, img);
     }
-
-    gt_area_st area_label = obj->area;
-    area_label.x += offset;
-    area_label.w -= offset;
-    gt_obj_st * lab = _create_item_label(listview, obj, area_label, text);
+    _create_item_label(listview, obj, text);
 
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_INSIDE, true);
 }
 
-void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, gt_size_t idx) {
+void gt_listview_set_icon_to_right(gt_obj_st * listview, bool enabled)
+{
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    gt_obj_st * item = NULL, * icon = NULL, * lab = NULL;
+    gt_size_t i = 0, cnt_obj = 0;
+    gt_size_t idx_item = 0, cnt_item = 0;
+
+    style->icon_right = enabled;
+
+    for (i = 0, cnt_obj = listview->cnt_child; i < cnt_obj; i++) {
+        item = listview->child[i];
+        cnt_item = item->cnt_child;
+
+        if (1 == cnt_item) {
+            continue;   /** only label do not switch */
+        }
+        lab = _get_obj_by_item(item, GT_TYPE_LAB);
+        icon = _get_obj_by_item(item, GT_TYPE_IMG);
+
+        _center_icon_pos(icon, item, style->icon_right);
+        _set_label_pos(lab, item, style->icon_right);
+    }
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, gt_size_t idx)
+{
     _gt_listview_st * style = (_gt_listview_st * )listview;
     if (0 == listview->cnt_child) {
         return;

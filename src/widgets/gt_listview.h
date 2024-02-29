@@ -47,13 +47,28 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent);
  */
 void gt_listview_add_item(gt_obj_st * list, char * text);
 
+/**
+ * @brief add item to listview obj with icon
+ *
+ * @param listview
+ * @param img icon path
+ * @param text text
+ */
 void gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * text);
+
+/**
+ * @brief item icon set to right side, default is left
+ *
+ * @param listview
+ * @param enabled true: set to right side; false[default]: set to left side
+ */
+void gt_listview_set_icon_to_right(gt_obj_st * listview, bool enabled);
 
 /**
  * @brief Set the listview item display height
  *
  * @param listview
- * @param height
+ * @param height The height of the item
  */
 void gt_listview_set_item_height(gt_obj_st * listview, uint16_t height);
 
