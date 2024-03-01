@@ -80,6 +80,16 @@ void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_ob
  */
 gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj);
 
+/**
+ * @brief Check if the object is target type
+ *
+ * @param obj
+ * @param type
+ * @return true
+ * @return false
+ */
+bool gt_obj_is_type(struct gt_obj_s * obj, gt_obj_type_et type);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
