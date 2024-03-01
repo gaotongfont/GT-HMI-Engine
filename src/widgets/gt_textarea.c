@@ -127,17 +127,7 @@ static void _init_cb(gt_obj_st * obj) {
     _gt_textarea_init_widget(obj);
 }
 
-/**
- * @brief obj deinit call back
- *
- * @param obj
- */
-static void _deinit_cb(gt_obj_st * obj) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
-    if (NULL == obj) {
-        return ;
-    }
-
+static void _free_contents(gt_obj_st * obj) {
     _gt_textarea_st * style_p = (_gt_textarea_st * )obj;
     if (NULL != style_p->contents) {
         gt_size_t i = style_p->cnt_contents - 1;
@@ -153,6 +143,19 @@ static void _deinit_cb(gt_obj_st * obj) {
         gt_mem_free(style_p->contents);
         style_p->contents = NULL;
     }
+}
+
+/**
+ * @brief obj deinit call back
+ *
+ * @param obj
+ */
+static void _deinit_cb(gt_obj_st * obj) {
+    GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
+    if (NULL == obj) {
+        return ;
+    }
+    _free_contents(obj);
 }
 
 
@@ -239,9 +242,8 @@ void gt_textarea_set_text(gt_obj_st * textarea, char * text)
     uint16_t len = 0;
 
     if(style->cnt_contents){
-        style_mask = style->contents[0].mask_style;
-        color = style->contents[0].color;
-        gt_mem_free(style->contents);
+        color = style->contents[style->cnt_contents - 1].color;
+        _free_contents(textarea);
     }
     if(text != NULL){
         len = strlen(text);
