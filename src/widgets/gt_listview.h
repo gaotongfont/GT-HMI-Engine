@@ -73,6 +73,23 @@ void gt_listview_set_icon_to_right(gt_obj_st * listview, bool enabled);
 void gt_listview_set_item_height(gt_obj_st * listview, uint16_t height);
 
 /**
+ * @brief Holding the selected item to highlight
+ *
+ * @param listview
+ * @param enabled true: highlight the selected item; false: not highlight
+
+ */
+void gt_listview_set_highlight_mode(gt_obj_st * listview, bool enabled);
+
+/**
+ * @brief Highlight the selected item which is multiple selected.
+ *
+ * @param listview
+ * @param enabled true: multiple selected; false: single selected
+ */
+void gt_listview_set_multiple(gt_obj_st * listview, bool enabled);
+
+/**
  * @brief set the listview selected item by index
  *
  * @param listview listview obj

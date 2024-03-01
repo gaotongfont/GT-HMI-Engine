@@ -41,10 +41,11 @@ typedef struct _gt_listview_s {
     uint8_t space_x;
     uint8_t space_y;
 
-    uint8_t selected_mode  : 1;
-    uint8_t septal_line    : 1;
+    uint8_t highlight      : 1; /** holding highlight state the last active item, 0: release restores the effect, 1: switch state */
+    uint8_t septal_line    : 1; /** Display septal line between items */
     uint8_t icon_right     : 1;
-    uint8_t reserved       : 5;
+    uint8_t multiple       : 1; /** Selected multiple item: 0: single selected; 1: multiple selected */
+    uint8_t reserved       : 4;
 }_gt_listview_st;
 
 
@@ -156,6 +157,45 @@ static void _reset_last_active_state(gt_obj_st * listview, gt_obj_st * target) {
     gt_disp_invalid_area(listview);
 }
 
+static void _highlight_set_obj_active_state(gt_obj_st * listview) {
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    if (false == style->highlight) {
+        return;
+    }
+    if (style->multiple) {
+        return;
+    }
+    if (false == gt_obj_get_trigger_mode(style->last_active)) {
+        return;
+    }
+    if (false == gt_obj_get_state(style->last_active)) {
+        gt_obj_set_state(style->last_active,  true);
+    }
+}
+
+static void _reset_other_active_state(gt_obj_st * listview) {
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    gt_obj_st * item = NULL;
+    if (false == style->highlight) {
+        return;
+    }
+    if (style->multiple) {
+        return;
+    }
+
+    for (gt_size_t i = 0, cnt = listview->cnt_child; i < cnt; i++) {
+        item = listview->child[i];
+        if (style->last_active == item) {
+            continue;
+        }
+        if (false == gt_obj_get_trigger_mode(item)) {
+            continue;
+        }
+        gt_obj_set_state(item, false);
+    }
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 /**
  * @brief obj event handler call back
  *
@@ -182,6 +222,8 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
     else if (GT_EVENT_TYPE_INPUT_RELEASED == code) {
         _set_last_active_obj(obj, e->origin);
+        _reset_other_active_state(obj);
+        _highlight_set_obj_active_state(obj);
     }
     else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code) {
         _reset_last_active_state(obj, e->origin);
@@ -195,7 +237,7 @@ static void _set_label_prop_by_type(gt_obj_st * listview, _label_prop_em type, i
     for (gt_size_t i = 0, cnt = listview->cnt_child; i < cnt; i++) {
         obj = listview->child[i];
         for (item = 0, cnt_item = obj->cnt_child; item < cnt_item; item++) {
-            if (GT_TYPE_LAB != gt_obj_class_get_type(obj->child[item])) {
+            if (false == gt_obj_is_type(obj->child[item], GT_TYPE_LAB)) {
                 continue;
             }
             if (_LABEL_FONT_SIZE == type) {
@@ -241,11 +283,13 @@ static gt_obj_st * _create_item_obj(gt_obj_st * listview) {
     obj->area.y = item_offset;
     obj->area.w = listview->area.w;
     obj->area.h = style->item_height;
+
     gt_obj_set_fixed(obj, true);
     gt_obj_set_inside(obj, true);
+    gt_obj_set_mask_effect(obj, true);
     gt_obj_set_bubble_notify(obj, true);
     gt_obj_set_septal_line(obj, style->septal_line);
-    gt_obj_set_mask_effect(obj, true);
+    gt_obj_set_trigger_mode(obj, style->highlight);
 
     return obj;
 }
@@ -375,7 +419,6 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     style->space_x = 0;
     style->space_y = 0;
     style->septal_line = true;
-    style->selected_mode = true;
     style->border_width = 2;
     style->border_color = gt_color_hex(0xc7c7c7);
 
@@ -386,10 +429,7 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
 
 void gt_listview_add_item(gt_obj_st * listview, char * text)
 {
-    if (NULL == listview) {
-        return;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;
     }
     gt_obj_st * obj = _create_item_obj(listview);
@@ -409,10 +449,7 @@ void gt_listview_set_item_height(gt_obj_st * listview, uint16_t height)
 
 void gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * text)
 {
-    if (NULL == listview) {
-        return;
-    }
-    if (GT_TYPE_LISTVIEW != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;
     }
     gt_obj_st * obj = _create_item_obj(listview);
@@ -452,8 +489,39 @@ void gt_listview_set_icon_to_right(gt_obj_st * listview, bool enabled)
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+void gt_listview_set_highlight_mode(gt_obj_st * listview, bool enabled)
+{
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+
+    if (false == enabled) {
+        style->multiple = false;
+        _reset_other_active_state(listview);
+        gt_obj_set_state(_get_last_active_obj(listview), false);
+    }
+    style->highlight = enabled;
+
+    for (gt_size_t i = 0, cnt = listview->cnt_child; i < cnt; i++) {
+        gt_obj_set_trigger_mode(listview->child[i], style->highlight);
+    }
+}
+
+void gt_listview_set_multiple(gt_obj_st * listview, bool enabled)
+{
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->multiple = enabled;
+}
+
 void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, gt_size_t idx)
 {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+        return;
+    }
     _gt_listview_st * style = (_gt_listview_st * )listview;
     if (0 == listview->cnt_child) {
         return;
@@ -468,10 +536,7 @@ void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, gt_size_t idx)
 
 gt_size_t gt_listview_get_list_items_cnt(gt_obj_st * listview)
 {
-    if (NULL == listview) {
-        return -1;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return -1;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -480,10 +545,7 @@ gt_size_t gt_listview_get_list_items_cnt(gt_obj_st * listview)
 
 gt_size_t gt_listview_get_idx_selected(gt_obj_st * listview)
 {
-    if (NULL == listview) {
-        return -1;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return -1;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -503,10 +565,7 @@ gt_size_t gt_listview_get_idx_selected(gt_obj_st * listview)
 
 char * gt_listview_get_selected_item_text(gt_obj_st * listview)
 {
-    if (NULL == listview) {
-        return NULL;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return NULL;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -528,10 +587,7 @@ char * gt_listview_get_selected_item_text(gt_obj_st * listview)
 
 void gt_listview_set_border_color(gt_obj_st * listview, gt_color_t color)
 {
-    if (NULL == listview) {
-        return;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -540,10 +596,7 @@ void gt_listview_set_border_color(gt_obj_st * listview, gt_color_t color)
 
 void gt_listview_set_border_width(gt_obj_st * listview, uint8_t width)
 {
-    if (NULL == listview) {
-        return;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -552,10 +605,7 @@ void gt_listview_set_border_width(gt_obj_st * listview, uint8_t width)
 
 void gt_listview_set_septal_line(gt_obj_st * listview, bool enabled)
 {
-    if (NULL == listview) {
-        return;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -569,10 +619,7 @@ void gt_listview_set_septal_line(gt_obj_st * listview, bool enabled)
 
 void gt_listview_set_font_size(gt_obj_st * listview, uint8_t size)
 {
-    if (NULL == listview) {
-        return;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -581,10 +628,7 @@ void gt_listview_set_font_size(gt_obj_st * listview, uint8_t size)
 }
 void gt_listview_set_font_gray(gt_obj_st * listview, uint8_t gray)
 {
-    if (NULL == listview) {
-        return;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -593,10 +637,7 @@ void gt_listview_set_font_gray(gt_obj_st * listview, uint8_t gray)
 }
 void gt_listview_set_font_align(gt_obj_st * listview, uint8_t align)
 {
-    if (NULL == listview) {
-        return;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -605,10 +646,7 @@ void gt_listview_set_font_align(gt_obj_st * listview, uint8_t align)
 }
 void gt_listview_set_font_color(gt_obj_st * listview, gt_color_t color)
 {
-    if (NULL == listview) {
-        return;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -618,10 +656,7 @@ void gt_listview_set_font_color(gt_obj_st * listview, gt_color_t color)
 
 void gt_listview_set_font_family_en(gt_obj_st * listview, gt_family_t family)
 {
-    if (NULL == listview) {
-        return;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -630,10 +665,7 @@ void gt_listview_set_font_family_en(gt_obj_st * listview, gt_family_t family)
 }
 void gt_listview_set_font_family_fl(gt_obj_st * listview, gt_family_t family)
 {
-    if (NULL == listview) {
-        return;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -642,10 +674,7 @@ void gt_listview_set_font_family_fl(gt_obj_st * listview, gt_family_t family)
 }
 void gt_listview_set_font_family_cn(gt_obj_st * listview, gt_family_t family)
 {
-    if (NULL == listview) {
-        return;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -655,10 +684,7 @@ void gt_listview_set_font_family_cn(gt_obj_st * listview, gt_family_t family)
 
 void gt_listview_set_font_family_numb(gt_obj_st * listview, gt_family_t family)
 {
-    if (NULL == listview) {
-        return;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -668,10 +694,7 @@ void gt_listview_set_font_family_numb(gt_obj_st * listview, gt_family_t family)
 
 void gt_listview_set_font_thick_en(gt_obj_st * listview, uint8_t thick)
 {
-    if (NULL == listview) {
-        return;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -680,10 +703,7 @@ void gt_listview_set_font_thick_en(gt_obj_st * listview, uint8_t thick)
 }
 void gt_listview_set_font_thick_cn(gt_obj_st * listview, uint8_t thick)
 {
-    if (NULL == listview) {
-        return;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -692,10 +712,7 @@ void gt_listview_set_font_thick_cn(gt_obj_st * listview, uint8_t thick)
 }
 void gt_listview_set_space(gt_obj_st * listview, uint8_t space_x, uint8_t space_y)
 {
-    if (NULL == listview) {
-        return;
-    }
-    if (GT_TYPE_LISTVIEW  != gt_obj_class_get_type(listview)) {
+    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
