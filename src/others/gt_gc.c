@@ -39,6 +39,19 @@ gt_gc_st _gt_global_call = {
 
 /* global functions / API interface -------------------------------------*/
 
+gt_disp_st * _gt_gc_get_disp(void)
+{
+    return _gt_global_call.disp;
+}
 
+void _gt_gc_set_disp(gt_disp_st * disp)
+{
+    _gt_global_call.disp = disp;
+}
+
+uint16_t _gt_gc_get_size(void)
+{
+    return sizeof(gt_gc_st);
+}
 
 /* end ------------------------------------------------------------------*/

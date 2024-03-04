@@ -18,6 +18,8 @@
 #include "../core/gt_timer.h"
 #include "../hal/gt_hal_tick.h"
 #include "../others/gt_area.h"
+#include "../others/gt_gc.h"
+
 /* private define -------------------------------------------------------*/
 
 
@@ -34,8 +36,6 @@
 #elif (GT_REFRESH_STYLE_3 == GT_REFRESH_STYLE)
     static gt_color_t * graph_buf_all;
 #endif
-
-static gt_disp_st * disp_p;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -67,6 +67,7 @@ void gt_disp_drv_init(gt_disp_drv_st * drv)
 
 void gt_disp_drv_register(gt_disp_drv_st * drv)
 {
+    gt_disp_st * disp_p = _gt_gc_get_disp();
     if( disp_p == NULL ){
         disp_p = gt_mem_malloc(sizeof(gt_disp_st));
         gt_memset(disp_p, 0, sizeof(gt_disp_st));
@@ -77,6 +78,8 @@ void gt_disp_drv_register(gt_disp_drv_st * drv)
     }
     disp_p->vbd_color = gt_disp_graph_get_buf_default();
     disp_p->drv = drv;
+
+    _gt_gc_set_disp(disp_p);
 
     _gt_timer_create(_gt_disp_task_handler, GT_TASK_PERIOD_TIME_REFR, NULL);
 }
@@ -89,7 +92,7 @@ void gt_disp_drv_register(gt_disp_drv_st * drv)
 
 gt_disp_st * gt_disp_get_default(void)
 {
-    return disp_p;
+    return _gt_gc_get_disp();
 }
 
 uint16_t gt_disp_get_res_hor(gt_disp_st * disp)
