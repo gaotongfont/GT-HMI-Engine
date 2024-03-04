@@ -38,7 +38,7 @@ extern gt_gc_st _gt_global_call;
 
 /* macros ---------------------------------------------------------------*/
 
-static inline int gt_gc_is_ll_empty(const struct _gt_list_head * head) {
+static inline int _gt_gc_is_ll_empty(const struct _gt_list_head * head) {
     return _gt_list_empty(head);
 }
 

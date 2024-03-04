@@ -79,7 +79,7 @@ static inline void _gt_anim_set_timer(struct _gt_timer_s * timer) {
 static void _gt_anim_change_list(void)
 {
     _is_list_change = true;
-    if (gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
+    if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
         _gt_timer_set_paused(_gt_anim_get_timer(), true);
     } else {
         _gt_timer_set_paused(_gt_anim_get_timer(), false);
@@ -232,7 +232,7 @@ static void _gt_anim_ready_handler(gt_anim_st * anim) {
 static void _gt_anim_task_handler(struct _gt_timer_s * timer)
 {
     GT_UNUSED(timer);
-    if (gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
+    if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
         return ;
     }
 
@@ -385,7 +385,7 @@ gt_anim_st * gt_anim_start(const gt_anim_st * anim)
         return NULL;
     }
 
-    if (gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
+    if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
         _time_last_run = gt_tick_get();
     }
 
@@ -425,7 +425,7 @@ bool gt_anim_del(gt_obj_st * target, gt_anim_exec_cb_t exec_cb)
     gt_anim_st * ptr        = NULL;
     gt_anim_st * backup_ptr = NULL;
 
-    if (gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
+    if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
         return ret;
     }
 
@@ -445,7 +445,7 @@ void gt_anim_del_all(void)
     gt_anim_st * ptr        = NULL;
     gt_anim_st * backup_ptr = NULL;
 
-    if (gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
+    if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
         return ;
     }
 
