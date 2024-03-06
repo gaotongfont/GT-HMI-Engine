@@ -153,14 +153,12 @@ static bool _gt_obj_class_destroy_children(gt_obj_st * self, bool is_root)
     gt_size_t i = 0;
 
     if (NULL == self->child || 0 == self->cnt_child) {
-        _gt_obj_class_destroy_property(self);
-        /**
-         * @brief free obj memory, root need to release disp memory,
-         *       child only need to release obj memory in here
-         */
-        if (!is_root) {
-            gt_mem_free(self);
-            self = NULL;
+        if (false == is_root) {
+            /**
+             * @brief free obj memory, root need to release disp memory,
+             *       child only need to release obj memory in here
+             */
+            _gt_obj_class_destroy_self(self);
         }
         return true;
     }
