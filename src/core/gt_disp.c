@@ -116,15 +116,16 @@ static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
  * @param obj The object to be checked and copied
  * @param param
  * @param area_parent All parent displayable areas
+ * @return true: visible or area need to refresh, false: invisible or area not need to refresh
  */
-static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent)
+static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent)
 {
     if (false == gt_area_is_intersect_screen(&param->disp->area_disp, &obj->area)) {
-        return ;
+        return false;
     }
 
     if( !_gt_obj_is_disp_area_visible(obj) ){
-        return;
+        return false;
     }
     gt_disp_st * disp = param->disp;
 
@@ -138,6 +139,8 @@ static inline void gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
 
     obj->draw_ctx = (struct _gt_draw_ctx_t * )&draw_ctx;
     obj->class->_init_cb(obj);
+
+    return true;
 }
 
 /**
@@ -160,21 +163,29 @@ static void _check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param
                 return ;
             }
         }
+    } else {
+        if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
+            return ;
+        }
     }
 
     while( idx < obj->cnt_child ) {
-        child_p = obj->child[idx];
-        gt_check_obj_visible_and_copy(child_p, param, area_cross);
+        child_p = obj->child[idx++];
+        if (false == gt_check_obj_visible_and_copy(child_p, param, area_cross)) {
+            /** No need to iterate over child widgets */
+            continue;
+        }
 
         if( child_p->cnt_child != 0 ){
             _check_and_copy_foreach(child_p, param, area_cross);
         }
-
-        ++idx;
     }
 }
 
 static inline void _gt_disp_check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param) {
+    if (NULL == obj) {
+        return ;
+    }
     /** The screen display area */
     _check_and_copy_foreach(obj, param, param->disp->area_disp);
 }
