@@ -46,8 +46,8 @@ typedef struct _gt_obj_process_attr_s {
 }gt_obj_process_attr_st;
 
 typedef enum {
-    GT_VISIBLE = 0,
-    GT_INVISIBLE = 1,
+    GT_INVISIBLE = 0,
+    GT_VISIBLE = 1,
 }gt_visible_et;
 
 typedef enum {
@@ -98,7 +98,7 @@ typedef struct gt_obj_s {
     uint32_t using         : 1;     /* obj using state 0:using [Can not be free memory], 1:free */
     uint32_t delate        : 1;     /* Prepare to free the current object 0:no delate, 1:delate */
     uint32_t focus         : 1;     /* obj focus state 0:no focus, 1:focus */
-    uint32_t visible       : 1;     /* obj visible state, @gt_visible_e */
+    uint32_t visible       : 1;     /* obj visible state, @gt_visible_et */
     uint32_t disabled      : 1;     /* obj disabled state, 0:enable, 1:disable */
 
     uint32_t focus_dis     : 1;     /* obj focus enable , 0:enable, 1:disable*/
