@@ -60,21 +60,9 @@ void gt_obj_set_area(gt_obj_st * obj, gt_area_st area)
 void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)
 {
     gt_area_st area = obj->area;
+    gt_obj_move_child_by(obj, x - area.x, y - area.y);
     area.x = x;
     area.y = y;
-    gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
-    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
-}
-
-void gt_obj_move_to(gt_obj_st * obj, gt_size_t x, gt_size_t y)
-{
-    gt_area_st area = obj->area;
-    gt_size_t dx = x - area.x;
-    gt_size_t dy = y - area.y;
-    area.x = x;
-    area.y = y;
-    gt_obj_move_child_by(obj, dx, dy);
     gt_obj_pos_change(obj, &area);
     _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);

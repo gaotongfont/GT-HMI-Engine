@@ -219,7 +219,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         break;
     }
     case GT_EVENT_TYPE_INPUT_SCROLL: {
-        gt_obj_move_to(obj, obj->process_attr.scroll.x, obj->area.y);
+        gt_obj_set_pos(obj, obj->process_attr.scroll.x, obj->area.y);
         break;
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_END: {
@@ -348,7 +348,7 @@ void gt_view_pager_fragment_add_widget(gt_obj_st * view_pager, uint8_t fragment_
     uint16_t scr_width = gt_disp_get_res_hor(NULL);
     uint16_t new_pos = (child->area.x % scr_width) + fragment_idx * scr_width;
 
-    gt_obj_move_to(child, new_pos, child->area.y);
+    gt_obj_set_pos(child, new_pos, child->area.y);
 }
 
 void gt_view_pager_set_glass(gt_obj_st * obj, bool enabled)

@@ -128,7 +128,7 @@ static void _scrolling_handler(gt_obj_st * obj) {
 
     gt_size_t offset = obj->area.y + gt_obj_scroll_get_y(obj);
     for (gt_size_t i = 0, cnt = obj->cnt_child; i < cnt; i++) {
-        gt_obj_move_to(obj->child[i], gt_obj_get_x(obj->child[i]), offset);
+        gt_obj_set_pos(obj->child[i], gt_obj_get_x(obj->child[i]), offset);
         offset += style->item_height;
     }
 }
