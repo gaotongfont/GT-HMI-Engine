@@ -67,7 +67,7 @@ bool _gt_obj_is_disp_area_visible(gt_obj_st * obj)
         GT_LOGW( GT_LOG_TAG_GUI, "disp is null" );
         return false;
     }
-    if( GT_INVISIBLE == obj->visible ){
+    if( GT_INVISIBLE == gt_obj_get_visible(obj) ){
         return false;
     }
 
@@ -181,17 +181,19 @@ void gt_obj_get_valid_area(gt_obj_st * obj, gt_area_st * area_act, gt_area_st *a
  * @return false not clicked
  */
 static _check_clicked_state_em gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point ){
-    _check_clicked_state_em ret = _CHECK_CLICKED_STATE_FAIL;
-
+    if (point->x < obj->area.x || point->x > (obj->area.x + obj->area.w)) {
+        return _CHECK_CLICKED_STATE_FAIL;
+    }
+    if (point->y < obj->area.y || point->y > (obj->area.y + obj->area.h)) {
+        return _CHECK_CLICKED_STATE_FAIL;
+    }
+    if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
+        return _CHECK_CLICKED_STATE_FAIL;
+    }
     if (gt_obj_get_virtual(obj)) {
         return _CHECK_CLICKED_STATE_CONTINUE;
     }
-    if( (point->x >= obj->area.x) && (point->x <= (obj->area.x + obj->area.w)) ){
-        if( (point->y >= obj->area.y) && (point->y <= (obj->area.y + obj->area.h)) ){
-            ret = _CHECK_CLICKED_STATE_OK;
-        }
-    }
-    return ret;
+    return _CHECK_CLICKED_STATE_OK;
 }
 
 /**
@@ -230,7 +232,7 @@ static _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st
     while (idx > -1) {
         ret = _gt_obj_foreach_clicked(parent->child[idx], point);
         if (_CHECK_CLICKED_STATE_OK == ret.state) {
-            if (ret.obj && GT_VISIBLE == ret.obj->visible) {
+            if (ret.obj && GT_VISIBLE == gt_obj_get_visible(ret.obj)) {
                 return ret;
             }
         }
