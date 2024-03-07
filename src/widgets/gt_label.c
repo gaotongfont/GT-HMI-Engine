@@ -177,24 +177,32 @@ void gt_label_set_text(gt_obj_st * label, const char * fmt, ...)
     char buffer[8] = {0};
     va_list args;
     va_list args2;
-    va_start(args, fmt);
-    va_copy(args2, args);
 
     _gt_label_st * style = (_gt_label_st * )label;
     if( NULL != style->text ){
         gt_mem_free(style->text);
+        style->text = NULL;
     }
+    va_start(args, fmt);
+    va_copy(args2, args);
     uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(buffer, sizeof(buffer), fmt, args) + 1);
+    va_end(args);
     if (!size) {
         goto free_lb;
     }
     style->text = gt_mem_malloc(size);
+    if (NULL == style->text) {
+        goto free_lb;
+    }
+    va_start(args2, fmt);
     vsnprintf(style->text, size, fmt, args2);
+    va_end(args2);
     gt_event_send(label, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+
+    return;
 
 free_lb:
     va_end(args2);
-    va_end(args);
 }
 
 char * gt_label_get_text(gt_obj_st * label)
