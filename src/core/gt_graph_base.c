@@ -734,7 +734,6 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area)
 	}
 
 }
-#endif
 
 void gt_bresenham_line(gt_size_t x0, gt_size_t y0, gt_size_t x1, gt_size_t y1,gt_color_t fg_color)
 {
@@ -764,6 +763,7 @@ void gt_bresenham_line(gt_size_t x0, gt_size_t y0, gt_size_t x1, gt_size_t y1,gt
 		}
 	}
 }
+#endif
 
 
 /* end ------------------------------------------------------------------*/

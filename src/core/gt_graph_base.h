@@ -190,7 +190,6 @@ void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area, gt_colo
  * @param area  display area
  */
 void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area );
-#endif
 
 /**
  * @brief use bresenham algorithm create a line obj
@@ -202,6 +201,7 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area );
  * @param fg_color line color
  */
 void gt_bresenham_line(gt_size_t x0, gt_size_t y0, gt_size_t x1, gt_size_t y1,gt_color_t fg_color);
+#endif
 
 #ifdef __cplusplus
 } /*extern "C"*/
