@@ -160,6 +160,12 @@ gt_obj_st * gt_obj_get_parent(gt_obj_st * obj);
  */
 gt_obj_st * gt_obj_change_parent(gt_obj_st * obj, gt_obj_st * to);
 
+/**
+ * @brief Get widget or screen by object id
+ *
+ * @param widget_id widget or screen id
+ * @return gt_obj_st*
+ */
 gt_obj_st * gt_obj_find_by_id(gt_id_t widget_id);
 
 /**
@@ -170,6 +176,12 @@ gt_obj_st * gt_obj_find_by_id(gt_id_t widget_id);
  */
 void gt_obj_register_id(gt_obj_st * obj, gt_id_t id);
 
+/**
+ * @brief Get widget Id
+ *
+ * @param obj
+ * @return gt_id_t -1: invalid id; normal begin from 0
+ */
 gt_id_t gt_obj_get_id(gt_obj_st * obj);
 
 /**
