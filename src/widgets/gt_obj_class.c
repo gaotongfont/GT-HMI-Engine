@@ -227,6 +227,7 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
 
     obj->class      = class;
     obj->parent     = parent;
+    obj->id         = -1;
     obj->opa        = GT_OPA_100;
     obj->visible    = GT_VISIBLE;
     obj->scroll_dir = GT_SCROLL_ALL;

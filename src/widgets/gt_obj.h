@@ -79,15 +79,17 @@ typedef struct gt_obj_s {
     struct gt_obj_s ** child;
     const gt_obj_class_st * class;
 
+    gt_id_t id;                     /* obj id, register by user, default: [-1] invalid id, normal begin from 0. */
+
     gt_obj_event_attr_st * event_attr;
     struct _gt_draw_ctx_t * draw_ctx;
     gt_obj_process_attr_st process_attr;
 
     gt_color_t bgcolor;
 
-    gt_area_st area;                    /* base area */
+    gt_area_st area;                /* base area */
 
-    uint32_t event_mask;                /* send event code add this mask */
+    uint32_t event_mask;            /* send event code add this mask */
 
     uint16_t cnt_child;
     uint8_t cnt_event;
@@ -157,6 +159,18 @@ gt_obj_st * gt_obj_get_parent(gt_obj_st * obj);
  * @return struct gt_obj_s* Parent pointer, if NULL is failed
  */
 gt_obj_st * gt_obj_change_parent(gt_obj_st * obj, gt_obj_st * to);
+
+gt_obj_st * gt_obj_find_by_id(gt_id_t widget_id);
+
+/**
+ * @brief Set widget Id, default: -1 invalid id
+ *
+ * @param obj
+ * @param id Normal begin from 0
+ */
+void gt_obj_register_id(gt_obj_st * obj, gt_id_t id);
+
+gt_id_t gt_obj_get_id(gt_obj_st * obj);
 
 /**
  * @brief

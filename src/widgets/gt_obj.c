@@ -244,9 +244,23 @@ void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
 #endif
 }
 
+static gt_obj_st * _find_obj_recursive_by_id(gt_obj_st * self, gt_id_t widget_id) {
+    gt_obj_st * target = NULL;
+
+    if (widget_id == self->id) {
+        return self;
+    }
+
+    for (gt_size_t i = 0, cnt = self->cnt_child; i < cnt; i++) {
+        target = _find_obj_recursive_by_id(self->child[i], widget_id);
+        if (target) {
+            return target;
+        }
+    }
+    return target;
+}
+
 /* global functions / API interface -------------------------------------*/
-
-
 
 gt_obj_st * gt_obj_create(gt_obj_st * parent)
 {
@@ -263,6 +277,38 @@ gt_obj_st * gt_obj_get_parent(gt_obj_st * obj)
 gt_obj_st * gt_obj_change_parent(gt_obj_st * obj, gt_obj_st * to)
 {
     return _gt_obj_class_change_parent(obj, to);
+}
+
+gt_obj_st * gt_obj_find_by_id(gt_id_t widget_id)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    gt_obj_st * target = NULL;
+
+    gt_size_t i = 0, cnt = disp->cnt_scr;
+
+    for (; i < cnt; i++) {
+        target = _find_obj_recursive_by_id(disp->screens[i], widget_id);
+        if (target) {
+            break;
+        }
+    }
+    return target;
+}
+
+void gt_obj_register_id(gt_obj_st * obj, gt_id_t id)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    obj->id = id;
+}
+
+gt_id_t gt_obj_get_id(gt_obj_st * obj)
+{
+    if (NULL == obj) {
+        return -1;
+    }
+    return obj->id;
 }
 
 bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent)

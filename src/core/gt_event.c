@@ -137,7 +137,6 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
 gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * parms)
 {
     if( !parent ){
-        GT_LOGD(GT_LOG_TAG_GUI, "parent is null");
         return GT_RES_FAIL;
     }
     gt_event_st e;
@@ -153,6 +152,16 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
     _gt_event_node_pop(&e);
 
     return res;
+}
+
+gt_res_t gt_event_send_by_id(gt_id_t widget_id, gt_event_type_et event, void * parms)
+{
+    if (-1 == widget_id) {
+        return GT_RES_FAIL;
+    }
+    gt_obj_st * target = gt_obj_find_by_id(widget_id);
+
+    gt_event_send(target, event, parms);
 }
 
 void gt_event_clr_all_event(gt_obj_st * parent)
