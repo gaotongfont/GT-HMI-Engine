@@ -108,9 +108,6 @@ extern "C" {
 #define GT_CFG_DEFAULT_FONT_FAMILY_NUMB     GT_CFG_DEFAULT_FONT_FAMILY_EN
 #define GT_CFG_DEFAULT_FONT_SIZE            16
 
-/* default event mask bit num */
-#define GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX   23
-
 #define GT_USE_MODE_FLASH       01
 #define GT_USE_MODE_SD          01
 
