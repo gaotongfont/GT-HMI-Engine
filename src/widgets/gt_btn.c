@@ -41,7 +41,7 @@ typedef struct _gt_btn_s {
     gt_color_t font_color;
     gt_color_t color_border;
     gt_size_t  radius;
-    gt_size_t border_width;
+    uint8_t border_width;
 
     gt_font_info_st font_info;
 

@@ -35,7 +35,7 @@
 
 
 /* static functions -----------------------------------------------------*/
-
+#if 0
 /**
  * @brief Horizontal gray gradient
  *
@@ -170,5 +170,6 @@ uint8_t gt_anti_aliasing_div(gt_color_t * buffer,gt_area_st * area, gt_point_st 
 
     return is_hor ? _gt_set_trans_gray_hor(buffer, area, dst, step) : _gt_set_trans_gray_ver(buffer, area, dst, step);
 }
+#endif
 
 /* end ------------------------------------------------------------------*/

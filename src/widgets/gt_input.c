@@ -37,13 +37,14 @@ typedef struct _gt_input_s
     uint16_t pos_cursor;
 
     gt_point_st point_pos;
-    gt_size_t border_width;
-    gt_color_t border_color;
 
     gt_color_t bg_color;
     gt_color_t font_color;
+    gt_color_t border_color;
 
     gt_font_info_st font_info;
+
+    uint8_t border_width;
 
     uint8_t     font_align;
     uint8_t     space_x;
