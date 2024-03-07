@@ -161,7 +161,7 @@ gt_res_t gt_event_send_by_id(gt_id_t widget_id, gt_event_type_et event, void * p
     }
     gt_obj_st * target = gt_obj_find_by_id(widget_id);
 
-    gt_event_send(target, event, parms);
+    return gt_event_send(target, event, parms);
 }
 
 void gt_event_clr_all_event(gt_obj_st * parent)
