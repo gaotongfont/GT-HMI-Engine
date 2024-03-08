@@ -178,11 +178,14 @@ void gt_label_set_text(gt_obj_st * label, const char * fmt, ...)
     va_list args;
     va_list args2;
 
-    _gt_label_st * style = (_gt_label_st * )label;
-    if( NULL != style->text ){
-        gt_mem_free(style->text);
-        style->text = NULL;
+    if (NULL == label) {
+        return;
     }
+    if (false == gt_obj_is_type(label, GT_TYPE_LAB)) {
+        return;
+    }
+
+    _gt_label_st * style = (_gt_label_st * )label;
     va_start(args, fmt);
     va_copy(args2, args);
     uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(buffer, sizeof(buffer), fmt, args) + 1);
@@ -190,13 +193,20 @@ void gt_label_set_text(gt_obj_st * label, const char * fmt, ...)
     if (!size) {
         goto free_lb;
     }
-    style->text = gt_mem_malloc(size);
+
+    if (NULL == style->text) {
+        style->text = gt_mem_malloc(size);
+    } else if (size != strlen(style->text) + 1) {
+        style->text = gt_mem_realloc(style->text, size);
+    }
     if (NULL == style->text) {
         goto free_lb;
     }
+
     va_start(args2, fmt);
     vsnprintf(style->text, size, fmt, args2);
     va_end(args2);
+
     gt_event_send(label, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 
     return;
