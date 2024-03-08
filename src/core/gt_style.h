@@ -71,7 +71,7 @@ typedef enum {
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_obj_set_area(gt_obj_st * obj, gt_area_st area);
+gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area);
 void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y);
 void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h);
 void gt_obj_set_x(gt_obj_st * obj, gt_size_t x);
@@ -94,7 +94,6 @@ bool gt_obj_is_disabled(gt_obj_st * obj);
 
 void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new);
 void gt_obj_pos_change(gt_obj_st * obj, gt_area_st * area_new);
-void gt_obj_area_change(gt_obj_st * obj, gt_area_st * area_new);
 
 void gt_obj_child_set_prop(gt_obj_st * obj, gt_obj_prop_type_em type, uint8_t val);
 
