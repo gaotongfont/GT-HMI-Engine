@@ -247,8 +247,7 @@ static _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st
 }
 
 gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point){
-    // uint8_t idx = 0;
-    gt_obj_st * obj_clicked = parent;
+    gt_obj_st * obj_clicked = NULL;
     _click_obj_ret_st obj_temp = {
         .obj = NULL,
         .state = _CHECK_CLICKED_STATE_FAIL
@@ -436,6 +435,9 @@ bool gt_obj_check_scr(gt_obj_st * obj)
         scr_obj = scr_obj->parent;
     }
     if( scr_now == scr_obj ){
+        return true;
+    }
+    if (scr_obj == gt_disp_get_layer_top()) {
         return true;
     }
     return false;

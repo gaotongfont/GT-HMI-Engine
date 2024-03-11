@@ -47,11 +47,51 @@ static void gt_obj_move_child_by(gt_obj_st * obj, gt_size_t dx, gt_size_t dy)
     }
 }
 
+/**
+ * @brief
+ *
+ * @param obj
+ * @param x value reset to: x % width
+ * @param y value reset to: y % height
+ * @return true
+ * @return false
+ */
+static bool _update_layer_top_widget_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y) {
+    if (NULL == obj) {
+        return false;
+    }
+    gt_disp_st * disp = gt_disp_get_default();
+    if (NULL == disp->layer_top) {
+        return false;
+    }
+    if (0 == disp->layer_top->cnt_child) {
+        return false;
+    }
+    gt_obj_st * ptr = obj;
+    while(ptr->parent) {
+        ptr = ptr->parent;
+    }
+    if (ptr != disp->layer_top) {
+        return false;
+    }
+    gt_area_st area = obj->area;
 
+    area.x = (x % disp->layer_top->area.w) + disp->layer_top->area.x;
+    area.y = (y % disp->layer_top->area.h) + disp->layer_top->area.y;
+
+    gt_obj_pos_change(obj, &area);
+    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
+
+    return true;
+}
 
 /* global functions / API interface -------------------------------------*/
 gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area)
 {
+    if (_update_layer_top_widget_pos(obj, area.x, area.y)) {
+        return GT_RES_OK;
+    }
     gt_obj_pos_change(obj, &area);
     _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     return gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
@@ -59,6 +99,10 @@ gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area)
 
 void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)
 {
+    if (_update_layer_top_widget_pos(obj, x, y)) {
+        return ;
+    }
+    /** normal screen */
     gt_area_st area = obj->area;
     gt_obj_move_child_by(obj, x - area.x, y - area.y);
     area.x = x;
@@ -77,12 +121,18 @@ void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h) {
 
 void gt_obj_set_x(gt_obj_st * obj, gt_size_t x) {
     gt_area_st area = obj->area;
+    if (_update_layer_top_widget_pos(obj, x, area.y)) {
+        return ;
+    }
     area.x = x;
     gt_obj_set_area(obj, area);
 }
 
 void gt_obj_set_y(gt_obj_st * obj, gt_size_t y) {
     gt_area_st area = obj->area;
+    if (_update_layer_top_widget_pos(obj, area.x, y)) {
+        return ;
+    }
     area.y = y;
     gt_obj_set_area(obj, area);
 }
@@ -277,6 +327,10 @@ void gt_obj_child_set_prop(gt_obj_st * obj, gt_obj_prop_type_em type, uint8_t va
             }
             case GT_OBJ_PROP_TYPE_INSIDE: {
                 gt_obj_set_inside(child, val);
+                break;
+            }
+            case GT_OBJ_PROP_TYPE_OPA: {
+                gt_obj_set_opa(child, (gt_opa_t)val);
                 break;
             }
             default:

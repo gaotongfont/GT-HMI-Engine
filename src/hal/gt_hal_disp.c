@@ -48,10 +48,29 @@ static inline gt_size_t _gt_disp_area_get_idx(gt_size_t idx) {
     return idx == _GT_REFR_AREA_MAX ? 0 : idx;
 }
 
-static void _gt_disp_task_handler(struct _gt_timer_s * timer)
-{
+static void _gt_disp_task_handler(struct _gt_timer_s * timer) {
     GT_UNUSED(timer);
     gt_refr_timer();
+}
+
+static gt_disp_st * _gt_disp_create(gt_disp_drv_st * drv) {
+    gt_disp_st * ret = gt_mem_malloc(sizeof(gt_disp_st));
+    if (NULL == ret) {
+        GT_LOGE(GT_LOG_TAG_GUI, "disp create failed");
+        return NULL;
+    }
+    gt_memset(ret, 0, sizeof(gt_disp_st));
+
+    ret->vbd_color = gt_disp_graph_get_buf_default();
+    ret->drv = drv;
+
+    _gt_gc_set_disp(ret);
+
+    ret->layer_top = gt_obj_create(NULL);
+    gt_screen_set_bgcolor(ret->layer_top, gt_color_hex(0x000000));
+    gt_obj_set_virtual(ret->layer_top, true);
+
+    return ret;
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -67,19 +86,17 @@ void gt_disp_drv_init(gt_disp_drv_st * drv)
 
 void gt_disp_drv_register(gt_disp_drv_st * drv)
 {
-    gt_disp_st * disp_p = _gt_gc_get_disp();
-    if( disp_p == NULL ){
-        disp_p = gt_mem_malloc(sizeof(gt_disp_st));
-        gt_memset(disp_p, 0, sizeof(gt_disp_st));
-    }
     if(drv->flush_cb == NULL){
         GT_LOGW(GT_LOG_TAG_GUI,"flush_cb is null");
         return;
     }
-    disp_p->vbd_color = gt_disp_graph_get_buf_default();
-    disp_p->drv = drv;
+    gt_disp_st * disp_p = _gt_gc_get_disp();
 
-    _gt_gc_set_disp(disp_p);
+    if( disp_p == NULL ){
+        disp_p = _gt_disp_create(drv);
+    } else {
+        disp_p->drv = drv;
+    }
 
     _gt_timer_create(_gt_disp_task_handler, GT_TASK_PERIOD_TIME_REFR, NULL);
 }
@@ -296,7 +313,18 @@ void _gt_disp_reload_max_area(gt_obj_st * scr)
     }
 }
 
+void _gt_disp_hided_layer_top_widgets(gt_obj_st * top)
+{
+    gt_obj_st * obj = NULL;
 
+    for (gt_size_t i = 0; i < top->cnt_child; i++) {
+        obj = top->child[i];
+        if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
+            continue;
+        }
+        gt_event_send(obj, GT_EVENT_TYPE_INPUT_HIDED, top);
+    }
+}
 
 
 /* end ------------------------------------------------------------------*/

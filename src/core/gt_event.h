@@ -49,6 +49,7 @@ typedef enum gt_event_type_e {
     GT_EVENT_TYPE_INPUT_SCROLL_DOWN,
     GT_EVENT_TYPE_INPUT_SCROLL_LEFT,
     GT_EVENT_TYPE_INPUT_SCROLL_RIGHT,
+    GT_EVENT_TYPE_INPUT_HIDED,          // Need to hide layer top widgets
 
     _GT_EVENT_TYPE_INPUT_END,
 

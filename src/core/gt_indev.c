@@ -268,8 +268,25 @@ static void _indev_released_handle(gt_indev_st * indev) {
     point_p->obj_target = NULL;
 }
 
-static void _indev_pressed_handle(gt_indev_st * indev) {
+static gt_obj_st * _search_active_obj_from_all_layers(gt_point_st * point, bool new_action) {
     gt_obj_st * scr = gt_disp_get_scr();
+    gt_obj_st * layer_top = gt_disp_get_layer_top();
+    gt_obj_st * ret = NULL;
+
+    if (layer_top->cnt_child) {
+        ret = gt_find_clicked_obj_by_point(layer_top, point);
+        if (true == new_action && NULL == ret) {
+            /** clicked dialog, etc. outside area */
+            _gt_disp_hided_layer_top_widgets(layer_top);
+        }
+    }
+    if (NULL == ret) {
+        ret = gt_find_clicked_obj_by_point(scr, point);
+    }
+    return ret;
+}
+
+static void _indev_pressed_handle(gt_indev_st * indev) {
     gt_point_st point_ret;
     struct _point * point_p = &indev->proc.data.point;
 
@@ -281,7 +298,10 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
         _gt_indev_point_set_value(&point_p->scroll_diff, 0, 0);
         /* save pressed obj */
         point_p->gesture = GT_DIR_NONE;
-        point_p->obj_act = gt_find_clicked_obj_by_point(scr, &point_p->newly);
+        point_p->obj_act = _search_active_obj_from_all_layers(&point_p->newly, true);
+        if (NULL == point_p->obj_act) {
+            return;
+        }
         point_p->obj_target = point_p->obj_act;
 #if _GT_INDEV_USE_REMARK
         _gt_indev_remark_active_obj(point_p->obj_act);
@@ -301,7 +321,7 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
     }
     // GT_LOGD(">", "(%d, %d) (%d, %d)", point_p->newly.x, point_p->newly.y, point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
 
-    point_p->obj_act = gt_find_clicked_obj_by_point(scr, &point_p->newly);
+    point_p->obj_act = _search_active_obj_from_all_layers(&point_p->newly, false);
 
     if (point_p->obj_act == point_p->obj_target) {
         /** Hold for a long time to trigger multiple times */

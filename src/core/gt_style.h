@@ -64,6 +64,7 @@ typedef enum {
     GT_OBJ_PROP_TYPE_FIXED,
     GT_OBJ_PROP_TYPE_OVERFLOW,
     GT_OBJ_PROP_TYPE_INSIDE,
+    GT_OBJ_PROP_TYPE_OPA,
 }gt_obj_prop_type_em;
 
 /* macros ---------------------------------------------------------------*/

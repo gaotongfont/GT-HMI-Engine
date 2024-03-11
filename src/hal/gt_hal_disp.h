@@ -82,6 +82,8 @@ typedef struct _gt_disp_s
     gt_obj_st *  scr_prev;      // Preview Screen,Only save one layer
     gt_obj_st *  scr_act;       // Active screen
 
+    gt_obj_st * layer_top;      // Top layer on the top of the scr layer, such as popup, dialog, etc.
+
     _gt_disp_stack_st * stack;  // Set backoff screen, only one screen can be recorded.
 
     gt_obj_st ** screens;       // Array of screen
@@ -204,6 +206,13 @@ gt_area_st * _gt_disp_refr_get_area(void);
 void _gt_disp_update_max_area(const gt_area_st * const area, bool is_ignore_calc);
 
 void _gt_disp_reload_max_area(gt_obj_st * scr);
+
+/**
+ * @brief Hided the top layer widgets, such as: dialog, etc.
+ *
+ * @param top
+ */
+void _gt_disp_hided_layer_top_widgets(gt_obj_st * top);
 
 #ifdef __cplusplus
 } /*extern "C"*/

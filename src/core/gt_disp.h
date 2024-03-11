@@ -62,6 +62,13 @@ void gt_disp_set_scr(gt_obj_st * scr);
 gt_obj_st * gt_disp_get_scr(void);
 
 /**
+ * @brief Get the top layer of the display, such as: the top layer of the dialog, popup, etc.
+ *
+ * @return gt_obj_st* The top layer of the display virtual screen
+ */
+gt_obj_st * gt_disp_get_layer_top(void);
+
+/**
  * @brief display screen
  *
  * @param scr screen obj

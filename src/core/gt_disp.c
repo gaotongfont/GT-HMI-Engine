@@ -597,6 +597,8 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     scr->area.x = param->disp->area_act.x;
     scr->area.y = param->disp->area_act.y;
 
+    gt_area_copy(&param->disp->layer_top->area, &scr->area);
+
     if(gt_disp_get_res_hor(NULL) == param->area_flush.w && gt_disp_get_res_ver(NULL) == param->area_flush.h){
         if(param->area_flush.x < 0 || (param->area_flush.x + param->area_flush.w > gt_disp_get_res_hor(NULL))){
             param->area_flush.x = 0;
@@ -720,6 +722,9 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
 
         _gt_disp_check_and_copy_foreach(scr, param);
 
+        // flush top layer
+        _gt_disp_check_and_copy_foreach(param->disp->layer_top, param);
+
         /** flush display by buffer area */
         param->disp->drv->flush_cb(param->disp->drv, &param->area_flush, param->disp->vbd_color);
         param->area_flush.y += param->line;
@@ -750,6 +755,15 @@ gt_obj_st * gt_disp_get_scr(void)
         return NULL;
     }
     return disp->scr_act;
+}
+
+gt_obj_st * gt_disp_get_layer_top(void)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    if( NULL == disp ){
+        return NULL;
+    }
+    return disp->layer_top;
 }
 
 void gt_disp_load_scr(gt_obj_st * scr)
