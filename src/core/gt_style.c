@@ -81,7 +81,7 @@ gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area)
     if (_update_layer_top_widget_pos(obj, area.x, area.y)) {
         return GT_RES_OK;
     }
-    _gt_obj_move_child_by(obj, area.x - gt_obj_get_x(obj), area.y - gt_obj_get_y(obj));
+    // _gt_obj_move_child_by(obj, area.x - gt_obj_get_x(obj), area.y - gt_obj_get_y(obj));
     gt_obj_pos_change(obj, &area);
     _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
     return gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
@@ -131,7 +131,7 @@ void gt_obj_set_x(gt_obj_st * obj, gt_size_t x) {
     if (_update_layer_top_widget_pos(obj, x, area.y)) {
         return ;
     }
-    _gt_obj_move_child_by(obj, x - area.x, area.y);
+    // _gt_obj_move_child_by(obj, x - area.x, area.y);
     area.x = x;
     gt_obj_set_area(obj, area);
 }
@@ -141,7 +141,7 @@ void gt_obj_set_y(gt_obj_st * obj, gt_size_t y) {
     if (_update_layer_top_widget_pos(obj, area.x, y)) {
         return ;
     }
-    _gt_obj_move_child_by(obj, area.x, y - area.y);
+    // _gt_obj_move_child_by(obj, area.x, y - area.y);
     area.y = y;
     gt_obj_set_area(obj, area);
 }
