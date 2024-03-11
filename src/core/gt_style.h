@@ -74,6 +74,7 @@ typedef enum {
 /* global functions / API interface -------------------------------------*/
 gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area);
 void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y);
+void _gt_obj_move_child_by(gt_obj_st * obj, gt_size_t dx, gt_size_t dy);
 void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h);
 void gt_obj_set_x(gt_obj_st * obj, gt_size_t x);
 void gt_obj_set_y(gt_obj_st * obj, gt_size_t y);

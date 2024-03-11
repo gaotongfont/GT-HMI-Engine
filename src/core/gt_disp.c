@@ -597,8 +597,6 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     scr->area.x = param->disp->area_act.x;
     scr->area.y = param->disp->area_act.y;
 
-    gt_area_copy(&param->disp->layer_top->area, &scr->area);
-
     if(gt_disp_get_res_hor(NULL) == param->area_flush.w && gt_disp_get_res_ver(NULL) == param->area_flush.h){
         if(param->area_flush.x < 0 || (param->area_flush.x + param->area_flush.w > gt_disp_get_res_hor(NULL))){
             param->area_flush.x = 0;
@@ -977,6 +975,7 @@ void gt_disp_scroll_area_act(int16_t dist_x, int16_t dist_y)
 {
     gt_area_st * area = gt_disp_get_area_act();
     gt_area_abs_st * max_area = gt_disp_get_area_max();
+    gt_disp_st * disp = gt_disp_get_default();
 
     area->x = dist_x;
     area->y = dist_y;
@@ -1001,6 +1000,17 @@ void gt_disp_scroll_area_act(int16_t dist_x, int16_t dist_y)
         } else if (area->y > 0) {
             area->y = 0;
         }
+    }
+
+    if (disp->layer_top) {
+        if (disp->layer_top->cnt_child) {
+            /** Keep float layer top widgets stay within display screen area */
+            _gt_obj_move_child_by(disp->layer_top,
+                area->x - gt_obj_get_x(disp->layer_top),
+                area->y - gt_obj_get_y(disp->layer_top));
+        }
+        disp->layer_top->area.x = area->x;
+        disp->layer_top->area.y = area->y;
     }
 
     _gt_disp_refr_reset_areas();
