@@ -232,6 +232,7 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
     obj->opa        = GT_OPA_100;
     obj->visible    = GT_VISIBLE;
     obj->scroll_dir = GT_SCROLL_ALL;
+    obj->bgcolor    = gt_color_white();
 
     /** Inherit from the parent class */
     _gt_obj_class_inherent_attr_from_parent(obj, parent);
