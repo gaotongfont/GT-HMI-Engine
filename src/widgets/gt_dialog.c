@@ -1,0 +1,707 @@
+/**
+ * @file gt_dialog.c
+ * @author Feyoung
+ * @brief
+ * @version 0.1
+ * @date 2024-03-04 15:53:48
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
+ */
+
+/* include --------------------------------------------------------------*/
+#include "./gt_dialog.h"
+
+#if GT_CFG_ENABLE_DIALOG
+#include "../hal/gt_hal_disp.h"
+#include "../core/gt_obj_pos.h"
+#include "../core/gt_graph_base.h"
+#include "../core/gt_draw.h"
+#include "../core/gt_disp.h"
+#include "../others/gt_log.h"
+#include "../others/gt_anim.h"
+#include "../widgets/gt_label.h"
+#include "../widgets/gt_btn.h"
+#include "../font/gt_symbol.h"
+
+/* private define -------------------------------------------------------*/
+#define OBJ_TYPE    GT_TYPE_DIALOG
+#define MY_CLASS    &gt_dialog_class
+
+#define _PADDING_VER    4
+#define _PADDING_HOR    8
+
+#define _BTN_SIZE_16    30
+#define _BTN_SIZE_24    40
+
+/** the height of title bar area */
+#define _TITLE_BAR_HEIGHT_16    ((_PADDING_VER << 1) + _BTN_SIZE_16)
+/** the height of title bar area */
+#define _TITLE_BAR_HEIGHT_24    ((_PADDING_VER << 1) + _BTN_SIZE_24)
+
+/* private typedef ------------------------------------------------------*/
+
+typedef struct _gt_dialog_s {
+    gt_obj_st obj;
+
+    gt_obj_st * btn_close;
+    gt_obj_st * title;
+    gt_obj_st * content;
+    gt_obj_st * btn_cannel;
+    gt_obj_st * btn_confirm;
+
+    gt_color_t border_color;
+    uint8_t border_width;
+    uint8_t border_radius;
+}_gt_dialog_st;
+
+
+/* static variables -----------------------------------------------------*/
+static void _init_cb(gt_obj_st * obj);
+static void _deinit_cb(gt_obj_st * obj);
+static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
+
+const gt_obj_class_st gt_dialog_class = {
+    ._init_cb      = _init_cb,
+    ._deinit_cb    = _deinit_cb,
+    ._event_cb     = _event_cb,
+    .type          = OBJ_TYPE,
+    .size_style    = sizeof(_gt_dialog_st)
+};
+
+
+/* macros ---------------------------------------------------------------*/
+
+
+
+/* class ----------------------------------------------------------------*/
+
+
+
+/* static functions -----------------------------------------------------*/
+static void _update_display_area(gt_obj_st * obj, gt_obj_st * top) {
+    obj->area.x = top->area.x + (top->area.w >> 2);
+    obj->area.y = top->area.y + (top->area.h >> 2);
+    obj->area.w = top->area.w >> 1;
+    obj->area.h = top->area.h >> 1;
+}
+
+static void _init_cb(gt_obj_st * obj) {
+    _gt_dialog_st * style = (_gt_dialog_st * )obj;
+    gt_attr_rect_st rect_attr;
+    gt_area_st disp_area = obj->area;
+
+    gt_graph_init_rect_attr(&rect_attr);
+    rect_attr.reg.is_fill   = true;
+    rect_attr.radius        = style->border_radius;
+    rect_attr.bg_opa        = obj->opa;
+    rect_attr.border_width  = 2;
+    rect_attr.border_color  = style->border_color;
+    rect_attr.bg_color      = obj->bgcolor;
+
+    // gt_area_st area = gt_area_reduce(btn->area, REDUCE_DEFAULT);
+    // 1:base shape
+    draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
+}
+
+static void _deinit_cb(gt_obj_st * obj) {
+
+}
+
+static void _dialog_anim_exec_cb(gt_obj_st * obj, int32_t val) {
+    gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_OPA, (uint8_t)val);
+    gt_obj_set_opa(obj, (gt_opa_t)val);
+}
+
+static void _dialog_show_anim_start_cb(struct gt_anim_s * anim) {
+    gt_obj_st * obj = anim->target;
+    obj->opa = GT_OPA_0;
+    gt_obj_set_visible(obj, GT_VISIBLE);
+}
+
+static void _dialog_close_anim_ready_cb(struct gt_anim_s * anim) {
+    gt_obj_st * obj = anim->target;
+    obj->opa = GT_OPA_0;
+    gt_obj_set_visible(obj, GT_INVISIBLE);
+    gt_obj_destroy(obj);
+}
+
+/**
+ * @brief Create animation to display or close the dialog
+ *
+ * @param obj
+ * @param is_create true: create anim to display the dialog, false: create anim to close and free the dialog
+ * @param start The opa of widget at the start of the animation @ref gt_opa_t
+ * @param end The opa of widget at the end of the animation @ref gt_opa_t
+ */
+static void _create_anim_handler(gt_obj_st *obj, bool is_create, int32_t start, int32_t end) {
+    gt_anim_st anim;
+
+    if (gt_obj_is_untouchability(obj)) {
+        return;
+    }
+
+    gt_anim_init(&anim);
+    gt_anim_set_value(&anim, start, end);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_exec_cb(&anim, _dialog_anim_exec_cb);
+    if (is_create) {
+        /** want to display the dialog */
+        gt_anim_set_start_cb(&anim, _dialog_show_anim_start_cb);
+    } else {
+        /** want to close and free the dialog */
+        gt_anim_set_ready_cb(&anim, _dialog_close_anim_ready_cb);
+
+        gt_obj_set_untouchability(obj, true);
+        gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_UNTOUCHABILITY, true);
+    }
+    gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_EASE_OUT);
+    gt_anim_start(&anim);
+}
+
+static void _close_release_cb(gt_event_st * e) {
+    gt_obj_st * dialog = (gt_obj_st * )e->user_data;
+    gt_event_send(dialog, GT_EVENT_TYPE_INPUT_HIDED, NULL);
+}
+
+static void _set_close_btn_pos(gt_obj_st * close_btn, gt_obj_st * dialog) {
+    if (NULL == close_btn) {
+        return ;
+    }
+    close_btn->area.w = _BTN_SIZE_16;
+    close_btn->area.h = _BTN_SIZE_16;
+    close_btn->area.x = dialog->area.x + dialog->area.w - close_btn->area.w - _PADDING_HOR;
+    close_btn->area.y = dialog->area.y + _PADDING_VER;
+}
+
+static gt_obj_st * _create_close_btn(gt_obj_st * dialog) {
+    gt_obj_st * close_btn = gt_btn_create(dialog);
+    if (NULL == close_btn) {
+        return NULL;
+    }
+    _set_close_btn_pos(close_btn, dialog);
+
+    gt_btn_set_color_background(close_btn, dialog->bgcolor);
+    gt_btn_set_font_color(close_btn, gt_color_hex(0x7f7f7f));
+    gt_btn_set_color_pressed(close_btn, gt_color_hex(0xdfdfdf));
+    gt_obj_set_opa(close_btn, GT_OPA_0);
+    gt_btn_set_text(close_btn, GT_SYMBOL_CLOSE);
+    gt_obj_add_event_cb(close_btn, _close_release_cb, GT_EVENT_TYPE_INPUT_RELEASED, dialog);
+    gt_obj_set_inside(close_btn, true);
+
+    return close_btn;
+}
+
+static void _set_title_pos(gt_obj_st * title, gt_obj_st * dialog) {
+    if (NULL == title) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    gt_obj_st * close_btn = style->btn_close;
+
+    gt_size_t btn_width = close_btn ? close_btn->area.w : 0;
+
+    title->area.x = dialog->area.x + _PADDING_HOR;
+    title->area.y = dialog->area.y + _PADDING_VER;
+    title->area.w = dialog->area.w - (_PADDING_HOR << 1) - btn_width;
+    title->area.h = _BTN_SIZE_16;
+}
+
+static gt_obj_st * _create_title(gt_obj_st * dialog, char * title_text) {
+    gt_obj_st * title = gt_label_create(dialog);
+    if (NULL == title) {
+        return NULL;
+    }
+    _set_title_pos(title, dialog);
+
+    gt_obj_set_opa(title, GT_OPA_0);
+    gt_obj_set_inside(title, true);
+    gt_label_set_font_align(title, GT_ALIGN_LEFT_MID);
+    gt_label_set_font_color(title, gt_color_hex(0x2f2f2f));
+    gt_label_set_text(title, title_text);
+
+    return title;
+}
+
+static void _set_content_pos(gt_obj_st * content, gt_obj_st * dialog) {
+    if (NULL == content) {
+        return ;
+    }
+    gt_size_t content_padding = (_PADDING_HOR << 1);
+    content->area.x = dialog->area.x + content_padding;
+    content->area.y = dialog->area.y + _TITLE_BAR_HEIGHT_16;
+    content->area.w = dialog->area.w - (content_padding << 1);
+
+    gt_size_t other_height = _TITLE_BAR_HEIGHT_16 + _PADDING_VER;
+    gt_size_t btn_size = _BTN_SIZE_16;
+
+    content->area.h = (dialog->area.h - other_height) < btn_size ? btn_size : (dialog->area.h - other_height);
+}
+
+static gt_obj_st * _create_content(gt_obj_st * dialog, char * content_text) {
+    gt_obj_st * content = gt_label_create(dialog);
+    if (NULL == content) {
+        return NULL;
+    }
+    _set_content_pos(content, dialog);
+
+    gt_obj_set_opa(content, GT_OPA_0);
+    gt_obj_set_inside(content, true);
+    gt_label_set_font_align(content, GT_ALIGN_LEFT);
+    gt_label_set_font_color(content, gt_color_hex(0x4f4f4f));
+    gt_label_set_text(content, content_text);
+
+    return content;
+}
+
+static void _set_cannel_btn_pos(gt_obj_st * cannel, gt_obj_st * dialog) {
+    if (NULL == cannel) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    gt_obj_st * confirm = style->btn_confirm;
+    gt_size_t confirm_width = confirm ? confirm->area.w : 0;
+
+    cannel->area.w = _BTN_SIZE_16 << 1;
+    cannel->area.h = _BTN_SIZE_16;
+    cannel->area.x = dialog->area.x + dialog->area.w - cannel->area.w - confirm_width - (_PADDING_HOR << 1);
+    cannel->area.y = dialog->area.y + dialog->area.h - cannel->area.h - _PADDING_VER;
+}
+
+static gt_obj_st * _create_cannel_btn(gt_obj_st * dialog, gt_event_cb_t cannel_cb, void * cannel_cb_user_data) {
+    gt_obj_st * cannel_btn = gt_btn_create(dialog);
+    if (NULL == cannel_btn) {
+        return NULL;
+    }
+    _set_cannel_btn_pos(cannel_btn, dialog);
+
+    gt_btn_set_color_background(cannel_btn, dialog->bgcolor);
+    gt_btn_set_color_pressed(cannel_btn, gt_color_hex(0xdfdfdf));
+    gt_btn_set_font_color(cannel_btn, gt_color_hex(0x5f5f5f));
+    gt_btn_set_border_width(cannel_btn, 1);
+    gt_btn_set_color_border(cannel_btn, gt_color_hex(0x7f7f7f));
+
+    gt_obj_set_opa(cannel_btn, GT_OPA_0);
+    gt_btn_set_text(cannel_btn, GT_SYMBOL_CLOSE);
+    gt_btn_set_radius(cannel_btn, _BTN_SIZE_16 >> 2);
+    gt_obj_set_inside(cannel_btn, true);
+    if (cannel_cb) {
+        gt_obj_add_event_cb(cannel_btn, cannel_cb, GT_EVENT_TYPE_INPUT_RELEASED, cannel_cb_user_data);
+    }
+    gt_obj_add_event_cb(cannel_btn, _close_release_cb, GT_EVENT_TYPE_INPUT_RELEASED, dialog);
+
+    return cannel_btn;
+}
+
+static void _set_confirm_btn_pos(gt_obj_st * confirm, gt_obj_st * dialog) {
+    if (NULL == confirm) {
+        return ;
+    }
+    confirm->area.w = _BTN_SIZE_16 << 1;
+    confirm->area.h = _BTN_SIZE_16;
+    confirm->area.x = dialog->area.x + dialog->area.w - confirm->area.w - (_PADDING_HOR << 1);
+    confirm->area.y = dialog->area.y + dialog->area.h - confirm->area.h - _PADDING_VER;
+}
+
+static gt_obj_st * _create_confirm_btn(gt_obj_st * dialog, gt_event_cb_t confirm_cb, void * confirm_cb_user_data) {
+    gt_obj_st * confirm_btn = gt_btn_create(dialog);
+    if (NULL == confirm_btn) {
+        return NULL;
+    }
+    _set_confirm_btn_pos(confirm_btn, dialog);
+
+    gt_obj_set_opa(confirm_btn, GT_OPA_0);
+    gt_btn_set_text(confirm_btn, GT_SYMBOL_OK);
+    gt_btn_set_radius(confirm_btn, _BTN_SIZE_16 >> 2);
+    gt_obj_set_inside(confirm_btn, true);
+    if (confirm_cb) {
+        gt_obj_add_event_cb(confirm_btn, confirm_cb, GT_EVENT_TYPE_INPUT_RELEASED, confirm_cb_user_data);
+    }
+    gt_obj_add_event_cb(confirm_btn, _close_release_cb, GT_EVENT_TYPE_INPUT_RELEASED, dialog);
+
+    return confirm_btn;
+
+}
+
+static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
+    gt_event_type_et type = gt_event_get_code(e);
+    _gt_dialog_st * style = (_gt_dialog_st * )obj;
+
+    switch (type) {
+        case GT_EVENT_TYPE_DRAW_START: {
+            gt_disp_invalid_area(obj);
+            break;
+        }
+        case GT_EVENT_TYPE_INPUT_HIDED: {
+            _create_anim_handler(obj, false, GT_OPA_100, GT_OPA_0);
+            break;
+        }
+        case GT_EVENT_TYPE_UPDATE_STYLE: {
+            _set_close_btn_pos(style->btn_close, obj);
+            _set_title_pos(style->title, obj);
+            _set_content_pos(style->content, obj);
+            _set_confirm_btn_pos(style->btn_confirm, obj);
+            _set_cannel_btn_pos(style->btn_cannel, obj);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+
+/* global functions / API interface -------------------------------------*/
+
+gt_obj_st * gt_dialog_create(bool show_close_btn)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, disp->layer_top);
+    if (NULL == obj) {
+        return obj;
+    }
+
+    _gt_dialog_st * style = (_gt_dialog_st * )obj;
+
+    obj->visible = GT_INVISIBLE;
+    obj->opa = GT_OPA_0;
+
+    style->border_color = gt_color_hex(0xc7c7c7);
+    style->border_width = 2;
+    style->border_radius = 10;
+
+    /** Center 50% area */
+    _update_display_area(obj, disp->layer_top);
+
+    if (show_close_btn) {
+        style->btn_close = _create_close_btn(obj);
+    }
+
+    return obj;
+}
+
+gt_obj_st * gt_dialog_create_issue(bool show_close_btn, gt_dialog_param_st const * const param)
+{
+    gt_obj_st * obj = gt_dialog_create(show_close_btn);
+    if (NULL == obj) {
+        return obj;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )obj;
+
+    if (param->title) {
+        style->title = _create_title(obj, param->title);
+    }
+    if (param->content) {
+        style->content = _create_content(obj, param->content);
+    }
+    /** Must exist */
+    style->btn_confirm = _create_confirm_btn(obj, param->confirm_cb, param->confirm_cb_user_data);
+
+    if (param->cannel_cb) {
+        style->btn_cannel = _create_cannel_btn(obj, param->cannel_cb, param->cannel_cb_user_data);
+    }
+
+    return obj;
+}
+
+void gt_dialog_show(gt_obj_st * obj)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )obj;
+
+    _create_anim_handler(obj, true, GT_OPA_0, GT_OPA_100);
+}
+
+void gt_dialog_set_border_color(gt_obj_st * dialog, gt_color_t color)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    style->border_color = color;
+}
+
+void gt_dialog_set_border_width(gt_obj_st * dialog, uint8_t width)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    style->border_width = width;
+}
+
+void gt_dialog_set_bgcolor(gt_obj_st * dialog, gt_color_t color)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    dialog->bgcolor = color;
+}
+
+void gt_dialog_set_border_radius(gt_obj_st * dialog, uint8_t radius)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    style->border_radius = radius;
+}
+
+/* ------------------- Issue mode api ------------------- */
+
+void gt_dialog_set_title_font_color(gt_obj_st * dialog, gt_color_t color)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_color(style->title, color);
+}
+
+void gt_dialog_set_title_font_size(gt_obj_st * dialog, uint8_t size)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_size(style->title, size);
+}
+
+void gt_dialog_set_title_font_align(gt_obj_st * dialog, gt_align_et align)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_align(style->title, align);
+}
+
+void gt_dialog_set_title_font_family_cn(gt_obj_st * dialog, bool is_cn)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_family_cn(style->title, is_cn);
+}
+
+void gt_dialog_set_title_font_family_en(gt_obj_st * dialog, bool is_en)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_family_en(style->title, is_en);
+}
+
+void gt_dialog_set_title_font_family_fl(gt_obj_st * dialog, bool is_fl)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_family_fl(style->title, is_fl);
+}
+
+void gt_dialog_set_title_font_thick_en(gt_obj_st * dialog, uint8_t thick)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_thick_en(style->title, thick);
+}
+
+void gt_dialog_set_title_font_thick_cn(gt_obj_st * dialog, uint8_t thick)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_thick_cn(style->title, thick);
+}
+
+void gt_dialog_set_content_font_color(gt_obj_st * dialog, gt_color_t color)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->content) {
+        return ;
+    }
+    gt_label_set_font_color(style->content, color);
+}
+
+void gt_dialog_set_content_font_size(gt_obj_st * dialog, uint8_t size)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (style->content) {
+        return ;
+    }
+    gt_label_set_font_size(style->content, size);
+}
+
+void gt_dialog_set_content_font_align(gt_obj_st * dialog, gt_align_et align)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (style->content) {
+        return ;
+    }
+    gt_label_set_font_align(style->content, align);
+}
+
+void gt_dialog_set_content_font_family_cn(gt_obj_st * dialog, bool is_cn)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (style->content) {
+        return ;
+    }
+    gt_label_set_font_family_cn(style->content, is_cn);
+}
+
+void gt_dialog_set_content_font_family_en(gt_obj_st * dialog, bool is_en)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (style->content) {
+        return ;
+    }
+    gt_label_set_font_family_en(style->content, is_en);
+}
+
+void gt_dialog_set_content_font_family_fl(gt_obj_st * dialog, bool is_fl)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (style->content) {
+        return ;
+    }
+    gt_label_set_font_family_fl(style->content, is_fl);
+}
+
+void gt_dialog_set_content_font_thick_en(gt_obj_st * dialog, uint8_t thick)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (style->content) {
+        return ;
+    }
+    gt_label_set_font_thick_en(style->content, thick);
+}
+
+void gt_dialog_set_content_font_thick_cn(gt_obj_st * dialog, uint8_t thick)
+{
+    if (NULL == dialog) {
+        return ;
+    }
+    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (style->content) {
+        return ;
+    }
+    gt_label_set_font_thick_cn(style->content, thick);
+}
+
+#endif  /** GT_CFG_ENABLE_DIALOG */
+/* end ------------------------------------------------------------------*/
