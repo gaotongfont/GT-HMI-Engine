@@ -1,6 +1,6 @@
 /**
  * @file gt_btnmap.c
- * @author Yang (your@email.com)
+ * @author Yang
  * @brief
  * @version 0.1
  * @date 2024-03-04 11:11:07
