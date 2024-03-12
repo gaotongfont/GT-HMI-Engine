@@ -273,20 +273,20 @@ extern "C" {
 #define GT_SYMBOL_CH                "\xEE\x9C\x93" /*59155, 0xE713*/
 #endif
 
-#if !defined GT_SYMBOL_KONGGE
-#define GT_SYMBOL_KONGGE            "\xEE\xA1\x91" /*59473, 0xE851*/
+#if !defined GT_SYMBOL_SPACE
+#define GT_SYMBOL_SPACE             "\xEE\xA1\x91" /*59473, 0xE851*/
 #endif
 
 #if !defined GT_SYMBOL_JINGHAO
 #define GT_SYMBOL_JINGHAO            "\xEE\xA2\xB0" /*59568, 0xE8B0*/
 #endif
 
-#if !defined GT_SYMBOL_XIAOXIE
-#define GT_SYMBOL_XIAOXIE            "\xEE\x98\xB7" /*59568, 0xE637*/
+#if !defined GT_SYMBOL_LOWER_CASE
+#define GT_SYMBOL_LOWER_CASE         "\xEE\x98\xB7" /*59568, 0xE637*/
 #endif
 
-#if !defined GT_SYMBOL_DAXIE
-#define GT_SYMBOL_DAXIE              "\xEE\x98\xB8" /*59568, 0xE638*/
+#if !defined GT_SYMBOL_UPPER_CASE
+#define GT_SYMBOL_UPPER_CASE              "\xEE\x98\xB8" /*59568, 0xE638*/
 #endif
 
 #endif // GT_CFG_USE_SYMBOL_ENABLE

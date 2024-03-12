@@ -118,8 +118,8 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_map_st _low_map_defual_26_key[] = {
     "1",1,  "2",1,  "3",1,  "4",1, "5",1,  "6",1, "7",1,  "8",1,  "9",1,  "0",1,  GT_BTNMAP_NEW_LINE,0,
     "q",1,  "w",1,  "e",1,  "r",1, "t",1,  "y",1, "u",1,  "i",1,  "o",1,  "p",1,  GT_BTNMAP_NEW_LINE,0,
     NULL,1,  "a",3,  "s",3,  "d",3,  "f",3, "g",3,  "h",3, "j",3,  "k",3,  "l",3,  NULL,1,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_XIAOXIE,5,  NULL,1,  "z",4,  "x",4,  "c",4,  "v",4, "b",4,  "n",4, "m",4,  NULL,1, GT_SYMBOL_BACKSPACE,5,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_CH,5,  GT_SYMBOL_JINGHAO,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_KONGGE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
+    GT_SYMBOL_LOWER_CASE,5,  NULL,1,  "z",4,  "x",4,  "c",4,  "v",4, "b",4,  "n",4, "m",4,  NULL,1, GT_SYMBOL_BACKSPACE,5,  GT_BTNMAP_NEW_LINE,0,
+    GT_SYMBOL_CH,5,  GT_SYMBOL_JINGHAO,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_SPACE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
     NULL,0
 };
 
@@ -128,8 +128,8 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_map_st _up_map_defual_26_key[] = {
     "1",1,  "2",1,  "3",1,  "4",1, "5",1,  "6",1, "7",1,  "8",1,  "9",1,  "0",1,  GT_BTNMAP_NEW_LINE,0,
     "Q",1,  "W",1,  "E",1,  "R",1, "T",1,  "Y",1, "U",1,  "I",1,  "O",1,  "P",1,  GT_BTNMAP_NEW_LINE,0,
     NULL,1,  "A",3,  "S",3,  "D",3,  "F",3, "G",3,  "H",3, "J",3,  "K",3,  "L",3,  NULL,1,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_DAXIE,5,  NULL,1,  "Z",4,  "X",4,  "C",4,  "V",4, "B",4,  "N",4, "M",4,  NULL,1, GT_SYMBOL_BACKSPACE,5,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_CH,5,  GT_SYMBOL_JINGHAO,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_KONGGE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
+    GT_SYMBOL_UPPER_CASE,5,  NULL,1,  "Z",4,  "X",4,  "C",4,  "V",4, "B",4,  "N",4, "M",4,  NULL,1, GT_SYMBOL_BACKSPACE,5,  GT_BTNMAP_NEW_LINE,0,
+    GT_SYMBOL_CH,5,  GT_SYMBOL_JINGHAO,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_SPACE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
     NULL,0
 };
 
@@ -138,8 +138,8 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_map_st _symbol_en_map_defual_26_key
     "!",1,  "@",1,  "#",1,  "$",1,  "%",1,  "^",1,  "&",1,  "*",1,  "(",1,  ")",1,  GT_BTNMAP_NEW_LINE,0,
     NULL,1,  "-",5,  "+",5,  "=",5,  "_",5, "{",5,  "}",5, "[",5,  "]",5,  "\\",5,  NULL,1,  GT_BTNMAP_NEW_LINE,0,
     NULL,1,  ";",3,  ":",3,  "\"",3,  "\'",3,  "~",3,  "`",3,  "/ ",3,  " |",3,  NULL,1,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_XIAOXIE,5,  NULL,1,  ",",4,  ".",4,  "?",4,  "<",4,  ">",4,  NULL,1, GT_SYMBOL_BACKSPACE,5,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_CH,5,  GT_SYMBOL_JINGHAO,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_KONGGE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
+    GT_SYMBOL_LOWER_CASE,5,  NULL,1,  ",",4,  ".",4,  "?",4,  "<",4,  ">",4,  NULL,1, GT_SYMBOL_BACKSPACE,5,  GT_BTNMAP_NEW_LINE,0,
+    GT_SYMBOL_CH,5,  GT_SYMBOL_JINGHAO,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_SPACE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
     NULL,0
 };
 
@@ -148,16 +148,16 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_map_st _ch_map_defual_26_key[] = {
     GT_SYMBOL_PREV,1,  _gt_spell[1],1,  _gt_spell[2],1,  _gt_spell[3],1,  _gt_spell[4],1,  _gt_spell[5],1,  _gt_spell[6],1,  _gt_spell[7],1,  _gt_spell[8],1,  GT_SYMBOL_NEXT,1, GT_BTNMAP_NEW_LINE,0,
     "q",1,  "w",1,  "e",1,  "r",1, "t",1,  "y",1, "u",1,  "i",1,  "o",1,  "p",1,  GT_BTNMAP_NEW_LINE,0,
     NULL,1,  "a",3,  "s",3,  "d",3,  "f",3, "g",3,  "h",3, "j",3,  "k",3,  "l",3,  NULL,1,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_XIAOXIE,5,  NULL,1,  "z",4,  "x",4,  "c",4,  "v",4, "b",4,  "n",4, "m",4,  NULL,1, GT_SYMBOL_BACKSPACE,5,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_EN,5,  GT_SYMBOL_JINGHAO,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_KONGGE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
+    GT_SYMBOL_LOWER_CASE,5,  NULL,1,  "z",4,  "x",4,  "c",4,  "v",4, "b",4,  "n",4, "m",4,  NULL,1, GT_SYMBOL_BACKSPACE,5,  GT_BTNMAP_NEW_LINE,0,
+    GT_SYMBOL_EN,5,  GT_SYMBOL_JINGHAO,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_SPACE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
     NULL,0
 };
 
 GT_ATTRIBUTE_LARGE_RAM_ARRAY static const char * _def_26_key_user_icon_key_list[] = {
     GT_SYMBOL_BACKSPACE,
     GT_SYMBOL_NEW_LINE,
-    GT_SYMBOL_XIAOXIE,
-    GT_SYMBOL_DAXIE,
+    GT_SYMBOL_LOWER_CASE,
+    GT_SYMBOL_UPPER_CASE,
     GT_SYMBOL_CH,
     GT_SYMBOL_EN,
     GT_SYMBOL_JINGHAO,
@@ -218,7 +218,7 @@ static void _def_26_key_push_btn_kv_handler( gt_obj_st* obj,  gt_obj_st* input ,
     uint16_t type = gt_btnmap_get_map_type(obj);
     gt_py_input_method_st* py_input_mt = gt_btnmap_get_py_input_method(obj);
 
-    if( 0 == strcmp(kv , GT_SYMBOL_KONGGE)){
+    if( 0 == strcmp(kv , GT_SYMBOL_SPACE)){
         gt_input_append_value(input , " ");
     }
     else if(0 == strcmp(kv , GT_SYMBOL_BACKSPACE)){
@@ -231,7 +231,7 @@ static void _def_26_key_push_btn_kv_handler( gt_obj_st* obj,  gt_obj_st* input ,
     else if(0 == strcmp(kv , GT_SYMBOL_NEW_LINE)){
         gt_input_append_value(input , "\n");
     }
-    else if(0 == strcmp(kv , GT_SYMBOL_DAXIE) || 0 == strcmp(kv , GT_SYMBOL_EN)){
+    else if(0 == strcmp(kv , GT_SYMBOL_UPPER_CASE) || 0 == strcmp(kv , GT_SYMBOL_EN)){
 
         idx = _gt_get_map_index((gt_keypad_map_st*)_list_defualt_26_key , sizeof(_list_defualt_26_key)/sizeof(gt_keypad_map_st) , GT_KEYPAD_TYPE_LOWER);
         if(idx < 0){
@@ -240,7 +240,7 @@ static void _def_26_key_push_btn_kv_handler( gt_obj_st* obj,  gt_obj_st* input ,
         }
         gt_btnmap_set_map( obj , (gt_map_st*)_list_defualt_26_key[idx].map , GT_KEYPAD_TYPE_LOWER);
     }
-    else if(0 == strcmp(kv , GT_SYMBOL_XIAOXIE)){
+    else if(0 == strcmp(kv , GT_SYMBOL_LOWER_CASE)){
         idx = _gt_get_map_index((gt_keypad_map_st*)_list_defualt_26_key , sizeof(_list_defualt_26_key)/sizeof(gt_keypad_map_st) , GT_KEYPAD_TYPE_UPPER);
         if(idx < 0){
             GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d , type = %d", GT_KEYPAD_STYLE_26_KEY , GT_KEYPAD_TYPE_UPPER);

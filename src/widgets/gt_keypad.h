@@ -14,11 +14,11 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+#if GT_CFG_ENABLE_KEYPAD
 #include "gt_obj.h"
 #include "gt_obj_class.h"
-#include "gt_conf_widgets.h"
 #include "gt_btnmap.h"
-#if GT_CFG_ENABLE_KEYPAD
 /* define ---------------------------------------------------------------*/
 
 
