@@ -152,6 +152,10 @@ extern "C" {
 #include "src/widgets/gt_roller.h"
 #endif
 
+#if GT_CFG_ENABLE_DIALOG
+#include "src/widgets/gt_dialog.h"
+#endif
+
 /* other */
 #include "src/others/gt_color.h"
 #include "src/others/gt_log.h"
