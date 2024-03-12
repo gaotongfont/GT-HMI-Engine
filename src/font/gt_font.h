@@ -160,11 +160,34 @@ typedef struct _gt_font_size_res_s {
     uint16_t font_per_size;
 }_gt_font_size_res_st;
 
+//
+#define GT_PY_MAX_NUMB  (8)
+typedef struct gt_py_input_method_s{
+    py_info_st * py_info;
+    volatile uint8_t ascii_numb;
+    volatile uint8_t chinese_numb;
+    uint8_t ascii[GT_PY_MAX_NUMB];
+    uint8_t chinese[GT_PY_MAX_NUMB][GT_PY_MAX_NUMB];
+}gt_py_input_method_st;
 /* macros ---------------------------------------------------------------*/
 
 
+/* py input method API interface -------------------------------------*/
+gt_py_input_method_st* gt_py_input_method_create(void);
+void gt_py_input_method_push_ascii(gt_py_input_method_st* py_input_method , uint8_t ch);
+void gt_py_input_method_pop_ascii(gt_py_input_method_st* py_input_method);
+uint8_t gt_py_input_method_get_ascii_numb(gt_py_input_method_st* py_input_method);
+int gt_py_input_method_get_chinese(gt_py_input_method_st* py_input_method);
+void gt_py_input_method_chinese_data_handler(gt_py_input_method_st* py_input_method);
+void gt_py_input_method_last_page(gt_py_input_method_st* py_input_method);
+void gt_py_input_method_next_page(gt_py_input_method_st* py_input_method);
+void gt_py_input_method_select_text(gt_py_input_method_st* py_input_method , uint8_t index);
+void gt_py_input_method_clean(gt_py_input_method_st* py_input_method);
+
 
 /* global functions / API interface -------------------------------------*/
+void gt_font_info_init(gt_font_info_st *font_info);
+void gt_font_info_update_font_thick(gt_font_info_st *font_info);
 
 /**
  * @brief utf-8 encoding convert to unicode encoding

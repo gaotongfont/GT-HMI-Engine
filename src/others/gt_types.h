@@ -78,6 +78,7 @@ typedef enum type_widget_e {
     GT_TYPE_LISTVIEW    = 26,       ///< listview
     GT_TYPE_TEMPLATE    = 27,       ///< template
     GT_TYPE_ROLLER      = 28,       ///< roller
+    GT_TYPE_BTNMAP      = 29,       ///< btnmap
 
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;

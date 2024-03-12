@@ -44,7 +44,7 @@ uint8_t latin_16x16_width[] = {
 
 /* macros ---------------------------------------------------------------*/
 static gt_encoding_et _gt_project_encoding = GT_ENCODING_UTF8;
-
+static py_info_st* _gt_py_info;
 
 /* static functions -----------------------------------------------------*/
 
@@ -170,6 +170,25 @@ static uint32_t _get_font_style(gt_font_st *font , uint32_t unicode)
 }
 
 /* global functions / API interface -------------------------------------*/
+void gt_font_info_init(gt_font_info_st *font_info)
+{
+    font_info->style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
+    font_info->style_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    font_info->style_fl    = GT_CFG_DEFAULT_FONT_FAMILY_FL;
+    font_info->style_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
+    font_info->size        = GT_CFG_DEFAULT_FONT_SIZE;
+    font_info->gray        = 1;
+    font_info->thick_en         = 0;
+    font_info->thick_cn         = 0;
+    font_info->encoding       = gt_project_encoding_get();
+}
+
+void gt_font_info_update_font_thick(gt_font_info_st *font_info)
+{
+    font_info->thick_en = font_info->thick_en == 0 ? font_info->size + 6: font_info->thick_en;
+    font_info->thick_cn = font_info->thick_cn == 0 ? font_info->size + 6: font_info->thick_cn;
+}
+
 uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const utf8, uint32_t *res)
 {
     if(NULL == utf8 ) return 0;
@@ -1229,6 +1248,169 @@ bool gt_right_to_left_handler(const gt_font_st* fonts , uint8_t* ret_text , uint
 
 
 
+/* py input method API interface -------------------------------------*/
+gt_py_input_method_st* gt_py_input_method_create(void)
+{
+#if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
+    if(!_gt_py_info){
+        _gt_py_info = (py_info_st*) gt_mem_malloc(sizeof(py_info_st));
+        if(!_gt_py_info){
+            GT_LOGE(GT_LOG_TAG_GUI , "py info malloc err!!! size = %d" , sizeof(py_info_st));
+            goto _info_ret;
+        }
+        gt_memset(_gt_py_info , 0 , sizeof(py_info_st));
+
+        _gt_py_info->content = (py_content_st*)gt_mem_malloc(sizeof(py_content_st));
+        if(!_gt_py_info->content){
+            GT_LOGE(GT_LOG_TAG_GUI , "py info content malloc err!!! size = %d" , sizeof(py_content_st));
+            goto _info_ret;
+        }
+        gt_memset(_gt_py_info->content , 0 , sizeof(py_content_st));
+
+        _gt_py_info->py_cache = (unsigned char*)gt_mem_malloc(1218);
+        if(!_gt_py_info->py_cache)
+        {
+            GT_LOGE(GT_LOG_TAG_GUI , "py info py_cache malloc err!!! size = %d" , 1218);
+            goto _info_ret;
+        }
+        gt_memset(_gt_py_info->py_cache , 0 , 1218);
+
+        //
+        if(0 == gt_pinyin_init(_gt_py_info)){
+            GT_LOGE(GT_LOG_TAG_GUI , "py init err!!!");
+            goto _info_ret;
+        }
+        _gt_py_info = _gt_py_info;
+    }
+
+    gt_py_input_method_st* py_input_method = (gt_py_input_method_st*) gt_mem_malloc(sizeof(gt_py_input_method_st));
+    if(!py_input_method){
+        GT_LOGE(GT_LOG_TAG_GUI , "pt input method malloc err!!! size = %d" , sizeof(gt_py_input_method_st));
+        goto input_met_ret;
+    }
+    gt_memset(py_input_method , 0 , sizeof(gt_py_input_method_st));
+
+    py_input_method->py_info = _gt_py_info;
+
+    return py_input_method;
+
+//
+_info_ret:
+    if(!_gt_py_info->py_cache){
+        gt_mem_free(_gt_py_info->py_cache);
+        _gt_py_info->py_cache = NULL;
+    }
+
+    if(!_gt_py_info->content){
+        gt_mem_free(_gt_py_info->content);
+        _gt_py_info->content = NULL;
+    }
+
+    if(!_gt_py_info){
+        gt_mem_free(_gt_py_info);
+        _gt_py_info = NULL;
+    }
+    return NULL;
+
+//
+input_met_ret:
+    if(!py_input_method){
+        gt_mem_free(py_input_method);
+        py_input_method = NULL;
+    }
+
+#endif
+    return NULL;
+}
+
+void gt_py_input_method_push_ascii(gt_py_input_method_st* py_input_method , uint8_t ch)
+{
+    if(!py_input_method || py_input_method->ascii_numb >= 6){
+        return;
+    }
+
+    py_input_method->ascii[py_input_method->ascii_numb++] = ch;
+    py_input_method->ascii[py_input_method->ascii_numb] = '\0';
+}
+
+void gt_py_input_method_pop_ascii(gt_py_input_method_st* py_input_method)
+{
+    if(py_input_method->ascii_numb <= 0){
+        return ;
+    }
+    --py_input_method->ascii_numb;
+    py_input_method->ascii[py_input_method->ascii_numb] = '\0';
+}
+
+uint8_t gt_py_input_method_get_ascii_numb(gt_py_input_method_st* py_input_method)
+{
+    return py_input_method->ascii_numb;
+}
+
+int gt_py_input_method_get_chinese(gt_py_input_method_st* py_input_method)
+{
+#if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
+    int ret = gt_pinyin_full_keyboard_get(py_input_method->ascii);
+    py_input_method->chinese_numb = ret ? py_input_method->py_info->content->chinese_numb : 0;
+
+    return ret;
+#else
+    return 0;
+#endif
+}
+
+void gt_py_input_method_chinese_data_handler(gt_py_input_method_st* py_input_method)
+{
+    uint32_t unicode = 0;
+    uint8_t len = 0;
+    int i = 0;
+    gt_memset_0(py_input_method->chinese , GT_PY_MAX_NUMB * GT_PY_MAX_NUMB);
+    for(i = 0 ; i < py_input_method->chinese_numb ; i++){
+        unicode = GBKToUnicode((((uint32_t)py_input_method->py_info->content->chinese[2*i]) << 8) | py_input_method->py_info->content->chinese[2*i+1]);
+        len = gt_unicode_to_utf8(py_input_method->chinese[i] , unicode);
+        py_input_method->chinese[i][len]='\0';
+    }
+}
+
+void gt_py_input_method_last_page(gt_py_input_method_st* py_input_method)
+{
+#if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
+    if(!gt_pinyin_last_page(py_input_method->py_info)){
+        return ;
+    }
+    py_input_method->chinese_numb = py_input_method->py_info->content->chinese_numb;
+    gt_py_input_method_chinese_data_handler(py_input_method);
+#endif
+}
+
+void gt_py_input_method_next_page(gt_py_input_method_st* py_input_method)
+{
+#if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
+    if(!gt_pinyin_next_page(py_input_method->py_info)){
+        return ;
+    }
+    py_input_method->chinese_numb = py_input_method->py_info->content->chinese_numb;
+    gt_py_input_method_chinese_data_handler(py_input_method);
+#endif
+}
+
+void gt_py_input_method_select_text(gt_py_input_method_st* py_input_method , uint8_t index)
+{
+#if ((GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
+    uint8_t tmp_text[2] = {0};
+    gt_pinyin_select_text(py_input_method->py_info , index , tmp_text);
+    py_input_method->ascii_numb = py_input_method->py_info->content->ascii_numb;
+    py_input_method->chinese_numb = py_input_method->py_info->content->chinese_numb;
+#endif
+
+}
+
+void gt_py_input_method_clean(gt_py_input_method_st* py_input_method)
+{
+    py_input_method->ascii_numb = 0;
+    py_input_method->chinese_numb = 0;
+    py_input_method->ascii[py_input_method->ascii_numb] = '\0';
+}
 #if GT_CFG_USE_FONT_16_ASCII == 1
 static const uint8_t ascii_16[] = {
     //

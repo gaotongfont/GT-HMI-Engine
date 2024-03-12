@@ -508,7 +508,8 @@ void gt_input_move_right_pos_cursor(gt_obj_st * input)
 {
     _gt_input_st * style = (_gt_input_st * )input;
     int32_t d_pos = style->pos_cursor;
-    if( style->pos_cursor < strlen(style->value) ){
+    uint32_t len = style->value ? strlen(style->value) : 0;
+    if( style->pos_cursor < len ){
         d_pos = gt_txt_check_char_numb(style->value , &d_pos);
         style->pos_cursor += d_pos;
         // style->pos_cursor++;

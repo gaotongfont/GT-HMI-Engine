@@ -1839,13 +1839,13 @@ gt_area_st draw_text_split(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc
                 gt_draw_blend_text(draw_ctx, &blend_dsc, _font.info.size, byte_width, font_gray , (const uint8_t*)_font.res);
 
             }else{
-                const uint8_t * temp = gt_symbol_get_mask_buf(_font.utf8 , _font.info.size);
+                uint8_t * temp = (uint8_t*)gt_symbol_get_mask_buf(_font.utf8 , _font.info.size);
                 if( temp == NULL ){
                     area_font.x += width + dsc->space_x;
-                    idx += _font.len;
+                    idx_2 += _font.len;
                     continue;
                 }
-                blend_dsc.mask_buf = (uint8_t*)temp;
+                blend_dsc.mask_buf = temp;
                 gt_draw_blend(draw_ctx, &blend_dsc);
                 blend_dsc.mask_buf = NULL;
             }

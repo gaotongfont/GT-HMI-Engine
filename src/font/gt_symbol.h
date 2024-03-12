@@ -266,15 +266,30 @@ extern "C" {
 #endif
 
 #if !defined GT_SYMBOL_EN
-#define GT_SYMBOL_EN               "\xEF\xA2\xA3" /*63651, 0xF8A3*/
+#define GT_SYMBOL_EN               "\xEE\x9C\x92" /*59154, 0xE712*/
 #endif
 
-#if !defined GT_SYMBOL_SPELL
-#define GT_SYMBOL_SPELL             "\xEF\xA2\xA4" /*63652, 0xF8A4*/
+#if !defined GT_SYMBOL_CH
+#define GT_SYMBOL_CH                "\xEE\x9C\x93" /*59155, 0xE713*/
 #endif
 
+#if !defined GT_SYMBOL_KONGGE
+#define GT_SYMBOL_KONGGE            "\xEE\xA1\x91" /*59473, 0xE851*/
 #endif
 
+#if !defined GT_SYMBOL_JINGHAO
+#define GT_SYMBOL_JINGHAO            "\xEE\xA2\xB0" /*59568, 0xE8B0*/
+#endif
+
+#if !defined GT_SYMBOL_XIAOXIE
+#define GT_SYMBOL_XIAOXIE            "\xEE\x98\xB7" /*59568, 0xE637*/
+#endif
+
+#if !defined GT_SYMBOL_DAXIE
+#define GT_SYMBOL_DAXIE              "\xEE\x98\xB8" /*59568, 0xE638*/
+#endif
+
+#endif // GT_CFG_USE_SYMBOL_ENABLE
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_symbol_s{
     char * utf8;
