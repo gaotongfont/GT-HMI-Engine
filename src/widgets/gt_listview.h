@@ -16,6 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
+#include "../core/gt_style.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -139,7 +140,7 @@ void gt_listview_set_septal_line(gt_obj_st * listview, bool enabled);
  */
 void gt_listview_set_font_size(gt_obj_st * listview, uint8_t size);
 void gt_listview_set_font_gray(gt_obj_st * listview, uint8_t gray);
-void gt_listview_set_font_align(gt_obj_st * listview, uint8_t align);
+void gt_listview_set_font_align(gt_obj_st * listview, gt_align_et align);
 /**
  * @brief Set listview active font color
  *

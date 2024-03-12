@@ -713,7 +713,7 @@ void gt_clock_set_font_gray(gt_obj_st * obj, uint8_t gray)
     gt_label_set_font_gray(style->label, gray);
 }
 
-void gt_clock_set_font_align(gt_obj_st * obj, uint8_t align)
+void gt_clock_set_font_align(gt_obj_st * obj, gt_align_et align)
 {
     _gt_clock_st * style = (_gt_clock_st * )obj;
     if (NULL == style->label) {

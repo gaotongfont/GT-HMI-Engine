@@ -41,11 +41,11 @@
 
 /* macros ---------------------------------------------------------------*/
 
-static inline bool _is_align_reverse(uint8_t align) {
+static inline bool _is_align_reverse(gt_align_et align) {
     return (align & GT_ALIGN_REVERSE) ? true : false;
 }
 
-static inline uint8_t _get_align_type(uint8_t align)
+static inline uint8_t _get_align_type(gt_align_et align)
 {
     return (align & 0x7F);
 }

@@ -19,6 +19,7 @@ extern "C" {
 #include "stdarg.h"
 #include "stdlib.h"
 #include "../utils/gt_vector.h"
+#include "../core/gt_style.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -100,7 +101,7 @@ void gt_btn_set_font_color(gt_obj_st * btn, gt_color_t color);
 
 void gt_btn_set_font_size(gt_obj_st * btn, uint8_t size);
 void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray);
-void gt_btn_set_font_align(gt_obj_st * btn, uint8_t align);
+void gt_btn_set_font_align(gt_obj_st * btn, gt_align_et align);
 void gt_btn_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn);
 void gt_btn_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en);
 void gt_btn_set_font_family_fl(gt_obj_st * btn, gt_family_t font_family_fl);

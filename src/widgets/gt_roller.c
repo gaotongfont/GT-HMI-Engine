@@ -705,7 +705,7 @@ void gt_roller_set_font_gray(gt_obj_st * obj, uint8_t gray)
     _resize_display_width(obj);
 }
 
-void gt_roller_set_font_align(gt_obj_st * obj, uint8_t align)
+void gt_roller_set_font_align(gt_obj_st * obj, gt_align_et align)
 {
     if (NULL == obj) {
         return ;

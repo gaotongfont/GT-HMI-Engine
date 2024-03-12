@@ -18,6 +18,7 @@ extern "C" {
 #include "gt_obj_class.h"
 #include "stdarg.h"
 #include "stdlib.h"
+#include "../core/gt_style.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -104,7 +105,7 @@ void gt_input_set_font_family_fl(gt_obj_st * input, gt_family_t family);
 void gt_input_set_font_family_numb(gt_obj_st * input, gt_family_t family);
 void gt_input_set_font_size(gt_obj_st * input, uint8_t size);
 void gt_input_set_font_gray(gt_obj_st * input, uint8_t gray);
-void gt_input_set_font_align(gt_obj_st * input, uint8_t align);
+void gt_input_set_font_align(gt_obj_st * input, gt_align_et align);
 void gt_input_set_font_thick_en(gt_obj_st * input, uint8_t thick);
 void gt_input_set_font_thick_cn(gt_obj_st * input, uint8_t thick);
 void gt_input_set_bg_color(gt_obj_st * input, gt_color_t color);

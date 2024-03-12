@@ -255,7 +255,7 @@ void gt_input_number_set_font_gray(gt_obj_st * obj, uint8_t gray)
     gt_label_set_font_gray(style->label, gray);
 }
 
-void gt_input_number_set_font_align(gt_obj_st * obj, uint8_t align)
+void gt_input_number_set_font_align(gt_obj_st * obj, gt_align_et align)
 {
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     if (NULL == style->label) {

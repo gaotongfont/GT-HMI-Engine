@@ -47,7 +47,7 @@ typedef struct _gt_btn_s {
 
     _gt_btn_reg_st reg;
     uint8_t     fill;
-    uint8_t     font_align;
+    gt_align_et font_align;
     uint8_t     space_x;
     uint8_t     space_y;
 }_gt_btn_st;
@@ -402,7 +402,7 @@ void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray)
     style->font_info.gray = gray;
 }
 
-void gt_btn_set_font_align(gt_obj_st * btn, uint8_t align)
+void gt_btn_set_font_align(gt_obj_st * btn, gt_align_et align)
 {
     _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_align = align;

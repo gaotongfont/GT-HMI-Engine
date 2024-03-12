@@ -117,7 +117,7 @@ typedef struct _gt_attr_font_s {
     uint8_t space_x;    ///< The width of the space between characters
     uint8_t space_y;    ///< The distance between rows
 
-    uint8_t align;      ///< Alignment @ gt_align_et
+    gt_align_et align;      ///< Alignment @ gt_align_et
     uint8_t style;      ///< font style value @ref gt_font_style_et
     gt_opa_t opa;       ///< font opa value @GT_OPA_X
 }gt_attr_font_st;

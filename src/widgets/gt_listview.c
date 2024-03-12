@@ -635,7 +635,7 @@ void gt_listview_set_font_gray(gt_obj_st * listview, uint8_t gray)
     style->font_info.gray = gray;
     _set_label_prop_by_type(listview, _LABEL_FONT_GRAY, gray);
 }
-void gt_listview_set_font_align(gt_obj_st * listview, uint8_t align)
+void gt_listview_set_font_align(gt_obj_st * listview, gt_align_et align)
 {
     if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
         return;

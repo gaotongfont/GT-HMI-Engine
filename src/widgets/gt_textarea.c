@@ -43,7 +43,7 @@ typedef struct _gt_textarea_s {
     uint8_t     bg_opa;     /* @ref gt_color.h */
     uint8_t     space_x;
     uint8_t     space_y;
-    uint8_t     font_align;
+    gt_align_et font_align;
 }_gt_textarea_st;
 
 
@@ -308,7 +308,7 @@ void gt_textarea_set_font_gray(gt_obj_st * textarea, uint8_t gray)
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.gray = gray;
 }
-void gt_textarea_set_font_align(gt_obj_st * textarea, uint8_t align)
+void gt_textarea_set_font_align(gt_obj_st * textarea, gt_align_et align)
 {
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_align = align;

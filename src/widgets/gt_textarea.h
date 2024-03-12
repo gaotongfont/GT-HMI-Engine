@@ -75,7 +75,7 @@ void gt_textarea_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t space_
  */
 void gt_textarea_set_font_size(gt_obj_st * textarea, uint8_t size);
 void gt_textarea_set_font_gray(gt_obj_st * textarea, uint8_t gray);
-void gt_textarea_set_font_align(gt_obj_st * textarea, uint8_t align);
+void gt_textarea_set_font_align(gt_obj_st * textarea, gt_align_et align);
 /**
  * @brief set textarea font color
  *

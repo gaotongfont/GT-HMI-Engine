@@ -33,7 +33,7 @@ typedef struct _gt_label_s {
 
     gt_font_info_st font_info;
 
-    uint8_t     font_align;
+    gt_align_et font_align;
     uint8_t     space_x;
     uint8_t     space_y;
 }_gt_label_st;
@@ -242,7 +242,7 @@ void gt_label_set_font_gray(gt_obj_st * label, uint8_t gray)
     style->font_info.gray = gray;
 }
 
-void gt_label_set_font_align(gt_obj_st * label, uint8_t align)
+void gt_label_set_font_align(gt_obj_st * label, gt_align_et align)
 {
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_align = align;

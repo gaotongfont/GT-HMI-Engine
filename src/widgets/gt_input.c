@@ -21,6 +21,7 @@
 #include "../others/gt_txt.h"
 #include "../hal/gt_hal_indev.h"
 #include "../core/gt_indev.h"
+
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_INPUT
 #define MY_CLASS    &gt_input_class
@@ -46,7 +47,7 @@ typedef struct _gt_input_s
 
     uint8_t border_width;
 
-    uint8_t     font_align;
+    gt_align_et font_align;
     uint8_t     space_x;
     uint8_t     space_y;
 }_gt_input_st;
@@ -565,7 +566,7 @@ void gt_input_set_font_gray(gt_obj_st * input, uint8_t gray)
     _gt_input_st * style = (_gt_input_st * )input;
     style->font_info.gray = gray;
 }
-void gt_input_set_font_align(gt_obj_st * input, uint8_t align)
+void gt_input_set_font_align(gt_obj_st * input, gt_align_et align)
 {
     _gt_input_st * style = (_gt_input_st * )input;
     style->font_align = align;

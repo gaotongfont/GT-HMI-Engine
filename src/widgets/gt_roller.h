@@ -19,6 +19,7 @@ extern "C" {
 
 #if GT_CFG_ENABLE_ROLLER
 #include "gt_obj.h"
+#include "../core/gt_style.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -150,7 +151,7 @@ void gt_roller_set_line_space(gt_obj_st * obj, uint8_t space);
 void gt_roller_set_font_color(gt_obj_st * obj, gt_color_t color);
 void gt_roller_set_font_size(gt_obj_st * obj, uint8_t size);
 void gt_roller_set_font_gray(gt_obj_st * obj, uint8_t gray);
-void gt_roller_set_font_align(gt_obj_st * obj, uint8_t align);
+void gt_roller_set_font_align(gt_obj_st * obj, gt_align_et align);
 void gt_roller_set_font_family_cn(gt_obj_st * obj, gt_family_t family);
 void gt_roller_set_font_family_en(gt_obj_st * obj, gt_family_t family);
 void gt_roller_set_font_family_fl(gt_obj_st * obj, gt_family_t family);
