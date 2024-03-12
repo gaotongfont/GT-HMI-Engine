@@ -9,13 +9,15 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_btnmap.h"
-#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_BTNMAP
 #include "../others/gt_log.h"
 #include "../core/gt_mem.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_obj_pos.h"
 #include "../core/gt_disp.h"
-#include "gt_input.h"
+#include "./gt_input.h"
+
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_BTNMAP
 #define MY_CLASS    &gt_btnmap_class
@@ -23,7 +25,7 @@
 #define _DEFAULT_SPACE  5
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _btnmap_btn_param_s{
+typedef struct _btnmap_btn_param_s {
     gt_color_t bg_color;
     gt_color_t border_color;
     gt_color_t font_color;
@@ -31,7 +33,7 @@ typedef struct _btnmap_btn_param_s{
 }_btnmap_btn_param_st;
 
 
-typedef struct _gt_btnmap_s{
+typedef struct _gt_btnmap_s {
     gt_obj_st obj;
     gt_obj_st* _input;
     gt_map_st* map;
@@ -831,6 +833,7 @@ gt_py_input_method_st* gt_btnmap_get_py_input_method(gt_obj_st * btnmap)
 }
 
 
+#endif  /** GT_CFG_ENABLE_BTNMAP */
 /* end of file ----------------------------------------------------------*/
 
 

@@ -14,6 +14,9 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "./gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_BTNMAP
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "../core/gt_graph_base.h"
@@ -22,7 +25,7 @@ extern "C" {
 /* define ---------------------------------------------------------------*/
 #define GT_BTNMAP_NEW_LINE    "\n"
 
-//
+
 
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_map_s
@@ -85,6 +88,12 @@ void gt_btnmap_set_special_btn_font_color(gt_obj_st * btnmap, gt_color_t color);
 //
 void gt_btnmap_set_py_input_method(gt_obj_st * btnmap, gt_py_input_method_st* py_input_method);
 gt_py_input_method_st* gt_btnmap_get_py_input_method(gt_obj_st * btnmap);
+
+
+
+
+
+#endif  /** GT_CFG_ENABLE_BTNMAP */
 
 #ifdef __cplusplus
 } /*extern "C"*/
