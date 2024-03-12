@@ -121,7 +121,8 @@ typedef struct gt_obj_s {
     uint32_t mask_effect   : 1;     /* default object  */
     uint32_t trigger_mode  : 1;     /* state toggle trigger mode @ref gt_obj_trigger_mode_et, 0:[default] hold-on; 1: switch */
     uint32_t bubble_notify : 1;     /* The object event will bubble notify to parent, 0: [default] disabled; 1: enabled */
-    uint32_t reserved      : 5;
+    uint32_t untouchability: 1;     /* The object is untouchable, 0: [default] enabled; 1: disabled, can not be touch */
+    uint32_t reserved      : 4;
 
 }gt_obj_st;
 

@@ -339,6 +339,10 @@ void gt_obj_child_set_prop(gt_obj_st * obj, gt_obj_prop_type_em type, uint8_t va
                 gt_obj_set_opa(child, (gt_opa_t)val);
                 break;
             }
+            case GT_OBJ_PROP_TYPE_UNTOUCHABILITY: {
+                gt_obj_set_untouchability(child, val);
+                break;
+            }
             default:
                 break;
         }
@@ -581,6 +585,16 @@ void gt_obj_set_bubble_notify(gt_obj_st * obj, bool is_bubble_notify)
 bool gt_obj_is_bubble_notify(gt_obj_st * obj)
 {
     return obj->bubble_notify;
+}
+
+void gt_obj_set_untouchability(gt_obj_st * obj, bool is_untouchability)
+{
+    obj->untouchability = is_untouchability ? true : false;
+}
+
+bool gt_obj_is_untouchability(gt_obj_st * obj)
+{
+    return obj->untouchability;
 }
 
 /* end ------------------------------------------------------------------*/

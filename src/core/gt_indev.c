@@ -244,6 +244,9 @@ static inline void _send_released_event(struct _point * point_p) {
     gt_event_type_et event_type = (point_p->obj_act == point_p->obj_target) ? \
         GT_EVENT_TYPE_INPUT_RELEASED : GT_EVENT_TYPE_INPUT_PRESS_LOST;
 
+    if (gt_obj_is_untouchability(point_p->obj_target)) {
+        return;
+    }
     gt_event_send(point_p->obj_target, event_type, NULL);
 }
 
@@ -302,6 +305,9 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
         if (NULL == point_p->obj_act) {
             return;
         }
+        if (gt_obj_is_untouchability(point_p->obj_act)) {
+            return;
+        }
         point_p->obj_target = point_p->obj_act;
 #if _GT_INDEV_USE_REMARK
         _gt_indev_remark_active_obj(point_p->obj_act);
@@ -319,7 +325,7 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
         point_p->scroll_throw.x = 0;
         point_p->scroll_throw.y = 0;
     }
-    // GT_LOGD(">", "(%d, %d) (%d, %d)", point_p->newly.x, point_p->newly.y, point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
+    // GT_LOGD(">", "%p (%d, %d) (%d, %d)", point_p->obj_target, point_p->newly.x, point_p->newly.y, point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
 
     point_p->obj_act = _search_active_obj_from_all_layers(&point_p->newly, false);
 
@@ -438,7 +444,9 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
     if(GT_INDEV_STATE_RELEASED == indev->proc.state){
         if(indev->proc.data.keypad.count_keydown != 0 && GT_KEY_ENTER == indev->proc.data.keypad.key){
             _indev_pa.param.keypad_key = GT_KEY_ENTER;
-            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_RELEASED, &_indev_pa);
+            if (false == gt_obj_is_untouchability(indev->proc.data.keypad.obj_target)) {
+                gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_RELEASED, &_indev_pa);
+            }
         }
         indev->proc.data.keypad.count_keydown = 0;
         last_key = GT_KEY_NONE;
@@ -463,7 +471,8 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
         else{
             _indev_pa.param.keypad_key = indev->proc.data.keypad.key;
             gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_pa);
-            if(GT_KEY_ENTER == indev->proc.data.keypad.key){
+            if (GT_KEY_ENTER == indev->proc.data.keypad.key &&
+                false == gt_obj_is_untouchability(indev->proc.data.keypad.obj_target)){
                 gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSED, &_indev_pa);
             }
         }
@@ -487,7 +496,8 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
             _indev_pa.param.keypad_key = indev->proc.data.keypad.key;
             gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_pa);
             if(0 == indev->proc.data.keypad.count_keydown % (GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS / GT_TASK_PERIOD_TIME_EVENT)){
-                if(GT_KEY_ENTER == indev->proc.data.keypad.key){
+                if (GT_KEY_ENTER == indev->proc.data.keypad.key &&
+                    false == gt_obj_is_untouchability(indev->proc.data.keypad.obj_target)){
                     gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSING, &_indev_pa);
                 }
             }

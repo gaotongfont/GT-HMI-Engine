@@ -65,6 +65,7 @@ typedef enum {
     GT_OBJ_PROP_TYPE_OVERFLOW,
     GT_OBJ_PROP_TYPE_INSIDE,
     GT_OBJ_PROP_TYPE_OPA,
+    GT_OBJ_PROP_TYPE_UNTOUCHABILITY,
 }gt_obj_prop_type_em;
 
 /* macros ---------------------------------------------------------------*/
@@ -235,6 +236,23 @@ void gt_obj_set_bubble_notify(gt_obj_st * obj, bool is_bubble_notify);
  * @return false
  */
 bool gt_obj_is_bubble_notify(gt_obj_st * obj);
+
+/**
+ * @brief Set the object is untouchable
+ *
+ * @param obj
+ * @param is_untouchability true: object can not be touch, false[default]: object can be touch
+ */
+void gt_obj_set_untouchability(gt_obj_st * obj, bool is_untouchability);
+
+/**
+ * @brief The object is untouchable or not
+ *
+ * @param obj
+ * @return true The object is untouchable
+ * @return false The object can be touch
+ */
+bool gt_obj_is_untouchability(gt_obj_st * obj);
 
 #ifdef __cplusplus
 } /*extern "C"*/
