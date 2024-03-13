@@ -109,18 +109,18 @@ void gt_dialog_set_border_radius(gt_obj_st * dialog, uint8_t radius);
 void gt_dialog_set_title_font_color(gt_obj_st * dialog, gt_color_t color);
 void gt_dialog_set_title_font_size(gt_obj_st * dialog, uint8_t size);
 void gt_dialog_set_title_font_align(gt_obj_st * dialog, gt_align_et align);
-void gt_dialog_set_title_font_family_cn(gt_obj_st * dialog, bool is_cn);
-void gt_dialog_set_title_font_family_en(gt_obj_st * dialog, bool is_en);
-void gt_dialog_set_title_font_family_fl(gt_obj_st * dialog, bool is_fl);
+void gt_dialog_set_title_font_family_cn(gt_obj_st * dialog, gt_family_t family);
+void gt_dialog_set_title_font_family_en(gt_obj_st * dialog, gt_family_t family);
+void gt_dialog_set_title_font_family_fl(gt_obj_st * dialog, gt_family_t family);
 void gt_dialog_set_title_font_thick_en(gt_obj_st * dialog, uint8_t thick);
 void gt_dialog_set_title_font_thick_cn(gt_obj_st * dialog, uint8_t thick);
 
 void gt_dialog_set_content_font_color(gt_obj_st * dialog, gt_color_t color);
 void gt_dialog_set_content_font_size(gt_obj_st * dialog, uint8_t size);
 void gt_dialog_set_content_font_align(gt_obj_st * dialog, gt_align_et align);
-void gt_dialog_set_content_font_family_cn(gt_obj_st * dialog, bool is_cn);
-void gt_dialog_set_content_font_family_en(gt_obj_st * dialog, bool is_en);
-void gt_dialog_set_content_font_family_fl(gt_obj_st * dialog, bool is_fl);
+void gt_dialog_set_content_font_family_cn(gt_obj_st * dialog, gt_family_t family);
+void gt_dialog_set_content_font_family_en(gt_obj_st * dialog, gt_family_t family);
+void gt_dialog_set_content_font_family_fl(gt_obj_st * dialog, gt_family_t family);
 void gt_dialog_set_content_font_thick_en(gt_obj_st * dialog, uint8_t thick);
 void gt_dialog_set_content_font_thick_cn(gt_obj_st * dialog, uint8_t thick);
 
