@@ -277,8 +277,8 @@ extern "C" {
 #define GT_SYMBOL_SPACE             "\xEE\xA1\x91" /*59473, 0xE851*/
 #endif
 
-#if !defined GT_SYMBOL_JINGHAO
-#define GT_SYMBOL_JINGHAO            "\xEE\xA2\xB0" /*59568, 0xE8B0*/
+#if !defined GT_SYMBOL_WELL_NUMBER
+#define GT_SYMBOL_WELL_NUMBER       "\xEE\xA2\xB0" /*59568, 0xE8B0*/
 #endif
 
 #if !defined GT_SYMBOL_LOWER_CASE
@@ -286,7 +286,7 @@ extern "C" {
 #endif
 
 #if !defined GT_SYMBOL_UPPER_CASE
-#define GT_SYMBOL_UPPER_CASE              "\xEE\x98\xB8" /*59568, 0xE638*/
+#define GT_SYMBOL_UPPER_CASE         "\xEE\x98\xB8" /*59568, 0xE638*/
 #endif
 
 #endif // GT_CFG_USE_SYMBOL_ENABLE

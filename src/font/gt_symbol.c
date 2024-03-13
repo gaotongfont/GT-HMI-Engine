@@ -248,8 +248,8 @@
     };
 #endif
 
-#ifdef GT_SYMBOL_JINGHAO
-    static const uint8_t symbol_jinghap_16x16[] = {
+#ifdef GT_SYMBOL_WELL_NUMBER
+    static const uint8_t symbol_well_number_16x16[] = {
     0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,
     0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,
     0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,
@@ -727,8 +727,8 @@
         };
 #endif
 
-#ifdef GT_SYMBOL_JINGHAO
-    static const uint8_t symbol_jinghap_24x24[] = {
+#ifdef GT_SYMBOL_WELL_NUMBER
+    static const uint8_t symbol_well_number_24x24[] = {
     0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,
     0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,
     0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,
@@ -893,7 +893,7 @@ static const _gt_symbol_st symbols_16x16[] = {
     GT_SYMBOL_BACKSPACE, symbol_16x16_backspace,
     GT_SYMBOL_EN , symbol_en_16x16 ,
     GT_SYMBOL_CH , symbol_ch_16x16 ,
-    GT_SYMBOL_JINGHAO , symbol_jinghap_16x16 ,
+    GT_SYMBOL_WELL_NUMBER , symbol_well_number_16x16 ,
     GT_SYMBOL_LOWER_CASE , symbol_lower_case_16x16 ,
     GT_SYMBOL_UPPER_CASE , symbol_upper_case_16x16 ,
     GT_SYMBOL_RIGHT, symbol_16x16_right,
@@ -920,7 +920,7 @@ static const _gt_symbol_st symbols_24x24[] = {
     GT_SYMBOL_BACKSPACE , symbol_backspace_24x24 ,
     GT_SYMBOL_EN , symbol_en_24x24 ,
     GT_SYMBOL_CH , symbol_ch_24x24 ,
-    GT_SYMBOL_JINGHAO , symbol_jinghap_24x24 ,
+    GT_SYMBOL_WELL_NUMBER , symbol_well_number_24x24 ,
     GT_SYMBOL_LOWER_CASE , symbol_lower_case_24x24 ,
     GT_SYMBOL_UPPER_CASE , symbol_upper_case_24x24 ,
     GT_SYMBOL_RIGHT , symbol_right_24x24 ,

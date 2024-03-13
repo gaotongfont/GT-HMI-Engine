@@ -119,7 +119,7 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_map_st _low_map_defual_26_key[] = {
     "q",1,  "w",1,  "e",1,  "r",1, "t",1,  "y",1, "u",1,  "i",1,  "o",1,  "p",1,  GT_BTNMAP_NEW_LINE,0,
     NULL,1,  "a",3,  "s",3,  "d",3,  "f",3, "g",3,  "h",3, "j",3,  "k",3,  "l",3,  NULL,1,  GT_BTNMAP_NEW_LINE,0,
     GT_SYMBOL_LOWER_CASE,5,  NULL,1,  "z",4,  "x",4,  "c",4,  "v",4, "b",4,  "n",4, "m",4,  NULL,1, GT_SYMBOL_BACKSPACE,5,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_CH,5,  GT_SYMBOL_JINGHAO,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_SPACE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
+    GT_SYMBOL_CH,5,  GT_SYMBOL_WELL_NUMBER,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_SPACE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
     NULL,0
 };
 
@@ -129,7 +129,7 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_map_st _up_map_defual_26_key[] = {
     "Q",1,  "W",1,  "E",1,  "R",1, "T",1,  "Y",1, "U",1,  "I",1,  "O",1,  "P",1,  GT_BTNMAP_NEW_LINE,0,
     NULL,1,  "A",3,  "S",3,  "D",3,  "F",3, "G",3,  "H",3, "J",3,  "K",3,  "L",3,  NULL,1,  GT_BTNMAP_NEW_LINE,0,
     GT_SYMBOL_UPPER_CASE,5,  NULL,1,  "Z",4,  "X",4,  "C",4,  "V",4, "B",4,  "N",4, "M",4,  NULL,1, GT_SYMBOL_BACKSPACE,5,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_CH,5,  GT_SYMBOL_JINGHAO,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_SPACE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
+    GT_SYMBOL_CH,5,  GT_SYMBOL_WELL_NUMBER,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_SPACE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
     NULL,0
 };
 
@@ -139,7 +139,7 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_map_st _symbol_en_map_defual_26_key
     NULL,1,  "-",5,  "+",5,  "=",5,  "_",5, "{",5,  "}",5, "[",5,  "]",5,  "\\",5,  NULL,1,  GT_BTNMAP_NEW_LINE,0,
     NULL,1,  ";",3,  ":",3,  "\"",3,  "\'",3,  "~",3,  "`",3,  "/ ",3,  " |",3,  NULL,1,  GT_BTNMAP_NEW_LINE,0,
     GT_SYMBOL_LOWER_CASE,5,  NULL,1,  ",",4,  ".",4,  "?",4,  "<",4,  ">",4,  NULL,1, GT_SYMBOL_BACKSPACE,5,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_CH,5,  GT_SYMBOL_JINGHAO,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_SPACE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
+    GT_SYMBOL_CH,5,  GT_SYMBOL_WELL_NUMBER,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_SPACE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
     NULL,0
 };
 
@@ -149,7 +149,7 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_map_st _ch_map_defual_26_key[] = {
     "q",1,  "w",1,  "e",1,  "r",1, "t",1,  "y",1, "u",1,  "i",1,  "o",1,  "p",1,  GT_BTNMAP_NEW_LINE,0,
     NULL,1,  "a",3,  "s",3,  "d",3,  "f",3, "g",3,  "h",3, "j",3,  "k",3,  "l",3,  NULL,1,  GT_BTNMAP_NEW_LINE,0,
     GT_SYMBOL_LOWER_CASE,5,  NULL,1,  "z",4,  "x",4,  "c",4,  "v",4, "b",4,  "n",4, "m",4,  NULL,1, GT_SYMBOL_BACKSPACE,5,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_EN,5,  GT_SYMBOL_JINGHAO,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_SPACE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
+    GT_SYMBOL_EN,5,  GT_SYMBOL_WELL_NUMBER,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_SPACE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
     NULL,0
 };
 
@@ -160,7 +160,7 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const char * _def_26_key_user_icon_key_list[
     GT_SYMBOL_UPPER_CASE,
     GT_SYMBOL_CH,
     GT_SYMBOL_EN,
-    GT_SYMBOL_JINGHAO,
+    GT_SYMBOL_WELL_NUMBER,
     GT_SYMBOL_LEFT,
     GT_SYMBOL_RIGHT,
     GT_SYMBOL_PREV,
@@ -248,7 +248,7 @@ static void _def_26_key_push_btn_kv_handler( gt_obj_st* obj,  gt_obj_st* input ,
         }
         gt_btnmap_set_map( obj , (gt_map_st*)_list_defualt_26_key[idx].map , GT_KEYPAD_TYPE_UPPER);
     }
-    else if(0 == strcmp(kv , GT_SYMBOL_JINGHAO)){
+    else if(0 == strcmp(kv , GT_SYMBOL_WELL_NUMBER)){
         idx = _gt_get_map_index((gt_keypad_map_st*)_list_defualt_26_key , sizeof(_list_defualt_26_key)/sizeof(gt_keypad_map_st) , GT_KEYPAD_TYPE_SYMBOL_EN);
         if(idx < 0){
             GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d , type = %d", GT_KEYPAD_STYLE_26_KEY , GT_KEYPAD_TYPE_SYMBOL_EN);
