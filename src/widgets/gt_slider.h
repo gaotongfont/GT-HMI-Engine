@@ -88,21 +88,35 @@ gt_size_t gt_slider_get_end(gt_obj_st * slider);
  */
 gt_size_t gt_slider_get_total(gt_obj_st * slider);
 
+/**
+ * @brief Set the active color of the slider
+ *
+ * @param slider
+ * @param color
+ */
 void gt_slider_set_color_act(gt_obj_st * slider, gt_color_t color);
+
+/**
+ * @brief Set the inactive color of the slider
+ *
+ * @param slider
+ * @param color
+ */
 void gt_slider_set_color_ina(gt_obj_st * slider, gt_color_t color);
+
 
 void gt_slider_set_dir(gt_obj_st * slider, gt_bar_dir_et dir);
 gt_bar_dir_et gt_slider_get_dir(gt_obj_st * slider);
 
 
-uint8_t gt_slider_get_step(gt_obj_st * slider);
+uint16_t gt_slider_get_step(gt_obj_st * slider);
 /**
  * @brief Increment/decrement per operation
  *
  * @param slider
  * @param step
  */
-void gt_slider_set_step(gt_obj_st * slider, uint8_t step);
+void gt_slider_set_step(gt_obj_st * slider, uint16_t step);
 
 void gt_slider_set_tag(gt_obj_st * slider, char * src);
 void gt_slider_set_tag_visible(gt_obj_st * slider, bool visible);

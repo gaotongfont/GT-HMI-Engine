@@ -30,16 +30,17 @@ typedef struct _gt_slider_s {
     gt_obj_st obj;
 
     gt_obj_st *tag;
-    gt_obj_st *img;         //img src
+    gt_obj_st *img;         /** The img object within tag area */
 
-    gt_color_t color_act;
-    gt_color_t color_ina;
+    gt_color_t color_act;   /** The active color of the slider */
+    gt_color_t color_ina;   /** The inactive color of the slider */
 
-    gt_size_t start;
-    gt_size_t end;
-    gt_size_t pos;
+    gt_size_t start;    /** The starting value of the range */
+    gt_size_t end;      /** The end value of the range */
+    gt_size_t pos;      /** The current value of the range */
+    uint16_t step;      /** Increments/decreases in units each time */
 
-    uint16_t offset;
+    uint16_t offset;    /** Offset pixels from the start pixel */
     uint16_t size;
     uint16_t tag_size;
     gt_bar_dir_et dir;
@@ -179,7 +180,7 @@ static void _gt_slider_set_offset(gt_obj_st * slider , gt_size_t offset)
 
 static void _scroll_dir_ver(gt_obj_st * obj, bool is_up) {
     _gt_slider_st * style = (_gt_slider_st * )obj;
-    gt_size_t val = is_up ? 1 : -1;
+    gt_size_t val = is_up ? style->step : -style->step;
 
     if (GT_BAR_DIR_VER_U2D == style->dir) {
         _gt_slider_set_offset_by_pos(obj, style->pos + val);
@@ -191,7 +192,7 @@ static void _scroll_dir_ver(gt_obj_st * obj, bool is_up) {
 
 static void _scroll_dir_hor(gt_obj_st * obj, bool is_right) {
     _gt_slider_st * style = (_gt_slider_st * )obj;
-    gt_size_t val = is_right ? 1 : -1;
+    gt_size_t val = is_right ? style->step : -style->step;
 
     if (GT_BAR_DIR_HOR_L2R == style->dir) {
         _gt_slider_set_offset_by_pos(obj, style->pos + val);
@@ -405,6 +406,7 @@ gt_obj_st * gt_slider_create(gt_obj_st * parent)
 
     style->color_act = gt_color_hex(0x409eff);
     style->color_ina = gt_color_hex(0xebeef5);
+    style->step = 1;
     style->start = 0;
     style->end = 100;
     style->pos = 50;
@@ -570,6 +572,31 @@ gt_bar_dir_et gt_slider_get_dir(gt_obj_st * slider)
     return style->dir;
 }
 
+uint16_t gt_slider_get_step(gt_obj_st * slider)
+{
+    if (NULL == slider) {
+        return 0;
+    }
+    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+        return 0;
+    }
+    _gt_slider_st * style = (_gt_slider_st *)slider;
+
+    return style->step;
+}
+
+void gt_slider_set_step(gt_obj_st * slider, uint16_t step)
+{
+    if (NULL == slider) {
+        return;
+    }
+    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+        return;
+    }
+    _gt_slider_st * style = (_gt_slider_st *)slider;
+
+    style->step = step;
+}
 
 void gt_slider_set_tag(gt_obj_st * slider, char * src)
 {
