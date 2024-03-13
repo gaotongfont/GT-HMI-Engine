@@ -901,7 +901,6 @@ static const _gt_symbol_st symbols_16x16[] = {
     GT_SYMBOL_NEXT , symbol_16x16_right,
     GT_SYMBOL_PREV , symbol_16x16_left,
     GT_SYMBOL_KEYBOARD, symbol_16x16_keyboard,
-    GT_SYMBOL_OK, symbol_16x16_down,
     GT_SYMBOL_UP, symbol_16x16_up,
     GT_SYMBOL_DOWN, symbol_16x16_down,
     GT_SYMBOL_SAVE, symbol_16x16_save,
