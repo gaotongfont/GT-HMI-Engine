@@ -202,7 +202,7 @@ unsigned int get_width_func_vec(unsigned char *p,unsigned int zfwidth,unsigned i
 
 /**
  * @brief 得到矢量字库文字数据
- * 
+ *
  * @param pBits 数据存储
  * @param font_option 字体
  * @param fontcode 文字编码
@@ -242,6 +242,7 @@ unsigned int GBKToUnicode(unsigned int fontcode);
 /*-------------------------------------------------  pinyin  -------------------------------------------------*/
 
 /* define ---------------------------------------------------------------*/
+#define PINYIN_INPUT_METHOD_EN
 #define CHINESE_NUMB_MAX    (8)
 #define CHINESE_BUFF_MAX    (40)
 #define ASCII_BUFF_MAX      (30)

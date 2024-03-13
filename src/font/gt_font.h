@@ -163,7 +163,9 @@ typedef struct _gt_font_size_res_s {
 //
 #define GT_PY_MAX_NUMB  (8)
 typedef struct gt_py_input_method_s{
+#ifdef PINYIN_INPUT_METHOD_EN
     py_info_st * py_info;
+#endif
     volatile uint8_t ascii_numb;
     volatile uint8_t chinese_numb;
     uint8_t ascii[GT_PY_MAX_NUMB];
