@@ -131,6 +131,65 @@ static gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
     return ret;
 }
 
+static bool _is_indev_home_gesture(gt_indev_st * indev , gt_event_type_et* event)
+{
+    struct _point * point_p = &indev->proc.data.point;
+    gt_res_t ret = GT_RES_FAIL;
+    point_p->gesture = _get_scroll_dir(indev);
+
+    if((uint16_t)GT_DIR_NONE == point_p->gesture) {
+        return false;
+    }
+
+    if(GT_DIR_DOWN == point_p->gesture){
+        // top
+        if(point_p->act.y <= GT_CFG_DEFAULT_POINT_HOME_GESTUER_PIXEL){
+            if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_TOP;
+            return true;
+        }
+    }
+    else if(GT_DIR_UP == point_p->gesture){
+        // bottom
+        if(GT_SCREEN_HEIGHT - point_p->act.y <= GT_CFG_DEFAULT_POINT_HOME_GESTUER_PIXEL){
+            if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_BOTTOM;
+            return true;
+        }
+    }
+    else if(GT_DIR_LEFT == point_p->gesture){
+        // right
+        if(GT_SCREEN_WIDTH - point_p->act.x <= GT_CFG_DEFAULT_POINT_HOME_GESTUER_PIXEL){
+            if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_RIGHT;
+            return true;
+        }
+    }
+    else if(GT_DIR_RIGHT == point_p->gesture){
+        // left
+        if(point_p->act.x <= GT_CFG_DEFAULT_POINT_HOME_GESTUER_PIXEL){
+            if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_LEFT;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool _indev_send_home_gesture_event(gt_indev_st * indev)
+{
+    if((gt_tick_get() - indev->proc.timestamp_start) > GT_CFG_DEFAULT_POINT_HOME_GESTUER_TIME){
+        return false;
+    }
+
+    gt_obj_st * scr = gt_disp_get_scr();
+
+    gt_event_type_et e = GT_EVENT_TYPE_NONE;
+    if(_is_indev_home_gesture(indev , &e)){
+        gt_event_send(scr , e , NULL);
+        return true;
+    }
+
+    return false;
+}
+
 /**
  * @brief Touch gestures make the act of throwing
  *
@@ -143,6 +202,12 @@ static void _indev_scroll_throw_handler(gt_indev_st * indev) {
     if((uint16_t)GT_DIR_NONE == point_p->gesture) {
         return ;
     }
+
+    //
+    if(_indev_send_home_gesture_event(indev)){
+        return ;
+    }
+
     gt_obj_st * obj_scroll = point_p->obj_scroll;
     gt_size_t dx = _scroll_predict(indev, point_p->scroll_throw.x);
     gt_size_t dy = _scroll_predict(indev, point_p->scroll_throw.y);
@@ -227,6 +292,10 @@ static void _indev_scroll_handler(gt_indev_st * indev) {
     gt_size_t dx = 0;
     gt_size_t dy = 0;
     point_p->obj_scroll = point_p->obj_target;
+
+    if(_is_indev_home_gesture(indev , NULL)){
+        return ;
+    }
 
     if (_is_scroll_vertical(point_p->gesture)) {
         dy = point_p->scroll_diff.y;
@@ -315,6 +384,7 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
 
         /* send clicking event to pressed obj */
         gt_obj_get_click_point_by_phy_point(point_p->obj_act, &point_p->newly, &point_ret);
+        _gt_indev_point_set_value(&point_p->act, point_p->newly.x, point_p->newly.y);
         _gt_indev_point_set_value(&point_p->last, point_p->newly.x, point_p->newly.y);
         _gt_obj_set_process_point(point_p->obj_act, &point_ret);
         gt_event_send(point_p->obj_act, GT_EVENT_TYPE_INPUT_PRESSED, NULL);

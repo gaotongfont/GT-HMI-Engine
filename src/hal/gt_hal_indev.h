@@ -36,7 +36,9 @@ extern "C" {
 
 #define GT_CFG_DEFAULT_POINT_SCROLL_LIMIT           10
 
-
+/** home gestuer default time and pix */
+#define GT_CFG_DEFAULT_POINT_HOME_GESTUER_TIME              (500)   //ms
+#define GT_CFG_DEFAULT_POINT_HOME_GESTUER_PIXEL             (10)    //px
 
 /* typedef --------------------------------------------------------------*/
 
