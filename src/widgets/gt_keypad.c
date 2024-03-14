@@ -365,8 +365,8 @@ bool _def_26_key_disp_special_btn_handler(gt_obj_st* obj, const char* const kv ,
 
 #endif // _DEF_STYLE_26_KEY
 //
-#define _DEF_STYLE_TLB
-#ifdef _DEF_STYLE_TLB
+#define _DEF_STYLE_OTHER_4x5
+#ifdef _DEF_STYLE_OTHER_4x5
 // w = 44 * 4 + 3 * 5 = 176 + 15 = 191
 // h = 44 * 5 + 3 * 6 = 220 + 18 = 238
 GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_map_st _low_map_defual_tlb[] = {
@@ -408,10 +408,10 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_keypad_map_st _list_defualt_tlb[] =
     {.type = GT_KEYPAD_TYPE_UPPER , .map = _up_map_defual_tlb},
     {.type = GT_KEYPAD_TYPE_NUMBER , .map = _numb_map_defual_tlb},
 };
-#endif // _DEF_STYLE_TLB
+#endif // _DEF_STYLE_OTHER_4x5
 //
-#define _DEF_STYLE_FYB_369
-#ifdef _DEF_STYLE_FYB_369
+#define _DEF_STYLE_OTHER_11x3
+#ifdef _DEF_STYLE_OTHER_11x3
 // w = 50 * 11 + 3 * 12 = 550 + 36 = 586
 // h = 38 * 3 + 3 * 4 = 114 + 12 = 126
 GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_map_st _low_map_defual_fyb_369[] = {
@@ -438,7 +438,7 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const gt_keypad_map_st _list_defualt_fyb_369
     {.type = GT_KEYPAD_TYPE_UPPER , .map = _up_map_defual_fyb_369},
     {.type = GT_KEYPAD_TYPE_NUMBER , .map = _numb_map_defual_fyb_369},
 };
-#endif // _DEF_STYLE_FYB_369
+#endif // _DEF_STYLE_OTHER_11x3
 
 GT_ATTRIBUTE_LARGE_RAM_ARRAY static const _gt_def_style_param_st _def_style_list[] = {
 //
@@ -453,27 +453,27 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const _gt_def_style_param_st _def_style_list
     },
 #endif // _DEF_STYLE_26_KEY
 //
-#ifdef _DEF_STYLE_TLB
+#ifdef _DEF_STYLE_OTHER_4x5
     {
-        .def_style = GT_KEYPAD_STYLE_TLB, .map_list = _list_defualt_tlb , .map_total = sizeof(_list_defualt_tlb)/sizeof(gt_keypad_map_st),
+        .def_style = GT_KEYPAD_STYLE_OTHER_4x5, .map_list = _list_defualt_tlb , .map_total = sizeof(_list_defualt_tlb)/sizeof(gt_keypad_map_st),
         .w = 191 , .h = 238 , .radius = 0 ,.bg_color = 0x0A1143, .border_width = 0 , .border_color = 0x0A1143,
         .key_h = 44 , .key_radius = 6 ,  .key_bg_color = 0x183581, .key_border_width = 0 , .key_border_color = 0x183581,
         .key_x_space = 3 , .key_y_space = 3 ,
         ._disp_special_btn_cb = NULL, ._push_btn_kv_cb = NULL,
         .ctrl_key_bg_color = 0x183581,  .ctrl_key_border_width = 0 , .ctrl_key_border_color = 0x183581,
     },
-#endif // _DEF_STYLE_TLB
+#endif // _DEF_STYLE_OTHER_4x5
 //
-#ifdef _DEF_STYLE_FYB_369
+#ifdef _DEF_STYLE_OTHER_11x3
     {
-        .def_style = GT_KEYPAD_STYLE_FYB_369, .map_list = _list_defualt_fyb_369 , .map_total = sizeof(_list_defualt_fyb_369)/sizeof(gt_keypad_map_st),
+        .def_style = GT_KEYPAD_STYLE_OTHER_11x3, .map_list = _list_defualt_fyb_369 , .map_total = sizeof(_list_defualt_fyb_369)/sizeof(gt_keypad_map_st),
         .w = 586 , .h = 126 , .radius = 0 ,.bg_color = 0x000000, .border_width = 0 , .border_color = 0x000000,
         .key_h = 38 , .key_radius = 6 ,  .key_bg_color = 0x22272C, .key_border_width = 0 , .key_border_color = 0x22272C,
         .key_x_space = 3 , .key_y_space = 3 ,
         ._disp_special_btn_cb = NULL, ._push_btn_kv_cb = NULL,
         .ctrl_key_bg_color = 0x22272C,  .ctrl_key_border_width = 0 , .ctrl_key_border_color = 0x22272C,
     },
-#endif // _DEF_STYLE_FYB_369
+#endif // _DEF_STYLE_OTHER_11x3
 };
 
 void _gt_switch_default_style(gt_obj_st * keypad , gt_keypad_default_style_st def_style)

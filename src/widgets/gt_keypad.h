@@ -43,10 +43,10 @@ typedef struct gt_keypad_map_s {
 // The default style is 0 after map list is set
 typedef enum {
     GT_KEYPAD_STYLE_NONE = 0,
-    GT_KEYPAD_STYLE_26_KEY, // 26-key keyboard
-    GT_KEYPAD_STYLE_9_KEY, // 9-key keyboard
-    GT_KEYPAD_STYLE_TLB, // ting li bao
-    GT_KEYPAD_STYLE_FYB_369, // 3.96fan yi bi
+    GT_KEYPAD_STYLE_26_KEY,     // 26-key keyboard
+    GT_KEYPAD_STYLE_9_KEY,      // 9-key keyboard
+    GT_KEYPAD_STYLE_OTHER_4x5,  // col:4  row: 5
+    GT_KEYPAD_STYLE_OTHER_11x3, // col:11 row: 3
 }gt_keypad_default_style_st;
 /* macros ---------------------------------------------------------------*/
 
