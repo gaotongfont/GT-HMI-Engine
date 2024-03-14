@@ -73,10 +73,8 @@ static inline bool _is_fill_zero_front(_gt_input_number_st * style) {
     return style->reg.fill_zero;
 }
 
-static void _init_cb(gt_obj_st * obj)
-{
-    _gt_input_number_st * style = (_gt_input_number_st * )obj;
-    char buffer[16] = {0};
+static void _update_label_value(_gt_input_number_st * style) {
+    char buffer[32] = {0};
     uint8_t idx = 0;
     uint8_t append_len = style->reg.len_decimal ? (style->reg.len_decimal + 1) : style->reg.len_decimal;
 
@@ -88,9 +86,12 @@ static void _init_cb(gt_obj_st * obj)
         buffer[idx++] = '0';
     }
     sprintf(&buffer[idx], "%d.%dlf", style->reg.len_integer + append_len, style->reg.len_decimal);
-    gt_area_copy(&style->label->area, &obj->area);
     gt_label_set_text(style->label, buffer, style->value);
-    gt_event_clr_all_event(style->label);
+}
+
+static void _init_cb(gt_obj_st * obj)
+{
+    _gt_input_number_st * style = (_gt_input_number_st * )obj;
 
     // focus
     draw_focus(obj , 0);
@@ -143,17 +144,36 @@ gt_obj_st * gt_input_number_create(gt_obj_st * parent)
 
 void gt_input_number_set_fill_zero_front(gt_obj_st * obj, bool enabled)
 {
-    ((_gt_input_number_st * )obj)->reg.fill_zero = enabled ? 1 : 0;
-    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
+    _gt_input_number_st * style = (_gt_input_number_st * )obj;
+    style->reg.fill_zero = enabled ? 1 : 0;
+    _update_label_value(style);
 }
 
 bool gt_input_number_get_fill_zero_front(gt_obj_st * obj)
 {
+    if (NULL == obj) {
+        return false;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return false;
+    }
     return _is_fill_zero_front((_gt_input_number_st * )obj);
 }
 
 void gt_input_number_set_value(gt_obj_st * obj, double value)
 {
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     style->value = value;
     if (style->value > style->max) {
@@ -161,75 +181,142 @@ void gt_input_number_set_value(gt_obj_st * obj, double value)
     } else if (style->value < style->min) {
         style->value = style->min;
     }
-    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    _update_label_value(style);
 }
 
 double gt_input_number_get_value(gt_obj_st * obj)
 {
+    if (NULL == obj) {
+        return 0;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return 0;
+    }
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     return style->value;
 }
 
 void gt_input_number_set_max(gt_obj_st * obj, double max)
 {
-    ((_gt_input_number_st * )obj)->max = max;
-    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
+    _gt_input_number_st * style = (_gt_input_number_st * )obj;
+    style->max = max;
+    if (style->value > style->max) {
+        style->value = style->max;
+    }
+    _update_label_value(style);
 }
 
 void gt_input_number_set_min(gt_obj_st * obj, double min)
 {
-    ((_gt_input_number_st * )obj)->min = min;
-    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
+    _gt_input_number_st * style = (_gt_input_number_st * )obj;
+    style->min = min;
+    if (style->value < style->min) {
+        style->value = style->min;
+    }
+    _update_label_value(style);
 }
 
 void gt_input_number_set_step(gt_obj_st * obj, double step)
 {
-    ((_gt_input_number_st * )obj)->step = step;
-    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
+    _gt_input_number_st * style = (_gt_input_number_st * )obj;
+    style->step = step;
+    // gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
 double gt_input_number_increase(gt_obj_st * obj)
 {
+    if (NULL == obj) {
+        return 0;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return 0;
+    }
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     style->value += style->step;
     if (style->value > style->max) {
         style->value = style->max;
     }
-    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    _update_label_value(style);
+    // gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
     return style->value;
 }
 
 double gt_input_number_decrease(gt_obj_st * obj)
 {
+    if (NULL == obj) {
+        return 0;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return 0;
+    }
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     style->value -= style->step;
     if (style->value < style->min) {
         style->value = style->min;
     }
-    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    // gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    _update_label_value(style);
     return style->value;
 }
 
 void gt_input_number_set_display_integer_length(gt_obj_st * obj, uint8_t length)
 {
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
     if (length > 64) {
         length = 64;
     }
-    ((_gt_input_number_st * )obj)->reg.len_integer = length;
-    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    _gt_input_number_st * style = (_gt_input_number_st * )obj;
+    style->reg.len_integer = length;
+    _update_label_value(style);
 }
 
 void gt_input_number_set_display_decimal_length(gt_obj_st * obj, uint8_t length)
 {
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
     if (length > 64) {
         length = 64;
     }
-    ((_gt_input_number_st * )obj)->reg.len_decimal = length;
-    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    _gt_input_number_st * style = (_gt_input_number_st * )obj;
+    style->reg.len_decimal = length;
+    _update_label_value(style);
 }
 
 void gt_input_number_set_font_color(gt_obj_st * obj, gt_color_t color)
 {
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     if (NULL == style->label) {
         return;
@@ -239,6 +326,12 @@ void gt_input_number_set_font_color(gt_obj_st * obj, gt_color_t color)
 
 void gt_input_number_set_font_size(gt_obj_st * obj, uint8_t size)
 {
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     if (NULL == style->label) {
         return;
@@ -248,6 +341,12 @@ void gt_input_number_set_font_size(gt_obj_st * obj, uint8_t size)
 
 void gt_input_number_set_font_gray(gt_obj_st * obj, uint8_t gray)
 {
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     if (NULL == style->label) {
         return;
@@ -257,6 +356,12 @@ void gt_input_number_set_font_gray(gt_obj_st * obj, uint8_t gray)
 
 void gt_input_number_set_font_align(gt_obj_st * obj, gt_align_et align)
 {
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     if (NULL == style->label) {
         return;
@@ -266,6 +371,12 @@ void gt_input_number_set_font_align(gt_obj_st * obj, gt_align_et align)
 
 void gt_input_number_set_font_family_cn(gt_obj_st * obj, gt_family_t family)
 {
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     if (NULL == style->label) {
         return;
@@ -275,6 +386,12 @@ void gt_input_number_set_font_family_cn(gt_obj_st * obj, gt_family_t family)
 
 void gt_input_number_set_font_family_en(gt_obj_st * obj, gt_family_t family)
 {
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     if (NULL == style->label) {
         return;
@@ -284,6 +401,12 @@ void gt_input_number_set_font_family_en(gt_obj_st * obj, gt_family_t family)
 
 void gt_input_number_set_font_family_fl(gt_obj_st * obj, gt_family_t family)
 {
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     if (NULL == style->label) {
         return;
@@ -293,6 +416,12 @@ void gt_input_number_set_font_family_fl(gt_obj_st * obj, gt_family_t family)
 
 void gt_input_number_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
 {
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     if (NULL == style->label) {
         return;
@@ -302,6 +431,12 @@ void gt_input_number_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
 
 void gt_input_number_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
 {
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     if (NULL == style->label) {
         return;
@@ -311,6 +446,12 @@ void gt_input_number_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
 
 void gt_input_number_set_font_thick_cn(gt_obj_st * obj, uint8_t thick)
 {
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     if (NULL == style->label) {
         return;
@@ -320,6 +461,12 @@ void gt_input_number_set_font_thick_cn(gt_obj_st * obj, uint8_t thick)
 
 void gt_input_number_set_space(gt_obj_st * obj, uint8_t space_x, uint8_t space_y)
 {
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == gt_obj_is_type(obj, GT_TYPE_INPUT_NUMBER)) {
+        return ;
+    }
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     if (NULL == style->label) {
         return;
