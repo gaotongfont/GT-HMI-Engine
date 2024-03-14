@@ -172,32 +172,43 @@ static inline bool _ignore_view_pager_slider_control(gt_obj_st * obj) {
  * @brief Set child unfixed property which can be slide itself or disable view pager scroll
  *
  * @param parent The target children
+ * @param is_root root must be view pager widget
+ * @returns true: childs has slider control
+ *          false: childs has no slider control
  */
-static void _unfixed_slider_widgets(gt_obj_st * parent) {
-    uint16_t idx, cnt = parent->cnt_child;
+static bool _unfixed_slider_widgets(gt_obj_st * self, bool is_root) {
     gt_obj_st * child = NULL;
-    for (idx = 0; idx < cnt; idx++) {
-        child = parent->child[idx];
-        if (false == _ignore_view_pager_slider_control(child)) {
-            continue;
-        }
-        if (false == gt_obj_get_fixed(child)) {
-            continue;
-        }
-        gt_obj_set_fixed(child, false);
+    uint8_t is_slider = false, is_cur_slider = false;
 
-        if (0 == child->cnt_child) {
-            continue;
+    if (false == is_root && 0 == self->cnt_child) {
+        is_slider = _ignore_view_pager_slider_control(self);
+        if (is_slider && gt_obj_get_fixed(self)) {
+            gt_obj_set_fixed(self, false);
         }
-        _unfixed_slider_widgets(child);
+        return is_slider;
     }
+
+    for (gt_size_t i = 0, cnt = self->cnt_child; i < cnt; i++) {
+        child = self->child[i];
+        is_slider = _unfixed_slider_widgets(child, false);
+        if (is_slider) {
+            is_cur_slider = true;
+        }
+    }
+    if ((is_cur_slider && false == is_root) || _ignore_view_pager_slider_control(self)) {
+        /** Child controls can either slide or slide themselves */
+        if (gt_obj_get_fixed(self)) {
+            gt_obj_set_fixed(self, false);
+        }
+    }
+    return is_cur_slider;
 }
 
 static inline void _init_child_prop(gt_obj_st * obj) {
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_INSIDE, true);
 
-    _unfixed_slider_widgets(obj);
+    _unfixed_slider_widgets(obj, true);
 }
 
 static void _deinit_cb(gt_obj_st * obj) {
