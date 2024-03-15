@@ -117,15 +117,15 @@ static void _gt_obj_class_destroy_property(gt_obj_st * self) {
 
     gt_event_send(self, GT_EVENT_TYPE_CHANGE_DELETED, NULL);
 
-    // free obj custom style
-    if (self->class->_deinit_cb) {
-        self->class->_deinit_cb(self);
-    }
-
     // free event attribute
     if (NULL != self->event_attr) {
         gt_mem_free(self->event_attr);
         self->event_attr = NULL;
+    }
+
+    // free obj custom style
+    if (self->class->_deinit_cb) {
+        self->class->_deinit_cb(self);
     }
 
     self->draw_ctx = NULL;

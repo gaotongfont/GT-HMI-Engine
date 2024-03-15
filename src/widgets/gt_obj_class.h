@@ -26,11 +26,17 @@ struct gt_obj_s;
  * @brief interface for other widgets
  */
 typedef struct _gt_obj_class_s {
+    /** Control drawing logic */
     void (*_init_cb)(struct gt_obj_s *);
+    /** Can only be used to free additional memory requested by the control when it is created */
     void (*_deinit_cb)(struct gt_obj_s *);
+    /** Controls all behavior events */
     void (*_event_cb)(struct gt_obj_s *, struct _gt_event_s *);
+    /** Control type @ref gt_obj_type_et */
     gt_obj_type_et type;
-    uint16_t size_style;        //used: malloc free
+    /** Control styles contain the memory size of the base object,
+     * which must exist at the very front of the struct */
+    uint16_t size_style;
 }gt_obj_class_st;
 
 
