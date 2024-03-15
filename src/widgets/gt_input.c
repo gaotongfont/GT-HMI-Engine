@@ -170,7 +170,8 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     }
 
     /*draw text after cursor*/
-    if( style->value && style->pos_cursor != strlen(style->value) ){
+    gt_size_t str_len = style->value ? strlen(style->value) : 0;
+    if( style->value && style->pos_cursor != str_len ){
         font.utf8 = &style->value[style->pos_cursor];
         font.len = strlen(&style->value[style->pos_cursor]);
         font.info.size = style->font_info.size;
@@ -368,23 +369,35 @@ void gt_input_set_value(gt_obj_st * input, const char * fmt, ...)
     char buffer[8] = {0};
     va_list args;
     va_list args2;
-    va_start(args, fmt);
-    va_copy(args2, args);
 
     _gt_input_st * style = (_gt_input_st * )input;
-    if( style->value ){
-        gt_mem_free(style->value);
-    }
+    va_start(args, fmt);
+    va_copy(args2, args);
     uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(buffer, sizeof(buffer), fmt, args) + 1);
-    style->value = gt_mem_malloc(size);
+    va_end(args);
+    if (!size) {
+        goto free_lb;
+    }
+    if (NULL == style->value) {
+        style->value = gt_mem_malloc(size);
+    } else if (size != strlen(style->value) + 1) {
+        style->value = gt_mem_realloc(style->value, size);
+    }
+    if (NULL == style->value) {
+        goto free_lb;
+    }
+
+    va_start(args2, fmt);
     vsnprintf(style->value, size, fmt, args2);
+    va_end(args2);
 
     style->pos_cursor = size - 1;
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 
+    return ;
+
 free_lb:
     va_end(args2);
-    va_end(args);
 }
 
 char * gt_input_get_value(gt_obj_st * input)

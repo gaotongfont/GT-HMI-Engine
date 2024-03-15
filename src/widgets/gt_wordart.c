@@ -301,27 +301,36 @@ void gt_wordart_set_text(gt_obj_st * wordart, const char * fmt, ...)
     char buffer[8] = {0};
     va_list args;
     va_list args2;
-    va_start(args, fmt);
-    va_copy(args2, args);
 
     _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
 
-    if( NULL != style->text ){
-        gt_mem_free(style->text);
-    }
+    va_start(args, fmt);
+    va_copy(args2, args);
     uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(buffer, sizeof(buffer), fmt, args) + 1);
+    va_end(args);
     if (!size) {
         goto free_lb;
     }
-    style->text = gt_mem_malloc(size);
 
+    if (NULL == style->text) {
+        style->text = gt_mem_malloc(size);
+    } else if (size != strlen(style->text) + 1) {
+        style->text = gt_mem_realloc(style->text, size);
+    }
+    if (NULL == style->text) {
+        goto free_lb;
+    }
+
+    va_start(args2, fmt);
     vsnprintf(style->text, size, fmt, args2);
+    va_end(args2);
 
     gt_event_send(wordart, GT_EVENT_TYPE_DRAW_START, NULL);
 
+    return ;
+
 free_lb:
     va_end(args2);
-    va_end(args);
 }
 
 char * gt_wordart_get_text(gt_obj_st * wordart)
