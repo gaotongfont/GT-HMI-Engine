@@ -122,6 +122,9 @@ static inline bool _is_input_event(gt_event_type_et event) {
 /* global functions / API interface -------------------------------------*/
 void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data)
 {
+    if (NULL == obj) {
+        return;
+    }
     if ( NULL == obj->event_attr ) {
         obj->event_attr =  gt_mem_malloc(sizeof(gt_obj_event_attr_st));
         obj->cnt_event = 0;
