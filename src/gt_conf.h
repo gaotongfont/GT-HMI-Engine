@@ -77,10 +77,11 @@ extern "C" {
 #else
     #define GT_MEM_CUSTOM_INCLUDE   "stdlib.h"
 
-    #define GT_MEM_CUSTOM_MALLOC    malloc
-    #define GT_MEM_CUSTOM_CALLOC    calloc
-    #define GT_MEM_CUSTOM_REALLOC   realloc
-    #define GT_MEM_CUSTOM_FREE      free
+    #define GT_MEM_CUSTOM_MALLOC        malloc
+    #define GT_MEM_CUSTOM_CALLOC        calloc
+    #define GT_MEM_CUSTOM_REALLOC       realloc
+    #define GT_MEM_CUSTOM_FREE          free
+    #define GT_MEM_CUSTOM_BLOCK_SIZE    NULL
 #endif
 
 
