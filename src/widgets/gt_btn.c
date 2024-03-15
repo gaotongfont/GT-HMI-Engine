@@ -559,7 +559,7 @@ bool gt_btn_clear_all_state_content(gt_obj_st * obj)
     if (NULL == obj) {
         return false;
     }
-    if (false == gt_obj_is_type(btn, GT_TYPE_BTN)) {
+    if (false == gt_obj_is_type(obj, GT_TYPE_BTN)) {
         return false;
     }
     _gt_btn_st * style = (_gt_btn_st * )obj;
@@ -571,7 +571,7 @@ int16_t gt_btn_get_state_content_index(gt_obj_st * obj)
     if (!obj) {
         return -1;
     }
-    if (false == gt_obj_is_type(btn, GT_TYPE_BTN)) {
+    if (false == gt_obj_is_type(obj, GT_TYPE_BTN)) {
         return -1;
     }
     _gt_btn_st * style = (_gt_btn_st * )obj;
