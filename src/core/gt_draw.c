@@ -1510,7 +1510,7 @@ _ret_handle:
     return fonts->len;
 }
 
-gt_area_st draw_text_split(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, const gt_area_st * coords)
+gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, const gt_area_st * coords)
 {
     gt_area_st area_font = {
         .x = coords->x , .y = coords->y , .w = dsc->font->info.size, .h = dsc->font->info.size
@@ -1929,12 +1929,6 @@ _ret_handler:
         bidi = NULL;
     }
     return area_font;
-}
-
-
-gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, const gt_area_st * coords)
-{
-    return draw_text_split(draw_ctx , dsc , coords);
 }
 
 #if GT_USE_SJPG
