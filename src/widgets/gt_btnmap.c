@@ -68,7 +68,6 @@ typedef struct _gt_btnmap_s {
 static void _init_cb(struct gt_obj_s *);
 static void _deinit_cb(struct gt_obj_s *);
 static void _event_cb(struct gt_obj_s *, struct _gt_event_s *);
-static void _gt_btnmap_init_style(gt_obj_st* btnmap);
 static inline void _gt_btnmap_init_widget(gt_obj_st* btnmap);
 static bool _gt_btn_cmp(const char* key1 , const char* key2);
 static void _gt_auto_btn_height(gt_obj_st* btnmap);
@@ -166,19 +165,6 @@ static void _event_cb(struct gt_obj_s *obj, struct _gt_event_s *e)
     default:
         break;
     }
-}
-
-static void _gt_btnmap_init_style(gt_obj_st* btnmap)
-{
-    /**/
-    _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
-    style->btn_x_space = _DEFAULT_SPACE;
-    style->btn_y_space = _DEFAULT_SPACE;
-    style->radius = 4;
-    gt_font_info_init(&style->font_info);
-
-    //
-    _gt_update_map(btnmap);
 }
 
 static inline void _gt_btnmap_init_widget(gt_obj_st* btnmap)
@@ -488,7 +474,16 @@ static void _gt_push_btn_kv(gt_obj_st* obj)
 gt_obj_st * gt_btnmap_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_btnmap_init_style(obj);
+    if (NULL == obj) {
+        return obj;
+    }
+    _gt_btnmap_st * style = (_gt_btnmap_st * )obj;
+    style->btn_x_space = _DEFAULT_SPACE;
+    style->btn_y_space = _DEFAULT_SPACE;
+    style->radius = 4;
+    gt_font_info_init(&style->font_info);
+
+    _gt_update_map(obj);
     return obj;
 }
 
