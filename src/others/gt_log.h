@@ -41,7 +41,7 @@ extern "C" {
 
 
 //字库相关能显示的调试信息等级
-#define GT_LOG_LEVEL_DEFALUT    5//GT_LOG_LEVEL_DEBUG
+#define GT_LOG_LEVEL_DEFALUT    GT_LOG_LEVEL_ERROR
 
 /* TAG ------------------------------------------------------------------*/
 
@@ -75,7 +75,7 @@ extern "C" {
 #if defined(GT_USE_LOG) && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_VERBOSE)
     #define GT_LOGV(_tag, _fmt, _arg...)                                                        \
         do {                                                                                    \
-            _GT_PRINT("[GT_VERB] [%s] [%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
+            _GT_PRINT("[GT_VERB][%s][%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
         }while(0)
 #else
     #define GT_LOGV(_tag, _fmt, _arg...)    ((void)0)
@@ -85,7 +85,7 @@ extern "C" {
 #if defined(GT_USE_LOG) && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_DEBUG)
     #define GT_LOGD(_tag, _fmt, _arg...)                                                        \
         do {                                                                                    \
-            _GT_PRINT("[GT_DEBG] [%s] [%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
+            _GT_PRINT("[GT_DEBG][%s][%s:%s():%d] " _fmt "\n", _tag, "", __func__, __LINE__, ##_arg); \
         }while(0)
 #else
     #define GT_LOGD(_tag, _fmt, _arg...)    ((void)0)
@@ -95,7 +95,7 @@ extern "C" {
 #if defined(GT_USE_LOG) && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_INFO)
     #define GT_LOGI(_tag, _fmt, _arg...)                                                        \
         do {                                                                                    \
-            _GT_PRINT("[GT_INFO] [%s] [%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
+            _GT_PRINT("[GT_INFO][%s][%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
         }while(0)
 #else
     #define GT_LOGI(_tag, _fmt, _arg...)    ((void)0)
@@ -105,7 +105,7 @@ extern "C" {
 #if defined(GT_USE_LOG) && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_WARNING)
     #define GT_LOGW(_tag, _fmt, _arg...)                                                        \
         do {                                                                                    \
-            _GT_PRINT("[GT_WARN] [%s] [%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
+            _GT_PRINT("[GT_WARN][%s][%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
         }while(0)
 #else
     #define GT_LOGW(_tag, _fmt, _arg...)    ((void)0)
@@ -115,10 +115,20 @@ extern "C" {
 #if defined(GT_USE_LOG) && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_ERROR)
     #define GT_LOGE(_tag, _fmt, _arg...)                                                        \
         do {                                                                                    \
-            _GT_PRINT("[GT_ERRO] [%s] [%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
+            _GT_PRINT("[GT_ERRO][%s][%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
         }while(0)
 #else
     #define GT_LOGE(_tag, _fmt, _arg...)    ((void)0)
+#endif
+
+// no format, log output all time
+#if defined(GT_USE_LOG)
+    #define GT_LOG_A(_tag, _fmt, _arg...)                           \
+        do {                                                        \
+            _GT_PRINT("[GT_ALL][%s] " _fmt "\n", _tag, ##_arg);    \
+        }while(0)
+#else
+    #define GT_LOG_A(_tag, _fmt, _arg...)    ((void)0)
 #endif
 
 //崩溃捕获, 生成断定
