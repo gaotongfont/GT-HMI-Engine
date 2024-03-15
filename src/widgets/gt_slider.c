@@ -45,6 +45,8 @@ typedef struct _gt_slider_s {
     uint16_t tag_size;
     gt_bar_dir_et dir;
 
+    uint8_t mode;
+
     bool tag_visible;
 }_gt_slider_st;
 
@@ -175,7 +177,16 @@ static void _gt_slider_set_offset(gt_obj_st * slider , gt_size_t offset)
         style->offset = offset;
     }
 
-    style->pos = style->offset * (style->end - style->start) / max_offset + style->start;
+    gt_size_t tmp_pos = style->offset * (style->end - style->start) / max_offset + style->start;
+    if(GT_SLIDER_MODE_STEP == style->mode){
+        tmp_pos = tmp_pos / style->step * style->step;
+        _gt_slider_set_offset_by_pos(slider , tmp_pos);
+        return ;
+    }
+
+    style->pos = tmp_pos;
+
+    // style->pos = style->offset * (style->end - style->start) / max_offset + style->start;
 }
 
 static void _scroll_dir_ver(gt_obj_st * obj, bool is_up) {
@@ -409,11 +420,11 @@ gt_obj_st * gt_slider_create(gt_obj_st * parent)
     style->step = 1;
     style->start = 0;
     style->end = 100;
-    style->pos = 50;
+    style->pos = 0;
     style->dir = GT_BAR_DIR_HOR_L2R;
     style->tag_visible = true;
     style->offset = 0;
-
+    style->mode = GT_SLIDER_MODE_DEFAULT;
     return obj;
 }
 
@@ -433,27 +444,13 @@ void gt_slider_set_pos(gt_obj_st * slider, gt_size_t pos)
         return;
     }
     _gt_slider_st * style = (_gt_slider_st * )slider;
-    uint16_t max = 0;
-
-    if( (style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L) ){
-        max = slider->area.w - (_gt_slider_get_tag_size(slider));
-    }
-    else if( (style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U) ){
-        max = slider->area.h - (_gt_slider_get_tag_size(slider));
-    }
 
     // limit end and start
     if (style->end < style->start) {
         style->end = style->start;
     }
 
-    style->pos = pos;
-    if (style->pos < style->start) {
-        style->pos = style->start;
-    } else if (style->pos > style->end) {
-        style->pos = style->end;
-    }
-    style->offset = (style->pos - style->start) * max / (style->end - style->start);
+    _gt_slider_set_offset_by_pos(slider , pos);
 
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -662,6 +659,19 @@ void gt_slider_set_size(gt_obj_st * slider , uint16_t size)
     }
     _gt_slider_st * style = (_gt_slider_st * )slider;
     style->size = size;
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_slider_set_mode(gt_obj_st * slider , gt_slider_mode_e mode)
+{
+    if (NULL == slider) {
+        return;
+    }
+    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+        return;
+    }
+    _gt_slider_st * style = (_gt_slider_st * )slider;
+    style->mode = mode;
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 /* end ------------------------------------------------------------------*/

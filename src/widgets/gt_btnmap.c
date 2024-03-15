@@ -344,11 +344,15 @@ static void _gt_get_line_list(const gt_map_st* map , uint16_t* w_list , uint16_t
 
 static gt_area_st _gt_get_btn_area_idx(gt_obj_st* btnmap , uint16_t idx , uint16_t line , uint16_t col , uint16_t sum_w)
 {
+    gt_area_st btn_area = {0};
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
+    if(!style->_line_w_list || !style->_line_numb_list){
+        return btn_area;
+    }
+
     uint16_t line_numb = style->_line_numb_list[line];
     uint16_t line_w = style->_line_w_list[line];
 
-    gt_area_st btn_area;
     gt_area_copy(&btn_area , &btnmap->area);
 
     btn_area.y += style->btn_height * line + style->btn_y_space * (line+1);

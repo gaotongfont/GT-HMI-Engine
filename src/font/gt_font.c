@@ -1285,7 +1285,7 @@ gt_py_input_method_st* gt_py_input_method_create(void)
 
     gt_py_input_method_st* py_input_method = (gt_py_input_method_st*) gt_mem_malloc(sizeof(gt_py_input_method_st));
     if(!py_input_method){
-        GT_LOGE(GT_LOG_TAG_GUI , "pt input method malloc err!!! size = %d" , sizeof(gt_py_input_method_st));
+        GT_LOGE(GT_LOG_TAG_GUI , "py input method malloc err!!! size = %d" , sizeof(gt_py_input_method_st));
         goto input_met_ret;
     }
     gt_memset(py_input_method , 0 , sizeof(gt_py_input_method_st));

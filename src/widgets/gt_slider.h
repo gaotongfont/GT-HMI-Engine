@@ -22,7 +22,10 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-
+typedef enum {
+    GT_SLIDER_MODE_DEFAULT = 0,
+    GT_SLIDER_MODE_STEP,
+}gt_slider_mode_e;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -123,6 +126,8 @@ void gt_slider_set_tag_visible(gt_obj_st * slider, bool visible);
 void gt_slider_set_tag_size(gt_obj_st * slider , uint16_t size);
 
 void gt_slider_set_size(gt_obj_st * slider , uint16_t size);
+
+void gt_slider_set_mode(gt_obj_st * slider , gt_slider_mode_e mode);
 
 
 #ifdef __cplusplus
