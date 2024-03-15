@@ -271,10 +271,19 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             break;
     }
 }
-
-static void _gt_barcode_init_style(gt_obj_st * barcode)
-{
-    _gt_barcode_st * widget = (_gt_barcode_st * )barcode;
+/* global functions / API interface -------------------------------------*/
+/**
+ * @brief create a barcode obj
+ *
+ * @param parent barcode's parent element
+ * @return gt_obj_st* barcode obj
+ */
+gt_obj_st * gt_barcode_create(gt_obj_st * parent) {
+    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    if (NULL == obj) {
+        return obj;
+    }
+    _gt_barcode_st * widget = (_gt_barcode_st * )obj;
     barcode_st * style = (barcode_st * )&widget->info;
 
     char *text = "1234567890128";
@@ -287,17 +296,7 @@ static void _gt_barcode_init_style(gt_obj_st * barcode)
     style->mode_h = 64;
     style->upc_e_sys = 0;
     style->pdat_size = 0;
-}
-/* global functions / API interface -------------------------------------*/
-/**
- * @brief create a barcode obj
- *
- * @param parent barcode's parent element
- * @return gt_obj_st* barcode obj
- */
-gt_obj_st * gt_barcode_create(gt_obj_st * parent) {
-    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_barcode_init_style(obj);
+
     return obj;
 }
 
@@ -317,30 +316,60 @@ void gt_barcode_set_code_text(gt_obj_st * barcode , char* code)
 
 void gt_barcode_set_type(gt_obj_st * barcode , gt_family_t family)
 {
+    if (NULL == barcode) {
+        return;
+    }
+    if (false == gt_obj_is_type(barcode, GT_TYPE_BARCODE)) {
+        return;
+    }
     _gt_barcode_st * style = (_gt_barcode_st * )barcode;
     style->info.type = family;
 }
 
 void gt_barcode_set_hri_type(gt_obj_st * barcode , gt_family_t family)
 {
+    if (NULL == barcode) {
+        return;
+    }
+    if (false == gt_obj_is_type(barcode, GT_TYPE_BARCODE)) {
+        return;
+    }
     _gt_barcode_st * style = (_gt_barcode_st * )barcode;
     style->info.hri_type = family;
 }
 
 void gt_barcode_set_mode_w(gt_obj_st * barcode , uint8_t value)
 {
+    if (NULL == barcode) {
+        return;
+    }
+    if (false == gt_obj_is_type(barcode, GT_TYPE_BARCODE)) {
+        return;
+    }
     _gt_barcode_st * style = (_gt_barcode_st * )barcode;
     style->info.mode_w = value;
 }
 
 void gt_barcode_set_mode_h(gt_obj_st * barcode , uint8_t value)
 {
+    if (NULL == barcode) {
+        return;
+    }
+    if (false == gt_obj_is_type(barcode, GT_TYPE_BARCODE)) {
+        return;
+    }
     _gt_barcode_st * style = (_gt_barcode_st * )barcode;
     style->info.mode_h = value;
 }
 
 void gt_barcode_set_upc_e_sys_code(gt_obj_st * barcode , uint8_t value)
 {
+    if (NULL == barcode) {
+        return;
+    }
+    if (false == gt_obj_is_type(barcode, GT_TYPE_BARCODE)) {
+        return;
+    }
     _gt_barcode_st * style = (_gt_barcode_st * )barcode;
     style->info.upc_e_sys = value;
 }
