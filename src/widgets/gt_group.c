@@ -99,6 +99,9 @@ gt_obj_st * gt_group_create(gt_obj_st * parent)
         return NULL;
     }
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    if (NULL == obj) {
+        return obj;
+    }
     _gt_group_st * style = (_gt_group_st * )obj;
 
     gt_obj_set_virtual(obj, true);
@@ -110,10 +113,7 @@ gt_obj_st * gt_group_create(gt_obj_st * parent)
 
 gt_obj_st * gt_group_get_active_obj(gt_obj_st * group, gt_obj_type_et type)
 {
-    if (NULL == group) {
-        return NULL;
-    }
-    if (GT_TYPE_GROUP != gt_obj_class_get_type(group)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(group)) {
         return NULL;
     }
     for (uint16_t i = 0, cnt = group->cnt_child; i < cnt; i++) {
@@ -129,10 +129,7 @@ gt_obj_st * gt_group_get_active_obj(gt_obj_st * group, gt_obj_type_et type)
 
 bool gt_group_reset_selected_state(gt_obj_st * group, gt_obj_type_et type)
 {
-    if (NULL == group) {
-        return false;
-    }
-    if (GT_TYPE_GROUP != gt_obj_class_get_type(group)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(group)) {
         return false;
     }
     gt_obj_st * first_obj = NULL;

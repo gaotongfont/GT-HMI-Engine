@@ -213,6 +213,9 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 gt_obj_st * gt_progress_bar_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    if (NULL == obj) {
+        return obj;
+    }
 
     _gt_progress_bar_st * style = (_gt_progress_bar_st * )obj;
 
@@ -235,10 +238,7 @@ gt_obj_st * gt_progress_bar_create(gt_obj_st * parent)
  */
 void gt_progress_bar_set_pos(gt_obj_st * progress_bar, gt_size_t pos)
 {
-    if (NULL == progress_bar) {
-        return;
-    }
-    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(progress_bar)) {
         return;
     }
     _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
@@ -254,10 +254,7 @@ void gt_progress_bar_set_pos(gt_obj_st * progress_bar, gt_size_t pos)
 
 void gt_progress_bar_set_start_end(gt_obj_st * progress_bar, gt_size_t start, gt_size_t end)
 {
-    if (NULL == progress_bar) {
-        return;
-    }
-    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(progress_bar)) {
         return;
     }
     _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
@@ -267,10 +264,7 @@ void gt_progress_bar_set_start_end(gt_obj_st * progress_bar, gt_size_t start, gt
 
 gt_size_t gt_progress_bar_get_pos(gt_obj_st * progress_bar)
 {
-    if (NULL == progress_bar) {
-        return 0;
-    }
-    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(progress_bar)) {
         return 0;
     }
     _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
@@ -279,10 +273,7 @@ gt_size_t gt_progress_bar_get_pos(gt_obj_st * progress_bar)
 
 gt_size_t gt_progress_bar_get_start(gt_obj_st * progress_bar)
 {
-    if (NULL == progress_bar) {
-        return 0;
-    }
-    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(progress_bar)) {
         return 0;
     }
     _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
@@ -291,10 +282,7 @@ gt_size_t gt_progress_bar_get_start(gt_obj_st * progress_bar)
 
 gt_size_t gt_progress_bar_get_end(gt_obj_st * progress_bar)
 {
-    if (NULL == progress_bar) {
-        return 0;
-    }
-    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(progress_bar)) {
         return 0;
     }
     _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
@@ -303,10 +291,7 @@ gt_size_t gt_progress_bar_get_end(gt_obj_st * progress_bar)
 
 gt_size_t gt_progress_bar_get_total(gt_obj_st * progress_bar)
 {
-    if (NULL == progress_bar) {
-        return 0;
-    }
-    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(progress_bar)) {
         return 0;
     }
     _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
@@ -315,10 +300,7 @@ gt_size_t gt_progress_bar_get_total(gt_obj_st * progress_bar)
 
 void gt_progress_bar_set_color_act(gt_obj_st * progress_bar, gt_color_t color)
 {
-    if (NULL == progress_bar) {
-        return;
-    }
-    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(progress_bar)) {
         return;
     }
     _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
@@ -328,10 +310,7 @@ void gt_progress_bar_set_color_act(gt_obj_st * progress_bar, gt_color_t color)
 
 void gt_progress_bar_set_color_ina(gt_obj_st * progress_bar, gt_color_t color)
 {
-    if (NULL == progress_bar) {
-        return;
-    }
-    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(progress_bar)) {
         return;
     }
     _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
@@ -341,10 +320,7 @@ void gt_progress_bar_set_color_ina(gt_obj_st * progress_bar, gt_color_t color)
 
 void gt_progress_bar_set_dir(gt_obj_st * progress_bar, gt_bar_dir_et dir)
 {
-    if (NULL == progress_bar) {
-        return;
-    }
-    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(progress_bar)) {
         return;
     }
     _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
@@ -354,10 +330,7 @@ void gt_progress_bar_set_dir(gt_obj_st * progress_bar, gt_bar_dir_et dir)
 
 gt_bar_dir_et gt_progress_bar_get_dir(gt_obj_st * progress_bar)
 {
-    if (NULL == progress_bar) {
-        return 0;
-    }
-    if (GT_TYPE_PROCESS_BAR != gt_obj_class_get_type(progress_bar)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(progress_bar)) {
         return 0;
     }
     _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;

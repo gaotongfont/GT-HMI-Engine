@@ -198,14 +198,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 }
 
 
-static void _gt_imgbtn_init_style(gt_obj_st * imgbtn)
-{
-    _gt_imgbtn_st * style = (_gt_imgbtn_st * )imgbtn;
-
-	style->selected = 0;
-    style->src = NULL;
-}
-
 static bool _imgs_free_cb(void * item) {
     gt_mem_free(item);
     return true;
@@ -229,13 +221,22 @@ static void imgs_init(_gt_imgbtn_st * style) {
 gt_obj_st * gt_imgbtn_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_imgbtn_init_style(obj);
+    if (NULL == obj) {
+        return obj;
+    }
+    _gt_imgbtn_st * style = (_gt_imgbtn_st * )obj;
+	style->selected = 0;
+    style->src = NULL;
+
     return obj;
 }
 
 
 void gt_imgbtn_style_set_selected(gt_obj_st * imgbtn, uint8_t selected)
 {
+    if (false == gt_obj_is_type(imgbtn, OBJ_TYPE)) {
+        return ;
+    }
     _gt_imgbtn_st * style = (_gt_imgbtn_st * )imgbtn;
     style->selected = selected ? 1 : 0;
     gt_event_send(imgbtn, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -243,6 +244,9 @@ void gt_imgbtn_style_set_selected(gt_obj_st * imgbtn, uint8_t selected)
 
 void gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src)
 {
+    if (false == gt_obj_is_type(imgbtn, OBJ_TYPE)) {
+        return ;
+    }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
     if( NULL != style->src_base ){
         gt_mem_free(style->src_base);
@@ -258,6 +262,9 @@ void gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src)
 
 void gt_imgbtn_set_src_press(gt_obj_st * imgbtn, char * src)
 {
+    if (false == gt_obj_is_type(imgbtn, OBJ_TYPE)) {
+        return ;
+    }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
     if( NULL != style->src_press ){
         gt_mem_free(style->src_press);
@@ -273,6 +280,9 @@ void gt_imgbtn_set_src_press(gt_obj_st * imgbtn, char * src)
 
 void gt_imgbtn_set_src_release(gt_obj_st * imgbtn, char * src)
 {
+    if (false == gt_obj_is_type(imgbtn, OBJ_TYPE)) {
+        return ;
+    }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
     if( NULL != style->src_release ){
         gt_mem_free(style->src_release);
@@ -287,13 +297,10 @@ void gt_imgbtn_set_src_release(gt_obj_st * imgbtn, char * src)
 
 bool gt_imgbtn_add_state_item(gt_obj_st * obj, char * src)
 {
-    if (NULL == obj) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return false;
     }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
-    if (NULL == style) {
-        return false;
-    }
     if (NULL == src || !strlen(src)) {
         return false;
     }
@@ -308,13 +315,10 @@ bool gt_imgbtn_add_state_item(gt_obj_st * obj, char * src)
 
 bool gt_imgbtn_remove_state_item(gt_obj_st * obj, char * src)
 {
-    if (NULL == obj) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return false;
     }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
-    if (NULL == style) {
-        return false;
-    }
     if (NULL == src || !strlen(src)) {
         return false;
     }
@@ -323,25 +327,19 @@ bool gt_imgbtn_remove_state_item(gt_obj_st * obj, char * src)
 
 bool gt_imgbtn_clear_all_state_item(gt_obj_st * obj)
 {
-    if (NULL == obj) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return false;
     }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
-    if (NULL == style) {
-        return false;
-    }
     return _gt_vector_clear_all_items(style->imgs);
 }
 
 int16_t bt_imgbtn_get_state_item_index(gt_obj_st * obj)
 {
-    if (NULL == obj) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return -1;
     }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
-    if (NULL == style) {
-        return -1;
-    }
     return _gt_vector_get_index(style->imgs);
 }
 

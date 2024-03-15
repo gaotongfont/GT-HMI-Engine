@@ -401,6 +401,9 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
         return NULL;
     }
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    if (NULL == obj) {
+        return obj;
+    }
     obj->bgcolor = gt_color_hex(0xffffff);
 
     _gt_listview_st * style = (_gt_listview_st * )obj;
@@ -429,7 +432,7 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
 
 void gt_listview_add_item(gt_obj_st * listview, char * text)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     gt_obj_st * obj = _create_item_obj(listview);
@@ -449,7 +452,7 @@ void gt_listview_set_item_height(gt_obj_st * listview, uint16_t height)
 
 void gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * text)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     gt_obj_st * obj = _create_item_obj(listview);
@@ -491,7 +494,7 @@ void gt_listview_set_icon_to_right(gt_obj_st * listview, bool enabled)
 
 void gt_listview_set_highlight_mode(gt_obj_st * listview, bool enabled)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -510,7 +513,7 @@ void gt_listview_set_highlight_mode(gt_obj_st * listview, bool enabled)
 
 void gt_listview_set_multiple(gt_obj_st * listview, bool enabled)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -519,7 +522,7 @@ void gt_listview_set_multiple(gt_obj_st * listview, bool enabled)
 
 void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, gt_size_t idx)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -536,7 +539,7 @@ void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, gt_size_t idx)
 
 gt_size_t gt_listview_get_list_items_cnt(gt_obj_st * listview)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return -1;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -545,7 +548,7 @@ gt_size_t gt_listview_get_list_items_cnt(gt_obj_st * listview)
 
 gt_size_t gt_listview_get_idx_selected(gt_obj_st * listview)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return -1;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -565,7 +568,7 @@ gt_size_t gt_listview_get_idx_selected(gt_obj_st * listview)
 
 char * gt_listview_get_selected_item_text(gt_obj_st * listview)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return NULL;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -587,7 +590,7 @@ char * gt_listview_get_selected_item_text(gt_obj_st * listview)
 
 void gt_listview_set_border_color(gt_obj_st * listview, gt_color_t color)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -596,7 +599,7 @@ void gt_listview_set_border_color(gt_obj_st * listview, gt_color_t color)
 
 void gt_listview_set_border_width(gt_obj_st * listview, uint8_t width)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -605,7 +608,7 @@ void gt_listview_set_border_width(gt_obj_st * listview, uint8_t width)
 
 void gt_listview_set_septal_line(gt_obj_st * listview, bool enabled)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -619,7 +622,7 @@ void gt_listview_set_septal_line(gt_obj_st * listview, bool enabled)
 
 void gt_listview_set_font_size(gt_obj_st * listview, uint8_t size)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -628,7 +631,7 @@ void gt_listview_set_font_size(gt_obj_st * listview, uint8_t size)
 }
 void gt_listview_set_font_gray(gt_obj_st * listview, uint8_t gray)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -637,7 +640,7 @@ void gt_listview_set_font_gray(gt_obj_st * listview, uint8_t gray)
 }
 void gt_listview_set_font_align(gt_obj_st * listview, gt_align_et align)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -646,7 +649,7 @@ void gt_listview_set_font_align(gt_obj_st * listview, gt_align_et align)
 }
 void gt_listview_set_font_color(gt_obj_st * listview, gt_color_t color)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -656,7 +659,7 @@ void gt_listview_set_font_color(gt_obj_st * listview, gt_color_t color)
 
 void gt_listview_set_font_family_en(gt_obj_st * listview, gt_family_t family)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -665,7 +668,7 @@ void gt_listview_set_font_family_en(gt_obj_st * listview, gt_family_t family)
 }
 void gt_listview_set_font_family_fl(gt_obj_st * listview, gt_family_t family)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -674,7 +677,7 @@ void gt_listview_set_font_family_fl(gt_obj_st * listview, gt_family_t family)
 }
 void gt_listview_set_font_family_cn(gt_obj_st * listview, gt_family_t family)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -684,7 +687,7 @@ void gt_listview_set_font_family_cn(gt_obj_st * listview, gt_family_t family)
 
 void gt_listview_set_font_family_numb(gt_obj_st * listview, gt_family_t family)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -694,7 +697,7 @@ void gt_listview_set_font_family_numb(gt_obj_st * listview, gt_family_t family)
 
 void gt_listview_set_font_thick_en(gt_obj_st * listview, uint8_t thick)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -703,7 +706,7 @@ void gt_listview_set_font_thick_en(gt_obj_st * listview, uint8_t thick)
 }
 void gt_listview_set_font_thick_cn(gt_obj_st * listview, uint8_t thick)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -712,7 +715,7 @@ void gt_listview_set_font_thick_cn(gt_obj_st * listview, uint8_t thick)
 }
 void gt_listview_set_space(gt_obj_st * listview, uint8_t space_x, uint8_t space_y)
 {
-    if (!gt_obj_is_type(listview, GT_TYPE_LISTVIEW)) {
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;

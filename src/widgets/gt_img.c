@@ -156,14 +156,16 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
  */
 gt_obj_st * gt_img_create(gt_obj_st * parent) {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-
+    if (NULL == obj) {
+        return obj;
+    }
 
     return obj;
 }
 
 
 void gt_img_set_src(gt_obj_st * img, char * src){
-    if (GT_TYPE_IMG != gt_obj_class_get_type(img)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(img)) {
         return ;
     }
     _gt_img_st * style = (_gt_img_st *)img;
@@ -184,7 +186,7 @@ void gt_img_set_src(gt_obj_st * img, char * src){
 }
 
 char * gt_img_get_src(gt_obj_st * img){
-    if (GT_TYPE_IMG != gt_obj_class_get_type(img)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(img)) {
         return NULL;
     }
     _gt_img_st * style = (_gt_img_st *)img;
@@ -193,10 +195,7 @@ char * gt_img_get_src(gt_obj_st * img){
 
 uint16_t gt_img_get_width(gt_obj_st * img)
 {
-    if (NULL == img) {
-        return 0;
-    }
-    if (GT_TYPE_IMG != gt_obj_class_get_type(img)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(img)) {
         return 0;
     }
     _gt_img_st * obj = (_gt_img_st * )img;
@@ -209,10 +208,7 @@ uint16_t gt_img_get_width(gt_obj_st * img)
 
 uint16_t gt_img_get_height(gt_obj_st * img)
 {
-    if (NULL == img) {
-        return 0;
-    }
-    if (GT_TYPE_IMG != gt_obj_class_get_type(img)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(img)) {
         return 0;
     }
     _gt_img_st * obj = (_gt_img_st * )img;

@@ -137,6 +137,9 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 gt_obj_st * gt_template_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    if (NULL == obj) {
+        return obj;
+    }
     _gt_template_st * style = (_gt_template_st * )obj;
 
     return obj;

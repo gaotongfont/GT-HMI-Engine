@@ -24,7 +24,7 @@
 #define MY_CLASS    &gt_textarea_class
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_txt_s{
+typedef struct _gt_txt_s {
     char *      text;
     gt_color_t  color;
     uint16_t    len;
@@ -207,9 +207,14 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-static void _gt_textarea_init_style(gt_obj_st * textarea)
-{
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+/* global functions / API interface -------------------------------------*/
+
+gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
+    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    if (NULL == obj) {
+        return obj;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )obj;
 
     style->font_info.style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
     style->font_info.style_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
@@ -224,18 +229,14 @@ static void _gt_textarea_init_style(gt_obj_st * textarea)
     style->font_info.thick_cn          = 0;
     style->space_x           = 0;
     style->space_y           = 0;
-}
-
-/* global functions / API interface -------------------------------------*/
-
-gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
-    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_textarea_init_style(obj);
     return obj;
 }
 
 void gt_textarea_set_text(gt_obj_st * textarea, char * text)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     uint8_t style_mask = GT_FONT_STYLE_NONE;
     gt_color_t color = gt_color_black();
@@ -261,6 +262,9 @@ void gt_textarea_set_text(gt_obj_st * textarea, char * text)
 
 char * gt_textarea_get_text(gt_obj_st * textarea,uint16_t idx)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return NULL;
+    }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     return style->contents[idx].text;
 }
@@ -268,6 +272,9 @@ char * gt_textarea_get_text(gt_obj_st * textarea,uint16_t idx)
 
 void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et style_mask, gt_color_t color)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     if( style->cnt_contents == 0 ){
         style->contents  = gt_mem_malloc( sizeof(_gt_txt_st) );
@@ -290,6 +297,9 @@ void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et styl
 
 void gt_textarea_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t space_y)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->space_x = space_x;
     style->space_y = space_y;
@@ -299,22 +309,34 @@ void gt_textarea_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t space_
 
 void gt_textarea_set_font_size(gt_obj_st * textarea, uint8_t size)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.size = size;
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_textarea_set_font_gray(gt_obj_st * textarea, uint8_t gray)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.gray = gray;
 }
 void gt_textarea_set_font_align(gt_obj_st * textarea, gt_align_et align)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_align = align;
 }
 void gt_textarea_set_font_color(gt_obj_st * textarea, gt_color_t color)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     uint16_t idx = 0;
     while( idx < style->cnt_contents ){
@@ -326,6 +348,9 @@ void gt_textarea_set_font_color(gt_obj_st * textarea, gt_color_t color)
 
 void gt_textarea_set_bg_color(gt_obj_st * textarea, gt_color_t color)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->color_background = color;
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -333,6 +358,9 @@ void gt_textarea_set_bg_color(gt_obj_st * textarea, gt_color_t color)
 
 void gt_textarea_set_bg_opa(gt_obj_st * textarea, uint8_t opa)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->bg_opa = opa;
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -340,33 +368,51 @@ void gt_textarea_set_bg_opa(gt_obj_st * textarea, uint8_t opa)
 
 void gt_textarea_set_font_family_cn(gt_obj_st * textarea, gt_family_t family)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.style_cn = family;
 }
 
 void gt_textarea_set_font_family_en(gt_obj_st * textarea, gt_family_t family)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.style_en = family;
 }
 void gt_textarea_set_font_family_fl(gt_obj_st * textarea, gt_family_t family)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.style_fl = family;
 }
 void gt_textarea_set_font_family_numb(gt_obj_st * textarea, gt_family_t family)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.style_numb = family;
 }
 
 void gt_textarea_set_font_thick_en(gt_obj_st * textarea, uint8_t thick)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.thick_en = thick;
 }
 void gt_textarea_set_font_thick_cn(gt_obj_st * textarea, uint8_t thick)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.thick_cn = thick;
 }

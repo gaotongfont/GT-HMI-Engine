@@ -177,17 +177,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-
-static void _gt_switcher_init_style(gt_obj_st * switcher)
-{
-    _gt_switcher_st * style = (_gt_switcher_st * )switcher;
-
-    style->color_ina    = gt_color_hex(0xebeef5);
-    style->color_act    = gt_color_hex(0x13ce66);
-    style->color_point  = gt_color_hex(0xffffff);
-}
-
-
 /* global functions / API interface -------------------------------------*/
 
 /**
@@ -199,7 +188,15 @@ static void _gt_switcher_init_style(gt_obj_st * switcher)
 gt_obj_st * gt_switch_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_switcher_init_style(obj);
+    if (NULL == obj) {
+        return obj;
+    }
+    _gt_switcher_st * style = (_gt_switcher_st * )obj;
+
+    style->color_ina    = gt_color_hex(0xebeef5);
+    style->color_act    = gt_color_hex(0x13ce66);
+    style->color_point  = gt_color_hex(0xffffff);
+
     return obj;
 }
 

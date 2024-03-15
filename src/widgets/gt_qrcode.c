@@ -246,21 +246,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-
-static void _gt_qrcode_init_style(gt_obj_st * qr_code)
-{
-    _gt_qr_code_st * style = (_gt_qr_code_st * )qr_code;
-    // http://www.gaotongfont.cn/
-    style->str = gt_mem_malloc(strlen("https://www.hmi.gaotongfont.cn/")+1);
-    gt_memcpy(style->str, "https://www.hmi.gaotongfont.cn/" , strlen("https://www.hmi.gaotongfont.cn/")+1);
-    style->str_len = strlen(style->str);
-    style->version = GT_FAMILY_QRCODE_VERSION_10;
-    style->ec_level = ECLevel_H;
-    style->mask_patt = MaskPattern4;
-    style->bg_color = gt_color_white();
-    style->fg_color = gt_color_black();
-}
-
 /* global functions / API interface -------------------------------------*/
 
 /**
@@ -272,19 +257,38 @@ static void _gt_qrcode_init_style(gt_obj_st * qr_code)
 gt_obj_st * gt_qrcode_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_qrcode_init_style(obj);
+    if (NULL == obj) {
+        return obj;
+    }
+
+    _gt_qr_code_st * style = (_gt_qr_code_st * )obj;
+    // http://www.gaotongfont.cn/
+    style->str = gt_mem_malloc(strlen("https://www.hmi.gaotongfont.cn/")+1);
+    gt_memcpy(style->str, "https://www.hmi.gaotongfont.cn/" , strlen("https://www.hmi.gaotongfont.cn/")+1);
+    style->str_len = strlen(style->str);
+    style->version = GT_FAMILY_QRCODE_VERSION_10;
+    style->ec_level = ECLevel_H;
+    style->mask_patt = MaskPattern4;
+    style->bg_color = gt_color_white();
+    style->fg_color = gt_color_black();
     return obj;
 }
 
 
 void gt_qrcode_set_version(gt_obj_st * qr_code , gt_qr_code_version_em version)
 {
+    if (false == gt_obj_is_type(qr_code, OBJ_TYPE)) {
+        return ;
+    }
     _gt_qr_code_st * style = (_gt_qr_code_st * )qr_code;
     style->version = version;
 }
 
 void gt_qrcode_set_str(gt_obj_st * qr_code , char* str)
 {
+    if (false == gt_obj_is_type(qr_code, OBJ_TYPE)) {
+        return ;
+    }
     _gt_qr_code_st * style = (_gt_qr_code_st * )qr_code;
     if( NULL != style->str) {
         gt_mem_free(style->str);
@@ -298,12 +302,18 @@ void gt_qrcode_set_str(gt_obj_st * qr_code , char* str)
 
 void gt_qrcode_set_background(gt_obj_st * qr_code , gt_color_t color)
 {
+    if (false == gt_obj_is_type(qr_code, OBJ_TYPE)) {
+        return ;
+    }
     _gt_qr_code_st * style = (_gt_qr_code_st * )qr_code;
     style->bg_color = color;
 }
 
 void gt_qrcode_set_forecolor(gt_obj_st * qr_code , gt_color_t color)
 {
+    if (false == gt_obj_is_type(qr_code, OBJ_TYPE)) {
+        return ;
+    }
     _gt_qr_code_st * style = (_gt_qr_code_st * )qr_code;
     style->fg_color = color;
 }

@@ -403,10 +403,7 @@ gt_obj_st * gt_dialog_create_issue(bool show_close_btn, gt_dialog_param_st const
 
 void gt_dialog_show(gt_obj_st * obj)
 {
-    if (NULL == obj) {
-        return ;
-    }
-    if (false == gt_obj_is_type(obj, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )obj;
@@ -416,10 +413,7 @@ void gt_dialog_show(gt_obj_st * obj)
 
 void gt_dialog_set_border_color(gt_obj_st * dialog, gt_color_t color)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -428,10 +422,7 @@ void gt_dialog_set_border_color(gt_obj_st * dialog, gt_color_t color)
 
 void gt_dialog_set_border_width(gt_obj_st * dialog, uint8_t width)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -440,10 +431,7 @@ void gt_dialog_set_border_width(gt_obj_st * dialog, uint8_t width)
 
 void gt_dialog_set_bgcolor(gt_obj_st * dialog, gt_color_t color)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     dialog->bgcolor = color;
@@ -451,10 +439,7 @@ void gt_dialog_set_bgcolor(gt_obj_st * dialog, gt_color_t color)
 
 void gt_dialog_set_border_radius(gt_obj_st * dialog, uint8_t radius)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -465,10 +450,7 @@ void gt_dialog_set_border_radius(gt_obj_st * dialog, uint8_t radius)
 
 void gt_dialog_set_title_font_color(gt_obj_st * dialog, gt_color_t color)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -480,10 +462,7 @@ void gt_dialog_set_title_font_color(gt_obj_st * dialog, gt_color_t color)
 
 void gt_dialog_set_title_font_size(gt_obj_st * dialog, uint8_t size)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -495,10 +474,7 @@ void gt_dialog_set_title_font_size(gt_obj_st * dialog, uint8_t size)
 
 void gt_dialog_set_title_font_align(gt_obj_st * dialog, gt_align_et align)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -510,10 +486,7 @@ void gt_dialog_set_title_font_align(gt_obj_st * dialog, gt_align_et align)
 
 void gt_dialog_set_title_font_family_cn(gt_obj_st * dialog, gt_family_t family)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -525,10 +498,7 @@ void gt_dialog_set_title_font_family_cn(gt_obj_st * dialog, gt_family_t family)
 
 void gt_dialog_set_title_font_family_en(gt_obj_st * dialog, gt_family_t family)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -540,10 +510,7 @@ void gt_dialog_set_title_font_family_en(gt_obj_st * dialog, gt_family_t family)
 
 void gt_dialog_set_title_font_family_fl(gt_obj_st * dialog, gt_family_t family)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -555,10 +522,7 @@ void gt_dialog_set_title_font_family_fl(gt_obj_st * dialog, gt_family_t family)
 
 void gt_dialog_set_title_font_thick_en(gt_obj_st * dialog, uint8_t thick)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -570,10 +534,7 @@ void gt_dialog_set_title_font_thick_en(gt_obj_st * dialog, uint8_t thick)
 
 void gt_dialog_set_title_font_thick_cn(gt_obj_st * dialog, uint8_t thick)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -585,10 +546,7 @@ void gt_dialog_set_title_font_thick_cn(gt_obj_st * dialog, uint8_t thick)
 
 void gt_dialog_set_content_font_color(gt_obj_st * dialog, gt_color_t color)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -600,10 +558,7 @@ void gt_dialog_set_content_font_color(gt_obj_st * dialog, gt_color_t color)
 
 void gt_dialog_set_content_font_size(gt_obj_st * dialog, uint8_t size)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -615,10 +570,7 @@ void gt_dialog_set_content_font_size(gt_obj_st * dialog, uint8_t size)
 
 void gt_dialog_set_content_font_align(gt_obj_st * dialog, gt_align_et align)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -630,10 +582,7 @@ void gt_dialog_set_content_font_align(gt_obj_st * dialog, gt_align_et align)
 
 void gt_dialog_set_content_font_family_cn(gt_obj_st * dialog, gt_family_t family)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -645,10 +594,7 @@ void gt_dialog_set_content_font_family_cn(gt_obj_st * dialog, gt_family_t family
 
 void gt_dialog_set_content_font_family_en(gt_obj_st * dialog, gt_family_t family)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -660,10 +606,7 @@ void gt_dialog_set_content_font_family_en(gt_obj_st * dialog, gt_family_t family
 
 void gt_dialog_set_content_font_family_fl(gt_obj_st * dialog, gt_family_t family)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -675,10 +618,7 @@ void gt_dialog_set_content_font_family_fl(gt_obj_st * dialog, gt_family_t family
 
 void gt_dialog_set_content_font_thick_en(gt_obj_st * dialog, uint8_t thick)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
@@ -690,10 +630,7 @@ void gt_dialog_set_content_font_thick_en(gt_obj_st * dialog, uint8_t thick)
 
 void gt_dialog_set_content_font_thick_cn(gt_obj_st * dialog, uint8_t thick)
 {
-    if (NULL == dialog) {
-        return ;
-    }
-    if (false == gt_obj_is_type(dialog, GT_TYPE_DIALOG)) {
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;

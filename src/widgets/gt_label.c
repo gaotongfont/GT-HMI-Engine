@@ -148,7 +148,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 gt_obj_st * gt_label_create(gt_obj_st * parent) {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
     if (NULL == obj) {
-        return NULL;
+        return obj;
     }
     _gt_label_st * style = (_gt_label_st * )obj;
 
@@ -178,10 +178,7 @@ void gt_label_set_text(gt_obj_st * label, const char * fmt, ...)
     va_list args;
     va_list args2;
 
-    if (NULL == label) {
-        return;
-    }
-    if (false == gt_obj_is_type(label, GT_TYPE_LAB)) {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
         return;
     }
 
@@ -217,7 +214,7 @@ free_lb:
 
 char * gt_label_get_text(gt_obj_st * label)
 {
-    if (!label) {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
         return NULL;
     }
     return ((_gt_label_st * )label)->text;
@@ -225,6 +222,9 @@ char * gt_label_get_text(gt_obj_st * label)
 
 void gt_label_set_font_color(gt_obj_st * label, gt_color_t color)
 {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_color = color;
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -232,59 +232,89 @@ void gt_label_set_font_color(gt_obj_st * label, gt_color_t color)
 
 void gt_label_set_font_size(gt_obj_st * label, uint8_t size)
 {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.size = size;
 }
 
 void gt_label_set_font_gray(gt_obj_st * label, uint8_t gray)
 {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.gray = gray;
 }
 
 void gt_label_set_font_align(gt_obj_st * label, gt_align_et align)
 {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_align = align;
 }
 
 void gt_label_set_font_family_cn(gt_obj_st * label, gt_family_t family)
 {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.style_cn = family;
 }
 void gt_label_set_font_family_en(gt_obj_st * label, gt_family_t family)
 {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.style_en = family;
 }
 
 void gt_label_set_font_family_fl(gt_obj_st * label, gt_family_t family)
 {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.style_fl = family;
 }
 
 void gt_label_set_font_thick_en(gt_obj_st * label, uint8_t thick)
 {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.thick_en = thick;
 }
 
 void gt_label_set_font_thick_cn(gt_obj_st * label, uint8_t thick)
 {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.thick_cn = thick;
 }
 
 void gt_label_set_font_family_numb(gt_obj_st * label, gt_family_t family)
 {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.style_numb = family;
 }
 
 void gt_label_set_space(gt_obj_st * label, uint8_t space_x, uint8_t space_y)
 {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
     _gt_label_st * style = (_gt_label_st * )label;
     style->space_x = space_x;
     style->space_y = space_y;
@@ -292,28 +322,34 @@ void gt_label_set_space(gt_obj_st * label, uint8_t space_x, uint8_t space_y)
 
 uint8_t gt_label_get_font_size(gt_obj_st * label)
 {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return 0;
+    }
     _gt_label_st * style = (_gt_label_st * )label;
     return style->font_info.size;
 }
 
 uint8_t gt_label_get_space_x(gt_obj_st * label)
 {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return 0;
+    }
     _gt_label_st * style = (_gt_label_st * )label;
     return style->space_x;
 }
 
 uint8_t gt_label_get_space_y(gt_obj_st * label)
 {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return 0;
+    }
     _gt_label_st * style = (_gt_label_st * )label;
     return style->space_y;
 }
 
 uint16_t gt_label_get_longest_line_substring_width(gt_obj_st * label)
 {
-    if (NULL == label) {
-        return 0;
-    }
-    if (GT_TYPE_LAB != gt_obj_class_get_type(label)) {
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
         return 0;
     }
     _gt_label_st * style = (_gt_label_st * )label;

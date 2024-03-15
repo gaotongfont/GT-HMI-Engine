@@ -24,11 +24,6 @@
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_option_s {
     gt_obj_st obj;
-    char ** option;
-    gt_color_t color_selected;
-    gt_color_t color_unselected;
-    gt_color_t color_back;
-    uint8_t cnt;
     uint8_t idx;
 }_gt_option_st;
 
@@ -132,6 +127,9 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 gt_obj_st * gt_option_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    if (NULL == obj) {
+        return obj;
+    }
 
     return obj;
 }

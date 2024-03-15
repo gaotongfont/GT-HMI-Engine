@@ -279,10 +279,7 @@ void gt_checkbox_set_text(gt_obj_st * checkbox, const char * fmt, ...)
     va_list args;
     va_list args2;
 
-    if (NULL == checkbox) {
-        return;
-    }
-    if (false == gt_obj_is_type(checkbox, GT_TYPE_CHECKBOX)) {
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
         return;
     }
 
@@ -317,10 +314,7 @@ free_lb:
 }
 char * gt_checkbox_get_text(gt_obj_st * checkbox)
 {
-    if (NULL == checkbox) {
-        return NULL;
-    }
-    if (false == gt_obj_is_type(checkbox, GT_TYPE_CHECKBOX)) {
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
         return NULL;
     }
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
@@ -329,10 +323,7 @@ char * gt_checkbox_get_text(gt_obj_st * checkbox)
 
 void gt_checkbox_set_font_family_cn(gt_obj_st * checkbox, gt_family_t family)
 {
-    if (NULL == checkbox) {
-        return;
-    }
-    if (false == gt_obj_is_type(checkbox, GT_TYPE_CHECKBOX)) {
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
         return;
     }
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
@@ -341,10 +332,7 @@ void gt_checkbox_set_font_family_cn(gt_obj_st * checkbox, gt_family_t family)
 
 void gt_checkbox_set_font_family_en(gt_obj_st * checkbox, gt_family_t family)
 {
-    if (NULL == checkbox) {
-        return;
-    }
-    if (false == gt_obj_is_type(checkbox, GT_TYPE_CHECKBOX)) {
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
         return;
     }
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
@@ -353,10 +341,7 @@ void gt_checkbox_set_font_family_en(gt_obj_st * checkbox, gt_family_t family)
 
 void gt_checkbox_set_font_family_fl(gt_obj_st * checkbox, gt_family_t family)
 {
-    if (NULL == checkbox) {
-        return;
-    }
-    if (false == gt_obj_is_type(checkbox, GT_TYPE_CHECKBOX)) {
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
         return;
     }
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
@@ -365,10 +350,7 @@ void gt_checkbox_set_font_family_fl(gt_obj_st * checkbox, gt_family_t family)
 
 void gt_checkbox_set_font_family_numb(gt_obj_st * checkbox, gt_family_t family)
 {
-    if (NULL == checkbox) {
-        return;
-    }
-    if (false == gt_obj_is_type(checkbox, GT_TYPE_CHECKBOX)) {
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
         return;
     }
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
@@ -389,10 +371,7 @@ void gt_checkbox_set_font_gray(gt_obj_st * checkbox, uint8_t gray)
 
 void gt_checkbox_set_font_color(gt_obj_st * checkbox, gt_color_t color)
 {
-    if (NULL == checkbox) {
-        return;
-    }
-    if (false == gt_obj_is_type(checkbox, GT_TYPE_CHECKBOX)) {
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
         return;
     }
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
@@ -401,10 +380,7 @@ void gt_checkbox_set_font_color(gt_obj_st * checkbox, gt_color_t color)
 }
 void gt_checkbox_set_font_thick_en(gt_obj_st * checkbox, uint8_t thick)
 {
-    if (NULL == checkbox) {
-        return;
-    }
-    if (false == gt_obj_is_type(checkbox, GT_TYPE_CHECKBOX)) {
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
         return;
     }
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
@@ -412,10 +388,7 @@ void gt_checkbox_set_font_thick_en(gt_obj_st * checkbox, uint8_t thick)
 }
 void gt_checkbox_set_font_thick_cn(gt_obj_st * checkbox, uint8_t thick)
 {
-    if (NULL == checkbox) {
-        return;
-    }
-    if (false == gt_obj_is_type(checkbox, GT_TYPE_CHECKBOX)) {
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
         return;
     }
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
@@ -423,10 +396,7 @@ void gt_checkbox_set_font_thick_cn(gt_obj_st * checkbox, uint8_t thick)
 }
 void gt_checkbox_set_space(gt_obj_st * checkbox, uint8_t space_x, uint8_t space_y)
 {
-    if (NULL == checkbox) {
-        return;
-    }
-    if (false == gt_obj_is_type(checkbox, GT_TYPE_CHECKBOX)) {
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
         return;
     }
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
@@ -436,10 +406,7 @@ void gt_checkbox_set_space(gt_obj_st * checkbox, uint8_t space_x, uint8_t space_
 
 void gt_checkbox_set_font_point_offset_x(gt_obj_st * checkbox, gt_size_t x)
 {
-    if (NULL == checkbox) {
-        return;
-    }
-    if (false == gt_obj_is_type(checkbox, GT_TYPE_CHECKBOX)) {
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
         return;
     }
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
@@ -448,10 +415,7 @@ void gt_checkbox_set_font_point_offset_x(gt_obj_st * checkbox, gt_size_t x)
 
 void gt_checkbox_set_font_point_offset_y(gt_obj_st * checkbox, gt_size_t y)
 {
-    if (NULL == checkbox) {
-        return;
-    }
-    if (false == gt_obj_is_type(checkbox, GT_TYPE_CHECKBOX)) {
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
         return;
     }
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
@@ -460,10 +424,7 @@ void gt_checkbox_set_font_point_offset_y(gt_obj_st * checkbox, gt_size_t y)
 
 void gt_checkbox_set_font_point_offset(gt_obj_st * checkbox , gt_size_t x, gt_size_t y)
 {
-    if (NULL == checkbox) {
-        return;
-    }
-    if (false == gt_obj_is_type(checkbox, GT_TYPE_CHECKBOX)) {
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
         return;
     }
     gt_checkbox_set_font_point_offset_x( checkbox , x);

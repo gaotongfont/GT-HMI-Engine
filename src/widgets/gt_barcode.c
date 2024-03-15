@@ -302,6 +302,9 @@ gt_obj_st * gt_barcode_create(gt_obj_st * parent) {
 
 void gt_barcode_set_code_text(gt_obj_st * barcode , char* code)
 {
+    if (false == gt_obj_is_type(barcode, OBJ_TYPE)) {
+        return;
+    }
     _gt_barcode_st * obj = (_gt_barcode_st * )barcode;
     barcode_st * style = (barcode_st * )&obj->info;
     if( NULL != style->barcode) {
@@ -316,10 +319,7 @@ void gt_barcode_set_code_text(gt_obj_st * barcode , char* code)
 
 void gt_barcode_set_type(gt_obj_st * barcode , gt_family_t family)
 {
-    if (NULL == barcode) {
-        return;
-    }
-    if (false == gt_obj_is_type(barcode, GT_TYPE_BARCODE)) {
+    if (false == gt_obj_is_type(barcode, OBJ_TYPE)) {
         return;
     }
     _gt_barcode_st * style = (_gt_barcode_st * )barcode;
@@ -328,10 +328,7 @@ void gt_barcode_set_type(gt_obj_st * barcode , gt_family_t family)
 
 void gt_barcode_set_hri_type(gt_obj_st * barcode , gt_family_t family)
 {
-    if (NULL == barcode) {
-        return;
-    }
-    if (false == gt_obj_is_type(barcode, GT_TYPE_BARCODE)) {
+    if (false == gt_obj_is_type(barcode, OBJ_TYPE)) {
         return;
     }
     _gt_barcode_st * style = (_gt_barcode_st * )barcode;
@@ -340,10 +337,7 @@ void gt_barcode_set_hri_type(gt_obj_st * barcode , gt_family_t family)
 
 void gt_barcode_set_mode_w(gt_obj_st * barcode , uint8_t value)
 {
-    if (NULL == barcode) {
-        return;
-    }
-    if (false == gt_obj_is_type(barcode, GT_TYPE_BARCODE)) {
+    if (false == gt_obj_is_type(barcode, OBJ_TYPE)) {
         return;
     }
     _gt_barcode_st * style = (_gt_barcode_st * )barcode;
@@ -352,10 +346,7 @@ void gt_barcode_set_mode_w(gt_obj_st * barcode , uint8_t value)
 
 void gt_barcode_set_mode_h(gt_obj_st * barcode , uint8_t value)
 {
-    if (NULL == barcode) {
-        return;
-    }
-    if (false == gt_obj_is_type(barcode, GT_TYPE_BARCODE)) {
+    if (false == gt_obj_is_type(barcode, OBJ_TYPE)) {
         return;
     }
     _gt_barcode_st * style = (_gt_barcode_st * )barcode;
@@ -364,10 +355,7 @@ void gt_barcode_set_mode_h(gt_obj_st * barcode , uint8_t value)
 
 void gt_barcode_set_upc_e_sys_code(gt_obj_st * barcode , uint8_t value)
 {
-    if (NULL == barcode) {
-        return;
-    }
-    if (false == gt_obj_is_type(barcode, GT_TYPE_BARCODE)) {
+    if (false == gt_obj_is_type(barcode, OBJ_TYPE)) {
         return;
     }
     _gt_barcode_st * style = (_gt_barcode_st * )barcode;

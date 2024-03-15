@@ -209,6 +209,9 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 gt_obj_st * gt_radio_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    if (NULL == obj) {
+        return obj;
+    }
     _gt_radio_st * style = (_gt_radio_st * )obj;
 
     style->text = gt_mem_malloc(sizeof("radio"));
@@ -228,25 +231,34 @@ gt_obj_st * gt_radio_create(gt_obj_st * parent)
     return obj;
 }
 
-void gt_radio_set_selected(gt_obj_st * radio){
-    int idx = 0;
-    gt_obj_st * obj = radio;
-    if (GT_TYPE_GROUP == gt_obj_class_get_type(obj->parent)) {
-        while(  idx < obj->parent->cnt_child ){
-            if( GT_TYPE_RADIO == gt_obj_class_get_type(obj->parent->child[idx]) &&
-                GT_STATE_NONE != gt_obj_get_state(obj->parent->child[idx])) {
-                gt_obj_set_state(obj->parent->child[idx], GT_STATE_NONE);
-                gt_event_send(obj->parent->child[idx], GT_EVENT_TYPE_DRAW_START, NULL);
+void gt_radio_set_selected(gt_obj_st * radio)
+{
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
+    gt_size_t idx = 0;
+    gt_obj_st * parent = radio->parent;
+    gt_obj_st * child = NULL;
+    if (GT_TYPE_GROUP == gt_obj_class_get_type(parent)) {
+        while(  idx < parent->cnt_child ){
+            child = parent->child[idx];
+            if( OBJ_TYPE == gt_obj_class_get_type(child) &&
+                GT_STATE_NONE != gt_obj_get_state(child)) {
+                gt_obj_set_state(child, GT_STATE_NONE);
+                gt_event_send(child, GT_EVENT_TYPE_DRAW_START, NULL);
             }
             idx++;
         }
     }
-    gt_obj_set_state(obj, GT_STATE_PRESSED);
+    gt_obj_set_state(radio, GT_STATE_PRESSED);
     gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_radio_set_text(gt_obj_st * radio, const char * fmt, ...)
 {
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
     char buffer[8] = {0};
     va_list args;
     va_list args2;
@@ -283,6 +295,9 @@ free_lb:
 
 void gt_radio_set_font_color(gt_obj_st * radio, gt_color_t color)
 {
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_color = color;
     gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -290,49 +305,76 @@ void gt_radio_set_font_color(gt_obj_st * radio, gt_color_t color)
 
 void gt_radio_set_font_size(gt_obj_st * radio, uint8_t size)
 {
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_info.size = size;
 }
 void gt_radio_set_font_gray(gt_obj_st * radio, uint8_t gray)
 {
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_info.gray = gray;
 }
 
 void gt_radio_set_font_family_cn(gt_obj_st * radio, gt_family_t family)
 {
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_info.style_cn = family;
 }
 
 void gt_radio_set_font_family_en(gt_obj_st * radio, gt_family_t family)
 {
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_info.style_en = family;
 }
 void gt_radio_set_font_family_fl(gt_obj_st * radio, gt_family_t family)
 {
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_info.style_fl = family;
 }
 void gt_radio_set_font_family_numb(gt_obj_st * radio, gt_family_t family)
 {
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_info.style_numb = family;
 }
 
 void gt_radio_set_font_thick_en(gt_obj_st * radio, uint8_t thick)
 {
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_info.thick_en = thick;
 }
 void gt_radio_set_font_thick_cn(gt_obj_st * radio, uint8_t thick)
 {
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_info.thick_cn = thick;
 }
 void gt_radio_set_space(gt_obj_st * radio, uint8_t space_x, uint8_t space_y)
 {
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->space_x = space_x;
     style->space_y = space_y;
@@ -340,18 +382,27 @@ void gt_radio_set_space(gt_obj_st * radio, uint8_t space_x, uint8_t space_y)
 
 void gt_radio_set_font_point_offset_x(gt_obj_st * radio , gt_size_t x)
 {
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_point_offset.x = x;
 }
 
 void gt_radio_set_font_point_offset_y(gt_obj_st * radio , gt_size_t y)
 {
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_point_offset.y = y;
 }
 
 void gt_radio_set_font_point_offset(gt_obj_st * radio , gt_size_t x , gt_size_t y)
 {
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
     gt_radio_set_font_point_offset_x( radio , x);
     gt_radio_set_font_point_offset_y( radio , y);
 }

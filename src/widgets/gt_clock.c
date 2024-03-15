@@ -392,6 +392,9 @@ gt_obj_st * gt_clock_create(gt_obj_st * parent)
 
 void gt_clock_set_time(gt_obj_st * obj, uint8_t hour, uint8_t minute, uint8_t second)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
     _set_hour(clock->time_current, hour < _HOUR_MAX_VALUE ? hour : 0);
     _set_minute(clock->time_current, minute < _MINUTE_MAX_VALUE ? minute : 0);
@@ -401,6 +404,9 @@ void gt_clock_set_time(gt_obj_st * obj, uint8_t hour, uint8_t minute, uint8_t se
 
 void gt_clock_set_time_by_timestamp(gt_obj_st * obj, uint32_t timestamp)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
     _set_hour(clock->time_current, (timestamp / 3600) % 24);
     _set_minute(clock->time_current, (timestamp / 60) % 60);
@@ -409,6 +415,9 @@ void gt_clock_set_time_by_timestamp(gt_obj_st * obj, uint32_t timestamp)
 
 void gt_clock_set_alert_time(gt_obj_st * obj, uint8_t hour, uint8_t minute, uint8_t second)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
     _set_hour(clock->time_setup, hour < _HOUR_MAX_VALUE ? hour : 0);
     _set_minute(clock->time_setup, minute < _MINUTE_MAX_VALUE ? minute : 0);
@@ -417,6 +426,9 @@ void gt_clock_set_alert_time(gt_obj_st * obj, uint8_t hour, uint8_t minute, uint
 
 void gt_clock_set_alert_time_by_timestamp(gt_obj_st * obj, uint32_t timestamp)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
     _set_hour(clock->time_setup, (timestamp / 3600) % 24);
     _set_minute(clock->time_setup, (timestamp / 60) % 60);
@@ -425,6 +437,9 @@ void gt_clock_set_alert_time_by_timestamp(gt_obj_st * obj, uint32_t timestamp)
 
 uint32_t gt_clock_get_time(gt_obj_st * obj, gt_clock_time_st * time)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return 0;
+    }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
     if (time) {
         time->hour = _get_hour(clock->time_current);
@@ -436,6 +451,9 @@ uint32_t gt_clock_get_time(gt_obj_st * obj, gt_clock_time_st * time)
 
 uint32_t gt_clock_get_alert_time(gt_obj_st * obj, gt_clock_time_st * time)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return 0;
+    }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
     if (time) {
         time->hour = _get_hour(clock->time_setup);
@@ -447,6 +465,9 @@ uint32_t gt_clock_get_alert_time(gt_obj_st * obj, gt_clock_time_st * time)
 
 void gt_clock_turn_next_second(gt_obj_st * obj)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
 
     if (GT_CLOCK_MODE_COUNTDOWN == clock->reg.mode) {
@@ -461,6 +482,9 @@ void gt_clock_turn_next_second(gt_obj_st * obj)
 
 void gt_clock_set_mode(gt_obj_st * obj, gt_clock_mode_et mode)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
 
     if (mode >= GT_CLOCK_MODE_MAX_COUNT) {
@@ -471,36 +495,54 @@ void gt_clock_set_mode(gt_obj_st * obj, gt_clock_mode_et mode)
 
 gt_clock_mode_et gt_clock_get_mode(gt_obj_st * obj)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return GT_CLOCK_MODE_TIME;
+    }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
     return clock->reg.mode;
 }
 
 void gt_clock_set_12_hours_mode(gt_obj_st * obj, bool enabled)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
     clock->reg.is_12_mode = enabled ? 1 : 0;
 }
 
 bool gt_clock_get_12_hours_mode(gt_obj_st * obj)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return false;
+    }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
     return clock->reg.is_12_mode ? true : false;
 }
 
 void gt_clock_set_meridiem_mode(gt_obj_st * obj, bool enabled)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
     clock->reg.is_show_meridiem = enabled ? 1 : 0;
 }
 
 bool gt_clock_get_meridiem_mode(gt_obj_st * obj)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return false;
+    }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
     return clock->reg.is_show_meridiem ? true : false;
 }
 
 void gt_clock_set_format(gt_obj_st * obj, const char * const format)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
     if (NULL == clock->format) {
         clock->format = (char * )gt_mem_malloc(strlen(format) + 1);
@@ -523,6 +565,9 @@ void gt_clock_set_format(gt_obj_st * obj, const char * const format)
 
 void gt_clock_set_next_day_cb(gt_obj_st * obj, gt_clock_next_day_cb next_day_cb, void * user_data)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
     if (NULL == next_day_cb) {
         return;
@@ -551,6 +596,9 @@ void gt_clock_set_next_day_cb(gt_obj_st * obj, gt_clock_next_day_cb next_day_cb,
 
 void gt_clock_set_alert_cb(gt_obj_st * obj, gt_clock_alert_cb alert_cb, void * user_data)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
     if (NULL == alert_cb) {
         return;
@@ -579,20 +627,29 @@ void gt_clock_set_alert_cb(gt_obj_st * obj, gt_clock_alert_cb alert_cb, void * u
 
 void gt_clock_clr_all_next_day_cb(gt_obj_st * obj)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _remove_all_next_day_cb((_gt_clock_st * )obj);
 }
 
 void gt_clock_clr_all_alert_cb(gt_obj_st * obj)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _remove_all_alert_cb((_gt_clock_st * )obj);
 }
 
 bool gt_clock_remove_next_day_cb(gt_obj_st * obj, gt_clock_next_day_cb next_day_cb)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return false;
+    }
     _gt_clock_st * style = (_gt_clock_st * )obj;
     gt_size_t i = 0;
 
-    if (NULL == obj || NULL == next_day_cb) {
+    if (NULL == next_day_cb) {
         return false;
     }
 
@@ -622,10 +679,13 @@ bool gt_clock_remove_next_day_cb(gt_obj_st * obj, gt_clock_next_day_cb next_day_
 
 bool gt_clock_remove_alert_cb(gt_obj_st * obj, gt_clock_alert_cb alert_cb)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return false;
+    }
     _gt_clock_st * style = (_gt_clock_st * )obj;
     gt_size_t i = 0;
 
-    if (NULL == obj || NULL == alert_cb) {
+    if (NULL == alert_cb) {
         return false;
     }
 
@@ -654,6 +714,9 @@ bool gt_clock_remove_alert_cb(gt_obj_st * obj, gt_clock_alert_cb alert_cb)
 
 void gt_clock_start(gt_obj_st * obj)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * style = (_gt_clock_st * )obj;
     style->reg.is_running = 1;
 
@@ -666,6 +729,9 @@ void gt_clock_start(gt_obj_st * obj)
 
 void gt_clock_stop(gt_obj_st * obj)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * style = (_gt_clock_st * )obj;
     style->reg.is_running = 0;
 
@@ -676,6 +742,9 @@ void gt_clock_stop(gt_obj_st * obj)
 
 void gt_clock_toggle(gt_obj_st * obj)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * style = (_gt_clock_st * )obj;
 
     if (style->reg.is_running) {
@@ -688,6 +757,9 @@ void gt_clock_toggle(gt_obj_st * obj)
 
 void gt_clock_set_font_color(gt_obj_st * obj, gt_color_t color)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * style = (_gt_clock_st * )obj;
     if (NULL == style->label) {
         return;
@@ -697,6 +769,9 @@ void gt_clock_set_font_color(gt_obj_st * obj, gt_color_t color)
 
 void gt_clock_set_font_size(gt_obj_st * obj, uint8_t size)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * style = (_gt_clock_st * )obj;
     if (NULL == style->label) {
         return;
@@ -706,6 +781,9 @@ void gt_clock_set_font_size(gt_obj_st * obj, uint8_t size)
 
 void gt_clock_set_font_gray(gt_obj_st * obj, uint8_t gray)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * style = (_gt_clock_st * )obj;
     if (NULL == style->label) {
         return;
@@ -715,6 +793,9 @@ void gt_clock_set_font_gray(gt_obj_st * obj, uint8_t gray)
 
 void gt_clock_set_font_align(gt_obj_st * obj, gt_align_et align)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * style = (_gt_clock_st * )obj;
     if (NULL == style->label) {
         return;
@@ -724,6 +805,9 @@ void gt_clock_set_font_align(gt_obj_st * obj, gt_align_et align)
 
 void gt_clock_set_font_family_cn(gt_obj_st * obj, gt_family_t family)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * style = (_gt_clock_st * )obj;
     if (NULL == style->label) {
         return;
@@ -733,6 +817,9 @@ void gt_clock_set_font_family_cn(gt_obj_st * obj, gt_family_t family)
 
 void gt_clock_set_font_family_en(gt_obj_st * obj, gt_family_t family)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * style = (_gt_clock_st * )obj;
     if (NULL == style->label) {
         return;
@@ -742,6 +829,9 @@ void gt_clock_set_font_family_en(gt_obj_st * obj, gt_family_t family)
 
 void gt_clock_set_font_family_fl(gt_obj_st * obj, gt_family_t family)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * style = (_gt_clock_st * )obj;
     if (NULL == style->label) {
         return;
@@ -751,6 +841,9 @@ void gt_clock_set_font_family_fl(gt_obj_st * obj, gt_family_t family)
 
 void gt_clock_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * style = (_gt_clock_st * )obj;
     if (NULL == style->label) {
         return;
@@ -760,6 +853,9 @@ void gt_clock_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
 
 void gt_clock_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * style = (_gt_clock_st * )obj;
     if (NULL == style->label) {
         return;
@@ -769,6 +865,9 @@ void gt_clock_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
 
 void gt_clock_set_font_thick_cn(gt_obj_st * obj, uint8_t thick)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * style = (_gt_clock_st * )obj;
     if (NULL == style->label) {
         return;
@@ -778,6 +877,9 @@ void gt_clock_set_font_thick_cn(gt_obj_st * obj, uint8_t thick)
 
 void gt_clock_set_space(gt_obj_st * obj, uint8_t space_x, uint8_t space_y)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     _gt_clock_st * style = (_gt_clock_st * )obj;
     if (NULL == style->label) {
         return;

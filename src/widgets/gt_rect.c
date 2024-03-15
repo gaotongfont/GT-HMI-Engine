@@ -145,20 +145,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-
-static void _gt_rect_init_style(gt_obj_st * rect)
-{
-    _gt_rect_st * style = (_gt_rect_st * )rect;
-
-    style->fill     = 1;
-    style->radius   = 0;
-    style->color_background = gt_color_black();
-    style->color_border     = gt_color_black();
-}
-
-
-
-
 /* global functions / API interface -------------------------------------*/
 
 /**
@@ -173,35 +159,56 @@ gt_obj_st * gt_rect_create(gt_obj_st * parent)
     if (NULL == obj) {
         return NULL;
     }
-    _gt_rect_init_style(obj);
+    _gt_rect_st * style = (_gt_rect_st * )obj;
+
+    style->fill     = 1;
+    style->radius   = 0;
+    style->color_background = gt_color_black();
+    style->color_border     = gt_color_black();
+
     return obj;
 }
 void gt_rect_set_bg_color(gt_obj_st * rect, gt_color_t color)
 {
+    if (false == gt_obj_is_type(rect, OBJ_TYPE)) {
+        return ;
+    }
     _gt_rect_st * style = (_gt_rect_st * )rect;
     style->color_background = color;
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_rect_set_color_border(gt_obj_st * rect, gt_color_t color)
 {
+    if (false == gt_obj_is_type(rect, OBJ_TYPE)) {
+        return ;
+    }
     _gt_rect_st * style = (_gt_rect_st * )rect;
     style->color_border = color;
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_rect_set_radius(gt_obj_st * rect, uint16_t radius)
 {
+    if (false == gt_obj_is_type(rect, OBJ_TYPE)) {
+        return ;
+    }
     _gt_rect_st * style = (_gt_rect_st * )rect;
     style->radius = radius;
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_rect_set_border(gt_obj_st * rect, uint16_t border)
 {
+    if (false == gt_obj_is_type(rect, OBJ_TYPE)) {
+        return ;
+    }
     _gt_rect_st * style = (_gt_rect_st * )rect;
     style->border = border;
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_rect_set_fill(gt_obj_st * rect, uint8_t fill)
 {
+    if (false == gt_obj_is_type(rect, OBJ_TYPE)) {
+        return ;
+    }
     _gt_rect_st * style = (_gt_rect_st * )rect;
     style->fill = fill;
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);

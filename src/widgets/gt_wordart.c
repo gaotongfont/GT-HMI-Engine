@@ -234,6 +234,9 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 gt_obj_st * gt_wordart_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    if (NULL == obj) {
+        return obj;
+    }
 
     _gt_wor_dart_st * style = (_gt_wor_dart_st * )obj;
 
@@ -248,6 +251,9 @@ gt_obj_st * gt_wordart_create(gt_obj_st * parent)
 
 void gt_wordart_items_init(gt_obj_st* wordart , uint32_t total)
 {
+    if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {
+        return ;
+    }
     _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
 
     if(NULL != style->items){
@@ -268,7 +274,10 @@ void gt_wordart_items_init(gt_obj_st* wordart , uint32_t total)
 
 void gt_wordart_add_item(gt_obj_st* wordart , uint32_t coding , char* img)
 {
-    if(NULL == wordart || NULL == img){
+    if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {
+        return ;
+    }
+    if(NULL == img){
         return ;
     }
     _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
@@ -298,6 +307,9 @@ void gt_wordart_add_item(gt_obj_st* wordart , uint32_t coding , char* img)
 
 void gt_wordart_set_text(gt_obj_st * wordart, const char * fmt, ...)
 {
+    if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {
+        return ;
+    }
     char buffer[8] = {0};
     va_list args;
     va_list args2;
@@ -335,12 +347,18 @@ free_lb:
 
 char * gt_wordart_get_text(gt_obj_st * wordart)
 {
+    if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {
+        return NULL;
+    }
     _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
     return style->text;
 }
 
 void gt_wordart_set_space(gt_obj_st * wordart, uint8_t space_x, uint8_t space_y)
 {
+    if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {
+        return ;
+    }
     _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
     style->space_x = space_x;
     style->space_y = space_y;

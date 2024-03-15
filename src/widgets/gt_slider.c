@@ -566,10 +566,7 @@ gt_obj_st * gt_slider_create(gt_obj_st * parent)
  */
 void gt_slider_set_pos(gt_obj_st * slider, gt_size_t pos)
 {
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;
     }
     _gt_slider_st * style = (_gt_slider_st * )slider;
@@ -586,10 +583,7 @@ void gt_slider_set_pos(gt_obj_st * slider, gt_size_t pos)
 
 void gt_slider_set_start_end(gt_obj_st * slider, gt_size_t start, gt_size_t end)
 {
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
@@ -599,10 +593,7 @@ void gt_slider_set_start_end(gt_obj_st * slider, gt_size_t start, gt_size_t end)
 
 gt_size_t gt_slider_get_pos(gt_obj_st * slider)
 {
-    if (NULL == slider) {
-        return 0;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return 0;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
@@ -611,10 +602,7 @@ gt_size_t gt_slider_get_pos(gt_obj_st * slider)
 
 gt_size_t gt_slider_get_start(gt_obj_st * slider)
 {
-    if (NULL == slider) {
-        return 0;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return 0;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
@@ -623,10 +611,7 @@ gt_size_t gt_slider_get_start(gt_obj_st * slider)
 
 gt_size_t gt_slider_get_end(gt_obj_st * slider)
 {
-    if (NULL == slider) {
-        return 0;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return 0;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
@@ -635,10 +620,7 @@ gt_size_t gt_slider_get_end(gt_obj_st * slider)
 
 gt_size_t gt_slider_get_total(gt_obj_st * slider)
 {
-    if (NULL == slider) {
-        return 0;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return 0;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
@@ -647,10 +629,7 @@ gt_size_t gt_slider_get_total(gt_obj_st * slider)
 
 void gt_slider_set_color_act(gt_obj_st * slider, gt_color_t color)
 {
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
@@ -660,10 +639,7 @@ void gt_slider_set_color_act(gt_obj_st * slider, gt_color_t color)
 
 void gt_slider_set_color_ina(gt_obj_st * slider, gt_color_t color)
 {
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
@@ -673,10 +649,7 @@ void gt_slider_set_color_ina(gt_obj_st * slider, gt_color_t color)
 
 void gt_slider_set_dir(gt_obj_st * slider, gt_bar_dir_et dir)
 {
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
@@ -688,10 +661,7 @@ void gt_slider_set_dir(gt_obj_st * slider, gt_bar_dir_et dir)
 
 gt_bar_dir_et gt_slider_get_dir(gt_obj_st * slider)
 {
-    if (NULL == slider) {
-        return 0;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return 0;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
@@ -700,10 +670,7 @@ gt_bar_dir_et gt_slider_get_dir(gt_obj_st * slider)
 
 uint16_t gt_slider_get_step(gt_obj_st * slider)
 {
-    if (NULL == slider) {
-        return 0;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return 0;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
@@ -713,10 +680,7 @@ uint16_t gt_slider_get_step(gt_obj_st * slider)
 
 void gt_slider_set_step(gt_obj_st * slider, uint16_t step)
 {
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
@@ -726,10 +690,7 @@ void gt_slider_set_step(gt_obj_st * slider, uint16_t step)
 
 void gt_slider_set_tag(gt_obj_st * slider, char * src)
 {
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
@@ -755,10 +716,7 @@ void gt_slider_set_tag(gt_obj_st * slider, char * src)
 
 void gt_slider_set_tag_visible(gt_obj_st * slider, bool visible)
 {
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
@@ -768,10 +726,7 @@ void gt_slider_set_tag_visible(gt_obj_st * slider, bool visible)
 
 void gt_slider_set_tag_size(gt_obj_st * slider , uint16_t size)
 {
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;
     }
     _gt_slider_st * style = (_gt_slider_st * )slider;
@@ -781,10 +736,7 @@ void gt_slider_set_tag_size(gt_obj_st * slider , uint16_t size)
 
 void gt_slider_set_thickness(gt_obj_st * slider , uint16_t thickness)
 {
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;
     }
     _gt_slider_st * style = (_gt_slider_st * )slider;
@@ -794,10 +746,7 @@ void gt_slider_set_thickness(gt_obj_st * slider , uint16_t thickness)
 
 void gt_slider_set_mode(gt_obj_st * slider , gt_slider_mode_e mode)
 {
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;
     }
     _gt_slider_st * style = (_gt_slider_st * )slider;
@@ -807,10 +756,7 @@ void gt_slider_set_mode(gt_obj_st * slider , gt_slider_mode_e mode)
 
 void gt_slider_set_AB_repeat_color(gt_obj_st * slider, gt_color_t color)
 {
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;
     }
     _gt_slider_st * style = (_gt_slider_st * )slider;
@@ -821,10 +767,7 @@ void gt_slider_set_AB_repeat_color(gt_obj_st * slider, gt_color_t color)
 
 void gt_slider_set_AB_repeat_remark_point(gt_obj_st * slider)
 {
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;
     }
     _gt_slider_st * style = (_gt_slider_st * )slider;
@@ -850,34 +793,26 @@ void gt_slider_set_AB_repeat_remark_point(gt_obj_st * slider)
 
 void gt_slider_set_AB_repeat_start_by(gt_obj_st * slider, gt_size_t start_value)
 {
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;
     }
     _gt_slider_st * style = (_gt_slider_st * )slider;
-
+    // TODO
 }
 
 void gt_slider_set_AB_repeat_stop_by(gt_obj_st * slider, gt_size_t stop_value)
 {
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;
     }
     _gt_slider_st * style = (_gt_slider_st * )slider;
+    // TODO
 
 }
 
 void gt_slider_unset_AB_repeat(gt_obj_st * slider)
 {
-    if (NULL == slider) {
-        return;
-    }
-    if (GT_TYPE_SLIDER != gt_obj_class_get_type(slider)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;
     }
     _gt_slider_st * style = (_gt_slider_st * )slider;

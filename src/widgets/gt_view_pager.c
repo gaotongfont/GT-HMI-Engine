@@ -279,6 +279,9 @@ static void _child_set_group_area(gt_obj_st const * const view_pager, gt_obj_st 
 gt_obj_st * gt_view_pager_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    if (NULL == obj) {
+        return obj;
+    }
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
     style->width = gt_disp_get_res_hor(NULL);
     obj->area.x = 0;
@@ -301,10 +304,7 @@ gt_obj_st * gt_view_pager_create(gt_obj_st * parent)
 
 int8_t gt_view_pager_set_fragment_count(gt_obj_st * obj, uint8_t count)
 {
-    if (NULL == obj) {
-        return 0;
-    }
-    if (OBJ_TYPE != obj->class->type) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return 0;
     }
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
@@ -319,10 +319,7 @@ int8_t gt_view_pager_set_fragment_count(gt_obj_st * obj, uint8_t count)
 
 int8_t gt_view_pager_add_fragment(gt_obj_st * obj)
 {
-    if (NULL == obj) {
-        return 0;
-    }
-    if (OBJ_TYPE != obj->class->type) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return 0;
     }
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
@@ -339,10 +336,7 @@ int8_t gt_view_pager_add_fragment(gt_obj_st * obj)
 
 void gt_view_pager_fragment_add_widget(gt_obj_st * view_pager, uint8_t fragment_idx, gt_obj_st * child)
 {
-    if (NULL == view_pager) {
-        return;
-    }
-    if (OBJ_TYPE != view_pager->class->type) {
+    if (false == gt_obj_is_type(view_pager, OBJ_TYPE)) {
         return;
     }
     if (_is_over_max_page(fragment_idx)) {
@@ -364,23 +358,35 @@ void gt_view_pager_fragment_add_widget(gt_obj_st * view_pager, uint8_t fragment_
 
 void gt_view_pager_set_glass(gt_obj_st * obj, bool enabled)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
     style->reg.glass = enabled;
 }
 
 bool gt_view_pager_get_glass(gt_obj_st * obj)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return false;
+    }
     return ((_gt_view_pager_st * )obj)->reg.glass;
 }
 
 void gt_view_pager_set_glass_color(gt_obj_st * obj, gt_color_t color)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
     style->color_glass = color;
 }
 
 gt_color_t gt_view_pager_get_glass_color(gt_obj_st * obj)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return gt_color_black();
+    }
     return ((_gt_view_pager_st * )obj)->color_glass;
 }
 

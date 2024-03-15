@@ -282,6 +282,12 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
 {
     gt_obj_st * parent = obj->parent;
     bool is_success = false;
+    if (NULL == parent) {
+        return NULL;
+    }
+    if (NULL == to) {
+        return parent;
+    }
 
     gt_event_send(parent, GT_EVENT_TYPE_CHANGE_CHILD_REMOVE, obj);
 
@@ -306,6 +312,9 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
 void _gt_obj_class_destroy(struct gt_obj_s * self)
 {
     gt_obj_st * ret_p = NULL;
+    if (NULL == self) {
+        return ;
+    }
 
     _gt_obj_class_destroy_children(self, true);
 

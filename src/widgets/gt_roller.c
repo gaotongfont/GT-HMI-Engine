@@ -428,10 +428,7 @@ gt_obj_st * gt_roller_create(gt_obj_st * parent)
 
 void gt_roller_set_display_item_count(gt_obj_st * obj, uint8_t count)
 {
-    if (NULL == obj) {
-        return;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -449,10 +446,7 @@ void gt_roller_set_display_item_count(gt_obj_st * obj, uint8_t count)
 
 void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mode)
 {
-    if (NULL == obj) {
-        return;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -501,10 +495,7 @@ void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mo
 
 gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index)
 {
-    if (NULL == obj) {
-        return GT_RES_FAIL;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return GT_RES_FAIL;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -538,10 +529,7 @@ gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index)
 
 gt_res_t gt_roller_set_selected_anim(gt_obj_st * obj, gt_size_t index)
 {
-    if (NULL == obj) {
-        return GT_RES_FAIL;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return GT_RES_FAIL;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -575,10 +563,7 @@ gt_res_t gt_roller_set_selected_anim(gt_obj_st * obj, gt_size_t index)
 
 gt_size_t gt_roller_get_selected(gt_obj_st * obj)
 {
-    if (NULL == obj) {
-        return -1;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return -1;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -590,13 +575,10 @@ gt_size_t gt_roller_get_selected(gt_obj_st * obj)
 
 bool gt_roller_get_selected_text(gt_obj_st * obj, char * result)
 {
-    if (NULL == obj) {
-        return false;
-    }
     if (NULL == result) {
         return false;
     }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return false;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -634,10 +616,7 @@ uint8_t gt_roller_go_next(gt_obj_st * obj)
 
 uint8_t gt_roller_get_total_count(gt_obj_st * obj)
 {
-    if (NULL == obj) {
-        return 0;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return 0;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -649,10 +628,7 @@ uint8_t gt_roller_get_total_count(gt_obj_st * obj)
 
 void gt_roller_set_line_space(gt_obj_st * obj, uint8_t space)
 {
-    if (NULL == obj) {
-        return ;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return ;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -666,10 +642,7 @@ void gt_roller_set_line_space(gt_obj_st * obj, uint8_t space)
 
 void gt_roller_set_font_color(gt_obj_st * obj, gt_color_t color)
 {
-    if (NULL == obj) {
-        return ;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return ;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -679,10 +652,7 @@ void gt_roller_set_font_color(gt_obj_st * obj, gt_color_t color)
 
 void gt_roller_set_font_size(gt_obj_st * obj, uint8_t size)
 {
-    if (NULL == obj) {
-        return ;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return ;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -693,10 +663,7 @@ void gt_roller_set_font_size(gt_obj_st * obj, uint8_t size)
 
 void gt_roller_set_font_gray(gt_obj_st * obj, uint8_t gray)
 {
-    if (NULL == obj) {
-        return ;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return ;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -707,10 +674,7 @@ void gt_roller_set_font_gray(gt_obj_st * obj, uint8_t gray)
 
 void gt_roller_set_font_align(gt_obj_st * obj, gt_align_et align)
 {
-    if (NULL == obj) {
-        return ;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return ;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -720,10 +684,7 @@ void gt_roller_set_font_align(gt_obj_st * obj, gt_align_et align)
 
 void gt_roller_set_font_family_cn(gt_obj_st * obj, gt_family_t family)
 {
-    if (NULL == obj) {
-        return ;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return ;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -734,10 +695,7 @@ void gt_roller_set_font_family_cn(gt_obj_st * obj, gt_family_t family)
 
 void gt_roller_set_font_family_en(gt_obj_st * obj, gt_family_t family)
 {
-    if (NULL == obj) {
-        return ;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return ;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -748,10 +706,7 @@ void gt_roller_set_font_family_en(gt_obj_st * obj, gt_family_t family)
 
 void gt_roller_set_font_family_fl(gt_obj_st * obj, gt_family_t family)
 {
-    if (NULL == obj) {
-        return ;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return ;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -762,10 +717,7 @@ void gt_roller_set_font_family_fl(gt_obj_st * obj, gt_family_t family)
 
 void gt_roller_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
 {
-    if (NULL == obj) {
-        return ;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return ;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -776,10 +728,7 @@ void gt_roller_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
 
 void gt_roller_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
 {
-    if (NULL == obj) {
-        return ;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return ;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -790,10 +739,7 @@ void gt_roller_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
 
 void gt_roller_set_font_thick_cn(gt_obj_st * obj, uint8_t thick)
 {
-    if (NULL == obj) {
-        return ;
-    }
-    if (GT_TYPE_ROLLER != gt_obj_class_get_type(obj)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
         return ;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;

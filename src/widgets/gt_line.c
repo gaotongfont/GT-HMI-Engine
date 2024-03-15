@@ -154,20 +154,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-
-static void _gt_line_init_style(gt_obj_st * line)
-{
-    _gt_line_st * widget = (_gt_line_st * )line;
-    gt_attr_line_st * style = &widget->line;
-
-    style->width = 1;
-    style->fg_color     = gt_color_black();
-    style->bg_color     = gt_color_black();
-}
-
-
-
-
 /* global functions / API interface -------------------------------------*/
 /**
  * @brief create a line obj
@@ -178,11 +164,22 @@ static void _gt_line_init_style(gt_obj_st * line)
 gt_obj_st * gt_line_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_line_init_style(obj);
+    if (NULL == obj) {
+        return obj;
+    }
+    _gt_line_st * widget = (_gt_line_st * )obj;
+    gt_attr_line_st * style = &widget->line;
+
+    style->width = 1;
+    style->fg_color     = gt_color_black();
+    style->bg_color     = gt_color_black();
     return obj;
 }
 void gt_line_set_color(gt_obj_st * line, gt_color_t color)
 {
+    if (false == gt_obj_is_type(line, OBJ_TYPE)) {
+        return ;
+    }
     _gt_line_st * widget = (_gt_line_st * )line;
     gt_attr_line_st * style = &widget->line;
     style->fg_color = color;
@@ -190,6 +187,9 @@ void gt_line_set_color(gt_obj_st * line, gt_color_t color)
 }
 void gt_line_set_start_point(gt_obj_st * line, uint16_t xs, uint16_t ys)
 {
+    if (false == gt_obj_is_type(line, OBJ_TYPE)) {
+        return ;
+    }
     _gt_line_st * widget = (_gt_line_st * )line;
     gt_attr_line_st * style = &widget->line;
     style->x_1 = xs;
@@ -198,6 +198,9 @@ void gt_line_set_start_point(gt_obj_st * line, uint16_t xs, uint16_t ys)
 }
 void gt_line_set_end_point(gt_obj_st * line, uint16_t xe, uint16_t ye)
 {
+    if (false == gt_obj_is_type(line, OBJ_TYPE)) {
+        return ;
+    }
     _gt_line_st * widget = (_gt_line_st * )line;
     gt_attr_line_st * style = &widget->line;
     style->x_2 = xe;
@@ -206,6 +209,9 @@ void gt_line_set_end_point(gt_obj_st * line, uint16_t xe, uint16_t ye)
 }
 void gt_line_set_line_width(gt_obj_st * line, uint16_t line_width)
 {
+    if (false == gt_obj_is_type(line, OBJ_TYPE)) {
+        return ;
+    }
     _gt_line_st * widget = (_gt_line_st * )line;
     gt_attr_line_st * style = &widget->line;
     style->width = line_width;
