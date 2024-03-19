@@ -97,8 +97,8 @@ typedef struct gt_obj_s {
 
     uint32_t state         : 2;     /* obj selected state @ref gt_state_et */
     uint32_t touch_parent  : 1;     /* touch event will be called to parent object */
-    uint32_t using         : 1;     /* obj using state 0:using [Can not be free memory], 1:free */
-    uint32_t delate        : 1;     /* Prepare to free the current object 0:no delate, 1:delate */
+    uint32_t using         : 1;     /* screen was using or not, not the widgets object. 0:using [Can not be free memory], 1:free */
+    uint32_t delate        : 1;     /* The status which be prepare to free the current object 0:no delate, 1:prepare to delate */
     uint32_t focus         : 1;     /* obj focus state 0:no focus, 1:focus */
     uint32_t visible       : 1;     /* obj visible state, @gt_visible_et */
     uint32_t disabled      : 1;     /* obj disabled state, 0:enable, 1:disable */
