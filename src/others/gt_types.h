@@ -42,6 +42,7 @@ typedef uint8_t gt_opt_t;
 
 typedef int16_t gt_id_t;
 
+typedef uint16_t gt_stack_size_t;
 
 /**
  * @brief widget type enum definition
