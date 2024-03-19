@@ -57,7 +57,7 @@ typedef struct _gt_slider_s {
     uint16_t tag_size;
     gt_bar_dir_et dir;
 
-    uint8_t mode        : 2;    /** @ref gt_slider_mode_e */
+    uint8_t mode        : 2;    /** @ref gt_slider_mode_et */
     uint8_t tag_visible : 1;
     uint8_t repeat_mode : 1;
     uint8_t reserved : 4;
@@ -235,8 +235,7 @@ static void _gt_slider_set_offset(gt_obj_st * slider , gt_size_t offset)
     }
     else if(offset < 0){
         style->offset = 0;
-    }
-    else{
+    } else {
         style->offset = offset;
     }
 
@@ -251,11 +250,13 @@ static void _gt_slider_set_offset(gt_obj_st * slider , gt_size_t offset)
         gt_size_t pixel = _calc_pixel_offset_by_value(slider, style->repeat_info.begin);
         if (style->offset < pixel) {
             style->offset = pixel;
+            tmp_pos = style->repeat_info.begin;
         }
         pixel = _calc_pixel_offset_by_value(slider, style->repeat_info.stop);
         if (style->repeat_info.stop > style->repeat_info.begin &&
             style->offset > pixel) {
             style->offset = pixel;
+            tmp_pos = style->repeat_info.stop;
         }
     }
 
@@ -397,6 +398,7 @@ static void _init_cb(gt_obj_st * obj) {
     rect_attr.radius = _gt_slider_get_size(obj) >> 1;
     _calc_all_layer_area(obj, &area_base, &area_val, &tag_area);
     if(style->pos < style->end){
+        /** background area */
         draw_bg(obj->draw_ctx, &rect_attr, &area_base);
     }
 
@@ -407,12 +409,14 @@ static void _init_cb(gt_obj_st * obj) {
         if(style->offset < dist_min){
             rect_attr.base_area = &area_base;
         }
+        /** active area */
         draw_bg(obj->draw_ctx, &rect_attr, &area_val);
 
         if (style->repeat_mode) {
             gt_attr_rect_st repeat_attr = rect_attr;
             repeat_attr.bg_color = style->repeat_info.color;
             gt_area_st repeat_area = _calc_repeat_mode_area(obj, &area_val);
+            /** AB repeat area */
             draw_bg(obj->draw_ctx, &repeat_attr, &repeat_area);
         }
         rect_attr.base_area = NULL;
@@ -481,24 +485,20 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             gt_event_send(obj, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
             _gt_slider_set_offset(obj, _calc_touch_point_pos(obj));
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
             _gt_slider_set_offset(obj, _calc_touch_point_pos(obj));
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
@@ -744,7 +744,7 @@ void gt_slider_set_thickness(gt_obj_st * slider , uint16_t thickness)
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_slider_set_mode(gt_obj_st * slider , gt_slider_mode_e mode)
+void gt_slider_set_mode(gt_obj_st * slider , gt_slider_mode_et mode)
 {
     if (OBJ_TYPE != gt_obj_class_get_type(slider)) {
         return;

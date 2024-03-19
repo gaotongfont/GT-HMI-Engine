@@ -22,10 +22,10 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef enum {
+typedef enum gt_slider_mode_e {
     GT_SLIDER_MODE_DEFAULT = 0,
     GT_SLIDER_MODE_STEP,
-}gt_slider_mode_e;
+}gt_slider_mode_et;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -132,12 +132,38 @@ void gt_slider_set_tag_size(gt_obj_st * slider , uint16_t size);
  */
 void gt_slider_set_thickness(gt_obj_st * slider , uint16_t thickness);
 
-void gt_slider_set_mode(gt_obj_st * slider , gt_slider_mode_e mode);
+/**
+ * @brief Normal mode or step setting mode
+ *
+ * @param slider
+ * @param mode @ref gt_slider_mode_et
+ */
+void gt_slider_set_mode(gt_obj_st * slider , gt_slider_mode_et mode);
 
+/**
+ * @brief Set AB repeat mode color
+ *
+ * @param slider
+ * @param color
+ */
 void gt_slider_set_AB_repeat_color(gt_obj_st * slider, gt_color_t color);
 
+/**
+ * @brief Three cycles are triggered, the first time point A is recorded,
+ *      the second time point B is recorded, and the third time point AB is
+ *      cancelled to restore the normal mode.
+ *
+ *      [Note] AB repeat mode only GT_SLIDER_MODE_DEFAULT mode is valid.
+ *
+ * @param slider
+ */
 void gt_slider_set_AB_repeat_remark_point(gt_obj_st * slider);
 
+/**
+ * @brief Point AB is cancelled to restore the normal mode.
+ *
+ * @param slider
+ */
 void gt_slider_unset_AB_repeat(gt_obj_st * slider);
 
 #ifdef __cplusplus
