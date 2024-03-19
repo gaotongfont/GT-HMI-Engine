@@ -12,6 +12,7 @@
 #include "gt_obj.h"
 #include "../core/gt_mem.h"
 #include "../core/gt_style.h"
+#include "../core/gt_indev.h"
 #include "../others/gt_types.h"
 #include "../hal/gt_hal_disp.h"
 #include "../hal/gt_hal_indev.h"
@@ -114,8 +115,8 @@ static void _gt_obj_class_destroy_property(gt_obj_st * self) {
     if (NULL == self) {
         return;
     }
-
     gt_event_send(self, GT_EVENT_TYPE_CHANGE_DELETED, NULL);
+    _gt_indev_remove_want_delate_target(self);
 
     // free event attribute
     if (NULL != self->event_attr) {
@@ -123,6 +124,7 @@ static void _gt_obj_class_destroy_property(gt_obj_st * self) {
         self->event_attr = NULL;
     }
 
+    self->delate = false;
     // free obj custom style
     if (self->class->_deinit_cb) {
         self->class->_deinit_cb(self);

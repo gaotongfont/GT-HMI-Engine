@@ -84,6 +84,8 @@ void gt_indev_set_disabled(bool disabled);
  */
 bool gt_indev_is_disabled(void);
 
+bool _gt_indev_remove_want_delate_target(gt_obj_st * target);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

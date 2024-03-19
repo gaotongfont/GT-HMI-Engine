@@ -902,7 +902,8 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
 
         if (auto_del) {
             /** When the animation is finished, the memory is freed */
-            scr_old->delate = 1;
+            scr_old->delate = true;
+            gt_obj_child_set_prop(scr_old, GT_OBJ_PROP_TYPE_DELATE, true);
         }
     }
 }

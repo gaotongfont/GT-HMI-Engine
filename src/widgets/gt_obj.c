@@ -235,7 +235,6 @@ void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
     uint32_t start = gt_tick_get();
 #endif
 
-    obj->delate = 0;
     _gt_obj_class_destroy(obj);
     _gt_timer_set_user_data(timer, NULL);
 
@@ -344,7 +343,8 @@ void gt_obj_destroy(gt_obj_st * obj)
 {
     // GT_LOGV(GT_LOG_TAG_GUI, "Want to destroy obj: 0x%p", obj);
     if (!obj) { return ; }
-    obj->delate = 1;
+    obj->delate = true;
+    gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_DELATE, true);
 
     // create a temp timer once task to destroy the object
     _gt_timer_st * tmp_timer = _gt_timer_create(_gt_obj_destroy_handler_cb, GT_TASK_PERIOD_TIME_DESTROY, obj);

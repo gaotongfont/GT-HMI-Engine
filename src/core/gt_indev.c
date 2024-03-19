@@ -641,4 +641,27 @@ bool gt_indev_is_disabled(void)
     return _indev_reg.disabled;
 }
 
+bool _gt_indev_remove_want_delate_target(gt_obj_st * target)
+{
+    gt_indev_st * indev;
+    uint8_t i, cnt_indev = gt_indev_get_dev_count();
+    struct _point * point_p = &indev->proc.data.point;
+    bool ret = false;
+
+    for (i = 0; i < cnt_indev; i++) {
+        indev = gt_indev_get_dev_by_idx(i);
+        point_p = &indev->proc.data.point;
+
+        if (target != point_p->obj_target) {
+            continue;
+        }
+        if (false == target->delate) {
+            continue;
+        }
+        point_p->obj_target = NULL;
+        ret = true;
+    }
+    return ret;
+}
+
 /* end ------------------------------------------------------------------*/
