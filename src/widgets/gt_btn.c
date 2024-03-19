@@ -46,7 +46,6 @@ typedef struct _gt_btn_s {
     gt_font_info_st font_info;
 
     _gt_btn_reg_st reg;
-    uint8_t     fill;
     gt_align_et font_align;
     uint8_t     space_x;
     uint8_t     space_y;
