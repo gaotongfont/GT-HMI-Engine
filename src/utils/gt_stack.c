@@ -94,10 +94,6 @@ static inline void * _item_pop(gt_stack_st * stack) {
     gt_stack_size_t real_top = stack->top - 1;
     void * ptr = _get_offset_by_top(stack, real_top);
 
-    if (0 == real_top && gt_stack_is_deepest_alive_forever(stack)) {
-        return ptr;
-    }
-
     stack->top = real_top;
     --stack->count;
     return ptr;
@@ -156,13 +152,6 @@ fail_lb:
     return NULL;
 }
 
-bool gt_stack_set_deepest_alive_forever(gt_stack_st * stack, bool deepest_alive_forever)
-{
-    if (NULL == stack) { return false; }
-    stack->reg.deepest_alive_forever = deepest_alive_forever;
-    return true;
-}
-
 bool gt_stack_push(gt_stack_st * stack, void * item)
 {
     if (NULL == stack || NULL == item) {
@@ -217,6 +206,7 @@ void gt_stack_clear(gt_stack_st * stack)
 
     stack->top = 0;
     stack->bottom = 0;
+    stack->count = 0;
     gt_memset(stack->data, 0, stack->item_size * stack->depth);
 }
 
@@ -235,14 +225,57 @@ uint16_t gt_stack_get_item_size(gt_stack_st * stack)
     return stack ? stack->item_size : 0;
 }
 
-bool gt_stack_is_deepest_alive_forever(gt_stack_st * stack)
-{
-    return stack ? stack->reg.deepest_alive_forever : false;
-}
-
 bool gt_stack_is_cycle(gt_stack_st * stack)
 {
     return stack ? stack->reg.cycle : false;
+}
+
+gt_stack_ret_st gt_stack_search_item_from_top(gt_stack_st * stack, gt_stack_equal_cb_t equal_cb, void * target)
+{
+    gt_stack_ret_st ret = {
+        .index_from_top = 0,
+        .data = NULL
+    };
+    if (NULL == stack || NULL == equal_cb || NULL == target) {
+        return ret;
+    }
+
+    void * ptr = NULL;
+    gt_stack_size_t top = stack->top;
+    for (gt_stack_size_t i = 0; i < stack->count; ++i) {
+        ptr = _get_offset_by_top(stack, top);
+        if (equal_cb(ptr, target)) {
+            ret.index_from_top = i;
+            ret.data = ptr;
+            break;
+        }
+        top = top ? (top - 1) : stack->depth;
+    }
+    return ret;
+}
+
+gt_stack_ret_st gt_stack_search_item_from_bottom(gt_stack_st * stack, gt_stack_equal_cb_t equal_cb, void * target)
+{
+    gt_stack_ret_st ret = {
+        .index_from_top = 0,
+        .data = NULL
+    };
+    if (NULL == stack || NULL == equal_cb || NULL == target) {
+        return ret;
+    }
+
+    void * ptr = NULL;
+    gt_stack_size_t bottom = stack->bottom;
+    for (gt_stack_size_t i = 0; i < stack->count; ++i) {
+        ptr = _get_offset_by_top(stack, bottom);
+        if (equal_cb(ptr, target)) {
+            ret.index_from_top = stack->count - i;
+            ret.data = ptr;
+            break;
+        }
+        bottom = (bottom + 1) % stack->depth;
+    }
+    return ret;
 }
 
 void gt_stack_destroy(gt_stack_st * stack)

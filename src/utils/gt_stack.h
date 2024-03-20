@@ -23,14 +23,23 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct _reg_s {
-    uint8_t deepest_alive_forever : 1;  /** The flag to indicate whether the deepest item is alive forever */
+
+/**
+ * @brief Compare the item with the data
+ * @param item The pointer to the item
+ * @param data The object data which is used to compare with the item
+ * @return  true The item is equal to the data
+ *          false The item is not equal to the data
+ */
+typedef bool ( * gt_stack_equal_cb_t)(void *, void *);
+
+typedef struct _stack_reg_s {
     uint8_t cycle : 1;                  /** The flag to indicate whether the stack is cyclic */
-    uint8_t reserved : 6;
-}_reg_st;
+    uint8_t reserved : 7;
+}_stack_reg_st;
 
 typedef struct gt_stack_s {
-    _reg_st reg;
+    _stack_reg_st reg;
     gt_stack_size_t top;    /** The index of the top item */
     gt_stack_size_t bottom; /** The index of the bottom item, such as cycle mode */
     gt_stack_size_t count;  /** The number of items in the stack */
@@ -39,6 +48,10 @@ typedef struct gt_stack_s {
     void ** data;           /** The pointer to the stack */
 }gt_stack_st;
 
+typedef struct gt_stack_ret_s {
+    gt_stack_size_t index_from_top;    /** The index of the item from the top */
+    void * data;
+}gt_stack_ret_st;
 
 /* macros ---------------------------------------------------------------*/
 
@@ -68,16 +81,6 @@ gt_stack_st * gt_stack_create(gt_stack_size_t depth, uint16_t item_size);
  */
 gt_stack_st * gt_stack_cycle_create(gt_stack_size_t depth, uint16_t item_size);
 
-/**
- * @brief Set the deepest alive forever, only valid for normal stack
- *
- * @param stack
- * @param deepest_alive_forever
- * @return true Set the deepest alive forever successfully
- * @return false Set the deepest alive forever failed
- */
-bool gt_stack_set_deepest_alive_forever(gt_stack_st * stack, bool deepest_alive_forever);
-
 bool gt_stack_push(gt_stack_st * stack, void * item);
 
 void * gt_stack_pop(gt_stack_st * stack);
@@ -96,7 +99,9 @@ gt_stack_size_t gt_stack_get_count(gt_stack_st * stack);
 
 uint16_t gt_stack_get_item_size(gt_stack_st * stack);
 
-bool gt_stack_is_deepest_alive_forever(gt_stack_st * stack);
+gt_stack_ret_st gt_stack_search_item_from_top(gt_stack_st * stack, gt_stack_equal_cb_t equal_cb, void * target);
+
+gt_stack_ret_st gt_stack_search_item_from_bottom(gt_stack_st * stack, gt_stack_equal_cb_t equal_cb, void * target);
 
 bool gt_stack_is_cycle(gt_stack_st * stack);
 
