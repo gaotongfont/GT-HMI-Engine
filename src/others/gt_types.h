@@ -35,6 +35,8 @@ extern "C" {
 #define REDUCE_DEFAULT     (2)
 
 /* typedef --------------------------------------------------------------*/
+typedef int16_t gt_scr_id_t;
+
 typedef int16_t gt_size_t;
 
 typedef uint16_t gt_family_t;
@@ -43,6 +45,24 @@ typedef uint8_t gt_opt_t;
 typedef int16_t gt_id_t;
 
 typedef uint16_t gt_stack_size_t;
+
+/**
+ * @brief The screen turn next screen animation type
+ */
+typedef enum gt_scr_anim_type_e {
+    GT_SCR_ANIM_TYPE_NONE = 0,
+    GT_SCR_ANIM_TYPE_MOVE_LEFT,     // Move the interface to the left
+    GT_SCR_ANIM_TYPE_MOVE_RIGHT,    // Move the interface to the right
+    GT_SCR_ANIM_TYPE_MOVE_UP,       // Move the interface to the up
+    GT_SCR_ANIM_TYPE_MOVE_DOWN,     // Move the interface to the down
+
+    GT_SCR_ANIM_TYPE_COVER_LEFT,    // Cover the interface from the left
+    GT_SCR_ANIM_TYPE_COVER_RIGHT,   // Cover the interface from the right
+    GT_SCR_ANIM_TYPE_COVER_UP,      // Cover the interface from the up
+    GT_SCR_ANIM_TYPE_COVER_DOWN,    // Cover the interface from the down
+
+    GT_SCR_ANIM_TYPE_TOTAL,
+}gt_scr_anim_type_et;
 
 /**
  * @brief widget type enum definition

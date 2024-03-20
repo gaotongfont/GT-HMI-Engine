@@ -16,6 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "../widgets/gt_obj.h"
 #include "../hal/gt_hal_disp.h"
+#include "../others/gt_types.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -23,23 +24,7 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 
-/**
- * @brief The screen turn next screen animation type
- */
-typedef enum {
-    GT_SCR_ANIM_TYPE_NONE = 0,
-    GT_SCR_ANIM_TYPE_MOVE_LEFT,     // Move the interface to the left
-    GT_SCR_ANIM_TYPE_MOVE_RIGHT,    // Move the interface to the right
-    GT_SCR_ANIM_TYPE_MOVE_UP,       // Move the interface to the up
-    GT_SCR_ANIM_TYPE_MOVE_DOWN,     // Move the interface to the down
 
-    GT_SCR_ANIM_TYPE_COVER_LEFT,    // Cover the interface from the left
-    GT_SCR_ANIM_TYPE_COVER_RIGHT,   // Cover the interface from the right
-    GT_SCR_ANIM_TYPE_COVER_UP,      // Cover the interface from the up
-    GT_SCR_ANIM_TYPE_COVER_DOWN,    // Cover the interface from the down
-
-    GT_SCR_ANIM_TYPE_TOTAL,
-}gt_scr_anim_type_et;
 
 /* macros ---------------------------------------------------------------*/
 
