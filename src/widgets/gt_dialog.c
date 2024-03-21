@@ -93,7 +93,7 @@ static void _init_cb(gt_obj_st * obj) {
     rect_attr.reg.is_fill   = true;
     rect_attr.radius        = style->border_radius;
     rect_attr.bg_opa        = obj->opa;
-    rect_attr.border_width  = 2;
+    rect_attr.border_width  = style->border_width;
     rect_attr.border_color  = style->border_color;
     rect_attr.bg_color      = obj->bgcolor;
 
