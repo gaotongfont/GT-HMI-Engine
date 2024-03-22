@@ -98,7 +98,7 @@ char * gt_btn_get_text(gt_obj_st * btn);
  * @param color font color
  */
 void gt_btn_set_font_color(gt_obj_st * btn, gt_color_t color);
-
+void gt_btn_set_font_color_pressed(gt_obj_st * btn, gt_color_t color);
 void gt_btn_set_font_size(gt_obj_st * btn, uint8_t size);
 void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray);
 void gt_btn_set_font_align(gt_obj_st * btn, gt_align_et align);
