@@ -444,7 +444,7 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const _gt_def_style_param_st _def_style_list
 #ifdef _DEF_STYLE_26_KEY
     {
         .def_style = GT_KEYPAD_STYLE_26_KEY, .map_list = _list_defualt_26_key , .map_total = sizeof(_list_defualt_26_key)/sizeof(gt_keypad_map_st),
-        .w = 304 , .h = 225 , .radius = 0 ,.bg_color = 0xD2D3D7, .border_width = 0 , .border_color = 0xD2D3D7,
+        .w = 304 , .h = 225 , .radius = 6 ,.bg_color = 0xD2D3D7, .border_width = 0 , .border_color = 0xD2D3D7,
         .key_h = 34 , .key_radius = 6 ,  .key_bg_color = 0xFFFFFF, .key_border_width = 0 , .key_border_color = 0xFFFFFF,
         .key_x_space = 3 , .key_y_space = 3 ,
         ._disp_special_btn_cb = _def_26_key_disp_special_btn_handler, ._push_btn_kv_cb = _def_26_key_push_btn_kv_handler,
@@ -455,7 +455,7 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const _gt_def_style_param_st _def_style_list
 #ifdef _DEF_STYLE_OTHER_4x5
     {
         .def_style = GT_KEYPAD_STYLE_OTHER_4x5, .map_list = _list_defualt_tlb , .map_total = sizeof(_list_defualt_tlb)/sizeof(gt_keypad_map_st),
-        .w = 191 , .h = 238 , .radius = 0 ,.bg_color = 0x0A1143, .border_width = 0 , .border_color = 0x0A1143,
+        .w = 191 , .h = 238 , .radius = 6 ,.bg_color = 0x0A1143, .border_width = 0 , .border_color = 0x0A1143,
         .key_h = 44 , .key_radius = 6 ,  .key_bg_color = 0x183581, .key_border_width = 0 , .key_border_color = 0x183581,
         .key_x_space = 3 , .key_y_space = 3 ,
         ._disp_special_btn_cb = NULL, ._push_btn_kv_cb = NULL,
@@ -466,7 +466,7 @@ GT_ATTRIBUTE_LARGE_RAM_ARRAY static const _gt_def_style_param_st _def_style_list
 #ifdef _DEF_STYLE_OTHER_11x3
     {
         .def_style = GT_KEYPAD_STYLE_OTHER_11x3, .map_list = _list_defualt_fyb_369 , .map_total = sizeof(_list_defualt_fyb_369)/sizeof(gt_keypad_map_st),
-        .w = 586 , .h = 126 , .radius = 0 ,.bg_color = 0x000000, .border_width = 0 , .border_color = 0x000000,
+        .w = 586 , .h = 126 , .radius = 6 ,.bg_color = 0x000000, .border_width = 0 , .border_color = 0x000000,
         .key_h = 38 , .key_radius = 6 ,  .key_bg_color = 0x22272C, .key_border_width = 0 , .key_border_color = 0x22272C,
         .key_x_space = 3 , .key_y_space = 3 ,
         ._disp_special_btn_cb = NULL, ._push_btn_kv_cb = NULL,
