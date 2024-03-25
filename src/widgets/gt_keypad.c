@@ -214,6 +214,7 @@ static void _def_26_key_push_btn_kv_handler( gt_obj_st* obj,  gt_obj_st* input ,
         return ;
     }
     int idx = -1;
+    gt_keypad_type_te tmp_keypad_type;
     uint16_t type = gt_btnmap_get_map_type(obj);
     gt_py_input_method_st* py_input_mt = gt_btnmap_get_py_input_method(obj);
 
@@ -248,12 +249,13 @@ static void _def_26_key_push_btn_kv_handler( gt_obj_st* obj,  gt_obj_st* input ,
         gt_btnmap_set_map( obj , (gt_map_st*)_list_defualt_26_key[idx].map , GT_KEYPAD_TYPE_UPPER);
     }
     else if(0 == strcmp(kv , GT_SYMBOL_WELL_NUMBER)){
-        idx = _gt_get_map_index((gt_keypad_map_st*)_list_defualt_26_key , sizeof(_list_defualt_26_key)/sizeof(gt_keypad_map_st) , GT_KEYPAD_TYPE_SYMBOL_EN);
+        tmp_keypad_type = (type != GT_KEYPAD_TYPE_SYMBOL_EN) ? GT_KEYPAD_TYPE_SYMBOL_EN : GT_KEYPAD_TYPE_LOWER;
+        idx = _gt_get_map_index((gt_keypad_map_st*)_list_defualt_26_key , sizeof(_list_defualt_26_key)/sizeof(gt_keypad_map_st) , tmp_keypad_type);
         if(idx < 0){
-            GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d , type = %d", GT_KEYPAD_STYLE_26_KEY , GT_KEYPAD_TYPE_SYMBOL_EN);
+            GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d , type = %d", GT_KEYPAD_STYLE_26_KEY , tmp_keypad_type);
             return ;
         }
-        gt_btnmap_set_map( obj , (gt_map_st*)_list_defualt_26_key[idx].map , GT_KEYPAD_TYPE_SYMBOL_EN);
+        gt_btnmap_set_map( obj , (gt_map_st*)_list_defualt_26_key[idx].map , tmp_keypad_type);
     }
     else if(0 == strcmp(kv , GT_SYMBOL_CH)){
         if(!py_input_mt){
@@ -274,12 +276,12 @@ static void _def_26_key_push_btn_kv_handler( gt_obj_st* obj,  gt_obj_st* input ,
         gt_input_move_right_pos_cursor(input);
     }
     else if(0 == strcmp(kv , GT_SYMBOL_PREV)){
-        if(!py_input_mt) return ;
+        if(!py_input_mt || py_input_mt->chinese_numb <= 0) return ;
         gt_py_input_method_last_page(py_input_mt);
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
     }
     else if(0 == strcmp(kv , GT_SYMBOL_NEXT)){
-        if(!py_input_mt) return ;
+        if(!py_input_mt || py_input_mt->chinese_numb <= 0) return ;
         gt_py_input_method_next_page(py_input_mt);
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
     }
