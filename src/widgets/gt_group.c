@@ -64,6 +64,13 @@ static void _init_cb(gt_obj_st * obj) {
 static void _deinit_cb(gt_obj_st * obj) {
 }
 
+static void _set_infinite_area(gt_obj_st * obj) {
+    /** Set an infinite range */
+    obj->area.x = -((1 << (sizeof(gt_size_t) << 3) - 1)) + 1;
+    obj->area.y = -((1 << (sizeof(gt_size_t) << 3) - 1)) + 1;
+    obj->area.w = ((1 << (sizeof(gt_size_t) << 3))) - 2;
+    obj->area.h = ((1 << (sizeof(gt_size_t) << 3))) - 2;
+}
 
 /**
  * @brief obj event handler call back
@@ -78,10 +85,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
     }
     else if (GT_EVENT_TYPE_UPDATE_STYLE == code) {
-        if (NULL == obj->parent) {
-            return;
-        }
-        gt_area_copy(&obj->area, &obj->parent->area);
+        _set_infinite_area(obj);
     }
 }
 
@@ -105,9 +109,8 @@ gt_obj_st * gt_group_create(gt_obj_st * parent)
     _gt_group_st * style = (_gt_group_st * )obj;
 
     gt_obj_set_virtual(obj, true);
-    if (obj->parent) {
-        gt_area_copy(&obj->area, &obj->parent->area);
-    }
+    _set_infinite_area(obj);
+
     return obj;
 }
 
