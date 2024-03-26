@@ -1,0 +1,142 @@
+/**
+ * @file gt_scr_stack.h
+ * @author Feyoung
+ * @brief
+ * @version 0.1
+ * @date 2024-03-20 10:28:20
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
+ */
+#ifndef _GT_SCR_STACK_H_
+#define _GT_SCR_STACK_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* include --------------------------------------------------------------*/
+#include "../others/gt_types.h"
+#include "../hal/gt_hal_disp.h"
+#include "../utils/gt_stack.h"
+
+/* define ---------------------------------------------------------------*/
+
+
+
+/* typedef --------------------------------------------------------------*/
+typedef struct gt_scr_list_s {
+    gt_scr_id_t scr_id;
+    gt_scr_init_func_cb_t init_cb;
+}gt_scr_list_st;
+
+typedef struct gt_scr_mapping_table_s {
+    gt_scr_list_st const * scr_list;
+    gt_scr_id_t count;
+}gt_scr_mapping_table_st;
+
+
+
+/**
+ * @brief
+ */
+typedef struct gt_scr_stack_item_s {
+    gt_scr_id_t prev_scr_id;    /** remark last screen id from current_scr_id */
+    gt_scr_id_t current_scr_id; /** current screen id */
+
+    /** NULL[default]: need to reload screen by prev_scr_id -> init_cb,
+     * otherwise load current scj object directly */
+    gt_obj_st * prev_scr_alive;
+    gt_obj_st * current_scr;
+
+    uint32_t time;
+    uint32_t delay;
+    gt_scr_anim_type_et anim_type;
+}gt_scr_stack_item_st;
+
+typedef struct _gt_scr_home_s {
+    gt_scr_id_t id;             /** -1: unset home page, >= 0: Have home page */
+    gt_obj_st * screen;
+    uint32_t time;
+    uint8_t alive       : 1;    /** 0: not alive, free home page screen each time; 1: home page screen object alive */
+    uint8_t reserved    : 7;
+}_gt_scr_home_st;
+
+typedef struct _gt_gc_scr_s {
+    gt_stack_st * stack;
+    _gt_scr_home_st home_scr;
+
+    gt_scr_mapping_table_st mapping_table;
+}_gt_gc_scr_st;
+
+
+
+/* macros ---------------------------------------------------------------*/
+
+
+
+/* class ----------------------------------------------------------------*/
+
+
+
+/* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief
+ *
+ * @param scr_id
+ * @return gt_scr_init_func_cb_t
+ */
+gt_scr_init_func_cb_t gt_scr_stack_get_init_func(gt_scr_id_t scr_id);
+
+/**
+ * @brief
+ *
+ * @param scr_list
+ * @param count
+ * @param stack_depth
+ * @return true
+ * @return false
+ */
+bool gt_scr_stack_register_id_list(gt_scr_list_st const * const scr_list, gt_scr_id_t count, gt_stack_size_t stack_depth);
+
+/**
+ * @brief
+ *
+ * @param scr_id -1[default]: disable home page, >= 0: set home page id
+ * @param alive_forever 0[default]: free home page screen each time, 1: home page screen object alive
+ * @return true
+ * @return false
+ */
+bool gt_scr_stack_set_home_scr_id(gt_scr_id_t scr_id, bool alive_forever);
+
+void gt_scr_stack_set_home_scr(gt_obj_st * scr);
+gt_obj_st * gt_scr_stack_get_home_scr(void);
+
+gt_scr_id_t gt_scr_stack_get_home_scr_id(void);
+
+bool gt_scr_stack_is_home_scr_alive(void);
+
+bool gt_scr_stack_set_depth(gt_stack_size_t stack_depth);
+
+bool gt_scr_stack_push(gt_scr_stack_item_st * scr);
+
+gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count);
+gt_scr_stack_item_st * gt_scr_stack_peek(void);
+
+gt_stack_item_st gt_scr_stack_has_before(gt_scr_stack_item_st * scr);
+
+bool gt_scr_stack_is_empty(void);
+bool gt_scr_stack_is_full(void);
+
+gt_stack_size_t gt_scr_stack_get_count(void);
+
+/**
+ * @brief Clear all screen stack, expect alive home screen
+ */
+void gt_scr_stack_clear(void);
+
+
+#ifdef __cplusplus
+} /*extern "C"*/
+#endif
+
+#endif //!_GT_SCR_STACK_H_

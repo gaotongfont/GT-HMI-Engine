@@ -18,7 +18,7 @@ extern "C" {
 #include "../core/gt_timer.h"
 #include "../others/gt_list.h"
 #include "../hal/gt_hal_disp.h"
-
+#include "../core/gt_disp.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -29,6 +29,7 @@ typedef struct gt_gc_s {
     struct _gt_event_s * _gt_event_node_header_ll;
 
     gt_disp_st * disp;
+    _gt_gc_scr_st scr_info;
 }gt_gc_st;
 
 extern gt_gc_st _gt_global_call;
@@ -54,6 +55,8 @@ static inline int _gt_gc_is_ll_empty(const struct _gt_list_head * head) {
 
 gt_disp_st * _gt_gc_get_disp(void);
 void _gt_gc_set_disp(gt_disp_st * disp);
+
+_gt_gc_scr_st * _gt_gc_get_scr_info(void);
 
 uint16_t _gt_gc_get_size(void);
 

@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_gc.h"
+#include "stdlib.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -18,7 +19,13 @@
 /* private typedef ------------------------------------------------------*/
 
 gt_gc_st _gt_global_call = {
-    0
+    .scr_info = {
+        .home_scr = {
+            .id = -1,
+            .screen = NULL,
+            .alive = false,
+        }
+    },
 };
 
 /* static variables -----------------------------------------------------*/
@@ -47,6 +54,11 @@ gt_disp_st * _gt_gc_get_disp(void)
 void _gt_gc_set_disp(gt_disp_st * disp)
 {
     _gt_global_call.disp = disp;
+}
+
+_gt_gc_scr_st * _gt_gc_get_scr_info(void)
+{
+    return &_gt_global_call.scr_info;
 }
 
 uint16_t _gt_gc_get_size(void)

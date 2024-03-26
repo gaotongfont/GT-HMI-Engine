@@ -17,6 +17,7 @@ extern "C" {
 #include "../widgets/gt_obj.h"
 #include "../hal/gt_hal_disp.h"
 #include "../others/gt_types.h"
+#include "./gt_scr_stack.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -31,6 +32,41 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief Go back to previous screen
+ *
+ * @param step 0: Only get current scr info; > 0: reload previous screen
+ * @return gt_scr_id_t The previous screen id
+ */
+gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step);
+
+/**
+ * @brief Use default param to load and display screen
+ *
+ * @param scr_id need to register id with init callback function @ref gt_scr_list_st
+ */
+void gt_disp_stack_load_scr(gt_scr_id_t scr_id);
+
+/**
+ * @brief Use Custom param to load and display screen
+ *
+ * @param scr_id need to register id with init callback function @ref gt_scr_list_st
+ * @param type animation type
+ * @param time animation whole time
+ * @param delay delay time to start animation
+ * @param del_prev_scr true: free previous screen object; false: keep previous screen object alive
+ */
+void gt_disp_stack_load_scr_anim(gt_scr_id_t scr_id, gt_scr_anim_type_et type, uint32_t time, uint32_t delay, bool del_prev_scr);
+
+/**
+ * @brief display screen
+ *
+ * @param scr screen obj
+ */
+void gt_disp_load_scr(gt_obj_st * scr);
+
+void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t time, uint32_t delay, bool del_prev_scr);
 
 /**
  * @brief Set display screen
@@ -52,15 +88,6 @@ gt_obj_st * gt_disp_get_scr(void);
  * @return gt_obj_st* The top layer of the display virtual screen
  */
 gt_obj_st * gt_disp_get_layer_top(void);
-
-/**
- * @brief display screen
- *
- * @param scr screen obj
- */
-void gt_disp_load_scr(gt_obj_st * scr);
-
-void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t time, uint32_t delay, bool auto_del);
 
 /**
  * @brief Update the display area

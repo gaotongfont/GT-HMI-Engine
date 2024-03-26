@@ -145,6 +145,7 @@ gt_stack_st * gt_stack_cycle_create(gt_stack_size_t depth, uint16_t item_size)
     ret->depth = depth;
     ret->item_size = item_size;
     ret->reg.cycle = true;
+
     return ret;
 
 fail_lb:
@@ -230,9 +231,9 @@ bool gt_stack_is_cycle(gt_stack_st * stack)
     return stack ? stack->reg.cycle : false;
 }
 
-gt_stack_ret_st gt_stack_search_item_from_top(gt_stack_st * stack, gt_stack_equal_cb_t equal_cb, void * target)
+gt_stack_item_st gt_stack_search_item_from_top(gt_stack_st * stack, gt_stack_equal_cb_t equal_cb, void * target)
 {
-    gt_stack_ret_st ret = {
+    gt_stack_item_st ret = {
         .index_from_top = 0,
         .data = NULL
     };
@@ -254,9 +255,9 @@ gt_stack_ret_st gt_stack_search_item_from_top(gt_stack_st * stack, gt_stack_equa
     return ret;
 }
 
-gt_stack_ret_st gt_stack_search_item_from_bottom(gt_stack_st * stack, gt_stack_equal_cb_t equal_cb, void * target)
+gt_stack_item_st gt_stack_search_item_from_bottom(gt_stack_st * stack, gt_stack_equal_cb_t equal_cb, void * target)
 {
-    gt_stack_ret_st ret = {
+    gt_stack_item_st ret = {
         .index_from_top = 0,
         .data = NULL
     };
@@ -276,6 +277,26 @@ gt_stack_ret_st gt_stack_search_item_from_bottom(gt_stack_st * stack, gt_stack_e
         bottom = (bottom + 1) % stack->depth;
     }
     return ret;
+}
+
+bool gt_stack_iterator(gt_stack_st * stack, gt_stack_iterator_cb_t it_cb, void * data)
+{
+    if (NULL == stack || NULL == it_cb) {
+        return false;
+    }
+    gt_stack_item_st ptr = { 0 };
+    gt_stack_size_t top = stack->top;
+
+    for (gt_stack_size_t i = 0, cnt = stack->count; i < cnt; ++i) {
+        ptr.index_from_top = i;
+        ptr.data = _get_offset_by_top(stack, top);
+        if (false == it_cb(ptr, data)) {
+            return false;
+        }
+        top = top ? (top - 1) : stack->depth;
+    }
+
+    return true;
 }
 
 void gt_stack_destroy(gt_stack_st * stack)

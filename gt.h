@@ -31,6 +31,7 @@ extern "C" {
 #include "src/core/gt_obj_pos.h"
 #include "src/core/gt_timer.h"
 #include "src/core/gt_draw.h"
+#include "src/core/gt_scr_stack.h"
 
 /* font */
 #include "src/font/gt_font.h"

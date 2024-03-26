@@ -643,9 +643,9 @@ bool gt_indev_is_disabled(void)
 
 bool _gt_indev_remove_want_delate_target(gt_obj_st * target)
 {
-    gt_indev_st * indev;
-    uint8_t i, cnt_indev = gt_indev_get_dev_count();
+    gt_indev_st * indev = NULL;
     struct _point * point_p = &indev->proc.data.point;
+    uint8_t i, cnt_indev = gt_indev_get_dev_count();
     bool ret = false;
 
     for (i = 0; i < cnt_indev; i++) {
