@@ -410,6 +410,7 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     if (NULL == obj) {
         return obj;
     }
+    obj->fixed = false;
     obj->bgcolor = gt_color_hex(0xffffff);
 
     _gt_listview_st * style = (_gt_listview_st * )obj;

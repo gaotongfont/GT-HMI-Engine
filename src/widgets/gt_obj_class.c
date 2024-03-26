@@ -267,6 +267,7 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
         obj->area.w = gt_disp_get_res_hor(NULL);
         obj->area.h = gt_disp_get_res_ver(NULL);
     } else {
+        obj->fixed = true;
         if (false == _add_obj_to_parent(obj, parent)) {
             goto obj_lb;
         }

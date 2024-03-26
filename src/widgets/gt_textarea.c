@@ -214,6 +214,8 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
     if (NULL == obj) {
         return obj;
     }
+    obj->fixed = false;
+
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
 
     style->font_info.style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;

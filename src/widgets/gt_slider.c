@@ -550,6 +550,7 @@ gt_obj_st * gt_slider_create(gt_obj_st * parent)
     style->tag_visible = true;
     style->offset = 0;
     style->mode = GT_SLIDER_MODE_DEFAULT;
+    obj->fixed = false;
 
     /** AB repeat mode setting */
     style->repeat_info.color = gt_color_hex(0xff6b81);

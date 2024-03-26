@@ -290,6 +290,7 @@ gt_obj_st * gt_view_pager_create(gt_obj_st * parent)
     obj->area.h = gt_disp_get_res_ver(NULL);
     obj->opa = GT_OPA_30;
     obj->absorb = true;
+    obj->fixed = false;
 
     style->reg.glass = true;
     style->color_glass = gt_color_make(0xff, 0xff, 0xff);

@@ -420,6 +420,7 @@ gt_obj_st * gt_roller_create(gt_obj_st * parent)
     style->count_of_show = 3;
     style->line_space = 10;
 
+    obj->fixed = false;
     obj->area.w = 60;
     obj->area.h = 20 * style->count_of_show;
 
