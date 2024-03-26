@@ -313,6 +313,10 @@ static void _set_label_pos(gt_obj_st * lab, gt_obj_st * item, bool icon_right) {
     uint16_t offset = _get_scale_offset(item);
 
     gt_area_copy(&lab->area, &item->area);
+    if (item->cnt_child < 2) {
+        return ;    /** only label */
+    }
+    /** have icon */
     lab->area.w -= offset;
 
     if (false == icon_right) {
@@ -334,7 +338,9 @@ static gt_obj_st * _create_item_icon(gt_obj_st * listview, gt_obj_st * obj, char
     gt_obj_st * icon = gt_img_create(obj);
 
     gt_img_set_src(icon, img);
-    _center_icon_pos(icon, obj, style->icon_right);
+    if (img) {
+        _center_icon_pos(icon, obj, style->icon_right);
+    }
 
     gt_obj_set_touch_parent(icon, true);
     gt_obj_set_bubble_notify(icon, true);
@@ -458,9 +464,7 @@ void gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * text)
     gt_obj_st * obj = _create_item_obj(listview);
     uint16_t offset = _get_scale_offset(obj);
 
-    if (img) {
-        _create_item_icon(listview, obj, img);
-    }
+    _create_item_icon(listview, obj, img);
     _create_item_label(listview, obj, text);
 
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);

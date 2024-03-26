@@ -168,6 +168,9 @@ void gt_img_set_src(gt_obj_st * img, char * src){
     if (OBJ_TYPE != gt_obj_class_get_type(img)) {
         return ;
     }
+    if (NULL == src) {
+        return ;
+    }
     _gt_img_st * style = (_gt_img_st *)img;
     if (NULL != style->src && !strcmp(src, style->src)) {
         return ;
