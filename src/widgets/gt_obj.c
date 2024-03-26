@@ -225,7 +225,7 @@ void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
     }
 
     if (obj->using) {
-        GT_LOGW("obj", "Try to delete an object that is in use.");
+        GT_LOGW("obj", "Try to delete an object %p that is in use.", obj);
         _gt_timer_set_repeat_count(timer, 1);   // retry to destroy object
         return;
     }
