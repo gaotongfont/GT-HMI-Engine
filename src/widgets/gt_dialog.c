@@ -45,7 +45,7 @@ typedef struct _gt_dialog_s {
     gt_obj_st * btn_close;
     gt_obj_st * title;
     gt_obj_st * content;
-    gt_obj_st * btn_cannel;
+    gt_obj_st * btn_cancel;
     gt_obj_st * btn_confirm;
 
     gt_color_t border_color;
@@ -252,43 +252,43 @@ static gt_obj_st * _create_content(gt_obj_st * dialog, char * content_text) {
     return content;
 }
 
-static void _set_cannel_btn_pos(gt_obj_st * cannel, gt_obj_st * dialog) {
-    if (NULL == cannel) {
+static void _set_cancel_btn_pos(gt_obj_st * cancel, gt_obj_st * dialog) {
+    if (NULL == cancel) {
         return ;
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
     gt_obj_st * confirm = style->btn_confirm;
     gt_size_t confirm_width = confirm ? confirm->area.w : 0;
 
-    cannel->area.w = _BTN_SIZE_16 << 1;
-    cannel->area.h = _BTN_SIZE_16;
-    cannel->area.x = dialog->area.x + dialog->area.w - cannel->area.w - confirm_width - (_PADDING_HOR << 1);
-    cannel->area.y = dialog->area.y + dialog->area.h - cannel->area.h - _PADDING_VER;
+    cancel->area.w = _BTN_SIZE_16 << 1;
+    cancel->area.h = _BTN_SIZE_16;
+    cancel->area.x = dialog->area.x + dialog->area.w - cancel->area.w - confirm_width - (_PADDING_HOR << 1);
+    cancel->area.y = dialog->area.y + dialog->area.h - cancel->area.h - _PADDING_VER;
 }
 
-static gt_obj_st * _create_cannel_btn(gt_obj_st * dialog, gt_event_cb_t cannel_cb, void * cannel_cb_user_data) {
-    gt_obj_st * cannel_btn = gt_btn_create(dialog);
-    if (NULL == cannel_btn) {
+static gt_obj_st * _create_cancel_btn(gt_obj_st * dialog, gt_event_cb_t cancel_cb, void * cancel_cb_user_data) {
+    gt_obj_st * cancel_btn = gt_btn_create(dialog);
+    if (NULL == cancel_btn) {
         return NULL;
     }
-    _set_cannel_btn_pos(cannel_btn, dialog);
+    _set_cancel_btn_pos(cancel_btn, dialog);
 
-    gt_btn_set_color_background(cannel_btn, dialog->bgcolor);
-    gt_btn_set_color_pressed(cannel_btn, gt_color_hex(0xdfdfdf));
-    gt_btn_set_font_color(cannel_btn, gt_color_hex(0x5f5f5f));
-    gt_btn_set_border_width(cannel_btn, 1);
-    gt_btn_set_color_border(cannel_btn, gt_color_hex(0x7f7f7f));
+    gt_btn_set_color_background(cancel_btn, dialog->bgcolor);
+    gt_btn_set_color_pressed(cancel_btn, gt_color_hex(0xdfdfdf));
+    gt_btn_set_font_color(cancel_btn, gt_color_hex(0x5f5f5f));
+    gt_btn_set_border_width(cancel_btn, 1);
+    gt_btn_set_color_border(cancel_btn, gt_color_hex(0x7f7f7f));
 
-    gt_obj_set_opa(cannel_btn, GT_OPA_0);
-    gt_btn_set_text(cannel_btn, GT_SYMBOL_CLOSE);
-    gt_btn_set_radius(cannel_btn, _BTN_SIZE_16 >> 2);
-    gt_obj_set_inside(cannel_btn, true);
-    if (cannel_cb) {
-        gt_obj_add_event_cb(cannel_btn, cannel_cb, GT_EVENT_TYPE_INPUT_RELEASED, cannel_cb_user_data);
+    gt_obj_set_opa(cancel_btn, GT_OPA_0);
+    gt_btn_set_text(cancel_btn, GT_SYMBOL_CLOSE);
+    gt_btn_set_radius(cancel_btn, _BTN_SIZE_16 >> 2);
+    gt_obj_set_inside(cancel_btn, true);
+    if (cancel_cb) {
+        gt_obj_add_event_cb(cancel_btn, cancel_cb, GT_EVENT_TYPE_INPUT_RELEASED, cancel_cb_user_data);
     }
-    gt_obj_add_event_cb(cannel_btn, _close_release_cb, GT_EVENT_TYPE_INPUT_RELEASED, dialog);
+    gt_obj_add_event_cb(cancel_btn, _close_release_cb, GT_EVENT_TYPE_INPUT_RELEASED, dialog);
 
-    return cannel_btn;
+    return cancel_btn;
 }
 
 static void _set_confirm_btn_pos(gt_obj_st * confirm, gt_obj_st * dialog) {
@@ -339,7 +339,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             _set_title_pos(style->title, obj);
             _set_content_pos(style->content, obj);
             _set_confirm_btn_pos(style->btn_confirm, obj);
-            _set_cannel_btn_pos(style->btn_cannel, obj);
+            _set_cancel_btn_pos(style->btn_cancel, obj);
             break;
         }
         default:
@@ -394,8 +394,8 @@ gt_obj_st * gt_dialog_create_issue(bool show_close_btn, gt_dialog_param_st const
     /** Must exist */
     style->btn_confirm = _create_confirm_btn(obj, param->confirm_cb, param->confirm_cb_user_data);
 
-    if (param->cannel_cb) {
-        style->btn_cannel = _create_cannel_btn(obj, param->cannel_cb, param->cannel_cb_user_data);
+    if (param->cancel_cb) {
+        style->btn_cancel = _create_cancel_btn(obj, param->cancel_cb, param->cancel_cb_user_data);
     }
 
     return obj;

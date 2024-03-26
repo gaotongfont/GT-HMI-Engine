@@ -27,8 +27,8 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 typedef struct gt_dialog_param_s {
-    gt_event_cb_t cannel_cb;    /** cannel button callback */
-    void * cannel_cb_user_data; /** cannel button callback parameter */
+    gt_event_cb_t cancel_cb;    /** cancel button callback */
+    void * cancel_cb_user_data; /** cancel button callback parameter */
 
     gt_event_cb_t confirm_cb;   /** confirm button callback */
     void * confirm_cb_user_data;/** confirm button callback parameter */
