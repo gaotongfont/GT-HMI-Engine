@@ -344,8 +344,11 @@ static bool _go_prev_sec(gt_obj_st * obj) {
 
     if (!_get_hour(clock->time_current) && !_get_minute(clock->time_current) && !_get_second(clock->time_current)) {
         /** return when value is 00:00:00 */
-        return false;
+        if (GT_CLOCK_MODE_COUNTDOWN == clock->reg.mode) {
+            return false;
+        }
     }
+
     if (_get_second(clock->time_current)) {
         --clock->time_current.second;
         if (clock->alert &&
@@ -357,20 +360,17 @@ static bool _go_prev_sec(gt_obj_st * obj) {
         }
         return true;
     }
-    clock->time_current.second = _SECOND_MAX_VALUE - 1;
+    _set_second(clock->time_current, _SECOND_MAX_VALUE - 1);
     if (_get_minute(clock->time_current)) {
         --clock->time_current.minute;
         return true;
     }
-    clock->time_current.minute = _MINUTE_MAX_VALUE - 1;
+    _set_minute(clock->time_current, _MINUTE_MAX_VALUE -1);
     if (_get_hour(clock->time_current)) {
         --clock->time_current.hour;
         return true;
     }
-
-    /** hour is 0 */
-    _set_minute(clock->time_current, 0);
-    _set_second(clock->time_current, 0);
+    _set_hour(clock->time_current, _HOUR_MAX_VALUE - 1);
 
     return true;
 }
@@ -478,6 +478,22 @@ void gt_clock_turn_next_second(gt_obj_st * obj)
         _go_next_sec(obj);
     }
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+void gt_clock_turn_prev_second(gt_obj_st * obj)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_clock_st * clock = (_gt_clock_st *)obj;
+
+    if (GT_CLOCK_MODE_COUNTDOWN == clock->reg.mode) {
+        _go_next_sec(obj);
+    } else {
+        _go_prev_sec(obj);
+    }
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+
 }
 
 void gt_clock_set_mode(gt_obj_st * obj, gt_clock_mode_et mode)

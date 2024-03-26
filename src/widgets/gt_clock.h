@@ -112,6 +112,8 @@ uint32_t gt_clock_get_alert_time(gt_obj_st * obj, gt_clock_time_st * time);
  */
 void gt_clock_turn_next_second(gt_obj_st * obj);
 
+void gt_clock_turn_prev_second(gt_obj_st * obj);
+
 /**
  * @brief Set widget working mode, [default: GT_CLOCK_MODE_TIME],
  *      @ref gt_clock_mode_et
