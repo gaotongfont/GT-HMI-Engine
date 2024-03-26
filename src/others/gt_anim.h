@@ -18,6 +18,7 @@ extern "C" {
 #include "./gt_list.h"
 #include "../widgets/gt_obj.h"
 #include "../others/gt_types.h"
+#include "../core/gt_mem.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -150,8 +151,15 @@ static inline void gt_anim_set_exec_cb(gt_anim_st * anim, gt_anim_exec_cb_t exec
  * @param anim
  * @param data
  */
-static inline void gt_anim_set_data(gt_anim_st * anim, void * data) {
-    anim->data = data;
+static inline void gt_anim_set_data(gt_anim_st * anim, void * data, gt_size_t size) {
+    if (NULL == data || 0 == size) {
+        return ;
+    }
+    anim->data = anim->data ? gt_mem_realloc(anim->data, size) : gt_mem_malloc(size);
+    if (NULL == anim->data) {
+        return ;
+    }
+    gt_memcpy(anim->data, data, size);
 }
 
 /* =================== Movement control of Widgets =================== */
