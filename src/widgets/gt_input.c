@@ -158,12 +158,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     /*draw cursor*/
     style->point_pos.x = area_res.x;
     style->point_pos.y = area_res.y;
-    // gt_graph_init_rect_attr(&rect_attr);
-    // rect_attr.reg.is_fill = 1;
-    // rect_attr.bg_color = gt_color_hex(0x666666);
-    // area_res.w = 2;
-    // area_res.h = style->font_info.size;
-    // draw_bg(input->draw_ctx, &rect_attr, &area_res);
+
     if( style->value ){
         _gt_input_cursor_anim(input , &area_font);
     }

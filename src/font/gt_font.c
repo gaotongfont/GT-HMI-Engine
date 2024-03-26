@@ -835,18 +835,30 @@ static uint32_t _gt_font_language_split(const uint8_t *str , uint32_t len , uint
     return idx;
 }
 
+static bool _is_punctuation(uint32_t unicode)
+{
+    if( (0x20 <= unicode && unicode <= 0x2E) || \
+        (0x3A <= unicode && unicode <= 0x40) || \
+        (0x5B <= unicode && unicode <= 0x60) || \
+        (0x7B <= unicode && unicode <= 0x7E)
+    ){
+        return true;
+    }
+    return false;
+}
+
 static uint32_t _gt_font_punctuation_split(const uint8_t *str , uint32_t len , uint8_t encoding)
 {
     uint32_t idx = 0 , unicode = 0;
     uint8_t tmp;
     idx += gt_font_one_char_code_len_get((uint8_t * )&str[idx], &unicode, encoding);
-    if(0x20 == unicode){
+    if(_is_punctuation(unicode)){
         return idx;
     }
     while (idx < len)
     {
         tmp = gt_font_one_char_code_len_get((uint8_t * )&str[idx], &unicode, encoding);
-        if(0x20 == unicode || '\n' == unicode){
+        if(_is_punctuation(unicode) || '\n' == unicode){
             break;
         }
         idx += tmp;
@@ -1070,7 +1082,7 @@ uint32_t gt_font_split(gt_font_st *fonts , uint32_t width , uint32_t dot_w ,uint
             }
             goto _ret_dat;
         }
-        else if((*ret_w + tmp_w > width) || (0x0A == _font.utf8[0])){
+        else if((*ret_w + tmp_w >= width) || (0x0A == _font.utf8[0])){
             if(0 == idx && width == dot_w){
                 len = ol_idx;
                 *ret_w = ol_w;
@@ -1089,17 +1101,7 @@ _ret_dat:
 }
 
 
-static bool _is_punctuation(uint32_t unicode)
-{
-    if( (0x20 <= unicode && unicode <= 0x2E) || \
-        (0x3A <= unicode && unicode <= 0x40) || \
-        (0x5B <= unicode && unicode <= 0x60) || \
-        (0x7B <= unicode && unicode <= 0x7E)
-    ){
-        return true;
-    }
-    return false;
-}
+
 
 static uint32_t _gt_font_lang_and_punctuation_split(const uint8_t *str , uint32_t len , uint8_t encoding , uint8_t *lan , uint8_t is_lan)
 {

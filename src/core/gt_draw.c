@@ -1517,6 +1517,15 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     };
 
     if( dsc->font->len == 0 ){
+        if( (GT_ALIGN_LEFT_MID == _get_align_type(dsc->align)) || (GT_ALIGN_RIGHT_MID == _get_align_type(dsc->align)) || \
+            (GT_ALIGN_CENTER_MID == _get_align_type(dsc->align))
+        )
+        {
+            if(dsc->font->info.size < coords->h){
+                area_font.y = coords->y + ((coords->h - dsc->font->info.size) >> 1);
+            }
+        }
+
         return area_font;
     }
 
@@ -1572,7 +1581,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     uint8_t style_space_y = (dsc->style == GT_FONT_STYLE_NONE) ? 0 : ((_font.info.size >> 4) ? (_font.info.size >> 4) : 1);
 
     uint16_t idx = 0 , idx_2 = 0 , idx_step = 0, idx_len = 0, txt_len = dsc->font->len;
-    uint16_t disp_w = coords->w;
+    int32_t disp_w = coords->w;
     uint16_t overlength_offset = ((coords->w / ((_font.info.size >> 1) + dsc->space_x) - 1) >> 1 << 1);
     uint8_t overlength = 0;
     uint32_t  unicode = 0 , ret_w = 0 , lan_len;
@@ -1589,48 +1598,36 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         goto _ret_handler;
     }
 
+    if(dsc->start_x > 0){
+        disp_w = coords->w - (dsc->start_x - coords->x);
+    }
+
     // align
     area_font.y = coords->y;
     if( (GT_ALIGN_LEFT !=_get_align_type(dsc->align)) &&  (GT_ALIGN_RIGHT !=_get_align_type(dsc->align)) && \
         (GT_ALIGN_CENTER !=_get_align_type(dsc->align)) &&  (GT_ALIGN_NONE !=_get_align_type(dsc->align))
     )
     {
-        idx_len = 0;
+        idx_len = 1;
         while (idx < txt_len)
         {
             if(0x0A == txt[idx]){
-                idx_step = 0;
-                ++idx;
+                idx += 1;
                 goto _compute_line;
             }
             _font.utf8 = &txt[idx];
             _font.len = txt_len - idx;
-
             idx_step = gt_font_split( &_font , disp_w, coords->w ,dsc->space_x , &ret_w , &lan , &lan_len);
 
-            if(0 == idx_step && 0 == ret_w){
-                ++overlength;
-                if(disp_w == coords->w){
-                    ++overlength;
-
-                }
+            disp_w -= ret_w;
+            if(disp_w <= 0 || 0 == idx_step){
+                goto _compute_line;
             }
-            else{
-                overlength = 0;
-            }
-
-            if( disp_w - ret_w > _font.info.size && idx_step != 0 ){
-                idx += idx_step;
-                disp_w -= ret_w;
-                if(idx < txt_len){
-                    continue;
-                }
-            }
-        _compute_line:
-            idx_len++;
-            idx += overlength < 2 ? idx_step : overlength_offset;
+            idx += idx_step;
+            continue;
+_compute_line:
+            ++idx_len;
             disp_w = coords->w;
-            overlength = 0;
         }
 
         idx_len = idx_len * (_font.info.size + (style_space_y << 1) + dsc->space_y);
@@ -1659,14 +1656,14 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     idx_len = 0;
     overlength = 0;
     bidi_len = 0;
-
-    uint16_t start_x = dsc->start_x;
     disp_w = coords->w;
-    if(start_x){
-        disp_w = coords->w - (start_x - coords->x);
-        area_font.x = start_x;
-    }
 
+    bool start_x_flag = false;
+    disp_w = coords->w;
+    if(dsc->start_x > 0){
+        disp_w = coords->w - (dsc->start_x - coords->x);
+        start_x_flag = true;
+    }
     int font_disp_h = _font.info.size;
 
     while (idx < txt_len)
@@ -1684,7 +1681,6 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             ++idx;
             goto _disp_font;
         }
-
         _font.utf8 = &txt[idx];
         _font.len = txt_len - idx;
         idx_step = gt_font_split( &_font , disp_w, coords->w , dsc->space_x , &ret_w , &lan , &lan_len);
@@ -1724,17 +1720,6 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
                 continue;
             }
         }
-
-        //
-        // if(1 == idx_len && 1 == overlength && 0x20 == txt_2[0]){
-        //     // idx += idx_len;
-        //     idx_len = 0;
-        //     txt_2 = &txt[idx];
-        //     bidi_len = 0;
-        //     font_disp_h = _font.info.size;
-        //     disp_w = coords->w;
-        //     continue;
-        // }
 
     _disp_font:
         if(overlength < 2){
@@ -1798,9 +1783,9 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             area_font.x = (coords->x + coords->w) - (area_font.x - coords->x);
         }
 
-        if(start_x){
-            area_font.x = start_x;
-            start_x = 0;
+        if(start_x_flag){
+            area_font.x = dsc->start_x;
+            start_x_flag = false;
         }
         idx_2 = 0;
         bidi_pos = 0;
@@ -1897,6 +1882,9 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             idx += overlength < 2 ? idx_step : overlength_offset;
             if(idx < txt_len){
                 area_font.y += area_font.h + dsc->space_y + (style_space_y << 1);
+            }
+            else if(0x0A == txt[txt_len - 1]){
+                area_font.y += area_font.h + dsc->space_y + (style_space_y << 1);
                 area_font.x = coords->x;
             }
             disp_w = coords->w;
@@ -1908,7 +1896,6 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         font_disp_h = _font.info.size;
         area_font.h = _font.info.size;
         area_font.w = _font.info.size;
-
     }
 
 _ret_handler:
