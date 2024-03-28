@@ -340,6 +340,13 @@ static void _indev_released_handle(gt_indev_st * indev) {
     point_p->obj_target = NULL;
 }
 
+/**
+ * @brief Search the active object from all layers
+ *
+ * @param point physical point
+ * @param new_action true: new action, false: continue action
+ * @return gt_obj_st* NULL or active object
+ */
 static gt_obj_st * _search_active_obj_from_all_layers(gt_point_st * point, bool new_action) {
     gt_obj_st * scr = gt_disp_get_scr();
     gt_obj_st * layer_top = gt_disp_get_layer_top();
@@ -348,11 +355,12 @@ static gt_obj_st * _search_active_obj_from_all_layers(gt_point_st * point, bool 
     if (layer_top->cnt_child) {
         ret = gt_find_clicked_obj_by_point(layer_top, point);
         if (true == new_action && NULL == ret) {
-            /** clicked dialog, etc. outside area */
+            /** clicked dialog, etc. widget's outside area, hided top widgets */
             _gt_disp_hided_layer_top_widgets(layer_top);
         }
     }
     if (NULL == ret) {
+        /** Layer top have no widget find out, search it within screen */
         ret = gt_find_clicked_obj_by_point(scr, point);
     }
     return ret;

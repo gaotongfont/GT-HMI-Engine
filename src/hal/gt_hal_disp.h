@@ -210,7 +210,7 @@ void _gt_disp_reload_max_area(gt_obj_st * scr);
 /**
  * @brief Hided the top layer widgets, such as: dialog, etc.
  *
- * @param top
+ * @param top The top layer object
  */
 void _gt_disp_hided_layer_top_widgets(gt_obj_st * top);
 
