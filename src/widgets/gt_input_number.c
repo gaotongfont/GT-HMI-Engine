@@ -116,6 +116,11 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
         case GT_EVENT_TYPE_DRAW_REDRAW:
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
+        case GT_EVENT_TYPE_UPDATE_STYLE: {
+            gt_obj_set_size(style->label, obj->area.w, obj->area.h);
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            break;
+        }
 
         default:
             break;
