@@ -94,6 +94,9 @@ void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)
     /** normal screen */
     gt_area_st area = obj->area;
     _gt_obj_move_child_by(obj, x - area.x, y - area.y);
+    if (gt_obj_get_virtual(obj)) {
+        return ;
+    }
     area.x = x;
     area.y = y;
     gt_obj_set_area(obj, area);
@@ -117,6 +120,9 @@ void _gt_obj_move_child_by(gt_obj_st * obj, gt_size_t dx, gt_size_t dy)
 }
 
 void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h) {
+    if (gt_obj_get_virtual(obj)) {
+        return ;
+    }
     gt_area_st area = obj->area;
     area.w = w;
     area.h = h;
@@ -130,6 +136,9 @@ void gt_obj_set_x(gt_obj_st * obj, gt_size_t x) {
     if (_update_layer_top_widget_pos(obj, x, area.y)) {
         return ;
     }
+    if (gt_obj_get_virtual(obj)) {
+        return ;
+    }
     area.x = x;
     gt_obj_set_area(obj, area);
 }
@@ -139,17 +148,26 @@ void gt_obj_set_y(gt_obj_st * obj, gt_size_t y) {
     if (_update_layer_top_widget_pos(obj, area.x, y)) {
         return ;
     }
+    if (gt_obj_get_virtual(obj)) {
+        return ;
+    }
     area.y = y;
     gt_obj_set_area(obj, area);
 }
 
 void gt_obj_set_w(gt_obj_st * obj, uint16_t w) {
+    if (gt_obj_get_virtual(obj)) {
+        return ;
+    }
     gt_area_st area = obj->area;
     area.w = w;
     gt_obj_set_area(obj, area);
 }
 
 void gt_obj_set_h(gt_obj_st * obj, uint16_t h) {
+    if (gt_obj_get_virtual(obj)) {
+        return ;
+    }
     gt_area_st area = obj->area;
     area.h = h;
     gt_obj_set_area(obj, area);

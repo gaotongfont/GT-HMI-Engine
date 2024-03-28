@@ -65,7 +65,7 @@ static void _deinit_cb(gt_obj_st * obj) {
 }
 
 static void _set_infinite_area(gt_obj_st * obj) {
-    /** Set an infinite range */
+    /** Set an infinite range -32767 ~ 32766 */
     obj->area.x = -((1 << (sizeof(gt_size_t) << 3) - 1)) + 1;
     obj->area.y = -((1 << (sizeof(gt_size_t) << 3) - 1)) + 1;
     obj->area.w = ((1 << (sizeof(gt_size_t) << 3))) - 2;
