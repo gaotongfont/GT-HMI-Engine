@@ -173,6 +173,28 @@ gt_scr_stack_item_st * gt_scr_stack_peek(void)
     return (gt_scr_stack_item_st * )gt_stack_peek(scr_info->stack);
 }
 
+bool gt_scr_stack_is_prev(gt_scr_id_t prev_scr_id)
+{
+    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+
+    gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek(scr_info->stack);
+    if (NULL == item) {
+        return false;
+    }
+    return item->prev_scr_id == prev_scr_id;
+}
+
+bool gt_scr_stack_is_current(gt_scr_id_t scr_id)
+{
+    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+
+    gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek(scr_info->stack);
+    if (NULL == item) {
+        return false;
+    }
+    return item->current_scr_id == scr_id;
+}
+
 gt_stack_item_st gt_scr_stack_has_before(gt_scr_stack_item_st * scr)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();

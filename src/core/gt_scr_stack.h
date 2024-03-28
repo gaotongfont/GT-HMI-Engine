@@ -80,26 +80,26 @@ typedef struct _gt_gc_scr_s {
 /* global functions / API interface -------------------------------------*/
 
 /**
- * @brief
+ * @brief Get screen init function by screen id
  *
- * @param scr_id
+ * @param scr_id screen id
  * @return gt_scr_init_func_cb_t
  */
 gt_scr_init_func_cb_t gt_scr_stack_get_init_func(gt_scr_id_t scr_id);
 
 /**
- * @brief
+ * @brief Register screen id list, and stack depth for the screen stack
  *
- * @param scr_list
- * @param count
- * @param stack_depth
- * @return true
- * @return false
+ * @param scr_list screen list
+ * @param count count of screen
+ * @param stack_depth screen stack depth
+ * @return true success
+ * @return false fail
  */
 bool gt_scr_stack_register_id_list(gt_scr_list_st const * const scr_list, gt_scr_id_t count, gt_stack_size_t stack_depth);
 
 /**
- * @brief
+ * @brief Set home page screen id, and life cycle
  *
  * @param scr_id -1[default]: disable home page, >= 0: set home page id
  * @param alive_forever 0[default]: free home page screen each time, 1: home page screen object alive
@@ -113,6 +113,12 @@ gt_obj_st * gt_scr_stack_get_home_scr(void);
 
 gt_scr_id_t gt_scr_stack_get_home_scr_id(void);
 
+/**
+ * @brief home screen is alive
+ *
+ * @return true
+ * @return false
+ */
 bool gt_scr_stack_is_home_scr_alive(void);
 
 bool gt_scr_stack_set_depth(gt_stack_size_t stack_depth);
@@ -121,6 +127,24 @@ bool gt_scr_stack_push(gt_scr_stack_item_st * scr);
 
 gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count);
 gt_scr_stack_item_st * gt_scr_stack_peek(void);
+
+/**
+ * @brief judge the previous screen is the screen which we want
+ *
+ * @param prev_scr_id
+ * @return true
+ * @return false
+ */
+bool gt_scr_stack_is_prev(gt_scr_id_t prev_scr_id);
+
+/**
+ * @brief
+ *
+ * @param scr_id
+ * @return true
+ * @return false
+ */
+bool gt_scr_stack_is_current(gt_scr_id_t scr_id);
 
 gt_stack_item_st gt_scr_stack_has_before(gt_scr_stack_item_st * scr);
 
