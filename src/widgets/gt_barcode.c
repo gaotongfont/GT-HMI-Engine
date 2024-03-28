@@ -100,7 +100,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
         goto RET_FREE ;
     }
     style->pdat_size = buf_size;
-    GT_LOGD(GT_LOG_TAG_GUI , "area dot_w = %d , dot_h = %d , buf_size = %d" , area.w , area.h , style->pdat_size);
+    // GT_LOGD(GT_LOG_TAG_GUI , "area dot_w = %d , dot_h = %d , buf_size = %d" , area.w , area.h , style->pdat_size);
 
     // 获取数据
     if(!gt_barcode_get(style))

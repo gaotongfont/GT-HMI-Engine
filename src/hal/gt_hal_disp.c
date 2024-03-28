@@ -308,12 +308,12 @@ static void _calc_max_area_recursive(gt_obj_st * obj, bool is_root) {
             _calc_max_area_recursive(ptr, false);
         }
 
-        if (false == is_root) {
-            _gt_disp_update_max_area(&ptr->area, _gt_obj_is_ignore_calc_max_area(ptr));
-        }
+        _gt_disp_update_max_area(&ptr->area, _gt_obj_is_ignore_calc_max_area(ptr));
     }
 
-    if (cnt) { return; }
+    if (is_root || gt_obj_get_virtual(obj)) {
+        return;
+    }
     _gt_disp_update_max_area(&obj->area, _gt_obj_is_ignore_calc_max_area(obj));
 }
 
