@@ -19,6 +19,7 @@
 #include "gt_obj_pos.h"
 #include "gt_obj_scroll.h"
 #include "gt_style.h"
+#include "../widgets/gt_dialog.h"
 
 /* private define -------------------------------------------------------*/
 /**
@@ -341,6 +342,19 @@ static void _indev_released_handle(gt_indev_st * indev) {
 }
 
 /**
+ * @brief Objects outside the control cannot be activated
+ *
+ * @return true can not be activated
+ * @return false can be activated
+ */
+static bool _obj_outside_can_not_be_activated(void) {
+    if (gt_dialog_has_showing()) {
+        return true;
+    }
+    return false;
+}
+
+/**
  * @brief Search the active object from all layers
  *
  * @param point physical point
@@ -357,6 +371,9 @@ static gt_obj_st * _search_active_obj_from_all_layers(gt_point_st * point, bool 
         if (true == new_action && NULL == ret) {
             /** clicked dialog, etc. widget's outside area, hided top widgets */
             _gt_disp_hided_layer_top_widgets(layer_top);
+            if (_obj_outside_can_not_be_activated()) {
+                return ret;
+            }
         }
     }
     if (NULL == ret) {

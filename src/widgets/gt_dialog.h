@@ -72,6 +72,8 @@ gt_obj_st * gt_dialog_create_issue(bool show_close_btn, gt_dialog_param_st const
  */
 void gt_dialog_show(gt_obj_st * obj);
 
+bool gt_dialog_has_showing(void);
+
 /**
  * @brief Set dialog border color
  *

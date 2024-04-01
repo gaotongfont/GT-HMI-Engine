@@ -356,6 +356,23 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
+static gt_obj_st * _find_showing_recursive_by_type(gt_obj_st * obj, gt_obj_type_et type) {
+    if (NULL == obj) {
+        return NULL;
+    }
+    if (gt_obj_is_type(obj, type) && gt_obj_get_visible(obj)) {
+        return obj;
+    }
+
+    gt_obj_st * ret = NULL;
+    for (gt_size_t i = 0, cnt = obj->cnt_child; i < cnt; ++i) {
+        ret = _find_showing_recursive_by_type(obj->child[i], type);
+        if (ret) {
+            return ret;
+        }
+    }
+    return ret;
+}
 
 /* global functions / API interface -------------------------------------*/
 
@@ -375,6 +392,7 @@ gt_obj_st * gt_dialog_create(bool show_close_btn)
     obj->visible = GT_INVISIBLE;
     obj->opa = GT_OPA_0;
 
+    style->outside_auto_hide = true;
     style->border_color = gt_color_hex(0xc7c7c7);
     style->border_width = 2;
     style->border_radius = 10;
@@ -421,6 +439,16 @@ void gt_dialog_show(gt_obj_st * obj)
     _gt_dialog_st * style = (_gt_dialog_st * )obj;
 
     _create_anim_handler(obj, true, GT_OPA_0, GT_OPA_100);
+}
+
+bool gt_dialog_has_showing(void)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    if (NULL == disp || NULL == disp->layer_top) {
+        return false;
+    }
+    gt_obj_st * obj = _find_showing_recursive_by_type(disp->layer_top, OBJ_TYPE);
+    return obj ? true : false;
 }
 
 void gt_dialog_set_border_color(gt_obj_st * dialog, gt_color_t color)
