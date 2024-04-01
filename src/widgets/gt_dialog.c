@@ -353,6 +353,9 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 gt_obj_st * gt_dialog_create(bool show_close_btn)
 {
     gt_disp_st * disp = gt_disp_get_default();
+    if (NULL == disp || NULL == disp->layer_top) {
+        return NULL;
+    }
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, disp->layer_top);
     if (NULL == obj) {
         return obj;
