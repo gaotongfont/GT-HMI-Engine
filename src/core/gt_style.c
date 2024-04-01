@@ -9,11 +9,10 @@
 
  /* include --------------------------------------------------------------*/
 #include "gt_style.h"
-#include "../hal/gt_hal_disp.h"
 #include "./gt_disp.h"
+#include "../core/gt_mem.h"
+#include "../hal/gt_hal_disp.h"
 #include "../others/gt_log.h"
-#include "gt_mem.h"
-#include "string.h"
 
 /* private define -------------------------------------------------------*/
 #define _set_style_prop_val(obj, prop, val)     (obj->style->prop = val)
@@ -198,10 +197,10 @@ void gt_obj_set_visible(gt_obj_st * obj, gt_visible_et is_visible)
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-bool gt_obj_get_visible(gt_obj_st * obj)
+gt_visible_et gt_obj_get_visible(gt_obj_st * obj)
 {
     if (NULL == obj) {
-        return false;
+        return GT_INVISIBLE;
     }
     return obj->visible;
 }
@@ -597,16 +596,25 @@ bool _gt_obj_is_ignore_calc_max_area(gt_obj_st * obj)
 
 void gt_obj_set_bubble_notify(gt_obj_st * obj, bool is_bubble_notify)
 {
+    if (NULL == obj) {
+        return ;
+    }
     obj->bubble_notify = is_bubble_notify ? true : false;
 }
 
 bool gt_obj_is_bubble_notify(gt_obj_st * obj)
 {
+    if (NULL == obj) {
+        return false;
+    }
     return obj->bubble_notify;
 }
 
 void gt_obj_set_untouchability(gt_obj_st * obj, bool is_untouchability)
 {
+    if (NULL == obj) {
+        return ;
+    }
     obj->untouchability = is_untouchability ? true : false;
 }
 
