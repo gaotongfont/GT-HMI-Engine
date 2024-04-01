@@ -74,6 +74,9 @@ typedef enum gt_event_type_e {
     GT_EVENT_TYPE_CHANGE_CHILD_DELETED,    // [Called by core inside] delete child finish
     GT_EVENT_TYPE_CHANGE_DELETED,          // [Called by core inside] delete self finish
 
+    /* notify event */
+    GT_EVENT_TYPE_NOTIFY_CLOSE,     // notify widget to close
+
     /* =================== Core defined here end =================== */
 
     /* =================== User custom defined here begin =================== */

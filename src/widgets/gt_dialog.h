@@ -104,6 +104,14 @@ void gt_dialog_set_bgcolor(gt_obj_st * dialog, gt_color_t color);
  */
 void gt_dialog_set_border_radius(gt_obj_st * dialog, uint8_t radius);
 
+/**
+ * @brief Click the area outside the control to close the dialog box
+ *
+ * @param dialog
+ * @param auto_hide true[default]: auto hide, false: not auto hide
+ */
+void gt_dialog_set_outside_auto_hide(gt_obj_st * dialog, bool auto_hide);
+
 /* ------------------- Issue mode api ------------------- */
 
 void gt_dialog_set_title_font_color(gt_obj_st * dialog, gt_color_t color);

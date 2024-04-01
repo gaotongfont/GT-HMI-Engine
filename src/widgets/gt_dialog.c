@@ -51,6 +51,9 @@ typedef struct _gt_dialog_s {
     gt_color_t border_color;
     uint8_t border_width;
     uint8_t border_radius;
+
+    uint8_t outside_auto_hide : 1;
+    uint8_t reserved : 7;
 }_gt_dialog_st;
 
 
@@ -159,7 +162,7 @@ static void _create_anim_handler(gt_obj_st *obj, bool is_create, int32_t start, 
 
 static void _close_release_cb(gt_event_st * e) {
     gt_obj_st * dialog = (gt_obj_st * )e->user_data;
-    gt_event_send(dialog, GT_EVENT_TYPE_INPUT_HIDED, NULL);
+    gt_event_send(dialog, GT_EVENT_TYPE_NOTIFY_CLOSE, NULL);
 }
 
 static void _set_close_btn_pos(gt_obj_st * close_btn, gt_obj_st * dialog) {
@@ -331,6 +334,12 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             break;
         }
         case GT_EVENT_TYPE_INPUT_HIDED: {
+            if (style->outside_auto_hide) {
+                _create_anim_handler(obj, false, GT_OPA_100, GT_OPA_0);
+            }
+            break;
+        }
+        case GT_EVENT_TYPE_NOTIFY_CLOSE: {
             _create_anim_handler(obj, false, GT_OPA_100, GT_OPA_0);
             break;
         }
@@ -447,6 +456,15 @@ void gt_dialog_set_border_radius(gt_obj_st * dialog, uint8_t radius)
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
     style->border_radius = radius;
+}
+
+void gt_dialog_set_outside_auto_hide(gt_obj_st * dialog, bool auto_hide)
+{
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    style->outside_auto_hide = auto_hide ? true : false;
 }
 
 /* ------------------- Issue mode api ------------------- */
