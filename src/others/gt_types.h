@@ -68,7 +68,8 @@ typedef enum gt_scr_anim_type_e {
  * @brief widget type enum definition
  */
 typedef enum type_widget_e {
-    GT_TYPE_UNKNOWN     = -2,       ///< unknown type
+    GT_TYPE_UNKNOWN     = -3,       ///< unknown type
+    GT_TYPE_LAYER_TOP   = -2,       ///< [CORE USED] layer top, used to display floating widgets
     GT_TYPE_SCREEN      = -1,       ///< screen type
     GT_TYPE_OBJ         = 0,        ///< base obj type
     GT_TYPE_BTN         = 1,        ///< button type

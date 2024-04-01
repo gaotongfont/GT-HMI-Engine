@@ -21,10 +21,14 @@
 #include "../others/gt_gc.h"
 
 /* private define -------------------------------------------------------*/
-
+#define OBJ_TYPE    GT_TYPE_LAYER_TOP
+#define MY_CLASS    &gt_layer_top_class
 
 
 /* private typedef ------------------------------------------------------*/
+typedef struct _gt_style_layer_top_s {
+    gt_obj_st obj;
+}_gt_style_layer_top_st;
 
 
 
@@ -36,6 +40,14 @@
 #elif (GT_REFRESH_STYLE_3 == GT_REFRESH_STYLE)
     static gt_color_t * graph_buf_all;
 #endif
+
+static const gt_obj_class_st gt_layer_top_class = {
+    ._init_cb      = NULL,
+    ._deinit_cb    = NULL,
+    ._event_cb     = NULL,
+    .type          = OBJ_TYPE,
+    .size_style    = sizeof(_gt_style_layer_top_st)
+};
 
 
 /* macros ---------------------------------------------------------------*/
@@ -66,7 +78,11 @@ static gt_disp_st * _gt_disp_create(gt_disp_drv_st * drv) {
 
     _gt_gc_set_disp(ret);
 
-    ret->layer_top = gt_obj_create(NULL);
+    ret->layer_top = gt_obj_class_create(MY_CLASS, NULL);
+    if (NULL == ret->layer_top) {
+        GT_LOGE(GT_LOG_TAG_GUI, "Layer top create failed");
+        return ret;
+    }
     gt_screen_set_bgcolor(ret->layer_top, gt_color_hex(0x000000));
     gt_obj_set_virtual(ret->layer_top, true);
 
