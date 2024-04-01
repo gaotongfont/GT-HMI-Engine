@@ -230,6 +230,16 @@ static void _old_scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_area_copy(&old_scr->area, area);
 }
 
+static void _reset_layer_top_area(gt_disp_st * disp) {
+    if (NULL == disp->layer_top) {
+        return ;
+    }
+    _gt_obj_move_child_by(disp->layer_top,
+        disp->area_act.x - disp->layer_top->area.x, disp->area_act.y - disp->layer_top->area.y);
+    disp->layer_top->area.x = disp->area_act.x;
+    disp->layer_top->area.y = disp->area_act.y;
+}
+
 static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_disp_st * disp = gt_disp_get_default();
     if (NULL == disp) {
@@ -251,6 +261,7 @@ static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     disp->scr_act->area.w = gt_disp_get_res_hor(NULL);
     disp->scr_act->area.h = gt_disp_get_res_ver(NULL);
 
+    _reset_layer_top_area(disp);
     _gt_disp_reload_max_area(anim->target);
     gt_disp_invalid_area(disp->scr_act);
 
@@ -950,6 +961,7 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
             disp->area_act.x = scr->area.x;
             disp->area_act.y = scr->area.y;
 
+            _reset_layer_top_area(disp);
             /** reset screen range of activity */
             _gt_disp_reload_max_area(scr);
         }
