@@ -63,16 +63,6 @@ typedef struct _gt_disp_drv_s
 }gt_disp_drv_st;
 
 /**
- * @brief Backoff screen info, only one screen(or single stack depth) can be recorded.
- */
-typedef struct _gt_disp_stack_s {
-    gt_scr_init_func_cb_t init_func_cb;
-    gt_obj_st * need_backoff_scr;
-    uint32_t time;
-    uint32_t delay;
-}_gt_disp_stack_st;
-
-/**
  * @brief display description
  */
 typedef struct _gt_disp_s
@@ -83,8 +73,6 @@ typedef struct _gt_disp_s
     gt_obj_st *  scr_act;       // Active screen
 
     gt_obj_st * layer_top;      // Top layer on the top of the scr layer, such as popup, dialog, etc.
-
-    _gt_disp_stack_st * stack;  // Set backoff screen, only one screen can be recorded.
 
     gt_obj_st ** screens;       // Array of screen
     uint16_t cnt_scr;           // Count screens nub

@@ -247,10 +247,6 @@ static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     if (NULL == disp) {
         return;
     }
-    if (disp->stack && disp->stack->need_backoff_scr == disp->scr_prev) {
-        gt_mem_free(disp->stack);
-        disp->stack = NULL;
-    }
     if (disp->scr_prev && disp->scr_prev->delate) {
         disp->scr_prev->using = 0;
         gt_obj_destroy(disp->scr_prev);
@@ -272,11 +268,6 @@ static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
 }
 
 static void _scr_anim_del_ready_cb(struct gt_anim_s * anim) {
-    gt_disp_st * disp = gt_disp_get_default();
-    if (disp && disp->stack && disp->stack->need_backoff_scr == anim->target) {
-        gt_mem_free(disp->stack);
-        disp->stack = NULL;
-    }
     anim->target->using = 0;
     gt_obj_destroy(anim->target);
 }
@@ -1223,43 +1214,6 @@ void gt_disp_invalid_area(gt_obj_st * obj)
         return;
     }
     _gt_disp_refr_append_area(&obj->area);
-}
-
-void gt_disp_set_backoff_scr(gt_obj_st * need_backoff_scr, gt_scr_init_func_cb_t init_cb, uint32_t time, uint32_t delay)
-{
-    gt_disp_st * disp = gt_disp_get_default();
-    if (NULL == disp) {
-        return;
-    }
-    if (NULL == disp->stack) {
-        disp->stack = gt_mem_malloc(sizeof(_gt_disp_stack_st));
-        if (NULL == disp->stack) {
-            return;
-        }
-    }
-    disp->stack->need_backoff_scr = need_backoff_scr;
-    disp->stack->init_func_cb = init_cb;
-    disp->stack->time = time;
-    disp->stack->delay = delay;
-}
-
-void gt_disp_go_backoff_scr(void)
-{
-    gt_disp_st * disp = gt_disp_get_default();
-    if (NULL == disp) {
-        return;
-    }
-    _gt_disp_stack_st * prev_stack = disp->stack;
-    if (NULL == prev_stack) {
-        return;
-    }
-    gt_obj_st * step_back_scr = prev_stack->init_func_cb();
-    if (NULL == step_back_scr) {
-        return;
-    }
-    gt_scr_anim_type_et type = _get_anti_anim_type(disp->scr_anim_type);
-
-    gt_disp_load_scr_anim(step_back_scr, type, prev_stack->time, prev_stack->delay, true);
 }
 
 /* end ------------------------------------------------------------------*/
