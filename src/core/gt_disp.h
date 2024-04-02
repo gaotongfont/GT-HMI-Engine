@@ -61,7 +61,7 @@ void gt_disp_stack_load_scr_anim(gt_scr_id_t scr_id, gt_scr_anim_type_et type, u
 
 /**
  * @brief [Unused screen stack manager] display screen by default param.
- *      It is not recommended to use with screen stack api, please use
+ *      [Warn] It is not recommended to use with screen stack api, please use
  *      gt_disp_stack_load_scr() instead.
  *
  * @param scr screen object
@@ -70,7 +70,7 @@ void gt_disp_load_scr(gt_obj_st * scr);
 
 /**
  * @brief [Unused screen stack manager] display screen by custom param.
- *      It is not recommended to use with screen stack api, please use
+ *      [Warn] It is not recommended to use with screen stack api, please use
  *      gt_disp_stack_load_scr_anim() instead.
  *
  * @param scr screen object
