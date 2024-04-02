@@ -156,9 +156,11 @@ static void _check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param
     int16_t idx = 0;
     gt_obj_st * child_p = NULL;
     gt_area_st area_cross = area_parent;
+    gt_area_st reduce = obj->area;
 
     if (GT_TYPE_SCREEN != gt_obj_class_get_type(obj)) {
-        if (false == gt_area_cover_screen(&area_parent, &obj->area, &area_cross)) {
+        reduce = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
+        if (false == gt_area_cover_screen(&area_parent, &reduce, &area_cross)) {
             if (GT_TYPE_GROUP != gt_obj_class_get_type(obj)) {
                 /** The Group ignores the area effects */
                 return ;
