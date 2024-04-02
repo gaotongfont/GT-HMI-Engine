@@ -19,6 +19,7 @@
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
+#include "../widgets/gt_obj.h"
 
 #include "./gt_label.h"
 #include "./gt_img.h"
@@ -36,16 +37,21 @@ typedef struct _gt_listview_s {
     gt_color_t font_color;
     gt_align_et align;
 
+    gt_color_t item_bg_color;
     gt_color_t border_color;
     uint8_t border_width;
     uint8_t space_x;
     uint8_t space_y;
 
+    uint8_t item_reduce;    /** The reduce of item area */
+    uint8_t item_radius;    /** The radius of item */
+
     uint8_t highlight      : 1; /** holding highlight state the last active item, 0: release restores the effect, 1: switch state */
     uint8_t septal_line    : 1; /** Display septal line between items */
     uint8_t icon_right     : 1;
     uint8_t multiple       : 1; /** Selected multiple item: 0: single selected; 1: multiple selected */
-    uint8_t reserved       : 4;
+    uint8_t item_show_bg   : 1;
+    uint8_t reserved       : 3;
 }_gt_listview_st;
 
 
@@ -102,8 +108,8 @@ static void _init_cb(gt_obj_st * obj) {
     rect_attr.bg_color      = obj->bgcolor;
     // 外框
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
-    // gt_area_st area_item = gt_area_reduce(obj->area, REDUCE_DEFAULT);
-    // draw_bg(obj->draw_ctx, &rect_attr, &area_item);
+
+    draw_focus(obj, 0);
 }
 
 
@@ -291,6 +297,11 @@ static gt_obj_st * _create_item_obj(gt_obj_st * listview) {
     gt_obj_set_septal_line(obj, style->septal_line);
     gt_obj_set_trigger_mode(obj, style->highlight);
 
+    gt_obj_set_bgcolor(obj, style->item_bg_color);
+    gt_obj_show_bg(obj, style->item_show_bg);
+    gt_obj_set_reduce(obj, style->item_reduce);
+    gt_obj_set_radius(obj, style->item_radius);
+
     return obj;
 }
 
@@ -411,7 +422,6 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
         return obj;
     }
     obj->fixed = false;
-    obj->bgcolor = gt_color_hex(0xffffff);
 
     _gt_listview_st * style = (_gt_listview_st * )obj;
     style->font_info.style_cn   = GT_CFG_DEFAULT_FONT_FAMILY_CN;
@@ -431,6 +441,11 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     style->septal_line = true;
     style->border_width = 2;
     style->border_color = gt_color_hex(0xc7c7c7);
+
+    style->item_bg_color =  obj->bgcolor;
+    style->item_show_bg = false;
+    style->item_reduce = 4;
+    style->item_radius = 10;
 
     gt_obj_set_scroll_dir(obj, GT_SCROLL_VERTICAL);
     return obj;
@@ -541,6 +556,67 @@ void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, gt_size_t idx)
     gt_event_send(listview->child[idx], GT_EVENT_TYPE_INPUT_RELEASED, NULL);
 }
 
+void gt_listview_set_bg_color(gt_obj_st * listview, gt_color_t color)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    listview->bgcolor = color;
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_listview_set_item_bg_color(gt_obj_st * listview, gt_color_t color)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->item_bg_color = color;
+    for (gt_size_t i = 0, cnt = listview->cnt_child; i < cnt; i++) {
+        gt_obj_set_bgcolor(listview->child[i], color);
+    }
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_listview_show_item_bg(gt_obj_st * listview, bool show)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->item_show_bg = show;
+    for (gt_size_t i = 0, cnt = listview->cnt_child; i < cnt; i++) {
+        gt_obj_show_bg(listview->child[i], show);
+    }
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_listview_set_item_reduce(gt_obj_st * listview, uint8_t reduce)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->item_reduce = reduce;
+    for (gt_size_t i = 0, cnt = listview->cnt_child; i < cnt; i++) {
+        gt_obj_set_reduce(listview->child[i], reduce);
+    }
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_listview_set_item_radius(gt_obj_st * listview, uint8_t radius)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->item_radius = radius;
+    for (gt_size_t i = 0, cnt = listview->cnt_child; i < cnt; i++) {
+        gt_obj_set_radius(listview->child[i], radius);
+    }
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
 
 gt_size_t gt_listview_get_list_items_cnt(gt_obj_st * listview)
 {

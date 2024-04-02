@@ -623,4 +623,36 @@ bool gt_obj_is_untouchability(gt_obj_st * obj)
     return obj->untouchability;
 }
 
+void gt_obj_set_reduce(gt_obj_st * obj, uint8_t reduce)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    obj->reduce = reduce;
+}
+
+uint8_t gt_obj_get_reduce(gt_obj_st * obj)
+{
+    if (NULL == obj) {
+        return 0;
+    }
+    return obj->reduce;
+}
+
+void gt_obj_set_radius(gt_obj_st * obj, uint8_t radius)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    obj->radius = radius;
+}
+
+uint8_t gt_obj_get_radius(gt_obj_st * obj)
+{
+    if (NULL == obj) {
+        return 0;
+    }
+    return obj->radius;
+}
+
 /* end ------------------------------------------------------------------*/

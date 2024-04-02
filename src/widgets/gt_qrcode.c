@@ -146,7 +146,7 @@ static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
     gt_mem_free(qr_data_buff);
     qr_data_buff = NULL;
 
-    gt_area_st box_area = gt_area_reduce(qr_code->area , REDUCE_DEFAULT);
+    gt_area_st box_area = gt_area_reduce(qr_code->area , gt_obj_get_reduce(qr_code));
     // draw background
     rect_attr.bg_color      = style->bg_color;
     draw_bg(qr_code->draw_ctx, &rect_attr, &box_area);

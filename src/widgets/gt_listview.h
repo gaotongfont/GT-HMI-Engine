@@ -99,6 +99,45 @@ void gt_listview_set_multiple(gt_obj_st * listview, bool enabled);
 void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, gt_size_t idx);
 
 /**
+ * @brief Set the listview background color
+ *
+ * @param listview
+ * @param color
+ */
+void gt_listview_set_bg_color(gt_obj_st * listview, gt_color_t color);
+
+/**
+ * @brief Set the listview item background color
+ *
+ * @param listview
+ * @param color
+ */
+void gt_listview_set_item_bg_color(gt_obj_st * listview, gt_color_t color);
+
+/**
+ * @brief Display the listview item background
+ *
+ * @param listview
+ * @param show false[default]: hide; true: show
+ */
+void gt_listview_show_item_bg(gt_obj_st * listview, bool show);
+/**
+ * @brief Set the listview item reduce area value, default is 2
+ *
+ * @param listview
+ * @param reduce REDUCE_DEFAULT[default]: 2
+ */
+void gt_listview_set_item_reduce(gt_obj_st * listview, uint8_t reduce);
+
+/**
+ * @brief Set the listview item radius
+ *
+ * @param listview
+ * @param radius default: 10
+ */
+void gt_listview_set_item_radius(gt_obj_st * listview, uint8_t radius);
+
+/**
  * @brief get cnt of listview all items
  *
  * @param listview listview

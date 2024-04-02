@@ -19,6 +19,7 @@
 #include "../hal/gt_hal_tick.h"
 #include "../others/gt_area.h"
 #include "../others/gt_gc.h"
+#include "../widgets/gt_obj_class.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_LAYER_TOP
@@ -42,9 +43,9 @@ typedef struct _gt_style_layer_top_s {
 #endif
 
 static const gt_obj_class_st gt_layer_top_class = {
-    ._init_cb      = NULL,
-    ._deinit_cb    = NULL,
-    ._event_cb     = NULL,
+    ._init_cb      = (_gt_init_cb)NULL,
+    ._deinit_cb    = (_gt_deinit_cb)NULL,
+    ._event_cb     = (_gt_event_cb)NULL,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_style_layer_top_st)
 };

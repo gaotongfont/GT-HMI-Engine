@@ -79,21 +79,22 @@ typedef struct gt_obj_s {
     struct gt_obj_s ** child;
     const gt_obj_class_st * class;
 
-    gt_id_t id;                     /* obj id, register by user, default: [-1] invalid id, normal begin from 0. */
-
     gt_obj_event_attr_st * event_attr;
     struct _gt_draw_ctx_t * draw_ctx;
     gt_obj_process_attr_st process_attr;
 
-    gt_color_t bgcolor;
-
     gt_area_st area;                /* base area */
 
-    uint32_t event_mask;            /* send event code add this mask */
+    gt_id_t id;                     /* obj id, register by user, default: [-1] invalid id, normal begin from 0. */
+    gt_color_t bgcolor;
 
     uint16_t cnt_child;
     uint8_t cnt_event;
     uint8_t opa;            /* @ref gt_color.h */
+    uint8_t radius;
+    uint8_t reduce;
+
+    uint32_t event_mask;            /* send event code add this mask */
 
     uint32_t state         : 2;     /* obj selected state @ref gt_state_et */
     uint32_t touch_parent  : 1;     /* touch event will be called to parent object */
@@ -122,7 +123,9 @@ typedef struct gt_obj_s {
     uint32_t trigger_mode  : 1;     /* state toggle trigger mode @ref gt_obj_trigger_mode_et, 0:[default] hold-on; 1: switch */
     uint32_t bubble_notify : 1;     /* The object event will bubble notify to parent, 0: [default] disabled; 1: enabled */
     uint32_t untouchability: 1;     /* The object is untouchable, 0: [default] enabled; 1: disabled, can not be touch */
-    uint32_t reserved      : 4;
+    uint32_t row_layout    : 1;     /* The child controls are arranged in a row layout */
+    uint32_t show_bg       : 1;     /* The object show background, 0: [default] hide; 1: show */
+    uint32_t reserved      : 2;
 
 }gt_obj_st;
 
@@ -196,9 +199,10 @@ gt_id_t gt_obj_get_id(gt_obj_st * obj);
 bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent);
 
 /**
- * @brief
+ * @brief If you use the screen stack functionality,
+ *      try to avoid using it to free screen objects directly
  *
- * @param obj
+ * @param obj widgets object
  */
 void gt_obj_destroy(gt_obj_st * obj);
 
@@ -218,10 +222,30 @@ void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color);
  */
 gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj);
 
+void gt_obj_set_bgcolor(gt_obj_st * obj, gt_color_t color);
+
+gt_color_t gt_obj_get_bgcolor(gt_obj_st * obj);
 
 gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj);
 
 gt_size_t gt_obj_get_childs_max_height(gt_obj_st * parent);
+
+/**
+ * @brief Set object show background color or not
+ *
+ * @param obj
+ * @param show true: show background; false[default]: hide background
+ */
+void gt_obj_show_bg(gt_obj_st * obj, bool show);
+
+/**
+ * @brief Get object show background color or not
+ *
+ * @param obj
+ * @return true show background
+ * @return false hide background
+ */
+bool gt_obj_is_show_bg(gt_obj_st * obj);
 
 #ifdef __cplusplus
 } /*extern "C"*/

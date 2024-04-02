@@ -92,7 +92,7 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
         rect_attr.bg_color = gt_color_white();
         rect_attr.border_color = gt_color_hex(0x409EFF);
     }
-    gt_area_st area = gt_area_reduce(checkbox->area , REDUCE_DEFAULT);
+    gt_area_st area = gt_area_reduce(checkbox->area , gt_obj_get_reduce(checkbox));
 
     gt_area_st area_box = area;
     area_box.w = style->font_info.size+4;

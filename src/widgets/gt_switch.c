@@ -79,7 +79,7 @@ static inline void _gt_switcher_init_widget(gt_obj_st * switcher)
     rect_attr.border_width  = 0;
     rect_attr.bg_opa        = switcher->opa;
 
-    gt_area_st box_area = gt_area_reduce(switcher->area , REDUCE_DEFAULT);
+    gt_area_st box_area = gt_area_reduce(switcher->area , gt_obj_get_reduce(switcher));
     draw_bg(switcher->draw_ctx, &rect_attr, &box_area);
 
     // focus

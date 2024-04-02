@@ -87,7 +87,7 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
     };
 
     gt_area_st area_font , area_temp;
-    area_font = gt_area_reduce(textarea->area , REDUCE_DEFAULT);
+    area_font = gt_area_reduce(textarea->area , gt_obj_get_reduce(textarea));
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);

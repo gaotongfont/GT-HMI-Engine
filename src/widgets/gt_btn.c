@@ -116,7 +116,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     rect_attr.bg_color      = fg_color;
     rect_attr.border_color  = style->color_border;
 
-    gt_area_st area = gt_area_reduce(btn->area, REDUCE_DEFAULT);
+    gt_area_st area = gt_area_reduce(btn->area, gt_obj_get_reduce(btn));
     // 1:base shape
     draw_bg(btn->draw_ctx, &rect_attr, &area);
 

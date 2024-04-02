@@ -254,6 +254,20 @@ void gt_obj_set_untouchability(gt_obj_st * obj, bool is_untouchability);
  */
 bool gt_obj_is_untouchability(gt_obj_st * obj);
 
+/**
+ * @brief Reduce the object background area
+ *
+ * @param obj
+ * @param reduce REDUCE_DEFAULT [default]: 2
+ */
+void gt_obj_set_reduce(gt_obj_st * obj, uint8_t reduce);
+
+uint8_t gt_obj_get_reduce(gt_obj_st * obj);
+
+void gt_obj_set_radius(gt_obj_st * obj, uint8_t radius);
+
+uint8_t gt_obj_get_radius(gt_obj_st * obj);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

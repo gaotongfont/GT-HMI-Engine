@@ -8,6 +8,7 @@
  */
 
 /* include --------------------------------------------------------------*/
+#include "stddef.h"
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "../core/gt_obj_pos.h"
@@ -32,29 +33,29 @@
 #define MY_CLASS_SCREEN     &gt_screen_class
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_style_obj_s {
-    gt_obj_st obj;
-}_gt_style_obj_st;
+
+
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
-static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e);
+static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e);
+static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e);
 
 static const gt_obj_class_st gt_obj_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
-    ._event_cb     = _event_cb,
+    ._deinit_cb    = (_gt_deinit_cb)NULL,
+    ._event_cb     = _obj_event_cb,
     .type          = OBJ_TYPE,
-    .size_style    = sizeof(_gt_style_obj_st)
+    .size_style    = sizeof(gt_obj_st)
 };
 
 static const gt_obj_class_st gt_screen_class = {
-    ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
-    ._event_cb     = _event_cb,
+    ._init_cb      = (_gt_init_cb)NULL,
+    ._deinit_cb    = (_gt_deinit_cb)NULL,
+    ._event_cb     = _screen_event_cb,
     .type          = OBJ_TYPE_SCREEN,
-    .size_style    = sizeof(_gt_style_obj_st)
+    .size_style    = sizeof(gt_obj_st)
 };
 
 /* macros ---------------------------------------------------------------*/
@@ -64,16 +65,24 @@ static const gt_obj_class_st gt_screen_class = {
 /* static functions -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj) {
     gt_attr_rect_st rect_attr;
+    if (gt_obj_is_show_bg(obj)) {
+        gt_graph_init_rect_attr(&rect_attr);
+        rect_attr.reg.is_fill    = true;
+        rect_attr.radius         = obj->radius;
+        rect_attr.bg_opa         = obj->opa;
+        rect_attr.bg_color      = obj->bgcolor;
+        gt_area_st real_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
+        draw_bg(obj->draw_ctx, &rect_attr, &real_area);
+    }
     if ( gt_obj_get_mask_effect(obj) && gt_obj_get_state(obj) ) {
         gt_graph_init_rect_attr(&rect_attr);
         rect_attr.reg.is_fill    = true;
-        // rect_attr.border_width   = 2;
-        rect_attr.radius         = 2;
+        rect_attr.radius         = obj->radius;
         rect_attr.bg_opa         = 0x44;
         rect_attr.border_color  = gt_color_hex(0x308ac5);
         rect_attr.fg_color      = gt_color_hex(0x308ac5);
         rect_attr.bg_color      = gt_color_hex(0x308ac5);
-        gt_area_st real_area = gt_area_reduce(obj->area, REDUCE_DEFAULT);
+        gt_area_st real_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
         draw_bg(obj->draw_ctx, &rect_attr, &real_area);
     }
 
@@ -92,9 +101,6 @@ static void _init_cb(gt_obj_st * obj) {
         line.y = obj->area.y + obj->area.h - 1;
         draw_bg(obj->draw_ctx, &rect_attr, &line);
     }
-}
-
-static void _deinit_cb(gt_obj_st * obj) {
 }
 
 static void _screen_scroll(gt_obj_st * obj) {
@@ -141,8 +147,7 @@ static void _change_state_by_trigger_mode(gt_obj_st * obj, bool is_pressed) {
     gt_obj_set_state(obj, is_pressed ? GT_STATE_PRESSED : GT_STATE_NONE);
 }
 
-static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
-{
+static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
     gt_event_type_et code = gt_event_get_code(e);
 
     switch(code) {
@@ -152,10 +157,6 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
         }
         case GT_EVENT_TYPE_UPDATE_STYLE: {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            break;
-        }
-        case GT_EVENT_TYPE_INPUT_SCROLL: {
-            _screen_scroll(obj);
             break;
         }
         case GT_EVENT_TYPE_INPUT_PRESSED: {
@@ -175,29 +176,43 @@ static void _event_cb(gt_obj_st * obj, struct _gt_event_s * e)
             _unmasked_effect_handler(obj);
             break;
         }
+        default:
+            break;
+    }
+}
+
+static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
+    gt_event_type_et code = gt_event_get_code(e);
+
+    switch(code) {
+        case GT_EVENT_TYPE_DRAW_START: {
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
+            break;
+        }
+        case GT_EVENT_TYPE_UPDATE_STYLE: {
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            break;
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL: {
+            _screen_scroll(obj);
+            break;
+        }
         case GT_EVENT_TYPE_INPUT_SCROLL_UP: {
             /** scroll 3/4 screen */
-            if (OBJ_TYPE_SCREEN == gt_obj_class_get_type(obj)) {
-                gt_obj_scroll_to_y(obj, (gt_disp_get_res_ver(NULL) * 3) >> 2, GT_ANIM_ON);
-            }
+            gt_obj_scroll_to_y(obj, (gt_disp_get_res_ver(NULL) * 3) >> 2, GT_ANIM_ON);
             break;
         }
         case GT_EVENT_TYPE_INPUT_SCROLL_DOWN: {
-            if (OBJ_TYPE_SCREEN == gt_obj_class_get_type(obj)) {
-                gt_obj_scroll_to_y(obj, (-gt_disp_get_res_ver(NULL) * 3) >> 2, GT_ANIM_ON);
-            }
+            gt_obj_scroll_to_y(obj, (-gt_disp_get_res_ver(NULL) * 3) >> 2, GT_ANIM_ON);
             break;
         }
         case GT_EVENT_TYPE_INPUT_SCROLL_LEFT: {
-            if (OBJ_TYPE_SCREEN == gt_obj_class_get_type(obj)) {
-                gt_obj_scroll_to_x(obj, (gt_disp_get_res_hor(NULL) * 3) >> 2, GT_ANIM_ON);
-            }
+            gt_obj_scroll_to_x(obj, (gt_disp_get_res_hor(NULL) * 3) >> 2, GT_ANIM_ON);
             break;
         }
         case GT_EVENT_TYPE_INPUT_SCROLL_RIGHT: {
-            if (OBJ_TYPE_SCREEN == gt_obj_class_get_type(obj)) {
-                gt_obj_scroll_to_x(obj, (-gt_disp_get_res_hor(NULL) * 3) >> 2, GT_ANIM_ON);
-            }
+            gt_obj_scroll_to_x(obj, (-gt_disp_get_res_hor(NULL) * 3) >> 2, GT_ANIM_ON);
+            break;
         }
         default:
             break;
@@ -263,9 +278,7 @@ static gt_obj_st * _find_obj_recursive_by_id(gt_obj_st * self, gt_id_t widget_id
 
 gt_obj_st * gt_obj_create(gt_obj_st * parent)
 {
-    gt_obj_st * obj = gt_obj_class_create(parent ? MY_CLASS : MY_CLASS_SCREEN, parent);
-    obj->bgcolor = gt_color_hex(0xFFFFFF);
-    return obj;
+    return gt_obj_class_create(parent ? MY_CLASS : MY_CLASS_SCREEN, parent);
 }
 
 gt_obj_st * gt_obj_get_parent(gt_obj_st * obj)
@@ -322,21 +335,17 @@ gt_id_t gt_obj_get_id(gt_obj_st * obj)
 
 bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent)
 {
-    if (NULL == parent || NULL == obj) {
+    if (NULL == obj) {
         return false;
     }
-    uint16_t i, cnt = parent->cnt_child;
-    gt_obj_st * child = NULL;
-    for (i = 0; i < cnt; i++) {
-        child = parent->child[i];
-        if (child == obj) {
+    gt_obj_st * p = obj->parent;
+    while (p) {
+        if (p == parent) {
             return true;
         }
-        if (true == gt_obj_is_child(obj, child)) {
-            return true;
-        }
+        p = p->parent;
     }
-    return false;
+    return p == parent ? true : false;
 }
 
 void gt_obj_destroy(gt_obj_st * obj)
@@ -362,6 +371,22 @@ void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color)
 gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj)
 {
     if( OBJ_TYPE_SCREEN != gt_obj_class_get_type(obj) ) {
+        return gt_color_make(0, 0, 0);
+    }
+    return obj->bgcolor;
+}
+
+void gt_obj_set_bgcolor(gt_obj_st * obj, gt_color_t color)
+{
+    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+        return ;
+    }
+    obj->bgcolor = color;
+}
+
+gt_color_t gt_obj_get_bgcolor(gt_obj_st * obj)
+{
+    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
         return gt_color_make(0, 0, 0);
     }
     return obj->bgcolor;
@@ -408,6 +433,22 @@ gt_size_t gt_obj_get_childs_max_height(gt_obj_st * parent)
         }
     }
     return max_y - min_y;
+}
+
+void gt_obj_show_bg(gt_obj_st * obj, bool show)
+{
+    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+        return;
+    }
+    obj->show_bg = show;
+}
+
+bool gt_obj_is_show_bg(gt_obj_st * obj)
+{
+    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+        return false;
+    }
+    return obj->show_bg;
 }
 
 /* end ------------------------------------------------------------------*/
