@@ -114,6 +114,14 @@ void gt_dialog_set_border_radius(gt_obj_st * dialog, uint8_t radius);
  */
 void gt_dialog_set_outside_auto_hide(gt_obj_st * dialog, bool auto_hide);
 
+/**
+ * @brief Set dialog animation time
+ *
+ * @param dialog
+ * @param time default: 250[ms]
+ */
+void gt_dialog_set_anim_time(gt_obj_st * dialog, uint32_t time);
+
 /* ------------------- Issue mode api ------------------- */
 
 void gt_dialog_set_title_font_color(gt_obj_st * dialog, gt_color_t color);

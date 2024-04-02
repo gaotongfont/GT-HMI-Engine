@@ -48,6 +48,8 @@ typedef struct _gt_dialog_s {
     gt_obj_st * btn_cancel;
     gt_obj_st * btn_confirm;
 
+    uint32_t anim_time;
+
     gt_color_t border_color;
     uint8_t border_width;
     uint8_t border_radius;
@@ -100,7 +102,6 @@ static void _init_cb(gt_obj_st * obj) {
     rect_attr.border_color  = style->border_color;
     rect_attr.bg_color      = obj->bgcolor;
 
-    // gt_area_st area = gt_area_reduce(btn->area, REDUCE_DEFAULT);
     // 1:base shape
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
 }
@@ -141,10 +142,12 @@ static void _create_anim_handler(gt_obj_st *obj, bool is_create, int32_t start, 
     if (gt_obj_is_untouchability(obj)) {
         return;
     }
+    _gt_dialog_st * style = (_gt_dialog_st * )obj;
 
     gt_anim_init(&anim);
     gt_anim_set_value(&anim, start, end);
     gt_anim_set_target(&anim, obj);
+    gt_anim_set_time(&anim, style->anim_time);
     gt_anim_set_exec_cb(&anim, _dialog_anim_exec_cb);
     if (is_create) {
         /** want to display the dialog */
@@ -396,6 +399,7 @@ gt_obj_st * gt_dialog_create(bool show_close_btn)
     style->border_color = gt_color_hex(0xc7c7c7);
     style->border_width = 2;
     style->border_radius = 10;
+    style->anim_time = 250;
 
     /** Center 50% area */
     _update_display_area(obj, disp->layer_top);
@@ -493,6 +497,15 @@ void gt_dialog_set_outside_auto_hide(gt_obj_st * dialog, bool auto_hide)
     }
     _gt_dialog_st * style = (_gt_dialog_st * )dialog;
     style->outside_auto_hide = auto_hide ? true : false;
+}
+
+void gt_dialog_set_anim_time(gt_obj_st * dialog, uint32_t time)
+{
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    style->anim_time = time;
 }
 
 /* ------------------- Issue mode api ------------------- */
