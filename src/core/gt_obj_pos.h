@@ -73,11 +73,11 @@ void gt_obj_get_valid_area(gt_obj_st * obj, gt_area_st * area_act, gt_area_st *a
 /**
  * @brief find smallest clicked obj from parent
  *
- * @param parent parent obj
+ * @param scr_or_top Screen object or layer top object
  * @param point click point
  * @return gt_obj_st* smallest and clicked obj in parent
  */
-gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point);
+gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * scr_or_top, gt_point_st * point);
 
 gt_obj_st* gt_find_clicked_obj_by_focus(gt_obj_st * parent);
 void gt_obj_next_focus_change(gt_obj_st * cur_obj);

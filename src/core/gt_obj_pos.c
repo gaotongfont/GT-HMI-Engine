@@ -310,19 +310,18 @@ void gt_obj_get_valid_area(gt_obj_st * obj, gt_area_st * area_act, gt_area_st *a
     return;
 }
 
-gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point){
+gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * scr_or_top, gt_point_st * point) {
     gt_obj_st * obj_clicked = NULL;
     _click_obj_ret_st obj_temp = {
         .obj = NULL,
         .state = _CHECK_CLICKED_STATE_FAIL
     };
 
-    gt_area_st * area = gt_disp_get_area_act();
     gt_point_st _point = {
-        .x = point->x + area->x,
-        .y = point->y + area->y
+        .x = point->x + scr_or_top->area.x,
+        .y = point->y + scr_or_top->area.y
     };
-    obj_temp = _gt_obj_foreach_clicked(parent, &_point);
+    obj_temp = _gt_obj_foreach_clicked(scr_or_top, &_point);
     if ( obj_temp.obj ) {
         obj_clicked = obj_temp.obj;
     }
@@ -434,9 +433,6 @@ bool gt_obj_check_scr(gt_obj_st * obj)
         scr_obj = scr_obj->parent;
     }
     if( scr_now == scr_obj ){
-        return true;
-    }
-    if (scr_obj == gt_disp_get_layer_top()) {
         return true;
     }
     return false;

@@ -297,7 +297,7 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
         .y = area_dsc.y > area_draw.y ? (area_dsc.y - area_draw.y) : 0,
     };
 
-    if (draw_ctx->valid) {
+    if (draw_ctx->valid && false == draw_ctx->valid->layer_top) {
         /** 界面切换动画绘制区 */
         gt_area_st area_valid;
         if (draw_ctx->valid->is_prev) {

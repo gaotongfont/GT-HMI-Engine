@@ -232,16 +232,6 @@ static void _old_scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_area_copy(&old_scr->area, area);
 }
 
-static void _reset_layer_top_area(gt_disp_st * disp) {
-    if (NULL == disp->layer_top) {
-        return ;
-    }
-    _gt_obj_move_child_by(disp->layer_top,
-        disp->area_act.x - disp->layer_top->area.x, disp->area_act.y - disp->layer_top->area.y);
-    disp->layer_top->area.x = disp->area_act.x;
-    disp->layer_top->area.y = disp->area_act.y;
-}
-
 static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_disp_st * disp = gt_disp_get_default();
     if (NULL == disp) {
@@ -259,7 +249,6 @@ static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     disp->scr_act->area.w = gt_disp_get_res_hor(NULL);
     disp->scr_act->area.h = gt_disp_get_res_ver(NULL);
 
-    _reset_layer_top_area(disp);
     _gt_disp_reload_max_area(anim->target);
     gt_disp_invalid_area(disp->scr_act);
 
@@ -600,6 +589,13 @@ static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
         gt_area_cover_screen(&param->disp->area_disp, &param->view_scr_abs, &param->valid.area_scr);
         _gt_disp_check_and_copy_foreach(scr, param);
 
+        // flush top layer
+        param->valid.layer_top = true;
+        param->disp->area_disp.x = param->area_flush.x;
+        param->disp->area_disp.y = param->area_flush.y;
+        _gt_disp_check_and_copy_foreach(param->disp->layer_top, param);
+        param->valid.layer_top = false;
+
         /** flush display by buffer area */
         param->disp->drv->flush_cb(param->disp->drv, &param->area_flush, param->disp->vbd_color);
         param->area_flush.y += param->line;
@@ -725,9 +721,8 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
             }
         }
     }
-    //
+
     uint16_t end_y = param->area_flush.y + param->area_flush.h;
-    param->disp->area_disp.x = param->area_flush.x + param->disp->area_act.x;
     param->disp->area_disp.y = param->area_flush.y;
     param->disp->area_disp.w = param->area_flush.w;
     if(param->area_flush.h > param->line){
@@ -741,11 +736,14 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     {
         gt_color_fill(param->disp->vbd_color, len, color_fill);
 
+        param->disp->area_disp.x = param->area_flush.x + param->disp->area_act.x;
         param->disp->area_disp.y = param->area_flush.y + param->disp->area_act.y;
 
         _gt_disp_check_and_copy_foreach(scr, param);
 
         // flush top layer
+        param->disp->area_disp.x = param->area_flush.x;
+        param->disp->area_disp.y = param->area_flush.y;
         _gt_disp_check_and_copy_foreach(param->disp->layer_top, param);
 
         /** flush display by buffer area */
@@ -756,7 +754,6 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
             param->area_flush.h = end_y - param->area_flush.y;
             param->disp->area_disp.h = param->area_flush.h;
         }
-
     }
 }
 
@@ -961,7 +958,6 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
             disp->area_act.x = scr->area.x;
             disp->area_act.y = scr->area.y;
 
-            _reset_layer_top_area(disp);
             /** reset screen range of activity */
             _gt_disp_reload_max_area(scr);
         }
@@ -1194,33 +1190,30 @@ void gt_disp_scroll_area_act(int16_t dist_x, int16_t dist_y)
         }
     }
 
-    if (disp->layer_top) {
-        if (disp->layer_top->cnt_child) {
-            /** Keep float layer top widgets stay within display screen area */
-            _gt_obj_move_child_by(disp->layer_top,
-                area->x - gt_obj_get_x(disp->layer_top),
-                area->y - gt_obj_get_y(disp->layer_top));
-        }
-        disp->layer_top->area.x = area->x;
-        disp->layer_top->area.y = area->y;
-    }
-
     _gt_disp_refr_reset_areas();
     _gt_disp_refr_append_area(area);
 }
 
 void gt_disp_invalid_area(gt_obj_st * obj)
 {
+    gt_obj_st * scr = gt_disp_get_scr();
     if (NULL == obj) {
         /** full screen refresh */
-        obj = gt_disp_get_scr();
+        obj = scr;
         obj->area.w = gt_disp_get_res_hor(NULL);
         obj->area.h = gt_disp_get_res_ver(NULL);
     }
-    if( !gt_obj_check_scr(obj)){
+    gt_area_st invalid = obj->area;
+    gt_obj_st * top = gt_disp_get_layer_top();
+
+    if (top && gt_obj_is_child(obj, top)) {
+        invalid.x += gt_obj_get_x(scr);
+        invalid.y += gt_obj_get_y(scr);
+    }
+    else if( !gt_obj_check_scr(obj)){
         return;
     }
-    _gt_disp_refr_append_area(&obj->area);
+    _gt_disp_refr_append_area(&invalid);
 }
 
 /* end ------------------------------------------------------------------*/
