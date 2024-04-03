@@ -20,8 +20,10 @@ extern "C" {
 #include "gt_obj_class.h"
 #include "gt_btnmap.h"
 /* define ---------------------------------------------------------------*/
-
-
+#define _DEF_STYLE_26_KEY
+// #define _DEF_STYLE_9_KEY     //unrealized
+#define _DEF_STYLE_OTHER_4x5
+#define _DEF_STYLE_OTHER_11x3
 
 /* typedef --------------------------------------------------------------*/
 typedef enum {
