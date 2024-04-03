@@ -275,6 +275,7 @@ bool gt_right_to_left_handler(const gt_font_st* fonts , uint8_t* ret_text , uint
 bool is_convertor_language(gt_font_style_en_cn_et style_laug);
 uint8_t right_to_left_lan_get(uint16_t style);
 
+uint32_t gt_font_split_line_numb(gt_font_info_st* info , const char * text , uint32_t max_w , uint16_t space , uint32_t * ret_max_w);
 
 #ifdef __cplusplus
 } /*extern "C"*/

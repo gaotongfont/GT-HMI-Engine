@@ -1100,6 +1100,68 @@ _ret_dat:
     return len;
 }
 
+//
+uint32_t gt_font_split_line_numb(gt_font_info_st* info , const char * text , uint32_t max_w , uint16_t space , uint32_t * ret_max_w)
+{
+    uint32_t line_numb = 1;
+    if(!text) return line_numb;
+
+    gt_font_st temp_font = {
+        .info = *info,
+        .res = NULL,
+    };
+
+    uint8_t font_style = GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH;
+    if (GT_FONT_TYPE_FLAG_VEC == gt_font_type_get(info->style_cn) ||
+        GT_FONT_TYPE_FLAG_VEC == gt_font_type_get(info->style_en) ||
+        GT_FONT_TYPE_FLAG_VEC == gt_font_type_get(info->style_fl)) {
+        font_style = GT_FONT_TYPE_FLAG_VEC;
+    }
+
+    _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(info, font_style, 0, 0);
+
+    temp_font.res = gt_mem_malloc(font_size_res.font_buff_len);
+
+    uint8_t lan = 0;
+    int32_t disp_w = max_w;
+    uint32_t ret_w = 0 , lan_len = 0;
+    uint32_t idx = 0 , idx_step = 0 , len = strlen(text);
+
+    while (idx < len)
+    {
+
+        if(0x0A == text[idx]){
+            idx += 1;
+            goto _compute_line;
+        }
+
+        temp_font.utf8 = (char*)&text[idx];
+        temp_font.len = len - idx;
+
+        idx_step = gt_font_split( &temp_font , disp_w,  max_w , space , &ret_w , &lan , &lan_len);
+
+        disp_w -= ret_w;
+        if(disp_w <= 0 || 0 == idx_step){
+            goto _compute_line;
+        }
+        idx += idx_step;
+
+        continue;
+
+    _compute_line:
+        ++line_numb;
+        disp_w = max_w;
+    }
+
+    if(ret_max_w) *ret_max_w = (line_numb > 1) ? max_w : max_w - disp_w;
+
+    if (temp_font.res) {
+        gt_mem_free(temp_font.res);
+        temp_font.res = NULL;
+    }
+
+    return line_numb;
+}
 
 
 

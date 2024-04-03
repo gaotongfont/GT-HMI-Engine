@@ -53,6 +53,7 @@ extern "C" {
 #define GT_CFG_ENABLE_ROLLER            1
 #define GT_CFG_ENABLE_BTNMAP            1
 #define GT_CFG_ENABLE_DIALOG            1
+#define GT_CFG_ENABLE_CHAT              1
 
 #if GT_USE_GIF
 #define GT_CFG_ENABLE_GIF               1
