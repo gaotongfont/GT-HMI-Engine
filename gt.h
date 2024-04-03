@@ -161,6 +161,10 @@ extern "C" {
 #include "src/widgets/gt_dialog.h"
 #endif
 
+#if GT_CFG_ENABLE_CHAT
+#include "src/widgets/gt_chat.h"
+#endif
+
 /* other */
 #include "src/others/gt_color.h"
 #include "src/others/gt_log.h"
