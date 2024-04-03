@@ -125,7 +125,7 @@ static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
         return false;
     }
 
-    if( !_gt_obj_is_disp_area_visible(obj) ){
+    if ( !_gt_obj_is_disp_area_visible(obj) ) {
         return false;
     }
     gt_disp_st * disp = param->disp;
@@ -828,6 +828,13 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
             /** set bottom stack screen */
             new_item.current_scr_id = target->current_scr_id;
             new_item.current_scr = target->current_scr;
+        }
+    } else if (home_id == new_item.current_scr_id) {
+        if (false == gt_scr_stack_is_empty()) {
+            gt_scr_stack_clear();
+        }
+        if (gt_scr_stack_is_home_scr_alive()) {
+            new_item.current_scr = gt_scr_stack_get_home_scr();
         }
     }
 

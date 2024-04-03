@@ -43,7 +43,9 @@ typedef struct gt_scr_stack_item_s {
     gt_scr_id_t current_scr_id; /** current screen id */
 
     /** NULL[default]: need to reload screen by prev_scr_id -> init_cb,
-     * otherwise load current scj object directly */
+     * otherwise load current scj object directly.
+     * [Warn] home screen always NULL!
+     */
     gt_obj_st * prev_scr_alive;
     gt_obj_st * current_scr;
 

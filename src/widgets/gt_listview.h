@@ -122,10 +122,10 @@ void gt_listview_set_item_bg_color(gt_obj_st * listview, gt_color_t color);
  */
 void gt_listview_show_item_bg(gt_obj_st * listview, bool show);
 /**
- * @brief Set the listview item reduce area value, default is 2
+ * @brief Set the listview item reduce area value, default is 4
  *
  * @param listview
- * @param reduce REDUCE_DEFAULT[default]: 2
+ * @param reduce REDUCE_DEFAULT[default]: 4
  */
 void gt_listview_set_item_reduce(gt_obj_st * listview, uint8_t reduce);
 
