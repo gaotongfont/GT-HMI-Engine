@@ -173,15 +173,15 @@ static uint32_t _get_font_style(gt_font_st *font , uint32_t unicode)
 /* global functions / API interface -------------------------------------*/
 void gt_font_info_init(gt_font_info_st *font_info)
 {
-    font_info->style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
-    font_info->style_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    font_info->style_fl    = GT_CFG_DEFAULT_FONT_FAMILY_FL;
-    font_info->style_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
-    font_info->size        = GT_CFG_DEFAULT_FONT_SIZE;
-    font_info->gray        = 1;
-    font_info->thick_en         = 0;
-    font_info->thick_cn         = 0;
-    font_info->encoding       = gt_project_encoding_get();
+    font_info->style_cn   = GT_CFG_DEFAULT_FONT_FAMILY_CN;
+    font_info->style_en   = GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    font_info->style_fl   = GT_CFG_DEFAULT_FONT_FAMILY_FL;
+    font_info->style_numb = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
+    font_info->size       = GT_CFG_DEFAULT_FONT_SIZE;
+    font_info->gray       = 1;
+    font_info->thick_en   = 0;
+    font_info->thick_cn   = 0;
+    font_info->encoding   = gt_project_encoding_get();
 }
 
 void gt_font_info_update_font_thick(gt_font_info_st *font_info)
