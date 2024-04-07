@@ -328,19 +328,12 @@ gt_obj_st * gt_input_create(gt_obj_st * parent)
 
     gt_input_set_placeholder(obj, "please input");
 
-    style->font_info.style_cn = GT_CFG_DEFAULT_FONT_FAMILY_CN;
-    style->font_info.style_en = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    style->font_info.style_fl    = GT_CFG_DEFAULT_FONT_FAMILY_FL;
-    style->font_info.style_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
-    style->font_info.size      = GT_CFG_DEFAULT_FONT_SIZE;
+    gt_font_info_init(&style->font_info);
     style->font_color     = gt_color_black();
     style->border_width   = 2;
     style->border_color   = gt_color_black();
 	style->bg_color 	  = gt_color_hex(0xffffff);
-    style->font_info.gray      = 1;
     style->font_align     = GT_ALIGN_NONE;
-    style->font_info.thick_en       = 0;
-    style->font_info.thick_cn       = 0;
     style->space_x        = 0;
     style->space_y        = 0;
 

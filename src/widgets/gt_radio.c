@@ -217,14 +217,7 @@ gt_obj_st * gt_radio_create(gt_obj_st * parent)
     style->text = gt_mem_malloc(sizeof("radio"));
     gt_memcpy(style->text, "radio\0", sizeof("radio"));
 
-    style->font_info.style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
-    style->font_info.style_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    style->font_info.style_fl    = GT_CFG_DEFAULT_FONT_FAMILY_FL;
-    style->font_info.style_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
-    style->font_info.size         = GT_CFG_DEFAULT_FONT_SIZE;
-    style->font_info.gray         = 1;
-    style->font_info.thick_en          = 0;
-    style->font_info.thick_cn          = 0;
+    gt_font_info_init(&style->font_info);
     style->space_x           = 0;
     style->space_y           = 0;
 

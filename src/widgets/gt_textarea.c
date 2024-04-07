@@ -217,18 +217,11 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
     obj->fixed = false;
 
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
+    gt_font_info_init(&style->font_info);
 
-    style->font_info.style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
-    style->font_info.style_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    style->font_info.style_fl    = GT_CFG_DEFAULT_FONT_FAMILY_FL;
-    style->font_info.style_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
-    style->font_info.size         = GT_CFG_DEFAULT_FONT_SIZE;
     style->color_background  = gt_color_white();
     style->bg_opa            = GT_OPA_100;
-    style->font_info.gray         = 1;
     style->font_align        = GT_ALIGN_NONE;
-    style->font_info.thick_en          = 0;
-    style->font_info.thick_cn          = 0;
     style->space_x           = 0;
     style->space_y           = 0;
     return obj;

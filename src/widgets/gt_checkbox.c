@@ -215,29 +215,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 }
 
 
-static void _gt_checkbox_init_style(gt_obj_st * checkbox)
-{
-    _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
-
-    style->text = gt_mem_malloc(sizeof("checkbox"));
-    gt_memcpy(style->text, "checkbox", sizeof("checkbox"));
-
-    style->font_info.style_cn   = GT_CFG_DEFAULT_FONT_FAMILY_CN;
-    style->font_info.style_en   = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    style->font_info.style_fl   = GT_CFG_DEFAULT_FONT_FAMILY_FL;
-    style->font_info.style_numb = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
-    style->font_info.size       = GT_CFG_DEFAULT_FONT_SIZE;
-    style->font_color           = gt_color_black();
-    style->font_info.gray       = 1;
-    style->font_info.thick_en   = 0;
-    style->font_info.thick_cn   = 0;
-    style->space_x              = 0;
-    style->space_y              = 0;
-}
-
-
-
-
 /* global functions / API interface -------------------------------------*/
 
 /**
@@ -257,15 +234,8 @@ gt_obj_st * gt_checkbox_create(gt_obj_st * parent)
     style->text = gt_mem_malloc(sizeof("checkbox"));
     gt_memcpy(style->text, "checkbox", sizeof("checkbox"));
 
-    style->font_info.style_cn   = GT_CFG_DEFAULT_FONT_FAMILY_CN;
-    style->font_info.style_en   = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    style->font_info.style_fl   = GT_CFG_DEFAULT_FONT_FAMILY_FL;
-    style->font_info.style_numb = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
-    style->font_info.size       = GT_CFG_DEFAULT_FONT_SIZE;
+    gt_font_info_init(&style->font_info);
     style->font_color           = gt_color_black();
-    style->font_info.gray       = 1;
-    style->font_info.thick_en   = 0;
-    style->font_info.thick_cn   = 0;
     style->space_x              = 0;
     style->space_y              = 0;
 
