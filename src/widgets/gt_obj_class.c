@@ -344,6 +344,8 @@ void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_ob
     if (NULL == obj || NULL == parent) {
         return;
     }
+    obj->area.x = parent->area.x;
+    obj->area.y = parent->area.y;
     gt_obj_set_overflow(obj, parent->overflow);
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_OVERFLOW, parent->overflow);
 }
