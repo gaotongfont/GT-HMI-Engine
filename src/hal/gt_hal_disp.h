@@ -72,7 +72,12 @@ typedef struct _gt_disp_s
     gt_obj_st *  scr_prev;      // Preview Screen,Only save one layer
     gt_obj_st *  scr_act;       // Active screen
 
-    gt_obj_st * layer_top;      // Top layer on the top of the scr layer, such as popup, dialog, etc.
+    /**
+     * @brief Top layer on the top of the scr layer, such as popup, dialog, etc.
+     *      [WARN] all widget must be set within physical screen area: (0, 0) - (WIDTH, HEIGHT),
+     *              reset area data by widget's event_cb().
+     */
+    gt_obj_st * layer_top;
 
     gt_obj_st ** screens;       // Array of screen
     uint16_t cnt_scr;           // Count screens nub
