@@ -366,6 +366,7 @@ static inline void _adapt_area_flush_hor(_flush_scr_param_st * param) {
     gt_obj_st * prev = param->disp->scr_prev;
     gt_obj_st * scr = param->disp->scr_act;
 
+    scr->area.w = param->disp->area_act.w - gt_abs(scr->area.x);
     param->valid.is_hor = true;
     prev->area.w = param->disp->area_act.w - gt_abs(prev->area.x);
     switch (param->disp->scr_anim_type) {
@@ -413,6 +414,7 @@ static inline void _adapt_area_flush_ver(_flush_scr_param_st * param) {
     gt_obj_st * prev = param->disp->scr_prev;
     gt_obj_st * scr = param->disp->scr_act;
 
+    scr->area.h = param->disp->area_act.h - gt_abs(scr->area.y);
     param->valid.is_hor = false;
     prev->area.h = param->disp->area_act.h - gt_abs(prev->area.y);
     param->view_scr_prev_abs.h = prev->area.h;
@@ -516,11 +518,9 @@ static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
 
     // 计算scr 在屏幕的显示区域
     if (_is_anim_type_hor(param->disp->scr_anim_type)) {
-        scr->area.w = param->disp->area_act.w - gt_abs(scr->area.x);
         _adapt_area_flush_hor(param);
     }
     if (_is_anim_type_ver(param->disp->scr_anim_type)) {
-        scr->area.h = param->disp->area_act.h - gt_abs(scr->area.y);
         _adapt_area_flush_ver(param);
     }
 
