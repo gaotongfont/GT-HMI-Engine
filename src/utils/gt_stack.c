@@ -103,7 +103,7 @@ static inline void * _item_pop(gt_stack_st * stack) {
 
 gt_stack_st * gt_stack_create(gt_stack_size_t depth, uint16_t item_size)
 {
-    if (0 == depth || 0 == item_size) {
+    if (depth <= 0 || 0 == item_size) {
         return NULL;
     }
     gt_stack_st * ret = (gt_stack_st * )gt_mem_malloc(sizeof(gt_stack_st));
@@ -128,7 +128,7 @@ fail_lb:
 
 gt_stack_st * gt_stack_cycle_create(gt_stack_size_t depth, uint16_t item_size)
 {
-    if (0 == depth || 0 == item_size) {
+    if (depth <= 0 || 0 == item_size) {
         return NULL;
     }
     gt_stack_st * ret = (gt_stack_st * )gt_mem_malloc(sizeof(gt_stack_st));
@@ -234,7 +234,7 @@ bool gt_stack_is_cycle(gt_stack_st * stack)
 gt_stack_item_st gt_stack_search_item_from_top(gt_stack_st * stack, gt_stack_equal_cb_t equal_cb, void * target)
 {
     gt_stack_item_st ret = {
-        .index_from_top = 0,
+        .index_from_top = -1,
         .data = NULL
     };
     if (NULL == stack || NULL == equal_cb || NULL == target) {
@@ -258,7 +258,7 @@ gt_stack_item_st gt_stack_search_item_from_top(gt_stack_st * stack, gt_stack_equ
 gt_stack_item_st gt_stack_search_item_from_bottom(gt_stack_st * stack, gt_stack_equal_cb_t equal_cb, void * target)
 {
     gt_stack_item_st ret = {
-        .index_from_top = 0,
+        .index_from_top = -1,
         .data = NULL
     };
     if (NULL == stack || NULL == equal_cb || NULL == target) {

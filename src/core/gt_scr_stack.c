@@ -111,7 +111,7 @@ bool gt_scr_stack_is_home_scr_alive(void)
 
 bool gt_scr_stack_set_depth(gt_stack_size_t stack_depth)
 {
-    if (0 == stack_depth) {
+    if (stack_depth <= 0) {
         return false;
     }
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
@@ -140,6 +140,10 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
     gt_scr_stack_item_st * item = NULL;
     gt_obj_st * prev = NULL;
     gt_scr_id_t home_id = gt_scr_stack_get_home_scr_id();
+
+    if (count < 0) {
+        return item;
+    }
 
     if (count > gt_stack_get_count(scr_info->stack)) {
         count = gt_stack_get_count(scr_info->stack);

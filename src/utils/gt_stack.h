@@ -114,7 +114,7 @@ bool gt_stack_is_cycle(gt_stack_st * stack);
  * @param stack
  * @param equal_cb
  * @param target
- * @return gt_stack_item_st ret.data is NULL, if not found
+ * @return gt_stack_item_st ret.data is NULL or ret.index_from_top is -1, if not found
  */
 gt_stack_item_st gt_stack_search_item_from_top(gt_stack_st * stack, gt_stack_equal_cb_t equal_cb, void * target);
 
@@ -124,7 +124,7 @@ gt_stack_item_st gt_stack_search_item_from_top(gt_stack_st * stack, gt_stack_equ
  * @param stack
  * @param equal_cb
  * @param target
- * @return gt_stack_item_st ret.data is NULL, if not found
+ * @return gt_stack_item_st ret.data is NULL or ret.index_from_top is -1, if not found
  */
 gt_stack_item_st gt_stack_search_item_from_bottom(gt_stack_st * stack, gt_stack_equal_cb_t equal_cb, void * target);
 

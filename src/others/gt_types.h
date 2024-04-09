@@ -44,7 +44,7 @@ typedef uint8_t gt_opt_t;
 
 typedef int16_t gt_id_t;
 
-typedef uint16_t gt_stack_size_t;
+typedef int16_t gt_stack_size_t;
 
 /**
  * @brief The screen turn next screen animation type
