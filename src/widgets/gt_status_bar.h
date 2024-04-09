@@ -1,0 +1,147 @@
+/**
+ * @file gt_status_bar.h
+ * @author Feyoung
+ * @brief Status bar widget
+ *  |-----------|----------|-----------|
+ *  |  left     |  center  |  right    |
+ *  |-----------|----------|-----------|
+ * left:   icon and text
+ * center: only one text title
+ * right:  icon and text
+ *
+ * @version 0.1
+ * @date 2024-03-29 10:51:59
+ * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
+ */
+#ifndef _GT_STATUS_BAR_H_
+#define _GT_STATUS_BAR_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* include --------------------------------------------------------------*/
+#include "./gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_STATUS_BAR
+#include "./gt_obj.h"
+#include "../core/gt_style.h"
+
+
+/* define ---------------------------------------------------------------*/
+
+
+
+/* typedef --------------------------------------------------------------*/
+
+
+
+/* macros ---------------------------------------------------------------*/
+
+
+
+/* class ----------------------------------------------------------------*/
+
+
+
+/* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief Create a status bar object, the status bar is a global object
+ *
+ * @param have_background true: have background, white color, false: no background
+ * @return gt_obj_st* status bar object
+ */
+gt_obj_st * gt_status_bar_create(bool have_background);
+
+gt_obj_st * gt_status_bar_get_obj(void);
+
+/**
+ * @brief Hide or show status bar within the current screen
+ *
+ * @param hide true: hide, false[default]: show
+ * @return true hide
+ * @return false show
+ */
+bool gt_status_bar_set_hide(bool hide);
+
+/**
+ * @brief Get status bar hide status
+ *
+ * @return true hide
+ * @return false show
+ */
+bool gt_status_bar_is_hide(void);
+
+void gt_status_bar_set_height(uint16_t height);
+
+/**
+ * @brief Set display percent value, The addition must be equal to 100
+ * [default left: 30, center: 40, right: 30]
+ *
+ * @param left 0 - 100
+ * @param center 0 - 100
+ * @param right 0 - 100
+ */
+void gt_status_bar_set_percent(uint8_t left, uint8_t center, uint8_t right);
+
+gt_obj_st * gt_status_bar_left_find_by(char * text_or_src);
+bool gt_status_bar_left_remove(gt_obj_st * target);
+bool gt_status_bar_left_remove_all(void);
+
+gt_obj_st * gt_status_bar_left_add_icon(char * src);
+bool gt_status_bar_left_change_icon(gt_obj_st * icon, char * src);
+gt_obj_st * gt_status_bar_left_add_text(char * text, uint16_t width);
+bool gt_status_bar_left_change_text(gt_obj_st * lab, char * text);
+
+gt_obj_st * gt_status_bar_right_find_by(char * text_or_src);
+bool gt_status_bar_right_remove(gt_obj_st * target);
+bool gt_status_bar_right_remove_all(void);
+
+gt_obj_st * gt_status_bar_right_add_icon(char * src);
+bool gt_status_bar_right_change_icon(gt_obj_st * icon, char * src);
+gt_obj_st * gt_status_bar_right_add_text(char * text, uint16_t width);
+bool gt_status_bar_right_change_text(gt_obj_st * lab, char * text);
+
+
+bool gt_status_bar_center_remove_all(void);
+gt_obj_st * gt_status_bar_center_set_text(char * text);
+
+/**
+ * @brief Show status bar background
+ *
+ * @param show true: show, false: hide
+ */
+void gt_status_bar_show_bg(bool show);
+
+/**
+ * @brief Set status bar background opacity
+ *
+ * @param opa @ref gt_opa_t
+ */
+void gt_status_bar_set_bg_opa(gt_opa_t opa);
+
+/**
+ * @brief Set status bar background color
+ *
+ * @param color
+ */
+void gt_status_bar_set_bg_color(gt_color_t color);
+
+void gt_status_bar_set_font_family_cn(gt_family_t family);
+void gt_status_bar_set_font_family_en(gt_family_t family);
+void gt_status_bar_set_font_family_fl(gt_family_t family);
+void gt_status_bar_set_font_family_numb(gt_family_t family);
+void gt_status_bar_set_font_size(uint8_t size);
+void gt_status_bar_set_font_gray(uint8_t gray);
+void gt_status_bar_set_font_color(gt_color_t color);
+void gt_status_bar_set_font_thick_cn(uint8_t thick);
+void gt_status_bar_set_font_thick_en(uint8_t thick);
+
+#endif  /** GT_CFG_ENABLE_STATUS_BAR */
+
+#ifdef __cplusplus
+} /*extern "C"*/
+#endif
+
+#endif //!_GT_STATUS_BAR_H_

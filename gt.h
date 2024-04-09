@@ -165,6 +165,10 @@ extern "C" {
 #include "src/widgets/gt_chat.h"
 #endif
 
+#if GT_CFG_ENABLE_STATUS_BAR
+#include "src/widgets/gt_status_bar.h"
+#endif
+
 /* other */
 #include "src/others/gt_color.h"
 #include "src/others/gt_log.h"
