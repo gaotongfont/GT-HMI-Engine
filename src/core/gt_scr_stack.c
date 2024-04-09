@@ -11,6 +11,7 @@
 #include "./gt_scr_stack.h"
 #include "../others/gt_log.h"
 #include "../others/gt_gc.h"
+#include "../core/gt_mem.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -173,6 +174,20 @@ gt_scr_stack_item_st * gt_scr_stack_peek(void)
     return (gt_scr_stack_item_st * )gt_stack_peek(scr_info->stack);
 }
 
+gt_obj_st * gt_scr_stack_get_prev_scr(void)
+{
+    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+
+    gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek(scr_info->stack);
+    if (NULL == item) {
+        return NULL;
+    }
+    if (item->prev_scr_id == gt_scr_stack_get_home_scr_id() && gt_scr_stack_is_home_scr_alive()) {
+        return gt_scr_stack_get_home_scr();
+    }
+    return item->prev_scr_alive;
+}
+
 bool gt_scr_stack_is_prev(gt_scr_id_t prev_scr_id)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
@@ -193,6 +208,17 @@ bool gt_scr_stack_is_current(gt_scr_id_t scr_id)
         return false;
     }
     return item->current_scr_id == scr_id;
+}
+
+gt_scr_id_t gt_scr_stack_get_prev_id(void)
+{
+    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+
+    gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek(scr_info->stack);
+    if (NULL == item) {
+        return -1;
+    }
+    return item->prev_scr_id;
 }
 
 gt_stack_item_st gt_scr_stack_has_before(gt_scr_stack_item_st * scr)

@@ -130,6 +130,8 @@ bool gt_scr_stack_push(gt_scr_stack_item_st * scr);
 gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count);
 gt_scr_stack_item_st * gt_scr_stack_peek(void);
 
+gt_obj_st * gt_scr_stack_get_prev_scr(void);
+
 /**
  * @brief judge the previous screen is the screen which we want
  *
@@ -147,6 +149,13 @@ bool gt_scr_stack_is_prev(gt_scr_id_t prev_scr_id);
  * @return false
  */
 bool gt_scr_stack_is_current(gt_scr_id_t scr_id);
+
+/**
+ * @brief
+ *
+ * @return gt_scr_id_t -1: if no previous screen
+ */
+gt_scr_id_t gt_scr_stack_get_prev_id(void);
 
 gt_stack_item_st gt_scr_stack_has_before(gt_scr_stack_item_st * scr);
 
