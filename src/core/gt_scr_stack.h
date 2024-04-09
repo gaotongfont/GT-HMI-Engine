@@ -157,6 +157,12 @@ bool gt_scr_stack_is_current(gt_scr_id_t scr_id);
  */
 gt_scr_id_t gt_scr_stack_get_prev_id(void);
 
+/**
+ * @brief Search the item in the stack
+ *
+ * @param scr which stack frame want to search, base on current_scr_id value
+ * @return gt_stack_item_st ret.data is NULL, if not found
+ */
 gt_stack_item_st gt_scr_stack_has_before(gt_scr_stack_item_st * scr);
 
 bool gt_scr_stack_is_empty(void);

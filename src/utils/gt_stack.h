@@ -109,22 +109,22 @@ uint16_t gt_stack_get_item_size(gt_stack_st * stack);
 bool gt_stack_is_cycle(gt_stack_st * stack);
 
 /**
- * @brief
+ * @brief Search the item from the stack top
  *
  * @param stack
  * @param equal_cb
  * @param target
- * @return gt_stack_item_st
+ * @return gt_stack_item_st ret.data is NULL, if not found
  */
 gt_stack_item_st gt_stack_search_item_from_top(gt_stack_st * stack, gt_stack_equal_cb_t equal_cb, void * target);
 
 /**
- * @brief
+ * @brief Search the item from the stack bottom
  *
  * @param stack
  * @param equal_cb
  * @param target
- * @return gt_stack_item_st
+ * @return gt_stack_item_st ret.data is NULL, if not found
  */
 gt_stack_item_st gt_stack_search_item_from_bottom(gt_stack_st * stack, gt_stack_equal_cb_t equal_cb, void * target);
 
