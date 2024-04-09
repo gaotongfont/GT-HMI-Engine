@@ -62,8 +62,14 @@ static bool _update_layer_top_widget_pos(gt_obj_st * obj, gt_size_t x, gt_size_t
     }
     gt_area_st area = obj->area;
 
-    area.x = (x % disp->layer_top->area.w) + disp->layer_top->area.x;
-    area.y = (y % disp->layer_top->area.h) + disp->layer_top->area.y;
+    if (x > disp->layer_top->area.w) {
+        x = x % disp->layer_top->area.w;
+    }
+    if (y > disp->layer_top->area.h) {
+        y = y % disp->layer_top->area.h;
+    }
+    area.x = x + disp->layer_top->area.x;
+    area.y = y + disp->layer_top->area.y;
 
     _gt_obj_move_child_by(obj, area.x - gt_obj_get_x(obj), area.y - gt_obj_get_y(obj));
 
@@ -178,15 +184,27 @@ void gt_obj_set_opa(gt_obj_st * obj, gt_opa_t opa) {
 }
 
 gt_size_t gt_obj_get_x(gt_obj_st * obj) {
+    if (NULL == obj) {
+        return 0;
+    }
     return _get_area_prop(obj, x);
 }
 gt_size_t gt_obj_get_y(gt_obj_st * obj) {
+    if (NULL == obj) {
+        return 0;
+    }
     return _get_area_prop(obj, y);
 }
 uint16_t gt_obj_get_w(gt_obj_st * obj) {
+    if (NULL == obj) {
+        return 0;
+    }
     return _get_area_prop(obj, w);
 }
 uint16_t gt_obj_get_h(gt_obj_st * obj) {
+    if (NULL == obj) {
+        return 0;
+    }
     return _get_area_prop(obj, h);
 }
 
