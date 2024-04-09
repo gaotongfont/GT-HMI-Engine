@@ -11,6 +11,7 @@
 #include "gt_style.h"
 #include "./gt_disp.h"
 #include "../core/gt_mem.h"
+#include "../core/gt_layout.h"
 #include "../hal/gt_hal_disp.h"
 #include "../others/gt_log.h"
 
@@ -671,6 +672,37 @@ uint8_t gt_obj_get_radius(gt_obj_st * obj)
         return 0;
     }
     return obj->radius;
+}
+
+void gt_obj_set_row_layout(gt_obj_st * obj, bool is_row_layout)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    if (false == is_row_layout) {
+        /** default */
+        obj->row_layout = false;
+        obj->scroll_dir = GT_SCROLL_ALL;
+        return;
+    }
+    obj->row_layout = true;
+    obj->scroll_dir = GT_SCROLL_HORIZONTAL;
+
+    if (obj->cnt_child) {
+        gt_layout_row_grow(obj);
+    }
+}
+
+void gt_obj_set_grow_invert(gt_obj_st * obj, bool is_grow_invert)
+{
+    if (NULL == obj) {
+        return ;
+    }
+    obj->grow_invert = is_grow_invert;
+
+    if (obj->cnt_child) {
+        gt_layout_row_grow(obj);
+    }
 }
 
 /* end ------------------------------------------------------------------*/

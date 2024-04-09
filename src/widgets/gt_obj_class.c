@@ -19,6 +19,7 @@
 #include "stdint.h"
 #include "../others/gt_log.h"
 #include "../others/gt_assert.h"
+#include "../core/gt_layout.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -210,9 +211,43 @@ static inline bool _add_obj_to_parent(gt_obj_st * obj, gt_obj_st * parent) {
     return true;
 }
 
-/* global functions / API interface -------------------------------------*/
-struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_obj_s * parent) {
+static bool _create_new_screen_obj(gt_obj_st * obj) {
+    GT_LOGV(GT_LOG_TAG_GUI, "create a screen");
+    gt_disp_st * disp = gt_disp_get_default();
 
+    if (disp == NULL) {
+        GT_LOGW(GT_LOG_TAG_GUI, "disp is null, please init disp");
+        // goto obj_lb;
+        return false;
+    }
+
+    if (disp->screens == NULL || disp->cnt_scr == 0 ) {
+        disp->screens = gt_mem_malloc(sizeof(gt_obj_st *));
+        if (!disp->screens) {
+            // goto obj_lb;
+            return false;
+        }
+        disp->screens[disp->cnt_scr++] = obj;
+    } else {
+        // gt_mem_realloc can't operate NULL ptr
+        disp->screens = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr + 1));
+        if (!disp->screens) {
+            // goto obj_lb;
+            return false;
+        }
+        disp->screens[disp->cnt_scr++] = obj;
+    }
+    obj->area.x = 0;
+    obj->area.y = 0;
+    obj->area.w = gt_disp_get_res_hor(NULL);
+    obj->area.h = gt_disp_get_res_ver(NULL);
+
+    return true;
+}
+
+/* global functions / API interface -------------------------------------*/
+struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_obj_s * parent)
+{
     /* check type */
     if ( parent && parent->class->type == class->type ){
         if (GT_TYPE_OBJ != class->type) {
@@ -242,37 +277,20 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
     _gt_obj_class_inherent_attr_from_parent(obj, parent);
 
     if (parent == NULL) {
-        GT_LOGV(GT_LOG_TAG_GUI, "create a screen");
-        gt_disp_st * disp = gt_disp_get_default();
-
-        if (disp == NULL) {
-            GT_LOGW(GT_LOG_TAG_GUI, "disp is null, please init disp");
+        if (false == _create_new_screen_obj(obj)) {
             goto obj_lb;
         }
+        return obj;
+    }
 
-        if (disp->screens == NULL || disp->cnt_scr == 0 ) {
-            disp->screens = gt_mem_malloc(sizeof(gt_obj_st *));
-            if (!disp->screens) {
-                goto obj_lb;
-            }
-            disp->screens[disp->cnt_scr++] = obj;
-        } else {
-            // gt_mem_realloc can't operate NULL ptr
-            disp->screens = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr + 1));
-            if (!disp->screens) {
-                goto obj_lb;
-            }
-            disp->screens[disp->cnt_scr++] = obj;
-        }
-        obj->area.x = 0;
-        obj->area.y = 0;
-        obj->area.w = gt_disp_get_res_hor(NULL);
-        obj->area.h = gt_disp_get_res_ver(NULL);
-    } else {
-        obj->fixed = true;
-        if (false == _add_obj_to_parent(obj, parent)) {
-            goto obj_lb;
-        }
+    /** widget object */
+    obj->fixed = true;
+    if (false == _add_obj_to_parent(obj, parent)) {
+        goto obj_lb;
+    }
+    if (parent->row_layout) {
+        // row calc width
+        gt_layout_row_grow(parent);
     }
 
     return obj;

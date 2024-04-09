@@ -124,8 +124,9 @@ typedef struct gt_obj_s {
     uint32_t bubble_notify : 1;     /* The object event will bubble notify to parent, 0: [default] disabled; 1: enabled */
     uint32_t untouchability: 1;     /* The object is untouchable, 0: [default] enabled; 1: disabled, can not be touch */
     uint32_t row_layout    : 1;     /* The child controls are arranged in a row layout */
-    uint32_t show_bg       : 1;     /* The object show background, 0: [default] hide; 1: show */
-    uint32_t reserved      : 2;
+    uint32_t grow_invert   : 1;     /* The child controls are arranged in a row layout, grow invert */
+    uint32_t show_bg       : 1;     /* The object show background, 0: [default] hide; 1: show, bgcolor can be used */
+    uint32_t reserved      : 1;
 
 }gt_obj_st;
 

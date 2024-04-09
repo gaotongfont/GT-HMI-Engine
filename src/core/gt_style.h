@@ -268,6 +268,22 @@ void gt_obj_set_radius(gt_obj_st * obj, uint8_t radius);
 
 uint8_t gt_obj_get_radius(gt_obj_st * obj);
 
+/**
+ * @brief Set the object is only row layout
+ *
+ * @param obj
+ * @param is_row_layout true: enabled row layout, false[default]: disabled row layout
+ */
+void gt_obj_set_row_layout(gt_obj_st * obj, bool is_row_layout);
+
+/**
+ * @brief The object invert grow or not in row layout mode
+ *
+ * @param obj
+ * @param is_grow_invert true: grow invert, false[default]: grow
+ */
+void gt_obj_set_grow_invert(gt_obj_st * obj, bool is_grow_invert);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
