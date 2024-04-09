@@ -878,7 +878,7 @@ void gt_disp_stack_load_scr_anim(gt_scr_id_t scr_id, gt_scr_anim_type_et type, u
 
     /** Has the same page before and pop unused stack item */
     gt_stack_item_st result = gt_scr_stack_has_before(&new_item);
-    if (result.index_from_top) {
+    if (result.data) {
         gt_scr_stack_item_st * same_scr = gt_scr_stack_pop(result.index_from_top);
         new_item.prev_scr_id = same_scr->prev_scr_id;
         new_item.prev_scr_alive = same_scr->prev_scr_alive;
