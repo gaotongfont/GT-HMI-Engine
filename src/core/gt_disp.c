@@ -789,7 +789,7 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
         return -1;
     }
 
-    if (0 == step) {
+    if (step <= 0) {
         target = gt_scr_stack_peek();
         return target ? target->prev_scr_id : -1;
     }
