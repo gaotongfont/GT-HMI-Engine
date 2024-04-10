@@ -42,6 +42,19 @@ static inline void * _get_offset_by_top(gt_stack_st * stack, gt_stack_size_t top
     return (void * )((uint8_t * )stack->data + top_ptr * stack->item_size);
 }
 
+static inline gt_stack_size_t _get_item_top_by_index(gt_stack_st * stack, gt_stack_size_t index) {
+    if (0 == index) {
+        ++index;
+    }
+    if (index > stack->count) {
+        index = stack->count;
+    }
+    if (index > stack->top) {
+        return stack->depth + stack->top + 1 - index;
+    }
+    return stack->top ? (stack->top - index) : stack->depth;
+}
+
 static inline bool _cycle_item_push(gt_stack_st * stack, void * item) {
     uint8_t * ptr = _get_offset_by_top(stack, stack->top);
     gt_memcpy(ptr, item, stack->item_size);
@@ -56,32 +69,6 @@ static inline bool _cycle_item_push(gt_stack_st * stack, void * item) {
         ++stack->count;
     }
     return true;
-}
-
-static inline gt_stack_size_t _get_item_top_by_index(gt_stack_st * stack, gt_stack_size_t index) {
-    if (0 == index) {
-        ++index;
-    }
-    if (index > stack->count) {
-        index = stack->count;
-    }
-    if (index > stack->top) {
-        return stack->depth + stack->top + 1 - index;
-    }
-    return stack->top ? (stack->top - index) : stack->depth;
-}
-
-static inline void * _cycle_item_pop(gt_stack_st * stack) {
-    if (gt_stack_is_empty(stack)) {
-        return NULL;
-    }
-    gt_stack_size_t real_top = _get_item_top_by_index(stack, 1);
-    void * ptr = _get_offset_by_top(stack, real_top);
-
-    stack->top = real_top;
-    --stack->count;
-
-    return ptr;
 }
 
 static inline bool _item_push(gt_stack_st * stack, void * item) {
@@ -181,9 +168,6 @@ void * gt_stack_pop(gt_stack_st * stack)
 {
     if (NULL == stack) { return NULL; }
 
-    if (stack->reg.cycle) {
-        return _cycle_item_pop(stack);
-    }
     return _item_pop(stack);
 }
 
