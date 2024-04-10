@@ -41,7 +41,9 @@ extern "C" {
 
 
 //字库相关能显示的调试信息等级
-#define GT_LOG_LEVEL_DEFALUT    GT_LOG_LEVEL_ERROR
+#ifndef GT_LOG_LEVEL_DEFALUT
+    #define GT_LOG_LEVEL_DEFALUT    GT_LOG_LEVEL_ERROR
+#endif
 
 /* TAG ------------------------------------------------------------------*/
 
