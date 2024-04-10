@@ -94,7 +94,6 @@ typedef struct _gt_disp_s
     gt_area_st     area_act;            //Location of physical screen on virtual screen
     gt_area_st     area_disp;           //10 lines area, Objects in this area will be copied to vbd_color
     gt_area_abs_st area_max;            // max area of virtual screen
-    gt_area_abs_st area_max_new_scr;    // loading screen max area of virtual screen
     gt_color_t     * vbd_color;         //save 10 lines visible pic, this will flush to phy screen
 
     uint8_t scr_anim_type : 4;          // @ref gt_scr_anim_type_et
