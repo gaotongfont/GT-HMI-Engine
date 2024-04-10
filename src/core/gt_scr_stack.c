@@ -51,10 +51,12 @@ gt_scr_init_func_cb_t gt_scr_stack_get_init_func(gt_scr_id_t scr_id)
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
     gt_scr_mapping_table_st * mapping = _get_scr_mapping_table(scr_info);
 
-    if (scr_id < 0 || scr_id >= mapping->count) {
-        return NULL;
+    for (gt_size_t i = 0, cnt = mapping->count; i < cnt; i++) {
+        if (scr_id == mapping->scr_list[i].scr_id) {
+            return mapping->scr_list[i].init_cb;
+        }
     }
-    return mapping->scr_list[scr_id].init_cb;
+    return NULL;
 }
 
 bool gt_scr_stack_register_id_list(gt_scr_list_st const * const scr_list, gt_scr_id_t count, gt_stack_size_t stack_depth)
@@ -223,6 +225,27 @@ gt_scr_id_t gt_scr_stack_get_prev_id(void)
         return -1;
     }
     return item->prev_scr_id;
+}
+
+gt_scr_id_t gt_scr_stack_get_prev_id_by(gt_stack_size_t step)
+{
+    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+    gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek_by(scr_info->stack, step);
+
+    return item ? item->current_scr_id : -1;
+}
+
+gt_obj_st * gt_scr_stack_get_prev_scr_by(gt_stack_size_t step)
+{
+    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+    gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek_by(scr_info->stack, step);
+    if (NULL == item) {
+        return NULL;
+    }
+    if (item->prev_scr_id == gt_scr_stack_get_home_scr_id() && gt_scr_stack_is_home_scr_alive()) {
+        return gt_scr_stack_get_home_scr();
+    }
+    return item->prev_scr_alive;
 }
 
 gt_stack_item_st gt_scr_stack_has_before(gt_scr_stack_item_st * scr)

@@ -158,7 +158,24 @@ bool gt_scr_stack_is_current(gt_scr_id_t scr_id);
 gt_scr_id_t gt_scr_stack_get_prev_id(void);
 
 /**
- * @brief Search the item in the stack
+ * @brief Get the previous screen id by step
+ *
+ * @param step > 0: valid step, < 0: invalid step
+ * @return gt_scr_id_t screen id
+ */
+gt_scr_id_t gt_scr_stack_get_prev_id_by(gt_stack_size_t step);
+
+/**
+ * @brief Get the previous screen object by step
+ *
+ * @param step > 0: valid step, < 0: invalid step
+ * @return gt_obj_st* screen object
+ */
+gt_obj_st * gt_scr_stack_get_prev_scr_by(gt_stack_size_t step);
+
+/**
+ * @brief Search the item in the stack, base on scr->current_scr_id value to
+ *     find the item.
  *
  * @param scr which stack frame want to search, base on current_scr_id value
  * @return gt_stack_item_st ret.data is NULL or ret.index_from_top is -1, if not found

@@ -94,6 +94,8 @@ void * gt_stack_pop(gt_stack_st * stack);
 
 void * gt_stack_peek(gt_stack_st * stack);
 
+void * gt_stack_peek_by(gt_stack_st * stack, gt_stack_size_t index);
+
 bool gt_stack_is_empty(gt_stack_st * stack);
 
 bool gt_stack_is_full(gt_stack_st * stack);

@@ -58,12 +58,24 @@ static inline bool _cycle_item_push(gt_stack_st * stack, void * item) {
     return true;
 }
 
+static inline gt_stack_size_t _get_item_top_by_index(gt_stack_st * stack, gt_stack_size_t index) {
+    if (0 == index) {
+        ++index;
+    }
+    if (index > stack->count) {
+        index = stack->count;
+    }
+    if (index > stack->top) {
+        return stack->depth + stack->top + 1 - index;
+    }
+    return stack->top ? (stack->top - index) : stack->depth;
+}
+
 static inline void * _cycle_item_pop(gt_stack_st * stack) {
     if (gt_stack_is_empty(stack)) {
         return NULL;
     }
-    gt_stack_size_t real_top = stack->top ? (stack->top - 1) : stack->depth;
-
+    gt_stack_size_t real_top = _get_item_top_by_index(stack, 1);
     void * ptr = _get_offset_by_top(stack, real_top);
 
     stack->top = real_top;
@@ -91,7 +103,7 @@ static inline void * _item_pop(gt_stack_st * stack) {
         return NULL;
     }
 
-    gt_stack_size_t real_top = stack->top - 1;
+    gt_stack_size_t real_top = _get_item_top_by_index(stack, 1);
     void * ptr = _get_offset_by_top(stack, real_top);
 
     stack->top = real_top;
@@ -177,11 +189,17 @@ void * gt_stack_pop(gt_stack_st * stack)
 
 void * gt_stack_peek(gt_stack_st * stack)
 {
+    return gt_stack_peek_by(stack, 1);
+}
+
+void * gt_stack_peek_by(gt_stack_st * stack, gt_stack_size_t index)
+{
     if (NULL == stack) { return NULL; }
     if (gt_stack_is_empty(stack)) {
         return NULL;
     }
-    gt_stack_size_t real_top = stack->top - 1;
+    gt_stack_size_t real_top = _get_item_top_by_index(stack, index);
+
     return _get_offset_by_top(stack, real_top);
 }
 
