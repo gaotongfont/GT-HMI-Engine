@@ -11,9 +11,9 @@ extern "C" {
 #endif
 
 #if 0
-    #define __always_inline
+    #define _gt_always_inline
 #else
-	#define __always_inline inline
+	#define _gt_always_inline inline
 #endif
 
 /**
@@ -35,7 +35,7 @@ struct _gt_list_head {
 #define _GT_LIST_HEAD_DEF(name) \
     struct _gt_list_head name = _GT_LIST_HEAD_INIT(name)
 
-static __always_inline void _GT_INIT_LIST_HEAD(struct _gt_list_head *list)
+static _gt_always_inline void _GT_INIT_LIST_HEAD(struct _gt_list_head *list)
 {
 	list->next = list;
 	list->prev = list;
@@ -47,7 +47,7 @@ static __always_inline void _GT_INIT_LIST_HEAD(struct _gt_list_head *list)
  * This is only for internal list manipulation where we know
  * the prev/next entries already!
  */
-static __always_inline void __gt_list_add(struct _gt_list_head *newl,
+static _gt_always_inline void __gt_list_add(struct _gt_list_head *newl,
                                        struct _gt_list_head *prev,
                                        struct _gt_list_head *next)
 {
@@ -65,7 +65,7 @@ static __always_inline void __gt_list_add(struct _gt_list_head *newl,
  * Insert a new entry after the specified head.
  * This is good for implementing stacks.
  */
-static __always_inline void _gt_list_add(struct _gt_list_head *newl, struct _gt_list_head *head)
+static _gt_always_inline void _gt_list_add(struct _gt_list_head *newl, struct _gt_list_head *head)
 {
 	__gt_list_add(newl, head, head->next);
 }
@@ -79,7 +79,7 @@ static __always_inline void _gt_list_add(struct _gt_list_head *newl, struct _gt_
  * Insert a new entry before the specified head.
  * This is useful for implementing queues.
  */
-static __always_inline void _gt_list_add_tail(struct _gt_list_head *newl, struct _gt_list_head *head)
+static _gt_always_inline void _gt_list_add_tail(struct _gt_list_head *newl, struct _gt_list_head *head)
 {
 	__gt_list_add(newl, head->prev, head);
 }
@@ -91,7 +91,7 @@ static __always_inline void _gt_list_add_tail(struct _gt_list_head *newl, struct
  * This is only for internal list manipulation where we know
  * the prev/next entries already!
  */
-static __always_inline void __gt_list_del(struct _gt_list_head *prev, struct _gt_list_head *next)
+static _gt_always_inline void __gt_list_del(struct _gt_list_head *prev, struct _gt_list_head *next)
 {
 	next->prev = prev;
 	prev->next = next;
@@ -103,12 +103,12 @@ static __always_inline void __gt_list_del(struct _gt_list_head *prev, struct _gt
  * Note: _gt_list_empty() on entry does not return true after this, the entry is
  * in an undefined state.
  */
-static __always_inline void __gt_list_del_entry(struct _gt_list_head *entry)
+static _gt_always_inline void __gt_list_del_entry(struct _gt_list_head *entry)
 {
 	__gt_list_del(entry->prev, entry->next);
 }
 
-static __always_inline void _gt_list_del(struct _gt_list_head *entry)
+static _gt_always_inline void _gt_list_del(struct _gt_list_head *entry)
 {
 	__gt_list_del(entry->prev, entry->next);
 	entry->next = entry;
@@ -122,7 +122,7 @@ static __always_inline void _gt_list_del(struct _gt_list_head *entry)
  *
  * If @old was empty, it will be overwritten.
  */
-static __always_inline void _gt_list_replace(struct _gt_list_head *old, struct _gt_list_head *newl)
+static _gt_always_inline void _gt_list_replace(struct _gt_list_head *old, struct _gt_list_head *newl)
 {
 	newl->next = old->next;
 	newl->next->prev = newl;
@@ -130,7 +130,7 @@ static __always_inline void _gt_list_replace(struct _gt_list_head *old, struct _
 	newl->prev->next = newl;
 }
 
-static __always_inline void _gt_list_replace_init(struct _gt_list_head *old,
+static _gt_always_inline void _gt_list_replace_init(struct _gt_list_head *old,
                                               struct _gt_list_head *newl)
 {
 	_gt_list_replace(old, newl);
@@ -141,7 +141,7 @@ static __always_inline void _gt_list_replace_init(struct _gt_list_head *old,
  * _gt_list_del_init - deletes entry from list and reinitialize it.
  * @param entry the element to delete from the list.
  */
-static __always_inline void _gt_list_del_init(struct _gt_list_head *entry)
+static _gt_always_inline void _gt_list_del_init(struct _gt_list_head *entry)
 {
 	__gt_list_del_entry(entry);
 	_GT_INIT_LIST_HEAD(entry);
@@ -152,7 +152,7 @@ static __always_inline void _gt_list_del_init(struct _gt_list_head *entry)
  * @param list the entry to move
  * @param head the head that will precede our entry
  */
-static __always_inline void _gt_list_move(struct _gt_list_head *list, struct _gt_list_head *head)
+static _gt_always_inline void _gt_list_move(struct _gt_list_head *list, struct _gt_list_head *head)
 {
 	__gt_list_del_entry(list);
 	_gt_list_add(list, head);
@@ -163,7 +163,7 @@ static __always_inline void _gt_list_move(struct _gt_list_head *list, struct _gt
  * @param list the entry to move
  * @param head the head that will follow our entry
  */
-static __always_inline void _gt_list_move_tail(struct _gt_list_head *list,
+static _gt_always_inline void _gt_list_move_tail(struct _gt_list_head *list,
                                            struct _gt_list_head *head)
 {
 	__gt_list_del_entry(list);
@@ -175,7 +175,7 @@ static __always_inline void _gt_list_move_tail(struct _gt_list_head *list,
  * @param list the entry to test
  * @param head the head of the list
  */
-static __always_inline int _gt_list_is_last(const struct _gt_list_head *list,
+static _gt_always_inline int _gt_list_is_last(const struct _gt_list_head *list,
                                         const struct _gt_list_head *head)
 {
 	return list->next == head;
@@ -185,7 +185,7 @@ static __always_inline int _gt_list_is_last(const struct _gt_list_head *list,
  * _gt_list_empty - tests whether a list is empty
  * @param head the list to test.
  */
-static __always_inline int _gt_list_empty(const struct _gt_list_head *head)
+static _gt_always_inline int _gt_list_empty(const struct _gt_list_head *head)
 {
 	return head->next == head;
 }
@@ -203,7 +203,7 @@ static __always_inline int _gt_list_empty(const struct _gt_list_head *head)
  * to the list entry is _gt_list_del_init(). Eg. it cannot be used
  * if another CPU could re-_gt_list_add() it.
  */
-static __always_inline int _gt_list_empty_careful(const struct _gt_list_head *head)
+static _gt_always_inline int _gt_list_empty_careful(const struct _gt_list_head *head)
 {
 	struct _gt_list_head *next = head->next;
 	return (next == head) && (next == head->prev);
@@ -213,7 +213,7 @@ static __always_inline int _gt_list_empty_careful(const struct _gt_list_head *he
  * _gt_list_rotate_left - rotate the list to the left
  * @param head the head of the list
  */
-static __always_inline void _gt_list_rotate_left(struct _gt_list_head *head)
+static _gt_always_inline void _gt_list_rotate_left(struct _gt_list_head *head)
 {
 	struct _gt_list_head *first;
 
@@ -227,12 +227,12 @@ static __always_inline void _gt_list_rotate_left(struct _gt_list_head *head)
  * _gt_list_is_singular - tests whether a list has just one entry.
  * @param head the list to test.
  */
-static __always_inline int _gt_list_is_singular(const struct _gt_list_head *head)
+static _gt_always_inline int _gt_list_is_singular(const struct _gt_list_head *head)
 {
 	return !_gt_list_empty(head) && (head->next == head->prev);
 }
 
-static __always_inline void __gt_list_cut_position(struct _gt_list_head *list,
+static _gt_always_inline void __gt_list_cut_position(struct _gt_list_head *list,
                                                 struct _gt_list_head *head,
                                                 struct _gt_list_head *entry)
 {
@@ -259,7 +259,7 @@ static __always_inline void __gt_list_cut_position(struct _gt_list_head *list,
  * losing its data.
  *
  */
-static __always_inline void _gt_list_cut_position(struct _gt_list_head *list,
+static _gt_always_inline void _gt_list_cut_position(struct _gt_list_head *list,
                                               struct _gt_list_head *head,
                                               struct _gt_list_head *entry)
 {
@@ -274,7 +274,7 @@ static __always_inline void _gt_list_cut_position(struct _gt_list_head *list,
 		__gt_list_cut_position(list, head, entry);
 }
 
-static __always_inline void __gt_list_splice(const struct _gt_list_head *list,
+static _gt_always_inline void __gt_list_splice(const struct _gt_list_head *list,
                                           struct _gt_list_head *prev,
                                           struct _gt_list_head *next)
 {
@@ -293,7 +293,7 @@ static __always_inline void __gt_list_splice(const struct _gt_list_head *list,
  * @param list the new list to add.
  * @param head the place to add it in the first list.
  */
-static __always_inline void _gt_list_splice(const struct _gt_list_head *list,
+static _gt_always_inline void _gt_list_splice(const struct _gt_list_head *list,
                                         struct _gt_list_head *head)
 {
 	if (!_gt_list_empty(list))
@@ -305,7 +305,7 @@ static __always_inline void _gt_list_splice(const struct _gt_list_head *list,
  * @param list the new list to add.
  * @param head the place to add it in the first list.
  */
-static __always_inline void _gt_list_splice_tail(struct _gt_list_head *list,
+static _gt_always_inline void _gt_list_splice_tail(struct _gt_list_head *list,
                                              struct _gt_list_head *head)
 {
 	if (!_gt_list_empty(list))
@@ -319,7 +319,7 @@ static __always_inline void _gt_list_splice_tail(struct _gt_list_head *list,
  *
  * The list at @list is reinitialised
  */
-static __always_inline void _gt_list_splice_init(struct _gt_list_head *list,
+static _gt_always_inline void _gt_list_splice_init(struct _gt_list_head *list,
                                              struct _gt_list_head *head)
 {
 	if (!_gt_list_empty(list)) {
@@ -336,7 +336,7 @@ static __always_inline void _gt_list_splice_init(struct _gt_list_head *list,
  * Each of the lists is a queue.
  * The list at @list is reinitialised
  */
-static __always_inline void _gt_list_splice_tail_init(struct _gt_list_head *list,
+static _gt_always_inline void _gt_list_splice_tail_init(struct _gt_list_head *list,
                                                   struct _gt_list_head *head)
 {
 	if (!_gt_list_empty(list)) {
