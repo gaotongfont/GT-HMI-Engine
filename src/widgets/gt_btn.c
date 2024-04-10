@@ -308,6 +308,7 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent)
     if (NULL == obj) {
         return obj;
     }
+    obj->fixed = false;
     _gt_btn_st * style = (_gt_btn_st * )obj;
 
     style->text = gt_mem_malloc(sizeof("btn"));
