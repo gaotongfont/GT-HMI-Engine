@@ -41,6 +41,14 @@ extern "C" {
 gt_obj_st * gt_listview_create(gt_obj_st * parent);
 
 /**
+ * @brief Sets the number of columns that can be displayed in subsequent rows
+ *
+ * @param listview
+ * @param column The subsequent rows will be displayed column number of items, default is 1
+ */
+void gt_listview_set_column(gt_obj_st * listview, uint8_t column);
+
+/**
  * @brief add item to listview obj
  *
  * @param list listview obj
