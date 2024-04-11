@@ -76,14 +76,15 @@ bool gt_status_bar_is_hide(void);
 void gt_status_bar_set_height(uint16_t height);
 
 /**
- * @brief Set display percent value, The addition must be equal to 100
+ * @brief Set three part of display scale value,
+ * such: left_width = screen_width * left / (left + center + right)
  * [default left: 30, center: 40, right: 30]
  *
- * @param left 0 - 100
- * @param center 0 - 100
- * @param right 0 - 100
+ * @param left 0 ~ 255
+ * @param center 0 ~ 255
+ * @param right 0 ~ 255
  */
-void gt_status_bar_set_percent(uint8_t left, uint8_t center, uint8_t right);
+void gt_status_bar_set_scale(uint8_t left, uint8_t center, uint8_t right);
 
 gt_obj_st * gt_status_bar_left_find_by(char * text_or_src);
 bool gt_status_bar_left_remove(gt_obj_st * target);

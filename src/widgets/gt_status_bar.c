@@ -32,14 +32,14 @@
 /** Status bar default height */
 #define _DEFAULT_HEIGHT     26
 
-#define _DEFAULT_LEFT_PERCENT    30
-#define _DEFAULT_CENTER_PERCENT  40
-#define _DEFAULT_RIGHT_PERCENT   30
+#define _DEFAULT_LEFT_SCALE     30
+#define _DEFAULT_CENTER_SCALE   40
+#define _DEFAULT_RIGHT_SCALE    30
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _part_item_s {
     gt_obj_st * obj;
-    uint8_t percent;
+    uint8_t scale;
 }_part_item_st;
 
 typedef struct _gt_status_bar_s {
@@ -150,21 +150,22 @@ static void _hor_center_widgets(gt_obj_st * obj) {
 static void _resize_part_width(gt_obj_st * obj) {
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
     gt_area_st area = obj->area;
+    uint16_t total = style->left.scale + style->center.scale + style->right.scale;
 
     if (style->left.obj) {
         gt_obj_set_pos(style->left.obj, area.x, area.y);
-        gt_obj_set_size(style->left.obj, area.w * style->left.percent / 100, area.h);
+        gt_obj_set_size(style->left.obj, area.w * style->left.scale / total, area.h);
         gt_layout_row_grow(style->left.obj);
         // center
         _hor_center_widgets(style->left.obj);
     }
     if (style->center.obj) {
         gt_obj_set_pos(style->center.obj, gt_obj_get_x(style->left.obj) + gt_obj_get_w(style->left.obj), area.y);
-        gt_obj_set_size(style->center.obj, area.w * style->center.percent / 100, area.h);
+        gt_obj_set_size(style->center.obj, area.w * style->center.scale / total, area.h);
     }
     if (style->right.obj) {
         gt_obj_set_pos(style->right.obj, gt_obj_get_x(style->center.obj) + gt_obj_get_w(style->center.obj), area.y);
-        gt_obj_set_size(style->right.obj, area.w * style->right.percent / 100, area.h);
+        gt_obj_set_size(style->right.obj, area.w * style->right.scale / total, area.h);
         gt_layout_row_grow(style->right.obj);
         // center
         _hor_center_widgets(style->right.obj);
@@ -352,9 +353,9 @@ gt_obj_st * gt_status_bar_create(bool have_background)
     style->font_color = gt_color_black();
     style->bg_opa = GT_OPA_100;
     style->show_bg = have_background;
-    style->left.percent = _DEFAULT_LEFT_PERCENT;
-    style->center.percent = _DEFAULT_CENTER_PERCENT;
-    style->right.percent = _DEFAULT_RIGHT_PERCENT;
+    style->left.scale = _DEFAULT_LEFT_SCALE;
+    style->center.scale = _DEFAULT_CENTER_SCALE;
+    style->right.scale = _DEFAULT_RIGHT_SCALE;
 
     if (NULL == style->left.obj) {
         style->left.obj = gt_obj_create(obj);
@@ -412,29 +413,17 @@ void gt_status_bar_set_height(uint16_t height)
     _resize_part_width(obj);
 }
 
-void gt_status_bar_set_percent(uint8_t left, uint8_t center, uint8_t right)
+void gt_status_bar_set_scale(uint8_t left, uint8_t center, uint8_t right)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
     if (NULL == obj) {
         return ;
     }
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
-    uint16_t total = left + right;  /** The left and right regions are given priority */
-    if (total + center != 100) {
-        if (total < 100) {
-            center = 100 - total;
-        } else if (100 == total) {
-            center = 0;
-        } else {
-            while(total > 100) {
-                total = (--left) + (--right);
-            }
-            center = 100 - total;
-        }
-    }
-    style->left.percent = left;
-    style->center.percent = center;
-    style->right.percent = right;
+
+    style->left.scale = left;
+    style->center.scale = center;
+    style->right.scale = right;
 
     _resize_part_width(obj);
 }
