@@ -58,6 +58,40 @@ void gt_listview_add_item(gt_obj_st * list, char * text);
 void gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * text);
 
 /**
+ * @brief add item to listview obj with [ icon + text + icon ] mode
+ *
+ * @param listview
+ * @param left_icon left icon path
+ * @param text text
+ * @param right_icon right icon path
+ */
+void gt_listview_add_item_icons(gt_obj_st * listview, char * left_icon, char * text, char * right_icon);
+
+/**
+ * @brief set [ icon + text ] or [ text + icon ] mode scale
+ *      within item area to display
+ *      such as: icon_width = parent_width * icon_scale / (icon_scale + label_scale)
+ *      [default icon: 25, label: 75]
+ *
+ * @param listview
+ * @param icon 0 ~ 255
+ * @param label 0 ~ 255
+ */
+void gt_listview_set_scale(gt_obj_st * listview, uint8_t icon, uint8_t label);
+
+/**
+ * @brief set only [ icon + text + icon ] mode scale within item area to display
+ *      such as: left_width = parent_width * left_scale / (left_scale + center_scale + right_scale)
+ *      [default left: 20, center: 60, right: 20]
+ *
+ * @param listview
+ * @param left 0 ~ 255
+ * @param center 0 ~ 255
+ * @param right 0 ~ 255
+ */
+void gt_listview_set_scale_triple(gt_obj_st * listview, uint8_t left, uint8_t center,  uint8_t right);
+
+/**
  * @brief item icon set to right side, default is left
  *
  * @param listview
