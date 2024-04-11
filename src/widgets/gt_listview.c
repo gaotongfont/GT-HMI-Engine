@@ -381,6 +381,8 @@ static gt_obj_st * _create_item_obj(gt_obj_st * listview) {
             offset_line = listview->child[listview->cnt_child - 1]->area.y + style->item_height;
             style->column.offset_y = offset_line;
         }
+    } else {
+        style->column.offset_y = listview->area.y;
     }
     gt_obj_st * obj = gt_obj_create(listview);
     /** set object item size */
@@ -548,7 +550,7 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     return obj;
 }
 
-void gt_listview_set_column(gt_obj_st * listview, uint8_t column)
+void gt_listview_set_next_row_item_count(gt_obj_st * listview, uint8_t column)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
