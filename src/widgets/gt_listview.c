@@ -519,7 +519,7 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     return obj;
 }
 
-void gt_listview_add_item(gt_obj_st * listview, char * text)
+gt_obj_st * gt_listview_add_item(gt_obj_st * listview, char * text)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
@@ -531,9 +531,11 @@ void gt_listview_add_item(gt_obj_st * listview, char * text)
 
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_INSIDE, true);
+
+    return obj;
 }
 
-void gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * text)
+gt_obj_st * gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * text)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
@@ -548,9 +550,11 @@ void gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * text)
 
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_INSIDE, true);
+
+    return obj;
 }
 
-void gt_listview_add_item_icons(gt_obj_st * listview, char * left_icon, char * text, char * right_icon)
+gt_obj_st * gt_listview_add_item_icons(gt_obj_st * listview, char * left_icon, char * text, char * right_icon)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
@@ -567,6 +571,8 @@ void gt_listview_add_item_icons(gt_obj_st * listview, char * left_icon, char * t
 
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_INSIDE, true);
+
+    return obj;
 }
 
 void gt_listview_set_scale(gt_obj_st * listview, uint8_t icon, uint8_t label)

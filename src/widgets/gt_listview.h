@@ -45,8 +45,9 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent);
  *
  * @param list listview obj
  * @param text text
+ * @return item object, which child[0]: label
  */
-void gt_listview_add_item(gt_obj_st * list, char * text);
+gt_obj_st * gt_listview_add_item(gt_obj_st * list, char * text);
 
 /**
  * @brief add item to listview obj with icon
@@ -54,8 +55,9 @@ void gt_listview_add_item(gt_obj_st * list, char * text);
  * @param listview
  * @param img icon path
  * @param text text
+ * @return item object, which child[0]: img, child[1]: label
  */
-void gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * text);
+gt_obj_st * gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * text);
 
 /**
  * @brief add item to listview obj with [ icon + text + icon ] mode
@@ -64,8 +66,9 @@ void gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * text);
  * @param left_icon left icon path
  * @param text text
  * @param right_icon right icon path
+ * @return item object, which child[0]: left img, child[1]: label, child[2]: right img
  */
-void gt_listview_add_item_icons(gt_obj_st * listview, char * left_icon, char * text, char * right_icon);
+gt_obj_st * gt_listview_add_item_icons(gt_obj_st * listview, char * left_icon, char * text, char * right_icon);
 
 /**
  * @brief set [ icon + text ] or [ text + icon ] mode scale
