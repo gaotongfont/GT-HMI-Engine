@@ -409,6 +409,10 @@ static gt_obj_st * _create_item_obj(gt_obj_st * listview) {
 static void _center_icon_pos(gt_obj_st * icon, gt_obj_st * item, gt_size_t offset_x, uint16_t width) {
     gt_area_copy(&icon->area, &item->area);
     icon->area.w = width;
+
+    if (NULL == gt_img_get_src(icon)) {
+        return ;
+    }
     icon->area.x += ((width - gt_img_get_width(icon)) >> 1) + offset_x;
     icon->area.y = ((gt_obj_get_h(item) - gt_img_get_height(icon)) >> 1) + gt_obj_get_y(icon);
 }
@@ -550,16 +554,16 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     return obj;
 }
 
-void gt_listview_set_next_row_item_count(gt_obj_st * listview, uint8_t column)
+void gt_listview_set_next_row_item_count(gt_obj_st * listview, uint8_t count)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
-    if (column == style->column.count) {
+    if (count == style->column.count) {
         return ;
     }
-    style->column.count = column;
+    style->column.count = count;
     style->column.idx = 0;
 }
 

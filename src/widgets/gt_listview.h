@@ -44,9 +44,9 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent);
  * @brief Sets the number of elements that can be displayed in subsequent rows
  *
  * @param listview
- * @param column The subsequent rows will be displayed column number of items, default is 1
+ * @param column The subsequent rows will be displayed elements number of items, default is 1
  */
-void gt_listview_set_next_row_item_count(gt_obj_st * listview, uint8_t column);
+void gt_listview_set_next_row_item_count(gt_obj_st * listview, uint8_t count);
 
 /**
  * @brief add item to listview obj
