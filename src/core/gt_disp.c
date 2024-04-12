@@ -41,7 +41,6 @@ typedef enum{
  */
 typedef struct _flush_scr_param_s {
     gt_disp_st * disp;
-    gt_area_st area_dirty;         // The area of display dirty area.
     gt_area_st area_flush;         // The buffer or area of display flush area.
     gt_area_st view_scr_abs;       // The new interface displays the absolute extent of the area on the physical screen
     gt_area_st view_scr_prev_abs;  // The previous interface displays the absolute extent within the area on the physical screen
@@ -1100,8 +1099,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
     uint16_t scr_width = gt_disp_get_res_hor(NULL);
     _flush_scr_param_st param = {
         .disp = gt_disp_get_default(),
-        .area_dirty = *coords,
-        .area_flush = {0, 0, scr_width, GT_REFRESH_FLUSH_LINE_PRE_TIME},
+        .area_flush = *coords,
         /** 旧界面在可视窗口中的区域 */
         .view_scr_abs = {0, 0, 0, 0},
         .view_scr_prev_abs = {0, 0, 0, 0},
@@ -1132,9 +1130,12 @@ void gt_disp_ref_area(const gt_area_st * coords)
     param.disp->area_disp.h = param.line;
 
     if (param.disp->scr_prev) {
+        param.area_flush.x = 0;
+        param.area_flush.y = 0;
+        param.area_flush.w = scr_width;
+        param.area_flush.h = GT_REFRESH_FLUSH_LINE_PRE_TIME;
         _flush_scr_by_anim(&param);
     } else {
-        param.area_flush = param.area_dirty;
         _flush_scr_by_direct(&param);
     }
 
