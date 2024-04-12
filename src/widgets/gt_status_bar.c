@@ -324,9 +324,7 @@ static bool _remove_all_by(gt_obj_st * parent) {
         return true;
     }
 
-    for (gt_size_t i = parent->cnt_child - 1; i >= 0; i--) {
-        _gt_obj_class_destroy(parent->child[i]);
-    }
+    _gt_obj_class_destroy_children(parent);
     gt_event_send(parent->parent, GT_EVENT_TYPE_DRAW_START, NULL);
     return true;
 }
