@@ -26,7 +26,13 @@
 
 
 /* private typedef ------------------------------------------------------*/
-
+typedef struct _valid_param_s {
+    struct _gt_draw_ctx_t * draw_ctx;
+    gt_area_st * area_draw;
+    gt_area_st * area_dsc;
+    gt_area_st * area_intersect;
+    gt_point_st * flush_buffer_offset;
+}_valid_param_st;
 
 
 /* static variables -----------------------------------------------------*/
@@ -254,6 +260,56 @@ static void _fill_opacity(
     }
 }
 
+static inline bool _adjust_valid_scr(_valid_param_st * vp) {
+    /** 界面切换动画绘制区 */
+    gt_area_st area_valid;
+    if (vp->draw_ctx->valid->is_prev) {
+        /** prev screen display */
+        gt_area_copy(&area_valid, &vp->draw_ctx->valid->area_prev);
+        if (vp->draw_ctx->valid->is_hor) {
+            if (vp->draw_ctx->valid->offset_prev.x && vp->flush_buffer_offset->x < vp->draw_ctx->valid->offset_prev.x) {
+                area_valid.x += vp->draw_ctx->valid->offset_prev.x;
+                area_valid.w -= vp->draw_ctx->valid->offset_prev.x;
+                vp->flush_buffer_offset->x = vp->draw_ctx->valid->offset_prev.x;
+            }
+        } else {
+            if (vp->draw_ctx->valid->is_over_top &&
+                vp->draw_ctx->valid->offset_prev.y > 0 &&
+                vp->draw_ctx->valid->offset_prev.y - vp->area_draw->y < vp->draw_ctx->valid->offset_prev.y) {
+                area_valid.y -= vp->draw_ctx->valid->offset_prev.y - vp->area_draw->y;
+            }
+            else {
+                area_valid.y -= vp->draw_ctx->valid->offset_prev.y;
+            }
+        }
+    } else {
+        /** new screen display */
+        gt_area_copy(&area_valid, &vp->draw_ctx->valid->area_scr);
+        if (vp->draw_ctx->valid->is_hor) {
+            area_valid.x += vp->draw_ctx->valid->offset_scr.x;
+            if (vp->draw_ctx->valid->offset_scr.x && vp->flush_buffer_offset->x < vp->draw_ctx->valid->offset_scr.x) {
+                vp->flush_buffer_offset->x = vp->draw_ctx->valid->offset_scr.x;
+            }
+        } else {
+            area_valid.y -= vp->draw_ctx->valid->offset_scr.y;
+        }
+    }
+    if (!gt_area_intersect_screen(&area_valid, vp->area_dsc, vp->area_intersect)) {
+        return false;
+    }
+    /** anim move down */
+    if (vp->draw_ctx->valid->is_over_top) {
+        if (vp->area_dsc->y < 0 && vp->area_dsc->h == vp->area_intersect->y + vp->area_intersect->h) {
+            if (area_valid.y - vp->area_draw->y < vp->area_intersect->y) {
+                vp->flush_buffer_offset->y += gt_abs(vp->area_draw->y - area_valid.y);
+            }
+            else {
+                vp->flush_buffer_offset->y += gt_abs(vp->area_intersect->y);
+            }
+        }
+    }
+    return  true;
+}
 
 /* global functions / API interface -------------------------------------*/
 /**
@@ -298,52 +354,15 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
     };
 
     if (draw_ctx->valid && false == draw_ctx->valid->layer_top) {
-        /** 界面切换动画绘制区 */
-        gt_area_st area_valid;
-        if (draw_ctx->valid->is_prev) {
-            /** prev screen display */
-            gt_area_copy(&area_valid, &draw_ctx->valid->area_prev);
-            if (draw_ctx->valid->is_hor) {
-                if (draw_ctx->valid->offset_prev.x && flush_buffer_offset.x < draw_ctx->valid->offset_prev.x) {
-                    area_valid.x += draw_ctx->valid->offset_prev.x;
-                    area_valid.w -= draw_ctx->valid->offset_prev.x;
-                    flush_buffer_offset.x = draw_ctx->valid->offset_prev.x;
-                }
-            } else {
-                if (draw_ctx->valid->is_over_top &&
-                    draw_ctx->valid->offset_prev.y > 0 &&
-                    draw_ctx->valid->offset_prev.y - area_draw.y < draw_ctx->valid->offset_prev.y) {
-                    area_valid.y -= draw_ctx->valid->offset_prev.y - area_draw.y;
-                }
-                else {
-                    area_valid.y -= draw_ctx->valid->offset_prev.y;
-                }
-            }
-        } else {
-            /** new screen display */
-            gt_area_copy(&area_valid, &draw_ctx->valid->area_scr);
-            if (draw_ctx->valid->is_hor) {
-                area_valid.x += draw_ctx->valid->offset_scr.x;
-                if (draw_ctx->valid->offset_scr.x && flush_buffer_offset.x < draw_ctx->valid->offset_scr.x) {
-                    flush_buffer_offset.x = draw_ctx->valid->offset_scr.x;
-                }
-            } else {
-                area_valid.y -= draw_ctx->valid->offset_scr.y;
-            }
-        }
-        if (!gt_area_intersect_screen(&area_valid, &area_dsc, &area_intersect)) {
+        _valid_param_st vp = {
+            .draw_ctx = draw_ctx,
+            .area_draw = &area_draw,
+            .area_dsc = &area_dsc,
+            .area_intersect = &area_intersect,
+            .flush_buffer_offset = &flush_buffer_offset,
+        };
+        if (false == _adjust_valid_scr(&vp)) {
             return;
-        }
-        /** anim move down */
-        if (draw_ctx->valid->is_over_top) {
-            if (area_dsc.y < 0 && area_dsc.h == area_intersect.y + area_intersect.h) {
-                if (area_valid.y - area_draw.y < area_intersect.y) {
-                    flush_buffer_offset.y += gt_abs(area_draw.y - area_valid.y);
-                }
-                else {
-                    flush_buffer_offset.y += gt_abs(area_intersect.y);
-                }
-            }
         }
     } else {
         /** draw_ctx->buf_area: 图片显示区域; dsc->dst_area: 当前绘制区域 */
@@ -422,7 +441,6 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
     gt_point_st offset = {0};   /** src data buffer offset set */
 
     if (draw_ctx->parent_area) {
-
         /** Be used when obj->inside true and object has its parent */
         gt_area_cover_screen(draw_ctx->parent_area, dsc->dst_area, &area_dsc);
 
@@ -443,52 +461,15 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
     };
 
     if (draw_ctx->valid && false == draw_ctx->valid->layer_top) {
-        /** 界面切换动画绘制区 */
-        gt_area_st area_valid;
-        if (draw_ctx->valid->is_prev) {
-            /** prev screen display */
-            gt_area_copy(&area_valid, &draw_ctx->valid->area_prev);
-            if (draw_ctx->valid->is_hor) {
-                if (draw_ctx->valid->offset_prev.x && flush_buffer_offset.x < draw_ctx->valid->offset_prev.x) {
-                    area_valid.x += draw_ctx->valid->offset_prev.x;
-                    area_valid.w -= draw_ctx->valid->offset_prev.x;
-                    flush_buffer_offset.x = draw_ctx->valid->offset_prev.x;
-                }
-            } else {
-                if (draw_ctx->valid->is_over_top &&
-                    draw_ctx->valid->offset_prev.y > 0 &&
-                    draw_ctx->valid->offset_prev.y - area_draw.y < draw_ctx->valid->offset_prev.y) {
-                    area_valid.y -= draw_ctx->valid->offset_prev.y - area_draw.y;
-                }
-                else {
-                    area_valid.y -= draw_ctx->valid->offset_prev.y;
-                }
-            }
-        } else {
-            /** new screen display */
-            gt_area_copy(&area_valid, &draw_ctx->valid->area_scr);
-            if (draw_ctx->valid->is_hor) {
-                area_valid.x += draw_ctx->valid->offset_scr.x;
-                if (draw_ctx->valid->offset_scr.x && flush_buffer_offset.x < draw_ctx->valid->offset_scr.x) {
-                    flush_buffer_offset.x = draw_ctx->valid->offset_scr.x;
-                }
-            } else {
-                area_valid.y -= draw_ctx->valid->offset_scr.y;
-            }
-        }
-        if (!gt_area_intersect_screen(&area_valid, &area_dsc, &area_intersect)) {
+        _valid_param_st vp = {
+            .draw_ctx = draw_ctx,
+            .area_draw = &area_draw,
+            .area_dsc = &area_dsc,
+            .area_intersect = &area_intersect,
+            .flush_buffer_offset = &flush_buffer_offset,
+        };
+        if (false == _adjust_valid_scr(&vp)) {
             return;
-        }
-        /** anim move down */
-        if (draw_ctx->valid->is_over_top) {
-            if (area_dsc.y < 0 && area_dsc.h == area_intersect.y + area_intersect.h) {
-                if (area_valid.y - area_draw.y < area_intersect.y) {
-                    flush_buffer_offset.y += gt_abs(area_draw.y - area_valid.y);
-                }
-                else {
-                    flush_buffer_offset.y += gt_abs(area_intersect.y);
-                }
-            }
         }
     } else {
         /** draw_ctx->buf_area: 图片显示区域; dsc->dst_area: 当前绘制区域 */
