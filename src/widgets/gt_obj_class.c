@@ -9,7 +9,7 @@
 
  /* include --------------------------------------------------------------*/
 #include "gt_obj_class.h"
-#include "gt_obj.h"
+#include "./gt_obj.h"
 #include "../core/gt_mem.h"
 #include "../core/gt_style.h"
 #include "../core/gt_indev.h"
@@ -142,53 +142,6 @@ static inline void _gt_obj_class_destroy_self(gt_obj_st * self) {
     _gt_obj_class_destroy_property(self);
     gt_mem_free(self);
     self = NULL;
-}
-
-/**
- * @brief Destroy the object and its child objects
- *
- * @param self The Current object
- * @param is_root true: root object, false: child object
- * @return true The deepest child object is released, return recursively
- * @return false Go to the next level of child object
- */
-static bool _gt_obj_class_destroy_children(gt_obj_st * self, bool is_root)
-{
-    gt_size_t i = 0;
-
-    if (NULL == self->child || 0 == self->cnt_child) {
-        if (false == is_root) {
-            /**
-             * @brief free obj memory, root need to release disp memory,
-             *       child only need to release obj memory in here
-             */
-            _gt_obj_class_destroy_self(self);
-        }
-        return true;
-    }
-
-    gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETE, NULL);
-
-    // release child object from bottom to top
-    for (i = self->cnt_child - 1; i >= 0; i--) {
-        if (_gt_obj_class_destroy_children(self->child[i], false)) {
-            self->child[i] = NULL;  /** can not repeat free memory here */
-        }
-    }
-
-    gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETED, NULL);
-
-    // release child array memory
-    if (NULL != self->child) {
-        gt_mem_free(self->child);
-        self->child = NULL;
-    }
-    self->cnt_child = 0;
-    if (!is_root) {
-        _gt_obj_class_destroy_self(self);
-        self = NULL;
-    }
-    return false;
 }
 
 static inline bool _add_obj_to_parent(gt_obj_st * obj, gt_obj_st * parent) {
@@ -329,6 +282,53 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
     gt_event_send(parent, GT_EVENT_TYPE_CHANGE_CHILD_REMOVED, obj);
 
     return obj->parent;
+}
+
+/**
+ * @brief Destroy the object and its child objects
+ *
+ * @param self The Current object
+ * @param is_root true: root object, false: child object
+ * @return true The deepest child object is released, return recursively
+ * @return false Go to the next level of child object
+ */
+bool _gt_obj_class_destroy_children(struct gt_obj_s * self, bool is_root)
+{
+    gt_size_t i = 0;
+
+    if (NULL == self->child || 0 == self->cnt_child) {
+        if (false == is_root) {
+            /**
+             * @brief free obj memory, root need to release disp memory,
+             *       child only need to release obj memory in here
+             */
+            _gt_obj_class_destroy_self(self);
+        }
+        return true;
+    }
+
+    gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETE, NULL);
+
+    // release child object from bottom to top
+    for (i = self->cnt_child - 1; i >= 0; i--) {
+        if (_gt_obj_class_destroy_children(self->child[i], false)) {
+            self->child[i] = NULL;  /** can not repeat free memory here */
+        }
+    }
+
+    gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETED, NULL);
+
+    // release child array memory
+    if (NULL != self->child) {
+        gt_mem_free(self->child);
+        self->child = NULL;
+    }
+    self->cnt_child = 0;
+    if (!is_root) {
+        _gt_obj_class_destroy_self(self);
+        self = NULL;
+    }
+    return false;
 }
 
 /**

@@ -79,6 +79,13 @@ gt_obj_st * gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * t
 gt_obj_st * gt_listview_add_item_icons(gt_obj_st * listview, char * left_icon, char * text, char * right_icon);
 
 /**
+ * @brief Clear all items in the listview
+ *
+ * @param listview
+ */
+void gt_listview_clear_all_items(gt_obj_st * listview);
+
+/**
  * @brief set [ icon + text ] or [ text + icon ] mode scale
  *      within item area to display
  *      such as: icon_width = parent_width * icon_scale / (icon_scale + label_scale)

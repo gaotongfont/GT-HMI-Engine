@@ -70,7 +70,18 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
 struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_obj_s * to);
 
 /**
- * @brief delete control widget; Reclaim the memory of child controls.
+ * @brief delete all child controls, immediately and recursively.
+ *
+ * @param self
+ * @param is_root Must be true, when deleting the root control
+ * @return true
+ * @return false
+ */
+bool _gt_obj_class_destroy_children(struct gt_obj_s * self, bool is_root);
+
+/**
+ * @brief delete control widget; Reclaim the memory of child controls,
+ *      immediately and recursively.
  *
  * @param self
  */
