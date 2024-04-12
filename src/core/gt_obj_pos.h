@@ -51,26 +51,6 @@ void gt_area_copy(gt_area_st * dst, gt_area_st const * const src);
 bool _gt_obj_is_disp_area_visible(gt_obj_st * obj);
 
 /**
- * @brief check the obj is visible in area
- *
- * @param obj locate object
- * @param area display area
- * @return true
- * @return false
- */
-bool gt_obj_check_visible(gt_obj_st * obj, gt_area_st area);
-
-
-/**
- * @brief gets the area of the object within the display area
- *
- * @param obj obj
- * @param area_act disp area active
- * @param area_valid valid area(x:start cpy x pos, y:start cpy y pos, w:how much cpy width,h:how much cpy height)
- */
-void gt_obj_get_valid_area(gt_obj_st * obj, gt_area_st * area_act, gt_area_st *area_valid);
-
-/**
  * @brief find smallest clicked obj from parent
  *
  * @param scr_or_top Screen object or layer top object
