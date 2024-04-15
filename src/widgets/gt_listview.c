@@ -633,6 +633,12 @@ void gt_listview_clear_all_items(gt_obj_st * listview)
     }
     listview->process_attr.scroll.x = 0;
     listview->process_attr.scroll.y = 0;
+
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->column.idx = 0;
+    style->column.offset_y = 0;
+    style->scroll = 0;
+
     _gt_obj_class_destroy_children(listview);
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
