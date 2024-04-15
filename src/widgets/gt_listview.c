@@ -631,6 +631,8 @@ void gt_listview_clear_all_items(gt_obj_st * listview)
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return ;
     }
+    listview->process_attr.scroll.x = 0;
+    listview->process_attr.scroll.y = 0;
     _gt_obj_class_destroy_children(listview);
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
