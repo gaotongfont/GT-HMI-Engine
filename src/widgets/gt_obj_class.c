@@ -240,6 +240,7 @@ static bool _create_new_screen_obj(gt_obj_st * obj) {
     obj->area.y = 0;
     obj->area.w = gt_disp_get_res_hor(NULL);
     obj->area.h = gt_disp_get_res_ver(NULL);
+    obj->show_bg = true;
 
     return true;
 }
