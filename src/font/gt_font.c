@@ -937,7 +937,7 @@ static uint32_t _get_convertor_string_width(const gt_font_st *fonts , uint8_t la
         *ol_idx = 0;
     }
 
-    gt_font_st _font = {
+    gt_font_st tmp_font = {
         .info = fonts->info,
         .utf8 = fonts->utf8,
         .len = fonts->len,
@@ -945,15 +945,15 @@ static uint32_t _get_convertor_string_width(const gt_font_st *fonts , uint8_t la
     };
 
     tmp = 0;
-    while (idx < _font.len)
+    while (idx < tmp_font.len)
     {
-        idx += gt_font_one_char_code_len_get((uint8_t * )&_font.utf8[idx], &unicode, _font.info.encoding);
+        idx += gt_font_one_char_code_len_get((uint8_t * )&tmp_font.utf8[idx], &unicode, tmp_font.info.encoding);
         text[tmp++] = (uint16_t)unicode;
     }
     uint16_t text_len = tmp , width;
     uint8_t ret_style;
-    ret_style = gt_font_type_get(_font.info.style_fl);
-    _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&_font.info, ret_style, lan, text_len);
+    ret_style = gt_font_type_get(tmp_font.info.style_fl);
+    _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&tmp_font.info, ret_style, lan, text_len);
 
     font_buf = (uint8_t*)gt_mem_malloc(font_size_res.font_buff_len);
     if(NULL == font_buf){
@@ -965,10 +965,10 @@ static uint32_t _get_convertor_string_width(const gt_font_st *fonts , uint8_t la
     font_convertor_st convertor = {
         .fontcode = text ,
         .code_len = text_len ,
-        .fontsize = _font.info.size ,
-        .fontgray = _font.info.gray ,
-        .font_option = _font.info.style_fl ,
-        .thick = _font.info.thick_en,
+        .fontsize = tmp_font.info.size ,
+        .fontgray = tmp_font.info.gray ,
+        .font_option = tmp_font.info.style_fl ,
+        .thick = tmp_font.info.thick_en,
         .data = font_buf ,
         .data_len = font_size_res.font_buff_len ,
         .is_rev = 1,
@@ -980,7 +980,7 @@ static uint32_t _get_convertor_string_width(const gt_font_st *fonts , uint8_t la
     idx = 0;
     tmp = 0;
     len = 0;
-    _font.res = &font_buf[font_size_res.font_buff_len - font_size_res.font_per_size];
+    tmp_font.res = &font_buf[font_size_res.font_buff_len - font_size_res.font_per_size];
     while (idx < text_len)
     {
         if(STYLE_EN_HINDI == lan){
@@ -1032,14 +1032,13 @@ uint32_t gt_font_split(gt_font_st *fonts , uint32_t width , uint32_t dot_w ,uint
 
     *ret_w = 0;
     *lan_len = 0;
-    //
     len = _gt_font_language_split((const uint8_t*)fonts->utf8, fonts->len , fonts->info.encoding , lan);
 
-    if(0 == len){
+    if (0 == len) {
         return 0;
     }
 
-    gt_font_st _font = {
+    gt_font_st tmp_font = {
         .info = fonts->info,
         .utf8 = fonts->utf8,
         .len = len,
@@ -1047,7 +1046,7 @@ uint32_t gt_font_split(gt_font_st *fonts , uint32_t width , uint32_t dot_w ,uint
     };
 
     if(*lan == STYLE_CN){
-        len = _gt_font_cn_in_this_range(&_font , width , space , ret_w);
+        len = _gt_font_cn_in_this_range(&tmp_font , width , space , ret_w);
         goto _ret_dat;
     }
     uint8_t *text = fonts->utf8;
@@ -1055,20 +1054,17 @@ uint32_t gt_font_split(gt_font_st *fonts , uint32_t width , uint32_t dot_w ,uint
     *ret_w = 0;
     *lan_len = len;
     uint16_t ol_w = 0 , ol_idx = 0;
-    while (idx < len)
-    {
-        //
+    while (idx < len) {
         tmp_len = _gt_font_punctuation_split((const uint8_t*)&text[idx] , len - idx, fonts->info.encoding);
-        _font.utf8 = &text[idx];
-        _font.len = tmp_len;
-        //
+        tmp_font.utf8 = &text[idx];
+        tmp_font.len = tmp_len;
+
         if(is_convertor_language(*lan)){
-            tmp_w = _get_convertor_string_width(&_font , *lan , space , width - *ret_w, &ol_idx , &ol_w);
+            tmp_w = _get_convertor_string_width(&tmp_font , *lan , space , width - *ret_w, &ol_idx , &ol_w);
         }
-        else
-        {
-            // tmp_w = gt_font_get_string_width(&_font);
-            _gt_font_en_in_this_range(&_font , (width - (*ret_w)) , space , &tmp_w , &ol_idx , &ol_w );
+        else {
+            // tmp_w = gt_font_get_string_width(&tmp_font);
+            _gt_font_en_in_this_range(&tmp_font , (width - (*ret_w)) , space , &tmp_w , &ol_idx , &ol_w );
         }
 
         if(tmp_w > width && 0 == ol_idx && 0 == idx){
@@ -1082,7 +1078,7 @@ uint32_t gt_font_split(gt_font_st *fonts , uint32_t width , uint32_t dot_w ,uint
             }
             goto _ret_dat;
         }
-        else if((*ret_w + tmp_w >= width) || (0x0A == _font.utf8[0])){
+        else if((*ret_w + tmp_w >= width) || (0x0A == tmp_font.utf8[0])){
             if(0 == idx && width == dot_w){
                 len = ol_idx;
                 *ret_w = ol_w;
