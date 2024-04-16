@@ -260,57 +260,6 @@ static void _fill_opacity(
     }
 }
 
-static inline bool _adjust_valid_scr(_valid_param_st * vp) {
-    /** 界面切换动画绘制区 */
-    gt_area_st area_valid;
-    if (vp->draw_ctx->valid->is_prev) {
-        /** prev screen display */
-        gt_area_copy(&area_valid, &vp->draw_ctx->valid->area_prev);
-        if (vp->draw_ctx->valid->is_hor) {
-            if (vp->draw_ctx->valid->offset_prev.x && vp->flush_buffer_offset->x < vp->draw_ctx->valid->offset_prev.x) {
-                area_valid.x += vp->draw_ctx->valid->offset_prev.x;
-                area_valid.w -= vp->draw_ctx->valid->offset_prev.x;
-                vp->flush_buffer_offset->x = vp->draw_ctx->valid->offset_prev.x;
-            }
-        } else {
-            if (vp->draw_ctx->valid->is_over_top &&
-                vp->draw_ctx->valid->offset_prev.y > 0 &&
-                vp->draw_ctx->valid->offset_prev.y - vp->area_draw->y < vp->draw_ctx->valid->offset_prev.y) {
-                area_valid.y -= vp->draw_ctx->valid->offset_prev.y - vp->area_draw->y;
-            }
-            else {
-                area_valid.y -= vp->draw_ctx->valid->offset_prev.y;
-            }
-        }
-    } else {
-        /** new screen display */
-        gt_area_copy(&area_valid, &vp->draw_ctx->valid->area_scr);
-        if (vp->draw_ctx->valid->is_hor) {
-            area_valid.x += vp->draw_ctx->valid->offset_scr.x;
-            if (vp->draw_ctx->valid->offset_scr.x && vp->flush_buffer_offset->x < vp->draw_ctx->valid->offset_scr.x) {
-                vp->flush_buffer_offset->x = vp->draw_ctx->valid->offset_scr.x;
-            }
-        } else {
-            area_valid.y -= vp->draw_ctx->valid->offset_scr.y;
-        }
-    }
-    if (!gt_area_intersect_screen(&area_valid, vp->area_dsc, vp->area_intersect)) {
-        return false;
-    }
-    /** anim move down */
-    if (vp->draw_ctx->valid->is_over_top) {
-        if (vp->area_dsc->y < 0 && vp->area_dsc->h == vp->area_intersect->y + vp->area_intersect->h) {
-            if (area_valid.y - vp->area_draw->y < vp->area_intersect->y) {
-                vp->flush_buffer_offset->y += gt_abs(vp->area_draw->y - area_valid.y);
-            }
-            else {
-                vp->flush_buffer_offset->y += gt_abs(vp->area_intersect->y);
-            }
-        }
-    }
-    return  true;
-}
-
 /* global functions / API interface -------------------------------------*/
 /**
  * @brief blend fore_color buf to back_color draw ctx
@@ -328,9 +277,10 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
 
     /** 显示屏的显示区域 */
     gt_area_copy(&area_draw, &draw_ctx->buf_area);
-    /** 图片当前处理的显示区域 */
+    /** 目标控件, 当前处理的显示区域 */
     gt_area_copy(&area_dsc, dsc->dst_area);
     uint16_t width_dsc = area_dsc.w;
+    uint16_t width_buf = area_draw.w;
     gt_point_st offset = {0};   /** src data buffer offset set */
 
     if (draw_ctx->parent_area) {
@@ -354,35 +304,20 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
     };
 
     if (draw_ctx->valid && false == draw_ctx->valid->layer_top) {
-        _valid_param_st vp = {
-            .draw_ctx = draw_ctx,
-            .area_draw = &area_draw,
-            .area_dsc = &area_dsc,
-            .area_intersect = &area_intersect,
-            .flush_buffer_offset = &flush_buffer_offset,
-        };
-        if (false == _adjust_valid_scr(&vp)) {
-            return;
+        if (draw_ctx->valid->is_hor) {
+            area_draw.w = draw_ctx->valid->area_clip.w;
         }
-    } else {
-        /** draw_ctx->buf_area: 图片显示区域; dsc->dst_area: 当前绘制区域 */
-        if (!gt_area_intersect_screen(&area_draw, &area_dsc, &area_intersect)) {
-            return;
-        }
+        flush_buffer_offset.x += draw_ctx->valid->area_clip.x;
+        flush_buffer_offset.y += draw_ctx->valid->area_clip.y;
+    }
+
+    if (!gt_area_intersect_screen(&area_draw, &area_dsc, &area_intersect)) {
+        return;
     }
 
     // from area_intersect cpy to flush_buffer_offset
-    uint32_t idx_dst = flush_buffer_offset.y * area_draw.w + flush_buffer_offset.x;
+    uint32_t idx_dst = flush_buffer_offset.y * width_buf + flush_buffer_offset.x;
     uint32_t idx_src = (offset.y + area_intersect.y) * width_dsc + area_intersect.x + offset.x;
-
-    if (flush_buffer_offset.y + area_intersect.h > GT_REFRESH_FLUSH_LINE_PRE_TIME) {
-        // over draw buffer size
-        if (flush_buffer_offset.y > GT_REFRESH_FLUSH_LINE_PRE_TIME) {
-            area_intersect.h = 0;
-        } else {
-            area_intersect.h = GT_REFRESH_FLUSH_LINE_PRE_TIME - flush_buffer_offset.y;
-        }
-    }
 
     if (0 == area_intersect.w || 0 == area_intersect.h) {
         return;
@@ -412,10 +347,10 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
      *  uint16_t step_src_line = width_dsc - area_intersect.w;
      */
     if (dsc->mask_buf) {
-        _fill_opacity(color_dst_p, &area_intersect, area_draw.w - area_intersect.w,
+        _fill_opacity(color_dst_p, &area_intersect, width_buf - area_intersect.w,
                         dsc->color_fill, dsc->opa, &dsc->mask_buf[idx_src], color_src_p, width_dsc - area_intersect.w);
     } else {
-        _fill_no_opacity(color_dst_p, &area_intersect, area_draw.w - area_intersect.w,
+        _fill_no_opacity(color_dst_p, &area_intersect, width_buf - area_intersect.w,
                             dsc->color_fill, dsc->opa, color_src_p, width_dsc - area_intersect.w);
     }
 
@@ -438,6 +373,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
     /** 图片当前处理的显示区域 */
     gt_area_copy(&area_dsc, dsc->dst_area);
     uint16_t width_dsc = area_dsc.w;
+    uint16_t width_buf = area_draw.w;
     gt_point_st offset = {0};   /** src data buffer offset set */
 
     if (draw_ctx->parent_area) {
@@ -461,30 +397,15 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
     };
 
     if (draw_ctx->valid && false == draw_ctx->valid->layer_top) {
-        _valid_param_st vp = {
-            .draw_ctx = draw_ctx,
-            .area_draw = &area_draw,
-            .area_dsc = &area_dsc,
-            .area_intersect = &area_intersect,
-            .flush_buffer_offset = &flush_buffer_offset,
-        };
-        if (false == _adjust_valid_scr(&vp)) {
-            return;
+        if (draw_ctx->valid->is_hor) {
+            area_draw.w = draw_ctx->valid->area_clip.w;
         }
-    } else {
-        /** draw_ctx->buf_area: 图片显示区域; dsc->dst_area: 当前绘制区域 */
-        if (!gt_area_intersect_screen(&area_draw, &area_dsc, &area_intersect)) {
-            return;
-        }
+        flush_buffer_offset.x += draw_ctx->valid->area_clip.x;
+        flush_buffer_offset.y += draw_ctx->valid->area_clip.y;
     }
 
-    if (flush_buffer_offset.y + area_intersect.h > GT_REFRESH_FLUSH_LINE_PRE_TIME) {
-        // over draw buffer size
-        if (flush_buffer_offset.y > GT_REFRESH_FLUSH_LINE_PRE_TIME) {
-            area_intersect.h = 0;
-        } else {
-            area_intersect.h = GT_REFRESH_FLUSH_LINE_PRE_TIME - flush_buffer_offset.y;
-        }
+    if (!gt_area_intersect_screen(&area_draw, &area_dsc, &area_intersect)) {
+        return;
     }
 
     if (0 == area_intersect.w || 0 == area_intersect.h) {
@@ -498,7 +419,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
     offset.y = offset.y + area_intersect.y;
 
     // from area_intersect cpy to flush_buffer_offset
-    uint32_t idx_dst = flush_buffer_offset.y * area_draw.w + flush_buffer_offset.x;
+    uint32_t idx_dst = flush_buffer_offset.y * width_buf + flush_buffer_offset.x;
     uint32_t idx_src = offset.y * dot_byte;
 
     if (color_dst_p) { color_dst_p += idx_dst; }
@@ -521,7 +442,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
                 ++count;
             }
             color_src_p += dot_byte;
-            color_dst_p += area_draw.w;
+            color_dst_p += width_buf;
         }
     }
     else if(4 == gray){
@@ -536,7 +457,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
                 ++count;
             }
             color_src_p += dot_byte;
-            color_dst_p += area_draw.w;
+            color_dst_p += width_buf;
         }
     }
     else if(3 == gray){
@@ -557,7 +478,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
                 ++count;
             }
             color_src_p += dot_byte;
-            color_dst_p += area_draw.w;
+            color_dst_p += width_buf;
         }
     }
     else{
@@ -575,7 +496,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
                 ++count;
             }
             color_src_p += dot_byte;
-            color_dst_p += area_draw.w;
+            color_dst_p += width_buf;
         }
     }
 

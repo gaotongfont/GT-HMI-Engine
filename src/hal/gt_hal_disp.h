@@ -62,6 +62,13 @@ typedef struct _gt_disp_drv_s
     uint8_t reserved:5;    ///< reserved
 }gt_disp_drv_st;
 
+typedef struct _gt_refr_s {
+    gt_area_st areas[_GT_REFR_AREA_MAX];    // ptr of area
+    uint8_t joined[_GT_REFR_AREA_MAX];      // the area is not joined into before area: 1: is joined into before.
+    uint8_t idx_w;                          // index of write now
+    uint8_t idx_r;                          // index of read now
+}_gt_refr_st;
+
 /**
  * @brief display description
  */
@@ -71,6 +78,8 @@ typedef struct _gt_disp_s
 
     gt_obj_st *  scr_prev;      // Preview Screen,Only save one layer
     gt_obj_st *  scr_act;       // Active screen
+
+    gt_point_st anim_scr_remark;    // screen toggle animation
 
     /**
      * @brief Top layer on the top of the scr layer, such as popup, dialog, etc.
@@ -82,19 +91,14 @@ typedef struct _gt_disp_s
     gt_obj_st ** screens;       // Array of screen
     uint16_t cnt_scr;           // Count screens nub
 
-    // round-robin queue
-    struct {
-        gt_area_st areas[_GT_REFR_AREA_MAX];    // ptr of area
-        uint8_t joined[_GT_REFR_AREA_MAX];      // the area is not joined into before area: 1: is joined into before.
-        uint8_t idx_w;                          // index of write now
-        uint8_t idx_r;                          // index of read now
-    }refr;
-
     /* flush */
     gt_area_st     area_act;            //Location of physical screen on virtual screen
     gt_area_st     area_disp;           //10 lines area, Objects in this area will be copied to vbd_color
     gt_area_abs_st area_max;            // max area of virtual screen
     gt_color_t     * vbd_color;         //save 10 lines visible pic, this will flush to phy screen
+
+    // round-robin queue
+    _gt_refr_st refr;
 
     uint8_t scr_anim_type : 4;          // @ref gt_scr_anim_type_et
     uint8_t reserved      : 4;

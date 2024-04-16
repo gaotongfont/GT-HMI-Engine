@@ -29,17 +29,11 @@ extern "C" {
  * @brief The displayable area of two interfaces on the same physical screen
  */
 typedef struct _gt_draw_valid_s {
-    gt_area_st area_prev;       ///<The prev screen absolute display area
-    gt_point_st offset_prev;    ///<prev screen display in relative position on the physical screen
+    gt_area_st area_clip;       ///<The clip area
 
-    gt_area_st area_scr;        ///<The current screen absolute display area
-    gt_point_st offset_scr;     ///<current screen display in relative position on the physical screen
-
-    uint8_t is_prev : 1;        ///<Whether the previous screen is valid
     uint8_t is_hor  : 1;        ///<Toggle the effect of the screen, the direction is horizontal
-    uint8_t is_over_top : 1;    ///<Anim widget is over the top screen
     uint8_t layer_top : 1;
-    uint8_t reserved: 4;
+    uint8_t reserved: 6;
 }_gt_draw_valid_st;
 
 
@@ -52,7 +46,6 @@ typedef struct _gt_draw_ctx_t{
 
     void * buf;     ///< save the temp buffer
     gt_area_st buf_area;    ///< The display area
-
 }gt_draw_ctx_t;
 
 
