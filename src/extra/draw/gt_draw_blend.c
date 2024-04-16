@@ -273,34 +273,30 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
 
     /** 绘制区域和显示屏buffer的交集区域 */
     gt_area_st area_intersect = {0};
-    gt_area_st area_draw = {0}, area_dsc = {0};
+    gt_area_st area_draw = draw_ctx->buf_area, area_dst = *dsc->dst_area;
 
-    /** 显示屏的显示区域 */
-    gt_area_copy(&area_draw, &draw_ctx->buf_area);
-    /** 目标控件, 当前处理的显示区域 */
-    gt_area_copy(&area_dsc, dsc->dst_area);
-    uint16_t width_dsc = area_dsc.w;
+    uint16_t width_dsc = area_dst.w;
     uint16_t width_buf = area_draw.w;
     gt_point_st offset = {0};   /** src data buffer offset set */
 
     if (draw_ctx->parent_area) {
         /** Be used when obj->inside true and object has its parent */
-        gt_area_cover_screen(draw_ctx->parent_area, dsc->dst_area, &area_dsc);
+        gt_area_cover_screen(draw_ctx->parent_area, dsc->dst_area, &area_dst);
 
-        if (draw_ctx->parent_area->x == area_dsc.x && dsc->dst_area->x < area_dsc.x) {
+        if (draw_ctx->parent_area->x == area_dst.x && dsc->dst_area->x < area_dst.x) {
             /** widget over left of parent display area */
-            offset.x = area_dsc.x - dsc->dst_area->x;
+            offset.x = area_dst.x - dsc->dst_area->x;
         }
-        if (draw_ctx->parent_area->y == area_dsc.y && dsc->dst_area->y < area_dsc.y) {
+        if (draw_ctx->parent_area->y == area_dst.y && dsc->dst_area->y < area_dst.y) {
             /** widget over top of parent display area */
-            offset.y = area_dsc.y - dsc->dst_area->y;
+            offset.y = area_dst.y - dsc->dst_area->y;
         }
     }
 
     /** 当前重绘制起始坐标 */
     gt_point_st flush_buffer_offset = {
-        .x = area_dsc.x < area_draw.x ? 0 : (area_dsc.x - area_draw.x),
-        .y = area_dsc.y > area_draw.y ? (area_dsc.y - area_draw.y) : 0,
+        .x = area_dst.x < area_draw.x ? 0 : (area_dst.x - area_draw.x),
+        .y = area_dst.y > area_draw.y ? (area_dst.y - area_draw.y) : 0,
     };
 
     if (draw_ctx->valid && false == draw_ctx->valid->layer_top) {
@@ -311,7 +307,7 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
         flush_buffer_offset.y += draw_ctx->valid->area_clip.y;
     }
 
-    if (!gt_area_intersect_screen(&area_draw, &area_dsc, &area_intersect)) {
+    if (!gt_area_intersect_screen(&area_draw, &area_dst, &area_intersect)) {
         return;
     }
 
@@ -333,7 +329,7 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
      * |                                    |
      * |      ---------------               |
      * |      |             |               |
-     * |      |~~~~~~~~~~~~~| <- area_dsc   |
+     * |      |~~~~~~~~~~~~~| <- area_dst   |
      * |      |             |               |
      * |      |             |               |
      * |      |             |               |
@@ -366,34 +362,30 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
 
     /** 绘制区域和显示屏buffer的交集区域 */
     gt_area_st area_intersect = {0};
-    gt_area_st area_draw = {0}, area_dsc = {0};
+    gt_area_st area_draw = draw_ctx->buf_area, area_dst = *dsc->dst_area;
 
-    /** 显示屏的显示区域 */
-    gt_area_copy(&area_draw, &draw_ctx->buf_area);
-    /** 图片当前处理的显示区域 */
-    gt_area_copy(&area_dsc, dsc->dst_area);
-    uint16_t width_dsc = area_dsc.w;
+    uint16_t width_dsc = area_dst.w;
     uint16_t width_buf = area_draw.w;
     gt_point_st offset = {0};   /** src data buffer offset set */
 
     if (draw_ctx->parent_area) {
         /** Be used when obj->inside true and object has its parent */
-        gt_area_cover_screen(draw_ctx->parent_area, dsc->dst_area, &area_dsc);
+        gt_area_cover_screen(draw_ctx->parent_area, dsc->dst_area, &area_dst);
 
-        if (draw_ctx->parent_area->x == area_dsc.x && dsc->dst_area->x < area_dsc.x) {
+        if (draw_ctx->parent_area->x == area_dst.x && dsc->dst_area->x < area_dst.x) {
             /** widget over left of parent display area */
-            offset.x = area_dsc.x - dsc->dst_area->x;
+            offset.x = area_dst.x - dsc->dst_area->x;
         }
-        if (draw_ctx->parent_area->y == area_dsc.y && dsc->dst_area->y < area_dsc.y) {
+        if (draw_ctx->parent_area->y == area_dst.y && dsc->dst_area->y < area_dst.y) {
             /** widget over top of parent display area */
-            offset.y = area_dsc.y - dsc->dst_area->y;
+            offset.y = area_dst.y - dsc->dst_area->y;
         }
     }
 
     /** 当前重绘制起始坐标 */
     gt_point_st flush_buffer_offset = {
-        .x = area_dsc.x < area_draw.x ? 0 : (area_dsc.x - area_draw.x),
-        .y = area_dsc.y > area_draw.y ? (area_dsc.y - area_draw.y) : 0,
+        .x = area_dst.x < area_draw.x ? 0 : (area_dst.x - area_draw.x),
+        .y = area_dst.y > area_draw.y ? (area_dst.y - area_draw.y) : 0,
     };
 
     if (draw_ctx->valid && false == draw_ctx->valid->layer_top) {
@@ -404,7 +396,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
         flush_buffer_offset.y += draw_ctx->valid->area_clip.y;
     }
 
-    if (!gt_area_intersect_screen(&area_draw, &area_dsc, &area_intersect)) {
+    if (!gt_area_intersect_screen(&area_draw, &area_dst, &area_intersect)) {
         return;
     }
 
