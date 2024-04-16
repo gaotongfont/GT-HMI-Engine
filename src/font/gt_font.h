@@ -43,13 +43,14 @@ typedef enum {
 /* define ---------------------------------------------------------------*/
 #define __GT_CHECK_NAME_IS_SAME(_name1, _name2)     (strcmp(#_name1,#_name2)==0)
 
+#define GT_PY_MAX_NUMB  (8)
 
 /* typedef --------------------------------------------------------------*/
 
 typedef unsigned long(* get_dot_bitmap_t)(unsigned long , unsigned int , unsigned char* );
 typedef unsigned int (* get_vec_bitmap_t)(unsigned char *,unsigned char ,unsigned long ,unsigned char ,unsigned char , unsigned char );
 
-typedef struct _gt_font_style_s{
+typedef struct _gt_font_style_s {
     get_dot_bitmap_t get_dot_bitmap;
     get_vec_bitmap_t get_vec_bitmap;
 
@@ -59,20 +60,20 @@ typedef struct _gt_font_style_s{
     uint32_t is_nor:1;
 }gt_font_style_st;
 
-typedef enum{
+typedef enum {
     GT_FONT_SIZE_8x8    = 8,
     GT_FONT_SIZE_16x16  = 16,
     GT_FONT_SIZE_24x24  = 24,
     GT_FONT_SIZE_32x32  = 32,
 }gt_font_size_et;
 
-typedef struct _gt_font_res_s{
+typedef struct _gt_font_res_s {
     uint8_t * dot;
     uint8_t w;
     uint8_t h;
 }gt_font_res_st;
 
-typedef struct _gt_font_info_s{
+typedef struct _gt_font_info_s {
     uint16_t style_cn;  ///< set: font style
     uint16_t style_en;  ///< set: font style
     uint16_t style_fl;  ///< set: font style foreign language
@@ -87,8 +88,7 @@ typedef struct _gt_font_info_s{
 /**
  * @brief THe font resource structure
  */
-typedef struct _gt_font_s
-{
+typedef struct _gt_font_s {
     char * utf8;        ///< set: text: utf8 code arr
     uint8_t * res;      ///< get: font data
     uint16_t len;       ///< set: utf8 arr len
@@ -118,21 +118,21 @@ typedef struct _gt_attr_font_s {
     uint8_t space_y;    ///< The distance between rows
 
     gt_align_et align;      ///< Alignment @ gt_align_et
-    uint8_t style;      ///< font style value @ref gt_font_style_et
     gt_opa_t opa;       ///< font opa value @GT_OPA_X
+
+    uint8_t style : 2;      ///< font style value @ref gt_font_style_et
+    uint8_t reserved : 6;
 }gt_attr_font_st;
 
 
 typedef enum _gt_encoding_e {
-
     GT_ENCODING_UTF8 = 0,
-    GT_ENCODING_GB ,
+    GT_ENCODING_GB,
 }gt_encoding_et;
 
 typedef enum _gt_encoding_convert_e {
-
     UTF8_2_GB = 0,
-    GB_2_UTF8 ,
+    GB_2_UTF8,
 }gt_encoding_convert_et;
 
 typedef enum _gt_font_style_en_cn_e {
@@ -160,9 +160,7 @@ typedef struct _gt_font_size_res_s {
     uint16_t font_per_size;
 }_gt_font_size_res_st;
 
-//
-#define GT_PY_MAX_NUMB  (8)
-typedef struct gt_py_input_method_s{
+typedef struct gt_py_input_method_s {
 #ifdef PINYIN_INPUT_METHOD_EN
     py_info_st * py_info;
 #endif
@@ -171,6 +169,7 @@ typedef struct gt_py_input_method_s{
     uint8_t ascii[GT_PY_MAX_NUMB];
     uint8_t chinese[GT_PY_MAX_NUMB][GT_PY_MAX_NUMB];
 }gt_py_input_method_st;
+
 /* macros ---------------------------------------------------------------*/
 
 
