@@ -269,7 +269,7 @@ uint8_t gt_font_type_get(unsigned int font_style);
 int gt_font_code_transform(font_convertor_st *convert);
 int gt_font_convertor_data_get(font_convertor_st *convert , uint32_t pos);
 
-uint32_t gt_font_split(gt_font_st *fonts , uint32_t width , uint32_t dot_w ,uint32_t space , uint32_t *ret_w , uint8_t *lan , uint32_t* lan_len);
+uint32_t gt_font_split(gt_font_st *fonts, uint32_t width, uint32_t dot_w, uint32_t space, uint32_t *ret_w, uint8_t * lan, uint32_t * lan_len);
 bool gt_right_to_left_handler(const gt_font_st* fonts , uint8_t* ret_text , uint8_t r2l_lan);
 bool is_convertor_language(gt_font_style_en_cn_et style_laug);
 uint8_t right_to_left_lan_get(uint16_t style);

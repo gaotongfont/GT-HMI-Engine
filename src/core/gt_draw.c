@@ -1706,7 +1706,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     }
     gt_memset(mask_line, 0xFF, tmp_font.info.size << 1);
 
-    bool heb_flag = false;
+    uint8_t * txt = (uint8_t * )dsc->font->utf8;
     uint8_t lan = right_to_left_lan_get(dsc->font->info.style_fl);
     if (lan == STYLE_EN_HEBREW || lan == STYLE_EN_ARABIC) {
         ret_txt = gt_mem_malloc(dsc->font->len);
@@ -1714,9 +1714,12 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             GT_LOGE(GT_LOG_TAG_GUI , "ret_txt malloc is failed!!! size = %d" , dsc->font->len);
             goto _ret_handler;
         }
-        heb_flag = gt_right_to_left_handler(&tmp_font , ret_txt , lan);
+        if (gt_right_to_left_handler(&tmp_font , ret_txt , lan)) {
+            txt = ret_txt;
+        }
     }
 
+    uint8_t * txt_2 = &txt[0];
     gt_draw_blend_dsc_st blend_dsc = {
         .mask_buf   = NULL,
         .dst_area   = &area_font,
@@ -1734,9 +1737,6 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     uint16_t idx = 0, idx_2 = 0, idx_step = 0, idx_len = 0, txt_len = dsc->font->len;
     uint16_t over_length_offset = ((coords->w / ((tmp_font.info.size >> 1) + dsc->space_x) - 1) >> 1 << 1);
     uint8_t over_length = 0;
-
-    uint8_t * txt = heb_flag ? ret_txt : (uint8_t*)dsc->font->utf8;
-    uint8_t * txt_2 = &txt[0];
 
     bool cov_flag_ol = false;
     bool start_x_flag = false;

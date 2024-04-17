@@ -1025,14 +1025,14 @@ _ret_handle:
     return len;
 }
 
-uint32_t gt_font_split(gt_font_st *fonts , uint32_t width , uint32_t dot_w ,uint32_t space , uint32_t *ret_w , uint8_t *lan , uint32_t* lan_len)
+uint32_t gt_font_split(gt_font_st * fonts, uint32_t width, uint32_t dot_w, uint32_t space, uint32_t *ret_w, uint8_t * lan, uint32_t* lan_len)
 {
     uint32_t idx = 0 , len = 0;
     uint32_t tmp_len = 0 , tmp_w = 0;
 
     *ret_w = 0;
     *lan_len = 0;
-    len = _gt_font_language_split((const uint8_t*)fonts->utf8, fonts->len , fonts->info.encoding , lan);
+    len = _gt_font_language_split((const uint8_t*)fonts->utf8, fonts->len, fonts->info.encoding, lan);
 
     if (0 == len) {
         return 0;
@@ -1096,8 +1096,7 @@ _ret_dat:
     return len;
 }
 
-//
-uint32_t gt_font_split_line_numb(gt_font_info_st* info , const char * text , uint32_t max_w , uint16_t space , uint32_t * ret_max_w)
+uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint32_t max_w, uint16_t space, uint32_t * ret_max_w)
 {
     uint32_t line_numb = 1;
     if(!text) return line_numb;
@@ -1123,9 +1122,7 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info , const char * text , uin
     uint32_t ret_w = 0 , lan_len = 0;
     uint32_t idx = 0 , idx_step = 0 , len = strlen(text);
 
-    while (idx < len)
-    {
-
+    while (idx < len) {
         if(0x0A == text[idx]){
             idx += 1;
             goto _compute_line;
@@ -1134,7 +1131,7 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info , const char * text , uin
         temp_font.utf8 = (char*)&text[idx];
         temp_font.len = len - idx;
 
-        idx_step = gt_font_split( &temp_font , disp_w,  max_w , space , &ret_w , &lan , &lan_len);
+        idx_step = gt_font_split(&temp_font, disp_w, max_w, space, &ret_w, &lan, &lan_len);
 
         disp_w -= ret_w;
         if(disp_w <= 0 || 0 == idx_step){
