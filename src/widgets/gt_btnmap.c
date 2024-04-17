@@ -190,11 +190,12 @@ static inline void _gt_btnmap_init_widget(gt_obj_st* btnmap)
     font.res = NULL;
     gt_font_info_update_font_thick(&font.info);
     //
-    gt_attr_font_st font_attr = {0};
-    font_attr.font = &font;
-    font_attr.align = GT_ALIGN_CENTER_MID;
-    font_attr.font_color = style->btn_param.font_color;
-    font_attr.opa = btnmap->opa;
+    gt_attr_font_st font_attr = {
+        .font = &font,
+        .align = GT_ALIGN_CENTER_MID,
+        .font_color = style->btn_param.font_color,
+        .opa = btnmap->opa,
+    };
     //
     gt_map_st* map = style->map;
     gt_area_st btn_area;

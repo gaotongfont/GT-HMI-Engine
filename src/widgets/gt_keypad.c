@@ -343,12 +343,10 @@ static bool _gt_keypad_check_key_is_ctl(char const * const kv){
 
 bool _def_26_key_disp_special_btn_handler(gt_obj_st* obj, const char* const kv , gt_attr_font_st* font_attr)
 {
-
     if(_gt_keypad_check_key_is_ctl(kv)){
         return true;
     }
 
-    //
     int idx = _gt_get_spell_index(kv);
     if(idx < 0){
         return false;
