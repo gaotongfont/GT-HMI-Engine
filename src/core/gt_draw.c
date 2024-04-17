@@ -1119,6 +1119,18 @@ line_lb:
     }
 }
 
+static inline gt_size_t _get_align_start_x(gt_align_et align, gt_size_t x, uint16_t width) {
+    gt_align_et type = _get_align_type(align);
+
+    if (GT_ALIGN_CENTER == type || GT_ALIGN_CENTER_MID == type || GT_ALIGN_CENTER_BOTTOM == type) {
+        return x + (width >> 1);
+    }
+    if (GT_ALIGN_RIGHT == type || GT_ALIGN_RIGHT_MID == type || GT_ALIGN_RIGHT_BOTTOM == type) {
+        return x + width;
+    }
+    return x;
+}
+
 static gt_size_t _get_align_start_y(const gt_attr_font_st * dsc, const gt_area_st * coords, gt_font_st * tmp_font, uint8_t * txt) {
     uint32_t ret_w = 0, lan_len = 0;
     uint16_t line_count = 1, idx = 0, txt_len = dsc->font->len;
@@ -1836,27 +1848,8 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         }
         // align
         if (!cov_flag_ol) {
-            switch (_get_align_type(dsc->align)) {
-            case GT_ALIGN_RIGHT_BOTTOM:
-            case GT_ALIGN_RIGHT_MID:
-            case GT_ALIGN_RIGHT:
-                area_font.x = coords->x + disp_w;
-                break;
-            case GT_ALIGN_CENTER_BOTTOM:
-            case GT_ALIGN_CENTER_MID:
-            case GT_ALIGN_CENTER:
-                area_font.x = coords->x + (disp_w >> 1);
-                break;
-            case GT_ALIGN_LEFT_BOTTOM:
-            case GT_ALIGN_LEFT_MID:
-            case GT_ALIGN_LEFT:
-            case GT_ALIGN_NONE:
-            default:
-                area_font.x = coords->x;
-                break;
-            }
+            area_font.x = _get_align_start_x(dsc->align, coords->x, disp_w);
         }
-
         if (_is_align_reverse(dsc->align) && !cov_flag_ol) {
             area_font.x = (coords->x + coords->w) - (area_font.x - coords->x);
         }
