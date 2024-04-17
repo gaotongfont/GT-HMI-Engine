@@ -104,7 +104,7 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
     while( idx < style->cnt_contents ){
         font.utf8               = style->contents[idx].text;
         font.len                = style->contents[idx].len;
-        font_attr.style         = style->contents[idx].mask_style;
+        font_attr.reg.style     = style->contents[idx].mask_style;
         font_attr.font_color    = style->contents[idx].color;
         area_temp = draw_text(textarea->draw_ctx, &font_attr, &area_font);
         font_attr.start_x       = area_temp.x;

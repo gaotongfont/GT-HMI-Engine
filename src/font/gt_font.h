@@ -104,6 +104,14 @@ typedef enum gt_font_style_e {
     GT_FONT_STYLE_STRIKETHROUGH = 0x02,     ///< strikethrough
 }gt_font_style_et;
 
+typedef struct gt_text_style_s {
+    uint8_t style       : 2;    ///< font style value @ref gt_font_style_et
+    uint8_t single_line : 1;    ///< 0[default]: multi-line, 1: single-line
+    uint8_t omit_line   : 1;    ///< enabled when single-line set to 1.[0: display all word, 1: Characters are omitted at the end of lines]
+    uint8_t cycle_scroll: 1;    ///< enabled when single-line set to 1.[0: no cycle scroll, 1: cycle scroll]
+    uint8_t reserved    : 3;
+}gt_text_style_st;
+
 /**
  * @brief The font display info
  */
@@ -120,8 +128,7 @@ typedef struct _gt_attr_font_s {
     gt_align_et align;      ///< Alignment @ gt_align_et
     gt_opa_t opa;       ///< font opa value @GT_OPA_X
 
-    uint8_t style : 2;      ///< font style value @ref gt_font_style_et
-    uint8_t reserved : 6;
+    gt_text_style_st reg;
 }gt_attr_font_st;
 
 

@@ -828,7 +828,7 @@ static uint16_t _gt_gray_and_dot_byte_get(uint8_t* gray , uint8_t width , gt_fon
 }
 
 static inline uint8_t _get_style_space_y(const gt_attr_font_st * dsc, uint16_t font_size) {
-    return (dsc->style == GT_FONT_STYLE_NONE) ? 0 : ((font_size >> 4) ? (font_size >> 4) : 1);
+    return (dsc->reg.style == GT_FONT_STYLE_NONE) ? 0 : ((font_size >> 4) ? (font_size >> 4) : 1);
 }
 
 static inline void _draw_blend_underline(
@@ -971,10 +971,10 @@ static uint32_t draw_text_convertor_split(
         }
 
         /* use style */
-        if (dsc->style == GT_FONT_STYLE_UNDERLINE && font_disp_h == tmp_font.info.size) {
+        if (dsc->reg.style == GT_FONT_STYLE_UNDERLINE && font_disp_h == tmp_font.info.size) {
             _draw_blend_underline(draw_ctx, dsc, blend_dsc_style, *blend_dsc->dst_area, tmp_font.info.size, width, style_space_y);
         }
-        if (dsc->style == GT_FONT_STYLE_STRIKETHROUGH && (font_disp_h > ((tmp_font.info.size >> 1) + (style_space_y << 1)))) {
+        if (dsc->reg.style == GT_FONT_STYLE_STRIKETHROUGH && (font_disp_h > ((tmp_font.info.size >> 1) + (style_space_y << 1)))) {
             _draw_blend_strikethrough(draw_ctx, dsc, blend_dsc_style, *blend_dsc->dst_area, tmp_font.info.size, width, style_space_y);
         }
 
@@ -1892,10 +1892,10 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             }
 
             /* use style */
-            if (dsc->style == GT_FONT_STYLE_UNDERLINE && font_disp_h == tmp_font.info.size) {
+            if (dsc->reg.style == GT_FONT_STYLE_UNDERLINE && font_disp_h == tmp_font.info.size) {
                 _draw_blend_underline(draw_ctx, dsc, &blend_dsc_style, area_font, tmp_font.info.size, width, style_space_y);
             }
-            if (dsc->style == GT_FONT_STYLE_STRIKETHROUGH && (font_disp_h > ((tmp_font.info.size >> 1) + (style_space_y << 1)))) {
+            if (dsc->reg.style == GT_FONT_STYLE_STRIKETHROUGH && (font_disp_h > ((tmp_font.info.size >> 1) + (style_space_y << 1)))) {
                 _draw_blend_strikethrough(draw_ctx, dsc, &blend_dsc_style, area_font, tmp_font.info.size, width, style_space_y);
             }
             if (_is_align_reverse(dsc->align)) {
