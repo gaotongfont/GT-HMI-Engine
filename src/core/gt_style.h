@@ -22,30 +22,28 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef enum _gt_align_e
-{
+typedef enum _gt_align_e {
     GT_ALIGN_NONE = 0,
-    GT_ALIGN_LEFT,
+    GT_ALIGN_LEFT,              // left top
     GT_ALIGN_LEFT_MID,
     GT_ALIGN_LEFT_BOTTOM,
-    GT_ALIGN_RIGHT,
+    GT_ALIGN_RIGHT,             // right top
     GT_ALIGN_RIGHT_MID,
     GT_ALIGN_RIGHT_BOTTOM,
-    GT_ALIGN_CENTER,
+    GT_ALIGN_CENTER,            // center top
     GT_ALIGN_CENTER_MID,
     GT_ALIGN_CENTER_BOTTOM,
 
     GT_ALIGN_REVERSE = 0x80,    //end of enum
 }gt_align_et;
 
-typedef enum _gt_text_long_mode_e
-{
+typedef enum _gt_text_long_mode_e {
     GT_TEXT_LONG_MODE_WRAP,
     GT_TEXT_LONG_MODE_DOT,
     GT_TEXT_LONG_MODE_SCROLL,
 }gt_text_long_mode_et;
 
-typedef enum{
+typedef enum {
     GT_BAR_DIR_HOR_L2R,
     GT_BAR_DIR_HOR_R2L,
     GT_BAR_DIR_VER_U2D,

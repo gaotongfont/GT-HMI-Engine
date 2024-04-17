@@ -1673,10 +1673,9 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     uint8_t* txt_2 = &txt[0];
 
     bool cov_flag_ol = false;
-    uint16_t bidi_len  = 0 , bidi_max = 1 , bidi_pos = 0;
-    gt_bidi_st* bidi = NULL;
-    bidi = (gt_bidi_st*)gt_mem_malloc(bidi_max * sizeof(gt_bidi_st));
-    if(NULL == bidi){
+    uint16_t bidi_len  = 0, bidi_max = 1, bidi_pos = 0;
+    gt_bidi_st * bidi = (gt_bidi_st * )gt_mem_malloc(bidi_max * sizeof(gt_bidi_st));
+    if (NULL == bidi) {
         GT_LOGE(GT_LOG_TAG_GUI , "bidi malloc is failed!!! size = %d" , bidi_max * sizeof(gt_bidi_st));
         goto _ret_handler;
     }
@@ -1686,12 +1685,11 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
 
     // align
     area_font.y = coords->y;
-    if( (GT_ALIGN_LEFT !=_get_align_type(dsc->align)) &&  (GT_ALIGN_RIGHT !=_get_align_type(dsc->align)) && \
-        (GT_ALIGN_CENTER !=_get_align_type(dsc->align)) &&  (GT_ALIGN_NONE !=_get_align_type(dsc->align))
-    ) {
+    if ((GT_ALIGN_LEFT !=_get_align_type(dsc->align)) && (GT_ALIGN_RIGHT !=_get_align_type(dsc->align)) &&
+        (GT_ALIGN_CENTER !=_get_align_type(dsc->align)) && (GT_ALIGN_NONE !=_get_align_type(dsc->align))) {
         idx_len = 1;
         while (idx < txt_len) {
-            if(0x0A == txt[idx]){
+            if (0x0A == txt[idx]) {
                 idx += 1;
                 goto _compute_line;
             }
@@ -1700,7 +1698,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             idx_step = gt_font_split( &tmp_font , disp_w, coords->w ,dsc->space_x , &ret_w , &lan , &lan_len);
 
             disp_w -= ret_w;
-            if(disp_w <= 0 || 0 == idx_step){
+            if (disp_w <= 0 || 0 == idx_step) {
                 goto _compute_line;
             }
             idx += idx_step;
@@ -1711,13 +1709,11 @@ _compute_line:
         }
 
         idx_len = idx_len * (tmp_font.info.size + (style_space_y << 1) + dsc->space_y);
-        if (GT_ALIGN_LEFT_MID == _get_align_type(dsc->align) || GT_ALIGN_RIGHT_MID == _get_align_type(dsc->align) ||
-            GT_ALIGN_CENTER_MID == _get_align_type(dsc->align)) {
-            if (idx_len < coords->h) {
+        if (idx_len < coords->h) {
+            if (GT_ALIGN_LEFT_MID == _get_align_type(dsc->align) || GT_ALIGN_RIGHT_MID == _get_align_type(dsc->align) ||
+                GT_ALIGN_CENTER_MID == _get_align_type(dsc->align)) {
                 area_font.y = coords->y + ((coords->h - idx_len) >> 1);
-            }
-        } else {
-            if (idx_len < coords->h) {
+            } else {
                 area_font.y = coords->y + ((coords->h - idx_len));
             }
         }
@@ -1776,7 +1772,7 @@ _compute_line:
             if (is_convertor_language(lan)) {
                 if (bidi_max <= bidi_len) {
                     ++bidi_max;
-                    bidi = (gt_bidi_st*)gt_mem_realloc( bidi ,bidi_max*sizeof(gt_bidi_st));
+                    bidi = (gt_bidi_st*)gt_mem_realloc( bidi ,bidi_max * sizeof(gt_bidi_st));
                 }
                 bidi[bidi_len].idx = idx_len;
                 bidi[bidi_len].len = idx_step;
@@ -1796,7 +1792,7 @@ _compute_line:
             if (is_convertor_language(lan) && (idx < txt_len)) {
                 if (bidi_max <= bidi_len) {
                     ++bidi_max;
-                    bidi = (gt_bidi_st*)gt_mem_realloc( bidi ,bidi_max*sizeof(gt_bidi_st));
+                    bidi = (gt_bidi_st*)gt_mem_realloc( bidi ,bidi_max * sizeof(gt_bidi_st));
                 }
                 bidi[bidi_len].idx = idx_len;
                 bidi[bidi_len].len = idx_step;
@@ -1808,7 +1804,7 @@ _compute_line:
             if (is_convertor_language(lan)) {
                 if (bidi_max <= bidi_len) {
                     ++bidi_max;
-                    bidi = (gt_bidi_st*)gt_mem_realloc( bidi ,bidi_max*sizeof(gt_bidi_st));
+                    bidi = (gt_bidi_st*)gt_mem_realloc( bidi ,bidi_max * sizeof(gt_bidi_st));
                 }
                 bidi[bidi_len].idx = idx_len;
                 bidi[bidi_len].len = lan_len;
