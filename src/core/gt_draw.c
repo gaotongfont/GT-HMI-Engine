@@ -1684,14 +1684,16 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
 
     gt_font_st tmp_font = {
         .info = dsc->font->info,
+        .utf8 = dsc->font->utf8,
+        .len = dsc->font->len,
         .res = NULL,
     };
     tmp_font.info.gray = dsc->font->info.gray == 0 ? 1 : dsc->font->info.gray;
+    gt_size_t font_disp_h = tmp_font.info.size;
     uint16_t font_dot_w = (((tmp_font.info.size + 15) >> 4) << 4) * tmp_font.info.gray;
     uint32_t data_len = font_dot_w * font_dot_w >> 3;
-    uint32_t mask_len = font_dot_w * font_dot_w;
+    uint8_t * mask_line = NULL, * ret_txt = NULL;
 
-    uint8_t *mask_line = NULL, *ret_txt = NULL;
     tmp_font.res = gt_mem_malloc(data_len);
     if (NULL == tmp_font.res) {
         GT_LOGE(GT_LOG_TAG_GUI , "data malloc is failed!!! size = %d" , data_len);
@@ -1702,11 +1704,10 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         GT_LOGE(GT_LOG_TAG_GUI , "mask_line malloc is failed!!! size = %d" , tmp_font.info.size << 1);
         goto _ret_handler;
     }
+    gt_memset(mask_line, 0xFF, tmp_font.info.size << 1);
+
     bool heb_flag = false;
-    uint8_t lan;
-    tmp_font.utf8 = dsc->font->utf8;
-    tmp_font.len = dsc->font->len;
-    lan = right_to_left_lan_get(dsc->font->info.style_fl);
+    uint8_t lan = right_to_left_lan_get(dsc->font->info.style_fl);
     if (lan == STYLE_EN_HEBREW || lan == STYLE_EN_ARABIC) {
         ret_txt = gt_mem_malloc(dsc->font->len);
         if (NULL == ret_txt) {
@@ -1722,11 +1723,10 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         .color_fill = dsc->font_color,
         .opa        = dsc->opa,
     };
+    gt_area_st area_font_style;
     gt_draw_blend_dsc_st blend_dsc_style = blend_dsc;
     blend_dsc_style.color_fill  = gt_color_black();
     blend_dsc_style.mask_buf    = mask_line;
-    gt_area_st area_font_style;
-    gt_memset(mask_line, 0xFF, tmp_font.info.size << 1);
     uint8_t style_space_y = _get_style_space_y(dsc, tmp_font.info.size);
 
     gt_size_t disp_w = coords->w;
@@ -1735,38 +1735,27 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
     uint16_t over_length_offset = ((coords->w / ((tmp_font.info.size >> 1) + dsc->space_x) - 1) >> 1 << 1);
     uint8_t over_length = 0;
 
-    uint8_t *txt = heb_flag ? ret_txt : (uint8_t*)dsc->font->utf8;
-    uint8_t* txt_2 = &txt[0];
+    uint8_t * txt = heb_flag ? ret_txt : (uint8_t*)dsc->font->utf8;
+    uint8_t * txt_2 = &txt[0];
 
     bool cov_flag_ol = false;
-    uint16_t bidi_len  = 0, bidi_max = 1, bidi_pos = 0;
+    bool start_x_flag = false;
+    uint16_t bidi_len = 0, bidi_max = 1, bidi_pos = 0;
     gt_bidi_st * bidi = (gt_bidi_st * )gt_mem_malloc(bidi_max * sizeof(gt_bidi_st));
     if (NULL == bidi) {
         GT_LOGE(GT_LOG_TAG_GUI , "bidi malloc is failed!!! size = %d" , bidi_max * sizeof(gt_bidi_st));
         goto _ret_handler;
     }
-
-    // align
+    // align vertical
     area_font.y = _get_align_start_y(dsc, coords, &tmp_font, txt);
     if (dsc->start_y) {
         area_font.y = dsc->start_y;
     }
-
     // disp
-    idx = 0;
-    idx_len = 0;
-    over_length = 0;
-    bidi_len = 0;
-    disp_w = coords->w;
-
-    bool start_x_flag = false;
-    gt_size_t font_disp_h = tmp_font.info.size;
-
     if (dsc->start_x > 0) {
         disp_w = coords->w - (dsc->start_x - coords->x);
         start_x_flag = true;
     }
-
     while (idx < txt_len) {
         // out of range
         if ((area_font.y + style_space_y + area_font.h ) > (coords->y + coords->h)) {
@@ -1800,7 +1789,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             if (is_convertor_language(lan)) {
                 if (bidi_max <= bidi_len) {
                     ++bidi_max;
-                    bidi = (gt_bidi_st*)gt_mem_realloc( bidi ,bidi_max * sizeof(gt_bidi_st));
+                    bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
                 }
                 bidi[bidi_len].idx = idx_len;
                 bidi[bidi_len].len = idx_step;
@@ -1820,7 +1809,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             if (is_convertor_language(lan) && (idx < txt_len)) {
                 if (bidi_max <= bidi_len) {
                     ++bidi_max;
-                    bidi = (gt_bidi_st*)gt_mem_realloc( bidi ,bidi_max * sizeof(gt_bidi_st));
+                    bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
                 }
                 bidi[bidi_len].idx = idx_len;
                 bidi[bidi_len].len = idx_step;
@@ -1832,7 +1821,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             if (is_convertor_language(lan)) {
                 if (bidi_max <= bidi_len) {
                     ++bidi_max;
-                    bidi = (gt_bidi_st*)gt_mem_realloc( bidi ,bidi_max * sizeof(gt_bidi_st));
+                    bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
                 }
                 bidi[bidi_len].idx = idx_len;
                 bidi[bidi_len].len = lan_len;
@@ -1846,7 +1835,7 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
                 disp_w = 0;
             }
         }
-        // align
+        /** align to left, center or right */
         if (!cov_flag_ol) {
             area_font.x = _get_align_start_x(dsc->align, coords->x, disp_w);
         }
@@ -1918,10 +1907,10 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
             idx_2 += tmp_font.len;
         }
 
-        if(is_convertor_language(lan) && over_length >= 2){
+        if (is_convertor_language(lan) && over_length >= 2) {
             idx += idx_len;
             cov_flag_ol = true;
-            if(_is_align_reverse(dsc->align)){
+            if (_is_align_reverse(dsc->align)) {
                 disp_w = area_font.x - coords->x;
             } else {
                 disp_w = coords->w - (area_font.x - coords->x);
