@@ -721,6 +721,7 @@ static gt_obj_st * _create_scr_by_id(gt_scr_id_t scr_id) {
 gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
 {
     gt_scr_stack_item_st * target = NULL;
+    gt_scr_stack_item_st * prev = NULL;
     gt_disp_st * disp = gt_disp_get_default();
     gt_obj_st * scr_old = gt_disp_get_scr();
 
@@ -778,6 +779,11 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
         new_item.current_scr = _create_scr_by_id(new_item.current_scr_id);
         if (NULL == new_item.current_scr) {
             return -1;
+        }
+        /** update prev current screen object */
+        prev = gt_scr_stack_peek();
+        if (prev && prev->current_scr_id == new_item.current_scr_id) {
+            prev->current_scr = new_item.current_scr;
         }
     }
 
