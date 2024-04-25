@@ -31,12 +31,11 @@
 /* static functions -----------------------------------------------------*/
 
 
-static char gt_txt_string_del(char * str , uint32_t del_txt_pos)
-{
-    uint32_t len = 0 , len_str = str ? strlen(str) : 0;
+static char gt_txt_string_del(char * str, uint8_t encoding, uint32_t del_txt_pos) {
+    uint32_t len = 0, len_str = str ? strlen(str) : 0;
     int32_t idx = del_txt_pos;
 
-    len = gt_txt_check_char_numb(str , &idx);
+    len = gt_txt_check_char_numb(str, encoding, &idx);
 
     if(!len){
         return 0 ;
@@ -55,29 +54,23 @@ static char gt_txt_string_del(char * str , uint32_t del_txt_pos)
 }
 /* global functions / API interface -------------------------------------*/
 
-uint8_t gt_txt_check_char_numb(char * dst , int32_t* pos )
+uint8_t gt_txt_check_char_numb(char * dst, uint8_t encoding, int32_t* pos)
 {
-    uint32_t len = 0 ;
+    uint32_t len = 0;
     int32_t *idx = pos;
-    while ((*idx) >= 0)
-    {
-        if(GT_ENCODING_UTF8 == gt_project_encoding_get())
-        {
+    while ((*idx) >= 0) {
+        if(GT_ENCODING_UTF8 == encoding) {
             len = gt_utf8_check_char((uint8_t * )&dst[*idx]);
         }
-        else if(GT_ENCODING_GB == gt_project_encoding_get())
-        {
+        else if(GT_ENCODING_GB == encoding) {
             len = gt_gb_check_char((uint8_t * )dst , *pos , NULL);
             *pos -= (len-1);
             return len;
         }
-
-        if(!len)
-        {
+        if(!len) {
             --(*idx);
             continue;
         }
-
         break;
     }
 
@@ -123,7 +116,7 @@ char * gt_txt_ins(char * dst, uint32_t pos, char * src)
  * @param pos_start position start
  * @param pos_end position end
  */
-char gt_txt_cut(char * dst, uint32_t pos_start, uint32_t pos_end)
+char gt_txt_cut(char * dst, uint8_t encoding, uint32_t pos_start, uint32_t pos_end)
 {
     uint32_t len_dst = dst ? strlen(dst) : 0;
     uint32_t ps,pe;
@@ -156,7 +149,7 @@ char gt_txt_cut(char * dst, uint32_t pos_start, uint32_t pos_end)
     dst[len_dst] = '\0';
     return 1;
 #else
-    return gt_txt_string_del(dst , ps);
+    return gt_txt_string_del(dst, encoding, ps);
 #endif
 }
 /* end ------------------------------------------------------------------*/

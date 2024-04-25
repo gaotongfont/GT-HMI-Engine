@@ -47,42 +47,16 @@ typedef enum {
 
 /* typedef --------------------------------------------------------------*/
 
-typedef unsigned long(* get_dot_bitmap_t)(unsigned long , unsigned int , unsigned char* );
-typedef unsigned int (* get_vec_bitmap_t)(unsigned char *,unsigned char ,unsigned long ,unsigned char ,unsigned char , unsigned char );
-
-typedef struct _gt_font_style_s {
-    get_dot_bitmap_t get_dot_bitmap;
-    get_vec_bitmap_t get_vec_bitmap;
-
-    uint32_t width:8;
-    uint32_t height:8;
-    uint32_t is_vec:1;
-    uint32_t is_nor:1;
-}gt_font_style_st;
-
-typedef enum {
-    GT_FONT_SIZE_8x8    = 8,
-    GT_FONT_SIZE_16x16  = 16,
-    GT_FONT_SIZE_24x24  = 24,
-    GT_FONT_SIZE_32x32  = 32,
-}gt_font_size_et;
-
-typedef struct _gt_font_res_s {
-    uint8_t * dot;
-    uint8_t w;
-    uint8_t h;
-}gt_font_res_st;
-
 typedef struct _gt_font_info_s {
-    uint16_t style_cn;  ///< set: font style
-    uint16_t style_en;  ///< set: font style
-    uint16_t style_fl;  ///< set: font style foreign language
-    uint16_t style_numb; ///< set: font style
-    uint8_t size;       ///< set: font size
-    uint8_t gray;       ///< set: font gray
-    uint8_t encoding;   ///< set: font encoding
-    uint8_t thick_en;   ///< set: font thick
-    uint8_t thick_cn;   ///< set: font thick
+    uint16_t style_cn;   ///< set: CJK font style
+    uint16_t style_en;   ///< set: ascii font style
+    uint16_t style_fl;   ///< set: font style foreign language
+    uint16_t style_numb; ///< set: special number font style
+    uint8_t size;        ///< set: font size
+    uint8_t thick_en;    ///< set: font thick
+    uint8_t thick_cn;    ///< set: font thick
+    uint8_t gray;        ///< set: font gray
+    uint8_t encoding;    ///< set: font encoding
 }gt_font_info_st;
 
 /**
@@ -125,12 +99,11 @@ typedef struct _gt_attr_font_s {
     uint8_t space_x;    ///< The width of the space between characters
     uint8_t space_y;    ///< The distance between rows
 
-    gt_align_et align;      ///< Alignment @ gt_align_et
+    uint8_t align;      ///< Alignment @ gt_align_et
     gt_opa_t opa;       ///< font opa value @GT_OPA_X
 
     gt_text_style_st reg;
 }gt_attr_font_st;
-
 
 typedef enum _gt_encoding_e {
     GT_ENCODING_UTF8 = 0,
@@ -144,15 +117,15 @@ typedef enum _gt_encoding_convert_e {
 
 typedef enum _gt_font_style_en_cn_e {
     STYLE_CN = 0,
-    STYLE_EN_ASCII ,
-    STYLE_EN_LATIN ,
-    STYLE_EN_GREEK ,
+    STYLE_EN_ASCII,
+    STYLE_EN_LATIN,
+    STYLE_EN_GREEK,
     STYLE_EN_CYRILLIC,
-    STYLE_EN_HEBREW ,
-    STYLE_EN_ARABIC ,
-    STYLE_EN_THAI ,
-    STYLE_EN_HINDI ,
-    STYLE_EN_Currency ,
+    STYLE_EN_HEBREW,
+    STYLE_EN_ARABIC,
+    STYLE_EN_THAI,
+    STYLE_EN_HINDI,
+    STYLE_EN_Currency,
 }gt_font_style_en_cn_et;
 
 typedef struct _gt_bidi_s {
@@ -204,7 +177,7 @@ void gt_font_info_update_font_thick(gt_font_info_st *font_info);
  * @param res unicode encoding
  * @return uint8_t THe number length bytes of utf-8 encoding
  */
-uint8_t _gt_utf8_to_unicode(uint8_t * utf8,uint32_t *res);
+uint8_t _gt_utf8_to_unicode(uint8_t * utf8, uint32_t * res);
 
 /**
  * @brief unicode encoding convert to utf-8 encoding
@@ -213,7 +186,7 @@ uint8_t _gt_utf8_to_unicode(uint8_t * utf8,uint32_t *res);
  * @param unicode unicode encoding
  * @return uint8_t THe number length bytes of utf-8 encoding
  */
-uint8_t gt_unicode_to_utf8(uint8_t* utf8 , uint32_t unicode);
+uint8_t gt_unicode_to_utf8(uint8_t * utf8, uint32_t unicode);
 
 uint8_t gt_utf8_check_char(uint8_t * utf8);
 
@@ -256,14 +229,14 @@ uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const 
 
 void gt_project_encoding_set(gt_encoding_et charset);
 gt_encoding_et gt_project_encoding_get(void);
-uint8_t gt_font_one_char_code_len_get(uint8_t * utf8,uint32_t *res , uint8_t encoding);
-uint8_t gt_encoding_table_one_char(uint8_t *src ,uint8_t* dst , gt_encoding_convert_et tab );
+uint8_t gt_font_one_char_code_len_get(uint8_t * utf8, uint32_t *res, uint8_t encoding);
+uint8_t gt_encoding_table_one_char(uint8_t *src, uint8_t* dst, gt_encoding_convert_et tab);
 uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const utf8, uint32_t *res);
-uint8_t gt_gb_check_char(const uint8_t *dst , uint16_t pos , uint32_t* fontcode);
+uint8_t gt_gb_check_char(const uint8_t *dst, uint16_t pos, uint32_t* font_code);
 
-gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding);
-bool gt_style_en_data_is_convertor(uint32_t unicode , uint8_t encoding);
-uint16_t gt_font_get_word_width_figure_up(const uint8_t* data , uint16_t dot_w , uint16_t dot_h , uint8_t gray);
+gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode, uint8_t encoding);
+bool gt_style_en_data_is_convertor(uint32_t unicode, uint8_t encoding);
+uint16_t gt_font_get_word_width_figure_up(const uint8_t* data, uint16_t dot_w, uint16_t dot_h, uint8_t gray);
 
 /**
  * @brief Get the font type

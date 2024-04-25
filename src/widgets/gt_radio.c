@@ -70,7 +70,6 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     };
     font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
-    font.info.encoding = gt_project_encoding_get();
 
     // set default size
     if( radio->area.w == 0 || radio->area.h == 0){

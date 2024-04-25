@@ -47,9 +47,9 @@ typedef struct _gt_btn_s {
     gt_font_info_st font_info;
 
     _gt_btn_reg_st reg;
-    gt_align_et font_align;
-    uint8_t     space_x;
-    uint8_t     space_y;
+    uint8_t font_align;     //@ref gt_align_et
+    uint8_t space_x;
+    uint8_t space_y;
 }_gt_btn_st;
 
 
@@ -88,7 +88,6 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
 
-    font.info.encoding = gt_project_encoding_get();
     // set default size
     if( btn->area.w == 0 || btn->area.h == 0){
         btn->area.w = style->font_info.size*strlen(style->text) + 32;

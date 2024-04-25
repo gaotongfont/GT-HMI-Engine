@@ -66,7 +66,6 @@ const gt_obj_class_st gt_label_class = {
  */
 static void _init_cb(gt_obj_st * obj) {
     _gt_label_st * style = (_gt_label_st * )obj;
-
     gt_font_st font = {
         .info       = style->font_info,
         .res        = NULL,
@@ -77,10 +76,7 @@ static void _init_cb(gt_obj_st * obj) {
     font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
 
-
-    font.info.encoding = gt_project_encoding_get();
-
-    if( 0 == obj->area.w || 0 == obj->area.h ){
+    if (0 == obj->area.w || 0 == obj->area.h) {
         obj->area.h = 20;
         obj->area.w = font.info.size * strlen(font.utf8);
     }

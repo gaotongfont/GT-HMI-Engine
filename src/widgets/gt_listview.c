@@ -60,7 +60,6 @@ typedef struct _gt_listview_s {
     uint16_t item_height;       /** The height of item */
     gt_font_info_st font_info;
     gt_color_t font_color;
-    gt_align_et align;
 
     gt_color_t item_bg_color;
     gt_color_t border_color;
@@ -71,6 +70,7 @@ typedef struct _gt_listview_s {
 
     _column_st column;
 
+    uint8_t align;      //@ref gt_align_et
     uint8_t border_width;
     uint8_t space_x;
     uint8_t space_y;

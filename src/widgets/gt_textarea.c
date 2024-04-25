@@ -40,10 +40,10 @@ typedef struct _gt_textarea_s {
 
     gt_font_info_st font_info;
 
-    uint8_t     bg_opa;     /* @ref gt_color.h */
-    uint8_t     space_x;
-    uint8_t     space_y;
-    gt_align_et font_align;
+    uint8_t bg_opa;     /* @ref gt_color.h */
+    uint8_t space_x;
+    uint8_t space_y;
+    uint8_t font_align;     //@ref gt_align_et
 }_gt_textarea_st;
 
 
@@ -77,7 +77,7 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
     };
     font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
-    font.info.encoding = gt_project_encoding_get();
+
     gt_attr_font_st font_attr = {
         .font       = &font,
         .space_x    = style->space_x,
