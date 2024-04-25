@@ -19,6 +19,7 @@ extern "C" {
 #include "stdarg.h"
 #include "stdlib.h"
 #include "../core/gt_style.h"
+#include "../font/gt_font.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -76,6 +77,7 @@ void gt_label_set_font_family_fl(gt_obj_st * label, gt_family_t family);
 void gt_label_set_font_family_numb(gt_obj_st * label, gt_family_t family);
 void gt_label_set_font_thick_en(gt_obj_st * label, uint8_t thick);
 void gt_label_set_font_thick_cn(gt_obj_st * label, uint8_t thick);
+void gt_label_set_font_encoding(gt_obj_st * label, gt_encoding_et encoding);
 
 void gt_label_set_space(gt_obj_st * label, uint8_t space_x, uint8_t space_y);
 

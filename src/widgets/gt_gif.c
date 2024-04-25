@@ -132,7 +132,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
 static void _gif_next_frame_handler_cb(struct _gt_timer_s * timer) {
     gt_obj_st * obj = (gt_obj_st * )timer->user_data;
-    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;
@@ -178,7 +178,7 @@ gt_obj_st * gt_gif_create(gt_obj_st * parent)
 
 void gt_gif_set_src(gt_obj_st * obj, char * src)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;
@@ -228,7 +228,7 @@ void gt_gif_set_src(gt_obj_st * obj, char * src)
 
 char * gt_gif_get_src(gt_obj_st *  obj)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return NULL;
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;
@@ -237,7 +237,7 @@ char * gt_gif_get_src(gt_obj_st *  obj)
 
 gt_size_t gt_gif_get_frame_width(gt_obj_st * obj)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return -1;
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;
@@ -246,7 +246,7 @@ gt_size_t gt_gif_get_frame_width(gt_obj_st * obj)
 
 gt_size_t gt_gif_get_frame_height(gt_obj_st * obj)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return -1;
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;
@@ -255,7 +255,7 @@ gt_size_t gt_gif_get_frame_height(gt_obj_st * obj)
 
 void gt_gif_play(gt_obj_st * obj)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;
@@ -264,7 +264,7 @@ void gt_gif_play(gt_obj_st * obj)
 
 void gt_gif_stop(gt_obj_st * obj)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;
@@ -273,7 +273,7 @@ void gt_gif_stop(gt_obj_st * obj)
 
 void gt_gif_toggle(gt_obj_st * obj)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;
@@ -282,7 +282,7 @@ void gt_gif_toggle(gt_obj_st * obj)
 
 bool gt_gif_is_play(gt_obj_st * obj)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return false;
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;
@@ -291,7 +291,7 @@ bool gt_gif_is_play(gt_obj_st * obj)
 
 void gt_gif_reset(gt_obj_st * obj)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;

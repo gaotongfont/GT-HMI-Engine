@@ -165,7 +165,7 @@ gt_obj_st * gt_img_create(gt_obj_st * parent) {
 
 
 void gt_img_set_src(gt_obj_st * img, char * src){
-    if (OBJ_TYPE != gt_obj_class_get_type(img)) {
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) {
         return ;
     }
     if (NULL == src) {
@@ -189,7 +189,7 @@ void gt_img_set_src(gt_obj_st * img, char * src){
 }
 
 char * gt_img_get_src(gt_obj_st * img){
-    if (OBJ_TYPE != gt_obj_class_get_type(img)) {
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) {
         return NULL;
     }
     _gt_img_st * style = (_gt_img_st *)img;
@@ -198,7 +198,7 @@ char * gt_img_get_src(gt_obj_st * img){
 
 uint16_t gt_img_get_width(gt_obj_st * img)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(img)) {
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) {
         return 0;
     }
     _gt_img_st * obj = (_gt_img_st * )img;
@@ -211,7 +211,7 @@ uint16_t gt_img_get_width(gt_obj_st * img)
 
 uint16_t gt_img_get_height(gt_obj_st * img)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(img)) {
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) {
         return 0;
     }
     _gt_img_st * obj = (_gt_img_st * )img;

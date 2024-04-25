@@ -14,7 +14,6 @@
 #include "string.h"
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
-#include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
@@ -362,6 +361,16 @@ void gt_checkbox_set_font_thick_cn(gt_obj_st * checkbox, uint8_t thick)
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
     style->font_info.thick_cn = thick;
 }
+
+void gt_checkbox_set_font_encoding(gt_obj_st * checkbox, gt_encoding_et encoding)
+{
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
+        return;
+    }
+    _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
+    style->font_info.encoding = encoding;
+}
+
 void gt_checkbox_set_space(gt_obj_st * checkbox, uint8_t space_x, uint8_t space_y)
 {
     if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {

@@ -20,6 +20,7 @@ extern "C" {
 #include "stdlib.h"
 #include "../utils/gt_vector.h"
 #include "../core/gt_style.h"
+#include "../font/gt_font.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -108,6 +109,7 @@ void gt_btn_set_font_family_fl(gt_obj_st * btn, gt_family_t font_family_fl);
 void gt_btn_set_font_family_numb(gt_obj_st * btn, gt_family_t font_family_numb);
 void gt_btn_set_font_thick_en(gt_obj_st * btn, uint8_t thick);
 void gt_btn_set_font_thick_cn(gt_obj_st * btn, uint8_t thick);
+void gt_btn_set_font_encoding(gt_obj_st * btn, gt_encoding_et encoding);
 void gt_btn_set_space(gt_obj_st * btn, uint8_t space_x, uint8_t space_y);
 
 /**

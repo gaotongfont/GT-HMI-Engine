@@ -78,6 +78,7 @@ void gt_btnmap_set_font_family_fl(gt_obj_st * btnmap, gt_family_t family);
 void gt_btnmap_set_font_family_numb(gt_obj_st * btnmap, gt_family_t family);
 void gt_btnmap_set_font_thick_en(gt_obj_st * btnmap, uint8_t thick);
 void gt_btnmap_set_font_thick_cn(gt_obj_st * btnmap, uint8_t thick);
+void gt_btnmap_set_font_encoding(gt_obj_st * btnmap, gt_encoding_et encoding);
 //
 void gt_btnmap_set_disp_special_btn_handler(gt_obj_st * btnmap , gt_btnmap_disp_special_btn_cb_t disp_special_btn_cb);
 void gt_btnmap_set_push_btn_kv_handler(gt_obj_st * btnmap , gt_btnmap_push_btn_kv_cb_t push_btn_kv_cb);

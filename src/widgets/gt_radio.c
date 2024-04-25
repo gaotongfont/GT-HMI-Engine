@@ -14,10 +14,10 @@
 #include "string.h"
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
-#include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
+
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_RADIO
 #define MY_CLASS    &gt_radio_class
@@ -354,6 +354,7 @@ void gt_radio_set_font_thick_en(gt_obj_st * radio, uint8_t thick)
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_info.thick_en = thick;
 }
+
 void gt_radio_set_font_thick_cn(gt_obj_st * radio, uint8_t thick)
 {
     if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
@@ -362,6 +363,16 @@ void gt_radio_set_font_thick_cn(gt_obj_st * radio, uint8_t thick)
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_info.thick_cn = thick;
 }
+
+void gt_radio_set_font_encoding(gt_obj_st * radio, gt_encoding_et encoding)
+{
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_radio_st * style = (_gt_radio_st * )radio;
+    style->font_info.encoding = encoding;
+}
+
 void gt_radio_set_space(gt_obj_st * radio, uint8_t space_x, uint8_t space_y)
 {
     if (false == gt_obj_is_type(radio, OBJ_TYPE)) {

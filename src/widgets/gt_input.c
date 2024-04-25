@@ -14,7 +14,6 @@
 #include "string.h"
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
-#include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
@@ -646,6 +645,7 @@ void gt_input_set_font_thick_en(gt_obj_st * input, uint8_t thick)
     _gt_input_st * style = (_gt_input_st * )input;
     style->font_info.thick_en = thick;
 }
+
 void gt_input_set_font_thick_cn(gt_obj_st * input, uint8_t thick)
 {
     if (false == gt_obj_is_type(input, OBJ_TYPE)) {
@@ -654,6 +654,16 @@ void gt_input_set_font_thick_cn(gt_obj_st * input, uint8_t thick)
     _gt_input_st * style = (_gt_input_st * )input;
     style->font_info.thick_cn = thick;
 }
+
+void gt_input_set_font_encoding(gt_obj_st * input, gt_encoding_et encoding)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    style->font_info.encoding = encoding;
+}
+
 void gt_input_set_space(gt_obj_st * input, uint8_t space_x, uint8_t space_y)
 {
     if (false == gt_obj_is_type(input, OBJ_TYPE)) {

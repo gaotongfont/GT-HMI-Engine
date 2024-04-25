@@ -104,7 +104,7 @@ static void _init_cb(gt_obj_st * obj) {
 }
 
 static void _screen_scroll(gt_obj_st * obj) {
-    if (OBJ_TYPE_SCREEN != gt_obj_class_get_type(obj)) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE_SCREEN)) {
         return;
     }
     gt_area_abs_st * max_area_p = gt_disp_get_area_max();
@@ -362,7 +362,7 @@ void gt_obj_destroy(gt_obj_st * obj)
 
 void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color)
 {
-    if( OBJ_TYPE_SCREEN != gt_obj_class_get_type(obj) ) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE_SCREEN)) {
         return;
     }
     obj->bgcolor = color;
@@ -370,7 +370,7 @@ void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color)
 
 gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj)
 {
-    if( OBJ_TYPE_SCREEN != gt_obj_class_get_type(obj) ) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE_SCREEN)) {
         return gt_color_make(0, 0, 0);
     }
     return obj->bgcolor;

@@ -880,7 +880,7 @@ char * gt_listview_get_selected_item_text(gt_obj_st * listview)
     char * text = NULL;
 
     for (gt_size_t i = 0, cnt = item->cnt_child; i < cnt; i++) {
-        if (GT_TYPE_LAB != gt_obj_class_get_type(item->child[i])) {
+        if (false == gt_obj_is_type(item->child[i], GT_TYPE_LAB)) {
             continue;
         }
         text = gt_label_get_text(item->child[i]);

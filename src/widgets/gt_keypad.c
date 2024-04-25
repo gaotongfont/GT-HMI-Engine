@@ -701,7 +701,7 @@ gt_obj_st * gt_keypad_create(gt_obj_st * parent)
 
 void gt_keypad_set_default_style(gt_obj_st * keypad , gt_keypad_default_style_st def_style)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     //
@@ -711,7 +711,7 @@ void gt_keypad_set_default_style(gt_obj_st * keypad , gt_keypad_default_style_st
 
 void gt_keypad_set_type(gt_obj_st * keypad , gt_keypad_type_te type)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     //
@@ -723,7 +723,7 @@ void gt_keypad_set_map_list(gt_obj_st * keypad , gt_keypad_map_st* map_list , ui
     if (NULL == map_list) {
         return;
     }
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
@@ -734,7 +734,7 @@ void gt_keypad_set_map_list(gt_obj_st * keypad , gt_keypad_map_st* map_list , ui
 
 void gt_keypad_set_target(gt_obj_st * keypad, gt_obj_st * ta)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     if (NULL == ta) {
@@ -746,7 +746,7 @@ void gt_keypad_set_target(gt_obj_st * keypad, gt_obj_st * ta)
 
 void gt_keypad_set_color_background(gt_obj_st * keypad, gt_color_t color)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
@@ -755,7 +755,7 @@ void gt_keypad_set_color_background(gt_obj_st * keypad, gt_color_t color)
 
 void gt_keypad_set_border_width_and_color(gt_obj_st * keypad, gt_size_t width , gt_color_t color)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
@@ -765,7 +765,7 @@ void gt_keypad_set_border_width_and_color(gt_obj_st * keypad, gt_size_t width , 
 
 void gt_keypad_set_color_ctrl_key(gt_obj_st * keypad, gt_color_t color)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
@@ -774,7 +774,7 @@ void gt_keypad_set_color_ctrl_key(gt_obj_st * keypad, gt_color_t color)
 
 void gt_keypad_set_key_color_background(gt_obj_st * keypad, gt_color_t color)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
@@ -783,7 +783,7 @@ void gt_keypad_set_key_color_background(gt_obj_st * keypad, gt_color_t color)
 
 void gt_keypad_set_key_border_width_and_color(gt_obj_st * keypad, gt_size_t width , gt_color_t color)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
@@ -794,7 +794,7 @@ void gt_keypad_set_key_border_width_and_color(gt_obj_st * keypad, gt_size_t widt
 
 void gt_keypad_set_radius(gt_obj_st * keypad, uint8_t radius)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
@@ -803,7 +803,7 @@ void gt_keypad_set_radius(gt_obj_st * keypad, uint8_t radius)
 
 void gt_keypad_set_key_radius(gt_obj_st * keypad, uint8_t radius)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
@@ -812,7 +812,7 @@ void gt_keypad_set_key_radius(gt_obj_st * keypad, uint8_t radius)
 
 void gt_keypad_set_key_height(gt_obj_st * keypad, uint16_t height)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
@@ -821,7 +821,7 @@ void gt_keypad_set_key_height(gt_obj_st * keypad, uint16_t height)
 
 void gt_keypad_set_key_height_auto_fill(gt_obj_st* keypad , bool auto_fill)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
@@ -830,7 +830,7 @@ void gt_keypad_set_key_height_auto_fill(gt_obj_st* keypad , bool auto_fill)
 
 void gt_keypad_set_key_xy_space(gt_obj_st* keypad , uint8_t x_space , uint8_t y_space)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
@@ -839,7 +839,7 @@ void gt_keypad_set_key_xy_space(gt_obj_st* keypad , uint8_t x_space , uint8_t y_
 //
 void gt_keypad_set_font_color(gt_obj_st * keypad, gt_color_t color)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
@@ -847,7 +847,7 @@ void gt_keypad_set_font_color(gt_obj_st * keypad, gt_color_t color)
 }
 void gt_keypad_set_font_size(gt_obj_st * keypad, uint8_t size)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
@@ -856,7 +856,7 @@ void gt_keypad_set_font_size(gt_obj_st * keypad, uint8_t size)
 
 void gt_keypad_set_font_gray(gt_obj_st * keypad, uint8_t gray)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
@@ -865,7 +865,7 @@ void gt_keypad_set_font_gray(gt_obj_st * keypad, uint8_t gray)
 
 void gt_keypad_set_font_family_cn(gt_obj_st * keypad, gt_family_t family)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
@@ -873,7 +873,7 @@ void gt_keypad_set_font_family_cn(gt_obj_st * keypad, gt_family_t family)
 }
 void gt_keypad_set_font_family_en(gt_obj_st * keypad, gt_family_t family)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
@@ -882,7 +882,7 @@ void gt_keypad_set_font_family_en(gt_obj_st * keypad, gt_family_t family)
 
 void gt_keypad_set_font_family_fl(gt_obj_st * keypad, gt_family_t family)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
@@ -890,7 +890,7 @@ void gt_keypad_set_font_family_fl(gt_obj_st * keypad, gt_family_t family)
 }
 void gt_keypad_set_font_family_numb(gt_obj_st * keypad, gt_family_t family)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
@@ -898,7 +898,7 @@ void gt_keypad_set_font_family_numb(gt_obj_st * keypad, gt_family_t family)
 }
 void gt_keypad_set_font_thick_en(gt_obj_st * keypad, uint8_t thick)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
@@ -907,7 +907,7 @@ void gt_keypad_set_font_thick_en(gt_obj_st * keypad, uint8_t thick)
 
 void gt_keypad_set_font_thick_cn(gt_obj_st * keypad, uint8_t thick)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
@@ -916,7 +916,7 @@ void gt_keypad_set_font_thick_cn(gt_obj_st * keypad, uint8_t thick)
 
 void gt_keypad_set_ctrl_key_color_background(gt_obj_st * keypad, gt_color_t color)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
@@ -924,7 +924,7 @@ void gt_keypad_set_ctrl_key_color_background(gt_obj_st * keypad, gt_color_t colo
 }
 void gt_keypad_set_ctrl_key_border_width_and_color(gt_obj_st * keypad, gt_size_t width , gt_color_t color)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
@@ -932,7 +932,7 @@ void gt_keypad_set_ctrl_key_border_width_and_color(gt_obj_st * keypad, gt_size_t
 }
 void gt_keypad_set_ctrl_key_font_color(gt_obj_st * keypad, gt_color_t color)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
@@ -942,7 +942,7 @@ void gt_keypad_set_ctrl_key_font_color(gt_obj_st * keypad, gt_color_t color)
 //
 void gt_keypad_set_py_input_method(gt_obj_st * keypad, gt_py_input_method_st* py_input_method)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(keypad)) {
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;

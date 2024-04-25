@@ -490,7 +490,7 @@ gt_obj_st * gt_btnmap_create(gt_obj_st * parent)
 
 void gt_btnmap_set_map(gt_obj_st* btnmap , gt_map_st* map , uint16_t map_type)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -503,7 +503,7 @@ void gt_btnmap_set_map(gt_obj_st* btnmap , gt_map_st* map , uint16_t map_type)
 
 uint16_t gt_btnmap_get_map_type(gt_obj_st* btnmap)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return 0;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -512,7 +512,7 @@ uint16_t gt_btnmap_get_map_type(gt_obj_st* btnmap)
 
 void gt_btnmap_set_input(gt_obj_st * btnmap, gt_obj_st * input)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     if (NULL == input) {
@@ -524,7 +524,7 @@ void gt_btnmap_set_input(gt_obj_st * btnmap, gt_obj_st * input)
 
 void gt_btnmap_set_radius(gt_obj_st* btnmap , uint8_t radius)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -534,7 +534,7 @@ void gt_btnmap_set_radius(gt_obj_st* btnmap , uint8_t radius)
 
 void gt_btnmap_set_btn_height(gt_obj_st* btnmap , uint16_t height)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -544,7 +544,7 @@ void gt_btnmap_set_btn_height(gt_obj_st* btnmap , uint16_t height)
 
 void gt_btnmap_set_btn_height_auto_fill(gt_obj_st* btnmap , bool auto_fill)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -554,7 +554,7 @@ void gt_btnmap_set_btn_height_auto_fill(gt_obj_st* btnmap , bool auto_fill)
 
 bool gt_btnmap_get_btn_height_auto_fill(gt_obj_st* btnmap)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return false;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -563,7 +563,7 @@ bool gt_btnmap_get_btn_height_auto_fill(gt_obj_st* btnmap)
 
 void gt_btnmap_set_btn_xy_space(gt_obj_st* btnmap , uint8_t x_space , uint8_t y_space)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -574,7 +574,7 @@ void gt_btnmap_set_btn_xy_space(gt_obj_st* btnmap , uint8_t x_space , uint8_t y_
 
 void gt_btnmap_set_color_background(gt_obj_st * btnmap, gt_color_t color)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st* style = (_gt_btnmap_st*)btnmap;
@@ -584,7 +584,7 @@ void gt_btnmap_set_color_background(gt_obj_st * btnmap, gt_color_t color)
 
 void gt_btnmap_set_border_width_and_color(gt_obj_st * btnmap, gt_size_t width , gt_color_t color)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st* style = (_gt_btnmap_st*)btnmap;
@@ -595,7 +595,7 @@ void gt_btnmap_set_border_width_and_color(gt_obj_st * btnmap, gt_size_t width , 
 
 void gt_btnmap_set_font_color(gt_obj_st * btnmap, gt_color_t color)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st* style = (_gt_btnmap_st*)btnmap;
@@ -605,7 +605,7 @@ void gt_btnmap_set_font_color(gt_obj_st * btnmap, gt_color_t color)
 
 void gt_btnmap_set_font_size(gt_obj_st * btnmap, uint8_t size)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -615,7 +615,7 @@ void gt_btnmap_set_font_size(gt_obj_st * btnmap, uint8_t size)
 
 void gt_btnmap_set_font_gray(gt_obj_st * btnmap, uint8_t gray)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -625,7 +625,7 @@ void gt_btnmap_set_font_gray(gt_obj_st * btnmap, uint8_t gray)
 
 void gt_btnmap_set_font_family_cn(gt_obj_st * btnmap, gt_family_t family)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -635,7 +635,7 @@ void gt_btnmap_set_font_family_cn(gt_obj_st * btnmap, gt_family_t family)
 
 void gt_btnmap_set_font_family_en(gt_obj_st * btnmap, gt_family_t family)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -645,7 +645,7 @@ void gt_btnmap_set_font_family_en(gt_obj_st * btnmap, gt_family_t family)
 
 void gt_btnmap_set_font_family_fl(gt_obj_st * btnmap, gt_family_t family)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -655,7 +655,7 @@ void gt_btnmap_set_font_family_fl(gt_obj_st * btnmap, gt_family_t family)
 
 void gt_btnmap_set_font_family_numb(gt_obj_st * btnmap, gt_family_t family)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -665,7 +665,7 @@ void gt_btnmap_set_font_family_numb(gt_obj_st * btnmap, gt_family_t family)
 
 void gt_btnmap_set_font_thick_en(gt_obj_st * btnmap, uint8_t thick)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -675,7 +675,7 @@ void gt_btnmap_set_font_thick_en(gt_obj_st * btnmap, uint8_t thick)
 
 void gt_btnmap_set_font_thick_cn(gt_obj_st * btnmap, uint8_t thick)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -683,10 +683,18 @@ void gt_btnmap_set_font_thick_cn(gt_obj_st * btnmap, uint8_t thick)
     gt_event_send(btnmap, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-//
+void gt_btnmap_set_font_encoding(gt_obj_st * btnmap, gt_encoding_et encoding)
+{
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
+        return;
+    }
+    _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
+    style->font_info.encoding = encoding;
+}
+
 void gt_btnmap_set_push_btn_kv_handler(gt_obj_st * btnmap , gt_btnmap_push_btn_kv_cb_t push_btn_kv_cb)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -695,7 +703,7 @@ void gt_btnmap_set_push_btn_kv_handler(gt_obj_st * btnmap , gt_btnmap_push_btn_k
 //
 void gt_btnmap_set_disp_special_btn_handler(gt_obj_st * btnmap , gt_btnmap_disp_special_btn_cb_t disp_special_btn_cb)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
@@ -703,7 +711,7 @@ void gt_btnmap_set_disp_special_btn_handler(gt_obj_st * btnmap , gt_btnmap_disp_
 }
 void gt_btnmap_set_special_btn_color_background(gt_obj_st * btnmap, gt_color_t color)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st* style = (_gt_btnmap_st*)btnmap;
@@ -713,7 +721,7 @@ void gt_btnmap_set_special_btn_color_background(gt_obj_st * btnmap, gt_color_t c
 
 void gt_btnmap_set_special_btn_border_width_and_color(gt_obj_st * btnmap, gt_size_t width , gt_color_t color)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st* style = (_gt_btnmap_st*)btnmap;
@@ -724,7 +732,7 @@ void gt_btnmap_set_special_btn_border_width_and_color(gt_obj_st * btnmap, gt_siz
 
 void gt_btnmap_set_special_btn_font_color(gt_obj_st * btnmap, gt_color_t color)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st* style = (_gt_btnmap_st*)btnmap;
@@ -734,7 +742,7 @@ void gt_btnmap_set_special_btn_font_color(gt_obj_st * btnmap, gt_color_t color)
 //
 void gt_btnmap_set_py_input_method(gt_obj_st * btnmap, gt_py_input_method_st* py_input_method)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st* style = (_gt_btnmap_st*)btnmap;
@@ -743,7 +751,7 @@ void gt_btnmap_set_py_input_method(gt_obj_st * btnmap, gt_py_input_method_st* py
 
 gt_py_input_method_st* gt_btnmap_get_py_input_method(gt_obj_st * btnmap)
 {
-    if (OBJ_TYPE != gt_obj_class_get_type(btnmap)) {
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return NULL;
     }
     _gt_btnmap_st* style = (_gt_btnmap_st*)btnmap;

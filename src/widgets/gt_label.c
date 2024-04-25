@@ -14,7 +14,6 @@
 #include "string.h"
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
-#include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
@@ -288,6 +287,15 @@ void gt_label_set_font_thick_cn(gt_obj_st * label, uint8_t thick)
     }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.thick_cn = thick;
+}
+
+void gt_label_set_font_encoding(gt_obj_st * label, gt_encoding_et encoding)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    style->font_info.encoding = encoding;
 }
 
 void gt_label_set_font_family_numb(gt_obj_st * label, gt_family_t family)

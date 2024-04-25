@@ -14,7 +14,6 @@
 #include "string.h"
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
-#include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
@@ -403,6 +402,7 @@ void gt_textarea_set_font_thick_en(gt_obj_st * textarea, uint8_t thick)
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.thick_en = thick;
 }
+
 void gt_textarea_set_font_thick_cn(gt_obj_st * textarea, uint8_t thick)
 {
     if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
@@ -410,5 +410,14 @@ void gt_textarea_set_font_thick_cn(gt_obj_st * textarea, uint8_t thick)
     }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.thick_cn = thick;
+}
+
+void gt_textarea_set_font_encoding(gt_obj_st * textarea, gt_encoding_et encoding)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    style->font_info.encoding = encoding;
 }
 /* end ------------------------------------------------------------------*/
