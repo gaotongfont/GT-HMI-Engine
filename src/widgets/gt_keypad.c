@@ -208,7 +208,7 @@ static uint8_t* _gt_spell_get_text(gt_py_input_method_st* py_input_mt,  uint8_t 
 
 static void _def_26_key_push_btn_kv_handler( gt_obj_st* obj,  gt_obj_st* input , const char* const kv)
 {
-    if(!obj || !input || !kv){
+    if(!obj || !kv){
         return ;
     }
     int idx = -1;

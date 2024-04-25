@@ -142,9 +142,7 @@ static void _event_cb(struct gt_obj_s *obj, struct _gt_event_s *e)
         break;
     case GT_EVENT_TYPE_INPUT_PRESSED:
         GT_LOGV(GT_LOG_TAG_GUI, "PRESSED");
-        if (gt_obj_check_scr(obj)) {
-            _gt_set_press_btn(obj);
-        }
+        _gt_set_press_btn(obj);
         break;
     case GT_EVENT_TYPE_DRAW_REDRAW: {
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -459,13 +457,11 @@ static void _gt_push_btn_kv(gt_obj_st* obj)
     _gt_btnmap_st * style = (_gt_btnmap_st * )obj;
     if(!style->press_btn) return ;
 
-    if(style->_input){
-        if(style->_push_btn_kv_cb){
-            style->_push_btn_kv_cb( obj, style->_input , style->press_btn);
-        }
-        else{
-            gt_input_append_value(style->_input , style->press_btn);
-        }
+    if(style->_push_btn_kv_cb){
+        style->_push_btn_kv_cb( obj, style->_input , style->press_btn);
+    }
+    else if(style->_input){
+        gt_input_append_value(style->_input , style->press_btn);
     }
 }
 
