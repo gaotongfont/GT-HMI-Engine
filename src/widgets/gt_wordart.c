@@ -103,24 +103,23 @@ static inline void _gt_wordart_init_widget(gt_obj_st * wordart)
     };
 
     uint32_t len = (NULL == style->text) ? 0 : strlen(style->text);
-    uint32_t idx = 0 , coding = 0 ;
+    uint32_t idx = 0, coding = 0;
     int tmp = 0;
 
-    for(idx = 0 ; idx < len ;){
-        tmp = _gt_utf8_to_unicode(&style->text[idx] , &coding);
-        if(0 == tmp){
+    while(idx < len) {
+        tmp = _gt_utf8_to_unicode((uint8_t * )&style->text[idx] , &coding);
+        if (0 == tmp) {
             return ;
         }
         idx += tmp;
 
         tmp = _gt_wordart_items_find(style , coding);
-        if(tmp < 0){
+        if (tmp < 0) {
             continue;
         }
 
         dsc.bg_img_src = style->items[tmp].img;
 
-        //
         draw_bg_img(wordart->draw_ctx, &dsc, &area);
         area.x += area.w + style->space_x;
     }

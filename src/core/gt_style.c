@@ -221,7 +221,7 @@ gt_visible_et gt_obj_get_visible(gt_obj_st * obj)
     if (NULL == obj) {
         return GT_INVISIBLE;
     }
-    return obj->visible;
+    return (gt_visible_et)obj->visible;
 }
 
 void gt_obj_set_disabled(gt_obj_st * obj, gt_disabled_et is_disabled)
@@ -340,7 +340,7 @@ void gt_obj_child_set_prop(gt_obj_st * obj, gt_obj_prop_type_em type, uint8_t va
         gt_obj_st * child = obj->child[i];
         switch (type) {
             case GT_OBJ_PROP_TYPE_VISIBLE: {
-                gt_obj_set_visible(child, val);
+                gt_obj_set_visible(child, (gt_visible_et)val);
                 break;
             }
             case GT_OBJ_PROP_TYPE_DELATE: {
@@ -352,7 +352,7 @@ void gt_obj_child_set_prop(gt_obj_st * obj, gt_obj_prop_type_em type, uint8_t va
                 break;
             }
             case GT_OBJ_PROP_TYPE_FOCUS_DISABLED: {
-                gt_obj_set_focus_disabled(child, val);
+                gt_obj_set_focus_disabled(child, (gt_disabled_et)val);
                 break;
             }
             case GT_OBJ_PROP_TYPE_DISABLED: {
@@ -402,7 +402,7 @@ gt_state_et gt_obj_get_state(gt_obj_st * obj)
     if (NULL == obj) {
         return GT_STATE_NONE;
     }
-    return obj->state;
+    return (gt_state_et)obj->state;
 }
 
 void gt_obj_set_fixed(gt_obj_st * obj, bool is_fixed)
@@ -514,7 +514,7 @@ gt_obj_trigger_mode_et gt_obj_get_trigger_mode(gt_obj_st * obj)
     if (NULL == obj) {
         return GT_OBJ_TRIGGER_MODE_HOLD_ON;
     }
-    return obj->trigger_mode;
+    return (gt_obj_trigger_mode_et)obj->trigger_mode;
 }
 
 void gt_obj_set_virtual(gt_obj_st * obj, bool is_virtual)
@@ -545,7 +545,7 @@ void gt_obj_set_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir)
 
 gt_scroll_dir_et gt_obj_get_scroll_dir(gt_obj_st * obj)
 {
-    return obj->scroll_dir;
+    return (gt_scroll_dir_et)obj->scroll_dir;
 }
 
 bool gt_obj_is_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir)
@@ -595,12 +595,12 @@ void gt_obj_set_scroll_snap_y(gt_obj_st * obj, gt_scroll_snap_em snap)
 
 gt_scroll_snap_em gt_obj_get_scroll_snap_x(gt_obj_st * obj)
 {
-    return obj->scroll_snap_x;
+    return (gt_scroll_snap_em)obj->scroll_snap_x;
 }
 
 gt_scroll_snap_em gt_obj_get_scroll_snap_y(gt_obj_st * obj)
 {
-    return obj->scroll_snap_y;
+    return (gt_scroll_snap_em)obj->scroll_snap_y;
 }
 
 bool _gt_obj_is_ignore_calc_max_area(gt_obj_st * obj)

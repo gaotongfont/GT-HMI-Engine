@@ -41,7 +41,6 @@ static const _gt_vf_type_label_st _drive_label[] = {
     { GT_FS_TYPE_FLASH, GT_FS_LABEL_FLASH },
 };
 
-static uint8_t file_occupied_count = 0;
 
 /* macros ---------------------------------------------------------------*/
 
@@ -55,8 +54,7 @@ static uint8_t file_occupied_count = 0;
  * @param index
  * @return gt_fs_type_et
  */
-static inline gt_fs_type_et _gt_fs_get_type(gt_size_t index)
-{
+static inline gt_fs_type_et _gt_fs_get_type(gt_size_t index) {
     return _drive_label[index].type;
 }
 
@@ -66,27 +64,8 @@ static inline gt_fs_type_et _gt_fs_get_type(gt_size_t index)
  * @param index
  * @return gt_fs_label_et
  */
-static inline gt_fs_label_et _gt_fs_get_label(gt_size_t index)
-{
+static inline gt_fs_label_et _gt_fs_get_label(gt_size_t index) {
     return _drive_label[index].label;
-}
-
-static inline void _gt_fs_file_occupied_increase(void)
-{
-    ++file_occupied_count;
-}
-
-static inline void _gt_fs_file_occupied_decrease(void)
-{
-    if (!file_occupied_count) {
-        return ;
-    }
-    --file_occupied_count;
-}
-
-static inline uint8_t _gt_fs_get_file_occupied_count(void)
-{
-    return file_occupied_count;
 }
 
 /**
@@ -96,8 +75,7 @@ static inline uint8_t _gt_fs_get_file_occupied_count(void)
  * @param path full path
  * @return gt_fs_drv_st* the driver of file system
  */
-static gt_fs_drv_st * gt_fs_get_default_drv(char const * path)
-{
+static gt_fs_drv_st * gt_fs_get_default_drv(char const * path) {
     gt_fs_type_et type = gt_fs_get_src_type(path);
     gt_fs_drv_st * drv = NULL;
 
@@ -161,8 +139,6 @@ gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode)
         return NULL;
     }
     gt_fs_fp_st * fp = drv->open_cb(drv, (char *)path, mode);
-
-    _gt_fs_file_occupied_increase();
 
     return fp;
 }

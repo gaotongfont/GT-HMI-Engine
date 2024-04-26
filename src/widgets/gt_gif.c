@@ -167,7 +167,7 @@ gt_obj_st * gt_gif_create(gt_obj_st * parent)
     _gt_gif_st * style = (_gt_gif_st * )obj;
 
     gt_obj_set_fixed(obj, true);
-    gt_obj_set_focus_disabled(obj, true);
+    gt_obj_set_focus_disabled(obj, GT_DISABLED);
     gt_obj_set_scroll_dir(obj, GT_SCROLL_DISABLE);
 
     style->timer = _gt_timer_create(_gif_next_frame_handler_cb, 10, obj);

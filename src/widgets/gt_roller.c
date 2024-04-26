@@ -585,7 +585,7 @@ bool gt_roller_get_selected_text(gt_obj_st * obj, char * result)
     _gt_roller_st * style = (_gt_roller_st * )obj;
     char * text = gt_label_get_text(style->text);
     uint16_t offset = 0;
-    uint16_t i = 0, len = strlen(text), count = 0, remark_idx = 0;
+    uint16_t i = 0, len = strlen(text), count = 0;
 
     for (i = 0; i < len; i++) {
         if ('\n' == text[i]) {
@@ -605,14 +605,16 @@ bool gt_roller_get_selected_text(gt_obj_st * obj, char * result)
     return offset ? true : false;
 }
 
-uint8_t gt_roller_go_prev(gt_obj_st * obj)
+uint16_t gt_roller_go_prev(gt_obj_st * obj)
 {
 	gt_roller_set_selected(obj, gt_roller_get_selected(obj) - 1);
+    return gt_roller_get_selected(obj);
 }
 
-uint8_t gt_roller_go_next(gt_obj_st * obj)
+uint16_t gt_roller_go_next(gt_obj_st * obj)
 {
     gt_roller_set_selected(obj, gt_roller_get_selected(obj) + 1);
+    return gt_roller_get_selected(obj);
 }
 
 uint8_t gt_roller_get_total_count(gt_obj_st * obj)

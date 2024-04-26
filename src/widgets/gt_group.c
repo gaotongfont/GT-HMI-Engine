@@ -106,7 +106,6 @@ gt_obj_st * gt_group_create(gt_obj_st * parent)
     if (NULL == obj) {
         return obj;
     }
-    _gt_group_st * style = (_gt_group_st * )obj;
 
     gt_obj_set_virtual(obj, true);
     _set_infinite_area(obj);

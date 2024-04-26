@@ -99,7 +99,6 @@ void gt_layout_row_grow(gt_obj_st * obj)
     if (0 == obj->cnt_child) {
         return ;
     }
-    gt_obj_st * child = NULL;
     gt_point_st offset = {
         .x =  obj->area.x,
         .y = obj->area.y

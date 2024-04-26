@@ -91,15 +91,6 @@ static void _gt_disp_set_state(gt_disp_st * disp, uint8_t state)
     disp->drv->busy = state;
 }
 
-static gt_obj_st * _get_scr_prev(void)
-{
-    gt_disp_st * disp = gt_disp_get_default();
-    if( NULL == disp ){
-        return NULL;
-    }
-    return disp->scr_prev;
-}
-
 /**
  * @brief foreach obj send draw start event
  *
@@ -498,10 +489,10 @@ static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
     bool is_cover = false;
 
     // 计算scr 在屏幕的显示区域
-    if (_is_anim_type_hor(param->disp->scr_anim_type)) {
+    if (_is_anim_type_hor((gt_scr_anim_type_et)param->disp->scr_anim_type)) {
         _adapt_area_flush_hor(param);
     }
-    if (_is_anim_type_ver(param->disp->scr_anim_type)) {
+    if (_is_anim_type_ver((gt_scr_anim_type_et)param->disp->scr_anim_type)) {
         _adapt_area_flush_ver(param);
     }
 

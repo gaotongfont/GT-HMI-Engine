@@ -105,7 +105,7 @@ static gt_obj_st * _search_not_fixed_by_parent_recursive(gt_obj_st * obj) {
 
 static gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
     struct _point * point_p = &indev->proc.data.point;
-    gt_dir_et ret = point_p->gesture;
+    gt_dir_et ret = (gt_dir_et)point_p->gesture;
     if (ret) {
         /** Locked the first direction */
         return ret;
@@ -135,7 +135,6 @@ static gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
 static bool _is_indev_home_gesture(gt_indev_st * indev , gt_event_type_et* event)
 {
     struct _point * point_p = &indev->proc.data.point;
-    gt_res_t ret = GT_RES_FAIL;
     point_p->gesture = _get_scroll_dir(indev);
 
     if((uint16_t)GT_DIR_NONE == point_p->gesture) {
@@ -298,7 +297,7 @@ static void _indev_scroll_handler(gt_indev_st * indev) {
         return ;
     }
 
-    if (_is_scroll_vertical(point_p->gesture)) {
+    if (_is_scroll_vertical((gt_dir_et)point_p->gesture)) {
         dy = point_p->scroll_diff.y;
         point_p->scroll_throw.x = 0;
         gt_obj_set_scroll_ud(point_p->obj_scroll, GT_DIR_DOWN == point_p->gesture ? true : false);

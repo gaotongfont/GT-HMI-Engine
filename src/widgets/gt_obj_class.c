@@ -38,10 +38,6 @@
 
 
 /* static functions -----------------------------------------------------*/
-static uint32_t get_instance_size(void) {
-    return sizeof(gt_obj_st);
-}
-
 static uint32_t get_style_size(const gt_obj_class_st * class) {
     return class->size_style;
 }
@@ -252,14 +248,14 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
     if ( parent && parent->class->type == class->type ){
         if (GT_TYPE_OBJ != class->type) {
             GT_LOGV(GT_LOG_TAG_GUI, "cannot create an object of the same type as the parent object onto the parent object");
-            goto null_lb;
+            return NULL;
         }
     }
 
     uint32_t is = get_style_size(class);
     gt_obj_st * obj = gt_mem_malloc(is);
     if (!obj) {
-        goto null_lb;
+        return NULL;
     }
     gt_memset_0(obj, is);
 
@@ -301,7 +297,6 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
 
 obj_lb:
     gt_mem_free(obj);
-null_lb:
     return NULL;
 }
 

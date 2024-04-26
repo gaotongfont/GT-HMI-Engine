@@ -38,7 +38,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _reg_s {
-    uint16_t mode             : 2;   /**  */
+    uint16_t mode             : 2;   /** @ref gt_clock_mode_et */
     uint16_t is_running       : 1;
     uint16_t is_12_mode       : 1;   /** 12hour mode, such as: 1: 00:25; 0: 13:25 */
     uint16_t is_full_day      : 1;   /** finish the day */
@@ -259,7 +259,6 @@ static void _deinit_cb(gt_obj_st * obj) {
 }
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    _gt_clock_st * style = (_gt_clock_st * )obj;
     gt_event_type_et code = gt_event_get_code(e);
     switch (code) {
         case GT_EVENT_TYPE_UPDATE_VALUE:
@@ -385,6 +384,7 @@ gt_obj_st * gt_clock_create(gt_obj_st * parent)
     _gt_clock_st * style = (_gt_clock_st * )obj;
 
     style->label = gt_label_create(obj);
+    gt_obj_set_inside(style->label, true);
     style->label->focus_dis = GT_DISABLED;
     gt_label_set_text(style->label , "");
     return obj;
@@ -515,7 +515,7 @@ gt_clock_mode_et gt_clock_get_mode(gt_obj_st * obj)
         return GT_CLOCK_MODE_TIME;
     }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
-    return clock->reg.mode;
+    return (gt_clock_mode_et)clock->reg.mode;
 }
 
 void gt_clock_set_12_hours_mode(gt_obj_st * obj, bool enabled)

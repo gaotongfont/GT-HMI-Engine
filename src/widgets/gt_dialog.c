@@ -92,7 +92,6 @@ static void _update_display_area(gt_obj_st * obj, gt_obj_st * top) {
 static void _init_cb(gt_obj_st * obj) {
     _gt_dialog_st * style = (_gt_dialog_st * )obj;
     gt_attr_rect_st rect_attr;
-    gt_area_st disp_area = obj->area;
 
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill   = true;
@@ -440,7 +439,6 @@ void gt_dialog_show(gt_obj_st * obj)
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;
     }
-    _gt_dialog_st * style = (_gt_dialog_st * )obj;
 
     _create_anim_handler(obj, true, GT_OPA_0, GT_OPA_100);
 }

@@ -147,6 +147,7 @@ static MEM_UNIT _malloc_count = 0;
 /* static functions -----------------------------------------------------*/
 
 
+#if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT
 static size_t _gt_block_size(void * ptr) {
     size_t size = 0;
 
@@ -160,6 +161,7 @@ static size_t _gt_block_size(void * ptr) {
 
     return size;
 }
+#endif
 
 /**
  * @brief 申请内存

@@ -593,7 +593,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
 static void _scrolling_handler(gt_obj_st * obj)
 {
-    _gt_keypad_st* style = (_gt_keypad_st*)obj;
     gt_size_t bottom = gt_obj_get_limit_bottom(obj);
 
     if (gt_obj_scroll_get_y(obj) > 0) {

@@ -553,6 +553,7 @@ static void _gt_redius_put_mask_buf(const gt_radius_mask_st *r_mask , uint8_t* m
     }
 }
 
+#if 0
 static bool _gt_draw_radius(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords) {
     if(NULL == draw_ctx || NULL == dsc || NULL == coords) return false;
 
@@ -676,6 +677,7 @@ radius_fail:
 
     return false;
 }
+#endif
 
 static bool _gt_radius_mask_init( gt_radius_mask_st*r_mask , const gt_area_st coords , uint16_t radius , bool outer) {
     if(!r_mask) return false;
@@ -757,14 +759,14 @@ static bool _gt_get_radius_mask_buf(gt_opa_t* mask_line , gt_size_t x , gt_size_
     x -= p->area.x;
     y -= p->area.y;
     //
-    gt_size_t aa_len , x_start , tmp_y;
+    gt_size_t aa_len, x_start, tmp_y;
     if (y < p->radius) {
-        tmp_y = p->radius - y - 1 ;
+        tmp_y = p->radius - y - 1;
     } else {
         tmp_y = y - (p->area.h - p->radius);
     }
     gt_opa_t tmp_opa;
-    gt_opa_t* aa_opa = _gt_get_next_line(p , tmp_y , &aa_len , &x_start);
+    gt_opa_t* aa_opa = _gt_get_next_line(p , tmp_y, &aa_len, &x_start);
     gt_size_t pos_x_right = k + p->area.w - p->radius + x_start;
     gt_size_t pos_x_left = k + p->radius - x_start - 1;
     gt_size_t i;
@@ -1726,7 +1728,6 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx, const gt_attr_font_st * dsc, cons
         .color_fill = dsc->font_color,
         .opa        = dsc->opa,
     };
-    gt_area_st area_font_style;
     gt_draw_blend_dsc_st blend_dsc_style = blend_dsc;
     blend_dsc_style.color_fill  = gt_color_black();
     blend_dsc_style.mask_buf    = mask_line;

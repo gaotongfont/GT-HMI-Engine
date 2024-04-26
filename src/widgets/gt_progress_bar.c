@@ -331,7 +331,7 @@ void gt_progress_bar_set_dir(gt_obj_st * progress_bar, gt_bar_dir_et dir)
 gt_bar_dir_et gt_progress_bar_get_dir(gt_obj_st * progress_bar)
 {
     if (false == gt_obj_is_type(progress_bar, OBJ_TYPE)) {
-        return 0;
+        return (gt_bar_dir_et)0;
     }
     _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
     return style->dir;

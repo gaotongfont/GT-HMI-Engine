@@ -37,16 +37,6 @@
 
 
 /* static functions -----------------------------------------------------*/
-static gt_obj_event_attr_st * gt_obj_get_event_attr(gt_obj_st * obj, uint8_t idx) {
-    if( 0 == obj->cnt_event ){
-        return NULL;
-    }
-    if( idx > obj->cnt_event ){
-        return NULL;
-    }
-    return &obj->event_attr[idx];
-}
-
 static void _gt_event_node_push(gt_event_st * e) {
     e->prev = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
     _GT_GC_GET_ROOT(_gt_event_node_header_ll) = e;

@@ -367,17 +367,12 @@ static gt_area_st _calc_repeat_mode_area(gt_obj_st * slider, gt_area_st const * 
     return repeat_area;
 }
 
-static inline void _gt_slider_init_widget(gt_obj_st * slider) {
-}
-
 /**
  * @brief obj init slider widget call back
  *
  * @param obj
  */
 static void _init_cb(gt_obj_st * obj) {
-
-    // _gt_slider_init_widget(obj);
     _gt_slider_st * style = (_gt_slider_st * )obj;
     gt_size_t dist_min = 0;
 
@@ -663,7 +658,7 @@ void gt_slider_set_dir(gt_obj_st * slider, gt_bar_dir_et dir)
 gt_bar_dir_et gt_slider_get_dir(gt_obj_st * slider)
 {
     if (false == gt_obj_is_type(slider, OBJ_TYPE)) {
-        return 0;
+        return (gt_bar_dir_et)0;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
     return style->dir;

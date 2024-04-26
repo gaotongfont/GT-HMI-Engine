@@ -38,7 +38,6 @@
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
 static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e);
 static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e);
 
@@ -140,7 +139,7 @@ static void _unmasked_effect_handler(gt_obj_st * obj) {
 static void _change_state_by_trigger_mode(gt_obj_st * obj, bool is_pressed) {
     if (gt_obj_get_trigger_mode(obj)) {
         if (false == is_pressed) {
-            gt_obj_set_state(obj, !gt_obj_get_state(obj));
+            gt_obj_set_state(obj, (gt_state_et)!gt_obj_get_state(obj));
         }
         return;
     }

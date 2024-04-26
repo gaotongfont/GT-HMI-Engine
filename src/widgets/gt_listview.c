@@ -218,7 +218,7 @@ static void _reset_last_active_state(gt_obj_st * listview, gt_obj_st * target) {
     if (gt_obj_get_trigger_mode(target)) {
         return;
     }
-    gt_obj_set_state(target, false);
+    gt_obj_set_state(target, GT_STATE_NONE);
     gt_disp_invalid_area(listview);
 }
 
@@ -234,7 +234,7 @@ static void _highlight_set_obj_active_state(gt_obj_st * listview) {
         return;
     }
     if (false == gt_obj_get_state(style->last_active)) {
-        gt_obj_set_state(style->last_active,  true);
+        gt_obj_set_state(style->last_active,  GT_STATE_PRESSED);
     }
 }
 
@@ -256,7 +256,7 @@ static void _reset_other_active_state(gt_obj_st * listview) {
         if (false == gt_obj_get_trigger_mode(item)) {
             continue;
         }
-        gt_obj_set_state(item, false);
+        gt_obj_set_state(item, GT_STATE_NONE);
     }
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -313,7 +313,7 @@ static void _set_label_prop_by_type(gt_obj_st * listview, _label_prop_em type, i
             } else if (_LABEL_FONT_GRAY == type) {
                 gt_label_set_font_gray(obj->child[item], val);
             } else if (_LABEL_FONT_ALIGN == type) {
-                gt_label_set_font_align(obj->child[item], val);
+                gt_label_set_font_align(obj->child[item], (gt_align_et)val);
             } else if (_LABEL_FONT_COLOR == type) {
                 gt_label_set_font_color(obj->child[item], gt_color_hex((uint32_t)val));
             } else if (_LABEL_FONT_CN == type) {
@@ -396,7 +396,7 @@ static gt_obj_st * _create_item_obj(gt_obj_st * listview) {
     gt_obj_set_mask_effect(obj, true);
     gt_obj_set_bubble_notify(obj, true);
     gt_obj_set_septal_line(obj, style->septal_line);
-    gt_obj_set_trigger_mode(obj, style->highlight);
+    gt_obj_set_trigger_mode(obj, (gt_obj_trigger_mode_et)style->highlight);
 
     gt_obj_set_bgcolor(obj, style->item_bg_color);
     gt_obj_show_bg(obj, style->item_show_bg);
@@ -433,7 +433,6 @@ static void _set_label_pos(gt_obj_st * lab, gt_obj_st * item, gt_size_t offset_x
  * @return gt_obj_st* icon object
  */
 static gt_obj_st * _create_item_icon(gt_obj_st * listview, gt_obj_st * obj, char * img) {
-    _gt_listview_st * style = (_gt_listview_st * )listview;
     gt_obj_st * icon = gt_img_create(obj);
 
     gt_img_set_src(icon, img);
@@ -744,7 +743,7 @@ void gt_listview_set_highlight_mode(gt_obj_st * listview, bool enabled)
         _reset_other_active_state(listview);
         gt_obj_set_state(_get_last_active_obj(listview), false);
     }
-    style->highlight = enabled;
+    style->highlight = enabled ? 1 : 0;
 
     for (gt_size_t i = 0, cnt = listview->cnt_child; i < cnt; i++) {
         gt_obj_set_trigger_mode(listview->child[i], style->highlight);
@@ -757,7 +756,7 @@ void gt_listview_set_multiple(gt_obj_st * listview, bool enabled)
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
-    style->multiple = enabled;
+    style->multiple = enabled ? 1 : 0;
 }
 
 void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, gt_size_t idx)
@@ -765,7 +764,6 @@ void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, gt_size_t idx)
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
-    _gt_listview_st * style = (_gt_listview_st * )listview;
     if (0 == listview->cnt_child) {
         return;
     }
@@ -781,7 +779,6 @@ void gt_listview_set_bg_color(gt_obj_st * listview, gt_color_t color)
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
-    _gt_listview_st * style = (_gt_listview_st * )listview;
     listview->bgcolor = color;
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -843,7 +840,6 @@ gt_size_t gt_listview_get_list_items_cnt(gt_obj_st * listview)
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return -1;
     }
-    _gt_listview_st * style = (_gt_listview_st * )listview;
     return listview->cnt_child;
 }
 

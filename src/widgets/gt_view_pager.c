@@ -90,7 +90,6 @@ const gt_obj_class_st _gt_view_pager_class = {
 /* static functions -----------------------------------------------------*/
 static void _draw_tip_bar(gt_obj_st * obj, gt_attr_rect_st * rect_attr) {
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
-    uint8_t idx = (uint8_t)style->reg.index;
     uint8_t count = style->reg.count;
     uint16_t total_width = count * _TIP_BAR_POINT_SELECT_WIDTH;
     uint8_t i = 0;

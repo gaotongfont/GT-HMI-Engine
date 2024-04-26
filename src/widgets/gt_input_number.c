@@ -91,8 +91,6 @@ static void _update_label_value(_gt_input_number_st * style) {
 
 static void _init_cb(gt_obj_st * obj)
 {
-    _gt_input_number_st * style = (_gt_input_number_st * )obj;
-
     // focus
     draw_focus(obj , 0);
 }

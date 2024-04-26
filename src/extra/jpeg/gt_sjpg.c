@@ -355,9 +355,8 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
     }
 
     /** common */
-    uint8_t color_depth = sizeof(gt_color_t);
     sjpg->sjpeg_cache_frame_index = -1;
-    sjpg->frame_cache = gt_mem_malloc(sjpg->sjpeg_x_res * sjpg->sjpeg_single_frame_height * color_depth);
+    sjpg->frame_cache = gt_mem_malloc(sjpg->sjpeg_x_res * sjpg->sjpeg_single_frame_height * sizeof(gt_color_t));
     if (NULL == sjpg->frame_cache) {
         goto err_lb;
     }

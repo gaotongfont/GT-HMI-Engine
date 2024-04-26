@@ -120,17 +120,17 @@ bool gt_roller_get_selected_text(gt_obj_st * obj, char * result);
  * @brief Go previous item
  *
  * @param obj Roller object
- * @return uint8_t The index of new item [begin with 0]
+ * @return uint16_t The index of new item [begin with 0]
  */
-uint8_t gt_roller_go_prev(gt_obj_st * obj);
+uint16_t gt_roller_go_prev(gt_obj_st * obj);
 
 /**
  * @brief Go next item
  *
  * @param obj Roller object
- * @return uint8_t The index of new item [begin with 0]
+ * @return uint16_t The index of new item [begin with 0]
  */
-uint8_t gt_roller_go_next(gt_obj_st * obj);
+uint16_t gt_roller_go_next(gt_obj_st * obj);
 
 /**
  * @brief Get the total count of the roller options
