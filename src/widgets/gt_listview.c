@@ -99,6 +99,7 @@ typedef enum {
     _LABEL_FONT_THICK_CN,
     _LABEL_FONT_THICK_EN,
     _LABEL_FONT_SPACE,
+    _LABEL_FONT_ENCODING,
 }_label_prop_em;
 
 typedef enum {
@@ -330,6 +331,8 @@ static void _set_label_prop_by_type(gt_obj_st * listview, _label_prop_em type, i
                 gt_label_set_font_thick_en(obj->child[item], val);
             } else if (_LABEL_FONT_SPACE == type) {
                 gt_label_set_space(obj->child[item], (val >> 8) & 0xff, val & 0xff);
+            } else if (_LABEL_FONT_ENCODING == type) {
+                gt_label_set_font_encoding(obj->child[item], (gt_encoding_et)val);
             }
         }
     }
@@ -466,6 +469,7 @@ static gt_obj_st * _create_item_label(gt_obj_st * listview, gt_obj_st * obj, cha
     gt_label_set_font_gray(lab, style->font_info.gray);
     gt_label_set_font_thick_cn(lab, style->font_info.thick_cn);
     gt_label_set_font_thick_en(lab, style->font_info.thick_en);
+    gt_label_set_font_encoding(lab, style->font_info.encoding);
     gt_label_set_space(lab, style->space_x, style->space_y);
     gt_label_set_text(lab, text);
     gt_obj_set_touch_parent(lab, true);
@@ -1001,6 +1005,7 @@ void gt_listview_set_font_thick_en(gt_obj_st * listview, uint8_t thick)
     style->font_info.thick_en = thick;
     _set_label_prop_by_type(listview, _LABEL_FONT_THICK_EN, thick);
 }
+
 void gt_listview_set_font_thick_cn(gt_obj_st * listview, uint8_t thick)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
@@ -1010,6 +1015,17 @@ void gt_listview_set_font_thick_cn(gt_obj_st * listview, uint8_t thick)
     style->font_info.thick_cn = thick;
     _set_label_prop_by_type(listview, _LABEL_FONT_THICK_CN, thick);
 }
+
+void gt_listview_set_font_font_encoding(gt_obj_st * listview, gt_encoding_et encoding)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->font_info.encoding = encoding;
+    _set_label_prop_by_type(listview, _LABEL_FONT_ENCODING, encoding);
+}
+
 void gt_listview_set_space(gt_obj_st * listview, uint8_t space_x, uint8_t space_y)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {

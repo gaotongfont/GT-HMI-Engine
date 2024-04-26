@@ -548,6 +548,10 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     scr->area.x = param->disp->area_act.x;
     scr->area.y = param->disp->area_act.y;
 
+    if (false == gt_area_is_intersect_screen(&scr->area, &param->area_flush)) {
+        return ;
+    }
+
     if(gt_disp_get_res_hor(NULL) == param->area_flush.w && gt_disp_get_res_ver(NULL) == param->area_flush.h){
         if(param->area_flush.x < 0 || (param->area_flush.x + param->area_flush.w > gt_disp_get_res_hor(NULL))){
             param->area_flush.x = 0;

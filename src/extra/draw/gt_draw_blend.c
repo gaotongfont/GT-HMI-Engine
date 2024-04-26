@@ -417,10 +417,9 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
     if (color_dst_p) { color_dst_p += idx_dst; }
     if (color_src_p) { color_src_p += idx_src; }
 
-    //
-    uint16_t count = 0 , tmp = 0;
-    uint8_t ch = 0 ;
-    int row , col;
+    uint16_t count = 0, tmp = 0;
+    gt_size_t row, col;
+    uint8_t ch = 0;
 
     if(2 == gray){
         for(col = 0 ; col < area_intersect.h ; col++){
