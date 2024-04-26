@@ -15,7 +15,6 @@
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
 #include "../core/gt_obj_scroll.h"
-#include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"

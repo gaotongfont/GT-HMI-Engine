@@ -17,6 +17,7 @@ extern "C" {
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "../core/gt_style.h"
+#include "../font/gt_font.h"
 
 /* define ---------------------------------------------------------------*/
 
