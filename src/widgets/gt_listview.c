@@ -1015,7 +1015,7 @@ void gt_listview_set_font_thick_cn(gt_obj_st * listview, uint8_t thick)
     _set_label_prop_by_type(listview, _LABEL_FONT_THICK_CN, thick);
 }
 
-void gt_listview_set_font_font_encoding(gt_obj_st * listview, gt_encoding_et encoding)
+void gt_listview_set_font_encoding(gt_obj_st * listview, gt_encoding_et encoding)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
