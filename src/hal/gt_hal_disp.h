@@ -46,9 +46,6 @@ typedef struct _gt_disp_drv_s
     uint16_t res_hor;   ///< horizontal resolution
     uint16_t res_ver;   ///< vertical resolution
 
-    gt_color_t bg_color;    ///< background color
-    gt_color_t fg_color;    ///< foreground color
-
     /**
      * @brief display flush callback
      * @param drv display driver

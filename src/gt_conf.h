@@ -99,8 +99,16 @@ extern "C" {
 
 #define GT_CFG_DEFAULT_BUTTON_
 
-#define GT_CFG_DEFAULT_KEYPAD_
-
+#ifndef GT_USE_EXTRA_FULL_IMG_BUFFER
+    /**
+     * @brief Set with the maximum width and height of the material,
+     *      read all the data of a single image material from flash at once.
+     *      If the storage space is less than the image data, default
+     *      use line fill mode. Default: 0.
+     * @see ./src/extra/gt_extra.c -> gt_gc_set_full_img_buffer()
+     */
+    #define GT_USE_EXTRA_FULL_IMG_BUFFER    0
+#endif
 
 /* default font style and size */
 #define GT_CFG_DEFAULT_FONT_FAMILY_CN       0xFFFE

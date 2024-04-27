@@ -23,11 +23,12 @@
 #include "gt_draw.h"
 #include "../others/gt_color.h"
 #include "../others/gt_area.h"
+#include "../others/gt_gc.h"
 #include "gt_fs.h"
 
 #include "../font/gt_symbol.h"
-
 #include "gt_img_decoder.h"
+
 /* private define -------------------------------------------------------*/
 
 
@@ -1054,6 +1055,65 @@ static void _filling_by_ram_data(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st 
     }
 }
 
+#if GT_USE_EXTRA_FULL_IMG_BUFFER
+static gt_res_t _filling_by_default_full_mode(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
+    uint32_t offset = 0;
+    uint32_t addr_start_alpha = 0;
+    uint16_t w, h, y = 0;
+    w = dsc_img->header.w;
+    h = dsc_img->header.h;
+    addr_start_alpha = w * h * sizeof(gt_color_t);
+
+    _gt_gc_full_img_buffer_st * full_img = _gt_gc_get_full_img_buffer();
+    if (NULL == full_img->color || NULL == full_img->alpha) {
+        GT_LOGV(GT_LOG_TAG_GUI, "Extra buffer color or alpha pointer is NULL");
+        return GT_RES_INV;
+    }
+
+    if (full_img->len_color < addr_start_alpha || full_img->len_alpha < w * h) {
+        GT_LOGV(GT_LOG_TAG_GUI, "Extra buffer color or alpha size is not enough to store image data");
+        return GT_RES_INV;
+    }
+
+    gt_fs_fp_st * fp = dsc_img->fp;
+    if (!fp) {
+        GT_LOGW(GT_LOG_TAG_GUI, "gt_fs_get_fp failed");
+        return GT_RES_FAIL;
+    }
+
+    gt_fs_read_img_offset(fp, (uint8_t *)full_img->color, offset, addr_start_alpha);
+
+    uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
+    if (is_mask) {    //png
+        gt_fs_read_img_offset(fp, (uint8_t *)full_img->alpha, addr_start_alpha, w * h);
+    }
+
+    while (y < h) {
+        /*read one line color data*/
+        blend_dsc->dst_buf = &full_img->color[offset];
+        if (is_mask) {
+            blend_dsc->mask_buf = &full_img->alpha[offset];
+        }
+        if (gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area)) {
+            /* blend to bg */
+            gt_draw_blend(draw_ctx, blend_dsc);
+        }
+        offset += w;
+
+        ++blend_dsc->dst_area->y;
+        ++blend_dsc->mask_area->y;
+        ++y;
+    }
+
+    if (is_mask) {
+        blend_dsc->mask_buf = NULL;
+    }
+line_lb:
+    blend_dsc->dst_buf = NULL;
+    return GT_RES_OK;
+}
+#endif
+
 /**
  * @brief GT-HMI Engine Image format
  *
@@ -1061,14 +1121,14 @@ static void _filling_by_ram_data(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st 
  * @param blend_dsc
  * @param dsc_img
  */
-static void _filling_by_default(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
+static void _filling_by_default_line_mode(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     uint32_t offset = 0, len = 0;
     uint32_t addr_start_alpha = 0;
-    uint8_t * mask_buf = NULL;
     uint16_t w, h, y = 0;
     w = dsc_img->header.w;
     h = dsc_img->header.h;
-    addr_start_alpha = w * h * sizeof(gt_color_t);
+    len = w * sizeof(gt_color_t);
+    addr_start_alpha = len * h;
 
     gt_fs_fp_st * fp = dsc_img->fp;
     if (!fp) {
@@ -1076,7 +1136,6 @@ static void _filling_by_default(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st *
         return;
     }
 
-    len = w * sizeof(gt_color_t);
     blend_dsc->dst_buf = gt_mem_malloc( len );
     if (!blend_dsc->dst_buf) {
         GT_LOGW(GT_LOG_TAG_GUI, "Per-line buffer malloc failed");
@@ -1113,12 +1172,20 @@ static void _filling_by_default(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st *
         gt_mem_free(blend_dsc->mask_buf);
         blend_dsc->mask_buf = NULL;
     }
-
 line_lb:
     if (blend_dsc->dst_buf) {
         gt_mem_free(blend_dsc->dst_buf);
         blend_dsc->dst_buf = NULL;
     }
+}
+
+static inline void _filling_by_default(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
+#if GT_USE_EXTRA_FULL_IMG_BUFFER
+    if (GT_RES_OK == _filling_by_default_full_mode(draw_ctx, blend_dsc, dsc_img)) {
+        return;
+    }
+#endif
+    _filling_by_default_line_mode(draw_ctx, blend_dsc, dsc_img);
 }
 
 static inline gt_size_t _get_align_start_x(gt_align_et align, gt_size_t x, uint16_t width) {

@@ -26,6 +26,14 @@ gt_gc_st _gt_global_call = {
             .alive = false,
         }
     },
+#if GT_USE_EXTRA_FULL_IMG_BUFFER
+    .full_img_buffer = {
+        .color = NULL,
+        .alpha = NULL,
+        .len_color = 0,
+        .len_alpha = 0,
+    },
+#endif
 };
 
 /* static variables -----------------------------------------------------*/
@@ -65,5 +73,20 @@ uint16_t _gt_gc_get_size(void)
 {
     return sizeof(gt_gc_st);
 }
+
+#if GT_USE_EXTRA_FULL_IMG_BUFFER
+void gt_gc_set_full_img_buffer(gt_color_t * color, uint32_t len_color, gt_opa_t * alpha, uint32_t len_alpha)
+{
+    _gt_global_call.full_img_buffer.color = color;
+    _gt_global_call.full_img_buffer.len_color = len_color;
+    _gt_global_call.full_img_buffer.alpha = alpha;
+    _gt_global_call.full_img_buffer.len_alpha = len_alpha;
+}
+
+_gt_gc_full_img_buffer_st * _gt_gc_get_full_img_buffer(void)
+{
+    return &_gt_global_call.full_img_buffer;
+}
+#endif
 
 /* end ------------------------------------------------------------------*/

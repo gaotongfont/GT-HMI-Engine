@@ -17,10 +17,23 @@ extern "C" {
 #include "gt_ll.h"
 #include "../core/gt_timer.h"
 #include "../others/gt_list.h"
+#include "../others/gt_color.h"
 #include "../hal/gt_hal_disp.h"
 #include "../core/gt_disp.h"
 
 /* define ---------------------------------------------------------------*/
+
+#if GT_USE_EXTRA_FULL_IMG_BUFFER
+/**
+ * @brief Malloc or free by user.
+ */
+typedef struct _gt_gc_full_img_buffer_s {
+    gt_color_t * color;     /** recommended to size more than [width * height * sizeof(gt_color_t)] byte */
+    gt_opa_t * alpha;       /** recommended to size more than [width * height] byte */
+    uint32_t len_color;
+    uint32_t len_alpha;
+}_gt_gc_full_img_buffer_st;
+#endif
 
 typedef struct gt_gc_s {
     struct _gt_list_head _gt_anim_ll;
@@ -30,6 +43,10 @@ typedef struct gt_gc_s {
 
     gt_disp_st * disp;
     _gt_gc_scr_st scr_info;
+
+#if GT_USE_EXTRA_FULL_IMG_BUFFER
+    _gt_gc_full_img_buffer_st full_img_buffer;
+#endif
 }gt_gc_st;
 
 extern gt_gc_st _gt_global_call;
@@ -59,6 +76,22 @@ void _gt_gc_set_disp(gt_disp_st * disp);
 _gt_gc_scr_st * _gt_gc_get_scr_info(void);
 
 uint16_t _gt_gc_get_size(void);
+
+#if GT_USE_EXTRA_FULL_IMG_BUFFER
+/**
+ * @brief Set external full image buffer, this buffer will be used by img reading
+ *      from flash or SD nand flash, etc. Set with the maximum width and height of
+ *      the material.
+ *
+ * @param color color 8 / 565 / 888 buffer
+ * @param len_color byte, must be equal or more than [width * height * sizeof(gt_color_t)]
+ * @param alpha alpha or opa buffer
+ * @param len_alpha byte, must be equal more than [width * height]
+ */
+void gt_gc_set_full_img_buffer(gt_color_t * color, uint32_t len_color, gt_opa_t * alpha, uint32_t len_alpha);
+
+_gt_gc_full_img_buffer_st * _gt_gc_get_full_img_buffer(void);
+#endif
 
 #ifdef __cplusplus
 } /*extern "C"*/
