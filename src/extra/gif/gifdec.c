@@ -536,7 +536,7 @@ render_frame_rect(gd_GIF *gif, uint8_t *buffer, uint8_t * mask)
     for (j = 0; j < gif->fh; j++) {
         for (k = 0; k < gif->fw; k++) {
             index = gif->frame[(gif->fy + j) * gif->width + gif->fx + k];
-            color = &gif->palette->colors[index*3];
+            color = &gif->palette->colors[index * 3];
             if (!gif->gce.transparency || index != gif->gce.tindex) {
 #if GT_COLOR_DEPTH == 32
             cnt = (i + k) * 3;
@@ -574,10 +574,10 @@ dispose(gd_GIF *gif)
     int i, j, k;
     uint8_t *bgcolor;
     uint32_t cnt = 0;
-    uint8_t opa = 0xff;
+    uint8_t opa = GT_OPA_100;
     gt_color_t color;
 
-    if(gif->gce.transparency) opa = 0x00;
+    if(gif->gce.transparency) opa = GT_OPA_0;
 
     switch (gif->gce.disposal) {
     case 2: /* Restore to background color. */
@@ -618,6 +618,7 @@ dispose(gd_GIF *gif)
     default:
         /* Add frame non-transparent pixels to canvas. */
         render_frame_rect(gif, gif->canvas, gif->mask);
+        break;
     }
 }
 

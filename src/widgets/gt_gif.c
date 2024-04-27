@@ -259,6 +259,9 @@ void gt_gif_play(gt_obj_st * obj)
         return ;
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;
+    if (NULL == style->gif) {
+        return ;
+    }
     _gt_timer_set_paused(style->timer, false);
 }
 
@@ -268,6 +271,9 @@ void gt_gif_stop(gt_obj_st * obj)
         return ;
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;
+    if (NULL == style->gif) {
+        return ;
+    }
     _gt_timer_set_paused(style->timer, true);
 }
 
@@ -277,6 +283,9 @@ void gt_gif_toggle(gt_obj_st * obj)
         return ;
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;
+    if (NULL == style->gif) {
+        return ;
+    }
     _gt_timer_set_paused(style->timer, !_gt_timer_get_paused(style->timer));
 }
 
@@ -295,6 +304,9 @@ void gt_gif_reset(gt_obj_st * obj)
         return ;
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;
+    if (NULL == style->gif) {
+        return ;
+    }
     gd_rewind(style->gif);
 }
 
