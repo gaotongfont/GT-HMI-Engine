@@ -160,7 +160,7 @@ gt_scr_id_t gt_scr_stack_get_prev_id(void);
 /**
  * @brief Get the previous screen id by step
  *
- * @param step > 0: valid step, < 0: invalid step
+ * @param step >= 0: valid step, < 0: invalid step
  * @return gt_scr_id_t screen id
  */
 gt_scr_id_t gt_scr_stack_get_prev_id_by(gt_stack_size_t step);
@@ -168,7 +168,7 @@ gt_scr_id_t gt_scr_stack_get_prev_id_by(gt_stack_size_t step);
 /**
  * @brief Get the previous screen object by step
  *
- * @param step > 0: valid step, < 0: invalid step
+ * @param step >= 0: valid step, < 0: invalid step
  * @return gt_obj_st* screen object
  */
 gt_obj_st * gt_scr_stack_get_prev_scr_by(gt_stack_size_t step);
