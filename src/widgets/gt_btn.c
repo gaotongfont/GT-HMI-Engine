@@ -127,16 +127,6 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
         .align          = style->font_align,
         .opa            = btn->opa,
     };
-    // if (gt_obj_get_state(btn)) {
-    //     gt_color_t mask_color = gt_color_dark_gray();
-    //     gt_opa_t mask_opa = 0x40;
-
-    //     if (gt_color_brightness(style->font_color) < 128) {
-    //         mask_color = gt_color_bright_gray();
-    //         mask_opa   = 0xC0;
-    //     }
-    //     font_attr.font_color = gt_color_mix(style->font_color, mask_color, mask_opa);
-    // }
 
     if( gt_obj_get_state(btn) != GT_STATE_NONE ){
         font_attr.font_color = style->font_color_pressed;
