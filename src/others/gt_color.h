@@ -272,6 +272,15 @@ enum {
 #define GT_COLOR_MIX_ROUND_OFS (GT_COLOR_DEPTH == 32 ? 0: 128)
 
 /* typedef --------------------------------------------------------------*/
+
+#if GT_COLOR_DEPTH == 1 || GT_COLOR_DEPTH == 8
+typedef uint8_t gt_color_val_t;
+#elif GT_COLOR_DEPTH == 16
+typedef uint16_t gt_color_val_t;
+#elif GT_COLOR_DEPTH == 32
+typedef uint32_t gt_color_val_t;
+#endif
+
 typedef union {
     uint8_t full; /*must be declared first to set all bits of byte via initializer list*/
     union {
@@ -325,18 +334,34 @@ typedef uint8_t gt_opa_t;
 /* macros ---------------------------------------------------------------*/
 
 /* static functions / API inteface-------------------------------------- */
-static inline gt_color_t gt_color_make(uint8_t r, uint8_t g, uint8_t b)
-{
+static inline gt_color_t gt_color_make(uint8_t r, uint8_t g, uint8_t b) {
     return (gt_color_t)GT_COLOR_MAKE(r, g, b);
 }
 
-static inline gt_color_t gt_color_hex(uint32_t c)
-{
+/**
+ * @brief
+ *
+ * @param c Must be 24bit RGB888
+ * @return gt_color_t
+ */
+static inline gt_color_t gt_color_hex(uint32_t c) {
     return gt_color_make((uint8_t)((c >> 16) & 0xFF), (uint8_t)((c >> 8) & 0xFF), (uint8_t)(c & 0xFF));
 }
 
-static inline uint32_t gt_color_to32(gt_color_t color)
-{
+/**
+ * @brief
+ *
+ * @param hex_val According to the GT_COLOR_DEPTH width
+ * @return gt_color_t
+ */
+static inline gt_color_t gt_color_set(gt_color_val_t hex_val) {
+    gt_color_t ret = {
+        .full = hex_val,
+    }
+    return ret;
+}
+
+static inline uint32_t gt_color_to32(gt_color_t color) {
 #if GT_COLOR_DEPTH == 1
     if(color.full == 0)
         return 0xFF000000;
