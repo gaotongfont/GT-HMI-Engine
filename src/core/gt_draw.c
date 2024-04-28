@@ -1058,19 +1058,19 @@ static void _filling_by_ram_data(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st 
 #if GT_USE_EXTRA_FULL_IMG_BUFFER
 static gt_res_t _filling_by_default_full_mode(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     uint32_t offset = 0;
-    uint32_t addr_start_alpha = 0;
+    uint32_t len = 0, addr_start_alpha = 0;
     uint16_t w, h, y = 0;
     w = dsc_img->header.w;
     h = dsc_img->header.h;
-    addr_start_alpha = w * h * sizeof(gt_color_t);
+    len = w * h;
+    addr_start_alpha = len * sizeof(gt_color_t);
 
     _gt_gc_full_img_buffer_st * full_img = _gt_gc_get_full_img_buffer();
-    if (NULL == full_img->color || NULL == full_img->alpha) {
+    if (NULL == full_img->buffer) {
         GT_LOGV(GT_LOG_TAG_GUI, "Extra buffer color or alpha pointer is NULL");
         return GT_RES_INV;
     }
-
-    if (full_img->len_color < addr_start_alpha || full_img->len_alpha < w * h) {
+    if (full_img->len < len + addr_start_alpha) {
         GT_LOGV(GT_LOG_TAG_GUI, "Extra buffer color or alpha size is not enough to store image data");
         return GT_RES_INV;
     }
@@ -1081,24 +1081,24 @@ static gt_res_t _filling_by_default_full_mode(gt_draw_ctx_t * draw_ctx, gt_draw_
         return GT_RES_FAIL;
     }
 
-    gt_fs_read_img_offset(fp, (uint8_t *)full_img->color, offset, addr_start_alpha);
-
+    gt_color_t * buffer_p = (gt_color_t * )full_img->buffer;
+    gt_opa_t * opa_p = (gt_opa_t * )&full_img->buffer[addr_start_alpha];
     uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
-    if (is_mask) {    //png
-        gt_fs_read_img_offset(fp, (uint8_t *)full_img->alpha, addr_start_alpha, w * h);
-    }
+
+    gt_fs_read_img_offset(fp, (uint8_t *)full_img->buffer, 0, (is_mask ? len : 0) + addr_start_alpha);
 
     while (y < h) {
         /*read one line color data*/
-        blend_dsc->dst_buf = &full_img->color[offset];
+        blend_dsc->dst_buf = buffer_p;
         if (is_mask) {
-            blend_dsc->mask_buf = &full_img->alpha[offset];
+            blend_dsc->mask_buf = opa_p;
         }
         if (gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area)) {
             /* blend to bg */
             gt_draw_blend(draw_ctx, blend_dsc);
         }
-        offset += w;
+        buffer_p += w;
+        opa_p += w;
 
         ++blend_dsc->dst_area->y;
         ++blend_dsc->mask_area->y;

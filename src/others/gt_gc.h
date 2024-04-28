@@ -28,10 +28,8 @@ extern "C" {
  * @brief Malloc or free by user.
  */
 typedef struct _gt_gc_full_img_buffer_s {
-    gt_color_t * color;     /** recommended to size more than [width * height * sizeof(gt_color_t)] byte */
-    gt_opa_t * alpha;       /** recommended to size more than [width * height] byte */
-    uint32_t len_color;
-    uint32_t len_alpha;
+    uint8_t * buffer;
+    uint32_t len;
 }_gt_gc_full_img_buffer_st;
 #endif
 
@@ -83,12 +81,11 @@ uint16_t _gt_gc_get_size(void);
  *      from flash or SD nand flash, etc. Set with the maximum width and height of
  *      the material.
  *
- * @param color color 8 / 565 / 888 buffer
- * @param len_color byte, must be equal or more than [width * height * sizeof(gt_color_t)]
- * @param alpha alpha or opa buffer
- * @param len_alpha byte, must be equal more than [width * height]
+ * @param buffer color 8 / 565 / 888 buffer, byte
+ * @param len buffer length, must be equal or more than
+ *          [max_width * max_height * (sizeof(gt_opa_t) + sizeof(gt_color_t))].
  */
-void gt_gc_set_full_img_buffer(gt_color_t * color, uint32_t len_color, gt_opa_t * alpha, uint32_t len_alpha);
+void gt_gc_set_full_img_buffer(uint8_t * buffer, uint32_t len);
 
 _gt_gc_full_img_buffer_st * _gt_gc_get_full_img_buffer(void);
 #endif

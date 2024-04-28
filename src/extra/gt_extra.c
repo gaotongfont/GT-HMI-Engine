@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_extra.h"
+#include "stddef.h"
 #include "../others/gt_gc.h"
 
 #if GT_USE_PNG
@@ -51,7 +52,7 @@
 void _gt_extra_init(void)
 {
 #if GT_USE_EXTRA_FULL_IMG_BUFFER
-    gt_gc_set_full_img_buffer(NULL, 0, NULL, 0);
+    gt_gc_set_full_img_buffer(NULL, 0);
 #endif
 
 #if GT_USE_PNG
