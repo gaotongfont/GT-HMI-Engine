@@ -357,7 +357,7 @@ static inline gt_color_t gt_color_hex(uint32_t c) {
 static inline gt_color_t gt_color_set(gt_color_val_t hex_val) {
     gt_color_t ret = {
         .full = hex_val,
-    }
+    };
     return ret;
 }
 
