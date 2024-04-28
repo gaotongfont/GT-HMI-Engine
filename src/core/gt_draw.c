@@ -1065,25 +1065,25 @@ static gt_res_t _filling_by_default_full_mode(gt_draw_ctx_t * draw_ctx, gt_draw_
     len = w * h;
     addr_start_alpha = len * sizeof(gt_color_t);
 
-    _gt_gc_full_img_buffer_st * full_img = _gt_gc_get_full_img_buffer();
-    if (NULL == full_img->buffer) {
-        GT_LOGV(GT_LOG_TAG_GUI, "Extra buffer color or alpha pointer is NULL");
-        return GT_RES_INV;
-    }
-    if (full_img->len < len + addr_start_alpha) {
-        GT_LOGV(GT_LOG_TAG_GUI, "Extra buffer color or alpha size is not enough to store image data");
-        return GT_RES_INV;
-    }
-
     gt_fs_fp_st * fp = dsc_img->fp;
+    uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
     if (!fp) {
         GT_LOGW(GT_LOG_TAG_GUI, "gt_fs_get_fp failed");
         return GT_RES_FAIL;
     }
 
+    _gt_gc_full_img_buffer_st * full_img = _gt_gc_get_full_img_buffer();
+    if (NULL == full_img->buffer) {
+        GT_LOGV(GT_LOG_TAG_GUI, "Extra buffer color or alpha pointer is NULL");
+        return GT_RES_INV;
+    }
+    if (full_img->len < (is_mask ? len : 0) + addr_start_alpha) {
+        GT_LOGV(GT_LOG_TAG_GUI, "Extra buffer color or alpha size is not enough to store image data");
+        return GT_RES_INV;
+    }
+
     gt_color_t * buffer_p = (gt_color_t * )full_img->buffer;
     gt_opa_t * opa_p = (gt_opa_t * )&full_img->buffer[addr_start_alpha];
-    uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
 
     gt_fs_read_img_offset(fp, (uint8_t *)full_img->buffer, 0, (is_mask ? len : 0) + addr_start_alpha);
 
