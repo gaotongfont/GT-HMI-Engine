@@ -121,13 +121,22 @@ static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * dat
         return GT_FS_RES_NULL;
     }
     uint32_t addr = vfp->pos + _vf_dev->addr_start;
-    uint8_t data_write[4] = {0x03, (uint8_t)(addr>>16), (uint8_t)(addr>>8), (uint8_t)addr };
+    uint8_t data_write[5] = {0x03, (uint8_t)(addr>>16), (uint8_t)(addr>>8), (uint8_t)addr };
+    uint8_t len_write = 4;
+
+    if (addr > 0xffffff) {
+        data_write[1] = (uint8_t)(addr >> 24);
+        data_write[2] = (uint8_t)(addr >> 16);
+        data_write[3] = (uint8_t)(addr >> 8);
+        data_write[4] = (uint8_t)addr;
+        ++len_write;
+    }
 
     /* set state busy */
     _state = GT_FS_RES_BUSY;
 
     /* start read */
-    *ret_len = drv->rw_cb(data_write, 4, data, len);
+    *ret_len = drv->rw_cb(data_write, len_write, data, len);
     drv->seek_cb(drv, vfp, len, GT_FS_SEEK_CUR);
 
     /* set state ready */
