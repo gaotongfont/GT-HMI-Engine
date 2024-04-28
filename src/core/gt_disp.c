@@ -513,6 +513,7 @@ static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
             _adjust_clip_area_and_flush(param, scr);
         }
 
+#if GT_USE_LAYER_TOP
         // flush top layer
         is_cover = gt_area_cover_screen(&param->area_flush, &param->disp->layer_top->area, &param->valid.area_clip);
         if (is_cover) {
@@ -525,6 +526,7 @@ static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
             _gt_disp_check_and_copy_foreach(param->disp->layer_top, param);
             param->valid.layer_top = false;
         }
+#endif
 
         /** flush display by buffer area */
         param->disp->drv->flush_cb(param->disp->drv, &param->area_flush, param->disp->vbd_color);
@@ -675,10 +677,12 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
 
         _gt_disp_check_and_copy_foreach(scr, param);
 
+#if GT_USE_LAYER_TOP
         // flush top layer
         param->disp->area_disp.x = param->area_flush.x;
         param->disp->area_disp.y = param->area_flush.y;
         _gt_disp_check_and_copy_foreach(param->disp->layer_top, param);
+#endif
 
         /** flush display by buffer area */
         param->disp->drv->flush_cb(param->disp->drv, &param->area_flush, param->disp->vbd_color);
@@ -1033,6 +1037,7 @@ gt_obj_st * gt_disp_get_scr(void)
     return disp->scr_act;
 }
 
+#if GT_USE_LAYER_TOP
 gt_obj_st * gt_disp_get_layer_top(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
@@ -1041,6 +1046,7 @@ gt_obj_st * gt_disp_get_layer_top(void)
     }
     return disp->layer_top;
 }
+#endif
 
 void gt_disp_ref_area(const gt_area_st * coords)
 {
@@ -1147,6 +1153,7 @@ void gt_disp_invalid_area(gt_obj_st * obj)
         obj->area.h = gt_disp_get_res_ver(NULL);
     }
     gt_area_st invalid = obj->area;
+#if GT_USE_LAYER_TOP
     gt_obj_st * top = gt_disp_get_layer_top();
 
     if (top && gt_obj_is_child(obj, top)) {
@@ -1156,6 +1163,11 @@ void gt_disp_invalid_area(gt_obj_st * obj)
     else if( !gt_obj_check_scr(obj)){
         return;
     }
+#else
+    if( !gt_obj_check_scr(obj)){
+        return;
+    }
+#endif
     _gt_disp_refr_append_area(&invalid);
 }
 

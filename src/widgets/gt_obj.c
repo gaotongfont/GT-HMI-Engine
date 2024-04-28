@@ -300,12 +300,14 @@ gt_obj_st * gt_obj_find_by_id(gt_id_t widget_id)
 
     gt_size_t i = 0, cnt = disp->cnt_scr;
 
+#if GT_USE_LAYER_TOP
     if (disp->layer_top && disp->layer_top->cnt_child) {
         target = _find_obj_recursive_by_id(disp->layer_top, widget_id);
         if (target) {
             return target;
         }
     }
+#endif
 
     for (; i < cnt; i++) {
         target = _find_obj_recursive_by_id(disp->screens[i], widget_id);

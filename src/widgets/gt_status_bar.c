@@ -10,7 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "./gt_status_bar.h"
 
-#if GT_CFG_ENABLE_STATUS_BAR
+#if GT_USE_LAYER_TOP && GT_CFG_ENABLE_STATUS_BAR
 #include "stddef.h"
 #include "string.h"
 #include "../others/gt_types.h"
@@ -758,6 +758,6 @@ void gt_status_bar_set_font_thick_en(uint8_t thick)
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-#endif  /** GT_CFG_ENABLE_STATUS_BAR */
+#endif  /** GT_USE_LAYER_TOP && GT_CFG_ENABLE_STATUS_BAR */
 
 /* end ------------------------------------------------------------------*/

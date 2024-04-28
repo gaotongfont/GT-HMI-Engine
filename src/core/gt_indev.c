@@ -362,8 +362,9 @@ static bool _obj_outside_can_not_be_activated(void) {
  */
 static gt_obj_st * _search_active_obj_from_all_layers(gt_point_st * point, bool new_action) {
     gt_obj_st * scr = gt_disp_get_scr();
-    gt_obj_st * layer_top = gt_disp_get_layer_top();
     gt_obj_st * ret = NULL;
+#if GT_USE_LAYER_TOP
+    gt_obj_st * layer_top = gt_disp_get_layer_top();
 
     if (layer_top->cnt_child) {
         ret = gt_find_clicked_obj_by_point(layer_top, point);
@@ -375,6 +376,7 @@ static gt_obj_st * _search_active_obj_from_all_layers(gt_point_st * point, bool 
             }
         }
     }
+#endif
     if (NULL == ret) {
         /** Layer top have no widget find out, search it within screen */
         ret = gt_find_clicked_obj_by_point(scr, point);

@@ -97,7 +97,15 @@ extern "C" {
 
 #define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL_INVALID   80
 
-#define GT_CFG_DEFAULT_BUTTON_
+#ifndef GT_USE_LAYER_TOP
+    /**
+     * @brief Can be used to set the top layer, the top layer
+     *      is always displayed on the screen.
+     *      Such as: dialog, pop-up window, status bar, etc.
+     *      [Default: 1]
+     */
+    #define GT_USE_LAYER_TOP    01
+#endif
 
 #ifndef GT_USE_EXTRA_FULL_IMG_BUFFER
     /**

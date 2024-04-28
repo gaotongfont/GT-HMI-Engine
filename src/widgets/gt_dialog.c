@@ -10,7 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "./gt_dialog.h"
 
-#if GT_CFG_ENABLE_DIALOG
+#if GT_USE_LAYER_TOP && GT_CFG_ENABLE_DIALOG
 #include "../hal/gt_hal_disp.h"
 #include "../core/gt_obj_pos.h"
 #include "../core/gt_graph_base.h"
@@ -700,5 +700,5 @@ void gt_dialog_set_content_font_thick_cn(gt_obj_st * dialog, uint8_t thick)
     gt_label_set_font_thick_cn(style->content, thick);
 }
 
-#endif  /** GT_CFG_ENABLE_DIALOG */
+#endif  /** GT_USE_LAYER_TOP && GT_CFG_ENABLE_DIALOG */
 /* end ------------------------------------------------------------------*/

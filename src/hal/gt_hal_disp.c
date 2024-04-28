@@ -79,6 +79,7 @@ static gt_disp_st * _gt_disp_create(gt_disp_drv_st * drv) {
 
     _gt_gc_set_disp(ret);
 
+#if GT_USE_LAYER_TOP
     ret->layer_top = gt_obj_class_create(MY_CLASS, NULL);
     if (NULL == ret->layer_top) {
         GT_LOGE(GT_LOG_TAG_GUI, "Layer top create failed");
@@ -86,6 +87,7 @@ static gt_disp_st * _gt_disp_create(gt_disp_drv_st * drv) {
     }
     gt_screen_set_bgcolor(ret->layer_top, gt_color_hex(0x000000));
     gt_obj_set_virtual(ret->layer_top, true);
+#endif
 
     return ret;
 }
