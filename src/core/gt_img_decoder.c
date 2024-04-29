@@ -79,7 +79,6 @@ static gt_res_t _gt_img_decoder_built_in_open(struct _gt_img_decoder_s * decoder
 static gt_res_t _gt_img_decoder_built_in_read_line(struct _gt_img_dsc_s * dsc,
                                                 gt_size_t x, gt_size_t y, gt_size_t len, uint8_t * buffer)
 {
-    // gt_fs_fp_st * fp = gt_fs_get_fp();
     gt_fs_fp_st * fp = dsc->fp;
     if (!fp) {
         return GT_RES_INV;

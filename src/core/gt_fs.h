@@ -45,13 +45,6 @@ const char * gt_fs_get_ext(const char * path);
 gt_fs_type_et gt_fs_get_src_type(const void * src);
 
 /**
- * @brief Get the virtual file operation pointer
- *
- * @return gt_fs_fp_st* The virtual file pointer
- */
-gt_fs_fp_st * gt_fs_get_fp(void);
-
-/**
  * @brief Try to identify the file and driver and open the file
  *
  * @param path The full path of file , see port file lists
