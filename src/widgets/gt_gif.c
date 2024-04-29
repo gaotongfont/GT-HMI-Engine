@@ -72,7 +72,7 @@ static void _init_cb(gt_obj_st * obj) {
         .bg_img_src = NULL,
         .ram_img = &style->dsc,
     };
-    if (NULL == dsc.ram_img->fp) {
+    if (NULL == style->gif) {
         return ;
     }
     /* start draw obj */
