@@ -11,6 +11,7 @@
 #include "gt_color.h"
 #include "../widgets/gt_obj.h"
 #include "../core/gt_mem.h"
+#include "./gt_log.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -44,11 +45,21 @@ void gt_color_area_copy(gt_color_t *dst, gt_area_st area_dst, gt_color_t * src, 
     }
 }
 
-void gt_color_fill(gt_color_t * color_arr, int len, gt_color_t color)
+void gt_color_fill(gt_color_t * color_arr, uint32_t len, gt_color_t color)
 {
-    int idx = 0;
-    while( idx < len ){
-        GT_COLOR_SET( color_arr[idx++], GT_COLOR_GET(color) );
+    uint32_t idx = 0;
+    uint32_t half = len >> 2;
+    uint8_t repeat = 0;
+
+    while (idx < half) {
+        GT_COLOR_SET(color_arr[idx++], GT_COLOR_GET(color));
+    }
+    for (repeat = 0; repeat < 3; repeat++) {
+        gt_memcpy(&color_arr[idx], color_arr, half * sizeof(gt_color_t));
+        idx += half;
+    }
+    if (len & 0x03) {
+        gt_memcpy(&color_arr[idx], color_arr, (len & 0x03) * sizeof(gt_color_t));
     }
 }
 

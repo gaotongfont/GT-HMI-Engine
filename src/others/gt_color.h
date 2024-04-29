@@ -557,7 +557,7 @@ void gt_color_area_copy(gt_color_t *dst, gt_area_st area_dst, gt_color_t * src, 
  * @param len The buffer data size.
  * @param color Which color value
  */
-void gt_color_fill(gt_color_t * color_arr, int len, gt_color_t color);
+void gt_color_fill(gt_color_t * color_arr, uint32_t len, gt_color_t color);
 
 gt_color_t gt_color_focus(void);
 void gt_color_focus_set(uint32_t col);
