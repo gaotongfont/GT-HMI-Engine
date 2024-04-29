@@ -50,27 +50,18 @@ void gt_refr_timer(void)
     if( disp == NULL ){
         return ;
     }
-    if( _gt_disp_refr_check() ){
+    if( _gt_disp_refr_check(disp) ){
 #if GT_USE_DISPLAY_PREF_MSG
         uint32_t start = gt_tick_get();
 #endif
 
-        area = _gt_disp_refr_get_area();
+        area = _gt_disp_refr_get_area(disp);
         if ( !area ) {
             return ;
         }
 
-        // if (false == gt_area_check_legal(area)) {
-        //     GT_LOGW("!!!", "area is illegal");
-        // }
-
-        // if (false == gt_area_is_intersect_screen(&disp->area_act, area)) {
-        //     _gt_disp_refr_area_pop();
-        //     return;
-        // }
-
         gt_disp_ref_area( area );
-        _gt_disp_refr_area_pop();
+        _gt_disp_refr_area_pop(disp);
 
 #if GT_USE_DISPLAY_PREF_MSG
         if( (gt_tick_get() - start) > 1 ) {

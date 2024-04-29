@@ -171,24 +171,29 @@ void _gt_disp_refr_append_area(gt_area_st * area);
  * @param disp disp
  * @return uint8_t 0:none, !0:yes
  */
-uint8_t _gt_disp_refr_check(void);
+uint8_t _gt_disp_refr_check(gt_disp_st * disp);
 
 /**
  * @brief Invalid redraw areas message queue set next index
+ *
+ * @param disp disp
  */
-void _gt_disp_refr_area_push(void);
+void _gt_disp_refr_area_push(gt_disp_st * disp);
 
 /**
  * @brief Invalid redraw areas message queue get the last index
+ *
+ * @param disp disp
  */
-void _gt_disp_refr_area_pop(void);
+void _gt_disp_refr_area_pop(gt_disp_st * disp);
 
 /**
  * @brief Get the laster invalid redraw areas from message queue
  *
+ * @param disp disp
  * @return gt_area_st* The invalid redraw areas
  */
-gt_area_st * _gt_disp_refr_get_area(void);
+gt_area_st * _gt_disp_refr_get_area(gt_disp_st * disp);
 
 /**
  * @brief Update max screen can display area

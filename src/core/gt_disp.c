@@ -1113,12 +1113,6 @@ void gt_disp_ref_area(const gt_area_st * coords)
     _gt_disp_set_state(param.disp, GT_NOT_BUSY);
 }
 
-void gt_disp_set_area_act(gt_area_st * area)
-{
-    gt_disp_st * disp_dev = gt_disp_get_default();
-    gt_area_copy(&disp_dev->area_act, area);
-}
-
 gt_area_st * gt_disp_get_area_act(void)
 {
     gt_disp_st * disp_dev = gt_disp_get_default();
@@ -1135,7 +1129,6 @@ void gt_disp_scroll_area_act(int16_t dist_x, int16_t dist_y)
 {
     gt_area_st * area = gt_disp_get_area_act();
     gt_area_abs_st * max_area = gt_disp_get_area_max();
-    gt_disp_st * disp = gt_disp_get_default();
 
     area->x = dist_x;
     area->y = dist_y;

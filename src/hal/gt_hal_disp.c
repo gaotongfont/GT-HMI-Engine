@@ -202,6 +202,17 @@ gt_color_t * gt_disp_graph_get_buf_backup(void)
 #endif
 }
 
+void _gt_disp_refr_area_push(gt_disp_st * disp)
+{
+    disp->refr.idx_w = _gt_disp_area_get_idx(++disp->refr.idx_w);
+}
+
+void _gt_disp_refr_area_pop(gt_disp_st * disp)
+{
+    gt_size_t idx = disp->refr.idx_r;
+    disp->refr.joined[idx] = 0; /* value will be clean up. */
+    disp->refr.idx_r = _gt_disp_area_get_idx(++idx);
+}
 
 void _gt_disp_refr_reset_areas(void)
 {
@@ -246,33 +257,17 @@ void _gt_disp_refr_append_area(gt_area_st * area)
     if (disp->refr.joined[idx_newly]) {
         disp->refr.joined[idx_newly] = 0;
     } else {
-        _gt_disp_refr_area_push();
+        _gt_disp_refr_area_push(disp);
     }
 }
 
-uint8_t _gt_disp_refr_check(void)
+uint8_t _gt_disp_refr_check(gt_disp_st * disp)
 {
-    gt_disp_st * disp = gt_disp_get_default();
     return disp->refr.idx_w != disp->refr.idx_r;
 }
 
-void _gt_disp_refr_area_push(void)
+gt_area_st * _gt_disp_refr_get_area(gt_disp_st * disp)
 {
-    gt_disp_st * disp = gt_disp_get_default();
-    disp->refr.idx_w = _gt_disp_area_get_idx(++disp->refr.idx_w);
-}
-
-void _gt_disp_refr_area_pop(void)
-{
-    gt_disp_st * disp = gt_disp_get_default();
-    gt_size_t idx = disp->refr.idx_r;
-    disp->refr.joined[idx] = 0; /* value will be clean up. */
-    disp->refr.idx_r = _gt_disp_area_get_idx(++idx);
-}
-
-gt_area_st * _gt_disp_refr_get_area(void)
-{
-    gt_disp_st * disp = gt_disp_get_default();
     gt_size_t i = 0;
     gt_size_t idx = disp->refr.idx_r;
     gt_size_t len = (disp->refr.idx_w < idx ? _GT_REFR_AREA_MAX : 0) + disp->refr.idx_w - idx;
@@ -281,7 +276,7 @@ gt_area_st * _gt_disp_refr_get_area(void)
         if (!disp->refr.joined[idx]) {
             goto get_area_lb;
         }
-        _gt_disp_refr_area_pop();
+        _gt_disp_refr_area_pop(disp);
         idx = _gt_disp_area_get_idx(++idx);
     }
 

@@ -120,13 +120,6 @@ gt_area_st * gt_disp_get_area_act(void);
 gt_area_abs_st * gt_disp_get_area_max(void);
 
 /**
- * @brief Set active display area
- *
- * @param area The active area
- */
-void gt_disp_set_area_act(gt_area_st * area);
-
-/**
  * @brief set active scroll direction and distance.
  *
  * @param dist_x distance of x
