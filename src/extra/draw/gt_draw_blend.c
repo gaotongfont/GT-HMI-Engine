@@ -65,6 +65,7 @@ static inline void _fill_no_opacity(
     uint16_t w = area_intersect->w;
     uint16_t h = area_intersect->h;
     uint16_t x, y;
+    uint16_t width = w * sizeof(gt_color_t);
 
     // fill dsc->dst_buf use opa
     if (color_src_p) {
@@ -81,11 +82,7 @@ static inline void _fill_no_opacity(
         }
         else {
             for (y = 0; y < h; y++) {
-                for (x = 0; x < w; x++) {
-                    color_dst_p[idx_dst] = color_src_p[idx_src];
-                    ++idx_dst;
-                    ++idx_src;
-                }
+                gt_memcpy((char *)&color_dst_p[idx_dst], (char *)&color_src_p[idx_src], width);
                 idx_dst += step_dst_line;
                 idx_src += step_src_line;
             }
@@ -107,7 +104,6 @@ static inline void _fill_no_opacity(
     }
 
     // Direct color overlay, opa >= GT_OPA_MAX
-    uint16_t width = w * sizeof(gt_color_t);
     for (x = 0; x < w; x++) {
         color_dst_p[idx_dst] = color_fill;
         ++idx_dst;
@@ -273,6 +269,7 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
 
     /** 绘制区域和显示屏buffer的交集区域 */
     gt_area_st area_intersect = {0};
+    /** area_draw x/y screen offset; w/h need to redraw area, which pos by dst_area */
     gt_area_st area_draw = draw_ctx->buf_area, area_dst = *dsc->dst_area;
 
     uint16_t width_dsc = area_dst.w;
