@@ -42,8 +42,10 @@ typedef enum{
 typedef struct _flush_scr_param_s {
     gt_disp_st * disp;
     gt_area_st area_flush;         // The buffer or area of display flush area.
+#if GT_USE_SCREEN_ANIM
     gt_area_st view_scr_abs;       // The new interface displays the absolute extent of the area on the physical screen
     gt_area_st view_scr_prev_abs;  // The previous interface displays the absolute extent within the area on the physical screen
+#endif
     _gt_draw_valid_st valid;       // Interface intersection results and screen display start offset
     uint16_t line;                 // Number of rows per refresh
 }_flush_scr_param_st;
@@ -196,6 +198,12 @@ static void _scr_anim_exec_y_cb(gt_obj_st * obj, int32_t y) {
     gt_obj_set_y(obj, (gt_size_t)y);
 }
 
+static void _scr_anim_del_ready_cb(struct gt_anim_s * anim) {
+    anim->target->using = 0;
+    gt_obj_destroy(anim->target);
+}
+
+#if GT_USE_SCREEN_ANIM
 static void _scr_anim_start_cb(struct gt_anim_s * anim) {
     gt_disp_st * disp = gt_disp_get_default();
     disp->scr_prev         = disp->scr_act;
@@ -251,11 +259,6 @@ static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
 
     /** Enabled all of input device event */
     gt_indev_set_disabled(false);
-}
-
-static void _scr_anim_del_ready_cb(struct gt_anim_s * anim) {
-    anim->target->using = 0;
-    gt_obj_destroy(anim->target);
 }
 
 static bool _is_anim_type_hor(gt_scr_anim_type_et anim_type) {
@@ -533,6 +536,7 @@ static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
         param->area_flush.y += param->line;
     }
 }
+#endif  /** GT_USE_SCREEN_ANIM */
 
 /**
  * @brief flush screen by direct or full screen refresh
@@ -696,7 +700,8 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     }
 }
 
-static gt_scr_anim_type_et _get_anti_anim_type(gt_scr_anim_type_et type) {
+static inline gt_scr_anim_type_et _get_anti_anim_type(gt_scr_anim_type_et type) {
+#if GT_USE_SCREEN_ANIM
     if (GT_SCR_ANIM_TYPE_MOVE_LEFT == type) { type = GT_SCR_ANIM_TYPE_MOVE_RIGHT; }
     else if (GT_SCR_ANIM_TYPE_MOVE_RIGHT == type) { type = GT_SCR_ANIM_TYPE_MOVE_LEFT; }
     else if (GT_SCR_ANIM_TYPE_MOVE_UP == type) { type = GT_SCR_ANIM_TYPE_MOVE_DOWN; }
@@ -706,6 +711,9 @@ static gt_scr_anim_type_et _get_anti_anim_type(gt_scr_anim_type_et type) {
     else if (GT_SCR_ANIM_TYPE_COVER_UP == type) { type = GT_SCR_ANIM_TYPE_COVER_DOWN; }
     else if (GT_SCR_ANIM_TYPE_COVER_DOWN == type) { type = GT_SCR_ANIM_TYPE_COVER_UP; }
     return type;
+#else
+    return GT_SCR_ANIM_TYPE_NONE;
+#endif
 }
 
 static gt_obj_st * _create_scr_by_id(gt_scr_id_t scr_id) {
@@ -883,6 +891,9 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
     if (!disp) {
         return;
     }
+#if !GT_USE_SCREEN_ANIM
+    type = GT_SCR_ANIM_TYPE_NONE;
+#endif
 
     _gt_disp_refr_reset_areas();
     if (NULL == scr_old) {
@@ -923,7 +934,9 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
             gt_anim_set_ready_cb(&anim_del, _scr_anim_del_ready_cb);
             gt_anim_start(&anim_del);
         }
-    } else {
+    }
+#if GT_USE_SCREEN_ANIM
+    else {
         gt_anim_st anim_old;
         gt_area_st area = scr_old->area;
         gt_anim_init(&anim_old);
@@ -1018,6 +1031,7 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
             scr_old->delate = true;
         }
     }
+#endif
 }
 
 void gt_disp_set_scr(gt_obj_st * scr)
@@ -1056,10 +1070,14 @@ void gt_disp_ref_area(const gt_area_st * coords)
     _flush_scr_param_st param = {
         .disp = gt_disp_get_default(),
         .area_flush = *coords,
+#if GT_USE_SCREEN_ANIM
         .view_scr_abs = {0, 0, scr_width, scr_height},
         .view_scr_prev_abs = {0, 0, scr_width, scr_height},
+#endif
         .valid = {
+#if GT_USE_SCREEN_ANIM
             .area_clip = { 0, 0, 0, 0 },
+#endif
             .is_hor    = false,
             .layer_top = false,
         },
@@ -1078,6 +1096,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
     param.disp->area_disp.w = scr_width;
     param.disp->area_disp.h = param.line;
 
+#if GT_USE_SCREEN_ANIM
     if (param.disp->scr_prev) {
         param.area_flush.x = 0;
         param.area_flush.y = 0;
@@ -1087,6 +1106,9 @@ void gt_disp_ref_area(const gt_area_st * coords)
     } else {
         _flush_scr_by_direct(&param);
     }
+#else
+    _flush_scr_by_direct(&param);
+#endif
 
     _gt_disp_set_state(param.disp, GT_NOT_BUSY);
 }

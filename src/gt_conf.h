@@ -107,6 +107,15 @@ extern "C" {
     #define GT_USE_LAYER_TOP    01
 #endif
 
+#ifndef GT_USE_SCREEN_ANIM
+    /**
+     * @brief Set the screen animation effect, the screen animation
+     *      [default: 1] 0: only GT_SCR_ANIM_TYPE_NONE can be used.
+     * @ref gt_scr_anim_type_et
+     */
+    #define GT_USE_SCREEN_ANIM  01
+#endif
+
 #ifndef GT_USE_EXTRA_FULL_IMG_BUFFER
     /**
      * @brief Set with the maximum width and height of the material,

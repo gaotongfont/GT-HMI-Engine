@@ -29,7 +29,9 @@ extern "C" {
  * @brief The displayable area of two interfaces on the same physical screen
  */
 typedef struct _gt_draw_valid_s {
+#if GT_USE_SCREEN_ANIM
     gt_area_st area_clip;       ///<The clip area
+#endif
 
     uint8_t is_hor  : 1;        ///<Toggle the effect of the screen, the direction is horizontal
     uint8_t layer_top : 1;
