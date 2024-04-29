@@ -137,13 +137,14 @@ typedef struct _gt_indev_proc_s
             gt_point_st newly;          ///< last point of touch input device
             gt_point_st last;           ///< used to judge gesture
 
-            gt_point_st scroll_diff;         ///< the distance between two coordinates
-            gt_point_st scroll_sum;          ///< the sum of distance
-            gt_point_st scroll_throw;       ///< used to judge scroll
+            gt_point_st scroll_diff;     ///< the distance between two coordinates
+            gt_point_st scroll_sum;      ///< the sum of distance
+            gt_point_st scroll_throw;    ///< used to judge scroll
 
-            struct gt_obj_s * obj_act;     ///< The object which is touching now
+            struct gt_obj_s * obj_act;       ///< The object which is touching now
             struct gt_obj_s * obj_target;    ///< The object of first touch
-            struct gt_obj_s * obj_scroll;  ///< The object of gesture
+            struct gt_obj_s * obj_origin;    //< The object of first touch
+            struct gt_obj_s * obj_scroll;    ///< The object of gesture
 
             uint16_t gesture : 3;          ///< @ref gt_dir_et gesture of touch input device point
             uint16_t count_point : 3;

@@ -310,13 +310,21 @@ static void _indev_scroll_handler(gt_indev_st * indev) {
 }
 
 static inline void _send_released_event(struct _point * point_p) {
-    gt_event_type_et event_type = (point_p->obj_act == point_p->obj_target) ? \
-        GT_EVENT_TYPE_INPUT_RELEASED : GT_EVENT_TYPE_INPUT_PRESS_LOST;
+    gt_event_type_et event_type = GT_EVENT_TYPE_INPUT_RELEASED;
+
+    if (point_p->obj_act != point_p->obj_target) {
+        event_type = GT_EVENT_TYPE_INPUT_PRESS_LOST;
+    }
 
     if (gt_obj_is_untouchability(point_p->obj_target)) {
         return;
     }
+
     gt_event_send(point_p->obj_target, event_type, NULL);
+
+    if (point_p->obj_origin != point_p->obj_target) {
+        gt_event_send(point_p->obj_origin, GT_EVENT_TYPE_INPUT_PRESS_LOST, NULL);
+    }
 }
 
 static void _indev_released_handle(gt_indev_st * indev) {
@@ -338,6 +346,7 @@ static void _indev_released_handle(gt_indev_st * indev) {
         _indev_scroll_throw_handler(indev);
     }
     point_p->obj_target = NULL;
+    point_p->obj_origin = NULL;
 }
 
 /**
@@ -404,6 +413,7 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
             return;
         }
         point_p->obj_target = point_p->obj_act;
+        point_p->obj_origin = point_p->obj_target;
 #if _GT_INDEV_USE_REMARK
         _gt_indev_remark_active_obj(point_p->obj_act);
 #endif
@@ -438,7 +448,6 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
         /** if widget fixed, then search it parent's widget to scroll */
         if (point_p->obj_scroll == point_p->obj_target) {
             point_p->obj_target = _search_not_fixed_by_parent_recursive(point_p->obj_target);
-            _send_released_event(point_p);
         }
     }
 
