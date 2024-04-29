@@ -1082,28 +1082,16 @@ static gt_res_t _filling_by_default_full_mode(gt_draw_ctx_t * draw_ctx, gt_draw_
         return GT_RES_INV;
     }
 
-    gt_color_t * buffer_p = (gt_color_t * )full_img->buffer;
-    gt_opa_t * opa_p = (gt_opa_t * )&full_img->buffer[addr_start_alpha];
-
     gt_fs_read_img_offset(fp, (uint8_t *)full_img->buffer, 0, (is_mask ? len : 0) + addr_start_alpha);
 
-    while (y < h) {
-        /*read one line color data*/
-        blend_dsc->dst_buf = buffer_p;
-        if (is_mask) {
-            blend_dsc->mask_buf = opa_p;
-        }
-        if (gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area)) {
-            /* blend to bg */
-            gt_draw_blend(draw_ctx, blend_dsc);
-        }
-        buffer_p += w;
-        opa_p += w;
+    blend_dsc->dst_area->h = h;
 
-        ++blend_dsc->dst_area->y;
-        ++blend_dsc->mask_area->y;
-        ++y;
+    blend_dsc->dst_buf = (gt_color_t * )full_img->buffer;
+    if (is_mask) {
+        blend_dsc->mask_buf = (gt_opa_t * )&full_img->buffer[addr_start_alpha];
     }
+
+    gt_draw_blend(draw_ctx, blend_dsc);
 
     if (is_mask) {
         blend_dsc->mask_buf = NULL;

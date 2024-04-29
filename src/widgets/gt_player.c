@@ -174,21 +174,10 @@ static inline void _set_dir(_gt_player_st * style, bool is_next) {
     style->reg.dir = is_next ? 0 : 1;
 }
 
-static inline void _default_init(gt_obj_st * obj, _gt_player_st * style) {
-    void * src = _get_src(style);
-    gt_attr_rect_st dsc = {
-        .bg_img_src = src,
-        .bg_opa = obj->opa,
-    };
-    /* start draw obj */
-    draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
-
-    // focus
-    draw_focus(obj , 0);
-}
-
 static void _init_cb(gt_obj_st * obj) {
     _gt_player_st * style = (_gt_player_st * )obj;
+    void * src = _get_src(style);
+
     _unlock(style);
     if (0 == style->target.count) {
         return;
@@ -196,13 +185,17 @@ static void _init_cb(gt_obj_st * obj) {
     if (NULL == style->target.list) {
         return;
     }
-    switch (style->reg.type)
-    {
-        default:
-            _default_init(obj, style);
-            break;
+    if (GT_PLAYER_TYPE_IMG == style->reg.type) {
+        gt_attr_rect_st dsc = {
+            .bg_img_src = src,
+            .bg_opa = obj->opa,
+        };
+        /* start draw obj */
+        draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
     }
 
+    // focus
+    draw_focus(obj , 0);
 }
 
 /**
@@ -502,6 +495,8 @@ gt_obj_st * gt_player_create(gt_obj_st * parent)
     if (NULL == obj) {
         return obj;
     }
+    _gt_player_st * style = (_gt_player_st * )obj;
+    style->reg.type = GT_PLAYER_TYPE_IMG;
 
     return obj;
 }
