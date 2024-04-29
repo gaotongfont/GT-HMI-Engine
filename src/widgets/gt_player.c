@@ -179,12 +179,12 @@ static void _init_cb(gt_obj_st * obj) {
     if (NULL == style->target.list) {
         return;
     }
-    void * src = _get_src(style);
-
-    _unlock(style);
     if (0 == style->target.count) {
         return;
     }
+    void * src = _get_src(style);
+
+    _unlock(style);
     if (GT_PLAYER_TYPE_IMG == style->reg.type) {
         gt_attr_rect_st dsc = {
             .bg_img_src = src,
@@ -389,6 +389,23 @@ static inline uint16_t _add_item(gt_obj_st * obj, void * item, uint16_t item_byt
     return ++style->target.count;
 }
 
+static inline void _set_play_status(_gt_player_st * style, bool is_play) {
+    if (NULL == style) {
+        return ;
+    }
+    if (!style->timer) {
+        return ;
+    }
+    if (NULL == style->target.list) {
+        return ;
+    }
+    if (style->target.count < 2) {
+        return ;
+    }
+    style->last_player_tick = gt_tick_get();
+    _gt_timer_set_paused(style->timer, is_play ? false : true);
+}
+
 static inline void _remove_item(_gt_player_st * style, uint16_t idx) {
     if (!style->target.count) {
         return ;
@@ -403,6 +420,8 @@ static inline void _remove_item(_gt_player_st * style, uint16_t idx) {
         gt_memmove(&style->target.list[idx], &style->target.list[idx + 1], (style->target.count - idx) * sizeof(_gt_player_item_st));
     }
     style->target.list = gt_mem_realloc(style->target.list, style->target.count *  sizeof(_gt_player_item_st));
+
+    _set_play_status(style, _gt_timer_get_paused(style->timer));
 }
 
 static void _auto_play_callback(struct _gt_timer_s * timer) {
@@ -420,23 +439,6 @@ static void _auto_play_callback(struct _gt_timer_s * timer) {
         _change_item_handler(obj, _is_dir_next(style));
     }
     style->last_player_tick =  gt_tick_get();
-}
-
-static inline void _set_play_status(_gt_player_st * style, bool is_play) {
-    if (NULL == style) {
-        return ;
-    }
-    if (!style->timer) {
-        return ;
-    }
-    if (NULL == style->target.list) {
-        return ;
-    }
-    if (style->target.count < 2) {
-        return ;
-    }
-    style->last_player_tick = gt_tick_get();
-    _gt_timer_set_paused(style->timer, is_play ? false : true);
 }
 
 /* global functions / API interface -------------------------------------*/
