@@ -1007,6 +1007,8 @@ static void _filling_by_sjpg_file(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st
     w = dsc_img->header.w;
     h = dsc_img->header.h;
 
+    blend_dsc->dst_area->h = 1;
+
     /* line by line to blend */
     uint32_t len = w * sizeof(gt_color_t);
     blend_dsc->dst_buf = gt_mem_malloc(len);
@@ -1030,10 +1032,6 @@ static void _filling_by_sjpg_file(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st
 #endif
 
 static void _filling_by_ram_data(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
-    uint16_t w, h, y = 0;
-    w = dsc_img->header.w;
-    h = dsc_img->header.h;
-
     blend_dsc->mask_buf = &dsc_img->alpha[0];
     blend_dsc->dst_buf = (gt_color_t *)&dsc_img->img[0];
     if (NULL == blend_dsc->dst_buf || NULL == blend_dsc->mask_buf) {
@@ -1041,28 +1039,16 @@ static void _filling_by_ram_data(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st 
         return;
     }
 
-    while (y < h) {
-        if (gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area)) {
-            /* blend to bg */
-            gt_draw_blend(draw_ctx, blend_dsc);
-        }
-
-        blend_dsc->dst_buf += w;
-        blend_dsc->mask_buf += w;
-        ++blend_dsc->dst_area->y;
-        ++blend_dsc->mask_area->y;
-        ++y;
-    }
+    gt_draw_blend(draw_ctx, blend_dsc);
+    blend_dsc->dst_buf = NULL;
+    blend_dsc->mask_buf = NULL;
 }
 
 #if GT_USE_EXTRA_FULL_IMG_BUFFER
 static gt_res_t _filling_by_default_full_mode(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
-    uint32_t offset = 0;
     uint32_t len = 0, addr_start_alpha = 0;
-    uint16_t w, h, y = 0;
-    w = dsc_img->header.w;
-    h = dsc_img->header.h;
-    len = w * h;
+
+    len = dsc_img->header.w * dsc_img->header.h;
     addr_start_alpha = len * sizeof(gt_color_t);
 
     gt_fs_fp_st * fp = dsc_img->fp;
@@ -1083,8 +1069,6 @@ static gt_res_t _filling_by_default_full_mode(gt_draw_ctx_t * draw_ctx, gt_draw_
     }
 
     gt_fs_read_img_offset(fp, (uint8_t *)full_img->buffer, 0, (is_mask ? len : 0) + addr_start_alpha);
-
-    blend_dsc->dst_area->h = h;
 
     blend_dsc->dst_buf = (gt_color_t * )full_img->buffer;
     if (is_mask) {
@@ -1124,6 +1108,7 @@ static void _filling_by_default_line_mode(gt_draw_ctx_t * draw_ctx, gt_draw_blen
         return;
     }
 
+    blend_dsc->dst_area->h = 1;     /** Read and cover line by line */
     blend_dsc->dst_buf = gt_mem_malloc( len );
     if (!blend_dsc->dst_buf) {
         GT_LOGW(GT_LOG_TAG_GUI, "Per-line buffer malloc failed");
@@ -2032,8 +2017,6 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_
     _gt_disp_update_max_area(coords, true);
 
     gt_area_st dst_area = *coords, mask_area = *coords;
-    dst_area.h = 1;         /** 每次只填充一行的数据量 */
-
     gt_draw_blend_dsc_st blend_dsc = {
         .dst_buf = NULL,
         .mask_buf = NULL,
