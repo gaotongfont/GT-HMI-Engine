@@ -15,12 +15,12 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "stdint.h"
+#include "../gt_conf.h"
 #include "../others/gt_types.h"
 #include "gt_hal_fs.h"
 
 
 /* define ---------------------------------------------------------------*/
-
 
 
 /* typedef --------------------------------------------------------------*/
@@ -42,6 +42,7 @@ typedef struct _gt_vfs_s {
 
 
 /* global functions / API interface -------------------------------------*/
+#if GT_USE_MODE_FLASH
 
 /**
  * @brief init virt file system
@@ -64,6 +65,7 @@ void gt_vf_drv_register(rw_cb_t rw_cb);
  */
 gt_fs_drv_st * gt_vf_get_drv(void);
 
+#endif  /** GT_USE_MODE_FLASH */
 
 #ifdef __cplusplus
 } /*extern "C"*/

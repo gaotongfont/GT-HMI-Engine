@@ -36,9 +36,15 @@ typedef struct _gt_fs_dsc_s {
  * @brief default drive label
  */
 static const _gt_vf_type_label_st _drive_label[] = {
-    { GT_FS_TYPE_SD,    GT_FS_LABEL_SD    },
-    { GT_FS_TYPE_ARRAY, GT_FS_LABEL_ARRAY },
+#if GT_USE_MODE_FLASH
     { GT_FS_TYPE_FLASH, GT_FS_LABEL_FLASH },
+#endif
+#if GT_USE_MODE_SD
+    { GT_FS_TYPE_SD,    GT_FS_LABEL_SD    },
+#endif
+#if GT_USE_MODE_SRC
+    { GT_FS_TYPE_ARRAY, GT_FS_LABEL_ARRAY },
+#endif
 };
 
 
@@ -77,25 +83,26 @@ static inline gt_fs_label_et _gt_fs_get_label(gt_size_t index) {
  */
 static gt_fs_drv_st * gt_fs_get_default_drv(char const * path) {
     gt_fs_type_et type = gt_fs_get_src_type(path);
-    gt_fs_drv_st * drv = NULL;
 
-    switch (type)
-    {
-    case GT_FS_TYPE_ARRAY: {
-       drv = gt_src_get_drv();
-        break;
+#if GT_USE_MODE_FLASH
+    if (GT_FS_TYPE_FLASH == type) {
+        return gt_vf_get_drv();
     }
-    case GT_FS_TYPE_FLASH: {
-        drv = gt_vf_get_drv();
-        break;
+#endif
+
+#if GT_USE_MODE_SD
+    if (GT_FS_TYPE_SD == type) {
+        return NULL;
     }
-    case GT_FS_TYPE_SD: {
-        break;
+#endif
+
+#if GT_USE_MODE_SRC
+    if (GT_FS_TYPE_ARRAY == type) {
+        return gt_src_get_drv();
     }
-    default:
-        break;
-    }
-    return drv;
+#endif
+
+    return NULL;
 }
 
 

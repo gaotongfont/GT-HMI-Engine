@@ -17,6 +17,7 @@
 #include "string.h"
 
 /* private define -------------------------------------------------------*/
+#if GT_USE_MODE_FLASH
 
 
 
@@ -285,4 +286,5 @@ gt_fs_drv_st * gt_vf_get_drv(void)
     return &_vf_dev->drv;
 }
 
+#endif  /** GT_USE_MODE_FLASH */
 /* end ------------------------------------------------------------------*/

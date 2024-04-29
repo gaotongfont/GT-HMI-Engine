@@ -125,8 +125,9 @@ extern "C" {
 #define GT_CFG_DEFAULT_FONT_FAMILY_NUMB     GT_CFG_DEFAULT_FONT_FAMILY_EN
 #define GT_CFG_DEFAULT_FONT_SIZE            16
 
+#define GT_USE_MODE_SRC         01
 #define GT_USE_MODE_FLASH       01
-#define GT_USE_MODE_SD          01
+#define GT_USE_MODE_SD          0
 
 /** display refresh time */
 #define GT_USE_DISPLAY_PREF_MSG         0

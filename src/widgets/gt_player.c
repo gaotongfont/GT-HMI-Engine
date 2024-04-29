@@ -366,15 +366,10 @@ static inline void _change_item_handler(gt_obj_st * obj, bool is_next) {
     _gt_player_st * style = (_gt_player_st * )obj;
     bool is_loop = true;
 
-    switch (style->reg.mode)
-    {
-        case GT_PLAYER_MODE_NONE:
-        case GT_PLAYER_MODE_ONCE: {
-            is_loop = false;
-            break;
-        }
-        default:
-            break;
+    if (GT_PLAYER_MODE_NONE == style->reg.mode) {
+        is_loop = false;
+    } else if (GT_PLAYER_MODE_ONCE == style->reg.mode) {
+        is_loop = false;
     }
 
     if (is_next) {

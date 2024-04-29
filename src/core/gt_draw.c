@@ -2084,8 +2084,11 @@ void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_
 }
 
 
-void draw_focus(gt_obj_st* obj , gt_size_t radius)
+void draw_focus(gt_obj_st* obj, gt_size_t radius)
 {
+    if (0 == radius) {
+        return;
+    }
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.bg_opa = obj->opa;

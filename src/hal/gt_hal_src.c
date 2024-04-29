@@ -16,7 +16,7 @@
 
 
 /* private define -------------------------------------------------------*/
-
+#if GT_USE_MODE_SRC
 
 
 /* private typedef ------------------------------------------------------*/
@@ -170,10 +170,12 @@ static void _gt_src_drv_register(gt_fs_drv_st * drv)
     drv->dir_close_cb = NULL;
 }
 
+#endif  /** GT_USE_MODE_SRC */
 /* global functions / API interface -------------------------------------*/
 
 void gt_src_init(const gt_src_st * const src_sys, uint32_t sys_count)
 {
+#if GT_USE_MODE_SRC
     if (!src_sys) {
         GT_LOGW(GT_LOG_TAG_DATA, "src array is NULL, init failed.");
         return ;
@@ -193,13 +195,15 @@ void gt_src_init(const gt_src_st * const src_sys, uint32_t sys_count)
     _self->sys_count = sys_count;
 
     _gt_src_drv_register(&_self->drv);
+#endif
 }
 
-
+#if GT_USE_MODE_SRC
 gt_fs_drv_st * gt_src_get_drv(void)
 {
     return _get_drv();
 }
+#endif
 
 
 /* end ------------------------------------------------------------------*/
