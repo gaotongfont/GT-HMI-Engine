@@ -55,7 +55,7 @@ typedef struct _valid_param_s {
  * @param color_src_p
  * @param step_src_line
  */
-static void _fill_no_opacity(
+static inline void _fill_no_opacity(
     gt_color_t * color_dst_p, gt_area_st * area_intersect,
     uint16_t step_dst_line, gt_color_t color_fill, gt_opa_t opa,
     gt_color_t * color_src_p, uint16_t step_src_line) {
@@ -119,7 +119,7 @@ static void _fill_no_opacity(
     }
 }
 
-static void _fill_opacity(
+static inline void _fill_opacity(
     gt_color_t * color_dst_p, gt_area_st * area_intersect,
     uint16_t step_dst_line, gt_color_t color_fill, gt_opa_t opa, gt_opa_t * mask,
     gt_color_t * color_src_p, uint16_t step_src_line) {
