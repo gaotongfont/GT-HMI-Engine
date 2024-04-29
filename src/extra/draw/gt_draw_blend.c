@@ -299,7 +299,7 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
         .y = area_dst.y > area_draw.y ? (area_dst.y - area_draw.y) : 0,
     };
 
-#if GT_USE_SCREEN_LAYER
+#if GT_USE_SCREEN_ANIM
     if (draw_ctx->valid && false == draw_ctx->valid->layer_top) {
         if (draw_ctx->valid->is_hor) {
             area_draw.w = draw_ctx->valid->area_clip.w;
@@ -390,7 +390,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
         .y = area_dst.y > area_draw.y ? (area_dst.y - area_draw.y) : 0,
     };
 
-#if GT_USE_SCREEN_LAYER
+#if GT_USE_SCREEN_ANIM
     if (draw_ctx->valid && false == draw_ctx->valid->layer_top) {
         if (draw_ctx->valid->is_hor) {
             area_draw.w = draw_ctx->valid->area_clip.w;
