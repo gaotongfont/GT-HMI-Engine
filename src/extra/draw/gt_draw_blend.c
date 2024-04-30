@@ -56,39 +56,36 @@ typedef struct _valid_param_s {
  * @param step_src_line
  */
 static inline void _fill_no_opacity(
-    gt_color_t * color_dst_p, gt_area_st * area_intersect,
+    gt_color_t * color_dst_p, gt_area_st const * const area_intersect,
     uint16_t step_dst_line, gt_color_t color_fill, gt_opa_t opa,
-    gt_color_t * color_src_p, uint16_t step_src_line) {
+    gt_color_t const * const color_src_p, uint16_t step_src_line) {
 
-    uint32_t idx_dst = 0;
-    uint32_t idx_src = 0;
+    gt_color_t * src_p = (gt_color_t *)color_src_p;
+    gt_color_t * dst_p = color_dst_p;
     uint16_t w = area_intersect->w;
     uint16_t h = area_intersect->h;
-    uint16_t x, y;
-    uint16_t width = w * sizeof(gt_color_t);
+    uint16_t x, y, width = w * sizeof(gt_color_t);
 
     if (opa <= GT_OPA_MIN) {
         return ;
     }
-
-    // fill dsc->dst_buf use opa
-    if (color_src_p) {
+    /** fill dsc->dst_buf use opa */
+    if (!src_p) {
         if (opa < GT_OPA_MAX) {
             for (y = 0; y < h; y++) {
                 for (x = 0; x < w; x++) {
-                    color_dst_p[idx_dst] = gt_color_mix(color_src_p[idx_src], color_dst_p[idx_dst], opa);
-                    ++idx_dst;
-                    ++idx_src;
+                    *dst_p = gt_color_mix(*src_p, *dst_p, opa);
+                    ++dst_p;
+                    ++src_p;
                 }
-                idx_dst += step_dst_line;
-                idx_src += step_src_line;
+                dst_p += step_dst_line;
+                src_p += step_src_line;
             }
-        }
-        else {
+        } else {
             for (y = 0; y < h; y++) {
-                gt_memcpy((char *)&color_dst_p[idx_dst], (char *)&color_src_p[idx_src], width);
-                idx_dst += step_dst_line;
-                idx_src += step_src_line;
+                gt_memcpy((char *)dst_p, (char *)src_p, width);
+                dst_p += step_dst_line;
+                src_p += step_src_line;
             }
         }
         return;
@@ -98,23 +95,23 @@ static inline void _fill_no_opacity(
     if (opa < GT_OPA_MAX) {
         for (y = 0; y < h; y++) {
             for (x = 0; x < w; x++) {
-                color_dst_p[idx_dst] = gt_color_mix(color_fill, color_dst_p[idx_dst], opa);
-                ++idx_dst;
+                *dst_p = gt_color_mix(color_fill, *dst_p, opa);
+                ++dst_p;
             }
-            idx_dst += step_dst_line;
+            dst_p += step_dst_line;
         }
         return;
     }
 
     // Direct color overlay, opa >= GT_OPA_MAX
     for (x = 0; x < w; x++) {
-        color_dst_p[idx_dst] = color_fill;
-        ++idx_dst;
+        *dst_p = color_fill;
+        ++dst_p;
     }
-    idx_dst += step_dst_line;
+    dst_p += step_dst_line;
     for (y = 1; y < h; y++) {
-        gt_memcpy(&color_dst_p[idx_dst], &color_dst_p[0], width);
-        idx_dst += step_dst_line + w;
+        gt_memcpy(dst_p, &color_dst_p[0], width);
+        dst_p += step_dst_line + w;
     }
 }
 
