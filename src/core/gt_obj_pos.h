@@ -42,15 +42,6 @@ extern "C" {
 void gt_area_copy(gt_area_st * dst, gt_area_st const * const src);
 
 /**
- * @brief check the obj is visible
- *
- * @param obj object
- * @return true visible
- * @return false invisible
- */
-bool _gt_obj_is_disp_area_visible(gt_obj_st * obj);
-
-/**
  * @brief find smallest clicked obj from parent
  *
  * @param scr_or_top Screen object or layer top object

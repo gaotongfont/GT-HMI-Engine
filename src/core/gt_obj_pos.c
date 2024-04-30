@@ -198,39 +198,6 @@ void gt_area_copy(gt_area_st * dst, gt_area_st const * const src)
     dst->h = src->h;
 }
 
-bool _gt_obj_is_disp_area_visible(gt_obj_st * obj)
-{
-    gt_disp_st * disp = gt_disp_get_default();
-    if( !disp ){
-        GT_LOGW( GT_LOG_TAG_GUI, "disp is null" );
-        return false;
-    }
-    if( GT_INVISIBLE == gt_obj_get_visible(obj) ){
-        return false;
-    }
-
-    gt_area_st area_obj, area_disp;
-
-    gt_area_copy( &area_disp, &disp->area_disp );
-    gt_area_copy( &area_obj, &obj->area );
-
-    if( (area_obj.x + area_obj.w) < area_disp.x ){
-        return false;
-    }
-
-    if( (area_obj.y + area_obj.h) < area_disp.y ){
-        return false;
-    }
-
-    if( area_obj.x > (area_disp.x + area_disp.w) ){
-        return false;
-    }
-    if( area_obj.y > (area_disp.y + area_disp.h) ){
-        return false;
-    }
-    return true;
-}
-
 gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * scr_or_top, gt_point_st * point) {
     gt_obj_st * obj_clicked = NULL;
     _click_obj_ret_st obj_temp = {

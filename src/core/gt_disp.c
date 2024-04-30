@@ -118,15 +118,14 @@ static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
  */
 static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent)
 {
+    if( GT_INVISIBLE == gt_obj_get_visible(obj) ){
+        return false;
+    }
     if (false == gt_area_is_intersect_screen(&param->disp->area_disp, &obj->area)) {
         return false;
     }
 
-    if ( !_gt_obj_is_disp_area_visible(obj) ) {
-        return false;
-    }
     gt_disp_st * disp = param->disp;
-
     gt_draw_ctx_t draw_ctx = {
         /** Page change animation */
         .valid    = param->disp->scr_prev ? &param->valid : NULL,
@@ -164,6 +163,7 @@ static void _check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param
             }
         }
     } else {
+        /** screen */
         if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
             return ;
         }
