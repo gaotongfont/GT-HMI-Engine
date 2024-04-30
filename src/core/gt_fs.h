@@ -119,6 +119,13 @@ gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h);
 void gt_fs_close(gt_fs_fp_st * fp);
 
 #if GT_USE_FS_NAME_BY_INDEX
+/**
+ * @brief Get the file name by index of the file list
+ *
+ * @param file_type
+ * @param index_of_list
+ * @return char const* const The file full fname
+ */
 char const * const gt_fs_get_name_by_index(gt_fs_type_et file_type, uint16_t index_of_list);
 #endif
 
