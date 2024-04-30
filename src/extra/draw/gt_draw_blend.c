@@ -70,7 +70,7 @@ static inline void _fill_no_opacity(
         return ;
     }
     /** fill dsc->dst_buf use opa */
-    if (!src_p) {
+    if (src_p) {
         if (opa < GT_OPA_MAX) {
             for (y = 0; y < h; y++) {
                 for (x = 0; x < w; x++) {
