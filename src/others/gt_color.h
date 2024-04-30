@@ -539,18 +539,6 @@ static inline void gt_color_mix_with_alpha(gt_color_t bg_color, gt_opa_t bg_opa,
 /* global functions / API interface -------------------------------------*/
 
 /**
- * @brief Copy from the area of the src to the area of the dst
- *
- * @param dst gt_color_t arr
- * @param area_dst dst's pos: area_dst.x, area_dst.y, dst's size: area_dst.w,area_dst.h
- * @param src gt_color_t arr
- * @param area_src src's pos: area_src.x, area_src.y, src's size: area_src.w,area_src.h
- * @param w copy width from src
- * @param h copy height from src
- */
-void gt_color_area_copy(gt_color_t *dst, gt_area_st area_dst, gt_color_t * src, gt_area_st area_src, gt_size_t w, gt_size_t h);
-
-/**
  * @brief fill the color into the buffer
  *
  * @param color_arr which buffer save color.

@@ -35,16 +35,6 @@ static uint32_t _focus_color = 0x0078D7;
 
 /* global functions / API interface -------------------------------------*/
 
-void gt_color_area_copy(gt_color_t *dst, gt_area_st area_dst, gt_color_t * src, gt_area_st area_src, gt_size_t w, gt_size_t h){
-    uint32_t line = 0;
-    uint16_t len = w * sizeof(gt_color_t);
-    for (line = 0; line < h; line++) {
-        gt_memcpy( &dst[ (line+area_dst.y) * area_dst.w + area_dst.x ],
-                   &src[ (line+area_src.y) * area_src.w + area_src.x ],
-                   len );
-    }
-}
-
 void gt_color_fill(gt_color_t * color_arr, uint32_t len, gt_color_t color)
 {
     uint32_t idx = 0;
