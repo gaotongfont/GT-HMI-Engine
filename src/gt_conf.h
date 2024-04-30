@@ -138,6 +138,23 @@ extern "C" {
 #define GT_USE_MODE_FLASH       01
 #define GT_USE_MODE_SD          0
 
+#ifndef GT_USE_FOLDER_SYSTEM
+    /**
+     * @brief Enabled file system function such as:
+     *       dir_open_cb() / dir_read_cb() / dir_close_cb()
+     * [Default: 0]
+     */
+    #define GT_USE_FOLDER_SYSTEM        0
+#endif
+
+#ifndef GT_USE_FS_NAME_BY_INDEX
+    /**
+     * @brief Enabled file system get name by index of list
+     * [Default: 0]
+     */
+    #define GT_USE_FS_NAME_BY_INDEX     0
+#endif
+
 /** display refresh time */
 #define GT_USE_DISPLAY_PREF_MSG         0
 
