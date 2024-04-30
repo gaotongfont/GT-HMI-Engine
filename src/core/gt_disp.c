@@ -125,13 +125,12 @@ static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
         return false;
     }
 
-    gt_disp_st * disp = param->disp;
     gt_draw_ctx_t draw_ctx = {
         /** Page change animation */
         .valid    = param->disp->scr_prev ? &param->valid : NULL,
         .parent_area = obj->inside ? &area_parent : NULL,
-        .buf      = disp->vbd_color,
-        .buf_area = disp->area_disp,
+        .buf      = param->disp->vbd_color,
+        .buf_area = param->disp->area_disp,
     };
 
     obj->draw_ctx = (struct _gt_draw_ctx_t * )&draw_ctx;
