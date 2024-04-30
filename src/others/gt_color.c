@@ -51,6 +51,13 @@ void gt_color_fill(gt_color_t * color_arr, uint32_t len, gt_color_t color)
     uint32_t half = len >> 2;
     uint8_t repeat = 0;
 
+    if (len < 1024) {
+        while (idx < len) {
+            GT_COLOR_SET(color_arr[idx++], GT_COLOR_GET(color));
+        }
+        return ;
+    }
+
     while (idx < half) {
         GT_COLOR_SET(color_arr[idx++], GT_COLOR_GET(color));
     }
