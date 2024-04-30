@@ -74,16 +74,7 @@ static inline gt_fs_label_et _gt_fs_get_label(gt_size_t index) {
     return _drive_label[index].label;
 }
 
-/**
- * @brief get file system driver, according to letters
- *          @ref _drive_label array
- *
- * @param path full path
- * @return gt_fs_drv_st* the driver of file system
- */
-static gt_fs_drv_st * gt_fs_get_default_drv(char const * path) {
-    gt_fs_type_et type = gt_fs_get_src_type(path);
-
+static inline gt_fs_drv_st * _get_default_drv_by(gt_fs_type_et type) {
 #if GT_USE_MODE_FLASH
     if (GT_FS_TYPE_FLASH == type) {
         return gt_vf_get_drv();
@@ -101,8 +92,20 @@ static gt_fs_drv_st * gt_fs_get_default_drv(char const * path) {
         return gt_src_get_drv();
     }
 #endif
-
     return NULL;
+}
+
+/**
+ * @brief get file system driver, according to letters
+ *          @ref _drive_label array
+ *
+ * @param path full path
+ * @return gt_fs_drv_st* the driver of file system
+ */
+static inline gt_fs_drv_st * _get_default_drv(char const * path) {
+    gt_fs_type_et type = gt_fs_get_src_type(path);
+
+    return _get_default_drv_by(type);
 }
 
 
@@ -134,13 +137,12 @@ gt_fs_type_et gt_fs_get_src_type(const void * src)
             break;
         }
     }
-
     return ret;
 }
 
 gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode)
 {
-    gt_fs_drv_st * drv = gt_fs_get_default_drv(path);
+    gt_fs_drv_st * drv = _get_default_drv(path);
 
     if (!drv) {
         return NULL;
@@ -235,5 +237,19 @@ void gt_fs_close(gt_fs_fp_st * fp)
     }
     fp = NULL;
 }
+
+#if GT_USE_FS_NAME_BY_INDEX
+char const * const gt_fs_get_name_by_index(gt_fs_type_et file_type, uint16_t index_of_list)
+{
+    gt_fs_drv_st * drv = _get_default_drv_by(file_type);
+    if (NULL == drv) {
+        return NULL;
+    }
+    if (NULL == drv->get_name_by_cb) {
+        return NULL;
+    }
+    return drv->get_name_by_cb(index_of_list);
+}
+#endif
 
 /* end ------------------------------------------------------------------*/

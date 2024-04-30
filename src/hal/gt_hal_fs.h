@@ -14,6 +14,7 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "../gt_conf.h"
 #include "../others/gt_types.h"
 
 
@@ -112,9 +113,15 @@ typedef struct _gt_fs_drv_s {
     gt_fs_res_et ( * seek_cb )(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos, gt_fs_whence_et whence);
     gt_fs_res_et ( * tell_cb )(struct _gt_fs_drv_s * drv, void * fp, uint32_t * pos);
 
+#if GT_USE_FOLDER_SYSTEM
     gt_fs_res_et ( * dir_open_cb )(struct _gt_fs_drv_s * drv, char * name);
     gt_fs_res_et ( * dir_read_cb )(struct _gt_fs_drv_s * drv, struct _gt_fs_dir_s * dir_p);
     gt_fs_res_et ( * dir_close_cb)(struct _gt_fs_dir_s * dir_p);
+#endif
+
+#if GT_USE_FS_NAME_BY_INDEX
+    char const * const ( * get_name_by_cb)(uint16_t index_of_list);
+#endif
 }gt_fs_drv_st;
 
 /**

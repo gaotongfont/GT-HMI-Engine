@@ -47,8 +47,7 @@ static gt_fs_res_et _state = GT_FS_RES_FAIL;
 
 /* static functions -----------------------------------------------------*/
 
-static void _gt_vf_set_fp_by_list(gt_fs_fp_st * fp, gt_vfs_st const * const item)
-{
+static void _gt_vf_set_fp_by_list(gt_fs_fp_st * fp, gt_vfs_st const * const item) {
     fp->start = item->addr;
     fp->end = item->addr + item->size;
     fp->pos = fp->start;
@@ -57,8 +56,7 @@ static void _gt_vf_set_fp_by_list(gt_fs_fp_st * fp, gt_vfs_st const * const item
     fp->msg.pic.is_alpha = item->is_alpha;
 }
 
-static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode)
-{
+static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode) {
     uint16_t idx = 0;
     bool is_find = false;
 
@@ -96,15 +94,13 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
     return vfp;
 }
 
-static void _close_cb(struct _gt_fs_drv_s * drv, void * fp)
-{
+static void _close_cb(struct _gt_fs_drv_s * drv, void * fp) {
     drv->seek_cb(drv, fp, 0, GT_FS_SEEK_SET);
     ((gt_fs_fp_st *)fp)->drv = NULL;
     gt_mem_free(fp);
 }
 
-static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len)
-{
+static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len) {
     gt_fs_fp_st * vfp = (gt_fs_fp_st * )fp;
 
     if( _state != GT_FS_RES_READY ){
@@ -146,8 +142,7 @@ static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * dat
     return GT_FS_RES_OK;
 }
 
-static gt_fs_res_et _write_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len)
-{
+static gt_fs_res_et _write_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len) {
     gt_fs_fp_st * vfp = (gt_fs_fp_st * )fp;
 
     if( !drv ){
@@ -188,8 +183,7 @@ static gt_fs_res_et _write_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * da
     return GT_FS_RES_OK;
 }
 
-static gt_fs_res_et _seek_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos, gt_fs_whence_et whence)
-{
+static gt_fs_res_et _seek_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos, gt_fs_whence_et whence) {
     gt_fs_fp_st * _fp = (gt_fs_fp_st * )fp;
 
     if( !_fp ){
@@ -215,8 +209,7 @@ static gt_fs_res_et _seek_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos,
     return GT_FS_RES_OK;
 }
 
-static gt_fs_res_et _tell_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t * pos)
-{
+static gt_fs_res_et _tell_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t * pos) {
     gt_fs_fp_st * _fp = (gt_fs_fp_st * )fp;
     if( !_fp ){
         GT_LOGW(GT_LOG_TAG_GUI, "fp is null");
@@ -226,8 +219,23 @@ static gt_fs_res_et _tell_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t * po
     return GT_FS_RES_OK;
 }
 
-static void _gt_vf_drv_init(gt_fs_drv_st * drv)
-{
+#if GT_USE_FS_NAME_BY_INDEX
+static char const * const _get_name_by_cb(uint16_t index_of_list) {
+    uint16_t idx = 0;
+    char * ret_name = NULL;
+
+    while( NULL != _vfs[idx].name ){
+        if (index_of_list == idx) {
+            ret_name = _vfs[idx].name;
+            break;
+        }
+        ++idx;
+    }
+    return ret_name;
+}
+#endif
+
+static void _gt_vf_drv_init(gt_fs_drv_st * drv) {
     drv->letter       = GT_FS_LABEL_FLASH;
 
     drv->open_cb      = _open_cb;
@@ -236,9 +244,14 @@ static void _gt_vf_drv_init(gt_fs_drv_st * drv)
     drv->write_cb     = _write_cb;
     drv->seek_cb      = _seek_cb;
     drv->tell_cb      = _tell_cb;
+#if GT_USE_FOLDER_SYSTEM
     drv->dir_open_cb  = NULL;
     drv->dir_read_cb  = NULL;
     drv->dir_close_cb = NULL;
+#endif
+#if GT_USE_FS_NAME_BY_INDEX
+    drv->get_name_by_cb = _get_name_by_cb;
+#endif
 }
 
 

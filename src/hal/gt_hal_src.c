@@ -155,6 +155,23 @@ static gt_fs_res_et _tell_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t * po
     return GT_FS_RES_OK;
 }
 
+#if GT_USE_FS_NAME_BY_INDEX
+static char const * const _get_name_by_cb(uint16_t index_of_list) {
+    uint16_t idx = 0;
+    char * ret_name = NULL;
+    _gt_src_dev_st * dev = _get_dev();
+
+    while (NULL != dev->sys[idx].name) {
+        if (index_of_list == idx) {
+            ret_name = dev->sys[idx].name;
+            break;
+        }
+        ++idx;
+    }
+    return ret_name;
+}
+#endif
+
 static void _gt_src_drv_register(gt_fs_drv_st * drv)
 {
     drv->letter       = GT_FS_LABEL_ARRAY;
@@ -165,9 +182,14 @@ static void _gt_src_drv_register(gt_fs_drv_st * drv)
     drv->seek_cb      = _seek_cb;
     drv->tell_cb      = _tell_cb;
     drv->write_cb     = NULL;
+#if GT_USE_FOLDER_SYSTEM
     drv->dir_open_cb  = NULL;
     drv->dir_read_cb  = NULL;
     drv->dir_close_cb = NULL;
+#endif
+#if GT_USE_FS_NAME_BY_INDEX
+    drv->get_name_by_cb = _get_name_by_cb;
+#endif
 }
 
 #endif  /** GT_USE_MODE_SRC */
