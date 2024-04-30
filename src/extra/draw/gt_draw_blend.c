@@ -83,7 +83,11 @@ static inline void _fill_no_opacity(
             }
         } else {
             for (y = 0; y < h; y++) {
-                gt_memcpy((char *)dst_p, (char *)src_p, width);
+                for (x = 0; x < w; x++) {
+                    *dst_p = *src_p;
+                    ++dst_p;
+                    ++src_p;
+                }
                 dst_p += step_dst_line;
                 src_p += step_src_line;
             }
@@ -104,14 +108,12 @@ static inline void _fill_no_opacity(
     }
 
     // Direct color overlay, opa >= GT_OPA_MAX
-    for (x = 0; x < w; x++) {
-        *dst_p = color_fill;
-        ++dst_p;
-    }
-    dst_p += step_dst_line;
-    for (y = 1; y < h; y++) {
-        gt_memcpy(dst_p, color_dst_p, width);
-        dst_p += step_dst_line + w;
+    for (y = 0; y < h; y++) {
+        for (x = 0; x < w; x++) {
+            *dst_p = color_fill;
+            ++dst_p;
+        }
+        dst_p += step_dst_line;
     }
 }
 
