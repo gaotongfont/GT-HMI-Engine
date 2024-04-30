@@ -199,6 +199,7 @@ static inline void _fill_opacity(
             }
             dst_p += step_dst_line;
             src_p += step_src_line;
+            mask_p += step_src_line;
         }
         return;
     }
@@ -231,6 +232,7 @@ static inline void _fill_opacity(
             }
             dst_p += step_dst_line;
             src_p += step_src_line;
+            mask_p += step_src_line;
         }
         return;
     }
@@ -261,6 +263,7 @@ static inline void _fill_opacity(
         }
         dst_p += step_dst_line;
         src_p += step_src_line;
+        mask_p += step_src_line;
     }
 }
 
