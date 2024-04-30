@@ -110,18 +110,19 @@ static inline void _fill_no_opacity(
     }
     dst_p += step_dst_line;
     for (y = 1; y < h; y++) {
-        gt_memcpy(dst_p, &color_dst_p[0], width);
+        gt_memcpy(dst_p, color_dst_p, width);
         dst_p += step_dst_line + w;
     }
 }
 
 static inline void _fill_opacity(
     gt_color_t * color_dst_p, gt_area_st * area_intersect,
-    uint16_t step_dst_line, gt_color_t color_fill, gt_opa_t opa, gt_opa_t * mask,
-    gt_color_t * color_src_p, uint16_t step_src_line) {
+    uint16_t step_dst_line, gt_color_t color_fill, gt_opa_t opa, gt_opa_t const * const mask,
+    gt_color_t const * const color_src_p, uint16_t step_src_line) {
 
-    uint32_t idx_dst = 0;
-    uint32_t idx_src = 0;
+    gt_color_t * src_p = (gt_color_t *)color_src_p;
+    gt_color_t * dst_p = color_dst_p;
+    gt_opa_t * mask_p = (gt_opa_t *)mask;
     uint16_t w = area_intersect->w;
     uint16_t h = area_intersect->h;
     uint16_t x, y;
@@ -132,69 +133,72 @@ static inline void _fill_opacity(
     gt_opa_t opa_save = GT_OPA_0;
     gt_opa_t opa_tmp = GT_OPA_0;
 
-    if (color_src_p) {
+    if (src_p) {
         if (opa >= GT_OPA_MAX) {
             /* be called too much */
             for (y = 0; y < h; y++) {
                 for (x = 0; x < w; x++) {
-                    opa_tmp = mask[idx_src];
+                    opa_tmp = *mask_p;
+                    ++mask_p;
                     if (opa_tmp >= GT_OPA_MAX) {
-                        color_dst_p[idx_dst] = color_src_p[idx_src];
-                        ++idx_dst;
-                        ++idx_src;
+                        *dst_p = *src_p;
+                        ++src_p;
+                        ++dst_p;
                         continue;
                     }
                     else if (opa_tmp <= GT_OPA_MIN) {
-                        ++idx_dst;
-                        ++idx_src;
+                        ++src_p;
+                        ++dst_p;
                         continue;
                     }
-                    if (src_save_c.full != color_src_p[idx_src].full ||
-                        dst_save_c.full != color_dst_p[idx_dst].full ||
+                    if (src_save_c.full != (*src_p).full ||
+                        dst_save_c.full != (*dst_p).full ||
                         opa_save != opa_tmp) {
-                        src_save_c = color_src_p[idx_src];
-                        dst_save_c = color_dst_p[idx_dst];
+                        src_save_c = *src_p;
+                        dst_save_c = *dst_p;
                         opa_save = opa_tmp;
-                        res_save_c = gt_color_mix(color_src_p[idx_src], color_dst_p[idx_dst], opa_tmp);
+                        res_save_c = gt_color_mix(*src_p, *dst_p, opa_tmp);
                     }
-                    color_dst_p[idx_dst] = res_save_c;
-                    ++idx_dst;
-                    ++idx_src;
+                    *dst_p = res_save_c;
+                    ++dst_p;
+                    ++src_p;
                 }
-                idx_dst += step_dst_line;
-                idx_src += step_src_line;
+                dst_p += step_dst_line;
+                src_p += step_src_line;
+                mask_p += step_src_line;
             }
             return;
         }
         // opa < GT_OPA_MAX color mixed
         for (y = 0; y < h; y++) {
             for (x = 0; x < w; x++) {
-                opa_tmp = (gt_per_255(mask[idx_src]) * opa) >> 15;
+                opa_tmp = (gt_per_255(*mask_p) * opa) >> 15;
+                ++mask_p;
                 if (opa_tmp >= GT_OPA_MAX) {
-                    color_dst_p[idx_dst] = color_src_p[idx_src];
-                    ++idx_dst;
-                    ++idx_src;
+                    *dst_p = *src_p;
+                    ++dst_p;
+                    ++src_p;
                     continue;
                 }
                 else if (opa_tmp <= GT_OPA_MIN) {
-                    ++idx_dst;
-                    ++idx_src;
+                    ++dst_p;
+                    ++src_p;
                     continue;
                 }
-                if (src_save_c.full != color_src_p[idx_src].full ||
-                    dst_save_c.full != color_dst_p[idx_dst].full ||
+                if (src_save_c.full != (*src_p).full ||
+                    dst_save_c.full != (*dst_p).full ||
                     opa_save != opa_tmp) {
-                    src_save_c = color_src_p[idx_src];
-                    dst_save_c = color_dst_p[idx_dst];
+                    src_save_c = *src_p;
+                    dst_save_c = *dst_p;
                     opa_save = opa_tmp;
-                    res_save_c = gt_color_mix(color_src_p[idx_src], color_dst_p[idx_dst], opa_tmp);
+                    res_save_c = gt_color_mix(*src_p, *dst_p, opa_tmp);
                 }
-                color_dst_p[idx_dst] = res_save_c;
-                ++idx_dst;
-                ++idx_src;
+                *dst_p = res_save_c;
+                ++dst_p;
+                ++src_p;
             }
-            idx_dst += step_dst_line;
-            idx_src += step_src_line;
+            dst_p += step_dst_line;
+            src_p += step_src_line;
         }
         return;
     }
@@ -202,59 +206,61 @@ static inline void _fill_opacity(
     if (opa >= GT_OPA_MAX) {
         for (y = 0; y < h; y++) {
             for (x = 0; x < w; x++) {
-                opa_tmp = mask[idx_src];
+                opa_tmp = *mask_p;
+                ++mask_p;
                 if (opa_tmp >= GT_OPA_MAX) {
-                    color_dst_p[idx_dst] = color_fill;
-                    ++idx_dst;
-                    ++idx_src;
+                    *dst_p = color_fill;
+                    ++dst_p;
+                    ++src_p;
                     continue;
                 }
                 else if (opa_tmp <= GT_OPA_MIN) {
-                    ++idx_dst;
-                    ++idx_src;
+                    ++dst_p;
+                    ++src_p;
                     continue;
                 }
-                if (dst_save_c.full != color_dst_p[idx_dst].full ||
+                if (dst_save_c.full != (*dst_p).full ||
                     opa_save != opa_tmp) {
-                    dst_save_c = color_dst_p[idx_dst];
+                    dst_save_c = *dst_p;
                     opa_save = opa_tmp;
-                    res_save_c = gt_color_mix(color_fill, color_dst_p[idx_dst], opa_tmp);
+                    res_save_c = gt_color_mix(color_fill, *dst_p, opa_tmp);
                 }
-                color_dst_p[idx_dst] = res_save_c;
-                ++idx_dst;
-                ++idx_src;
+                *dst_p = res_save_c;
+                ++dst_p;
+                ++src_p;
             }
-            idx_dst += step_dst_line;
-            idx_src += step_src_line;
+            dst_p += step_dst_line;
+            src_p += step_src_line;
         }
         return;
     }
     for (y = 0; y < h; y++) {
         for (x = 0; x < w; x++) {
-            opa_tmp = (gt_per_255(mask[idx_src]) * opa) >> 15;
+            opa_tmp = (gt_per_255(*mask_p) * opa) >> 15;
+            ++mask_p;
             if (opa_tmp >= GT_OPA_MAX) {
-                color_dst_p[idx_dst] = color_fill;
-                ++idx_dst;
-                ++idx_src;
+                *dst_p = color_fill;
+                ++dst_p;
+                ++src_p;
                 continue;
             }
             else if (opa_tmp <= GT_OPA_MIN) {
-                ++idx_dst;
-                ++idx_src;
+                ++dst_p;
+                ++src_p;
                 continue;
             }
-            if (dst_save_c.full != color_dst_p[idx_dst].full ||
+            if (dst_save_c.full != (*dst_p).full ||
                 opa_save != opa_tmp) {
-                dst_save_c = color_dst_p[idx_dst];
+                dst_save_c = *dst_p;
                 opa_save = opa_tmp;
-                res_save_c = gt_color_mix(color_fill, color_dst_p[idx_dst], opa_tmp);
+                res_save_c = gt_color_mix(color_fill, *dst_p, opa_tmp);
             }
-            color_dst_p[idx_dst] = res_save_c;
-            ++idx_dst;
-            ++idx_src;
+            *dst_p = res_save_c;
+            ++dst_p;
+            ++src_p;
         }
-        idx_dst += step_dst_line;
-        idx_src += step_src_line;
+        dst_p += step_dst_line;
+        src_p += step_src_line;
     }
 }
 
