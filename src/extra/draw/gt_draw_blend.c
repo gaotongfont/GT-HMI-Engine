@@ -67,6 +67,10 @@ static inline void _fill_no_opacity(
     uint16_t x, y;
     uint16_t width = w * sizeof(gt_color_t);
 
+    if (opa <= GT_OPA_MIN) {
+        return ;
+    }
+
     // fill dsc->dst_buf use opa
     if (color_src_p) {
         if (opa < GT_OPA_MAX) {
@@ -86,7 +90,6 @@ static inline void _fill_no_opacity(
                 idx_dst += step_dst_line;
                 idx_src += step_src_line;
             }
-
         }
         return;
     }
@@ -137,24 +140,25 @@ static inline void _fill_opacity(
             /* be called too much */
             for (y = 0; y < h; y++) {
                 for (x = 0; x < w; x++) {
-                    if (mask[idx_src] <= GT_OPA_MIN) {
+                    opa_tmp = mask[idx_src];
+                    if (opa_tmp >= GT_OPA_MAX) {
+                        color_dst_p[idx_dst] = color_src_p[idx_src];
                         ++idx_dst;
                         ++idx_src;
                         continue;
                     }
-                    if (mask[idx_src] >= GT_OPA_MAX) {
-                        color_dst_p[idx_dst] = color_src_p[idx_src];
+                    else if (opa_tmp <= GT_OPA_MIN) {
                         ++idx_dst;
                         ++idx_src;
                         continue;
                     }
                     if (src_save_c.full != color_src_p[idx_src].full ||
                         dst_save_c.full != color_dst_p[idx_dst].full ||
-                        opa_save != mask[idx_src]) {
+                        opa_save != opa_tmp) {
                         src_save_c = color_src_p[idx_src];
                         dst_save_c = color_dst_p[idx_dst];
-                        opa_save = mask[idx_src];
-                        res_save_c = gt_color_mix(color_src_p[idx_src], color_dst_p[idx_dst], mask[idx_src]);
+                        opa_save = opa_tmp;
+                        res_save_c = gt_color_mix(color_src_p[idx_src], color_dst_p[idx_dst], opa_tmp);
                     }
                     color_dst_p[idx_dst] = res_save_c;
                     ++idx_dst;
@@ -169,13 +173,13 @@ static inline void _fill_opacity(
         for (y = 0; y < h; y++) {
             for (x = 0; x < w; x++) {
                 opa_tmp = (gt_per_255(mask[idx_src]) * opa) >> 15;
-                if (opa_tmp <= GT_OPA_MIN) {
+                if (opa_tmp >= GT_OPA_MAX) {
+                    color_dst_p[idx_dst] = color_src_p[idx_src];
                     ++idx_dst;
                     ++idx_src;
                     continue;
                 }
-                if (opa_tmp >= GT_OPA_MAX) {
-                    color_dst_p[idx_dst] = color_src_p[idx_src];
+                else if (opa_tmp <= GT_OPA_MIN) {
                     ++idx_dst;
                     ++idx_src;
                     continue;
@@ -201,22 +205,23 @@ static inline void _fill_opacity(
     if (opa >= GT_OPA_MAX) {
         for (y = 0; y < h; y++) {
             for (x = 0; x < w; x++) {
-                if (mask[idx_src] <= GT_OPA_MIN) {
-                    ++idx_dst;
-                    ++idx_src;
-                    continue;
-                }
-                if (mask[idx_src] >= GT_OPA_MAX) {
+                opa_tmp = mask[idx_src];
+                if (opa_tmp >= GT_OPA_MAX) {
                     color_dst_p[idx_dst] = color_fill;
                     ++idx_dst;
                     ++idx_src;
                     continue;
                 }
+                else if (opa_tmp <= GT_OPA_MIN) {
+                    ++idx_dst;
+                    ++idx_src;
+                    continue;
+                }
                 if (dst_save_c.full != color_dst_p[idx_dst].full ||
-                    opa_save != mask[idx_src]) {
+                    opa_save != opa_tmp) {
                     dst_save_c = color_dst_p[idx_dst];
-                    opa_save = mask[idx_src];
-                    res_save_c = gt_color_mix(color_fill, color_dst_p[idx_dst], mask[idx_src]);
+                    opa_save = opa_tmp;
+                    res_save_c = gt_color_mix(color_fill, color_dst_p[idx_dst], opa_tmp);
                 }
                 color_dst_p[idx_dst] = res_save_c;
                 ++idx_dst;
@@ -230,13 +235,13 @@ static inline void _fill_opacity(
     for (y = 0; y < h; y++) {
         for (x = 0; x < w; x++) {
             opa_tmp = (gt_per_255(mask[idx_src]) * opa) >> 15;
-            if (opa_tmp <= GT_OPA_MIN) {
+            if (opa_tmp >= GT_OPA_MAX) {
+                color_dst_p[idx_dst] = color_fill;
                 ++idx_dst;
                 ++idx_src;
                 continue;
             }
-            if (opa_tmp >= GT_OPA_MAX) {
-                color_dst_p[idx_dst] = color_fill;
+            else if (opa_tmp <= GT_OPA_MIN) {
                 ++idx_dst;
                 ++idx_src;
                 continue;
