@@ -569,95 +569,89 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     }
     else{
         // Calculate the area_flush x coordinates and width
-        if(param->disp->area_act.x == 0){
+        if (scr->area.x == 0) {
             if(param->area_flush.x < 0){
                 param->area_flush.w = param->area_flush.w + param->area_flush.x;
                 param->area_flush.x = 0;
             }
 
-            if((param->area_flush.x % width) + param->area_flush.w > width){
+            if ((param->area_flush.x % width) + param->area_flush.w > width) {
                 param->area_flush.w = width - (param->area_flush.x % width);
             }
         }
-        else if(param->disp->area_act.x > 0){
-            if(param->area_flush.x < 0){
+        else if (scr->area.x > 0) {
+            if (param->area_flush.x < 0) {
                 param->area_flush.w = param->area_flush.w + param->area_flush.x;
                 param->area_flush.x = 0;
             }
 
-            if(param->area_flush.x > param->disp->area_act.x){
-                param->area_flush.x = param->area_flush.x - param->disp->area_act.x;
-            }
-            else{
-                param->area_flush.w = (param->area_flush.w + param->area_flush.x) - param->disp->area_act.x;
+            if (param->area_flush.x > scr->area.x) {
+                param->area_flush.x = param->area_flush.x - scr->area.x;
+            } else {
+                param->area_flush.w = (param->area_flush.w + param->area_flush.x) - scr->area.x;
                 param->area_flush.x = 0;
             }
 
-            if((param->area_flush.x % width) + param->area_flush.w > width){
+            if ((param->area_flush.x % width) + param->area_flush.w > width) {
                 param->area_flush.w = width - (param->area_flush.x % width);
             }
-
         }
-        else if(param->disp->area_act.x < 0)
-        {
-            if(param->area_flush.x < 0){
-                param->area_flush.w = param->area_flush.w + param->area_flush.x - param->disp->area_act.x;
+        else if (scr->area.x < 0) {
+            if (param->area_flush.x < 0) {
+                param->area_flush.w = param->area_flush.w + param->area_flush.x - scr->area.x;
                 param->area_flush.x = 0;
             }
 
-            if(param->area_flush.x > 0){
-                param->area_flush.x = param->area_flush.x - param->disp->area_act.x;
+            if (param->area_flush.x > scr->area.x) {
+                param->area_flush.x = param->area_flush.x - scr->area.x;
+            } else if (param->area_flush.x > 0) {
+                param->area_flush.x = param->area_flush.x - scr->area.x;
             }
 
-            if((param->area_flush.x % width) + param->area_flush.w > width){
+            if ((param->area_flush.x % width) + param->area_flush.w > width) {
                 param->area_flush.w = width - (param->area_flush.x % width);
             }
-
         }
 
         // Calculate the area_flush y coordinates and height
-        if(param->disp->area_act.y == 0){
-            if(param->area_flush.y < 0){
+        if (scr->area.y == 0) {
+            if (param->area_flush.y < 0) {
                 param->area_flush.h = param->area_flush.h + param->area_flush.y;
                 param->area_flush.y = 0;
             }
 
-            if((param->area_flush.y % height) + param->area_flush.h > height){
+            if ((param->area_flush.y % height) + param->area_flush.h > height) {
                 param->area_flush.h = height - (param->area_flush.y % height);
             }
-
         }
-        else if(param->disp->area_act.y > 0){
-            if(param->area_flush.y < 0){
+        else if (scr->area.y > 0) {
+            if (param->area_flush.y < 0) {
                 param->area_flush.h = param->area_flush.h + param->area_flush.y;
                 param->area_flush.y = 0;
             }
 
-            if(param->area_flush.y > param->disp->area_act.y){
-                param->area_flush.y = param->area_flush.y - param->disp->area_act.y;
-            }
-            else{
-                param->area_flush.h = (param->area_flush.h + param->area_flush.y) - param->disp->area_act.y;
+            if (param->area_flush.y > scr->area.y) {
+                param->area_flush.y = param->area_flush.y - scr->area.y;
+            } else {
+                param->area_flush.h = (param->area_flush.h + param->area_flush.y) - scr->area.y;
                 param->area_flush.y = 0;
             }
 
-            if((param->area_flush.y % height) + param->area_flush.h > height){
+            if ((param->area_flush.y % height) + param->area_flush.h > height) {
                 param->area_flush.h = height - (param->area_flush.y % height);
             }
-
         }
-        else if(param->disp->area_act.y < 0)
-        {
-            if(param->area_flush.y < 0){
-                param->area_flush.h = param->area_flush.h + param->area_flush.y - param->disp->area_act.y;
+        else if (scr->area.y < 0) {
+            if (param->area_flush.y < 0) {
+                param->area_flush.h = param->area_flush.h + param->area_flush.y - scr->area.y;
                 param->area_flush.y = 0;
             }
 
-            if(param->area_flush.y > 0){
-                param->area_flush.y = param->area_flush.y - param->disp->area_act.y;
+            if (param->area_flush.y > 0) {
+                param->area_flush.y = param->area_flush.y - scr->area.y;
             }
 
-            if((param->area_flush.y % height) + param->area_flush.h > height){
+            if ((param->area_flush.y % height) + param->area_flush.h > height) {
                 param->area_flush.h = height - (param->area_flush.y % height);
             }
         }
@@ -676,8 +670,8 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     while (param->area_flush.y < end_y) {
         gt_color_fill(param->disp->vbd_color, len, color_fill);
 
-        param->disp->area_disp.x = param->area_flush.x + param->disp->area_act.x;
-        param->disp->area_disp.y = param->area_flush.y + param->disp->area_act.y;
+        param->disp->area_disp.x = param->area_flush.x + scr->area.x;
+        param->disp->area_disp.y = param->area_flush.y + scr->area.y;
 
         _gt_disp_check_and_copy_foreach(scr, param);
 
