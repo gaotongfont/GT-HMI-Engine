@@ -681,6 +681,8 @@ gt_obj_st * gt_listview_add_item_by_param(gt_obj_st * listview, gt_listview_para
         _triple_calc_pos(style, &pm);
     } else if (pm.left && pm.center) {
         _double_calc_pos(style, obj, pm.left, pm.center);
+    } else if (pm.center) {
+        _set_label_pos(pm.center, obj, 0, gt_obj_get_w(obj));
     }
 
     return _set_item_obj_prop(obj, listview);
