@@ -24,6 +24,15 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+/**
+ * @brief Only used by gt_listview_add_item_by_param() function.
+ */
+typedef struct gt_listview_param_s {
+    char * left_icon;
+    char * right_icon;
+    char * text_ptr;
+    uint16_t text_len;
+}gt_listview_param_st;
 
 
 
@@ -52,11 +61,11 @@ void gt_listview_set_next_row_item_count(gt_obj_st * listview, uint8_t count);
 /**
  * @brief add item to listview obj
  *
- * @param list listview obj
+ * @param listview listview obj
  * @param text text
  * @return item object, which child[0]: label
  */
-gt_obj_st * gt_listview_add_item(gt_obj_st * list, char * text);
+gt_obj_st * gt_listview_add_item(gt_obj_st * listview, char const * text);
 
 /**
  * @brief add item to listview obj with icon
@@ -66,7 +75,7 @@ gt_obj_st * gt_listview_add_item(gt_obj_st * list, char * text);
  * @param text text
  * @return item object, which child[0]: img, child[1]: label
  */
-gt_obj_st * gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * text);
+gt_obj_st * gt_listview_add_item_icon(gt_obj_st * listview, char * img, char const * text);
 
 /**
  * @brief add item to listview obj with [ icon + text + icon ] mode
@@ -77,7 +86,16 @@ gt_obj_st * gt_listview_add_item_icon(gt_obj_st * listview, char * img, char * t
  * @param right_icon right icon path
  * @return item object, which child[0]: left img, child[1]: label, child[2]: right img
  */
-gt_obj_st * gt_listview_add_item_icons(gt_obj_st * listview, char * left_icon, char * text, char * right_icon);
+gt_obj_st * gt_listview_add_item_icons(gt_obj_st * listview, char * left_icon, char const * text, char * right_icon);
+
+/**
+ * @brief add item to listview obj
+ *
+ * @param listview listview obj
+ * @param param Must be reset NULL before used.
+ * @return item object, which child[0]: label
+ */
+gt_obj_st * gt_listview_add_item_by_param(gt_obj_st * listview, gt_listview_param_st * param);
 
 /**
  * @brief Clear all items in the listview
