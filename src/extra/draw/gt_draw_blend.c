@@ -27,7 +27,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _valid_param_s {
-    struct _gt_draw_ctx_t * draw_ctx;
+    struct _gt_draw_ctx_s * draw_ctx;
     gt_area_st * area_draw;
     gt_area_st * area_dsc;
     gt_area_st * area_intersect;
@@ -269,6 +269,24 @@ static inline void _fill_opacity(
     }
 }
 
+static inline gt_point_st _get_cover_dst_area_and_offset_by(
+    gt_area_st * parent_or_limit, gt_area_st * dst_area, gt_area_st * ret
+) {
+    gt_point_st offset = {0};
+
+    gt_area_cover_screen(parent_or_limit, dst_area, ret);
+
+    if (parent_or_limit->x == ret->x && dst_area->x < ret->x) {
+        /** widget over left of parent display area */
+        offset.x = ret->x - dst_area->x;
+    }
+    if (parent_or_limit->y == ret->y && dst_area->y < ret->y) {
+        /** widget over top of parent display area */
+        offset.y = ret->y - dst_area->y;
+    }
+    return offset;
+}
+
 /* global functions / API interface -------------------------------------*/
 /**
  * @brief blend fore_color buf to back_color draw ctx
@@ -276,7 +294,7 @@ static inline void _fill_opacity(
  * @param draw_ctx draw content
  * @param dsc
  */
-void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st * dsc)
+void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st * dsc)
 {
     if (dsc->opa <= GT_OPA_MIN) return;
 
@@ -291,16 +309,7 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
 
     if (draw_ctx->parent_area) {
         /** Be used when obj->inside true and object has its parent */
-        gt_area_cover_screen(draw_ctx->parent_area, dsc->dst_area, &area_dst);
-
-        if (draw_ctx->parent_area->x == area_dst.x && dsc->dst_area->x < area_dst.x) {
-            /** widget over left of parent display area */
-            offset.x = area_dst.x - dsc->dst_area->x;
-        }
-        if (draw_ctx->parent_area->y == area_dst.y && dsc->dst_area->y < area_dst.y) {
-            /** widget over top of parent display area */
-            offset.y = area_dst.y - dsc->dst_area->y;
-        }
+        offset = _get_cover_dst_area_and_offset_by(draw_ctx->parent_area, dsc->dst_area, &area_dst);
     }
 
     /** 当前重绘制起始坐标 */
@@ -365,8 +374,8 @@ void gt_draw_blend(struct _gt_draw_ctx_t * draw_ctx, const gt_draw_blend_dsc_st 
 }
 
 
-void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_dsc_st * dsc,
-                        uint16_t font_size, uint16_t dot_byte , uint8_t gray , const uint8_t* res)
+void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st * dsc,
+                        uint16_t font_size, uint16_t dot_byte, uint8_t gray, const uint8_t* res)
 {
     if(!draw_ctx || !dsc || !res) return;
 
@@ -374,24 +383,20 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
 
     /** 绘制区域和显示屏buffer的交集区域 */
     gt_area_st area_intersect = {0};
+    /** buf_area: area_disp */
     gt_area_st area_draw = draw_ctx->buf_area, area_dst = *dsc->dst_area;
 
     uint16_t width_dsc = area_dst.w;
     uint16_t width_buf = area_draw.w;
     gt_point_st offset = {0};   /** src data buffer offset set */
 
+    if (draw_ctx->font_limit_area) {
+        offset = _get_cover_dst_area_and_offset_by(draw_ctx->font_limit_area, dsc->dst_area, &area_dst);
+    }
+
     if (draw_ctx->parent_area) {
         /** Be used when obj->inside true and object has its parent */
-        gt_area_cover_screen(draw_ctx->parent_area, dsc->dst_area, &area_dst);
-
-        if (draw_ctx->parent_area->x == area_dst.x && dsc->dst_area->x < area_dst.x) {
-            /** widget over left of parent display area */
-            offset.x = area_dst.x - dsc->dst_area->x;
-        }
-        if (draw_ctx->parent_area->y == area_dst.y && dsc->dst_area->y < area_dst.y) {
-            /** widget over top of parent display area */
-            offset.y = area_dst.y - dsc->dst_area->y;
-        }
+        offset = _get_cover_dst_area_and_offset_by(draw_ctx->parent_area, dsc->dst_area, &area_dst);
     }
 
     /** 当前重绘制起始坐标 */
@@ -435,13 +440,13 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
     gt_size_t row, col;
     uint8_t ch = 0;
 
-    if(2 == gray){
-        for(col = 0 ; col < area_intersect.h ; col++){
+    if (2 == gray) {
+        for (col = 0; col < area_intersect.h; col++) {
             count = 0;
-            for(row = offset.x ; row < font_size ; row++){
-                if(row >= offset.x + area_intersect.w) break;
+            for (row = offset.x; row < font_size; row++) {
+                if (row >= offset.x + area_intersect.w) break;
 
-                ch = ((color_src_p[row >> 2] >> (6 - ((row % 4)<<1))) & 0x03) * 255 / 3 ;
+                ch = ((color_src_p[row >> 2] >> (6 - ((row & 0x3)<<1))) & 0x03) * 255 / 3;
                 tmp = (gt_per_255(ch) * dsc->opa) >> 15;
                 color_dst_p[count] = gt_color_mix(dsc->color_fill, color_dst_p[count], tmp);
                 ++count;
@@ -449,14 +454,13 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
             color_src_p += dot_byte;
             color_dst_p += width_buf;
         }
-    }
-    else if(4 == gray){
-        for(col = 0 ; col < area_intersect.h ; col++){
+    } else if (4 == gray) {
+        for (col = 0; col < area_intersect.h; col++) {
             count = 0;
-            for(row = offset.x ; row < font_size ; row++){
-                if(row >= offset.x + area_intersect.w) break;
+            for (row = offset.x; row < font_size; row++) {
+                if (row >= offset.x + area_intersect.w) break;
 
-                ch = ((color_src_p[row >> 1] >> (4 - ((row % 2)<<2))) & 0x0F) * 255 / 15 ;
+                ch = ((color_src_p[row >> 1] >> (4 - ((row & 0x1)<<2))) & 0x0F) * 255 / 15;
                 tmp = (gt_per_255(ch) * dsc->opa) >> 15;
                 color_dst_p[count] = gt_color_mix(dsc->color_fill, color_dst_p[count], tmp);
                 ++count;
@@ -464,19 +468,17 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
             color_src_p += dot_byte;
             color_dst_p += width_buf;
         }
-    }
-    else if(3 == gray){
-        for(col = 0 ; col < area_intersect.h ; col++){
+    } else if (3 == gray) {
+        for (col = 0; col < area_intersect.h; col++) {
             count = 0;
-            for(row = offset.x ; row < font_size ; row++){
+            for (row = offset.x; row < font_size; row++) {
                 if(row >= offset.x + area_intersect.w) break;
 
-                tmp =  row * 3;
-                if((tmp % 8) <= 5){
-                    ch = ((color_src_p[tmp >> 3] >> (5 - (tmp%8))) & 0x07) * 255 / 7;
-                }
-                else{
-                    ch = ((((color_src_p[tmp >> 3]<<(tmp%8))|(color_src_p[(tmp >> 3)+1]>>(8-(tmp%8)))) >> 5) & 0x07) * 255 / 7;
+                tmp = row * 3;
+                if ((tmp & 0x7) <= 5) {
+                    ch = ((color_src_p[tmp >> 3] >> (5 - (tmp & 0x7))) & 0x07) * 255 / 7;
+                } else {
+                    ch = ((((color_src_p[tmp >> 3]<<(tmp & 0x7))|(color_src_p[(tmp >> 3)+1]>>(8-(tmp & 0x7)))) >> 5) & 0x07) * 255 / 7;
                 }
                 tmp = (gt_per_255(ch) * dsc->opa) >> 15;
                 color_dst_p[count] = gt_color_mix(dsc->color_fill, color_dst_p[count], tmp);
@@ -485,17 +487,16 @@ void gt_draw_blend_text(struct _gt_draw_ctx_t *draw_ctx , const gt_draw_blend_ds
             color_src_p += dot_byte;
             color_dst_p += width_buf;
         }
-    }
-    else{
-        for(col = 0 ; col < area_intersect.h ; col++){
+    } else {
+        for (col = 0; col < area_intersect.h; col++) {
             count = 0;
-            for(row = offset.x ; row < font_size ; row++){
+            for (row = offset.x; row < font_size; row++) {
 
-                if(row >= offset.x + area_intersect.w) break;
+                if (row >= offset.x + area_intersect.w) break;
 
-                ch = color_src_p[row >> 3] >> (7-(row % 8));
+                ch = color_src_p[row >> 3] >> (7-(row & 0x7));
 
-                if(ch & 0x01){
+                if (ch & 0x01) {
                     color_dst_p[count] = gt_color_mix(dsc->color_fill, color_dst_p[count], dsc->opa);
                 }
                 ++count;

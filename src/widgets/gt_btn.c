@@ -126,6 +126,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
         .font_color     = style->font_color,
         .align          = style->font_align,
         .opa            = btn->opa,
+        .logical_area   = area,
     };
 
     if( gt_obj_get_state(btn) != GT_STATE_NONE ){

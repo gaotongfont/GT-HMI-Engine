@@ -85,7 +85,8 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
         .opa        = textarea->opa,
     };
 
-    gt_area_st area_font , area_temp;
+    gt_area_st area_font;
+    _gt_draw_font_res_st font_res;
     area_font = gt_area_reduce(textarea->area , gt_obj_get_reduce(textarea));
 
     gt_attr_rect_st rect_attr;
@@ -100,15 +101,16 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
     draw_bg(textarea->draw_ctx, &rect_attr, &area_font);
 
     area_font = gt_area_reduce(textarea->area , rect_attr.border_width + 2);
+    font_attr.logical_area = area_font;
     while( idx < style->cnt_contents ){
         font.utf8               = style->contents[idx].text;
         font.len                = style->contents[idx].len;
         font_attr.reg.style     = style->contents[idx].mask_style;
         font_attr.font_color    = style->contents[idx].color;
-        area_temp = draw_text(textarea->draw_ctx, &font_attr, &area_font);
-        font_attr.start_x       = area_temp.x;
-        font_attr.start_y       = area_temp.y;
-        idx++;
+        font_res = draw_text(textarea->draw_ctx, &font_attr, &area_font);
+        font_attr.start_x       = font_res.area.x;
+        font_attr.start_y       = font_res.area.y;
+        ++idx;
     }
 
     // focus

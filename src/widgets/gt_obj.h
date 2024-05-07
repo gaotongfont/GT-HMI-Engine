@@ -80,7 +80,7 @@ typedef struct gt_obj_s {
     const gt_obj_class_st * class;
 
     gt_obj_event_attr_st * event_attr;
-    struct _gt_draw_ctx_t * draw_ctx;
+    struct _gt_draw_ctx_s * draw_ctx;
     gt_obj_process_attr_st process_attr;
 
     gt_area_st area;                /* base area */

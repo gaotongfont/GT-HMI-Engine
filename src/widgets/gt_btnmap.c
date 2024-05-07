@@ -237,6 +237,7 @@ static inline void _gt_btnmap_init_widget(gt_obj_st* btnmap) {
         btn_area = _gt_get_btn_area_idx(btnmap , map_idx ,  line ,  col ,  sum_w);
         draw_bg(btnmap->draw_ctx , &rect_attr , &btn_area);
         // draw text
+        font_attr.logical_area = btn_area;
         draw_text(btnmap->draw_ctx, &font_attr, &btn_area);
 
 g_NEXT:

@@ -439,7 +439,7 @@ void gt_roller_set_display_item_count(gt_obj_st * obj, uint8_t count)
     if (count < 4) {
         style->count_of_show = 3;
     } else {
-        style->count_of_show = count - ((0 == count % 2) ? 1 : 0);
+        style->count_of_show = count - ((0 == (count & 0x1)) ? 1 : 0);
     }
 
     _resize_display_area_height(obj);

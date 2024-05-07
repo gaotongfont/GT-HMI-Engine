@@ -53,6 +53,15 @@ gt_obj_st * gt_label_create(gt_obj_st * parent);
 void gt_label_set_text(gt_obj_st * label, const char * fmt, ...);
 
 /**
+ * @brief Set label text by content length
+ *
+ * @param label
+ * @param text
+ * @param len encoding byte count, such as: strlen(text).
+ */
+void gt_label_set_text_by_len(gt_obj_st * label, const char * text, uint16_t len);
+
+/**
  * @brief get label text
  *
  * @param label label obj
@@ -93,6 +102,15 @@ uint8_t gt_label_get_space_y(gt_obj_st * label);
  * @return uint16_t max substring line width
  */
 uint16_t gt_label_get_longest_line_substring_width(gt_obj_st * label);
+
+void gt_label_set_single_line(gt_obj_st * label, bool is_single_line);
+void gt_label_set_omit_single_line(gt_obj_st * label, bool is_omit);
+void gt_label_set_auto_scroll_single_line(gt_obj_st * label, bool is_auto_scroll);
+void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style);
+
+bool gt_label_is_single_line(gt_obj_st * label);
+bool gt_label_is_omit_single_line(gt_obj_st * label);
+bool gt_label_is_auto_scroll_single_line(gt_obj_st * label);
 
 #ifdef __cplusplus
 } /*extern "C"*/

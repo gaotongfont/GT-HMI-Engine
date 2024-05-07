@@ -124,6 +124,7 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
         area.h = checkbox->area.y + checkbox->area.h - area.y;
     }
 
+    font_dsc.logical_area = area;
     draw_text(checkbox->draw_ctx, &font_dsc, &area);
 
      // focus

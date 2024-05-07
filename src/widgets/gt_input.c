@@ -151,11 +151,12 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
 
     //
     gt_area_st area_font = gt_area_reduce(box_area , style->border_width + 2);
-    gt_area_st area_res = draw_text(input->draw_ctx, &font_attr, &area_font);
+    font_attr.logical_area = area_font;
+    _gt_draw_font_res_st font_res = draw_text(input->draw_ctx, &font_attr, &area_font);
 
     /*draw cursor*/
-    style->point_pos.x = area_res.x;
-    style->point_pos.y = area_res.y;
+    style->point_pos.x = font_res.area.x;
+    style->point_pos.y = font_res.area.y;
 
     if( style->value ){
         _gt_input_cursor_anim(input , &area_font);
@@ -172,8 +173,8 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         font_attr.font = &font,
         font_attr.font_color = color_font,
 
-        font_attr.start_x = area_res.x + style->border_width + 2;
-        font_attr.start_y = area_res.y;
+        font_attr.start_x = font_res.area.x + style->border_width + 2;
+        font_attr.start_y = font_res.area.y;
         draw_text(input->draw_ctx, &font_attr, &area_font);
     }
 

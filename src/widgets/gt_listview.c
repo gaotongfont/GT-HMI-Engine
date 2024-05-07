@@ -82,7 +82,9 @@ typedef struct _gt_listview_s {
     uint8_t icon_right     : 1;
     uint8_t multiple       : 1; /** Selected multiple item: 0: single selected; 1: multiple selected */
     uint8_t item_show_bg   : 1;
-    uint8_t reserved       : 3;
+    uint8_t omit_sl        : 1; /** Omit single line */
+    uint8_t auto_scroll_sl : 1; /** auto scroll single line */
+    uint8_t reserved       : 1;
 }_gt_listview_st;
 
 
@@ -99,6 +101,8 @@ typedef enum {
     _LABEL_FONT_THICK_EN,
     _LABEL_FONT_SPACE,
     _LABEL_FONT_ENCODING,
+    _LABEL_OMIT_SL,         /** Omit single line */
+    _LABEL_AUTO_SCROLL_SL,  /** Auto scroll single line */
 }_label_prop_em;
 
 typedef enum {
@@ -293,9 +297,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code) {
         _reset_last_active_state(obj, e->origin);
     }
-    else if (GT_EVENT_TYPE_UPDATE_STYLE == code) {
-
-    }
 }
 
 static void _set_label_prop_by_type(gt_obj_st * listview, _label_prop_em type, int val) {
@@ -332,6 +333,10 @@ static void _set_label_prop_by_type(gt_obj_st * listview, _label_prop_em type, i
                 gt_label_set_space(obj->child[item], (val >> 8) & 0xff, val & 0xff);
             } else if (_LABEL_FONT_ENCODING == type) {
                 gt_label_set_font_encoding(obj->child[item], (gt_encoding_et)val);
+            } else if (_LABEL_OMIT_SL == type) {
+                gt_label_set_omit_single_line(obj->child[item], (bool)val);
+            } else if (_LABEL_AUTO_SCROLL_SL == type) {
+                gt_label_set_auto_scroll_single_line(obj->child[item], (bool)val);
             }
         }
     }
@@ -462,6 +467,12 @@ static inline void _set_label_prop(gt_obj_st * listview, gt_obj_st * lab) {
     gt_label_set_space(lab, style->space_x, style->space_y);
     gt_obj_set_touch_parent(lab, true);
     gt_obj_set_bubble_notify(lab, true);
+
+    if (style->omit_sl) {
+        gt_label_set_omit_single_line(lab, true);
+    } else if (style->auto_scroll_sl) {
+        gt_label_set_auto_scroll_single_line(lab, true);
+    }
 }
 
 /**
@@ -1082,4 +1093,28 @@ void gt_listview_set_space(gt_obj_st * listview, uint8_t space_x, uint8_t space_
     style->space_y = space_y;
     _set_label_prop_by_type(listview, _LABEL_FONT_SPACE, (space_x << 8) | space_y);
 }
+
+void gt_listview_set_label_omit_single_line_by(gt_obj_st * listview, bool is_omit)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->omit_sl = is_omit ? 1 : 0;
+    style->auto_scroll_sl = 0;
+    _set_label_prop_by_type(listview, _LABEL_OMIT_SL, is_omit);
+}
+
+void gt_listview_set_label_auto_scroll_single_line_by(gt_obj_st * listview, bool is_auto_scroll)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->omit_sl = 0;
+    style->auto_scroll_sl = is_auto_scroll ? 1 : 0;
+    _set_label_prop_by_type(listview, _LABEL_AUTO_SCROLL_SL, is_auto_scroll);
+}
+
+
 /* end ------------------------------------------------------------------*/

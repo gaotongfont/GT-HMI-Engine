@@ -78,13 +78,12 @@ typedef enum gt_font_style_e {
     GT_FONT_STYLE_STRIKETHROUGH = 0x02,     ///< strikethrough
 }gt_font_style_et;
 
-typedef struct gt_text_style_s {
+typedef struct _gt_text_style_s {
     uint8_t style       : 2;    ///< font style value @ref gt_font_style_et
     uint8_t single_line : 1;    ///< 0[default]: multi-line, 1: single-line
     uint8_t omit_line   : 1;    ///< enabled when single-line set to 1.[0: display all word, 1: Characters are omitted at the end of lines]
-    uint8_t cycle_scroll: 1;    ///< enabled when single-line set to 1.[0: no cycle scroll, 1: cycle scroll]
-    uint8_t reserved    : 3;
-}gt_text_style_st;
+    uint8_t reserved    : 4;
+}_gt_text_style_st;
 
 /**
  * @brief The font display info
@@ -92,6 +91,8 @@ typedef struct gt_text_style_s {
 typedef struct _gt_attr_font_s {
     gt_font_st * font;      ///< Resource for font information
     gt_color_t font_color;  ///< The color of the font fore display
+
+    gt_area_st logical_area;
 
     uint16_t start_x;   ///< draw text start x from coords,if not need,must set 0
     uint16_t start_y;   ///< draw text start y from coords,if not need,must set 0
@@ -102,7 +103,7 @@ typedef struct _gt_attr_font_s {
     uint8_t align;      ///< Alignment @ gt_align_et
     gt_opa_t opa;       ///< font opa value @GT_OPA_X
 
-    gt_text_style_st reg;
+    _gt_text_style_st reg;
 }gt_attr_font_st;
 
 typedef enum _gt_encoding_e {
