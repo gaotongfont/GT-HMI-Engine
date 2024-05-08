@@ -160,7 +160,7 @@ gt_obj_st * gt_obj_get_parent(gt_obj_st * obj);
  * @brief
  *
  * @param obj
- * @param to
+ * @param to [Warn] Do not set to NULL
  * @return struct gt_obj_s* Parent pointer, if NULL is failed
  */
 gt_obj_st * gt_obj_change_parent(gt_obj_st * obj, gt_obj_st * to);
