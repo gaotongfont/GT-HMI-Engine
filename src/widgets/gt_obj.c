@@ -107,6 +107,17 @@ static void _screen_scroll(gt_obj_st * obj) {
         return;
     }
     gt_area_abs_st * max_area_p = gt_disp_get_area_max();
+    if (gt_disp_get_res_hor(NULL) == max_area_p->right &&
+        gt_disp_get_res_ver(NULL) == max_area_p->bottom &&
+        0 == max_area_p->left && 0 == max_area_p->top) {
+        /** Full screen can display all widget, do not refresh full screen again */
+        gt_area_st * area = gt_disp_get_area_act();
+        area->x = 0;
+        area->y = 0;
+        obj->process_attr.scroll.x = 0;
+        obj->process_attr.scroll.y = 0;
+        return;
+    }
 
     if (-obj->process_attr.scroll.x < max_area_p->left) {
         obj->process_attr.scroll.x = -max_area_p->left;
