@@ -149,10 +149,19 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
 
 gt_res_t gt_event_send_to_childs(struct gt_obj_s * parent, gt_event_type_et event, void * parms)
 {
+    gt_res_t res = GT_RES_OK;
+    if (NULL == parent) {
+        return GT_RES_FAIL;
+    }
+
     gt_size_t idx = parent->cnt_child - 1;
     for (; idx >= 0; idx--) {
-        gt_event_send(parent->child[idx], event, parms);
+        res = gt_event_send(parent->child[idx], event, parms);
+        if (GT_RES_OK != res) {
+            break;
+        }
     }
+    return res;
 }
 
 gt_res_t gt_event_send_by_id(gt_id_t widget_id, gt_event_type_et event, void * parms)
