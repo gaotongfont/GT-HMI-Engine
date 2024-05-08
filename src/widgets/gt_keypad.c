@@ -594,8 +594,13 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 static void _scrolling_handler(gt_obj_st * obj)
 {
     gt_size_t bottom = gt_obj_get_limit_bottom(obj);
+    uint16_t height = gt_obj_get_childs_max_height(obj);
 
-    if (gt_obj_scroll_get_y(obj) > 0) {
+    if (height < obj->area.h) {
+        obj->process_attr.scroll.y = 0;
+        return;
+    }
+    else if (gt_obj_scroll_get_y(obj) > 0) {
         obj->process_attr.scroll.y = 0;
     }
     else if (gt_obj_scroll_get_y(obj) < bottom) {
@@ -685,6 +690,9 @@ gt_obj_st * gt_keypad_create(gt_obj_st * parent)
     if (NULL == obj) {
         return obj;
     }
+
+    gt_obj_set_fixed(obj, false);
+
     gt_obj_set_focus_disabled(obj, GT_DISABLED);
     _gt_keypad_st* style = (_gt_keypad_st*)obj;
     style->radius = 4;
