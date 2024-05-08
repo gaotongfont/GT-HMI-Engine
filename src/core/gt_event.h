@@ -133,6 +133,24 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
  */
 gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * parms);
 
+/**
+ * @brief Send an event to the child object, excluding the parent object.
+ *
+ * @param parent object
+ * @param event
+ * @param parms
+ * @return gt_res_t
+ */
+gt_res_t gt_event_send_to_childs(struct gt_obj_s * parent, gt_event_type_et event, void * parms);
+
+/**
+ * @brief
+ *
+ * @param widget_id register widget id by gt_obj_register_id()
+ * @param event
+ * @param parms
+ * @return gt_res_t
+ */
 gt_res_t gt_event_send_by_id(gt_id_t widget_id, gt_event_type_et event, void * parms);
 
 /**

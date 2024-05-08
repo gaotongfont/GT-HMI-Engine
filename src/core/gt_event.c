@@ -147,6 +147,14 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
     return res;
 }
 
+gt_res_t gt_event_send_to_childs(struct gt_obj_s * parent, gt_event_type_et event, void * parms)
+{
+    gt_size_t idx = parent->cnt_child - 1;
+    for (; idx >= 0; idx--) {
+        gt_event_send(parent->child[idx], event, parms);
+    }
+}
+
 gt_res_t gt_event_send_by_id(gt_id_t widget_id, gt_event_type_et event, void * parms)
 {
     if (-1 == widget_id) {
@@ -157,7 +165,7 @@ gt_res_t gt_event_send_by_id(gt_id_t widget_id, gt_event_type_et event, void * p
     return gt_event_send(target, event, parms);
 }
 
-void gt_event_clr_all_event(gt_obj_st * parent)
+void gt_event_clr_all_event(struct gt_obj_s * parent)
 {
     if( parent == NULL ){
         return;
