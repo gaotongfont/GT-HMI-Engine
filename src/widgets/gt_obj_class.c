@@ -310,6 +310,9 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
     if (NULL == to) {
         return parent;
     }
+    if (parent == to) {
+        return parent;
+    }
 
     gt_event_send(parent, GT_EVENT_TYPE_CHANGE_CHILD_REMOVE, obj);
 
