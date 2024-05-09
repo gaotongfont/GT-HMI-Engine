@@ -530,14 +530,9 @@ void gt_label_set_omit_single_line(gt_obj_st * label, bool is_omit)
     }
     _gt_label_st * style = (_gt_label_st * )label;
     style->text_style.omit_line = is_omit;
+    style->text_style.single_line = is_omit;
 
-    if (style->text_style.omit_line) {
-        style->text_style.single_line = true;
-        _free_auto_scroll_st(style);
-    } else {
-        style->text_style.omit_line = false;
-        style->text_style.single_line = false;
-    }
+    _free_auto_scroll_st(style);
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

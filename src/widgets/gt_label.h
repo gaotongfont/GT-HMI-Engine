@@ -103,8 +103,29 @@ uint8_t gt_label_get_space_y(gt_obj_st * label);
  */
 uint16_t gt_label_get_longest_line_substring_width(gt_obj_st * label);
 
+/**
+ * @brief Set single line, label first time init is multi-line.
+ *      Enabled is omit single line mode, as gt_label_set_omit_single_line().
+ *
+ * @param label
+ * @param is_single_line true: single line, false: multi-line
+ */
 void gt_label_set_single_line(gt_obj_st * label, bool is_single_line);
+
+/**
+ * @brief Set omit single line
+ *
+ * @param label
+ * @param is_omit true: omit single line, false: multi-line
+ */
 void gt_label_set_omit_single_line(gt_obj_st * label, bool is_omit);
+
+/**
+ * @brief Set auto scroll single line
+ *
+ * @param label
+ * @param is_auto_scroll true: auto scroll single line, false: omit single line
+ */
 void gt_label_set_auto_scroll_single_line(gt_obj_st * label, bool is_auto_scroll);
 void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style);
 
