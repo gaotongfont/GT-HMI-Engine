@@ -143,6 +143,16 @@ void gt_player_stop(gt_obj_st * obj);
 void gt_player_toggle(gt_obj_st * obj);
 
 void gt_player_dir_toggle(gt_obj_st * obj);
+
+/**
+ * @brief When GT_PLAYER_MODE_LOOP or GT_PLAYER_MODE_PLAYBACK mode, set
+ *      repeat count
+ *
+ * @param obj
+ * @param count -1: infinite loop; otherwise, repeat count
+ */
+void gt_player_set_repeat_count(gt_obj_st * obj, int32_t count);
+
 /**
  * @brief Is forward direction to play
  *

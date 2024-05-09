@@ -694,6 +694,15 @@ void gt_player_dir_toggle(gt_obj_st * obj)
     _set_dir(style, _is_dir_next(style) ? false : true);
 }
 
+void gt_player_set_repeat_count(gt_obj_st * obj, int32_t count)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj;
+    _gt_timer_set_repeat_count(style->timer, count);
+}
+
 bool gt_player_dir_is_forward(gt_obj_st * obj)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
