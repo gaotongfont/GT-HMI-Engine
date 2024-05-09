@@ -76,7 +76,7 @@ lodepng source code. Don't forget to remove "static" if you copypaste them
 from here.*/
 
 #ifdef LODEPNG_COMPILE_ALLOCATORS
-static void* lodepng_malloc(size_t size) {
+static inline void * lodepng_malloc(size_t size) {
 #ifdef LODEPNG_MAX_ALLOC
   if(size > LODEPNG_MAX_ALLOC) return 0;
 #endif
@@ -84,14 +84,20 @@ static void* lodepng_malloc(size_t size) {
 }
 
 /* NOTE: when realloc returns NULL, it leaves the original memory untouched */
-static void* lodepng_realloc(void* ptr, size_t new_size) {
+static inline void * lodepng_realloc(void* ptr, size_t new_size) {
 #ifdef LODEPNG_MAX_ALLOC
   if(new_size > LODEPNG_MAX_ALLOC) return 0;
 #endif
+  if (NULL == ptr) {
+    return gt_mem_malloc(new_size);
+  }
   return gt_mem_realloc(ptr, new_size);
 }
 
-static void lodepng_free(void* ptr) {
+static inline void lodepng_free(void* ptr) {
+  if (NULL == ptr) {
+    return;
+  }
   gt_mem_free(ptr);
 }
 #else /*LODEPNG_COMPILE_ALLOCATORS*/
