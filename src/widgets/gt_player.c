@@ -433,7 +433,7 @@ static void _auto_play_callback(struct _gt_timer_s * timer) {
 
     do {
         _change_item_handler(obj, _is_dir_next(style));
-    } while (count-- > 0);
+    } while (--count > 0);
 
     style->last_player_tick =  gt_tick_get();
 }
