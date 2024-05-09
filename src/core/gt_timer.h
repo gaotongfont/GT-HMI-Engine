@@ -107,7 +107,8 @@ _gt_timer_st * _gt_timer_get_laster_timer(void);
  * @brief timer repeat times
  *
  * @param timer timer control block
- * @param repeat task repeat times and remove it from timer list
+ * @param repeat task repeat times and remove it from timer list,
+ *          -1 : infinity; n > 0: repeat time;such as: 1 -> it will run in One time;
  */
 void _gt_timer_set_repeat_count(_gt_timer_st * timer, int32_t repeat);
 

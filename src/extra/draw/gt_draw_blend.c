@@ -44,17 +44,6 @@ typedef struct _valid_param_s {
 
 
 /* static functions -----------------------------------------------------*/
-/**
- * @brief
- *
- * @param color_dst_p
- * @param area_intersect
- * @param step_dst_line
- * @param color_fill
- * @param opa
- * @param color_src_p
- * @param step_src_line
- */
 static inline void _fill_no_opacity(
     gt_color_t * color_dst_p, gt_area_st const * const area_intersect,
     uint16_t step_dst_line, gt_color_t color_fill, gt_opa_t opa,
