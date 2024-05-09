@@ -146,9 +146,6 @@ static inline bool _unlock(_gt_player_st * style) {
     if (NULL == style) {
         return false;
     }
-    if (!style->reg.lock) {
-        return false;
-    }
     style->reg.lock = false;
     return true;
 }
@@ -243,15 +240,12 @@ static void _deinit_cb(gt_obj_st * obj) {
     if (NULL == obj) {
         return ;
     }
-
     _gt_player_st * style_p = (_gt_player_st * )obj;
-    switch (style_p->reg.type) {
-        default:
-            _destroy_type_default(style_p);
-            break;
-    }
-
     _destroy_timer(style_p);
+
+    if (GT_PLAYER_TYPE_IMG == style_p->reg.type) {
+        _destroy_type_default(style_p);
+    }
 }
 
 /**
@@ -429,15 +423,18 @@ static void _auto_play_callback(struct _gt_timer_s * timer) {
     _gt_player_st * style = (_gt_player_st * )obj;
     if (!_lock(style)) {
         /** The callback has been executed, waiting for it to be displayed */
+        gt_disp_invalid_area(obj);
         return ;
     }
-    uint16_t count = 1;
+    gt_size_t count = 1;
     if (style->reg.real_time_update) {
         count = gt_tick_elapse(style->last_player_tick) / _gt_timer_get_period(timer);
     }
-    for (uint16_t i = 0; i < count; i++) {
+
+    do {
         _change_item_handler(obj, _is_dir_next(style));
-    }
+    } while (count-- > 0);
+
     style->last_player_tick =  gt_tick_get();
 }
 

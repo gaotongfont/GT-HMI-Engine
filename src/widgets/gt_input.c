@@ -71,7 +71,7 @@ const gt_obj_class_st gt_input_class = {
 
 
 /* static functions -----------------------------------------------------*/
-static void _gt_input_cursor_anim(gt_obj_st * input , const gt_area_st* box_area)
+static void _gt_input_cursor_anim(gt_obj_st * input, const gt_area_st* box_area)
 {
     _gt_input_st * style = (_gt_input_st * )input;
     gt_size_t tmp;
