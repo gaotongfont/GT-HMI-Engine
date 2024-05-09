@@ -105,7 +105,8 @@ uint16_t gt_label_get_longest_line_substring_width(gt_obj_st * label);
 
 /**
  * @brief Set single line, label first time init is multi-line.
- *      Enabled is omit single line mode, as gt_label_set_omit_single_line().
+ *      The characters that can be displayed in the display area, without
+ *      "..." or "。。。" at the end of the line.
  *
  * @param label
  * @param is_single_line true: single line, false: multi-line
@@ -113,7 +114,8 @@ uint16_t gt_label_get_longest_line_substring_width(gt_obj_st * label);
 void gt_label_set_single_line(gt_obj_st * label, bool is_single_line);
 
 /**
- * @brief Set omit single line
+ * @brief Set omit single line, The characters display "..." or "。。。"
+ *      at the end of the line, if the characters that can be displayed.
  *
  * @param label
  * @param is_omit true: omit single line, false: multi-line

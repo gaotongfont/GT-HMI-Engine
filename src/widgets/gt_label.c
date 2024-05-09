@@ -511,12 +511,12 @@ void gt_label_set_single_line(gt_obj_st * label, bool is_single_line)
         return ;
     }
     _gt_label_st * style = (_gt_label_st * )label;
+    if (is_single_line == style->text_style.single_line) {
+        return ;
+    }
     style->text_style.single_line = is_single_line;
-    _reset_auto_scroll_st(style->auto_scroll);
 
-    if (style->text_style.single_line) {
-        style->text_style.omit_line = true; //default mode
-    } else {
+    if (false == style->text_style.single_line) {
         _free_auto_scroll_st(style);
     }
 
