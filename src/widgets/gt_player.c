@@ -34,6 +34,7 @@
 #define _GT_PLAYER_BIT_LOCK_LENGTH      1
 #define _GT_PLAYER_BIT_DIR_LENGTH       1
 #define _GT_PLAYER_BIT_REAL_TIME_UPDATE_LENGTH 1
+#define _GT_PLAYER_BIT_DEFAULT_DIR_LENGTH 1
 #define _GT_PLAYER_BIT_RESERVED_LENGTH  4
 
 
@@ -66,6 +67,7 @@ typedef struct _gt_player_reg_s {
     uint16_t lock: _GT_PLAYER_BIT_LOCK_LENGTH;          ///< lock the player callback handler, 0: unlock, 1: lock
     uint16_t dir: _GT_PLAYER_BIT_DIR_LENGTH;            ///< direction of the player, 0: forward, 1: backward
     uint16_t real_time_update: _GT_PLAYER_BIT_REAL_TIME_UPDATE_LENGTH;  ///< 1: real time update, 0: update when the player is displayed
+    uint16_t default_dir: _GT_PLAYER_BIT_DEFAULT_DIR_LENGTH;  ///< 0: default direction is forward, 1: direction is backward
     uint16_t reserved: _GT_PLAYER_BIT_RESERVED_LENGTH;  ///< reserved bit length
 }_gt_player_reg_st;
 
@@ -75,6 +77,7 @@ typedef struct _gt_player_s {
     _gt_player_reg_st reg;
     _gt_player_obj_st target;
     _gt_timer_st * timer;
+    int32_t repeat_cnt;         /** -1: infinite; > 0: repeat count; 0: stop player */
 }_gt_player_st;
 
 
@@ -268,6 +271,23 @@ static inline bool _is_type_none(_gt_player_st * style) {
     return style->reg.type == GT_PLAYER_TYPE_NONE;
 }
 
+static void _toggle_dir_handler(_gt_player_st * style) {
+    if (_is_type_none(style)) {
+        GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
+        return ;
+    }
+    _set_dir(style, _is_dir_next(style) ? false : true);
+}
+
+static inline void _check_repeat_count(_gt_player_st * style) {
+    if (style->repeat_cnt < 1) {
+        return ;
+    }
+    if (_is_dir_next(style) != style->reg.default_dir) {
+        --style->repeat_cnt;
+    }
+}
+
 /**
  * @brief Turn to the previous item
  *
@@ -279,12 +299,19 @@ static void _turn_prev_item(gt_obj_st * obj) {
         return ;
     }
     if (style->target.index > 0) {
+        if (0 == style->repeat_cnt) {
+            _gt_timer_set_paused(style->timer, true);
+            return;
+        }
         --style->target.index;
         _invalid_area(obj, style);
         return ;
     }
     if (_is_mode_equal(style, GT_PLAYER_MODE_LOOP)) {
         style->target.index = style->target.count - 1;
+        if (style->repeat_cnt > 0) {
+            --style->repeat_cnt;
+        }
         _invalid_area(obj, style);
         return ;
     }
@@ -293,7 +320,8 @@ static void _turn_prev_item(gt_obj_st * obj) {
         return ;
     }
     if (_is_mode_equal(style, GT_PLAYER_MODE_PLAYBACK)) {
-        gt_player_dir_toggle(obj);
+        _toggle_dir_handler(style);
+        _check_repeat_count(style);
         _turn_next_item(obj);
         return ;
     }
@@ -310,12 +338,19 @@ static void _turn_next_item(gt_obj_st * obj) {
         return ;
     }
     if (style->target.index + 1 < style->target.count) {
+        if (0 == style->repeat_cnt) {
+            _gt_timer_set_paused(style->timer, true);
+            return;
+        }
         ++style->target.index;
         _invalid_area(obj, style);
         return ;
     }
     if (_is_mode_equal(style, GT_PLAYER_MODE_LOOP)) {
         style->target.index = 0;
+        if (style->repeat_cnt > 0) {
+            --style->repeat_cnt;
+        }
         _invalid_area(obj, style);
         return ;
     }
@@ -324,7 +359,8 @@ static void _turn_next_item(gt_obj_st * obj) {
         return ;
     }
     if (_is_mode_equal(style, GT_PLAYER_MODE_PLAYBACK)) {
-        gt_player_dir_toggle(obj);
+        _toggle_dir_handler(style);
+        _check_repeat_count(style);
         _turn_prev_item(obj);
         return ;
     }
@@ -667,11 +703,9 @@ void gt_player_dir_toggle(gt_obj_st * obj)
         return ;
     }
     _gt_player_st * style = (_gt_player_st * )obj;
-    if (_is_type_none(style)) {
-        GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
-        return ;
-    }
-    _set_dir(style, _is_dir_next(style) ? false : true);
+    style->reg.default_dir = style->reg.default_dir ? 0 : 1;
+
+    _toggle_dir_handler(style);
 }
 
 void gt_player_set_repeat_count(gt_obj_st * obj, int32_t count)
@@ -680,7 +714,8 @@ void gt_player_set_repeat_count(gt_obj_st * obj, int32_t count)
         return ;
     }
     _gt_player_st * style = (_gt_player_st * )obj;
-    _gt_timer_set_repeat_count(style->timer, style->target.count * count - 1);
+
+    style->repeat_cnt = count;
 }
 
 bool gt_player_dir_is_forward(gt_obj_st * obj)
