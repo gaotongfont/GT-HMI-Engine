@@ -28,7 +28,8 @@
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_img_s {
     gt_obj_st obj;
-    char * src;         // img src, It can be a virt file name/path or an array of C
+    char * src;             // img src, It can be a virt file name/path or an array of C
+    _gt_img_dsc_st raw;   // raw data buffer draw directly
 }_gt_img_st;
 
 /* static variables -----------------------------------------------------*/
@@ -61,6 +62,7 @@ static void _init_cb(gt_obj_st * obj) {
     _gt_img_st * style = (_gt_img_st * )obj;
     gt_attr_rect_st dsc = {
         .bg_img_src = style->src,
+        .raw_img = style->src ? NULL : &style->raw,
         .bg_opa = obj->opa,
     };
     /* start draw obj */
@@ -154,7 +156,8 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
  * @param parent img's parent element
  * @return gt_obj_st* img obj
  */
-gt_obj_st * gt_img_create(gt_obj_st * parent) {
+gt_obj_st * gt_img_create(gt_obj_st * parent)
+{
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
     if (NULL == obj) {
         return obj;
@@ -163,8 +166,8 @@ gt_obj_st * gt_img_create(gt_obj_st * parent) {
     return obj;
 }
 
-
-void gt_img_set_src(gt_obj_st * img, char * src){
+void gt_img_set_src(gt_obj_st * img, char * src)
+{
     if (false == gt_obj_is_type(img, OBJ_TYPE)) {
         return ;
     }
@@ -175,8 +178,9 @@ void gt_img_set_src(gt_obj_st * img, char * src){
     if (NULL != style->src && !strcmp(src, style->src)) {
         return ;
     }
+    gt_memset(&style->raw, 0, sizeof(_gt_img_dsc_st));
 
-    if( NULL != style->src ){
+    if (NULL != style->src) {
         gt_mem_free(style->src);
         style->src = NULL;
     }
@@ -188,11 +192,41 @@ void gt_img_set_src(gt_obj_st * img, char * src){
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
-char * gt_img_get_src(gt_obj_st * img){
+void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) {
+        return ;
+    }
+    if (NULL == raw->buffer) {
+        return ;
+    }
+    _gt_img_st * style = (_gt_img_st *)img;
+    if (style->src) {
+        gt_mem_free(style->src);
+        style->src = NULL;
+    }
+    style->raw.img = (uint8_t * )raw->buffer;
+    style->raw.alpha = (gt_opa_t * )raw->opa;
+    style->raw.header.w = raw->width;
+    style->raw.header.h = raw->height;
+    style->raw.header.type = GT_IMG_DECODER_TYPE_RAM;
+
+    if (style->raw.img && style->raw.alpha) {
+        style->raw.header.color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;
+    } else {
+        style->raw.header.color_format = GT_IMG_CF_TRUE_COLOR;
+    }
+
+    gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+char * gt_img_get_src(gt_obj_st * img)
+{
     if (false == gt_obj_is_type(img, OBJ_TYPE)) {
         return NULL;
     }
     _gt_img_st * style = (_gt_img_st *)img;
+    /** raw data mode src is NULL */
     return style->src;
 }
 

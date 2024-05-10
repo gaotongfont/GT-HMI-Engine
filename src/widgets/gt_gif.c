@@ -70,7 +70,7 @@ static void _init_cb(gt_obj_st * obj) {
     gt_attr_rect_st dsc = {
         .bg_opa = obj->opa,
         .bg_img_src = NULL,
-        .ram_img = &style->dsc,
+        .raw_img = &style->dsc,
     };
     if (NULL == style->gif) {
         return ;

@@ -62,13 +62,11 @@ typedef struct _gt_attr_rect_reg_s {
 /**
  * @brief rectangle attribute information
  */
-typedef struct _gt_attr_rect_s
-{
-    // bg img
+typedef struct _gt_attr_rect_s {
     void * bg_img_src;          ///< image source; NULL: using RAM image data
     gt_attr_line_st  * line;     ///< use straight line
 
-    _gt_img_dsc_st * ram_img;   ///< RAM image data, when bg_img_src is NULL
+    _gt_img_dsc_st * raw_img;   ///< RAM image data, when bg_img_src is NULL
 
     gt_area_st* base_area;
     // Dot matrix data

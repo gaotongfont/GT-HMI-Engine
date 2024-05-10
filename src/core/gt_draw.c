@@ -857,8 +857,8 @@ static void _filling_by_sjpg_file(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_
 static void _filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     blend_dsc->mask_buf = &dsc_img->alpha[0];
     blend_dsc->dst_buf = (gt_color_t *)&dsc_img->img[0];
-    if (NULL == blend_dsc->dst_buf || NULL == blend_dsc->mask_buf) {
-        GT_LOGW(GT_LOG_TAG_GUI, "Per-line buffer malloc failed");
+    if (NULL == blend_dsc->dst_buf) {
+        GT_LOGW(GT_LOG_TAG_GUI, "Raw data buffer is NULL");
         return;
     }
 
@@ -2309,10 +2309,10 @@ void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_are
 
     _gt_img_dsc_st dsc_img = {0};
     if (NULL == dsc->bg_img_src) {
-        if (NULL == dsc->ram_img) {
+        if (NULL == dsc->raw_img) {
             return;
         }
-        dsc_img = *dsc->ram_img;
+        dsc_img = *dsc->raw_img;
     }
     else if ( GT_RES_FAIL == gt_img_decoder_open(&dsc_img, dsc->bg_img_src)) {
         GT_LOGW(GT_LOG_TAG_DATA, "Open image decoder failed\n");

@@ -71,10 +71,8 @@ typedef struct _gt_img_dsc_s {
     void * customs_data;        ///< customs data
     _gt_img_info_st header;     ///< the header information of image
     gt_fs_type_et type;         ///< file driver type, such as: SD, Flash...
-    uint8_t * alpha;            ///< temp buffer which is used to save alpha data
+    gt_opa_t * alpha;           ///< temp buffer which is used to save alpha data
 }_gt_img_dsc_st;
-
-struct _gt_img_decoder_s;
 
 /**
  * @brief function pointer to decode image information, @ref _gt_img_info_st

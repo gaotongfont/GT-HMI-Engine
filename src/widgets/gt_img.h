@@ -16,6 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_obj.h"
 #include "gt_obj_class.h"
+#include "../others/gt_color.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -23,6 +24,12 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+typedef struct gt_img_raw_s {
+    gt_color_t const * buffer;    /** color channel, necessary */
+    gt_opa_t   const * opa;       /** alpha channel, unnecessary */
+    uint16_t   width;             /** width of the image */
+    uint16_t   height;            /** height of the image */
+}gt_img_raw_st;
 
 
 
@@ -47,6 +54,14 @@ gt_obj_st * gt_img_create(gt_obj_st * parent);
  * @param src path of img
  */
 void gt_img_set_src(gt_obj_st * img, char * src);
+
+/**
+ * @brief Display the image directly with raw data
+ *
+ * @param img img object
+ * @param raw Raw data of the image
+ */
+void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw);
 
 /**
  * @brief get img src of path
