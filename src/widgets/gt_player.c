@@ -431,9 +431,9 @@ static void _auto_play_callback(struct _gt_timer_s * timer) {
         count = gt_tick_elapse(style->last_player_tick) / _gt_timer_get_period(timer);
     }
 
-    do {
+    while (count-- > 0) {
         _change_item_handler(obj, _is_dir_next(style));
-    } while (--count > 0);
+    }
 
     style->last_player_tick =  gt_tick_get();
 }
