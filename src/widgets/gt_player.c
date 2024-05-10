@@ -481,6 +481,7 @@ gt_obj_st * gt_player_create(gt_obj_st * parent)
     }
     _gt_player_st * style = (_gt_player_st * )obj;
     style->reg.type = GT_PLAYER_TYPE_IMG;
+    style->repeat_cnt = -1;
 
     style->timer = _gt_timer_create(_auto_play_callback, 500, (void * )obj);
     _gt_timer_set_paused(style->timer, true);
