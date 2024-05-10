@@ -22,10 +22,6 @@ extern "C" {
 #if GT_CFG_ENABLE_PLAYER
 /* define ---------------------------------------------------------------*/
 
-/**
- * @brief The objects displayed use custom display position
- */
-#define _GT_PLAYER_USE_CUSTOM_POS       0
 
 
 /* typedef --------------------------------------------------------------*/
@@ -102,9 +98,6 @@ void gt_player_remove_item(gt_obj_st * obj, void * item);
  */
 void gt_player_remove_item_by_index(gt_obj_st * obj, uint16_t idx);
 
-#if _GT_PLAYER_USE_CUSTOM_POS
-uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_size, gt_area_st * area);
-#else
 /**
  * @brief Add the player project content
  *
@@ -114,7 +107,6 @@ uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_siz
  * @return uint16_t The index of the item
  */
 uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_size);
-#endif  /** !_GT_PLAYER_USE_CUSTOM_POS */
 
 /**
  * @brief Set player item index

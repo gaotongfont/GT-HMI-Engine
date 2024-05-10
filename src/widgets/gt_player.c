@@ -44,9 +44,6 @@
 typedef struct _gt_player_item_s {
     void * src;
     uint16_t test;
-#if _GT_PLAYER_USE_CUSTOM_POS
-    gt_area_st area;
-#endif
 }_gt_player_item_st;
 
 /**
@@ -449,6 +446,9 @@ gt_obj_st * gt_player_create(gt_obj_st * parent)
     _gt_player_st * style = (_gt_player_st * )obj;
     style->reg.type = GT_PLAYER_TYPE_IMG;
 
+    style->timer = _gt_timer_create(_auto_play_callback, 500, (void * )obj);
+    _gt_timer_set_paused(style->timer, true);
+
     return obj;
 }
 
@@ -496,7 +496,7 @@ void gt_player_set_auto_play_period(gt_obj_st * obj, uint32_t period)
         _gt_timer_set_period(style->timer, period);
         return ;
     }
-    style->timer = _gt_timer_create(_auto_play_callback, period, (void * )obj);
+    _gt_timer_set_period(style->timer, period);
     _set_play_status(style, false);
 }
 
@@ -540,22 +540,6 @@ void gt_player_remove_item_by_index(gt_obj_st * obj, uint16_t idx) {
     _remove_item(style, idx);
 }
 
-#if _GT_PLAYER_USE_CUSTOM_POS
-uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_size, gt_area_st * area)
-{
-    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
-        return ;
-    }
-    uint16_t count = _add_item(obj, item, item_byte_size);
-    if (!count) {
-        return count;
-    }
-    uint16_t idx = count - 1;
-    _gt_player_st * style = (_gt_player_st * )obj;
-    style->target.list[idx]->area = *area;
-    return count;
-}
-#else
 uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_size)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
@@ -563,7 +547,6 @@ uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_siz
     }
     return _add_item(obj, item, item_byte_size);
 }
-#endif
 
 void gt_player_set_index(gt_obj_st * obj, gt_size_t index)
 {
@@ -697,7 +680,7 @@ void gt_player_set_repeat_count(gt_obj_st * obj, int32_t count)
         return ;
     }
     _gt_player_st * style = (_gt_player_st * )obj;
-    _gt_timer_set_repeat_count(style->timer, count);
+    _gt_timer_set_repeat_count(style->timer, style->target.count * count - 1);
 }
 
 bool gt_player_dir_is_forward(gt_obj_st * obj)
