@@ -143,28 +143,28 @@ static bool _is_indev_home_gesture(gt_indev_st * indev , gt_event_type_et* event
 
     if(GT_DIR_DOWN == point_p->gesture){
         // top
-        if(GT_CFG_DEFAULT_AREA_HOME_GESTUER_TOP >= point_p->act.y){
+        if(GT_CFG_DEFAULT_AREA_HOME_GESTURE_TOP >= point_p->act.y){
             if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_TOP;
             return true;
         }
     }
     else if(GT_DIR_UP == point_p->gesture){
         // bottom
-        if(GT_CFG_DEFAULT_AREA_HOME_GESTUER_BOTTOM >= GT_SCREEN_HEIGHT - point_p->act.y){
+        if(GT_CFG_DEFAULT_AREA_HOME_GESTURE_BOTTOM >= GT_SCREEN_HEIGHT - point_p->act.y){
             if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_BOTTOM;
             return true;
         }
     }
     else if(GT_DIR_LEFT == point_p->gesture){
         // right
-        if(GT_CFG_DEFAULT_AREA_HOME_GESTUER_RIGHT >= GT_SCREEN_WIDTH - point_p->act.x){
+        if(GT_CFG_DEFAULT_AREA_HOME_GESTURE_RIGHT >= GT_SCREEN_WIDTH - point_p->act.x){
             if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_RIGHT;
             return true;
         }
     }
     else if(GT_DIR_RIGHT == point_p->gesture){
         // left
-        if(GT_CFG_DEFAULT_AREA_HOME_GESTUER_LEFT >= point_p->act.x){
+        if(GT_CFG_DEFAULT_AREA_HOME_GESTURE_LEFT >= point_p->act.x){
             if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_LEFT;
             return true;
         }
@@ -175,7 +175,7 @@ static bool _is_indev_home_gesture(gt_indev_st * indev , gt_event_type_et* event
 
 static bool _indev_send_home_gesture_event(gt_indev_st * indev)
 {
-    if((gt_tick_get() - indev->proc.timestamp_start) > GT_CFG_DEFAULT_POINT_HOME_GESTUER_TIME){
+    if((gt_tick_get() - indev->proc.timestamp_start) > GT_CFG_DEFAULT_POINT_HOME_GESTURE_TIME){
         return false;
     }
 
