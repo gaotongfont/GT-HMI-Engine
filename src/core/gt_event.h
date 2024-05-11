@@ -93,7 +93,7 @@ typedef enum gt_event_type_e {
 
 typedef struct _gt_event_s {
     struct _gt_event_s * prev;
-    struct gt_obj_s * target;
+    struct gt_obj_s * target;   /** Bubble notify temp target */
     struct gt_obj_s * origin;   /** origin control */
     void * user_data;
     void * param;               /** gt_event_send() param */

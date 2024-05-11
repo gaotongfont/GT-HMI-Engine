@@ -44,7 +44,7 @@
  * @return true
  * @return false
  */
-static bool _update_layer_top_widget_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y) {
+static bool _update_layer_top_widget_area(gt_obj_st * obj, gt_area_st new) {
     if (NULL == obj) {
         return false;
     }
@@ -62,21 +62,20 @@ static bool _update_layer_top_widget_pos(gt_obj_st * obj, gt_size_t x, gt_size_t
     if (ptr != disp->layer_top) {
         return false;
     }
-    gt_area_st area = obj->area;
 
-    if (x > disp->layer_top->area.w) {
-        x = x % disp->layer_top->area.w;
+    if (new.x > disp->layer_top->area.w) {
+        new.x = new.x % disp->layer_top->area.w;
     }
-    if (y > disp->layer_top->area.h) {
-        y = y % disp->layer_top->area.h;
+    if (new.y > disp->layer_top->area.h) {
+        new.y = new.y % disp->layer_top->area.h;
     }
-    area.x = x + disp->layer_top->area.x;
-    area.y = y + disp->layer_top->area.y;
+    new.x = new.x + disp->layer_top->area.x;
+    new.y = new.y + disp->layer_top->area.y;
 
-    _gt_obj_move_child_by(obj, area.x - gt_obj_get_x(obj), area.y - gt_obj_get_y(obj));
+    _gt_obj_move_child_by(obj, new.x - gt_obj_get_x(obj), new.y - gt_obj_get_y(obj));
 
-    gt_obj_pos_change(obj, &area);
-    _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
+    gt_obj_pos_change(obj, &new);
+    _gt_disp_update_max_area(&new, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 
     return true;
@@ -87,7 +86,7 @@ static bool _update_layer_top_widget_pos(gt_obj_st * obj, gt_size_t x, gt_size_t
 gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area)
 {
 #if GT_USE_LAYER_TOP
-    if (_update_layer_top_widget_pos(obj, area.x, area.y)) {
+    if (_update_layer_top_widget_area(obj, area)) {
         return GT_RES_OK;
     }
 #endif
@@ -98,13 +97,16 @@ gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area)
 
 void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)
 {
+    gt_area_st area = obj->area;
 #if GT_USE_LAYER_TOP
-    if (_update_layer_top_widget_pos(obj, x, y)) {
+    area.x = x;
+    area.y = y;
+    if (_update_layer_top_widget_area(obj, area)) {
         return ;
     }
 #endif
     /** normal screen */
-    gt_area_st area = obj->area;
+    area = obj->area;
     _gt_obj_move_child_by(obj, x - area.x, y - area.y);
     if (gt_obj_get_virtual(obj)) {
         return ;
@@ -145,29 +147,29 @@ void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h) {
 
 void gt_obj_set_x(gt_obj_st * obj, gt_size_t x) {
     gt_area_st area = obj->area;
+    area.x = x;
 #if GT_USE_LAYER_TOP
-    if (_update_layer_top_widget_pos(obj, x, area.y)) {
+    if (_update_layer_top_widget_area(obj, area)) {
         return ;
     }
 #endif
     if (gt_obj_get_virtual(obj)) {
         return ;
     }
-    area.x = x;
     gt_obj_set_area(obj, area);
 }
 
 void gt_obj_set_y(gt_obj_st * obj, gt_size_t y) {
     gt_area_st area = obj->area;
+    area.y = y;
 #if GT_USE_LAYER_TOP
-    if (_update_layer_top_widget_pos(obj, area.x, y)) {
+    if (_update_layer_top_widget_area(obj, area)) {
         return ;
     }
 #endif
     if (gt_obj_get_virtual(obj)) {
         return ;
     }
-    area.y = y;
     gt_obj_set_area(obj, area);
 }
 
