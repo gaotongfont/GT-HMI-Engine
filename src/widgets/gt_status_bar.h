@@ -29,7 +29,20 @@ extern "C" {
 
 
 /* define ---------------------------------------------------------------*/
+#ifndef GT_STATUS_BAR_THREE_PART_SCALE_MODE
+    /**
+     * @brief Use three part scale mode, left center right part
+     */
+    #define GT_STATUS_BAR_THREE_PART_SCALE_MODE     01
+#endif
 
+#ifndef GT_STATUS_BAR_CUSTOM_MODE
+    /**
+     * @brief Use custom mode, use gt_obj_set_pos(), etc. to set
+     *      custom position.
+     */
+    #define GT_STATUS_BAR_CUSTOM_MODE               01
+#endif
 
 
 /* typedef --------------------------------------------------------------*/
@@ -75,6 +88,8 @@ bool gt_status_bar_is_hide(void);
 
 void gt_status_bar_set_height(uint16_t height);
 
+/* ------------------- left center right part ------------------- */
+#if GT_STATUS_BAR_THREE_PART_SCALE_MODE
 /**
  * @brief Set three part of display scale value,
  * such: left_width = screen_width * left / (left + center + right)
@@ -104,9 +119,33 @@ bool gt_status_bar_right_change_icon(gt_obj_st * icon, char * src);
 gt_obj_st * gt_status_bar_right_add_text(char * text, uint16_t width);
 bool gt_status_bar_right_change_text(gt_obj_st * lab, char * text);
 
-
 bool gt_status_bar_center_remove_all(void);
 gt_obj_st * gt_status_bar_center_set_text(char * text);
+
+#endif  /** GT_STATUS_BAR_THREE_PART_SCALE_MODE */
+
+/* ------------------- custom ------------------- */
+#if GT_STATUS_BAR_CUSTOM_MODE
+
+/**
+ * @brief Find custom status bar object by text or src
+ *
+ * @param target
+ * @return true
+ * @return false
+ */
+gt_obj_st * gt_status_bar_custom_find_by(char * text_or_src);
+bool gt_status_bar_custom_remove(gt_obj_st * target);
+bool gt_status_bar_custom_remove_all(void);
+
+gt_obj_st * gt_status_bar_custom_add_icon(char * src);
+bool gt_status_bar_custom_change_icon(gt_obj_st * icon, char * src);
+gt_obj_st * gt_status_bar_custom_add_text(char * text, uint16_t width);
+bool gt_status_bar_custom_change_text(gt_obj_st * lab, char * text);
+
+#endif  /** GT_STATUS_BAR_CUSTOM_MODE */
+
+/* ------------------- common ------------------- */
 
 /**
  * @brief Show status bar background

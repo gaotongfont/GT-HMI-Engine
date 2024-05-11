@@ -44,9 +44,17 @@ typedef struct _part_item_s {
 
 typedef struct _gt_status_bar_s {
     gt_obj_st obj;
+
+#if GT_STATUS_BAR_THREE_PART_SCALE_MODE
     _part_item_st left;
     _part_item_st center;
     _part_item_st right;
+#endif
+
+#if GT_STATUS_BAR_CUSTOM_MODE
+    gt_obj_st * custom;
+#endif
+
     gt_font_info_st font_info;
     gt_color_t font_color;
     uint16_t height;
@@ -128,6 +136,31 @@ static gt_obj_st * _find_obj_recursive_by_type(gt_obj_st * self, gt_obj_type_et 
     return ret;
 }
 
+static gt_obj_st * _find_by_str(gt_obj_st * parent, char * text_or_src) {
+    if (NULL == parent) {
+        return NULL;
+    }
+    gt_obj_st * ret = NULL;
+    gt_obj_st * child = NULL;
+    for (gt_size_t i = 0, cnt = parent->cnt_child; i < cnt; ++i) {
+        child = parent->child[i];
+        if (gt_obj_is_type(child, GT_TYPE_IMG)) {
+            if (0 == strcmp(text_or_src, gt_img_get_src(child))) {
+                ret = child;
+                break;
+            }
+        } else if (gt_obj_is_type(child, GT_TYPE_LAB)) {
+            if (0 == strcmp(text_or_src, gt_label_get_text(child))) {
+                ret = child;
+                break;
+            }
+        }
+    }
+    return ret;
+}
+
+#if GT_STATUS_BAR_THREE_PART_SCALE_MODE
+
 static void _adjust_img_center_line(gt_obj_st * icon, gt_obj_st * obj) {
     uint16_t w = gt_img_get_width(icon);
     uint16_t h = gt_img_get_height(icon);
@@ -172,29 +205,6 @@ static void _resize_part_width(gt_obj_st * obj) {
     }
 }
 
-static gt_obj_st * _find_by_str(gt_obj_st * parent, char * text_or_src) {
-    if (NULL == parent) {
-        return NULL;
-    }
-    gt_obj_st * ret = NULL;
-    gt_obj_st * child = NULL;
-    for (gt_size_t i = 0, cnt = parent->cnt_child; i < cnt; ++i) {
-        child = parent->child[i];
-        if (gt_obj_is_type(child, GT_TYPE_IMG)) {
-            if (0 == strcmp(text_or_src, gt_img_get_src(child))) {
-                ret = child;
-                break;
-            }
-        } else if (gt_obj_is_type(child, GT_TYPE_LAB)) {
-            if (0 == strcmp(text_or_src, gt_label_get_text(child))) {
-                ret = child;
-                break;
-            }
-        }
-    }
-    return ret;
-}
-
 static gt_obj_st * _create_img_obj(gt_obj_st * parent, char * src) {
 
     gt_obj_st * icon = _find_by_str(parent, src);
@@ -225,6 +235,21 @@ static bool _change_img_src(gt_obj_st * parent, gt_obj_st * icon, char * src) {
 
     return true;
 }
+
+static bool _remove_by(gt_obj_st * parent, gt_obj_st * target) {
+    if (NULL == parent) {
+        return false;
+    }
+    if (false == gt_obj_is_child(target, parent)) {
+        return false;
+    }
+    _gt_obj_class_destroy(target);
+    gt_layout_row_grow(parent);
+
+    return true;
+}
+
+#endif  /** GT_STATUS_BAR_THREE_PART_SCALE_MODE */
 
 static gt_obj_st * _create_lab_obj(gt_obj_st * parent, _gt_status_bar_st * style, char * text, uint16_t width) {
     if (NULL == parent) {
@@ -306,19 +331,6 @@ static bool _change_lab_text(gt_obj_st * parent, gt_obj_st * lab, char * text) {
     return true;
 }
 
-static bool _remove_by(gt_obj_st * parent, gt_obj_st * target) {
-    if (NULL == parent) {
-        return false;
-    }
-    if (false == gt_obj_is_child(target, parent)) {
-        return false;
-    }
-    _gt_obj_class_destroy(target);
-    gt_layout_row_grow(parent);
-
-    return true;
-}
-
 static bool _remove_all_by(gt_obj_st * parent) {
     if (0 == parent->cnt_child) {
         return true;
@@ -351,6 +363,7 @@ gt_obj_st * gt_status_bar_create(bool have_background)
     style->font_color = gt_color_black();
     style->bg_opa = GT_OPA_100;
     style->show_bg = have_background;
+#if GT_STATUS_BAR_THREE_PART_SCALE_MODE
     style->left.scale = _DEFAULT_LEFT_SCALE;
     style->center.scale = _DEFAULT_CENTER_SCALE;
     style->right.scale = _DEFAULT_RIGHT_SCALE;
@@ -367,7 +380,16 @@ gt_obj_st * gt_status_bar_create(bool have_background)
     if (NULL == style->center.obj) {
         style->center.obj = gt_obj_create(obj);
     }
+
     _resize_part_width(obj);
+#endif
+
+#if GT_STATUS_BAR_CUSTOM_MODE
+    if (NULL == style->custom) {
+        style->custom = gt_obj_create(obj);
+        gt_obj_set_area(style->custom, obj->area);
+    }
+#endif
 
     return obj;
 }
@@ -407,9 +429,20 @@ void gt_status_bar_set_height(uint16_t height)
     if (NULL == obj) {
         return ;
     }
+    _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
     gt_obj_set_size(obj, gt_obj_get_w(obj), height);
+#if GT_STATUS_BAR_THREE_PART_SCALE_MODE
     _resize_part_width(obj);
+#endif
+
+#if GT_STATUS_BAR_CUSTOM_MODE
+    if (style->custom) {
+        gt_obj_set_h(style->custom, height);
+    }
+#endif
 }
+
+#if GT_STATUS_BAR_THREE_PART_SCALE_MODE
 
 void gt_status_bar_set_scale(uint8_t left, uint8_t center, uint8_t right)
 {
@@ -615,6 +648,116 @@ gt_obj_st * gt_status_bar_center_set_text(char * text)
     }
     return lab;
 }
+
+#endif  /** GT_STATUS_BAR_THREE_PART_SCALE_MODE */
+
+#if GT_STATUS_BAR_CUSTOM_MODE
+
+gt_obj_st * gt_status_bar_custom_find_by(char * text_or_src)
+{
+    gt_obj_st * obj = gt_status_bar_get_obj();
+    if (NULL == obj || NULL == text_or_src) {
+        return NULL;
+    }
+    _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
+
+    return _find_by_str(style->custom, text_or_src);
+}
+
+bool gt_status_bar_custom_remove(gt_obj_st * target)
+{
+    gt_obj_st * obj = gt_status_bar_get_obj();
+    if (NULL == obj) {
+        return false;
+    }
+    if (NULL == target) {
+        return false;
+    }
+    _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
+
+    if (false == gt_obj_is_child(target, style->custom)) {
+        return false;
+    }
+    _gt_obj_class_destroy(target);
+    return true;
+}
+
+bool gt_status_bar_custom_remove_all(void)
+{
+    gt_obj_st * obj = gt_status_bar_get_obj();
+    if (NULL == obj) {
+        return NULL;
+    }
+    _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
+
+    return _remove_all_by(style->custom);
+}
+
+gt_obj_st * gt_status_bar_custom_add_icon(char * src)
+{
+    gt_obj_st * obj = gt_status_bar_get_obj();
+    if (NULL == obj || NULL == src) {
+        return NULL;
+    }
+    _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
+    if (NULL == style->custom) {
+        return NULL;
+    }
+
+    gt_obj_st * icon = _find_by_str(style->custom, src);
+    if (icon) {
+        return icon;
+    }
+    icon = gt_img_create(style->custom);
+    gt_img_set_src(icon, src);
+    gt_obj_set_inside(icon, true);
+
+    return icon;
+}
+
+bool gt_status_bar_custom_change_icon(gt_obj_st * icon, char * src)
+{
+    gt_obj_st * obj = gt_status_bar_get_obj();
+    if (NULL == obj || NULL == src) {
+        return false;
+    }
+    _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
+    if (NULL == style->custom) {
+        return false;
+    }
+    if (false == gt_obj_is_child(icon, style->custom)) {
+        return false;
+    }
+    if (false == gt_obj_is_type(icon, GT_TYPE_IMG)) {
+        return false;
+    }
+    gt_img_set_src(icon, src);
+    return true;
+}
+
+gt_obj_st * gt_status_bar_custom_add_text(char * text, uint16_t width)
+{
+    gt_obj_st * obj = gt_status_bar_get_obj();
+    if (NULL == obj || NULL == text) {
+        return NULL;
+    }
+    _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
+
+    return _create_lab_obj(style->custom, style, text, width);
+}
+
+bool gt_status_bar_custom_change_text(gt_obj_st * lab, char * text)
+{
+    gt_obj_st * obj = gt_status_bar_get_obj();
+    if (NULL == obj || NULL == text) {
+        return false;
+    }
+    _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
+
+    return _change_lab_text(style->custom, lab, text);
+}
+
+#endif  /** GT_STATUS_BAR_CUSTOM_MODE */
 
 void gt_status_bar_show_bg(bool show)
 {
