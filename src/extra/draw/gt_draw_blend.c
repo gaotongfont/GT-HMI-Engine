@@ -345,6 +345,7 @@ void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
         .x = offset.y,
         .y = offset.x,
     };
+    offset = convert_parent;
 #endif
 
     // from area_intersect cpy to flush_buffer_offset
@@ -401,8 +402,11 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
     /** buf_area: area_disp */
     gt_area_st area_draw = draw_ctx->buf_area, area_dst = *dsc->dst_area;
 
-    uint16_t width_dsc = area_dst.w;
+#if GT_FLUSH_CONVERT_VERTICAL
+    uint16_t width_buf = area_draw.h;
+#else
     uint16_t width_buf = area_draw.w;
+#endif
     gt_point_st offset = {0};   /** src data buffer offset set */
 
     if (draw_ctx->font_limit_area) {
@@ -437,6 +441,28 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
     if (0 == area_intersect.w || 0 == area_intersect.h) {
         return;
     }
+
+#if GT_FLUSH_CONVERT_VERTICAL
+    gt_area_st convert = {
+        .x = area_intersect.y,
+        .y = area_intersect.x,
+        .w = area_intersect.h,
+        .h = area_intersect.w,
+    };
+    area_intersect = convert;
+
+    gt_point_st convert_offset = {
+        .x = flush_buffer_offset.y,
+        .y = flush_buffer_offset.x,
+    };
+    flush_buffer_offset = convert_offset;
+
+    gt_point_st convert_parent = {
+        .x = offset.y,
+        .y = offset.x,
+    };
+    offset = convert_parent;
+#endif
 
     gt_color_t * color_dst_p = (gt_color_t *)draw_ctx->buf;
     const uint8_t * color_src_p = res;
