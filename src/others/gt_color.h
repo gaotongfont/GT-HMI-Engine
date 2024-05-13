@@ -356,7 +356,11 @@ static inline gt_color_t gt_color_hex(uint32_t c) {
  */
 static inline gt_color_t gt_color_set(gt_color_val_t hex_val) {
     gt_color_t ret = {
+#if GT_COLOR_16_SWAP == 0
         .full = hex_val,
+#else
+        .full = ((hex_val & 0xff) << 8) | (hex_val >> 8),
+#endif
     };
     return ret;
 }
