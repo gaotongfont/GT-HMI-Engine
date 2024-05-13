@@ -292,8 +292,13 @@ void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
     /** area_draw x/y screen offset; w/h need to redraw area, which pos by dst_area */
     gt_area_st area_draw = draw_ctx->buf_area, area_dst = *dsc->dst_area;
 
+#if GT_FLUSH_CONVERT_VERTICAL
+    uint16_t width_dsc = area_dst.h;
+    uint16_t width_buf = area_draw.h;
+#else
     uint16_t width_dsc = area_dst.w;
     uint16_t width_buf = area_draw.w;
+#endif
     gt_point_st offset = {0};   /** src data buffer offset set */
 
     if (draw_ctx->parent_area) {
@@ -320,6 +325,27 @@ void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
     if (!gt_area_intersect_screen(&area_draw, &area_dst, &area_intersect)) {
         return;
     }
+
+#if GT_FLUSH_CONVERT_VERTICAL
+    gt_area_st convert = {
+        .x = area_intersect.y,
+        .y = area_intersect.x,
+        .w = area_intersect.h,
+        .h = area_intersect.w,
+    };
+    area_intersect = convert;
+
+    gt_point_st convert_offset = {
+        .x = flush_buffer_offset.y,
+        .y = flush_buffer_offset.x,
+    };
+    flush_buffer_offset = convert_offset;
+
+    gt_point_st convert_parent = {
+        .x = offset.y,
+        .y = offset.x,
+    };
+#endif
 
     // from area_intersect cpy to flush_buffer_offset
     uint32_t idx_dst = flush_buffer_offset.y * width_buf + flush_buffer_offset.x;

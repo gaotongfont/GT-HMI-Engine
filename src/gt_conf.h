@@ -50,6 +50,14 @@ extern "C" {
 #define GT_COLOR_DEPTH      16
 #define GT_COLOR_16_SWAP    0
 
+#ifndef GT_FLUSH_CONVERT_VERTICAL
+    /**
+     * @brief Set the screen refresh direction, 0: horizontal, 1: vertical
+     * [Default: 0]
+     */
+    #define GT_FLUSH_CONVERT_VERTICAL   0
+#endif
+
 /* user: Timer task handler timer [ms] */
 #define GT_TASK_PERIOD_TIME_INDEV   10
 #define GT_TASK_PERIOD_TIME_EVENT   10
