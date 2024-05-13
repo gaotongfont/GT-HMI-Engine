@@ -532,17 +532,23 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
         for (col = 0; col < area_intersect.h; col++) {
             count = 0;
             for (row = offset.x; row < font_size; row++) {
-
                 if (row >= offset.x + area_intersect.w) break;
-
-                ch = color_src_p[row >> 3] >> (7-(row & 0x7));
-
+#if GT_FLUSH_CONVERT_VERTICAL
+                ch = color_src_p[col >> 3] >> (7 - (col & 0x7));
+                color_src_p += dot_byte;
+#else
+                ch = color_src_p[row >> 3] >> (7 - (row & 0x7));
+#endif
                 if (ch & 0x01) {
                     color_dst_p[count] = gt_color_mix(dsc->color_fill, color_dst_p[count], dsc->opa);
                 }
                 ++count;
             }
+#if GT_FLUSH_CONVERT_VERTICAL
+            color_src_p = res;
+#else
             color_src_p += dot_byte;
+#endif
             color_dst_p += width_buf;
         }
     }

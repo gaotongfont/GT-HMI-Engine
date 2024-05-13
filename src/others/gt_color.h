@@ -455,15 +455,7 @@ static inline gt_color_t gt_color_mix(gt_color_t c1, gt_color_t c2, uint8_t mix)
 {
     gt_color_t ret;
 
-#if GT_COLOR_DEPTH == 16 && GT_COLOR_16_SWAP == 1
-    /*Source: https://stackoverflow.com/a/50012418/1999969*/
-    mix = (mix + 4) >> 3;
-    uint32_t bg = (uint32_t)((uint32_t)c2.full | ((uint32_t)c2.full << 16)) &
-                  0x7E0F81F; /*0b00000111111000001111100000011111*/
-    uint32_t fg = (uint32_t)((uint32_t)c1.full | ((uint32_t)c1.full << 16)) & 0x7E0F81F;
-    uint32_t result = ((((fg - bg) * mix) >> 5) + bg) & 0x7E0F81F;
-    ret.full = (uint16_t)((result >> 16) | result);
-#elif GT_COLOR_DEPTH != 1
+#if GT_COLOR_DEPTH != 1
     /*GT_COLOR_DEPTH == 8, 16 or 32*/
     GT_COLOR_SET_R(ret, GT_UDIV255((uint16_t)GT_COLOR_GET_R(c1) * mix + GT_COLOR_GET_R(c2) *
                                    (255 - mix) + GT_COLOR_MIX_ROUND_OFS));
