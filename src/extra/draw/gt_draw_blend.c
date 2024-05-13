@@ -485,7 +485,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
         for (col = 0; col < area_intersect.h; col++) {
             count = 0;
 #if GT_FLUSH_CONVERT_VERTICAL
-            color_src_p = offset.x + res;
+            color_src_p = offset.x * dot_byte + res;
 #endif
             for (row = offset.x; row < font_size; row++) {
                 if (row >= offset.x + area_intersect.w) break;
@@ -509,7 +509,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
         for (col = 0; col < area_intersect.h; col++) {
             count = 0;
 #if GT_FLUSH_CONVERT_VERTICAL
-            color_src_p = offset.x + res;
+            color_src_p = offset.x * dot_byte + res;
 #endif
             for (row = offset.x; row < font_size; row++) {
                 if (row >= offset.x + area_intersect.w) break;
@@ -533,7 +533,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
         for (col = 0; col < area_intersect.h; col++) {
             count = 0;
 #if GT_FLUSH_CONVERT_VERTICAL
-            color_src_p = offset.x + res;
+            color_src_p = offset.x * dot_byte + res;
 #endif
             for (row = offset.x; row < font_size; row++) {
                 if(row >= offset.x + area_intersect.w) break;
@@ -565,7 +565,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
         for (col = 0; col < area_intersect.h; col++) {
             count = 0;
 #if GT_FLUSH_CONVERT_VERTICAL
-            color_src_p = offset.x + res;
+            color_src_p = offset.x * dot_byte + res;
 #endif
             for (row = offset.x; row < font_size; row++) {
                 if (row >= offset.x + area_intersect.w) break;
