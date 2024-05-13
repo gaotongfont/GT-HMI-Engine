@@ -145,6 +145,14 @@ void gt_listview_set_icon_to_right(gt_obj_st * listview, bool enabled);
 void gt_listview_set_item_height(gt_obj_st * listview, uint16_t height);
 
 /**
+ * @brief Enabled the listview item selected effect
+ *
+ * @param listview
+ * @param enabled 1[Default]: Enabled; 0: Disabled
+ */
+void gt_listview_set_selected_effect(gt_obj_st * listview, bool enabled);
+
+/**
  * @brief Holding the selected item to highlight
  *
  * @param listview

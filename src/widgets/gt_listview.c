@@ -77,14 +77,14 @@ typedef struct _gt_listview_s {
     uint8_t item_reduce;    /** The reduce of item area */
     uint8_t item_radius;    /** The radius of item */
 
-    uint8_t highlight      : 1; /** holding highlight state the last active item, 0: release restores the effect, 1: switch state */
-    uint8_t septal_line    : 1; /** Display septal line between items */
-    uint8_t icon_right     : 1;
-    uint8_t multiple       : 1; /** Selected multiple item: 0: single selected; 1: multiple selected */
-    uint8_t item_show_bg   : 1;
-    uint8_t omit_sl        : 1; /** Omit single line */
-    uint8_t auto_scroll_sl : 1; /** auto scroll single line */
-    uint8_t reserved       : 1;
+    uint8_t highlight       : 1;    /** holding highlight state the last active item, 0: release restores the effect, 1: switch state */
+    uint8_t septal_line     : 1;    /** Display septal line between items */
+    uint8_t icon_right      : 1;
+    uint8_t multiple        : 1;    /** Selected multiple item: 0: single selected; 1: multiple selected */
+    uint8_t item_show_bg    : 1;
+    uint8_t omit_sl         : 1;    /** Omit single line */
+    uint8_t auto_scroll_sl  : 1;    /** auto scroll single line */
+    uint8_t selected_effect : 1;    /** 1[defalut]: Enabled  effect; 0: close selected effect */
 }_gt_listview_st;
 
 
@@ -219,6 +219,10 @@ static void _reset_last_active_state(gt_obj_st * listview, gt_obj_st * target) {
     if (listview == target) {
         return;
     }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    if (false == style->selected_effect) {
+        return;
+    }
     if (gt_obj_get_trigger_mode(target)) {
         return;
     }
@@ -232,6 +236,9 @@ static void _highlight_set_obj_active_state(gt_obj_st * listview) {
         return;
     }
     if (style->multiple) {
+        return;
+    }
+    if (false == style->selected_effect) {
         return;
     }
     if (false == gt_obj_get_trigger_mode(style->last_active)) {
@@ -249,6 +256,9 @@ static void _reset_other_active_state(gt_obj_st * listview) {
         return;
     }
     if (style->multiple) {
+        return;
+    }
+    if (false == style->selected_effect) {
         return;
     }
 
@@ -342,10 +352,6 @@ static void _set_label_prop_by_type(gt_obj_st * listview, _label_prop_em type, i
     }
 }
 
-// static inline uint16_t _get_scale_offset(gt_obj_st * item) {
-//     return gt_obj_get_w(item) >> 2;
-// }
-
 static inline uint16_t _get_double_real_width(_gt_listview_st * style, gt_obj_st * item, _double_pos_em pos) {
     uint16_t total = style->double_scale.icon + style->double_scale.label;
     uint8_t value = 0;
@@ -400,7 +406,7 @@ static gt_obj_st * _create_item_obj(gt_obj_st * listview) {
 
     gt_obj_set_fixed(obj, true);
     gt_obj_set_inside(obj, true);
-    gt_obj_set_mask_effect(obj, true);
+    gt_obj_set_mask_effect(obj, style->selected_effect);
     gt_obj_set_bubble_notify(obj, true);
     gt_obj_set_septal_line(obj, style->septal_line);
     gt_obj_set_trigger_mode(obj, (gt_obj_trigger_mode_et)style->highlight);
@@ -593,6 +599,8 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     style->triple_scale.left = _TRIPLE_SCALE_LEFT;
     style->triple_scale.center = _TRIPLE_SCALE_CENTER;
     style->triple_scale.right = _TRIPLE_SCALE_RIGHT;
+
+    style->selected_effect = true;
 
     gt_obj_set_scroll_dir(obj, GT_SCROLL_VERTICAL);
     return obj;
@@ -792,6 +800,22 @@ void gt_listview_set_item_height(gt_obj_st * listview, uint16_t height)
     _gt_listview_st * style = (_gt_listview_st * )listview;
     style->item_height = height;
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_listview_set_selected_effect(gt_obj_st * listview, bool enabled)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+
+    if (style->selected_effect == (uint8_t)enabled) {
+        return;
+    }
+    style->selected_effect = enabled ? 1 : 0;
+    for (gt_size_t i = 0, cnt = listview->cnt_child; i < cnt; i++) {
+        gt_obj_set_mask_effect(listview->child[i], enabled);
+    }
 }
 
 void gt_listview_set_highlight_mode(gt_obj_st * listview, bool enabled)
