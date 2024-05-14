@@ -77,6 +77,12 @@ typedef struct _gt_player_s {
     _gt_player_reg_st reg;
     _gt_player_obj_st target;
     _gt_timer_st * timer;
+
+#if GT_PLAYER_REPEAT_FINISH_CALLBACK
+    gt_event_cb_t repeat_finish_cb;
+    void * user_data;
+#endif
+
     int32_t repeat_cnt;         /** -1: infinite; > 0: repeat count; 0: stop player */
 }_gt_player_st;
 
@@ -279,6 +285,21 @@ static void _toggle_dir_handler(_gt_player_st * style) {
     _set_dir(style, _is_dir_next(style) ? false : true);
 }
 
+#if GT_PLAYER_REPEAT_FINISH_CALLBACK
+static inline void _repeat_finish_callback_handler(_gt_player_st * style) {
+    if (NULL == style->repeat_finish_cb) {
+        return ;
+    }
+    gt_event_st e = {
+        .code = GT_EVENT_TYPE_NONE,
+        .origin = (gt_obj_st * )style,
+        .target = (gt_obj_st * )style,
+        .param = style->parms,
+    };
+    style->repeat_finish_cb(&e);
+}
+#endif
+
 static inline void _check_repeat_count(_gt_player_st * style) {
     if (style->repeat_cnt < 1) {
         return ;
@@ -301,6 +322,7 @@ static void _turn_prev_item(gt_obj_st * obj) {
     if (style->target.index > 0) {
         if (0 == style->repeat_cnt) {
             _gt_timer_set_paused(style->timer, true);
+            _repeat_finish_callback_handler(style);
             return;
         }
         --style->target.index;
@@ -340,6 +362,7 @@ static void _turn_next_item(gt_obj_st * obj) {
     if (style->target.index + 1 < style->target.count) {
         if (0 == style->repeat_cnt) {
             _gt_timer_set_paused(style->timer, true);
+            _repeat_finish_callback_handler(style);
             return;
         }
         ++style->target.index;
@@ -598,6 +621,7 @@ void gt_player_set_index(gt_obj_st * obj, gt_size_t index)
         return ;
     }
     style->target.index = (-1 == index) ? (style->target.count - 1) : index;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 gt_size_t gt_player_get_index(gt_obj_st * obj)
@@ -718,6 +742,19 @@ void gt_player_set_repeat_count(gt_obj_st * obj, int32_t count)
 
     style->repeat_cnt = count;
 }
+
+#if GT_PLAYER_REPEAT_FINISH_CALLBACK
+void gt_player_set_repeat_finish_callback(gt_obj_st * obj, gt_event_cb_t cb, void * parms)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj;
+
+    style->repeat_finish_cb = cb;
+    style->parms = parms;
+}
+#endif
 
 bool gt_player_dir_is_forward(gt_obj_st * obj)
 {

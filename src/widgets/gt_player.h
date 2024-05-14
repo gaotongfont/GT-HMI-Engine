@@ -22,6 +22,14 @@ extern "C" {
 #if GT_CFG_ENABLE_PLAYER
 /* define ---------------------------------------------------------------*/
 
+#ifndef GT_PLAYER_REPEAT_FINISH_CALLBACK
+    /**
+     * @brief Using repeat finish callback
+     *      [default]: 0
+     */
+    #define GT_PLAYER_REPEAT_FINISH_CALLBACK    0
+#endif
+
 
 
 /* typedef --------------------------------------------------------------*/
@@ -144,6 +152,17 @@ void gt_player_dir_toggle(gt_obj_st * obj);
  * @param count -1: infinite loop; otherwise, repeat count
  */
 void gt_player_set_repeat_count(gt_obj_st * obj, int32_t count);
+
+#if GT_PLAYER_REPEAT_FINISH_CALLBACK
+/**
+ * @brief
+ *
+ * @param obj
+ * @param cb
+ * @param parms
+ */
+void gt_player_set_repeat_finish_callback(gt_obj_st * obj, gt_event_cb_t cb, void * parms);
+#endif
 
 /**
  * @brief Is forward direction to play
