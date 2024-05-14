@@ -80,7 +80,7 @@ typedef struct _gt_player_s {
 
 #if GT_PLAYER_REPEAT_FINISH_CALLBACK
     gt_event_cb_t repeat_finish_cb;
-    void * user_data;
+    void * parms;
 #endif
 
     int32_t repeat_cnt;         /** -1: infinite; > 0: repeat count; 0: stop player */
@@ -407,6 +407,27 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
+static inline _gt_player_item_st * _add_item_into_list(_gt_player_st * style) {
+    if (NULL == style) {
+        return 0;
+    }
+    if (style->target.list) {
+        style->target.list = gt_mem_realloc(style->target.list, sizeof(_gt_player_item_st * ) * (style->target.count + 1));
+    } else {
+        style->target.count = 0;
+        style->target.list = gt_mem_malloc(sizeof(_gt_player_item_st * ));
+    }
+
+    _gt_player_item_st ** list = style->target.list;
+    list[style->target.count] = gt_mem_malloc(sizeof(_gt_player_item_st));
+    gt_memset(list[style->target.count], 0, sizeof(_gt_player_item_st));
+
+    _gt_player_item_st * ret = (_gt_player_item_st * )list[style->target.count];
+
+    ++style->target.count;
+    return ret;
+}
+
 /**
  * @brief Create player object, or add item to player object
  *
@@ -422,25 +443,16 @@ static inline uint16_t _add_item(gt_obj_st * obj, void * item, uint16_t item_byt
     if (NULL == item || 0 == item_byte_size) {
         return 0;
     }
-
     _gt_player_st * style = (_gt_player_st * )obj;
-    if (NULL == style) {
+
+    _gt_player_item_st * new_item = _add_item_into_list(style);
+    if (NULL == new_item) {
         return 0;
     }
-    if (style->target.list) {
-        style->target.list = gt_mem_realloc(style->target.list, sizeof(_gt_player_item_st * ) * (style->target.count + 1));
-    } else {
-        style->target.count = 0;
-        style->target.list = gt_mem_malloc(sizeof(_gt_player_item_st * ));
-    }
 
-    _gt_player_item_st ** list = style->target.list;
-    list[style->target.count] = gt_mem_malloc(sizeof(_gt_player_item_st));
-    gt_memset(list[style->target.count], 0, sizeof(_gt_player_item_st));
-
-    list[style->target.count]->src = gt_mem_malloc(item_byte_size);
-    gt_memcpy(list[style->target.count]->src, item, item_byte_size);
-    return ++style->target.count;
+    new_item->src = gt_mem_malloc(item_byte_size);
+    gt_memcpy(new_item->src, item, item_byte_size);
+    return style->target.count;
 }
 
 static inline void _set_play_status(_gt_player_st * style, bool is_play) {
