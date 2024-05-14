@@ -322,7 +322,9 @@ static void _turn_prev_item(gt_obj_st * obj) {
     if (style->target.index > 0) {
         if (0 == style->repeat_cnt) {
             _gt_timer_set_paused(style->timer, true);
+#if GT_PLAYER_REPEAT_FINISH_CALLBACK
             _repeat_finish_callback_handler(style);
+#endif
             return;
         }
         --style->target.index;
@@ -362,7 +364,9 @@ static void _turn_next_item(gt_obj_st * obj) {
     if (style->target.index + 1 < style->target.count) {
         if (0 == style->repeat_cnt) {
             _gt_timer_set_paused(style->timer, true);
+#if GT_PLAYER_REPEAT_FINISH_CALLBACK
             _repeat_finish_callback_handler(style);
+#endif
             return;
         }
         ++style->target.index;
