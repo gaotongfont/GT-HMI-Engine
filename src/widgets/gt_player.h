@@ -99,6 +99,13 @@ void gt_player_set_auto_play_period(gt_obj_st * obj, uint32_t period);
 void gt_player_remove_item(gt_obj_st * obj, void * item);
 
 /**
+ * @brief Remove all item
+ *
+ * @param obj
+ */
+void gt_player_remove_all_items(gt_obj_st * obj);
+
+/**
  * @brief Remove item from player object by index
  *
  * @param style

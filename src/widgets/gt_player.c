@@ -447,13 +447,18 @@ static inline void _set_play_status(_gt_player_st * style, bool is_play) {
         return ;
     }
     if (NULL == style->target.list) {
-        return ;
+        is_play = false;
     }
     if (style->target.count < 2) {
-        return ;
+        is_play = false;
     }
     style->last_player_tick = gt_tick_get();
     _gt_timer_set_paused(style->timer, is_play ? false : true);
+
+    if (false == is_play) {
+        /** redraw */
+        gt_event_send((gt_obj_st * )style, GT_EVENT_TYPE_DRAW_START, NULL);
+    }
 }
 
 static inline void _remove_item(_gt_player_st * style, uint16_t idx) {
@@ -467,9 +472,9 @@ static inline void _remove_item(_gt_player_st * style, uint16_t idx) {
     style->target.list[idx] = NULL;
 
     if (idx != style->target.count--) {
-        gt_memmove(&style->target.list[idx], &style->target.list[idx + 1], (style->target.count - idx) * sizeof(_gt_player_item_st));
+        gt_memmove(&style->target.list[idx], &style->target.list[idx + 1], (style->target.count - idx) * sizeof(_gt_player_item_st * ));
     }
-    style->target.list = gt_mem_realloc(style->target.list, style->target.count *  sizeof(_gt_player_item_st));
+    style->target.list = gt_mem_realloc(style->target.list, style->target.count *  sizeof(_gt_player_item_st * ));
 
     _set_play_status(style, _gt_timer_get_paused(style->timer));
 }
@@ -581,6 +586,29 @@ void gt_player_remove_item(gt_obj_st * obj, void * item)
         }
     }
     _remove_item(style, idx);
+}
+
+void gt_player_remove_all_items(gt_obj_st * obj)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj;
+    if (NULL == style->target.list) {
+        return ;
+    }
+    for (gt_size_t i = style->target.count - 1; i >= 0; i--) {
+        if (style->target.list[i]->src) {
+            gt_mem_free(style->target.list[i]->src);
+            style->target.list[i]->src = NULL;
+        }
+        gt_mem_free(style->target.list[i]);
+        style->target.list[i] = NULL;
+    }
+    gt_mem_free(style->target.list);
+    style->target.list = NULL;
+
+    _set_play_status(style, _gt_timer_get_paused(style->timer));
 }
 
 void gt_player_remove_item_by_index(gt_obj_st * obj, uint16_t idx) {
