@@ -123,6 +123,19 @@ void gt_player_remove_item_by_index(gt_obj_st * obj, uint16_t idx);
  */
 uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_size);
 
+#if GT_USE_FILE_HEADER
+/**
+ * @brief
+ *
+ * @param obj
+ * @param idx -1[defalut]: Disabled file header, using img path to open file; >=0: index number, valid value
+ *              < 0: invalid value.
+ * @param package_idx 0[defalut]: The index of element within item, as the first element
+ * @return uint16_t The item count of player
+ */
+uint16_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_idx_t idx, gt_file_header_idx_t package_idx);
+#endif  /** GT_USE_FILE_HEADER */
+
 /**
  * @brief Set player item index
  *

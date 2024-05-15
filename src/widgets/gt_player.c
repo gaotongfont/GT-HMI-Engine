@@ -18,6 +18,10 @@
 #include "../core/gt_obj_pos.h"
 #include "../hal/gt_hal_tick.h"
 
+#if GT_USE_FILE_HEADER
+#include "../hal/gt_hal_file_header.h"
+#endif
+
 #if GT_CFG_ENABLE_PLAYER
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE GT_TYPE_PLAYER
@@ -44,7 +48,11 @@
 
 typedef struct _gt_player_item_s {
     void * src;
-    uint16_t test;
+
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_st fh_param;
+#endif  /** GT_USE_FILE_HEADER */
+
 }_gt_player_item_st;
 
 /**
@@ -123,6 +131,12 @@ static inline void * _get_src(_gt_player_st * style) {
     return style->target.list[style->target.index]->src;
 }
 
+#if GT_USE_FILE_HEADER
+static inline gt_file_header_param_st * _get_file_header_param(_gt_player_st * style) {
+    return &style->target.list[style->target.index]->fh_param;
+}
+#endif
+
 /**
  * @brief Lock the player callback  handler
  *
@@ -193,6 +207,12 @@ static void _init_cb(gt_obj_st * obj) {
             .bg_img_src = src,
             .bg_opa = obj->opa,
         };
+#if GT_USE_FILE_HEADER
+        dsc.file_header = _get_file_header_param(style);
+        if (dsc.file_header->idx < 0) {
+            dsc.file_header = NULL;
+        }
+#endif
         /* start draw obj */
         draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
     }
@@ -424,6 +444,10 @@ static inline _gt_player_item_st * _add_item_into_list(_gt_player_st * style) {
 
     _gt_player_item_st * ret = (_gt_player_item_st * )list[style->target.count];
 
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&ret->fh_param);
+#endif
+
     ++style->target.count;
     return ret;
 }
@@ -651,6 +675,31 @@ uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_siz
     }
     return _add_item(obj, item, item_byte_size);
 }
+
+#if GT_USE_FILE_HEADER
+uint16_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_idx_t idx, gt_file_header_idx_t package_idx)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj;
+    if (idx >= gt_file_header_get_count()) {
+        return 0;
+    }
+
+    _gt_player_item_st * new_item = _add_item_into_list(style);
+    if (NULL == new_item) {
+        return 0;
+    }
+
+    new_item->fh_param.idx = idx;
+
+#if _GT_FILE_HEADER_IMG_PACKAGE
+    new_item->fh_param.package_idx = package_idx;
+#endif
+    return style->target.count;
+}
+#endif
 
 void gt_player_set_index(gt_obj_st * obj, gt_size_t index)
 {
