@@ -696,6 +696,46 @@ gt_obj_st * gt_listview_add_item_by_param(gt_obj_st * listview, gt_listview_para
     return _set_item_obj_prop(obj, listview);
 }
 
+gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listview_custom_item_st * item)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return NULL;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    gt_obj_st * obj = NULL;
+    gt_obj_st * element = NULL;
+    if (_GT_LISTVIEW_ELEMENT_TYPE_MAX <= item->element_idx) {
+        return NULL;
+    }
+
+    if (item->item_idx < listview->cnt_child) {
+        obj = listview->child[item->item_idx];
+    } else {
+        obj = _set_item_obj_prop(_create_item_obj(listview), listview);
+    }
+
+    if (item->element_idx < obj->cnt_child) {
+        element = obj->child[item->element_idx];
+    }
+    if (GT_LISTVIEW_ELEMENT_TYPE_IMG == item->type) {
+        if (NULL == element) {
+            element = _create_item_icon(listview, obj, item->src);
+        } else {
+            gt_img_set_src(element, item->src);
+        }
+    } else {
+        if (NULL == element) {
+            element = _create_item_label_by_len(listview, obj, item->src, item->src_len);
+        } else {
+            gt_label_set_text_by_len(element, item->src, item->src_len);
+        }
+    }
+    element->area = item->area;
+    element->area.x += obj->area.x;
+    element->area.y += obj->area.y;
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 void gt_listview_clear_all_items(gt_obj_st * listview)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
@@ -747,6 +787,7 @@ void gt_listview_set_scale_triple(gt_obj_st * listview, uint8_t left, uint8_t ce
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
     _triple_param_st param = { NULL, NULL, NULL, NULL };
+    bool is_first = true;
 
     style->triple_scale.left = left;
     style->triple_scale.center = center;
@@ -757,10 +798,20 @@ void gt_listview_set_scale_triple(gt_obj_st * listview, uint8_t left, uint8_t ce
         if (3 != param.item->cnt_child) {
             continue;
         }
-        param.left = param.item->child[0];
-        param.center = param.item->child[1];
-        param.right = param.item->child[2];
+        is_first = true;
 
+        for (gt_size_t j = 0; j < 3; ++j) {
+            if (GT_TYPE_LAB == gt_obj_class_get_type(param.item->child[j])) {
+                param.center = param.item->child[j];
+            } else if (GT_TYPE_IMG == gt_obj_class_get_type(param.item->child[j])) {
+                if (is_first) {
+                    param.left = param.item->child[j];
+                    is_first = false;
+                    continue;
+                }
+                param.right = param.item->child[j];
+            }
+        }
         _triple_calc_pos(style, &param);
     }
 

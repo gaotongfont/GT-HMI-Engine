@@ -24,6 +24,13 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+typedef enum gt_listview_element_type_s {
+    GT_LISTVIEW_ELEMENT_TYPE_IMG = 0,
+    GT_LISTVIEW_ELEMENT_TYPE_LABEL,
+
+    _GT_LISTVIEW_ELEMENT_TYPE_MAX,
+}gt_listview_element_type_st;
+
 /**
  * @brief Only used by gt_listview_add_item_by_param() function.
  */
@@ -34,6 +41,14 @@ typedef struct gt_listview_param_s {
     uint16_t text_len;
 }gt_listview_param_st;
 
+typedef struct gt_listview_custom_item_s {
+    char * src;
+    uint16_t src_len;
+    uint16_t item_idx;
+    gt_area_st area;
+    uint8_t type;           /** @ref gt_listview_element_type_st */
+    uint8_t element_idx;
+}gt_listview_custom_item_st;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -96,6 +111,15 @@ gt_obj_st * gt_listview_add_item_icons(gt_obj_st * listview, char * left_icon, c
  * @return item object, which child[0]: label
  */
 gt_obj_st * gt_listview_add_item_by_param(gt_obj_st * listview, gt_listview_param_st * param);
+
+/**
+ * @brief
+ *
+ * @param listview
+ * @param item
+ * @return gt_obj_st*
+ */
+gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listview_custom_item_st * item);
 
 /**
  * @brief Clear all items in the listview
