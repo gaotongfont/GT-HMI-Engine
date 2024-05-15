@@ -449,6 +449,7 @@ static gt_obj_st * _create_item_icon(gt_obj_st * listview, gt_obj_st * obj, char
     gt_obj_st * icon = gt_img_create(obj);
 
     gt_img_set_src(icon, img);
+    gt_obj_set_inside(icon, true);
 
     gt_obj_set_touch_parent(icon, true);
     gt_obj_set_bubble_notify(icon, true);
@@ -473,6 +474,7 @@ static inline void _set_label_prop(gt_obj_st * listview, gt_obj_st * lab) {
     gt_label_set_space(lab, style->space_x, style->space_y);
     gt_obj_set_touch_parent(lab, true);
     gt_obj_set_bubble_notify(lab, true);
+    gt_obj_set_inside(lab, true);
 
     if (style->omit_sl) {
         gt_label_set_omit_single_line(lab, true);
