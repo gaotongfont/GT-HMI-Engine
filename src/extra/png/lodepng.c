@@ -358,11 +358,8 @@ static void lodepng_set32bitInt(unsigned char* buffer, unsigned value) {
 #ifdef LODEPNG_COMPILE_DISK
 
 /* returns negative value on error. This should be pure C compatible, so no fstat. */
-static long lodepng_filesize(const char* filename) {
-  gt_fs_fp_st * fp = gt_fs_open(filename, GT_FS_MODE_RD);
+static long lodepng_common_filesize(gt_fs_fp_st * fp) {
   long size = -1;
-
-  if (!fp) { return size; }
 
   if (0 != gt_fs_seek(fp, 0, GT_FS_SEEK_END)) {
     goto ret_lb;
@@ -378,12 +375,25 @@ ret_lb:
   return size;
 }
 
-/* load file into buffer that already has the correct allocated size. Returns error code.*/
-static unsigned lodepng_buffer_file(unsigned char* out, size_t size, const char* filename) {
+static long lodepng_filesize(const char* filename) {
   gt_fs_fp_st * fp = gt_fs_open(filename, GT_FS_MODE_RD);
-  long read_size = -1;
+  if (!fp) { return -1; }
 
-  if (!fp) { return 78; }
+  return lodepng_common_filesize(fp);
+}
+
+#if GT_USE_FILE_HEADER
+static long lodepng_filesize_fh(gt_file_header_param_st const * const param) {
+  gt_fs_fp_st * fp = gt_fs_fh_open(param, GT_FS_MODE_RD);
+  if (!fp) { return -1; }
+
+  return lodepng_common_filesize(fp);
+}
+#endif
+
+/* load file into buffer that already has the correct allocated size. Returns error code.*/
+static unsigned lodepng_common_buffer_file(unsigned char* out, size_t size, gt_fs_fp_st * fp) {
+  long read_size = -1;
 
   gt_fs_seek(fp, 0, GT_FS_SEEK_SET);
   gt_fs_read(fp, out, size, (uint32_t * )&read_size);
@@ -391,6 +401,13 @@ static unsigned lodepng_buffer_file(unsigned char* out, size_t size, const char*
   gt_fs_close(fp);
   if (read_size != size) { return 78; }
   return 0;
+}
+
+static unsigned lodepng_buffer_file(unsigned char* out, size_t size, const char* filename) {
+  gt_fs_fp_st * fp = gt_fs_open(filename, GT_FS_MODE_RD);
+  if (!fp) { return 78; }
+
+  return lodepng_common_buffer_file(out, size, fp);
 }
 
 unsigned lodepng_load_file(unsigned char** out, size_t* outsize, const char* filename) {
@@ -402,6 +419,25 @@ unsigned lodepng_load_file(unsigned char** out, size_t* outsize, const char* fil
   if(!(*out) && size > 0) return 83; /*the above malloc failed*/
   return lodepng_buffer_file(*out, (size_t)size, filename);
 }
+
+#if GT_USE_FILE_HEADER
+static unsigned lodepng_buffer_file_fh(unsigned char* out, size_t size, gt_file_header_param_st const * const param) {
+  gt_fs_fp_st * fp = gt_fs_fh_open(param, GT_FS_MODE_RD);
+  if (!fp) { return 78; }
+
+  return lodepng_common_buffer_file(out, size, fp);
+}
+
+unsigned lodepng_load_file_fh(unsigned char** out, size_t* outsize, gt_file_header_param_st const * const param) {
+  long size = lodepng_filesize_fh(param);
+  if(size < 0) return 78;
+  *outsize = (size_t)size;
+
+  *out = (unsigned char*)lodepng_malloc((size_t)size);
+  if(!(*out) && size > 0) return 83; /*the above malloc failed*/
+  return lodepng_buffer_file_fh(*out, (size_t)size, param);
+}
+#endif
 
 /*write given buffer to the file, overwriting the file, it doesn't append to it.*/
 unsigned lodepng_save_file(const unsigned char* buffer, size_t buffersize, const char* filename) {
