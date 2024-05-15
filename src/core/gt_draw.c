@@ -1266,7 +1266,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
                 continue;
             }
 
-            // gt_memset(tmp_font.res, 0, data_len);
+            gt_memset(tmp_font.res, 0, data_len);
             tmp_font.utf8 = (char * )&txt_2[idx_2];
             tmp_font.len = gt_font_one_char_code_len_get(&txt_2[idx_2], &unicode, tmp_font.info.encoding);
 
@@ -1277,7 +1277,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             }
 
             if( !gt_symbol_check_by_unicode(unicode) ){
-                // gt_memset(tmp_font.res, 0, data_len);
+                gt_memset(tmp_font.res, 0, data_len);
                 uint16_t ret_style = gt_font_get_string_dot(&tmp_font);
 
                 uint8_t byte_width = (width + 7) >> 3;
@@ -1551,7 +1551,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
             continue;
         }
 
-        // gt_memset(tmp_font.res, 0, data_len);
+        gt_memset(tmp_font.res, 0, data_len);
         tmp_font.utf8 = (char * )&txt[idx];
         tmp_font.len = gt_font_one_char_code_len_get(&txt[idx], &unicode, tmp_font.info.encoding);
 
@@ -1566,7 +1566,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
         }
 
         if( !gt_symbol_check_by_unicode(unicode) ){
-            // gt_memset(tmp_font.res, 0, data_len);
+            gt_memset(tmp_font.res, 0, data_len);
             ret_style = gt_font_get_string_dot(&tmp_font);
 
             byte_width = (width + 7) >> 3;
