@@ -2317,17 +2317,16 @@ void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_are
     if( dsc->bg_opa < GT_OPA_MIN ) return;
 
     _gt_img_dsc_st dsc_img = {0};
-#if GT_USE_FILE_HEADER
-    if (GT_RES_FAIL == gt_img_decoder_fh_open(&dsc_img, dsc->file_header)) {
-        GT_LOGW(GT_LOG_TAG_DATA, "Open image decoder by file header failed");
-        return;
-    }
-#endif
     if (NULL == dsc->bg_img_src) {
-        if (NULL == dsc->raw_img) {
+        if (dsc->raw_img) {
+            dsc_img = *dsc->raw_img;
+        }
+#if GT_USE_FILE_HEADER
+        else if (GT_RES_FAIL == gt_img_decoder_fh_open(&dsc_img, dsc->file_header)) {
+            GT_LOGW(GT_LOG_TAG_DATA, "Open image decoder by file header failed");
             return;
         }
-        dsc_img = *dsc->raw_img;
+#endif
     }
     else if (GT_RES_FAIL == gt_img_decoder_open(&dsc_img, dsc->bg_img_src)) {
         GT_LOGW(GT_LOG_TAG_DATA, "Open image decoder failed");
