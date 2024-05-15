@@ -38,6 +38,12 @@ extern "C" {
  * @return uint32_t
  */
 uint32_t gt_indev_get_key(void);
+
+/**
+ * @brief Get physical point value
+ *
+ * @return gt_point_st
+ */
 gt_point_st gt_indev_get_point(void);
 
 /**
