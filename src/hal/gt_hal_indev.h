@@ -178,13 +178,16 @@ typedef struct _gt_indev_s {
     gt_indev_proc_st proc;          ///< Save all input device data
 }gt_indev_st;
 
-typedef struct _gt_indev_param_s{
+typedef struct gt_indev_param_st {
     union
     {
         gt_point_st point;
         uint16_t button_id;
         uint32_t keypad_key;
     }param;
+
+    uint8_t disabled : 1;   /** When screen anim used, 0: default set, normal; 1: temporary disability */
+    uint8_t reserved : 7;
 }gt_indev_param_st;
 
 

@@ -22,51 +22,25 @@
 #include "../widgets/gt_dialog.h"
 
 /* private define -------------------------------------------------------*/
-/**
- * @brief
- */
-#define _GT_INDEV_USE_REMARK    0
+
 
 
 /* private typedef ------------------------------------------------------*/
 
-typedef struct _indev_reg_s {
-    uint8_t disabled : 1;   /** When screen anim used, 0: default set, normal; 1: temporary disability */
-    uint8_t reserved : 7;
-}_indev_reg_st;
 
 
 
 /* static variables -----------------------------------------------------*/
-#if _GT_INDEV_USE_REMARK
-static gt_obj_st * _remark_act_obj = NULL;
-#endif
 
-static _indev_reg_st _indev_reg = {
+static gt_indev_param_st _indev_params = {
     .disabled = 0,
 };
-
-static gt_indev_param_st _indev_pa;
 
 /* macros ---------------------------------------------------------------*/
 
 
 
 /* static functions -----------------------------------------------------*/
-#if _GT_INDEV_USE_REMARK
-static inline void _gt_indev_remark_active_obj(const gt_obj_st * const obj) {
-    _remark_act_obj = obj;
-}
-
-static inline bool _gt_indev_is_equal_remark_active_obj(const gt_obj_st * const obj) {
-    return obj == _remark_act_obj;
-}
-
-static inline gt_obj_st * _gt_indev_get_remark_active_obj(void) {
-    return _remark_act_obj;
-}
-#endif
-
 static inline bool _is_scroll_vertical(gt_dir_et dir) {
     return (GT_DIR_UP == dir || GT_DIR_DOWN == dir) ? true : false;
 }
@@ -132,7 +106,7 @@ static gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
     return ret;
 }
 
-static bool _is_indev_home_gesture(gt_indev_st * indev , gt_event_type_et* event)
+static bool _is_indev_home_gesture(gt_indev_st * indev, gt_event_type_et* event)
 {
     struct _point * point_p = &indev->proc.data.point;
     point_p->gesture = _get_scroll_dir(indev);
@@ -182,8 +156,8 @@ static bool _indev_send_home_gesture_event(gt_indev_st * indev)
     gt_obj_st * scr = gt_disp_get_scr();
 
     gt_event_type_et e = GT_EVENT_TYPE_NONE;
-    if(_is_indev_home_gesture(indev , &e)){
-        gt_event_send(scr , e , NULL);
+    if(_is_indev_home_gesture(indev, &e)){
+        gt_event_send(scr, e, NULL);
         return true;
     }
 
@@ -293,7 +267,7 @@ static void _indev_scroll_handler(gt_indev_st * indev) {
     gt_size_t dy = 0;
     point_p->obj_scroll = point_p->obj_target;
 
-    if(_is_indev_home_gesture(indev , NULL)){
+    if(_is_indev_home_gesture(indev, NULL)){
         return ;
     }
 
@@ -333,12 +307,6 @@ static void _indev_released_handle(gt_indev_st * indev) {
         return;
     }
 
-#if _GT_INDEV_USE_REMARK
-    if (!_gt_indev_is_equal_remark_active_obj(point_p->obj_act)) {
-        point_p->obj_act = _gt_indev_get_remark_active_obj();
-    }
-    _gt_indev_remark_active_obj(NULL);
-#endif
     _send_released_event(point_p);
     point_p->obj_act = NULL;
 
@@ -414,9 +382,6 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
         }
         point_p->obj_target = point_p->obj_act;
         point_p->obj_origin = point_p->obj_target;
-#if _GT_INDEV_USE_REMARK
-        _gt_indev_remark_active_obj(point_p->obj_act);
-#endif
 
         /* send clicking event to pressed obj */
         gt_obj_get_click_point_by_phy_point(point_p->obj_act, &point_p->newly, &point_ret);
@@ -485,11 +450,10 @@ static void _gt_indev_handler_point(gt_indev_st * indev)
 
     /* process point data */
     indev->proc.state = data_indev.state;
-#if 1
-    _indev_pa.param.point.x = data_indev.point.x;
-    _indev_pa.param.point.y = data_indev.point.y;
+
+    _indev_params.param.point.x = data_indev.point.x;
+    _indev_params.param.point.y = data_indev.point.y;
     _gt_indev_point_set_value(&point_p->newly, data_indev.point.x, data_indev.point.y);
-#endif
 
     /* have one touch event */
     if (GT_INDEV_STATE_RELEASED == indev->proc.state) {
@@ -548,9 +512,9 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
 
     if(GT_INDEV_STATE_RELEASED == indev->proc.state){
         if(indev->proc.data.keypad.count_keydown != 0 && GT_KEY_ENTER == indev->proc.data.keypad.key){
-            _indev_pa.param.keypad_key = GT_KEY_ENTER;
+            _indev_params.param.keypad_key = GT_KEY_ENTER;
             if (false == gt_obj_is_untouchability(indev->proc.data.keypad.obj_target)) {
-                gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_RELEASED, &_indev_pa);
+                gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_RELEASED, &_indev_params);
             }
         }
         indev->proc.data.keypad.count_keydown = 0;
@@ -565,23 +529,23 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
         indev->proc.data.keypad.count_keydown = 0;
         if(GT_KEY_NEXT == indev->proc.data.keypad.key){
             gt_obj_next_focus_change(indev->proc.data.keypad.obj_target);
-            _indev_pa.param.keypad_key = GT_KEY_NEXT;
-            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_pa);
+            _indev_params.param.keypad_key = GT_KEY_NEXT;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
         else if(GT_KEY_PREV == indev->proc.data.keypad.key){
             gt_obj_prev_focus_change(indev->proc.data.keypad.obj_target);
-            _indev_pa.param.keypad_key = GT_KEY_PREV;
-            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_pa);
+            _indev_params.param.keypad_key = GT_KEY_PREV;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
         else{
-            _indev_pa.param.keypad_key = indev->proc.data.keypad.key;
-            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_pa);
+            _indev_params.param.keypad_key = indev->proc.data.keypad.key;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
             if (GT_KEY_ENTER == indev->proc.data.keypad.key &&
                 false == gt_obj_is_untouchability(indev->proc.data.keypad.obj_target)){
-                gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSED, &_indev_pa);
+                gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSED, &_indev_params);
             }
         }
-        // GT_LOGD(GT_LOG_TAG_GUI, "keypad the key = %#X  count_keydown = %d obj type = %d", indev->proc.data.keypad.key , indev->proc.data.keypad.count_keydown , indev->proc.data.keypad.obj_target->class->type);
+        // GT_LOGD(GT_LOG_TAG_GUI, "keypad the key = %#X  count_keydown = %d obj type = %d", indev->proc.data.keypad.key, indev->proc.data.keypad.count_keydown, indev->proc.data.keypad.obj_target->class->type);
         return ;
     }
     // 长按
@@ -589,37 +553,37 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
     if(indev->proc.data.keypad.count_keydown >= (GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS / GT_TASK_PERIOD_TIME_EVENT)){
         if(GT_KEY_NEXT == indev->proc.data.keypad.key){
             gt_obj_next_focus_change(indev->proc.data.keypad.obj_target);
-            _indev_pa.param.keypad_key = GT_KEY_NEXT;
-            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_pa);
+            _indev_params.param.keypad_key = GT_KEY_NEXT;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
         else if(GT_KEY_PREV == indev->proc.data.keypad.key){
             gt_obj_prev_focus_change(indev->proc.data.keypad.obj_target);
-            _indev_pa.param.keypad_key = GT_KEY_PREV;
-            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_pa);
+            _indev_params.param.keypad_key = GT_KEY_PREV;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
         else{
-            _indev_pa.param.keypad_key = indev->proc.data.keypad.key;
-            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_pa);
+            _indev_params.param.keypad_key = indev->proc.data.keypad.key;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
             if(0 == indev->proc.data.keypad.count_keydown % (GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS / GT_TASK_PERIOD_TIME_EVENT)){
                 if (GT_KEY_ENTER == indev->proc.data.keypad.key &&
                     false == gt_obj_is_untouchability(indev->proc.data.keypad.obj_target)){
-                    gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSING, &_indev_pa);
+                    gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSING, &_indev_params);
                 }
             }
         }
-        // GT_LOGD(GT_LOG_TAG_GUI, "long , key = %#X  count_keydown = %d", indev->proc.data.keypad.key , indev->proc.data.keypad.count_keydown);
+        // GT_LOGD(GT_LOG_TAG_GUI, "long, key = %#X  count_keydown = %d", indev->proc.data.keypad.key, indev->proc.data.keypad.count_keydown);
     }
 }
 
 /* global functions / API interface -------------------------------------*/
 uint32_t gt_indev_get_key(void)
 {
-    return _indev_pa.param.keypad_key;
+    return _indev_params.param.keypad_key;
 }
 
 gt_point_st gt_indev_get_point(void)
 {
-    return _indev_pa.param.point;
+    return _indev_params.param.point;
 }
 
 void gt_indev_get_point_act(const gt_indev_st * indev, gt_point_st * point)
@@ -668,12 +632,12 @@ void gt_indev_handler(struct _gt_timer_s * timer)
 
 void gt_indev_set_disabled(bool disabled)
 {
-    _indev_reg.disabled = disabled;
+    _indev_params.disabled = disabled;
 }
 
 bool gt_indev_is_disabled(void)
 {
-    return _indev_reg.disabled;
+    return _indev_params.disabled;
 }
 
 bool _gt_indev_remove_want_delate_target(gt_obj_st * target)
