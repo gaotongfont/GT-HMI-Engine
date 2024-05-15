@@ -147,6 +147,11 @@ void _gt_img_decoder_init(void)
     gt_img_decoder_set_read_line_cb(decoder, _gt_img_decoder_built_in_read_line);
     gt_img_decoder_set_close_cb(decoder, _gt_img_decoder_built_in_close);
 
+#if GT_USE_FILE_HEADER
+    gt_img_decoder_set_fh_info_cb(decoder, _gt_img_decoder_built_in_fh_info);
+    gt_img_decoder_set_fh_open_cb(decoder, _gt_img_decoder_build_in_fh_open);
+#endif
+
     gt_img_decoder_register(decoder);
 }
 
@@ -296,6 +301,16 @@ gt_res_t gt_img_decoder_fh_open(_gt_img_dsc_st * dsc, gt_file_header_param_st co
     }
 
     return dsc->decoder ? GT_RES_OK : GT_RES_FAIL;
+}
+
+void gt_img_decoder_set_fh_info_cb(_gt_img_decoder_st * decoder, gt_img_decoder_fh_get_info_t fh_info_cb)
+{
+    decoder->fh_info_cb = fh_info_cb;
+}
+
+void gt_img_decoder_set_fh_open_cb(_gt_img_decoder_st * decoder, gt_img_decoder_fh_open_t fh_open_cb)
+{
+    decoder->fh_open_cb = fh_open_cb;
 }
 #endif
 

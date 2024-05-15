@@ -242,6 +242,28 @@ void gt_img_decoder_set_read_line_cb(_gt_img_decoder_st * decoder, gt_img_decode
  */
 void gt_img_decoder_set_close_cb(_gt_img_decoder_st * decoder, gt_img_decoder_close_t close_cb);
 
+#if GT_USE_FILE_HEADER
+/**
+ * @brief Set the information callback function pointer into image decoder object
+ *      by file header.
+ *
+ * @param decoder Image decoder, Which need to be init function and get information.
+ *      information.
+ * @param fh_info_cb The file header control callback function pointer
+ */
+void gt_img_decoder_set_fh_info_cb(_gt_img_decoder_st * decoder, gt_img_decoder_fh_get_info_t fh_info_cb);
+
+/**
+ * @brief Set the open image file callback function pointer into image decoder object
+ *      by file header.
+ *
+ * @param decoder Image decoder, Which need to be init function by open file.
+ * @param fh_open_cb The file header control callback function pointer, which open image file and
+ *      create image file object.
+ */
+void gt_img_decoder_set_fh_open_cb(_gt_img_decoder_st * decoder, gt_img_decoder_fh_open_t fh_open_cb);
+#endif
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
