@@ -52,12 +52,12 @@ uint16_t gt_file_header_get_instance_size(void)
 }
 
 #if _GT_FILE_HEADER_IMG_SAME_SIZE
-void gt_file_header_init(gt_file_header_st const * header_list, uint16_t count, uint32_t img_size)
+void gt_file_header_init(gt_file_header_st const * header_list, uint16_t count, gt_file_header_color_info_st * info)
 {
     _gt_file_header_ctl_st * ctl = &_GT_GC_GET_ROOT(file_header_ctl);
     ctl->header = header_list;
     ctl->count = count;
-    ctl->img_size = img_size;
+    ctl->info = *info;
 }
 #else
 void gt_file_header_init(gt_file_header_st const * header_list, uint16_t count)
@@ -119,9 +119,9 @@ uint32_t gt_file_header_get_img_size(gt_file_header_st const * item)
 #if _GT_FILE_HEADER_IMG_SAME_SIZE
     _gt_file_header_ctl_st const * ctl = &_GT_GC_GET_ROOT(file_header_ctl);
 
-    return ctl->img_size;
+    return ((ctl->info.alpha ? 1 : 0) + sizeof(gt_color_t)) * ctl->info.width * ctl->info.height;
 #else
-    return ((item->alpha ? 1 : 0) + item->color_depth) * item->width * item->height;
+    return ((item->info.alpha ? 1 : 0) + sizeof(gt_color_t)) * item->info.width * item->info.height;
 #endif
 }
 

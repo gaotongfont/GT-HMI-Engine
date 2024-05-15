@@ -9,12 +9,14 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_hal_vf.h"
+#include "stdbool.h"
+#include "string.h"
+
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "../others/gt_types.h"
 #include "../hal/gt_hal_file_header.h"
-#include "stdbool.h"
-#include "string.h"
+#include "../others/gt_gc.h"
 
 /* private define -------------------------------------------------------*/
 #if GT_USE_MODE_FLASH
@@ -73,9 +75,17 @@ void * _fh_open_cb(struct _gt_fs_drv_s * drv, gt_file_header_param_st const * co
     fp->start = gt_file_header_get_img_offset_by(item, fh_param->package_idx);
     fp->end = gt_file_header_get_img_size(item) + fp->start;
     fp->pos = fp->start;
-    fp->msg.pic.w = item->width;
-    fp->msg.pic.h = item->height;
-    fp->msg.pic.is_alpha = item->alpha;
+
+#if _GT_FILE_HEADER_IMG_SAME_SIZE
+    _gt_file_header_ctl_st const * ctl = &_GT_GC_GET_ROOT(file_header_ctl);
+    fp->msg.pic.w = ctl->info.width;
+    fp->msg.pic.h = ctl->info.height;
+    fp->msg.pic.is_alpha = ctl->info.alpha;
+#else
+    fp->msg.pic.w = item->info.width;
+    fp->msg.pic.h = item->info.height;
+    fp->msg.pic.is_alpha = item->info.alpha;
+#endif
 
     if (fp->end > _vf_dev->addr_max) {
         GT_LOGW(GT_LOG_TAG_GUI, "out of GT_VF_FLASH_SIZE");

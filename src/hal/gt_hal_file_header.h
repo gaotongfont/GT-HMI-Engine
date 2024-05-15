@@ -64,6 +64,12 @@ typedef struct gt_file_header_param_s {
 #endif
 }gt_file_header_param_st;
 
+typedef struct gt_file_header_color_info_s {
+    uint16_t width;
+    uint16_t height;
+    uint8_t alpha;
+}gt_file_header_color_info_st;
+
 /**
  * @brief The file header
  */
@@ -73,16 +79,15 @@ typedef struct gt_file_header_s {
 #if _GT_FILE_HEADER_USE_RAND_INDEX
     gt_file_header_idx_t index;
 #endif
+
 #if _GT_FILE_HEADER_IMG_PACKAGE
     uint16_t package_count;
 #endif
 
 #if !_GT_FILE_HEADER_IMG_SAME_SIZE
-    uint16_t width;
-    uint16_t height;
-    uint8_t alpha;
-    uint8_t color_depth;
+    gt_file_header_color_info_st info;
 #endif
+
     uint16_t reserved;
 }gt_file_header_st;
 
@@ -92,7 +97,7 @@ typedef struct _gt_file_header_ctl_s {
     uint16_t count;
 
 #if _GT_FILE_HEADER_IMG_SAME_SIZE
-    uint32_t img_size;
+    gt_file_header_color_info_st info;
 #endif
 }_gt_file_header_ctl_st;
 
@@ -119,9 +124,9 @@ uint16_t gt_file_header_get_instance_size(void);
  *
  * @param header [WARN] The object cannot be deallocated, and freeing memory causes an exception
  * @param count The count of header item
- * @param img_size The image data byte size
+ * @param info Image info
  */
-void gt_file_header_init(gt_file_header_st const * header_list, uint16_t count, uint32_t img_size);
+void gt_file_header_init(gt_file_header_st const * header_list, uint16_t count, gt_file_header_color_info_st * info);
 #else
 /**
  * @brief
@@ -157,7 +162,7 @@ gt_file_header_st const * gt_file_header_get(gt_file_header_idx_t index);
 /**
  * @brief Get image data byte size
  *
- * @param item NULL: When _GT_FILE_HEADER_IMG_SAME_SIZE
+ * @param item
  * @return uint32_t
  */
 uint32_t gt_file_header_get_img_size(gt_file_header_st const * item);
