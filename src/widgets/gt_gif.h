@@ -19,6 +19,7 @@ extern "C" {
 #if GT_CFG_ENABLE_GIF
 #include "gt_obj.h"
 #include "gt_obj_class.h"
+#include "../hal/gt_hal_file_header.h"
 
 
 
@@ -45,6 +46,10 @@ gt_obj_st * gt_gif_create(gt_obj_st * parent);
 void gt_gif_set_src(gt_obj_st * obj, char * src);
 
 char * gt_gif_get_src(gt_obj_st *  obj);
+
+#if GT_USE_FILE_HEADER
+void gt_gif_set_src_by_fh(gt_obj_st * obj, gt_file_header_param_st * fh);
+#endif
 
 gt_size_t gt_gif_get_frame_width(gt_obj_st * obj);
 

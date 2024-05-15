@@ -35,6 +35,9 @@
 typedef struct _gt_gif_s {
     gt_obj_st obj;
     char * src;
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_st fh;
+#endif
     gd_GIF * gif;
     _gt_timer_st * timer;
     uint32_t last_run;
@@ -177,38 +180,22 @@ gt_obj_st * gt_gif_create(gt_obj_st * parent)
     return obj;
 }
 
-void gt_gif_set_src(gt_obj_st * obj, char * src)
-{
-    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
-        return ;
-    }
-    _gt_gif_st * style = (_gt_gif_st * )obj;
-    bool is_running = false;
-    if (NULL != style->src && !strcmp(src, style->src)) {
-        return ;
-    }
-
+static gt_res_t _reset_gif_status(_gt_gif_st * style) {
     if( NULL != style->src ){
         gt_mem_free(style->src);
         style->src = NULL;
     }
     if (NULL != style->timer) {
-        is_running = !_gt_timer_get_paused(style->timer);
         _gt_timer_set_paused(style->timer, true);
     }
     if (NULL != style->gif) {
         gd_close_gif(style->gif);
         style->gif = NULL;
     }
-    uint16_t len = src == NULL ? 0 : strlen(src);
-    style->src = gt_mem_malloc( len + 1 );
-    strcpy(style->src, src);
-    style->src[len] = 0;
+    GT_RES_OK;
+}
 
-    style->gif = gd_open_gif(style->src);
-    if (NULL == style->gif) {
-        return ;
-    }
+static void _set_dsc_info_restart_timer(_gt_gif_st * style, bool is_running) {
     style->dsc.src = NULL;
     style->dsc.img = style->gif->canvas;
     style->dsc.alpha = style->gif->mask;
@@ -224,8 +211,55 @@ void gt_gif_set_src(gt_obj_st * obj, char * src)
         _gt_timer_set_paused(style->timer, false);
     }
 
-    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    gt_event_send((gt_obj_st * )style, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
+
+void gt_gif_set_src(gt_obj_st * obj, char * src)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_gif_st * style = (_gt_gif_st * )obj;
+    bool is_running = style->timer ? !_gt_timer_get_paused(style->timer) : false;
+    if (GT_RES_OK != _reset_gif_status(style)) {
+        return ;
+    }
+    if (NULL != style->src && !strcmp(src, style->src)) {
+        return ;
+    }
+
+    uint16_t len = src == NULL ? 0 : strlen(src);
+    style->src = gt_mem_malloc( len + 1 );
+    strcpy(style->src, src);
+    style->src[len] = 0;
+
+    style->gif = gd_open_gif(style->src);
+    if (NULL == style->gif) {
+        return ;
+    }
+    _set_dsc_info_restart_timer(style, is_running);
+}
+
+#if GT_USE_FILE_HEADER
+void gt_gif_set_src_by_fh(gt_obj_st * obj, gt_file_header_param_st * fh)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_gif_st * style = (_gt_gif_st * )obj;
+    bool is_running = style->timer ? !_gt_timer_get_paused(style->timer) : false;
+    if (GT_RES_OK != _reset_gif_status(style)) {
+        return ;
+    }
+
+    style->gif = gd_fh_open_gif(&style->fh);
+    if (NULL == style->gif) {
+        return ;
+    }
+
+    _set_dsc_info_restart_timer(style, is_running);
+}
+#endif
 
 char * gt_gif_get_src(gt_obj_st *  obj)
 {
