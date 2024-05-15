@@ -32,6 +32,12 @@ gt_gc_st _gt_global_call = {
         .len = 0,
     },
 #endif
+#if GT_USE_FILE_HEADER
+    .file_header_ctl = {
+        .header = NULL,
+        .count = 0,
+    },
+#endif
 };
 
 /* static variables -----------------------------------------------------*/

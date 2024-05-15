@@ -19,6 +19,7 @@ extern "C" {
 #include "../others/gt_list.h"
 #include "../others/gt_color.h"
 #include "../hal/gt_hal_disp.h"
+#include "../hal/gt_hal_file_header.h"
 #include "../core/gt_disp.h"
 
 /* define ---------------------------------------------------------------*/
@@ -44,6 +45,10 @@ typedef struct gt_gc_s {
 
 #if GT_USE_EXTRA_FULL_IMG_BUFFER
     _gt_gc_full_img_buffer_st full_img_buffer;
+#endif
+
+#if GT_USE_FILE_HEADER
+    _gt_file_header_ctl_st file_header_ctl;
 #endif
 }gt_gc_st;
 

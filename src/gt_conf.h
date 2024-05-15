@@ -146,6 +146,20 @@ extern "C" {
 #define GT_USE_MODE_FLASH       01
 #define GT_USE_MODE_SD          0
 
+#if GT_USE_MODE_FLASH || GT_USE_MODE_SD
+    #ifndef GT_USE_FILE_HEADER
+        /**
+         * @brief Enabled img file header function @ref gt_file_header_st, such as:
+         *      { index[2], count[2], address[4], width[2], height[2], reg[4] }
+         *      reg: colorDepth, alpha, etc.
+         *      More details see @ref gt_hal_file_header.h
+         *
+         * [Default: 0]
+         */
+        #define GT_USE_FILE_HEADER      0
+    #endif
+#endif
+
 #ifndef GT_USE_FOLDER_SYSTEM
     /**
      * @brief Enabled file system function such as:

@@ -176,6 +176,9 @@ static void _gt_src_drv_register(gt_fs_drv_st * drv)
 {
     drv->letter       = GT_FS_LABEL_ARRAY;
 
+#if GT_USE_FILE_HEADER
+    drv->fh_open_cb   = NULL;
+#endif
     drv->open_cb      = _open_cb;
     drv->close_cb     = _close_cb;
     drv->read_cb      = _read_cb;

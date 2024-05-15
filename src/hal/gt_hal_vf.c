@@ -9,10 +9,10 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_hal_vf.h"
-#include "gt_hal_fs.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "../others/gt_types.h"
+#include "../hal/gt_hal_file_header.h"
 #include "stdbool.h"
 #include "string.h"
 
@@ -55,6 +55,38 @@ static void _gt_vf_set_fp_by_list(gt_fs_fp_st * fp, gt_vfs_st const * const item
     fp->msg.pic.h = item->h;
     fp->msg.pic.is_alpha = item->is_alpha;
 }
+
+#if GT_USE_FILE_HEADER
+void * _fh_open_cb(struct _gt_fs_drv_s * drv, gt_file_header_param_st const * const fh_param, gt_fs_mode_et mode)
+{
+    /* check drv state */
+    if (_state == GT_FS_RES_DEINIT) {
+        GT_LOGV(GT_LOG_TAG_GUI, "vf drv is deinit");
+        return NULL;
+    }
+    gt_file_header_st const * item = gt_file_header_get(fh_param->idx);
+    if (NULL == item) {
+        return NULL;
+    }
+    gt_fs_fp_st * fp = _gt_hal_fp_init();
+
+    fp->start = gt_file_header_get_img_offset_by(item, fh_param->package_idx);
+    fp->end = gt_file_header_get_img_size(item) + fp->start;
+    fp->pos = fp->start;
+    fp->msg.pic.w = item->width;
+    fp->msg.pic.h = item->height;
+    fp->msg.pic.is_alpha = item->alpha;
+
+    if (fp->end > _vf_dev->addr_max) {
+        GT_LOGW(GT_LOG_TAG_GUI, "out of GT_VF_FLASH_SIZE");
+    }
+
+    fp->drv = gt_vf_get_drv();
+
+    fp->mode = mode;
+    return fp;
+}
+#endif
 
 static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode) {
     uint16_t idx = 0;
@@ -238,6 +270,9 @@ static char const * const _get_name_by_cb(uint16_t index_of_list) {
 static void _gt_vf_drv_init(gt_fs_drv_st * drv) {
     drv->letter       = GT_FS_LABEL_FLASH;
 
+#if GT_USE_FILE_HEADER
+    drv->fh_open_cb   = _fh_open_cb;
+#endif
     drv->open_cb      = _open_cb;
     drv->close_cb     = _close_cb;
     drv->read_cb      = _read_cb;

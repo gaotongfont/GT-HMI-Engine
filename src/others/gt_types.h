@@ -35,16 +35,37 @@ extern "C" {
 #define REDUCE_DEFAULT     (2)
 
 /* typedef --------------------------------------------------------------*/
+/**
+ * @brief screen id
+ */
 typedef int16_t gt_scr_id_t;
 
 typedef int16_t gt_size_t;
 
+/**
+ * @brief Font family type
+ */
 typedef uint16_t gt_family_t;
+
+/**
+ * @brief color opacity value
+ */
 typedef uint8_t gt_opt_t;
 
+/**
+ * @brief widget id
+ */
 typedef int16_t gt_id_t;
 
+/**
+ * @brief Screen stack size
+ */
 typedef int16_t gt_stack_size_t;
+
+/**
+ * @brief The header index type
+ */
+typedef int16_t gt_file_header_idx_t;
 
 /**
  * @brief The screen turn next screen animation type

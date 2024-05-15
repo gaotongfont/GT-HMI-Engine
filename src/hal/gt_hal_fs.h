@@ -16,6 +16,9 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "../gt_conf.h"
 #include "../others/gt_types.h"
+#if GT_USE_FILE_HEADER
+#include "../hal/gt_hal_file_header.h"
+#endif
 
 
 /* define ---------------------------------------------------------------*/
@@ -106,6 +109,9 @@ typedef struct _gt_fs_drv_s {
     rw_cb_t rw_cb;
 
     /* do not change */
+#if GT_USE_FILE_HEADER
+    void *( * fh_open_cb)(struct _gt_fs_drv_s * drv, gt_file_header_param_st const * const fh_param, gt_fs_mode_et mode);
+#endif
     void *( * open_cb)(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode);
     void ( * close_cb)(struct _gt_fs_drv_s * drv, void * fp);
     gt_fs_res_et ( * read_cb )(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len);

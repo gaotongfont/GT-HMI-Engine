@@ -144,7 +144,7 @@ gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode)
 {
     gt_fs_drv_st * drv = _get_default_drv(path);
 
-    if (!drv) {
+    if (!drv || !drv->open_cb) {
         return NULL;
     }
     gt_fs_fp_st * fp = drv->open_cb(drv, (char *)path, mode);
@@ -152,10 +152,23 @@ gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode)
     return fp;
 }
 
+#if GT_USE_FILE_HEADER
+gt_fs_fp_st * gt_fs_fh_open(gt_file_header_param_st const * const fh_param, gt_fs_mode_et mode)
+{
+    gt_fs_drv_st * drv = gt_vf_get_drv();
+    if (!drv || !drv->fh_open_cb) {
+        return NULL;
+    }
+    gt_fs_fp_st * fp = drv->fh_open_cb(drv, fh_param, mode);
+
+    return fp;
+}
+#endif
+
 gt_fs_res_et gt_fs_read(gt_fs_fp_st * fp, uint8_t * out, uint32_t size, uint32_t * ret_len)
 {
     gt_fs_drv_st * drv = fp->drv;
-    if (!fp) {
+    if (!fp || !drv->read_cb) {
         return GT_FS_RES_FAIL;
     }
 
@@ -165,7 +178,7 @@ gt_fs_res_et gt_fs_read(gt_fs_fp_st * fp, uint8_t * out, uint32_t size, uint32_t
 gt_fs_res_et gt_fs_seek(gt_fs_fp_st * fp, uint32_t offset, gt_fs_whence_et whence)
 {
     gt_fs_drv_st * drv = fp->drv;
-    if (!fp) {
+    if (!fp || !drv->seek_cb) {
         return GT_FS_RES_FAIL;
     }
 
@@ -175,7 +188,7 @@ gt_fs_res_et gt_fs_seek(gt_fs_fp_st * fp, uint32_t offset, gt_fs_whence_et whenc
 gt_fs_res_et gt_fs_tell(gt_fs_fp_st * fp, uint32_t * pos)
 {
     gt_fs_drv_st * drv = fp->drv;
-    if (!fp) {
+    if (!fp || !drv->tell_cb) {
         return GT_FS_RES_FAIL;
     }
 
@@ -185,7 +198,7 @@ gt_fs_res_et gt_fs_tell(gt_fs_fp_st * fp, uint32_t * pos)
 gt_fs_res_et gt_fs_write(gt_fs_fp_st * fp, uint8_t * buffer, uint32_t len, uint32_t * ret_len)
 {
     gt_fs_drv_st * drv = fp->drv;
-    if (!fp) {
+    if (!fp || !drv->write_cb) {
         return GT_FS_RES_FAIL;
     }
 
@@ -200,7 +213,7 @@ gt_fs_res_et gt_fs_read_img_offset(gt_fs_fp_st * fp, uint8_t * res, uint32_t off
     }
     uint32_t ret_len = 0;
 
-    if (fp == NULL) {
+    if (!fp || !drv->seek_cb || !drv->read_cb) {
         return GT_FS_RES_FAIL;
     }
     drv->seek_cb(drv, fp, offset, GT_FS_SEEK_SET);

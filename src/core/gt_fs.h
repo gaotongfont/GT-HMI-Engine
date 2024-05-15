@@ -53,6 +53,19 @@ gt_fs_type_et gt_fs_get_src_type(const void * src);
  */
 gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode);
 
+#if GT_USE_FILE_HEADER
+/**
+ * @brief open file by file header control
+ *
+ * @param fh_param The index of header list item and the index of
+ *              header item inside count, package_index Enabled when
+ *              _GT_FILE_HEADER_IMG_PACKAGE is enabled,
+ * @param mode The file operation mode
+ * @return gt_fs_res_et the result status
+ */
+gt_fs_fp_st * gt_fs_fh_open(gt_file_header_param_st const * const fh_param, gt_fs_mode_et mode);
+#endif
+
 /**
  * @brief Read file contents from file descriptor
  *

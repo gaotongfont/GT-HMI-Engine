@@ -2314,8 +2314,14 @@ void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_are
         }
         dsc_img = *dsc->raw_img;
     }
-    else if ( GT_RES_FAIL == gt_img_decoder_open(&dsc_img, dsc->bg_img_src)) {
-        GT_LOGW(GT_LOG_TAG_DATA, "Open image decoder failed\n");
+#if GT_USE_FILE_HEADER
+    else if (GT_RES_FAIL == gt_img_decoder_fh_open(&dsc_img, dsc->file_header)) {
+        GT_LOGW(GT_LOG_TAG_DATA, "Open image decoder by file header failed");
+        return;
+    }
+#endif
+    else if (GT_RES_FAIL == gt_img_decoder_open(&dsc_img, dsc->bg_img_src)) {
+        GT_LOGW(GT_LOG_TAG_DATA, "Open image decoder failed");
         return;
     }
     coords->w = dsc_img.header.w;

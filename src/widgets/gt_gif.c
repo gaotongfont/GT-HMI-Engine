@@ -67,14 +67,14 @@ const gt_obj_class_st gt_gif_class = {
 
 static void _init_cb(gt_obj_st * obj) {
     _gt_gif_st * style = (_gt_gif_st * )obj;
+    if (NULL == style->gif) {
+        return ;
+    }
     gt_attr_rect_st dsc = {
         .bg_opa = obj->opa,
         .bg_img_src = NULL,
         .raw_img = &style->dsc,
     };
-    if (NULL == style->gif) {
-        return ;
-    }
     /* start draw obj */
     draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
 
