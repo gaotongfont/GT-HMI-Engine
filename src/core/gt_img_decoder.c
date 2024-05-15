@@ -256,6 +256,9 @@ gt_res_t gt_img_decoder_close(_gt_img_dsc_st * dsc)
 gt_res_t gt_img_decoder_fh_get_info(gt_file_header_param_st const * const param, _gt_img_info_st * header)
 {
     _gt_img_decoder_st * ptr = NULL;
+    if (NULL == param || param->idx < 0) {
+        return GT_RES_INV;
+    }
 
     _gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
         if (NULL == ptr->fh_info_cb) {
