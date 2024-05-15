@@ -276,7 +276,7 @@ gt_res_t gt_img_decoder_fh_open(_gt_img_dsc_st * dsc, gt_file_header_param_st co
 {
     _gt_img_decoder_st * ptr = NULL;
     dsc->decoder = NULL;    /* reset image dsc struct */
-    if (NULL == param->file_header || param->file_header->idx < 0) {
+    if (NULL == param || param->idx < 0) {
         return GT_RES_INV;
     }
 
