@@ -893,9 +893,18 @@ static gt_res_t _filling_by_default_full_mode(_gt_draw_ctx_st * draw_ctx, gt_dra
 
     gt_fs_read_img_offset(fp, (uint8_t *)full_img->buffer, 0, (is_mask ? len : 0) + addr_start_alpha);
 
+#if GT_USE_EXTRA_FULL_IMG_OFFSET
+    blend_dsc->dst_buf = (gt_color_t * )&full_img->buffer[full_img->offset];
+#else
     blend_dsc->dst_buf = (gt_color_t * )full_img->buffer;
+#endif
+
     if (is_mask) {
+#if GT_USE_EXTRA_FULL_IMG_OFFSET
+        blend_dsc->mask_buf = (gt_opa_t * )&full_img->buffer[addr_start_alpha + full_img->offset];
+#else
         blend_dsc->mask_buf = (gt_opa_t * )&full_img->buffer[addr_start_alpha];
+#endif
     }
 
     gt_draw_blend(draw_ctx, blend_dsc);

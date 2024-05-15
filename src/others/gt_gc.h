@@ -25,12 +25,23 @@ extern "C" {
 /* define ---------------------------------------------------------------*/
 
 #if GT_USE_EXTRA_FULL_IMG_BUFFER
+
+#ifndef GT_USE_EXTRA_FULL_IMG_OFFSET
+    /**
+     * @brief Using the full image buffer, set the offset of the buffer is valid.
+     */
+    #define GT_USE_EXTRA_FULL_IMG_OFFSET    0
+#endif
+
 /**
  * @brief Malloc or free by user.
  */
 typedef struct _gt_gc_full_img_buffer_s {
     uint8_t * buffer;
     uint32_t len;
+#if GT_USE_EXTRA_FULL_IMG_OFFSET
+    uint32_t offset;
+#endif
 }_gt_gc_full_img_buffer_st;
 #endif
 
@@ -91,6 +102,15 @@ uint16_t _gt_gc_get_size(void);
  *          [max_width * max_height * (sizeof(gt_opa_t) + sizeof(gt_color_t))].
  */
 void gt_gc_set_full_img_buffer(uint8_t * buffer, uint32_t len);
+
+#if GT_USE_EXTRA_FULL_IMG_OFFSET
+/**
+ * @brief Using the full image buffer, set the offset of the buffer is valid.
+ *
+ * @param offset 0[defalut]: Buffer begin address
+ */
+void gt_gc_set_full_img_buffer_offset(uint32_t offset);
+#endif
 
 _gt_gc_full_img_buffer_st * _gt_gc_get_full_img_buffer(void);
 #endif

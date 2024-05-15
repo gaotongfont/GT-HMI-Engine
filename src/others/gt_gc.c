@@ -30,6 +30,9 @@ gt_gc_st _gt_global_call = {
     .full_img_buffer = {
         .buffer = NULL,
         .len = 0,
+#if GT_USE_EXTRA_FULL_IMG_OFFSET
+        .offset = 0,
+#endif
     },
 #endif
 #if GT_USE_FILE_HEADER
@@ -84,6 +87,13 @@ void gt_gc_set_full_img_buffer(uint8_t * buffer, uint32_t len)
     _gt_global_call.full_img_buffer.buffer = buffer;
     _gt_global_call.full_img_buffer.len = len;
 }
+
+#if GT_USE_EXTRA_FULL_IMG_OFFSET
+void gt_gc_set_full_img_buffer_offset(uint32_t offset)
+{
+    _gt_global_call.full_img_buffer.offset = offset;
+}
+#endif
 
 _gt_gc_full_img_buffer_st * _gt_gc_get_full_img_buffer(void)
 {
