@@ -283,7 +283,16 @@ static void _deinit_cb(gt_obj_st * obj) {
 static void _invalid_area(gt_obj_st * obj, _gt_player_st * style) {
     void * src = _get_src(style);
     uint16_t w = 0, h = 0;
-    gt_fs_read_img_wh((char * )src, &w, &h);
+    gt_fs_res_et ret = GT_FS_RES_FAIL;
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_st * param = _get_file_header_param(style);
+    if (GT_FS_RES_OK != ret) {
+        ret = gt_fs_fh_read_img_wh(param, &w, &h);
+    }
+#endif
+    if (GT_FS_RES_OK != ret) {
+        gt_fs_read_img_wh((char * )src, &w, &h);
+    }
     obj->area.w = GT_MAX(obj->area.w, w);
     obj->area.h = GT_MAX(obj->area.h, h);
     gt_disp_invalid_area(obj);
