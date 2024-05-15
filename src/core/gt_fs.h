@@ -115,6 +115,16 @@ gt_fs_res_et gt_fs_write(gt_fs_fp_st * fp, uint8_t * buffer, uint32_t len, uint3
  */
 gt_fs_res_et gt_fs_read_img_offset(gt_fs_fp_st * fp, uint8_t * res, uint32_t offset, uint32_t len);
 
+/**
+ * @brief Get the image width and height, by the full path of file name.
+ *
+ * @param path The full path of file name
+ * @param w Get image width value
+ * @param h Get image height value
+ * @return gt_fs_res_et The result status
+ */
+gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h);
+
 #if GT_USE_FILE_HEADER
 /**
  * @brief Get the image width and height, by the file header of file item.
@@ -127,16 +137,6 @@ gt_fs_res_et gt_fs_read_img_offset(gt_fs_fp_st * fp, uint8_t * res, uint32_t off
  */
 gt_fs_res_et gt_fs_fh_read_img_wh(gt_file_header_param_st * param, uint16_t * w, uint16_t * h);
 #endif
-
-/**
- * @brief Get the image width and height, by the full path of file name.
- *
- * @param path The full path of file name
- * @param w Get image width value
- * @param h Get image height value
- * @return gt_fs_res_et The result status
- */
-gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h);
 
 /**
  * @brief Close the file operation handler, which need to

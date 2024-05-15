@@ -222,6 +222,23 @@ gt_fs_res_et gt_fs_read_img_offset(gt_fs_fp_st * fp, uint8_t * res, uint32_t off
     return GT_FS_RES_OK;
 }
 
+gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h)
+{
+    if( !path ){
+        return GT_FS_RES_FAIL;
+    }
+    gt_fs_fp_st * fp = gt_fs_open(path, GT_FS_MODE_RD);
+    if (!fp) {
+        return GT_FS_RES_FAIL;
+    }
+    *w = fp->msg.pic.w;
+    *h = fp->msg.pic.h;
+
+    gt_fs_close(fp);
+
+    return GT_FS_RES_OK;
+}
+
 #if GT_USE_FILE_HEADER
 gt_fs_res_et gt_fs_fh_read_img_wh(gt_file_header_param_st * param, uint16_t * w, uint16_t * h)
 {
@@ -244,23 +261,6 @@ gt_fs_res_et gt_fs_fh_read_img_wh(gt_file_header_param_st * param, uint16_t * w,
     return GT_FS_RES_OK;
 }
 #endif
-
-gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h)
-{
-    if( !path ){
-        return GT_FS_RES_FAIL;
-    }
-    gt_fs_fp_st * fp = gt_fs_open(path, GT_FS_MODE_RD);
-    if (!fp) {
-        return GT_FS_RES_FAIL;
-    }
-    *w = fp->msg.pic.w;
-    *h = fp->msg.pic.h;
-
-    gt_fs_close(fp);
-
-    return GT_FS_RES_OK;
-}
 
 void gt_fs_close(gt_fs_fp_st * fp)
 {
