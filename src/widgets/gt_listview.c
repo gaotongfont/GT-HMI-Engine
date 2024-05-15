@@ -245,7 +245,7 @@ static void _highlight_set_obj_active_state(gt_obj_st * listview) {
         return;
     }
     if (false == gt_obj_get_state(style->last_active)) {
-        gt_obj_set_state(style->last_active,  GT_STATE_PRESSED);
+        gt_obj_set_state(style->last_active, GT_STATE_PRESSED);
     }
 }
 

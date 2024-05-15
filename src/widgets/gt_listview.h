@@ -150,7 +150,7 @@ void gt_listview_set_scale(gt_obj_st * listview, uint8_t icon, uint8_t label);
  * @param center 0 ~ 255
  * @param right 0 ~ 255
  */
-void gt_listview_set_scale_triple(gt_obj_st * listview, uint8_t left, uint8_t center,  uint8_t right);
+void gt_listview_set_scale_triple(gt_obj_st * listview, uint8_t left, uint8_t center, uint8_t right);
 
 /**
  * @brief item icon set to right side, default is left

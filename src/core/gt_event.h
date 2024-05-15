@@ -71,7 +71,7 @@ typedef enum gt_event_type_e {
     GT_EVENT_TYPE_CHANGE_CHILD_REMOVE,     // [Called by core inside] remove child but not delete child
     GT_EVENT_TYPE_CHANGE_CHILD_REMOVED,    // [Called by core inside] remove child finish
     GT_EVENT_TYPE_CHANGE_CHILD_ADD,        // [Called by core inside] add child
-    GT_EVENT_TYPE_CHANGE_CHILD_DELETE ,    // [Called by core inside] delete child
+    GT_EVENT_TYPE_CHANGE_CHILD_DELETE,     // [Called by core inside] delete child
     GT_EVENT_TYPE_CHANGE_CHILD_DELETED,    // [Called by core inside] delete child finish
     GT_EVENT_TYPE_CHANGE_DELETED,          // [Called by core inside] delete self finish
 

@@ -47,7 +47,7 @@ gt_fs_type_et gt_fs_get_src_type(const void * src);
 /**
  * @brief Try to identify the file and driver and open the file
  *
- * @param path The full path of file , see port file lists
+ * @param path The full path of file, see port file lists
  * @param mode The file operation mode
  * @return gt_fs_res_et the result status
  */

@@ -122,7 +122,7 @@ static _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st
     return obj_clicked;
 }
 
-static gt_obj_st* _gt_obj_next_focus_get( gt_obj_st * parent , const gt_obj_st * cur_obj , bool flag)
+static gt_obj_st* _gt_obj_next_focus_get( gt_obj_st * parent, const gt_obj_st * cur_obj, bool flag)
 {
     gt_obj_st * next = NULL;
     int idx = 0;
@@ -138,7 +138,7 @@ static gt_obj_st* _gt_obj_next_focus_get( gt_obj_st * parent , const gt_obj_st *
             }
         }
 
-        next = _gt_obj_next_focus_get(parent->child[idx] , cur_obj , tmp);
+        next = _gt_obj_next_focus_get(parent->child[idx], cur_obj, tmp);
 
         if(cur_obj == parent->child[idx]){
             tmp = true;
@@ -254,14 +254,14 @@ void gt_obj_next_focus_change(gt_obj_st * cur_obj)
 
     gt_obj_st* parent = gt_disp_get_scr();
 
-    gt_obj_st* next = _gt_obj_next_focus_get(parent , cur_obj , false);
+    gt_obj_st* next = _gt_obj_next_focus_get(parent, cur_obj, false);
 
     if(!next){
         next = parent;
     }
 
-    gt_obj_set_focus(cur_obj , false);
-    gt_obj_set_focus(next , true);
+    gt_obj_set_focus(cur_obj, false);
+    gt_obj_set_focus(next, true);
 }
 
 void gt_obj_prev_focus_change(gt_obj_st * cur_obj)
@@ -297,8 +297,8 @@ void gt_obj_prev_focus_change(gt_obj_st * cur_obj)
         prev = parent;
     }
 
-    gt_obj_set_focus(cur_obj , false);
-    gt_obj_set_focus(prev , true);
+    gt_obj_set_focus(cur_obj, false);
+    gt_obj_set_focus(prev, true);
 }
 
 

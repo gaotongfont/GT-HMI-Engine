@@ -69,12 +69,12 @@ static void _init_cb(struct gt_obj_s *);
 static void _deinit_cb(struct gt_obj_s *);
 static void _event_cb(struct gt_obj_s *, struct _gt_event_s *);
 static inline void _gt_btnmap_init_widget(gt_obj_st* btnmap);
-static bool _gt_btn_cmp(const char* key1 , const char* key2);
+static bool _gt_btn_cmp(const char* key1, const char* key2);
 static void _gt_auto_btn_height(gt_obj_st* btnmap);
 static uint16_t _gt_get_map_max_line(const gt_map_st *map);
-static void _gt_get_line_list(const gt_map_st* map , uint16_t* w_list , uint16_t* numb_list);
+static void _gt_get_line_list(const gt_map_st* map, uint16_t* w_list, uint16_t* numb_list);
 static void _gt_update_map(gt_obj_st* btnmap);
-static gt_area_st _gt_get_btn_area_idx(gt_obj_st* btnmap , uint16_t idx , uint16_t line , uint16_t col , uint16_t sum_w);
+static gt_area_st _gt_get_btn_area_idx(gt_obj_st* btnmap, uint16_t idx, uint16_t line, uint16_t col, uint16_t sum_w);
 static void _gt_set_press_btn(gt_obj_st* obj);
 static char* _gt_get_press_btn(gt_obj_st* obj);
 static void _gt_clean_press_btn(gt_obj_st* obj);
@@ -189,7 +189,7 @@ static inline void _gt_btnmap_init_widget(gt_obj_st* btnmap) {
     //
     gt_map_st* map = style->map;
     gt_area_st btn_area;
-    uint16_t map_idx = 0 , line = 0 , col = 0 , sum_w = 0;
+    uint16_t map_idx = 0, line = 0, col = 0, sum_w = 0;
     uint8_t r, g, b;
 
     //
@@ -205,7 +205,7 @@ static inline void _gt_btnmap_init_widget(gt_obj_st* btnmap) {
             goto g_NEXT;
         }
         //
-        if(_gt_btn_cmp(map[map_idx].kv , GT_BTNMAP_NEW_LINE)){
+        if(_gt_btn_cmp(map[map_idx].kv, GT_BTNMAP_NEW_LINE)){
             line++;
             map_idx++;
             col = 0;
@@ -219,7 +219,7 @@ static inline void _gt_btnmap_init_widget(gt_obj_st* btnmap) {
         //
         if(style->_disp_special_btn_cb){
             // Attribute change
-            if(style->_disp_special_btn_cb(btnmap , map[map_idx].kv , &font_attr)){
+            if(style->_disp_special_btn_cb(btnmap, map[map_idx].kv, &font_attr)){
                 rect_attr.bg_color = style->special_btn_param.bg_color;
                 rect_attr.border_color = style->special_btn_param.border_color;
                 rect_attr.border_width = style->special_btn_param.border_width;
@@ -227,15 +227,15 @@ static inline void _gt_btnmap_init_widget(gt_obj_st* btnmap) {
             }
         }
 
-        if(_gt_get_press_btn(btnmap) && _gt_btn_cmp(map[map_idx].kv , _gt_get_press_btn(btnmap))){
+        if(_gt_get_press_btn(btnmap) && _gt_btn_cmp(map[map_idx].kv, _gt_get_press_btn(btnmap))){
             r = GT_COLOR_GET_R(rect_attr.bg_color) >> 1;
             g = GT_COLOR_GET_G(rect_attr.bg_color) >> 1;
             b = GT_COLOR_GET_B(rect_attr.bg_color) >> 1;
             GT_COLOR_SET_RGB(rect_attr.bg_color, r, g, b);
         }
 
-        btn_area = _gt_get_btn_area_idx(btnmap , map_idx ,  line ,  col ,  sum_w);
-        draw_bg(btnmap->draw_ctx , &rect_attr , &btn_area);
+        btn_area = _gt_get_btn_area_idx(btnmap, map_idx, line, col, sum_w);
+        draw_bg(btnmap->draw_ctx, &rect_attr, &btn_area);
         // draw text
         font_attr.logical_area = btn_area;
         draw_text(btnmap->draw_ctx, &font_attr, &btn_area);
@@ -247,7 +247,7 @@ g_NEXT:
     }
 }
 
-static bool _gt_btn_cmp(const char* key1 , const char* key2) {
+static bool _gt_btn_cmp(const char* key1, const char* key2) {
     if(!key1 || !key2) return false;
     else if(!key1 && !key2) true;
 
@@ -283,15 +283,15 @@ static void _gt_update_map(gt_obj_st* btnmap) {
     if(!style->_line_w_list) {
         style->_line_w_list = gt_mem_malloc(style->_max_line * sizeof(uint16_t) * 2);
         if(NULL == style->_line_w_list) {
-            GT_LOGE(GT_LOG_TAG_GUI, "btnmap malloc failed!!! size = %d" , style->_max_line * sizeof(uint16_t) * 2);
+            GT_LOGE(GT_LOG_TAG_GUI, "btnmap malloc failed!!! size = %d", style->_max_line * sizeof(uint16_t) * 2);
             return ;
         }
         buf_max = style->_max_line;
     }
-    gt_memset_0(style->_line_w_list , style->_max_line * sizeof(uint16_t) * 2);
+    gt_memset_0(style->_line_w_list, style->_max_line * sizeof(uint16_t) * 2);
     style->_line_numb_list = &style->_line_w_list[style->_max_line];
 
-    _gt_get_line_list((const gt_map_st*)style->map , style->_line_w_list , style->_line_numb_list);
+    _gt_get_line_list((const gt_map_st*)style->map, style->_line_w_list, style->_line_numb_list);
 
     _gt_auto_btn_height(btnmap);
 }
@@ -302,7 +302,7 @@ static uint16_t _gt_get_map_max_line(const gt_map_st *map) {
 
     while (map[map_idx].kv || map[map_idx].w > 0)
     {
-        if(_gt_btn_cmp(map[map_idx].kv , GT_BTNMAP_NEW_LINE)){
+        if(_gt_btn_cmp(map[map_idx].kv, GT_BTNMAP_NEW_LINE)){
             max_line++;
         }
         map_idx++;
@@ -311,7 +311,7 @@ static uint16_t _gt_get_map_max_line(const gt_map_st *map) {
     return max_line;
 }
 
-static void _gt_get_line_list(const gt_map_st* map , uint16_t* w_list , uint16_t* numb_list) {
+static void _gt_get_line_list(const gt_map_st* map, uint16_t* w_list, uint16_t* numb_list) {
     if(!map || !w_list) return ;
     uint16_t map_idx = 0;
     uint16_t max_line = 0;
@@ -322,14 +322,14 @@ static void _gt_get_line_list(const gt_map_st* map , uint16_t* w_list , uint16_t
 
         numb_list[max_line] += (map[map_idx].w ? 1 : 0);
 
-        if(_gt_btn_cmp(map[map_idx].kv , GT_BTNMAP_NEW_LINE)){
+        if(_gt_btn_cmp(map[map_idx].kv, GT_BTNMAP_NEW_LINE)){
             max_line++;
         }
         map_idx++;
     }
 }
 
-static gt_area_st _gt_get_btn_area_idx(gt_obj_st* btnmap , uint16_t idx , uint16_t line , uint16_t col , uint16_t sum_w) {
+static gt_area_st _gt_get_btn_area_idx(gt_obj_st* btnmap, uint16_t idx, uint16_t line, uint16_t col, uint16_t sum_w) {
     gt_area_st btn_area = {0};
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
     if(!style->_line_w_list || !style->_line_numb_list){
@@ -339,7 +339,7 @@ static gt_area_st _gt_get_btn_area_idx(gt_obj_st* btnmap , uint16_t idx , uint16
     uint16_t line_numb = style->_line_numb_list[line];
     uint16_t line_w = style->_line_w_list[line];
 
-    gt_area_copy(&btn_area , &btnmap->area);
+    gt_area_copy(&btn_area, &btnmap->area);
 
     btn_area.y += style->btn_height * line + style->btn_y_space * (line+1);
     btn_area.h = style->btn_height;
@@ -356,22 +356,22 @@ static void _gt_set_press_btn(gt_obj_st* obj) {
     const gt_map_st* map = (const gt_map_st*)style->map;
 
     const char* const press_old_btn = style->press_btn;
-    uint16_t map_idx = 0 , line = 0 , col = 0 , sum_w = 0;
-    gt_area_st btn_area = {0} , area_tmp = {0};
+    uint16_t map_idx = 0, line = 0, col = 0, sum_w = 0;
+    gt_area_st btn_area = {0}, area_tmp = {0};
     while (map[map_idx].kv || map[map_idx].w > 0)
     {
         if(!map[map_idx].kv){
             goto g_NEXT;
         }
         //
-        if(_gt_btn_cmp(map[map_idx].kv , GT_BTNMAP_NEW_LINE)){
+        if(_gt_btn_cmp(map[map_idx].kv, GT_BTNMAP_NEW_LINE)){
             line++;
             map_idx++;
             col = 0;
             sum_w = 0;
             continue;
         }
-        btn_area = _gt_get_btn_area_idx(obj , map_idx ,  line ,  col ,  sum_w);
+        btn_area = _gt_get_btn_area_idx(obj, map_idx, line, col, sum_w);
 
         if ((btn_area.x < obj->process_attr.point.x + obj->area.x) &&
             ((btn_area.x + btn_area.w) > obj->process_attr.point.x + obj->area.x) &&
@@ -379,10 +379,10 @@ static void _gt_set_press_btn(gt_obj_st* obj) {
             ((btn_area.y + btn_area.h) > obj->process_attr.point.y + obj->area.y)) {
 
             style->press_btn = (char*)map[map_idx].kv;
-            gt_event_send(obj , GT_EVENT_TYPE_DRAW_START , NULL);
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 
             // if(press_old_btn != style->press_btn){
-            //     gt_event_send(obj , GT_EVENT_TYPE_DRAW_START , NULL);
+            //     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             // }
 
             // if(style->press_btn){
@@ -406,7 +406,7 @@ static char * _gt_get_press_btn(gt_obj_st* obj) {
 static void _gt_clean_press_btn(gt_obj_st* obj) {
     _gt_btnmap_st * style = (_gt_btnmap_st * )obj;
     style->press_btn = NULL;
-    gt_event_send(obj , GT_EVENT_TYPE_DRAW_START , NULL);
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 static void _gt_push_btn_kv(gt_obj_st* obj) {
@@ -414,10 +414,10 @@ static void _gt_push_btn_kv(gt_obj_st* obj) {
     if(!style->press_btn) return ;
 
     if(style->_push_btn_kv_cb){
-        style->_push_btn_kv_cb( obj, style->_input , style->press_btn);
+        style->_push_btn_kv_cb( obj, style->_input, style->press_btn);
     }
     else if(style->_input){
-        gt_input_append_value(style->_input , style->press_btn);
+        gt_input_append_value(style->_input, style->press_btn);
     }
 }
 
@@ -444,7 +444,7 @@ gt_obj_st * gt_btnmap_create(gt_obj_st * parent)
     return obj;
 }
 
-void gt_btnmap_set_map(gt_obj_st* btnmap , gt_map_st* map , uint16_t map_type)
+void gt_btnmap_set_map(gt_obj_st* btnmap, gt_map_st* map, uint16_t map_type)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
@@ -478,7 +478,7 @@ void gt_btnmap_set_input(gt_obj_st * btnmap, gt_obj_st * input)
     style->_input = input;
 }
 
-void gt_btnmap_set_radius(gt_obj_st* btnmap , uint8_t radius)
+void gt_btnmap_set_radius(gt_obj_st* btnmap, uint8_t radius)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
@@ -488,7 +488,7 @@ void gt_btnmap_set_radius(gt_obj_st* btnmap , uint8_t radius)
     gt_event_send(btnmap, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_btnmap_set_btn_height(gt_obj_st* btnmap , uint16_t height)
+void gt_btnmap_set_btn_height(gt_obj_st* btnmap, uint16_t height)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
@@ -498,7 +498,7 @@ void gt_btnmap_set_btn_height(gt_obj_st* btnmap , uint16_t height)
     gt_event_send(btnmap, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_btnmap_set_btn_height_auto_fill(gt_obj_st* btnmap , bool auto_fill)
+void gt_btnmap_set_btn_height_auto_fill(gt_obj_st* btnmap, bool auto_fill)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
@@ -517,7 +517,7 @@ bool gt_btnmap_get_btn_height_auto_fill(gt_obj_st* btnmap)
     return style->auto_fill_h;
 }
 
-void gt_btnmap_set_btn_xy_space(gt_obj_st* btnmap , uint8_t x_space , uint8_t y_space)
+void gt_btnmap_set_btn_xy_space(gt_obj_st* btnmap, uint8_t x_space, uint8_t y_space)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
@@ -538,7 +538,7 @@ void gt_btnmap_set_color_background(gt_obj_st * btnmap, gt_color_t color)
     gt_event_send(btnmap, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_btnmap_set_border_width_and_color(gt_obj_st * btnmap, gt_size_t width , gt_color_t color)
+void gt_btnmap_set_border_width_and_color(gt_obj_st * btnmap, gt_size_t width, gt_color_t color)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
@@ -648,7 +648,7 @@ void gt_btnmap_set_font_encoding(gt_obj_st * btnmap, gt_encoding_et encoding)
     style->font_info.encoding = encoding;
 }
 
-void gt_btnmap_set_push_btn_kv_handler(gt_obj_st * btnmap , gt_btnmap_push_btn_kv_cb_t push_btn_kv_cb)
+void gt_btnmap_set_push_btn_kv_handler(gt_obj_st * btnmap, gt_btnmap_push_btn_kv_cb_t push_btn_kv_cb)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
@@ -657,7 +657,7 @@ void gt_btnmap_set_push_btn_kv_handler(gt_obj_st * btnmap , gt_btnmap_push_btn_k
     style->_push_btn_kv_cb = push_btn_kv_cb;
 }
 //
-void gt_btnmap_set_disp_special_btn_handler(gt_obj_st * btnmap , gt_btnmap_disp_special_btn_cb_t disp_special_btn_cb)
+void gt_btnmap_set_disp_special_btn_handler(gt_obj_st * btnmap, gt_btnmap_disp_special_btn_cb_t disp_special_btn_cb)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
@@ -675,7 +675,7 @@ void gt_btnmap_set_special_btn_color_background(gt_obj_st * btnmap, gt_color_t c
     gt_event_send(btnmap, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_btnmap_set_special_btn_border_width_and_color(gt_obj_st * btnmap, gt_size_t width , gt_color_t color)
+void gt_btnmap_set_special_btn_border_width_and_color(gt_obj_st * btnmap, gt_size_t width, gt_color_t color)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;

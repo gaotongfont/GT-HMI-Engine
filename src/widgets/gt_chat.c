@@ -444,7 +444,7 @@ void gt_chat_add_received_text_msg(gt_obj_st * chat, const char * msg)
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
         return ;
     }
-    _gt_chat_add_msg( chat, msg ,  0 , GT_CHAT_TYPE_TEXT , false);
+    _gt_chat_add_msg( chat, msg , 0 , GT_CHAT_TYPE_TEXT , false);
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
