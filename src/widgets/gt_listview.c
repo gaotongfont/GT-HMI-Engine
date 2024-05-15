@@ -704,7 +704,7 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
     _gt_listview_st * style = (_gt_listview_st * )listview;
     gt_obj_st * obj = NULL;
     gt_obj_st * element = NULL;
-    if (_GT_LISTVIEW_ELEMENT_TYPE_MAX <= item->element_idx) {
+    if (_GT_LISTVIEW_ELEMENT_TYPE_MAX <= item->type) {
         return NULL;
     }
 
