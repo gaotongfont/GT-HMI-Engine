@@ -228,6 +228,9 @@ gt_fs_res_et gt_fs_fh_read_img_wh(gt_file_header_param_st * param, uint16_t * w,
     if (NULL == param) {
         return GT_FS_RES_FAIL;
     }
+    if (param->idx < 0) {
+        return GT_FS_RES_FAIL;
+    }
     gt_fs_fp_st * fp = gt_fs_fh_open(param, GT_FS_MODE_RD);
     if (NULL == fp) {
         return GT_FS_RES_FAIL;
