@@ -1,6 +1,6 @@
 /**
  * @file gt_wordart.h
- * @author Yang (your@email.com)
+ * @author Yang
  * @brief
  * @version 0.1
  * @date 2023-07-21 14:10:24
@@ -34,25 +34,32 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
-gt_obj_st * gt_wordart_create(gt_obj_st * parent) ;
+gt_obj_st * gt_wordart_create(gt_obj_st * parent);
 
 /**
  * @brief Example Initialize the maximum number of items
  *
  * @param wordart obj
  * @param total maximum number
+ * @return valid number count of items
  */
-void gt_wordart_items_init(gt_obj_st* wordart , uint32_t total);
+uint32_t gt_wordart_items_init(gt_obj_st* wordart, uint32_t total);
 
 /**
  * @brief add item
  *
  * @param wordart obj
- * @param coding unicode
- * @param img image
+ * @param coding custom unicode
+ * @param src image path
  */
-void gt_wordart_add_item(gt_obj_st* wordart , uint32_t coding , char* img);
+void gt_wordart_add_item(gt_obj_st* wordart, uint32_t coding, char * src);
 
+/**
+ * @brief Set the text, which display by wordart image character
+ *
+ * @param wordart
+ * @param fmt
+ */
 void gt_wordart_set_text(gt_obj_st * wordart, const char * fmt, ...);
 
 char * gt_wordart_get_text(gt_obj_st * wordart);

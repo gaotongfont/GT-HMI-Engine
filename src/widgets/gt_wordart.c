@@ -1,6 +1,6 @@
 /**
  * @file gt_wordart.c
- * @author Yang (your@email.com)
+ * @author Yang
  * @brief
  * @version 0.1
  * @date 2023-07-21 14:10:32
@@ -32,10 +32,10 @@ typedef struct _gt_word_art_item_s {
 
 typedef struct _gt_wor_dart_s {
     gt_obj_st obj;
-    _gt_word_art_item_st *items;
+    _gt_word_art_item_st * items;
     uint32_t total;
     uint32_t item_number;
-    char *text;
+    char * text;
     uint8_t space_x;
     uint8_t space_y;
 }_gt_wor_dart_st;
@@ -64,65 +64,13 @@ const gt_obj_class_st gt_word_art_class = {
 
 
 /* static functions -----------------------------------------------------*/
-static int _gt_wordart_items_find(_gt_wor_dart_st * style , uint32_t coding)
-{
-    uint32_t i = 0;
-
-    for(i = 0 ; i < style->item_number ; i++){
-
+static int _gt_wordart_items_find(_gt_wor_dart_st * style, uint32_t coding) {
+    for (uint32_t i = 0; i < style->item_number; i++) {
         if(coding == style->items[i].coding){
             return i;
         }
     }
-
     return -1;
-}
-
-static inline void _gt_wordart_init_widget(gt_obj_st * wordart)
-{
-    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
-
-    if(0 == wordart->area.w || 0 == wordart->area.h){
-        wordart->area.w = 5;
-        wordart->area.h = 5;
-    }
-
-    gt_area_st area = {
-        .x = wordart->area.x ,
-        .y = wordart->area.y ,
-        .w = wordart->area.w ,
-        .h = wordart->area.h
-    };
-
-    if(NULL == style->items ||  0 == style->item_number){
-        return ;
-    }
-
-    gt_attr_rect_st dsc = {
-        .bg_opa = wordart->opa,
-    };
-
-    uint32_t len = (NULL == style->text) ? 0 : strlen(style->text);
-    uint32_t idx = 0, coding = 0;
-    int tmp = 0;
-
-    while(idx < len) {
-        tmp = _gt_utf8_to_unicode((uint8_t * )&style->text[idx] , &coding);
-        if (0 == tmp) {
-            return ;
-        }
-        idx += tmp;
-
-        tmp = _gt_wordart_items_find(style , coding);
-        if (tmp < 0) {
-            continue;
-        }
-
-        dsc.bg_img_src = style->items[tmp].img;
-
-        draw_bg_img(wordart->draw_ctx, &dsc, &area);
-        area.x += area.w + style->space_x;
-    }
 }
 
 /**
@@ -130,11 +78,48 @@ static inline void _gt_wordart_init_widget(gt_obj_st * wordart)
  *
  * @param obj
  */
-static void _init_cb(gt_obj_st * obj)
-{
-    GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
+static void _init_cb(gt_obj_st * obj) {
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )obj;
+    if(0 == obj->area.w || 0 == obj->area.h){
+        obj->area.w = 5;
+        obj->area.h = 5;
+    }
 
-    _gt_wordart_init_widget(obj);
+    gt_area_st area = {
+        .x = obj->area.x,
+        .y = obj->area.y,
+        .w = obj->area.w,
+        .h = obj->area.h
+    };
+
+    if(NULL == style->items ||  0 == style->item_number){
+        return ;
+    }
+
+    gt_attr_rect_st dsc = {
+        .bg_opa = obj->opa,
+    };
+
+    uint32_t len = (NULL == style->text) ? 0 : strlen(style->text);
+    uint32_t idx = 0, coding = 0;
+    int tmp = 0;
+
+    while(idx < len) {
+        tmp = _gt_utf8_to_unicode((uint8_t * )&style->text[idx], &coding);
+        if (0 == tmp) {
+            return ;
+        }
+        idx += tmp;
+        tmp = _gt_wordart_items_find(style, coding);
+        if (tmp < 0) {
+            continue;
+        }
+        dsc.bg_img_src = style->items[tmp].img;
+        GT_LOGD("", "%d [%s]", tmp, dsc.bg_img_src);
+
+        draw_bg_img(obj->draw_ctx, &dsc, &area);
+        area.x += area.w + style->space_x;
+    }
 }
 
 /**
@@ -150,7 +135,7 @@ static void _deinit_cb(gt_obj_st * obj) {
 
     _gt_wor_dart_st * style_p = (_gt_wor_dart_st * )obj;
     if(NULL != style_p->items){
-        for(int i =  style_p->item_number ; i >= 0 ; i--) {
+        for(uint32_t i = style_p->item_number; i >= 0; i--) {
             if(NULL == style_p->items[i].img)
             {
                 continue;
@@ -180,40 +165,19 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-
         case GT_EVENT_TYPE_UPDATE_VALUE:
-            GT_LOGV(GT_LOG_TAG_GUI, "value update");
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
             break;
 
         case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
-        case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
-            break;
-
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
-
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
@@ -228,7 +192,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
  * @brief create a wordart obj
  *
  * @param parent wordart's parent element
- * @return gt_obj_st* wordart obj
+ * @return gt_obj_st * wordart obj
  */
 gt_obj_st * gt_wordart_create(gt_obj_st * parent)
 {
@@ -248,35 +212,38 @@ gt_obj_st * gt_wordart_create(gt_obj_st * parent)
 }
 
 
-void gt_wordart_items_init(gt_obj_st* wordart , uint32_t total)
+uint32_t gt_wordart_items_init(gt_obj_st * wordart, uint32_t total)
 {
     if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {
-        return ;
+        return 0;
     }
     _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
 
-    if(NULL != style->items){
-        return;
+    if (NULL == style->items) {
+        style->item_number = 0;
+        style->items = (_gt_word_art_item_st * )gt_mem_malloc(total * sizeof(_gt_word_art_item_st));
+    } else {
+        style->items = (_gt_word_art_item_st * )gt_mem_realloc(style->items, total * sizeof(_gt_word_art_item_st));
     }
-
-    style->item_number = 0;
-    style->items = (_gt_word_art_item_st * )gt_mem_malloc(total * sizeof(_gt_word_art_item_st));
-
-    if(NULL == style->items){
-        style->total = 0;
-        return ;
-    }
-
     style->total = total;
+
+    if (NULL == style->items) {
+        style->total = 0;
+    }
+    if (style->total < style->item_number) {
+        style->item_number = style->total;
+    }
+    GT_LOGD("", "%d, %d", style->item_number, style->total);
+    return style->total;
 }
 
 
-void gt_wordart_add_item(gt_obj_st* wordart , uint32_t coding , char* img)
+void gt_wordart_add_item(gt_obj_st * wordart, uint32_t coding, char * src)
 {
     if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {
         return ;
     }
-    if(NULL == img){
+    if (NULL == src) {
         return ;
     }
     _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
@@ -285,23 +252,16 @@ void gt_wordart_add_item(gt_obj_st* wordart , uint32_t coding , char* img)
     if(NULL == style->items || style->item_number >= style->total){
         return ;
     }
-    // if(NULL == style->items){
-    //     style->item_number = 0;
-    //     style->items = (_gt_word_art_item_st * )gt_mem_malloc(20*sizeof(_gt_word_art_item_st));
-    // }
-    // else{
-    //     // style->items = (_gt_word_art_item_st * )gt_mem_realloc( style->items , (style->item_number+1) * sizeof(_gt_word_art_item_st));
-    // }
 
-    len = (NULL == img) ? 1 : strlen(img) + 1;
-    style->items[style->item_number].img = gt_mem_malloc(len);
+    len = src ? strlen(src) : 0;
+    style->items[style->item_number].img = gt_mem_malloc(len + 1);
     if(NULL == style->items[style->item_number].img){
         return ;
     }
-    gt_memcpy(style->items[style->item_number].img , img, len-1);
+    gt_memcpy(style->items[style->item_number].img, src, len);
     style->items[style->item_number].img[len] = '\0';
     style->items[style->item_number].coding = coding;
-    style->item_number++;
+    ++style->item_number;
 }
 
 void gt_wordart_set_text(gt_obj_st * wordart, const char * fmt, ...)
