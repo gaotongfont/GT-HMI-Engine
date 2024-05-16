@@ -12,14 +12,17 @@
 #include "stdbool.h"
 #include "string.h"
 
+#if GT_USE_MODE_FLASH
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "../others/gt_types.h"
-#include "../hal/gt_hal_file_header.h"
 #include "../others/gt_gc.h"
 
+#if GT_USE_FILE_HEADER
+#include "../hal/gt_hal_file_header.h"
+#endif
+
 /* private define -------------------------------------------------------*/
-#if GT_USE_MODE_FLASH
 
 
 

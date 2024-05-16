@@ -240,15 +240,15 @@ gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h)
 }
 
 #if GT_USE_FILE_HEADER
-gt_fs_res_et gt_fs_fh_read_img_wh(gt_file_header_param_st * param, uint16_t * w, uint16_t * h)
+gt_fs_res_et gt_fs_fh_read_img_wh(gt_file_header_param_st * fh, uint16_t * w, uint16_t * h)
 {
-    if (NULL == param) {
+    if (NULL == fh) {
         return GT_FS_RES_FAIL;
     }
-    if (param->idx < 0) {
+    if (fh->idx < 0) {
         return GT_FS_RES_FAIL;
     }
-    gt_fs_fp_st * fp = gt_fs_fh_open(param, GT_FS_MODE_RD);
+    gt_fs_fp_st * fp = gt_fs_fh_open(fh, GT_FS_MODE_RD);
     if (NULL == fp) {
         return GT_FS_RES_FAIL;
     }

@@ -75,14 +75,14 @@ uint16_t gt_file_header_get_count(void)
     return ctl->count;
 }
 
-void gt_file_header_param_init(gt_file_header_param_st * param)
+void gt_file_header_param_init(gt_file_header_param_st * fh)
 {
-    if (NULL == param) {
+    if (NULL == fh) {
         return ;
     }
-    param->idx = GT_FILE_HEADER_INVALID_IDX;
+    fh->idx = GT_FILE_HEADER_INVALID_IDX;
 #if _GT_FILE_HEADER_IMG_PACKAGE
-    param->package_idx = 0;
+    fh->package_idx = 0;
 #endif
 }
 

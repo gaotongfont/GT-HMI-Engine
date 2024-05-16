@@ -129,13 +129,13 @@ gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h);
 /**
  * @brief Get the image width and height, by the file header of file item.
  *
- * @param param idx: The index of header list item and the package index of
+ * @param fh [file header] idx: The index of header list item and the package index of
  *              header item inside count
  * @param w Get image width value
  * @param h Get image height value
  * @return gt_fs_res_et The result status
  */
-gt_fs_res_et gt_fs_fh_read_img_wh(gt_file_header_param_st * param, uint16_t * w, uint16_t * h);
+gt_fs_res_et gt_fs_fh_read_img_wh(gt_file_header_param_st * fh, uint16_t * w, uint16_t * h);
 #endif
 
 /**

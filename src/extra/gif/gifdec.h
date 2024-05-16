@@ -3,15 +3,19 @@
 
 #include <stdint.h>
 #include "../../gt_conf.h"
+
+#if GT_USE_GIF
+
 #include "../../others/gt_types.h"
 #include "../../core/gt_fs.h"
+
+#if GT_USE_FILE_HEADER
 #include "../../hal/gt_hal_file_header.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#if GT_USE_GIF
 
 typedef struct gd_Palette {
     int size;
@@ -60,10 +64,10 @@ int gd_is_bgcolor(gd_GIF *gif, uint8_t color[3]);
 void gd_rewind(gd_GIF *gif);
 void gd_close_gif(gd_GIF *gif);
 
-#endif  /** GT_USE_GIF */
-
 #ifdef __cplusplus
 }
 #endif
+
+#endif  /** GT_USE_GIF */
 
 #endif /* GIFDEC_H */

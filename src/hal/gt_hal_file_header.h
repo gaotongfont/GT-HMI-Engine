@@ -168,9 +168,9 @@ uint16_t gt_file_header_get_count(void);
 /**
  * @brief Init gt_file_header_param_st
  *
- * @param param
+ * @param fh file header param
  */
-void gt_file_header_param_init(gt_file_header_param_st * param);
+void gt_file_header_param_init(gt_file_header_param_st * fh);
 
 /**
  * @brief
