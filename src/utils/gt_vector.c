@@ -169,6 +169,7 @@ vector_lb:
 bool _gt_vector_remove_item(_gt_vector_st ** vector_p, void * target)
 {
     uint16_t i = 0, count = (*vector_p)->count;
+    uint8_t is_find = false;
     if (NULL == vector_p || NULL == target) {
         return false;
     }
@@ -178,8 +179,12 @@ bool _gt_vector_remove_item(_gt_vector_st ** vector_p, void * target)
 
     for (i = 0; i < count; i++) {
         if (true == (*vector_p)->equal_item_cb((*vector_p)->list[i], target) ) {
+            is_find = true;
             break;
         }
+    }
+    if (false == is_find) {
+        return false;
     }
     if (!(*vector_p)->free_item_cb((*vector_p)->list[i])) {
         return false;
