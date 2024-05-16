@@ -208,10 +208,7 @@ static void _init_cb(gt_obj_st * obj) {
             .bg_opa = obj->opa,
         };
 #if GT_USE_FILE_HEADER
-        dsc.file_header = _get_file_header_param(style);
-        if (dsc.file_header->idx < 0) {
-            dsc.file_header = NULL;
-        }
+        dsc.file_header = gt_file_header_param_check_valid(_get_file_header_param(style));
 #endif
         /* start draw obj */
         draw_bg_img(obj->draw_ctx, &dsc, &obj->area);

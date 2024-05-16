@@ -80,7 +80,7 @@ void gt_file_header_param_init(gt_file_header_param_st * param)
     if (NULL == param) {
         return ;
     }
-    param->idx = -1;
+    param->idx = GT_FILE_HEADER_INVALID_IDX;
 #if _GT_FILE_HEADER_IMG_PACKAGE
     param->package_idx = 0;
 #endif

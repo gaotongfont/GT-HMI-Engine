@@ -19,6 +19,7 @@ extern "C" {
 
 #if GT_USE_FILE_HEADER
 #include "../others/gt_types.h"
+#include "stddef.h"
 
 
 
@@ -46,8 +47,13 @@ extern "C" {
      * @brief The image using the same size.
      *      default: 0
      */
-    #define _GT_FILE_HEADER_IMG_SAME_SIZE      0
+    #define _GT_FILE_HEADER_IMG_SAME_SIZE       0
 #endif
+
+/**
+ * @brief init invalid index
+ */
+#define GT_FILE_HEADER_INVALID_IDX              -1
 
 /* typedef --------------------------------------------------------------*/
 
@@ -103,6 +109,21 @@ typedef struct _gt_file_header_ctl_s {
 
 /* macros ---------------------------------------------------------------*/
 
+/**
+ * @brief Check param is valid, otherwise return NULL
+ *
+ * @param param The param to check
+ * @return gt_file_header_param_st * result object to draw image
+ */
+gt_file_header_param_st inline * gt_file_header_param_check_valid(gt_file_header_param_st * param) {
+    if (NULL == param) {
+        return NULL;
+    }
+    if (param->idx < 0) {
+        return NULL;
+    }
+    return param;
+}
 
 
 /* class ----------------------------------------------------------------*/

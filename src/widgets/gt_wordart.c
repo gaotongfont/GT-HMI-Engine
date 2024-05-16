@@ -26,8 +26,11 @@
 #if GT_CFG_ENABLE_WORDART
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_word_art_item_s {
-    uint32_t coding;
+    uint32_t encode;
     char * img;
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_st fh;
+#endif
 }_gt_word_art_item_st;
 
 typedef struct _gt_wor_dart_s {
@@ -64,9 +67,9 @@ const gt_obj_class_st gt_word_art_class = {
 
 
 /* static functions -----------------------------------------------------*/
-static int _gt_wordart_items_find(_gt_wor_dart_st * style, uint32_t coding) {
+static int _gt_wordart_items_find(_gt_wor_dart_st * style, uint32_t encode) {
     for (uint32_t i = 0; i < style->item_number; i++) {
-        if(coding == style->items[i].coding){
+        if(encode == style->items[i].encode){
             return i;
         }
     }
@@ -101,21 +104,23 @@ static void _init_cb(gt_obj_st * obj) {
     };
 
     uint32_t len = (NULL == style->text) ? 0 : strlen(style->text);
-    uint32_t idx = 0, coding = 0;
+    uint32_t idx = 0, encode = 0;
     int tmp = 0;
 
     while(idx < len) {
-        tmp = _gt_utf8_to_unicode((uint8_t * )&style->text[idx], &coding);
+        tmp = _gt_utf8_to_unicode((uint8_t * )&style->text[idx], &encode);
         if (0 == tmp) {
             return ;
         }
         idx += tmp;
-        tmp = _gt_wordart_items_find(style, coding);
+        tmp = _gt_wordart_items_find(style, encode);
         if (tmp < 0) {
             continue;
         }
         dsc.bg_img_src = style->items[tmp].img;
-        GT_LOGD("", "%d [%s]", tmp, dsc.bg_img_src);
+#if GT_USE_FILE_HEADER
+        dsc.file_header = gt_file_header_param_check_valid(&style->items[tmp].fh);
+#endif
 
         draw_bg_img(obj->draw_ctx, &dsc, &area);
         area.x += area.w + style->space_x;
@@ -233,12 +238,10 @@ uint32_t gt_wordart_items_init(gt_obj_st * wordart, uint32_t total)
     if (style->total < style->item_number) {
         style->item_number = style->total;
     }
-    GT_LOGD("", "%d, %d", style->item_number, style->total);
     return style->total;
 }
 
-
-void gt_wordart_add_item(gt_obj_st * wordart, uint32_t coding, char * src)
+void gt_wordart_add_item(gt_obj_st * wordart, uint32_t encode, char * src)
 {
     if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {
         return ;
@@ -247,22 +250,40 @@ void gt_wordart_add_item(gt_obj_st * wordart, uint32_t coding, char * src)
         return ;
     }
     _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
-    uint32_t len = 0;
-
     if(NULL == style->items || style->item_number >= style->total){
         return ;
     }
 
-    len = src ? strlen(src) : 0;
+    uint32_t len = src ? strlen(src) : 0;
     style->items[style->item_number].img = gt_mem_malloc(len + 1);
     if(NULL == style->items[style->item_number].img){
         return ;
     }
     gt_memcpy(style->items[style->item_number].img, src, len);
     style->items[style->item_number].img[len] = '\0';
-    style->items[style->item_number].coding = coding;
+    style->items[style->item_number].encode = encode;
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->items[style->item_number].fh);
+#endif
     ++style->item_number;
 }
+
+#if GT_USE_FILE_HEADER
+void gt_wordart_add_item_by_fh(gt_obj_st * wordart, uint32_t encode, gt_file_header_param_st const * fh)
+{
+    if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
+    if(NULL == style->items || style->item_number >= style->total){
+        return ;
+    }
+    style->items[style->item_number].img = NULL;
+    style->items[style->item_number].fh = *fh;
+    style->items[style->item_number].encode = encode;
+    ++style->item_number;
+}
+#endif
 
 void gt_wordart_set_text(gt_obj_st * wordart, const char * fmt, ...)
 {
