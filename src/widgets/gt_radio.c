@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_radio.h"
+
+#if GT_CFG_ENABLE_RADIO
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -411,4 +413,5 @@ void gt_radio_set_font_point_offset(gt_obj_st * radio , gt_size_t x , gt_size_t 
     gt_radio_set_font_point_offset_y( radio , y);
 }
 
+#endif  /** GT_CFG_ENABLE_RADIO */
 /* end ------------------------------------------------------------------*/

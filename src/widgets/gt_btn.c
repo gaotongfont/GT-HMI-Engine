@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_btn.h"
+
+#if GT_CFG_ENABLE_BTN
 #include "../core/gt_mem.h"
 #include "../hal/gt_hal_disp.h"
 #include "../others/gt_log.h"
@@ -587,4 +589,5 @@ void gt_btn_set_selected(gt_obj_st * obj)
     _press_btn_handler(obj);
 }
 
+#endif  /** GT_CFG_ENABLE_BTN */
 /* end ------------------------------------------------------------------*/

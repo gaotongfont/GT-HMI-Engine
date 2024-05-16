@@ -14,6 +14,9 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_LABEL
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "stdarg.h"
@@ -134,6 +137,10 @@ void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style);
 bool gt_label_is_single_line(gt_obj_st * label);
 bool gt_label_is_omit_single_line(gt_obj_st * label);
 bool gt_label_is_auto_scroll_single_line(gt_obj_st * label);
+
+
+
+#endif  /** GT_CFG_ENABLE_LABEL */
 
 #ifdef __cplusplus
 } /*extern "C"*/

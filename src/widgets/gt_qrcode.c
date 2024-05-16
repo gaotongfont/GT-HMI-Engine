@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_qrcode.h"
+
+#if GT_CFG_ENABLE_QRCODE
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "../core/gt_draw.h"
@@ -19,7 +21,6 @@
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 
-#if GT_CFG_ENABLE_QRCODE == 1
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_QRCODE
 #define MY_CLASS    &gt_qr_code_class
@@ -318,5 +319,5 @@ void gt_qrcode_set_forecolor(gt_obj_st * qr_code , gt_color_t color)
     style->fg_color = color;
 }
 
-#endif
+#endif  /** GT_CFG_ENABLE_QRCODE */
 /* end ------------------------------------------------------------------*/

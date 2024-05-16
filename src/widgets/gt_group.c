@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_group.h"
+
+#if GT_CFG_ENABLE_GROUP
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -152,4 +154,5 @@ bool gt_group_reset_selected_state(gt_obj_st * group, gt_obj_type_et type)
     return true;
 }
 
+#endif  /** GT_CFG_ENABLE_GROUP */
 /* end ------------------------------------------------------------------*/

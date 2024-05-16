@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_rect.h"
+
+#if GT_CFG_ENABLE_RECT
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -214,4 +216,5 @@ void gt_rect_set_fill(gt_obj_st * rect, uint8_t fill)
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+#endif  /** GT_CFG_ENABLE_RECT */
 /* end ------------------------------------------------------------------*/

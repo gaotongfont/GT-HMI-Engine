@@ -269,9 +269,12 @@ void gt_wordart_add_item(gt_obj_st * wordart, uint32_t encode, char * src)
 }
 
 #if GT_USE_FILE_HEADER
-void gt_wordart_add_item_by_fh(gt_obj_st * wordart, uint32_t encode, gt_file_header_param_st const * fh)
+void gt_wordart_add_item_by_file_header(gt_obj_st * wordart, uint32_t encode, gt_file_header_param_st const * fh)
 {
     if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {
+        return ;
+    }
+    if (NULL == fh) {
         return ;
     }
     _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;

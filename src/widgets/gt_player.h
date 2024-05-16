@@ -14,12 +14,18 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_PLAYER
 #include "stdbool.h"
-#include "./gt_conf_widgets.h"
 #include "gt_obj.h"
 #include "../core/gt_timer.h"
 
-#if GT_CFG_ENABLE_PLAYER
+
+#if GT_USE_FILE_HEADER
+#include "../hal/gt_hal_file_header.h"
+#endif
+
 /* define ---------------------------------------------------------------*/
 
 #ifndef GT_PLAYER_REPEAT_FINISH_CALLBACK
@@ -128,12 +134,12 @@ uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_siz
  * @brief
  *
  * @param obj
- * @param idx -1[defalut]: Disabled file header, using img path to open file; >=0: index number, valid value
+ * @param fh idx -1[defalut]: Disabled file header, using img path to open file; >=0: index number, valid value
  *              < 0: invalid value.
- * @param package_idx 0[defalut]: The index of element within item, as the first element
+ *           package_idx 0[defalut]: The index of element within item, as the first element
  * @return uint16_t The item count of player
  */
-uint16_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_idx_t idx, gt_file_header_idx_t package_idx);
+uint16_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh);
 #endif  /** GT_USE_FILE_HEADER */
 
 /**

@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_switch.h"
+
+#if GT_CFG_ENABLE_SWITCH
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -219,4 +221,5 @@ void gt_switch_set_color_point(gt_obj_st * switcher, gt_color_t color)
     gt_event_send(switcher, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+#endif  /** GT_CFG_ENABLE_SWITCH */
 /* end ------------------------------------------------------------------*/

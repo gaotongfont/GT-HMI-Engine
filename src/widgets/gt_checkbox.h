@@ -14,6 +14,9 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_CHECKBOX
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "stdarg.h"
@@ -66,6 +69,10 @@ void gt_checkbox_set_space(gt_obj_st * checkbox, uint8_t space_x, uint8_t space_
 void gt_checkbox_set_font_point_offset_x(gt_obj_st * checkbox , gt_size_t x);
 void gt_checkbox_set_font_point_offset_y(gt_obj_st * checkbox , gt_size_t y);
 void gt_checkbox_set_font_point_offset(gt_obj_st * checkbox , gt_size_t x , gt_size_t y);
+
+
+
+#endif  /** GT_CFG_ENABLE_CHECKBOX */
 
 #ifdef __cplusplus
 } /*extern "C"*/

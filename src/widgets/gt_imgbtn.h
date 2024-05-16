@@ -14,11 +14,11 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-#include "gt_obj.h"
-#include "gt_obj_class.h"
-#include "./gt_conf_widgets.h"
+#include "gt_conf_widgets.h"
 
 #if GT_CFG_ENABLE_IMGBTN
+#include "gt_obj.h"
+#include "gt_obj_class.h"
 #include "../utils/gt_vector.h"
 
 #if GT_USE_FILE_HEADER

@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_textarea.h"
+
+#if GT_CFG_ENABLE_TEXTAREA
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -422,4 +424,6 @@ void gt_textarea_set_font_encoding(gt_obj_st * textarea, gt_encoding_et encoding
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.encoding = encoding;
 }
+
+#endif  /** GT_CFG_ENABLE_TEXTAREA */
 /* end ------------------------------------------------------------------*/

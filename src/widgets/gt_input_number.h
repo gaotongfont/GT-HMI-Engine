@@ -14,11 +14,13 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_INPUT_NUMBER
 #include "gt_obj.h"
 #include "../font/gt_font.h"
 
 
-#if GT_CFG_ENABLE_INPUT_NUMBER
 /* define ---------------------------------------------------------------*/
 
 

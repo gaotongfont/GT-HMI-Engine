@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_label.h"
+
+#if GT_CFG_ENABLE_LABEL
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -606,4 +608,5 @@ bool gt_label_is_auto_scroll_single_line(gt_obj_st * label)
     return true;
 }
 
+#endif  /** GT_CFG_ENABLE_LABEL */
 /* end ------------------------------------------------------------------*/

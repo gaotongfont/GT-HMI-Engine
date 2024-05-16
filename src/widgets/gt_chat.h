@@ -1,6 +1,6 @@
 /**
  * @file gt_chat.h
- * @author Yang (your@email.com)
+ * @author Yang
  * @brief
  * @version 0.1
  * @date 2024-03-19 14:31:18
@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-#include "./gt_conf_widgets.h"
+#include "gt_conf_widgets.h"
 
 #if GT_CFG_ENABLE_CHAT
 #include "./gt_obj.h"

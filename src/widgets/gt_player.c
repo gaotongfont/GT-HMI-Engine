@@ -18,10 +18,6 @@
 #include "../core/gt_obj_pos.h"
 #include "../hal/gt_hal_tick.h"
 
-#if GT_USE_FILE_HEADER
-#include "../hal/gt_hal_file_header.h"
-#endif
-
 #if GT_CFG_ENABLE_PLAYER
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE GT_TYPE_PLAYER
@@ -683,13 +679,16 @@ uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_siz
 }
 
 #if GT_USE_FILE_HEADER
-uint16_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_idx_t idx, gt_file_header_idx_t package_idx)
+uint16_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return 0;
     }
+    if (NULL == fh) {
+        return 0;
+    }
     _gt_player_st * style = (_gt_player_st * )obj;
-    if (idx >= gt_file_header_get_count()) {
+    if (fh->idx >= gt_file_header_get_count()) {
         return 0;
     }
 
@@ -698,10 +697,8 @@ uint16_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_idx_t
         return 0;
     }
 
-    new_item->fh_param.idx = idx;
-
-#if _GT_FILE_HEADER_IMG_PACKAGE
-    new_item->fh_param.package_idx = package_idx;
+#if GT_USE_FILE_HEADER
+    new_item->fh_param = *fh;
 #endif
     return style->target.count;
 }

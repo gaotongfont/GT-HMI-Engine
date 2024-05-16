@@ -14,6 +14,9 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_RADIO
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "stdarg.h"
@@ -73,6 +76,8 @@ void gt_radio_set_font_point_offset_x(gt_obj_st * radio , gt_size_t x);
 void gt_radio_set_font_point_offset_y(gt_obj_st * radio , gt_size_t y);
 void gt_radio_set_font_point_offset(gt_obj_st * radio , gt_size_t x , gt_size_t y);
 
+
+#endif  /** GT_CFG_ENABLE_RADIO */
 
 #ifdef __cplusplus
 } /*extern "C"*/

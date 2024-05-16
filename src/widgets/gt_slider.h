@@ -6,14 +6,17 @@
  * @date 2022-07-21 19:53:55
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
-#ifndef _GT_SCROLLBAR_H_
-#define _GT_SCROLLBAR_H_
+#ifndef _GT_SLIDER_H_
+#define _GT_SLIDER_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_SLIDER
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "../core/gt_style.h"
@@ -166,8 +169,11 @@ void gt_slider_set_AB_repeat_remark_point(gt_obj_st * slider);
  */
 void gt_slider_unset_AB_repeat(gt_obj_st * slider);
 
+
+#endif  /** GT_CFG_ENABLE_SLIDER */
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
 
-#endif //!_GT_SCROLLBAR_H_
+#endif //!_GT_SLIDER_H_

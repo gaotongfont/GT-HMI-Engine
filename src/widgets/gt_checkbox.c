@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_checkbox.h"
+
+#if GT_CFG_ENABLE_CHECKBOX
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -408,4 +410,7 @@ void gt_checkbox_set_font_point_offset(gt_obj_st * checkbox , gt_size_t x, gt_si
     gt_checkbox_set_font_point_offset_x( checkbox , x);
     gt_checkbox_set_font_point_offset_y( checkbox , y);
 }
+
+
+#endif  /** GT_CFG_ENABLE_CHECKBOX */
 /* end ------------------------------------------------------------------*/

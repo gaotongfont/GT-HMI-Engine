@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_progress_bar.h"
+
+#if GT_CFG_ENABLE_PROGRESS_BAR
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -337,4 +339,5 @@ gt_bar_dir_et gt_progress_bar_get_dir(gt_obj_st * progress_bar)
     return style->dir;
 }
 
+#endif  /** GT_CFG_ENABLE_PROGRESS_BAR */
 /* end ------------------------------------------------------------------*/

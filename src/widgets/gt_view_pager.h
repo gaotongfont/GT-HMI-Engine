@@ -14,8 +14,10 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_VIEW_PAGER
 #include "stdbool.h"
-#include "./gt_conf_widgets.h"
 #include "gt_obj.h"
 
 
@@ -88,6 +90,9 @@ bool gt_view_pager_get_glass(gt_obj_st * obj);
  */
 void gt_view_pager_set_glass_color(gt_obj_st * obj, gt_color_t color);
 gt_color_t gt_view_pager_get_glass_color(gt_obj_st * obj);
+
+
+#endif  /** GT_CFG_ENABLE_VIEW_PAGER */
 
 #ifdef __cplusplus
 } /*extern "C"*/

@@ -14,6 +14,9 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_LISTVIEW
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "../core/gt_style.h"
@@ -306,6 +309,9 @@ void gt_listview_set_space(gt_obj_st * listview, uint8_t space_x, uint8_t space_
 void gt_listview_set_label_omit_single_line_by(gt_obj_st * listview, bool is_omit);
 void gt_listview_set_label_auto_scroll_single_line_by(gt_obj_st * listview, bool is_auto_scroll);
 
+
+
+#endif  /** GT_CFG_ENABLE_LISTVIEW */
 
 #ifdef __cplusplus
 } /*extern "C"*/

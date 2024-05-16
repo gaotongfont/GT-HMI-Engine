@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_listview.h"
+
+#if GT_CFG_ENABLE_LISTVIEW
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -1195,5 +1197,5 @@ void gt_listview_set_label_auto_scroll_single_line_by(gt_obj_st * listview, bool
     _set_label_prop_by_type(listview, _LABEL_AUTO_SCROLL_SL, is_auto_scroll);
 }
 
-
+#endif  /** GT_CFG_ENABLE_LISTVIEW */
 /* end ------------------------------------------------------------------*/

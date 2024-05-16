@@ -14,6 +14,9 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_INPUT
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "stdarg.h"
@@ -116,7 +119,7 @@ void gt_input_set_border_color(gt_obj_st * input, gt_color_t color);
 void gt_input_set_space(gt_obj_st * input, uint8_t space_x, uint8_t space_y);
 
 
-
+#endif  /** GT_CFG_ENABLE_INPUT */
 
 #ifdef __cplusplus
 } /*extern "C"*/

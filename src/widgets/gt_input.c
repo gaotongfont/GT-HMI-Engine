@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_input.h"
+
+#if GT_CFG_ENABLE_INPUT
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -675,4 +677,5 @@ void gt_input_set_space(gt_obj_st * input, uint8_t space_x, uint8_t space_y)
     style->space_y = space_y;
 }
 
+#endif  /** GT_CFG_ENABLE_INPUT */
 /* end ------------------------------------------------------------------*/

@@ -241,9 +241,12 @@ void gt_gif_set_src(gt_obj_st * obj, char * src)
 }
 
 #if GT_USE_FILE_HEADER
-void gt_gif_set_src_by_fh(gt_obj_st * obj, gt_file_header_param_st * fh)
+void gt_gif_set_src_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    if (NULL ==  fh) {
         return ;
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;

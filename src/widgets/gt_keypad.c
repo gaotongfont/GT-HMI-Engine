@@ -1,6 +1,6 @@
 /**
  * @file gt_keypad.c
- * @author Yang (your@email.com)
+ * @author Yang
  * @brief
  * @version 0.1
  * @date 2024-03-04 12:24:51
@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_keypad.h"
+
+#if GT_CFG_ENABLE_KEYPAD
 #include "gt_btnmap.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
@@ -27,7 +29,6 @@
 #include "gt_input.h"
 
 
-#if GT_CFG_ENABLE_KEYPAD
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_KEYPAD
 #define MY_CLASS    &gt_keypad_class
@@ -956,5 +957,5 @@ void gt_keypad_set_py_input_method(gt_obj_st * keypad, gt_py_input_method_st* py
     gt_btnmap_set_py_input_method(style->btnmap, py_input_method);
 }
 
-#endif
+#endif  /** GT_CFG_ENABLE_KEYPAD */
 /* end of file ----------------------------------------------------------*/

@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_view_pager.h"
+
+#if GT_CFG_ENABLE_VIEW_PAGER
 #include "../core/gt_mem.h"
 #include "../others/gt_types.h"
 #include "../core/gt_draw.h"
@@ -19,7 +21,6 @@
 #include "../core/gt_obj_scroll.h"
 
 
-#if GT_CFG_ENABLE_VIEW_PAGER
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_VIEW_PAGER
 #define MY_CLASS    &_gt_view_pager_class

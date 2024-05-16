@@ -1,6 +1,6 @@
 /**
  * @file gt_keypad.h
- * @author Yang (your@email.com)
+ * @author Yang
  * @brief
  * @version 0.1
  * @date 2024-03-04 14:00:57
@@ -15,6 +15,7 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "gt_conf_widgets.h"
+
 #if GT_CFG_ENABLE_KEYPAD
 #include "gt_obj.h"
 #include "gt_obj_class.h"

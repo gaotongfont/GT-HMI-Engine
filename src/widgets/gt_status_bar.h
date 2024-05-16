@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-#include "./gt_conf_widgets.h"
+#include "gt_conf_widgets.h"
 
 #if GT_CFG_ENABLE_STATUS_BAR
 #include "./gt_obj.h"

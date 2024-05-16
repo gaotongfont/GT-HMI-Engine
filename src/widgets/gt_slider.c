@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_slider.h"
+
+#if GT_CFG_ENABLE_SLIDER
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -818,4 +820,5 @@ void gt_slider_unset_AB_repeat(gt_obj_st * slider)
 }
 
 
+#endif  /** GT_CFG_ENABLE_SLIDER */
 /* end ------------------------------------------------------------------*/

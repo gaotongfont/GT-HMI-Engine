@@ -14,6 +14,9 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_TEXTAREA
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "../font/gt_font.h"
@@ -121,6 +124,11 @@ void gt_textarea_set_font_family_numb(gt_obj_st * textarea, gt_family_t family);
 void gt_textarea_set_font_thick_en(gt_obj_st * textarea, uint8_t thick);
 void gt_textarea_set_font_thick_cn(gt_obj_st * textarea, uint8_t thick);
 void gt_textarea_set_font_encoding(gt_obj_st * textarea, gt_encoding_et encoding);
+
+
+
+
+#endif  /** GT_CFG_ENABLE_TEXTAREA */
 
 #ifdef __cplusplus
 } /*extern "C"*/

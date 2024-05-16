@@ -19,8 +19,10 @@ extern "C" {
 #if GT_CFG_ENABLE_GIF
 #include "gt_obj.h"
 #include "gt_obj_class.h"
-#include "../hal/gt_hal_file_header.h"
 
+#if GT_USE_FILE_HEADER
+#include "../hal/gt_hal_file_header.h"
+#endif
 
 
 /* define ---------------------------------------------------------------*/
@@ -48,7 +50,15 @@ void gt_gif_set_src(gt_obj_st * obj, char * src);
 char * gt_gif_get_src(gt_obj_st *  obj);
 
 #if GT_USE_FILE_HEADER
-void gt_gif_set_src_by_fh(gt_obj_st * obj, gt_file_header_param_st * fh);
+/**
+ * @brief
+ *
+ * @param obj
+ * @param fh idx -1[defalut]: Disabled file header, using img path to open file; >=0: index number, valid value
+ *              < 0: invalid value.
+ *           package_idx 0[defalut]: The index of element within item, as the first element
+ */
+void gt_gif_set_src_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh);
 #endif
 
 gt_size_t gt_gif_get_frame_width(gt_obj_st * obj);

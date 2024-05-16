@@ -1,6 +1,6 @@
 /**
  * @file gt_chat.c
- * @author Yang (your@email.com)
+ * @author Yang
  * @brief
  * @version 0.1
  * @date 2024-03-19 14:32:13
@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "./gt_chat.h"
+
 #if GT_CFG_ENABLE_CHAT
 #include "../hal/gt_hal_disp.h"
 #include "../core/gt_obj_pos.h"

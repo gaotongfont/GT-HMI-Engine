@@ -1,6 +1,6 @@
 /**
  * @file gt_barcode.c
- * @author Yang (your@email.com)
+ * @author Yang
  * @brief
  * @version 0.1
  * @date 2022-12-09 13:40:14
@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_barcode.h"
+
+#if GT_CFG_ENABLE_BARCODE
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -19,7 +21,6 @@
 #include "../core/gt_disp.h"
 #include "../core/gt_draw.h"
 
-#if GT_CFG_ENABLE_BARCODE == 1
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_BARCODE
@@ -362,8 +363,8 @@ void gt_barcode_set_upc_e_sys_code(gt_obj_st * barcode , uint8_t value)
     style->info.upc_e_sys = value;
 }
 
-#endif
-/* */
+#endif  /** GT_CFG_ENABLE_BARCODE */
+
 /* end of file ----------------------------------------------------------*/
 
 

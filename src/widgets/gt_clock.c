@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_clock.h"
+
+#if GT_CFG_ENABLE_CLOCK
 #include "../core/gt_mem.h"
 #include "../others/gt_types.h"
 #include "./gt_label.h"
@@ -19,7 +21,6 @@
 #include "../core/gt_timer.h"
 #include "./gt_label.h"
 
-#if GT_CFG_ENABLE_CLOCK
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_CLOCK
 #define MY_CLASS    &gt_clock_class

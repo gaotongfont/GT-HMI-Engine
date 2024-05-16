@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_line.h"
+
+#if GT_CFG_ENABLE_LINE
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -218,4 +220,5 @@ void gt_line_set_line_width(gt_obj_st * line, uint16_t line_width)
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
+#endif  /** GT_CFG_ENABLE_LINE */
 /* end ------------------------------------------------------------------*/

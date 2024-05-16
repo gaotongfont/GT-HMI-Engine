@@ -18,10 +18,13 @@ extern "C" {
 #include "gt_obj_class.h"
 #include "stdarg.h"
 #include "stdlib.h"
-#include "./gt_conf_widgets.h"
+#include "gt_conf_widgets.h"
 
 #if GT_CFG_ENABLE_WORDART
+
+#if GT_USE_FILE_HEADER
 #include "../hal/gt_hal_file_header.h"
+#endif
 
 /* define ---------------------------------------------------------------*/
 
@@ -57,7 +60,16 @@ uint32_t gt_wordart_items_init(gt_obj_st* wordart, uint32_t total);
 void gt_wordart_add_item(gt_obj_st* wordart, uint32_t coding, char * src);
 
 #if GT_USE_FILE_HEADER
-void gt_wordart_add_item_by_fh(gt_obj_st * wordart, uint32_t encode, gt_file_header_param_st const * fh);
+/**
+ * @brief add item by file header
+ *
+ * @param wordart
+ * @param encode
+ * @param fh idx -1[defalut]: Disabled file header, using img path to open file; >=0: index number, valid value
+ *              < 0: invalid value.
+ *           package_idx 0[defalut]: The index of element within item, as the first element
+ */
+void gt_wordart_add_item_by_file_header(gt_obj_st * wordart, uint32_t encode, gt_file_header_param_st const * fh);
 #endif
 
 /**

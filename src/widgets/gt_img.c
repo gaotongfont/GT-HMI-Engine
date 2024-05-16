@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_img.h"
+
+#if GT_CFG_ENABLE_IMG
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -214,9 +216,12 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw)
 }
 
 #if GT_USE_FILE_HEADER
-void gt_img_set_by_file_header(gt_obj_st * img, gt_file_header_param_st * param)
+void gt_img_set_by_file_header(gt_obj_st * img, gt_file_header_param_st * fh)
 {
     if (false == gt_obj_is_type(img, OBJ_TYPE)) {
+        return ;
+    }
+    if (NULL == fh) {
         return ;
     }
     _gt_img_st * style = (_gt_img_st *)img;
@@ -226,7 +231,7 @@ void gt_img_set_by_file_header(gt_obj_st * img, gt_file_header_param_st * param)
         style->src = NULL;
     }
 #if GT_USE_FILE_HEADER
-    style->fh = *param;
+    style->fh = *fh;
 #endif
 
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
@@ -269,4 +274,5 @@ uint16_t gt_img_get_height(gt_obj_st * img)
     return info.h;
 }
 
+#endif  /** #if GT_CFG_ENABLE_IMG */
 /* end ------------------------------------------------------------------*/

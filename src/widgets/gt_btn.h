@@ -14,6 +14,9 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_BTN
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "stdarg.h"
@@ -163,6 +166,8 @@ int16_t gt_btn_get_state_content_index(gt_obj_st * obj);
  * @param obj
  */
 void gt_btn_set_selected(gt_obj_st * obj);
+
+#endif  /** GT_CFG_ENABLE_BTN */
 
 #ifdef __cplusplus
 } /*extern "C"*/

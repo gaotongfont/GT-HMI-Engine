@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_input_number.h"
+
+#if GT_CFG_ENABLE_INPUT_NUMBER
 #include "../core/gt_mem.h"
 #include "../others/gt_types.h"
 #include "./gt_label.h"
@@ -18,7 +20,6 @@
 #include "float.h"
 #include "../others/gt_log.h"
 
-#if GT_CFG_ENABLE_INPUT_NUMBER
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_INPUT_NUMBER
 #define MY_CLASS    &gt_input_number_class
