@@ -18,6 +18,7 @@ extern "C" {
 #include "gt_obj_class.h"
 #include "../others/gt_color.h"
 
+#include "../hal/gt_hal_file_header.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -67,10 +68,10 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw);
 /**
  * @brief Display the image by file header information
  *
- * @param obj
+ * @param img
  * @param param
  */
-void gt_img_set_by_file_header(gt_obj_st * obj, gt_file_header_param_st * param);
+void gt_img_set_by_file_header(gt_obj_st * img, gt_file_header_param_st * param);
 #endif
 
 /**
