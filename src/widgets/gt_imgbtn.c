@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_imgbtn.h"
+
+#if GT_CFG_ENABLE_IMGBTN
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -277,6 +279,7 @@ void gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src)
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
     if( NULL != style->base.name ){
         gt_mem_free(style->base.name);
+        style->base.name = NULL;
     }
     uint16_t len = src == NULL ? 0 : strlen(src);
 
@@ -299,6 +302,7 @@ void gt_imgbtn_set_src_press(gt_obj_st * imgbtn, char * src)
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
     if( NULL != style->press.name ){
         gt_mem_free(style->press.name);
+        style->press.name = NULL;
     }
     uint16_t len = src == NULL ? 0 : strlen(src);
 
@@ -320,6 +324,7 @@ void gt_imgbtn_set_src_release(gt_obj_st * imgbtn, char * src)
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
     if( NULL != style->release.name ){
         gt_mem_free(style->release.name);
+        style->release.name = NULL;
     }
     uint16_t len = src == NULL ? 0 : strlen(src);
     style->release.name = gt_mem_malloc( len + 1 );
@@ -379,6 +384,103 @@ bool gt_imgbtn_remove_state_item(gt_obj_st * obj, char * src)
     return _gt_vector_remove_item(&style->imgs, &item);
 }
 
+#if GT_USE_FILE_HEADER
+void gt_imgbtn_set_src_by_file_header(gt_obj_st * imgbtn, gt_file_header_param_st * fh)
+{
+    if (false == gt_obj_is_type(imgbtn, OBJ_TYPE)) {
+        return ;
+    }
+    if (NULL == fh) {
+        return ;
+    }
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
+    if( NULL != style->base.name ){
+        gt_mem_free(style->base.name);
+        style->base.name = NULL;
+    }
+    style->base.fh = *fh;
+    style->src = style->base;
+
+    gt_event_send(imgbtn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+void gt_imgbtn_set_src_press_by_file_header(gt_obj_st * imgbtn, gt_file_header_param_st * fh)
+{
+    if (false == gt_obj_is_type(imgbtn, OBJ_TYPE)) {
+        return ;
+    }
+    if (NULL == fh) {
+        return ;
+    }
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
+    if( NULL != style->press.name ){
+        gt_mem_free(style->press.name);
+        style->press.name = NULL;
+    }
+#if GT_USE_FILE_HEADER
+    style->press.fh = *fh;
+#endif
+
+    gt_event_send(imgbtn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+void gt_imgbtn_set_src_release_by_file_header(gt_obj_st * imgbtn, gt_file_header_param_st * fh)
+{
+    if (false == gt_obj_is_type(imgbtn, OBJ_TYPE)) {
+        return ;
+    }
+    if (NULL == fh) {
+        return ;
+    }
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
+    if( NULL != style->release.name ){
+        gt_mem_free(style->release.name);
+        style->release.name = NULL;
+    }
+    style->release.fh = *fh;
+
+    gt_event_send(imgbtn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+bool gt_imgbtn_add_state_item_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return false;
+    }
+    if (NULL == fh) {
+        return false;
+    }
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
+
+    imgs_init(style);
+    /** set first item src */
+    if (_gt_vector_get_count(style->imgs) <= 0) {
+        _gt_vector_add_item(&style->imgs, (void *)&style->base, sizeof(_item_st));
+    }
+    _item_st item = { 0 };
+    item.fh = *fh;
+
+    return _gt_vector_add_item(&style->imgs, &item, sizeof(_item_st));
+}
+
+bool gt_imgbtn_remove_state_item_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return false;
+    }
+    if (NULL == fh) {
+        return false;
+    }
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
+    _item_st item = {
+        .name = NULL,
+    };
+    item.fh = *fh;
+
+    return _gt_vector_remove_item(&style->imgs, &item);
+}
+#endif
+
 bool gt_imgbtn_clear_all_state_item(gt_obj_st * obj)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
@@ -397,4 +499,5 @@ int16_t bt_imgbtn_get_state_item_index(gt_obj_st * obj)
     return _gt_vector_get_index(style->imgs);
 }
 
+#endif  /** GT_CFG_ENABLE_IMGBTN */
 /* end ------------------------------------------------------------------*/
