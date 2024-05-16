@@ -63,6 +63,16 @@ void gt_img_set_src(gt_obj_st * img, char * src);
  */
 void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw);
 
+#if GT_USE_FILE_HEADER
+/**
+ * @brief Display the image by file header information
+ *
+ * @param obj
+ * @param param
+ */
+void gt_img_set_by_file_header(gt_obj_st * obj, gt_file_header_param_st * param);
+#endif
+
 /**
  * @brief get img src of path
  *

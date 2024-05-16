@@ -252,6 +252,7 @@ void gt_gif_set_src_by_fh(gt_obj_st * obj, gt_file_header_param_st * fh)
         return ;
     }
 
+    style->fh = *fh;
     style->gif = gd_fh_open_gif(&style->fh);
     if (NULL == style->gif) {
         return ;

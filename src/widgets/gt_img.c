@@ -29,7 +29,10 @@
 typedef struct _gt_img_s {
     gt_obj_st obj;
     char * src;             // img src, It can be a virt file name/path or an array of C
-    _gt_img_dsc_st raw;   // raw data buffer draw directly
+    _gt_img_dsc_st raw;     // raw data buffer draw directly
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_st fh;
+#endif
 }_gt_img_st;
 
 /* static variables -----------------------------------------------------*/
@@ -65,6 +68,10 @@ static void _init_cb(gt_obj_st * obj) {
         .raw_img = style->src ? NULL : &style->raw,
         .bg_opa = obj->opa,
     };
+#if GT_USE_FILE_HEADER
+    dsc.file_header = gt_file_header_param_check_valid(&style->fh);
+#endif
+
     /* start draw obj */
     draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
 
@@ -102,26 +109,10 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-            break;
         case GT_EVENT_TYPE_UPDATE_VALUE:
             area = obj->area;
             gt_fs_read_img_wh(gt_img_get_src(obj), &area.w, &area.h);
@@ -133,13 +124,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         }
-
-        case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
-            break;
-
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
             // gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
@@ -189,6 +174,10 @@ void gt_img_set_src(gt_obj_st * img, char * src)
     strcpy(style->src, src);
     style->src[len] = 0;
 
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->fh);
+#endif
+
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
@@ -217,8 +206,32 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw)
         style->raw.header.color_format = GT_IMG_CF_TRUE_COLOR;
     }
 
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->fh);
+#endif
+
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
+
+#if GT_USE_FILE_HEADER
+void gt_img_set_by_file_header(gt_obj_st * obj, gt_file_header_param_st * param)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_img_st * style = (_gt_img_st *)img;
+    gt_memset(&style->raw, 0, sizeof(_gt_img_dsc_st));
+    if (NULL != style->src) {
+        gt_mem_free(style->src);
+        style->src = NULL;
+    }
+#if GT_USE_FILE_HEADER
+    style->fh = *param;
+#endif
+
+    gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+#endif
 
 char * gt_img_get_src(gt_obj_st * img)
 {
