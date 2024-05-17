@@ -75,7 +75,7 @@ void * _fh_open_cb(struct _gt_fs_drv_s * drv, gt_file_header_param_st const * co
     }
     gt_fs_fp_st * fp = _gt_hal_fp_init();
 
-    fp->start = gt_file_header_get_img_offset_by(item, fh_param->package_idx);
+    fp->start = gt_file_header_get_img_offset_by(item, fh_param);
     fp->end = gt_file_header_get_img_size(item) + fp->start;
     fp->pos = fp->start;
 

@@ -39,7 +39,7 @@ extern "C" {
      * @brief The image package size.
      *      default: 0
      */
-    #define _GT_FILE_HEADER_IMG_PACKAGE         01
+    #define _GT_FILE_HEADER_IMG_PACKAGE         0
 #endif
 
 #ifndef _GT_FILE_HEADER_IMG_SAME_SIZE
@@ -194,17 +194,16 @@ gt_file_header_st const * gt_file_header_get(gt_file_header_idx_t index);
  */
 uint32_t gt_file_header_get_img_size(gt_file_header_st const * item);
 
-#if _GT_FILE_HEADER_IMG_PACKAGE
 /**
  * @brief
  *
  * @param item
- * @param image_idx The index of item inside the package count, begin from 0,
+ * @param fh File header param The index of item inside the package count, begin from 0,
  *      which equal to item begin address.
+ *      Enabled when _GT_FILE_HEADER_IMG_PACKAGE is enabled.
  * @return uint32_t
  */
-uint32_t gt_file_header_get_img_offset_by(gt_file_header_st const * item, gt_file_header_idx_t image_idx);
-#endif
+uint32_t gt_file_header_get_img_offset_by(gt_file_header_st const * item, gt_file_header_param_st const * const fh);
 
 #endif  /** GT_USE_FILE_HEADER */
 

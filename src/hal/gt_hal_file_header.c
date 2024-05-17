@@ -125,23 +125,29 @@ uint32_t gt_file_header_get_img_size(gt_file_header_st const * item)
 #endif
 }
 
-#if _GT_FILE_HEADER_IMG_PACKAGE
-uint32_t gt_file_header_get_img_offset_by(gt_file_header_st const * item, gt_file_header_idx_t image_idx)
+uint32_t gt_file_header_get_img_offset_by(gt_file_header_st const * item, gt_file_header_param_st const * const fh)
 {
     if (NULL == item) {
         return 0;
     }
-    if (image_idx < 0) {
-        GT_LOGW(GT_LOG_TAG_FS, "image index out of package count range");
-        image_idx = 0;
+#if _GT_FILE_HEADER_IMG_PACKAGE
+    if (NULL == fh) {
+        return 0;
     }
-    if (image_idx >= item->package_count) {
+    gt_file_header_idx_t pkg_idx = fh->package_idx;
+    if (pkg_idx < 0) {
         GT_LOGW(GT_LOG_TAG_FS, "image index out of package count range");
-        image_idx = 0;
+        pkg_idx = 0;
     }
-    return gt_file_header_get_img_size(item) * image_idx + item->address;
-}
+    if (pkg_idx >= item->package_count) {
+        GT_LOGW(GT_LOG_TAG_FS, "image index out of package count range");
+        pkg_idx = 0;
+    }
+    return gt_file_header_get_img_size(item) * pkg_idx + item->address;
+#else
+    return item->address;
 #endif  /** _GT_FILE_HEADER_IMG_PACKAGE */
+}
 
 #endif  /** GT_USE_FILE_HEADER */
 /* end ------------------------------------------------------------------*/
