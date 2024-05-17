@@ -70,6 +70,12 @@ typedef struct gt_file_header_param_s {
 #endif
 }gt_file_header_param_st;
 
+/**
+ * @brief Image size: [(sizeof(gt_color_t) + alpha ? sizeof(gt_opa_t) : 0) * width * height],
+ *      The size of image data in bytes
+ *      distribution: [color data][color data] ... [color data] * width * height
+ *                    [alpha data][alpha data] ... [alpha data] * width * height
+ */
 typedef struct gt_file_header_color_info_s {
     uint16_t width;
     uint16_t height;
