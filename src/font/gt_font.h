@@ -79,10 +79,18 @@ typedef enum gt_font_style_e {
 }gt_font_style_et;
 
 typedef struct _gt_text_style_s {
-    uint8_t style       : 2;    ///< font style value @ref gt_font_style_et
-    uint8_t single_line : 1;    ///< 0[default]: multi-line, 1: single-line
-    uint8_t omit_line   : 1;    ///< enabled when single-line set to 1.[0: display all word, 1: Characters are omitted at the end of lines]
-    uint8_t reserved    : 4;
+    ///< 0[default]: Set the text beginning position by direct point, by start_x and start_y.
+    uint8_t enabled_start   : 1;
+
+    ///< font style value @ref gt_font_style_et
+    uint8_t style           : 2;
+
+    ///< 0[default]: multi-line, 1: single-line
+    uint8_t single_line     : 1;
+
+    ///< enabled when single-line set to 1.[0: display all word, 1: Characters are omitted at the end of lines]
+    uint8_t omit_line       : 1;
+    uint8_t reserved        : 3;
 }_gt_text_style_st;
 
 /**
@@ -92,10 +100,22 @@ typedef struct _gt_attr_font_s {
     gt_font_st * font;      ///< Resource for font information
     gt_color_t font_color;  ///< The color of the font fore display
 
+    /**
+     * Single-line or multiple line text full display area required,
+     * widget area is visible area window
+     * |---------------------| <--- logical_area
+     * | |--------| <--------+----- widget area
+     * | |"this is|a window" |
+     * | |visible |          |
+     * | |--------|          |
+     * |  invisible area     |
+     * |---------------------|
+     *  widget area is visible area window.
+     */
     gt_area_st logical_area;
 
-    uint16_t start_x;   ///< draw text start x from coords,if not need,must set 0
-    uint16_t start_y;   ///< draw text start y from coords,if not need,must set 0
+    gt_size_t start_x;  ///< draw text start x from coords,if not need,must set 0
+    gt_size_t start_y;  ///< draw text start y from coords,if not need,must set 0
 
     uint8_t space_x;    ///< The width of the space between characters
     uint8_t space_y;    ///< The distance between rows
