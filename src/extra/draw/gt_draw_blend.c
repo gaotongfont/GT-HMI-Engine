@@ -301,6 +301,10 @@ void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
 #endif
     gt_point_st offset = {0};   /** src data buffer offset set */
 
+    if (draw_ctx->font_limit_area) {
+        offset = _get_cover_dst_area_and_offset_by(draw_ctx->font_limit_area, dsc->dst_area, &area_dst);
+    }
+
     if (draw_ctx->parent_area) {
         /** Be used when obj->inside true and object has its parent */
         offset = _get_cover_dst_area_and_offset_by(draw_ctx->parent_area, dsc->dst_area, &area_dst);
