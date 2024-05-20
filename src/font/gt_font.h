@@ -103,6 +103,7 @@ typedef struct _gt_attr_font_s {
     /**
      * Single-line or multiple line text full display area required,
      * widget area is visible area window
+     * defalut: logical_area = widget_area
      * |---------------------| <--- logical_area
      * | |--------| <--------+----- widget area
      * | |"this is|a window" |
