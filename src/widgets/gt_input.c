@@ -177,6 +177,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
 
         font_attr.start_x = font_res.area.x + style->border_width + 2;
         font_attr.start_y = font_res.area.y;
+        font_attr.reg.enabled_start = true;
         draw_text(input->draw_ctx, &font_attr, &area_font);
     }
 
