@@ -244,14 +244,6 @@ static bool _create_new_screen_obj(gt_obj_st * obj) {
 /* global functions / API interface -------------------------------------*/
 struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_obj_s * parent)
 {
-    /* check type */
-    if ( parent && parent->class->type == class->type ){
-        if (GT_TYPE_OBJ != class->type) {
-            GT_LOGV(GT_LOG_TAG_GUI, "cannot create an object of the same type as the parent object onto the parent object");
-            return NULL;
-        }
-    }
-
     uint32_t is = get_style_size(class);
     gt_obj_st * obj = gt_mem_malloc(is);
     if (!obj) {
