@@ -104,6 +104,30 @@ void gt_textarea_set_bg_color(gt_obj_st * textarea, gt_color_t color);
 void gt_textarea_set_bg_opa(gt_obj_st * textarea, uint8_t opa);
 
 /**
+ * @brief Set the border color of the textarea
+ *
+ * @param textarea
+ * @param width 2[defalut]: 2px
+ */
+void gt_textarea_set_border_width(gt_obj_st * textarea, uint8_t width);
+
+/**
+ * @brief Set the border color of the textarea
+ *
+ * @param textarea
+ * @param color 0xc7c7c7[defalut]
+ */
+void gt_textarea_set_border_color(gt_obj_st * textarea, gt_color_t color);
+
+/**
+ * @brief Set the border radius of the textarea
+ *
+ * @param textarea
+ * @param radius 4[defalut]
+ */
+void gt_textarea_set_radius(gt_obj_st * textarea, gt_size_t radius);
+
+/**
  * @brief set textarea chinese font style
  *
  * @param textarea obj pointer
