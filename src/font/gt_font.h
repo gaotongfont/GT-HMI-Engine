@@ -177,14 +177,14 @@ typedef struct gt_py_input_method_s {
 
 /* py input method API interface -------------------------------------*/
 gt_py_input_method_st* gt_py_input_method_create(void);
-void gt_py_input_method_push_ascii(gt_py_input_method_st* py_input_method , uint8_t ch);
+void gt_py_input_method_push_ascii(gt_py_input_method_st* py_input_method, uint8_t ch);
 void gt_py_input_method_pop_ascii(gt_py_input_method_st* py_input_method);
 uint8_t gt_py_input_method_get_ascii_numb(gt_py_input_method_st* py_input_method);
 int gt_py_input_method_get_chinese(gt_py_input_method_st* py_input_method);
 void gt_py_input_method_chinese_data_handler(gt_py_input_method_st* py_input_method);
 void gt_py_input_method_last_page(gt_py_input_method_st* py_input_method);
 void gt_py_input_method_next_page(gt_py_input_method_st* py_input_method);
-void gt_py_input_method_select_text(gt_py_input_method_st* py_input_method , uint8_t index);
+void gt_py_input_method_select_text(gt_py_input_method_st* py_input_method, uint8_t index);
 void gt_py_input_method_clean(gt_py_input_method_st* py_input_method);
 
 
@@ -269,14 +269,14 @@ uint16_t gt_font_get_word_width_figure_up(const uint8_t* data, uint16_t dot_w, u
 uint8_t gt_font_type_get(unsigned int font_style);
 
 int gt_font_code_transform(font_convertor_st *convert);
-int gt_font_convertor_data_get(font_convertor_st *convert , uint32_t pos);
+int gt_font_convertor_data_get(font_convertor_st *convert, uint32_t pos);
 
 uint32_t gt_font_split(gt_font_st *fonts, uint32_t width, uint32_t dot_w, uint32_t space, uint32_t *ret_w, uint8_t * lan, uint32_t * lan_len);
-bool gt_right_to_left_handler(const gt_font_st* fonts , uint8_t* ret_text , uint8_t r2l_lan);
-bool is_convertor_language(gt_font_style_en_cn_et style_laug);
+bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_t r2l_lan);
+bool is_convertor_language(gt_font_style_en_cn_et style_lang);
 uint8_t right_to_left_lan_get(uint16_t style);
 
-uint32_t gt_font_split_line_numb(gt_font_info_st* info , const char * text , uint32_t max_w , uint16_t space , uint32_t * ret_max_w);
+uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint32_t max_w, uint16_t space, uint32_t * ret_max_w);
 
 #ifdef __cplusplus
 } /*extern "C"*/

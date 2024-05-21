@@ -147,15 +147,15 @@ static bool _gt_number_symbol_font(uint32_t unicode)
     return false;
 }
 
-static uint32_t _get_font_style(gt_font_st *font , uint32_t unicode)
+static uint32_t _get_font_style(gt_font_st *font, uint32_t unicode)
 {
     gt_font_style_en_cn_et style_type = 0;
-    uint32_t font_style ;
+    uint32_t font_style;
     if(GT_CFG_DEFAULT_FONT_FAMILY_NUMB != font->info.style_numb && _gt_number_symbol_font(unicode)){
         font_style = font->info.style_numb;
     }
     else{
-        style_type = _gt_is_style_cn_or_en(unicode , font->info.encoding);
+        style_type = _gt_is_style_cn_or_en(unicode, font->info.encoding);
         if(STYLE_CN == style_type){
             font_style = font->info.style_cn;
         }
@@ -304,10 +304,10 @@ uint8_t gt_font_one_char_code_len_get(uint8_t * utf8, uint32_t *res, uint8_t enc
     GT_Set_Chinese_Charset_Type(encoding);
 #endif
     if(GT_ENCODING_UTF8 == encoding) {
-        return _gt_utf8_to_unicode(utf8 , res);
+        return _gt_utf8_to_unicode(utf8, res);
     }
     else if(GT_ENCODING_GB == encoding) {
-        return _gt_gb_font_one_char_code_len_get(utf8 , res);
+        return _gt_gb_font_one_char_code_len_get(utf8, res);
     }
 
     return 0;
@@ -336,7 +336,7 @@ uint8_t gt_encoding_table_one_char(uint8_t *src, uint8_t* dst, gt_encoding_conve
         // gb to unicode
         font_code =  GBKToUnicode(font_code);
         // unicode to utf8
-        gt_unicode_to_utf8(dst , font_code);
+        gt_unicode_to_utf8(dst, font_code);
     }
 #endif
     return len;
@@ -369,7 +369,7 @@ uint8_t gt_utf8_check_char(uint8_t * utf8)
     return 0;
 }
 
-uint8_t gt_gb_check_char(const uint8_t *dst , uint16_t pos , uint32_t* font_code)
+uint8_t gt_gb_check_char(const uint8_t *dst, uint16_t pos, uint32_t* font_code)
 {
     if(NULL == dst) return 0;
     uint16_t pos_s = 0, len = 0, idx = 0, str_len = 0;
@@ -398,7 +398,7 @@ uint8_t gt_gb_check_char(const uint8_t *dst , uint16_t pos , uint32_t* font_code
  * @param unicode unicode编码
  * @return int 0 - style_cn  else-style_en
  */
-gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding)
+gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode, uint8_t encoding)
 {
     if(GT_ENCODING_GB == encoding) {
         if(unicode <= 0x7F) {
@@ -450,11 +450,11 @@ gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode , uint8_t encoding
     return STYLE_CN;
 }
 
-bool gt_style_en_data_is_convertor(uint32_t unicode , uint8_t encoding)
+bool gt_style_en_data_is_convertor(uint32_t unicode, uint8_t encoding)
 {
-    gt_font_style_en_cn_et style_laug = _gt_is_style_cn_or_en(unicode , encoding);
+    gt_font_style_en_cn_et style_lang = _gt_is_style_cn_or_en(unicode, encoding);
 
-    switch(style_laug) {
+    switch(style_lang) {
         // case STYLE_EN_HEBREW:
         case STYLE_EN_ARABIC:
         case STYLE_EN_THAI:
@@ -466,9 +466,9 @@ bool gt_style_en_data_is_convertor(uint32_t unicode , uint8_t encoding)
     return false;
 }
 
-bool is_convertor_language(gt_font_style_en_cn_et style_laug)
+bool is_convertor_language(gt_font_style_en_cn_et style_lang)
 {
-    switch(style_laug) {
+    switch(style_lang) {
         // case STYLE_EN_HEBREW:
         case STYLE_EN_ARABIC:
         case STYLE_EN_THAI:
@@ -486,15 +486,14 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
     uint32_t idx = 0, unicode, len, font_style = 0, idx_read = 0, temp = 0;
     uint16_t ret = GT_FONT_TYPE_FLAG_NONE;
 
-    // GT_LOGV(GT_LOG_TAG_GUI, "text:%s", font->utf8);
     while(idx < font->len) {
         // len = _gt_utf8_to_unicode(&font->utf8[idx], &unicode);
-        len = gt_font_one_char_code_len_get((uint8_t * )&font->utf8[idx], &unicode , font->info.encoding);
+        len = gt_font_one_char_code_len_get((uint8_t * )&font->utf8[idx], &unicode, font->info.encoding);
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
         struct gt_font_func_s* font_func;
 
-        font_style = _get_font_style(font , unicode);
+        font_style = _get_font_style(font, unicode);
 
         font_func = GT_Get_Font_Func_S(font_style);
         if(!font_func) {
@@ -506,7 +505,7 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
                 idx+=len;
                 continue;
             }
-            temp = font_func->func.read_dot_font(unicode , font_style , &font->res[idx_read]);
+            temp = font_func->func.read_dot_font(unicode, font_style, &font->res[idx_read]);
             if(temp == 0) {
                 idx+=len;
                 continue;
@@ -519,7 +518,7 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
                 idx+=len;
                 continue;
             }
-            temp = font_func->func.read_vec_font(&font->res[idx_read], font_style , unicode , font->info.size , font->info.gray , \
+            temp = font_func->func.read_vec_font(&font->res[idx_read], font_style, unicode, font->info.size, font->info.gray,
                                                 font_style==font->info.style_cn ? font->info.thick_cn : font->info.thick_en);
             if(temp == 0) {
                 idx+=len;
@@ -531,7 +530,7 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
 #endif
 
 default_font:
-        font_style = _gt_is_style_cn_or_en(unicode , font->info.encoding);
+        font_style = _gt_is_style_cn_or_en(unicode, font->info.encoding);
         if(1 == font_style) {
 #if GT_CFG_USE_FONT_16_ASCII == 1
             temp = 32;
@@ -577,10 +576,10 @@ unsigned int len = 0;
     return len;
 }
 
-int gt_font_convertor_data_get(font_convertor_st *convert , uint32_t pos)
+int gt_font_convertor_data_get(font_convertor_st *convert, uint32_t pos)
 {
 #if GT_CFG_ENABLE_ZK_FONT == 1
-    return GT_Get_Font_Convertor_Data(convert , pos);
+    return GT_Get_Font_Convertor_Data(convert, pos);
 #else
     return 0;
 #endif
@@ -619,11 +618,11 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
 
 uint32_t gt_font_get_string_width(gt_font_st * font)
 {
-	uint32_t idx = 0, unicode = 0, width = 0 , tmp = 0;
+	uint32_t idx = 0, unicode = 0, width = 0, tmp = 0;
 
     while( idx < font->len ){
         idx += gt_font_one_char_code_len_get((uint8_t * )&font->utf8[idx], &unicode, font->info.encoding);
-        width += gt_font_get_one_word_width(unicode , font);
+        width += gt_font_get_one_word_width(unicode, font);
     }
     return width;
 }
@@ -695,19 +694,19 @@ uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
     int width = 0;
     int option = 0;
 
-    option = _get_font_style(font , unicode);
+    option = _get_font_style(font, unicode);
 
     if(GT_Check_Is_Vec(option)){
         uint32_t font_dot_w = (((font->info.size + 15) >> 4) << 4) * font->info.gray;
         font_dot_w = (font_dot_w*font_dot_w) >> 3;
-        gt_memset(font->res , 0 , font_dot_w);
+        gt_memset(font->res, 0, font_dot_w);
     }
 
-    width = GT_Get_Font_Width(unicode , option , font->info.size , font->info.gray , font->res);
+    width = GT_Get_Font_Width(unicode, option, font->info.size, font->info.gray, font->res);
 
     if(0 == width){
         if(_gt_font_latin_check(unicode)) {
-            return _gt_font_latin_get_width(unicode , font->info.size);
+            return _gt_font_latin_get_width(unicode, font->info.size);
         }
         return font->info.size;
     }
@@ -715,7 +714,7 @@ uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
 #else
     if(_gt_font_latin_check(unicode))
     {
-        return _gt_font_latin_get_width(unicode , font->size);
+        return _gt_font_latin_get_width(unicode, font->size);
     }
     return font->size;
 #endif
@@ -731,7 +730,7 @@ uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
  * @param gray 取值: 1 / 2 / 4
  * @return int 实际文字宽度
  */
-uint16_t gt_font_get_word_width_figure_up(const uint8_t* data , uint16_t dot_w , uint16_t dot_h , uint8_t gray)
+uint16_t gt_font_get_word_width_figure_up(const uint8_t* data, uint16_t dot_w, uint16_t dot_h, uint8_t gray)
 {
 	uint16_t byte_w, i;
 	int j, len;
@@ -739,13 +738,13 @@ uint16_t gt_font_get_word_width_figure_up(const uint8_t* data , uint16_t dot_w ,
 
     byte_w = ((dot_w + 7) >> 3) * gray;
 
-	for(j = byte_w-1;j >= 0 ; j--) {
+	for(j = byte_w-1;j >= 0; j--) {
 		tmp = 0;
-		for(i = 0 ; i < dot_h ; i++) {
+		for(i = 0; i < dot_h; i++) {
 			tmp |= data[i*byte_w + j];
 		}
 		if(0 != tmp) {
-			for(i = 0 ; i < 8 ;i++){
+			for(i = 0; i < 8; i++){
 				if((tmp >> i)&0x01){
 					break;
 				}
@@ -773,19 +772,19 @@ gt_encoding_et gt_project_encoding_get(void)
     return _gt_project_encoding;
 }
 
-static uint32_t _gt_font_language_split(const uint8_t *str , uint32_t len , uint8_t encoding , uint8_t *lan)
+static uint32_t _gt_font_language_split(const uint8_t *str, uint32_t len, uint8_t encoding, uint8_t *lan)
 {
-    uint32_t idx = 0 ,tmp, unicode ;
+    uint32_t idx = 0 ,tmp, unicode;
     idx += gt_font_one_char_code_len_get((uint8_t * )&str[0], &unicode, encoding);
     if(idx == 0){
         return 0;
     }
-    *lan = _gt_is_style_cn_or_en(unicode , encoding);
+    *lan = _gt_is_style_cn_or_en(unicode, encoding);
 
     while (idx < len) {
         /* code */
         tmp = gt_font_one_char_code_len_get((uint8_t * )&str[idx], &unicode, encoding);
-        if(*lan != _gt_is_style_cn_or_en(unicode , encoding)){
+        if(*lan != _gt_is_style_cn_or_en(unicode, encoding)){
             break;
         }
         idx += tmp;
@@ -806,9 +805,9 @@ static bool _is_punctuation(uint32_t unicode)
     return false;
 }
 
-static uint32_t _gt_font_punctuation_split(const uint8_t *str , uint32_t len , uint8_t encoding)
+static uint32_t _gt_font_punctuation_split(const uint8_t *str, uint32_t len, uint8_t encoding)
 {
-    uint32_t idx = 0 , unicode = 0;
+    uint32_t idx = 0, unicode = 0;
     uint8_t tmp;
     idx += gt_font_one_char_code_len_get((uint8_t * )&str[idx], &unicode, encoding);
     if(_is_punctuation(unicode)){
@@ -825,7 +824,7 @@ static uint32_t _gt_font_punctuation_split(const uint8_t *str , uint32_t len , u
     return idx;
 }
 
-static uint32_t _gt_font_cn_in_this_range(const gt_font_st *fonts , uint32_t width , uint32_t space , uint32_t* ret_w)
+static uint32_t _gt_font_cn_in_this_range(const gt_font_st *fonts, uint32_t width, uint32_t space, uint32_t* ret_w)
 {
     uint32_t idx = 0, unicode = 0, w = 0;
     uint8_t *str = fonts->utf8, tmp, tmp_w = 0;
@@ -845,7 +844,7 @@ static uint32_t _gt_font_cn_in_this_range(const gt_font_st *fonts , uint32_t wid
     return idx;
 }
 
-static uint32_t _gt_font_en_in_this_range(const gt_font_st *fonts , uint32_t width , uint32_t space , uint32_t* ret_w , uint16_t *ol_idx , uint16_t *ol_width)
+static uint32_t _gt_font_en_in_this_range(const gt_font_st *fonts, uint32_t width, uint32_t space, uint32_t* ret_w, uint16_t *ol_idx, uint16_t *ol_width)
 {
     uint32_t idx = 0, unicode = 0, w = 0;
     uint8_t *str = fonts->utf8, tmp, tmp_w = 0;
@@ -875,14 +874,14 @@ static uint32_t _gt_font_en_in_this_range(const gt_font_st *fonts , uint32_t wid
     return idx;
 }
 
-static uint32_t _get_convertor_string_width(const gt_font_st *fonts , uint8_t lan , uint32_t space , uint16_t range_w, uint16_t *ol_idx , uint16_t *ol_width)
+static uint32_t _get_convertor_string_width(const gt_font_st *fonts, uint8_t lan, uint32_t space, uint16_t range_w, uint16_t *ol_idx, uint16_t *ol_width)
 {
     uint32_t idx = 0, unicode, tmp, len = fonts->info.size * fonts->len;
     uint16_t *text = NULL;
     uint8_t *font_buf = NULL;
     text = (uint16_t * )gt_mem_malloc(fonts->len * sizeof(uint16_t));
     if (NULL == text) {
-        GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed , size: %d" , fonts->len * sizeof(uint16_t));
+        GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %d", fonts->len * sizeof(uint16_t));
         return len;
     }
 
@@ -924,7 +923,7 @@ static uint32_t _get_convertor_string_width(const gt_font_st *fonts , uint8_t la
 
     font_buf = (uint8_t * )gt_mem_malloc(font_size_res.font_buff_len);
     if (NULL == font_buf) {
-        GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed , size: %d" , font_size_res.font_buff_len);
+        GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %d", font_size_res.font_buff_len);
         goto _ret_handle;
     }
     gt_memset_0(font_buf, font_size_res.font_buff_len);
@@ -938,18 +937,18 @@ static uint32_t _get_convertor_string_width(const gt_font_st *fonts , uint8_t la
     tmp_font.res = &font_buf[font_size_res.font_buff_len - font_size_res.font_per_size];
     while (idx < text_len) {
         if (STYLE_EN_HINDI == lan) {
-            width = gt_font_get_word_width_figure_up(&convertor.data[idx * font_size_res.font_per_size] , 16 , 24 , 1);
+            width = gt_font_get_word_width_figure_up(&convertor.data[idx * font_size_res.font_per_size], 16, 24, 1);
             tmp = 1;
         }
         else {
-            gt_memset_0(&convertor.data[0] , font_size_res.font_buff_len);
+            gt_memset_0(&convertor.data[0], font_size_res.font_buff_len);
 
             if (0x20 == convertor.fontcode[idx]) {
                 width = convertor.fontsize >> 1;
             } else {
-                tmp = gt_font_convertor_data_get(&convertor , idx);
+                tmp = gt_font_convertor_data_get(&convertor, idx);
 
-                width = gt_font_get_word_width_figure_up(&convertor.data[0] , font_size_res.dot_width, convertor.fontsize , convertor.fontgray);
+                width = gt_font_get_word_width_figure_up(&convertor.data[0], font_size_res.dot_width, convertor.fontsize, convertor.fontgray);
             }
         }
 
@@ -1009,7 +1008,7 @@ uint32_t gt_font_split(gt_font_st * fonts, uint32_t width, uint32_t dot_w, uint3
     *ret_w = 0;
     *lan_len = len;
     while (idx < len) {
-        tmp_len = _gt_font_punctuation_split((const uint8_t*)&text[idx] , len - idx, fonts->info.encoding);
+        tmp_len = _gt_font_punctuation_split((const uint8_t*)&text[idx], len - idx, fonts->info.encoding);
         tmp_font.utf8 = &text[idx];
         tmp_font.len = tmp_len;
 
@@ -1071,8 +1070,8 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint3
 
     uint8_t lan = 0;
     int32_t disp_w = max_w;
-    uint32_t ret_w = 0 , lan_len = 0;
-    uint32_t idx = 0 , idx_step = 0 , len = strlen(text);
+    uint32_t ret_w = 0, lan_len = 0;
+    uint32_t idx = 0, idx_step = 0, len = strlen(text);
 
     while (idx < len) {
         if (0x0A == text[idx]) {
@@ -1110,14 +1109,14 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint3
 
 
 
-static uint32_t _gt_font_lang_and_punctuation_split(const uint8_t *str , uint32_t len , uint8_t encoding , uint8_t *lan , uint8_t is_lan)
+static uint32_t _gt_font_lang_and_punctuation_split(const uint8_t *str, uint32_t len, uint8_t encoding, uint8_t *lan, uint8_t is_lan)
 {
-    uint32_t idx = 0 ,tmp, unicode ;
+    uint32_t idx = 0 ,tmp, unicode;
     idx += gt_font_one_char_code_len_get((uint8_t * )&str[0], &unicode, encoding);
     if (idx == 0) {
         return 0;
     }
-    *lan = _gt_is_style_cn_or_en(unicode , encoding);
+    *lan = _gt_is_style_cn_or_en(unicode, encoding);
     if (_is_punctuation(unicode)) {
         *lan = is_lan;
     }
@@ -1125,7 +1124,7 @@ static uint32_t _gt_font_lang_and_punctuation_split(const uint8_t *str , uint32_
     while (idx < len) {
         /* code */
         tmp = gt_font_one_char_code_len_get((uint8_t * )&str[idx], &unicode, encoding);
-        tmp_lan = _gt_is_style_cn_or_en(unicode , encoding);
+        tmp_lan = _gt_is_style_cn_or_en(unicode, encoding);
         if ((*lan != is_lan) && _is_punctuation(unicode)) {
             break;
         }
@@ -1158,10 +1157,10 @@ uint8_t right_to_left_lan_get(uint16_t style)
     return 0xFF;
 }
 
-bool gt_right_to_left_handler(const gt_font_st* fonts , uint8_t* ret_text , uint8_t r2l_lan)
+bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_t r2l_lan)
 {
-    uint32_t tmp = 0, unicode = 0 , len = 0 , alb_count = 0 ;
-    int bidi_s = -1 , bidi_e = -1 , idx = 0;
+    uint32_t tmp = 0, unicode = 0, len = 0, alb_count = 0;
+    int bidi_s = -1, bidi_e = -1, idx = 0;
     uint8_t lan;
     bool ret_flag = false;
 
@@ -1188,7 +1187,7 @@ bool gt_right_to_left_handler(const gt_font_st* fonts , uint8_t* ret_text , uint
     uint16_t bidi_len = tmp;
     gt_bidi_st* bidi = (gt_bidi_st*)gt_mem_malloc((bidi_len * sizeof(gt_bidi_st)));
     if (NULL == bidi) {
-        GT_LOGE(GT_LOG_TAG_GUI , "bidi malloc err! size = %d" , (bidi_len * sizeof(gt_bidi_st)) );
+        GT_LOGE(GT_LOG_TAG_GUI, "bidi malloc err! size = %d", (bidi_len * sizeof(gt_bidi_st)) );
         return false;
     }
     tmp = 0;
@@ -1223,7 +1222,7 @@ bool gt_right_to_left_handler(const gt_font_st* fonts , uint8_t* ret_text , uint
     idx = 0;
     for(tmp = 0; tmp < bidi_len; ++tmp) {
         if (false == bidi[tmp].flag || r2l_lan == STYLE_EN_ARABIC) {
-            gt_memcpy(&ret_text[idx] , &fonts->utf8[bidi[tmp].idx] ,bidi[tmp].len);
+            gt_memcpy(&ret_text[idx], &fonts->utf8[bidi[tmp].idx] ,bidi[tmp].len);
             idx += bidi[tmp].len;
             continue;
         }
@@ -1231,7 +1230,7 @@ bool gt_right_to_left_handler(const gt_font_st* fonts , uint8_t* ret_text , uint
         bidi_e = 0;
         while(bidi_e < bidi[tmp].len) {
             len = gt_font_one_char_code_len_get((uint8_t * )&fonts->utf8[bidi_s], &unicode, fonts->info.encoding);
-            gt_memcpy(&ret_text[idx + (bidi[tmp].len - bidi_e) - len] , &fonts->utf8[bidi_s] ,len);
+            gt_memcpy(&ret_text[idx + (bidi[tmp].len - bidi_e) - len], &fonts->utf8[bidi_s] ,len);
             bidi_e += len;
             bidi_s += len;
         }
@@ -1254,29 +1253,29 @@ gt_py_input_method_st* gt_py_input_method_create(void)
     if(!_gt_py_info){
         _gt_py_info = (py_info_st*) gt_mem_malloc(sizeof(py_info_st));
         if(!_gt_py_info){
-            GT_LOGE(GT_LOG_TAG_GUI , "py info malloc err!!! size = %d" , sizeof(py_info_st));
+            GT_LOGE(GT_LOG_TAG_GUI, "py info malloc err!!! size = %d", sizeof(py_info_st));
             goto _info_ret;
         }
-        gt_memset(_gt_py_info , 0 , sizeof(py_info_st));
+        gt_memset(_gt_py_info, 0, sizeof(py_info_st));
 
         _gt_py_info->content = (py_content_st*)gt_mem_malloc(sizeof(py_content_st));
         if(!_gt_py_info->content){
-            GT_LOGE(GT_LOG_TAG_GUI , "py info content malloc err!!! size = %d" , sizeof(py_content_st));
+            GT_LOGE(GT_LOG_TAG_GUI, "py info content malloc err!!! size = %d", sizeof(py_content_st));
             goto _info_ret;
         }
-        gt_memset(_gt_py_info->content , 0 , sizeof(py_content_st));
+        gt_memset(_gt_py_info->content, 0, sizeof(py_content_st));
 
         _gt_py_info->py_cache = (unsigned char*)gt_mem_malloc(1218);
         if(!_gt_py_info->py_cache)
         {
-            GT_LOGE(GT_LOG_TAG_GUI , "py info py_cache malloc err!!! size = %d" , 1218);
+            GT_LOGE(GT_LOG_TAG_GUI, "py info py_cache malloc err!!! size = %d", 1218);
             goto _info_ret;
         }
-        gt_memset(_gt_py_info->py_cache , 0 , 1218);
+        gt_memset(_gt_py_info->py_cache, 0, 1218);
 
         //
         if(0 == gt_pinyin_init(_gt_py_info)){
-            GT_LOGE(GT_LOG_TAG_GUI , "py init err!!!");
+            GT_LOGE(GT_LOG_TAG_GUI, "py init err!!!");
             goto _info_ret;
         }
         _gt_py_info = _gt_py_info;
@@ -1284,10 +1283,10 @@ gt_py_input_method_st* gt_py_input_method_create(void)
 
     gt_py_input_method_st* py_input_method = (gt_py_input_method_st*) gt_mem_malloc(sizeof(gt_py_input_method_st));
     if(!py_input_method){
-        GT_LOGE(GT_LOG_TAG_GUI , "py input method malloc err!!! size = %d" , sizeof(gt_py_input_method_st));
+        GT_LOGE(GT_LOG_TAG_GUI, "py input method malloc err!!! size = %d", sizeof(gt_py_input_method_st));
         goto input_met_ret;
     }
-    gt_memset(py_input_method , 0 , sizeof(gt_py_input_method_st));
+    gt_memset(py_input_method, 0, sizeof(gt_py_input_method_st));
 
     py_input_method->py_info = _gt_py_info;
 
@@ -1322,7 +1321,7 @@ input_met_ret:
     return NULL;
 }
 
-void gt_py_input_method_push_ascii(gt_py_input_method_st* py_input_method , uint8_t ch)
+void gt_py_input_method_push_ascii(gt_py_input_method_st* py_input_method, uint8_t ch)
 {
 #if ((defined(PINYIN_INPUT_METHOD_EN)) && (GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
     if(!py_input_method || py_input_method->ascii_numb >= 6){
@@ -1338,7 +1337,7 @@ void gt_py_input_method_pop_ascii(gt_py_input_method_st* py_input_method)
 {
 #if ((defined(PINYIN_INPUT_METHOD_EN)) && (GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
     if(py_input_method->ascii_numb <= 0){
-        return ;
+        return;
     }
     --py_input_method->ascii_numb;
     py_input_method->ascii[py_input_method->ascii_numb] = '\0';
@@ -1368,10 +1367,10 @@ void gt_py_input_method_chinese_data_handler(gt_py_input_method_st* py_input_met
     uint32_t unicode = 0;
     uint8_t len = 0;
     int i = 0;
-    gt_memset_0(py_input_method->chinese , GT_PY_MAX_NUMB * GT_PY_MAX_NUMB);
-    for(i = 0 ; i < py_input_method->chinese_numb ; i++){
+    gt_memset_0(py_input_method->chinese, GT_PY_MAX_NUMB * GT_PY_MAX_NUMB);
+    for(i = 0; i < py_input_method->chinese_numb; i++){
         unicode = GBKToUnicode((((uint32_t)py_input_method->py_info->content->chinese[2*i]) << 8) | py_input_method->py_info->content->chinese[2*i+1]);
-        len = gt_unicode_to_utf8(py_input_method->chinese[i] , unicode);
+        len = gt_unicode_to_utf8(py_input_method->chinese[i], unicode);
         py_input_method->chinese[i][len]='\0';
     }
 #endif
@@ -1381,7 +1380,7 @@ void gt_py_input_method_last_page(gt_py_input_method_st* py_input_method)
 {
 #if ((defined(PINYIN_INPUT_METHOD_EN)) && (GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
     if(!gt_pinyin_last_page(py_input_method->py_info)){
-        return ;
+        return;
     }
     py_input_method->chinese_numb = py_input_method->py_info->content->chinese_numb;
     gt_py_input_method_chinese_data_handler(py_input_method);
@@ -1392,18 +1391,18 @@ void gt_py_input_method_next_page(gt_py_input_method_st* py_input_method)
 {
 #if ((defined(PINYIN_INPUT_METHOD_EN)) && (GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
     if(!gt_pinyin_next_page(py_input_method->py_info)){
-        return ;
+        return;
     }
     py_input_method->chinese_numb = py_input_method->py_info->content->chinese_numb;
     gt_py_input_method_chinese_data_handler(py_input_method);
 #endif
 }
 
-void gt_py_input_method_select_text(gt_py_input_method_st* py_input_method , uint8_t index)
+void gt_py_input_method_select_text(gt_py_input_method_st* py_input_method, uint8_t index)
 {
 #if ((defined(PINYIN_INPUT_METHOD_EN)) && (GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
     uint8_t tmp_text[2] = {0};
-    gt_pinyin_select_text(py_input_method->py_info , index , tmp_text);
+    gt_pinyin_select_text(py_input_method->py_info, index, tmp_text);
     py_input_method->ascii_numb = py_input_method->py_info->content->ascii_numb;
     py_input_method->chinese_numb = py_input_method->py_info->content->chinese_numb;
 #endif
