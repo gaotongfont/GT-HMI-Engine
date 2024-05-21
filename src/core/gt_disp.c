@@ -642,7 +642,7 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
             }
         }
         else if (scr->area.y < 0) {
-            if (param->area_flush.y < 0) {
+            if (param->area_flush.y <= 0) {
                 param->area_flush.h = param->area_flush.h + param->area_flush.y - scr->area.y;
                 param->area_flush.y = 0;
             }
