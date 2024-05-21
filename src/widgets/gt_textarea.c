@@ -98,7 +98,7 @@ static void _init_cb(gt_obj_st * obj) {
 
     gt_area_st area_font;
     _gt_draw_font_res_st font_res;
-    area_font = gt_area_reduce(obj->area , gt_obj_get_reduce(obj));
+    area_font = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
@@ -117,7 +117,7 @@ static void _init_cb(gt_obj_st * obj) {
     font_attr.logical_area.h = 0xffff;
 
     uint16_t height = (obj->reduce << 1) + font_attr.font->info.size + (font_attr.space_y << 1);
-    while( idx < style->cnt_contents ){
+    while (idx < style->cnt_contents) {
         font.utf8               = style->contents[idx].text;
         font.len                = style->contents[idx].len;
         font_attr.reg.style     = style->contents[idx].mask_style;
@@ -135,7 +135,7 @@ static void _init_cb(gt_obj_st * obj) {
     }
 
     // focus
-    draw_focus(obj , 0);
+    draw_focus(obj, 0);
 }
 
 static void _free_contents(gt_obj_st * obj) {
@@ -244,11 +244,11 @@ void gt_textarea_set_text(gt_obj_st * textarea, char * text)
     gt_color_t color = gt_color_black();
     uint16_t len = 0;
 
-    if(style->cnt_contents){
+    if (style->cnt_contents) {
         color = style->contents[style->cnt_contents - 1].color;
         _free_contents(textarea);
     }
-    if(text != NULL){
+    if (text != NULL) {
         len = strlen(text);
     }
     style->contents  = gt_mem_malloc( sizeof(_gt_txt_st) );
@@ -279,7 +279,7 @@ void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et styl
         return ;
     }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
-    if( style->cnt_contents == 0 ){
+    if (style->cnt_contents == 0) {
         style->contents  = gt_mem_malloc( sizeof(_gt_txt_st) );
         style->contents[0].len  = strlen(str);
         style->contents[0].text = gt_mem_malloc(style->contents[0].len);
@@ -287,7 +287,7 @@ void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et styl
         style->contents[0].mask_style = style_mask;
         style->contents[0].color = color;
         style->cnt_contents = 1;
-    }else{
+    } else {
         style->contents  = gt_mem_realloc(style->contents, (style->cnt_contents + 1) * sizeof(_gt_txt_st) );
         style->contents[style->cnt_contents].len  = strlen(str);
         style->contents[style->cnt_contents].text = gt_mem_malloc(style->contents[style->cnt_contents].len);
