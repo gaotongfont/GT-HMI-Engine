@@ -24,8 +24,9 @@
 /* private typedef ------------------------------------------------------*/
 
 /* static variables -----------------------------------------------------*/
-static const uint8_t ascii_16[];
-uint8_t latin_16x16_width[] = {
+static const uint8_t _ascii_16[];
+
+static const uint8_t _latin_16x16_width[] = {
     // latin
     // 1.1:0x0020UL<=unicode<=0x007FUL
     0x04,  0x04,  0x08,  0x09,  0x09,  0x10,  0x0d,  0x04,  0x06,  0x05,  0x09,  0x09,  0x04,  0x06,  0x04,  0x05,  0x09,  0x07,  0x09,  0x09,  0x09,  0x09,  0x09,  0x09,  0x09,  0x09,  0x06,  0x06,  0x09,  0x09,  0x09,  0x0a,  0x10,  0x0c,  0x0c,  0x0c,  0x0c,  0x0b,  0x0a,  0x0c,  0x0c,  0x04,  0x09,  0x0c,  0x0a,  0x0d,  0x0c,  0x0c,  0x0b,  0x0c,  0x0d,  0x0b,  0x0b,  0x0c,  0x0c,  0x10,  0x0b,  0x0b,  0x0a,  0x06,  0x05,  0x06,  0x09,  0x0a,  0x04,  0x0a,  0x0a,  0x09,  0x0a,  0x09,  0x06,  0x0a,  0x0a,  0x04,  0x04,  0x09,  0x04,  0x0e,  0x0a,  0x0a,  0x0a,  0x0a,  0x07,  0x09,  0x06,  0x0a,  0x09,  0x0e,  0x09,  0x0a,  0x09,  0x07,  0x04,  0x07,  0x0a,
@@ -41,6 +42,15 @@ uint8_t latin_16x16_width[] = {
     0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0b,  0x0c,  0x0a,  0x0c,  0x0b,  0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0a,  0x0b,  0x09,  0x0b,  0x09,  0x0b,  0x09,  0x0c,  0x0b,  0x0b,  0x09,  0x0d,  0x0c,  0x0b,  0x09,  0x0b,  0x09,  0x05,  0x05,  0x04,  0x04,  0x0c,  0x0a,  0x0c,  0x0a,  0x0d,  0x0c,  0x0c,  0x0a,  0x0d,  0x0c,  0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0b,  0x0d,  0x0b,  0x0d,  0x0b,  0x0d,  0x0b,  0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0c,  0x0c,  0x0c,  0x0c,  0x0c,  0x0c,  0x0c,  0x0c,  0x0c,  0x0b,  0x0a,  0x0b,  0x0a,  0x0b,  0x0a,  0x0b,  0x0a,  0x0a,  0x0a,  0x0a,  0x0a,  0x0a,
 };
 
+static const uint32_t _latin_encoding_range[] = {
+    //start     end
+    0x0020UL, 0x007FUL,
+    0x00A0UL, 0x017FUL,
+    0x01A0UL, 0x01CFUL,
+    0x01F0UL, 0x01FFUL,
+    0x0210UL, 0x021FUL,
+    0x1EA0UL, 0x1EFFUL,
+};
 
 /* macros ---------------------------------------------------------------*/
 static gt_encoding_et _gt_project_encoding = GT_ENCODING_UTF8;
@@ -57,20 +67,18 @@ static py_info_st* _gt_py_info;
  * @param unicode
  * @return uint32_t
  */
-static uint32_t __get_idx(uint32_t * unicode_arr, uint8_t depth, uint32_t unicode)
-{
-    uint8_t idx = 0;
-    while( idx < depth ){
-        if( unicode >= unicode_arr[idx << 2] && unicode <= unicode_arr[(idx << 2) + 1] ){
+static uint32_t _get_idx(uint32_t const * const unicode_arr, uint16_t depth, uint32_t unicode) {
+    uint16_t idx = 0;
+    while (idx < depth) {
+        if (unicode >= unicode_arr[idx << 2] && unicode <= unicode_arr[(idx << 2) + 1]) {
             idx += unicode - unicode_arr[idx << 2];
             break;
-        }else{
+        } else {
             idx += unicode_arr[(idx << 2) + 1] - unicode_arr[idx << 2];
         }
     }
     return idx;
 }
-
 
 /**
  * @brief check unicode is latin
@@ -79,27 +87,18 @@ static uint32_t __get_idx(uint32_t * unicode_arr, uint8_t depth, uint32_t unicod
  * @return true :the unicode is latin
  * @return false :the unicode not is latin
  */
-static bool _gt_font_latin_check(uint32_t unicode)
-{
-    uint32_t code[] = {
-        //start     end
-        0x0020UL, 0x007FUL,
-        0x00A0UL, 0x017FUL,
-        0x01A0UL, 0x01CFUL,
-        0x01F0UL, 0x01FFUL,
-        0x0210UL, 0x021FUL,
-        0x1EA0UL, 0x1EFFUL,
-    };
+static bool _gt_font_latin_check(uint32_t unicode) {
     bool res = false;
-    for(int i=0; i<6; i++){
-        if( unicode >= code[i<<1] && unicode <= code[(i<<1)+1] ){
+    const uint32_t * encoding_range_p = _latin_encoding_range;
+    uint16_t len = (sizeof(_latin_encoding_range) / sizeof(_latin_encoding_range[0])) >> 1;
+    for (uint16_t i = 0; i < len; i++) {
+        if (unicode >= *encoding_range_p && unicode <= *(encoding_range_p + 1)) {
             res = true;
         }
+        encoding_range_p += 2;
     }
     return res;
 }
-
-
 
 /**
  * @brief get one latin word width
@@ -108,34 +107,17 @@ static bool _gt_font_latin_check(uint32_t unicode)
  * @param font_size font size
  * @return uint8_t the latin unicode font width
  */
-static uint8_t _gt_font_latin_get_width(uint32_t unicode, uint8_t font_size)
-{
-    uint32_t code[] = {
-        //start     end
-        0x0020UL, 0x007FUL,
-        0x00A0UL, 0x017FUL,
-        0x01A0UL, 0x01CFUL,
-        0x01F0UL, 0x01FFUL,
-        0x0210UL, 0x021FUL,
-        0x1EA0UL, 0x1EFFUL,
-    };
-    uint32_t idx = __get_idx(code, 6, unicode);
-    uint8_t width = font_size;
-    switch( font_size ){
-        case 16:
-            width = latin_16x16_width[idx];
-            break;
-        case 24:
-            break;
-        default:
-            break;
+static uint8_t _gt_font_latin_get_width(uint32_t unicode, uint8_t font_size) {
+    uint16_t len = (sizeof(_latin_encoding_range) / sizeof(_latin_encoding_range[0])) >> 1;
+    uint32_t idx = _get_idx(_latin_encoding_range, len, unicode);
+    if (16 == font_size) {
+        return _latin_16x16_width[idx];
     }
-    return width;
+    return font_size;
 
 }
 
-static bool _gt_number_symbol_font(uint32_t unicode)
-{
+static bool _gt_number_symbol_font(uint32_t unicode) {
     // 0123456789,.:'$€￥
     if( unicode >= 0x30 && unicode <= 0x39 || \
         0x3A == unicode || 0x2C == unicode || 0x2E == unicode || \
@@ -147,27 +129,20 @@ static bool _gt_number_symbol_font(uint32_t unicode)
     return false;
 }
 
-static uint32_t _get_font_style(gt_font_st *font, uint32_t unicode)
-{
+static uint32_t _get_font_style(gt_font_st *font, uint32_t unicode) {
     gt_font_style_en_cn_et style_type = 0;
-    uint32_t font_style;
-    if(GT_CFG_DEFAULT_FONT_FAMILY_NUMB != font->info.style_numb && _gt_number_symbol_font(unicode)){
-        font_style = font->info.style_numb;
+    uint16_t font_style = font->info.style_fl;
+
+    if (GT_CFG_DEFAULT_FONT_FAMILY_NUMB != font->info.style_numb && _gt_number_symbol_font(unicode)) {
+        return font->info.style_numb;
     }
-    else{
-        style_type = _gt_is_style_cn_or_en(unicode, font->info.encoding);
-        if(STYLE_CN == style_type){
-            font_style = font->info.style_cn;
-        }
-        else if(STYLE_EN_ASCII == style_type){
-            font_style = font->info.style_en;
-        }
-        else{
-            font_style = font->info.style_fl;
-        }
+    style_type = _gt_is_style_cn_or_en(unicode, font->info.encoding);
+    if (STYLE_CN == style_type) {
+        font_style = font->info.style_cn;
+    } else if (STYLE_EN_ASCII == style_type) {
+        font_style = font->info.style_en;
     }
     return font_style;
-
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -534,7 +509,7 @@ default_font:
         if(1 == font_style) {
 #if GT_CFG_USE_FONT_16_ASCII == 1
             temp = 32;
-            gt_memcpy(&font->res[idx_read], &ascii_16[ (unicode-0x20)<<5 ], 32);
+            gt_memcpy(&font->res[idx_read], &_ascii_16[ (unicode-0x20)<<5 ], 32);
             ret = GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH;
 #endif
         }
@@ -1417,8 +1392,10 @@ void gt_py_input_method_clean(gt_py_input_method_st* py_input_method)
     py_input_method->ascii[py_input_method->ascii_numb] = '\0';
 #endif
 }
+
+
 #if GT_CFG_USE_FONT_16_ASCII == 1
-static const uint8_t ascii_16[] = {
+static const uint8_t _ascii_16[] = {
     //
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
     //!
