@@ -1222,35 +1222,28 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
         }
 
     _disp_font:
-        if (over_length < 2) {
-            if (is_convertor_language(lan) && (idx < txt_len)) {
-                if (bidi_max <= bidi_len) {
-                    ++bidi_max;
-                    bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
-                }
-                bidi[bidi_len].idx = idx_len;
-                bidi[bidi_len].len = idx_step;
-                bidi[bidi_len].flag = lan;
-                ++bidi_len;
+        if (is_convertor_language(lan)) {
+            if (bidi_max <= bidi_len) {
+                ++bidi_max;
+                bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
             }
-            idx_len = (idx < txt_len) ? idx_len + idx_step : idx_len;
-        } else {
-            if (is_convertor_language(lan)) {
-                if (bidi_max <= bidi_len) {
-                    ++bidi_max;
-                    bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
-                }
-                bidi[bidi_len].idx = idx_len;
-                bidi[bidi_len].len = lan_len;
-                bidi[bidi_len].flag = lan;
-                ++bidi_len;
+            bidi[bidi_len].idx = idx_len;
+            bidi[bidi_len].flag = lan;
 
+            if (over_length < 2 && idx < txt_len) {
+                bidi[bidi_len].len = idx_step;
+                idx_len = idx_len + idx_step;
+            } else {
+                bidi[bidi_len].len = lan_len;
                 idx_len = lan_len;
                 disp_w = 0;
-            } else {
-                idx_len = over_length_offset;
-                disp_w = 0;
             }
+            ++bidi_len;
+        } else if (over_length < 2) {
+            idx_len = (idx < txt_len) ? idx_len + idx_step : idx_len;
+        } else {
+            idx_len = over_length_offset;
+            disp_w = 0;
         }
         /** align to left, center or right */
         if (!cov_flag_ol) {
