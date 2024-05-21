@@ -375,16 +375,12 @@ uint8_t gt_gb_check_char(const uint8_t *dst, uint16_t pos, uint32_t* font_code)
  */
 gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode, uint8_t encoding)
 {
-    if(GT_ENCODING_GB == encoding) {
-        if(unicode <= 0x7F) {
-            return STYLE_EN_ASCII;
-        }
-        return STYLE_CN;
-    }
     // ascii
-    // if(unicode >= 0x20 && unicode <= 0x7F)
-    if(unicode <= 0x7F) {
+    if (unicode < 0x80) {
         return STYLE_EN_ASCII;
+    }
+    if(GT_ENCODING_GB == encoding) {
+        return STYLE_CN;
     }
     // latin
     else if( (unicode >= 0x0080 && unicode <= 0x02FF) ||
@@ -418,43 +414,36 @@ gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode, uint8_t encoding)
         return STYLE_EN_HINDI;
     }
     // Currency Symbols
-    else if(0x20AC == unicode ) {
+    else if (0x20AC == unicode) {
         return STYLE_EN_Currency;
     }
 
     return STYLE_CN;
 }
 
-bool gt_style_en_data_is_convertor(uint32_t unicode, uint8_t encoding)
+bool _gt_font_is_convertor_language(gt_font_style_en_cn_et style_lang)
+{
+    // if (STYLE_EN_HEBREW == style_lang) {
+    //     return true;
+    // }
+    if (STYLE_EN_ARABIC == style_lang) {
+        return true;
+    }
+    if (STYLE_EN_THAI == style_lang) {
+        return true;
+    }
+    if (STYLE_EN_HINDI == style_lang) {
+        return true;
+    }
+    return false;
+}
+
+bool _gt_font_is_convertor_by(uint32_t unicode, uint8_t encoding)
 {
     gt_font_style_en_cn_et style_lang = _gt_is_style_cn_or_en(unicode, encoding);
 
-    switch(style_lang) {
-        // case STYLE_EN_HEBREW:
-        case STYLE_EN_ARABIC:
-        case STYLE_EN_THAI:
-        case STYLE_EN_HINDI:
-            return true;
-        default:
-            break;
-    }
-    return false;
+    return _gt_font_is_convertor_language(style_lang);
 }
-
-bool is_convertor_language(gt_font_style_en_cn_et style_lang)
-{
-    switch(style_lang) {
-        // case STYLE_EN_HEBREW:
-        case STYLE_EN_ARABIC:
-        case STYLE_EN_THAI:
-        case STYLE_EN_HINDI:
-            return true;
-        default:
-            break;
-    }
-    return false;
-}
-
 
 uint16_t gt_font_get_string_dot(gt_font_st * font)
 {
@@ -462,7 +451,6 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
     uint16_t ret = GT_FONT_TYPE_FLAG_NONE;
 
     while(idx < font->len) {
-        // len = _gt_utf8_to_unicode(&font->utf8[idx], &unicode);
         len = gt_font_one_char_code_len_get((uint8_t * )&font->utf8[idx], &unicode, font->info.encoding);
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
@@ -987,7 +975,7 @@ uint32_t gt_font_split(gt_font_st * fonts, uint32_t width, uint32_t dot_w, uint3
         tmp_font.utf8 = &text[idx];
         tmp_font.len = tmp_len;
 
-        if(is_convertor_language((gt_font_style_en_cn_et)*lan)){
+        if(_gt_font_is_convertor_language((gt_font_style_en_cn_et)*lan)){
             tmp_w = _get_convertor_string_width(&tmp_font, *lan, space, width - *ret_w, &ol_idx, &ol_w);
         }
         else {
@@ -996,7 +984,7 @@ uint32_t gt_font_split(gt_font_st * fonts, uint32_t width, uint32_t dot_w, uint3
         }
 
         if (tmp_w > width && 0 == ol_idx && 0 == idx) {
-            if (is_convertor_language((gt_font_style_en_cn_et)*lan)) {
+            if (_gt_font_is_convertor_language((gt_font_style_en_cn_et)*lan)) {
                 len = ol_idx;
                 *ret_w = ol_w;
             } else {

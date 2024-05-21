@@ -133,7 +133,8 @@ gt_size_t gt_obj_scroll_get_y(gt_obj_st * obj)
  * @param obj obj
  * @param point point ptr
  */
-void _gt_obj_set_process_point(gt_obj_st * obj, gt_point_st * point){
+void _gt_obj_set_process_point(gt_obj_st * obj, gt_point_st * point)
+{
     obj->process_attr.point.x = point->x;
     obj->process_attr.point.y = point->y;
 }

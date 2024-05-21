@@ -1203,7 +1203,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             disp_w -= ret_w;
         }
         if (disp_w > tmp_font.info.size && idx_step != 0) {
-            if (is_convertor_language(lan)) {
+            if (_gt_font_is_convertor_language(lan)) {
                 if (bidi_max <= bidi_len) {
                     ++bidi_max;
                     bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
@@ -1222,7 +1222,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
         }
 
     _disp_font:
-        if (is_convertor_language(lan)) {
+        if (_gt_font_is_convertor_language(lan)) {
             if (bidi_max <= bidi_len) {
                 ++bidi_max;
                 bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
@@ -1330,7 +1330,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             idx_2 += tmp_font.len;
         }
 
-        if (is_convertor_language(lan) && over_length > 1) {
+        if (_gt_font_is_convertor_language(lan) && over_length > 1) {
             idx += idx_len;
             cov_flag_ol = true;
             if (_is_align_reverse(dsc->align)) {
@@ -1523,7 +1523,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
         if (idx_step) {
             string_total_width += ret_w;
         }
-        if (is_convertor_language(lan)) {
+        if (_gt_font_is_convertor_language(lan)) {
             if (bidi_max <= bidi_len) {
                 ++bidi_max;
                 bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));

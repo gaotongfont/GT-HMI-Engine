@@ -33,8 +33,8 @@ typedef enum {
 #ifdef GT_CONFIG_GUI_DRIVER_LIB
     #include "../../driver/gt_gui_driver.h"
 #endif /* GT_CONFIG_GUI_DRIVER_LIB */
-    extern int GT_Get_Font_Width(unsigned long fontcode, unsigned int font_option, unsigned int size , unsigned int gray , unsigned char* pBits);
-    extern int GT_Get_Font_Height(unsigned long fontcode, unsigned int font_option, unsigned int size , unsigned int gray);
+    extern int GT_Get_Font_Width(unsigned long fontcode, unsigned int font_option, unsigned int size, unsigned int gray, unsigned char* pBits);
+    extern int GT_Get_Font_Height(unsigned long fontcode, unsigned int font_option, unsigned int size, unsigned int gray);
     extern char GT_Check_Is_Vec(unsigned int font_option);
     extern struct gt_font_func_s* GT_Get_Font_Func_S(unsigned int style);
     extern unsigned char GT_Get_Font_Type(unsigned int style);
@@ -175,6 +175,9 @@ typedef struct gt_py_input_method_s {
 /* macros ---------------------------------------------------------------*/
 
 
+
+/* global functions / API interface -------------------------------------*/
+
 /* py input method API interface -------------------------------------*/
 gt_py_input_method_st* gt_py_input_method_create(void);
 void gt_py_input_method_push_ascii(gt_py_input_method_st* py_input_method, uint8_t ch);
@@ -188,7 +191,6 @@ void gt_py_input_method_select_text(gt_py_input_method_st* py_input_method, uint
 void gt_py_input_method_clean(gt_py_input_method_st* py_input_method);
 
 
-/* global functions / API interface -------------------------------------*/
 void gt_font_info_init(gt_font_info_st *font_info);
 void gt_font_info_update_font_thick(gt_font_info_st *font_info);
 
@@ -257,7 +259,8 @@ uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const utf8, uint32_t *
 uint8_t gt_gb_check_char(const uint8_t *dst, uint16_t pos, uint32_t* font_code);
 
 gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode, uint8_t encoding);
-bool gt_style_en_data_is_convertor(uint32_t unicode, uint8_t encoding);
+bool _gt_font_is_convertor_language(gt_font_style_en_cn_et style_lang);
+bool _gt_font_is_convertor_by(uint32_t unicode, uint8_t encoding);
 uint16_t gt_font_get_word_width_figure_up(const uint8_t* data, uint16_t dot_w, uint16_t dot_h, uint8_t gray);
 
 /**
@@ -273,7 +276,6 @@ int gt_font_convertor_data_get(font_convertor_st *convert, uint32_t pos);
 
 uint32_t gt_font_split(gt_font_st *fonts, uint32_t width, uint32_t dot_w, uint32_t space, uint32_t *ret_w, uint8_t * lan, uint32_t * lan_len);
 bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_t r2l_lan);
-bool is_convertor_language(gt_font_style_en_cn_et style_lang);
 uint8_t right_to_left_lan_get(uint16_t style);
 
 uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint32_t max_w, uint16_t space, uint32_t * ret_max_w);

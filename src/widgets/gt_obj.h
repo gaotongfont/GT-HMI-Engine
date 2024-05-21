@@ -41,7 +41,7 @@ typedef struct _gt_obj_event_attr_s {
  * @brief save all indev/disp/others dev data
  */
 typedef struct _gt_obj_process_attr_s {
-    gt_point_st point;      //click point(note: the point is for obj)
+    gt_point_st point;      //click point(note: the point is for object inside offset)
     gt_point_st scroll;     //scroll distance, default is 0
 }gt_obj_process_attr_st;
 
