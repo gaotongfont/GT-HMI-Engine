@@ -252,6 +252,7 @@ void gt_progress_bar_set_pos(gt_obj_st * progress_bar, gt_size_t pos)
         style->pos = pos;
     }
     gt_event_send(progress_bar, GT_EVENT_TYPE_DRAW_START, NULL);
+    gt_event_send(progress_bar, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
 void gt_progress_bar_set_start_end(gt_obj_st * progress_bar, gt_size_t start, gt_size_t end)
