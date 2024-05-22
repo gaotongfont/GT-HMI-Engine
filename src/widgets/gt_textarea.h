@@ -20,6 +20,7 @@ extern "C" {
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "../font/gt_font.h"
+#include "../core/gt_draw.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -149,7 +150,9 @@ void gt_textarea_set_font_thick_en(gt_obj_st * textarea, uint8_t thick);
 void gt_textarea_set_font_thick_cn(gt_obj_st * textarea, uint8_t thick);
 void gt_textarea_set_font_encoding(gt_obj_st * textarea, gt_encoding_et encoding);
 
-
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+gt_font_touch_word_st gt_textarea_get_touch_word(gt_obj_st * textarea);
+#endif
 
 
 #endif  /** GT_CFG_ENABLE_TEXTAREA */

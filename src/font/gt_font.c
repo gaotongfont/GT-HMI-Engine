@@ -21,6 +21,29 @@
 /* Symbol */
 #define GT_CFG_USE_SYMBOL_16x16     1
 
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+#ifndef _GT_FONT_APOSTROPHE_PUNCTUATION_MARK_LEGAL
+    /**
+     * @brief 1: The apostrophe punctuation mark is a legal character, 0: disabled
+     *      "'" such as: "don't" [1: "don't", 0: "don"]
+     *      default: 01
+     */
+    #define _GT_FONT_APOSTROPHE_PUNCTUATION_MARK_LEGAL    01
+#endif
+#endif
+
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+#ifndef _GT_FONT_NUMBER_LEGAL
+    /**
+     * @brief 1: Numbers are legal characters, 0: disabled
+     *      such as: "1234" [1: "1234", 0: ""]
+     *      default: 0
+     */
+    #define _GT_FONT_NUMBER_LEGAL    0
+#endif
+#endif
+
+
 /* private typedef ------------------------------------------------------*/
 
 /* static variables -----------------------------------------------------*/
@@ -1208,6 +1231,59 @@ bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_
     return ret_flag;
 }
 
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+bool gt_font_is_illegal_char(uint32_t unicode)
+{
+#if _GT_FONT_APOSTROPHE_PUNCTUATION_MARK_LEGAL
+    if ('\'' == unicode) { return false; }
+#endif
+    if (unicode < '0') { return true; }
+#if _GT_FONT_NUMBER_LEGAL
+    if (unicode < ':') { return false; }
+#endif
+    if (unicode < 'A') { return true; }
+    if (unicode < '[') { return false; }
+    if (unicode < 'a') { return true; }
+    if (unicode < '{') { return false; }
+    if (unicode < 0x80) { return true; }
+    return false;
+}
+
+uint16_t gt_font_get_word_byte_length(char const * const text, uint16_t length, uint8_t encoding)
+{
+    if (NULL == text) {
+        return 0;
+    }
+    char const * ptr = (char const * )text;
+    char const * end_p = (char const * )text + length;
+    uint32_t unicode = 0;
+    uint8_t len = 0;
+
+    len = gt_font_one_char_code_len_get((uint8_t * )ptr, &unicode, encoding);
+    gt_font_style_en_cn_et remark_sty = STYLE_UNKNOWN;
+    gt_font_style_en_cn_et cur_sty = STYLE_UNKNOWN;
+
+    while (ptr < end_p) {
+        len = gt_font_one_char_code_len_get((uint8_t * )ptr, &unicode, encoding);
+        if (0 == len) {
+            ++ptr;
+            continue;
+        }
+        cur_sty = _gt_is_style_cn_or_en(unicode, encoding);
+        if (ptr == text) {
+            remark_sty = cur_sty;
+        }
+        if (remark_sty != cur_sty) {
+            break;
+        } else if (gt_font_is_illegal_char(unicode)) {
+            break;
+        }
+        ptr += len;
+    }
+
+    return ptr - text;
+}
+#endif
 
 /* py input method API interface -------------------------------------*/
 gt_py_input_method_st* gt_py_input_method_create(void)

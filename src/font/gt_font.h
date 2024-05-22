@@ -41,6 +41,15 @@ typedef enum {
 #endif
 
 /* define ---------------------------------------------------------------*/
+
+#ifndef _GT_FONT_GET_WORD_BY_TOUCH_POINT
+    /**
+     * @brief 1: Get the word by touch point from draw text code run again, 0: disabled
+     *      default: 0
+     */
+    #define _GT_FONT_GET_WORD_BY_TOUCH_POINT    0
+#endif
+
 #define __GT_CHECK_NAME_IS_SAME(_name1, _name2)     (strcmp(#_name1,#_name2)==0)
 
 #define GT_PY_MAX_NUMB  (8)
@@ -90,7 +99,12 @@ typedef struct _gt_text_style_s {
 
     ///< enabled when single-line set to 1.[0: display all word, 1: Characters are omitted at the end of lines]
     uint8_t omit_line       : 1;
-    uint8_t reserved        : 3;
+
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+    ///< 0[default]: disabled touch point logical, 1: using touch point logical to get word
+    uint8_t touch_point     : 1;
+#endif
+    uint8_t reserved        : 2;
 }_gt_text_style_st;
 
 /**
@@ -121,6 +135,10 @@ typedef struct _gt_attr_font_s {
     uint8_t space_x;    ///< The width of the space between characters
     uint8_t space_y;    ///< The distance between rows
 
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+    gt_point_st * touch_point;  ///< touch point logical, @ref reg.touch_point
+#endif
+
     uint8_t align;      ///< Alignment @ gt_align_et
     gt_opa_t opa;       ///< font opa value @GT_OPA_X
 
@@ -138,6 +156,7 @@ typedef enum _gt_encoding_convert_e {
 }gt_encoding_convert_et;
 
 typedef enum _gt_font_style_en_cn_e {
+    STYLE_UNKNOWN = -1,
     STYLE_CN = 0,
     STYLE_EN_ASCII,
     STYLE_EN_LATIN,
@@ -279,6 +298,23 @@ bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_
 uint8_t right_to_left_lan_get(uint16_t style);
 
 uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint32_t max_w, uint16_t space, uint32_t * ret_max_w);
+
+
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+/**
+ * @brief legal char: 0-9, a-z, A-Z, Chinese, English, etc.
+ *      Warn: "'" @ref _GT_FONT_APOSTROPHE_PUNCTUATION_MARK_LEGAL
+ *      number legal enable @ref _GT_FONT_NUMBER_LEGAL
+ *
+ * @param unicode
+ * @return true illegal char
+ * @return false legal char
+ */
+bool gt_font_is_illegal_char(uint32_t unicode);
+uint16_t gt_font_get_word_byte_length(char const * const text, uint16_t length, uint8_t encoding);
+#endif
+
+
 
 #ifdef __cplusplus
 } /*extern "C"*/

@@ -26,6 +26,7 @@
 #include "../others/gt_gc.h"
 #include "gt_fs.h"
 
+#include "../font/gt_font.h"
 #include "../font/gt_symbol.h"
 #include "gt_img_decoder.h"
 
@@ -1079,7 +1080,7 @@ static gt_size_t _get_align_start_y(const gt_attr_font_st * dsc, const gt_area_s
     return _get_align_start_y_by_line(dsc, coords, tmp_font, txt, line_count);
 }
 
-static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, const gt_area_st * view) {
+static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, gt_area_st const * view) {
     const gt_area_st * coords = &dsc->logical_area;
     _gt_draw_font_res_st ret = {0};
     gt_area_st area_font = {
@@ -1096,8 +1097,6 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
         ret.area = area_font;
         return ret;
     }
-
-    draw_ctx->font_limit_area = (gt_area_st * )view;
     gt_font_st tmp_font = {
         .info = dsc->font->info,
         .utf8 = dsc->font->utf8,
@@ -1141,6 +1140,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
         .dst_area   = &area_font,
         .color_fill = dsc->font_color,
         .opa        = dsc->opa,
+        .font_limit_area = (gt_area_st * )view,
     };
     gt_draw_blend_dsc_st blend_dsc_style = blend_dsc;
     blend_dsc_style.color_fill  = gt_color_black();
@@ -1154,6 +1154,11 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
     uint16_t over_length_offset = ((coords->w / ((tmp_font.info.size >> 1) + dsc->space_x) - 1) >> 1) << 1;
     uint8_t over_length = 0;
 
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+    gt_font_touch_word_st tmp_word = {0};
+    gt_font_style_en_cn_et prev_sty = STYLE_UNKNOWN;
+    gt_font_style_en_cn_et cur_sty = STYLE_UNKNOWN;
+#endif
     bool cov_flag_ol = false;
     bool start_x_flag = dsc->reg.enabled_start;
     uint16_t bidi_len = 0, bidi_max = 1, bidi_pos = 0;
@@ -1170,7 +1175,6 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
     // disp
     if (start_x_flag) {
         disp_w = coords->w - (dsc->start_x - coords->x);
-        start_x_flag = true;
     }
 
     while (idx < txt_len) {
@@ -1261,6 +1265,13 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
         area_font.h = font_disp_h;
         while (idx_2 < idx_len) {
             if (bidi_pos < bidi_len && idx_2 == bidi[bidi_pos].idx) {
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+                if (dsc->reg.touch_point) {
+                    idx_2 += bidi[bidi_pos].len;
+                    ++bidi_pos;
+                    continue;
+                }
+#endif
                 tmp_font.utf8 = (char * )&txt_2[idx_2];
                 tmp_font.len = bidi[bidi_pos].len;
                 _draw_text_convertor_split(&tmp_font, bidi[bidi_pos].flag,
@@ -1288,7 +1299,37 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             else if (area_font.x + width < view->x || area_font.x > (view->x + view->w)) {
                 goto next_word_multi_lb;
             }
-
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+            if (dsc->reg.touch_point) {
+                cur_sty = _gt_is_style_cn_or_en(unicode, tmp_font.info.encoding);
+                if (cur_sty != prev_sty) {
+                    /** different language remark start directly */
+                    tmp_word.word_p = tmp_font.utf8;
+                    tmp_word.len = txt_len - idx_2;
+                }
+                if (gt_font_is_illegal_char(unicode)) {
+                    /** illegal char waiting to next remark start */
+                    tmp_word.word_p = NULL;
+                    tmp_word.len = 0;
+                } else if (NULL == tmp_word.word_p) {
+                    tmp_word.word_p = tmp_font.utf8;
+                    tmp_word.len = txt_len - idx_2;
+                }
+                prev_sty = cur_sty;
+                if (dsc->touch_point->y > area_font.y && dsc->touch_point->y < area_font.y + per_line_h) {
+                    if (dsc->touch_point->x > area_font.x && dsc->touch_point->x < area_font.x + width) {
+                        ret.touch_word.len = gt_font_get_word_byte_length(tmp_word.word_p, tmp_word.len, tmp_font.info.encoding);
+                        ret.touch_word.word_p = tmp_word.word_p;
+                    }
+                }
+                gt_font_one_char_code_len_get(&txt_2[idx_2 + tmp_font.len], &unicode, tmp_font.info.encoding);
+                if ('\n' == unicode) {
+                    tmp_word.word_p = NULL;
+                    tmp_word.len = 0;
+                }
+                goto next_word_multi_lb;
+            }
+#endif
             if( !gt_symbol_check_by_unicode(unicode) ){
                 gt_memset(tmp_font.res, 0, data_len);
                 uint16_t ret_style = gt_font_get_string_dot(&tmp_font);
@@ -1421,7 +1462,6 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
         ret.size.y = 0;
         return ret;
     }
-    draw_ctx->font_limit_area = (gt_area_st * )view;
     gt_font_st tmp_font = {
         .info = dsc->font->info,
         .utf8 = dsc->font->utf8,
@@ -1464,6 +1504,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
         .dst_area   = &area_font,
         .color_fill = dsc->font_color,
         .opa        = dsc->opa,
+        .font_limit_area = (gt_area_st * )view,
     };
     gt_draw_blend_dsc_st blend_dsc_style = blend_dsc;
     blend_dsc_style.color_fill  = gt_color_black();
@@ -1649,7 +1690,6 @@ next_word_lb:
     area_font.h = tmp_font.info.size;
 
 ret_handler_lb:
-    draw_ctx->font_limit_area = NULL;
     if (NULL != bidi) {
         gt_mem_free(bidi);
         bidi = NULL;

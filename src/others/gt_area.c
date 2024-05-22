@@ -122,7 +122,7 @@ bool gt_area_intersect_screen(const gt_area_st * screen, const gt_area_st * area
     return true;
 }
 
-bool gt_area_cover_screen(const gt_area_st * area1, const gt_area_st * area2, gt_area_st * area_res)
+bool gt_area_cover_screen(const gt_area_st const * const area1, gt_area_st const * const area2, gt_area_st * area_res)
 {
     gt_size_t a1_x2 = AREA_X2(area1);
     gt_size_t a1_y2 = AREA_Y2(area1);

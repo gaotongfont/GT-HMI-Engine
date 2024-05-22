@@ -259,7 +259,7 @@ static inline void _fill_opacity(
 }
 
 static inline gt_point_st _get_cover_dst_area_and_offset_by(
-    gt_area_st * parent_or_limit, gt_area_st * dst_area, gt_area_st * ret
+    gt_area_st const * const parent_or_limit, gt_area_st const * const dst_area, gt_area_st * ret
 ) {
     gt_point_st offset = {0};
 
@@ -301,8 +301,8 @@ void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
 #endif
     gt_point_st offset = {0};   /** src data buffer offset set */
 
-    if (draw_ctx->font_limit_area) {
-        offset = _get_cover_dst_area_and_offset_by(draw_ctx->font_limit_area, dsc->dst_area, &area_dst);
+    if (dsc->font_limit_area) {
+        offset = _get_cover_dst_area_and_offset_by(dsc->font_limit_area, dsc->dst_area, &area_dst);
     }
 
     if (draw_ctx->parent_area) {
@@ -413,8 +413,8 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
 #endif
     gt_point_st offset = {0};   /** src data buffer offset set */
 
-    if (draw_ctx->font_limit_area) {
-        offset = _get_cover_dst_area_and_offset_by(draw_ctx->font_limit_area, dsc->dst_area, &area_dst);
+    if (dsc->font_limit_area) {
+        offset = _get_cover_dst_area_and_offset_by(dsc->font_limit_area, dsc->dst_area, &area_dst);
     }
 
     if (draw_ctx->parent_area) {

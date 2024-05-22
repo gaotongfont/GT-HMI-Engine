@@ -45,15 +45,24 @@ typedef struct _gt_draw_valid_s {
 typedef struct _gt_draw_ctx_s {
     _gt_draw_valid_st * valid;      ///< Only be used in the screen animation mode
     gt_area_st * parent_area;       ///< The parent area, when obj->inside is true, obj display limited to parent area
-    gt_area_st * font_limit_area;   ///< The area within the control where characters can be displayed only
 
     void * buf;             ///< save the temp buffer
     gt_area_st buf_area;    ///< The display area
 }_gt_draw_ctx_st;
 
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+typedef struct gt_font_touch_word_s {
+    char * word_p;
+    uint16_t len;
+}gt_font_touch_word_st;
+#endif
+
 typedef struct _gt_draw_font_res_s {
     gt_area_st area;
-    gt_point_st size;   /** String total width (0xffff invalid) and height */
+    gt_point_st size;   /** String total width (0xffff invalid) and height(invalid) */
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+    gt_font_touch_word_st touch_word;
+#endif
 }_gt_draw_font_res_st;
 
 typedef struct _gt_radius_mask_t{

@@ -12,12 +12,12 @@
 
 #if GT_CFG_ENABLE_TEXTAREA
 #include "../core/gt_mem.h"
+#include "../core/gt_indev.h"
 #include "../others/gt_log.h"
 #include "string.h"
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
 #include "../others/gt_assert.h"
-#include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
 
 /* private define -------------------------------------------------------*/
@@ -31,6 +31,11 @@ typedef struct _gt_txt_s {
     uint16_t    len;
     uint8_t     mask_style;
 }_gt_txt_st;
+
+typedef struct _textarea_reg_s {
+    uint8_t click_valid : 1;    /** click status: scroll will set to false, only click event valid */
+    uint8_t reserved    : 7;
+}_textarea_reg_st;
 
 typedef struct _gt_textarea_s {
     gt_obj_st obj;
@@ -49,6 +54,13 @@ typedef struct _gt_textarea_s {
     uint8_t space_x;
     uint8_t space_y;
     uint8_t font_align;     //@ref gt_align_et
+
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+    /** detail @ref gt_font.h */
+    gt_font_touch_word_st select_word;
+#endif
+
+    _textarea_reg_st reg;
 }_gt_textarea_st;
 
 
@@ -72,15 +84,9 @@ const gt_obj_class_st gt_textarea_class = {
 
 /* static functions -----------------------------------------------------*/
 
-/**
- * @brief obj init textarea widget call back
- *
- * @param obj
- */
-static void _init_cb(gt_obj_st * obj) {
+static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p) {
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
-    int idx = 0;
-
+    uint16_t idx = 0;
     gt_font_st font = {
         .info       = style->font_info,
         .res        = NULL,
@@ -94,11 +100,64 @@ static void _init_cb(gt_obj_st * obj) {
         .space_y    = style->space_y,
         .align      = style->font_align,
         .opa        = obj->opa,
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+        .reg.touch_point = touch_point_p ? true : false,
+        .touch_point = touch_point_p,
+#endif
     };
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+    if (touch_point_p) {
+        style->select_word.word_p = NULL;
+        style->select_word.len = 0;
+    }
+#endif
 
-    gt_area_st area_font;
-    _gt_draw_font_res_st font_res;
-    area_font = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
+    _gt_draw_font_res_st font_res = {0};
+    gt_area_st area_font = gt_area_reduce(obj->area, style->border_width + 2);
+    font_attr.logical_area = area_font;
+    font_attr.logical_area.y += obj->process_attr.scroll.y;
+    font_attr.logical_area.h = 0xffff;
+
+    uint16_t height = (obj->reduce << 1) + font_attr.font->info.size + (font_attr.space_y << 1);
+    while (idx < style->cnt_contents) {
+        font.utf8               = style->contents[idx].text;
+        font.len                = style->contents[idx].len;
+        font_attr.reg.style     = style->contents[idx].mask_style;
+        font_attr.font_color    = style->contents[idx].color;
+
+        font_res = draw_text(obj->draw_ctx, &font_attr, &area_font);
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+        if (touch_point_p && font_res.touch_word.word_p) {
+            style->select_word = font_res.touch_word;
+            break;
+        }
+#endif
+        font_attr.start_x       = font_res.area.x;
+        font_attr.start_y       = font_res.area.y;
+        font_attr.reg.enabled_start = true;
+        ++idx;
+    }
+
+    if (touch_point_p) {
+        /** Get touch word handler, do not calc all text height to scroll */
+        return ;
+    }
+    height += font_res.area.y - font_attr.logical_area.y;
+    if (height > style->max_height) {
+        style->max_height = height;
+    }
+}
+
+/**
+ * @brief obj init textarea widget call back
+ *
+ * @param obj
+ */
+static void _init_cb(gt_obj_st * obj) {
+    _gt_textarea_st * style = (_gt_textarea_st * )obj;
+
+    /** draw border */
+    gt_area_st area_font = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
@@ -111,28 +170,7 @@ static void _init_cb(gt_obj_st * obj) {
 
     draw_bg(obj->draw_ctx, &rect_attr, &area_font);
 
-    area_font = gt_area_reduce(obj->area, rect_attr.border_width + 2);
-    font_attr.logical_area = area_font;
-    font_attr.logical_area.y += obj->process_attr.scroll.y;
-    font_attr.logical_area.h = 0xffff;
-
-    uint16_t height = (obj->reduce << 1) + font_attr.font->info.size + (font_attr.space_y << 1);
-    while (idx < style->cnt_contents) {
-        font.utf8               = style->contents[idx].text;
-        font.len                = style->contents[idx].len;
-        font_attr.reg.style     = style->contents[idx].mask_style;
-        font_attr.font_color    = style->contents[idx].color;
-        font_res = draw_text(obj->draw_ctx, &font_attr, &area_font);
-        font_attr.start_x       = font_res.area.x;
-        font_attr.start_y       = font_res.area.y;
-        font_attr.reg.enabled_start = true;
-        ++idx;
-    }
-
-    height += font_res.area.y - font_attr.logical_area.y;
-    if (height > style->max_height) {
-        style->max_height = height;
-    }
+    _draw_content_or_get_words(obj, NULL);
 
     // focus
     draw_focus(obj, 0);
@@ -189,7 +227,12 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
+        case GT_EVENT_TYPE_INPUT_PRESSED:
+            style->reg.click_valid = true;
+            break;
+
         case GT_EVENT_TYPE_INPUT_SCROLL:
+            style->reg.click_valid = false;
             if (style->max_height < obj->area.h) {
                 obj->process_attr.scroll.y = 0;
                 break;
@@ -203,6 +246,13 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             break;
 
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
+            if (false == style->reg.click_valid) {
+                break;
+            }
+    #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+            gt_point_st tp = gt_indev_get_point();
+            _draw_content_or_get_words(obj, &tp);
+    #endif
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
@@ -248,13 +298,15 @@ void gt_textarea_set_text(gt_obj_st * textarea, char * text)
         color = style->contents[style->cnt_contents - 1].color;
         _free_contents(textarea);
     }
-    if (text != NULL) {
-        len = strlen(text);
+    if (NULL == text) {
+        return;
     }
+    len = strlen(text);
     style->contents  = gt_mem_malloc( sizeof(_gt_txt_st) );
     style->contents[0].len  = len;
-    style->contents[0].text = gt_mem_malloc(style->contents[0].len);
+    style->contents[0].text = gt_mem_malloc(style->contents[0].len + 1);
     gt_memcpy(style->contents[0].text, text, len);
+    style->contents[0].text[len] = '\0';
     style->contents[0].mask_style = style_mask;
     style->contents[0].color = color;
     style->cnt_contents = 1;
@@ -279,23 +331,23 @@ void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et styl
         return ;
     }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
-    if (style->cnt_contents == 0) {
-        style->contents  = gt_mem_malloc( sizeof(_gt_txt_st) );
-        style->contents[0].len  = strlen(str);
-        style->contents[0].text = gt_mem_malloc(style->contents[0].len);
-        gt_memcpy(style->contents[0].text, str, style->contents[0].len);
-        style->contents[0].mask_style = style_mask;
-        style->contents[0].color = color;
-        style->cnt_contents = 1;
+    uint16_t idx = style->cnt_contents;
+
+    if (idx) {
+        style->contents = gt_mem_realloc(style->contents, (style->cnt_contents + 1) * sizeof(_gt_txt_st));
     } else {
-        style->contents  = gt_mem_realloc(style->contents, (style->cnt_contents + 1) * sizeof(_gt_txt_st) );
-        style->contents[style->cnt_contents].len  = strlen(str);
-        style->contents[style->cnt_contents].text = gt_mem_malloc(style->contents[style->cnt_contents].len);
-        gt_memcpy(style->contents[style->cnt_contents].text, str, style->contents[style->cnt_contents].len);
-        style->contents[style->cnt_contents].mask_style = style_mask;
-        style->contents[style->cnt_contents].color = color;
-        style->cnt_contents++;
+        style->contents = gt_mem_malloc(sizeof(_gt_txt_st));
     }
+    if (NULL == style->contents) {
+        return;
+    }
+    style->contents[idx].len  = strlen(str);
+    style->contents[idx].text = gt_mem_malloc(style->contents[idx].len + 1);
+    gt_memcpy(style->contents[idx].text, str, style->contents[idx].len);
+    style->contents[idx].text[style->contents[idx].len] = '\0';
+    style->contents[idx].mask_style = style_mask;
+    style->contents[idx].color = color;
+    ++style->cnt_contents;
 }
 
 void gt_textarea_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t space_y)
@@ -459,6 +511,18 @@ void gt_textarea_set_font_encoding(gt_obj_st * textarea, gt_encoding_et encoding
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.encoding = encoding;
 }
+
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+gt_font_touch_word_st gt_textarea_get_touch_word(gt_obj_st * textarea)
+{
+    gt_font_touch_word_st ret = {0};
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ret;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    return style->select_word;
+}
+#endif
 
 #endif  /** GT_CFG_ENABLE_TEXTAREA */
 /* end ------------------------------------------------------------------*/
