@@ -796,6 +796,8 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
 
     if (scr_old != new_item.current_scr) {
         gt_disp_load_scr_anim(new_item.current_scr, new_item.anim_type, new_item.time, new_item.delay, true);
+    } else {
+        gt_disp_invalid_area(new_item.current_scr);
     }
 
     return new_item.current_scr_id;
