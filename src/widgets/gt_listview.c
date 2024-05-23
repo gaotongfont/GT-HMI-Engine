@@ -459,20 +459,30 @@ static gt_obj_st * _create_item_icon(gt_obj_st * listview, gt_obj_st * obj, char
     return icon;
 }
 
-static inline void _set_label_prop(gt_obj_st * listview, gt_obj_st * lab) {
+/**
+ * @brief Set label object property
+ *
+ * @param listview
+ * @param lab
+ * @param font_info_p Using extra font information to init label object.
+ */
+static inline void _set_label_prop(gt_obj_st * listview, gt_obj_st * lab, gt_font_info_st * font_info_p) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
+    if (NULL == font_info_p) {
+        font_info_p = &style->font_info;
+    }
 
     gt_label_set_font_align(lab, style->align);
     gt_label_set_font_color(lab, style->font_color);
-    gt_label_set_font_family_cn(lab, style->font_info.style_cn);
-    gt_label_set_font_family_en(lab, style->font_info.style_en);
-    gt_label_set_font_family_fl(lab, style->font_info.style_fl);
-    gt_label_set_font_family_numb(lab, style->font_info.style_numb);
-    gt_label_set_font_size(lab, style->font_info.size);
-    gt_label_set_font_gray(lab, style->font_info.gray);
-    gt_label_set_font_thick_cn(lab, style->font_info.thick_cn);
-    gt_label_set_font_thick_en(lab, style->font_info.thick_en);
-    gt_label_set_font_encoding(lab, style->font_info.encoding);
+    gt_label_set_font_family_cn(lab, font_info_p->style_cn);
+    gt_label_set_font_family_en(lab, font_info_p->style_en);
+    gt_label_set_font_family_fl(lab, font_info_p->style_fl);
+    gt_label_set_font_family_numb(lab, font_info_p->style_numb);
+    gt_label_set_font_size(lab, font_info_p->size);
+    gt_label_set_font_gray(lab, font_info_p->gray);
+    gt_label_set_font_thick_cn(lab, font_info_p->thick_cn);
+    gt_label_set_font_thick_en(lab, font_info_p->thick_en);
+    gt_label_set_font_encoding(lab, font_info_p->encoding);
     gt_label_set_space(lab, style->space_x, style->space_y);
     gt_obj_set_touch_parent(lab, true);
     gt_obj_set_bubble_notify(lab, true);
@@ -496,7 +506,7 @@ static inline void _set_label_prop(gt_obj_st * listview, gt_obj_st * lab) {
 static gt_obj_st * _create_item_label(gt_obj_st * listview, gt_obj_st * obj, char const * text) {
     gt_obj_st * lab = gt_label_create(obj);
 
-    _set_label_prop(listview, lab);
+    _set_label_prop(listview, lab, NULL);
     gt_label_set_text(lab, text);
 
     return lab;
@@ -511,10 +521,11 @@ static gt_obj_st * _create_item_label(gt_obj_st * listview, gt_obj_st * obj, cha
  * @param len encoding byte count, such as: strlen(text).
  * @return gt_obj_st* label object
  */
-static gt_obj_st * _create_item_label_by_len(gt_obj_st * listview, gt_obj_st * obj, char const * text, uint16_t len) {
+static gt_obj_st * _create_item_label_by_len(gt_obj_st * listview, gt_obj_st * obj,
+                                                char const * text, uint16_t len, gt_font_info_st * font_p) {
     gt_obj_st * lab = gt_label_create(obj);
 
-    _set_label_prop(listview, lab);
+    _set_label_prop(listview, lab, font_p);
     gt_label_set_text_by_len(lab, text, len);
 
     return lab;
@@ -683,7 +694,7 @@ gt_obj_st * gt_listview_add_item_by_param(gt_obj_st * listview, gt_listview_para
         pm.left = _create_item_icon(listview, obj, param->left_icon);
     }
     if (param->text_ptr) {
-        pm.center = _create_item_label_by_len(listview, obj, param->text_ptr, param->text_len);
+        pm.center = _create_item_label_by_len(listview, obj, param->text_ptr, param->text_len, param->font_info_p);
     }
     if (param->right_icon) {
         pm.right = _create_item_icon(listview, obj, param->right_icon);
@@ -729,7 +740,7 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
         }
     } else {
         if (NULL == element) {
-            element = _create_item_label_by_len(listview, obj, item->src, item->src_len);
+            element = _create_item_label_by_len(listview, obj, item->src, item->src_len, NULL);
         } else {
             gt_label_set_text_by_len(element, item->src, item->src_len);
         }

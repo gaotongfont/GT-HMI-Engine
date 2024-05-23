@@ -24,6 +24,13 @@ extern "C" {
 
 /* define ---------------------------------------------------------------*/
 
+#ifndef GT_LISTVIEW_CUSTOM_FONT_STYLE
+    /**
+     * @brief 0: Use listview default font style, only support one font style;
+     *        1: One of the listview items uses custom font style, which is defined by user.
+     */
+    #define GT_LISTVIEW_CUSTOM_FONT_STYLE   0
+#endif
 
 
 /* typedef --------------------------------------------------------------*/
@@ -42,6 +49,13 @@ typedef struct gt_listview_param_s {
     char * right_icon;
     char * text_ptr;
     uint16_t text_len;
+#if GT_LISTVIEW_CUSTOM_FONT_STYLE
+    /**
+     * @brief Pointer NULL: use listview default font style;
+     *       NOT NULL: use custom font style, which is defined by user.
+     */
+    gt_font_info_st * font_info_p;
+#endif
 }gt_listview_param_st;
 
 typedef struct gt_listview_custom_item_s {
