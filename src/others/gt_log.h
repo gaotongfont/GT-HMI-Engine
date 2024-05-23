@@ -128,7 +128,7 @@ extern "C" {
 #if defined(GT_USE_LOG)
     #define GT_LOG_A(_tag, _fmt, _arg...)                           \
         do {                                                        \
-            _GT_PRINT("[GT_ALL][%s] " _fmt "\n", _tag, ##_arg);    \
+            _GT_PRINT("[GT_ALL][%s] " _fmt "\n", _tag, ##_arg);     \
         }while(0)
 #else
     #define GT_LOG_A(_tag, _fmt, _arg...)    ((void)0)
