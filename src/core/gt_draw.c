@@ -682,13 +682,17 @@ static inline void _draw_blend_strikethrough(
     gt_draw_blend(draw_ctx, blend_dsc_style);
 }
 
-static uint32_t _draw_text_convertor_split(
+static _gt_draw_font_res_st _draw_text_convertor_split(
     const gt_font_st * fonts, uint8_t lan,
     _gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc,
     const gt_attr_font_st * dsc, gt_size_t font_disp_h,
     gt_draw_blend_dsc_st * blend_dsc_style, const gt_area_st * coords, uint8_t flag_ol)
 {
     uint32_t idx = 0, unicode = 0, tmp = 0;
+    _gt_draw_font_res_st ret = {0};
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+    gt_font_touch_word_st tmp_word = {0};
+#endif
     uint16_t * text = NULL;
     uint8_t * font_buf = NULL;
     text = (uint16_t * )gt_mem_malloc(fonts->len * sizeof(uint16_t));
@@ -708,7 +712,7 @@ static uint32_t _draw_text_convertor_split(
         text[tmp++] = (uint16_t)unicode;
     }
     uint16_t text_len = tmp;
-    uint8_t width, byte_width, font_gray, x_offset;
+    uint8_t width, byte_width, font_gray;
     uint8_t ret_style = gt_font_type_get(tmp_font.info.style_fl);
     _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&tmp_font.info, ret_style, lan, text_len);
 
@@ -786,20 +790,40 @@ static uint32_t _draw_text_convertor_split(
             }
         }
         blend_dsc->dst_area->h = font_disp_h;
+        if (blend_dsc->dst_area->y + style_space_y + blend_dsc->dst_area->h < blend_dsc->font_limit_area->y ||
+            blend_dsc->dst_area->y > (blend_dsc->font_limit_area->y + blend_dsc->font_limit_area->h)) {
+            goto _next_word_cvt_lb;
+        }
+        else if (blend_dsc->dst_area->x + width < blend_dsc->font_limit_area->x ||
+            blend_dsc->dst_area->x > (blend_dsc->font_limit_area->x + blend_dsc->font_limit_area->w)) {
+            goto _next_word_cvt_lb;
+        }
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+        if (dsc->reg.touch_point) {
+            if (dsc->touch_point->y < blend_dsc->dst_area->y ||
+                dsc->touch_point->y > blend_dsc->dst_area->y + blend_dsc->dst_area->h + style_space_y) {
+                goto _next_word_cvt_lb;
+            }
+            if (dsc->touch_point->x < blend_dsc->dst_area->x ||
+                dsc->touch_point->x > blend_dsc->dst_area->x + width) {
+                goto _next_word_cvt_lb;
+            }
+            ret.touch_word.word_p = tmp_font.utf8;
+            ret.touch_word.len = tmp_font.len;
+            goto _next_word_cvt_lb;
+        }
+#endif
+        font_gray = 1;
         if (STYLE_EN_HINDI == lan) {
             byte_width = 2;
-            font_gray = 1;
             blend_dsc->dst_area->w = byte_width << 3;
-            gt_draw_blend_text(draw_ctx, (const gt_draw_blend_dsc_st*)blend_dsc, tmp_font.info.size,
-                                byte_width, font_gray,
-                                (const uint8_t*)&convertor.data[idx * font_size_res.font_per_size]);
+            gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font.info.size, byte_width, font_gray,
+                                &convertor.data[idx * font_size_res.font_per_size]);
         } else {
-            byte_width = (gt_font_get_one_word_width(convertor.fontcode[idx], &tmp_font) + 7 ) >> 3;
-            font_gray = 1;
+            byte_width = (gt_font_get_one_word_width(convertor.fontcode[idx], &tmp_font) + 7) >> 3;
             byte_width = _gt_gray_and_dot_byte_get(&font_gray, byte_width, tmp_font, ret_style);
             blend_dsc->dst_area->w = byte_width << 3;
-            gt_draw_blend_text(draw_ctx, (const gt_draw_blend_dsc_st *)blend_dsc, tmp_font.info.size,
-                                byte_width, font_gray, (const uint8_t*)&convertor.data[0]);
+            gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font.info.size, byte_width, font_gray, &convertor.data[0]);
         }
 
         /* use style */
@@ -811,7 +835,7 @@ static uint32_t _draw_text_convertor_split(
             _draw_blend_strikethrough(draw_ctx, dsc, blend_dsc_style, *blend_dsc->dst_area,
                                         tmp_font.info.size, width, style_space_y);
         }
-
+    _next_word_cvt_lb:
         if (_is_align_reverse(dsc->align)) {
             blend_dsc->dst_area->x -= dsc->space_x;
         } else {
@@ -829,7 +853,8 @@ _ret_handle:
         gt_mem_free(text);
         text = NULL;
     }
-    return fonts->len;
+    ret.area = *blend_dsc->dst_area;
+    return ret;
 }
 
 #if GT_USE_SJPG
@@ -1083,6 +1108,7 @@ static gt_size_t _get_align_start_y(const gt_attr_font_st * dsc, const gt_area_s
 static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, gt_area_st const * view) {
     const gt_area_st * coords = &dsc->logical_area;
     _gt_draw_font_res_st ret = {0};
+    _gt_draw_font_res_st tmp_ret = {0};
     gt_area_st area_font = {
         .x = coords->x, .y = coords->y, .w = dsc->font->info.size, .h = dsc->font->info.size
     };
@@ -1265,19 +1291,17 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
         area_font.h = font_disp_h;
         while (idx_2 < idx_len) {
             if (bidi_pos < bidi_len && idx_2 == bidi[bidi_pos].idx) {
-#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
-                if (dsc->reg.touch_point) {
-                    idx_2 += bidi[bidi_pos].len;
-                    ++bidi_pos;
-                    continue;
-                }
-#endif
                 tmp_font.utf8 = (char * )&txt_2[idx_2];
                 tmp_font.len = bidi[bidi_pos].len;
-                _draw_text_convertor_split(&tmp_font, bidi[bidi_pos].flag,
+                tmp_ret = _draw_text_convertor_split(&tmp_font, bidi[bidi_pos].flag,
                                             draw_ctx, &blend_dsc, dsc, font_disp_h,
                                             &blend_dsc_style, coords,
                                             (over_length < 2 ? 0 : 1));
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+                if (tmp_ret.touch_word.word_p) {
+                    ret.touch_word = tmp_ret.touch_word;
+                }
+#endif
                 ++bidi_pos;
                 idx_2 += tmp_font.len;
                 continue;
@@ -1316,12 +1340,16 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
                     tmp_word.len = txt_len - idx_2;
                 }
                 prev_sty = cur_sty;
-                if (dsc->touch_point->y > area_font.y && dsc->touch_point->y < area_font.y + per_line_h) {
-                    if (dsc->touch_point->x > area_font.x && dsc->touch_point->x < area_font.x + width) {
-                        ret.touch_word.len = gt_font_get_word_byte_length(tmp_word.word_p, tmp_word.len, tmp_font.info.encoding);
-                        ret.touch_word.word_p = tmp_word.word_p;
-                    }
+                if (dsc->touch_point->y < area_font.y || dsc->touch_point->y > area_font.y + per_line_h) {
+                    goto check_next_lf_lb;
                 }
+                if (dsc->touch_point->x < area_font.x || dsc->touch_point->x > area_font.x + width) {
+                    goto check_next_lf_lb;
+                }
+                ret.touch_word.len = gt_font_get_word_byte_length(tmp_word.word_p, tmp_word.len, tmp_font.info.encoding);
+                ret.touch_word.word_p = tmp_word.word_p;
+
+            check_next_lf_lb:
                 gt_font_one_char_code_len_get(&txt_2[idx_2 + tmp_font.len], &unicode, tmp_font.info.encoding);
                 if ('\n' == unicode) {
                     tmp_word.word_p = NULL;
