@@ -40,6 +40,9 @@ typedef struct gt_disp_stack_param_s {
     gt_scr_anim_type_et type;
     uint32_t time;
     uint32_t delay;
+    /**
+     * @brief 0: keep previous screen object alive; 1: free previous screen object
+     */
     uint8_t del_prev_scr : 1;
 #if GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
     /**
