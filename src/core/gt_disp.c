@@ -803,7 +803,15 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
 
 void gt_disp_stack_load_scr(gt_scr_id_t scr_id)
 {
-    gt_disp_stack_load_scr_anim(scr_id, GT_SCR_ANIM_TYPE_NONE, 300, 0, true);
+    gt_disp_stack_param_st param = {
+        .scr_id = scr_id,
+        .type = GT_SCR_ANIM_TYPE_NONE,
+        .time = 300,
+        .delay = 0,
+        .del_prev_scr = true,
+        .ignore_repeat_screen_id = false,
+    };
+    gt_disp_stack_load_scr_anim_st(&param);
 }
 
 void gt_disp_stack_load_scr_anim(gt_scr_id_t scr_id, gt_scr_anim_type_et type, uint32_t time, uint32_t delay, bool del_prev_scr)
