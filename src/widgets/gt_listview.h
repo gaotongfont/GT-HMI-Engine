@@ -53,6 +53,7 @@ typedef struct gt_listview_param_s {
     /**
      * @brief Pointer NULL: use listview default font style;
      *       NOT NULL: use custom font style, which is defined by user.
+     * [Warn] gt_font_info_init() is recommended for initialization of defined variables.
      */
     gt_font_info_st * font_info_p;
 #endif
