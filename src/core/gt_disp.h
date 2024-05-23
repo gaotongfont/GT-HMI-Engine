@@ -42,6 +42,10 @@ typedef struct gt_disp_stack_param_s {
     uint32_t delay;
     uint8_t del_prev_scr : 1;
 #if GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
+    /**
+     * @brief defalut 0: The same screen id will be reloaded before within stack list;
+     *                1: Ignore the same screen id, create a new screen object to load.
+     */
     uint8_t ignore_repeat_screen_id : 1;
 #endif
     uint8_t reserved : 6;
