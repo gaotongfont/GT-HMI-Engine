@@ -88,7 +88,7 @@ extern "C" {
 #if defined(GT_USE_LOG) && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_DEBUG)
     #define GT_LOGD(_tag, _fmt, _arg...)                                                        \
         do {                                                                                    \
-            _GT_PRINT("[GT_DEBG][%s][%s:%s():%d] " _fmt "\n", _tag, __FILE__ __func__, __LINE__, ##_arg); \
+            _GT_PRINT("[GT_DEBG][%s][%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
         }while(0)
 #else
     #define GT_LOGD(_tag, _fmt, _arg...)    ((void)0)
