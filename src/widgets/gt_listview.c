@@ -694,7 +694,11 @@ gt_obj_st * gt_listview_add_item_by_param(gt_obj_st * listview, gt_listview_para
         pm.left = _create_item_icon(listview, obj, param->left_icon);
     }
     if (param->text_ptr) {
+#if GT_LISTVIEW_CUSTOM_FONT_STYLE
         pm.center = _create_item_label_by_len(listview, obj, param->text_ptr, param->text_len, param->font_info_p);
+#else
+        pm.center = _create_item_label_by_len(listview, obj, param->text_ptr, param->text_len, NULL);
+#endif
     }
     if (param->right_icon) {
         pm.right = _create_item_icon(listview, obj, param->right_icon);
