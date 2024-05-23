@@ -21,10 +21,31 @@ extern "C" {
 
 /* define ---------------------------------------------------------------*/
 
+#ifndef GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
+    /**
+     * @brief Ignore repeat screen id, if the screen id is the same as the
+     *      before screen id, it will not be reloaded and free the last
+     *      intermediate page with the same id and the current page.
+     *      [Default]0: The same screen id will be reloaded before within stack list;
+     *               1: Ignore the same screen id, create a new screen object to load.
+     */
+    #define GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID   0
+#endif
 
 
 /* typedef --------------------------------------------------------------*/
 
+typedef struct gt_disp_stack_param_s {
+    gt_scr_id_t scr_id;
+    gt_scr_anim_type_et type;
+    uint32_t time;
+    uint32_t delay;
+    uint8_t del_prev_scr : 1;
+#if GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
+    uint8_t ignore_repeat_screen_id : 1;
+#endif
+    uint8_t reserved : 6;
+}gt_disp_stack_param_st;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -58,6 +79,13 @@ void gt_disp_stack_load_scr(gt_scr_id_t scr_id);
  * @param del_prev_scr true: free previous screen object; false: keep previous screen object alive
  */
 void gt_disp_stack_load_scr_anim(gt_scr_id_t scr_id, gt_scr_anim_type_et type, uint32_t time, uint32_t delay, bool del_prev_scr);
+
+/**
+ * @brief [Use screen stack manager] Use custom param to load and display screen
+ *
+ * @param param @ref gt_disp_stack_param_st
+ */
+void gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const param);
 
 /**
  * @brief [Unused screen stack manager] display screen by default param.

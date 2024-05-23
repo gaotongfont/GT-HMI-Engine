@@ -808,21 +808,43 @@ void gt_disp_stack_load_scr(gt_scr_id_t scr_id)
 
 void gt_disp_stack_load_scr_anim(gt_scr_id_t scr_id, gt_scr_anim_type_et type, uint32_t time, uint32_t delay, bool del_prev_scr)
 {
+    gt_disp_stack_param_st param = {
+        .scr_id = scr_id,
+        .type = type,
+        .time = time,
+        .delay = delay,
+        .del_prev_scr = del_prev_scr,
+        .ignore_repeat_screen_id = false,
+    };
+    gt_disp_stack_load_scr_anim_st(&param);
+}
+
+void gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const param)
+{
+    if (NULL == param) {
+        return;
+    }
     gt_obj_st * scr_old = gt_disp_get_scr();
+    bool del_prev_scr = param->del_prev_scr;
 
     gt_scr_stack_item_st new_item = {
-        .current_scr_id = scr_id,
+        .current_scr_id = param->scr_id,
         .prev_scr_id = -1,
         .prev_scr_alive = NULL,
         .current_scr = NULL,
-        .time = time,
-        .delay = delay,
-        .anim_type = type,
+        .time = param->time,
+        .delay = param->delay,
+        .anim_type = param->type,
     };
     gt_scr_id_t home_id = gt_scr_stack_get_home_scr_id();
 
     /** Has the same page before and pop unused stack item */
     gt_stack_item_st result = gt_scr_stack_has_before(&new_item);
+#if GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
+    if (param->ignore_repeat_screen_id) {
+        result.data = NULL; /** Need to create a new screen to load */
+    }
+#endif
     if (result.data) {
         gt_scr_stack_item_st * same_scr = gt_scr_stack_pop(result.index_from_top);
         new_item.prev_scr_id = same_scr->prev_scr_id;
