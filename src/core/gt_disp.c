@@ -809,7 +809,9 @@ void gt_disp_stack_load_scr(gt_scr_id_t scr_id)
         .time = 300,
         .delay = 0,
         .del_prev_scr = true,
+#if GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
         .ignore_repeat_screen_id = false,
+#endif
     };
     gt_disp_stack_load_scr_anim_st(&param);
 }
@@ -822,7 +824,9 @@ void gt_disp_stack_load_scr_anim(gt_scr_id_t scr_id, gt_scr_anim_type_et type, u
         .time = time,
         .delay = delay,
         .del_prev_scr = del_prev_scr,
+#if GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
         .ignore_repeat_screen_id = false,
+#endif
     };
     gt_disp_stack_load_scr_anim_st(&param);
 }
