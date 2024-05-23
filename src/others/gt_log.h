@@ -88,7 +88,7 @@ extern "C" {
 #if defined(GT_USE_LOG) && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_DEBUG)
     #define GT_LOGD(_tag, _fmt, _arg...)                                                        \
         do {                                                                                    \
-            _GT_PRINT("[GT_DEBG][%s][%s:%s():%d] " _fmt "\n", _tag, "", __func__, __LINE__, ##_arg); \
+            _GT_PRINT("[GT_DEBG][%s][%s:%s():%d] " _fmt "\n", _tag, __FILE__ __func__, __LINE__, ##_arg); \
         }while(0)
 #else
     #define GT_LOGD(_tag, _fmt, _arg...)    ((void)0)
@@ -196,27 +196,27 @@ extern "C" {
         }                                                                                   \
     }while(0)
 
-#define GT_LOG_COLOR_ARR(_arr, _start, _len)      	\
-	do{																								\
-		int i=_start;																		\
-		printf("\n");																		\
-		while(i<_len+_start){														\
-			printf("%s[%d]=%04x  ",#_arr,i,_arr[i].full);								\
-			i++;																					\
-		}																								\
-		printf("\n");																		\
+#define GT_LOG_COLOR_ARR(_arr, _start, _len)            \
+	do{													\
+		int i=_start;									\
+		printf("\n%s:\n", #_arr);						\
+		while(i<_len+_start){							\
+			printf("[%d]=%04x ", i, _arr[i].full);		\
+			i++;										\
+		}												\
+		printf("\n");									\
 	}while(0);
 
 
-#define GT_LOG_ARR(_arr, _start, _len)  \
-    do{																								\
-		int i=_start;																		\
-		printf("\n");																		\
-		while(i<_len+_start){														\
-			printf("%s[%d]=%02x  ",#_arr,i,_arr[i]);								\
-			i++;																					\
-		}																								\
-		printf("\n");																		\
+#define GT_LOG_ARR(_arr, _start, _len)                  \
+    do{                                                 \
+		int i=_start;                                   \
+		printf("\n%s:\n", #_arr);                       \
+		while(i<_len+_start){                           \
+			printf("[%d]=%02x ", i, _arr[i]);           \
+			i++;                                        \
+		}                                               \
+		printf("\n");                                   \
 	}while(0);
 
 #ifdef __cplusplus
