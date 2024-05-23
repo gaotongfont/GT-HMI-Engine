@@ -1130,12 +1130,10 @@ uint8_t right_to_left_lan_get(uint16_t style)
         case 73:
         case 141:
             return STYLE_EN_HEBREW;
-
         case 74:
         case 75:
         case 76:
             return STYLE_EN_ARABIC;
-
         default:
             break;
     }
