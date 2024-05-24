@@ -1323,26 +1323,20 @@ bool gt_symbol_check_by_unicode(uint32_t unicode)
 #include <stdio.h>
 const uint8_t * gt_symbol_get_mask_buf(char * utf8 , uint8_t size)
 {
-    uint16_t cnt = 0 , idx = 0;
-    _gt_symbol_st *tmp_symbol = NULL;
+    uint16_t cnt = 0, idx = 0;
+    _gt_symbol_st * tmp_symbol = NULL;
 
-    if(16 == size)
-    {
+    if(16 == size) {
         cnt = sizeof(symbols_16x16)/sizeof(_gt_symbol_st);
         tmp_symbol = (_gt_symbol_st * )symbols_16x16;
-    }
-    else if(24 == size)
-    {
+    } else if(24 == size) {
         cnt = sizeof(symbols_24x24)/sizeof(_gt_symbol_st);
         tmp_symbol = (_gt_symbol_st * )symbols_24x24;
-    }
-    else
-    {
+    } else {
         return NULL;
     }
 
-    while (idx < cnt)
-    {
+    while (idx < cnt) {
         if( gt_memcmp(utf8, tmp_symbol[idx].utf8, 3) == 0 ){
             return tmp_symbol[idx].mask_buf;
         }

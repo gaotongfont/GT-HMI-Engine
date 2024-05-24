@@ -62,20 +62,34 @@ static inline void _fill_no_opacity(
     if (src_p) {
         if (opa < GT_OPA_MAX) {
             for (y = 0; y < h; y++) {
+#if GT_FLUSH_CONVERT_VERTICAL
+                src_p = (gt_color_t * )color_src_p + y;
+#endif
                 for (x = 0; x < w; x++) {
                     *dst_p = gt_color_mix(*src_p, *dst_p, opa);
                     ++dst_p;
+#if GT_FLUSH_CONVERT_VERTICAL
+                    src_p += w;
+#else
                     ++src_p;
+#endif
                 }
                 dst_p += step_dst_line;
                 src_p += step_src_line;
             }
         } else {
             for (y = 0; y < h; y++) {
+#if GT_FLUSH_CONVERT_VERTICAL
+                src_p = (gt_color_t * )color_src_p + y;
+#endif
                 for (x = 0; x < w; x++) {
                     *dst_p = *src_p;
                     ++dst_p;
+#if GT_FLUSH_CONVERT_VERTICAL
+                    src_p += w;
+#else
                     ++src_p;
+#endif
                 }
                 dst_p += step_dst_line;
                 src_p += step_src_line;
@@ -128,17 +142,33 @@ static inline void _fill_opacity(
         if (opa >= GT_OPA_MAX) {
             /* be called too much */
             for (y = 0; y < h; y++) {
+#if GT_FLUSH_CONVERT_VERTICAL
+                mask_p = (gt_obj_t * )mask + y;
+                src_p = (gt_color_t * )color_src_p + y;
+#endif
                 for (x = 0; x < w; x++) {
                     opa_tmp = *mask_p;
+#if GT_FLUSH_CONVERT_VERTICAL
+                    mask_p += w;
+#else
                     ++mask_p;
+#endif
                     if (opa_tmp >= GT_OPA_MAX) {
                         *dst_p = *src_p;
+#if GT_FLUSH_CONVERT_VERTICAL
+                        src_p += w;
+#else
                         ++src_p;
+#endif
                         ++dst_p;
                         continue;
                     }
                     else if (opa_tmp <= GT_OPA_MIN) {
+#if GT_FLUSH_CONVERT_VERTICAL
+                        src_p += w;
+#else
                         ++src_p;
+#endif
                         ++dst_p;
                         continue;
                     }
@@ -152,7 +182,11 @@ static inline void _fill_opacity(
                     }
                     *dst_p = res_save_c;
                     ++dst_p;
+#if GT_FLUSH_CONVERT_VERTICAL
+                    src_p += w;
+#else
                     ++src_p;
+#endif
                 }
                 dst_p += step_dst_line;
                 src_p += step_src_line;
@@ -162,18 +196,34 @@ static inline void _fill_opacity(
         }
         // opa < GT_OPA_MAX color mixed
         for (y = 0; y < h; y++) {
+#if GT_FLUSH_CONVERT_VERTICAL
+            mask_p = (gt_obj_t * )mask + y;
+            src_p = (gt_color_t * )color_src_p + y;
+#endif
             for (x = 0; x < w; x++) {
                 opa_tmp = (gt_per_255(*mask_p) * opa) >> 15;
+#if GT_FLUSH_CONVERT_VERTICAL
+                mask_p += w;
+#else
                 ++mask_p;
+#endif
                 if (opa_tmp >= GT_OPA_MAX) {
                     *dst_p = *src_p;
                     ++dst_p;
+#if GT_FLUSH_CONVERT_VERTICAL
+                    src_p += w;
+#else
                     ++src_p;
+#endif
                     continue;
                 }
                 else if (opa_tmp <= GT_OPA_MIN) {
                     ++dst_p;
+#if GT_FLUSH_CONVERT_VERTICAL
+                    src_p += w;
+#else
                     ++src_p;
+#endif
                     continue;
                 }
                 if (src_save_c.full != (*src_p).full ||
@@ -186,7 +236,11 @@ static inline void _fill_opacity(
                 }
                 *dst_p = res_save_c;
                 ++dst_p;
+#if GT_FLUSH_CONVERT_VERTICAL
+                src_p += w;
+#else
                 ++src_p;
+#endif
             }
             dst_p += step_dst_line;
             src_p += step_src_line;
@@ -197,18 +251,23 @@ static inline void _fill_opacity(
     // draw circle, color_scr_p is NULL
     if (opa >= GT_OPA_MAX) {
         for (y = 0; y < h; y++) {
+#if GT_FLUSH_CONVERT_VERTICAL
+            mask_p = (gt_opa_t * )mask + y;
+#endif
             for (x = 0; x < w; x++) {
                 opa_tmp = *mask_p;
+#if GT_FLUSH_CONVERT_VERTICAL
+                mask_p += w;
+#else
                 ++mask_p;
+#endif
                 if (opa_tmp >= GT_OPA_MAX) {
                     *dst_p = color_fill;
                     ++dst_p;
-                    ++src_p;
                     continue;
                 }
                 else if (opa_tmp <= GT_OPA_MIN) {
                     ++dst_p;
-                    ++src_p;
                     continue;
                 }
                 if (dst_save_c.full != (*dst_p).full ||
@@ -219,27 +278,30 @@ static inline void _fill_opacity(
                 }
                 *dst_p = res_save_c;
                 ++dst_p;
-                ++src_p;
             }
             dst_p += step_dst_line;
-            src_p += step_src_line;
             mask_p += step_src_line;
         }
         return;
     }
     for (y = 0; y < h; y++) {
+#if GT_FLUSH_CONVERT_VERTICAL
+        mask_p = (gt_opa_t * )mask + y;
+#endif
         for (x = 0; x < w; x++) {
             opa_tmp = (gt_per_255(*mask_p) * opa) >> 15;
+#if GT_FLUSH_CONVERT_VERTICAL
+            mask_p += w;
+#else
             ++mask_p;
+#endif
             if (opa_tmp >= GT_OPA_MAX) {
                 *dst_p = color_fill;
                 ++dst_p;
-                ++src_p;
                 continue;
             }
             else if (opa_tmp <= GT_OPA_MIN) {
                 ++dst_p;
-                ++src_p;
                 continue;
             }
             if (dst_save_c.full != (*dst_p).full ||
@@ -250,10 +312,8 @@ static inline void _fill_opacity(
             }
             *dst_p = res_save_c;
             ++dst_p;
-            ++src_p;
         }
         dst_p += step_dst_line;
-        src_p += step_src_line;
         mask_p += step_src_line;
     }
 }
