@@ -94,7 +94,7 @@ typedef struct gt_obj_s {
     uint8_t radius;
     uint8_t reduce;
 
-    uint32_t event_mask;            /* send event code add this mask */
+    // uint32_t event_mask;            /* send event code add this mask */
 
     uint32_t state         : 2;     /* obj selected state @ref gt_state_et */
     uint32_t touch_parent  : 1;     /* touch event will be called to parent object */

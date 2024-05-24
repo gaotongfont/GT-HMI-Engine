@@ -928,9 +928,6 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         if (GT_SCR_ANIM_TYPE_NONE != type) {
             type = GT_SCR_ANIM_TYPE_NONE;
         }
-    } else if (scr_old != scr) {
-        gt_event_clr_all_event(scr_old);
-        // gt_event_clr_all_event(scr);     // TODO: why clear event?
     }
 
     scr->using = true;

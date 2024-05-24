@@ -174,18 +174,6 @@ gt_res_t gt_event_send_by_id(gt_id_t widget_id, gt_event_type_et event, void * p
     return gt_event_send(target, event, parms);
 }
 
-void gt_event_clr_all_event(struct gt_obj_s * parent)
-{
-    if( parent == NULL ){
-        return;
-    }
-    gt_size_t idx = 0;
-    parent->event_mask = 0;
-    while(idx < parent->cnt_child){
-        gt_event_clr_all_event( parent->child[idx++] );
-    }
-}
-
 gt_event_type_et gt_event_get_code(gt_event_st * e)
 {
     return e->code;

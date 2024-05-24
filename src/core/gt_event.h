@@ -154,13 +154,6 @@ gt_res_t gt_event_send_to_childs(struct gt_obj_s * parent, gt_event_type_et even
 gt_res_t gt_event_send_by_id(gt_id_t widget_id, gt_event_type_et event, void * parms);
 
 /**
- * @brief clean the object events
- *
- * @param parent Object which want to change
- */
-void gt_event_clr_all_event(struct gt_obj_s * parent);
-
-/**
  * @brief Get the code value for the event
  *
  * @param e The structure of the event

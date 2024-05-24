@@ -206,8 +206,6 @@ static void _init_cb(gt_obj_st * obj) {
     gt_mem_free(str);
     str = NULL;
 
-    gt_event_clr_all_event(style->label);
-
     // focus
     draw_focus(obj , 0);
 
