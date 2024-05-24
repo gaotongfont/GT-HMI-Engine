@@ -117,7 +117,7 @@ typedef struct gt_obj_s {
     uint32_t virtual       : 1;     /* obj virtual state, 0:un-virtual[default], 1:virtual (widget is virtual logic, not entities) */
     uint32_t septal_line_y : 1;     /* draw obj vertical septal line state, 0:un-septal_line, 1:septal_line */
 
-    uint32_t mask_effect   : 1;     /* default object  */
+    uint32_t mask_effect   : 1;     /* Mask effect in the state of object selection: 1: Enabled, 0[default]:Disabled */
     uint32_t trigger_mode  : 1;     /* state toggle trigger mode @ref gt_obj_trigger_mode_et, 0:[default] hold-on; 1: switch */
     uint32_t bubble_notify : 1;     /* The object event will bubble notify to parent, 0: [default] disabled; 1: enabled */
     uint32_t untouchability: 1;     /* The object is untouchable, 0: [default] enabled; 1: disabled, can not be touch */
@@ -125,7 +125,6 @@ typedef struct gt_obj_s {
     uint32_t grow_invert   : 1;     /* The child controls are arranged in a row layout, grow invert */
     uint32_t show_bg       : 1;     /* The object show background, 0: [default] hide; 1: show, bgcolor can be used */
     uint32_t reserved      : 1;
-
 }gt_obj_st;
 
 
