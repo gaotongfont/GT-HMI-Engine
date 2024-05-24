@@ -52,8 +52,10 @@ static bool _gt_init_is_done(void)
 
 static void _gt_port_init(void)
 {
+#ifndef _GT_PORT_SIMULATOR_ENVS
     gt_port_disp_init();
     gt_port_indev_init();
+#endif
     gt_port_vf_init();
     gt_port_src_init();
 }
