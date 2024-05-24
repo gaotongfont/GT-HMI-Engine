@@ -8,6 +8,7 @@
  */
 
  /* include --------------------------------------------------------------*/
+ #include "./gt_handler.h"
 #include "../gt_conf.h"
 #include "gt_mem.h"
 #include "gt_timer.h"
