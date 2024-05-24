@@ -105,6 +105,14 @@ extern "C" {
 
 #define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL_INVALID   80
 
+#ifndef GT_LOADING_INFO_MSG
+    /**
+     * @brief Set the loading information display, 0: no display, 1: display
+     * [Default: 0]
+     */
+    #define GT_LOADING_INFO_MSG     0
+#endif
+
 #ifndef GT_USE_LAYER_TOP
     /**
      * @brief Can be used to set the top layer, the top layer
