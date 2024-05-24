@@ -17,6 +17,7 @@
 #include "../../driver/gt_port_vf.h"
 #include "../../driver/gt_port_src.h"
 #include "../others/gt_anim.h"
+#include "../others/gt_log.h"
 #include "../others/gt_gc.h"
 #include "gt_event.h"
 #include "../extra/gt_extra.h"
