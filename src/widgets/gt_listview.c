@@ -394,6 +394,7 @@ static gt_obj_st * _create_item_obj(gt_obj_st * listview) {
             offset_line = style->column.offset_y;
         } else {
             offset_line = listview->child[listview->cnt_child - 1]->area.y + style->item_height;
+            offset_line += gt_abs(listview->process_attr.scroll.y);
             style->column.offset_y = offset_line;
         }
     } else {
@@ -402,7 +403,7 @@ static gt_obj_st * _create_item_obj(gt_obj_st * listview) {
     gt_obj_st * obj = gt_obj_create(listview);
     /** set object item size */
     obj->area.x = listview->area.x + idx * width;
-    obj->area.y = offset_line;
+    obj->area.y = offset_line + listview->process_attr.scroll.y;
     obj->area.w = width;
     obj->area.h = style->item_height;
 
