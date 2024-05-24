@@ -42,7 +42,7 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY bool _gt_init_done_flag = false;
 
 
 /* static functions -----------------------------------------------------*/
-#if GT_LOADING_INFO_MSG
+#if GT_BOOTING_INFO_MSG
 static void gt_print_info_start(void) {
 	GT_LOG_A(GT_LOG_TAG_BOOT, "------------------- GT-HMI-Engine Start -------------------");
 
@@ -115,7 +115,7 @@ void gt_init(void)
         return ;
     }
 
-#if GT_LOADING_INFO_MSG
+#if GT_BOOTING_INFO_MSG
     gt_print_info_start();
 #endif
 
@@ -133,7 +133,7 @@ void gt_init(void)
 
     _gt_port_init();
 
-#if GT_LOADING_INFO_MSG
+#if GT_BOOTING_INFO_MSG
     gt_print_info_end();
 #endif
 }

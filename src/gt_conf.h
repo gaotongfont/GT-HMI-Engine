@@ -105,12 +105,12 @@ extern "C" {
 
 #define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL_INVALID   80
 
-#ifndef GT_LOADING_INFO_MSG
+#ifndef GT_BOOTING_INFO_MSG
     /**
-     * @brief Set the loading information display, 0: no display, 1: display
+     * @brief Print Engine information when booting, 0: no display, 1: display
      * [Default: 0]
      */
-    #define GT_LOADING_INFO_MSG     0
+    #define GT_BOOTING_INFO_MSG     0
 #endif
 
 #ifndef GT_USE_LAYER_TOP
