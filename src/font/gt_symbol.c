@@ -10,6 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "./gt_symbol.h"
 #include "string.h"
+#include "stdio.h"
 #include "../core/gt_mem.h"
 
 /* private define -------------------------------------------------------*/
@@ -1315,12 +1316,12 @@ static const _gt_symbol_st symbols_24x24[] = {
  */
 bool gt_symbol_check_by_unicode(uint32_t unicode)
 {
-    if( unicode > 0xE000 && unicode < 0xF8FF ){
+    if (unicode > 0xE000 && unicode < 0xF8FF) {
         return true;
     }
     return false;
 }
-#include <stdio.h>
+
 const uint8_t * gt_symbol_get_mask_buf(char * utf8 , uint8_t size)
 {
     uint16_t cnt = 0, idx = 0;
