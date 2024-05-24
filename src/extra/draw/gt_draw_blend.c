@@ -143,7 +143,7 @@ static inline void _fill_opacity(
             /* be called too much */
             for (y = 0; y < h; y++) {
 #if GT_FLUSH_CONVERT_VERTICAL
-                mask_p = (gt_obj_t * )mask + y;
+                mask_p = (gt_opa_t * )mask + y;
                 src_p = (gt_color_t * )color_src_p + y;
 #endif
                 for (x = 0; x < w; x++) {
@@ -197,7 +197,7 @@ static inline void _fill_opacity(
         // opa < GT_OPA_MAX color mixed
         for (y = 0; y < h; y++) {
 #if GT_FLUSH_CONVERT_VERTICAL
-            mask_p = (gt_obj_t * )mask + y;
+            mask_p = (gt_opa_t * )mask + y;
             src_p = (gt_color_t * )color_src_p + y;
 #endif
             for (x = 0; x < w; x++) {
