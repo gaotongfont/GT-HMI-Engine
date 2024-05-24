@@ -94,8 +94,6 @@ typedef struct gt_obj_s {
     uint8_t radius;
     uint8_t reduce;
 
-    // uint32_t event_mask;            /* send event code add this mask */
-
     uint32_t state         : 2;     /* obj selected state @ref gt_state_et */
     uint32_t touch_parent  : 1;     /* touch event will be called to parent object */
     uint32_t using         : 1;     /* screen was using or not, not the widgets object. 0:using [Can not be free memory], 1:free */
