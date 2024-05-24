@@ -9,10 +9,10 @@
 
  /* include --------------------------------------------------------------*/
  #include "./gt_handler.h"
-#include "../gt_conf.h"
-#include "gt_mem.h"
-#include "gt_timer.h"
 #include "stdbool.h"
+#include "../gt_conf.h"
+#include "./gt_mem.h"
+#include "./gt_timer.h"
 #include "../../driver/gt_port_disp.h"
 #include "../../driver/gt_port_indev.h"
 #include "../../driver/gt_port_vf.h"
