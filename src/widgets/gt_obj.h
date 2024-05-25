@@ -89,9 +89,9 @@ typedef struct gt_obj_s {
     gt_color_t bgcolor;
 
     uint16_t cnt_child;
+    gt_radius_t radius;
     uint8_t cnt_event;
     uint8_t opa;            /* @ref gt_color.h */
-    uint8_t radius;
     uint8_t reduce;
 
     uint32_t state         : 2;     /* obj selected state @ref gt_state_et */

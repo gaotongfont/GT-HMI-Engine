@@ -37,15 +37,14 @@ typedef struct _gt_btn_s {
     char * text;
     _gt_vector_st * contents;
 
-    gt_color_t color_background;
     gt_color_t color_pressed;
     gt_color_t font_color;
     gt_color_t font_color_pressed;
     gt_color_t color_border;
-    gt_size_t  radius;
-    uint8_t border_width;
 
     gt_font_info_st font_info;
+
+    uint8_t border_width;
 
     _gt_btn_reg_st reg;
     uint8_t font_align;     //@ref gt_align_et
@@ -90,19 +89,19 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
 
     // set default size
-    if( btn->area.w == 0 || btn->area.h == 0){
+    if (btn->area.w == 0 || btn->area.h == 0) {
         btn->area.w = style->font_info.size*strlen(style->text) + 32;
         btn->area.h = style->font_info.size+16;
     }
-    if( style->radius == 0 ){
+    if (btn->radius == 0) {
         radius = btn->area.h >> 2;
-    }else{
-        radius = style->radius;
+    } else {
+        radius = btn->radius;
     }
-    if( gt_obj_get_state(btn) != GT_STATE_NONE ){
+    if (gt_obj_get_state(btn) != GT_STATE_NONE) {
         fg_color = style->color_pressed;
-    }else{
-        fg_color = style->color_background;
+    } else {
+        fg_color = btn->bgcolor;
     }
 
     /* base shape */
@@ -300,13 +299,13 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent)
         return obj;
     }
     obj->fixed = false;
+    obj->radius = 4;
     _gt_btn_st * style = (_gt_btn_st * )obj;
 
     style->text = gt_mem_malloc(sizeof("btn"));
     strcpy(style->text, "btn");
-    style->radius           = 4;
     style->color_pressed    = gt_color_hex(0x0097e6);    //default color_selected
-    style->color_background = gt_color_hex(0x00a8ff);    //default color_unselected
+    obj->bgcolor            = gt_color_hex(0x00a8ff);    //default color_unselected
     style->color_border     = gt_color_hex(0x00a8ff);    //default color_border
     style->border_width     = 0;
     style->reg.fill         = 1;
@@ -331,11 +330,7 @@ void gt_btn_set_color_pressed(gt_obj_st * btn, gt_color_t color)
 
 void gt_btn_set_color_background(gt_obj_st * btn, gt_color_t color)
 {
-    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
-        return ;
-    }
-    _gt_btn_st * style = (_gt_btn_st * )btn;
-    style->color_background = color;
+    gt_obj_set_bgcolor(btn, color);
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -486,13 +481,12 @@ void gt_btn_set_font_family_numb(gt_obj_st * btn, gt_family_t font_family_numb)
     style->font_info.style_numb = font_family_numb;
 }
 
-void gt_btn_set_radius(gt_obj_st * btn, uint8_t radius)
+void gt_btn_set_radius(gt_obj_st * btn, gt_radius_t radius)
 {
     if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
         return ;
     }
-    _gt_btn_st * style = (_gt_btn_st * )btn;
-    style->radius = radius;
+    btn->radius = radius;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

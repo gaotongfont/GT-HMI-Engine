@@ -121,7 +121,7 @@ void gt_btn_set_space(gt_obj_st * btn, uint8_t space_x, uint8_t space_y);
  * @param btn button obj
  * @param radius radius size
  */
-void gt_btn_set_radius(gt_obj_st * btn, uint8_t radius);
+void gt_btn_set_radius(gt_obj_st * btn, gt_radius_t radius);
 
 /**
  * @brief Button add switching status text content
