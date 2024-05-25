@@ -46,7 +46,6 @@ typedef struct _gt_textarea_s {
     gt_color_t color_background;
     gt_color_t color_border;
     uint8_t border_width;
-    gt_size_t border_radius;
 
     gt_font_info_st font_info;
 
@@ -161,7 +160,7 @@ static void _init_cb(gt_obj_st * obj) {
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.radius = style->border_radius;
+    rect_attr.radius = obj->radius;
     rect_attr.border_width = style->border_width;
     rect_attr.reg.is_fill = 1;
     rect_attr.bg_color = style->color_background;
@@ -269,6 +268,7 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
         return obj;
     }
     obj->fixed = false;
+    obj->radius = 4;
 
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
     gt_font_info_init(&style->font_info);
@@ -279,7 +279,6 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
     style->space_x           = 0;
     style->space_y           = 0;
     style->color_border      = gt_color_hex(0xc7c7c7);
-    style->border_radius     = 4;
     style->border_width      = 2;
     return obj;
 }
@@ -441,13 +440,12 @@ void gt_textarea_set_border_color(gt_obj_st * textarea, gt_color_t color)
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_textarea_set_radius(gt_obj_st * textarea, gt_size_t radius)
+void gt_textarea_set_radius(gt_obj_st * textarea, gt_radius_t radius)
 {
     if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
         return ;
     }
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
-    style->border_radius = radius;
+    textarea->radius = radius;
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

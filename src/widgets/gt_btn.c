@@ -75,7 +75,7 @@ const gt_obj_class_st gt_btn_class = {
 
 static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     _gt_btn_st * style = (_gt_btn_st * )btn;
-    gt_size_t radius;               //widget attr
+    gt_radius_t radius;
 
     gt_color_t fg_color;
     gt_font_st font = {

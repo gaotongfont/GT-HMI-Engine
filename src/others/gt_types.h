@@ -67,7 +67,10 @@ typedef int16_t gt_stack_size_t;
  */
 typedef int16_t gt_file_header_idx_t;
 
-typedef uint8_t gt_radius_t;
+/**
+ * @brief radius unit
+ */
+typedef uint16_t gt_radius_t;
 
 /**
  * @brief The screen turn next screen animation type

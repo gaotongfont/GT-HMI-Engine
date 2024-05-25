@@ -670,7 +670,7 @@ uint8_t gt_obj_get_reduce(gt_obj_st * obj)
     return obj->reduce;
 }
 
-void gt_obj_set_radius(gt_obj_st * obj, uint8_t radius)
+void gt_obj_set_radius(gt_obj_st * obj, gt_radius_t radius)
 {
     if (NULL == obj) {
         return ;
@@ -678,7 +678,7 @@ void gt_obj_set_radius(gt_obj_st * obj, uint8_t radius)
     obj->radius = radius;
 }
 
-uint8_t gt_obj_get_radius(gt_obj_st * obj)
+gt_radius_t gt_obj_get_radius(gt_obj_st * obj)
 {
     if (NULL == obj) {
         return 0;

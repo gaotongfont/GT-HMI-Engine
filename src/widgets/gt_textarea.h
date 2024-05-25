@@ -126,7 +126,7 @@ void gt_textarea_set_border_color(gt_obj_st * textarea, gt_color_t color);
  * @param textarea
  * @param radius 4[defalut]
  */
-void gt_textarea_set_radius(gt_obj_st * textarea, gt_size_t radius);
+void gt_textarea_set_radius(gt_obj_st * textarea, gt_radius_t radius);
 
 /**
  * @brief set textarea chinese font style

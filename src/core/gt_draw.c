@@ -1833,7 +1833,7 @@ _gt_radius_dat radius_dat[] = {
 void gt_draw_arch(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st  *blend_dsc,uint8_t *mask_left_up,uint8_t *mask_right_up,const gt_area_st * coords)
 {
     gt_size_t x = blend_dsc->mask_area->x;
-    uint8_t radius = blend_dsc->mask_area->w;
+    gt_radius_t radius = blend_dsc->mask_area->w;
     uint8_t * mask_right_down = mask_left_up;
     uint8_t * mask_left_down = mask_right_up;
 
