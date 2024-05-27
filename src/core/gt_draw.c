@@ -1456,6 +1456,9 @@ static _omit_info_st _omit_get_font_width(gt_font_st * tmp_font) {
     tmp_font->len = gt_font_one_char_code_len_get((char * )&_utf8_dots[0], &unicode, tmp_font->info.encoding);
     ret.width = gt_font_get_one_word_width(unicode, tmp_font) * 3;
     if (ret.width) {
+        if (ret.width < tmp_font->info.size) {
+            ret.width = tmp_font->info.size;
+        }
         ret.utf8 = (char * )&_utf8_dots[0];
         ret.len = sizeof(_utf8_dots);
         return ret;
@@ -1464,6 +1467,9 @@ static _omit_info_st _omit_get_font_width(gt_font_st * tmp_font) {
     tmp_font->utf8 = (char * )&_utf8_full_stops[0];
     tmp_font->len = gt_font_one_char_code_len_get((char * )&_utf8_full_stops[0], &unicode, tmp_font->info.encoding);
     ret.width = gt_font_get_one_word_width(unicode, tmp_font) * 3;
+    if (ret.width < tmp_font->info.size) {
+        ret.width = tmp_font->info.size;
+    }
     ret.utf8 = (char * )&_utf8_full_stops[0];
     ret.len = sizeof(_utf8_full_stops);
     return ret;
