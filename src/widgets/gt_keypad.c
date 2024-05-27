@@ -53,12 +53,11 @@ typedef struct _gt_keypad_s {
 }_gt_keypad_st;
 
 typedef struct _gt_def_style_param_s {
-
     const gt_keypad_map_st *map_list;
-    //
+
     gt_btnmap_disp_special_btn_cb_t _disp_special_btn_cb;
     gt_btnmap_push_btn_kv_cb_t _push_btn_kv_cb;
-    //
+
     uint32_t bg_color;
     uint32_t border_color;
     uint32_t key_bg_color;
@@ -68,15 +67,15 @@ typedef struct _gt_def_style_param_s {
     gt_size_t border_width;
     gt_size_t key_border_width;
     gt_size_t ctrl_key_border_width;
-    gt_size_t radius;
-    gt_size_t key_radius;
-    //
+    gt_radius_t radius;
+    gt_radius_t key_radius;
+
     uint16_t w;
     uint16_t h;
     uint16_t key_h;
-    //
+
     gt_keypad_default_style_st def_style;
-    //
+
     uint8_t map_total;
     uint8_t key_x_space;
     uint8_t key_y_space;
@@ -87,7 +86,7 @@ static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 static inline void _gt_keypad_init_widget(gt_obj_st * keypad);
 static void _scrolling_handler(gt_obj_st * obj);
-int _gt_get_map_index(gt_keypad_map_st *map_list , uint8_t map_total, gt_keypad_type_te type);
+int _gt_get_map_index(gt_keypad_map_st *map_list, uint8_t map_total, gt_keypad_type_te type);
 
 
 /* static variables -----------------------------------------------------*/
@@ -102,10 +101,10 @@ const gt_obj_class_st gt_keypad_class = {
 
 /* keypad default style -----------------------------------------------------*/
 #ifdef _DEF_STYLE_26_KEY
-//
+
 #define _GT_KEYPADS_SPELL_NUMB      (9)
 static const char _gt_spell[_GT_KEYPADS_SPELL_NUMB][8] = {
-    "spell_0" , "spell_1" , "spell_2" , "spell_3" , "spell_4" , "spell_5" , "spell_6" , "spell_7" , "spell_8",
+    "spell_0", "spell_1", "spell_2", "spell_3", "spell_4", "spell_5", "spell_6", "spell_7", "spell_8",
 };
 // h = 34 * 6 + 3 * 7 = 204 + 24 = 225
 static const gt_map_st _low_map_default_26_key[] = {
@@ -164,24 +163,22 @@ static const char * _def_26_key_user_icon_key_list[] = {
 };
 
 static const gt_keypad_map_st _list_default_26_key[] = {
-    {.type = GT_KEYPAD_TYPE_LOWER , .map = _low_map_default_26_key},
-    {.type = GT_KEYPAD_TYPE_UPPER , .map = _up_map_default_26_key},
-    {.type = GT_KEYPAD_TYPE_SYMBOL_EN , .map = _symbol_en_map_default_26_key},
-    {.type = GT_KEYPAD_TYPE_CH , .map = _ch_map_default_26_key},
+    {.type = GT_KEYPAD_TYPE_LOWER, .map = _low_map_default_26_key},
+    {.type = GT_KEYPAD_TYPE_UPPER, .map = _up_map_default_26_key},
+    {.type = GT_KEYPAD_TYPE_SYMBOL_EN, .map = _symbol_en_map_default_26_key},
+    {.type = GT_KEYPAD_TYPE_CH, .map = _ch_map_default_26_key},
 };
 
 
-static int _gt_get_spell_index(char const * const kv)
-{
-    int idx = 0;
+static gt_size_t _gt_get_spell_index(char const * const kv) {
+    gt_size_t idx = 0;
 
-    if( kv == NULL){
+    if (kv == NULL) {
         return -1;
     }
 
-    for ( idx = 0; idx < _GT_KEYPADS_SPELL_NUMB; idx++)
-    {
-        if( strcmp((const char * )_gt_spell[idx], kv) == 0 ){
+    for (idx = 0; idx < _GT_KEYPADS_SPELL_NUMB; idx++) {
+        if(strcmp((const char * )_gt_spell[idx], kv) == 0) {
             return idx;
         }
     }
@@ -189,116 +186,114 @@ static int _gt_get_spell_index(char const * const kv)
     return -1;
 }
 
-static uint8_t* _gt_spell_get_text(gt_py_input_method_st* py_input_mt,  uint8_t index)
-{
-    if(!py_input_mt){
+static uint8_t* _gt_spell_get_text(gt_py_input_method_st* py_input_mt,  uint8_t index) {
+    if (!py_input_mt) {
         return "";
     }
 
-    if(index == 0 && py_input_mt->ascii_numb > 0){
+    if (index == 0 && py_input_mt->ascii_numb > 0) {
         return py_input_mt->ascii;
     }
-    else if(index > 0 && py_input_mt->chinese_numb > 0){
+    else if (index > 0 && py_input_mt->chinese_numb > 0) {
         return py_input_mt->chinese[index-1];
     }
     return "";
 }
 
-static void _def_26_key_push_btn_kv_handler( gt_obj_st* obj,  gt_obj_st* input , const char* const kv)
-{
-    if(!obj || !kv){
+static void _def_26_key_push_btn_kv_handler( gt_obj_st* obj,  gt_obj_st* input, const char* const kv) {
+    if (!obj || !kv) {
         return ;
     }
-    int idx = -1;
-    gt_keypad_type_te tmp_keypad_type;
-    uint16_t type = gt_btnmap_get_map_type(obj);
     gt_py_input_method_st* py_input_mt = gt_btnmap_get_py_input_method(obj);
+    gt_keypad_type_te tmp_keypad_type;
+    gt_size_t idx = -1;
+    uint16_t type = gt_btnmap_get_map_type(obj);
 
-    if( 0 == strcmp(kv , GT_SYMBOL_SPACE)){
-        gt_input_append_value(input , " ");
+    if (0 == strcmp(kv, GT_SYMBOL_SPACE)) {
+        gt_input_append_value(input, " ");
     }
-    else if(0 == strcmp(kv , GT_SYMBOL_BACKSPACE)){
+    else if (0 == strcmp(kv, GT_SYMBOL_BACKSPACE)) {
         if(py_input_mt && GT_KEYPAD_TYPE_CH == type && gt_py_input_method_get_ascii_numb(py_input_mt) > 0){
             gt_py_input_method_pop_ascii(py_input_mt);
             goto _get_chinese;
         }
         gt_input_del_value(input);
     }
-    else if(0 == strcmp(kv , GT_SYMBOL_NEW_LINE)){
-        gt_input_append_value(input , "\n");
+    else if (0 == strcmp(kv, GT_SYMBOL_NEW_LINE)) {
+        gt_input_append_value(input, "\n");
     }
-    else if(0 == strcmp(kv , GT_SYMBOL_UPPER_CASE) || 0 == strcmp(kv , GT_SYMBOL_EN)){
+    else if (0 == strcmp(kv, GT_SYMBOL_UPPER_CASE) || 0 == strcmp(kv, GT_SYMBOL_EN)) {
 
-        idx = _gt_get_map_index((gt_keypad_map_st*)_list_default_26_key , sizeof(_list_default_26_key)/sizeof(gt_keypad_map_st) , GT_KEYPAD_TYPE_LOWER);
+        idx = _gt_get_map_index((gt_keypad_map_st*)_list_default_26_key, sizeof(_list_default_26_key)/sizeof(gt_keypad_map_st), GT_KEYPAD_TYPE_LOWER);
         if(idx < 0){
-            GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d , type = %d", GT_KEYPAD_STYLE_26_KEY , GT_KEYPAD_TYPE_LOWER);
+            GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d, type = %d", GT_KEYPAD_STYLE_26_KEY, GT_KEYPAD_TYPE_LOWER);
             return ;
         }
-        gt_btnmap_set_map( obj , (gt_map_st*)_list_default_26_key[idx].map , GT_KEYPAD_TYPE_LOWER);
+        gt_btnmap_set_map( obj, (gt_map_st*)_list_default_26_key[idx].map, GT_KEYPAD_TYPE_LOWER);
     }
-    else if(0 == strcmp(kv , GT_SYMBOL_LOWER_CASE)){
-        idx = _gt_get_map_index((gt_keypad_map_st*)_list_default_26_key , sizeof(_list_default_26_key)/sizeof(gt_keypad_map_st) , GT_KEYPAD_TYPE_UPPER);
+    else if (0 == strcmp(kv, GT_SYMBOL_LOWER_CASE)) {
+        idx = _gt_get_map_index((gt_keypad_map_st*)_list_default_26_key, sizeof(_list_default_26_key)/sizeof(gt_keypad_map_st), GT_KEYPAD_TYPE_UPPER);
         if(idx < 0){
-            GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d , type = %d", GT_KEYPAD_STYLE_26_KEY , GT_KEYPAD_TYPE_UPPER);
+            GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d, type = %d", GT_KEYPAD_STYLE_26_KEY, GT_KEYPAD_TYPE_UPPER);
             return ;
         }
-        gt_btnmap_set_map( obj , (gt_map_st*)_list_default_26_key[idx].map , GT_KEYPAD_TYPE_UPPER);
+        gt_btnmap_set_map( obj, (gt_map_st*)_list_default_26_key[idx].map, GT_KEYPAD_TYPE_UPPER);
     }
-    else if(0 == strcmp(kv , GT_SYMBOL_WELL_NUMBER)){
+    else if (0 == strcmp(kv, GT_SYMBOL_WELL_NUMBER)) {
         tmp_keypad_type = (type != GT_KEYPAD_TYPE_SYMBOL_EN) ? GT_KEYPAD_TYPE_SYMBOL_EN : GT_KEYPAD_TYPE_LOWER;
-        idx = _gt_get_map_index((gt_keypad_map_st*)_list_default_26_key , sizeof(_list_default_26_key)/sizeof(gt_keypad_map_st) , tmp_keypad_type);
-        if(idx < 0){
-            GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d , type = %d", GT_KEYPAD_STYLE_26_KEY , tmp_keypad_type);
+        idx = _gt_get_map_index((gt_keypad_map_st*)_list_default_26_key, sizeof(_list_default_26_key)/sizeof(gt_keypad_map_st), tmp_keypad_type);
+        if (idx < 0) {
+            GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d, type = %d", GT_KEYPAD_STYLE_26_KEY, tmp_keypad_type);
             return ;
         }
-        gt_btnmap_set_map( obj , (gt_map_st*)_list_default_26_key[idx].map , tmp_keypad_type);
+        gt_btnmap_set_map( obj, (gt_map_st*)_list_default_26_key[idx].map, tmp_keypad_type);
     }
-    else if(0 == strcmp(kv , GT_SYMBOL_CH)){
-        if(!py_input_mt){
+    else if (0 == strcmp(kv, GT_SYMBOL_CH)) {
+        if (!py_input_mt) {
             GT_LOGW(GT_LOG_TAG_GUI, "Keyboard does not create pinyin input method!!!");
             return ;
         }
-        idx = _gt_get_map_index((gt_keypad_map_st*)_list_default_26_key , sizeof(_list_default_26_key)/sizeof(gt_keypad_map_st) , GT_KEYPAD_TYPE_CH);
-        if(idx < 0){
-            GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d , type = %d", GT_KEYPAD_STYLE_26_KEY , GT_KEYPAD_TYPE_CH);
+        idx = _gt_get_map_index((gt_keypad_map_st*)_list_default_26_key, sizeof(_list_default_26_key)/sizeof(gt_keypad_map_st), GT_KEYPAD_TYPE_CH);
+        if (idx < 0) {
+            GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d, type = %d", GT_KEYPAD_STYLE_26_KEY, GT_KEYPAD_TYPE_CH);
             return ;
         }
-        gt_btnmap_set_map( obj , (gt_map_st*)_list_default_26_key[idx].map , GT_KEYPAD_TYPE_CH);
+        gt_btnmap_set_map( obj, (gt_map_st*)_list_default_26_key[idx].map, GT_KEYPAD_TYPE_CH);
     }
-    else if(0 == strcmp(kv , GT_SYMBOL_LEFT)){
+    else if (0 == strcmp(kv, GT_SYMBOL_LEFT)) {
         gt_input_move_left_pos_cursor(input);
     }
-    else if(0 == strcmp(kv , GT_SYMBOL_RIGHT)){
+    else if (0 == strcmp(kv, GT_SYMBOL_RIGHT)) {
         gt_input_move_right_pos_cursor(input);
     }
-    else if(0 == strcmp(kv , GT_SYMBOL_PREV)){
-        if(!py_input_mt || py_input_mt->chinese_numb <= 0) return ;
+    else if (0 == strcmp(kv, GT_SYMBOL_PREV)) {
+        if (!py_input_mt || py_input_mt->chinese_numb <= 0) return ;
         gt_py_input_method_last_page(py_input_mt);
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
     }
-    else if(0 == strcmp(kv , GT_SYMBOL_NEXT)){
+    else if (0 == strcmp(kv, GT_SYMBOL_NEXT)) {
         if(!py_input_mt || py_input_mt->chinese_numb <= 0) return ;
         gt_py_input_method_next_page(py_input_mt);
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
     }
-    else{
+    else {
         idx = _gt_get_spell_index(kv);
-        if(idx < 0 && GT_KEYPAD_TYPE_CH != type){
-            gt_input_append_value(input , (char*)kv);
+        if (idx < 0 && GT_KEYPAD_TYPE_CH != type) {
+            gt_input_append_value(input, (char*)kv);
             return ;
         }
 
-        if(!py_input_mt) return ;
-        //
-        if(idx < 0 && GT_KEYPAD_TYPE_CH == type){
-            if(py_input_mt->ascii_numb >= GT_PY_MAX_NUMB){
+        if (!py_input_mt) return ;
+
+        if (idx < 0 && GT_KEYPAD_TYPE_CH == type) {
+            if (py_input_mt->ascii_numb >= GT_PY_MAX_NUMB) {
                 return ;
             }
 
-            gt_py_input_method_push_ascii(py_input_mt , *kv);
+            gt_py_input_method_push_ascii(py_input_mt, *kv);
 
 _get_chinese:
-            if(!gt_py_input_method_get_chinese(py_input_mt)){
+            if (!gt_py_input_method_get_chinese(py_input_mt)) {
                 gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
                 return ;
             }
@@ -307,31 +302,30 @@ _get_chinese:
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
             return ;
         }
-        else if(0 == idx){
-            uint8_t *tmp_str = _gt_spell_get_text(py_input_mt , idx);
-            gt_input_append_value(input , (char*)tmp_str);
+        else if (0 == idx) {
+            uint8_t *tmp_str = _gt_spell_get_text(py_input_mt, idx);
+            gt_input_append_value(input, (char*)tmp_str);
             gt_py_input_method_clean(py_input_mt);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
             return ;
         }
 
-        uint8_t *tmp_str = _gt_spell_get_text(py_input_mt , idx);
-        gt_input_append_value(input , (char*)tmp_str);
+        uint8_t *tmp_str = _gt_spell_get_text(py_input_mt, idx);
+        gt_input_append_value(input, (char*)tmp_str);
 
-        //
-        gt_py_input_method_select_text(py_input_mt , idx);
+        gt_py_input_method_select_text(py_input_mt, idx);
         gt_py_input_method_chinese_data_handler(py_input_mt);
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
     }
 }
 
-static bool _gt_keypad_check_key_is_ctl(char const * const kv){
-    if( kv == NULL ){
+static bool _gt_keypad_check_key_is_ctl(char const * const kv) {
+    if (kv == NULL) {
         return false;
     }
-    int idx = 0;
-    while( _def_26_key_user_icon_key_list[idx] != NULL ){
-        if( strcmp(_def_26_key_user_icon_key_list[idx], kv) == 0 ){
+    gt_size_t idx = 0;
+    while (_def_26_key_user_icon_key_list[idx] != NULL) {
+        if (strcmp(_def_26_key_user_icon_key_list[idx], kv) == 0) {
             return true;
         }
         idx++;
@@ -339,19 +333,18 @@ static bool _gt_keypad_check_key_is_ctl(char const * const kv){
     return false;
 }
 
-bool _def_26_key_disp_special_btn_handler(gt_obj_st* obj, const char* const kv , gt_attr_font_st* font_attr)
-{
-    if(_gt_keypad_check_key_is_ctl(kv)){
+static bool _def_26_key_disp_special_btn_handler(gt_obj_st* obj, const char* const kv, gt_attr_font_st* font_attr) {
+    if (_gt_keypad_check_key_is_ctl(kv)) {
         return true;
     }
 
-    int idx = _gt_get_spell_index(kv);
-    if(idx < 0){
+    gt_size_t idx = _gt_get_spell_index(kv);
+    if (idx < 0) {
         return false;
     }
 
     gt_py_input_method_st* py_input_mt = gt_btnmap_get_py_input_method(obj);
-    uint8_t *tmp_str = _gt_spell_get_text(py_input_mt , idx);
+    uint8_t *tmp_str = _gt_spell_get_text(py_input_mt, idx);
 
     font_attr->font->utf8 = (char * )tmp_str;
     font_attr->font->len = strlen((const char * )tmp_str);
@@ -359,7 +352,7 @@ bool _def_26_key_disp_special_btn_handler(gt_obj_st* obj, const char* const kv ,
 }
 
 #endif // _DEF_STYLE_26_KEY
-//
+
 #ifdef _DEF_STYLE_OTHER_4x5
 // w = 44 * 4 + 3 * 5 = 176 + 15 = 191
 // h = 44 * 5 + 3 * 6 = 220 + 18 = 238
@@ -398,9 +391,9 @@ static const gt_map_st _numb_map_default_tlb[] = {
 };
 
 static const gt_keypad_map_st _list_default_tlb[] = {
-    {.type = GT_KEYPAD_TYPE_LOWER , .map = _low_map_default_tlb},
-    {.type = GT_KEYPAD_TYPE_UPPER , .map = _up_map_default_tlb},
-    {.type = GT_KEYPAD_TYPE_NUMBER , .map = _numb_map_default_tlb},
+    {.type = GT_KEYPAD_TYPE_LOWER, .map = _low_map_default_tlb},
+    {.type = GT_KEYPAD_TYPE_UPPER, .map = _up_map_default_tlb},
+    {.type = GT_KEYPAD_TYPE_NUMBER, .map = _numb_map_default_tlb},
 };
 #endif // _DEF_STYLE_OTHER_4x5
 //
@@ -427,49 +420,94 @@ static const gt_map_st _numb_map_default_fyb_369[] = {
 };
 
 static const gt_keypad_map_st _list_default_fyb_369[] = {
-    {.type = GT_KEYPAD_TYPE_LOWER , .map = _low_map_default_fyb_369},
-    {.type = GT_KEYPAD_TYPE_UPPER , .map = _up_map_default_fyb_369},
-    {.type = GT_KEYPAD_TYPE_NUMBER , .map = _numb_map_default_fyb_369},
+    {.type = GT_KEYPAD_TYPE_LOWER, .map = _low_map_default_fyb_369},
+    {.type = GT_KEYPAD_TYPE_UPPER, .map = _up_map_default_fyb_369},
+    {.type = GT_KEYPAD_TYPE_NUMBER, .map = _numb_map_default_fyb_369},
 };
 #endif // _DEF_STYLE_OTHER_11x3
 
 static const _gt_def_style_param_st _def_style_list[] = {
-//
+
 #ifdef _DEF_STYLE_26_KEY
     {
-        .def_style = GT_KEYPAD_STYLE_26_KEY, .map_list = _list_default_26_key , .map_total = sizeof(_list_default_26_key)/sizeof(gt_keypad_map_st),
-        .w = 304 , .h = 225 , .radius = 6 ,.bg_color = 0xD2D3D7, .border_width = 0 , .border_color = 0xD2D3D7,
-        .key_h = 34 , .key_radius = 6 ,  .key_bg_color = 0xFFFFFF, .key_border_width = 0 , .key_border_color = 0xFFFFFF,
-        .key_x_space = 3 , .key_y_space = 3 ,
-        ._disp_special_btn_cb = _def_26_key_disp_special_btn_handler, ._push_btn_kv_cb = _def_26_key_push_btn_kv_handler,
-        .ctrl_key_bg_color = 0xBAC1CB,  .ctrl_key_border_width = 0 , .ctrl_key_border_color = 0xBAC1CB,
+        .def_style = GT_KEYPAD_STYLE_26_KEY,
+        .map_list = _list_default_26_key,
+        .map_total = sizeof(_list_default_26_key) / sizeof(gt_keypad_map_st),
+        .w = 304,
+        .h = 225,
+        .radius = 6,
+        .bg_color = 0xD2D3D7,
+        .border_width = 0,
+        .border_color = 0xD2D3D7,
+        .key_h = 34,
+        .key_radius = 6,
+        .key_bg_color = 0xFFFFFF,
+        .key_border_width = 0,
+        .key_border_color = 0xFFFFFF,
+        .key_x_space = 3,
+        .key_y_space = 3,
+        ._disp_special_btn_cb = _def_26_key_disp_special_btn_handler,
+        ._push_btn_kv_cb = _def_26_key_push_btn_kv_handler,
+        .ctrl_key_bg_color = 0xBAC1CB,
+        .ctrl_key_border_width = 0,
+        .ctrl_key_border_color = 0xBAC1CB,
     },
 #endif // _DEF_STYLE_26_KEY
-//
+
 #ifdef _DEF_STYLE_OTHER_4x5
     {
-        .def_style = GT_KEYPAD_STYLE_OTHER_4x5, .map_list = _list_default_tlb , .map_total = sizeof(_list_default_tlb)/sizeof(gt_keypad_map_st),
-        .w = 191 , .h = 238 , .radius = 6 ,.bg_color = 0x0A1143, .border_width = 0 , .border_color = 0x0A1143,
-        .key_h = 44 , .key_radius = 6 ,  .key_bg_color = 0x183581, .key_border_width = 0 , .key_border_color = 0x183581,
-        .key_x_space = 3 , .key_y_space = 3 ,
-        ._disp_special_btn_cb = NULL, ._push_btn_kv_cb = NULL,
-        .ctrl_key_bg_color = 0x183581,  .ctrl_key_border_width = 0 , .ctrl_key_border_color = 0x183581,
+        .def_style = GT_KEYPAD_STYLE_OTHER_4x5,
+        .map_list = _list_default_tlb,
+        .map_total = sizeof(_list_default_tlb)/sizeof(gt_keypad_map_st),
+        .w = 191,
+        .h = 238,
+        .radius = 6,
+        .bg_color = 0x0A1143,
+        .border_width = 0,
+        .border_color = 0x0A1143,
+        .key_h = 44,
+        .key_radius = 6,
+        .key_bg_color = 0x183581,
+        .key_border_width = 0,
+        .key_border_color = 0x183581,
+        .key_x_space = 3,
+        .key_y_space = 3,
+        ._disp_special_btn_cb = NULL,
+        ._push_btn_kv_cb = NULL,
+        .ctrl_key_bg_color = 0x183581,
+        .ctrl_key_border_width = 0,
+        .ctrl_key_border_color = 0x183581,
     },
 #endif // _DEF_STYLE_OTHER_4x5
-//
+
 #ifdef _DEF_STYLE_OTHER_11x3
     {
-        .def_style = GT_KEYPAD_STYLE_OTHER_11x3, .map_list = _list_default_fyb_369 , .map_total = sizeof(_list_default_fyb_369)/sizeof(gt_keypad_map_st),
-        .w = 586 , .h = 126 , .radius = 6 ,.bg_color = 0x000000, .border_width = 0 , .border_color = 0x000000,
-        .key_h = 38 , .key_radius = 6 ,  .key_bg_color = 0x22272C, .key_border_width = 0 , .key_border_color = 0x22272C,
-        .key_x_space = 3 , .key_y_space = 3 ,
-        ._disp_special_btn_cb = NULL, ._push_btn_kv_cb = NULL,
-        .ctrl_key_bg_color = 0x22272C,  .ctrl_key_border_width = 0 , .ctrl_key_border_color = 0x22272C,
+        .def_style = GT_KEYPAD_STYLE_OTHER_11x3,
+        .map_list = _list_default_fyb_369,
+        .map_total = sizeof(_list_default_fyb_369)/sizeof(gt_keypad_map_st),
+        .w = 586,
+        .h = 126,
+        .radius = 6,
+        .bg_color = 0x000000,
+        .border_width = 0,
+        .border_color = 0x000000,
+        .key_h = 38,
+        .key_radius = 6,
+        .key_bg_color = 0x22272C,
+        .key_border_width = 0,
+        .key_border_color = 0x22272C,
+        .key_x_space = 3,
+        .key_y_space = 3,
+        ._disp_special_btn_cb = NULL,
+        ._push_btn_kv_cb = NULL,
+        .ctrl_key_bg_color = 0x22272C,
+        .ctrl_key_border_width = 0,
+        .ctrl_key_border_color = 0x22272C,
     },
 #endif // _DEF_STYLE_OTHER_11x3
 };
 
-void _gt_switch_default_style(gt_obj_st * keypad , gt_keypad_default_style_st def_style)
+void _gt_switch_default_style(gt_obj_st * keypad, gt_keypad_default_style_st def_style)
 {
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
     style->def_style = def_style;
@@ -479,33 +517,33 @@ void _gt_switch_default_style(gt_obj_st * keypad , gt_keypad_default_style_st de
     uint8_t total = sizeof(_def_style_list) / sizeof(_gt_def_style_param_st);
     const _gt_def_style_param_st *list = _def_style_list;
     uint8_t i = 0;
-    for(i = 0 ; i < total ; i++)
+    for(i = 0; i < total; i++)
     {
         if(style->def_style != list[i].def_style){
             continue;
         }
-        gt_keypad_set_radius(keypad , list[i].radius);
-        gt_keypad_set_color_background(keypad , gt_color_hex(list[i].bg_color));
-        gt_keypad_set_border_width_and_color(keypad , list[i].border_width , gt_color_hex(list[i].border_color));
-        gt_keypad_set_key_height(keypad , list[i].key_h);
-        gt_keypad_set_key_radius(keypad , list[i].key_radius);
-        gt_keypad_set_key_color_background(keypad , gt_color_hex(list[i].key_bg_color));
-        gt_keypad_set_key_border_width_and_color(keypad , list[i].key_border_width , gt_color_hex(list[i].key_border_color));
-        gt_keypad_set_key_xy_space(keypad , list[i].key_x_space , list[i].key_y_space);
-        gt_keypad_set_ctrl_key_color_background(keypad , gt_color_hex(list[i].ctrl_key_bg_color));
-        gt_keypad_set_ctrl_key_border_width_and_color(keypad , list[i].ctrl_key_border_width , gt_color_hex(list[i].ctrl_key_border_color));
-        gt_obj_set_size(keypad , list[i].w , list[i].h);
+        gt_keypad_set_radius(keypad, list[i].radius);
+        gt_keypad_set_color_background(keypad, gt_color_hex(list[i].bg_color));
+        gt_keypad_set_border_width_and_color(keypad, list[i].border_width, gt_color_hex(list[i].border_color));
+        gt_keypad_set_key_height(keypad, list[i].key_h);
+        gt_keypad_set_key_radius(keypad, list[i].key_radius);
+        gt_keypad_set_key_color_background(keypad, gt_color_hex(list[i].key_bg_color));
+        gt_keypad_set_key_border_width_and_color(keypad, list[i].key_border_width, gt_color_hex(list[i].key_border_color));
+        gt_keypad_set_key_xy_space(keypad, list[i].key_x_space, list[i].key_y_space);
+        gt_keypad_set_ctrl_key_color_background(keypad, gt_color_hex(list[i].ctrl_key_bg_color));
+        gt_keypad_set_ctrl_key_border_width_and_color(keypad, list[i].ctrl_key_border_width, gt_color_hex(list[i].ctrl_key_border_color));
+        gt_obj_set_size(keypad, list[i].w, list[i].h);
         // def
         if(GT_KEYPAD_STYLE_26_KEY == style->def_style){
-            gt_keypad_set_key_height_auto_fill(keypad , true);
+            gt_keypad_set_key_height_auto_fill(keypad, true);
         }
         else{
-            gt_keypad_set_key_height_auto_fill(keypad , false);
+            gt_keypad_set_key_height_auto_fill(keypad, false);
         }
         //
-        gt_btnmap_set_disp_special_btn_handler(style->btnmap , list[i]._disp_special_btn_cb);
-        gt_btnmap_set_push_btn_kv_handler(style->btnmap , list[i]._push_btn_kv_cb);
-        gt_keypad_set_map_list(keypad , (gt_keypad_map_st*)list[i].map_list , list[i].map_total);
+        gt_btnmap_set_disp_special_btn_handler(style->btnmap, list[i]._disp_special_btn_cb);
+        gt_btnmap_set_push_btn_kv_handler(style->btnmap, list[i]._push_btn_kv_cb);
+        gt_keypad_set_map_list(keypad, (gt_keypad_map_st*)list[i].map_list, list[i].map_total);
         break;
     }
 }
@@ -627,12 +665,12 @@ static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
     // draw_bg
     draw_bg(keypad->draw_ctx, &rect_attr, &keypad->area);
     //
-    gt_obj_set_size(style->btnmap , keypad->area.w , gt_btnmap_get_btn_height_auto_fill(style->btnmap) ? keypad->area.h : style->btnmap->area.h);
+    gt_obj_set_size(style->btnmap, keypad->area.w, gt_btnmap_get_btn_height_auto_fill(style->btnmap) ? keypad->area.h : style->btnmap->area.h);
 
 }
 
 
-int _gt_get_map_index(gt_keypad_map_st *map_list , uint8_t map_total, gt_keypad_type_te type)
+int _gt_get_map_index(gt_keypad_map_st *map_list, uint8_t map_total, gt_keypad_type_te type)
 {
     uint8_t i = 0;
     for ( i = 0; i < map_total; i++)
@@ -651,7 +689,7 @@ int _gt_get_map_index(gt_keypad_map_st *map_list , uint8_t map_total, gt_keypad_
     return -1;
 }
 
-static void _gt_keypad_switch_type(gt_obj_st * keypad , gt_keypad_type_te type , bool flag)
+static void _gt_keypad_switch_type(gt_obj_st * keypad, gt_keypad_type_te type, bool flag)
 {
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
 
@@ -661,17 +699,17 @@ static void _gt_keypad_switch_type(gt_obj_st * keypad , gt_keypad_type_te type ,
         GT_LOGE(GT_LOG_TAG_GUI, "keypad map_list is NULL!!!");
         return ;
     }
-    int idx = _gt_get_map_index(style->map_list , style->map_total , type);
+    int idx = _gt_get_map_index(style->map_list, style->map_total, type);
     if (idx < 0){
-        GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d , type = %d" , style->def_style , style->type);
+        GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d, type = %d", style->def_style, style->type);
         return ;
     }
     style->type = type;
     keypad->process_attr.scroll.y = 0;
-    gt_obj_set_pos(style->btnmap , keypad->area.x , keypad->area.y);
-    gt_btnmap_set_map(style->btnmap, (gt_map_st*)style->map_list[idx].map , style->map_list[idx].type);
+    gt_obj_set_pos(style->btnmap, keypad->area.x, keypad->area.y);
+    gt_btnmap_set_map(style->btnmap, (gt_map_st*)style->map_list[idx].map, style->map_list[idx].type);
 
-    gt_event_send(keypad , GT_EVENT_TYPE_DRAW_START , NULL);
+    gt_event_send(keypad, GT_EVENT_TYPE_DRAW_START, NULL);
     return ;
 }
 
@@ -695,7 +733,7 @@ gt_obj_st * gt_keypad_create(gt_obj_st * parent)
 
     _gt_keypad_st* style = (_gt_keypad_st*)obj;
     style->btnmap = gt_btnmap_create(obj);
-    gt_obj_set_pos(style->btnmap , obj->area.x , obj->area.y);
+    gt_obj_set_pos(style->btnmap, obj->area.x, obj->area.y);
     gt_obj_set_inside(style->btnmap, true);
     gt_obj_set_fixed(style->btnmap, true);
 
@@ -704,26 +742,26 @@ gt_obj_st * gt_keypad_create(gt_obj_st * parent)
     return obj;
 }
 
-void gt_keypad_set_default_style(gt_obj_st * keypad , gt_keypad_default_style_st def_style)
+void gt_keypad_set_default_style(gt_obj_st * keypad, gt_keypad_default_style_st def_style)
 {
     if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     //
-    _gt_switch_default_style(keypad , def_style);
-    gt_event_send(keypad , GT_EVENT_TYPE_DRAW_START , NULL);
+    _gt_switch_default_style(keypad, def_style);
+    gt_event_send(keypad, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_keypad_set_type(gt_obj_st * keypad , gt_keypad_type_te type)
+void gt_keypad_set_type(gt_obj_st * keypad, gt_keypad_type_te type)
 {
     if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     //
-    _gt_keypad_switch_type(keypad , type , false);
+    _gt_keypad_switch_type(keypad, type, false);
 }
 
-void gt_keypad_set_map_list(gt_obj_st * keypad , gt_keypad_map_st* map_list , uint8_t map_num)
+void gt_keypad_set_map_list(gt_obj_st * keypad, gt_keypad_map_st* map_list, uint8_t map_num)
 {
     if (NULL == map_list) {
         return;
@@ -734,7 +772,7 @@ void gt_keypad_set_map_list(gt_obj_st * keypad , gt_keypad_map_st* map_list , ui
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
     style->map_list = map_list;
     style->map_total = map_num;
-    _gt_keypad_switch_type(keypad , map_list[0].type , true);
+    _gt_keypad_switch_type(keypad, map_list[0].type, true);
 }
 
 void gt_keypad_set_target(gt_obj_st * keypad, gt_obj_st * ta)
@@ -746,7 +784,7 @@ void gt_keypad_set_target(gt_obj_st * keypad, gt_obj_st * ta)
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
-    gt_btnmap_set_input(style->btnmap , ta);
+    gt_btnmap_set_input(style->btnmap, ta);
 }
 
 void gt_keypad_set_color_background(gt_obj_st * keypad, gt_color_t color)
@@ -758,7 +796,7 @@ void gt_keypad_set_color_background(gt_obj_st * keypad, gt_color_t color)
     style->bg_color = color;
 }
 
-void gt_keypad_set_border_width_and_color(gt_obj_st * keypad, gt_size_t width , gt_color_t color)
+void gt_keypad_set_border_width_and_color(gt_obj_st * keypad, gt_size_t width, gt_color_t color)
 {
     if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
@@ -786,7 +824,7 @@ void gt_keypad_set_key_color_background(gt_obj_st * keypad, gt_color_t color)
     gt_btnmap_set_color_background(style->btnmap, color);
 }
 
-void gt_keypad_set_key_border_width_and_color(gt_obj_st * keypad, gt_size_t width , gt_color_t color)
+void gt_keypad_set_key_border_width_and_color(gt_obj_st * keypad, gt_size_t width, gt_color_t color)
 {
     if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
@@ -824,7 +862,7 @@ void gt_keypad_set_key_height(gt_obj_st * keypad, uint16_t height)
     gt_btnmap_set_btn_height(style->btnmap, height);
 }
 
-void gt_keypad_set_key_height_auto_fill(gt_obj_st* keypad , bool auto_fill)
+void gt_keypad_set_key_height_auto_fill(gt_obj_st* keypad, bool auto_fill)
 {
     if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
@@ -833,7 +871,7 @@ void gt_keypad_set_key_height_auto_fill(gt_obj_st* keypad , bool auto_fill)
     gt_btnmap_set_btn_height_auto_fill(style->btnmap, auto_fill);
 }
 
-void gt_keypad_set_key_xy_space(gt_obj_st* keypad , uint8_t x_space , uint8_t y_space)
+void gt_keypad_set_key_xy_space(gt_obj_st* keypad, uint8_t x_space, uint8_t y_space)
 {
     if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
@@ -927,13 +965,13 @@ void gt_keypad_set_ctrl_key_color_background(gt_obj_st * keypad, gt_color_t colo
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     gt_btnmap_set_special_btn_color_background(style->btnmap, color);
 }
-void gt_keypad_set_ctrl_key_border_width_and_color(gt_obj_st * keypad, gt_size_t width , gt_color_t color)
+void gt_keypad_set_ctrl_key_border_width_and_color(gt_obj_st * keypad, gt_size_t width, gt_color_t color)
 {
     if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
-    gt_btnmap_set_special_btn_border_width_and_color(style->btnmap, width , color);
+    gt_btnmap_set_special_btn_border_width_and_color(style->btnmap, width, color);
 }
 void gt_keypad_set_ctrl_key_font_color(gt_obj_st * keypad, gt_color_t color)
 {
