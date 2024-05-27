@@ -396,6 +396,7 @@ void gt_label_set_font_align(gt_obj_st * label, gt_align_et align)
     }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_align = align;
+    gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_label_set_font_family_cn(gt_obj_st * label, gt_family_t family)
