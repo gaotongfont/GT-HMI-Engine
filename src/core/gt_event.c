@@ -122,7 +122,7 @@ static bool _has_the_same_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_even
 /* global functions / API interface -------------------------------------*/
 void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data)
 {
-    if (NULL == obj) {
+    if (NULL == obj || NULL == event) {
         return;
     }
     if (_has_the_same_cb(obj, event, filter)) {
