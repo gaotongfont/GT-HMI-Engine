@@ -39,7 +39,7 @@ typedef struct _gt_keypad_s {
     gt_obj_st obj;
     gt_obj_st* btnmap;
 
-    gt_keypad_map_st *map_list;
+    gt_keypad_map_st * map_list;
 
     gt_color_t bg_color;
     gt_color_t border_color;
@@ -53,7 +53,7 @@ typedef struct _gt_keypad_s {
 }_gt_keypad_st;
 
 typedef struct _gt_def_style_param_s {
-    const gt_keypad_map_st *map_list;
+    const gt_keypad_map_st * map_list;
 
     gt_btnmap_disp_special_btn_cb_t _disp_special_btn_cb;
     gt_btnmap_push_btn_kv_cb_t _push_btn_kv_cb;
@@ -84,9 +84,8 @@ typedef struct _gt_def_style_param_s {
 static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
-static inline void _gt_keypad_init_widget(gt_obj_st * keypad);
 static void _scrolling_handler(gt_obj_st * obj);
-int _gt_get_map_index(gt_keypad_map_st *map_list, uint8_t map_total, gt_keypad_type_te type);
+static gt_size_t _gt_get_map_index(gt_keypad_map_st * map_list, uint8_t map_total, gt_keypad_type_te type);
 
 
 /* static variables -----------------------------------------------------*/
@@ -186,7 +185,7 @@ static gt_size_t _gt_get_spell_index(char const * const kv) {
     return -1;
 }
 
-static uint8_t* _gt_spell_get_text(gt_py_input_method_st* py_input_mt,  uint8_t index) {
+static uint8_t * _gt_spell_get_text(gt_py_input_method_st * py_input_mt,  uint8_t index) {
     if (!py_input_mt) {
         return "";
     }
@@ -200,7 +199,7 @@ static uint8_t* _gt_spell_get_text(gt_py_input_method_st* py_input_mt,  uint8_t 
     return "";
 }
 
-static void _def_26_key_push_btn_kv_handler( gt_obj_st* obj,  gt_obj_st* input, const char* const kv) {
+static void _def_26_key_push_btn_kv_handler( gt_obj_st * obj,  gt_obj_st * input, const char* const kv) {
     if (!obj || !kv) {
         return ;
     }
@@ -427,7 +426,6 @@ static const gt_keypad_map_st _list_default_fyb_369[] = {
 #endif // _DEF_STYLE_OTHER_11x3
 
 static const _gt_def_style_param_st _def_style_list[] = {
-
 #ifdef _DEF_STYLE_26_KEY
     {
         .def_style = GT_KEYPAD_STYLE_26_KEY,
@@ -458,7 +456,7 @@ static const _gt_def_style_param_st _def_style_list[] = {
     {
         .def_style = GT_KEYPAD_STYLE_OTHER_4x5,
         .map_list = _list_default_tlb,
-        .map_total = sizeof(_list_default_tlb)/sizeof(gt_keypad_map_st),
+        .map_total = sizeof(_list_default_tlb) / sizeof(gt_keypad_map_st),
         .w = 191,
         .h = 238,
         .radius = 6,
@@ -484,7 +482,7 @@ static const _gt_def_style_param_st _def_style_list[] = {
     {
         .def_style = GT_KEYPAD_STYLE_OTHER_11x3,
         .map_list = _list_default_fyb_369,
-        .map_total = sizeof(_list_default_fyb_369)/sizeof(gt_keypad_map_st),
+        .map_total = sizeof(_list_default_fyb_369) / sizeof(gt_keypad_map_st),
         .w = 586,
         .h = 126,
         .radius = 6,
@@ -511,41 +509,42 @@ void _gt_switch_default_style(gt_obj_st * keypad, gt_keypad_default_style_st def
 {
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
     style->def_style = def_style;
-    if(GT_KEYPAD_STYLE_NONE == style->def_style) {
+    if (GT_KEYPAD_STYLE_NONE == style->def_style) {
         return ;
     }
+    const _gt_def_style_param_st * item = NULL;
     uint8_t total = sizeof(_def_style_list) / sizeof(_gt_def_style_param_st);
-    const _gt_def_style_param_st *list = _def_style_list;
     uint8_t i = 0;
-    for(i = 0; i < total; i++)
-    {
-        if(style->def_style != list[i].def_style){
-            continue;
+    for(i = 0; i < total; i++) {
+        if (style->def_style == _def_style_list[i].def_style) {
+            item = &_def_style_list[i];
+            break;
         }
-        gt_keypad_set_radius(keypad, list[i].radius);
-        gt_keypad_set_color_background(keypad, gt_color_hex(list[i].bg_color));
-        gt_keypad_set_border_width_and_color(keypad, list[i].border_width, gt_color_hex(list[i].border_color));
-        gt_keypad_set_key_height(keypad, list[i].key_h);
-        gt_keypad_set_key_radius(keypad, list[i].key_radius);
-        gt_keypad_set_key_color_background(keypad, gt_color_hex(list[i].key_bg_color));
-        gt_keypad_set_key_border_width_and_color(keypad, list[i].key_border_width, gt_color_hex(list[i].key_border_color));
-        gt_keypad_set_key_xy_space(keypad, list[i].key_x_space, list[i].key_y_space);
-        gt_keypad_set_ctrl_key_color_background(keypad, gt_color_hex(list[i].ctrl_key_bg_color));
-        gt_keypad_set_ctrl_key_border_width_and_color(keypad, list[i].ctrl_key_border_width, gt_color_hex(list[i].ctrl_key_border_color));
-        gt_obj_set_size(keypad, list[i].w, list[i].h);
-        // def
-        if(GT_KEYPAD_STYLE_26_KEY == style->def_style){
-            gt_keypad_set_key_height_auto_fill(keypad, true);
-        }
-        else{
-            gt_keypad_set_key_height_auto_fill(keypad, false);
-        }
-        //
-        gt_btnmap_set_disp_special_btn_handler(style->btnmap, list[i]._disp_special_btn_cb);
-        gt_btnmap_set_push_btn_kv_handler(style->btnmap, list[i]._push_btn_kv_cb);
-        gt_keypad_set_map_list(keypad, (gt_keypad_map_st*)list[i].map_list, list[i].map_total);
-        break;
     }
+    if (NULL == item) {
+        return;
+    }
+    gt_keypad_set_radius(keypad, item->radius);
+    gt_keypad_set_color_background(keypad, gt_color_hex(item->bg_color));
+    gt_keypad_set_border_width_and_color(keypad, item->border_width, gt_color_hex(item->border_color));
+    gt_keypad_set_key_height(keypad, item->key_h);
+    gt_keypad_set_key_radius(keypad, item->key_radius);
+    gt_keypad_set_key_color_background(keypad, gt_color_hex(item->key_bg_color));
+    gt_keypad_set_key_border_width_and_color(keypad, item->key_border_width, gt_color_hex(item->key_border_color));
+    gt_keypad_set_key_xy_space(keypad, item->key_x_space, item->key_y_space);
+    gt_keypad_set_ctrl_key_color_background(keypad, gt_color_hex(item->ctrl_key_bg_color));
+    gt_keypad_set_ctrl_key_border_width_and_color(keypad, item->ctrl_key_border_width, gt_color_hex(item->ctrl_key_border_color));
+    gt_obj_set_size(keypad, item->w, item->h);
+    // def
+    if (GT_KEYPAD_STYLE_26_KEY == style->def_style) {
+        gt_keypad_set_key_height_auto_fill(keypad, true);
+    } else {
+        gt_keypad_set_key_height_auto_fill(keypad, false);
+    }
+
+    gt_btnmap_set_disp_special_btn_handler(style->btnmap, item->_disp_special_btn_cb);
+    gt_btnmap_set_push_btn_kv_handler(style->btnmap, item->_push_btn_kv_cb);
+    gt_keypad_set_map_list(keypad, (gt_keypad_map_st*)item->map_list, item->map_total);
 }
 /* macros ---------------------------------------------------------------*/
 
@@ -557,9 +556,22 @@ void _gt_switch_default_style(gt_obj_st * keypad, gt_keypad_default_style_st def
  * @param obj
  */
 static void _init_cb(gt_obj_st * obj) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
+    if(obj->area.w == 0 || obj->area.h == 0) return;
 
-    _gt_keypad_init_widget(obj);
+    _gt_keypad_st* style = (_gt_keypad_st*)obj;
+
+    gt_attr_rect_st rect_attr;
+    gt_graph_init_rect_attr(&rect_attr);
+    rect_attr.reg.is_fill = 1;
+    rect_attr.bg_opa = obj->opa;
+    rect_attr.bg_color = style->bg_color;
+    rect_attr.border_color = style->border_color;
+    rect_attr.border_width = style->border_width;
+    rect_attr.radius = obj->radius;
+    // draw_bg
+    draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
+
+    gt_obj_set_size(style->btnmap, obj->area.w, gt_btnmap_get_btn_height_auto_fill(style->btnmap) ? obj->area.h : style->btnmap->area.h);
 }
 
 /**
@@ -568,10 +580,6 @@ static void _init_cb(gt_obj_st * obj) {
  * @param obj
  */
 static void _deinit_cb(gt_obj_st * obj) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
-    if (NULL == obj) {
-        return ;
-    }
 
 }
 
@@ -582,48 +590,17 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param e event
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et tp = gt_event_get_code(e);
 
-    switch (code) {
-    case GT_EVENT_TYPE_DRAW_START:
-        GT_LOGV(GT_LOG_TAG_GUI, "start draw");
+    if (GT_EVENT_TYPE_DRAW_START == tp) {
         gt_disp_invalid_area(obj);
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
-        break;
-
-    case GT_EVENT_TYPE_DRAW_END:
-        GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-        break;
-
-    case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-        GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-        break;
-
-    case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-        GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-        break;
-
-    case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-        GT_LOGV(GT_LOG_TAG_GUI, "PRESSING");
-        break;
-    case GT_EVENT_TYPE_INPUT_PRESSED:
-        GT_LOGV(GT_LOG_TAG_GUI, "PRESSED");
-        break;
-    case GT_EVENT_TYPE_DRAW_REDRAW: {
-        gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-        break;
     }
-    case GT_EVENT_TYPE_INPUT_SCROLL:
-        GT_LOGV(GT_LOG_TAG_GUI, "scroll");
+    else if (GT_EVENT_TYPE_INPUT_SCROLL == tp) {
         _scrolling_handler(obj);
-        break;
-
-    case GT_EVENT_TYPE_INPUT_PRESS_LOST:
-    case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-        GT_LOGV(GT_LOG_TAG_GUI, "processed");
-        break;
-    default:
-        break;
+    }
+    else if (GT_EVENT_TYPE_DRAW_REDRAW == tp) {
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
     }
 }
 
@@ -648,38 +625,15 @@ static void _scrolling_handler(gt_obj_st * obj)
     }
 }
 
-static inline void _gt_keypad_init_widget(gt_obj_st * keypad)
+static gt_size_t _gt_get_map_index(gt_keypad_map_st * map_list, uint8_t map_total, gt_keypad_type_te type)
 {
-    if(keypad->area.w == 0 || keypad->area.h == 0) return;
-
-    _gt_keypad_st* style = (_gt_keypad_st*)keypad;
-
-    gt_attr_rect_st rect_attr;
-    gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.reg.is_fill = 1;
-    rect_attr.bg_opa = keypad->opa;
-    rect_attr.bg_color = style->bg_color;
-    rect_attr.border_color = style->border_color;
-    rect_attr.border_width = style->border_width;
-    rect_attr.radius = keypad->radius;
-    // draw_bg
-    draw_bg(keypad->draw_ctx, &rect_attr, &keypad->area);
-    //
-    gt_obj_set_size(style->btnmap, keypad->area.w, gt_btnmap_get_btn_height_auto_fill(style->btnmap) ? keypad->area.h : style->btnmap->area.h);
-
-}
-
-
-int _gt_get_map_index(gt_keypad_map_st *map_list, uint8_t map_total, gt_keypad_type_te type)
-{
-    uint8_t i = 0;
-    for ( i = 0; i < map_total; i++)
-    {
-        if(type != map_list[i].type){
+    gt_size_t i = -1;
+    for ( i = 0; i < map_total; i++) {
+        if (type != map_list[i].type) {
             continue;
         }
 
-        if(NULL == map_list[i].map){
+        if (NULL == map_list[i].map) {
             GT_LOGE(GT_LOG_TAG_GUI, "keypad map is NULL!!!");
             return -1;
         }
@@ -699,8 +653,8 @@ static void _gt_keypad_switch_type(gt_obj_st * keypad, gt_keypad_type_te type, b
         GT_LOGE(GT_LOG_TAG_GUI, "keypad map_list is NULL!!!");
         return ;
     }
-    int idx = _gt_get_map_index(style->map_list, style->map_total, type);
-    if (idx < 0){
+    gt_size_t idx = _gt_get_map_index(style->map_list, style->map_total, type);
+    if (idx < 0) {
         GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d, type = %d", style->def_style, style->type);
         return ;
     }
@@ -710,7 +664,6 @@ static void _gt_keypad_switch_type(gt_obj_st * keypad, gt_keypad_type_te type, b
     gt_btnmap_set_map(style->btnmap, (gt_map_st*)style->map_list[idx].map, style->map_list[idx].type);
 
     gt_event_send(keypad, GT_EVENT_TYPE_DRAW_START, NULL);
-    return ;
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -747,7 +700,7 @@ void gt_keypad_set_default_style(gt_obj_st * keypad, gt_keypad_default_style_st 
     if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
-    //
+
     _gt_switch_default_style(keypad, def_style);
     gt_event_send(keypad, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -757,7 +710,7 @@ void gt_keypad_set_type(gt_obj_st * keypad, gt_keypad_type_te type)
     if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
-    //
+
     _gt_keypad_switch_type(keypad, type, false);
 }
 
