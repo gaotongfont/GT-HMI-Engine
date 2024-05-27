@@ -1579,6 +1579,12 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
         omit_info = _omit_get_font_width(&tmp_font);
         string_total_width += omit_info.width;
         view_width -= omit_info.width;
+        if (view_width < tmp_font.info.size >> 1) {
+            /** Area can not display anyone char, hide omit char to display the only one char */
+            omit_info.width = 0;
+            string_total_width = 0;
+            view_width = coords->w;
+        }
     }
     while (idx < txt_len) {
         if (0x0A == txt[idx]) {
@@ -1620,6 +1626,8 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
     if (string_total_width > view->w) {
         area_font.x = coords->x;
     } else {
+        /** Area can display all content, no need for omit width */
+        string_total_width -= omit_info.width;
         area_font.x = _get_align_start_x(dsc->align, view->x, view->w, string_total_width);
     }
     if (_is_align_reverse(dsc->align)) {
