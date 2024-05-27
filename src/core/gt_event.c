@@ -109,11 +109,24 @@ static inline bool _is_input_event(gt_event_type_et event) {
     return (event < _GT_EVENT_TYPE_INPUT_BEGIN || event > _GT_EVENT_TYPE_INPUT_END) ? false : true;
 }
 
+static bool _has_the_same_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter) {
+    gt_size_t i = obj->cnt_event - 1;
+    for (; i >= 0; --i) {
+        if (obj->event_attr[i].user_cb == event && obj->event_attr[i].filter == filter) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /* global functions / API interface -------------------------------------*/
 void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data)
 {
     if (NULL == obj) {
         return;
+    }
+    if (_has_the_same_cb(obj, event, filter)) {
+        return ;
     }
     if ( NULL == obj->event_attr ) {
         obj->event_attr =  gt_mem_malloc(sizeof(gt_obj_event_attr_st));
