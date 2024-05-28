@@ -1092,6 +1092,11 @@ static gt_size_t _get_align_start_y(const gt_attr_font_st * dsc, const gt_area_s
 
             disp_w -= ret_w;
             if (disp_w <= 0 || 0 == idx_step) {
+                if (ret_w >= coords->w) {
+                    /** Over widget's width, forced display */
+                    idx += idx_step;
+                    goto _compute_line;
+                }
                 goto _compute_line;
             }
             idx += idx_step;
