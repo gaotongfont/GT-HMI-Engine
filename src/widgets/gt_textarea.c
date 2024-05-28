@@ -384,6 +384,10 @@ void gt_textarea_set_font_align(gt_obj_st * textarea, gt_align_et align)
         return ;
     }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+
+    // NOTE : textarea only support left align
+    align = GT_ALIGN_LEFT;
+
     style->font_align = align;
 }
 void gt_textarea_set_font_color(gt_obj_st * textarea, gt_color_t color)

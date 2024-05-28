@@ -1031,7 +1031,7 @@ static inline void _filling_by_default(_gt_draw_ctx_st * draw_ctx, gt_draw_blend
  *
  * @param align
  * @param x
- * @param width The total width of the area
+ * @param width the rest of the width
  * @param string_width The string total width pixel
  * @return gt_size_t
  */
@@ -1420,7 +1420,11 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             }
             else if (0x0A == txt[txt_len - 1]) {
                 area_font.y += area_font.h + dsc->space_y + (style_space_y << 1);
-                area_font.x = coords->x;
+                if (_is_align_reverse(dsc->align)) {
+                    area_font.x = (coords->x + coords->w) - (area_font.x - coords->x);
+                } else {
+                    area_font.x = _get_align_start_x(dsc->align, coords->x, disp_w, 0);
+                }
             }
             disp_w = coords->w;
         }
