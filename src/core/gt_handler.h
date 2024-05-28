@@ -30,7 +30,7 @@ extern "C" {
 /**
  * @brief 修订号
  */
-#define GT_HMI_ENGINE_PATCH_VERSION 33
+#define GT_HMI_ENGINE_PATCH_VERSION 34
 
 /* typedef --------------------------------------------------------------*/
 
