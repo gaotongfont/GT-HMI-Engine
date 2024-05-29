@@ -47,12 +47,13 @@ typedef struct _valid_param_s {
 static inline void _fill_no_opacity(
     gt_color_t * color_dst_p, gt_area_st const * const area_intersect,
     uint16_t step_dst_line, gt_color_t color_fill, gt_opa_t opa,
-    gt_color_t const * const color_src_p, uint16_t step_src_line) {
+    gt_color_t const * const color_src_p, uint16_t src_width, gt_point_st * offset) {
 
     gt_color_t * src_p = (gt_color_t *)color_src_p;
     gt_color_t * dst_p = color_dst_p;
     uint16_t w = area_intersect->w;
     uint16_t h = area_intersect->h;
+    uint16_t step_src_line = src_width - w;
     uint16_t x, y, width = w * sizeof(gt_color_t);
 
     if (opa <= GT_OPA_MIN) {
@@ -69,13 +70,15 @@ static inline void _fill_no_opacity(
                     *dst_p = gt_color_mix(*src_p, *dst_p, opa);
                     ++dst_p;
 #if GT_FLUSH_CONVERT_VERTICAL
-                    src_p += w;
+                    src_p += src_width;
 #else
                     ++src_p;
 #endif
                 }
                 dst_p += step_dst_line;
+#if !GT_FLUSH_CONVERT_VERTICAL
                 src_p += step_src_line;
+#endif
             }
         } else {
             for (y = 0; y < h; y++) {
@@ -86,13 +89,15 @@ static inline void _fill_no_opacity(
                     *dst_p = *src_p;
                     ++dst_p;
 #if GT_FLUSH_CONVERT_VERTICAL
-                    src_p += w;
+                    src_p += src_width;
 #else
                     ++src_p;
 #endif
                 }
                 dst_p += step_dst_line;
+#if !GT_FLUSH_CONVERT_VERTICAL
                 src_p += step_src_line;
+#endif
             }
         }
         return;
@@ -123,13 +128,14 @@ static inline void _fill_no_opacity(
 static inline void _fill_opacity(
     gt_color_t * color_dst_p, gt_area_st * area_intersect,
     uint16_t step_dst_line, gt_color_t color_fill, gt_opa_t opa, gt_opa_t const * const mask,
-    gt_color_t const * const color_src_p, uint16_t step_src_line) {
+    gt_color_t const * const color_src_p, uint16_t src_width, gt_point_st * offset) {
 
     gt_color_t * src_p = (gt_color_t *)color_src_p;
-    gt_color_t * dst_p = color_dst_p;
     gt_opa_t * mask_p = (gt_opa_t *)mask;
+    gt_color_t * dst_p = color_dst_p;
     uint16_t w = area_intersect->w;
     uint16_t h = area_intersect->h;
+    uint16_t step_src_line = src_width - w;
     uint16_t x, y;
 
     gt_color_t dst_save_c = gt_color_black();
@@ -149,14 +155,14 @@ static inline void _fill_opacity(
                 for (x = 0; x < w; x++) {
                     opa_tmp = *mask_p;
 #if GT_FLUSH_CONVERT_VERTICAL
-                    mask_p += w;
+                    mask_p += src_width;
 #else
                     ++mask_p;
 #endif
                     if (opa_tmp >= GT_OPA_MAX) {
                         *dst_p = *src_p;
 #if GT_FLUSH_CONVERT_VERTICAL
-                        src_p += w;
+                        src_p += src_width;
 #else
                         ++src_p;
 #endif
@@ -165,7 +171,7 @@ static inline void _fill_opacity(
                     }
                     else if (opa_tmp <= GT_OPA_MIN) {
 #if GT_FLUSH_CONVERT_VERTICAL
-                        src_p += w;
+                        src_p += src_width;
 #else
                         ++src_p;
 #endif
@@ -183,14 +189,16 @@ static inline void _fill_opacity(
                     *dst_p = res_save_c;
                     ++dst_p;
 #if GT_FLUSH_CONVERT_VERTICAL
-                    src_p += w;
+                    src_p += src_width;
 #else
                     ++src_p;
 #endif
                 }
                 dst_p += step_dst_line;
+#if !GT_FLUSH_CONVERT_VERTICAL
                 src_p += step_src_line;
                 mask_p += step_src_line;
+#endif
             }
             return;
         }
@@ -203,7 +211,7 @@ static inline void _fill_opacity(
             for (x = 0; x < w; x++) {
                 opa_tmp = (gt_per_255(*mask_p) * opa) >> 15;
 #if GT_FLUSH_CONVERT_VERTICAL
-                mask_p += w;
+                mask_p += src_width;
 #else
                 ++mask_p;
 #endif
@@ -211,7 +219,7 @@ static inline void _fill_opacity(
                     *dst_p = *src_p;
                     ++dst_p;
 #if GT_FLUSH_CONVERT_VERTICAL
-                    src_p += w;
+                    src_p += src_width;
 #else
                     ++src_p;
 #endif
@@ -220,7 +228,7 @@ static inline void _fill_opacity(
                 else if (opa_tmp <= GT_OPA_MIN) {
                     ++dst_p;
 #if GT_FLUSH_CONVERT_VERTICAL
-                    src_p += w;
+                    src_p += src_width;
 #else
                     ++src_p;
 #endif
@@ -237,14 +245,16 @@ static inline void _fill_opacity(
                 *dst_p = res_save_c;
                 ++dst_p;
 #if GT_FLUSH_CONVERT_VERTICAL
-                src_p += w;
+                src_p += src_width;
 #else
                 ++src_p;
 #endif
             }
             dst_p += step_dst_line;
+#if !GT_FLUSH_CONVERT_VERTICAL
             src_p += step_src_line;
             mask_p += step_src_line;
+#endif
         }
         return;
     }
@@ -257,7 +267,7 @@ static inline void _fill_opacity(
             for (x = 0; x < w; x++) {
                 opa_tmp = *mask_p;
 #if GT_FLUSH_CONVERT_VERTICAL
-                mask_p += w;
+                mask_p += src_width;
 #else
                 ++mask_p;
 #endif
@@ -280,7 +290,9 @@ static inline void _fill_opacity(
                 ++dst_p;
             }
             dst_p += step_dst_line;
+#if !GT_FLUSH_CONVERT_VERTICAL
             mask_p += step_src_line;
+#endif
         }
         return;
     }
@@ -291,7 +303,7 @@ static inline void _fill_opacity(
         for (x = 0; x < w; x++) {
             opa_tmp = (gt_per_255(*mask_p) * opa) >> 15;
 #if GT_FLUSH_CONVERT_VERTICAL
-            mask_p += w;
+            mask_p += src_width;
 #else
             ++mask_p;
 #endif
@@ -314,7 +326,9 @@ static inline void _fill_opacity(
             ++dst_p;
         }
         dst_p += step_dst_line;
+#if !GT_FLUSH_CONVERT_VERTICAL
         mask_p += step_src_line;
+#endif
     }
 }
 
@@ -412,9 +426,16 @@ void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
     offset = convert_parent;
 #endif
 
+    offset.x += area_intersect.x;
+    offset.y += area_intersect.y;
+
     // from area_intersect cpy to flush_buffer_offset
     uint32_t idx_dst = flush_buffer_offset.y * width_buf + flush_buffer_offset.x;
-    uint32_t idx_src = (offset.y + area_intersect.y) * width_dsc + area_intersect.x + offset.x;
+#if GT_FLUSH_CONVERT_VERTICAL
+    uint32_t idx_src = offset.x * width_dsc + offset.y;
+#else
+    uint32_t idx_src = offset.y * width_dsc + offset.x;
+#endif
 
     if (0 == area_intersect.w || 0 == area_intersect.h) {
         return;
@@ -445,10 +466,10 @@ void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
      */
     if (dsc->mask_buf) {
         _fill_opacity(color_dst_p, &area_intersect, width_buf - area_intersect.w,
-                        dsc->color_fill, dsc->opa, &dsc->mask_buf[idx_src], color_src_p, width_dsc - area_intersect.w);
+                        dsc->color_fill, dsc->opa, &dsc->mask_buf[idx_src], color_src_p, width_dsc, &offset);
     } else {
         _fill_no_opacity(color_dst_p, &area_intersect, width_buf - area_intersect.w,
-                            dsc->color_fill, dsc->opa, color_src_p, width_dsc - area_intersect.w);
+                            dsc->color_fill, dsc->opa, color_src_p, width_dsc, &offset);
     }
 
 }
@@ -531,8 +552,8 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
     gt_color_t * color_dst_p = (gt_color_t *)draw_ctx->buf;
     const uint8_t * color_src_p = res;
 
-    offset.x = offset.x + area_intersect.x;
-    offset.y = offset.y + area_intersect.y;
+    offset.x += area_intersect.x;
+    offset.y += area_intersect.y;
 
     // from area_intersect cpy to flush_buffer_offset
     uint32_t idx_dst = flush_buffer_offset.y * width_buf + flush_buffer_offset.x;
