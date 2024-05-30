@@ -116,7 +116,6 @@ static int32_t _gt_anim_path_ease_in(const struct gt_anim_s * anim) {
 
 static int32_t _gt_anim_path_ease_out(const struct gt_anim_s * anim) {
     int32_t t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION);
-    // int32_t step = gt_bezier3(t, 0, 900, 950, GT_MATH_BEZIER_VAL_RESOLUTION);
     int32_t step = gt_bezier3(t, 0, 0, 600, GT_MATH_BEZIER_VAL_RESOLUTION);
 
     int32_t value = (anim->value_end - anim->value_start) * step;
