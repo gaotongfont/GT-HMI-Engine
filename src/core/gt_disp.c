@@ -712,7 +712,7 @@ static inline gt_scr_anim_type_et _get_anti_anim_type(gt_scr_anim_type_et type) 
 static gt_obj_st * _create_scr_by_id(gt_scr_id_t scr_id) {
     gt_scr_init_func_cb_t scr_init_cb = gt_scr_stack_get_init_func(scr_id);
     if (NULL == scr_init_cb) {
-        GT_LOGE(GT_LOG_TAG_GUI, "Screen init callback is NULL");
+        GT_LOGE(GT_LOG_TAG_GUI, "Screen[0x%X = %d] init callback is NULL", scr_id, scr_id);
         return NULL;
     }
     return scr_init_cb();
@@ -795,6 +795,7 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
     }
 
     if (scr_old != new_item.current_scr) {
+        GT_LOGD(GT_LOG_TAG_GUI, "layer[%d] = new_scr[0x%X = %d]", gt_scr_stack_get_count(), new_item.current_scr_id, new_item.current_scr_id);
         gt_disp_load_scr_anim(new_item.current_scr, new_item.anim_type, new_item.time, new_item.delay, true);
     }
 
@@ -903,6 +904,7 @@ void gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const param)
         gt_disp_invalid_area(new_item.current_scr);
         return;
     }
+    GT_LOGD(GT_LOG_TAG_GUI, "layer[%d] = new_scr[0x%X = %d]", gt_scr_stack_get_count(), new_item.current_scr_id, new_item.current_scr_id);
     gt_disp_load_scr_anim(new_item.current_scr, new_item.anim_type, new_item.time, new_item.delay, del_prev_scr);
 }
 
