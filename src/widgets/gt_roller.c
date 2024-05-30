@@ -284,7 +284,6 @@ static void _scroll_snap(gt_obj_st * obj) {
     }
     else if (target_y == scroll_y) {
         /** Do not scroll by anim when target y equal to current scroll value */
-        GT_LOGE("", "equal");
         return;
     }
     target_y = _normal_limit_y(obj, target_y);
