@@ -205,6 +205,14 @@ static gt_size_t _normal_limit_y(gt_obj_st * obj, gt_size_t val) {
     return ret_val;
 }
 
+static inline void _delay_scroll_snap_anim(_gt_roller_st * style) {
+    if (NULL == style->anim_snap) {
+        return;
+    }
+    gt_anim_set_time_delay_start(style->anim_snap, 100);
+    gt_anim_restart(style->anim_snap);
+}
+
 static void _scroll_text_handler(gt_obj_st * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
     if (NULL == style->text) {
@@ -212,8 +220,38 @@ static void _scroll_text_handler(gt_obj_st * obj) {
     }
     obj->process_attr.scroll.y = _normal_limit_y(obj, gt_obj_scroll_get_y(obj));
     gt_obj_set_pos(style->text, obj->area.x, obj->area.y + obj->process_attr.scroll.y + (style->line_space >> 1));
+
+    if (_SCROLL_SNAP_READY == style->reg.state) {
+        _delay_scroll_snap_anim(style);
+    }
 }
 
+
+static void _scroll_exec_cb(gt_obj_st * obj, int32_t y) { }
+
+static void _notify_update_value_cb(gt_obj_st * obj, int32_t val) { }
+
+static void _notify_update_value_ready_cb(struct gt_anim_s * anim) {
+    gt_event_send(anim->target, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+static void _select_target_item(gt_obj_st * obj) {
+    _gt_roller_st * style = (_gt_roller_st * )obj;
+    uint16_t item_height = style->text->area.h / style->count_total;
+    uint16_t item_offset = gt_abs(obj->process_attr.scroll.y - (style->count_of_show >> 1) * item_height);
+
+    style->selected = item_offset / item_height;
+
+    gt_anim_st anim;
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_time(&anim, 0);
+    gt_anim_set_value(&anim, 0, 100);
+    gt_anim_set_time_delay_start(&anim, 10);
+    gt_anim_set_exec_cb(&anim, _notify_update_value_cb);
+    gt_anim_set_ready_cb(&anim, _notify_update_value_ready_cb);
+    gt_anim_start(&anim);
+}
 static void _scroll_snap(gt_obj_st * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
     gt_size_t scroll_y = gt_obj_scroll_get_y(obj);
@@ -241,10 +279,12 @@ static void _scroll_snap(gt_obj_st * obj) {
     }
     if (gt_abs(target_y - scroll_y) >= item_height) {
         /** Do not scroll by anim when variation over item height */
+        _select_target_item(obj);
         return;
     }
     else if (target_y == scroll_y) {
         /** Do not scroll by anim when target y equal to current scroll value */
+        GT_LOGE("", "equal");
         return;
     }
     target_y = _normal_limit_y(obj, target_y);
@@ -259,32 +299,6 @@ static void _scroll_anim_ready_handler(struct gt_anim_s * anim) {
     style->reg.state = _SCROLL_SNAP_READY;
     _scroll_snap(anim->target);
     style->anim_snap = NULL;
-}
-
-static void _scroll_exec_cb(gt_obj_st * obj, int32_t y) { }
-
-static void _notify_update_value_cb(gt_obj_st * obj, int32_t val) { }
-
-static void _notify_update_value_ready_cb(struct gt_anim_s * anim) {
-    gt_event_send(anim->target, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
-}
-
-static void _select_target_item(gt_obj_st * obj) {
-    _gt_roller_st * style = (_gt_roller_st * )obj;
-    uint16_t item_height = style->text->area.h / style->count_total;
-    uint16_t item_offset = gt_abs(obj->process_attr.scroll.y - (style->count_of_show >> 1) * item_height);
-
-    style->selected = item_offset / item_height;
-
-    gt_anim_st anim;
-    gt_anim_init(&anim);
-    gt_anim_set_target(&anim, obj);
-    gt_anim_set_time(&anim, 0);
-    gt_anim_set_value(&anim, 0, 100);
-    gt_anim_set_time_delay_start(&anim, 10);
-    gt_anim_set_exec_cb(&anim, _notify_update_value_cb);
-    gt_anim_set_ready_cb(&anim, _notify_update_value_ready_cb);
-    gt_anim_start(&anim);
 }
 
 static void _ready_scroll_snap_anim(struct gt_obj_s * obj) {
@@ -313,8 +327,7 @@ static void _ready_scroll_snap_anim(struct gt_obj_s * obj) {
         return ;
     }
 
-    gt_anim_set_time_delay_start(style->anim_snap, 100);
-    gt_anim_restart(style->anim_snap);
+    _delay_scroll_snap_anim(style);
 }
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
