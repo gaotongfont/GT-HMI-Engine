@@ -474,16 +474,8 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
     point_p->scroll_diff.x = point_p->newly.x - point_p->last.x;
     point_p->scroll_diff.y = point_p->newly.y - point_p->last.y;
 
-#if 0
-    point_p->scroll_throw.x = (point_p->scroll_throw.x << 2) >> 3;
-    point_p->scroll_throw.y = (point_p->scroll_throw.y << 2) >> 3;
-
-    point_p->scroll_throw.x += (point_p->scroll_diff.x << 2) >> 3;
-    point_p->scroll_throw.y += (point_p->scroll_diff.y << 2) >> 3;
-#else
     point_p->scroll_throw.x = (point_p->scroll_throw.x + point_p->scroll_diff.x) >> 1;
     point_p->scroll_throw.y = (point_p->scroll_throw.y + point_p->scroll_diff.y) >> 1;
-#endif
 
     if (NULL == point_p->obj_target) {
         return;
