@@ -24,10 +24,26 @@ extern "C" {
 
 /* define ---------------------------------------------------------------*/
 
+#ifndef GT_TEXTAREA_CUSTOM_FONT_STYLE
+    /**
+     * @brief 0[defalut]: Use textarea default font style, only support one font style;
+     *        1: One of the textarea items uses custom font style, which is defined by user.
+     */
+    #define GT_TEXTAREA_CUSTOM_FONT_STYLE   0
+#endif
 
 
 /* typedef --------------------------------------------------------------*/
-
+typedef struct gt_textarea_param_s {
+    char *      text;
+    uint16_t    len;
+#if GT_TEXTAREA_CUSTOM_FONT_STYLE
+    gt_font_info_st font_info;
+#else
+    gt_color_t  color;
+#endif
+    uint8_t     mask_style;    /** @ref gt_font_style_et */
+}gt_textarea_param_st;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -62,6 +78,15 @@ void gt_textarea_set_text(gt_obj_st * textarea, char * text);
  */
 void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et style, gt_color_t color);
 
+#if GT_TEXTAREA_CUSTOM_FONT_STYLE
+/**
+ * @brief Set text by custom font style
+ *
+ * @param textarea
+ * @param param @ref gt_textarea_param_st
+ */
+void gt_textarea_add_str_by_param(gt_obj_st * textarea, gt_textarea_param_st * param);
+#endif
 /**
  * @brief set textarea space
  *

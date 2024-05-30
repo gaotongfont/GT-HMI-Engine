@@ -25,12 +25,6 @@
 #define MY_CLASS    &gt_textarea_class
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_txt_s {
-    char *      text;
-    gt_color_t  color;
-    uint16_t    len;
-    uint8_t     mask_style;
-}_gt_txt_st;
 
 typedef struct _textarea_reg_s {
     uint8_t click_valid : 1;    /** click status: scroll will set to false, only click event valid */
@@ -39,7 +33,7 @@ typedef struct _textarea_reg_s {
 
 typedef struct _gt_textarea_s {
     gt_obj_st obj;
-    _gt_txt_st * contents;
+    gt_textarea_param_st * contents;
     uint16_t cnt_contents;
     uint16_t max_height;
 
@@ -90,8 +84,6 @@ static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_poin
         .info       = style->font_info,
         .res        = NULL,
     };
-    font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
-    font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
 
     gt_attr_font_st font_attr = {
         .font       = &font,
@@ -122,7 +114,12 @@ static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_poin
         font.utf8               = style->contents[idx].text;
         font.len                = style->contents[idx].len;
         font_attr.reg.style     = style->contents[idx].mask_style;
+#if GT_TEXTAREA_CUSTOM_FONT_STYLE
+        font_attr.font_color    = style->contents[idx].font_info.palette;
+        font.info               = style->contents[idx].font_info;
+#else
         font_attr.font_color    = style->contents[idx].color;
+#endif
 
         font_res = draw_text(obj->draw_ctx, &font_attr, &area_font);
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
@@ -294,22 +291,35 @@ void gt_textarea_set_text(gt_obj_st * textarea, char * text)
     uint16_t len = 0;
 
     if (style->cnt_contents) {
+#if GT_TEXTAREA_CUSTOM_FONT_STYLE
+        color = style->contents[style->cnt_contents - 1].font_info.palette;
+#else
         color = style->contents[style->cnt_contents - 1].color;
+#endif
         _free_contents(textarea);
     }
     if (NULL == text) {
         return;
     }
     len = strlen(text);
-    style->contents  = gt_mem_malloc( sizeof(_gt_txt_st) );
+    style->contents  = gt_mem_malloc( sizeof(gt_textarea_param_st) );
     style->contents[0].len  = len;
     style->contents[0].text = gt_mem_malloc(style->contents[0].len + 1);
     gt_memcpy(style->contents[0].text, text, len);
     style->contents[0].text[len] = '\0';
     style->contents[0].mask_style = style_mask;
+#if GT_TEXTAREA_CUSTOM_FONT_STYLE
+    style->contents[0].font_info.palette = color;
+#else
     style->contents[0].color = color;
+#endif
     style->cnt_contents = 1;
     style->max_height = 0;
+
+#if GT_TEXTAREA_CUSTOM_FONT_STYLE
+    style->contents[0].font_info = style->font_info;
+    gt_font_info_update_font_thick(&style->contents[0].font_info);
+#endif
 
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -333,9 +343,9 @@ void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et styl
     uint16_t idx = style->cnt_contents;
 
     if (idx) {
-        style->contents = gt_mem_realloc(style->contents, (style->cnt_contents + 1) * sizeof(_gt_txt_st));
+        style->contents = gt_mem_realloc(style->contents, (style->cnt_contents + 1) * sizeof(gt_textarea_param_st));
     } else {
-        style->contents = gt_mem_malloc(sizeof(_gt_txt_st));
+        style->contents = gt_mem_malloc(sizeof(gt_textarea_param_st));
     }
     if (NULL == style->contents) {
         return;
@@ -345,9 +355,52 @@ void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et styl
     gt_memcpy(style->contents[idx].text, str, style->contents[idx].len);
     style->contents[idx].text[style->contents[idx].len] = '\0';
     style->contents[idx].mask_style = style_mask;
+
+#if GT_TEXTAREA_CUSTOM_FONT_STYLE
+    style->contents[idx].font_info = style->font_info;
+    style->contents[idx].font_info.palette = color;
+    gt_font_info_update_font_thick(&style->contents[idx].font_info);
+#else
     style->contents[idx].color = color;
+#endif
+
     ++style->cnt_contents;
 }
+
+#if GT_TEXTAREA_CUSTOM_FONT_STYLE
+void gt_textarea_add_str_by_param(gt_obj_st * textarea, gt_textarea_param_st * param)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    if (NULL == param) {
+        return;
+    }
+    if (NULL == param->text || 0 == param->len) {
+        return;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    uint16_t idx = style->cnt_contents;
+
+    if (idx) {
+        style->contents = gt_mem_realloc(style->contents, (style->cnt_contents + 1) * sizeof(gt_textarea_param_st));
+    } else {
+        style->contents = gt_mem_malloc(sizeof(gt_textarea_param_st));
+    }
+    if (NULL == style->contents) {
+        return;
+    }
+
+    style->contents[idx].len = param->len;
+    style->contents[idx].text = gt_mem_malloc(style->contents[idx].len + 1);
+    gt_memcpy(style->contents[idx].text, param->text, style->contents[idx].len);
+    style->contents[idx].text[style->contents[idx].len] = '\0';
+    style->contents[idx].mask_style = param->mask_style;
+    style->contents[idx].font_info = param->font_info;
+    gt_font_info_update_font_thick(&style->contents[idx].font_info);
+    ++style->cnt_contents;
+}
+#endif
 
 void gt_textarea_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t space_y)
 {
@@ -368,6 +421,7 @@ void gt_textarea_set_font_size(gt_obj_st * textarea, uint8_t size)
     }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.size = size;
+    gt_font_info_update_font_thick(&style->font_info);
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_textarea_set_font_gray(gt_obj_st * textarea, uint8_t gray)
@@ -397,8 +451,12 @@ void gt_textarea_set_font_color(gt_obj_st * textarea, gt_color_t color)
     }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     uint16_t idx = 0;
-    while( idx < style->cnt_contents ){
+    while (idx < style->cnt_contents) {
+#if GT_TEXTAREA_CUSTOM_FONT_STYLE
+        style->contents[idx].font_info.palette = color;
+#else
         style->contents[idx].color = color;
+#endif
         idx ++;
     }
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -494,6 +552,7 @@ void gt_textarea_set_font_thick_en(gt_obj_st * textarea, uint8_t thick)
     }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.thick_en = thick;
+    gt_font_info_update_font_thick(&style->font_info);
 }
 
 void gt_textarea_set_font_thick_cn(gt_obj_st * textarea, uint8_t thick)
@@ -503,6 +562,7 @@ void gt_textarea_set_font_thick_cn(gt_obj_st * textarea, uint8_t thick)
     }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.thick_cn = thick;
+    gt_font_info_update_font_thick(&style->font_info);
 }
 
 void gt_textarea_set_font_encoding(gt_obj_st * textarea, gt_encoding_et encoding)
