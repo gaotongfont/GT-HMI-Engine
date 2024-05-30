@@ -57,6 +57,7 @@ typedef enum {
 /* typedef --------------------------------------------------------------*/
 
 typedef struct _gt_font_info_s {
+    gt_color_t palette;  ///< set: font color
     uint16_t style_cn;   ///< set: CJK font style
     uint16_t style_en;   ///< set: ascii font style
     uint16_t style_fl;   ///< set: font style foreign language

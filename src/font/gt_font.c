@@ -171,6 +171,7 @@ static uint32_t _get_font_style(gt_font_st *font, uint32_t unicode) {
 /* global functions / API interface -------------------------------------*/
 void gt_font_info_init(gt_font_info_st *font_info)
 {
+    font_info->palette    = gt_color_black();
     font_info->style_cn   = GT_CFG_DEFAULT_FONT_FAMILY_CN;
     font_info->style_en   = GT_CFG_DEFAULT_FONT_FAMILY_EN;
     font_info->style_fl   = GT_CFG_DEFAULT_FONT_FAMILY_FL;
