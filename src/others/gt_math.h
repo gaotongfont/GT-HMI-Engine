@@ -41,8 +41,8 @@ extern "C" {
 #define GT_MIN(a,b) ((a) > (b) ? (b) : (a))
 #define GT_MAX(a,b) ((a) > (b) ? (a) : (b))
 
-#define GT_MATH_BEZIER_VAL_RESOLUTION   1024
 #define GT_MATH_BEZIER_VAL_SHIFT        10  /* (1 << 10) = 1024 */
+#define GT_MATH_BEZIER_VAL_RESOLUTION   (1 << GT_MATH_BEZIER_VAL_SHIFT)
 
 /* typedef --------------------------------------------------------------*/
 

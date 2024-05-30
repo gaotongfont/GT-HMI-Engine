@@ -41,8 +41,8 @@ static gt_scr_mapping_table_st * _get_scr_mapping_table(_gt_gc_scr_st * scr_info
 
 static bool _equal_current_id_cb(void * item, void * target) {
     gt_scr_stack_item_st * it = (gt_scr_stack_item_st * )item;
-    gt_scr_stack_item_st * tar = (gt_scr_stack_item_st * )target;
-    return it->current_scr_id == tar->current_scr_id;
+    gt_scr_stack_item_st * tar_stack = (gt_scr_stack_item_st * )target;
+    return it->current_scr_id == tar_stack->current_scr_id;
 }
 
 /* global functions / API interface -------------------------------------*/

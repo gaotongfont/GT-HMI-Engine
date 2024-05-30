@@ -26,7 +26,7 @@ extern "C" {
 
 #ifndef GT_LISTVIEW_CUSTOM_FONT_STYLE
     /**
-     * @brief 0: Use listview default font style, only support one font style;
+     * @brief 0[defalut]: Use listview default font style, only support one font style;
      *        1: One of the listview items uses custom font style, which is defined by user.
      */
     #define GT_LISTVIEW_CUSTOM_FONT_STYLE   0

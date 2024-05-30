@@ -195,24 +195,24 @@ static inline void _gt_disp_check_and_copy_foreach(gt_obj_st * obj, _flush_scr_p
     _check_and_copy_foreach(obj, param, param->disp->area_disp);
 }
 
-static void _scr_anim_exec_x_cb(gt_obj_st * obj, int32_t x) {
-    gt_obj_set_x(obj, (gt_size_t)x);
+static void _scr_anim_exec_x_cb(void * obj, int32_t x) {
+    gt_obj_set_x((gt_obj_st * )obj, (gt_size_t)x);
 }
 
-static void _scr_anim_exec_y_cb(gt_obj_st * obj, int32_t y) {
-    gt_obj_set_y(obj, (gt_size_t)y);
+static void _scr_anim_exec_y_cb(void * obj, int32_t y) {
+    gt_obj_set_y((gt_obj_st * )obj, (gt_size_t)y);
 }
 
 static void _scr_anim_del_ready_cb(struct gt_anim_s * anim) {
-    anim->target->using = 0;
-    gt_obj_destroy(anim->target);
+    ((gt_obj_st * )anim->tar)->using = 0;
+    gt_obj_destroy((gt_obj_st * )anim->tar);
 }
 
 #if GT_USE_SCREEN_ANIM
 static void _scr_anim_start_cb(struct gt_anim_s * anim) {
     gt_disp_st * disp = gt_disp_get_default();
     disp->scr_prev         = disp->scr_act;
-    disp->scr_act          = anim->target;
+    disp->scr_act          = (gt_obj_st * )anim->tar;
 
     /** Remark the begin status prev and scr position */
     disp->anim_scr_remark.x = disp->scr_act->area.x;
@@ -229,7 +229,7 @@ static void _scr_anim_start_cb(struct gt_anim_s * anim) {
  */
 static void _old_scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_area_st * area = (gt_area_st * )anim->data;
-    gt_obj_st * old_scr = anim->target;
+    gt_obj_st * old_scr = (gt_obj_st * )anim->tar;
     if (NULL == old_scr) {
         return ;
     }
@@ -259,7 +259,7 @@ static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     disp->scr_act->area.w = gt_disp_get_res_hor(NULL);
     disp->scr_act->area.h = gt_disp_get_res_ver(NULL);
 
-    _gt_disp_reload_max_area(anim->target);
+    _gt_disp_reload_max_area((gt_obj_st * )anim->tar);
     gt_disp_invalid_area(disp->scr_act);
 
     /** Enabled all of input device event */
@@ -1162,7 +1162,7 @@ gt_area_abs_st * gt_disp_get_area_max(void)
     return &disp_dev->area_max;
 }
 
-void gt_disp_scroll_area_act(int16_t dist_x, int16_t dist_y)
+void gt_disp_scroll_area_act(gt_size_t dist_x, gt_size_t dist_y)
 {
     gt_area_st * area = gt_disp_get_area_act();
     gt_area_abs_st * max_area = gt_disp_get_area_max();

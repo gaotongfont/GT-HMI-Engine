@@ -40,15 +40,14 @@
 
 /* static functions -----------------------------------------------------*/
 
-static void _btn_exec_cb(gt_obj_st * obj, int32_t value)
-{
+static void _btn_exec_cb(void * target, int32_t value) {
+	gt_obj_st * obj = (gt_obj_st * )target;
 	// gt_obj_set_y(obj, value);
 	gt_obj_set_pos(obj, obj->area.x, value);
 	printf("_btn_exec_cb: %d\n", value);
 }
 
-static void btn_click_cb(gt_event_st * e)
-{
+static void btn_click_cb(gt_event_st * e) {
 	static int cnt_idx = 0;
 	char buffer[100];
 

@@ -227,12 +227,12 @@ static void _scroll_text_handler(gt_obj_st * obj) {
 }
 
 
-static void _scroll_exec_cb(gt_obj_st * obj, int32_t y) { }
+static void _scroll_exec_cb(void * obj, int32_t y) { }
 
-static void _notify_update_value_cb(gt_obj_st * obj, int32_t val) { }
+static void _notify_update_value_cb(void * obj, int32_t val) { }
 
 static void _notify_update_value_ready_cb(struct gt_anim_s * anim) {
-    gt_event_send(anim->target, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    gt_event_send((gt_obj_st * )anim->tar, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
 static void _select_target_item(gt_obj_st * obj) {
@@ -291,12 +291,12 @@ static void _scroll_snap(gt_obj_st * obj) {
 }
 
 static void _scroll_anim_ready_handler(struct gt_anim_s * anim) {
-    _gt_roller_st * style = (_gt_roller_st * )anim->target;
+    _gt_roller_st * style = (_gt_roller_st * )anim->tar;
     if (_SCROLL_SNAP_DONE == style->reg.state) {
         return ;
     }
     style->reg.state = _SCROLL_SNAP_READY;
-    _scroll_snap(anim->target);
+    _scroll_snap((gt_obj_st * )anim->tar);
     style->anim_snap = NULL;
 }
 
