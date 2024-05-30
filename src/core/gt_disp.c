@@ -27,10 +27,12 @@
 
 /* private define -------------------------------------------------------*/
 
-/**
- * @brief 0[defalut]: Close the page stack log
- */
-#define _GT_STACK_USE_LOADING_LOG   0
+#ifndef _GT_STACK_USE_LOADING_LOG
+    /**
+     * @brief 0[defalut]: Close the page stack log
+     */
+    #define _GT_STACK_USE_LOADING_LOG   0
+#endif
 
 
 /* private typedef ------------------------------------------------------*/
