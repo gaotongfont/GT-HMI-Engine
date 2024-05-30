@@ -66,6 +66,14 @@ typedef struct gt_listview_custom_item_s {
     gt_area_st area;
     uint8_t type;           /** @ref gt_listview_element_type_st */
     uint8_t element_idx;
+#if GT_LISTVIEW_CUSTOM_FONT_STYLE
+    /**
+     * @brief Pointer NULL: use listview default font style;
+     *       NOT NULL: use custom font style, which is defined by user.
+     * [Warn] gt_font_info_init() is recommended for initialization of defined variables.
+     */
+    gt_font_info_st * font_info_p;
+#endif
 }gt_listview_custom_item_st;
 
 

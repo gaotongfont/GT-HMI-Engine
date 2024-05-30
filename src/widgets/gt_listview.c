@@ -724,6 +724,8 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
     _gt_listview_st * style = (_gt_listview_st * )listview;
     gt_obj_st * obj = NULL;
     gt_obj_st * element = NULL;
+    gt_font_info_st * font_p = NULL;
+
     if (_GT_LISTVIEW_ELEMENT_TYPE_MAX <= item->type) {
         return NULL;
     }
@@ -745,7 +747,10 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
         }
     } else {
         if (NULL == element) {
-            element = _create_item_label_by_len(listview, obj, item->src, item->src_len, NULL);
+        #if GT_LISTVIEW_CUSTOM_FONT_STYLE
+            font_p = item->font_info_p;
+        #endif
+            element = _create_item_label_by_len(listview, obj, item->src, item->src_len, font_p);
         } else {
             gt_label_set_text_by_len(element, item->src, item->src_len);
         }
