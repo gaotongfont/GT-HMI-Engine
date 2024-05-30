@@ -391,9 +391,14 @@ void gt_textarea_add_str_by_param(gt_obj_st * textarea, gt_textarea_param_st * p
         return;
     }
 
-    style->contents[idx].len = param->len;
+    uint8_t new_line_len = param->new_line ? 1 : 0;
+
+    style->contents[idx].len = param->len + new_line_len;
     style->contents[idx].text = gt_mem_malloc(style->contents[idx].len + 1);
-    gt_memcpy(style->contents[idx].text, param->text, style->contents[idx].len);
+    gt_memcpy(style->contents[idx].text, param->text, param->len);
+    if (param->new_line) {
+        style->contents[idx].text[param->len] = '\n';
+    }
     style->contents[idx].text[style->contents[idx].len] = '\0';
     style->contents[idx].mask_style = param->mask_style;
     style->contents[idx].font_info = param->font_info;

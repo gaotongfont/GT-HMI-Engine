@@ -42,7 +42,8 @@ typedef struct gt_textarea_param_s {
 #else
     gt_color_t  color;
 #endif
-    uint8_t     mask_style;    /** @ref gt_font_style_et */
+    uint8_t mask_style : 7;     /** @ref gt_font_style_et */
+    uint8_t new_line   : 1;     /** 0[default] */
 }gt_textarea_param_st;
 
 
