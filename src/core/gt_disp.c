@@ -27,6 +27,10 @@
 
 /* private define -------------------------------------------------------*/
 
+/**
+ * @brief 0[defalut]: Close the page stack log
+ */
+#define _GT_STACK_USE_LOADING_LOG   0
 
 
 /* private typedef ------------------------------------------------------*/
@@ -100,7 +104,7 @@ static void _gt_disp_set_state(gt_disp_st * disp, uint8_t state)
  */
 static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
 {
-    int16_t idx = 0;
+    uint16_t idx = 0;
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
     while( idx < obj->cnt_child ) {
         _gt_disp_send_draw_event_foreach( obj->child[idx] );
@@ -148,7 +152,7 @@ static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
  */
 static void _check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent)
 {
-    int16_t idx = 0;
+    uint16_t idx = 0;
     gt_obj_st * child_p = NULL;
     gt_area_st area_cross = area_parent;
     gt_area_st reduce = obj->area;
@@ -795,7 +799,9 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
     }
 
     if (scr_old != new_item.current_scr) {
+#if _GT_STACK_USE_LOADING_LOG
         GT_LOGD(GT_LOG_TAG_GUI, "layer[%d] = new_scr[0x%X = %d]", gt_scr_stack_get_count(), new_item.current_scr_id, new_item.current_scr_id);
+#endif
         gt_disp_load_scr_anim(new_item.current_scr, new_item.anim_type, new_item.time, new_item.delay, true);
     }
 
@@ -904,7 +910,9 @@ void gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const param)
         gt_disp_invalid_area(new_item.current_scr);
         return;
     }
+#if _GT_STACK_USE_LOADING_LOG
     GT_LOGD(GT_LOG_TAG_GUI, "layer[%d] = new_scr[0x%X = %d]", gt_scr_stack_get_count(), new_item.current_scr_id, new_item.current_scr_id);
+#endif
     gt_disp_load_scr_anim(new_item.current_scr, new_item.anim_type, new_item.time, new_item.delay, del_prev_scr);
 }
 
