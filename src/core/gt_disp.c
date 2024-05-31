@@ -77,23 +77,21 @@ typedef struct _bg_abs_area_st {
  * @return true busy now
  * @return false
  */
-static bool _gt_disp_get_state(gt_disp_st * disp)
-{
-    if( disp == NULL ){
+static bool _gt_disp_get_state(gt_disp_st * disp) {
+    if (NULL == disp) {
         return GT_BUSY;
     }
-    if( disp->drv == NULL ){
+    if (NULL == disp->drv) {
         return GT_BUSY;
     }
     return disp->drv->busy;
 }
 
-static void _gt_disp_set_state(gt_disp_st * disp, uint8_t state)
-{
-    if( disp == NULL ){
+static void _gt_disp_set_state(gt_disp_st * disp, uint8_t state) {
+    if (NULL == disp) {
         return;
     }
-    if( disp->drv == NULL ){
+    if (NULL == disp->drv) {
         return;
     }
     disp->drv->busy = state;
@@ -104,13 +102,12 @@ static void _gt_disp_set_state(gt_disp_st * disp, uint8_t state)
  *
  * @param obj parent
  */
-static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
-{
+static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj) {
     uint16_t idx = 0;
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-    while( idx < obj->cnt_child ) {
-        _gt_disp_send_draw_event_foreach( obj->child[idx] );
-        idx++;
+    while (idx < obj->cnt_child) {
+        _gt_disp_send_draw_event_foreach(obj->child[idx]);
+        ++idx;
     }
 }
 
@@ -122,9 +119,8 @@ static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
  * @param area_parent All parent displayable areas
  * @return true: visible or area need to refresh, false: invisible or area not need to refresh
  */
-static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent)
-{
-    if( GT_INVISIBLE == gt_obj_get_visible(obj) ){
+static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent) {
+    if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
         return false;
     }
     if (false == gt_area_is_intersect_screen(&param->disp->area_disp, &obj->area)) {
@@ -152,47 +148,55 @@ static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
  * @param param
  * @param area_parent All parent displayable areas
  */
-static void _check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent)
-{
+static void _check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent) {
     uint16_t idx = 0;
     gt_obj_st * child_p = NULL;
     gt_area_st area_cross = area_parent;
-    gt_area_st reduce = obj->area;
+    gt_area_st reduce = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
 
-    if (GT_TYPE_SCREEN != gt_obj_class_get_type(obj)) {
-        reduce = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
-        if (false == gt_area_cover_screen(&area_parent, &reduce, &area_cross)) {
-            if (GT_TYPE_GROUP != gt_obj_class_get_type(obj)) {
-                /** The Group ignores the area effects */
-                return ;
-            }
-        }
-    } else {
-        /** screen */
-        if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
+    if (false == gt_area_cover_screen(&area_parent, &reduce, &area_cross)) {
+        if (GT_TYPE_GROUP != gt_obj_class_get_type(obj)) {
+            /** The Group ignores the area effects */
             return ;
         }
     }
 
-    while( idx < obj->cnt_child ) {
+    while (idx < obj->cnt_child) {
         child_p = obj->child[idx++];
         if (false == gt_check_obj_visible_and_copy(child_p, param, area_cross)) {
             /** No need to iterate over child widgets */
             continue;
         }
-
-        if( child_p->cnt_child != 0 ){
-            _check_and_copy_foreach(child_p, param, area_cross);
+        if (0 == child_p->cnt_child) {
+            continue;
         }
+        _check_and_copy_foreach(child_p, param, area_cross);
     }
 }
 
-static inline void _gt_disp_check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param) {
-    if (NULL == obj) {
+static void _gt_disp_check_and_copy_foreach(gt_obj_st * scr_or_layer, _flush_scr_param_st * param) {
+    uint16_t idx = 0;
+    gt_obj_st * child_p = NULL;
+    gt_area_st area_parent = param->disp->area_disp;
+
+    if (NULL == scr_or_layer) {
+        return ;
+    }
+    if (GT_INVISIBLE == gt_obj_get_visible(scr_or_layer)) {
         return ;
     }
     /** The screen display area */
-    _check_and_copy_foreach(obj, param, param->disp->area_disp);
+    while (idx < scr_or_layer->cnt_child) {
+        child_p = scr_or_layer->child[idx++];
+        if (false == gt_check_obj_visible_and_copy(child_p, param, area_parent)) {
+            /** No need to iterate over child widgets */
+            continue;
+        }
+        if (0 == child_p->cnt_child) {
+            continue;
+        }
+        _check_and_copy_foreach(child_p, param, area_parent);
+    }
 }
 
 static void _scr_anim_exec_x_cb(void * obj, int32_t x) {
