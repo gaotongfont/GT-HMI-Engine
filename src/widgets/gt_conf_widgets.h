@@ -53,9 +53,12 @@ extern "C" {
 #define GT_CFG_ENABLE_VIEW_PAGER        1
 #define GT_CFG_ENABLE_ROLLER            1
 #define GT_CFG_ENABLE_BTNMAP            1
-#define GT_CFG_ENABLE_DIALOG            1
 #define GT_CFG_ENABLE_CHAT              1
+
+#if GT_USE_LAYER_TOP
+#define GT_CFG_ENABLE_DIALOG            1
 #define GT_CFG_ENABLE_STATUS_BAR        1
+#endif
 
 #if GT_USE_GIF
 #define GT_CFG_ENABLE_GIF               1
