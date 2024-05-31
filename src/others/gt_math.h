@@ -45,6 +45,16 @@ extern "C" {
 #define GT_MATH_BEZIER_VAL_RESOLUTION   (1 << GT_MATH_BEZIER_VAL_SHIFT)
 
 /* typedef --------------------------------------------------------------*/
+/**
+ * @brief Bezier curve struct
+ */
+typedef struct gt_math_bezier_s {
+    uint32_t t;
+    uint32_t p0;
+    uint32_t p1;
+    uint32_t p2;
+    uint32_t p3;
+}gt_math_bezier_st;
 
 
 
@@ -80,7 +90,7 @@ uint32_t gt_per_255(uint8_t n);
  */
 int32_t gt_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max);
 
-uint32_t gt_bezier3(uint32_t t, uint32_t p0, uint32_t p1, uint32_t p2, uint32_t p3);
+uint32_t gt_bezier3(gt_math_bezier_st const * const bezier);
 
 #ifdef __cplusplus
 } /*extern "C"*/

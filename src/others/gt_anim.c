@@ -103,48 +103,34 @@ static int32_t _gt_anim_path_linear(const struct gt_anim_s * anim) {
     return value;
 }
 
-static int32_t _gt_anim_path_ease_in(const struct gt_anim_s * anim) {
-    int32_t t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION);
-    int32_t step = gt_bezier3(t, 0, 50, 100, GT_MATH_BEZIER_VAL_RESOLUTION);
+static inline int32_t _gt_anim_calc_path_by_bezier(const struct gt_anim_s * anim, uint32_t p0, uint32_t p1, uint32_t p2, uint32_t p3) {
+    gt_math_bezier_st bezier = {
+        .t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION),
+        .p0 = p0, .p1 = p1, .p2 = p2, .p3 = p3
+    };
+    int32_t step = gt_bezier3(&bezier);
 
     int32_t value = (anim->value_end - anim->value_start) * step;
     value >>= GT_MATH_BEZIER_VAL_SHIFT;
     value += anim->value_start;
 
     return value;
+}
+
+static int32_t _gt_anim_path_ease_in(const struct gt_anim_s * anim) {
+    return _gt_anim_calc_path_by_bezier(anim, 0, 50, 100, GT_MATH_BEZIER_VAL_RESOLUTION);
 }
 
 static int32_t _gt_anim_path_ease_out(const struct gt_anim_s * anim) {
-    int32_t t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION);
-    int32_t step = gt_bezier3(t, 0, 0, 600, GT_MATH_BEZIER_VAL_RESOLUTION);
-
-    int32_t value = (anim->value_end - anim->value_start) * step;
-    value >>= GT_MATH_BEZIER_VAL_SHIFT;
-    value += anim->value_start;
-
-    return value;
+    return _gt_anim_calc_path_by_bezier(anim, 0, 0, 600, GT_MATH_BEZIER_VAL_RESOLUTION);
 }
 
 static int32_t _gt_anim_path_ease_in_out(const struct gt_anim_s * anim) {
-    int32_t t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION);
-    int32_t step = gt_bezier3(t, 0, 50, 950, GT_MATH_BEZIER_VAL_RESOLUTION);
-
-    int32_t value = (anim->value_end - anim->value_start) * step;
-    value >>= GT_MATH_BEZIER_VAL_SHIFT;
-    value += anim->value_start;
-
-    return value;
+    return _gt_anim_calc_path_by_bezier(anim, 0, 50, 950, GT_MATH_BEZIER_VAL_RESOLUTION);
 }
 
 static int32_t _gt_anim_path_overshoot(const struct gt_anim_s * anim) {
-    int32_t t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION);
-    int32_t step = gt_bezier3(t, 0, 1000, 1300, GT_MATH_BEZIER_VAL_RESOLUTION);
-
-    int32_t value = (anim->value_end - anim->value_start) * step;
-    value >>= _GT_ANIM_PATH_SHIFT;
-    value += anim->value_start;
-
-    return value;
+    return _gt_anim_calc_path_by_bezier(anim, 0, 1000, 1300, GT_MATH_BEZIER_VAL_RESOLUTION);
 }
 
 static int32_t _gt_anim_path_bounce(const struct gt_anim_s * anim) {
@@ -182,7 +168,14 @@ static int32_t _gt_anim_path_bounce(const struct gt_anim_s * anim) {
 
     if (t > _GT_ANIM_PATH_RESOLUTION) { t = _GT_ANIM_PATH_RESOLUTION; }
     if (t < 0) { t = 0; }
-    int32_t step = gt_bezier3(t, GT_MATH_BEZIER_VAL_RESOLUTION, 800, 500, 0);
+    gt_math_bezier_st bezier = {
+        .t = t,
+        .p0 = GT_MATH_BEZIER_VAL_RESOLUTION,
+        .p1 = 800,
+        .p2 = 500,
+        .p3 = 0
+    };
+    int32_t step = gt_bezier3(&bezier);
 
     int32_t value = step * diff;
     value >>= GT_MATH_BEZIER_VAL_SHIFT;
