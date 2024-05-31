@@ -555,6 +555,46 @@ static inline void _scr_y_less_0(_flush_scr_param_st * param, uint16_t height, g
     }
 }
 
+/**
+ * @brief Calculate the area of the display buffer that needs to be refreshed
+ *
+ * @param param
+ * @param scr
+ * @return gt_area_st The buffer or area of display flush area.
+ */
+static gt_area_st _update_area_flush_by_calc_partly_redraw_area(_flush_scr_param_st * param, gt_obj_st * scr) {
+    uint16_t width = gt_disp_get_res_hor(param->disp);
+    uint16_t height = gt_disp_get_res_ver(param->disp);
+
+    if(width == param->area_flush.w && height == param->area_flush.h){
+        if (param->area_flush.x < 0 || (param->area_flush.x + param->area_flush.w > width)) {
+            param->area_flush.x = 0;
+        }
+        if (param->area_flush.y < 0 || (param->area_flush.y + param->area_flush.h > height)) {
+            param->area_flush.y = 0;
+        }
+        return param->area_flush;
+    }
+    // Calculate the area_flush x coordinates and width
+    if (0 == scr->area.x) {
+        _scr_x_equal_0(param, width);
+    } else if (scr->area.x > 0) {
+        _scr_x_large_0(param, width, scr);
+    } else if (scr->area.x < 0) {
+        _scr_x_less_0(param, width, scr);
+    }
+
+    // Calculate the area_flush y coordinates and height
+    if (0 == scr->area.y) {
+        _scr_y_equal_0(param, height);
+    } else if (scr->area.y > 0) {
+        _scr_y_large_0(param, height, scr);
+    } else if (scr->area.y < 0) {
+        _scr_y_less_0(param, height, scr);
+    }
+    return param->area_flush;
+}
+
 static inline void _adjust_clip_area_and_flush(_flush_scr_param_st * param, gt_obj_st * target_scr) {
     param->disp->area_disp.x = target_scr->area.x + param->valid.area_clip.x;
     param->disp->area_disp.y = target_scr->area.y + param->valid.area_clip.y;
@@ -645,8 +685,6 @@ static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
 static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     gt_obj_st * scr = param->disp->scr_act;
     gt_color_t color_fill = gt_screen_get_bgcolor(scr);
-    uint16_t width = gt_disp_get_res_hor(param->disp);
-    uint16_t height = gt_disp_get_res_ver(param->disp);
 
     scr->area.x = param->disp->area_act.x;
     scr->area.y = param->disp->area_act.y;
@@ -654,33 +692,7 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     if (false == gt_area_is_intersect_screen(&scr->area, &param->area_flush)) {
         return ;
     }
-
-    if(width == param->area_flush.w && height == param->area_flush.h){
-        if (param->area_flush.x < 0 || (param->area_flush.x + param->area_flush.w > width)) {
-            param->area_flush.x = 0;
-        }
-        if (param->area_flush.y < 0 || (param->area_flush.y + param->area_flush.h > height)) {
-            param->area_flush.y = 0;
-        }
-    } else {
-        // Calculate the area_flush x coordinates and width
-        if (0 == scr->area.x) {
-            _scr_x_equal_0(param, width);
-        } else if (scr->area.x > 0) {
-            _scr_x_large_0(param, width, scr);
-        } else if (scr->area.x < 0) {
-            _scr_x_less_0(param, width, scr);
-        }
-
-        // Calculate the area_flush y coordinates and height
-        if (0 == scr->area.y) {
-            _scr_y_equal_0(param, height);
-        } else if (scr->area.y > 0) {
-            _scr_y_large_0(param, height, scr);
-        } else if (scr->area.y < 0) {
-            _scr_y_less_0(param, height, scr);
-        }
-    }
+    _update_area_flush_by_calc_partly_redraw_area(param, scr);
 
     uint16_t end_y = param->area_flush.y + param->area_flush.h;
     param->disp->area_disp.y = param->area_flush.y;
