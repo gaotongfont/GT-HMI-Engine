@@ -38,6 +38,12 @@
     #define GT_INDEV_POINT_LOG      0
 #endif
 
+#ifndef GT_INDEV_KEYPAD_LOG
+    /**
+     * @brief 0[default]: disable log, 1: enable log
+     */
+    #define GT_INDEV_KEYPAD_LOG      0
+#endif
 
 /* private typedef ------------------------------------------------------*/
 
@@ -487,7 +493,8 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
     }
 
 #if GT_INDEV_POINT_LOG
-    GT_LOG_A(GT_LOG_TAG_TP, "press %p (%d, %d) (%d, %d)", point_p->obj_target, point_p->newly.x, point_p->newly.y, point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
+    GT_LOG_A(GT_LOG_TAG_TP, "press %p (%d, %d) diff: (%d, %d)", point_p->obj_target, point_p->newly.x, point_p->newly.y,
+                point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
 #endif
 
     point_p->obj_act = _search_active_obj_from_all_layers(&point_p->newly, false);
@@ -640,7 +647,10 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
                 gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSED, &_indev_params);
             }
         }
-        // GT_LOGD(GT_LOG_TAG_GUI, "keypad the key = %#X  count_keydown = %d obj type = %d", indev->data.keypad.key, indev->data.keypad.count_keydown, indev->data.keypad.obj_target->class->type);
+#if GT_INDEV_KEYPAD_LOG
+        GT_LOG_A(GT_LOG_TAG_TP, "keypad key: %#X count_keydown: %d obj type: %d",
+                    indev->data.keypad.key, indev->data.keypad.count_keydown, indev->data.keypad.obj_target->class->type);
+#endif
         return ;
     }
     // 长按
@@ -666,7 +676,9 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
                 }
             }
         }
-        // GT_LOGD(GT_LOG_TAG_GUI, "long, key = %#X  count_keydown = %d", indev->data.keypad.key, indev->data.keypad.count_keydown);
+#if GT_INDEV_KEYPAD_LOG
+        GT_LOG_A(GT_LOG_TAG_TP, "long key: %#X count_keydown: %d", indev->data.keypad.key, indev->data.keypad.count_keydown);
+#endif
     }
 }
 
