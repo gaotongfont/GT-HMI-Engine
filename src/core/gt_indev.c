@@ -23,6 +23,14 @@
 #include "../widgets/gt_dialog.h"
 
 /* private define -------------------------------------------------------*/
+#ifndef GT_INDEV_SCROLL_THROW_SPEED_UP
+    /**
+     * @brief 0[default]: do not append release scroll throw sum calc distance;
+     *        1: append release scroll throw sum calc distance;
+     */
+    #define GT_INDEV_SCROLL_THROW_SPEED_UP      0
+#endif
+
 #ifndef GT_INDEV_POINT_LOG
     /**
      * @brief 0[default]: disable log, 1: enable log
@@ -111,34 +119,34 @@ static bool _is_indev_home_gesture(gt_indev_st * indev, gt_event_type_et* event)
     struct _point * point_p = &indev->data.point;
     point_p->gesture = _get_scroll_dir(indev);
 
-    if((uint16_t)GT_DIR_NONE == point_p->gesture) {
+    if ((uint16_t)GT_DIR_NONE == point_p->gesture) {
         return false;
     }
 
-    if(GT_DIR_DOWN == point_p->gesture){
+    if (GT_DIR_DOWN == point_p->gesture) {
         // top
-        if(GT_CFG_DEFAULT_AREA_HOME_GESTURE_TOP >= point_p->act.y){
+        if (GT_CFG_DEFAULT_AREA_HOME_GESTURE_TOP >= point_p->act.y) {
             if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_TOP;
             return true;
         }
     }
-    else if(GT_DIR_UP == point_p->gesture){
+    else if (GT_DIR_UP == point_p->gesture) {
         // bottom
-        if(GT_CFG_DEFAULT_AREA_HOME_GESTURE_BOTTOM >= GT_SCREEN_HEIGHT - point_p->act.y){
+        if (GT_CFG_DEFAULT_AREA_HOME_GESTURE_BOTTOM >= GT_SCREEN_HEIGHT - point_p->act.y) {
             if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_BOTTOM;
             return true;
         }
     }
-    else if(GT_DIR_LEFT == point_p->gesture){
+    else if (GT_DIR_LEFT == point_p->gesture) {
         // right
-        if(GT_CFG_DEFAULT_AREA_HOME_GESTURE_RIGHT >= GT_SCREEN_WIDTH - point_p->act.x){
+        if (GT_CFG_DEFAULT_AREA_HOME_GESTURE_RIGHT >= GT_SCREEN_WIDTH - point_p->act.x) {
             if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_RIGHT;
             return true;
         }
     }
-    else if(GT_DIR_RIGHT == point_p->gesture){
+    else if (GT_DIR_RIGHT == point_p->gesture) {
         // left
-        if(GT_CFG_DEFAULT_AREA_HOME_GESTURE_LEFT >= point_p->act.x){
+        if (GT_CFG_DEFAULT_AREA_HOME_GESTURE_LEFT >= point_p->act.x) {
             if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_LEFT;
             return true;
         }
@@ -367,6 +375,14 @@ static inline void _send_released_event(struct _point * point_p) {
     }
 }
 
+static inline void _scroll_calc_throw_distance(struct _point * point_p) {
+    point_p->scroll_diff.x = point_p->newly.x - point_p->last.x;
+    point_p->scroll_diff.y = point_p->newly.y - point_p->last.y;
+
+    point_p->scroll_throw.x = (point_p->scroll_throw.x + point_p->scroll_diff.x) >> 1;
+    point_p->scroll_throw.y = (point_p->scroll_throw.y + point_p->scroll_diff.y) >> 1;
+}
+
 static void _indev_released_handle(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
     if (NULL == point_p->obj_target) {
@@ -381,6 +397,9 @@ static void _indev_released_handle(gt_indev_st * indev) {
     point_p->obj_act = NULL;
 
     if (point_p->obj_scroll) {
+#if GT_INDEV_SCROLL_THROW_SPEED_UP
+        _scroll_calc_throw_distance(point_p);
+#endif
         _indev_scroll_throw_handler_anim_start(indev);
     }
     point_p->obj_target = NULL;
@@ -489,11 +508,7 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
         }
     }
 
-    point_p->scroll_diff.x = point_p->newly.x - point_p->last.x;
-    point_p->scroll_diff.y = point_p->newly.y - point_p->last.y;
-
-    point_p->scroll_throw.x = (point_p->scroll_throw.x + point_p->scroll_diff.x) >> 1;
-    point_p->scroll_throw.y = (point_p->scroll_throw.y + point_p->scroll_diff.y) >> 1;
+    _scroll_calc_throw_distance(point_p);
 
     if (NULL == point_p->obj_target) {
         return;
