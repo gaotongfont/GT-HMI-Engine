@@ -58,6 +58,15 @@ void gt_refr_timer(void)
         if (NULL == area) {
             return ;
         }
+#if GT_REFR_AREA_ALIGN_HOR
+        area->x -= area->x % GT_REFR_AREA_ALIGN_HOR_PIXEL;
+        area->w += GT_REFR_AREA_ALIGN_HOR_PIXEL - (area->w % GT_REFR_AREA_ALIGN_HOR_PIXEL);
+ #endif
+
+#if GT_REFR_AREA_ALIGN_VER
+        area->y -= area->y % GT_REFR_AREA_ALIGN_VER_PIXEL;
+        area->h += GT_REFR_AREA_ALIGN_VER_PIXEL - (area->h % GT_REFR_AREA_ALIGN_VER_PIXEL);
+#endif
         gt_disp_ref_area(area);
         _gt_disp_refr_area_pop(disp);
 

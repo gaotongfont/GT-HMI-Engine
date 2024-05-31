@@ -18,7 +18,35 @@ extern "C" {
 
 
 /* define ---------------------------------------------------------------*/
+#ifndef GT_REFR_AREA_ALIGN_HOR
+    /**
+     * @brief Refresh area resize to alignment horizontal, x or width will be
+     *      aligned to the multiple of GT_REFR_AREA_ALIGN_HOR_PIXEL
+     */
+    #define GT_REFR_AREA_ALIGN_HOR          0
+#endif
 
+#if GT_REFR_AREA_ALIGN_HOR
+    /**
+     * @brief The pixel value for horizontal alignment
+     */
+    #define GT_REFR_AREA_ALIGN_HOR_PIXEL    0
+#endif
+
+#ifndef GT_REFR_AREA_ALIGN_VER
+    /**
+     * @brief Refresh area resize to alignment vertical, y or height will be
+     *     aligned to the multiple of GT_REFR_AREA_ALIGN_VER_PIXEL
+     */
+    #define GT_REFR_AREA_ALIGN_VER          0
+#endif
+
+#if GT_REFR_AREA_ALIGN_VER
+    /**
+     * @brief The pixel value for vertical alignment
+     */
+    #define GT_REFR_AREA_ALIGN_VER_PIXEL    0
+#endif
 
 
 /* typedef --------------------------------------------------------------*/
