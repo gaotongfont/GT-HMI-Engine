@@ -23,7 +23,12 @@
 #include "../widgets/gt_dialog.h"
 
 /* private define -------------------------------------------------------*/
-
+#ifndef GT_INDEV_POINT_LOG
+    /**
+     * @brief 0[default]: disable log, 1: enable log
+     */
+    #define GT_INDEV_POINT_LOG      0
+#endif
 
 
 /* private typedef ------------------------------------------------------*/
@@ -368,6 +373,10 @@ static void _indev_released_handle(gt_indev_st * indev) {
         return;
     }
 
+#if GT_INDEV_POINT_LOG
+    GT_LOG_A(GT_LOG_TAG_TP, "release %p (%d, %d)", point_p->obj_target, point_p->newly.x, point_p->newly.y);
+#endif
+
     _send_released_event(point_p);
     point_p->obj_act = NULL;
 
@@ -457,7 +466,10 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
         point_p->scroll_throw.x = 0;
         point_p->scroll_throw.y = 0;
     }
-    // GT_LOGD(">", "%p (%d, %d) (%d, %d)", point_p->obj_target, point_p->newly.x, point_p->newly.y, point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
+
+#if GT_INDEV_POINT_LOG
+    GT_LOG_A(GT_LOG_TAG_TP, "press %p (%d, %d) (%d, %d)", point_p->obj_target, point_p->newly.x, point_p->newly.y, point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
+#endif
 
     point_p->obj_act = _search_active_obj_from_all_layers(&point_p->newly, false);
 
@@ -495,11 +507,14 @@ static void _gt_indev_handler_point(gt_indev_st * indev)
     gt_indev_data_st data_indev = {
         .point.x = point_p->newly.x,
         .point.y = point_p->newly.y,
-        .state = GT_INDEV_STATE_RELEASED,
+        .state = GT_INDEV_STATE_INVALID,
     };
 
     /* call user hard interface */
     indev->drv->read_cb(indev->drv, &data_indev);
+    if (GT_INDEV_STATE_INVALID == data_indev.state) {
+        return;
+    }
 
     if (data_indev.point.x > GT_SCREEN_WIDTH || data_indev.point.y > GT_SCREEN_HEIGHT) {
         // GT_LOGW(GT_LOG_TAG_TP, "point out of range: x:%d, y:%d", data_indev.point.x, data_indev.point.y);
@@ -529,9 +544,12 @@ static void _gt_indev_handler_button(gt_indev_st * indev)
     static uint32_t last_run = 0;
     gt_indev_data_st data_indev = {
         .btn_id = indev->data.button.id,
-        .state = GT_INDEV_STATE_RELEASED,
+        .state = GT_INDEV_STATE_INVALID,
     };
     indev->drv->read_cb(indev->drv, &data_indev);
+    if (GT_INDEV_STATE_INVALID == data_indev.state) {
+        return;
+    }
 
     indev->state = data_indev.state;
     if (indev->state == GT_INDEV_STATE_PRESSED) {
@@ -559,12 +577,16 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
 {
     gt_indev_data_st data_indev = {
         .key = GT_KEY_NONE,
-        .state = GT_INDEV_STATE_RELEASED,
+        .state = GT_INDEV_STATE_INVALID,
     };
     static uint32_t last_key = GT_KEY_NONE;
     gt_obj_st * scr = gt_disp_get_scr();
 
     indev->drv->read_cb(indev->drv, &data_indev);
+    if (GT_INDEV_STATE_INVALID == data_indev.state) {
+        return;
+    }
+
     indev->state = data_indev.state;
     indev->data.keypad.obj_target = gt_find_clicked_obj_by_focus(scr);
 
