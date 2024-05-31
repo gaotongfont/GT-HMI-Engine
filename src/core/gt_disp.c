@@ -465,6 +465,96 @@ static inline void _clear_buffer(_flush_scr_param_st * param, gt_color_t prev_c,
     }
 }
 
+static inline void _scr_x_equal_0(_flush_scr_param_st * param, uint16_t width) {
+    if (param->area_flush.x < 0) {
+        param->area_flush.w = param->area_flush.w + param->area_flush.x;
+        param->area_flush.x = 0;
+    }
+
+    if ((param->area_flush.x % width) + param->area_flush.w > width) {
+        param->area_flush.w = width - (param->area_flush.x % width);
+    }
+}
+
+static inline void _scr_x_large_0(_flush_scr_param_st * param, uint16_t width, gt_obj_st * scr) {
+    if (param->area_flush.x < 0) {
+        param->area_flush.w = param->area_flush.w + param->area_flush.x;
+        param->area_flush.x = 0;
+    }
+
+    if (param->area_flush.x > scr->area.x) {
+        param->area_flush.x = param->area_flush.x - scr->area.x;
+    } else {
+        param->area_flush.w = (param->area_flush.w + param->area_flush.x) - scr->area.x;
+        param->area_flush.x = 0;
+    }
+
+    if ((param->area_flush.x % width) + param->area_flush.w > width) {
+        param->area_flush.w = width - (param->area_flush.x % width);
+    }
+}
+
+static inline void _scr_x_less_0(_flush_scr_param_st * param, uint16_t width, gt_obj_st * scr) {
+    if (param->area_flush.x < 0) {
+        param->area_flush.w = param->area_flush.w + param->area_flush.x - scr->area.x;
+        param->area_flush.x = 0;
+    }
+
+    if (param->area_flush.x > scr->area.x) {
+        param->area_flush.x = param->area_flush.x - scr->area.x;
+    } else if (param->area_flush.x > 0) {
+        param->area_flush.x = param->area_flush.x - scr->area.x;
+    }
+
+    if ((param->area_flush.x % width) + param->area_flush.w > width) {
+        param->area_flush.w = width - (param->area_flush.x % width);
+    }
+}
+
+static inline void _scr_y_equal_0(_flush_scr_param_st * param, uint16_t height) {
+    if (param->area_flush.y < 0) {
+        param->area_flush.h = param->area_flush.h + param->area_flush.y;
+        param->area_flush.y = 0;
+    }
+
+    if ((param->area_flush.y % height) + param->area_flush.h > height) {
+        param->area_flush.h = height - (param->area_flush.y % height);
+    }
+}
+
+static inline void _scr_y_large_0(_flush_scr_param_st * param, uint16_t height, gt_obj_st * scr) {
+    if (param->area_flush.y < 0) {
+        param->area_flush.h = param->area_flush.h + param->area_flush.y;
+        param->area_flush.y = 0;
+    }
+
+    if (param->area_flush.y > scr->area.y) {
+        param->area_flush.y = param->area_flush.y - scr->area.y;
+    } else {
+        param->area_flush.h = (param->area_flush.h + param->area_flush.y) - scr->area.y;
+        param->area_flush.y = 0;
+    }
+
+    if ((param->area_flush.y % height) + param->area_flush.h > height) {
+        param->area_flush.h = height - (param->area_flush.y % height);
+    }
+}
+
+static inline void _scr_y_less_0(_flush_scr_param_st * param, uint16_t height, gt_obj_st * scr) {
+    if (param->area_flush.y <= 0) {
+        param->area_flush.h = param->area_flush.h + param->area_flush.y - scr->area.y;
+        param->area_flush.y = 0;
+    }
+
+    if (param->area_flush.y > 0) {
+        param->area_flush.y = param->area_flush.y - scr->area.y;
+    }
+
+    if ((param->area_flush.y % height) + param->area_flush.h > height) {
+        param->area_flush.h = height - (param->area_flush.y % height);
+    }
+}
+
 static inline void _adjust_clip_area_and_flush(_flush_scr_param_st * param, gt_obj_st * target_scr) {
     param->disp->area_disp.x = target_scr->area.x + param->valid.area_clip.x;
     param->disp->area_disp.y = target_scr->area.y + param->valid.area_clip.y;
@@ -566,100 +656,29 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     }
 
     if(width == param->area_flush.w && height == param->area_flush.h){
-        if(param->area_flush.x < 0 || (param->area_flush.x + param->area_flush.w > width)){
+        if (param->area_flush.x < 0 || (param->area_flush.x + param->area_flush.w > width)) {
             param->area_flush.x = 0;
         }
-        if(param->area_flush.y < 0 || (param->area_flush.y + param->area_flush.h > height)){
+        if (param->area_flush.y < 0 || (param->area_flush.y + param->area_flush.h > height)) {
             param->area_flush.y = 0;
         }
-    }
-    else{
+    } else {
         // Calculate the area_flush x coordinates and width
-        if (scr->area.x == 0) {
-            if(param->area_flush.x < 0){
-                param->area_flush.w = param->area_flush.w + param->area_flush.x;
-                param->area_flush.x = 0;
-            }
-
-            if ((param->area_flush.x % width) + param->area_flush.w > width) {
-                param->area_flush.w = width - (param->area_flush.x % width);
-            }
-        }
-        else if (scr->area.x > 0) {
-            if (param->area_flush.x < 0) {
-                param->area_flush.w = param->area_flush.w + param->area_flush.x;
-                param->area_flush.x = 0;
-            }
-
-            if (param->area_flush.x > scr->area.x) {
-                param->area_flush.x = param->area_flush.x - scr->area.x;
-            } else {
-                param->area_flush.w = (param->area_flush.w + param->area_flush.x) - scr->area.x;
-                param->area_flush.x = 0;
-            }
-
-            if ((param->area_flush.x % width) + param->area_flush.w > width) {
-                param->area_flush.w = width - (param->area_flush.x % width);
-            }
-        }
-        else if (scr->area.x < 0) {
-            if (param->area_flush.x < 0) {
-                param->area_flush.w = param->area_flush.w + param->area_flush.x - scr->area.x;
-                param->area_flush.x = 0;
-            }
-
-            if (param->area_flush.x > scr->area.x) {
-                param->area_flush.x = param->area_flush.x - scr->area.x;
-            } else if (param->area_flush.x > 0) {
-                param->area_flush.x = param->area_flush.x - scr->area.x;
-            }
-
-            if ((param->area_flush.x % width) + param->area_flush.w > width) {
-                param->area_flush.w = width - (param->area_flush.x % width);
-            }
+        if (0 == scr->area.x) {
+            _scr_x_equal_0(param, width);
+        } else if (scr->area.x > 0) {
+            _scr_x_large_0(param, width, scr);
+        } else if (scr->area.x < 0) {
+            _scr_x_less_0(param, width, scr);
         }
 
         // Calculate the area_flush y coordinates and height
-        if (scr->area.y == 0) {
-            if (param->area_flush.y < 0) {
-                param->area_flush.h = param->area_flush.h + param->area_flush.y;
-                param->area_flush.y = 0;
-            }
-
-            if ((param->area_flush.y % height) + param->area_flush.h > height) {
-                param->area_flush.h = height - (param->area_flush.y % height);
-            }
-        }
-        else if (scr->area.y > 0) {
-            if (param->area_flush.y < 0) {
-                param->area_flush.h = param->area_flush.h + param->area_flush.y;
-                param->area_flush.y = 0;
-            }
-
-            if (param->area_flush.y > scr->area.y) {
-                param->area_flush.y = param->area_flush.y - scr->area.y;
-            } else {
-                param->area_flush.h = (param->area_flush.h + param->area_flush.y) - scr->area.y;
-                param->area_flush.y = 0;
-            }
-
-            if ((param->area_flush.y % height) + param->area_flush.h > height) {
-                param->area_flush.h = height - (param->area_flush.y % height);
-            }
-        }
-        else if (scr->area.y < 0) {
-            if (param->area_flush.y <= 0) {
-                param->area_flush.h = param->area_flush.h + param->area_flush.y - scr->area.y;
-                param->area_flush.y = 0;
-            }
-
-            if (param->area_flush.y > 0) {
-                param->area_flush.y = param->area_flush.y - scr->area.y;
-            }
-
-            if ((param->area_flush.y % height) + param->area_flush.h > height) {
-                param->area_flush.h = height - (param->area_flush.y % height);
-            }
+        if (0 == scr->area.y) {
+            _scr_y_equal_0(param, height);
+        } else if (scr->area.y > 0) {
+            _scr_y_large_0(param, height, scr);
+        } else if (scr->area.y < 0) {
+            _scr_y_less_0(param, height, scr);
         }
     }
 
