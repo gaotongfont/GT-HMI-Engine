@@ -42,7 +42,7 @@
     /**
      * @brief 0[default]: disable log, 1: enable log
      */
-    #define GT_INDEV_KEYPAD_LOG      0
+    #define GT_INDEV_KEYPAD_LOG     0
 #endif
 
 /* private typedef ------------------------------------------------------*/
