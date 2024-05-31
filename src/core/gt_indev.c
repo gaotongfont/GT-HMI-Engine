@@ -102,8 +102,7 @@ static gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
     return ret;
 }
 
-static bool _is_indev_home_gesture(gt_indev_st * indev, gt_event_type_et* event)
-{
+static bool _is_indev_home_gesture(gt_indev_st * indev, gt_event_type_et* event) {
     struct _point * point_p = &indev->data.point;
     point_p->gesture = _get_scroll_dir(indev);
 
@@ -143,21 +142,24 @@ static bool _is_indev_home_gesture(gt_indev_st * indev, gt_event_type_et* event)
     return false;
 }
 
-static bool _indev_send_home_gesture_event(gt_indev_st * indev)
-{
+static bool _indev_send_home_gesture_event(gt_indev_st * indev) {
     if ((gt_tick_get() - indev->timestamp_start) > GT_CFG_DEFAULT_POINT_HOME_GESTURE_TIME) {
         return false;
     }
 
     gt_obj_st * scr = gt_disp_get_scr();
-
     gt_event_type_et e = GT_EVENT_TYPE_NONE;
-    if(_is_indev_home_gesture(indev, &e)){
-        gt_event_send(scr, e, NULL);
-        return true;
+
+    if (false == _is_indev_home_gesture(indev, &e)) {
+        return false;
     }
 
-    return false;
+    gt_event_send(scr, e, NULL);
+
+    if (indev->scroll_throw_anim) {
+        gt_anim_set_time(indev->scroll_throw_anim, 0);
+    }
+    return true;
 }
 
 static inline bool _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const point_p, gt_size_t * dx, gt_size_t * dy) {
@@ -233,10 +235,6 @@ static void _indev_scroll_throw_handler(gt_indev_st * indev) {
         return ;
     }
 
-    if (_indev_send_home_gesture_event(indev)) {
-        return ;
-    }
-
     gt_obj_st * obj_scroll = point_p->obj_scroll;
     gt_size_t dx = 0;
     gt_size_t dy = 0;
@@ -283,15 +281,23 @@ static void _indev_scroll_throw_exec_cb(void * indev, int32_t v) {
     }
 }
 
-static void _indev_scroll_throw_ready_cb(struct gt_anim_s * anim) {
-    gt_indev_st * dev_p = anim->tar;
+static inline void _indev_scroll_throw_reset(gt_indev_st * indev) {
+    indev->scroll_throw_anim = NULL;
+    indev->data.point.scroll_throw.x = 0;
+    indev->data.point.scroll_throw.y = 0;
+}
 
-    dev_p->scroll_throw_anim = NULL;
-    dev_p->data.point.scroll_throw.x = 0;
-    dev_p->data.point.scroll_throw.y = 0;
+static void _indev_scroll_throw_ready_cb(struct gt_anim_s * anim) {
+    gt_indev_st * dev_p = (gt_indev_st * )anim->tar;
+
+    _indev_scroll_throw_reset(dev_p);
 }
 
 static inline void _indev_scroll_throw_handler_anim_start(gt_indev_st * indev) {
+    if (_indev_send_home_gesture_event(indev)) {
+        _indev_scroll_throw_reset(indev);
+        return ;
+    }
     gt_anim_st anim;
     gt_anim_init(&anim);
     gt_anim_set_target(&anim, indev);
