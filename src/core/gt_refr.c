@@ -47,6 +47,9 @@ void gt_refr_timer(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
     gt_area_st * area = NULL;
+#if GT_REFR_AREA_ALIGN_HOR || GT_REFR_AREA_ALIGN_VER
+    uint16_t align_val = 0;
+#endif
     if (NULL == disp) {
         return ;
     }
@@ -59,13 +62,19 @@ void gt_refr_timer(void)
             return ;
         }
 #if GT_REFR_AREA_ALIGN_HOR
-        area->x -= area->x % GT_REFR_AREA_ALIGN_HOR_PIXEL;
-        area->w += GT_REFR_AREA_ALIGN_HOR_PIXEL - (area->w % GT_REFR_AREA_ALIGN_HOR_PIXEL);
+        align_val = gt_abs(area->x % GT_REFR_AREA_ALIGN_HOR_PIXEL);
+        if (align_val) {
+            area->x -= align_val;
+            area->w = ((uint16_t)(align_val + GT_REFR_AREA_ALIGN_HOR_PIXEL + area->w) / GT_REFR_AREA_ALIGN_HOR_PIXEL) * GT_REFR_AREA_ALIGN_HOR_PIXEL;
+        }
  #endif
 
 #if GT_REFR_AREA_ALIGN_VER
-        area->y -= area->y % GT_REFR_AREA_ALIGN_VER_PIXEL;
-        area->h += GT_REFR_AREA_ALIGN_VER_PIXEL - (area->h % GT_REFR_AREA_ALIGN_VER_PIXEL);
+        align_val = gt_abs(area->y % GT_REFR_AREA_ALIGN_VER_PIXEL);
+        if (align_val) {
+            area->y -= align_val;
+            area->h = ((uint16_t)(align_val + GT_REFR_AREA_ALIGN_VER_PIXEL + area->h) / GT_REFR_AREA_ALIGN_VER_PIXEL) * GT_REFR_AREA_ALIGN_VER_PIXEL;
+        }
 #endif
         gt_disp_ref_area(area);
         _gt_disp_refr_area_pop(disp);

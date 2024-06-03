@@ -29,6 +29,8 @@ extern "C" {
 #if GT_REFR_AREA_ALIGN_HOR
     /**
      * @brief The pixel value for horizontal alignment
+     *      such as: x: 3, w: 8, GT_REFR_AREA_ALIGN_HOR_PIXEL: 4
+     *      result: x will be 0, w will be 12 = (3 + 4 + 8) / 4 * 4.
      */
     #define GT_REFR_AREA_ALIGN_HOR_PIXEL    0
 #endif
@@ -44,6 +46,8 @@ extern "C" {
 #if GT_REFR_AREA_ALIGN_VER
     /**
      * @brief The pixel value for vertical alignment
+     *      such as: y: 3, h: 8, GT_REFR_AREA_ALIGN_VER_PIXEL: 4
+     *      result: y will be 0, h will be 12 = (3 + 4 + 8) / 4 * 4.
      */
     #define GT_REFR_AREA_ALIGN_VER_PIXEL    0
 #endif
