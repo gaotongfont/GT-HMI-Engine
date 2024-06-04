@@ -282,12 +282,12 @@ typedef uint32_t gt_color_val_t;
 #endif
 
 typedef union {
-    uint8_t full; /*must be declared first to set all bits of byte via initializer list*/
     union {
         uint8_t blue : 1;
         uint8_t green : 1;
         uint8_t red : 1;
     } ch;
+    uint8_t full; /*must be declared first to set all bits of byte via initializer list*/
 } gt_color1_t;
 
 typedef union {
