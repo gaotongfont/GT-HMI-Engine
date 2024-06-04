@@ -23,7 +23,7 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct _gt_draw_blend_dsc_s{
+typedef struct _gt_draw_blend_dsc_s {
     gt_area_st  * dst_area;  /** dst area, draw temp cache */
     gt_color_t  * dst_buf;   /** blend dst color */
 

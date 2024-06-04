@@ -56,7 +56,7 @@ static inline void _fill_no_opacity(
     uint16_t step_src_line = src_width - w;
     uint16_t x, y, width = w * sizeof(gt_color_t);
 
-    if (opa <= GT_OPA_MIN) {
+    if (opa < GT_OPA_MIN) {
         return ;
     }
     /** fill dsc->dst_buf use opa */
@@ -145,7 +145,7 @@ static inline void _fill_opacity(
     gt_opa_t opa_tmp = GT_OPA_0;
 
     if (src_p) {
-        if (opa >= GT_OPA_MAX) {
+        if (opa > GT_OPA_MAX) {
             /* be called too much */
             for (y = 0; y < h; y++) {
 #if GT_FLUSH_CONVERT_VERTICAL
@@ -159,7 +159,7 @@ static inline void _fill_opacity(
 #else
                     ++mask_p;
 #endif
-                    if (opa_tmp >= GT_OPA_MAX) {
+                    if (opa_tmp > GT_OPA_MAX) {
                         *dst_p = *src_p;
 #if GT_FLUSH_CONVERT_VERTICAL
                         src_p += src_width;
@@ -169,7 +169,7 @@ static inline void _fill_opacity(
                         ++dst_p;
                         continue;
                     }
-                    else if (opa_tmp <= GT_OPA_MIN) {
+                    else if (opa_tmp < GT_OPA_MIN) {
 #if GT_FLUSH_CONVERT_VERTICAL
                         src_p += src_width;
 #else
@@ -215,7 +215,7 @@ static inline void _fill_opacity(
 #else
                 ++mask_p;
 #endif
-                if (opa_tmp >= GT_OPA_MAX) {
+                if (opa_tmp > GT_OPA_MAX) {
                     *dst_p = *src_p;
                     ++dst_p;
 #if GT_FLUSH_CONVERT_VERTICAL
@@ -225,7 +225,7 @@ static inline void _fill_opacity(
 #endif
                     continue;
                 }
-                else if (opa_tmp <= GT_OPA_MIN) {
+                else if (opa_tmp < GT_OPA_MIN) {
                     ++dst_p;
 #if GT_FLUSH_CONVERT_VERTICAL
                     src_p += src_width;
@@ -259,7 +259,7 @@ static inline void _fill_opacity(
         return;
     }
     // draw circle, color_scr_p is NULL
-    if (opa >= GT_OPA_MAX) {
+    if (opa > GT_OPA_MAX) {
         for (y = 0; y < h; y++) {
 #if GT_FLUSH_CONVERT_VERTICAL
             mask_p = (gt_opa_t * )mask + y;
@@ -271,12 +271,12 @@ static inline void _fill_opacity(
 #else
                 ++mask_p;
 #endif
-                if (opa_tmp >= GT_OPA_MAX) {
+                if (opa_tmp > GT_OPA_MAX) {
                     *dst_p = color_fill;
                     ++dst_p;
                     continue;
                 }
-                else if (opa_tmp <= GT_OPA_MIN) {
+                else if (opa_tmp < GT_OPA_MIN) {
                     ++dst_p;
                     continue;
                 }
@@ -307,12 +307,12 @@ static inline void _fill_opacity(
 #else
             ++mask_p;
 #endif
-            if (opa_tmp >= GT_OPA_MAX) {
+            if (opa_tmp > GT_OPA_MAX) {
                 *dst_p = color_fill;
                 ++dst_p;
                 continue;
             }
-            else if (opa_tmp <= GT_OPA_MIN) {
+            else if (opa_tmp < GT_OPA_MIN) {
                 ++dst_p;
                 continue;
             }
@@ -359,7 +359,7 @@ static inline gt_point_st _get_cover_dst_area_and_offset_by(
  */
 void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st * dsc)
 {
-    if (dsc->opa <= GT_OPA_MIN) return;
+    if (dsc->opa < GT_OPA_MIN) return;
 
     /** 绘制区域和显示屏buffer的交集区域 */
     gt_area_st area_intersect = {0};
@@ -483,7 +483,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
 {
     if(!draw_ctx || !dsc || !res) return;
 
-    if (dsc->opa <= GT_OPA_MIN) return;
+    if (dsc->opa < GT_OPA_MIN) return;
 
     /** 绘制区域和显示屏buffer的交集区域 */
     gt_area_st area_intersect = {0};
