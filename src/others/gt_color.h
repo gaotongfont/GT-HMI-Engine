@@ -382,12 +382,25 @@ static inline gt_color_t gt_color_mix(gt_color_t c1, gt_color_t c2, uint8_t mix)
         return c2;
     }
     mix = (mix + 4) >> 3;
+
+    #if GT_COLOR_16_SWAP
+    c1.full = (GT_COLOR_GET_B16(c1) << 11) | (GT_COLOR_GET_G16(c1) << 5) | GT_COLOR_GET_R16(c1);
+    c2.full = (GT_COLOR_GET_B16(c2) << 11) | (GT_COLOR_GET_G16(c2) << 5) | GT_COLOR_GET_R16(c2);
+    #endif
+
     /* 0x7E0F81F = 0b00000111111000001111100000011111 */
     uint32_t fg = ((c1.full << 16) | c1.full) & 0x07E0F81F;
     uint32_t bg = ((c2.full << 16) | c2.full) & 0x07E0F81F;
     bg += ((fg - bg) * mix) >> 5;
     bg &= 0x07E0F81F;
+
+    #if GT_COLOR_16_SWAP
+    GT_COLOR_SET_G16(ret, (bg >> 21) & 0x3F);
+    GT_COLOR_SET_R16(ret, bg >> 11);
+    GT_COLOR_SET_B16(ret, bg);
+    #else
     ret.full = (uint16_t)((bg >> 16) | bg);
+    #endif
 #else
     /* GT_COLOR_DEPTH == 8 or 32 */
     GT_COLOR_SET_R(ret, GT_UDIV255((uint16_t)GT_COLOR_GET_R(c1) * mix + GT_COLOR_GET_R(c2) *
