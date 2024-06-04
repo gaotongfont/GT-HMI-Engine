@@ -70,6 +70,22 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent);
 void gt_textarea_set_text(gt_obj_st * textarea, char * text);
 
 /**
+ * @brief Get string from textarea widget
+ *
+ * @param textarea
+ * @param idx
+ * @return char*
+ */
+char * gt_textarea_get_text(gt_obj_st * textarea,uint16_t idx);
+
+/**
+ * @brief Clear all string in textarea widget
+ *
+ * @param textarea
+ */
+void gt_textarea_clear_all_str(gt_obj_st * textarea);
+
+/**
  * @brief add string to textarea widget with style
  *
  * @param textarea obj pointer

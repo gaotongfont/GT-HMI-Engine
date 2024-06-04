@@ -333,6 +333,14 @@ char * gt_textarea_get_text(gt_obj_st * textarea,uint16_t idx)
     return style->contents[idx].text;
 }
 
+void gt_textarea_clear_all_str(gt_obj_st * textarea)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return NULL;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    _free_contents(textarea);
+}
 
 void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et style_mask, gt_color_t color)
 {
