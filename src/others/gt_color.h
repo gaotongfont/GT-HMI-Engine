@@ -455,8 +455,24 @@ static inline gt_color_t gt_color_mix(gt_color_t c1, gt_color_t c2, uint8_t mix)
 {
     gt_color_t ret;
 
-#if GT_COLOR_DEPTH != 1
-    /*GT_COLOR_DEPTH == 8, 16 or 32*/
+#if 1 == GT_COLOR_DEPTH
+    /*GT_COLOR_DEPTH == 1*/
+    ret.full = mix > GT_OPA_50 ? c1.full : c2.full;
+#elif 16 == GT_COLOR_DEPTH
+    if (mix >= GT_OPA_MAX) {
+        return c1;
+    } else if (mix <= GT_OPA_MIN) {
+        return c2;
+    }
+    mix = (mix + 4) >> 3;
+    /* 0x7E0F81F = 0b00000111111000001111100000011111 */
+    uint32_t fg = ((c1.full << 16) | c1.full) & 0x07E0F81F;
+    uint32_t bg = ((c2.full << 16) | c2.full) & 0x07E0F81F;
+    bg += ((fg - bg) * mix) >> 5;
+    bg &= 0x07E0F81F;
+    ret.full = (uint16_t)((bg >> 16) | bg);
+#else
+    /* GT_COLOR_DEPTH == 8 or 32 */
     GT_COLOR_SET_R(ret, GT_UDIV255((uint16_t)GT_COLOR_GET_R(c1) * mix + GT_COLOR_GET_R(c2) *
                                    (255 - mix) + GT_COLOR_MIX_ROUND_OFS));
     GT_COLOR_SET_G(ret, GT_UDIV255((uint16_t)GT_COLOR_GET_G(c1) * mix + GT_COLOR_GET_G(c2) *
@@ -464,9 +480,6 @@ static inline gt_color_t gt_color_mix(gt_color_t c1, gt_color_t c2, uint8_t mix)
     GT_COLOR_SET_B(ret, GT_UDIV255((uint16_t)GT_COLOR_GET_B(c1) * mix + GT_COLOR_GET_B(c2) *
                                    (255 - mix) + GT_COLOR_MIX_ROUND_OFS));
     GT_COLOR_SET_A(ret, 0xFF);
-#else
-    /*GT_COLOR_DEPTH == 1*/
-    ret.full = mix > GT_OPA_50 ? c1.full : c2.full;
 #endif
 
     return ret;
