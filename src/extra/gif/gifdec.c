@@ -580,7 +580,7 @@ render_frame_rect(gd_GIF *gif, uint8_t *buffer, uint8_t * mask)
             mask[i + k]     = GT_OPA_100;
 #elif GT_COLOR_DEPTH == 8
             cnt = i + k;
-            color = gt_color_make(color[0], color[1], color[2]);
+            c = gt_color_make(color[0], color[1], color[2]);
             buffer[cnt] = c.full;
             mask[cnt]   = GT_OPA_100;
 #elif GT_COLOR_DEPTH == 1
