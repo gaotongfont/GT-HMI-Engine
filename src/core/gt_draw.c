@@ -690,9 +690,6 @@ static _gt_draw_font_res_st _draw_text_convertor_split(
 {
     uint32_t idx = 0, unicode = 0, tmp = 0;
     _gt_draw_font_res_st ret = {0};
-#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
-    gt_font_touch_word_st tmp_word = {0};
-#endif
     uint16_t * text = NULL;
     uint8_t * font_buf = NULL;
     text = (uint16_t * )gt_mem_malloc(fonts->len * sizeof(uint16_t));
@@ -1712,7 +1709,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
             }
             ret.touch_word.len = gt_font_get_word_byte_length(tmp_word.word_p, tmp_word.len, tmp_font.info.encoding);
             ret.touch_word.word_p = tmp_word.word_p;
-            ret.touch_word.offset = tmp_word.offset;
+            ret.touch_word.offset = tmp_word.word_p - dsc->font->utf8;
 
         check_next_lf_lb:
             gt_font_one_char_code_len_get(&txt[idx + tmp_font.len], &unicode, tmp_font.info.encoding);
