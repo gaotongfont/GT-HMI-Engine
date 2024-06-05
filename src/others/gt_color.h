@@ -383,8 +383,8 @@ static inline gt_color_t gt_color_mix(gt_color_t c1, gt_color_t c2, uint8_t mix)
     mix = (mix + 4) >> 3;
 
     #if GT_COLOR_16_SWAP
-    c1.full = (GT_COLOR_GET_B16(c1) << 11) | (GT_COLOR_GET_G16(c1) << 5) | GT_COLOR_GET_R16(c1);
-    c2.full = (GT_COLOR_GET_B16(c2) << 11) | (GT_COLOR_GET_G16(c2) << 5) | GT_COLOR_GET_R16(c2);
+    c1.full = (GT_COLOR_GET_R16(c1) << 11) | (GT_COLOR_GET_G16(c1) << 5) | GT_COLOR_GET_B16(c1);
+    c2.full = (GT_COLOR_GET_R16(c2) << 11) | (GT_COLOR_GET_G16(c2) << 5) | GT_COLOR_GET_B16(c2);
     #endif
 
     /** https://stackoverflow.com/questions/18937701/combining-two-16-bits-rgb-colors-with-alpha-blending/50012418#50012418 */
