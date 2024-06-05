@@ -36,6 +36,17 @@ typedef struct _gt_draw_blend_dsc_s {
     gt_opt_t    opa;         /** value of the overall opacity */
 }gt_draw_blend_dsc_st;
 
+typedef struct _gt_draw_blend_fill_cache_s {
+    gt_color_t * color_dst_p;
+    gt_color_t * color_src_p;
+    gt_opa_t * mask_buf_p;
+    gt_area_st area_intersect;
+    gt_color_t color;
+    uint16_t width_src;
+    uint16_t width_buf;
+    gt_opa_t opa;
+}_gt_draw_blend_fill_cache_st;
+
 /* macros ---------------------------------------------------------------*/
 
 

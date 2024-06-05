@@ -20,6 +20,8 @@
 #include "../../others/gt_area.h"
 #include "../../core/gt_draw.h"
 #include "../../core/gt_obj_pos.h"
+#include "./gt_draw_blend_with_rgb565.h"
+#include "./gt_draw_blend_with_argb888.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -44,10 +46,11 @@ typedef struct _valid_param_s {
 
 
 /* static functions -----------------------------------------------------*/
+#if 0
 static inline void _fill_no_opacity(
     gt_color_t * color_dst_p, gt_area_st const * const area_intersect,
     uint16_t step_dst_line, gt_color_t color_fill, gt_opa_t opa,
-    gt_color_t const * const color_src_p, uint16_t src_width, gt_point_st * offset) {
+    gt_color_t const * const color_src_p, uint16_t src_width) {
 
     gt_color_t * src_p = (gt_color_t *)color_src_p;
     gt_color_t * dst_p = color_dst_p;
@@ -128,7 +131,7 @@ static inline void _fill_no_opacity(
 static inline void _fill_opacity(
     gt_color_t * color_dst_p, gt_area_st * area_intersect,
     uint16_t step_dst_line, gt_color_t color_fill, gt_opa_t opa, gt_opa_t const * const mask,
-    gt_color_t const * const color_src_p, uint16_t src_width, gt_point_st * offset) {
+    gt_color_t const * const color_src_p, uint16_t src_width) {
 
     gt_color_t * src_p = (gt_color_t *)color_src_p;
     gt_opa_t * mask_p = (gt_opa_t *)mask;
@@ -331,6 +334,7 @@ static inline void _fill_opacity(
 #endif
     }
 }
+#endif
 
 static inline gt_point_st _get_cover_dst_area_and_offset_by(
     gt_area_st const * const parent_or_limit, gt_area_st const * const dst_area, gt_area_st * ret
@@ -361,24 +365,26 @@ void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
 {
     if (dsc->opa < GT_OPA_MIN) return;
 
-    /** 绘制区域和显示屏buffer的交集区域 */
-    gt_area_st area_intersect = {0};
+    _gt_draw_blend_fill_cache_st fill_cache = {
+        .color = dsc->color_fill,
+        .opa = dsc->opa,
+    };
     /** area_draw x/y screen offset; w/h need to redraw area, which pos by dst_area */
     gt_area_st area_draw = draw_ctx->buf_area, area_dst = *dsc->dst_area;
 
 #if GT_FLUSH_CONVERT_VERTICAL
-    uint16_t width_dsc = area_dst.h;
-    uint16_t width_buf = area_draw.h;
+    fill_cache.width_src = area_dst.h;
+    fill_cache.width_buf = area_draw.h;
 #else
-    uint16_t width_dsc = area_dst.w;
-    uint16_t width_buf = area_draw.w;
+    fill_cache.width_src = area_dst.w;
+    fill_cache.width_buf = area_draw.w;
 #endif
     gt_point_st offset = {0};   /** src data buffer offset set */
 
     if (dsc->font_limit_area) {
         if (draw_ctx->parent_area) {
-            gt_area_cover_screen(draw_ctx->parent_area, dsc->font_limit_area, &area_intersect);
-            offset = _get_cover_dst_area_and_offset_by(&area_intersect, dsc->dst_area, &area_dst);
+            gt_area_cover_screen(draw_ctx->parent_area, dsc->font_limit_area, &fill_cache.area_intersect);
+            offset = _get_cover_dst_area_and_offset_by(&fill_cache.area_intersect, dsc->dst_area, &area_dst);
         } else {
             offset = _get_cover_dst_area_and_offset_by(dsc->font_limit_area, dsc->dst_area, &area_dst);
         }
@@ -403,18 +409,18 @@ void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
     }
 #endif
 
-    if (!gt_area_intersect_screen(&area_draw, &area_dst, &area_intersect)) {
+    if (!gt_area_intersect_screen(&area_draw, &area_dst, &fill_cache.area_intersect)) {
         return;
     }
 
 #if GT_FLUSH_CONVERT_VERTICAL
     gt_area_st convert = {
-        .x = area_intersect.y,
-        .y = area_intersect.x,
-        .w = area_intersect.h,
-        .h = area_intersect.w,
+        .x = fill_cache.area_intersect.y,
+        .y = fill_cache.area_intersect.x,
+        .w = fill_cache.area_intersect.h,
+        .h = fill_cache.area_intersect.w,
     };
-    area_intersect = convert;
+    fill_cache.area_intersect = convert;
 
     gt_point_st convert_offset = {
         .x = flush_buffer_offset.y,
@@ -429,24 +435,24 @@ void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
     offset = convert_parent;
 #endif
 
-    offset.x += area_intersect.x;
-    offset.y += area_intersect.y;
+    offset.x += fill_cache.area_intersect.x;
+    offset.y += fill_cache.area_intersect.y;
 
     // from area_intersect cpy to flush_buffer_offset
-    uint32_t idx_dst = flush_buffer_offset.y * width_buf + flush_buffer_offset.x;
+    uint32_t idx_dst = flush_buffer_offset.y * fill_cache.width_buf + flush_buffer_offset.x;
 #if GT_FLUSH_CONVERT_VERTICAL
-    uint32_t idx_src = offset.x * width_dsc + offset.y;
+    uint32_t idx_src = offset.x * fill_cache.width_src + offset.y;
 #else
-    uint32_t idx_src = offset.y * width_dsc + offset.x;
+    uint32_t idx_src = offset.y * fill_cache.width_src + offset.x;
 #endif
 
-    if (0 == area_intersect.w || 0 == area_intersect.h) {
+    if (0 == fill_cache.area_intersect.w || 0 == fill_cache.area_intersect.h) {
         return;
     }
 
-    gt_color_t * color_dst_p = (gt_color_t *)draw_ctx->buf, * color_src_p = dsc->dst_buf;
-    if (color_dst_p) { color_dst_p += idx_dst; }
-    if (color_src_p) { color_src_p += idx_src; }
+    if (draw_ctx->buf) { fill_cache.color_dst_p = (gt_color_t * )draw_ctx->buf + idx_dst; }
+    if (dsc->dst_buf)  { fill_cache.color_src_p = (gt_color_t * )dsc->dst_buf + idx_src; }
+    if (dsc->mask_buf) { fill_cache.mask_buf_p = (gt_opa_t * )dsc->mask_buf + idx_src; }
 
     /**
      * use dsc->opa to blend background
@@ -468,13 +474,18 @@ void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
      *  uint16_t step_src_line = width_dsc - area_intersect.w;
      */
     if (dsc->mask_buf) {
-        _fill_opacity(color_dst_p, &area_intersect, width_buf - area_intersect.w,
-                        dsc->color_fill, dsc->opa, &dsc->mask_buf[idx_src], color_src_p, width_dsc, &offset);
+#if 0 == GT_COLOR_DEPTH
+        gt_draw_blend_with_argb888_opacity(&fill_cache);
+#else
+        gt_draw_blend_with_rgb565_opacity(&fill_cache);
+#endif
     } else {
-        _fill_no_opacity(color_dst_p, &area_intersect, width_buf - area_intersect.w,
-                            dsc->color_fill, dsc->opa, color_src_p, width_dsc, &offset);
+#if 0 == GT_COLOR_DEPTH
+        gt_draw_blend_with_argb888_no_opacity(&fill_cache);
+#else
+        gt_draw_blend_with_rgb565_no_opacity(&fill_cache);
+#endif
     }
-
 }
 
 
