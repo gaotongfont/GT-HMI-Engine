@@ -27,8 +27,9 @@
 /* private typedef ------------------------------------------------------*/
 
 typedef struct _textarea_reg_s {
-    uint8_t click_valid : 1;    /** click status: scroll will set to false, only click event valid */
-    uint8_t reserved    : 7;
+    uint8_t click_valid : 1;        /** click status: scroll will set to false, only click event valid */
+    uint8_t click_single_cn : 1;    /** click single chinese character */
+    uint8_t reserved    : 6;
 }_textarea_reg_st;
 
 typedef struct _gt_textarea_s {
@@ -93,6 +94,7 @@ static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_poin
         .opa        = obj->opa,
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
         .reg.touch_point = touch_point_p ? true : false,
+        .reg.single_cn = style->reg.click_single_cn,
         .touch_point = touch_point_p,
 #endif
     };
@@ -591,6 +593,15 @@ void gt_textarea_set_font_encoding(gt_obj_st * textarea, gt_encoding_et encoding
 }
 
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+void gt_textarea_set_touch_single_chinese_word(gt_obj_st * textarea, bool is_single_cn)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    style->reg.click_single_cn = is_single_cn ? 1 : 0;
+}
+
 gt_font_touch_word_st gt_textarea_get_touch_word(gt_obj_st * textarea)
 {
     gt_font_touch_word_st ret = {0};

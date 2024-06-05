@@ -807,7 +807,6 @@ static _gt_draw_font_res_st _draw_text_convertor_split(
             }
             ret.touch_word.word_p = tmp_font.utf8;
             ret.touch_word.len = tmp_font.len;
-            ret.touch_word.offset = ret.touch_word.word_p - dsc->font->utf8;
             goto _next_word_cvt_lb;
         }
 #endif
@@ -1333,17 +1332,14 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
                     /** different language remark start directly */
                     tmp_word.word_p = tmp_font.utf8;
                     tmp_word.len = txt_len - idx_2;
-                    tmp_word.offset = tmp_word.word_p - dsc->font->utf8;
                 }
                 if (gt_font_is_illegal_char(unicode)) {
                     /** illegal char waiting to next remark start */
                     tmp_word.word_p = NULL;
                     tmp_word.len = 0;
-                    tmp_word.offset = 0;
                 } else if (NULL == tmp_word.word_p) {
                     tmp_word.word_p = tmp_font.utf8;
                     tmp_word.len = txt_len - idx_2;
-                    tmp_word.offset = tmp_word.word_p - dsc->font->utf8;
                 }
                 prev_sty = cur_sty;
                 if (dsc->touch_point->y < area_font.y || dsc->touch_point->y > area_font.y + per_line_h) {
@@ -1352,16 +1348,19 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
                 if (dsc->touch_point->x < area_font.x || dsc->touch_point->x > area_font.x + width) {
                     goto check_next_lf_lb;
                 }
-                ret.touch_word.len = gt_font_get_word_byte_length(tmp_word.word_p, tmp_word.len, tmp_font.info.encoding);
-                ret.touch_word.word_p = tmp_word.word_p;
-                ret.touch_word.offset = tmp_word.word_p - dsc->font->utf8;
+                if (STYLE_CN == cur_sty && dsc->reg.single_cn) {
+                    ret.touch_word.word_p = tmp_font.utf8;
+                    ret.touch_word.len = tmp_font.len;
+                } else {
+                    ret.touch_word.len = gt_font_get_word_byte_length(tmp_word.word_p, tmp_word.len, tmp_font.info.encoding);
+                    ret.touch_word.word_p = tmp_word.word_p;
+                }
 
             check_next_lf_lb:
                 gt_font_one_char_code_len_get(&txt_2[idx_2 + tmp_font.len], &unicode, tmp_font.info.encoding);
                 if ('\n' == unicode) {
                     tmp_word.word_p = NULL;
                     tmp_word.len = 0;
-                    tmp_word.offset = 0;
                 }
                 goto next_word_multi_lb;
             }
@@ -1691,32 +1690,33 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
                 /** different language remark start directly */
                 tmp_word.word_p = tmp_font.utf8;
                 tmp_word.len = txt_len - idx;
-                tmp_word.offset = tmp_word.word_p - dsc->font->utf8;
             }
             if (gt_font_is_illegal_char(unicode)) {
                 /** illegal char waiting to next remark start */
                 tmp_word.word_p = NULL;
                 tmp_word.len = 0;
-                tmp_word.offset = 0;
             } else if (NULL == tmp_word.word_p) {
                 tmp_word.word_p = tmp_font.utf8;
                 tmp_word.len = txt_len - idx;
-                tmp_word.offset = tmp_word.word_p - dsc->font->utf8;
             }
             prev_sty = cur_sty;
             if (dsc->touch_point->x < area_font.x || dsc->touch_point->x > area_font.x + width) {
                 goto check_next_lf_lb;
             }
-            ret.touch_word.len = gt_font_get_word_byte_length(tmp_word.word_p, tmp_word.len, tmp_font.info.encoding);
-            ret.touch_word.word_p = tmp_word.word_p;
-            ret.touch_word.offset = tmp_word.word_p - dsc->font->utf8;
+            if (STYLE_CN == cur_sty && dsc->reg.single_cn) {
+                GT_LOG_A("", " >> %x %d, %d", unicode, cur_sty, prev_sty);
+                ret.touch_word.word_p = tmp_font.utf8;
+                ret.touch_word.len = tmp_font.len;
+            } else {
+                ret.touch_word.len = gt_font_get_word_byte_length(tmp_word.word_p, tmp_word.len, tmp_font.info.encoding);
+                ret.touch_word.word_p = tmp_word.word_p;
+            }
 
         check_next_lf_lb:
             gt_font_one_char_code_len_get(&txt[idx + tmp_font.len], &unicode, tmp_font.info.encoding);
             if ('\n' == unicode) {
                 tmp_word.word_p = NULL;
                 tmp_word.len = 0;
-                tmp_word.offset = 0;
             }
             goto next_word_lb;
         }

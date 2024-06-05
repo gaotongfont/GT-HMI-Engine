@@ -104,8 +104,10 @@ typedef struct _gt_text_style_s {
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
     ///< 0[default]: disabled touch point logical, 1: using touch point logical to get word
     uint8_t touch_point     : 1;
+    ///< 0[default]: multi chinese words together, 1: single chinese word
+    uint8_t single_cn       : 1;
 #endif
-    uint8_t reserved        : 2;
+    uint8_t reserved        : 1;
 }_gt_text_style_st;
 
 /**

@@ -201,6 +201,7 @@ void gt_textarea_set_font_thick_cn(gt_obj_st * textarea, uint8_t thick);
 void gt_textarea_set_font_encoding(gt_obj_st * textarea, gt_encoding_et encoding);
 
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+void gt_textarea_set_touch_single_chinese_word(gt_obj_st * textarea, bool is_single_cn);
 gt_font_touch_word_st gt_textarea_get_touch_word(gt_obj_st * textarea);
 #endif
 
