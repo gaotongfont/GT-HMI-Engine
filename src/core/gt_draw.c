@@ -810,7 +810,7 @@ static _gt_draw_font_res_st _draw_text_convertor_split(
             }
             ret.touch_word.word_p = tmp_font.utf8;
             ret.touch_word.len = tmp_font.len;
-            ret.touch_word.word_idx = ret.touch_word.word_p - dsc->font->utf8;
+            ret.touch_word.offset = ret.touch_word.word_p - dsc->font->utf8;
             goto _next_word_cvt_lb;
         }
 #endif
