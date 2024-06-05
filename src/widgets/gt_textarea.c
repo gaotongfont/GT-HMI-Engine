@@ -187,6 +187,9 @@ static void _free_contents(gt_obj_st * obj) {
 
         gt_mem_free(style_p->contents);
         style_p->contents = NULL;
+        style_p->max_height = 0;
+        style_p->cnt_contents = 0;
+        obj->process_attr.scroll.y = 0;
     }
 }
 
