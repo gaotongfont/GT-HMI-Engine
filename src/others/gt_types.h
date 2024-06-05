@@ -35,6 +35,22 @@ extern "C" {
 #define REDUCE_DEFAULT     (2)
 
 /* typedef --------------------------------------------------------------*/
+
+#if defined(__cplusplus) || __STDC_VERSION__ >= 199901L
+    /*If c99 or newer,  use the definition of uintptr_t directly from <stdint.h>*/
+    typedef uintptr_t gt_uintptr_t;
+    typedef intptr_t gt_intptr_t;
+#else
+/*Otherwise, use the arch size determination*/
+    #ifdef GT_ARCH_64
+        typedef uint64_t gt_uintptr_t;
+        typedef int64_t gt_intptr_t;
+    #else
+        typedef uint32_t gt_uintptr_t;
+        typedef int32_t gt_intptr_t;
+    #endif
+#endif
+
 /**
  * @brief screen id
  */
