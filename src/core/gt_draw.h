@@ -54,6 +54,7 @@ typedef struct _gt_draw_ctx_s {
 typedef struct gt_font_touch_word_s {
     char * word_p;
     uint16_t len;
+    uint16_t offset;
 }gt_font_touch_word_st;
 #endif
 
