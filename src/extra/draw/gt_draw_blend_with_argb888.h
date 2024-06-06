@@ -34,13 +34,11 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_draw_blend_with_rgb888_opacity(_gt_draw_blend_fill_cache_st const * const fc);
-
-void gt_draw_blend_with_rgb888_no_opacity(_gt_draw_blend_fill_cache_st const * const fc);
-
 void gt_draw_blend_with_argb888_opacity(_gt_draw_blend_fill_cache_st const * const fc);
 
 void gt_draw_blend_with_argb888_no_opacity(_gt_draw_blend_fill_cache_st const * const fc);
+
+
 
 #ifdef __cplusplus
 } /*extern "C"*/

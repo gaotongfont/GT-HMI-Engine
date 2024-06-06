@@ -474,13 +474,13 @@ void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
      *  uint16_t step_src_line = width_dsc - area_intersect.w;
      */
     if (dsc->mask_buf) {
-#if 0 == GT_COLOR_DEPTH
+#if 32 == GT_COLOR_DEPTH
         gt_draw_blend_with_argb888_opacity(&fill_cache);
 #else
         gt_draw_blend_with_rgb565_opacity(&fill_cache);
 #endif
     } else {
-#if 0 == GT_COLOR_DEPTH
+#if 32 == GT_COLOR_DEPTH
         gt_draw_blend_with_argb888_no_opacity(&fill_cache);
 #else
         gt_draw_blend_with_rgb565_no_opacity(&fill_cache);
