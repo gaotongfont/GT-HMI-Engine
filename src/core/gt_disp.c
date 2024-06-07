@@ -918,6 +918,9 @@ void gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const param)
                 new_item.prev_scr_alive = NULL;
                 del_prev_scr = false;
             }
+            if (del_prev_scr) {
+                prev->current_scr = NULL;
+            }
         }
     }
     /** Home page reset stack */

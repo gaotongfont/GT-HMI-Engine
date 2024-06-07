@@ -242,10 +242,10 @@ gt_obj_st * gt_scr_stack_get_prev_scr_by(gt_stack_size_t step)
     if (NULL == item) {
         return NULL;
     }
-    if (item->prev_scr_id == gt_scr_stack_get_home_scr_id() && gt_scr_stack_is_home_scr_alive()) {
+    if (item->current_scr_id == gt_scr_stack_get_home_scr_id() && gt_scr_stack_is_home_scr_alive()) {
         return gt_scr_stack_get_home_scr();
     }
-    return item->prev_scr_alive;
+    return item->current_scr;
 }
 
 gt_stack_item_st gt_scr_stack_has_before(gt_scr_stack_item_st * scr)
