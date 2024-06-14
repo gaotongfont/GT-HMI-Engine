@@ -21,6 +21,7 @@
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
 #include "../widgets/gt_obj.h"
+#include "../widgets/gt_rect.h"
 
 #include "./gt_label.h"
 #include "./gt_img.h"
@@ -575,6 +576,37 @@ static gt_obj_st * _set_item_obj_prop(gt_obj_st * obj, gt_obj_st * listview) {
     return obj;
 }
 
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
+/**
+ * @brief Create a rect object
+ *
+ * @param listview
+ * @param obj
+ * @param rect rect object detail
+ * @return gt_obj_st*
+ */
+static gt_obj_st * _create_item_rect(gt_obj_st * listview, gt_obj_st * obj) {
+    gt_obj_st * r = gt_rect_create(obj);
+
+    gt_obj_set_inside(r, true);
+
+    gt_obj_set_touch_parent(r, true);
+    gt_obj_set_bubble_notify(r, true);
+    return r;
+}
+
+static inline void _set_rect_prop(gt_obj_st * rect, gt_listview_rect_st const * const prop) {
+    if (false == gt_obj_is_type(rect, GT_TYPE_RECT)) {
+        return;
+    }
+    gt_rect_set_bg_color(rect, prop->bg_color);
+    gt_rect_set_color_border(rect, prop->border_color);
+    gt_rect_set_border(rect, prop->border);
+    gt_rect_set_radius(rect, prop->radius);
+    gt_rect_set_fill(rect, prop->is_fill);
+}
+#endif
+
 
 /* global functions / API interface -------------------------------------*/
 
@@ -745,6 +777,13 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
         } else {
             gt_img_set_src(element, item->src);
         }
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
+    } if (GT_LISTVIEW_ELEMENT_TYPE_RECT == item->type) {
+        if (NULL == element) {
+            element = _create_item_rect(listview, obj);
+        }
+        _set_rect_prop(element, &item->rect);
+#endif
     } else {
         if (NULL == element) {
         #if GT_LISTVIEW_CUSTOM_FONT_STYLE
