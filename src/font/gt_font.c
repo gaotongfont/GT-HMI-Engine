@@ -579,6 +579,42 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
         return res;
     }
 
+#if 01
+    uint8_t s_cn, s_en, s_fl;
+    s_cn = gt_font_type_get(info->style_cn);
+    s_en = gt_font_type_get(info->style_en);
+    s_fl = gt_font_type_get(info->style_fl);
+
+    uint8_t font_type, font_gray;
+
+    if( GT_FONT_TYPE_FLAG_VEC == s_cn || GT_FONT_TYPE_FLAG_VEC == s_en || GT_FONT_TYPE_FLAG_VEC == s_fl){
+        font_type = GT_FONT_TYPE_FLAG_VEC;
+        font_gray = info->gray;
+        res.dot_width = (((info->size + 15) >> 4) << 4) * info->gray;
+    }
+    else{
+        font_type = GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH;
+        font_gray = GT_MAX((s_cn / 10), GT_MAX((s_en / 10), (s_fl / 10)));
+        font_gray = font_gray > 0 ? font_gray : 1;
+        res.dot_width = (((info->size + 7) >> 3) << 3);
+    }
+
+    if(STYLE_EN_HINDI == langue){
+        res.font_per_size = 48;
+        res.font_buff_len = res.font_per_size * (text_len + 1);
+    }
+    else{
+        res.font_per_size = (res.dot_width * res.dot_width * font_gray >> 3);
+        if(GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH == font_type){
+            res.font_per_size += 2;
+        }
+        res.font_buff_len = res.font_per_size * 3;
+    }
+    if(GT_FONT_TYPE_FLAG_VEC == font_type){
+        res.dot_width = (((((info->size * info->gray + 15) >> 4) << 4) / info->gray) >> 3) << 3;
+    }
+
+#else
     if (GT_FONT_TYPE_FLAG_VEC == font_style) {
         res.dot_width = (((info->size + 15) >> 4) << 4) * info->gray;
     } else {
@@ -600,6 +636,8 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
     if(info->gray != 1){
         res.dot_width = (((((info->size * info->gray + 15) >> 4) << 4) / info->gray) >> 3) << 3;
     }
+
+#endif
     return res;
 }
 
@@ -1130,6 +1168,8 @@ uint8_t right_to_left_lan_get(uint16_t style)
         case 72:
         case 73:
         case 141:
+        case 169:
+        case 170:
             return STYLE_EN_HEBREW;
         case 74:
         case 75:

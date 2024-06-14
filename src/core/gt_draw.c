@@ -635,12 +635,13 @@ static bool _gt_get_radius_mask_buf(gt_opa_t* mask_line, gt_size_t x, gt_size_t 
 
 static uint16_t _gt_gray_and_dot_byte_get(uint8_t* gray, uint8_t width, gt_font_st font, uint8_t ret_style) {
     uint16_t dot_byte = 0;
-    uint8_t font_gray = 1;
-    if ( (GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH) == ret_style) {
-        dot_byte = (font.info.size + 7) >> 3;
-        font_gray = 1;
+    uint8_t font_type = ret_style % 10;
+    uint8_t font_gray = (ret_style/10) > 0 ? (ret_style/10) : 1;
+
+    if ( (GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH) == font_type) {
+        dot_byte = ((font.info.size + 7) >> 3) * font_gray;
     }
-    else if ((GT_FONT_TYPE_FLAG_VEC == ret_style)) {
+    else if ((GT_FONT_TYPE_FLAG_VEC == font_type)) {
         font_gray = font.info.gray;
 
         if (1 != font_gray) {
@@ -649,8 +650,7 @@ static uint16_t _gt_gray_and_dot_byte_get(uint8_t* gray, uint8_t width, gt_font_
             dot_byte = (((font.info.size + 15) >> 4) << 4) >> 3;
         }
     } else {
-        dot_byte = (width + 7) >> 3;
-        font_gray = 1;
+        dot_byte = ((width + 7) >> 3) * font_gray;
     }
     *gray = font_gray;
     return dot_byte;
