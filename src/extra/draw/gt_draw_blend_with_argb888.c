@@ -177,7 +177,7 @@ static inline void _blend_argb888_with_opacity(_gt_draw_blend_fill_cache_st cons
             /* be called too much */
             for (y = 0; y < h; ++y) {
                 x = 0;
-                if ((gt_uintptr_t)&dst_p[0] & 0x3) {
+                if ((gt_uintptr_t)&dst_p[0] & 0x1) {
                     *dst_p = gt_color_mix(*src_p, *dst_p, *mask_p);
                     ++dst_p; ++src_p; ++mask_p;
                     ++x;
@@ -201,7 +201,7 @@ static inline void _blend_argb888_with_opacity(_gt_draw_blend_fill_cache_st cons
         // opa < GT_OPA_MAX color mixed
         for (y = 0; y < h; ++y) {
             x = 0;
-            if ((gt_uintptr_t)&dst_p[0] & 0x3) {
+            if ((gt_uintptr_t)&dst_p[0] & 0x1) {
                 *dst_p = gt_color_mix(*src_p, *dst_p, (gt_per_255(*mask_p) * opa) >> 15);
                 ++dst_p; ++src_p; ++mask_p;
                 ++x;
@@ -225,7 +225,7 @@ static inline void _blend_argb888_with_opacity(_gt_draw_blend_fill_cache_st cons
     if (opa > GT_OPA_MAX) {
         for (y = 0; y < h; ++y) {
             x = 0;
-            if ((gt_uintptr_t)&dst_p[0] & 0x3) {
+            if ((gt_uintptr_t)&dst_p[0] & 0x1) {
                 *dst_p = gt_color_mix(fc->color, *dst_p, *mask_p);
                 ++dst_p;
                 ++x;
@@ -246,7 +246,7 @@ static inline void _blend_argb888_with_opacity(_gt_draw_blend_fill_cache_st cons
     }
     for (y = 0; y < h; ++y) {
         x = 0;
-        if ((gt_uintptr_t)&dst_p[0] & 0x3) {
+        if ((gt_uintptr_t)&dst_p[0] & 0x1) {
             *dst_p = gt_color_mix(fc->color, *dst_p, (gt_per_255(*mask_p) * opa) >> 15);
             ++dst_p; ++mask_p;
             ++x;
@@ -326,7 +326,7 @@ static inline void _blend_argb888_with_no_opacity_vertical(_gt_draw_blend_fill_c
     // Direct color overlay, opa >= GT_OPA_MAX
     for (y = 0; y < h; ++y) {
         x = 0;
-        if ((gt_uintptr_t)dst_p & 0x3) {
+        if ((gt_uintptr_t)dst_p & 0x1) {
             *dst_p = fc->color;
             ++dst_p;
         }
@@ -368,7 +368,7 @@ static inline void _blend_argb888_with_no_opacity(_gt_draw_blend_fill_cache_st c
         if (opa < GT_OPA_MAX) {
             for (y = 0; y < h; ++y) {
                 x = 0;
-                if ((gt_uintptr_t)&dst_p[0] & 0x3) {
+                if ((gt_uintptr_t)&dst_p[0] & 0x1) {
                     *dst_p = gt_color_mix(*src_p, *dst_p, opa);
                     ++dst_p; ++src_p;
                     ++x;
@@ -389,7 +389,7 @@ static inline void _blend_argb888_with_no_opacity(_gt_draw_blend_fill_cache_st c
         }
         for (y = 0; y < h; ++y) {
             x = 0;
-            if ((gt_uintptr_t)&dst_p[0] & 0x3) {
+            if ((gt_uintptr_t)&dst_p[0] & 0x1) {
                 *dst_p = *src_p;
                 ++dst_p; ++src_p;
                 ++x;
@@ -413,7 +413,7 @@ static inline void _blend_argb888_with_no_opacity(_gt_draw_blend_fill_cache_st c
     if (opa < GT_OPA_MAX) {
         for (y = 0; y < h; ++y) {
             x = 0;
-            if ((gt_uintptr_t)&dst_p[0] & 0x3) {
+            if ((gt_uintptr_t)&dst_p[0] & 0x1) {
                 *dst_p = gt_color_mix(fc->color, *dst_p, opa);
                 ++dst_p;
                 ++x;
@@ -438,7 +438,7 @@ static inline void _blend_argb888_with_no_opacity(_gt_draw_blend_fill_cache_st c
     // Direct color overlay, opa >= GT_OPA_MAX
     for (y = 0; y < h; ++y) {
         x = 0;
-        if ((gt_uintptr_t)&dst_p[0] & 0x3) {
+        if ((gt_uintptr_t)&dst_p[0] & 0x1) {
             *dst_p = fc->color;
             ++dst_p;
             ++x;

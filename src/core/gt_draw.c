@@ -1373,7 +1373,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
                 uint8_t font_gray = 1;
 
                 byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, ret_style);
-                area_font.w = byte_width << 3;
+                area_font.w = (byte_width / font_gray) << 3;
                 gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size,
                                     byte_width, font_gray, (const uint8_t*)tmp_font.res);
             } else {
@@ -1384,6 +1384,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
                     continue;
                 }
                 blend_dsc.mask_buf = temp;
+                area_font.w = tmp_font.info.size;
                 gt_draw_blend(draw_ctx, &blend_dsc);
                 blend_dsc.mask_buf = NULL;
             }
@@ -1729,7 +1730,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
             font_gray = 1;
 
             byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, ret_style);
-            area_font.w = byte_width << 3;
+            area_font.w = (byte_width / font_gray) << 3;
             gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size,
                                 byte_width, font_gray, (const uint8_t*)tmp_font.res);
         } else {
@@ -1739,6 +1740,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
                 idx += tmp_font.len;
                 continue;
             }
+            area_font.w = tmp_font.info.size;
             gt_draw_blend(draw_ctx, &blend_dsc);
             blend_dsc.mask_buf = NULL;
         }
@@ -1772,7 +1774,7 @@ next_word_lb:
         font_gray = 1;
 
         byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, ret_style);
-        area_font.w = byte_width << 3;
+        area_font.w = (byte_width / font_gray) << 3;
         idx = 0;
         while (idx < omit_info.len)  {
             gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size, byte_width,
