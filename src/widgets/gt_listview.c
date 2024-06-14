@@ -660,9 +660,6 @@ void gt_listview_set_next_row_item_count(gt_obj_st * listview, uint8_t count)
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
-    if (count == style->column.count) {
-        return ;
-    }
     style->column.count = count;
     style->column.idx = 0;
 }
