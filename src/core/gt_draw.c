@@ -1705,7 +1705,6 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
                 goto check_next_lf_lb;
             }
             if (STYLE_CN == cur_sty && dsc->reg.single_cn) {
-                GT_LOG_A("", " >> %x %d, %d", unicode, cur_sty, prev_sty);
                 ret.touch_word.word_p = tmp_font.utf8;
                 ret.touch_word.len = tmp_font.len;
             } else {
