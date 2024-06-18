@@ -71,7 +71,6 @@ typedef struct gt_listview_param_s {
 
 #if GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
 typedef struct gt_listview_rect_s {
-    gt_area_st area;
     gt_color_t bg_color;
     gt_color_t border_color;
     uint16_t border;
