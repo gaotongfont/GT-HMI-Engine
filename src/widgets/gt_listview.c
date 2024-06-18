@@ -759,12 +759,14 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
         return NULL;
     }
 
+    /** item object */
     if (item->item_idx < listview->cnt_child) {
         obj = listview->child[item->item_idx];
     } else {
         obj = _set_item_obj_prop(_create_item_obj(listview), listview);
     }
 
+    /** element */
     if (item->element_idx < obj->cnt_child) {
         element = obj->child[item->element_idx];
     }
@@ -795,6 +797,8 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
     element->area.x += obj->area.x;
     element->area.y += obj->area.y;
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+
+    return obj;
 }
 
 void gt_listview_clear_all_items(gt_obj_st * listview)
