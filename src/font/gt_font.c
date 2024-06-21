@@ -45,6 +45,21 @@
 
 
 /* private typedef ------------------------------------------------------*/
+/**
+ * @brief 0: defalut, < 0: up, > 0: down
+ */
+typedef struct {
+    int8_t y;
+}_font_type_group_offset_st;
+
+/**
+ * @brief Adjust the position of the ASCII font type with the Chinese font type
+ */
+typedef struct {
+    uint16_t cn_opt;
+    uint16_t en_opt;
+    _font_type_group_offset_st offset;
+}_font_type_group_adjust_ascii_pos_st;
 
 /* static variables -----------------------------------------------------*/
 static const uint8_t _ascii_16[];
@@ -74,6 +89,64 @@ static const uint32_t _latin_encoding_range[] = {
     0x0210UL, 0x021FUL,
     0x1EA0UL, 0x1EFFUL,
 };
+
+/**
+ * @brief Adjust the ascii display position according to the match between Chinese and ascii
+ */
+static const _font_type_group_adjust_ascii_pos_st _font_type_group_arr[] = {
+    /** 16 */
+#if defined(GT_FAMILY_GB2312_16_ST) && defined(GT_FAMILY_ASCII_16x16_T)
+    {.cn_opt = gt_family_gb2312_16_st, .en_opt = gt_family_ascii_16x16_t, .offset = { .y = 1 } },
+#endif
+#if defined(GT_FAMILY_GB2312_16_ST) && defined(GT_FAMILY_ASCII_16x16_A)
+    {.cn_opt = gt_family_gb2312_16_st, .en_opt = gt_family_ascii_16x16_a, .offset = { .y = 1 } },
+#endif
+#if defined(GT_FAMILY_GBK_16_ST) && defined(GT_FAMILY_ASCII_16x16_T)
+    {.cn_opt = gt_family_gbk_16_st, .en_opt = gt_family_ascii_16x16_t, .offset = { .y = 1 } },
+#endif
+#if defined(GT_FAMILY_GBK_16_ST) && defined(GT_FAMILY_ASCII_16x16_A)
+    {.cn_opt = gt_family_gbk_16_st, .en_opt = gt_family_ascii_16x16_a, .offset = { .y = 1 } },
+#endif
+#if defined(GT_FAMILY_GB18030_16_ST) && defined(GT_FAMILY_ASCII_16x16_T)
+    {.cn_opt = gt_family_gb18030_16_st, .en_opt = gt_family_ascii_16x16_t, .offset = { .y = 1 } },
+#endif
+#if defined(GT_FAMILY_GB18030_16_ST) && defined(GT_FAMILY_ASCII_16x16_A)
+    {.cn_opt = gt_family_gb18030_16_st, .en_opt = gt_family_ascii_16x16_a, .offset = { .y = 1 } },
+#endif
+#if defined(GT_FAMILY_GB2312_16_YH) && defined(GT_FAMILY_ASCII_16x16_T)
+    {.cn_opt = gt_family_gb2312_16_yh, .en_opt = gt_family_ascii_16x16_t, .offset = { .y = 1 } },
+#endif
+#if defined(GT_FAMILY_GB2312_16_YH) && defined(GT_FAMILY_ASCII_16x16_A)
+    {.cn_opt = gt_family_gb2312_16_yh, .en_opt = gt_family_ascii_16x16_a, .offset = { .y = 1 } },
+#endif
+    /** 32 */
+#if defined(GT_FAMILY_GB2312_32_ST) && defined(GT_FAMILY_ASCII_32x32_T)
+    {.cn_opt = gt_family_gb2312_32_st, .en_opt = gt_family_ascii_32x32_t, .offset = { .y= 2 } },
+#endif
+#if defined(GT_FAMILY_GB2312_32_ST) && defined(GT_FAMILY_ASCII_32x32_A)
+    {.cn_opt = gt_family_gb2312_32_st, .en_opt = gt_family_ascii_32x32_a, .offset = { .y= 2 } },
+#endif
+#if defined(GT_FAMILY_GBK_32_ST) && defined(GT_FAMILY_ASCII_32x32_T)
+    {.cn_opt = gt_family_gbk_32_st, .en_opt = gt_family_ascii_32x32_t, .offset = { .y= 2 } },
+#endif
+#if defined(GT_FAMILY_GBK_32_ST) && defined(GT_FAMILY_ASCII_32x32_A)
+    {.cn_opt = gt_family_gbk_32_st, .en_opt = gt_family_ascii_32x32_a, .offset = { .y= 2 } },
+#endif
+#if defined(GT_FAMILY_GB18030_32_ST) && defined(GT_FAMILY_ASCII_32x32_T)
+    {.cn_opt = gt_family_gb18030_32_st, .en_opt = gt_family_ascii_32x32_t, .offset = { .y= 2 } },
+#endif
+#if defined(GT_FAMILY_GB18030_32_ST) && defined(GT_FAMILY_ASCII_32x32_A)
+    {.cn_opt = gt_family_gb18030_32_st, .en_opt = gt_family_ascii_32x32_a, .offset = { .y= 2 } },
+#endif
+#if defined(GT_FAMILY_GB2312_32_HT) && defined(GT_FAMILY_ASCII_32x32_T)
+    {.cn_opt = gt_family_gb2312_32_ht, .en_opt = gt_family_ascii_32x32_t, .offset = { .y= 2 } },
+#endif
+#if defined(GT_FAMILY_GB2312_32_HT) && defined(GT_FAMILY_ASCII_32x32_A)
+    {.cn_opt = gt_family_gb2312_32_ht, .en_opt = gt_family_ascii_32x32_a, .offset = { .y= 2 } },
+#endif
+};
+
+static const size_t _font_type_group_arr_len = sizeof(_font_type_group_arr) / sizeof(_font_type_group_adjust_ascii_pos_st);
 
 /* macros ---------------------------------------------------------------*/
 static gt_encoding_et _gt_project_encoding = GT_ENCODING_UTF8;
@@ -181,6 +254,7 @@ void gt_font_info_init(gt_font_info_st *font_info)
     font_info->thick_en   = 0;
     font_info->thick_cn   = 0;
     font_info->encoding   = gt_project_encoding_get();
+    font_info->offset_y   = 0;
 }
 
 void gt_font_info_update_font_thick(gt_font_info_st *font_info)
@@ -296,6 +370,17 @@ uint8_t _gt_utf8_to_unicode(uint8_t * utf8, uint32_t *res)
 	return 0;
 }
 
+int8_t _gt_font_get_type_group_offset_y(uint16_t cn_option, uint16_t en_option)
+{
+    int8_t offset = 0;
+    for (gt_size_t i = _font_type_group_arr_len - 1; i >= 0; --i) {
+        if (cn_option == _font_type_group_arr[i].cn_opt && en_option == _font_type_group_arr[i].en_opt) {
+            offset = _font_type_group_arr[i].offset.y;
+            break;
+        }
+    }
+    return offset;
+}
 
 uint8_t gt_font_one_char_code_len_get(uint8_t * utf8, uint32_t *res, uint8_t encoding)
 {

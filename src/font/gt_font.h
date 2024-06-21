@@ -67,6 +67,7 @@ typedef struct _gt_font_info_s {
     uint8_t thick_cn;    ///< set: font thick
     uint8_t gray;        ///< set: font gray
     uint8_t encoding;    ///< set: font encoding
+    int8_t offset_y;    ///< 0: [default] don't move; < 0: move up; > 0: move down
 }gt_font_info_st;
 
 /**
@@ -275,6 +276,7 @@ uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const 
 
 void gt_project_encoding_set(gt_encoding_et charset);
 gt_encoding_et gt_project_encoding_get(void);
+int8_t _gt_font_get_type_group_offset_y(uint16_t cn_option, uint16_t en_option);
 uint8_t gt_font_one_char_code_len_get(uint8_t * utf8, uint32_t *res, uint8_t encoding);
 uint8_t gt_encoding_table_one_char(uint8_t *src, uint8_t* dst, gt_encoding_convert_et tab);
 uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const utf8, uint32_t *res);

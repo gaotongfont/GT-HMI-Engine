@@ -40,7 +40,7 @@
 /**
  * @brief Single line omit mode
  */
-typedef struct _omit_info_s {
+typedef struct {
     char * utf8;
     uint8_t len;
     uint16_t width;
@@ -1131,6 +1131,8 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
         .len = dsc->font->len,
         .res = NULL,
     };
+    int8_t offset_y = _gt_font_get_type_group_offset_y(tmp_font.info.style_cn, tmp_font.info.style_en);
+
     tmp_font.info.gray = dsc->font->info.gray == 0 ? 1 : dsc->font->info.gray;
     gt_size_t font_disp_h = tmp_font.info.size;
     uint16_t font_dot_w = (((tmp_font.info.size + 15) >> 4) << 4) * tmp_font.info.gray;
@@ -1374,8 +1376,14 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
 
                 byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, ret_style);
                 area_font.w = (byte_width / font_gray) << 3;
+                if (STYLE_EN_ASCII == _gt_is_style_cn_or_en(unicode, tmp_font.info.encoding)) {
+                    area_font.y += offset_y;
+                }
                 gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size,
                                     byte_width, font_gray, (const uint8_t*)tmp_font.res);
+                if (STYLE_EN_ASCII == _gt_is_style_cn_or_en(unicode, tmp_font.info.encoding)) {
+                    area_font.y -= offset_y;
+                }
             } else {
                 uint8_t * temp = (uint8_t*)gt_symbol_get_mask_buf(tmp_font.utf8, tmp_font.info.size);
                 if( temp == NULL ){
@@ -1514,6 +1522,8 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
         .len = dsc->font->len,
         .res = NULL,
     };
+    int8_t offset_y = _gt_font_get_type_group_offset_y(tmp_font.info.style_cn, tmp_font.info.style_en);
+
     tmp_font.info.gray = dsc->font->info.gray == 0 ? 1 : dsc->font->info.gray;
     gt_size_t font_disp_h = tmp_font.info.size;
     uint16_t font_dot_w = (((tmp_font.info.size + 15) >> 4) << 4) * tmp_font.info.gray;
@@ -1730,8 +1740,14 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
 
             byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, ret_style);
             area_font.w = (byte_width / font_gray) << 3;
+            if (STYLE_EN_ASCII == _gt_is_style_cn_or_en(unicode, tmp_font.info.encoding)) {
+                area_font.y += offset_y;
+            }
             gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size,
                                 byte_width, font_gray, (const uint8_t*)tmp_font.res);
+            if (STYLE_EN_ASCII == _gt_is_style_cn_or_en(unicode, tmp_font.info.encoding)) {
+                area_font.y -= offset_y;
+            }
         } else {
             blend_dsc.mask_buf = (uint8_t*)gt_symbol_get_mask_buf(tmp_font.utf8, tmp_font.info.size);
             if (NULL == blend_dsc.mask_buf) {
