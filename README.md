@@ -12,16 +12,28 @@
 
 ---
 
-
-
-<div align="center">
-    <img src="images/组合.gif">
+<div align="center"
+>
+    <img src="images/组合.gif"
+    >
 </div>
 
 <br/>
 
-<div align="center">
-<a href="https://www.hmi.gaotongfont.cn/kfgj">公司官网</a> | <a href="https://space.bilibili.com/3493293474188211/video">B 站教程</a> | <a href="https://www.gaotongfont.cn:8087/video/dl?mv=GT-HMI%20Engine%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8CV1.8-20231103183143.pdf">Engine 使用手册</a> | <a href="https://download.wezhan.cn/contents/sitefiles2062/10314814/files/754101..pdf?response-content-disposition=inline%3Bfilename%3DGT-HMI%2BDesigner%25e7%2594%25a8%25e6%2588%25b7%25e6%2589%258b%25e5%2586%258cV1.10.pdf&response-content-type=application%2Fpdf&auth_key=1700730759-bfb97452488845f2b091f51afa04f20f-0-ccdf533b36a868bf3306274d36c4644b">Designer 使用手册</a> | <a href="http://isite.baidu.com/site/wjz7qkrv/406a2b0c-f9c7-4a08-a47a-662e862b2af4?ch=48&wid=498ccd5c05334f21a2142ba3cf628964_0_0&field=&orderBy=&categoryId=undefined&title=%E8%81%94%E7%B3%BB%E6%88%91%E4%BB%AC">联系方式</a> | <a href="https://qun.qq.com/qqweb/qunpro/share?_wv=3&_wwv=128&appChannel=share&inviteCode=20igkt2UZnY&businessType=9&from=181074&biz=ka&mainSourceId=share&subSourceId=others&jumpsource=shorturl#/pc">QQ频道</a>
+<div align="center"
+>
+    <a href="https://www.hmi.gaotongfont.cn/kfgj"
+    > 公司官网 </a> |
+    <a href="https://space.bilibili.com/3493293474188211/video"
+    > B 站教程 </a> |
+    <a href="https://www.hmi.gaotongfont.cn/kfgj#/#hmiEngine"
+    > Engine 使用手册 </a> |
+    <a href="https://www.hmi.gaotongfont.cn/kfgj#/#hmidesigner"
+    > Designer 使用手册 </a> |
+    <a href="http://isite.baidu.com/site/wjz7qkrv/406a2b0c-f9c7-4a08-a47a-662e862b2af4?ch=48&wid=498ccd5c05334f21a2142ba3cf628964_0_0&field=&orderBy=&categoryId=undefined&title=%E8%81%94%E7%B3%BB%E6%88%91%E4%BB%AC"
+    > 联系方式 </a> |
+    <a href="https://qun.qq.com/qqweb/qunpro/share?_wv=3&_wwv=128&appChannel=share&inviteCode=20igkt2UZnY&businessType=9&from=181074&biz=ka&mainSourceId=share&subSourceId=others&jumpsource=shorturl#/pc"
+    > QQ频道 </a>
 </div>
 
 <br/>
