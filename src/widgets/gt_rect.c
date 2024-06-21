@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_rect.h"
+
+#if GT_CFG_ENABLE_RECT
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -24,9 +26,9 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_rect_s {
+    gt_obj_st obj;
     gt_color_t  color_background;
     gt_color_t  color_border;
-    uint16_t    radius;
     uint16_t    border;
     uint8_t     fill;
 }_gt_rect_st;
@@ -53,7 +55,7 @@ const gt_obj_class_st gt_rect_class = {
 /* static functions -----------------------------------------------------*/
 
 static inline void _gt_rect_init_widget(gt_obj_st * rect) {
-    _gt_rect_st * style = rect->style;
+    _gt_rect_st * style = (_gt_rect_st * )rect;
 
     if( rect->area.w == 0 || rect->area.h == 0){
         return;
@@ -65,7 +67,7 @@ static inline void _gt_rect_init_widget(gt_obj_st * rect) {
     rect_attr.border_color   = style->color_border;
     rect_attr.bg_opa         = rect->opa;
     rect_attr.bg_color       = style->color_background;
-    rect_attr.radius         = style->radius;
+    rect_attr.radius         = rect->radius;
 
     gt_area_st area_base = rect->area;
     draw_bg(rect->draw_ctx, &rect_attr, &area_base);
@@ -109,33 +111,26 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
         case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
             break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
 			break;
 
         case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
             break;
 
         case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
             break;
 
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
@@ -143,22 +138,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             break;
     }
 }
-
-
-static void _gt_rect_init_style(gt_obj_st * rect)
-{
-    _gt_rect_st * style = (_gt_rect_st * )rect->style;
-
-    gt_memset(style,0,sizeof(_gt_rect_st));
-
-    style->fill     = 1;
-    style->radius   = 0;
-    style->color_background = gt_color_black();
-    style->color_border     = gt_color_black();
-}
-
-
-
 
 /* global functions / API interface -------------------------------------*/
 
@@ -174,38 +153,59 @@ gt_obj_st * gt_rect_create(gt_obj_st * parent)
     if (NULL == obj) {
         return NULL;
     }
-    _gt_rect_init_style(obj);
+    obj->radius = 0;
+    _gt_rect_st * style = (_gt_rect_st * )obj;
+
+    style->fill = 1;
+    style->color_background = gt_color_black();
+    style->color_border     = gt_color_black();
+
     return obj;
 }
 void gt_rect_set_bg_color(gt_obj_st * rect, gt_color_t color)
 {
-    _gt_rect_st * style = (_gt_rect_st * )rect->style;
+    if (false == gt_obj_is_type(rect, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_rect_st * style = (_gt_rect_st * )rect;
     style->color_background = color;
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_rect_set_color_border(gt_obj_st * rect, gt_color_t color)
 {
-    _gt_rect_st * style = (_gt_rect_st * )rect->style;
+    if (false == gt_obj_is_type(rect, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_rect_st * style = (_gt_rect_st * )rect;
     style->color_border = color;
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
-void gt_rect_set_radius(gt_obj_st * rect, uint16_t radius)
+void gt_rect_set_radius(gt_obj_st * rect, gt_radius_t radius)
 {
-    _gt_rect_st * style = (_gt_rect_st * )rect->style;
-    style->radius = radius;
+    if (false == gt_obj_is_type(rect, OBJ_TYPE)) {
+        return ;
+    }
+    rect->radius = radius;
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_rect_set_border(gt_obj_st * rect, uint16_t border)
 {
-    _gt_rect_st * style = (_gt_rect_st * )rect->style;
+    if (false == gt_obj_is_type(rect, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_rect_st * style = (_gt_rect_st * )rect;
     style->border = border;
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_rect_set_fill(gt_obj_st * rect, uint8_t fill)
 {
-    _gt_rect_st * style = (_gt_rect_st * )rect->style;
+    if (false == gt_obj_is_type(rect, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_rect_st * style = (_gt_rect_st * )rect;
     style->fill = fill;
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+#endif  /** GT_CFG_ENABLE_RECT */
 /* end ------------------------------------------------------------------*/

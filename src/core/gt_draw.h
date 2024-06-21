@@ -29,31 +29,59 @@ extern "C" {
  * @brief The displayable area of two interfaces on the same physical screen
  */
 typedef struct _gt_draw_valid_s {
-    gt_area_st area_prev;       ///<The prev screen absolute display area
-    gt_point_st offset_prev;    ///<prev screen display in relative position on the physical screen
+#if GT_USE_SCREEN_ANIM
+    gt_area_st area_clip;       ///<The clip area
+#endif
 
-    gt_area_st area_scr;        ///<The current screen absolute display area
-    gt_point_st offset_scr;     ///<current screen display in relative position on the physical screen
-
-    uint8_t is_prev : 1;        ///<Whether the previous screen is valid
     uint8_t is_hor  : 1;        ///<Toggle the effect of the screen, the direction is horizontal
-   uint8_t is_over_top : 1;     ///<Anim widget is over the top screen
-    uint8_t reserved: 5;
+    uint8_t layer_top : 1;
+    uint8_t reserved: 6;
 }_gt_draw_valid_st;
 
 
 /**
  * @brief Draw object description
  */
-typedef struct _gt_draw_ctx_t{
-    _gt_draw_valid_st * valid;  ///< Only be used in the screen animation mode
-    gt_area_st * parent_area; ///< The parent area, when obj->inside is true, obj display limited to parent area
+typedef struct _gt_draw_ctx_s {
+    _gt_draw_valid_st * valid;      ///< Only be used in the screen animation mode
+    gt_area_st * parent_area;       ///< The parent area, when obj->inside is true, obj display limited to parent area
 
-    void * buf;     ///< save the temp buffer
+    void * buf;             ///< save the temp buffer
     gt_area_st buf_area;    ///< The display area
+}_gt_draw_ctx_st;
 
-}gt_draw_ctx_t;
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+typedef struct gt_font_touch_word_s {
+    char * word_p;
+    uint16_t len;
+}gt_font_touch_word_st;
+#endif
 
+typedef struct _gt_draw_font_res_s {
+    gt_area_st area;
+    gt_point_st size;   /** String total width (0xffff invalid) and height(invalid) */
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+    gt_font_touch_word_st touch_word;
+#endif
+}_gt_draw_font_res_st;
+
+typedef struct _gt_radius_mask_t{
+    uint8_t *buf;
+    uint8_t *opa;
+    uint16_t * opa_start;
+    uint16_t * x_start;
+
+    gt_area_st area;
+    uint16_t radius;
+    uint8_t outer : 1; ///< 0: inner, 1: outer
+}gt_radius_mask_st;
+
+typedef enum {
+    R_DIR_TOP_LEFT = 0,
+    R_DIR_TOP_RIGHT,
+    R_DIR_BOTTOM_LEFT,
+    R_DIR_BOTTOM_RIGHT
+}gt_radius_dir_et;
 
 /* macros ---------------------------------------------------------------*/
 
@@ -69,7 +97,7 @@ typedef struct _gt_draw_ctx_t{
  * @param mask_right_up circle right_up data buff
  * @param coords data area
  */
-void gt_draw_arch(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st  *blend_dsc,uint8_t *mask_left_up,uint8_t *mask_right_up,const gt_area_st * coords);
+void gt_draw_arch(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st  *blend_dsc,uint8_t *mask_left_up,uint8_t *mask_right_up,const gt_area_st * coords);
 
 /**
  * @brief use bresenham algorithm draw a line by circle
@@ -81,7 +109,7 @@ void gt_draw_arch(gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st  *blend_dsc,uin
  * @param mask_right_up circle right_up data buff
  * @param coords data area
  */
-void gt_draw_line(gt_attr_line_st * line_attr, gt_draw_ctx_t * draw_ctx, gt_draw_blend_dsc_st * blend_dsc,uint8_t *mask_left_up,uint8_t *mask_right_up,const gt_area_st * coords);
+void gt_draw_line(gt_attr_line_st * line_attr, _gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc,uint8_t *mask_left_up,uint8_t *mask_right_up,const gt_area_st * coords);
 
 /**
  * @brief Draw rect background
@@ -90,7 +118,7 @@ void gt_draw_line(gt_attr_line_st * line_attr, gt_draw_ctx_t * draw_ctx, gt_draw
  * @param dsc description
  * @param coords Want to display area
  */
-void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords);
+void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords);
 
 /**
  * @brief Draw text content
@@ -100,7 +128,7 @@ void draw_bg(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, const gt_are
  * @param coords Want to display area
  * @return gt_area_st The display area
  */
-gt_area_st draw_text(gt_draw_ctx_t * draw_ctx,const gt_attr_font_st * dsc, const gt_area_st * coords);
+_gt_draw_font_res_st draw_text(_gt_draw_ctx_st * draw_ctx,const gt_attr_font_st * dsc, const gt_area_st * coords);
 
 /**
  * @brief Draw background image
@@ -109,9 +137,9 @@ gt_area_st draw_text(gt_draw_ctx_t * draw_ctx,const gt_attr_font_st * dsc, const
  * @param dsc description
  * @param coords Want to display area
  */
-void draw_bg_img(gt_draw_ctx_t * draw_ctx, const gt_attr_rect_st * dsc, gt_area_st * coords);
+void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_area_st * coords);
 
-void draw_focus(gt_obj_st* obj , gt_size_t radius);
+void draw_focus(gt_obj_st* obj, gt_size_t radius);
 
 #ifdef __cplusplus
 } /*extern "C"*/

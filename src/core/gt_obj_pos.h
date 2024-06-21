@@ -42,42 +42,13 @@ extern "C" {
 void gt_area_copy(gt_area_st * dst, gt_area_st const * const src);
 
 /**
- * @brief check the obj is visible
- *
- * @param obj object
- * @return true visible
- * @return false invisible
- */
-bool _gt_obj_is_disp_area_visible(gt_obj_st * obj);
-
-/**
- * @brief check the obj is visible in area
- *
- * @param obj locate object
- * @param area display area
- * @return true
- * @return false
- */
-bool gt_obj_check_visible(gt_obj_st * obj, gt_area_st area);
-
-
-/**
- * @brief gets the area of the object within the display area
- *
- * @param obj obj
- * @param area_act disp area active
- * @param area_valid valid area(x:start cpy x pos, y:start cpy y pos, w:how much cpy width,h:how much cpy height)
- */
-void gt_obj_get_valid_area(gt_obj_st * obj, gt_area_st * area_act, gt_area_st *area_valid);
-
-/**
  * @brief find smallest clicked obj from parent
  *
- * @param parent parent obj
+ * @param scr_or_top Screen object or layer top object
  * @param point click point
  * @return gt_obj_st* smallest and clicked obj in parent
  */
-gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * parent, gt_point_st * point);
+gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * scr_or_top, gt_point_st * point);
 
 gt_obj_st* gt_find_clicked_obj_by_focus(gt_obj_st * parent);
 void gt_obj_next_focus_change(gt_obj_st * cur_obj);

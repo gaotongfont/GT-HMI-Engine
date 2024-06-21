@@ -31,6 +31,7 @@ extern "C" {
 #include "src/core/gt_obj_pos.h"
 #include "src/core/gt_timer.h"
 #include "src/core/gt_draw.h"
+#include "src/core/gt_scr_stack.h"
 
 /* font */
 #include "src/font/gt_font.h"
@@ -150,6 +151,22 @@ extern "C" {
 
 #if GT_CFG_ENABLE_ROLLER
 #include "src/widgets/gt_roller.h"
+#endif
+
+#if GT_CFG_ENABLE_BTNMAP
+#include "src/widgets/gt_btnmap.h"
+#endif
+
+#if GT_CFG_ENABLE_DIALOG
+#include "src/widgets/gt_dialog.h"
+#endif
+
+#if GT_CFG_ENABLE_CHAT
+#include "src/widgets/gt_chat.h"
+#endif
+
+#if GT_CFG_ENABLE_STATUS_BAR
+#include "src/widgets/gt_status_bar.h"
 #endif
 
 /* other */

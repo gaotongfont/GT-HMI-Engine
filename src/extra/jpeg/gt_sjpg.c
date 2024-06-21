@@ -183,13 +183,59 @@ static int output_func(JDEC * jdec, void * bitmap, JRECT * rect) {
     return 1;
 }
 
+static gt_res_t _common_sjpg_info(struct _gt_img_decoder_s * decoder, gt_fs_fp_st * fp, _gt_img_info_st * header) {
+    uint32_t ret_len = 0;
+    uint8_t buffer[22] = {0};
+    uint8_t buffer_eod[2] = {0};
+
+    if (gt_fs_seek(fp, 2, GT_FS_SEEK_END)) {
+        return GT_RES_INV;
+    }
+    if (gt_fs_read(fp, buffer_eod, sizeof(buffer_eod), &ret_len)) {
+        return GT_RES_INV;
+    }
+    if (gt_fs_seek(fp, 0, GT_FS_SEEK_SET)) {
+        return GT_RES_INV;
+    }
+    if (gt_fs_read(fp, buffer, sizeof(buffer), &ret_len)) {
+        return GT_RES_INV;
+    }
+
+    if (0 == gt_memcmp(buffer, "_SJPG__", strlen("_SJPG__"))) {
+        header->w = (buffer[SJPEG_X_RES_OFFSET + 1] << 8) | buffer[SJPEG_X_RES_OFFSET];
+        header->h = (buffer[SJPEG_y_RES_OFFSET + 1] << 8) | buffer[SJPEG_y_RES_OFFSET];
+    }
+    else if (_is_jpg(buffer, buffer_eod, ret_len)) {
+        uint8_t * work_buffer = gt_mem_malloc(TJPGD_WORK_BUFF_SIZE);
+        if (!work_buffer) {
+            return GT_RES_INV;
+        }
+        if (gt_fs_seek(fp, 0, GT_FS_SEEK_SET)) {
+            gt_mem_free(work_buffer);
+            return GT_RES_INV;
+        }
+        JDEC jdec_hdc = {0};
+        _device_st dev = {
+            .file = fp,
+        };
+        JRESULT j_ret = jd_prepare(&jdec_hdc, input_func, work_buffer, (size_t)TJPGD_WORK_BUFF_SIZE, (void *)&dev);
+        gt_mem_free(work_buffer);
+        if (JDR_OK != j_ret) {
+            return GT_RES_INV;
+        }
+        header->w = jdec_hdc.width;
+        header->h = jdec_hdc.height;
+    }
+
+    _sjpg_set_type(header);
+
+    return GT_RES_OK;
+}
+
 static gt_res_t _gt_sjpg_info(struct _gt_img_decoder_s * decoder, const void * src, _gt_img_info_st * header)
 {
     gt_fs_fp_st * fp = gt_fs_open(src, GT_FS_MODE_RD);
     gt_res_t ret = GT_RES_OK;
-    uint32_t ret_len = 0;
-    uint8_t buffer[22] = {0};
-    uint8_t buffer_eod[2] = {0};
     if (!fp) {
         return GT_RES_INV;
     }
@@ -201,50 +247,7 @@ static gt_res_t _gt_sjpg_info(struct _gt_img_decoder_s * decoder, const void * s
         ret = GT_RES_INV;
         goto err_lb;
     }
-
-    if (gt_fs_seek(fp, 2, GT_FS_SEEK_END)) {
-        goto err_lb;
-    }
-    if (gt_fs_read(fp, buffer_eod, sizeof(buffer_eod), &ret_len)) {
-        goto err_lb;
-    }
-    if (gt_fs_seek(fp, 0, GT_FS_SEEK_SET)) {
-        goto err_lb;
-    }
-    if (gt_fs_read(fp, buffer, sizeof(buffer), &ret_len)) {
-        goto err_lb;
-    }
-
-    if (0 == gt_memcmp(buffer, "_SJPG__", strlen("_SJPG__"))) {
-        header->w = (buffer[SJPEG_X_RES_OFFSET + 1] << 8) | buffer[SJPEG_X_RES_OFFSET];
-        header->h = (buffer[SJPEG_y_RES_OFFSET + 1] << 8) | buffer[SJPEG_y_RES_OFFSET];
-    }
-    else if (_is_jpg(buffer, buffer_eod, ret_len)) {
-        uint8_t * work_buffer = gt_mem_malloc(TJPGD_WORK_BUFF_SIZE);
-        if (!work_buffer) {
-            ret = GT_RES_INV;
-            goto err_lb;
-        }
-        if (gt_fs_seek(fp, 0, GT_FS_SEEK_SET)) {
-            gt_mem_free(work_buffer);
-            ret = GT_RES_INV;
-            goto err_lb;
-        }
-        JDEC jdec_hdc = {0};
-        _device_st dev = {
-            .file = fp,
-        };
-        JRESULT j_ret = jd_prepare(&jdec_hdc, input_func, work_buffer, (size_t)TJPGD_WORK_BUFF_SIZE, (void *)&dev);
-        gt_mem_free(work_buffer);
-        if (JDR_OK != j_ret) {
-            ret = GT_RES_INV;
-            goto err_lb;
-        }
-        header->w = jdec_hdc.width;
-        header->h = jdec_hdc.height;
-    }
-
-    _sjpg_set_type(header);
+    ret = _common_sjpg_info(decoder, fp, header);
 
 err_lb:
     gt_fs_close(fp);
@@ -266,20 +269,14 @@ static inline _sjpg_st * _malloc_sjpg_st(struct _gt_img_dsc_s * dsc) {
     return sjpg;
 }
 
-static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc)
+static gt_res_t _common_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc)
 {
-    gt_res_t ret = GT_RES_INV;
-    const char * path = (char * )dsc->src;
-    dsc->fp = gt_fs_open(path, GT_FS_MODE_RD);
     uint32_t ret_len = 0;
     gt_fs_res_et res = GT_FS_RES_OK;
     uint8_t buffer[22] = {0};
     uint8_t buffer_eod[2] = {0};
     _sjpg_st * sjpg = NULL;
 
-    if (!dsc->fp) {
-        return GT_RES_INV;
-    }
     if (gt_fs_seek(dsc->fp, 2, GT_FS_SEEK_END)) {
         goto err_lb;
     }
@@ -355,9 +352,8 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
     }
 
     /** common */
-    uint8_t color_depth = sizeof(gt_color_t);
     sjpg->sjpeg_cache_frame_index = -1;
-    sjpg->frame_cache = gt_mem_malloc(sjpg->sjpeg_x_res * sjpg->sjpeg_single_frame_height * color_depth);
+    sjpg->frame_cache = gt_mem_malloc(sjpg->sjpeg_x_res * sjpg->sjpeg_single_frame_height * sizeof(gt_color_t));
     if (NULL == sjpg->frame_cache) {
         goto err_lb;
     }
@@ -378,7 +374,17 @@ err_lb:
     _sjpg_free(sjpg);
     dsc->customs_data = NULL;
     gt_fs_close(dsc->fp);
-    return ret;
+    dsc->fp = NULL;
+    return GT_RES_INV;
+}
+
+static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc)
+{
+    dsc->fp = gt_fs_open((char * )dsc->src, GT_FS_MODE_RD);
+    if (NULL == dsc->fp) {
+        GT_RES_INV;
+    }
+    return _common_sjpg_open(decoder, dsc);
 }
 
 static gt_res_t _gt_sjpg_read_line(struct _gt_img_dsc_s * dsc,
@@ -449,6 +455,30 @@ static gt_res_t _gt_sjpg_close(struct _gt_img_dsc_s * dsc)
     return GT_RES_OK;
 }
 
+#if GT_USE_FILE_HEADER
+static gt_res_t _gt_sjpg_fh_info(struct _gt_img_decoder_s * decoder, gt_file_header_param_st const * const param, _gt_img_info_st * header) {
+    gt_fs_fp_st * fp = gt_fs_fh_open(param, GT_FS_MODE_RD);
+    gt_res_t ret = GT_RES_OK;
+    if (!fp) {
+        return GT_RES_INV;
+    }
+    ret = _common_sjpg_info(decoder, fp, header);
+
+err_lb:
+    gt_fs_close(fp);
+    return ret;
+}
+
+static gt_res_t _gt_sjpg_fh_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc) {
+    dsc->fp = gt_fs_fh_open((gt_file_header_param_st * )dsc->file_header, GT_FS_MODE_RD);
+    if (NULL == dsc->fp) {
+        return GT_RES_INV;
+    }
+
+    return _common_sjpg_open(decoder, dsc);
+}
+#endif
+
 /* global functions / API interface -------------------------------------*/
 
 void gt_sjpg_init(void)
@@ -459,6 +489,11 @@ void gt_sjpg_init(void)
     gt_img_decoder_set_open_cb(decoder, _gt_sjpg_open);
     gt_img_decoder_set_read_line_cb(decoder, _gt_sjpg_read_line);
     gt_img_decoder_set_close_cb(decoder, _gt_sjpg_close);
+
+#if GT_USE_FILE_HEADER
+    gt_img_decoder_set_fh_info_cb(decoder, _gt_sjpg_fh_info);
+    gt_img_decoder_set_fh_open_cb(decoder, _gt_sjpg_fh_open);
+#endif
 
     gt_img_decoder_register(decoder);
 }

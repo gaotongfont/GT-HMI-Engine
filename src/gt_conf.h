@@ -46,12 +46,17 @@ extern "C" {
 /* user: refr max area */
 #define _GT_REFR_AREA_MAX   32
 
-/* user: obj contain user_data: 1 yes, 0 no */
-#define GT_USE_USER_DATA    1
-
 /* user: color depth: 1(1 byte per pixel), 8(RGB332), 16(RGB565), 32(ARGB8888) */
 #define GT_COLOR_DEPTH      16
 #define GT_COLOR_16_SWAP    0
+
+#ifndef GT_FLUSH_CONVERT_VERTICAL
+    /**
+     * @brief Set the screen refresh direction, 0: horizontal, 1: vertical
+     * [Default: 0]
+     */
+    #define GT_FLUSH_CONVERT_VERTICAL   0
+#endif
 
 /* user: Timer task handler timer [ms] */
 #define GT_TASK_PERIOD_TIME_INDEV   10
@@ -80,10 +85,11 @@ extern "C" {
 #else
     #define GT_MEM_CUSTOM_INCLUDE   "stdlib.h"
 
-    #define GT_MEM_CUSTOM_MALLOC    malloc
-    #define GT_MEM_CUSTOM_CALLOC    calloc
-    #define GT_MEM_CUSTOM_REALLOC   realloc
-    #define GT_MEM_CUSTOM_FREE      free
+    #define GT_MEM_CUSTOM_MALLOC        malloc
+    #define GT_MEM_CUSTOM_CALLOC        calloc
+    #define GT_MEM_CUSTOM_REALLOC       realloc
+    #define GT_MEM_CUSTOM_FREE          free
+    #define GT_MEM_CUSTOM_BLOCK_SIZE    NULL
 #endif
 
 
@@ -99,10 +105,43 @@ extern "C" {
 
 #define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL_INVALID   80
 
-#define GT_CFG_DEFAULT_BUTTON_
+#ifndef GT_BOOTING_INFO_MSG
+    /**
+     * @brief Print Engine information when booting, 0: no display, 1: display
+     * [Default: 0]
+     */
+    #define GT_BOOTING_INFO_MSG     0
+#endif
 
-#define GT_CFG_DEFAULT_KEYPAD_
+#ifndef GT_USE_LAYER_TOP
+    /**
+     * @brief Can be used to set the top layer, the top layer
+     *      is always displayed on the screen.
+     *      Such as: dialog, pop-up window, status bar, etc.
+     *      [Default: 1]
+     */
+    #define GT_USE_LAYER_TOP    01
+#endif
 
+#ifndef GT_USE_SCREEN_ANIM
+    /**
+     * @brief Set the screen animation effect, the screen animation
+     *      [default: 1] 0: only GT_SCR_ANIM_TYPE_NONE can be used.
+     * @ref gt_scr_anim_type_et
+     */
+    #define GT_USE_SCREEN_ANIM  01
+#endif
+
+#ifndef GT_USE_EXTRA_FULL_IMG_BUFFER
+    /**
+     * @brief Set with the maximum width and height of the material,
+     *      read all the data of a single image material from flash at once.
+     *      If the storage space is less than the image data, default
+     *      use line fill mode. Default: 0.
+     * @see ./src/extra/gt_extra.c -> gt_gc_set_full_img_buffer()
+     */
+    #define GT_USE_EXTRA_FULL_IMG_BUFFER    0
+#endif
 
 /* default font style and size */
 #define GT_CFG_DEFAULT_FONT_FAMILY_CN       0xFFFE
@@ -111,11 +150,40 @@ extern "C" {
 #define GT_CFG_DEFAULT_FONT_FAMILY_NUMB     GT_CFG_DEFAULT_FONT_FAMILY_EN
 #define GT_CFG_DEFAULT_FONT_SIZE            16
 
-/* default event mask bit num */
-#define GT_CFG_DEFAULT_EVENT_MASK_BIT_MAX   23
-
+#define GT_USE_MODE_SRC         01
 #define GT_USE_MODE_FLASH       01
-#define GT_USE_MODE_SD          01
+#define GT_USE_MODE_SD          0
+
+#if GT_USE_MODE_FLASH || GT_USE_MODE_SD
+    #ifndef GT_USE_FILE_HEADER
+        /**
+         * @brief Enabled img file header function @ref gt_file_header_st, such as:
+         *      { index[2], count[2], address[4], width[2], height[2], reg[4] }
+         *      reg: colorDepth, alpha, etc.
+         *      More details see @ref gt_hal_file_header.h
+         *
+         * [Default: 0]
+         */
+        #define GT_USE_FILE_HEADER      0
+    #endif
+#endif
+
+#ifndef GT_USE_FOLDER_SYSTEM
+    /**
+     * @brief Enabled file system function such as:
+     *       dir_open_cb() / dir_read_cb() / dir_close_cb()
+     * [Default: 0]
+     */
+    #define GT_USE_FOLDER_SYSTEM        0
+#endif
+
+#ifndef GT_USE_FS_NAME_BY_INDEX
+    /**
+     * @brief Enabled file system get name by index of list
+     * [Default: 0]
+     */
+    #define GT_USE_FS_NAME_BY_INDEX     0
+#endif
 
 /** display refresh time */
 #define GT_USE_DISPLAY_PREF_MSG         0

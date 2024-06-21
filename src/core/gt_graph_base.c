@@ -24,6 +24,7 @@
 
 /* private typedef ------------------------------------------------------*/
 
+#if 0
 typedef enum{
 	GT_GRAY_1 = 1,
 	GT_GRAY_2 = 2,
@@ -32,9 +33,10 @@ typedef enum{
 
 	GT_GRAY_MAX_COUNT,
 }gt_gray_t;
+#endif
 
 /* static variables -----------------------------------------------------*/
-static gt_color_t * color;
+
 
 
 /* macros ---------------------------------------------------------------*/
@@ -43,6 +45,7 @@ static gt_color_t * color;
 
 /* static functions -----------------------------------------------------*/
 
+#if 0
 /**
  * @brief dot data change to color
  *
@@ -409,8 +412,8 @@ static void _gt_graph_arc_0_45(
 	gt_size_t x, y, r, theta, div = 0;
 	gt_point_st coord, last, tmp;
 	gt_size_t w, h;
-	gt_size_t border_width = circle_attr->border_width;
 	gt_size_t  diff_x  = 0, diff_y = 0, remark_col;
+	uint8_t border_width = circle_attr->border_width;
 	uint8_t    count   = 0;
 
 	w            = area->w;
@@ -517,8 +520,8 @@ static void _gt_graph_arc_45_90(
 	gt_size_t x, y, r, theta, div = 0;
 	gt_point_st coord, last, tmp;
 	gt_size_t w, h;
-	gt_size_t border_width = circle_attr->border_width;
 	gt_size_t  diff_x  = 0, diff_y = 0, remark_row;
+	uint8_t border_width = circle_attr->border_width;
 	uint8_t    count   = 0;
 
 	w          = area->w;
@@ -617,50 +620,9 @@ static void _gt_graph_arc_45_90(
 		}
 	}
 }
+#endif
 
 /* global functions / API interface -------------------------------------*/
-
-void gt_graph_dot_to_gray(uint8_t *dot, uint8_t *out, gt_size_t w, gt_size_t h, uint8_t level_gray)
-{
-	int _x,_y,_w, _h;
-	int bit_idx;
-	uint8_t bit_mask,bit_cnt,bit_step,bit_x,bit_y;
-	uint8_t *p;
-	float d1,weight=0.5;
-
-	bit_idx = 8;
-	switch ( level_gray ) {
-		case GT_GRAY_1: bit_step = 1; bit_cnt = 8; bit_mask = 0x01; break;
-		case GT_GRAY_2:	bit_step = 2; bit_cnt = 4; bit_mask = 0x03; break;
-		case GT_GRAY_4:	bit_step = 4; bit_cnt = 2; bit_mask = 0x0F; break;
-		case GT_GRAY_8:	bit_step = 8; bit_cnt = 1; bit_mask = 0xFF; break;
-		default: break;
-	}
-
-	_x = 0;
-	_y = 0;
-	_w = (w*level_gray)/8;
-	_h = h*level_gray;
-
-	while(_y<_h) {
-		while(_x<_w) {
-			bit_idx = 8;
-			for(bit_x=0; bit_x<bit_cnt; bit_x++) {
-				p = dot+(_y*_w);
-				bit_idx = bit_idx-bit_step;
-				d1 = 0;
-				for(bit_y=0; bit_y<bit_cnt; bit_y++) {
-					d1 += ((*p>>bit_idx)&bit_mask)*weight;
-					p+=_w;
-				}
-				*out = *out&(~bit_mask<<bit_idx) | ((int)d1<<bit_idx);
-			}
-			out++;
-			_x++;
-		}
-		_y+=level_gray;
-	}
-}
 
 uint32_t gt_graph_get_gray(gt_color_t * color_out, gt_color_t color_from, gt_color_t color_to, gt_size_t gray, gt_size_t step)
 {
@@ -694,14 +656,7 @@ void gt_graph_init_circle_attr(gt_attr_circle_st * circle_attr)
 	gt_memset(circle_attr, 0, sizeof(gt_attr_circle_st));
 }
 
-gt_color_t * gt_graph_get_default()
-{
-	return color;
-}
-
-void gt_graph_set_default(gt_color_t * _color){
-	color = _color;
-}
+#if 0
 void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area, gt_color_t * color_buf)
 {
 	gt_color_t * buf = color_buf;
@@ -808,147 +763,7 @@ void gt_bresenham_line(gt_size_t x0, gt_size_t y0, gt_size_t x1, gt_size_t y1,gt
 		}
 	}
 }
+#endif
 
-void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * color)
-{
-	uint16_t is_fill, border_width;
-	gt_color_t bg_color, border_color;
-
-	is_fill = rect_attr->reg.is_fill;
-
-	border_width = rect_attr->border_width;
-	GT_COLOR_SET(border_color, GT_COLOR_GET(rect_attr->border_color));
-
-	GT_COLOR_SET(bg_color, GT_COLOR_GET(rect_attr->bg_color));
-
-	gt_size_t w,h;
-	w = area->w;
-	h = area->h;
-
-	uint32_t x,y, x1,y1, x2,y2, idx = 0, all = w * h, x21, idxb1;
-	x1 = border_width;
-	x2 = w - border_width;
-
-	y1 = border_width;
-	y2 = h - border_width;
-	x21 = x2 - x1;
-
-	//draw center
-	if(is_fill){
-		gt_color_fill(color, all, bg_color);
-	}
-
-	//draw up border
-	y = 0;
-	idx = 0;
-	idxb1 = border_width * w;
-	while(idx < idxb1){
-		GT_COLOR_SET(color[idx], GT_COLOR_GET(border_color));
-		idx++;
-	}
-
-	//draw bottom border
-	y = y2;
-	idx = w * y2;
-	while( idx < all ){
-		GT_COLOR_SET(color[idx], GT_COLOR_GET(border_color));
-		idx++;
-	}
-
-	y = y1;
-	idx = border_width * w;
-	while( y < y2 ){
-		//draw left border
-		x = 0;
-		while( x < border_width ){
-			GT_COLOR_SET(color[idx], GT_COLOR_GET(border_color));
-			idx++;
-			x++;
-		}
-		//draw right border
-		x = 0;
-		idx += x21;
-		while( x < border_width ){
-			GT_COLOR_SET(color[idx], GT_COLOR_GET(border_color));
-			idx++;
-			x++;
-		}
-		y++;
-	}
-
-	if( 0 != rect_attr->radius ){
-		gt_attr_circle_st circle_attr = {
-			.reg.is_fill = is_fill,
-			.radius = rect_attr->radius,
-			.bg_color = rect_attr->bg_color,
-			.fg_color = rect_attr->fg_color,
-			.border_color = rect_attr->border_color,
-			.border_width = rect_attr->border_width
-		};
-		gt_area_st area_circle = {
-			.w = circle_attr.radius * 2,
-			.h = circle_attr.radius * 2,
-		};
-		gt_color_t * color_circle = gt_mem_malloc(area_circle.w * area_circle.h * sizeof(gt_color_t));
-		gt_graph_circle(&circle_attr, &area_circle, color_circle);
-
-		gt_area_st area_dst = {
-			.x = 0,
-			.y = 0,
-			.w = area->w,
-			.h = area->h,
-		}, area_src = {
-			.x = 0,
-			.y = 0,
-			.w = area_circle.w,
-			.h = area_circle.h,
-		};
-		// cpy left-up radius
-		gt_color_area_copy(color, area_dst, color_circle, area_src, circle_attr.radius, circle_attr.radius);
-
-		// cpy left-down radius
-		area_dst.y = area->h - rect_attr->radius;
-		area_src.y = circle_attr.radius;
-		gt_color_area_copy(color, area_dst, color_circle, area_src, circle_attr.radius, circle_attr.radius);
-
-		// cpy right-up radius
-		area_dst.y = 0;
-		area_dst.x = area->w - rect_attr->radius;
-		area_src.y = 0;
-		area_src.x = circle_attr.radius;
-		gt_color_area_copy(color, area_dst, color_circle, area_src, circle_attr.radius, circle_attr.radius);
-
-		// cpy right-down radius
-		area_dst.y = area->h - rect_attr->radius;
-		area_dst.x = area->w - rect_attr->radius;
-		area_src.y = circle_attr.radius;
-		area_src.x = circle_attr.radius;
-		gt_color_area_copy(color, area_dst, color_circle, area_src, circle_attr.radius, circle_attr.radius);
-
-		gt_mem_free(color_circle);
-	}
-}
-
-void gt_graph_dot_draw_to_color(uint8_t * dot, gt_color_t * color, gt_area_st area_color, uint8_t w, uint8_t h, gt_color_t fg_color)
-{
-	uint16_t y, x, idx = 0, temp;
-	uint16_t _h, _w;
-	int8_t j = 0;
-	_h = area_color.y + h;
-	_w = w >> 3;
-
-	for(y = area_color.y; y < (_h); y++){
-		temp = 0;
-		for(x = 0; x < _w; x++){
-			for(j = 7; j >= 0; j--){
-				if( (dot[idx] >> j) & 0x01 ){
-					GT_COLOR_SET_BUF(color, area_color.x + temp, y, area_color.w, area_color.h, GT_COLOR_GET(fg_color));
-				}
-				++temp;
-			}
-			++idx;
-		}
-	}
-}
 
 /* end ------------------------------------------------------------------*/

@@ -14,6 +14,9 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_LINE
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 
@@ -43,6 +46,8 @@ void gt_line_set_start_point(gt_obj_st * line, uint16_t xs, uint16_t ys);
 void gt_line_set_end_point(gt_obj_st * line, uint16_t xe, uint16_t ye);
 void gt_line_set_line_width(gt_obj_st * line, uint16_t line_width);
 
+
+#endif  /** GT_CFG_ENABLE_LINE */
 
 #ifdef __cplusplus
 } /*extern "C"*/

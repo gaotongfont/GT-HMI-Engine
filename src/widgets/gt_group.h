@@ -14,6 +14,9 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_GROUP
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 
@@ -57,6 +60,9 @@ gt_obj_st * gt_group_get_active_obj(gt_obj_st * group, gt_obj_type_et type);
  * @return false set failed
  */
 bool gt_group_reset_selected_state(gt_obj_st * group, gt_obj_type_et type);
+
+
+#endif  /** GT_CFG_ENABLE_GROUP */
 
 #ifdef __cplusplus
 } /*extern "C"*/

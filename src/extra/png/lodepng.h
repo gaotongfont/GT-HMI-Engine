@@ -32,6 +32,7 @@ freely, subject to the following restrictions:
 
 #include <string.h> /*for size_t*/
 #include "gt_png.h"
+#include "../../hal/gt_hal_file_header.h"
 
 extern const char* LODEPNG_VERSION_STRING;
 
@@ -1076,6 +1077,10 @@ NOTE: Wide-character filenames are not supported, you can use an external method
 to handle such files and decode in-memory.
 */
 unsigned lodepng_load_file(unsigned char** out, size_t* outsize, const char* filename);
+
+#if GT_USE_FILE_HEADER
+unsigned lodepng_load_file_fh(unsigned char** out, size_t* outsize, gt_file_header_param_st const * const param);
+#endif
 
 /*
 Save a file from buffer to disk. Warning, if it exists, this function overwrites

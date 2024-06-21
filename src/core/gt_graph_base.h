@@ -62,14 +62,16 @@ typedef struct _gt_attr_rect_reg_s {
 /**
  * @brief rectangle attribute information
  */
-typedef struct _gt_attr_rect_s
-{
-    // bg img
-    void * bg_img_src;          ///< image source; NULL: using RAM image data
-    gt_attr_line_st  * line;     ///< use straight line
+typedef struct _gt_attr_rect_s {
+    void * bg_img_src;          ///< image source; NULL: using RAM image data @ref raw_img
+    _gt_img_dsc_st * raw_img;   ///< RAM image data, when bg_img_src is NULL
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_st * file_header;  ///< Using file header mode to read image data
+#endif
 
-    _gt_img_dsc_st * ram_img;   ///< RAM image data, when bg_img_src is NULL
+    gt_attr_line_st * line;     ///< use straight line
 
+    gt_area_st* base_area;
     // Dot matrix data
     uint8_t * data_gray;
     uint8_t gray;
@@ -79,7 +81,7 @@ typedef struct _gt_attr_rect_s
 
     // border
     gt_color_t border_color;    ///< border color
-    gt_size_t border_width;     ///< border width in pixels
+    uint8_t border_width;     ///< border width in pixels
 
     gt_size_t radius;           ///< radius value
 
@@ -105,8 +107,8 @@ typedef struct _gt_attr_circle_s
 
     gt_size_t radius;           ///< radius value
 
-    gt_size_t border_width;     ///< border width
     gt_color_t border_color;    ///< border color
+    uint8_t border_width;     ///< border width
 
     _gt_attr_circle_reg_st reg;
 }gt_attr_circle_st;
@@ -123,7 +125,7 @@ typedef struct _gt_attr_arch_s
     gt_size_t angle_start;          ///< The start angle
     gt_size_t angle_end;            ///< The end angle
 
-    gt_size_t border_width;         ///< border width
+    uint8_t border_width;         ///< border width
 }gt_attr_arch_st;
 
 /* macros ---------------------------------------------------------------*/
@@ -171,17 +173,7 @@ void gt_graph_init_circle_attr(gt_attr_circle_st * circle_attr);
  */
 uint32_t gt_graph_get_gray(gt_color_t * color_out, gt_color_t color_from, gt_color_t color_to, gt_size_t gray, gt_size_t step);
 
-/**
- * @brief Get default display buffer
- *
- * @return gt_color_t*
- */
-gt_color_t * gt_graph_get_default(void);
-
-/**
- * @brief Set default display buffer
- */
-void gt_graph_set_default(gt_color_t *);
+#if 0
 
 /**
  * @brief draw a circle
@@ -210,38 +202,7 @@ void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area );
  * @param fg_color line color
  */
 void gt_bresenham_line(gt_size_t x0, gt_size_t y0, gt_size_t x1, gt_size_t y1,gt_color_t fg_color);
-
-/**
- * @brief Draw a rectangle
- *
- * @param rect_attr
- * @param area
- * @param color
- */
-void gt_graph_rect(gt_attr_rect_st * rect_attr, gt_area_st * area, gt_color_t * color );
-
-/**
- * @brief draw dot to color_arr
- *
- * @param dot dot arr
- * @param color color_arr
- * @param area_color pos and size of color_arr
- * @param w dot width
- * @param h dot height
- * @param fg_color fg_color
- */
-void gt_graph_dot_draw_to_color(uint8_t * dot, gt_color_t * color, gt_area_st area_color, uint8_t w, uint8_t h, gt_color_t fg_color);
-
-/**
- * @brief dot data change to gray data
- *
- * @param dot input dot array => output gray array
- * @param out the output data buffer
- * @param w array width
- * @param h array height
- * @param level_gray gray level
- */
-void gt_graph_dot_to_gray(uint8_t *dot, uint8_t *out, gt_size_t w, gt_size_t h, uint8_t level_gray);
+#endif
 
 #ifdef __cplusplus
 } /*extern "C"*/

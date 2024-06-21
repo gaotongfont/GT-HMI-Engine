@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_qrcode.h"
+
+#if GT_CFG_ENABLE_QRCODE
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "../core/gt_draw.h"
@@ -19,7 +21,6 @@
 #include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 
-#if GT_CFG_ENABLE_QRCODE == 1
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_QRCODE
 #define MY_CLASS    &gt_qr_code_class
@@ -30,8 +31,8 @@
 #define _QRCodeDataBuf_SIZE   _QRDataBuf_SIZE  // (3706)
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_qrcode_s
-{
+typedef struct _gt_qr_code_s {
+    gt_obj_st obj;
     uint16_t str_len;
     uint8_t * str;
     uint8_t ec_level;
@@ -39,7 +40,7 @@ typedef struct _gt_qrcode_s
     gt_family_t version;
     gt_color_t fg_color;
     gt_color_t bg_color;
-}_gt_qrcode_st;
+}_gt_qr_code_st;
 
 
 /* static variables -----------------------------------------------------*/
@@ -52,7 +53,7 @@ const gt_obj_class_st gt_qr_code_class = {
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
-    .size_style    = sizeof(_gt_qrcode_st)
+    .size_style    = sizeof(_gt_qr_code_st)
 };
 
 
@@ -95,9 +96,9 @@ static void _Data_ReMap(unsigned char* getdate,unsigned char* putdata, unsigned 
 
 
 static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
-    _gt_qrcode_st * style = qr_code->style;
-    unsigned char *qr_data_buff = NULL;
-    unsigned char *qr_code_buff = NULL;
+    _gt_qr_code_st * style = (_gt_qr_code_st * )qr_code;
+    uint8_t *qr_data_buff = NULL;
+    uint8_t *qr_code_buff = NULL;
 
     qr_data_buff = gt_mem_malloc(_QRDataBuf_SIZE);
     qr_code_buff = gt_mem_malloc(_QRCodeDataBuf_SIZE);
@@ -146,7 +147,7 @@ static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
     gt_mem_free(qr_data_buff);
     qr_data_buff = NULL;
 
-    gt_area_st box_area = gt_area_reduce(qr_code->area , REDUCE_DEFAULT);
+    gt_area_st box_area = gt_area_reduce(qr_code->area , gt_obj_get_reduce(qr_code));
     // draw background
     rect_attr.bg_color      = style->bg_color;
     draw_bg(qr_code->draw_ctx, &rect_attr, &box_area);
@@ -246,23 +247,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-
-static void _gt_qrcode_init_style(gt_obj_st * qr_code)
-{
-    _gt_qrcode_st * style = (_gt_qrcode_st * )qr_code->style;
-    /* code */
-    // http://www.gaotongfont.cn/
-    gt_memset(style, 0, sizeof(_gt_qrcode_st));
-    style->str = gt_mem_malloc(strlen("https://www.hmi.gaotongfont.cn/")+1);
-    gt_memcpy(style->str, "https://www.hmi.gaotongfont.cn/" , strlen("https://www.hmi.gaotongfont.cn/")+1);
-    style->str_len = strlen(style->str);
-    style->version = GT_FAMILY_QRCODE_VERSION_10;
-    style->ec_level = ECLevel_H;
-    style->mask_patt = MaskPattern4;
-    style->bg_color = gt_color_white();
-    style->fg_color = gt_color_black();
-}
-
 /* global functions / API interface -------------------------------------*/
 
 /**
@@ -274,22 +258,40 @@ static void _gt_qrcode_init_style(gt_obj_st * qr_code)
 gt_obj_st * gt_qrcode_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_qrcode_init_style(obj);
+    if (NULL == obj) {
+        return obj;
+    }
+
+    _gt_qr_code_st * style = (_gt_qr_code_st * )obj;
+    // http://www.gaotongfont.cn/
+    style->str = gt_mem_malloc(strlen("https://www.hmi.gaotongfont.cn/")+1);
+    gt_memcpy(style->str, "https://www.hmi.gaotongfont.cn/" , strlen("https://www.hmi.gaotongfont.cn/")+1);
+    style->str_len = strlen(style->str);
+    style->version = GT_FAMILY_QRCODE_VERSION_10;
+    style->ec_level = ECLevel_H;
+    style->mask_patt = MaskPattern4;
+    style->bg_color = gt_color_white();
+    style->fg_color = gt_color_black();
     return obj;
 }
 
 
 void gt_qrcode_set_version(gt_obj_st * qr_code , gt_qr_code_version_em version)
 {
-    _gt_qrcode_st * style = qr_code->style;
+    if (false == gt_obj_is_type(qr_code, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_qr_code_st * style = (_gt_qr_code_st * )qr_code;
     style->version = version;
 }
 
 void gt_qrcode_set_str(gt_obj_st * qr_code , char* str)
 {
-    _gt_qrcode_st * style = qr_code->style;
-    if( NULL != style->str)
-    {
+    if (false == gt_obj_is_type(qr_code, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_qr_code_st * style = (_gt_qr_code_st * )qr_code;
+    if( NULL != style->str) {
         gt_mem_free(style->str);
     }
     uint16_t size = str == NULL ? 0 : strlen(str);
@@ -301,16 +303,21 @@ void gt_qrcode_set_str(gt_obj_st * qr_code , char* str)
 
 void gt_qrcode_set_background(gt_obj_st * qr_code , gt_color_t color)
 {
-    _gt_qrcode_st * style = qr_code->style;
+    if (false == gt_obj_is_type(qr_code, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_qr_code_st * style = (_gt_qr_code_st * )qr_code;
     style->bg_color = color;
 }
 
 void gt_qrcode_set_forecolor(gt_obj_st * qr_code , gt_color_t color)
 {
-    _gt_qrcode_st * style = qr_code->style;
+    if (false == gt_obj_is_type(qr_code, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_qr_code_st * style = (_gt_qr_code_st * )qr_code;
     style->fg_color = color;
 }
 
-#endif
-/* */
+#endif  /** GT_CFG_ENABLE_QRCODE */
 /* end ------------------------------------------------------------------*/

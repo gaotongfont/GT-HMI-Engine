@@ -14,11 +14,13 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_INPUT_NUMBER
 #include "gt_obj.h"
 #include "../font/gt_font.h"
 
 
-#if GT_CFG_ENABLE_INPUT_NUMBER
 /* define ---------------------------------------------------------------*/
 
 
@@ -144,7 +146,7 @@ void gt_input_number_set_font_size(gt_obj_st * obj, uint8_t size);
 
 void gt_input_number_set_font_gray(gt_obj_st * obj, uint8_t gray);
 
-void gt_input_number_set_font_align(gt_obj_st * obj, uint8_t align);
+void gt_input_number_set_font_align(gt_obj_st * obj, gt_align_et align);
 
 void gt_input_number_set_font_family_cn(gt_obj_st * obj, gt_family_t family);
 

@@ -38,7 +38,9 @@ extern "C" {
 
 /* global functions / API interface -------------------------------------*/
 
+#if 0
 uint8_t gt_anti_aliasing_div(gt_color_t * buffer,gt_area_st * area, gt_point_st * coord, gt_point_st * last);
+#endif
 
 #ifdef __cplusplus
 } /*extern "C"*/

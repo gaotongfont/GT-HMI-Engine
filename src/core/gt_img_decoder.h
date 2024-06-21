@@ -67,14 +67,15 @@ typedef struct _gt_img_dsc_s {
     struct _gt_img_decoder_s * decoder; ///< iamge decoder
     gt_fs_fp_st * fp;           ///< file object
     void * src;                 ///< path or destination of image
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_st * file_header;  ///< Using file header mode to read image data
+#endif
     uint8_t * img;              ///< temp buffer which is used to save image data
     void * customs_data;        ///< customs data
     _gt_img_info_st header;     ///< the header information of image
     gt_fs_type_et type;         ///< file driver type, such as: SD, Flash...
-    uint8_t * alpha;            ///< temp buffer which is used to save alpha data
+    gt_opa_t * alpha;           ///< temp buffer which is used to save alpha data
 }_gt_img_dsc_st;
-
-struct _gt_img_decoder_s;
 
 /**
  * @brief function pointer to decode image information, @ref _gt_img_info_st
@@ -98,6 +99,12 @@ typedef gt_res_t ( * gt_img_decoder_read_line_t)(struct _gt_img_dsc_s * dsc,
  */
 typedef gt_res_t ( * gt_img_decoder_close_t)(struct _gt_img_dsc_s * dsc);
 
+#if GT_USE_FILE_HEADER
+typedef gt_res_t ( * gt_img_decoder_fh_get_info_t)(struct _gt_img_decoder_s * decoder, gt_file_header_param_st const * const param, _gt_img_info_st * header);
+
+typedef gt_res_t ( * gt_img_decoder_fh_open_t)(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc);
+#endif
+
 /**
  * @brief callback function
  */
@@ -108,6 +115,11 @@ typedef struct _gt_img_decoder_s {
     gt_img_decoder_open_t open_cb;              ///< open image file and create file object
     gt_img_decoder_read_line_t read_line_cb;    ///< read image data
     gt_img_decoder_close_t close_cb;            ///< close image file object
+
+#if GT_USE_FILE_HEADER
+    gt_img_decoder_fh_get_info_t fh_info_cb;    ///< get image base information by file header
+    gt_img_decoder_fh_open_t fh_open_cb;        ///< open image file and create file object by file header
+#endif
 }_gt_img_decoder_st;
 
 
@@ -188,6 +200,11 @@ gt_res_t gt_img_decoder_read_line(_gt_img_dsc_st * dsc, gt_size_t x, gt_size_t y
  */
 gt_res_t gt_img_decoder_close(_gt_img_dsc_st * dsc);
 
+#if GT_USE_FILE_HEADER
+gt_res_t gt_img_decoder_fh_get_info(gt_file_header_param_st const * const param, _gt_img_info_st * header);
+gt_res_t gt_img_decoder_fh_open(_gt_img_dsc_st * dsc, gt_file_header_param_st const * const param);
+#endif
+
 /**
  * @brief Set the information callback function pointer into image decoder object.
  *
@@ -224,6 +241,28 @@ void gt_img_decoder_set_read_line_cb(_gt_img_decoder_st * decoder, gt_img_decode
  * @param close_cb The callback function pointer, which close image file.
  */
 void gt_img_decoder_set_close_cb(_gt_img_decoder_st * decoder, gt_img_decoder_close_t close_cb);
+
+#if GT_USE_FILE_HEADER
+/**
+ * @brief Set the information callback function pointer into image decoder object
+ *      by file header.
+ *
+ * @param decoder Image decoder, Which need to be init function and get information.
+ *      information.
+ * @param fh_info_cb The file header control callback function pointer
+ */
+void gt_img_decoder_set_fh_info_cb(_gt_img_decoder_st * decoder, gt_img_decoder_fh_get_info_t fh_info_cb);
+
+/**
+ * @brief Set the open image file callback function pointer into image decoder object
+ *      by file header.
+ *
+ * @param decoder Image decoder, Which need to be init function by open file.
+ * @param fh_open_cb The file header control callback function pointer, which open image file and
+ *      create image file object.
+ */
+void gt_img_decoder_set_fh_open_cb(_gt_img_decoder_st * decoder, gt_img_decoder_fh_open_t fh_open_cb);
+#endif
 
 #ifdef __cplusplus
 } /*extern "C"*/

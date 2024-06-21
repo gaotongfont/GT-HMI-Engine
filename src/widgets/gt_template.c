@@ -27,6 +27,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_template_s {
+    gt_obj_st obj;
     char * template;
 }_gt_template_st;
 
@@ -72,18 +73,11 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_template_st ** style_p = (_gt_template_st ** )&obj->style;
-    if (NULL == *style_p) {
-        return ;
+    _gt_template_st * style_p = (_gt_template_st * )obj;
+    if (NULL != style_p->template) {
+        gt_mem_free(style_p->template);
+        style_p->template = NULL;
     }
-
-    if (NULL != (*style_p)->template) {
-        gt_mem_free((*style_p)->template);
-        (*style_p)->template = NULL;
-    }
-
-    gt_mem_free(*style_p);
-    *style_p = NULL;
 }
 
 
@@ -132,17 +126,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-
-static void _gt_template_init_style(gt_obj_st * template)
-{
-    _gt_template_st * style = (_gt_template_st * )template->style;
-
-    gt_memset(style,0,sizeof(_gt_template_st));
-}
-
-
-
-
 /* global functions / API interface -------------------------------------*/
 
 /**
@@ -154,7 +137,11 @@ static void _gt_template_init_style(gt_obj_st * template)
 gt_obj_st * gt_template_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_template_init_style(obj);
+    if (NULL == obj) {
+        return obj;
+    }
+    _gt_template_st * style = (_gt_template_st * )obj;
+
     return obj;
 }
 

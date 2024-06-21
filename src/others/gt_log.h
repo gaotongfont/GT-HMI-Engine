@@ -41,12 +41,16 @@ extern "C" {
 
 
 //字库相关能显示的调试信息等级
-#define GT_LOG_LEVEL_DEFALUT    5//GT_LOG_LEVEL_DEBUG
+#ifndef GT_LOG_LEVEL_DEFALUT
+    #define GT_LOG_LEVEL_DEFALUT    GT_LOG_LEVEL_ERROR
+#endif
 
 /* TAG ------------------------------------------------------------------*/
 
+#define GT_LOG_TAG_BOOT         "BOOT"
 #define GT_LOG_TAG_CHECK        "CHECK"
 #define GT_LOG_TAG_MEM          "MEM"
+#define GT_LOG_TAG_FS           "FS"
 #define GT_LOG_TAG_FLASH        "FLASH"
 #define GT_LOG_TAG_LIST         "LIST"
 #define GT_LOG_TAG_LCD          "LCD"
@@ -75,7 +79,7 @@ extern "C" {
 #if defined(GT_USE_LOG) && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_VERBOSE)
     #define GT_LOGV(_tag, _fmt, _arg...)                                                        \
         do {                                                                                    \
-            _GT_PRINT("[GT_VERB] [%s] [%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
+            _GT_PRINT("[GT_VERB][%s][%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
         }while(0)
 #else
     #define GT_LOGV(_tag, _fmt, _arg...)    ((void)0)
@@ -85,7 +89,7 @@ extern "C" {
 #if defined(GT_USE_LOG) && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_DEBUG)
     #define GT_LOGD(_tag, _fmt, _arg...)                                                        \
         do {                                                                                    \
-            _GT_PRINT("[GT_DEBG] [%s] [%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
+            _GT_PRINT("[GT_DEBG][%s][%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
         }while(0)
 #else
     #define GT_LOGD(_tag, _fmt, _arg...)    ((void)0)
@@ -95,7 +99,7 @@ extern "C" {
 #if defined(GT_USE_LOG) && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_INFO)
     #define GT_LOGI(_tag, _fmt, _arg...)                                                        \
         do {                                                                                    \
-            _GT_PRINT("[GT_INFO] [%s] [%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
+            _GT_PRINT("[GT_INFO][%s][%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
         }while(0)
 #else
     #define GT_LOGI(_tag, _fmt, _arg...)    ((void)0)
@@ -105,7 +109,7 @@ extern "C" {
 #if defined(GT_USE_LOG) && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_WARNING)
     #define GT_LOGW(_tag, _fmt, _arg...)                                                        \
         do {                                                                                    \
-            _GT_PRINT("[GT_WARN] [%s] [%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
+            _GT_PRINT("[GT_WARN][%s][%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
         }while(0)
 #else
     #define GT_LOGW(_tag, _fmt, _arg...)    ((void)0)
@@ -115,10 +119,20 @@ extern "C" {
 #if defined(GT_USE_LOG) && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_ERROR)
     #define GT_LOGE(_tag, _fmt, _arg...)                                                        \
         do {                                                                                    \
-            _GT_PRINT("[GT_ERRO] [%s] [%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
+            _GT_PRINT("[GT_ERRO][%s][%s:%s():%d] " _fmt "\n", _tag, __FILE__, __func__, __LINE__, ##_arg); \
         }while(0)
 #else
     #define GT_LOGE(_tag, _fmt, _arg...)    ((void)0)
+#endif
+
+// no format, log output all time
+#if defined(GT_USE_LOG)
+    #define GT_LOG_A(_tag, _fmt, _arg...)                           \
+        do {                                                        \
+            _GT_PRINT("[HMI][%s] " _fmt "\n", _tag, ##_arg);     \
+        }while(0)
+#else
+    #define GT_LOG_A(_tag, _fmt, _arg...)    ((void)0)
 #endif
 
 //崩溃捕获, 生成断定
@@ -183,27 +197,27 @@ extern "C" {
         }                                                                                   \
     }while(0)
 
-#define GT_LOG_COLOR_ARR(_arr, _start, _len)      	\
-	do{																								\
-		int i=_start;																		\
-		printf("\n");																		\
-		while(i<_len+_start){														\
-			printf("%s[%d]=%04x  ",#_arr,i,_arr[i].full);								\
-			i++;																					\
-		}																								\
-		printf("\n");																		\
+#define GT_LOG_COLOR_ARR(_arr, _start, _len)            \
+	do{													\
+		int i=_start;									\
+		printf("\n%s:\n", #_arr);						\
+		while(i<_len+_start){							\
+			printf("[%d]=%04x ", i, _arr[i].full);		\
+			i++;										\
+		}												\
+		printf("\n");									\
 	}while(0);
 
 
-#define GT_LOG_ARR(_arr, _start, _len)  \
-    do{																								\
-		int i=_start;																		\
-		printf("\n");																		\
-		while(i<_len+_start){														\
-			printf("%s[%d]=%02x  ",#_arr,i,_arr[i]);								\
-			i++;																					\
-		}																								\
-		printf("\n");																		\
+#define GT_LOG_ARR(_arr, _start, _len)                  \
+    do{                                                 \
+		int i=_start;                                   \
+		printf("\n%s:\n", #_arr);                       \
+		while(i<_len+_start){                           \
+			printf("[%d]=%02x ", i, _arr[i]);           \
+			i++;                                        \
+		}                                               \
+		printf("\n");                                   \
 	}while(0);
 
 #ifdef __cplusplus

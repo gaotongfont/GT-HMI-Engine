@@ -18,6 +18,7 @@ extern "C" {
 #include "./gt_list.h"
 #include "../widgets/gt_obj.h"
 #include "../others/gt_types.h"
+#include "../core/gt_mem.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -54,8 +55,20 @@ typedef int32_t ( * gt_anim_path_cb_t)(const struct gt_anim_s *);
  * param 2: the value to set
  */
 typedef void ( * gt_anim_exec_cb_t)(gt_obj_st *, int32_t);
+
+/**
+ * @brief The event is fired when the animation is complete
+ */
 typedef void ( * gt_anim_ready_cb_t)(struct gt_anim_s *);
+
+/**
+ * @brief The event is fired when the animation is start
+ */
 typedef void ( * gt_anim_start_cb_t)(struct gt_anim_s *);
+
+/**
+ * @brief Get anim current timestamp value
+ */
 typedef int32_t ( * gt_anim_get_value_cb_t)(struct gt_anim_s *);
 
 /**
@@ -82,7 +95,7 @@ typedef struct gt_anim_s {
     gt_anim_path_cb_t _path_cb; /* Warn: animation system used - user should not modified it */
     void * data;
 
-    int32_t tick_create;        // create this animation tick timer
+    int32_t tick_create;        // [Tick Timestamp] create this animation tick timer
     int32_t time_delay_start;   // The animation is executed after this delay [ms]
     int32_t time;               // remark animation running total time [ms]
     int32_t time_act;           // remark active animation time [0 -> time ms]
@@ -94,12 +107,15 @@ typedef struct gt_anim_s {
     int32_t playback_time;      // Playback time [ms]
     uint32_t playback_delay;    // Delay ms to playback animation [ms]
     uint32_t repeat_delay;      // The time to repeat playback animation [ms]
-    uint16_t repeat_count;      // The number of times to repeat playback animation
+    uint16_t repeat_count;      // The number of times to repeat playback animation, infinite: GT_ANIM_REPEAT_INFINITE
     gt_anim_path_type_em type;  // The path which is animation object to run
 
     /* Warn: anim core system used these - user should not modified it */
-    uint8_t run_already     : 1;
-    uint8_t playback_status : 1;
+    uint8_t run_already : 1;    // Determines whether the current moment has been executed
+    uint8_t invert      : 1;    // remark playback current status [0: forward, 1: backward]
+    uint8_t playback    : 1;    // TODO enabled playback
+    uint8_t paused      : 1;    // paused status
+    uint8_t reserved    : 4;
 }gt_anim_st;
 
 
@@ -129,7 +145,35 @@ static inline void gt_anim_set_value(gt_anim_st * anim, int32_t start, int32_t e
 }
 
 static inline void gt_anim_set_playback(gt_anim_st * anim, bool enabled) {
-    anim->time = enabled ? 1 : 0;
+    anim->playback = enabled ? 1 : 0;
+}
+
+/**
+ * @brief
+ *
+ * @param anim
+ * @param count Default: 0, infinite: GT_ANIM_REPEAT_INFINITE
+ */
+static inline void gt_anim_set_repeat_count(gt_anim_st * anim, uint16_t count) {
+    anim->repeat_count = count;
+}
+
+/**
+ * @brief
+ *
+ * @param anim
+ * @param delay Set delay time to playback animation [ms]
+ */
+static inline void gt_anim_set_repeat_delay(gt_anim_st * anim, uint32_t delay) {
+    anim->repeat_delay = delay;
+}
+
+static inline void gt_anim_set_paused(gt_anim_st * anim, bool paused) {
+    anim->paused = paused ? 1 : 0;
+}
+
+static inline bool gt_anim_is_paused(const gt_anim_st * anim) {
+    return anim->paused;
 }
 
 static inline void gt_anim_set_start_cb(gt_anim_st * anim, gt_anim_start_cb_t start_cb) {
@@ -150,8 +194,15 @@ static inline void gt_anim_set_exec_cb(gt_anim_st * anim, gt_anim_exec_cb_t exec
  * @param anim
  * @param data
  */
-static inline void gt_anim_set_data(gt_anim_st * anim, void * data) {
-    anim->data = data;
+static inline void gt_anim_set_data(gt_anim_st * anim, void * data, gt_size_t size) {
+    if (NULL == data || 0 == size) {
+        return ;
+    }
+    anim->data = anim->data ? gt_mem_realloc(anim->data, size) : gt_mem_malloc(size);
+    if (NULL == anim->data) {
+        return ;
+    }
+    gt_memcpy(anim->data, data, size);
 }
 
 /* =================== Movement control of Widgets =================== */
@@ -263,6 +314,15 @@ void gt_anim_restart(gt_anim_st * anim);
  * @return False Delete animation object failed
  */
 bool gt_anim_del(gt_obj_st * target, gt_anim_exec_cb_t exec_cb);
+
+/**
+ * @brief delete animation object in core
+ *
+ * @param anim Which animation object want to be deleted
+ * @return true Delete animation object successfully
+ * @return False Delete animation object failed
+ */
+bool gt_anim_del_by(gt_anim_st * anim);
 
 /**
  * @brief Delete all animation object

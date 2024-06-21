@@ -14,10 +14,14 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_RADIO
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "stdarg.h"
 #include "stdlib.h"
+#include "../font/gt_font.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -65,12 +69,15 @@ void gt_radio_set_font_family_fl(gt_obj_st * radio, gt_family_t family);
 void gt_radio_set_font_family_numb(gt_obj_st * radio, gt_family_t family);
 void gt_radio_set_font_thick_en(gt_obj_st * radio, uint8_t thick);
 void gt_radio_set_font_thick_cn(gt_obj_st * radio, uint8_t thick);
+void gt_radio_set_font_encoding(gt_obj_st * radio, gt_encoding_et encoding);
 void gt_radio_set_space(gt_obj_st * radio, uint8_t space_x, uint8_t space_y);
 
 void gt_radio_set_font_point_offset_x(gt_obj_st * radio , gt_size_t x);
 void gt_radio_set_font_point_offset_y(gt_obj_st * radio , gt_size_t y);
 void gt_radio_set_font_point_offset(gt_obj_st * radio , gt_size_t x , gt_size_t y);
 
+
+#endif  /** GT_CFG_ENABLE_RADIO */
 
 #ifdef __cplusplus
 } /*extern "C"*/

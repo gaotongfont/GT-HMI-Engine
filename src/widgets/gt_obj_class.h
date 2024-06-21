@@ -22,15 +22,27 @@ struct gt_obj_s;
 
 
 /* typedef --------------------------------------------------------------*/
+/** Control drawing logic */
+typedef void (* _gt_init_cb)(struct gt_obj_s *);
+
+/** Can only be used to free additional memory requested by the control when it is created */
+typedef void (* _gt_deinit_cb)(struct gt_obj_s *);
+
+/** Controls all behavior events */
+typedef void (* _gt_event_cb)(struct gt_obj_s *, struct _gt_event_s *);
+
 /**
  * @brief interface for other widgets
  */
 typedef struct _gt_obj_class_s {
-    void (*_init_cb)(struct gt_obj_s *);
-    void (*_deinit_cb)(struct gt_obj_s *);
-    void (*_event_cb)(struct gt_obj_s *, struct _gt_event_s *);
+    _gt_init_cb     _init_cb;
+    _gt_deinit_cb   _deinit_cb;
+    _gt_event_cb    _event_cb;
+    /** Control type @ref gt_obj_type_et */
     gt_obj_type_et type;
-    uint16_t size_style;        //used: malloc free
+    /** Control styles contain the memory size of the base object,
+     * which must exist at the very front of the struct */
+    uint16_t size_style;
 }gt_obj_class_st;
 
 
@@ -58,7 +70,15 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
 struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_obj_s * to);
 
 /**
- * @brief delete control widget; Reclaim the memory of child controls.
+ * @brief delete all child controls, immediately and recursively.
+ *
+ * @param self
+ */
+void _gt_obj_class_destroy_children(struct gt_obj_s * self);
+
+/**
+ * @brief delete control widget; Reclaim the memory of child controls,
+ *      immediately and recursively.
  *
  * @param self
  */
@@ -79,6 +99,16 @@ void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_ob
  * @return gt_obj_type_et @see gt_obj_type_et
  */
 gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj);
+
+/**
+ * @brief Check if the object is target type
+ *
+ * @param obj
+ * @param type
+ * @return true
+ * @return false
+ */
+bool gt_obj_is_type(struct gt_obj_s * obj, gt_obj_type_et type);
 
 #ifdef __cplusplus
 } /*extern "C"*/

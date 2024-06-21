@@ -14,9 +14,13 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_TEXTAREA
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "../font/gt_font.h"
+#include "../core/gt_draw.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -75,7 +79,15 @@ void gt_textarea_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t space_
  */
 void gt_textarea_set_font_size(gt_obj_st * textarea, uint8_t size);
 void gt_textarea_set_font_gray(gt_obj_st * textarea, uint8_t gray);
-void gt_textarea_set_font_align(gt_obj_st * textarea, uint8_t align);
+
+/**
+ * @brief Set font alignment
+ *      NOTE textarea only support GT_ALIGN_LEFT
+ *
+ * @param textarea
+ * @param align
+ */
+void gt_textarea_set_font_align(gt_obj_st * textarea, gt_align_et align);
 /**
  * @brief set textarea font color
  *
@@ -101,6 +113,30 @@ void gt_textarea_set_bg_color(gt_obj_st * textarea, gt_color_t color);
 void gt_textarea_set_bg_opa(gt_obj_st * textarea, uint8_t opa);
 
 /**
+ * @brief Set the border color of the textarea
+ *
+ * @param textarea
+ * @param width 2[defalut]: 2px
+ */
+void gt_textarea_set_border_width(gt_obj_st * textarea, uint8_t width);
+
+/**
+ * @brief Set the border color of the textarea
+ *
+ * @param textarea
+ * @param color 0xc7c7c7[defalut]
+ */
+void gt_textarea_set_border_color(gt_obj_st * textarea, gt_color_t color);
+
+/**
+ * @brief Set the border radius of the textarea
+ *
+ * @param textarea
+ * @param radius 4[defalut]
+ */
+void gt_textarea_set_radius(gt_obj_st * textarea, gt_radius_t radius);
+
+/**
  * @brief set textarea chinese font style
  *
  * @param textarea obj pointer
@@ -120,6 +156,14 @@ void gt_textarea_set_font_family_numb(gt_obj_st * textarea, gt_family_t family);
 
 void gt_textarea_set_font_thick_en(gt_obj_st * textarea, uint8_t thick);
 void gt_textarea_set_font_thick_cn(gt_obj_st * textarea, uint8_t thick);
+void gt_textarea_set_font_encoding(gt_obj_st * textarea, gt_encoding_et encoding);
+
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+gt_font_touch_word_st gt_textarea_get_touch_word(gt_obj_st * textarea);
+#endif
+
+
+#endif  /** GT_CFG_ENABLE_TEXTAREA */
 
 #ifdef __cplusplus
 } /*extern "C"*/

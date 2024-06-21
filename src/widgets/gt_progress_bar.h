@@ -14,6 +14,9 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_PROGRESS_BAR
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "../core/gt_style.h"
@@ -95,6 +98,9 @@ void gt_progress_bar_set_color_ina(gt_obj_st * progress_bar, gt_color_t color);
 
 void gt_progress_bar_set_dir(gt_obj_st * progress_bar, gt_bar_dir_et dir);
 gt_bar_dir_et gt_progress_bar_get_dir(gt_obj_st * progress_bar);
+
+
+#endif  /** GT_CFG_ENABLE_PROGRESS_BAR */
 
 #ifdef __cplusplus
 } /*extern "C"*/

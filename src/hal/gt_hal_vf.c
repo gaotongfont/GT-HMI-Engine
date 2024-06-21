@@ -9,12 +9,18 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_hal_vf.h"
-#include "gt_hal_fs.h"
+#include "stdbool.h"
+#include "string.h"
+
+#if GT_USE_MODE_FLASH
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "../others/gt_types.h"
-#include "stdbool.h"
-#include "string.h"
+#include "../others/gt_gc.h"
+
+#if GT_USE_FILE_HEADER
+#include "../hal/gt_hal_file_header.h"
+#endif
 
 /* private define -------------------------------------------------------*/
 
@@ -46,8 +52,7 @@ static gt_fs_res_et _state = GT_FS_RES_FAIL;
 
 /* static functions -----------------------------------------------------*/
 
-static void _gt_vf_set_fp_by_list(gt_fs_fp_st * fp, gt_vfs_st const * const item)
-{
+static void _gt_vf_set_fp_by_list(gt_fs_fp_st * fp, gt_vfs_st const * const item) {
     fp->start = item->addr;
     fp->end = item->addr + item->size;
     fp->pos = fp->start;
@@ -56,8 +61,47 @@ static void _gt_vf_set_fp_by_list(gt_fs_fp_st * fp, gt_vfs_st const * const item
     fp->msg.pic.is_alpha = item->is_alpha;
 }
 
-static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode)
+#if GT_USE_FILE_HEADER
+void * _fh_open_cb(struct _gt_fs_drv_s * drv, gt_file_header_param_st const * const fh_param, gt_fs_mode_et mode)
 {
+    /* check drv state */
+    if (_state == GT_FS_RES_DEINIT) {
+        GT_LOGV(GT_LOG_TAG_GUI, "vf drv is deinit");
+        return NULL;
+    }
+    gt_file_header_st const * item = gt_file_header_get(fh_param->idx);
+    if (NULL == item) {
+        return NULL;
+    }
+    gt_fs_fp_st * fp = _gt_hal_fp_init();
+
+    fp->start = gt_file_header_get_img_offset_by(item, fh_param);
+    fp->end = gt_file_header_get_img_size(item) + fp->start;
+    fp->pos = fp->start;
+
+#if _GT_FILE_HEADER_IMG_SAME_SIZE
+    _gt_file_header_ctl_st const * ctl = &_GT_GC_GET_ROOT(file_header_ctl);
+    fp->msg.pic.w = ctl->info.width;
+    fp->msg.pic.h = ctl->info.height;
+    fp->msg.pic.is_alpha = ctl->info.alpha;
+#else
+    fp->msg.pic.w = item->info.width;
+    fp->msg.pic.h = item->info.height;
+    fp->msg.pic.is_alpha = item->info.alpha;
+#endif
+
+    if (fp->end > _vf_dev->addr_max) {
+        GT_LOGW(GT_LOG_TAG_GUI, "out of GT_VF_FLASH_SIZE");
+    }
+
+    fp->drv = gt_vf_get_drv();
+
+    fp->mode = mode;
+    return fp;
+}
+#endif
+
+static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode) {
     uint16_t idx = 0;
     bool is_find = false;
 
@@ -95,15 +139,13 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
     return vfp;
 }
 
-static void _close_cb(struct _gt_fs_drv_s * drv, void * fp)
-{
+static void _close_cb(struct _gt_fs_drv_s * drv, void * fp) {
     drv->seek_cb(drv, fp, 0, GT_FS_SEEK_SET);
     ((gt_fs_fp_st *)fp)->drv = NULL;
     gt_mem_free(fp);
 }
 
-static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len)
-{
+static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len) {
     gt_fs_fp_st * vfp = (gt_fs_fp_st * )fp;
 
     if( _state != GT_FS_RES_READY ){
@@ -121,13 +163,22 @@ static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * dat
         return GT_FS_RES_NULL;
     }
     uint32_t addr = vfp->pos + _vf_dev->addr_start;
-    uint8_t data_write[4] = {0x03, (uint8_t)(addr>>16), (uint8_t)(addr>>8), (uint8_t)addr };
+    uint8_t data_write[5] = {0x03, (uint8_t)(addr>>16), (uint8_t)(addr>>8), (uint8_t)addr };
+    uint8_t len_write = 4;
+
+    if (addr > 0xffffff) {
+        data_write[1] = (uint8_t)(addr >> 24);
+        data_write[2] = (uint8_t)(addr >> 16);
+        data_write[3] = (uint8_t)(addr >> 8);
+        data_write[4] = (uint8_t)addr;
+        ++len_write;
+    }
 
     /* set state busy */
     _state = GT_FS_RES_BUSY;
 
     /* start read */
-    *ret_len = drv->rw_cb(data_write, 4, data, len);
+    *ret_len = drv->rw_cb(data_write, len_write, data, len);
     drv->seek_cb(drv, vfp, len, GT_FS_SEEK_CUR);
 
     /* set state ready */
@@ -136,8 +187,7 @@ static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * dat
     return GT_FS_RES_OK;
 }
 
-static gt_fs_res_et _write_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len)
-{
+static gt_fs_res_et _write_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len) {
     gt_fs_fp_st * vfp = (gt_fs_fp_st * )fp;
 
     if( !drv ){
@@ -178,8 +228,7 @@ static gt_fs_res_et _write_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * da
     return GT_FS_RES_OK;
 }
 
-static gt_fs_res_et _seek_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos, gt_fs_whence_et whence)
-{
+static gt_fs_res_et _seek_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos, gt_fs_whence_et whence) {
     gt_fs_fp_st * _fp = (gt_fs_fp_st * )fp;
 
     if( !_fp ){
@@ -205,8 +254,7 @@ static gt_fs_res_et _seek_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos,
     return GT_FS_RES_OK;
 }
 
-static gt_fs_res_et _tell_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t * pos)
-{
+static gt_fs_res_et _tell_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t * pos) {
     gt_fs_fp_st * _fp = (gt_fs_fp_st * )fp;
     if( !_fp ){
         GT_LOGW(GT_LOG_TAG_GUI, "fp is null");
@@ -216,19 +264,42 @@ static gt_fs_res_et _tell_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t * po
     return GT_FS_RES_OK;
 }
 
-static void _gt_vf_drv_init(gt_fs_drv_st * drv)
-{
+#if GT_USE_FS_NAME_BY_INDEX
+static char const * const _get_name_by_cb(uint16_t index_of_list) {
+    uint16_t idx = 0;
+    char * ret_name = NULL;
+
+    while( NULL != _vfs[idx].name ){
+        if (index_of_list == idx) {
+            ret_name = _vfs[idx].name;
+            break;
+        }
+        ++idx;
+    }
+    return ret_name;
+}
+#endif
+
+static void _gt_vf_drv_init(gt_fs_drv_st * drv) {
     drv->letter       = GT_FS_LABEL_FLASH;
 
+#if GT_USE_FILE_HEADER
+    drv->fh_open_cb   = _fh_open_cb;
+#endif
     drv->open_cb      = _open_cb;
     drv->close_cb     = _close_cb;
     drv->read_cb      = _read_cb;
     drv->write_cb     = _write_cb;
     drv->seek_cb      = _seek_cb;
     drv->tell_cb      = _tell_cb;
+#if GT_USE_FOLDER_SYSTEM
     drv->dir_open_cb  = NULL;
     drv->dir_read_cb  = NULL;
     drv->dir_close_cb = NULL;
+#endif
+#if GT_USE_FS_NAME_BY_INDEX
+    drv->get_name_by_cb = _get_name_by_cb;
+#endif
 }
 
 
@@ -276,4 +347,5 @@ gt_fs_drv_st * gt_vf_get_drv(void)
     return &_vf_dev->drv;
 }
 
+#endif  /** GT_USE_MODE_FLASH */
 /* end ------------------------------------------------------------------*/

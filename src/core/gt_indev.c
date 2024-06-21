@@ -19,53 +19,28 @@
 #include "gt_obj_pos.h"
 #include "gt_obj_scroll.h"
 #include "gt_style.h"
+#include "../widgets/gt_dialog.h"
 
 /* private define -------------------------------------------------------*/
-/**
- * @brief
- */
-#define _GT_INDEV_USE_REMARK    0
+
 
 
 /* private typedef ------------------------------------------------------*/
 
-typedef struct _indev_reg_s {
-    uint8_t disabled : 1;   /** 0: default set, normal; 1: temporary disability */
-    uint8_t reserved : 7;
-}_indev_reg_st;
 
 
 
 /* static variables -----------------------------------------------------*/
-#if _GT_INDEV_USE_REMARK
-static gt_obj_st * _remark_act_obj = NULL;
-#endif
 
-static _indev_reg_st _indev_reg = {
+static gt_indev_param_st _indev_params = {
     .disabled = 0,
 };
-
-static gt_indev_param_st _indev_pa;
 
 /* macros ---------------------------------------------------------------*/
 
 
 
 /* static functions -----------------------------------------------------*/
-#if _GT_INDEV_USE_REMARK
-static inline void _gt_indev_remark_active_obj(const gt_obj_st * const obj) {
-    _remark_act_obj = obj;
-}
-
-static inline bool _gt_indev_is_equal_remark_active_obj(const gt_obj_st * const obj) {
-    return obj == _remark_act_obj;
-}
-
-static inline gt_obj_st * _gt_indev_get_remark_active_obj(void) {
-    return _remark_act_obj;
-}
-#endif
-
 static inline bool _is_scroll_vertical(gt_dir_et dir) {
     return (GT_DIR_UP == dir || GT_DIR_DOWN == dir) ? true : false;
 }
@@ -104,7 +79,7 @@ static gt_obj_st * _search_not_fixed_by_parent_recursive(gt_obj_st * obj) {
 
 static gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
     struct _point * point_p = &indev->proc.data.point;
-    gt_dir_et ret = point_p->gesture;
+    gt_dir_et ret = (gt_dir_et)point_p->gesture;
     if (ret) {
         /** Locked the first direction */
         return ret;
@@ -131,6 +106,64 @@ static gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
     return ret;
 }
 
+static bool _is_indev_home_gesture(gt_indev_st * indev, gt_event_type_et* event)
+{
+    struct _point * point_p = &indev->proc.data.point;
+    point_p->gesture = _get_scroll_dir(indev);
+
+    if((uint16_t)GT_DIR_NONE == point_p->gesture) {
+        return false;
+    }
+
+    if(GT_DIR_DOWN == point_p->gesture){
+        // top
+        if(GT_CFG_DEFAULT_AREA_HOME_GESTURE_TOP >= point_p->act.y){
+            if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_TOP;
+            return true;
+        }
+    }
+    else if(GT_DIR_UP == point_p->gesture){
+        // bottom
+        if(GT_CFG_DEFAULT_AREA_HOME_GESTURE_BOTTOM >= GT_SCREEN_HEIGHT - point_p->act.y){
+            if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_BOTTOM;
+            return true;
+        }
+    }
+    else if(GT_DIR_LEFT == point_p->gesture){
+        // right
+        if(GT_CFG_DEFAULT_AREA_HOME_GESTURE_RIGHT >= GT_SCREEN_WIDTH - point_p->act.x){
+            if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_RIGHT;
+            return true;
+        }
+    }
+    else if(GT_DIR_RIGHT == point_p->gesture){
+        // left
+        if(GT_CFG_DEFAULT_AREA_HOME_GESTURE_LEFT >= point_p->act.x){
+            if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_LEFT;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool _indev_send_home_gesture_event(gt_indev_st * indev)
+{
+    if((gt_tick_get() - indev->proc.timestamp_start) > GT_CFG_DEFAULT_POINT_HOME_GESTURE_TIME){
+        return false;
+    }
+
+    gt_obj_st * scr = gt_disp_get_scr();
+
+    gt_event_type_et e = GT_EVENT_TYPE_NONE;
+    if(_is_indev_home_gesture(indev, &e)){
+        gt_event_send(scr, e, NULL);
+        return true;
+    }
+
+    return false;
+}
+
 /**
  * @brief Touch gestures make the act of throwing
  *
@@ -143,6 +176,12 @@ static void _indev_scroll_throw_handler(gt_indev_st * indev) {
     if((uint16_t)GT_DIR_NONE == point_p->gesture) {
         return ;
     }
+
+    //
+    if(_indev_send_home_gesture_event(indev)){
+        return ;
+    }
+
     gt_obj_st * obj_scroll = point_p->obj_scroll;
     gt_size_t dx = _scroll_predict(indev, point_p->scroll_throw.x);
     gt_size_t dy = _scroll_predict(indev, point_p->scroll_throw.y);
@@ -228,7 +267,11 @@ static void _indev_scroll_handler(gt_indev_st * indev) {
     gt_size_t dy = 0;
     point_p->obj_scroll = point_p->obj_target;
 
-    if (_is_scroll_vertical(point_p->gesture)) {
+    if(_is_indev_home_gesture(indev, NULL)){
+        return ;
+    }
+
+    if (_is_scroll_vertical((gt_dir_et)point_p->gesture)) {
         dy = point_p->scroll_diff.y;
         point_p->scroll_throw.x = 0;
         gt_obj_set_scroll_ud(point_p->obj_scroll, GT_DIR_DOWN == point_p->gesture ? true : false);
@@ -241,10 +284,21 @@ static void _indev_scroll_handler(gt_indev_st * indev) {
 }
 
 static inline void _send_released_event(struct _point * point_p) {
-    gt_event_type_et event_type = (point_p->obj_act == point_p->obj_target) ? \
-        GT_EVENT_TYPE_INPUT_RELEASED : GT_EVENT_TYPE_INPUT_PROCESS_LOST;
+    gt_event_type_et event_type = GT_EVENT_TYPE_INPUT_RELEASED;
+
+    if (point_p->obj_act != point_p->obj_target) {
+        event_type = GT_EVENT_TYPE_INPUT_PRESS_LOST;
+    }
+
+    if (gt_obj_is_untouchability(point_p->obj_target)) {
+        return;
+    }
 
     gt_event_send(point_p->obj_target, event_type, NULL);
+
+    if (point_p->obj_origin != point_p->obj_target) {
+        gt_event_send(point_p->obj_origin, GT_EVENT_TYPE_INPUT_PRESS_LOST, NULL);
+    }
 }
 
 static void _indev_released_handle(gt_indev_st * indev) {
@@ -253,12 +307,6 @@ static void _indev_released_handle(gt_indev_st * indev) {
         return;
     }
 
-#if _GT_INDEV_USE_REMARK
-    if (!_gt_indev_is_equal_remark_active_obj(point_p->obj_act)) {
-        point_p->obj_act = _gt_indev_get_remark_active_obj();
-    }
-    _gt_indev_remark_active_obj(NULL);
-#endif
     _send_released_event(point_p);
     point_p->obj_act = NULL;
 
@@ -266,10 +314,54 @@ static void _indev_released_handle(gt_indev_st * indev) {
         _indev_scroll_throw_handler(indev);
     }
     point_p->obj_target = NULL;
+    point_p->obj_origin = NULL;
+}
+
+/**
+ * @brief Objects outside the control cannot be activated
+ *
+ * @return true can not be activated
+ * @return false can be activated
+ */
+static bool _obj_outside_can_not_be_activated(void) {
+    if (gt_dialog_has_showing()) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * @brief Search the active object from all layers
+ *
+ * @param point physical point
+ * @param new_action true: new action, false: continue action
+ * @return gt_obj_st* NULL or active object
+ */
+static gt_obj_st * _search_active_obj_from_all_layers(gt_point_st * point, bool new_action) {
+    gt_obj_st * scr = gt_disp_get_scr();
+    gt_obj_st * ret = NULL;
+#if GT_USE_LAYER_TOP
+    gt_obj_st * layer_top = gt_disp_get_layer_top();
+
+    if (layer_top->cnt_child) {
+        ret = gt_find_clicked_obj_by_point(layer_top, point);
+        if (true == new_action && NULL == ret) {
+            /** clicked dialog, etc. widget's outside area, hided top widgets */
+            _gt_disp_hided_layer_top_widgets(layer_top);
+            if (_obj_outside_can_not_be_activated()) {
+                return ret;
+            }
+        }
+    }
+#endif
+    if (NULL == ret) {
+        /** Layer top have no widget find out, search it within screen */
+        ret = gt_find_clicked_obj_by_point(scr, point);
+    }
+    return ret;
 }
 
 static void _indev_pressed_handle(gt_indev_st * indev) {
-    gt_obj_st * scr = gt_disp_get_scr();
     gt_point_st point_ret;
     struct _point * point_p = &indev->proc.data.point;
 
@@ -281,14 +373,19 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
         _gt_indev_point_set_value(&point_p->scroll_diff, 0, 0);
         /* save pressed obj */
         point_p->gesture = GT_DIR_NONE;
-        point_p->obj_act = gt_find_clicked_obj_by_point(scr, &point_p->newly);
+        point_p->obj_act = _search_active_obj_from_all_layers(&point_p->newly, true);
+        if (NULL == point_p->obj_act) {
+            return;
+        }
+        if (gt_obj_is_untouchability(point_p->obj_act)) {
+            return;
+        }
         point_p->obj_target = point_p->obj_act;
-#if _GT_INDEV_USE_REMARK
-        _gt_indev_remark_active_obj(point_p->obj_act);
-#endif
+        point_p->obj_origin = point_p->obj_target;
 
         /* send clicking event to pressed obj */
         gt_obj_get_click_point_by_phy_point(point_p->obj_act, &point_p->newly, &point_ret);
+        _gt_indev_point_set_value(&point_p->act, point_p->newly.x, point_p->newly.y);
         _gt_indev_point_set_value(&point_p->last, point_p->newly.x, point_p->newly.y);
         _gt_obj_set_process_point(point_p->obj_act, &point_ret);
         gt_event_send(point_p->obj_act, GT_EVENT_TYPE_INPUT_PRESSED, NULL);
@@ -299,9 +396,9 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
         point_p->scroll_throw.x = 0;
         point_p->scroll_throw.y = 0;
     }
-    // GT_LOGD(">", "(%d, %d) (%d, %d)", point_p->newly.x, point_p->newly.y, point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
+    // GT_LOGD(">", "%p (%d, %d) (%d, %d)", point_p->obj_target, point_p->newly.x, point_p->newly.y, point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
 
-    point_p->obj_act = gt_find_clicked_obj_by_point(scr, &point_p->newly);
+    point_p->obj_act = _search_active_obj_from_all_layers(&point_p->newly, false);
 
     if (point_p->obj_act == point_p->obj_target) {
         /** Hold for a long time to trigger multiple times */
@@ -316,7 +413,6 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
         /** if widget fixed, then search it parent's widget to scroll */
         if (point_p->obj_scroll == point_p->obj_target) {
             point_p->obj_target = _search_not_fixed_by_parent_recursive(point_p->obj_target);
-            _send_released_event(point_p);
         }
     }
 
@@ -354,11 +450,10 @@ static void _gt_indev_handler_point(gt_indev_st * indev)
 
     /* process point data */
     indev->proc.state = data_indev.state;
-#if 1
-    _indev_pa.param.point.x = data_indev.point.x;
-    _indev_pa.param.point.y = data_indev.point.y;
+
+    _indev_params.param.point.x = data_indev.point.x;
+    _indev_params.param.point.y = data_indev.point.y;
     _gt_indev_point_set_value(&point_p->newly, data_indev.point.x, data_indev.point.y);
-#endif
 
     /* have one touch event */
     if (GT_INDEV_STATE_RELEASED == indev->proc.state) {
@@ -417,8 +512,10 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
 
     if(GT_INDEV_STATE_RELEASED == indev->proc.state){
         if(indev->proc.data.keypad.count_keydown != 0 && GT_KEY_ENTER == indev->proc.data.keypad.key){
-            _indev_pa.param.keypad_key = GT_KEY_ENTER;
-            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_RELEASED, &_indev_pa);
+            _indev_params.param.keypad_key = GT_KEY_ENTER;
+            if (false == gt_obj_is_untouchability(indev->proc.data.keypad.obj_target)) {
+                gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_RELEASED, &_indev_params);
+            }
         }
         indev->proc.data.keypad.count_keydown = 0;
         last_key = GT_KEY_NONE;
@@ -432,22 +529,23 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
         indev->proc.data.keypad.count_keydown = 0;
         if(GT_KEY_NEXT == indev->proc.data.keypad.key){
             gt_obj_next_focus_change(indev->proc.data.keypad.obj_target);
-            _indev_pa.param.keypad_key = GT_KEY_NEXT;
-            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_pa);
+            _indev_params.param.keypad_key = GT_KEY_NEXT;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
         else if(GT_KEY_PREV == indev->proc.data.keypad.key){
             gt_obj_prev_focus_change(indev->proc.data.keypad.obj_target);
-            _indev_pa.param.keypad_key = GT_KEY_PREV;
-            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_pa);
+            _indev_params.param.keypad_key = GT_KEY_PREV;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
         else{
-            _indev_pa.param.keypad_key = indev->proc.data.keypad.key;
-            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_pa);
-            if(GT_KEY_ENTER == indev->proc.data.keypad.key){
-                gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSED, &_indev_pa);
+            _indev_params.param.keypad_key = indev->proc.data.keypad.key;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
+            if (GT_KEY_ENTER == indev->proc.data.keypad.key &&
+                false == gt_obj_is_untouchability(indev->proc.data.keypad.obj_target)){
+                gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSED, &_indev_params);
             }
         }
-        // GT_LOGD(GT_LOG_TAG_GUI, "keypad the key = %#X  count_keydown = %d obj type = %d", indev->proc.data.keypad.key , indev->proc.data.keypad.count_keydown , indev->proc.data.keypad.obj_target->class->type);
+        // GT_LOGD(GT_LOG_TAG_GUI, "keypad the key = %#X  count_keydown = %d obj type = %d", indev->proc.data.keypad.key, indev->proc.data.keypad.count_keydown, indev->proc.data.keypad.obj_target->class->type);
         return ;
     }
     // 长按
@@ -455,36 +553,37 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
     if(indev->proc.data.keypad.count_keydown >= (GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS / GT_TASK_PERIOD_TIME_EVENT)){
         if(GT_KEY_NEXT == indev->proc.data.keypad.key){
             gt_obj_next_focus_change(indev->proc.data.keypad.obj_target);
-            _indev_pa.param.keypad_key = GT_KEY_NEXT;
-            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_pa);
+            _indev_params.param.keypad_key = GT_KEY_NEXT;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
         else if(GT_KEY_PREV == indev->proc.data.keypad.key){
             gt_obj_prev_focus_change(indev->proc.data.keypad.obj_target);
-            _indev_pa.param.keypad_key = GT_KEY_PREV;
-            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_pa);
+            _indev_params.param.keypad_key = GT_KEY_PREV;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
         else{
-            _indev_pa.param.keypad_key = indev->proc.data.keypad.key;
-            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_pa);
+            _indev_params.param.keypad_key = indev->proc.data.keypad.key;
+            gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
             if(0 == indev->proc.data.keypad.count_keydown % (GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS / GT_TASK_PERIOD_TIME_EVENT)){
-                if(GT_KEY_ENTER == indev->proc.data.keypad.key){
-                    gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSING, &_indev_pa);
+                if (GT_KEY_ENTER == indev->proc.data.keypad.key &&
+                    false == gt_obj_is_untouchability(indev->proc.data.keypad.obj_target)){
+                    gt_event_send(indev->proc.data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSING, &_indev_params);
                 }
             }
         }
-        // GT_LOGD(GT_LOG_TAG_GUI, "long , key = %#X  count_keydown = %d", indev->proc.data.keypad.key , indev->proc.data.keypad.count_keydown);
+        // GT_LOGD(GT_LOG_TAG_GUI, "long, key = %#X  count_keydown = %d", indev->proc.data.keypad.key, indev->proc.data.keypad.count_keydown);
     }
 }
 
 /* global functions / API interface -------------------------------------*/
 uint32_t gt_indev_get_key(void)
 {
-    return _indev_pa.param.keypad_key;
+    return _indev_params.param.keypad_key;
 }
 
 gt_point_st gt_indev_get_point(void)
 {
-    return _indev_pa.param.point;
+    return _indev_params.param.point;
 }
 
 void gt_indev_get_point_act(const gt_indev_st * indev, gt_point_st * point)
@@ -533,12 +632,35 @@ void gt_indev_handler(struct _gt_timer_s * timer)
 
 void gt_indev_set_disabled(bool disabled)
 {
-    _indev_reg.disabled = disabled;
+    _indev_params.disabled = disabled;
 }
 
 bool gt_indev_is_disabled(void)
 {
-    return _indev_reg.disabled;
+    return _indev_params.disabled;
+}
+
+bool _gt_indev_remove_want_delate_target(gt_obj_st * target)
+{
+    gt_indev_st * indev = NULL;
+    struct _point * point_p = &indev->proc.data.point;
+    uint8_t i, cnt_indev = gt_indev_get_dev_count();
+    bool ret = false;
+
+    for (i = 0; i < cnt_indev; i++) {
+        indev = gt_indev_get_dev_by_idx(i);
+        point_p = &indev->proc.data.point;
+
+        if (target != point_p->obj_target) {
+            continue;
+        }
+        if (false == target->delate) {
+            continue;
+        }
+        point_p->obj_target = NULL;
+        ret = true;
+    }
+    return ret;
 }
 
 /* end ------------------------------------------------------------------*/

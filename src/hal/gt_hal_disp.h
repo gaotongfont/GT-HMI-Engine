@@ -46,9 +46,6 @@ typedef struct _gt_disp_drv_s
     uint16_t res_hor;   ///< horizontal resolution
     uint16_t res_ver;   ///< vertical resolution
 
-    gt_color_t bg_color;    ///< background color
-    gt_color_t fg_color;    ///< foreground color
-
     /**
      * @brief display flush callback
      * @param drv display driver
@@ -62,15 +59,12 @@ typedef struct _gt_disp_drv_s
     uint8_t reserved:5;    ///< reserved
 }gt_disp_drv_st;
 
-/**
- * @brief Backoff screen info, only one screen(or single stack depth) can be recorded.
- */
-typedef struct _gt_disp_stack_s {
-    gt_scr_init_func_cb_t init_func_cb;
-    gt_obj_st * need_backoff_scr;
-    uint32_t time;
-    uint32_t delay;
-}_gt_disp_stack_st;
+typedef struct _gt_refr_s {
+    gt_area_st areas[_GT_REFR_AREA_MAX];    // ptr of area
+    uint8_t joined[_GT_REFR_AREA_MAX];      // the area is not joined into before area: 1: is joined into before.
+    uint8_t idx_w;                          // index of write now
+    uint8_t idx_r;                          // index of read now
+}_gt_refr_st;
 
 /**
  * @brief display description
@@ -82,25 +76,28 @@ typedef struct _gt_disp_s
     gt_obj_st *  scr_prev;      // Preview Screen,Only save one layer
     gt_obj_st *  scr_act;       // Active screen
 
-    _gt_disp_stack_st * stack;  // Set backoff screen, only one screen can be recorded.
+    gt_point_st anim_scr_remark;    // screen toggle animation
+
+#if GT_USE_LAYER_TOP
+    /**
+     * @brief Top layer on the top of the scr layer, such as popup, dialog, etc.
+     *      [WARN] all widget must be set within physical screen area: (0, 0) - (WIDTH, HEIGHT),
+     *              reset area data by widget's event_cb().
+     */
+    gt_obj_st * layer_top;
+#endif
 
     gt_obj_st ** screens;       // Array of screen
     uint16_t cnt_scr;           // Count screens nub
-
-    // round-robin queue
-    struct {
-        gt_area_st areas[_GT_REFR_AREA_MAX];    // ptr of area
-        uint8_t joined[_GT_REFR_AREA_MAX];      // the area is not joined into before area: 1: is joined into before.
-        uint8_t idx_w;                          // index of write now
-        uint8_t idx_r;                          // index of read now
-    }refr;
 
     /* flush */
     gt_area_st     area_act;            //Location of physical screen on virtual screen
     gt_area_st     area_disp;           //10 lines area, Objects in this area will be copied to vbd_color
     gt_area_abs_st area_max;            // max area of virtual screen
-    gt_area_abs_st area_max_new_scr;    // loading screen max area of virtual screen
     gt_color_t     * vbd_color;         //save 10 lines visible pic, this will flush to phy screen
+
+    // round-robin queue
+    _gt_refr_st refr;
 
     uint8_t scr_anim_type : 4;          // @ref gt_scr_anim_type_et
     uint8_t reserved      : 4;
@@ -174,24 +171,29 @@ void _gt_disp_refr_append_area(gt_area_st * area);
  * @param disp disp
  * @return uint8_t 0:none, !0:yes
  */
-uint8_t _gt_disp_refr_check(void);
+uint8_t _gt_disp_refr_check(gt_disp_st * disp);
 
 /**
  * @brief Invalid redraw areas message queue set next index
+ *
+ * @param disp disp
  */
-void _gt_disp_refr_area_push(void);
+void _gt_disp_refr_area_push(gt_disp_st * disp);
 
 /**
  * @brief Invalid redraw areas message queue get the last index
+ *
+ * @param disp disp
  */
-void _gt_disp_refr_area_pop(void);
+void _gt_disp_refr_area_pop(gt_disp_st * disp);
 
 /**
  * @brief Get the laster invalid redraw areas from message queue
  *
+ * @param disp disp
  * @return gt_area_st* The invalid redraw areas
  */
-gt_area_st * _gt_disp_refr_get_area(void);
+gt_area_st * _gt_disp_refr_get_area(gt_disp_st * disp);
 
 /**
  * @brief Update max screen can display area
@@ -204,6 +206,13 @@ gt_area_st * _gt_disp_refr_get_area(void);
 void _gt_disp_update_max_area(const gt_area_st * const area, bool is_ignore_calc);
 
 void _gt_disp_reload_max_area(gt_obj_st * scr);
+
+/**
+ * @brief Hided the top layer widgets, such as: dialog, etc.
+ *
+ * @param top The top layer object
+ */
+void _gt_disp_hided_layer_top_widgets(gt_obj_st * top);
 
 #ifdef __cplusplus
 } /*extern "C"*/

@@ -9,14 +9,15 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_textarea.h"
+
+#if GT_CFG_ENABLE_TEXTAREA
 #include "../core/gt_mem.h"
+#include "../core/gt_indev.h"
 #include "../others/gt_log.h"
 #include "string.h"
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
-#include "../font/gt_font.h"
 #include "../others/gt_assert.h"
-#include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
 
 /* private define -------------------------------------------------------*/
@@ -24,25 +25,41 @@
 #define MY_CLASS    &gt_textarea_class
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_txt_s{
+typedef struct _gt_txt_s {
     char *      text;
     gt_color_t  color;
     uint16_t    len;
     uint8_t     mask_style;
 }_gt_txt_st;
 
-typedef struct _gt_textarea_s{
-    _gt_txt_st * contents;
-    uint16_t    cnt_contents;
+typedef struct _textarea_reg_s {
+    uint8_t click_valid : 1;    /** click status: scroll will set to false, only click event valid */
+    uint8_t reserved    : 7;
+}_textarea_reg_st;
 
-    gt_color_t  color_background;
+typedef struct _gt_textarea_s {
+    gt_obj_st obj;
+    _gt_txt_st * contents;
+    uint16_t cnt_contents;
+    uint16_t max_height;
+
+    gt_color_t color_background;
+    gt_color_t color_border;
+    uint8_t border_width;
 
     gt_font_info_st font_info;
 
-    uint8_t     bg_opa;     /* @ref gt_color.h */
-    uint8_t     space_x;
-    uint8_t     space_y;
-    uint8_t     font_align;
+    uint8_t bg_opa;     /* @ref gt_color.h */
+    uint8_t space_x;
+    uint8_t space_y;
+    uint8_t font_align;     //@ref gt_align_et
+
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+    /** detail @ref gt_font.h */
+    gt_font_touch_word_st select_word;
+#endif
+
+    _textarea_reg_st reg;
 }_gt_textarea_st;
 
 
@@ -66,53 +83,68 @@ const gt_obj_class_st gt_textarea_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
-    int idx = 0;
-
+static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p) {
+    _gt_textarea_st * style = (_gt_textarea_st * )obj;
+    uint16_t idx = 0;
     gt_font_st font = {
         .info       = style->font_info,
         .res        = NULL,
     };
     font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
-    font.info.encoding = gt_project_encoding_get();
+
     gt_attr_font_st font_attr = {
         .font       = &font,
         .space_x    = style->space_x,
         .space_y    = style->space_y,
         .align      = style->font_align,
-        .opa        = textarea->opa,
+        .opa        = obj->opa,
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+        .reg.touch_point = touch_point_p ? true : false,
+        .touch_point = touch_point_p,
+#endif
     };
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+    if (touch_point_p) {
+        style->select_word.word_p = NULL;
+        style->select_word.len = 0;
+    }
+#endif
 
-    gt_area_st area_font , area_temp;
-    area_font = gt_area_reduce(textarea->area , REDUCE_DEFAULT);
+    _gt_draw_font_res_st font_res = {0};
+    gt_area_st area_font = gt_area_reduce(obj->area, style->border_width + 2);
+    font_attr.logical_area = area_font;
+    font_attr.logical_area.y += obj->process_attr.scroll.y;
+    font_attr.logical_area.h = 0xffff;
 
-    gt_attr_rect_st rect_attr;
-    gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.radius = 4;
-    rect_attr.border_width = 2;
-    rect_attr.reg.is_fill = 1;
-    rect_attr.bg_color = style->color_background;
-    rect_attr.border_color = gt_color_hex(0x888888);
-    rect_attr.bg_opa = style->bg_opa;
-
-    draw_bg(textarea->draw_ctx, &rect_attr, &area_font);
-
-    area_font = gt_area_reduce(textarea->area , rect_attr.border_width + 2);
-    while( idx < style->cnt_contents ){
+    uint16_t height = (obj->reduce << 1) + font_attr.font->info.size + (font_attr.space_y << 1);
+    while (idx < style->cnt_contents) {
         font.utf8               = style->contents[idx].text;
         font.len                = style->contents[idx].len;
-        font_attr.style         = style->contents[idx].mask_style;
+        font_attr.reg.style     = style->contents[idx].mask_style;
         font_attr.font_color    = style->contents[idx].color;
-        area_temp = draw_text(textarea->draw_ctx, &font_attr, &area_font);
-        font_attr.start_x       = area_temp.x;
-        font_attr.start_y       = area_temp.y;
-        idx++;
+
+        font_res = draw_text(obj->draw_ctx, &font_attr, &area_font);
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+        if (touch_point_p && font_res.touch_word.word_p) {
+            style->select_word = font_res.touch_word;
+            break;
+        }
+#endif
+        font_attr.start_x       = font_res.area.x;
+        font_attr.start_y       = font_res.area.y;
+        font_attr.reg.enabled_start = true;
+        ++idx;
     }
 
-    // focus
-    draw_focus(textarea , 0);
+    if (touch_point_p) {
+        /** Get touch word handler, do not calc all text height to scroll */
+        return ;
+    }
+    height += font_res.area.y - font_attr.logical_area.y;
+    if (height > style->max_height) {
+        style->max_height = height;
+    }
 }
 
 /**
@@ -121,9 +153,44 @@ static inline void _gt_textarea_init_widget(gt_obj_st * textarea) {
  * @param obj
  */
 static void _init_cb(gt_obj_st * obj) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
+    _gt_textarea_st * style = (_gt_textarea_st * )obj;
 
-    _gt_textarea_init_widget(obj);
+    /** draw border */
+    gt_area_st area_font = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
+
+    gt_attr_rect_st rect_attr;
+    gt_graph_init_rect_attr(&rect_attr);
+    rect_attr.radius = obj->radius;
+    rect_attr.border_width = style->border_width;
+    rect_attr.reg.is_fill = 1;
+    rect_attr.bg_color = style->color_background;
+    rect_attr.border_color = style->color_border;
+    rect_attr.bg_opa = style->bg_opa;
+
+    draw_bg(obj->draw_ctx, &rect_attr, &area_font);
+
+    _draw_content_or_get_words(obj, NULL);
+
+    // focus
+    draw_focus(obj, 0);
+}
+
+static void _free_contents(gt_obj_st * obj) {
+    _gt_textarea_st * style_p = (_gt_textarea_st * )obj;
+    if (NULL != style_p->contents) {
+        gt_size_t i = style_p->cnt_contents - 1;
+        for (; i >= 0; i--) {
+            if (NULL == style_p->contents[i].text) {
+                continue;
+            }
+            gt_mem_free(style_p->contents[i].text);
+            style_p->contents[i].text = NULL;
+            style_p->contents[i].len = 0;
+        }
+
+        gt_mem_free(style_p->contents);
+        style_p->contents = NULL;
+    }
 }
 
 /**
@@ -136,29 +203,7 @@ static void _deinit_cb(gt_obj_st * obj) {
     if (NULL == obj) {
         return ;
     }
-
-    _gt_textarea_st ** style_p = (_gt_textarea_st ** )&obj->style;
-    if (NULL == *style_p) {
-        return ;
-    }
-
-    if (NULL != (*style_p)->contents) {
-        gt_size_t i = (*style_p)->cnt_contents - 1;
-        for (; i >= 0; i--) {
-            if (NULL == (*style_p)->contents[i].text) {
-                continue;
-            }
-            gt_mem_free((*style_p)->contents[i].text);
-            (*style_p)->contents[i].text = NULL;
-            (*style_p)->contents[i].len = 0;
-        }
-
-        gt_mem_free((*style_p)->contents);
-        (*style_p)->contents = NULL;
-    }
-
-    gt_mem_free(*style_p);
-    *style_p = NULL;
+    _free_contents(obj);
 }
 
 
@@ -170,38 +215,43 @@ static void _deinit_cb(gt_obj_st * obj) {
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
+    _gt_textarea_st * style = (_gt_textarea_st * )obj;
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-            break;
-
         case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
+        case GT_EVENT_TYPE_INPUT_PRESSED:
+            style->reg.click_valid = true;
+            break;
+
         case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
+            style->reg.click_valid = false;
+            if (style->max_height < obj->area.h) {
+                obj->process_attr.scroll.y = 0;
+                break;
+            }
+            if (obj->process_attr.scroll.y > 0) {
+                obj->process_attr.scroll.y = 0;
+            } else if (gt_abs(obj->process_attr.scroll.y) + obj->area.h > style->max_height) {
+                obj->process_attr.scroll.y = obj->area.h - style->max_height;
+            }
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
-
+            if (false == style->reg.click_valid) {
+                break;
+            }
+    #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+            gt_point_st tp = gt_indev_get_point();
+            _draw_content_or_get_words(obj, &tp);
+    #endif
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
@@ -210,93 +260,101 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-static void _gt_textarea_init_style(gt_obj_st * textarea)
-{
-    _gt_textarea_st * style = (_gt_textarea_st *)textarea->style;
-
-    gt_memset(style, 0, sizeof(_gt_textarea_st ));
-
-    style->font_info.style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
-    style->font_info.style_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    style->font_info.style_fl    = GT_CFG_DEFAULT_FONT_FAMILY_FL;
-    style->font_info.style_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
-    style->font_info.size         = GT_CFG_DEFAULT_FONT_SIZE;
-    style->color_background  = gt_color_white();
-    style->bg_opa            = GT_OPA_100;
-    style->font_info.gray         = 1;
-    style->font_align        = GT_ALIGN_NONE;
-    style->font_info.thick_en          = 0;
-    style->font_info.thick_cn          = 0;
-    style->space_x           = 0;
-    style->space_y           = 0;
-}
-
 /* global functions / API interface -------------------------------------*/
 
 gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_textarea_init_style(obj);
+    if (NULL == obj) {
+        return obj;
+    }
+    obj->fixed = false;
+    obj->radius = 4;
+
+    _gt_textarea_st * style = (_gt_textarea_st * )obj;
+    gt_font_info_init(&style->font_info);
+
+    style->color_background  = gt_color_white();
+    style->bg_opa            = GT_OPA_100;
+    style->font_align        = GT_ALIGN_NONE;
+    style->space_x           = 0;
+    style->space_y           = 0;
+    style->color_border      = gt_color_hex(0xc7c7c7);
+    style->border_width      = 2;
     return obj;
 }
 
 void gt_textarea_set_text(gt_obj_st * textarea, char * text)
 {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     uint8_t style_mask = GT_FONT_STYLE_NONE;
     gt_color_t color = gt_color_black();
     uint16_t len = 0;
 
-    if(style->cnt_contents){
-        style_mask = style->contents[0].mask_style;
-        color = style->contents[0].color;
-        gt_mem_free(style->contents);
+    if (style->cnt_contents) {
+        color = style->contents[style->cnt_contents - 1].color;
+        _free_contents(textarea);
     }
-    if(text != NULL){
-        len = strlen(text);
+    if (NULL == text) {
+        return;
     }
+    len = strlen(text);
     style->contents  = gt_mem_malloc( sizeof(_gt_txt_st) );
     style->contents[0].len  = len;
-    style->contents[0].text = gt_mem_malloc(style->contents[0].len);
+    style->contents[0].text = gt_mem_malloc(style->contents[0].len + 1);
     gt_memcpy(style->contents[0].text, text, len);
+    style->contents[0].text[len] = '\0';
     style->contents[0].mask_style = style_mask;
     style->contents[0].color = color;
     style->cnt_contents = 1;
+    style->max_height = 0;
 
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 char * gt_textarea_get_text(gt_obj_st * textarea,uint16_t idx)
 {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return NULL;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     return style->contents[idx].text;
 }
 
 
 void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et style_mask, gt_color_t color)
 {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
-    if( style->cnt_contents == 0 ){
-        style->contents  = gt_mem_malloc( sizeof(_gt_txt_st) );
-        style->contents[0].len  = strlen(str);
-        style->contents[0].text = gt_mem_malloc(style->contents[0].len);
-        gt_memcpy(style->contents[0].text, str, style->contents[0].len);
-        style->contents[0].mask_style = style_mask;
-        style->contents[0].color = color;
-        style->cnt_contents = 1;
-    }else{
-        style->contents  = gt_mem_realloc(style->contents, (style->cnt_contents + 1) * sizeof(_gt_txt_st) );
-        style->contents[style->cnt_contents].len  = strlen(str);
-        style->contents[style->cnt_contents].text = gt_mem_malloc(style->contents[style->cnt_contents].len);
-        gt_memcpy(style->contents[style->cnt_contents].text, str, style->contents[style->cnt_contents].len);
-        style->contents[style->cnt_contents].mask_style = style_mask;
-        style->contents[style->cnt_contents].color = color;
-        style->cnt_contents++;
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
     }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    uint16_t idx = style->cnt_contents;
+
+    if (idx) {
+        style->contents = gt_mem_realloc(style->contents, (style->cnt_contents + 1) * sizeof(_gt_txt_st));
+    } else {
+        style->contents = gt_mem_malloc(sizeof(_gt_txt_st));
+    }
+    if (NULL == style->contents) {
+        return;
+    }
+    style->contents[idx].len  = strlen(str);
+    style->contents[idx].text = gt_mem_malloc(style->contents[idx].len + 1);
+    gt_memcpy(style->contents[idx].text, str, style->contents[idx].len);
+    style->contents[idx].text[style->contents[idx].len] = '\0';
+    style->contents[idx].mask_style = style_mask;
+    style->contents[idx].color = color;
+    ++style->cnt_contents;
 }
 
 void gt_textarea_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t space_y)
 {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->space_x = space_x;
     style->space_y = space_y;
 
@@ -305,23 +363,39 @@ void gt_textarea_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t space_
 
 void gt_textarea_set_font_size(gt_obj_st * textarea, uint8_t size)
 {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.size = size;
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_textarea_set_font_gray(gt_obj_st * textarea, uint8_t gray)
 {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.gray = gray;
 }
-void gt_textarea_set_font_align(gt_obj_st * textarea, uint8_t align)
+void gt_textarea_set_font_align(gt_obj_st * textarea, gt_align_et align)
 {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+
+    // NOTE : textarea only support left align
+    align = GT_ALIGN_LEFT;
+
     style->font_align = align;
 }
 void gt_textarea_set_font_color(gt_obj_st * textarea, gt_color_t color)
 {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     uint16_t idx = 0;
     while( idx < style->cnt_contents ){
         style->contents[idx].color = color;
@@ -332,48 +406,125 @@ void gt_textarea_set_font_color(gt_obj_st * textarea, gt_color_t color)
 
 void gt_textarea_set_bg_color(gt_obj_st * textarea, gt_color_t color)
 {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->color_background = color;
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_textarea_set_bg_opa(gt_obj_st * textarea, uint8_t opa)
 {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->bg_opa = opa;
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_textarea_set_border_width(gt_obj_st * textarea, uint8_t width)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    style->border_width = width;
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_textarea_set_border_color(gt_obj_st * textarea, gt_color_t color)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    style->color_border = color;
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_textarea_set_radius(gt_obj_st * textarea, gt_radius_t radius)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    textarea->radius = radius;
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_textarea_set_font_family_cn(gt_obj_st * textarea, gt_family_t family)
 {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.style_cn = family;
 }
 
 void gt_textarea_set_font_family_en(gt_obj_st * textarea, gt_family_t family)
 {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.style_en = family;
 }
 void gt_textarea_set_font_family_fl(gt_obj_st * textarea, gt_family_t family)
 {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.style_fl = family;
 }
 void gt_textarea_set_font_family_numb(gt_obj_st * textarea, gt_family_t family)
 {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.style_numb = family;
 }
 
 void gt_textarea_set_font_thick_en(gt_obj_st * textarea, uint8_t thick)
 {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.thick_en = thick;
 }
+
 void gt_textarea_set_font_thick_cn(gt_obj_st * textarea, uint8_t thick)
 {
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea->style;
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.thick_cn = thick;
 }
+
+void gt_textarea_set_font_encoding(gt_obj_st * textarea, gt_encoding_et encoding)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    style->font_info.encoding = encoding;
+}
+
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+gt_font_touch_word_st gt_textarea_get_touch_word(gt_obj_st * textarea)
+{
+    gt_font_touch_word_st ret = {0};
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ret;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    return style->select_word;
+}
+#endif
+
+#endif  /** GT_CFG_ENABLE_TEXTAREA */
 /* end ------------------------------------------------------------------*/

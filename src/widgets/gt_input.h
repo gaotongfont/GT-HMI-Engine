@@ -14,10 +14,15 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_INPUT
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "stdarg.h"
 #include "stdlib.h"
+#include "../core/gt_style.h"
+#include "../font/gt_font.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -66,7 +71,7 @@ char * gt_input_get_value(gt_obj_st * input);
  */
 void gt_input_append_value(gt_obj_st * input, char * value);
 void gt_input_append_char(gt_obj_st * input, char chr);
-void gt_input_append_value_encoding(gt_obj_st * input, char * value , uint8_t encoding);
+void gt_input_append_value_encoding(gt_obj_st * input, char * value, uint8_t encoding);
 
 /**
  * @brief set input obj placeholder
@@ -104,16 +109,17 @@ void gt_input_set_font_family_fl(gt_obj_st * input, gt_family_t family);
 void gt_input_set_font_family_numb(gt_obj_st * input, gt_family_t family);
 void gt_input_set_font_size(gt_obj_st * input, uint8_t size);
 void gt_input_set_font_gray(gt_obj_st * input, uint8_t gray);
-void gt_input_set_font_align(gt_obj_st * input, uint8_t align);
+void gt_input_set_font_align(gt_obj_st * input, gt_align_et align);
 void gt_input_set_font_thick_en(gt_obj_st * input, uint8_t thick);
 void gt_input_set_font_thick_cn(gt_obj_st * input, uint8_t thick);
+void gt_input_set_font_encoding(gt_obj_st * input, gt_encoding_et encoding);
 void gt_input_set_bg_color(gt_obj_st * input, gt_color_t color);
 void gt_input_set_border_width(gt_obj_st * input, gt_size_t width);
 void gt_input_set_border_color(gt_obj_st * input, gt_color_t color);
 void gt_input_set_space(gt_obj_st * input, uint8_t space_x, uint8_t space_y);
 
 
-
+#endif  /** GT_CFG_ENABLE_INPUT */
 
 #ifdef __cplusplus
 } /*extern "C"*/

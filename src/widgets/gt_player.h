@@ -14,18 +14,28 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_PLAYER
 #include "stdbool.h"
-#include "./gt_conf_widgets.h"
 #include "gt_obj.h"
 #include "../core/gt_timer.h"
 
-#if GT_CFG_ENABLE_PLAYER
+
+#if GT_USE_FILE_HEADER
+#include "../hal/gt_hal_file_header.h"
+#endif
+
 /* define ---------------------------------------------------------------*/
 
-/**
- * @brief The objects displayed use custom display position
- */
-#define _GT_PLAYER_USE_CUSTOM_POS       0
+#ifndef GT_PLAYER_REPEAT_FINISH_CALLBACK
+    /**
+     * @brief Using repeat finish callback
+     *      [default]: 0
+     */
+    #define GT_PLAYER_REPEAT_FINISH_CALLBACK    0
+#endif
+
 
 
 /* typedef --------------------------------------------------------------*/
@@ -95,6 +105,13 @@ void gt_player_set_auto_play_period(gt_obj_st * obj, uint32_t period);
 void gt_player_remove_item(gt_obj_st * obj, void * item);
 
 /**
+ * @brief Remove all item
+ *
+ * @param obj
+ */
+void gt_player_remove_all_items(gt_obj_st * obj);
+
+/**
  * @brief Remove item from player object by index
  *
  * @param style
@@ -102,9 +119,6 @@ void gt_player_remove_item(gt_obj_st * obj, void * item);
  */
 void gt_player_remove_item_by_index(gt_obj_st * obj, uint16_t idx);
 
-#if _GT_PLAYER_USE_CUSTOM_POS
-uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_size, gt_area_st * area);
-#else
 /**
  * @brief Add the player project content
  *
@@ -114,7 +128,19 @@ uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_siz
  * @return uint16_t The index of the item
  */
 uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_size);
-#endif  /** !_GT_PLAYER_USE_CUSTOM_POS */
+
+#if GT_USE_FILE_HEADER
+/**
+ * @brief
+ *
+ * @param obj
+ * @param fh idx -1[defalut]: Disabled file header, using img path to open file; >=0: index number, valid value
+ *              < 0: invalid value.
+ *           package_idx 0[defalut]: The index of element within item, as the first element
+ * @return uint16_t The item count of player
+ */
+uint16_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh);
+#endif  /** GT_USE_FILE_HEADER */
 
 /**
  * @brief Set player item index
@@ -143,6 +169,27 @@ void gt_player_stop(gt_obj_st * obj);
 void gt_player_toggle(gt_obj_st * obj);
 
 void gt_player_dir_toggle(gt_obj_st * obj);
+
+/**
+ * @brief When GT_PLAYER_MODE_LOOP or GT_PLAYER_MODE_PLAYBACK mode, set
+ *      repeat count
+ *
+ * @param obj
+ * @param count -1: infinite loop; otherwise, repeat count
+ */
+void gt_player_set_repeat_count(gt_obj_st * obj, int32_t count);
+
+#if GT_PLAYER_REPEAT_FINISH_CALLBACK
+/**
+ * @brief
+ *
+ * @param obj
+ * @param cb
+ * @param parms
+ */
+void gt_player_set_repeat_finish_callback(gt_obj_st * obj, gt_event_cb_t cb, void * parms);
+#endif
+
 /**
  * @brief Is forward direction to play
  *

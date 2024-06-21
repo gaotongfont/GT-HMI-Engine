@@ -8,8 +8,9 @@
  */
 
 /* include --------------------------------------------------------------*/
-/* include --------------------------------------------------------------*/
 #include "gt_line.h"
+
+#if GT_CFG_ENABLE_LINE
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -25,6 +26,11 @@
 
 /* private typedef ------------------------------------------------------*/
 
+typedef struct _gt_line_s {
+    gt_obj_st obj;
+    gt_attr_line_st line;
+}_gt_line_st;
+
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
@@ -36,7 +42,7 @@ const gt_obj_class_st gt_line_class = {
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
-    .size_style    = sizeof(gt_attr_line_st)
+    .size_style    = sizeof(_gt_line_st)
 };
 
 
@@ -47,7 +53,8 @@ const gt_obj_class_st gt_line_class = {
 /* static functions -----------------------------------------------------*/
 
 static inline void _gt_line_init_widget(gt_obj_st * line) {
-    gt_attr_line_st * style = line->style;
+    _gt_line_st * widget = (_gt_line_st * )line;
+    gt_attr_line_st * style = &widget->line;
     uint8_t r = (style->width + 1) >> 1;
     line->area.x = style->x_1;
     line->area.y = style->y_1;
@@ -97,13 +104,6 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    gt_attr_line_st ** style_p = (gt_attr_line_st ** )&obj->style;
-    if (NULL == *style_p) {
-        return ;
-    }
-
-    gt_mem_free(*style_p);
-    *style_p = NULL;
 }
 
 
@@ -156,21 +156,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-
-static void _gt_line_init_style(gt_obj_st * line)
-{
-    gt_attr_line_st * style = (gt_attr_line_st * )line->style;
-
-    gt_memset(style,0,sizeof(gt_attr_line_st));
-
-    style->width = 1;
-    style->fg_color     = gt_color_black();
-    style->bg_color     = gt_color_black();
-}
-
-
-
-
 /* global functions / API interface -------------------------------------*/
 /**
  * @brief create a line obj
@@ -181,34 +166,59 @@ static void _gt_line_init_style(gt_obj_st * line)
 gt_obj_st * gt_line_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_line_init_style(obj);
+    if (NULL == obj) {
+        return obj;
+    }
+    _gt_line_st * widget = (_gt_line_st * )obj;
+    gt_attr_line_st * style = &widget->line;
+
+    style->width = 1;
+    style->fg_color     = gt_color_black();
+    style->bg_color     = gt_color_black();
     return obj;
 }
 void gt_line_set_color(gt_obj_st * line, gt_color_t color)
 {
-    gt_attr_line_st * style = line->style;
+    if (false == gt_obj_is_type(line, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_line_st * widget = (_gt_line_st * )line;
+    gt_attr_line_st * style = &widget->line;
     style->fg_color = color;
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 void gt_line_set_start_point(gt_obj_st * line, uint16_t xs, uint16_t ys)
 {
-    gt_attr_line_st * style = line->style;
+    if (false == gt_obj_is_type(line, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_line_st * widget = (_gt_line_st * )line;
+    gt_attr_line_st * style = &widget->line;
     style->x_1 = xs;
     style->y_1 = ys;
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 void gt_line_set_end_point(gt_obj_st * line, uint16_t xe, uint16_t ye)
 {
-    gt_attr_line_st * style = line->style;
+    if (false == gt_obj_is_type(line, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_line_st * widget = (_gt_line_st * )line;
+    gt_attr_line_st * style = &widget->line;
     style->x_2 = xe;
     style->y_2 = ye;
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 void gt_line_set_line_width(gt_obj_st * line, uint16_t line_width)
 {
-    gt_attr_line_st * style = line->style;
+    if (false == gt_obj_is_type(line, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_line_st * widget = (_gt_line_st * )line;
+    gt_attr_line_st * style = &widget->line;
     style->width = line_width;
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
+#endif  /** GT_CFG_ENABLE_LINE */
 /* end ------------------------------------------------------------------*/

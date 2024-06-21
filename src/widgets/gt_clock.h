@@ -14,11 +14,12 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_CLOCK
 #include "gt_obj.h"
 #include "../font/gt_font.h"
 
-
-#if GT_CFG_ENABLE_CLOCK
 /* define ---------------------------------------------------------------*/
 
 
@@ -111,6 +112,8 @@ uint32_t gt_clock_get_alert_time(gt_obj_st * obj, gt_clock_time_st * time);
  * @param obj
  */
 void gt_clock_turn_next_second(gt_obj_st * obj);
+
+void gt_clock_turn_prev_second(gt_obj_st * obj);
 
 /**
  * @brief Set widget working mode, [default: GT_CLOCK_MODE_TIME],
@@ -250,7 +253,7 @@ void gt_clock_toggle(gt_obj_st * obj);
 void gt_clock_set_font_color(gt_obj_st * obj, gt_color_t color);
 void gt_clock_set_font_size(gt_obj_st * obj, uint8_t size);
 void gt_clock_set_font_gray(gt_obj_st * obj, uint8_t gray);
-void gt_clock_set_font_align(gt_obj_st * obj, uint8_t align);
+void gt_clock_set_font_align(gt_obj_st * obj, gt_align_et align);
 void gt_clock_set_font_family_cn(gt_obj_st * obj, gt_family_t family);
 void gt_clock_set_font_family_en(gt_obj_st * obj, gt_family_t family);
 void gt_clock_set_font_family_fl(gt_obj_st * obj, gt_family_t family);

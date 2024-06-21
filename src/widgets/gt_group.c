@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_group.h"
+
+#if GT_CFG_ENABLE_GROUP
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -25,7 +27,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_group_s {
-    uint8_t reserved;
+    gt_obj_st obj;
 }_gt_group_st;
 
 /* static variables -----------------------------------------------------*/
@@ -64,6 +66,13 @@ static void _init_cb(gt_obj_st * obj) {
 static void _deinit_cb(gt_obj_st * obj) {
 }
 
+static void _set_infinite_area(gt_obj_st * obj) {
+    /** Set an infinite range -32767 ~ 32766 */
+    obj->area.x = -((1 << (sizeof(gt_size_t) << 3) - 1)) + 1;
+    obj->area.y = -((1 << (sizeof(gt_size_t) << 3) - 1)) + 1;
+    obj->area.w = ((1 << (sizeof(gt_size_t) << 3))) - 2;
+    obj->area.h = ((1 << (sizeof(gt_size_t) << 3))) - 2;
+}
 
 /**
  * @brief obj event handler call back
@@ -78,10 +87,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
     }
     else if (GT_EVENT_TYPE_UPDATE_STYLE == code) {
-        if (NULL == obj->parent) {
-            return;
-        }
-        gt_area_copy(&obj->area, &obj->parent->area);
+        _set_infinite_area(obj);
     }
 }
 
@@ -99,22 +105,19 @@ gt_obj_st * gt_group_create(gt_obj_st * parent)
         return NULL;
     }
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_group_st * style = (_gt_group_st * )obj->style;
-
-    gt_memset(style, 0, sizeof(_gt_group_st));
-    gt_obj_set_virtual(obj, true);
-    if (obj->parent) {
-        gt_area_copy(&obj->area, &obj->parent->area);
+    if (NULL == obj) {
+        return obj;
     }
+
+    gt_obj_set_virtual(obj, true);
+    _set_infinite_area(obj);
+
     return obj;
 }
 
 gt_obj_st * gt_group_get_active_obj(gt_obj_st * group, gt_obj_type_et type)
 {
-    if (NULL == group) {
-        return NULL;
-    }
-    if (GT_TYPE_GROUP != gt_obj_class_get_type(group)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(group)) {
         return NULL;
     }
     for (uint16_t i = 0, cnt = group->cnt_child; i < cnt; i++) {
@@ -130,10 +133,7 @@ gt_obj_st * gt_group_get_active_obj(gt_obj_st * group, gt_obj_type_et type)
 
 bool gt_group_reset_selected_state(gt_obj_st * group, gt_obj_type_et type)
 {
-    if (NULL == group) {
-        return false;
-    }
-    if (GT_TYPE_GROUP != gt_obj_class_get_type(group)) {
+    if (OBJ_TYPE != gt_obj_class_get_type(group)) {
         return false;
     }
     gt_obj_st * first_obj = NULL;
@@ -154,4 +154,5 @@ bool gt_group_reset_selected_state(gt_obj_st * group, gt_obj_type_et type)
     return true;
 }
 
+#endif  /** GT_CFG_ENABLE_GROUP */
 /* end ------------------------------------------------------------------*/

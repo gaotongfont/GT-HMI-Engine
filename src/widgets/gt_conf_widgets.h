@@ -30,7 +30,8 @@ extern "C" {
 #define GT_CFG_ENABLE_GROUP             1
 #define GT_CFG_ENABLE_IMG               1
 #define GT_CFG_ENABLE_INPUT             1
-#define GT_CFG_ENABLE_KEYPAD            1    /**the keypad must exist with input widget*/
+/**the keypad must exist with input widget*/
+#define GT_CFG_ENABLE_KEYPAD            1
 #define GT_CFG_ENABLE_LABEL             1
 #define GT_CFG_ENABLE_LISTVIEW          1
 #define GT_CFG_ENABLE_PROGRESS_BAR      1
@@ -51,6 +52,10 @@ extern "C" {
 #define GT_CFG_ENABLE_WORDART           1
 #define GT_CFG_ENABLE_VIEW_PAGER        1
 #define GT_CFG_ENABLE_ROLLER            1
+#define GT_CFG_ENABLE_BTNMAP            1
+#define GT_CFG_ENABLE_DIALOG            1
+#define GT_CFG_ENABLE_CHAT              1
+#define GT_CFG_ENABLE_STATUS_BAR        1
 
 #if GT_USE_GIF
 #define GT_CFG_ENABLE_GIF               1

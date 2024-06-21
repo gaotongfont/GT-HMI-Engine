@@ -38,6 +38,12 @@ static inline gt_fs_fp_st * _gif_open(const char * path, gt_fs_mode_et mode) {
     return gt_fs_open(path, mode);
 }
 
+#if GT_USE_FILE_HEADER
+static inline gt_fs_fp_st * _fh_gif_open(gt_file_header_param_st const * const fh, gt_fs_mode_et mode) {
+    return gt_fs_fh_open(fh, mode);
+}
+#endif
+
 static inline int _gif_read(gt_fs_fp_st * fp, uint8_t * buffer, uint32_t len) {
     uint32_t ret_len = 0;
     gt_fs_read(fp, buffer, len, &ret_len);
@@ -61,33 +67,18 @@ static inline uint16_t _get_uint16(uint8_t const * const buffer) {
     return (buffer[1] << 8) | buffer[0];
 }
 
-/* =================== driver end =================== */
-
-static uint16_t
-read_num(gt_fs_fp_st * fp)
-{
+static uint16_t read_num(gt_fs_fp_st * fp) {
     uint8_t bytes[2];
 
     _gif_read(fp, bytes, 2);
     return bytes[0] + (((uint16_t) bytes[1]) << 8);
 }
 
-gd_GIF *
-gd_open_gif(const char *fname)
-{
+static gd_GIF * _common_open_gif(gd_GIF * gif) {
     uint8_t fdsz, aspect;
     uint8_t *bgcolor;
     uint8_t buffer[13] = {0};
     uint32_t size = 0;
-
-    gd_GIF * gif = gt_mem_malloc(sizeof(gd_GIF));
-    if (!gif) return NULL;
-    gt_memset(gif, 0, sizeof(gd_GIF));
-
-    gif->fd = _gif_open(fname, GT_FS_MODE_RD);
-    if (!gif->fd) {
-        goto free_gif;
-    }
 
     _gif_read(gif->fd, buffer, sizeof(buffer));
 
@@ -185,10 +176,47 @@ gd_open_gif(const char *fname)
     return gif;
 fail:
     _gif_close(gif->fd);
+    gif->fd = NULL;
+    return NULL;
+}
+
+/* =================== driver end =================== */
+
+gd_GIF *
+gd_open_gif(const char *fname)
+{
+    gd_GIF * gif = gt_mem_malloc(sizeof(gd_GIF));
+    if (!gif) return NULL;
+    gt_memset(gif, 0, sizeof(gd_GIF));
+
+    gif->fd = _gif_open(fname, GT_FS_MODE_RD);
+    if (!gif->fd) {
+        goto free_gif;
+    }
+    return _common_open_gif(gif);
 free_gif:
     gt_mem_free(gif);
     return NULL;
 }
+
+#if GT_USE_FILE_HEADER
+gd_GIF *
+gd_fh_open_gif(gt_file_header_param_st const * const file_header)
+{
+    gd_GIF * gif = gt_mem_malloc(sizeof(gd_GIF));
+    if (!gif) return NULL;
+    gt_memset(gif, 0, sizeof(gd_GIF));
+
+    gif->fd = _fh_gif_open(file_header, GT_FS_MODE_RD);
+    if (!gif->fd) {
+        goto free_gif;
+    }
+    return _common_open_gif(gif);
+free_gif:
+    gt_mem_free(gif);
+    return NULL;
+}
+#endif
 
 static void
 discard_sub_blocks(gd_GIF *gif)
@@ -536,7 +564,7 @@ render_frame_rect(gd_GIF *gif, uint8_t *buffer, uint8_t * mask)
     for (j = 0; j < gif->fh; j++) {
         for (k = 0; k < gif->fw; k++) {
             index = gif->frame[(gif->fy + j) * gif->width + gif->fx + k];
-            color = &gif->palette->colors[index*3];
+            color = &gif->palette->colors[index * 3];
             if (!gif->gce.transparency || index != gif->gce.tindex) {
 #if GT_COLOR_DEPTH == 32
             cnt = (i + k) * 3;
@@ -574,10 +602,10 @@ dispose(gd_GIF *gif)
     int i, j, k;
     uint8_t *bgcolor;
     uint32_t cnt = 0;
-    uint8_t opa = 0xff;
+    uint8_t opa = GT_OPA_100;
     gt_color_t color;
 
-    if(gif->gce.transparency) opa = 0x00;
+    if(gif->gce.transparency) opa = GT_OPA_0;
 
     switch (gif->gce.disposal) {
     case 2: /* Restore to background color. */
@@ -618,6 +646,7 @@ dispose(gd_GIF *gif)
     default:
         /* Add frame non-transparent pixels to canvas. */
         render_frame_rect(gif, gif->canvas, gif->mask);
+        break;
     }
 }
 

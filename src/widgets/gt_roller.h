@@ -19,6 +19,7 @@ extern "C" {
 
 #if GT_CFG_ENABLE_ROLLER
 #include "gt_obj.h"
+#include "../core/gt_style.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -119,17 +120,17 @@ bool gt_roller_get_selected_text(gt_obj_st * obj, char * result);
  * @brief Go previous item
  *
  * @param obj Roller object
- * @return uint8_t The index of new item [begin with 0]
+ * @return uint16_t The index of new item [begin with 0]
  */
-uint8_t gt_roller_go_prev(gt_obj_st * obj);
+uint16_t gt_roller_go_prev(gt_obj_st * obj);
 
 /**
  * @brief Go next item
  *
  * @param obj Roller object
- * @return uint8_t The index of new item [begin with 0]
+ * @return uint16_t The index of new item [begin with 0]
  */
-uint8_t gt_roller_go_next(gt_obj_st * obj);
+uint16_t gt_roller_go_next(gt_obj_st * obj);
 
 /**
  * @brief Get the total count of the roller options
@@ -150,7 +151,7 @@ void gt_roller_set_line_space(gt_obj_st * obj, uint8_t space);
 void gt_roller_set_font_color(gt_obj_st * obj, gt_color_t color);
 void gt_roller_set_font_size(gt_obj_st * obj, uint8_t size);
 void gt_roller_set_font_gray(gt_obj_st * obj, uint8_t gray);
-void gt_roller_set_font_align(gt_obj_st * obj, uint8_t align);
+void gt_roller_set_font_align(gt_obj_st * obj, gt_align_et align);
 void gt_roller_set_font_family_cn(gt_obj_st * obj, gt_family_t family);
 void gt_roller_set_font_family_en(gt_obj_st * obj, gt_family_t family);
 void gt_roller_set_font_family_fl(gt_obj_st * obj, gt_family_t family);

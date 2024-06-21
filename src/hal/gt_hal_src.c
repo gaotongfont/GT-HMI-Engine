@@ -16,7 +16,7 @@
 
 
 /* private define -------------------------------------------------------*/
-
+#if GT_USE_MODE_SRC
 
 
 /* private typedef ------------------------------------------------------*/
@@ -155,25 +155,52 @@ static gt_fs_res_et _tell_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t * po
     return GT_FS_RES_OK;
 }
 
+#if GT_USE_FS_NAME_BY_INDEX
+static char const * const _get_name_by_cb(uint16_t index_of_list) {
+    uint16_t idx = 0;
+    char * ret_name = NULL;
+    _gt_src_dev_st * dev = _get_dev();
+
+    while (NULL != dev->sys[idx].name) {
+        if (index_of_list == idx) {
+            ret_name = dev->sys[idx].name;
+            break;
+        }
+        ++idx;
+    }
+    return ret_name;
+}
+#endif
+
 static void _gt_src_drv_register(gt_fs_drv_st * drv)
 {
     drv->letter       = GT_FS_LABEL_ARRAY;
 
+#if GT_USE_FILE_HEADER
+    drv->fh_open_cb   = NULL;
+#endif
     drv->open_cb      = _open_cb;
     drv->close_cb     = _close_cb;
     drv->read_cb      = _read_cb;
     drv->seek_cb      = _seek_cb;
     drv->tell_cb      = _tell_cb;
     drv->write_cb     = NULL;
+#if GT_USE_FOLDER_SYSTEM
     drv->dir_open_cb  = NULL;
     drv->dir_read_cb  = NULL;
     drv->dir_close_cb = NULL;
+#endif
+#if GT_USE_FS_NAME_BY_INDEX
+    drv->get_name_by_cb = _get_name_by_cb;
+#endif
 }
 
+#endif  /** GT_USE_MODE_SRC */
 /* global functions / API interface -------------------------------------*/
 
 void gt_src_init(const gt_src_st * const src_sys, uint32_t sys_count)
 {
+#if GT_USE_MODE_SRC
     if (!src_sys) {
         GT_LOGW(GT_LOG_TAG_DATA, "src array is NULL, init failed.");
         return ;
@@ -193,13 +220,15 @@ void gt_src_init(const gt_src_st * const src_sys, uint32_t sys_count)
     _self->sys_count = sys_count;
 
     _gt_src_drv_register(&_self->drv);
+#endif
 }
 
-
+#if GT_USE_MODE_SRC
 gt_fs_drv_st * gt_src_get_drv(void)
 {
     return _get_drv();
 }
+#endif
 
 
 /* end ------------------------------------------------------------------*/

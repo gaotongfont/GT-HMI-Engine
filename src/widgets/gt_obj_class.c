@@ -9,14 +9,17 @@
 
  /* include --------------------------------------------------------------*/
 #include "gt_obj_class.h"
-#include "gt_obj.h"
+#include "./gt_obj.h"
 #include "../core/gt_mem.h"
 #include "../core/gt_style.h"
+#include "../core/gt_indev.h"
 #include "../others/gt_types.h"
-#include "../hal/gt_hal.h"
+#include "../hal/gt_hal_disp.h"
+#include "../hal/gt_hal_indev.h"
 #include "stdint.h"
 #include "../others/gt_log.h"
 #include "../others/gt_assert.h"
+#include "../core/gt_layout.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -35,10 +38,6 @@
 
 
 /* static functions -----------------------------------------------------*/
-static uint32_t get_instance_size(void) {
-    return sizeof(gt_obj_st);
-}
-
 static uint32_t get_style_size(const gt_obj_class_st * class) {
     return class->size_style;
 }
@@ -113,21 +112,19 @@ static void _gt_obj_class_destroy_property(gt_obj_st * self) {
     if (NULL == self) {
         return;
     }
+    gt_event_send(self, GT_EVENT_TYPE_CHANGE_DELETED, NULL);
+    _gt_indev_remove_want_delate_target(self);
+
     // free event attribute
     if (NULL != self->event_attr) {
         gt_mem_free(self->event_attr);
         self->event_attr = NULL;
     }
 
+    self->delate = false;
     // free obj custom style
     if (self->class->_deinit_cb) {
         self->class->_deinit_cb(self);
-    }
-
-    // free the malloc memory, normally it will be release by widget's _deinit_cb()
-    if (self->style) {
-        gt_mem_free(self->style);
-        self->style = NULL;
     }
 
     self->draw_ctx = NULL;
@@ -151,29 +148,30 @@ static inline void _gt_obj_class_destroy_self(gt_obj_st * self) {
  * @return true The deepest child object is released, return recursively
  * @return false Go to the next level of child object
  */
-static bool _gt_obj_class_destroy_children(gt_obj_st * self, bool is_root)
-{
+static bool _destroy_and_free_children(struct gt_obj_s * self, bool is_root) {
     gt_size_t i = 0;
 
     if (NULL == self->child || 0 == self->cnt_child) {
-        _gt_obj_class_destroy_property(self);
-        /**
-         * @brief free obj memory, root need to release disp memory,
-         *       child only need to release obj memory in here
-         */
-        if (!is_root) {
-            gt_mem_free(self);
-            self = NULL;
+        if (false == is_root) {
+            /**
+             * @brief free obj memory, root need to release disp memory,
+             *       child only need to release obj memory in here
+             */
+            _gt_obj_class_destroy_self(self);
         }
         return true;
     }
 
+    gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETE, NULL);
+
     // release child object from bottom to top
     for (i = self->cnt_child - 1; i >= 0; i--) {
-        if (_gt_obj_class_destroy_children(self->child[i], false)) {
+        if (_destroy_and_free_children(self->child[i], false)) {
             self->child[i] = NULL;  /** can not repeat free memory here */
         }
     }
+
+    gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETED, NULL);
 
     // release child array memory
     if (NULL != self->child) {
@@ -208,78 +206,89 @@ static inline bool _add_obj_to_parent(gt_obj_st * obj, gt_obj_st * parent) {
     return true;
 }
 
-/* global functions / API interface -------------------------------------*/
-struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_obj_s * parent) {
+static bool _create_new_screen_obj(gt_obj_st * obj) {
+    GT_LOGV(GT_LOG_TAG_GUI, "create a screen");
+    gt_disp_st * disp = gt_disp_get_default();
 
-    /* check type */
-    if ( parent && parent->class->type == class->type ){
-        if (GT_TYPE_OBJ != class->type) {
-            GT_LOGV(GT_LOG_TAG_GUI, "cannot create an object of the same type as the parent object onto the parent object");
-            goto null_lb;
-        }
+    if (disp == NULL) {
+        GT_LOGW(GT_LOG_TAG_GUI, "disp is null, please init disp");
+        // goto obj_lb;
+        return false;
     }
 
-    uint32_t is = get_instance_size();
+    if (disp->screens == NULL || disp->cnt_scr == 0 ) {
+        disp->screens = gt_mem_malloc(sizeof(gt_obj_st *));
+        if (!disp->screens) {
+            // goto obj_lb;
+            return false;
+        }
+        disp->screens[disp->cnt_scr++] = obj;
+    } else {
+        // gt_mem_realloc can't operate NULL ptr
+        disp->screens = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr + 1));
+        if (!disp->screens) {
+            // goto obj_lb;
+            return false;
+        }
+        disp->screens[disp->cnt_scr++] = obj;
+    }
+    obj->area.x = 0;
+    obj->area.y = 0;
+    obj->area.w = gt_disp_get_res_hor(NULL);
+    obj->area.h = gt_disp_get_res_ver(NULL);
+    obj->show_bg = true;
+
+    return true;
+}
+
+/* global functions / API interface -------------------------------------*/
+struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_obj_s * parent)
+{
+    uint32_t is = get_style_size(class);
     gt_obj_st * obj = gt_mem_malloc(is);
     if (!obj) {
-        goto null_lb;
+        return NULL;
     }
     gt_memset_0(obj, is);
 
     obj->class      = class;
     obj->parent     = parent;
+    obj->id         = -1;
     obj->opa        = GT_OPA_100;
-    obj->style      = gt_mem_malloc(get_style_size(class));
     obj->visible    = GT_VISIBLE;
     obj->scroll_dir = GT_SCROLL_ALL;
+    obj->bgcolor    = gt_color_white();
+    obj->radius     = 4;
+    obj->reduce     = REDUCE_DEFAULT;
 
     /** Inherit from the parent class */
+    if (parent) {
+        obj->area.x = parent->area.x;
+        obj->area.y = parent->area.y;
+    }
     _gt_obj_class_inherent_attr_from_parent(obj, parent);
 
-    if (!obj->style) {
-        goto obj_lb;
+    if (parent == NULL) {
+        if (false == _create_new_screen_obj(obj)) {
+            goto obj_lb;
+        }
+        return obj;
     }
 
-    if (parent == NULL) {
-        GT_LOGV(GT_LOG_TAG_GUI, "create a screen");
-        gt_disp_st * disp = gt_disp_get_default();
-
-        if (disp == NULL) {
-            GT_LOGW(GT_LOG_TAG_GUI, "disp is null, please init disp");
-            goto style_lb;
-        }
-
-        if (disp->screens == NULL || disp->cnt_scr == 0 ) {
-            disp->screens = gt_mem_malloc(sizeof(gt_obj_st *));
-            if (!disp->screens) {
-                goto style_lb;
-            }
-            disp->screens[disp->cnt_scr++] = obj;
-        } else {
-            // gt_mem_realloc can't operate NULL ptr
-            disp->screens = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr + 1));
-            if (!disp->screens) {
-                goto style_lb;
-            }
-            disp->screens[disp->cnt_scr++] = obj;
-        }
-        obj->area.x = 0;
-        obj->area.y = 0;
-        obj->area.w = gt_disp_get_res_hor(NULL);
-        obj->area.h = gt_disp_get_res_ver(NULL);
-    } else {
-        if (false == _add_obj_to_parent(obj, parent)) {
-            goto style_lb;
-        }
+    /** widget object */
+    obj->fixed = true;
+    if (false == _add_obj_to_parent(obj, parent)) {
+        goto obj_lb;
+    }
+    if (parent->row_layout) {
+        // row calc width
+        gt_layout_row_grow(parent);
     }
 
     return obj;
 
-style_lb:
-    gt_mem_free(obj->style);
 obj_lb:
     gt_mem_free(obj);
-null_lb:
     return NULL;
 }
 
@@ -287,6 +296,17 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
 {
     gt_obj_st * parent = obj->parent;
     bool is_success = false;
+    if (NULL == parent) {
+        return NULL;
+    }
+    if (NULL == to) {
+        return parent;
+    }
+    if (parent == to) {
+        return parent;
+    }
+
+    gt_event_send(parent, GT_EVENT_TYPE_CHANGE_CHILD_REMOVE, obj);
 
     is_success = _add_obj_to_parent(obj, to);
     if (false == is_success) {
@@ -295,19 +315,20 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
 
     _gt_obj_class_destroy_from_parent(obj);
     obj->parent = to;
+
+    gt_event_send(parent, GT_EVENT_TYPE_CHANGE_CHILD_REMOVED, obj);
+
     return obj->parent;
 }
 
-/**
- * @brief Release the target object from memory
- *
- * @param self The target object which want to be delete from memory
- */
 void _gt_obj_class_destroy(struct gt_obj_s * self)
 {
     gt_obj_st * ret_p = NULL;
+    if (NULL == self) {
+        return ;
+    }
 
-    _gt_obj_class_destroy_children(self, true);
+    _destroy_and_free_children(self, true);
 
     if (NULL == self->parent) {
         ret_p = _gt_obj_class_destroy_screen(self);
@@ -325,6 +346,16 @@ void _gt_obj_class_destroy(struct gt_obj_s * self)
     self = NULL;
 }
 
+void _gt_obj_class_destroy_children(struct gt_obj_s * self)
+{
+    if (NULL == self) {
+        return ;
+    }
+    for (gt_size_t i = self->cnt_child - 1; i >= 0; i--) {
+        _gt_obj_class_destroy(self->child[i]);
+    }
+}
+
 void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_obj_s * parent)
 {
     if (NULL == obj || NULL == parent) {
@@ -335,12 +366,20 @@ void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_ob
 }
 
 
-gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj) {
+gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj)
+{
     if (NULL == obj || NULL == obj->class) {
         return GT_TYPE_UNKNOWN;
     }
     return obj->class->type;
 }
 
+bool gt_obj_is_type(struct gt_obj_s * obj, gt_obj_type_et type)
+{
+    if (NULL == obj || NULL == obj->class) {
+        return false;
+    }
+    return obj->class->type == type;
+}
 
 /* end ------------------------------------------------------------------*/

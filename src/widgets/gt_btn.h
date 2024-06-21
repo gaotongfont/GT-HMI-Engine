@@ -14,11 +14,16 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_BTN
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "stdarg.h"
 #include "stdlib.h"
 #include "../utils/gt_vector.h"
+#include "../core/gt_style.h"
+#include "../font/gt_font.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -97,16 +102,17 @@ char * gt_btn_get_text(gt_obj_st * btn);
  * @param color font color
  */
 void gt_btn_set_font_color(gt_obj_st * btn, gt_color_t color);
-
+void gt_btn_set_font_color_pressed(gt_obj_st * btn, gt_color_t color);
 void gt_btn_set_font_size(gt_obj_st * btn, uint8_t size);
 void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray);
-void gt_btn_set_font_align(gt_obj_st * btn, uint8_t align);
+void gt_btn_set_font_align(gt_obj_st * btn, gt_align_et align);
 void gt_btn_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn);
 void gt_btn_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en);
 void gt_btn_set_font_family_fl(gt_obj_st * btn, gt_family_t font_family_fl);
 void gt_btn_set_font_family_numb(gt_obj_st * btn, gt_family_t font_family_numb);
 void gt_btn_set_font_thick_en(gt_obj_st * btn, uint8_t thick);
 void gt_btn_set_font_thick_cn(gt_obj_st * btn, uint8_t thick);
+void gt_btn_set_font_encoding(gt_obj_st * btn, gt_encoding_et encoding);
 void gt_btn_set_space(gt_obj_st * btn, uint8_t space_x, uint8_t space_y);
 
 /**
@@ -115,7 +121,7 @@ void gt_btn_set_space(gt_obj_st * btn, uint8_t space_x, uint8_t space_y);
  * @param btn button obj
  * @param radius radius size
  */
-void gt_btn_set_radius(gt_obj_st * btn, uint8_t radius);
+void gt_btn_set_radius(gt_obj_st * btn, gt_radius_t radius);
 
 /**
  * @brief Button add switching status text content
@@ -160,6 +166,8 @@ int16_t gt_btn_get_state_content_index(gt_obj_st * obj);
  * @param obj
  */
 void gt_btn_set_selected(gt_obj_st * obj);
+
+#endif  /** GT_CFG_ENABLE_BTN */
 
 #ifdef __cplusplus
 } /*extern "C"*/

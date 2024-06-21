@@ -79,7 +79,7 @@ static inline void _gt_anim_set_timer(struct _gt_timer_s * timer) {
 static void _gt_anim_change_list(void)
 {
     _is_list_change = true;
-    if (gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
+    if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
         _gt_timer_set_paused(_gt_anim_get_timer(), true);
     } else {
         _gt_timer_set_paused(_gt_anim_get_timer(), false);
@@ -198,11 +198,11 @@ static int32_t _gt_anim_path_step(const struct gt_anim_s * anim) {
 }
 
 static void _gt_anim_ready_handler(gt_anim_st * anim) {
-    if (anim->repeat_count && !anim->playback_status && GT_ANIM_REPEAT_INFINITE != anim->repeat_count) {
+    if (anim->repeat_count && !anim->invert && GT_ANIM_REPEAT_INFINITE != anim->repeat_count) {
         --anim->repeat_count;
     }
 
-    if (!anim->repeat_count && (anim->playback_status || !anim->playback_time)) {
+    if (!anim->repeat_count && (anim->invert || !anim->playback_time)) {
         if (anim->ready_cb) { anim->ready_cb(anim); }
         _gt_anim_free_task(anim);
         return ;
@@ -213,10 +213,11 @@ static void _gt_anim_ready_handler(gt_anim_st * anim) {
     if (!anim->playback_time) {
         return ;
     }
-    if (!anim->playback_status) {
+    if (!anim->invert) {
+        // FIXME
         anim->time_act = -(int32_t)anim->playback_delay;
 
-        anim->playback_status = anim->playback_status ? 0 : 1;
+        anim->invert = anim->invert ? 0 : 1;
 
         /* swap start and end value, and swap anim time */
         int32_t tmp = anim->value_start;
@@ -232,7 +233,7 @@ static void _gt_anim_ready_handler(gt_anim_st * anim) {
 static void _gt_anim_task_handler(struct _gt_timer_s * timer)
 {
     GT_UNUSED(timer);
-    if (gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
+    if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
         return ;
     }
 
@@ -249,6 +250,12 @@ refresh_lb:
         if (ptr->run_already == _is_run_same_time) {
             continue;
         }
+        ptr->run_already = _is_run_same_time ? 1 : 0;
+
+        if (ptr->paused) {
+            ptr->tick_create = gt_tick_elapse(ptr->tick_create);
+            continue;
+        }
         if (ptr->time_delay_start > 0) {
             if (gt_tick_elapse(ptr->tick_create) < ptr->time_delay_start) {
                 continue;
@@ -256,7 +263,6 @@ refresh_lb:
             ptr->time_delay_start = 0;
         }
 
-        ptr->run_already = _is_run_same_time ? 1 : 0;
         _gt_anim_set_act(ptr);
 
         if (ptr->time_act <= 0 && ptr->start_cb) {
@@ -299,8 +305,8 @@ static void _default_exec_cb(gt_obj_st * obj, int32_t value)
     gt_anim_st * anim = _gt_anim_get_act();
     gt_point_st * point = (gt_point_st * )gt_anim_get_data();
 
-    gt_obj_set_pos(obj, \
-        ((point[1].x - point[0].x) * anim->value_current / anim->value_end) + point[0].x, \
+    gt_obj_set_pos(obj,
+        ((point[1].x - point[0].x) * anim->value_current / anim->value_end) + point[0].x,
         ((point[1].y - point[0].y) * anim->value_current / anim->value_end) + point[0].y);
 }
 
@@ -346,7 +352,7 @@ void gt_anim_pos_move(gt_obj_st * obj, gt_anim_param_st * param)
     point[0].y = obj->area.y;
     point[1].x = param->dst.x;
     point[1].y = param->dst.y;
-    gt_anim_set_data(&anim, (void * )point);
+    gt_anim_set_data(&anim, (void * )point, sizeof(gt_point_st) << 1);
     gt_anim_start(&anim);
 }
 
@@ -385,7 +391,7 @@ gt_anim_st * gt_anim_start(const gt_anim_st * anim)
         return NULL;
     }
 
-    if (gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
+    if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
         _time_last_run = gt_tick_get();
     }
 
@@ -425,12 +431,32 @@ bool gt_anim_del(gt_obj_st * target, gt_anim_exec_cb_t exec_cb)
     gt_anim_st * ptr        = NULL;
     gt_anim_st * backup_ptr = NULL;
 
-    if (gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
+    if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
         return ret;
     }
 
     _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         if ((ptr->target == target || NULL == ptr->target) && (ptr->exec_cb == exec_cb || NULL == ptr->exec_cb)) {
+            _gt_anim_free_task(ptr);
+            ret = true;
+        }
+    }
+
+    return ret;
+}
+
+bool gt_anim_del_by(gt_anim_st * anim)
+{
+    bool ret = false;
+    gt_anim_st * ptr        = NULL;
+    gt_anim_st * backup_ptr = NULL;
+
+    if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
+        return ret;
+    }
+
+    _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
+        if (ptr == anim) {
             _gt_anim_free_task(ptr);
             ret = true;
         }
@@ -445,7 +471,7 @@ void gt_anim_del_all(void)
     gt_anim_st * ptr        = NULL;
     gt_anim_st * backup_ptr = NULL;
 
-    if (gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
+    if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
         return ;
     }
 

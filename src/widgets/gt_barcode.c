@@ -1,6 +1,6 @@
 /**
  * @file gt_barcode.c
- * @author Yang (your@email.com)
+ * @author Yang
  * @brief
  * @version 0.1
  * @date 2022-12-09 13:40:14
@@ -9,6 +9,8 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_barcode.h"
+
+#if GT_CFG_ENABLE_BARCODE
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -19,7 +21,6 @@
 #include "../core/gt_disp.h"
 #include "../core/gt_draw.h"
 
-#if GT_CFG_ENABLE_BARCODE == 1
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_BARCODE
@@ -27,9 +28,13 @@
 
 //
 #define BARCODE_READ_MODE       (0) // 1 -- read all  0 - read tow line
-#define BAECODE_LINE_NUMB       (10)
+#define BARCODE_LINE_NUMB       (10)
 /* private typedef ------------------------------------------------------*/
 
+typedef struct _gt_barcode_s {
+    gt_obj_st obj;
+    barcode_st info;
+}_gt_barcode_st;
 
 
 /* static prototypes ----------------------------------------------------*/
@@ -55,8 +60,8 @@ const gt_obj_class_st gt_barcode_class = {
 
 /* static functions -----------------------------------------------------*/
 static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
-
-    _gt_barcode_st * style = barcode->style;
+    _gt_barcode_st * widget = (_gt_barcode_st * )barcode;
+    barcode_st * style = (barcode_st * )&widget->info;
     bar_uint32_t buf_size = 0;
     gt_area_st area;
     gt_size_t h = 0;
@@ -65,8 +70,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
 
 #if (!BARCODE_READ_MODE)
     gt_size_t x = 0, y = 0, w  = 0, i = 0;
-    if(h < BAECODE_LINE_NUMB)
-        h = BAECODE_LINE_NUMB;
+    if(h < BARCODE_LINE_NUMB) { h = BARCODE_LINE_NUMB; }
     style->mode_h = 1;
 #endif
     // 获取长宽
@@ -87,7 +91,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
 #if (BARCODE_READ_MODE)
     buf_size = (area.w * area.h) >> 3;
 #else
-    buf_size = (area.w * (area.h > BAECODE_LINE_NUMB ? area.h : BAECODE_LINE_NUMB)) >> 3;
+    buf_size = (area.w * (area.h > BARCODE_LINE_NUMB ? area.h : BARCODE_LINE_NUMB)) >> 3;
 #endif
     style->pdat = gt_mem_malloc(buf_size);
 
@@ -97,7 +101,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
         goto RET_FREE ;
     }
     style->pdat_size = buf_size;
-    GT_LOGD(GT_LOG_TAG_GUI , "area dot_w = %d , dot_h = %d , buf_size = %d" , area.w , area.h , style->pdat_size);
+    // GT_LOGD(GT_LOG_TAG_GUI , "area dot_w = %d , dot_h = %d , buf_size = %d" , area.w , area.h , style->pdat_size);
 
     // 获取数据
     if(!gt_barcode_get(style))
@@ -139,30 +143,30 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     // Barcode indent
     area.y = barcode->area.y + 2;
     h -=4;
-    area.h = BAECODE_LINE_NUMB;
+    area.h = BARCODE_LINE_NUMB;
 
-    for(i = 1 ; i < BAECODE_LINE_NUMB ; i++)
+    for(i = 1 ; i < BARCODE_LINE_NUMB ; i++)
     {
         gt_memmove(&style->pdat[i * (area.w >> 3)] , &style->pdat[0] , area.w >> 3);
     }
 
-    int count = h / BAECODE_LINE_NUMB;
-    if(h%BAECODE_LINE_NUMB)
+    int count = h / BARCODE_LINE_NUMB;
+    if(h%BARCODE_LINE_NUMB)
     {
         count++;
     }
 
     for(i = 0 ; i < count ; i++)
     {
-        if((h%BAECODE_LINE_NUMB) && (i == count-1))
+        if((h%BARCODE_LINE_NUMB) && (i == count-1))
         {
-            area.h = h%BAECODE_LINE_NUMB;
+            area.h = h%BARCODE_LINE_NUMB;
             draw_bg(barcode->draw_ctx, &rect_attr, &area);
             area.y += area.h;
             continue;
         }
         draw_bg(barcode->draw_ctx, &rect_attr, &area);
-        area.y += BAECODE_LINE_NUMB;
+        area.y += BARCODE_LINE_NUMB;
     }
 
 #endif
@@ -201,24 +205,18 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_barcode_st ** style_p = (_gt_barcode_st ** )&obj->style;
-    if (NULL == *style_p) {
-        return ;
+    _gt_barcode_st * obj_p = (_gt_barcode_st * )obj;
+    barcode_st * style_p = (barcode_st * )&obj_p->info;
+
+    if(NULL != style_p->barcode){
+        gt_mem_free(style_p->barcode);
+        style_p->barcode = NULL;
     }
 
-    if(NULL != (*style_p)->barcode){
-        gt_mem_free((*style_p)->barcode);
-        (*style_p)->barcode = NULL;
+    if(NULL != style_p->pdat){
+        gt_mem_free(style_p->pdat);
+        style_p->pdat = NULL;
     }
-
-    if(NULL != (*style_p)->pdat){
-        gt_mem_free((*style_p)->pdat);
-        (*style_p)->pdat = NULL;
-    }
-
-    gt_mem_free(*style_p);
-    *style_p = NULL;
-
 }
 
 /**
@@ -274,11 +272,20 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             break;
     }
 }
-
-static void _gt_barcode_init_style(gt_obj_st * barcode)
-{
-    _gt_barcode_st * style = barcode->style;
-    gt_memset(style, 0, sizeof(_gt_barcode_st));
+/* global functions / API interface -------------------------------------*/
+/**
+ * @brief create a barcode obj
+ *
+ * @param parent barcode's parent element
+ * @return gt_obj_st* barcode obj
+ */
+gt_obj_st * gt_barcode_create(gt_obj_st * parent) {
+    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    if (NULL == obj) {
+        return obj;
+    }
+    _gt_barcode_st * widget = (_gt_barcode_st * )obj;
+    barcode_st * style = (barcode_st * )&widget->info;
 
     char *text = "1234567890128";
     style->barcode = gt_mem_malloc(strlen(text)+1);
@@ -290,25 +297,18 @@ static void _gt_barcode_init_style(gt_obj_st * barcode)
     style->mode_h = 64;
     style->upc_e_sys = 0;
     style->pdat_size = 0;
-}
-/* global functions / API interface -------------------------------------*/
-/**
- * @brief create a barcode obj
- *
- * @param parent barcode's parent element
- * @return gt_obj_st* barcode obj
- */
-gt_obj_st * gt_barcode_create(gt_obj_st * parent) {
-    gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_barcode_init_style(obj);
+
     return obj;
 }
 
 void gt_barcode_set_code_text(gt_obj_st * barcode , char* code)
 {
-    _gt_barcode_st * style = barcode->style;
-    if( NULL != style->barcode)
-    {
+    if (false == gt_obj_is_type(barcode, OBJ_TYPE)) {
+        return;
+    }
+    _gt_barcode_st * obj = (_gt_barcode_st * )barcode;
+    barcode_st * style = (barcode_st * )&obj->info;
+    if( NULL != style->barcode) {
         gt_mem_free(style->barcode);
     }
     uint16_t size = code == NULL ? 0 : strlen(code);
@@ -320,36 +320,51 @@ void gt_barcode_set_code_text(gt_obj_st * barcode , char* code)
 
 void gt_barcode_set_type(gt_obj_st * barcode , gt_family_t family)
 {
-    _gt_barcode_st * style = barcode->style;
-    style->type = family;
+    if (false == gt_obj_is_type(barcode, OBJ_TYPE)) {
+        return;
+    }
+    _gt_barcode_st * style = (_gt_barcode_st * )barcode;
+    style->info.type = family;
 }
 
 void gt_barcode_set_hri_type(gt_obj_st * barcode , gt_family_t family)
 {
-    _gt_barcode_st * style = barcode->style;
-    style->hri_type = family;
+    if (false == gt_obj_is_type(barcode, OBJ_TYPE)) {
+        return;
+    }
+    _gt_barcode_st * style = (_gt_barcode_st * )barcode;
+    style->info.hri_type = family;
 }
 
 void gt_barcode_set_mode_w(gt_obj_st * barcode , uint8_t value)
 {
-    _gt_barcode_st * style = barcode->style;
-    style->mode_w = value;
+    if (false == gt_obj_is_type(barcode, OBJ_TYPE)) {
+        return;
+    }
+    _gt_barcode_st * style = (_gt_barcode_st * )barcode;
+    style->info.mode_w = value;
 }
 
 void gt_barcode_set_mode_h(gt_obj_st * barcode , uint8_t value)
 {
-    _gt_barcode_st * style = barcode->style;
-    style->mode_h = value;
+    if (false == gt_obj_is_type(barcode, OBJ_TYPE)) {
+        return;
+    }
+    _gt_barcode_st * style = (_gt_barcode_st * )barcode;
+    style->info.mode_h = value;
 }
 
 void gt_barcode_set_upc_e_sys_code(gt_obj_st * barcode , uint8_t value)
 {
-    _gt_barcode_st * style = barcode->style;
-    style->upc_e_sys = value;
+    if (false == gt_obj_is_type(barcode, OBJ_TYPE)) {
+        return;
+    }
+    _gt_barcode_st * style = (_gt_barcode_st * )barcode;
+    style->info.upc_e_sys = value;
 }
 
-#endif
-/* */
+#endif  /** GT_CFG_ENABLE_BARCODE */
+
 /* end of file ----------------------------------------------------------*/
 
 

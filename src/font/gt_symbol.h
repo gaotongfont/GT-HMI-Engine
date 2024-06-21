@@ -266,15 +266,40 @@ extern "C" {
 #endif
 
 #if !defined GT_SYMBOL_EN
-#define GT_SYMBOL_EN               "\xEF\xA2\xA3" /*63651, 0xF8A3*/
+#define GT_SYMBOL_EN               "\xEE\x9C\x92" /*59154, 0xE712*/
 #endif
 
-#if !defined GT_SYMBOL_SPELL
-#define GT_SYMBOL_SPELL             "\xEF\xA2\xA4" /*63652, 0xF8A4*/
+#if !defined GT_SYMBOL_CH
+#define GT_SYMBOL_CH                "\xEE\x9C\x93" /*59155, 0xE713*/
 #endif
 
+#if !defined GT_SYMBOL_SPACE
+#define GT_SYMBOL_SPACE             "\xEE\xA1\x91" /*59473, 0xE851*/
 #endif
 
+#if !defined GT_SYMBOL_WELL_NUMBER
+#define GT_SYMBOL_WELL_NUMBER       "\xEE\xA2\xB0" /*59568, 0xE8B0*/
+#endif
+
+#if !defined GT_SYMBOL_LOWER_CASE
+#define GT_SYMBOL_LOWER_CASE         "\xEE\x98\xB7" /*59568, 0xE637*/
+#endif
+
+#if !defined GT_SYMBOL_UPPER_CASE
+#define GT_SYMBOL_UPPER_CASE         "\xEE\x98\xB8" /*59568, 0xE638*/
+#endif
+
+#if !defined GT_SYMBOL_VOICE_PLAY
+#define GT_SYMBOL_VOICE_PLAY          (3)
+#define GT_SYMBOL_VOICE_PLAY_LEFT_1   "\xEE\x9C\x80" /* 0xE700 */
+#define GT_SYMBOL_VOICE_PLAY_LEFT_2   "\xEE\x9C\x81" /* 0xE701 */
+#define GT_SYMBOL_VOICE_PLAY_LEFT_3   "\xEE\x9C\x82" /* 0xE702 */
+#define GT_SYMBOL_VOICE_PLAY_RIGHT_1  "\xEE\x9C\x83" /* 0xE703 */
+#define GT_SYMBOL_VOICE_PLAY_RIGHT_2  "\xEE\x9C\x84" /* 0xE704 */
+#define GT_SYMBOL_VOICE_PLAY_RIGHT_3  "\xEE\x9C\x85" /* 0xE705 */
+#endif
+
+#endif // GT_CFG_USE_SYMBOL_ENABLE
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_symbol_s{
     char * utf8;

@@ -14,11 +14,13 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_QRCODE
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "gt_conf_widgets.h"
 
-#if GT_CFG_ENABLE_QRCODE == 1
 /* define ---------------------------------------------------------------*/
 
 /* typedef --------------------------------------------------------------*/
@@ -62,8 +64,8 @@ void gt_qrcode_set_str(gt_obj_st * qr_code , char* str);
 void gt_qrcode_set_background(gt_obj_st * qr_code , gt_color_t color);
 void gt_qrcode_set_forecolor(gt_obj_st * qr_code , gt_color_t color);
 
-#endif
-/* */
+
+#endif  /** GT_CFG_ENABLE_QRCODE */
 
 #ifdef __cplusplus
 } /*extern "C"*/

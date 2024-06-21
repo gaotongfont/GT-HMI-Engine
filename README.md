@@ -12,16 +12,28 @@
 
 ---
 
-
-
-<div align="center">
-    <img src="images/组合.gif">
+<div align="center"
+>
+    <img src="images/组合.gif"
+    >
 </div>
 
 <br/>
 
-<div align="center">  
-<a href="https://www.hmi.gaotongfont.cn/kfgj">公司官网</a> | <a href="https://space.bilibili.com/3493293474188211/video">B 站教程</a> | <a href="https://www.gaotongfont.cn:8087/video/dl?mv=GT-HMI%20Engine%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8CV1.8-20231103183143.pdf">Engine 使用手册</a> | <a href="https://www.gaotongfont.cn:8087/video/dl?mv=GT-HMI%20Designer%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8CV1.10-20231103183232.pdf">Designer 使用手册</a> | <a href="http://isite.baidu.com/site/wjz7qkrv/406a2b0c-f9c7-4a08-a47a-662e862b2af4?ch=48&wid=498ccd5c05334f21a2142ba3cf628964_0_0&field=&orderBy=&categoryId=undefined&title=%E8%81%94%E7%B3%BB%E6%88%91%E4%BB%AC">联系方式</a> | <a href="https://qun.qq.com/qqweb/qunpro/share?_wv=3&_wwv=128&appChannel=share&inviteCode=20igkt2UZnY&businessType=9&from=181074&biz=ka&mainSourceId=share&subSourceId=others&jumpsource=shorturl#/pc">QQ频道</a>
+<div align="center"
+>
+    <a href="https://www.hmi.gaotongfont.cn/kfgj"
+    > 公司官网 </a> |
+    <a href="https://space.bilibili.com/3493293474188211/video"
+    > B 站教程 </a> |
+    <a href="https://www.hmi.gaotongfont.cn/kfgj#/#hmiEngine"
+    > Engine 使用手册 </a> |
+    <a href="https://www.hmi.gaotongfont.cn/kfgj#/#hmidesigner"
+    > Designer 使用手册 </a> |
+    <a href="http://isite.baidu.com/site/wjz7qkrv/406a2b0c-f9c7-4a08-a47a-662e862b2af4?ch=48&wid=498ccd5c05334f21a2142ba3cf628964_0_0&field=&orderBy=&categoryId=undefined&title=%E8%81%94%E7%B3%BB%E6%88%91%E4%BB%AC"
+    > 联系方式 </a> |
+    <a href="https://qun.qq.com/qqweb/qunpro/share?_wv=3&_wwv=128&appChannel=share&inviteCode=20igkt2UZnY&businessType=9&from=181074&biz=ka&mainSourceId=share&subSourceId=others&jumpsource=shorturl#/pc"
+    > QQ频道 </a>
 </div>
 
 <br/>
@@ -35,6 +47,7 @@
         GT-HMI（Human Machine Interface） 国产开源 GUI 框架及永久免费设计软件。它提供创建具有易于使用的图形元素，精美的视觉效果和低内存占用的嵌入式 GUI 所需的一切。针对国内市场及用户需求，使用习惯进行了优化设计，为国内工程师量身打造！
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;产品由中国高通 GENITOP 倾心打造，继承了中国高通 30 年的汉显技术及汉字技术积累。产品分为上位机 GT-HMI Designer 和下位机 GT-HMI Engine。
+
 
 <br/>
 
@@ -134,7 +147,7 @@
  </tr>
  <tr>
   <td>|-|-gt_conf_widgets.h&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-  <td>控件开关宏 </td>
+  <td>控件开关宏&nbsp;</td>
  </tr>
 </table>
 
@@ -157,7 +170,7 @@
 <pre><code style="color:black;">
 #include "gt_ui.h"
 
-// screen_home 
+// screen_home
 gt_obj_st * screen_home = NULL;
 static gt_obj_st * lab1 = NULL;
 static gt_obj_st * rect1 = NULL;
@@ -211,7 +224,7 @@ void gt_init_screen_home(void)
 {
     screen_home = gt_obj_create(NULL);
     gt_screen_set_bgcolor(screen_home, gt_color_hex(0xFFFFFF));
-    // lab1 
+    // lab1
     lab1 = gt_label_create(screen_home);
     gt_obj_set_pos(lab1, 295, 16);
     gt_obj_set_size(lab1, 118, 40);
@@ -220,7 +233,7 @@ void gt_init_screen_home(void)
     gt_label_set_font_family_cn(lab1, 16);
     gt_label_set_font_align(lab1, GT_ALIGN_LEFT);
     gt_label_set_text(lab1, "语言设置");
-    // rect1 
+    // rect1
     rect1 = gt_rect_create(screen_home);
     gt_obj_set_pos(rect1, 8, 55);
     gt_obj_set_size(rect1, 660, 1);
@@ -229,7 +242,7 @@ void gt_init_screen_home(void)
     gt_rect_set_color_border(rect1, gt_color_hex(0xdbdbdb));
     gt_rect_set_fill(rect1, 1);
     gt_rect_set_border(rect1, 0);
-    // btn1 
+    // btn1
     btn1 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn1, 29, 76);
     gt_obj_set_size(btn1, 160, 43);
@@ -246,7 +259,7 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn1, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn1, 8);
     gt_obj_add_event_cb(btn1, btn1_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // btn2 
+    // btn2
     btn2 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn2, 264, 76);
     gt_obj_set_size(btn2, 160, 43);
@@ -263,7 +276,7 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn2, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn2, 8);
     gt_obj_add_event_cb(btn2, btn2_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // btn3 
+    // btn3
     btn3 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn3, 489, 76);
     gt_obj_set_size(btn3, 160, 41);
@@ -280,7 +293,7 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn3, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn3, 8);
     gt_obj_add_event_cb(btn3, btn3_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // btn4 
+    // btn4
     btn4 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn4, 29, 158);
     gt_obj_set_size(btn4, 160, 43);
@@ -294,7 +307,9 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn4, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn4, 8);
     gt_obj_add_event_cb(btn4, btn4_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // btn5 
+
+
+    // btn5
     btn5 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn5, 263, 158);
     gt_obj_set_size(btn5, 160, 43);
@@ -308,7 +323,9 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn5, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn5, 8);
     gt_obj_add_event_cb(btn5, btn5_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // btn7 
+
+
+    // btn7
     btn7 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn7, 30, 238);
     gt_obj_set_size(btn7, 160, 43);
@@ -322,7 +339,9 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn7, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn7, 8);
     gt_obj_add_event_cb(btn7, btn7_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // btn8 
+
+
+    // btn8
     btn8 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn8, 263, 238);
     gt_obj_set_size(btn8, 160, 43);
@@ -336,7 +355,9 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn8, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn8, 8);
     gt_obj_add_event_cb(btn8, btn8_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // btn9 
+
+
+    // btn9
     btn9 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn9, 490, 238);
     gt_obj_set_size(btn9, 160, 43);
@@ -350,7 +371,9 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn9, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn9, 8);
     gt_obj_add_event_cb(btn9, btn9_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // btn10 
+
+
+    // btn10
     btn10 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn10, 489, 158);
     gt_obj_set_size(btn10, 160, 43);
@@ -444,7 +467,7 @@ void gt_init_screen_home(void)
 {
     screen_home = gt_obj_create(NULL);
     gt_screen_set_bgcolor(screen_home, gt_color_hex(0xFFFFFF));
-    // lab1 
+    // lab1
     lab1 = gt_label_create(screen_home);
     gt_obj_set_pos(lab1, 207, 10);
     gt_obj_set_size(lab1, 309, 40);
@@ -456,7 +479,7 @@ void gt_init_screen_home(void)
     gt_label_set_font_thick_cn(lab1, 30);
     gt_label_set_font_gray(lab1, 4);
     gt_label_set_text(lab1, "矢量字库，灰度与多字形");
-    // rect1 
+    // rect1
     rect1 = gt_rect_create(screen_home);
     gt_obj_set_pos(rect1, 8, 55);
     gt_obj_set_size(rect1, 660, 1);
@@ -465,7 +488,7 @@ void gt_init_screen_home(void)
     gt_rect_set_color_border(rect1, gt_color_hex(0xdbdbdb));
     gt_rect_set_fill(rect1, 1);
     gt_rect_set_border(rect1, 0);
-    // btn1 
+    // btn1
     btn1 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn1, 33, 78);
     gt_obj_set_size(btn1, 160, 43);
@@ -482,7 +505,7 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn1, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn1, 8);
     gt_obj_add_event_cb(btn1, btn1_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // btn2 
+    // btn2
     btn2 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn2, 266, 76);
     gt_obj_set_size(btn2, 160, 43);
@@ -499,7 +522,7 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn2, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn2, 8);
     gt_obj_add_event_cb(btn2, btn2_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // btn3 
+    // btn3
     btn3 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn3, 493, 76);
     gt_obj_set_size(btn3, 160, 41);
@@ -516,7 +539,7 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn3, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn3, 8);
     gt_obj_add_event_cb(btn3, btn3_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // btn4 
+    // btn4
     btn4 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn4, 33, 160);
     gt_obj_set_size(btn4, 160, 43);
@@ -533,7 +556,9 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn4, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn4, 8);
     gt_obj_add_event_cb(btn4, btn4_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // btn5 
+
+
+    // btn5
     btn5 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn5, 265, 160);
     gt_obj_set_size(btn5, 160, 43);
@@ -550,7 +575,9 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn5, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn5, 8);
     gt_obj_add_event_cb(btn5, btn5_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // btn7 
+
+
+    // btn7
     btn7 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn7, 32, 240);
     gt_obj_set_size(btn7, 160, 43);
@@ -567,7 +594,9 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn7, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn7, 8);
     gt_obj_add_event_cb(btn7, btn7_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // btn8 
+
+
+    // btn8
     btn8 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn8, 267, 240);
     gt_obj_set_size(btn8, 160, 43);
@@ -584,7 +613,9 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn8, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn8, 8);
     gt_obj_add_event_cb(btn8, btn8_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // btn9 
+
+
+    // btn9
     btn9 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn9, 494, 240);
     gt_obj_set_size(btn9, 160, 43);
@@ -601,7 +632,9 @@ void gt_init_screen_home(void)
     gt_btn_set_color_background(btn9, gt_color_hex(0xddeeff));
     gt_btn_set_radius(btn9, 8);
     gt_obj_add_event_cb(btn9, btn9_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // btn10 
+
+
+    // btn10
     btn10 = gt_btn_create(screen_home);
     gt_obj_set_pos(btn10, 495, 160);
     gt_obj_set_size(btn10, 160, 43);
@@ -644,7 +677,7 @@ void gt_init_screen_home(void)
 <pre><code style="color:black;">
 #include "gt_ui.h"
 
-// screen_home 
+// screen_home
 gt_obj_st * screen_home = NULL;
 static gt_obj_st * lab1 = NULL;
 static gt_obj_st * img1 = NULL;
@@ -664,7 +697,7 @@ void gt_init_screen_home(void)
 {
     screen_home = gt_obj_create(NULL);
     gt_screen_set_bgcolor(screen_home, gt_color_hex(0xFFFFFF));
-    // lab1 
+    // lab1
     lab1 = gt_label_create(screen_home);
     gt_obj_set_pos(lab1, 223, 71);
     gt_obj_set_size(lab1, 96, 51);
@@ -673,12 +706,12 @@ void gt_init_screen_home(void)
     gt_label_set_font_family_cn(lab1, 19);
     gt_label_set_font_align(lab1, GT_ALIGN_LEFT);
     gt_label_set_text(lab1, "风速");
-    // img1 
+    // img1
     img1 = gt_img_create(screen_home);
     gt_obj_set_pos(img1, 157, 75);
     gt_obj_set_size(img1, 42, 40);
     gt_img_set_src(img1, "f:img_42x40_9.png");
-    // player1 
+    // player1
     player1 = gt_player_create(screen_home);
     gt_obj_set_pos(player1, 153, 136);
     gt_obj_set_size(player1, 161, 66);
@@ -689,13 +722,13 @@ void gt_init_screen_home(void)
     gt_player_add_item(player1, "f:img_161x66_8.png", sizeof("f:img_161x66_8.png"));
     gt_player_set_type(player1, GT_PLAYER_TYPE_IMG);
     gt_player_set_mode(player1, GT_PLAYER_MODE_LOOP);
-    /  svg1 
+    /  svg1
     svg1 = gt_img_create(screen_home);
     gt_obj_set_pos(svg1, 76, 149);
     gt_obj_set_size(svg1, 48, 48);
     gt_img_set_src(svg1, "f:img_48x48_minus_0_3.png");
     gt_obj_add_event_cb(svg1, svg1_0_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
-    // svg2 
+    // svg2
     svg2 = gt_img_create(screen_home);
     gt_obj_set_pos(svg2, 341, 148);
     gt_obj_set_size(svg2, 48, 48);
@@ -725,7 +758,7 @@ void gt_init_screen_home(void)
 <pre><code style="color:black;">
 #include "gt_ui.h"
 
-// screen_home 
+// screen_home
 gt_obj_st * screen_home = NULL;
 static gt_obj_st * input1 = NULL;
 static gt_obj_st * keyboard1 = NULL;
@@ -734,7 +767,7 @@ void gt_init_screen_home(void)
 {
     screen_home = gt_obj_create(NULL);
     gt_screen_set_bgcolor(screen_home, gt_color_hex(0xFFFFFF));
-    // input1 
+    // input1
     input1 = gt_input_create(screen_home);
     gt_obj_set_pos(input1, 117, 38);
     gt_obj_set_size(input1, 249, 84);
@@ -745,16 +778,14 @@ void gt_init_screen_home(void)
     gt_input_set_font_align(input1, GT_ALIGN_LEFT);
     gt_input_set_placeholder(input1, "placeholder");
     gt_input_set_bg_color(input1, gt_color_hex(0xffffff));
-    // keyboard1 
+    // keyboard1
     keyboard1 = gt_keypad_create(screen_home);
     gt_obj_set_pos(keyboard1, 89, 138);
     gt_obj_set_size(keyboard1, 309, 170);
     gt_keypad_set_font_color(keyboard1, gt_color_hex(0xffffff));
     gt_keypad_set_font_size(keyboard1, 16);
     gt_keypad_set_font_align(keyboard1, GT_ALIGN_CENTER_MID);
-    gt_keypad_set_color_board(keyboard1, gt_color_hex(0x242424));
-    gt_keypad_set_color_key(keyboard1, gt_color_hex(0x646464));
-    gt_keypad_set_color_ctrl_key(keyboard1, gt_color_hex(0x3E3E3E));
+    gt_keypad_set_color_background(keyboard1, gt_color_hex(0x242424));
     gt_keypad_set_target(keyboard1, input1);
     gt_disp_load_scr_anim(screen_home, GT_SCR_ANIM_TYPE_NONE, 500, 0, true);
 
@@ -807,7 +838,7 @@ void gt_init_screen_home(void)
 
 <br/>
 
-**Desinger功能特点** 
+**Desinger功能特点**
 
         GT HMI Designer是一款功能强大的嵌入式人机界面设计软件。它提供直观的可视化设计界面，支持多种常用控件和丰富的交互功能。此外，它还支持多国语言界面设计和强大的仿真功能。通过GT HMI Designer，您可以轻松设计出美观、交互性强的界面，满足各种应用场景的需求。
 
@@ -837,3 +868,5 @@ void gt_init_screen_home(void)
 </ul>
 
 <br/>
+
+

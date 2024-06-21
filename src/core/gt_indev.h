@@ -38,6 +38,12 @@ extern "C" {
  * @return uint32_t
  */
 uint32_t gt_indev_get_key(void);
+
+/**
+ * @brief Get physical point value
+ *
+ * @return gt_point_st
+ */
 gt_point_st gt_indev_get_point(void);
 
 /**
@@ -83,6 +89,8 @@ void gt_indev_set_disabled(bool disabled);
  * @return false
  */
 bool gt_indev_is_disabled(void);
+
+bool _gt_indev_remove_want_delate_target(gt_obj_st * target);
 
 #ifdef __cplusplus
 } /*extern "C"*/

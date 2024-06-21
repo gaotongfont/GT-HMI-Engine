@@ -272,6 +272,15 @@ enum {
 #define GT_COLOR_MIX_ROUND_OFS (GT_COLOR_DEPTH == 32 ? 0: 128)
 
 /* typedef --------------------------------------------------------------*/
+
+#if GT_COLOR_DEPTH == 1 || GT_COLOR_DEPTH == 8
+typedef uint8_t gt_color_val_t;
+#elif GT_COLOR_DEPTH == 16
+typedef uint16_t gt_color_val_t;
+#elif GT_COLOR_DEPTH == 32
+typedef uint32_t gt_color_val_t;
+#endif
+
 typedef union {
     uint8_t full; /*must be declared first to set all bits of byte via initializer list*/
     union {
@@ -325,18 +334,38 @@ typedef uint8_t gt_opa_t;
 /* macros ---------------------------------------------------------------*/
 
 /* static functions / API inteface-------------------------------------- */
-static inline gt_color_t gt_color_make(uint8_t r, uint8_t g, uint8_t b)
-{
+static inline gt_color_t gt_color_make(uint8_t r, uint8_t g, uint8_t b) {
     return (gt_color_t)GT_COLOR_MAKE(r, g, b);
 }
 
-static inline gt_color_t gt_color_hex(uint32_t c)
-{
+/**
+ * @brief
+ *
+ * @param c Must be 24bit RGB888
+ * @return gt_color_t
+ */
+static inline gt_color_t gt_color_hex(uint32_t c) {
     return gt_color_make((uint8_t)((c >> 16) & 0xFF), (uint8_t)((c >> 8) & 0xFF), (uint8_t)(c & 0xFF));
 }
 
-static inline uint32_t gt_color_to32(gt_color_t color)
-{
+/**
+ * @brief
+ *
+ * @param hex_val According to the GT_COLOR_DEPTH width
+ * @return gt_color_t
+ */
+static inline gt_color_t gt_color_set(gt_color_val_t hex_val) {
+    gt_color_t ret = {
+#if GT_COLOR_16_SWAP == 0
+        .full = hex_val,
+#else
+        .full = ((hex_val & 0xff) << 8) | (hex_val >> 8),
+#endif
+    };
+    return ret;
+}
+
+static inline uint32_t gt_color_to32(gt_color_t color) {
 #if GT_COLOR_DEPTH == 1
     if(color.full == 0)
         return 0xFF000000;
@@ -426,15 +455,7 @@ static inline gt_color_t gt_color_mix(gt_color_t c1, gt_color_t c2, uint8_t mix)
 {
     gt_color_t ret;
 
-#if GT_COLOR_DEPTH == 16 && GT_COLOR_16_SWAP == 1
-    /*Source: https://stackoverflow.com/a/50012418/1999969*/
-    mix = (mix + 4) >> 3;
-    uint32_t bg = (uint32_t)((uint32_t)c2.full | ((uint32_t)c2.full << 16)) &
-                  0x7E0F81F; /*0b00000111111000001111100000011111*/
-    uint32_t fg = (uint32_t)((uint32_t)c1.full | ((uint32_t)c1.full << 16)) & 0x7E0F81F;
-    uint32_t result = ((((fg - bg) * mix) >> 5) + bg) & 0x7E0F81F;
-    ret.full = (uint16_t)((result >> 16) | result);
-#elif GT_COLOR_DEPTH != 1
+#if GT_COLOR_DEPTH != 1
     /*GT_COLOR_DEPTH == 8, 16 or 32*/
     GT_COLOR_SET_R(ret, GT_UDIV255((uint16_t)GT_COLOR_GET_R(c1) * mix + GT_COLOR_GET_R(c2) *
                                    (255 - mix) + GT_COLOR_MIX_ROUND_OFS));
@@ -514,25 +535,13 @@ static inline void gt_color_mix_with_alpha(gt_color_t bg_color, gt_opa_t bg_opa,
 /* global functions / API interface -------------------------------------*/
 
 /**
- * @brief Copy from the area of the src to the area of the dst
- *
- * @param dst gt_color_t arr
- * @param area_dst dst's pos: area_dst.x, area_dst.y, dst's size: area_dst.w,area_dst.h
- * @param src gt_color_t arr
- * @param area_src src's pos: area_src.x, area_src.y, src's size: area_src.w,area_src.h
- * @param w copy width from src
- * @param h copy height from src
- */
-void gt_color_area_copy(gt_color_t *dst, gt_area_st area_dst, gt_color_t * src, gt_area_st area_src, gt_size_t w, gt_size_t h);
-
-/**
  * @brief fill the color into the buffer
  *
  * @param color_arr which buffer save color.
  * @param len The buffer data size.
  * @param color Which color value
  */
-void gt_color_fill(gt_color_t * color_arr, int len, gt_color_t color);
+void gt_color_fill(gt_color_t * color_arr, uint32_t len, gt_color_t color);
 
 gt_color_t gt_color_focus(void);
 void gt_color_focus_set(uint32_t col);

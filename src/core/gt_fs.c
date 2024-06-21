@@ -36,12 +36,17 @@ typedef struct _gt_fs_dsc_s {
  * @brief default drive label
  */
 static const _gt_vf_type_label_st _drive_label[] = {
-    { GT_FS_TYPE_SD,    GT_FS_LABEL_SD    },
-    { GT_FS_TYPE_ARRAY, GT_FS_LABEL_ARRAY },
+#if GT_USE_MODE_FLASH
     { GT_FS_TYPE_FLASH, GT_FS_LABEL_FLASH },
+#endif
+#if GT_USE_MODE_SD
+    { GT_FS_TYPE_SD,    GT_FS_LABEL_SD    },
+#endif
+#if GT_USE_MODE_SRC
+    { GT_FS_TYPE_ARRAY, GT_FS_LABEL_ARRAY },
+#endif
 };
 
-static uint8_t file_occupied_count = 0;
 
 /* macros ---------------------------------------------------------------*/
 
@@ -55,8 +60,7 @@ static uint8_t file_occupied_count = 0;
  * @param index
  * @return gt_fs_type_et
  */
-static inline gt_fs_type_et _gt_fs_get_type(gt_size_t index)
-{
+static inline gt_fs_type_et _gt_fs_get_type(gt_size_t index) {
     return _drive_label[index].type;
 }
 
@@ -66,27 +70,29 @@ static inline gt_fs_type_et _gt_fs_get_type(gt_size_t index)
  * @param index
  * @return gt_fs_label_et
  */
-static inline gt_fs_label_et _gt_fs_get_label(gt_size_t index)
-{
+static inline gt_fs_label_et _gt_fs_get_label(gt_size_t index) {
     return _drive_label[index].label;
 }
 
-static inline void _gt_fs_file_occupied_increase(void)
-{
-    ++file_occupied_count;
-}
-
-static inline void _gt_fs_file_occupied_decrease(void)
-{
-    if (!file_occupied_count) {
-        return ;
+static inline gt_fs_drv_st * _get_default_drv_by(gt_fs_type_et type) {
+#if GT_USE_MODE_FLASH
+    if (GT_FS_TYPE_FLASH == type) {
+        return gt_vf_get_drv();
     }
-    --file_occupied_count;
-}
+#endif
 
-static inline uint8_t _gt_fs_get_file_occupied_count(void)
-{
-    return file_occupied_count;
+#if GT_USE_MODE_SD
+    if (GT_FS_TYPE_SD == type) {
+        return NULL;
+    }
+#endif
+
+#if GT_USE_MODE_SRC
+    if (GT_FS_TYPE_ARRAY == type) {
+        return gt_src_get_drv();
+    }
+#endif
+    return NULL;
 }
 
 /**
@@ -96,28 +102,10 @@ static inline uint8_t _gt_fs_get_file_occupied_count(void)
  * @param path full path
  * @return gt_fs_drv_st* the driver of file system
  */
-static gt_fs_drv_st * gt_fs_get_default_drv(char const * path)
-{
+static inline gt_fs_drv_st * _get_default_drv(char const * path) {
     gt_fs_type_et type = gt_fs_get_src_type(path);
-    gt_fs_drv_st * drv = NULL;
 
-    switch (type)
-    {
-    case GT_FS_TYPE_ARRAY: {
-       drv = gt_src_get_drv();
-        break;
-    }
-    case GT_FS_TYPE_FLASH: {
-        drv = gt_vf_get_drv();
-        break;
-    }
-    case GT_FS_TYPE_SD: {
-        break;
-    }
-    default:
-        break;
-    }
-    return drv;
+    return _get_default_drv_by(type);
 }
 
 
@@ -149,28 +137,38 @@ gt_fs_type_et gt_fs_get_src_type(const void * src)
             break;
         }
     }
-
     return ret;
 }
 
 gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode)
 {
-    gt_fs_drv_st * drv = gt_fs_get_default_drv(path);
+    gt_fs_drv_st * drv = _get_default_drv(path);
 
-    if (!drv) {
+    if (!drv || !drv->open_cb) {
         return NULL;
     }
     gt_fs_fp_st * fp = drv->open_cb(drv, (char *)path, mode);
 
-    _gt_fs_file_occupied_increase();
+    return fp;
+}
+
+#if GT_USE_FILE_HEADER
+gt_fs_fp_st * gt_fs_fh_open(gt_file_header_param_st const * const fh_param, gt_fs_mode_et mode)
+{
+    gt_fs_drv_st * drv = gt_vf_get_drv();
+    if (!drv || !drv->fh_open_cb) {
+        return NULL;
+    }
+    gt_fs_fp_st * fp = drv->fh_open_cb(drv, fh_param, mode);
 
     return fp;
 }
+#endif
 
 gt_fs_res_et gt_fs_read(gt_fs_fp_st * fp, uint8_t * out, uint32_t size, uint32_t * ret_len)
 {
     gt_fs_drv_st * drv = fp->drv;
-    if (!fp) {
+    if (!fp || !drv->read_cb) {
         return GT_FS_RES_FAIL;
     }
 
@@ -180,7 +178,7 @@ gt_fs_res_et gt_fs_read(gt_fs_fp_st * fp, uint8_t * out, uint32_t size, uint32_t
 gt_fs_res_et gt_fs_seek(gt_fs_fp_st * fp, uint32_t offset, gt_fs_whence_et whence)
 {
     gt_fs_drv_st * drv = fp->drv;
-    if (!fp) {
+    if (!fp || !drv->seek_cb) {
         return GT_FS_RES_FAIL;
     }
 
@@ -190,7 +188,7 @@ gt_fs_res_et gt_fs_seek(gt_fs_fp_st * fp, uint32_t offset, gt_fs_whence_et whenc
 gt_fs_res_et gt_fs_tell(gt_fs_fp_st * fp, uint32_t * pos)
 {
     gt_fs_drv_st * drv = fp->drv;
-    if (!fp) {
+    if (!fp || !drv->tell_cb) {
         return GT_FS_RES_FAIL;
     }
 
@@ -200,7 +198,7 @@ gt_fs_res_et gt_fs_tell(gt_fs_fp_st * fp, uint32_t * pos)
 gt_fs_res_et gt_fs_write(gt_fs_fp_st * fp, uint8_t * buffer, uint32_t len, uint32_t * ret_len)
 {
     gt_fs_drv_st * drv = fp->drv;
-    if (!fp) {
+    if (!fp || !drv->write_cb) {
         return GT_FS_RES_FAIL;
     }
 
@@ -215,7 +213,7 @@ gt_fs_res_et gt_fs_read_img_offset(gt_fs_fp_st * fp, uint8_t * res, uint32_t off
     }
     uint32_t ret_len = 0;
 
-    if (fp == NULL) {
+    if (!fp || !drv->seek_cb || !drv->read_cb) {
         return GT_FS_RES_FAIL;
     }
     drv->seek_cb(drv, fp, offset, GT_FS_SEEK_SET);
@@ -230,7 +228,6 @@ gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h)
         return GT_FS_RES_FAIL;
     }
     gt_fs_fp_st * fp = gt_fs_open(path, GT_FS_MODE_RD);
-
     if (!fp) {
         return GT_FS_RES_FAIL;
     }
@@ -242,6 +239,29 @@ gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h)
     return GT_FS_RES_OK;
 }
 
+#if GT_USE_FILE_HEADER
+gt_fs_res_et gt_fs_fh_read_img_wh(gt_file_header_param_st * fh, uint16_t * w, uint16_t * h)
+{
+    if (NULL == fh) {
+        return GT_FS_RES_FAIL;
+    }
+    if (fh->idx < 0) {
+        return GT_FS_RES_FAIL;
+    }
+    gt_fs_fp_st * fp = gt_fs_fh_open(fh, GT_FS_MODE_RD);
+    if (NULL == fp) {
+        return GT_FS_RES_FAIL;
+    }
+
+    *w = fp->msg.pic.w;
+    *h = fp->msg.pic.h;
+
+    gt_fs_close(fp);
+
+    return GT_FS_RES_OK;
+}
+#endif
+
 void gt_fs_close(gt_fs_fp_st * fp)
 {
     if (NULL == fp) {
@@ -252,5 +272,19 @@ void gt_fs_close(gt_fs_fp_st * fp)
     }
     fp = NULL;
 }
+
+#if GT_USE_FS_NAME_BY_INDEX
+char const * const gt_fs_get_name_by_index(gt_fs_type_et file_type, uint16_t index_of_list)
+{
+    gt_fs_drv_st * drv = _get_default_drv_by(file_type);
+    if (NULL == drv) {
+        return NULL;
+    }
+    if (NULL == drv->get_name_by_cb) {
+        return NULL;
+    }
+    return drv->get_name_by_cb(index_of_list);
+}
+#endif
 
 /* end ------------------------------------------------------------------*/

@@ -9,13 +9,14 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_btn.h"
+
+#if GT_CFG_ENABLE_BTN
 #include "../core/gt_mem.h"
 #include "../hal/gt_hal_disp.h"
 #include "../others/gt_log.h"
 #include "string.h"
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
-#include "../font/gt_font.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
@@ -31,26 +32,24 @@ typedef struct _gt_btn_reg_s {
     uint8_t reserved: 7;
 }_gt_btn_reg_st;
 
-typedef struct _gt_btn_s
-{
+typedef struct _gt_btn_s {
+    gt_obj_st obj;
     char * text;
     _gt_vector_st * contents;
 
-    gt_color_t color_background;
     gt_color_t color_pressed;
     gt_color_t font_color;
+    gt_color_t font_color_pressed;
     gt_color_t color_border;
-    gt_size_t  radius;
-    gt_size_t border_width;
 
     gt_font_info_st font_info;
 
-    _gt_btn_reg_st reg;
-    uint8_t     fill;
-    uint8_t     font_align;
-    uint8_t     space_x;
-    uint8_t     space_y;
+    uint8_t border_width;
 
+    _gt_btn_reg_st reg;
+    uint8_t font_align;     //@ref gt_align_et
+    uint8_t space_x;
+    uint8_t space_y;
 }_gt_btn_st;
 
 
@@ -75,8 +74,8 @@ const gt_obj_class_st gt_btn_class = {
 /* static functions -----------------------------------------------------*/
 
 static inline void _gt_btn_init_widget(gt_obj_st * btn) {
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
-    gt_size_t radius;               //widget attr
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+    gt_radius_t radius;
 
     gt_color_t fg_color;
     gt_font_st font = {
@@ -89,21 +88,20 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
 
-    font.info.encoding = gt_project_encoding_get();
     // set default size
-    if( btn->area.w == 0 || btn->area.h == 0){
+    if (btn->area.w == 0 || btn->area.h == 0) {
         btn->area.w = style->font_info.size*strlen(style->text) + 32;
         btn->area.h = style->font_info.size+16;
     }
-    if( style->radius == 0 ){
+    if (btn->radius == 0) {
         radius = btn->area.h >> 2;
-    }else{
-        radius = style->radius;
+    } else {
+        radius = btn->radius;
     }
-    if( gt_obj_get_state(btn) != GT_STATE_NONE ){
+    if (gt_obj_get_state(btn) != GT_STATE_NONE) {
         fg_color = style->color_pressed;
-    }else{
-        fg_color = style->color_background;
+    } else {
+        fg_color = btn->bgcolor;
     }
 
     /* base shape */
@@ -117,7 +115,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     rect_attr.bg_color      = fg_color;
     rect_attr.border_color  = style->color_border;
 
-    gt_area_st area = gt_area_reduce(btn->area, REDUCE_DEFAULT);
+    gt_area_st area = gt_area_reduce(btn->area, gt_obj_get_reduce(btn));
     // 1:base shape
     draw_bg(btn->draw_ctx, &rect_attr, &area);
 
@@ -129,23 +127,18 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
         .font_color     = style->font_color,
         .align          = style->font_align,
         .opa            = btn->opa,
+        .logical_area   = area,
     };
-    if (gt_obj_get_state(btn)) {
-        gt_color_t mask_color = gt_color_dark_gray();
-        gt_opa_t mask_opa = 0x40;
 
-        if (gt_color_brightness(style->font_color) < 128) {
-            mask_color = gt_color_bright_gray();
-            mask_opa   = 0xC0;
-        }
-        font_attr.font_color = gt_color_mix(style->font_color, mask_color, mask_opa);
+    if( gt_obj_get_state(btn) != GT_STATE_NONE ){
+        font_attr.font_color = style->font_color_pressed;
+    }else{
+        font_attr.font_color = style->font_color;
     }
     draw_text(btn->draw_ctx, &font_attr, &area);
 
     // focus
     draw_focus(btn , radius);
-
-    return;
 }
 
 /**
@@ -175,27 +168,21 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
-    _gt_btn_st ** style_p = (_gt_btn_st ** )&obj->style;
-    if (NULL == *style_p) {
-        return ;
+    _gt_btn_st * style_p = (_gt_btn_st * )obj;
+
+    if (NULL != style_p->contents) {
+        _free_contents(&style_p->contents);
+        style_p->contents = NULL;
     }
 
-    if (NULL != (*style_p)->contents) {
-        _free_contents(&(*style_p)->contents);
-        (*style_p)->contents = NULL;
+    if (NULL != style_p->text) {
+        gt_mem_free(style_p->text);
+        style_p->text = NULL;
     }
-
-    if (NULL != (*style_p)->text) {
-        gt_mem_free((*style_p)->text);
-        (*style_p)->text = NULL;
-    }
-
-    gt_mem_free(*style_p);
-    *style_p = NULL;
 }
 
 static bool _turn_next_content(gt_obj_st * obj) {
-    _gt_btn_st * style = (_gt_btn_st * )obj->style;
+    _gt_btn_st * style = (_gt_btn_st * )obj;
     if (NULL == style->contents) {
         return false;
     }
@@ -209,7 +196,7 @@ static void _press_btn_handler(gt_obj_st * obj) {
         gt_obj_st * parent = obj->parent;
         /** reset group all btn state */
         for (uint16_t i = 0, cnt = parent->cnt_child; i < cnt; i++) {
-            if (GT_TYPE_BTN != gt_obj_class_get_type(parent->child[i])) {
+            if (OBJ_TYPE != gt_obj_class_get_type(parent->child[i])) {
                 continue;
             }
             if (GT_STATE_NONE == gt_obj_get_state(parent->child[i])) {
@@ -270,7 +257,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             _released_btn_handler(obj);
             break;
 
-        case GT_EVENT_TYPE_INPUT_PROCESS_LOST:
+        case GT_EVENT_TYPE_INPUT_PRESS_LOST:
             GT_LOGV(GT_LOG_TAG_GUI, "process lost");
             _lost_focus_btn_handler(obj);
             break;
@@ -308,27 +295,23 @@ static void _contents_init(_gt_btn_st * style) {
 gt_obj_st * gt_btn_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    _gt_btn_st * style = (_gt_btn_st * )obj->style;
-
-    gt_memset(style, 0, sizeof(_gt_btn_st));
+    if (NULL == obj) {
+        return obj;
+    }
+    obj->fixed = false;
+    obj->radius = 4;
+    _gt_btn_st * style = (_gt_btn_st * )obj;
 
     style->text = gt_mem_malloc(sizeof("btn"));
     strcpy(style->text, "btn");
-    style->radius           = 4;
     style->color_pressed    = gt_color_hex(0x0097e6);    //default color_selected
-    style->color_background = gt_color_hex(0x00a8ff);    //default color_unselected
+    obj->bgcolor            = gt_color_hex(0x00a8ff);    //default color_unselected
     style->color_border     = gt_color_hex(0x00a8ff);    //default color_border
     style->border_width     = 0;
     style->reg.fill         = 1;
     style->font_color       = gt_color_white();        //default color_font
-    style->font_info.style_cn    = GT_CFG_DEFAULT_FONT_FAMILY_CN;
-    style->font_info.style_en    = GT_CFG_DEFAULT_FONT_FAMILY_EN;
-    style->font_info.style_fl    = GT_CFG_DEFAULT_FONT_FAMILY_FL;
-    style->font_info.style_numb  = GT_CFG_DEFAULT_FONT_FAMILY_NUMB;
-    style->font_info.size        = GT_CFG_DEFAULT_FONT_SIZE;
-    style->font_info.gray        = 1;
-    style->font_info.thick_en         = 0;
-    style->font_info.thick_cn         = 0;
+    style->font_color_pressed    = gt_color_gray();        //default color_font
+    gt_font_info_init(&style->font_info);
     style->font_align = GT_ALIGN_CENTER_MID;
     style->space_x          = 0;
     style->space_y          = 0;
@@ -337,126 +320,182 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent)
 
 void gt_btn_set_color_pressed(gt_obj_st * btn, gt_color_t color)
 {
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     style->color_pressed = color;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_btn_set_color_background(gt_obj_st * btn, gt_color_t color)
 {
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
-    style->color_background = color;
+    gt_obj_set_bgcolor(btn, color);
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_btn_set_color_border(gt_obj_st *btn, gt_color_t color)
 {
-    _gt_btn_st * style = (_gt_btn_st *)btn->style;
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     style->color_border = color;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_btn_set_border_width(gt_obj_st * btn, uint8_t width)
 {
-    _gt_btn_st * style = (_gt_btn_st *)btn->style;
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     style->border_width = width;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...)
 {
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
     char buffer[8] = {0};
     va_list args;
     va_list args2;
+
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     va_start(args, fmt);
     va_copy(args2, args);
-
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
-    if( NULL != style->text ){
-        gt_mem_free(style->text);
-    }
     uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(buffer, sizeof(buffer), fmt, args) + 1);
+    va_end(args);
     if (!size) {
         goto free_lb;
     }
-    style->text = gt_mem_malloc(size);
+    if (NULL == style->text) {
+        style->text = gt_mem_malloc(size);
+    } else if (size != strlen(style->text) + 1) {
+        style->text = gt_mem_realloc(style->text, size);
+    }
+    if (NULL == style->text) {
+        goto free_lb;
+    }
+
+    va_start(args2, fmt);
     vsnprintf(style->text, size, fmt, args2);
+    va_end(args2);
+
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
+
+    return ;
 
 free_lb:
     va_end(args2);
-    va_end(args);
 }
 
-char * gt_btn_get_text(gt_obj_st * btn){
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+char * gt_btn_get_text(gt_obj_st * btn)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return NULL;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     return style->text;
 }
 
-void gt_btn_set_font_color(gt_obj_st * btn, gt_color_t color){
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+void gt_btn_set_font_color(gt_obj_st * btn, gt_color_t color)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_color = color;
+    gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_btn_set_font_color_pressed(gt_obj_st * btn, gt_color_t color)
+{
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+    style->font_color_pressed = color;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_btn_set_font_size(gt_obj_st * btn, uint8_t size)
 {
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_info.size = size;
 }
 
 void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray)
 {
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_info.gray = gray;
 }
 
-void gt_btn_set_font_align(gt_obj_st * btn, uint8_t align)
+void gt_btn_set_font_align(gt_obj_st * btn, gt_align_et align)
 {
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_align = align;
 }
 
 void gt_btn_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn)
 {
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_info.style_cn = font_family_cn;
 }
 
 void gt_btn_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en)
 {
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_info.style_en = font_family_en;
 }
 
 void gt_btn_set_font_family_fl(gt_obj_st * btn, gt_family_t font_family_fl)
 {
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_info.style_fl = font_family_fl;
 }
 
 void gt_btn_set_font_family_numb(gt_obj_st * btn, gt_family_t font_family_numb)
 {
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_info.style_numb = font_family_numb;
 }
 
-void gt_btn_set_radius(gt_obj_st * btn, uint8_t radius)
+void gt_btn_set_radius(gt_obj_st * btn, gt_radius_t radius)
 {
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
-    style->radius = radius;
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    btn->radius = radius;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 bool gt_btn_add_state_content(gt_obj_st * btn, const char * str)
 {
-    if (!btn) {
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
         return false;
     }
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
-    if (!style) {
-        return false;
-    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     if (!str || !strlen(str)) {
         return false;
     }
@@ -471,13 +510,10 @@ bool gt_btn_add_state_content(gt_obj_st * btn, const char * str)
 
 bool gt_btn_remove_state_content(gt_obj_st * btn, const char * str)
 {
-    if (!btn) {
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
         return false;
     }
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
-    if (!style) {
-        return false;
-    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     if (!str || !strlen(str)) {
         return false;
     }
@@ -486,55 +522,66 @@ bool gt_btn_remove_state_content(gt_obj_st * btn, const char * str)
 
 bool gt_btn_clear_all_state_content(gt_obj_st * obj)
 {
-    if (NULL == obj) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return false;
     }
-    _gt_btn_st * style = (_gt_btn_st * )obj->style;
-    if (NULL == style) {
-        return false;
-    }
+    _gt_btn_st * style = (_gt_btn_st * )obj;
     return _gt_vector_clear_all_items(style->contents);
 }
 
 int16_t gt_btn_get_state_content_index(gt_obj_st * obj)
 {
-    if (!obj) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return -1;
     }
-    _gt_btn_st * style = (_gt_btn_st * )obj->style;
-    if (NULL == style) {
-        return -1;
-    }
+    _gt_btn_st * style = (_gt_btn_st * )obj;
     return _gt_vector_get_index(style->contents);
 }
 
 void gt_btn_set_font_thick_en(gt_obj_st * btn, uint8_t thick)
 {
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_info.thick_en = thick;
 }
+
 void gt_btn_set_font_thick_cn(gt_obj_st * btn, uint8_t thick)
 {
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_info.thick_cn = thick;
+}
+
+void gt_btn_set_font_encoding(gt_obj_st * btn, gt_encoding_et encoding)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+    style->font_info.encoding = encoding;
 }
 
 void gt_btn_set_space(gt_obj_st * btn, uint8_t space_x, uint8_t space_y)
 {
-    _gt_btn_st * style = (_gt_btn_st * )btn->style;
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
     style->space_x = space_x;
     style->space_y = space_y;
 }
 
 void gt_btn_set_selected(gt_obj_st * obj)
 {
-    if (NULL == obj) {
-        return;
-    }
-    if (GT_TYPE_BTN != gt_obj_class_get_type(obj)) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;
     }
     _press_btn_handler(obj);
 }
 
+#endif  /** GT_CFG_ENABLE_BTN */
 /* end ------------------------------------------------------------------*/

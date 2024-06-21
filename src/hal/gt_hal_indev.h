@@ -36,7 +36,13 @@ extern "C" {
 
 #define GT_CFG_DEFAULT_POINT_SCROLL_LIMIT           10
 
-
+/** home gesture default time and pix */
+#define GT_CFG_DEFAULT_POINT_HOME_GESTURE_TIME              (500)   //ms
+#define GT_CFG_DEFAULT_POINT_HOME_GESTURE_PIXEL             (10)    //px
+#define GT_CFG_DEFAULT_AREA_HOME_GESTURE_TOP                (GT_CFG_DEFAULT_POINT_HOME_GESTURE_PIXEL)    //@ref GT_EVENT_TYPE_INPUT_HOME_GESTURE_TOP
+#define GT_CFG_DEFAULT_AREA_HOME_GESTURE_BOTTOM             (GT_CFG_DEFAULT_POINT_HOME_GESTURE_PIXEL)    //@ref GT_EVENT_TYPE_INPUT_HOME_GESTURE_BOTTOM
+#define GT_CFG_DEFAULT_AREA_HOME_GESTURE_LEFT               (GT_CFG_DEFAULT_POINT_HOME_GESTURE_PIXEL)    //@ref GT_EVENT_TYPE_INPUT_HOME_GESTURE_LEFT
+#define GT_CFG_DEFAULT_AREA_HOME_GESTURE_RIGHT              (GT_CFG_DEFAULT_POINT_HOME_GESTURE_PIXEL)    //@ref GT_EVENT_TYPE_INPUT_HOME_GESTURE_RIGHT
 
 /* typedef --------------------------------------------------------------*/
 
@@ -109,9 +115,6 @@ typedef struct _gt_indev_drv_s
 {
     gt_indev_type_et type;
     void (*read_cb)(struct _gt_indev_drv_s * indev_drv, gt_indev_data_st * data);
-#if GT_USE_USER_DATA
-    void * user_data;
-#endif
 
     gt_size_t limit_timers_long_press;          ///< long press timers
     gt_size_t limit_pixel_gesture_ver;          ///< move pixel trigger once event
@@ -138,13 +141,14 @@ typedef struct _gt_indev_proc_s
             gt_point_st newly;          ///< last point of touch input device
             gt_point_st last;           ///< used to judge gesture
 
-            gt_point_st scroll_diff;         ///< the distance between two coordinates
-            gt_point_st scroll_sum;          ///< the sum of distance
-            gt_point_st scroll_throw;       ///< used to judge scroll
+            gt_point_st scroll_diff;     ///< the distance between two coordinates
+            gt_point_st scroll_sum;      ///< the sum of distance
+            gt_point_st scroll_throw;    ///< used to judge scroll
 
-            struct gt_obj_s * obj_act;     ///< The object which is touching now
+            struct gt_obj_s * obj_act;       ///< The object which is touching now
             struct gt_obj_s * obj_target;    ///< The object of first touch
-            struct gt_obj_s * obj_scroll;  ///< The object of gesture
+            struct gt_obj_s * obj_origin;    //< The object of first touch
+            struct gt_obj_s * obj_scroll;    ///< The object of gesture
 
             uint16_t gesture : 3;          ///< @ref gt_dir_et gesture of touch input device point
             uint16_t count_point : 3;
@@ -174,13 +178,16 @@ typedef struct _gt_indev_s {
     gt_indev_proc_st proc;          ///< Save all input device data
 }gt_indev_st;
 
-typedef struct _gt_indev_param_s{
+typedef struct gt_indev_param_st {
     union
     {
         gt_point_st point;
         uint16_t button_id;
         uint32_t keypad_key;
     }param;
+
+    uint8_t disabled : 1;   /** When screen anim used, 0: default set, normal; 1: temporary disability */
+    uint8_t reserved : 7;
 }gt_indev_param_st;
 
 

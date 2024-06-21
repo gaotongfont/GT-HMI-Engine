@@ -35,19 +35,67 @@ extern "C" {
 #define REDUCE_DEFAULT     (2)
 
 /* typedef --------------------------------------------------------------*/
-typedef void * style_widget_t;
+/**
+ * @brief screen id
+ */
+typedef int16_t gt_scr_id_t;
 
 typedef int16_t gt_size_t;
 
-typedef uint8_t gt_family_t;
+/**
+ * @brief Font family type
+ */
+typedef uint16_t gt_family_t;
+
+/**
+ * @brief color opacity value
+ */
 typedef uint8_t gt_opt_t;
 
+/**
+ * @brief widget id
+ */
+typedef int16_t gt_id_t;
+
+/**
+ * @brief Screen stack size
+ */
+typedef int16_t gt_stack_size_t;
+
+/**
+ * @brief The header index type
+ */
+typedef int16_t gt_file_header_idx_t;
+
+/**
+ * @brief radius unit
+ */
+typedef uint16_t gt_radius_t;
+
+/**
+ * @brief The screen turn next screen animation type
+ */
+typedef enum gt_scr_anim_type_e {
+    GT_SCR_ANIM_TYPE_NONE = 0,
+    GT_SCR_ANIM_TYPE_MOVE_LEFT,     // Move the interface to the left
+    GT_SCR_ANIM_TYPE_MOVE_RIGHT,    // Move the interface to the right
+    GT_SCR_ANIM_TYPE_MOVE_UP,       // Move the interface to the up
+    GT_SCR_ANIM_TYPE_MOVE_DOWN,     // Move the interface to the down
+
+    GT_SCR_ANIM_TYPE_COVER_LEFT,    // Cover the interface from the left
+    GT_SCR_ANIM_TYPE_COVER_RIGHT,   // Cover the interface from the right
+    GT_SCR_ANIM_TYPE_COVER_UP,      // Cover the interface from the up
+    GT_SCR_ANIM_TYPE_COVER_DOWN,    // Cover the interface from the down
+
+    GT_SCR_ANIM_TYPE_TOTAL,
+}gt_scr_anim_type_et;
 
 /**
  * @brief widget type enum definition
  */
 typedef enum type_widget_e {
-    GT_TYPE_UNKNOWN     = -2,       ///< unknown type
+    GT_TYPE_UNKNOWN     = -3,       ///< unknown type
+    GT_TYPE_LAYER_TOP   = -2,       ///< [CORE USED] layer top, used to display floating widgets
     GT_TYPE_SCREEN      = -1,       ///< screen type
     GT_TYPE_OBJ         = 0,        ///< base obj type
     GT_TYPE_BTN         = 1,        ///< button type
@@ -78,6 +126,10 @@ typedef enum type_widget_e {
     GT_TYPE_LISTVIEW    = 26,       ///< listview
     GT_TYPE_TEMPLATE    = 27,       ///< template
     GT_TYPE_ROLLER      = 28,       ///< roller
+    GT_TYPE_BTNMAP      = 29,       ///< button map
+    GT_TYPE_DIALOG      = 30,       ///< dialog, floating widget
+    GT_TYPE_CHAT        = 31,       ///< chat
+    GT_TYPE_STATUS_BAR  = 32,       ///< status bar, floating widget
 
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;
