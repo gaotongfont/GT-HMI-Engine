@@ -82,10 +82,10 @@ typedef struct gt_listview_rect_s {
 typedef struct gt_listview_custom_item_s {
     char * src;
     uint16_t src_len;
-    uint16_t item_idx;
+    uint16_t item_idx;      /** The item index of listview widget */
     gt_area_st area;        /** The position relative item location */
     uint8_t type;           /** @ref gt_listview_element_type_st */
-    uint8_t element_idx;
+    uint8_t element_idx;    /** The element index of item object */
 #if GT_LISTVIEW_CUSTOM_FONT_STYLE
     /**
      * @brief Pointer NULL: use listview default font style;
