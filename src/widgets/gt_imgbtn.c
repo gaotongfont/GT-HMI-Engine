@@ -41,7 +41,6 @@ typedef struct _gt_imgbtn_s {
     _item_st src;
     _item_st press;     ///< imgbtn src when press, It can be a virt file name/path or an array of C
     _item_st release;   ///< imgbtn src when release
-    _item_st base;      ///< imgbtn src when nothing
 
     _gt_vector_st * imgs;
 
@@ -73,10 +72,10 @@ static void _gt_imgbtn_set_src(gt_obj_st * imgbtn, _item_st * src) {
     _gt_imgbtn_st * style = (_gt_imgbtn_st * )imgbtn;
 
     if (src == NULL) {
-        style->src.name = style->base.name;
-    }else{
-        style->src.name = src->name;
+        style->src.name = NULL;
+        return;
     }
+    style->src.name = src->name;
 }
 
 static char * _gt_imgbtn_get_src(gt_obj_st * obj) {
@@ -136,11 +135,6 @@ static void _deinit_cb(gt_obj_st * obj) {
         style_p->release.name = NULL;
     }
 
-    if (NULL != style_p->base.name) {
-        gt_mem_free(style_p->base.name);
-        style_p->base.name = NULL;
-    }
-
     style_p->src.name = NULL;
 }
 
@@ -194,7 +188,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             style->selected = 0;
             if (!_turn_next_image(obj)) {
-                _gt_imgbtn_set_src(obj, &style->base);
+                _gt_imgbtn_set_src(obj, _gt_vector_get_item(style->imgs, 0));
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
@@ -277,19 +271,24 @@ void gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src)
         return ;
     }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
-    if( NULL != style->base.name ){
-        gt_mem_free(style->base.name);
-        style->base.name = NULL;
-    }
     uint16_t len = src == NULL ? 0 : strlen(src);
+    imgs_init(style);
+    _item_st item = { 0 };
+    item.name = gt_mem_malloc(len + 1);
+    gt_memcpy(item.name, src, len);
+    item.name[len] = '\0';
 
-    style->base.name = gt_mem_malloc( len + 1 );
-    strcpy(style->base.name, src);
-    style->base.name[len] = 0;
 #if GT_USE_FILE_HEADER
-    gt_file_header_param_init(&style->base.fh);
+    gt_file_header_param_init(&item.fh);
 #endif
-    style->src = style->base;
+
+    if (false == _gt_vector_replace_item(&style->imgs, 0, &item, sizeof(_item_st))) {
+        gt_mem_free(item.name);
+        item.name = NULL;
+        return ;
+    }
+    _item_st * item_p = (_item_st *)_gt_vector_get_item(style->imgs, 0);
+    style->src = *item_p;
 
     gt_event_send(imgbtn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
@@ -349,10 +348,6 @@ bool gt_imgbtn_add_state_item(gt_obj_st * obj, char * src)
     }
 
     imgs_init(style);
-    /** set first item src */
-    if (_gt_vector_get_count(style->imgs) <= 0) {
-        _gt_vector_add_item(&style->imgs, (void *)&style->base, sizeof(_item_st));
-    }
     _item_st item = { 0 };
     item.name = gt_mem_malloc(len + 1);
     gt_memcpy(item.name, src, len);
@@ -394,12 +389,13 @@ void gt_imgbtn_set_src_by_file_header(gt_obj_st * imgbtn, gt_file_header_param_s
         return ;
     }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
-    if( NULL != style->base.name ){
-        gt_mem_free(style->base.name);
-        style->base.name = NULL;
+    _item_st item = { 0 };
+    item.fh = *fh;
+    if (false == _gt_vector_replace_item(&style->imgs, 0, &item, sizeof(_item_st))) {
+        return ;
     }
-    style->base.fh = *fh;
-    style->src = style->base;
+    _item_st * item_p = (_item_st *)_gt_vector_get_item(style->imgs, 0);
+    style->src = *item_p;
 
     gt_event_send(imgbtn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
@@ -453,10 +449,6 @@ bool gt_imgbtn_add_state_item_by_file_header(gt_obj_st * obj, gt_file_header_par
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
 
     imgs_init(style);
-    /** set first item src */
-    if (_gt_vector_get_count(style->imgs) <= 0) {
-        _gt_vector_add_item(&style->imgs, (void *)&style->base, sizeof(_item_st));
-    }
     _item_st item = { 0 };
     item.fh = *fh;
 

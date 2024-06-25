@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_vector.h"
+#include "../others/gt_log.h"
 #include "../core/gt_mem.h"
 
 
@@ -166,6 +167,25 @@ vector_lb:
     return false;
 }
 
+bool _gt_vector_replace_item(_gt_vector_st ** vector_p, uint16_t index, void * item, uint16_t size)
+{
+    if (NULL == item) {
+        return false;
+    }
+    if (NULL == *vector_p) {
+        return _gt_vector_add_item(vector_p, item, size);
+    }
+    _gt_vector_st * vector = *vector_p;
+    if (index < vector->count) {
+        if (vector->free_item_cb) {
+            vector->free_item_cb(vector->list[index]);
+        }
+        gt_memcpy(vector->list[index], item, size);
+        return true;
+    }
+    return _gt_vector_add_item(vector_p, item, size);
+}
+
 bool _gt_vector_remove_item(_gt_vector_st ** vector_p, void * target)
 {
     uint16_t i = 0, count = (*vector_p)->count;
@@ -240,6 +260,21 @@ gt_size_t _gt_vector_get_index(_gt_vector_st const * vector)
     return (gt_size_t)vector->index;
 }
 
+void * _gt_vector_get_item(_gt_vector_st const * vector, uint16_t index)
+{
+    if (NULL == vector) {
+        return NULL;
+    }
+    if (NULL == vector->list || 0 == vector->count) {
+        return NULL;
+    }
+
+    if (index >= vector->count) {
+        return NULL;
+    }
+    return vector->list[index];
+}
+
 bool _gt_vector_free(_gt_vector_st ** vector_p)
 {
     if (NULL == vector_p) {
@@ -264,6 +299,7 @@ bool _gt_vector_clear_all_items(_gt_vector_st * vector)
             continue;
         }
         vector->free_item_cb(vector->list[i]);
+        gt_mem_free(vector->list[i]);
         vector->list[i] = NULL;
     }
     gt_mem_free(vector->list);

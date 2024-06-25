@@ -90,6 +90,18 @@ bool _gt_vector_add_equal_item_cb(_gt_vector_st ** vector_p, _gt_vector_equal_it
 bool _gt_vector_add_item(_gt_vector_st ** vector_p, void * item, uint16_t size);
 
 /**
+ * @brief Replace a item in vector
+ *
+ * @param vector_p
+ * @param index The index of the item to be replaced
+ * @param item The new item
+ * @param size The size of the new item
+ * @return true
+ * @return false
+ */
+bool _gt_vector_replace_item(_gt_vector_st ** vector_p, uint16_t index, void * item, uint16_t size);
+
+/**
  * @brief Remove a item from vector
  *
  * @param vector_p
@@ -122,6 +134,15 @@ gt_size_t _gt_vector_get_count(_gt_vector_st const * vector);
  * @return gt_size_t -1: failed to find the item, >=0: the index of the item
  */
 gt_size_t _gt_vector_get_index(_gt_vector_st const * vector);
+
+/**
+ * @brief Get the item from vector
+ *
+ * @param vector
+ * @param index
+ * @return void*
+ */
+void * _gt_vector_get_item(_gt_vector_st const * vector, uint16_t index);
 
 /**
  * @brief Free the whole vector
