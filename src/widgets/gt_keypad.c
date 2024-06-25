@@ -505,8 +505,7 @@ static const _gt_def_style_param_st _def_style_list[] = {
 #endif // _DEF_STYLE_OTHER_11x3
 };
 
-void _gt_switch_default_style(gt_obj_st * keypad, gt_keypad_default_style_st def_style)
-{
+static void _gt_switch_default_style(gt_obj_st * keypad, gt_keypad_default_style_st def_style) {
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
     style->def_style = def_style;
     if (GT_KEYPAD_STYLE_NONE == style->def_style) {
@@ -546,6 +545,16 @@ void _gt_switch_default_style(gt_obj_st * keypad, gt_keypad_default_style_st def
     gt_btnmap_set_push_btn_kv_handler(style->btnmap, item->_push_btn_kv_cb);
     gt_keypad_set_map_list(keypad, (gt_keypad_map_st*)item->map_list, item->map_total);
 }
+
+static inline void _set_minimum_width(gt_obj_st * keypad) {
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
+
+    uint16_t minimum_width = gt_btnmap_get_calc_minimum_width(style->btnmap);
+    if (keypad->area.w < minimum_width) {
+        keypad->area.w = minimum_width;
+    }
+}
+
 /* macros ---------------------------------------------------------------*/
 
 
@@ -571,6 +580,7 @@ static void _init_cb(gt_obj_st * obj) {
     // draw_bg
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
 
+    _set_minimum_width(obj);
     gt_obj_set_size(style->btnmap, obj->area.w, gt_btnmap_get_btn_height_auto_fill(style->btnmap) ? obj->area.h : style->btnmap->area.h);
 }
 
