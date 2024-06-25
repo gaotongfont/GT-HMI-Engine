@@ -165,6 +165,12 @@ static const _font_type_group_adjust_ascii_pos_st _font_type_group_arr[] = {
 #if defined(GT_FAMILY_GBK_16_HT_4bit) && defined(GT_FAMILY_ASCII_16x16_ZK_4bit)
     {.cn_opt = gt_family_gbk_16_ht_4bit, .en_opt = gt_family_ascii_16x16_zk_4bit, .offset = { .y= 2 } },
 #endif
+#if defined(GT_FAMILY_GBK_16_ZK_4bit) && defined(GT_FAMILY_ASCII_16x16_HT_4bit)
+    {.cn_opt = gt_family_gbk_16_zk_4bit, .en_opt = gt_family_ascii_16x16_ht_4bit, .offset = { .y= 1 } },
+#endif
+#if defined(GT_FAMILY_GBK_16_ZK_4bit) && defined(GT_FAMILY_ASCII_16x16_ZK_4bit)
+    {.cn_opt = gt_family_gbk_16_zk_4bit, .en_opt = gt_family_ascii_16x16_zk_4bit, .offset = { .y= 2 } },
+#endif
     /** 24 */
 #if defined(GT_FAMILY_GB2312_24_HT_4bit) && defined(GT_FAMILY_ASCII_24x24_HT_4bit)
     {.cn_opt = gt_family_gb2312_24_ht_4bit, .en_opt = gt_family_ascii_24x24_ht_4bit, .offset = { .y= 2 } },
