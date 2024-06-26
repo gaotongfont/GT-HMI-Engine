@@ -104,7 +104,6 @@ static void _deinit_cb(gt_obj_st * obj) {
     }
 
     if (NULL != style_p->timer) {
-        _gt_timer_set_paused(style_p->timer, true);
         _gt_timer_del(style_p->timer);
         style_p->timer = NULL;
     }
@@ -135,7 +134,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 }
 
 static void _gif_next_frame_handler_cb(struct _gt_timer_s * timer) {
-    gt_obj_st * obj = (gt_obj_st * )timer->user_data;
+    gt_obj_st * obj = (gt_obj_st * )_gt_timer_get_user_data(timer);
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;
     }

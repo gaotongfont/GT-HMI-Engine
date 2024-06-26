@@ -144,12 +144,23 @@ _gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * 
     return timer;
 }
 
-void _gt_timer_del(_gt_timer_st * timer)
+void _gt_timer_set_callback(_gt_timer_st * timer, gt_timer_cb_t callback)
 {
-    if( !timer ) {
+    if (!timer) {
         return;
     }
+    timer->timer_cb = callback;
+}
+
+void _gt_timer_del(_gt_timer_st * timer)
+{
+    if (!timer) {
+        return;
+    }
+    _gt_timer_set_paused(timer, true);
     _gt_timer_set_repeat_count(timer, 0);   /** remove timer by core handler */
+    _gt_timer_set_callback(timer, NULL);
+    _gt_timer_set_user_data(timer, NULL);
 }
 
 void _gt_timer_handler(void)

@@ -223,7 +223,6 @@ static void _destroy_timer(_gt_player_st * style) {
     if ( !style->timer ) {
         return ;
     }
-    _gt_timer_set_paused(style->timer, true);
     _gt_timer_del(style->timer);
     style->timer = NULL;
 }
@@ -523,6 +522,9 @@ static inline void _remove_item(_gt_player_st * style, uint16_t idx) {
 
 static void _auto_play_callback(struct _gt_timer_s * timer) {
     gt_obj_st * obj = (gt_obj_st * )_gt_timer_get_user_data(timer);
+    if (false == gt_obj_is_type(obj, GT_TYPE_PLAYER)) {
+        return ;
+    }
     _gt_player_st * style = (_gt_player_st * )obj;
     if (!_lock(style)) {
         /** The callback has been executed, waiting for it to be displayed */

@@ -124,7 +124,7 @@ static bool _is_double_target_ignore_case(const char * const str, char target) {
 }
 
 static void _gt_clock_timer_cb(struct _gt_timer_s * timer) {
-    gt_clock_turn_next_second((gt_obj_st * )timer->user_data);
+    gt_clock_turn_next_second((gt_obj_st * )_gt_timer_get_user_data(timer));
 }
 
 static char * _get_time_str(_gt_clock_st * clock) {
