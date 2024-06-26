@@ -733,6 +733,10 @@ static _gt_draw_font_res_st _draw_text_convertor_split(
         .is_rev = _is_align_reverse(dsc->align) ? 0 : 1,
         .is_vec = ret_style == GT_FONT_TYPE_FLAG_VEC ? 1 : 0,
     };
+    if(ret_style != GT_FONT_TYPE_FLAG_VEC){
+        convertor.fontgray = (ret_style / 10) ? (ret_style / 10) : 1;
+    }
+
 
     text_len = gt_font_code_transform(&convertor);
 
@@ -1135,8 +1139,8 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
 
     tmp_font.info.gray = dsc->font->info.gray == 0 ? 1 : dsc->font->info.gray;
     gt_size_t font_disp_h = tmp_font.info.size;
-    uint16_t font_dot_w = (((tmp_font.info.size + 15) >> 4) << 4) * tmp_font.info.gray;
-    uint16_t data_len = font_dot_w * font_dot_w >> 3;
+    _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&tmp_font.info, 2, 0, 0);
+    uint16_t data_len = font_size_res.font_per_size;
     uint8_t * mask_line = NULL, * ret_txt = NULL;
 
     tmp_font.res = gt_mem_malloc(data_len);
@@ -1526,8 +1530,8 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
 
     tmp_font.info.gray = dsc->font->info.gray == 0 ? 1 : dsc->font->info.gray;
     gt_size_t font_disp_h = tmp_font.info.size;
-    uint16_t font_dot_w = (((tmp_font.info.size + 15) >> 4) << 4) * tmp_font.info.gray;
-    uint16_t data_len = font_dot_w * font_dot_w >> 3;
+    _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&tmp_font.info, 2, 0, 0);
+    uint16_t data_len = font_size_res.font_per_size;
     uint8_t * mask_line = NULL, * ret_txt = NULL;
 
     tmp_font.res = gt_mem_malloc(data_len);
