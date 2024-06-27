@@ -244,7 +244,7 @@ static bool _gt_font_latin_check(uint32_t unicode) {
 }
 
 /**
- * @brief get one latin word width
+ * @brief Inline chars get one latin word width
  *
  * @param unicode latin unicode
  * @param font_size font size
@@ -253,11 +253,9 @@ static bool _gt_font_latin_check(uint32_t unicode) {
 static uint8_t _gt_font_latin_get_width(uint32_t unicode, uint8_t font_size) {
     uint16_t len = (sizeof(_latin_encoding_range) / sizeof(_latin_encoding_range[0])) >> 1;
     uint32_t idx = _get_idx(_latin_encoding_range, len, unicode);
-    if (16 == font_size) {
-        return _latin_16x16_width[idx];
-    }
-    return font_size;
 
+    /** default */
+    return _latin_16x16_width[idx];
 }
 
 static bool _gt_number_symbol_font(uint32_t unicode) {
@@ -272,7 +270,7 @@ static bool _gt_number_symbol_font(uint32_t unicode) {
     return false;
 }
 
-static uint32_t _get_font_style(gt_font_st *font, uint32_t unicode) {
+static uint32_t _get_font_style(gt_font_st * font, uint32_t unicode) {
     gt_font_style_en_cn_et style_type = 0;
     uint16_t font_style = font->info.style_fl;
 
@@ -524,9 +522,9 @@ uint8_t gt_gb_check_char(const uint8_t *dst, uint16_t pos, uint32_t* font_code)
 }
 
 /**
- * @brief 判断编码是外文（style_en）还是中日韩(style_cn)
+ * @brief Determine whether the encoding is for English (style_en) or Chinese/Japanese/Korean (style_cn)
  *
- * @param unicode unicode编码
+ * @param unicode unicode
  * @return int 0 - style_cn  else-style_en
  */
 gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode, uint8_t encoding)
@@ -601,12 +599,63 @@ bool _gt_font_is_convertor_by(uint32_t unicode, uint8_t encoding)
     return _gt_font_is_convertor_language(style_lang);
 }
 
-uint16_t gt_font_get_string_dot(gt_font_st * font)
+_gt_font_dot_ret_st gt_font_get_dot(gt_font_st * font, uint32_t unicode)
+{
+    uint16_t font_style = 0, temp = 0;
+    _gt_font_dot_ret_st ret = {
+        .type = GT_FONT_TYPE_FLAG_NONE,
+        .size = font->info.size,
+    };
+
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    font_style = _get_font_style(font, unicode);
+    struct gt_font_func_s * font_func = GT_Get_Font_Func_S(font_style);
+    if (!font_func) {
+        goto default_font;
+    }
+    // temp = 0;
+    if (!GT_Check_Is_Vec(font_style)) {
+        // Dot font
+        if(!font_func->func.read_dot_font) {
+            return ret;
+        }
+        temp = font_func->func.read_dot_font(unicode, font_style, font->res);
+
+    } else {
+        // Vector font
+        if(!font_func->func.read_vec_font) {
+            return ret;
+        }
+        temp = font_func->func.read_vec_font(font->res, font_style, unicode, font->info.size, font->info.gray,
+                                            font_style==font->info.style_cn ? font->info.thick_cn : font->info.thick_en);
+    }
+    if (0 == temp) {
+        return ret;
+    }
+    ret.type = font_func->type;
+    return ret;
+#endif
+
+default_font:
+    font_style = _gt_is_style_cn_or_en(unicode, font->info.encoding);
+    if (1 == font_style) {
+#if GT_CFG_USE_FONT_16_ASCII == 1
+        temp = 32;
+        gt_memcpy(font->res, &_ascii_16[ (unicode - 0x20) << 5 ], 32);
+        ret.type = GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH;
+        ret.size = 16;
+        font->info.size = 16;
+#endif
+    }
+    return ret;
+}
+
+gt_font_type_em gt_font_get_string_dot(gt_font_st * font)
 {
     uint32_t idx = 0, unicode, len, font_style = 0, idx_read = 0, temp = 0;
-    uint16_t ret = GT_FONT_TYPE_FLAG_NONE;
+    gt_font_type_em ret = GT_FONT_TYPE_FLAG_NONE;
 
-    while(idx < font->len) {
+    while (idx < font->len) {
         len = gt_font_one_char_code_len_get((uint8_t * )&font->utf8[idx], &unicode, font->info.encoding);
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
@@ -615,42 +664,36 @@ uint16_t gt_font_get_string_dot(gt_font_st * font)
         font_style = _get_font_style(font, unicode);
 
         font_func = GT_Get_Font_Func_S(font_style);
-        if(!font_func) {
+        if (!font_func) {
             goto default_font;
         }
-        if(!GT_Check_Is_Vec(font_style)) {
-            // 点阵
+        if (!GT_Check_Is_Vec(font_style)) {
+            // Dot font
             if(!font_func->func.read_dot_font) {
                 idx+=len;
                 continue;
             }
             temp = font_func->func.read_dot_font(unicode, font_style, &font->res[idx_read]);
-            if(temp == 0) {
-                idx+=len;
-                continue;
-            }
-            ret = font_func->type;
-            goto lab_next_word;
         } else {
-            // 矢量
+            // Vector font
             if(!font_func->func.read_vec_font) {
                 idx+=len;
                 continue;
             }
             temp = font_func->func.read_vec_font(&font->res[idx_read], font_style, unicode, font->info.size, font->info.gray,
                                                 font_style==font->info.style_cn ? font->info.thick_cn : font->info.thick_en);
-            if(temp == 0) {
-                idx+=len;
-                continue;
-            }
-            ret = font_func->type;
-            goto lab_next_word;
         }
+        if (temp == 0) {
+            idx+=len;
+            continue;
+        }
+        ret = font_func->type;
+        goto lab_next_word;
 #endif
 
 default_font:
         font_style = _gt_is_style_cn_or_en(unicode, font->info.encoding);
-        if(1 == font_style) {
+        if (1 == font_style) {
 #if GT_CFG_USE_FONT_16_ASCII == 1
             temp = 32;
             gt_memcpy(&font->res[idx_read], &_ascii_16[ (unicode-0x20)<<5 ], 32);
@@ -839,29 +882,26 @@ uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const 
 
 uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
 {
-    if(unicode == 0x20){
+    if (0x20 == unicode) {
         return font->info.size >> 1;
     }
 
-    if(gt_symbol_check_by_unicode(unicode)){
+    if (gt_symbol_check_by_unicode(unicode)) {
         return font->info.size;
     }
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
-    int width = 0;
-    int option = 0;
+    gt_size_t width = 0;
+    uint16_t option = _get_font_style(font, unicode);
 
-    option = _get_font_style(font, unicode);
-
-    if(GT_Check_Is_Vec(option)){
+    if (GT_Check_Is_Vec(option)) {
         uint32_t font_dot_w = (((font->info.size + 15) >> 4) << 4) * font->info.gray;
         font_dot_w = (font_dot_w*font_dot_w) >> 3;
         gt_memset(font->res, 0, font_dot_w);
     }
 
     width = GT_Get_Font_Width(unicode, option, font->info.size, font->info.gray, font->res);
-
-    if(0 == width){
+    if (0 == width) {
         if(_gt_font_latin_check(unicode)) {
             return _gt_font_latin_get_width(unicode, font->info.size);
         }
@@ -869,8 +909,7 @@ uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font)
     }
     return width;
 #else
-    if(_gt_font_latin_check(unicode))
-    {
+    if (_gt_font_latin_check(unicode)) {
         return _gt_font_latin_get_width(unicode, font->size);
     }
     return font->size;

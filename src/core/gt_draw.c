@@ -1197,6 +1197,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
     bool start_x_flag = dsc->reg.enabled_start;
     uint16_t bidi_len = 0, bidi_max = 1, bidi_pos = 0;
     gt_bidi_st * bidi = (gt_bidi_st * )gt_mem_malloc(bidi_max * sizeof(gt_bidi_st));
+    _gt_font_dot_ret_st dot_ret = {0};
     if (NULL == bidi) {
         GT_LOGE(GT_LOG_TAG_GUI, "bidi malloc is failed!!! size = %d", bidi_max * sizeof(gt_bidi_st));
         goto _ret_handler;
@@ -1316,6 +1317,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             }
 
             gt_memset(tmp_font.res, 0, data_len);
+            tmp_font.info.size = dsc->font->info.size;
             tmp_font.utf8 = (char * )&txt_2[idx_2];
             tmp_font.len = gt_font_one_char_code_len_get(&txt_2[idx_2], &unicode, tmp_font.info.encoding);
 
@@ -1371,14 +1373,14 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
                 goto next_word_multi_lb;
             }
 #endif
-            if( !gt_symbol_check_by_unicode(unicode) ){
-                gt_memset(tmp_font.res, 0, data_len);
-                uint16_t ret_style = gt_font_get_string_dot(&tmp_font);
+            if (!gt_symbol_check_by_unicode(unicode)) {
+                gt_memset(&tmp_font.res[data_len >> 1], 0, data_len >> 1);
+                dot_ret = gt_font_get_dot(&tmp_font, unicode);
 
                 uint8_t byte_width = (width + 7) >> 3;
                 uint8_t font_gray = 1;
 
-                byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, ret_style);
+                byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type);
                 area_font.w = (byte_width / font_gray) << 3;
                 if (STYLE_EN_ASCII == _gt_is_style_cn_or_en(unicode, tmp_font.info.encoding)) {
                     area_font.y += offset_y;
@@ -1666,7 +1668,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
 
     idx = 0;
     area_font.h = font_disp_h;
-    uint16_t ret_style;
+    _gt_font_dot_ret_st dot_ret = {0};
     uint8_t width, byte_width, font_gray;
     while (idx < idx_len) {
         if (bidi_pos < bidi_len && idx == bidi[bidi_pos].idx) {
@@ -1686,6 +1688,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
         }
 
         gt_memset(tmp_font.res, 0, data_len);
+        tmp_font.info.size = dsc->font->info.size;
         tmp_font.utf8 = (char * )&txt[idx];
         tmp_font.len = gt_font_one_char_code_len_get(&txt[idx], &unicode, tmp_font.info.encoding);
 
@@ -1736,13 +1739,13 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
         }
 #endif
         if( !gt_symbol_check_by_unicode(unicode) ){
-            gt_memset(tmp_font.res, 0, data_len);
-            ret_style = gt_font_get_string_dot(&tmp_font);
+            gt_memset(&tmp_font.res[data_len >> 1], 0, data_len >> 1);
+            dot_ret = gt_font_get_dot(&tmp_font, unicode);
 
             byte_width = (width + 7) >> 3;
             font_gray = 1;
 
-            byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, ret_style);
+            byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type);
             area_font.w = (byte_width / font_gray) << 3;
             if (STYLE_EN_ASCII == _gt_is_style_cn_or_en(unicode, tmp_font.info.encoding)) {
                 area_font.y += offset_y;
@@ -1788,11 +1791,12 @@ next_word_lb:
         tmp_font.len = gt_font_one_char_code_len_get(omit_info.utf8, &unicode, tmp_font.info.encoding);
         width = gt_font_get_one_word_width(unicode, &tmp_font);
 
-        ret_style = gt_font_get_string_dot(&tmp_font);
+        tmp_font.info.size = dsc->font->info.size;
+        dot_ret = gt_font_get_dot(&tmp_font, unicode);
         byte_width = (width + 7) >> 3;
         font_gray = 1;
 
-        byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, ret_style);
+        byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type);
         area_font.w = (byte_width / font_gray) << 3;
         idx = 0;
         while (idx < omit_info.len)  {

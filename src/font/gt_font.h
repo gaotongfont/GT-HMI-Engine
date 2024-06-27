@@ -195,6 +195,11 @@ typedef struct gt_py_input_method_s {
     uint8_t chinese[GT_PY_MAX_NUMB][GT_PY_MAX_NUMB];
 }gt_py_input_method_st;
 
+typedef struct _gt_font_dot_ret_s {
+    gt_font_type_em type;
+    uint16_t size;
+}_gt_font_dot_ret_st;
+
 /* macros ---------------------------------------------------------------*/
 
 
@@ -238,12 +243,21 @@ uint8_t gt_unicode_to_utf8(uint8_t * utf8, uint32_t unicode);
 uint8_t gt_utf8_check_char(uint8_t * utf8);
 
 /**
- * @brief Get the character data of a string
+ * @brief Get one character encode dot data
+ *
+ * @param font [Warning] font->info.size will be change by real font size
+ * @param unicode The unicode encoding of the character
+ * @return _gt_font_dot_ret_st
+ */
+_gt_font_dot_ret_st gt_font_get_dot(gt_font_st * font, uint32_t unicode);
+
+/**
+ * @brief [Temporarily unused] Get the character data of a string
  *
  * @param font font basic information
- * @return font type value enum @ref gt_font_type_em
+ * @return font type and font size value enum @ref gt_font_type_em
  */
-uint16_t gt_font_get_string_dot(gt_font_st * font);
+gt_font_type_em gt_font_get_string_dot(gt_font_st * font);
 
 /**
  * @brief get string all width
@@ -277,6 +291,15 @@ uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const 
 void gt_project_encoding_set(gt_encoding_et charset);
 gt_encoding_et gt_project_encoding_get(void);
 int8_t _gt_font_get_type_group_offset_y(uint16_t cn_option, uint16_t en_option);
+
+/**
+ * @brief
+ *
+ * @param utf8
+ * @param res
+ * @param encoding
+ * @return uint8_t The byte length of the encode
+ */
 uint8_t gt_font_one_char_code_len_get(uint8_t * utf8, uint32_t *res, uint8_t encoding);
 uint8_t gt_encoding_table_one_char(uint8_t *src, uint8_t* dst, gt_encoding_convert_et tab);
 uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const utf8, uint32_t *res);
