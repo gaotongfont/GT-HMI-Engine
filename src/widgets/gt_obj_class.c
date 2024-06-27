@@ -69,10 +69,11 @@ static gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st * self)
         return ret_p;
     }
     // release screen count, later data is moved to the front
-    if (idx != disp->cnt_scr--) {
+    if (idx < --disp->cnt_scr) {
         gt_memmove(&disp->screens[idx], &disp->screens[idx + 1], (disp->cnt_scr - idx) * sizeof(gt_obj_st * ));
     }
-    disp->screens = gt_mem_realloc(disp->screens, disp->cnt_scr * sizeof(gt_obj_st * ));
+    disp->screens[disp->cnt_scr] = NULL;
+    disp->screens = (gt_obj_st ** )gt_mem_realloc(disp->screens, disp->cnt_scr * sizeof(gt_obj_st * ));
     return ret_p;
 }
 
@@ -101,10 +102,11 @@ static gt_obj_st * _gt_obj_class_destroy_from_parent(gt_obj_st * self)
     if (-1 == idx) {
         return ret_p;
     }
-    if (idx != parent->cnt_child--) {
+    if (idx < --parent->cnt_child) {
         gt_memmove(&parent->child[idx], &parent->child[idx + 1], (parent->cnt_child - idx) * sizeof(gt_obj_st * ));
     }
-    parent->child = gt_mem_realloc(parent->child, parent->cnt_child * sizeof(gt_obj_st * ));
+    parent->child[parent->cnt_child] = NULL;
+    parent->child = (gt_obj_st ** )gt_mem_realloc(parent->child, parent->cnt_child * sizeof(gt_obj_st * ));
     return ret_p;
 }
 
@@ -207,19 +209,16 @@ static inline bool _add_obj_to_parent(gt_obj_st * obj, gt_obj_st * parent) {
 }
 
 static bool _create_new_screen_obj(gt_obj_st * obj) {
-    GT_LOGV(GT_LOG_TAG_GUI, "create a screen");
     gt_disp_st * disp = gt_disp_get_default();
 
     if (disp == NULL) {
         GT_LOGW(GT_LOG_TAG_GUI, "disp is null, please init disp");
-        // goto obj_lb;
         return false;
     }
 
     if (disp->screens == NULL || disp->cnt_scr == 0 ) {
         disp->screens = gt_mem_malloc(sizeof(gt_obj_st *));
         if (!disp->screens) {
-            // goto obj_lb;
             return false;
         }
         disp->screens[disp->cnt_scr++] = obj;
@@ -227,7 +226,6 @@ static bool _create_new_screen_obj(gt_obj_st * obj) {
         // gt_mem_realloc can't operate NULL ptr
         disp->screens = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr + 1));
         if (!disp->screens) {
-            // goto obj_lb;
             return false;
         }
         disp->screens[disp->cnt_scr++] = obj;

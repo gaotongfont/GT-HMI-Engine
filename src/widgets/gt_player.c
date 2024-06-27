@@ -430,7 +430,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
 static inline _gt_player_item_st * _add_item_into_list(_gt_player_st * style) {
     if (NULL == style) {
-        return 0;
+        return NULL;
     }
     if (style->target.list) {
         style->target.list = gt_mem_realloc(style->target.list, sizeof(_gt_player_item_st * ) * (style->target.count + 1));
@@ -438,7 +438,6 @@ static inline _gt_player_item_st * _add_item_into_list(_gt_player_st * style) {
         style->target.count = 0;
         style->target.list = gt_mem_malloc(sizeof(_gt_player_item_st * ));
     }
-
     _gt_player_item_st ** list = style->target.list;
     list[style->target.count] = gt_mem_malloc(sizeof(_gt_player_item_st));
     gt_memset(list[style->target.count], 0, sizeof(_gt_player_item_st));
@@ -512,10 +511,11 @@ static inline void _remove_item(_gt_player_st * style, uint16_t idx) {
     gt_mem_free(style->target.list[idx]);
     style->target.list[idx] = NULL;
 
-    if (idx != style->target.count--) {
+    if (idx < --style->target.count) {
         gt_memmove(&style->target.list[idx], &style->target.list[idx + 1], (style->target.count - idx) * sizeof(_gt_player_item_st * ));
     }
-    style->target.list = gt_mem_realloc(style->target.list, style->target.count *  sizeof(_gt_player_item_st * ));
+    style->target.list[style->target.count] = NULL;
+    style->target.list = (_gt_player_item_st ** )gt_mem_realloc(style->target.list, style->target.count *  sizeof(_gt_player_item_st * ));
 
     _set_play_status(style, _gt_timer_get_paused(style->timer));
 }

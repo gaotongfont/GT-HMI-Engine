@@ -210,9 +210,10 @@ bool _gt_vector_remove_item(_gt_vector_st ** vector_p, void * target)
         return false;
     }
     (*vector_p)->list[i] = NULL;
-    if (i != count - 1) {
-        gt_memmove(&(*vector_p)->list[i], &(*vector_p)->list[i + 1], sizeof(void * ) * (count - i - 1));
+    if (i < --count) {
+        gt_memmove(&(*vector_p)->list[i], &(*vector_p)->list[i + 1], sizeof(void * ) * (count - i));
     }
+    (*vector_p)->list[count] = NULL;
     (*vector_p)->list = (void ** )gt_mem_realloc((*vector_p)->list, sizeof(void * ) * (--(*vector_p)->count));
     if ((*vector_p)->index >= (*vector_p)->count) {
         (*vector_p)->index = (*vector_p)->count - 1;
