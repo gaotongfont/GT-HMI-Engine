@@ -12,13 +12,11 @@
 #include "string.h"
 #include "stdio.h"
 #include "../core/gt_mem.h"
-#if _GT_SYMBOL_PRINTF_VALID_CODE
 #include "../others/gt_types.h"
-#include "./gt_font.h"
-#endif
 
 /* private define -------------------------------------------------------*/
 
+static char gbk_str[2] = {0};
 
 
 #if GT_CFG_USE_SYMBOL_16x16 == 1
@@ -1338,10 +1336,13 @@ bool gt_symbol_is_valid_range(uint32_t uni_or_gbk)
     return true;
 }
 
-const uint8_t * gt_symbol_get_mask_buf(char * utf8 , uint8_t size)
+const uint8_t * gt_symbol_get_mask_buf(uint32_t uni_or_gbk, uint8_t size)
 {
     uint16_t cnt = 0, idx = 0;
     _gt_symbol_st * tmp_symbol = NULL;
+    char utf8[4] = {0};
+
+    gt_unicode_to_utf8(utf8, uni_or_gbk);
 
     if (16 == size) {
         cnt = sizeof(symbols_16x16) / sizeof(_gt_symbol_st);
@@ -1358,7 +1359,7 @@ const uint8_t * gt_symbol_get_mask_buf(char * utf8 , uint8_t size)
         if (gt_memcmp(utf8, tmp_symbol[idx].utf8, 3) == 0) {
             return tmp_symbol[idx].mask_buf;
         }
-        idx++;
+        ++idx;
     }
 
     return NULL;
