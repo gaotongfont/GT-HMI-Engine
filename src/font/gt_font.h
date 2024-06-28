@@ -270,11 +270,11 @@ uint32_t gt_font_get_string_width(gt_font_st * font);
 /**
  * @brief Get the width of a character
  *
- * @param unicode The unicode encoding of the character
+ * @param uni_or_gbk The unicode or gbk encoding of the character
  * @param font string msg
  * @return uint8_t The width of the character
  */
-uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font);
+uint8_t gt_font_get_one_word_width(uint32_t uni_or_gbk, gt_font_st * font);
 
 _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, uint8_t font_style, uint8_t langue, uint32_t text_len);
 
@@ -340,11 +340,11 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint3
  *      Warn: "'" @ref _GT_FONT_APOSTROPHE_PUNCTUATION_MARK_LEGAL
  *      number legal enable @ref _GT_FONT_NUMBER_LEGAL
  *
- * @param unicode
+ * @param uni_or_gbk
  * @return true illegal char
  * @return false legal char
  */
-bool gt_font_is_illegal_char(uint32_t unicode);
+bool gt_font_is_illegal_char(uint32_t uni_or_gbk);
 uint16_t gt_font_get_word_byte_length(char const * const text, uint16_t length, uint8_t encoding);
 #endif
 
