@@ -283,7 +283,12 @@ static void _invalid_area(gt_obj_st * obj, _gt_player_st * style) {
     }
 #endif
     if (GT_FS_RES_OK != ret) {
-        gt_fs_read_img_wh((char * )src, &w, &h);
+        if (GT_FS_RES_FAIL == gt_fs_read_img_wh((char * )src, &w, &h)) {
+            return ;
+        }
+        if (0 == w || 0 == h) {
+            return ;
+        }
     }
     obj->area.w = GT_MAX(obj->area.w, w);
     obj->area.h = GT_MAX(obj->area.h, h);
@@ -438,8 +443,17 @@ static inline _gt_player_item_st * _add_item_into_list(_gt_player_st * style) {
         style->target.count = 0;
         style->target.list = gt_mem_malloc(sizeof(_gt_player_item_st * ));
     }
+    if (0 == style->target.list) {
+        style->target.count = 0;
+        style->target.index = 0;
+        GT_LOGE(GT_LOG_TAG_MEM, "Failed to allocate memory for the player item list.");
+        return NULL;
+    }
     _gt_player_item_st ** list = style->target.list;
     list[style->target.count] = gt_mem_malloc(sizeof(_gt_player_item_st));
+    if (NULL == list[style->target.count]) {
+        return NULL;
+    }
     gt_memset(list[style->target.count], 0, sizeof(_gt_player_item_st));
 
     _gt_player_item_st * ret = (_gt_player_item_st * )list[style->target.count];
@@ -458,12 +472,10 @@ static inline _gt_player_item_st * _add_item_into_list(_gt_player_st * style) {
  * @param obj
  * @param item
  * @param item_byte_size
- * @return uint16_t
+ * @return uint16_t 0: failed to add item; >0: the count of items
  */
 static inline uint16_t _add_item(gt_obj_st * obj, void * item, uint16_t item_byte_size) {
-    if (NULL == obj) {
-        return 0;
-    }
+    GT_CHECK_BACK_VAL(obj, 0);
     if (NULL == item || 0 == item_byte_size) {
         return 0;
     }
@@ -475,6 +487,11 @@ static inline uint16_t _add_item(gt_obj_st * obj, void * item, uint16_t item_byt
     }
 
     new_item->src = gt_mem_malloc(item_byte_size);
+    if (NULL == new_item->src) {
+        --style->target.count;
+        style->target.list = gt_mem_realloc(style->target.list, sizeof(_gt_player_item_st * ) * (style->target.count));
+        return 0;
+    }
     gt_memcpy(new_item->src, item, item_byte_size);
     return style->target.count;
 }

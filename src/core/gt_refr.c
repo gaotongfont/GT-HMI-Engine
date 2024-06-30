@@ -50,17 +50,13 @@ void gt_refr_timer(void)
 #if GT_REFR_AREA_ALIGN_HOR || GT_REFR_AREA_ALIGN_VER
     uint16_t align_val = 0;
 #endif
-    if (NULL == disp) {
-        return ;
-    }
+    GT_CHECK_BACK(disp);
     if (_gt_disp_refr_check(disp)) {
 #if GT_USE_DISPLAY_PREF_MSG
         uint32_t start = gt_tick_get();
 #endif
         area = _gt_disp_refr_get_area(disp);
-        if (NULL == area) {
-            return ;
-        }
+        GT_CHECK_BACK(area);
 #if GT_REFR_AREA_ALIGN_HOR
         align_val = gt_abs(area->x % GT_REFR_AREA_ALIGN_HOR_PIXEL);
         if (align_val) {

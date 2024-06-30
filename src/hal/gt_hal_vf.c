@@ -74,6 +74,7 @@ void * _fh_open_cb(struct _gt_fs_drv_s * drv, gt_file_header_param_st const * co
         return NULL;
     }
     gt_fs_fp_st * fp = _gt_hal_fp_init();
+    GT_CHECK_BACK_VAL(fp, NULL);
 
     fp->start = gt_file_header_get_img_offset_by(item, fh_param);
     fp->end = gt_file_header_get_img_size(item) + fp->start;
@@ -106,13 +107,13 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
     bool is_find = false;
 
     /* check drv state */
-    if( _state == GT_FS_RES_DEINIT ){
+    if (_state == GT_FS_RES_DEINIT) {
         GT_LOGV(GT_LOG_TAG_GUI, "vf drv is deinit");
         return NULL;
     }
 
     /* find this file by name  */
-    while( NULL != _vfs[idx].name ){
+    while (NULL != _vfs[idx].name) {
         if( strcmp( _vfs[idx].name, name ) == 0 ){
             is_find = true;
             break;
@@ -120,15 +121,16 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
         ++idx;
     }
 
-    if( is_find == false ){
+    if (is_find == false) {
         GT_LOGV(GT_LOG_TAG_GUI, "can not find this file:%s", name);
         return NULL;
     }
 
     /* set vf ptr */
     gt_fs_fp_st * vfp = _gt_hal_fp_init();
+    GT_CHECK_BACK_VAL(vfp, NULL);
 
-    if(  _vfs[idx].addr > _vf_dev->addr_max ){
+    if ( _vfs[idx].addr > _vf_dev->addr_max) {
         GT_LOGW(GT_LOG_TAG_GUI, "out of GT_VF_FLASH_SIZE");
     }
 
@@ -148,17 +150,17 @@ static void _close_cb(struct _gt_fs_drv_s * drv, void * fp) {
 static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len) {
     gt_fs_fp_st * vfp = (gt_fs_fp_st * )fp;
 
-    if( _state != GT_FS_RES_READY ){
+    if (_state != GT_FS_RES_READY) {
         GT_LOGV(GT_LOG_TAG_GUI, "drv is busy");
         return GT_FS_RES_BUSY;
     }
 
-    if( !drv ){
+    if (!drv) {
         GT_LOGW(GT_LOG_TAG_GUI, "drv is null,err code[%d]", GT_FS_RES_HW_ERR);
         return GT_FS_RES_HW_ERR;
     }
 
-    if( !vfp ){
+    if (!vfp) {
         GT_LOGW(GT_LOG_TAG_GUI, "fp is null");
         return GT_FS_RES_NULL;
     }

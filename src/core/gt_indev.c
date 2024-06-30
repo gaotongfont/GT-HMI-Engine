@@ -68,9 +68,7 @@ static inline bool _is_scroll_vertical(gt_dir_et dir) {
 static gt_size_t _scroll_predict(gt_indev_st * indev, gt_size_t v)
 {
     gt_size_t result = 0;
-    if (NULL == indev) {
-        return result;
-    }
+    GT_CHECK_BACK_VAL(indev, result);
 
     gt_size_t limit_scroll_throw = indev->drv->limit_scroll_throw;
     while(v) {
@@ -419,9 +417,11 @@ static void _indev_released_handle(gt_indev_st * indev) {
  * @return false can be activated
  */
 static bool _obj_outside_can_not_be_activated(void) {
+#if GT_CFG_ENABLE_DIALOG
     if (gt_dialog_has_showing()) {
         return true;
     }
+#endif
     return false;
 }
 
@@ -469,9 +469,7 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
         /* save pressed obj */
         point_p->gesture = GT_DIR_NONE;
         point_p->obj_act = _search_active_obj_from_all_layers(&point_p->newly, true);
-        if (NULL == point_p->obj_act) {
-            return;
-        }
+        GT_CHECK_BACK(point_p->obj_act);
         if (gt_obj_is_untouchability(point_p->obj_act)) {
             return;
         }
@@ -517,9 +515,7 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
 
     _scroll_calc_throw_distance(point_p);
 
-    if (NULL == point_p->obj_target) {
-        return;
-    }
+    GT_CHECK_BACK(point_p->obj_target);
     _indev_scroll_handler(indev);
 }
 

@@ -83,6 +83,7 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
     }
 
     gt_fs_fp_st * fp = _gt_hal_fp_init();
+    GT_CHECK_BACK_VAL(fp, NULL);
     fp->start = 0;
     fp->end = dev->sys[idx].size;
     fp->type = GT_FS_TYPE_ARRAY;

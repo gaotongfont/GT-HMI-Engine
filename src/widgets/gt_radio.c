@@ -163,11 +163,6 @@ static void _init_cb(gt_obj_st * obj) {
  * @param obj
  */
 static void _deinit_cb(gt_obj_st * obj) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
-    if (NULL == obj) {
-        return ;
-    }
-
     _gt_radio_st * style_p = (_gt_radio_st * )obj;
     if (NULL != style_p->text) {
         gt_mem_free(style_p->text);

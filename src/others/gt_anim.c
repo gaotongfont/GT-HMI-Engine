@@ -380,9 +380,7 @@ gt_anim_st * gt_anim_start(const gt_anim_st * anim)
     gt_anim_st * ptr        = NULL;
     gt_anim_st * backup_ptr = NULL;
     gt_anim_st * new_obj = (gt_anim_st * )gt_mem_malloc(sizeof(gt_anim_st));
-    if (!new_obj) {
-        return NULL;
-    }
+    GT_CHECK_BACK_VAL(new_obj, NULL);
 
     if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
         _time_last_run = gt_tick_get();

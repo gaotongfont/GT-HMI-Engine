@@ -83,7 +83,7 @@ static inline void gt_color_mix_with_alpha(gt_color_t bg_color, gt_opa_t bg_opa,
         bg_color_save.full = bg_color.full;
         /** Info: https://en.wikipedia.org/wiki/Alpha_compositing#Analytical_derivation_of_the_over_operator */
         res_opa_saved = 255 - ((uint16_t)((uint16_t)(255 - fg_opa) * (255 - bg_opa)) >> 8);
-        GT_ASSERT(res_opa_saved != 0);
+        GT_ASSERT_EXPR(res_opa_saved != 0);
         gt_opa_t ratio = (uint16_t)((uint16_t)fg_opa * 255) / res_opa_saved;
         res_color_saved = gt_color_mix(fg_color, bg_color, ratio);
     }

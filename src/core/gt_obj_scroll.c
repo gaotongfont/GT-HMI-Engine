@@ -57,9 +57,7 @@ void _scroll_ready_cb(struct gt_anim_s * anim) {
 /* global functions / API interface -------------------------------------*/
 void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim_enable_et en)
 {
-    if (NULL == obj) {
-        return;
-    }
+    GT_CHECK_BACK(obj);
 
     if (0 == dx && 0 == dy) {
         return;

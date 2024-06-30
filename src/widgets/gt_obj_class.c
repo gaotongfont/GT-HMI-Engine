@@ -111,9 +111,7 @@ static gt_obj_st * _gt_obj_class_destroy_from_parent(gt_obj_st * self)
 }
 
 static void _gt_obj_class_destroy_property(gt_obj_st * self) {
-    if (NULL == self) {
-        return;
-    }
+    GT_CHECK_BACK(self);
     gt_event_send(self, GT_EVENT_TYPE_CHANGE_DELETED, NULL);
     _gt_indev_remove_want_delate_target(self);
 
@@ -134,9 +132,7 @@ static void _gt_obj_class_destroy_property(gt_obj_st * self) {
 }
 
 static inline void _gt_obj_class_destroy_self(gt_obj_st * self) {
-    if (NULL == self) {
-        return;
-    }
+    GT_CHECK_BACK(self);
     _gt_obj_class_destroy_property(self);
     gt_mem_free(self);
     self = NULL;
@@ -376,6 +372,11 @@ bool gt_obj_is_type(struct gt_obj_s * obj, gt_obj_type_et type)
 {
     if (NULL == obj || NULL == obj->class) {
         return false;
+    }
+    if (GT_TYPE_TOTAL == type) {
+        if (GT_TYPE_UNKNOWN == obj->class->type) {
+            return false;
+        }
     }
     return obj->class->type == type;
 }

@@ -432,11 +432,16 @@ static void _init_cb(gt_obj_st * obj) {
     // draw img tag
     if(style->tag && style->img){
         uint16_t _w = 0,_h = 0;
-        if( GT_FS_RES_OK == gt_fs_read_img_wh(gt_img_get_src(style->img), &_w, &_h) ){
+        if( GT_FS_RES_OK == gt_fs_read_img_wh(gt_img_get_src(style->img), &_w, &_h) ) {
+            if (0 == _w || 0 == _h) {
+                goto draw_focus;
+            }
             tag_area.w = _w > tag_size ? tag_size : _w;
             tag_area.h = _h > tag_size ? tag_size : _h;
             tag_area.x += (tag_size - tag_area.w) >> 1;
             tag_area.y += (tag_size - tag_area.h) >> 1;
+        } else {
+            goto draw_focus;
         }
         gt_obj_set_area(style->tag, tag_area);
         gt_obj_set_area(style->img , tag_area);

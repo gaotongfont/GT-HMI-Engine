@@ -208,6 +208,12 @@ extern "C" {
 
 #define GT_CONFIG_GUI_DRIVER_LIB    01
 
+#ifndef _GT_USE_TEST
+    /**
+     * @brief Use the test module
+     */
+    #define _GT_USE_TEST       0
+#endif
 /* typedef --------------------------------------------------------------*/
 
 

@@ -78,37 +78,15 @@ typedef struct _bg_abs_area_st {
  * @return false
  */
 static bool _gt_disp_get_state(gt_disp_st * disp) {
-    if (NULL == disp) {
-        return GT_BUSY;
-    }
-    if (NULL == disp->drv) {
-        return GT_BUSY;
-    }
+    GT_CHECK_BACK_VAL(disp, GT_BUSY);
+    GT_CHECK_BACK_VAL(disp->drv, GT_BUSY);
     return disp->drv->busy;
 }
 
 static void _gt_disp_set_state(gt_disp_st * disp, uint8_t state) {
-    if (NULL == disp) {
-        return;
-    }
-    if (NULL == disp->drv) {
-        return;
-    }
+    GT_CHECK_BACK(disp);
+    GT_CHECK_BACK(disp->drv);
     disp->drv->busy = state;
-}
-
-/**
- * @brief foreach obj send draw start event
- *
- * @param obj parent
- */
-static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj) {
-    uint16_t idx = 0;
-    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-    while (idx < obj->cnt_child) {
-        _gt_disp_send_draw_event_foreach(obj->child[idx]);
-        ++idx;
-    }
 }
 
 /**
@@ -178,10 +156,6 @@ static void _gt_disp_check_and_copy_foreach(gt_obj_st * scr_or_layer, _flush_scr
     uint16_t idx = 0;
     gt_obj_st * child_p = NULL;
     gt_area_st area_parent = param->disp->area_disp;
-
-    if (NULL == scr_or_layer) {
-        return ;
-    }
     if (GT_INVISIBLE == gt_obj_get_visible(scr_or_layer)) {
         return ;
     }
@@ -234,9 +208,7 @@ static void _scr_anim_start_cb(struct gt_anim_s * anim) {
 static void _old_scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_area_st * area = (gt_area_st * )anim->data;
     gt_obj_st * old_scr = (gt_obj_st * )anim->tar;
-    if (NULL == old_scr) {
-        return ;
-    }
+    GT_CHECK_BACK(old_scr);
     if (old_scr->delate) {
         return ;
     }
@@ -248,9 +220,7 @@ static void _old_scr_anim_ready_cb(struct gt_anim_s * anim) {
 
 static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_disp_st * disp = gt_disp_get_default();
-    if (NULL == disp) {
-        return;
-    }
+    GT_CHECK_BACK(disp);
     if (disp->scr_prev && disp->scr_prev->delate) {
         disp->scr_prev->using = 0;
         gt_obj_destroy(disp->scr_prev);
@@ -628,6 +598,8 @@ static inline void _adjust_clip_area_and_flush(_flush_scr_param_st * param, gt_o
 static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
     gt_obj_st * prev = param->disp->scr_prev;
     gt_obj_st * scr = param->disp->scr_act;
+    GT_CHECK_BACK(prev);
+    GT_CHECK_BACK(scr);
     bool is_cover = false;
 
     // 计算scr 在屏幕的显示区域
@@ -689,6 +661,7 @@ static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
 static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     gt_obj_st * scr = param->disp->scr_act;
     gt_color_t color_fill = gt_screen_get_bgcolor(scr);
+    GT_CHECK_BACK(scr);
 
     scr->area.x = param->disp->area_act.x;
     scr->area.y = param->disp->area_act.y;
@@ -765,10 +738,7 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
     gt_scr_stack_item_st * target = NULL;
     gt_disp_st * disp = gt_disp_get_default();
     gt_obj_st * scr_old = gt_disp_get_scr();
-
-    if (!disp) {
-        return -1;
-    }
+    GT_CHECK_BACK_VAL(disp, -1);
 
     if (step <= 0) {
         target = gt_scr_stack_peek();
@@ -776,9 +746,7 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
     }
 
     target = gt_scr_stack_pop(step);
-    if (NULL == target) {
-        return -1;
-    }
+    GT_CHECK_BACK_VAL(target, -1);
 
     gt_scr_stack_item_st new_item = {
         .current_scr = target->prev_scr_alive,
@@ -818,9 +786,7 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
 
     if (NULL == new_item.current_scr) {
         new_item.current_scr = _create_scr_by_id(new_item.current_scr_id);
-        if (NULL == new_item.current_scr) {
-            return -1;
-        }
+        GT_CHECK_BACK_VAL(new_item.current_scr, -1);
         /** update prev current screen object */
         gt_scr_stack_item_st * prev = gt_scr_stack_peek();
         if (prev && prev->current_scr_id == new_item.current_scr_id) {
@@ -884,10 +850,7 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
         .ok = false
     };
     gt_scr_stack_item_st * new_item_p = &ret.new_item;
-
-    if (NULL == param) {
-        return ret;
-    }
+    GT_CHECK_BACK_VAL(param, ret);
     ret.scr_old = gt_disp_get_scr();
     ret.del_prev_scr = param->del_prev_scr;
 
@@ -938,9 +901,7 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
     /** ready to init and load screen */
     if (NULL == new_item_p->current_scr) {
         new_item_p->current_scr = _create_scr_by_id(new_item_p->current_scr_id);
-        if (NULL == new_item_p->current_scr) {
-            return ret;
-        }
+        GT_CHECK_BACK_VAL(new_item_p->current_scr, ret);
         if (home_id == new_item_p->current_scr_id) {
             gt_scr_stack_set_home_scr(new_item_p->current_scr);
         }
@@ -1007,8 +968,6 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         }
         gt_disp_set_scr(scr);
 
-        // _gt_disp_send_draw_event_foreach(scr);
-
         disp->area_act.h = disp->drv->res_ver;
         disp->area_act.w = disp->drv->res_hor;
 
@@ -1021,7 +980,10 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
             gt_anim_set_time_delay_start(&anim_del, delay);
             gt_anim_set_target(&anim_del, scr_old);
             gt_anim_set_ready_cb(&anim_del, _scr_anim_del_ready_cb);
-            gt_anim_start(&anim_del);
+            if (NULL == gt_anim_start(&anim_del)) {
+                /** No more free memory, force release memory */
+                _gt_obj_class_destroy(scr_old);
+            }
         }
     }
 #if GT_USE_SCREEN_ANIM
@@ -1173,9 +1135,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
         .line = GT_REFRESH_FLUSH_LINE_PRE_TIME,
     };
 
-    if ( param.disp->scr_act == NULL ) {
-        return;
-    }
+    GT_CHECK_BACK(param.disp->scr_act);
     if ( _gt_disp_get_state(param.disp) == GT_BUSY ) {
         GT_LOGD(GT_LOG_TAG_GUI, "disp is busy");
         return;
@@ -1205,12 +1165,14 @@ void gt_disp_ref_area(const gt_area_st * coords)
 gt_area_st * gt_disp_get_area_act(void)
 {
     gt_disp_st * disp_dev = gt_disp_get_default();
+    GT_CHECK_BACK_VAL(disp_dev, NULL);
     return &disp_dev->area_act;
 }
 
 gt_area_abs_st * gt_disp_get_area_max(void)
 {
     gt_disp_st * disp_dev = gt_disp_get_default();
+    GT_CHECK_BACK_VAL(disp_dev, NULL);
     return &disp_dev->area_max;
 }
 
@@ -1251,6 +1213,7 @@ void gt_disp_scroll_area_act(gt_size_t dist_x, gt_size_t dist_y)
 void gt_disp_invalid_area(gt_obj_st * obj)
 {
     gt_obj_st * scr = gt_disp_get_scr();
+    GT_CHECK_BACK(scr);
     if (NULL == obj) {
         /** full screen refresh */
         obj = scr;

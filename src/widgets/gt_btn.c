@@ -152,26 +152,16 @@ static void _init_cb(gt_obj_st * obj) {
     _gt_btn_init_widget(obj);
 }
 
-static void _free_contents(_gt_vector_st ** ptr) {
-    _gt_vector_free(ptr);
-}
-
 /**
  * @brief obj deinit call back
  *
  * @param obj
  */
 static void _deinit_cb(gt_obj_st * obj) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
-
-    if (NULL == obj) {
-        return ;
-    }
-
     _gt_btn_st * style_p = (_gt_btn_st * )obj;
 
     if (NULL != style_p->contents) {
-        _free_contents(&style_p->contents);
+        _gt_vector_free(style_p->contents);
         style_p->contents = NULL;
     }
 
@@ -267,21 +257,8 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-static bool _contents_free_cb(void * item) {
-    gt_mem_free(item);
-    return true;
-}
-
 static bool _contents_equal_cb(void * item, void * target) {
     return strcmp(item, target) ? false : true;
-}
-
-static void _contents_init(_gt_btn_st * style) {
-    if (style->contents) {
-        return;
-    }
-    _gt_vector_add_free_item_cb(&style->contents, _contents_free_cb);
-    _gt_vector_add_equal_item_cb(&style->contents, _contents_equal_cb);
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -315,6 +292,9 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent)
     style->font_align = GT_ALIGN_CENTER_MID;
     style->space_x          = 0;
     style->space_y          = 0;
+
+    style->contents = _gt_vector_create(NULL, _contents_equal_cb);
+
     return obj;
 }
 
@@ -413,6 +393,9 @@ void gt_btn_set_font_color(gt_obj_st * btn, gt_color_t color)
 
 void gt_btn_set_font_color_pressed(gt_obj_st * btn, gt_color_t color)
 {
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
     _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_color_pressed = color;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -500,12 +483,11 @@ bool gt_btn_add_state_content(gt_obj_st * btn, const char * str)
         return false;
     }
 
-    _contents_init(style);
     /** set first item */
-    if (_gt_vector_get_count(style->contents) <= 0) {
-        _gt_vector_add_item(&style->contents, (void *)style->text, strlen(style->text) + 1);
+    if (_gt_vector_get_count(style->contents) == 0) {
+        _gt_vector_add_item(style->contents, (void *)style->text, strlen(style->text) + 1);
     }
-    return _gt_vector_add_item(&style->contents, (void *)str, strlen(str) + 1);
+    return _gt_vector_add_item(style->contents, (void *)str, strlen(str) + 1);
 }
 
 bool gt_btn_remove_state_content(gt_obj_st * btn, const char * str)
@@ -517,7 +499,7 @@ bool gt_btn_remove_state_content(gt_obj_st * btn, const char * str)
     if (!str || !strlen(str)) {
         return false;
     }
-    return _gt_vector_remove_item(&style->contents, (void * )str);
+    return _gt_vector_remove_item(style->contents, (void * )str);
 }
 
 bool gt_btn_clear_all_state_content(gt_obj_st * obj)

@@ -46,7 +46,9 @@
 #if USE_MEM_TRACE_DEBUG_BY_FILE
 #include "stdio.h"
 #include "unistd.h"
+#include "sys/stat.h"
 
+#define MEM_TRACE_RUNTIMES_PATH "./runtimes"
 #define MEM_TRACE_PATH          "./runtimes/mem"
 #define MEM_TRACE_FAILED_PATH   "./runtimes/mem/failed.log"
 #define MEM_TRACE_LOG_PATH      "./runtimes/mem/success.log"
@@ -232,6 +234,11 @@ void gt_mem_init(void)
 #if USE_MEM_TRACE_DEBUG_BY_FILE
     uint8_t buffer[128] = {0};
     FILE * fp = NULL;
+    struct stat info;
+    if (stat(MEM_TRACE_PATH, &info)) {
+        mkdir(MEM_TRACE_RUNTIMES_PATH);
+        mkdir(MEM_TRACE_PATH);
+    }
     fp = fopen(MEM_TRACE_LOG_PATH, "a");
     fprintf(fp, "\t--- addr: %p -> %p, size: 0x%x(%d) ---\n", _addr_start, _addr_end, GT_MEM_SIZE, GT_MEM_SIZE);
     fflush(fp);
@@ -322,13 +329,19 @@ void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
 
     // 删除之前内存记录
     sprintf((char *)buffer, "%s/%p_%d.mem\0", MEM_TRACE_PATH, ptr, old_size);
-    if (unlink(buffer) < 0) {
-        fp = fopen(MEM_TRACE_FAILED_PATH, "a");
-        fprintf(fp, "[++]%s:%d   addr: %p -> %p,   want: 0x%x(%d)   real: 0x%x(%d) -> 0x%x(%d)\n",
-            file_name, line, ptr, ret, size, size, old_size, old_size, block_size, block_size);
-        fflush(fp);
-        fclose(fp);
-        fp = NULL;
+    if (ptr != ret
+#if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT
+    || old_size != block_size
+#endif
+    ) {
+        if (unlink(buffer) < 0) {
+            fp = fopen(MEM_TRACE_FAILED_PATH, "a");
+            fprintf(fp, "[++]%s:%d   addr: %p -> %p,   want: 0x%x(%d)   real: 0x%x(%d) -> 0x%x(%d)\n",
+                file_name, line, ptr, ret, size, size, old_size, old_size, block_size, block_size);
+            fflush(fp);
+            fclose(fp);
+            fp = NULL;
+        }
     }
 
     sprintf((char *)buffer, "%s/%p_%d.mem\0", MEM_TRACE_PATH, ret, block_size);

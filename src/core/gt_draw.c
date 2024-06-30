@@ -2516,7 +2516,7 @@ void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_are
 #endif
     }
     else if (GT_RES_FAIL == gt_img_decoder_open(&dsc_img, dsc->bg_img_src)) {
-        GT_LOGW(GT_LOG_TAG_DATA, "Open image decoder failed");
+        GT_LOGW(GT_LOG_TAG_DATA, "[%s] Open image decoder failed", dsc->bg_img_src);
         return;
     }
     coords->w = dsc_img.header.w;
