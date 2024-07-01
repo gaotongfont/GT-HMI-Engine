@@ -195,9 +195,7 @@ _gt_timer_st * _gt_timer_get_laster_timer(void)
 
 void _gt_timer_set_repeat_count(_gt_timer_st * timer, int32_t repeat)
 {
-    if (!timer) {
-        return ;
-    }
+    GT_CHECK_BACK(timer);
     timer->repeat_count = repeat;
 }
 
@@ -211,11 +209,13 @@ int32_t _gt_timer_get_repeat_count(_gt_timer_st * timer)
 
 void _gt_timer_set_period(_gt_timer_st * timer, uint32_t period)
 {
+    GT_CHECK_BACK(timer);
     timer->period = period;
 }
 
 uint32_t _gt_timer_get_period(_gt_timer_st * timer)
 {
+    GT_CHECK_BACK(timer);
     return timer->period;
 }
 
@@ -238,16 +238,19 @@ void _gt_timer_set_paused(_gt_timer_st * timer, bool state)
 
 bool _gt_timer_get_paused(_gt_timer_st * timer)
 {
+    GT_CHECK_BACK_VAL(timer, true);
     return (bool)timer->paused;
 }
 
 void _gt_timer_set_user_data(_gt_timer_st * timer, void * user_data)
 {
+    GT_CHECK_BACK(timer);
     timer->user_data = user_data;
 }
 
 void * _gt_timer_get_user_data(_gt_timer_st * timer)
 {
+    GT_CHECK_BACK(timer);
     return timer->user_data;
 }
 
