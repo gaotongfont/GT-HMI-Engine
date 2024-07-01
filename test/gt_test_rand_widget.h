@@ -18,6 +18,9 @@ extern "C" {
 #if _GT_USE_TEST
 
 #ifndef _GT_TEST_RAND_WIDGET_EVENT
+    /**
+     * @brief Control random click event test
+     */
     #define _GT_TEST_RAND_WIDGET_EVENT      0
 #endif
 

@@ -20,9 +20,21 @@
 
 
 /* private define -------------------------------------------------------*/
+/** Random send event min ms */
 #define _GT_RAND_SEED_MIN   30
+/** Random send event max ms */
 #define _GT_RAND_SEED_MAX   200
 
+/**
+ * @brief Random event type
+ */
+#if 01
+    #define _RANDOM_EVENT_1     GT_EVENT_TYPE_INPUT_PRESSED
+    #define _RANDOM_EVENT_2     GT_EVENT_TYPE_INPUT_RELEASED
+#else
+    #define _RANDOM_EVENT_1     GT_EVENT_TYPE_INPUT_PRESSED
+    #define _RANDOM_EVENT_2     GT_EVENT_TYPE_INPUT_RELEASED
+#endif
 
 /* private typedef ------------------------------------------------------*/
 
@@ -49,8 +61,8 @@ static void _event_calling_recursive(gt_obj_st * p) {
     uint32_t rand_val = rand();
     if (0 == p->cnt_child) {
         GT_LOG_A(GT_LOG_TAG_TEST, "  ==== widget: %p[%d], event: %d",
-            p, gt_obj_class_get_type(p), rand_val & 0x1 ? GT_EVENT_TYPE_INPUT_PRESSED : GT_EVENT_TYPE_INPUT_RELEASED);
-        gt_event_send(p, rand_val & 0x1 ? GT_EVENT_TYPE_INPUT_PRESSED : GT_EVENT_TYPE_INPUT_RELEASED, NULL);
+            p, gt_obj_class_get_type(p), rand_val & 0x1 ? _RANDOM_EVENT_1 : _RANDOM_EVENT_2);
+        gt_event_send(p, rand_val & 0x1 ? _RANDOM_EVENT_1 : _RANDOM_EVENT_2, NULL);
         GT_LOG_A(GT_LOG_TAG_TEST, "  ----");
         return;
     }
@@ -61,8 +73,8 @@ static void _event_calling_recursive(gt_obj_st * p) {
     }
     GT_LOG_A(GT_LOG_TAG_TEST, "  ==== cur: %p widget: %p[%d](%d/%d), event: %d",
         p, p->child[rand_widget], gt_obj_class_get_type(p->child[rand_widget]), rand_widget, p->cnt_child,
-        rand_val & 0x1 ? GT_EVENT_TYPE_INPUT_PRESSED : GT_EVENT_TYPE_INPUT_RELEASED);
-    gt_event_send(p->child[rand_widget], rand_val & 0x1 ? GT_EVENT_TYPE_INPUT_PRESSED : GT_EVENT_TYPE_INPUT_RELEASED, NULL);
+        rand_val & 0x1 ? _RANDOM_EVENT_1 : _RANDOM_EVENT_2);
+    gt_event_send(p->child[rand_widget], rand_val & 0x1 ? _RANDOM_EVENT_1 : _RANDOM_EVENT_2, NULL);
     GT_LOG_A(GT_LOG_TAG_TEST, "  ----");
 }
 
