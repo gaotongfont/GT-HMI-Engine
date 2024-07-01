@@ -67,6 +67,7 @@ typedef struct _gt_font_info_s {
     uint8_t thick_cn;    ///< set: font thick
     uint8_t gray;        ///< set: font gray
     uint8_t encoding;    ///< set: font encoding
+    int8_t offset_y;    ///< 0: [default] don't move; < 0: move up; > 0: move down
 }gt_font_info_st;
 
 /**
@@ -104,8 +105,10 @@ typedef struct _gt_text_style_s {
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
     ///< 0[default]: disabled touch point logical, 1: using touch point logical to get word
     uint8_t touch_point     : 1;
+    ///< 0[default]: multi chinese words together, 1: single chinese word
+    uint8_t single_cn       : 1;
 #endif
-    uint8_t reserved        : 2;
+    uint8_t reserved        : 1;
 }_gt_text_style_st;
 
 /**
@@ -192,6 +195,11 @@ typedef struct gt_py_input_method_s {
     uint8_t chinese[GT_PY_MAX_NUMB][GT_PY_MAX_NUMB];
 }gt_py_input_method_st;
 
+typedef struct _gt_font_dot_ret_s {
+    gt_font_type_em type;
+    uint16_t size;
+}_gt_font_dot_ret_st;
+
 /* macros ---------------------------------------------------------------*/
 
 
@@ -235,12 +243,21 @@ uint8_t gt_unicode_to_utf8(uint8_t * utf8, uint32_t unicode);
 uint8_t gt_utf8_check_char(uint8_t * utf8);
 
 /**
- * @brief Get the character data of a string
+ * @brief Get one character encode dot data
+ *
+ * @param font [Warning] font->info.size will be change by real font size
+ * @param unicode The unicode encoding of the character
+ * @return _gt_font_dot_ret_st
+ */
+_gt_font_dot_ret_st gt_font_get_dot(gt_font_st * font, uint32_t unicode);
+
+/**
+ * @brief [Temporarily unused] Get the character data of a string
  *
  * @param font font basic information
- * @return font type value enum @ref gt_font_type_em
+ * @return font type and font size value enum @ref gt_font_type_em
  */
-uint16_t gt_font_get_string_dot(gt_font_st * font);
+gt_font_type_em gt_font_get_string_dot(gt_font_st * font);
 
 /**
  * @brief get string all width
@@ -253,11 +270,11 @@ uint32_t gt_font_get_string_width(gt_font_st * font);
 /**
  * @brief Get the width of a character
  *
- * @param unicode The unicode encoding of the character
+ * @param uni_or_gbk The unicode or gbk encoding of the character
  * @param font string msg
  * @return uint8_t The width of the character
  */
-uint8_t gt_font_get_one_word_width(uint32_t unicode, gt_font_st * font);
+uint8_t gt_font_get_one_word_width(uint32_t uni_or_gbk, gt_font_st * font);
 
 _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, uint8_t font_style, uint8_t langue, uint32_t text_len);
 
@@ -273,6 +290,16 @@ uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const 
 
 void gt_project_encoding_set(gt_encoding_et charset);
 gt_encoding_et gt_project_encoding_get(void);
+int8_t _gt_font_get_type_group_offset_y(uint16_t cn_option, uint16_t en_option);
+
+/**
+ * @brief
+ *
+ * @param utf8
+ * @param res
+ * @param encoding
+ * @return uint8_t The byte length of the encode
+ */
 uint8_t gt_font_one_char_code_len_get(uint8_t * utf8, uint32_t *res, uint8_t encoding);
 uint8_t gt_encoding_table_one_char(uint8_t *src, uint8_t* dst, gt_encoding_convert_et tab);
 uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const utf8, uint32_t *res);
@@ -313,11 +340,11 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint3
  *      Warn: "'" @ref _GT_FONT_APOSTROPHE_PUNCTUATION_MARK_LEGAL
  *      number legal enable @ref _GT_FONT_NUMBER_LEGAL
  *
- * @param unicode
+ * @param uni_or_gbk
  * @return true illegal char
  * @return false legal char
  */
-bool gt_font_is_illegal_char(uint32_t unicode);
+bool gt_font_is_illegal_char(uint32_t uni_or_gbk);
 uint16_t gt_font_get_word_byte_length(char const * const text, uint16_t length, uint8_t encoding);
 #endif
 

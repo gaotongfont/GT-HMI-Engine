@@ -17,6 +17,7 @@ extern "C" {
 #include "stdint.h"
 #include "../gt_conf.h"
 #include "../widgets/gt_obj.h"
+#include "../others/gt_anim.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -32,7 +33,7 @@ extern "C" {
 #define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL           3
 
 /** Drag throw slow-down in [%]. Greater value: faster(far)[0] -> slow-down[100] */
-#define GT_CFG_DEFAULT_POINT_SCROLL_THROW           30
+#define GT_CFG_DEFAULT_POINT_SCROLL_THROW           10
 
 #define GT_CFG_DEFAULT_POINT_SCROLL_LIMIT           10
 
@@ -60,8 +61,9 @@ typedef enum _gt_indev_type_e {
  * @brief button or touch pad, input status
  */
 typedef enum _gt_indev_state_e {
-    GT_INDEV_STATE_RELEASED = 0,        ///< released
+    GT_INDEV_STATE_RELEASED = 0,    ///< released
     GT_INDEV_STATE_PRESSED,         ///< key down
+    GT_INDEV_STATE_INVALID,         ///< invalid
 }gt_indev_state_et;
 
 /**
@@ -125,10 +127,11 @@ typedef struct _gt_indev_drv_s
 }gt_indev_drv_st;
 
 /**
- * @brief input device data structure
+ * @brief input device information
  */
-typedef struct _gt_indev_proc_s
-{
+typedef struct _gt_indev_s {
+    gt_indev_drv_st * drv;
+
     uint32_t timestamp_start;
     uint32_t timestamp_long_press;
 
@@ -168,14 +171,8 @@ typedef struct _gt_indev_proc_s
             struct gt_obj_s * obj_target;    ///< The object of first touch
         }keypad;
     }data;
-}gt_indev_proc_st;
 
-/**
- * @brief input device information
- */
-typedef struct _gt_indev_s {
-    gt_indev_drv_st * drv;
-    gt_indev_proc_st proc;          ///< Save all input device data
+    gt_anim_st * scroll_throw_anim;
 }gt_indev_st;
 
 typedef struct gt_indev_param_st {

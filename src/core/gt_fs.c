@@ -147,9 +147,7 @@ gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode)
     if (!drv || !drv->open_cb) {
         return NULL;
     }
-    gt_fs_fp_st * fp = drv->open_cb(drv, (char *)path, mode);
-
-    return fp;
+    return (gt_fs_fp_st * )drv->open_cb(drv, (char *)path, mode);
 }
 
 #if GT_USE_FILE_HEADER
@@ -242,9 +240,7 @@ gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h)
 #if GT_USE_FILE_HEADER
 gt_fs_res_et gt_fs_fh_read_img_wh(gt_file_header_param_st * fh, uint16_t * w, uint16_t * h)
 {
-    if (NULL == fh) {
-        return GT_FS_RES_FAIL;
-    }
+    GT_CHECK_BACK_VAL(fh, GT_FS_RES_FAIL);
     if (fh->idx < 0) {
         return GT_FS_RES_FAIL;
     }
@@ -264,9 +260,7 @@ gt_fs_res_et gt_fs_fh_read_img_wh(gt_file_header_param_st * fh, uint16_t * w, ui
 
 void gt_fs_close(gt_fs_fp_st * fp)
 {
-    if (NULL == fp) {
-        return;
-    }
+    GT_CHECK_BACK(fp);
     if (fp->drv->close_cb) {
         fp->drv->close_cb(fp->drv, fp);
     }
@@ -277,12 +271,8 @@ void gt_fs_close(gt_fs_fp_st * fp)
 char const * const gt_fs_get_name_by_index(gt_fs_type_et file_type, uint16_t index_of_list)
 {
     gt_fs_drv_st * drv = _get_default_drv_by(file_type);
-    if (NULL == drv) {
-        return NULL;
-    }
-    if (NULL == drv->get_name_by_cb) {
-        return NULL;
-    }
+    GT_CHECK_BACK_VAL(drv, NULL);
+    GT_CHECK_BACK_VAL(drv->get_name_by_cb, NULL);
     return drv->get_name_by_cb(index_of_list);
 }
 #endif

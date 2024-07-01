@@ -238,7 +238,7 @@ static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
 void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
 {
     gt_obj_st * obj = (gt_obj_st * )_gt_timer_get_user_data(timer);
-
+    GT_CHECK_BACK(obj);
     gt_event_st * ptr = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
     while(ptr) {
         if (ptr->target == obj) {
@@ -293,9 +293,7 @@ gt_obj_st * gt_obj_create(gt_obj_st * parent)
 
 gt_obj_st * gt_obj_get_parent(gt_obj_st * obj)
 {
-    if (NULL == obj) {
-        return NULL;
-    }
+    GT_CHECK_BACK_VAL(obj, NULL);
     return obj->parent;
 }
 
@@ -331,9 +329,7 @@ gt_obj_st * gt_obj_find_by_id(gt_id_t widget_id)
 
 void gt_obj_register_id(gt_obj_st * obj, gt_id_t id)
 {
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
     obj->id = id;
 }
 
@@ -347,9 +343,7 @@ gt_id_t gt_obj_get_id(gt_obj_st * obj)
 
 bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent)
 {
-    if (NULL == obj) {
-        return false;
-    }
+    GT_CHECK_BACK_VAL(obj, false);
     gt_obj_st * p = obj->parent;
     while (p) {
         if (p == parent) {
@@ -390,7 +384,7 @@ gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj)
 
 void gt_obj_set_bgcolor(gt_obj_st * obj, gt_color_t color)
 {
-    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+    if (false == gt_obj_is_type(obj, GT_TYPE_TOTAL)) {
         return ;
     }
     obj->bgcolor = color;
@@ -398,7 +392,7 @@ void gt_obj_set_bgcolor(gt_obj_st * obj, gt_color_t color)
 
 gt_color_t gt_obj_get_bgcolor(gt_obj_st * obj)
 {
-    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+    if (false == gt_obj_is_type(obj, GT_TYPE_TOTAL)) {
         return gt_color_make(0, 0, 0);
     }
     return obj->bgcolor;
@@ -409,9 +403,7 @@ gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj)
     gt_obj_st * child = NULL;
     gt_size_t bottom = -0x7fff;
     gt_size_t temp = 0, min_y = 0x7fff;
-    if (NULL == obj) {
-        return 0;
-    }
+    GT_CHECK_BACK_VAL(obj, 0);
 
     for (gt_size_t i = 0, cnt = obj->cnt_child; i < cnt; i++) {
         child = obj->child[i];
@@ -449,7 +441,7 @@ gt_size_t gt_obj_get_childs_max_height(gt_obj_st * parent)
 
 void gt_obj_show_bg(gt_obj_st * obj, bool show)
 {
-    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+    if (false == gt_obj_is_type(obj, GT_TYPE_TOTAL)) {
         return;
     }
     obj->show_bg = show;
@@ -457,7 +449,7 @@ void gt_obj_show_bg(gt_obj_st * obj, bool show)
 
 bool gt_obj_is_show_bg(gt_obj_st * obj)
 {
-    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+    if (false == gt_obj_is_type(obj, GT_TYPE_TOTAL)) {
         return false;
     }
     return obj->show_bg;

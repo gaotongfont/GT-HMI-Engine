@@ -26,17 +26,27 @@ extern "C" {
 
 #ifndef GT_LISTVIEW_CUSTOM_FONT_STYLE
     /**
-     * @brief 0: Use listview default font style, only support one font style;
+     * @brief 0[defalut]: Use listview default font style, only support one font style;
      *        1: One of the listview items uses custom font style, which is defined by user.
      */
-    #define GT_LISTVIEW_CUSTOM_FONT_STYLE   0
+    #define GT_LISTVIEW_CUSTOM_FONT_STYLE           0
 #endif
 
+#ifndef GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
+    /**
+     * @brief 0[defalut]: Do not use rectangle element;
+     */
+    #define GT_LISTVIEW_USE_ELEMENT_TYPE_RECT       0
+#endif
 
 /* typedef --------------------------------------------------------------*/
 typedef enum gt_listview_element_type_s {
     GT_LISTVIEW_ELEMENT_TYPE_IMG = 0,
     GT_LISTVIEW_ELEMENT_TYPE_LABEL,
+
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
+    GT_LISTVIEW_ELEMENT_TYPE_RECT,
+#endif
 
     _GT_LISTVIEW_ELEMENT_TYPE_MAX,
 }gt_listview_element_type_st;
@@ -59,13 +69,23 @@ typedef struct gt_listview_param_s {
 #endif
 }gt_listview_param_st;
 
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
+typedef struct gt_listview_rect_s {
+    gt_color_t bg_color;
+    gt_color_t border_color;
+    uint16_t border;
+    uint8_t radius;
+    uint8_t is_fill;
+}gt_listview_rect_st;
+#endif
+
 typedef struct gt_listview_custom_item_s {
     char * src;
     uint16_t src_len;
-    uint16_t item_idx;
-    gt_area_st area;
+    uint16_t item_idx;      /** The item index of listview widget */
+    gt_area_st area;        /** The position relative item location */
     uint8_t type;           /** @ref gt_listview_element_type_st */
-    uint8_t element_idx;
+    uint8_t element_idx;    /** The element index of item object */
 #if GT_LISTVIEW_CUSTOM_FONT_STYLE
     /**
      * @brief Pointer NULL: use listview default font style;
@@ -73,6 +93,9 @@ typedef struct gt_listview_custom_item_s {
      * [Warn] gt_font_info_init() is recommended for initialization of defined variables.
      */
     gt_font_info_st * font_info_p;
+#endif
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
+    gt_listview_rect_st rect;
 #endif
 }gt_listview_custom_item_st;
 
@@ -139,7 +162,7 @@ gt_obj_st * gt_listview_add_item_icons(gt_obj_st * listview, char * left_icon, c
 gt_obj_st * gt_listview_add_item_by_param(gt_obj_st * listview, gt_listview_param_st * param);
 
 /**
- * @brief
+ * @brief add item to listview obj with custom element
  *
  * @param listview
  * @param item

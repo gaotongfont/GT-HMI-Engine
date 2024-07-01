@@ -120,11 +120,6 @@ static void _init_cb(gt_obj_st * obj) {
  * @param obj
  */
 static void _deinit_cb(gt_obj_st * obj) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
-    if (NULL == obj) {
-        return ;
-    }
-
 }
 
 
@@ -190,9 +185,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 gt_obj_st * gt_switch_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    if (NULL == obj) {
-        return obj;
-    }
+    GT_CHECK_BACK_VAL(obj, NULL);
     _gt_switcher_st * style = (_gt_switcher_st * )obj;
 
     style->color_ina    = gt_color_hex(0xebeef5);

@@ -107,8 +107,8 @@ typedef struct gt_obj_s {
     uint32_t scroll_dir    : 2;     /* @see gt_scroll_dir_et [default: GT_SCROLL_ALL] */
     uint32_t scroll_l_r    : 1;     /* Enabled when GT_SCROLL_HORIZONTAL or GT_SCROLL_ALL @see gt_scroll_dir_et */
     uint32_t scroll_u_d    : 1;     /* Enabled when GT_SCROLL_VERTICAL or GT_SCROLL_ALL @see gt_scroll_dir_et */
-    uint32_t scroll_snap_x : 2;     /* Scroll the alignment position @see gt_scroll_snap_em */
-    uint32_t scroll_snap_y : 2;     /* As scroll_snap_x */
+    uint32_t scroll_snap_x : 2;     /* Scroll the alignment position @ref gt_scroll_snap_em */
+    uint32_t scroll_snap_y : 2;     /* As scroll_snap_x @ref gt_scroll_snap_em */
 
     uint32_t absorb        : 1;     /* obj absorb state, 0:un-absorb, 1: Adsorption screen maximum boundary */
     uint32_t absorb_dir    : 1;     /* obj absorb direction(It only works when absorb is set to 1), 0: horizontal; 1: vertical */

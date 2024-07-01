@@ -88,9 +88,7 @@ static void _init_cb(gt_obj_st * obj) {
  */
 static void _deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
 
     _gt_img_st * style_p = (_gt_img_st * )obj;
     if (NULL != style_p->src) {
@@ -117,7 +115,12 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_UPDATE_VALUE:
             area = obj->area;
-            gt_fs_read_img_wh(gt_img_get_src(obj), &area.w, &area.h);
+            if (GT_FS_RES_FAIL == gt_fs_read_img_wh(gt_img_get_src(obj), &area.w, &area.h)) {
+                return ;
+            }
+            if (0 == area.w || 0 == area.h) {
+                return ;
+            }
             gt_obj_size_change(obj, &area);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
@@ -172,7 +175,10 @@ void gt_img_set_src(gt_obj_st * img, char * src)
         style->src = NULL;
     }
     uint16_t len = src == NULL ? 0 : strlen(src);
-    style->src = gt_mem_malloc( len + 1 );
+    style->src = gt_mem_malloc(len + 1);
+    if (NULL == style->src) {
+        return ;
+    }
     strcpy(style->src, src);
     style->src[len] = 0;
 

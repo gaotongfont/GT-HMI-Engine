@@ -115,21 +115,6 @@ typedef struct _gt_file_header_ctl_s {
 
 /* macros ---------------------------------------------------------------*/
 
-/**
- * @brief Check param is valid, otherwise return NULL
- *
- * @param param The param to check
- * @return gt_file_header_param_st * result object to draw image
- */
-gt_file_header_param_st inline * gt_file_header_param_check_valid(gt_file_header_param_st * param) {
-    if (NULL == param) {
-        return NULL;
-    }
-    if (param->idx < 0) {
-        return NULL;
-    }
-    return param;
-}
 
 
 /* class ----------------------------------------------------------------*/
@@ -204,6 +189,14 @@ uint32_t gt_file_header_get_img_size(gt_file_header_st const * item);
  * @return uint32_t
  */
 uint32_t gt_file_header_get_img_offset_by(gt_file_header_st const * item, gt_file_header_param_st const * const fh);
+
+/**
+ * @brief Check param is valid, otherwise return NULL
+ *
+ * @param param The param to check
+ * @return gt_file_header_param_st * result object to draw image
+ */
+gt_file_header_param_st * gt_file_header_param_check_valid(gt_file_header_param_st * param);
 
 #endif  /** GT_USE_FILE_HEADER */
 

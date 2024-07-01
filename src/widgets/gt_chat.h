@@ -39,19 +39,19 @@ typedef enum {
 
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_chat_create(gt_obj_st * parent);
-//
+
 void gt_chat_set_bg_color(gt_obj_st * chat, gt_color_t color);
-//
+
 void gt_chat_add_send_text_msg(gt_obj_st * chat, const char * msg);
 void gt_chat_add_send_voice_msg(gt_obj_st * chat, uint8_t tim_s);
-//
+
 void gt_chat_add_received_text_msg(gt_obj_st * chat, const char * msg);
 void gt_chat_add_received_voice_msg(gt_obj_st * chat, uint8_t tim_s);
-//
+
 void gt_chat_msg_set_color_background(gt_obj_st * chat, gt_color_t color);
 void gt_chat_msg_set_color_border(gt_obj_st * chat, gt_color_t color);
 void gt_chat_msg_set_border_width(gt_obj_st * chat, uint8_t width);
-void gt_chat_set_font_coloror(gt_obj_st * chat, gt_color_t color);
+void gt_chat_set_font_color(gt_obj_st * chat, gt_color_t color);
 void gt_chat_set_font_size(gt_obj_st * chat, uint8_t size);
 void gt_chat_set_font_gray(gt_obj_st * chat, uint8_t gray);
 void gt_chat_set_font_family_cn(gt_obj_st * chat, gt_family_t font_family_cn);

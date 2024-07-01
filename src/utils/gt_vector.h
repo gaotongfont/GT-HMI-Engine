@@ -57,16 +57,25 @@ typedef struct _gt_vector_s {
 
 
 /* global functions / API interface -------------------------------------*/
+/**
+ * @brief Create a vector object
+ *
+ * @param free_cb To free memory inside the project
+ * @param equal_item_cb To compare the same item
+ * @return _gt_vector_st* default object
+ */
+_gt_vector_st * _gt_vector_create(_gt_vector_free_item_cb_t free_cb, _gt_vector_equal_item_cb_t equal_item_cb);
 
 /**
  * @brief A callback to free custom content memory
  *
  * @param vector_p
  * @param free_item_cb
+ * @param instance_size
  * @return true
  * @return false
  */
-bool _gt_vector_add_free_item_cb(_gt_vector_st ** vector_p, _gt_vector_free_item_cb_t free_item_cb);
+bool _gt_vector_add_free_item_cb(_gt_vector_st * vector_p, _gt_vector_free_item_cb_t free_item_cb);
 
 /**
  * @brief Find a way to compare the same item
@@ -76,7 +85,7 @@ bool _gt_vector_add_free_item_cb(_gt_vector_st ** vector_p, _gt_vector_free_item
  * @return true
  * @return false
  */
-bool _gt_vector_add_equal_item_cb(_gt_vector_st ** vector_p, _gt_vector_equal_item_cb_t equal_item_cb);
+bool _gt_vector_add_equal_item_cb(_gt_vector_st * vector_p, _gt_vector_equal_item_cb_t equal_item_cb);
 
 /**
  * @brief Add a item to vector
@@ -87,7 +96,19 @@ bool _gt_vector_add_equal_item_cb(_gt_vector_st ** vector_p, _gt_vector_equal_it
  * @return true
  * @return false
  */
-bool _gt_vector_add_item(_gt_vector_st ** vector_p, void * item, uint16_t size);
+bool _gt_vector_add_item(_gt_vector_st * vector_p, void * item, uint16_t size);
+
+/**
+ * @brief Replace a item in vector
+ *
+ * @param vector_p
+ * @param index The index of the item to be replaced
+ * @param item The new item
+ * @param size The size of the new item
+ * @return true
+ * @return false
+ */
+bool _gt_vector_replace_item(_gt_vector_st * vector_p, uint16_t index, void * item, uint16_t size);
 
 /**
  * @brief Remove a item from vector
@@ -97,7 +118,7 @@ bool _gt_vector_add_item(_gt_vector_st ** vector_p, void * item, uint16_t size);
  * @return true
  * @return false
  */
-bool _gt_vector_remove_item(_gt_vector_st ** vector_p, void * target);
+bool _gt_vector_remove_item(_gt_vector_st * vector_p, void * target);
 
 /**
  * @brief Get the item from vector
@@ -124,13 +145,22 @@ gt_size_t _gt_vector_get_count(_gt_vector_st const * vector);
 gt_size_t _gt_vector_get_index(_gt_vector_st const * vector);
 
 /**
+ * @brief Get the item from vector
+ *
+ * @param vector
+ * @param index
+ * @return void*
+ */
+void * _gt_vector_get_item(_gt_vector_st const * vector, uint16_t index);
+
+/**
  * @brief Free the whole vector
  *
  * @param vector_p
  * @return true
  * @return false
  */
-bool _gt_vector_free(_gt_vector_st ** vector_p);
+bool _gt_vector_free(_gt_vector_st * vector_p);
 
 /**
  * @brief Just clear the vector list, but not free the vector

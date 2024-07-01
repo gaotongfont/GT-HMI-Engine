@@ -124,7 +124,7 @@ static bool _is_double_target_ignore_case(const char * const str, char target) {
 }
 
 static void _gt_clock_timer_cb(struct _gt_timer_s * timer) {
-    gt_clock_turn_next_second((gt_obj_st * )timer->user_data);
+    gt_clock_turn_next_second((gt_obj_st * )_gt_timer_get_user_data(timer));
 }
 
 static char * _get_time_str(_gt_clock_st * clock) {
@@ -688,7 +688,8 @@ bool gt_clock_remove_next_day_cb(gt_obj_st * obj, gt_clock_next_day_cb next_day_
     if (i < --style->reg.len_next_day_cb) {
         gt_memmove(&style->next_day[i], &style->next_day[i + 1], (style->reg.len_next_day_cb - i) * sizeof(_next_day_st * ));
     }
-    style->next_day = (_next_day_st ** )gt_mem_realloc(style->next_day, (style->reg.len_next_day_cb) * sizeof(_next_day_st ** ));
+    style->next_day[style->reg.len_next_day_cb] = NULL;
+    style->next_day = (_next_day_st ** )gt_mem_realloc(style->next_day, (style->reg.len_next_day_cb) * sizeof(_next_day_st * ));
     return true;
 }
 
@@ -723,7 +724,8 @@ bool gt_clock_remove_alert_cb(gt_obj_st * obj, gt_clock_alert_cb alert_cb)
     if (i < --style->reg.len_alert_cb) {
         gt_memmove(&style->alert[i], &style->alert[i + 1], (style->reg.len_alert_cb - i) * sizeof(_alert_st * ));
     }
-    style->alert = (_alert_st ** )gt_mem_realloc(style->alert, (style->reg.len_alert_cb) * sizeof(_alert_st ** ));
+    style->alert[style->reg.len_alert_cb] = NULL;
+    style->alert = (_alert_st ** )gt_mem_realloc(style->alert, (style->reg.len_alert_cb) * sizeof(_alert_st * ));
     return true;
 }
 

@@ -84,6 +84,14 @@ void _gt_timer_core_init(void);
 _gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * user_data);
 
 /**
+ * @brief Set timer callback
+ *
+ * @param timer
+ * @param callback The callback function to be set
+ */
+void _gt_timer_set_callback(_gt_timer_st * timer, gt_timer_cb_t callback);
+
+/**
  * @brief Del timer node
  *
  * @param timer timer ptr

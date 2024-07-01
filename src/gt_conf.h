@@ -65,7 +65,7 @@ extern "C" {
 #define GT_TASK_PERIOD_TIME_REFR    30
 
 /** Free object memory after N ms timer */
-#define GT_TASK_PERIOD_TIME_DESTROY 300
+#define GT_TASK_PERIOD_TIME_DESTROY 200
 
 /* user: virt file device setting */
 #define GT_VF_FLASH_SIZE    0x800000    //flash size 8*1024*1024   8M
@@ -208,6 +208,12 @@ extern "C" {
 
 #define GT_CONFIG_GUI_DRIVER_LIB    01
 
+#ifndef _GT_USE_TEST
+    /**
+     * @brief Use the test module
+     */
+    #define _GT_USE_TEST       0
+#endif
 /* typedef --------------------------------------------------------------*/
 
 

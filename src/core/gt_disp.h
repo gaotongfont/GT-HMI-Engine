@@ -55,6 +55,13 @@ typedef struct gt_disp_stack_param_s {
 }gt_disp_stack_param_st;
 
 
+typedef struct gt_disp_stack_res_s {
+    gt_obj_st * scr_old;
+    gt_scr_stack_item_st new_item;
+    uint8_t del_prev_scr : 1;
+    uint8_t ok : 1;
+}gt_disp_stack_res_st;
+
 /* macros ---------------------------------------------------------------*/
 
 
@@ -86,6 +93,14 @@ void gt_disp_stack_load_scr(gt_scr_id_t scr_id);
  * @param del_prev_scr true: free previous screen object; false: keep previous screen object alive
  */
 void gt_disp_stack_load_scr_anim(gt_scr_id_t scr_id, gt_scr_anim_type_et type, uint32_t time, uint32_t delay, bool del_prev_scr);
+
+/**
+ * @brief [Warning] Only push screen object into stack, but not display or reload screen.
+ *
+ * @param param
+ * @return gt_disp_stack_res_st
+ */
+gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const * const param);
 
 /**
  * @brief [Use screen stack manager] Use custom param to load and display screen
@@ -160,7 +175,7 @@ gt_area_abs_st * gt_disp_get_area_max(void);
  * @param dist_x distance of x
  * @param dist_y distance of y
  */
-void gt_disp_scroll_area_act(int16_t dist_x, int16_t dist_y);
+void gt_disp_scroll_area_act(gt_size_t dist_x, gt_size_t dist_y);
 
 /**
  * @brief Detects if the control intersects with the screen and sets the redrawn area

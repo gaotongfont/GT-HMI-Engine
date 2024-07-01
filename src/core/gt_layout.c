@@ -90,9 +90,7 @@ static gt_size_t _row_grow_inside_invert(gt_obj_st * target, gt_point_st * offse
 
 void gt_layout_row_grow(gt_obj_st * obj)
 {
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
     if (false == obj->row_layout) {
         return ;
     }

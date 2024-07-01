@@ -12,9 +12,11 @@
 #include "string.h"
 #include "stdio.h"
 #include "../core/gt_mem.h"
+#include "../others/gt_types.h"
 
 /* private define -------------------------------------------------------*/
 
+static char gbk_str[2] = {0};
 
 
 #if GT_CFG_USE_SYMBOL_16x16 == 1
@@ -1310,22 +1312,37 @@ static const _gt_symbol_st symbols_24x24[] = {
 /**
  * @brief check unicode is symbol
  *
- * @param unicode
+ * @param uni_or_gbk unicode or GBK(GB18030)
  * @return true is symbol
  * @return false no
  */
-bool gt_symbol_check_by_unicode(uint32_t unicode)
+bool gt_symbol_is_valid_range(uint32_t uni_or_gbk)
 {
-    if (unicode > 0xE000 && unicode < 0xF8FF) {
-        return true;
+    /**
+     * @brief GB18030 and Unicode common can use range:
+     *      0xE000 - 0xE03F
+     *          |
+     *      0xF800 - 0xF83F
+     */
+    uint8_t encodeByte = uni_or_gbk >> 8;
+    if (encodeByte < 0xE0 || encodeByte > 0xF8) {
+        return false;
     }
-    return false;
+
+    encodeByte = uni_or_gbk & 0xFF;
+    if (encodeByte > 0x3F) {
+        return false;
+    }
+    return true;
 }
 
-const uint8_t * gt_symbol_get_mask_buf(char * utf8 , uint8_t size)
+const uint8_t * gt_symbol_get_mask_buf(uint32_t uni_or_gbk, uint8_t size)
 {
     uint16_t cnt = 0, idx = 0;
     _gt_symbol_st * tmp_symbol = NULL;
+    char utf8[4] = {0};
+
+    gt_unicode_to_utf8(utf8, uni_or_gbk);
 
     if (16 == size) {
         cnt = sizeof(symbols_16x16) / sizeof(_gt_symbol_st);
@@ -1342,10 +1359,27 @@ const uint8_t * gt_symbol_get_mask_buf(char * utf8 , uint8_t size)
         if (gt_memcmp(utf8, tmp_symbol[idx].utf8, 3) == 0) {
             return tmp_symbol[idx].mask_buf;
         }
-        idx++;
+        ++idx;
     }
 
     return NULL;
 }
 
+#if _GT_SYMBOL_PRINTF_VALID_CODE
+void _gt_symbol_get_all_valid_utf8_code(void)
+{
+	uint32_t unicode = 0;
+	uint16_t len = 0;
+	char utf8[4] = {0};
+
+	for (gt_size_t msb = 0xe0; msb < 0xf9; ++msb) {
+		for (gt_size_t lsb = 0x00; lsb < 0x40; ++lsb) {
+			unicode = (msb << 8) | lsb;
+			len = gt_unicode_to_utf8(utf8, unicode);
+			// Such as:  "\xEE\x80\x80" /*57344, 0xE000*/
+			printf("\"\\x%02X\\x%02X\\x%02X\" /*%d, 0x%04X*/\n", (uint8_t)utf8[0], (uint8_t)utf8[1], (uint8_t)utf8[2], unicode, unicode);
+		}
+	}
+}
+#endif
 /* end ------------------------------------------------------------------*/

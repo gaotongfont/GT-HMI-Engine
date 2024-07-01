@@ -93,7 +93,9 @@ void gt_btnmap_set_special_btn_font_color(gt_obj_st * btnmap, gt_color_t color);
 void gt_btnmap_set_py_input_method(gt_obj_st * btnmap, gt_py_input_method_st* py_input_method);
 gt_py_input_method_st* gt_btnmap_get_py_input_method(gt_obj_st * btnmap);
 
-
+uint16_t gt_btnmap_get_max_key_count_of_lines(gt_obj_st * btnmap);
+uint16_t gt_btnmap_get_line_count(gt_obj_st * btnmap);
+uint16_t gt_btnmap_get_calc_minimum_width(gt_obj_st * btnmap);
 
 
 

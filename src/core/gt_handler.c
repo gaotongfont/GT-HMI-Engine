@@ -24,6 +24,10 @@
 #include "../extra/gt_extra.h"
 #include "../core/gt_img_decoder.h"
 
+#if _GT_USE_TEST
+#include "../../test/gt_test_rand_widget.h"
+#endif
+
 /* private define -------------------------------------------------------*/
 
 
@@ -144,6 +148,10 @@ void gt_task_handler(void)
         return ;
     }
     _gt_timer_handler();
+
+#if _GT_TEST_RAND_WIDGET_EVENT
+    _gt_test_rand_widget();
+#endif
 }
 
 

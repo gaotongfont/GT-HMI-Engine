@@ -37,12 +37,30 @@ static uint32_t _focus_color = 0x0078D7;
 
 void gt_color_fill(gt_color_t * color_arr, uint32_t len, gt_color_t color)
 {
-    uint32_t idx = 0;
     gt_color_t * ptr = color_arr;
-    while (idx < len) {
-        *ptr = color;
-        ++ptr;
-        ++idx;
+    gt_color_t const * end_p = color_arr + len - 2;
+#if 16 == GT_COLOR_DEPTH
+    uint32_t * ptr32 = NULL;
+    uint32_t color32 = (color.full << 16) | color.full;
+#endif
+
+    if ((gt_uintptr_t)ptr & 0x3) {
+        *ptr = color; ++ptr;
+    }
+    while (ptr < end_p) {
+#if 16 == GT_COLOR_DEPTH
+        ptr32 = (uint32_t *)ptr;
+        ptr32[0] = color32;
+#else
+        ptr[0] = color;
+        ptr[1] = color;
+#endif
+        ptr += 2;
+    }
+
+    end_p = color_arr + len;
+    while (ptr < end_p) {
+        *ptr = color; ++ptr;
     }
 }
 

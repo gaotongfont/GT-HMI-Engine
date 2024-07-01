@@ -149,5 +149,17 @@ uint32_t gt_file_header_get_img_offset_by(gt_file_header_st const * item, gt_fil
 #endif  /** _GT_FILE_HEADER_IMG_PACKAGE */
 }
 
+
+gt_file_header_param_st * gt_file_header_param_check_valid(gt_file_header_param_st * param)
+{
+    if (NULL == param) {
+        return NULL;
+    }
+    if (param->idx < 0) {
+        return NULL;
+    }
+    return param;
+}
+
 #endif  /** GT_USE_FILE_HEADER */
 /* end ------------------------------------------------------------------*/

@@ -41,8 +41,8 @@ static gt_scr_mapping_table_st * _get_scr_mapping_table(_gt_gc_scr_st * scr_info
 
 static bool _equal_current_id_cb(void * item, void * target) {
     gt_scr_stack_item_st * it = (gt_scr_stack_item_st * )item;
-    gt_scr_stack_item_st * tar = (gt_scr_stack_item_st * )target;
-    return it->current_scr_id == tar->current_scr_id;
+    gt_scr_stack_item_st * tar_stack = (gt_scr_stack_item_st * )target;
+    return it->current_scr_id == tar_stack->current_scr_id;
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -122,9 +122,7 @@ bool gt_scr_stack_set_depth(gt_stack_size_t stack_depth)
         scr_info->stack = NULL;
     }
     scr_info->stack = gt_stack_create(stack_depth, sizeof(gt_scr_stack_item_st));
-    if (NULL == scr_info->stack) {
-        return false;
-    }
+    GT_CHECK_BACK_VAL(scr_info->stack, false);
 
     return true;
 }
@@ -185,9 +183,7 @@ gt_obj_st * gt_scr_stack_get_prev_scr(void)
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
 
     gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek(scr_info->stack);
-    if (NULL == item) {
-        return NULL;
-    }
+    GT_CHECK_BACK_VAL(item, NULL);
     if (item->prev_scr_id == gt_scr_stack_get_home_scr_id() && gt_scr_stack_is_home_scr_alive()) {
         return gt_scr_stack_get_home_scr();
     }
@@ -199,9 +195,7 @@ bool gt_scr_stack_is_prev(gt_scr_id_t prev_scr_id)
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
 
     gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek(scr_info->stack);
-    if (NULL == item) {
-        return false;
-    }
+    GT_CHECK_BACK_VAL(item, false);
     return item->prev_scr_id == prev_scr_id;
 }
 
@@ -210,9 +204,7 @@ bool gt_scr_stack_is_current(gt_scr_id_t scr_id)
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
 
     gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek(scr_info->stack);
-    if (NULL == item) {
-        return false;
-    }
+    GT_CHECK_BACK_VAL(item, false);
     return item->current_scr_id == scr_id;
 }
 
@@ -221,9 +213,7 @@ gt_scr_id_t gt_scr_stack_get_prev_id(void)
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
 
     gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek(scr_info->stack);
-    if (NULL == item) {
-        return -1;
-    }
+    GT_CHECK_BACK_VAL(item, -1);
     return item->prev_scr_id;
 }
 
@@ -239,13 +229,11 @@ gt_obj_st * gt_scr_stack_get_prev_scr_by(gt_stack_size_t step)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
     gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek_by(scr_info->stack, step);
-    if (NULL == item) {
-        return NULL;
-    }
-    if (item->prev_scr_id == gt_scr_stack_get_home_scr_id() && gt_scr_stack_is_home_scr_alive()) {
+    GT_CHECK_BACK_VAL(item, NULL);
+    if (item->current_scr_id == gt_scr_stack_get_home_scr_id() && gt_scr_stack_is_home_scr_alive()) {
         return gt_scr_stack_get_home_scr();
     }
-    return item->prev_scr_alive;
+    return item->current_scr;
 }
 
 gt_stack_item_st gt_scr_stack_has_before(gt_scr_stack_item_st * scr)
@@ -285,9 +273,7 @@ static bool _free_alive_scr_object_cb(gt_stack_item_st item, void * data) {
             return true;
         }
     }
-    if (NULL == p->prev_scr_alive) {
-        return true;
-    }
+    GT_CHECK_BACK_VAL(p->prev_scr_alive, true);
     _gt_obj_class_destroy(p->prev_scr_alive);
     p->prev_scr_alive = NULL;
     return true;

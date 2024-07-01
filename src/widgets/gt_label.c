@@ -202,13 +202,13 @@ static _auto_scroll_st * _create_auto_scroll_st(gt_obj_st * label) {
     return _reset_auto_scroll_st(style->auto_scroll);
 }
 
-static void _auto_scroll_exec_cb(gt_obj_st * obj, int32_t value) {
+static void _auto_scroll_exec_cb(void * obj, int32_t value) {
     _gt_label_st * style = (_gt_label_st * )obj;
     if (NULL == style->auto_scroll) {
         return ;
     }
     style->auto_scroll->area.x = value;
-    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+    gt_event_send((gt_obj_st * )obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 static gt_anim_st * _create_auto_scroll_anim(gt_obj_st * label) {

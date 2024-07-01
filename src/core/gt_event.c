@@ -65,18 +65,13 @@ static gt_res_t _gt_event_calling_user_cb(gt_event_st * e) {
 
 static gt_res_t _gt_event_calling_event_cb(gt_event_st * e) {
     gt_obj_st * obj = e->target;
-    if (NULL == obj) {
-        return GT_RES_FAIL;
-    }
-    const gt_obj_class_st * class = obj->class;
-    if (NULL == class) {
-        return GT_RES_FAIL;
-    }
-    if (NULL == class->_event_cb) {
-        return GT_RES_FAIL;
-    }
-    class->_event_cb(obj, e);
+    GT_CHECK_BACK_VAL(obj, GT_RES_FAIL);
 
+    const gt_obj_class_st * class = obj->class;
+    GT_CHECK_BACK_VAL(class, GT_RES_FAIL);
+    GT_CHECK_BACK_VAL(class->_event_cb, GT_RES_FAIL);
+
+    class->_event_cb(obj, e);
     return GT_RES_OK;
 }
 
@@ -134,6 +129,7 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
     } else {
         obj->event_attr = gt_mem_realloc( obj->event_attr, (obj->cnt_event + 1) * sizeof(gt_obj_event_attr_st) );
     }
+    GT_CHECK_BACK(obj->event_attr);
     obj->event_attr[obj->cnt_event].user_cb = event;
     obj->event_attr[obj->cnt_event].filter = filter;
     obj->event_attr[obj->cnt_event].user_data = user_data;
@@ -142,9 +138,7 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
 
 gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * parms)
 {
-    if( !parent ){
-        return GT_RES_FAIL;
-    }
+    GT_CHECK_BACK_VAL(parent, GT_RES_FAIL);
     gt_event_st e;
     e.target = parent;
     e.origin = parent;
@@ -163,9 +157,7 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
 gt_res_t gt_event_send_to_childs(struct gt_obj_s * parent, gt_event_type_et event, void * parms)
 {
     gt_res_t res = GT_RES_OK;
-    if (NULL == parent) {
-        return GT_RES_FAIL;
-    }
+    GT_CHECK_BACK_VAL(parent, GT_RES_FAIL);
 
     gt_size_t idx = parent->cnt_child - 1;
     for (; idx >= 0; idx--) {

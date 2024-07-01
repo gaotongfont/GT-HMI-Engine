@@ -92,6 +92,31 @@ static gt_disp_st * _gt_disp_create(gt_disp_drv_st * drv) {
     return ret;
 }
 
+static void _calc_max_area_recursive(gt_obj_st * obj, bool is_root) {
+    GT_CHECK_BACK(obj);
+    gt_obj_st * ptr = NULL;
+    gt_size_t i = 0, cnt = obj->cnt_child;
+
+    for (; i < cnt; i++) {
+        ptr = obj->child[i];
+        GT_CHECK_FOR_CONTINUE(ptr);
+
+        if (false == gt_obj_get_visible(ptr)) {
+            continue;
+        }
+        if (ptr->cnt_child || gt_obj_get_virtual(ptr)) {
+            _calc_max_area_recursive(ptr, false);
+        }
+
+        _gt_disp_update_max_area(&ptr->area, _gt_obj_is_ignore_calc_max_area(ptr));
+    }
+
+    if (is_root || gt_obj_get_virtual(obj)) {
+        return;
+    }
+    _gt_disp_update_max_area(&obj->area, _gt_obj_is_ignore_calc_max_area(obj));
+}
+
 /* global functions / API interface -------------------------------------*/
 
 /*************************************/
@@ -288,6 +313,7 @@ get_area_lb:
 void _gt_disp_update_max_area(const gt_area_st * const area, bool is_ignore_calc)
 {
     gt_disp_st * disp = gt_disp_get_default();
+    GT_CHECK_BACK(disp);
     gt_area_abs_st * max_area = &disp->area_max;
 
     if (is_ignore_calc) {
@@ -309,31 +335,11 @@ void _gt_disp_update_max_area(const gt_area_st * const area, bool is_ignore_calc
     }
 }
 
-static void _calc_max_area_recursive(gt_obj_st * obj, bool is_root) {
-    gt_obj_st * ptr = NULL;
-    gt_size_t i = 0, cnt = obj->cnt_child;
-
-    for (; i < cnt; i++) {
-        ptr = obj->child[i];
-        if (false == gt_obj_get_visible(ptr)) {
-            continue;
-        }
-        if (ptr->cnt_child || gt_obj_get_virtual(ptr)) {
-            _calc_max_area_recursive(ptr, false);
-        }
-
-        _gt_disp_update_max_area(&ptr->area, _gt_obj_is_ignore_calc_max_area(ptr));
-    }
-
-    if (is_root || gt_obj_get_virtual(obj)) {
-        return;
-    }
-    _gt_disp_update_max_area(&obj->area, _gt_obj_is_ignore_calc_max_area(obj));
-}
-
 void _gt_disp_reload_max_area(gt_obj_st * scr)
 {
+    GT_CHECK_BACK(scr);
     gt_disp_st * disp = gt_disp_get_default();
+    GT_CHECK_BACK(disp);
     gt_area_abs_st * max_area = &disp->area_max;
 
     max_area->left = 0;
@@ -347,6 +353,7 @@ void _gt_disp_reload_max_area(gt_obj_st * scr)
 void _gt_disp_hided_layer_top_widgets(gt_obj_st * top)
 {
     gt_obj_st * obj = NULL;
+    GT_CHECK_BACK(top);
 
     for (gt_size_t i = 0; i < top->cnt_child; i++) {
         obj = top->child[i];

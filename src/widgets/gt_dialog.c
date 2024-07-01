@@ -109,19 +109,19 @@ static void _deinit_cb(gt_obj_st * obj) {
 
 }
 
-static void _dialog_anim_exec_cb(gt_obj_st * obj, int32_t val) {
-    gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_OPA, (uint8_t)val);
-    gt_obj_set_opa(obj, (gt_opa_t)val);
+static void _dialog_anim_exec_cb(void * obj, int32_t val) {
+    gt_obj_child_set_prop((gt_obj_st * )obj, GT_OBJ_PROP_TYPE_OPA, (uint8_t)val);
+    gt_obj_set_opa((gt_obj_st * )obj, (gt_opa_t)val);
 }
 
 static void _dialog_show_anim_start_cb(struct gt_anim_s * anim) {
-    gt_obj_st * obj = anim->target;
+    gt_obj_st * obj = (gt_obj_st * )anim->tar;
     obj->opa = GT_OPA_0;
     gt_obj_set_visible(obj, GT_VISIBLE);
 }
 
 static void _dialog_close_anim_ready_cb(struct gt_anim_s * anim) {
-    gt_obj_st * obj = anim->target;
+    gt_obj_st * obj = (gt_obj_st * )anim->tar;
     obj->opa = GT_OPA_0;
     gt_obj_set_visible(obj, GT_INVISIBLE);
     gt_obj_destroy(obj);

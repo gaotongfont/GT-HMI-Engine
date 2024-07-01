@@ -103,48 +103,34 @@ static int32_t _gt_anim_path_linear(const struct gt_anim_s * anim) {
     return value;
 }
 
-static int32_t _gt_anim_path_ease_in(const struct gt_anim_s * anim) {
-    int32_t t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION);
-    int32_t step = gt_bezier3(t, 0, 50, 100, GT_MATH_BEZIER_VAL_RESOLUTION);
+static inline int32_t _gt_anim_calc_path_by_bezier(const struct gt_anim_s * anim, uint32_t p0, uint32_t p1, uint32_t p2, uint32_t p3) {
+    gt_math_bezier_st bezier = {
+        .t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION),
+        .p0 = p0, .p1 = p1, .p2 = p2, .p3 = p3
+    };
+    int32_t step = gt_bezier3(&bezier);
 
     int32_t value = (anim->value_end - anim->value_start) * step;
     value >>= GT_MATH_BEZIER_VAL_SHIFT;
     value += anim->value_start;
 
     return value;
+}
+
+static int32_t _gt_anim_path_ease_in(const struct gt_anim_s * anim) {
+    return _gt_anim_calc_path_by_bezier(anim, 0, 50, 100, GT_MATH_BEZIER_VAL_RESOLUTION);
 }
 
 static int32_t _gt_anim_path_ease_out(const struct gt_anim_s * anim) {
-    int32_t t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION);
-    int32_t step = gt_bezier3(t, 0, 900, 950, GT_MATH_BEZIER_VAL_RESOLUTION);
-
-    int32_t value = (anim->value_end - anim->value_start) * step;
-    value >>= GT_MATH_BEZIER_VAL_SHIFT;
-    value += anim->value_start;
-
-    return value;
+    return _gt_anim_calc_path_by_bezier(anim, 0, 0, 600, GT_MATH_BEZIER_VAL_RESOLUTION);
 }
 
 static int32_t _gt_anim_path_ease_in_out(const struct gt_anim_s * anim) {
-    int32_t t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION);
-    int32_t step = gt_bezier3(t, 0, 50, 950, GT_MATH_BEZIER_VAL_RESOLUTION);
-
-    int32_t value = (anim->value_end - anim->value_start) * step;
-    value >>= GT_MATH_BEZIER_VAL_SHIFT;
-    value += anim->value_start;
-
-    return value;
+    return _gt_anim_calc_path_by_bezier(anim, 0, 50, 950, GT_MATH_BEZIER_VAL_RESOLUTION);
 }
 
 static int32_t _gt_anim_path_overshoot(const struct gt_anim_s * anim) {
-    int32_t t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION);
-    int32_t step = gt_bezier3(t, 0, 1000, 1300, GT_MATH_BEZIER_VAL_RESOLUTION);
-
-    int32_t value = (anim->value_end - anim->value_start) * step;
-    value >>= _GT_ANIM_PATH_SHIFT;
-    value += anim->value_start;
-
-    return value;
+    return _gt_anim_calc_path_by_bezier(anim, 0, 1000, 1300, GT_MATH_BEZIER_VAL_RESOLUTION);
 }
 
 static int32_t _gt_anim_path_bounce(const struct gt_anim_s * anim) {
@@ -182,7 +168,14 @@ static int32_t _gt_anim_path_bounce(const struct gt_anim_s * anim) {
 
     if (t > _GT_ANIM_PATH_RESOLUTION) { t = _GT_ANIM_PATH_RESOLUTION; }
     if (t < 0) { t = 0; }
-    int32_t step = gt_bezier3(t, GT_MATH_BEZIER_VAL_RESOLUTION, 800, 500, 0);
+    gt_math_bezier_st bezier = {
+        .t = t,
+        .p0 = GT_MATH_BEZIER_VAL_RESOLUTION,
+        .p1 = 800,
+        .p2 = 500,
+        .p3 = 0
+    };
+    int32_t step = gt_bezier3(&bezier);
 
     int32_t value = step * diff;
     value >>= GT_MATH_BEZIER_VAL_SHIFT;
@@ -204,6 +197,7 @@ static void _gt_anim_ready_handler(gt_anim_st * anim) {
 
     if (!anim->repeat_count && (anim->invert || !anim->playback_time)) {
         if (anim->ready_cb) { anim->ready_cb(anim); }
+        if (anim->deleted_cb) { anim->deleted_cb(anim); }
         _gt_anim_free_task(anim);
         return ;
     }
@@ -280,7 +274,7 @@ refresh_lb:
         if (new_value != ptr->value_current) {
             ptr->value_current = new_value;
             if (ptr->exec_cb) {
-                ptr->exec_cb(ptr->target, ptr->value_current);
+                ptr->exec_cb(ptr->tar, ptr->value_current);
             }
         }
         if (ptr->time_act >= ptr->time) {
@@ -300,12 +294,11 @@ refresh_lb:
     _time_last_run = gt_tick_get();
 }
 
-static void _default_exec_cb(gt_obj_st * obj, int32_t value)
-{
+static void _default_exec_cb(void * obj, int32_t value) {
     gt_anim_st * anim = _gt_anim_get_act();
     gt_point_st * point = (gt_point_st * )gt_anim_get_data();
 
-    gt_obj_set_pos(obj,
+    gt_obj_set_pos((gt_obj_st * )obj,
         ((point[1].x - point[0].x) * anim->value_current / anim->value_end) + point[0].x,
         ((point[1].y - point[0].y) * anim->value_current / anim->value_end) + point[0].y);
 }
@@ -387,9 +380,7 @@ gt_anim_st * gt_anim_start(const gt_anim_st * anim)
     gt_anim_st * ptr        = NULL;
     gt_anim_st * backup_ptr = NULL;
     gt_anim_st * new_obj = (gt_anim_st * )gt_mem_malloc(sizeof(gt_anim_st));
-    if (!new_obj) {
-        return NULL;
-    }
+    GT_CHECK_BACK_VAL(new_obj, NULL);
 
     if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
         _time_last_run = gt_tick_get();
@@ -404,12 +395,13 @@ gt_anim_st * gt_anim_start(const gt_anim_st * anim)
 
     // remove before the same exec callback
     _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
-        if (new_obj->target != ptr->target) {
+        if (new_obj->tar != ptr->tar) {
             continue;
         }
         if (new_obj->exec_cb != ptr->exec_cb) {
             continue;
         }
+        if (ptr->deleted_cb) { ptr->deleted_cb(ptr); }
         _gt_anim_free_task(ptr);
     }
 
@@ -425,7 +417,7 @@ void gt_anim_restart(gt_anim_st * anim)
     anim->tick_create = gt_tick_get();
 }
 
-bool gt_anim_del(gt_obj_st * target, gt_anim_exec_cb_t exec_cb)
+bool gt_anim_del(void const * const target, gt_anim_exec_cb_t exec_cb)
 {
     bool ret = false;
     gt_anim_st * ptr        = NULL;
@@ -436,7 +428,8 @@ bool gt_anim_del(gt_obj_st * target, gt_anim_exec_cb_t exec_cb)
     }
 
     _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
-        if ((ptr->target == target || NULL == ptr->target) && (ptr->exec_cb == exec_cb || NULL == ptr->exec_cb)) {
+        if ((ptr->tar == target || NULL == ptr->tar) && (ptr->exec_cb == exec_cb || NULL == ptr->exec_cb)) {
+            if (ptr->deleted_cb) { ptr->deleted_cb(ptr); }
             _gt_anim_free_task(ptr);
             ret = true;
         }
@@ -457,6 +450,7 @@ bool gt_anim_del_by(gt_anim_st * anim)
 
     _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         if (ptr == anim) {
+            if (ptr->deleted_cb) { ptr->deleted_cb(ptr); }
             _gt_anim_free_task(ptr);
             ret = true;
         }
@@ -477,6 +471,7 @@ void gt_anim_del_all(void)
 
     _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         if (ptr) {
+            if (ptr->deleted_cb) { ptr->deleted_cb(ptr); }
             _gt_anim_free_task(ptr);
             ret = true;
         }

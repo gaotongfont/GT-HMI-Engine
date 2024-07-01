@@ -229,13 +229,9 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name)
 
 gt_res_t gt_img_decoder_read_line(_gt_img_dsc_st * dsc, gt_size_t x, gt_size_t y, gt_size_t len, uint8_t * buf)
 {
-    if (NULL == dsc || NULL == dsc->decoder) {
-        return GT_RES_INV;
-    }
-
-    if (NULL == dsc->decoder->read_line_cb) {
-        return GT_RES_INV;
-    }
+    GT_CHECK_BACK_VAL(dsc, GT_RES_INV);
+    GT_CHECK_BACK_VAL(dsc->decoder, GT_RES_INV);
+    GT_CHECK_BACK_VAL(dsc->decoder->read_line_cb, GT_RES_INV);
 
     if (dsc->decoder->read_line_cb(dsc, x, y, len, buf)) {
         return GT_RES_INV;
@@ -246,9 +242,7 @@ gt_res_t gt_img_decoder_read_line(_gt_img_dsc_st * dsc, gt_size_t x, gt_size_t y
 
 gt_res_t gt_img_decoder_close(_gt_img_dsc_st * dsc)
 {
-    if (NULL == dsc->decoder->close_cb) {
-        return GT_RES_OK;
-    }
+    GT_CHECK_BACK_VAL(dsc->decoder->close_cb, GT_RES_OK);
     return dsc->decoder->close_cb(dsc);
 }
 

@@ -77,41 +77,16 @@ typedef struct _bg_abs_area_st {
  * @return true busy now
  * @return false
  */
-static bool _gt_disp_get_state(gt_disp_st * disp)
-{
-    if( disp == NULL ){
-        return GT_BUSY;
-    }
-    if( disp->drv == NULL ){
-        return GT_BUSY;
-    }
+static bool _gt_disp_get_state(gt_disp_st * disp) {
+    GT_CHECK_BACK_VAL(disp, GT_BUSY);
+    GT_CHECK_BACK_VAL(disp->drv, GT_BUSY);
     return disp->drv->busy;
 }
 
-static void _gt_disp_set_state(gt_disp_st * disp, uint8_t state)
-{
-    if( disp == NULL ){
-        return;
-    }
-    if( disp->drv == NULL ){
-        return;
-    }
+static void _gt_disp_set_state(gt_disp_st * disp, uint8_t state) {
+    GT_CHECK_BACK(disp);
+    GT_CHECK_BACK(disp->drv);
     disp->drv->busy = state;
-}
-
-/**
- * @brief foreach obj send draw start event
- *
- * @param obj parent
- */
-static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
-{
-    uint16_t idx = 0;
-    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-    while( idx < obj->cnt_child ) {
-        _gt_disp_send_draw_event_foreach( obj->child[idx] );
-        idx++;
-    }
 }
 
 /**
@@ -122,9 +97,8 @@ static void _gt_disp_send_draw_event_foreach(gt_obj_st * obj)
  * @param area_parent All parent displayable areas
  * @return true: visible or area need to refresh, false: invisible or area not need to refresh
  */
-static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent)
-{
-    if( GT_INVISIBLE == gt_obj_get_visible(obj) ){
+static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent) {
+    if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
         return false;
     }
     if (false == gt_area_is_intersect_screen(&param->disp->area_disp, &obj->area)) {
@@ -152,67 +126,71 @@ static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
  * @param param
  * @param area_parent All parent displayable areas
  */
-static void _check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent)
-{
+static void _check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent) {
     uint16_t idx = 0;
     gt_obj_st * child_p = NULL;
     gt_area_st area_cross = area_parent;
-    gt_area_st reduce = obj->area;
+    gt_area_st reduce = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
 
-    if (GT_TYPE_SCREEN != gt_obj_class_get_type(obj)) {
-        reduce = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
-        if (false == gt_area_cover_screen(&area_parent, &reduce, &area_cross)) {
-            if (GT_TYPE_GROUP != gt_obj_class_get_type(obj)) {
-                /** The Group ignores the area effects */
-                return ;
-            }
-        }
-    } else {
-        /** screen */
-        if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
+    if (false == gt_area_cover_screen(&area_parent, &reduce, &area_cross)) {
+        if (GT_TYPE_GROUP != gt_obj_class_get_type(obj)) {
+            /** The Group ignores the area effects */
             return ;
         }
     }
 
-    while( idx < obj->cnt_child ) {
+    while (idx < obj->cnt_child) {
         child_p = obj->child[idx++];
         if (false == gt_check_obj_visible_and_copy(child_p, param, area_cross)) {
             /** No need to iterate over child widgets */
             continue;
         }
-
-        if( child_p->cnt_child != 0 ){
-            _check_and_copy_foreach(child_p, param, area_cross);
+        if (0 == child_p->cnt_child) {
+            continue;
         }
+        _check_and_copy_foreach(child_p, param, area_cross);
     }
 }
 
-static inline void _gt_disp_check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param) {
-    if (NULL == obj) {
+static void _gt_disp_check_and_copy_foreach(gt_obj_st * scr_or_layer, _flush_scr_param_st * param) {
+    uint16_t idx = 0;
+    gt_obj_st * child_p = NULL;
+    gt_area_st area_parent = param->disp->area_disp;
+    if (GT_INVISIBLE == gt_obj_get_visible(scr_or_layer)) {
         return ;
     }
     /** The screen display area */
-    _check_and_copy_foreach(obj, param, param->disp->area_disp);
+    while (idx < scr_or_layer->cnt_child) {
+        child_p = scr_or_layer->child[idx++];
+        if (false == gt_check_obj_visible_and_copy(child_p, param, area_parent)) {
+            /** No need to iterate over child widgets */
+            continue;
+        }
+        if (0 == child_p->cnt_child) {
+            continue;
+        }
+        _check_and_copy_foreach(child_p, param, area_parent);
+    }
 }
 
-static void _scr_anim_exec_x_cb(gt_obj_st * obj, int32_t x) {
-    gt_obj_set_x(obj, (gt_size_t)x);
+static void _scr_anim_exec_x_cb(void * obj, int32_t x) {
+    gt_obj_set_x((gt_obj_st * )obj, (gt_size_t)x);
 }
 
-static void _scr_anim_exec_y_cb(gt_obj_st * obj, int32_t y) {
-    gt_obj_set_y(obj, (gt_size_t)y);
+static void _scr_anim_exec_y_cb(void * obj, int32_t y) {
+    gt_obj_set_y((gt_obj_st * )obj, (gt_size_t)y);
 }
 
 static void _scr_anim_del_ready_cb(struct gt_anim_s * anim) {
-    anim->target->using = 0;
-    gt_obj_destroy(anim->target);
+    ((gt_obj_st * )anim->tar)->using = 0;
+    gt_obj_destroy((gt_obj_st * )anim->tar);
 }
 
 #if GT_USE_SCREEN_ANIM
 static void _scr_anim_start_cb(struct gt_anim_s * anim) {
     gt_disp_st * disp = gt_disp_get_default();
     disp->scr_prev         = disp->scr_act;
-    disp->scr_act          = anim->target;
+    disp->scr_act          = (gt_obj_st * )anim->tar;
 
     /** Remark the begin status prev and scr position */
     disp->anim_scr_remark.x = disp->scr_act->area.x;
@@ -229,10 +207,8 @@ static void _scr_anim_start_cb(struct gt_anim_s * anim) {
  */
 static void _old_scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_area_st * area = (gt_area_st * )anim->data;
-    gt_obj_st * old_scr = anim->target;
-    if (NULL == old_scr) {
-        return ;
-    }
+    gt_obj_st * old_scr = (gt_obj_st * )anim->tar;
+    GT_CHECK_BACK(old_scr);
     if (old_scr->delate) {
         return ;
     }
@@ -244,9 +220,7 @@ static void _old_scr_anim_ready_cb(struct gt_anim_s * anim) {
 
 static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_disp_st * disp = gt_disp_get_default();
-    if (NULL == disp) {
-        return;
-    }
+    GT_CHECK_BACK(disp);
     if (disp->scr_prev && disp->scr_prev->delate) {
         disp->scr_prev->using = 0;
         gt_obj_destroy(disp->scr_prev);
@@ -259,7 +233,7 @@ static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     disp->scr_act->area.w = gt_disp_get_res_hor(NULL);
     disp->scr_act->area.h = gt_disp_get_res_ver(NULL);
 
-    _gt_disp_reload_max_area(anim->target);
+    _gt_disp_reload_max_area((gt_obj_st * )anim->tar);
     gt_disp_invalid_area(disp->scr_act);
 
     /** Enabled all of input device event */
@@ -465,6 +439,136 @@ static inline void _clear_buffer(_flush_scr_param_st * param, gt_color_t prev_c,
     }
 }
 
+static inline void _scr_x_equal_0(_flush_scr_param_st * param, uint16_t width) {
+    if (param->area_flush.x < 0) {
+        param->area_flush.w = param->area_flush.w + param->area_flush.x;
+        param->area_flush.x = 0;
+    }
+
+    if ((param->area_flush.x % width) + param->area_flush.w > width) {
+        param->area_flush.w = width - (param->area_flush.x % width);
+    }
+}
+
+static inline void _scr_x_large_0(_flush_scr_param_st * param, uint16_t width, gt_obj_st * scr) {
+    if (param->area_flush.x < 0) {
+        param->area_flush.w = param->area_flush.w + param->area_flush.x;
+        param->area_flush.x = 0;
+    }
+
+    if (param->area_flush.x > scr->area.x) {
+        param->area_flush.x = param->area_flush.x - scr->area.x;
+    } else {
+        param->area_flush.w = (param->area_flush.w + param->area_flush.x) - scr->area.x;
+        param->area_flush.x = 0;
+    }
+
+    if ((param->area_flush.x % width) + param->area_flush.w > width) {
+        param->area_flush.w = width - (param->area_flush.x % width);
+    }
+}
+
+static inline void _scr_x_less_0(_flush_scr_param_st * param, uint16_t width, gt_obj_st * scr) {
+    if (param->area_flush.x < 0) {
+        param->area_flush.w = param->area_flush.w + param->area_flush.x - scr->area.x;
+        param->area_flush.x = 0;
+    }
+
+    if (param->area_flush.x > scr->area.x) {
+        param->area_flush.x = param->area_flush.x - scr->area.x;
+    } else if (param->area_flush.x > 0) {
+        param->area_flush.x = param->area_flush.x - scr->area.x;
+    }
+
+    if ((param->area_flush.x % width) + param->area_flush.w > width) {
+        param->area_flush.w = width - (param->area_flush.x % width);
+    }
+}
+
+static inline void _scr_y_equal_0(_flush_scr_param_st * param, uint16_t height) {
+    if (param->area_flush.y < 0) {
+        param->area_flush.h = param->area_flush.h + param->area_flush.y;
+        param->area_flush.y = 0;
+    }
+
+    if ((param->area_flush.y % height) + param->area_flush.h > height) {
+        param->area_flush.h = height - (param->area_flush.y % height);
+    }
+}
+
+static inline void _scr_y_large_0(_flush_scr_param_st * param, uint16_t height, gt_obj_st * scr) {
+    if (param->area_flush.y < 0) {
+        param->area_flush.h = param->area_flush.h + param->area_flush.y;
+        param->area_flush.y = 0;
+    }
+
+    if (param->area_flush.y > scr->area.y) {
+        param->area_flush.y = param->area_flush.y - scr->area.y;
+    } else {
+        param->area_flush.h = (param->area_flush.h + param->area_flush.y) - scr->area.y;
+        param->area_flush.y = 0;
+    }
+
+    if ((param->area_flush.y % height) + param->area_flush.h > height) {
+        param->area_flush.h = height - (param->area_flush.y % height);
+    }
+}
+
+static inline void _scr_y_less_0(_flush_scr_param_st * param, uint16_t height, gt_obj_st * scr) {
+    if (param->area_flush.y <= 0) {
+        param->area_flush.h = param->area_flush.h + param->area_flush.y - scr->area.y;
+        param->area_flush.y = 0;
+    }
+
+    if (param->area_flush.y > 0) {
+        param->area_flush.y = param->area_flush.y - scr->area.y;
+    }
+
+    if ((param->area_flush.y % height) + param->area_flush.h > height) {
+        param->area_flush.h = height - (param->area_flush.y % height);
+    }
+}
+
+/**
+ * @brief Calculate the area of the display buffer that needs to be refreshed
+ *
+ * @param param
+ * @param scr
+ * @return gt_area_st The buffer or area of display flush area.
+ */
+static gt_area_st _update_area_flush_by_calc_partly_redraw_area(_flush_scr_param_st * param, gt_obj_st * scr) {
+    uint16_t width = gt_disp_get_res_hor(param->disp);
+    uint16_t height = gt_disp_get_res_ver(param->disp);
+
+    if(width == param->area_flush.w && height == param->area_flush.h){
+        if (param->area_flush.x < 0 || (param->area_flush.x + param->area_flush.w > width)) {
+            param->area_flush.x = 0;
+        }
+        if (param->area_flush.y < 0 || (param->area_flush.y + param->area_flush.h > height)) {
+            param->area_flush.y = 0;
+        }
+        return param->area_flush;
+    }
+    // Calculate the area_flush x coordinates and width
+    if (0 == scr->area.x) {
+        _scr_x_equal_0(param, width);
+    } else if (scr->area.x > 0) {
+        _scr_x_large_0(param, width, scr);
+    } else if (scr->area.x < 0) {
+        _scr_x_less_0(param, width, scr);
+    }
+
+    // Calculate the area_flush y coordinates and height
+    if (0 == scr->area.y) {
+        _scr_y_equal_0(param, height);
+    } else if (scr->area.y > 0) {
+        _scr_y_large_0(param, height, scr);
+    } else if (scr->area.y < 0) {
+        _scr_y_less_0(param, height, scr);
+    }
+    return param->area_flush;
+}
+
 static inline void _adjust_clip_area_and_flush(_flush_scr_param_st * param, gt_obj_st * target_scr) {
     param->disp->area_disp.x = target_scr->area.x + param->valid.area_clip.x;
     param->disp->area_disp.y = target_scr->area.y + param->valid.area_clip.y;
@@ -494,6 +598,8 @@ static inline void _adjust_clip_area_and_flush(_flush_scr_param_st * param, gt_o
 static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
     gt_obj_st * prev = param->disp->scr_prev;
     gt_obj_st * scr = param->disp->scr_act;
+    GT_CHECK_BACK(prev);
+    GT_CHECK_BACK(scr);
     bool is_cover = false;
 
     // 计算scr 在屏幕的显示区域
@@ -555,8 +661,7 @@ static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
 static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     gt_obj_st * scr = param->disp->scr_act;
     gt_color_t color_fill = gt_screen_get_bgcolor(scr);
-    uint16_t width = gt_disp_get_res_hor(param->disp);
-    uint16_t height = gt_disp_get_res_ver(param->disp);
+    GT_CHECK_BACK(scr);
 
     scr->area.x = param->disp->area_act.x;
     scr->area.y = param->disp->area_act.y;
@@ -564,104 +669,7 @@ static inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     if (false == gt_area_is_intersect_screen(&scr->area, &param->area_flush)) {
         return ;
     }
-
-    if(width == param->area_flush.w && height == param->area_flush.h){
-        if(param->area_flush.x < 0 || (param->area_flush.x + param->area_flush.w > width)){
-            param->area_flush.x = 0;
-        }
-        if(param->area_flush.y < 0 || (param->area_flush.y + param->area_flush.h > height)){
-            param->area_flush.y = 0;
-        }
-    }
-    else{
-        // Calculate the area_flush x coordinates and width
-        if (scr->area.x == 0) {
-            if(param->area_flush.x < 0){
-                param->area_flush.w = param->area_flush.w + param->area_flush.x;
-                param->area_flush.x = 0;
-            }
-
-            if ((param->area_flush.x % width) + param->area_flush.w > width) {
-                param->area_flush.w = width - (param->area_flush.x % width);
-            }
-        }
-        else if (scr->area.x > 0) {
-            if (param->area_flush.x < 0) {
-                param->area_flush.w = param->area_flush.w + param->area_flush.x;
-                param->area_flush.x = 0;
-            }
-
-            if (param->area_flush.x > scr->area.x) {
-                param->area_flush.x = param->area_flush.x - scr->area.x;
-            } else {
-                param->area_flush.w = (param->area_flush.w + param->area_flush.x) - scr->area.x;
-                param->area_flush.x = 0;
-            }
-
-            if ((param->area_flush.x % width) + param->area_flush.w > width) {
-                param->area_flush.w = width - (param->area_flush.x % width);
-            }
-        }
-        else if (scr->area.x < 0) {
-            if (param->area_flush.x < 0) {
-                param->area_flush.w = param->area_flush.w + param->area_flush.x - scr->area.x;
-                param->area_flush.x = 0;
-            }
-
-            if (param->area_flush.x > scr->area.x) {
-                param->area_flush.x = param->area_flush.x - scr->area.x;
-            } else if (param->area_flush.x > 0) {
-                param->area_flush.x = param->area_flush.x - scr->area.x;
-            }
-
-            if ((param->area_flush.x % width) + param->area_flush.w > width) {
-                param->area_flush.w = width - (param->area_flush.x % width);
-            }
-        }
-
-        // Calculate the area_flush y coordinates and height
-        if (scr->area.y == 0) {
-            if (param->area_flush.y < 0) {
-                param->area_flush.h = param->area_flush.h + param->area_flush.y;
-                param->area_flush.y = 0;
-            }
-
-            if ((param->area_flush.y % height) + param->area_flush.h > height) {
-                param->area_flush.h = height - (param->area_flush.y % height);
-            }
-        }
-        else if (scr->area.y > 0) {
-            if (param->area_flush.y < 0) {
-                param->area_flush.h = param->area_flush.h + param->area_flush.y;
-                param->area_flush.y = 0;
-            }
-
-            if (param->area_flush.y > scr->area.y) {
-                param->area_flush.y = param->area_flush.y - scr->area.y;
-            } else {
-                param->area_flush.h = (param->area_flush.h + param->area_flush.y) - scr->area.y;
-                param->area_flush.y = 0;
-            }
-
-            if ((param->area_flush.y % height) + param->area_flush.h > height) {
-                param->area_flush.h = height - (param->area_flush.y % height);
-            }
-        }
-        else if (scr->area.y < 0) {
-            if (param->area_flush.y <= 0) {
-                param->area_flush.h = param->area_flush.h + param->area_flush.y - scr->area.y;
-                param->area_flush.y = 0;
-            }
-
-            if (param->area_flush.y > 0) {
-                param->area_flush.y = param->area_flush.y - scr->area.y;
-            }
-
-            if ((param->area_flush.y % height) + param->area_flush.h > height) {
-                param->area_flush.h = height - (param->area_flush.y % height);
-            }
-        }
-    }
+    _update_area_flush_by_calc_partly_redraw_area(param, scr);
 
     uint16_t end_y = param->area_flush.y + param->area_flush.h;
     param->disp->area_disp.y = param->area_flush.y;
@@ -730,10 +738,7 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
     gt_scr_stack_item_st * target = NULL;
     gt_disp_st * disp = gt_disp_get_default();
     gt_obj_st * scr_old = gt_disp_get_scr();
-
-    if (!disp) {
-        return -1;
-    }
+    GT_CHECK_BACK_VAL(disp, -1);
 
     if (step <= 0) {
         target = gt_scr_stack_peek();
@@ -741,9 +746,7 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
     }
 
     target = gt_scr_stack_pop(step);
-    if (NULL == target) {
-        return -1;
-    }
+    GT_CHECK_BACK_VAL(target, -1);
 
     gt_scr_stack_item_st new_item = {
         .current_scr = target->prev_scr_alive,
@@ -783,9 +786,7 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
 
     if (NULL == new_item.current_scr) {
         new_item.current_scr = _create_scr_by_id(new_item.current_scr_id);
-        if (NULL == new_item.current_scr) {
-            return -1;
-        }
+        GT_CHECK_BACK_VAL(new_item.current_scr, -1);
         /** update prev current screen object */
         gt_scr_stack_item_st * prev = gt_scr_stack_peek();
         if (prev && prev->current_scr_id == new_item.current_scr_id) {
@@ -840,27 +841,27 @@ void gt_disp_stack_load_scr_anim(gt_scr_id_t scr_id, gt_scr_anim_type_et type, u
     gt_disp_stack_load_scr_anim_st(&param);
 }
 
-void gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const param)
+gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const * const param)
 {
-    if (NULL == param) {
-        return;
-    }
-    gt_obj_st * scr_old = gt_disp_get_scr();
-    bool del_prev_scr = param->del_prev_scr;
-
-    gt_scr_stack_item_st new_item = {
-        .current_scr_id = param->scr_id,
-        .prev_scr_id = -1,
-        .prev_scr_alive = NULL,
-        .current_scr = NULL,
-        .time = param->time,
-        .delay = param->delay,
-        .anim_type = param->type,
+    gt_disp_stack_res_st ret = {
+        .new_item = {
+            .prev_scr_id = -1,
+        },
+        .ok = false
     };
+    gt_scr_stack_item_st * new_item_p = &ret.new_item;
+    GT_CHECK_BACK_VAL(param, ret);
+    ret.scr_old = gt_disp_get_scr();
+    ret.del_prev_scr = param->del_prev_scr;
+
+    new_item_p->current_scr_id = param->scr_id;
+    new_item_p->time = param->time;
+    new_item_p->delay = param->delay;
+    new_item_p->anim_type = param->type;
     gt_scr_id_t home_id = gt_scr_stack_get_home_scr_id();
 
     /** Has the same page before and pop unused stack item */
-    gt_stack_item_st result = gt_scr_stack_has_before(&new_item);
+    gt_stack_item_st result = gt_scr_stack_has_before(new_item_p);
 #if GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
     if (param->ignore_repeat_screen_id) {
         result.data = NULL; /** Need to create a new screen to load */
@@ -868,54 +869,66 @@ void gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const param)
 #endif
     if (result.data) {
         gt_scr_stack_item_st * same_scr = gt_scr_stack_pop(result.index_from_top);
-        new_item.prev_scr_id = same_scr->prev_scr_id;
-        new_item.prev_scr_alive = same_scr->prev_scr_alive;
-        new_item.current_scr = same_scr->current_scr;
-        del_prev_scr = true;    /** Must free old screen memory */
+        new_item_p->prev_scr_id = same_scr->prev_scr_id;
+        new_item_p->prev_scr_alive = same_scr->prev_scr_alive;
+        new_item_p->current_scr = same_scr->current_scr;
+        ret.del_prev_scr = true;    /** Must free old screen memory */
     } else {
         gt_scr_stack_item_st * prev = gt_scr_stack_peek();
         if (prev) {
-            new_item.prev_scr_id = prev->current_scr_id;
-            if (false == del_prev_scr) {
-                new_item.prev_scr_alive = prev->current_scr;
+            new_item_p->prev_scr_id = prev->current_scr_id;
+            if (false == ret.del_prev_scr) {
+                new_item_p->prev_scr_alive = prev->current_scr;
             }
-            if (home_id == new_item.prev_scr_id && gt_scr_stack_is_home_scr_alive()) {
-                new_item.prev_scr_alive = NULL;
-                del_prev_scr = false;
+            if (home_id == new_item_p->prev_scr_id && gt_scr_stack_is_home_scr_alive()) {
+                new_item_p->prev_scr_alive = NULL;
+                ret.del_prev_scr = false;
+            }
+            if (ret.del_prev_scr) {
+                prev->current_scr = NULL;
             }
         }
     }
     /** Home page reset stack */
-    if (-1 != home_id && new_item.current_scr_id == home_id) {
+    if (-1 != home_id && new_item_p->current_scr_id == home_id) {
         if (false == gt_scr_stack_is_empty()) {
             gt_scr_stack_clear();
         }
-        new_item.prev_scr_id = -1;
-        new_item.prev_scr_alive = NULL;
+        new_item_p->prev_scr_id = -1;
+        new_item_p->prev_scr_alive = NULL;
     }
 
     /** ready to init and load screen */
-    if (NULL == new_item.current_scr) {
-        new_item.current_scr = _create_scr_by_id(new_item.current_scr_id);
-        if (NULL == new_item.current_scr) {
-            return ;
-        }
-        if (home_id == new_item.current_scr_id) {
-            gt_scr_stack_set_home_scr(new_item.current_scr);
+    if (NULL == new_item_p->current_scr) {
+        new_item_p->current_scr = _create_scr_by_id(new_item_p->current_scr_id);
+        GT_CHECK_BACK_VAL(new_item_p->current_scr, ret);
+        if (home_id == new_item_p->current_scr_id) {
+            gt_scr_stack_set_home_scr(new_item_p->current_scr);
         }
     }
-    if (false == gt_scr_stack_push(&new_item)) {
+    if (false == gt_scr_stack_push(new_item_p)) {
         GT_LOGE(GT_LOG_TAG_GUI, "Push stack failed");
-        return ;
+        return ret;
     }
-    if (scr_old == new_item.current_scr) {
-        gt_disp_invalid_area(new_item.current_scr);
+    ret.ok = true;
+    return ret;
+}
+
+void gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const param)
+{
+    gt_disp_stack_res_st ret = gt_disp_stack_push_scr_only_st(param);
+    if (false == ret.ok) {
+        return;
+    }
+    gt_scr_stack_item_st * item_p = &ret.new_item;
+    if (ret.scr_old == item_p->current_scr) {
+        gt_disp_invalid_area(item_p->current_scr);
         return;
     }
 #if _GT_STACK_USE_LOADING_LOG
-    GT_LOGD(GT_LOG_TAG_GUI, "layer[%d] = new_scr[0x%X = %d]", gt_scr_stack_get_count(), new_item.current_scr_id, new_item.current_scr_id);
+    GT_LOGD(GT_LOG_TAG_GUI, "layer[%d] = new_scr[0x%X = %d]", gt_scr_stack_get_count(), item_p->current_scr_id, item_p->current_scr_id);
 #endif
-    gt_disp_load_scr_anim(new_item.current_scr, new_item.anim_type, new_item.time, new_item.delay, del_prev_scr);
+    gt_disp_load_scr_anim(item_p->current_scr, item_p->anim_type, item_p->time, item_p->delay, ret.del_prev_scr);
 }
 
 void gt_disp_load_scr(gt_obj_st * scr)
@@ -955,8 +968,6 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         }
         gt_disp_set_scr(scr);
 
-        // _gt_disp_send_draw_event_foreach(scr);
-
         disp->area_act.h = disp->drv->res_ver;
         disp->area_act.w = disp->drv->res_hor;
 
@@ -969,7 +980,10 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
             gt_anim_set_time_delay_start(&anim_del, delay);
             gt_anim_set_target(&anim_del, scr_old);
             gt_anim_set_ready_cb(&anim_del, _scr_anim_del_ready_cb);
-            gt_anim_start(&anim_del);
+            if (NULL == gt_anim_start(&anim_del)) {
+                /** No more free memory, force release memory */
+                _gt_obj_class_destroy(scr_old);
+            }
         }
     }
 #if GT_USE_SCREEN_ANIM
@@ -1121,9 +1135,7 @@ void gt_disp_ref_area(const gt_area_st * coords)
         .line = GT_REFRESH_FLUSH_LINE_PRE_TIME,
     };
 
-    if ( param.disp->scr_act == NULL ) {
-        return;
-    }
+    GT_CHECK_BACK(param.disp->scr_act);
     if ( _gt_disp_get_state(param.disp) == GT_BUSY ) {
         GT_LOGD(GT_LOG_TAG_GUI, "disp is busy");
         return;
@@ -1153,16 +1165,18 @@ void gt_disp_ref_area(const gt_area_st * coords)
 gt_area_st * gt_disp_get_area_act(void)
 {
     gt_disp_st * disp_dev = gt_disp_get_default();
+    GT_CHECK_BACK_VAL(disp_dev, NULL);
     return &disp_dev->area_act;
 }
 
 gt_area_abs_st * gt_disp_get_area_max(void)
 {
     gt_disp_st * disp_dev = gt_disp_get_default();
+    GT_CHECK_BACK_VAL(disp_dev, NULL);
     return &disp_dev->area_max;
 }
 
-void gt_disp_scroll_area_act(int16_t dist_x, int16_t dist_y)
+void gt_disp_scroll_area_act(gt_size_t dist_x, gt_size_t dist_y)
 {
     gt_area_st * area = gt_disp_get_area_act();
     gt_area_abs_st * max_area = gt_disp_get_area_max();
@@ -1199,6 +1213,9 @@ void gt_disp_scroll_area_act(int16_t dist_x, int16_t dist_y)
 void gt_disp_invalid_area(gt_obj_st * obj)
 {
     gt_obj_st * scr = gt_disp_get_scr();
+    if (NULL == scr) {
+        return;
+    }
     if (NULL == obj) {
         /** full screen refresh */
         obj = scr;

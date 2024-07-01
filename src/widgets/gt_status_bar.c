@@ -119,9 +119,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 }
 
 static gt_obj_st * _find_obj_recursive_by_type(gt_obj_st * self, gt_obj_type_et type) {
-    if (NULL == self) {
-        return NULL;
-    }
+    GT_CHECK_BACK_VAL(self, NULL);
     if (gt_obj_is_type(self, type)) {
         return self;
     }
@@ -352,9 +350,7 @@ gt_obj_st * gt_status_bar_create(bool have_background)
     if (NULL == obj) {
         obj = gt_obj_class_create(MY_CLASS, disp->layer_top);
     }
-    if (NULL == obj) {
-        return NULL;
-    }
+    GT_CHECK_BACK_VAL(obj, NULL);
     obj->area = disp->layer_top->area;
     obj->area.h = _DEFAULT_HEIGHT;
 
@@ -406,9 +402,7 @@ gt_obj_st * gt_status_bar_get_obj(void)
 bool gt_status_bar_set_hide(bool hide)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return false;
-    }
+    GT_CHECK_BACK_VAL(obj, false);
 
     gt_obj_set_visible(obj, hide ? GT_INVISIBLE : GT_VISIBLE);
     return true;
@@ -417,18 +411,14 @@ bool gt_status_bar_set_hide(bool hide)
 bool gt_status_bar_is_hide(void)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return false;
-    }
+    GT_CHECK_BACK_VAL(obj, false);
     return gt_obj_get_visible(obj);
 }
 
 void gt_status_bar_set_height(uint16_t height)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
     gt_obj_set_size(obj, gt_obj_get_w(obj), height);
 #if GT_STATUS_BAR_THREE_PART_SCALE_MODE
@@ -447,9 +437,7 @@ void gt_status_bar_set_height(uint16_t height)
 void gt_status_bar_set_scale(uint8_t left, uint8_t center, uint8_t right)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
 
     style->left.scale = left;
@@ -473,9 +461,7 @@ gt_obj_st * gt_status_bar_left_find_by(char * text_or_src)
 bool gt_status_bar_left_remove(gt_obj_st * target)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return false;
-    }
+    GT_CHECK_BACK_VAL(obj, false);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
 
     return _remove_by(style->left.obj, target);
@@ -484,9 +470,7 @@ bool gt_status_bar_left_remove(gt_obj_st * target)
 bool gt_status_bar_left_remove_all(void)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return false;
-    }
+    GT_CHECK_BACK_VAL(obj, false);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
 
     return _remove_all_by(style->left.obj);
@@ -553,9 +537,7 @@ gt_obj_st * gt_status_bar_right_find_by(char * text_or_src)
 bool gt_status_bar_right_remove(gt_obj_st * target)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return false;
-    }
+    GT_CHECK_BACK_VAL(obj, false);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
 
     return _remove_by(style->right.obj, target);
@@ -564,9 +546,7 @@ bool gt_status_bar_right_remove(gt_obj_st * target)
 bool gt_status_bar_right_remove_all(void)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return false;
-    }
+    GT_CHECK_BACK_VAL(obj, false);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
 
     return _remove_all_by(style->right.obj);
@@ -626,9 +606,7 @@ bool gt_status_bar_right_change_text(gt_obj_st * lab, char * text)
 bool gt_status_bar_center_remove_all(void)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return NULL;
-    }
+    GT_CHECK_BACK_VAL(obj, NULL);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
 
     return _remove_all_by(style->center.obj);
@@ -667,9 +645,7 @@ gt_obj_st * gt_status_bar_custom_find_by(char * text_or_src)
 bool gt_status_bar_custom_remove(gt_obj_st * target)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return false;
-    }
+    GT_CHECK_BACK_VAL(obj, false);
     if (NULL == target) {
         return false;
     }
@@ -685,9 +661,7 @@ bool gt_status_bar_custom_remove(gt_obj_st * target)
 bool gt_status_bar_custom_remove_all(void)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return NULL;
-    }
+    GT_CHECK_BACK_VAL(obj, NULL);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
 
     return _remove_all_by(style->custom);
@@ -700,9 +674,7 @@ gt_obj_st * gt_status_bar_custom_add_icon(char * src)
         return NULL;
     }
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
-    if (NULL == style->custom) {
-        return NULL;
-    }
+    GT_CHECK_BACK_VAL(style->custom, NULL);
 
     gt_obj_st * icon = _find_by_str(style->custom, src);
     if (icon) {
@@ -722,9 +694,7 @@ bool gt_status_bar_custom_change_icon(gt_obj_st * icon, char * src)
         return false;
     }
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
-    if (NULL == style->custom) {
-        return false;
-    }
+    GT_CHECK_BACK_VAL(style->custom, false);
     if (false == gt_obj_is_child(icon, style->custom)) {
         return false;
     }
@@ -762,9 +732,7 @@ bool gt_status_bar_custom_change_text(gt_obj_st * lab, char * text)
 void gt_status_bar_show_bg(bool show)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
     style->show_bg = show;
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -773,9 +741,7 @@ void gt_status_bar_show_bg(bool show)
 void gt_status_bar_set_bg_opa(gt_opa_t opa)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
     style->bg_opa = opa;
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -784,9 +750,7 @@ void gt_status_bar_set_bg_opa(gt_opa_t opa)
 void gt_status_bar_set_bg_color(gt_color_t color)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
     obj->bgcolor = color;
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -794,9 +758,7 @@ void gt_status_bar_set_bg_color(gt_color_t color)
 void gt_status_bar_set_font_family_cn(gt_family_t family)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
     style->font_info.style_cn = family;
 
@@ -808,9 +770,7 @@ void gt_status_bar_set_font_family_cn(gt_family_t family)
 void gt_status_bar_set_font_family_en(gt_family_t family)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
     style->font_info.style_en = family;
     _set_font_param_call(obj, (_font_param_cb_t)gt_label_set_font_family_en, family);
@@ -820,9 +780,7 @@ void gt_status_bar_set_font_family_en(gt_family_t family)
 void gt_status_bar_set_font_family_fl(gt_family_t family)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
     style->font_info.style_fl = family;
     _set_font_param_call(obj, (_font_param_cb_t)gt_label_set_font_family_fl, family);
@@ -832,9 +790,7 @@ void gt_status_bar_set_font_family_fl(gt_family_t family)
 void gt_status_bar_set_font_family_numb(gt_family_t family)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
     style->font_info.style_numb = family;
     _set_font_param_call(obj, (_font_param_cb_t)gt_label_set_font_family_numb, family);
@@ -844,9 +800,7 @@ void gt_status_bar_set_font_family_numb(gt_family_t family)
 void gt_status_bar_set_font_size(uint8_t size)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
     style->font_info.size = size;
     _set_font_param_call(obj, (_font_param_cb_t)gt_label_set_font_size, size);
@@ -856,9 +810,7 @@ void gt_status_bar_set_font_size(uint8_t size)
 void gt_status_bar_set_font_gray(uint8_t gray)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
     style->font_info.gray = gray;
     _set_font_param_call(obj, (_font_param_cb_t)gt_label_set_font_gray, gray);
@@ -868,9 +820,7 @@ void gt_status_bar_set_font_gray(uint8_t gray)
 void gt_status_bar_set_font_color(gt_color_t color)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
     style->font_color = color;
     _set_font_color_call(obj, gt_label_set_font_color, color);
@@ -880,9 +830,7 @@ void gt_status_bar_set_font_color(gt_color_t color)
 void gt_status_bar_set_font_thick_cn(uint8_t thick)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
     style->font_info.thick_cn = thick;
     _set_font_param_call(obj, (_font_param_cb_t)gt_label_set_font_thick_cn, thick);
@@ -892,9 +840,7 @@ void gt_status_bar_set_font_thick_cn(uint8_t thick)
 void gt_status_bar_set_font_thick_en(uint8_t thick)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
-    if (NULL == obj) {
-        return ;
-    }
+    GT_CHECK_BACK(obj);
     _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
     style->font_info.thick_en = thick;
     _set_font_param_call(obj, (_font_param_cb_t)gt_label_set_font_thick_en, thick);

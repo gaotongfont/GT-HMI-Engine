@@ -25,115 +25,32 @@ extern "C" {
 enum {
     GT_OPA_TRANSP = 0,
     GT_OPA_0      = 0,
-    GT_OPA_1      = 3,
-    GT_OPA_2      = 5,
-    GT_OPA_3      = 7,
-    GT_OPA_4      = 10,
     GT_OPA_5      = 12,
-    GT_OPA_6      = 15,
-    GT_OPA_7      = 17,
-    GT_OPA_8      = 20,
-    GT_OPA_9      = 22,
     GT_OPA_10     = 25,
-    GT_OPA_11     = 27,
-    GT_OPA_12     = 30,
-    GT_OPA_13     = 32,
-    GT_OPA_14     = 35,
     GT_OPA_15     = 38,
-    GT_OPA_16     = 40,
-    GT_OPA_17     = 43,
-    GT_OPA_18     = 45,
-    GT_OPA_19     = 49,
     GT_OPA_20     = 51,
-    GT_OPA_21     = 54,
-    GT_OPA_22     = 56,
-    GT_OPA_23     = 59,
-    GT_OPA_24     = 61,
     GT_OPA_25     = 64,
-    GT_OPA_26     = 66,
-    GT_OPA_27     = 69,
-    GT_OPA_28     = 71,
-    GT_OPA_29     = 74,
     GT_OPA_30     = 76,
-    GT_OPA_31     = 79,
-    GT_OPA_32     = 81,
-    GT_OPA_33     = 84,
-    GT_OPA_34     = 86,
     GT_OPA_35     = 89,
-    GT_OPA_36     = 91,
-    GT_OPA_37     = 94,
-    GT_OPA_38     = 96,
-    GT_OPA_39     = 99,
     GT_OPA_40     = 102,
-    GT_OPA_41     = 104,
-    GT_OPA_42     = 107,
-    GT_OPA_43     = 109,
-    GT_OPA_44     = 112,
     GT_OPA_45     = 114,
-    GT_OPA_46     = 117,
-    GT_OPA_47     = 119,
-    GT_OPA_48     = 122,
-    GT_OPA_49     = 124,
     GT_OPA_50     = 127,
-    GT_OPA_51     = 129,
-    GT_OPA_52     = 132,
-    GT_OPA_53     = 135,
-    GT_OPA_54     = 138,
     GT_OPA_55     = 140,
-    GT_OPA_56     = 143,
-    GT_OPA_57     = 145,
-    GT_OPA_58     = 148,
-    GT_OPA_59     = 150,
     GT_OPA_60     = 153,
-    GT_OPA_61     = 155,
-    GT_OPA_62     = 158,
-    GT_OPA_63     = 160,
-    GT_OPA_64     = 163,
     GT_OPA_65     = 165,
-    GT_OPA_66     = 168,
-    GT_OPA_67     = 170,
-    GT_OPA_68     = 173,
-    GT_OPA_69     = 175,
     GT_OPA_70     = 178,
-    GT_OPA_71     = 180,
-    GT_OPA_72     = 182,
-    GT_OPA_73     = 185,
-    GT_OPA_74     = 187,
     GT_OPA_75     = 190,
-    GT_OPA_76     = 192,
-    GT_OPA_77     = 194,
-    GT_OPA_78     = 197,
-    GT_OPA_79     = 200,
     GT_OPA_80     = 204,
-    GT_OPA_81     = 206,
-    GT_OPA_82     = 209,
-    GT_OPA_83     = 211,
-    GT_OPA_84     = 214,
     GT_OPA_85     = 217,
-    GT_OPA_86     = 219,
-    GT_OPA_87     = 222,
-    GT_OPA_88     = 225,
-    GT_OPA_89     = 227,
     GT_OPA_90     = 229,
-    GT_OPA_91     = 232,
-    GT_OPA_92     = 234,
-    GT_OPA_93     = 237,
-    GT_OPA_94     = 239,
     GT_OPA_95     = 241,
-    GT_OPA_96     = 244,
-    GT_OPA_97     = 246,
-    GT_OPA_98     = 249,
-    GT_OPA_99     = 252,
     GT_OPA_100    = 255,
     GT_OPA_HALF   = GT_OPA_50,
     GT_OPA_COVER  = GT_OPA_100,
+
+    GT_OPA_MIN    = 3,          /* Opacities below this will be transparent */
+    GT_OPA_MAX    = 252,        /* Opacities above this will fully cover GT */
 };
-
-#define GT_OPA_MIN 2    /*Opacities below this will be transparent*/
-#define GT_OPA_MAX 253  /*Opacities above this will fully cover GT */
-
-
-
 
 #if GT_COLOR_DEPTH == 1
 #define GT_COLOR_SIZE 8
@@ -147,11 +64,11 @@ enum {
 #error "Invalid GT_COLOR_DEPTH in GT_conf.h! Set it to 1, 8, 16 or 32!"
 #endif
 
-#define GT_COLOR_GET_OBJ(_buf, x, y, w, h)          (_buf[ (int)( (y) * (w) + x) ])
-#define GT_COLOR_CLR_BUF(obj_buf, len, val)         do{int __idx__=0;while(__idx__<len){obj_buf[__idx__].full=val; __idx__++;}}while(0)
-#define GT_COLOR_CPY_BUF(dst, src,len, val)         do{int __idx__=0;while(__idx__<len){dst[__idx__].full=src[__idx__].full;__idx__++;}}while(0)
-#define GT_COLOR_SET_BUF(obj_buf, x, y, w, h, val)  (obj_buf[ (int)((y)*(w) + (x)) ].full = val)
-#define GT_COLOR_GET_BUF(obj_buf, x, y, w, h)       (obj_buf[ (int)((y)*(w) + (x)) ].full)
+// #define GT_COLOR_GET_OBJ(_buf, x, y, w, h)          (_buf[ (int)( (y) * (w) + x) ])
+// #define GT_COLOR_CLR_BUF(obj_buf, len, val)         do{int __idx__=0;while(__idx__<len){obj_buf[__idx__].full=val; __idx__++;}}while(0)
+// #define GT_COLOR_CPY_BUF(dst, src,len, val)         do{int __idx__=0;while(__idx__<len){dst[__idx__].full=src[__idx__].full;__idx__++;}}while(0)
+// #define GT_COLOR_SET_BUF(obj_buf, x, y, w, h, val)  (obj_buf[ (int)((y)*(w) + (x)) ].full = val)
+// #define GT_COLOR_GET_BUF(obj_buf, x, y, w, h)       (obj_buf[ (int)((y)*(w) + (x)) ].full)
 
 #define GT_COLOR_SET(obj,val)           (obj.full=val)
 #define GT_COLOR_GET(obj)               (obj.full)
@@ -282,12 +199,12 @@ typedef uint32_t gt_color_val_t;
 #endif
 
 typedef union {
-    uint8_t full; /*must be declared first to set all bits of byte via initializer list*/
     union {
         uint8_t blue : 1;
         uint8_t green : 1;
         uint8_t red : 1;
     } ch;
+    uint8_t full; /*must be declared first to set all bits of byte via initializer list*/
 } gt_color1_t;
 
 typedef union {
@@ -432,16 +349,15 @@ static inline uint8_t gt_color_brightness(gt_color_t color)
     return (uint8_t)(bright >> 3);
 }
 
-static inline gt_color_t gt_color_white(void){ return gt_color_make(0xff, 0xff, 0xff);  }
-static inline gt_color_t gt_color_black(void){ return gt_color_make(0x00, 0x00, 0x00);  }
-static inline gt_color_t gt_color_red(void){ return gt_color_make(0xFF, 0x00, 0x00);  }
-static inline gt_color_t gt_color_yellow(void){ return gt_color_make(0xFF, 0xFF, 0x00);  }
-static inline gt_color_t gt_color_blue(void){ return gt_color_make(0x00, 0x00, 0xFF);  }
+static inline gt_color_t gt_color_white(void) { return gt_color_make(0xff, 0xff, 0xff); }
+static inline gt_color_t gt_color_black(void) { return gt_color_make(0x00, 0x00, 0x00); }
+static inline gt_color_t gt_color_red(void) { return gt_color_make(0xFF, 0x00, 0x00); }
+static inline gt_color_t gt_color_yellow(void) { return gt_color_make(0xFF, 0xFF, 0x00); }
+static inline gt_color_t gt_color_blue(void) { return gt_color_make(0x00, 0x00, 0xFF); }
 static inline gt_color_t gt_color_gray(void) { return gt_color_make(0x80, 0x80, 0x80); }
 static inline gt_color_t gt_color_dark_gray(void) { return gt_color_make(0x40, 0x40, 0x40); }
 static inline gt_color_t gt_color_bright_gray(void) { return gt_color_make(0xc0, 0xc0, 0xc0); }
-
-static inline gt_color_t gt_color_orange(void){ return gt_color_make(0xFF, 0xA5, 0x00);  }
+static inline gt_color_t gt_color_orange(void) { return gt_color_make(0xFF, 0xA5, 0x00); }
 
 
 /**
@@ -455,8 +371,38 @@ static inline gt_color_t gt_color_mix(gt_color_t c1, gt_color_t c2, uint8_t mix)
 {
     gt_color_t ret;
 
-#if GT_COLOR_DEPTH != 1
-    /*GT_COLOR_DEPTH == 8, 16 or 32*/
+#if 1 == GT_COLOR_DEPTH
+    /*GT_COLOR_DEPTH == 1*/
+    ret.full = mix > GT_OPA_50 ? c1.full : c2.full;
+#elif 16 == GT_COLOR_DEPTH
+    if (mix > GT_OPA_MAX) {
+        return c1;
+    } else if (mix < GT_OPA_MIN) {
+        return c2;
+    }
+    mix = (mix + 4) >> 3;
+
+    #if GT_COLOR_16_SWAP
+    c1.full = (GT_COLOR_GET_R16(c1) << 11) | (GT_COLOR_GET_G16(c1) << 5) | GT_COLOR_GET_B16(c1);
+    c2.full = (GT_COLOR_GET_R16(c2) << 11) | (GT_COLOR_GET_G16(c2) << 5) | GT_COLOR_GET_B16(c2);
+    #endif
+
+    /** https://stackoverflow.com/questions/18937701/combining-two-16-bits-rgb-colors-with-alpha-blending/50012418#50012418 */
+    /** 0x7E0F81F = 0b00000111111000001111100000011111 */
+    uint32_t fg = ((c1.full << 16) | c1.full) & 0x07E0F81F;
+    uint32_t bg = ((c2.full << 16) | c2.full) & 0x07E0F81F;
+    bg += ((fg - bg) * mix) >> 5;
+    bg &= 0x07E0F81F;
+
+    #if GT_COLOR_16_SWAP
+    GT_COLOR_SET_G16(ret, (bg >> 21) & 0x3F);
+    GT_COLOR_SET_R16(ret, bg >> 11);
+    GT_COLOR_SET_B16(ret, bg);
+    #else
+    ret.full = (uint16_t)((bg >> 16) | bg);
+    #endif
+#else
+    /* GT_COLOR_DEPTH == 8 or 32 */
     GT_COLOR_SET_R(ret, GT_UDIV255((uint16_t)GT_COLOR_GET_R(c1) * mix + GT_COLOR_GET_R(c2) *
                                    (255 - mix) + GT_COLOR_MIX_ROUND_OFS));
     GT_COLOR_SET_G(ret, GT_UDIV255((uint16_t)GT_COLOR_GET_G(c1) * mix + GT_COLOR_GET_G(c2) *
@@ -464,71 +410,9 @@ static inline gt_color_t gt_color_mix(gt_color_t c1, gt_color_t c2, uint8_t mix)
     GT_COLOR_SET_B(ret, GT_UDIV255((uint16_t)GT_COLOR_GET_B(c1) * mix + GT_COLOR_GET_B(c2) *
                                    (255 - mix) + GT_COLOR_MIX_ROUND_OFS));
     GT_COLOR_SET_A(ret, 0xFF);
-#else
-    /*GT_COLOR_DEPTH == 1*/
-    ret.full = mix > GT_OPA_50 ? c1.full : c2.full;
 #endif
 
     return ret;
-}
-
-/**
- * Mix two colors. Both color can have alpha value.
- * @param bg_color background color
- * @param bg_opa alpha of the background color
- * @param fg_color foreground color
- * @param fg_opa alpha of the foreground color
- * @param res_color the result color
- * @param res_opa the result opacity
- */
-static inline void gt_color_mix_with_alpha(gt_color_t bg_color, gt_opa_t bg_opa,
-                                            gt_color_t fg_color, gt_opa_t fg_opa,
-                                            gt_color_t * res_color, gt_opa_t * res_opa)
-{
-    /*Pick the foreground if it's fully opaque or the Background is fully transparent*/
-    if(fg_opa >= GT_OPA_MAX || bg_opa <= GT_OPA_MIN) {
-        res_color->full = fg_color.full;
-        *res_opa = fg_opa;
-        return ;
-    }
-    /*Transparent foreground: use the Background*/
-    if(fg_opa <= GT_OPA_MIN) {
-        res_color->full = bg_color.full;
-        *res_opa = bg_opa;
-        return ;
-    }
-    /*Opaque background: use simple mix*/
-    if(bg_opa >= GT_OPA_MAX) {
-        *res_color = gt_color_mix(fg_color, bg_color, fg_opa);
-        *res_opa = GT_OPA_COVER;
-        return;
-    }
-
-    /*Both colors have alpha. Expensive calculation need to be applied*/
-    /*Save the parameters and the result. If they will be asked again don't compute again*/
-    static gt_opa_t fg_opa_save       = 0;
-    static gt_opa_t bg_opa_save       = 0;
-    static gt_color_t fg_color_save   = _GT_COLOR_ZERO_INITIALIZER;
-    static gt_color_t bg_color_save   = _GT_COLOR_ZERO_INITIALIZER;
-    static gt_color_t res_color_saved = _GT_COLOR_ZERO_INITIALIZER;
-    static gt_opa_t res_opa_saved     = 0;
-
-    if (fg_opa != fg_opa_save || bg_opa != bg_opa_save ||
-        fg_color.full != fg_color_save.full ||
-        bg_color.full != bg_color_save.full) {
-        fg_opa_save        = fg_opa;
-        bg_opa_save        = bg_opa;
-        fg_color_save.full = fg_color.full;
-        bg_color_save.full = bg_color.full;
-        /** Info: https://en.wikipedia.org/wiki/Alpha_compositing#Analytical_derivation_of_the_over_operator */
-        res_opa_saved = 255 - ((uint16_t)((uint16_t)(255 - fg_opa) * (255 - bg_opa)) >> 8);
-        GT_ASSERT(res_opa_saved != 0);
-        gt_opa_t ratio = (uint16_t)((uint16_t)fg_opa * 255) / res_opa_saved;
-        res_color_saved = gt_color_mix(fg_color, bg_color, ratio);
-    }
-
-    res_color->full = res_color_saved.full;
-    *res_opa = res_opa_saved;
 }
 
 

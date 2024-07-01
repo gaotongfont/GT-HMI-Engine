@@ -51,15 +51,20 @@ typedef int32_t ( * gt_anim_path_cb_t)(const struct gt_anim_s *);
 
 /**
  * @brief animation trace
- * param 1: the object of animate
- * param 2: the value to set
+ * @param value1 the object of animate
+ * @param value2 the value to set
  */
-typedef void ( * gt_anim_exec_cb_t)(gt_obj_st *, int32_t);
+typedef void ( * gt_anim_exec_cb_t)(void *, int32_t);
 
 /**
  * @brief The event is fired when the animation is complete
  */
 typedef void ( * gt_anim_ready_cb_t)(struct gt_anim_s *);
+
+/**
+ * @brief The anim object is before deleted handler
+ */
+typedef void ( * gt_anim_deleted_cb_t)(struct gt_anim_s *);
 
 /**
  * @brief The event is fired when the animation is start
@@ -87,12 +92,14 @@ typedef struct gt_anim_param_s {
  * [Core using: User do not modified]
  */
 typedef struct gt_anim_s {
-    struct _gt_list_head list;       /* Do not modified it, Core need to use it */
-    gt_obj_st * target;             // Target object
-    gt_anim_exec_cb_t exec_cb;      // The path execution callback which object run
-    gt_anim_ready_cb_t ready_cb;    // When the animation done need to be executed
-    gt_anim_start_cb_t start_cb;    // When the animation starts need to be executed
-    gt_anim_path_cb_t _path_cb; /* Warn: animation system used - user should not modified it */
+    struct _gt_list_head list;          /* Do not modified it, Core need to use it */
+    void * tar;                         // Target object
+    gt_anim_exec_cb_t exec_cb;          // The path execution callback which object run
+    gt_anim_start_cb_t start_cb;        // When the animation starts need to be executed
+    gt_anim_ready_cb_t ready_cb;        // When the animation done need to be executed
+    gt_anim_deleted_cb_t deleted_cb;    // When the animation object is deleted
+    gt_anim_path_cb_t _path_cb;         /* Warn: animation system used - user should not modified it */
+
     void * data;
 
     int32_t tick_create;        // [Tick Timestamp] create this animation tick timer
@@ -127,8 +134,8 @@ typedef struct gt_anim_s {
  * @param anim animation description
  * @param target widget object
  */
-static inline void gt_anim_set_target(gt_anim_st * anim, gt_obj_st * const target) {
-    anim->target = target;
+static inline void gt_anim_set_target(gt_anim_st * anim, void * const target) {
+    anim->tar = target;
 }
 
 static inline void gt_anim_set_time_delay_start(gt_anim_st * anim, int32_t time_ms) {
@@ -180,12 +187,16 @@ static inline void gt_anim_set_start_cb(gt_anim_st * anim, gt_anim_start_cb_t st
     anim->start_cb = start_cb;
 }
 
+static inline void gt_anim_set_exec_cb(gt_anim_st * anim, gt_anim_exec_cb_t exec_cb) {
+    anim->exec_cb = exec_cb;
+}
+
 static inline void gt_anim_set_ready_cb(gt_anim_st * anim, gt_anim_ready_cb_t ready_cb) {
     anim->ready_cb = ready_cb;
 }
 
-static inline void gt_anim_set_exec_cb(gt_anim_st * anim, gt_anim_exec_cb_t exec_cb) {
-    anim->exec_cb = exec_cb;
+static inline void gt_anim_set_deleted_cb(gt_anim_st * anim, gt_anim_deleted_cb_t deleted_cb) {
+    anim->deleted_cb = deleted_cb;
 }
 
 /**
@@ -313,7 +324,7 @@ void gt_anim_restart(gt_anim_st * anim);
  * @return true Delete animation object successfully
  * @return False Delete animation object failed
  */
-bool gt_anim_del(gt_obj_st * target, gt_anim_exec_cb_t exec_cb);
+bool gt_anim_del(void const * const target, gt_anim_exec_cb_t exec_cb);
 
 /**
  * @brief delete animation object in core
