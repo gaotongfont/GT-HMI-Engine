@@ -99,6 +99,8 @@ static void _calc_max_area_recursive(gt_obj_st * obj, bool is_root) {
 
     for (; i < cnt; i++) {
         ptr = obj->child[i];
+        GT_CHECK_FOR_CONTINUE(ptr);
+
         if (false == gt_obj_get_visible(ptr)) {
             continue;
         }
