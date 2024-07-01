@@ -197,6 +197,7 @@ static _auto_scroll_st * _create_auto_scroll_st(gt_obj_st * label) {
     _gt_label_st * style = (_gt_label_st * )label;
     if (NULL == style->auto_scroll) {
         style->auto_scroll = gt_mem_malloc(sizeof(_auto_scroll_st));
+        GT_CHECK_BACK_VAL(style->auto_scroll, NULL);
         gt_memset(style->auto_scroll, 0, sizeof(_auto_scroll_st));
     }
     return _reset_auto_scroll_st(style->auto_scroll);
@@ -215,6 +216,7 @@ static gt_anim_st * _create_auto_scroll_anim(gt_obj_st * label) {
     _gt_label_st * style = (_gt_label_st * )label;
     if (NULL == style->auto_scroll) {
         style->auto_scroll = _create_auto_scroll_st(label);
+        GT_CHECK_BACK_VAL(style->auto_scroll, NULL);
     }
     if (style->auto_scroll->anim) {
         _reset_auto_scroll_st(style->auto_scroll);
@@ -250,7 +252,9 @@ gt_obj_st * gt_label_create(gt_obj_st * parent) {
     _gt_label_st * style = (_gt_label_st * )obj;
 
     style->text = gt_mem_malloc(sizeof("label"));
-    gt_memcpy(style->text, "label\0", sizeof("label"));
+    if (style->text) {
+        gt_memcpy(style->text, "label\0", sizeof("label"));
+    }
 
     style->font_color        = gt_color_hex(0x00);
 
