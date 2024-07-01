@@ -193,7 +193,7 @@ static const _font_type_group_adjust_ascii_pos_st _font_type_group_arr[] = {
 #endif
 };
 
-static const size_t _font_type_group_arr_len = sizeof(_font_type_group_arr) / sizeof(_font_type_group_adjust_ascii_pos_st);
+static const gt_size_t _font_type_group_arr_len = sizeof(_font_type_group_arr) / sizeof(_font_type_group_adjust_ascii_pos_st);
 
 /* macros ---------------------------------------------------------------*/
 static gt_encoding_et _gt_project_encoding = GT_ENCODING_UTF8;

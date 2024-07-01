@@ -215,7 +215,7 @@ void _gt_timer_set_period(_gt_timer_st * timer, uint32_t period)
 
 uint32_t _gt_timer_get_period(_gt_timer_st * timer)
 {
-    GT_CHECK_BACK(timer);
+    GT_CHECK_BACK_VAL(timer, 0);
     return timer->period;
 }
 
@@ -250,7 +250,7 @@ void _gt_timer_set_user_data(_gt_timer_st * timer, void * user_data)
 
 void * _gt_timer_get_user_data(_gt_timer_st * timer)
 {
-    GT_CHECK_BACK(timer);
+    GT_CHECK_BACK_VAL(timer, NULL);
     return timer->user_data;
 }
 
