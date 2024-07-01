@@ -16,10 +16,12 @@
 #include "gt_symbol.h"
 /* private define -------------------------------------------------------*/
 
-#define GT_CFG_USE_FONT_16_ASCII    01
-
-/* Symbol */
-#define GT_CFG_USE_SYMBOL_16x16     1
+#ifndef GT_CFG_USE_FONT_16_ASCII
+    /**
+     * @brief
+     */
+    #define GT_CFG_USE_FONT_16_ASCII    01
+#endif
 
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
 #ifndef _GT_FONT_APOSTROPHE_PUNCTUATION_MARK_LEGAL
