@@ -25,7 +25,7 @@
 #include "../core/gt_img_decoder.h"
 
 #if _GT_USE_TEST
-#include "../../test/gt_rand_widget_test.h"
+#include "../../test/gt_test_rand_widget.h"
 #endif
 
 /* private define -------------------------------------------------------*/
@@ -150,7 +150,7 @@ void gt_task_handler(void)
     _gt_timer_handler();
 
 #if _GT_TEST_RAND_WIDGET_EVENT
-    _gt_rand_widget_test();
+    _gt_test_rand_widget();
 #endif
 }
 

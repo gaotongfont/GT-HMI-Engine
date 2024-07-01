@@ -43,12 +43,12 @@ extern "C" {
 /* global functions / API interface -------------------------------------*/
 
 /**
- * @brief GT-GUI all init
+ * @brief GT-HMI all init
  */
 void gt_init(void);
 
 /**
- * @brief GT-GUI task handler function called by task
+ * @brief GT-HMI task handler function called by task
  */
 void gt_task_handler(void);
 

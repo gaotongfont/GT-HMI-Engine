@@ -1213,7 +1213,9 @@ void gt_disp_scroll_area_act(gt_size_t dist_x, gt_size_t dist_y)
 void gt_disp_invalid_area(gt_obj_st * obj)
 {
     gt_obj_st * scr = gt_disp_get_scr();
-    GT_CHECK_BACK(scr);
+    if (NULL == scr) {
+        return;
+    }
     if (NULL == obj) {
         /** full screen refresh */
         obj = scr;
