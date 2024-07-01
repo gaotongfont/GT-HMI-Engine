@@ -57,9 +57,7 @@ static inline bool _gt_timer_task_is_ready(void)
 
 static void _gt_timer_remove_task(_gt_timer_st *ptr)
 {
-    if (NULL == ptr) {
-        return ;
-    }
+    GT_CHECK_BACK(ptr);
     _gt_list_del(&ptr->list);
     gt_mem_free(ptr);
 }
@@ -121,9 +119,7 @@ void _gt_timer_core_init(void)
 
 _gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * user_data)
 {
-    if (!callback) {
-        return NULL;
-    }
+    GT_CHECK_BACK_VAL(callback, NULL);
     _gt_timer_st * timer = gt_mem_malloc(sizeof(_gt_timer_st));
     if (!timer) {
         return NULL;
@@ -146,17 +142,13 @@ _gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * 
 
 void _gt_timer_set_callback(_gt_timer_st * timer, gt_timer_cb_t callback)
 {
-    if (!timer) {
-        return;
-    }
+    GT_CHECK_BACK(timer);
     timer->timer_cb = callback;
 }
 
 void _gt_timer_del(_gt_timer_st * timer)
 {
-    if (!timer) {
-        return;
-    }
+    GT_CHECK_BACK(timer);
     _gt_timer_set_paused(timer, true);
     _gt_timer_set_repeat_count(timer, 0);   /** remove timer by core handler */
     _gt_timer_set_callback(timer, NULL);
@@ -201,9 +193,7 @@ void _gt_timer_set_repeat_count(_gt_timer_st * timer, int32_t repeat)
 
 int32_t _gt_timer_get_repeat_count(_gt_timer_st * timer)
 {
-    if (!timer) {
-        return 0;
-    }
+    GT_CHECK_BACK_VAL(timer, 0);
     return timer->repeat_count;
 }
 

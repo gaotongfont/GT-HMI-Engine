@@ -101,10 +101,10 @@ void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_ob
 gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj);
 
 /**
- * @brief Check if the object is target type
+ * @brief Check if the object is target type, include NULL check
  *
  * @param obj
- * @param type
+ * @param type GT_TYPE_TOTAL: select all types, except GT_TYPE_UNKNOWN
  * @return true
  * @return false
  */

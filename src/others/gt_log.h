@@ -179,6 +179,18 @@ extern "C" {
     }while(0)
 
 /**
+ * @brief 变量检查, 并继续循环
+ * @param _value 检查对象
+ * @param _ret_code 检查失败, 返回的错误码
+ */
+#define GT_CHECK_FOR_CONTINUE(_value) do { \
+        if (!_value) { \
+            GT_LOGE(GT_LOG_TAG_CHECK, "[%s] value check failed!", #_value); \
+            continue; \
+        } \
+    }while(0)
+
+/**
  * @brief 变量检查, 并跳到处理标签处.
  * @param _value 检查对象
  * @param _label 跳转到的标签
