@@ -114,8 +114,9 @@ static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
     };
 
     obj->draw_ctx = (struct _gt_draw_ctx_s * )&draw_ctx;
-    obj->class->_init_cb(obj);
-
+    if (obj->class->_init_cb) {
+        obj->class->_init_cb(obj);
+    }
     return true;
 }
 

@@ -73,7 +73,7 @@ static void _init_cb(gt_obj_st * obj) {
         gt_area_st real_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
         draw_bg(obj->draw_ctx, &rect_attr, &real_area);
     }
-    if ( gt_obj_get_mask_effect(obj) && gt_obj_get_state(obj) ) {
+    if ( gt_obj_get_mask_effect(obj) && GT_STATE_PRESSED == gt_obj_get_state(obj) ) {
         gt_graph_init_rect_attr(&rect_attr);
         rect_attr.reg.is_fill    = true;
         rect_attr.radius         = obj->radius;

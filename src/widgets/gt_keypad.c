@@ -82,7 +82,6 @@ typedef struct _gt_def_style_param_s {
 }_gt_def_style_param_st;
 /* static prototypes ----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 static void _scrolling_handler(gt_obj_st * obj);
 static gt_size_t _gt_get_map_index(gt_keypad_map_st * map_list, uint8_t map_total, gt_keypad_type_te type);
@@ -91,7 +90,7 @@ static gt_size_t _gt_get_map_index(gt_keypad_map_st * map_list, uint8_t map_tota
 /* static variables -----------------------------------------------------*/
 const gt_obj_class_st gt_keypad_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
+    ._deinit_cb    = NULL,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_keypad_st)
@@ -582,15 +581,6 @@ static void _init_cb(gt_obj_st * obj) {
 
     _set_minimum_width(obj);
     gt_obj_set_size(style->btnmap, obj->area.w, gt_btnmap_get_btn_height_auto_fill(style->btnmap) ? obj->area.h : style->btnmap->area.h);
-}
-
-/**
- * @brief obj deinit call back
- *
- * @param obj
- */
-static void _deinit_cb(gt_obj_st * obj) {
-
 }
 
 /**

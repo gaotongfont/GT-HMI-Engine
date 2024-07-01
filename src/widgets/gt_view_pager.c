@@ -68,12 +68,11 @@ typedef struct _gt_view_pager_s {
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
 const gt_obj_class_st _gt_view_pager_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
+    ._deinit_cb    = NULL,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_view_pager_st)
@@ -209,10 +208,6 @@ static inline void _init_child_prop(gt_obj_st * obj) {
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_INSIDE, true);
 
     _unfixed_slider_widgets(obj, true);
-}
-
-static void _deinit_cb(gt_obj_st * obj) {
-
 }
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {

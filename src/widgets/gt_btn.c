@@ -98,7 +98,7 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     } else {
         radius = btn->radius;
     }
-    if (gt_obj_get_state(btn) != GT_STATE_NONE) {
+    if (gt_obj_get_state(btn) == GT_STATE_PRESSED) {
         fg_color = style->color_pressed;
     } else {
         fg_color = btn->bgcolor;
@@ -130,9 +130,9 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
         .logical_area   = area,
     };
 
-    if( gt_obj_get_state(btn) != GT_STATE_NONE ){
+    if (gt_obj_get_state(btn) == GT_STATE_PRESSED) {
         font_attr.font_color = style->font_color_pressed;
-    }else{
+    } else {
         font_attr.font_color = style->font_color;
     }
     draw_text(btn->draw_ctx, &font_attr, &area);
@@ -189,7 +189,7 @@ static void _press_btn_handler(gt_obj_st * obj) {
             if (OBJ_TYPE != gt_obj_class_get_type(parent->child[i])) {
                 continue;
             }
-            if (GT_STATE_NONE == gt_obj_get_state(parent->child[i])) {
+            if (GT_STATE_PRESSED != gt_obj_get_state(parent->child[i])) {
                 continue;
             }
             gt_obj_set_state(parent->child[i], GT_STATE_NONE);

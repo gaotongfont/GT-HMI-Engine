@@ -128,12 +128,11 @@ typedef struct _triple_param_s {
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
 const gt_obj_class_st gt_listview_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
+    ._deinit_cb    = NULL,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_listview_st)
@@ -167,14 +166,6 @@ static void _init_cb(gt_obj_st * obj) {
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
 
     draw_focus(obj, 0);
-}
-
-/**
- * @brief obj deinit call back
- *
- * @param obj
- */
-static void _deinit_cb(gt_obj_st * obj) {
 }
 
 static void _scrolling_handler(gt_obj_st * obj) {
@@ -247,7 +238,7 @@ static void _highlight_set_obj_active_state(gt_obj_st * listview) {
     if (false == gt_obj_get_trigger_mode(style->last_active)) {
         return;
     }
-    if (false == gt_obj_get_state(style->last_active)) {
+    if (GT_STATE_PRESSED != gt_obj_get_state(style->last_active)) {
         gt_obj_set_state(style->last_active, GT_STATE_PRESSED);
     }
 }

@@ -114,7 +114,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
 
     gt_color_t color = gt_color_white();
 
-    if( gt_obj_get_state(radio) != GT_STATE_NONE ){
+    if (gt_obj_get_state(radio) == GT_STATE_PRESSED) {
         color = gt_color_hex(0x808080);
     }
 
@@ -232,7 +232,7 @@ void gt_radio_set_selected(gt_obj_st * radio)
     if (GT_TYPE_GROUP == gt_obj_class_get_type(parent)) {
         while(  idx < parent->cnt_child ){
             child = parent->child[idx];
-            if( OBJ_TYPE == gt_obj_class_get_type(child) &&
+            if (OBJ_TYPE == gt_obj_class_get_type(child) &&
                 GT_STATE_NONE != gt_obj_get_state(child)) {
                 gt_obj_set_state(child, GT_STATE_NONE);
                 gt_event_send(child, GT_EVENT_TYPE_DRAW_START, NULL);
