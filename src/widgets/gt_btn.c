@@ -54,14 +54,14 @@ typedef struct _gt_btn_s {
 
 
 /* static variables -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
+static void _btn_init_cb(gt_obj_st * obj);
+static void _btn_deinit_cb(gt_obj_st * obj);
+static void _btn_event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
 const gt_obj_class_st gt_btn_class = {
-    ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
-    ._event_cb     = _event_cb,
+    ._init_cb      = _btn_init_cb,
+    ._deinit_cb    = _btn_deinit_cb,
+    ._event_cb     = _btn_event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_btn_st)
 };
@@ -73,8 +73,13 @@ const gt_obj_class_st gt_btn_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static inline void _gt_btn_init_widget(gt_obj_st * btn) {
-    _gt_btn_st * style = (_gt_btn_st * )btn;
+/**
+ * @brief obj init btn widget call back
+ *
+ * @param obj
+ */
+static void _btn_init_cb(gt_obj_st * obj) {
+    _gt_btn_st * style = (_gt_btn_st * )obj;
     gt_radius_t radius;
 
     gt_color_t fg_color;
@@ -89,19 +94,19 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
 
     // set default size
-    if (btn->area.w == 0 || btn->area.h == 0) {
-        btn->area.w = style->font_info.size*strlen(style->text) + 32;
-        btn->area.h = style->font_info.size+16;
+    if (obj->area.w == 0 || obj->area.h == 0) {
+        obj->area.w = style->font_info.size*strlen(style->text) + 32;
+        obj->area.h = style->font_info.size+16;
     }
-    if (btn->radius == 0) {
-        radius = btn->area.h >> 2;
+    if (obj->radius == 0) {
+        radius = obj->area.h >> 2;
     } else {
-        radius = btn->radius;
+        radius = obj->radius;
     }
-    if (gt_obj_get_state(btn) == GT_STATE_PRESSED) {
+    if (gt_obj_get_state(obj) == GT_STATE_PRESSED) {
         fg_color = style->color_pressed;
     } else {
-        fg_color = btn->bgcolor;
+        fg_color = obj->bgcolor;
     }
 
     /* base shape */
@@ -109,15 +114,15 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill   = style->reg.fill;
     rect_attr.radius        = radius;
-    rect_attr.bg_opa        = btn->opa;
+    rect_attr.bg_opa        = obj->opa;
     rect_attr.border_width  = style->border_width;
     rect_attr.fg_color      = fg_color;
     rect_attr.bg_color      = fg_color;
     rect_attr.border_color  = style->color_border;
 
-    gt_area_st area = gt_area_reduce(btn->area, gt_obj_get_reduce(btn));
+    gt_area_st area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
     // 1:base shape
-    draw_bg(btn->draw_ctx, &rect_attr, &area);
+    draw_bg(obj->draw_ctx, &rect_attr, &area);
 
     // 2:font
     gt_attr_font_st font_attr = {
@@ -126,30 +131,19 @@ static inline void _gt_btn_init_widget(gt_obj_st * btn) {
         .space_y        = style->space_y,
         .font_color     = style->font_color,
         .align          = style->font_align,
-        .opa            = btn->opa,
+        .opa            = obj->opa,
         .logical_area   = area,
     };
 
-    if (gt_obj_get_state(btn) == GT_STATE_PRESSED) {
+    if (gt_obj_get_state(obj) == GT_STATE_PRESSED) {
         font_attr.font_color = style->font_color_pressed;
     } else {
         font_attr.font_color = style->font_color;
     }
-    draw_text(btn->draw_ctx, &font_attr, &area);
+    draw_text(obj->draw_ctx, &font_attr, &area);
 
     // focus
-    draw_focus(btn , radius);
-}
-
-/**
- * @brief obj init btn widget call back
- *
- * @param obj
- */
-static void _init_cb(gt_obj_st * obj) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-
-    _gt_btn_init_widget(obj);
+    draw_focus(obj, radius);
 }
 
 /**
@@ -157,7 +151,7 @@ static void _init_cb(gt_obj_st * obj) {
  *
  * @param obj
  */
-static void _deinit_cb(gt_obj_st * obj) {
+static void _btn_deinit_cb(gt_obj_st * obj) {
     _gt_btn_st * style_p = (_gt_btn_st * )obj;
 
     if (NULL != style_p->contents) {
@@ -223,7 +217,7 @@ static inline void _lost_focus_btn_handler(gt_obj_st *obj) {
  * @param obj
  * @param e event
  */
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
+static void _btn_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
 
     switch(code) {

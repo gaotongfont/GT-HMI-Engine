@@ -93,14 +93,14 @@ typedef struct _gt_player_s {
 
 
 /* static variables -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
+static void _player_init_cb(gt_obj_st * obj);
+static void _player_deinit_cb(gt_obj_st * obj);
+static void _player_event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
 const gt_obj_class_st gt_player_class = {
-    ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
-    ._event_cb     = _event_cb,
+    ._init_cb      = _player_init_cb,
+    ._deinit_cb    = _player_deinit_cb,
+    ._event_cb     = _player_event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_player_st)
 };
@@ -187,7 +187,7 @@ static inline void _set_dir(_gt_player_st * style, bool is_next) {
     style->reg.dir = is_next ? 0 : 1;
 }
 
-static void _init_cb(gt_obj_st * obj) {
+static void _player_init_cb(gt_obj_st * obj) {
     _gt_player_st * style = (_gt_player_st * )obj;
     if (NULL == style->target.list) {
         return;
@@ -254,7 +254,7 @@ static void _destroy_type_default(_gt_player_st * style) {
     gt_memset(&style->target, 0, sizeof(_gt_player_obj_st));
 }
 
-static void _deinit_cb(gt_obj_st * obj) {
+static void _player_deinit_cb(gt_obj_st * obj) {
     if (NULL == obj) {
         return ;
     }
@@ -423,7 +423,7 @@ static inline void _change_item_handler(gt_obj_st * obj, bool is_next) {
     return is_next ? _turn_next_item(obj) : _turn_prev_item(obj);
 }
 
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
+static void _player_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
 
     if (GT_EVENT_TYPE_DRAW_START == code) {

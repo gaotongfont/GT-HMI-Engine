@@ -50,14 +50,14 @@ typedef struct _gt_imgbtn_s {
 
 
 /* static variables -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
+static void _imgbtn_init_cb(gt_obj_st * obj);
+static void _imgbtn_deinit_cb(gt_obj_st * obj);
+static void _imgbtn_event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
 const gt_obj_class_st gt_imgbtn_class = {
-    ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
-    ._event_cb     = _event_cb,
+    ._init_cb      = _imgbtn_init_cb,
+    ._deinit_cb    = _imgbtn_deinit_cb,
+    ._event_cb     = _imgbtn_event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_imgbtn_st)
 };
@@ -88,7 +88,7 @@ static char * _gt_imgbtn_get_src(gt_obj_st * obj) {
  *
  * @param obj
  */
-static void _init_cb(gt_obj_st * obj) {
+static void _imgbtn_init_cb(gt_obj_st * obj) {
     _gt_imgbtn_st * style = (_gt_imgbtn_st * )obj;
     _item_st * img = style->press.name && style->selected ? &style->press : &style->src;
     gt_attr_rect_st dsc = {
@@ -111,7 +111,7 @@ static void _init_cb(gt_obj_st * obj) {
  *
  * @param obj
  */
-static void _deinit_cb(gt_obj_st * obj) {
+static void _imgbtn_deinit_cb(gt_obj_st * obj) {
     _gt_imgbtn_st * style_p = (_gt_imgbtn_st * )obj;
     if (NULL != style_p->imgs) {
         _gt_vector_free(style_p->imgs);
@@ -161,7 +161,7 @@ static bool _turn_next_image(gt_obj_st * obj) {
  * @param obj
  * @param e event
  */
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
+static void _imgbtn_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     _gt_imgbtn_st * style = (_gt_imgbtn_st * )obj;
     gt_event_type_et code = gt_event_get_code(e);
     switch(code) {
@@ -278,6 +278,7 @@ void gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src)
         return ;
     }
     _item_st * item_p = (_item_st *)_gt_vector_get_item(style->imgs, 0);
+    GT_CHECK_BACK(item_p);
     style->src = *item_p;
 
     gt_event_send(imgbtn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
@@ -393,6 +394,7 @@ void gt_imgbtn_set_src_by_file_header(gt_obj_st * imgbtn, gt_file_header_param_s
         return ;
     }
     _item_st * item_p = (_item_st *)_gt_vector_get_item(style->imgs, 0);
+    GT_CHECK_BACK(item_p);
     style->src = *item_p;
 
     gt_event_send(imgbtn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);

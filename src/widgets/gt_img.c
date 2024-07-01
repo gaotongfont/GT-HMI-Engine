@@ -56,12 +56,7 @@ const gt_obj_class_st gt_img_class = {
 
 
 /* static functions -----------------------------------------------------*/
-/**
- * @brief obj init img widget call back
- *
- * @param obj
- */
-static void _init_cb(gt_obj_st * obj) {
+static inline void _img_init_cb(gt_obj_st * obj) {
     _gt_img_st * style = (_gt_img_st * )obj;
     gt_attr_rect_st dsc = {
         .bg_img_src = style->src,
@@ -77,6 +72,14 @@ static void _init_cb(gt_obj_st * obj) {
 
     // focus
     draw_focus(obj , 0);
+}
+/**
+ * @brief obj init img widget call back
+ *
+ * @param obj
+ */
+static void _init_cb(gt_obj_st * obj) {
+    _img_init_cb(obj);
 }
 
 /**

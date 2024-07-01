@@ -42,8 +42,7 @@ static uint32_t get_style_size(const gt_obj_class_st * class) {
     return class->size_style;
 }
 
-static gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st * self)
-{
+static gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st * self) {
     gt_size_t i = 0;
     gt_size_t idx = -1;
     gt_disp_st * disp = gt_disp_get_default();
@@ -77,8 +76,7 @@ static gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st * self)
     return ret_p;
 }
 
-static gt_obj_st * _gt_obj_class_destroy_from_parent(gt_obj_st * self)
-{
+static gt_obj_st * _gt_obj_class_destroy_from_parent(gt_obj_st * self) {
     gt_size_t i = 0;
     gt_size_t idx = -1;
     gt_obj_st * parent = self->parent;
@@ -107,6 +105,10 @@ static gt_obj_st * _gt_obj_class_destroy_from_parent(gt_obj_st * self)
     }
     parent->child[parent->cnt_child] = NULL;
     parent->child = (gt_obj_st ** )gt_mem_realloc(parent->child, parent->cnt_child * sizeof(gt_obj_st * ));
+    if (NULL == parent->child) {
+        GT_CHECK_PRINT(parent->child);
+        parent->cnt_child = 0;
+    }
     return ret_p;
 }
 

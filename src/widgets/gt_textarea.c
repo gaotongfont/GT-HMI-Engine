@@ -59,13 +59,13 @@ typedef struct _gt_textarea_s {
 
 
 /* static variables -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
+static void _textarea_init_cb(gt_obj_st * obj);
+static void _textarea_deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
 const gt_obj_class_st gt_textarea_class = {
-    ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
+    ._init_cb      = _textarea_init_cb,
+    ._deinit_cb    = _textarea_deinit_cb,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_textarea_st)
@@ -85,6 +85,7 @@ static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_poin
         .info       = style->font_info,
         .res        = NULL,
     };
+    GT_CHECK_BACK(style->contents);
 
     gt_attr_font_st font_attr = {
         .font       = &font,
@@ -155,7 +156,7 @@ static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_poin
  *
  * @param obj
  */
-static void _init_cb(gt_obj_st * obj) {
+static void _textarea_init_cb(gt_obj_st * obj) {
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
 
     /** draw border */
@@ -204,7 +205,7 @@ static void _free_contents(gt_obj_st * obj) {
  *
  * @param obj
  */
-static void _deinit_cb(gt_obj_st * obj) {
+static void _textarea_deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     if (NULL == obj) {
         return ;
@@ -306,6 +307,7 @@ void gt_textarea_set_text(gt_obj_st * textarea, char * text)
         color = style->contents[style->cnt_contents - 1].color;
 #endif
         _free_contents(textarea);
+        style->cnt_contents = 0;
     }
     if (NULL == text) {
         return;
@@ -373,13 +375,16 @@ void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et styl
     } else {
         style->contents = gt_mem_malloc(sizeof(gt_textarea_param_st));
     }
-    GT_CHECK_BACK(style->contents);
+    if (NULL == style->contents) {
+        GT_CHECK_PRINT(style->contents);
+        style->cnt_contents = 0;
+        return;
+    }
     style->contents[idx].len  = strlen(str);
     style->contents[idx].text = gt_mem_malloc(style->contents[idx].len + 1);
     if (NULL == style->contents[idx].text) {
         /** Reset to before */
         style->contents = gt_mem_realloc(style->contents, (style->cnt_contents) * sizeof(gt_textarea_param_st));
-        GT_CHECK_PRINT(style->contents);
         return;
     }
     gt_memcpy(style->contents[idx].text, str, style->contents[idx].len);
@@ -417,7 +422,11 @@ void gt_textarea_add_str_by_param(gt_obj_st * textarea, gt_textarea_param_st * p
     } else {
         style->contents = gt_mem_malloc(sizeof(gt_textarea_param_st));
     }
-    GT_CHECK_BACK(style->contents);
+    if (NULL == style->contents) {
+        GT_CHECK_PRINT(style->contents);
+        style->cnt_contents = 0;
+        return;
+    }
 
     uint8_t new_line_len = param->new_line ? 1 : 0;
 
@@ -426,7 +435,6 @@ void gt_textarea_add_str_by_param(gt_obj_st * textarea, gt_textarea_param_st * p
     if (NULL == style->contents[idx].text) {
         /** Reset to before */
         style->contents = gt_mem_realloc(style->contents, (style->cnt_contents) * sizeof(gt_textarea_param_st));
-        GT_CHECK_PRINT(style->contents);
         return;
     }
     gt_memcpy(style->contents[idx].text, param->text, param->len);

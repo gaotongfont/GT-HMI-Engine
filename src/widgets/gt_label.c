@@ -49,14 +49,14 @@ typedef struct _gt_label_s {
 
 
 /* static variables -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
+static void _label_init_cb(gt_obj_st * obj);
+static void _label_deinit_cb(gt_obj_st * obj);
+static void _label_event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
 const gt_obj_class_st gt_label_class = {
-    ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
-    ._event_cb     = _event_cb,
+    ._init_cb      = _label_init_cb,
+    ._deinit_cb    = _label_deinit_cb,
+    ._event_cb     = _label_event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_label_st)
 };
@@ -67,13 +67,12 @@ const gt_obj_class_st gt_label_class = {
 
 
 /* static functions -----------------------------------------------------*/
-
 /**
  * @brief obj init label widget call back
  *
  * @param obj
  */
-static void _init_cb(gt_obj_st * obj) {
+static void  _label_init_cb(gt_obj_st * obj) {
     _gt_label_st * style = (_gt_label_st * )obj;
     gt_font_st font = {
         .info       = style->font_info,
@@ -144,7 +143,7 @@ static void _free_auto_scroll_st(_gt_label_st * style) {
  *
  * @param obj
  */
-static void _deinit_cb(gt_obj_st * obj) {
+static void _label_deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "label deinit");
     if (NULL == obj) {
         return ;
@@ -165,7 +164,7 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param obj
  * @param e event
  */
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
+static void _label_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
 
     if (GT_EVENT_TYPE_DRAW_START == code) {
