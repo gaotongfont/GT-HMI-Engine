@@ -66,7 +66,8 @@ static void _event_calling_recursive(gt_obj_st * p) {
         GT_LOG_A(GT_LOG_TAG_TEST, "  ----");
         return;
     }
-    uint32_t rand_widget = rand_val % (p->cnt_child);
+    rand_val = rand();
+    uint32_t rand_widget = rand_val % (p->cnt_child + 1);
     if (rand_val & 0x1) {
         _event_calling_recursive(p->child[rand_widget]);
         return ;

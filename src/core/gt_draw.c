@@ -1246,6 +1246,10 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
                 if (bidi_max <= bidi_len) {
                     ++bidi_max;
                     bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
+                    if (NULL == bidi) {
+                        GT_LOGE(GT_LOG_TAG_GUI, "bidi realloc is failed!!! size = %d", bidi_max * sizeof(gt_bidi_st));
+                        goto _ret_handler;
+                    }
                 }
                 bidi[bidi_len].idx = idx_len;
                 bidi[bidi_len].len = idx_step;
@@ -1265,6 +1269,10 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             if (bidi_max <= bidi_len) {
                 ++bidi_max;
                 bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
+                if (NULL == bidi) {
+                    GT_LOGE(GT_LOG_TAG_GUI, "bidi realloc is failed!!! size = %d", bidi_max * sizeof(gt_bidi_st));
+                    goto _ret_handler;
+                }
             }
             bidi[bidi_len].idx = idx_len;
             bidi[bidi_len].flag = lan;
@@ -1641,6 +1649,10 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
             if (bidi_max <= bidi_len) {
                 ++bidi_max;
                 bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
+                if (NULL == bidi) {
+                    GT_LOGE(GT_LOG_TAG_GUI, "bidi realloc is failed!!! size = %d", bidi_max * sizeof(gt_bidi_st));
+                    goto ret_handler_lb;
+                }
             }
             bidi[bidi_len].idx = idx_len;
             bidi[bidi_len].len = idx_step;

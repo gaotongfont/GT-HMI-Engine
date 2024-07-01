@@ -62,8 +62,6 @@ const gt_obj_class_st gt_img_class = {
  * @param obj
  */
 static void _init_cb(gt_obj_st * obj) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-
     _gt_img_st * style = (_gt_img_st * )obj;
     gt_attr_rect_st dsc = {
         .bg_img_src = style->src,

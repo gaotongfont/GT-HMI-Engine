@@ -114,6 +114,10 @@ static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_poin
     uint16_t height = (obj->reduce << 1) + font_attr.font->info.size + (font_attr.space_y << 1);
     while (idx < style->cnt_contents) {
         font.utf8               = style->contents[idx].text;
+        if (NULL == font.utf8) {
+            ++idx;
+            continue;
+        }
         font.len                = style->contents[idx].len;
         font_attr.reg.style     = style->contents[idx].mask_style;
 #if GT_TEXTAREA_CUSTOM_FONT_STYLE
@@ -312,9 +316,9 @@ void gt_textarea_set_text(gt_obj_st * textarea, char * text)
     style->contents[0].len  = len;
     style->contents[0].text = gt_mem_malloc(style->contents[0].len + 1);
     if (NULL == style->contents[0].text) {
+        GT_CHECK_PRINT(style->contents[0].text);
         gt_mem_free(style->contents);
         style->contents = NULL;
-        GT_CHECK_PRINT(style->contents[0].text);
         style->cnt_contents = 0;
         style->max_height = 0;
         return;
