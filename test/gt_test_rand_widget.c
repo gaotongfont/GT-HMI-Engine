@@ -1,5 +1,5 @@
 /**
- * @file gt_rand_widget_test.c
+ * @file gt_test_rand_widget.c
  * @author Feyoung
  * @brief
  * @version 0.1
@@ -8,7 +8,7 @@
  */
 
 /* include --------------------------------------------------------------*/
-#include "./gt_rand_widget_test.h"
+#include "./gt_test_rand_widget.h"
 #if _GT_USE_TEST
 #if _GT_TEST_RAND_WIDGET_EVENT
 #include "stdlib.h"
@@ -68,7 +68,7 @@ static void _event_calling_recursive(gt_obj_st * p) {
 
 
 /* global functions / API interface -------------------------------------*/
-void _gt_rand_widget_test(void)
+void _gt_test_rand_widget(void)
 {
     static uint32_t next_run_tick = 0;
     uint32_t cur_tick = gt_tick_get();

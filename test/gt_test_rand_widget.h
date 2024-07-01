@@ -1,13 +1,13 @@
 /**
- * @file gt_rand_widget_test.h
+ * @file gt_test_rand_widget.h
  * @author Feyoung
  * @brief
  * @version 0.1
  * @date 2024-06-29 13:33:54
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
-#ifndef _GT_RAND_WIDGET_TEST_H_
-#define _GT_RAND_WIDGET_TEST_H_
+#ifndef _GT_TEST_RAND_WIDGET_H_
+#define _GT_TEST_RAND_WIDGET_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,7 +40,7 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
-void _gt_rand_widget_test(void);
+void _gt_test_rand_widget(void);
 
 
 #endif  /** _GT_TEST_RAND_WIDGET_EVENT */
@@ -50,4 +50,4 @@ void _gt_rand_widget_test(void);
 } /*extern "C"*/
 #endif
 
-#endif //!_GT_RAND_WIDGET_TEST_H_
+#endif //!_GT_TEST_RAND_WIDGET_H_
