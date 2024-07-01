@@ -308,8 +308,17 @@ void gt_textarea_set_text(gt_obj_st * textarea, char * text)
     }
     len = strlen(text);
     style->contents  = gt_mem_malloc( sizeof(gt_textarea_param_st) );
+    GT_CHECK_BACK(style->contents);
     style->contents[0].len  = len;
     style->contents[0].text = gt_mem_malloc(style->contents[0].len + 1);
+    if (NULL == style->contents[0].text) {
+        gt_mem_free(style->contents);
+        style->contents = NULL;
+        GT_CHECK_PRINT(style->contents[0].text);
+        style->cnt_contents = 0;
+        style->max_height = 0;
+        return;
+    }
     gt_memcpy(style->contents[0].text, text, len);
     style->contents[0].text[len] = '\0';
     style->contents[0].mask_style = style_mask;
@@ -360,11 +369,15 @@ void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et styl
     } else {
         style->contents = gt_mem_malloc(sizeof(gt_textarea_param_st));
     }
-    if (NULL == style->contents) {
-        return;
-    }
+    GT_CHECK_BACK(style->contents);
     style->contents[idx].len  = strlen(str);
     style->contents[idx].text = gt_mem_malloc(style->contents[idx].len + 1);
+    if (NULL == style->contents[idx].text) {
+        /** Reset to before */
+        style->contents = gt_mem_realloc(style->contents, (style->cnt_contents) * sizeof(gt_textarea_param_st));
+        GT_CHECK_PRINT(style->contents);
+        return;
+    }
     gt_memcpy(style->contents[idx].text, str, style->contents[idx].len);
     style->contents[idx].text[style->contents[idx].len] = '\0';
     style->contents[idx].mask_style = style_mask;
@@ -400,14 +413,18 @@ void gt_textarea_add_str_by_param(gt_obj_st * textarea, gt_textarea_param_st * p
     } else {
         style->contents = gt_mem_malloc(sizeof(gt_textarea_param_st));
     }
-    if (NULL == style->contents) {
-        return;
-    }
+    GT_CHECK_BACK(style->contents);
 
     uint8_t new_line_len = param->new_line ? 1 : 0;
 
     style->contents[idx].len = param->len + new_line_len;
     style->contents[idx].text = gt_mem_malloc(style->contents[idx].len + 1);
+    if (NULL == style->contents[idx].text) {
+        /** Reset to before */
+        style->contents = gt_mem_realloc(style->contents, (style->cnt_contents) * sizeof(gt_textarea_param_st));
+        GT_CHECK_PRINT(style->contents);
+        return;
+    }
     gt_memcpy(style->contents[idx].text, param->text, param->len);
     if (param->new_line) {
         style->contents[idx].text[param->len] = '\n';

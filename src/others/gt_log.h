@@ -155,15 +155,14 @@ extern "C" {
 
 /* value check ------------------------------------------------------------*/
 
+#define GT_CHECK_PRINT(_value)    GT_LOGE(GT_LOG_TAG_CHECK, "Failed: [%s] value is NULL!", #_value)
+
 /**
  * @brief 变量检查, 并跳出函数.
  * @param _value 检查对象
  */
 #define GT_CHECK_BACK(_value) do { \
-        if (!_value) { \
-            GT_LOGE(GT_LOG_TAG_CHECK, "Failed: [%s] value is NULL!", #_value); \
-            return; \
-        } \
+        if (!_value) { GT_CHECK_PRINT(_value); return; } \
     }while(0)
 
 /**
@@ -172,10 +171,7 @@ extern "C" {
  * @param _ret_code 检查失败, 返回的错误码
  */
 #define GT_CHECK_BACK_VAL(_value, _ret_code) do { \
-        if (!_value) { \
-            GT_LOGE(GT_LOG_TAG_CHECK, "Failed: [%s] value is NULL!", #_value); \
-            return _ret_code; \
-        } \
+        if (!_value) { GT_CHECK_PRINT(_value); return _ret_code; } \
     }while(0)
 
 /**
@@ -184,10 +180,7 @@ extern "C" {
  * @param _ret_code 检查失败, 返回的错误码
  */
 #define GT_CHECK_FOR_CONTINUE(_value) do { \
-        if (!_value) { \
-            GT_LOGE(GT_LOG_TAG_CHECK, "Failed: [%s] value is NULL!", #_value); \
-            continue; \
-        } \
+        if (!_value) { GT_CHECK_PRINT(_value); continue; } \
     }while(0)
 
 /**
@@ -196,10 +189,7 @@ extern "C" {
  * @param _label 跳转到的标签
  */
 #define GT_CHECK_GOTO(_value, _label) do { \
-        if (!_value) { \
-            GT_LOGE(GT_LOG_TAG_CHECK, "Failed: [%s] value is NULL!", #_value); \
-            goto _label; \
-        } \
+        if (!_value) { GT_CHECK_PRINT(_value); goto _label; } \
     }while(0)
 
 #define GT_LOG_COLOR_ARR(_arr, _start, _len) do { \
