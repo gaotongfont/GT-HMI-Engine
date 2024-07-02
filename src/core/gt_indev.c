@@ -753,11 +753,7 @@ bool _gt_indev_remove_want_delate_target(gt_obj_st * target)
     for (i = 0; i < cnt_indev; i++) {
         indev = gt_indev_get_dev_by_idx(i);
         point_p = &indev->data.point;
-
         if (target != point_p->obj_target) {
-            continue;
-        }
-        if (false == target->delate) {
             continue;
         }
         point_p->obj_target = NULL;

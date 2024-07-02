@@ -366,6 +366,11 @@ void gt_obj_destroy(gt_obj_st * obj)
     _gt_timer_set_repeat_count(tmp_timer, 1);
 }
 
+void gt_obj_destroy_immediately(gt_obj_st * obj)
+{
+    return _gt_obj_class_destroy(obj);
+}
+
 void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE_SCREEN)) {

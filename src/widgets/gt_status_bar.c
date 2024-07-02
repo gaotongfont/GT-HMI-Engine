@@ -236,7 +236,7 @@ static bool _remove_by(gt_obj_st * parent, gt_obj_st * target) {
     if (false == gt_obj_is_child(target, parent)) {
         return false;
     }
-    _gt_obj_class_destroy(target);
+    gt_obj_destroy_immediately(target);
     gt_layout_row_grow(parent);
 
     return true;
@@ -649,7 +649,7 @@ bool gt_status_bar_custom_remove(gt_obj_st * target)
     if (false == gt_obj_is_child(target, style->custom)) {
         return false;
     }
-    _gt_obj_class_destroy(target);
+    gt_obj_destroy_immediately(target);
     return true;
 }
 

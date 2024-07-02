@@ -228,7 +228,7 @@ static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     GT_CHECK_BACK(disp);
     if (disp->scr_prev && disp->scr_prev->delate) {
         disp->scr_prev->using = 0;
-        gt_obj_destroy(disp->scr_prev);
+        _gt_obj_class_destroy(disp->scr_prev);
     }
 
     disp->scr_prev      = NULL;

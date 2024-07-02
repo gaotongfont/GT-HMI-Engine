@@ -49,7 +49,7 @@ typedef struct _gt_gc_full_img_buffer_s {
 
 #if GT_USE_SCREEN_ANIM
 typedef struct _gt_gc_event_s {
-    uint8_t enabled : 1;
+    uint8_t enabled : 1;    /** Disabled when the screen is animating */
     uint8_t reserved : 7;
 }_gt_gc_event_st;
 #endif

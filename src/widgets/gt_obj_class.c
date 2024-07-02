@@ -122,13 +122,10 @@ static void _gt_obj_class_destroy_property(gt_obj_st * self) {
         gt_mem_free(self->event_attr);
         self->event_attr = NULL;
     }
-
-    self->delate = false;
     // free obj custom style
     if (self->class->_deinit_cb) {
         self->class->_deinit_cb(self);
     }
-
     self->draw_ctx = NULL;
     self->class = NULL;
 }
@@ -323,7 +320,6 @@ void _gt_obj_class_destroy(struct gt_obj_s * self)
     if (NULL == self) {
         return ;
     }
-
     _destroy_and_free_children(self, true);
 
     if (NULL == self->parent) {

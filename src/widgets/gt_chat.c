@@ -209,7 +209,7 @@ static void _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint8_t tim_s, 
 
     if(style->msg_cnt >= GT_CHAT_MAX_MSG_CNT){
         style->max_h -= gt_obj_get_h(style->msg_list[0].msg_obj);
-        _gt_obj_class_destroy(style->msg_list[0].msg_obj);
+        gt_obj_destroy_immediately(style->msg_list[0].msg_obj);
         gt_memmove (style->msg_list, style->msg_list + 1, sizeof(_gt_chat_param_st) * (GT_CHAT_MAX_MSG_CNT-1));
         style->msg_cnt = GT_CHAT_MAX_MSG_CNT - 1;
     }

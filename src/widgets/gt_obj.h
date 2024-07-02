@@ -205,6 +205,13 @@ bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent);
 void gt_obj_destroy(gt_obj_st * obj);
 
 /**
+ * @brief Destroy the object immediately
+ *
+ * @param obj widgets object
+ */
+void gt_obj_destroy_immediately(gt_obj_st * obj);
+
+/**
  * @brief Set screen background color
  *
  * @param obj
