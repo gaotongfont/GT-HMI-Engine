@@ -64,7 +64,7 @@ static gt_res_t _gt_event_calling_user_cb(gt_event_st * e) {
 }
 
 static gt_res_t _gt_event_calling_event_cb(gt_event_st * e) {
-    gt_obj_st * obj = e->target;
+    gt_obj_st * obj = (gt_obj_st * )e->target;
     GT_CHECK_BACK_VAL(obj, GT_RES_FAIL);
 
     const gt_obj_class_st * class = obj->class;
