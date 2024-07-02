@@ -416,7 +416,7 @@ void gt_obj_set_state(gt_obj_st * obj, gt_state_et state)
 
 gt_state_et gt_obj_get_state(gt_obj_st * obj)
 {
-    GT_CHECK_BACK_VAL(obj, GT_STATE_FAIL);
+    GT_CHECK_BACK_VAL(obj, GT_STATE_NONE);
     return (gt_state_et)obj->state;
 }
 

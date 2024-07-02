@@ -182,7 +182,6 @@ typedef struct _gt_area_abs_s {
 typedef enum {
     GT_STATE_NONE = 0,
     GT_STATE_PRESSED,   // pressed
-    GT_STATE_FAIL,
 }gt_state_et;
 
 
