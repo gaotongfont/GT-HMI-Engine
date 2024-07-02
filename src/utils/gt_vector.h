@@ -15,6 +15,7 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "../others/gt_types.h"
+#include "../others/gt_list.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -38,11 +39,16 @@ typedef bool ( * _gt_vector_free_item_cb_t)(void * item);
  */
 typedef bool ( * _gt_vector_equal_item_cb_t)(void * item, void * target);
 
+typedef struct {
+    struct _gt_list_head node;
+    void * val;
+}_gt_vector_item_st;
+
 typedef struct _gt_vector_s {
     _gt_vector_free_item_cb_t free_item_cb;
     _gt_vector_equal_item_cb_t equal_item_cb;
 
-    void ** list;
+    struct _gt_list_head list_head;
     uint8_t count;
     uint8_t index;
 }_gt_vector_st;
@@ -71,7 +77,6 @@ _gt_vector_st * _gt_vector_create(_gt_vector_free_item_cb_t free_cb, _gt_vector_
  *
  * @param vector_p
  * @param free_item_cb
- * @param instance_size
  * @return true
  * @return false
  */
@@ -91,24 +96,22 @@ bool _gt_vector_add_equal_item_cb(_gt_vector_st * vector_p, _gt_vector_equal_ite
  * @brief Add a item to vector
  *
  * @param vector_p
- * @param item
- * @param size
+ * @param item The point of item, the item must be malloced, free by free_cb()
  * @return true
  * @return false
  */
-bool _gt_vector_add_item(_gt_vector_st * vector_p, void * item, uint16_t size);
+bool _gt_vector_add_item(_gt_vector_st * vector_p, void * item);
 
 /**
  * @brief Replace a item in vector
  *
  * @param vector_p
  * @param index The index of the item to be replaced
- * @param item The new item
- * @param size The size of the new item
+ * @param item The point of item, the item must be malloced, free by free_cb()
  * @return true
  * @return false
  */
-bool _gt_vector_replace_item(_gt_vector_st * vector_p, uint16_t index, void * item, uint16_t size);
+bool _gt_vector_replace_item(_gt_vector_st * vector_p, uint16_t index, void * item);
 
 /**
  * @brief Remove a item from vector

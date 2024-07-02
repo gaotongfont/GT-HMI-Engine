@@ -186,7 +186,7 @@ static void _imgbtn_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             style->selected = 0;
             if (!_turn_next_image(obj)) {
-                _gt_imgbtn_set_src(obj, _gt_vector_get_item(style->imgs, 0));
+                _gt_imgbtn_set_src(obj, (_item_st * )_gt_vector_get_item(style->imgs, 0));
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
@@ -205,10 +205,14 @@ static void _imgbtn_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
 static bool _imgs_free_cb(void * item) {
     _item_st * item_p = (_item_st * )item;
+    if (NULL == item_p) {
+        return true;
+    }
     if (item_p->name) {
         gt_mem_free(item_p->name);
+        item_p->name = NULL;
     }
-    item_p->name = NULL;
+    gt_mem_free(item);
     return true;
 }
 
@@ -260,28 +264,39 @@ void gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src)
     }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
     uint16_t len = src == NULL ? 0 : strlen(src);
-    _item_st item = { 0 };
-    item.name = gt_mem_malloc(len + 1);
-    if (NULL == item.name) {
-        return ;
+    _item_st * item = gt_mem_malloc(sizeof(_item_st));
+    GT_CHECK_BACK(item);
+
+    item->name = gt_mem_malloc(len + 1);
+    if (NULL == item->name) {
+        GT_CHECK_PRINT(item->name);
+        goto item_lb;
     }
-    gt_memcpy(item.name, src, len);
-    item.name[len] = '\0';
+    gt_memcpy(item->name, src, len);
+    item->name[len] = '\0';
 
 #if GT_USE_FILE_HEADER
-    gt_file_header_param_init(&item.fh);
+    gt_file_header_param_init(&item->fh);
 #endif
 
-    if (false == _gt_vector_replace_item(style->imgs, 0, &item, sizeof(_item_st))) {
-        gt_mem_free(item.name);
-        item.name = NULL;
-        return ;
+    if (false == _gt_vector_replace_item(style->imgs, 0, (void * )item)) {
+        if (false == _gt_vector_add_item(style->imgs, (void * )item)) {
+            goto name_lb;
+        }
     }
     _item_st * item_p = (_item_st *)_gt_vector_get_item(style->imgs, 0);
     GT_CHECK_BACK(item_p);
     style->src = *item_p;
 
     gt_event_send(imgbtn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    return;
+
+name_lb:
+    gt_mem_free(item->name);
+    item->name = NULL;
+item_lb:
+    gt_mem_free(item);
+    item = NULL;
 }
 
 void gt_imgbtn_set_src_press(gt_obj_st * imgbtn, char * src)
@@ -344,19 +359,33 @@ bool gt_imgbtn_add_state_item(gt_obj_st * obj, char * src)
         return false;
     }
 
-    _item_st item = { 0 };
-    item.name = gt_mem_malloc(len + 1);
-    if (NULL == item.name) {
-        return false;
+    _item_st * item = gt_mem_malloc(sizeof(_item_st));
+    GT_CHECK_BACK_VAL(item, false);
+
+    item->name = gt_mem_malloc(len + 1);
+    if (NULL == item->name) {
+        GT_CHECK_PRINT(item->name);
+        goto item_lb;
     }
-    gt_memcpy(item.name, src, len);
-    item.name[len] = '\0';
+    gt_memcpy(item->name, src, len);
+    item->name[len] = '\0';
 
 #if GT_USE_FILE_HEADER
-    gt_file_header_param_init(&item.fh);
+    gt_file_header_param_init(&item->fh);
 #endif
 
-    return _gt_vector_add_item(style->imgs, &item, sizeof(_item_st));
+    if (false == _gt_vector_add_item(style->imgs, (void * )item)) {
+        goto name_lb;
+    }
+    return true;
+
+name_lb:
+    gt_mem_free(item->name);
+    item->name = NULL;
+item_lb:
+    gt_mem_free(item);
+    item = NULL;
+    return false;
 }
 
 bool gt_imgbtn_remove_state_item(gt_obj_st * obj, char * src)
@@ -388,16 +417,28 @@ void gt_imgbtn_set_src_by_file_header(gt_obj_st * imgbtn, gt_file_header_param_s
         return ;
     }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
-    _item_st item = { 0 };
-    item.fh = *fh;
-    if (false == _gt_vector_replace_item(style->imgs, 0, &item, sizeof(_item_st))) {
-        return ;
+    _item_st * item = (_item_st * )gt_mem_malloc(sizeof(_item_st));
+    GT_CHECK_BACK(item);
+    item->fh = *fh;
+    if (0 == _gt_vector_get_count(style->imgs)) {
+        if (false == _gt_vector_add_item(style->imgs, (void * )item)) {
+            goto item_lb;
+        }
+    } else {
+        if (false == _gt_vector_replace_item(style->imgs, 0, (void * )item)) {
+            goto item_lb;
+        }
     }
     _item_st * item_p = (_item_st *)_gt_vector_get_item(style->imgs, 0);
     GT_CHECK_BACK(item_p);
     style->src = *item_p;
 
     gt_event_send(imgbtn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    return;
+
+item_lb:
+    gt_mem_free(item);
+    item = NULL;
 }
 
 void gt_imgbtn_set_src_press_by_file_header(gt_obj_st * imgbtn, gt_file_header_param_st * fh)
@@ -447,11 +488,15 @@ bool gt_imgbtn_add_state_item_by_file_header(gt_obj_st * obj, gt_file_header_par
         return false;
     }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
-
-    _item_st item = { 0 };
-    item.fh = *fh;
-
-    return _gt_vector_add_item(style->imgs, &item, sizeof(_item_st));
+    _item_st * item = gt_mem_malloc(sizeof(_item_st));
+    GT_CHECK_BACK_VAL(item, false);
+    item->fh = *fh;
+    if (false == _gt_vector_add_item(style->imgs, (void * )item)) {
+        gt_mem_free(item);
+        item = NULL;
+        return false;
+    }
+    return true;
 }
 
 bool gt_imgbtn_remove_state_item_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh)
