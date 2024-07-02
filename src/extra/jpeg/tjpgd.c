@@ -26,6 +26,7 @@
 
 #include "tjpgd.h"
 
+#if GT_USE_SJPG
 
 #if JD_FASTDECODE == 2
 #define HUFF_BIT	10	/* Bit length to apply fast huffman decode */
@@ -946,7 +947,7 @@ static JRESULT mcu_output (
 	}
 
 	/* Output the rectangular */
-	return outfunc(jd, jd->workbuf, &rect) ? JDR_OK : JDR_INTR; 
+	return outfunc(jd, jd->workbuf, &rect) ? JDR_OK : JDR_INTR;
 }
 
 
@@ -1151,3 +1152,5 @@ JRESULT jd_decomp (
 
 	return rc;
 }
+
+#endif	/** GT_USE_SJPG */
