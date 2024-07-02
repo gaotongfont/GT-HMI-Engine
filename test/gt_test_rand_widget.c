@@ -36,6 +36,10 @@
     #define _RANDOM_EVENT_2     GT_EVENT_TYPE_INPUT_RELEASED
 #endif
 
+#ifndef _GT_TEST_PRINT
+    #define _GT_TEST_PRINT      0
+#endif
+
 /* private typedef ------------------------------------------------------*/
 
 
@@ -60,10 +64,14 @@ static void _event_calling_recursive(gt_obj_st * p) {
     srand(time(NULL));
     uint32_t rand_val = rand();
     if (0 == p->cnt_child) {
+#if _GT_TEST_PRINT
         GT_LOG_A(GT_LOG_TAG_TEST, "  ==== widget: %p[%d], event: %d",
             p, gt_obj_class_get_type(p), rand_val & 0x1 ? _RANDOM_EVENT_1 : _RANDOM_EVENT_2);
+#endif
         gt_event_send(p, rand_val & 0x1 ? _RANDOM_EVENT_1 : _RANDOM_EVENT_2, NULL);
+#if _GT_TEST_PRINT
         GT_LOG_A(GT_LOG_TAG_TEST, "  ----");
+#endif
         return;
     }
     rand_val = rand();
@@ -72,11 +80,15 @@ static void _event_calling_recursive(gt_obj_st * p) {
         _event_calling_recursive(p->child[rand_widget]);
         return ;
     }
+#if _GT_TEST_PRINT
     GT_LOG_A(GT_LOG_TAG_TEST, "  ==== cur: %p widget: %p[%d](%d/%d), event: %d",
         p, p->child[rand_widget], gt_obj_class_get_type(p->child[rand_widget]), rand_widget, p->cnt_child,
         rand_val & 0x1 ? _RANDOM_EVENT_1 : _RANDOM_EVENT_2);
+#endif
     gt_event_send(p->child[rand_widget], rand_val & 0x1 ? _RANDOM_EVENT_1 : _RANDOM_EVENT_2, NULL);
+#if _GT_TEST_PRINT
     GT_LOG_A(GT_LOG_TAG_TEST, "  ----");
+#endif
 }
 
 
@@ -95,9 +107,13 @@ void _gt_test_rand_widget(void)
     GT_CHECK_BACK(cur_scr);
     GT_CHECK_BACK(cur_scr->child);
     uint32_t rand_widget = rand() % (cur_scr->cnt_child);
+#if _GT_TEST_PRINT
     GT_LOG_A(GT_LOG_TAG_TEST, "==== cur scr: %p, %d/%d, next time after: %d", cur_scr, rand_widget, cur_scr->cnt_child, rand_value);
+#endif
     _event_calling_recursive(cur_scr->child[rand_widget]);
+#if _GT_TEST_PRINT
     GT_LOG_A(GT_LOG_TAG_TEST, "----");
+#endif
 }
 
 #endif  /** _GT_TEST_RAND_WIDGET_EVENT */
