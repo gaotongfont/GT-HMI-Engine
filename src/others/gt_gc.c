@@ -41,6 +41,11 @@ gt_gc_st _gt_global_call = {
         .count = 0,
     },
 #endif
+#if GT_USE_SCREEN_ANIM
+    .event_ctl = {
+        .enabled = true,
+    }
+#endif
 };
 
 /* static variables -----------------------------------------------------*/

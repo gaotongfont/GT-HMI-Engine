@@ -112,6 +112,22 @@ typedef void (* gt_event_cb_t)(gt_event_st * e);
 
 
 /* global functions / API interface -------------------------------------*/
+#if GT_USE_SCREEN_ANIM
+/**
+ * @brief Disabled when the screen is animating.
+ *
+ * @param enabled
+ */
+void gt_event_set_enabled(bool enabled);
+
+/**
+ * @brief Disabled when the screen is animating.
+ *
+ * @return true
+ * @return false
+ */
+bool gt_event_is_enabled(void);
+#endif  /** GT_USE_SCREEN_ANIM */
 
 /**
  * @brief Adding an event to an object

@@ -53,7 +53,7 @@
 /* static variables -----------------------------------------------------*/
 
 static gt_indev_param_st _indev_params = {
-    .disabled = 0,
+    .enabled = true,
 };
 
 /* macros ---------------------------------------------------------------*/
@@ -710,7 +710,7 @@ void gt_indev_handler(struct _gt_timer_s * timer)
     gt_indev_st * indev;
     uint8_t i, cnt_indev;
 
-    if (gt_indev_is_disabled()) {
+    if (false == gt_indev_is_enabled()) {
         return;
     }
 
@@ -733,14 +733,14 @@ void gt_indev_handler(struct _gt_timer_s * timer)
     }
 }
 
-void gt_indev_set_disabled(bool disabled)
+void gt_indev_set_enabled(bool enabled)
 {
-    _indev_params.disabled = disabled;
+    _indev_params.enabled = enabled;
 }
 
-bool gt_indev_is_disabled(void)
+bool gt_indev_is_enabled(void)
 {
-    return _indev_params.disabled;
+    return _indev_params.enabled;
 }
 
 bool _gt_indev_remove_want_delate_target(gt_obj_st * target)

@@ -183,7 +183,7 @@ typedef struct gt_indev_param_st {
         uint32_t keypad_key;
     }param;
 
-    uint8_t disabled : 1;   /** When screen anim used, 0: default set, normal; 1: temporary disability */
+    uint8_t enabled : 1;   /** When screen anim used, 1: default set, normal; 0: temporary disability */
     uint8_t reserved : 7;
 }gt_indev_param_st;
 

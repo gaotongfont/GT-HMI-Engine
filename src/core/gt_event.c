@@ -115,6 +115,22 @@ static bool _has_the_same_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_even
 }
 
 /* global functions / API interface -------------------------------------*/
+#if GT_USE_SCREEN_ANIM
+void gt_event_set_enabled(bool enabled)
+{
+    struct _gt_gc_event_s * event_c = (struct _gt_gc_event_s * )&_GT_GC_GET_ROOT(event_ctl);
+    GT_CHECK_BACK(event_c);
+    event_c->enabled = enabled;
+}
+
+bool gt_event_is_enabled(void)
+{
+    struct _gt_gc_event_s * event_c = (struct _gt_gc_event_s * )&_GT_GC_GET_ROOT(event_ctl);
+    GT_CHECK_BACK_VAL(event_c, false);
+    return event_c->enabled;
+}
+#endif  /** GT_USE_SCREEN_ANIM */
+
 void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data)
 {
     if (NULL == obj || NULL == event) {
@@ -138,6 +154,11 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
 
 gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * parms)
 {
+#if GT_USE_SCREEN_ANIM
+    if (false == gt_event_is_enabled()) {
+        return GT_RES_INV;
+    }
+#endif
     GT_CHECK_BACK_VAL(parent, GT_RES_FAIL);
     gt_event_st e;
     e.target = parent;
@@ -156,6 +177,11 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
 
 gt_res_t gt_event_send_to_childs(struct gt_obj_s * parent, gt_event_type_et event, void * parms)
 {
+#if GT_USE_SCREEN_ANIM
+    if (false == gt_event_is_enabled()) {
+        return GT_RES_INV;
+    }
+#endif
     gt_res_t res = GT_RES_OK;
     GT_CHECK_BACK_VAL(parent, GT_RES_FAIL);
 
@@ -171,6 +197,11 @@ gt_res_t gt_event_send_to_childs(struct gt_obj_s * parent, gt_event_type_et even
 
 gt_res_t gt_event_send_by_id(gt_id_t widget_id, gt_event_type_et event, void * parms)
 {
+#if GT_USE_SCREEN_ANIM
+    if (false == gt_event_is_enabled()) {
+        return GT_RES_INV;
+    }
+#endif
     if (-1 == widget_id) {
         return GT_RES_FAIL;
     }

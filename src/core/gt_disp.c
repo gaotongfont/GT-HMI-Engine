@@ -201,7 +201,8 @@ static void _scr_anim_start_cb(struct gt_anim_s * anim) {
     disp->anim_scr_remark.y = disp->scr_act->area.y;
 
     /** Can not calling other event by all of input device */
-    gt_indev_set_disabled(true);
+    gt_indev_set_enabled(false);
+    gt_event_set_enabled(false);
 }
 
 /**
@@ -241,7 +242,8 @@ static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_disp_invalid_area(disp->scr_act);
 
     /** Enabled all of input device event */
-    gt_indev_set_disabled(false);
+    gt_indev_set_enabled(true);
+    gt_event_set_enabled(true);
 }
 
 static bool _is_anim_type_hor(gt_scr_anim_type_et anim_type) {
@@ -1002,7 +1004,9 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         gt_anim_set_time(&anim_old, time);
         gt_anim_set_data(&anim_old, &area, sizeof(gt_area_st));
         gt_anim_set_time_delay_start(&anim_old, delay);
-        gt_anim_set_ready_cb(&anim_old, _old_scr_anim_ready_cb);
+        if (false == del_prev_scr) {
+            gt_anim_set_ready_cb(&anim_old, _old_scr_anim_ready_cb);
+        }
         gt_anim_set_target(&anim_old, scr_old);
 
         gt_anim_st anim_new;
