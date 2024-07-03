@@ -26,6 +26,13 @@ extern "C" {
     #define GT_USE_LOG      01
 #endif
 
+#ifndef GT_USE_VALUE_CHECK
+    /**
+     * @brief This function enables the value check feature.
+     */
+    #define GT_USE_VALUE_CHECK      01
+#endif
+
 /**
  * @brief 映射底层打印接口
  */
@@ -155,7 +162,9 @@ extern "C" {
 
 /* value check ------------------------------------------------------------*/
 
-#define GT_CHECK_PRINT(_value)    GT_LOGE(GT_LOG_TAG_CHECK, "Failed: [%s] value is NULL!", #_value)
+#if GT_USE_VALUE_CHECK
+
+#define GT_CHECK_PRINT(_value)    GT_LOGW(GT_LOG_TAG_CHECK, "Failed: [%s] value is NULL!", #_value)
 
 /**
  * @brief 变量检查, 并跳出函数.
@@ -202,7 +211,6 @@ extern "C" {
         printf("\n"); \
     }while(0);
 
-
 #define GT_LOG_ARR(_arr, _start, _len) do { \
         unsigned int i = _start; \
         printf("\n%s:\n", #_arr); \
@@ -212,6 +220,17 @@ extern "C" {
         } \
         printf("\n"); \
     }while(0);
+#else
+
+#define GT_CHECK_PRINT(_value)
+#define GT_CHECK_BACK(_value)
+#define GT_CHECK_BACK_VAL(_value, _ret_code)
+#define GT_CHECK_FOR_CONTINUE(_value)
+#define GT_CHECK_GOTO(_value, _label)
+#define GT_LOG_COLOR_ARR(_arr, _start, _len)
+#define GT_LOG_ARR(_arr, _start, _len)
+
+#endif  /** GT_USE_VALUE_CHECK */
 
 #ifdef __cplusplus
 } /*extern "C"*/
