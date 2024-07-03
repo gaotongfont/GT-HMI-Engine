@@ -82,7 +82,7 @@ static void _btn_init_cb(gt_obj_st * obj) {
     gt_radius_t radius;
 
     gt_color_t fg_color;
-    char * text = (char * )_gt_vector_get_item(style->contents, style->contents->index);
+    char * text = (char * )_gt_vector_get_item(style->contents, _gt_vector_get_index(style->contents));
     GT_CHECK_BACK(text);
 
     gt_font_st font = {
@@ -395,7 +395,7 @@ char * gt_btn_get_text(gt_obj_st * btn)
         return NULL;
     }
     _gt_btn_st * style = (_gt_btn_st * )btn;
-    return (char * )_gt_vector_get_item(style->contents, style->contents->index);
+    return (char * )_gt_vector_get_item(style->contents, _gt_vector_get_index(style->contents));
 }
 
 void gt_btn_set_font_color(gt_obj_st * btn, gt_color_t color)
