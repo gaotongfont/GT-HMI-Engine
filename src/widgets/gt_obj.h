@@ -197,7 +197,7 @@ gt_id_t gt_obj_get_id(gt_obj_st * obj);
 bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent);
 
 /**
- * @brief If you use the screen stack functionality,
+ * @brief [SCREEN SAFE] If you use the screen stack functionality,
  *      try to avoid using it to free screen objects directly
  *
  * @param obj widgets object
@@ -205,7 +205,7 @@ bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent);
 void gt_obj_destroy(gt_obj_st * obj);
 
 /**
- * @brief Destroy the object immediately
+ * @brief [SCREEN UNSAFE] Destroy the object immediately
  *
  * @param obj widgets object
  */
