@@ -34,7 +34,6 @@
     #define _GT_STACK_USE_LOADING_LOG   0
 #endif
 
-#define _TEST_LOAD  0
 
 /* private typedef ------------------------------------------------------*/
 
@@ -183,12 +182,11 @@ static void _scr_anim_exec_y_cb(void * obj, int32_t y) {
     gt_obj_set_y((gt_obj_st * )obj, (gt_size_t)y);
 }
 
-#if _TEST_LOAD
 static void _scr_anim_del_ready_cb(struct gt_anim_s * anim) {
-    ((gt_obj_st * )anim->tar)->using = 0;
-    gt_obj_destroy((gt_obj_st * )anim->tar);
+    gt_obj_st * old_scr = (gt_obj_st * )anim->tar;
+    old_scr->using = 0;
+    _gt_obj_class_destroy(old_scr);
 }
-#endif
 
 #if GT_USE_SCREEN_ANIM
 static void _scr_anim_start_cb(struct gt_anim_s * anim) {
@@ -980,20 +978,12 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         gt_disp_ref_area(&disp->area_act);
 
         if (del_prev_scr && scr_old && scr_old != scr) {
-        #if _TEST_LOAD
             gt_anim_st anim_del;
             gt_anim_init(&anim_del);
-            gt_anim_set_time(&anim_del, time);
-            gt_anim_set_time_delay_start(&anim_del, delay);
+            gt_anim_set_time(&anim_del, GT_TASK_PERIOD_TIME_REFR);
             gt_anim_set_target(&anim_del, scr_old);
             gt_anim_set_ready_cb(&anim_del, _scr_anim_del_ready_cb);
-            if (NULL == gt_anim_start(&anim_del)) {
-                /** No more free memory, force release memory */
-                _gt_obj_class_destroy(scr_old);
-            }
-        #else
-            _gt_obj_class_destroy(scr_old);
-        #endif
+            GT_CHECK_BACK(gt_anim_start(&anim_del));
         }
     }
 #if GT_USE_SCREEN_ANIM
