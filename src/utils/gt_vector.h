@@ -49,8 +49,8 @@ typedef struct _gt_vector_s {
     _gt_vector_equal_item_cb_t equal_item_cb;
 
     struct _gt_list_head list_head;
-    uint8_t count;
-    uint8_t index;
+    gt_size_t count;
+    gt_size_t index;
 }_gt_vector_st;
 
 
@@ -124,7 +124,15 @@ bool _gt_vector_replace_item(_gt_vector_st * vector_p, uint16_t index, void * it
 bool _gt_vector_remove_item(_gt_vector_st * vector_p, void * target);
 
 /**
- * @brief Get the item from vector
+ * @brief Get the prev item from vector, index will be decreased
+ *
+ * @param vector
+ * @return void*
+ */
+void * _gt_vector_turn_prev(_gt_vector_st * vector);
+
+/**
+ * @brief Get next the item from vector, index will be increased
  *
  * @param vector
  * @return void*
@@ -140,6 +148,15 @@ void * _gt_vector_turn_next(_gt_vector_st * vector);
 gt_size_t _gt_vector_get_count(_gt_vector_st const * vector);
 
 /**
+ * @brief Set the index of the item in vector
+ *
+ * @param vector
+ * @param index -1: last one; >=0: index number
+ * @return gt_size_t -1: failed to set the index, >=0: the index of the item
+ */
+gt_size_t _gt_vector_set_index(_gt_vector_st * vector, gt_size_t index);
+
+/**
  * @brief Get current the item index from vector
  *
  * @param vector
@@ -151,10 +168,19 @@ gt_size_t _gt_vector_get_index(_gt_vector_st const * vector);
  * @brief Get the item from vector
  *
  * @param vector
- * @param index
+ * @param index The index of the item, -1: failed; >=0: the index of the item
  * @return void*
  */
-void * _gt_vector_get_item(_gt_vector_st const * vector, uint16_t index);
+void * _gt_vector_get_item(_gt_vector_st const * vector, gt_size_t index);
+
+/**
+ * @brief Is the current index is the tail one
+ *
+ * @param vector
+ * @return true The current index is the tail one
+ * @return false
+ */
+bool _gt_vector_is_tail_index_now(_gt_vector_st const * vector);
 
 /**
  * @brief Free the whole vector
