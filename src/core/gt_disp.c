@@ -983,7 +983,9 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
             gt_anim_set_time(&anim_del, GT_TASK_PERIOD_TIME_REFR);
             gt_anim_set_target(&anim_del, scr_old);
             gt_anim_set_ready_cb(&anim_del, _scr_anim_del_ready_cb);
-            GT_CHECK_BACK(gt_anim_start(&anim_del));
+            if (NULL == gt_anim_start(&anim_del)) {
+                GT_CHECK_PRINT(gt_anim_start(&anim_del));
+            }
         }
     }
 #if GT_USE_SCREEN_ANIM
