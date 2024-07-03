@@ -152,7 +152,7 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
     ++obj->cnt_event;
 }
 
-void gt_obj_remove_all_event_cb(gt_obj_st * obj)
+void gt_obj_remove_all_event_cb(struct gt_obj_s * obj)
 {
     GT_CHECK_BACK(obj);
     if (NULL == obj->event_attr) {
