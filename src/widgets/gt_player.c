@@ -721,6 +721,46 @@ uint16_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_param
 #endif
     return style->target.count;
 }
+
+uint16_t gt_player_add_item_list_by_file_header(gt_obj_st * obj, gt_file_header_param_st const * const fh_array, uint16_t count)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return 0;
+    }
+    if (NULL == fh_array) {
+        return 0;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj;
+    _gt_player_item_st * ret = NULL;
+    if (style->target.list) {
+        if (GT_PLAYER_TYPE_IMG == style->reg.type) {
+            _destroy_type_default(style);
+        }
+        style->target.index = 0;
+        style->target.count = 0;
+        style->target.list = NULL;
+    }
+    uint16_t instance = sizeof(_gt_player_item_st * );
+    style->target.list = gt_mem_malloc(instance * count);
+    GT_CHECK_BACK_VAL(style->target.list, 0);
+    gt_memset(style->target.list, 0, instance * count);
+
+    instance = sizeof(_gt_player_item_st);
+    for (uint16_t i = 0; i < count; ++i) {
+        style->target.list[i] = gt_mem_malloc(instance);
+        if (NULL == style->target.list[i]) {
+            break;
+        }
+        gt_memset(style->target.list[i], 0, instance);
+        ret = (_gt_player_item_st * )style->target.list[i];
+
+#if GT_USE_FILE_HEADER
+        ret->fh_param = (gt_file_header_param_st)fh_array[i];
+#endif
+        ++style->target.count;
+    }
+    return style->target.count;
+}
 #endif
 
 void gt_player_set_index(gt_obj_st * obj, gt_size_t index)

@@ -131,7 +131,7 @@ uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_siz
 
 #if GT_USE_FILE_HEADER
 /**
- * @brief
+ * @brief Add the player project content by file header
  *
  * @param obj
  * @param fh idx -1[defalut]: Disabled file header, using img path to open file; >=0: index number, valid value
@@ -140,6 +140,16 @@ uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_siz
  * @return uint16_t The item count of player
  */
 uint16_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh);
+
+/**
+ * @brief Add the player project content by file header list
+ *
+ * @param obj
+ * @param fh_array The array of gt_file_header_param_st
+ * @param count The count of gt_file_header_param_st[]
+ * @return uint16_t
+ */
+uint16_t gt_player_add_item_list_by_file_header(gt_obj_st * obj, gt_file_header_param_st const * const fh_array, uint16_t count);
 #endif  /** GT_USE_FILE_HEADER */
 
 /**
