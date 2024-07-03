@@ -256,7 +256,7 @@ void gt_mem_deinit(void)
 #endif
 }
 
-void * _mem_malloc(size_t size, uint8_t * file_name, size_t line)
+void * _mem_malloc(size_t size, char const * file_name, char const * func_name, size_t line)
 {
     void * ret = _gt_malloc_hooks(size);
 
@@ -265,8 +265,8 @@ void * _mem_malloc(size_t size, uint8_t * file_name, size_t line)
 #endif
 
 #if USE_MEM_LOG_PRINT
-    GT_LOG_A(GT_LOG_TAG_MEM, "[%s] %d \t--- malloc addr: %p, size: %d real: %d ---",
-        file_name, line, ret, size, block_size);
+    GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s] %d \t--- malloc addr: %p, size: %d real: %d ---",
+        file_name, func_name, line, ret, size, block_size);
 #endif
 
 #if USE_MEM_BIG_UNIT_REMARK
@@ -284,8 +284,8 @@ void * _mem_malloc(size_t size, uint8_t * file_name, size_t line)
         return ret;
     }
 
-    fprintf(fp, "[+]%s:%d   %p   want: 0x%x(%d)   real: 0x%x(%d)\n",
-        file_name, line, ret, size, size, block_size, block_size);
+    fprintf(fp, "[+]%s%s:%d   %p   want: 0x%x(%d)   real: 0x%x(%d)\n",
+        file_name, func_name, line, ret, size, size, block_size, block_size);
     fflush(fp);
     fclose(fp);
 #endif
@@ -299,7 +299,7 @@ void * _mem_malloc(size_t size, uint8_t * file_name, size_t line)
     return ret;
 }
 
-void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
+void * _mem_realloc(void * ptr, size_t size, char const * file_name, char const * func_name, size_t line)
 {
 #if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT
     size_t old_size = _gt_block_size(ptr);
@@ -312,8 +312,8 @@ void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
 #endif
 
 #if USE_MEM_LOG_PRINT
-    GT_LOG_A(GT_LOG_TAG_MEM, "[%s] %d \t--- realloc addr: %p -> %p, size: %d real: %d -> %d ---",
-        file_name, line, ptr, ret, size, old_size, block_size);
+    GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s] %d \t--- realloc addr: %p -> %p, size: %d real: %d -> %d ---",
+        file_name, func_name, line, ptr, ret, size, old_size, block_size);
 #endif
 
 #if USE_MEM_BIG_UNIT_REMARK
@@ -336,8 +336,8 @@ void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
     ) {
         if (unlink(buffer) < 0) {
             fp = fopen(MEM_TRACE_FAILED_PATH, "a");
-            fprintf(fp, "[++]%s:%d   addr: %p -> %p,   want: 0x%x(%d)   real: 0x%x(%d) -> 0x%x(%d)\n",
-                file_name, line, ptr, ret, size, size, old_size, old_size, block_size, block_size);
+            fprintf(fp, "[++]%s%s:%d   addr: %p -> %p,   want: 0x%x(%d)   real: 0x%x(%d) -> 0x%x(%d)\n",
+                file_name, func_name, line, ptr, ret, size, size, old_size, old_size, block_size, block_size);
             fflush(fp);
             fclose(fp);
             fp = NULL;
@@ -351,8 +351,8 @@ void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
         return ret;
     }
 
-    fprintf(fp, "[++]%s:%d   %p -> %p   want: 0x%x(%d),  real: 0x%x(%d) -> 0x%x(%d)\n",
-        file_name, line, ptr, ret, size, size, old_size, old_size, block_size, block_size);
+    fprintf(fp, "[++]%s%s:%d   %p -> %p   want: 0x%x(%d),  real: 0x%x(%d) -> 0x%x(%d)\n",
+        file_name, func_name, line, ptr, ret, size, size, old_size, old_size, block_size, block_size);
     fflush(fp);
     fclose(fp);
 #endif
@@ -367,7 +367,7 @@ void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
     return ret;
 }
 
-void _mem_free(void * ptr, uint8_t * file_name, size_t line)
+void _mem_free(void * ptr, char const * file_name, char const * func_name, size_t line)
 {
 #if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT
     size_t block_size = _gt_block_size(ptr);
@@ -380,7 +380,7 @@ void _mem_free(void * ptr, uint8_t * file_name, size_t line)
 #endif
 
 #if USE_MEM_LOG_PRINT
-    GT_LOG_A(GT_LOG_TAG_MEM, "[%s] %d \t--- free addr: %p, size: 0x%x ---", file_name, line, ptr, block_size);
+    GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s] %d \t--- free addr: %p, size: 0x%x ---", file_name, func_name, line, ptr, block_size);
 #endif
 
 #if USE_MEM_TRACE_DEBUG_BY_FILE
@@ -391,15 +391,15 @@ void _mem_free(void * ptr, uint8_t * file_name, size_t line)
     sprintf((char *)buffer, "%s/%p_%d.mem\0", MEM_TRACE_PATH, ptr, block_size);
     if (unlink(buffer) < 0) {
         fp = fopen(MEM_TRACE_FAILED_PATH, "a");
-        fprintf(fp, "[-]%s:%d    addr: %p    real size: 0x%x(%d)\n",
-            file_name, line, ptr, block_size, block_size);
+        fprintf(fp, "[-]%s%s:%d    addr: %p    real size: 0x%x(%d)\n",
+            file_name, func_name, line, ptr, block_size, block_size);
         fflush(fp);
         fclose(fp);
         fp = NULL;
     } else {
         fp = fopen(MEM_TRACE_LOG_PATH, "a");
-        fprintf(fp, "[o]%s:%d    addr: %p    real size: 0x%x(%d)\n",
-            file_name, line, ptr, block_size, block_size);
+        fprintf(fp, "[o]%s%s:%d    addr: %p    real size: 0x%x(%d)\n",
+            file_name, func_name, line, ptr, block_size, block_size);
         fflush(fp);
         fclose(fp);
         fp = NULL;
