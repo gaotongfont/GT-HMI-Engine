@@ -140,6 +140,13 @@ bool gt_event_is_enabled(void);
 void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data);
 
 /**
+ * @brief
+ *
+ * @param obj
+ */
+void gt_obj_remove_all_event_cb(gt_obj_st * obj);
+
+/**
  * @brief Send an event code to the object kernel.
  *
  * @param parent Object which want to be notified

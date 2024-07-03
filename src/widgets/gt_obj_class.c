@@ -118,10 +118,8 @@ static void _gt_obj_class_destroy_property(gt_obj_st * self) {
     _gt_indev_remove_want_delate_target(self);
 
     // free event attribute
-    if (NULL != self->event_attr) {
-        gt_mem_free(self->event_attr);
-        self->event_attr = NULL;
-    }
+    gt_obj_remove_all_event_cb(self);
+
     // free obj custom style
     if (self->class->_deinit_cb) {
         self->class->_deinit_cb(self);
@@ -356,7 +354,6 @@ void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_ob
     gt_obj_set_overflow(obj, parent->overflow);
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_OVERFLOW, parent->overflow);
 }
-
 
 gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj)
 {
