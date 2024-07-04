@@ -980,7 +980,7 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         if (del_prev_scr && scr_old && scr_old != scr) {
             gt_anim_st anim_del;
             gt_anim_init(&anim_del);
-            gt_anim_set_time(&anim_del, GT_TASK_PERIOD_TIME_REFR);
+            gt_anim_set_time(&anim_del, 0);
             gt_anim_set_target(&anim_del, scr_old);
             gt_anim_set_ready_cb(&anim_del, _scr_anim_del_ready_cb);
             if (NULL == gt_anim_start(&anim_del)) {
