@@ -283,6 +283,27 @@ obj_lb:
     return NULL;
 }
 
+gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj)
+{
+    if (NULL == obj || NULL == obj->class) {
+        return GT_TYPE_UNKNOWN;
+    }
+    return obj->class->type;
+}
+
+bool gt_obj_is_type(struct gt_obj_s * obj, gt_obj_type_et type)
+{
+    if (NULL == obj || NULL == obj->class) {
+        return false;
+    }
+    if (GT_TYPE_TOTAL == type) {
+        if (GT_TYPE_UNKNOWN == obj->class->type) {
+            return false;
+        }
+    }
+    return obj->class->type == type;
+}
+
 struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_obj_s * to)
 {
     gt_obj_st * parent = obj->parent;
@@ -353,27 +374,6 @@ void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_ob
     }
     gt_obj_set_overflow(obj, parent->overflow);
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_OVERFLOW, parent->overflow);
-}
-
-gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj)
-{
-    if (NULL == obj || NULL == obj->class) {
-        return GT_TYPE_UNKNOWN;
-    }
-    return obj->class->type;
-}
-
-bool gt_obj_is_type(struct gt_obj_s * obj, gt_obj_type_et type)
-{
-    if (NULL == obj || NULL == obj->class) {
-        return false;
-    }
-    if (GT_TYPE_TOTAL == type) {
-        if (GT_TYPE_UNKNOWN == obj->class->type) {
-            return false;
-        }
-    }
-    return obj->class->type == type;
 }
 
 /* end ------------------------------------------------------------------*/
