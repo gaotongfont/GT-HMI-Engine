@@ -626,6 +626,7 @@ gt_size_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_para
 
     _gt_player_item_st * new_item = gt_mem_malloc(sizeof(_gt_player_item_st));
     GT_CHECK_BACK_VAL(new_item, _gt_vector_get_count(style->vector));
+    new_item->src = NULL;
 
 #if GT_USE_FILE_HEADER
     new_item->fh_param = *fh;
