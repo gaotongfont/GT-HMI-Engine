@@ -265,13 +265,14 @@ void * _mem_malloc(size_t size, char const * file_name, char const * func_name, 
 #endif
 
 #if USE_MEM_LOG_PRINT
-    GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s] %d \t--- malloc addr: %p, size: %d real: %d ---",
+    GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] \t--- malloc addr: %p, size: %d real: %d ---",
         file_name, func_name, line, ret, size, block_size);
 #endif
 
 #if USE_MEM_BIG_UNIT_REMARK
     if (size >= _BIG_UNIT_REMARK_SIZE) {
-        GT_LOGD(GT_LOG_TAG_MEM, "### + %p big unit: 0x%x(%d) real: %d ###", ret, size, size, block_size);
+        GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] ### + %p big unit: 0x%x(%d) real: %d ###",
+                    file_name, func_name, line, ret, size, size, block_size);
     }
 #endif
 
@@ -293,7 +294,8 @@ void * _mem_malloc(size_t size, char const * file_name, char const * func_name, 
 #if USE_MEM_MAX_REMARK
     if ((MEM_UNIT)ret > _max_addr) {
         _max_addr = (MEM_UNIT)ret;
-        GT_LOGD(GT_LOG_TAG_MEM, ">>>>>> %d max addr: %p   %d %d <<<<<<", ++_malloc_count, _max_addr, size, block_size);
+        GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] >>>>>> %d max mem addr: %p   %d [%d] <<<<<<",
+                    file_name, func_name, line, ++_malloc_count, _max_addr, size, block_size);
     }
 #endif
     return ret;
@@ -312,14 +314,14 @@ void * _mem_realloc(void * ptr, size_t size, char const * file_name, char const 
 #endif
 
 #if USE_MEM_LOG_PRINT
-    GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s] %d \t--- realloc addr: %p -> %p, size: %d real: %d -> %d ---",
+    GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] \t--- realloc addr: %p -> %p, size: %d real: %d -> %d ---",
         file_name, func_name, line, ptr, ret, size, old_size, block_size);
 #endif
 
 #if USE_MEM_BIG_UNIT_REMARK
     if (size >= _BIG_UNIT_REMARK_SIZE) {
-        GT_LOGD(GT_LOG_TAG_MEM, "### ++ %p -> %p big unit: %d %d -> %d ###",
-            ptr, ret, size, old_size, block_size);
+        GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] ### ++ %p -> %p big unit: %d %d -> %d ###",
+                    file_name, func_name, line, ptr, ret, size, old_size, block_size);
     }
 #endif
 
@@ -360,8 +362,8 @@ void * _mem_realloc(void * ptr, size_t size, char const * file_name, char const 
 #if USE_MEM_MAX_REMARK
     if ((MEM_UNIT)ret > _max_addr) {
         _max_addr = (MEM_UNIT)ret;
-        GT_LOGD(GT_LOG_TAG_MEM, ">>>>>> %d R max addr: %p   %d  %d -> %d <<<<<<",
-            ++_malloc_count, _max_addr, size, old_size, block_size);
+        GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] >>>>>> %d R max mem addr: %p   %d [%d -> %d] <<<<<<",
+                    file_name, func_name, line, ++_malloc_count, _max_addr, size, old_size, block_size);
     }
 #endif
     return ret;
@@ -375,12 +377,13 @@ void _mem_free(void * ptr, char const * file_name, char const * func_name, size_
 
 #if USE_MEM_BIG_UNIT_REMARK
     if (size >= _BIG_UNIT_REMARK_SIZE) {
-        GT_LOGD(GT_LOG_TAG_MEM, "### - %p big unit: 0x%x(%d) ###", ptr, block_size, block_size);
+        GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] ### - %p big unit: 0x%x(%d) ###",
+                    file_name, func_name, line, ptr, block_size, block_size);
     }
 #endif
 
 #if USE_MEM_LOG_PRINT
-    GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s] %d \t--- free addr: %p, size: 0x%x ---", file_name, func_name, line, ptr, block_size);
+    GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] \t--- free addr: %p, size: 0x%x ---", file_name, func_name, line, ptr, block_size);
 #endif
 
 #if USE_MEM_TRACE_DEBUG_BY_FILE
