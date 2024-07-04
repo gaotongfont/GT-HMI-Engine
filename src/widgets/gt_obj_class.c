@@ -216,7 +216,6 @@ static bool _create_new_screen_obj(gt_obj_st * obj) {
         }
         disp->screens[disp->cnt_scr++] = obj;
     } else {
-        // gt_mem_realloc can't operate NULL ptr
         disp->screens = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr + 1));
         if (!disp->screens) {
             return false;
