@@ -1,9 +1,9 @@
 /**
  * @file gt_event.c
- * @author yongg
+ * @author Feyoung
  * @brief Object implementation for the event handler
- * @version 0.1
- * @date 2022-05-11 15:02:33
+ * @version 0.2
+ * @date 2024-7-4
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
 
@@ -47,19 +47,17 @@ static void _gt_event_node_pop(gt_event_st *e) {
 }
 
 static gt_res_t _gt_event_calling_user_cb(gt_event_st * e) {
-    gt_obj_event_attr_st * event_list = e->target->event_attr;
-
-    for (gt_size_t i = 0, count = e->target->cnt_event; i < count; i++) {
-        if (NULL == event_list[i].user_cb) {
-            continue;
-        }
-        if (e->code != event_list[i].filter) {
-            continue;
-        }
-        e->user_data = event_list[i].user_data;
-        event_list[i].user_cb(e);
+    gt_obj_event_attr_st * event_ptr = e->target->event_attr;
+    if (NULL == event_ptr) {
+        return GT_RES_OK;
     }
-
+    while(event_ptr) {
+        if(event_ptr->user_cb && e->code == event_ptr->filter) {
+            e->user_data = event_ptr->user_data;
+            event_ptr->user_cb(e);
+        }
+        event_ptr = event_ptr->next_ptr;
+    }
     return GT_RES_OK;
 }
 
@@ -105,13 +103,26 @@ static inline bool _is_input_event(gt_event_type_et event) {
 }
 
 static bool _has_the_same_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter) {
-    gt_size_t i = obj->cnt_event - 1;
-    for (; i >= 0; --i) {
-        if (obj->event_attr[i].user_cb == event && obj->event_attr[i].filter == filter) {
+    gt_obj_event_attr_st * event_ptr = obj->event_attr;
+    if (NULL == event_ptr) {
+        return false;
+    }
+    while (event_ptr) {
+        if (event_ptr->user_cb == event && event_ptr->filter == filter) {
             return true;
         }
+        event_ptr = event_ptr->next_ptr;
     }
     return false;
+}
+
+static void _free_event_recursive(gt_obj_event_attr_st * event) {
+    if (event->next_ptr) {
+        _free_event_recursive(event->next_ptr);
+    }
+    event->next_ptr = NULL;
+    event->user_cb = NULL;
+    gt_mem_free(event);
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -139,17 +150,21 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
     if (_has_the_same_cb(obj, event, filter)) {
         return ;
     }
-    if ( NULL == obj->event_attr ) {
-        obj->event_attr =  gt_mem_malloc(sizeof(gt_obj_event_attr_st));
-        obj->cnt_event = 0;
+    uint16_t len = sizeof(gt_obj_event_attr_st);
+    gt_obj_event_attr_st * tmp_ptr = obj->event_attr;
+    gt_obj_event_attr_st * new_event = (gt_obj_event_attr_st * )gt_mem_malloc(len);
+    GT_CHECK_BACK(new_event);
+    new_event->next_ptr = NULL;
+    new_event->user_cb = event;
+    new_event->filter = filter;
+    new_event->user_data = user_data;
+
+    if (tmp_ptr) {
+        while(tmp_ptr->next_ptr) { tmp_ptr = tmp_ptr->next_ptr; }
+        tmp_ptr->next_ptr = new_event;
     } else {
-        obj->event_attr = gt_mem_realloc( obj->event_attr, (obj->cnt_event + 1) * sizeof(gt_obj_event_attr_st) );
+        obj->event_attr = new_event;
     }
-    GT_CHECK_BACK(obj->event_attr);
-    obj->event_attr[obj->cnt_event].user_cb = event;
-    obj->event_attr[obj->cnt_event].filter = filter;
-    obj->event_attr[obj->cnt_event].user_data = user_data;
-    ++obj->cnt_event;
 }
 
 void gt_obj_remove_all_event_cb(struct gt_obj_s * obj)
@@ -158,7 +173,7 @@ void gt_obj_remove_all_event_cb(struct gt_obj_s * obj)
     if (NULL == obj->event_attr) {
         return;
     }
-    gt_mem_free(obj->event_attr);
+    _free_event_recursive(obj->event_attr);
     obj->event_attr = NULL;
 }
 
