@@ -39,19 +39,56 @@ typedef bool ( * _gt_vector_free_item_cb_t)(void * item);
  */
 typedef bool ( * _gt_vector_equal_item_cb_t)(void * item, void * target);
 
+typedef struct _gt_vector_s _iter_dsc_st;
+
+/**
+ * @brief Has next item in vector iterator
+ * @param vct_dsc The dsc object from @see _gt_vector_iterator_st
+ */
+typedef bool ( * has_next_cb)(_iter_dsc_st * vct_dsc);
+
+/**
+ * @brief Get the next item from vector iterator
+ * @param vct_dsc The dsc object from @see _gt_vector_iterator_st
+ */
+typedef void * ( * next_cb)(_iter_dsc_st * vct_dsc);
+
+/**
+ * @brief Get the index of the item from vector iterator, when "iter.next()" is
+ *       called, the index will be increased.
+ * @param vct_dsc The dsc object from @see _gt_vector_iterator_st
+ */
+typedef gt_size_t ( * index_cb)(_iter_dsc_st * vct_dsc);
+
 typedef struct {
     struct _gt_list_head node;
     void * val;
 }_gt_vector_item_st;
 
+typedef struct _gt_vector_iterator_s {
+    has_next_cb has_next;
+    next_cb next;
+    index_cb index;
+    _iter_dsc_st * dsc_t;
+}_gt_vector_iterator_st;
+
+typedef struct _gt_vector_iterator_ctl_s {
+    _gt_vector_item_st * item_p;
+    gt_size_t idx;
+}_gt_vector_iterator_ctl_st;
+
 typedef struct _gt_vector_s {
+    struct _gt_list_head list_head;
+
     _gt_vector_free_item_cb_t free_item_cb;
     _gt_vector_equal_item_cb_t equal_item_cb;
 
-    struct _gt_list_head list_head;
     gt_size_t count;
     gt_size_t index;
+
+    _gt_vector_iterator_ctl_st * iter_ctl;
 }_gt_vector_st;
+
 
 
 /* macros ---------------------------------------------------------------*/
@@ -190,6 +227,19 @@ bool _gt_vector_is_tail_index_now(_gt_vector_st const * vector);
  * @return false
  */
 bool _gt_vector_free(_gt_vector_st * vector_p);
+
+/**
+ * @brief Get the iterator of the vector, detail @see _gt_vector_iterator_st:
+ *      use:    _gt_vector_iterator_st iter = _gt_vector_get_iterator(vector);
+ *              while (iter.has_next(iter.dsc_t)) {
+ *                  void * item = iter.next(iter.dsc_t);
+ *                  // do something with item
+ *              }
+ *
+ * @param vector
+ * @return _gt_vector_iterator_st
+ */
+_gt_vector_iterator_st _gt_vector_get_iterator(_gt_vector_st * vector);
 
 /**
  * @brief Just clear the vector list, but not free the vector

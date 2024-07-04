@@ -60,6 +60,31 @@ static inline void _free_item_obj(_gt_vector_st * vector, _gt_vector_item_st * i
     vector->free_item_cb(val);
 }
 
+static bool _gt_vector_iterator_has_next(_iter_dsc_st * vct_dsc) {
+    GT_CHECK_BACK_VAL(vct_dsc, false);
+    GT_CHECK_BACK_VAL(vct_dsc->iter_ctl, false);
+    return vct_dsc->iter_ctl->idx < vct_dsc->count ? true : false;
+}
+
+static void * _gt_vector_iterator_next(_iter_dsc_st * vct_dsc) {
+    GT_CHECK_BACK_VAL(vct_dsc, false);
+    GT_CHECK_BACK_VAL(vct_dsc->iter_ctl, false);
+
+    if (vct_dsc->iter_ctl->item_p) {
+        vct_dsc->iter_ctl->item_p = (_gt_vector_item_st * )_gt_list_next_entry(vct_dsc->iter_ctl->item_p, _gt_vector_item_st, node);
+    } else {
+        vct_dsc->iter_ctl->item_p = (_gt_vector_item_st * )_gt_list_first_entry(&vct_dsc->list_head, _gt_vector_item_st, node);
+    }
+    ++vct_dsc->iter_ctl->idx;
+    return vct_dsc->iter_ctl->item_p->val;
+}
+
+static gt_size_t _gt_vector_iterator_index(_iter_dsc_st * vct_dsc) {
+    GT_CHECK_BACK_VAL(vct_dsc, -1);
+    GT_CHECK_BACK_VAL(vct_dsc->iter_ctl, -1);
+    return vct_dsc->iter_ctl->idx;
+}
+
 /* global functions / API interface -------------------------------------*/
 
 _gt_vector_st * _gt_vector_create(_gt_vector_free_item_cb_t free_cb, _gt_vector_equal_item_cb_t equal_item_cb)
@@ -253,15 +278,39 @@ bool _gt_vector_is_tail_index_now(_gt_vector_st const * vector)
 bool _gt_vector_free(_gt_vector_st * vector_p)
 {
     GT_CHECK_BACK_VAL(vector_p, false);
+
     _gt_vector_clear_all_items(vector_p);
 
     gt_mem_free(vector_p);
     return true;
 }
 
+_gt_vector_iterator_st _gt_vector_get_iterator(_gt_vector_st * vector)
+{
+    _gt_vector_iterator_st ret_iter = {
+        .has_next = _gt_vector_iterator_has_next,
+        .next = _gt_vector_iterator_next,
+        .index = _gt_vector_iterator_index,
+    };
+    uint16_t instance = sizeof(_gt_vector_iterator_ctl_st);
+    GT_CHECK_BACK_VAL(vector, ret_iter);
+    if (NULL == vector->iter_ctl) {
+        vector->iter_ctl = (_gt_vector_iterator_ctl_st * )gt_mem_malloc(instance);
+        GT_CHECK_BACK_VAL(vector->iter_ctl, ret_iter);
+    }
+    gt_memset(vector->iter_ctl, 0, instance);
+    ret_iter.dsc_t = vector;
+    return ret_iter;
+}
+
 bool _gt_vector_clear_all_items(_gt_vector_st * vector)
 {
     GT_CHECK_BACK_VAL(vector, false);
+
+    if (vector->iter_ctl) {
+        gt_mem_free(vector->iter_ctl);
+        vector->iter_ctl = NULL;
+    }
 
     _gt_vector_item_st * item_p = NULL;
     _gt_vector_item_st * backup_p = NULL;
