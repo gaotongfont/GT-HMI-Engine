@@ -171,17 +171,13 @@ void gt_img_set_src(gt_obj_st * img, char * src)
     }
     gt_memset(&style->raw, 0, sizeof(_gt_img_dsc_st));
 
-    if (NULL != style->src) {
-        gt_mem_free(style->src);
-        style->src = NULL;
-    }
     uint16_t len = src == NULL ? 0 : strlen(src);
-    style->src = gt_mem_malloc(len + 1);
+    style->src = style->src ? gt_mem_realloc(style->src, len + 1) : gt_mem_malloc(len + 1);
     if (NULL == style->src) {
         return ;
     }
-    strcpy(style->src, src);
-    style->src[len] = 0;
+    gt_memcpy(style->src, src, len);
+    style->src[len] = '\0';
 
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->fh);

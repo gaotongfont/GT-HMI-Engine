@@ -228,8 +228,9 @@ void gt_gif_set_src(gt_obj_st * obj, char * src)
     }
 
     uint16_t len = src == NULL ? 0 : strlen(src);
-    style->src = gt_mem_malloc( len + 1 );
-    strcpy(style->src, src);
+    style->src = style->src ? gt_mem_realloc(style->src, len + 1) : gt_mem_malloc(len + 1);
+    GT_CHECK_BACK(style->src);
+    gt_memcpy(style->src, src, len);
     style->src[len] = 0;
 
     style->gif = gd_open_gif(style->src);

@@ -561,6 +561,7 @@ void gt_clock_set_format(gt_obj_st * obj, const char * const format)
     _gt_clock_st * clock = (_gt_clock_st *)obj;
     if (NULL == clock->format) {
         clock->format = (char * )gt_mem_malloc(strlen(format) + 1);
+        GT_CHECK_BACK(clock->format);
         gt_memset(clock->format, 0, strlen(format) + 1);
         gt_memcpy(clock->format, format, strlen(format));
         return;
@@ -573,6 +574,7 @@ void gt_clock_set_format(gt_obj_st * obj, const char * const format)
     }
 
     clock->format = (char * )gt_mem_realloc(clock->format, strlen(format) + 1);
+    GT_CHECK_BACK(clock->format);
 
     gt_memset(clock->format, 0, strlen(clock->format) + 1);
     gt_memcpy(clock->format, format, strlen(format));

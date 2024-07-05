@@ -364,6 +364,7 @@ void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...)
     if (NULL == text) {
         goto free_lb;
     }
+    gt_memset(text, 0, size);
     va_start(args2, fmt);
     vsnprintf(text, size, fmt, args2);
     va_end(args2);

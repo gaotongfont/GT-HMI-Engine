@@ -74,10 +74,8 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     style->mode_h = 1;
 #endif
     // 获取长宽
-    if(!gt_barcode_get_w_and_h(style))
-    {
-        if(style->ret_param.dot_w == 0 || style->ret_param.dot_h == 0)
-        {
+    if (!gt_barcode_get_w_and_h(style)) {
+        if (style->ret_param.dot_w == 0 || style->ret_param.dot_h == 0) {
             GT_LOGE(GT_LOG_TAG_GUI , "get width err dot_w = %d , dot_h = %d" , style->ret_param.dot_w , style->ret_param.dot_h);
             goto RET_FREE ;
         }
@@ -94,18 +92,16 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     buf_size = (area.w * (area.h > BARCODE_LINE_NUMB ? area.h : BARCODE_LINE_NUMB)) >> 3;
 #endif
     style->pdat = gt_mem_malloc(buf_size);
-
-    if( NULL == style->pdat )
-    {
+    if (NULL == style->pdat) {
         GT_LOGE(GT_LOG_TAG_GUI , "bracode malloc failed!!!");
         goto RET_FREE ;
     }
+    gt_memset(style->pdat, 0, buf_size);
     style->pdat_size = buf_size;
     // GT_LOGD(GT_LOG_TAG_GUI , "area dot_w = %d , dot_h = %d , buf_size = %d" , area.w , area.h , style->pdat_size);
 
     // 获取数据
-    if(!gt_barcode_get(style))
-    {
+    if (!gt_barcode_get(style)) {
         GT_LOGE(GT_LOG_TAG_GUI , "get barcode type = %d ,dot_w = %d , dot_h = %d" , style->type , style->ret_param.dot_w , style->ret_param.dot_h);
         goto RET_FREE ;
     }
@@ -142,22 +138,19 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
 
     // Barcode indent
     area.y = barcode->area.y + 2;
-    h -=4;
+    h -= 4;
     area.h = BARCODE_LINE_NUMB;
 
-    for(i = 1 ; i < BARCODE_LINE_NUMB ; i++)
-    {
+    for(i = 1; i < BARCODE_LINE_NUMB; i++) {
         gt_memmove(&style->pdat[i * (area.w >> 3)] , &style->pdat[0] , area.w >> 3);
     }
 
     int count = h / BARCODE_LINE_NUMB;
-    if(h%BARCODE_LINE_NUMB)
-    {
+    if (h % BARCODE_LINE_NUMB) {
         count++;
     }
 
-    for(i = 0 ; i < count ; i++)
-    {
+    for(i = 0; i < count; i++) {
         if((h%BARCODE_LINE_NUMB) && (i == count-1))
         {
             area.h = h%BARCODE_LINE_NUMB;
@@ -168,14 +161,13 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
         draw_bg(barcode->draw_ctx, &rect_attr, &area);
         area.y += BARCODE_LINE_NUMB;
     }
-
 #endif
 
     // focus
     draw_focus(barcode , 0);
 
 RET_FREE:
-    if(NULL != style->pdat){
+    if (NULL != style->pdat) {
         gt_mem_free(style->pdat);
         style->pdat = NULL;
     }
@@ -289,6 +281,8 @@ gt_obj_st * gt_barcode_create(gt_obj_st * parent) {
 
     char *text = "1234567890128";
     style->barcode = gt_mem_malloc(strlen(text)+1);
+    GT_CHECK_BACK_VAL(style->barcode, obj);
+
     gt_memcpy(style->barcode, text , strlen(text));
     style->barcode[strlen(text)+1] = '\0';
     style->hri_type = GT_FAMILY_BARCODE_HRI_TYPE_DOWN;
@@ -308,11 +302,10 @@ void gt_barcode_set_code_text(gt_obj_st * barcode , char* code)
     }
     _gt_barcode_st * obj = (_gt_barcode_st * )barcode;
     barcode_st * style = (barcode_st * )&obj->info;
-    if( NULL != style->barcode) {
-        gt_mem_free(style->barcode);
-    }
     uint16_t size = code == NULL ? 0 : strlen(code);
-    style->barcode = gt_mem_malloc(size+1);
+
+    style->barcode = style->barcode ? gt_mem_realloc(style->barcode, size + 1) : gt_mem_malloc(size + 1);
+    GT_CHECK_BACK(style->barcode);
     gt_memcpy(style->barcode, code, size);
     style->barcode[size] = '\0';
     // gt_event_send(barcode, GT_EVENT_TYPE_DRAW_START, NULL);

@@ -200,9 +200,11 @@ gt_obj_st * gt_checkbox_create(gt_obj_st * parent)
         return obj;
     }
     _gt_checkbox_st * style = (_gt_checkbox_st * )obj;
+    uint16_t size_byte = sizeof("checkbox");
 
-    style->text = gt_mem_malloc(sizeof("checkbox"));
-    gt_memcpy(style->text, "checkbox", sizeof("checkbox"));
+    style->text = gt_mem_malloc(size_byte);
+    GT_CHECK_BACK_VAL(style->text, obj);
+    gt_memcpy(style->text, "checkbox", size_byte);
 
     gt_font_info_init(&style->font_info);
     style->font_color           = gt_color_black();
@@ -240,6 +242,7 @@ void gt_checkbox_set_text(gt_obj_st * checkbox, const char * fmt, ...)
     if (NULL == style->text) {
         goto free_lb;
     }
+    gt_memset(style->text, 0, size);
 
     va_start(args2, fmt);
     vsnprintf(style->text, size, fmt, args2);

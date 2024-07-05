@@ -264,10 +264,10 @@ void gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src)
     }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
     uint16_t len = src == NULL ? 0 : strlen(src);
-    _item_st * item = gt_mem_malloc(sizeof(_item_st));
+    _item_st * item = (_item_st * )gt_mem_malloc(sizeof(_item_st));
     GT_CHECK_BACK(item);
 
-    item->name = gt_mem_malloc(len + 1);
+    item->name = (char * )gt_mem_malloc(len + 1);
     if (NULL == item->name) {
         GT_CHECK_PRINT(item->name);
         goto item_lb;
@@ -305,13 +305,9 @@ void gt_imgbtn_set_src_press(gt_obj_st * imgbtn, char * src)
         return ;
     }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
-    if( NULL != style->press.name ){
-        gt_mem_free(style->press.name);
-        style->press.name = NULL;
-    }
     uint16_t len = src == NULL ? 0 : strlen(src);
 
-    style->press.name = gt_mem_malloc(len + 1);
+    style->press.name = style->press.name ? gt_mem_realloc(style->press.name, len + 1) : gt_mem_malloc(len + 1);
     if (NULL == style->press.name) {
         return ;
     }
@@ -330,12 +326,9 @@ void gt_imgbtn_set_src_release(gt_obj_st * imgbtn, char * src)
         return ;
     }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
-    if( NULL != style->release.name ){
-        gt_mem_free(style->release.name);
-        style->release.name = NULL;
-    }
     uint16_t len = src == NULL ? 0 : strlen(src);
-    style->release.name = gt_mem_malloc(len + 1);
+
+    style->release.name = style->release.name ? gt_mem_realloc(style->release.name, len + 1) : gt_mem_malloc(len + 1);
     if (NULL == style->release.name) {
         return ;
     }
@@ -359,10 +352,10 @@ bool gt_imgbtn_add_state_item(gt_obj_st * obj, char * src)
         return false;
     }
 
-    _item_st * item = gt_mem_malloc(sizeof(_item_st));
+    _item_st * item = (_item_st * )gt_mem_malloc(sizeof(_item_st));
     GT_CHECK_BACK_VAL(item, false);
 
-    item->name = gt_mem_malloc(len + 1);
+    item->name = (char * )gt_mem_malloc(len + 1);
     if (NULL == item->name) {
         GT_CHECK_PRINT(item->name);
         goto item_lb;
@@ -488,7 +481,7 @@ bool gt_imgbtn_add_state_item_by_file_header(gt_obj_st * obj, gt_file_header_par
         return false;
     }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
-    _item_st * item = gt_mem_malloc(sizeof(_item_st));
+    _item_st * item = (_item_st * )gt_mem_malloc(sizeof(_item_st));
     GT_CHECK_BACK_VAL(item, false);
     item->fh = *fh;
     if (false == _gt_vector_add_item(style->imgs, (void * )item)) {
