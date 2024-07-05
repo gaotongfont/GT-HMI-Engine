@@ -299,6 +299,7 @@ bool gt_obj_is_type(struct gt_obj_s * obj, gt_obj_type_et type)
         if (GT_TYPE_UNKNOWN == obj->class->type) {
             return false;
         }
+        return true;
     }
     return obj->class->type == type;
 }
