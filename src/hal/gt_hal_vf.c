@@ -309,10 +309,13 @@ static void _gt_vf_drv_init(gt_fs_drv_st * drv) {
 void gt_vf_init(const gt_vfs_st * vfs)
 {
     _vfs = vfs;
+    uint16_t size_byte = sizeof(gt_vf_st);
 
     if( !_vf_dev ){
-        _vf_dev = gt_mem_malloc( sizeof(gt_vf_st) );
+        _vf_dev = gt_mem_malloc(size_byte);
+        GT_CHECK_BACK(_vf_dev);
     }
+    gt_memset(_vf_dev, 0, size_byte);
 
     /* set _vf_dev msg */
     _vf_dev->addr_max = GT_VF_FLASH_START + GT_VF_FLASH_SIZE;
