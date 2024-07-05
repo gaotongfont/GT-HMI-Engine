@@ -854,6 +854,7 @@ uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const 
     _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(info, font_style, 0, 0);
 
     temp_font.res = gt_mem_malloc(font_size_res.font_buff_len);
+    GT_CHECK_BACK_VAL(temp_font.res, max_width);
 
     while (idx < len) {
         count_byte = gt_font_one_char_code_len_get((uint8_t*)&text[idx], &unicode, info->encoding);
@@ -874,10 +875,8 @@ uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const 
         max_width = cur_line_width;
     }
 
-    if (temp_font.res) {
-        gt_mem_free(temp_font.res);
-        temp_font.res = NULL;
-    }
+    gt_mem_free(temp_font.res);
+    temp_font.res = NULL;
     return max_width;
 }
 
@@ -1260,6 +1259,7 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint3
     _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(info, font_style, 0, 0);
 
     temp_font.res = gt_mem_malloc(font_size_res.font_buff_len);
+    GT_CHECK_BACK_VAL(temp_font.res, line_numb);
 
     uint8_t lan = 0;
     int32_t disp_w = max_w;
@@ -1292,11 +1292,8 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint3
 
     if(ret_max_w) *ret_max_w = (line_numb > 1) ? max_w : max_w - disp_w;
 
-    if (temp_font.res) {
-        gt_mem_free(temp_font.res);
-        temp_font.res = NULL;
-    }
-
+    gt_mem_free(temp_font.res);
+    temp_font.res = NULL;
     return line_numb;
 }
 
@@ -1433,11 +1430,8 @@ bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_
         idx += bidi[tmp].len;
     }
 
-    if (NULL != bidi) {
-        gt_mem_free(bidi);
-        bidi = NULL;
-    }
-
+    gt_mem_free(bidi);
+    bidi = NULL;
     return ret_flag;
 }
 
