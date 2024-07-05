@@ -102,17 +102,17 @@ void _gt_test_rand_widget(void)
     }
     srand(time(NULL));
     uint32_t rand_value = _GT_RAND_SEED_MIN + rand() % (_GT_RAND_SEED_MAX - _GT_RAND_SEED_MIN + 1);
-    next_run_tick = rand_value + cur_tick;
     gt_obj_st * cur_scr = gt_disp_get_scr();
     GT_CHECK_BACK(cur_scr);
     GT_CHECK_BACK(cur_scr->child);
     uint32_t rand_widget = rand() % (cur_scr->cnt_child);
 #if _GT_TEST_PRINT
-    GT_LOG_A(GT_LOG_TAG_TEST, "==== cur scr: %p, %d/%d, next time after: %d", cur_scr, rand_widget, cur_scr->cnt_child, rand_value);
+    GT_LOG_A(GT_LOG_TAG_TEST, "==== cur scr: %p, %d/%d", cur_scr, rand_widget, cur_scr->cnt_child);
 #endif
     _event_calling_recursive(cur_scr->child[rand_widget]);
+    next_run_tick = rand_value + gt_tick_get();
 #if _GT_TEST_PRINT
-    GT_LOG_A(GT_LOG_TAG_TEST, "----");
+    GT_LOG_A(GT_LOG_TAG_TEST, "---- next time after: %d", rand_value);
 #endif
 }
 
