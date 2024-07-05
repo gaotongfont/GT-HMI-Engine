@@ -67,6 +67,10 @@ void * _mem_realloc(void * ptr, size_t size, char const * file_name, char const 
  */
 void _mem_free(void * ptr, char const * file_name, char const * func_name, size_t line);
 
+#ifdef _GT_PORT_SIMULATOR_ENVS
+void gt_mem_print_info(void);
+#endif
+
 /**
  * @brief Memory data copy from src to dst, which size was given.
  *

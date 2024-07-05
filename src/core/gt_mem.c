@@ -218,7 +218,6 @@ static inline void _gt_free_hooks(void * ptr) {
 }
 
 /* global functions / API interface -------------------------------------*/
-
 void gt_mem_init(void)
 {
 #if GT_MEM_CUSTOM
@@ -410,6 +409,17 @@ void _mem_free(void * ptr, char const * file_name, char const * func_name, size_
 #endif
     _gt_free_hooks(ptr);
 }
+
+#ifdef _GT_PORT_SIMULATOR_ENVS
+void gt_mem_print_info(void)
+{
+#if USE_MEM_MAX_REMARK
+	GT_LOG_A(GT_LOG_TAG_MEM, "\t--- addr: %p -> %p, size: 0x%x(%d) max addr: %p, used: 0x%x(%.3f KB), cnt: %d ---",
+                _addr_start, _addr_end, GT_MEM_SIZE, GT_MEM_SIZE, _max_addr,
+                _max_addr - _addr_start, (_max_addr - _addr_start) * 1.0 / 1024, _malloc_count);
+#endif
+}
+#endif
 
 void * gt_memcpy(void * dst, const void * src, size_t size)
 {
