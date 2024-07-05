@@ -340,12 +340,11 @@ void gt_anim_pos_move(gt_obj_st * obj, gt_anim_param_st * param)
 
     gt_anim_set_exec_cb(&anim, _default_exec_cb);
 
-    gt_point_st * point = gt_mem_malloc(sizeof(gt_point_st) << 1);
-    point[0].x = obj->area.x;
-    point[0].y = obj->area.y;
-    point[1].x = param->dst.x;
-    point[1].y = param->dst.y;
-    gt_anim_set_data(&anim, (void * )point, sizeof(gt_point_st) << 1);
+    gt_point_st point[2] = {
+        { .x = obj->area.x, .y = obj->area.y },
+        { .x = param->dst.x, .y = param->dst.y }
+    };
+    gt_anim_set_data(&anim, (void * )&point, sizeof(gt_point_st) << 1);
     gt_anim_start(&anim);
 }
 
