@@ -103,16 +103,19 @@ gt_stack_st * gt_stack_create(gt_stack_size_t depth, uint16_t item_size)
     if (depth <= 0 || 0 == item_size) {
         return NULL;
     }
-    gt_stack_st * ret = (gt_stack_st * )gt_mem_malloc(sizeof(gt_stack_st));
+    uint16_t size_byte = sizeof(gt_stack_st);
+    gt_stack_st * ret = (gt_stack_st * )gt_mem_malloc(size_byte);
     if (NULL == ret) {
         return NULL;
     }
-    gt_memset(ret, 0, sizeof(gt_stack_st));
+    gt_memset(ret, 0, size_byte);
 
-    ret->data = (void **)gt_mem_malloc(depth * item_size);
+    size_byte = depth * item_size;
+    ret->data = (void **)gt_mem_malloc(size_byte);
     if (NULL == ret->data) {
         goto fail_lb;
     }
+    gt_memset(ret->data, 0, size_byte);
 
     ret->depth = depth;
     ret->item_size = item_size;
@@ -128,16 +131,19 @@ gt_stack_st * gt_stack_cycle_create(gt_stack_size_t depth, uint16_t item_size)
     if (depth <= 0 || 0 == item_size) {
         return NULL;
     }
-    gt_stack_st * ret = (gt_stack_st * )gt_mem_malloc(sizeof(gt_stack_st));
+    uint16_t size_byte = sizeof(gt_stack_st);
+    gt_stack_st * ret = (gt_stack_st * )gt_mem_malloc(size_byte);
     if (NULL == ret) {
         return NULL;
     }
-    gt_memset(ret, 0, sizeof(gt_stack_st));
+    gt_memset(ret, 0, size_byte);
 
-    ret->data = (void **)gt_mem_malloc((depth + _CYCLE_STACK_DUMMY_SIZE) * item_size);
+    size_byte = (depth + _CYCLE_STACK_DUMMY_SIZE) * item_size;
+    ret->data = (void **)gt_mem_malloc(size_byte);
     if (NULL == ret->data) {
         goto fail_lb;
     }
+    gt_memset(ret->data, 0, size_byte);
 
     ret->depth = depth;
     ret->item_size = item_size;
