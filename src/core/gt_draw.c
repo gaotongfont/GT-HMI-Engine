@@ -194,6 +194,7 @@ static bool _gt_get_radius_mask( gt_radius_mask_st *r_mask, uint16_t radius) {
     }
 
     if(r_mask->buf) {
+        GT_LOGE(GT_LOG_TAG_ASSERT, "radius mask already malloc!");
         gt_mem_free(r_mask->buf);
         r_mask->buf = NULL;
     }
@@ -223,9 +224,7 @@ static bool _gt_get_radius_mask( gt_radius_mask_st *r_mask, uint16_t radius) {
     gt_size_t * cir_x = gt_mem_malloc(cir_xy_size);
     if(!cir_x){
         GT_LOGE(GT_LOG_TAG_MEM, "radius cir_x malloc fail!!! size: %d", cir_xy_size);
-        gt_mem_free(r_mask->buf);
-        r_mask->buf = NULL;
-        return false;
+        goto buf_lb;
     }
     gt_size_t * cir_y = &cir_x[(radius + 1) << 1];
 
@@ -348,8 +347,13 @@ static bool _gt_get_radius_mask( gt_radius_mask_st *r_mask, uint16_t radius) {
         y++;
     }
 
+cir_lb:
     gt_mem_free(cir_x);
     cir_x = NULL;
+
+buf_lb:
+    gt_mem_free(r_mask->buf);
+    r_mask->buf = NULL;
     return true;
 }
 
@@ -1041,7 +1045,7 @@ static void _filling_by_default_line_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_bl
         ++y;
     }
 
-    if (is_mask) {
+    if (blend_dsc->mask_buf) {
         gt_mem_free(blend_dsc->mask_buf);
         blend_dsc->mask_buf = NULL;
     }
@@ -2099,9 +2103,7 @@ void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
         }
         gt_draw_blend(draw_ctx, &blend_dsc);
 
-        if(NULL != mask_buf) {
-            gt_mem_free(mask_buf);
-        }
+        gt_mem_free(mask_buf);
         mask_buf = NULL;
         return ;
     }
