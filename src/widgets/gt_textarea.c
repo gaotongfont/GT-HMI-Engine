@@ -77,6 +77,12 @@ const gt_obj_class_st gt_textarea_class = {
 
 
 /* static functions -----------------------------------------------------*/
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+static inline void _set_touch_word(_gt_textarea_st * style, char * word, uint16_t len) {
+    style->select_word.word_p = word;
+    style->select_word.len = len;
+}
+#endif
 
 static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p) {
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
@@ -101,8 +107,7 @@ static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_poin
     };
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
     if (touch_point_p) {
-        style->select_word.word_p = NULL;
-        style->select_word.len = 0;
+        _set_touch_word(style, NULL, 0);
     }
 #endif
 
@@ -131,7 +136,7 @@ static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_poin
         font_res = draw_text(obj->draw_ctx, &font_attr, &area_font);
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
         if (touch_point_p && font_res.touch_word.word_p) {
-            style->select_word = font_res.touch_word;
+            _set_touch_word(style, font_res.touch_word.word_p, font_res.touch_word.len);
             break;
         }
 #endif
@@ -235,6 +240,9 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_PRESSED:
             style->reg.click_valid = true;
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+            _set_touch_word(style, NULL, 0);
+#endif
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
@@ -255,10 +263,10 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             if (false == style->reg.click_valid) {
                 break;
             }
-    #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
             gt_point_st tp = gt_indev_get_point();
             _draw_content_or_get_words(obj, &tp);
-    #endif
+#endif
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
