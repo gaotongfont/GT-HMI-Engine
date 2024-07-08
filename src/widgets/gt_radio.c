@@ -210,9 +210,14 @@ gt_obj_st * gt_radio_create(gt_obj_st * parent)
         return obj;
     }
     _gt_radio_st * style = (_gt_radio_st * )obj;
+    const char * text = "radio";
+    uint16_t len = strlen(text);
 
-    style->text = gt_mem_malloc(sizeof("radio"));
-    gt_memcpy(style->text, "radio\0", sizeof("radio"));
+    style->text = gt_mem_malloc(len + 1);
+    if (style->text) {
+        gt_memcpy(style->text, text, len);
+        style->text[len] = '\0';
+    }
 
     gt_font_info_init(&style->font_info);
     style->space_x           = 0;
@@ -270,7 +275,7 @@ void gt_radio_set_text(gt_obj_st * radio, const char * fmt, ...)
     if (NULL == style->text) {
         goto free_lb;
     }
-
+    gt_memset(style->text, 0, size);
     va_start(args2, fmt);
     vsnprintf(style->text, size, fmt, args2);
     va_end(args2);

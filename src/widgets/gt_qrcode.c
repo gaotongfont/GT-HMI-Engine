@@ -263,10 +263,14 @@ gt_obj_st * gt_qrcode_create(gt_obj_st * parent)
     }
 
     _gt_qr_code_st * style = (_gt_qr_code_st * )obj;
-    // http://www.gaotongfont.cn/
-    style->str = gt_mem_malloc(strlen("https://www.hmi.gaotongfont.cn/")+1);
-    gt_memcpy(style->str, "https://www.hmi.gaotongfont.cn/" , strlen("https://www.hmi.gaotongfont.cn/")+1);
-    style->str_len = strlen(style->str);
+    const char * default_str = "https://www.hmi.gaotongfont.cn/";
+    uint16_t len = strlen(default_str);
+
+    style->str = gt_mem_malloc(len + 1);
+    if (style->str) {
+        gt_memcpy(style->str, default_str, len + 1);
+        style->str_len = len;
+    }
     style->version = GT_FAMILY_QRCODE_VERSION_10;
     style->ec_level = ECLevel_H;
     style->mask_patt = MaskPattern4;
@@ -296,8 +300,10 @@ void gt_qrcode_set_str(gt_obj_st * qr_code , char* str)
     }
     uint16_t size = str == NULL ? 0 : strlen(str);
     style->str = gt_mem_malloc(size + 1);
-    gt_memcpy(style->str, str, size);
-    style->str[size] = '\0';
+    if (style->str) {
+        gt_memcpy(style->str, str, size);
+        style->str[size] = '\0';
+    }
     // gt_event_send(barcode, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

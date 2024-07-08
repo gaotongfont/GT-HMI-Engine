@@ -373,7 +373,7 @@ void gt_input_set_value(gt_obj_st * input, const char * fmt, ...)
     if (NULL == style->value) {
         goto free_lb;
     }
-
+    gt_memset(style->value, 0, size);
     va_start(args2, fmt);
     vsnprintf(style->value, size, fmt, args2);
     va_end(args2);
@@ -409,14 +409,16 @@ void gt_input_append_value(gt_obj_st * input, char * value)
     }
     _gt_input_st * style = (_gt_input_st * )input;
     uint16_t len = value == NULL ? 0 : strlen(value);
-    if( !style->value ){
-        style->value = gt_mem_malloc(len+1);
+    if (!style->value) {
+        style->value = gt_mem_malloc(len + 1);
+        GT_CHECK_BACK(style->value);
         gt_memcpy(style->value, value, len);
-        style->value[len] = 0;
+        style->value[len] = '\0';
         style->pos_cursor = len;
-    }else{
+    } else {
         style->value = gt_txt_ins(style->value, style->pos_cursor, value);
-        style->pos_cursor += value == NULL ? 0 : strlen(value);
+        GT_CHECK_BACK(style->value);
+        style->pos_cursor += len;
     }
 
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -449,6 +451,7 @@ void gt_input_append_value_encoding(gt_obj_st * input, char * value, uint8_t enc
     uint16_t len = value == NULL ? 0 : strlen(value);
     uint16_t idx = 0;
     char *tmp_str = gt_mem_malloc(len + 1);
+    GT_CHECK_BACK(tmp_str);
 
     while(idx < len) {
         gt_memset_0(tmp_str, len + 1);
@@ -500,13 +503,15 @@ void gt_input_set_placeholder(gt_obj_st * input, const char * placeholder)
         return ;
     }
     _gt_input_st * style = (_gt_input_st * )input;
-    if( style->placeholder ){
-        gt_mem_free(style->placeholder);
-    }
     uint16_t len = strlen(placeholder);
-    style->placeholder = gt_mem_malloc( len + 1 );
+    if (style->placeholder) {
+        style->placeholder = gt_mem_realloc(style->placeholder, len + 1);
+    } else {
+        style->placeholder = gt_mem_malloc(len + 1);
+    }
+    GT_CHECK_BACK(style->placeholder);
     gt_memcpy(style->placeholder, placeholder, len);
-    style->placeholder[len] = 0;
+    style->placeholder[len] = '\0';
 
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -521,7 +526,6 @@ void gt_input_move_left_pos_cursor(gt_obj_st * input)
     if( style->pos_cursor > 0 ){
         d_pos = gt_txt_check_char_numb(style->value, style->font_info.encoding, &d_pos);
         style->pos_cursor -= d_pos;
-        // style->pos_cursor--;
     }
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -536,7 +540,6 @@ void gt_input_move_right_pos_cursor(gt_obj_st * input)
     if( style->pos_cursor < len ){
         d_pos = gt_txt_check_char_numb(style->value, style->font_info.encoding, &d_pos);
         style->pos_cursor += d_pos;
-        // style->pos_cursor++;
     }
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }

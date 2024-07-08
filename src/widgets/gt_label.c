@@ -251,9 +251,10 @@ gt_obj_st * gt_label_create(gt_obj_st * parent) {
     }
     _gt_label_st * style = (_gt_label_st * )obj;
 
-    style->text = gt_mem_malloc(sizeof("label"));
+    uint16_t len = sizeof("label");
+    style->text = gt_mem_malloc(len);
     if (style->text) {
-        gt_memcpy(style->text, "label\0", sizeof("label"));
+        gt_memcpy(style->text, "label\0", len);
     }
 
     style->font_color        = gt_color_hex(0x00);
@@ -302,7 +303,7 @@ void gt_label_set_text(gt_obj_st * label, const char * fmt, ...)
     if (NULL == style->text) {
         goto free_lb;
     }
-
+    gt_memset(style->text, 0, size);
     va_start(args2, fmt);
     vsnprintf(style->text, size, fmt, args2);
     va_end(args2);

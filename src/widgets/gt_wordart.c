@@ -315,7 +315,7 @@ void gt_wordart_set_text(gt_obj_st * wordart, const char * fmt, ...)
     if (NULL == style->text) {
         goto free_lb;
     }
-
+    gt_memset(style->text, 0, size);
     va_start(args2, fmt);
     vsnprintf(style->text, size, fmt, args2);
     va_end(args2);
