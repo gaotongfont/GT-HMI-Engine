@@ -234,7 +234,8 @@ static void _pull_wait_to_refresh(struct gt_obj_s * obj) {
     gt_anim_st anim;
     gt_anim_init(&anim);
     gt_anim_set_target(&anim, obj);
-    gt_anim_set_time_delay_start(&anim, 50);
+    gt_anim_set_time(&anim, 0);
+    gt_anim_set_time_delay_start(&anim, 200);
     gt_anim_set_exec_cb(&anim, _wait_exec_cb);
     gt_anim_set_ready_cb(&anim, _ready_pull_to_refresh_cb);
     gt_anim_start(&anim);
@@ -252,7 +253,8 @@ static void _load_more(struct gt_obj_s * obj) {
     gt_anim_st anim;
     gt_anim_init(&anim);
     gt_anim_set_target(&anim, obj);
-    gt_anim_set_time_delay_start(&anim, 50);
+    gt_anim_set_time(&anim, 0);
+    gt_anim_set_time_delay_start(&anim, 200);
     gt_anim_set_exec_cb(&anim, _wait_exec_cb);
     gt_anim_set_ready_cb(&anim, _ready_load_more_cb);
     gt_anim_start(&anim);
