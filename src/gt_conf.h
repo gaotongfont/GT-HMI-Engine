@@ -20,8 +20,12 @@ extern "C" {
 /* define ---------------------------------------------------------------*/
 
 /* user: screen width and height config */
-#define GT_SCREEN_WIDTH     800
-#define GT_SCREEN_HEIGHT    480
+#ifndef GT_SCREEN_WIDTH
+    #define GT_SCREEN_WIDTH     800
+#endif
+#ifndef GT_SCREEN_HEIGHT
+    #define GT_SCREEN_HEIGHT    480
+#endif
 
 /* GT_REFRESH_STYLE type don't change */
 #define GT_REFRESH_STYLE_0      0   /* no cache buf, It is suitable for MCU with low refresh requirements and low performance */
@@ -47,8 +51,12 @@ extern "C" {
 #define _GT_REFR_AREA_MAX   32
 
 /* user: color depth: 1(1 byte per pixel), 8(RGB332), 16(RGB565), 32(ARGB8888) */
-#define GT_COLOR_DEPTH      16
-#define GT_COLOR_16_SWAP    0
+#ifndef GT_COLOR_DEPTH
+    #define GT_COLOR_DEPTH          16
+#endif
+#ifndef GT_COLOR_16_SWAP
+    #define GT_COLOR_16_SWAP        0
+#endif
 
 #ifndef GT_FLUSH_CONVERT_VERTICAL
     /**
@@ -68,13 +76,21 @@ extern "C" {
 #define GT_TASK_PERIOD_TIME_DESTROY 10
 
 /* user: virt file device setting */
-#define GT_VF_FLASH_SIZE    0x1000000    //flash size 16*1024*1024   16M
-#define GT_VF_FLASH_START   0x000000    //start addr default 0x0000000
+#ifndef GT_VF_FLASH_SIZE
+    //flash size 16*1024*1024   16M
+    #define GT_VF_FLASH_SIZE        0x1000000
+#endif
+#ifndef GT_VF_FLASH_START
+    //start addr default 0x0000000
+    #define GT_VF_FLASH_START       0x000000
+#endif
 
 /**
  * @brief memory mode. 1: array as memory pool; 0:  c library api.
  */
-#define GT_MEM_CUSTOM       01
+#ifndef GT_MEM_CUSTOM
+    #define GT_MEM_CUSTOM           01
+#endif
 
 #if GT_MEM_CUSTOM
     #define GT_MEM_CUSTOM_INCLUDE   "../others/gt_tlsf.h"
@@ -95,7 +111,9 @@ extern "C" {
 
 
 /* Compiler prefix for a big array declaration in RAM */
-#define GT_ATTRIBUTE_LARGE_RAM_ARRAY
+#ifndef GT_ATTRIBUTE_LARGE_RAM_ARRAY
+    #define GT_ATTRIBUTE_LARGE_RAM_ARRAY
+#endif
 
 
 /* ui default style */
@@ -150,9 +168,15 @@ extern "C" {
 #define GT_CFG_DEFAULT_FONT_FAMILY_NUMB     GT_CFG_DEFAULT_FONT_FAMILY_EN
 #define GT_CFG_DEFAULT_FONT_SIZE            16
 
-#define GT_USE_MODE_SRC         01
-#define GT_USE_MODE_FLASH       01
-#define GT_USE_MODE_SD          0
+#ifndef GT_USE_MODE_SRC
+    #define GT_USE_MODE_SRC             01
+#endif
+#ifndef GT_USE_MODE_FLASH
+    #define GT_USE_MODE_FLASH           01
+#endif
+#ifndef GT_USE_MODE_SD
+    #define GT_USE_MODE_SD              0
+#endif
 
 #if GT_USE_MODE_FLASH || GT_USE_MODE_SD
     #ifndef GT_USE_FILE_HEADER
