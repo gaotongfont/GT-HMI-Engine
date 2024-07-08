@@ -91,7 +91,6 @@ typedef struct gt_obj_s {
 
     uint16_t cnt_child;
     gt_radius_t radius;
-    uint8_t cnt_event;
     uint8_t opa;            /* @ref gt_color.h */
     uint8_t reduce;
 
