@@ -110,8 +110,6 @@ gt_stack_st * gt_stack_create(gt_stack_size_t depth, uint16_t item_size, bool is
     }
     gt_memset(ret, 0, size_byte);
 
-    size_byte = depth * item_size;
-
     size_byte = (depth + cycle_dummy_size) * item_size;
     ret->data = (void **)gt_mem_malloc(size_byte);
     if (NULL == ret->data) {
