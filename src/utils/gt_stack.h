@@ -75,18 +75,10 @@ typedef bool ( * gt_stack_iterator_cb_t)(gt_stack_item_st , void * );
  *
  * @param depth The maximum number of items the stack can hold
  * @param item_size The number of bytes the item occupies in memory
+ * @param is_cycle_stack [default: 0] The flag to indicate whether the stack is cyclic
  * @return gt_stack_st*
  */
-gt_stack_st * gt_stack_create(gt_stack_size_t depth, uint16_t item_size);
-
-/**
- * @brief Cycle stack
- *
- * @param depth The maximum number of items the stack can hold
- * @param item_size The number of bytes the item occupies in memory
- * @return gt_stack_st*
- */
-gt_stack_st * gt_stack_cycle_create(gt_stack_size_t depth, uint16_t item_size);
+gt_stack_st * gt_stack_create(gt_stack_size_t depth, uint16_t item_size, bool is_cycle_stack);
 
 bool gt_stack_push(gt_stack_st * stack, void * item);
 

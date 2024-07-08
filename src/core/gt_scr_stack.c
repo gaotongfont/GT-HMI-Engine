@@ -121,7 +121,7 @@ bool gt_scr_stack_set_depth(gt_stack_size_t stack_depth)
         gt_stack_destroy(scr_info->stack);
         scr_info->stack = NULL;
     }
-    scr_info->stack = gt_stack_create(stack_depth, sizeof(gt_scr_stack_item_st));
+    scr_info->stack = gt_stack_create(stack_depth, sizeof(gt_scr_stack_item_st), false);
     GT_CHECK_BACK_VAL(scr_info->stack, false);
 
     return true;
