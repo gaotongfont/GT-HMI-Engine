@@ -29,7 +29,9 @@
 typedef struct _textarea_reg_s {
     uint8_t click_valid : 1;        /** click status: scroll will set to false, only click event valid */
     uint8_t click_single_cn : 1;    /** click single chinese character */
-    uint8_t reserved    : 6;
+    uint8_t pull_to_refresh : 1;    /** pull to refresh */
+    uint8_t load_more : 1;          /** load more */
+    uint8_t reserved : 4;
 }_textarea_reg_st;
 
 typedef struct _gt_textarea_s {
@@ -218,7 +220,43 @@ static void _textarea_deinit_cb(gt_obj_st * obj) {
     _free_contents(obj);
 }
 
+static void _wait_exec_cb(void * obj, int32_t val) { }
 
+static void _ready_pull_to_refresh_cb(struct gt_anim_s * anim) {
+    gt_obj_st * obj = (gt_obj_st *)anim->tar;
+    _gt_textarea_st * style = (_gt_textarea_st * )obj;
+
+    style->reg.pull_to_refresh = false;
+    gt_event_send(obj, GT_EVENT_TYPE_PULL_TO_REFRESH, NULL);
+}
+
+static void _pull_wait_to_refresh(struct gt_obj_s * obj) {
+    gt_anim_st anim;
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_time_delay_start(&anim, 50);
+    gt_anim_set_exec_cb(&anim, _wait_exec_cb);
+    gt_anim_set_ready_cb(&anim, _ready_pull_to_refresh_cb);
+    gt_anim_start(&anim);
+}
+
+static void _ready_load_more_cb(struct gt_anim_s * anim) {
+    gt_obj_st * obj = (gt_obj_st *)anim->tar;
+    _gt_textarea_st * style = (_gt_textarea_st * )obj;
+
+    style->reg.load_more = false;
+    gt_event_send(obj, GT_EVENT_TYPE_LOAD_MORE, NULL);
+}
+
+static void _load_more(struct gt_obj_s * obj) {
+    gt_anim_st anim;
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_time_delay_start(&anim, 50);
+    gt_anim_set_exec_cb(&anim, _wait_exec_cb);
+    gt_anim_set_ready_cb(&anim, _ready_load_more_cb);
+    gt_anim_start(&anim);
+}
 /**
  * @brief obj event handler call back
  *
@@ -252,15 +290,33 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
                 break;
             }
             if (obj->process_attr.scroll.y > 0) {
+                if (false == style->reg.pull_to_refresh && obj->process_attr.scroll.y > obj->area.h >> 4) {
+                    style->reg.pull_to_refresh = true;
+                }
                 obj->process_attr.scroll.y = 0;
             } else if (gt_abs(obj->process_attr.scroll.y) + obj->area.h > style->max_height) {
+                if (false == style->reg.load_more &&
+                    gt_abs(obj->process_attr.scroll.y) + obj->area.h - (obj->area.h >> 4) > style->max_height) {
+                    style->reg.load_more = true;
+                }
                 obj->process_attr.scroll.y = obj->area.h - style->max_height;
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
+        case GT_EVENT_TYPE_INPUT_SCROLL_END:
+            if (style->reg.pull_to_refresh) {
+                _pull_wait_to_refresh(obj);
+            } else if (style->reg.load_more) {
+                _load_more(obj);
+            }
+            break;
+
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             if (false == style->reg.click_valid) {
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+                _set_touch_word(style, NULL, 0);
+#endif
                 break;
             }
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
