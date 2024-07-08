@@ -87,23 +87,22 @@ uint8_t gt_txt_check_char_numb(char * dst, uint8_t encoding, int32_t* pos)
  */
 char * gt_txt_ins(char * dst, uint32_t pos, char * src)
 {
-    if( !dst || !src ){
+    if (!dst || !src) {
         return dst;
     }
     uint32_t len_dst = strlen(dst);
     uint32_t len_src = strlen(src);
     uint32_t len_all = len_dst + len_src;
-    if( pos > len_dst ){
+    if (pos > len_dst) {
         return dst;
     }
     dst = (char * )gt_mem_realloc(dst, len_all + 1);
+    GT_CHECK_BACK_VAL(dst, NULL);
     /*move chars*/
     if (len_dst > pos) {
-        // gt_memcpy(&dst[ pos + len_src ], &dst[pos], len_dst - pos);
-        gt_memmove(&dst[ pos + len_src ], &dst[pos], len_dst - pos);
+        gt_memmove(&dst[pos + len_src], &dst[pos], len_dst - pos);
     }
     gt_memmove(&dst[pos], src, len_src);
-    // gt_memcpy(&dst[pos], src, len_src);
     dst[len_all] = '\0';
 
     return dst;
