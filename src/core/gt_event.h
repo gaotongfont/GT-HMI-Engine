@@ -75,6 +75,10 @@ typedef enum gt_event_type_e {
     GT_EVENT_TYPE_CHANGE_CHILD_DELETED,    // [Called by core inside] delete child finish
     GT_EVENT_TYPE_CHANGE_DELETED,          // [Called by core inside] delete self finish
 
+    /* scroll boundary events */
+    GT_EVENT_TYPE_PULL_TO_REFRESH,         // [Called by core inside] scroll to top, pull to refresh event
+    GT_EVENT_TYPE_LOAD_MORE,               // [Called by core inside] scroll to bottom, load more event
+
     /* notify event */
     GT_EVENT_TYPE_NOTIFY_CLOSE,     // notify widget to close
 
