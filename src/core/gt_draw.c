@@ -1344,6 +1344,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
         idx_2 = 0;
         bidi_pos = 0;
         area_font.h = font_disp_h;
+        /** Display current line chars */
         while (idx_2 < idx_len) {
             if (bidi_pos < bidi_len && idx_2 == bidi[bidi_pos].idx) {
                 tmp_font.utf8 = (char * )&txt_2[idx_2];
@@ -1479,7 +1480,10 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             cov_flag_ol = false;
             idx += over_length < 2 ? idx_step : over_length_offset;
             if (idx < txt_len) {
-                area_font.y += area_font.h + dsc->space_y + (style_space_y << 1);
+                /** LF has skipped to handler, new line or multi '\n' to handler */
+                if (0x0A != txt[idx] || (0x0A == txt[idx] && txt[idx] == txt[idx - 1])) {
+                    area_font.y += area_font.h + dsc->space_y + (style_space_y << 1);
+                }
             }
             else if (0x0A == txt[txt_len - 1]) {
                 area_font.y += area_font.h + dsc->space_y + (style_space_y << 1);
