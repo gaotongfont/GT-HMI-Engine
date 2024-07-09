@@ -976,7 +976,7 @@ JRESULT jd_prepare (
 
 
 	memset(jd, 0, sizeof (JDEC));	/* Clear decompression object (this might be a problem if machine's null pointer is not all bits zero) */
-	jd->pool = pool;		/* Work memroy */
+	jd->pool = pool;		/* Work memory */
 	jd->sz_pool = sz_pool;	/* Size of given work memory */
 	jd->infunc = infunc;	/* Stream input function */
 	jd->device = dev;		/* I/O device identifier */
