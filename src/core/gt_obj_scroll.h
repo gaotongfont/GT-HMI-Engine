@@ -18,7 +18,6 @@ extern "C" {
 #include "../others/gt_types.h"
 #include "../widgets/gt_obj.h"
 
-struct gt_obj_s;
 /* define ---------------------------------------------------------------*/
 
 

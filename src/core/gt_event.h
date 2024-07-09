@@ -23,8 +23,6 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-struct gt_obj_s;
-
 /**
  * @brief The event type enum definition
  */

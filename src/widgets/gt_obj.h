@@ -75,6 +75,9 @@ typedef enum {
 }gt_obj_trigger_mode_et;
 
 
+/**
+ * @brief obj base struct
+ */
 typedef struct gt_obj_s {
     struct gt_obj_s * parent;
     struct gt_obj_s ** child;
