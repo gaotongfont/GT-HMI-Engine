@@ -318,7 +318,6 @@ static gt_obj_st * _create_confirm_btn(gt_obj_st * dialog, gt_event_cb_t confirm
     gt_obj_add_event_cb(confirm_btn, _close_release_cb, GT_EVENT_TYPE_INPUT_RELEASED, dialog);
 
     return confirm_btn;
-
 }
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
@@ -436,6 +435,16 @@ void gt_dialog_show(gt_obj_st * obj)
     }
 
     _create_anim_handler(obj, true, GT_OPA_0, GT_OPA_100);
+}
+
+void gt_dialog_close(gt_obj_st * obj)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+
+    /** Better than: _create_anim_handler(obj, false, GT_OPA_100, GT_OPA_0); */
+    gt_event_send(obj, GT_EVENT_TYPE_NOTIFY_CLOSE, NULL);
 }
 
 bool gt_dialog_has_showing(void)

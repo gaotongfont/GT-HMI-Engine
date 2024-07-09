@@ -72,6 +72,19 @@ gt_obj_st * gt_dialog_create_issue(bool show_close_btn, gt_dialog_param_st const
  */
 void gt_dialog_show(gt_obj_st * obj);
 
+/**
+ * @brief Close the dialog and free dialog memory
+ *
+ * @param obj The dialog object
+ */
+void gt_dialog_close(gt_obj_st * obj);
+
+/**
+ * @brief is dialog showing
+ *
+ * @return true
+ * @return false
+ */
 bool gt_dialog_has_showing(void);
 
 /**
