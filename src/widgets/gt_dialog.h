@@ -80,6 +80,13 @@ void gt_dialog_show(gt_obj_st * obj);
 void gt_dialog_close(gt_obj_st * obj);
 
 /**
+ * @brief Get the active dialog object
+ *
+ * @return gt_obj_st*
+ */
+gt_obj_st * gt_dialog_get_active_obj(void);
+
+/**
  * @brief is dialog showing
  *
  * @return true

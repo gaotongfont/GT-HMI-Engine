@@ -361,7 +361,7 @@ static gt_obj_st * _find_showing_recursive_by_type(gt_obj_st * obj, gt_obj_type_
     }
 
     gt_obj_st * ret = NULL;
-    for (gt_size_t i = 0, cnt = obj->cnt_child; i < cnt; ++i) {
+    for (gt_size_t i = obj->cnt_child - 1; i >= 0; i--) {
         ret = _find_showing_recursive_by_type(obj->child[i], type);
         if (ret) {
             return ret;
@@ -447,14 +447,18 @@ void gt_dialog_close(gt_obj_st * obj)
     gt_event_send(obj, GT_EVENT_TYPE_NOTIFY_CLOSE, NULL);
 }
 
-bool gt_dialog_has_showing(void)
+gt_obj_st * gt_dialog_get_active_obj(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
     if (NULL == disp || NULL == disp->layer_top) {
         return false;
     }
-    gt_obj_st * obj = _find_showing_recursive_by_type(disp->layer_top, OBJ_TYPE);
-    return obj ? true : false;
+    return _find_showing_recursive_by_type(disp->layer_top, OBJ_TYPE);
+}
+
+bool gt_dialog_has_showing(void)
+{
+    return gt_dialog_get_active_obj() ? true : false;
 }
 
 void gt_dialog_set_border_color(gt_obj_st * dialog, gt_color_t color)
