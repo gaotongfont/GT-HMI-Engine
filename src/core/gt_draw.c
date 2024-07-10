@@ -224,7 +224,9 @@ static bool _gt_get_radius_mask( gt_radius_mask_st *r_mask, uint16_t radius) {
     gt_size_t * cir_x = gt_mem_malloc(cir_xy_size);
     if(!cir_x){
         GT_LOGE(GT_LOG_TAG_MEM, "radius cir_x malloc fail!!! size: %d", cir_xy_size);
-        goto buf_lb;
+        gt_mem_free(r_mask->buf);
+        r_mask->buf = NULL;
+        return false;
     }
     gt_size_t * cir_y = &cir_x[(radius + 1) << 1];
 
@@ -347,13 +349,8 @@ static bool _gt_get_radius_mask( gt_radius_mask_st *r_mask, uint16_t radius) {
         y++;
     }
 
-cir_lb:
     gt_mem_free(cir_x);
     cir_x = NULL;
-
-buf_lb:
-    gt_mem_free(r_mask->buf);
-    r_mask->buf = NULL;
     return true;
 }
 
