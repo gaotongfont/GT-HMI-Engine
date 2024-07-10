@@ -309,7 +309,7 @@ static inline void _check_repeat_count(_gt_player_st * style) {
 static void _turn_prev_item(gt_obj_st * obj) {
     _gt_player_st * style = (_gt_player_st * )obj;
     GT_CHECK_BACK(style->vector);
-    if (_gt_vector_get_count(style->vector) > 0) {
+    if (_gt_vector_get_index(style->vector) > 0) {
         if (0 == style->repeat_cnt) {
             _gt_timer_set_paused(style->timer, true);
 #if GT_PLAYER_REPEAT_FINISH_CALLBACK
