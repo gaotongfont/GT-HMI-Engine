@@ -262,10 +262,10 @@ static uint8_t _gt_font_latin_get_width(uint32_t unicode, uint8_t font_size) {
 
 static bool _gt_number_symbol_font(uint32_t unicode) {
     // 0123456789,.:'$€￥
-    if( unicode >= 0x30 && unicode <= 0x39 || \
+    if ((unicode >= 0x30 && unicode <= 0x39) || \
         0x3A == unicode || 0x2C == unicode || 0x2E == unicode || \
         0x27 == unicode || 0x24 == unicode || 0xFFE5 == unicode || 0x20AC == unicode \
-    ){
+    ) {
         return true;
     }
 
@@ -819,9 +819,9 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
 
 uint32_t gt_font_get_string_width(gt_font_st * font)
 {
-	uint32_t idx = 0, unicode = 0, width = 0, tmp = 0;
+	uint32_t idx = 0, unicode = 0, width = 0;
 
-    while( idx < font->len ){
+    while (idx < font->len) {
         idx += gt_font_one_char_code_len_get((uint8_t * )&font->utf8[idx], &unicode, font->info.encoding);
         width += gt_font_get_one_word_width(unicode, font);
     }
@@ -1019,7 +1019,7 @@ static uint32_t _gt_font_punctuation_split(const uint8_t *str, uint32_t len, uin
 static uint32_t _gt_font_cn_in_this_range(const gt_font_st *fonts, uint32_t width, uint32_t space, uint32_t* ret_w)
 {
     uint32_t idx = 0, uni_or_gbk = 0, w = 0;
-    uint8_t *str = fonts->utf8, tmp, tmp_w = 0;
+    uint8_t *str = (uint8_t * )fonts->utf8, tmp, tmp_w = 0;
 
     while (idx < fonts->len) {
         tmp = gt_font_one_char_code_len_get((uint8_t * )&str[idx], &uni_or_gbk, fonts->info.encoding);
@@ -1039,7 +1039,7 @@ static uint32_t _gt_font_cn_in_this_range(const gt_font_st *fonts, uint32_t widt
 static uint32_t _gt_font_en_in_this_range(const gt_font_st *fonts, uint32_t width, uint32_t space, uint32_t* ret_w, uint16_t *ol_idx, uint16_t *ol_width)
 {
     uint32_t idx = 0, uni_or_gbk = 0, w = 0;
-    uint8_t *str = fonts->utf8, tmp, tmp_w = 0;
+    uint8_t *str = (uint8_t * )fonts->utf8, tmp, tmp_w = 0;
     if (NULL != ol_width) {
         *ol_width = 0;
     }
@@ -1068,7 +1068,7 @@ static uint32_t _gt_font_en_in_this_range(const gt_font_st *fonts, uint32_t widt
 
 static uint32_t _get_convertor_string_width(const gt_font_st *fonts, uint8_t lan, uint32_t space, uint16_t range_w, uint16_t *ol_idx, uint16_t *ol_width)
 {
-    uint32_t idx = 0, uni_or_gbk, tmp, len = fonts->info.size * fonts->len;
+    uint32_t idx = 0, uni_or_gbk = 0, tmp, len = fonts->info.size * fonts->len;
     uint16_t *text = NULL;
     uint8_t *font_buf = NULL;
     text = (uint16_t * )gt_mem_malloc(fonts->len * sizeof(uint16_t));
@@ -1115,7 +1115,7 @@ static uint32_t _get_convertor_string_width(const gt_font_st *fonts, uint8_t lan
 
     font_buf = (uint8_t * )gt_mem_malloc(font_size_res.font_buff_len);
     if (NULL == font_buf) {
-        GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %d", font_size_res.font_buff_len);
+        GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %ld", font_size_res.font_buff_len);
         goto _ret_handle;
     }
     gt_memset_0(font_buf, font_size_res.font_buff_len);
@@ -1595,7 +1595,7 @@ uint8_t gt_py_input_method_get_ascii_numb(gt_py_input_method_st* py_input_method
 int gt_py_input_method_get_chinese(gt_py_input_method_st* py_input_method)
 {
 #if ((defined(PINYIN_INPUT_METHOD_EN)) && (GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
-    int ret = gt_pinyin_full_keyboard_get(py_input_method->ascii);
+    int ret = gt_pinyin_full_keyboard_get((char * )py_input_method->ascii);
     py_input_method->chinese_numb = ret ? py_input_method->py_info->content->chinese_numb : 0;
 
     return ret;

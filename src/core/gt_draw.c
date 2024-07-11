@@ -628,7 +628,7 @@ static bool _gt_get_radius_mask_buf(gt_opa_t* mask_line, gt_size_t x, gt_size_t 
         tmp_y = y - (p->area.h - p->radius);
     }
     gt_opa_t tmp_opa;
-    gt_opa_t* aa_opa = _gt_get_next_line(p, tmp_y, &aa_len, &x_start);
+    gt_opa_t* aa_opa = _gt_get_next_line(p, tmp_y, (uint16_t * )&aa_len, (uint16_t * )&x_start);
     gt_size_t pos_x_right = k + p->area.w - p->radius + x_start;
     gt_size_t pos_x_left = k + p->radius - x_start - 1;
     gt_size_t i;
@@ -1122,7 +1122,7 @@ static gt_size_t _get_align_start_y(const gt_attr_font_st * dsc, const gt_area_s
                 idx += 1;
                 goto _compute_line;
             }
-            tmp_font->utf8 = &txt[idx];
+            tmp_font->utf8 = (char * )&txt[idx];
             tmp_font->len = txt_len - idx;
             idx_step = gt_font_split(tmp_font, disp_w, coords->w, dsc->space_x, &ret_w, &lan, &lan_len);
 
@@ -1150,6 +1150,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
     const gt_area_st * coords = &dsc->logical_area;
     _gt_draw_font_res_st ret = {0};
     _gt_draw_font_res_st tmp_ret = {0};
+    gt_bidi_st * bidi = NULL;
     gt_area_st area_font = {
         .x = coords->x, .y = coords->y, .w = dsc->font->info.size, .h = dsc->font->info.size
     };
@@ -1231,7 +1232,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
     bool cov_flag_ol = false;
     bool start_x_flag = dsc->reg.enabled_start;
     uint16_t bidi_len = 0, bidi_max = 1, bidi_pos = 0;
-    gt_bidi_st * bidi = (gt_bidi_st * )gt_mem_malloc(bidi_max * sizeof(gt_bidi_st));
+    bidi = (gt_bidi_st * )gt_mem_malloc(bidi_max * sizeof(gt_bidi_st));
     _gt_font_dot_ret_st dot_ret = {0};
     if (NULL == bidi) {
         GT_LOGE(GT_LOG_TAG_GUI, "bidi malloc is failed!!! size = %d", bidi_max * sizeof(gt_bidi_st));
@@ -1261,7 +1262,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             ++idx;
             goto _disp_font;
         }
-        tmp_font.utf8 = &txt[idx];
+        tmp_font.utf8 = (char * )&txt[idx];
         tmp_font.len = txt_len - idx;
         idx_step = gt_font_split(&tmp_font, disp_w, coords->w, dsc->space_x, &ret_w, &lan, &lan_len);
 
@@ -1526,7 +1527,7 @@ static _omit_info_st _omit_get_font_width(gt_font_st * tmp_font) {
     _omit_info_st ret = {0};
 
     tmp_font->utf8 = (char * )&_utf8_dots[0];
-    tmp_font->len = gt_font_one_char_code_len_get((char * )&_utf8_dots[0], &uni_or_gbk, tmp_font->info.encoding);
+    tmp_font->len = gt_font_one_char_code_len_get((uint8_t * )&_utf8_dots[0], &uni_or_gbk, tmp_font->info.encoding);
     ret.width = gt_font_get_one_word_width(uni_or_gbk, tmp_font) * 3;
     if (ret.width) {
         if (ret.width < tmp_font->info.size) {
@@ -1538,7 +1539,7 @@ static _omit_info_st _omit_get_font_width(gt_font_st * tmp_font) {
     }
 
     tmp_font->utf8 = (char * )&_utf8_full_stops[0];
-    tmp_font->len = gt_font_one_char_code_len_get((char * )&_utf8_full_stops[0], &uni_or_gbk, tmp_font->info.encoding);
+    tmp_font->len = gt_font_one_char_code_len_get((uint8_t * )&_utf8_full_stops[0], &uni_or_gbk, tmp_font->info.encoding);
     ret.width = gt_font_get_one_word_width(uni_or_gbk, tmp_font) * 3;
     if (ret.width < tmp_font->info.size) {
         ret.width = tmp_font->info.size;
@@ -1555,6 +1556,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
     gt_area_st area_font = {
         .x = coords->x, .y = coords->y, .w = dsc->font->info.size, .h = dsc->font->info.size
     };
+    gt_bidi_st * bidi = NULL;
 
     if (0 == dsc->font->len) {
         gt_align_et type = _get_align_type(dsc->align);
@@ -1633,7 +1635,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
     _omit_info_st omit_info = {0};
     bool start_x_flag = dsc->reg.enabled_start;
     uint16_t bidi_len = 0, bidi_max = 1, bidi_pos = 0;
-    gt_bidi_st * bidi = (gt_bidi_st * )gt_mem_malloc(bidi_max * sizeof(gt_bidi_st));
+    bidi = (gt_bidi_st * )gt_mem_malloc(bidi_max * sizeof(gt_bidi_st));
     if (NULL == bidi) {
         GT_LOGE(GT_LOG_TAG_GUI, "bidi malloc is failed!!! size = %d", bidi_max * sizeof(gt_bidi_st));
         goto ret_handler_lb;
@@ -1839,7 +1841,7 @@ next_word_lb:
     if (dsc->reg.omit_line && idx_len < txt_len) {
         // Display "..." or "。。。"
         tmp_font.utf8 = omit_info.utf8;
-        tmp_font.len = gt_font_one_char_code_len_get(omit_info.utf8, &uni_or_gbk, tmp_font.info.encoding);
+        tmp_font.len = gt_font_one_char_code_len_get((uint8_t * )omit_info.utf8, &uni_or_gbk, tmp_font.info.encoding);
         width = gt_font_get_one_word_width(uni_or_gbk, &tmp_font);
 
         tmp_font.info.size = dsc->font->info.size;

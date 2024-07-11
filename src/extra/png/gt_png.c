@@ -115,11 +115,13 @@ static void _set_png_type(_gt_img_info_st * header) {
     header->color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;
 }
 
+#if 0
 static void _set_fp_info(gt_fs_fp_st * fp, _gt_img_info_st * header) {
     fp->msg.pic.w = header->w;
     fp->msg.pic.h = header->h;
     fp->msg.pic.is_alpha = 1;   // GT_IMG_TYPE_RGB565_PNG, is not alpha
 }
+#endif
 
 static bool _is_png_file_type(gt_fs_fp_st * fp) {
     const uint8_t magic[] = {0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a};
@@ -216,6 +218,7 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
     int32_t png_size   = 0;
     uint8_t * png_data = NULL;
     const char * path = (char * )dsc->src;
+    gt_res_t ret = GT_RES_INV;
 
     if (!_is_png_file_ext(path)) {
         return GT_RES_INV;
@@ -232,7 +235,7 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
     if (0 != lodepng_load_file(&png_data, (size_t * )&png_size, dsc->src)) {
         goto err_lb;
     }
-    gt_res_t ret = _common_png_open(decoder, dsc, png_size, png_data);
+    ret = _common_png_open(decoder, dsc, png_size, png_data);
 
 err_lb:
     if (png_data) {

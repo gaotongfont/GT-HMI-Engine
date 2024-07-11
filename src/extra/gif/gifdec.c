@@ -376,8 +376,11 @@ add_entry(Table **tablep, uint16_t length, uint16_t prefix, uint8_t suffix)
         table->entries = (Entry *) &table[1];
         *tablep = table;
     }
-    table->entries[table->nentries] = (Entry) {length, prefix, suffix};
-    table->nentries++;
+    Entry * entry = &table->entries[table->nentries];
+    entry->length = length;
+    entry->prefix = prefix;
+    entry->suffix = suffix;
+    ++table->nentries;
     if ((table->nentries & (table->nentries - 1)) == 0)
         return 1;
     return 0;
@@ -441,8 +444,8 @@ static int
 read_image_data(gd_GIF *gif, int interlace)
 {
     uint8_t sub_len, shift, byte;
-    int init_key_size, key_size, table_is_full;
-    int frm_off, frm_size, str_len, i, p, x, y;
+    int init_key_size, key_size, table_is_full = 0;
+    int frm_off, frm_size, str_len = 0, i, p, x, y;
     uint16_t key, clear, stop;
     int ret;
     Table *table;
@@ -657,14 +660,14 @@ gd_get_frame(gd_GIF *gif)
     char sep;
 
     dispose(gif);
-    _gif_read(gif->fd, &sep, 1);
+    _gif_read(gif->fd, (uint8_t * )&sep, 1);
     while (sep != ',') {
         if (sep == ';')
             return 0;
         if (sep == '!')
             read_ext(gif);
         else return -1;
-        _gif_read(gif->fd, &sep, 1);
+        _gif_read(gif->fd, (uint8_t * )&sep, 1);
     }
     if (read_image(gif) == -1)
         return -1;

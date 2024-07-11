@@ -357,7 +357,7 @@ static inline void _blend_argb888_with_no_opacity(_gt_draw_blend_fill_cache_st c
     uint16_t h = fc->area_intersect.h;
     uint16_t step_src_line = fc->width_src - w;
     uint16_t step_dst_line = fc->width_buf - w;
-    uint16_t x, y, width = w * sizeof(gt_color_t);
+    uint16_t x, y;
     gt_opa_t opa = fc->opa;
 
     if (opa < GT_OPA_MIN) {
