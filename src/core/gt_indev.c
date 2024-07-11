@@ -179,7 +179,7 @@ static bool _indev_send_home_gesture_event(gt_indev_st * indev) {
     return true;
 }
 
-static inline bool _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const point_p, gt_size_t * dx, gt_size_t * dy) {
+static inline void _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const point_p, gt_size_t * dx, gt_size_t * dy) {
     uint16_t w_parent = obj_scroll->parent->area.w;
     uint16_t h_parent = obj_scroll->parent->area.h;
     gt_size_t left = 0, right = GT_SCREEN_WIDTH;
