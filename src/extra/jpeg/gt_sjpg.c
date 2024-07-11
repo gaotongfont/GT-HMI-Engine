@@ -382,7 +382,7 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
 {
     dsc->fp = gt_fs_open((char * )dsc->src, GT_FS_MODE_RD);
     if (NULL == dsc->fp) {
-        GT_RES_INV;
+        return GT_RES_INV;
     }
     return _common_sjpg_open(decoder, dsc);
 }
