@@ -193,9 +193,11 @@ static const _font_type_group_adjust_ascii_pos_st _font_type_group_arr[] = {
 #if defined(GT_FAMILY_GB2312_32_HT_4bit) && defined(GT_FAMILY_ASCII_32x32_ZK_4bit)
     {.cn_opt = gt_family_gb2312_32_ht_4bit, .en_opt = gt_family_ascii_32x32_zk_4bit, .offset = { .y= 2 } },
 #endif
+    /** null value */
+    { .cn_opt = GT_CFG_DEFAULT_FONT_FAMILY_CN, .en_opt = GT_CFG_DEFAULT_FONT_FAMILY_EN, .offset = { .y = 0 } },
 };
 
-static const gt_size_t _font_type_group_arr_len = sizeof(_font_type_group_arr) / sizeof(_font_type_group_adjust_ascii_pos_st);
+static const gt_size_t _font_type_group_arr_len = sizeof(_font_type_group_arr) / sizeof(_font_type_group_adjust_ascii_pos_st) - 1;
 
 /* macros ---------------------------------------------------------------*/
 static gt_encoding_et _gt_project_encoding = GT_ENCODING_UTF8;
