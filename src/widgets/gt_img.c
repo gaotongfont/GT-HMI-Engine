@@ -191,7 +191,7 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw)
     if (false == gt_obj_is_type(img, OBJ_TYPE)) {
         return ;
     }
-    if (NULL == raw->buffer) {
+    if (NULL == raw->buffer && NULL == raw->opa) {
         return ;
     }
     _gt_img_st * style = (_gt_img_st *)img;

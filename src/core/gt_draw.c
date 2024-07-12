@@ -926,8 +926,8 @@ static void _filling_by_sjpg_file(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_
 static void _filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     blend_dsc->mask_buf = &dsc_img->alpha[0];
     blend_dsc->dst_buf = (gt_color_t *)&dsc_img->img[0];
-    if (NULL == blend_dsc->dst_buf) {
-        GT_LOGW(GT_LOG_TAG_GUI, "Raw data buffer is NULL");
+    if (NULL == blend_dsc->dst_buf && NULL == blend_dsc->mask_buf) {
+        GT_LOGW(GT_LOG_TAG_GUI, "Raw data buffer or mask is NULL");
         return;
     }
 
