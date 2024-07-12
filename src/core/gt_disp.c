@@ -105,7 +105,7 @@ static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
         return false;
     }
 
-    _gt_draw_ctx_st draw_ctx = {
+    struct _gt_draw_ctx_s draw_ctx = {
         /** Page change animation */
         .valid    = param->disp->scr_prev ? &param->valid : NULL,
         .parent_area = obj->inside ? &area_parent : NULL,
@@ -113,7 +113,7 @@ static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
         .buf_area = param->disp->area_disp,
     };
 
-    obj->draw_ctx = (struct _gt_draw_ctx_s * )&draw_ctx;
+    obj->draw_ctx = &draw_ctx;
     if (obj->class->_init_cb) {
         obj->class->_init_cb(obj);
     }
