@@ -71,10 +71,11 @@ typedef struct _gt_img_dsc_s {
     gt_file_header_param_st * file_header;  ///< Using file header mode to read image data
 #endif
     uint8_t * img;              ///< temp buffer which is used to save image data
+    gt_opa_t * alpha;           ///< temp buffer which is used to save alpha data
     void * customs_data;        ///< customs data
+    gt_color_t fill_color;      ///< fill color
     _gt_img_info_st header;     ///< the header information of image
     gt_fs_type_et type;         ///< file driver type, such as: SD, Flash...
-    gt_opa_t * alpha;           ///< temp buffer which is used to save alpha data
 }_gt_img_dsc_st;
 
 /**
