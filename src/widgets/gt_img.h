@@ -33,6 +33,7 @@ extern "C" {
 typedef struct gt_img_raw_s {
     gt_color_t const * buffer;    /** color channel, necessary */
     gt_opa_t   const * opa;       /** alpha channel, unnecessary */
+    gt_color_t color;
     uint16_t   width;             /** width of the image */
     uint16_t   height;            /** height of the image */
 }gt_img_raw_st;

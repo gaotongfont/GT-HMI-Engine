@@ -204,6 +204,7 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw)
     style->raw.header.w = raw->width;
     style->raw.header.h = raw->height;
     style->raw.header.type = GT_IMG_DECODER_TYPE_RAM;
+    style->raw.fill_color = raw->color;
 
     if (style->raw.img && style->raw.alpha) {
         style->raw.header.color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;

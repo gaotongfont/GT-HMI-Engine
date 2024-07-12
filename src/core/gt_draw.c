@@ -2578,6 +2578,7 @@ void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_are
     gt_draw_blend_dsc_st blend_dsc = {
         .dst_buf = NULL,
         .mask_buf = NULL,
+        .color_fill = dsc->raw_img ? dsc->raw_img->fill_color : gt_color_black(),
         .dst_area = &dst_area,
         .mask_area = &mask_area,
         .opa = dsc->bg_opa

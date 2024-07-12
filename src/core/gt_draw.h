@@ -128,7 +128,7 @@ void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
  * @param coords Want to display area
  * @return gt_area_st The display area
  */
-_gt_draw_font_res_st draw_text(_gt_draw_ctx_st * draw_ctx,const gt_attr_font_st * dsc, const gt_area_st * coords);
+_gt_draw_font_res_st draw_text(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, const gt_area_st * coords);
 
 /**
  * @brief Draw background image
