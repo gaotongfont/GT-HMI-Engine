@@ -382,7 +382,7 @@ static void _turn_next_item(gt_obj_st * obj) {
 }
 
 static inline void _change_item_handler(gt_obj_st * obj, bool is_next) {
-    return is_next ? _turn_next_item(obj) : _turn_prev_item(obj);
+    is_next ? _turn_next_item(obj) : _turn_prev_item(obj);
 }
 
 static void _player_event_cb(struct gt_obj_s * obj, gt_event_st * e) {

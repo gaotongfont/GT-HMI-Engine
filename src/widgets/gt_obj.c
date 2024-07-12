@@ -368,7 +368,7 @@ void gt_obj_destroy(gt_obj_st * obj)
 
 void gt_obj_destroy_immediately(gt_obj_st * obj)
 {
-    return _gt_obj_class_destroy(obj);
+    _gt_obj_class_destroy(obj);
 }
 
 void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color)
