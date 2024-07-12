@@ -1668,7 +1668,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
             ++idx;
             continue;
         }
-        tmp_font.utf8 = &txt[idx];
+        tmp_font.utf8 = (char * )&txt[idx];
         tmp_font.len = txt_len - idx;
         idx_step = gt_font_split(&tmp_font, view_width, coords->w, dsc->space_x, &ret_w, &lan, &lan_len);
 
