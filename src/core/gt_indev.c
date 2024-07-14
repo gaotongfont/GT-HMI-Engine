@@ -390,7 +390,7 @@ static inline void _scroll_calc_throw_distance(struct _point * point_p) {
 static void _indev_released_handle(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
     if (NULL == point_p->obj_target) {
-        return;
+        goto clr_lb;
     }
 
 #if GT_INDEV_POINT_LOG
@@ -407,6 +407,7 @@ static void _indev_released_handle(gt_indev_st * indev) {
         _indev_scroll_throw_handler_anim_start(indev);
     }
     point_p->obj_target = NULL;
+clr_lb:
     point_p->obj_origin = NULL;
 }
 
@@ -460,6 +461,9 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
     gt_point_st point_ret;
     struct _point * point_p = &indev->data.point;
 
+    if (point_p->obj_origin) {
+        return;
+    }
     if (NULL == point_p->obj_target) {
         indev->timestamp_start = gt_tick_get();
         indev->timestamp_long_press = indev->timestamp_start;
@@ -757,6 +761,7 @@ bool _gt_indev_remove_want_delate_target(gt_obj_st * target)
             continue;
         }
         point_p->obj_target = NULL;
+        point_p->obj_scroll = NULL;
         ret = true;
     }
     return ret;

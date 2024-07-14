@@ -153,9 +153,8 @@ typedef struct _gt_indev_s {
             struct gt_obj_s * obj_origin;    //< The object of first touch
             struct gt_obj_s * obj_scroll;    ///< The object of gesture
 
-            uint16_t gesture : 3;          ///< @ref gt_dir_et gesture of touch input device point
-            uint16_t count_point : 3;
-            uint16_t reserved : 10;
+            uint16_t gesture : 3;           ///< @ref gt_dir_et gesture of touch input device point
+            uint16_t reserved : 13;
         }point;
 
         struct _button
