@@ -461,10 +461,11 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
     gt_point_st point_ret;
     struct _point * point_p = &indev->data.point;
 
-    if (point_p->obj_origin) {
-        return;
-    }
     if (NULL == point_p->obj_target) {
+        if (point_p->obj_origin) {
+            /** prev screen or the last complete process did not complete */
+            return;
+        }
         indev->timestamp_start = gt_tick_get();
         indev->timestamp_long_press = indev->timestamp_start;
 
