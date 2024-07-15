@@ -268,14 +268,14 @@ static void _gt_update_map(gt_obj_st* btnmap) {
     }
     //
     if(!style->_line_w_list) {
-        style->_line_w_list = gt_mem_malloc(style->_max_line * sizeof(uint16_t) * 2);
+        style->_line_w_list = gt_mem_malloc(style->_max_line * sizeof(uint16_t) << 1);
         if(NULL == style->_line_w_list) {
-            GT_LOGE(GT_LOG_TAG_GUI, "btnmap malloc failed!!! size = %d", style->_max_line * sizeof(uint16_t) * 2);
+            GT_LOGE(GT_LOG_TAG_GUI, "btnmap malloc failed!!! size = %lu", style->_max_line * sizeof(uint16_t) << 1);
             return ;
         }
         buf_max = style->_max_line;
     }
-    gt_memset_0(style->_line_w_list, style->_max_line * sizeof(uint16_t) * 2);
+    gt_memset_0(style->_line_w_list, style->_max_line * sizeof(uint16_t) << 1);
     style->_line_numb_list = &style->_line_w_list[style->_max_line];
 
     _gt_get_line_list((const gt_map_st*)style->map, style->_line_w_list, style->_line_numb_list);

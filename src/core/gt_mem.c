@@ -222,12 +222,12 @@ void gt_mem_init(void)
 {
 #if GT_MEM_CUSTOM
     _tlsf = gt_tlsf_create_with_pool((void *)_mem_pool_int, GT_MEM_SIZE);
-    _addr_start = (MEM_UNIT)_mem_pool_int;
-    _addr_end = (MEM_UNIT)_mem_pool_int + GT_MEM_SIZE;
+    _addr_start = (uintptr_t)_mem_pool_int;
+    _addr_end = (uintptr_t)_mem_pool_int + GT_MEM_SIZE;
 #if GT_BOOTING_INFO_MSG
-	GT_LOG_A(GT_LOG_TAG_MEM, "Custom memory pool addr: %p -> %p, size: 0x%x(%d)", _addr_start, _addr_end, GT_MEM_SIZE, GT_MEM_SIZE);
+	GT_LOG_A(GT_LOG_TAG_MEM, "Custom memory pool addr: %lx -> %lx, size: 0x%x(%d)", (uintptr_t)_addr_start, (uintptr_t)_addr_end, GT_MEM_SIZE, GT_MEM_SIZE);
 #else
-	GT_LOGD(GT_LOG_TAG_MEM, "\t--- addr: %p -> %p, size: 0x%x(%d) ---", _addr_start, _addr_end, GT_MEM_SIZE, GT_MEM_SIZE);
+	GT_LOGD(GT_LOG_TAG_MEM, "\t--- addr: %lx -> %lx, size: 0x%x(%d) ---", (uintptr_t)_addr_start, (uintptr_t)_addr_end, GT_MEM_SIZE, GT_MEM_SIZE);
 #endif
 
 #if USE_MEM_TRACE_DEBUG_BY_FILE
@@ -239,7 +239,7 @@ void gt_mem_init(void)
         mkdir(MEM_TRACE_PATH);
     }
     fp = fopen(MEM_TRACE_LOG_PATH, "a");
-    fprintf(fp, "\t--- addr: %p -> %p, size: 0x%x(%d) ---\n", _addr_start, _addr_end, GT_MEM_SIZE, GT_MEM_SIZE);
+    fprintf(fp, "\t--- addr: %x -> %x, size: 0x%x(%d) ---\n", (uintptr_t)_addr_start, (uintptr_t)_addr_end, GT_MEM_SIZE, GT_MEM_SIZE);
     fflush(fp);
     fclose(fp);
     fp = NULL;
@@ -291,8 +291,8 @@ void * _mem_malloc(size_t size, char const * file_name, char const * func_name, 
 #endif
 
 #if USE_MEM_MAX_REMARK
-    if ((MEM_UNIT)ret > _max_addr) {
-        _max_addr = (MEM_UNIT)ret;
+    if ((uintptr_t)ret > _max_addr) {
+        _max_addr = (uintptr_t)ret;
         GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] >>>>>> %d max mem addr: %p   %d [%d] <<<<<<",
                     file_name, func_name, line, ++_malloc_count, _max_addr, size, block_size);
     }
@@ -359,8 +359,8 @@ void * _mem_realloc(void * ptr, size_t size, char const * file_name, char const 
 #endif
 
 #if USE_MEM_MAX_REMARK
-    if ((MEM_UNIT)ret > _max_addr) {
-        _max_addr = (MEM_UNIT)ret;
+    if ((uintptr_t)ret > _max_addr) {
+        _max_addr = (uintptr_t)ret;
         GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] >>>>>> %d R max mem addr: %p   %d [%d -> %d] <<<<<<",
                     file_name, func_name, line, ++_malloc_count, _max_addr, size, old_size, block_size);
     }
@@ -460,7 +460,7 @@ void gt_mem_check_used(void)
         GT_LOGI(GT_LOG_TAG_MEM, "mem is less 1024byte");
         return;
     }
-    float used = (float)((MEM_UNIT)addr_now - _addr_start) / (float)( _addr_end - _addr_start );
+    float used = (float)((uintptr_t)addr_now - _addr_start) / (float)( _addr_end - _addr_start );
     gt_mem_free(addr_now);
     GT_LOGI(GT_LOG_TAG_MEM, "used:%.2f%%",used*100);
     printf("used:%.2f%%\n",used*100);

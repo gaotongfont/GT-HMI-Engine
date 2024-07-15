@@ -1075,7 +1075,7 @@ static uint32_t _get_convertor_string_width(const gt_font_st *fonts, uint8_t lan
     uint8_t *font_buf = NULL;
     text = (uint16_t * )gt_mem_malloc(fonts->len * sizeof(uint16_t));
     if (NULL == text) {
-        GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %d", fonts->len * sizeof(uint16_t));
+        GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %lu", fonts->len * sizeof(uint16_t));
         return len;
     }
 
@@ -1117,7 +1117,7 @@ static uint32_t _get_convertor_string_width(const gt_font_st *fonts, uint8_t lan
 
     font_buf = (uint8_t * )gt_mem_malloc(font_size_res.font_buff_len);
     if (NULL == font_buf) {
-        GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %ld", font_size_res.font_buff_len);
+        GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %d", font_size_res.font_buff_len);
         goto _ret_handle;
     }
     gt_memset_0(font_buf, font_size_res.font_buff_len);
@@ -1382,7 +1382,7 @@ bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_
     uint16_t bidi_len = tmp;
     gt_bidi_st* bidi = (gt_bidi_st*)gt_mem_malloc((bidi_len * sizeof(gt_bidi_st)));
     if (NULL == bidi) {
-        GT_LOGE(GT_LOG_TAG_GUI, "bidi malloc err! size = %d", (bidi_len * sizeof(gt_bidi_st)) );
+        GT_LOGE(GT_LOG_TAG_GUI, "bidi malloc err! size = %lu", (bidi_len * sizeof(gt_bidi_st)) );
         return false;
     }
     tmp = 0;
@@ -1498,14 +1498,14 @@ gt_py_input_method_st* gt_py_input_method_create(void)
     if(!_gt_py_info){
         _gt_py_info = (py_info_st*) gt_mem_malloc(sizeof(py_info_st));
         if(!_gt_py_info){
-            GT_LOGE(GT_LOG_TAG_GUI, "py info malloc err!!! size = %d", sizeof(py_info_st));
+            GT_LOGE(GT_LOG_TAG_GUI, "py info malloc err!!! size = %lu", sizeof(py_info_st));
             goto _info_ret;
         }
         gt_memset(_gt_py_info, 0, sizeof(py_info_st));
 
         _gt_py_info->content = (py_content_st*)gt_mem_malloc(sizeof(py_content_st));
         if(!_gt_py_info->content){
-            GT_LOGE(GT_LOG_TAG_GUI, "py info content malloc err!!! size = %d", sizeof(py_content_st));
+            GT_LOGE(GT_LOG_TAG_GUI, "py info content malloc err!!! size = %lu", sizeof(py_content_st));
             goto _info_ret;
         }
         gt_memset(_gt_py_info->content, 0, sizeof(py_content_st));
@@ -1513,7 +1513,7 @@ gt_py_input_method_st* gt_py_input_method_create(void)
         _gt_py_info->py_cache = (unsigned char*)gt_mem_malloc(1218);
         if(!_gt_py_info->py_cache)
         {
-            GT_LOGE(GT_LOG_TAG_GUI, "py info py_cache malloc err!!! size = %d", 1218);
+            GT_LOGE(GT_LOG_TAG_GUI, "py info py_cache malloc err!!! size = %lu", 1218);
             goto _info_ret;
         }
         gt_memset(_gt_py_info->py_cache, 0, 1218);
@@ -1528,7 +1528,7 @@ gt_py_input_method_st* gt_py_input_method_create(void)
 
     gt_py_input_method_st* py_input_method = (gt_py_input_method_st*) gt_mem_malloc(sizeof(gt_py_input_method_st));
     if(!py_input_method){
-        GT_LOGE(GT_LOG_TAG_GUI, "py input method malloc err!!! size = %d", sizeof(gt_py_input_method_st));
+        GT_LOGE(GT_LOG_TAG_GUI, "py input method malloc err!!! size = %lu", sizeof(gt_py_input_method_st));
         goto input_met_ret;
     }
     gt_memset(py_input_method, 0, sizeof(gt_py_input_method_st));

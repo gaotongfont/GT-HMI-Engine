@@ -729,7 +729,7 @@ static _gt_draw_font_res_st _draw_text_convertor_split(
     uint8_t * font_buf = NULL;
     text = (uint16_t * )gt_mem_malloc(fonts->len * sizeof(uint16_t));
     if (NULL == text) {
-        GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %d", fonts->len * sizeof(uint16_t));
+        GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %lu", fonts->len * sizeof(uint16_t));
         goto _ret_handle;
     }
     gt_font_st tmp_font = {
@@ -1235,7 +1235,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
     bidi = (gt_bidi_st * )gt_mem_malloc(bidi_max * sizeof(gt_bidi_st));
     _gt_font_dot_ret_st dot_ret = {0};
     if (NULL == bidi) {
-        GT_LOGE(GT_LOG_TAG_GUI, "bidi malloc is failed!!! size = %d", bidi_max * sizeof(gt_bidi_st));
+        GT_LOGE(GT_LOG_TAG_GUI, "bidi malloc is failed!!! size = %lu", bidi_max * sizeof(gt_bidi_st));
         goto _ret_handler;
     }
     // align vertical
@@ -1283,7 +1283,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
                     ++bidi_max;
                     bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
                     if (NULL == bidi) {
-                        GT_LOGE(GT_LOG_TAG_GUI, "bidi realloc is failed!!! size = %d", bidi_max * sizeof(gt_bidi_st));
+                        GT_LOGE(GT_LOG_TAG_GUI, "bidi realloc is failed!!! size = %lu", bidi_max * sizeof(gt_bidi_st));
                         goto _ret_handler;
                     }
                 }
@@ -1306,7 +1306,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
                 ++bidi_max;
                 bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
                 if (NULL == bidi) {
-                    GT_LOGE(GT_LOG_TAG_GUI, "bidi realloc is failed!!! size = %d", bidi_max * sizeof(gt_bidi_st));
+                    GT_LOGE(GT_LOG_TAG_GUI, "bidi realloc is failed!!! size = %lu", bidi_max * sizeof(gt_bidi_st));
                     goto _ret_handler;
                 }
             }
@@ -1637,7 +1637,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
     uint16_t bidi_len = 0, bidi_max = 1, bidi_pos = 0;
     bidi = (gt_bidi_st * )gt_mem_malloc(bidi_max * sizeof(gt_bidi_st));
     if (NULL == bidi) {
-        GT_LOGE(GT_LOG_TAG_GUI, "bidi malloc is failed!!! size = %d", bidi_max * sizeof(gt_bidi_st));
+        GT_LOGE(GT_LOG_TAG_GUI, "bidi malloc is failed!!! size = %lu", bidi_max * sizeof(gt_bidi_st));
         goto ret_handler_lb;
     }
     // align vertical
@@ -1691,7 +1691,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
                 ++bidi_max;
                 bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
                 if (NULL == bidi) {
-                    GT_LOGE(GT_LOG_TAG_GUI, "bidi realloc is failed!!! size = %d", bidi_max * sizeof(gt_bidi_st));
+                    GT_LOGE(GT_LOG_TAG_GUI, "bidi realloc is failed!!! size = %lu", bidi_max * sizeof(gt_bidi_st));
                     goto ret_handler_lb;
                 }
             }
