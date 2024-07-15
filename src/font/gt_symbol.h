@@ -444,7 +444,7 @@ const uint8_t * gt_symbol_get_mask_buf(uint32_t uni_or_gbk, uint8_t size);
  *      0xE000 - 0xE03F
  *          |
  *      0xF800 - 0xF83F
- * @returns such as: "\xEE\x80\x80" /*57344, 0xE000*\/
+ * @returns such as: "\xEE\x80\x80" //57344, 0xE000
  */
 void _gt_symbol_get_all_valid_utf8_code(void);
 #endif

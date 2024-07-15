@@ -116,6 +116,32 @@ void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)
     gt_obj_set_area(obj, area);
 }
 
+void gt_obj_set_pos_relative(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff_x, gt_size_t diff_y)
+{
+    GT_CHECK_BACK(obj);
+    if (NULL == target) {
+        target = obj->parent;
+        GT_CHECK_BACK(target);
+    }
+    gt_area_st area = {
+        .x = target->area.x + diff_x,
+        .y = target->area.y + diff_y,
+        .w = obj->area.w,
+        .h = obj->area.h
+    };
+#if GT_USE_LAYER_TOP
+    if (_update_layer_top_widget_area(obj, area)) {
+        return ;
+    }
+#endif
+    /** normal screen */
+    _gt_obj_move_child_by(obj, area.x - obj->area.x, area.y - obj->area.y);
+    if (gt_obj_get_virtual(obj)) {
+        return ;
+    }
+    gt_obj_set_area(obj, area);
+}
+
 void _gt_obj_move_child_by(gt_obj_st * obj, gt_size_t dx, gt_size_t dy)
 {
     GT_CHECK_BACK(obj);
