@@ -449,13 +449,14 @@ read_image_data(gd_GIF *gif, int interlace)
     uint16_t key, clear, stop;
     int ret;
     Table *table;
-    Entry entry;
+    Entry entry = {0};
     uint32_t start, end;
 
     _gif_read(gif->fd, &byte, 1);
     key_size = (int) byte;
-    if (key_size < 2 || key_size > 8)
+    if (key_size < 2 || key_size > 8) {
         return -1;
+    }
 
     start = _gif_seek(gif->fd, 0, GT_FS_SEEK_CUR);
     discard_sub_blocks(gif);
