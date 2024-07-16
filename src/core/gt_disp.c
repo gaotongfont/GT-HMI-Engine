@@ -101,22 +101,24 @@ static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
     if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
         return false;
     }
+    if (NULL == obj->class->_init_cb) {
+        return true;
+    }
     if (false == gt_area_is_intersect_screen(&param->disp->area_disp, &obj->area)) {
         return false;
     }
 
-    struct _gt_draw_ctx_s draw_ctx = {
-        /** Page change animation */
-        .valid    = param->disp->scr_prev ? &param->valid : NULL,
-        .parent_area = obj->inside ? &area_parent : NULL,
-        .buf      = param->disp->vbd_color,
-        .buf_area = param->disp->area_disp,
-    };
+    obj->draw_ctx = gt_mem_malloc(sizeof(struct _gt_draw_ctx_s));
+    GT_CHECK_BACK_VAL(obj->draw_ctx, false);
+    obj->draw_ctx->valid       = param->disp->scr_prev ? &param->valid : NULL;
+    obj->draw_ctx->parent_area = obj->inside ? &area_parent : NULL;
+    obj->draw_ctx->buf         = param->disp->vbd_color;
+    obj->draw_ctx->buf_area    = param->disp->area_disp;
 
-    obj->draw_ctx = &draw_ctx;
-    if (obj->class->_init_cb) {
-        obj->class->_init_cb(obj);
-    }
+    obj->class->_init_cb(obj);
+
+    gt_mem_free(obj->draw_ctx);
+    obj->draw_ctx = NULL;
     return true;
 }
 
