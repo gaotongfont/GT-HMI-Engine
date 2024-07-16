@@ -49,8 +49,8 @@ const gt_obj_class_st gt_group_class = {
 /* static functions -----------------------------------------------------*/
 static void _set_infinite_area(gt_obj_st * obj) {
     /** Set an infinite range -32767 ~ 32766 */
-    obj->area.x = 1 - ((1 << (sizeof(gt_size_t) << 3) - 1));
-    obj->area.y = 1 - ((1 << (sizeof(gt_size_t) << 3) - 1));
+    obj->area.x = 1 - ((1 << ((sizeof(gt_size_t) << 3) - 1)));
+    obj->area.y = 1 - ((1 << ((sizeof(gt_size_t) << 3) - 1)));
     obj->area.w = ((1 << (sizeof(gt_size_t) << 3))) - 2;
     obj->area.h = ((1 << (sizeof(gt_size_t) << 3))) - 2;
 }
