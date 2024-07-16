@@ -106,43 +106,43 @@ static const char _gt_spell[_GT_KEYPADS_SPELL_NUMB][8] = {
 };
 // h = 34 * 6 + 3 * 7 = 204 + 24 = 225
 static const gt_map_st _low_map_default_26_key[] = {
-    ".",1,  ",",1,  "?",1,  ";",1, ":",1,  "\'",1, "\"",1,  "@",1,  "(",1,  ")",1,  GT_BTNMAP_NEW_LINE,0,
-    "1",1,  "2",1,  "3",1,  "4",1, "5",1,  "6",1, "7",1,  "8",1,  "9",1,  "0",1,  GT_BTNMAP_NEW_LINE,0,
-    "q",1,  "w",1,  "e",1,  "r",1, "t",1,  "y",1, "u",1,  "i",1,  "o",1,  "p",1,  GT_BTNMAP_NEW_LINE,0,
-    NULL,1,  "a",3,  "s",3,  "d",3,  "f",3, "g",3,  "h",3, "j",3,  "k",3,  "l",3,  NULL,1,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_LOWER_CASE,5,  NULL,1,  "z",4,  "x",4,  "c",4,  "v",4, "b",4,  "n",4, "m",4,  NULL,1, GT_SYMBOL_BACKSPACE,5,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_CH,5,  GT_SYMBOL_WELL_NUMBER,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_SPACE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
-    NULL,0
+    {".",1}, {",",1}, {"?",1}, {";",1}, {":",1}, {"\'",1}, {"\"",1}, {"@",1}, {"(",1}, {")",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"1",1}, {"2",1}, {"3",1}, {"4",1}, {"5",1}, {"6",1}, {"7",1}, {"8",1}, {"9",1}, {"0",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"q",1}, {"w",1}, {"e",1}, {"r",1}, {"t",1}, {"y",1}, {"u",1}, {"i",1}, {"o",1}, {"p",1}, {GT_BTNMAP_NEW_LINE,0},
+    {NULL,1}, {"a",3}, {"s",3}, {"d",3}, {"f",3}, {"g",3}, {"h",3}, {"j",3}, {"k",3}, {"l",3}, {NULL,1}, {GT_BTNMAP_NEW_LINE,0}, {GT_SYMBOL_LOWER_CASE,5},
+    {NULL,1}, {"z",4}, {"x",4}, {"c",4}, {"v",4}, {"b",4}, {"n",4}, {"m",4}, {NULL,1}, {GT_SYMBOL_BACKSPACE,5}, {GT_BTNMAP_NEW_LINE,0},
+    {GT_SYMBOL_CH,5}, {GT_SYMBOL_WELL_NUMBER,5}, {GT_SYMBOL_LEFT,4}, {GT_SYMBOL_SPACE,12}, {GT_SYMBOL_RIGHT,4}, {GT_SYMBOL_NEW_LINE,8},
+    {NULL,0}
 };
 
 static const gt_map_st _up_map_default_26_key[] = {
-    ".",1,  ",",1,  "?",1,  ";",1, ":",1,  "\'",1, "\"",1,  "@",1,  "(",1,  ")",1,  GT_BTNMAP_NEW_LINE,0,
-    "1",1,  "2",1,  "3",1,  "4",1, "5",1,  "6",1, "7",1,  "8",1,  "9",1,  "0",1,  GT_BTNMAP_NEW_LINE,0,
-    "Q",1,  "W",1,  "E",1,  "R",1, "T",1,  "Y",1, "U",1,  "I",1,  "O",1,  "P",1,  GT_BTNMAP_NEW_LINE,0,
-    NULL,1,  "A",3,  "S",3,  "D",3,  "F",3, "G",3,  "H",3, "J",3,  "K",3,  "L",3,  NULL,1,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_UPPER_CASE,5,  NULL,1,  "Z",4,  "X",4,  "C",4,  "V",4, "B",4,  "N",4, "M",4,  NULL,1, GT_SYMBOL_BACKSPACE,5,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_CH,5,  GT_SYMBOL_WELL_NUMBER,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_SPACE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
-    NULL,0
+    {".",1}, {",",1}, {"?",1}, {";",1}, {":",1}, {"\'",1}, {"\"",1}, {"@",1}, {"(",1}, {")",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"1",1}, {"2",1}, {"3",1}, {"4",1}, {"5",1}, {"6",1}, {"7",1}, {"8",1}, {"9",1}, {"0",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"Q",1}, {"W",1}, {"E",1}, {"R",1}, {"T",1}, {"Y",1}, {"U",1}, {"I",1}, {"O",1}, {"P",1}, {GT_BTNMAP_NEW_LINE,0},
+    {NULL,1}, {"A",3}, {"S",3}, {"D",3}, {"F",3}, {"G",3}, {"H",3}, {"J",3}, {"K",3}, {"L",3}, {NULL,1}, {GT_BTNMAP_NEW_LINE,0},
+    {GT_SYMBOL_UPPER_CASE,5}, {NULL,1}, {"Z",4}, {"X",4}, {"C",4}, {"V",4}, {"B",4}, {"N",4}, {"M",4}, {NULL,1}, {GT_SYMBOL_BACKSPACE,5}, {GT_BTNMAP_NEW_LINE,0},
+    {GT_SYMBOL_CH,5}, {GT_SYMBOL_WELL_NUMBER,5}, {GT_SYMBOL_LEFT,4}, {GT_SYMBOL_SPACE,12}, {GT_SYMBOL_RIGHT,4}, {GT_SYMBOL_NEW_LINE,8},
+    {NULL,0},
 };
 
 static const gt_map_st _symbol_en_map_default_26_key[] = {
-    "1",1,  "2",1,  "3",1,  "4",1, "5",1,  "6",1, "7",1,  "8",1,  "9",1,  "0",1,  GT_BTNMAP_NEW_LINE,0,
-    "!",1,  "@",1,  "#",1,  "$",1,  "%",1,  "^",1,  "&",1,  "*",1,  "(",1,  ")",1,  GT_BTNMAP_NEW_LINE,0,
-    NULL,1,  "-",5,  "+",5,  "=",5,  "_",5, "{",5,  "}",5, "[",5,  "]",5,  "\\",5,  NULL,1,  GT_BTNMAP_NEW_LINE,0,
-    NULL,1,  ";",3,  ":",3,  "\"",3,  "\'",3,  "~",3,  "`",3,  "/ ",3,  " |",3,  NULL,1,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_LOWER_CASE,5,  NULL,1,  ",",4,  ".",4,  "?",4,  "<",4,  ">",4,  NULL,1, GT_SYMBOL_BACKSPACE,5,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_CH,5,  GT_SYMBOL_WELL_NUMBER,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_SPACE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
-    NULL,0
+    {"1",1}, {"2",1}, {"3",1}, {"4",1}, {"5",1}, {"6",1}, {"7",1}, {"8",1}, {"9",1}, {"0",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"!",1}, {"@",1}, {"#",1}, {"$",1}, {"%",1}, {"^",1}, {"&",1}, {"*",1}, {"(",1}, {")",1}, {GT_BTNMAP_NEW_LINE,0},
+    {NULL,1}, {"-",5}, {"+",5}, {"=",5}, {"_",5}, {"{",5}, {"}",5}, {"[",5}, {"]",5}, {"\\",5}, {NULL,1}, {GT_BTNMAP_NEW_LINE,0},
+    {NULL,1}, {";",3}, {":",3}, {"\"",3}, {"\'",3}, {"~",3}, {"`",3}, {"/ ",3}, {" |",3}, {NULL,1}, {GT_BTNMAP_NEW_LINE,0},
+    {GT_SYMBOL_LOWER_CASE,5}, {NULL,1}, {",",4}, {".",4}, {"?",4}, {"<",4}, {">",4}, {NULL,1}, {GT_SYMBOL_BACKSPACE,5}, {GT_BTNMAP_NEW_LINE,0},
+    {GT_SYMBOL_CH,5}, {GT_SYMBOL_WELL_NUMBER,5}, {GT_SYMBOL_LEFT,4}, {GT_SYMBOL_SPACE,12}, {GT_SYMBOL_RIGHT,4}, {GT_SYMBOL_NEW_LINE,8},
+    {NULL,},
 };
 
 static const gt_map_st _ch_map_default_26_key[] = {
-    _gt_spell[0],1,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_PREV,1,  _gt_spell[1],1,  _gt_spell[2],1,  _gt_spell[3],1,  _gt_spell[4],1,  _gt_spell[5],1,  _gt_spell[6],1,  _gt_spell[7],1,  _gt_spell[8],1,  GT_SYMBOL_NEXT,1, GT_BTNMAP_NEW_LINE,0,
-    "q",1,  "w",1,  "e",1,  "r",1, "t",1,  "y",1, "u",1,  "i",1,  "o",1,  "p",1,  GT_BTNMAP_NEW_LINE,0,
-    NULL,1,  "a",3,  "s",3,  "d",3,  "f",3, "g",3,  "h",3, "j",3,  "k",3,  "l",3,  NULL,1,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_LOWER_CASE,5,  NULL,1,  "z",4,  "x",4,  "c",4,  "v",4, "b",4,  "n",4, "m",4,  NULL,1, GT_SYMBOL_BACKSPACE,5,  GT_BTNMAP_NEW_LINE,0,
-    GT_SYMBOL_EN,5,  GT_SYMBOL_WELL_NUMBER,5,  GT_SYMBOL_LEFT,4,  GT_SYMBOL_SPACE,12,  GT_SYMBOL_RIGHT,4, GT_SYMBOL_NEW_LINE,8,
-    NULL,0
+    {_gt_spell[0],1}, {GT_BTNMAP_NEW_LINE,0},
+    {GT_SYMBOL_PREV,1}, {_gt_spell[1],1}, {_gt_spell[2],1}, {_gt_spell[3],1}, {_gt_spell[4],1}, {_gt_spell[5],1}, {_gt_spell[6],1}, {_gt_spell[7],1}, {_gt_spell[8],1}, {GT_SYMBOL_NEXT,1}, {GT_BTNMAP_NEW_LINE,0},
+    {"q",1}, {"w",1}, {"e",1}, {"r",1}, {"t",1}, {"y",1}, {"u",1}, {"i",1}, {"o",1}, {"p",1}, {GT_BTNMAP_NEW_LINE,0},
+    {NULL,1}, {"a",3}, {"s",3}, {"d",3}, {"f",3}, {"g",3}, {"h",3}, {"j",3}, {"k",3}, {"l",3}, {NULL,1}, {GT_BTNMAP_NEW_LINE,0},
+    {GT_SYMBOL_LOWER_CASE,5}, {NULL,1}, {"z",4}, {"x",4}, {"c",4}, {"v",4}, {"b",4}, {"n",4}, {"m",4}, {NULL,1}, {GT_SYMBOL_BACKSPACE,5}, {GT_BTNMAP_NEW_LINE,0},
+    {GT_SYMBOL_EN,5}, {GT_SYMBOL_WELL_NUMBER,5}, {GT_SYMBOL_LEFT,4}, {GT_SYMBOL_SPACE,12}, {GT_SYMBOL_RIGHT,4}, {GT_SYMBOL_NEW_LINE,8},
+    {NULL,0},
 };
 
 static const char * _def_26_key_user_icon_key_list[] = {
@@ -355,37 +355,37 @@ static bool _def_26_key_disp_special_btn_handler(gt_obj_st* obj, const char* con
 // w = 44 * 4 + 3 * 5 = 176 + 15 = 191
 // h = 44 * 5 + 3 * 6 = 220 + 18 = 238
 static const gt_map_st _low_map_default_tlb[] = {
-    "a",1,  "b",1,  "c",1,  "d",1, GT_BTNMAP_NEW_LINE,0,
-    "e",1,  "f",1,  "g",1,  "h",1, GT_BTNMAP_NEW_LINE,0,
-    "i",1,  "j",1,  "k",1,  "l",1, GT_BTNMAP_NEW_LINE,0,
-    "m",1,  "n",1,  "o",1,  "p",1, GT_BTNMAP_NEW_LINE,0,
-    "q",1,  "r",1,  "s",1,  "t",1, GT_BTNMAP_NEW_LINE,0,
-    "u",1,  "v",1,  "w",1,  "x",1, GT_BTNMAP_NEW_LINE,0,
-    "y",1,  "z",1,  NULL,2,  NULL,0,
+    {"a",1}, {"b",1}, {"c",1}, {"d",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"e",1}, {"f",1}, {"g",1}, {"h",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"i",1}, {"j",1}, {"k",1}, {"l",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"m",1}, {"n",1}, {"o",1}, {"p",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"q",1}, {"r",1}, {"s",1}, {"t",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"u",1}, {"v",1}, {"w",1}, {"x",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"y",1}, {"z",1}, {NULL,2}, {NULL,0},
 };
 
 static const gt_map_st _up_map_default_tlb[] = {
-    "A",1,  "B",1,  "C",1,  "D",1, GT_BTNMAP_NEW_LINE,0,
-    "E",1,  "F",1,  "G",1,  "H",1, GT_BTNMAP_NEW_LINE,0,
-    "I",1,  "J",1,  "K",1,  "L",1, GT_BTNMAP_NEW_LINE,0,
-    "M",1,  "N",1,  "O",1,  "P",1, GT_BTNMAP_NEW_LINE,0,
-    "Q",1,  "R",1,  "S",1,  "T",1, GT_BTNMAP_NEW_LINE,0,
-    "U",1,  "V",1,  "W",1,  "X",1, GT_BTNMAP_NEW_LINE,0,
-    "Y",1,  "Z",1,  NULL,2,  NULL,0,
+    {"A",1}, {"B",1}, {"C",1}, {"D",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"E",1}, {"F",1}, {"G",1}, {"H",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"I",1}, {"J",1}, {"K",1}, {"L",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"M",1}, {"N",1}, {"O",1}, {"P",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"Q",1}, {"R",1}, {"S",1}, {"T",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"U",1}, {"V",1}, {"W",1}, {"X",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"Y",1}, {"Z",1}, {NULL,2}, {NULL,0},
 };
 
 static const gt_map_st _numb_map_default_tlb[] = {
-    "1",1,  "2",1,  "3",1,  "4",1, GT_BTNMAP_NEW_LINE,0,
-    "5",1,  "6",1,  "7",1,  "8",1, GT_BTNMAP_NEW_LINE,0,
-    "9",1,  "0",1,  "@",1,  "=",1, GT_BTNMAP_NEW_LINE,0,
-    "+",1,  "-",1,  "*",1,  "/",1, GT_BTNMAP_NEW_LINE,0,
-    ",",1,  ".",1,  ";",1,  "?",1, GT_BTNMAP_NEW_LINE,0,
-    "\'",1,  "\"",1,  ":",1,  "!",1, GT_BTNMAP_NEW_LINE,0,
-    "(",1,  ")",1,  "<",1,  ">",1, GT_BTNMAP_NEW_LINE,0,
-    "[",1,  "]",1,  "_",1,  "~",1, GT_BTNMAP_NEW_LINE,0,
-    "\\",1,  "|",1,  "`",1,  "#",1, GT_BTNMAP_NEW_LINE,0,
-    "$",1,  "%",1,  "^",1,  "&",1, GT_BTNMAP_NEW_LINE,0,
-    "{",1,  "}",1,  NULL,2,  NULL,0,
+    {"1",1}, {"2",1}, {"3",1}, {"4",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"5",1}, {"6",1}, {"7",1}, {"8",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"9",1}, {"0",1}, {"@",1}, {"=",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"+",1}, {"-",1}, {"*",1}, {"/",1}, {GT_BTNMAP_NEW_LINE,0},
+    {",",1}, {".",1}, {";",1}, {"?",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"\'",1}, {"\"",1}, {":",1}, {"!",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"(",1}, {")",1}, {"<",1}, {">",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"[",1}, {"]",1}, {"_",1}, {"~",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"\\",1}, {"|",1}, {"`",1}, {"#",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"$",1}, {"%",1}, {"^",1}, {"&",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"{",1}, {"}",1}, {NULL,2}, {NULL,0},
 };
 
 static const gt_keypad_map_st _list_default_tlb[] = {
@@ -399,22 +399,22 @@ static const gt_keypad_map_st _list_default_tlb[] = {
 // w = 50 * 11 + 3 * 12 = 550 + 36 = 586
 // h = 38 * 3 + 3 * 4 = 114 + 12 = 126
 static const gt_map_st _low_map_default_fyb_369[] = {
-    "a",1,  "b",1,  "c",1,  "d",1,  "e",1,  "f",1,  "g",1,  "h",1,  "i",1,  "j",1,  "k",1,  GT_BTNMAP_NEW_LINE,0,
-    "l",1,  "m",1,  "n",1,  "o",1,  "p",1,  "q",1,  "r",1,  "s",1,  "t",1,  "u",1,  "v",1,  GT_BTNMAP_NEW_LINE,0,
-    "w",1,  "x",1, "y",1,   "z",1,  NULL,1,  NULL,1,  NULL,1,  NULL,1,  NULL,1,  NULL,1,  NULL,1,  NULL,0,
+    {"a",1}, {"b",1}, {"c",1}, {"d",1}, {"e",1}, {"f",1}, {"g",1}, {"h",1}, {"i",1}, {"j",1}, {"k",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"l",1}, {"m",1}, {"n",1}, {"o",1}, {"p",1}, {"q",1}, {"r",1}, {"s",1}, {"t",1}, {"u",1}, {"v",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"w",1}, {"x",1}, {"y",1}, {"z",1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,0},
 };
 
 static const gt_map_st _up_map_default_fyb_369[] = {
-    "A",1,  "B",1,  "C",1,  "D",1,  "E",1,  "F",1,  "G",1,  "H",1,  "I",1,  "J",1,  "K",1,  GT_BTNMAP_NEW_LINE,0,
-    "L",1,  "M",1,  "N",1,  "O",1,  "P",1,  "Q",1,  "R",1,  "S",1,  "T",1,  "U",1,  "V",1,  GT_BTNMAP_NEW_LINE,0,
-    "W",1,  "X",1,  "Y",1,  "Z",1, NULL,1,  NULL,1,  NULL,1,  NULL,1,  NULL,1,  NULL,1,  NULL,1,  NULL,0,
+    {"A",1}, {"B",1}, {"C",1}, {"D",1}, {"E",1}, {"F",1}, {"G",1}, {"H",1}, {"I",1}, {"J",1}, {"K",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"L",1}, {"M",1}, {"N",1}, {"O",1}, {"P",1}, {"Q",1}, {"R",1}, {"S",1}, {"T",1}, {"U",1}, {"V",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"W",1}, {"X",1}, {"Y",1}, {"Z",1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,0},
 };
 
 static const gt_map_st _numb_map_default_fyb_369[] = {
-    "1",1,  "2",1,  "3",1,  "4",1,  "5",1,  "6",1,  "7",1,  "8",1,  "9",1,  "0",1,  "@",1,  GT_BTNMAP_NEW_LINE,0,
-    "=",1,  "+",1,  "-",1,  "*",1,  "/",1,  ",",1,  ".",1,  ";",1,  "?",1,  "\'",1,  "\"",1,  GT_BTNMAP_NEW_LINE,0,
-    ":",1,  "!",1,  "(",1,  ")",1,  "<",1,  ">",1,  "[",1,  "]",1,  "_",1,  "~",1,  "\\",1,  GT_BTNMAP_NEW_LINE,0,
-    "|",1,  "`",1,  "#",1,  "$",1,  "%",1,  "^",1,  "&",1,  "{",1,  "}",1,  NULL,1,  NULL,1, NULL,0,
+    {"1",1}, {"2",1}, {"3",1}, {"4",1}, {"5",1}, {"6",1}, {"7",1}, {"8",1}, {"9",1}, {"0",1}, {"@",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"=",1}, {"+",1}, {"-",1}, {"*",1}, {"/",1}, {",",1}, {".",1}, {";",1}, {"?",1}, {"\'",1}, {"\"",1}, {GT_BTNMAP_NEW_LINE,0},
+    {":",1}, {"!",1}, {"(",1}, {")",1}, {"<",1}, {">",1}, {"[",1}, {"]",1}, {"_",1}, {"~",1}, {"\\",1}, {GT_BTNMAP_NEW_LINE,0},
+    {"|",1}, {"`",1}, {"#",1}, {"$",1}, {"%",1}, {"^",1}, {"&",1}, {"{",1}, {"}",1}, {NULL,1}, {NULL,1}, {NULL,0},
 };
 
 static const gt_keypad_map_st _list_default_fyb_369[] = {
