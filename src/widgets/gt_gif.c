@@ -191,7 +191,7 @@ static gt_res_t _reset_gif_status(_gt_gif_st * style) {
         gd_close_gif(style->gif);
         style->gif = NULL;
     }
-    GT_RES_OK;
+    return GT_RES_OK;
 }
 
 static void _set_dsc_info_restart_timer(_gt_gif_st * style, bool is_running) {

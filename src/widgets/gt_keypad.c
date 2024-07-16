@@ -186,7 +186,7 @@ static gt_size_t _gt_get_spell_index(char const * const kv) {
 
 static uint8_t * _gt_spell_get_text(gt_py_input_method_st * py_input_mt,  uint8_t index) {
     if (!py_input_mt) {
-        return "";
+        return (uint8_t * )"";
     }
 
     if (index == 0 && py_input_mt->ascii_numb > 0) {
@@ -195,7 +195,7 @@ static uint8_t * _gt_spell_get_text(gt_py_input_method_st * py_input_mt,  uint8_
     else if (index > 0 && py_input_mt->chinese_numb > 0) {
         return py_input_mt->chinese[index-1];
     }
-    return "";
+    return (uint8_t * )"";
 }
 
 static void _def_26_key_push_btn_kv_handler( gt_obj_st * obj,  gt_obj_st * input, const char* const kv) {
