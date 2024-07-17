@@ -403,9 +403,11 @@ static void _gt_push_btn_kv(gt_obj_st* obj) {
     if(style->_push_btn_kv_cb){
         style->_push_btn_kv_cb( obj, style->_input, style->press_btn);
     }
+#if GT_CFG_ENABLE_INPUT
     else if(style->_input){
         gt_input_append_value(style->_input, style->press_btn);
     }
+#endif
 }
 
 /* global functions / API interface -------------------------------------*/
