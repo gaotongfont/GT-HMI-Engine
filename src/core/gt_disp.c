@@ -919,7 +919,7 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
     GT_CHECK_BACK_VAL(item_p, ret);
     if (NULL == item_p->current_scr) {
         item_p->current_scr = _create_scr_by_id(item_p->current_scr_id);
-        GT_CHECK_BACK_VAL(new_item_p->current_scr, ret);
+        GT_CHECK_BACK_VAL(item_p->current_scr, ret);
         if (home_id == item_p->current_scr_id) {
             gt_scr_stack_set_home_scr(item_p->current_scr);
         }
