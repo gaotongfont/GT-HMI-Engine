@@ -34,6 +34,12 @@
     #define _GT_STACK_USE_LOADING_LOG   0
 #endif
 
+#ifndef _GT_STACK_PUSH_BEFORE_INIT_SCR
+    /**
+     * @brief 0[defalut]: The screen object is initialized before the stack is pushed
+     */
+    #define _GT_STACK_PUSH_BEFORE_INIT_SCR      0
+#endif
 
 /* private typedef ------------------------------------------------------*/
 
@@ -904,6 +910,26 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
         new_item_p->prev_scr_alive = NULL;
     }
 
+#if _GT_STACK_PUSH_BEFORE_INIT_SCR
+    if (false == gt_scr_stack_push(new_item_p)) {
+        GT_LOGE(GT_LOG_TAG_GUI, "Push stack failed");
+        return ret;
+    }
+    gt_scr_stack_item_st * item_p = gt_scr_stack_peek();
+    GT_CHECK_BACK_VAL(item_p, ret);
+    if (NULL == item_p->current_scr) {
+        item_p->current_scr = _create_scr_by_id(item_p->current_scr_id);
+        GT_CHECK_BACK_VAL(new_item_p->current_scr, ret);
+        if (home_id == item_p->current_scr_id) {
+            gt_scr_stack_set_home_scr(item_p->current_scr);
+        }
+    }
+    if (NULL == item_p->current_scr) {
+        gt_scr_stack_pop(1);
+        return ret;
+    }
+    new_item_p->current_scr = item_p->current_scr;
+#else
     /** ready to init and load screen */
     if (NULL == new_item_p->current_scr) {
         new_item_p->current_scr = _create_scr_by_id(new_item_p->current_scr_id);
@@ -916,6 +942,7 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
         GT_LOGE(GT_LOG_TAG_GUI, "Push stack failed");
         return ret;
     }
+#endif
     ret.ok = true;
     return ret;
 }
