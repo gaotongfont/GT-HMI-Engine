@@ -83,12 +83,13 @@ static void _btn_init_cb(gt_obj_st * obj) {
 
     gt_color_t fg_color;
     char * text = (char * )_gt_vector_get_item(style->contents, _gt_vector_get_index(style->contents));
+    uint32_t len = (uint32_t)strlen(text);
     GT_CHECK_BACK(text);
 
     gt_font_st font = {
         .res        = NULL,
         .utf8       = text,
-        .len        = strlen(text),
+        .len        = len,
         .info       = style->font_info,
     };
 
@@ -97,8 +98,8 @@ static void _btn_init_cb(gt_obj_st * obj) {
 
     // set default size
     if (obj->area.w == 0 || obj->area.h == 0) {
-        obj->area.w = style->font_info.size*strlen(text) + 32;
-        obj->area.h = style->font_info.size+16;
+        obj->area.w = style->font_info.size * len + 32;
+        obj->area.h = style->font_info.size + 16;
     }
     if (obj->radius == 0) {
         radius = obj->area.h >> 2;

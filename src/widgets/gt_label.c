@@ -75,19 +75,20 @@ const gt_obj_class_st gt_label_class = {
  */
 static void _init_cb(gt_obj_st * obj) {
     _gt_label_st * style = (_gt_label_st * )obj;
+    uint32_t len = strlen((char * )style->text);
     gt_font_st font = {
         .info       = style->font_info,
         .res        = NULL,
         .utf8       = (char * )style->text,
-        .len        = strlen((char * )style->text),
+        .len        = len,
     };
 
     font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
 
     if (0 == obj->area.w || 0 == obj->area.h) {
-        obj->area.h = 20;
-        obj->area.w = font.info.size * strlen(font.utf8);
+        obj->area.h = font.info.size + 6;
+        obj->area.w = font.info.size * len;
     }
 
     gt_area_st box_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));

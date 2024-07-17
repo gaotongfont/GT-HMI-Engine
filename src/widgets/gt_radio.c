@@ -62,12 +62,13 @@ const gt_obj_class_st gt_radio_class = {
 
 static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     _gt_radio_st * style = (_gt_radio_st * )radio;
+    uint32_t len = strlen(style->text);
 
     gt_font_st font = {
-        .info       = style->font_info,
-        .res        = NULL,
-        .utf8       = style->text,
-        .len        = strlen(style->text),
+        .info = style->font_info,
+        .res  = NULL,
+        .utf8 = style->text,
+        .len  = len,
 
     };
     font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
@@ -75,12 +76,12 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
 
     // set default size
     if( radio->area.w == 0 || radio->area.h == 0){
-        radio->area.w = style->font_info.size+4 + strlen(style->text)*11;
-        radio->area.h = style->font_info.size+4;
+        radio->area.w = style->font_info.size + 4 + len * 11;
+        radio->area.h = style->font_info.size + 4;
     }
 
     gt_area_st area_base = gt_area_reduce(radio->area, gt_obj_get_reduce(radio));
-    area_base.w = style->font_info.size+4;
+    area_base.w = style->font_info.size + 4;
     area_base.h = area_base.w;
     // area_base.y = radio->area.y + ((radio->area.h - area_base.h) >> 1);
     area_base.x = radio->area.x;

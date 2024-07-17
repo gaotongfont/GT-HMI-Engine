@@ -338,7 +338,7 @@ void gt_barcode_set_mode_w(gt_obj_st * barcode , uint8_t value)
     style->info.mode_w = value;
 }
 
-void gt_barcode_set_mode_h(gt_obj_st * barcode , uint8_t value)
+void gt_barcode_set_mode_h(gt_obj_st * barcode, uint8_t value)
 {
     if (false == gt_obj_is_type(barcode, OBJ_TYPE)) {
         return;
