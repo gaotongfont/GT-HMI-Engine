@@ -1628,13 +1628,16 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
     gt_font_style_en_cn_et cur_sty = STYLE_UNKNOWN;
 #endif
     gt_size_t string_total_width = 0, view_width = coords->w;
-    uint32_t uni_or_gbk = 0, ret_w = 0, lan_len = 0;
-    uint16_t idx = 0, idx_step = 0, idx_len = 0, txt_len = dsc->font->len;
+    uint32_t uni_or_gbk = 0, remark_idx = 0, lan_len = 0;
+    uint16_t idx = 0, idx_len = 0, txt_len = dsc->font->len;
     uint16_t over_length_offset = ((coords->w / ((tmp_font.info.size >> 1) + dsc->space_x) - 1) >> 1) << 1;
     uint8_t over_length = 0;
     _omit_info_st omit_info = {0};
     bool start_x_flag = dsc->reg.enabled_start;
     uint16_t bidi_len = 0, bidi_max = 1, bidi_pos = 0;
+    _gt_font_dot_ret_st dot_ret = {0};
+    uint8_t width, byte_width, font_gray;
+
     bidi = (gt_bidi_st * )gt_mem_malloc(bidi_max * sizeof(gt_bidi_st));
     if (NULL == bidi) {
         GT_LOGE(GT_LOG_TAG_GUI, "bidi malloc is failed!!! size = %lu", bidi_max * sizeof(gt_bidi_st));
@@ -1654,9 +1657,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
     }
     if (dsc->reg.omit_line) {
         omit_info = _omit_get_font_width(&tmp_font);
-        string_total_width += omit_info.width;
-        view_width -= omit_info.width;
-        if (view_width < tmp_font.info.size >> 1) {
+        if (view_width < (tmp_font.info.size >> 1)) {
             /** Area can not display anyone char, hide omit char to display the only one char */
             omit_info.width = 0;
             string_total_width = 0;
@@ -1668,23 +1669,24 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
             ++idx;
             continue;
         }
+        tmp_font.info.size = dsc->font->info.size;
         tmp_font.utf8 = (char * )&txt[idx];
-        tmp_font.len = txt_len - idx;
-        idx_step = gt_font_split(&tmp_font, view_width, coords->w, dsc->space_x, &ret_w, &lan, &lan_len);
+        tmp_font.len = gt_font_one_char_code_len_get(&txt[idx], &uni_or_gbk, tmp_font.info.encoding);
 
-        if (0 == idx_step || 0 == ret_w) {
+        width = gt_font_get_one_word_width(uni_or_gbk, &tmp_font);
+        if (0 == tmp_font.len) {
             ++idx;
             continue;
         }
 
         if (dsc->reg.omit_line) {
-            if (view_width <= ret_w) {
-                break;
+            view_width -= width;
+            if (0 == remark_idx && view_width < omit_info.width + 1) {
+                remark_idx = idx + tmp_font.len;
             }
-            view_width -= ret_w;
         }
-        if (idx_step) {
-            string_total_width += ret_w;
+        if (tmp_font.len) {
+            string_total_width += width;
         }
         if (_gt_font_is_convertor_language(lan)) {
             if (bidi_max <= bidi_len) {
@@ -1696,19 +1698,21 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
                 }
             }
             bidi[bidi_len].idx = idx_len;
-            bidi[bidi_len].len = idx_step;
+            bidi[bidi_len].len = tmp_font.len;
             bidi[bidi_len].flag = lan;
             ++bidi_len;
         }
-        idx += idx_step;
-        idx_len += idx_step;
+        idx += tmp_font.len;
+        idx_len += tmp_font.len;
+    }
+    if (dsc->reg.omit_line && view_width < 0) {
+        idx_len = remark_idx;
     }
     ret.size.x = string_total_width;
     if (string_total_width > view->w) {
         area_font.x = coords->x;
     } else {
         /** Area can display all content, no need for omit width */
-        string_total_width -= omit_info.width;
         area_font.x = _get_align_start_x(dsc->align, view->x, view->w, string_total_width);
     }
     if (_is_align_reverse(dsc->align)) {
@@ -1721,8 +1725,6 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
 
     idx = 0;
     area_font.h = font_disp_h;
-    _gt_font_dot_ret_st dot_ret = {0};
-    uint8_t width, byte_width, font_gray;
     while (idx < idx_len) {
         if (bidi_pos < bidi_len && idx == bidi[bidi_pos].idx) {
             tmp_font.utf8 = (char * )&txt[idx];
@@ -1838,7 +1840,7 @@ next_word_lb:
         idx += tmp_font.len;
     }
 
-    if (dsc->reg.omit_line && idx_len < txt_len) {
+    if (dsc->reg.omit_line && view_width < omit_info.width && idx_len < txt_len) {
         // Display "..." or "。。。"
         tmp_font.utf8 = omit_info.utf8;
         tmp_font.len = gt_font_one_char_code_len_get((uint8_t * )omit_info.utf8, &uni_or_gbk, tmp_font.info.encoding);
