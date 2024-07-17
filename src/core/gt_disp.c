@@ -41,6 +41,13 @@
     #define _GT_STACK_PUSH_BEFORE_INIT_SCR      0
 #endif
 
+#ifndef _GT_DISP_USE_MALLOC_DRAW_CTX
+    /**
+     * @brief 0[default]: The drawing context is not allocated on the heap, by stack
+     */
+    #define _GT_DISP_USE_MALLOC_DRAW_CTX        0
+#endif
+
 /* private typedef ------------------------------------------------------*/
 
 typedef enum{
@@ -114,6 +121,7 @@ static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
         return false;
     }
 
+#if _GT_DISP_USE_MALLOC_DRAW_CTX
     obj->draw_ctx = gt_mem_malloc(sizeof(struct _gt_draw_ctx_s));
     GT_CHECK_BACK_VAL(obj->draw_ctx, false);
     obj->draw_ctx->valid       = param->disp->scr_prev ? &param->valid : NULL;
@@ -124,6 +132,16 @@ static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
     obj->class->_init_cb(obj);
 
     gt_mem_free(obj->draw_ctx);
+#else
+    struct _gt_draw_ctx_s tmp_draw_ctx = {
+        .valid       = param->disp->scr_prev ? &param->valid : NULL;
+        .parent_area = obj->inside ? &area_parent : NULL;
+        .buf         = param->disp->vbd_color;
+        .buf_area    = param->disp->area_disp;
+    };
+    obj->draw_ctx = &tmp_draw_ctx;
+    obj->class->_init_cb(obj);
+#endif
     obj->draw_ctx = NULL;
     return true;
 }
