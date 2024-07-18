@@ -181,6 +181,7 @@ static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
             // gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         }
+        // TODO scroll
         case GT_EVENT_TYPE_INPUT_PRESS_LOST: {
             _change_state_by_trigger_mode(obj, false);
             _unmasked_effect_handler(obj);
@@ -423,25 +424,36 @@ gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj)
     return -(bottom - min_y - obj->area.h);
 }
 
-gt_size_t gt_obj_get_childs_max_height(gt_obj_st * parent)
+gt_point_st gt_obj_get_childs_max_size(gt_obj_st * parent)
 {
     gt_obj_st * child = NULL;
-    gt_size_t min_y = 0x7fff;
-    gt_size_t max_y = -0x7fff;
-    if (NULL == parent) {
-        return 0;
-    }
+    gt_point_st ret_size = { .x = 0, .y = 0 };
+    gt_point_st min = { .x = 0x7fff, .y = 0x7fff };
+    gt_point_st max = { .x = -0x7fff, .y = -0x7fff };
+    GT_CHECK_BACK_VAL(parent, ret_size);
 
-    for (gt_size_t i = 0, cnt = parent->cnt_child; i < cnt; i++) {
+    for (gt_size_t i = parent->cnt_child - 1; i >= 0; --i) {
         child = parent->child[i];
-        if (child->area.y < min_y) {
-            min_y = child->area.y;
-        }
-        if (child->area.y + child->area.h > max_y) {
-            max_y = child->area.y + child->area.h;
-        }
+        if (child->area.x < min.x) { min.x = child->area.x; }
+        if (child->area.y < min.y) { min.y = child->area.y; }
+        if (child->area.x + child->area.w > max.x) { max.x = child->area.x + child->area.w; }
+        if (child->area.y + child->area.h > max.y) { max.y = child->area.y + child->area.h; }
     }
-    return max_y - min_y;
+    ret_size.x = max.x - min.x;
+    ret_size.y = max.y - min.y;
+    return ret_size;
+}
+
+gt_size_t gt_obj_get_childs_max_width(gt_obj_st * parent)
+{
+    gt_point_st size = gt_obj_get_childs_max_size(parent);
+    return size.x;
+}
+
+gt_size_t gt_obj_get_childs_max_height(gt_obj_st * parent)
+{
+    gt_point_st size = gt_obj_get_childs_max_size(parent);
+    return size.y;
 }
 
 void gt_obj_show_bg(gt_obj_st * obj, bool show)
