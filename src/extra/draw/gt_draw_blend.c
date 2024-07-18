@@ -363,7 +363,12 @@ static inline gt_point_st _get_cover_dst_area_and_offset_by(
  */
 void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st * dsc)
 {
-    if (dsc->opa < GT_OPA_MIN) return;
+    if (dsc->opa < GT_OPA_MIN) {
+        return;
+    }
+    if (NULL == draw_ctx->buf) {
+        return;
+    }
 
     _gt_draw_blend_fill_cache_st fill_cache = {
         .color = dsc->color_fill,
@@ -492,9 +497,15 @@ void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
 void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st * dsc,
                         uint16_t font_size, uint16_t dot_byte, uint8_t gray, const uint8_t* res)
 {
-    if(!draw_ctx || !dsc || !res) return;
-
-    if (dsc->opa < GT_OPA_MIN) return;
+    if(!draw_ctx || !dsc || !res) {
+        return;
+    }
+    if (dsc->opa < GT_OPA_MIN) {
+        return;
+    }
+    if (NULL == draw_ctx->buf) {
+        return;
+    }
 
     /** 绘制区域和显示屏buffer的交集区域 */
     gt_area_st area_intersect = {0};
