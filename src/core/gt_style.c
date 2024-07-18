@@ -142,18 +142,18 @@ void gt_obj_set_pos_relative(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff
     gt_obj_set_area(obj, area);
 }
 
-void _gt_obj_move_child_by(gt_obj_st * obj, gt_size_t dx, gt_size_t dy)
+void _gt_obj_move_child_by(gt_obj_st * obj, gt_size_t diff_x, gt_size_t diff_y)
 {
     GT_CHECK_BACK(obj);
-    if (0 == dx && 0 == dy) {
+    if (0 == diff_x && 0 == diff_y) {
         return;
     }
     for (uint16_t i = 0, cnt = obj->cnt_child; i < cnt; i++) {
         gt_obj_st * child = obj->child[i];
-        child->area.x += dx;
-        child->area.y += dy;
+        child->area.x += diff_x;
+        child->area.y += diff_y;
 
-        _gt_obj_move_child_by(child, dx, dy);
+        _gt_obj_move_child_by(child, diff_x, diff_y);
     }
 }
 

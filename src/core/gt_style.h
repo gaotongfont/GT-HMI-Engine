@@ -83,7 +83,14 @@ void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y);
  * @param diff_y offset
  */
 void gt_obj_set_pos_relative(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff_x, gt_size_t diff_y);
-void _gt_obj_move_child_by(gt_obj_st * obj, gt_size_t dx, gt_size_t dy);
+/**
+ * @brief
+ *
+ * @param obj
+ * @param diff_x different offset
+ * @param diff_y different offset
+ */
+void _gt_obj_move_child_by(gt_obj_st * obj, gt_size_t diff_x, gt_size_t diff_y);
 
 void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h);
 void gt_obj_set_x(gt_obj_st * obj, gt_size_t x);
