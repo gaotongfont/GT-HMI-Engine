@@ -220,7 +220,7 @@ static void _btn_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
     switch(code) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
+        case GT_EVENT_TYPE_UPDATE_STYLE:
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
@@ -230,17 +230,11 @@ static void _btn_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             _press_btn_handler(obj);
             break;
 
-        case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
-            break;
-
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
             _released_btn_handler(obj);
             break;
 
         case GT_EVENT_TYPE_INPUT_PRESS_LOST:
-            GT_LOGV(GT_LOG_TAG_GUI, "process lost");
             _lost_focus_btn_handler(obj);
             break;
 
