@@ -2062,8 +2062,12 @@ static void get_graph_circle_ring_buff(uint16_t radius,uint16_t border_width,uin
 
 void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
 {
-    if (dsc->bg_opa <= GT_OPA_MIN) return;
-
+    if (dsc->bg_opa <= GT_OPA_MIN) {
+        return;
+    }
+    if (NULL == draw_ctx->buf) {
+        return;
+    }
     if( !gt_area_is_intersect_screen(&draw_ctx->buf_area, coords) ){
         return;
     }
@@ -2554,7 +2558,9 @@ _gt_draw_font_res_st draw_text(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st
 
 void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_area_st * coords)
 {
-    if( dsc->bg_opa < GT_OPA_MIN ) return;
+    if( dsc->bg_opa < GT_OPA_MIN ) {
+        return;
+    }
 
     _gt_img_dsc_st dsc_img = {0};
     if (NULL == dsc->bg_img_src) {
