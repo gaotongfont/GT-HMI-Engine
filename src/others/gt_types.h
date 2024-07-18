@@ -89,6 +89,16 @@ typedef int16_t gt_file_header_idx_t;
 typedef uint16_t gt_radius_t;
 
 /**
+ * @brief layout property value
+ */
+typedef uint8_t gt_layout_prop_t;
+
+/**
+ * @brief The gap size value
+ */
+typedef uint8_t gt_gap_t;
+
+/**
  * @brief The screen turn next screen animation type
  */
 typedef enum gt_scr_anim_type_e {
@@ -109,7 +119,7 @@ typedef enum gt_scr_anim_type_e {
 /**
  * @brief widget type enum definition
  */
-typedef enum type_widget_e {
+typedef enum gt_obj_type_e {
     GT_TYPE_UNKNOWN     = -3,       ///< unknown type
     GT_TYPE_LAYER_TOP   = -2,       ///< [CORE USED] layer top, used to display floating widgets
     GT_TYPE_SCREEN      = -1,       ///< screen type
@@ -149,6 +159,48 @@ typedef enum type_widget_e {
 
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;
+
+
+enum gt_layout_type_e {
+    GT_LAYOUT_TYPE_FIXED = 0,
+    GT_LAYOUT_TYPE_FLEX,
+
+    _GT_LAYOUT_TYPE_TOTAL,
+};
+
+typedef gt_layout_prop_t gt_layout_type_t;
+
+enum gt_layout_flex_direction_e {
+    GT_LAYOUT_FLEX_DIR_ROW = 0,
+    GT_LAYOUT_FLEX_DIR_ROW_REVERSE,
+    GT_LAYOUT_FLEX_DIR_COLUMN,
+    GT_LAYOUT_FLEX_DIR_COLUMN_REVERSE,
+
+    _GT_LAYOUT_FLEX_DIR_TOTAL,
+};
+
+typedef gt_layout_prop_t gt_layout_flex_direction_t;
+
+enum gt_layout_justify_content_e {
+    GT_LAYOUT_JUSTIFY_CONTENT_START = 0,        /** left to right, or top to bottom */
+    GT_LAYOUT_JUSTIFY_CONTENT_END,              /** right to left, or bottom to top */
+    GT_LAYOUT_JUSTIFY_CONTENT_CENTER,           /** the center expend to both sides */
+    // GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND,     /* TODO space around */
+
+    _GT_LAYOUT_JUSTIFY_CONTENT_TOTAL,
+};
+
+typedef gt_layout_prop_t gt_layout_justify_content_t;
+
+enum gt_layout_align_items_e {
+    GT_LAYOUT_ALIGN_ITEMS_START = 0,    /** top or left border align */
+    GT_LAYOUT_ALIGN_ITEMS_END,          /** bottom or right border align */
+    GT_LAYOUT_ALIGN_ITEMS_CENTER,       /** center align */
+
+    _GT_LAYOUT_ALIGN_ITEMS_TOTAL,
+};
+
+typedef gt_layout_prop_t gt_layout_align_items_t;
 
 /**
  * @brief return status
