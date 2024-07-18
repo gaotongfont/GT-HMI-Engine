@@ -26,6 +26,7 @@ gt_gc_st _gt_global_call = {
             .alive = false,
         }
     },
+    ._gt_event_node_header_ll = NULL,
 #if GT_USE_EXTRA_FULL_IMG_BUFFER
     .full_img_buffer = {
         .buffer = NULL,
