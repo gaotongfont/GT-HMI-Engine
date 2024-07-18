@@ -74,6 +74,18 @@ typedef enum {
     GT_OBJ_TRIGGER_MODE_SWITCH  = 1,
 }gt_obj_trigger_mode_et;
 
+/**
+ * @brief Owner Childs widget layout type
+ */
+typedef struct gt_obj_container_s {
+    gt_gap_t gap;   /** justify content dir gap value */
+
+    gt_layout_type_t layout_type : 1;                   /** 0[default]: fixed position; 1: flex position */
+    gt_layout_flex_direction_t flex_direction : 2;      /** main axis direction */
+    gt_layout_justify_content_t justify_content : 2;    /** main axis align */
+    gt_layout_align_items_t align_items : 2;            /** second axis align */
+    gt_layout_prop_t reversed : 1;
+}gt_obj_container_st;
 
 /**
  * @brief obj base struct
@@ -96,6 +108,7 @@ typedef struct gt_obj_s {
     gt_radius_t radius;
     uint8_t opa;            /* @ref gt_color.h */
     uint8_t reduce;
+    gt_obj_container_st container;
 
     uint32_t state         : 2;     /* obj selected state @ref gt_state_et */
     uint32_t touch_parent  : 1;     /* touch event will be called to parent object */

@@ -15,12 +15,13 @@
 #include "../hal/gt_hal_disp.h"
 #include "gt_disp.h"
 #include "../extra/draw/gt_draw_blend.h"
-#include "../core/gt_draw.h"
-#include "../core/gt_obj_pos.h"
+#include "./gt_draw.h"
+#include "./gt_obj_pos.h"
 #include "../others/gt_area.h"
 #include "../others/gt_anim.h"
-#include "../core/gt_mem.h"
-#include "../core/gt_indev.h"
+#include "./gt_mem.h"
+#include "./gt_indev.h"
+#include "./gt_layout.h"
 #include "../others/gt_gc.h"
 
 #include "./gt_obj_scroll.h"
@@ -1263,6 +1264,7 @@ void gt_disp_scroll_area_act(gt_size_t dist_x, gt_size_t dist_y)
 
 void gt_disp_invalid_area(gt_obj_st * obj)
 {
+    gt_layout_update_core(obj);             // TODO pref handler, unstable
     gt_obj_st * scr = gt_disp_get_scr();
     if (NULL == scr) {
         return;
