@@ -10,7 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "gt_barcode.h"
 
-#if GT_CFG_ENABLE_BARCODE
+#if GT_CFG_ENABLE_BARCODE && defined(__GT_BARCODE_EN_)
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
