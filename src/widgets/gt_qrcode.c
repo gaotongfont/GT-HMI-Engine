@@ -10,7 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "gt_qrcode.h"
 
-#if GT_CFG_ENABLE_QRCODE
+#if GT_CFG_ENABLE_QRCODE && defined(__GT_QRCODE_EN_)
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "../core/gt_draw.h"
