@@ -448,6 +448,7 @@ static bool _free_item_cb(void * item) {
         item_p->src = NULL;
     }
     gt_mem_free(item_p);
+    return true;
 }
 
 static bool _equal_item_cb(void * item, void * target) {
