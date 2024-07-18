@@ -2582,6 +2582,10 @@ void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_are
     coords->h = dsc_img.header.h;
     _gt_disp_update_max_area(coords, true);
 
+    if (NULL == draw_ctx->buf) {
+        goto close_lb;
+    }
+
     gt_area_st dst_area = *coords, mask_area = *coords;
     gt_draw_blend_dsc_st blend_dsc = {
         .dst_buf = NULL,
@@ -2616,9 +2620,8 @@ void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_are
         }
     }
 
-    if (dsc_img.decoder) {
-        gt_img_decoder_close(&dsc_img);
-    }
+close_lb:
+    gt_img_decoder_close(&dsc_img);
 }
 
 
