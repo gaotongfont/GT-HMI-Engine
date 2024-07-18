@@ -53,7 +53,7 @@ typedef enum gt_img_color_format_e {
  * @brief image header info
  */
 typedef struct _gt_img_info_s {
-    uint32_t color_format : 5;  ///< @ref gt_img_color_format_et
+    uint32_t color_format : 5;  // TODO adjust import @ref gt_img_color_format_et
     uint32_t reserved : 3;
     uint32_t w : 12;
     uint32_t h : 12;

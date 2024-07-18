@@ -242,6 +242,8 @@ gt_res_t gt_img_decoder_read_line(_gt_img_dsc_st * dsc, gt_size_t x, gt_size_t y
 
 gt_res_t gt_img_decoder_close(_gt_img_dsc_st * dsc)
 {
+    GT_CHECK_BACK_VAL(dsc, GT_RES_INV);
+    GT_CHECK_BACK_VAL(dsc->decoder, GT_RES_INV);
     GT_CHECK_BACK_VAL(dsc->decoder->close_cb, GT_RES_OK);
     return dsc->decoder->close_cb(dsc);
 }
