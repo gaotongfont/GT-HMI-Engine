@@ -134,10 +134,10 @@ static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
     gt_mem_free(obj->draw_ctx);
 #else
     struct _gt_draw_ctx_s tmp_draw_ctx = {
-        .valid       = param->disp->scr_prev ? &param->valid : NULL;
-        .parent_area = obj->inside ? &area_parent : NULL;
-        .buf         = param->disp->vbd_color;
-        .buf_area    = param->disp->area_disp;
+        .valid       = param->disp->scr_prev ? &param->valid : NULL,
+        .parent_area = obj->inside ? &area_parent : NULL,
+        .buf         = param->disp->vbd_color,
+        .buf_area    = param->disp->area_disp,
     };
     obj->draw_ctx = &tmp_draw_ctx;
     obj->class->_init_cb(obj);
