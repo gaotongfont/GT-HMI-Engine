@@ -37,9 +37,21 @@
 
 
 /* static functions -----------------------------------------------------*/
-static void _gt_event_node_push(gt_event_st * e) {
+static gt_res_t _gt_event_node_push(gt_event_st * e) {
     e->prev = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
     _GT_GC_GET_ROOT(_gt_event_node_header_ll) = e;
+
+    gt_event_st * ptr = e->prev;
+    while (ptr) {
+        if (ptr == ptr->prev) {
+            return GT_RES_FAIL;
+        }
+        if (ptr->code == e->code && ptr->origin == e->origin) {
+            return GT_RES_FAIL;
+        }
+        ptr = ptr->prev;
+    }
+    return GT_RES_OK;
 }
 
 static void _gt_event_node_pop(gt_event_st *e) {
@@ -185,13 +197,16 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
     }
 #endif
     GT_CHECK_BACK_VAL(parent, GT_RES_FAIL);
-    gt_event_st e;
-    e.target = parent;
-    e.origin = parent;
-    e.code = event;
-    e.param = parms;
+    gt_event_st e = {
+        .target = parent,
+        .origin = parent,
+        .code = event,
+        .param = parms,
+    };
 
-    _gt_event_node_push(&e);
+    if (GT_RES_FAIL == _gt_event_node_push(&e)) {
+        return GT_RES_INV;
+    }
 
     gt_res_t res = _gt_event_send_kernel(&e);
 
