@@ -120,6 +120,9 @@ static void _init_cb(gt_obj_st * obj) {
     gt_attr_rect_st rect_attr;
     gt_area_st area_bg = obj->area;
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
+    if (0 == style->reg.count) {
+        return;
+    }
     uint16_t i = 0, width = area_bg.w / style->reg.count;
     uint16_t space = (width << 1) / 100;    /** 2% of screen width */
 
