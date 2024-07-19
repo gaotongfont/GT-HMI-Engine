@@ -185,7 +185,7 @@ enum gt_layout_justify_content_e {
     GT_LAYOUT_JUSTIFY_CONTENT_START = 0,        /** left to right, or top to bottom */
     GT_LAYOUT_JUSTIFY_CONTENT_END,              /** right to left, or bottom to top */
     GT_LAYOUT_JUSTIFY_CONTENT_CENTER,           /** the center expend to both sides */
-    // GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND,     /* TODO space around */
+    GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND,     /* TODO space around */
 
     _GT_LAYOUT_JUSTIFY_CONTENT_TOTAL,
 };
