@@ -197,12 +197,17 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
 
     if (GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND == parent->container.justify_content) {
         /** pre calc real total width or height value */
-        sa_ret = _space_around_align(parent, _is_flex_row_dir(parent->container.flex_direction));
+        bool is_row = _is_flex_row_dir(parent->container.flex_direction);
+        sa_ret = _space_around_align(parent, is_row);
         parent->container.gap = sa_ret.gap;
+        if (is_row) {
+            pos.w += sa_ret.offset;
+        } else {
+            pos.h += sa_ret.offset;
+        }
     }
 
     if (GT_LAYOUT_FLEX_DIR_ROW == dir || GT_LAYOUT_FLEX_DIR_COLUMN == dir) {
-        pos.w += sa_ret.offset;
         for (i = 0; i < cnt; ++i) {
             child = parent->child[i];
             /** align second dir */
@@ -210,7 +215,6 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
             cb_st.update_max_size_p(child, &pos, parent->container.gap);
         }
     } else {
-        pos.h += sa_ret.offset;
         for (i = cnt - 1; i >= 0; --i) {
             child = parent->child[i];
             /** align second dir */
@@ -241,7 +245,6 @@ static gt_area_st _childs_adjust_justify_content(gt_obj_st * parent, gt_area_st 
         return *content_pos;
     }
     if (GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND == jc) {
-    //     return _space_around_align(parent, content_pos, _is_flex_row_dir(parent->container.flex_direction));
         return *content_pos;
     }
 
