@@ -20,6 +20,8 @@ extern "C" {
 #include "math.h"
 #include "stdlib.h"
 
+#include "src/gt_api_mapper.h"
+
 #include "src/gt_conf.h"
 
 /* core */
