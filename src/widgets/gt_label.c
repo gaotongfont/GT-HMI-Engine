@@ -86,11 +86,6 @@ static void _init_cb(gt_obj_st * obj) {
     font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
 
-    if (0 == obj->area.w || 0 == obj->area.h) {
-        obj->area.h = font.info.size + 6;
-        obj->area.w = font.info.size * len;
-    }
-
     gt_area_st box_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
     /*draw font*/
     gt_attr_font_st font_attr = {
@@ -237,6 +232,15 @@ static gt_anim_st * _create_auto_scroll_anim(gt_obj_st * label) {
     return style->auto_scroll->anim;
 }
 
+static void _update_label_size(gt_obj_st * obj, uint16_t len) {
+    _gt_label_st * style = (_gt_label_st * )obj;
+    if (obj->area.w && obj->area.h) {
+        return;
+    }
+    obj->area.h = style->font_info.size + 6;
+    obj->area.w = style->font_info.size * len;
+}
+
 /* global functions / API interface -------------------------------------*/
 
 /**
@@ -268,6 +272,8 @@ gt_obj_st * gt_label_create(gt_obj_st * parent) {
     if (style->auto_scroll) {
         style->auto_scroll->area.w   = 0xffff;
     }
+
+    _update_label_size(obj, len);
 
     return obj;
 }
@@ -309,6 +315,7 @@ void gt_label_set_text(gt_obj_st * label, const char * fmt, ...)
     vsnprintf(style->text, size, fmt, args2);
     va_end(args2);
 
+    _update_label_size(label, size);
     gt_event_send(label, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 
     return;
@@ -355,6 +362,8 @@ void gt_label_set_text_by_len(gt_obj_st * label, const char * text, uint16_t len
         ++i;
     }
     *dst = '\0';
+
+    _update_label_size(label, len);
     gt_event_send(label, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
