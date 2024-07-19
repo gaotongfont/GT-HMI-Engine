@@ -93,7 +93,7 @@ typedef struct gt_obj_container_s {
 typedef struct gt_obj_s {
     struct gt_obj_s * parent;
     struct gt_obj_s ** child;
-    const gt_obj_class_st * class;
+    const gt_obj_class_st * classes;
 
     gt_obj_event_attr_st * event_attr;
     struct _gt_draw_ctx_s * draw_ctx;

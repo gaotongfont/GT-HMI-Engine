@@ -115,7 +115,7 @@ static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
     if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
         return false;
     }
-    if (NULL == obj->class->_init_cb) {
+    if (NULL == obj->classes->_init_cb) {
         return true;
     }
     if (false == gt_area_is_intersect_screen(&param->disp->area_disp, &obj->area)) {
@@ -130,7 +130,7 @@ static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
     obj->draw_ctx->buf         = param->disp->vbd_color;
     obj->draw_ctx->buf_area    = param->disp->area_disp;
 
-    obj->class->_init_cb(obj);
+    obj->classes->_init_cb(obj);
 
     gt_mem_free(obj->draw_ctx);
 #else
@@ -141,7 +141,7 @@ static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
         .buf_area    = param->disp->area_disp,
     };
     obj->draw_ctx = &tmp_draw_ctx;
-    obj->class->_init_cb(obj);
+    obj->classes->_init_cb(obj);
 #endif
     obj->draw_ctx = NULL;
     return true;

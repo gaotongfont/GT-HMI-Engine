@@ -263,7 +263,7 @@ static inline bool _is_over_max_page(uint8_t val) {
 }
 
 static bool _child_is_group(gt_obj_st * obj) {
-    return (GT_TYPE_GROUP == obj->class->type) ? true : false;
+    return (GT_TYPE_GROUP == obj->classes->type) ? true : false;
 }
 
 static void _child_set_group_area(gt_obj_st const * const view_pager, gt_obj_st * group) {

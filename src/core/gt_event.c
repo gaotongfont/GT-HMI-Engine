@@ -76,11 +76,11 @@ static gt_res_t _gt_event_calling_event_cb(gt_event_st * e) {
     gt_obj_st * obj = (gt_obj_st * )e->target;
     GT_CHECK_BACK_VAL(obj, GT_RES_FAIL);
 
-    const gt_obj_class_st * class = obj->class;
-    GT_CHECK_BACK_VAL(class, GT_RES_FAIL);
-    GT_CHECK_BACK_VAL(class->_event_cb, GT_RES_FAIL);
+    const gt_obj_class_st * c = obj->classes;
+    GT_CHECK_BACK_VAL(c, GT_RES_FAIL);
+    GT_CHECK_BACK_VAL(c->_event_cb, GT_RES_FAIL);
 
-    class->_event_cb(obj, e);
+    c->_event_cb(obj, e);
     return GT_RES_OK;
 }
 

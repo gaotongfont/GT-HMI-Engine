@@ -58,7 +58,7 @@ typedef struct _gt_obj_class_s {
  * @param parent
  * @return struct gt_obj_s*
  */
-struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_obj_s * parent);
+struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * c, struct gt_obj_s * parent);
 
 /**
  * @brief Get widget type

@@ -38,8 +38,8 @@
 
 
 /* static functions -----------------------------------------------------*/
-static uint32_t get_style_size(const gt_obj_class_st * class) {
-    return class->size_style;
+static uint32_t get_style_size(const gt_obj_class_st * c) {
+    return c->size_style;
 }
 
 static gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st * self) {
@@ -121,11 +121,11 @@ static void _gt_obj_class_destroy_property(gt_obj_st * self) {
     gt_obj_remove_all_event_cb(self);
 
     // free obj custom style
-    if (self->class->_deinit_cb) {
-        self->class->_deinit_cb(self);
+    if (self->classes->_deinit_cb) {
+        self->classes->_deinit_cb(self);
     }
     self->draw_ctx = NULL;
-    self->class = NULL;
+    self->classes = NULL;
 }
 
 static inline void _gt_obj_class_destroy_self(gt_obj_st * self) {
@@ -232,16 +232,16 @@ static bool _create_new_screen_obj(gt_obj_st * obj) {
 }
 
 /* global functions / API interface -------------------------------------*/
-struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_obj_s * parent)
+struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * c, struct gt_obj_s * parent)
 {
-    uint32_t is = get_style_size(class);
+    uint32_t is = get_style_size(c);
     gt_obj_st * obj = gt_mem_malloc(is);
     if (!obj) {
         return NULL;
     }
     gt_memset_0(obj, is);
 
-    obj->class      = class;
+    obj->classes      = c;
     obj->parent     = parent;
     obj->id         = -1;
     obj->opa        = GT_OPA_100;
@@ -284,24 +284,24 @@ obj_lb:
 
 gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj)
 {
-    if (NULL == obj || NULL == obj->class) {
+    if (NULL == obj || NULL == obj->classes) {
         return GT_TYPE_UNKNOWN;
     }
-    return obj->class->type;
+    return obj->classes->type;
 }
 
 bool gt_obj_is_type(struct gt_obj_s * obj, gt_obj_type_et type)
 {
-    if (NULL == obj || NULL == obj->class) {
+    if (NULL == obj || NULL == obj->classes) {
         return false;
     }
     if (GT_TYPE_TOTAL == type) {
-        if (GT_TYPE_UNKNOWN == obj->class->type) {
+        if (GT_TYPE_UNKNOWN == obj->classes->type) {
             return false;
         }
         return true;
     }
-    return obj->class->type == type;
+    return obj->classes->type == type;
 }
 
 struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_obj_s * to)

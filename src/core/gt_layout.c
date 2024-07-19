@@ -314,13 +314,13 @@ gt_res_t gt_layout_update_core(gt_obj_st * obj)
 {
     GT_CHECK_BACK_VAL(obj, GT_RES_FAIL);
 
-    if (obj->class->_init_cb) {
+    if (obj->classes->_init_cb) {
         struct _gt_draw_ctx_s tmp_draw_ctx = {
             .parent_area = obj->inside ? &obj->parent->area : NULL,
             .buf_area = obj->area,
         };
         obj->draw_ctx = &tmp_draw_ctx;
-        obj->class->_init_cb(obj);
+        obj->classes->_init_cb(obj);
         obj->draw_ctx = NULL;
     }
 

@@ -650,7 +650,7 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
         }
 #if GT_INDEV_KEYPAD_LOG
         GT_LOG_A(GT_LOG_TAG_TP, "keypad key: %#X count_keydown: %d obj type: %d",
-                    indev->data.keypad.key, indev->data.keypad.count_keydown, indev->data.keypad.obj_target->class->type);
+                    indev->data.keypad.key, indev->data.keypad.count_keydown, indev->data.keypad.obj_target->classes->type);
 #endif
         return ;
     }
