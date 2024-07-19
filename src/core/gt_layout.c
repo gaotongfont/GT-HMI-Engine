@@ -152,10 +152,8 @@ static _content_space_around_st _space_around_align(gt_obj_st * parent, bool is_
 
     if (is_row_dir) {
         for (gt_size_t i = 0; i < parent->cnt_child; ++i) {
-            GT_LOG_A("", "%d. %d", i, parent->child[i]->area.w);
             total_size += parent->child[i]->area.w;
         }
-        GT_LOG_A("", "total: %d", total_size);
         if (total_size == parent->area.w) {
             return ret;
         }
@@ -163,7 +161,7 @@ static _content_space_around_st _space_around_align(gt_obj_st * parent, bool is_
             ret.offset = (parent->area.w - total_size) >> 1;
             return ret;
         }
-        ret.gap = ((parent->area.w - total_size) / (parent->cnt_child + 1));
+        ret.gap = (parent->area.w - total_size) / parent->cnt_child;
         ret.offset = ret.gap >> 1;
         return ret;
     }
@@ -178,7 +176,7 @@ static _content_space_around_st _space_around_align(gt_obj_st * parent, bool is_
         ret.offset = (parent->area.h - total_size) >> 1;
         return ret;
     }
-    ret.gap = ((parent->area.h - total_size) / (parent->cnt_child + 1));
+    ret.gap = (parent->area.h - total_size) / parent->cnt_child;
     ret.offset = parent->container.gap >> 1;
     return ret;
 }
@@ -206,7 +204,6 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
             pos.h += sa_ret.offset;
         }
     }
-
     if (GT_LAYOUT_FLEX_DIR_ROW == dir || GT_LAYOUT_FLEX_DIR_COLUMN == dir) {
         for (i = 0; i < cnt; ++i) {
             child = parent->child[i];
@@ -222,10 +219,13 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
             cb_st.update_max_size_p(child, &pos, parent->container.gap);
         }
     }
-    if (is_row) {
-        if (pos.w > parent->area.w) { parent->area.w = pos.w; }
-    } else {
-        if (pos.h > parent->area.h) { parent->area.h = pos.h; }
+    if (GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND != parent->container.justify_content) {
+        /** Expand parent disp area size */
+        if (is_row) {
+            if (pos.w > parent->area.w) { parent->area.w = pos.w; }
+        } else {
+            if (pos.h > parent->area.h) { parent->area.h = pos.h; }
+        }
     }
     return pos;
 }

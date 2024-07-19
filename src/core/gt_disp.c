@@ -1264,7 +1264,7 @@ void gt_disp_scroll_area_act(gt_size_t dist_x, gt_size_t dist_y)
 
 void gt_disp_invalid_area(gt_obj_st * obj)
 {
-    // gt_layout_update_core(obj);             // TODO pref handler, unstable
+    gt_layout_update_core(obj);             // TODO pref handler, unstable
     gt_obj_st * scr = gt_disp_get_scr();
     if (NULL == scr) {
         return;
