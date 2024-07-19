@@ -338,6 +338,8 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
     }
     obj->fixed = false;
     obj->radius = 4;
+    obj->area.w = 100;
+    obj->area.h = 100;
 
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
     gt_font_info_init(&style->font_info);
