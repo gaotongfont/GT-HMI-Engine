@@ -2068,6 +2068,9 @@ void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
     if (NULL == draw_ctx->buf) {
         return;
     }
+    if (0 == coords->w || 0 == coords->h) {
+        return;
+    }
     if( !gt_area_is_intersect_screen(&draw_ctx->buf_area, coords) ){
         return;
     }
