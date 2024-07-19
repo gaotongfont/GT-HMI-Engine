@@ -500,13 +500,13 @@ gt_obj_trigger_mode_et gt_obj_get_trigger_mode(gt_obj_st * obj)
 void gt_obj_set_virtual(gt_obj_st * obj, bool is_virtual)
 {
     GT_CHECK_BACK(obj);
-    obj->virtual = is_virtual;
+    obj->virtuality = is_virtual;
 }
 
 bool gt_obj_get_virtual(gt_obj_st * obj)
 {
     GT_CHECK_BACK_VAL(obj, false);
-    return obj->virtual;
+    return obj->virtuality;
 }
 
 void gt_obj_set_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir)
@@ -585,7 +585,7 @@ bool _gt_obj_is_ignore_calc_max_area(gt_obj_st * obj)
     if (NULL == obj) { return true; }
     if (obj->inside) { return true; }
     if (obj->overflow) { return true; }
-    if (obj->virtual) { return true; }
+    if (obj->virtuality) { return true; }
 
     return false;
 }

@@ -211,7 +211,7 @@ static void _scr_anim_exec_y_cb(void * obj, int32_t y) {
 
 static void _scr_anim_del_ready_cb(struct gt_anim_s * anim) {
     gt_obj_st * old_scr = (gt_obj_st * )anim->tar;
-    old_scr->using = 0;
+    old_scr->using_sta = 0;
     _gt_obj_class_destroy(old_scr);
 }
 
@@ -242,7 +242,7 @@ static void _old_scr_anim_ready_cb(struct gt_anim_s * anim) {
     if (old_scr->delate) {
         return ;
     }
-    if (false == old_scr->using) {
+    if (false == old_scr->using_sta) {
         return ;
     }
     gt_area_copy(&old_scr->area, area);
@@ -252,7 +252,7 @@ static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_disp_st * disp = gt_disp_get_default();
     GT_CHECK_BACK(disp);
     if (disp->scr_prev && disp->scr_prev->delate) {
-        disp->scr_prev->using = 0;
+        disp->scr_prev->using_sta = 0;
         _gt_obj_class_destroy(disp->scr_prev);
     }
 
@@ -1007,7 +1007,7 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         }
     }
 
-    scr->using = true;
+    scr->using_sta = true;
     disp->scr_anim_type = type;
 
     if (GT_SCR_ANIM_TYPE_NONE == type) {

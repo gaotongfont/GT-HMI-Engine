@@ -157,7 +157,7 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
 
     for (gt_size_t i = 0; i < count; i++) {
         if (item && item->prev_scr_alive) {
-            item->prev_scr_alive->using = false;
+            item->prev_scr_alive->using_sta = false;
             _gt_obj_class_destroy(item->prev_scr_alive);
             item->prev_scr_alive = NULL;
             prev = item->prev_scr_alive;

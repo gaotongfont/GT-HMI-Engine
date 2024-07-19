@@ -112,7 +112,7 @@ typedef struct gt_obj_s {
 
     uint32_t state         : 2;     /* obj selected state @ref gt_state_et */
     uint32_t touch_parent  : 1;     /* touch event will be called to parent object */
-    uint32_t using         : 1;     /* screen was using or not, not the widgets object. 0:using [Can not be free memory], 1:free */
+    uint32_t using_sta     : 1;     /* screen was using or not, not the widgets object. 0:using [Can not be free memory], 1:free */
     uint32_t delate        : 1;     /* The status which be prepare to free the current object 0:no delate, 1:prepare to delate */
     uint32_t focus         : 1;     /* obj focus state 0:no focus, 1:focus */
     uint32_t visible       : 1;     /* obj visible state, @gt_visible_et */
@@ -130,7 +130,7 @@ typedef struct gt_obj_s {
     uint32_t absorb_dir    : 1;     /* obj absorb direction(It only works when absorb is set to 1), 0: horizontal; 1: vertical */
     uint32_t overflow      : 1;     /* [Inheritable]obj overflow state, 0:un-overflow, 1:overflow (widget can out of screen area size) */
     uint32_t inside        : 1;     /* obj display only limited to parent area, 0:un-inside, 1:inside (widget is inside screen area size) */
-    uint32_t virtual       : 1;     /* obj virtual state, 0:un-virtual[default], 1:virtual (widget is virtual logic, not entities) */
+    uint32_t virtuality    : 1;     /* obj virtual state, 0:un-virtual[default], 1:virtual (widget is virtual logic, not entities) */
     uint32_t septal_line_y : 1;     /* draw obj vertical septal line state, 0:un-septal_line, 1:septal_line */
 
     uint32_t mask_effect   : 1;     /* Mask effect in the state of object selection: 1: Enabled, 0[default]:Disabled */
