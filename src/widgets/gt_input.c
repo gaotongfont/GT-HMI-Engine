@@ -328,8 +328,6 @@ gt_obj_st * gt_input_create(gt_obj_st * parent)
     }
     _gt_input_st * style = (_gt_input_st * )obj;
 
-    gt_input_set_placeholder(obj, "please input");
-
     gt_font_info_init(&style->font_info);
     style->font_color     = gt_color_black();
     style->border_width   = 2;
@@ -338,6 +336,8 @@ gt_obj_st * gt_input_create(gt_obj_st * parent)
     style->font_align     = GT_ALIGN_NONE;
     style->space_x        = 0;
     style->space_y        = 0;
+
+    gt_input_set_placeholder(obj, "please input");
 
     return obj;
 }
