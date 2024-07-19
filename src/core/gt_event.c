@@ -38,12 +38,9 @@
 
 /* static functions -----------------------------------------------------*/
 static gt_res_t _gt_event_node_push(gt_event_st * e) {
-    e->prev = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
-    _GT_GC_GET_ROOT(_gt_event_node_header_ll) = e;
-
-    gt_event_st * ptr = e->prev;
+    gt_event_st * ptr = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
     while (ptr) {
-        if (ptr == ptr->prev) {
+        if (e == ptr) {
             return GT_RES_FAIL;
         }
         if (ptr->code == e->code && ptr->origin == e->origin) {
@@ -51,6 +48,8 @@ static gt_res_t _gt_event_node_push(gt_event_st * e) {
         }
         ptr = ptr->prev;
     }
+    e->prev = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
+    _GT_GC_GET_ROOT(_gt_event_node_header_ll) = e;
     return GT_RES_OK;
 }
 
