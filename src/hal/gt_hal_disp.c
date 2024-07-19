@@ -317,6 +317,7 @@ void _gt_disp_update_max_area(const gt_area_st * const area, bool is_ignore_calc
 {
     gt_disp_st * disp = gt_disp_get_default();
     GT_CHECK_BACK(disp);
+    /** Note: update into disp->area_max */
     gt_area_abs_st * max_area = &disp->area_max;
 
     if (is_ignore_calc) {
