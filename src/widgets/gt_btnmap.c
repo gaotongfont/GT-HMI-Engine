@@ -246,6 +246,9 @@ static bool _gt_btn_cmp(const char* key1, const char* key2) {
 
 static void _gt_auto_btn_height(gt_obj_st* btnmap) {
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
+    if (0 == style->_max_line) {
+        return;
+    }
 
     if(!style->auto_fill_h) {
         btnmap->area.h = style->btn_height * style->_max_line + style->btn_y_space * (style->_max_line + 1);
