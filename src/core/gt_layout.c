@@ -187,7 +187,6 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
     gt_obj_st * child = NULL;
     gt_area_st pos = { .x = parent->area.x, .y = parent->area.y, .w = 0, .h = 0 };  /** w/h temp to calc offset */
     gt_size_t i = 0, cnt = parent->cnt_child;
-    gt_gap_t gap = parent->container.gap;
     gt_layout_flex_direction_t dir = parent->container.flex_direction;
     gt_layout_align_items_t align = parent->container.align_items;
 
@@ -208,7 +207,7 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
             child = parent->child[i];
             /** align second dir */
             cb_st.update_align_pos_p(child, &pos, second_dir_height, align);
-            cb_st.update_max_size_p(child, &pos, gap);
+            cb_st.update_max_size_p(child, &pos, parent->container.gap);
         }
     } else {
         pos.h += sa_ret.offset;
@@ -216,7 +215,7 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
             child = parent->child[i];
             /** align second dir */
             cb_st.update_align_pos_p(child, &pos, second_dir_height, align);
-            cb_st.update_max_size_p(child, &pos, gap);
+            cb_st.update_max_size_p(child, &pos, parent->container.gap);
         }
     }
     if (is_row) {
