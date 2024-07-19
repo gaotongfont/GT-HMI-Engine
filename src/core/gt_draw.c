@@ -779,7 +779,7 @@ static _gt_draw_font_res_st _draw_text_convertor_split(
     tmp = 0;
     tmp_font.res = &font_buf[font_size_res.font_buff_len - font_size_res.font_per_size];
     while (idx < text_len) {
-        if (STYLE_EN_HINDI == lan) {
+        if (FONT_LAN_HINDI == lan) {
             width = gt_font_get_word_width_figure_up(&convertor.data[idx * font_size_res.font_per_size],
                                                         16, 24, 1);
             tmp = 1;
@@ -850,7 +850,7 @@ static _gt_draw_font_res_st _draw_text_convertor_split(
         }
 #endif
         font_gray = 1;
-        if (STYLE_EN_HINDI == lan) {
+        if (FONT_LAN_HINDI == lan) {
             byte_width = 2;
             blend_dsc->dst_area->w = byte_width << 3;
             gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font.info.size, byte_width, font_gray,
@@ -1193,7 +1193,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
 
     uint8_t * txt = (uint8_t * )dsc->font->utf8;
     uint8_t lan = right_to_left_lan_get(dsc->font->info.style_fl);
-    if (lan == STYLE_EN_HEBREW || lan == STYLE_EN_ARABIC) {
+    if (lan == FONT_LAN_HEBREW || lan == FONT_LAN_ARABIC) {
         ret_txt = gt_mem_malloc(dsc->font->len);
         if (NULL == ret_txt) {
             GT_LOGE(GT_LOG_TAG_GUI, "ret_txt malloc is failed!!! size = %d", dsc->font->len);
@@ -1226,8 +1226,8 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
 
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
     gt_font_touch_word_st tmp_word = {0};
-    gt_font_style_en_cn_et prev_sty = STYLE_UNKNOWN;
-    gt_font_style_en_cn_et cur_sty = STYLE_UNKNOWN;
+    gt_font_lan_et prev_sty = FONT_LAN_UNKNOWN;
+    gt_font_lan_et cur_sty = FONT_LAN_UNKNOWN;
 #endif
     bool cov_flag_ol = false;
     bool start_x_flag = dsc->reg.enabled_start;
@@ -1401,7 +1401,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
                 if (dsc->touch_point->x < area_font.x || dsc->touch_point->x > area_font.x + width) {
                     goto check_next_lf_lb;
                 }
-                if (STYLE_CN == cur_sty && dsc->reg.single_cn) {
+                if (FONT_LAN_CN == cur_sty && dsc->reg.single_cn) {
                     ret.touch_word.word_p = tmp_font.utf8;
                     ret.touch_word.len = tmp_font.len;
                 } else {
@@ -1427,12 +1427,12 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
 
                 byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type);
                 area_font.w = (byte_width / font_gray) << 3;
-                if (STYLE_EN_ASCII == _gt_is_style_cn_or_en(uni_or_gbk, tmp_font.info.encoding)) {
+                if (FONT_LAN_ASCII == _gt_is_style_cn_or_en(uni_or_gbk, tmp_font.info.encoding)) {
                     area_font.y += offset_y;
                 }
                 gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size,
                                     byte_width, font_gray, (const uint8_t*)tmp_font.res);
-                if (STYLE_EN_ASCII == _gt_is_style_cn_or_en(uni_or_gbk, tmp_font.info.encoding)) {
+                if (FONT_LAN_ASCII == _gt_is_style_cn_or_en(uni_or_gbk, tmp_font.info.encoding)) {
                     area_font.y -= offset_y;
                 }
             } else {
@@ -1599,7 +1599,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
 
     uint8_t * txt = (uint8_t * )dsc->font->utf8;
     uint8_t lan = right_to_left_lan_get(dsc->font->info.style_fl);
-    if (lan == STYLE_EN_HEBREW || lan == STYLE_EN_ARABIC) {
+    if (lan == FONT_LAN_HEBREW || lan == FONT_LAN_ARABIC) {
         ret_txt = gt_mem_malloc(dsc->font->len);
         if (NULL == ret_txt) {
             GT_LOGE(GT_LOG_TAG_GUI, "ret_txt malloc is failed!!! size = %d", dsc->font->len);
@@ -1624,8 +1624,8 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
 
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
     gt_font_touch_word_st tmp_word = {0};
-    gt_font_style_en_cn_et prev_sty = STYLE_UNKNOWN;
-    gt_font_style_en_cn_et cur_sty = STYLE_UNKNOWN;
+    gt_font_lan_et prev_sty = FONT_LAN_UNKNOWN;
+    gt_font_lan_et cur_sty = FONT_LAN_UNKNOWN;
 #endif
     gt_size_t string_total_width = 0, view_width = coords->w;
     uint32_t uni_or_gbk = 0, remark_idx = 0, lan_len = 0;
@@ -1776,7 +1776,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
             if (dsc->touch_point->x < area_font.x || dsc->touch_point->x > area_font.x + width) {
                 goto check_next_lf_lb;
             }
-            if (STYLE_CN == cur_sty && dsc->reg.single_cn) {
+            if (FONT_LAN_CN == cur_sty && dsc->reg.single_cn) {
                 ret.touch_word.word_p = tmp_font.utf8;
                 ret.touch_word.len = tmp_font.len;
             } else {
@@ -1802,12 +1802,12 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
 
             byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type);
             area_font.w = (byte_width / font_gray) << 3;
-            if (STYLE_EN_ASCII == _gt_is_style_cn_or_en(uni_or_gbk, tmp_font.info.encoding)) {
+            if (FONT_LAN_ASCII == _gt_is_style_cn_or_en(uni_or_gbk, tmp_font.info.encoding)) {
                 area_font.y += offset_y;
             }
             gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size,
                                 byte_width, font_gray, (const uint8_t*)tmp_font.res);
-            if (STYLE_EN_ASCII == _gt_is_style_cn_or_en(uni_or_gbk, tmp_font.info.encoding)) {
+            if (FONT_LAN_ASCII == _gt_is_style_cn_or_en(uni_or_gbk, tmp_font.info.encoding)) {
                 area_font.y -= offset_y;
             }
         } else {

@@ -159,24 +159,28 @@ typedef enum _gt_encoding_convert_e {
     GB_2_UTF8,
 }gt_encoding_convert_et;
 
-typedef enum _gt_font_style_en_cn_e {
-    STYLE_UNKNOWN = -1,
-    STYLE_CN = 0,
-    STYLE_EN_ASCII,
-    STYLE_EN_LATIN,
-    STYLE_EN_GREEK,
-    STYLE_EN_CYRILLIC,
-    STYLE_EN_HEBREW,
-    STYLE_EN_ARABIC,
-    STYLE_EN_THAI,
-    STYLE_EN_HINDI,
-    STYLE_EN_Currency,
-}gt_font_style_en_cn_et;
+typedef enum _gt_font_lan_e {
+    FONT_LAN_UNKNOWN = -1,
+    FONT_LAN_CN = 0,
+    FONT_LAN_ASCII,
+    FONT_LAN_LATIN,
+    FONT_LAN_GREEK,
+    FONT_LAN_CYRILLIC,
+    FONT_LAN_HEBREW,
+    FONT_LAN_ARABIC,
+    FONT_LAN_THAI,
+    FONT_LAN_HINDI,
+    FONT_LAN_JIAPANESE,
+    FONT_LAN_KOREAN,
+
+    //
+    FONT_LAN_MAX_COUNT
+}gt_font_lan_et;
 
 typedef struct _gt_bidi_s {
     uint16_t idx;
     uint16_t len;
-    uint8_t flag;   /** @ref gt_font_style_en_cn_et */
+    uint8_t flag;   /** @ref gt_font_lan_et */
 }gt_bidi_st;
 
 typedef struct _gt_font_size_res_s {
@@ -305,8 +309,8 @@ uint8_t gt_encoding_table_one_char(uint8_t *src, uint8_t* dst, gt_encoding_conve
 uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const utf8, uint32_t *res);
 uint8_t gt_gb_check_char(const uint8_t *dst, uint16_t pos, uint32_t* font_code);
 
-gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode, uint8_t encoding);
-bool _gt_font_is_convertor_language(gt_font_style_en_cn_et style_lang);
+gt_font_lan_et _gt_is_style_cn_or_en(uint32_t unicode, uint8_t encoding);
+bool _gt_font_is_convertor_language(gt_font_lan_et style_lang);
 bool _gt_font_is_convertor_by(uint32_t unicode, uint8_t encoding);
 uint16_t gt_font_get_word_width_figure_up(const uint8_t* data, uint16_t dot_w, uint16_t dot_h, uint8_t gray);
 
@@ -327,7 +331,7 @@ bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_
  * @brief Get the font style
  *
  * @param style
- * @return uint8_t @ref gt_font_style_en_cn_et
+ * @return uint8_t @ref gt_font_lan_et
  */
 uint8_t right_to_left_lan_get(uint16_t style);
 

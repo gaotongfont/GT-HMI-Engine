@@ -275,22 +275,24 @@ static bool _gt_number_symbol_font(uint32_t unicode) {
 }
 
 static uint32_t _get_font_style(gt_font_st * font, uint32_t unicode) {
-    gt_font_style_en_cn_et style_type = 0;
+    gt_font_lan_et style_type = 0;
     uint16_t font_style = font->info.style_fl;
 
     if (GT_CFG_DEFAULT_FONT_FAMILY_NUMB != font->info.style_numb && _gt_number_symbol_font(unicode)) {
         return font->info.style_numb;
     }
     style_type = _gt_is_style_cn_or_en(unicode, font->info.encoding);
-    if (STYLE_CN == style_type) {
+    if (FONT_LAN_CN == style_type) {
         font_style = font->info.style_cn;
-    } else if (STYLE_EN_ASCII == style_type) {
+    } else if (FONT_LAN_ASCII == style_type) {
         font_style = font->info.style_en;
     }
     return font_style;
 }
 
 /* global functions / API interface -------------------------------------*/
+
+
 void gt_font_info_init(gt_font_info_st *font_info)
 {
     font_info->palette    = gt_color_black();
@@ -531,66 +533,61 @@ uint8_t gt_gb_check_char(const uint8_t *dst, uint16_t pos, uint32_t* font_code)
  * @param unicode unicode
  * @return int 0 - style_cn  else-style_en
  */
-gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode, uint8_t encoding)
+gt_font_lan_et _gt_is_style_cn_or_en(uint32_t unicode, uint8_t encoding)
 {
     // ascii
     if (unicode < 0x80) {
-        return STYLE_EN_ASCII;
+        return FONT_LAN_ASCII;
     }
     if(GT_ENCODING_GB == encoding) {
-        return STYLE_CN;
+        return FONT_LAN_CN;
     }
     // latin
     else if( (unicode >= 0x0080 && unicode <= 0x02FF) ||
         (unicode >= 0x1E00 && unicode <= 0x1EFF) ) {
-        return STYLE_EN_LATIN;
+        return FONT_LAN_LATIN;
     }
     // greek and coptic
     else if (unicode >= 0x0370 && unicode <= 0x03FF) {
-        return STYLE_EN_GREEK;
+        return FONT_LAN_GREEK;
     }
     // cyrillic
     else if (unicode >= 0x0400 && unicode <= 0x04FF) {
-        return STYLE_EN_CYRILLIC;
+        return FONT_LAN_CYRILLIC;
     }
     // hebrew
     else if (unicode >= 0x0590 && unicode <= 0x05FF) {
-        return STYLE_EN_HEBREW;
+        return FONT_LAN_HEBREW;
     }
     // arabic
     else if ((unicode >= 0x0600 && unicode <= 0x06FF) ||
         (unicode >= 0xFB50 && unicode <= 0xFDFF) ||
         (unicode >= 0xFE70 && unicode <= 0xFEFF)) {
-        return STYLE_EN_ARABIC;
+        return FONT_LAN_ARABIC;
     }
     // thai
     else if (unicode >= 0x0E00 && unicode <= 0x0E7F) {
-        return STYLE_EN_THAI;
+        return FONT_LAN_THAI;
     }
     // hindi
     else if (unicode >=0x0900 && unicode<=0x097F) {
-        return STYLE_EN_HINDI;
+        return FONT_LAN_HINDI;
     }
-    // Currency Symbols
-    else if (0x20AC == unicode) {
-        return STYLE_EN_Currency;
-    }
-
-    return STYLE_CN;
+    return FONT_LAN_CN;
 }
 
-bool _gt_font_is_convertor_language(gt_font_style_en_cn_et style_lang)
+bool _gt_font_is_convertor_language(gt_font_lan_et style_lang)
 {
-    // if (STYLE_EN_HEBREW == style_lang) {
+    // if (FONT_LAN_HEBREW == style_lang) {
     //     return true;
     // }
-    if (STYLE_EN_ARABIC == style_lang) {
+    if (FONT_LAN_ARABIC == style_lang) {
         return true;
     }
-    if (STYLE_EN_THAI == style_lang) {
+    if (FONT_LAN_THAI == style_lang) {
         return true;
     }
-    if (STYLE_EN_HINDI == style_lang) {
+    if (FONT_LAN_HINDI == style_lang) {
         return true;
     }
     return false;
@@ -598,7 +595,7 @@ bool _gt_font_is_convertor_language(gt_font_style_en_cn_et style_lang)
 
 bool _gt_font_is_convertor_by(uint32_t unicode, uint8_t encoding)
 {
-    gt_font_style_en_cn_et style_lang = _gt_is_style_cn_or_en(unicode, encoding);
+    gt_font_lan_et style_lang = _gt_is_style_cn_or_en(unicode, encoding);
 
     return _gt_font_is_convertor_language(style_lang);
 }
@@ -777,7 +774,7 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
         res.dot_width = (((info->size + 7) >> 3) << 3);
     }
 
-    if(STYLE_EN_HINDI == langue){
+    if(FONT_LAN_HINDI == langue){
         res.font_per_size = 48;
         res.font_buff_len = res.font_per_size * (text_len + 1);
     }
@@ -799,7 +796,7 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
         res.dot_width = ((info->size + 7) >> 3) << 3;
     }
 
-    if(STYLE_EN_HINDI == langue){
+    if(FONT_LAN_HINDI == langue){
         res.font_per_size = 48;
         res.font_buff_len = res.font_per_size * (text_len + 1);
     }
@@ -1130,7 +1127,7 @@ static uint32_t _get_convertor_string_width(const gt_font_st *fonts, uint8_t lan
     len = 0;
     tmp_font.res = &font_buf[font_size_res.font_buff_len - font_size_res.font_per_size];
     while (idx < text_len) {
-        if (STYLE_EN_HINDI == lan) {
+        if (FONT_LAN_HINDI == lan) {
             width = gt_font_get_word_width_figure_up(&convertor.data[idx * font_size_res.font_per_size], 16, 24, 1);
             tmp = 1;
         }
@@ -1146,7 +1143,7 @@ static uint32_t _get_convertor_string_width(const gt_font_st *fonts, uint8_t lan
             }
         }
 
-        if (len < range_w && lan != STYLE_EN_ARABIC) {
+        if (len < range_w && lan != FONT_LAN_ARABIC) {
             if (NULL != ol_width) {
                 *ol_width = len;
             }
@@ -1193,7 +1190,7 @@ uint32_t gt_font_split(gt_font_st * fonts, uint32_t width, uint32_t dot_w, uint3
     char *text = fonts->utf8;
     uint16_t ol_w = 0, ol_idx = 0;
 
-    if (*lan == STYLE_CN) {
+    if (*lan == FONT_LAN_CN) {
         len = _gt_font_cn_in_this_range(&tmp_font, width, space, ret_w);
         goto _ret_dat;
     }
@@ -1206,7 +1203,7 @@ uint32_t gt_font_split(gt_font_st * fonts, uint32_t width, uint32_t dot_w, uint3
         tmp_font.utf8 = &text[idx];
         tmp_font.len = tmp_len;
 
-        if(_gt_font_is_convertor_language((gt_font_style_en_cn_et)*lan)){
+        if(_gt_font_is_convertor_language((gt_font_lan_et)*lan)){
             tmp_w = _get_convertor_string_width(&tmp_font, *lan, space, width - *ret_w, &ol_idx, &ol_w);
         }
         else {
@@ -1215,7 +1212,7 @@ uint32_t gt_font_split(gt_font_st * fonts, uint32_t width, uint32_t dot_w, uint3
         }
 
         if (tmp_w > width && 0 == ol_idx && 0 == idx) {
-            if (_gt_font_is_convertor_language((gt_font_style_en_cn_et)*lan)) {
+            if (_gt_font_is_convertor_language((gt_font_lan_et)*lan)) {
                 len = ol_idx;
                 *ret_w = ol_w;
             } else {
@@ -1337,14 +1334,14 @@ uint8_t right_to_left_lan_get(uint16_t style)
         case 141:
         case 169:
         case 170:
-            return STYLE_EN_HEBREW;
+            return FONT_LAN_HEBREW;
         case 74:
         case 75:
         case 76:
         case 143:
         case 177:
         case 178:
-            return STYLE_EN_ARABIC;
+            return FONT_LAN_ARABIC;
         default:
             break;
     }
@@ -1360,7 +1357,7 @@ bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_
     bool ret_flag = false;
 
     while (idx < fonts->len) {
-        if (r2l_lan == STYLE_EN_ARABIC) {
+        if (r2l_lan == FONT_LAN_ARABIC) {
             len = _gt_font_language_split((const uint8_t * )&fonts->utf8[idx], fonts->len-idx, fonts->info.encoding, &lan);
         } else {
             len = _gt_font_lang_and_punctuation_split((const uint8_t * )&fonts->utf8[idx], fonts->len-idx, fonts->info.encoding, &lan, r2l_lan);
@@ -1388,7 +1385,7 @@ bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_
     tmp = 0;
     idx = 0;
     while (idx < fonts->len) {
-        if (r2l_lan == STYLE_EN_ARABIC) {
+        if (r2l_lan == FONT_LAN_ARABIC) {
             len = _gt_font_language_split((const uint8_t * )&fonts->utf8[idx], fonts->len-idx, fonts->info.encoding, &lan);
         } else {
             len = _gt_font_lang_and_punctuation_split((const uint8_t * )&fonts->utf8[idx], fonts->len-idx, fonts->info.encoding, &lan, r2l_lan);
@@ -1404,7 +1401,7 @@ bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_
     gt_bidi_st tmp_bidi;
 
     while(bidi_s < bidi_e) {
-        if (r2l_lan == STYLE_EN_ARABIC && bidi_len != alb_count) {
+        if (r2l_lan == FONT_LAN_ARABIC && bidi_len != alb_count) {
             break;
         }
         tmp_bidi = bidi[bidi_s];
@@ -1416,7 +1413,7 @@ bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_
 
     idx = 0;
     for(tmp = 0; tmp < bidi_len; ++tmp) {
-        if (false == bidi[tmp].flag || r2l_lan == STYLE_EN_ARABIC) {
+        if (false == bidi[tmp].flag || r2l_lan == FONT_LAN_ARABIC) {
             gt_memcpy(&ret_text[idx], &fonts->utf8[bidi[tmp].idx] ,bidi[tmp].len);
             idx += bidi[tmp].len;
             continue;
@@ -1466,8 +1463,8 @@ uint16_t gt_font_get_word_byte_length(char const * const text, uint16_t length, 
     uint8_t len = 0;
 
     len = gt_font_one_char_code_len_get((uint8_t * )ptr, &uni_or_gbk, encoding);
-    gt_font_style_en_cn_et remark_sty = STYLE_UNKNOWN;
-    gt_font_style_en_cn_et cur_sty = STYLE_UNKNOWN;
+    gt_font_lan_et remark_sty = FONT_LAN_UNKNOWN;
+    gt_font_lan_et cur_sty = FONT_LAN_UNKNOWN;
 
     while (ptr < end_p) {
         len = gt_font_one_char_code_len_get((uint8_t * )ptr, &uni_or_gbk, encoding);
