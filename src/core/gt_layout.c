@@ -298,7 +298,6 @@ void gt_layout_init(gt_obj_st * obj, gt_obj_container_st const * const container
     GT_CHECK_BACK(obj);
     GT_CHECK_BACK(container);
 
-	GT_LOG_A("", "sizeof: %d obj: %d", sizeof(gt_obj_container_st), sizeof(gt_obj_st));
     obj->container = *container;
     if (0 == obj->cnt_child) {
         return;
