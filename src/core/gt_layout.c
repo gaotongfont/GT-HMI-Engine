@@ -177,7 +177,7 @@ static _content_space_around_st _space_around_align(gt_obj_st * parent, bool is_
         return ret;
     }
     ret.gap = (parent->area.h - total_size) / parent->cnt_child;
-    ret.offset = parent->container.gap >> 1;
+    ret.offset = ret.gap >> 1;
     return ret;
 }
 
