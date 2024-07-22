@@ -280,11 +280,12 @@ gt_obj_st * gt_barcode_create(gt_obj_st * parent) {
     barcode_st * style = (barcode_st * )&widget->info;
 
     char *text = "1234567890128";
-    style->barcode = gt_mem_malloc(strlen(text)+1);
+    uint16_t len = strlen(text);
+    style->barcode = gt_mem_malloc(len + 1);
     GT_CHECK_BACK_VAL(style->barcode, obj);
 
-    gt_memcpy(style->barcode, text , strlen(text));
-    style->barcode[strlen(text)+1] = '\0';
+    gt_memcpy(style->barcode, text , len);
+    style->barcode[len] = '\0';
     style->hri_type = GT_FAMILY_BARCODE_HRI_TYPE_DOWN;
     style->type = GT_FAMILY_BARCODE_TYPE_EAN_13;
     style->mode_w = 2;
