@@ -161,6 +161,16 @@ extern "C" {
     #define GT_USE_EXTRA_FULL_IMG_BUFFER    0
 #endif
 
+#ifndef GT_USE_WIDGET_LAYOUT
+    /**
+     * @brief Set the widget layout function:
+     *      0: no layout function, improve performance
+     *      1: layout function
+     * [Default: 1]
+     */
+    #define GT_USE_WIDGET_LAYOUT        01
+#endif
+
 /* default font style and size */
 #define GT_CFG_DEFAULT_FONT_FAMILY_CN       0xFFFE
 #define GT_CFG_DEFAULT_FONT_FAMILY_EN       0xFFFF

@@ -96,6 +96,7 @@ static gt_size_t _row_grow_inside_invert(gt_obj_st * target, gt_point_st * offse
     return offset->x;
 }
 
+#if GT_USE_WIDGET_LAYOUT
 static inline bool _is_flex_row_dir(gt_layout_flex_direction_t dir) {
     return (GT_LAYOUT_FLEX_DIR_ROW == dir || GT_LAYOUT_FLEX_DIR_ROW_REVERSE ==  dir) ? true : false;
 }
@@ -270,6 +271,7 @@ static void _adjust_flex_content(gt_obj_st * target) {
     gt_area_st pos = _childs_sort_by_flex_direction(target);
     _childs_adjust_justify_content(target, &pos);
 }
+#endif
 
 /* global functions / API interface -------------------------------------*/
 
@@ -295,6 +297,7 @@ void gt_layout_row_grow(gt_obj_st * obj)
     }
 }
 
+#if GT_USE_WIDGET_LAYOUT
 void gt_layout_init(gt_obj_st * obj, gt_obj_container_st const * const container)
 {
     GT_CHECK_BACK(obj);
@@ -345,5 +348,6 @@ bool gt_layout_is_type(gt_obj_st * obj, enum gt_layout_type_e type)
     }
     return (type == obj->container.layout_type) ? true : false;
 }
+#endif
 
 /* end ------------------------------------------------------------------*/
