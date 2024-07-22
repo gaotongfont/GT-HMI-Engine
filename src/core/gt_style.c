@@ -303,7 +303,6 @@ void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new)
     }
     obj->area = *area_new;
     _gt_disp_refr_append_area(&area);
-
 }
 
 void gt_obj_pos_change(gt_obj_st * obj, gt_area_st * area_new)
