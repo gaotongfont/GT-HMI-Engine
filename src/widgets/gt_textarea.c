@@ -94,6 +94,9 @@ static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_poin
         .res        = NULL,
     };
     GT_CHECK_BACK(style->contents);
+    if (0 == obj->area.w || 0 == obj->area.h) {
+        return;
+    }
 
     gt_attr_font_st font_attr = {
         .font       = &font,
