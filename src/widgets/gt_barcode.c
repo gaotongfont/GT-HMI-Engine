@@ -69,7 +69,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
     h = style->mode_h;
 
 #if (!BARCODE_READ_MODE)
-    gt_size_t x = 0, y = 0, w  = 0, i = 0;
+    gt_size_t i = 0;
     if(h < BARCODE_LINE_NUMB) { h = BARCODE_LINE_NUMB; }
     style->mode_h = 1;
 #endif
