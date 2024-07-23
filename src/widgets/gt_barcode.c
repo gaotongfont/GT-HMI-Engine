@@ -199,15 +199,14 @@ static void _deinit_cb(gt_obj_st * obj) {
 
     _gt_barcode_st * obj_p = (_gt_barcode_st * )obj;
     barcode_st * style_p = (barcode_st * )&obj_p->info;
+    if(NULL != style_p->pdat){
+        gt_mem_free(style_p->pdat);
+        style_p->pdat = NULL;
+    }
 
     if(NULL != style_p->barcode){
         gt_mem_free(style_p->barcode);
         style_p->barcode = NULL;
-    }
-
-    if(NULL != style_p->pdat){
-        gt_mem_free(style_p->pdat);
-        style_p->pdat = NULL;
     }
 }
 
