@@ -176,7 +176,7 @@ static void _gt_radius_mask_free(gt_radius_mask_st *r_mask, uint16_t radius) {
     r_mask->x_start = NULL;
 }
 
-static bool _gt_get_radius_mask( gt_radius_mask_st *r_mask, uint16_t radius) {
+static bool _gt_get_radius_mask(gt_radius_mask_st *r_mask, uint16_t radius) {
     if(!r_mask) return false;
 
     if(0 == radius){
@@ -549,7 +549,7 @@ static bool _gt_radius_mask_init( gt_radius_mask_st*r_mask, const gt_area_st coo
     r_mask->outer = outer;
     r_mask->radius = radius;
 
-    return _gt_get_radius_mask( r_mask, radius);
+    return _gt_get_radius_mask(r_mask, radius);
 }
 
 static void _gt_radius_mask_deinit(gt_radius_mask_st*r_mask) {
@@ -1890,6 +1890,37 @@ ret_handler_lb:
     return ret;
 }
 
+static void _draw_dot_matrix_data(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords, gt_draw_blend_dsc_st * blend_dsc_p) {
+    uint32_t len = coords->w * coords->h, index = 0, buf_idx = 0;
+    uint8_t idx_bit = 0;
+    uint8_t * mask_buf = gt_mem_malloc(len);
+    GT_CHECK_BACK(mask_buf);
+
+    gt_area_st area_gy = {0};
+    gt_area_copy(&area_gy, coords);
+    blend_dsc_p->mask_buf = mask_buf;
+    blend_dsc_p->dst_area = &area_gy;
+    blend_dsc_p->mask_area = &area_gy;
+
+    len >>= 3;
+    while (index < len) {
+        for (idx_bit = 0; idx_bit < 8; idx_bit++) {
+            if ((dsc->data_gray[index] << idx_bit) & 0x80) {
+                mask_buf[buf_idx] = 0xFF;
+            }else{
+                mask_buf[buf_idx] = 0x00;
+            }
+            ++buf_idx;
+        }
+        ++index;
+    }
+    gt_draw_blend(draw_ctx, blend_dsc_p);
+
+    gt_mem_free(mask_buf);
+    mask_buf = NULL;
+    blend_dsc_p->mask_buf = NULL;
+}
+
 /* global functions / API interface -------------------------------------*/
 
 #if 0
@@ -2081,42 +2112,9 @@ void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
     blend_dsc.mask_buf = NULL;
 
     // Dot matrix data
-    if(dsc->gray != 0) {
-        if(!dsc->data_gray) {
-            return ;
-        }
-        uint8_t * mask_buf = NULL;
-        uint32_t len = coords->w * coords->h, index = 0, buf_idx = 0;
-        char idx_bit = 0;
-        mask_buf = gt_mem_malloc(len);
-        if (!mask_buf) {
-            return ;
-        }
-
-        gt_area_st area_gy = {0};
-        gt_area_copy(&area_gy, coords);
-
-        blend_dsc.mask_buf = mask_buf;
-        blend_dsc.dst_area = &area_gy;
-        blend_dsc.mask_area = &area_gy;
-
-        len = len >> 3;
-        buf_idx = 0;
-        index = 0;
-        while ( index < len ) {
-            for (idx_bit = 0; idx_bit < 8; idx_bit++) {
-                if( (dsc->data_gray[index] << idx_bit )&0x80 ){
-                    mask_buf[buf_idx++] = 0xFF;
-                }else{
-                    mask_buf[buf_idx++] = 0x00;
-                }
-            }
-            index++;
-        }
-        gt_draw_blend(draw_ctx, &blend_dsc);
-
-        gt_mem_free(mask_buf);
-        mask_buf = NULL;
+    if (dsc->gray != 0) {
+        if (!dsc->data_gray) { return; }
+        _draw_dot_matrix_data(draw_ctx, dsc, coords, &blend_dsc);
         return ;
     }
 
