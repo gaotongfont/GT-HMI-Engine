@@ -613,8 +613,8 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
     indev->state = data_indev.state;
     indev->data.keypad.obj_target = gt_find_clicked_obj_by_focus(scr);
 
-    if(GT_INDEV_STATE_RELEASED == indev->state){
-        if(indev->data.keypad.count_keydown != 0 && GT_KEY_ENTER == indev->data.keypad.key){
+    if (GT_INDEV_STATE_RELEASED == indev->state) {
+        if (indev->data.keypad.count_keydown != 0 && GT_KEY_ENTER == indev->data.keypad.key) {
             _indev_params.param.keypad_key = GT_KEY_ENTER;
             if (false == gt_obj_is_untouchability(indev->data.keypad.obj_target)) {
                 gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_RELEASED, &_indev_params);
@@ -622,11 +622,10 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
         }
         indev->data.keypad.count_keydown = 0;
         last_key = GT_KEY_NONE;
-        return ;
+        return;
     }
     // 新的按键
-    if(GT_KEY_NONE == last_key || last_key != data_indev.key)
-    {
+    if (GT_KEY_NONE == last_key || last_key != data_indev.key) {
         indev->data.keypad.key = data_indev.key;
         last_key = data_indev.key;
         indev->data.keypad.count_keydown = 0;
@@ -635,16 +634,15 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
             _indev_params.param.keypad_key = GT_KEY_NEXT;
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
-        else if(GT_KEY_PREV == indev->data.keypad.key){
+        else if (GT_KEY_PREV == indev->data.keypad.key) {
             gt_obj_prev_focus_change(indev->data.keypad.obj_target);
             _indev_params.param.keypad_key = GT_KEY_PREV;
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
-        }
-        else{
+        } else {
             _indev_params.param.keypad_key = indev->data.keypad.key;
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
             if (GT_KEY_ENTER == indev->data.keypad.key &&
-                false == gt_obj_is_untouchability(indev->data.keypad.obj_target)){
+                false == gt_obj_is_untouchability(indev->data.keypad.obj_target)) {
                 gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSED, &_indev_params);
             }
         }
@@ -662,17 +660,16 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
             _indev_params.param.keypad_key = GT_KEY_NEXT;
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
-        else if(GT_KEY_PREV == indev->data.keypad.key){
+        else if (GT_KEY_PREV == indev->data.keypad.key) {
             gt_obj_prev_focus_change(indev->data.keypad.obj_target);
             _indev_params.param.keypad_key = GT_KEY_PREV;
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
-        }
-        else{
+        } else {
             _indev_params.param.keypad_key = indev->data.keypad.key;
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
-            if(0 == indev->data.keypad.count_keydown % (GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS / GT_TASK_PERIOD_TIME_EVENT)){
+            if (0 == indev->data.keypad.count_keydown % (GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS / GT_TASK_PERIOD_TIME_EVENT)) {
                 if (GT_KEY_ENTER == indev->data.keypad.key &&
-                    false == gt_obj_is_untouchability(indev->data.keypad.obj_target)){
+                    false == gt_obj_is_untouchability(indev->data.keypad.obj_target)) {
                     gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSING, &_indev_params);
                 }
             }
