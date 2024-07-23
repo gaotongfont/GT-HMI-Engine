@@ -53,7 +53,7 @@ extern "C" {
 typedef enum _gt_indev_type_e {
     GT_INDEV_TYPE_NONE,        ///< nothing input dev
     GT_INDEV_TYPE_POINTER,     ///< touch-pad, mouse
-    GT_INDEV_TYPE_KEYPAD,      ///< keypad
+    GT_INDEV_TYPE_KEYPAD,      ///< keypad @ref gt_key_et binding
     GT_INDEV_TYPE_BUTTON,      ///< button
 }gt_indev_type_et;
 
@@ -80,6 +80,10 @@ typedef enum{
 }gt_dir_et;
 
 typedef enum {
+    GT_KEY_NEXT      = 9,   /*0x09, '\t'*/  // focus next
+    GT_KEY_ENTER     = 10,  /*0x0A, '\n'*/
+    GT_KEY_PREV      = 11,  /*0x0B, '*/     // focus previous
+
     GT_KEY_UP        = 17,  /*0x11*/
     GT_KEY_DOWN      = 18,  /*0x12*/
     GT_KEY_RIGHT     = 19,  /*0x13*/
@@ -87,9 +91,6 @@ typedef enum {
     GT_KEY_ESC       = 27,  /*0x1B*/
     GT_KEY_DEL       = 127, /*0x7F*/
     GT_KEY_BACKSPACE = 8,   /*0x08*/
-    GT_KEY_ENTER     = 10,  /*0x0A, '\n'*/
-    GT_KEY_NEXT      = 9,   /*0x09, '\t'*/
-    GT_KEY_PREV      = 11,  /*0x0B, '*/
     GT_KEY_HOME      = 2,   /*0x02, STX*/
     GT_KEY_END       = 3,   /*0x03, ETX*/
 
