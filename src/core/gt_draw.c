@@ -34,6 +34,22 @@
 
 #define RADIUS_MAX  16
 
+#ifndef _GT_DRAW_USE_RADIUS_MASK_MIX
+    /**
+     * @brief Use the mask to mix the color of the radius, or use the minimum value of the two colors mask
+     *          0: Use the minimum value of the two colors mask
+     *          1: Use the mask to mix the color of the radius
+     */
+    #define _GT_DRAW_USE_RADIUS_MASK_MIX        0
+#endif
+
+#if _GT_DRAW_USE_RADIUS_MASK_MIX
+    #define _GT_DRAW_MASK_MIX(opa, mask_val)    (gt_per_255(opa) * mask_val >> 15)
+#else
+    #define _GT_DRAW_MASK_MIX(opa, mask_val)    GT_MIN(opa, mask_val)
+#endif
+
+
 
 /* private typedef ------------------------------------------------------*/
 
@@ -553,9 +569,9 @@ static bool _gt_radius_mask_init( gt_radius_mask_st*r_mask, const gt_area_st coo
 }
 
 static void _gt_radius_mask_deinit(gt_radius_mask_st*r_mask) {
-    if(!r_mask) return;
+    if (!r_mask) { return; }
 
-    if(r_mask->buf && r_mask->radius > RADIUS_MAX){
+    if (r_mask->buf && r_mask->radius > RADIUS_MAX) {
         gt_mem_free(r_mask->buf);
     }
 
@@ -571,43 +587,41 @@ static void _gt_radius_mask_deinit(gt_radius_mask_st*r_mask) {
 }
 
 static bool _gt_get_radius_mask_buf(gt_opa_t* mask_line, gt_size_t x, gt_size_t y, uint16_t len, gt_radius_mask_st* p) {
-    if(!p || !mask_line) return false;
+    if(!p || !mask_line) { return false; }
 
-    if(false == p->outer){
-        if(y < p->area.y || y >= p->area.y + p->area.h){
+    if (false == p->outer) {
+        if (y < p->area.y || y >= p->area.y + p->area.h) {
+            return false;
+        }
+    } else {
+        if (y < p->area.y || y >= p->area.y + p->area.h) {
             return false;
         }
     }
-    else{
-        if(y < p->area.y || y >= p->area.y + p->area.h){
-            return false;
-        }
-    }
 
-    if((x >= p->area.x + p->radius && x + len <= p->area.x + p->area.w - p->radius-1)
-        || (y >= p->area.y + p->radius && y <= p->area.y + p->area.h - p->radius-1)
-    ){
-        if(false == p->outer){
+    if ((x >= p->area.x + p->radius && x + len <= p->area.x + p->area.w - p->radius-1) ||
+        (y >= p->area.y + p->radius && y <= p->area.y + p->area.h - p->radius-1)) {
+        if (false == p->outer) {
             int32_t last = p->area.x - x;
-            if(last > len) return false;
-            if(last >= 0){
+            if (last > len) { return false; }
+            if (last >= 0) {
                 gt_memset_0(&mask_line[0], last);
             }
 
             int32_t first = p->area.x + p->area.w - x;
-            if(first < 0) return false;
-            else if(first < len){
+            if (first < 0) {
+                return false;
+            } else if (first < len) {
                 gt_memset_0(&mask_line[first], len - first);
             }
             return false;
-        }
-        else{
+        } else {
             int32_t first = p->area.x - x;
-            if(first < 0) first = 0;
-            if(first <= len) {
+            if (first < 0) { first = 0; }
+            if (first <= len) {
                 int32_t last = p->area.x + p->area.w - x - first;
-                if(first + last > len) last = len - first;
-                if(last >= 0){
+                if (first + last > len) { last = len - first; }
+                if (last >= 0) {
                     gt_memset_0(&mask_line[first], last);
                 }
             }
@@ -637,15 +651,15 @@ static bool _gt_get_radius_mask_buf(gt_opa_t* mask_line, gt_size_t x, gt_size_t 
         for (i = 0; i < aa_len; i++) {
             tmp_opa = aa_opa[aa_len - i - 1];
             if (pos_x_right + i >= 0 && pos_x_right + i < len) {
-                mask_line[pos_x_right + i] = GT_MIN(tmp_opa, mask_line[pos_x_right + i]); //(gt_per_255(tmp_opa) * mask_line[pos_x_right + i]) >> 15;
+                mask_line[pos_x_right + i] = _GT_DRAW_MASK_MIX(tmp_opa, mask_line[pos_x_right + i]);
             }
             if (pos_x_left - i >= 0 && pos_x_left - i < len) {
-                mask_line[pos_x_left - i] = GT_MIN(tmp_opa, mask_line[pos_x_left - i]); //(gt_per_255(tmp_opa) * mask_line[pos_x_right - i]) >> 15;
+                mask_line[pos_x_left - i] = _GT_DRAW_MASK_MIX(tmp_opa, mask_line[pos_x_left - i]);
             }
         }
 
         pos_x_right = GT_MAX(0, (GT_MIN(pos_x_right + aa_len, len)));
-        gt_memset_0(&mask_line[pos_x_right], len -pos_x_right );
+        gt_memset_0(&mask_line[pos_x_right], len - pos_x_right);
 
         pos_x_left = GT_MAX(0, (GT_MIN(pos_x_left - aa_len + 1, len)));
         gt_memset_0(&mask_line[0], pos_x_left);
@@ -653,10 +667,10 @@ static bool _gt_get_radius_mask_buf(gt_opa_t* mask_line, gt_size_t x, gt_size_t 
         for (i = 0; i < aa_len; i++) {
             tmp_opa = 255 - aa_opa[aa_len - i - 1];
             if (pos_x_right + i >= 0 && pos_x_right + i < len) {
-                mask_line[pos_x_right + i] = GT_MIN(tmp_opa, mask_line[pos_x_right + i]); //(gt_per_255(tmp_opa) * mask_line[pos_x_right + i]) >> 15;
+                mask_line[pos_x_right + i] = _GT_DRAW_MASK_MIX(tmp_opa, mask_line[pos_x_right + i]);
             }
             if (pos_x_left - i >= 0 && pos_x_left - i < len) {
-                mask_line[pos_x_left - i] = GT_MIN(tmp_opa, mask_line[pos_x_left - i]); //(gt_per_255(tmp_opa) * mask_line[pos_x_left - i]) >> 15;
+                mask_line[pos_x_left - i] = _GT_DRAW_MASK_MIX(tmp_opa, mask_line[pos_x_left - i]);
             }
         }
 
@@ -2132,7 +2146,7 @@ void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
     if (dsc->reg.is_fill) {
         if (r_bg > 0) {
             gt_radius_mask_st r_bg_radius = {0};
-            if(!_gt_radius_mask_init(&r_bg_radius, area_bg, r_bg, false)){
+            if (!_gt_radius_mask_init(&r_bg_radius, area_bg, r_bg, false)) {
                 GT_LOGE( GT_LOG_TAG_GUI,"draw bg radius init fail!!! radius = %d", r_bg);
                 return ;
             }
@@ -2140,7 +2154,7 @@ void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
             gt_radius_mask_st r_cl_radius = {0};
             if (dsc->base_area) {
                 uint16_t r_cl = GT_MIN(dsc->radius, (GT_MIN(dsc->base_area->w >> 1, dsc->base_area->h >> 1)));
-                if(!_gt_radius_mask_init(&r_cl_radius, *dsc->base_area, r_cl, false)){
+                if (!_gt_radius_mask_init(&r_cl_radius, *dsc->base_area, r_cl, false)) {
                     _gt_radius_mask_deinit(&r_bg_radius);
                     GT_LOGE( GT_LOG_TAG_GUI,"draw clipped radius init fail!!! radius = %d", r_cl);
                     return ;
@@ -2149,7 +2163,7 @@ void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
 
             gt_opa_t* mask_bg_line = gt_mem_malloc(area_bg.w);
             if (NULL == mask_bg_line) {
-                if(dsc->base_area) {
+                if (dsc->base_area) {
                     _gt_radius_mask_deinit(&r_cl_radius);
                 }
                 _gt_radius_mask_deinit(&r_bg_radius);
@@ -2229,7 +2243,7 @@ void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
         blend_dsc.mask_buf = mask_bd_line;
         blend_dsc.mask_area = &area_bd;
 
-        for(gt_size_t i = 0; i < area_border.h; i++){
+        for (gt_size_t i = 0; i < area_border.h; i++) {
             gt_memset(mask_bd_line, 0xFF, area_border.w);
             area_bd.y = area_border.y + i;
             _gt_get_radius_mask_buf(mask_bd_line, area_bd.x, area_bd.y, area_border.w, &in_r_mask);
