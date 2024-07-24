@@ -89,7 +89,7 @@ static void _player_init_cb(gt_obj_st * obj);
 static void _player_deinit_cb(gt_obj_st * obj);
 static void _player_event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_player_class = {
+static const gt_obj_class_st gt_player_class = {
     ._init_cb      = _player_init_cb,
     ._deinit_cb    = _player_deinit_cb,
     ._event_cb     = _player_event_cb,

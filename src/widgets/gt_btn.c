@@ -57,7 +57,7 @@ static void _btn_init_cb(gt_obj_st * obj);
 static void _btn_deinit_cb(gt_obj_st * obj);
 static void _btn_event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_btn_class = {
+static const gt_obj_class_st gt_btn_class = {
     ._init_cb      = _btn_init_cb,
     ._deinit_cb    = _btn_deinit_cb,
     ._event_cb     = _btn_event_cb,
@@ -81,7 +81,7 @@ static void _btn_init_cb(gt_obj_st * obj) {
     _gt_btn_st * style = (_gt_btn_st * )obj;
     gt_radius_t radius;
 
-    gt_color_t fg_color;
+    gt_color_t fg_color = gt_obj_get_state(obj) == GT_STATE_PRESSED ? style->color_pressed : obj->bgcolor;
     char * text = (char * )_gt_vector_get_item(style->contents, _gt_vector_get_index(style->contents));
     uint32_t len = (uint32_t)strlen(text);
     GT_CHECK_BACK(text);
@@ -105,11 +105,6 @@ static void _btn_init_cb(gt_obj_st * obj) {
         radius = obj->area.h >> 2;
     } else {
         radius = obj->radius;
-    }
-    if (gt_obj_get_state(obj) == GT_STATE_PRESSED) {
-        fg_color = style->color_pressed;
-    } else {
-        fg_color = obj->bgcolor;
     }
 
     /* base shape */

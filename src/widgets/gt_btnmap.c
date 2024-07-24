@@ -78,7 +78,7 @@ static void _gt_clean_press_btn(gt_obj_st* obj);
 static void _gt_push_btn_kv(gt_obj_st* obj);
 
 /* static variables -----------------------------------------------------*/
-const gt_obj_class_st gt_btnmap_class = {
+static const gt_obj_class_st gt_btnmap_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,

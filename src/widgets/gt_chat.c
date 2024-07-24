@@ -87,7 +87,7 @@ static void _msg_anim_ready_cb(struct gt_anim_s * anim);
 
 /* static variables -----------------------------------------------------*/
 
-const gt_obj_class_st gt_chat_class = {
+static const gt_obj_class_st gt_chat_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = NULL,
     ._event_cb     = _event_cb,

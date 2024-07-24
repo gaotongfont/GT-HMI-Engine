@@ -54,7 +54,7 @@ static void _imgbtn_init_cb(gt_obj_st * obj);
 static void _imgbtn_deinit_cb(gt_obj_st * obj);
 static void _imgbtn_event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_imgbtn_class = {
+static const gt_obj_class_st gt_imgbtn_class = {
     ._init_cb      = _imgbtn_init_cb,
     ._deinit_cb    = _imgbtn_deinit_cb,
     ._event_cb     = _imgbtn_event_cb,

@@ -88,7 +88,7 @@ static gt_size_t _gt_get_map_index(gt_keypad_map_st * map_list, uint8_t map_tota
 
 
 /* static variables -----------------------------------------------------*/
-const gt_obj_class_st gt_keypad_class = {
+static const gt_obj_class_st gt_keypad_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = NULL,
     ._event_cb     = _event_cb,

@@ -33,7 +33,7 @@ typedef struct _gt_group_s {
 /* static variables -----------------------------------------------------*/
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_group_class = {
+static const gt_obj_class_st gt_group_class = {
     ._init_cb      = NULL,
     ._deinit_cb    = NULL,
     ._event_cb     = _event_cb,
