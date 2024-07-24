@@ -624,7 +624,7 @@ void gt_textarea_set_radius(gt_obj_st * textarea, gt_radius_t radius)
     textarea->radius = radius;
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_textarea_set_font_family_cn(gt_obj_st * textarea, gt_family_t family)
 {
     if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
@@ -658,7 +658,25 @@ void gt_textarea_set_font_family_numb(gt_obj_st * textarea, gt_family_t family)
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.style_numb = family;
 }
+#else
+void gt_textarea_set_font_family(gt_obj_st * textarea, gt_family_t family)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    gt_font_set_family(&style->font_info, family);
+}
+void gt_textarea_set_font_cjk(gt_obj_st* textarea, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    style->font_info.cjk = cjk;
+}
 
+#endif
 void gt_textarea_set_font_thick_en(gt_obj_st * textarea, uint8_t thick)
 {
     if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {

@@ -327,7 +327,7 @@ void gt_input_number_set_font_align(gt_obj_st * obj, gt_align_et align)
     }
     gt_label_set_font_align(style->label, align);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_input_number_set_font_family_cn(gt_obj_st * obj, gt_family_t family)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
@@ -375,7 +375,32 @@ void gt_input_number_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
     }
     gt_label_set_font_family_numb(style->label, family);
 }
+#else
+void gt_input_number_set_font_family(gt_obj_st * obj, gt_family_t family)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_number_st * style = (_gt_input_number_st * )obj;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_family(style->label, family);
+}
 
+void gt_input_number_set_font_cjk(gt_obj_st * obj, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_number_st * style = (_gt_input_number_st * )obj;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_cjk(style->label, cjk);
+}
+
+#endif
 void gt_input_number_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {

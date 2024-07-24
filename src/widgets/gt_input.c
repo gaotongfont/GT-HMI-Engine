@@ -563,7 +563,7 @@ void gt_input_set_font_color(gt_obj_st * input, gt_color_t color)
     style->font_color = color;
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_input_set_font_family_cn(gt_obj_st * input, gt_family_t family)
 {
     if (false == gt_obj_is_type(input, OBJ_TYPE)) {
@@ -599,6 +599,24 @@ void gt_input_set_font_family_numb(gt_obj_st * input, gt_family_t family)
     _gt_input_st * style = (_gt_input_st * )input;
     style->font_info.style_numb = family;
 }
+#else
+void gt_input_set_font_family(gt_obj_st * input, gt_family_t font_family)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    gt_font_set_family(&style->font_info, font_family);
+}
+void gt_input_set_font_cjk(gt_obj_st* input, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    style->font_info.cjk = cjk;
+}
+#endif
 
 void gt_input_set_font_size(gt_obj_st * input, uint8_t size)
 {

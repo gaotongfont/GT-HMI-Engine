@@ -552,6 +552,7 @@ void gt_dialog_set_title_font_align(gt_obj_st * dialog, gt_align_et align)
     gt_label_set_font_align(style->title, align);
 }
 
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_dialog_set_title_font_family_cn(gt_obj_st * dialog, gt_family_t family)
 {
     if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
@@ -587,7 +588,32 @@ void gt_dialog_set_title_font_family_fl(gt_obj_st * dialog, gt_family_t family)
     }
     gt_label_set_font_family_fl(style->title, family);
 }
+#else
+void gt_dialog_set_title_font_family(gt_obj_st * dialog, gt_family_t family)
+{
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_family(style->title, family);
+}
 
+void gt_dialog_set_title_font_cjk(gt_obj_st * dialog, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_cjk(style->title, cjk);
+}
+
+#endif
 void gt_dialog_set_title_font_thick_en(gt_obj_st * dialog, uint8_t thick)
 {
     if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
@@ -647,7 +673,7 @@ void gt_dialog_set_content_font_align(gt_obj_st * dialog, gt_align_et align)
     }
     gt_label_set_font_align(style->content, align);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_dialog_set_content_font_family_cn(gt_obj_st * dialog, gt_family_t family)
 {
     if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
@@ -683,6 +709,31 @@ void gt_dialog_set_content_font_family_fl(gt_obj_st * dialog, gt_family_t family
     }
     gt_label_set_font_family_fl(style->content, family);
 }
+#else
+void gt_dialog_set_content_font_family(gt_obj_st * dialog, gt_family_t family)
+{
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_family(style->title, family);
+}
+
+void gt_dialog_set_content_font_cjk(gt_obj_st * dialog, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_cjk(style->title, cjk);
+}
+#endif
 
 void gt_dialog_set_content_font_thick_en(gt_obj_st * dialog, uint8_t thick)
 {

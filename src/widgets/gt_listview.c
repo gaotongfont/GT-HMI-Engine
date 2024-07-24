@@ -96,10 +96,15 @@ typedef enum {
     _LABEL_FONT_GRAY,
     _LABEL_FONT_ALIGN,
     _LABEL_FONT_COLOR,
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
     _LABEL_FONT_CN,
     _LABEL_FONT_EN,
     _LABEL_FONT_FL,
     _LABEL_FONT_NUMB,
+#else
+    _LABEL_FONT_FAMILY,
+    _LABEL_FONT_CJK,
+#endif
     _LABEL_FONT_THICK_CN,
     _LABEL_FONT_THICK_EN,
     _LABEL_FONT_SPACE,
@@ -321,7 +326,9 @@ static void _set_label_prop_by_type(gt_obj_st * listview, _label_prop_em type, i
                 gt_label_set_font_align(obj->child[item], (gt_align_et)val);
             } else if (_LABEL_FONT_COLOR == type) {
                 gt_label_set_font_color(obj->child[item], gt_color_hex((uint32_t)val));
-            } else if (_LABEL_FONT_CN == type) {
+            }
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
+            else if (_LABEL_FONT_CN == type) {
                 gt_label_set_font_family_cn(obj->child[item], (gt_family_t)val);
             } else if (_LABEL_FONT_EN == type) {
                 gt_label_set_font_family_en(obj->child[item], (gt_family_t)val);
@@ -329,7 +336,16 @@ static void _set_label_prop_by_type(gt_obj_st * listview, _label_prop_em type, i
                 gt_label_set_font_family_fl(obj->child[item], (gt_family_t)val);
             } else if (_LABEL_FONT_NUMB == type) {
                 gt_label_set_font_family_numb(obj->child[item], (gt_family_t)val);
-            } else if (_LABEL_FONT_THICK_CN == type) {
+            }
+#else
+            else if(_LABEL_FONT_FAMILY == type){
+                gt_label_set_font_family(obj->child[item], (gt_family_t)val);
+            }
+            else if(_LABEL_FONT_CJK == type){
+                gt_label_set_font_cjk(obj->child[item], (gt_family_t)val);
+            }
+#endif
+            else if (_LABEL_FONT_THICK_CN == type) {
                 gt_label_set_font_thick_cn(obj->child[item], val);
             } else if (_LABEL_FONT_THICK_EN == type) {
                 gt_label_set_font_thick_en(obj->child[item], val);
@@ -467,10 +483,15 @@ static inline void _set_label_prop(gt_obj_st * listview, gt_obj_st * lab, gt_fon
 
     gt_label_set_font_align(lab, style->align);
     gt_label_set_font_color(lab, style->font_color);
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
     gt_label_set_font_family_cn(lab, font_info_p->style_cn);
     gt_label_set_font_family_en(lab, font_info_p->style_en);
     gt_label_set_font_family_fl(lab, font_info_p->style_fl);
     gt_label_set_font_family_numb(lab, font_info_p->style_numb);
+#else
+    gt_label_set_font_family(lab, font_info_p->family);
+    gt_label_set_font_cjk(lab, font_info_p->cjk);
+#endif
     gt_label_set_font_size(lab, font_info_p->size);
     gt_label_set_font_gray(lab, font_info_p->gray);
     gt_label_set_font_thick_cn(lab, font_info_p->thick_cn);
@@ -1147,7 +1168,7 @@ void gt_listview_set_font_color(gt_obj_st * listview, gt_color_t color)
     style->font_color = color;
     _set_label_prop_by_type(listview, _LABEL_FONT_COLOR, color.full);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_listview_set_font_family_en(gt_obj_st * listview, gt_family_t family)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
@@ -1185,6 +1206,28 @@ void gt_listview_set_font_family_numb(gt_obj_st * listview, gt_family_t family)
     style->font_info.style_numb = family;
     _set_label_prop_by_type(listview, _LABEL_FONT_NUMB, family);
 }
+#else
+void gt_listview_set_font_family(gt_obj_st * listview, gt_family_t family)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    gt_font_set_family(&style->font_info, family);
+    _set_label_prop_by_type(listview, _LABEL_FONT_FAMILY, family);
+    gt_listview_set_font_size(listview, style->font_info.size);
+}
+
+void gt_listview_set_font_cjk(gt_obj_st* listview, gt_font_cjk_et cjk)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->font_info.cjk = cjk;
+    _set_label_prop_by_type(listview, _LABEL_FONT_CJK, cjk);
+}
+#endif
 
 void gt_listview_set_font_thick_en(gt_obj_st * listview, uint8_t thick)
 {

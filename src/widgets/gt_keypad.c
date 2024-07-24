@@ -858,7 +858,7 @@ void gt_keypad_set_font_gray(gt_obj_st * keypad, uint8_t gray)
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     gt_btnmap_set_font_gray(style->btnmap, gray);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_keypad_set_font_family_cn(gt_obj_st * keypad, gt_family_t family)
 {
     if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
@@ -892,6 +892,26 @@ void gt_keypad_set_font_family_numb(gt_obj_st * keypad, gt_family_t family)
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     gt_btnmap_set_font_family_numb(style->btnmap, family);
 }
+#else
+void gt_keypad_set_font_family(gt_obj_st * keypad, gt_family_t family)
+{
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
+    gt_btnmap_set_font_family(style->btnmap, family);
+}
+void gt_keypad_set_font_cjk(gt_obj_st* keypad, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
+    gt_btnmap_set_font_cjk(style->btnmap, cjk);
+}
+
+#endif
+
 void gt_keypad_set_font_thick_en(gt_obj_st * keypad, uint8_t thick)
 {
     if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {

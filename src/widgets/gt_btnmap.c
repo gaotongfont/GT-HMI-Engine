@@ -569,7 +569,7 @@ void gt_btnmap_set_font_gray(gt_obj_st * btnmap, uint8_t gray)
     style->font_info.gray = gray;
     gt_event_send(btnmap, GT_EVENT_TYPE_DRAW_START, NULL);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_btnmap_set_font_family_cn(gt_obj_st * btnmap, gt_family_t family)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
@@ -609,7 +609,25 @@ void gt_btnmap_set_font_family_numb(gt_obj_st * btnmap, gt_family_t family)
     style->font_info.style_numb = family;
     gt_event_send(btnmap, GT_EVENT_TYPE_DRAW_START, NULL);
 }
+#else
+void gt_btnmap_set_font_family(gt_obj_st * btnmap, gt_family_t font_family)
+{
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
+    gt_font_set_family(&style->font_info, font_family);
+}
 
+void gt_btnmap_set_font_cjk(gt_obj_st* btnmap, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
+    style->font_info.cjk = cjk;
+}
+#endif
 void gt_btnmap_set_font_thick_en(gt_obj_st * btnmap, uint8_t thick)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {

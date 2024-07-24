@@ -17,6 +17,7 @@
 #include "../../driver/gt_port_indev.h"
 #include "../../driver/gt_port_vf.h"
 #include "../../driver/gt_port_src.h"
+#include "../../driver/gt_font_config.h"
 #include "../others/gt_anim.h"
 #include "../others/gt_log.h"
 #include "../others/gt_gc.h"
@@ -109,6 +110,7 @@ static void _gt_port_init(void) {
 #endif
     gt_port_vf_init();
     gt_port_src_init();
+    gt_font_config_init();
 }
 
 /* global functions / API interface -------------------------------------*/

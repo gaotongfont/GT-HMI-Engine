@@ -315,7 +315,7 @@ void gt_radio_set_font_gray(gt_obj_st * radio, uint8_t gray)
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_info.gray = gray;
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_radio_set_font_family_cn(gt_obj_st * radio, gt_family_t family)
 {
     if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
@@ -349,6 +349,24 @@ void gt_radio_set_font_family_numb(gt_obj_st * radio, gt_family_t family)
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_info.style_numb = family;
 }
+#else
+void gt_radio_set_font_family(gt_obj_st * radio, gt_family_t family)
+{
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_radio_st * style = (_gt_radio_st * )radio;
+    gt_font_set_family(&style->font_info, family);
+}
+void gt_radio_set_font_cjk(gt_obj_st* radio, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_radio_st * style = (_gt_radio_st * )radio;
+    style->font_info.cjk = cjk;
+}
+#endif
 
 void gt_radio_set_font_thick_en(gt_obj_st * radio, uint8_t thick)
 {

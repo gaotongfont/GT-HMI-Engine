@@ -413,7 +413,7 @@ void gt_label_set_font_align(gt_obj_st * label, gt_align_et align)
     style->font_align = align;
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_label_set_font_family_cn(gt_obj_st * label, gt_family_t family)
 {
     if (false == gt_obj_is_type(label, OBJ_TYPE)) {
@@ -439,6 +439,32 @@ void gt_label_set_font_family_fl(gt_obj_st * label, gt_family_t family)
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.style_fl = family;
 }
+void gt_label_set_font_family_numb(gt_obj_st * label, gt_family_t family)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    style->font_info.style_numb = family;
+}
+#else
+void gt_label_set_font_family(gt_obj_st * label, gt_family_t family)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    gt_font_set_family(&style->font_info, family);
+}
+void gt_label_set_font_cjk(gt_obj_st* label, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    style->font_info.cjk = cjk;
+}
+#endif
 
 void gt_label_set_font_thick_en(gt_obj_st * label, uint8_t thick)
 {
@@ -465,15 +491,6 @@ void gt_label_set_font_encoding(gt_obj_st * label, gt_encoding_et encoding)
     }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.encoding = encoding;
-}
-
-void gt_label_set_font_family_numb(gt_obj_st * label, gt_family_t family)
-{
-    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
-        return ;
-    }
-    _gt_label_st * style = (_gt_label_st * )label;
-    style->font_info.style_numb = family;
 }
 
 void gt_label_set_space(gt_obj_st * label, uint8_t space_x, uint8_t space_y)

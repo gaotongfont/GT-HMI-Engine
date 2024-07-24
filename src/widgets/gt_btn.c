@@ -435,7 +435,7 @@ void gt_btn_set_font_align(gt_obj_st * btn, gt_align_et align)
     _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_align = align;
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_btn_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn)
 {
     if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
@@ -471,7 +471,25 @@ void gt_btn_set_font_family_numb(gt_obj_st * btn, gt_family_t font_family_numb)
     _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_info.style_numb = font_family_numb;
 }
+#else
+void gt_btn_set_font_family(gt_obj_st * btn, gt_family_t font_family)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+    gt_font_set_family(&style->font_info, font_family);
+}
 
+void gt_btn_set_font_cjk(gt_obj_st* btn, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+    style->font_info.cjk = cjk;
+}
+#endif
 void gt_btn_set_radius(gt_obj_st * btn, gt_radius_t radius)
 {
     if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
