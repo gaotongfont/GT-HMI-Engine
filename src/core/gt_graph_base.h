@@ -91,10 +91,6 @@ typedef struct _gt_attr_rect_s {
     _gt_attr_rect_reg_st reg;
 }gt_attr_rect_st;
 
-typedef struct _gt_attr_circle_reg_s {
-    uint8_t is_fill : 1;    ///< fill inside area by fg_color
-    uint8_t reserved : 7;   ///< reserved
-}_gt_attr_circle_reg_st;
 
 
 /* macros ---------------------------------------------------------------*/
