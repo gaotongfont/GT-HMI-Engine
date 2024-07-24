@@ -15,7 +15,6 @@
 #include "../../core/gt_mem.h"
 #include "../../others/gt_math.h"
 #include "../../others/gt_log.h"
-#include "../../others/gt_effects.h"
 #include "../../widgets/gt_obj.h"
 #include "../../others/gt_area.h"
 #include "../../core/gt_draw.h"

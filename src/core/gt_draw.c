@@ -18,7 +18,6 @@
 #include "gt_mem.h"
 #include "../others/gt_math.h"
 #include "../others/gt_log.h"
-#include "../others/gt_effects.h"
 #include "../widgets/gt_obj.h"
 #include "gt_draw.h"
 #include "../others/gt_color.h"
