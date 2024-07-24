@@ -102,13 +102,13 @@ typedef enum {
  */
 typedef struct {
     gt_point_st point; ///< For GT_INDEV_TYPE_POINTER the currently pressed point
-    uint32_t key;     ///< For GT_INDEV_TYPE_KEYPAD the currently pressed key
-    uint32_t btn_id;  ///< For GT_INDEV_TYPE_BUTTON the currently pressed button
-    int16_t enc_diff; ///< For GT_INDEV_TYPE_ENCODER number of steps since the previous read
+    uint32_t key;      ///< For GT_INDEV_TYPE_KEYPAD the currently pressed key, @ref gt_key_et
+    uint32_t btn_id;   ///< For GT_INDEV_TYPE_BUTTON the currently pressed button
+    int16_t enc_diff;  ///< For GT_INDEV_TYPE_ENCODER number of steps since the previous read
 
-    gt_indev_state_et state; ///< GT_INDEV_STATE_REL or GT_INDEV_STATE_PR
-	uint8_t continue_reading:1;  ///< If set to true, the read callback is invoked again
-    uint8_t reserved:7;          ///< Reserved for future use
+    gt_indev_state_et state;        ///< GT_INDEV_STATE_REL or GT_INDEV_STATE_PR
+    uint8_t continue_reading : 1;   ///< If set to true, the read callback is invoked again
+    uint8_t reserved:7;             ///< Reserved for future use
 } gt_indev_data_st;
 
 /**
@@ -119,11 +119,11 @@ typedef struct _gt_indev_drv_s
     gt_indev_type_et type;
     void (*read_cb)(struct _gt_indev_drv_s * indev_drv, gt_indev_data_st * data);
 
-    gt_size_t limit_timers_long_press;          ///< long press timers
-    gt_size_t limit_pixel_gesture_ver;          ///< move pixel trigger once event
-    gt_size_t limit_pixel_gesture_hor;          ///< move pixel trigger once event
-    uint8_t limit_pixel_scroll;               ///< scroll pixel trigger scroll event
-    uint8_t limit_scroll_throw;               ///< [%]
+    gt_size_t limit_timers_long_press;      ///< long press timers
+    gt_size_t limit_pixel_gesture_ver;      ///< move pixel trigger once event
+    gt_size_t limit_pixel_gesture_hor;      ///< move pixel trigger once event
+    uint8_t limit_pixel_scroll;             ///< scroll pixel trigger scroll event
+    uint8_t limit_scroll_throw;             ///< [%]
 
 }gt_indev_drv_st;
 
