@@ -175,6 +175,10 @@ extern "C" {
 #include "src/widgets/gt_status_bar.h"
 #endif
 
+#if GT_CFG_ENABLE_GRAPHS
+#include "src/widgets/gt_graphs.h"
+#endif
+
 /* other */
 #include "src/others/gt_color.h"
 #include "src/others/gt_log.h"

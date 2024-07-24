@@ -2151,7 +2151,7 @@ _gt_draw_font_res_st draw_text(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st
 
 void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_area_st * coords)
 {
-    if( dsc->bg_opa < GT_OPA_MIN ) {
+    if (dsc->bg_opa < GT_OPA_MIN) {
         return;
     }
 
@@ -2217,6 +2217,51 @@ close_lb:
     gt_img_decoder_close(&dsc_img);
 }
 
+void gt_draw_lines(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, const gt_area_st * coords)
+{
+    if (dsc->opa < GT_OPA_MIN) {
+        return;
+    }
+    if (NULL == draw_ctx->buf) {
+        return;
+    }
+    if (!gt_area_is_intersect_screen(&draw_ctx->buf_area, coords)) {
+        return;
+    }
+    gt_radius_mask_st radius_mask = {0};
+    uint16_t rd_val = dsc->width ? dsc->width : 4;
+    gt_area_st circle = { 0, 0, rd_val, rd_val };
+    if (!_gt_radius_mask_init(&radius_mask, circle, rd_val >> 1, false)) {
+    }
+
+    gt_area_st area_line = circle;
+    area_line.x = dsc->start.x;
+    area_line.y = dsc->start.y;
+    area_line.h = 1;
+
+    gt_draw_blend_dsc_st blend_dsc = {
+        .dst_area = &area_line,
+        .mask_area = &area_line,
+        .color_fill = dsc->color,
+        .opa = dsc->opa,
+        .mask_buf = gt_mem_malloc(rd_val),
+    };
+    if (NULL == blend_dsc.mask_buf) {
+        goto radius_lb;
+    }
+
+    for (gt_size_t i = 0; i < rd_val; ++i) {
+        gt_memset(blend_dsc.mask_buf, 0xFF, rd_val);
+        area_line.y = dsc->start.y + i;
+        _gt_get_radius_mask_buf(blend_dsc.mask_buf, 0, i, area_line.w, &radius_mask);
+        gt_draw_blend(draw_ctx, &blend_dsc);
+    }
+
+
+    gt_mem_free(blend_dsc.mask_buf);
+radius_lb:
+    _gt_radius_mask_deinit(&radius_mask);
+}
 
 void draw_focus(gt_obj_st* obj, gt_size_t radius)
 {

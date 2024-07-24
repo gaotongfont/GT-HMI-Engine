@@ -116,6 +116,15 @@ _gt_draw_font_res_st draw_text(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st
  */
 void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_area_st * coords);
 
+/**
+ * @brief
+ *
+ * @param draw_ctx
+ * @param dsc
+ * @param coords
+ */
+void gt_draw_lines(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, const gt_area_st * coords);
+
 void draw_focus(gt_obj_st* obj, gt_size_t radius);
 
 #ifdef __cplusplus

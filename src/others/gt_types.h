@@ -156,6 +156,7 @@ typedef enum gt_obj_type_e {
     GT_TYPE_DIALOG      = 30,       ///< dialog, floating widget
     GT_TYPE_CHAT        = 31,       ///< chat
     GT_TYPE_STATUS_BAR  = 32,       ///< status bar, floating widget
+    GT_TYPE_GRAPH       = 33,       ///< graph
 
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;
@@ -214,14 +215,19 @@ typedef enum {
 /**
  * @brief area information
  */
-typedef struct _gt_area_s {
+typedef struct gt_area_s {
     gt_size_t x;    ///< x position
     gt_size_t y;    ///< y position
     uint16_t w;     ///< The width of area
     uint16_t h;     ///< The height of area
 }gt_area_st;
 
-typedef struct _gt_area_abs_s {
+typedef struct gt_range_s {
+    gt_size_t start;
+    gt_size_t end;
+}gt_range_st;
+
+typedef struct gt_area_abs_s {
     gt_size_t left;
     gt_size_t right;
     gt_size_t top;
