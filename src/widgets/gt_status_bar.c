@@ -807,7 +807,7 @@ void gt_status_bar_set_font_family(gt_family_t family)
     _set_font_param_call(obj, (_font_param_cb_t)gt_label_set_font_family, family);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
-void gt_status_bar_set_font_cjk(gt_obj_st* label, gt_font_cjk_et cjk)
+void gt_status_bar_set_font_cjk(gt_font_cjk_et cjk)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
     GT_CHECK_BACK(obj);
