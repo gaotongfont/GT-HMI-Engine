@@ -100,7 +100,7 @@ static void _draw_axis(gt_obj_st * obj) {
     };
     gt_point_st points[] = {
         { padding.x, padding.y }, { obj->area.w - padding.x, padding.y },
-        { padding.x, obj->area.h - padding.y }, { obj->area.w - padding.x, obj->area.h - padding.y },
+        { obj->area.w - padding.x, obj->area.h - padding.y }, { padding.x, obj->area.h - padding.y },
     };
 
     for (gt_size_t i = 0; i < 4; ++i) {

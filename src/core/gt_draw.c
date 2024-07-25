@@ -2235,8 +2235,8 @@ void gt_draw_lines(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, cons
     }
 
     gt_area_st area_line = circle;
-    area_line.x = dsc->start.x;
-    area_line.y = dsc->start.y;
+    area_line.x = dsc->start.x - (rd_val >> 1);     /** move to circle center point */
+    area_line.y = dsc->start.y - (rd_val >> 1);
     area_line.h = 1;
 
     gt_draw_blend_dsc_st blend_dsc = {
@@ -2249,14 +2249,24 @@ void gt_draw_lines(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, cons
     if (NULL == blend_dsc.mask_buf) {
         goto radius_lb;
     }
+    gt_point_st tmp = { .x = area_line.x, .y = area_line.y };
+    gt_point_st end = { .x = dsc->end.x - (rd_val >> 1), .y = dsc->end.y - (rd_val >> 1) };
+    gt_point_st diff = {
+        .x = end.x == tmp.x ? 0 : (end.x > tmp.x ? 1 : -1),
+        .y = end.y - tmp.y == 0 ? 0 : (end.y > tmp.y ? 1 : -1)
+    };
 
-    for (gt_size_t i = 0; i < rd_val; ++i) {
-        gt_memset(blend_dsc.mask_buf, 0xFF, rd_val);
-        area_line.y = dsc->start.y + i;
-        _gt_get_radius_mask_buf(blend_dsc.mask_buf, 0, i, area_line.w, &radius_mask);
-        gt_draw_blend(draw_ctx, &blend_dsc);
+    while (tmp.y != end.y || tmp.x != end.x) {
+        for (gt_size_t i = 0; i < rd_val; ++i) {
+            gt_memset(blend_dsc.mask_buf, 0xFF, rd_val);
+            _gt_get_radius_mask_buf(blend_dsc.mask_buf, 0, i, area_line.w, &radius_mask);
+            area_line.x = tmp.x;
+            area_line.y = tmp.y + i;
+            gt_draw_blend(draw_ctx, &blend_dsc);
+        }
+        tmp.x += diff.x;
+        tmp.y += diff.y;
     }
-
 
     gt_mem_free(blend_dsc.mask_buf);
 radius_lb:
