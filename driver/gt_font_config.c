@@ -25,7 +25,7 @@
 
 
 /* static variables -----------------------------------------------------*/
-static gt_font_family_st* _font_family = NULL;
+static const gt_font_family_st* _font_family = NULL;
 
 
 /* macros ---------------------------------------------------------------*/
