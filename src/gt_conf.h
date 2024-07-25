@@ -177,11 +177,14 @@ extern "C" {
 #define GT_CFG_DEFAULT_FONT_FAMILY_FL       GT_CFG_DEFAULT_FONT_FAMILY_EN
 #define GT_CFG_DEFAULT_FONT_FAMILY_NUMB     GT_CFG_DEFAULT_FONT_FAMILY_EN
 #define GT_CFG_DEFAULT_FONT_SIZE            16
-/**
- * @brief use old font family
- *
- */
-#define GT_FONT_FAMILY_OLD_ENABLE  01
+
+#ifndef GT_FONT_FAMILY_OLD_ENABLE
+    /**
+     * @brief use old font family
+     *
+     */
+    #define GT_FONT_FAMILY_OLD_ENABLE  01
+#endif
 
 
 #ifndef GT_USE_MODE_SRC
