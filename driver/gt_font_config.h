@@ -24,10 +24,7 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 typedef enum {
-    Family_16_ht = 0,
-    Family_16_4bit,
-    Family_24_hi,
-    Family_32_vec,
+    family_none = -1,
 }gt_font_family_et;
 
 
