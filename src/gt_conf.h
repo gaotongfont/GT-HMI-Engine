@@ -171,19 +171,23 @@ extern "C" {
     #define GT_USE_WIDGET_LAYOUT        01
 #endif
 
-/* default font style and size */
-#define GT_CFG_DEFAULT_FONT_FAMILY_CN       0xFFFE
-#define GT_CFG_DEFAULT_FONT_FAMILY_EN       0xFFFF
-#define GT_CFG_DEFAULT_FONT_FAMILY_FL       GT_CFG_DEFAULT_FONT_FAMILY_EN
-#define GT_CFG_DEFAULT_FONT_FAMILY_NUMB     GT_CFG_DEFAULT_FONT_FAMILY_EN
-#define GT_CFG_DEFAULT_FONT_SIZE            16
-
 #ifndef GT_FONT_FAMILY_OLD_ENABLE
     /**
      * @brief use old font family
      *
      */
     #define GT_FONT_FAMILY_OLD_ENABLE  01
+#endif
+
+/* default font style and size */
+#define GT_CFG_DEFAULT_FONT_FAMILY          (0xFFFF)
+#define GT_CFG_DEFAULT_FONT_SIZE            (16)
+
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
+#define GT_CFG_DEFAULT_FONT_FAMILY_CN       0xFFFE
+#define GT_CFG_DEFAULT_FONT_FAMILY_EN       GT_CFG_DEFAULT_FONT_FAMILY
+#define GT_CFG_DEFAULT_FONT_FAMILY_FL       GT_CFG_DEFAULT_FONT_FAMILY
+#define GT_CFG_DEFAULT_FONT_FAMILY_NUMB     GT_CFG_DEFAULT_FONT_FAMILY
 #endif
 
 

@@ -194,7 +194,11 @@ static const _font_type_group_adjust_ascii_pos_st _font_type_group_arr[] = {
     {.cn_opt = gt_family_gb2312_32_ht_4bit, .en_opt = gt_family_ascii_32x32_zk_4bit, .offset = { .y= 2 } },
 #endif
     /** null value */
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
     { .cn_opt = GT_CFG_DEFAULT_FONT_FAMILY_CN, .en_opt = GT_CFG_DEFAULT_FONT_FAMILY_EN, .offset = { .y = 0 } },
+#else
+    { .cn_opt = GT_CFG_DEFAULT_FONT_FAMILY, .en_opt = GT_CFG_DEFAULT_FONT_FAMILY, .offset = { .y = 0 } },
+#endif
 };
 
 static const gt_size_t _font_type_group_arr_len = sizeof(_font_type_group_arr) / sizeof(_font_type_group_adjust_ascii_pos_st) - 1;
@@ -298,6 +302,14 @@ static uint32_t _get_font_option(gt_font_st * font, uint32_t unicode)
     }
     return font_style;
 #else
+
+    if(_gt_number_symbol_font(unicode)){
+        uint32_t tmp_option = gt_font_family_get_option(font->info.family, FONT_LAN_NUMBER, font->info.cjk);
+        if(GT_CFG_DEFAULT_FONT_FAMILY != tmp_option){
+            return tmp_option;
+        }
+    }
+
     font_lan = gt_font_lan_get(unicode, font->info.encoding);
     return gt_font_family_get_option(font->info.family, font_lan, font->info.cjk);
 #endif
@@ -305,7 +317,7 @@ static uint32_t _get_font_option(gt_font_st * font, uint32_t unicode)
 
 /* global functions / API interface -------------------------------------*/
 
-void gt_font_family_init(gt_font_family_st* fam_list, uint16_t count)
+void gt_font_family_init(const gt_font_family_st* fam_list, uint16_t count)
 {
     _font_family_list.fam_list = fam_list;
     _font_family_list.count = count;
@@ -331,10 +343,10 @@ uint16_t gt_font_family_get_option(uint16_t fam , int16_t lan, uint8_t cjk)
     }
 
     if(GT_FONT_FAMILY_CHECK(_font_family_list , fam)){
-        return GT_CFG_DEFAULT_FONT_FAMILY_EN;
+        return GT_CFG_DEFAULT_FONT_FAMILY;
     }
 
-    if(lan >= FONT_LAN_MAX_COUNT) return GT_CFG_DEFAULT_FONT_FAMILY_EN;
+    if(lan >= FONT_LAN_MAX_COUNT) return GT_CFG_DEFAULT_FONT_FAMILY;
 
     if(FONT_LAN_CJK_UNIFIED == lan) {
         if(GT_FONT_CJK_C == cjk){

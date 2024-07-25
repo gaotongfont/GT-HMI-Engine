@@ -182,6 +182,7 @@ typedef enum _gt_font_lan_e {
     FONT_LAN_HINDI,
     FONT_LAN_JAPANESE,
     FONT_LAN_KOREAN,
+    FONT_LAN_NUMBER,
     //
     FONT_LAN_MAX_COUNT,
     //
@@ -222,7 +223,7 @@ typedef struct {
 }gt_font_family_st;
 
 typedef struct {
-    gt_font_family_st *fam_list;
+    const gt_font_family_st *fam_list;
     uint16_t count;
 }gt_font_family_list_st;
 
@@ -379,7 +380,7 @@ uint16_t gt_font_get_word_byte_length(char const * const text, uint16_t length, 
 
 
 
-void gt_font_family_init(gt_font_family_st* fam_list, uint16_t count);
+void gt_font_family_init(const gt_font_family_st* fam_list, uint16_t count);
 uint16_t gt_font_family_get_size(uint16_t fam);
 uint16_t gt_font_family_get_option(uint16_t fam , int16_t lan, uint8_t cjk);
 bool gt_font_family_is_one_style(uint16_t fam);
