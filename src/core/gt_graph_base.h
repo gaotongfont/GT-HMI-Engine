@@ -37,22 +37,31 @@ extern "C" {
 #define GT_RADIUS_MIN   2
 /* typedef --------------------------------------------------------------*/
 
+typedef struct gt_line_s {
+    gt_color_t color;
+    gt_opa_t opa;
+    uint8_t width;
+}gt_line_st;
+
 typedef struct gt_axis_s {
     gt_range_st hor;
     gt_range_st ver;
     uint16_t hor_unit;
     uint16_t ver_unit;
 
-    gt_color_t color;
-    uint8_t width;
+    // gt_color_t color;
+    // uint8_t width;
+    gt_line_st scale;
+    gt_line_st grid;
 }gt_axis_st;
 
 /**
  * @brief line attribute information
  */
 typedef struct _gt_attr_line_s {
-    gt_color_t color;   ///< fore color
-    gt_size_t width;    ///< line width
+    // gt_color_t color;   ///< fore color
+    // gt_size_t width;    ///< line width
+    gt_line_st line;
 
     // gt_size_t x_1;      ///< start point position
     // gt_size_t y_1;      ///< start point position
@@ -60,7 +69,7 @@ typedef struct _gt_attr_line_s {
     // gt_size_t x_2;      ///< end point position
     // gt_size_t y_2;      ///< end point position
 
-    gt_opa_t opa;       ///< opacity
+    // gt_opa_t opa;       ///< opacity
 
     gt_point_st start;
     gt_point_st end;

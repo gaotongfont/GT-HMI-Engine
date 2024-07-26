@@ -59,7 +59,7 @@ static const gt_obj_class_st gt_line_class = {
 static void _init_cb(gt_obj_st * obj) {
     _gt_line_st * widget = (_gt_line_st * )obj;
     gt_attr_line_st * style = &widget->line;
-    uint8_t r = (style->width + 1) >> 1;
+    uint8_t r = (style->line.width + 1) >> 1;
     obj->area.x = style->start.x;
     obj->area.y = style->start.y;
 
@@ -163,8 +163,8 @@ gt_obj_st * gt_line_create(gt_obj_st * parent)
     _gt_line_st * widget = (_gt_line_st * )obj;
     gt_attr_line_st * style = &widget->line;
 
-    style->width = 1;
-    style->color     = gt_color_black();
+    style->line.width = 1;
+    style->line.color = gt_color_black();
     return obj;
 }
 
@@ -175,7 +175,7 @@ void gt_line_set_color(gt_obj_st * line, gt_color_t color)
     }
     _gt_line_st * widget = (_gt_line_st * )line;
     gt_attr_line_st * style = &widget->line;
-    style->color = color;
+    style->line.color = color;
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
@@ -210,7 +210,7 @@ void gt_line_set_line_width(gt_obj_st * line, uint16_t line_width)
     }
     _gt_line_st * widget = (_gt_line_st * )line;
     gt_attr_line_st * style = &widget->line;
-    style->width = line_width;
+    style->line.width = line_width;
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 

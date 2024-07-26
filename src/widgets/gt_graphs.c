@@ -60,7 +60,7 @@ static void _draw_axis(gt_obj_st * obj);
 static void _graphs_init_cb(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     /* base shape */
-    GT_LOG_A("", ">> %x", style->gp.axis.color.full);
+    GT_LOG_A("", ">> %x", style->gp.axis.scale.color.full);
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill   = true;
@@ -93,15 +93,13 @@ static void _draw_axis(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_point_st padding = { (gt_size_t)(obj->area.w * 0.2) >> 1, (gt_size_t)(obj->area.h * 0.2) >> 1 };
 
-    gt_attr_line_st line = {
-        .color = style->gp.axis.color,
-        .width = style->gp.axis.width,
-        .opa = GT_OPA_COVER,
-    };
+    gt_attr_line_st line = { .line = style->gp.axis.scale };
     gt_point_st points[] = {
         { padding.x, padding.y }, { obj->area.w - padding.x, padding.y },
         { obj->area.w - padding.x, obj->area.h - padding.y }, { padding.x, obj->area.h - padding.y },
     };
+
+    // grid
 
     for (gt_size_t i = 0; i < 4; ++i) {
         line.start = points[i];
@@ -122,8 +120,9 @@ gt_obj_st * gt_graphs_create(gt_obj_st * parent)
         return obj;
     }
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
-    style->gp.axis.color = gt_color_red();
-    style->gp.axis.width = 8;
+    style->gp.axis.scale.color = gt_color_red();
+    style->gp.axis.scale.width = 8;
+    style->gp.axis.scale.opa = GT_OPA_COVER;
 
     return obj;
 }

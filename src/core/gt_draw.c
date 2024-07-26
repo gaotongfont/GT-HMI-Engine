@@ -2219,7 +2219,7 @@ close_lb:
 
 void gt_draw_lines(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, const gt_area_st * coords)
 {
-    if (dsc->opa < GT_OPA_MIN) {
+    if (dsc->line.opa < GT_OPA_MIN) {
         return;
     }
     if (NULL == draw_ctx->buf) {
@@ -2229,7 +2229,7 @@ void gt_draw_lines(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, cons
         return;
     }
     gt_radius_mask_st radius_mask = {0};
-    uint16_t rd_val = dsc->width ? dsc->width : 4;
+    uint16_t rd_val = dsc->line.width ? dsc->line.width : 4;
     gt_area_st circle = { 0, 0, rd_val, rd_val };
     if (!_gt_radius_mask_init(&radius_mask, circle, rd_val >> 1, false)) {
     }
@@ -2242,8 +2242,8 @@ void gt_draw_lines(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, cons
     gt_draw_blend_dsc_st blend_dsc = {
         .dst_area = &area_line,
         .mask_area = &area_line,
-        .color_fill = dsc->color,
-        .opa = dsc->opa,
+        .color_fill = dsc->line.color,
+        .opa = dsc->line.opa,
         .mask_buf = gt_mem_malloc(rd_val),
     };
     if (NULL == blend_dsc.mask_buf) {
