@@ -34,12 +34,7 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef enum gt_graphs_type_e {
-    GT_GRAPHS_TYPE_POINT = 0,
-    GT_GRAPHS_TYPE_LINE,
-    GT_GRAPHS_TYPE_CURVE,
-    GT_GRAPHS_TYPE_BAR,
-}gt_graphs_type_et;
+
 
 
 /* macros ---------------------------------------------------------------*/

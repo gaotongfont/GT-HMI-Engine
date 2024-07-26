@@ -78,7 +78,8 @@ static void _graphs_init_cb(gt_obj_st * obj) {
     /** draw axis */
     _draw_axis(obj);
 
-    /** draw point / line / curve */
+    /** draw points / lines / curves */
+    // _draw_points_lines_curves(obj);
 }
 
 static void _graphs_deinit_cb(gt_obj_st * obj) {
@@ -91,8 +92,8 @@ static void _graphs_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
 static void _void_draw_grid_lines(gt_obj_st * obj, gt_point_st const * const padding, gt_point_st * points) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
-    gt_attr_line_st line = { .line = style->gp.axis.grid };
-    if (line.line.opa < GT_OPA_MIN) {
+    gt_attr_line_st line_attr = { .line = style->gp.axis.grid };
+    if (line_attr.line.opa < GT_OPA_MIN) {
         return;
     }
     gt_point_st grid_diff = {
@@ -108,30 +109,30 @@ static void _void_draw_grid_lines(gt_obj_st * obj, gt_point_st const * const pad
     grid_diff.x = grid_diff.x - 1;
     grid_diff.y = grid_diff.y - 1;
 
-    line.start = points[0];
-    line.start.x += obj->area.x;
-    line.start.y += obj->area.y;
-    line.end = points[1];
-    line.end.x += obj->area.x;
-    line.end.y += obj->area.y;
+    line_attr.start = points[0];
+    line_attr.start.x += obj->area.x;
+    line_attr.start.y += obj->area.y;
+    line_attr.end = points[1];
+    line_attr.end.x += obj->area.x;
+    line_attr.end.y += obj->area.y;
     /** draw hor grid's lines */
     for (gt_size_t i = 0; i < grid_diff.y; ++i) {
-        line.start.y += grid.y;
-        line.end.y += grid.y;
-        gt_draw_lines(obj->draw_ctx, &line, &obj->area);
+        line_attr.start.y += grid.y;
+        line_attr.end.y += grid.y;
+        gt_draw_lines(obj->draw_ctx, &line_attr, &obj->area);
     }
 
-    line.start = points[0];
-    line.start.x += obj->area.x;
-    line.start.y += obj->area.y;
-    line.end = points[3];
-    line.end.x += obj->area.x;
-    line.end.y += obj->area.y;
+    line_attr.start = points[0];
+    line_attr.start.x += obj->area.x;
+    line_attr.start.y += obj->area.y;
+    line_attr.end = points[3];
+    line_attr.end.x += obj->area.x;
+    line_attr.end.y += obj->area.y;
     /** draw ver grid's lines */
     for (gt_size_t i = 0; i < grid_diff.x; ++i) {
-        line.start.x += grid.x;
-        line.end.x += grid.x;
-        gt_draw_lines(obj->draw_ctx, &line, &obj->area);
+        line_attr.start.x += grid.x;
+        line_attr.end.x += grid.x;
+        gt_draw_lines(obj->draw_ctx, &line_attr, &obj->area);
     }
 }
 
@@ -139,7 +140,7 @@ static void _draw_axis(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_point_st padding = { (gt_size_t)(obj->area.w * 0.2) >> 1, (gt_size_t)(obj->area.h * 0.2) >> 1 };
 
-    gt_attr_line_st line = { .line = style->gp.axis.scale };
+    gt_attr_line_st line_attr = { .line = style->gp.axis.scale };
     gt_point_st points[] = {
         { padding.x, padding.y }, { obj->area.w - padding.x, padding.y },
         { obj->area.w - padding.x, obj->area.h - padding.y }, { padding.x, obj->area.h - padding.y },
@@ -147,17 +148,17 @@ static void _draw_axis(gt_obj_st * obj) {
 
     _void_draw_grid_lines(obj, &padding, points);
 
-    if (line.line.opa < GT_OPA_MIN) {
+    if (line_attr.line.opa < GT_OPA_MIN) {
         return;
     }
     for (gt_size_t i = 0; i < 4; ++i) {
-        line.start = points[i];
-        line.start.x += obj->area.x;
-        line.start.y += obj->area.y;
-        line.end = points[(i + 1) % 4];
-        line.end.x += obj->area.x;
-        line.end.y += obj->area.y;
-        gt_draw_lines(obj->draw_ctx, &line, &obj->area);
+        line_attr.start = points[i];
+        line_attr.start.x += obj->area.x;
+        line_attr.start.y += obj->area.y;
+        line_attr.end = points[(i + 1) % 4];
+        line_attr.end.x += obj->area.x;
+        line_attr.end.y += obj->area.y;
+        gt_draw_lines(obj->draw_ctx, &line_attr, &obj->area);
     }
 }
 

@@ -161,6 +161,15 @@ typedef enum gt_obj_type_e {
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;
 
+/**
+ * @brief graphs type enum definition
+ */
+typedef enum gt_graphs_type_e {
+    GT_GRAPHS_TYPE_POINT = 0,
+    GT_GRAPHS_TYPE_LINE,
+    GT_GRAPHS_TYPE_CURVE,
+    GT_GRAPHS_TYPE_BAR,
+}gt_graphs_type_et;
 
 enum gt_layout_type_e {
     GT_LAYOUT_TYPE_FIXED = 0,
