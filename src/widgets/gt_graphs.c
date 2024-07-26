@@ -44,6 +44,7 @@ static const gt_obj_class_st gt_graphs_class = {
 };
 
 static void _draw_axis(gt_obj_st * obj);
+static void _draw_points_lines_curves(gt_obj_st * obj);
 
 
 
@@ -59,8 +60,6 @@ static void _draw_axis(gt_obj_st * obj);
 
 static void _graphs_init_cb(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
-    /* base shape */
-    GT_LOG_A("", ">> %x", style->gp.axis.scale.color.full);
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill   = true;
@@ -79,10 +78,37 @@ static void _graphs_init_cb(gt_obj_st * obj) {
     _draw_axis(obj);
 
     /** draw points / lines / curves */
-    // _draw_points_lines_curves(obj);
+    _draw_points_lines_curves(obj);
+}
+
+static void _free_series_lines(gt_series_points_st * series) {
+    if (NULL == series) {
+        return;
+    }
+    if (series->next_series_p) {
+        _free_series_lines(series->next_series_p);
+    }
+    if (series->y_series) {
+        gt_mem_free(series->y_series);
+        series->y_series = NULL;
+    }
+    if (series->x_series) {
+        gt_mem_free(series->x_series);
+        series->x_series = NULL;
+    }
+    gt_mem_free(series->next_series_p);
+    series->next_series_p = NULL;
 }
 
 static void _graphs_deinit_cb(gt_obj_st * obj) {
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    if (style->gp.series_head_p) {
+        _free_series_lines(style->gp.series_head_p);
+        gt_mem_free(style->gp.series_head_p);
+        style->gp.series_head_p = NULL;
+        style->gp.line_count = 0;
+    }
+
 
 }
 
@@ -100,6 +126,8 @@ static void _void_draw_grid_lines(gt_obj_st * obj, gt_point_st const * const pad
         .x = gt_abs((style->gp.axis.hor.end - style->gp.axis.hor.start) / style->gp.axis.hor_unit),
         .y = gt_abs((style->gp.axis.ver.end - style->gp.axis.ver.start) / style->gp.axis.ver_unit),
     };
+    if (0 == grid_diff.x) { grid_diff.x = 1; }  /** Avoid the denominator 0 */
+    if (0 == grid_diff.y) { grid_diff.y = 1; }
 
     gt_point_st grid = {
         .x = (obj->area.w - (padding->x << 1)) / grid_diff.x,
@@ -162,6 +190,24 @@ static void _draw_axis(gt_obj_st * obj) {
     }
 }
 
+static void _draw_points_lines_curves(gt_obj_st * obj) {
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    gt_attr_point_st point_attr = { .line = style->gp.axis.scale };
+    point_attr.pos.x = obj->area.x + 100;
+    point_attr.pos.y = obj->area.y + 100;
+    gt_draw_points(obj->draw_ctx, &point_attr, &obj->area);
+
+#if 0
+    /** test same point in line */
+    gt_attr_line_st line_attr = { .line = style->gp.axis.scale };
+    line_attr.start.x = obj->area.x + 50;
+    line_attr.start.y = obj->area.y + 50;
+    line_attr.end.x = obj->area.x + 50;
+    line_attr.end.y = obj->area.y + 50;
+    gt_draw_lines(obj->draw_ctx, &line_attr, &obj->area);
+#endif
+}
+
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_graphs_create(gt_obj_st * parent)
 {
@@ -179,11 +225,55 @@ gt_obj_st * gt_graphs_create(gt_obj_st * parent)
 
 void gt_graphs_set_axis(gt_obj_st * obj, gt_axis_st const * const axis)
 {
-    _gt_graphs_st * style = (_gt_graphs_st *)obj;
-    if (NULL == style) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;
     }
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_memcpy(&style->gp.axis, axis, sizeof(gt_axis_st));
+}
+
+void gt_graphs_set_series_line_type(gt_obj_st * obj, gt_graphs_type_et type_style)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    style->gp.type = type_style;
+}
+
+gt_series_points_st * gt_graphs_add_series_line(gt_obj_st * obj, gt_line_st const * const line_style)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return NULL;
+    }
+    return NULL;    // FIX
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    uint16_t size = sizeof(gt_series_points_st);
+    gt_series_points_st * series = gt_mem_malloc(size);
+    GT_CHECK_BACK_VAL(series, NULL);
+    gt_memset(series, 0, size);
+
+    gt_memcpy(&series->line, line_style, sizeof(gt_line_st));
+
+    ++style->gp.line_count;
+    if (NULL == style->gp.series_head_p) {
+        style->gp.series_head_p = series;
+        return series;
+    }
+    gt_series_points_st * ptr = style->gp.series_head_p;
+    while (ptr->next_series_p) { ptr = ptr->next_series_p; }
+    ptr->next_series_p = series;
+    return series;
+}
+
+gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st const * series, gt_point_st const * const point)
+{
+    return GT_RES_OK;
+}
+
+gt_res_t gt_graphs_series_add_point_by(gt_obj_st * obj, uint16_t series_index, gt_point_st const * const point)
+{
+    return GT_RES_OK;
 }
 
 #endif  /** GT_CFG_ENABLE_GRAPHS */

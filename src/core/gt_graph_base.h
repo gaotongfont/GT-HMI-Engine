@@ -66,6 +66,11 @@ typedef struct gt_axis_s {
     gt_line_st grid;
 }gt_axis_st;
 
+typedef struct gt_attr_point_s {
+    gt_point_st pos;
+    gt_line_st line;
+}gt_attr_point_st;
+
 /**
  * @brief line attribute information
  */
@@ -81,13 +86,13 @@ typedef struct gt_series_points_s {
     gt_size_t * x_series;
     gt_size_t * y_series;
     gt_line_st line;
-    uint8_t type;   /** @ref gt_graphs_type_et */
 }gt_series_points_st;
 
 typedef struct _gt_attr_graphs_s {
-    gt_axis_st axis;
-    uint16_t count;
     gt_series_points_st * series_head_p;
+    gt_axis_st axis;
+    uint16_t line_count;
+    uint8_t type;   /** @ref gt_graphs_type_et */
 }_gt_attr_graphs_st;
 
 typedef struct _gt_attr_rect_reg_s {

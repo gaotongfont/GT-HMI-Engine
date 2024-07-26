@@ -2217,6 +2217,49 @@ close_lb:
     gt_img_decoder_close(&dsc_img);
 }
 
+void gt_draw_points(_gt_draw_ctx_st * draw_ctx, gt_attr_point_st const * dsc, gt_area_st const * coords)
+{
+    if (dsc->line.opa < GT_OPA_MIN) {
+        return;
+    }
+    if (NULL == draw_ctx->buf) {
+        return;
+    }
+    if (!gt_area_is_intersect_screen(&draw_ctx->buf_area, coords)) {
+        return;
+    }
+    gt_radius_mask_st radius_mask = {0};
+    uint16_t rd_val = dsc->line.width ? dsc->line.width : 4;
+    gt_area_st area_line = { 0, 0, rd_val, rd_val };
+    if (!_gt_radius_mask_init(&radius_mask, area_line, rd_val >> 1, false)) {
+    }
+
+    area_line.x = dsc->pos.x - (rd_val >> 1);     /** move to circle center point */
+    area_line.y = dsc->pos.y - (rd_val >> 1);
+    area_line.h = 1;
+
+    gt_draw_blend_dsc_st blend_dsc = {
+        .dst_area = &area_line,
+        .mask_area = &area_line,
+        .color_fill = dsc->line.color,
+        .opa = dsc->line.opa,
+        .mask_buf = gt_mem_malloc(rd_val),
+    };
+    if (NULL == blend_dsc.mask_buf) {
+        goto radius_lb;
+    }
+    for (gt_size_t i = 0; i < rd_val; ++i) {
+        gt_memset(blend_dsc.mask_buf, 0xFF, rd_val);
+        _gt_get_radius_mask_buf(blend_dsc.mask_buf, 0, i, area_line.w, &radius_mask);
+        ++area_line.y;
+        gt_draw_blend(draw_ctx, &blend_dsc);
+    }
+
+    gt_mem_free(blend_dsc.mask_buf);
+radius_lb:
+    _gt_radius_mask_deinit(&radius_mask);
+}
+
 void gt_draw_lines(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, const gt_area_st * coords)
 {
     if (dsc->line.opa < GT_OPA_MIN) {
@@ -2230,11 +2273,10 @@ void gt_draw_lines(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, cons
     }
     gt_radius_mask_st radius_mask = {0};
     uint16_t rd_val = dsc->line.width ? dsc->line.width : 4;
-    gt_area_st circle = { 0, 0, rd_val, rd_val };
-    if (!_gt_radius_mask_init(&radius_mask, circle, rd_val >> 1, false)) {
+    gt_area_st area_line = { 0, 0, rd_val, rd_val };
+    if (!_gt_radius_mask_init(&radius_mask, area_line, rd_val >> 1, false)) {
     }
 
-    gt_area_st area_line = circle;
     area_line.x = dsc->start.x - (rd_val >> 1);     /** move to circle center point */
     area_line.y = dsc->start.y - (rd_val >> 1);
     area_line.h = 1;
@@ -2256,7 +2298,7 @@ void gt_draw_lines(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, cons
         .y = end.y - tmp.y == 0 ? 0 : (end.y > tmp.y ? 1 : -1)
     };
 
-    while (tmp.y != end.y || tmp.x != end.x) {
+    do {
         for (gt_size_t i = 0; i < rd_val; ++i) {
             gt_memset(blend_dsc.mask_buf, 0xFF, rd_val);
             _gt_get_radius_mask_buf(blend_dsc.mask_buf, 0, i, area_line.w, &radius_mask);
@@ -2266,7 +2308,7 @@ void gt_draw_lines(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, cons
         }
         tmp.x += diff.x;
         tmp.y += diff.y;
-    }
+    } while (tmp.y != end.y || tmp.x != end.x);  /** The start or end point are the same, it will draw once. */
 
     gt_mem_free(blend_dsc.mask_buf);
 radius_lb:
