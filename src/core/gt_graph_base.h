@@ -35,12 +35,25 @@ extern "C" {
 #define GT_DOT_GET_BIT(buf,x,y,w,h)		((buf[(y)*((w)>>3)+((x)>>3)]>>(7-((x)%8)))&0x01)
 
 #define GT_RADIUS_MIN   2
+
 /* typedef --------------------------------------------------------------*/
+
+#if 0
+// TODO
+typedef enum {
+    GT_LINE_STYLE_DEFAULT = 0,
+    GT_LINE_STYLE_STUB,             /** such as: - - - - */
+}gt_line_style_et;
+#endif
+
 
 typedef struct gt_line_s {
     gt_color_t color;
     gt_opa_t opa;
     uint8_t width;
+#if 0
+    uint8_t type_sty;           /** line style @ref gt_line_style_et */
+#endif
 }gt_line_st;
 
 typedef struct gt_axis_s {
@@ -49,8 +62,6 @@ typedef struct gt_axis_s {
     uint16_t hor_unit;
     uint16_t ver_unit;
 
-    // gt_color_t color;
-    // uint8_t width;
     gt_line_st scale;
     gt_line_st grid;
 }gt_axis_st;
@@ -59,20 +70,10 @@ typedef struct gt_axis_s {
  * @brief line attribute information
  */
 typedef struct _gt_attr_line_s {
-    // gt_color_t color;   ///< fore color
-    // gt_size_t width;    ///< line width
-    gt_line_st line;
-
-    // gt_size_t x_1;      ///< start point position
-    // gt_size_t y_1;      ///< start point position
-
-    // gt_size_t x_2;      ///< end point position
-    // gt_size_t y_2;      ///< end point position
-
-    // gt_opa_t opa;       ///< opacity
-
     gt_point_st start;
     gt_point_st end;
+
+    gt_line_st line;
 }gt_attr_line_st;
 
 typedef struct _gt_attr_graphs_s {
@@ -84,8 +85,8 @@ typedef struct _gt_attr_graphs_s {
 
 typedef struct _gt_attr_rect_reg_s {
     uint8_t is_fill : 1;    ///< fill inside area by bg_color
-    uint8_t is_line : 1;    ///< use straight line
-    uint8_t reserved : 6;   ///< reserved
+    // uint8_t is_line : 1;    ///< use straight line
+    uint8_t reserved : 7;   ///< reserved
 }_gt_attr_rect_reg_st;
 
 /**
