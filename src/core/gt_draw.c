@@ -2232,7 +2232,10 @@ void gt_draw_point(_gt_draw_ctx_st * draw_ctx, gt_attr_point_st const * dsc, gt_
     uint16_t rd_val = dsc->line.width ? dsc->line.width : 4;
     gt_area_st area_line = { 0, 0, rd_val, rd_val };
     if (!_gt_radius_mask_init(&radius_mask, area_line, rd_val >> 1, false)) {
+        return;
     }
+    gt_area_st * remark_area = draw_ctx->parent_area;
+    draw_ctx->parent_area = (gt_area_st * )coords;  /** remark before parent area value, return will reload */
 
     area_line.x = dsc->pos.x - (rd_val >> 1);     /** move to circle center point */
     area_line.y = dsc->pos.y - (rd_val >> 1);
@@ -2258,6 +2261,7 @@ void gt_draw_point(_gt_draw_ctx_st * draw_ctx, gt_attr_point_st const * dsc, gt_
     gt_mem_free(blend_dsc.mask_buf);
 radius_lb:
     _gt_radius_mask_deinit(&radius_mask);
+    draw_ctx->parent_area = remark_area;    /** reset to before value */
 }
 
 void gt_draw_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, const gt_area_st * coords)
@@ -2275,7 +2279,10 @@ void gt_draw_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, const
     uint16_t rd_val = dsc->line.width ? dsc->line.width : 4;
     gt_area_st area_line = { 0, 0, rd_val, rd_val };
     if (!_gt_radius_mask_init(&radius_mask, area_line, rd_val >> 1, false)) {
+        return;
     }
+    gt_area_st * remark_area = draw_ctx->parent_area;
+    draw_ctx->parent_area = (gt_area_st * )coords;  /** remark before parent area value, return will reload */
 
     area_line.x = dsc->start.x - (rd_val >> 1);     /** move to circle center point */
     area_line.y = dsc->start.y - (rd_val >> 1);
@@ -2313,6 +2320,7 @@ void gt_draw_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, const
     gt_mem_free(blend_dsc.mask_buf);
 radius_lb:
     _gt_radius_mask_deinit(&radius_mask);
+    draw_ctx->parent_area = remark_area;    /** reset to before value */
 }
 
 void draw_focus(gt_obj_st* obj, gt_size_t radius)

@@ -116,6 +116,11 @@ static void _graphs_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
 }
 
+static gt_point_st _get_display_pixel_range(gt_point_st const * const padding, uint16_t w, uint16_t h) {
+    gt_point_st ret = { .x = w - (padding->x << 1), .y = h - (padding->y << 1) };
+    return ret;
+}
+
 static void _void_draw_grid_lines(gt_obj_st * obj, gt_point_st const * const padding, gt_point_st * points) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_attr_line_st line_attr = { .line = style->gp.axis.grid };
@@ -129,10 +134,10 @@ static void _void_draw_grid_lines(gt_obj_st * obj, gt_point_st const * const pad
     if (0 == grid_diff.x) { grid_diff.x = 1; }  /** Avoid the denominator 0 */
     if (0 == grid_diff.y) { grid_diff.y = 1; }
 
-    gt_point_st grid = {
-        .x = (obj->area.w - (padding->x << 1)) / grid_diff.x,
-        .y = (obj->area.h - (padding->y << 1)) / grid_diff.y,
-    };
+    gt_point_st grid = _get_display_pixel_range(padding, obj->area.w, obj->area.h);
+    grid.x /= grid_diff.x;
+    grid.y /= grid_diff.y;
+
 
     grid_diff.x = grid_diff.x - 1;
     grid_diff.y = grid_diff.y - 1;
@@ -164,9 +169,14 @@ static void _void_draw_grid_lines(gt_obj_st * obj, gt_point_st const * const pad
     }
 }
 
+static gt_point_st _get_padding_by(gt_obj_st * obj) {
+    gt_point_st padding = { (gt_size_t)(obj->area.w * 0.2) >> 1, (gt_size_t)(obj->area.h * 0.2) >> 1 };
+    return padding;
+}
+
 static void _draw_axis(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
-    gt_point_st padding = { (gt_size_t)(obj->area.w * 0.2) >> 1, (gt_size_t)(obj->area.h * 0.2) >> 1 };
+    gt_point_st padding = _get_padding_by(obj);
 
     gt_attr_line_st line_attr = { .line = style->gp.axis.scale };
     gt_point_st points[] = {
@@ -176,6 +186,9 @@ static void _draw_axis(gt_obj_st * obj) {
 
     _void_draw_grid_lines(obj, &padding, points);
 
+        GT_LOG_A("", "axis: (%d, %d, %d,  %d)",
+            points[0].x + obj->area.x, points[0].y + obj->area.y,
+            points[2].x + obj->area.x, points[2].y + obj->area.y);
     if (line_attr.line.opa < GT_OPA_MIN) {
         return;
     }
@@ -203,8 +216,29 @@ static void _graphs_draw_curve(_gt_graphs_st * style) {
 static void _graphs_draw_bar(_gt_graphs_st * style) {
 
 }
+
 static void _graphs_draw_points(_gt_graphs_st * style) {
 
+    gt_obj_st * obj = (gt_obj_st * )style;
+    gt_attr_point_st point_attr = {0};
+    gt_series_points_st * ptr = style->gp.series_head_p;
+    gt_point_st padding = _get_padding_by(obj);
+    gt_point_st range = _get_display_pixel_range(&padding, obj->area.w, obj->area.h);
+    gt_point_st offset = {
+        .x = obj->area.x + padding.x - style->gp.axis.hor.start,
+        .y = obj->area.y + padding.y - style->gp.axis.ver.start,
+    };
+
+    while (ptr) {
+        point_attr.line = ptr->line;
+        for (gt_size_t i = 0; i < ptr->count_point; ++i) {
+            point_attr.pos.x = ptr->x_series[i] + offset.x;
+            point_attr.pos.y = ptr->y_series[i] + offset.y;
+            GT_LOG_A("", ">> (%d, %d)", point_attr.pos.x, point_attr.pos.y);
+            gt_draw_point(style->obj.draw_ctx, &point_attr, &style->obj.area);
+        }
+        ptr = ptr->next_series_p;
+    }
 }
 
 static void _draw_points_lines_curves(gt_obj_st * obj) {
@@ -219,6 +253,8 @@ static void _draw_points_lines_curves(gt_obj_st * obj) {
     } else {
         _graphs_draw_points(style);
     }
+
+
 #if 0
     gt_attr_point_st point_attr = { .line = style->gp.axis.scale };
     point_attr.pos.x = obj->area.x + 100;
