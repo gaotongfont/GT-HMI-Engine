@@ -402,8 +402,8 @@ static void _init_cb(gt_obj_st * obj) {
     rect_attr.bg_color = style->color_act;
     dist_min = rect_attr.radius << 1;
     /* When style->offset = 1, area_val is plotted as a line */
-    if(style->offset > 1){
-        if(style->offset < dist_min){
+    if (style->offset > 1) {
+        if (style->offset < dist_min) {
             rect_attr.base_area = &area_base;
         }
         /** active area */
