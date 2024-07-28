@@ -87,6 +87,8 @@ static void _free_series_lines(gt_series_points_st * series) {
     }
     if (series->next_series_p) {
         _free_series_lines(series->next_series_p);
+        gt_mem_free(series->next_series_p);
+        series->next_series_p = NULL;
     }
     if (series->y_series) {
         gt_mem_free(series->y_series);
@@ -96,8 +98,6 @@ static void _free_series_lines(gt_series_points_st * series) {
         gt_mem_free(series->x_series);
         series->x_series = NULL;
     }
-    gt_mem_free(series->next_series_p);
-    series->next_series_p = NULL;
 }
 
 static void _graphs_deinit_cb(gt_obj_st * obj) {
@@ -246,7 +246,6 @@ gt_series_points_st * gt_graphs_add_series_line(gt_obj_st * obj, gt_line_st cons
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return NULL;
     }
-    return NULL;    // FIX
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     uint16_t size = sizeof(gt_series_points_st);
     gt_series_points_st * series = gt_mem_malloc(size);
