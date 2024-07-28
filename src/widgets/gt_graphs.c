@@ -190,13 +190,35 @@ static void _draw_axis(gt_obj_st * obj) {
     }
 }
 
+static inline bool _is_line_type(_gt_graphs_st * style, gt_graphs_type_et type) {
+    return type == style->gp.type;
+}
+
+static void _graphs_draw_line(_gt_graphs_st * style) {
+
+}
+static void _graphs_draw_curve(_gt_graphs_st * style) {
+
+}
+static void _graphs_draw_bar(_gt_graphs_st * style) {
+
+}
+static void _graphs_draw_points(_gt_graphs_st * style) {
+
+}
+
 static void _draw_points_lines_curves(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
-    // TODO change to series point
 
-
-
-
+    if (_is_line_type(style, GT_GRAPHS_TYPE_LINE)) {
+        _graphs_draw_line(style);
+    } else if (_is_line_type(style, GT_GRAPHS_TYPE_CURVE)) {
+        _graphs_draw_curve(style);
+    } else if (_is_line_type(style, GT_GRAPHS_TYPE_BAR)) {
+        _graphs_draw_bar(style);
+    } else {
+        _graphs_draw_points(style);
+    }
 #if 0
     gt_attr_point_st point_attr = { .line = style->gp.axis.scale };
     point_attr.pos.x = obj->area.x + 100;
