@@ -86,12 +86,13 @@ typedef struct gt_series_points_s {
     gt_size_t * x_series;
     gt_size_t * y_series;
     gt_line_st line;
+    uint16_t count_point;
 }gt_series_points_st;
 
 typedef struct _gt_attr_graphs_s {
     gt_series_points_st * series_head_p;
     gt_axis_st axis;
-    uint16_t line_count;
+    uint16_t count_line;
     uint8_t type;   /** @ref gt_graphs_type_et */
 }_gt_attr_graphs_st;
 

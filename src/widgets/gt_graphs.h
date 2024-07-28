@@ -55,7 +55,7 @@ void gt_graphs_set_series_line_type(gt_obj_st * obj, gt_graphs_type_et type_styl
 
 gt_series_points_st * gt_graphs_add_series_line(gt_obj_st * obj, gt_line_st const * const line_style);
 
-gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st const * series, gt_point_st const * const point);
+gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const series, gt_point_st const * const point);
 gt_res_t gt_graphs_series_add_point_by(gt_obj_st * obj, uint16_t series_index, gt_point_st const * const point);
 
 #endif  /** GT_CFG_ENABLE_GRAPHS */

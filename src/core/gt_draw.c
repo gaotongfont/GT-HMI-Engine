@@ -2217,7 +2217,7 @@ close_lb:
     gt_img_decoder_close(&dsc_img);
 }
 
-void gt_draw_points(_gt_draw_ctx_st * draw_ctx, gt_attr_point_st const * dsc, gt_area_st const * coords)
+void gt_draw_point(_gt_draw_ctx_st * draw_ctx, gt_attr_point_st const * dsc, gt_area_st const * coords)
 {
     if (dsc->line.opa < GT_OPA_MIN) {
         return;
@@ -2260,7 +2260,7 @@ radius_lb:
     _gt_radius_mask_deinit(&radius_mask);
 }
 
-void gt_draw_lines(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, const gt_area_st * coords)
+void gt_draw_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, const gt_area_st * coords)
 {
     if (dsc->line.opa < GT_OPA_MIN) {
         return;
