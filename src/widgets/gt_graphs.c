@@ -251,11 +251,13 @@ static void _graphs_draw_line(_gt_graphs_st * style) {
         ptr = ptr->next_series_p;
     }
 }
+
 static void _graphs_draw_curve(_gt_graphs_st * style) {
 
 }
-static void _graphs_draw_bar(_gt_graphs_st * style) {
 
+static void _graphs_draw_bar(_gt_graphs_st * style) {
+    GT_LOG_A("GRAPHS", "WARN Bar has not been implemented yet!!!");
 }
 
 static void _graphs_draw_points(_gt_graphs_st * style) {
