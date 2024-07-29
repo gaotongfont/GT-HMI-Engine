@@ -215,7 +215,41 @@ static inline gt_point_st _get_axis_scale_total_range(_gt_graphs_st * style) {
 }
 
 static void _graphs_draw_line(_gt_graphs_st * style) {
+    gt_obj_st * obj = (gt_obj_st * )style;
+    gt_attr_line_st line_attr = {0};
+    gt_series_points_st * ptr = style->gp.series_head_p;
+    gt_point_st padding = _get_padding_by(obj);
+    gt_point_st range = _get_display_pixel_range(&padding, obj->area.w, obj->area.h);
+    gt_point_st total = _get_axis_scale_total_range(style);
+    gt_size_t hor_start = style->gp.axis.hor.start;
+    gt_size_t ver_start = style->gp.axis.ver.start;
+    padding.x += obj->area.x;
+    padding.y += obj->area.y;
 
+    while (ptr) {
+        line_attr.line = ptr->line;
+        if (0 == ptr->count_point) {
+            ptr = ptr->next_series_p;
+            continue;
+        }
+        if (1 == ptr->count_point) {
+            gt_attr_point_st point_attr = { .line = line_attr.line };
+            point_attr.pos.x = (ptr->x_series[0] - hor_start) * range.x / total.x + padding.x;
+            point_attr.pos.y = (ptr->y_series[0] - ver_start) * range.y / total.y + padding.y;
+            gt_draw_point(style->obj.draw_ctx, &point_attr, &style->obj.area);
+            ptr = ptr->next_series_p;
+            continue;
+        }
+        line_attr.end.x = (ptr->x_series[0] - hor_start) * range.x / total.x + padding.x;
+        line_attr.end.y = (ptr->y_series[0] - ver_start) * range.y / total.y + padding.y;
+        for (gt_size_t i = 1; i < ptr->count_point; ++i) {
+            line_attr.start = line_attr.end;
+            line_attr.end.x = (ptr->x_series[i] - hor_start) * range.x / total.x + padding.x;
+            line_attr.end.y = (ptr->y_series[i] - ver_start) * range.y / total.y + padding.y;
+            gt_draw_line(style->obj.draw_ctx, &line_attr, &style->obj.area);
+        }
+        ptr = ptr->next_series_p;
+    }
 }
 static void _graphs_draw_curve(_gt_graphs_st * style) {
 
@@ -225,7 +259,6 @@ static void _graphs_draw_bar(_gt_graphs_st * style) {
 }
 
 static void _graphs_draw_points(_gt_graphs_st * style) {
-
     gt_obj_st * obj = (gt_obj_st * )style;
     gt_attr_point_st point_attr = {0};
     gt_series_points_st * ptr = style->gp.series_head_p;
