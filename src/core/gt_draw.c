@@ -2304,6 +2304,8 @@ void gt_draw_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, const
         .x = end.x == tmp.x ? 0 : (end.x > tmp.x ? 1 : -1),
         .y = end.y - tmp.y == 0 ? 0 : (end.y > tmp.y ? 1 : -1)
     };
+    gt_point_st start = { .x = tmp.x, .y = tmp.y };
+    gt_point_st distance = { .x = end.x - start.x, .y = end.y - start.y };
 
     do {
         for (gt_size_t i = 0; i < rd_val; ++i) {
@@ -2313,8 +2315,14 @@ void gt_draw_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, const
             area_line.y = tmp.y + i;
             gt_draw_blend(draw_ctx, &blend_dsc);
         }
-        tmp.x += diff.x;
-        tmp.y += diff.y;
+        if (0 == diff.x) {
+            tmp.y += diff.y;
+        } else if (0 == diff.y) {
+            tmp.x += diff.x;
+        } else {
+            tmp.x += diff.x;
+            tmp.y = (tmp.x - start.x) * distance.y / distance.x + start.y;
+        }
     } while (tmp.y != end.y || tmp.x != end.x);  /** The start or end point are the same, it will draw once. */
 
     gt_mem_free(blend_dsc.mask_buf);
