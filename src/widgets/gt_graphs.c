@@ -293,25 +293,6 @@ static void _draw_points_lines_curves(gt_obj_st * obj) {
     } else {
         _graphs_draw_points(style);
     }
-
-
-#if 0
-    gt_attr_point_st point_attr = { .line = style->gp.axis.scale };
-    point_attr.pos.x = obj->area.x + 100;
-    point_attr.pos.y = obj->area.y + 100;
-    gt_draw_point(obj->draw_ctx, &point_attr, &obj->area);
-#endif
-
-
-#if 0
-    /** test same point in line */
-    gt_attr_line_st line_attr = { .line = style->gp.axis.scale };
-    line_attr.start.x = obj->area.x + 50;
-    line_attr.start.y = obj->area.y + 50;
-    line_attr.end.x = obj->area.x + 50;
-    line_attr.end.y = obj->area.y + 50;
-    gt_draw_line(obj->draw_ctx, &line_attr, &obj->area);
-#endif
 }
 
 /* global functions / API interface -------------------------------------*/
