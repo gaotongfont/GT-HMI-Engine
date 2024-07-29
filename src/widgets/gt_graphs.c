@@ -170,7 +170,9 @@ static void _void_draw_grid_lines(gt_obj_st * obj, gt_point_st const * const pad
 }
 
 static gt_point_st _get_padding_by(gt_obj_st * obj) {
-    gt_point_st padding = { (gt_size_t)(obj->area.w * 0.2) >> 1, (gt_size_t)(obj->area.h * 0.2) >> 1 };
+    gt_point_st padding = {
+        (gt_size_t)(obj->area.w * 0.2) >> 1, (gt_size_t)(obj->area.h * 0.2) >> 1
+    };
     return padding;
 }
 
@@ -186,9 +188,6 @@ static void _draw_axis(gt_obj_st * obj) {
 
     _void_draw_grid_lines(obj, &padding, points);
 
-        GT_LOG_A("", "axis: (%d, %d, %d,  %d)",
-            points[0].x + obj->area.x, points[0].y + obj->area.y,
-            points[2].x + obj->area.x, points[2].y + obj->area.y);
     if (line_attr.line.opa < GT_OPA_MIN) {
         return;
     }
@@ -205,6 +204,14 @@ static void _draw_axis(gt_obj_st * obj) {
 
 static inline bool _is_line_type(_gt_graphs_st * style, gt_graphs_type_et type) {
     return type == style->gp.type;
+}
+
+static inline gt_point_st _get_axis_scale_total_range(_gt_graphs_st * style) {
+    gt_point_st scale_range = {
+        .x = style->gp.axis.hor.end == style->gp.axis.hor.start ? 1 : (style->gp.axis.hor.end - style->gp.axis.hor.start),
+        .y = style->gp.axis.ver.end == style->gp.axis.ver.start ? 1 : (style->gp.axis.ver.end - style->gp.axis.ver.start),
+    };
+    return scale_range;
 }
 
 static void _graphs_draw_line(_gt_graphs_st * style) {
@@ -224,17 +231,17 @@ static void _graphs_draw_points(_gt_graphs_st * style) {
     gt_series_points_st * ptr = style->gp.series_head_p;
     gt_point_st padding = _get_padding_by(obj);
     gt_point_st range = _get_display_pixel_range(&padding, obj->area.w, obj->area.h);
-    gt_point_st offset = {
-        .x = obj->area.x + padding.x - style->gp.axis.hor.start,
-        .y = obj->area.y + padding.y - style->gp.axis.ver.start,
-    };
+    gt_point_st total = _get_axis_scale_total_range(style);
+    gt_size_t hor_start = style->gp.axis.hor.start;
+    gt_size_t ver_start = style->gp.axis.ver.start;
+    padding.x += obj->area.x;
+    padding.y += obj->area.y;
 
     while (ptr) {
         point_attr.line = ptr->line;
         for (gt_size_t i = 0; i < ptr->count_point; ++i) {
-            point_attr.pos.x = ptr->x_series[i] + offset.x;
-            point_attr.pos.y = ptr->y_series[i] + offset.y;
-            GT_LOG_A("", ">> (%d, %d)", point_attr.pos.x, point_attr.pos.y);
+            point_attr.pos.x = (ptr->x_series[i] - hor_start) * range.x / total.x + padding.x;
+            point_attr.pos.y = (ptr->y_series[i] - ver_start) * range.y / total.y + padding.y;
             gt_draw_point(style->obj.draw_ctx, &point_attr, &style->obj.area);
         }
         ptr = ptr->next_series_p;
@@ -393,7 +400,6 @@ gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const
     series->y_series[series->count_point] = point->y;
     ++series->count_point;
 
-    GT_LOG_A("", "%d, %d", point->x, point->y);
     return GT_RES_OK;
 
 y_fail_lb:
