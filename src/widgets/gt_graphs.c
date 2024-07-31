@@ -30,6 +30,13 @@ typedef struct _gt_graphs_s {
     _gt_attr_graphs_st gp;
 }_gt_graphs_st;
 
+typedef struct _graph_css_s {
+    gt_point_st padding;
+    gt_point_st range;
+    gt_point_st total;
+    gt_point_st start;
+}_graph_css_st;
+
 /* static variables -----------------------------------------------------*/
 static void _graphs_init_cb(gt_obj_st * obj);
 static void _graphs_deinit_cb(gt_obj_st * obj);
@@ -65,10 +72,8 @@ static void _graphs_init_cb(gt_obj_st * obj) {
     rect_attr.reg.is_fill   = true;
     rect_attr.radius        = obj->radius;
     rect_attr.bg_opa        = obj->opa;
-    // rect_attr.border_width  = style->border_width;
     rect_attr.fg_color      = obj->bgcolor;
     rect_attr.bg_color      = obj->bgcolor;
-    // rect_attr.border_color  = style->color_border;
 
     gt_area_st area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
     // 1:base shape
@@ -219,34 +224,52 @@ static inline gt_point_st _get_start_value_by(_gt_graphs_st * style) {
     return start_val;
 }
 
-static inline gt_size_t _calc_abs_point(gt_size_t p, gt_size_t start, gt_size_t range, gt_size_t total, gt_size_t padding) {
-    return (p - start) * range / total + padding;
+static inline gt_size_t _calc_abs_point_x(gt_size_t p, _graph_css_st const * const css) {
+    return (p - css->start.x) * css->range.x / css->total.x + css->padding.x;
 }
 
-static inline float _calc_abs_point_f(gt_size_t p, gt_size_t start, gt_size_t range, gt_size_t total, gt_size_t padding) {
-    return 1.0 * (p - start) * range / total + padding;
+static inline gt_size_t _calc_abs_point_y(gt_size_t p, _graph_css_st const * const css) {
+    return (p - css->start.y) * css->range.y / css->total.y + css->padding.y;
 }
 
-static inline void _draw_point_by(
-    gt_obj_st * obj, gt_series_points_st * ptr, gt_size_t idx,
-    gt_point_st const * const padding, gt_point_st const * const range, gt_point_st const * const start_val,
-    gt_point_st const * const total) {
+static inline void _draw_point_by( gt_obj_st * obj, gt_series_points_st * ptr, gt_size_t idx, _graph_css_st const * const css) {
     gt_attr_point_st point_attr = { .line = ptr->line };
-    point_attr.pos.x = _calc_abs_point(ptr->x_series[idx], start_val->x, range->x, total->x, padding->x);
-    point_attr.pos.y = _calc_abs_point(ptr->y_series[idx], start_val->y, range->y, total->y, padding->y);
+    point_attr.pos.x = _calc_abs_point_x(ptr->x_series[idx], css);
+    point_attr.pos.y = _calc_abs_point_y(ptr->y_series[idx], css);
     gt_draw_point(obj->draw_ctx, &point_attr, &obj->area);
+}
+
+static _graph_css_st _get_css(gt_obj_st * obj) {
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    _graph_css_st css = {
+        .padding = _get_padding_by(obj),
+        .range = _get_display_pixel_range(&css.padding, obj->area.w, obj->area.h),
+        .total = _get_axis_scale_total_range(style),
+        .start = _get_start_value_by(style),
+    };
+    css.padding.x += obj->area.x;
+    css.padding.y += obj->area.y;
+    return css;
+}
+
+static void _graphs_draw_points(_gt_graphs_st * style) {
+    gt_obj_st * obj = (gt_obj_st * )style;
+    gt_series_points_st * ptr = style->gp.series_head_p;
+    _graph_css_st css = _get_css(obj);
+
+    while (ptr) {
+        for (gt_size_t i = 0; i < ptr->count_point; ++i) {
+            _draw_point_by(obj, ptr, i, &css);
+        }
+        ptr = ptr->next_series_p;
+    }
 }
 
 static void _graphs_draw_line(_gt_graphs_st * style) {
     gt_obj_st * obj = (gt_obj_st * )style;
     gt_attr_line_st line_attr = {0};
     gt_series_points_st * ptr = style->gp.series_head_p;
-    gt_point_st padding = _get_padding_by(obj);
-    gt_point_st range = _get_display_pixel_range(&padding, obj->area.w, obj->area.h);
-    gt_point_st total = _get_axis_scale_total_range(style);
-    gt_point_st start_val = _get_start_value_by(style);
-    padding.x += obj->area.x;
-    padding.y += obj->area.y;
+    _graph_css_st css = _get_css(obj);
 
     while (ptr) {
         line_attr.line = ptr->line;
@@ -254,16 +277,16 @@ static void _graphs_draw_line(_gt_graphs_st * style) {
             ptr = ptr->next_series_p;
             continue;
         } else if (1 == ptr->count_point) {
-            _draw_point_by(obj, ptr, 0, &padding, &range, &start_val, &total);
+            _draw_point_by(obj, ptr, 0, &css);
             ptr = ptr->next_series_p;
             continue;
         }
-        line_attr.end.x = _calc_abs_point(ptr->x_series[0], start_val.x, range.x, total.x, padding.x);
-        line_attr.end.y = _calc_abs_point(ptr->y_series[0], start_val.y, range.y, total.y, padding.y);
+        line_attr.end.x = _calc_abs_point_x(ptr->x_series[0], &css);
+        line_attr.end.y = _calc_abs_point_y(ptr->y_series[0], &css);
         for (gt_size_t i = 1; i < ptr->count_point; ++i) {
             line_attr.start = line_attr.end;
-            line_attr.end.x = _calc_abs_point(ptr->x_series[i], start_val.x, range.x, total.x, padding.x);
-            line_attr.end.y = _calc_abs_point(ptr->y_series[i], start_val.y, range.y, total.y, padding.y);
+            line_attr.end.x = _calc_abs_point_x(ptr->x_series[i], &css);
+            line_attr.end.y = _calc_abs_point_y(ptr->y_series[i], &css);
             gt_draw_line(obj->draw_ctx, &line_attr, &obj->area);
         }
         ptr = ptr->next_series_p;
@@ -274,13 +297,7 @@ static void _graphs_draw_curve(_gt_graphs_st * style) {
     gt_obj_st * obj = (gt_obj_st * )style;
     gt_attr_curve_st bz_attr = {0};
     gt_series_points_st * ptr = style->gp.series_head_p;
-    gt_point_st padding = _get_padding_by(obj);
-    gt_point_st range = _get_display_pixel_range(&padding, obj->area.w, obj->area.h);
-    gt_point_st total = _get_axis_scale_total_range(style);
-    gt_point_st start_val = _get_start_value_by(style);
-    padding.x += obj->area.x;
-    padding.y += obj->area.y;
-    float t = 0.5;
+    _graph_css_st css = _get_css(obj);
 
     while (ptr) {
         bz_attr.line = ptr->line;
@@ -288,38 +305,38 @@ static void _graphs_draw_curve(_gt_graphs_st * style) {
             ptr = ptr->next_series_p;
             continue;
         } else if (1 == ptr->count_point) {
-            _draw_point_by(obj, ptr, 0, &padding, &range, &start_val, &total);
+            _draw_point_by(obj, ptr, 0, &css);
             ptr = ptr->next_series_p;
             continue;
         } else if (2 == ptr->count_point) {
             gt_attr_line_st line_attr = {
                 .line = ptr->line,
                 .start = {
-                    .x = _calc_abs_point(ptr->x_series[0], start_val.x, range.x, total.x, padding.x),
-                    .y = _calc_abs_point(ptr->y_series[0], start_val.y, range.y, total.y, padding.y)
+                    .x = _calc_abs_point_x(ptr->x_series[0], &css),
+                    .y = _calc_abs_point_y(ptr->y_series[0], &css),
                 },
                 .end = {
-                    .x = _calc_abs_point(ptr->x_series[1], start_val.x, range.x, total.x, padding.x),
-                    .y = _calc_abs_point(ptr->y_series[1], start_val.y, range.y, total.y, padding.y)
+                    .x = _calc_abs_point_x(ptr->x_series[1], &css),
+                    .y = _calc_abs_point_y(ptr->y_series[1], &css),
                 },
             };
             gt_draw_line(obj->draw_ctx, &line_attr, &obj->area);
             continue;
         }
 
-        bz_attr.p1.x = _calc_abs_point(ptr->x_series[0], start_val.x, range.x, total.x, padding.x);
-        bz_attr.p1.y = _calc_abs_point(ptr->y_series[0], start_val.y, range.y, total.y, padding.y);
+        bz_attr.p1.x = _calc_abs_point_x(ptr->x_series[0], &css);
+        bz_attr.p1.y = _calc_abs_point_y(ptr->y_series[0], &css);
         bz_attr.p2 = bz_attr.p1;
-        bz_attr.p3.x = _calc_abs_point(ptr->x_series[1], start_val.x, range.x, total.x, padding.x);
-        bz_attr.p3.y = _calc_abs_point(ptr->y_series[1], start_val.y, range.y, total.y, padding.y);
+        bz_attr.p3.x = _calc_abs_point_x(ptr->x_series[1], &css);
+        bz_attr.p3.y = _calc_abs_point_y(ptr->y_series[1], &css);
 
         for (gt_size_t i = 0; i + 1 < ptr->count_point; ++i) {
             bz_attr.p0 = bz_attr.p1;
             bz_attr.p1 = bz_attr.p2;
             bz_attr.p2 = bz_attr.p3;
             if (i + 2 < ptr->count_point) {
-                bz_attr.p3.x = _calc_abs_point(ptr->x_series[i + 2], start_val.x, range.x, total.x, padding.x);
-                bz_attr.p3.y = _calc_abs_point(ptr->y_series[i + 2], start_val.y, range.y, total.y, padding.y);
+                bz_attr.p3.x = _calc_abs_point_x(ptr->x_series[i + 2], &css);
+                bz_attr.p3.y = _calc_abs_point_y(ptr->y_series[i + 2], &css);
             }
             gt_draw_catmullrom(obj->draw_ctx, &bz_attr, &obj->area);
         }
@@ -330,24 +347,6 @@ static void _graphs_draw_curve(_gt_graphs_st * style) {
 
 static void _graphs_draw_bar(_gt_graphs_st * style) {
     GT_LOG_A("GRAPHS", "WARN Bar has not been implemented yet!!!");
-}
-
-static void _graphs_draw_points(_gt_graphs_st * style) {
-    gt_obj_st * obj = (gt_obj_st * )style;
-    gt_series_points_st * ptr = style->gp.series_head_p;
-    gt_point_st padding = _get_padding_by(obj);
-    gt_point_st range = _get_display_pixel_range(&padding, obj->area.w, obj->area.h);
-    gt_point_st total = _get_axis_scale_total_range(style);
-    gt_point_st start_val = _get_start_value_by(style);
-    padding.x += obj->area.x;
-    padding.y += obj->area.y;
-
-    while (ptr) {
-        for (gt_size_t i = 0; i < ptr->count_point; ++i) {
-            _draw_point_by(obj, ptr, i, &padding, &range, &start_val, &total);
-        }
-        ptr = ptr->next_series_p;
-    }
 }
 
 static void _draw_points_lines_curves(gt_obj_st * obj) {
