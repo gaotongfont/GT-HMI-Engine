@@ -46,6 +46,8 @@ typedef struct _graph_css_s {
     gt_point_st start;
 }_graph_css_st;
 
+typedef void ( * _draw_ruler_pos_area_t)(gt_obj_st * , gt_padding_st const * const, gt_attr_font_st * );
+
 /* static variables -----------------------------------------------------*/
 static void _graphs_init_cb(gt_obj_st * obj);
 static void _graphs_deinit_cb(gt_obj_st * obj);
@@ -263,6 +265,62 @@ static gt_padding_st _get_padding_by(gt_obj_st * obj) {
     return padding;
 }
 
+static void _draw_ruler_ver_start(gt_obj_st * obj, gt_padding_st const * const padding, gt_attr_font_st * font_attr) {
+    font_attr->logical_area.x = obj->area.x + 6;
+    font_attr->logical_area.y = obj->area.y + padding->top - 6;
+    font_attr->logical_area.w = padding->left - 6;
+    font_attr->logical_area.h = 20;
+}
+
+static void _draw_ruler_ver_end(gt_obj_st * obj, gt_padding_st const * const padding, gt_attr_font_st * font_attr) {
+    font_attr->logical_area.x = obj->area.x + 6;
+    font_attr->logical_area.y = obj->area.y + obj->area.h - padding->bottom - 6;
+    font_attr->logical_area.w = padding->left - 6;
+    font_attr->logical_area.h = 20;
+}
+
+static void _draw_ruler_hor_start(gt_obj_st * obj, gt_padding_st const * const padding, gt_attr_font_st * font_attr) {
+    font_attr->logical_area.x = obj->area.x + padding->left - 6;
+    font_attr->logical_area.y = obj->area.y + obj->area.h - padding->bottom + 10;
+    font_attr->logical_area.w = padding->left - 6;
+    font_attr->logical_area.h = 20;
+}
+
+static void _draw_ruler_hor_end(gt_obj_st * obj, gt_padding_st const * const padding, gt_attr_font_st * font_attr) {
+    font_attr->logical_area.x = obj->area.x + obj->area.w - padding->right - 20;
+    font_attr->logical_area.y = obj->area.y + obj->area.h - padding->bottom + 10;
+    font_attr->logical_area.w = padding->left - 6;
+    font_attr->logical_area.h = 20;
+}
+
+// TODO anti-order x/y axis
+static void _draw_ruler_range(gt_obj_st * obj, gt_padding_st const * const padding) {
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    char buf[20] = {0};
+    gt_font_st font = {0};
+    gt_attr_font_st font_attr = {
+        .font = &font,
+        .font_color = style->gp.axis.scale.color,
+        .opa = style->gp.axis.scale.opa,
+    };
+    _draw_ruler_pos_area_t pos_func_arr[] = {
+        _draw_ruler_ver_start, _draw_ruler_ver_end, _draw_ruler_hor_start, _draw_ruler_hor_end
+    };
+    gt_size_t value[] = {
+        style->gp.axis.ver.start, style->gp.axis.ver.end, style->gp.axis.hor.start, style->gp.axis.hor.end
+    };
+    gt_font_info_init(&font.info);
+    gt_font_info_update_font_thick(&font.info);
+
+    for (uint8_t i = 0; i < 4; ++i) {
+        pos_func_arr[i](obj, padding, &font_attr);
+        sprintf(buf, "%d", value[i]);
+        font.utf8 = buf;
+        font.len = strlen(buf);
+        draw_text(obj->draw_ctx, &font_attr, &obj->area);
+    }
+}
+
 static void _draw_axis(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_padding_st padding = _get_padding_by(obj);
@@ -286,7 +344,7 @@ static void _draw_axis(gt_obj_st * obj) {
     }
 
     if (_is_show_ruler(obj)) {
-        // TODO display ruler number text
+        _draw_ruler_range(obj, &padding);
     }
 }
 
