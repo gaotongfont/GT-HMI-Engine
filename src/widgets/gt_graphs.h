@@ -54,6 +54,10 @@ extern "C" {
  */
 gt_obj_st * gt_graphs_create(gt_obj_st * parent);
 
+void gt_graphs_set_self_adaptive(gt_obj_st * obj, bool enabled);
+
+void gt_graphs_set_show_ruler(gt_obj_st * obj, bool enabled);
+
 /**
  * @brief Set the axis of the graph
  *
@@ -94,6 +98,11 @@ gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const
  * @return gt_res_t
  */
 gt_res_t gt_graphs_series_add_point_by(gt_obj_st * obj, uint16_t series_index, gt_point_st const * const point);
+
+bool gt_graphs_is_self_adaptive(gt_obj_st * obj);
+
+bool gt_graphs_is_show_ruler(gt_obj_st * obj);
+
 
 #endif  /** GT_CFG_ENABLE_GRAPHS */
 

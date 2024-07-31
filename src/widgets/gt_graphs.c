@@ -25,9 +25,15 @@
 
 
 /* private typedef ------------------------------------------------------*/
+typedef struct _graphs_reg_s {
+    uint8_t self_adaptive : 1;
+    uint8_t show_ruler : 1;
+}_graphs_reg_st;
+
 typedef struct _gt_graphs_s {
     gt_obj_st obj;
     _gt_attr_graphs_st gp;
+    _graphs_reg_st reg;
 }_gt_graphs_st;
 
 typedef struct _graph_css_s {
@@ -50,9 +56,10 @@ static const gt_obj_class_st gt_graphs_class = {
     .size_style    = sizeof(_gt_graphs_st)
 };
 
+static bool _is_self_adaptive(gt_obj_st * obj);
 static void _draw_axis(gt_obj_st * obj);
 static void _draw_points_lines_curves(gt_obj_st * obj);
-
+static void _calc_self_adaptive_axis_range(gt_obj_st * obj);
 
 
 /* macros ---------------------------------------------------------------*/
@@ -78,6 +85,10 @@ static void _graphs_init_cb(gt_obj_st * obj) {
     gt_area_st area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
     // 1:base shape
     draw_bg(obj->draw_ctx, &rect_attr, &area);
+
+    if (_is_self_adaptive(obj)) {
+        _calc_self_adaptive_axis_range(obj);
+    }
 
     /** draw axis */
     _draw_axis(obj);
@@ -114,11 +125,20 @@ static void _graphs_deinit_cb(gt_obj_st * obj) {
         style->gp.count_line = 0;
     }
 
-
 }
 
 static void _graphs_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
+}
+
+static bool _is_self_adaptive(gt_obj_st * obj) {
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    return style->reg.self_adaptive;
+}
+
+static bool _is_show_ruler(gt_obj_st * obj) {
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    return style->reg.show_ruler;
 }
 
 static gt_point_st _get_display_pixel_range(gt_point_st const * const padding, uint16_t w, uint16_t h) {
@@ -129,6 +149,10 @@ static gt_point_st _get_display_pixel_range(gt_point_st const * const padding, u
 static gt_point_st _add_obj_offset(gt_point_st const * const p, gt_obj_st * obj) {
     gt_point_st ret = { .x = p->x + obj->area.x, .y = p->y + obj->area.y };
     return ret;
+}
+
+static void _calc_self_adaptive_axis_range(gt_obj_st * obj) {
+    // TODO calculate the axis range by the series points
 }
 
 static void _void_draw_grid_lines(gt_obj_st * obj, gt_point_st const * const padding, gt_point_st * points) {
@@ -198,6 +222,10 @@ static void _draw_axis(gt_obj_st * obj) {
         line_attr.start = _add_obj_offset(&points[i], obj);
         line_attr.end = _add_obj_offset(&points[(i + 1) % 4], obj);
         gt_draw_line(obj->draw_ctx, &line_attr, &obj->area);
+    }
+
+    if (_is_show_ruler(obj)) {
+        // TODO display ruler number text
     }
 }
 
@@ -391,11 +419,29 @@ gt_obj_st * gt_graphs_create(gt_obj_st * parent)
         return obj;
     }
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
-    style->gp.axis.scale.color = gt_color_red();
-    style->gp.axis.scale.width = 8;
+    style->gp.axis.scale.color = gt_color_black();
+    style->gp.axis.scale.width = 2;
     style->gp.axis.scale.opa = GT_OPA_COVER;
 
     return obj;
+}
+
+void gt_graphs_set_self_adaptive(gt_obj_st * obj, bool enabled)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    style->reg.self_adaptive = enabled;
+}
+
+void gt_graphs_set_show_ruler(gt_obj_st * obj, bool enabled)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    style->reg.show_ruler = enabled;
 }
 
 void gt_graphs_set_axis(gt_obj_st * obj, gt_axis_st const * const axis)
@@ -488,6 +534,22 @@ gt_res_t gt_graphs_series_add_point_by(gt_obj_st * obj, uint16_t series_index, g
 {
     gt_series_points_st * series = _get_series_line_by(obj, series_index);
     return gt_graphs_series_add_point(obj, series, point);
+}
+
+bool gt_graphs_is_self_adaptive(gt_obj_st * obj)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return false;
+    }
+    return _is_self_adaptive(obj);
+}
+
+bool gt_graphs_is_show_ruler(gt_obj_st * obj)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return false;
+    }
+    return _is_show_ruler(obj);
 }
 
 #endif  /** GT_CFG_ENABLE_GRAPHS */
