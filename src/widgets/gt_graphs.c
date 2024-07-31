@@ -126,6 +126,11 @@ static gt_point_st _get_display_pixel_range(gt_point_st const * const padding, u
     return ret;
 }
 
+static gt_point_st _add_obj_offset(gt_point_st const * const p, gt_obj_st * obj) {
+    gt_point_st ret = { .x = p->x + obj->area.x, .y = p->y + obj->area.y };
+    return ret;
+}
+
 static void _void_draw_grid_lines(gt_obj_st * obj, gt_point_st const * const padding, gt_point_st * points) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_attr_line_st line_attr = { .line = style->gp.axis.grid };
@@ -147,12 +152,8 @@ static void _void_draw_grid_lines(gt_obj_st * obj, gt_point_st const * const pad
     grid_diff.x = grid_diff.x - 1;
     grid_diff.y = grid_diff.y - 1;
 
-    line_attr.start = points[0];
-    line_attr.start.x += obj->area.x;
-    line_attr.start.y += obj->area.y;
-    line_attr.end = points[1];
-    line_attr.end.x += obj->area.x;
-    line_attr.end.y += obj->area.y;
+    line_attr.start = _add_obj_offset(&points[0], obj);
+    line_attr.end = _add_obj_offset(&points[1], obj);
     /** draw hor grid's lines */
     for (gt_size_t i = 0; i < grid_diff.y; ++i) {
         line_attr.start.y += grid.y;
@@ -160,12 +161,8 @@ static void _void_draw_grid_lines(gt_obj_st * obj, gt_point_st const * const pad
         gt_draw_line(obj->draw_ctx, &line_attr, &obj->area);
     }
 
-    line_attr.start = points[0];
-    line_attr.start.x += obj->area.x;
-    line_attr.start.y += obj->area.y;
-    line_attr.end = points[3];
-    line_attr.end.x += obj->area.x;
-    line_attr.end.y += obj->area.y;
+    line_attr.start = _add_obj_offset(&points[0], obj);
+    line_attr.end = _add_obj_offset(&points[3], obj);
     /** draw ver grid's lines */
     for (gt_size_t i = 0; i < grid_diff.x; ++i) {
         line_attr.start.x += grid.x;
@@ -197,12 +194,8 @@ static void _draw_axis(gt_obj_st * obj) {
         return;
     }
     for (gt_size_t i = 0; i < 4; ++i) {
-        line_attr.start = points[i];
-        line_attr.start.x += obj->area.x;
-        line_attr.start.y += obj->area.y;
-        line_attr.end = points[(i + 1) % 4];
-        line_attr.end.x += obj->area.x;
-        line_attr.end.y += obj->area.y;
+        line_attr.start = _add_obj_offset(&points[i], obj);
+        line_attr.end = _add_obj_offset(&points[(i + 1) % 4], obj);
         gt_draw_line(obj->draw_ctx, &line_attr, &obj->area);
     }
 }
@@ -247,8 +240,7 @@ static _graph_css_st _get_css(gt_obj_st * obj) {
         .total = _get_axis_scale_total_range(style),
         .start = _get_start_value_by(style),
     };
-    css.padding.x += obj->area.x;
-    css.padding.y += obj->area.y;
+    css.padding = _add_obj_offset(&css.padding, obj);
     return css;
 }
 
