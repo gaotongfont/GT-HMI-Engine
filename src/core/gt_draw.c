@@ -2264,7 +2264,7 @@ radius_lb:
     draw_ctx->parent_area = remark_area;    /** reset to before value */
 }
 
-void gt_draw_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, const gt_area_st * coords)
+void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const gt_area_st * coords)
 {
     if (dsc->line.opa < GT_OPA_MIN) {
         return;
@@ -2302,7 +2302,7 @@ void gt_draw_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, const
     gt_point_st end = { .x = dsc->end.x - (rd_val >> 1), .y = dsc->end.y - (rd_val >> 1) };
     gt_point_st diff = {
         .x = end.x == tmp.x ? 0 : (end.x > tmp.x ? 1 : -1),
-        .y = end.y - tmp.y == 0 ? 0 : (end.y > tmp.y ? 1 : -1)
+        .y = end.y == tmp.y ? 0 : (end.y > tmp.y ? 1 : -1)
     };
     gt_point_st start = { .x = tmp.x, .y = tmp.y };
     gt_point_st distance = { .x = end.x - start.x, .y = end.y - start.y };
@@ -2324,6 +2324,75 @@ void gt_draw_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, const
             tmp.y = (tmp.x - start.x) * distance.y / distance.x + start.y;
         }
     } while (tmp.y != end.y || tmp.x != end.x);  /** The start or end point are the same, it will draw once. */
+
+    gt_mem_free(blend_dsc.mask_buf);
+radius_lb:
+    _gt_radius_mask_deinit(&radius_mask);
+    draw_ctx->parent_area = remark_area;    /** reset to before value */
+}
+
+void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_attr_curve_st const * dsc, const gt_area_st * coords)
+{
+    if (dsc->line.opa < GT_OPA_MIN) {
+        return;
+    }
+    if (NULL == draw_ctx->buf) {
+        return;
+    }
+    if (!gt_area_is_intersect_screen(&draw_ctx->buf_area, coords)) {
+        return;
+    }
+    gt_radius_mask_st radius_mask = {0};
+    uint16_t rd_val = dsc->line.width ? dsc->line.width : 4;
+    gt_area_st area_line = { 0, 0, rd_val, rd_val };
+    if (!_gt_radius_mask_init(&radius_mask, area_line, rd_val >> 1, false)) {
+        return;
+    }
+    gt_area_st * remark_area = draw_ctx->parent_area;
+    draw_ctx->parent_area = (gt_area_st * )coords;  /** remark before parent area value, return will reload */
+
+    area_line.x = dsc->p0.x - (rd_val >> 1);     /** move to circle center point */
+    area_line.y = dsc->p0.y - (rd_val >> 1);
+    area_line.h = 1;
+
+    gt_draw_blend_dsc_st blend_dsc = {
+        .dst_area = &area_line,
+        .mask_area = &area_line,
+        .color_fill = dsc->line.color,
+        .opa = dsc->line.opa,
+        .mask_buf = gt_mem_malloc(rd_val),
+    };
+    if (NULL == blend_dsc.mask_buf) {
+        goto radius_lb;
+    }
+    gt_point_f_st remark_prev = { .x = -(1 << ((sizeof(float) << 3) - 2)), .y = -(1 << ((sizeof(float) << 3) - 2)) };
+    gt_point_f_st tmp = { .x = area_line.x, .y = area_line.y };
+    gt_point_f_st p0 = { .x = tmp.x, .y = tmp.y };
+    gt_point_f_st p1 = { .x = dsc->p1.x - (rd_val >> 1), .y = dsc->p1.y - (rd_val >> 1) };
+    gt_point_f_st p2 = { .x = dsc->p2.x - (rd_val >> 1), .y = dsc->p2.y - (rd_val >> 1) };
+    gt_point_f_st p3 = { .x = dsc->p3.x - (rd_val >> 1), .y = dsc->p3.y - (rd_val >> 1) };
+    uint16_t max_hor_range = gt_abs(
+        GT_MAX(p0.x, GT_MAX(p1.x, GT_MAX(p2.x, p3.x))) - GT_MIN(p0.x, GT_MIN(p1.x, GT_MIN(p2.x, p3.x)))
+    );
+    uint16_t max_ver_range = gt_abs(
+        GT_MAX(p0.y, GT_MAX(p1.y, GT_MAX(p2.y, p3.y))) - GT_MIN(p0.y, GT_MIN(p1.y, GT_MIN(p2.y, p3.y)))
+    );
+    for (gt_size_t i = 0, second = 0, cnt = GT_MAX(max_hor_range, max_ver_range) << 1; i < cnt; ++i) {
+        tmp = gt_math_catmullrom(1.0 * i / cnt, &p0, &p1, &p2, &p3);
+        if (second && gt_abs(remark_prev.x - tmp.x) < 1 && gt_abs(remark_prev.y - tmp.y) < 1) {
+            second = 0;
+            continue;
+        }
+        remark_prev = tmp;
+        ++second;
+        for (gt_size_t i = 0; i < rd_val; ++i) {
+            gt_memset(blend_dsc.mask_buf, 0xFF, rd_val);
+            _gt_get_radius_mask_buf(blend_dsc.mask_buf, 0, i, area_line.w, &radius_mask);
+            area_line.x = (gt_size_t)tmp.x;
+            area_line.y = (gt_size_t)tmp.y + i;
+            gt_draw_blend(draw_ctx, &blend_dsc);
+        }
+    }
 
     gt_mem_free(blend_dsc.mask_buf);
 radius_lb:

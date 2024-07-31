@@ -77,9 +77,19 @@ typedef struct gt_attr_point_s {
 typedef struct _gt_attr_line_s {
     gt_point_st start;
     gt_point_st end;
-
     gt_line_st line;
 }gt_attr_line_st;
+
+/**
+ * @brief curve attribute information
+ */
+typedef struct _gt_attr_curve_s {
+    gt_point_f_st p0;
+    gt_point_f_st p1;
+    gt_point_f_st p2;
+    gt_point_f_st p3;
+    gt_line_st line;
+}gt_attr_curve_st;
 
 typedef struct gt_series_points_s {
     struct gt_series_points_s * next_series_p;

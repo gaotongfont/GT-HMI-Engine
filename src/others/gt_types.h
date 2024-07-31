@@ -212,6 +212,17 @@ enum gt_layout_align_items_e {
 
 typedef gt_layout_prop_t gt_layout_align_items_t;
 
+
+typedef struct gt_point_s {
+    gt_size_t x;
+    gt_size_t y;
+}gt_point_st;
+
+typedef struct gt_point_f_s {
+    float x;
+    float y;
+}gt_point_f_st;
+
 /**
  * @brief return status
  */

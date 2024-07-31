@@ -25,12 +25,6 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-
-typedef struct _gt_point_s {
-    gt_size_t x;
-    gt_size_t y;
-}gt_point_st;
-
 typedef struct _gt_obj_event_attr_s {
     struct _gt_obj_event_attr_s * next_ptr;
     gt_event_cb_t user_cb;

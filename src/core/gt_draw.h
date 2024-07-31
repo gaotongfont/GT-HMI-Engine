@@ -132,7 +132,16 @@ void gt_draw_point(_gt_draw_ctx_st * draw_ctx, gt_attr_point_st const * dsc, gt_
  * @param dsc
  * @param coords
  */
-void gt_draw_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_line_st * dsc, const gt_area_st * coords);
+void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const gt_area_st * coords);
+
+/**
+ * @brief
+ *
+ * @param draw_ctx
+ * @param dsc
+ * @param coords
+ */
+void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_attr_curve_st const * dsc, const gt_area_st * coords);
 
 void draw_focus(gt_obj_st* obj, gt_size_t radius);
 
