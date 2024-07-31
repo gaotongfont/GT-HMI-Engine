@@ -63,6 +63,13 @@ static void _calc_self_adaptive_axis_range(gt_obj_st * obj);
 
 
 /* macros ---------------------------------------------------------------*/
+static inline bool _is_hor_range_zero(_gt_graphs_st const * const style) {
+    return style->gp.axis.hor.end == style->gp.axis.hor.start;
+}
+
+static inline bool _is_ver_range_zero(_gt_graphs_st const * const style) {
+    return style->gp.axis.ver.end == style->gp.axis.ver.start;
+}
 
 
 
@@ -83,10 +90,10 @@ static void _graphs_init_cb(gt_obj_st * obj) {
     rect_attr.bg_color      = obj->bgcolor;
 
     gt_area_st area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
-    // 1:base shape
+    /** base shape */
     draw_bg(obj->draw_ctx, &rect_attr, &area);
 
-    if (_is_self_adaptive(obj)) {
+    if (_is_self_adaptive(obj) || _is_hor_range_zero(style) || _is_ver_range_zero(style)) {
         _calc_self_adaptive_axis_range(obj);
     }
 
@@ -151,8 +158,45 @@ static gt_point_st _add_obj_offset(gt_point_st const * const p, gt_obj_st * obj)
     return ret;
 }
 
+static void _update_axis_range(gt_range_st * dir_range, gt_size_t min, gt_size_t max, uint16_t redundancy) {
+    if (dir_range->start > min) {
+        dir_range->start = min - redundancy;
+    }
+    if (dir_range->end < max) {
+        dir_range->end = max + redundancy;
+    }
+}
+
 static void _calc_self_adaptive_axis_range(gt_obj_st * obj) {
-    // TODO calculate the axis range by the series points
+    gt_point_st min = { 0x7fff, 0x7fff }, max = { -0x7fff, -0x7fff };
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    gt_series_points_st * ptr = style->gp.series_head_p;
+
+    while (ptr) {
+        for (gt_size_t i = 0; i < ptr->count_point; ++i) {
+            min.x = GT_MIN(min.x, ptr->x_series[i]);
+            min.y = GT_MIN(min.y, ptr->y_series[i]);
+            max.x = GT_MAX(max.x, ptr->x_series[i]);
+            max.y = GT_MAX(max.y, ptr->y_series[i]);
+        }
+        ptr = ptr->next_series_p;
+    }
+    /** add redundancy */
+    uint16_t hor_redundancy = (max.x - min.x) >> 4;
+    uint16_t ver_redundancy = (max.y - min.y) >> 4;
+
+    if (_is_self_adaptive(obj)) {
+        _update_axis_range(&style->gp.axis.hor, min.x, max.x, hor_redundancy);
+        _update_axis_range(&style->gp.axis.ver, min.y, max.y, ver_redundancy);
+        return;
+    }
+
+    if (_is_hor_range_zero(style)) {
+        _update_axis_range(&style->gp.axis.hor, min.x, max.x, hor_redundancy);
+    }
+    if (_is_ver_range_zero(style)) {
+        _update_axis_range(&style->gp.axis.ver, min.y, max.y, ver_redundancy);
+    }
 }
 
 static void _void_draw_grid_lines(gt_obj_st * obj, gt_point_st const * const padding, gt_point_st * points) {
