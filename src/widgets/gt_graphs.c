@@ -24,6 +24,9 @@
 #define MY_CLASS    &gt_graphs_class
 
 
+#define _GRAPHS_DEFAULT_PADDING_SIZE    20
+
+
 /* private typedef ------------------------------------------------------*/
 typedef struct _graphs_reg_s {
     uint8_t self_adaptive : 1;
@@ -37,7 +40,7 @@ typedef struct _gt_graphs_s {
 }_gt_graphs_st;
 
 typedef struct _graph_css_s {
-    gt_point_st padding;
+    gt_padding_st padding;
     gt_point_st range;
     gt_point_st total;
     gt_point_st start;
@@ -148,13 +151,23 @@ static bool _is_show_ruler(gt_obj_st * obj) {
     return style->reg.show_ruler;
 }
 
-static gt_point_st _get_display_pixel_range(gt_point_st const * const padding, uint16_t w, uint16_t h) {
-    gt_point_st ret = { .x = w - (padding->x << 1), .y = h - (padding->y << 1) };
+static gt_point_st _get_display_pixel_range(gt_padding_st const * const padding, uint16_t w, uint16_t h) {
+    gt_point_st ret = { .x = w - padding->left - padding->right, .y = h - padding->top - padding->bottom };
     return ret;
 }
 
 static gt_point_st _add_obj_offset(gt_point_st const * const p, gt_obj_st * obj) {
     gt_point_st ret = { .x = p->x + obj->area.x, .y = p->y + obj->area.y };
+    return ret;
+}
+
+static gt_padding_st _add_obj_offset_padding(gt_padding_st const * const p, gt_obj_st * obj) {
+    gt_padding_st ret = {
+        .left = p->left + obj->area.x,
+        .right = p->right,
+        .top = p->top + obj->area.y,
+        .bottom = p->bottom,
+    };
     return ret;
 }
 
@@ -199,7 +212,7 @@ static void _calc_self_adaptive_axis_range(gt_obj_st * obj) {
     }
 }
 
-static void _void_draw_grid_lines(gt_obj_st * obj, gt_point_st const * const padding, gt_point_st * points) {
+static void _void_draw_grid_lines(gt_obj_st * obj, gt_padding_st const * const padding, gt_point_st * points) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_attr_line_st line_attr = { .line = style->gp.axis.grid };
     if (line_attr.line.opa < GT_OPA_MIN) {
@@ -239,21 +252,25 @@ static void _void_draw_grid_lines(gt_obj_st * obj, gt_point_st const * const pad
     }
 }
 
-static gt_point_st _get_padding_by(gt_obj_st * obj) {
-    gt_point_st padding = {
-        (gt_size_t)(obj->area.w * 0.2) >> 1, (gt_size_t)(obj->area.h * 0.2) >> 1
+static gt_padding_st _get_padding_by(gt_obj_st * obj) {
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    gt_padding_st padding = {
+        .left = style->reg.show_ruler ? 60 : _GRAPHS_DEFAULT_PADDING_SIZE,
+        .right = _GRAPHS_DEFAULT_PADDING_SIZE,
+        .top = _GRAPHS_DEFAULT_PADDING_SIZE,
+        .bottom = style->reg.show_ruler ? 40 : _GRAPHS_DEFAULT_PADDING_SIZE,
     };
     return padding;
 }
 
 static void _draw_axis(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
-    gt_point_st padding = _get_padding_by(obj);
+    gt_padding_st padding = _get_padding_by(obj);
 
     gt_attr_line_st line_attr = { .line = style->gp.axis.scale };
     gt_point_st points[] = {
-        { padding.x, padding.y }, { obj->area.w - padding.x, padding.y },
-        { obj->area.w - padding.x, obj->area.h - padding.y }, { padding.x, obj->area.h - padding.y },
+        { padding.left, padding.top }, { obj->area.w - padding.right, padding.top },
+        { obj->area.w - padding.right, obj->area.h - padding.bottom }, { padding.left, obj->area.h - padding.bottom },
     };
 
     _void_draw_grid_lines(obj, &padding, points);
@@ -291,11 +308,11 @@ static inline gt_point_st _get_start_value_by(_gt_graphs_st * style) {
 }
 
 static inline gt_size_t _calc_abs_point_x(gt_size_t p, _graph_css_st const * const css) {
-    return (p - css->start.x) * css->range.x / css->total.x + css->padding.x;
+    return (p - css->start.x) * css->range.x / css->total.x + css->padding.left;
 }
 
 static inline gt_size_t _calc_abs_point_y(gt_size_t p, _graph_css_st const * const css) {
-    return (p - css->start.y) * css->range.y / css->total.y + css->padding.y;
+    return (p - css->start.y) * css->range.y / css->total.y + css->padding.top;
 }
 
 static inline void _draw_point_by( gt_obj_st * obj, gt_series_points_st * ptr, gt_size_t idx, _graph_css_st const * const css) {
@@ -313,7 +330,7 @@ static _graph_css_st _get_css(gt_obj_st * obj) {
         .total = _get_axis_scale_total_range(style),
         .start = _get_start_value_by(style),
     };
-    css.padding = _add_obj_offset(&css.padding, obj);
+    css.padding = _add_obj_offset_padding(&css.padding, obj);
     return css;
 }
 

@@ -223,6 +223,13 @@ typedef struct gt_point_f_s {
     float y;
 }gt_point_f_st;
 
+typedef struct gt_padding_s {
+    gt_size_t left;
+    gt_size_t right;
+    gt_size_t top;
+    gt_size_t bottom;
+}gt_padding_st;
+
 /**
  * @brief return status
  */
