@@ -366,10 +366,12 @@ static inline gt_point_st _get_start_value_by(_gt_graphs_st * style) {
 }
 
 static inline gt_size_t _calc_abs_point_x(gt_size_t p, _graph_css_st const * const css) {
+    // TODO anti-order x/y axis
     return (p - css->start.x) * css->range.x / css->total.x + css->padding.left;
 }
 
 static inline gt_size_t _calc_abs_point_y(gt_size_t p, _graph_css_st const * const css) {
+    // TODO anti-order x/y axis
     return (p - css->start.y) * css->range.y / css->total.y + css->padding.top;
 }
 
