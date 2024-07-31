@@ -46,16 +46,53 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
-
+/**
+ * @brief Create a graph object
+ *
+ * @param parent
+ * @return gt_obj_st*
+ */
 gt_obj_st * gt_graphs_create(gt_obj_st * parent);
 
+/**
+ * @brief Set the axis of the graph
+ *
+ * @param obj
+ * @param axis Must be set axis->hor and axis->ver range value,
+ *              when scale's opa is 0, the axis will not be displayed,
+ *              when grid's opa is 0x0, the grid line will not be displayed
+ */
 void gt_graphs_set_axis(gt_obj_st * obj, gt_axis_st const * const axis);
 
 void gt_graphs_set_series_line_type(gt_obj_st * obj, gt_graphs_type_et type_style);
 
+/**
+ * @brief Add a series to the graph
+ *
+ * @param obj
+ * @param line_style
+ * @return gt_series_points_st* series points object
+ */
 gt_series_points_st * gt_graphs_add_series_line(gt_obj_st * obj, gt_line_st const * const line_style);
 
+/**
+ * @brief Add a series to the graph
+ *
+ * @param obj
+ * @param series The series to be added
+ * @param point The point to be added
+ * @return gt_res_t
+ */
 gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const series, gt_point_st const * const point);
+
+/**
+ * @brief Add a point to the series by index
+ *
+ * @param obj
+ * @param series_index The index of the series to which the point is added
+ * @param point The point to be added
+ * @return gt_res_t
+ */
 gt_res_t gt_graphs_series_add_point_by(gt_obj_st * obj, uint16_t series_index, gt_point_st const * const point);
 
 #endif  /** GT_CFG_ENABLE_GRAPHS */

@@ -193,6 +193,7 @@ static void _draw_axis(gt_obj_st * obj) {
     if (line_attr.line.opa < GT_OPA_MIN) {
         return;
     }
+    /** graph's inside border line */
     for (gt_size_t i = 0; i < 4; ++i) {
         line_attr.start = _add_obj_offset(&points[i], obj);
         line_attr.end = _add_obj_offset(&points[(i + 1) % 4], obj);
