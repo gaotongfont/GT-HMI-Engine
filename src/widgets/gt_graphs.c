@@ -324,7 +324,6 @@ static void _draw_ruler_hor_end(gt_obj_st * obj, gt_padding_st const * const pad
     font_attr->logical_area.h = 20;
 }
 
-// TODO anti-order x/y axis
 static void _draw_ruler_range(gt_obj_st * obj, gt_padding_st const * const padding) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     char buf[20] = {0};
