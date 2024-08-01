@@ -223,9 +223,19 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
     if (GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND != parent->container.justify_content) {
         /** Expand parent disp area size */
         if (is_row) {
-            if (pos.w > parent->area.w) { parent->area.w = pos.w; }
+            if (pos.w > parent->area.w) {
+                if (GT_LAYOUT_JUSTIFY_CONTENT_END == parent->container.justify_content) {
+                    parent->area.x = parent->area.x + parent->area.w - pos.w;
+                }
+                parent->area.w = pos.w;
+            }
         } else {
-            if (pos.h > parent->area.h) { parent->area.h = pos.h; }
+            if (pos.h > parent->area.h) {
+                if (GT_LAYOUT_JUSTIFY_CONTENT_END == parent->container.justify_content) {
+                    parent->area.y = parent->area.y + parent->area.h - pos.h;
+                }
+                parent->area.h = pos.h;
+            }
         }
     }
     return pos;
