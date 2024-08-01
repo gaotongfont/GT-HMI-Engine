@@ -174,18 +174,15 @@ static gt_padding_st _add_obj_offset_padding(gt_padding_st const * const p, gt_o
 }
 
 static void _update_axis_range(gt_range_st * dir_range, gt_size_t min, gt_size_t max, uint16_t redundancy) {
-    if (dir_range->start > min) {
-        dir_range->start = min - redundancy;
-    }
-    if (dir_range->end < max) {
-        dir_range->end = max + redundancy;
-    }
+    dir_range->start = min - redundancy;
+    dir_range->end   = max + redundancy;
 }
 
 static void _calc_self_adaptive_axis_range(gt_obj_st * obj) {
     gt_point_st min = { 0x7fff, 0x7fff }, max = { -0x7fff, -0x7fff };
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_series_points_st * ptr = style->gp.series_head_p;
+    uint16_t max_count = 0;
 
     while (ptr) {
         for (gt_size_t i = 0; i < ptr->count_point; ++i) {
@@ -194,11 +191,21 @@ static void _calc_self_adaptive_axis_range(gt_obj_st * obj) {
             max.x = GT_MAX(max.x, ptr->x_series[i]);
             max.y = GT_MAX(max.y, ptr->y_series[i]);
         }
+        if (ptr->count_point > max_count) {
+            max_count = ptr->count_point;
+        }
         ptr = ptr->next_series_p;
     }
+    /** set default unit */
+    if (0 == style->gp.axis.hor_unit) {
+        style->gp.axis.hor_unit = ((max.x - min.x) + max_count) / (max_count + 1);
+    }
+    if (0 == style->gp.axis.ver_unit) {
+        style->gp.axis.ver_unit = ((max.y - min.y) + max_count) / (max_count + 1);
+    }
     /** add redundancy */
-    uint16_t hor_redundancy = (max.x - min.x) >> 4;
-    uint16_t ver_redundancy = (max.y - min.y) >> 4;
+    uint16_t hor_redundancy = ((max.x - min.x) + style->gp.axis.hor_unit - 1) / style->gp.axis.hor_unit;
+    uint16_t ver_redundancy = ((max.y - min.y) + style->gp.axis.ver_unit - 1) / style->gp.axis.ver_unit;
 
     if (_is_self_adaptive(obj)) {
         _update_axis_range(&style->gp.axis.hor, min.x, max.x, hor_redundancy);
@@ -214,31 +221,35 @@ static void _calc_self_adaptive_axis_range(gt_obj_st * obj) {
     }
 }
 
+static gt_point_st _calc_div_part(_gt_graphs_st * style) {
+    gt_point_st div_part = {
+        .x = gt_abs((style->gp.axis.hor.end - style->gp.axis.hor.start) / style->gp.axis.hor_unit),
+        .y = gt_abs((style->gp.axis.ver.end - style->gp.axis.ver.start) / style->gp.axis.ver_unit),
+    };
+    if (0 == div_part.x) { div_part.x = 1; }  /** Avoid the denominator 0 */
+    if (0 == div_part.y) { div_part.y = 1; }
+    return div_part;
+}
+
 static void _void_draw_grid_lines(gt_obj_st * obj, gt_padding_st const * const padding, gt_point_st * points) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_attr_line_st line_attr = { .line = style->gp.axis.grid };
     if (line_attr.line.opa < GT_OPA_MIN) {
         return;
     }
-    gt_point_st grid_diff = {
-        .x = gt_abs((style->gp.axis.hor.end - style->gp.axis.hor.start) / style->gp.axis.hor_unit),
-        .y = gt_abs((style->gp.axis.ver.end - style->gp.axis.ver.start) / style->gp.axis.ver_unit),
-    };
-    if (0 == grid_diff.x) { grid_diff.x = 1; }  /** Avoid the denominator 0 */
-    if (0 == grid_diff.y) { grid_diff.y = 1; }
+    gt_point_st div_part = _calc_div_part(style);
 
     gt_point_st grid = _get_display_pixel_range(padding, obj->area.w, obj->area.h);
-    grid.x /= grid_diff.x;
-    grid.y /= grid_diff.y;
+    grid.x /= div_part.x;
+    grid.y /= div_part.y;
 
-
-    grid_diff.x = grid_diff.x - 1;
-    grid_diff.y = grid_diff.y - 1;
+    div_part.x = div_part.x - 1;
+    div_part.y = div_part.y - 1;
 
     line_attr.start = _add_obj_offset(&points[0], obj);
     line_attr.end = _add_obj_offset(&points[1], obj);
     /** draw hor grid's lines */
-    for (gt_size_t i = 0; i < grid_diff.y; ++i) {
+    for (gt_size_t i = 0; i < div_part.y; ++i) {
         line_attr.start.y += grid.y;
         line_attr.end.y += grid.y;
         gt_draw_line(obj->draw_ctx, &line_attr, &obj->area);
@@ -247,7 +258,7 @@ static void _void_draw_grid_lines(gt_obj_st * obj, gt_padding_st const * const p
     line_attr.start = _add_obj_offset(&points[0], obj);
     line_attr.end = _add_obj_offset(&points[3], obj);
     /** draw ver grid's lines */
-    for (gt_size_t i = 0; i < grid_diff.x; ++i) {
+    for (gt_size_t i = 0; i < div_part.x; ++i) {
         line_attr.start.x += grid.x;
         line_attr.end.x += grid.x;
         gt_draw_line(obj->draw_ctx, &line_attr, &obj->area);
@@ -262,6 +273,14 @@ static gt_padding_st _get_padding_by(gt_obj_st * obj) {
         .top = _GRAPHS_DEFAULT_PADDING_SIZE,
         .bottom = style->reg.show_ruler ? 40 : _GRAPHS_DEFAULT_PADDING_SIZE,
     };
+    /** calc real right and bottom padding */
+    gt_point_st div_part = _calc_div_part(style);
+    gt_point_st grid = _get_display_pixel_range(&padding, obj->area.w, obj->area.h);
+
+    /** resize really graphs size */
+    padding.right += grid.x - (grid.x / div_part.x) * div_part.x;
+    padding.bottom += grid.y - (grid.y / div_part.y) * div_part.y;
+
     return padding;
 }
 
