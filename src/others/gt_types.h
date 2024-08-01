@@ -58,6 +58,8 @@ typedef int16_t gt_scr_id_t;
 
 typedef int16_t gt_size_t;
 
+typedef float gt_float_t;
+
 /**
  * @brief Font family type
  */
@@ -219,8 +221,8 @@ typedef struct gt_point_s {
 }gt_point_st;
 
 typedef struct gt_point_f_s {
-    float x;
-    float y;
+    gt_float_t x;
+    gt_float_t y;
 }gt_point_f_st;
 
 typedef struct gt_padding_s {
@@ -250,8 +252,8 @@ typedef struct gt_area_s {
 }gt_area_st;
 
 typedef struct gt_range_s {
-    gt_size_t start;
-    gt_size_t end;
+    gt_float_t start;
+    gt_float_t end;
 }gt_range_st;
 
 typedef struct gt_area_abs_s {

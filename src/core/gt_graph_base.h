@@ -59,8 +59,8 @@ typedef struct gt_line_s {
 typedef struct gt_axis_s {
     gt_range_st hor;
     gt_range_st ver;
-    uint16_t hor_unit;
-    uint16_t ver_unit;
+    gt_float_t hor_unit;
+    gt_float_t ver_unit;
 
     gt_line_st scale;
     gt_line_st grid;
@@ -93,8 +93,8 @@ typedef struct _gt_attr_curve_s {
 
 typedef struct gt_series_points_s {
     struct gt_series_points_s * next_series_p;
-    gt_size_t * x_series;
-    gt_size_t * y_series;
+    gt_float_t * x_series;
+    gt_float_t * y_series;
     gt_line_st line;
     uint16_t count_point;
 }gt_series_points_st;

@@ -87,7 +87,7 @@ gt_series_points_st * gt_graphs_add_series_line(gt_obj_st * obj, gt_line_st cons
  * @param point The point to be added
  * @return gt_res_t
  */
-gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const series, gt_point_st const * const point);
+gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const series, gt_point_f_st const * const point);
 
 /**
  * @brief Add a point to the series by index
@@ -97,7 +97,7 @@ gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const
  * @param point The point to be added
  * @return gt_res_t
  */
-gt_res_t gt_graphs_series_add_point_by(gt_obj_st * obj, uint16_t series_index, gt_point_st const * const point);
+gt_res_t gt_graphs_series_add_point_by(gt_obj_st * obj, uint16_t series_index, gt_point_f_st const * const point);
 
 bool gt_graphs_is_self_adaptive(gt_obj_st * obj);
 

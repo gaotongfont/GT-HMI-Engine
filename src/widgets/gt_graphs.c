@@ -198,10 +198,10 @@ static void _calc_self_adaptive_axis_range(gt_obj_st * obj) {
 
     while (ptr) {
         for (gt_size_t i = 0; i < ptr->count_point; ++i) {
-            min.x = GT_MIN(min.x, ptr->x_series[i]);
-            min.y = GT_MIN(min.y, ptr->y_series[i]);
-            max.x = GT_MAX(max.x, ptr->x_series[i]);
-            max.y = GT_MAX(max.y, ptr->y_series[i]);
+            min.x = GT_MIN(min.x, (gt_size_t)ptr->x_series[i]);
+            min.y = GT_MIN(min.y, (gt_size_t)ptr->y_series[i]);
+            max.x = GT_MAX(max.x, (gt_size_t)ptr->x_series[i]);
+            max.y = GT_MAX(max.y, (gt_size_t)ptr->y_series[i]);
         }
         if (ptr->count_point > max_count) {
             max_count = ptr->count_point;
@@ -297,14 +297,14 @@ static gt_padding_st _get_padding_by(gt_obj_st * obj) {
 }
 
 static void _draw_ruler_ver_start(gt_obj_st * obj, gt_padding_st const * const padding, gt_attr_font_st * font_attr) {
-    font_attr->logical_area.x = obj->area.x + 6;
+    font_attr->logical_area.x = obj->area.x + 4;
     font_attr->logical_area.y = obj->area.y + padding->top - 6;
     font_attr->logical_area.w = padding->left - 6;
     font_attr->logical_area.h = 20;
 }
 
 static void _draw_ruler_ver_end(gt_obj_st * obj, gt_padding_st const * const padding, gt_attr_font_st * font_attr) {
-    font_attr->logical_area.x = obj->area.x + 6;
+    font_attr->logical_area.x = obj->area.x + 4;
     font_attr->logical_area.y = obj->area.y + obj->area.h - padding->bottom - 6;
     font_attr->logical_area.w = padding->left - 6;
     font_attr->logical_area.h = 20;
@@ -318,7 +318,7 @@ static void _draw_ruler_hor_start(gt_obj_st * obj, gt_padding_st const * const p
 }
 
 static void _draw_ruler_hor_end(gt_obj_st * obj, gt_padding_st const * const padding, gt_attr_font_st * font_attr) {
-    font_attr->logical_area.x = obj->area.x + obj->area.w - padding->right - 20;
+    font_attr->logical_area.x = obj->area.x + obj->area.w - padding->right - 40;
     font_attr->logical_area.y = obj->area.y + obj->area.h - padding->bottom + 10;
     font_attr->logical_area.w = padding->left - 6;
     font_attr->logical_area.h = 20;
@@ -336,7 +336,7 @@ static void _draw_ruler_range(gt_obj_st * obj, gt_padding_st const * const paddi
     _draw_ruler_pos_area_t pos_func_arr[] = {
         _draw_ruler_ver_start, _draw_ruler_ver_end, _draw_ruler_hor_start, _draw_ruler_hor_end
     };
-    gt_size_t value[] = {
+    gt_float_t value[] = {
         style->reg.anti_ver_axis_dir ? style->gp.axis.ver.start : style->gp.axis.ver.end,
         style->reg.anti_ver_axis_dir ? style->gp.axis.ver.end : style->gp.axis.ver.start,
         style->reg.anti_hor_axis_dir ? style->gp.axis.hor.end : style->gp.axis.hor.start,
@@ -347,7 +347,7 @@ static void _draw_ruler_range(gt_obj_st * obj, gt_padding_st const * const paddi
 
     for (uint8_t i = 0; i < 4; ++i) {
         pos_func_arr[i](obj, padding, &font_attr);
-        sprintf(buf, "%d", value[i]);
+        sprintf(buf, "%.2f", value[i]);
         font.utf8 = buf;
         font.len = strlen(buf);
         draw_text(obj->draw_ctx, &font_attr, &obj->area);
@@ -409,12 +409,12 @@ static inline gt_point_st _get_end_value_by(_gt_graphs_st * style) {
     return end_val;
 }
 
-static inline gt_size_t _calc_abs_point_x(gt_size_t p, _graph_css_st const * const css) {
+static inline gt_size_t _calc_abs_point_x(gt_float_t p, _graph_css_st const * const css) {
     gt_size_t offset = css->reg.anti_hor_axis_dir ? (css->end.x - p) : (p - css->start.x);
     return offset * css->range.x / css->total.x + css->padding.left;
 }
 
-static inline gt_size_t _calc_abs_point_y(gt_size_t p, _graph_css_st const * const css) {
+static inline gt_size_t _calc_abs_point_y(gt_float_t p, _graph_css_st const * const css) {
     gt_size_t offset = css->reg.anti_ver_axis_dir ? (p - css->start.y) : (css->end.y - p);
     return offset * css->range.y / css->total.y + css->padding.top;
 }
@@ -653,7 +653,7 @@ gt_series_points_st * gt_graphs_add_series_line(gt_obj_st * obj, gt_line_st cons
     return series;
 }
 
-gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const series, gt_point_st const * const point)
+gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const series, gt_point_f_st const * const point)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return GT_RES_FAIL;
@@ -662,7 +662,7 @@ gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const
     if (false == _is_series_valid(style, series)) {
         return GT_RES_FAIL;
     }
-    uint16_t size = sizeof(gt_size_t);
+    uint16_t size = sizeof(gt_float_t);
     if (series->count_point) {
         series->x_series = gt_mem_realloc(series->x_series, (series->count_point + 1) * size);
         if (NULL == series->x_series) {
@@ -697,7 +697,7 @@ x_fail_lb:
     return GT_RES_FAIL;
 }
 
-gt_res_t gt_graphs_series_add_point_by(gt_obj_st * obj, uint16_t series_index, gt_point_st const * const point)
+gt_res_t gt_graphs_series_add_point_by(gt_obj_st * obj, uint16_t series_index, gt_point_f_st const * const point)
 {
     gt_series_points_st * series = _get_series_line_by(obj, series_index);
     return gt_graphs_series_add_point(obj, series, point);
