@@ -103,6 +103,8 @@ bool gt_graphs_is_self_adaptive(gt_obj_st * obj);
 
 bool gt_graphs_is_show_ruler(gt_obj_st * obj);
 
+void gt_graphs_set_anti_axis_hor_dir(gt_obj_st * obj, bool enabled);
+void gt_graphs_set_anti_axis_ver_dir(gt_obj_st * obj, bool enabled);
 
 #endif  /** GT_CFG_ENABLE_GRAPHS */
 

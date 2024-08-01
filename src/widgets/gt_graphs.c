@@ -31,6 +31,8 @@
 typedef struct _graphs_reg_s {
     uint8_t self_adaptive : 1;
     uint8_t show_ruler : 1;
+    uint8_t anti_hor_axis_dir : 1;
+    uint8_t anti_ver_axis_dir : 1;
 }_graphs_reg_st;
 
 typedef struct _gt_graphs_s {
@@ -44,6 +46,8 @@ typedef struct _graph_css_s {
     gt_point_st range;
     gt_point_st total;
     gt_point_st start;
+    gt_point_st end;
+    _graphs_reg_st reg;
 }_graph_css_st;
 
 typedef void ( * _draw_ruler_pos_area_t)(gt_obj_st * , gt_padding_st const * const, gt_attr_font_st * );
@@ -153,6 +157,14 @@ static bool _is_show_ruler(gt_obj_st * obj) {
     return style->reg.show_ruler;
 }
 
+/**
+ * @brief Get display pixel range
+ *
+ * @param padding
+ * @param w
+ * @param h
+ * @return gt_point_st
+ */
 static gt_point_st _get_display_pixel_range(gt_padding_st const * const padding, uint16_t w, uint16_t h) {
     gt_point_st ret = { .x = w - padding->left - padding->right, .y = h - padding->top - padding->bottom };
     return ret;
@@ -326,7 +338,10 @@ static void _draw_ruler_range(gt_obj_st * obj, gt_padding_st const * const paddi
         _draw_ruler_ver_start, _draw_ruler_ver_end, _draw_ruler_hor_start, _draw_ruler_hor_end
     };
     gt_size_t value[] = {
-        style->gp.axis.ver.start, style->gp.axis.ver.end, style->gp.axis.hor.start, style->gp.axis.hor.end
+        style->reg.anti_ver_axis_dir ? style->gp.axis.ver.start : style->gp.axis.ver.end,
+        style->reg.anti_ver_axis_dir ? style->gp.axis.ver.end : style->gp.axis.ver.start,
+        style->reg.anti_hor_axis_dir ? style->gp.axis.hor.end : style->gp.axis.hor.start,
+        style->reg.anti_hor_axis_dir ? style->gp.axis.hor.start : style->gp.axis.hor.end,
     };
     gt_font_info_init(&font.info);
     gt_font_info_update_font_thick(&font.info);
@@ -371,6 +386,12 @@ static inline bool _is_line_type(_gt_graphs_st * style, gt_graphs_type_et type) 
     return type == style->gp.type;
 }
 
+/**
+ * @brief Get start to end range
+ *
+ * @param style
+ * @return gt_point_st
+ */
 static inline gt_point_st _get_axis_scale_total_range(_gt_graphs_st * style) {
     gt_point_st scale_range = {
         .x = style->gp.axis.hor.end == style->gp.axis.hor.start ? 1 : (style->gp.axis.hor.end - style->gp.axis.hor.start),
@@ -384,14 +405,19 @@ static inline gt_point_st _get_start_value_by(_gt_graphs_st * style) {
     return start_val;
 }
 
+static inline gt_point_st _get_end_value_by(_gt_graphs_st * style) {
+    gt_point_st end_val = { .x = style->gp.axis.hor.end, .y = style->gp.axis.ver.end };
+    return end_val;
+}
+
 static inline gt_size_t _calc_abs_point_x(gt_size_t p, _graph_css_st const * const css) {
-    // TODO anti-order x/y axis
-    return (p - css->start.x) * css->range.x / css->total.x + css->padding.left;
+    gt_size_t offset = css->reg.anti_hor_axis_dir ? (css->end.x - p) : (p - css->start.x);
+    return offset * css->range.x / css->total.x + css->padding.left;
 }
 
 static inline gt_size_t _calc_abs_point_y(gt_size_t p, _graph_css_st const * const css) {
-    // TODO anti-order x/y axis
-    return (p - css->start.y) * css->range.y / css->total.y + css->padding.top;
+    gt_size_t offset = css->reg.anti_ver_axis_dir ? (p - css->start.y) : (css->end.y - p);
+    return offset * css->range.y / css->total.y + css->padding.top;
 }
 
 static inline void _draw_point_by( gt_obj_st * obj, gt_series_points_st * ptr, gt_size_t idx, _graph_css_st const * const css) {
@@ -408,6 +434,8 @@ static _graph_css_st _get_css(gt_obj_st * obj) {
         .range = _get_display_pixel_range(&css.padding, obj->area.w, obj->area.h),
         .total = _get_axis_scale_total_range(style),
         .start = _get_start_value_by(style),
+        .end   = _get_end_value_by(style),
+        .reg   = style->reg,
     };
     css.padding = _add_obj_offset_padding(&css.padding, obj);
     return css;
@@ -690,6 +718,24 @@ bool gt_graphs_is_show_ruler(gt_obj_st * obj)
         return false;
     }
     return _is_show_ruler(obj);
+}
+
+void gt_graphs_set_anti_axis_hor_dir(gt_obj_st * obj, bool enabled)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    style->reg.anti_hor_axis_dir = enabled;
+}
+
+void gt_graphs_set_anti_axis_ver_dir(gt_obj_st * obj, bool enabled)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    style->reg.anti_ver_axis_dir = enabled;
 }
 
 #endif  /** GT_CFG_ENABLE_GRAPHS */
