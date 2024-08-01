@@ -226,6 +226,8 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
             if (pos.w > parent->area.w) {
                 if (GT_LAYOUT_JUSTIFY_CONTENT_END == parent->container.justify_content) {
                     parent->area.x = parent->area.x + parent->area.w - pos.w;
+                } else if (GT_LAYOUT_JUSTIFY_CONTENT_CENTER == parent->container.justify_content) {
+                    parent->area.x = parent->area.x + (parent->area.w - pos.w) >> 1;
                 }
                 parent->area.w = pos.w;
             }
@@ -233,6 +235,8 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
             if (pos.h > parent->area.h) {
                 if (GT_LAYOUT_JUSTIFY_CONTENT_END == parent->container.justify_content) {
                     parent->area.y = parent->area.y + parent->area.h - pos.h;
+                } else if (GT_LAYOUT_JUSTIFY_CONTENT_CENTER == parent->container.justify_content) {
+                    parent->area.y = parent->area.y + (parent->area.h - pos.h) >> 1;
                 }
                 parent->area.h = pos.h;
             }
@@ -261,13 +265,13 @@ static gt_area_st _childs_adjust_justify_content(gt_obj_st * parent, gt_area_st 
 
     // justify content end pos
     if (_is_flex_row_dir(parent->container.flex_direction)) {
-        diff.x = (parent->area.x + parent->area.w - content_pos->w) - content_pos->x;
+        diff.x = parent->area.x + parent->area.w - content_pos->w - content_pos->x;
     } else {
-        diff.y = (parent->area.y + parent->area.h - content_pos->h) - content_pos->y;
+        diff.y = parent->area.y + parent->area.h - content_pos->h - content_pos->y;
     }
     if (GT_LAYOUT_JUSTIFY_CONTENT_CENTER == jc) {
-        diff.x >>= 1;
-        diff.y >>= 1;
+        if (parent->area.w > content_pos->w) { diff.x >>= 1; }
+        if (parent->area.h > content_pos->h) { diff.y >>= 1; }
     }
     _gt_obj_move_child_by(parent, diff.x, diff.y);
 
