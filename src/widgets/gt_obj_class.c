@@ -267,6 +267,7 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * c, struct gt_obj_s
 
     /** widget object */
     obj->fixed = true;
+    obj->inside = true;
     if (false == _add_obj_to_parent(obj, parent)) {
         goto obj_lb;
     }
