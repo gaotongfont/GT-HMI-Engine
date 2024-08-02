@@ -147,39 +147,52 @@ static _update_align_cb_st _get_update_align_pos_cb(bool is_row) {
     return ret;
 }
 
-static _content_space_around_st _space_around_align(gt_obj_st * parent, bool is_row_dir) {
-    uint16_t total_size = 0;
+static bool _is_justify_content_space_mode(gt_layout_justify_content_t jc) {
+    return (GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND == jc ||
+            GT_LAYOUT_JUSTIFY_CONTENT_SPACE_BETWEEN == jc ||
+            GT_LAYOUT_JUSTIFY_CONTENT_SPACE_EVENLY == jc) ? true : false;
+}
+
+static _content_space_around_st _common_calc_space_gap_and_offset(
+    uint16_t obj_size, uint16_t gap_count,
+    uint16_t total_size, gt_layout_justify_content_t jc) {
     _content_space_around_st ret = {0};
+
+    if (total_size == obj_size) {
+        return ret;
+    }
+    if (total_size > obj_size) {
+        ret.offset = (obj_size - total_size) >> 1;
+        return ret;
+    }
+    if (GT_LAYOUT_JUSTIFY_CONTENT_SPACE_BETWEEN == jc && gap_count > 1) {
+        ret.gap = (obj_size - total_size) / (gap_count - 1);
+        return ret;
+    } else if (GT_LAYOUT_JUSTIFY_CONTENT_SPACE_EVENLY == jc) {
+        ret.gap = (obj_size - total_size) / (gap_count + 1);
+        ret.offset = ret.gap;
+        return ret;
+    }
+    ret.gap = (obj_size - total_size) / gap_count;
+    ret.offset = ret.gap >> 1;
+    return ret;
+}
+
+static _content_space_around_st _calc_space_mode_gap_and_offset(
+    gt_obj_st * parent, bool is_row_dir, gt_layout_justify_content_t jc) {
+    uint16_t total_size = 0;
 
     if (is_row_dir) {
         for (gt_size_t i = 0; i < parent->cnt_child; ++i) {
             total_size += parent->child[i]->area.w;
         }
-        if (total_size == parent->area.w) {
-            return ret;
-        }
-        if (total_size > parent->area.w) {
-            ret.offset = (parent->area.w - total_size) >> 1;
-            return ret;
-        }
-        ret.gap = (parent->area.w - total_size) / parent->cnt_child;
-        ret.offset = ret.gap >> 1;
-        return ret;
+        return _common_calc_space_gap_and_offset(parent->area.w, parent->cnt_child, total_size, jc);
     }
     /** column dir */
     for (gt_size_t i = 0; i < parent->cnt_child; ++i) {
         total_size += parent->child[i]->area.h;
     }
-    if (total_size == parent->area.h) {
-        return ret;
-    }
-    if (total_size > parent->area.h) {
-        ret.offset = (parent->area.h - total_size) >> 1;
-        return ret;
-    }
-    ret.gap = (parent->area.h - total_size) / parent->cnt_child;
-    ret.offset = ret.gap >> 1;
-    return ret;
+    return _common_calc_space_gap_and_offset(parent->area.h, parent->cnt_child, total_size, jc);
 }
 
 static void _sort_order_by_grow_dir(gt_obj_st * parent, gt_area_st * pos, uint8_t is_row) {
@@ -212,9 +225,9 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
     uint8_t is_row = _is_flex_row_dir(parent->container.flex_direction);
     gt_layout_justify_content_t jc = parent->container.justify_content;
 
-    if (GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND == jc) {
+    if (_is_justify_content_space_mode(jc)) {
         /** pre calc real total width or height value */
-        _content_space_around_st sa_ret = _space_around_align(parent, is_row);
+        _content_space_around_st sa_ret = _calc_space_mode_gap_and_offset(parent, is_row, jc);
         parent->container.gap = sa_ret.gap;
         if (is_row) {
             pos.w += sa_ret.offset;
@@ -224,7 +237,7 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
     }
     _sort_order_by_grow_dir(parent, &pos, is_row);
 
-    if (GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND != jc) {
+    if (false == _is_justify_content_space_mode(jc)) {
         /** Expand parent disp area size */
         if (is_row) {
             if (pos.w > parent->area.w) {
@@ -291,6 +304,9 @@ static gt_area_st _childs_adjust_justify_content(gt_obj_st * parent, gt_area_st 
 
 static void _adjust_flex_content(gt_obj_st * target) {
     if (false == gt_layout_is_type(target, GT_LAYOUT_TYPE_FLEX)) {
+        return ;
+    }
+    if (0 == target->cnt_child) {
         return ;
     }
     gt_area_st pos = _childs_sort_by_flex_direction(target);

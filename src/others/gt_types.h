@@ -93,7 +93,7 @@ typedef uint16_t gt_radius_t;
 /**
  * @brief layout property value
  */
-typedef uint8_t gt_layout_prop_t;
+typedef uint16_t gt_layout_prop_t;
 
 /**
  * @brief The gap size value
@@ -197,7 +197,9 @@ enum gt_layout_justify_content_e {
     GT_LAYOUT_JUSTIFY_CONTENT_START = 0,        /** left to right, or top to bottom */
     GT_LAYOUT_JUSTIFY_CONTENT_END,              /** right to left, or bottom to top */
     GT_LAYOUT_JUSTIFY_CONTENT_CENTER,           /** the center expend to both sides */
-    GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND,     /** space around */
+    GT_LAYOUT_JUSTIFY_CONTENT_SPACE_BETWEEN,    /** space between, Gap = item_count - 1 */
+    GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND,     /** space around, Gap = item_count */
+    GT_LAYOUT_JUSTIFY_CONTENT_SPACE_EVENLY,     /** space evenly, Gap = item_count + 1 */
 
     _GT_LAYOUT_JUSTIFY_CONTENT_TOTAL,
 };
