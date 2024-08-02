@@ -513,7 +513,20 @@ static void _graphs_draw_curve(gt_obj_st * obj, gt_series_points_st const * cons
 }
 
 static void _graphs_draw_bar(gt_obj_st * obj, gt_series_points_st const * const ptr) {
-    GT_LOG_A("GRAPHS", "WARN Bar has not been implemented yet!!!");
+    gt_attr_line_st line_attr = { .line = ptr->line };
+    _graph_css_st css = _get_css(obj);
+
+    if (0 == ptr->count_point) {
+        return;
+    }
+    line_attr.end.y = obj->area.y + obj->area.h - css.padding.bottom;
+
+    for (gt_size_t i = 0; i < ptr->count_point; ++i) {
+        line_attr.start.x = _calc_abs_point_x(ptr->x_series[i], &css);
+        line_attr.start.y = _calc_abs_point_y(ptr->y_series[i], &css);
+        line_attr.end.x = line_attr.start.x;
+        gt_draw_line(obj->draw_ctx, &line_attr, &obj->area);
+    }
 }
 
 static void _draw_points_lines_curves(gt_obj_st * obj) {
