@@ -2320,13 +2320,18 @@ void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const
     gt_point_st distance = { .x = end.x - start.x, .y = end.y - start.y };
 
     do {
-        for (gt_size_t i = 0; i < rd_val; ++i) {
-            gt_memset(blend_dsc.mask_buf, 0xFF, rd_val);
-            if (is_round) {
+        if (is_round) {
+            for (gt_size_t i = 0; i < rd_val; ++i) {
+                gt_memset(blend_dsc.mask_buf, 0xFF, rd_val);
                 _gt_get_radius_mask_buf(blend_dsc.mask_buf, 0, i, area_line.w, &radius_mask);
+                area_line.x = tmp.x;
+                area_line.y = tmp.y + i;
+                gt_draw_blend(draw_ctx, &blend_dsc);
             }
+        } else {
+            gt_memset(blend_dsc.mask_buf, 0xFF, rd_val);
             area_line.x = tmp.x;
-            area_line.y = tmp.y + i;
+            area_line.y = tmp.y + (rd_val >> 1);
             gt_draw_blend(draw_ctx, &blend_dsc);
         }
         if (0 == diff.x) {
