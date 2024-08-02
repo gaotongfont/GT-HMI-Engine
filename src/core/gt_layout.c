@@ -273,10 +273,10 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
 }
 
 /**
- * @brief
+ * @brief Handle END and CENTER justify content
  *
  * @param parent
- * @param content_pos
+ * @param content_pos Overall position of all elements
  * @return gt_area_st
  */
 static gt_area_st _childs_adjust_justify_content(gt_obj_st * parent, gt_area_st * content_pos) {
