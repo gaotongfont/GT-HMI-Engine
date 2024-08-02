@@ -99,6 +99,28 @@ gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const
  */
 gt_res_t gt_graphs_series_add_point_by(gt_obj_st * obj, uint16_t series_index, gt_point_f_st const * const point);
 
+/**
+ * @brief Add a series's point array to the graph
+ *
+ * @param obj
+ * @param series The series to be added
+ * @param list The array of points to be added
+ * @param count The count of the array items
+ * @return gt_res_t
+ */
+gt_res_t gt_graphs_series_add_point_list(gt_obj_st * obj, gt_series_points_st * const series, gt_point_f_st const * const list, uint16_t count);
+
+/**
+ * @brief Add a series's point array to the graph by index
+ *
+ * @param obj
+ * @param series_index The index of the series to which the point is added
+ * @param list The array of points to be added
+ * @param count The count of the array items
+ * @return gt_res_t
+ */
+gt_res_t gt_graphs_series_add_point_list_by(gt_obj_st * obj, uint16_t series_index, gt_point_f_st const * const list, uint16_t count);
+
 bool gt_graphs_is_self_adaptive(gt_obj_st * obj);
 
 bool gt_graphs_is_show_ruler(gt_obj_st * obj);

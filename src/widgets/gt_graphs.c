@@ -658,6 +658,9 @@ gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return GT_RES_FAIL;
     }
+    if (NULL == point) {
+        return GT_RES_FAIL;
+    }
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     if (false == _is_series_valid(style, series)) {
         return GT_RES_FAIL;
@@ -701,6 +704,65 @@ gt_res_t gt_graphs_series_add_point_by(gt_obj_st * obj, uint16_t series_index, g
 {
     gt_series_points_st * series = _get_series_line_by(obj, series_index);
     return gt_graphs_series_add_point(obj, series, point);
+}
+
+gt_res_t gt_graphs_series_add_point_list(gt_obj_st * obj, gt_series_points_st * const series, gt_point_f_st const * const list, uint16_t count)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+    if (NULL == list) {
+        return GT_RES_FAIL;
+    }
+    if (0 == count) {
+        return GT_RES_OK;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    if (false == _is_series_valid(style, series)) {
+        return GT_RES_FAIL;
+    }
+    uint16_t size = sizeof(gt_float_t);
+    if (series->count_point) {
+        series->x_series = gt_mem_realloc(series->x_series, (series->count_point + count) * size);
+        if (NULL == series->x_series) {
+            goto x_fail_lb;
+        }
+        series->y_series = gt_mem_realloc(series->y_series, (series->count_point + count) * size);
+        if (NULL == series->y_series) {
+            goto y_fail_lb;
+        }
+    } else {
+        series->x_series = gt_mem_malloc(count * size);
+        if (NULL == series->x_series) {
+            return GT_RES_FAIL;
+        }
+        series->y_series = gt_mem_malloc(count * size);
+        if (NULL == series->y_series) {
+            gt_mem_free(series->x_series);
+            series->x_series = NULL;
+            return GT_RES_FAIL;
+        }
+    }
+
+    for (gt_size_t i = 0; i < count; ++i) {
+        series->x_series[series->count_point] = list[i].x;
+        series->y_series[series->count_point] = list[i].y;
+        ++series->count_point;
+    }
+
+    return GT_RES_OK;
+
+y_fail_lb:
+    series->y_series = gt_mem_realloc(series->y_series, series->count_point * size);
+x_fail_lb:
+    series->x_series = gt_mem_realloc(series->x_series, series->count_point * size);
+    return GT_RES_FAIL;
+}
+
+gt_res_t gt_graphs_series_add_point_list_by(gt_obj_st * obj, uint16_t series_index, gt_point_f_st const * const list, uint16_t count)
+{
+    gt_series_points_st * series = _get_series_line_by(obj, series_index);
+    return gt_graphs_series_add_point_list(obj, series, list, count);
 }
 
 bool gt_graphs_is_self_adaptive(gt_obj_st * obj)
