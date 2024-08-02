@@ -75,11 +75,11 @@ typedef enum {
 typedef struct gt_obj_container_s {
     gt_gap_t gap;   /** justify content dir gap value */
 
-    gt_layout_type_t layout_type : 1;                   /** 0[default]: fixed position; 1: flex position */
-    gt_layout_flex_direction_t flex_direction : 2;      /** main axis direction */
-    gt_layout_justify_content_t justify_content : 2;    /** main axis align */
-    gt_layout_align_items_t align_items : 2;            /** second axis align */
-    gt_layout_prop_t reversed : 1;
+    gt_layout_type_t layout_type : 1;                   /** 0[default]: fixed position; 1: flex position @ref gt_layout_type_e */
+    gt_layout_flex_direction_t flex_direction : 2;      /** main axis direction @ref gt_layout_flex_direction_e */
+    gt_layout_justify_content_t justify_content : 2;    /** main axis align @ref gt_layout_justify_content_e */
+    gt_layout_align_items_t align_items : 2;            /** second axis align @ref gt_layout_align_items_e */
+    gt_layout_shrink_t shrink : 1;                      /** 0[default]: shrink disable; 1: shrink enable @ref gt_layout_shrink_e */
 }gt_obj_container_st;
 #endif
 

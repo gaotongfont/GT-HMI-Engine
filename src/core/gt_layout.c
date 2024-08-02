@@ -193,8 +193,9 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
     _update_align_cb_st cb_st = _get_update_align_pos_cb(is_row);
     gt_size_t second_dir_height = is_row ? parent->area.h : parent->area.w;
     _content_space_around_st sa_ret = {0};
+    gt_layout_justify_content_t jc = parent->container.justify_content;
 
-    if (GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND == parent->container.justify_content) {
+    if (GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND == jc) {
         /** pre calc real total width or height value */
         bool is_row = _is_flex_row_dir(parent->container.flex_direction);
         sa_ret = _space_around_align(parent, is_row);
@@ -220,25 +221,35 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
             cb_st.update_max_size_p(child, &pos, parent->container.gap);
         }
     }
-    if (GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND != parent->container.justify_content) {
+    if (GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND != jc) {
         /** Expand parent disp area size */
         if (is_row) {
             if (pos.w > parent->area.w) {
-                if (GT_LAYOUT_JUSTIFY_CONTENT_END == parent->container.justify_content) {
+                if (GT_LAYOUT_JUSTIFY_CONTENT_END == jc) {
                     parent->area.x = parent->area.x + parent->area.w - pos.w;
-                } else if (GT_LAYOUT_JUSTIFY_CONTENT_CENTER == parent->container.justify_content) {
+                } else if (GT_LAYOUT_JUSTIFY_CONTENT_CENTER == jc) {
                     parent->area.x = parent->area.x + (parent->area.w - pos.w) >> 1;
                 }
+                /** Main axis dir to grow size */
                 parent->area.w = pos.w;
+            }
+            if (GT_LAYOUT_SHRINK_ENABLE == parent->container.shrink && pos.h > parent->area.h) {
+                /** Second axis dir to self-adjust size */
+                parent->area.h = pos.h;
             }
         } else {
             if (pos.h > parent->area.h) {
-                if (GT_LAYOUT_JUSTIFY_CONTENT_END == parent->container.justify_content) {
+                if (GT_LAYOUT_JUSTIFY_CONTENT_END == jc) {
                     parent->area.y = parent->area.y + parent->area.h - pos.h;
-                } else if (GT_LAYOUT_JUSTIFY_CONTENT_CENTER == parent->container.justify_content) {
+                } else if (GT_LAYOUT_JUSTIFY_CONTENT_CENTER == jc) {
                     parent->area.y = parent->area.y + (parent->area.h - pos.h) >> 1;
                 }
+                /** Main axis dir to grow size */
                 parent->area.h = pos.h;
+            }
+            if (GT_LAYOUT_SHRINK_ENABLE == parent->container.shrink && pos.w > parent->area.w) {
+                /** Second axis dir to self-adjust size */
+                parent->area.w = pos.w;
             }
         }
     }

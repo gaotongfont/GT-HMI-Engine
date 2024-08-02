@@ -197,7 +197,7 @@ enum gt_layout_justify_content_e {
     GT_LAYOUT_JUSTIFY_CONTENT_START = 0,        /** left to right, or top to bottom */
     GT_LAYOUT_JUSTIFY_CONTENT_END,              /** right to left, or bottom to top */
     GT_LAYOUT_JUSTIFY_CONTENT_CENTER,           /** the center expend to both sides */
-    GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND,     /* TODO space around */
+    GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND,     /** space around */
 
     _GT_LAYOUT_JUSTIFY_CONTENT_TOTAL,
 };
@@ -214,6 +214,12 @@ enum gt_layout_align_items_e {
 
 typedef gt_layout_prop_t gt_layout_align_items_t;
 
+enum gt_layout_shrink_e {
+    GT_LAYOUT_SHRINK_DISABLE = 0,
+    GT_LAYOUT_SHRINK_ENABLE,
+};
+
+typedef gt_layout_prop_t gt_layout_shrink_t;
 
 typedef struct gt_point_s {
     gt_size_t x;
