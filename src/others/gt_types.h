@@ -173,6 +173,11 @@ typedef enum gt_graphs_type_e {
     GT_GRAPHS_TYPE_BAR,
 }gt_graphs_type_et;
 
+typedef enum gt_brush_type_e {
+    GT_BRUSH_TYPE_ROUND = 0,
+    GT_BRUSH_TYPE_RECT,
+}gt_brush_type_et;
+
 enum gt_layout_type_e {
     GT_LAYOUT_TYPE_FIXED = 0,
     GT_LAYOUT_TYPE_FLEX,

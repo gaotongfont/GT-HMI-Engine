@@ -54,7 +54,9 @@ typedef struct gt_line_s {
 #if 0
     uint8_t type_sty;           /** line style @ref gt_line_style_et */
 #endif
-    uint8_t type;   /** Such point/line/curve/bar @ref gt_graphs_type_et */
+
+    uint8_t type : 3;   /** Such point/line/curve/bar @ref gt_graphs_type_et */
+    uint8_t brush : 1;  /** brush type @ref gt_brush_type_et */
 }gt_line_st;
 
 typedef struct gt_axis_s {

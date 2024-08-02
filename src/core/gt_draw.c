@@ -2217,6 +2217,10 @@ close_lb:
     gt_img_decoder_close(&dsc_img);
 }
 
+static inline bool _is_brush_round(gt_line_st const * const line) {
+    return GT_BRUSH_TYPE_ROUND == line->brush;
+}
+
 void gt_draw_point(_gt_draw_ctx_st * draw_ctx, gt_attr_point_st const * dsc, gt_area_st const * coords)
 {
     if (dsc->line.opa < GT_OPA_MIN) {
@@ -2231,8 +2235,11 @@ void gt_draw_point(_gt_draw_ctx_st * draw_ctx, gt_attr_point_st const * dsc, gt_
     gt_radius_mask_st radius_mask = {0};
     uint16_t rd_val = dsc->line.width ? dsc->line.width : 4;
     gt_area_st area_line = { 0, 0, rd_val, rd_val };
-    if (!_gt_radius_mask_init(&radius_mask, area_line, rd_val >> 1, false)) {
-        return;
+    bool is_round = _is_brush_round(&dsc->line);
+    if (is_round) {
+        if (!_gt_radius_mask_init(&radius_mask, area_line, rd_val >> 1, false)) {
+            return;
+        }
     }
     gt_area_st * remark_area = draw_ctx->parent_area;
     draw_ctx->parent_area = (gt_area_st * )coords;  /** remark before parent area value, return will reload */
@@ -2253,7 +2260,9 @@ void gt_draw_point(_gt_draw_ctx_st * draw_ctx, gt_attr_point_st const * dsc, gt_
     }
     for (gt_size_t i = 0; i < rd_val; ++i) {
         gt_memset(blend_dsc.mask_buf, 0xFF, rd_val);
-        _gt_get_radius_mask_buf(blend_dsc.mask_buf, 0, i, area_line.w, &radius_mask);
+        if (is_round) {
+            _gt_get_radius_mask_buf(blend_dsc.mask_buf, 0, i, area_line.w, &radius_mask);
+        }
         ++area_line.y;
         gt_draw_blend(draw_ctx, &blend_dsc);
     }
@@ -2278,8 +2287,11 @@ void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const
     gt_radius_mask_st radius_mask = {0};
     uint16_t rd_val = dsc->line.width ? dsc->line.width : 4;
     gt_area_st area_line = { 0, 0, rd_val, rd_val };
-    if (!_gt_radius_mask_init(&radius_mask, area_line, rd_val >> 1, false)) {
-        return;
+    bool is_round = _is_brush_round(&dsc->line);
+    if (is_round) {
+        if (!_gt_radius_mask_init(&radius_mask, area_line, rd_val >> 1, false)) {
+            return;
+        }
     }
     gt_area_st * remark_area = draw_ctx->parent_area;
     draw_ctx->parent_area = (gt_area_st * )coords;  /** remark before parent area value, return will reload */
@@ -2310,7 +2322,9 @@ void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const
     do {
         for (gt_size_t i = 0; i < rd_val; ++i) {
             gt_memset(blend_dsc.mask_buf, 0xFF, rd_val);
-            _gt_get_radius_mask_buf(blend_dsc.mask_buf, 0, i, area_line.w, &radius_mask);
+            if (is_round) {
+                _gt_get_radius_mask_buf(blend_dsc.mask_buf, 0, i, area_line.w, &radius_mask);
+            }
             area_line.x = tmp.x;
             area_line.y = tmp.y + i;
             gt_draw_blend(draw_ctx, &blend_dsc);
@@ -2345,8 +2359,11 @@ void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_attr_curve_st const * dsc
     gt_radius_mask_st radius_mask = {0};
     uint16_t rd_val = dsc->line.width ? dsc->line.width : 4;
     gt_area_st area_line = { 0, 0, rd_val, rd_val };
-    if (!_gt_radius_mask_init(&radius_mask, area_line, rd_val >> 1, false)) {
-        return;
+    bool is_round = _is_brush_round(&dsc->line);
+    if (is_round) {
+        if (!_gt_radius_mask_init(&radius_mask, area_line, rd_val >> 1, false)) {
+            return;
+        }
     }
     gt_area_st * remark_area = draw_ctx->parent_area;
     draw_ctx->parent_area = (gt_area_st * )coords;  /** remark before parent area value, return will reload */
@@ -2387,7 +2404,9 @@ void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_attr_curve_st const * dsc
         ++second;
         for (gt_size_t i = 0; i < rd_val; ++i) {
             gt_memset(blend_dsc.mask_buf, 0xFF, rd_val);
-            _gt_get_radius_mask_buf(blend_dsc.mask_buf, 0, i, area_line.w, &radius_mask);
+            if (is_round) {
+                _gt_get_radius_mask_buf(blend_dsc.mask_buf, 0, i, area_line.w, &radius_mask);
+            }
             area_line.x = (gt_size_t)tmp.x;
             area_line.y = (gt_size_t)tmp.y + i;
             gt_draw_blend(draw_ctx, &blend_dsc);
