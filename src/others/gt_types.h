@@ -215,8 +215,8 @@ enum gt_layout_align_items_e {
 typedef gt_layout_prop_t gt_layout_align_items_t;
 
 enum gt_layout_shrink_e {
-    GT_LAYOUT_SHRINK_DISABLE = 0,
-    GT_LAYOUT_SHRINK_ENABLE,
+    GT_LAYOUT_SHRINK_DISABLE = 0,   /** All items will be display full size */
+    GT_LAYOUT_SHRINK_ENABLE,        /** All items display area limited by parent area */
 };
 
 typedef gt_layout_prop_t gt_layout_shrink_t;

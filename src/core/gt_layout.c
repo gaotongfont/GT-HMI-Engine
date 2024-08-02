@@ -233,7 +233,7 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
                 /** Main axis dir to grow size */
                 parent->area.w = pos.w;
             }
-            if (GT_LAYOUT_SHRINK_ENABLE == parent->container.shrink && pos.h > parent->area.h) {
+            if (GT_LAYOUT_SHRINK_DISABLE == parent->container.shrink && pos.h > parent->area.h) {
                 /** Second axis dir to self-adjust size */
                 parent->area.h = pos.h;
             }
@@ -247,7 +247,7 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
                 /** Main axis dir to grow size */
                 parent->area.h = pos.h;
             }
-            if (GT_LAYOUT_SHRINK_ENABLE == parent->container.shrink && pos.w > parent->area.w) {
+            if (GT_LAYOUT_SHRINK_DISABLE == parent->container.shrink && pos.w > parent->area.w) {
                 /** Second axis dir to self-adjust size */
                 parent->area.w = pos.w;
             }
