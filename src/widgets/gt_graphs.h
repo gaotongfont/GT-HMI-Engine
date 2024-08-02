@@ -68,8 +68,6 @@ void gt_graphs_set_show_ruler(gt_obj_st * obj, bool enabled);
  */
 void gt_graphs_set_axis(gt_obj_st * obj, gt_axis_st const * const axis);
 
-void gt_graphs_set_series_line_type(gt_obj_st * obj, gt_graphs_type_et type_style);
-
 /**
  * @brief Add a series to the graph
  *

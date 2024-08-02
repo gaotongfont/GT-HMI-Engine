@@ -603,15 +603,6 @@ void gt_graphs_set_axis(gt_obj_st * obj, gt_axis_st const * const axis)
     gt_memcpy(&style->gp.axis, axis, sizeof(gt_axis_st));
 }
 
-void gt_graphs_set_series_line_type(gt_obj_st * obj, gt_graphs_type_et type_style)
-{
-    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
-        return;
-    }
-    _gt_graphs_st * style = (_gt_graphs_st *)obj;
-    style->gp.type = type_style;
-}
-
 gt_series_points_st * gt_graphs_add_series_line(gt_obj_st * obj, gt_line_st const * const line_style)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {

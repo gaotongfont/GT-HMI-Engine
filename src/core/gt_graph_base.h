@@ -104,12 +104,10 @@ typedef struct _gt_attr_graphs_s {
     gt_series_points_st * series_head_p;
     gt_axis_st axis;
     uint16_t count_line;
-    uint8_t type;   /** @ref gt_graphs_type_et */
 }_gt_attr_graphs_st;
 
 typedef struct _gt_attr_rect_reg_s {
     uint8_t is_fill : 1;    ///< fill inside area by bg_color
-    // uint8_t is_line : 1;    ///< use straight line
     uint8_t reserved : 7;   ///< reserved
 }_gt_attr_rect_reg_st;
 
