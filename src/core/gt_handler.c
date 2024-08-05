@@ -8,7 +8,7 @@
  */
 
  /* include --------------------------------------------------------------*/
- #include "./gt_handler.h"
+#include "./gt_handler.h"
 #include "stdbool.h"
 #include "../gt_conf.h"
 #include "./gt_mem.h"
