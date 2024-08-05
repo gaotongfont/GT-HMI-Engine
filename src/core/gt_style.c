@@ -44,7 +44,7 @@
  * @return true
  * @return false
  */
-static bool _update_layer_top_widget_area(gt_obj_st * obj, gt_area_st new) {
+static bool _update_layer_top_widget_area(gt_obj_st * obj, gt_area_st new_area) {
     GT_CHECK_BACK_VAL(obj, false);
     gt_disp_st * disp = gt_disp_get_default();
     if (NULL == disp->layer_top) {
@@ -61,19 +61,19 @@ static bool _update_layer_top_widget_area(gt_obj_st * obj, gt_area_st new) {
         return false;
     }
 
-    if (new.x > disp->layer_top->area.w) {
-        new.x = new.x % disp->layer_top->area.w;
+    if (new_area.x > disp->layer_top->area.w) {
+        new_area.x = new_area.x % disp->layer_top->area.w;
     }
-    if (new.y > disp->layer_top->area.h) {
-        new.y = new.y % disp->layer_top->area.h;
+    if (new_area.y > disp->layer_top->area.h) {
+        new_area.y = new_area.y % disp->layer_top->area.h;
     }
-    new.x = new.x + disp->layer_top->area.x;
-    new.y = new.y + disp->layer_top->area.y;
+    new_area.x = new_area.x + disp->layer_top->area.x;
+    new_area.y = new_area.y + disp->layer_top->area.y;
 
-    _gt_obj_move_child_by(obj, new.x - gt_obj_get_x(obj), new.y - gt_obj_get_y(obj));
+    _gt_obj_move_child_by(obj, new_area.x - gt_obj_get_x(obj), new_area.y - gt_obj_get_y(obj));
 
-    gt_obj_pos_change(obj, &new);
-    _gt_disp_update_max_area(&new, _gt_obj_is_ignore_calc_max_area(obj));
+    gt_obj_pos_change(obj, &new_area);
+    _gt_disp_update_max_area(&new_area, _gt_obj_is_ignore_calc_max_area(obj));
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 
     return true;
