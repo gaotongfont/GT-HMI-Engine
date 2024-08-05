@@ -1227,16 +1227,16 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
 #else
     uint8_t lan = right_to_left_lan_get(&tmp_font);
 #endif
-    // if (lan == FONT_LAN_HEBREW || lan == FONT_LAN_ARABIC) {
-    //     ret_txt = gt_mem_malloc(dsc->font->len);
-    //     if (NULL == ret_txt) {
-    //         GT_LOGE(GT_LOG_TAG_GUI, "ret_txt malloc is failed!!! size = %d", dsc->font->len);
-    //         goto _ret_handler;
-    //     }
-    //     if (gt_right_to_left_handler(&tmp_font, ret_txt, lan)) {
-    //         txt = ret_txt;
-    //     }
-    // }
+    if (lan == FONT_LAN_HEBREW || lan == FONT_LAN_ARABIC) {
+        ret_txt = gt_mem_malloc(dsc->font->len);
+        if (NULL == ret_txt) {
+            GT_LOGE(GT_LOG_TAG_GUI, "ret_txt malloc is failed!!! size = %d", dsc->font->len);
+            goto _ret_handler;
+        }
+        if (gt_right_to_left_handler(&tmp_font, ret_txt, lan)) {
+            txt = ret_txt;
+        }
+    }
 
     uint8_t * txt_2 = &txt[0];
     gt_draw_blend_dsc_st blend_dsc = {
