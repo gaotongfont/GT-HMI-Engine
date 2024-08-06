@@ -215,9 +215,10 @@ static inline void _init_child_prop(gt_obj_st * obj) {
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
+    gt_event_type_et code_val = gt_event_get_code(e);
     gt_size_t value = 0;
 
-    switch (e->code) {
+    switch (code_val) {
     case GT_EVENT_TYPE_DRAW_START: {
         gt_disp_invalid_area(obj);
         break;
