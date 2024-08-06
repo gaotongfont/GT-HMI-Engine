@@ -2163,6 +2163,9 @@ void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_are
     if (dsc->bg_opa < GT_OPA_MIN) {
         return;
     }
+    if (NULL == draw_ctx->buf) {
+        return;
+    }
 
     _gt_img_dsc_st dsc_img = {0};
     if (NULL == dsc->bg_img_src) {
