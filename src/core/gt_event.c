@@ -43,7 +43,7 @@ static gt_res_t _gt_event_node_push(gt_event_st * e) {
         if (e == ptr) {
             return GT_RES_FAIL;
         }
-        if (ptr->code == e->code && ptr->origin == e->origin) {
+        if (ptr->code_type == e->code_type && ptr->origin == e->origin) {
             return GT_RES_FAIL;
         }
         ptr = ptr->prev;
@@ -63,7 +63,7 @@ static gt_res_t _gt_event_calling_user_cb(gt_event_st * e) {
         return GT_RES_OK;
     }
     while(event_ptr) {
-        if(event_ptr->user_cb && e->code == event_ptr->filter) {
+        if(event_ptr->user_cb && e->code_type == event_ptr->filter) {
             e->user_data = event_ptr->user_data;
             event_ptr->user_cb(e);
         }
@@ -199,7 +199,7 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
     gt_event_st e = {
         .target = parent,
         .origin = parent,
-        .code = event,
+        .code_type = event,
         .param = parms,
     };
 
@@ -251,7 +251,7 @@ gt_res_t gt_event_send_by_id(gt_id_t widget_id, gt_event_type_et event, void * p
 
 gt_event_type_et gt_event_get_code(gt_event_st * e)
 {
-    return e->code;
+    return e->code_type;
 }
 
 /* end ------------------------------------------------------------------*/

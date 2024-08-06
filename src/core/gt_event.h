@@ -99,7 +99,7 @@ typedef struct _gt_event_s {
     struct gt_obj_s * origin;   /** origin control */
     void * user_data;
     void * param;               /** gt_event_send() param */
-    gt_event_type_et code;
+    gt_event_type_et code_type;
 }gt_event_st;
 
 /**

@@ -283,7 +283,7 @@ static inline void _repeat_finish_callback_handler(_gt_player_st * style) {
         return ;
     }
     gt_event_st e = {
-        .code = GT_EVENT_TYPE_NONE,
+        .code_type = GT_EVENT_TYPE_NONE,
         .origin = (gt_obj_st * )style,
         .target = (gt_obj_st * )style,
         .param = style->parms,
