@@ -244,7 +244,7 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
                 if (GT_LAYOUT_JUSTIFY_CONTENT_END == jc) {
                     parent->area.x = parent->area.x + parent->area.w - pos.w;
                 } else if (GT_LAYOUT_JUSTIFY_CONTENT_CENTER == jc) {
-                    parent->area.x = parent->area.x + (parent->area.w - pos.w) >> 1;
+                    parent->area.x = parent->area.x + ((parent->area.w - pos.w) >> 1);
                 }
                 /** Main axis dir to grow size */
                 parent->area.w = pos.w;
@@ -258,7 +258,7 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
                 if (GT_LAYOUT_JUSTIFY_CONTENT_END == jc) {
                     parent->area.y = parent->area.y + parent->area.h - pos.h;
                 } else if (GT_LAYOUT_JUSTIFY_CONTENT_CENTER == jc) {
-                    parent->area.y = parent->area.y + (parent->area.h - pos.h) >> 1;
+                    parent->area.y = parent->area.y + ((parent->area.h - pos.h) >> 1);
                 }
                 /** Main axis dir to grow size */
                 parent->area.h = pos.h;
