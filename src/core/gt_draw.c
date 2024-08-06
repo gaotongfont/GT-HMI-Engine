@@ -1649,11 +1649,12 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
     uint8_t lan = right_to_left_lan_get(&tmp_font);
 #endif
     if (lan == FONT_LAN_HEBREW || lan == FONT_LAN_ARABIC) {
-        ret_txt = gt_mem_malloc(dsc->font->len);
+        ret_txt = gt_mem_malloc(dsc->font->len + 1);
         if (NULL == ret_txt) {
-            GT_LOGE(GT_LOG_TAG_GUI, "ret_txt malloc is failed!!! size = %d", dsc->font->len);
+            GT_LOGE(GT_LOG_TAG_GUI, "ret_txt malloc is failed!!! size = %d", dsc->font->len+1);
             goto ret_handler_lb;
         }
+        gt_memset_0(ret_txt, dsc->font->len + 1);
         if (gt_right_to_left_handler(&tmp_font, ret_txt, lan)) {
             txt = ret_txt;
         }
@@ -1677,7 +1678,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
     gt_font_lan_et cur_sty = FONT_LAN_UNKNOWN;
 #endif
     gt_size_t string_total_width = 0, view_width = coords->w;
-    uint32_t uni_or_gbk = 0, remark_idx = 0, lan_len = 0;
+    uint32_t uni_or_gbk = 0, remark_idx = 0, lan_len = 0, ret_w = 0;
     uint16_t idx = 0, idx_len = 0, txt_len = dsc->font->len;
     uint16_t over_length_offset = ((coords->w / ((tmp_font.info.size >> 1) + dsc->space_x) - 1) >> 1) << 1;
     uint8_t over_length = 0;
@@ -1718,24 +1719,29 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
             ++idx;
             continue;
         }
+#if 0
         tmp_font.info.size = dsc->font->info.size;
         tmp_font.utf8 = (char * )&txt[idx];
         tmp_font.len = gt_font_one_char_code_len_get(&txt[idx], &uni_or_gbk, tmp_font.info.encoding);
-
         width = gt_font_get_one_word_width(uni_or_gbk, &tmp_font);
+#else
+        tmp_font.utf8 = (char * )&txt[idx];
+        tmp_font.len = txt_len - idx;
+        tmp_font.len = gt_font_split(&tmp_font, view_width, coords->w, dsc->space_x, &ret_w, &lan, &lan_len);
+#endif
         if (0 == tmp_font.len) {
             ++idx;
             continue;
         }
 
         if (dsc->reg.omit_line) {
-            view_width -= width;
+            view_width -= ret_w;
             if (0 == remark_idx && view_width < omit_info.width + 1) {
                 remark_idx = idx + tmp_font.len;
             }
         }
         if (tmp_font.len) {
-            string_total_width += width;
+            string_total_width += ret_w;
         }
         if (_gt_font_is_convertor_language(lan)) {
             if (bidi_max <= bidi_len) {
@@ -1775,6 +1781,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
     idx = 0;
     area_font.h = font_disp_h;
     while (idx < idx_len) {
+        tmp_font.info.size = dsc->font->info.size;
         if (bidi_pos < bidi_len && idx == bidi[bidi_pos].idx) {
             tmp_font.utf8 = (char * )&txt[idx];
             tmp_font.len = bidi[bidi_pos].len;
@@ -1792,7 +1799,6 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
         }
 
         gt_memset(tmp_font.res, 0, data_len);
-        tmp_font.info.size = dsc->font->info.size;
         tmp_font.utf8 = (char * )&txt[idx];
         tmp_font.len = gt_font_one_char_code_len_get(&txt[idx], &uni_or_gbk, tmp_font.info.encoding);
 
