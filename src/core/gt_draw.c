@@ -1530,9 +1530,9 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
         idx_len = 0;
         txt_2 = &txt[idx];
         bidi_len = 0;
-        font_disp_h = tmp_font.info.size;
-        area_font.h = tmp_font.info.size;
-        area_font.w = tmp_font.info.size;
+        font_disp_h = dsc->font->info.size;
+        area_font.h = font_disp_h;
+        area_font.w = dsc->font->info.size;
     }
 
 _ret_handler:
