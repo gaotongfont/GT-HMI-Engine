@@ -68,7 +68,6 @@ typedef struct _gt_listview_s {
 
     _double_scale_st double_scale;
     _triple_scale_st triple_scale;
-    gt_size_t scroll;       /** The offset of the last scroll */
 
     _column_st column;
 
@@ -171,22 +170,6 @@ static void _init_cb(gt_obj_st * obj) {
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
 
     draw_focus(obj, 0);
-}
-
-static void _scrolling_handler(gt_obj_st * obj) {
-    _gt_listview_st * style = (_gt_listview_st * )obj;
-    gt_size_t bottom = gt_obj_get_limit_bottom(obj);
-
-    if (gt_obj_scroll_get_y(obj) > 0) {
-        obj->process_attr.scroll.y = 0;
-    }
-    else if (gt_obj_scroll_get_y(obj) < bottom) {
-        obj->process_attr.scroll.y = bottom;
-    }
-
-    _gt_obj_move_child_by(obj, 0, gt_obj_scroll_get_y(obj) - style->scroll);
-    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-    style->scroll = gt_obj_scroll_get_y(obj);
 }
 
 static inline uint8_t _column_plus_one(_gt_listview_st * style) {
@@ -293,7 +276,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             _set_last_active_obj(obj, NULL);
             return;
         }
-        _scrolling_handler(obj);
+        _gt_obj_scroll_internal(obj);
     }
     else if (GT_EVENT_TYPE_INPUT_PRESSED == code) {
         _set_last_active_obj(obj, e->origin);
@@ -824,7 +807,6 @@ void gt_listview_clear_all_items(gt_obj_st * listview)
     _gt_listview_st * style = (_gt_listview_st * )listview;
     style->column.idx = 0;
     style->column.offset_y = 0;
-    style->scroll = 0;
 
     _gt_obj_class_destroy_children(listview);
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
