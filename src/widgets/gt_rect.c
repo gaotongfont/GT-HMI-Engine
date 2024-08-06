@@ -109,33 +109,12 @@ static void _deinit_cb(gt_obj_st * obj) {
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code = gt_event_get_code(e);
-    switch(code) {
-        case GT_EVENT_TYPE_DRAW_START:
-            gt_disp_invalid_area(obj);
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
-            break;
-
-        case GT_EVENT_TYPE_DRAW_END:
-            break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            break;
-
-        case GT_EVENT_TYPE_INPUT_SCROLL:
-            break;
-
-        case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            break;
-
-        default:
-            break;
+    if (GT_EVENT_TYPE_DRAW_START == code) {
+        gt_disp_invalid_area(obj);
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
+    }
+    else if (GT_EVENT_TYPE_INPUT_RELEASED == code) {
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
     }
 }
 
