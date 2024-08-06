@@ -36,8 +36,9 @@ typedef struct _gt_obj_event_attr_s {
  * @brief save all indev/disp/others dev data
  */
 typedef struct _gt_obj_process_attr_s {
-    gt_point_st point;      //click point(note: the point is for object inside offset)
-    gt_point_st scroll;     //scroll distance, default is 0
+    gt_point_st point;          //click point(note: the point is for object inside offset)
+    gt_point_st scroll;         //scroll distance, default is 0
+    gt_point_st scroll_prev;    // remark previous scroll distance
 }gt_obj_process_attr_st;
 
 typedef enum {
@@ -247,6 +248,7 @@ void gt_obj_set_bgcolor(gt_obj_st * obj, gt_color_t color);
 
 gt_color_t gt_obj_get_bgcolor(gt_obj_st * obj);
 
+gt_size_t gt_obj_get_limit_right(gt_obj_st * obj);
 gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj);
 
 gt_point_st gt_obj_get_childs_max_size(gt_obj_st * parent);

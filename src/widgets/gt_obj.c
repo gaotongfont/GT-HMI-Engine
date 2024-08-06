@@ -102,6 +102,37 @@ static void _init_cb(gt_obj_st * obj) {
     }
 }
 
+static void _scroll_obj(gt_obj_st * obj) {
+    gt_point_st * scroll = &obj->process_attr.scroll;
+    gt_size_t right = gt_obj_get_limit_right(obj);
+    gt_size_t bottom = gt_obj_get_limit_bottom(obj);
+
+    if (scroll->y > 0) {
+        scroll->y = 0;
+    } else if (bottom < 0 && scroll->y < bottom) {
+        scroll->y = bottom;
+    } else if (bottom >= 0) {
+        scroll->y = 0;
+    }
+
+    if (scroll->x > 0) {
+        scroll->x = 0;
+    } else if (right < 0 && scroll->x < right) {
+        scroll->x = right;
+    } else if (right >= 0) {
+        scroll->x = 0;
+    }
+
+    _gt_obj_move_child_by(obj, scroll->x - obj->process_attr.scroll_prev.x, scroll->y - obj->process_attr.scroll_prev.y);
+    gt_disp_invalid_area(obj);
+    if (obj->process_attr.scroll_prev.x != scroll->x) {
+        obj->process_attr.scroll_prev.x = scroll->x;
+    }
+    if (obj->process_attr.scroll_prev.y != scroll->y) {
+        obj->process_attr.scroll_prev.y = scroll->y;
+    }
+}
+
 static void _screen_scroll(gt_obj_st * obj) {
     if (false == gt_obj_is_type(obj, OBJ_TYPE_SCREEN)) {
         return;
@@ -167,6 +198,10 @@ static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
         }
         case GT_EVENT_TYPE_UPDATE_STYLE: {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            break;
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL: {
+            _scroll_obj(obj);
             break;
         }
         case GT_EVENT_TYPE_INPUT_PRESSED: {
@@ -289,7 +324,11 @@ static gt_obj_st * _find_obj_recursive_by_id(gt_obj_st * self, gt_id_t widget_id
 
 gt_obj_st * gt_obj_create(gt_obj_st * parent)
 {
-    return gt_obj_class_create(parent ? MY_CLASS : MY_CLASS_SCREEN, parent);
+    gt_obj_st * obj = gt_obj_class_create(parent ? MY_CLASS : MY_CLASS_SCREEN, parent);
+    GT_CHECK_BACK_VAL(obj, NULL);
+
+    obj->fixed = false;
+    return obj;
 }
 
 gt_obj_st * gt_obj_get_parent(gt_obj_st * obj)
@@ -404,10 +443,30 @@ gt_color_t gt_obj_get_bgcolor(gt_obj_st * obj)
     return obj->bgcolor;
 }
 
+gt_size_t gt_obj_get_limit_right(gt_obj_st * obj)
+{
+    gt_obj_st * child = NULL;
+    gt_size_t max_x = -0x7fff;
+    gt_size_t temp = 0, min_x = 0x7fff;
+    GT_CHECK_BACK_VAL(obj, 0);
+
+    for (gt_size_t i = 0, cnt = obj->cnt_child; i < cnt; i++) {
+        child = obj->child[i];
+        if (child->area.x < min_x) {
+            min_x = child->area.x;
+        }
+        temp = child->area.x + child->area.w;
+        if (temp > max_x) {
+            max_x = temp;
+        }
+    }
+    return min_x - max_x + obj->area.w;
+}
+
 gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj)
 {
     gt_obj_st * child = NULL;
-    gt_size_t bottom = -0x7fff;
+    gt_size_t max_y = -0x7fff;
     gt_size_t temp = 0, min_y = 0x7fff;
     GT_CHECK_BACK_VAL(obj, 0);
 
@@ -417,11 +476,11 @@ gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj)
             min_y = child->area.y;
         }
         temp = child->area.y + child->area.h;
-        if (temp > bottom) {
-            bottom = temp;
+        if (temp > max_y) {
+            max_y = temp;
         }
     }
-    return -(bottom - min_y - obj->area.h);
+    return min_y - max_y + obj->area.h;
 }
 
 gt_point_st gt_obj_get_childs_max_size(gt_obj_st * parent)
