@@ -581,10 +581,18 @@ gt_scroll_snap_em gt_obj_get_scroll_snap_y(gt_obj_st * obj)
 
 bool _gt_obj_is_ignore_calc_max_area(gt_obj_st * obj)
 {
+    gt_obj_st * ptr = obj;
     if (NULL == obj) { return true; }
-    if (obj->inside) { return true; }
+
+    while (ptr->parent) { ptr = ptr->parent; }
+
     if (obj->overflow) { return true; }
     if (obj->virtuality) { return true; }
+    if (obj->parent == ptr) {
+        return false;
+    }
+
+    if (obj->inside) { return true; }
 
     return false;
 }
