@@ -325,18 +325,18 @@ static void _ready_scroll_snap_anim(struct gt_obj_s * obj) {
 }
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    if (GT_EVENT_TYPE_INPUT_SCROLL == code) {
+    if (GT_EVENT_TYPE_INPUT_SCROLL == code_val) {
         _scroll_text_handler(obj);
     }
-    else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code) {
+    else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code_val) {
         _ready_scroll_snap_anim(obj);
     }
-    else if (GT_EVENT_TYPE_INPUT_SCROLL_UP == code || GT_EVENT_TYPE_INPUT_SCROLL_LEFT == code) {
+    else if (GT_EVENT_TYPE_INPUT_SCROLL_UP == code_val || GT_EVENT_TYPE_INPUT_SCROLL_LEFT == code_val) {
         gt_roller_go_prev(obj);
     }
-    else if (GT_EVENT_TYPE_INPUT_SCROLL_DOWN == code || GT_EVENT_TYPE_INPUT_SCROLL_RIGHT == code) {
+    else if (GT_EVENT_TYPE_INPUT_SCROLL_DOWN == code_val || GT_EVENT_TYPE_INPUT_SCROLL_RIGHT == code_val) {
         gt_roller_go_next(obj);
     }
 }

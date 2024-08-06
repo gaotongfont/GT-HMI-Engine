@@ -185,9 +185,9 @@ static void _deinit_cb(struct gt_obj_s *obj) {
 }
 
 static void _event_cb(struct gt_obj_s *obj, struct _gt_event_s *e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    switch (code) {
+    switch (code_val) {
     case GT_EVENT_TYPE_DRAW_START:
         GT_LOGV(GT_LOG_TAG_GUI, "start draw");
         gt_disp_invalid_area(obj);

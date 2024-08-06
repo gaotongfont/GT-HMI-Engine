@@ -163,8 +163,8 @@ static bool _turn_next_image(gt_obj_st * obj) {
  */
 static void _imgbtn_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     _gt_imgbtn_st * style = (_gt_imgbtn_st * )obj;
-    gt_event_type_et code = gt_event_get_code(e);
-    switch(code) {
+    gt_event_type_et code_val = gt_event_get_code(e);
+    switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START:
             _invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);

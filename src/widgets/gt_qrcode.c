@@ -209,8 +209,8 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param e event
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
-    if (GT_EVENT_TYPE_DRAW_START == code) {
+    gt_event_type_et code_val = gt_event_get_code(e);
+    if (GT_EVENT_TYPE_DRAW_START == code_val) {
         gt_disp_invalid_area(obj);
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
     }

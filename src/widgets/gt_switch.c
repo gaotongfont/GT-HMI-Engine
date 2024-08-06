@@ -113,12 +113,12 @@ static void _init_cb(gt_obj_st * obj) {
  * @param e event
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    if (GT_EVENT_TYPE_DRAW_START == code) {
+    if (GT_EVENT_TYPE_DRAW_START == code_val) {
         gt_disp_invalid_area(obj);
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
-    } else if (GT_EVENT_TYPE_INPUT_RELEASED == code) {
+    } else if (GT_EVENT_TYPE_INPUT_RELEASED == code_val) {
         if (GT_STATE_PRESSED == gt_obj_get_state(obj)) {
             gt_obj_set_state(obj, GT_STATE_NONE);
         } else {

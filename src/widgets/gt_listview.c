@@ -264,12 +264,12 @@ static void _reset_other_active_state(gt_obj_st * listview) {
  * @param e event
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    if (GT_EVENT_TYPE_DRAW_START == code) {
+    if (GT_EVENT_TYPE_DRAW_START == code_val) {
         gt_disp_invalid_area(obj);
     }
-    else if (GT_EVENT_TYPE_INPUT_SCROLL == code) {
+    else if (GT_EVENT_TYPE_INPUT_SCROLL == code_val) {
         if (gt_obj_get_childs_max_height(obj) < gt_obj_get_h(obj)) {
             /** all items can display with current page, reset scroll selected effect */
             _reset_last_active_state(obj, _get_last_active_obj(obj));
@@ -278,15 +278,15 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         }
         _gt_obj_scroll_internal(obj);
     }
-    else if (GT_EVENT_TYPE_INPUT_PRESSED == code) {
+    else if (GT_EVENT_TYPE_INPUT_PRESSED == code_val) {
         _set_last_active_obj(obj, e->origin);
     }
-    else if (GT_EVENT_TYPE_INPUT_RELEASED == code) {
+    else if (GT_EVENT_TYPE_INPUT_RELEASED == code_val) {
         _set_last_active_obj(obj, e->origin);
         _reset_other_active_state(obj);
         _highlight_set_obj_active_state(obj);
     }
-    else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code) {
+    else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code_val) {
         _reset_last_active_state(obj, e->origin);
     }
 }

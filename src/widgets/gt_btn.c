@@ -211,9 +211,9 @@ static inline void _lost_focus_btn_handler(gt_obj_st *obj) {
  * @param e event
  */
 static void _btn_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    switch(code) {
+    switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START:
         case GT_EVENT_TYPE_UPDATE_STYLE:
             gt_disp_invalid_area(obj);

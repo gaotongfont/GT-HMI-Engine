@@ -158,9 +158,9 @@ static void _change_state_by_trigger_mode(gt_obj_st * obj, bool is_pressed) {
 }
 
 static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    switch(code) {
+    switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START: {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
@@ -197,9 +197,9 @@ static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
 }
 
 static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    switch(code) {
+    switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START: {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;

@@ -386,11 +386,11 @@ static inline void _change_item_handler(gt_obj_st * obj, bool is_next) {
 }
 
 static void _player_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    if (GT_EVENT_TYPE_DRAW_START == code) {
+    if (GT_EVENT_TYPE_DRAW_START == code_val) {
         gt_disp_invalid_area(obj);
-    } else if (GT_EVENT_TYPE_UPDATE_STYLE == code) {
+    } else if (GT_EVENT_TYPE_UPDATE_STYLE == code_val) {
         gt_disp_invalid_area(obj);
     }
 }
