@@ -1129,7 +1129,7 @@ static uint32_t _gt_font_en_in_this_range(const gt_font_st *fonts, uint32_t widt
 
 static uint32_t _get_convertor_string_width(const gt_font_st *fonts, uint8_t lan, uint32_t space, uint16_t range_w, uint16_t *ol_idx, uint16_t *ol_width)
 {
-    uint32_t idx = 0, uni_or_gbk = 0, tmp, len = fonts->info.size * fonts->len;
+    uint32_t idx = 0, uni_or_gbk = 0, tmp = 0, len = fonts->info.size * fonts->len;
     uint16_t *text = NULL;
     uint8_t *font_buf = NULL;
     text = (uint16_t * )gt_mem_malloc(fonts->len * sizeof(uint16_t));
@@ -1180,6 +1180,9 @@ static uint32_t _get_convertor_string_width(const gt_font_st *fonts, uint8_t lan
         .is_rev = 1,
         .is_vec = ret_style == GT_FONT_TYPE_FLAG_VEC ? 1 : 0,
     };
+    if(ret_style != GT_FONT_TYPE_FLAG_VEC){
+        convertor.fontgray = (ret_style / 10) ? (ret_style / 10) : 1;
+    }
 
     font_buf = (uint8_t * )gt_mem_malloc(font_size_res.font_buff_len);
     if (NULL == font_buf) {
@@ -1400,6 +1403,12 @@ uint8_t right_to_left_lan_get(uint16_t style)
         case 141:
         case 169:
         case 170:
+        case 194:
+        case 195:
+        case 196:
+        case 197:
+        case 198:
+        case 199:
             return FONT_LAN_HEBREW;
         case 74:
         case 75:
@@ -1407,6 +1416,12 @@ uint8_t right_to_left_lan_get(uint16_t style)
         case 143:
         case 177:
         case 178:
+        case 206:
+        case 207:
+        case 208:
+        case 209:
+        case 210:
+        case 211:
             return FONT_LAN_ARABIC;
         default:
             break;

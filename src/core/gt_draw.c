@@ -1228,11 +1228,12 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
     uint8_t lan = right_to_left_lan_get(&tmp_font);
 #endif
     if (lan == FONT_LAN_HEBREW || lan == FONT_LAN_ARABIC) {
-        ret_txt = gt_mem_malloc(dsc->font->len);
+        ret_txt = gt_mem_malloc(dsc->font->len+1);
         if (NULL == ret_txt) {
-            GT_LOGE(GT_LOG_TAG_GUI, "ret_txt malloc is failed!!! size = %d", dsc->font->len);
+            GT_LOGE(GT_LOG_TAG_GUI, "ret_txt malloc is failed!!! size = %d", dsc->font->len+1);
             goto _ret_handler;
         }
+        gt_memset_0(ret_txt, dsc->font->len+1);
         if (gt_right_to_left_handler(&tmp_font, ret_txt, lan)) {
             txt = ret_txt;
         }
@@ -1333,34 +1334,36 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
                 continue;
             }
         }
-
     _disp_font:
-        if (_gt_font_is_convertor_language(lan)) {
-            if (bidi_max <= bidi_len) {
-                ++bidi_max;
-                bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
-                if (NULL == bidi) {
-                    GT_LOGE(GT_LOG_TAG_GUI, "bidi realloc is failed!!! size = %lu", bidi_max * sizeof(gt_bidi_st));
-                    goto _ret_handler;
+        if (over_length < 2) {
+            if (_gt_font_is_convertor_language(lan) && (idx < txt_len)) {
+                if (bidi_max <= bidi_len) {
+                    ++bidi_max;
+                    bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
                 }
-            }
-            bidi[bidi_len].idx = idx_len;
-            bidi[bidi_len].flag = lan;
-
-            if (over_length < 2 && idx < txt_len) {
+                bidi[bidi_len].idx = idx_len;
                 bidi[bidi_len].len = idx_step;
-                idx_len = idx_len + idx_step;
-            } else {
-                bidi[bidi_len].len = lan_len;
-                idx_len = lan_len;
-                disp_w = 0;
+                bidi[bidi_len].flag = lan;
+                ++bidi_len;
             }
-            ++bidi_len;
-        } else if (over_length < 2) {
             idx_len = (idx < txt_len) ? idx_len + idx_step : idx_len;
         } else {
-            idx_len = over_length_offset;
-            disp_w = 0;
+            if (_gt_font_is_convertor_language(lan)) {
+                if (bidi_max <= bidi_len) {
+                    ++bidi_max;
+                    bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
+                }
+                bidi[bidi_len].idx = idx_len;
+                bidi[bidi_len].len = lan_len;
+                bidi[bidi_len].flag = lan;
+                ++bidi_len;
+
+                idx_len = lan_len;
+                disp_w = 0;
+            } else {
+                idx_len = over_length_offset;
+                disp_w = 0;
+            }
         }
         /** align to left, center or right */
         if (!cov_flag_ol) {
@@ -1378,6 +1381,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
         area_font.h = font_disp_h;
         /** Display current line chars */
         while (idx_2 < idx_len) {
+            tmp_font.info.size = dsc->font->info.size;
             if (bidi_pos < bidi_len && idx_2 == bidi[bidi_pos].idx) {
                 tmp_font.utf8 = (char * )&txt_2[idx_2];
                 tmp_font.len = bidi[bidi_pos].len;
@@ -1396,7 +1400,6 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             }
 
             gt_memset(tmp_font.res, 0, data_len);
-            tmp_font.info.size = dsc->font->info.size;
             tmp_font.utf8 = (char * )&txt_2[idx_2];
             tmp_font.len = gt_font_one_char_code_len_get(&txt_2[idx_2], &uni_or_gbk, tmp_font.info.encoding);
 
