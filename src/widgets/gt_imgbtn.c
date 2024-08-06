@@ -42,6 +42,8 @@ typedef struct _gt_imgbtn_s {
     _item_st press;     ///< imgbtn src when press, It can be a virt file name/path or an array of C
     _item_st release;   ///< imgbtn src when release
 
+    gt_point_st prev_size;
+
     _gt_vector_st * imgs;
 
     uint8_t selected: 1;
@@ -98,6 +100,17 @@ static void _imgbtn_init_cb(gt_obj_st * obj) {
 #if GT_USE_FILE_HEADER
     dsc.file_header = gt_file_header_param_check_valid(&img->fh);
 #endif
+
+    // TODO pref time
+    if (obj->area.w > style->prev_size.x) {
+        style->prev_size.x = obj->area.w;
+    }
+    if (obj->area.h > style->prev_size.y) {
+        style->prev_size.y = obj->area.h;
+    }
+
+    obj->area.w = GT_MAX(style->prev_size.x, obj->area.w);
+    obj->area.h = GT_MAX(style->prev_size.y, obj->area.h);
 
     /* start draw imgbtn */
     draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
