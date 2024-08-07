@@ -173,6 +173,10 @@ static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
             _gt_obj_scroll_internal(obj);
             break;
         }
+        case GT_EVENT_TYPE_INPUT_SCROLL_END: {
+            _change_state_by_trigger_mode(obj, false);
+            break;
+        }
         case GT_EVENT_TYPE_INPUT_PRESSED: {
             _change_state_by_trigger_mode(obj, true);
             _masked_effect_handler(obj);
@@ -181,11 +185,8 @@ static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
         case GT_EVENT_TYPE_INPUT_RELEASED: {
             _change_state_by_trigger_mode(obj, false);
             _unmasked_effect_handler(obj);
-            /* TODO repeat event called? */
-            // gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         }
-        // TODO scroll
         case GT_EVENT_TYPE_INPUT_PRESS_LOST: {
             _change_state_by_trigger_mode(obj, false);
             _unmasked_effect_handler(obj);
