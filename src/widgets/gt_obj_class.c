@@ -197,6 +197,13 @@ static inline bool _add_obj_to_parent(gt_obj_st * obj, gt_obj_st * parent) {
         parent->child[parent->cnt_child++] = obj;
     }
     // GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj: %p, parent: %p, parent child: %p, count: %d", parent->child[parent->cnt_child - 1], parent, parent->child, parent->cnt_child);
+    if (parent->row_layout) {
+        // row calc width
+        gt_layout_row_grow(parent);
+    }
+    else if (GT_LAYOUT_TYPE_FLEX == parent->container.layout_type) {
+        gt_layout_update_core(obj);
+    }
     gt_event_send(parent, GT_EVENT_TYPE_CHANGE_CHILD_ADD, obj);
     return true;
 }
@@ -270,13 +277,6 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * c, struct gt_obj_s
     obj->inside = true;
     if (false == _add_obj_to_parent(obj, parent)) {
         goto obj_lb;
-    }
-    if (parent->row_layout) {
-        // row calc width
-        gt_layout_row_grow(parent);
-    }
-    else if (GT_LAYOUT_TYPE_FLEX == parent->container.layout_type) {
-        gt_layout_update_core(parent);
     }
 
     return obj;

@@ -220,42 +220,19 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
     switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
-            if( 0 ){
-                gt_disp_invalid_area(obj);
-            }
+            gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-
         case GT_EVENT_TYPE_UPDATE_VALUE:
-            GT_LOGV(GT_LOG_TAG_GUI, "value update");
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
             break;
 
         case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
-        case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
-            break;
-
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
-
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
@@ -318,6 +295,7 @@ void gt_barcode_set_type(gt_obj_st * barcode , gt_family_t family)
     }
     _gt_barcode_st * style = (_gt_barcode_st * )barcode;
     style->info.type = family;
+    gt_event_send(barcode, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_barcode_set_hri_type(gt_obj_st * barcode , gt_family_t family)
@@ -336,6 +314,7 @@ void gt_barcode_set_mode_w(gt_obj_st * barcode , uint8_t value)
     }
     _gt_barcode_st * style = (_gt_barcode_st * )barcode;
     style->info.mode_w = value;
+    gt_event_send(barcode, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_barcode_set_mode_h(gt_obj_st * barcode, uint8_t value)
@@ -345,6 +324,7 @@ void gt_barcode_set_mode_h(gt_obj_st * barcode, uint8_t value)
     }
     _gt_barcode_st * style = (_gt_barcode_st * )barcode;
     style->info.mode_h = value;
+    gt_event_send(barcode, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_barcode_set_upc_e_sys_code(gt_obj_st * barcode , uint8_t value)
