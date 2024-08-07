@@ -201,9 +201,7 @@ static inline bool _add_obj_to_parent(gt_obj_st * obj, gt_obj_st * parent) {
         // row calc width
         gt_layout_row_grow(parent);
     }
-    else if (GT_LAYOUT_TYPE_FLEX == parent->container.layout_type) {
-        gt_layout_update_core(obj);
-    }
+
     gt_event_send(parent, GT_EVENT_TYPE_CHANGE_CHILD_ADD, obj);
     return true;
 }
