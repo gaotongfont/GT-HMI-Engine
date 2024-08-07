@@ -275,6 +275,9 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * c, struct gt_obj_s
         // row calc width
         gt_layout_row_grow(parent);
     }
+    else if (GT_LAYOUT_TYPE_FLEX == parent->container.layout_type) {
+        gt_layout_update_core(parent);
+    }
 
     return obj;
 
