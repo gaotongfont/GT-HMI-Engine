@@ -70,6 +70,9 @@ typedef struct _gt_img_dsc_s {
 #if GT_USE_FILE_HEADER
     gt_file_header_param_st * file_header;  ///< Using file header mode to read image data
 #endif
+#if GT_USE_DIRECT_ADDR
+    gt_addr_t addr;
+#endif
     uint8_t * img;              ///< temp buffer which is used to save image data
     gt_opa_t * alpha;           ///< temp buffer which is used to save alpha data
     void * customs_data;        ///< customs data
@@ -106,6 +109,12 @@ typedef gt_res_t ( * gt_img_decoder_fh_get_info_t)(struct _gt_img_decoder_s * de
 typedef gt_res_t ( * gt_img_decoder_fh_open_t)(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc);
 #endif
 
+#if GT_USE_DIRECT_ADDR
+typedef gt_res_t ( * gt_img_decoder_direct_addr_get_info_t)(struct _gt_img_decoder_s * decoder, gt_addr_t addr, _gt_img_info_st * header);
+
+typedef gt_res_t ( * gt_img_decoder_direct_addr_open_t)(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc);
+#endif
+
 /**
  * @brief callback function
  */
@@ -120,6 +129,11 @@ typedef struct _gt_img_decoder_s {
 #if GT_USE_FILE_HEADER
     gt_img_decoder_fh_get_info_t fh_info_cb;    ///< get image base information by file header
     gt_img_decoder_fh_open_t fh_open_cb;        ///< open image file and create file object by file header
+#endif
+
+#if GT_USE_DIRECT_ADDR
+    gt_img_decoder_direct_addr_get_info_t direct_addr_info_cb;    ///< get image base information by direct addr
+    gt_img_decoder_direct_addr_open_t direct_addr_open_cb;        ///< open image file and create file object by direct addr
 #endif
 }_gt_img_decoder_st;
 
@@ -206,6 +220,11 @@ gt_res_t gt_img_decoder_fh_get_info(gt_file_header_param_st const * const param,
 gt_res_t gt_img_decoder_fh_open(_gt_img_dsc_st * dsc, gt_file_header_param_st const * const param);
 #endif
 
+#if GT_USE_DIRECT_ADDR
+gt_res_t gt_img_decoder_direct_addr_get_info(gt_addr_t addr, _gt_img_info_st * header);
+gt_res_t gt_img_decoder_direct_addr_open(_gt_img_dsc_st * dsc, gt_addr_t addr);
+#endif
+
 /**
  * @brief Set the information callback function pointer into image decoder object.
  *
@@ -263,6 +282,28 @@ void gt_img_decoder_set_fh_info_cb(_gt_img_decoder_st * decoder, gt_img_decoder_
  *      create image file object.
  */
 void gt_img_decoder_set_fh_open_cb(_gt_img_decoder_st * decoder, gt_img_decoder_fh_open_t fh_open_cb);
+#endif
+
+#if GT_USE_DIRECT_ADDR
+/**
+ * @brief Set the information callback function pointer into image decoder object
+ *      by direct address.
+ *
+ * @param decoder Image decoder, Which need to be init function and get information.
+ *      information.
+ * @param direct_addr_info_cb The direct addr control callback function pointer
+ */
+void gt_img_decoder_set_direct_addr_info_cb(_gt_img_decoder_st * decoder, gt_img_decoder_direct_addr_get_info_t direct_addr_info_cb);
+
+/**
+ * @brief Set the open image file callback function pointer into image decoder object
+ *      by direct address.
+ *
+ * @param decoder Image decoder, Which need to be init function by open file.
+ * @param direct_addr_open_cb The direct addr control callback function pointer, which open image file and
+ *      create image file object.
+ */
+void gt_img_decoder_set_direct_addr_open_cb(_gt_img_decoder_st * decoder, gt_img_decoder_direct_addr_open_t direct_addr_open_cb);
 #endif
 
 #ifdef __cplusplus

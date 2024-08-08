@@ -51,6 +51,8 @@ extern "C" {
     #endif
 #endif
 
+typedef uint32_t gt_addr_t;
+
 /**
  * @brief screen id
  */

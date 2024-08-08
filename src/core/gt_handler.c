@@ -78,6 +78,7 @@ static void gt_print_info_start(void) {
 
 static void gt_print_info_end(void) {
     GT_LOG_A(GT_LOG_TAG_FS, "Using file header: [%s]", GT_USE_FILE_HEADER ? "Yes" : "No");
+    GT_LOG_A(GT_LOG_TAG_FS, "Using direct addr: [%s]", GT_USE_DIRECT_ADDR ? "Yes" : "No");
 
 #if GT_USE_FILE_HEADER
     _gt_file_header_ctl_st * fh_ctl = &_GT_GC_GET_ROOT(file_header_ctl);

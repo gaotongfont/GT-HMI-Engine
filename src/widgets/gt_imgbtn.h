@@ -148,6 +148,18 @@ bool gt_imgbtn_add_state_item_by_file_header(gt_obj_st * obj, gt_file_header_par
 bool gt_imgbtn_remove_state_item_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh);
 #endif
 
+#if GT_USE_DIRECT_ADDR
+void gt_imgbtn_set_src_by_direct_addr(gt_obj_st * imgbtn, gt_addr_t addr);
+
+void gt_imgbtn_set_src_press_by_direct_addr(gt_obj_st * imgbtn, gt_addr_t addr);
+
+void gt_imgbtn_set_src_release_by_direct_addr(gt_obj_st * imgbtn, gt_addr_t addr);
+
+bool gt_imgbtn_add_state_item_by_direct_addr(gt_obj_st * obj, gt_addr_t addr);
+
+bool gt_imgbtn_remove_state_item_by_direct_addr(gt_obj_st * obj, gt_addr_t addr);
+#endif
+
 /**
  * @brief Clear all state items of the imgbtn, but do not free vector
  *

@@ -44,6 +44,12 @@ static inline gt_fs_fp_st * _fh_gif_open(gt_file_header_param_st const * const f
 }
 #endif
 
+#if GT_USE_DIRECT_ADDR
+static inline gt_fs_fp_st * _direct_addr_gif_open(gt_addr_t addr, gt_fs_mode_et mode) {
+    return gt_fs_direct_addr_open(addr, mode);
+}
+#endif
+
 static inline int _gif_read(gt_fs_fp_st * fp, uint8_t * buffer, uint32_t len) {
     uint32_t ret_len = 0;
     gt_fs_read(fp, buffer, len, &ret_len);
@@ -208,6 +214,25 @@ gd_fh_open_gif(gt_file_header_param_st const * const file_header)
     gt_memset(gif, 0, sizeof(gd_GIF));
 
     gif->fd = _fh_gif_open(file_header, GT_FS_MODE_RD);
+    if (!gif->fd) {
+        goto free_gif;
+    }
+    return _common_open_gif(gif);
+free_gif:
+    gt_mem_free(gif);
+    return NULL;
+}
+#endif
+
+#if GT_USE_DIRECT_ADDR
+gd_GIF *
+gd_direct_addr_open_gif(gt_addr_t addr)
+{
+    gd_GIF * gif = gt_mem_malloc(sizeof(gd_GIF));
+    if (!gif) return NULL;
+    gt_memset(gif, 0, sizeof(gd_GIF));
+
+    gif->fd = _direct_addr_gif_open(addr, GT_FS_MODE_RD);
     if (!gif->fd) {
         goto free_gif;
     }

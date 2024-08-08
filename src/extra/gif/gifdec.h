@@ -58,6 +58,10 @@ gd_GIF * gd_open_gif(const char *fname);
 gd_GIF * gd_fh_open_gif(gt_file_header_param_st const * const file_header);
 #endif
 
+#if GT_USE_DIRECT_ADDR
+gd_GIF * gd_direct_addr_open_gif(gt_addr_t addr);
+#endif
+
 int gd_get_frame(gd_GIF *gif);
 void gd_render_frame(gd_GIF *gif, uint8_t *buffer, uint8_t * mask);
 int gd_is_bgcolor(gd_GIF *gif, uint8_t color[3]);

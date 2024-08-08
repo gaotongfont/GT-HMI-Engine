@@ -307,6 +307,42 @@ err_lb:
 }
 #endif
 
+#if GT_USE_DIRECT_ADDR
+static gt_res_t _gt_png_direct_addr_info(struct _gt_img_decoder_s * decoder, gt_addr_t addr, _gt_img_info_st * header) {
+    gt_fs_fp_st * fp = gt_fs_direct_addr_open(addr, GT_FS_MODE_RD);
+    if (!fp) {
+        return GT_RES_INV;
+    }
+    return _common_png_info(decoder, fp, header);
+}
+
+gt_res_t _gt_png_direct_addr_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc) {
+    GT_UNUSED(decoder);
+    int32_t png_size   = 0;
+    uint8_t * png_data = NULL;
+    gt_fs_fp_st * fp = gt_fs_direct_addr_open(dsc->addr, GT_FS_MODE_RD);
+    if (NULL == fp) {
+        return GT_RES_INV;
+    }
+    if (false == _is_png_file_type(fp)) {
+        gt_fs_close(fp);
+        return GT_RES_INV;
+    }
+
+    if (0 != lodepng_load_file_direct_addr(&png_data, (size_t * )&png_size, dsc->addr)) {
+        goto err_lb;
+    }
+    gt_res_t ret = _common_png_open(decoder, dsc, png_size, png_data);
+
+err_lb:
+    if (png_data) {
+        gt_mem_free(png_data);
+    }
+    gt_fs_close(fp);
+    return ret;
+}
+#endif
+
 /* global functions / API interface -------------------------------------*/
 
 void gt_png_init(void)
@@ -321,6 +357,11 @@ void gt_png_init(void)
 #if GT_USE_FILE_HEADER
     gt_img_decoder_set_fh_info_cb(decoder, _gt_png_fh_info);
     gt_img_decoder_set_fh_open_cb(decoder, _gt_png_fh_open);
+#endif
+
+#if GT_USE_DIRECT_ADDR
+    gt_img_decoder_set_direct_addr_info_cb(decoder, _gt_png_direct_addr_info);
+    gt_img_decoder_set_direct_addr_open_cb(decoder, _gt_png_direct_addr_open);
 #endif
 
     gt_img_decoder_register(decoder);

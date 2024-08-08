@@ -50,5 +50,17 @@ gt_fs_fp_st * _gt_hal_fp_init(void)
     return fp;
 }
 
+#if GT_USE_DIRECT_ADDR
+void gt_hal_direct_addr_init(gt_addr_t * info)
+{
+    *info = GT_ADDR_INVALID;
+}
+
+bool gt_hal_is_invalid_addr(gt_addr_t addr)
+{
+    return addr == GT_ADDR_INVALID;
+}
+#endif  /** GT_USE_DIRECT_ADDR */
+
 
 /* end ------------------------------------------------------------------*/

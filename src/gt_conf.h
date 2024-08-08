@@ -213,6 +213,13 @@ extern "C" {
          */
         #define GT_USE_FILE_HEADER      0
     #endif
+    #ifndef GT_USE_DIRECT_ADDR
+        /**
+         * @brief Enabled direct address function, range such as:
+         *        GT_VF_FLASH_START -> GT_VF_FLASH_START + GT_VF_FLASH_SIZE
+         */
+        #define GT_USE_DIRECT_ADDR      0
+    #endif
 #endif
 
 #ifndef GT_USE_FOLDER_SYSTEM

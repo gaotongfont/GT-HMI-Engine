@@ -38,6 +38,9 @@ typedef struct _gt_gif_s {
 #if GT_USE_FILE_HEADER
     gt_file_header_param_st fh;
 #endif
+#if GT_USE_DIRECT_ADDR
+    gt_addr_t addr;
+#endif
     gd_GIF * gif;
     _gt_timer_st * timer;
     uint32_t last_run;
@@ -169,6 +172,10 @@ gt_obj_st * gt_gif_create(gt_obj_st * parent)
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;
 
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->addr);
+#endif
+
     gt_obj_set_fixed(obj, true);
     gt_obj_set_focus_disabled(obj, GT_DISABLED);
     gt_obj_set_scroll_dir(obj, GT_SCROLL_DISABLE);
@@ -233,6 +240,14 @@ void gt_gif_set_src(gt_obj_st * obj, char * src)
     gt_memcpy(style->src, src, len);
     style->src[len] = 0;
 
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->fh);
+#endif
+
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->addr);
+#endif
+
     style->gif = gd_open_gif(style->src);
     if (NULL == style->gif) {
         return ;
@@ -254,9 +269,39 @@ void gt_gif_set_src_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh
     if (GT_RES_OK != _reset_gif_status(style)) {
         return ;
     }
-
     style->fh = *fh;
+
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->addr);
+#endif
+
     style->gif = gd_fh_open_gif(&style->fh);
+    if (NULL == style->gif) {
+        return ;
+    }
+
+    _set_dsc_info_restart_timer(style, is_running);
+}
+#endif
+
+#if GT_USE_DIRECT_ADDR
+void gt_gif_set_src_by_direct_addr(gt_obj_st * obj, gt_addr_t addr)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_gif_st * style = (_gt_gif_st * )obj;
+    bool is_running = style->timer ? !_gt_timer_get_paused(style->timer) : false;
+    if (GT_RES_OK != _reset_gif_status(style)) {
+        return ;
+    }
+    style->addr = addr;
+
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->fh);
+#endif
+
+    style->gif = gd_direct_addr_open_gif(style->addr);
     if (NULL == style->gif) {
         return ;
     }

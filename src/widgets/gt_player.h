@@ -150,7 +150,28 @@ gt_size_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_para
  * @return gt_size_t -1: failed, The item count of player
  */
 gt_size_t gt_player_add_item_list_by_file_header(gt_obj_st * obj, gt_file_header_param_st const * const fh_array, uint16_t count);
-#endif  /** GT_USE_FILE_HEADER */
+#endif
+
+#if GT_USE_DIRECT_ADDR
+/**
+ * @brief Add the player project content by direct address
+ *
+ * @param obj
+ * @param addr
+ * @return gt_size_t
+ */
+gt_size_t gt_player_add_item_by_direct_addr(gt_obj_st * obj, gt_addr_t addr);
+
+/**
+ * @brief Add the player project content by direct address list
+ *
+ * @param obj
+ * @param addr_array  The array of gt_addr_t
+ * @param count The count of gt_addr_t[]
+ * @return gt_size_t
+ */
+gt_size_t gt_player_add_item_list_by_direct_addr(gt_obj_st * obj, gt_addr_t const * const addr_array, uint16_t count);
+#endif
 
 /**
  * @brief Set player item index

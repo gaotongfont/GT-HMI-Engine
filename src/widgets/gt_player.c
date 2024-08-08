@@ -48,8 +48,11 @@ typedef struct _gt_player_item_s {
 
 #if GT_USE_FILE_HEADER
     gt_file_header_param_st fh_param;
-#endif  /** GT_USE_FILE_HEADER */
+#endif
 
+#if GT_USE_DIRECT_ADDR
+    gt_addr_t addr;
+#endif
 }_gt_player_item_st;
 
 /**
@@ -129,6 +132,14 @@ static inline gt_file_header_param_st * _get_file_header_param(_gt_player_st * s
 }
 #endif
 
+#if GT_USE_DIRECT_ADDR
+static inline gt_addr_t _get_direct_addr_param(_gt_player_st * style) {
+    _gt_player_item_st * item = (_gt_player_item_st * )_gt_vector_get_item(style->vector, _gt_vector_get_index(style->vector));
+    GT_CHECK_BACK_VAL(item, GT_ADDR_INVALID);
+    return item->addr;
+}
+#endif
+
 /**
  * @brief Lock the player callback  handler
  *
@@ -198,6 +209,11 @@ static void _player_init_cb(gt_obj_st * obj) {
 #if GT_USE_FILE_HEADER
         dsc.file_header = gt_file_header_param_check_valid(_get_file_header_param(style));
 #endif
+
+#if GT_USE_DIRECT_ADDR
+        dsc.addr = _get_direct_addr_param(style);
+#endif
+
         /* start draw obj */
         draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
     }
@@ -246,6 +262,14 @@ static void _invalid_area(gt_obj_st * obj, _gt_player_st * style) {
     gt_file_header_param_st * param = _get_file_header_param(style);
     if (GT_FS_RES_OK != ret) {
         ret = gt_fs_fh_read_img_wh(param, &w, &h);
+    }
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_addr_t addr = _get_direct_addr_param(style);
+    if (false == gt_hal_is_invalid_addr(addr)) {
+        if (GT_FS_RES_OK != ret) {
+            ret = gt_fs_direct_addr_read_img_wh(addr, &w, &h);
+        }
     }
 #endif
     if (GT_FS_RES_OK != ret) {
@@ -465,6 +489,14 @@ static bool _equal_item_cb(void * item, void * target) {
         return true;
     }
 #endif
+
+#if GT_USE_DIRECT_ADDR
+    if (false == gt_hal_is_invalid_addr(tar_p->addr)) {
+        if (item_p->addr == tar_p->addr) {
+            return true;
+        }
+    }
+#endif
     return false;
 }
 
@@ -588,6 +620,10 @@ gt_size_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_si
     GT_CHECK_BACK_VAL(new_item, -1);
     gt_memset(new_item, 0, sizeof(_gt_player_item_st));
 
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&new_item->fh_param);
+#endif
+
     new_item->src = gt_mem_malloc(item_byte_size + 1);
     if (NULL == new_item->src) {
         GT_CHECK_PRINT(new_item->src);
@@ -628,10 +664,11 @@ gt_size_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_para
     _gt_player_item_st * new_item = gt_mem_malloc(sizeof(_gt_player_item_st));
     GT_CHECK_BACK_VAL(new_item, _gt_vector_get_count(style->vector));
     new_item->src = NULL;
-
-#if GT_USE_FILE_HEADER
     new_item->fh_param = *fh;
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&new_item->addr);
 #endif
+
     if (false == _gt_vector_add_item(style->vector, new_item)) {
         gt_mem_free(new_item);
         new_item = NULL;
@@ -659,10 +696,75 @@ gt_size_t gt_player_add_item_list_by_file_header(gt_obj_st * obj, gt_file_header
         new_item = (_gt_player_item_st * )gt_mem_malloc(instance);
         GT_CHECK_BACK_VAL(new_item, -1);
         new_item->src = NULL;
-
-#if GT_USE_FILE_HEADER
         new_item->fh_param = (gt_file_header_param_st)fh_array[i];
+#if GT_USE_DIRECT_ADDR
+        gt_hal_direct_addr_init(&new_item->addr);
 #endif
+
+        if (false == _gt_vector_add_item(style->vector, new_item)) {
+            gt_mem_free(new_item);
+            new_item = NULL;
+            break;
+        }
+    }
+    return _gt_vector_get_count(style->vector);
+}
+#endif
+
+#if GT_USE_DIRECT_ADDR
+gt_size_t gt_player_add_item_by_direct_addr(gt_obj_st * obj, gt_addr_t addr)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return -1;
+    }
+    if (gt_hal_is_invalid_addr(addr)) {
+        return -1;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj;
+
+    _gt_player_item_st * new_item = gt_mem_malloc(sizeof(_gt_player_item_st));
+    GT_CHECK_BACK_VAL(new_item, _gt_vector_get_count(style->vector));
+    new_item->src = NULL;
+    new_item->addr = addr;
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&new_item->fh_param);
+#endif
+
+    if (false == _gt_vector_add_item(style->vector, new_item)) {
+        gt_mem_free(new_item);
+        new_item = NULL;
+        return -1;
+    }
+    return _gt_vector_get_count(style->vector);
+}
+
+gt_size_t gt_player_add_item_list_by_direct_addr(gt_obj_st * obj, gt_addr_t const * const addr_array, uint16_t count)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return -1;
+    }
+    if (NULL == addr_array) {
+        return -1;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj;
+    GT_CHECK_BACK_VAL(style->vector, -1);
+    _gt_vector_clear_all_items(style->vector);
+
+    _gt_player_item_st * new_item = NULL;
+    uint16_t instance = sizeof(_gt_player_item_st);
+
+    for (gt_size_t i = 0; i < count; ++i) {
+        if (gt_hal_is_invalid_addr(addr_array[i])) {
+            continue;
+        }
+        new_item = (_gt_player_item_st * )gt_mem_malloc(instance);
+        GT_CHECK_BACK_VAL(new_item, -1);
+        new_item->src = NULL;
+        new_item->addr = addr_array[i];
+#if GT_USE_FILE_HEADER
+        gt_file_header_param_init(&new_item->fh_param);
+#endif
+
         if (false == _gt_vector_add_item(style->vector, new_item)) {
             gt_mem_free(new_item);
             new_item = NULL;

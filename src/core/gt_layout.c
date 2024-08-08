@@ -383,7 +383,7 @@ enum gt_layout_type_e gt_layout_get_type(gt_obj_st * obj)
 
 bool gt_layout_is_type(gt_obj_st * obj, enum gt_layout_type_e type)
 {
-    GT_CHECK_BACK_VAL(obj, false);
+    if (NULL == obj) { return false; }
     if (type >= _GT_LAYOUT_TYPE_TOTAL) {
         return false;
     }

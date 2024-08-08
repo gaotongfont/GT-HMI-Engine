@@ -82,6 +82,16 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw);
 void gt_img_set_by_file_header(gt_obj_st * img, gt_file_header_param_st * fh);
 #endif
 
+#if GT_USE_DIRECT_ADDR
+/**
+ * @brief Display the image by direct address
+ *
+ * @param img
+ * @param addr Direct address of the image
+ */
+void gt_img_set_by_direct_addr(gt_obj_st * img, gt_addr_t addr);
+#endif
+
 /**
  * @brief get img src of path
  *
