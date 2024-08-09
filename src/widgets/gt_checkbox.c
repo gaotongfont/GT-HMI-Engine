@@ -76,9 +76,11 @@ static void _init_cb(gt_obj_st * obj) {
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
 
     // set default size
-    if( obj->area.w == 0 || obj->area.h == 0){
+    if (obj->area.w == 0) {
         obj->area.w = style->font_info.size+4 + strlen(style->text)*11;
-        obj->area.h = style->font_info.size+4;
+    }
+    if (obj->area.h < style->font_info.size + 4) {
+        obj->area.h = style->font_info.size + 4;
     }
 
     /* base shape */

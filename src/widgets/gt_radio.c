@@ -75,9 +75,11 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
 
     // set default size
-    if( radio->area.w == 0 || radio->area.h == 0){
+    if( radio->area.w == 0){
         radio->area.w = style->font_info.size + 4 + len * 11;
-        radio->area.h = style->font_info.size + 4;
+    }
+    if (radio->area.h < style->font_info.size + 4) {
+        radio->area.h = style->font_info.size + 4;  // Force height equal to font size
     }
 
     gt_area_st area_base = gt_area_reduce(radio->area, gt_obj_get_reduce(radio));
