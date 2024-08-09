@@ -78,9 +78,9 @@ static gt_res_t _gt_event_calling_event_cb(gt_event_st * e) {
 
     const gt_obj_class_st * c = obj->classes;
     GT_CHECK_BACK_VAL(c, GT_RES_FAIL);
-    GT_CHECK_BACK_VAL(c->_event_cb, GT_RES_FAIL);
-
-    c->_event_cb(obj, e);
+    if (c->_event_cb) {
+        c->_event_cb(obj, e);
+    }
     return GT_RES_OK;
 }
 
