@@ -239,6 +239,12 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
         } else {
             pos.h += sa_ret.offset;
         }
+    } else if (GT_LAYOUT_ALIGN_ITEMS_END == parent->container.align_items) {
+        if (is_row) {
+            pos.y = parent->area.y - (parent->radius >> 1);
+        } else {
+            pos.x = parent->area.x - (parent->radius >> 1);
+        }
     }
     _sort_order_by_grow_dir(parent, &pos, is_row);
 
