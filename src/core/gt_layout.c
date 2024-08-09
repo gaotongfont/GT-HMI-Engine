@@ -279,6 +279,13 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
                 parent->area.w = pos.w;
             }
         }
+        if (GT_LAYOUT_JUSTIFY_CONTENT_END == jc) {
+            if (is_row) {
+                pos.x += (parent->radius >> 1);
+            } else {
+                pos.y += (parent->radius >> 1);
+            }
+        }
     }
     return pos;
 }
