@@ -519,7 +519,7 @@ static void _graphs_draw_bar(gt_obj_st * obj, gt_series_points_st const * const 
     if (0 == ptr->count_point) {
         return;
     }
-    line_attr.end.y = obj->area.y + obj->area.h - css.padding.bottom;
+    line_attr.end.y = _calc_abs_point_y(0, &css);
 
     for (gt_size_t i = 0; i < ptr->count_point; ++i) {
         line_attr.start.x = _calc_abs_point_x(ptr->x_series[i], &css);
