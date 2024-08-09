@@ -154,10 +154,11 @@ static bool _is_justify_content_space_mode(gt_layout_justify_content_t jc) {
 }
 
 static _content_space_around_st _common_calc_space_gap_and_offset(
-    uint16_t obj_size, uint16_t gap_count,
+    uint16_t obj_size, uint16_t gap_count, uint16_t parent_radius,
     uint16_t total_size, gt_layout_justify_content_t jc) {
     _content_space_around_st ret = {0};
 
+    obj_size -= parent_radius;
     if (total_size == obj_size) {
         return ret;
     }
@@ -186,13 +187,13 @@ static _content_space_around_st _calc_space_mode_gap_and_offset(
         for (gt_size_t i = 0; i < parent->cnt_child; ++i) {
             total_size += parent->child[i]->area.w;
         }
-        return _common_calc_space_gap_and_offset(parent->area.w, parent->cnt_child, total_size, jc);
+        return _common_calc_space_gap_and_offset(parent->area.w, parent->cnt_child, parent->radius, total_size, jc);
     }
     /** column dir */
     for (gt_size_t i = 0; i < parent->cnt_child; ++i) {
         total_size += parent->child[i]->area.h;
     }
-    return _common_calc_space_gap_and_offset(parent->area.h, parent->cnt_child, total_size, jc);
+    return _common_calc_space_gap_and_offset(parent->area.h, parent->cnt_child, parent->radius, total_size, jc);
 }
 
 static void _sort_order_by_grow_dir(gt_obj_st * parent, gt_area_st * pos, uint8_t is_row) {
@@ -221,9 +222,13 @@ static void _sort_order_by_grow_dir(gt_obj_st * parent, gt_area_st * pos, uint8_
 }
 
 static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
-    gt_area_st pos = { .x = parent->area.x, .y = parent->area.y, .w = 0, .h = 0 };  /** w/h temp to calc offset */
-    uint8_t is_row = _is_flex_row_dir(parent->container.flex_direction);
+    gt_area_st pos = {
+        .x = parent->area.x + (parent->radius >> 1),
+        .y = parent->area.y + (parent->radius >> 1),
+        .w = 0, .h = 0
+    };  /** w/h temp to calc offset */
     gt_layout_justify_content_t jc = parent->container.justify_content;
+    uint8_t is_row = _is_flex_row_dir(parent->container.flex_direction);
 
     if (_is_justify_content_space_mode(jc)) {
         /** pre calc real total width or height value */
