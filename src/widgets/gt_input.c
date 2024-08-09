@@ -55,14 +55,14 @@ typedef struct _gt_input_s
 
 
 /* static variables -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj);
+static void _input_init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
+static void _input_event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
 static const gt_obj_class_st gt_input_class = {
-    ._init_cb      = _init_cb,
+    ._init_cb      = _input_init_cb,
     ._deinit_cb    = _deinit_cb,
-    ._event_cb     = _event_cb,
+    ._event_cb     = _input_event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_input_st)
 };
@@ -231,7 +231,7 @@ static void _input_key_handler( gt_obj_st* obj, uint32_t key)
  *
  * @param obj
  */
-static void _init_cb(gt_obj_st * obj) {
+static void _input_init_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
 
     _gt_input_init_widget(obj);
@@ -268,43 +268,17 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param obj
  * @param e event
  */
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
+static void _input_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
     uint32_t key = gt_indev_get_key();
 
     switch (code_val) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-
-            break;
-
-        case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
-            break;
         case GT_EVENT_TYPE_INPUT_KEY:
-            GT_LOGV(GT_LOG_TAG_GUI, "input key");
             _input_key_handler(obj, key);
             break;
         default:

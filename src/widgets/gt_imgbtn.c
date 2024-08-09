@@ -199,9 +199,6 @@ static void _imgbtn_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
-        case GT_EVENT_TYPE_INPUT_SCROLL:
-            break;
-
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
             style->selected = 0;
             if (!_turn_next_image(obj)) {
