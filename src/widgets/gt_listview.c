@@ -68,7 +68,6 @@ typedef struct _gt_listview_s {
 
     _double_scale_st double_scale;
     _triple_scale_st triple_scale;
-    gt_size_t scroll;       /** The offset of the last scroll */
 
     _column_st column;
 
@@ -96,10 +95,15 @@ typedef enum {
     _LABEL_FONT_GRAY,
     _LABEL_FONT_ALIGN,
     _LABEL_FONT_COLOR,
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
     _LABEL_FONT_CN,
     _LABEL_FONT_EN,
     _LABEL_FONT_FL,
     _LABEL_FONT_NUMB,
+#else
+    _LABEL_FONT_FAMILY,
+    _LABEL_FONT_CJK,
+#endif
     _LABEL_FONT_THICK_CN,
     _LABEL_FONT_THICK_EN,
     _LABEL_FONT_SPACE,
@@ -128,12 +132,11 @@ typedef struct _triple_param_s {
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_listview_class = {
+static const gt_obj_class_st gt_listview_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
+    ._deinit_cb    = NULL,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_listview_st)
@@ -167,30 +170,6 @@ static void _init_cb(gt_obj_st * obj) {
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
 
     draw_focus(obj, 0);
-}
-
-/**
- * @brief obj deinit call back
- *
- * @param obj
- */
-static void _deinit_cb(gt_obj_st * obj) {
-}
-
-static void _scrolling_handler(gt_obj_st * obj) {
-    _gt_listview_st * style = (_gt_listview_st * )obj;
-    gt_size_t bottom = gt_obj_get_limit_bottom(obj);
-
-    if (gt_obj_scroll_get_y(obj) > 0) {
-        obj->process_attr.scroll.y = 0;
-    }
-    else if (gt_obj_scroll_get_y(obj) < bottom) {
-        obj->process_attr.scroll.y = bottom;
-    }
-
-    _gt_obj_move_child_by(obj, 0, gt_obj_scroll_get_y(obj) - style->scroll);
-    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-    style->scroll = gt_obj_scroll_get_y(obj);
 }
 
 static inline uint8_t _column_plus_one(_gt_listview_st * style) {
@@ -247,7 +226,7 @@ static void _highlight_set_obj_active_state(gt_obj_st * listview) {
     if (false == gt_obj_get_trigger_mode(style->last_active)) {
         return;
     }
-    if (false == gt_obj_get_state(style->last_active)) {
+    if (GT_STATE_NONE == gt_obj_get_state(style->last_active)) {
         gt_obj_set_state(style->last_active, GT_STATE_PRESSED);
     }
 }
@@ -285,29 +264,29 @@ static void _reset_other_active_state(gt_obj_st * listview) {
  * @param e event
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    if (GT_EVENT_TYPE_DRAW_START == code) {
+    if (GT_EVENT_TYPE_DRAW_START == code_val) {
         gt_disp_invalid_area(obj);
     }
-    else if (GT_EVENT_TYPE_INPUT_SCROLL == code) {
+    else if (GT_EVENT_TYPE_INPUT_SCROLL == code_val) {
         if (gt_obj_get_childs_max_height(obj) < gt_obj_get_h(obj)) {
             /** all items can display with current page, reset scroll selected effect */
             _reset_last_active_state(obj, _get_last_active_obj(obj));
             _set_last_active_obj(obj, NULL);
             return;
         }
-        _scrolling_handler(obj);
+        _gt_obj_scroll_internal(obj);
     }
-    else if (GT_EVENT_TYPE_INPUT_PRESSED == code) {
+    else if (GT_EVENT_TYPE_INPUT_PRESSED == code_val) {
         _set_last_active_obj(obj, e->origin);
     }
-    else if (GT_EVENT_TYPE_INPUT_RELEASED == code) {
+    else if (GT_EVENT_TYPE_INPUT_RELEASED == code_val) {
         _set_last_active_obj(obj, e->origin);
         _reset_other_active_state(obj);
         _highlight_set_obj_active_state(obj);
     }
-    else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code) {
+    else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code_val) {
         _reset_last_active_state(obj, e->origin);
     }
 }
@@ -330,7 +309,9 @@ static void _set_label_prop_by_type(gt_obj_st * listview, _label_prop_em type, i
                 gt_label_set_font_align(obj->child[item], (gt_align_et)val);
             } else if (_LABEL_FONT_COLOR == type) {
                 gt_label_set_font_color(obj->child[item], gt_color_hex((uint32_t)val));
-            } else if (_LABEL_FONT_CN == type) {
+            }
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
+            else if (_LABEL_FONT_CN == type) {
                 gt_label_set_font_family_cn(obj->child[item], (gt_family_t)val);
             } else if (_LABEL_FONT_EN == type) {
                 gt_label_set_font_family_en(obj->child[item], (gt_family_t)val);
@@ -338,7 +319,16 @@ static void _set_label_prop_by_type(gt_obj_st * listview, _label_prop_em type, i
                 gt_label_set_font_family_fl(obj->child[item], (gt_family_t)val);
             } else if (_LABEL_FONT_NUMB == type) {
                 gt_label_set_font_family_numb(obj->child[item], (gt_family_t)val);
-            } else if (_LABEL_FONT_THICK_CN == type) {
+            }
+#else
+            else if(_LABEL_FONT_FAMILY == type){
+                gt_label_set_font_family(obj->child[item], (gt_family_t)val);
+            }
+            else if(_LABEL_FONT_CJK == type){
+                gt_label_set_font_cjk(obj->child[item], (gt_family_t)val);
+            }
+#endif
+            else if (_LABEL_FONT_THICK_CN == type) {
                 gt_label_set_font_thick_cn(obj->child[item], val);
             } else if (_LABEL_FONT_THICK_EN == type) {
                 gt_label_set_font_thick_en(obj->child[item], val);
@@ -476,10 +466,15 @@ static inline void _set_label_prop(gt_obj_st * listview, gt_obj_st * lab, gt_fon
 
     gt_label_set_font_align(lab, style->align);
     gt_label_set_font_color(lab, style->font_color);
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
     gt_label_set_font_family_cn(lab, font_info_p->style_cn);
     gt_label_set_font_family_en(lab, font_info_p->style_en);
     gt_label_set_font_family_fl(lab, font_info_p->style_fl);
     gt_label_set_font_family_numb(lab, font_info_p->style_numb);
+#else
+    gt_label_set_font_family(lab, font_info_p->family);
+    gt_label_set_font_cjk(lab, font_info_p->cjk);
+#endif
     gt_label_set_font_size(lab, font_info_p->size);
     gt_label_set_font_gray(lab, font_info_p->gray);
     gt_label_set_font_thick_cn(lab, font_info_p->thick_cn);
@@ -812,7 +807,6 @@ void gt_listview_clear_all_items(gt_obj_st * listview)
     _gt_listview_st * style = (_gt_listview_st * )listview;
     style->column.idx = 0;
     style->column.offset_y = 0;
-    style->scroll = 0;
 
     _gt_obj_class_destroy_children(listview);
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -1156,7 +1150,7 @@ void gt_listview_set_font_color(gt_obj_st * listview, gt_color_t color)
     style->font_color = color;
     _set_label_prop_by_type(listview, _LABEL_FONT_COLOR, color.full);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_listview_set_font_family_en(gt_obj_st * listview, gt_family_t family)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
@@ -1194,6 +1188,28 @@ void gt_listview_set_font_family_numb(gt_obj_st * listview, gt_family_t family)
     style->font_info.style_numb = family;
     _set_label_prop_by_type(listview, _LABEL_FONT_NUMB, family);
 }
+#else
+void gt_listview_set_font_family(gt_obj_st * listview, gt_family_t family)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    gt_font_set_family(&style->font_info, family);
+    _set_label_prop_by_type(listview, _LABEL_FONT_FAMILY, family);
+    gt_listview_set_font_size(listview, style->font_info.size);
+}
+
+void gt_listview_set_font_cjk(gt_obj_st* listview, gt_font_cjk_et cjk)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->font_info.cjk = cjk;
+    _set_label_prop_by_type(listview, _LABEL_FONT_CJK, cjk);
+}
+#endif
 
 void gt_listview_set_font_thick_en(gt_obj_st * listview, uint8_t thick)
 {

@@ -10,7 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "gt_qrcode.h"
 
-#if GT_CFG_ENABLE_QRCODE
+#if GT_CFG_ENABLE_QRCODE && defined(__GT_QRCODE_EN_)
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "../core/gt_draw.h"
@@ -48,7 +48,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_qr_code_class = {
+static const gt_obj_class_st gt_qr_code_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
@@ -209,41 +209,10 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param e event
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
-    switch(code) {
-        case GT_EVENT_TYPE_DRAW_START: {
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
-            gt_disp_invalid_area(obj);
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
-            break;
-        }
-        case GT_EVENT_TYPE_DRAW_END: {
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-        }
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: {/* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-        }
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: {/* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-            break;
-        }
-        case GT_EVENT_TYPE_INPUT_PRESSING: {  /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-
-            break;
-        }
-        case GT_EVENT_TYPE_INPUT_SCROLL: {
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
-            break;
-        }
-        case GT_EVENT_TYPE_INPUT_RELEASED: {/* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
-            break;
-        }
-        default:
-            break;
+    gt_event_type_et code_val = gt_event_get_code(e);
+    if (GT_EVENT_TYPE_DRAW_START == code_val) {
+        gt_disp_invalid_area(obj);
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
     }
 }
 
@@ -263,10 +232,14 @@ gt_obj_st * gt_qrcode_create(gt_obj_st * parent)
     }
 
     _gt_qr_code_st * style = (_gt_qr_code_st * )obj;
-    // http://www.gaotongfont.cn/
-    style->str = gt_mem_malloc(strlen("https://www.hmi.gaotongfont.cn/")+1);
-    gt_memcpy(style->str, "https://www.hmi.gaotongfont.cn/" , strlen("https://www.hmi.gaotongfont.cn/")+1);
-    style->str_len = strlen(style->str);
+    const char * default_str = "https://www.hmi.gaotongfont.cn/";
+    uint16_t len = strlen(default_str);
+
+    style->str = gt_mem_malloc(len + 1);
+    if (style->str) {
+        gt_memcpy(style->str, default_str, len + 1);
+        style->str_len = len;
+    }
     style->version = GT_FAMILY_QRCODE_VERSION_10;
     style->ec_level = ECLevel_H;
     style->mask_patt = MaskPattern4;
@@ -296,8 +269,10 @@ void gt_qrcode_set_str(gt_obj_st * qr_code , char* str)
     }
     uint16_t size = str == NULL ? 0 : strlen(str);
     style->str = gt_mem_malloc(size + 1);
-    gt_memcpy(style->str, str, size);
-    style->str[size] = '\0';
+    if (style->str) {
+        gt_memcpy(style->str, str, size);
+        style->str[size] = '\0';
+    }
     // gt_event_send(barcode, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

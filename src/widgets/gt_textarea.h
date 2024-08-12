@@ -90,7 +90,7 @@ void gt_textarea_clear_all_str(gt_obj_st * textarea);
  *
  * @param textarea obj pointer
  * @param str text
- * @param style font style @ref gt_font_family_et
+ * @param style font style @ref gt_font_style_et
  * @param color font color
  */
 void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et style, gt_color_t color);
@@ -184,18 +184,15 @@ void gt_textarea_set_radius(gt_obj_st * textarea, gt_radius_t radius);
  * @param textarea obj pointer
  * @param font_family_cn chinese font style
  */
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_textarea_set_font_family_cn(gt_obj_st * textarea, gt_family_t family);
-
-/**
- * @brief set textarea english font style
- *
- * @param textarea obj pointer
- * @param font_family_cn english font style
- */
 void gt_textarea_set_font_family_en(gt_obj_st * textarea, gt_family_t family);
 void gt_textarea_set_font_family_fl(gt_obj_st * textarea, gt_family_t family);
 void gt_textarea_set_font_family_numb(gt_obj_st * textarea, gt_family_t family);
-
+#else
+void gt_textarea_set_font_family(gt_obj_st * textarea, gt_family_t family);
+void gt_textarea_set_font_cjk(gt_obj_st* textarea, gt_font_cjk_et cjk);
+#endif
 void gt_textarea_set_font_thick_en(gt_obj_st * textarea, uint8_t thick);
 void gt_textarea_set_font_thick_cn(gt_obj_st * textarea, uint8_t thick);
 void gt_textarea_set_font_encoding(gt_obj_st * textarea, gt_encoding_et encoding);

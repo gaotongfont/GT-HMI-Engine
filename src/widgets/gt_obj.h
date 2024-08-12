@@ -25,13 +25,8 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-
-typedef struct _gt_point_s {
-    gt_size_t x;
-    gt_size_t y;
-}gt_point_st;
-
 typedef struct _gt_obj_event_attr_s {
+    struct _gt_obj_event_attr_s * next_ptr;
     gt_event_cb_t user_cb;
     void * user_data;
     gt_event_type_et filter;
@@ -41,8 +36,9 @@ typedef struct _gt_obj_event_attr_s {
  * @brief save all indev/disp/others dev data
  */
 typedef struct _gt_obj_process_attr_s {
-    gt_point_st point;      //click point(note: the point is for object inside offset)
-    gt_point_st scroll;     //scroll distance, default is 0
+    gt_point_st point;          //click point(note: the point is for object inside offset)
+    gt_point_st scroll;         //scroll distance, default is 0
+    gt_point_st scroll_prev;    // remark previous scroll distance
 }gt_obj_process_attr_st;
 
 typedef enum {
@@ -73,11 +69,29 @@ typedef enum {
     GT_OBJ_TRIGGER_MODE_SWITCH  = 1,
 }gt_obj_trigger_mode_et;
 
+#if GT_USE_WIDGET_LAYOUT
+/**
+ * @brief Owner Childs widget layout type
+ */
+typedef struct gt_obj_container_s {
+    gt_gap_t gap;   /** justify content dir gap value */
 
+    gt_layout_type_t layout_type : 1;                   /** 0[default]: fixed position; 1: flex position @ref gt_layout_type_e */
+    gt_layout_flex_direction_t flex_direction : 2;      /** main axis direction @ref gt_layout_flex_direction_e */
+    gt_layout_justify_content_t justify_content : 3;    /** main axis align @ref gt_layout_justify_content_e */
+    gt_layout_align_items_t align_items : 2;            /** second axis align @ref gt_layout_align_items_e */
+    gt_layout_shrink_t shrink : 1;                      /** 0[default]: shrink disable; 1: shrink enable @ref gt_layout_shrink_e */
+    gt_layout_prop_t reserved : 7;
+}gt_obj_container_st;
+#endif
+
+/**
+ * @brief obj base struct
+ */
 typedef struct gt_obj_s {
     struct gt_obj_s * parent;
     struct gt_obj_s ** child;
-    const gt_obj_class_st * class;
+    const gt_obj_class_st * classes;
 
     gt_obj_event_attr_st * event_attr;
     struct _gt_draw_ctx_s * draw_ctx;
@@ -90,13 +104,15 @@ typedef struct gt_obj_s {
 
     uint16_t cnt_child;
     gt_radius_t radius;
-    uint8_t cnt_event;
     uint8_t opa;            /* @ref gt_color.h */
     uint8_t reduce;
+#if GT_USE_WIDGET_LAYOUT
+    gt_obj_container_st container;
+#endif
 
     uint32_t state         : 2;     /* obj selected state @ref gt_state_et */
     uint32_t touch_parent  : 1;     /* touch event will be called to parent object */
-    uint32_t using         : 1;     /* screen was using or not, not the widgets object. 0:using [Can not be free memory], 1:free */
+    uint32_t using_sta     : 1;     /* screen was using or not, not the widgets object. 0:using [Can not be free memory], 1:free */
     uint32_t delate        : 1;     /* The status which be prepare to free the current object 0:no delate, 1:prepare to delate */
     uint32_t focus         : 1;     /* obj focus state 0:no focus, 1:focus */
     uint32_t visible       : 1;     /* obj visible state, @gt_visible_et */
@@ -114,7 +130,7 @@ typedef struct gt_obj_s {
     uint32_t absorb_dir    : 1;     /* obj absorb direction(It only works when absorb is set to 1), 0: horizontal; 1: vertical */
     uint32_t overflow      : 1;     /* [Inheritable]obj overflow state, 0:un-overflow, 1:overflow (widget can out of screen area size) */
     uint32_t inside        : 1;     /* obj display only limited to parent area, 0:un-inside, 1:inside (widget is inside screen area size) */
-    uint32_t virtual       : 1;     /* obj virtual state, 0:un-virtual[default], 1:virtual (widget is virtual logic, not entities) */
+    uint32_t virtuality    : 1;     /* obj virtual state, 0:un-virtual[default], 1:virtual (widget is virtual logic, not entities) */
     uint32_t septal_line_y : 1;     /* draw obj vertical septal line state, 0:un-septal_line, 1:septal_line */
 
     uint32_t mask_effect   : 1;     /* Mask effect in the state of object selection: 1: Enabled, 0[default]:Disabled */
@@ -197,12 +213,20 @@ gt_id_t gt_obj_get_id(gt_obj_st * obj);
 bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent);
 
 /**
- * @brief If you use the screen stack functionality,
+ * @brief [SAFE] If you use the screen stack functionality,
  *      try to avoid using it to free screen objects directly
  *
  * @param obj widgets object
  */
 void gt_obj_destroy(gt_obj_st * obj);
+
+/**
+ * @brief [UNSAFE] Destroy the object immediately,
+ *      Cannot be a running widget object
+ *
+ * @param obj widgets object
+ */
+void gt_obj_destroy_immediately(gt_obj_st * obj);
 
 /**
  * @brief Set screen background color
@@ -224,8 +248,11 @@ void gt_obj_set_bgcolor(gt_obj_st * obj, gt_color_t color);
 
 gt_color_t gt_obj_get_bgcolor(gt_obj_st * obj);
 
+gt_size_t gt_obj_get_limit_right(gt_obj_st * obj);
 gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj);
 
+gt_point_st gt_obj_get_childs_max_size(gt_obj_st * parent);
+gt_size_t gt_obj_get_childs_max_width(gt_obj_st * parent);
 gt_size_t gt_obj_get_childs_max_height(gt_obj_st * parent);
 
 /**

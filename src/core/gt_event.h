@@ -23,8 +23,6 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-struct gt_obj_s;
-
 /**
  * @brief The event type enum definition
  */
@@ -75,6 +73,10 @@ typedef enum gt_event_type_e {
     GT_EVENT_TYPE_CHANGE_CHILD_DELETED,    // [Called by core inside] delete child finish
     GT_EVENT_TYPE_CHANGE_DELETED,          // [Called by core inside] delete self finish
 
+    /* scroll boundary events */
+    GT_EVENT_TYPE_PULL_TO_REFRESH,         // [Called by core inside] scroll to top, pull to refresh event
+    GT_EVENT_TYPE_LOAD_MORE,               // [Called by core inside] scroll to bottom, load more event
+
     /* notify event */
     GT_EVENT_TYPE_NOTIFY_CLOSE,     // notify widget to close
 
@@ -97,7 +99,7 @@ typedef struct _gt_event_s {
     struct gt_obj_s * origin;   /** origin control */
     void * user_data;
     void * param;               /** gt_event_send() param */
-    gt_event_type_et code;
+    gt_event_type_et code_type;
 }gt_event_st;
 
 /**
@@ -112,6 +114,22 @@ typedef void (* gt_event_cb_t)(gt_event_st * e);
 
 
 /* global functions / API interface -------------------------------------*/
+#if GT_USE_SCREEN_ANIM
+/**
+ * @brief Disabled when the screen is animating.
+ *
+ * @param enabled
+ */
+void gt_event_set_enabled(bool enabled);
+
+/**
+ * @brief Disabled when the screen is animating.
+ *
+ * @return true
+ * @return false
+ */
+bool gt_event_is_enabled(void);
+#endif  /** GT_USE_SCREEN_ANIM */
 
 /**
  * @brief Adding an event to an object
@@ -122,6 +140,13 @@ typedef void (* gt_event_cb_t)(gt_event_st * e);
  * @param user_data User data [default or unused: NULL]
  */
 void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data);
+
+/**
+ * @brief
+ *
+ * @param obj
+ */
+void gt_obj_remove_all_event_cb(struct gt_obj_s * obj);
 
 /**
  * @brief Send an event code to the object kernel.

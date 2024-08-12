@@ -69,8 +69,7 @@ typedef struct _gt_refr_s {
 /**
  * @brief display description
  */
-typedef struct _gt_disp_s
-{
+typedef struct _gt_disp_s {
     gt_disp_drv_st * drv;
 
     gt_obj_st *  scr_prev;      // Preview Screen,Only save one layer

@@ -21,6 +21,11 @@ extern "C" {
 #include "gt_obj_class.h"
 #include "gt_conf_widgets.h"
 
+#ifdef GT_CONFIG_GUI_DRIVER_LIB
+    #include "../../driver/gt_gui_driver.h"
+#endif /* GT_CONFIG_GUI_DRIVER_LIB */
+
+
 /* define ---------------------------------------------------------------*/
 
 /* typedef --------------------------------------------------------------*/

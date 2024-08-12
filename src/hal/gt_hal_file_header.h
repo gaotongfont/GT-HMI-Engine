@@ -164,6 +164,16 @@ uint16_t gt_file_header_get_count(void);
 void gt_file_header_param_init(gt_file_header_param_st * fh);
 
 /**
+ * @brief Compare two file header param value is equal
+ *
+ * @param a
+ * @param b
+ * @return true
+ * @return false
+ */
+bool gt_file_header_param_is_equal(gt_file_header_param_st const * const a, gt_file_header_param_st const * const b);
+
+/**
  * @brief
  *
  * @param index

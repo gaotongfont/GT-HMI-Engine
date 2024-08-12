@@ -23,7 +23,12 @@ extern "C" {
 
 
 /* define ---------------------------------------------------------------*/
-
+#if GT_USE_DIRECT_ADDR
+    /**
+     * @brief invalid address default value
+     */
+    #define GT_ADDR_INVALID     0xFFFFFFFF
+#endif
 
 
 /* typedef --------------------------------------------------------------*/
@@ -113,6 +118,9 @@ typedef struct _gt_fs_drv_s {
 #if GT_USE_FILE_HEADER
     void *( * fh_open_cb)(struct _gt_fs_drv_s * drv, gt_file_header_param_st const * const fh_param, gt_fs_mode_et mode);
 #endif
+#if GT_USE_DIRECT_ADDR
+    void *( * direct_addr_open_cb)(struct _gt_fs_drv_s * drv, gt_addr_t addr, gt_fs_mode_et mode);
+#endif
     void *( * open_cb)(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode);
     void ( * close_cb)(struct _gt_fs_drv_s * drv, void * fp);
     gt_fs_res_et ( * read_cb )(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len);
@@ -171,6 +179,12 @@ typedef struct _gt_fs_fp_s {
 
 gt_fs_fp_st * _gt_hal_fp_init(void);
 
+#if GT_USE_DIRECT_ADDR
+
+void gt_hal_direct_addr_init(gt_addr_t * info);
+
+bool gt_hal_is_invalid_addr(gt_addr_t addr);
+#endif  /** GT_USE_DIRECT_ADDR */
 
 #ifdef __cplusplus
 } /*extern "C"*/

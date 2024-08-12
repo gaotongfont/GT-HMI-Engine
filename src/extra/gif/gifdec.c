@@ -44,6 +44,12 @@ static inline gt_fs_fp_st * _fh_gif_open(gt_file_header_param_st const * const f
 }
 #endif
 
+#if GT_USE_DIRECT_ADDR
+static inline gt_fs_fp_st * _direct_addr_gif_open(gt_addr_t addr, gt_fs_mode_et mode) {
+    return gt_fs_direct_addr_open(addr, mode);
+}
+#endif
+
 static inline int _gif_read(gt_fs_fp_st * fp, uint8_t * buffer, uint32_t len) {
     uint32_t ret_len = 0;
     gt_fs_read(fp, buffer, len, &ret_len);
@@ -218,6 +224,25 @@ free_gif:
 }
 #endif
 
+#if GT_USE_DIRECT_ADDR
+gd_GIF *
+gd_direct_addr_open_gif(gt_addr_t addr)
+{
+    gd_GIF * gif = gt_mem_malloc(sizeof(gd_GIF));
+    if (!gif) return NULL;
+    gt_memset(gif, 0, sizeof(gd_GIF));
+
+    gif->fd = _direct_addr_gif_open(addr, GT_FS_MODE_RD);
+    if (!gif->fd) {
+        goto free_gif;
+    }
+    return _common_open_gif(gif);
+free_gif:
+    gt_mem_free(gif);
+    return NULL;
+}
+#endif
+
 static void
 discard_sub_blocks(gd_GIF *gif)
 {
@@ -376,8 +401,11 @@ add_entry(Table **tablep, uint16_t length, uint16_t prefix, uint8_t suffix)
         table->entries = (Entry *) &table[1];
         *tablep = table;
     }
-    table->entries[table->nentries] = (Entry) {length, prefix, suffix};
-    table->nentries++;
+    Entry * entry = &table->entries[table->nentries];
+    entry->length = length;
+    entry->prefix = prefix;
+    entry->suffix = suffix;
+    ++table->nentries;
     if ((table->nentries & (table->nentries - 1)) == 0)
         return 1;
     return 0;
@@ -441,18 +469,19 @@ static int
 read_image_data(gd_GIF *gif, int interlace)
 {
     uint8_t sub_len, shift, byte;
-    int init_key_size, key_size, table_is_full;
-    int frm_off, frm_size, str_len, i, p, x, y;
+    int init_key_size, key_size, table_is_full = 0;
+    int frm_off, frm_size, str_len = 0, i, p, x, y;
     uint16_t key, clear, stop;
     int ret;
     Table *table;
-    Entry entry;
+    Entry entry = {0};
     uint32_t start, end;
 
     _gif_read(gif->fd, &byte, 1);
     key_size = (int) byte;
-    if (key_size < 2 || key_size > 8)
+    if (key_size < 2 || key_size > 8) {
         return -1;
+    }
 
     start = _gif_seek(gif->fd, 0, GT_FS_SEEK_CUR);
     discard_sub_blocks(gif);
@@ -657,14 +686,14 @@ gd_get_frame(gd_GIF *gif)
     char sep;
 
     dispose(gif);
-    _gif_read(gif->fd, &sep, 1);
+    _gif_read(gif->fd, (uint8_t * )&sep, 1);
     while (sep != ',') {
         if (sep == ';')
             return 0;
         if (sep == '!')
             read_ext(gif);
         else return -1;
-        _gif_read(gif->fd, &sep, 1);
+        _gif_read(gif->fd, (uint8_t * )&sep, 1);
     }
     if (read_image(gif) == -1)
         return -1;

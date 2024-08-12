@@ -54,14 +54,24 @@ typedef enum {
 
 #define GT_PY_MAX_NUMB  (8)
 
+#define GT_FONT_FAMILY_ONE_TYPE  (1 << 15)
+
+#define IS_CN_FONT_LAN(_lan) ((FONT_LAN_CJK_UNIFIED == _lan) || (FONT_LAN_CN == _lan) || (FONT_LAN_JAPANESE == _lan) || (FONT_LAN_KOREAN == _lan))
+
 /* typedef --------------------------------------------------------------*/
 
 typedef struct _gt_font_info_s {
     gt_color_t palette;  ///< set: font color
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
     uint16_t style_cn;   ///< set: CJK font style
     uint16_t style_en;   ///< set: ascii font style
     uint16_t style_fl;   ///< set: font style foreign language
     uint16_t style_numb; ///< set: special number font style
+#else
+    gt_family_t family;      ///< set: font family
+    uint16_t option;      ///< set: font style
+    uint8_t cjk;        ///< set: font cjk
+#endif
     uint8_t size;        ///< set: font size
     uint8_t thick_en;    ///< set: font thick
     uint8_t thick_cn;    ///< set: font thick
@@ -159,24 +169,30 @@ typedef enum _gt_encoding_convert_e {
     GB_2_UTF8,
 }gt_encoding_convert_et;
 
-typedef enum _gt_font_style_en_cn_e {
-    STYLE_UNKNOWN = -1,
-    STYLE_CN = 0,
-    STYLE_EN_ASCII,
-    STYLE_EN_LATIN,
-    STYLE_EN_GREEK,
-    STYLE_EN_CYRILLIC,
-    STYLE_EN_HEBREW,
-    STYLE_EN_ARABIC,
-    STYLE_EN_THAI,
-    STYLE_EN_HINDI,
-    STYLE_EN_Currency,
-}gt_font_style_en_cn_et;
+typedef enum _gt_font_lan_e {
+    FONT_LAN_UNKNOWN = -1,
+    FONT_LAN_CN = 0,
+    FONT_LAN_ASCII,
+    FONT_LAN_LATIN,
+    FONT_LAN_GREEK,
+    FONT_LAN_CYRILLIC,
+    FONT_LAN_HEBREW,
+    FONT_LAN_ARABIC,
+    FONT_LAN_THAI,
+    FONT_LAN_HINDI,
+    FONT_LAN_JAPANESE,
+    FONT_LAN_KOREAN,
+    FONT_LAN_NUMBER,
+    //
+    FONT_LAN_MAX_COUNT,
+    //
+    FONT_LAN_CJK_UNIFIED
+}gt_font_lan_et;
 
 typedef struct _gt_bidi_s {
     uint16_t idx;
     uint16_t len;
-    uint8_t flag;   /** @ref gt_font_style_en_cn_et */
+    uint8_t flag;   /** @ref gt_font_lan_et */
 }gt_bidi_st;
 
 typedef struct _gt_font_size_res_s {
@@ -200,6 +216,22 @@ typedef struct _gt_font_dot_ret_s {
     uint16_t size;
 }_gt_font_dot_ret_st;
 
+
+typedef struct {
+    uint8_t size;
+    uint16_t option[FONT_LAN_MAX_COUNT];
+}gt_font_family_st;
+
+typedef struct {
+    const gt_font_family_st *fam_list;
+    uint16_t count;
+}gt_font_family_list_st;
+
+typedef enum {
+    GT_FONT_CJK_C = 0,
+    GT_FONT_CJK_J,
+    GT_FONT_CJK_K,
+}gt_font_cjk_et;
 /* macros ---------------------------------------------------------------*/
 
 
@@ -251,13 +283,6 @@ uint8_t gt_utf8_check_char(uint8_t * utf8);
  */
 _gt_font_dot_ret_st gt_font_get_dot(gt_font_st * font, uint32_t unicode);
 
-/**
- * @brief [Temporarily unused] Get the character data of a string
- *
- * @param font font basic information
- * @return font type and font size value enum @ref gt_font_type_em
- */
-gt_font_type_em gt_font_get_string_dot(gt_font_st * font);
 
 /**
  * @brief get string all width
@@ -275,9 +300,11 @@ uint32_t gt_font_get_string_width(gt_font_st * font);
  * @return uint8_t The width of the character
  */
 uint8_t gt_font_get_one_word_width(uint32_t uni_or_gbk, gt_font_st * font);
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, uint8_t font_style, uint8_t langue, uint32_t text_len);
-
+#else
+_gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, uint8_t langue, uint32_t text_len);
+#endif
 /**
  * @brief Get max substring line width
  *
@@ -305,8 +332,8 @@ uint8_t gt_encoding_table_one_char(uint8_t *src, uint8_t* dst, gt_encoding_conve
 uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const utf8, uint32_t *res);
 uint8_t gt_gb_check_char(const uint8_t *dst, uint16_t pos, uint32_t* font_code);
 
-gt_font_style_en_cn_et _gt_is_style_cn_or_en(uint32_t unicode, uint8_t encoding);
-bool _gt_font_is_convertor_language(gt_font_style_en_cn_et style_lang);
+gt_font_lan_et gt_font_lan_get(uint32_t unicode, uint8_t encoding);
+bool _gt_font_is_convertor_language(gt_font_lan_et style_lang);
 bool _gt_font_is_convertor_by(uint32_t unicode, uint8_t encoding);
 uint16_t gt_font_get_word_width_figure_up(const uint8_t* data, uint16_t dot_w, uint16_t dot_h, uint8_t gray);
 
@@ -327,10 +354,13 @@ bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_
  * @brief Get the font style
  *
  * @param style
- * @return uint8_t @ref gt_font_style_en_cn_et
+ * @return uint8_t @ref gt_font_lan_et
  */
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 uint8_t right_to_left_lan_get(uint16_t style);
-
+#else
+uint8_t right_to_left_lan_get(gt_font_st* font);
+#endif
 uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint32_t max_w, uint16_t space, uint32_t * ret_max_w);
 
 
@@ -349,6 +379,12 @@ uint16_t gt_font_get_word_byte_length(char const * const text, uint16_t length, 
 #endif
 
 
+
+void gt_font_family_init(const gt_font_family_st* fam_list, uint16_t count);
+uint16_t gt_font_family_get_size(uint16_t fam);
+uint16_t gt_font_family_get_option(uint16_t fam , int16_t lan, uint8_t cjk);
+bool gt_font_family_is_one_style(uint16_t fam);
+void gt_font_set_family(gt_font_info_st *font_info, gt_family_t fam);
 
 #ifdef __cplusplus
 } /*extern "C"*/

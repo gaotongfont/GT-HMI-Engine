@@ -239,73 +239,9 @@ unsigned int UnicodeToKSC5601(unsigned int fontcode);
  */
 unsigned int GBKToUnicode(unsigned int fontcode);
 
-/*-------------------------------------------------  pinyin  -------------------------------------------------*/
-
-/* define ---------------------------------------------------------------*/
-#define PINYIN_INPUT_METHOD_EN
-#define CHINESE_NUMB_MAX    (8)
-#define CHINESE_BUFF_MAX    (40)
-#define ASCII_BUFF_MAX      (30)
-
-/* typedef --------------------------------------------------------------*/
-typedef struct
-{
-    unsigned char chinese[CHINESE_BUFF_MAX];
-    unsigned char ascii[ASCII_BUFF_MAX];
-    unsigned int chinese_numb;
-    unsigned int ascii_numb;
-    unsigned int soundmark_numb;
-}py_content_st;
-
-typedef struct
-{
-    char ci;
-    unsigned int W ;
-    unsigned int m ;
-    unsigned int s ;
-}_py_param_st;
-
-typedef struct
-{
-    unsigned char content[6];
-    unsigned char number;
-    unsigned long no;
-}_digital_st;
-
-typedef struct
-{
-    unsigned char content[CHINESE_BUFF_MAX];
-    unsigned char chineseSelect[401];
-    unsigned char connectSelect[401];
-    unsigned char nowPage;
-    unsigned char totPage;
-    unsigned char totChinese;
-    unsigned char is_lianxiang;
-}_connect_st;
-
-typedef struct
-{
-    py_content_st* content;
-
-    _py_param_st param;
-
-    _digital_st digital;
-
-    _connect_st connect;
-
-    unsigned char* py_cache; // 缓存 size = 1218 Byte
-}py_info_st;
 /* macros ---------------------------------------------------------------*/
 
 /* global functions / API interface -------------------------------------*/
-int gt_pinyin_init(py_info_st* py_info);
-int gt_pinyin_full_keyboard_get(char* py);
-int gt_pinyin_sudoku_get(char* numb);
-int gt_pinyin_spell(py_info_st* py_info , unsigned char pyCombinNo);
-int gt_pinyin_next_page(py_info_st* py_info);
-int gt_pinyin_last_page(py_info_st* py_info);
-int gt_pinyin_select_text(py_info_st* py_info , char numb , unsigned char* text);
-
 
 /**
 * @brief 得到文字的宽度

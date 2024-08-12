@@ -20,6 +20,10 @@ extern "C" {
 #include "math.h"
 #include "stdlib.h"
 
+#include "src/gt_api_mapper.h"
+
+#include "src/gt_conf.h"
+
 /* core */
 #include "src/core/gt_handler.h"
 #include "src/core/gt_graph_base.h"
@@ -32,6 +36,7 @@ extern "C" {
 #include "src/core/gt_timer.h"
 #include "src/core/gt_draw.h"
 #include "src/core/gt_scr_stack.h"
+#include "src/core/gt_layout.h"
 
 /* font */
 #include "src/font/gt_font.h"
@@ -51,6 +56,7 @@ extern "C" {
 /* draw */
 #include "src/extra/draw/gt_draw_blend.h"
 
+#include "src/others/gt_types.h"
 #include "src/others/gt_anim.h"
 
 #if GT_CFG_ENABLE_BTN
@@ -167,6 +173,10 @@ extern "C" {
 
 #if GT_CFG_ENABLE_STATUS_BAR
 #include "src/widgets/gt_status_bar.h"
+#endif
+
+#if GT_CFG_ENABLE_GRAPHS
+#include "src/widgets/gt_graphs.h"
 #endif
 
 /* other */

@@ -340,12 +340,15 @@ void gt_listview_set_font_align(gt_obj_st * listview, gt_align_et align);
  */
 void gt_listview_set_font_color(gt_obj_st * listview, gt_color_t color);
 
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_listview_set_font_family_cn(gt_obj_st * listview, gt_family_t family);
 void gt_listview_set_font_family_en(gt_obj_st * listview, gt_family_t family);
 void gt_listview_set_font_family_fl(gt_obj_st * listview, gt_family_t family);
 void gt_listview_set_font_family_numb(gt_obj_st * listview, gt_family_t family);
-
+#else
+void gt_listview_set_font_family(gt_obj_st * listview, gt_family_t family);
+void gt_listview_set_font_cjk(gt_obj_st* listview, gt_font_cjk_et cjk);
+#endif
 void gt_listview_set_font_thick_en(gt_obj_st * listview, uint8_t thick);
 void gt_listview_set_font_thick_cn(gt_obj_st * listview, uint8_t thick);
 void gt_listview_set_font_encoding(gt_obj_st * listview, gt_encoding_et encoding);

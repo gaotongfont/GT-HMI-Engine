@@ -31,6 +31,9 @@ typedef struct _gt_word_art_item_s {
 #if GT_USE_FILE_HEADER
     gt_file_header_param_st fh;
 #endif
+#if GT_USE_DIRECT_ADDR
+    gt_addr_t addr;
+#endif
 }_gt_word_art_item_st;
 
 typedef struct _gt_wor_dart_s {
@@ -53,7 +56,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_word_art_class = {
+static const gt_obj_class_st gt_word_art_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
@@ -122,6 +125,10 @@ static void _init_cb(gt_obj_st * obj) {
         dsc.file_header = gt_file_header_param_check_valid(&style->items[tmp].fh);
 #endif
 
+#if GT_USE_DIRECT_ADDR
+        dsc.addr = style->items[tmp].addr;
+#endif
+
         draw_bg_img(obj->draw_ctx, &dsc, &area);
         area.x += area.w + style->space_x;
     }
@@ -167,8 +174,8 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param e event
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
-    switch(code) {
+    gt_event_type_et code_val = gt_event_get_code(e);
+    switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START:
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
@@ -202,17 +209,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 gt_obj_st * gt_wordart_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    if (NULL == obj) {
-        return obj;
-    }
-
-    _gt_wor_dart_st * style = (_gt_wor_dart_st * )obj;
-
-    style->total = 0;
-    style->item_number = 0;
-    style->space_x = 0;
-    style->space_y = 0;
-
     return obj;
 }
 
@@ -265,6 +261,9 @@ void gt_wordart_add_item(gt_obj_st * wordart, uint32_t encode, char * src)
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->items[style->item_number].fh);
 #endif
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->items[style->item_number].addr);
+#endif
     ++style->item_number;
 }
 
@@ -278,12 +277,38 @@ void gt_wordart_add_item_by_file_header(gt_obj_st * wordart, uint32_t encode, gt
         return ;
     }
     _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
-    if(NULL == style->items || style->item_number >= style->total){
+    if (NULL == style->items || style->item_number >= style->total) {
         return ;
     }
     style->items[style->item_number].img = NULL;
     style->items[style->item_number].fh = *fh;
     style->items[style->item_number].encode = encode;
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->items[style->item_number].addr);
+#endif
+    ++style->item_number;
+}
+#endif
+
+#if GT_USE_DIRECT_ADDR
+void gt_wordart_add_item_by_direct_addr(gt_obj_st * wordart, uint32_t encode, gt_addr_t addr)
+{
+    if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {
+        return ;
+    }
+    if (gt_hal_is_invalid_addr(addr)) {
+        return;
+    }
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
+    if (NULL == style->items || style->item_number >= style->total) {
+        return ;
+    }
+    style->items[style->item_number].img = NULL;
+    style->items[style->item_number].addr = addr;
+    style->items[style->item_number].encode = encode;
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->items[style->item_number].fh);
+#endif
     ++style->item_number;
 }
 #endif
@@ -315,7 +340,7 @@ void gt_wordart_set_text(gt_obj_st * wordart, const char * fmt, ...)
     if (NULL == style->text) {
         goto free_lb;
     }
-
+    gt_memset(style->text, 0, size);
     va_start(args2, fmt);
     vsnprintf(style->text, size, fmt, args2);
     va_end(args2);

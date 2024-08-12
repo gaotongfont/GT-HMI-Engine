@@ -19,6 +19,12 @@ extern "C" {
 
 
 /* define ---------------------------------------------------------------*/
+#ifndef GT_DRAW_BLEND_ALIGN
+    /**
+     * @brief 1[default]: align the buffer to 4 bytes
+     */
+    #define GT_DRAW_BLEND_ALIGN     01
+#endif
 
 
 

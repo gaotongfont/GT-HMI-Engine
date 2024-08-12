@@ -146,12 +146,21 @@ void gt_disp_set_scr(gt_obj_st * scr);
  */
 gt_obj_st * gt_disp_get_scr(void);
 
+#if GT_USE_LAYER_TOP
 /**
  * @brief Get the top layer of the display, such as: the top layer of the dialog, popup, etc.
  *
  * @return gt_obj_st* The top layer of the display virtual screen
  */
 gt_obj_st * gt_disp_get_layer_top(void);
+
+/**
+ * @brief
+ *
+ * @return gt_res_t
+ */
+gt_res_t gt_disp_destroy_layer_top_widgets(void);
+#endif
 
 /**
  * @brief Update the display area

@@ -62,8 +62,7 @@ static void _gt_vf_set_fp_by_list(gt_fs_fp_st * fp, gt_vfs_st const * const item
 }
 
 #if GT_USE_FILE_HEADER
-void * _fh_open_cb(struct _gt_fs_drv_s * drv, gt_file_header_param_st const * const fh_param, gt_fs_mode_et mode)
-{
+static void * _fh_open_cb(struct _gt_fs_drv_s * drv, gt_file_header_param_st const * const fh_param, gt_fs_mode_et mode) {
     /* check drv state */
     if (_state == GT_FS_RES_DEINIT) {
         GT_LOGV(GT_LOG_TAG_GUI, "vf drv is deinit");
@@ -102,6 +101,48 @@ void * _fh_open_cb(struct _gt_fs_drv_s * drv, gt_file_header_param_st const * co
 }
 #endif
 
+#if GT_USE_DIRECT_ADDR
+static void * _direct_addr_open_cb(struct _gt_fs_drv_s * drv, gt_addr_t addr, gt_fs_mode_et mode) {
+    uint16_t idx = 0;
+    bool is_find = false;
+
+    /* check drv state */
+    if (_state == GT_FS_RES_DEINIT) {
+        GT_LOGV(GT_LOG_TAG_GUI, "vf drv is deinit");
+        return NULL;
+    }
+    if (gt_hal_is_invalid_addr(addr)) {
+        GT_LOGE(GT_LOG_TAG_GUI, "invalid addr");
+        return NULL;
+    }
+
+    /* find this file by name  */
+    while (NULL != _vfs[idx].name) {
+        if (addr == _vfs[idx].addr) {
+            is_find = true;
+            break;
+        }
+        ++idx;
+    }
+    if (is_find == false) {
+        GT_LOGV(GT_LOG_TAG_GUI, "can not find this file addr: 0x%x", addr);
+        return NULL;
+    }
+
+    gt_fs_fp_st * fp = _gt_hal_fp_init();
+    GT_CHECK_BACK_VAL(fp, NULL);
+
+    if (fp->end > _vf_dev->addr_max) {
+        GT_LOGW(GT_LOG_TAG_GUI, "out of GT_VF_FLASH_SIZE");
+    }
+    _gt_vf_set_fp_by_list(fp, &_vfs[idx]);
+    fp->drv = gt_vf_get_drv();
+
+    fp->mode = mode;
+    return fp;
+}
+#endif
+
 static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode) {
     uint16_t idx = 0;
     bool is_find = false;
@@ -114,13 +155,12 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
 
     /* find this file by name  */
     while (NULL != _vfs[idx].name) {
-        if( strcmp( _vfs[idx].name, name ) == 0 ){
+        if (strcmp(_vfs[idx].name, name) == 0) {
             is_find = true;
             break;
         }
         ++idx;
     }
-
     if (is_find == false) {
         GT_LOGV(GT_LOG_TAG_GUI, "can not find this file:%s", name);
         return NULL;
@@ -288,6 +328,9 @@ static void _gt_vf_drv_init(gt_fs_drv_st * drv) {
 #if GT_USE_FILE_HEADER
     drv->fh_open_cb   = _fh_open_cb;
 #endif
+#if GT_USE_DIRECT_ADDR
+    drv->direct_addr_open_cb = _direct_addr_open_cb;
+#endif
     drv->open_cb      = _open_cb;
     drv->close_cb     = _close_cb;
     drv->read_cb      = _read_cb;
@@ -309,10 +352,13 @@ static void _gt_vf_drv_init(gt_fs_drv_st * drv) {
 void gt_vf_init(const gt_vfs_st * vfs)
 {
     _vfs = vfs;
+    uint16_t size_byte = sizeof(gt_vf_st);
 
     if( !_vf_dev ){
-        _vf_dev = gt_mem_malloc( sizeof(gt_vf_st) );
+        _vf_dev = gt_mem_malloc(size_byte);
+        GT_CHECK_BACK(_vf_dev);
     }
+    gt_memset(_vf_dev, 0, size_byte);
 
     /* set _vf_dev msg */
     _vf_dev->addr_max = GT_VF_FLASH_START + GT_VF_FLASH_SIZE;

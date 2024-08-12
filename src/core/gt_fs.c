@@ -163,6 +163,18 @@ gt_fs_fp_st * gt_fs_fh_open(gt_file_header_param_st const * const fh_param, gt_f
 }
 #endif
 
+#if GT_USE_DIRECT_ADDR
+gt_fs_fp_st * gt_fs_direct_addr_open(gt_addr_t addr, gt_fs_mode_et mode)
+{
+    gt_fs_drv_st * drv = gt_vf_get_drv();
+    if (!drv || !drv->direct_addr_open_cb) {
+        return NULL;
+    }
+    gt_fs_fp_st * fp = drv->direct_addr_open_cb(drv, addr, mode);
+    return fp;
+}
+#endif
+
 gt_fs_res_et gt_fs_read(gt_fs_fp_st * fp, uint8_t * out, uint32_t size, uint32_t * ret_len)
 {
     gt_fs_drv_st * drv = fp->drv;
@@ -245,6 +257,26 @@ gt_fs_res_et gt_fs_fh_read_img_wh(gt_file_header_param_st * fh, uint16_t * w, ui
         return GT_FS_RES_FAIL;
     }
     gt_fs_fp_st * fp = gt_fs_fh_open(fh, GT_FS_MODE_RD);
+    if (NULL == fp) {
+        return GT_FS_RES_FAIL;
+    }
+
+    *w = fp->msg.pic.w;
+    *h = fp->msg.pic.h;
+
+    gt_fs_close(fp);
+
+    return GT_FS_RES_OK;
+}
+#endif
+
+#if GT_USE_DIRECT_ADDR
+gt_fs_res_et gt_fs_direct_addr_read_img_wh(gt_addr_t addr, uint16_t * w, uint16_t * h)
+{
+    if (gt_hal_is_invalid_addr(addr)) {
+        return GT_FS_RES_FAIL;
+    }
+    gt_fs_fp_st * fp = gt_fs_direct_addr_open(addr, GT_FS_MODE_RD);
     if (NULL == fp) {
         return GT_FS_RES_FAIL;
     }

@@ -120,10 +120,12 @@ void _gt_timer_core_init(void)
 _gt_timer_st * _gt_timer_create(gt_timer_cb_t callback, uint32_t period, void * user_data)
 {
     GT_CHECK_BACK_VAL(callback, NULL);
-    _gt_timer_st * timer = gt_mem_malloc(sizeof(_gt_timer_st));
+    uint16_t size_byte = sizeof(_gt_timer_st);
+    _gt_timer_st * timer = gt_mem_malloc(size_byte);
     if (!timer) {
         return NULL;
     }
+    gt_memset(timer, 0, size_byte);
 
     _GT_INIT_LIST_HEAD(&timer->list);
 

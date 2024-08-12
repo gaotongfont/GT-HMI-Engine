@@ -16,6 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "math.h"
 #include "stdint.h"
+#include "../others/gt_types.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -43,6 +44,10 @@ extern "C" {
 
 #define GT_MATH_BEZIER_VAL_SHIFT        10  /* (1 << 10) = 1024 */
 #define GT_MATH_BEZIER_VAL_RESOLUTION   (1 << GT_MATH_BEZIER_VAL_SHIFT)
+#define GT_MATH_BEZIER_VAL_FLOAT(_val)  (uint32_t)((_val) * GT_MATH_BEZIER_VAL_RESOLUTION)
+
+#define GT_MATH_CUBIC_NEWTON_ITER       8   /** Cubic Newton iterations */
+#define GT_MATH_CUBIC_BITS              10  /** 10 or 14 bits recommended, int64_t calculation is used for >14bit precision */
 
 /* typedef --------------------------------------------------------------*/
 /**
@@ -90,7 +95,41 @@ uint32_t gt_per_255(uint8_t n);
  */
 int32_t gt_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max);
 
-uint32_t gt_bezier3(gt_math_bezier_st const * const bezier);
+/**
+ * @brief
+ *
+ * @param bezier
+ * @return uint32_t
+ */
+uint32_t gt_math_calc_bezier(gt_math_bezier_st const * const bezier);
+
+/**
+ * @brief
+ *
+ * @param x
+ * @param x1 Control point 1
+ * @param y1
+ * @param x2 Control point 2
+ * @param y2
+ * @return int32_t y value
+ */
+int32_t gt_cubic_bezier(int32_t x, int32_t x1, int32_t y1, int32_t x2, int32_t y2);
+
+/**
+ * @brief
+ *
+ * @param t
+ * @param p0
+ * @param p1
+ * @param p2
+ * @param p3
+ * @return gt_point_f_st
+ */
+gt_point_f_st gt_math_catmullrom(float t, gt_point_f_st const * p0, gt_point_f_st const * p1, gt_point_f_st const * p2, gt_point_f_st const * p3);
+
+static inline uint32_t gt_math_bezier3(gt_math_bezier_st const * const bezier) {
+    return gt_cubic_bezier(bezier->t, 341, bezier->p1, 683, bezier->p3);
+}
 
 #ifdef __cplusplus
 } /*extern "C"*/

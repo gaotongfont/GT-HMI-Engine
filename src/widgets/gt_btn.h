@@ -106,10 +106,15 @@ void gt_btn_set_font_color_pressed(gt_obj_st * btn, gt_color_t color);
 void gt_btn_set_font_size(gt_obj_st * btn, uint8_t size);
 void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray);
 void gt_btn_set_font_align(gt_obj_st * btn, gt_align_et align);
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_btn_set_font_family_cn(gt_obj_st * btn, gt_family_t font_family_cn);
 void gt_btn_set_font_family_en(gt_obj_st * btn, gt_family_t font_family_en);
 void gt_btn_set_font_family_fl(gt_obj_st * btn, gt_family_t font_family_fl);
 void gt_btn_set_font_family_numb(gt_obj_st * btn, gt_family_t font_family_numb);
+#else
+void gt_btn_set_font_family(gt_obj_st * btn, gt_family_t font_family);
+void gt_btn_set_font_cjk(gt_obj_st* btn, gt_font_cjk_et cjk);
+#endif
 void gt_btn_set_font_thick_en(gt_obj_st * btn, uint8_t thick);
 void gt_btn_set_font_thick_cn(gt_obj_st * btn, uint8_t thick);
 void gt_btn_set_font_encoding(gt_obj_st * btn, gt_encoding_et encoding);

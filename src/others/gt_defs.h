@@ -70,13 +70,25 @@
  * Definitions for byte order, according to byte significance from low
  * address to high.
  */
-#define _LITTLE_ENDIAN  1234    /* LSB first: i386, vax */
-#define _BIG_ENDIAN     4321    /* MSB first: 68000, ibm, net */
+#ifndef _LITTLE_ENDIAN
+	#define _LITTLE_ENDIAN  1234    /* LSB first: i386, vax */
+#endif
+#ifndef _BIG_ENDIAN
+	#define _BIG_ENDIAN     4321    /* MSB first: 68000, ibm, net */
+#endif
 
-#define LITTLE_ENDIAN   _LITTLE_ENDIAN
-#define BIG_ENDIAN      _BIG_ENDIAN
+#ifndef LITTLE_ENDIAN
+	#define LITTLE_ENDIAN   _LITTLE_ENDIAN
+#endif
+#ifndef BIG_ENDIAN
+	#define BIG_ENDIAN      _BIG_ENDIAN
+#endif
 
-#define _BYTE_ORDER     _LITTLE_ENDIAN
-#define BYTE_ORDER      _BYTE_ORDER
+#ifndef _BYTE_ORDER
+	#define _BYTE_ORDER     _LITTLE_ENDIAN
+#endif
+#ifndef BYTE_ORDER
+	#define BYTE_ORDER      _BYTE_ORDER
+#endif
 
 #endif /* _SYS_DEFS_H_ */

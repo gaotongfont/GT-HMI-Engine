@@ -117,7 +117,7 @@ void gt_player_remove_all_items(gt_obj_st * obj);
  * @param style
  * @param idx
  */
-void gt_player_remove_item_by_index(gt_obj_st * obj, uint16_t idx);
+void gt_player_remove_item_by_index(gt_obj_st * obj, gt_size_t idx);
 
 /**
  * @brief Add the player project content
@@ -125,22 +125,53 @@ void gt_player_remove_item_by_index(gt_obj_st * obj, uint16_t idx);
  * @param obj
  * @param item The item to be added
  * @param item_byte_size The item memory size in bytes
- * @return uint16_t The index of the item
+ * @return gt_size_t -1: failed, The item count of player
  */
-uint16_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_size);
+gt_size_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_size);
 
 #if GT_USE_FILE_HEADER
 /**
- * @brief
+ * @brief Add the player project content by file header
  *
  * @param obj
  * @param fh idx -1[defalut]: Disabled file header, using img path to open file; >=0: index number, valid value
  *              < 0: invalid value.
  *           package_idx 0[defalut]: The index of element within item, as the first element
- * @return uint16_t The item count of player
+ * @return gt_size_t -1: failed, The item count of player
  */
-uint16_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh);
-#endif  /** GT_USE_FILE_HEADER */
+gt_size_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh);
+
+/**
+ * @brief Add the player project content by file header list
+ *
+ * @param obj
+ * @param fh_array The array of gt_file_header_param_st
+ * @param count The count of gt_file_header_param_st[]
+ * @return gt_size_t -1: failed, The item count of player
+ */
+gt_size_t gt_player_add_item_list_by_file_header(gt_obj_st * obj, gt_file_header_param_st const * const fh_array, uint16_t count);
+#endif
+
+#if GT_USE_DIRECT_ADDR
+/**
+ * @brief Add the player project content by direct address
+ *
+ * @param obj
+ * @param addr
+ * @return gt_size_t
+ */
+gt_size_t gt_player_add_item_by_direct_addr(gt_obj_st * obj, gt_addr_t addr);
+
+/**
+ * @brief Add the player project content by direct address list
+ *
+ * @param obj
+ * @param addr_array  The array of gt_addr_t
+ * @param count The count of gt_addr_t[]
+ * @return gt_size_t
+ */
+gt_size_t gt_player_add_item_list_by_direct_addr(gt_obj_st * obj, gt_addr_t const * const addr_array, uint16_t count);
+#endif
 
 /**
  * @brief Set player item index
@@ -151,7 +182,7 @@ uint16_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_param
 void gt_player_set_index(gt_obj_st * obj, gt_size_t index);
 gt_size_t gt_player_get_index(gt_obj_st * obj);
 
-uint16_t gt_player_get_item_count(gt_obj_st * obj);
+gt_size_t gt_player_get_item_count(gt_obj_st * obj);
 
 /**
  * @brief Get current item percentage of the player

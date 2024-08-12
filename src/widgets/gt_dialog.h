@@ -19,6 +19,7 @@ extern "C" {
 #if GT_CFG_ENABLE_DIALOG
 #include "./gt_obj.h"
 #include "../core/gt_style.h"
+#include "../font/gt_font.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -72,6 +73,26 @@ gt_obj_st * gt_dialog_create_issue(bool show_close_btn, gt_dialog_param_st const
  */
 void gt_dialog_show(gt_obj_st * obj);
 
+/**
+ * @brief Close the dialog and free dialog memory
+ *
+ * @param obj The dialog object
+ */
+void gt_dialog_close(gt_obj_st * obj);
+
+/**
+ * @brief Get the active dialog object
+ *
+ * @return gt_obj_st*
+ */
+gt_obj_st * gt_dialog_get_active_obj(void);
+
+/**
+ * @brief is dialog showing
+ *
+ * @return true
+ * @return false
+ */
 bool gt_dialog_has_showing(void);
 
 /**
@@ -127,18 +148,27 @@ void gt_dialog_set_anim_time(gt_obj_st * dialog, uint32_t time);
 void gt_dialog_set_title_font_color(gt_obj_st * dialog, gt_color_t color);
 void gt_dialog_set_title_font_size(gt_obj_st * dialog, uint8_t size);
 void gt_dialog_set_title_font_align(gt_obj_st * dialog, gt_align_et align);
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_dialog_set_title_font_family_cn(gt_obj_st * dialog, gt_family_t family);
 void gt_dialog_set_title_font_family_en(gt_obj_st * dialog, gt_family_t family);
 void gt_dialog_set_title_font_family_fl(gt_obj_st * dialog, gt_family_t family);
+#else
+void gt_dialog_set_title_font_family(gt_obj_st * dialog, gt_family_t family);
+void gt_dialog_set_title_font_cjk(gt_obj_st * dialog, gt_font_cjk_et cjk);
+#endif
 void gt_dialog_set_title_font_thick_en(gt_obj_st * dialog, uint8_t thick);
 void gt_dialog_set_title_font_thick_cn(gt_obj_st * dialog, uint8_t thick);
-
 void gt_dialog_set_content_font_color(gt_obj_st * dialog, gt_color_t color);
 void gt_dialog_set_content_font_size(gt_obj_st * dialog, uint8_t size);
 void gt_dialog_set_content_font_align(gt_obj_st * dialog, gt_align_et align);
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_dialog_set_content_font_family_cn(gt_obj_st * dialog, gt_family_t family);
 void gt_dialog_set_content_font_family_en(gt_obj_st * dialog, gt_family_t family);
 void gt_dialog_set_content_font_family_fl(gt_obj_st * dialog, gt_family_t family);
+#else
+void gt_dialog_set_content_font_family(gt_obj_st * dialog, gt_family_t family);
+void gt_dialog_set_content_font_cjk(gt_obj_st * dialog, gt_font_cjk_et cjk);
+#endif
 void gt_dialog_set_content_font_thick_en(gt_obj_st * dialog, uint8_t thick);
 void gt_dialog_set_content_font_thick_cn(gt_obj_st * dialog, uint8_t thick);
 

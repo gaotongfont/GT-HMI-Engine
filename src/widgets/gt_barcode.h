@@ -48,6 +48,12 @@ extern "C" {
 gt_obj_st * gt_barcode_create(gt_obj_st * parent);
 
 void gt_barcode_set_code_text(gt_obj_st * barcode , char* code);
+/**
+ * @brief Set bar-code type
+ *
+ * @param barcode
+ * @param family  @ref gt_gui_driver.h/barcode_type_te which export by GT-HMI-Designer tool.
+ */
 void gt_barcode_set_type(gt_obj_st * barcode , gt_family_t family);
 void gt_barcode_set_hri_type(gt_obj_st * barcode , gt_family_t family);
 void gt_barcode_set_mode_w(gt_obj_st * barcode , uint8_t value);

@@ -218,17 +218,16 @@ static inline void _gt_free_hooks(void * ptr) {
 }
 
 /* global functions / API interface -------------------------------------*/
-
 void gt_mem_init(void)
 {
 #if GT_MEM_CUSTOM
     _tlsf = gt_tlsf_create_with_pool((void *)_mem_pool_int, GT_MEM_SIZE);
-    _addr_start = (MEM_UNIT)_mem_pool_int;
-    _addr_end = (MEM_UNIT)_mem_pool_int + GT_MEM_SIZE;
+    _addr_start = (uintptr_t)_mem_pool_int;
+    _addr_end = (uintptr_t)_mem_pool_int + GT_MEM_SIZE;
 #if GT_BOOTING_INFO_MSG
-	GT_LOG_A(GT_LOG_TAG_MEM, "Custom memory pool addr: %p -> %p, size: 0x%x(%d)", _addr_start, _addr_end, GT_MEM_SIZE, GT_MEM_SIZE);
+	GT_LOG_A(GT_LOG_TAG_MEM, "Custom memory pool addr: %lx -> %lx, size: 0x%x(%d)", (uintptr_t)_addr_start, (uintptr_t)_addr_end, GT_MEM_SIZE, GT_MEM_SIZE);
 #else
-	GT_LOGD(GT_LOG_TAG_MEM, "\t--- addr: %p -> %p, size: 0x%x(%d) ---", _addr_start, _addr_end, GT_MEM_SIZE, GT_MEM_SIZE);
+	GT_LOGD(GT_LOG_TAG_MEM, "\t--- addr: %lx -> %lx, size: 0x%x(%d) ---", (uintptr_t)_addr_start, (uintptr_t)_addr_end, GT_MEM_SIZE, GT_MEM_SIZE);
 #endif
 
 #if USE_MEM_TRACE_DEBUG_BY_FILE
@@ -240,7 +239,7 @@ void gt_mem_init(void)
         mkdir(MEM_TRACE_PATH);
     }
     fp = fopen(MEM_TRACE_LOG_PATH, "a");
-    fprintf(fp, "\t--- addr: %p -> %p, size: 0x%x(%d) ---\n", _addr_start, _addr_end, GT_MEM_SIZE, GT_MEM_SIZE);
+    fprintf(fp, "\t--- addr: %x -> %x, size: 0x%x(%d) ---\n", (uintptr_t)_addr_start, (uintptr_t)_addr_end, GT_MEM_SIZE, GT_MEM_SIZE);
     fflush(fp);
     fclose(fp);
     fp = NULL;
@@ -256,7 +255,7 @@ void gt_mem_deinit(void)
 #endif
 }
 
-void * _mem_malloc(size_t size, uint8_t * file_name, size_t line)
+void * _mem_malloc(size_t size, char const * file_name, char const * func_name, size_t line)
 {
     void * ret = _gt_malloc_hooks(size);
 
@@ -265,13 +264,14 @@ void * _mem_malloc(size_t size, uint8_t * file_name, size_t line)
 #endif
 
 #if USE_MEM_LOG_PRINT
-    GT_LOG_A(GT_LOG_TAG_MEM, "[%s] %d \t--- malloc addr: %p, size: %d real: %d ---",
-        file_name, line, ret, size, block_size);
+    GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] \t--- malloc addr: %p, size: %d real: %d ---",
+        file_name, func_name, line, ret, size, block_size);
 #endif
 
 #if USE_MEM_BIG_UNIT_REMARK
     if (size >= _BIG_UNIT_REMARK_SIZE) {
-        GT_LOGD(GT_LOG_TAG_MEM, "### + %p big unit: 0x%x(%d) real: %d ###", ret, size, size, block_size);
+        GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] ### + %p big unit: 0x%x(%d) real: %d ###",
+                    file_name, func_name, line, ret, size, size, block_size);
     }
 #endif
 
@@ -284,22 +284,23 @@ void * _mem_malloc(size_t size, uint8_t * file_name, size_t line)
         return ret;
     }
 
-    fprintf(fp, "[+]%s:%d   %p   want: 0x%x(%d)   real: 0x%x(%d)\n",
-        file_name, line, ret, size, size, block_size, block_size);
+    fprintf(fp, "[+]%s%s:%d   %p   want: 0x%x(%d)   real: 0x%x(%d)\n",
+        file_name, func_name, line, ret, size, size, block_size, block_size);
     fflush(fp);
     fclose(fp);
 #endif
 
 #if USE_MEM_MAX_REMARK
-    if ((MEM_UNIT)ret > _max_addr) {
-        _max_addr = (MEM_UNIT)ret;
-        GT_LOGD(GT_LOG_TAG_MEM, ">>>>>> %d max addr: %p   %d %d <<<<<<", ++_malloc_count, _max_addr, size, block_size);
+    if ((uintptr_t)ret > _max_addr) {
+        _max_addr = (uintptr_t)ret;
+        GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] >>>>>> %d max mem addr: %p   %d [%d] <<<<<<",
+                    file_name, func_name, line, ++_malloc_count, _max_addr, size, block_size);
     }
 #endif
     return ret;
 }
 
-void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
+void * _mem_realloc(void * ptr, size_t size, char const * file_name, char const * func_name, size_t line)
 {
 #if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT
     size_t old_size = _gt_block_size(ptr);
@@ -312,14 +313,14 @@ void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
 #endif
 
 #if USE_MEM_LOG_PRINT
-    GT_LOG_A(GT_LOG_TAG_MEM, "[%s] %d \t--- realloc addr: %p -> %p, size: %d real: %d -> %d ---",
-        file_name, line, ptr, ret, size, old_size, block_size);
+    GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] \t--- realloc addr: %p -> %p, size: %d real: %d -> %d ---",
+        file_name, func_name, line, ptr, ret, size, old_size, block_size);
 #endif
 
 #if USE_MEM_BIG_UNIT_REMARK
     if (size >= _BIG_UNIT_REMARK_SIZE) {
-        GT_LOGD(GT_LOG_TAG_MEM, "### ++ %p -> %p big unit: %d %d -> %d ###",
-            ptr, ret, size, old_size, block_size);
+        GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] ### ++ %p -> %p big unit: %d %d -> %d ###",
+                    file_name, func_name, line, ptr, ret, size, old_size, block_size);
     }
 #endif
 
@@ -336,8 +337,8 @@ void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
     ) {
         if (unlink(buffer) < 0) {
             fp = fopen(MEM_TRACE_FAILED_PATH, "a");
-            fprintf(fp, "[++]%s:%d   addr: %p -> %p,   want: 0x%x(%d)   real: 0x%x(%d) -> 0x%x(%d)\n",
-                file_name, line, ptr, ret, size, size, old_size, old_size, block_size, block_size);
+            fprintf(fp, "[++]%s%s:%d   addr: %p -> %p,   want: 0x%x(%d)   real: 0x%x(%d) -> 0x%x(%d)\n",
+                file_name, func_name, line, ptr, ret, size, size, old_size, old_size, block_size, block_size);
             fflush(fp);
             fclose(fp);
             fp = NULL;
@@ -351,23 +352,23 @@ void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line)
         return ret;
     }
 
-    fprintf(fp, "[++]%s:%d   %p -> %p   want: 0x%x(%d),  real: 0x%x(%d) -> 0x%x(%d)\n",
-        file_name, line, ptr, ret, size, size, old_size, old_size, block_size, block_size);
+    fprintf(fp, "[++]%s%s:%d   %p -> %p   want: 0x%x(%d),  real: 0x%x(%d) -> 0x%x(%d)\n",
+        file_name, func_name, line, ptr, ret, size, size, old_size, old_size, block_size, block_size);
     fflush(fp);
     fclose(fp);
 #endif
 
 #if USE_MEM_MAX_REMARK
-    if ((MEM_UNIT)ret > _max_addr) {
-        _max_addr = (MEM_UNIT)ret;
-        GT_LOGD(GT_LOG_TAG_MEM, ">>>>>> %d R max addr: %p   %d  %d -> %d <<<<<<",
-            ++_malloc_count, _max_addr, size, old_size, block_size);
+    if ((uintptr_t)ret > _max_addr) {
+        _max_addr = (uintptr_t)ret;
+        GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] >>>>>> %d R max mem addr: %p   %d [%d -> %d] <<<<<<",
+                    file_name, func_name, line, ++_malloc_count, _max_addr, size, old_size, block_size);
     }
 #endif
     return ret;
 }
 
-void _mem_free(void * ptr, uint8_t * file_name, size_t line)
+void _mem_free(void * ptr, char const * file_name, char const * func_name, size_t line)
 {
 #if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT
     size_t block_size = _gt_block_size(ptr);
@@ -375,12 +376,13 @@ void _mem_free(void * ptr, uint8_t * file_name, size_t line)
 
 #if USE_MEM_BIG_UNIT_REMARK
     if (size >= _BIG_UNIT_REMARK_SIZE) {
-        GT_LOGD(GT_LOG_TAG_MEM, "### - %p big unit: 0x%x(%d) ###", ptr, block_size, block_size);
+        GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] ### - %p big unit: 0x%x(%d) ###",
+                    file_name, func_name, line, ptr, block_size, block_size);
     }
 #endif
 
 #if USE_MEM_LOG_PRINT
-    GT_LOG_A(GT_LOG_TAG_MEM, "[%s] %d \t--- free addr: %p, size: 0x%x ---", file_name, line, ptr, block_size);
+    GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] \t--- free addr: %p, size: 0x%x ---", file_name, func_name, line, ptr, block_size);
 #endif
 
 #if USE_MEM_TRACE_DEBUG_BY_FILE
@@ -391,15 +393,15 @@ void _mem_free(void * ptr, uint8_t * file_name, size_t line)
     sprintf((char *)buffer, "%s/%p_%d.mem\0", MEM_TRACE_PATH, ptr, block_size);
     if (unlink(buffer) < 0) {
         fp = fopen(MEM_TRACE_FAILED_PATH, "a");
-        fprintf(fp, "[-]%s:%d    addr: %p    real size: 0x%x(%d)\n",
-            file_name, line, ptr, block_size, block_size);
+        fprintf(fp, "[-]%s%s:%d    addr: %p    real size: 0x%x(%d)\n",
+            file_name, func_name, line, ptr, block_size, block_size);
         fflush(fp);
         fclose(fp);
         fp = NULL;
     } else {
         fp = fopen(MEM_TRACE_LOG_PATH, "a");
-        fprintf(fp, "[o]%s:%d    addr: %p    real size: 0x%x(%d)\n",
-            file_name, line, ptr, block_size, block_size);
+        fprintf(fp, "[o]%s%s:%d    addr: %p    real size: 0x%x(%d)\n",
+            file_name, func_name, line, ptr, block_size, block_size);
         fflush(fp);
         fclose(fp);
         fp = NULL;
@@ -407,6 +409,17 @@ void _mem_free(void * ptr, uint8_t * file_name, size_t line)
 #endif
     _gt_free_hooks(ptr);
 }
+
+#ifdef _GT_PORT_SIMULATOR_ENVS
+void gt_mem_print_info(void)
+{
+#if USE_MEM_MAX_REMARK
+	GT_LOG_A(GT_LOG_TAG_MEM, "\t--- addr: %p -> %p, size: 0x%x(%d) max addr: %p, used: 0x%x(%.3f KB), cnt: %d ---",
+                _addr_start, _addr_end, GT_MEM_SIZE, GT_MEM_SIZE, _max_addr,
+                _max_addr - _addr_start, (_max_addr - _addr_start) * 1.0 / 1024, _malloc_count);
+#endif
+}
+#endif
 
 void * gt_memcpy(void * dst, const void * src, size_t size)
 {
@@ -447,7 +460,7 @@ void gt_mem_check_used(void)
         GT_LOGI(GT_LOG_TAG_MEM, "mem is less 1024byte");
         return;
     }
-    float used = (float)((MEM_UNIT)addr_now - _addr_start) / (float)( _addr_end - _addr_start );
+    float used = (float)((uintptr_t)addr_now - _addr_start) / (float)( _addr_end - _addr_start );
     gt_mem_free(addr_now);
     GT_LOGI(GT_LOG_TAG_MEM, "used:%.2f%%",used*100);
     printf("used:%.2f%%\n",used*100);

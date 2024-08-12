@@ -55,14 +55,14 @@ typedef struct _gt_input_s
 
 
 /* static variables -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj);
+static void _input_init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
+static void _input_event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_input_class = {
-    ._init_cb      = _init_cb,
+static const gt_obj_class_st gt_input_class = {
+    ._init_cb      = _input_init_cb,
     ._deinit_cb    = _deinit_cb,
-    ._event_cb     = _event_cb,
+    ._event_cb     = _input_event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_input_st)
 };
@@ -231,7 +231,7 @@ static void _input_key_handler( gt_obj_st* obj, uint32_t key)
  *
  * @param obj
  */
-static void _init_cb(gt_obj_st * obj) {
+static void _input_init_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
 
     _gt_input_init_widget(obj);
@@ -268,43 +268,17 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param obj
  * @param e event
  */
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+static void _input_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
+    gt_event_type_et code_val = gt_event_get_code(e);
     uint32_t key = gt_indev_get_key();
 
-    switch(code) {
+    switch (code_val) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-
-            break;
-
-        case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
-            break;
         case GT_EVENT_TYPE_INPUT_KEY:
-            GT_LOGV(GT_LOG_TAG_GUI, "input key");
             _input_key_handler(obj, key);
             break;
         default:
@@ -328,8 +302,6 @@ gt_obj_st * gt_input_create(gt_obj_st * parent)
     }
     _gt_input_st * style = (_gt_input_st * )obj;
 
-    gt_input_set_placeholder(obj, "please input");
-
     gt_font_info_init(&style->font_info);
     style->font_color     = gt_color_black();
     style->border_width   = 2;
@@ -338,6 +310,8 @@ gt_obj_st * gt_input_create(gt_obj_st * parent)
     style->font_align     = GT_ALIGN_NONE;
     style->space_x        = 0;
     style->space_y        = 0;
+
+    gt_input_set_placeholder(obj, "please input");
 
     return obj;
 }
@@ -373,7 +347,7 @@ void gt_input_set_value(gt_obj_st * input, const char * fmt, ...)
     if (NULL == style->value) {
         goto free_lb;
     }
-
+    gt_memset(style->value, 0, size);
     va_start(args2, fmt);
     vsnprintf(style->value, size, fmt, args2);
     va_end(args2);
@@ -409,14 +383,16 @@ void gt_input_append_value(gt_obj_st * input, char * value)
     }
     _gt_input_st * style = (_gt_input_st * )input;
     uint16_t len = value == NULL ? 0 : strlen(value);
-    if( !style->value ){
-        style->value = gt_mem_malloc(len+1);
+    if (!style->value) {
+        style->value = gt_mem_malloc(len + 1);
+        GT_CHECK_BACK(style->value);
         gt_memcpy(style->value, value, len);
-        style->value[len] = 0;
+        style->value[len] = '\0';
         style->pos_cursor = len;
-    }else{
+    } else {
         style->value = gt_txt_ins(style->value, style->pos_cursor, value);
-        style->pos_cursor += value == NULL ? 0 : strlen(value);
+        GT_CHECK_BACK(style->value);
+        style->pos_cursor += len;
     }
 
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -449,6 +425,7 @@ void gt_input_append_value_encoding(gt_obj_st * input, char * value, uint8_t enc
     uint16_t len = value == NULL ? 0 : strlen(value);
     uint16_t idx = 0;
     char *tmp_str = gt_mem_malloc(len + 1);
+    GT_CHECK_BACK(tmp_str);
 
     while(idx < len) {
         gt_memset_0(tmp_str, len + 1);
@@ -500,13 +477,15 @@ void gt_input_set_placeholder(gt_obj_st * input, const char * placeholder)
         return ;
     }
     _gt_input_st * style = (_gt_input_st * )input;
-    if( style->placeholder ){
-        gt_mem_free(style->placeholder);
-    }
     uint16_t len = strlen(placeholder);
-    style->placeholder = gt_mem_malloc( len + 1 );
+    if (style->placeholder) {
+        style->placeholder = gt_mem_realloc(style->placeholder, len + 1);
+    } else {
+        style->placeholder = gt_mem_malloc(len + 1);
+    }
+    GT_CHECK_BACK(style->placeholder);
     gt_memcpy(style->placeholder, placeholder, len);
-    style->placeholder[len] = 0;
+    style->placeholder[len] = '\0';
 
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -521,7 +500,6 @@ void gt_input_move_left_pos_cursor(gt_obj_st * input)
     if( style->pos_cursor > 0 ){
         d_pos = gt_txt_check_char_numb(style->value, style->font_info.encoding, &d_pos);
         style->pos_cursor -= d_pos;
-        // style->pos_cursor--;
     }
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -536,7 +514,6 @@ void gt_input_move_right_pos_cursor(gt_obj_st * input)
     if( style->pos_cursor < len ){
         d_pos = gt_txt_check_char_numb(style->value, style->font_info.encoding, &d_pos);
         style->pos_cursor += d_pos;
-        // style->pos_cursor++;
     }
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -560,7 +537,7 @@ void gt_input_set_font_color(gt_obj_st * input, gt_color_t color)
     style->font_color = color;
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_input_set_font_family_cn(gt_obj_st * input, gt_family_t family)
 {
     if (false == gt_obj_is_type(input, OBJ_TYPE)) {
@@ -596,6 +573,24 @@ void gt_input_set_font_family_numb(gt_obj_st * input, gt_family_t family)
     _gt_input_st * style = (_gt_input_st * )input;
     style->font_info.style_numb = family;
 }
+#else
+void gt_input_set_font_family(gt_obj_st * input, gt_family_t font_family)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    gt_font_set_family(&style->font_info, font_family);
+}
+void gt_input_set_font_cjk(gt_obj_st* input, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    style->font_info.cjk = cjk;
+}
+#endif
 
 void gt_input_set_font_size(gt_obj_st * input, uint8_t size)
 {

@@ -15,6 +15,7 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "../others/gt_types.h"
+#include "../others/gt_list.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -38,14 +39,56 @@ typedef bool ( * _gt_vector_free_item_cb_t)(void * item);
  */
 typedef bool ( * _gt_vector_equal_item_cb_t)(void * item, void * target);
 
+typedef struct _gt_vector_s _iter_dsc_st;
+
+/**
+ * @brief Has next item in vector iterator
+ * @param vct_dsc The dsc object from @see _gt_vector_iterator_st
+ */
+typedef bool ( * has_next_cb)(_iter_dsc_st * vct_dsc);
+
+/**
+ * @brief Get the next item from vector iterator
+ * @param vct_dsc The dsc object from @see _gt_vector_iterator_st
+ */
+typedef void * ( * next_cb)(_iter_dsc_st * vct_dsc);
+
+/**
+ * @brief Get the index of the item from vector iterator, when "iter.next()" is
+ *       called, the index will be increased.
+ * @param vct_dsc The dsc object from @see _gt_vector_iterator_st
+ */
+typedef gt_size_t ( * index_cb)(_iter_dsc_st * vct_dsc);
+
+typedef struct {
+    struct _gt_list_head node;
+    void * val;
+}_gt_vector_item_st;
+
+typedef struct _gt_vector_iterator_s {
+    has_next_cb has_next;
+    next_cb next;
+    index_cb index;
+    _iter_dsc_st * dsc_t;
+}_gt_vector_iterator_st;
+
+typedef struct _gt_vector_iterator_ctl_s {
+    _gt_vector_item_st * item_p;
+    gt_size_t idx;
+}_gt_vector_iterator_ctl_st;
+
 typedef struct _gt_vector_s {
+    struct _gt_list_head list_head;
+
     _gt_vector_free_item_cb_t free_item_cb;
     _gt_vector_equal_item_cb_t equal_item_cb;
 
-    void ** list;
-    uint8_t count;
-    uint8_t index;
+    gt_size_t count;
+    gt_size_t index;
+
+    _gt_vector_iterator_ctl_st * iter_ctl;
 }_gt_vector_st;
+
 
 
 /* macros ---------------------------------------------------------------*/
@@ -71,7 +114,6 @@ _gt_vector_st * _gt_vector_create(_gt_vector_free_item_cb_t free_cb, _gt_vector_
  *
  * @param vector_p
  * @param free_item_cb
- * @param instance_size
  * @return true
  * @return false
  */
@@ -91,24 +133,22 @@ bool _gt_vector_add_equal_item_cb(_gt_vector_st * vector_p, _gt_vector_equal_ite
  * @brief Add a item to vector
  *
  * @param vector_p
- * @param item
- * @param size
+ * @param item The point of item, the item must be malloced, free by free_cb()
  * @return true
  * @return false
  */
-bool _gt_vector_add_item(_gt_vector_st * vector_p, void * item, uint16_t size);
+bool _gt_vector_add_item(_gt_vector_st * vector_p, void * item);
 
 /**
  * @brief Replace a item in vector
  *
  * @param vector_p
  * @param index The index of the item to be replaced
- * @param item The new item
- * @param size The size of the new item
+ * @param item The point of item, the item must be malloced, free by free_cb()
  * @return true
  * @return false
  */
-bool _gt_vector_replace_item(_gt_vector_st * vector_p, uint16_t index, void * item, uint16_t size);
+bool _gt_vector_replace_item(_gt_vector_st * vector_p, uint16_t index, void * item);
 
 /**
  * @brief Remove a item from vector
@@ -121,7 +161,15 @@ bool _gt_vector_replace_item(_gt_vector_st * vector_p, uint16_t index, void * it
 bool _gt_vector_remove_item(_gt_vector_st * vector_p, void * target);
 
 /**
- * @brief Get the item from vector
+ * @brief Get the prev item from vector, index will be decreased
+ *
+ * @param vector
+ * @return void*
+ */
+void * _gt_vector_turn_prev(_gt_vector_st * vector);
+
+/**
+ * @brief Get next the item from vector, index will be increased
  *
  * @param vector
  * @return void*
@@ -137,6 +185,15 @@ void * _gt_vector_turn_next(_gt_vector_st * vector);
 gt_size_t _gt_vector_get_count(_gt_vector_st const * vector);
 
 /**
+ * @brief Set the index of the item in vector
+ *
+ * @param vector
+ * @param index -1: last one; >=0: index number
+ * @return gt_size_t -1: failed to set the index, >=0: the index of the item
+ */
+gt_size_t _gt_vector_set_index(_gt_vector_st * vector, gt_size_t index);
+
+/**
  * @brief Get current the item index from vector
  *
  * @param vector
@@ -148,10 +205,19 @@ gt_size_t _gt_vector_get_index(_gt_vector_st const * vector);
  * @brief Get the item from vector
  *
  * @param vector
- * @param index
+ * @param index The index of the item, -1: failed; >=0: the index of the item
  * @return void*
  */
-void * _gt_vector_get_item(_gt_vector_st const * vector, uint16_t index);
+void * _gt_vector_get_item(_gt_vector_st const * vector, gt_size_t index);
+
+/**
+ * @brief Is the current index is the tail one
+ *
+ * @param vector
+ * @return true The current index is the tail one
+ * @return false
+ */
+bool _gt_vector_is_tail_index_now(_gt_vector_st const * vector);
 
 /**
  * @brief Free the whole vector
@@ -161,6 +227,19 @@ void * _gt_vector_get_item(_gt_vector_st const * vector, uint16_t index);
  * @return false
  */
 bool _gt_vector_free(_gt_vector_st * vector_p);
+
+/**
+ * @brief Get the iterator of the vector, detail @see _gt_vector_iterator_st:
+ *      use:    _gt_vector_iterator_st iter = _gt_vector_get_iterator(vector);
+ *              while (iter.has_next(iter.dsc_t)) {
+ *                  void * item = iter.next(iter.dsc_t);
+ *                  // do something with item
+ *              }
+ *
+ * @param vector
+ * @return _gt_vector_iterator_st
+ */
+_gt_vector_iterator_st _gt_vector_get_iterator(_gt_vector_st * vector);
 
 /**
  * @brief Just clear the vector list, but not free the vector

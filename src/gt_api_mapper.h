@@ -1,13 +1,13 @@
 /**
- * @file gt_handler.h
- * @author yongg
- * @brief GUI task management interface
+ * @file gt_api_mapper.h
+ * @author Feyoung
+ * @brief Remapping of deprecated interfaces
  * @version 0.1
- * @date 2022-05-11 15:07:33
+ * @date 2024-07-19 10:01:14
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
-#ifndef _GT_HANDLER_H_
-#define _GT_HANDLER_H_
+#ifndef _GT_API_MAPPER_H_
+#define _GT_API_MAPPER_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,18 +19,7 @@ extern "C" {
 
 /* define ---------------------------------------------------------------*/
 
-/**
- * @brief 主版本号
- */
-#define GT_HMI_ENGINE_MAJOR_VERSION 1
-/**
- * @brief 次版本号
- */
-#define GT_HMI_ENGINE_MINOR_VERSION 3
-/**
- * @brief 修订号
- */
-#define GT_HMI_ENGINE_PATCH_VERSION 2
+
 
 /* typedef --------------------------------------------------------------*/
 
@@ -40,20 +29,16 @@ extern "C" {
 
 
 
+/* class ----------------------------------------------------------------*/
+
+
+
 /* global functions / API interface -------------------------------------*/
 
-/**
- * @brief GT-HMI all init
- */
-void gt_init(void);
 
-/**
- * @brief GT-HMI task handler function called by task
- */
-void gt_task_handler(void);
 
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
 
-#endif //!_GT_HANDLER_H_
+#endif //!_GT_API_MAPPER_H_

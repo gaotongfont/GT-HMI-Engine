@@ -116,6 +116,7 @@ static inline void _blend_rgb565_with_opacity(_gt_draw_blend_fill_cache_st const
             /* be called too much */
             for (y = 0; y < h; ++y) {
                 x = 0;
+#if GT_DRAW_BLEND_ALIGN
                 if ((gt_uintptr_t)&dst_p[0] & 0x1) {
                     *dst_p = gt_color_mix(*src_p, *dst_p, *mask_p);
                     ++dst_p; ++src_p; ++mask_p;
@@ -126,7 +127,7 @@ static inline void _blend_rgb565_with_opacity(_gt_draw_blend_fill_cache_st const
                     dst_p[1] = gt_color_mix(src_p[1], dst_p[1], mask_p[1]);
                     dst_p += 2; src_p += 2; mask_p += 2;
                 }
-
+#endif
                 for (; x < w; ++x) {
                     *dst_p = gt_color_mix(*src_p, *dst_p, *mask_p);
                     ++dst_p; ++src_p; ++mask_p;
@@ -140,6 +141,7 @@ static inline void _blend_rgb565_with_opacity(_gt_draw_blend_fill_cache_st const
         // opa < GT_OPA_MAX color mixed
         for (y = 0; y < h; ++y) {
             x = 0;
+#if GT_DRAW_BLEND_ALIGN
             if ((gt_uintptr_t)&dst_p[0] & 0x1) {
                 *dst_p = gt_color_mix(*src_p, *dst_p, (gt_per_255(*mask_p) * opa) >> 15);
                 ++dst_p; ++src_p; ++mask_p;
@@ -150,6 +152,7 @@ static inline void _blend_rgb565_with_opacity(_gt_draw_blend_fill_cache_st const
                 dst_p[1] = gt_color_mix(src_p[1], dst_p[1], (gt_per_255(mask_p[1]) * opa) >> 15);
                 dst_p += 2; src_p += 2; mask_p += 2;
             }
+#endif
             for (; x < w; ++x) {
                 *dst_p = gt_color_mix(*src_p, *dst_p, (gt_per_255(*mask_p) * opa) >> 15);
                 ++dst_p; ++src_p; ++mask_p;
@@ -164,6 +167,7 @@ static inline void _blend_rgb565_with_opacity(_gt_draw_blend_fill_cache_st const
     if (opa > GT_OPA_MAX) {
         for (y = 0; y < h; ++y) {
             x = 0;
+#if GT_DRAW_BLEND_ALIGN
             if ((gt_uintptr_t)&dst_p[0] & 0x1) {
                 *dst_p = gt_color_mix(fc->color, *dst_p, *mask_p);
                 ++dst_p;
@@ -174,6 +178,7 @@ static inline void _blend_rgb565_with_opacity(_gt_draw_blend_fill_cache_st const
                 dst_p[1] = gt_color_mix(fc->color, dst_p[1], mask_p[1]);
                 dst_p += 2; mask_p += 2;
             }
+#endif
             for (; x < w; ++x) {
                 *dst_p = gt_color_mix(fc->color, *dst_p, *mask_p);
                 ++dst_p; ++mask_p;
@@ -185,6 +190,7 @@ static inline void _blend_rgb565_with_opacity(_gt_draw_blend_fill_cache_st const
     }
     for (y = 0; y < h; ++y) {
         x = 0;
+#if GT_DRAW_BLEND_ALIGN
         if ((gt_uintptr_t)&dst_p[0] & 0x1) {
             *dst_p = gt_color_mix(fc->color, *dst_p, (gt_per_255(*mask_p) * opa) >> 15);
             ++dst_p; ++mask_p;
@@ -195,6 +201,7 @@ static inline void _blend_rgb565_with_opacity(_gt_draw_blend_fill_cache_st const
             dst_p[1] = gt_color_mix(fc->color, dst_p[1], (gt_per_255(mask_p[1]) * opa) >> 15);
             dst_p += 2; mask_p += 2;
         }
+#endif
         for (; x < w; ++x) {
             *dst_p = gt_color_mix(fc->color, *dst_p, (gt_per_255(*mask_p) * opa) >> 15);
             ++dst_p; ++mask_p;
@@ -296,7 +303,7 @@ static inline void _blend_rgb565_with_no_opacity(_gt_draw_blend_fill_cache_st co
     uint16_t h = fc->area_intersect.h;
     uint16_t step_src_line = fc->width_src - w;
     uint16_t step_dst_line = fc->width_buf - w;
-    uint16_t x, y, width = w * sizeof(gt_color_t);
+    uint16_t x, y;
     gt_opa_t opa = fc->opa;
 
     if (opa < GT_OPA_MIN) {
@@ -307,6 +314,7 @@ static inline void _blend_rgb565_with_no_opacity(_gt_draw_blend_fill_cache_st co
         if (opa < GT_OPA_MAX) {
             for (y = 0; y < h; ++y) {
                 x = 0;
+#if GT_DRAW_BLEND_ALIGN
                 if ((gt_uintptr_t)&dst_p[0] & 0x1) {
                     *dst_p = gt_color_mix(*src_p, *dst_p, opa);
                     ++dst_p; ++src_p;
@@ -317,6 +325,7 @@ static inline void _blend_rgb565_with_no_opacity(_gt_draw_blend_fill_cache_st co
                     dst_p[1] = gt_color_mix(src_p[1], dst_p[1], opa);
                     dst_p += 2; src_p += 2;
                 }
+#endif
                 for (; x < w; ++x) {
                     *dst_p = gt_color_mix(*src_p, *dst_p, opa);
                     ++dst_p; ++src_p;
@@ -328,6 +337,7 @@ static inline void _blend_rgb565_with_no_opacity(_gt_draw_blend_fill_cache_st co
         }
         for (y = 0; y < h; ++y) {
             x = 0;
+#if GT_DRAW_BLEND_ALIGN
             if ((gt_uintptr_t)&dst_p[0] & 0x1) {
                 *dst_p = *src_p;
                 ++dst_p; ++src_p;
@@ -338,6 +348,7 @@ static inline void _blend_rgb565_with_no_opacity(_gt_draw_blend_fill_cache_st co
                 dst_p[1] = src_p[1];
                 dst_p += 2; src_p += 2;
             }
+#endif
             for (; x < w; ++x) {
                 *dst_p = *src_p;
                 ++dst_p; ++src_p;
@@ -352,6 +363,7 @@ static inline void _blend_rgb565_with_no_opacity(_gt_draw_blend_fill_cache_st co
     if (opa < GT_OPA_MAX) {
         for (y = 0; y < h; ++y) {
             x = 0;
+#if GT_DRAW_BLEND_ALIGN
             if ((gt_uintptr_t)&dst_p[0] & 0x1) {
                 *dst_p = gt_color_mix(fc->color, *dst_p, opa);
                 ++dst_p;
@@ -362,6 +374,7 @@ static inline void _blend_rgb565_with_no_opacity(_gt_draw_blend_fill_cache_st co
                 dst_p[1] = gt_color_mix(fc->color, dst_p[1], opa);
                 dst_p += 2;
             }
+#endif
             for (; x < w; ++x) {
                 *dst_p = gt_color_mix(fc->color, *dst_p, opa);
                 ++dst_p;
@@ -377,6 +390,7 @@ static inline void _blend_rgb565_with_no_opacity(_gt_draw_blend_fill_cache_st co
     // Direct color overlay, opa >= GT_OPA_MAX
     for (y = 0; y < h; ++y) {
         x = 0;
+#if GT_DRAW_BLEND_ALIGN
         if ((gt_uintptr_t)&dst_p[0] & 0x1) {
             *dst_p = fc->color;
             ++dst_p;
@@ -392,6 +406,7 @@ static inline void _blend_rgb565_with_no_opacity(_gt_draw_blend_fill_cache_st co
             *dst_p = fc->color; ++dst_p;
 #endif
         }
+#endif
         for (; x < w; ++x) {
             *dst_p = fc->color;
             ++dst_p;
@@ -405,18 +420,18 @@ static inline void _blend_rgb565_with_no_opacity(_gt_draw_blend_fill_cache_st co
 void gt_draw_blend_with_rgb565_opacity(_gt_draw_blend_fill_cache_st const * const fc)
 {
 #if GT_FLUSH_CONVERT_VERTICAL
-    return _blend_rgb565_with_opacity_vertical(fc);
+    _blend_rgb565_with_opacity_vertical(fc);
 #else
-    return _blend_rgb565_with_opacity(fc);
+     _blend_rgb565_with_opacity(fc);
 #endif
 }
 
 void gt_draw_blend_with_rgb565_no_opacity(_gt_draw_blend_fill_cache_st const * const fc)
 {
 #if GT_FLUSH_CONVERT_VERTICAL
-    return _blend_rgb565_with_no_opacity_vertical(fc);
+    _blend_rgb565_with_no_opacity_vertical(fc);
 #else
-    return _blend_rgb565_with_no_opacity(fc);
+     _blend_rgb565_with_no_opacity(fc);
 #endif
 }
 

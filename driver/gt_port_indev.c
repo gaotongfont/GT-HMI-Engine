@@ -22,7 +22,10 @@
 
 /* static variables -----------------------------------------------------*/
 static gt_indev_drv_st indev_drv_pointer;
-static gt_indev_drv_st indev_drv_button;
+#if _EXAMPLE
+static gt_indev_drv_st indev_drv_keypad;
+#endif
+
 
 /* macros ---------------------------------------------------------------*/
 
@@ -45,11 +48,13 @@ void gt_port_indev_init(void)
 	indev_drv_pointer.type = GT_INDEV_TYPE_POINTER;
 	gt_indev_drv_register(&indev_drv_pointer);
 
-	/* register a button dev */
-    gt_indev_drv_init(&indev_drv_button);
-	indev_drv_button.read_cb = read_cb_btn;
-	indev_drv_button.type = GT_INDEV_TYPE_BUTTON;
-	gt_indev_drv_register(&indev_drv_button);
+#if _EXAMPLE
+	/* register a keypad dev */
+    gt_indev_drv_init(&indev_drv_keypad);
+	indev_drv_keypad.read_cb = read_cb_btn;
+	indev_drv_keypad.type = GT_INDEV_TYPE_KEYPAD;
+	gt_indev_drv_register(&indev_drv_keypad);
+#endif
 }
 
 

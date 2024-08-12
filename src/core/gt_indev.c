@@ -53,7 +53,7 @@
 /* static variables -----------------------------------------------------*/
 
 static gt_indev_param_st _indev_params = {
-    .disabled = 0,
+    .enabled = true,
 };
 
 /* macros ---------------------------------------------------------------*/
@@ -179,7 +179,7 @@ static bool _indev_send_home_gesture_event(gt_indev_st * indev) {
     return true;
 }
 
-static inline bool _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const point_p, gt_size_t * dx, gt_size_t * dy) {
+static inline void _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const point_p, gt_size_t * dx, gt_size_t * dy) {
     uint16_t w_parent = obj_scroll->parent->area.w;
     uint16_t h_parent = obj_scroll->parent->area.h;
     gt_size_t left = 0, right = GT_SCREEN_WIDTH;
@@ -390,7 +390,7 @@ static inline void _scroll_calc_throw_distance(struct _point * point_p) {
 static void _indev_released_handle(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
     if (NULL == point_p->obj_target) {
-        return;
+        goto clr_lb;
     }
 
 #if GT_INDEV_POINT_LOG
@@ -407,6 +407,7 @@ static void _indev_released_handle(gt_indev_st * indev) {
         _indev_scroll_throw_handler_anim_start(indev);
     }
     point_p->obj_target = NULL;
+clr_lb:
     point_p->obj_origin = NULL;
 }
 
@@ -461,6 +462,10 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
 
     if (NULL == point_p->obj_target) {
+        if (point_p->obj_origin) {
+            /** prev screen or the last complete process did not complete */
+            return;
+        }
         indev->timestamp_start = gt_tick_get();
         indev->timestamp_long_press = indev->timestamp_start;
 
@@ -608,8 +613,8 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
     indev->state = data_indev.state;
     indev->data.keypad.obj_target = gt_find_clicked_obj_by_focus(scr);
 
-    if(GT_INDEV_STATE_RELEASED == indev->state){
-        if(indev->data.keypad.count_keydown != 0 && GT_KEY_ENTER == indev->data.keypad.key){
+    if (GT_INDEV_STATE_RELEASED == indev->state) {
+        if (indev->data.keypad.count_keydown != 0 && GT_KEY_ENTER == indev->data.keypad.key) {
             _indev_params.param.keypad_key = GT_KEY_ENTER;
             if (false == gt_obj_is_untouchability(indev->data.keypad.obj_target)) {
                 gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_RELEASED, &_indev_params);
@@ -617,11 +622,10 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
         }
         indev->data.keypad.count_keydown = 0;
         last_key = GT_KEY_NONE;
-        return ;
+        return;
     }
     // 新的按键
-    if(GT_KEY_NONE == last_key || last_key != data_indev.key)
-    {
+    if (GT_KEY_NONE == last_key || last_key != data_indev.key) {
         indev->data.keypad.key = data_indev.key;
         last_key = data_indev.key;
         indev->data.keypad.count_keydown = 0;
@@ -630,22 +634,21 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
             _indev_params.param.keypad_key = GT_KEY_NEXT;
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
-        else if(GT_KEY_PREV == indev->data.keypad.key){
+        else if (GT_KEY_PREV == indev->data.keypad.key) {
             gt_obj_prev_focus_change(indev->data.keypad.obj_target);
             _indev_params.param.keypad_key = GT_KEY_PREV;
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
-        }
-        else{
+        } else {
             _indev_params.param.keypad_key = indev->data.keypad.key;
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
             if (GT_KEY_ENTER == indev->data.keypad.key &&
-                false == gt_obj_is_untouchability(indev->data.keypad.obj_target)){
+                false == gt_obj_is_untouchability(indev->data.keypad.obj_target)) {
                 gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSED, &_indev_params);
             }
         }
 #if GT_INDEV_KEYPAD_LOG
         GT_LOG_A(GT_LOG_TAG_TP, "keypad key: %#X count_keydown: %d obj type: %d",
-                    indev->data.keypad.key, indev->data.keypad.count_keydown, indev->data.keypad.obj_target->class->type);
+                    indev->data.keypad.key, indev->data.keypad.count_keydown, indev->data.keypad.obj_target->classes->type);
 #endif
         return ;
     }
@@ -657,17 +660,16 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
             _indev_params.param.keypad_key = GT_KEY_NEXT;
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
-        else if(GT_KEY_PREV == indev->data.keypad.key){
+        else if (GT_KEY_PREV == indev->data.keypad.key) {
             gt_obj_prev_focus_change(indev->data.keypad.obj_target);
             _indev_params.param.keypad_key = GT_KEY_PREV;
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
-        }
-        else{
+        } else {
             _indev_params.param.keypad_key = indev->data.keypad.key;
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
-            if(0 == indev->data.keypad.count_keydown % (GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS / GT_TASK_PERIOD_TIME_EVENT)){
+            if (0 == indev->data.keypad.count_keydown % (GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS / GT_TASK_PERIOD_TIME_EVENT)) {
                 if (GT_KEY_ENTER == indev->data.keypad.key &&
-                    false == gt_obj_is_untouchability(indev->data.keypad.obj_target)){
+                    false == gt_obj_is_untouchability(indev->data.keypad.obj_target)) {
                     gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_PRESSING, &_indev_params);
                 }
             }
@@ -710,7 +712,7 @@ void gt_indev_handler(struct _gt_timer_s * timer)
     gt_indev_st * indev;
     uint8_t i, cnt_indev;
 
-    if (gt_indev_is_disabled()) {
+    if (false == gt_indev_is_enabled()) {
         return;
     }
 
@@ -733,14 +735,14 @@ void gt_indev_handler(struct _gt_timer_s * timer)
     }
 }
 
-void gt_indev_set_disabled(bool disabled)
+void gt_indev_set_enabled(bool enabled)
 {
-    _indev_params.disabled = disabled;
+    _indev_params.enabled = enabled;
 }
 
-bool gt_indev_is_disabled(void)
+bool gt_indev_is_enabled(void)
 {
-    return _indev_params.disabled;
+    return _indev_params.enabled;
 }
 
 bool _gt_indev_remove_want_delate_target(gt_obj_st * target)
@@ -753,14 +755,11 @@ bool _gt_indev_remove_want_delate_target(gt_obj_st * target)
     for (i = 0; i < cnt_indev; i++) {
         indev = gt_indev_get_dev_by_idx(i);
         point_p = &indev->data.point;
-
         if (target != point_p->obj_target) {
             continue;
         }
-        if (false == target->delate) {
-            continue;
-        }
         point_p->obj_target = NULL;
+        point_p->obj_scroll = NULL;
         ret = true;
     }
     return ret;

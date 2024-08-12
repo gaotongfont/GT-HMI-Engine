@@ -43,7 +43,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_checkbox_class = {
+static const gt_obj_class_st gt_checkbox_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
@@ -58,8 +58,13 @@ const gt_obj_class_st gt_checkbox_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
-    _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
+/**
+ * @brief obj init checkbox widget call back
+ *
+ * @param obj
+ */
+static void _init_cb(gt_obj_st * obj) {
+    _gt_checkbox_st * style = (_gt_checkbox_st * )obj;
     gt_font_st font = {
         .info     = style->font_info,
         .res      = NULL,
@@ -71,27 +76,29 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
 
     // set default size
-    if( checkbox->area.w == 0 || checkbox->area.h == 0){
-        checkbox->area.w = style->font_info.size+4 + strlen(style->text)*11;
-        checkbox->area.h = style->font_info.size+4;
+    if (obj->area.w == 0) {
+        obj->area.w = style->font_info.size+4 + strlen(style->text)*11;
+    }
+    if (obj->area.h < style->font_info.size + 4) {
+        obj->area.h = style->font_info.size + 4;
     }
 
     /* base shape */
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.bg_opa = checkbox->opa;
-    if( gt_obj_get_state(checkbox) == GT_STATE_PRESSED ){
+    rect_attr.bg_opa = obj->opa;
+    if (gt_obj_get_state(obj) == GT_STATE_PRESSED) {
         rect_attr.reg.is_fill = 1;
         rect_attr.border_width = 0;
         rect_attr.bg_color = gt_color_hex(0x409EFF);
         rect_attr.border_color = gt_color_hex(0x409EFF);
-    }else{
+    } else {
         rect_attr.reg.is_fill = 1;
         rect_attr.border_width = 2;
         rect_attr.bg_color = gt_color_white();
         rect_attr.border_color = gt_color_hex(0x409EFF);
     }
-    gt_area_st area = gt_area_reduce(checkbox->area , gt_obj_get_reduce(checkbox));
+    gt_area_st area = gt_area_reduce(obj->area , gt_obj_get_reduce(obj));
 
     gt_area_st area_box = area;
     area_box.w = style->font_info.size+4;
@@ -100,7 +107,7 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     area_box.x = area.x;
 
    /* base shape */
-    draw_bg(checkbox->draw_ctx, &rect_attr, &area_box);
+    draw_bg(obj->draw_ctx, &rect_attr, &area_box);
 
     /* font */
     gt_attr_font_st font_dsc = {
@@ -109,7 +116,7 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
         .space_y        = style->space_y,
         .font_color     = style->font_color,
         .align          = GT_ALIGN_NONE,
-        .opa            = checkbox->opa,
+        .opa            = obj->opa,
     };
     area.x += (area_box.w + 2) + style->font_point_offset.x;
     if(area.x < area_box.x) {
@@ -122,27 +129,15 @@ static inline void _gt_checkbox_init_widget(gt_obj_st * checkbox) {
     area.w = area.w > area_box.w ? (area.w - area_box.w) : 0;
 
     area.h = style->font_info.size;
-    if(area.y + area.h > checkbox->area.y + checkbox->area.h){
-        area.h = checkbox->area.y + checkbox->area.h - area.y;
+    if(area.y + area.h > obj->area.y + obj->area.h){
+        area.h = obj->area.y + obj->area.h - area.y;
     }
 
     font_dsc.logical_area = area;
-    draw_text(checkbox->draw_ctx, &font_dsc, &area);
+    draw_text(obj->draw_ctx, &font_dsc, &area);
 
      // focus
-    draw_focus(checkbox , 0);
-
-}
-
-/**
- * @brief obj init checkbox widget call back
- *
- * @param obj
- */
-static void _init_cb(gt_obj_st * obj) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-
-    _gt_checkbox_init_widget(obj);
+    draw_focus(obj , 0);
 }
 
 /**
@@ -170,40 +165,17 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param e event
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
-    switch(code) {
+    gt_event_type_et code_val = gt_event_get_code(e);
+    switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-
-            break;
-
-        case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
-            break;
-
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
-            if( gt_obj_get_state(obj) != GT_STATE_NONE ){
+            if (gt_obj_get_state(obj) != GT_STATE_NONE) {
                 gt_obj_set_state(obj, GT_STATE_NONE);
-            }else{
+            } else {
                 gt_obj_set_state(obj, GT_STATE_PRESSED);
             }
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -230,9 +202,11 @@ gt_obj_st * gt_checkbox_create(gt_obj_st * parent)
         return obj;
     }
     _gt_checkbox_st * style = (_gt_checkbox_st * )obj;
+    uint16_t size_byte = sizeof("checkbox");
 
-    style->text = gt_mem_malloc(sizeof("checkbox"));
-    gt_memcpy(style->text, "checkbox", sizeof("checkbox"));
+    style->text = gt_mem_malloc(size_byte);
+    GT_CHECK_BACK_VAL(style->text, obj);
+    gt_memcpy(style->text, "checkbox", size_byte);
 
     gt_font_info_init(&style->font_info);
     style->font_color           = gt_color_black();
@@ -270,6 +244,7 @@ void gt_checkbox_set_text(gt_obj_st * checkbox, const char * fmt, ...)
     if (NULL == style->text) {
         goto free_lb;
     }
+    gt_memset(style->text, 0, size);
 
     va_start(args2, fmt);
     vsnprintf(style->text, size, fmt, args2);
@@ -290,7 +265,7 @@ char * gt_checkbox_get_text(gt_obj_st * checkbox)
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
     return style->text;
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_checkbox_set_font_family_cn(gt_obj_st * checkbox, gt_family_t family)
 {
     if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
@@ -326,7 +301,24 @@ void gt_checkbox_set_font_family_numb(gt_obj_st * checkbox, gt_family_t family)
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
     style->font_info.style_numb = family;
 }
-
+#else
+void gt_checkbox_set_font_family(gt_obj_st * checkbox, gt_family_t family)
+{
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
+        return;
+    }
+    _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
+    gt_font_set_family(&style->font_info, family);
+}
+void gt_checkbox_set_font_cjk(gt_obj_st* checkbox, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
+        return;
+    }
+    _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
+    style->font_info.cjk = cjk;
+}
+#endif
 void gt_checkbox_set_font_size(gt_obj_st * checkbox, uint8_t size)
 {
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;

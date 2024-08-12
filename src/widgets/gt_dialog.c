@@ -61,12 +61,11 @@ typedef struct _gt_dialog_s {
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_dialog_class = {
+static const gt_obj_class_st gt_dialog_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
+    ._deinit_cb    = NULL,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_dialog_st)
@@ -103,10 +102,6 @@ static void _init_cb(gt_obj_st * obj) {
 
     // 1:base shape
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
-}
-
-static void _deinit_cb(gt_obj_st * obj) {
-
 }
 
 static void _dialog_anim_exec_cb(void * obj, int32_t val) {
@@ -323,7 +318,6 @@ static gt_obj_st * _create_confirm_btn(gt_obj_st * dialog, gt_event_cb_t confirm
     gt_obj_add_event_cb(confirm_btn, _close_release_cb, GT_EVENT_TYPE_INPUT_RELEASED, dialog);
 
     return confirm_btn;
-
 }
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
@@ -367,7 +361,7 @@ static gt_obj_st * _find_showing_recursive_by_type(gt_obj_st * obj, gt_obj_type_
     }
 
     gt_obj_st * ret = NULL;
-    for (gt_size_t i = 0, cnt = obj->cnt_child; i < cnt; ++i) {
+    for (gt_size_t i = obj->cnt_child - 1; i >= 0; i--) {
         ret = _find_showing_recursive_by_type(obj->child[i], type);
         if (ret) {
             return ret;
@@ -443,14 +437,28 @@ void gt_dialog_show(gt_obj_st * obj)
     _create_anim_handler(obj, true, GT_OPA_0, GT_OPA_100);
 }
 
-bool gt_dialog_has_showing(void)
+void gt_dialog_close(gt_obj_st * obj)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+
+    /** Better than: _create_anim_handler(obj, false, GT_OPA_100, GT_OPA_0); */
+    gt_event_send(obj, GT_EVENT_TYPE_NOTIFY_CLOSE, NULL);
+}
+
+gt_obj_st * gt_dialog_get_active_obj(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
     if (NULL == disp || NULL == disp->layer_top) {
         return false;
     }
-    gt_obj_st * obj = _find_showing_recursive_by_type(disp->layer_top, OBJ_TYPE);
-    return obj ? true : false;
+    return _find_showing_recursive_by_type(disp->layer_top, OBJ_TYPE);
+}
+
+bool gt_dialog_has_showing(void)
+{
+    return gt_dialog_get_active_obj() ? true : false;
 }
 
 void gt_dialog_set_border_color(gt_obj_st * dialog, gt_color_t color)
@@ -544,6 +552,7 @@ void gt_dialog_set_title_font_align(gt_obj_st * dialog, gt_align_et align)
     gt_label_set_font_align(style->title, align);
 }
 
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_dialog_set_title_font_family_cn(gt_obj_st * dialog, gt_family_t family)
 {
     if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
@@ -579,7 +588,32 @@ void gt_dialog_set_title_font_family_fl(gt_obj_st * dialog, gt_family_t family)
     }
     gt_label_set_font_family_fl(style->title, family);
 }
+#else
+void gt_dialog_set_title_font_family(gt_obj_st * dialog, gt_family_t family)
+{
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_family(style->title, family);
+}
 
+void gt_dialog_set_title_font_cjk(gt_obj_st * dialog, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_cjk(style->title, cjk);
+}
+
+#endif
 void gt_dialog_set_title_font_thick_en(gt_obj_st * dialog, uint8_t thick)
 {
     if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
@@ -639,7 +673,7 @@ void gt_dialog_set_content_font_align(gt_obj_st * dialog, gt_align_et align)
     }
     gt_label_set_font_align(style->content, align);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_dialog_set_content_font_family_cn(gt_obj_st * dialog, gt_family_t family)
 {
     if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
@@ -675,6 +709,31 @@ void gt_dialog_set_content_font_family_fl(gt_obj_st * dialog, gt_family_t family
     }
     gt_label_set_font_family_fl(style->content, family);
 }
+#else
+void gt_dialog_set_content_font_family(gt_obj_st * dialog, gt_family_t family)
+{
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_family(style->title, family);
+}
+
+void gt_dialog_set_content_font_cjk(gt_obj_st * dialog, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_cjk(style->title, cjk);
+}
+#endif
 
 void gt_dialog_set_content_font_thick_en(gt_obj_st * dialog, uint8_t thick)
 {

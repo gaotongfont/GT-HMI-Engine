@@ -8,7 +8,7 @@
  */
 
  /* include --------------------------------------------------------------*/
- #include "./gt_handler.h"
+#include "./gt_handler.h"
 #include "stdbool.h"
 #include "../gt_conf.h"
 #include "./gt_mem.h"
@@ -17,6 +17,7 @@
 #include "../../driver/gt_port_indev.h"
 #include "../../driver/gt_port_vf.h"
 #include "../../driver/gt_port_src.h"
+#include "../../driver/gt_font_config.h"
 #include "../others/gt_anim.h"
 #include "../others/gt_log.h"
 #include "../others/gt_gc.h"
@@ -77,6 +78,7 @@ static void gt_print_info_start(void) {
 
 static void gt_print_info_end(void) {
     GT_LOG_A(GT_LOG_TAG_FS, "Using file header: [%s]", GT_USE_FILE_HEADER ? "Yes" : "No");
+    GT_LOG_A(GT_LOG_TAG_FS, "Using direct addr: [%s]", GT_USE_DIRECT_ADDR ? "Yes" : "No");
 
 #if GT_USE_FILE_HEADER
     _gt_file_header_ctl_st * fh_ctl = &_GT_GC_GET_ROOT(file_header_ctl);
@@ -109,6 +111,7 @@ static void _gt_port_init(void) {
 #endif
     gt_port_vf_init();
     gt_port_src_init();
+    gt_font_config_init();
 }
 
 /* global functions / API interface -------------------------------------*/

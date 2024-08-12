@@ -108,7 +108,7 @@ static inline int32_t _gt_anim_calc_path_by_bezier(const struct gt_anim_s * anim
         .t = gt_map(anim->time_act, 0, anim->time, 0, _GT_ANIM_PATH_RESOLUTION),
         .p0 = p0, .p1 = p1, .p2 = p2, .p3 = p3
     };
-    int32_t step = gt_bezier3(&bezier);
+    int32_t step = gt_math_calc_bezier(&bezier);
 
     int32_t value = (anim->value_end - anim->value_start) * step;
     value >>= GT_MATH_BEZIER_VAL_SHIFT;
@@ -175,7 +175,7 @@ static int32_t _gt_anim_path_bounce(const struct gt_anim_s * anim) {
         .p2 = 500,
         .p3 = 0
     };
-    int32_t step = gt_bezier3(&bezier);
+    int32_t step = gt_math_calc_bezier(&bezier);
 
     int32_t value = step * diff;
     value >>= GT_MATH_BEZIER_VAL_SHIFT;
@@ -340,12 +340,11 @@ void gt_anim_pos_move(gt_obj_st * obj, gt_anim_param_st * param)
 
     gt_anim_set_exec_cb(&anim, _default_exec_cb);
 
-    gt_point_st * point = gt_mem_malloc(sizeof(gt_point_st) << 1);
-    point[0].x = obj->area.x;
-    point[0].y = obj->area.y;
-    point[1].x = param->dst.x;
-    point[1].y = param->dst.y;
-    gt_anim_set_data(&anim, (void * )point, sizeof(gt_point_st) << 1);
+    gt_point_st point[2] = {
+        { .x = obj->area.x, .y = obj->area.y },
+        { .x = param->dst.x, .y = param->dst.y }
+    };
+    gt_anim_set_data(&anim, (void * )&point, sizeof(gt_point_st) << 1);
     gt_anim_start(&anim);
 }
 

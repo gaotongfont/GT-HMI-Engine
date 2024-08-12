@@ -180,6 +180,9 @@ static void _gt_src_drv_register(gt_fs_drv_st * drv)
 #if GT_USE_FILE_HEADER
     drv->fh_open_cb   = NULL;
 #endif
+#if GT_USE_DIRECT_ADDR
+    drv ->direct_addr_open_cb = NULL;
+#endif
     drv->open_cb      = _open_cb;
     drv->close_cb     = _close_cb;
     drv->read_cb      = _read_cb;
@@ -214,6 +217,7 @@ void gt_src_init(const gt_src_st * const src_sys, uint32_t sys_count)
 
     if (!_self) {
         _self = (_gt_src_dev_st * )gt_mem_malloc(sizeof(_gt_src_dev_st));
+        GT_CHECK_BACK(_self);
         gt_memset_0(_self, sizeof(_gt_src_dev_st));
     }
 

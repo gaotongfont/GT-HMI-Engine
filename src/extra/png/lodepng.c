@@ -391,6 +391,15 @@ static long lodepng_filesize_fh(gt_file_header_param_st const * const param) {
 }
 #endif
 
+#if GT_USE_DIRECT_ADDR
+static long lodepng_filesize_direct_addr(gt_addr_t addr) {
+  gt_fs_fp_st * fp = gt_fs_direct_addr_open(addr, GT_FS_MODE_RD);
+  if (!fp) { return -1; }
+
+  return lodepng_common_filesize(fp);
+}
+#endif
+
 /* load file into buffer that already has the correct allocated size. Returns error code.*/
 static unsigned lodepng_common_buffer_file(unsigned char* out, size_t size, gt_fs_fp_st * fp) {
   long read_size = -1;
@@ -436,6 +445,25 @@ unsigned lodepng_load_file_fh(unsigned char** out, size_t* outsize, gt_file_head
   *out = (unsigned char*)lodepng_malloc((size_t)size);
   if(!(*out) && size > 0) return 83; /*the above malloc failed*/
   return lodepng_buffer_file_fh(*out, (size_t)size, param);
+}
+#endif
+
+#if GT_USE_DIRECT_ADDR
+static unsigned lodepng_buffer_file_direct_addr(unsigned char* out, size_t size, gt_addr_t addr) {
+  gt_fs_fp_st * fp = gt_fs_direct_addr_open(addr, GT_FS_MODE_RD);
+  if (!fp) { return 78; }
+
+  return lodepng_common_buffer_file(out, size, fp);
+}
+
+unsigned lodepng_load_file_direct_addr(unsigned char** out, size_t* outsize, gt_addr_t addr) {
+  long size = lodepng_filesize_direct_addr(addr);
+  if(size < 0) return 78;
+  *outsize = (size_t)size;
+
+  *out = (unsigned char*)lodepng_malloc((size_t)size);
+  if(!(*out) && size > 0) return 83; /*the above malloc failed*/
+  return lodepng_buffer_file_direct_addr(*out, (size_t)size, addr);
 }
 #endif
 

@@ -51,12 +51,16 @@ extern "C" {
     #endif
 #endif
 
+typedef uint32_t gt_addr_t;
+
 /**
  * @brief screen id
  */
 typedef int16_t gt_scr_id_t;
 
 typedef int16_t gt_size_t;
+
+typedef float gt_float_t;
 
 /**
  * @brief Font family type
@@ -89,6 +93,16 @@ typedef int16_t gt_file_header_idx_t;
 typedef uint16_t gt_radius_t;
 
 /**
+ * @brief layout property value
+ */
+typedef uint16_t gt_layout_prop_t;
+
+/**
+ * @brief The gap size value
+ */
+typedef uint8_t gt_gap_t;
+
+/**
  * @brief The screen turn next screen animation type
  */
 typedef enum gt_scr_anim_type_e {
@@ -109,7 +123,7 @@ typedef enum gt_scr_anim_type_e {
 /**
  * @brief widget type enum definition
  */
-typedef enum type_widget_e {
+typedef enum gt_obj_type_e {
     GT_TYPE_UNKNOWN     = -3,       ///< unknown type
     GT_TYPE_LAYER_TOP   = -2,       ///< [CORE USED] layer top, used to display floating widgets
     GT_TYPE_SCREEN      = -1,       ///< screen type
@@ -146,9 +160,92 @@ typedef enum type_widget_e {
     GT_TYPE_DIALOG      = 30,       ///< dialog, floating widget
     GT_TYPE_CHAT        = 31,       ///< chat
     GT_TYPE_STATUS_BAR  = 32,       ///< status bar, floating widget
+    GT_TYPE_GRAPH       = 33,       ///< graph
 
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;
+
+/**
+ * @brief graphs type enum definition
+ */
+typedef enum gt_graphs_type_e {
+    GT_GRAPHS_TYPE_POINT = 0,
+    GT_GRAPHS_TYPE_LINE,
+    GT_GRAPHS_TYPE_CURVE,
+    GT_GRAPHS_TYPE_BAR,
+}gt_graphs_type_et;
+
+typedef enum gt_brush_type_e {
+    GT_BRUSH_TYPE_ROUND = 0,
+    GT_BRUSH_TYPE_RECT,
+}gt_brush_type_et;
+
+enum gt_layout_type_e {
+    GT_LAYOUT_TYPE_FIXED = 0,
+    GT_LAYOUT_TYPE_FLEX,
+
+    _GT_LAYOUT_TYPE_TOTAL,
+};
+
+typedef gt_layout_prop_t gt_layout_type_t;
+
+enum gt_layout_flex_direction_e {
+    GT_LAYOUT_FLEX_DIR_ROW = 0,
+    GT_LAYOUT_FLEX_DIR_ROW_REVERSE,
+    GT_LAYOUT_FLEX_DIR_COLUMN,
+    GT_LAYOUT_FLEX_DIR_COLUMN_REVERSE,
+
+    _GT_LAYOUT_FLEX_DIR_TOTAL,
+};
+
+typedef gt_layout_prop_t gt_layout_flex_direction_t;
+
+enum gt_layout_justify_content_e {
+    GT_LAYOUT_JUSTIFY_CONTENT_START = 0,        /** left to right, or top to bottom */
+    GT_LAYOUT_JUSTIFY_CONTENT_END,              /** right to left, or bottom to top */
+    GT_LAYOUT_JUSTIFY_CONTENT_CENTER,           /** the center expend to both sides */
+    GT_LAYOUT_JUSTIFY_CONTENT_SPACE_BETWEEN,    /** space between, Gap = item_count - 1 */
+    GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND,     /** space around, Gap = item_count */
+    GT_LAYOUT_JUSTIFY_CONTENT_SPACE_EVENLY,     /** space evenly, Gap = item_count + 1 */
+
+    _GT_LAYOUT_JUSTIFY_CONTENT_TOTAL,
+};
+
+typedef gt_layout_prop_t gt_layout_justify_content_t;
+
+enum gt_layout_align_items_e {
+    GT_LAYOUT_ALIGN_ITEMS_START = 0,    /** top or left border align */
+    GT_LAYOUT_ALIGN_ITEMS_END,          /** bottom or right border align */
+    GT_LAYOUT_ALIGN_ITEMS_CENTER,       /** center align */
+
+    _GT_LAYOUT_ALIGN_ITEMS_TOTAL,
+};
+
+typedef gt_layout_prop_t gt_layout_align_items_t;
+
+enum gt_layout_shrink_e {
+    GT_LAYOUT_SHRINK_DISABLE = 0,   /** All items will be display full size */
+    GT_LAYOUT_SHRINK_ENABLE,        /** All items display area limited by parent area */
+};
+
+typedef gt_layout_prop_t gt_layout_shrink_t;
+
+typedef struct gt_point_s {
+    gt_size_t x;
+    gt_size_t y;
+}gt_point_st;
+
+typedef struct gt_point_f_s {
+    gt_float_t x;
+    gt_float_t y;
+}gt_point_f_st;
+
+typedef struct gt_padding_s {
+    gt_size_t left;
+    gt_size_t right;
+    gt_size_t top;
+    gt_size_t bottom;
+}gt_padding_st;
 
 /**
  * @brief return status
@@ -162,14 +259,19 @@ typedef enum {
 /**
  * @brief area information
  */
-typedef struct _gt_area_s {
+typedef struct gt_area_s {
     gt_size_t x;    ///< x position
     gt_size_t y;    ///< y position
     uint16_t w;     ///< The width of area
     uint16_t h;     ///< The height of area
 }gt_area_st;
 
-typedef struct _gt_area_abs_s {
+typedef struct gt_range_s {
+    gt_float_t start;
+    gt_float_t end;
+}gt_range_st;
+
+typedef struct gt_area_abs_s {
     gt_size_t left;
     gt_size_t right;
     gt_size_t top;

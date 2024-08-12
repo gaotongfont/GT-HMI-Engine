@@ -67,12 +67,11 @@ typedef struct _gt_roller_s {
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_roller_class = {
+static const gt_obj_class_st gt_roller_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
+    ._deinit_cb    = NULL,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_roller_st)
@@ -115,10 +114,6 @@ static void _init_cb(gt_obj_st * obj) {
     draw_bg(obj->draw_ctx, &rect_attr, &selected);
 
     draw_focus(obj, 0);
-}
-
-static void _deinit_cb(gt_obj_st * obj) {
-
 }
 
 /**
@@ -330,18 +325,18 @@ static void _ready_scroll_snap_anim(struct gt_obj_s * obj) {
 }
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    if (GT_EVENT_TYPE_INPUT_SCROLL == code) {
+    if (GT_EVENT_TYPE_INPUT_SCROLL == code_val) {
         _scroll_text_handler(obj);
     }
-    else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code) {
+    else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code_val) {
         _ready_scroll_snap_anim(obj);
     }
-    else if (GT_EVENT_TYPE_INPUT_SCROLL_UP == code || GT_EVENT_TYPE_INPUT_SCROLL_LEFT == code) {
+    else if (GT_EVENT_TYPE_INPUT_SCROLL_UP == code_val || GT_EVENT_TYPE_INPUT_SCROLL_LEFT == code_val) {
         gt_roller_go_prev(obj);
     }
-    else if (GT_EVENT_TYPE_INPUT_SCROLL_DOWN == code || GT_EVENT_TYPE_INPUT_SCROLL_RIGHT == code) {
+    else if (GT_EVENT_TYPE_INPUT_SCROLL_DOWN == code_val || GT_EVENT_TYPE_INPUT_SCROLL_RIGHT == code_val) {
         gt_roller_go_next(obj);
     }
 }
@@ -696,7 +691,7 @@ void gt_roller_set_font_align(gt_obj_st * obj, gt_align_et align)
     _create_text(obj);
     gt_label_set_font_align(style->text, align);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_roller_set_font_family_cn(gt_obj_st * obj, gt_family_t family)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
@@ -740,7 +735,28 @@ void gt_roller_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
     gt_label_set_font_family_numb(style->text, family);
     _resize_display_width(obj);
 }
-
+#else
+void gt_roller_set_font_family(gt_obj_st * obj, gt_family_t family)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
+    _create_text(obj);
+    gt_label_set_font_family(style->text, family);
+    _resize_display_width(obj);
+}
+void gt_roller_set_font_cjk(gt_obj_st* obj, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
+    _create_text(obj);
+    gt_label_set_font_cjk(style->text, cjk);
+    _resize_display_width(obj);
+}
+#endif
 void gt_roller_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {

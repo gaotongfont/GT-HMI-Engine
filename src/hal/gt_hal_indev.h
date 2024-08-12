@@ -39,7 +39,7 @@ extern "C" {
 
 /** home gesture default time and pix */
 #define GT_CFG_DEFAULT_POINT_HOME_GESTURE_TIME              (500)   //ms
-#define GT_CFG_DEFAULT_POINT_HOME_GESTURE_PIXEL             (10)    //px
+#define GT_CFG_DEFAULT_POINT_HOME_GESTURE_PIXEL             (20)    //px
 #define GT_CFG_DEFAULT_AREA_HOME_GESTURE_TOP                (GT_CFG_DEFAULT_POINT_HOME_GESTURE_PIXEL)    //@ref GT_EVENT_TYPE_INPUT_HOME_GESTURE_TOP
 #define GT_CFG_DEFAULT_AREA_HOME_GESTURE_BOTTOM             (GT_CFG_DEFAULT_POINT_HOME_GESTURE_PIXEL)    //@ref GT_EVENT_TYPE_INPUT_HOME_GESTURE_BOTTOM
 #define GT_CFG_DEFAULT_AREA_HOME_GESTURE_LEFT               (GT_CFG_DEFAULT_POINT_HOME_GESTURE_PIXEL)    //@ref GT_EVENT_TYPE_INPUT_HOME_GESTURE_LEFT
@@ -53,7 +53,7 @@ extern "C" {
 typedef enum _gt_indev_type_e {
     GT_INDEV_TYPE_NONE,        ///< nothing input dev
     GT_INDEV_TYPE_POINTER,     ///< touch-pad, mouse
-    GT_INDEV_TYPE_KEYPAD,      ///< keypad
+    GT_INDEV_TYPE_KEYPAD,      ///< keypad @ref gt_key_et binding
     GT_INDEV_TYPE_BUTTON,      ///< button
 }gt_indev_type_et;
 
@@ -80,6 +80,10 @@ typedef enum{
 }gt_dir_et;
 
 typedef enum {
+    GT_KEY_NEXT      = 9,   /*0x09, '\t'*/  // focus next
+    GT_KEY_ENTER     = 10,  /*0x0A, '\n'*/
+    GT_KEY_PREV      = 11,  /*0x0B, '*/     // focus previous
+
     GT_KEY_UP        = 17,  /*0x11*/
     GT_KEY_DOWN      = 18,  /*0x12*/
     GT_KEY_RIGHT     = 19,  /*0x13*/
@@ -87,9 +91,6 @@ typedef enum {
     GT_KEY_ESC       = 27,  /*0x1B*/
     GT_KEY_DEL       = 127, /*0x7F*/
     GT_KEY_BACKSPACE = 8,   /*0x08*/
-    GT_KEY_ENTER     = 10,  /*0x0A, '\n'*/
-    GT_KEY_NEXT      = 9,   /*0x09, '\t'*/
-    GT_KEY_PREV      = 11,  /*0x0B, '*/
     GT_KEY_HOME      = 2,   /*0x02, STX*/
     GT_KEY_END       = 3,   /*0x03, ETX*/
 
@@ -101,13 +102,13 @@ typedef enum {
  */
 typedef struct {
     gt_point_st point; ///< For GT_INDEV_TYPE_POINTER the currently pressed point
-    uint32_t key;     ///< For GT_INDEV_TYPE_KEYPAD the currently pressed key
-    uint32_t btn_id;  ///< For GT_INDEV_TYPE_BUTTON the currently pressed button
-    int16_t enc_diff; ///< For GT_INDEV_TYPE_ENCODER number of steps since the previous read
+    uint32_t key;      ///< For GT_INDEV_TYPE_KEYPAD the currently pressed key, @ref gt_key_et
+    uint32_t btn_id;   ///< For GT_INDEV_TYPE_BUTTON the currently pressed button
+    int16_t enc_diff;  ///< For GT_INDEV_TYPE_ENCODER number of steps since the previous read
 
-    gt_indev_state_et state; ///< GT_INDEV_STATE_REL or GT_INDEV_STATE_PR
-	uint8_t continue_reading:1;  ///< If set to true, the read callback is invoked again
-    uint8_t reserved:7;          ///< Reserved for future use
+    gt_indev_state_et state;        ///< GT_INDEV_STATE_REL or GT_INDEV_STATE_PR
+    uint8_t continue_reading : 1;   ///< If set to true, the read callback is invoked again
+    uint8_t reserved:7;             ///< Reserved for future use
 } gt_indev_data_st;
 
 /**
@@ -118,11 +119,11 @@ typedef struct _gt_indev_drv_s
     gt_indev_type_et type;
     void (*read_cb)(struct _gt_indev_drv_s * indev_drv, gt_indev_data_st * data);
 
-    gt_size_t limit_timers_long_press;          ///< long press timers
-    gt_size_t limit_pixel_gesture_ver;          ///< move pixel trigger once event
-    gt_size_t limit_pixel_gesture_hor;          ///< move pixel trigger once event
-    uint8_t limit_pixel_scroll;               ///< scroll pixel trigger scroll event
-    uint8_t limit_scroll_throw;               ///< [%]
+    gt_size_t limit_timers_long_press;      ///< long press timers
+    gt_size_t limit_pixel_gesture_ver;      ///< move pixel trigger once event
+    gt_size_t limit_pixel_gesture_hor;      ///< move pixel trigger once event
+    uint8_t limit_pixel_scroll;             ///< scroll pixel trigger scroll event
+    uint8_t limit_scroll_throw;             ///< [%]
 
 }gt_indev_drv_st;
 
@@ -153,9 +154,8 @@ typedef struct _gt_indev_s {
             struct gt_obj_s * obj_origin;    //< The object of first touch
             struct gt_obj_s * obj_scroll;    ///< The object of gesture
 
-            uint16_t gesture : 3;          ///< @ref gt_dir_et gesture of touch input device point
-            uint16_t count_point : 3;
-            uint16_t reserved : 10;
+            uint16_t gesture : 3;           ///< @ref gt_dir_et gesture of touch input device point
+            uint16_t reserved : 13;
         }point;
 
         struct _button
@@ -183,7 +183,7 @@ typedef struct gt_indev_param_st {
         uint32_t keypad_key;
     }param;
 
-    uint8_t disabled : 1;   /** When screen anim used, 0: default set, normal; 1: temporary disability */
+    uint8_t enabled : 1;   /** When screen anim used, 1: default set, normal; 0: temporary disability */
     uint8_t reserved : 7;
 }gt_indev_param_st;
 

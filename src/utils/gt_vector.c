@@ -44,7 +44,45 @@
  * @return false not find it out
  */
 static bool _default_equal_cb(void * item, void * target) {
-    return strcmp(item, target) ? false : true;
+    return target == item ? true : false;
+}
+
+static inline void _free_item_obj(_gt_vector_st * vector, _gt_vector_item_st * item_p) {
+    void * val = item_p->val;
+
+    _gt_list_del(&item_p->node);
+    /** free vector list item */
+    gt_mem_free(item_p);
+
+    if (NULL == vector->free_item_cb) {
+        return;
+    }
+    vector->free_item_cb(val);
+}
+
+static bool _gt_vector_iterator_has_next(_iter_dsc_st * vct_dsc) {
+    GT_CHECK_BACK_VAL(vct_dsc, false);
+    GT_CHECK_BACK_VAL(vct_dsc->iter_ctl, false);
+    return vct_dsc->iter_ctl->idx < vct_dsc->count ? true : false;
+}
+
+static void * _gt_vector_iterator_next(_iter_dsc_st * vct_dsc) {
+    GT_CHECK_BACK_VAL(vct_dsc, false);
+    GT_CHECK_BACK_VAL(vct_dsc->iter_ctl, false);
+
+    if (vct_dsc->iter_ctl->item_p) {
+        vct_dsc->iter_ctl->item_p = (_gt_vector_item_st * )_gt_list_next_entry(vct_dsc->iter_ctl->item_p, _gt_vector_item_st, node);
+    } else {
+        vct_dsc->iter_ctl->item_p = (_gt_vector_item_st * )_gt_list_first_entry(&vct_dsc->list_head, _gt_vector_item_st, node);
+    }
+    ++vct_dsc->iter_ctl->idx;
+    return vct_dsc->iter_ctl->item_p->val;
+}
+
+static gt_size_t _gt_vector_iterator_index(_iter_dsc_st * vct_dsc) {
+    GT_CHECK_BACK_VAL(vct_dsc, -1);
+    GT_CHECK_BACK_VAL(vct_dsc->iter_ctl, -1);
+    return vct_dsc->iter_ctl->idx;
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -52,10 +90,10 @@ static bool _default_equal_cb(void * item, void * target) {
 _gt_vector_st * _gt_vector_create(_gt_vector_free_item_cb_t free_cb, _gt_vector_equal_item_cb_t equal_item_cb)
 {
     _gt_vector_st * vector = (_gt_vector_st * )gt_mem_malloc(sizeof(_gt_vector_st));
-    if (NULL == vector) {
-        return NULL;
-    }
+    GT_CHECK_BACK_VAL(vector, NULL);
+
     gt_memset(vector, 0, sizeof(_gt_vector_st));
+    _GT_INIT_LIST_HEAD(&vector->list_head);
     _gt_vector_add_free_item_cb(vector, free_cb);
     _gt_vector_add_equal_item_cb(vector, equal_item_cb ? equal_item_cb : _default_equal_cb);
     return vector;
@@ -63,12 +101,8 @@ _gt_vector_st * _gt_vector_create(_gt_vector_free_item_cb_t free_cb, _gt_vector_
 
 bool _gt_vector_add_free_item_cb(_gt_vector_st * vector_p, _gt_vector_free_item_cb_t free_item_cb)
 {
-    if (NULL == vector_p) {
-        return false;
-    }
-    if (NULL == free_item_cb) {
-        return false;
-    }
+    GT_CHECK_BACK_VAL(vector_p, false);
+    GT_CHECK_BACK_VAL(free_item_cb, false);
 
     vector_p->free_item_cb = free_item_cb;
     return true;
@@ -76,199 +110,215 @@ bool _gt_vector_add_free_item_cb(_gt_vector_st * vector_p, _gt_vector_free_item_
 
 bool _gt_vector_add_equal_item_cb(_gt_vector_st * vector_p, _gt_vector_equal_item_cb_t equal_item_cb)
 {
-    if (NULL == vector_p) {
-        return false;
-    }
-    if (NULL == equal_item_cb) {
-        return false;
-    }
+    GT_CHECK_BACK_VAL(vector_p, false);
+    GT_CHECK_BACK_VAL(equal_item_cb, false);
 
     vector_p->equal_item_cb = equal_item_cb;
     return true;
 }
 
-bool _gt_vector_add_item(_gt_vector_st * vector_p, void * item, uint16_t size)
+bool _gt_vector_add_item(_gt_vector_st * vector_p, void * item)
 {
-    if (NULL == vector_p) {
+    GT_CHECK_BACK_VAL(vector_p, false);
+    GT_CHECK_BACK_VAL(item, false);
+    _gt_vector_item_st * new_item = (_gt_vector_item_st * )gt_mem_malloc(sizeof(_gt_vector_item_st));
+    if (NULL == new_item) {
+        GT_CHECK_PRINT(new_item);
         return false;
     }
-    if (NULL == item) {
-        return false;
-    }
-    if (NULL == vector_p->list) {
-        vector_p->index = 0;
-        vector_p->count = 0;
-        vector_p->list = (void ** )gt_mem_malloc(sizeof(void *));
-        if (NULL == vector_p->list) {
-            return false;
-        }
-    } else {
-        void ** ptr = (void ** )gt_mem_realloc(vector_p->list, sizeof(void * ) * (vector_p->count + 1));
-        if (NULL == ptr) {
-            goto list_lb;
-        }
-        vector_p->list = ptr;
-    }
-    vector_p->list[vector_p->count] = gt_mem_malloc(size);
-    if (NULL == vector_p->list[vector_p->count]) {
-        goto list_lb;
-    }
-    gt_memcpy(vector_p->list[vector_p->count++], item, size);
-    // GT_LOG_A("+", "add %p, idx: %d/%d", vector_p->list[vector_p->count - 1], vector_p->count - 1, vector_p->count);
+    _GT_INIT_LIST_HEAD(&new_item->node);
+    new_item->val = item;
+    _gt_list_add_tail(&new_item->node, &vector_p->list_head);
+    ++vector_p->count;
     return true;
-
-list_lb:
-    vector_p->list = (void ** )gt_mem_realloc(vector_p->list, sizeof(void * ) * vector_p->count);
-    return false;
 }
 
-bool _gt_vector_replace_item(_gt_vector_st * vector_p, uint16_t index, void * item, uint16_t size)
+bool _gt_vector_replace_item(_gt_vector_st * vector_p, uint16_t index, void * item)
 {
-    if (NULL == item) {
-        return false;
-    }
-    if (NULL == vector_p) {
-        return false;
-    }
-    if (NULL == vector_p->list) {
-        return _gt_vector_add_item(vector_p, item, size);
-    }
+    GT_CHECK_BACK_VAL(vector_p, false);
+    GT_CHECK_BACK_VAL(item, false);
     if (index >= vector_p->count) {
         return false;
     }
-    if (vector_p->free_item_cb) {
-        vector_p->free_item_cb(vector_p->list[index]);
+    _gt_vector_item_st * item_p = NULL;
+    _gt_list_for_each_entry(item_p, &vector_p->list_head, _gt_vector_item_st, node) {
+        if (index-- == 0) {
+            if (vector_p->free_item_cb) {
+                vector_p->free_item_cb(item_p->val);
+            }
+            item_p->val = item;
+            return true;
+        }
     }
-    gt_memcpy(vector_p->list[index], item, size);
-    return true;
+    return false;
 }
 
 bool _gt_vector_remove_item(_gt_vector_st * vector_p, void * target)
 {
     uint16_t i = 0, count = vector_p->count;
     uint8_t is_find = false;
-    if (NULL == vector_p || NULL == target) {
-        return false;
-    }
-    if (0 == count) {
-        return false;
-    }
-    if (NULL == vector_p->equal_item_cb) {
-        return false;
-    }
-    for (i = 0; i < count; i++) {
-        if (true == vector_p->equal_item_cb(vector_p->list[i], target)) {
-            is_find = true;
-            break;
+    GT_CHECK_BACK_VAL(vector_p, false);
+    GT_CHECK_BACK_VAL(target, false);
+    GT_CHECK_BACK_VAL(count, false);
+    GT_CHECK_BACK_VAL(vector_p->equal_item_cb, false);
+
+    _gt_vector_item_st * item_p = NULL;
+    _gt_vector_item_st * backup_p = NULL;
+    _gt_list_for_each_entry_safe(item_p, backup_p, &vector_p->list_head, _gt_vector_item_st, node) {
+        if (false == vector_p->equal_item_cb(item_p->val, target)) {
+            continue;
         }
+        _free_item_obj(vector_p, item_p);
+        --vector_p->count;
+        is_find = true;
     }
-    if (false == is_find) {
-        return false;
-    }
-    if (vector_p->free_item_cb) {
-        if (!vector_p->free_item_cb(vector_p->list[i])) {
-            return false;
-        }
-    }
-    vector_p->list[i] = NULL;
-    if (i < --count) {
-        gt_memmove(&vector_p->list[i], &vector_p->list[i + 1], sizeof(void * ) * (count - i));
-    }
-    vector_p->list[count] = NULL;
-    vector_p->list = (void ** )gt_mem_realloc(vector_p->list, sizeof(void * ) * (--vector_p->count));
-    if (vector_p->index >= vector_p->count) {
+    if (vector_p->index + 1 > vector_p->count) {
         vector_p->index = vector_p->count - 1;
     }
-    if (NULL == vector_p->list || 0 == vector_p->count) {
-        vector_p->index = 0;
+    return is_find;
+}
+
+void * _gt_vector_turn_prev(_gt_vector_st * vector)
+{
+    GT_CHECK_BACK_VAL(vector, NULL);
+    GT_CHECK_BACK_VAL(vector->count, NULL);
+    if (vector->index == 0) {
+        vector->index = vector->count;
     }
-    // GT_LOG_A("-", "remove %p, idx: %d/%d", vector_p->list, vector_p->index, vector_p->count);
-    return true;
+    if (--vector->index < 0) {
+        vector->index = vector->count - 1;
+    }
+    _gt_vector_item_st * item_p = NULL;
+    uint16_t i = 0;
+    _gt_list_for_each_entry(item_p, &vector->list_head, _gt_vector_item_st, node) {
+        if (i++ == vector->index) {
+            return item_p->val;
+        }
+    }
+    return NULL;
 }
 
 void * _gt_vector_turn_next(_gt_vector_st * vector)
 {
-    if (NULL == vector) {
-        return NULL;
-    }
-    if (NULL == vector->list || 0 == vector->count) {
-        return NULL;
-    }
+    GT_CHECK_BACK_VAL(vector, NULL);
+    GT_CHECK_BACK_VAL(vector->count, NULL);
     if (++vector->index >= vector->count) {
         vector->index = 0;
     }
-    return vector->list[vector->index];
+    _gt_vector_item_st * item_p = NULL;
+    uint16_t i = 0;
+    _gt_list_for_each_entry(item_p, &vector->list_head, _gt_vector_item_st, node) {
+        if (i++ == vector->index) {
+            return item_p->val;
+        }
+    }
+    return NULL;
 }
 
 gt_size_t _gt_vector_get_count(_gt_vector_st const * vector)
 {
-    if (NULL == vector) {
+    GT_CHECK_BACK_VAL(vector, -1);
+    return vector->count;
+}
+
+gt_size_t _gt_vector_set_index(_gt_vector_st * vector, gt_size_t index)
+{
+    GT_CHECK_BACK_VAL(vector, -1);
+    GT_CHECK_BACK_VAL(vector->count, -1);
+    if (index < -1) {
         return -1;
     }
-    if (NULL == vector->list) {
+    if (-1 == index) {
+        /** Set to last one item index */
+        vector->index = (gt_size_t)(vector->count - 1);
+        return vector->index;
+    }
+    /** Normal direct */
+    if (index + 1 > vector->count) {
         return -1;
     }
-    return (gt_size_t)vector->count;
+    vector->index = index;
+    return vector->index;
 }
 
 gt_size_t _gt_vector_get_index(_gt_vector_st const * vector)
 {
-    if (NULL == vector) {
-        return -1;
-    }
-    if (NULL == vector->list || 0 == vector->count) {
-        return -1;
-    }
-    return (gt_size_t)vector->index;
+    GT_CHECK_BACK_VAL(vector, -1);
+    GT_CHECK_BACK_VAL(vector->count, -1);
+
+    return vector->index;
 }
 
-void * _gt_vector_get_item(_gt_vector_st const * vector, uint16_t index)
+void * _gt_vector_get_item(_gt_vector_st const * vector, gt_size_t index)
 {
-    if (NULL == vector) {
+    GT_CHECK_BACK_VAL(vector, NULL);
+    GT_CHECK_BACK_VAL(vector->count, NULL);
+    if (index < 0) {
         return NULL;
     }
-    if (NULL == vector->list || 0 == vector->count) {
-        return NULL;
-    }
-
     if (index >= vector->count) {
         return NULL;
     }
-    return vector->list[index];
+    _gt_vector_item_st * item_p = NULL;
+    uint16_t i = 0;
+    _gt_list_for_each_entry(item_p, &vector->list_head, _gt_vector_item_st, node) {
+        if (i++ == index) {
+            return item_p->val;
+        }
+    }
+    return NULL;
+}
+
+bool _gt_vector_is_tail_index_now(_gt_vector_st const * vector)
+{
+    GT_CHECK_BACK_VAL(vector, false);
+    return (vector->index + 1) >= vector->count ? true : false;
 }
 
 bool _gt_vector_free(_gt_vector_st * vector_p)
 {
-    if (NULL == vector_p) {
-        return false;
-    }
+    GT_CHECK_BACK_VAL(vector_p, false);
+
     _gt_vector_clear_all_items(vector_p);
 
     gt_mem_free(vector_p);
     return true;
 }
 
+_gt_vector_iterator_st _gt_vector_get_iterator(_gt_vector_st * vector)
+{
+    _gt_vector_iterator_st ret_iter = {
+        .has_next = _gt_vector_iterator_has_next,
+        .next = _gt_vector_iterator_next,
+        .index = _gt_vector_iterator_index,
+    };
+    uint16_t instance = sizeof(_gt_vector_iterator_ctl_st);
+    GT_CHECK_BACK_VAL(vector, ret_iter);
+    if (NULL == vector->iter_ctl) {
+        vector->iter_ctl = (_gt_vector_iterator_ctl_st * )gt_mem_malloc(instance);
+        GT_CHECK_BACK_VAL(vector->iter_ctl, ret_iter);
+    }
+    gt_memset(vector->iter_ctl, 0, instance);
+    ret_iter.dsc_t = vector;
+    return ret_iter;
+}
+
 bool _gt_vector_clear_all_items(_gt_vector_st * vector)
 {
-    if (NULL == vector) {
-        return false;
+    GT_CHECK_BACK_VAL(vector, false);
+
+    if (vector->iter_ctl) {
+        gt_mem_free(vector->iter_ctl);
+        vector->iter_ctl = NULL;
     }
 
-    gt_size_t i = vector->count - 1;
-    for (; i >= 0; i--) {
-        if (!vector->list[i]) {
-            continue;
-        }
-        if (vector->free_item_cb) {
-            vector->free_item_cb(vector->list[i]);
-        }
-        gt_mem_free(vector->list[i]);
-        // GT_LOG_A("-", "clear %p, idx: %d/%d", vector->list[i], i, vector->count - 1);
-        vector->list[i] = NULL;
-        --vector->count;
+    _gt_vector_item_st * item_p = NULL;
+    _gt_vector_item_st * backup_p = NULL;
+   _gt_list_for_each_entry_safe_reverse(item_p, backup_p, &vector->list_head, _gt_vector_item_st, node) {
+        _free_item_obj(vector, item_p);
     }
-    gt_mem_free(vector->list);
-    vector->list = NULL;
+    vector->index = 0;
+    vector->count = 0;
     return true;
 }
 

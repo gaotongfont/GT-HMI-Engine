@@ -72,6 +72,17 @@ void gt_wordart_add_item(gt_obj_st* wordart, uint32_t coding, char * src);
 void gt_wordart_add_item_by_file_header(gt_obj_st * wordart, uint32_t encode, gt_file_header_param_st const * fh);
 #endif
 
+#if GT_USE_DIRECT_ADDR
+/**
+ * @brief add item by direct address
+ *
+ * @param wordart
+ * @param encode
+ * @param addr
+ */
+void gt_wordart_add_item_by_direct_addr(gt_obj_st * wordart, uint32_t encode, gt_addr_t addr);
+#endif
+
 /**
  * @brief Set the text, which display by wordart image character
  *

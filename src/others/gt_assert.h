@@ -30,6 +30,12 @@ extern "C" {
     #define GT_USE_ASSERT_MALLOC    01
 #endif
 
+#ifdef _GT_PORT_SIMULATOR_ENVS
+    #define _ASSERT_ABORT()     abort()
+#else
+    #define _ASSERT_ABORT()     while(1){}
+#endif
+
 #define GT_ASSERT_MSG(expr, msg) do { \
         if (!(expr)) { \
             GT_LOG_A(GT_LOG_TAG_ASSERT, "Failed: %s is %s at %s:%d", #expr, msg,  __FILE__, __LINE__); \
@@ -42,14 +48,14 @@ extern "C" {
     #define GT_ASSERT(p)  do { \
         if (!p) { \
             GT_LOG_A(GT_LOG_TAG_ASSERT, "Failed: %s is NULL at %s:%d", #p, __FILE__, __LINE__); \
-            abort(); \
+            _ASSERT_ABORT(); \
         } \
     } while(0)
 
     #define GT_ASSERT_EXPR(expr) do { \
         if (!(expr)) { \
             GT_LOG_A(GT_LOG_TAG_ASSERT, "Failed: %s at %s:%d", #expr, __FILE__, __LINE__); \
-            abort(); \
+            _ASSERT_ABORT(); \
         } \
     } while(0)
 #else

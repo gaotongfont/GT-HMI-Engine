@@ -134,6 +134,35 @@ gt_res_t _gt_img_decoder_build_in_fh_open(struct _gt_img_decoder_s * decoder, st
 }
 #endif
 
+#if GT_USE_DIRECT_ADDR
+static gt_res_t _gt_img_decoder_built_in_direct_addr_info(struct _gt_img_decoder_s * decoder, gt_addr_t addr, _gt_img_info_st * header) {
+    GT_UNUSED(decoder);
+    gt_fs_fp_st * fp = gt_fs_direct_addr_open(addr, GT_FS_MODE_RD);
+    if (!fp) {
+        return GT_RES_INV;
+    }
+    header->w = fp->msg.pic.w;
+    header->h = fp->msg.pic.h;
+
+    gt_fs_close(fp);
+
+    return GT_RES_OK;
+}
+
+gt_res_t _gt_img_decoder_build_in_direct_addr_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc) {
+    GT_UNUSED(decoder);
+    gt_fs_fp_st * fp = gt_fs_direct_addr_open(dsc->addr, GT_FS_MODE_RD);
+    if (!fp) {
+        return GT_RES_INV;
+    }
+    dsc->fp = fp;
+    dsc->header.w = fp->msg.pic.w;
+    dsc->header.h = fp->msg.pic.h;
+
+    return GT_RES_OK;
+}
+#endif
+
 /* global functions / API interface -------------------------------------*/
 
 void _gt_img_decoder_init(void)
@@ -150,6 +179,11 @@ void _gt_img_decoder_init(void)
 #if GT_USE_FILE_HEADER
     gt_img_decoder_set_fh_info_cb(decoder, _gt_img_decoder_built_in_fh_info);
     gt_img_decoder_set_fh_open_cb(decoder, _gt_img_decoder_build_in_fh_open);
+#endif
+
+#if GT_USE_DIRECT_ADDR
+    gt_img_decoder_set_direct_addr_info_cb(decoder, _gt_img_decoder_built_in_direct_addr_info);
+    gt_img_decoder_set_direct_addr_open_cb(decoder, _gt_img_decoder_build_in_direct_addr_open);
 #endif
 
     gt_img_decoder_register(decoder);
@@ -242,6 +276,8 @@ gt_res_t gt_img_decoder_read_line(_gt_img_dsc_st * dsc, gt_size_t x, gt_size_t y
 
 gt_res_t gt_img_decoder_close(_gt_img_dsc_st * dsc)
 {
+    GT_CHECK_BACK_VAL(dsc, GT_RES_INV);
+    GT_CHECK_BACK_VAL(dsc->decoder, GT_RES_INV);
     GT_CHECK_BACK_VAL(dsc->decoder->close_cb, GT_RES_OK);
     return dsc->decoder->close_cb(dsc);
 }
@@ -308,6 +344,70 @@ void gt_img_decoder_set_fh_info_cb(_gt_img_decoder_st * decoder, gt_img_decoder_
 void gt_img_decoder_set_fh_open_cb(_gt_img_decoder_st * decoder, gt_img_decoder_fh_open_t fh_open_cb)
 {
     decoder->fh_open_cb = fh_open_cb;
+}
+#endif
+
+#if GT_USE_DIRECT_ADDR
+gt_res_t gt_img_decoder_direct_addr_get_info(gt_addr_t addr, _gt_img_info_st * header)
+{
+    _gt_img_decoder_st * ptr = NULL;
+    if (gt_hal_is_invalid_addr(addr)) {
+        return GT_RES_FAIL;
+    }
+    _gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
+        if (NULL == ptr->direct_addr_info_cb) {
+            continue;
+        }
+
+        if (ptr->direct_addr_info_cb(ptr, addr, header)) {
+            continue;
+        }
+
+        break;
+    }
+
+    return GT_RES_OK;
+}
+
+gt_res_t gt_img_decoder_direct_addr_open(_gt_img_dsc_st * dsc, gt_addr_t addr)
+{
+    _gt_img_decoder_st * ptr = NULL;
+    if (gt_hal_is_invalid_addr(addr)) {
+        return GT_RES_FAIL;
+    }
+    dsc->decoder = NULL;    /* reset image dsc struct */
+
+    _gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
+        if (NULL == ptr->direct_addr_open_cb || NULL == ptr->direct_addr_info_cb) {
+            continue;
+        }
+
+        if (ptr->direct_addr_info_cb(ptr, addr, &dsc->header)) {
+            gt_memset(&dsc->header, 0, sizeof(_gt_img_info_st));
+            continue;
+        }
+
+        dsc->addr = addr;
+        if (ptr->direct_addr_open_cb(ptr, dsc)) {
+            continue;
+        }
+
+        dsc->decoder = ptr;
+
+        break;
+    }
+
+    return dsc->decoder ? GT_RES_OK : GT_RES_FAIL;
+}
+
+void gt_img_decoder_set_direct_addr_info_cb(_gt_img_decoder_st * decoder, gt_img_decoder_direct_addr_get_info_t direct_addr_info_cb)
+{
+    decoder->direct_addr_info_cb = direct_addr_info_cb;
+}
+
+void gt_img_decoder_set_direct_addr_open_cb(_gt_img_decoder_st * decoder, gt_img_decoder_direct_addr_open_t direct_addr_open_cb)
+{
+    decoder->direct_addr_open_cb = direct_addr_open_cb;
 }
 #endif
 

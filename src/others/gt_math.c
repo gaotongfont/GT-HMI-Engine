@@ -30,7 +30,7 @@ static const GT_ATTRIBUTE_LARGE_RAM_ARRAY int16_t _gt_sin_90_table[] = {
 #endif
 
 #if 1
-static const uint32_t _gt_tab_per_255[] = {
+static const GT_ATTRIBUTE_LARGE_RAM_ARRAY uint32_t _gt_tab_per_255[] = {
     0, 129, 257, 386, 514, 643, 771, 900, 1028, 1157, 1285, 1414, 1542, 1671, 1799, 1928, 2056,
     2185, 2313, 2442, 2570, 2699, 2827, 2956, 3084, 3213, 3341, 3470, 3598, 3727, 3855, 3984, 4112,
     4241, 4369, 4498, 4626, 4755, 4883, 5012, 5140, 5269, 5397, 5526, 5654, 5783, 5911, 6040, 6168,
@@ -146,6 +146,122 @@ uint32_t gt_per_255(uint8_t n)
     return _gt_tab_per_255[n];
 }
 
+static int32_t do_cubic_bezier(int32_t t, int32_t a, int32_t b, int32_t c) {
+    /*a * t^3 + b * t^2 + c * t*/
+#if GT_MATH_CUBIC_BITS > 14
+    int64_t ret;
+#else
+    int32_t ret;
+#endif
+
+    ret = a;
+    ret = (ret * t) >> GT_MATH_CUBIC_BITS;
+    ret = ((ret + b) * t) >> GT_MATH_CUBIC_BITS;
+    ret = ((ret + c) * t) >> GT_MATH_CUBIC_BITS;
+    return ret;
+}
+
+int32_t gt_cubic_bezier(int32_t x, int32_t x1, int32_t y1, int32_t x2, int32_t y2)
+{
+    int32_t ax, bx, cx, ay, by, cy;
+    int32_t tl, tr, t;  /*t in cubic-bezier function, used for bisection */
+    int32_t xs;  /*x sampled on curve */
+#if GT_MATH_CUBIC_BITS > 14
+    int64_t d; /*slope value at specified t*/
+#else
+    int32_t d;
+#endif
+
+    if(x == 0 || x == GT_MATH_BEZIER_VAL_RESOLUTION) return x;
+
+    /* input is always GT_MATH_BEZIER_VAL_SHIFT bit precision */
+
+#if GT_MATH_CUBIC_BITS != GT_MATH_BEZIER_VAL_SHIFT
+    x <<= GT_MATH_CUBIC_BITS - GT_MATH_BEZIER_VAL_SHIFT;
+    x1 <<= GT_MATH_CUBIC_BITS - GT_MATH_BEZIER_VAL_SHIFT;
+    x2 <<= GT_MATH_CUBIC_BITS - GT_MATH_BEZIER_VAL_SHIFT;
+    y1 <<= GT_MATH_CUBIC_BITS - GT_MATH_BEZIER_VAL_SHIFT;
+    y2 <<= GT_MATH_CUBIC_BITS - GT_MATH_BEZIER_VAL_SHIFT;
+#endif
+
+    cx = 3 * x1;
+    bx = 3 * (x2 - x1) - cx;
+    ax = (1L << GT_MATH_CUBIC_BITS) - cx - bx;
+
+    cy = 3 * y1;
+    by = 3 * (y2 - y1) - cy;
+    ay = (1L << GT_MATH_CUBIC_BITS)  - cy - by;
+
+    /*Try Newton's method firstly */
+    t = x; /*Make a guess*/
+    for(int i = 0; i < GT_MATH_CUBIC_NEWTON_ITER; i++) {
+        /*Check if x on curve at t matches input x*/
+        xs = do_cubic_bezier(t, ax, bx, cx) - x;
+        if(gt_abs(xs) <= 1) goto found;
+
+        /* get slop at t, d = 3 * ax * t^2 + 2 * bx + t + cx */
+        d = ax; /* use 64bit operation if needed. */
+        d = (3 * d * t) >> GT_MATH_CUBIC_BITS;
+        d = ((d + 2 * bx) * t) >> GT_MATH_CUBIC_BITS;
+        d += cx;
+
+        if(gt_abs(d) <= 1) break;
+
+        d = ((int64_t)xs * (1L << GT_MATH_CUBIC_BITS)) / d;
+        if(d == 0) break;  /*Reached precision limits*/
+        t -= d;
+    }
+
+    /*Fallback to bisection method for reliability*/
+    tl = 0, tr = 1L << GT_MATH_CUBIC_BITS, t = x;
+
+    if(t < tl) {
+        t = tl;
+        goto found;
+    }
+
+    if(t > tr) {
+        t = tr;
+        goto found;
+    }
+
+    while(tl < tr) {
+        xs = do_cubic_bezier(t, ax, bx, cx);
+        if(gt_abs(xs - x) <= 1) goto found;
+        x > xs ? (tl = t) : (tr = t);
+        t = (tr - tl) / 2 + tl;
+        if(t == tl) break;
+    }
+
+    /*Failed to find suitable t for given x, return a value anyway.*/
+found:
+    /*Return y at t*/
+#if GT_MATH_CUBIC_BITS != GT_MATH_BEZIER_VAL_SHIFT
+    return do_cubic_bezier(t, ay, by, cy) >> (GT_MATH_CUBIC_BITS - GT_MATH_BEZIER_VAL_SHIFT);
+#else
+    return do_cubic_bezier(t, ay, by, cy);
+#endif
+}
+
+gt_point_f_st gt_math_catmullrom(float t, gt_point_f_st const * p0, gt_point_f_st const * p1, gt_point_f_st const * p2, gt_point_f_st const * p3)
+{
+    gt_point_f_st result;
+    float t2 = t * t;
+    float t3 = t2 * t;
+
+    result.x = 0.5 * (2 * p1->x +
+                (p2->x - p0->x) * t +
+                (2 * p0->x - 5 * p1->x + 4 * p2->x - p3->x) * t2 +
+                (-p0->x + 3 * p1->x - 3 * p2->x + p3->x) * t3);
+
+    result.y = 0.5 * (2 * p1->y +
+                (p2->y - p0->y) * t +
+                (2 * p0->y - 5 * p1->y + 4 * p2->y - p3->y) * t2 +
+                (-p0->y + 3 * p1->y - 3 * p2->y + p3->y) * t3);
+
+    return result;
+}
+
 int32_t gt_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max)
 {
     if (in_max >= in_min) {
@@ -163,7 +279,7 @@ int32_t gt_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32
     return ( ((x - in_min) * out_delta) / in_delta ) + out_min;
 }
 
-uint32_t gt_bezier3(gt_math_bezier_st const * const bezier)
+uint32_t gt_math_calc_bezier(gt_math_bezier_st const * const bezier)
 {
     uint32_t t_res  = GT_MATH_BEZIER_VAL_RESOLUTION - bezier->t;
     uint32_t t_res2 = _GT_MATH_GET_BEZIER_SHIFT_VALUE(t_res * t_res);
@@ -178,4 +294,5 @@ uint32_t gt_bezier3(gt_math_bezier_st const * const bezier)
 
     return v1 + v2 + v3 + v4;
 }
+
 /* end ------------------------------------------------------------------*/
