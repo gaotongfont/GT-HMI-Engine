@@ -12,3 +12,19 @@ bin/
 
 # ignore "gui-win" makefile list
 **/**.mk
+
+driver/gt_driver.mk
+examples/gt_examples.mk
+gui.mk
+src/core/gt_core.mk
+src/extra/draw/gt_draw.mk
+src/extra/gif/gt_gif.mk
+src/extra/gt_extra.mk
+src/extra/jpeg/gt_jpeg.mk
+src/extra/png/gt_png.mk
+src/font/gt_font.mk
+src/hal/gt_hal.mk
+src/others/gt_others.mk
+src/utils/gt_utils.mk
+src/widgets/gt_widgets.mk
+test/gt_test.mk

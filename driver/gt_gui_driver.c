@@ -30,88 +30,7 @@ const struct gt_font_func_s gt_get_font_func[] = {
 };
 /*------------------------------------------------------------------ Separation -----------------------------------------------------------------*/
 /* global functions / API interface -------------------------------------*/
-/**
- * @brief 选择拼音音标
- *
- * @param py_info @ py_info_st
- * @param pyCombinNo 大于 0
- * @return int
- */
-int gt_pinyin_spell(py_info_st* py_info , unsigned char pyCombinNo)
-{
-    return 1;
-}
 
-/**
- * @brief 下一页
- *
- * @param py_info @ py_info_st
- * @return int
- */
-int gt_pinyin_next_page(py_info_st* py_info)
-{
-    return 1;
-}
-
-/**
- * @brief 上一页
- *
- * @param py_info @ py_info_st
- * @return int
- */
-int gt_pinyin_last_page(py_info_st* py_info)
-{
-    return 1;
-}
-
-/**
- * @brief 选择文字
- *
- * @param py_info @ py_info_st
- * @param numb 1-9 数字
- * @param text 选择的汉字（最小2Byte）
- * @return int
- */
-int gt_pinyin_select_text(py_info_st* py_info , char numb , unsigned char* text)
-{
-    return 1;
-}
-
-/**
- * @brief 初始化
- *
- * @param py_info
- * @return int
- */
-int gt_pinyin_init(py_info_st* py_info )
-{
-    return 1;
-}
-
-
-/**
- * @brief 九宫格拼音输入
- *
- * @param numb 数字字符串 （“22”）
- * @return int
- */
-int gt_pinyin_sudoku_get(char* numb)
-{
-    return 0;
-}
-
-/**
- * @brief 全键盘拼音输入
- *
- * @param py 拼音
- * @return int
- */
-int gt_pinyin_full_keyboard_get(char* py)
-{
-    return 1;
-}
-
-/*------------------------------------------------------------------ Separation -----------------------------------------------------------------*/
 /**
 * @brief 得到文字的宽度
 *
@@ -178,7 +97,7 @@ int GT_Font_Code_Transform(font_convertor_st* convert)
     switch (convert->font_option)
     {
 
-        default: 
+        default:
             break;
     }
 
@@ -197,7 +116,7 @@ int GT_Get_Font_Convertor_Data(font_convertor_st* convert, uint32_t pos)
     switch (convert->font_option)
     {
 
-        default: 
+        default:
             break;
     }
 

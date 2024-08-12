@@ -68,12 +68,11 @@ typedef struct _gt_view_pager_s {
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st _gt_view_pager_class = {
+static const gt_obj_class_st _gt_view_pager_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
+    ._deinit_cb    = NULL,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_view_pager_st)
@@ -121,6 +120,9 @@ static void _init_cb(gt_obj_st * obj) {
     gt_attr_rect_st rect_attr;
     gt_area_st area_bg = obj->area;
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
+    if (0 == style->reg.count) {
+        return;
+    }
     uint16_t i = 0, width = area_bg.w / style->reg.count;
     uint16_t space = (width << 1) / 100;    /** 2% of screen width */
 
@@ -211,15 +213,12 @@ static inline void _init_child_prop(gt_obj_st * obj) {
     _unfixed_slider_widgets(obj, true);
 }
 
-static void _deinit_cb(gt_obj_st * obj) {
-
-}
-
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
+    gt_event_type_et code_val = gt_event_get_code(e);
     gt_size_t value = 0;
 
-    switch (e->code) {
+    switch (code_val) {
     case GT_EVENT_TYPE_DRAW_START: {
         gt_disp_invalid_area(obj);
         break;
@@ -268,7 +267,7 @@ static inline bool _is_over_max_page(uint8_t val) {
 }
 
 static bool _child_is_group(gt_obj_st * obj) {
-    return (GT_TYPE_GROUP == obj->class->type) ? true : false;
+    return (GT_TYPE_GROUP == obj->classes->type) ? true : false;
 }
 
 static void _child_set_group_area(gt_obj_st const * const view_pager, gt_obj_st * group) {

@@ -86,6 +86,21 @@ void gt_file_header_param_init(gt_file_header_param_st * fh)
 #endif
 }
 
+bool gt_file_header_param_is_equal(gt_file_header_param_st const * const a, gt_file_header_param_st const * const b)
+{
+    GT_CHECK_BACK_VAL(a, false);
+    GT_CHECK_BACK_VAL(b, false);
+    if (a->idx != b->idx) {
+        return false;
+    }
+#if _GT_FILE_HEADER_IMG_PACKAGE
+    if (a->package_idx != b->package_idx) {
+        return false;
+    }
+#endif
+    return true;
+}
+
 gt_file_header_st const * gt_file_header_get(gt_file_header_idx_t index)
 {
     _gt_file_header_ctl_st const * ctl = &_GT_GC_GET_ROOT(file_header_ctl);

@@ -53,7 +53,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_input_number_class = {
+static const gt_obj_class_st gt_input_number_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
@@ -104,9 +104,9 @@ static void _deinit_cb(gt_obj_st * obj)
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
 {
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    switch(code) {
+    switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START:
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
@@ -327,7 +327,7 @@ void gt_input_number_set_font_align(gt_obj_st * obj, gt_align_et align)
     }
     gt_label_set_font_align(style->label, align);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_input_number_set_font_family_cn(gt_obj_st * obj, gt_family_t family)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
@@ -375,7 +375,32 @@ void gt_input_number_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
     }
     gt_label_set_font_family_numb(style->label, family);
 }
+#else
+void gt_input_number_set_font_family(gt_obj_st * obj, gt_family_t family)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_number_st * style = (_gt_input_number_st * )obj;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_family(style->label, family);
+}
 
+void gt_input_number_set_font_cjk(gt_obj_st * obj, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_number_st * style = (_gt_input_number_st * )obj;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_cjk(style->label, cjk);
+}
+
+#endif
 void gt_input_number_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {

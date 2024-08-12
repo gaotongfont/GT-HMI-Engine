@@ -18,6 +18,7 @@ extern "C" {
 #include "stddef.h"
 #include "../gt_conf.h"
 #include "string.h"
+#include "../others/gt_log.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -48,7 +49,7 @@ void gt_mem_deinit(void);
  * @param size Want to malloc memory size [byte]
  * @return void* The buffer pointer which malloc successfully
  */
-void * _mem_malloc(size_t size, uint8_t * file_name, size_t line);
+void * _mem_malloc(size_t size, char const * file_name, char const * func_name, size_t line);
 
 /**
  * @brief Realloc memory buffer size
@@ -57,14 +58,18 @@ void * _mem_malloc(size_t size, uint8_t * file_name, size_t line);
  * @param size Realloc memory size [byte]
  * @return void* The buffer pointer which malloc successfully
  */
-void * _mem_realloc(void * ptr, size_t size, uint8_t * file_name, size_t line);
+void * _mem_realloc(void * ptr, size_t size, char const * file_name, char const * func_name, size_t line);
 
 /**
  * @brief Free memory which malloc by gt_mem_malloc() or gt_mem_realloc().
  *
  * @param ptr The memory buffer address
  */
-void _mem_free(void * ptr, uint8_t * file_name, size_t line);
+void _mem_free(void * ptr, char const * file_name, char const * func_name, size_t line);
+
+#ifdef _GT_PORT_SIMULATOR_ENVS
+void gt_mem_print_info(void);
+#endif
 
 /**
  * @brief Memory data copy from src to dst, which size was given.
@@ -118,9 +123,9 @@ int gt_memcmp(const void * dst, const void * src, size_t size);
 void gt_mem_check_used(void);
 
 
-#define gt_mem_malloc(size) _mem_malloc(size, (uint8_t * )__FILE__, __LINE__)
-#define gt_mem_realloc(ptr, size) _mem_realloc(ptr, size, (uint8_t * )__FILE__, __LINE__)
-#define gt_mem_free(ptr) _mem_free(ptr, (uint8_t * )__FILE__, __LINE__)
+#define gt_mem_malloc(size) _mem_malloc(size, _GT_LOG_PRINT_FILE, __func__, __LINE__)
+#define gt_mem_realloc(ptr, size) _mem_realloc(ptr, size, _GT_LOG_PRINT_FILE, __func__, __LINE__)
+#define gt_mem_free(ptr) _mem_free(ptr, _GT_LOG_PRINT_FILE, __func__, __LINE__)
 
 #ifdef __cplusplus
 } /*extern "C"*/

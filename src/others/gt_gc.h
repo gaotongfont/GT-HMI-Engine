@@ -15,6 +15,8 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "gt_ll.h"
+#include "stdint.h"
+#include "../gt_conf.h"
 #include "../core/gt_timer.h"
 #include "../others/gt_list.h"
 #include "../others/gt_color.h"
@@ -45,6 +47,13 @@ typedef struct _gt_gc_full_img_buffer_s {
 }_gt_gc_full_img_buffer_st;
 #endif
 
+#if GT_USE_SCREEN_ANIM
+typedef struct _gt_gc_event_s {
+    uint8_t enabled : 1;    /** Disabled when the screen is animating */
+    uint8_t reserved : 7;
+}_gt_gc_event_st;
+#endif
+
 typedef struct gt_gc_s {
     struct _gt_list_head _gt_anim_ll;
     struct _gt_list_head _gt_timer_ll;
@@ -60,6 +69,9 @@ typedef struct gt_gc_s {
 
 #if GT_USE_FILE_HEADER
     _gt_file_header_ctl_st file_header_ctl;
+#endif
+#if GT_USE_SCREEN_ANIM
+    _gt_gc_event_st event_ctl;
 #endif
 }gt_gc_st;
 

@@ -19,6 +19,7 @@ extern "C" {
 #if GT_CFG_ENABLE_CHAT
 #include "./gt_obj.h"
 #include "../core/gt_style.h"
+#include "../font/gt_font.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -54,10 +55,15 @@ void gt_chat_msg_set_border_width(gt_obj_st * chat, uint8_t width);
 void gt_chat_set_font_color(gt_obj_st * chat, gt_color_t color);
 void gt_chat_set_font_size(gt_obj_st * chat, uint8_t size);
 void gt_chat_set_font_gray(gt_obj_st * chat, uint8_t gray);
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_chat_set_font_family_cn(gt_obj_st * chat, gt_family_t font_family_cn);
 void gt_chat_set_font_family_en(gt_obj_st * chat, gt_family_t font_family_en);
 void gt_chat_set_font_family_fl(gt_obj_st * chat, gt_family_t font_family_fl);
 void gt_chat_set_font_family_numb(gt_obj_st * chat, gt_family_t font_family_numb);
+#else
+void gt_chat_set_font_family(gt_obj_st * chat, gt_family_t font_family);
+void gt_chat_set_font_cjk(gt_obj_st* chat, gt_font_cjk_et cjk);
+#endif
 void gt_chat_set_font_thick_en(gt_obj_st * chat, uint8_t thick);
 void gt_chat_set_font_thick_cn(gt_obj_st * chat, uint8_t thick);
 

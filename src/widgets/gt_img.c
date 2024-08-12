@@ -35,17 +35,20 @@ typedef struct _gt_img_s {
 #if GT_USE_FILE_HEADER
     gt_file_header_param_st fh;
 #endif
+#if GT_USE_DIRECT_ADDR
+    gt_addr_t addr;
+#endif
 }_gt_img_st;
 
 /* static variables -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
+static void _img_init_cb(gt_obj_st * obj);
+static void _img_deinit_cb(gt_obj_st * obj);
+static void _img_event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_img_class = {
-    ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
-    ._event_cb     = _event_cb,
+static const gt_obj_class_st gt_img_class = {
+    ._init_cb      = _img_init_cb,
+    ._deinit_cb    = _img_deinit_cb,
+    ._event_cb     = _img_event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_img_st)
 };
@@ -61,18 +64,27 @@ const gt_obj_class_st gt_img_class = {
  *
  * @param obj
  */
-static void _init_cb(gt_obj_st * obj) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-
+static void _img_init_cb(gt_obj_st * obj) {
     _gt_img_st * style = (_gt_img_st * )obj;
+    bool is_val = false;
     gt_attr_rect_st dsc = {
         .bg_img_src = style->src,
-        .raw_img = style->src ? NULL : &style->raw,
         .bg_opa = obj->opa,
     };
+
 #if GT_USE_FILE_HEADER
     dsc.file_header = gt_file_header_param_check_valid(&style->fh);
+    if (dsc.file_header) { is_val = true; }
 #endif
+
+#if GT_USE_DIRECT_ADDR
+    dsc.addr = style->addr;
+    if (dsc.addr) { is_val = true; }
+#endif
+
+    if (false == is_val) {
+        dsc.raw_img = style->src ? NULL : &style->raw;
+    }
 
     /* start draw obj */
     draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
@@ -86,7 +98,7 @@ static void _init_cb(gt_obj_st * obj) {
  *
  * @param obj
  */
-static void _deinit_cb(gt_obj_st * obj) {
+static void _img_deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     GT_CHECK_BACK(obj);
 
@@ -103,11 +115,11 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param obj
  * @param e event
  */
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+static void _img_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
+    gt_event_type_et code_val = gt_event_get_code(e);
     gt_area_st area;
 
-    switch(code) {
+    switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START:
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
@@ -152,6 +164,11 @@ gt_obj_st * gt_img_create(gt_obj_st * parent)
     if (NULL == obj) {
         return obj;
     }
+    _gt_img_st * style = (_gt_img_st *)obj;
+
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->addr);
+#endif
 
     return obj;
 }
@@ -170,20 +187,20 @@ void gt_img_set_src(gt_obj_st * img, char * src)
     }
     gt_memset(&style->raw, 0, sizeof(_gt_img_dsc_st));
 
-    if (NULL != style->src) {
-        gt_mem_free(style->src);
-        style->src = NULL;
-    }
     uint16_t len = src == NULL ? 0 : strlen(src);
-    style->src = gt_mem_malloc(len + 1);
+    style->src = style->src ? gt_mem_realloc(style->src, len + 1) : gt_mem_malloc(len + 1);
     if (NULL == style->src) {
         return ;
     }
-    strcpy(style->src, src);
-    style->src[len] = 0;
+    gt_memcpy(style->src, src, len);
+    style->src[len] = '\0';
 
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->fh);
+#endif
+
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->addr);
 #endif
 
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
@@ -194,7 +211,7 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw)
     if (false == gt_obj_is_type(img, OBJ_TYPE)) {
         return ;
     }
-    if (NULL == raw->buffer) {
+    if (NULL == raw->buffer && NULL == raw->opa) {
         return ;
     }
     _gt_img_st * style = (_gt_img_st *)img;
@@ -207,6 +224,7 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw)
     style->raw.header.w = raw->width;
     style->raw.header.h = raw->height;
     style->raw.header.type = GT_IMG_DECODER_TYPE_RAM;
+    style->raw.fill_color = raw->color;
 
     if (style->raw.img && style->raw.alpha) {
         style->raw.header.color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;
@@ -216,6 +234,10 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw)
 
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->fh);
+#endif
+
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->addr);
 #endif
 
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
@@ -236,9 +258,31 @@ void gt_img_set_by_file_header(gt_obj_st * img, gt_file_header_param_st * fh)
         gt_mem_free(style->src);
         style->src = NULL;
     }
-#if GT_USE_FILE_HEADER
     style->fh = *fh;
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->addr);
 #endif
+
+    gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+#endif
+
+#if GT_USE_DIRECT_ADDR
+void gt_img_set_by_direct_addr(gt_obj_st * img, gt_addr_t addr)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_img_st * style = (_gt_img_st *)img;
+    gt_memset(&style->raw, 0, sizeof(_gt_img_dsc_st));
+    if (NULL != style->src) {
+        gt_mem_free(style->src);
+        style->src = NULL;
+    }
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->fh);
+#endif
+    style->addr = addr;
 
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }

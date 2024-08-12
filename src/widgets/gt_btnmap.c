@@ -78,7 +78,7 @@ static void _gt_clean_press_btn(gt_obj_st* obj);
 static void _gt_push_btn_kv(gt_obj_st* obj);
 
 /* static variables -----------------------------------------------------*/
-const gt_obj_class_st gt_btnmap_class = {
+static const gt_obj_class_st gt_btnmap_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
@@ -185,9 +185,9 @@ static void _deinit_cb(struct gt_obj_s *obj) {
 }
 
 static void _event_cb(struct gt_obj_s *obj, struct _gt_event_s *e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    switch (code) {
+    switch (code_val) {
     case GT_EVENT_TYPE_DRAW_START:
         GT_LOGV(GT_LOG_TAG_GUI, "start draw");
         gt_disp_invalid_area(obj);
@@ -246,6 +246,9 @@ static bool _gt_btn_cmp(const char* key1, const char* key2) {
 
 static void _gt_auto_btn_height(gt_obj_st* btnmap) {
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
+    if (0 == style->_max_line) {
+        return;
+    }
 
     if(!style->auto_fill_h) {
         btnmap->area.h = style->btn_height * style->_max_line + style->btn_y_space * (style->_max_line + 1);
@@ -268,14 +271,14 @@ static void _gt_update_map(gt_obj_st* btnmap) {
     }
     //
     if(!style->_line_w_list) {
-        style->_line_w_list = gt_mem_malloc(style->_max_line * sizeof(uint16_t) * 2);
+        style->_line_w_list = gt_mem_malloc(style->_max_line * sizeof(uint16_t) << 1);
         if(NULL == style->_line_w_list) {
-            GT_LOGE(GT_LOG_TAG_GUI, "btnmap malloc failed!!! size = %d", style->_max_line * sizeof(uint16_t) * 2);
+            GT_LOGE(GT_LOG_TAG_GUI, "btnmap malloc failed!!! size = %lu", style->_max_line * sizeof(uint16_t) << 1);
             return ;
         }
         buf_max = style->_max_line;
     }
-    gt_memset_0(style->_line_w_list, style->_max_line * sizeof(uint16_t) * 2);
+    gt_memset_0(style->_line_w_list, style->_max_line * sizeof(uint16_t) << 1);
     style->_line_numb_list = &style->_line_w_list[style->_max_line];
 
     _gt_get_line_list((const gt_map_st*)style->map, style->_line_w_list, style->_line_numb_list);
@@ -403,9 +406,11 @@ static void _gt_push_btn_kv(gt_obj_st* obj) {
     if(style->_push_btn_kv_cb){
         style->_push_btn_kv_cb( obj, style->_input, style->press_btn);
     }
+#if GT_CFG_ENABLE_INPUT
     else if(style->_input){
         gt_input_append_value(style->_input, style->press_btn);
     }
+#endif
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -564,7 +569,7 @@ void gt_btnmap_set_font_gray(gt_obj_st * btnmap, uint8_t gray)
     style->font_info.gray = gray;
     gt_event_send(btnmap, GT_EVENT_TYPE_DRAW_START, NULL);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_btnmap_set_font_family_cn(gt_obj_st * btnmap, gt_family_t family)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
@@ -604,7 +609,25 @@ void gt_btnmap_set_font_family_numb(gt_obj_st * btnmap, gt_family_t family)
     style->font_info.style_numb = family;
     gt_event_send(btnmap, GT_EVENT_TYPE_DRAW_START, NULL);
 }
+#else
+void gt_btnmap_set_font_family(gt_obj_st * btnmap, gt_family_t font_family)
+{
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
+    gt_font_set_family(&style->font_info, font_family);
+}
 
+void gt_btnmap_set_font_cjk(gt_obj_st* btnmap, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
+    style->font_info.cjk = cjk;
+}
+#endif
 void gt_btnmap_set_font_thick_en(gt_obj_st * btnmap, uint8_t thick)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {

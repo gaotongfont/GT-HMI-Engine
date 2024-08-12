@@ -71,7 +71,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_slider_class = {
+static const gt_obj_class_st gt_slider_class = {
     ._init_cb       = _init_cb,
     ._deinit_cb     = _deinit_cb,
     ._event_cb      = _event_cb,
@@ -402,8 +402,8 @@ static void _init_cb(gt_obj_st * obj) {
     rect_attr.bg_color = style->color_act;
     dist_min = rect_attr.radius << 1;
     /* When style->offset = 1, area_val is plotted as a line */
-    if(style->offset > 1){
-        if(style->offset < dist_min){
+    if (style->offset > 1) {
+        if (style->offset < dist_min) {
             rect_attr.base_area = &area_base;
         }
         /** active area */
@@ -483,9 +483,9 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param e event
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    switch(code) {
+    switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START:
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);

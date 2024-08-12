@@ -25,22 +25,39 @@ extern "C" {
 
 
 /* define ---------------------------------------------------------------*/
+#ifndef GT_CFG_USE_SYMBOL_ENABLE
+    /**
+     * @brief Enable or disable the symbol function
+     */
+    #define GT_CFG_USE_SYMBOL_ENABLE            1
+#endif
+
+#if GT_CFG_USE_SYMBOL_ENABLE
+    #ifndef GT_CFG_USE_SYMBOL_16x16
+        /**
+         * @brief 0: Disabled; 1[default]: Use 16x16 symbol
+         */
+        #define GT_CFG_USE_SYMBOL_16x16	        1
+    #endif
+
+    #ifndef GT_CFG_USE_SYMBOL_24x24
+        /**
+         * @brief 0: Disabled; 1[default]: Use 24x24 symbol
+         */
+        #define GT_CFG_USE_SYMBOL_24x24         1
+    #endif
+#endif
+
 #ifndef _GT_SYMBOL_PRINTF_VALID_CODE
     /**
      * @brief 0[default]: Disabled; 1: Print all valid symbol can be use utf8 code
      */
-    #define _GT_SYMBOL_PRINTF_VALID_CODE    0
+    #define _GT_SYMBOL_PRINTF_VALID_CODE        0
 #endif
-
-#ifndef GT_CFG_USE_SYMBOL_ENABLE
-    #define GT_CFG_USE_SYMBOL_ENABLE        1
-#endif
-
-#define GT_CFG_USE_SYMBOL_16x16	     1
-#define GT_CFG_USE_SYMBOL_24x24	     1
 
 
 #if	GT_CFG_USE_SYMBOL_ENABLE	 == 1
+
 #if !defined GT_SYMBOL_AUDIO
 #define GT_SYMBOL_AUDIO           "\xEE\x80\x80" /*57344, 0xE000*/
 #define GT_SYMBOL_AUDIO_GBK       "\xE0\x00"
@@ -427,7 +444,7 @@ const uint8_t * gt_symbol_get_mask_buf(uint32_t uni_or_gbk, uint8_t size);
  *      0xE000 - 0xE03F
  *          |
  *      0xF800 - 0xF83F
- * @returns such as: "\xEE\x80\x80" /*57344, 0xE000*\/
+ * @returns such as: "\xEE\x80\x80" //57344, 0xE000
  */
 void _gt_symbol_get_all_valid_utf8_code(void);
 #endif

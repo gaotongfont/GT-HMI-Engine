@@ -148,13 +148,15 @@ void gt_input_number_set_font_gray(gt_obj_st * obj, uint8_t gray);
 
 void gt_input_number_set_font_align(gt_obj_st * obj, gt_align_et align);
 
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_input_number_set_font_family_cn(gt_obj_st * obj, gt_family_t family);
-
 void gt_input_number_set_font_family_en(gt_obj_st * obj, gt_family_t family);
-
 void gt_input_number_set_font_family_fl(gt_obj_st * obj, gt_family_t family);
-
 void gt_input_number_set_font_family_numb(gt_obj_st * obj, gt_family_t family);
+#else
+void gt_input_number_set_font_family(gt_obj_st * obj, gt_family_t family);
+void gt_input_number_set_font_cjk(gt_obj_st * obj, gt_font_cjk_et cjk);
+#endif
 
 void gt_input_number_set_font_thick_en(gt_obj_st * obj, uint8_t thick);
 

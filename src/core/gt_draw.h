@@ -89,29 +89,6 @@ typedef enum {
 
 /* global functions / API interface -------------------------------------*/
 /**
- * @brief Draw a circle
- *
- * @param draw_ctx callback function
- * @param blend_dsc draw blend dsc structures
- * @param mask_left_up circle left_up data buff
- * @param mask_right_up circle right_up data buff
- * @param coords data area
- */
-void gt_draw_arch(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st  *blend_dsc,uint8_t *mask_left_up,uint8_t *mask_right_up,const gt_area_st * coords);
-
-/**
- * @brief use bresenham algorithm draw a line by circle
- *
- * @param line_attr line attribute
- * @param draw_ctx callback function
- * @param blend_dsc draw blend dsc structures
- * @param mask_left_up circle left_up data buff
- * @param mask_right_up circle right_up data buff
- * @param coords data area
- */
-void gt_draw_line(gt_attr_line_st * line_attr, _gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc,uint8_t *mask_left_up,uint8_t *mask_right_up,const gt_area_st * coords);
-
-/**
  * @brief Draw rect background
  *
  * @param draw_ctx callback function
@@ -128,7 +105,7 @@ void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
  * @param coords Want to display area
  * @return gt_area_st The display area
  */
-_gt_draw_font_res_st draw_text(_gt_draw_ctx_st * draw_ctx,const gt_attr_font_st * dsc, const gt_area_st * coords);
+_gt_draw_font_res_st draw_text(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, const gt_area_st * coords);
 
 /**
  * @brief Draw background image
@@ -138,6 +115,33 @@ _gt_draw_font_res_st draw_text(_gt_draw_ctx_st * draw_ctx,const gt_attr_font_st 
  * @param coords Want to display area
  */
 void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_area_st * coords);
+
+/**
+ * @brief
+ *
+ * @param draw_ctx
+ * @param dsc
+ * @param coords
+ */
+void gt_draw_point(_gt_draw_ctx_st * draw_ctx, gt_attr_point_st const * dsc, gt_area_st const * coords);
+
+/**
+ * @brief
+ *
+ * @param draw_ctx
+ * @param dsc
+ * @param coords
+ */
+void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const gt_area_st * coords);
+
+/**
+ * @brief
+ *
+ * @param draw_ctx
+ * @param dsc
+ * @param coords
+ */
+void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_attr_curve_st const * dsc, const gt_area_st * coords);
 
 void draw_focus(gt_obj_st* obj, gt_size_t radius);
 

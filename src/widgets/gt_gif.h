@@ -61,6 +61,16 @@ char * gt_gif_get_src(gt_obj_st *  obj);
 void gt_gif_set_src_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh);
 #endif
 
+#if GT_USE_DIRECT_ADDR
+/**
+ * @brief Display the gif by direct address
+ *
+ * @param obj
+ * @param addr Direct address of the gif
+ */
+void gt_gif_set_src_by_direct_addr(gt_obj_st * obj, gt_addr_t addr);
+#endif
+
 gt_size_t gt_gif_get_frame_width(gt_obj_st * obj);
 
 gt_size_t gt_gif_get_frame_height(gt_obj_st * obj);

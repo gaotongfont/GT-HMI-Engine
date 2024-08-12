@@ -80,7 +80,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_clock_class = {
+static const gt_obj_class_st gt_clock_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
@@ -258,8 +258,8 @@ static void _deinit_cb(gt_obj_st * obj) {
 }
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
-    switch (code) {
+    gt_event_type_et code_val = gt_event_get_code(e);
+    switch (code_val) {
         case GT_EVENT_TYPE_UPDATE_VALUE:
         case GT_EVENT_TYPE_DRAW_START: {
             gt_disp_invalid_area(obj);
@@ -561,6 +561,7 @@ void gt_clock_set_format(gt_obj_st * obj, const char * const format)
     _gt_clock_st * clock = (_gt_clock_st *)obj;
     if (NULL == clock->format) {
         clock->format = (char * )gt_mem_malloc(strlen(format) + 1);
+        GT_CHECK_BACK(clock->format);
         gt_memset(clock->format, 0, strlen(format) + 1);
         gt_memcpy(clock->format, format, strlen(format));
         return;
@@ -573,6 +574,7 @@ void gt_clock_set_format(gt_obj_st * obj, const char * const format)
     }
 
     clock->format = (char * )gt_mem_realloc(clock->format, strlen(format) + 1);
+    GT_CHECK_BACK(clock->format);
 
     gt_memset(clock->format, 0, strlen(clock->format) + 1);
     gt_memcpy(clock->format, format, strlen(format));
@@ -819,7 +821,7 @@ void gt_clock_set_font_align(gt_obj_st * obj, gt_align_et align)
     }
     gt_label_set_font_align(style->label, align);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_clock_set_font_family_cn(gt_obj_st * obj, gt_family_t family)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
@@ -867,7 +869,31 @@ void gt_clock_set_font_family_numb(gt_obj_st * obj, gt_family_t family)
     }
     gt_label_set_font_family_numb(style->label, family);
 }
+#else
+void gt_clock_set_font_family(gt_obj_st * obj, gt_family_t family)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_clock_st * style = (_gt_clock_st * )obj;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_family(style->label, family);
+}
 
+void gt_clock_set_font_cjk(gt_obj_st* obj, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_clock_st * style = (_gt_clock_st * )obj;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_cjk(style->label, cjk);
+}
+#endif
 void gt_clock_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {

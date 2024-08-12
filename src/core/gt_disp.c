@@ -15,12 +15,13 @@
 #include "../hal/gt_hal_disp.h"
 #include "gt_disp.h"
 #include "../extra/draw/gt_draw_blend.h"
-#include "../core/gt_draw.h"
-#include "../core/gt_obj_pos.h"
+#include "./gt_draw.h"
+#include "./gt_obj_pos.h"
 #include "../others/gt_area.h"
 #include "../others/gt_anim.h"
-#include "../core/gt_mem.h"
-#include "../core/gt_indev.h"
+#include "./gt_mem.h"
+#include "./gt_indev.h"
+#include "./gt_layout.h"
 #include "../others/gt_gc.h"
 
 #include "./gt_obj_scroll.h"
@@ -34,6 +35,19 @@
     #define _GT_STACK_USE_LOADING_LOG   0
 #endif
 
+#ifndef _GT_STACK_PUSH_BEFORE_INIT_SCR
+    /**
+     * @brief 0[defalut]: The screen object is initialized before the stack is pushed
+     */
+    #define _GT_STACK_PUSH_BEFORE_INIT_SCR      0
+#endif
+
+#ifndef _GT_DISP_USE_MALLOC_DRAW_CTX
+    /**
+     * @brief 0[default]: The drawing context is not allocated on the heap, by stack
+     */
+    #define _GT_DISP_USE_MALLOC_DRAW_CTX        0
+#endif
 
 /* private typedef ------------------------------------------------------*/
 
@@ -101,21 +115,35 @@ static inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_par
     if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
         return false;
     }
+    if (NULL == obj->classes->_init_cb) {
+        return true;
+    }
     if (false == gt_area_is_intersect_screen(&param->disp->area_disp, &obj->area)) {
         return false;
     }
 
-    _gt_draw_ctx_st draw_ctx = {
-        /** Page change animation */
-        .valid    = param->disp->scr_prev ? &param->valid : NULL,
+#if _GT_DISP_USE_MALLOC_DRAW_CTX
+    obj->draw_ctx = gt_mem_malloc(sizeof(struct _gt_draw_ctx_s));
+    GT_CHECK_BACK_VAL(obj->draw_ctx, false);
+    obj->draw_ctx->valid       = param->disp->scr_prev ? &param->valid : NULL;
+    obj->draw_ctx->parent_area = obj->inside ? &area_parent : NULL;
+    obj->draw_ctx->buf         = param->disp->vbd_color;
+    obj->draw_ctx->buf_area    = param->disp->area_disp;
+
+    obj->classes->_init_cb(obj);
+
+    gt_mem_free(obj->draw_ctx);
+#else
+    struct _gt_draw_ctx_s tmp_draw_ctx = {
+        .valid       = param->disp->scr_prev ? &param->valid : NULL,
         .parent_area = obj->inside ? &area_parent : NULL,
-        .buf      = param->disp->vbd_color,
-        .buf_area = param->disp->area_disp,
+        .buf         = param->disp->vbd_color,
+        .buf_area    = param->disp->area_disp,
     };
-
-    obj->draw_ctx = (struct _gt_draw_ctx_s * )&draw_ctx;
-    obj->class->_init_cb(obj);
-
+    obj->draw_ctx = &tmp_draw_ctx;
+    obj->classes->_init_cb(obj);
+#endif
+    obj->draw_ctx = NULL;
     return true;
 }
 
@@ -182,8 +210,9 @@ static void _scr_anim_exec_y_cb(void * obj, int32_t y) {
 }
 
 static void _scr_anim_del_ready_cb(struct gt_anim_s * anim) {
-    ((gt_obj_st * )anim->tar)->using = 0;
-    gt_obj_destroy((gt_obj_st * )anim->tar);
+    gt_obj_st * old_scr = (gt_obj_st * )anim->tar;
+    old_scr->using_sta = 0;
+    _gt_obj_class_destroy(old_scr);
 }
 
 #if GT_USE_SCREEN_ANIM
@@ -197,7 +226,8 @@ static void _scr_anim_start_cb(struct gt_anim_s * anim) {
     disp->anim_scr_remark.y = disp->scr_act->area.y;
 
     /** Can not calling other event by all of input device */
-    gt_indev_set_disabled(true);
+    gt_indev_set_enabled(false);
+    gt_event_set_enabled(false);
 }
 
 /**
@@ -212,7 +242,7 @@ static void _old_scr_anim_ready_cb(struct gt_anim_s * anim) {
     if (old_scr->delate) {
         return ;
     }
-    if (false == old_scr->using) {
+    if (false == old_scr->using_sta) {
         return ;
     }
     gt_area_copy(&old_scr->area, area);
@@ -222,8 +252,8 @@ static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_disp_st * disp = gt_disp_get_default();
     GT_CHECK_BACK(disp);
     if (disp->scr_prev && disp->scr_prev->delate) {
-        disp->scr_prev->using = 0;
-        gt_obj_destroy(disp->scr_prev);
+        disp->scr_prev->using_sta = 0;
+        _gt_obj_class_destroy(disp->scr_prev);
     }
 
     disp->scr_prev      = NULL;
@@ -237,7 +267,8 @@ static void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_disp_invalid_area(disp->scr_act);
 
     /** Enabled all of input device event */
-    gt_indev_set_disabled(false);
+    gt_indev_set_enabled(true);
+    gt_event_set_enabled(true);
 }
 
 static bool _is_anim_type_hor(gt_scr_anim_type_et anim_type) {
@@ -898,6 +929,26 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
         new_item_p->prev_scr_alive = NULL;
     }
 
+#if _GT_STACK_PUSH_BEFORE_INIT_SCR
+    if (false == gt_scr_stack_push(new_item_p)) {
+        GT_LOGE(GT_LOG_TAG_GUI, "Push stack failed");
+        return ret;
+    }
+    gt_scr_stack_item_st * item_p = gt_scr_stack_peek();
+    GT_CHECK_BACK_VAL(item_p, ret);
+    if (NULL == item_p->current_scr) {
+        item_p->current_scr = _create_scr_by_id(item_p->current_scr_id);
+        GT_CHECK_BACK_VAL(item_p->current_scr, ret);
+        if (home_id == item_p->current_scr_id) {
+            gt_scr_stack_set_home_scr(item_p->current_scr);
+        }
+    }
+    if (NULL == item_p->current_scr) {
+        gt_scr_stack_pop(1);
+        return ret;
+    }
+    new_item_p->current_scr = item_p->current_scr;
+#else
     /** ready to init and load screen */
     if (NULL == new_item_p->current_scr) {
         new_item_p->current_scr = _create_scr_by_id(new_item_p->current_scr_id);
@@ -910,6 +961,7 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
         GT_LOGE(GT_LOG_TAG_GUI, "Push stack failed");
         return ret;
     }
+#endif
     ret.ok = true;
     return ret;
 }
@@ -955,7 +1007,7 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         }
     }
 
-    scr->using = true;
+    scr->using_sta = true;
     disp->scr_anim_type = type;
 
     if (GT_SCR_ANIM_TYPE_NONE == type) {
@@ -976,13 +1028,11 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         if (del_prev_scr && scr_old && scr_old != scr) {
             gt_anim_st anim_del;
             gt_anim_init(&anim_del);
-            gt_anim_set_time(&anim_del, time);
-            gt_anim_set_time_delay_start(&anim_del, delay);
+            gt_anim_set_time(&anim_del, 0);
             gt_anim_set_target(&anim_del, scr_old);
             gt_anim_set_ready_cb(&anim_del, _scr_anim_del_ready_cb);
             if (NULL == gt_anim_start(&anim_del)) {
-                /** No more free memory, force release memory */
-                _gt_obj_class_destroy(scr_old);
+                GT_CHECK_PRINT(gt_anim_start(&anim_del));
             }
         }
     }
@@ -994,7 +1044,9 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         gt_anim_set_time(&anim_old, time);
         gt_anim_set_data(&anim_old, &area, sizeof(gt_area_st));
         gt_anim_set_time_delay_start(&anim_old, delay);
-        gt_anim_set_ready_cb(&anim_old, _old_scr_anim_ready_cb);
+        if (false == del_prev_scr) {
+            gt_anim_set_ready_cb(&anim_old, _old_scr_anim_ready_cb);
+        }
         gt_anim_set_target(&anim_old, scr_old);
 
         gt_anim_st anim_new;
@@ -1112,6 +1164,24 @@ gt_obj_st * gt_disp_get_layer_top(void)
     }
     return disp->layer_top;
 }
+
+gt_res_t gt_disp_destroy_layer_top_widgets(void)
+{
+    gt_obj_st * layer_top = gt_disp_get_layer_top();
+    if (NULL == layer_top) {
+        return GT_RES_FAIL;
+    }
+    for (gt_size_t i = layer_top->cnt_child - 1; i >= 0; i--) {
+        if (gt_obj_is_type(layer_top->child[i], GT_TYPE_STATUS_BAR)) {
+            continue;
+        }
+        if (gt_obj_is_type(layer_top->child[i], GT_TYPE_DIALOG)) {
+            continue;
+        }
+        _gt_obj_class_destroy(layer_top->child[i]);
+    }
+    return GT_RES_OK;
+}
 #endif
 
 void gt_disp_ref_area(const gt_area_st * coords)
@@ -1212,6 +1282,9 @@ void gt_disp_scroll_area_act(gt_size_t dist_x, gt_size_t dist_y)
 
 void gt_disp_invalid_area(gt_obj_st * obj)
 {
+#if GT_USE_WIDGET_LAYOUT
+    gt_layout_update_core(obj);             // TODO pref handler, unstable
+#endif
     gt_obj_st * scr = gt_disp_get_scr();
     if (NULL == scr) {
         return;

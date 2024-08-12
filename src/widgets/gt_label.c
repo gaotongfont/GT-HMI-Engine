@@ -53,7 +53,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_label_class = {
+static const gt_obj_class_st gt_label_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
@@ -75,20 +75,16 @@ const gt_obj_class_st gt_label_class = {
  */
 static void _init_cb(gt_obj_st * obj) {
     _gt_label_st * style = (_gt_label_st * )obj;
+    uint32_t len = strlen((char * )style->text);
     gt_font_st font = {
         .info       = style->font_info,
         .res        = NULL,
         .utf8       = (char * )style->text,
-        .len        = strlen((char * )style->text),
+        .len        = len,
     };
 
     font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
-
-    if (0 == obj->area.w || 0 == obj->area.h) {
-        obj->area.h = 20;
-        obj->area.w = font.info.size * strlen(font.utf8);
-    }
 
     gt_area_st box_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
     /*draw font*/
@@ -166,12 +162,12 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param e event
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    if (GT_EVENT_TYPE_DRAW_START == code) {
+    if (GT_EVENT_TYPE_DRAW_START == code_val) {
         gt_disp_invalid_area(obj);
     }
-    else if (GT_EVENT_TYPE_UPDATE_VALUE == code) {
+    else if (GT_EVENT_TYPE_UPDATE_VALUE == code_val) {
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
     }
 }
@@ -197,6 +193,7 @@ static _auto_scroll_st * _create_auto_scroll_st(gt_obj_st * label) {
     _gt_label_st * style = (_gt_label_st * )label;
     if (NULL == style->auto_scroll) {
         style->auto_scroll = gt_mem_malloc(sizeof(_auto_scroll_st));
+        GT_CHECK_BACK_VAL(style->auto_scroll, NULL);
         gt_memset(style->auto_scroll, 0, sizeof(_auto_scroll_st));
     }
     return _reset_auto_scroll_st(style->auto_scroll);
@@ -215,6 +212,7 @@ static gt_anim_st * _create_auto_scroll_anim(gt_obj_st * label) {
     _gt_label_st * style = (_gt_label_st * )label;
     if (NULL == style->auto_scroll) {
         style->auto_scroll = _create_auto_scroll_st(label);
+        GT_CHECK_BACK_VAL(style->auto_scroll, NULL);
     }
     if (style->auto_scroll->anim) {
         _reset_auto_scroll_st(style->auto_scroll);
@@ -234,6 +232,15 @@ static gt_anim_st * _create_auto_scroll_anim(gt_obj_st * label) {
     return style->auto_scroll->anim;
 }
 
+static void _update_label_size(gt_obj_st * obj, uint16_t len) {
+    _gt_label_st * style = (_gt_label_st * )obj;
+    if (obj->area.w && obj->area.h) {
+        return;
+    }
+    obj->area.h = style->font_info.size + 6;
+    obj->area.w = style->font_info.size * len;
+}
+
 /* global functions / API interface -------------------------------------*/
 
 /**
@@ -249,8 +256,11 @@ gt_obj_st * gt_label_create(gt_obj_st * parent) {
     }
     _gt_label_st * style = (_gt_label_st * )obj;
 
-    style->text = gt_mem_malloc(sizeof("label"));
-    gt_memcpy(style->text, "label\0", sizeof("label"));
+    uint16_t len = sizeof("label");
+    style->text = gt_mem_malloc(len);
+    if (style->text) {
+        gt_memcpy(style->text, "label\0", len);
+    }
 
     style->font_color        = gt_color_hex(0x00);
 
@@ -262,6 +272,8 @@ gt_obj_st * gt_label_create(gt_obj_st * parent) {
     if (style->auto_scroll) {
         style->auto_scroll->area.w   = 0xffff;
     }
+
+    _update_label_size(obj, len);
 
     return obj;
 }
@@ -298,11 +310,12 @@ void gt_label_set_text(gt_obj_st * label, const char * fmt, ...)
     if (NULL == style->text) {
         goto free_lb;
     }
-
+    gt_memset(style->text, 0, size);
     va_start(args2, fmt);
     vsnprintf(style->text, size, fmt, args2);
     va_end(args2);
 
+    _update_label_size(label, size);
     gt_event_send(label, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 
     return;
@@ -349,6 +362,8 @@ void gt_label_set_text_by_len(gt_obj_st * label, const char * text, uint16_t len
         ++i;
     }
     *dst = '\0';
+
+    _update_label_size(label, len);
     gt_event_send(label, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
@@ -398,7 +413,7 @@ void gt_label_set_font_align(gt_obj_st * label, gt_align_et align)
     style->font_align = align;
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_label_set_font_family_cn(gt_obj_st * label, gt_family_t family)
 {
     if (false == gt_obj_is_type(label, OBJ_TYPE)) {
@@ -424,6 +439,32 @@ void gt_label_set_font_family_fl(gt_obj_st * label, gt_family_t family)
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.style_fl = family;
 }
+void gt_label_set_font_family_numb(gt_obj_st * label, gt_family_t family)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    style->font_info.style_numb = family;
+}
+#else
+void gt_label_set_font_family(gt_obj_st * label, gt_family_t family)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    gt_font_set_family(&style->font_info, family);
+}
+void gt_label_set_font_cjk(gt_obj_st* label, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    style->font_info.cjk = cjk;
+}
+#endif
 
 void gt_label_set_font_thick_en(gt_obj_st * label, uint8_t thick)
 {
@@ -450,15 +491,6 @@ void gt_label_set_font_encoding(gt_obj_st * label, gt_encoding_et encoding)
     }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.encoding = encoding;
-}
-
-void gt_label_set_font_family_numb(gt_obj_st * label, gt_family_t family)
-{
-    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
-        return ;
-    }
-    _gt_label_st * style = (_gt_label_st * )label;
-    style->font_info.style_numb = family;
 }
 
 void gt_label_set_space(gt_obj_st * label, uint8_t space_x, uint8_t space_y)

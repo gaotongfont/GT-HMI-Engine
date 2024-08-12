@@ -78,9 +78,9 @@ void gt_indev_handler(struct _gt_timer_s * timer);
 /**
  * @brief disabled input device
  *
- * @param disabled 1: disabled, 0: enabled [default: 0]
+ * @param disabled 0: disabled, 1: enabled [default: 1]
  */
-void gt_indev_set_disabled(bool disabled);
+void gt_indev_set_enabled(bool enabled);
 
 /**
  * @brief
@@ -88,7 +88,7 @@ void gt_indev_set_disabled(bool disabled);
  * @return true
  * @return false
  */
-bool gt_indev_is_disabled(void);
+bool gt_indev_is_enabled(void);
 
 bool _gt_indev_remove_want_delate_target(gt_obj_st * target);
 

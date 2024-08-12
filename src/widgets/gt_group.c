@@ -31,13 +31,11 @@ typedef struct _gt_group_s {
 }_gt_group_st;
 
 /* static variables -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_group_class = {
-    ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
+static const gt_obj_class_st gt_group_class = {
+    ._init_cb      = NULL,
+    ._deinit_cb    = NULL,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_group_st)
@@ -49,27 +47,10 @@ const gt_obj_class_st gt_group_class = {
 
 
 /* static functions -----------------------------------------------------*/
-
-/**
- * @brief obj init group widget call back
- *
- * @param obj
- */
-static void _init_cb(gt_obj_st * obj) {
-}
-
-/**
- * @brief obj deinit call back
- *
- * @param obj
- */
-static void _deinit_cb(gt_obj_st * obj) {
-}
-
 static void _set_infinite_area(gt_obj_st * obj) {
     /** Set an infinite range -32767 ~ 32766 */
-    obj->area.x = -((1 << (sizeof(gt_size_t) << 3) - 1)) + 1;
-    obj->area.y = -((1 << (sizeof(gt_size_t) << 3) - 1)) + 1;
+    obj->area.x = 1 - ((1 << ((sizeof(gt_size_t) << 3) - 1)));
+    obj->area.y = 1 - ((1 << ((sizeof(gt_size_t) << 3) - 1)));
     obj->area.w = ((1 << (sizeof(gt_size_t) << 3))) - 2;
     obj->area.h = ((1 << (sizeof(gt_size_t) << 3))) - 2;
 }
@@ -81,12 +62,12 @@ static void _set_infinite_area(gt_obj_st * obj) {
  * @param e event
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    if (GT_EVENT_TYPE_DRAW_START == code) {
+    if (GT_EVENT_TYPE_DRAW_START == code_val) {
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
     }
-    else if (GT_EVENT_TYPE_UPDATE_STYLE == code) {
+    else if (GT_EVENT_TYPE_UPDATE_STYLE == code_val) {
         _set_infinite_area(obj);
     }
 }

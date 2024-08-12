@@ -73,7 +73,7 @@ static void _init_cb(gt_obj_st * obj) {
         gt_area_st real_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
         draw_bg(obj->draw_ctx, &rect_attr, &real_area);
     }
-    if ( gt_obj_get_mask_effect(obj) && gt_obj_get_state(obj) ) {
+    if ( gt_obj_get_mask_effect(obj) && GT_STATE_PRESSED == gt_obj_get_state(obj) ) {
         gt_graph_init_rect_attr(&rect_attr);
         rect_attr.reg.is_fill    = true;
         rect_attr.radius         = obj->radius;
@@ -158,15 +158,23 @@ static void _change_state_by_trigger_mode(gt_obj_st * obj, bool is_pressed) {
 }
 
 static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    switch(code) {
+    switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START: {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
         }
         case GT_EVENT_TYPE_UPDATE_STYLE: {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            break;
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL: {
+            _gt_obj_scroll_internal(obj);
+            break;
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL_END: {
+            _change_state_by_trigger_mode(obj, false);
             break;
         }
         case GT_EVENT_TYPE_INPUT_PRESSED: {
@@ -177,8 +185,6 @@ static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
         case GT_EVENT_TYPE_INPUT_RELEASED: {
             _change_state_by_trigger_mode(obj, false);
             _unmasked_effect_handler(obj);
-            /* TODO repeat event called? */
-            // gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         }
         case GT_EVENT_TYPE_INPUT_PRESS_LOST: {
@@ -192,9 +198,9 @@ static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
 }
 
 static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
-    gt_event_type_et code = gt_event_get_code(e);
+    gt_event_type_et code_val = gt_event_get_code(e);
 
-    switch(code) {
+    switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START: {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
@@ -249,7 +255,7 @@ void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
         ptr = ptr->prev;
     }
 
-    if (obj->using) {
+    if (obj->using_sta) {
         GT_LOGW("obj", "Try to delete an object %p that is in use.", obj);
         _gt_timer_set_repeat_count(timer, 1);   // retry to destroy object
         return;
@@ -288,7 +294,11 @@ static gt_obj_st * _find_obj_recursive_by_id(gt_obj_st * self, gt_id_t widget_id
 
 gt_obj_st * gt_obj_create(gt_obj_st * parent)
 {
-    return gt_obj_class_create(parent ? MY_CLASS : MY_CLASS_SCREEN, parent);
+    gt_obj_st * obj = gt_obj_class_create(parent ? MY_CLASS : MY_CLASS_SCREEN, parent);
+    GT_CHECK_BACK_VAL(obj, NULL);
+
+    obj->fixed = false;
+    return obj;
 }
 
 gt_obj_st * gt_obj_get_parent(gt_obj_st * obj)
@@ -366,6 +376,11 @@ void gt_obj_destroy(gt_obj_st * obj)
     _gt_timer_set_repeat_count(tmp_timer, 1);
 }
 
+void gt_obj_destroy_immediately(gt_obj_st * obj)
+{
+    _gt_obj_class_destroy(obj);
+}
+
 void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE_SCREEN)) {
@@ -398,10 +413,30 @@ gt_color_t gt_obj_get_bgcolor(gt_obj_st * obj)
     return obj->bgcolor;
 }
 
+gt_size_t gt_obj_get_limit_right(gt_obj_st * obj)
+{
+    gt_obj_st * child = NULL;
+    gt_size_t max_x = -0x7fff;
+    gt_size_t temp = 0, min_x = 0x7fff;
+    GT_CHECK_BACK_VAL(obj, 0);
+
+    for (gt_size_t i = 0, cnt = obj->cnt_child; i < cnt; i++) {
+        child = obj->child[i];
+        if (child->area.x < min_x) {
+            min_x = child->area.x;
+        }
+        temp = child->area.x + child->area.w;
+        if (temp > max_x) {
+            max_x = temp;
+        }
+    }
+    return min_x - max_x + obj->area.w;
+}
+
 gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj)
 {
     gt_obj_st * child = NULL;
-    gt_size_t bottom = -0x7fff;
+    gt_size_t max_y = -0x7fff;
     gt_size_t temp = 0, min_y = 0x7fff;
     GT_CHECK_BACK_VAL(obj, 0);
 
@@ -411,32 +446,43 @@ gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj)
             min_y = child->area.y;
         }
         temp = child->area.y + child->area.h;
-        if (temp > bottom) {
-            bottom = temp;
+        if (temp > max_y) {
+            max_y = temp;
         }
     }
-    return -(bottom - min_y - obj->area.h);
+    return min_y - max_y + obj->area.h;
+}
+
+gt_point_st gt_obj_get_childs_max_size(gt_obj_st * parent)
+{
+    gt_obj_st * child = NULL;
+    gt_point_st ret_size = { .x = 0, .y = 0 };
+    gt_point_st min = { .x = 0x7fff, .y = 0x7fff };
+    gt_point_st max = { .x = -0x7fff, .y = -0x7fff };
+    GT_CHECK_BACK_VAL(parent, ret_size);
+
+    for (gt_size_t i = parent->cnt_child - 1; i >= 0; --i) {
+        child = parent->child[i];
+        if (child->area.x < min.x) { min.x = child->area.x; }
+        if (child->area.y < min.y) { min.y = child->area.y; }
+        if (child->area.x + child->area.w > max.x) { max.x = child->area.x + child->area.w; }
+        if (child->area.y + child->area.h > max.y) { max.y = child->area.y + child->area.h; }
+    }
+    ret_size.x = max.x - min.x;
+    ret_size.y = max.y - min.y;
+    return ret_size;
+}
+
+gt_size_t gt_obj_get_childs_max_width(gt_obj_st * parent)
+{
+    gt_point_st size = gt_obj_get_childs_max_size(parent);
+    return size.x;
 }
 
 gt_size_t gt_obj_get_childs_max_height(gt_obj_st * parent)
 {
-    gt_obj_st * child = NULL;
-    gt_size_t min_y = 0x7fff;
-    gt_size_t max_y = -0x7fff;
-    if (NULL == parent) {
-        return 0;
-    }
-
-    for (gt_size_t i = 0, cnt = parent->cnt_child; i < cnt; i++) {
-        child = parent->child[i];
-        if (child->area.y < min_y) {
-            min_y = child->area.y;
-        }
-        if (child->area.y + child->area.h > max_y) {
-            max_y = child->area.y + child->area.h;
-        }
-    }
-    return max_y - min_y;
+    gt_point_st size = gt_obj_get_childs_max_size(parent);
+    return size.y;
 }
 
 void gt_obj_show_bg(gt_obj_st * obj, bool show)

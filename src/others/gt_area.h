@@ -66,7 +66,7 @@ bool gt_area_intersect_screen(const gt_area_st * screen, const gt_area_st * area
  * @return true Have intersection
  * @return false No intersection
  */
-bool gt_area_cover_screen(const gt_area_st const * const area1, gt_area_st const * const area2, gt_area_st * area_res);
+bool gt_area_cover_screen(gt_area_st const * const area1, gt_area_st const * const area2, gt_area_st * area_res);
 
 /**
  * @brief The inclusion relation of two regions

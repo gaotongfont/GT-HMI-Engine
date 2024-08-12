@@ -36,7 +36,7 @@
 
 static void _gt_check_event_cb(gt_event_st * e)
 {
-    printf("checkbox state: %s\n", gt_obj_get_state(e->target) ? "selected" : "unselected");
+    printf("checkbox state: %s\n", GT_STATE_PRESSED == gt_obj_get_state(e->target) ? "selected" : "unselected");
 }
 
 

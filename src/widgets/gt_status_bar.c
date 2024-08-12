@@ -70,12 +70,11 @@ typedef void (* _font_color_cb_t)(gt_obj_st *, gt_color_t);
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_status_bar_class = {
+static const gt_obj_class_st gt_status_bar_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
+    ._deinit_cb    = NULL,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_status_bar_st)
@@ -104,10 +103,6 @@ static void _init_cb(gt_obj_st * obj) {
 
         draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
     }
-}
-
-static void _deinit_cb(gt_obj_st * obj) {
-
 }
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
@@ -258,10 +253,15 @@ static gt_obj_st * _create_lab_obj(gt_obj_st * parent, _gt_status_bar_st * style
         return lab;
     }
     lab = gt_label_create(parent);
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
     gt_label_set_font_family_cn(lab, style->font_info.style_cn);
     gt_label_set_font_family_en(lab, style->font_info.style_en);
     gt_label_set_font_family_fl(lab, style->font_info.style_fl);
     gt_label_set_font_family_numb(lab, style->font_info.style_numb);
+#else
+    gt_label_set_font_family(lab, style->font_info.family);
+    gt_label_set_font_cjk(lab, style->font_info.cjk);
+#endif
     gt_label_set_font_size(lab, style->font_info.size);
     gt_label_set_font_gray(lab, style->font_info.gray);
     gt_label_set_font_thick_cn(lab, style->font_info.thick_cn);
@@ -755,6 +755,7 @@ void gt_status_bar_set_bg_color(gt_color_t color)
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_status_bar_set_font_family_cn(gt_family_t family)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
@@ -796,7 +797,26 @@ void gt_status_bar_set_font_family_numb(gt_family_t family)
     _set_font_param_call(obj, (_font_param_cb_t)gt_label_set_font_family_numb, family);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
-
+#else
+void gt_status_bar_set_font_family(gt_family_t family)
+{
+    gt_obj_st * obj = gt_status_bar_get_obj();
+    GT_CHECK_BACK(obj);
+    _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
+    gt_font_set_family(&style->font_info, family);
+    _set_font_param_call(obj, (_font_param_cb_t)gt_label_set_font_family, family);
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+void gt_status_bar_set_font_cjk(gt_font_cjk_et cjk)
+{
+    gt_obj_st * obj = gt_status_bar_get_obj();
+    GT_CHECK_BACK(obj);
+    _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
+    style->font_info.cjk = cjk;
+    _set_font_param_call(obj, (_font_param_cb_t)gt_label_set_font_cjk, cjk);
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+#endif
 void gt_status_bar_set_font_size(uint8_t size)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();

@@ -15,10 +15,6 @@
 #include "../others/gt_types.h"
 
 /* private define -------------------------------------------------------*/
-
-static char gbk_str[2] = {0};
-
-
 #if GT_CFG_USE_SYMBOL_16x16 == 1
 #ifdef GT_SYMBOL_KEYBOARD
     static const uint8_t symbol_16x16_keyboard[] = {
@@ -1243,59 +1239,58 @@ static char gbk_str[2] = {0};
 
 static const _gt_symbol_st symbols_16x16[] = {
 #if GT_CFG_USE_SYMBOL_16x16 == 1
-    GT_SYMBOL_SPACE, symbol_space_16x16,
-    GT_SYMBOL_NEW_LINE, symbol_16x16_new_line,
-    GT_SYMBOL_BACKSPACE, symbol_16x16_backspace,
-    GT_SYMBOL_EN, symbol_en_16x16,
-    GT_SYMBOL_CH, symbol_ch_16x16,
-    GT_SYMBOL_WELL_NUMBER, symbol_well_number_16x16,
-    GT_SYMBOL_LOWER_CASE, symbol_lower_case_16x16,
-    GT_SYMBOL_UPPER_CASE, symbol_upper_case_16x16,
-    GT_SYMBOL_RIGHT, symbol_16x16_right,
-    GT_SYMBOL_LEFT, symbol_16x16_left,
-    GT_SYMBOL_NEXT, symbol_16x16_right,
-    GT_SYMBOL_PREV, symbol_16x16_left,
-    GT_SYMBOL_KEYBOARD, symbol_16x16_keyboard,
-    GT_SYMBOL_UP, symbol_16x16_up,
-    GT_SYMBOL_DOWN, symbol_16x16_down,
-    GT_SYMBOL_SAVE, symbol_16x16_save,
+    { GT_SYMBOL_SPACE, symbol_space_16x16, },
+    { GT_SYMBOL_NEW_LINE, symbol_16x16_new_line, },
+    { GT_SYMBOL_BACKSPACE, symbol_16x16_backspace, },
+    { GT_SYMBOL_EN, symbol_en_16x16, },
+    { GT_SYMBOL_CH, symbol_ch_16x16, },
+    { GT_SYMBOL_WELL_NUMBER, symbol_well_number_16x16, },
+    { GT_SYMBOL_LOWER_CASE, symbol_lower_case_16x16, },
+    { GT_SYMBOL_UPPER_CASE, symbol_upper_case_16x16, },
+    { GT_SYMBOL_RIGHT, symbol_16x16_right, },
+    { GT_SYMBOL_LEFT, symbol_16x16_left, },
+    { GT_SYMBOL_NEXT, symbol_16x16_right, },
+    { GT_SYMBOL_PREV, symbol_16x16_left, },
+    { GT_SYMBOL_KEYBOARD, symbol_16x16_keyboard, },
+    { GT_SYMBOL_UP, symbol_16x16_up, },
+    { GT_SYMBOL_DOWN, symbol_16x16_down, },
+    { GT_SYMBOL_SAVE, symbol_16x16_save, },
 
-    GT_SYMBOL_OK, symbol_16x16_ok,
-    GT_SYMBOL_CLOSE, symbol_16x16_close,
+    { GT_SYMBOL_OK, symbol_16x16_ok, },
+    { GT_SYMBOL_CLOSE, symbol_16x16_close, },
 
-    GT_SYMBOL_VOICE_PLAY_LEFT_1 , voice_play_16x16_left_1,
-    GT_SYMBOL_VOICE_PLAY_LEFT_2 , voice_play_16x16_left_2,
-    GT_SYMBOL_VOICE_PLAY_LEFT_3 , voice_play_16x16_left_3,
-    GT_SYMBOL_VOICE_PLAY_RIGHT_1 , voice_play_16x16_right_1,
-    GT_SYMBOL_VOICE_PLAY_RIGHT_2 , voice_play_16x16_right_2,
-    GT_SYMBOL_VOICE_PLAY_RIGHT_3 , voice_play_16x16_right_3,
-
+    { GT_SYMBOL_VOICE_PLAY_LEFT_1 , voice_play_16x16_left_1, },
+    { GT_SYMBOL_VOICE_PLAY_LEFT_2 , voice_play_16x16_left_2, },
+    { GT_SYMBOL_VOICE_PLAY_LEFT_3 , voice_play_16x16_left_3, },
+    { GT_SYMBOL_VOICE_PLAY_RIGHT_1 , voice_play_16x16_right_1, },
+    { GT_SYMBOL_VOICE_PLAY_RIGHT_2 , voice_play_16x16_right_2, },
+    { GT_SYMBOL_VOICE_PLAY_RIGHT_3 , voice_play_16x16_right_3, },
 #endif
 };
 static const _gt_symbol_st symbols_24x24[] = {
 #if GT_CFG_USE_SYMBOL_24x24 == 1
-    GT_SYMBOL_SPACE, symbol_space_24x24,
-    GT_SYMBOL_NEW_LINE, symbol_new_line_24x24,
-    GT_SYMBOL_BACKSPACE, symbol_backspace_24x24,
-    GT_SYMBOL_EN, symbol_en_24x24,
-    GT_SYMBOL_CH, symbol_ch_24x24,
-    GT_SYMBOL_WELL_NUMBER, symbol_well_number_24x24,
-    GT_SYMBOL_LOWER_CASE, symbol_lower_case_24x24,
-    GT_SYMBOL_UPPER_CASE, symbol_upper_case_24x24,
-    GT_SYMBOL_RIGHT, symbol_right_24x24,
-    GT_SYMBOL_LEFT, symbol_left_24x24,
-    GT_SYMBOL_NEXT, symbol_right_24x24,
-    GT_SYMBOL_PREV, symbol_left_24x24,
-    GT_SYMBOL_KEYBOARD, symbol_keyboard_24x24,
-    GT_SYMBOL_OK, symbol_ok_24x24,
-    GT_SYMBOL_CLOSE, symbol_24x24_close,
+    { GT_SYMBOL_SPACE, symbol_space_24x24, },
+    { GT_SYMBOL_NEW_LINE, symbol_new_line_24x24, },
+    { GT_SYMBOL_BACKSPACE, symbol_backspace_24x24, },
+    { GT_SYMBOL_EN, symbol_en_24x24, },
+    { GT_SYMBOL_CH, symbol_ch_24x24, },
+    { GT_SYMBOL_WELL_NUMBER, symbol_well_number_24x24, },
+    { GT_SYMBOL_LOWER_CASE, symbol_lower_case_24x24, },
+    { GT_SYMBOL_UPPER_CASE, symbol_upper_case_24x24, },
+    { GT_SYMBOL_RIGHT, symbol_right_24x24, },
+    { GT_SYMBOL_LEFT, symbol_left_24x24, },
+    { GT_SYMBOL_NEXT, symbol_right_24x24, },
+    { GT_SYMBOL_PREV, symbol_left_24x24, },
+    { GT_SYMBOL_KEYBOARD, symbol_keyboard_24x24, },
+    { GT_SYMBOL_OK, symbol_ok_24x24, },
+    { GT_SYMBOL_CLOSE, symbol_24x24_close, },
 
-    GT_SYMBOL_VOICE_PLAY_LEFT_1 , voice_play_24x24_left_1,
-    GT_SYMBOL_VOICE_PLAY_LEFT_2 , voice_play_24x24_left_2,
-    GT_SYMBOL_VOICE_PLAY_LEFT_3 , voice_play_24x24_left_3,
-    GT_SYMBOL_VOICE_PLAY_RIGHT_1 , voice_play_24x24_right_1,
-    GT_SYMBOL_VOICE_PLAY_RIGHT_2 , voice_play_24x24_right_2,
-    GT_SYMBOL_VOICE_PLAY_RIGHT_3 , voice_play_24x24_right_3,
+    { GT_SYMBOL_VOICE_PLAY_LEFT_1 , voice_play_24x24_left_1, },
+    { GT_SYMBOL_VOICE_PLAY_LEFT_2 , voice_play_24x24_left_2, },
+    { GT_SYMBOL_VOICE_PLAY_LEFT_3 , voice_play_24x24_left_3, },
+    { GT_SYMBOL_VOICE_PLAY_RIGHT_1 , voice_play_24x24_right_1, },
+    { GT_SYMBOL_VOICE_PLAY_RIGHT_2 , voice_play_24x24_right_2, },
+    { GT_SYMBOL_VOICE_PLAY_RIGHT_3 , voice_play_24x24_right_3, },
 
 #endif
 };
@@ -1342,7 +1337,7 @@ const uint8_t * gt_symbol_get_mask_buf(uint32_t uni_or_gbk, uint8_t size)
     _gt_symbol_st * tmp_symbol = NULL;
     char utf8[4] = {0};
 
-    gt_unicode_to_utf8(utf8, uni_or_gbk);
+    gt_unicode_to_utf8((uint8_t * )utf8, uni_or_gbk);
 
     if (16 == size) {
         cnt = sizeof(symbols_16x16) / sizeof(_gt_symbol_st);

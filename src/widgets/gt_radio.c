@@ -45,7 +45,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-const gt_obj_class_st gt_radio_class = {
+static const gt_obj_class_st gt_radio_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
@@ -62,25 +62,28 @@ const gt_obj_class_st gt_radio_class = {
 
 static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     _gt_radio_st * style = (_gt_radio_st * )radio;
+    uint32_t len = strlen(style->text);
 
     gt_font_st font = {
-        .info       = style->font_info,
-        .res        = NULL,
-        .utf8       = style->text,
-        .len        = strlen(style->text),
+        .info = style->font_info,
+        .res  = NULL,
+        .utf8 = style->text,
+        .len  = len,
 
     };
     font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
 
     // set default size
-    if( radio->area.w == 0 || radio->area.h == 0){
-        radio->area.w = style->font_info.size+4 + strlen(style->text)*11;
-        radio->area.h = style->font_info.size+4;
+    if( radio->area.w == 0){
+        radio->area.w = style->font_info.size + 4 + len * 11;
+    }
+    if (radio->area.h < style->font_info.size + 4) {
+        radio->area.h = style->font_info.size + 4;  // Force height equal to font size
     }
 
     gt_area_st area_base = gt_area_reduce(radio->area, gt_obj_get_reduce(radio));
-    area_base.w = style->font_info.size+4;
+    area_base.w = style->font_info.size + 4;
     area_base.h = area_base.w;
     // area_base.y = radio->area.y + ((radio->area.h - area_base.h) >> 1);
     area_base.x = radio->area.x;
@@ -114,7 +117,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
 
     gt_color_t color = gt_color_white();
 
-    if( gt_obj_get_state(radio) != GT_STATE_NONE ){
+    if (gt_obj_get_state(radio) == GT_STATE_PRESSED) {
         color = gt_color_hex(0x808080);
     }
 
@@ -178,8 +181,8 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param e event
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-    gt_event_type_et code = gt_event_get_code(e);
-    switch(code) {
+    gt_event_type_et code_val = gt_event_get_code(e);
+    switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START:
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
@@ -210,9 +213,14 @@ gt_obj_st * gt_radio_create(gt_obj_st * parent)
         return obj;
     }
     _gt_radio_st * style = (_gt_radio_st * )obj;
+    const char * text = "radio";
+    uint16_t len = strlen(text);
 
-    style->text = gt_mem_malloc(sizeof("radio"));
-    gt_memcpy(style->text, "radio\0", sizeof("radio"));
+    style->text = gt_mem_malloc(len + 1);
+    if (style->text) {
+        gt_memcpy(style->text, text, len);
+        style->text[len] = '\0';
+    }
 
     gt_font_info_init(&style->font_info);
     style->space_x           = 0;
@@ -232,7 +240,7 @@ void gt_radio_set_selected(gt_obj_st * radio)
     if (GT_TYPE_GROUP == gt_obj_class_get_type(parent)) {
         while(  idx < parent->cnt_child ){
             child = parent->child[idx];
-            if( OBJ_TYPE == gt_obj_class_get_type(child) &&
+            if (OBJ_TYPE == gt_obj_class_get_type(child) &&
                 GT_STATE_NONE != gt_obj_get_state(child)) {
                 gt_obj_set_state(child, GT_STATE_NONE);
                 gt_event_send(child, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -270,7 +278,7 @@ void gt_radio_set_text(gt_obj_st * radio, const char * fmt, ...)
     if (NULL == style->text) {
         goto free_lb;
     }
-
+    gt_memset(style->text, 0, size);
     va_start(args2, fmt);
     vsnprintf(style->text, size, fmt, args2);
     va_end(args2);
@@ -309,7 +317,7 @@ void gt_radio_set_font_gray(gt_obj_st * radio, uint8_t gray)
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_info.gray = gray;
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_radio_set_font_family_cn(gt_obj_st * radio, gt_family_t family)
 {
     if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
@@ -343,6 +351,24 @@ void gt_radio_set_font_family_numb(gt_obj_st * radio, gt_family_t family)
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_info.style_numb = family;
 }
+#else
+void gt_radio_set_font_family(gt_obj_st * radio, gt_family_t family)
+{
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_radio_st * style = (_gt_radio_st * )radio;
+    gt_font_set_family(&style->font_info, family);
+}
+void gt_radio_set_font_cjk(gt_obj_st* radio, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_radio_st * style = (_gt_radio_st * )radio;
+    style->font_info.cjk = cjk;
+}
+#endif
 
 void gt_radio_set_font_thick_en(gt_obj_st * radio, uint8_t thick)
 {

@@ -35,28 +35,82 @@ extern "C" {
 #define GT_DOT_GET_BIT(buf,x,y,w,h)		((buf[(y)*((w)>>3)+((x)>>3)]>>(7-((x)%8)))&0x01)
 
 #define GT_RADIUS_MIN   2
+
 /* typedef --------------------------------------------------------------*/
+
+#if 0
+// TODO
+typedef enum {
+    GT_LINE_STYLE_DEFAULT = 0,
+    GT_LINE_STYLE_STUB,             /** such as: - - - - */
+}gt_line_style_et;
+#endif
+
+
+typedef struct gt_line_s {
+    gt_color_t color;
+    gt_opa_t opa;
+    uint8_t width;
+#if 0
+    uint8_t type_sty;           /** line style @ref gt_line_style_et */
+#endif
+
+    uint8_t type : 3;   /** Such point/line/curve/bar @ref gt_graphs_type_et */
+    uint8_t brush : 1;  /** brush type @ref gt_brush_type_et */
+}gt_line_st;
+
+typedef struct gt_axis_s {
+    gt_range_st hor;
+    gt_range_st ver;
+    gt_float_t hor_unit;
+    gt_float_t ver_unit;
+
+    gt_line_st scale;
+    gt_line_st grid;
+}gt_axis_st;
+
+typedef struct gt_attr_point_s {
+    gt_point_st pos;
+    gt_line_st line;
+}gt_attr_point_st;
 
 /**
  * @brief line attribute information
  */
-typedef struct _gt_attr_line_s
-{
-    gt_color_t fg_color;            ///< fore color
-    gt_color_t bg_color;            ///< background color
-    gt_size_t width;                ///< line width
-
-    gt_size_t x_1;                  ///< start point position
-    gt_size_t y_1;                  ///< start point position
-
-    gt_size_t x_2;                  ///< end point position
-    gt_size_t y_2;                  ///< end point position
+typedef struct _gt_attr_line_s {
+    gt_point_st start;
+    gt_point_st end;
+    gt_line_st line;
 }gt_attr_line_st;
+
+/**
+ * @brief curve attribute information
+ */
+typedef struct _gt_attr_curve_s {
+    gt_point_f_st p0;
+    gt_point_f_st p1;
+    gt_point_f_st p2;
+    gt_point_f_st p3;
+    gt_line_st line;
+}gt_attr_curve_st;
+
+typedef struct gt_series_points_s {
+    struct gt_series_points_s * next_series_p;
+    gt_float_t * x_series;
+    gt_float_t * y_series;
+    gt_line_st line;
+    uint16_t count_point;
+}gt_series_points_st;
+
+typedef struct _gt_attr_graphs_s {
+    gt_series_points_st * series_head_p;
+    gt_axis_st axis;
+    uint16_t count_line;
+}_gt_attr_graphs_st;
 
 typedef struct _gt_attr_rect_reg_s {
     uint8_t is_fill : 1;    ///< fill inside area by bg_color
-    uint8_t is_line : 1;    ///< use straight line
-    uint8_t reserved : 6;   ///< reserved
+    uint8_t reserved : 7;   ///< reserved
 }_gt_attr_rect_reg_st;
 
 /**
@@ -67,6 +121,9 @@ typedef struct _gt_attr_rect_s {
     _gt_img_dsc_st * raw_img;   ///< RAM image data, when bg_img_src is NULL
 #if GT_USE_FILE_HEADER
     gt_file_header_param_st * file_header;  ///< Using file header mode to read image data
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_addr_t addr;             ///< Using direct address mode to read image data
 #endif
 
     gt_attr_line_st * line;     ///< use straight line
@@ -92,41 +149,7 @@ typedef struct _gt_attr_rect_s {
     _gt_attr_rect_reg_st reg;
 }gt_attr_rect_st;
 
-typedef struct _gt_attr_circle_reg_s {
-    uint8_t is_fill : 1;    ///< fill inside area by fg_color
-    uint8_t reserved : 7;   ///< reserved
-}_gt_attr_circle_reg_st;
 
-/**
- * @brief circle attribute information
- */
-typedef struct _gt_attr_circle_s
-{
-    gt_color_t fg_color;        ///< fore color
-    gt_color_t bg_color;        ///< background color
-
-    gt_size_t radius;           ///< radius value
-
-    gt_color_t border_color;    ///< border color
-    uint8_t border_width;     ///< border width
-
-    _gt_attr_circle_reg_st reg;
-}gt_attr_circle_st;
-
-/**
- * @brief arch attribute information
- */
-typedef struct _gt_attr_arch_s
-{
-    gt_color_t fg_color;            ///< fore color
-    gt_color_t bg_color;            ///< background color
-
-    gt_size_t radius;               ///< radius value
-    gt_size_t angle_start;          ///< The start angle
-    gt_size_t angle_end;            ///< The end angle
-
-    uint8_t border_width;         ///< border width
-}gt_attr_arch_st;
 
 /* macros ---------------------------------------------------------------*/
 
@@ -140,69 +163,6 @@ typedef struct _gt_attr_arch_s
  */
 void gt_graph_init_rect_attr(gt_attr_rect_st * rect_attr);
 
-/**
- * @brief
- *
- * @param line_attr
- */
-void gt_graph_init_line_attr(gt_attr_line_st * line_attr);
-
-/**
- * @brief init line attribute object
- *
- * @param arch_attr
- */
-void gt_graph_init_arch_attr(gt_attr_arch_st * arch_attr);
-
-/**
- * @brief init circle attribute object
- *
- * @param circle_attr
- */
-void gt_graph_init_circle_attr(gt_attr_circle_st * circle_attr);
-
-/**
- * @brief Get gary between two colors
- *
- * @param color_out The return color value
- * @param color_from
- * @param color_to
- * @param gray
- * @param step The level of gray value
- * @return uint32_t The color value
- */
-uint32_t gt_graph_get_gray(gt_color_t * color_out, gt_color_t color_from, gt_color_t color_to, gt_size_t gray, gt_size_t step);
-
-#if 0
-
-/**
- * @brief draw a circle
- *
- * @param circle_attr circle attribute
- * @param area display area
- * @param color_buf buffer to save data
- */
-void gt_graph_circle(gt_attr_circle_st * circle_attr, gt_area_st * area, gt_color_t * color_buf);
-
-/**
- * @brief draw a line
- *
- * @param line_attr line attribute
- * @param area  display area
- */
-void gt_graph_line(gt_attr_line_st * line_attr, gt_area_st * area );
-
-/**
- * @brief use bresenham algorithm create a line obj
- *
- * @param x0 start point
- * @param y0 start point
- * @param x1 end point
- * @param y1 end point
- * @param fg_color line color
- */
-void gt_bresenham_line(gt_size_t x0, gt_size_t y0, gt_size_t x1, gt_size_t y1,gt_color_t fg_color);
-#endif
 
 #ifdef __cplusplus
 } /*extern "C"*/

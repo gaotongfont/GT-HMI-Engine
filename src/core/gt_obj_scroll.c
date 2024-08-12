@@ -127,6 +127,37 @@ gt_size_t gt_obj_scroll_get_y(gt_obj_st * obj)
     return obj->process_attr.scroll.y;
 }
 
+void _gt_obj_scroll_internal(gt_obj_st * obj)
+{
+    gt_point_st * scroll = &obj->process_attr.scroll;
+    gt_size_t right = gt_obj_get_limit_right(obj);
+    gt_size_t bottom = gt_obj_get_limit_bottom(obj);
+
+    if (scroll->y > 0) {
+        scroll->y = 0;
+    } else if (bottom < 0 && scroll->y < bottom) {
+        scroll->y = bottom;
+    } else if (bottom >= 0) {
+        scroll->y = 0;
+    }
+
+    if (scroll->x > 0) {
+        scroll->x = 0;
+    } else if (right < 0 && scroll->x < right) {
+        scroll->x = right;
+    } else if (right >= 0) {
+        scroll->x = 0;
+    }
+
+    _gt_obj_move_child_by(obj, scroll->x - obj->process_attr.scroll_prev.x, scroll->y - obj->process_attr.scroll_prev.y);
+    gt_disp_invalid_area(obj);
+    if (obj->process_attr.scroll_prev.x != scroll->x) {
+        obj->process_attr.scroll_prev.x = scroll->x;
+    }
+    if (obj->process_attr.scroll_prev.y != scroll->y) {
+        obj->process_attr.scroll_prev.y = scroll->y;
+    }
+}
 
 
 /**

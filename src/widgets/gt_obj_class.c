@@ -38,12 +38,11 @@
 
 
 /* static functions -----------------------------------------------------*/
-static uint32_t get_style_size(const gt_obj_class_st * class) {
-    return class->size_style;
+static uint32_t get_style_size(const gt_obj_class_st * c) {
+    return c->size_style;
 }
 
-static gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st * self)
-{
+static gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st * self) {
     gt_size_t i = 0;
     gt_size_t idx = -1;
     gt_disp_st * disp = gt_disp_get_default();
@@ -77,8 +76,7 @@ static gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st * self)
     return ret_p;
 }
 
-static gt_obj_st * _gt_obj_class_destroy_from_parent(gt_obj_st * self)
-{
+static gt_obj_st * _gt_obj_class_destroy_from_parent(gt_obj_st * self) {
     gt_size_t i = 0;
     gt_size_t idx = -1;
     gt_obj_st * parent = self->parent;
@@ -107,6 +105,10 @@ static gt_obj_st * _gt_obj_class_destroy_from_parent(gt_obj_st * self)
     }
     parent->child[parent->cnt_child] = NULL;
     parent->child = (gt_obj_st ** )gt_mem_realloc(parent->child, parent->cnt_child * sizeof(gt_obj_st * ));
+    if (NULL == parent->child) {
+        GT_CHECK_PRINT(parent->child);
+        parent->cnt_child = 0;
+    }
     return ret_p;
 }
 
@@ -116,19 +118,14 @@ static void _gt_obj_class_destroy_property(gt_obj_st * self) {
     _gt_indev_remove_want_delate_target(self);
 
     // free event attribute
-    if (NULL != self->event_attr) {
-        gt_mem_free(self->event_attr);
-        self->event_attr = NULL;
-    }
+    gt_obj_remove_all_event_cb(self);
 
-    self->delate = false;
     // free obj custom style
-    if (self->class->_deinit_cb) {
-        self->class->_deinit_cb(self);
+    if (self->classes->_deinit_cb) {
+        self->classes->_deinit_cb(self);
     }
-
     self->draw_ctx = NULL;
-    self->class = NULL;
+    self->classes = NULL;
 }
 
 static inline void _gt_obj_class_destroy_self(gt_obj_st * self) {
@@ -200,6 +197,11 @@ static inline bool _add_obj_to_parent(gt_obj_st * obj, gt_obj_st * parent) {
         parent->child[parent->cnt_child++] = obj;
     }
     // GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj: %p, parent: %p, parent child: %p, count: %d", parent->child[parent->cnt_child - 1], parent, parent->child, parent->cnt_child);
+    if (parent->row_layout) {
+        // row calc width
+        gt_layout_row_grow(parent);
+    }
+
     gt_event_send(parent, GT_EVENT_TYPE_CHANGE_CHILD_ADD, obj);
     return true;
 }
@@ -219,7 +221,6 @@ static bool _create_new_screen_obj(gt_obj_st * obj) {
         }
         disp->screens[disp->cnt_scr++] = obj;
     } else {
-        // gt_mem_realloc can't operate NULL ptr
         disp->screens = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr + 1));
         if (!disp->screens) {
             return false;
@@ -236,16 +237,16 @@ static bool _create_new_screen_obj(gt_obj_st * obj) {
 }
 
 /* global functions / API interface -------------------------------------*/
-struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_obj_s * parent)
+struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * c, struct gt_obj_s * parent)
 {
-    uint32_t is = get_style_size(class);
+    uint32_t is = get_style_size(c);
     gt_obj_st * obj = gt_mem_malloc(is);
     if (!obj) {
         return NULL;
     }
     gt_memset_0(obj, is);
 
-    obj->class      = class;
+    obj->classes      = c;
     obj->parent     = parent;
     obj->id         = -1;
     obj->opa        = GT_OPA_100;
@@ -271,12 +272,9 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
 
     /** widget object */
     obj->fixed = true;
+    obj->inside = true;
     if (false == _add_obj_to_parent(obj, parent)) {
         goto obj_lb;
-    }
-    if (parent->row_layout) {
-        // row calc width
-        gt_layout_row_grow(parent);
     }
 
     return obj;
@@ -284,6 +282,28 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * class, struct gt_o
 obj_lb:
     gt_mem_free(obj);
     return NULL;
+}
+
+gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj)
+{
+    if (NULL == obj || NULL == obj->classes) {
+        return GT_TYPE_UNKNOWN;
+    }
+    return obj->classes->type;
+}
+
+bool gt_obj_is_type(struct gt_obj_s * obj, gt_obj_type_et type)
+{
+    if (NULL == obj || NULL == obj->classes) {
+        return false;
+    }
+    if (GT_TYPE_TOTAL == type) {
+        if (GT_TYPE_UNKNOWN == obj->classes->type) {
+            return false;
+        }
+        return true;
+    }
+    return obj->classes->type == type;
 }
 
 struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_obj_s * to)
@@ -321,7 +341,6 @@ void _gt_obj_class_destroy(struct gt_obj_s * self)
     if (NULL == self) {
         return ;
     }
-
     _destroy_and_free_children(self, true);
 
     if (NULL == self->parent) {
@@ -357,28 +376,6 @@ void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_ob
     }
     gt_obj_set_overflow(obj, parent->overflow);
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_OVERFLOW, parent->overflow);
-}
-
-
-gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj)
-{
-    if (NULL == obj || NULL == obj->class) {
-        return GT_TYPE_UNKNOWN;
-    }
-    return obj->class->type;
-}
-
-bool gt_obj_is_type(struct gt_obj_s * obj, gt_obj_type_et type)
-{
-    if (NULL == obj || NULL == obj->class) {
-        return false;
-    }
-    if (GT_TYPE_TOTAL == type) {
-        if (GT_TYPE_UNKNOWN == obj->class->type) {
-            return false;
-        }
-    }
-    return obj->class->type == type;
 }
 
 /* end ------------------------------------------------------------------*/

@@ -8,6 +8,10 @@
 extern "C" {
 #endif
 
+#include "../../gt_conf.h"
+
+#if GT_USE_SJPG
+
 #include "tjpgdcnf.h"
 #include "../../others/gt_types.h"
 #include <string.h>
@@ -101,3 +105,5 @@ JRESULT jd_decomp (JDEC* jd, int (*outfunc)(JDEC*,void*,JRECT*), uint8_t scale);
 #endif
 
 #endif /* _TJPGDEC */
+
+#endif /** GT_USE_SJPG */

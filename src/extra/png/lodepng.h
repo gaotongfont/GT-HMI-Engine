@@ -32,6 +32,7 @@ freely, subject to the following restrictions:
 
 #include <string.h> /*for size_t*/
 #include "gt_png.h"
+#include "../others/gt_types.h"
 #include "../../hal/gt_hal_file_header.h"
 
 extern const char* LODEPNG_VERSION_STRING;
@@ -1080,6 +1081,10 @@ unsigned lodepng_load_file(unsigned char** out, size_t* outsize, const char* fil
 
 #if GT_USE_FILE_HEADER
 unsigned lodepng_load_file_fh(unsigned char** out, size_t* outsize, gt_file_header_param_st const * const param);
+#endif
+
+#if GT_USE_DIRECT_ADDR
+unsigned lodepng_load_file_direct_addr(unsigned char** out, size_t* outsize, gt_addr_t addr);
 #endif
 
 /*

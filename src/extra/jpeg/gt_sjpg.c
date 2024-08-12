@@ -382,7 +382,7 @@ static gt_res_t _gt_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt_img
 {
     dsc->fp = gt_fs_open((char * )dsc->src, GT_FS_MODE_RD);
     if (NULL == dsc->fp) {
-        GT_RES_INV;
+        return GT_RES_INV;
     }
     return _common_sjpg_open(decoder, dsc);
 }
@@ -479,6 +479,30 @@ static gt_res_t _gt_sjpg_fh_open(struct _gt_img_decoder_s * decoder, struct _gt_
 }
 #endif
 
+#if GT_USE_DIRECT_ADDR
+static gt_res_t _gt_sjpg_direct_addr_info(struct _gt_img_decoder_s * decoder, gt_addr_t addr, _gt_img_info_st * header) {
+    gt_fs_fp_st * fp = gt_fs_direct_addr_open(addr, GT_FS_MODE_RD);
+    gt_res_t ret = GT_RES_OK;
+    if (!fp) {
+        return GT_RES_INV;
+    }
+    ret = _common_sjpg_info(decoder, fp, header);
+
+err_lb:
+    gt_fs_close(fp);
+    return ret;
+}
+
+static gt_res_t _gt_sjpg_direct_addr_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc) {
+    dsc->fp = gt_fs_direct_addr_open(dsc->addr, GT_FS_MODE_RD);
+    if (NULL == dsc->fp) {
+        return GT_RES_INV;
+    }
+
+    return _common_sjpg_open(decoder, dsc);
+}
+#endif
+
 /* global functions / API interface -------------------------------------*/
 
 void gt_sjpg_init(void)
@@ -495,6 +519,10 @@ void gt_sjpg_init(void)
     gt_img_decoder_set_fh_open_cb(decoder, _gt_sjpg_fh_open);
 #endif
 
+#if GT_USE_DIRECT_ADDR
+    gt_img_decoder_set_direct_addr_info_cb(decoder, _gt_sjpg_direct_addr_info);
+    gt_img_decoder_set_direct_addr_open_cb(decoder, _gt_sjpg_direct_addr_open);
+#endif
     gt_img_decoder_register(decoder);
 }
 

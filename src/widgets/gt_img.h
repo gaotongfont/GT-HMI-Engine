@@ -33,6 +33,7 @@ extern "C" {
 typedef struct gt_img_raw_s {
     gt_color_t const * buffer;    /** color channel, necessary */
     gt_opa_t   const * opa;       /** alpha channel, unnecessary */
+    gt_color_t color;
     uint16_t   width;             /** width of the image */
     uint16_t   height;            /** height of the image */
 }gt_img_raw_st;
@@ -79,6 +80,16 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw);
  *           package_idx 0[defalut]: The index of element within item, as the first element
  */
 void gt_img_set_by_file_header(gt_obj_st * img, gt_file_header_param_st * fh);
+#endif
+
+#if GT_USE_DIRECT_ADDR
+/**
+ * @brief Display the image by direct address
+ *
+ * @param img
+ * @param addr Direct address of the image
+ */
+void gt_img_set_by_direct_addr(gt_obj_st * img, gt_addr_t addr);
 #endif
 
 /**

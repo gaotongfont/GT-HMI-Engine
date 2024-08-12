@@ -62,10 +62,15 @@ typedef enum{
     _SET_MSG_BORDER_COLOR,
     _SET_MSG_BORDER_W,
     _SET_MSG_FONT_COLOR,
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
     _SET_MSG_FONT_STYLE_CN,
     _SET_MSG_FONT_STYLE_EN,
     _SET_MSG_FONT_STYLE_FL,
     _SET_MSG_FONT_STYLE_NUMB,
+#else
+    _SET_MSG_FONT_FAMILY,
+    _SET_MSG_FONT_CJK,
+#endif
     _SET_MSG_FONT_SIZE,
     _SET_MSG_FONT_GRAY,
     _SET_MSG_FONT_THICK_EN,
@@ -74,7 +79,6 @@ typedef enum{
 
 /* static prototypes ----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
 static void _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint8_t tim_s, gt_chat_type_te type, bool is_send);
@@ -88,9 +92,9 @@ static void _msg_anim_ready_cb(struct gt_anim_s * anim);
 
 /* static variables -----------------------------------------------------*/
 
-const gt_obj_class_st gt_chat_class = {
+static const gt_obj_class_st gt_chat_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
+    ._deinit_cb    = NULL,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_chat_st)
@@ -118,9 +122,6 @@ static void _init_cb(gt_obj_st * obj) {
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
 }
 
-static void _deinit_cb(gt_obj_st * obj) {
-
-}
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et type = gt_event_get_code(e);
@@ -153,10 +154,15 @@ static void _gt_set_voice_text(gt_obj_st* obj, uint8_t tim_s, bool is_send, uint
 }
 
 static void _gt_set_msg_font_info_all(gt_obj_st * msg_obj, gt_font_info_st * font_info) {
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
     gt_btn_set_font_family_cn(msg_obj, font_info->style_cn);
     gt_btn_set_font_family_en(msg_obj, font_info->style_en);
     gt_btn_set_font_family_fl(msg_obj, font_info->style_fl);
     gt_btn_set_font_family_numb(msg_obj, font_info->style_numb);
+#else
+    gt_btn_set_font_family(msg_obj, font_info->family);
+    gt_btn_set_font_cjk(msg_obj, font_info->cjk);
+#endif
     gt_btn_set_font_gray(msg_obj, font_info->gray);
     gt_btn_set_font_size(msg_obj, font_info->size);
     gt_btn_set_font_thick_cn(msg_obj, font_info->thick_cn);
@@ -346,6 +352,7 @@ static void _gt_set_msg_param(gt_obj_st* chat, _gt_chat_set_msg_te set_type, gt_
         case _SET_MSG_FONT_COLOR:
             gt_btn_set_font_color(style->msg_list[i].msg_obj, color);
             break;
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
         case _SET_MSG_FONT_STYLE_CN:
             gt_btn_set_font_family_cn(style->msg_list[i].msg_obj, style->font_info.style_cn);
             break;
@@ -358,6 +365,14 @@ static void _gt_set_msg_param(gt_obj_st* chat, _gt_chat_set_msg_te set_type, gt_
         case _SET_MSG_FONT_STYLE_NUMB:
             gt_btn_set_font_family_numb(style->msg_list[i].msg_obj, style->font_info.style_numb);
             break;
+#else
+        case _SET_MSG_FONT_FAMILY:
+            gt_btn_set_font_family(style->msg_list[i].msg_obj, style->font_info.family);
+            break;
+        case _SET_MSG_FONT_CJK:
+            gt_btn_set_font_cjk(style->msg_list[i].msg_obj, style->font_info.cjk);
+            break;
+#endif
         case _SET_MSG_FONT_SIZE:
             gt_btn_set_font_size(style->msg_list[i].msg_obj, style->font_info.size);
             break;
@@ -498,7 +513,7 @@ void gt_chat_set_font_gray(gt_obj_st * chat, uint8_t gray)
     style->font_info.gray = gray;
     _gt_set_msg_param(chat, _SET_MSG_FONT_GRAY, gt_color_hex(0), 0);
 }
-
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_chat_set_font_family_cn(gt_obj_st * chat, gt_family_t font_family_cn)
 {
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
@@ -542,7 +557,27 @@ void gt_chat_set_font_family_numb(gt_obj_st * chat, gt_family_t font_family_numb
     style->font_info.style_numb = font_family_numb;
     _gt_set_msg_param(chat, _SET_MSG_FONT_STYLE_NUMB, gt_color_hex(0), 0);
 }
-
+#else
+void gt_chat_set_font_family(gt_obj_st * chat, gt_family_t font_family)
+{
+    if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_chat_st * style = (_gt_chat_st * )chat;
+    gt_font_set_family(&style->font_info, font_family);
+    _gt_set_msg_param(chat, _SET_MSG_FONT_FAMILY, gt_color_hex(0), 0);
+    gt_chat_set_font_size(chat, style->font_info.size);
+}
+void gt_chat_set_font_cjk(gt_obj_st* chat, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_chat_st * style = (_gt_chat_st * )chat;
+    style->font_info.cjk = cjk;
+    _gt_set_msg_param(chat, _SET_MSG_FONT_CJK, gt_color_hex(0), 0);
+}
+#endif
 void gt_chat_set_font_thick_en(gt_obj_st * chat, uint8_t thick)
 {
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
