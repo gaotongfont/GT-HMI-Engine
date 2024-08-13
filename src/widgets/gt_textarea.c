@@ -273,10 +273,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
-        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            break;
-
         case GT_EVENT_TYPE_INPUT_PRESSED:
             style->reg.click_valid = true;
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
