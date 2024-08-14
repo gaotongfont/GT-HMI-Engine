@@ -861,14 +861,18 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
         tmp = gt_font_type_get(gt_font_family_get_option(info->family, i, info->cjk));
         if(GT_FONT_TYPE_FLAG_VEC == tmp){
             font_type = GT_FONT_TYPE_FLAG_VEC;
-            font_gray = info->gray;
-            res.dot_width = (((info->size + 15) >> 4) << 4) * info->gray;
-            break;
+            tmp = info->gray;
         }
-        font_type = GT_MAX(font_type, tmp);
-        font_gray = (font_type / 10) > 0 ? (font_type / 10) : 1;
-        res.dot_width = (((info->size + 7) >> 3) << 3);
+        else{
+            if(font_type != GT_FONT_TYPE_FLAG_VEC){
+                font_type = GT_MAX(font_type, tmp);
+            }
+            tmp = (tmp / 10) > 0 ? (tmp / 10) : 1;
+        }
+        font_gray = GT_MAX(font_gray, tmp);
     }
+
+    res.dot_width = (font_type == GT_FONT_TYPE_FLAG_VEC) ? ((((info->size + 15) >> 4) << 4) * info->gray) : ((((info->size + 7) >> 3) << 3));
 
     res.font_per_size = (res.dot_width * res.dot_width * font_gray >> 3);
     if(GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH == font_type){
