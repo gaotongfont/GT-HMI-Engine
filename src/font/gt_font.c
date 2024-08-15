@@ -346,7 +346,7 @@ uint16_t gt_font_family_get_option(uint16_t fam , int16_t lan, uint8_t cjk)
         return GT_CFG_DEFAULT_FONT_FAMILY;
     }
 
-    if(lan >= FONT_LAN_MAX_COUNT) return GT_CFG_DEFAULT_FONT_FAMILY;
+    if((lan != FONT_LAN_CJK_UNIFIED) && (lan >= FONT_LAN_MAX_COUNT)) return GT_CFG_DEFAULT_FONT_FAMILY;
 
     if(FONT_LAN_CJK_UNIFIED == lan) {
         if(GT_FONT_CJK_C == cjk){
