@@ -2336,6 +2336,7 @@ void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const
     };
     gt_point_st start = { .x = tmp.x, .y = tmp.y };
     gt_point_st distance = { .x = end.x - start.x, .y = end.y - start.y };
+    uint8_t dir_hor = gt_abs(distance.x) > gt_abs(distance.y) ? 1 : 0;
 
     do {
         if (is_round) {
@@ -2357,8 +2358,13 @@ void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const
         } else if (0 == diff.y) {
             tmp.x += diff.x;
         } else {
-            tmp.x += diff.x;
-            tmp.y = (tmp.x - start.x) * distance.y / distance.x + start.y;
+            if (dir_hor) {
+                tmp.x += diff.x;
+                tmp.y = (tmp.x - start.x) * distance.y / distance.x + start.y;
+            } else {
+                tmp.y += diff.y;
+                tmp.x = (tmp.y - start.y) * distance.x / distance.y + start.x;
+            }
         }
     } while (tmp.y != end.y || tmp.x != end.x);  /** The start or end point are the same, it will draw once. */
 
