@@ -344,6 +344,9 @@ static void _draw_ruler_range(gt_obj_st * obj, gt_padding_st const * const paddi
     };
     gt_font_info_init(&font.info);
     gt_font_info_update_font_thick(&font.info);
+#if !(defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
+    font.info.family = GT_CFG_DEFAULT_FONT_FAMILY;
+#endif
 
     for (uint8_t i = 0; i < 4; ++i) {
         pos_func_arr[i](obj, padding, &font_attr);

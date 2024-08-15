@@ -382,7 +382,7 @@ void gt_font_info_init(gt_font_info_st *font_info)
     font_info->size       = GT_CFG_DEFAULT_FONT_SIZE;
 #else
     font_info->cjk = GT_FONT_CJK_C;
-    font_info->family = 0;
+    font_info->family = GT_CFG_DEFAULT_FONT_FAMILY;
     font_info->size = gt_font_family_get_size(font_info->family);
 #endif
     font_info->gray       = 1;
