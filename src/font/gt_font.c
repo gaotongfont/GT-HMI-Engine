@@ -64,6 +64,12 @@ typedef struct {
     _font_type_group_offset_st offset;
 }_font_type_group_adjust_ascii_pos_st;
 
+typedef struct {
+    uint32_t start;
+    uint32_t end;
+    gt_font_lan_et language;
+}_unicode_range_st;
+
 /* static variables -----------------------------------------------------*/
 static const uint8_t _ascii_16[];
 
@@ -439,33 +445,29 @@ void gt_font_info_update_font_thick(gt_font_info_st *font_info)
     font_info->thick_cn = font_info->thick_cn == 0 ? font_info->size + 6: font_info->thick_cn;
 }
 
-uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const utf8, uint32_t *res)
+uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const gbk_code, uint32_t *res)
 {
-    if(NULL == utf8 ) return 0;
+    if (NULL == gbk_code) { return 0; }
 
-    uint32_t len = strlen((char * )utf8);
+    uint32_t len = strlen((char * )gbk_code);
+    uint16_t high_val = 0;
 
-    if (len >= 1 && utf8[0] <= 0x7F) {
-        if (res) {
-            *res = utf8[0];
-        }
+    if (len >= 1 && gbk_code[0] <= 0x7F) {
+        if (res) { *res = gbk_code[0]; }
         return 1;
     }
-    else if( len >=4 &&
-    (((utf8[0] << 8 | utf8[1]) == 0x8139) || ((utf8[0] << 8 | utf8[1]) >= 0x8230 && (utf8[0] << 8 | utf8[1]) <= 0x8235))
-    ) {
+
+    high_val = (gbk_code[0] << 8) | gbk_code[1];
+    if( len >= 4 && ((high_val == 0x8139) || (high_val >= 0x8230 && high_val <= 0x8235))) {
         if (res) {
-            *res = utf8[0] << 24 | utf8[1] << 16 | utf8[2] << 8 | utf8[3] << 0;
+            *res = (high_val << 16) | (gbk_code[2] << 8) | gbk_code[3];
         }
         return 4;
     }
     else if (len >= 2) {
-        if (res) {
-            *res = utf8[0] << 8 | utf8[1] << 0;
-        }
+        if (res) { *res = high_val; }
         return 2;
     }
-
     return len;
 }
 
@@ -558,16 +560,16 @@ int8_t _gt_font_get_type_group_offset_y(uint16_t cn_option, uint16_t en_option)
     return offset;
 }
 
-uint8_t gt_font_one_char_code_len_get(uint8_t * utf8, uint32_t *res, uint8_t encoding)
+uint8_t gt_font_one_char_code_len_get(uint8_t * utf8_or_bgk, uint32_t *res, uint8_t encoding)
 {
 #if GT_CFG_ENABLE_ZK_FONT == 1
     GT_Set_Chinese_Charset_Type(encoding);
 #endif
     if(GT_ENCODING_UTF8 == encoding) {
-        return _gt_utf8_to_unicode(utf8, res);
+        return _gt_utf8_to_unicode(utf8_or_bgk, res);
     }
     else if(GT_ENCODING_GB == encoding) {
-        return _gt_gb_font_one_char_code_len_get(utf8, res);
+        return _gt_gb_font_one_char_code_len_get(utf8_or_bgk, res);
     }
 
     return 0;
@@ -660,66 +662,44 @@ uint8_t gt_gb_check_char(const uint8_t *dst, uint16_t pos, uint32_t* font_code)
  */
 gt_font_lan_et gt_font_lan_get(uint32_t unicode, uint8_t encoding)
 {
+    static const _unicode_range_st ranges[] = {
+        { 0x0080, 0x02FF, FONT_LAN_LATIN },
+        { 0x1E00, 0x1EFF, FONT_LAN_LATIN },
+        { 0x0370, 0x03FF, FONT_LAN_GREEK },
+        { 0x0400, 0x04FF, FONT_LAN_CYRILLIC },
+        { 0x0590, 0x05FF, FONT_LAN_HEBREW },
+        { 0x0600, 0x06FF, FONT_LAN_ARABIC },
+        { 0xFB50, 0xFDFF, FONT_LAN_ARABIC },
+        { 0xFE70, 0xFEFF, FONT_LAN_ARABIC },
+        { 0x0E00, 0x0E7F, FONT_LAN_THAI },
+        { 0x0900, 0x097F, FONT_LAN_HINDI },
+        { 0x3040, 0x30FF, FONT_LAN_JAPANESE },
+        { 0x31F0, 0x31FF, FONT_LAN_JAPANESE },
+        { 0x1100, 0x11FF, FONT_LAN_KOREAN },
+        { 0xA960, 0xA97F, FONT_LAN_KOREAN },
+        { 0xAC00, 0xD7FF, FONT_LAN_KOREAN },
+        { 0x3130, 0x318F, FONT_LAN_KOREAN },
+        { 0xF900, 0xFAFF, FONT_LAN_CJK_UNIFIED },
+        { 0xFE30, 0xFE4F, FONT_LAN_CJK_UNIFIED },
+        { 0x3200, 0x33FF, FONT_LAN_CJK_UNIFIED },
+        { 0x3190, 0x319F, FONT_LAN_CJK_UNIFIED },
+        { 0xFF00, 0xFFEF, FONT_LAN_CJK_UNIFIED }
+    };
+
     // ascii
     if (unicode < 0x80) {
         return FONT_LAN_ASCII;
     }
-    if(GT_ENCODING_GB == encoding) {
+    if (GT_ENCODING_GB == encoding) {
         return FONT_LAN_CN;
     }
-    // latin
-    else if( (unicode >= 0x0080 && unicode <= 0x02FF) ||
-        (unicode >= 0x1E00 && unicode <= 0x1EFF) ) {
-        return FONT_LAN_LATIN;
+
+    for (size_t i = 0, cnt = sizeof(ranges) / sizeof(ranges[0]); i < cnt; ++i) {
+        if (unicode >= ranges[i].start && unicode <= ranges[i].end) {
+            return ranges[i].language;
+        }
     }
-    // greek and coptic
-    else if (unicode >= 0x0370 && unicode <= 0x03FF) {
-        return FONT_LAN_GREEK;
-    }
-    // cyrillic
-    else if (unicode >= 0x0400 && unicode <= 0x04FF) {
-        return FONT_LAN_CYRILLIC;
-    }
-    // hebrew
-    else if (unicode >= 0x0590 && unicode <= 0x05FF) {
-        return FONT_LAN_HEBREW;
-    }
-    // arabic
-    else if ((unicode >= 0x0600 && unicode <= 0x06FF) ||
-        (unicode >= 0xFB50 && unicode <= 0xFDFF) ||
-        (unicode >= 0xFE70 && unicode <= 0xFEFF)) {
-        return FONT_LAN_ARABIC;
-    }
-    // thai
-    else if (unicode >= 0x0E00 && unicode <= 0x0E7F) {
-        return FONT_LAN_THAI;
-    }
-    // hindi
-    else if (unicode >=0x0900 && unicode<=0x097F) {
-        return FONT_LAN_HINDI;
-    }
-    // Hiragana Katakana
-    else if ((unicode >= 0x3040 && unicode <= 0x30FF) ||
-            (unicode >= 0x31F0 && unicode <= 0x31FF)){
-        return FONT_LAN_JAPANESE;
-    }
-    // korean
-    else if ((unicode >= 0x1100 && unicode <= 0x11FF) ||
-            (unicode >= 0xA960 && unicode <= 0xA97F) ||
-            (unicode >= 0xAC00 && unicode <= 0xD7FF) ||
-            (unicode >= 0x3130 && unicode <= 0x318F) ||
-            (unicode >= 0xA960 && unicode <= 0xA97F)
-            ){
-        return FONT_LAN_KOREAN;
-    }
-    // cjk unified ideographs
-    else if ((unicode >= 0xF900 && unicode <= 0xFAFF) ||
-            (unicode >= 0xFE30 && unicode <= 0xFE4F) ||
-            (unicode >= 0x3200 && unicode <= 0x33FF) ||
-            (unicode >= 0x3190 && unicode <= 0x319F) ||
-            (unicode >= 0xFF00 && unicode <= 0xFFEF)){
-        return FONT_LAN_CJK_UNIFIED;
-    }
+
     return FONT_LAN_CN;
 }
 

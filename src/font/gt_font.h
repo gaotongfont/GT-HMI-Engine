@@ -330,14 +330,14 @@ int8_t _gt_font_get_type_group_offset_y(uint16_t cn_option, uint16_t en_option);
 /**
  * @brief
  *
- * @param utf8
+ * @param utf8_or_gbk
  * @param res
  * @param encoding
  * @return uint8_t The byte length of the encode
  */
-uint8_t gt_font_one_char_code_len_get(uint8_t * utf8, uint32_t *res, uint8_t encoding);
+uint8_t gt_font_one_char_code_len_get(uint8_t * utf8_or_gbk, uint32_t *res, uint8_t encoding);
 uint8_t gt_encoding_table_one_char(uint8_t *src, uint8_t* dst, gt_encoding_convert_et tab);
-uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const utf8, uint32_t *res);
+uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const gbk_code, uint32_t *res);
 uint8_t gt_gb_check_char(const uint8_t *dst, uint16_t pos, uint32_t* font_code);
 
 gt_font_lan_et gt_font_lan_get(uint32_t unicode, uint8_t encoding);
