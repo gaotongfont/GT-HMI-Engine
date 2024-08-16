@@ -223,12 +223,12 @@ static py_info_st* _gt_py_info;
  * @return gt_size_t
  */
 static inline gt_size_t gt_font_get_font_width_inline(uint32_t uni_or_gbk, uint16_t option, uint16_t font_size, uint8_t gray, uint8_t * res) {
-    _gt_gc_ascii_width_cache_st * const cache = _gt_gc_get_ascii_width_cache();
     gt_size_t width = 0;
     if (GT_CFG_DEFAULT_FONT_FAMILY == option) {
         return width;
     }
 #if GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+    _gt_gc_ascii_width_cache_st * const cache = _gt_gc_get_ascii_width_cache();
     if (uni_or_gbk < 0x20|| uni_or_gbk > 0x7F) {
         return GT_Get_Font_Width(uni_or_gbk, option, font_size, gray, res);
     }
