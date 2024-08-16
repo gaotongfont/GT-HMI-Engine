@@ -52,10 +52,10 @@ extern "C" {
 
 /* user: color depth: 1(1 byte per pixel), 8(RGB332), 16(RGB565), 32(ARGB8888) */
 #ifndef GT_COLOR_DEPTH
-    #define GT_COLOR_DEPTH          16
+    #define GT_COLOR_DEPTH      16
 #endif
 #ifndef GT_COLOR_16_SWAP
-    #define GT_COLOR_16_SWAP        0
+    #define GT_COLOR_16_SWAP    0
 #endif
 
 #ifndef GT_FLUSH_CONVERT_VERTICAL
@@ -176,7 +176,7 @@ extern "C" {
      * @brief use old font family
      *
      */
-    #define GT_FONT_FAMILY_OLD_ENABLE  01
+    #define GT_FONT_FAMILY_OLD_ENABLE   01
 #endif
 
 /* default font style and size */
