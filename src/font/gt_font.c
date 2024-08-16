@@ -1588,7 +1588,6 @@ uint16_t gt_font_get_word_byte_length(char const * const text, uint16_t length, 
     uint32_t uni_or_gbk = 0;
     uint8_t len = 0;
 
-    len = gt_font_one_char_code_len_get((uint8_t * )ptr, &uni_or_gbk, encoding);
     gt_font_lan_et remark_sty = FONT_LAN_UNKNOWN;
     gt_font_lan_et cur_sty = FONT_LAN_UNKNOWN;
 
