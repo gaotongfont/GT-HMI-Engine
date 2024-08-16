@@ -232,18 +232,18 @@ static inline gt_size_t gt_font_get_font_width_inline(uint32_t uni_or_gbk, uint1
     if (uni_or_gbk < 0x20|| uni_or_gbk > 0x7F) {
         return GT_Get_Font_Width(uni_or_gbk, option, font_size, gray, res);
     }
-    // check cache valid
     if (cache->option != option || cache->size != font_size || cache->gray != gray) {
+        // check cache valid
         gt_memset(cache->ascii_width_cache, 0, sizeof(gt_font_width_t) * _FONT_ASCII_WIDTH_CACHE_COUNT);
         cache->option = option;
         cache->size = font_size;
         cache->gray = gray;
         width = GT_Get_Font_Width(uni_or_gbk, option, font_size, gray, res);
         cache->ascii_width_cache[uni_or_gbk - 0x20] = (gt_font_width_t)width;
-        return width;
+    } else {
+        // read width from cache
+        width = cache->ascii_width_cache[uni_or_gbk - 0x20];
     }
-    // read width from cache
-    width = cache->ascii_width_cache[uni_or_gbk - 0x20];
     if (0 == width) {
         width = GT_Get_Font_Width(uni_or_gbk, option, font_size, gray, res);
         cache->ascii_width_cache[uni_or_gbk - 0x20] = (gt_font_width_t)width;
