@@ -13,6 +13,7 @@
 #include "stdbool.h"
 #include "../others/gt_log.h"
 #include "../core/gt_mem.h"
+#include "../others/gt_gc.h"
 #include "gt_symbol.h"
 /* private define -------------------------------------------------------*/
 
@@ -212,6 +213,46 @@ static gt_encoding_et _gt_project_encoding = GT_ENCODING_UTF8;
 static py_info_st* _gt_py_info;
 #endif
 /* static functions -----------------------------------------------------*/
+/**
+ * @brief get font width by cache
+ *
+ * @param uni_or_gbk
+ * @param option
+ * @param font_size
+ * @param gray
+ * @return gt_size_t
+ */
+static inline gt_size_t gt_font_get_font_width_inline(uint32_t uni_or_gbk, uint16_t option, uint16_t font_size, uint8_t gray, uint8_t * res) {
+    _gt_gc_ascii_width_cache_st * const cache = _gt_gc_get_ascii_width_cache();
+    gt_size_t width = 0;
+    if (GT_CFG_DEFAULT_FONT_FAMILY == option) {
+        return width;
+    }
+#if GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+    if (uni_or_gbk < 0x20|| uni_or_gbk > 0x7F) {
+        return GT_Get_Font_Width(uni_or_gbk, option, font_size, gray, res);
+    }
+    // check cache valid
+    if (cache->option != option || cache->size != font_size || cache->gray != gray) {
+        gt_memset(cache->ascii_width_cache, 0, sizeof(gt_font_width_t) * _FONT_ASCII_WIDTH_CACHE_COUNT);
+        cache->option = option;
+        cache->size = font_size;
+        cache->gray = gray;
+        width = GT_Get_Font_Width(uni_or_gbk, option, font_size, gray, res);
+        cache->ascii_width_cache[uni_or_gbk - 0x20] = (gt_font_width_t)width;
+        return width;
+    }
+    // read width from cache
+    width = cache->ascii_width_cache[uni_or_gbk - 0x20];
+    if (0 == width) {
+        width = GT_Get_Font_Width(uni_or_gbk, option, font_size, gray, res);
+        cache->ascii_width_cache[uni_or_gbk - 0x20] = (gt_font_width_t)width;
+    }
+#else
+    width = GT_Get_Font_Width(uni_or_gbk, option, font_size, gray, res);
+#endif
+    return width;
+}
 
 /**
  * @brief get idx in unicode_arr by unicode (for )
@@ -965,7 +1006,7 @@ uint8_t gt_font_get_one_word_width(uint32_t uni_or_gbk, gt_font_st * font)
         gt_memset(font->res, 0, font_dot_w);
     }
 
-    width = GT_Get_Font_Width(uni_or_gbk, option, font->info.size, font->info.gray, font->res);
+    width = gt_font_get_font_width_inline(uni_or_gbk, option, font->info.size, font->info.gray, font->res);
     if (0 == width) {
         if(_gt_font_latin_check(uni_or_gbk)) {
             return _gt_font_latin_get_width(uni_or_gbk, font->info.size);

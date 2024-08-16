@@ -58,6 +58,14 @@ typedef enum {
 
 #define IS_CN_FONT_LAN(_lan) ((FONT_LAN_CJK_UNIFIED == _lan) || (FONT_LAN_CN == _lan) || (FONT_LAN_JAPANESE == _lan) || (FONT_LAN_KOREAN == _lan))
 
+#if GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+    #ifndef _FONT_ASCII_WIDTH_CACHE_COUNT
+        /**
+         * @brief The number of cache data for ASCII font width
+         */
+        #define _FONT_ASCII_WIDTH_CACHE_COUNT     (94)
+    #endif
+#endif
 /* typedef --------------------------------------------------------------*/
 
 typedef struct _gt_font_info_s {

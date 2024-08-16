@@ -102,6 +102,8 @@ typedef uint16_t gt_layout_prop_t;
  */
 typedef uint8_t gt_gap_t;
 
+typedef uint8_t gt_font_width_t;
+
 /**
  * @brief The screen turn next screen animation type
  */
