@@ -126,8 +126,8 @@ bool gt_area_cover_screen(gt_area_st const * const area1, gt_area_st const * con
     }
     AREA_X1(area_res) = AREA_X1(area2) > AREA_X1(area1) ? AREA_X1(area2) : AREA_X1(area1);
     AREA_Y1(area_res) = AREA_Y1(area2) > AREA_Y1(area1) ? AREA_Y1(area2) : AREA_Y1(area1);
-    AREA_W(area_res) = (AREA_X2(area1) < AREA_X2(area2) ? AREA_X2(area1) : AREA_X2(area2) ) - AREA_X1(area_res);
-    AREA_H(area_res) = (AREA_Y2(area1) < AREA_Y2(area2) ? AREA_Y2(area1) : AREA_Y2(area2) ) - AREA_Y1(area_res);
+    AREA_W(area_res) = (AREA_X2(area1) < AREA_X2(area2) ? AREA_X2(area1) : AREA_X2(area2)) - AREA_X1(area_res);
+    AREA_H(area_res) = (AREA_Y2(area1) < AREA_Y2(area2) ? AREA_Y2(area1) : AREA_Y2(area2)) - AREA_Y1(area_res);
     return true;
 }
 
