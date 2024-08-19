@@ -298,7 +298,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
                 }
                 obj->process_attr.scroll.y = obj->area.h - style->max_height;
             }
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL_END:
@@ -306,6 +305,8 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
                 _pull_wait_to_refresh(obj);
             } else if (style->reg.load_more) {
                 _load_more(obj);
+            } else {
+                gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             }
             break;
 
@@ -320,7 +321,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             gt_point_st tp = gt_indev_get_point();
             _draw_content_or_get_words(obj, &tp);
 #endif
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            // gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
         default:
