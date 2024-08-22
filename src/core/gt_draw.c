@@ -737,7 +737,7 @@ static _gt_draw_font_res_st _draw_text_convertor_split(
     gt_draw_blend_dsc_st * blend_dsc_style, const gt_area_st * coords, uint8_t flag_ol)
 {
     uint32_t idx = 0, uni_or_gbk = 0, tmp = 0;
-    _gt_draw_font_res_st ret = {0};
+    _gt_draw_font_res_st ret = { .res = GT_RES_OK };
     uint16_t * text = NULL;
     uint8_t * font_buf = NULL;
     text = (uint16_t * )gt_mem_malloc(fonts->len * sizeof(uint16_t));
@@ -1409,8 +1409,16 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
                 area_font.x -= width;
             }
 
-            if (area_font.y + per_line_h < view->y || area_font.y > (view->y + view->h)) {
+            if (area_font.y + per_line_h < view->y) {
                 goto next_word_multi_lb;
+            }
+            else if (area_font.y > view->y + view->h) {
+                if (dsc->reg.immediately_return) {
+                    ret.res = GT_RES_INV;
+                    goto _ret_handler;
+                } else {
+                    goto next_word_multi_lb;
+                }
             }
             else if (area_font.x + width < view->x || area_font.x > (view->x + view->w)) {
                 goto next_word_multi_lb;
@@ -1588,7 +1596,7 @@ static _omit_info_st _omit_get_font_width(gt_font_st * tmp_font) {
 
 static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, const gt_area_st * view) {
     gt_area_st * coords = (gt_area_st * )&dsc->logical_area;
-    _gt_draw_font_res_st ret = {0};
+    _gt_draw_font_res_st ret = { .res = GT_RES_OK };
     _gt_draw_font_res_st tmp_ret = {0};
     gt_area_st area_font = {
         .x = coords->x, .y = coords->y, .w = dsc->font->info.size, .h = dsc->font->info.size

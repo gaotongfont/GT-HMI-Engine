@@ -63,6 +63,7 @@ typedef struct _gt_draw_font_res_s {
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
     gt_font_touch_word_st touch_word;
 #endif
+    gt_res_t res;
 }_gt_draw_font_res_st;
 
 typedef struct _gt_radius_mask_t{

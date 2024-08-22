@@ -27,11 +27,12 @@
 /* private typedef ------------------------------------------------------*/
 
 typedef struct _textarea_reg_s {
+    uint8_t hold_on : 1;            /** hold on content for scroll */
     uint8_t click_valid : 1;        /** click status: scroll will set to false, only click event valid */
     uint8_t click_single_cn : 1;    /** click single chinese character */
     uint8_t pull_to_refresh : 1;    /** pull to refresh */
     uint8_t load_more : 1;          /** load more */
-    uint8_t reserved : 4;
+    uint8_t reserved : 3;
 }_textarea_reg_st;
 
 typedef struct _gt_textarea_s {
@@ -86,6 +87,14 @@ static inline void _set_touch_word(_gt_textarea_st * style, char * word, uint16_
 }
 #endif
 
+static inline void _set_hold_on_contents_for_scroll(_gt_textarea_st * style, bool hold_on) {
+    style->reg.hold_on = hold_on;
+}
+
+static inline bool _is_hold_on_contents_for_scroll(_gt_textarea_st * style) {
+    return style->reg.hold_on;
+}
+
 static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p) {
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
     uint16_t idx = 0;
@@ -104,6 +113,7 @@ static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_poin
         .space_y    = style->space_y,
         .align      = style->font_align,
         .opa        = obj->opa,
+        .reg.immediately_return = _is_hold_on_contents_for_scroll(style),
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
         .reg.touch_point = touch_point_p ? true : false,
         .reg.single_cn = style->reg.click_single_cn,
@@ -145,11 +155,16 @@ static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_poin
             break;
         }
 #endif
+        if (_is_hold_on_contents_for_scroll(style) && GT_RES_INV == font_res.res) {
+            break;
+        }
         font_attr.start_x       = font_res.area.x;
         font_attr.start_y       = font_res.area.y;
         font_attr.reg.enabled_start = true;
         ++idx;
     }
+
+    _set_hold_on_contents_for_scroll(style, false);
 
     if (touch_point_p) {
         /** Get touch word handler, do not calc all text height to scroll */
@@ -311,6 +326,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             } else if (style->reg.load_more) {
                 _load_more(obj);
             } else {
+                _set_hold_on_contents_for_scroll(style, true);
                 gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             }
             break;

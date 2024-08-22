@@ -126,7 +126,8 @@ typedef struct _gt_text_style_s {
     ///< 0[default]: multi chinese words together, 1: single chinese word
     uint8_t single_cn       : 1;
 #endif
-    uint8_t reserved        : 1;
+    ///< 0[default]: not immediately return, 1: immediately return when the text is bottom over the display area
+    uint8_t immediately_return : 1;
 }_gt_text_style_st;
 
 /**
