@@ -207,6 +207,7 @@ static void _free_contents(gt_obj_st * obj) {
         style_p->max_height = 0;
         style_p->cnt_contents = 0;
         obj->process_attr.scroll.y = 0;
+        obj->process_attr.scroll_prev.y = 0;
     }
 }
 
