@@ -189,6 +189,11 @@ static void _textarea_init_cb(gt_obj_st * obj) {
     draw_focus(obj, 0);
 }
 
+static inline void _reset_scroll_value(gt_obj_process_attr_st * process_attr) {
+    process_attr->scroll.y = 0;
+    process_attr->scroll_prev.y = 0;
+}
+
 static void _free_contents(gt_obj_st * obj) {
     _gt_textarea_st * style_p = (_gt_textarea_st * )obj;
     if (NULL != style_p->contents) {
@@ -206,8 +211,7 @@ static void _free_contents(gt_obj_st * obj) {
         style_p->contents = NULL;
         style_p->max_height = 0;
         style_p->cnt_contents = 0;
-        obj->process_attr.scroll.y = 0;
-        obj->process_attr.scroll_prev.y = 0;
+        _reset_scroll_value(&obj->process_attr);
     }
 }
 
@@ -284,14 +288,14 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_SCROLL:
             style->reg.click_valid = false;
             if (style->max_height < obj->area.h) {
-                obj->process_attr.scroll.y = 0;
+                _reset_scroll_value(&obj->process_attr);
                 break;
             }
             if (obj->process_attr.scroll.y > 0) {
                 if (false == style->reg.pull_to_refresh && obj->process_attr.scroll.y > obj->area.h >> 4) {
                     style->reg.pull_to_refresh = true;
                 }
-                obj->process_attr.scroll.y = 0;
+                _reset_scroll_value(&obj->process_attr);
             } else if (gt_abs(obj->process_attr.scroll.y) + obj->area.h > style->max_height) {
                 if (false == style->reg.load_more &&
                     gt_abs(obj->process_attr.scroll.y) + obj->area.h - (obj->area.h >> 4) > style->max_height) {
