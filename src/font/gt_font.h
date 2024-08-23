@@ -354,11 +354,17 @@ uint16_t gt_font_get_word_width_figure_up(const uint8_t* data, uint16_t dot_w, u
  */
 uint8_t gt_font_type_get(unsigned int font_style);
 
+#if _GT_FONT_ENABLE_CONVERTOR
 int gt_font_code_transform(font_convertor_st *convert);
 int gt_font_convertor_data_get(font_convertor_st *convert, uint32_t pos);
+#endif
 
 uint32_t gt_font_split(gt_font_st *fonts, uint32_t width, uint32_t dot_w, uint32_t space, uint32_t *ret_w, uint8_t * lan, uint32_t * lan_len);
+
+#if _GT_FONT_ENABLE_CONVERTOR
 bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_t r2l_lan);
+#endif  /** _GT_FONT_ENABLE_CONVERTOR */
+
 /**
  * @brief Get the font style
  *
@@ -370,6 +376,7 @@ uint8_t right_to_left_lan_get(uint16_t style);
 #else
 uint8_t right_to_left_lan_get(gt_font_st* font);
 #endif
+
 uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint32_t max_w, uint16_t space, uint32_t * ret_max_w);
 
 

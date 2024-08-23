@@ -706,6 +706,7 @@ gt_font_lan_et gt_font_lan_get(uint32_t unicode, uint8_t encoding)
 
 bool _gt_font_is_convertor_language(gt_font_lan_et style_lang)
 {
+#if _GT_FONT_ENABLE_CONVERTOR
     // if (FONT_LAN_HEBREW == style_lang) {
     //     return true;
     // }
@@ -718,14 +719,19 @@ bool _gt_font_is_convertor_language(gt_font_lan_et style_lang)
     if (FONT_LAN_HINDI == style_lang) {
         return true;
     }
+#endif
     return false;
 }
 
 bool _gt_font_is_convertor_by(uint32_t unicode, uint8_t encoding)
 {
+#if _GT_FONT_ENABLE_CONVERTOR
     gt_font_lan_et style_lang = gt_font_lan_get(unicode, encoding);
 
     return _gt_font_is_convertor_language(style_lang);
+#else
+    return false;
+#endif
 }
 
 _gt_font_dot_ret_st gt_font_get_dot(gt_font_st * font, uint32_t unicode)
@@ -787,6 +793,7 @@ uint8_t gt_font_type_get(unsigned int style)
 #endif
 }
 
+#if _GT_FONT_ENABLE_CONVERTOR
 int gt_font_code_transform(font_convertor_st *convert)
 {
 unsigned int len = 0;
@@ -817,7 +824,7 @@ int gt_font_convertor_data_get(font_convertor_st *convert, uint32_t pos)
     return 0;
 #endif
 }
-
+#endif  /** _GT_FONT_ENABLE_CONVERTOR */
 
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 
@@ -1142,6 +1149,7 @@ static uint32_t _gt_font_en_in_this_range(const gt_font_st *fonts, uint32_t widt
     return idx;
 }
 
+#if _GT_FONT_ENABLE_CONVERTOR
 static uint32_t _get_convertor_string_width(const gt_font_st *fonts, uint8_t lan, uint32_t space, uint16_t range_w, uint16_t *ol_idx, uint16_t *ol_width)
 {
     uint32_t idx = 0, uni_or_gbk = 0, tmp = 0, len = fonts->info.size * fonts->len;
@@ -1254,6 +1262,7 @@ _ret_handle:
     }
     return len;
 }
+#endif  /** _GT_FONT_ENABLE_CONVERTOR */
 
 uint32_t gt_font_split(gt_font_st * fonts, uint32_t width, uint32_t dot_w, uint32_t space, uint32_t *ret_w, uint8_t * lan, uint32_t* lan_len)
 {
@@ -1290,6 +1299,7 @@ uint32_t gt_font_split(gt_font_st * fonts, uint32_t width, uint32_t dot_w, uint3
         tmp_font.utf8 = &text[idx];
         tmp_font.len = tmp_len;
 
+#if _GT_FONT_ENABLE_CONVERTOR
         if(_gt_font_is_convertor_language((gt_font_lan_et)*lan)){
             tmp_w = _get_convertor_string_width(&tmp_font, *lan, space, width - *ret_w, &ol_idx, &ol_w);
         }
@@ -1297,8 +1307,12 @@ uint32_t gt_font_split(gt_font_st * fonts, uint32_t width, uint32_t dot_w, uint3
             // tmp_w = gt_font_get_string_width(&tmp_font);
             _gt_font_en_in_this_range(&tmp_font, (width - (*ret_w)), space, &tmp_w, &ol_idx, &ol_w);
         }
+#else
+        _gt_font_en_in_this_range(&tmp_font, (width - (*ret_w)), space, &tmp_w, &ol_idx, &ol_w);
+#endif
 
         if (tmp_w > width && 0 == ol_idx && 0 == idx) {
+#if _GT_FONT_ENABLE_CONVERTOR
             if (_gt_font_is_convertor_language((gt_font_lan_et)*lan)) {
                 len = ol_idx;
                 *ret_w = ol_w;
@@ -1306,6 +1320,10 @@ uint32_t gt_font_split(gt_font_st * fonts, uint32_t width, uint32_t dot_w, uint3
                 *ret_w = tmp_w;
                 len = tmp_len;
             }
+#else
+            *ret_w = tmp_w;
+            len = tmp_len;
+#endif
             goto _ret_dat;
         }
         else if ((*ret_w + tmp_w >= width) || (0x0A == tmp_font.utf8[0])) {
@@ -1410,7 +1428,7 @@ static uint32_t _gt_font_lang_and_punctuation_split(const uint8_t *str, uint32_t
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 uint8_t right_to_left_lan_get(uint16_t style)
 {
-
+#if _GT_FONT_ENABLE_CONVERTOR
     switch (style) {
         case 71:
         case 72:
@@ -1441,6 +1459,7 @@ uint8_t right_to_left_lan_get(uint16_t style)
         default:
             break;
     }
+#endif
 
     return 0xFF;
 }
@@ -1464,6 +1483,7 @@ uint8_t right_to_left_lan_get(gt_font_st* font)
 
 #endif
 
+#if _GT_FONT_ENABLE_CONVERTOR
 bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_t r2l_lan)
 {
     uint32_t tmp = 0, uni_or_gbk = 0, len = 0, alb_count = 0;
@@ -1548,6 +1568,7 @@ bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_
     bidi = NULL;
     return ret_flag;
 }
+#endif
 
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
 bool gt_font_is_illegal_char(uint32_t uni_or_gbk)
