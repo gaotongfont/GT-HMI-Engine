@@ -1127,23 +1127,16 @@ static uint32_t _gt_font_en_in_this_range(const gt_font_st *fonts, uint32_t widt
 {
     uint32_t idx = 0, uni_or_gbk = 0, w = 0;
     uint8_t *str = (uint8_t * )fonts->utf8, tmp, tmp_w = 0;
-    if (NULL != ol_width) {
-        *ol_width = 0;
-    }
-    if (NULL != ol_idx) {
-        *ol_idx = 0;
-    }
+    if (ol_width) { *ol_width = 0; }
+    if (ol_idx) { *ol_idx = 0; }
+
     while (idx < fonts->len) {
         tmp = gt_font_one_char_code_len_get((uint8_t * )&str[idx], &uni_or_gbk, fonts->info.encoding);
         tmp_w = gt_font_get_one_word_width(uni_or_gbk, (gt_font_st*)fonts);
 
         if (w < width) {
-            if (NULL != ol_width) {
-                *ol_width = w;
-            }
-            if (NULL != ol_idx) {
-                *ol_idx = idx;
-            }
+            if (ol_width) { *ol_width = w; }
+            if (ol_idx) { *ol_idx = idx; }
         }
 
         w += tmp_w + space;
