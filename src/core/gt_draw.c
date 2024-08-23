@@ -1297,6 +1297,12 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             ++idx;
             goto _disp_font;
         }
+        if (area_font.y > view->y + view->h) {
+            if (dsc->reg.immediately_return) {
+                ret.res = GT_RES_INV;
+                goto _ret_handler;
+            }
+        }
         tmp_font.utf8 = (char * )&txt[idx];
         tmp_font.len = txt_len - idx;
         idx_step = gt_font_split(&tmp_font, disp_w, coords->w, dsc->space_x, &ret_w, &lan, &lan_len);
