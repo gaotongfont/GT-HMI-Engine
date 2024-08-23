@@ -1419,12 +1419,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
                 goto next_word_multi_lb;
             }
             else if (area_font.y > view->y + view->h) {
-                if (dsc->reg.immediately_return) {
-                    ret.res = GT_RES_INV;
-                    goto _ret_handler;
-                } else {
-                    goto next_word_multi_lb;
-                }
+                goto next_word_multi_lb;
             }
             else if (area_font.x + width < view->x || area_font.x > (view->x + view->w)) {
                 goto next_word_multi_lb;
