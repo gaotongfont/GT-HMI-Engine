@@ -1170,6 +1170,10 @@ static gt_size_t _get_align_start_y(const gt_attr_font_st * dsc, const gt_area_s
     return _get_align_start_y_by_line(dsc, coords, tmp_font, txt, line_count);
 }
 
+static uint16_t _calc_line_height_pixel(gt_area_st * area_font, const gt_attr_font_st * dsc, uint8_t style_space_y) {
+    return area_font->h + dsc->space_y + (style_space_y << 1);
+}
+
 static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, gt_area_st const * view) {
     const gt_area_st * coords = &dsc->logical_area;
     _gt_draw_font_res_st ret = {0};
@@ -1273,6 +1277,8 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
     bool cov_flag_ol = false;
     bool start_x_flag = dsc->reg.enabled_start;
     _gt_font_dot_ret_st dot_ret = {0};
+    uint16_t line_height = _calc_line_height_pixel(&area_font, dsc, style_space_y);
+    ret.size.y = line_height;
 #if _GT_FONT_ENABLE_CONVERTOR
     uint16_t bidi_len = 0, bidi_max = 1, bidi_pos = 0;
     gt_bidi_st * bidi = (gt_bidi_st * )gt_mem_malloc(bidi_max * sizeof(gt_bidi_st));
@@ -1549,11 +1555,13 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             if (idx < txt_len) {
                 /** LF has skipped to handler, new line or multi '\n' to handler */
                 if (0x0A != txt[idx] || (0x0A == txt[idx] && txt[idx] == txt[idx - 1])) {
-                    area_font.y += area_font.h + dsc->space_y + (style_space_y << 1);
+                    ret.size.y += line_height;
+                    area_font.y += line_height;
                 }
             }
             else if (0x0A == txt[txt_len - 1]) {
-                area_font.y += area_font.h + dsc->space_y + (style_space_y << 1);
+                ret.size.y += line_height;
+                area_font.y += line_height;
                 if (_is_align_reverse(dsc->align)) {
                     area_font.x = (coords->x + coords->w) - (area_font.x - coords->x);
                 } else {

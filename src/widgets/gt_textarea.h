@@ -32,6 +32,14 @@ extern "C" {
     #define GT_TEXTAREA_CUSTOM_FONT_STYLE   0
 #endif
 
+#ifndef GT_TEXTAREA_SUB_STRING_SCROLL_CACHE
+    /**
+     * @brief Use sub string scroll cache, improve scrolling performance and takes up some memory
+     *      0[defalut]: disable
+     */
+    #define GT_TEXTAREA_SUB_STRING_SCROLL_CACHE    0
+#endif
+
 
 /* typedef --------------------------------------------------------------*/
 typedef struct gt_textarea_param_s {
