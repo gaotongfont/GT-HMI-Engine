@@ -1563,12 +1563,10 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             disp_w = coords->w;
 #if _GT_FONT_ENABLE_CONVERTOR
         }
+        bidi_len = 0;
 #endif
         idx_len = 0;
         txt_2 = &txt[idx];
-#if _GT_FONT_ENABLE_CONVERTOR
-        bidi_len = 0;
-#endif
         font_disp_h = dsc->font->info.size;
         area_font.h = font_disp_h;
         area_font.w = dsc->font->info.size;

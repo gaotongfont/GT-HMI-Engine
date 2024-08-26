@@ -41,6 +41,13 @@ typedef enum {
 #endif
 
 /* define ---------------------------------------------------------------*/
+#ifndef _GT_FONT_ENABLE_CONVERTOR
+    /**
+     * @brief 1: Enable the font convertor, 0: disabled
+     *       [default: 1]
+     */
+    #define _GT_FONT_ENABLE_CONVERTOR           01
+#endif
 
 #ifndef _GT_FONT_GET_WORD_BY_TOUCH_POINT
     /**
