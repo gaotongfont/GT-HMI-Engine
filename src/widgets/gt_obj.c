@@ -241,8 +241,7 @@ static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
  *
  * @param timer
  */
-void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
-{
+static void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer) {
     gt_obj_st * obj = (gt_obj_st * )_gt_timer_get_user_data(timer);
     GT_CHECK_BACK(obj);
     gt_event_st * ptr = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
