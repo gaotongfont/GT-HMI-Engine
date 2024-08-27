@@ -1176,7 +1176,6 @@ static void _layer_top_destroy_handler_cb(struct _gt_timer_s * timer) {
         }
         _gt_obj_class_destroy(layer_top->child[i]);
     }
-    gt_disp_invalid_area(gt_disp_get_scr());
 }
 
 gt_res_t gt_disp_destroy_layer_top_widgets(void)
@@ -1184,6 +1183,15 @@ gt_res_t gt_disp_destroy_layer_top_widgets(void)
     gt_obj_st * layer_top = gt_disp_get_layer_top();
     if (NULL == layer_top) {
         return GT_RES_FAIL;
+    }
+    for (gt_size_t i = layer_top->cnt_child - 1; i >= 0; i--) {
+        if (gt_obj_is_type(layer_top->child[i], GT_TYPE_STATUS_BAR)) {
+            continue;
+        }
+        if (gt_obj_is_type(layer_top->child[i], GT_TYPE_DIALOG)) {
+            continue;
+        }
+        gt_obj_child_set_prop(layer_top->child[i], GT_OBJ_PROP_TYPE_VISIBLE, GT_INVISIBLE);
     }
     _gt_timer_st * tmp_timer = _gt_timer_create(_layer_top_destroy_handler_cb, GT_TASK_PERIOD_TIME_DESTROY, layer_top);
     _gt_timer_set_repeat_count(tmp_timer, 1);
