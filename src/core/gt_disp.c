@@ -1192,6 +1192,7 @@ gt_res_t gt_disp_destroy_layer_top_widgets(void)
             continue;
         }
         gt_obj_child_set_prop(layer_top->child[i], GT_OBJ_PROP_TYPE_VISIBLE, GT_INVISIBLE);
+        layer_top->child[i]->visible = GT_INVISIBLE;
     }
     _gt_timer_st * tmp_timer = _gt_timer_create(_layer_top_destroy_handler_cb, GT_TASK_PERIOD_TIME_DESTROY, layer_top);
     _gt_timer_set_repeat_count(tmp_timer, 1);
