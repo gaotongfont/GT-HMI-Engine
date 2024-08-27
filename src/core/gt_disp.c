@@ -1176,6 +1176,7 @@ static void _layer_top_destroy_handler_cb(struct _gt_timer_s * timer) {
         }
         _gt_obj_class_destroy(layer_top->child[i]);
     }
+    gt_disp_invalid_area(gt_disp_get_scr());
 }
 
 gt_res_t gt_disp_destroy_layer_top_widgets(void)
