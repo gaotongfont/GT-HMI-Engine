@@ -56,6 +56,10 @@ extern "C" {
 #define GT_CFG_ENABLE_CHAT              1
 #define GT_CFG_ENABLE_GRAPHS            1
 
+#if GT_CFG_ENABLE_IMG && GT_CFG_ENABLE_SLIDER && GT_CFG_ENABLE_LABEL
+#define GT_CFG_ENABLE_MEDIA_PLAYER      1
+#endif
+
 #if GT_USE_LAYER_TOP
 #define GT_CFG_ENABLE_DIALOG            1
 #define GT_CFG_ENABLE_STATUS_BAR        1

@@ -179,6 +179,10 @@ extern "C" {
 #include "src/widgets/gt_graphs.h"
 #endif
 
+#if GT_CFG_ENABLE_MEDIA_PLAYER
+#include "src/widgets/gt_media_player.h"
+#endif
+
 /* other */
 #include "src/others/gt_color.h"
 #include "src/others/gt_log.h"
