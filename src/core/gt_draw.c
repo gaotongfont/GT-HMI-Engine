@@ -1410,6 +1410,14 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
         bidi_pos = 0;
 #endif
         area_font.h = font_disp_h;
+#if 01
+        if (area_font.y + per_line_h < view->y) {
+            goto next_line_lb;
+        }
+        else if (area_font.y > view->y + view->h) {
+            goto next_line_lb;
+        }
+#endif
         /** Display current line chars */
         while (idx_2 < idx_len) {
             tmp_font.info.size = dsc->font->info.size;
@@ -1441,14 +1449,16 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             if (_is_align_reverse(dsc->align)) {
                 area_font.x -= width;
             }
-
+#if 0
             if (area_font.y + per_line_h < view->y) {
                 goto next_word_multi_lb;
             }
             else if (area_font.y > view->y + view->h) {
                 goto next_word_multi_lb;
             }
-            else if (area_font.x + width < view->x || area_font.x > (view->x + view->w)) {
+            else
+#endif
+            if (area_font.x + width < view->x || area_font.x > (view->x + view->w)) {
                 goto next_word_multi_lb;
             }
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
@@ -1539,6 +1549,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             idx_2 += tmp_font.len;
         }
 
+    next_line_lb:
 #if _GT_FONT_ENABLE_CONVERTOR
         if (_gt_font_is_convertor_language(lan) && over_length > 1) {
             idx += idx_len;
