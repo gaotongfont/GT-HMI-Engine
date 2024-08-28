@@ -152,22 +152,9 @@ static _scroll_cache_item_st * _scroll_cache_get_remark_item_by(_gt_textarea_st 
 
     /** [Warn] except the begin one */
     for (gt_size_t i = 0, cnt = style->scroll_cache.item_count; i < cnt; ++i) {
-#if 01
         if (style->scroll_cache.list[i].offset_abs.y + style->scroll_cache.list[i].offset_abs.h > offset) {
             return &style->scroll_cache.list[i];
         }
-#else
-#if GT_TEXTAREA_CUSTOM_FONT_STYLE
-        is_cur_half_display = style->scroll_cache.list[i].offset_abs.y + style->contents[i].font_info.size >= offset ? 1 : 0;
-#else
-        is_cur_half_display = style->scroll_cache.list[i].offset_abs.y + style->font_info.size >= offset ? 1 : 0;
-#endif
-        uint16_t dif = style->scroll_cache.list[i + 1].offset_abs.y - style->scroll_cache.list[i].offset_abs.y;
-
-        if (is_cur_half_display || style->scroll_cache.list[i + 1].offset_abs.y < offset) {
-            return &style->scroll_cache.list[i];
-        }
-#endif
     }
     return NULL;
 }
