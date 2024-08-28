@@ -113,10 +113,6 @@ static void _init_cb(gt_obj_st * obj) {
     }else{
         area_circle.x += space >> 1;
     }
-    rect_attr.radius        = _calc_diameter_by(style->sw_type, area_circle.h);
-    rect_attr.border_width  = 0;
-    rect_attr.bg_color      = style->color_point;
-    draw_bg(obj->draw_ctx, &rect_attr, &area_circle);
 
     if (style->divider_line && GT_SWITCH_STYLE_AXIS != style->sw_type) {
         gt_area_st area_line = area_circle;
@@ -128,6 +124,12 @@ static void _init_cb(gt_obj_st * obj) {
         rect_attr.bg_color = style->color_divider;
         draw_bg(obj->draw_ctx, &rect_attr, &area_line);
     }
+
+    /** circle */
+    rect_attr.radius        = _calc_diameter_by(style->sw_type, area_circle.h);
+    rect_attr.bg_color      = style->color_point;
+    rect_attr.border_width  = 0;
+    draw_bg(obj->draw_ctx, &rect_attr, &area_circle);
 
     // focus
     draw_focus(obj , rect_attr.radius);
