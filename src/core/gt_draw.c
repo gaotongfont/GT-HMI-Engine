@@ -1412,9 +1412,11 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
         area_font.h = font_disp_h;
 #if 01
         if (area_font.y + per_line_h < view->y) {
+            area_font.x += ret_w;
             goto next_line_lb;
         }
         else if (area_font.y > view->y + view->h) {
+            area_font.x += ret_w;
             goto next_line_lb;
         }
 #endif
