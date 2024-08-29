@@ -1429,7 +1429,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
                 tmp_ret = _draw_text_convertor_split(&tmp_font, bidi[bidi_pos].flag,
                                             draw_ctx, &blend_dsc, dsc, font_disp_h,
                                             &blend_dsc_style, coords,
-                                            (over_length < 2 ? 0 : 1));
+                                            over_length < 2 ? 0 : 1);
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
                 if (tmp_ret.touch_word.word_p) {
                     ret.touch_word = tmp_ret.touch_word;
