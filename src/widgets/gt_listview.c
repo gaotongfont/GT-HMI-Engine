@@ -87,6 +87,8 @@ typedef struct _gt_listview_s {
     uint8_t omit_sl         : 1;    /** Omit single line */
     uint8_t auto_scroll_sl  : 1;    /** auto scroll single line */
     uint8_t selected_effect : 1;    /** 1[defalut]: Enabled  effect; 0: close selected effect */
+
+    uint8_t show_background : 1;    /** 1[defalut]: show background; 0: hide background */
 }_gt_listview_st;
 
 
@@ -158,16 +160,18 @@ static const gt_obj_class_st gt_listview_class = {
 static void _init_cb(gt_obj_st * obj) {
     _gt_listview_st * style = (_gt_listview_st * )obj;
 
-    gt_attr_rect_st rect_attr;
-    gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.reg.is_fill    = true;
-    rect_attr.border_width   = style->border_width;
-    rect_attr.radius         = style->border_width << 1;
-    rect_attr.bg_opa         = obj->opa;
-    rect_attr.border_color  = style->border_color;
-    rect_attr.bg_color      = obj->bgcolor;
-    // 外框
-    draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
+    if (style->show_background) {
+        gt_attr_rect_st rect_attr;
+        gt_graph_init_rect_attr(&rect_attr);
+        rect_attr.reg.is_fill    = true;
+        rect_attr.border_width   = style->border_width;
+        rect_attr.radius         = style->border_width << 1;
+        rect_attr.bg_opa         = obj->opa;
+        rect_attr.border_color  = style->border_color;
+        rect_attr.bg_color      = obj->bgcolor;
+        // 外框
+        draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
+    }
 
     draw_focus(obj, 0);
 }
@@ -644,9 +648,20 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     style->triple_scale.right = _TRIPLE_SCALE_RIGHT;
 
     style->selected_effect = true;
+    style->show_background = true;
 
     gt_obj_set_scroll_dir(obj, GT_SCROLL_VERTICAL);
     return obj;
+}
+
+void gt_listview_hide_background(gt_obj_st * listview, bool hide)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->show_background = hide ? false : true;
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_listview_set_next_row_item_count(gt_obj_st * listview, uint8_t count)

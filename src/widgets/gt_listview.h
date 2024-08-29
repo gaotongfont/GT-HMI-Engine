@@ -115,6 +115,14 @@ typedef struct gt_listview_custom_item_s {
 gt_obj_st * gt_listview_create(gt_obj_st * parent);
 
 /**
+ * @brief hide listview background
+ *
+ * @param listview
+ * @param hide true: hide; false[default]: show
+ */
+void gt_listview_hide_background(gt_obj_st * listview, bool hide);
+
+/**
  * @brief Sets the number of elements that can be displayed in subsequent rows
  *
  * @param listview

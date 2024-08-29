@@ -77,6 +77,12 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent);
  */
 void gt_textarea_set_text(gt_obj_st * textarea, char * text);
 
+/**
+ * @brief hide textarea background
+ *
+ * @param textarea
+ * @param hide true: hide; false[default]: show
+ */
 void gt_textarea_hide_background(gt_obj_st * textarea, bool hide);
 
 /**
