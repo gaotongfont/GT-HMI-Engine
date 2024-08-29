@@ -297,7 +297,7 @@ static void _textarea_init_cb(gt_obj_st * obj) {
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
 
     /** draw border */
-    if (false == style->reg.show_background) {
+    if (style->reg.show_background) {
         gt_area_st area_font = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
 
         gt_attr_rect_st rect_attr;
