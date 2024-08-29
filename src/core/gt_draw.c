@@ -1410,7 +1410,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
         bidi_pos = 0;
 #endif
         area_font.h = font_disp_h;
-#if 01
+
         if (area_font.y + per_line_h < view->y) {
             area_font.x += ret_w;
             goto next_line_lb;
@@ -1419,7 +1419,6 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             area_font.x += ret_w;
             goto next_line_lb;
         }
-#endif
         /** Display current line chars */
         while (idx_2 < idx_len) {
             tmp_font.info.size = dsc->font->info.size;
@@ -1451,15 +1450,6 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
             if (_is_align_reverse(dsc->align)) {
                 area_font.x -= width;
             }
-#if 0
-            if (area_font.y + per_line_h < view->y) {
-                goto next_word_multi_lb;
-            }
-            else if (area_font.y > view->y + view->h) {
-                goto next_word_multi_lb;
-            }
-            else
-#endif
             if (area_font.x + width < view->x || area_font.x > (view->x + view->w)) {
                 goto next_word_multi_lb;
             }
