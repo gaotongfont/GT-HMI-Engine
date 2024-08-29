@@ -32,7 +32,8 @@ typedef struct _textarea_reg_s {
     uint8_t click_single_cn : 1;    /** click single chinese character */
     uint8_t pull_to_refresh : 1;    /** pull to refresh */
     uint8_t load_more : 1;          /** load more */
-    uint8_t reserved : 3;
+    uint8_t show_background : 1;    /** show background */
+    uint8_t reserved : 2;
 }_textarea_reg_st;
 
 #if GT_TEXTAREA_SUB_STRING_SCROLL_CACHE
@@ -296,18 +297,20 @@ static void _textarea_init_cb(gt_obj_st * obj) {
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
 
     /** draw border */
-    gt_area_st area_font = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
+    if (false == style->reg.show_background) {
+        gt_area_st area_font = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
 
-    gt_attr_rect_st rect_attr;
-    gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.radius = obj->radius;
-    rect_attr.border_width = style->border_width;
-    rect_attr.reg.is_fill = 1;
-    rect_attr.bg_color = style->color_background;
-    rect_attr.border_color = style->color_border;
-    rect_attr.bg_opa = style->bg_opa;
+        gt_attr_rect_st rect_attr;
+        gt_graph_init_rect_attr(&rect_attr);
+        rect_attr.radius = obj->radius;
+        rect_attr.border_width = style->border_width;
+        rect_attr.reg.is_fill = 1;
+        rect_attr.bg_color = style->color_background;
+        rect_attr.border_color = style->color_border;
+        rect_attr.bg_opa = style->bg_opa;
 
-    draw_bg(obj->draw_ctx, &rect_attr, &area_font);
+        draw_bg(obj->draw_ctx, &rect_attr, &area_font);
+    }
 
     _draw_content_or_get_words(obj, NULL);
 
@@ -489,6 +492,7 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
     style->space_y           = 0;
     style->color_border      = gt_color_hex(0xc7c7c7);
     style->border_width      = 2;
+    style->reg.show_background = true;
 
     _set_hold_on_contents_for_scroll(style, false);
     return obj;
@@ -550,6 +554,16 @@ void gt_textarea_set_text(gt_obj_st * textarea, char * text)
 #endif
     _set_hold_on_contents_for_scroll(style, false);
 
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_textarea_hide_background(gt_obj_st * textarea, bool hide)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    style->reg.show_background = hide ? false : true;
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

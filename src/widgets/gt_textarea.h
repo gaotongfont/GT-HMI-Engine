@@ -77,6 +77,8 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent);
  */
 void gt_textarea_set_text(gt_obj_st * textarea, char * text);
 
+void gt_textarea_hide_background(gt_obj_st * textarea, bool hide);
+
 /**
  * @brief Get string from textarea widget
  *
