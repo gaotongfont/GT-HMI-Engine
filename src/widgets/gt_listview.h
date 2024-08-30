@@ -361,7 +361,7 @@ void gt_listview_set_font_thick_en(gt_obj_st * listview, uint8_t thick);
 void gt_listview_set_font_thick_cn(gt_obj_st * listview, uint8_t thick);
 void gt_listview_set_font_encoding(gt_obj_st * listview, gt_encoding_et encoding);
 
-void gt_listview_set_space(gt_obj_st * listview, uint8_t space_x, uint8_t space_y);
+void gt_listview_set_font_space(gt_obj_st * listview, uint8_t space_x, uint8_t space_y);
 
 void gt_listview_set_label_omit_single_line_by(gt_obj_st * listview, bool is_omit);
 void gt_listview_set_label_auto_scroll_single_line_by(gt_obj_st * listview, bool is_auto_scroll);

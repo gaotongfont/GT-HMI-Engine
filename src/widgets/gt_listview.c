@@ -202,9 +202,6 @@ static gt_obj_st * _get_last_active_obj(gt_obj_st * listview) {
 }
 
 static void _reset_last_active_state(gt_obj_st * listview, gt_obj_st * target) {
-    if (listview == target) {
-        return;
-    }
     _gt_listview_st * style = (_gt_listview_st * )listview;
     if (false == style->selected_effect) {
         return;
@@ -489,6 +486,7 @@ static inline void _set_label_prop(gt_obj_st * listview, gt_obj_st * lab, gt_fon
     gt_obj_set_touch_parent(lab, true);
     gt_obj_set_bubble_notify(lab, true);
     gt_obj_set_inside(lab, true);
+    gt_obj_set_reduce(lab, 0);
 
     if (style->omit_sl) {
         gt_label_set_omit_single_line(lab, true);
@@ -510,7 +508,6 @@ static gt_obj_st * _create_item_label(gt_obj_st * listview, gt_obj_st * obj, cha
 
     _set_label_prop(listview, lab, NULL);
     gt_label_set_text(lab, text);
-    gt_obj_set_reduce(lab, 0);
 
     return lab;
 }
@@ -628,6 +625,7 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     style->item_height = style->font_info.size + (style->font_info.size >> 1);
     style->font_color = gt_color_hex(0x000000);
     style->align = GT_ALIGN_CENTER_MID;
+    /** font */
     style->space_x = 0;
     style->space_y = 0;
     style->septal_line = true;
@@ -1260,7 +1258,7 @@ void gt_listview_set_font_encoding(gt_obj_st * listview, gt_encoding_et encoding
     _set_label_prop_by_type(listview, _LABEL_FONT_ENCODING, encoding);
 }
 
-void gt_listview_set_space(gt_obj_st * listview, uint8_t space_x, uint8_t space_y)
+void gt_listview_set_font_space(gt_obj_st * listview, uint8_t space_x, uint8_t space_y)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
