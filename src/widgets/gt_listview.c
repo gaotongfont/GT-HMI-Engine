@@ -448,6 +448,7 @@ static gt_obj_st * _create_item_icon(gt_obj_st * listview, gt_obj_st * obj, char
 
     gt_img_set_src(icon, img);
     gt_obj_set_inside(icon, true);
+    gt_obj_set_reduce(icon, 0);
 
     gt_obj_set_touch_parent(icon, true);
     gt_obj_set_bubble_notify(icon, true);
@@ -509,6 +510,7 @@ static gt_obj_st * _create_item_label(gt_obj_st * listview, gt_obj_st * obj, cha
 
     _set_label_prop(listview, lab, NULL);
     gt_label_set_text(lab, text);
+    gt_obj_set_reduce(lab, 0);
 
     return lab;
 }
