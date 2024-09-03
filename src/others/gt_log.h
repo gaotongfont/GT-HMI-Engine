@@ -174,6 +174,9 @@ extern "C" {
 #if GT_USE_VALUE_CHECK
 
     #if GT_USE_VALUE_CHECK_PRINT
+        /**
+         * @brief Print the check failed information.
+         */
         #define GT_CHECK_PRINT(_value)    GT_LOGW(GT_LOG_TAG_CHECK, "Failed: [%s] value is NULL!", #_value)
     #else
         #define GT_CHECK_PRINT(_value)
