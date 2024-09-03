@@ -196,6 +196,7 @@ static void _media_player_init_cb(gt_obj_st * obj) {
         // text
         if (false == style->reg.hide_title) {
             _show_center_content(obj, 16, "media player");
+            return;
         }
     }
 
@@ -211,21 +212,25 @@ static void _media_player_deinit_cb(gt_obj_st * obj) {
 
 }
 
-static void _media_player_switch_status(gt_obj_st * obj) {
+static bool _media_player_switch_status(gt_obj_st * obj) {
     _gt_media_player_st * style = (_gt_media_player_st *)obj;
+    if (false == style->reg.hide_title) {
+        return false;
+    }
     style->reg.playing = !style->reg.playing;
     if (style->reg.playing) {
         if (style->play_hdr.media_cb) {
             style->play_hdr.media_cb(obj, style->play_hdr.user_data);
         }
         _hide_slider_bar(obj, false);
-        return;
+        return true;
     }
     /** stop */
     if (style->stop_hdr.media_cb) {
         style->stop_hdr.media_cb(obj, style->stop_hdr.user_data);
     }
     _show_slider_bar(obj);
+    return true;
 }
 
 static void _media_player_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
@@ -236,8 +241,9 @@ static void _media_player_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
     else if (GT_EVENT_TYPE_INPUT_RELEASED == code_val) {
         /** stop or run */
-        _media_player_switch_status(obj);
-        gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+        if (_media_player_switch_status(obj)) {
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+        }
     }
     else if (GT_EVENT_TYPE_UPDATE_STYLE == code_val) {
         _update_slider_bar_pos_size(obj);
