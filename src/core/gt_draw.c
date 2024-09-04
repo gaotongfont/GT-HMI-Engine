@@ -200,11 +200,11 @@ static bool _gt_get_radius_mask(gt_radius_mask_st *r_mask, uint16_t radius) {
 
     const uint32_t mask_size = (radius << 1) + 2;
 
-    if(radius <= RADIUS_MAX){
+    if (radius <= RADIUS_MAX) {
         r_mask->buf = (uint8_t * )small_radius_make[radius];
         r_mask->opa = r_mask->buf;
         r_mask->opa_start = (uint16_t * )(r_mask->buf + mask_size);
-        r_mask->x_start = (uint16_t * )(r_mask->buf + mask_size*2);
+        r_mask->x_start = (uint16_t * )(r_mask->buf + (mask_size << 1));
         return true;
     }
 
@@ -222,7 +222,7 @@ static bool _gt_get_radius_mask(gt_radius_mask_st *r_mask, uint16_t radius) {
     gt_memset_0(r_mask->buf, mask_size * 3);
     r_mask->opa = r_mask->buf;
     r_mask->opa_start = (uint16_t * )(r_mask->buf + mask_size);
-    r_mask->x_start = (uint16_t * )(r_mask->buf + mask_size*2);
+    r_mask->x_start = (uint16_t * )(r_mask->buf + (mask_size << 1));
 
 #if 0
     /*Special case, handle manually*/
