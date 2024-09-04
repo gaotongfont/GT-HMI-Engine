@@ -219,6 +219,7 @@ void gt_listview_set_icon_to_right(gt_obj_st * listview, bool enabled);
 
 /**
  * @brief Set the listview item display height
+ *      [Warn] Must set before adding items, otherwise it will not take effect
  *
  * @param listview
  * @param height The height of the item
@@ -328,9 +329,44 @@ void gt_listview_set_border_width(gt_obj_st * listview, uint8_t width);
  * @brief Sets the split line between each item to be displayed
  *
  * @param listview
- * @param enabled true: Enabled; false: Disabled
+ * @param enabled true[default]: Enabled; false: Disabled
  */
 void gt_listview_set_septal_line(gt_obj_st * listview, bool enabled);
+
+/**
+ * @brief Set the split line size, which always be center of the widget width
+ *      [Warn] Must set before adding items, otherwise it will not take normal effect
+ *
+ * @param listview
+ * @param width the line width -1: 100% width of widget; 0[default]: auto calc 80% width of widget; > 0: width pixel
+ * @param height the line height 1[default]: 1 pixel
+ */
+void gt_listview_set_septal_line_size(gt_obj_st * listview, uint16_t width, uint16_t height);
+
+/**
+ * @brief Set the split line color between each row to be displayed
+ *
+ * @param listview
+ * @param color
+ */
+void gt_listview_set_septal_line_color(gt_obj_st * listview, gt_color_t color);
+
+/**
+ * @brief Set the split line opacity between each row to be displayed
+ *
+ * @param listview
+ * @param opa
+ */
+void gt_listview_set_septal_line_opa(gt_obj_st * listview, gt_opa_t opa);
+
+/**
+ * @brief Set the split line space between each row to be displayed
+ *
+ * @param listview
+ * @param hor
+ * @param ver
+ */
+void gt_listview_set_item_space(gt_obj_st * listview, uint16_t hor, uint16_t ver);
 
 /**
  * @brief set listview show font size

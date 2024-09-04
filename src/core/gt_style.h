@@ -152,15 +152,6 @@ bool gt_obj_get_overflow(gt_obj_st * obj);
 void gt_obj_set_inside(gt_obj_st * obj, bool is_inside);
 bool gt_obj_get_inside(gt_obj_st * obj);
 
-/**
- * @brief Draw the vertical septal line
- *
- * @param obj
- * @param enabled true: enabled, false: disabled
- */
-void gt_obj_set_septal_line(gt_obj_st * obj, bool enabled);
-bool gt_obj_get_septal_line(gt_obj_st * obj);
-
 void gt_obj_set_mask_effect(gt_obj_st * obj, bool is_keep_alive);
 bool gt_obj_get_mask_effect(gt_obj_st * obj);
 

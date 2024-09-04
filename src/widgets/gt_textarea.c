@@ -170,7 +170,7 @@ static void _scroll_cache_remark_item(_gt_textarea_st * style, gt_size_t idx, gt
     style->scroll_cache.list[idx].idx = idx;
     style->scroll_cache.list[idx].offset_abs = *item_area;
 }
-#endif
+#endif  /** GT_TEXTAREA_SUB_STRING_SCROLL_CACHE */
 
 static inline void _set_hold_on_contents_for_scroll(_gt_textarea_st * style, bool hold_on) {
     style->reg.hold_on = hold_on;

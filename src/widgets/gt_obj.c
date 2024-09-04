@@ -84,22 +84,6 @@ static void _init_cb(gt_obj_st * obj) {
         gt_area_st real_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
         draw_bg(obj->draw_ctx, &rect_attr, &real_area);
     }
-
-    if (gt_obj_get_septal_line(obj)) {
-        gt_graph_init_rect_attr(&rect_attr);
-        rect_attr.reg.is_fill    = true;
-        rect_attr.radius         = 1;
-        rect_attr.bg_color      = gt_color_hex(0xc7c7c7);
-        rect_attr.bg_opa = 0x99;
-
-        // top line
-        gt_area_st line = {(obj->area.w >> 3) + obj->area.x, obj->area.y, obj->area.w - (obj->area.w >> 2), 1};
-        draw_bg(obj->draw_ctx, &rect_attr, &line);
-
-        // bottom line
-        line.y = obj->area.y + obj->area.h - 1;
-        draw_bg(obj->draw_ctx, &rect_attr, &line);
-    }
 }
 
 static void _screen_scroll(gt_obj_st * obj) {
