@@ -328,6 +328,9 @@ void gt_media_player_set_total_time(gt_obj_st * obj, gt_size_t total_time)
         return;
     }
     _gt_media_player_st * style = (_gt_media_player_st *)obj;
+    if (0 == total_time) {
+        total_time = 100;
+    }
     gt_slider_set_start_end(style->slider_p, 0, total_time);
 }
 
