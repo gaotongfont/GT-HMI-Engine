@@ -2053,6 +2053,7 @@ void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
 
     gt_draw_blend_dsc_st blend_dsc = {0};
     blend_dsc.color_fill = dsc->bg_color;
+    blend_dsc.font_limit_area = dsc->limit_area;
     blend_dsc.opa = dsc->bg_opa;
     blend_dsc.mask_buf = NULL;
 
