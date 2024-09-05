@@ -187,7 +187,7 @@ static gt_size_t _calc_septal_line_width(gt_obj_st * obj, _gt_listview_st * styl
 
 static void _show_septal_line(gt_obj_st * obj, _gt_listview_st * style) {
     gt_attr_rect_st rect_attr;
-    gt_area_st area = obj->area, cover_area;
+    gt_area_st area = obj->area;
     gt_size_t offset = (gt_abs(style->item_space.y - style->septal_line_info.size.y) >> 1);
     gt_size_t line_width_offset = style->item_space.y - offset;
     gt_size_t septal_width = (-1 == style->septal_line_info.size.x) ? obj->area.w : _calc_septal_line_width(obj, style);
@@ -205,16 +205,17 @@ static void _show_septal_line(gt_obj_st * obj, _gt_listview_st * style) {
     rect_attr.bg_color = style->septal_line_info.color;
     rect_attr.bg_opa = style->septal_line_info.opa;
 
+    rect_attr.limit_area = &obj->area;  /** limit widget area range */
+
     area.x += (obj->area.w - septal_width) >> 1;
     area.y += obj->process_attr.scroll.y;
     area.w = septal_width;
     area.h = style->septal_line_info.size.y;
+
     for (gt_size_t i = 0, cnt = obj->cnt_child - 1; i < cnt; ++i) {
         area.y += obj->child[i]->area.h + offset;
-        if (gt_area_cover_screen(&obj->area, &area, &cover_area)) {
-            if (cover_area.h) {
-                draw_bg(obj->draw_ctx, &rect_attr, &cover_area);
-            }
+        if (gt_area_is_on(&obj->area, &area)) {
+            draw_bg(obj->draw_ctx, &rect_attr, &area);
         }
         area.y += line_width_offset;
     }
