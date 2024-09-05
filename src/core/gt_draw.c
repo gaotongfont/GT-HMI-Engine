@@ -849,12 +849,12 @@ static _gt_draw_font_res_st _draw_text_convertor_split(
             }
         }
         blend_dsc->dst_area->h = font_disp_h;
-        if (blend_dsc->dst_area->y + style_space_y + blend_dsc->dst_area->h < blend_dsc->font_limit_area->y ||
-            blend_dsc->dst_area->y > (blend_dsc->font_limit_area->y + blend_dsc->font_limit_area->h)) {
+        if (blend_dsc->dst_area->y + style_space_y + blend_dsc->dst_area->h < blend_dsc->view_area->y ||
+            blend_dsc->dst_area->y > (blend_dsc->view_area->y + blend_dsc->view_area->h)) {
             goto _next_word_cvt_lb;
         }
-        else if (blend_dsc->dst_area->x + width < blend_dsc->font_limit_area->x ||
-            blend_dsc->dst_area->x > (blend_dsc->font_limit_area->x + blend_dsc->font_limit_area->w)) {
+        else if (blend_dsc->dst_area->x + width < blend_dsc->view_area->x ||
+            blend_dsc->dst_area->x > (blend_dsc->view_area->x + blend_dsc->view_area->w)) {
             goto _next_word_cvt_lb;
         }
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
@@ -1255,7 +1255,7 @@ static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, 
         .dst_area   = &area_font,
         .color_fill = dsc->font_color,
         .opa        = dsc->opa,
-        .font_limit_area = (gt_area_st * )view,
+        .view_area = (gt_area_st * )view,
     };
     gt_draw_blend_dsc_st blend_dsc_style = blend_dsc;
     blend_dsc_style.color_fill  = gt_color_black();
@@ -1715,7 +1715,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
         .dst_area   = &area_font,
         .color_fill = dsc->font_color,
         .opa        = dsc->opa,
-        .font_limit_area = (gt_area_st * )view,
+        .view_area = (gt_area_st * )view,
     };
     gt_draw_blend_dsc_st blend_dsc_style = blend_dsc;
     blend_dsc_style.color_fill  = gt_color_black();
@@ -2053,7 +2053,7 @@ void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
 
     gt_draw_blend_dsc_st blend_dsc = {0};
     blend_dsc.color_fill = dsc->bg_color;
-    blend_dsc.font_limit_area = dsc->limit_area;
+    blend_dsc.view_area = dsc->limit_area;
     blend_dsc.opa = dsc->bg_opa;
     blend_dsc.mask_buf = NULL;
 
