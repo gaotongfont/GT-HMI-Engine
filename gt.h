@@ -24,6 +24,8 @@ extern "C" {
 
 #include "src/gt_conf.h"
 
+#include "driver/gt_font_config.h"
+
 /* core */
 #include "src/core/gt_handler.h"
 #include "src/core/gt_graph_base.h"
