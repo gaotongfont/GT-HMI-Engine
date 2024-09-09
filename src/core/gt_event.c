@@ -62,6 +62,9 @@ static gt_res_t _gt_event_calling_user_cb(gt_event_st * e) {
     if (NULL == event_ptr) {
         return GT_RES_OK;
     }
+    if (gt_obj_is_disabled(e->target)) {
+        return GT_RES_OK;
+    }
     while(event_ptr) {
         if(event_ptr->user_cb && e->code_type == event_ptr->filter) {
             e->user_data = event_ptr->user_data;
