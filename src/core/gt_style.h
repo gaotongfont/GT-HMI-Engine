@@ -78,6 +78,7 @@ void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y);
 /**
  * @brief Enabled custom touch expand size, such as:
  *      widget size: 20x20,  expand size: (5, 10), touch size: 30x40.
+ * [Default val: 0] widget default display size
  * @param obj
  * @param hor horizontal expand size
  * @param ver vertical expand size

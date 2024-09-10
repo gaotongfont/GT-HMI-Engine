@@ -251,7 +251,7 @@ extern "C" {
     /**
      * @brief Enabled custom touch expand size, such as:
      *      widget size: 20x20,  expand size: (5, 10), touch size: 30x40.
-     * [Default: 0]
+     * [Default: 0] widget default display size
      */
     #define GT_USE_CUSTOM_TOUCH_EXPAND_SIZE     0
 #endif
