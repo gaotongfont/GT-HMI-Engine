@@ -50,12 +50,11 @@ typedef struct _gt_input_number_s {
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
 static const gt_obj_class_st gt_input_number_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
+    ._deinit_cb    = NULL,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_input_number_st)
@@ -90,19 +89,12 @@ static void _update_label_value(_gt_input_number_st * style) {
     gt_label_set_text(style->label, buffer, style->value);
 }
 
-static void _init_cb(gt_obj_st * obj)
-{
+static void _init_cb(gt_obj_st * obj) {
     // focus
     draw_focus(obj , 0);
 }
 
-static void _deinit_cb(gt_obj_st * obj)
-{
-
-}
-
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
-{
+static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     gt_event_type_et code_val = gt_event_get_code(e);
 
@@ -120,7 +112,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         }
-
         default:
             break;
     }
