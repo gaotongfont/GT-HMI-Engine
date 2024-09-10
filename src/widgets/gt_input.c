@@ -162,7 +162,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     /** calc text max width */
     _gt_draw_font_res_st font_res = draw_text(input->draw_ctx, &font_attr, &area_font);
     if (font_res.size.x >= 0) {
-        font_attr.logical_area.x += area_font.w - font_res.size.x - gt_obj_get_reduce(input);
+        font_attr.logical_area.x += area_font.w - font_res.size.x - 8;
     }
     font_attr.opa = input->opa;
     /** display all font */
