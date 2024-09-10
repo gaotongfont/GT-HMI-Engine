@@ -310,6 +310,13 @@ void gt_anim_init(gt_anim_st * anim);
 gt_anim_st * gt_anim_start(const gt_anim_st * anim);
 
 /**
+ * @brief Pause the animation object
+ *
+ * @param anim The return object pointer from @ref gt_anim_start()
+ */
+void gt_anim_stop(gt_anim_st * const anim);
+
+/**
  * @brief Reset the animation object create tick to restart to run
  *
  * @param anim The animation object

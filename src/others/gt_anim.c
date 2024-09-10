@@ -409,9 +409,16 @@ gt_anim_st * gt_anim_start(const gt_anim_st * anim)
     return new_obj;
 }
 
+void gt_anim_stop(gt_anim_st * const anim)
+{
+    if (!anim) { return ; }
+    anim->paused = true;
+}
+
 void gt_anim_restart(gt_anim_st * anim)
 {
     if (!anim) { return ; }
+    if (anim->paused) { anim->paused = false; }
     anim->tick_create = gt_tick_get();
 }
 
