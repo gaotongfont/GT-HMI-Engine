@@ -247,6 +247,15 @@ extern "C" {
     #define GT_USE_FS_NAME_BY_INDEX     0
 #endif
 
+#ifndef GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
+    /**
+     * @brief Enabled custom touch expand size, such as:
+     *      widget size: 20x20,  expand size: (5, 10), touch size: 30x40.
+     * [Default: 0]
+     */
+    #define GT_USE_CUSTOM_TOUCH_EXPAND_SIZE     0
+#endif
+
 /** display refresh time */
 #define GT_USE_DISPLAY_PREF_MSG         0
 

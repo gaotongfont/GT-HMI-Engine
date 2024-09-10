@@ -57,12 +57,23 @@ typedef struct {
  * @return false not clicked
  */
 static _check_clicked_state_em gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point ) {
+#if GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
+    if (point->x + obj->touch_expand_size.x < obj->area.x ||
+        point->x > (obj->area.x + obj->area.w + obj->touch_expand_size.x)) {
+        return _CHECK_CLICKED_STATE_FAIL;
+    }
+    if (point->y + obj->touch_expand_size.y < obj->area.y ||
+        point->y > (obj->area.y + obj->area.h + obj->touch_expand_size.y)) {
+        return _CHECK_CLICKED_STATE_FAIL;
+    }
+#else
     if (point->x < obj->area.x || point->x > (obj->area.x + obj->area.w)) {
         return _CHECK_CLICKED_STATE_FAIL;
     }
     if (point->y < obj->area.y || point->y > (obj->area.y + obj->area.h)) {
         return _CHECK_CLICKED_STATE_FAIL;
     }
+#endif
     if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
         return _CHECK_CLICKED_STATE_FAIL;
     }

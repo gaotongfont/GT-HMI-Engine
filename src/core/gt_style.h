@@ -73,6 +73,18 @@ typedef enum {
 /* global functions / API interface -------------------------------------*/
 gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area);
 void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y);
+
+#if GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
+/**
+ * @brief Enabled custom touch expand size, such as:
+ *      widget size: 20x20,  expand size: (5, 10), touch size: 30x40.
+ * @param obj
+ * @param hor horizontal expand size
+ * @param ver vertical expand size
+ */
+void gt_obj_set_touch_expand_area(gt_obj_st * obj, gt_size_t hor, gt_size_t ver);
+#endif
+
 /**
  * @brief Set the object's position relative to the target object
  *

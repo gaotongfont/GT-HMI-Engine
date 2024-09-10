@@ -98,6 +98,13 @@ typedef struct gt_obj_s {
     gt_obj_process_attr_st process_attr;
 
     gt_area_st area;                /* base area */
+#if GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
+    /**
+     * @brief Enabled custom touch expand size, such as:
+     *      widget size: 20x20,  expand size: (5, 10), touch size: 30x40.
+     */
+    gt_point_st touch_expand_size;
+#endif
 
     gt_id_t id;                     /* obj id, register by user, default: [-1] invalid id, normal begin from 0. */
     gt_color_t bgcolor;
