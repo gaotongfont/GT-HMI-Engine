@@ -56,7 +56,7 @@ gt_obj_st * gt_media_player_create(gt_obj_st * parent);
  * @brief Set the callback function when the media triggers the play event
  *
  * @param obj
- * @param play_cb
+ * @param play_cb Callback function
  * @param user_data
  */
 void gt_media_player_set_play_cb(gt_obj_st * obj, gt_media_player_handler_cb play_cb, void * user_data);
@@ -65,7 +65,7 @@ void gt_media_player_set_play_cb(gt_obj_st * obj, gt_media_player_handler_cb pla
  * @brief Set the callback function when the media triggers the stop event
  *
  * @param obj
- * @param stop_cb
+ * @param stop_cb Callback function
  * @param user_data
  */
 void gt_media_player_set_stop_cb(gt_obj_st * obj, gt_media_player_handler_cb stop_cb, void * user_data);
@@ -78,17 +78,35 @@ void gt_media_player_set_stop_cb(gt_obj_st * obj, gt_media_player_handler_cb sto
  */
 void gt_media_player_set_raw(gt_obj_st * obj, gt_img_raw_st * raw);
 
+/**
+ * @brief Setting media total second time
+ *
+ * @param obj
+ * @param total_time second[s]
+ */
 void gt_media_player_set_total_time(gt_obj_st * obj, gt_size_t total_time);
 
+/**
+ * @brief Set the current second time of the media
+ *
+ * @param obj
+ * @param current_time
+ */
 void gt_media_player_set_current_time(gt_obj_st * obj, gt_size_t current_time);
 
+/**
+ * @brief Get the current second time of the media
+ *
+ * @param obj
+ * @return gt_size_t second
+ */
 gt_size_t gt_media_player_get_current_time(gt_obj_st * obj);
 
 /**
  * @brief Calling by the slider bar to set the current time
  *
  * @param obj
- * @param value_change_cb
+ * @param value_change_cb Callback function
  * @param user_data
  */
 void gt_media_player_set_slider_change_cb(gt_obj_st * obj, gt_event_cb_t value_change_cb, void * user_data);
