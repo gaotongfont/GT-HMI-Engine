@@ -122,7 +122,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     rect_attr.border_color = style->border_color;
 
     /* draw base shape */
-    gt_area_st box_area = gt_area_reduce(input->area , gt_obj_get_reduce(input));
+    gt_area_st box_area = gt_area_reduce(input->area, gt_obj_get_reduce(input));
     draw_bg(input->draw_ctx, &rect_attr, &box_area);
 
     /* draw font */
@@ -162,7 +162,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     /** calc text max width */
     _gt_draw_font_res_st font_res = draw_text(input->draw_ctx, &font_attr, &area_font);
     if (font_res.size.x >= 0) {
-        font_attr.logical_area.x = area_font.w - font_res.size.x;
+        font_attr.logical_area.x += area_font.w - font_res.size.x - gt_obj_get_reduce(input);
     }
     font_attr.opa = input->opa;
     /** display all font */
