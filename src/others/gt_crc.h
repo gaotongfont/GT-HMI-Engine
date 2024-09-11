@@ -48,6 +48,7 @@ extern "C" {
 
 
 #if GT_ENABLED_CRC8
+    #define GT_CRC8_POLY            0x07
     #define GT_CRC8_START           0x00
 #endif
 
@@ -99,7 +100,7 @@ uint8_t gt_update_crc_8(uint8_t crc, uint8_t val);
 
 #if GT_ENABLED_CRC16
 /**
- * @brief Calculates the 16 bits CRC16 in one pass for a byte
+ * @brief Calculates the 16 bits CRC16/IBM in one pass for a byte
  *      string of which the beginning has been passed to the function. The number of
  *      bytes to check is also a parameter. The number of the bytes in the string is
  *      limited by the constant SIZE_MAX.
