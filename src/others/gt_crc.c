@@ -121,6 +121,7 @@ void init_crc32_tab(void) {
 		}
 		crc32_table[i] = crc;
 	}
+	crc32_init_flag = true;
 }
 #endif  /** GT_ENABLED_CRC32 */
 
