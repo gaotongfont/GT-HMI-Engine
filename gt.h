@@ -189,6 +189,7 @@ extern "C" {
 #include "src/others/gt_color.h"
 #include "src/others/gt_log.h"
 #include "src/others/gt_txt.h"
+#include "src/others/gt_crc.h"
 
 /* define ---------------------------------------------------------------*/
 

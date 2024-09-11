@@ -265,12 +265,37 @@ extern "C" {
 /** display idle time */
 #define GT_USE_DISPLAY_PREF_IDLE        0
 
-/** @brief use lodepng */
-#define GT_USE_PNG              01
-/** @brief use TJpgDec */
-#define GT_USE_SJPG             01
-/** @brief use gifDec */
-#define GT_USE_GIF              01
+#ifndef GT_USE_CRC
+    /**
+     * @brief Enabled CRC function @ref gt_crc.h
+     * [default: 0]
+     */
+    #define GT_USE_CRC          0
+#endif
+
+#ifndef GT_USE_PNG
+    /**
+     * @brief use lodepng
+     * [default: 1]
+     */
+    #define GT_USE_PNG          01
+#endif
+
+#ifndef GT_USE_SJPG
+    /**
+     * @brief use TJpgDec
+     * [default: 1]
+     */
+    #define GT_USE_SJPG         01
+#endif
+
+#ifndef GT_USE_GIF
+    /**
+     * @brief use gifDec
+     * [default: 1]
+     */
+    #define GT_USE_GIF          01
+#endif
 
 /**
  * @brief use examples demo
