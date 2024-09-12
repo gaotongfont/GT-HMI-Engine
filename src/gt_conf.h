@@ -190,13 +190,13 @@ extern "C" {
 #define GT_CFG_DEFAULT_FONT_FAMILY_NUMB     GT_CFG_DEFAULT_FONT_FAMILY
 #endif
 
-#ifndef GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+#ifndef GT_FONT_USE_ASCII_WIDTH_CACHE
     /**
      * @brief 1: Cache the width of the ASCII font, 0: Do not cache.
      *      Almost 94 characters, (94 * _FONT_ASCII_WIDTH_CACHE_BYTE_SIZE) bytes
      *      [default: 01]
      */
-    #define GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE     01
+    #define GT_FONT_USE_ASCII_WIDTH_CACHE     01
 #endif
 
 #ifndef GT_USE_MODE_SRC

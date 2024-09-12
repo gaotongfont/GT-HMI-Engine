@@ -55,7 +55,7 @@ typedef struct _gt_gc_event_s {
 }_gt_gc_event_st;
 #endif
 
-#if GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+#if GT_FONT_USE_ASCII_WIDTH_CACHE
 typedef struct _gt_gc_ascii_width_cache_s {
     uint16_t option;
     uint16_t size;
@@ -83,7 +83,7 @@ typedef struct gt_gc_s {
 #if GT_USE_SCREEN_ANIM
     _gt_gc_event_st event_ctl;
 #endif
-#if GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+#if GT_FONT_USE_ASCII_WIDTH_CACHE
     _gt_gc_ascii_width_cache_st ascii_width_cache;
 #endif
 }gt_gc_st;
@@ -140,7 +140,7 @@ void gt_gc_set_full_img_buffer_offset(uint32_t offset);
 _gt_gc_full_img_buffer_st * _gt_gc_get_full_img_buffer(void);
 #endif
 
-#if GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+#if GT_FONT_USE_ASCII_WIDTH_CACHE
 /**
  * @brief Get the ASCII font width cache object
  *

@@ -233,7 +233,7 @@ static inline gt_size_t gt_font_get_font_width_inline(uint32_t uni_or_gbk, uint1
     if (GT_CFG_DEFAULT_FONT_FAMILY == option) {
         return width;
     }
-#if GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+#if GT_FONT_USE_ASCII_WIDTH_CACHE
     _gt_gc_ascii_width_cache_st * const cache = _gt_gc_get_ascii_width_cache();
     if (uni_or_gbk < 0x20|| uni_or_gbk > 0x7F) {
         return GT_Get_Font_Width(uni_or_gbk, option, font_size, gray, res);
