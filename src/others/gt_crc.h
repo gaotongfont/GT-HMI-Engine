@@ -27,7 +27,7 @@ extern "C" {
      * @brief crc8 enable flag
      *  [default: 0]
      */
-    #define GT_ENABLED_CRC8     0
+    #define GT_ENABLED_CRC8         0
 #endif
 
 #ifndef GT_ENABLED_CRC16
@@ -35,7 +35,7 @@ extern "C" {
      * @brief crc16 enable flag
      *  [default: 0]
      */
-    #define GT_ENABLED_CRC16    0
+    #define GT_ENABLED_CRC16        0
 #endif
 
 #ifndef GT_ENABLED_CRC32
@@ -43,7 +43,7 @@ extern "C" {
      * @brief crc32 enable flag
      *  [default: 0]
      */
-    #define GT_ENABLED_CRC32    0
+    #define GT_ENABLED_CRC32        0
 #endif
 
 
@@ -84,17 +84,17 @@ extern "C" {
  * @param num_bytes
  * @return uint8_t
  */
-uint8_t gt_crc_8(const uint8_t * input_str, size_t num_bytes);
+uint8_t gt_crc8(const uint8_t * input_str, size_t num_bytes);
 
 /**
  * @brief Given a data byte and the previous value of the CRC value, the function
- *      gt_update_crc_8() calculates and returns the new actual CRC value of the data
+ *      gt_update_crc8() calculates and returns the new actual CRC value of the data
  *      coming in.
  * @param crc The previous value of the CRC value
  * @param val The new data byte
  * @return uint8_t new crc value
  */
-uint8_t gt_update_crc_8(uint8_t crc, uint8_t val);
+uint8_t gt_update_crc8(uint8_t crc, uint8_t val);
 #endif  /** GT_ENABLED_CRC8 */
 
 
@@ -108,7 +108,7 @@ uint8_t gt_update_crc_8(uint8_t crc, uint8_t val);
  * @param num_bytes
  * @return uint16_t
  */
-uint16_t gt_crc_16(const uint8_t *input_str, size_t num_bytes);
+uint16_t gt_crc16(const uint8_t * input_str, size_t num_bytes);
 
 /**
  * @brief Calculates the 16 bits Modbus CRC in one pass for a byte string
@@ -118,7 +118,7 @@ uint16_t gt_crc_16(const uint8_t *input_str, size_t num_bytes);
  * @param num_bytes
  * @return uint16_t
  */
-uint16_t gt_crc16_mod_bus(const uint8_t *input_str, size_t num_bytes);
+uint16_t gt_crc16_mod_bus(const uint8_t * input_str, size_t num_bytes);
 
 /**
  * @brief Calculates a new CRC-16 value based on the previous
@@ -127,7 +127,7 @@ uint16_t gt_crc16_mod_bus(const uint8_t *input_str, size_t num_bytes);
  * @param c The next byte of the data to be checked
  * @return uint16_t
  */
-uint16_t gt_update_crc_16(uint16_t crc, uint8_t c);
+uint16_t gt_update_crc16(uint16_t crc, uint8_t c);
 #endif  /** GT_ENABLED_CRC16 */
 
 #if GT_ENABLED_CRC32
@@ -139,7 +139,7 @@ uint16_t gt_update_crc_16(uint16_t crc, uint8_t c);
  * @param num_bytes
  * @return uint32_t
  */
-uint32_t gt_crc_32(const uint8_t * input_str, size_t num_bytes);
+uint32_t gt_crc32(const uint8_t * input_str, size_t num_bytes);
 
 /**
  * @brief Calculates a new CRC-32 value based on the
@@ -148,7 +148,7 @@ uint32_t gt_crc_32(const uint8_t * input_str, size_t num_bytes);
  * @param c The next byte of the data to be checked
  * @return uint32_t
  */
-uint32_t gt_update_crc_32(uint32_t crc, uint8_t c);
+uint32_t gt_update_crc32(uint32_t crc, uint8_t c);
 #endif  /** GT_ENABLED_CRC32 */
 
 

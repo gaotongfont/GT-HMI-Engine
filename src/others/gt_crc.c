@@ -124,7 +124,7 @@ void init_crc32_tab(void) {
 
 /* global functions / API interface -------------------------------------*/
 #if GT_ENABLED_CRC8
-uint8_t gt_crc_8(const uint8_t * input_str, size_t num_bytes)
+uint8_t gt_crc8(const uint8_t * input_str, size_t num_bytes)
 {
 	const uint8_t * ptr = input_str;
 	size_t a = 0;
@@ -139,13 +139,13 @@ uint8_t gt_crc_8(const uint8_t * input_str, size_t num_bytes)
 	return crc;
 }
 
-uint8_t gt_update_crc_8(uint8_t crc, uint8_t val) {
+uint8_t gt_update_crc8(uint8_t crc, uint8_t val) {
 	return crc8_table[val ^ crc];
 }
 #endif  /** GT_ENABLED_CRC8 */
 
 #if GT_ENABLED_CRC16
-uint16_t gt_crc_16(const uint8_t * input_str, size_t num_bytes)
+uint16_t gt_crc16(const uint8_t * input_str, size_t num_bytes)
 {
 	uint16_t crc = GT_CRC16_START;
 	const uint8_t * ptr = input_str;
@@ -175,7 +175,7 @@ uint16_t gt_crc16_mod_bus(const uint8_t * input_str, size_t num_bytes)
 	return crc;
 }
 
-uint16_t gt_update_crc_16(uint16_t crc, uint8_t c)
+uint16_t gt_update_crc16(uint16_t crc, uint8_t c)
 {
 	if ( ! crc16_init_flag ) init_crc16_tab();
 
@@ -184,7 +184,7 @@ uint16_t gt_update_crc_16(uint16_t crc, uint8_t c)
 #endif  /** GT_ENABLED_CRC16 */
 
 #if GT_ENABLED_CRC32
-uint32_t gt_crc_32(const uint8_t * input_str, size_t num_bytes)
+uint32_t gt_crc32(const uint8_t * input_str, size_t num_bytes)
 {
 	uint32_t crc = GT_CRC_START_32;
 	const uint8_t * ptr = input_str;
@@ -199,7 +199,7 @@ uint32_t gt_crc_32(const uint8_t * input_str, size_t num_bytes)
 	return (crc ^ 0xFFFFFFFFul);
 }
 
-uint32_t gt_update_crc_32(uint32_t crc, uint8_t c)
+uint32_t gt_update_crc32(uint32_t crc, uint8_t c)
 {
 	return _crc32_calc(crc, c);
 }
