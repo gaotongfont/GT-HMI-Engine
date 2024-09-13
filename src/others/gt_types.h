@@ -102,6 +102,8 @@ typedef uint16_t gt_layout_prop_t;
  */
 typedef uint8_t gt_gap_t;
 
+typedef uint8_t gt_font_width_t;
+
 /**
  * @brief The screen turn next screen animation type
  */
@@ -149,7 +151,7 @@ typedef enum gt_obj_type_e {
     GT_TYPE_PLAYER      = 19,       ///< player
     GT_TYPE_INPUT_NUMBER= 20,       ///< input number
     GT_TYPE_CLOCK       = 21,       ///< clock
-    GT_TYPE_WORDART     = 22,       ///< wordard
+    GT_TYPE_WORDART     = 22,       ///< wordart
     GT_TYPE_VIEW_PAGER  = 23,       ///< view pager
     GT_TYPE_GIF         = 24,       ///< gif
     GT_TYPE_RECT        = 25,       ///< rect
@@ -161,6 +163,7 @@ typedef enum gt_obj_type_e {
     GT_TYPE_CHAT        = 31,       ///< chat
     GT_TYPE_STATUS_BAR  = 32,       ///< status bar, floating widget
     GT_TYPE_GRAPH       = 33,       ///< graph
+    GT_TYPE_MEDIA_PLAYER= 34,       ///< media player
 
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;

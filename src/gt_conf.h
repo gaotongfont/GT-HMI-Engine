@@ -52,10 +52,10 @@ extern "C" {
 
 /* user: color depth: 1(1 byte per pixel), 8(RGB332), 16(RGB565), 32(ARGB8888) */
 #ifndef GT_COLOR_DEPTH
-    #define GT_COLOR_DEPTH          16
+    #define GT_COLOR_DEPTH      16
 #endif
 #ifndef GT_COLOR_16_SWAP
-    #define GT_COLOR_16_SWAP        0
+    #define GT_COLOR_16_SWAP    0
 #endif
 
 #ifndef GT_FLUSH_CONVERT_VERTICAL
@@ -176,7 +176,7 @@ extern "C" {
      * @brief use old font family
      *
      */
-    #define GT_FONT_FAMILY_OLD_ENABLE  01
+    #define GT_FONT_FAMILY_OLD_ENABLE   01
 #endif
 
 /* default font style and size */
@@ -190,6 +190,14 @@ extern "C" {
 #define GT_CFG_DEFAULT_FONT_FAMILY_NUMB     GT_CFG_DEFAULT_FONT_FAMILY
 #endif
 
+#ifndef GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+    /**
+     * @brief 1: Cache the width of the ASCII font, 0: Do not cache.
+     *      Almost 94 characters, (94 * _FONT_ASCII_WIDTH_CACHE_BYTE_SIZE) bytes
+     *      [default: 01]
+     */
+    #define GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE     01
+#endif
 
 #ifndef GT_USE_MODE_SRC
     #define GT_USE_MODE_SRC             01
@@ -239,6 +247,15 @@ extern "C" {
     #define GT_USE_FS_NAME_BY_INDEX     0
 #endif
 
+#ifndef GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
+    /**
+     * @brief Enabled custom touch expand size, such as:
+     *      widget size: 20x20,  expand size: (5, 10), touch size: 30x40.
+     * [Default: 0] widget default display size
+     */
+    #define GT_USE_CUSTOM_TOUCH_EXPAND_SIZE     0
+#endif
+
 /** display refresh time */
 #define GT_USE_DISPLAY_PREF_MSG         0
 
@@ -248,12 +265,37 @@ extern "C" {
 /** display idle time */
 #define GT_USE_DISPLAY_PREF_IDLE        0
 
-/** @brief use lodepng */
-#define GT_USE_PNG              01
-/** @brief use TJpgDec */
-#define GT_USE_SJPG             01
-/** @brief use gifDec */
-#define GT_USE_GIF              01
+#ifndef GT_USE_CRC
+    /**
+     * @brief Enabled CRC function @ref gt_crc.h
+     * [default: 0]
+     */
+    #define GT_USE_CRC          0
+#endif
+
+#ifndef GT_USE_PNG
+    /**
+     * @brief use lodepng
+     * [default: 1]
+     */
+    #define GT_USE_PNG          01
+#endif
+
+#ifndef GT_USE_SJPG
+    /**
+     * @brief use TJpgDec
+     * [default: 1]
+     */
+    #define GT_USE_SJPG         01
+#endif
+
+#ifndef GT_USE_GIF
+    /**
+     * @brief use gifDec
+     * [default: 1]
+     */
+    #define GT_USE_GIF          01
+#endif
 
 /**
  * @brief use examples demo

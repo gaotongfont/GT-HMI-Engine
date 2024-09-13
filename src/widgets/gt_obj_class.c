@@ -12,6 +12,7 @@
 #include "./gt_obj.h"
 #include "../core/gt_mem.h"
 #include "../core/gt_style.h"
+#include "../core/gt_disp.h"
 #include "../core/gt_indev.h"
 #include "../others/gt_types.h"
 #include "../hal/gt_hal_disp.h"
@@ -355,6 +356,12 @@ void _gt_obj_class_destroy(struct gt_obj_s * self)
         }
     }
 
+#if GT_USE_LAYER_TOP
+    if (gt_disp_get_layer_top() == self) {
+        /** Do not release layer top object */
+        return;
+    }
+#endif
     _gt_obj_class_destroy_self(self);
     self = NULL;
 }

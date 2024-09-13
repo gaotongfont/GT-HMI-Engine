@@ -22,6 +22,7 @@ extern "C" {
 #include "../others/gt_color.h"
 #include "../hal/gt_hal_disp.h"
 #include "../hal/gt_hal_file_header.h"
+#include "../font/gt_font.h"
 #include "../core/gt_disp.h"
 
 /* define ---------------------------------------------------------------*/
@@ -54,6 +55,15 @@ typedef struct _gt_gc_event_s {
 }_gt_gc_event_st;
 #endif
 
+#if GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+typedef struct _gt_gc_ascii_width_cache_s {
+    uint16_t option;
+    uint16_t size;
+    uint8_t gray;
+    gt_font_width_t ascii_width_cache[_FONT_ASCII_WIDTH_CACHE_COUNT];
+}_gt_gc_ascii_width_cache_st;
+#endif
+
 typedef struct gt_gc_s {
     struct _gt_list_head _gt_anim_ll;
     struct _gt_list_head _gt_timer_ll;
@@ -72,6 +82,9 @@ typedef struct gt_gc_s {
 #endif
 #if GT_USE_SCREEN_ANIM
     _gt_gc_event_st event_ctl;
+#endif
+#if GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+    _gt_gc_ascii_width_cache_st ascii_width_cache;
 #endif
 }gt_gc_st;
 
@@ -125,6 +138,15 @@ void gt_gc_set_full_img_buffer_offset(uint32_t offset);
 #endif
 
 _gt_gc_full_img_buffer_st * _gt_gc_get_full_img_buffer(void);
+#endif
+
+#if GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+/**
+ * @brief Get the ASCII font width cache object
+ *
+ * @return _gt_gc_ascii_width_cache_st *
+ */
+_gt_gc_ascii_width_cache_st * _gt_gc_get_ascii_width_cache(void);
 #endif
 
 #ifdef __cplusplus

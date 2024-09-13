@@ -73,6 +73,19 @@ typedef enum {
 /* global functions / API interface -------------------------------------*/
 gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area);
 void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y);
+
+#if GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
+/**
+ * @brief Enabled custom touch expand size, such as:
+ *      widget size: 20x20,  expand size: (5, 10), touch size: 30x40.
+ * [Default val: 0] widget default display size
+ * @param obj
+ * @param hor horizontal expand size
+ * @param ver vertical expand size
+ */
+void gt_obj_set_touch_expand_area(gt_obj_st * obj, gt_size_t hor, gt_size_t ver);
+#endif
+
 /**
  * @brief Set the object's position relative to the target object
  *
@@ -151,15 +164,6 @@ bool gt_obj_get_overflow(gt_obj_st * obj);
  */
 void gt_obj_set_inside(gt_obj_st * obj, bool is_inside);
 bool gt_obj_get_inside(gt_obj_st * obj);
-
-/**
- * @brief Draw the vertical septal line
- *
- * @param obj
- * @param enabled true: enabled, false: disabled
- */
-void gt_obj_set_septal_line(gt_obj_st * obj, bool enabled);
-bool gt_obj_get_septal_line(gt_obj_st * obj);
 
 void gt_obj_set_mask_effect(gt_obj_st * obj, bool is_keep_alive);
 bool gt_obj_get_mask_effect(gt_obj_st * obj);

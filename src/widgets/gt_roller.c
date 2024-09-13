@@ -46,7 +46,8 @@ typedef enum {
 typedef struct {
     uint8_t mode : 2;       //Roller running mode @ref gt_roller_mode_em
     uint8_t state : 2;      //Item scroll snap state @ref _gt_roller_state_em
-    uint8_t reserved : 4;
+    uint8_t show_background : 1;    /** 1[default]: show background;  */
+    uint8_t reserved : 3;
 }_gt_roller_reg_st;
 
 /**
@@ -89,15 +90,18 @@ static const gt_obj_class_st gt_roller_class = {
 static void _init_cb(gt_obj_st * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
     gt_attr_rect_st rect_attr;
-    gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.reg.is_fill    = true;
-    rect_attr.border_width   = 2;
-    rect_attr.border_color   = gt_color_hex(0xc7c7c7);
-    rect_attr.bg_opa         = obj->opa;
-    rect_attr.bg_color       = gt_color_white();
-    rect_attr.radius         = 4;
 
-    draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
+    if (style->reg.show_background) {
+        gt_graph_init_rect_attr(&rect_attr);
+        rect_attr.reg.is_fill    = true;
+        rect_attr.border_width   = 2;
+        rect_attr.border_color   = gt_color_hex(0xc7c7c7);
+        rect_attr.bg_opa         = obj->opa;
+        rect_attr.bg_color       = gt_color_white();
+        rect_attr.radius         = 4;
+
+        draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
+    }
 
     /** selected */
     gt_graph_init_rect_attr(&rect_attr);
@@ -426,12 +430,23 @@ gt_obj_st * gt_roller_create(gt_obj_st * parent)
     _gt_roller_st * style = (_gt_roller_st * )obj;
     style->count_of_show = 3;
     style->line_space = 10;
+    style->reg.show_background = true;
 
     obj->fixed = false;
     obj->area.w = 60;
     obj->area.h = 20 * style->count_of_show;
 
     return obj;
+}
+
+void gt_roller_hide_background(gt_obj_st * obj, bool hide)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
+    style->reg.show_background = hide ? false : true;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_roller_set_display_item_count(gt_obj_st * obj, uint8_t count)

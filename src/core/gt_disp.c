@@ -470,6 +470,86 @@ static inline void _clear_buffer(_flush_scr_param_st * param, gt_color_t prev_c,
     }
 }
 
+static inline void _adjust_clip_area_and_flush(_flush_scr_param_st * param, gt_obj_st * target_scr) {
+    param->disp->area_disp.x = target_scr->area.x + param->valid.area_clip.x;
+    param->disp->area_disp.y = target_scr->area.y + param->valid.area_clip.y;
+    param->disp->area_disp.h = param->valid.area_clip.h;
+
+    if (param->area_flush.y == param->valid.area_clip.y) {
+        param->valid.area_clip.y = 0;
+    } else {
+        param->valid.area_clip.y = param->valid.area_clip.y - param->area_flush.y;
+    }
+    _gt_disp_check_and_copy_foreach(target_scr, param);
+}
+
+/**
+ * @brief flush screen by animation
+ *
+ * @param param The package of all of param, using such as: disp, area_flush, scr, scr_prev, view_scr_prev_abs, valid, line.
+ * @param disp
+ * @param area_flush The buffer or area of display flush area.
+ * @param scr       The current screen absolute display area
+ * @param scr_prev  The previous screen absolute display area
+ * @param view_scr_abs The next screen in the display area of the physical window
+ * @param view_scr_prev_abs The previous screen in the display area of the physical window
+ * @param valid Interface intersection results and screen display start offset
+ * @param line Number of rows per refresh
+ */
+static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
+    gt_obj_st * prev = param->disp->scr_prev;
+    gt_obj_st * scr = param->disp->scr_act;
+    GT_CHECK_BACK(prev);
+    GT_CHECK_BACK(scr);
+    bool is_cover = false;
+
+    // 计算scr 在屏幕的显示区域
+    if (_is_anim_type_hor((gt_scr_anim_type_et)param->disp->scr_anim_type)) {
+        _adapt_area_flush_hor(param);
+    }
+    if (_is_anim_type_ver((gt_scr_anim_type_et)param->disp->scr_anim_type)) {
+        _adapt_area_flush_ver(param);
+    }
+
+    while(param->area_flush.y < param->disp->area_act.h) {
+        /** prev screen */
+        _clear_buffer(param, prev->bgcolor, scr->bgcolor, param->area_flush.y, true);
+
+        is_cover = gt_area_cover_screen(&param->area_flush, &param->view_scr_prev_abs, &param->valid.area_clip);
+        if (is_cover) {
+            _adjust_clip_area_and_flush(param, prev);
+        }
+
+        /** new screen */
+        _clear_buffer(param, prev->bgcolor, scr->bgcolor, param->area_flush.y, false);
+
+        is_cover = gt_area_cover_screen(&param->area_flush, &param->view_scr_abs, &param->valid.area_clip);
+        if (is_cover) {
+            _adjust_clip_area_and_flush(param, scr);
+        }
+
+#if GT_USE_LAYER_TOP
+        // flush top layer
+        is_cover = gt_area_cover_screen(&param->area_flush, &param->disp->layer_top->area, &param->valid.area_clip);
+        if (is_cover) {
+            param->valid.layer_top = true;
+            param->valid.area_clip.x = 0;
+            param->valid.area_clip.y = 0;
+            param->disp->area_disp.x = param->area_flush.x;
+            param->disp->area_disp.y = param->area_flush.y;
+            param->disp->area_disp.h = param->line;
+            _gt_disp_check_and_copy_foreach(param->disp->layer_top, param);
+            param->valid.layer_top = false;
+        }
+#endif
+
+        /** flush display by buffer area */
+        param->disp->drv->flush_cb(param->disp->drv, &param->area_flush, param->disp->vbd_color);
+        param->area_flush.y += param->line;
+    }
+}
+#endif  /** GT_USE_SCREEN_ANIM */
+
 static inline void _scr_x_equal_0(_flush_scr_param_st * param, uint16_t width) {
     if (param->area_flush.x < 0) {
         param->area_flush.w = param->area_flush.w + param->area_flush.x;
@@ -599,86 +679,6 @@ static gt_area_st _update_area_flush_by_calc_partly_redraw_area(_flush_scr_param
     }
     return param->area_flush;
 }
-
-static inline void _adjust_clip_area_and_flush(_flush_scr_param_st * param, gt_obj_st * target_scr) {
-    param->disp->area_disp.x = target_scr->area.x + param->valid.area_clip.x;
-    param->disp->area_disp.y = target_scr->area.y + param->valid.area_clip.y;
-    param->disp->area_disp.h = param->valid.area_clip.h;
-
-    if (param->area_flush.y == param->valid.area_clip.y) {
-        param->valid.area_clip.y = 0;
-    } else {
-        param->valid.area_clip.y = param->valid.area_clip.y - param->area_flush.y;
-    }
-    _gt_disp_check_and_copy_foreach(target_scr, param);
-}
-
-/**
- * @brief flush screen by animation
- *
- * @param param The package of all of param, using such as: disp, area_flush, scr, scr_prev, view_scr_prev_abs, valid, line.
- * @param disp
- * @param area_flush The buffer or area of display flush area.
- * @param scr       The current screen absolute display area
- * @param scr_prev  The previous screen absolute display area
- * @param view_scr_abs The next screen in the display area of the physical window
- * @param view_scr_prev_abs The previous screen in the display area of the physical window
- * @param valid Interface intersection results and screen display start offset
- * @param line Number of rows per refresh
- */
-static inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
-    gt_obj_st * prev = param->disp->scr_prev;
-    gt_obj_st * scr = param->disp->scr_act;
-    GT_CHECK_BACK(prev);
-    GT_CHECK_BACK(scr);
-    bool is_cover = false;
-
-    // 计算scr 在屏幕的显示区域
-    if (_is_anim_type_hor((gt_scr_anim_type_et)param->disp->scr_anim_type)) {
-        _adapt_area_flush_hor(param);
-    }
-    if (_is_anim_type_ver((gt_scr_anim_type_et)param->disp->scr_anim_type)) {
-        _adapt_area_flush_ver(param);
-    }
-
-    while(param->area_flush.y < param->disp->area_act.h) {
-        /** prev screen */
-        _clear_buffer(param, prev->bgcolor, scr->bgcolor, param->area_flush.y, true);
-
-        is_cover = gt_area_cover_screen(&param->area_flush, &param->view_scr_prev_abs, &param->valid.area_clip);
-        if (is_cover) {
-            _adjust_clip_area_and_flush(param, prev);
-        }
-
-        /** new screen */
-        _clear_buffer(param, prev->bgcolor, scr->bgcolor, param->area_flush.y, false);
-
-        is_cover = gt_area_cover_screen(&param->area_flush, &param->view_scr_abs, &param->valid.area_clip);
-        if (is_cover) {
-            _adjust_clip_area_and_flush(param, scr);
-        }
-
-#if GT_USE_LAYER_TOP
-        // flush top layer
-        is_cover = gt_area_cover_screen(&param->area_flush, &param->disp->layer_top->area, &param->valid.area_clip);
-        if (is_cover) {
-            param->valid.layer_top = true;
-            param->valid.area_clip.x = 0;
-            param->valid.area_clip.y = 0;
-            param->disp->area_disp.x = param->area_flush.x;
-            param->disp->area_disp.y = param->area_flush.y;
-            param->disp->area_disp.h = param->line;
-            _gt_disp_check_and_copy_foreach(param->disp->layer_top, param);
-            param->valid.layer_top = false;
-        }
-#endif
-
-        /** flush display by buffer area */
-        param->disp->drv->flush_cb(param->disp->drv, &param->area_flush, param->disp->vbd_color);
-        param->area_flush.y += param->line;
-    }
-}
-#endif  /** GT_USE_SCREEN_ANIM */
 
 /**
  * @brief flush screen by direct or full screen refresh
@@ -1165,6 +1165,19 @@ gt_obj_st * gt_disp_get_layer_top(void)
     return disp->layer_top;
 }
 
+static void _layer_top_destroy_handler_cb(struct _gt_timer_s * timer) {
+    gt_obj_st * layer_top = (gt_obj_st * )_gt_timer_get_user_data(timer);
+    for (gt_size_t i = layer_top->cnt_child - 1; i >= 0; i--) {
+        if (gt_obj_is_type(layer_top->child[i], GT_TYPE_STATUS_BAR)) {
+            continue;
+        }
+        if (gt_obj_is_type(layer_top->child[i], GT_TYPE_DIALOG)) {
+            continue;
+        }
+        _gt_obj_class_destroy(layer_top->child[i]);
+    }
+}
+
 gt_res_t gt_disp_destroy_layer_top_widgets(void)
 {
     gt_obj_st * layer_top = gt_disp_get_layer_top();
@@ -1178,8 +1191,11 @@ gt_res_t gt_disp_destroy_layer_top_widgets(void)
         if (gt_obj_is_type(layer_top->child[i], GT_TYPE_DIALOG)) {
             continue;
         }
-        _gt_obj_class_destroy(layer_top->child[i]);
+        gt_obj_child_set_prop(layer_top->child[i], GT_OBJ_PROP_TYPE_VISIBLE, GT_INVISIBLE);
+        layer_top->child[i]->visible = GT_INVISIBLE;
     }
+    _gt_timer_st * tmp_timer = _gt_timer_create(_layer_top_destroy_handler_cb, GT_TASK_PERIOD_TIME_DESTROY, layer_top);
+    _gt_timer_set_repeat_count(tmp_timer, 1);
     return GT_RES_OK;
 }
 #endif
@@ -1283,7 +1299,7 @@ void gt_disp_scroll_area_act(gt_size_t dist_x, gt_size_t dist_y)
 void gt_disp_invalid_area(gt_obj_st * obj)
 {
 #if GT_USE_WIDGET_LAYOUT
-    gt_layout_update_core(obj);             // TODO pref handler, unstable
+    gt_layout_update_core(obj);          // TODO pref handler, unstable
 #endif
     gt_obj_st * scr = gt_disp_get_scr();
     if (NULL == scr) {

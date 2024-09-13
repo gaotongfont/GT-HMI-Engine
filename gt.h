@@ -24,6 +24,8 @@ extern "C" {
 
 #include "src/gt_conf.h"
 
+#include "driver/gt_font_config.h"
+
 /* core */
 #include "src/core/gt_handler.h"
 #include "src/core/gt_graph_base.h"
@@ -179,10 +181,15 @@ extern "C" {
 #include "src/widgets/gt_graphs.h"
 #endif
 
+#if GT_CFG_ENABLE_MEDIA_PLAYER
+#include "src/widgets/gt_media_player.h"
+#endif
+
 /* other */
 #include "src/others/gt_color.h"
 #include "src/others/gt_log.h"
 #include "src/others/gt_txt.h"
+#include "src/others/gt_crc.h"
 
 /* define ---------------------------------------------------------------*/
 

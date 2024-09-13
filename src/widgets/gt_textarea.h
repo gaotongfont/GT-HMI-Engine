@@ -32,6 +32,14 @@ extern "C" {
     #define GT_TEXTAREA_CUSTOM_FONT_STYLE   0
 #endif
 
+#ifndef GT_TEXTAREA_SUB_STRING_SCROLL_CACHE
+    /**
+     * @brief Use sub string scroll cache, improve scrolling performance and takes up some memory
+     *      0[defalut]: disable
+     */
+    #define GT_TEXTAREA_SUB_STRING_SCROLL_CACHE    0
+#endif
+
 
 /* typedef --------------------------------------------------------------*/
 typedef struct gt_textarea_param_s {
@@ -68,6 +76,14 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent);
  * @param text set text content
  */
 void gt_textarea_set_text(gt_obj_st * textarea, char * text);
+
+/**
+ * @brief hide textarea background
+ *
+ * @param textarea
+ * @param hide true: hide; false[default]: show
+ */
+void gt_textarea_hide_background(gt_obj_st * textarea, bool hide);
 
 /**
  * @brief Get string from textarea widget

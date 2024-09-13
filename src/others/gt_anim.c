@@ -232,7 +232,6 @@ static void _gt_anim_task_handler(struct _gt_timer_s * timer)
     }
 
     int32_t    new_value    = 0;
-    uint32_t   time_gone    = gt_tick_elapse(_time_last_run);
     gt_anim_st * ptr        = NULL;
     gt_anim_st * backup_ptr = NULL;
 
@@ -263,7 +262,7 @@ refresh_lb:
             ptr->start_cb(ptr);
         }
 
-        ptr->time_act += time_gone;
+        ptr->time_act += gt_tick_elapse(_time_last_run);    // time has gone
         if (ptr->time_act < 0) {
             continue;
         }
@@ -410,9 +409,16 @@ gt_anim_st * gt_anim_start(const gt_anim_st * anim)
     return new_obj;
 }
 
+void gt_anim_stop(gt_anim_st * const anim)
+{
+    if (!anim) { return ; }
+    anim->paused = true;
+}
+
 void gt_anim_restart(gt_anim_st * anim)
 {
     if (!anim) { return ; }
+    if (anim->paused) { anim->paused = false; }
     anim->tick_create = gt_tick_get();
 }
 

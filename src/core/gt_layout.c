@@ -366,17 +366,22 @@ void gt_layout_init(gt_obj_st * obj, gt_obj_container_st const * const container
     if (0 == obj->cnt_child) {
         return;
     }
-    gt_layout_type_t type = obj->container.layout_type;
-    if (GT_LAYOUT_TYPE_FIXED == type) {
-        return;
-    } else if (GT_LAYOUT_TYPE_FLEX == type) {
-        gt_layout_update_core(obj);
-    }
+    gt_layout_update_core(obj);
 }
 
 gt_res_t gt_layout_update_core(gt_obj_st * obj)
 {
     GT_CHECK_BACK_VAL(obj, GT_RES_FAIL);
+
+    gt_layout_type_t type = obj->container.layout_type;
+    if (obj->parent && obj->parent->cnt_child) {
+        if (GT_LAYOUT_TYPE_FIXED == type &&
+            GT_LAYOUT_TYPE_FIXED == obj->parent->container.layout_type) {
+            return GT_RES_INV;
+        }
+    } else if (GT_LAYOUT_TYPE_FIXED == type) {
+        return GT_RES_INV;
+    }
 
     if (obj->classes->_init_cb) {
         struct _gt_draw_ctx_s tmp_draw_ctx = {

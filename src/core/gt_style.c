@@ -116,6 +116,15 @@ void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)
     gt_obj_set_area(obj, area);
 }
 
+#if GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
+void gt_obj_set_touch_expand_area(gt_obj_st * obj, gt_size_t hor, gt_size_t ver)
+{
+    GT_CHECK_BACK(obj);
+    obj->touch_expand_size.x = hor < 0 ? 0 : hor;
+    obj->touch_expand_size.y = ver < 0 ? 0 : ver;
+}
+#endif  /** GT_USE_CUSTOM_TOUCH_EXPAND_SIZE */
+
 void gt_obj_set_pos_relative(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff_x, gt_size_t diff_y)
 {
     GT_CHECK_BACK(obj);
@@ -470,18 +479,6 @@ bool gt_obj_get_inside(gt_obj_st * obj)
 {
     GT_CHECK_BACK_VAL(obj, false);
     return obj->inside;
-}
-
-void gt_obj_set_septal_line(gt_obj_st * obj, bool enabled)
-{
-    GT_CHECK_BACK(obj);
-    obj->septal_line_y = enabled;
-}
-
-bool gt_obj_get_septal_line(gt_obj_st * obj)
-{
-    GT_CHECK_BACK_VAL(obj, false);
-    return obj->septal_line_y;
 }
 
 void gt_obj_set_mask_effect(gt_obj_st * obj, bool is_keep_alive)

@@ -385,12 +385,12 @@ void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
 #endif
     gt_point_st offset = {0};   /** src data buffer offset set */
 
-    if (dsc->font_limit_area) {
+    if (dsc->view_area) {
         if (draw_ctx->parent_area) {
-            gt_area_cover_screen(draw_ctx->parent_area, dsc->font_limit_area, &fill_cache.area_intersect);
+            gt_area_cover_screen(draw_ctx->parent_area, dsc->view_area, &fill_cache.area_intersect);
             offset = _get_cover_dst_area_and_offset_by(&fill_cache.area_intersect, dsc->dst_area, &area_dst);
         } else {
-            offset = _get_cover_dst_area_and_offset_by(dsc->font_limit_area, dsc->dst_area, &area_dst);
+            offset = _get_cover_dst_area_and_offset_by(dsc->view_area, dsc->dst_area, &area_dst);
         }
     } else if (draw_ctx->parent_area) {
         /** Be used when obj->inside true and object has its parent */
@@ -518,12 +518,12 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
 #endif
     gt_point_st offset = {0};   /** src data buffer offset set */
 
-    if (dsc->font_limit_area) {
+    if (dsc->view_area) {
         if (draw_ctx->parent_area) {
-            gt_area_cover_screen(draw_ctx->parent_area, dsc->font_limit_area, &area_intersect);
+            gt_area_cover_screen(draw_ctx->parent_area, dsc->view_area, &area_intersect);
             offset = _get_cover_dst_area_and_offset_by(&area_intersect, dsc->dst_area, &area_dst);
         } else {
-            offset = _get_cover_dst_area_and_offset_by(dsc->font_limit_area, dsc->dst_area, &area_dst);
+            offset = _get_cover_dst_area_and_offset_by(dsc->view_area, dsc->dst_area, &area_dst);
         }
     } else if (draw_ctx->parent_area) {
         /** Be used when obj->inside true and object has its parent */

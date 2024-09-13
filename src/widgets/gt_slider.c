@@ -23,6 +23,7 @@
 #include "../core/gt_fs.h"
 #include "../core/gt_indev.h"
 #include "gt_img.h"
+
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_SLIDER
 #define MY_CLASS    &gt_slider_class
@@ -491,18 +492,18 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
 
-        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            gt_event_send(obj, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
+        case GT_EVENT_TYPE_INPUT_PRESSED:
+            _gt_slider_set_offset(obj, _calc_touch_point_pos(obj));
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL:
+        case GT_EVENT_TYPE_INPUT_PRESS_LOST:
+        case GT_EVENT_TYPE_INPUT_RELEASED:
             _gt_slider_set_offset(obj, _calc_touch_point_pos(obj));
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            break;
-
-        case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            _gt_slider_set_offset(obj, _calc_touch_point_pos(obj));
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            int pos = gt_slider_get_pos(obj);
+            gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, (void *)pos);
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL_UP:

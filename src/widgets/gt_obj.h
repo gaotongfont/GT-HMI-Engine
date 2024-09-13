@@ -98,6 +98,13 @@ typedef struct gt_obj_s {
     gt_obj_process_attr_st process_attr;
 
     gt_area_st area;                /* base area */
+#if GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
+    /**
+     * @brief Enabled custom touch expand size, such as:
+     *      widget size: 20x20,  expand size: (5, 10), touch size: 30x40.
+     */
+    gt_point_st touch_expand_size;
+#endif
 
     gt_id_t id;                     /* obj id, register by user, default: [-1] invalid id, normal begin from 0. */
     gt_color_t bgcolor;
@@ -131,7 +138,6 @@ typedef struct gt_obj_s {
     uint32_t overflow      : 1;     /* [Inheritable]obj overflow state, 0:un-overflow, 1:overflow (widget can out of screen area size) */
     uint32_t inside        : 1;     /* obj display only limited to parent area, 0:un-inside, 1:inside (widget is inside screen area size) */
     uint32_t virtuality    : 1;     /* obj virtual state, 0:un-virtual[default], 1:virtual (widget is virtual logic, not entities) */
-    uint32_t septal_line_y : 1;     /* draw obj vertical septal line state, 0:un-septal_line, 1:septal_line */
 
     uint32_t mask_effect   : 1;     /* Mask effect in the state of object selection: 1: Enabled, 0[default]:Disabled */
     uint32_t trigger_mode  : 1;     /* state toggle trigger mode @ref gt_obj_trigger_mode_et, 0:[default] hold-on; 1: switch */
@@ -140,7 +146,7 @@ typedef struct gt_obj_s {
     uint32_t row_layout    : 1;     /* The child controls are arranged in a row layout */
     uint32_t grow_invert   : 1;     /* The child controls are arranged in a row layout, grow invert */
     uint32_t show_bg       : 1;     /* The object show background, 0: [default] hide; 1: show, bgcolor can be used */
-    uint32_t reserved      : 1;
+    uint32_t reserved      : 2;
 }gt_obj_st;
 
 

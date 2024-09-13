@@ -22,14 +22,14 @@
 #include "../others/gt_txt.h"
 #include "../hal/gt_hal_indev.h"
 #include "../core/gt_indev.h"
+#include "../others/gt_area.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_INPUT
 #define MY_CLASS    &gt_input_class
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_input_s
-{
+typedef struct _gt_input_s {
     gt_obj_st obj;
     char * value;
     char * placeholder;
@@ -40,7 +40,6 @@ typedef struct _gt_input_s
 
     gt_point_st point_pos;
 
-    gt_color_t bg_color;
     gt_color_t font_color;
     gt_color_t border_color;
 
@@ -85,19 +84,22 @@ static void _gt_input_cursor_anim(gt_obj_st * input, const gt_area_st* box_area)
     };
 
     tmp = ((area.y + area.h) - (box_area->y + box_area->h));
-
-    if(tmp > 0){
+    if (tmp > 0) {
         tmp = style->font_info.size - tmp;
-        if(tmp < (area.h-2)){
+        if (tmp < (area.h-2)) {
             return ;
         }
         area.h = tmp;
+    }
+    if (false == gt_area_is_on((gt_area_st * )box_area, &area)) {
+        return ;
     }
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill = 1;
     rect_attr.bg_color = gt_color_hex(0x666666);
+    rect_attr.limit_area = (gt_area_st * )box_area;
 
     draw_bg(input->draw_ctx, &rect_attr, &area);
 }
@@ -116,23 +118,22 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     rect_attr.reg.is_fill = 1;
     rect_attr.border_width = style->border_width;
     rect_attr.radius = (0 == style->border_width) ? 0 : 4;
-    rect_attr.bg_color = style->bg_color;
+    rect_attr.bg_color = input->bgcolor;
     rect_attr.border_color = style->border_color;
 
     /* draw base shape */
-    gt_area_st box_area = gt_area_reduce(input->area , gt_obj_get_reduce(input));
+    gt_area_st box_area = gt_area_reduce(input->area, gt_obj_get_reduce(input));
     draw_bg(input->draw_ctx, &rect_attr, &box_area);
 
     /* draw font */
     gt_font_st font;
     gt_color_t color_font = {0};
-    if( !style->value ){
+    if (!style->value) {
         font.utf8 = style->placeholder;
         font.len = strlen(style->placeholder);
         color_font = gt_color_hex(0x808080);
-    }
-    // if input value is not null
-    else{
+    } else {
+        // if input value is not null
         font.utf8 = style->value;
         font.len = style->pos_cursor;
         color_font = style->font_color;
@@ -149,19 +150,30 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         .space_y = style->space_y,
         .font_color = color_font,
         .opa = input->opa,
+        .reg = {
+            .single_line = true,
+        },
     };
 
-    //
+    /*draw text before cursor*/
     gt_area_st area_font = gt_area_reduce(box_area , style->border_width + 2);
     font_attr.logical_area = area_font;
+    font_attr.opa = GT_OPA_0;
+    /** calc text max width */
     _gt_draw_font_res_st font_res = draw_text(input->draw_ctx, &font_attr, &area_font);
+    if (font_res.size.x >= 0) {
+        font_attr.logical_area.x += area_font.w - font_res.size.x - 8;
+    }
+    font_attr.opa = input->opa;
+    /** display all font */
+    font_res = draw_text(input->draw_ctx, &font_attr, &area_font);
 
     /*draw cursor*/
     style->point_pos.x = font_res.area.x;
     style->point_pos.y = font_res.area.y;
 
-    if( style->value ){
-        _gt_input_cursor_anim(input , &area_font);
+    if (style->value) {
+        _gt_input_cursor_anim(input, &area_font);
     }
 
     /*draw text after cursor*/
@@ -306,7 +318,6 @@ gt_obj_st * gt_input_create(gt_obj_st * parent)
     style->font_color     = gt_color_black();
     style->border_width   = 2;
     style->border_color   = gt_color_black();
-	style->bg_color 	  = gt_color_hex(0xffffff);
     style->font_align     = GT_ALIGN_NONE;
     style->space_x        = 0;
     style->space_y        = 0;
@@ -523,8 +534,9 @@ void gt_input_set_bg_color(gt_obj_st * input, gt_color_t color)
     if (false == gt_obj_is_type(input, OBJ_TYPE)) {
         return ;
     }
-    _gt_input_st * style = (_gt_input_st * )input;
-    style->bg_color = color;
+    // _gt_input_st * style = (_gt_input_st * )input;
+    // style->bg_color = color;
+    input->bgcolor = color;
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

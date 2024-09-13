@@ -341,6 +341,9 @@ static void _indev_scroll_handler(gt_indev_st * indev) {
     if ((uint16_t)GT_DIR_NONE == point_p->gesture) {
         return;
     }
+    if (GT_SCROLL_DISABLE == point_p->obj_target->scroll_dir) {
+        return;
+    }
     gt_size_t dx = 0;
     gt_size_t dy = 0;
     point_p->obj_scroll = point_p->obj_target;

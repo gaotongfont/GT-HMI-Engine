@@ -45,7 +45,12 @@ gt_gc_st _gt_global_call = {
 #if GT_USE_SCREEN_ANIM
     .event_ctl = {
         .enabled = true,
-    }
+    },
+#endif
+#if GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+    .ascii_width_cache = {
+        .option = GT_CFG_DEFAULT_FONT_FAMILY,
+    },
 #endif
 };
 
@@ -107,4 +112,15 @@ _gt_gc_full_img_buffer_st * _gt_gc_get_full_img_buffer(void)
 }
 #endif
 
+#if GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+/**
+ * @brief Get the ASCII font width cache object
+ *
+ * @return _gt_gc_ascii_width_cache_st
+ */
+_gt_gc_ascii_width_cache_st * _gt_gc_get_ascii_width_cache(void)
+{
+    return &_gt_global_call.ascii_width_cache;
+}
+#endif
 /* end ------------------------------------------------------------------*/

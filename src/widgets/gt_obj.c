@@ -84,22 +84,6 @@ static void _init_cb(gt_obj_st * obj) {
         gt_area_st real_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
         draw_bg(obj->draw_ctx, &rect_attr, &real_area);
     }
-
-    if (gt_obj_get_septal_line(obj)) {
-        gt_graph_init_rect_attr(&rect_attr);
-        rect_attr.reg.is_fill    = true;
-        rect_attr.radius         = 1;
-        rect_attr.bg_color      = gt_color_hex(0xc7c7c7);
-        rect_attr.bg_opa = 0x99;
-
-        // top line
-        gt_area_st line = {(obj->area.w >> 3) + obj->area.x, obj->area.y, obj->area.w - (obj->area.w >> 2), 1};
-        draw_bg(obj->draw_ctx, &rect_attr, &line);
-
-        // bottom line
-        line.y = obj->area.y + obj->area.h - 1;
-        draw_bg(obj->draw_ctx, &rect_attr, &line);
-    }
 }
 
 static void _screen_scroll(gt_obj_st * obj) {
@@ -241,8 +225,7 @@ static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
  *
  * @param timer
  */
-void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer)
-{
+static void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer) {
     gt_obj_st * obj = (gt_obj_st * )_gt_timer_get_user_data(timer);
     GT_CHECK_BACK(obj);
     gt_event_st * ptr = _GT_GC_GET_ROOT(_gt_event_node_header_ll);

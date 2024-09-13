@@ -64,6 +64,14 @@ typedef enum gt_roller_mode_e {
 gt_obj_st * gt_roller_create(gt_obj_st * parent);
 
 /**
+ * @brief hide the background of the roller
+ *
+ * @param obj
+ * @param hide true: hide; false[default]: show
+ */
+void gt_roller_hide_background(gt_obj_st * obj, bool hide);
+
+/**
  * @brief Set the options content of the roller, In the middle,
  *      "\n" is used to distinguish items, such as: "A\nB\nC".
  *      [Maximum options item: 256]

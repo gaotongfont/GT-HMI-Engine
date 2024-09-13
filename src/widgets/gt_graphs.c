@@ -209,10 +209,10 @@ static void _calc_self_adaptive_axis_range(gt_obj_st * obj) {
         ptr = ptr->next_series_p;
     }
     /** set default unit */
-    if (0 == style->gp.axis.hor_unit) {
+    if (0.0 == style->gp.axis.hor_unit) {
         style->gp.axis.hor_unit = ((max.x - min.x) + max_count) / (max_count + 1);
     }
-    if (0 == style->gp.axis.ver_unit) {
+    if (0.0 == style->gp.axis.ver_unit) {
         style->gp.axis.ver_unit = ((max.y - min.y) + max_count) / (max_count + 1);
     }
     /** add redundancy */
@@ -250,8 +250,8 @@ static void _void_draw_grid_lines(gt_obj_st * obj, gt_padding_st const * const p
         return;
     }
     gt_point_st div_part = _calc_div_part(style);
-
     gt_point_st grid = _get_display_pixel_range(padding, obj->area.w, obj->area.h);
+
     grid.x /= div_part.x;
     grid.y /= div_part.y;
 
@@ -290,8 +290,12 @@ static gt_padding_st _get_padding_by(gt_obj_st * obj) {
     gt_point_st grid = _get_display_pixel_range(&padding, obj->area.w, obj->area.h);
 
     /** resize really graphs size */
-    padding.right += grid.x - (grid.x / div_part.x) * div_part.x;
-    padding.bottom += grid.y - (grid.y / div_part.y) * div_part.y;
+    if (grid.x > div_part.x) {
+        padding.right += grid.x - (grid.x / div_part.x) * div_part.x;
+    }
+    if (grid.y > div_part.y) {
+        padding.bottom += grid.y - (grid.y / div_part.y) * div_part.y;
+    }
 
     return padding;
 }
@@ -344,6 +348,9 @@ static void _draw_ruler_range(gt_obj_st * obj, gt_padding_st const * const paddi
     };
     gt_font_info_init(&font.info);
     gt_font_info_update_font_thick(&font.info);
+#if !(defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
+    font.info.family = GT_CFG_DEFAULT_FONT_FAMILY;
+#endif
 
     for (uint8_t i = 0; i < 4; ++i) {
         pos_func_arr[i](obj, padding, &font_attr);
@@ -610,6 +617,9 @@ void gt_graphs_set_show_ruler(gt_obj_st * obj, bool enabled)
 void gt_graphs_set_axis(gt_obj_st * obj, gt_axis_st const * const axis)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    if (NULL == axis) {
         return;
     }
     _gt_graphs_st * style = (_gt_graphs_st *)obj;

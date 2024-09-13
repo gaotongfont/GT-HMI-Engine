@@ -67,9 +67,13 @@ bool gt_area_is_intersect_screen(const gt_area_st * screen, const gt_area_st * a
 
 bool gt_area_intersect_screen(const gt_area_st * screen, const gt_area_st * area_fore, gt_area_st * area_res)
 {
+    gt_size_t fore_x1 = AREA_X1(area_fore);
+    gt_size_t fore_y1 = AREA_Y1(area_fore);
     gt_size_t fore_x2 = AREA_X2(area_fore);
     gt_size_t fore_y2 = AREA_Y2(area_fore);
 
+    gt_size_t scr_x1 = AREA_X1(screen);
+    gt_size_t scr_y1 = AREA_Y1(screen);
     gt_size_t scr_x2 = AREA_X2(screen);
     gt_size_t scr_y2 = AREA_Y2(screen);
 
@@ -78,45 +82,25 @@ bool gt_area_intersect_screen(const gt_area_st * screen, const gt_area_st * area
     AREA_W(area_res)  = 0;
     AREA_H(area_res)  = 0;
 
-    if (_gt_area_is_outside_area(
-        AREA_X1(screen), AREA_Y1(screen), scr_x2, scr_y2,
-        AREA_X1(area_fore), AREA_Y1(area_fore), fore_x2, fore_y2)) {
-            return false;
+    if (_gt_area_is_outside_area(scr_x1, scr_y1, scr_x2, scr_y2, fore_x1, fore_y1, fore_x2, fore_y2)) {
+        return false;
     }
 
-    // calc area_res pos and width and height
-    if( AREA_X1(area_fore) < AREA_X1(screen) ){
-        /** fore over the area of the left of screen  */
-        AREA_X1(area_res) = AREA_X1(screen) - AREA_X1(area_fore);
-
-        if( fore_x2 < scr_x2 ){
-            AREA_W(area_res) = fore_x2 - AREA_X1(screen);
-        }else{
-            AREA_W(area_res) = AREA_W(screen);
-        }
-    }else{
-        if( fore_x2 < scr_x2 ){
-            AREA_W(area_res) = fore_x2 - AREA_X1(area_fore);
-        }else{
-            AREA_W(area_res) = scr_x2 - AREA_X1(area_fore);
-        }
+    // Calculate area_res position and width and height
+    if (fore_x1 < scr_x1) {
+        AREA_X1(area_res) = scr_x1 - fore_x1;
+        AREA_W(area_res) = (fore_x2 < scr_x2) ? (fore_x2 - scr_x1) : AREA_W(screen);
+    } else {
+        AREA_X1(area_res) = 0;
+        AREA_W(area_res) = (fore_x2 < scr_x2) ? (fore_x2 - fore_x1) : (scr_x2 - fore_x1);
     }
 
-    if( AREA_Y1(area_fore) < AREA_Y1(screen) ){
-        /** fore over the area of the top of screen */
-        AREA_Y1(area_res) = AREA_Y1(screen) - AREA_Y1(area_fore);
-
-        if( fore_y2 < scr_y2 ){
-            AREA_H(area_res) = fore_y2 - AREA_Y1(screen);
-        }else{
-            AREA_H(area_res) = AREA_H(screen);
-        }
-    }else{
-        if( fore_y2 < scr_y2 ){
-            AREA_H(area_res) = AREA_H(area_fore);
-        }else{
-            AREA_H(area_res) = scr_y2 - AREA_Y1(area_fore);
-        }
+    if (fore_y1 < scr_y1) {
+        AREA_Y1(area_res) = scr_y1 - fore_y1;
+        AREA_H(area_res) = (fore_y2 < scr_y2) ? (fore_y2 - scr_y1) : AREA_H(screen);
+    } else {
+        AREA_Y1(area_res) = 0;
+        AREA_H(area_res) = (fore_y2 < scr_y2) ? (fore_y2 - fore_y1) : (scr_y2 - fore_y1);
     }
 
     return true;
@@ -142,8 +126,8 @@ bool gt_area_cover_screen(gt_area_st const * const area1, gt_area_st const * con
     }
     AREA_X1(area_res) = AREA_X1(area2) > AREA_X1(area1) ? AREA_X1(area2) : AREA_X1(area1);
     AREA_Y1(area_res) = AREA_Y1(area2) > AREA_Y1(area1) ? AREA_Y1(area2) : AREA_Y1(area1);
-    AREA_W(area_res) = (AREA_X2(area1) < AREA_X2(area2) ? AREA_X2(area1) : AREA_X2(area2) ) - AREA_X1(area_res);
-    AREA_H(area_res) = (AREA_Y2(area1) < AREA_Y2(area2) ? AREA_Y2(area1) : AREA_Y2(area2) ) - AREA_Y1(area_res);
+    AREA_W(area_res) = (AREA_X2(area1) < AREA_X2(area2) ? AREA_X2(area1) : AREA_X2(area2)) - AREA_X1(area_res);
+    AREA_H(area_res) = (AREA_Y2(area1) < AREA_Y2(area2) ? AREA_Y2(area1) : AREA_Y2(area2)) - AREA_Y1(area_res);
     return true;
 }
 

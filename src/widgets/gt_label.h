@@ -137,6 +137,15 @@ void gt_label_set_omit_single_line(gt_obj_st * label, bool is_omit);
  * @param is_auto_scroll true: auto scroll single line, false: omit single line
  */
 void gt_label_set_auto_scroll_single_line(gt_obj_st * label, bool is_auto_scroll);
+
+/**
+ * @brief Set auto scroll speed
+ *
+ * @param label
+ * @param speed [default: 20] 1 ~ 99: speed from fast -> slow; 0: stop auto scroll.
+ */
+void gt_label_set_auto_scroll_speed(gt_obj_st * label, uint8_t speed);
+
 void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style);
 
 bool gt_label_is_single_line(gt_obj_st * label);

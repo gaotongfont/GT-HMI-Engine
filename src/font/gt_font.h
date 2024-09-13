@@ -41,6 +41,13 @@ typedef enum {
 #endif
 
 /* define ---------------------------------------------------------------*/
+#ifndef _GT_FONT_ENABLE_CONVERTOR
+    /**
+     * @brief 1: Enable the font convertor, 0: disabled
+     *       [default: 1]
+     */
+    #define _GT_FONT_ENABLE_CONVERTOR           01
+#endif
 
 #ifndef _GT_FONT_GET_WORD_BY_TOUCH_POINT
     /**
@@ -58,6 +65,14 @@ typedef enum {
 
 #define IS_CN_FONT_LAN(_lan) ((FONT_LAN_CJK_UNIFIED == _lan) || (FONT_LAN_CN == _lan) || (FONT_LAN_JAPANESE == _lan) || (FONT_LAN_KOREAN == _lan))
 
+#if GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+    #ifndef _FONT_ASCII_WIDTH_CACHE_COUNT
+        /**
+         * @brief The number of cache data for ASCII font width
+         */
+        #define _FONT_ASCII_WIDTH_CACHE_COUNT     (94)
+    #endif
+#endif
 /* typedef --------------------------------------------------------------*/
 
 typedef struct _gt_font_info_s {
@@ -118,7 +133,8 @@ typedef struct _gt_text_style_s {
     ///< 0[default]: multi chinese words together, 1: single chinese word
     uint8_t single_cn       : 1;
 #endif
-    uint8_t reserved        : 1;
+    ///< 0[default]: not immediately return, 1: immediately return when the text is bottom over the display area
+    uint8_t immediately_return : 1;
 }_gt_text_style_st;
 
 /**
@@ -322,14 +338,14 @@ int8_t _gt_font_get_type_group_offset_y(uint16_t cn_option, uint16_t en_option);
 /**
  * @brief
  *
- * @param utf8
+ * @param utf8_or_gbk
  * @param res
  * @param encoding
  * @return uint8_t The byte length of the encode
  */
-uint8_t gt_font_one_char_code_len_get(uint8_t * utf8, uint32_t *res, uint8_t encoding);
+uint8_t gt_font_one_char_code_len_get(uint8_t * utf8_or_gbk, uint32_t *res, uint8_t encoding);
 uint8_t gt_encoding_table_one_char(uint8_t *src, uint8_t* dst, gt_encoding_convert_et tab);
-uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const utf8, uint32_t *res);
+uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const gbk_code, uint32_t *res);
 uint8_t gt_gb_check_char(const uint8_t *dst, uint16_t pos, uint32_t* font_code);
 
 gt_font_lan_et gt_font_lan_get(uint32_t unicode, uint8_t encoding);
@@ -345,11 +361,17 @@ uint16_t gt_font_get_word_width_figure_up(const uint8_t* data, uint16_t dot_w, u
  */
 uint8_t gt_font_type_get(unsigned int font_style);
 
+#if _GT_FONT_ENABLE_CONVERTOR
 int gt_font_code_transform(font_convertor_st *convert);
 int gt_font_convertor_data_get(font_convertor_st *convert, uint32_t pos);
+#endif
 
 uint32_t gt_font_split(gt_font_st *fonts, uint32_t width, uint32_t dot_w, uint32_t space, uint32_t *ret_w, uint8_t * lan, uint32_t * lan_len);
+
+#if _GT_FONT_ENABLE_CONVERTOR
 bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_t r2l_lan);
+#endif  /** _GT_FONT_ENABLE_CONVERTOR */
+
 /**
  * @brief Get the font style
  *
@@ -361,6 +383,7 @@ uint8_t right_to_left_lan_get(uint16_t style);
 #else
 uint8_t right_to_left_lan_get(gt_font_st* font);
 #endif
+
 uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint32_t max_w, uint16_t space, uint32_t * ret_max_w);
 
 
