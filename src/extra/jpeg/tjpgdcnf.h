@@ -12,6 +12,8 @@
     #define JD_FORMAT		1
 #elif GT_COLOR_DEPTH == 8
     #define JD_FORMAT		2
+#elif GT_COLOR_DEPTH == 1
+    #define JD_FORMAT		2
 #endif
 /* Specifies output pixel format.
 /  0: RGB888 (24-bit/pix)
