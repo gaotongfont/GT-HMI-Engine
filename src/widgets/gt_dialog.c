@@ -65,7 +65,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
 static const gt_obj_class_st gt_dialog_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = NULL,
+    ._deinit_cb    = (_gt_deinit_cb_t)NULL,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_dialog_st)
