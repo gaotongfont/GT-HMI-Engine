@@ -21,10 +21,10 @@ extern "C" {
 /* define ---------------------------------------------------------------*/
 #ifndef GT_QUEUE_USE_PRE_CHECK_VALID
     /**
-     * @brief Use pre-check data by callback function
+     * @brief Use pre-check data by callback function, such as: check uart data is valid
      *      [default: 0]
      */
-    #define GT_QUEUE_USE_PRE_CHECK_VALID    01
+    #define GT_QUEUE_USE_PRE_CHECK_VALID    0
 #endif
 
 
