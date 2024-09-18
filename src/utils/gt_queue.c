@@ -35,8 +35,29 @@
 
 
 /* static functions -----------------------------------------------------*/
+static inline void _head_ptr_inc(gt_queue_st * queue) {
+    if (++queue->head >= queue->max_count) {
+        queue->head = 0;
+    }
+}
 
+static inline void _tail_ptr_inc(gt_queue_st * queue) {
+    if (++queue->tail >= queue->max_count) {
+        queue->tail = 0;
+    }
+}
 
+static inline void _item_count_inc(gt_queue_st * queue) {
+    if (queue->num_byte < queue->max_count) {
+        ++queue->num_byte;
+    }
+}
+
+static inline void _item_count_dec(gt_queue_st * queue) {
+    if (queue->num_byte > 0) {
+        --queue->num_byte;
+    }
+}
 
 /* global functions / API interface -------------------------------------*/
 gt_queue_st * gt_queue_init(uint16_t instance, void * buffer, uint32_t byte_size)
@@ -109,19 +130,56 @@ gt_res_t gt_queue_clear(gt_queue_st * queue)
 
 gt_res_t gt_queue_push(gt_queue_st * queue, void * data)
 {
-    ++queue->num_byte;
+    if (NULL == queue) {
+        return GT_RES_FAIL;
+    }
+    if (NULL == data) {
+        return GT_RES_FAIL;
+    }
+
+    uint8_t * ptr = (uint8_t * )queue->buffer + queue->head * queue->instance;
+
+    if (0 == queue->instance) {
+        return GT_RES_FAIL;
+    } else if (queue->instance > 1) {
+        gt_memcpy(ptr, data, queue->instance);
+    } else {
+        *ptr = (uint8_t)(*(uint8_t *)data);
+    }
+
+    if (queue->head == queue->tail) {
+        /** drop the oldest item */
+        _tail_ptr_inc(queue);
+    }
+    _head_ptr_inc(queue);
+    _item_count_inc(queue);
     return GT_RES_OK;
 }
 
 gt_res_t gt_queue_pop(gt_queue_st * queue, void * res)
 {
+    if (NULL == res) {
+        return GT_RES_FAIL;
+    }
+    *(uint8_t * )res = 0;
     if (NULL == queue) {
         return GT_RES_FAIL;
     }
     if (queue->num_byte < 1) {
         return GT_RES_INV;
     }
-    --queue->num_byte;
+
+    uint8_t * ptr = (uint8_t * )queue->buffer + queue->tail * queue->instance;
+
+    if (0 == queue->instance) {
+        return GT_RES_FAIL;
+    } else if (queue->instance > 1) {
+        gt_memcpy(res, ptr, queue->instance);
+    } else {
+        *(uint8_t *)res = *ptr;
+    }
+    _tail_ptr_inc(queue);
+    _item_count_dec(queue);
     return GT_RES_OK;
 }
 
