@@ -35,29 +35,70 @@
 
 
 /* static functions -----------------------------------------------------*/
-static inline void _head_ptr_inc(gt_queue_st * queue) {
+static inline uint16_t _head_ptr_inc(gt_queue_st * queue) {
     if (++queue->head >= queue->max_count) {
         queue->head = 0;
     }
+    return queue->head;
 }
 
-static inline void _tail_ptr_inc(gt_queue_st * queue) {
+static inline uint16_t _tail_ptr_inc(gt_queue_st * queue) {
     if (++queue->tail >= queue->max_count) {
         queue->tail = 0;
     }
+    return queue->tail;
 }
 
-static inline void _item_count_inc(gt_queue_st * queue) {
+static inline uint16_t _item_count_inc(gt_queue_st * queue) {
     if (queue->num_byte < queue->max_count) {
         ++queue->num_byte;
     }
+    return queue->num_byte;
 }
 
-static inline void _item_count_dec(gt_queue_st * queue) {
+static inline uint16_t _item_count_dec(gt_queue_st * queue) {
     if (queue->num_byte > 0) {
         --queue->num_byte;
     }
+    return queue->num_byte;
 }
+
+static gt_res_t _get_item_by(gt_queue_st const * const queue, uint16_t idx, void * res) {
+    uint8_t * ptr = (uint8_t * )queue->buffer + idx * queue->instance;
+    if (queue->instance > 1) {
+        gt_memcpy(res, ptr, queue->instance);
+    } else if (1 == queue->instance) {
+        *(uint8_t *)res = *ptr;
+    } else {
+        return GT_RES_FAIL;
+    }
+    return GT_RES_OK;
+}
+
+#if GT_QUEUE_USE_PRE_CHECK_VALID
+static inline uint16_t _get_tail_ptr_by(gt_queue_st const * const queue, uint16_t offset) {
+    uint16_t idx = queue->tail + offset;
+    while (idx >= queue->max_count) {
+        idx -= queue->max_count;
+    }
+    return idx;
+}
+
+static gt_res_t _get_value_cb(struct gt_queue_s const * const queue, uint16_t offset, void * res) {
+    if (NULL == res) {
+        return GT_RES_FAIL;
+    }
+    if (offset >= queue->num_byte) {
+        return GT_RES_FAIL;
+    }
+    uint16_t idx = _get_tail_ptr_by(queue, offset);
+    return _get_item_by(queue, idx, res);
+}
+
+static uint16_t _get_count_cb(struct gt_queue_s const * const queue) {
+    return queue->num_byte;
+}
+#endif
 
 /* global functions / API interface -------------------------------------*/
 gt_queue_st * gt_queue_init(uint16_t instance, void * buffer, uint32_t byte_size)
@@ -138,13 +179,12 @@ gt_res_t gt_queue_push(gt_queue_st * queue, void * data)
     }
 
     uint8_t * ptr = (uint8_t * )queue->buffer + queue->head * queue->instance;
-
-    if (0 == queue->instance) {
-        return GT_RES_FAIL;
-    } else if (queue->instance > 1) {
+    if (queue->instance > 1) {
         gt_memcpy(ptr, data, queue->instance);
-    } else {
+    } else if (1 == queue->instance) {
         *ptr = (uint8_t)(*(uint8_t *)data);
+    } else {
+        return GT_RES_FAIL;
     }
 
     if (queue->head == queue->tail) {
@@ -169,14 +209,9 @@ gt_res_t gt_queue_pop(gt_queue_st * queue, void * res)
         return GT_RES_INV;
     }
 
-    uint8_t * ptr = (uint8_t * )queue->buffer + queue->tail * queue->instance;
-
-    if (0 == queue->instance) {
-        return GT_RES_FAIL;
-    } else if (queue->instance > 1) {
-        gt_memcpy(res, ptr, queue->instance);
-    } else {
-        *(uint8_t *)res = *ptr;
+    gt_res_t ret = _get_item_by(queue, queue->tail, res);
+    if (GT_RES_OK != ret) {
+        return ret;
     }
     _tail_ptr_inc(queue);
     _item_count_dec(queue);
@@ -186,12 +221,69 @@ gt_res_t gt_queue_pop(gt_queue_st * queue, void * res)
 #if GT_QUEUE_USE_PRE_CHECK_VALID
 gt_res_t gt_queue_set_check_valid_cb(gt_queue_st * queue, gt_queue_check_valid_cb_t check_valid_cb)
 {
+    if (NULL == queue) {
+        return GT_RES_FAIL;
+    }
+    if (NULL == check_valid_cb) {
+        return GT_RES_FAIL;
+    }
+    queue->check_valid_cb = check_valid_cb;
     return GT_RES_OK;
 }
 
-uint16_t gt_queue_pop_by_check_valid(gt_queue_st * queue, void * res)
+gt_queue_check_valid_res_st gt_queue_pop_by_check_valid(gt_queue_st * queue, void * res)
 {
-    return 0;
+    gt_queue_check_valid_res_st ret = {
+        .res = GT_RES_FAIL,
+        .valid_data_len = 0,
+    };
+    if (NULL == res) {
+        return ret;
+    }
+    *(uint8_t * )res = 0;
+    if (NULL == queue) {
+        return ret;
+    }
+    if (queue->num_byte < 1) {
+        ret.res = GT_RES_INV;
+        return ret;
+    }
+
+    uint8_t * ptr = (uint8_t * )queue->buffer + queue->tail * queue->instance;
+    gt_queue_check_valid_st check_valid = {
+        .queue = queue,
+        .get_count = _get_count_cb,
+        .get_value = _get_value_cb,
+    };
+    while (GT_RES_FAIL == ret.res) {
+        ret = queue->check_valid_cb(&check_valid);
+        if (ret.valid_data_len > queue->max_count) {
+            ret.res = GT_RES_FAIL;
+            ret.valid_data_len = 0;
+        } else if (GT_RES_OK == ret.res) {
+            break;
+        } else if (GT_RES_INV == ret.res) {
+            return ret;
+        }
+        ptr = (uint8_t * )queue->buffer + _tail_ptr_inc(queue) * queue->instance;
+        if (0 == _item_count_dec(queue)) {
+            ret.res = GT_RES_FAIL;
+            return ret;
+        }
+    }
+
+    uint8_t * res_ptr = (uint8_t * )res;
+    for (uint16_t i = 0; i < ret.valid_data_len; ++i) {
+        gt_res_t tmp_ret = _get_item_by(queue, queue->tail, res_ptr);
+        if (GT_RES_OK != tmp_ret) {
+            ret.res = GT_RES_FAIL;
+            return ret;
+        }
+        _tail_ptr_inc(queue);
+        _item_count_dec(queue);
+        res_ptr += queue->instance;
+    }
+    return ret;
 }
 #endif  /** GT_QUEUE_USE_PRE_CHECK_VALID */
 

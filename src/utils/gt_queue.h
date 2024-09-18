@@ -33,14 +33,54 @@ extern "C" {
 
 #if GT_QUEUE_USE_PRE_CHECK_VALID
 /**
- * @brief The callback function to pre-check the validity of the data
- * @param ptr The queue cache buffer pointer
- * @param valid_byte_len The number of bytes to be processed
- * @return gt_res_t GT_RES_OK: success;
+ * @brief Describe
+ */
+struct gt_queue_s;
+
+/**
+ * @brief Get the valid data by index / offset
+ * @param queue The object of gt_queue_check_valid_cb_t callback function param
+ *          @ref gt_queue_check_valid_st -> queue
+ * @param index 0 <= index < get_count_cb_t() - 1
+ * @param res The data buffer to store the valid data
+ */
+typedef gt_res_t ( * get_value_cb_t)(struct gt_queue_s const * const, uint16_t, void * );
+
+/**
+ * @brief Get the number of valid elements in the queue
+ * @param queue The object of gt_queue_check_valid_cb_t callback function param
+ *          @ref gt_queue_check_valid_st -> queue
+ */
+typedef uint16_t ( * get_count_cb_t)(struct gt_queue_s const * const);
+
+typedef struct gt_queue_check_valid_s {
+    struct gt_queue_s const * const queue;
+    get_count_cb_t get_count;
+    get_value_cb_t get_value;
+}gt_queue_check_valid_st;
+
+/**
+ * @brief
+ * @ref gt_res_t    GT_RES_OK: success;
  *                  GT_RES_FAIL: failed;
  *                  GT_RES_INV: invalid, need to waiting for more data byte recv to pre-check
+ * @ref valid_data_len  valid data byte length
  */
-typedef gt_res_t ( * gt_queue_check_valid_cb_t)(uint8_t const * const, uint16_t);
+typedef struct gt_queue_check_valid_res_s {
+    gt_res_t res;
+    uint16_t valid_data_len;
+}gt_queue_check_valid_res_st;
+
+/**
+ * @brief The callback function to pre-check the validity of the data
+ * @param index The tail index of the queue
+ * @param valid_count queue valid data count
+ * @returns gt_res_t        GT_RES_OK: success;
+ *                          GT_RES_FAIL: failed;
+ *                          GT_RES_INV: invalid, need to waiting for more data byte recv to pre-check
+ *          valid_data_len  valid data byte length
+ */
+typedef gt_queue_check_valid_res_st ( * gt_queue_check_valid_cb_t)(struct gt_queue_check_valid_s const * const);
 #endif
 
 typedef struct gt_queue_s {
@@ -143,11 +183,14 @@ gt_res_t gt_queue_set_check_valid_cb(gt_queue_st * queue, gt_queue_check_valid_c
  *
  * @param queue
  * @param res The data buffer to store the valid data
- * @return uint16_t valid data byte length, 0: no valid data
+ * @return gt_queue_check_valid_res_st:
+ *          @ref gt_res_t           GT_RES_OK: success;
+ *                                  GT_RES_FAIL: failed;
+ *                                  GT_RES_INV: invalid, need to waiting for more data byte recv to pre-check
+ *          @ref valid_data_len     valid data byte length
  */
-uint16_t gt_queue_pop_by_check_valid(gt_queue_st * queue, void * res);
-
-#endif
+gt_queue_check_valid_res_st gt_queue_pop_by_check_valid(gt_queue_st * queue, void * res);
+#endif  /** GT_QUEUE_USE_PRE_CHECK_VALID */
 
 #ifdef __cplusplus
 } /*extern "C"*/
