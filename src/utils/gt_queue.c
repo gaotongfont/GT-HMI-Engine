@@ -1,7 +1,7 @@
 /**
  * @file gt_queue.c
  * @author Feyoung
- * @brief
+ * @brief cycle queue
  * @version 0.1
  * @date 2024-09-14 16:22:30
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
@@ -187,7 +187,7 @@ gt_res_t gt_queue_push(gt_queue_st * queue, void * data)
         return GT_RES_FAIL;
     }
 
-    if (queue->head == queue->tail) {
+    if (queue->num_byte && queue->head == queue->tail) {
         /** drop the oldest item */
         _tail_ptr_inc(queue);
     }

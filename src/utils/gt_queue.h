@@ -1,7 +1,7 @@
 /**
  * @file gt_queue.h
  * @author Feyoung
- * @brief
+ * @brief cycle queue
  * @version 0.1
  * @date 2024-09-14 15:48:02
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
@@ -14,6 +14,7 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "../gt_conf.h"
 #include "../others/gt_types.h"
 
 
