@@ -274,26 +274,52 @@ extern "C" {
 
 #if GT_USE_SERIAL
 
-#ifndef GT_SERIAL_MASTER_CACHE_SIZE
-    /**
-     * @brief The size of the send cache cycle buffer
-     */
-    #define GT_SERIAL_MASTER_CACHE_SIZE     512
-#endif
+    #ifndef GT_SERIAL_MASTER_CACHE_SIZE
+        /**
+         * @brief The size of the send cache cycle buffer
+         */
+        #define GT_SERIAL_MASTER_CACHE_SIZE     512
+    #endif
 
-#ifndef GT_SERIAL_CLIENT_CACHE_SIZE
-    /**
-     * @brief The size of the recv cache cycle buffer
-     */
-    #define GT_SERIAL_CLIENT_CACHE_SIZE     512
-#endif
+    #ifndef GT_SERIAL_CLIENT_CACHE_SIZE
+        /**
+         * @brief The size of the recv cache cycle buffer
+         */
+        #define GT_SERIAL_CLIENT_CACHE_SIZE     512
+    #endif
 
-#undef GT_QUEUE_USE_PRE_CHECK_VALID
-/**
- * @brief Use pre-check data by callback function, such as: check uart data is valid.
- *      Must be used with GT_USE_SERIAL.
- */
-#define GT_QUEUE_USE_PRE_CHECK_VALID    1
+    #ifndef GT_SERIAL_HEADER_BYTE
+        /**
+         * @brief The serial communication header byte
+         */
+        #define GT_SERIAL_HEADER_BYTE           { 0x5A, 0xA5 }
+    #endif
+
+    #ifndef GT_SERIAL_WIDTH_BYTE_LENGTH
+        /**
+         * @brief The serial communication width byte length to store recv valid byte data
+         *      [default: 1]
+         */
+        #define GT_SERIAL_WIDTH_BYTE_LENGTH     1
+    #endif
+
+    #ifndef GT_SERIAL_GET_ONLY_VALID_DATA
+        /**
+         * @brief Only valid byte data is kept, remove headers, length, and crc16 byte data;
+         *      otherwise, keep all data.
+         *      such as: 0x5a, 0xa5, 0x06, 0x83, 0x00, 0x10, 0x04, 0x25, 0xa3
+         *      result:  0x83, 0x00, 0x10, 0x04
+         *      [default: 1]
+         */
+        #define GT_SERIAL_GET_ONLY_VALID_DATA   1
+    #endif
+
+    #undef GT_QUEUE_USE_PRE_CHECK_VALID
+    /**
+     * @brief Use pre-check data by callback function, such as: check uart data is valid.
+     *      Must be used with GT_USE_SERIAL.
+     */
+    #define GT_QUEUE_USE_PRE_CHECK_VALID        1
 
 #endif  /** GT_USE_SERIAL */
 

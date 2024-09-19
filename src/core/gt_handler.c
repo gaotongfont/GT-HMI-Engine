@@ -24,6 +24,7 @@
 #include "gt_event.h"
 #include "../extra/gt_extra.h"
 #include "../core/gt_img_decoder.h"
+#include "../utils/gt_serial.h"
 
 #if _GT_USE_TEST
 #include "../../test/gt_test_rand_widget.h"
@@ -139,6 +140,10 @@ void gt_init(void)
     _gt_init_set_flag(true);
 
     _gt_port_init();
+
+#if GT_USE_SERIAL
+    gt_serial_init();
+#endif
 
 #if GT_BOOTING_INFO_MSG
     gt_print_info_end();
