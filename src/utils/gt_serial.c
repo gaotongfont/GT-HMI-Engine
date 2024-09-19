@@ -10,6 +10,7 @@
  *      buffer size @ref GT_SERIAL_MASTER_CACHE_SIZE, @ref GT_SERIAL_CLIENT_CACHE_SIZE;
  *      crc16 enable set by @ref gt_serial_set_crc16()
  *
+ *  serial headers byte content @ref GT_SERIAL_HEADER_BYTE;
  *  serial width byte length @ref GT_SERIAL_WIDTH_BYTE_LENGTH;
  *  serial valid auto pack by @ref gt_serial_client_send_packet, @ref gt_serial_client_send_packet()
  *  when enabled @ref GT_SERIAL_USE_AUTO_PACK;
@@ -50,7 +51,6 @@ typedef struct _serial_reg_s {
     uint8_t crc16 : 1;
 }_serial_reg_st;
 
-
 typedef struct gt_serial_s {
     gt_queue_st * master;   /** HMI as master */
     gt_queue_st * client;   /** HMI as client */
@@ -58,7 +58,7 @@ typedef struct gt_serial_s {
     _serial_reg_st reg;
 
     uint16_t headers_len;
-    uint8_t headers[];
+    uint8_t headers[];      /** such as: 0x5A, 0xA5 @ref GT_SERIAL_HEADER_BYTE */
 }gt_serial_st;
 
 

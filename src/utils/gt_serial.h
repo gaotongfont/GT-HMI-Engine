@@ -10,6 +10,7 @@
  *      buffer size @ref GT_SERIAL_MASTER_CACHE_SIZE, @ref GT_SERIAL_CLIENT_CACHE_SIZE;
  *      crc16 enable set by @ref gt_serial_set_crc16();
  *
+ *  serial headers byte content @ref GT_SERIAL_HEADER_BYTE;
  *  serial width byte length @ref GT_SERIAL_WIDTH_BYTE_LENGTH;
  *  serial valid auto pack by @ref gt_serial_client_send_packet, @ref gt_serial_client_send_packet()
  *  when enabled @ref GT_SERIAL_USE_AUTO_PACK;
