@@ -265,6 +265,38 @@ extern "C" {
 /** display idle time */
 #define GT_USE_DISPLAY_PREF_IDLE        0
 
+#ifndef GT_USE_SERIAL
+    /**
+     * @brief Enabled serial communications function @ref gt_serial.h
+     */
+    #define GT_USE_SERIAL       01
+#endif
+
+#if GT_USE_SERIAL
+
+#ifndef GT_SERIAL_MASTER_CACHE_SIZE
+    /**
+     * @brief The size of the send cache cycle buffer
+     */
+    #define GT_SERIAL_MASTER_CACHE_SIZE     512
+#endif
+
+#ifndef GT_SERIAL_CLIENT_CACHE_SIZE
+    /**
+     * @brief The size of the recv cache cycle buffer
+     */
+    #define GT_SERIAL_CLIENT_CACHE_SIZE     512
+#endif
+
+#undef GT_QUEUE_USE_PRE_CHECK_VALID
+/**
+ * @brief Use pre-check data by callback function, such as: check uart data is valid.
+ *      Must be used with GT_USE_SERIAL.
+ */
+#define GT_QUEUE_USE_PRE_CHECK_VALID    1
+
+#endif  /** GT_USE_SERIAL */
+
 #ifndef GT_USE_CRC
     /**
      * @brief Enabled CRC function @ref gt_crc.h
