@@ -1,7 +1,29 @@
 /**
  * @file gt_serial.c
  * @author Feyoung
- * @brief
+ * @brief Serial communication module, want to use this module,
+ *      please check defined is enabled:
+ *          @ref GT_USE_CRC
+ *          @ref GT_ENABLED_CRC16
+ *          @ref GT_QUEUE_USE_PRE_CHECK_VALID
+ *          @ref GT_USE_SERIAL
+ *      buffer size @ref GT_SERIAL_MASTER_CACHE_SIZE, @ref GT_SERIAL_CLIENT_CACHE_SIZE;
+ *      crc16 enable set by @ref gt_serial_set_crc16()
+ *
+ *  serial width byte length @ref GT_SERIAL_WIDTH_BYTE_LENGTH;
+ *  serial valid auto pack by @ref gt_serial_client_send_packet, @ref gt_serial_client_send_packet()
+ *  when enabled @ref GT_SERIAL_USE_AUTO_PACK;
+ *
+ *  HMI as master, send data to ohter device by @ref gt_serial_master_send();
+ *  HMI as master, receive one byte data from other device by @ref gt_serial_master_recv(),
+ *      get a complete packet of data(include: headers, length, crc16),
+ *      by disabled @ref GT_SERIAL_GET_ONLY_VALID_DATA
+ *
+ *  HMI as client, ohter device send data to HMI by @ref gt_serial_client_send();
+ *  HMI as client, receive one byte data from other device by @ref gt_serial_client_recv(),
+ *      get a complete packet of data(include: headers, length, crc16),
+ *      by disabled @ref GT_SERIAL_GET_ONLY_VALID_DATA
+ *
  * @version 0.1
  * @date 2024-09-18 19:37:34
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
@@ -178,7 +200,7 @@ static uint16_t _serial_common_unpack_valid_data(gt_queue_check_valid_res_st * r
     return ret_p->valid_data_len;
 }
 
-#if GT_SERIAL_GET_ONLY_VALID_DATA
+#if GT_SERIAL_USE_AUTO_PACK
 static gt_res_t _serial_common_push_integer(gt_queue_st * queue, uint32_t value, uint16_t byte_len) {
     uint16_t i = 0;
     uint8_t length_arr[4] = {0};
@@ -286,7 +308,7 @@ gt_res_t gt_serial_master_send(uint8_t const * const data, uint16_t len)
 
 gt_res_t gt_serial_master_send_packet(uint8_t const * const data, uint16_t len)
 {
-#if GT_SERIAL_GET_ONLY_VALID_DATA
+#if GT_SERIAL_USE_AUTO_PACK
     return _serial_common_send_pack(_serial.master, data, len);
 #else
     return _serial_common_send(_serial.master, data, len);
@@ -312,7 +334,7 @@ gt_res_t gt_serial_client_send(uint8_t const * const data, uint16_t len)
 
 gt_res_t gt_serial_client_send_packet(uint8_t const * const data, uint16_t len)
 {
-#if GT_SERIAL_GET_ONLY_VALID_DATA
+#if GT_SERIAL_USE_AUTO_PACK
     return _serial_common_send_pack(_serial.client, data, len);
 #else
     return _serial_common_send(_serial.client, data, len);

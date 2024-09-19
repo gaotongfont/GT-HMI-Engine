@@ -303,6 +303,15 @@ extern "C" {
         #define GT_SERIAL_WIDTH_BYTE_LENGTH     1
     #endif
 
+    #ifndef GT_SERIAL_USE_AUTO_PACK
+        /**
+         * @brief Set auto pack, such as: [0x83, 0x00, 0x10, 0x04],
+         *      result: [0x5a, 0xa5, 0x06, 0x83, 0x00, 0x10, 0x04, 0x25, 0xa3]
+         *      [default: 1]
+         */
+        #define GT_SERIAL_USE_AUTO_PACK         1
+    #endif
+
     #ifndef GT_SERIAL_GET_ONLY_VALID_DATA
         /**
          * @brief Only valid byte data is kept, remove headers, length, and crc16 byte data;

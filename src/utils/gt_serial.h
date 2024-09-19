@@ -1,7 +1,29 @@
 /**
  * @file gt_serial.h
  * @author Feyoung
- * @brief
+ * @brief Serial communication module, want to use this module,
+ *      please check defined is enabled:
+ *          @ref GT_USE_CRC
+ *          @ref GT_ENABLED_CRC16
+ *          @ref GT_QUEUE_USE_PRE_CHECK_VALID
+ *          @ref GT_USE_SERIAL
+ *      buffer size @ref GT_SERIAL_MASTER_CACHE_SIZE, @ref GT_SERIAL_CLIENT_CACHE_SIZE;
+ *      crc16 enable set by @ref gt_serial_set_crc16();
+ *
+ *  serial width byte length @ref GT_SERIAL_WIDTH_BYTE_LENGTH;
+ *  serial valid auto pack by @ref gt_serial_client_send_packet, @ref gt_serial_client_send_packet()
+ *  when enabled @ref GT_SERIAL_USE_AUTO_PACK;
+ *
+ *  HMI as master, send data to ohter device by @ref gt_serial_master_send();
+ *  HMI as master, receive one byte data from other device by @ref gt_serial_master_recv(),
+ *      get a complete packet of data(include: headers, length, crc16),
+ *      by disabled @ref GT_SERIAL_GET_ONLY_VALID_DATA
+ *
+ *  HMI as client, ohter device send data to HMI by @ref gt_serial_client_send();
+ *  HMI as client, receive one byte data from other device by @ref gt_serial_client_recv(),
+ *      get a complete packet of data(include: headers, length, crc16),
+ *      by disabled @ref GT_SERIAL_GET_ONLY_VALID_DATA
+ *
  * @version 0.1
  * @date 2024-09-18 19:34:39
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
