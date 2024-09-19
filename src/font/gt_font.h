@@ -178,11 +178,15 @@ typedef struct _gt_attr_font_s {
 typedef enum _gt_encoding_e {
     GT_ENCODING_UTF8 = 0,
     GT_ENCODING_GB,
+    GT_ENCODING_SJIS,
 }gt_encoding_et;
 
 typedef enum _gt_encoding_convert_e {
     UTF8_2_GB = 0,
     GB_2_UTF8,
+    UNICODE_2_UTF8,
+    BIG5_2_GBK,
+    SJIS_2_JIS0208,
 }gt_encoding_convert_et;
 
 typedef enum _gt_font_lan_e {
@@ -408,6 +412,8 @@ uint16_t gt_font_family_get_size(uint16_t fam);
 uint16_t gt_font_family_get_option(uint16_t fam , int16_t lan, uint8_t cjk);
 bool gt_font_family_is_one_style(uint16_t fam);
 void gt_font_set_family(gt_font_info_st *font_info, gt_family_t fam);
+
+uint16_t gt_encoding_convert(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len, gt_encoding_convert_et enc_cov);
 
 #ifdef __cplusplus
 } /*extern "C"*/

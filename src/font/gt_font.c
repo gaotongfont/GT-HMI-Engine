@@ -471,6 +471,25 @@ uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const gbk_code, uint32
     return len;
 }
 
+uint8_t _gt_sjis_oen_char_code_len_get(uint8_t const * const gbk_code, uint32_t *res)
+{
+    if(NULL == gbk_code) { return 0; }
+    uint32_t len = strlen((char * )gbk_code);
+
+    if (len >= 1 && gbk_code[0] <= 0x7F) {
+        if (res) { *res = gbk_code[0]; }
+        return 1;
+    }
+    else if(len >= 2){
+        if (res) { *res = (gbk_code[0] << 8) | gbk_code[1]; }
+        return 2;
+    }
+
+    return len;
+}
+
+
+
 /**
  * @brief unicode encoding convert to utf-8 encoding
  *
@@ -530,6 +549,8 @@ uint8_t gt_unicode_to_utf8(uint8_t* utf8, uint32_t unicode)
 }
 
 
+
+
 uint8_t _gt_utf8_to_unicode(uint8_t * utf8, uint32_t *res)
 {
 	if (utf8[0] < 0x80) {
@@ -565,11 +586,187 @@ uint8_t gt_font_one_char_code_len_get(uint8_t * utf8_or_bgk, uint32_t *res, uint
 #if GT_CFG_ENABLE_ZK_FONT == 1
     GT_Set_Chinese_Charset_Type(encoding);
 #endif
-    if(GT_ENCODING_UTF8 == encoding) {
-        return _gt_utf8_to_unicode(utf8_or_bgk, res);
-    }
-    else if(GT_ENCODING_GB == encoding) {
+    if(GT_ENCODING_GB == encoding) {
         return _gt_gb_font_one_char_code_len_get(utf8_or_bgk, res);
+    }
+    else if(GT_ENCODING_SJIS == encoding) {
+        return _gt_sjis_oen_char_code_len_get(utf8_or_bgk, res);
+    }
+
+    return _gt_utf8_to_unicode(utf8_or_bgk, res);
+}
+
+static uint8_t _gt_gb_code_len_get(uint32_t gb_code)
+{
+    if(gb_code <= 0x7F){
+        return 1;
+    }
+    else if(0x0000 != (gb_code >> 16))
+    {
+        return 4;
+    }
+    return 2;
+}
+
+static uint8_t _gt_utf8_to_gb(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
+{
+    uint32_t out_len = 0;
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    uint32_t font_code = 0, i = 0;
+    uint8_t len = 0, tmp_len = 0, tmp_i = 0;
+    for(i = 0; i < src_len;){
+        len = _gt_utf8_to_unicode((uint8_t*)&src[i], &font_code);
+        if(0 == len){
+            return out_len;
+        }
+        i += len;
+        if(font_code <= 0x7F){
+            tmp_len = 1;
+            goto fill;
+        }
+        font_code = UnicodeToGBK(font_code);
+        if(0x00 == font_code){
+            font_code = 0x3F;
+        }
+        tmp_len = _gt_gb_code_len_get(font_code);
+fill:
+        if(out_len + tmp_len > dst_len){
+            return out_len;
+        }
+        for(tmp_i = 0; tmp_i < tmp_len; tmp_i++) {
+            dst[out_len + tmp_len -1 - tmp_i] = (uint8_t)((font_code >> (tmp_i * 8))&0xFF);
+        }
+        out_len += tmp_len;
+    }
+#endif
+    return out_len;
+}
+
+static uint16_t _gt_gb_to_utf8(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
+{
+    uint32_t out_len = 0;
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    uint32_t font_code = 0, i = 0;
+    uint8_t len = 0, tmp_len = 0, tmp_i = 0;
+
+    for(i = 0; i < src_len; ){
+        len = _gt_gb_font_one_char_code_len_get(&src[i], &font_code);
+        if(0 == len){
+            return out_len;
+        }
+        i += len;
+        font_code = (font_code <= 0x7F) ? font_code : GBKToUnicode(font_code);
+        if(0x00 == font_code){
+            font_code = 0x3F;
+        }
+        tmp_len = gt_unicode_to_utf8(&dst[out_len], font_code);
+        if(out_len + tmp_len > dst_len){
+            return out_len;
+        }
+        out_len += tmp_len;
+    }
+
+#endif
+    return out_len;
+}
+
+static uint16_t _gt_unicode_to_utf8_buf(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
+{
+    uint32_t out_len = 0;
+    uint32_t font_code = 0, i = 0;
+    uint8_t tmp_len = 0;
+
+    for(i = 0; i < src_len; i+=2)
+    {
+        font_code = (src[i] << 8) | (src[i + 1]);
+        tmp_len = gt_unicode_to_utf8(&dst[out_len], font_code);
+        if(out_len + tmp_len > dst_len){
+            return out_len;
+        }
+        out_len += tmp_len;
+    }
+
+    return out_len;
+}
+
+static uint16_t _gt_big5_to_gbk(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
+{
+    uint32_t out_len = 0;
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    uint32_t font_code = 0, i = 0;
+    uint8_t len = 0, tmp_len = 0, tmp_i = 0;
+
+    for(i = 0; i < src_len;){
+        if(src[i] <= 0x7F){
+            font_code = src[i];
+            tmp_len = 1;
+            len = 1;
+            goto fill;
+        }
+        font_code = (src[i] << 8) | (src[i + 1]);
+        font_code = BIG5ToGBK(font_code);
+        tmp_len = 2;
+        len = 2;
+fill:
+        i += len;
+        if(0x00 == font_code){
+            font_code = 0x3F;
+            tmp_len = 1;
+        }
+        if(out_len + tmp_len > dst_len){
+            return out_len;
+        }
+        for(tmp_i = 0; tmp_i < tmp_len; tmp_i++) {
+            dst[out_len + tmp_len -1 - tmp_i] = (uint8_t)((font_code >> (tmp_i * 8))&0xFF);
+        }
+        out_len += tmp_len;
+    }
+#endif
+    return out_len;
+}
+
+static uint16_t _gt_shiftjis_to_jis0208(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
+{
+    uint32_t out_len = 0;
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    uint32_t font_code = 0, i = 0;
+    uint8_t len = 0, tmp_len = 0, tmp_i = 0;
+
+    for(i = 0; i < src_len; i+=2){
+        font_code = (src[i] << 8) | (src[i + 1]);
+        font_code = Shift_JIS_To_JIS0208(font_code);
+        tmp_len = 2;
+        if(0x00 == font_code){
+            font_code = 0x0109;
+        }
+        if(out_len + tmp_len > dst_len){
+            return out_len;
+        }
+        for(tmp_i = 0; tmp_i < tmp_len; tmp_i++) {
+            dst[out_len + tmp_len -1 - tmp_i] = (uint8_t)((font_code >> (tmp_i * 8))&0xFF);
+        }
+        out_len += tmp_len;
+    }
+#endif
+    return out_len;
+}
+
+uint16_t gt_encoding_convert(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len, gt_encoding_convert_et enc_cov)
+{
+    switch (enc_cov)
+    {
+    case UTF8_2_GB:
+        return _gt_utf8_to_gb(src, src_len, dst,dst_len);
+    case GB_2_UTF8:
+        return _gt_gb_to_utf8(src, src_len, dst,dst_len);
+    case UNICODE_2_UTF8:
+        return _gt_unicode_to_utf8_buf(src, src_len, dst,dst_len);
+    case BIG5_2_GBK:
+        return _gt_big5_to_gbk(src, src_len, dst,dst_len);
+    case SJIS_2_JIS0208:
+        return _gt_shiftjis_to_jis0208(src, src_len, dst,dst_len);
+    default:
+        break;
     }
 
     return 0;
@@ -587,7 +784,7 @@ uint8_t gt_encoding_table_one_char(uint8_t *src, uint8_t* dst, gt_encoding_conve
         len = _gt_utf8_to_unicode(src, &font_code);
         // unicode to gb
         font_code = UnicodeToGBK(font_code);
-        gt_size_t tmp_len = _gt_gb_font_one_char_code_len_get((uint8_t*)src, NULL);
+        gt_size_t tmp_len = _gt_gb_code_len_get(font_code);
         gt_size_t tmp_i = 0;
         for(tmp_i = 0; tmp_i < tmp_len; tmp_i++) {
             dst[tmp_len -1 - tmp_i] = font_code >> (tmp_i * 8);
@@ -693,6 +890,9 @@ gt_font_lan_et gt_font_lan_get(uint32_t unicode, uint8_t encoding)
     }
     if (GT_ENCODING_GB == encoding) {
         return FONT_LAN_CN;
+    }
+    else if(GT_ENCODING_SJIS == encoding){
+        return FONT_LAN_JAPANESE;
     }
 
     for (size_t i = 0, cnt = sizeof(ranges) / sizeof(ranges[0]); i < cnt; ++i) {

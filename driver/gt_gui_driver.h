@@ -238,6 +238,18 @@ unsigned int UnicodeToKSC5601(unsigned int fontcode);
  * @retval int  转换后编码
  */
 unsigned int GBKToUnicode(unsigned int fontcode);
+/**
+ * @brief  BIG5转GBK
+ * @param  fontcode	BIG5编码
+ * @retval int  转换后编码
+ */
+unsigned int BIG5ToGBK(unsigned int fontcode);
+/**
+ * @brief  ShiftJis转JIS0208
+ * @param  fontcode	ShiftJis编码
+ * @retval int  转换后编码
+ */
+unsigned int Shift_JIS_To_JIS0208(unsigned int fontcode);
 
 /* macros ---------------------------------------------------------------*/
 
