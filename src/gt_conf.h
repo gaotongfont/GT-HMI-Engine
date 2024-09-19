@@ -268,8 +268,9 @@ extern "C" {
 #ifndef GT_USE_SERIAL
     /**
      * @brief Enabled serial communications function @ref gt_serial.h
+     *      [default: 0]
      */
-    #define GT_USE_SERIAL       01
+    #define GT_USE_SERIAL       0
 #endif
 
 #if GT_USE_SERIAL
