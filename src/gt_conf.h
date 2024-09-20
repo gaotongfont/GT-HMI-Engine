@@ -71,6 +71,7 @@ extern "C" {
 #define GT_TASK_PERIOD_TIME_EVENT   10
 #define GT_TASK_PERIOD_TIME_ANIM    10
 #define GT_TASK_PERIOD_TIME_REFR    10
+#define GT_TASK_PERIOD_TIME_SERIAL  20
 
 /** Free object memory after N ms timer */
 #define GT_TASK_PERIOD_TIME_DESTROY 10
@@ -274,6 +275,16 @@ extern "C" {
 #endif
 
 #if GT_USE_SERIAL
+    #ifndef GT_SERIAL_USE_TIMER_RECV_UNPACK
+        /**
+         * @brief Use client recv timer to unpack serial data, timer period
+         *      @ref GT_TASK_PERIOD_TIME_SERIAL, callback function @ref
+         *      _serial_client_recv_timer_handler_cb().
+         *      [default: 0]
+         */
+        #define GT_SERIAL_USE_TIMER_RECV_UNPACK 0
+    #endif
+
     #ifndef GT_SERIAL_MASTER_CACHE_SIZE
         /**
          * @brief The size of the send cache cycle buffer
@@ -288,9 +299,17 @@ extern "C" {
         #define GT_SERIAL_CLIENT_CACHE_SIZE     512
     #endif
 
+    #ifndef GT_SERIAL_UNPACK_CACHE_SIZE
+        /**
+         * @brief The size of the unpack data cache for each time
+         */
+        #define GT_SERIAL_UNPACK_CACHE_SIZE     512
+    #endif
+
     #ifndef GT_SERIAL_HEADER_BYTE
         /**
          * @brief The serial communication header byte
+         *      [Warn] Range: 1 ~ 4 bytes
          */
         #define GT_SERIAL_HEADER_BYTE           { 0x5A, 0xA5 }
     #endif

@@ -8,7 +8,10 @@
  *          @ref GT_QUEUE_USE_PRE_CHECK_VALID
  *          @ref GT_USE_SERIAL
  *      buffer size @ref GT_SERIAL_MASTER_CACHE_SIZE, @ref GT_SERIAL_CLIENT_CACHE_SIZE;
- *      crc16 enable set by @ref gt_serial_set_crc16();
+ *      unpack store buffer size @ref GT_SERIAL_UNPACK_CACHE_SIZE;
+ *  Total RAM cost: GT_SERIAL_MASTER_CACHE_SIZE + GT_SERIAL_CLIENT_CACHE_SIZE + GT_SERIAL_UNPACK_CACHE_SIZE.
+ *
+ *  Crc16 enable set by @ref gt_serial_set_crc16(), Default: disabled;
  *
  *  serial headers byte content @ref GT_SERIAL_HEADER_BYTE;
  *  serial width byte length @ref GT_SERIAL_WIDTH_BYTE_LENGTH;
@@ -49,7 +52,13 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-
+/**
+ * @brief Serial protocol data buffer handler callback function
+ * @param data_buffer a full serial protocol data buffer
+ * @param data_len data byte length
+ * @return gt_res_t GT_RES_OK: success; GT_RES_FAIL: failed;
+ */
+typedef gt_res_t ( * gt_serial_handler_cb_t)(uint8_t const * const, uint16_t);
 
 
 /* macros ---------------------------------------------------------------*/
@@ -72,6 +81,16 @@ void gt_serial_init(void);
  * @brief Deinitialize the serial communication module
  */
 void gt_serial_deinit(void);
+
+#if GT_SERIAL_USE_TIMER_RECV_UNPACK
+/**
+ * @brief Set the serial protocol data buffer handler callback function,
+ *      The user parses the serial port content in the callback function
+ *
+ * @param cb The callback function
+ */
+void gt_serial_set_handler_cb(gt_serial_handler_cb_t cb);
+#endif
 
 /**
  * @brief crc16 enable set by mod-bus mode, The last two bytes

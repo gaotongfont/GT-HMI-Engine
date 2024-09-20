@@ -8,7 +8,10 @@
  *          @ref GT_QUEUE_USE_PRE_CHECK_VALID
  *          @ref GT_USE_SERIAL
  *      buffer size @ref GT_SERIAL_MASTER_CACHE_SIZE, @ref GT_SERIAL_CLIENT_CACHE_SIZE;
- *      crc16 enable set by @ref gt_serial_set_crc16()
+ *      unpack store buffer size @ref GT_SERIAL_UNPACK_CACHE_SIZE;
+ *  Total RAM cost: GT_SERIAL_MASTER_CACHE_SIZE + GT_SERIAL_CLIENT_CACHE_SIZE + GT_SERIAL_UNPACK_CACHE_SIZE.
+ *
+ *  Crc16 enable set by @ref gt_serial_set_crc16(), Default: disabled;
  *
  *  serial headers byte content @ref GT_SERIAL_HEADER_BYTE;
  *  serial width byte length @ref GT_SERIAL_WIDTH_BYTE_LENGTH;
@@ -39,6 +42,7 @@
 #include "../others/gt_log.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_crc.h"
+#include "../core/gt_timer.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -54,6 +58,11 @@ typedef struct _serial_reg_s {
 typedef struct gt_serial_s {
     gt_queue_st * master;   /** HMI as master */
     gt_queue_st * client;   /** HMI as client */
+#if GT_SERIAL_USE_TIMER_RECV_UNPACK
+    uint8_t * const unpack_buffer;  /** cache to store unpack data */
+    _gt_timer_st * timer_p;
+    gt_serial_handler_cb_t handler_cb;
+#endif
 
     _serial_reg_st reg;
 
@@ -63,13 +72,31 @@ typedef struct gt_serial_s {
 
 
 /* static variables -----------------------------------------------------*/
+/**
+ * @brief Cycle array to store the data of the master
+ */
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY uint8_t _serial_master_cache[GT_SERIAL_MASTER_CACHE_SIZE] = {0};
 
+/**
+ * @brief Cycle array to store the data of the client
+ */
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY uint8_t _serial_client_cache[GT_SERIAL_CLIENT_CACHE_SIZE] = {0};
+
+#if GT_SERIAL_USE_TIMER_RECV_UNPACK
+/**
+ * @brief Cache buffer to store client recv a full serial protocol data
+ */
+static GT_ATTRIBUTE_LARGE_RAM_ARRAY uint8_t _serial_unpack_cache[GT_SERIAL_UNPACK_CACHE_SIZE] = {0};
+#endif
 
 static gt_serial_st _serial = {
     .master = NULL,
     .client = NULL,
+#if GT_SERIAL_USE_TIMER_RECV_UNPACK
+    .timer_p = NULL,
+    .unpack_buffer = _serial_unpack_cache,
+    .handler_cb = NULL,
+#endif
     .reg = {
         .crc16 = false,
     },
@@ -269,6 +296,23 @@ static gt_res_t _serial_common_send_pack(gt_queue_st * queue, uint8_t const * co
 }
 #endif
 
+#if GT_SERIAL_USE_TIMER_RECV_UNPACK
+static void _serial_client_recv_timer_handler_cb(struct _gt_timer_s * timer) {
+    uint16_t data_len = gt_serial_client_recv(_serial.unpack_buffer);
+    if (0 == data_len) {
+        return;
+    }
+    /** Prepare to handle a full serial protocol */
+    if (NULL == _serial.handler_cb) {
+        return;
+    }
+    gt_res_t res = _serial.handler_cb(_serial.unpack_buffer, data_len);
+    if (GT_RES_FAIL == res) {
+        GT_LOGW(GT_LOG_TAG_SERIAL, "Serial handler_cb() handler failed!");
+    }
+}
+#endif
+
 /* global functions / API interface -------------------------------------*/
 void gt_serial_init(void)
 {
@@ -279,12 +323,23 @@ void gt_serial_init(void)
     gt_queue_set_check_valid_cb(_serial.master, _serial_queue_check_valid_cb);
     gt_queue_set_check_valid_cb(_serial.client, _serial_queue_check_valid_cb);
 
+#if GT_SERIAL_USE_TIMER_RECV_UNPACK
+    /** create timer to handler serial */
+    _serial.timer_p = _gt_timer_create(_serial_client_recv_timer_handler_cb, GT_TASK_PERIOD_TIME_SERIAL, &_serial);
+#endif
+
     GT_LOG_A(GT_LOG_TAG_SERIAL, "Serial header byte len: %d", _serial.headers_len);
     GT_LOG_ARR(_serial.headers, 0, _serial.headers_len);
 }
 
 void gt_serial_deinit(void)
 {
+#if GT_SERIAL_USE_TIMER_RECV_UNPACK
+    if (_serial.timer_p) {
+        _gt_timer_del(_serial.timer_p);
+        _serial.timer_p = NULL;
+    }
+#endif
     if (_serial.master) {
         gt_queue_deinit(_serial.master);
         _serial.master = NULL;
@@ -294,6 +349,13 @@ void gt_serial_deinit(void)
         _serial.client = NULL;
     }
 }
+
+#if GT_SERIAL_USE_TIMER_RECV_UNPACK
+void gt_serial_set_handler_cb(gt_serial_handler_cb_t cb)
+{
+    _serial.handler_cb = cb;
+}
+#endif
 
 void gt_serial_set_crc16(bool enable)
 {
@@ -320,7 +382,7 @@ uint16_t gt_serial_master_recv(uint8_t * res_buffer)
     if (GT_RES_INV == ret.res) {
         return 0;
     } else if (GT_RES_FAIL == ret.res) {
-        GT_LOGW(GT_LOG_TAG_SERIAL, "Master queue pop failed!");
+        GT_LOGV(GT_LOG_TAG_SERIAL, "Master queue pop failed!");
         return 0;
     }
     return _serial_common_unpack_valid_data(&ret, res_buffer);
@@ -346,7 +408,7 @@ uint16_t gt_serial_client_recv(uint8_t * res_buffer)
     if (GT_RES_INV == ret.res) {
         return 0;
     } else if (GT_RES_FAIL == ret.res) {
-        GT_LOGW(GT_LOG_TAG_SERIAL, "Client queue pop failed!");
+        GT_LOGV(GT_LOG_TAG_SERIAL, "Client queue pop failed!");
         return 0;
     }
     return _serial_common_unpack_valid_data(&ret, res_buffer);
