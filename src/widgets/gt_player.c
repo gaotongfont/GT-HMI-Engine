@@ -83,6 +83,12 @@ typedef struct _gt_player_s {
 #endif
 
     int32_t repeat_cnt;         /** -1: infinite; > 0: repeat count; 0: stop player */
+
+#if GT_USE_SERIAL
+    gt_size_t index_offset;
+    gt_size_t stop_index;
+#endif
+
 }_gt_player_st;
 
 
@@ -436,6 +442,12 @@ static inline void _set_play_status(_gt_player_st * style, bool is_play) {
     _gt_timer_set_paused(style->timer, is_play ? false : true);
 
     if (false == is_play) {
+
+#if GT_USE_SERIAL
+        if(style->stop_index >= 0){
+            _gt_vector_set_index(style->vector, style->stop_index);
+        }
+#endif
         /** redraw */
         gt_event_send((gt_obj_st * )style, GT_EVENT_TYPE_DRAW_START, NULL);
     }
@@ -511,6 +523,10 @@ gt_obj_st * gt_player_create(gt_obj_st * parent)
     _gt_player_st * style = (_gt_player_st * )obj;
     style->reg.type = GT_PLAYER_TYPE_IMG;
     style->repeat_cnt = -1;
+
+#if GT_USE_SERIAL
+    style->stop_index = -1;
+#endif
 
     style->timer = _gt_timer_create(_auto_play_callback, 500, (void * )obj);
     _gt_timer_set_paused(style->timer, true);
@@ -782,6 +798,18 @@ void gt_player_set_index(gt_obj_st * obj, gt_size_t index)
     }
     _gt_player_st * style = (_gt_player_st * )obj;
     GT_CHECK_BACK(style->vector);
+
+#if GT_USE_SERIAL
+    if(_is_mode_equal(style, GT_PLAYER_MODE_NONE))
+    {
+        index = index - style->index_offset;
+        if(index < 0 || index >= _gt_vector_get_count(style->vector)){
+            style->vector->index = -2;
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            return ;
+        }
+    }
+#endif
     _gt_vector_set_index(style->vector, index);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -846,6 +874,12 @@ void gt_player_play(gt_obj_st * obj)
         return ;
     }
     _gt_player_st * style = (_gt_player_st * )obj;
+
+    if(_is_mode_equal(style, GT_PLAYER_MODE_NONE)){
+        GT_LOGV(GT_LOG_TAG_GUI, "player mode is none.");
+        return ;
+    }
+
     if (_is_type_none(style)) {
         GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
@@ -859,6 +893,12 @@ void gt_player_stop(gt_obj_st * obj)
         return ;
     }
     _gt_player_st * style = (_gt_player_st * )obj;
+
+    if(_is_mode_equal(style, GT_PLAYER_MODE_NONE)){
+        GT_LOGV(GT_LOG_TAG_GUI, "player mode is none.");
+        return ;
+    }
+
     if (_is_type_none(style)) {
         GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
@@ -872,6 +912,12 @@ void gt_player_toggle(gt_obj_st * obj)
         return ;
     }
     _gt_player_st * style = (_gt_player_st * )obj;
+
+    if(_is_mode_equal(style, GT_PLAYER_MODE_NONE)){
+        GT_LOGV(GT_LOG_TAG_GUI, "player mode is none.");
+        return ;
+    }
+
     if (_is_type_none(style)) {
         GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
@@ -943,6 +989,26 @@ bool gt_player_is_real_time_update(gt_obj_st * obj)
     _gt_player_st * style = (_gt_player_st * )obj;
     return style->reg.real_time_update;
 }
+
+#if GT_USE_SERIAL
+void gt_player_set_index_offset(gt_obj_st * obj, gt_size_t offset)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj;
+    style->index_offset = offset;
+}
+
+void gt_player_set_stop_index(gt_obj_st * obj, gt_size_t index)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj;
+    style->stop_index = index;
+}
+#endif
 
 #endif /** GT_CFG_ENABLE_PLAYER */
 /* end ------------------------------------------------------------------*/

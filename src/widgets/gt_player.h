@@ -239,6 +239,12 @@ bool gt_player_dir_is_forward(gt_obj_st * obj);
 void gt_player_set_real_time_update(gt_obj_st * obj, bool is_real_time_update);
 bool gt_player_is_real_time_update(gt_obj_st * obj);
 
+
+#if GT_USE_SERIAL
+void gt_player_set_index_offset(gt_obj_st * obj, gt_size_t offset);
+void gt_player_set_stop_index(gt_obj_st * obj, gt_size_t index);
+#endif
+
 #endif /** GT_CFG_ENABLE_PLAYER */
 #ifdef __cplusplus
 } /*extern "C"*/
