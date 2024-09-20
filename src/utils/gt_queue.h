@@ -87,7 +87,7 @@ typedef gt_queue_check_valid_res_st ( * gt_queue_check_valid_cb_t)(struct gt_que
 typedef struct gt_queue_s {
     uint16_t head;          /** index of push position offset */
     uint16_t tail;          /** index of pop position offset */
-    uint16_t num_byte;      /** number of bytes = element_count * instance */
+    uint16_t el_count;      /** element_count */
     uint16_t instance;      /** element instance byte size */
 
     void * buffer;          /** queue cache buffer */

@@ -50,17 +50,17 @@ static inline uint16_t _tail_ptr_inc(gt_queue_st * queue) {
 }
 
 static inline uint16_t _item_count_inc(gt_queue_st * queue) {
-    if (queue->num_byte < queue->max_count) {
-        ++queue->num_byte;
+    if (queue->el_count < queue->max_count) {
+        ++queue->el_count;
     }
-    return queue->num_byte;
+    return queue->el_count;
 }
 
 static inline uint16_t _item_count_dec(gt_queue_st * queue) {
-    if (queue->num_byte > 0) {
-        --queue->num_byte;
+    if (queue->el_count > 0) {
+        --queue->el_count;
     }
-    return queue->num_byte;
+    return queue->el_count;
 }
 
 static gt_res_t _get_item_by(gt_queue_st const * const queue, uint16_t idx, void * res) {
@@ -88,7 +88,7 @@ static gt_res_t _get_value_cb(struct gt_queue_s const * const queue, uint16_t of
     if (NULL == res) {
         return GT_RES_FAIL;
     }
-    if (offset >= queue->num_byte) {
+    if (offset >= queue->el_count) {
         return GT_RES_FAIL;
     }
     uint16_t idx = _get_tail_ptr_by(queue, offset);
@@ -96,7 +96,7 @@ static gt_res_t _get_value_cb(struct gt_queue_s const * const queue, uint16_t of
 }
 
 static uint16_t _get_count_cb(struct gt_queue_s const * const queue) {
-    return queue->num_byte;
+    return queue->el_count;
 }
 #endif
 
@@ -138,7 +138,7 @@ bool gt_queue_is_empty(gt_queue_st * queue)
     if (NULL == queue) {
         return true;
     }
-    if (queue->num_byte) {
+    if (queue->el_count) {
         return false;
     }
     if (queue->head != queue->tail) {
@@ -155,7 +155,7 @@ uint16_t gt_queue_get_count(gt_queue_st * queue)
     if (0 == queue->instance) {
         return 0;
     }
-    return queue->num_byte;
+    return queue->el_count;
 }
 
 gt_res_t gt_queue_clear(gt_queue_st * queue)
@@ -165,7 +165,7 @@ gt_res_t gt_queue_clear(gt_queue_st * queue)
     }
     queue->head = 0;
     queue->tail = 0;
-    queue->num_byte = 0;
+    queue->el_count = 0;
     return GT_RES_OK;
 }
 
@@ -187,7 +187,7 @@ gt_res_t gt_queue_push(gt_queue_st * queue, void * data)
         return GT_RES_FAIL;
     }
 
-    if (queue->num_byte && queue->head == queue->tail) {
+    if (queue->el_count && queue->head == queue->tail) {
         /** drop the oldest item */
         _tail_ptr_inc(queue);
     }
@@ -205,7 +205,7 @@ gt_res_t gt_queue_pop(gt_queue_st * queue, void * res)
     if (NULL == queue) {
         return GT_RES_FAIL;
     }
-    if (queue->num_byte < 1) {
+    if (queue->el_count < 1) {
         return GT_RES_INV;
     }
 
@@ -244,7 +244,7 @@ gt_queue_check_valid_res_st gt_queue_pop_by_check_valid(gt_queue_st * queue, voi
     if (NULL == queue) {
         return ret;
     }
-    if (queue->num_byte < 1) {
+    if (queue->el_count < 1) {
         ret.res = GT_RES_INV;
         return ret;
     }
