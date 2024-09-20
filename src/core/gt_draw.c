@@ -2267,6 +2267,7 @@ void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_are
         .color_fill = dsc->raw_img ? dsc->raw_img->fill_color : gt_color_black(),
         .dst_area = &dst_area,
         .mask_area = &mask_area,
+        // .view_area = dsc->limit_area,   // TODO feat limit area range
         .opa = dsc->bg_opa
     };
 
