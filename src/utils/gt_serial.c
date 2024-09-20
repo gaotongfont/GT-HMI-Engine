@@ -230,7 +230,6 @@ static gt_res_t _serial_common_push_integer(gt_queue_st * queue, uint32_t value,
  * @return gt_res_t
  */
 static gt_res_t _serial_common_send_pack(gt_queue_st * queue, uint8_t const * const data, uint16_t len) {
-    uint16_t i = 0, width_len = GT_SERIAL_WIDTH_BYTE_LENGTH;
     uint32_t checksum = 0;
     gt_res_t ret = GT_RES_OK;
 
@@ -242,7 +241,7 @@ static gt_res_t _serial_common_send_pack(gt_queue_st * queue, uint8_t const * co
 
     /** push length */
     uint32_t value = len + _serial_get_crc16_byte_length();
-    ret = _serial_common_push_integer(queue, value, width_len);
+    ret = _serial_common_push_integer(queue, value, GT_SERIAL_WIDTH_BYTE_LENGTH);
     if (GT_RES_OK != ret) {
         return ret;
     }
@@ -252,7 +251,7 @@ static gt_res_t _serial_common_send_pack(gt_queue_st * queue, uint8_t const * co
 #if GT_ENABLED_CRC16
     checksum = GT_CRC16_START_MOD_BUS;
 #endif
-    for (i = 0; i < len; ++i) {
+    for (uint16_t i = 0; i < len; ++i) {
         ret = gt_queue_push(queue, p);
         if (GT_RES_OK != ret) {
             return ret;
