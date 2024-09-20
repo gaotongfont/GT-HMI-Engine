@@ -205,7 +205,7 @@ static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * dat
         return GT_FS_RES_NULL;
     }
     uint32_t addr = vfp->pos + _vf_dev->addr_start;
-    uint8_t data_write[5] = {0x03, (uint8_t)(addr>>16), (uint8_t)(addr>>8), (uint8_t)addr };
+    uint8_t data_write[5] = {GT_HAL_FLASH_READ_CMD, (uint8_t)(addr>>16), (uint8_t)(addr>>8), (uint8_t)addr };
     uint8_t len_write = 4;
 
     if (addr > 0xffffff) {

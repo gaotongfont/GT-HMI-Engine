@@ -162,6 +162,16 @@ gt_fs_res_et gt_fs_direct_addr_read_img_wh(gt_addr_t addr, uint16_t * w, uint16_
 #endif
 
 /**
+ * @brief Directly read the physical data from the address
+ *
+ * @param addr Flash address
+ * @param len The number of bytes to read
+ * @param data The buffer to save the data
+ * @return uint32_t The number of bytes read back
+ */
+uint32_t gt_fs_read_direct_physical(gt_addr_t addr, uint32_t len, uint8_t * data);
+
+/**
  * @brief Close the file operation handler, which need to
  *      be called after gt_fs_open().
  */

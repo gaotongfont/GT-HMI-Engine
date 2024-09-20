@@ -290,6 +290,27 @@ gt_fs_res_et gt_fs_direct_addr_read_img_wh(gt_addr_t addr, uint16_t * w, uint16_
 }
 #endif
 
+uint32_t gt_fs_read_direct_physical(gt_addr_t addr, uint32_t len, uint8_t * data)
+{
+    gt_fs_drv_st * drv = gt_vf_get_drv();
+    if (!drv) {
+        return 0;
+    }
+    uint8_t data_write[5] = {GT_HAL_FLASH_READ_CMD, (uint8_t)(addr>>16), (uint8_t)(addr>>8), (uint8_t)addr };
+    uint8_t len_write = 4;
+
+    if (addr > 0xffffff) {
+        data_write[1] = (uint8_t)(addr >> 24);
+        data_write[2] = (uint8_t)(addr >> 16);
+        data_write[3] = (uint8_t)(addr >> 8);
+        data_write[4] = (uint8_t)addr;
+        ++len_write;
+    }
+
+    /* start read */
+    return drv->rw_cb(data_write, len_write, data, len);
+}
+
 void gt_fs_close(gt_fs_fp_st * fp)
 {
     GT_CHECK_BACK(fp);
