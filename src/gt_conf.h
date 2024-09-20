@@ -78,7 +78,7 @@ extern "C" {
 
 /* user: virt file device setting */
 #ifndef GT_VF_FLASH_SIZE
-    //flash size 16*1024*1024   16M
+    //HMI-chip or flash size 16*1024*1024   16M
     #define GT_VF_FLASH_SIZE        0x1000000
 #endif
 #ifndef GT_VF_FLASH_START

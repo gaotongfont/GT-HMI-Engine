@@ -33,8 +33,8 @@
  */
 typedef struct _gt_vf_s {
     gt_fs_drv_st drv;     ///< file descriptor  driver
-    uint32_t addr_max;      ///< flash max address range
-    uint32_t addr_start;    ///< resource begin address in flash
+    uint32_t addr_max;      ///< HMI-Chip or flash max address range
+    uint32_t addr_start;    ///< resource begin address in HMI-Chip or flash
 }gt_vf_st;
 
 

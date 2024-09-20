@@ -101,7 +101,7 @@ typedef struct _gt_fs_drv_s {
     gt_fs_label_et letter;
 
     /**
-     * @brief write or read data from flash
+     * @brief write or read data from HMI-Chip or flash
      * ! [user set: spi read write func]
      *
      * param data_write the data to be written

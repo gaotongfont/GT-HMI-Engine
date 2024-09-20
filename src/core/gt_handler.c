@@ -70,7 +70,7 @@ static void gt_print_info_start(void) {
 
     GT_LOG_A(GT_LOG_TAG_FS, "Enabled src array: [%s], prefix name: \"%c\"", GT_USE_MODE_SRC ? "Yes" : "No", GT_FS_LABEL_ARRAY);
 
-    GT_LOG_A(GT_LOG_TAG_FS, "Enabled flash or sd: [%s], prefix name: \"%c\"", GT_USE_MODE_FLASH ? "Yes" : "No", GT_FS_LABEL_FLASH);
+    GT_LOG_A(GT_LOG_TAG_FS, "Enabled HMI-Chip, flash or sd: [%s], prefix name: \"%c\"", GT_USE_MODE_FLASH ? "Yes" : "No", GT_FS_LABEL_FLASH);
 
     GT_LOG_A(GT_LOG_TAG_FS, "Flash begin addr: 0x%x, size: 0x%x", GT_VF_FLASH_START, GT_VF_FLASH_SIZE);
 

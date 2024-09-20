@@ -162,9 +162,9 @@ gt_fs_res_et gt_fs_direct_addr_read_img_wh(gt_addr_t addr, uint16_t * w, uint16_
 #endif
 
 /**
- * @brief Directly read the physical data from the address
+ * @brief Directly read the physical data from vf(HMI-chip, flash, etc) the address
  *
- * @param addr Flash address
+ * @param addr HMI-chip or Flash address
  * @param len The number of bytes to read
  * @param data The buffer to save the data
  * @return uint32_t The number of bytes read back
