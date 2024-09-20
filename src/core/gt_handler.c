@@ -55,7 +55,7 @@ static void gt_print_info_start(void) {
     GT_LOG_A(GT_LOG_TAG_BOOT, "Date: %s, Time: %s", __DATE__, __TIME__);
 
     GT_LOG_A(GT_LOG_TAG_BOOT, "Engine version: v%d.%d.%d",
-                GT_HMI_ENGINE_MAJOR_VERSION, GT_HMI_ENGINE_MINOR_VERSION, GT_HMI_ENGINE_PATCH_VERSION);
+        GT_HMI_ENGINE_MAJOR_VERSION, GT_HMI_ENGINE_MINOR_VERSION, GT_HMI_ENGINE_PATCH_VERSION);
 
     GT_LOG_A(GT_LOG_TAG_LCD, "Width: %d, Height: %d", GT_SCREEN_WIDTH, GT_SCREEN_HEIGHT);
 
@@ -65,8 +65,8 @@ static void gt_print_info_start(void) {
 
     GT_LOG_A(GT_LOG_TAG_LCD, "Flush style: %d", GT_REFRESH_STYLE);
 
-    GT_LOG_A(GT_LOG_TAG_TIM, "Indev: %d, Event: %d, Anim: %d, Refr: %d",
-                GT_TASK_PERIOD_TIME_INDEV, GT_TASK_PERIOD_TIME_EVENT, GT_TASK_PERIOD_TIME_ANIM, GT_TASK_PERIOD_TIME_REFR);
+    GT_LOG_A(GT_LOG_TAG_TIM, "Indev: %d, Event: %d, Anim: %d, Refr: %d, Serial: %d",
+        GT_TASK_PERIOD_TIME_INDEV, GT_TASK_PERIOD_TIME_EVENT, GT_TASK_PERIOD_TIME_ANIM, GT_TASK_PERIOD_TIME_REFR, GT_TASK_PERIOD_TIME_SERIAL);
 
     GT_LOG_A(GT_LOG_TAG_FS, "Enabled src array: [%s], prefix name: \"%c\"", GT_USE_MODE_SRC ? "Yes" : "No", GT_FS_LABEL_ARRAY);
 
