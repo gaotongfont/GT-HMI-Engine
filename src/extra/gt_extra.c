@@ -67,7 +67,7 @@ void _gt_extra_init(void)
     gt_sjpg_init();
 #endif
 
-#if GT_USE_SERIAL
+#if GT_USE_SERIAL && GT_USE_SERIAL_CFG
     gt_serial_cfg_init();
 #endif
 }

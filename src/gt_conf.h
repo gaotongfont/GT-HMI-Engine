@@ -355,7 +355,22 @@ extern "C" {
      *      Must be used with GT_USE_SERIAL.
      */
     #define GT_USE_CRC          1
+
+    #undef GT_USE_BIN_CONVERT
+    /**
+     * @brief [Warn] Force enabled bin convert function @ref gt_bin_convert.h
+     *      Must be used with GT_USE_SERIAL.
+     */
+    #define GT_USE_BIN_CONVERT  1
 #endif  /** GT_USE_SERIAL */
+
+#ifndef GT_USE_BIN_CONVERT
+    /**
+     * @brief Enabled bin convert function @ref gt_bin_convert.h
+     *      [default: 0]
+     */
+    #define GT_USE_BIN_CONVERT  0
+#endif
 
 #ifndef GT_USE_CRC
     /**

@@ -15,12 +15,24 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "../../gt_conf.h"
+#include "../../others/gt_types.h"
 
+#if GT_USE_SERIAL
 
 
 /* define ---------------------------------------------------------------*/
+#ifndef GT_USE_SERIAL_CFG
+    /**
+     * @brief
+     *      [default: 0]
+     */
+    #define GT_USE_SERIAL_CFG       01
+#endif
+
+#endif  /** GT_USE_SERIAL */
 
 
+#if GT_USE_SERIAL_CFG
 
 /* typedef --------------------------------------------------------------*/
 
@@ -39,6 +51,10 @@ extern "C" {
 void gt_serial_cfg_init(void);
 
 
+
+
+
+#endif  /** GT_USE_SERIAL_CFG */
 
 #ifdef __cplusplus
 } /*extern "C"*/
