@@ -689,6 +689,7 @@ static uint16_t _gt_unicode_to_utf8_buf(const uint8_t *src, uint16_t src_len, ui
     return out_len;
 }
 
+#if BIG5TOGBK
 static uint16_t _gt_big5_to_gbk(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
 {
     uint32_t out_len = 0;
@@ -724,7 +725,9 @@ fill:
 #endif
     return out_len;
 }
+#endif
 
+#if SHIFT_JIS_TO_JIS0208
 static uint16_t _gt_shiftjis_to_jis0208(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
 {
     uint32_t out_len = 0;
@@ -750,6 +753,7 @@ static uint16_t _gt_shiftjis_to_jis0208(const uint8_t *src, uint16_t src_len, ui
 #endif
     return out_len;
 }
+#endif
 
 uint16_t gt_encoding_convert(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len, gt_encoding_convert_et enc_cov)
 {
@@ -761,10 +765,14 @@ uint16_t gt_encoding_convert(const uint8_t *src, uint16_t src_len, uint8_t* dst,
         return _gt_gb_to_utf8(src, src_len, dst,dst_len);
     case UNICODE_2_UTF8:
         return _gt_unicode_to_utf8_buf(src, src_len, dst,dst_len);
+#if BIG5TOGBK
     case BIG5_2_GBK:
         return _gt_big5_to_gbk(src, src_len, dst,dst_len);
+#endif
+#if SHIFT_JIS_TO_JIS0208
     case SJIS_2_JIS0208:
         return _gt_shiftjis_to_jis0208(src, src_len, dst,dst_len);
+#endif
     default:
         break;
     }
