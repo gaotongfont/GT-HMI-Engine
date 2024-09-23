@@ -23,7 +23,7 @@ extern "C" {
 /* define ---------------------------------------------------------------*/
 #ifndef GT_USE_SERIAL_CFG
     /**
-     * @brief
+     * @brief Serial configuration
      *      [default: 0]
      */
     #define GT_USE_SERIAL_CFG       01
@@ -32,7 +32,7 @@ extern "C" {
 #endif  /** GT_USE_SERIAL */
 
 
-#if GT_USE_SERIAL_CFG
+#if GT_USE_SERIAL_CFG && GT_USE_BIN_CONVERT
 
 /* typedef --------------------------------------------------------------*/
 
@@ -54,7 +54,7 @@ void gt_serial_cfg_init(void);
 
 
 
-#endif  /** GT_USE_SERIAL_CFG */
+#endif  /** GT_USE_SERIAL_CFG && GT_USE_BIN_CONVERT */
 
 #ifdef __cplusplus
 } /*extern "C"*/
