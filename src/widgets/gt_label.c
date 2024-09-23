@@ -30,8 +30,8 @@
 
 typedef struct _auto_scroll_s {
     gt_anim_st * anim;
-    gt_area_st area;    // single line auto scroll
-    uint8_t speed;      // n: n times the display area width
+    gt_area_st area;        // single line auto scroll
+    uint32_t total_time;    // scroll total time [ms]
 }_auto_scroll_st;
 
 typedef struct _gt_label_s {
@@ -112,8 +112,7 @@ static void _init_cb(gt_obj_st * obj) {
         /** first time to calc label widget need to scroll and begin to scroll */
         if (font_res.size.x > box_area.w && gt_anim_is_paused(style->auto_scroll->anim)) {
             style->auto_scroll->area.w = font_res.size.x - box_area.w;
-            uint32_t time = style->auto_scroll->area.w * style->auto_scroll->speed;
-            gt_anim_set_time(style->auto_scroll->anim, time);
+            gt_anim_set_time(style->auto_scroll->anim, style->auto_scroll->total_time);
             gt_anim_set_value(style->auto_scroll->anim, 0, -style->auto_scroll->area.w);
             gt_anim_set_paused(style->auto_scroll->anim, false);
         }
@@ -195,7 +194,7 @@ static void _auto_scroll_init(_auto_scroll_st * const auto_scroll_p) {
         return ;
     }
     gt_memset(auto_scroll_p, 0, sizeof(_auto_scroll_st));
-    auto_scroll_p->speed = 20;
+    auto_scroll_p->total_time = 2000;   /** 2s */
     auto_scroll_p->area.w = 0xffff;
 }
 
@@ -597,30 +596,29 @@ void gt_label_set_auto_scroll_single_line(gt_obj_st * label, bool is_auto_scroll
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_label_set_auto_scroll_speed(gt_obj_st * label, uint8_t speed)
+void gt_label_set_auto_scroll_total_time(gt_obj_st * label, uint32_t total_time_ms)
 {
     if (false == gt_obj_is_type(label, OBJ_TYPE)) {
         return ;
     }
     _gt_label_st * style = (_gt_label_st * )label;
-
     if (NULL == style->auto_scroll) {
         return ;
     }
-    if (speed > 99) { speed = 99; }
 
-    style->auto_scroll->speed = speed;
+    style->auto_scroll->total_time = total_time_ms;
     if (NULL == style->auto_scroll->anim) {
         return ;
     }
-    if (0 == style->auto_scroll->speed) {
+    if (0 == style->auto_scroll->total_time) {
+        style->auto_scroll->total_time = 2000;
         gt_anim_set_paused(style->auto_scroll->anim, true);
     }
     if (gt_anim_is_paused(style->auto_scroll->anim)) {
         gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);   /** restart scroll */
         return ;
     }
-    gt_anim_set_time(style->auto_scroll->anim, style->auto_scroll->speed * style->auto_scroll->area.w);
+    gt_anim_set_time(style->auto_scroll->anim, style->auto_scroll->total_time);
 }
 
 void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style)

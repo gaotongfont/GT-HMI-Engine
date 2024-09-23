@@ -142,9 +142,10 @@ void gt_label_set_auto_scroll_single_line(gt_obj_st * label, bool is_auto_scroll
  * @brief Set auto scroll speed
  *
  * @param label
- * @param speed [default: 20] 1 ~ 99: speed from fast -> slow; 0: stop auto scroll.
+ * @param total_time_ms > 0: total time(ms) for auto scroll each time;
+ *                     = 0: set default 2s.
  */
-void gt_label_set_auto_scroll_speed(gt_obj_st * label, uint8_t speed);
+void gt_label_set_auto_scroll_total_time(gt_obj_st * label, uint32_t total_time_ms);
 
 void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style);
 
