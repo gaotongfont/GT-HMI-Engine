@@ -75,8 +75,9 @@ int16_t gt_serial_go_back(int16_t step);
  * @param vp
  * @param value
  * @param len
+ * @return int  0: success, -1: fail
  */
-void gt_serial_control_value_set(uint16_t vp, uint8_t* value, uint16_t len);
+int gt_serial_control_value_set(uint16_t vp, uint8_t* value, uint16_t len);
 
 
 /**
@@ -85,8 +86,19 @@ void gt_serial_control_value_set(uint16_t vp, uint8_t* value, uint16_t len);
  * @param sp
  * @param param
  * @param len
+ * @return int  0: success, -1: fail
  */
-void gt_serial_control_param_set(uint16_t sp, uint8_t* param, uint16_t len);
+int gt_serial_control_param_set(uint16_t sp, uint8_t* param, uint16_t len);
+
+/**
+ * @brief Set the control using reg , reg is vp or sp
+ *
+ * @param reg vp or sp
+ * @param param
+ * @param len
+ * @return int  0: success, -1: fail
+ */
+int gt_serial_control_set(uint16_t reg, uint8_t* param, uint16_t len);
 
 
 #endif

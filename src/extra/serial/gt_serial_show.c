@@ -18,7 +18,7 @@
 /* private define -------------------------------------------------------*/
 #ifndef GT_SERIAL_SHOW_FILE_ADDR
     /* show file addrese */
-    #define GT_SERIAL_SHOW_FILE_ADDR        (0x380000)
+    #define GT_SERIAL_SHOW_FILE_ADDR        (0x50)//(0x380000)
 #endif
 
 #ifndef GT_SERIAL_SHOW_FILE_HEAD_SIZE
@@ -135,9 +135,9 @@ static void _read_show_file_page_info(gt_serial_page_info* info, uint16_t index)
 }
 
 
-static void _set_contorl_param(uint8_t* control, uint8_t reg, uint8_t* param, uint16_t len)
+static int _set_contorl_param(uint8_t* control, uint8_t reg, uint8_t* param, uint16_t len)
 {
-    if(!control){return ;}
+    if(!control){return -1;}
     uint8_t type = control[_CONTROL_TYPE];
     GT_LOGI(GT_LOG_TAG_SERIAL , "set control param, type = 0x%X, reg = 0x%X", type, reg);
 
@@ -150,16 +150,17 @@ static void _set_contorl_param(uint8_t* control, uint8_t reg, uint8_t* param, ui
     default:
         break;
     }
+
+    return 0;
 }
 
-static void _set_contorl_value(uint8_t* control, uint8_t* value, uint16_t len)
+static int _set_contorl_value(uint8_t* control, uint8_t* value, uint16_t len)
 {
-    if(!control){ return; }
-    _set_contorl_param(control, 0, value, len);
+    return _set_contorl_param(control, 0, value, len);
 }
 
 
-static void _create_control(uint8_t* control, gt_obj_st* praent)
+static void _create_control(uint8_t* control, gt_obj_st* parent)
 {
     if(!control){
         return;
@@ -183,11 +184,11 @@ static uint8_t* _get_control(gt_serial_page_info* info, uint16_t index)
     return ((index >= info->numb) ? NULL : info->control + (index * GT_SERIAL_UI_PAGE_CONTROL_SIZE));
 }
 
-static void _addr_control_to_page(gt_serial_page_info* info, gt_obj_st* praent)
+static void _addr_control_to_page(gt_serial_page_info* info, gt_obj_st* parent)
 {
     // create control
     for(uint8_t i = 0; i < info->numb; i++){
-        _create_control(_get_control(info, i), praent);
+        _create_control(_get_control(info, i), parent);
     }
 }
 
@@ -295,28 +296,39 @@ int16_t gt_serial_go_back(int16_t step)
     return gt_disp_stack_go_back(step);
 }
 
-void gt_serial_control_value_set(uint16_t vp, uint8_t* value, uint16_t len)
+int gt_serial_control_value_set(uint16_t vp, uint8_t* value, uint16_t len)
 {
-    if(!_serial_ui.lock) {return ;}
+    if(!_serial_ui.lock) {return -1;}
 
     int16_t index = _find_controls_in_vp_or_sp(&_serial_ui.page_info, vp, true);
-    if(index < 0) {return ;}
+    if(index < 0) {return -1;}
 
-    _set_contorl_value(_get_control(&_serial_ui.page_info, index), value, len);
+    return _set_contorl_value(_get_control(&_serial_ui.page_info, index), value, len);
 }
 
-void gt_serial_control_param_set(uint16_t sp, uint8_t* param, uint16_t len)
+int gt_serial_control_param_set(uint16_t sp, uint8_t* param, uint16_t len)
 {
-    if(!_serial_ui.lock) {return ;}
+    if(!_serial_ui.lock) {return -1;}
+
+    if(sp >= 0xFFFF) {return -1;}
+
     int16_t index = _find_controls_in_vp_or_sp(&_serial_ui.page_info, sp, false);
-    if(index < 0) {return ;}
+    if(index < 0) {return -1;}
 
     uint8_t* p = _get_control(&_serial_ui.page_info, index);
     uint8_t reg = sp - (p[_CONTROL_SP] << 8 | p[_CONTROL_SP + 1]);
-    _set_contorl_param(p, reg, param, len);
+    return _set_contorl_param(p, reg, param, len);
 }
 
+int gt_serial_control_set(uint16_t reg, uint8_t* param, uint16_t len)
+{
+    if(!_serial_ui.lock) {return -1;}
 
+    int ret = gt_serial_control_value_set(reg, param, len);
+    if(ret > 0) {return ret;}
+
+    return gt_serial_control_param_set(reg, param, len);
+}
 
 #endif
 /* end of file ----------------------------------------------------------*/
