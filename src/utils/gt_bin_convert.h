@@ -63,6 +63,11 @@ typedef struct gt_bin_convert_s {
     uint32_t byte_len;  /** buffer byte length */
 }gt_bin_convert_st;
 
+typedef struct gt_bin_res_s {
+    gt_res_t res;
+    uint16_t index;    /** The index of the current bin item get error or inv */
+}gt_bin_res_st;
+
 /* macros ---------------------------------------------------------------*/
 
 
@@ -86,9 +91,9 @@ typedef struct gt_bin_convert_s {
  *                  { 0x8, _param_1_parse_cb, _param_1_print_cb },
  *                  { 0x0, (parse_cb_t)NULL, (print_cb_t)NULL }  // [Warn] End of list, len must be set to 0.
  *               };
- * @return gt_res_t GT_RES_OK or GT_RES_FAIL
+ * @return gt_res_t GT_RES_OK or GT_RES_FAIL; index of the current bin item get error or inv
  */
-gt_res_t gt_bin_convert_parse(gt_bin_convert_st const * const bin, gt_bin_item_st const * const list);
+gt_bin_res_st gt_bin_convert_parse(gt_bin_convert_st const * const bin, gt_bin_item_st const * const list);
 
 /**
  * @brief According to the list of callback functions, the tar object is printed
@@ -102,9 +107,9 @@ gt_res_t gt_bin_convert_parse(gt_bin_convert_st const * const bin, gt_bin_item_s
  *                  { 0x8, _param_1_parse_cb, _param_1_print_cb },
  *                  { 0x0, (parse_cb_t)NULL, (print_cb_t)NULL }  // [Warn] End of list, len must be set to 0.
  *               };
- * @return gt_res_t GT_RES_OK or GT_RES_FAIL
+ * @return gt_res_t GT_RES_OK or GT_RES_FAIL; index of the current bin item get error or inv
  */
-gt_res_t gt_bin_convert_print(gt_bin_convert_st const * const bin, gt_bin_item_st const * const list);
+gt_bin_res_st gt_bin_convert_print(gt_bin_convert_st const * const bin, gt_bin_item_st const * const list);
 
 #endif   /** GT_USE_BIN_CONVERT */
 
