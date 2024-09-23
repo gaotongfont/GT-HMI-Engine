@@ -94,7 +94,7 @@ gt_res_t gt_bin_convert_parse(gt_bin_convert_st const * const bin, gt_bin_item_s
  * @brief According to the list of callback functions, the tar object is printed
  *      to the buffer data, which all print_cb() will be called.
  *
- * @param bin The hex data to be parsed
+ * @param bin The tar object will be printed to the buffer data
  * @param list such as:
  *              gt_bin_item_st format[] = {
  *                  // { len, parse_call_back_func, print_call_back_func },
