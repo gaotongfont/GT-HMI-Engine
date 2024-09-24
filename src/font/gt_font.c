@@ -1675,7 +1675,7 @@ uint8_t right_to_left_lan_get(uint16_t style)
 uint8_t right_to_left_lan_get(gt_font_st* font)
 {
     gt_font_lan_et font_lan = FONT_LAN_UNKNOWN;
-    uint8_t* str = font->utf8;
+    uint8_t* str = (uint8_t*)font->utf8;
     uint16_t idx = 0;
     uint32_t uni_or_gbk = 0;
 
