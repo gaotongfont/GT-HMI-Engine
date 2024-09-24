@@ -37,6 +37,16 @@
 
 
 /* global functions / API interface -------------------------------------*/
+uint32_t gt_bin_get_total_byte_length(gt_bin_item_st const * const list)
+{
+    uint32_t total = 0;
+    uint16_t i = 0;
+
+    for (i = 0; list[i].len; ++i) {
+        total += list[i].len;
+    }
+    return total;
+}
 
 gt_bin_res_st gt_bin_convert_parse(gt_bin_convert_st const * const bin, gt_bin_item_st const * const list)
 {

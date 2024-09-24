@@ -77,6 +77,19 @@ typedef struct gt_bin_res_s {
 
 
 /* global functions / API interface -------------------------------------*/
+/**
+ * @brief Get the total byte length of the bin item list
+ *
+ * @param list such as:
+ *              gt_bin_item_st format[] = {
+ *                  // { len, parse_call_back_func, print_call_back_func },
+ *                  { 0x2, _param_0_parse_cb, _param_0_print_cb },
+ *                  { 0x8, _param_1_parse_cb, _param_1_print_cb },
+ *                  { 0x0, (parse_cb_t)NULL, (print_cb_t)NULL }  // [Warn] End of list, len must be set to 0.
+ *               };
+ * @return uint32_t total byte length
+ */
+uint32_t gt_bin_get_total_byte_length(gt_bin_item_st const * const list);
 
 /**
  * @brief According to the list of callback functions, the data in the bin
