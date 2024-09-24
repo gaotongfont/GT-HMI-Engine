@@ -15,14 +15,24 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "../../gt_conf.h"
-#include <stdint.h>
-#include <stdbool.h>
+#include "../../others/gt_types.h"
 
 #if GT_USE_SERIAL
 
 
 /* define ---------------------------------------------------------------*/
+#ifndef GT_USE_SERIAL_SHOW
+    /**
+     * @brief Serial show
+     *      [default: 0]
+     */
+    #define GT_USE_SERIAL_SHOW       01
+#endif
 
+#endif  /** GT_USE_SERIAL */
+//
+
+#if GT_USE_SERIAL_SHOW && GT_USE_BIN_CONVERT
 
 
 /* typedef --------------------------------------------------------------*/
@@ -100,8 +110,29 @@ int gt_serial_control_param_set(uint16_t sp, uint8_t* param, uint16_t len);
  */
 int gt_serial_control_set(uint16_t reg, uint8_t* param, uint16_t len);
 
+/**
+ * @brief get value using reg , reg is vp or sp
+ *
+ * @param reg
+ * @param data
+ * @param len
+ * @return int
+ */
+int gt_serial_val_get(uint16_t reg, uint8_t* data, uint16_t len);
 
-#endif
+/**
+ * @brief set value using reg , reg is vp or sp
+ *
+ * @param reg vp or sp
+ * @param data
+ * @param len
+ * @return int
+ */
+int gt_serial_val_set(uint16_t reg, uint8_t* data, uint16_t len);
+
+
+
+#endif /* GT_USE_SERIAL_CFG && GT_USE_BIN_CONVERT */
 //
 #ifdef __cplusplus
 } /*extern "C"*/
