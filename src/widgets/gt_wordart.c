@@ -98,7 +98,7 @@ static void _init_cb(gt_obj_st * obj) {
         .h = obj->area.h
     };
 
-    if(NULL == style->items ||  0 == style->item_number){
+    if(NULL == style->items || 0 == style->item_number){
         return ;
     }
 
@@ -147,7 +147,7 @@ static void _deinit_cb(gt_obj_st * obj) {
 
     _gt_wor_dart_st * style_p = (_gt_wor_dart_st * )obj;
     if(NULL != style_p->items){
-        for(uint32_t i = style_p->item_number; i >= 0; i--) {
+        for(int32_t i = style_p->item_number; i >= 0; i--) {
             if(NULL == style_p->items[i].img)
             {
                 continue;
