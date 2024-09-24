@@ -67,7 +67,9 @@ gt_bin_res_st gt_bin_convert_parse(gt_bin_convert_st const * const bin, gt_bin_i
             ret.index = i;
             return ret;
         }
-        ret.res = list[i].parse_cb(bin->tar, bin->buffer + offset, list[i].len);
+        if (list[i].parse_cb) {
+            ret.res = list[i].parse_cb(bin->tar, bin->buffer + offset, list[i].len);
+        }
         if (GT_RES_OK != ret.res) {
             ret.index = i;
             return ret;
@@ -96,7 +98,9 @@ gt_bin_res_st gt_bin_convert_print(gt_bin_convert_st const * const bin, gt_bin_i
             ret.index = i;
             return ret;
         }
-        ret.res = list[i].print_cb(bin->tar, bin->buffer + offset, list[i].len);
+        if (list[i].print_cb) {
+            ret.res = list[i].print_cb(bin->tar, bin->buffer + offset, list[i].len);
+        }
         if (GT_RES_OK != ret.res) {
             ret.index = i;
             return ret;
