@@ -19,6 +19,7 @@
 #include "gt_disp.h"
 #include "stdbool.h"
 #include "../others/gt_gc.h"
+#include "../others/gt_anim.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -139,6 +140,11 @@ static void _free_event_recursive(gt_obj_event_attr_st * event) {
     gt_mem_free(event);
 }
 
+static void _anim_to_remove_all_event(struct gt_anim_s * anim) {
+    gt_obj_st * tar = (gt_obj_st * )anim->tar;
+    gt_obj_remove_all_event_cb_immediately(tar);
+}
+
 /* global functions / API interface -------------------------------------*/
 #if GT_USE_SCREEN_ANIM
 void gt_event_set_enabled(bool enabled)
@@ -182,6 +188,17 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
 }
 
 void gt_obj_remove_all_event_cb(struct gt_obj_s * obj)
+{
+    GT_CHECK_BACK(obj);
+    gt_anim_st anim;
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_time(&anim, 1);
+    gt_anim_set_ready_cb(&anim, _anim_to_remove_all_event);
+    gt_anim_start(&anim);
+}
+
+void gt_obj_remove_all_event_cb_immediately(struct gt_obj_s * obj)
 {
     GT_CHECK_BACK(obj);
     if (NULL == obj->event_attr) {
