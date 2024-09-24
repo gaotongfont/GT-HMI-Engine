@@ -436,14 +436,14 @@ void gt_serial_cfg_init(void)
     gt_bin_res_st ret = {0};
     // GT_LOG_A("", ">>>>>>>>>>>>>>>> total byte length: %d", gt_bin_get_total_byte_length(format));
     // GT_LOG_A("", ">>>>>>>>>>>>>>>>>>>>>> %x %x", buffer[5], buffer[6]);
-    ret = gt_bin_convert_parse(&bin, format);
-    if (GT_RES_OK != ret.res) {
-        GT_LOG_A("", "Parse err code: %d, index: %d", ret.res, ret.index);
-    }
-    ret = gt_bin_convert_print(&bin, format);
-    if (GT_RES_OK != ret.res) {
-        GT_LOG_A("", "Print err code: %d, index: %d", ret.res, ret.index);
-    }
+    // ret = gt_bin_convert_parse(&bin, format);
+    // if (GT_RES_OK != ret.res) {
+    //     GT_LOG_A("", "Parse err code: %d, index: %d", ret.res, ret.index);
+    // }
+    // ret = gt_bin_convert_print(&bin, format);
+    // if (GT_RES_OK != ret.res) {
+    //     GT_LOG_A("", "Print err code: %d, index: %d", ret.res, ret.index);
+    // }
     // GT_LOG_A("", ">>>>>>>>>>>>>>>>>>>>>> %x %x", buffer[5], buffer[6]);
 }
 
