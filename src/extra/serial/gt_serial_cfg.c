@@ -89,7 +89,7 @@ static gt_res_t _parse_system_config(void * user_data, uint8_t const * const buf
     sys_cfg->wae_id = buffer[2];
     sys_cfg->icl_id = buffer[3];
     sys_cfg->touch_report_rate = buffer[4];
-    uint16_t short_val = gt_convert_parse_short(&buffer[5]);
+    uint16_t short_val = gt_convert_parse_u16(&buffer[5]);
     if (0 == short_val) {
         sys_cfg->uart_baud_rate = 115200;
     } else {
@@ -133,7 +133,7 @@ static gt_res_t _print_system_config(void const * const user_data, uint8_t * con
     if (0 == sys_cfg->uart_baud_rate) {
         sys_cfg->uart_baud_rate = 115200;
     }
-    gt_convert_print_short(&buffer[5], (uint16_t)(3225600 / sys_cfg->uart_baud_rate));
+    gt_convert_print_u16(&buffer[5], (uint16_t)(3225600 / sys_cfg->uart_baud_rate));
 
     return GT_RES_OK;
 }
@@ -144,7 +144,7 @@ static gt_res_t _parse_backlight_sleep(void * user_data, uint8_t const * const b
 
     bs->brightness = buffer[0];
     bs->brightness_sleep = buffer[1];
-    bs->wake_up_time = gt_convert_parse_short(&buffer[2]);
+    bs->wake_up_time = gt_convert_parse_u16(&buffer[2]);
 
     return GT_RES_OK;
 }
@@ -155,7 +155,7 @@ static gt_res_t _print_backlight_sleep(void const * const user_data, uint8_t * c
 
     buffer[0] = bs->brightness;
     buffer[1] = bs->brightness_sleep;
-    gt_convert_print_short(&buffer[2], bs->wake_up_time);
+    gt_convert_print_u16(&buffer[2], bs->wake_up_time);
 
     return GT_RES_OK;
 }
@@ -164,16 +164,16 @@ static gt_res_t _parse_display(void * user_data, uint8_t const * const buffer, u
     gt_serial_cfg_st * cfg = (gt_serial_cfg_st *)user_data;
     gt_serial_cfg_display_st * disp = (gt_serial_cfg_display_st *)&cfg->display;
 
-    disp->disp_enabled = gt_convert_parse_short(&buffer[0]);
+    disp->disp_enabled = gt_convert_parse_u16(&buffer[0]);
     disp->pll_clk_phs = buffer[2];
     disp->pll_clk_div = buffer[3];
     disp->hor_w = buffer[4];
     disp->hor_s = buffer[5];
-    disp->hor_d = gt_convert_parse_short(&buffer[6]);
+    disp->hor_d = gt_convert_parse_u16(&buffer[6]);
     disp->hor_e = buffer[8];
     disp->ver_w = buffer[9];
     disp->ver_s = buffer[10];
-    disp->ver_d = gt_convert_parse_short(&buffer[11]);
+    disp->ver_d = gt_convert_parse_u16(&buffer[11]);
     disp->ver_e = buffer[13];
     disp->tcon_sel = buffer[14];
 
@@ -184,16 +184,16 @@ static gt_res_t _print_display(void const * const user_data, uint8_t * const buf
     gt_serial_cfg_st const * cfg = (gt_serial_cfg_st const *)user_data;
     gt_serial_cfg_display_st * disp = (gt_serial_cfg_display_st *)&cfg->display;
 
-    gt_convert_print_short(&buffer[0], disp->disp_enabled);
+    gt_convert_print_u16(&buffer[0], disp->disp_enabled);
     buffer[2] = disp->pll_clk_phs;
     buffer[3] = disp->pll_clk_div;
     buffer[4] = disp->hor_w;
     buffer[5] = disp->hor_s;
-    gt_convert_print_short(&buffer[6], disp->hor_d);
+    gt_convert_print_u16(&buffer[6], disp->hor_d);
     buffer[8] = disp->hor_e;
     buffer[9] = disp->ver_w;
     buffer[10] = disp->ver_s;
-    gt_convert_print_short(&buffer[11], disp->ver_d);
+    gt_convert_print_u16(&buffer[11], disp->ver_d);
     buffer[13] = disp->ver_e;
     buffer[14] = disp->tcon_sel;
 
@@ -270,8 +270,8 @@ static gt_res_t _parse_beep(void * user_data, uint8_t const * const buffer, uint
 
     beep->set_en = buffer[0];
     beep->freq_div1 = buffer[1];
-    beep->freq_div2 = gt_convert_parse_short(&buffer[2]);
-    beep->freq_duty = gt_convert_parse_short(&buffer[4]);
+    beep->freq_div2 = gt_convert_parse_u16(&buffer[2]);
+    beep->freq_duty = gt_convert_parse_u16(&buffer[4]);
     beep->time = buffer[6];
 
     return GT_RES_OK;
@@ -283,8 +283,8 @@ static gt_res_t _print_beep(void const * const user_data, uint8_t * const buffer
 
     buffer[0] = beep->set_en;
     buffer[1] = beep->freq_div1;
-    gt_convert_print_short(&buffer[2], beep->freq_div2);
-    gt_convert_print_short(&buffer[4], beep->freq_duty);
+    gt_convert_print_u16(&buffer[2], beep->freq_div2);
+    gt_convert_print_u16(&buffer[4], beep->freq_duty);
     buffer[6] = beep->time;
 
     return GT_RES_OK;
@@ -384,7 +384,7 @@ static gt_res_t _parse_sd(void * user_data, uint8_t const * const buffer, uint32
     gt_serial_cfg_st * cfg = (gt_serial_cfg_st *)user_data;
     gt_serial_cfg_sd_st * sd = (gt_serial_cfg_sd_st *)&cfg->sd;
 
-    sd->set_en = gt_convert_parse_short(&buffer[0]);
+    sd->set_en = gt_convert_parse_u16(&buffer[0]);
     sd->name_len = buffer[2];
     gt_memcpy(sd->folder_name, &buffer[3], 8);
     gt_memcpy(sd->reserved, &buffer[11], 37);
@@ -396,7 +396,7 @@ static gt_res_t _print_sd(void const * const user_data, uint8_t * const buffer, 
     gt_serial_cfg_st const * cfg = (gt_serial_cfg_st const *)user_data;
     gt_serial_cfg_sd_st * sd = (gt_serial_cfg_sd_st *)&cfg->sd;
 
-    gt_convert_print_short(&buffer[0], sd->set_en);
+    gt_convert_print_u16(&buffer[0], sd->set_en);
     buffer[2] = sd->name_len;
     gt_memcpy(&buffer[3], sd->folder_name, 8);
     gt_memcpy(&buffer[11], sd->reserved, 37);
