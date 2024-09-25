@@ -26,7 +26,7 @@ extern "C" {
      * @brief Serial configuration
      *      [default: 0]
      */
-    #define GT_USE_SERIAL_CFG       01
+    #define GT_USE_SERIAL_CFG       0
 #endif
 
 #endif  /** GT_USE_SERIAL */
@@ -48,6 +48,9 @@ extern "C" {
 
 /* global functions / API interface -------------------------------------*/
 
+/**
+ * @brief Read serial configuration from file
+ */
 void gt_serial_cfg_init(void);
 
 
