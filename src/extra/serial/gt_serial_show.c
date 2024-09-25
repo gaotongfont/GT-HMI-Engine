@@ -13,61 +13,13 @@
 #if GT_USE_SERIAL_SHOW && GT_USE_BIN_CONVERT
 #include "../../utils/gt_bin_convert.h"
 #include "../../others/gt_log.h"
-#include "gt_fs.h"
-#include "gt_mem.h"
-#include "gt_disp.h"
+#include "../../../gt.h"
+//
+#include "gt_serial_var.h"
 
 /* private define -------------------------------------------------------*/
-#ifndef GT_SERIAL_UI_VAR_SIZE
-    /* serial ui variable size */
-    #define GT_SERIAL_UI_VAR_SIZE           (128 * 1024)
-#endif
-
-#ifndef GT_SERIAL_SHOW_FILE_ADDR
-    /* show file addrese */
-    #define GT_SERIAL_SHOW_FILE_ADDR        (0x50)//(0x380000)
-#endif
-
-#ifndef GT_SERIAL_SHOW_FILE_HEAD_SIZE
-    /* show file head info size */
-    #define GT_SERIAL_SHOW_FILE_HEAD_SIZE   (16)
-#endif
-
-#ifndef GT_SERIAL_SHOW_FILE_PAGE_INFO_ADDR
-    /* show file page info addr */
-    #define GT_SERIAL_SHOW_FILE_PAGE_INFO_ADDR  (GT_SERIAL_SHOW_FILE_ADDR + GT_SERIAL_SHOW_FILE_HEAD_SIZE)
-#endif
-
-#ifndef GT_SERIAL_SHOW_FILE_PAGE_INFO_SIZ
-    /* show file page info size */
-    #define GT_SERIAL_SHOW_FILE_PAGE_INFO_SIZ    (4)
-#endif
-
-#ifndef GT_SERIAL_UI_PAGE_STACK_DEPTH
-    /* show file page stack depth */
-    #define GT_SERIAL_UI_PAGE_STACK_DEPTH   (20)
-#endif
-
-#ifndef GT_SERIAL_UI_HOME_PAGE_INDEX
-    /* show file home page index */
-    #define GT_SERIAL_UI_HOME_PAGE_INDEX   (0)
-#endif
-
-#ifndef GT_SERIAL_UI_PAGE_CONTROL_SIZE
-    #define GT_SERIAL_UI_PAGE_CONTROL_SIZE      (32)
-#endif
-
-#ifndef GT_SERIAL_UI_PAGE_CONTROL_MAX_NUMB
-    #define GT_SERIAL_UI_PAGE_CONTROL_MAX_NUMB  (255)
-#endif
 
 
-// define control offset
-#define _CONTROL_TYPE       (0x01)
-#define _CONTROL_SP         (0x02)
-#define _CONTROL_LEN        (0x04)
-#define _CONTROL_VP         (0x06)
-//
 
 /* private typedef ------------------------------------------------------*/
 typedef struct {
@@ -76,37 +28,33 @@ typedef struct {
     uint8_t page_mode;
     uint16_t page_numb;
     uint8_t reserve[6];
-}gt_serial_show_file_head;
+}gt_serial_show_file_head_st;
 
 typedef struct {
     uint8_t numb;
     uint32_t addr;
     uint8_t control[GT_SERIAL_UI_PAGE_CONTROL_SIZE * GT_SERIAL_UI_PAGE_CONTROL_MAX_NUMB];
-}gt_serial_page_info;
+}gt_serial_page_info_st;
 
 typedef struct
 {
     gt_scr_list_st* page_list;
-    gt_serial_show_file_head _show_file_head;
-    gt_serial_page_info page_info;
+    gt_serial_show_file_head_st _show_file_head;
+    gt_serial_page_info_st page_info;
     //
     volatile uint16_t page_index;
     bool lock;
-}gt_serial_ui;
+}gt_serial_ui_st;
 
 /* static prototypes ----------------------------------------------------*/
 
 
 /* static variables -----------------------------------------------------*/
-/**
- * @brief serial ui variable
- */
-static GT_ATTRIBUTE_LARGE_RAM_ARRAY uint8_t _serial_ui_var[GT_SERIAL_UI_VAR_SIZE] = {0};
 
 /**
  * @brief serial ui
  */
-static gt_serial_ui _serial_ui = {
+static gt_serial_ui_st _serial_ui = {
     .page_list = NULL,
     .lock = false,
 };
@@ -118,59 +66,59 @@ static gt_serial_ui _serial_ui = {
 
 /* static functions -----------------------------------------------------*/
 static gt_res_t _parse_show_header_file_id(void * user_data, uint8_t const * const buffer, uint32_t len) {
-    gt_serial_show_file_head* head = (gt_serial_show_file_head*)user_data;
+    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
     head->file_id = buffer[0];
     return GT_RES_OK;
 }
 
 static gt_res_t _parse_show_header_sys_id(void * user_data, uint8_t const * const buffer, uint32_t len) {
-    gt_serial_show_file_head* head = (gt_serial_show_file_head*)user_data;
+    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
     gt_memcpy(head->sys_id, buffer, len);
     return GT_RES_OK;
 }
 
 static gt_res_t _parse_show_header_page_mode(void * user_data, uint8_t const * const buffer, uint32_t len) {
-    gt_serial_show_file_head* head = (gt_serial_show_file_head*)user_data;
+    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
     head->page_mode = buffer[0];
     return GT_RES_OK;
 }
 
 static gt_res_t _parse_show_header_page_numb(void * user_data, uint8_t const * const buffer, uint32_t len) {
-    gt_serial_show_file_head* head = (gt_serial_show_file_head*)user_data;
+    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
     head->page_numb = (buffer[0] << 8) | buffer[1];
     return GT_RES_OK;
 }
 
 static gt_res_t _parse_show_header_reserve(void * user_data, uint8_t const * const buffer, uint32_t len) {
-    gt_serial_show_file_head* head = (gt_serial_show_file_head*)user_data;
+    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
     gt_memcpy(head->reserve, buffer, len);
     return GT_RES_OK;
 }
 
 static gt_res_t _print_show_header_file_id(void const * const user_data, uint8_t * const buffer, uint32_t len) {
-    gt_serial_show_file_head* head = (gt_serial_show_file_head*)user_data;
+    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
     buffer[0] = head->file_id;
     return GT_RES_OK;
 }
 
 static gt_res_t _print_show_header_sys_id(void const * const user_data, uint8_t * const buffer, uint32_t len) {
-    gt_serial_show_file_head* head = (gt_serial_show_file_head*)user_data;
+    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
     gt_memcpy(buffer, head->sys_id, len);
     return GT_RES_OK;
 }
 static gt_res_t _print_show_header_page_mode(void const * const user_data, uint8_t * const buffer, uint32_t len) {
-    gt_serial_show_file_head* head = (gt_serial_show_file_head*)user_data;
+    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
     buffer[0] = head->page_mode;
     return GT_RES_OK;
 }
 static gt_res_t _print_show_header_page_numb(void const * const user_data, uint8_t * const buffer, uint32_t len) {
-    gt_serial_show_file_head* head = (gt_serial_show_file_head*)user_data;
+    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
     buffer[0] = (head->page_numb >> 8) & 0xFF;
     buffer[1] = head->page_numb & 0xFF;
     return GT_RES_OK;
 }
 static gt_res_t _print_show_header_reserve(void const * const user_data, uint8_t * const buffer, uint32_t len) {
-    gt_serial_show_file_head* head = (gt_serial_show_file_head*)user_data;
+    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
     gt_memcpy(buffer, head->reserve, len);
     return GT_RES_OK;
 }
@@ -187,25 +135,25 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st _format_show_hand[] = {
 };
 
 static gt_res_t _parse_page_info_numb(void * user_data, uint8_t const * const buffer, uint32_t len) {
-    gt_serial_page_info* info = (gt_serial_page_info*)user_data;
+    gt_serial_page_info_st* info = (gt_serial_page_info_st*)user_data;
     info->numb = buffer[0];
     return GT_RES_OK;
 }
 
 static gt_res_t _parse_page_info_addr(void * user_data, uint8_t const * const buffer, uint32_t len) {
-    gt_serial_page_info* info = (gt_serial_page_info*)user_data;
-    info->addr = (buffer[0] << 16) | (buffer[1] << 8) | buffer[2];
+    gt_serial_page_info_st* info = (gt_serial_page_info_st*)user_data;
+    info->addr = ((buffer[0] << 16) | (buffer[1] << 8) | buffer[2]) + GT_SERIAL_SHOW_FILE_ADDR;
     return GT_RES_OK;
 }
 
 static gt_res_t _print_page_info_numb(void const * const user_data, uint8_t * const buffer, uint32_t len) {
-    gt_serial_page_info* info = (gt_serial_page_info*)user_data;
+    gt_serial_page_info_st* info = (gt_serial_page_info_st*)user_data;
     buffer[0] = info->numb;
     return GT_RES_OK;
 }
 
 static gt_res_t _print_page_info_addr(void const * const user_data, uint8_t * const buffer, uint32_t len) {
-    gt_serial_page_info* info = (gt_serial_page_info*)user_data;
+    gt_serial_page_info_st* info = (gt_serial_page_info_st*)user_data;
     buffer[0] = (info->addr >> 16) & 0xFF;
     buffer[1] = (info->addr >> 8) & 0xFF;
     buffer[2] = info->addr & 0xFF;
@@ -220,7 +168,7 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st _format_page_info[] = {
     { 0x0, (parse_cb_t)NULL, (print_cb_t)NULL },
 };
 
-static void _read_show_file_head(gt_serial_show_file_head* head)
+static void _read_show_file_head(gt_serial_show_file_head_st* head)
 {
     uint8_t tmp[GT_SERIAL_SHOW_FILE_HEAD_SIZE] = {0};
     gt_fs_read_direct_physical(GT_SERIAL_SHOW_FILE_ADDR, GT_SERIAL_SHOW_FILE_HEAD_SIZE, tmp);
@@ -240,13 +188,13 @@ static void _read_show_file_head(gt_serial_show_file_head* head)
                                 head->file_id ,head->sys_id, head->page_mode,head->page_numb);
 }
 
-static void _read_show_file_page_control(gt_serial_page_info* info)
+static void _read_show_file_page_control(gt_serial_page_info_st* info)
 {
     gt_memset_0(info->control, GT_SERIAL_UI_PAGE_CONTROL_SIZE * GT_SERIAL_UI_PAGE_CONTROL_MAX_NUMB);
     gt_fs_read_direct_physical(info->addr, info->numb * GT_SERIAL_UI_PAGE_CONTROL_SIZE, info->control);
 }
 
-static void _read_show_file_page_info(gt_serial_page_info* info, uint16_t index)
+static void _read_show_file_page_info(gt_serial_page_info_st* info, uint16_t index)
 {
     uint8_t tmp[GT_SERIAL_SHOW_FILE_PAGE_INFO_SIZ];
     gt_fs_read_direct_physical( GT_SERIAL_SHOW_FILE_PAGE_INFO_ADDR + (index * GT_SERIAL_SHOW_FILE_PAGE_INFO_SIZ),\
@@ -261,6 +209,7 @@ static void _read_show_file_page_info(gt_serial_page_info* info, uint16_t index)
     if (GT_RES_OK != ret.res) {
         GT_LOG_A("", "Parse err code: %d, index: %d", ret.res, ret.index);
     }
+    GT_LOGI(GT_LOG_TAG_SERIAL , "page index = %d, numb = 0x%X, addr = 0x%X, ",index, info->numb, info->addr);
     // read control
     _read_show_file_page_control(info);
 }
@@ -277,61 +226,91 @@ static int _set_contorl_value(uint8_t* control, uint8_t* value, uint16_t len)
 }
 
 
-static void _create_control(uint8_t* control, uint32_t len, gt_obj_st* parent)
+static gt_res_t _create_control(gt_var_st* var)
 {
-
+#if GT_USE_SERIAL_VAR
+    return gt_serial_var_create(var);
+#else
+    return GT_RES_OK;
+#endif
 }
 
-static uint8_t* _get_control(gt_serial_page_info* info, uint16_t index)
+static uint8_t* _get_control(gt_serial_page_info_st* info, uint16_t index)
 {
     return ((index >= info->numb) ? NULL : info->control + (index * GT_SERIAL_UI_PAGE_CONTROL_SIZE));
 }
 
-static void _addr_control_to_page(gt_serial_page_info* info, gt_obj_st* parent)
+static gt_res_t _addr_control_to_page(gt_serial_page_info_st* info, gt_obj_st* parent)
 {
     // create control
+    gt_var_st var;
     for(uint8_t i = 0; i < info->numb; i++){
-        _create_control(_get_control(info, i), GT_SERIAL_UI_PAGE_CONTROL_SIZE, parent);
+        var.buffer = _get_control(info, i);
+        var.len = GT_SERIAL_UI_PAGE_CONTROL_SIZE;
+        var.obj = parent;
+        var.id = i;
+        if(GT_RES_OK != _create_control(&var)){
+            GT_LOGE(GT_LOG_TAG_SERIAL , "create control failed!, index: %d", i);
+            return GT_RES_FAIL;
+        }
     }
+    return GT_RES_OK;
 }
-
-static int16_t _find_controls_in_vp_or_sp(gt_serial_page_info* info, uint16_t reg, bool is_vp)
+#define TEST_UI 1
+#if TEST_UI
+gt_obj_st* btn1 = NULL;
+gt_obj_st* btn2 = NULL;
+static uint8_t index_test = 0;
+static void _btn1_cb(gt_event_st* event)
 {
-    uint8_t *p;
-    int16_t index = -1;
-    // vp
-    if(is_vp){
-        uint16_t vp = 0x0000;
-        for(index = 0; index < info->numb; index++){
-            p = _get_control(info, index);
-            vp = p[_CONTROL_VP] << 8 | p[_CONTROL_VP + 1];
-            if(vp == reg){
-                return index;
-            }
-        }
-        return -1;
-    }
-
-    // sp
-    uint16_t sp = 0x0000, len = 0;
-    for(index = 0; index < info->numb; index++){
-        p = _get_control(info, index);
-        sp = p[_CONTROL_SP] << 8 | p[_CONTROL_SP + 1];
-        len = p[_CONTROL_LEN] << 8 | p[_CONTROL_LEN + 1];
-        if(reg >= sp && reg < (sp + len)){
-            return index;
-        }
-    }
-    return -1;
+    uint8_t vp_buf[] = {0x10, 0x00, 0x00, 0x01};
+    uint8_t sp_buf[] = {0x20, 0x00, 0x00, 0x01};
+    ++index_test;
+    vp_buf[3] = index_test;
+    sp_buf[3] = index_test;
+    GT_LOGD(GT_LOG_TAG_SERIAL , "\n>> send vp param = %d", vp_buf[3]);
+    gt_serial_set_value(vp_buf, sizeof(vp_buf));
+    GT_LOGD(GT_LOG_TAG_SERIAL , "\n>> send sp param = %d", vp_buf[3]);
+    gt_serial_set_value(sp_buf, sizeof(sp_buf));
 }
-
+static void _btn2_cb(gt_event_st* event)
+{
+    uint8_t vp_buf[] = {0x10, 0x00, 0x00, 0x00};
+    uint8_t sp_buf[] = {0x20, 0x00, 0x00, 0x00};
+    --index_test;
+    vp_buf[3] = index_test;
+    sp_buf[3] = index_test;
+    GT_LOGD(GT_LOG_TAG_SERIAL , "\n>> send vp param = %d", vp_buf[3]);
+    gt_serial_set_value(vp_buf, sizeof(vp_buf));
+    GT_LOGD(GT_LOG_TAG_SERIAL , "\n>> send sp param = %d", vp_buf[3]);
+    gt_serial_set_value(sp_buf, sizeof(sp_buf));
+}
+#endif
 static gt_obj_st* _gt_serial_init_screen(void)
 {
     gt_obj_st* screen = gt_obj_create(NULL);
     // read page info
     _read_show_file_page_info(&_serial_ui.page_info, _serial_ui.page_index);
 
-    _addr_control_to_page(&_serial_ui.page_info, screen);
+    if(GT_RES_OK != _addr_control_to_page(&_serial_ui.page_info, screen)){
+        gt_obj_destroy(screen);
+        GT_LOGE(GT_LOG_TAG_SERIAL , "create control failed!");
+        return NULL;
+    }
+
+#if TEST_UI
+    btn1 = gt_btn_create(screen);
+    gt_obj_set_pos(btn1, 10, 10);
+    gt_obj_set_size(btn1, 100, 60);
+    gt_btn_set_text(btn1, "test++");
+    gt_obj_add_event_cb(btn1, _btn1_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
+
+    btn2 = gt_btn_create(screen);
+    gt_obj_set_pos(btn2, 120, 10);
+    gt_obj_set_size(btn2, 100, 60);
+    gt_btn_set_text(btn2, "test--");
+    gt_obj_add_event_cb(btn2, _btn2_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
+#endif
 
     return screen;
 }
@@ -351,6 +330,11 @@ static void _gt_serial_ui_init(void)
         return;
     }
     _serial_ui.lock = true;
+
+#if GT_USE_SERIAL_VAR
+    gt_serial_var_init();
+#endif
+
     for(uint16_t i = 0; i < _serial_ui._show_file_head.page_numb; i++){
         _serial_ui.page_list[i].scr_id = i;
         _serial_ui.page_list[i].init_cb = _gt_serial_init_screen;
@@ -361,11 +345,12 @@ static void _gt_serial_ui_init(void)
     gt_serial_load_page(GT_SERIAL_UI_HOME_PAGE_INDEX);
 
     GT_LOGD(GT_LOG_TAG_SERIAL , "serial ui init success, _serial_ui size: %d byte, page list size: %d byte, page count: %d",\
-        sizeof(gt_serial_ui), sizeof(gt_scr_list_st) * _serial_ui._show_file_head.page_numb, _serial_ui._show_file_head.page_numb);
+        sizeof(gt_serial_ui_st), sizeof(gt_scr_list_st) * _serial_ui._show_file_head.page_numb, _serial_ui._show_file_head.page_numb);
 }
 /* global functions / API interface -------------------------------------*/
 void gt_serial_show_init(void)
 {
+    GT_LOGI(GT_LOG_TAG_SERIAL , "serial show init!");
     _gt_serial_ui_init();
 }
 
@@ -386,8 +371,8 @@ uint16_t gt_serial_page_index_get(void)
 void gt_serial_load_page(uint16_t index)
 {
     if(!_serial_ui.lock) {return ;}
-    GT_LOGI(GT_LOG_TAG_SERIAL , "load page = %d", index);
     _serial_ui.page_index = index;
+    GT_LOGI(GT_LOG_TAG_SERIAL , "load page = %d", _serial_ui.page_index);
     gt_disp_stack_load_scr(_serial_ui.page_index);
 }
 
@@ -399,52 +384,34 @@ int16_t gt_serial_go_back(int16_t step)
     return gt_disp_stack_go_back(step);
 }
 
-int gt_serial_control_value_set(uint16_t vp, uint8_t* value, uint16_t len)
+void gt_serial_set_value(uint8_t *value, uint16_t len)
 {
-    if(!_serial_ui.lock) {return -1;}
+    if(!_serial_ui.lock) {return ;}
+    int ret = -1;
+    uint16_t index = 0;
+    gt_var_st var;
+    gt_var_value_st var_value;
+    var_value.buffer = value;
+    var_value.len = len;
 
-    int16_t index = _find_controls_in_vp_or_sp(&_serial_ui.page_info, vp, true);
-    if(index < 0) {return -1;}
+    if(0 != gt_serial_var_buffer_set(&var_value) ) {return ;}
 
-    return _set_contorl_value(_get_control(&_serial_ui.page_info, index), value, len);
-}
+    for(index = 0; index < _serial_ui.page_info.numb;index++){
+        var.buffer = _get_control(&_serial_ui.page_info, index);
+        var.len = GT_SERIAL_UI_PAGE_CONTROL_SIZE;
+        var.id = index;
+#if GT_USE_SERIAL_VAR
+        ret = gt_serial_var_check_value_is_set_this(&var, &var_value);
+#endif
+        if(ret < 0) {continue;}
 
-int gt_serial_control_param_set(uint16_t sp, uint8_t* param, uint16_t len)
-{
-    if(!_serial_ui.lock) {return -1;}
-
-    if(sp >= 0xFFFF) {return -1;}
-
-    int16_t index = _find_controls_in_vp_or_sp(&_serial_ui.page_info, sp, false);
-    if(index < 0) {return -1;}
-
-    uint8_t* p = _get_control(&_serial_ui.page_info, index);
-    uint8_t reg = sp - (p[_CONTROL_SP] << 8 | p[_CONTROL_SP + 1]);
-    return _set_contorl_param(p, reg, param, len);
-}
-
-int gt_serial_control_set(uint16_t reg, uint8_t* param, uint16_t len)
-{
-    if(!_serial_ui.lock) {return -1;}
-
-    int ret = gt_serial_control_value_set(reg, param, len);
-    if(ret > 0) {return ret;}
-
-    return gt_serial_control_param_set(reg, param, len);
-}
-
-int gt_serial_val_get(uint16_t reg, uint8_t* data, uint16_t len)
-{
-    if(reg >= 0xFFFF) {return -1;}
-    memcpy(data, &_serial_ui_var[reg * 2], len);
-    return 0;
-}
-
-int gt_serial_val_set(uint16_t reg, uint8_t* data, uint16_t len)
-{
-    if(reg >= 0xFFFF) {return -1;}
-    memcpy(&_serial_ui_var[reg * 2], data, len);
-    return 0;
+        var.id = index;
+        var.obj = gt_obj_find_by_id(var.id);
+        if(var.obj == NULL) {continue;}
+#if GT_USE_SERIAL_VAR
+        gt_serial_var_set_value(&var, &var_value);
+#endif
+    }
 }
 
 

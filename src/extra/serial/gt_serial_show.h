@@ -34,7 +34,43 @@ extern "C" {
 
 #if GT_USE_SERIAL_SHOW && GT_USE_BIN_CONVERT
 
+#ifndef GT_SERIAL_SHOW_FILE_ADDR
+    /* show file addrese */
+    #define GT_SERIAL_SHOW_FILE_ADDR        (0x0007C7AC)//(0x380000)
+#endif
 
+#ifndef GT_SERIAL_SHOW_FILE_HEAD_SIZE
+    /* show file head info size */
+    #define GT_SERIAL_SHOW_FILE_HEAD_SIZE   (16)
+#endif
+
+#ifndef GT_SERIAL_SHOW_FILE_PAGE_INFO_ADDR
+    /* show file page info addr */
+    #define GT_SERIAL_SHOW_FILE_PAGE_INFO_ADDR  (GT_SERIAL_SHOW_FILE_ADDR + GT_SERIAL_SHOW_FILE_HEAD_SIZE)
+#endif
+
+#ifndef GT_SERIAL_SHOW_FILE_PAGE_INFO_SIZ
+    /* show file page info size */
+    #define GT_SERIAL_SHOW_FILE_PAGE_INFO_SIZ    (4)
+#endif
+
+#ifndef GT_SERIAL_UI_PAGE_STACK_DEPTH
+    /* show file page stack depth */
+    #define GT_SERIAL_UI_PAGE_STACK_DEPTH   (20)
+#endif
+
+#ifndef GT_SERIAL_UI_HOME_PAGE_INDEX
+    /* show file home page index */
+    #define GT_SERIAL_UI_HOME_PAGE_INDEX   (1)
+#endif
+
+#ifndef GT_SERIAL_UI_PAGE_CONTROL_SIZE
+    #define GT_SERIAL_UI_PAGE_CONTROL_SIZE      (32)
+#endif
+
+#ifndef GT_SERIAL_UI_PAGE_CONTROL_MAX_NUMB
+    #define GT_SERIAL_UI_PAGE_CONTROL_MAX_NUMB  (255)
+#endif
 /* typedef --------------------------------------------------------------*/
 
 
@@ -79,56 +115,8 @@ void gt_serial_load_page(uint16_t index);
  */
 int16_t gt_serial_go_back(int16_t step);
 
-/**
- * @brief Set the value using vp
- *
- * @param vp
- * @param value
- * @param len
- * @return int  0: success, -1: fail
- */
-int gt_serial_control_value_set(uint16_t vp, uint8_t* value, uint16_t len);
 
-
-/**
- * @brief Set the param using sp
- *
- * @param sp
- * @param param
- * @param len
- * @return int  0: success, -1: fail
- */
-int gt_serial_control_param_set(uint16_t sp, uint8_t* param, uint16_t len);
-
-/**
- * @brief Set the control using reg , reg is vp or sp
- *
- * @param reg vp or sp
- * @param param
- * @param len
- * @return int  0: success, -1: fail
- */
-int gt_serial_control_set(uint16_t reg, uint8_t* param, uint16_t len);
-
-/**
- * @brief get value using reg , reg is vp or sp
- *
- * @param reg
- * @param data
- * @param len
- * @return int
- */
-int gt_serial_val_get(uint16_t reg, uint8_t* data, uint16_t len);
-
-/**
- * @brief set value using reg , reg is vp or sp
- *
- * @param reg vp or sp
- * @param data
- * @param len
- * @return int
- */
-int gt_serial_val_set(uint16_t reg, uint8_t* data, uint16_t len);
+void gt_serial_set_value(uint8_t *value, uint16_t len);
 
 
 
