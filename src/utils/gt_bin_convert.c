@@ -1,7 +1,7 @@
 /**
  * @file gt_bin_convert.c
  * @author Feyoung
- * @brief
+ * @brief bin hex buffer convert to target object struct or print to hex buffer
  * @version 0.1
  * @date 2024-09-23 11:47:54
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
