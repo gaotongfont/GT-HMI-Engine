@@ -425,23 +425,21 @@ static gt_res_t _print_backlight_delay(void const * const user_data, uint8_t * c
 }
 
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st format[] = {
-    { 5, _parse_header, _print_header },
-    { 7, _parse_system_config, _print_system_config },
-    { 4, _parse_backlight_sleep, _print_backlight_sleep },
-    { 15, _parse_display, _print_display },
-    { 5, _parse_touch, _print_touch },
-    { 3, _parse_clock_output, _print_clock_output },
-    { 7, _parse_beep, _print_beep },
-    { 2, _parse_init_file, _print_init_file },
-    { 2, _parse_sys_clk, _print_sys_clk },
-    { 2, _parse_picture_replace, _print_picture_replace },
-    { 12, _parse_expand_param, _print_expand_param },
-    { 48, _parse_sd, _print_sd },
-    { 2, _parse_backlight_delay, _print_backlight_delay },
-    { 14, (parse_cb_t)NULL, (print_cb_t)NULL },
-
-    /** ... */
-    { 0, (parse_cb_t)NULL, (print_cb_t)NULL },
+    { 5,    _parse_header,          _print_header           },
+    { 7,    _parse_system_config,   _print_system_config    },
+    { 4,    _parse_backlight_sleep, _print_backlight_sleep  },
+    { 15,   _parse_display,         _print_display          },
+    { 5,    _parse_touch,           _print_touch            },
+    { 3,    _parse_clock_output,    _print_clock_output     },
+    { 7,    _parse_beep,            _print_beep             },
+    { 2,    _parse_init_file,       _print_init_file        },
+    { 2,    _parse_sys_clk,         _print_sys_clk          },
+    { 2,    _parse_picture_replace, _print_picture_replace  },
+    { 12,   _parse_expand_param,    _print_expand_param     },
+    { 48,   _parse_sd,              _print_sd               },
+    { 2,    _parse_backlight_delay, _print_backlight_delay  },
+    { 14,   (parse_cb_t)NULL,       (print_cb_t)NULL        },
+    { 0,    (parse_cb_t)NULL,       (print_cb_t)NULL        },
 };
 
 /* global functions / API interface -------------------------------------*/
