@@ -1,7 +1,7 @@
 /**
  * @file gt_serial_cfg.h
  * @author Feyoung
- * @brief
+ * @brief Serial configuration
  * @version 0.1
  * @date 2024-09-20 16:06:38
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
