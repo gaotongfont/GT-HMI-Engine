@@ -43,6 +43,7 @@
 #include "../core/gt_mem.h"
 #include "../others/gt_crc.h"
 #include "../core/gt_timer.h"
+#include "../extra/serial/gt_serial_cfg.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -326,6 +327,13 @@ void gt_serial_init(void)
 #if GT_SERIAL_USE_TIMER_RECV_UNPACK
     /** create timer to handler serial */
     _serial.timer_p = _gt_timer_create(_serial_client_recv_timer_handler_cb, GT_TASK_PERIOD_TIME_SERIAL, &_serial);
+#endif
+
+#if GT_USE_SERIAL_CFG
+    gt_serial_cfg_st const * const cfg = gt_serial_cfg_get_root();
+    if (cfg->system_config.param_0.crc_checksum) {
+        _serial.reg.crc16 = true;
+    }
 #endif
 
     GT_LOG_A(GT_LOG_TAG_SERIAL, "Serial header byte len: %d", _serial.headers_len);
