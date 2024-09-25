@@ -124,6 +124,27 @@ gt_bin_res_st gt_bin_convert_parse(gt_bin_convert_st const * const bin, gt_bin_i
  */
 gt_bin_res_st gt_bin_convert_print(gt_bin_convert_st const * const bin, gt_bin_item_st const * const list);
 
+
+/* ------------------- convert api ------------------- */
+
+/**
+ *  @brief Convert the hex buffer to a uint16_t value
+ *
+ * @param buffer The hex buffer to be converted
+ * @return uint16_t The converted value
+ */
+uint16_t gt_convert_parse_short(uint8_t const * const buffer);
+
+/**
+ * @brief Convert the value to a hex buffer
+ *
+ * @param res result buffer to store the converted value
+ * @param val value to be converted
+ * @return uint16_t byte length
+ */
+uint16_t gt_convert_print_short(uint8_t * const res, uint16_t val);
+
+
 #endif   /** GT_USE_BIN_CONVERT */
 
 #ifdef __cplusplus
