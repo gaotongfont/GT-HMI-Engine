@@ -136,14 +136,14 @@ static bool _is_indev_home_gesture(gt_indev_st * indev, gt_event_type_et* event)
     }
     else if (GT_DIR_UP == point_p->gesture) {
         // bottom
-        if (GT_CFG_DEFAULT_AREA_HOME_GESTURE_BOTTOM >= GT_SCREEN_HEIGHT - point_p->act.y) {
+        if (GT_CFG_DEFAULT_AREA_HOME_GESTURE_BOTTOM >= gt_disp_get_res_ver(NULL) - point_p->act.y) {
             if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_BOTTOM;
             return true;
         }
     }
     else if (GT_DIR_LEFT == point_p->gesture) {
         // right
-        if (GT_CFG_DEFAULT_AREA_HOME_GESTURE_RIGHT >= GT_SCREEN_WIDTH - point_p->act.x) {
+        if (GT_CFG_DEFAULT_AREA_HOME_GESTURE_RIGHT >= gt_disp_get_res_hor(NULL) - point_p->act.x) {
             if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_RIGHT;
             return true;
         }
@@ -182,8 +182,8 @@ static bool _indev_send_home_gesture_event(gt_indev_st * indev) {
 static inline void _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const point_p, gt_size_t * dx, gt_size_t * dy) {
     uint16_t w_parent = obj_scroll->parent->area.w;
     uint16_t h_parent = obj_scroll->parent->area.h;
-    gt_size_t left = 0, right = GT_SCREEN_WIDTH;
-    gt_size_t top = 0, bottom = GT_SCREEN_HEIGHT;
+    gt_size_t left = 0, right = gt_disp_get_res_hor(NULL);
+    gt_size_t top = 0, bottom = gt_disp_get_res_ver(NULL);
 
     if (false == obj_scroll->absorb_dir) {
         /** hor */
@@ -542,7 +542,8 @@ static void _gt_indev_handler_point(gt_indev_st * indev)
         return;
     }
 
-    if (data_indev.point.x > GT_SCREEN_WIDTH || data_indev.point.y > GT_SCREEN_HEIGHT) {
+    if (data_indev.point.x > gt_disp_get_res_hor(NULL) ||
+        data_indev.point.y > gt_disp_get_res_ver(NULL)) {
         // GT_LOGW(GT_LOG_TAG_TP, "point out of range: x:%d, y:%d", data_indev.point.x, data_indev.point.y);
         return;
     }

@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_area.h"
+#include "../core/gt_disp.h"
 #include "../gt_conf.h"
 #include "./gt_log.h"
 
@@ -175,12 +176,13 @@ void gt_area_join(gt_area_st * res, const gt_area_st * const src, const gt_area_
 
 bool gt_area_check_legal(gt_area_st * area)
 {
-    if ( !(area->w > GT_SCREEN_WIDTH || area->h > GT_SCREEN_HEIGHT) ) {
+    uint16_t hor = gt_disp_get_res_hor(NULL);
+    uint16_t ver = gt_disp_get_res_ver(NULL);
+    if ( !(area->w > hor || area->h > ver) ) {
         return true;
     }
-
-    area->w = GT_SCREEN_WIDTH;
-    area->h = GT_SCREEN_HEIGHT;
+    area->w = hor;
+    area->h = ver;
     return false;
 }
 
