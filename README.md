@@ -22,7 +22,7 @@
 
 <div align="center"
 >
-    <a href="https://www.hmi.gaotongfont.cn/kfgj"
+    <a href="https://www.hmi.gaotongfont.cn/"
     > 公司官网 </a> |
     <a href="https://space.bilibili.com/3493293474188211/video"
     > B 站教程 </a> |
