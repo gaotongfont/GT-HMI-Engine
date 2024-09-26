@@ -12,6 +12,7 @@
 
 #if GT_USE_SERIAL && GT_SERIAL_USE_TIMER_RECV_UNPACK
 #include "../../others/gt_log.h"
+#include "./gt_serial_show.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -38,12 +39,11 @@
 
 static gt_res_t _command_decode_handler_cb(uint8_t const * const buffer, uint16_t len) {
     uint8_t cmd_val = buffer[0];
-    // GT_LOG_A("", "command > %x %x", buffer[0], buffer[1]);
 
     if (GT_SERIAL_COMMAND_WRITE_CMD == cmd_val) {
-        // GT_LOG_A("", "command write");
+        gt_serial_set_value((uint8_t * )&buffer[1], len - 1);
     } else if (GT_SERIAL_COMMAND_READ_CMD == cmd_val) {
-        // GT_LOG_A("", "command read");
+
     }
 
     return GT_RES_OK;
