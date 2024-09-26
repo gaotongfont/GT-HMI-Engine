@@ -70,7 +70,8 @@ static gt_res_t _parse_reg(void * user_data, uint8_t const * const buffer, uint3
 }
 
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st _format_value[] = {
-    {GT_VAR_REG_LEN, _parse_reg, (print_cb_t)NULL,},
+    { GT_VAR_REG_LEN, _parse_reg, (print_cb_t)NULL },
+    { 0x0, (parse_cb_t)NULL, (print_cb_t)NULL },
 };
 
 
