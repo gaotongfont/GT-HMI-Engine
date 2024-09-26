@@ -55,6 +55,10 @@ typedef struct _serial_reg_s {
     uint8_t crc16 : 1;
 }_serial_reg_st;
 
+typedef struct {
+    uint8_t width_byte_len;
+}_serial_custom_data_st;
+
 typedef struct gt_serial_s {
     gt_queue_st * master;   /** HMI as master */
     gt_queue_st * client;   /** HMI as client */
@@ -134,6 +138,7 @@ static gt_queue_check_valid_res_st _serial_queue_check_valid_cb(gt_queue_check_v
         .res = GT_RES_FAIL,
         .valid_data_len = 0,
     };
+    _serial_custom_data_st * custom_data = (_serial_custom_data_st *)cv->queue->custom_data;
 	uint16_t count = cv->get_count(cv->queue);
     uint16_t i = 0, idx = 0;
 	uint8_t data = 0;
@@ -147,13 +152,13 @@ static gt_queue_check_valid_res_st _serial_queue_check_valid_cb(gt_queue_check_v
     }
 
     /** check valid byte data has recv done */
-    for (i = 0; i < GT_SERIAL_WIDTH_BYTE_LENGTH; ++i) {
+    for (i = 0; i < custom_data->width_byte_len; ++i) {
         ret.valid_data_len <<= 8;
         cv->get_value(cv->queue, idx++, &data);
         ret.valid_data_len |= data;
     }
 
-    ret.valid_data_len += _serial.headers_len + GT_SERIAL_WIDTH_BYTE_LENGTH;
+    ret.valid_data_len += _serial.headers_len + custom_data->width_byte_len;
     if (count < ret.valid_data_len) {
         /** Wait for the complete data */
         ret.res = GT_RES_INV;
@@ -166,7 +171,7 @@ static gt_queue_check_valid_res_st _serial_queue_check_valid_cb(gt_queue_check_v
         uint16_t target = 0;
         uint16_t end = ret.valid_data_len - _serial_get_crc16_byte_length();
 
-        for (i = _serial.headers_len + GT_SERIAL_WIDTH_BYTE_LENGTH; i < end; ++i) {
+        for (i = _serial.headers_len + custom_data->width_byte_len; i < end; ++i) {
             cv->get_value(cv->queue, i, &data);
             checksum = gt_update_crc16(checksum, data);
         }
@@ -213,10 +218,11 @@ static gt_res_t _serial_common_send(gt_queue_st * queue, uint8_t const * const d
  * @param res_buffer
  * @return uint16_t
  */
-static uint16_t _serial_common_unpack_valid_data(gt_queue_check_valid_res_st * ret_p, uint8_t * res_buffer) {
+static uint16_t _serial_common_unpack_valid_data(gt_queue_st * queue, gt_queue_check_valid_res_st * ret_p, uint8_t * res_buffer) {
 #if GT_SERIAL_GET_ONLY_VALID_DATA
+    _serial_custom_data_st * custom_data = (_serial_custom_data_st *)queue->custom_data;
     uint16_t i = 0;
-    uint16_t offset = _serial.headers_len + GT_SERIAL_WIDTH_BYTE_LENGTH;
+    uint16_t offset = _serial.headers_len + custom_data->width_byte_len;
 
     ret_p->valid_data_len -= offset + _serial_get_crc16_byte_length();
     for (i = 0; i < ret_p->valid_data_len; ++i) {
@@ -257,6 +263,7 @@ static gt_res_t _serial_common_push_integer(gt_queue_st * queue, uint32_t value,
  * @return gt_res_t
  */
 static gt_res_t _serial_common_send_pack(gt_queue_st * queue, uint8_t const * const data, uint16_t len) {
+    _serial_custom_data_st * custom_data = (_serial_custom_data_st *)queue->custom_data;
     uint32_t checksum = 0;
     gt_res_t ret = GT_RES_OK;
 
@@ -268,7 +275,7 @@ static gt_res_t _serial_common_send_pack(gt_queue_st * queue, uint8_t const * co
 
     /** push length */
     uint32_t value = len + _serial_get_crc16_byte_length();
-    ret = _serial_common_push_integer(queue, value, GT_SERIAL_WIDTH_BYTE_LENGTH);
+    ret = _serial_common_push_integer(queue, value, custom_data->width_byte_len);
     if (GT_RES_OK != ret) {
         return ret;
     }
@@ -297,6 +304,11 @@ static gt_res_t _serial_common_send_pack(gt_queue_st * queue, uint8_t const * co
 #endif
 
 #if GT_SERIAL_USE_TIMER_RECV_UNPACK
+/**
+ * @brief Get data from client queue
+ *
+ * @param timer
+ */
 static void _serial_client_recv_timer_handler_cb(struct _gt_timer_s * timer) {
     uint16_t data_len = gt_serial_client_recv(_serial.unpack_buffer);
     if (0 == data_len) {
@@ -316,9 +328,15 @@ static void _serial_client_recv_timer_handler_cb(struct _gt_timer_s * timer) {
 /* global functions / API interface -------------------------------------*/
 void gt_serial_init(void)
 {
+    _serial_custom_data_st custom_data = {
+        .width_byte_len = GT_SERIAL_WIDTH_BYTE_LENGTH,
+    };
     _serial.master = gt_queue_init(sizeof(uint8_t), _serial_master_cache, GT_SERIAL_MASTER_CACHE_SIZE);
     _serial.client = gt_queue_init(sizeof(uint8_t), _serial_client_cache, GT_SERIAL_CLIENT_CACHE_SIZE);
     _serial.headers_len = strlen(_serial.headers);
+
+    gt_queue_set_custom_data(_serial.master, &custom_data, sizeof(_serial_custom_data_st));
+    gt_queue_set_custom_data(_serial.client, &custom_data, sizeof(_serial_custom_data_st));
 
     gt_queue_set_check_valid_cb(_serial.master, _serial_queue_check_valid_cb);
     gt_queue_set_check_valid_cb(_serial.client, _serial_queue_check_valid_cb);
@@ -385,7 +403,7 @@ uint16_t gt_serial_master_recv(uint8_t * res_buffer)
         GT_LOGV(GT_LOG_TAG_SERIAL, "Master queue pop failed!");
         return 0;
     }
-    return _serial_common_unpack_valid_data(&ret, res_buffer);
+    return _serial_common_unpack_valid_data(_serial.master, &ret, res_buffer);
 }
 
 gt_res_t gt_serial_client_send(uint8_t const * const data, uint16_t len)
@@ -411,7 +429,7 @@ uint16_t gt_serial_client_recv(uint8_t * res_buffer)
         GT_LOGV(GT_LOG_TAG_SERIAL, "Client queue pop failed!");
         return 0;
     }
-    return _serial_common_unpack_valid_data(&ret, res_buffer);
+    return _serial_common_unpack_valid_data(_serial.client, &ret, res_buffer);
 }
 
 /* end ------------------------------------------------------------------*/

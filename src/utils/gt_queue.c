@@ -128,8 +128,27 @@ gt_queue_st * gt_queue_init(uint16_t instance, void * buffer, uint32_t byte_size
 gt_res_t gt_queue_deinit(gt_queue_st * queue)
 {
     GT_CHECK_BACK_VAL(queue, GT_RES_FAIL);
+    if (queue->custom_data) {
+        gt_mem_free(queue->custom_data);
+    }
     gt_memset(queue, 0, sizeof(gt_queue_st));
     gt_mem_free(queue);
+    return GT_RES_OK;
+}
+
+gt_res_t gt_queue_set_custom_data(gt_queue_st * queue, void * custom_data, size_t byte_size)
+{
+    if (NULL == queue) {
+        return GT_RES_FAIL;
+    }
+    if (NULL == custom_data || 0 == byte_size) {
+        return GT_RES_FAIL;
+    }
+    queue->custom_data = queue->custom_data ? gt_mem_realloc(queue->custom_data, byte_size) : gt_mem_malloc(byte_size);
+    if (NULL == queue->custom_data) {
+        return GT_RES_FAIL;
+    }
+    gt_memcpy(queue->custom_data, custom_data, byte_size);
     return GT_RES_OK;
 }
 

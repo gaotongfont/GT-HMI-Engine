@@ -22,6 +22,9 @@
 
 #if GT_USE_SERIAL
 #include "./serial/gt_serial_cfg.h"
+    #if GT_SERIAL_USE_TIMER_RECV_UNPACK
+        #include "./serial/gt_serial_command.h"
+    #endif
 #endif
 
 /* private define -------------------------------------------------------*/
@@ -69,6 +72,9 @@ void _gt_extra_init(void)
 
 #if GT_USE_SERIAL && GT_USE_SERIAL_CFG && GT_USE_BIN_CONVERT
     gt_serial_cfg_init();
+#if GT_SERIAL_USE_TIMER_RECV_UNPACK
+    gt_serial_command_init();
+#endif  /** GT_SERIAL_USE_TIMER_RECV_UNPACK */
 #endif
 }
 

@@ -14,6 +14,7 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "stddef.h"
 #include "../gt_conf.h"
 #include "../others/gt_types.h"
 
@@ -100,6 +101,8 @@ typedef struct gt_queue_s {
      */
     gt_queue_check_valid_cb_t check_valid_cb;
 #endif
+
+    void * custom_data;     /** user custom data */
 }gt_queue_st;
 
 
@@ -131,6 +134,23 @@ gt_queue_st * gt_queue_init(uint16_t instance, void * buffer, uint32_t byte_size
  */
 gt_res_t gt_queue_deinit(gt_queue_st * queue);
 
+/**
+ * @brief Copy custom data to queue object
+ *
+ * @param queue The queue object
+ * @param custom_data The custom data: object, array, etc.
+ * @param byte_size The custom data byte size
+ * @return gt_res_t GT_RES_OK: success; GT_RES_FAIL: failed;
+ */
+gt_res_t gt_queue_set_custom_data(gt_queue_st * queue, void * custom_data, size_t byte_size);
+
+/**
+ * @brief Check the queue is empty or not
+ *
+ * @param queue
+ * @return true
+ * @return false
+ */
 bool gt_queue_is_empty(gt_queue_st * queue);
 
 /**
