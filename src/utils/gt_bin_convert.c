@@ -112,19 +112,13 @@ gt_bin_res_st gt_bin_convert_print(gt_bin_convert_st const * const bin, gt_bin_i
 
 uint16_t gt_convert_parse_u16(uint8_t const * const buffer)
 {
-    uint16_t val = 0;
-    for (uint8_t i = 0; i < 2; ++i) {
-        val <<= 8;
-        val |= buffer[i];
-    }
-    return val;
+    return (buffer[0] << 8) | buffer[1];
 }
 
 uint16_t gt_convert_print_u16(uint8_t * const res, uint16_t val)
 {
-    for (uint8_t i = 0; i < 2; ++i) {
-        res[i] = (val >> ((1 - i) * 8)) & 0xff;
-    }
+    res[0] = (val >> 8) & 0xff;
+    res[1] = val & 0xff;
     return 2;
 }
 
@@ -133,7 +127,7 @@ uint32_t gt_convert_parse_u32(uint8_t const * const buffer)
     uint32_t val = 0;
     for (uint8_t i = 0; i < 4; ++i) {
         val <<= 8;
-        val |= buffer[i];
+        val |= buffer[i] & 0xff;
     }
     return val;
 }
