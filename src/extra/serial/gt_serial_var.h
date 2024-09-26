@@ -124,8 +124,12 @@ int gt_serial_var_buffer_set(gt_var_value_st* value);
  */
 int gt_serial_var_check_value_is_set_this(gt_var_st *var, gt_var_value_st* value);
 
+//
+gt_res_t gt_serial_var_head_parse(void * user_data, uint8_t const * const buffer, uint32_t len);
 
 
+
+//
 gt_res_t gt_serial_var_create(gt_var_st* var);
 gt_res_t gt_serial_var_set_value(gt_var_st* var, gt_var_value_st* value);
 

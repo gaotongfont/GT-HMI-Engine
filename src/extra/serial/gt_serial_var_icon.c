@@ -19,7 +19,6 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct{
-    gt_var_head_st head;
     uint16_t x;
     uint16_t y;
     uint16_t v_min;
@@ -32,6 +31,10 @@ typedef struct{
     uint8_t icon_gamma;
     uint8_t pic_gamma;
     uint8_t filter;
+}gt_icon_param_st;
+typedef struct{
+    gt_var_head_st head;
+    gt_icon_param_st param;
 }gt_var_icon_st;
 
 
@@ -49,105 +52,29 @@ typedef struct{
 
 
 /* static functions -----------------------------------------------------*/
-static gt_res_t _parse_prio(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_icon_st * var_icon = (gt_var_icon_st *)user_data;
-    var_icon->head.prio = buffer[0];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_type(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_icon_st * var_icon = (gt_var_icon_st *)user_data;
-    var_icon->head.type = buffer[0];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_sp(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_icon_st * var_icon = (gt_var_icon_st *)user_data;
-    var_icon->head.sp = buffer[0] << 8 | buffer[1];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_len_dsc(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_icon_st * var_icon = (gt_var_icon_st *)user_data;
-    var_icon->head.len_dsc = buffer[0] << 8 | buffer[1];
-    return GT_RES_OK;
-}
-static gt_res_t  _parse_vp(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_icon_st * var_icon = (gt_var_icon_st *)user_data;
-    var_icon->head.vp = buffer[0] << 8 | buffer[1];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_xy(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_icon_st * var_icon = (gt_var_icon_st *)user_data;
-    var_icon->x = buffer[0] << 8 | buffer[1];
-    var_icon->y = buffer[2] << 8 | buffer[3];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_v_min(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_icon_st * var_icon = (gt_var_icon_st *)user_data;
-    var_icon->v_min = buffer[0] << 8 | buffer[1];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_v_max(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_icon_st * var_icon = (gt_var_icon_st *)user_data;
-    var_icon->v_max = buffer[0] << 8 | buffer[1];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_icon_min(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_icon_st * var_icon = (gt_var_icon_st *)user_data;
-    var_icon->icon_min = buffer[0] << 8 | buffer[1];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_icon_max(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_icon_st * var_icon = (gt_var_icon_st *)user_data;
-    var_icon->icon_max = buffer[0] << 8 | buffer[1];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_icon_lib(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_icon_st * var_icon = (gt_var_icon_st *)user_data;
-    var_icon->icon_lib = buffer[0];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_mode(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_icon_st * var_icon = (gt_var_icon_st *)user_data;
-    var_icon->mode = buffer[0];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_layer_mode(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_icon_st * var_icon = (gt_var_icon_st *)user_data;
-    var_icon->layer_mode = buffer[0];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_icon_gamma(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_icon_st * var_icon = (gt_var_icon_st *)user_data;
-    var_icon->icon_gamma = buffer[0];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_pic_gamma(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_icon_st * var_icon = (gt_var_icon_st *)user_data;
-    var_icon->pic_gamma = buffer[0];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_filter(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_icon_st * var_icon = (gt_var_icon_st *)user_data;
-    var_icon->filter = buffer[0];
+static gt_res_t _parse_param(void * user_data, uint8_t const * const buffer, uint32_t len){
+    gt_var_icon_st * icon = (gt_var_icon_st *)user_data;
+    gt_icon_param_st* param = &icon->param;
+
+    param->x = buffer[0] << 8 | buffer[1];
+    param->y = buffer[2] << 8 | buffer[3];
+    param->v_min = buffer[4] << 8 | buffer[5];
+    param->v_max = buffer[6] << 8 | buffer[7];
+    param->icon_min = buffer[8] << 8 | buffer[9];
+    param->icon_max = buffer[10] << 8 | buffer[11];
+    param->icon_lib = buffer[12];
+    param->mode = buffer[13];
+    param->layer_mode = buffer[14];
+    param->icon_gamma = buffer[15];
+    param->pic_gamma = buffer[16];
+    param->filter = buffer[17];
     return GT_RES_OK;
 }
 
 
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st _format[] = {
-    {1, _parse_prio, (print_cb_t)NULL,},
-    {1, _parse_type, (print_cb_t)NULL,},
-    {2, _parse_sp, (print_cb_t)NULL,},
-    {2, _parse_len_dsc, (print_cb_t)NULL,},
-    {2, _parse_vp, (print_cb_t)NULL,},
-    {4, _parse_xy, (print_cb_t)NULL,},
-    {2, _parse_v_min, (print_cb_t)NULL,},
-    {2, _parse_v_max, (print_cb_t)NULL,},
-    {2, _parse_icon_min, (print_cb_t)NULL,},
-    {2, _parse_icon_max, (print_cb_t)NULL,},
-    {1, _parse_icon_lib, (print_cb_t)NULL,},
-    {1, _parse_mode, (print_cb_t)NULL,},
-    {1, _parse_layer_mode, (print_cb_t)NULL,},
-    {1, _parse_icon_gamma, (print_cb_t)NULL,},
-    {1, _parse_pic_gamma, (print_cb_t)NULL,},
+    {8, gt_serial_var_head_parse, (print_cb_t)NULL,},
+    {18, _parse_param, (print_cb_t)NULL,},
     { 0x0, (parse_cb_t)NULL, (print_cb_t)NULL },
 };
 
@@ -207,7 +134,7 @@ bool _get_var_icon_param(gt_var_st* var, gt_var_icon_st* icon)
 #endif
 
     GT_LOGI(GT_LOG_TAG_SERIAL, "type: %d, sp: 0x%X, vp: 0x%X x: %d, y: %d, ivon_min: %d",\
-                                icon->head.type, icon->head.sp, icon->head.vp, icon->x, icon->y, icon->icon_min);
+                                icon->head.type, icon->head.sp, icon->head.vp, icon->param.x, icon->param.y, icon->param.icon_min);
     if(icon->head.type != VAR_TYPE_ICON) {return GT_RES_INV;}
 
     return true;
@@ -225,7 +152,7 @@ gt_res_t gt_serial_var_icon_create(gt_var_st* var)
 
     gt_obj_st* new_obj = gt_player_create(var->obj);
     gt_obj_register_id(new_obj, var->id);
-    gt_obj_set_pos(new_obj, var_icon.x, var_icon.y);
+    gt_obj_set_pos(new_obj, var_icon.param.x, var_icon.param.y);
     gt_obj_set_size(new_obj, 1, 1);
     gt_player_set_type(new_obj, GT_PLAYER_TYPE_IMG);
     gt_player_set_mode(new_obj, GT_PLAYER_MODE_NONE);
@@ -242,7 +169,7 @@ gt_res_t gt_serial_var_icon_create(gt_var_st* var)
 	gt_player_add_item(new_obj, "f:img_sports_record14_78x78.png", sizeof("f:img_sports_record14_78x78.png"));
 
 
-    gt_player_set_index_offset(new_obj, var_icon.icon_min);
+    gt_player_set_index_offset(new_obj, var_icon.param.icon_min);
     uint16_t index = 0;
     uint8_t data[2];
     if(0 == gt_serial_var_buffer_get_reg(var_icon.head.vp, data, 2)){

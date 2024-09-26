@@ -65,105 +65,51 @@ static gt_serial_ui_st _serial_ui = {
 
 
 /* static functions -----------------------------------------------------*/
-static gt_res_t _parse_show_header_file_id(void * user_data, uint8_t const * const buffer, uint32_t len) {
+static gt_res_t _parse_show_head(void * user_data, uint8_t const * const buffer, uint32_t len) {
     gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
     head->file_id = buffer[0];
+    gt_memcpy(head->sys_id, &buffer[1], 6);
+    head->page_mode = buffer[7];
+    head->page_numb = (buffer[8] << 8) | buffer[9];
+    gt_memcpy(head->reserve, &buffer[10], 6);
     return GT_RES_OK;
 }
 
-static gt_res_t _parse_show_header_sys_id(void * user_data, uint8_t const * const buffer, uint32_t len) {
-    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
-    gt_memcpy(head->sys_id, buffer, len);
-    return GT_RES_OK;
-}
+static gt_res_t _print_show_head(void const * const user_data, uint8_t * const buffer, uint32_t len) {
 
-static gt_res_t _parse_show_header_page_mode(void * user_data, uint8_t const * const buffer, uint32_t len) {
-    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
-    head->page_mode = buffer[0];
-    return GT_RES_OK;
-}
-
-static gt_res_t _parse_show_header_page_numb(void * user_data, uint8_t const * const buffer, uint32_t len) {
-    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
-    head->page_numb = (buffer[0] << 8) | buffer[1];
-    return GT_RES_OK;
-}
-
-static gt_res_t _parse_show_header_reserve(void * user_data, uint8_t const * const buffer, uint32_t len) {
-    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
-    gt_memcpy(head->reserve, buffer, len);
-    return GT_RES_OK;
-}
-
-static gt_res_t _print_show_header_file_id(void const * const user_data, uint8_t * const buffer, uint32_t len) {
     gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
     buffer[0] = head->file_id;
-    return GT_RES_OK;
-}
-
-static gt_res_t _print_show_header_sys_id(void const * const user_data, uint8_t * const buffer, uint32_t len) {
-    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
-    gt_memcpy(buffer, head->sys_id, len);
-    return GT_RES_OK;
-}
-static gt_res_t _print_show_header_page_mode(void const * const user_data, uint8_t * const buffer, uint32_t len) {
-    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
-    buffer[0] = head->page_mode;
-    return GT_RES_OK;
-}
-static gt_res_t _print_show_header_page_numb(void const * const user_data, uint8_t * const buffer, uint32_t len) {
-    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
-    buffer[0] = (head->page_numb >> 8) & 0xFF;
-    buffer[1] = head->page_numb & 0xFF;
-    return GT_RES_OK;
-}
-static gt_res_t _print_show_header_reserve(void const * const user_data, uint8_t * const buffer, uint32_t len) {
-    gt_serial_show_file_head_st* head = (gt_serial_show_file_head_st*)user_data;
-    gt_memcpy(buffer, head->reserve, len);
+    gt_memcpy(buffer + 1, head->sys_id, 6);
+    buffer[7] = head->page_mode;
+    buffer[8] = (head->page_numb >> 8) & 0xFF;
+    buffer[9] = head->page_numb & 0xFF;
+    gt_memcpy(buffer + 10, head->reserve, 6);
     return GT_RES_OK;
 }
 
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st _format_show_hand[] = {
-    { 1, _parse_show_header_file_id,   _print_show_header_file_id },
-    { 6, _parse_show_header_sys_id,    _print_show_header_sys_id },
-    { 1, _parse_show_header_page_mode, _print_show_header_page_mode },
-    { 2, _parse_show_header_page_numb, _print_show_header_page_numb },
-    { 6, _parse_show_header_reserve,   _print_show_header_reserve },
-
+    { 16, _parse_show_head,   _print_show_head },
     /** ... */
     { 0x0, (parse_cb_t)NULL, (print_cb_t)NULL },
 };
 
-static gt_res_t _parse_page_info_numb(void * user_data, uint8_t const * const buffer, uint32_t len) {
+static gt_res_t _parse_page_info(void * user_data, uint8_t const * const buffer, uint32_t len) {
     gt_serial_page_info_st* info = (gt_serial_page_info_st*)user_data;
     info->numb = buffer[0];
+    info->addr = ((buffer[1] << 16) | (buffer[2] << 8) | buffer[3]) + GT_SERIAL_SHOW_FILE_ADDR;
     return GT_RES_OK;
 }
 
-static gt_res_t _parse_page_info_addr(void * user_data, uint8_t const * const buffer, uint32_t len) {
-    gt_serial_page_info_st* info = (gt_serial_page_info_st*)user_data;
-    info->addr = ((buffer[0] << 16) | (buffer[1] << 8) | buffer[2]) + GT_SERIAL_SHOW_FILE_ADDR;
-    return GT_RES_OK;
-}
-
-static gt_res_t _print_page_info_numb(void const * const user_data, uint8_t * const buffer, uint32_t len) {
+static gt_res_t _print_page_info(void const * const user_data, uint8_t * const buffer, uint32_t len) {
     gt_serial_page_info_st* info = (gt_serial_page_info_st*)user_data;
     buffer[0] = info->numb;
-    return GT_RES_OK;
-}
-
-static gt_res_t _print_page_info_addr(void const * const user_data, uint8_t * const buffer, uint32_t len) {
-    gt_serial_page_info_st* info = (gt_serial_page_info_st*)user_data;
-    buffer[0] = (info->addr >> 16) & 0xFF;
-    buffer[1] = (info->addr >> 8) & 0xFF;
-    buffer[2] = info->addr & 0xFF;
-    return GT_RES_OK;
+    buffer[1] = (info->addr >> 16) & 0xFF;
+    buffer[2] = (info->addr >> 8) & 0xFF;
+    buffer[3] = info->addr & 0xFF;
 }
 
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st _format_page_info[] = {
-    { 1, _parse_page_info_numb,   _print_page_info_numb },
-    { 3, _parse_page_info_addr,   _print_page_info_addr },
-
+    { 4, _parse_page_info,   _print_page_info },
     /** ... */
     { 0x0, (parse_cb_t)NULL, (print_cb_t)NULL },
 };

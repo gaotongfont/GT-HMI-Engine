@@ -47,38 +47,19 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_var_handler_item_st _var_handler_li
 
 
 /* static functions -----------------------------------------------------*/
-static gt_res_t _parse_prio(void * user_data, uint8_t const * const buffer, uint32_t len){
+gt_res_t gt_serial_var_head_parse(void * user_data, uint8_t const * const buffer, uint32_t len)
+{
     gt_var_head_st * var_head = (gt_var_head_st *)user_data;
     var_head->prio = buffer[0];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_type(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_head_st * var_head = (gt_var_head_st *)user_data;
-    var_head->type = buffer[0];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_sp(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_head_st * var_head = (gt_var_head_st *)user_data;
-    var_head->sp = buffer[0] << 8 | buffer[1];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_len_dsc(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_head_st * var_head = (gt_var_head_st *)user_data;
-    var_head->len_dsc = buffer[0] << 8 | buffer[1];
-    return GT_RES_OK;
-}
-static gt_res_t _parse_vp(void * user_data, uint8_t const * const buffer, uint32_t len){
-    gt_var_head_st * var_head = (gt_var_head_st *)user_data;
-    var_head->vp = buffer[0] << 8 | buffer[1];
+    var_head->type = buffer[1];
+    var_head->sp = buffer[2] << 8 | buffer[3];
+    var_head->len_dsc = buffer[4] << 8 | buffer[5];
+    var_head->vp = buffer[6] << 8 | buffer[7];
     return GT_RES_OK;
 }
 
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st _format[] = {
-    {1, _parse_prio, (print_cb_t)NULL,},
-    {1, _parse_type, (print_cb_t)NULL,},
-    {2, _parse_sp, (print_cb_t)NULL,},
-    {2, _parse_len_dsc, (print_cb_t)NULL,},
-    {2, _parse_vp, (print_cb_t)NULL,},
+    {8, gt_serial_var_head_parse, (print_cb_t)NULL,},
     { 0x0, (parse_cb_t)NULL, (print_cb_t)NULL },
 };
 
