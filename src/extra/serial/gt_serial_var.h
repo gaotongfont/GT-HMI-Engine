@@ -93,10 +93,18 @@ typedef struct {
  *
  */
 void gt_serial_var_init(void);
-
+/**
+ * @brief get var buffer
+ *
+ * @param reg   is sp or vp
+ * @param data
+ * @param len
+ * @return int [0] : success [-1] : error
+ */
+int gt_serial_var_buffer_get_reg(uint16_t reg, uint8_t* data, uint16_t len);
 
 /**
- * @brief get value buffer
+ * @brief get var buffer
  *
  * @param value
  * @param data
@@ -104,11 +112,19 @@ void gt_serial_var_init(void);
  * @return int [0] : success [-1] : error
  */
 int gt_serial_var_buffer_get(gt_var_value_st* value, uint8_t* data, uint16_t len);
-int gt_serial_var_buffer_get_reg(uint16_t reg, uint8_t* data, uint16_t len);
-
 
 /**
- * @brief set value buffer
+ * @brief set var buffer
+ *
+ * @param reg   is sp or vp
+ * @param data
+ * @param len
+ * @return int [0] : success [-1] : error
+ */
+int gt_serial_var_buffer_set_reg(uint16_t reg, uint8_t* data, uint16_t len);
+
+/**
+ * @brief set var buffer
  *
  * @param value
  * @return int [0] : success [-1] : error
@@ -120,17 +136,35 @@ int gt_serial_var_buffer_set(gt_var_value_st* value);
  *
  * @param var
  * @param value
- * @return int [-1] : error [>0]: reg
+ * @return int  [-1]: error  [0]: is vp reg  [0x80|X]: is sp reg @ GT_VAR_GET_SP_REG
  */
 int gt_serial_var_check_value_is_set_this(gt_var_st *var, gt_var_value_st* value);
 
-//
+/**
+ * @brief parse var head cb
+ *
+ * @param user_data
+ * @param buffer
+ * @param len
+ * @return gt_res_t [GT_RES_OK] : success [other] : error
+ */
 gt_res_t gt_serial_var_head_parse(void * user_data, uint8_t const * const buffer, uint32_t len);
-
-
-
 //
+/**
+ * @brief Create var
+ *
+ * @param var
+ * @return gt_res_t [GT_RES_OK] : success [other] : error
+ */
 gt_res_t gt_serial_var_create(gt_var_st* var);
+
+/**
+ * @brief set var value
+ *
+ * @param var
+ * @param value
+ * @return gt_res_t [GT_RES_OK] : success [other] : error
+ */
 gt_res_t gt_serial_var_set_value(gt_var_st* var, gt_var_value_st* value);
 
 #endif  /** GT_USE_SERIAL_SHOW && GT_USE_BIN_CONVERT */

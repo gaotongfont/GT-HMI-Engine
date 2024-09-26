@@ -116,6 +116,14 @@ int gt_serial_var_buffer_get_reg(uint16_t reg, uint8_t* data, uint16_t len)
     return 0;
 }
 
+int gt_serial_var_buffer_set_reg(uint16_t reg, uint8_t* data, uint16_t len)
+{
+    if(!data){return -1;}
+    if(reg + len > 0xFFFF) {return -1;}
+    memcpy(&_serial_var_buf[reg * 2], data, len);
+    return 0;
+}
+
 int gt_serial_var_buffer_get(gt_var_value_st* value, uint8_t* data, uint16_t len)
 {
     if(!value || !data || !value->buffer) {return -1;}
@@ -134,9 +142,7 @@ int gt_serial_var_buffer_get(gt_var_value_st* value, uint8_t* data, uint16_t len
         return -1;
     };
 
-    if(reg + len > 0xFFFF) {return -1;}
-    memcpy(data, &_serial_var_buf[reg * 2], len);
-    return 0;
+    return gt_serial_var_buffer_get_reg( reg,  data, len);
 }
 
 int gt_serial_var_buffer_set(gt_var_value_st* value)
@@ -156,9 +162,8 @@ int gt_serial_var_buffer_set(gt_var_value_st* value)
         return -1;
     };
     uint32_t len = value->len - GT_VAR_REG_LEN;
-    if(reg + len > 0xFFFF) {return -1;}
-    memcpy(&_serial_var_buf[reg * 2], &value->buffer[GT_VAR_REG_LEN], len);
-    return 0;
+
+    return gt_serial_var_buffer_set_reg(reg, &value->buffer[GT_VAR_REG_LEN], len);
 }
 
 int gt_serial_var_check_value_is_set_this(gt_var_st *var, gt_var_value_st* value)
