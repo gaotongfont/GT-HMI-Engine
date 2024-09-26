@@ -26,7 +26,7 @@ extern "C" {
      * @brief Serial configuration
      *      [default: 0]
      */
-    #define GT_USE_SERIAL_CFG       0
+    #define GT_USE_SERIAL_CFG       01
 #endif
 
 #endif  /** GT_USE_SERIAL */
