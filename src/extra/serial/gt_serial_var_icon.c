@@ -1,6 +1,6 @@
 /**
  * @file gt_serial_var_icon.c
- * @author Yang (your@email.com)
+ * @author Yang
  * @brief
  * @version 0.1
  * @date 2024-09-24 15:00:32
