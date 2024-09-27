@@ -98,7 +98,7 @@ static bool _get_param(gt_var_st* var, gt_var_icon_st* icon)
 
 #if 0
     if(icon->head.sp != 0xFFFF){
-        if(0 != gt_serial_var_buffer_get_reg(icon->head.sp, var->buffer + 6, (icon->head.len_dsc-1)*2)){
+        if(0 != gt_serial_var_buffer_get_reg(icon->head.sp, var->buffer + 6, (icon->head.len_dsc)*2)){
             GT_LOGE(GT_LOG_TAG_SERIAL, "Get sp value err!!");
             return false;
         }
