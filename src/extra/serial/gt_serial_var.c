@@ -86,7 +86,7 @@ static gt_res_t _var_create(gt_var_handler_st *handler)
             break;
         }
     }
-    return GT_RES_FAIL;
+    return GT_RES_INV;  /** No valid related type control was found */
 }
 
 static gt_res_t _var_set_value(gt_var_handler_st *handler)
