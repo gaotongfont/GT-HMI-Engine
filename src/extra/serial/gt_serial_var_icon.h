@@ -17,7 +17,7 @@ extern "C" {
 #include "gt_serial_var.h"
 
 #if GT_USE_SERIAL_VAR && GT_USE_BIN_CONVERT
-#include "../../widgets/gt_obj.h"
+
 /* define ---------------------------------------------------------------*/
 
 

@@ -78,32 +78,8 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st _format[] = {
     { 0x0, (parse_cb_t)NULL, (print_cb_t)NULL },
 };
 
-void _set_value(gt_obj_st* obj, uint8_t reg, gt_var_value_st* value)
-{
-    // set vp value
-    if(0 == reg){
-        uint16_t index = 0;
-        uint8_t data[2];
-        if(0 == gt_serial_var_buffer_get(value, data, 2)){
-            index = ((data[0] << 8) | data[1]);
-        }
-        gt_player_set_index(obj, index);
-        return ;
-    }
 
-    // set sp value
-    uint8_t tmp_reg = GT_VAR_GET_SP_REG(reg);
-    printf("set sp reg: %d\n", tmp_reg);
-    switch(reg)
-    {
-    case 0:
-        break;
-    default:
-        break;
-    }
-}
-
-bool _get_var_icon_param(gt_var_st* var, gt_var_icon_st* icon)
+static bool _get_param(gt_var_st* var, gt_var_icon_st* icon)
 {
     gt_bin_convert_st bin = {
         .tar = icon,
@@ -122,7 +98,7 @@ bool _get_var_icon_param(gt_var_st* var, gt_var_icon_st* icon)
 
 #if 0
     if(icon->head.sp != 0xFFFF){
-        if(0 != gt_serial_var_buffer_get_reg(icon->head.sp, var->buffer + 6, icon->head.len_dsc)){
+        if(0 != gt_serial_var_buffer_get_reg(icon->head.sp, var->buffer + 6, (icon->head.len_dsc-1)*2)){
             GT_LOGE(GT_LOG_TAG_SERIAL, "Get sp value err!!");
             return false;
         }
@@ -144,13 +120,47 @@ bool _get_var_icon_param(gt_var_st* var, gt_var_icon_st* icon)
     return true;
 }
 
+static void _set_vp_value(gt_var_st* var, gt_var_value_st* value)
+{
+    uint8_t data[2];
+    uint16_t index = 0;
+    if(0 == gt_serial_var_buffer_get(value, data, 2)){
+        index = ((data[0] << 8) | data[1]);
+    }
+    gt_player_set_index(var->obj, index);
+}
 
+static void _set_sp_value(uint8_t reg, gt_var_st* var, gt_var_value_st* value)
+{
+    // set sp value
+    uint8_t tmp_reg = GT_VAR_GET_SP_REG(reg);
+    switch(reg)
+    {
+    case 0:
+        break;
+    default:
+        break;
+    }
+}
+
+static void _set_value(gt_var_st* var, gt_var_value_st* value)
+{
+    uint8_t reg = gt_serial_var_check_value_is_set_this(var, value);
+    if(reg < 0) { return ; }
+    // set vp value
+    if(0 == reg){
+        _set_vp_value(var, value);
+    }
+    else{
+        _set_sp_value(reg, var, value);
+    }
+}
 /* global functions / API interface -------------------------------------*/
 gt_res_t gt_serial_var_icon_create(gt_var_st* var)
 {
     gt_var_icon_st var_icon;
 
-    if(!_get_var_icon_param(var, &var_icon)){
+    if(!_get_param(var, &var_icon)){
         return GT_RES_INV;
     }
 
@@ -180,16 +190,13 @@ gt_res_t gt_serial_var_icon_create(gt_var_st* var)
         index = ((data[0] << 8) | data[1]);
     }
     gt_player_set_index(new_obj, index);
-    printf(">> index: %d\n", index);
 
     return GT_RES_OK;
 }
 
 gt_res_t gt_serial_var_icon_set_value(gt_var_st* var, gt_var_value_st* value)
 {
-    uint8_t reg = gt_serial_var_check_value_is_set_this(var, value);
-    if(reg < 0) { return GT_RES_FAIL; }
-    _set_value( var->obj, reg, value);
+    _set_value(var, value);
     return GT_RES_OK;
 }
 
