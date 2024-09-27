@@ -169,6 +169,26 @@ int gt_serial_var_buffer_set(gt_var_value_st* value)
     return gt_serial_var_buffer_set_reg(reg, &value->buffer[GT_VAR_REG_LEN], len);
 }
 
+int gt_serial_var_check_value_is_sys_config(gt_var_value_st* value)
+{
+    uint16_t reg;
+    gt_bin_res_st ret = {0};
+    gt_bin_convert_st bin_value = {
+        .tar = &reg,
+        .buffer = value->buffer,
+        .byte_len = value->len,
+    };
+    ret = gt_bin_convert_parse(&bin_value, _format_value);
+    if (GT_RES_OK != ret.res) {
+        GT_LOGE(GT_LOG_TAG_SERIAL, "value parse err code: %d, index: %d", ret.res, ret.index);
+        return -1;
+    };
+
+    if(GT_VAR_IS_SYS_CONFIG(reg)) { return 0;}
+
+    return -1;
+}
+
 int gt_serial_var_check_value_is_set_this(gt_var_st *var, gt_var_value_st* value)
 {
     gt_var_head_st var_head;

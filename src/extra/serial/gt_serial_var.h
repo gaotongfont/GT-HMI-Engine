@@ -35,6 +35,7 @@ extern "C" {
 #define GT_VAR_IS_VP(reg, vp) ((reg) == (vp))
 #define GT_VAR_IS_SP(reg, sp, len_dsc) (((reg) >= (sp)) && ((reg) < (sp) + (len_dsc)))
 #define GT_VAR_GET_SP_REG(reg) (reg & 0x7F)
+#define GT_VAR_IS_SYS_CONFIG(reg) ((reg) < (0x1000))
 /* typedef --------------------------------------------------------------*/
 
 typedef enum{
@@ -130,6 +131,16 @@ int gt_serial_var_buffer_set_reg(uint16_t reg, uint8_t* data, uint16_t len);
  * @return int [0] : success [-1] : error
  */
 int gt_serial_var_buffer_set(gt_var_value_st* value);
+
+
+/**
+ * @brief Check value is sys config
+ *
+ * @param value
+ * @return int [0] : is sys config [-1] : not sys config
+ */
+int gt_serial_var_check_value_is_sys_config(gt_var_value_st* value);
+
 
 /**
  * @brief Check value is set this variable

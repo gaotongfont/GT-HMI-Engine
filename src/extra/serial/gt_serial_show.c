@@ -206,30 +206,28 @@ static gt_res_t _addr_control_to_page(gt_serial_page_info_st* info, gt_obj_st* p
 #if TEST_UI
 gt_obj_st* btn1 = NULL;
 gt_obj_st* btn2 = NULL;
-static uint8_t index_test = 0;
+static uint16_t index_test = 0;
+static uint16_t addr_test = 0x1000;
+static uint8_t vp_buf[4] = {0};
+static uint8_t sp_buf[4] = {0};
 static void _btn1_cb(gt_event_st* event)
 {
-    uint8_t vp_buf[] = {0x10, 0x00, 0x00, 0x01};
-    uint8_t sp_buf[] = {0x20, 0x00, 0x00, 0x01};
     ++index_test;
-    vp_buf[3] = index_test;
-    sp_buf[3] = index_test;
-    GT_LOGD(GT_LOG_TAG_SERIAL , "\n>> send vp param = %d", vp_buf[3]);
+    gt_convert_print_u16(vp_buf, addr_test);
+    gt_convert_print_u16(vp_buf + 2, index_test);
+
+    GT_LOGD(GT_LOG_TAG_SERIAL , ">> send vp = 0x%X param = %d",addr_test, index_test);
     gt_serial_set_value(vp_buf, sizeof(vp_buf));
-    GT_LOGD(GT_LOG_TAG_SERIAL , "\n>> send sp param = %d", vp_buf[3]);
-    gt_serial_set_value(sp_buf, sizeof(sp_buf));
 }
 static void _btn2_cb(gt_event_st* event)
 {
-    uint8_t vp_buf[] = {0x10, 0x00, 0x00, 0x00};
-    uint8_t sp_buf[] = {0x20, 0x00, 0x00, 0x00};
     --index_test;
-    vp_buf[3] = index_test;
-    sp_buf[3] = index_test;
-    GT_LOGD(GT_LOG_TAG_SERIAL , "\n>> send vp param = %d", vp_buf[3]);
+    gt_convert_print_u16(vp_buf, addr_test);
+    gt_convert_print_u16(vp_buf + 2, index_test);
+
+    GT_LOGD(GT_LOG_TAG_SERIAL , ">> send vp = 0x%X param = %d",addr_test, index_test);
     gt_serial_set_value(vp_buf, sizeof(vp_buf));
-    GT_LOGD(GT_LOG_TAG_SERIAL , "\n>> send sp param = %d", vp_buf[3]);
-    gt_serial_set_value(sp_buf, sizeof(sp_buf));
+
 }
 #endif
 static gt_obj_st* _gt_serial_init_screen(void)
@@ -341,6 +339,13 @@ void gt_serial_set_value(uint8_t *value, uint16_t len)
     var_value.len = len;
 
     if(0 != gt_serial_var_buffer_set(&var_value) ) {return ;}
+
+    if(0 == gt_serial_var_check_value_is_sys_config(&var_value)) {
+
+        /* Operation sys config */
+
+        return ;
+    }
 
     for(index = 0; index < _serial_ui.page_info.numb;index++){
         var.buffer = _get_control(&_serial_ui.page_info, index);
