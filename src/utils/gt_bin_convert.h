@@ -128,6 +128,23 @@ gt_bin_res_st gt_bin_convert_print(gt_bin_convert_st const * const bin, gt_bin_i
 /* ------------------- convert api ------------------- */
 
 /**
+ *  @brief Convert the hex buffer to a uint64_t value by len
+ *
+ * @param buffer The hex buffer to be converted
+ * @return uint32_t The converted value
+ */
+uint64_t  gt_convert_parse_by_len(uint8_t const * const buffer, uint8_t len);
+
+/**
+ * @brief Convert the value to a hex buffer
+ *
+ * @param res result buffer to store the converted value
+ * @param val value to be converted
+ * @return uint16_t byte length
+ */
+uint16_t gt_convert_print_by_len(uint8_t * const res, uint64_t val, uint8_t len);
+
+/**
  *  @brief Convert the hex buffer to a uint16_t value
  *
  * @param buffer The hex buffer to be converted
@@ -157,7 +174,7 @@ uint32_t gt_convert_parse_u32(uint8_t const * const buffer);
  *
  * @param res result buffer to store the converted value
  * @param val value to be converted
- * @return uint32_t byte length
+ * @return uint16_t byte length
  */
 uint16_t gt_convert_print_u32(uint8_t * const res, uint32_t val);
 
