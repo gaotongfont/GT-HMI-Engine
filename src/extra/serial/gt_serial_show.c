@@ -12,6 +12,7 @@
 //
 #if GT_USE_SERIAL_SHOW && GT_USE_BIN_CONVERT
 #include "../../utils/gt_bin_convert.h"
+#include "./gt_serial_system.h"
 #include "../../others/gt_log.h"
 #include "../../../gt.h"
 //
@@ -341,9 +342,8 @@ void gt_serial_set_value(uint8_t *value, uint16_t len)
     if(0 != gt_serial_var_buffer_set(&var_value) ) {return ;}
 
     if(0 == gt_serial_var_check_value_is_sys_config(&var_value)) {
-
         /* Operation sys config */
-
+        gt_serial_system_set_value(value, len);
         return ;
     }
 

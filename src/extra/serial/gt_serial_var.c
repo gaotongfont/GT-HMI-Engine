@@ -24,6 +24,7 @@
     #define GT_SERIAL_UI_VAR_SIZE           (128 * 1024)
 #endif
 
+#define _REFACTOR_PARSE     0
 
 /* private typedef ------------------------------------------------------*/
 
@@ -61,10 +62,11 @@ gt_res_t gt_serial_var_head_parse(void * user_data, uint8_t const * const buffer
 }
 
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st _format[] = {
-    {8, gt_serial_var_head_parse, (print_cb_t)NULL,},
+    { 8, gt_serial_var_head_parse, (print_cb_t)NULL },
     { 0x0, (parse_cb_t)NULL, (print_cb_t)NULL },
 };
 
+#if _REFACTOR_PARSE
 static gt_res_t _parse_reg(void * user_data, uint8_t const * const buffer, uint32_t len){
     uint16_t* reg = (uint16_t*)user_data;
     *reg = buffer[0] << 8 | buffer[1];
@@ -75,6 +77,7 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st _format_value[] = {
     { GT_VAR_REG_LEN, _parse_reg, (print_cb_t)NULL },
     { 0x0, (parse_cb_t)NULL, (print_cb_t)NULL },
 };
+#endif
 
 
 static gt_res_t _var_create(gt_var_handler_st *handler)
@@ -132,6 +135,9 @@ int gt_serial_var_buffer_get(gt_var_value_st* value, uint8_t* data, uint16_t len
     if(!value || !data || !value->buffer) {return -1;}
     if(value->len < GT_VAR_REG_LEN || 0 == len) {return -1;}
 
+#if !_REFACTOR_PARSE
+    uint16_t reg = gt_convert_parse_u16(value->buffer);
+#else
     uint16_t reg;
     gt_bin_convert_st bin_value = {
         .tar = &reg,
@@ -144,14 +150,18 @@ int gt_serial_var_buffer_get(gt_var_value_st* value, uint8_t* data, uint16_t len
         GT_LOGE(GT_LOG_TAG_SERIAL, "value parse err code: %d, index: %d", ret.res, ret.index);
         return -1;
     };
+#endif
 
-    return gt_serial_var_buffer_get_reg( reg,  data, len);
+    return gt_serial_var_buffer_get_reg(reg,  data, len);
 }
 
 int gt_serial_var_buffer_set(gt_var_value_st* value)
 {
     if(!value || !value->buffer || value->len < GT_VAR_REG_LEN) {return -1;}
 
+#if !_REFACTOR_PARSE
+    uint16_t reg = gt_convert_parse_u16(value->buffer);
+#else
     uint16_t reg;
     gt_bin_convert_st bin_value = {
         .tar = &reg,
@@ -164,6 +174,7 @@ int gt_serial_var_buffer_set(gt_var_value_st* value)
         GT_LOGE(GT_LOG_TAG_SERIAL, "value parse err code: %d, index: %d", ret.res, ret.index);
         return -1;
     };
+#endif
     uint32_t len = value->len - GT_VAR_REG_LEN;
 
     return gt_serial_var_buffer_set_reg(reg, &value->buffer[GT_VAR_REG_LEN], len);
@@ -171,6 +182,9 @@ int gt_serial_var_buffer_set(gt_var_value_st* value)
 
 int gt_serial_var_check_value_is_sys_config(gt_var_value_st* value)
 {
+#if !_REFACTOR_PARSE
+    return GT_VAR_IS_SYS_CONFIG(gt_convert_parse_u16(value->buffer)) ? 0 : -1;
+#else
     uint16_t reg;
     gt_bin_res_st ret = {0};
     gt_bin_convert_st bin_value = {
@@ -187,6 +201,7 @@ int gt_serial_var_check_value_is_sys_config(gt_var_value_st* value)
     if(GT_VAR_IS_SYS_CONFIG(reg)) { return 0;}
 
     return -1;
+#endif
 }
 
 int gt_serial_var_check_value_is_set_this(gt_var_st *var, gt_var_value_st* value)
@@ -204,6 +219,9 @@ int gt_serial_var_check_value_is_set_this(gt_var_st *var, gt_var_value_st* value
         return -1;
     }
 
+#if !_REFACTOR_PARSE
+    uint16_t reg = gt_convert_parse_u16(value->buffer);
+#else
     uint16_t reg;
     gt_bin_convert_st bin_value = {
         .tar = &reg,
@@ -215,6 +233,7 @@ int gt_serial_var_check_value_is_set_this(gt_var_st *var, gt_var_value_st* value
         GT_LOGE(GT_LOG_TAG_SERIAL, "value parse err code: %d, index: %d", ret.res, ret.index);
         return -1;
     };
+#endif
 
     if(GT_VAR_IS_VP(reg, var_head.vp)) { return 0;}
     if(GT_VAR_IS_SP(reg, var_head.sp, var_head.len_dsc)) {
@@ -240,7 +259,7 @@ gt_res_t gt_serial_var_create(gt_var_st* var)
         return GT_RES_INV;
     }
 
-    gt_var_handler_st handler;
+    gt_var_handler_st handler = {0};
     handler.var = var;
     handler.type = var_icon.type;
     handler.list = _var_handler_list;
@@ -265,7 +284,7 @@ gt_res_t gt_serial_var_set_value(gt_var_st* var, gt_var_value_st* value)
         return GT_RES_INV;
     }
 
-    gt_var_handler_st handler;
+    gt_var_handler_st handler = {0};
     handler.var = var;
     handler.value = value;
     handler.type = var_icon.type;
