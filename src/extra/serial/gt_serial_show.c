@@ -396,7 +396,6 @@ void gt_serial_set_value(uint8_t *value, uint16_t len)
     if(0 == gt_serial_var_check_value_is_sys_config(&var_value)) {
         /* Operation sys config */
         gt_serial_system_set_value(value, len);
-        return ;
     }
 
     for(index = 0; index < _serial_ui.page_info.numb;index++){
