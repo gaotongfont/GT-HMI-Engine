@@ -161,6 +161,40 @@ static void _read_show_file_page_info(gt_serial_page_info_st* info, uint16_t ind
     _read_show_file_page_control(info);
 }
 
+static uint8_t* _get_control(gt_serial_page_info_st* info, uint16_t index)
+{
+    return ((index >= info->numb) ? NULL : info->control + (index * GT_SERIAL_UI_PAGE_CONTROL_SIZE));
+}
+
+static void _read_sp_param_to_var_buffer(gt_serial_show_file_head_st* head, gt_serial_page_info_st* info)
+{
+    uint16_t i = 0, n = 0;
+    const gt_bin_item_st _format[] = {
+        {8, gt_serial_var_head_parse, (print_cb_t)NULL,},
+        { 0x0, (parse_cb_t)NULL, (print_cb_t)NULL },
+    };
+    gt_var_head_st var_head;
+    gt_bin_convert_st bin = {
+        .tar = &var_head,
+        .byte_len = GT_SERIAL_UI_PAGE_CONTROL_SIZE,
+    };
+    gt_bin_res_st ret = {0};
+
+    for(i = 0; i < head->page_numb; i++){
+        _read_show_file_page_info(info, i);
+
+        for(n = 0; n < info->numb; n++){
+            bin.buffer = _get_control(info, n);
+            ret = gt_bin_convert_parse(&bin, _format);
+            if (GT_RES_OK != ret.res) {
+                continue;
+            }
+            if(var_head.sp != 0xFFFF){
+                gt_serial_var_buffer_set_reg(var_head.sp, bin.buffer + 6, var_head.len_dsc*2);
+            }
+        }
+    }
+}
 
 static int _set_contorl_param(uint8_t* control, uint8_t reg, uint8_t* param, uint16_t len)
 {
@@ -182,10 +216,6 @@ static gt_res_t _create_control(gt_var_st* var)
 #endif
 }
 
-static uint8_t* _get_control(gt_serial_page_info_st* info, uint16_t index)
-{
-    return ((index >= info->numb) ? NULL : info->control + (index * GT_SERIAL_UI_PAGE_CONTROL_SIZE));
-}
 
 static gt_res_t _addr_control_to_page(gt_serial_page_info_st* info, gt_obj_st* parent)
 {
@@ -205,30 +235,50 @@ static gt_res_t _addr_control_to_page(gt_serial_page_info_st* info, gt_obj_st* p
 }
 #define TEST_UI 1
 #if TEST_UI
+#define TEST_IS_VP   (0)
 gt_obj_st* btn1 = NULL;
 gt_obj_st* btn2 = NULL;
 static uint16_t index_test = 0;
-static uint16_t addr_test = 0x1000;
+static uint16_t vp_test = 0x1000;
+static uint16_t sp_test = 0x2001;
 static uint8_t vp_buf[4] = {0};
 static uint8_t sp_buf[4] = {0};
 static void _btn1_cb(gt_event_st* event)
 {
+#if TEST_IS_VP
     ++index_test;
-    gt_convert_print_u16(vp_buf, addr_test);
+    gt_convert_print_u16(vp_buf, vp_test);
     gt_convert_print_u16(vp_buf + 2, index_test);
 
-    GT_LOGD(GT_LOG_TAG_SERIAL , ">> send vp = 0x%X param = %d",addr_test, index_test);
+    GT_LOGD(GT_LOG_TAG_SERIAL , ">> send vp = 0x%X param = %d",vp_test, index_test);
     gt_serial_set_value(vp_buf, sizeof(vp_buf));
+#else
+    index_test += 10;
+    gt_convert_print_u16(sp_buf, sp_test);
+    gt_convert_print_u16(sp_buf + 2, index_test);
+
+    GT_LOGD(GT_LOG_TAG_SERIAL , ">> send sp = 0x%X param = %d",sp_test, index_test);
+    gt_serial_set_value(sp_buf, sizeof(sp_buf));
+#endif
+
 }
 static void _btn2_cb(gt_event_st* event)
 {
+#if TEST_IS_VP
     --index_test;
-    gt_convert_print_u16(vp_buf, addr_test);
+    gt_convert_print_u16(vp_buf, vp_test);
     gt_convert_print_u16(vp_buf + 2, index_test);
 
-    GT_LOGD(GT_LOG_TAG_SERIAL , ">> send vp = 0x%X param = %d",addr_test, index_test);
+    GT_LOGD(GT_LOG_TAG_SERIAL , ">> send vp = 0x%X param = %d",vp_test, index_test);
     gt_serial_set_value(vp_buf, sizeof(vp_buf));
+#else
+    index_test -= 10;
+    gt_convert_print_u16(sp_buf, sp_test);
+    gt_convert_print_u16(sp_buf + 2, index_test);
 
+    GT_LOGD(GT_LOG_TAG_SERIAL , ">> send sp = 0x%X param = %d",sp_test, index_test);
+    gt_serial_set_value(sp_buf, sizeof(sp_buf));
+#endif
 }
 #endif
 static gt_obj_st* _gt_serial_init_screen(void)
@@ -260,6 +310,7 @@ static gt_obj_st* _gt_serial_init_screen(void)
     return screen;
 }
 
+
 static void _gt_serial_ui_init(void)
 {
     if(_serial_ui.lock){
@@ -278,6 +329,7 @@ static void _gt_serial_ui_init(void)
 
 #if GT_USE_SERIAL_VAR
     gt_serial_var_init();
+    _read_sp_param_to_var_buffer(&_serial_ui._show_file_head, &_serial_ui.page_info);
 #endif
 
     for(uint16_t i = 0; i < _serial_ui._show_file_head.page_numb; i++){

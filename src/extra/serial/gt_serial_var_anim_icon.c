@@ -105,27 +105,55 @@ static bool _get_param(gt_var_st* var, gt_var_anim_icon_st* icon)
     GT_LOGI(GT_LOG_TAG_SERIAL, "var type: %d", icon->head.type);
     if(icon->head.type != VAR_TYPE_ANIM_ICON) {return false;}
 
-#if 0
-    if(icon->head.sp != 0xFFFF){
-        if(0 != gt_serial_var_buffer_get_reg(icon->head.sp, var->buffer + 6, (icon->head.len_dsc)*2)){
-            GT_LOGE(GT_LOG_TAG_SERIAL, "Get sp value err!!");
-            return false;
-        }
-
-        ret = gt_bin_convert_parse(&bin, _format);
-        if (GT_RES_OK != ret.res) {
-            GT_LOGE(GT_LOG_TAG_SERIAL, "Parse err code: %d, index: %d", ret.res, ret.index);
-            return false;
-        }
-    }
-#endif
-
     GT_LOGI(GT_LOG_TAG_SERIAL, "type: %d, sp: 0x%X, vp: 0x%X x: %d, y: %d",\
                                 icon->head.type, icon->head.sp, icon->head.vp, icon->param.x, icon->param.y);
 
     //
 
     return true;
+}
+
+static void _set_param(gt_var_st* var, gt_var_anim_icon_st* icon)
+{
+    // add imge
+    if(0 != gt_player_get_item_count(var->obj)){
+        gt_player_remove_all_items(var->obj);
+    }
+    gt_player_add_item(var->obj, "f:img_altitude_78x78.png", sizeof("f:img_altitude_78x78.png"));
+	gt_player_add_item(var->obj, "f:img_blood_oxygen18_78x78.png", sizeof("f:img_blood_oxygen18_78x78.png"));
+	gt_player_add_item(var->obj, "f:img_heart_rate15_78x78.png", sizeof("f:img_heart_rate15_78x78.png"));
+	gt_player_add_item(var->obj, "f:img_information13_78x78.png", sizeof("f:img_information13_78x78.png"));
+	gt_player_add_item(var->obj, "f:img_music14_78x78.png", sizeof("f:img_music14_78x78.png"));
+	gt_player_add_item(var->obj, "f:img_record_78x78.png", sizeof("f:img_record_78x78.png"));
+	gt_player_add_item(var->obj, "f:img_sleep5_78x78.png", sizeof("f:img_sleep5_78x78.png"));
+	gt_player_add_item(var->obj, "f:img_sports14_78x78.png", sizeof("f:img_sports14_78x78.png"));
+	gt_player_add_item(var->obj, "f:img_sports_record14_78x78.png", sizeof("f:img_sports_record14_78x78.png"));
+
+    gt_obj_set_pos(var->obj, icon->param.x, icon->param.y);
+    gt_player_set_mode(var->obj, icon->param.anim_mode ? GT_PLAYER_MODE_ONCE : GT_PLAYER_MODE_LOOP);
+
+    //
+    if(0x0002 == icon->param.reset_icon_en){
+        gt_player_set_stop_index(var->obj, -1);
+    }
+    else{
+        gt_player_set_stop_index(var->obj, icon->param.icon_stop);
+    }
+    //
+    gt_player_set_auto_play_period(var->obj, icon->param.time);
+
+    uint16_t index = 0;
+    uint8_t data[2];
+    if(0 == gt_serial_var_buffer_get_reg(icon->head.vp, data, 2)){
+        index = ((data[0] << 8) | data[1]);
+    }
+    if(index == icon->param.v_stop){
+        gt_player_stop(var->obj);
+    }
+    else if(index == icon->param.v_start){
+        gt_player_play(var->obj);
+    }
+
 }
 
 static void _set_vp_value(gt_var_st* var, gt_var_value_st* value)
@@ -158,13 +186,22 @@ static void _set_sp_value(uint8_t reg, gt_var_st* var, gt_var_value_st* value)
 {
     // set sp value
     uint8_t tmp_reg = GT_VAR_GET_SP_REG(reg);
-    switch(reg)
-    {
-    case 0:
-        break;
-    default:
-        break;
+    gt_var_anim_icon_st var_icon;
+
+    if(!_get_param(var, &var_icon)){
+        return ;
     }
+
+    // read sp;
+    if(0 != gt_serial_var_buffer_get_reg(var_icon.head.sp, var->buffer + 6, var_icon.head.len_dsc*2)){
+        return ;
+    }
+
+    if(!_get_param(var, &var_icon)){
+        return ;
+    }
+
+    _set_param(var, &var_icon);
 }
 
 static void _set_value(gt_var_st* var, gt_var_value_st* value)
@@ -191,36 +228,11 @@ gt_res_t gt_serial_var_anim_icon_create(gt_var_st* var)
 
     gt_obj_st* new_obj = gt_player_create(var->obj);
     gt_obj_register_id(new_obj, var->id);
-    gt_obj_set_pos(new_obj, var_icon.param.x, var_icon.param.y);
     gt_obj_set_size(new_obj, 1, 1);
     gt_player_set_type(new_obj, GT_PLAYER_TYPE_IMG);
-    // add imge
-    gt_player_add_item(new_obj, "f:img_altitude_78x78.png", sizeof("f:img_altitude_78x78.png"));
-	gt_player_add_item(new_obj, "f:img_blood_oxygen18_78x78.png", sizeof("f:img_blood_oxygen18_78x78.png"));
-	gt_player_add_item(new_obj, "f:img_heart_rate15_78x78.png", sizeof("f:img_heart_rate15_78x78.png"));
-	gt_player_add_item(new_obj, "f:img_information13_78x78.png", sizeof("f:img_information13_78x78.png"));
-	gt_player_add_item(new_obj, "f:img_music14_78x78.png", sizeof("f:img_music14_78x78.png"));
-	gt_player_add_item(new_obj, "f:img_record_78x78.png", sizeof("f:img_record_78x78.png"));
-	gt_player_add_item(new_obj, "f:img_sleep5_78x78.png", sizeof("f:img_sleep5_78x78.png"));
-	gt_player_add_item(new_obj, "f:img_sports14_78x78.png", sizeof("f:img_sports14_78x78.png"));
-	gt_player_add_item(new_obj, "f:img_sports_record14_78x78.png", sizeof("f:img_sports_record14_78x78.png"));
 
-    //
-    gt_player_set_mode(new_obj, var_icon.param.anim_mode ? GT_PLAYER_MODE_ONCE : GT_PLAYER_MODE_LOOP);
-    gt_player_set_stop_index(new_obj, var_icon.param.icon_stop);
-    gt_player_set_auto_play_period(new_obj, var_icon.param.time);
-
-    uint16_t index = 0;
-    uint8_t data[2];
-    if(0 == gt_serial_var_buffer_get_reg(var_icon.head.vp, data, 2)){
-        index = ((data[0] << 8) | data[1]);
-    }
-    if(index == var_icon.param.v_stop){
-        gt_player_stop(new_obj);
-    }
-    else if(index == var_icon.param.v_start){
-        gt_player_play(new_obj);
-    }
+    var->obj = new_obj;
+    _set_param(var, &var_icon);
 
     return GT_RES_OK;
 }

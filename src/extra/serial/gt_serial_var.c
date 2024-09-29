@@ -259,6 +259,10 @@ gt_res_t gt_serial_var_create(gt_var_st* var)
         return GT_RES_INV;
     }
 
+    if(0xFFFF != var_icon.sp){
+        gt_serial_var_buffer_get_reg(var_icon.sp, var->buffer + 6, var_icon.len_dsc * 2);
+    }
+
     gt_var_handler_st handler = {0};
     handler.var = var;
     handler.type = var_icon.type;
