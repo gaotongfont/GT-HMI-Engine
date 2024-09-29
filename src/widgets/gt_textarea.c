@@ -56,6 +56,7 @@ typedef struct _gt_textarea_s {
 
     gt_color_t color_background;
     gt_color_t color_border;
+    gt_color_t color_font;
     uint8_t border_width;
 
     gt_font_info_st font_info;
@@ -218,7 +219,7 @@ static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_poin
     font_attr.logical_area.y += scroll_y;
     font_attr.logical_area.h = 0xffff;
 
-    uint16_t height = (obj->reduce << 1) + font_attr.font->info.size + (font_attr.space_y << 1);
+    uint16_t height = obj->reduce + font_attr.font->info.size + (font_attr.space_y << 1);
 
 #if GT_TEXTAREA_SUB_STRING_SCROLL_CACHE
     gt_area_st cur_offset = {0};
@@ -486,6 +487,7 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
     gt_font_info_init(&style->font_info);
 
     style->color_background  = gt_color_white();
+    style->color_font        = gt_color_black();
     style->bg_opa            = GT_OPA_100;
     style->font_align        = GT_ALIGN_NONE;
     style->space_x           = 0;
@@ -505,7 +507,7 @@ void gt_textarea_set_text(gt_obj_st * textarea, char * text)
     }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     uint8_t style_mask = GT_FONT_STYLE_NONE;
-    gt_color_t color = gt_color_black();
+    gt_color_t color = style->color_font;
     uint16_t len = 0;
 
     if (style->cnt_contents) {
@@ -729,6 +731,7 @@ void gt_textarea_set_font_color(gt_obj_st * textarea, gt_color_t color)
     }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     uint16_t idx = 0;
+    style->color_font = color;
     while (idx < style->cnt_contents) {
 #if GT_TEXTAREA_CUSTOM_FONT_STYLE
         style->contents[idx].font_info.palette = color;
