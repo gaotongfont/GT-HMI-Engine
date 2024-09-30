@@ -397,7 +397,9 @@ static void _init_cb(gt_obj_st * obj) {
     _calc_all_layer_area(obj, &area_base, &area_val, &tag_area);
     if(style->pos < style->end){
         /** background area */
+#if !GT_USE_SERIAL
         draw_bg(obj->draw_ctx, &rect_attr, &area_base);
+#endif
     }
 
     rect_attr.bg_color = style->color_act;
@@ -408,14 +410,18 @@ static void _init_cb(gt_obj_st * obj) {
             rect_attr.base_area = &area_base;
         }
         /** active area */
+#if !GT_USE_SERIAL
         draw_bg(obj->draw_ctx, &rect_attr, &area_val);
+#endif
 
         if (style->repeat_mode) {
             gt_attr_rect_st repeat_attr = rect_attr;
             repeat_attr.bg_color = style->repeat_info.color;
             gt_area_st repeat_area = _calc_repeat_mode_area(obj, &area_val);
             /** AB repeat area */
+#if !GT_USE_SERIAL
             draw_bg(obj->draw_ctx, &repeat_attr, &repeat_area);
+#endif
         }
         rect_attr.base_area = NULL;
     }
@@ -452,7 +458,9 @@ static void _init_cb(gt_obj_st * obj) {
     }
 
     // draw tag
+#if !GT_USE_SERIAL
     draw_bg(obj->draw_ctx, &rect_attr, &tag_area);
+#endif
 
 draw_focus:
     // focus

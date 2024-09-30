@@ -41,6 +41,7 @@ extern "C" {
 typedef enum{
     VAR_TYPE_ICON = 0,
     VAR_TYPE_ANIM_ICON,
+    VAR_TYPE_SLIDER,
 
 }gt_var_type_et;
 
