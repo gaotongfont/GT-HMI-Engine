@@ -299,6 +299,13 @@ extern "C" {
         #define GT_SERIAL_CLIENT_CACHE_SIZE     512
     #endif
 
+    #ifndef GT_SERIAL_PACK_CACHE_SIZE
+        /**
+         * @brief The size of the pack data cache for each time
+         */
+        #define GT_SERIAL_PACK_CACHE_SIZE       512
+    #endif
+
     #ifndef GT_SERIAL_UNPACK_CACHE_SIZE
         /**
          * @brief The size of the unpack data cache for each time

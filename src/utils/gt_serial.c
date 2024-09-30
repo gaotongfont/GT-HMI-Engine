@@ -62,6 +62,7 @@ typedef struct {
 typedef struct gt_serial_s {
     gt_queue_st * master;   /** HMI as master */
     gt_queue_st * client;   /** HMI as client */
+    uint8_t * const pack_buffer;    /** cache to store pack data */
 #if GT_SERIAL_USE_TIMER_RECV_UNPACK
     uint8_t * const unpack_buffer;  /** cache to store unpack data */
     _gt_timer_st * timer_p;
@@ -86,6 +87,11 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY uint8_t _serial_master_cache[GT_SERIAL_MASTE
  */
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY uint8_t _serial_client_cache[GT_SERIAL_CLIENT_CACHE_SIZE] = {0};
 
+/**
+ * @brief Cache buffer to store client send a full serial protocol data
+ */
+static GT_ATTRIBUTE_LARGE_RAM_ARRAY uint8_t _serial_pack_cache[GT_SERIAL_PACK_CACHE_SIZE] = {0};
+
 #if GT_SERIAL_USE_TIMER_RECV_UNPACK
 /**
  * @brief Cache buffer to store client recv a full serial protocol data
@@ -96,6 +102,7 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY uint8_t _serial_unpack_cache[GT_SERIAL_UNPAC
 static gt_serial_st _serial = {
     .master = NULL,
     .client = NULL,
+    .pack_buffer =  _serial_pack_cache,
 #if GT_SERIAL_USE_TIMER_RECV_UNPACK
     .timer_p = NULL,
     .unpack_buffer = _serial_unpack_cache,
@@ -430,6 +437,15 @@ uint16_t gt_serial_client_recv(uint8_t * res_buffer)
         return 0;
     }
     return _serial_common_unpack_valid_data(_serial.client, &ret, res_buffer);
+}
+
+gt_serial_pack_buffer_st gt_serial_get_temp_pack_buffer(void)
+{
+    gt_serial_pack_buffer_st ret = {
+        .buffer = _serial.pack_buffer,
+        .size = GT_SERIAL_PACK_CACHE_SIZE,
+    };
+    return ret;
 }
 
 /* end ------------------------------------------------------------------*/

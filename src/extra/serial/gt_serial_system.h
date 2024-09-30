@@ -41,6 +41,7 @@ extern "C" {
 
 gt_res_t gt_serial_system_set_value(uint8_t const * const buffer, uint32_t len);
 
+uint16_t gt_serial_system_get_value(uint8_t * const res, uint8_t const * const buffer, uint32_t len);
 
 #endif  /** GT_USE_SERIAL */
 
