@@ -61,7 +61,7 @@ extern "C" {
 typedef gt_res_t ( * gt_serial_handler_cb_t)(uint8_t const * const, uint16_t);
 
 typedef struct {
-    uint8_t * const buffer;
+    uint8_t * buffer;
     uint32_t size;
 }gt_serial_pack_buffer_st;
 

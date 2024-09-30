@@ -12,6 +12,7 @@
 #include "./gt_serial_system.h"
 
 #if GT_USE_SERIAL && GT_USE_BIN_CONVERT
+#include "./gt_serial.h"
 #include "./gt_serial_var.h"
 #include "../utils/gt_bin_convert.h"
 #include "../../core/gt_mem.h"
@@ -493,7 +494,7 @@ uint16_t gt_serial_system_get_value(uint8_t * const res, uint8_t const * const b
             continue;
         }
         if (sys[i].sys_read_cb) {
-            byte_size = sys[i].sys_read_cb(pack_info, res, len);
+            byte_size = sys[i].sys_read_cb(&pack_info, res, len);
         }
         break;
     }
