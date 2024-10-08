@@ -443,7 +443,7 @@ gt_serial_pack_buffer_st gt_serial_get_temp_pack_buffer(void)
 {
     gt_serial_pack_buffer_st ret = {
         .buffer = _serial.pack_buffer,
-        .size = GT_SERIAL_PACK_CACHE_SIZE,
+        .len = GT_SERIAL_PACK_CACHE_SIZE,
     };
     return ret;
 }

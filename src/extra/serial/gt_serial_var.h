@@ -15,6 +15,7 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "../../gt_conf.h"
+#include "../../utils/gt_serial.h"
 #include "../../others/gt_types.h"
 #include "../../widgets/gt_obj.h"
 
@@ -60,10 +61,7 @@ typedef struct{
     gt_id_t id;
 }gt_var_st;
 
-typedef struct{
-    uint8_t* buffer;
-    uint32_t len;
-}gt_var_value_st;
+typedef struct gt_serial_pack_buffer_s gt_var_value_st;
 
 
 typedef gt_res_t (*create_cb_t)(gt_var_st* );

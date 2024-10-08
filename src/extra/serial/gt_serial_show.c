@@ -252,6 +252,7 @@ static void _btn1_cb(gt_event_st* event)
 
     GT_LOGD(GT_LOG_TAG_SERIAL , ">> send vp = 0x%X param = %d",vp_test, index_test);
     gt_serial_set_value(vp_buf, sizeof(vp_buf));
+    gt_serial_get_value(vp_buf, sizeof(vp_buf));
 #else
     index_test += 10;
     gt_convert_print_u16(sp_buf, sp_test);
@@ -259,6 +260,7 @@ static void _btn1_cb(gt_event_st* event)
 
     GT_LOGD(GT_LOG_TAG_SERIAL , ">> send sp = 0x%X param = %d",sp_test, index_test);
     gt_serial_set_value(sp_buf, sizeof(sp_buf));
+    gt_serial_get_value(sp_buf, sizeof(sp_buf));
 #endif
 
 }
@@ -271,6 +273,7 @@ static void _btn2_cb(gt_event_st* event)
 
     GT_LOGD(GT_LOG_TAG_SERIAL , ">> send vp = 0x%X param = %d",vp_test, index_test);
     gt_serial_set_value(vp_buf, sizeof(vp_buf));
+    gt_serial_get_value(vp_buf, sizeof(vp_buf));
 #else
     index_test -= 10;
     gt_convert_print_u16(sp_buf, sp_test);
@@ -278,6 +281,7 @@ static void _btn2_cb(gt_event_st* event)
 
     GT_LOGD(GT_LOG_TAG_SERIAL , ">> send sp = 0x%X param = %d",sp_test, index_test);
     gt_serial_set_value(sp_buf, sizeof(sp_buf));
+    gt_serial_get_value(sp_buf, sizeof(sp_buf));
 #endif
 }
 #endif
@@ -398,7 +402,7 @@ void gt_serial_set_value(uint8_t *value, uint16_t len)
         gt_serial_system_set_value(value, len);
     }
 
-    for(index = 0; index < _serial_ui.page_info.numb;index++){
+    for (index = 0; index < _serial_ui.page_info.numb;index++) {
         var.buffer = _get_control(&_serial_ui.page_info, index);
         var.len = GT_SERIAL_UI_PAGE_CONTROL_SIZE;
         var.id = index;
@@ -412,6 +416,40 @@ void gt_serial_set_value(uint8_t *value, uint16_t len)
         if(var.obj == NULL) {continue;}
 #if GT_USE_SERIAL_VAR
         gt_serial_var_set_value(&var, &var_value);
+#endif
+    }
+}
+
+void gt_serial_get_value(uint8_t * value, uint16_t len)
+{
+    int ret = -1;
+    uint16_t index = 0;
+    gt_var_st var;
+    gt_var_value_st var_value;
+    var_value.buffer = value;
+    var_value.len = len;
+
+    if(0 == gt_serial_var_check_value_is_sys_config(&var_value)) {
+        /* Operation sys config */
+        uint8_t re[60] = {0};
+        gt_serial_system_get_value(re, value, len);
+        GT_LOG_ARR(re, 0, 8);
+    }
+
+    for (index = 0; index < _serial_ui.page_info.numb;index++) {
+        var.buffer = _get_control(&_serial_ui.page_info, index);
+        var.len = GT_SERIAL_UI_PAGE_CONTROL_SIZE;
+        var.id = index;
+#if GT_USE_SERIAL_VAR
+        ret = gt_serial_var_check_value_is_set_this(&var, &var_value);
+#endif
+        if(ret < 0) {continue;}
+
+        var.id = index;
+        var.obj = gt_obj_find_by_id(var.id);
+        if(var.obj == NULL) {continue;}
+#if GT_USE_SERIAL_VAR
+        // gt_serial_var_get_value(&var, &var_value);   // TODO
 #endif
     }
 }

@@ -248,7 +248,7 @@ gt_res_t gt_serial_var_create(gt_var_st* var)
 {
     if(!var || !var->buffer || !var->obj) {return GT_RES_INV;}
 
-    gt_var_head_st var_icon;
+    gt_var_head_st var_icon = {0};
     gt_bin_convert_st bin = {
         .tar = &var_icon,
         .buffer = var->buffer,

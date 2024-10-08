@@ -118,6 +118,7 @@ int16_t gt_serial_go_back(int16_t step);
 
 void gt_serial_set_value(uint8_t *value, uint16_t len);
 
+void gt_serial_get_value(uint8_t * value, uint16_t len);
 
 
 #endif /* GT_USE_SERIAL_CFG && GT_USE_BIN_CONVERT */
