@@ -27,8 +27,8 @@
 
 typedef struct {
     uint32_t addr;
-    gt_serial_pack_buffer_st unpack;
-    gt_serial_pack_buffer_st pack;
+    gt_serial_pack_buffer_st unpack;    /** need to unpack data */
+    gt_serial_pack_buffer_st pack;      /** want to pack up data */
 }_serial_sys_pack_st;
 
 typedef gt_res_t ( * _system_write_cb_t)(_serial_sys_pack_st * const);
@@ -43,11 +43,17 @@ typedef struct {
 }_serial_system_st;
 
 /* static variables -----------------------------------------------------*/
-uint16_t _read_buffer_direct(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_buffer_direct(_serial_sys_pack_st * const pack_p) {
+    uint16_t len = 0, need_read = 0;
 
-    // pack_p->unpack.buffer[0] = GT_SERIAL_COMMAND_PASS_BACK_CMD;
-    // gt_memcpy(&pack_p->unpack.buffer[1], buffer, );
-    // gt_serial_master_send_packet();
+    need_read = pack_p->unpack.buffer[pack_p->unpack.len - 1] << 1; // short
+    gt_memcpy(&pack_p->pack.buffer[len], pack_p->unpack.buffer, pack_p->unpack.len);
+    len += pack_p->unpack.len;
+
+    gt_serial_var_buffer_get(&pack_p->unpack, &pack_p->pack.buffer[len], need_read);
+    pack_p->pack.len = len + need_read;
+
+    return pack_p->pack.len;
     return 0;
 }
 
@@ -103,15 +109,7 @@ gt_res_t _write_nor_flash(_serial_sys_pack_st * const pack_p) {
  * @return uint16_t
  */
 uint16_t _read_ver(_serial_sys_pack_st * const pack_p) {
-    GT_LOG_A("", "addr: %p, %d", pack_p->addr, pack_p->unpack.len);
-    GT_LOG_ARR(pack_p->unpack.buffer, 0, pack_p->unpack.len);
-    gt_serial_var_buffer_get(&pack_p->unpack, pack_p->pack.buffer, pack_p->unpack.len);
-
-    pack_p->pack.len = pack_p->unpack.len;
-
-    GT_LOG_A("", "_read_ver %d", pack_p->unpack.len);
-    GT_LOG_ARR(pack_p->pack.buffer, 0, pack_p->pack.len);
-    return 0;
+    return _read_buffer_direct(pack_p);
 }
 
 /**
@@ -136,23 +134,21 @@ gt_res_t _write_rtc(_serial_sys_pack_st * const pack_p) {
  * @return uint16_t
  */
 uint16_t _read_rtc(_serial_sys_pack_st * const pack_p) {
-    // gt_serial_pack_buffer_st unpack = gt_serial_get_temp_pack_buffer();
-    // if (len > unpack.len) {
-    //     return GT_RES_FAIL;
-    // }
-    // unpack.buffer[0] = GT_SERIAL_COMMAND_PASS_BACK_CMD;
-    // gt_memcpy(&unpack.buffer[1], buffer, );
-    // gt_serial_master_send_packet();
-    return 0;
+    return _read_buffer_direct(pack_p);
 }
 
 uint16_t _read_pic_now(_serial_sys_pack_st * const pack_p) {
-
-    return 0;
+    return _read_buffer_direct(pack_p);
 }
 
+/**
+ * @brief 0x0000: idle; 0x0001: busy, handle 13.bin / 14.bin
+ *
+ * @param pack_p
+ * @return uint16_t
+ */
 uint16_t _read_gui_status(_serial_sys_pack_st * const pack_p) {
-    return 0;
+    return _read_buffer_direct(pack_p);
 }
 
 // uint16_t _read_tp_status(_serial_sys_pack_st * const pack_p) {
@@ -389,52 +385,52 @@ uint16_t _read_value_change(_serial_sys_pack_st * const pack_p) {
 
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY const _serial_system_st _system_list[] = {
     // { 0x00, 4, (_system_write_cb_t)NULL, (_system_read_cb_t)NULL },
-    { 0x04, 2, _write_system_reset, (_system_read_cb_t)NULL },
-    { 0x06, 2, _write_update_cmd, (_system_read_cb_t)NULL },
-    { 0x08, 4, _write_nor_flash, (_system_read_cb_t)NULL },
+    { GT_SERIAL_SYS_ADDR_RESET, 2, _write_system_reset, (_system_read_cb_t)NULL },
+    { GT_SERIAL_SYS_ADDR_UPDATE_CMD, 2, _write_update_cmd, (_system_read_cb_t)NULL },
+    { GT_SERIAL_SYS_ADDR_NOR_FLASH, 4, _write_nor_flash, (_system_read_cb_t)NULL },
     // { 0x0c, 2, _write_uart2, (_system_read_cb_t)NULL },
-    { 0x0e, 2, (_system_write_cb_t)NULL, _read_ver },
-    { 0x10, 4, _write_rtc, _read_rtc },
-    { 0x14, 1, (_system_write_cb_t)NULL, _read_pic_now },
-    { 0x15, 1, (_system_write_cb_t)NULL, _read_gui_status },
+    { GT_SERIAL_SYS_ADDR_VER, 2, (_system_write_cb_t)NULL, _read_ver },
+    { GT_SERIAL_SYS_ADDR_RTC, 4, _write_rtc, _read_rtc },
+    { GT_SERIAL_SYS_ADDR_PIC_NOW, 1, (_system_write_cb_t)NULL, _read_pic_now },
+    { GT_SERIAL_SYS_ADDR_GUI_STATUS, 1, (_system_write_cb_t)NULL, _read_gui_status },
     // { 0x16, 4, (_system_write_cb_t)NULL, _read_tp_status },  // deprecated
     // { 0x1a, 23, (_system_write_cb_t)NULL, (_system_read_cb_t)NULL },
-    { 0x31, 1, (_system_write_cb_t)NULL, _read_led_now },
-    { 0x32, 8, (_system_write_cb_t)NULL, _read_ad0_ad7 },
+    { GT_SERIAL_SYS_ADDR_LED_NOW, 1, (_system_write_cb_t)NULL, _read_led_now },
+    { GT_SERIAL_SYS_ADDR_AD0_7, 8, (_system_write_cb_t)NULL, _read_ad0_ad7 },
     // { 0x3a, 64, (_system_write_cb_t)NULL, (_system_read_cb_t)NULL },
-    { 0x7a, 1, (_system_write_cb_t)NULL, _read_lcd_hor },
-    { 0x7b, 1, (_system_write_cb_t)NULL, _read_lcd_ver },
+    { GT_SERIAL_SYS_ADDR_LCD_HOR, 1, (_system_write_cb_t)NULL, _read_lcd_hor },
+    { GT_SERIAL_SYS_ADDR_LCD_VER, 1, (_system_write_cb_t)NULL, _read_lcd_ver },
     // { 0x7c, 4, (_system_write_cb_t)NULL, (_system_read_cb_t)NULL },
-    { 0x80, 2, _write_system_config, _read_system_config },
-    { 0x82, 2, _write_led_config, _read_led_config },
-    { 0x84, 2, _write_pic_set, _read_pic_set },
-    { 0x86, 2, _write_pwm0_set, _read_pwm0_set },
+    { GT_SERIAL_SYS_ADDR_SYS_CONFIG, 2, _write_system_config, _read_system_config },
+    { GT_SERIAL_SYS_ADDR_LED_CONFIG, 2, _write_led_config, _read_led_config },
+    { GT_SERIAL_SYS_ADDR_PIC_SET, 2, _write_pic_set, _read_pic_set },
+    { GT_SERIAL_SYS_ADDR_PWM0_SET, 2, _write_pwm0_set, _read_pwm0_set },
     // { 0x88, 2, _write_pwm1_set, _read_pwm1_set },    // deprecated
     // { 0x8a, 10, (_system_write_cb_t)NULL, (_system_read_cb_t)NULL },
-    { 0x92, 1, _write_pwm0_out, _read_pwm0_out },
-    { 0x93, 1, _write_pwm1_out, _read_pwm1_out },
+    { GT_SERIAL_SYS_ADDR_PWM0_OUT, 1, _write_pwm0_out, _read_pwm0_out },
+    { GT_SERIAL_SYS_ADDR_PWM1_OUT, 1, _write_pwm1_out, _read_pwm1_out },
     // { 0x94, 9, (_system_write_cb_t)NULL, (_system_read_cb_t)NULL },
-    { 0x9c, 4, _write_rtc_set, _read_rtc_set },
-    { 0xa0, 4, _write_wae, _read_wae },
+    { GT_SERIAL_SYS_ADDR_RTC_SET, 4, _write_rtc_set, _read_rtc_set },
+    { GT_SERIAL_SYS_ADDR_READ_WAE, 4, _write_wae, _read_wae },
     // { 0xa4, 6, (_system_write_cb_t)NULL, (_system_read_cb_t)NULL },
-    { 0xaa, 6, _write_expand_128mbit_flash, _read_expand_128mbit_flash },
-    { 0xb0, 36, _write_tp_cmd_visit, (_system_read_cb_t)NULL },
-    { 0xd4, 4, _write_tp_simulate, (_system_read_cb_t)NULL },
-    { 0xd8, 4, _write_pointer_icon_overlay, (_system_read_cb_t)NULL },
+    { GT_SERIAL_SYS_ADDR_EXP_FLASH, 6, _write_expand_128mbit_flash, _read_expand_128mbit_flash },
+    { GT_SERIAL_SYS_ADDR_TP_CMD_VISIT, 36, _write_tp_cmd_visit, (_system_read_cb_t)NULL },
+    { GT_SERIAL_SYS_ADDR_TP_SIMULATE, 4, _write_tp_simulate, (_system_read_cb_t)NULL },
+    { GT_SERIAL_SYS_ADDR_PTR_ICON_OVERLAY, 4, _write_pointer_icon_overlay, (_system_read_cb_t)NULL },
     // { 0xdc, 2, _write_wae_switch, (_system_read_cb_t)NULL }, // deprecated
-    { 0xde, 2, _write_icl_switch, (_system_read_cb_t)NULL },
+    { GT_SERIAL_SYS_ADDR_ICL_SWITCH, 2, _write_icl_switch, (_system_read_cb_t)NULL },
     // { 0xdc, 4, (_system_write_cb_t)NULL, (_system_read_cb_t)NULL },
-    { 0xe0, 2, _write_crc_checksum, _read_crc_checksum },
+    { GT_SERIAL_SYS_ADDR_CRC_CHECKSUM, 2, _write_crc_checksum, _read_crc_checksum },
     // { 0xe2, 6, (_system_write_cb_t)NULL, _read_area_single_bitmap_export },  // deprecated
     // { 0xe8, 2, (_system_write_cb_t)NULL, _read_page_overlay_switch },        // deprecated
     // { 0xea, 6, (_system_write_cb_t)NULL, (_system_read_cb_t)NULL },
-    { 0xf0, 4, _write_music_stream, (_system_read_cb_t)NULL },
-    { 0xf4, 8, _write_tp_draw_window, (_system_read_cb_t)NULL },
+    { GT_SERIAL_SYS_ADDR_MUSIC_STREAM, 4, _write_music_stream, (_system_read_cb_t)NULL },
+    { GT_SERIAL_SYS_ADDR_TP_DRAW_WINDOW, 8, _write_tp_draw_window, (_system_read_cb_t)NULL },
     // deprecated
     // { 0xfc, 2, _write_gui_stop_enabled, (_system_read_cb_t)NULL },
     // { 0xfe, 2, _write_uart_download, (_system_read_cb_t)NULL },
     // { 0x100, 512, _write_fsk, _read_fsk },
-    { 0x300, 128, _write_dynamic_curve, _read_dynamic_curve },
+    { GT_SERIAL_SYS_ADDR_DYNAMIC_CURVE, 128, _write_dynamic_curve, _read_dynamic_curve },
     // deprecated
     // { 0x380, 2, _write_dynamic_curve_channel1, (_system_read_cb_t)NULL },
     // { 0x382, 2, _write_dynamic_curve_channel2, (_system_read_cb_t)NULL },
@@ -445,11 +441,11 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const _serial_system_st _system_list[] = {
     // { 0x38c, 2, _write_dynamic_curve_channel7, (_system_read_cb_t)NULL },
     // { 0x38e, 2, _write_dynamic_curve_channel8, (_system_read_cb_t)NULL },
     // // { 0x390, 112, (_system_write_cb_t)NULL, (_system_read_cb_t)NULL },
-    { 0x400, 256, _write_wifi_connect, _read_wifi_connect },
-    { 0x500, 192, _write_multi_media, _read_multi_media },
-    { 0x5c0, 64, _write_expand_store, _read_expand_store },
+    { GT_SERIAL_SYS_ADDR_WIFI_CONNECT, 256, _write_wifi_connect, _read_wifi_connect },
+    { GT_SERIAL_SYS_ADDR_MULTI_MEDIA, 192, _write_multi_media, _read_multi_media },
+    { GT_SERIAL_SYS_ADDR_EXPAND_STORE, 64, _write_expand_store, _read_expand_store },
     // { 0x600, 2404, (_system_write_cb_t)NULL, (_system_read_cb_t)NULL },
-    { 0xf00, 2, (_system_write_cb_t)NULL, _read_value_change },
+    { GT_SERIAL_SYS_ADDR_VALUE_CHANGE, 2, (_system_write_cb_t)NULL, _read_value_change },
     // { 0xf02, 254, (_system_write_cb_t)NULL, (_system_read_cb_t)NULL },
 };
 

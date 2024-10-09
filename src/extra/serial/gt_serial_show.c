@@ -245,6 +245,7 @@ static uint8_t vp_buf[4] = {0};
 static uint8_t sp_buf[4] = {0};
 static void _btn1_cb(gt_event_st* event)
 {
+    gt_serial_pack_buffer_st pack = gt_serial_get_temp_pack_buffer();
 #if TEST_IS_VP
     ++index_test;
     gt_convert_print_u16(vp_buf, vp_test);
@@ -252,7 +253,7 @@ static void _btn1_cb(gt_event_st* event)
 
     GT_LOGD(GT_LOG_TAG_SERIAL , ">> send vp = 0x%X param = %d",vp_test, index_test);
     gt_serial_set_value(vp_buf, sizeof(vp_buf));
-    gt_serial_get_value(vp_buf, sizeof(vp_buf));
+    gt_serial_get_value(pack.buffer, vp_buf, sizeof(vp_buf));
 #else
     index_test += 10;
     gt_convert_print_u16(sp_buf, sp_test);
@@ -260,12 +261,13 @@ static void _btn1_cb(gt_event_st* event)
 
     GT_LOGD(GT_LOG_TAG_SERIAL , ">> send sp = 0x%X param = %d",sp_test, index_test);
     gt_serial_set_value(sp_buf, sizeof(sp_buf));
-    gt_serial_get_value(sp_buf, sizeof(sp_buf));
+    gt_serial_get_value(pack.buffer, sp_buf, sizeof(sp_buf));
 #endif
 
 }
 static void _btn2_cb(gt_event_st* event)
 {
+    gt_serial_pack_buffer_st pack = gt_serial_get_temp_pack_buffer();
 #if TEST_IS_VP
     --index_test;
     gt_convert_print_u16(vp_buf, vp_test);
@@ -273,7 +275,7 @@ static void _btn2_cb(gt_event_st* event)
 
     GT_LOGD(GT_LOG_TAG_SERIAL , ">> send vp = 0x%X param = %d",vp_test, index_test);
     gt_serial_set_value(vp_buf, sizeof(vp_buf));
-    gt_serial_get_value(vp_buf, sizeof(vp_buf));
+    gt_serial_get_value(pack.buffer, vp_buf, sizeof(vp_buf));
 #else
     index_test -= 10;
     gt_convert_print_u16(sp_buf, sp_test);
@@ -281,7 +283,7 @@ static void _btn2_cb(gt_event_st* event)
 
     GT_LOGD(GT_LOG_TAG_SERIAL , ">> send sp = 0x%X param = %d",sp_test, index_test);
     gt_serial_set_value(sp_buf, sizeof(sp_buf));
-    gt_serial_get_value(sp_buf, sizeof(sp_buf));
+    gt_serial_get_value(pack.buffer, sp_buf, sizeof(sp_buf));
 #endif
 }
 #endif
@@ -420,20 +422,24 @@ void gt_serial_set_value(uint8_t *value, uint16_t len)
     }
 }
 
-void gt_serial_get_value(uint8_t * value, uint16_t len)
+uint16_t gt_serial_get_value(uint8_t * res_buffer, uint8_t * value, uint16_t len)
 {
     int ret = -1;
     uint16_t index = 0;
+    uint16_t ret_len = 0;
     gt_var_st var;
     gt_var_value_st var_value;
     var_value.buffer = value;
     var_value.len = len;
+    if (NULL == res_buffer) {
+        return ret_len;
+    }
 
     if(0 == gt_serial_var_check_value_is_sys_config(&var_value)) {
         /* Operation sys config */
-        uint8_t re[60] = {0};
-        gt_serial_system_get_value(re, value, len);
-        GT_LOG_ARR(re, 0, 8);
+        ret_len = gt_serial_system_get_value(res_buffer, value, len);
+        GT_LOG_ARR(res_buffer, 0, ret_len);
+        return ret_len;
     }
 
     for (index = 0; index < _serial_ui.page_info.numb;index++) {
@@ -452,6 +458,7 @@ void gt_serial_get_value(uint8_t * value, uint16_t len)
         // gt_serial_var_get_value(&var, &var_value);   // TODO
 #endif
     }
+    return ret_len;
 }
 
 

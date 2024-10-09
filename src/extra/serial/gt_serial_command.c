@@ -38,14 +38,17 @@
 /* static functions -----------------------------------------------------*/
 
 static gt_res_t _command_decode_handler_cb(uint8_t const * const buffer, uint16_t len) {
+    gt_serial_pack_buffer_st pack = gt_serial_get_temp_pack_buffer();
     uint8_t cmd_val = buffer[0];
 
+    if (GT_SERIAL_COMMAND_READ_CMD == cmd_val) {
+        pack.buffer[0] = GT_SERIAL_COMMAND_PASS_BACK_CMD;
+        pack.len += gt_serial_get_value(&pack.buffer[1], (uint8_t * )&buffer[1], len - 1);
+        return gt_serial_master_send_packet(pack.buffer, pack.len);
+    }
     if (GT_SERIAL_COMMAND_WRITE_CMD == cmd_val) {
         gt_serial_set_value((uint8_t * )&buffer[1], len - 1);
-    } else if (GT_SERIAL_COMMAND_READ_CMD == cmd_val) {
-
     }
-
     return GT_RES_OK;
 }
 

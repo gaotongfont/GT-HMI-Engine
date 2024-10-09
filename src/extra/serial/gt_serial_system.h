@@ -23,6 +23,39 @@ extern "C" {
 
 /* define ---------------------------------------------------------------*/
 
+#define GT_SERIAL_SYS_ADDR_RESET            0x04
+#define GT_SERIAL_SYS_ADDR_UPDATE_CMD       0x06
+#define GT_SERIAL_SYS_ADDR_NOR_FLASH        0x08
+#define GT_SERIAL_SYS_ADDR_VER              0x0E
+#define GT_SERIAL_SYS_ADDR_RTC              0x10
+#define GT_SERIAL_SYS_ADDR_PIC_NOW          0x14
+#define GT_SERIAL_SYS_ADDR_GUI_STATUS       0x15
+#define GT_SERIAL_SYS_ADDR_LED_NOW          0x31
+#define GT_SERIAL_SYS_ADDR_AD0_7            0x32
+#define GT_SERIAL_SYS_ADDR_LCD_HOR          0x7A
+#define GT_SERIAL_SYS_ADDR_LCD_VER          0x7B
+#define GT_SERIAL_SYS_ADDR_SYS_CONFIG       0x80
+#define GT_SERIAL_SYS_ADDR_LED_CONFIG       0x82
+#define GT_SERIAL_SYS_ADDR_PIC_SET          0x84
+#define GT_SERIAL_SYS_ADDR_PWM0_SET         0x86
+#define GT_SERIAL_SYS_ADDR_PWM0_OUT         0x92
+#define GT_SERIAL_SYS_ADDR_PWM1_OUT         0x93
+#define GT_SERIAL_SYS_ADDR_RTC_SET          0x9C
+#define GT_SERIAL_SYS_ADDR_READ_WAE         0xA0
+#define GT_SERIAL_SYS_ADDR_EXP_FLASH        0xAA
+#define GT_SERIAL_SYS_ADDR_TP_CMD_VISIT     0xB0
+#define GT_SERIAL_SYS_ADDR_TP_SIMULATE      0xD4
+#define GT_SERIAL_SYS_ADDR_PTR_ICON_OVERLAY 0xD8
+#define GT_SERIAL_SYS_ADDR_ICL_SWITCH       0xDE
+#define GT_SERIAL_SYS_ADDR_CRC_CHECKSUM     0xE0
+#define GT_SERIAL_SYS_ADDR_MUSIC_STREAM     0xF0
+#define GT_SERIAL_SYS_ADDR_TP_DRAW_WINDOW   0xF4
+#define GT_SERIAL_SYS_ADDR_DYNAMIC_CURVE    0x300
+#define GT_SERIAL_SYS_ADDR_WIFI_CONNECT     0x400
+#define GT_SERIAL_SYS_ADDR_MULTI_MEDIA      0x500
+#define GT_SERIAL_SYS_ADDR_EXPAND_STORE     0x5C0
+#define GT_SERIAL_SYS_ADDR_VALUE_CHANGE     0xF00
+
 
 
 /* typedef --------------------------------------------------------------*/
