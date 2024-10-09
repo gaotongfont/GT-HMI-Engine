@@ -57,6 +57,7 @@ typedef struct _gt_roller_s {
     gt_obj_st obj;
     gt_obj_st * text;                   // Options text, free by class
     gt_anim_st * anim_snap;             // The anim object to scroll snap
+    gt_color_t select_color;            // The color of selected item
     uint16_t scroll_vertical_length;    // The length of vertical scroll
     uint16_t selected;                  // The index of selected item, Infinite mode need to calculate the real index
     uint8_t count_total;                // The total count of items
@@ -97,7 +98,7 @@ static void _init_cb(gt_obj_st * obj) {
         rect_attr.border_width   = 2;
         rect_attr.border_color   = gt_color_hex(0xc7c7c7);
         rect_attr.bg_opa         = obj->opa;
-        rect_attr.bg_color       = gt_color_white();
+        rect_attr.bg_color       = obj->bgcolor;
         rect_attr.radius         = 4;
 
         draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
@@ -112,7 +113,7 @@ static void _init_cb(gt_obj_st * obj) {
         .h = obj->area.h / style->count_of_show
     };
     rect_attr.reg.is_fill    = true;
-    rect_attr.bg_color       = gt_color_hex(0x00a8ff);
+    rect_attr.bg_color       = style->select_color;
     rect_attr.bg_opa         = obj->opa;
 
     draw_bg(obj->draw_ctx, &rect_attr, &selected);
@@ -431,6 +432,7 @@ gt_obj_st * gt_roller_create(gt_obj_st * parent)
     style->count_of_show = 3;
     style->line_space = 10;
     style->reg.show_background = true;
+    style->select_color = gt_color_hex(0x00a8ff);
 
     obj->fixed = false;
     obj->area.w = 60;
@@ -514,6 +516,16 @@ void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mo
     _reset_scroll_size(obj);
     gt_obj_set_inside(style->text, true);
     gt_obj_set_scroll_dir(obj, GT_SCROLL_VERTICAL);
+}
+
+void gt_roller_set_select_bgcolor(gt_obj_st * obj, gt_color_t color)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
+    style->select_color = color;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index)

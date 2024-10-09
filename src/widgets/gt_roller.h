@@ -91,6 +91,14 @@ void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mo
 void gt_roller_set_display_item_count(gt_obj_st * obj, uint8_t count);
 
 /**
+ * @brief set select item background color
+ *
+ * @param obj
+ * @param color default color value: 0x00a8ff
+ */
+void gt_roller_set_select_bgcolor(gt_obj_st * obj, gt_color_t color);
+
+/**
  * @brief Set the selected item of the roller immediately
  *
  * @param obj Roller object
