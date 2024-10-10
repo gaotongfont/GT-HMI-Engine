@@ -17,6 +17,8 @@
 #include "../utils/gt_bin_convert.h"
 #include "../../core/gt_mem.h"
 #include "../../others/gt_log.h"
+#include "./gt_serial_show.h"
+#include "./gt_serial_cfg.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -43,6 +45,23 @@ typedef struct {
 }_serial_system_st;
 
 /* static variables -----------------------------------------------------*/
+static gt_res_t _write_buffer_direct(_serial_sys_pack_st * const pack_p) {
+    gt_var_value_st var_value = {
+        .buffer = pack_p->unpack.buffer,
+        .len = pack_p->unpack.len,
+    };
+    if (gt_serial_var_buffer_set(&var_value)) {
+        return GT_RES_FAIL;
+    }
+    return GT_RES_OK;
+}
+
+/**
+ * @brief 0x00f0 0x01
+ *
+ * @param pack_p
+ * @return uint16_t
+ */
 static uint16_t _read_buffer_direct(_serial_sys_pack_st * const pack_p) {
     uint16_t len = 0, need_read = 0;
 
@@ -57,10 +76,9 @@ static uint16_t _read_buffer_direct(_serial_sys_pack_st * const pack_p) {
     return 0;
 }
 
-gt_res_t _write_system_reset(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_system_reset(_serial_sys_pack_st * const pack_p) {
     uint8_t reset[] = { 0x55, 0xaa, 0x5a, 0xa5 };
     for (uint8_t i = 0; i < 4; ++i) {
-        // if (reset[i] != buffer[i]) {
         if (reset[i] != pack_p->unpack.buffer[i]) {
             return GT_RES_FAIL;
         }
@@ -70,7 +88,7 @@ gt_res_t _write_system_reset(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-gt_res_t _write_update_cmd(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_update_cmd(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
@@ -81,7 +99,7 @@ gt_res_t _write_update_cmd(_serial_sys_pack_st * const pack_p) {
  * @param pack_p
  * @return gt_res_t
  */
-gt_res_t _write_nor_flash(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_nor_flash(_serial_sys_pack_st * const pack_p) {
     uint8_t type = pack_p->unpack.buffer[0];
     uint32_t addr = gt_convert_parse_by_len(&pack_p->unpack.buffer[1], 3);
     if (0x5a == type) {
@@ -108,7 +126,7 @@ gt_res_t _write_nor_flash(_serial_sys_pack_st * const pack_p) {
  * @param len
  * @return uint16_t
  */
-uint16_t _read_ver(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_ver(_serial_sys_pack_st * const pack_p) {
     return _read_buffer_direct(pack_p);
 }
 
@@ -121,7 +139,7 @@ uint16_t _read_ver(_serial_sys_pack_st * const pack_p) {
  * @param pack_p
  * @return gt_res_t
  */
-gt_res_t _write_rtc(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_rtc(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
@@ -133,11 +151,11 @@ gt_res_t _write_rtc(_serial_sys_pack_st * const pack_p) {
  * @param pack_p
  * @return uint16_t
  */
-uint16_t _read_rtc(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_rtc(_serial_sys_pack_st * const pack_p) {
     return _read_buffer_direct(pack_p);
 }
 
-uint16_t _read_pic_now(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_pic_now(_serial_sys_pack_st * const pack_p) {
     return _read_buffer_direct(pack_p);
 }
 
@@ -147,7 +165,7 @@ uint16_t _read_pic_now(_serial_sys_pack_st * const pack_p) {
  * @param pack_p
  * @return uint16_t
  */
-uint16_t _read_gui_status(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_gui_status(_serial_sys_pack_st * const pack_p) {
     return _read_buffer_direct(pack_p);
 }
 
@@ -155,231 +173,251 @@ uint16_t _read_gui_status(_serial_sys_pack_st * const pack_p) {
 //     return 0;
 // }
 
-uint16_t _read_led_now(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_led_now(_serial_sys_pack_st * const pack_p) {
+    return _read_buffer_direct(pack_p);
+}
+
+static uint16_t _read_ad0_ad7(_serial_sys_pack_st * const pack_p) {
     return 0;
 }
 
-uint16_t _read_ad0_ad7(_serial_sys_pack_st * const pack_p) {
-    return 0;
+static uint16_t _read_lcd_hor(_serial_sys_pack_st * const pack_p) {
+    return _read_buffer_direct(pack_p);
 }
 
-uint16_t _read_lcd_hor(_serial_sys_pack_st * const pack_p) {
-    return 0;
+static uint16_t _read_lcd_ver(_serial_sys_pack_st * const pack_p) {
+    return _read_buffer_direct(pack_p);
 }
 
-uint16_t _read_lcd_ver(_serial_sys_pack_st * const pack_p) {
-    return 0;
+static gt_res_t _write_system_config(_serial_sys_pack_st * const pack_p) {
+    bool is_load = 0x5A == pack_p->unpack.buffer[0] ? true : false;
+    if (!is_load) {
+        return GT_RES_OK;
+    }
+    gt_serial_cfg_st * const val = gt_serial_cfg_get_root();
+    uint8_t d0 = pack_p->unpack.buffer[5];
+    val->system_config.param_0.touch_auto_upload = (d0 >> 5) & 0x01;
+    val->system_config.param_0.touch_beep = (d0 >> 4) & 0x01;
+    val->system_config.param_0.touch_back_light_sleep = (d0 >> 3) & 0x01;
+    val->system_config.param_0.disp_direct = d0 & 0x03;
+    return _write_buffer_direct(pack_p);
 }
 
-gt_res_t _write_system_config(_serial_sys_pack_st * const pack_p) {
-    GT_LOG_A("", "_write_system_config");
+static uint16_t _read_system_config(_serial_sys_pack_st * const pack_p) {
+    return _read_buffer_direct(pack_p);
+}
+
+static gt_res_t _write_led_config(_serial_sys_pack_st * const pack_p) {
+    return _write_buffer_direct(pack_p);
+}
+
+static uint16_t _read_led_config(_serial_sys_pack_st * const pack_p) {
+    return _read_buffer_direct(pack_p);
+}
+
+/**
+ * @brief 0x5a01 0x0001
+ *
+ * @param pack_p
+ * @return gt_res_t
+ */
+static gt_res_t _write_pic_set(_serial_sys_pack_st * const pack_p) {
+    bool is_load = 0x5A == pack_p->unpack.buffer[0] ? true : false;
+    if (!is_load) {
+        return GT_RES_OK;
+    }
+    uint16_t idx = gt_convert_parse_u16(&pack_p->unpack.buffer[2]);
+    gt_serial_load_page(idx);
+    pack_p->unpack.buffer[0] = 0x00;
+    return _write_buffer_direct(pack_p);
+}
+
+static uint16_t _read_pic_set(_serial_sys_pack_st * const pack_p) {
+    return _read_buffer_direct(pack_p);
+}
+
+static gt_res_t _write_pwm0_set(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-uint16_t _read_system_config(_serial_sys_pack_st * const pack_p) {
-    GT_LOG_A("", "_read_system_config");
-
+static uint16_t _read_pwm0_set(_serial_sys_pack_st * const pack_p) {
     return 0;
 }
 
-gt_res_t _write_led_config(_serial_sys_pack_st * const pack_p) {
-    return GT_RES_OK;
-}
-
-uint16_t _read_led_config(_serial_sys_pack_st * const pack_p) {
-    return 0;
-}
-
-gt_res_t _write_pic_set(_serial_sys_pack_st * const pack_p) {
-    return GT_RES_OK;
-}
-
-uint16_t _read_pic_set(_serial_sys_pack_st * const pack_p) {
-    return 0;
-}
-
-gt_res_t _write_pwm0_set(_serial_sys_pack_st * const pack_p) {
-    return GT_RES_OK;
-}
-
-uint16_t _read_pwm0_set(_serial_sys_pack_st * const pack_p) {
-    return 0;
-}
-
-// gt_res_t _write_pwm1_set(_serial_sys_pack_st * const pack_p) {
+// static gt_res_t _write_pwm1_set(_serial_sys_pack_st * const pack_p) {
 //     return GT_RES_OK;
 // }
 
-// uint16_t _read_pwm1_set(_serial_sys_pack_st * const pack_p) {
+// static uint16_t _read_pwm1_set(_serial_sys_pack_st * const pack_p) {
 //     return 0;
 // }
 
-gt_res_t _write_pwm0_out(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_pwm0_out(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-uint16_t _read_pwm0_out(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_pwm0_out(_serial_sys_pack_st * const pack_p) {
     return 0;
 }
 
-gt_res_t _write_pwm1_out(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_pwm1_out(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-uint16_t _read_pwm1_out(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_pwm1_out(_serial_sys_pack_st * const pack_p) {
     return 0;
 }
 
-gt_res_t _write_rtc_set(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_rtc_set(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-uint16_t _read_rtc_set(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_rtc_set(_serial_sys_pack_st * const pack_p) {
     return 0;
 }
 
-gt_res_t _write_wae(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_wae(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-uint16_t _read_wae(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_wae(_serial_sys_pack_st * const pack_p) {
     return 0;
 }
 
-gt_res_t _write_expand_128mbit_flash(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_expand_128mbit_flash(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-uint16_t _read_expand_128mbit_flash(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_expand_128mbit_flash(_serial_sys_pack_st * const pack_p) {
     return 0;
 }
 
-gt_res_t _write_tp_cmd_visit(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_tp_cmd_visit(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-gt_res_t _write_tp_simulate(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_tp_simulate(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-gt_res_t _write_pointer_icon_overlay(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_pointer_icon_overlay(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-// gt_res_t _write_wae_switch(_serial_sys_pack_st * const pack_p) {
+// static gt_res_t _write_wae_switch(_serial_sys_pack_st * const pack_p) {
 //     return GT_RES_OK;
 // }
 
-gt_res_t _write_icl_switch(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_icl_switch(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-gt_res_t _write_crc_checksum(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_crc_checksum(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-uint16_t _read_crc_checksum(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_crc_checksum(_serial_sys_pack_st * const pack_p) {
     return 0;
 }
 
-// uint16_t _read_area_single_bitmap_export(_serial_sys_pack_st * const pack_p) {
+// static uint16_t _read_area_single_bitmap_export(_serial_sys_pack_st * const pack_p) {
 //     return 0;
 // }
 
-// uint16_t _read_page_overlay_switch(_serial_sys_pack_st * const pack_p) {
+// static uint16_t _read_page_overlay_switch(_serial_sys_pack_st * const pack_p) {
 //     return 0;
 // }
 
-gt_res_t _write_music_stream(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_music_stream(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-gt_res_t _write_tp_draw_window(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_tp_draw_window(_serial_sys_pack_st * const pack_p) {
     /** deprecated */
     return GT_RES_OK;
 }
 
-// gt_res_t _write_gui_stop_enabled(_serial_sys_pack_st * const pack_p) {
+// static gt_res_t _write_gui_stop_enabled(_serial_sys_pack_st * const pack_p) {
 //     return GT_RES_OK;
 // }
 
-// gt_res_t _write_uart_download(_serial_sys_pack_st * const pack_p) {
+// static gt_res_t _write_uart_download(_serial_sys_pack_st * const pack_p) {
 //     return GT_RES_OK;
 // }
 
-// gt_res_t _write_fsk(_serial_sys_pack_st * const pack_p) {
+// static gt_res_t _write_fsk(_serial_sys_pack_st * const pack_p) {
 //     return GT_RES_OK;
 // }
 
-// uint16_t _read_fsk(_serial_sys_pack_st * const pack_p) {
+// static uint16_t _read_fsk(_serial_sys_pack_st * const pack_p) {
 //     return 0;
 // }
 
-gt_res_t _write_dynamic_curve(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_dynamic_curve(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-uint16_t _read_dynamic_curve(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_dynamic_curve(_serial_sys_pack_st * const pack_p) {
     return 0;
 }
 
-// gt_res_t _write_dynamic_curve_channel1(_serial_sys_pack_st * const pack_p) {
+// static gt_res_t _write_dynamic_curve_channel1(_serial_sys_pack_st * const pack_p) {
 //     return GT_RES_OK;
 // }
 
-// gt_res_t _write_dynamic_curve_channel2(_serial_sys_pack_st * const pack_p) {
+// static gt_res_t _write_dynamic_curve_channel2(_serial_sys_pack_st * const pack_p) {
 //     return GT_RES_OK;
 // }
 
-// gt_res_t _write_dynamic_curve_channel3(_serial_sys_pack_st * const pack_p) {
+// static gt_res_t _write_dynamic_curve_channel3(_serial_sys_pack_st * const pack_p) {
 //     return GT_RES_OK;
 // }
 
-// gt_res_t _write_dynamic_curve_channel4(_serial_sys_pack_st * const pack_p) {
+// static gt_res_t _write_dynamic_curve_channel4(_serial_sys_pack_st * const pack_p) {
 //     return GT_RES_OK;
 // }
 
-// gt_res_t _write_dynamic_curve_channel5(_serial_sys_pack_st * const pack_p) {
+// static gt_res_t _write_dynamic_curve_channel5(_serial_sys_pack_st * const pack_p) {
 //     return GT_RES_OK;
 // }
 
-// gt_res_t _write_dynamic_curve_channel6(_serial_sys_pack_st * const pack_p) {
+// static gt_res_t _write_dynamic_curve_channel6(_serial_sys_pack_st * const pack_p) {
 //     return GT_RES_OK;
 // }
 
-// gt_res_t _write_dynamic_curve_channel7(_serial_sys_pack_st * const pack_p) {
+// static gt_res_t _write_dynamic_curve_channel7(_serial_sys_pack_st * const pack_p) {
 //     return GT_RES_OK;
 // }
 
-// gt_res_t _write_dynamic_curve_channel8(_serial_sys_pack_st * const pack_p) {
+// static gt_res_t _write_dynamic_curve_channel8(_serial_sys_pack_st * const pack_p) {
 //     return GT_RES_OK;
 // }
 
-gt_res_t _write_wifi_connect(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_wifi_connect(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-uint16_t _read_wifi_connect(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_wifi_connect(_serial_sys_pack_st * const pack_p) {
     return 0;
 }
 
-gt_res_t _write_multi_media(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_multi_media(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-uint16_t _read_multi_media(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_multi_media(_serial_sys_pack_st * const pack_p) {
     return 0;
 }
 
-gt_res_t _write_expand_store(_serial_sys_pack_st * const pack_p) {
+static gt_res_t _write_expand_store(_serial_sys_pack_st * const pack_p) {
     return GT_RES_OK;
 }
 
-uint16_t _read_expand_store(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_expand_store(_serial_sys_pack_st * const pack_p) {
     return 0;
 }
 
-uint16_t _read_value_change(_serial_sys_pack_st * const pack_p) {
+static uint16_t _read_value_change(_serial_sys_pack_st * const pack_p) {
     return 0;
 }
 

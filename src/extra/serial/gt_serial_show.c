@@ -389,7 +389,6 @@ int16_t gt_serial_go_back(int16_t step)
 
 void gt_serial_set_value(uint8_t *value, uint16_t len)
 {
-    if(!_serial_ui.lock) {return ;}
     int ret = -1;
     uint16_t index = 0;
     gt_var_st var;
@@ -403,6 +402,7 @@ void gt_serial_set_value(uint8_t *value, uint16_t len)
         /* Operation sys config */
         gt_serial_system_set_value(value, len);
     }
+    if(!_serial_ui.lock) {return ;}
 
     for (index = 0; index < _serial_ui.page_info.numb;index++) {
         var.buffer = _get_control(&_serial_ui.page_info, index);

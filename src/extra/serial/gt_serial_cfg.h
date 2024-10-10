@@ -204,9 +204,9 @@ void gt_serial_cfg_init(void);
 /**
  * @brief Get serial configuration object
  *
- * @return gt_serial_cfg_st const* const
+ * @return gt_serial_cfg_st * const
  */
-gt_serial_cfg_st const * const gt_serial_cfg_get_root(void);
+gt_serial_cfg_st * const gt_serial_cfg_get_root(void);
 
 
 

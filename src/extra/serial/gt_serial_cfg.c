@@ -16,6 +16,8 @@
 #include "../../core/gt_mem.h"
 #include "../../others/gt_log.h"
 #include "../../utils/gt_serial.h"
+#include "./gt_serial_show.h"
+#include "./gt_serial_system.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -141,10 +143,17 @@ static gt_res_t _print_system_config(void const * const user_data, uint8_t * con
 static gt_res_t _parse_backlight_sleep(void * user_data, uint8_t const * const buffer, uint32_t len) {
     gt_serial_cfg_st * cfg = (gt_serial_cfg_st *)user_data;
     gt_serial_cfg_backlight_sleep_st * bs = (gt_serial_cfg_backlight_sleep_st *)&cfg->backlight_sleep;
+    uint8_t tmp[4] = {0};
 
     bs->brightness = buffer[0];
     bs->brightness_sleep = buffer[1];
     bs->wake_up_time = gt_convert_parse_u16(&buffer[2]);
+
+    /** update var buffer */
+    gt_convert_print_u16(tmp, GT_SERIAL_SYS_ADDR_LED_NOW);
+    tmp[2] = 0x5a;
+    tmp[3] = bs->brightness;
+    gt_serial_set_value(tmp, 4);
 
     return GT_RES_OK;
 }
@@ -163,6 +172,7 @@ static gt_res_t _print_backlight_sleep(void const * const user_data, uint8_t * c
 static gt_res_t _parse_display(void * user_data, uint8_t const * const buffer, uint32_t len) {
     gt_serial_cfg_st * cfg = (gt_serial_cfg_st *)user_data;
     gt_serial_cfg_display_st * disp = (gt_serial_cfg_display_st *)&cfg->display;
+    uint8_t tmp[6] = {0};
 
     disp->disp_enabled = gt_convert_parse_u16(&buffer[0]);
     disp->pll_clk_phs = buffer[2];
@@ -176,6 +186,12 @@ static gt_res_t _parse_display(void * user_data, uint8_t const * const buffer, u
     disp->ver_d = gt_convert_parse_u16(&buffer[11]);
     disp->ver_e = buffer[13];
     disp->tcon_sel = buffer[14];
+
+    /** update var buffer */
+    gt_convert_print_u16(tmp, GT_SERIAL_SYS_ADDR_LCD_HOR);
+    gt_convert_print_u16(&tmp[2], disp->hor_d);
+    gt_convert_print_u16(&tmp[4], disp->ver_d);
+    gt_serial_set_value(tmp, 6);
 
     return GT_RES_OK;
 }
@@ -500,7 +516,7 @@ void gt_serial_cfg_init(void)
 #endif
 }
 
-gt_serial_cfg_st const * const gt_serial_cfg_get_root(void)
+gt_serial_cfg_st * const gt_serial_cfg_get_root(void)
 {
     return &_serial_cfg;
 }
