@@ -194,12 +194,12 @@ static gt_res_t _write_system_config(_serial_sys_pack_st * const pack_p) {
     if (!is_load) {
         return GT_RES_OK;
     }
-    gt_serial_cfg_st * const val = gt_serial_cfg_get_root();
+    gt_serial_cfg_st * const cfg = gt_serial_cfg_get_root();
     uint8_t d0 = pack_p->unpack.buffer[5];
-    val->system_config.param_0.touch_auto_upload = (d0 >> 5) & 0x01;
-    val->system_config.param_0.touch_beep = (d0 >> 4) & 0x01;
-    val->system_config.param_0.touch_back_light_sleep = (d0 >> 3) & 0x01;
-    val->system_config.param_0.disp_direct = d0 & 0x03;
+    cfg->system_config.param_0.touch_auto_upload = (d0 >> 5) & 0x01;
+    cfg->system_config.param_0.touch_beep = (d0 >> 4) & 0x01;
+    cfg->system_config.param_0.touch_back_light_sleep = (d0 >> 3) & 0x01;
+    cfg->system_config.param_0.disp_direct = d0 & 0x03;
     return _write_buffer_direct(pack_p);
 }
 
@@ -208,6 +208,10 @@ static uint16_t _read_system_config(_serial_sys_pack_st * const pack_p) {
 }
 
 static gt_res_t _write_led_config(_serial_sys_pack_st * const pack_p) {
+    gt_serial_cfg_st * const cfg = gt_serial_cfg_get_root();
+    cfg->backlight_sleep.brightness = pack_p->unpack.buffer[0];
+    cfg->backlight_sleep.brightness_sleep = pack_p->unpack.buffer[1];
+    cfg->backlight_sleep.wake_up_time = gt_convert_parse_u16(&pack_p->unpack.buffer[2]);
     return _write_buffer_direct(pack_p);
 }
 
@@ -269,11 +273,12 @@ static uint16_t _read_pwm1_out(_serial_sys_pack_st * const pack_p) {
 }
 
 static gt_res_t _write_rtc_set(_serial_sys_pack_st * const pack_p) {
-    return GT_RES_OK;
+
+    return _write_buffer_direct(pack_p);
 }
 
 static uint16_t _read_rtc_set(_serial_sys_pack_st * const pack_p) {
-    return 0;
+    return _read_buffer_direct(pack_p);
 }
 
 static gt_res_t _write_wae(_serial_sys_pack_st * const pack_p) {
