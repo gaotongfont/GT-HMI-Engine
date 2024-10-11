@@ -43,7 +43,7 @@ typedef enum{
     VAR_TYPE_ICON = 0,
     VAR_TYPE_ANIM_ICON,
     VAR_TYPE_SLIDER,
-
+    VAR_TYPE_ARTISTIC,
 }gt_var_type_et;
 
 typedef struct{

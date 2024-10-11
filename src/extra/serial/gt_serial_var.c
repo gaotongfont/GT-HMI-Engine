@@ -19,6 +19,7 @@
 #include "gt_serial_var_icon.h"
 #include "gt_serial_var_anim_icon.h"
 #include "gt_serial_var_slider.h"
+#include "gt_serial_var_artistic.h"
 /* private define -------------------------------------------------------*/
 #ifndef GT_SERIAL_UI_VAR_SIZE
     /* serial ui variable size */
@@ -45,6 +46,7 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_var_handler_item_st _var_handler_li
     {VAR_TYPE_ICON, gt_serial_var_icon_create, gt_serial_var_icon_set_value},
     {VAR_TYPE_ANIM_ICON, gt_serial_var_anim_icon_create, gt_serial_var_anim_icon_set_value},
     {VAR_TYPE_SLIDER, gt_serial_var_slider_create, gt_serial_var_slider_set_value},
+    {VAR_TYPE_ARTISTIC, gt_serial_var_artistic_create, gt_serial_var_artistic_set_value},
 };
 
 /* macros ---------------------------------------------------------------*/

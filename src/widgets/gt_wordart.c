@@ -118,6 +118,7 @@ static void _init_cb(gt_obj_st * obj) {
         idx += tmp;
         tmp = _gt_wordart_items_find(style, encode);
         if (tmp < 0) {
+            area.x += area.w + style->space_x;
             continue;
         }
         dsc.bg_img_src = style->items[tmp].img;
@@ -134,6 +135,25 @@ static void _init_cb(gt_obj_st * obj) {
     }
 }
 
+static void _free_items(gt_obj_st * obj)
+{
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )obj;
+    if(NULL != style->items){
+        for(int32_t i = style->item_number; i >= 0; i--) {
+            if(NULL == style->items[i].img){
+                continue;
+            }
+            gt_mem_free(style->items[i].img);
+            style->items[i].img = NULL;
+        }
+        style->item_number = 0;
+
+        gt_mem_free(style->items);
+        style->items = NULL;
+        style->total = 0;
+    }
+}
+
 /**
  * @brief obj deinit call back
  *
@@ -145,22 +165,9 @@ static void _deinit_cb(gt_obj_st * obj) {
         return ;
     }
 
+    _free_items(obj);
+
     _gt_wor_dart_st * style_p = (_gt_wor_dart_st * )obj;
-    if(NULL != style_p->items){
-        for(int32_t i = style_p->item_number; i >= 0; i--) {
-            if(NULL == style_p->items[i].img)
-            {
-                continue;
-            }
-            gt_mem_free(style_p->items[i].img);
-            style_p->items[i].img = NULL;
-        }
-
-        gt_mem_free(style_p->items);
-        style_p->items = NULL;
-        style_p->item_number = 0;
-    }
-
     if(NULL != style_p->text){
         gt_mem_free(style_p->text);
         style_p->text = NULL;
@@ -312,6 +319,23 @@ void gt_wordart_add_item_by_direct_addr(gt_obj_st * wordart, uint32_t encode, gt
     ++style->item_number;
 }
 #endif
+
+void gt_wordart_remove_all_items(gt_obj_st * wordart)
+{
+    if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {
+        return ;
+    }
+    _free_items(wordart);
+}
+
+uint32_t gt_wordart_get_items_count(gt_obj_st * wordart)
+{
+    if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
+    return style->item_number;
+}
 
 void gt_wordart_set_text(gt_obj_st * wordart, const char * fmt, ...)
 {

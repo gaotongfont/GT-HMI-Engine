@@ -83,6 +83,9 @@ void gt_wordart_add_item_by_file_header(gt_obj_st * wordart, uint32_t encode, gt
 void gt_wordart_add_item_by_direct_addr(gt_obj_st * wordart, uint32_t encode, gt_addr_t addr);
 #endif
 
+void gt_wordart_remove_all_items(gt_obj_st * wordart);
+uint32_t gt_wordart_get_items_count(gt_obj_st * wordart);
+
 /**
  * @brief Set the text, which display by wordart image character
  *
