@@ -168,6 +168,18 @@ typedef struct {
     uint8_t delay;          /** default: 0x0a, unit: 10ms */
 }gt_serial_cfg_backlight_delay_st;
 
+typedef struct {
+    uint32_t addr_or_id;    /** expand flash flash address or area id, maybe 4k algin */
+    uint32_t var_addr;
+    uint32_t crc32_checksum;
+
+    uint8_t handler_type;   /** @ref _write_expand_128mbit_flash() 0xAA */
+    uint8_t is_running;     /** 0x00: done; 0x01: running */
+    uint16_t font_id;
+    uint16_t count_block;   /** the count of block to store */
+    uint16_t delay_to_next; /** delay to next command */
+}gt_serial_cfg_expand_flash_st;
+
 typedef struct gt_serial_cfg_s {
     uint8_t header[5];
     gt_serial_cfg_system_config_st   system_config;      /** system config */
@@ -183,6 +195,10 @@ typedef struct gt_serial_cfg_s {
     gt_serial_cfg_sd_st              sd;                 /** SD download folder setting */
     gt_serial_cfg_backlight_delay_st backlight_delay;    /** backlight delay time */
     uint8_t reserved[14];
+
+    /* ------------------- expand param ------------------- */
+
+    gt_serial_cfg_expand_flash_st   expand_flash_hd;
 }gt_serial_cfg_st;
 
 

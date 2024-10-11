@@ -769,4 +769,42 @@ bool _gt_indev_remove_want_delate_target(gt_obj_st * target)
     return ret;
 }
 
+#if GT_INDEV_SIMULATE_POINTER
+void gt_indev_simulate_handler(gt_indev_state_et state, gt_size_t x, gt_size_t y)
+{
+    gt_indev_st * indev = gt_hal_indev_get_simulate_drv();
+    if (false == gt_indev_is_enabled()) {
+        return;
+    }
+    struct _point * point_p = &indev->data.point;
+
+    /* call user hard interface */
+    if (GT_INDEV_STATE_INVALID == state) {
+        return;
+    }
+
+    if (x > gt_disp_get_res_hor(NULL) ||
+        y > gt_disp_get_res_ver(NULL)) {
+        // GT_LOGW(GT_LOG_TAG_TP, "point out of range: x:%d, y:%d", x, y);
+        return;
+    }
+
+    /* process point data */
+    indev->state = state;
+
+    _indev_params.param.point.x = x;
+    _indev_params.param.point.y = y;
+    _gt_indev_point_set_value(&point_p->newly, x, y);
+
+    /* have one touch event */
+    if (GT_INDEV_STATE_RELEASED == indev->state) {
+        _indev_released_handle(indev);
+    } else {
+        _indev_pressed_handle(indev);
+    }
+
+    _gt_indev_point_set_value(&point_p->last, point_p->newly.x, point_p->newly.y);
+}
+#endif
+
 /* end ------------------------------------------------------------------*/

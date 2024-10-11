@@ -92,6 +92,10 @@ bool gt_indev_is_enabled(void);
 
 bool _gt_indev_remove_want_delate_target(gt_obj_st * target);
 
+#if GT_INDEV_SIMULATE_POINTER
+void gt_indev_simulate_handler(gt_indev_state_et state, gt_size_t x, gt_size_t y);
+#endif
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

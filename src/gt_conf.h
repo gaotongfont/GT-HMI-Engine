@@ -369,6 +369,12 @@ extern "C" {
      *      Must be used with GT_USE_SERIAL.
      */
     #define GT_USE_BIN_CONVERT  1
+
+    #undef GT_INDEV_SIMULATE_POINTER
+    /**
+     * @brief [Warn] Force enabled simulate pointer input device
+     */
+    #define GT_INDEV_SIMULATE_POINTER       1
 #endif  /** GT_USE_SERIAL */
 
 #ifndef GT_USE_BIN_CONVERT

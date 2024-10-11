@@ -20,6 +20,13 @@ extern "C" {
 #include "../others/gt_anim.h"
 
 /* define ---------------------------------------------------------------*/
+#ifndef GT_INDEV_SIMULATE_POINTER
+    /**
+     * @brief Simulate pointer input device
+     *      [default: 0]
+     */
+    #define GT_INDEV_SIMULATE_POINTER       0
+#endif
 
 /* default gesture repeat */
 
@@ -245,6 +252,10 @@ gt_indev_st * gt_indev_get_dev_by_idx(uint8_t idx);
  * @return uint8_t
  */
 uint8_t gt_indev_get_dev_count(void);
+
+#if GT_INDEV_SIMULATE_POINTER
+gt_indev_st * gt_hal_indev_get_simulate_drv(void);
+#endif
 
 #ifdef __cplusplus
 } /*extern "C"*/

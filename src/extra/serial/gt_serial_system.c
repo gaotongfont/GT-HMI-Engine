@@ -19,6 +19,7 @@
 #include "../../others/gt_log.h"
 #include "./gt_serial_show.h"
 #include "./gt_serial_cfg.h"
+#include "../../core/gt_indev.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -273,12 +274,15 @@ static uint16_t _read_pwm1_out(_serial_sys_pack_st * const pack_p) {
 }
 
 static gt_res_t _write_rtc_set(_serial_sys_pack_st * const pack_p) {
+    if (0x5A != pack_p->unpack.buffer[0]) {
+        return GT_RES_FAIL;
+    }
+    if (0xA5 != pack_p->unpack.buffer[1]) {
+        return GT_RES_FAIL;
+    }
+    /** Y-M-D h-m-s */
 
     return _write_buffer_direct(pack_p);
-}
-
-static uint16_t _read_rtc_set(_serial_sys_pack_st * const pack_p) {
-    return _read_buffer_direct(pack_p);
 }
 
 static gt_res_t _write_wae(_serial_sys_pack_st * const pack_p) {
@@ -289,20 +293,135 @@ static uint16_t _read_wae(_serial_sys_pack_st * const pack_p) {
     return 0;
 }
 
+/**
+ * @brief  0x5a +
+ *          (read flash data)
+ *          1. 0x01(read) 0x00(font id) 0x000000(font addr) 0x0000(var_addr even number) 0x0000(var length even number) 0x0000
+ *          (write 32kB data to flash)
+ *          2. 0x02(write) 0x0000(32kB data addr/pre 16MB flash) 0x0000(save addr) 0x0000(delay  1ms) 0x0000
+ *          (copy font data)
+ *          3. 0x03(copy) 0x0000(copy from id / 256kB) 0x0000(copy to) 0x0000(copy times) 0x000000
+ *          (write 4kB  to expand nand flash)
+ *          4. 0x04(write) 0x000000(to 4kB data addr) 0x0000(from vp buffer) 0x00(4kB count) 0x0000
+ *          (nand  32bit crc checksum)
+ *          5. 0x05(crc) 0x0000 0000 (low 12bit is 0, 4kB align) 0x0000(count <= 0x8000) 0x00000000(crc value)
+ *          (nand flash copy)
+ *          6. 0x06(copy) 0x0000 0000 (low 12bit is 0, 4kB align) 0x0000(target id <= 0x00ff) 0x0000(count) 0x0000
+ * @param pack_p
+ * @return gt_res_t
+ */
 static gt_res_t _write_expand_128mbit_flash(_serial_sys_pack_st * const pack_p) {
-    return GT_RES_OK;
+    if (0x5A != pack_p->unpack.buffer[0]) {
+        return GT_RES_OK;
+    }
+    gt_serial_cfg_st * const cfg = gt_serial_cfg_get_root();
+    cfg->expand_flash_hd.is_running = true;
+    cfg->expand_flash_hd.handler_type = pack_p->unpack.buffer[1];
+    switch (cfg->expand_flash_hd.handler_type)
+    {
+        case 0x01: {
+            cfg->expand_flash_hd.font_id = pack_p->unpack.buffer[2];
+            cfg->expand_flash_hd.addr_or_id = gt_convert_parse_by_len(&pack_p->unpack.buffer[3], 3);
+            cfg->expand_flash_hd.var_addr = gt_convert_parse_u16(&pack_p->unpack.buffer[6]);
+            cfg->expand_flash_hd.count_block = gt_convert_parse_u16(&pack_p->unpack.buffer[8]);
+            break;
+        }
+        case 0x02: {
+            cfg->expand_flash_hd.addr_or_id = gt_convert_parse_u16(&pack_p->unpack.buffer[2]);
+            cfg->expand_flash_hd.var_addr = gt_convert_parse_u16(&pack_p->unpack.buffer[4]);
+            cfg->expand_flash_hd.delay_to_next = gt_convert_parse_u16(&pack_p->unpack.buffer[6]);
+            break;
+        }
+        case 0x03: {
+            cfg->expand_flash_hd.font_id = gt_convert_parse_u16(&pack_p->unpack.buffer[2]);
+            cfg->expand_flash_hd.addr_or_id = gt_convert_parse_u16(&pack_p->unpack.buffer[4]);
+            cfg->expand_flash_hd.count_block = gt_convert_parse_u16(&pack_p->unpack.buffer[6]);
+            break;
+        }
+        case 0x04: {
+            cfg->expand_flash_hd.addr_or_id = gt_convert_parse_u32(&pack_p->unpack.buffer[2]);
+            cfg->expand_flash_hd.var_addr = gt_convert_parse_u16(&pack_p->unpack.buffer[6]);
+            cfg->expand_flash_hd.count_block = pack_p->unpack.buffer[8];
+            break;
+        }
+        case 0x05: {
+            cfg->expand_flash_hd.addr_or_id = gt_convert_parse_u32(&pack_p->unpack.buffer[2]);
+            cfg->expand_flash_hd.count_block = gt_convert_parse_u16(&pack_p->unpack.buffer[6]);
+            cfg->expand_flash_hd.crc32_checksum = gt_convert_parse_u32(&pack_p->unpack.buffer[8]);
+            break;
+        }
+        case 0x06: {
+            cfg->expand_flash_hd.addr_or_id = gt_convert_parse_u32(&pack_p->unpack.buffer[2]);
+            cfg->expand_flash_hd.font_id = gt_convert_parse_u16(&pack_p->unpack.buffer[6]);
+            cfg->expand_flash_hd.count_block = gt_convert_parse_u16(&pack_p->unpack.buffer[8]);
+            break;
+        }
+        default:
+            break;
+    }
+    return _write_buffer_direct(pack_p);
 }
 
 static uint16_t _read_expand_128mbit_flash(_serial_sys_pack_st * const pack_p) {
-    return 0;
+    return _read_buffer_direct(pack_p);
 }
 
 static gt_res_t _write_tp_cmd_visit(_serial_sys_pack_st * const pack_p) {
-    return GT_RES_OK;
+    if (0x5A != pack_p->unpack.buffer[0]) {
+        return GT_RES_FAIL;
+    }
+    if (0xA5 != pack_p->unpack.buffer[1]) {
+        return GT_RES_FAIL;
+    }
+    uint16_t page_id = gt_convert_parse_u16(&pack_p->unpack.buffer[2]);
+    uint8_t widget_id = pack_p->unpack.buffer[4];
+    uint8_t cmd_code = pack_p->unpack.buffer[5];
+    /** 0x0000: disabled current tp cmd;
+     *  0x0001: enabled;
+     *  0x0002: read cmd to addr;
+     *  0x0003: replace cmd by addr data;
+     */
+    uint16_t mode_val_or_addr = gt_convert_parse_u16(&pack_p->unpack.buffer[6]);
+
+    // TODO handle widget touch cmd
+
+
+    /** clear after done */
+    pack_p->unpack.buffer[0] = 0x00;
+    pack_p->unpack.buffer[1] = 0x00;
+    return _write_buffer_direct(pack_p);
 }
 
 static gt_res_t _write_tp_simulate(_serial_sys_pack_st * const pack_p) {
-    return GT_RES_OK;
+    if (0x5A != pack_p->unpack.buffer[0]) {
+        return GT_RES_FAIL;
+    }
+    if (0xA5 != pack_p->unpack.buffer[1]) {
+        return GT_RES_FAIL;
+    }
+
+    /**
+     * 1: press down; 2; press up; 3: pressing; 4: click(down + up)
+     * must be have 2 after 1 or 3.
+     */
+    uint16_t press_mode = gt_convert_parse_u16(&pack_p->unpack.buffer[2]);
+    uint16_t x = gt_convert_parse_u16(&pack_p->unpack.buffer[4]);
+    uint16_t y = gt_convert_parse_u16(&pack_p->unpack.buffer[6]);
+    gt_indev_state_et state = GT_INDEV_STATE_INVALID;
+
+    if (1 == press_mode || 3 == press_mode) {
+        gt_indev_simulate_handler(GT_INDEV_STATE_PRESSED, x, y);
+    } else if (2 == press_mode) {
+        gt_indev_simulate_handler(GT_INDEV_STATE_RELEASED, x, y);
+    } else if (4 == press_mode) {
+        gt_indev_simulate_handler(GT_INDEV_STATE_PRESSED, x, y);
+        gt_indev_simulate_handler(GT_INDEV_STATE_RELEASED, x, y);
+    }
+
+    /** clear after done */
+    pack_p->unpack.buffer[0] = 0x00;
+    pack_p->unpack.buffer[1] = 0x00;
+    return _write_buffer_direct(pack_p);
 }
 
 static gt_res_t _write_pointer_icon_overlay(_serial_sys_pack_st * const pack_p) {
@@ -453,7 +572,7 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const _serial_system_st _system_list[] = {
     { GT_SERIAL_SYS_ADDR_PWM0_OUT, 1, _write_pwm0_out, _read_pwm0_out },
     { GT_SERIAL_SYS_ADDR_PWM1_OUT, 1, _write_pwm1_out, _read_pwm1_out },
     // { 0x94, 9, (_system_write_cb_t)NULL, (_system_read_cb_t)NULL },
-    { GT_SERIAL_SYS_ADDR_RTC_SET, 4, _write_rtc_set, _read_rtc_set },
+    { GT_SERIAL_SYS_ADDR_RTC_SET, 4, _write_rtc_set, (_system_read_cb_t)NULL },
     { GT_SERIAL_SYS_ADDR_READ_WAE, 4, _write_wae, _read_wae },
     // { 0xa4, 6, (_system_write_cb_t)NULL, (_system_read_cb_t)NULL },
     { GT_SERIAL_SYS_ADDR_EXP_FLASH, 6, _write_expand_128mbit_flash, _read_expand_128mbit_flash },
