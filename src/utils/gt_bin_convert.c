@@ -152,5 +152,42 @@ uint16_t gt_convert_print_u32(uint8_t * const res, uint32_t val)
     return gt_convert_print_by_len(res, val, 4);
 }
 
+float gt_convert_parse_float(uint8_t const * const buffer)
+{
+    uint32_t val = 0;
+    for (uint8_t i = 0; i < 4; ++i) {
+        val = (val << 8) | buffer[i];
+    }
+    return *(float*)&val;
+}
+
+double gt_convert_parse_double(uint8_t const * const buffer)
+{
+    uint64_t val = 0;
+    for (uint8_t i = 0; i < 8; ++i) {
+        val = (val << 8) | buffer[i];
+    }
+    return *(double*)&val;
+}
+
+int16_t gt_convert_parse_i16(uint8_t const * const buffer)
+{
+    return (int16_t)gt_convert_parse_u16(buffer);
+}
+
+int32_t gt_convert_parse_i32(uint8_t const * const buffer)
+{
+    return (int32_t)gt_convert_parse_u32(buffer);
+}
+
+int64_t gt_convert_parse_i64(uint8_t const * const buffer)
+{
+    uint64_t val = 0;
+    for (uint8_t i = 0; i < 8; ++i) {
+        val <<= 8;
+        val |= buffer[i] & 0xff;
+    }
+    return (int64_t)val;
+}
 /* end ------------------------------------------------------------------*/
 #endif  /** GT_USE_BIN_CONVERT */

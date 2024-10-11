@@ -178,6 +178,48 @@ uint32_t gt_convert_parse_u32(uint8_t const * const buffer);
  */
 uint16_t gt_convert_print_u32(uint8_t * const res, uint32_t val);
 
+/**
+ * @brief Convert the hex buffer to a float value
+ *
+ * @param buffer The hex buffer to be converted
+ * @return float The converted value
+ */
+float gt_convert_parse_float(uint8_t const * const buffer);
+
+/**
+ * @brief Convert the hex buffer to a double value
+ *
+ * @param buffer The hex buffer to be converted
+ * @return double The converted value
+ */
+double gt_convert_parse_double(uint8_t const * const buffer);
+
+/**
+ * @brief Convert the hex buffer to a int16_t value
+ *
+ * @param buffer The hex buffer to be converted
+ * @return int16_t The converted value
+ */
+int16_t gt_convert_parse_i16(uint8_t const * const buffer);
+
+/**
+ * @brief Convert the hex buffer to a int32_t value
+ *
+ * @param buffer The hex buffer to be converted
+ * @return int32_t The converted value
+ */
+int32_t gt_convert_parse_i32(uint8_t const * const buffer);
+
+/**
+ * @brief Convert the hex buffer to a int64_t value
+ *
+ * @param buffer The hex buffer to be converted
+ * @return int64_t The converted value
+ */
+int64_t gt_convert_parse_i64(uint8_t const * const buffer);
+
+
+
 #endif   /** GT_USE_BIN_CONVERT */
 
 #ifdef __cplusplus
