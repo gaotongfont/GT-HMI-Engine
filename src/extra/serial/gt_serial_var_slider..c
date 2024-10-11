@@ -185,7 +185,7 @@ static void _set_sp_value(uint8_t reg, gt_var_st* var, gt_var_value_st* value)
 
 static void _set_value(gt_var_st* var, gt_var_value_st* value)
 {
-    uint8_t reg = gt_serial_var_check_value_is_set_this(var, value);
+    int reg = gt_serial_var_check_value_is_set_this(var, value);
 
     if(reg < 0) { return ; }
     // set vp value
