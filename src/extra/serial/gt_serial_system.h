@@ -57,6 +57,10 @@ extern "C" {
 #define GT_SERIAL_SYS_ADDR_VALUE_CHANGE     0xF00
 
 
+#ifndef GT_POINTER_ICON_ID
+    #define GT_POINTER_ICON_ID              (-100)
+#endif
+
 
 /* typedef --------------------------------------------------------------*/
 

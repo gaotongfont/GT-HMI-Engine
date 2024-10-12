@@ -20,6 +20,9 @@
 #include "./gt_serial_show.h"
 #include "./gt_serial_cfg.h"
 #include "../../core/gt_indev.h"
+#include "../../widgets/gt_img.h"
+#include "../../core/gt_disp.h"
+#include "../../core/gt_style.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -275,10 +278,10 @@ static uint16_t _read_pwm1_out(_serial_sys_pack_st * const pack_p) {
 
 static gt_res_t _write_rtc_set(_serial_sys_pack_st * const pack_p) {
     if (0x5A != pack_p->unpack.buffer[0]) {
-        return GT_RES_FAIL;
+        return GT_RES_OK;
     }
     if (0xA5 != pack_p->unpack.buffer[1]) {
-        return GT_RES_FAIL;
+        return GT_RES_OK;
     }
     /** Y-M-D h-m-s */
 
@@ -394,19 +397,18 @@ static gt_res_t _write_tp_cmd_visit(_serial_sys_pack_st * const pack_p) {
 
 static gt_res_t _write_tp_simulate(_serial_sys_pack_st * const pack_p) {
     if (0x5A != pack_p->unpack.buffer[0]) {
-        return GT_RES_FAIL;
+        return GT_RES_OK;
     }
     if (0xA5 != pack_p->unpack.buffer[1]) {
-        return GT_RES_FAIL;
+        return GT_RES_OK;
     }
-
     /**
      * 1: press down; 2; press up; 3: pressing; 4: click(down + up)
      * must be have 2 after 1 or 3.
      */
     uint16_t press_mode = gt_convert_parse_u16(&pack_p->unpack.buffer[2]);
-    uint16_t x = gt_convert_parse_u16(&pack_p->unpack.buffer[4]);
-    uint16_t y = gt_convert_parse_u16(&pack_p->unpack.buffer[6]);
+    gt_size_t x = gt_convert_parse_u16(&pack_p->unpack.buffer[4]);
+    gt_size_t y = gt_convert_parse_u16(&pack_p->unpack.buffer[6]);
     gt_indev_state_et state = GT_INDEV_STATE_INVALID;
 
     if (1 == press_mode || 3 == press_mode) {
@@ -425,7 +427,29 @@ static gt_res_t _write_tp_simulate(_serial_sys_pack_st * const pack_p) {
 }
 
 static gt_res_t _write_pointer_icon_overlay(_serial_sys_pack_st * const pack_p) {
-    return GT_RES_OK;
+    if (0x5A != pack_p->unpack.buffer[0]) {
+        return GT_RES_OK;
+    }
+    uint8_t icl_id = pack_p->unpack.buffer[1];
+    uint16_t icon_id = gt_convert_parse_u16(&pack_p->unpack.buffer[2]);
+    gt_size_t x = gt_convert_parse_u16(&pack_p->unpack.buffer[4]);
+    gt_size_t y = gt_convert_parse_u16(&pack_p->unpack.buffer[6]);
+
+    gt_obj_st * pointer_icon = gt_obj_find_by_id(GT_POINTER_ICON_ID);
+    if (NULL == pointer_icon) {
+        pointer_icon = gt_img_create(gt_disp_get_layer_top());
+        if (NULL == pointer_icon) {
+            return GT_RES_FAIL;
+        }
+        gt_obj_register_id(pointer_icon, GT_POINTER_ICON_ID);
+    }
+#if GT_USE_FILE_HEADER
+    // gt_file_header_param_st fh = {0};
+    // gt_img_set_by_file_header(pointer_icon, &fh);
+#endif
+    gt_obj_set_pos(pointer_icon, x, y);
+
+    return _write_buffer_direct(pack_p);
 }
 
 // static gt_res_t _write_wae_switch(_serial_sys_pack_st * const pack_p) {
