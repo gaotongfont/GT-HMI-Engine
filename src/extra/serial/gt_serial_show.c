@@ -334,7 +334,7 @@ static void _gt_serial_ui_init(void)
     _serial_ui.lock = true;
 
 #if GT_USE_SERIAL_VAR
-    gt_serial_var_init();
+    // gt_serial_var_init();
     _read_sp_param_to_var_buffer(&_serial_ui._show_file_head, &_serial_ui.page_info);
 #endif
 
