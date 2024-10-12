@@ -453,19 +453,34 @@ static gt_res_t _write_pointer_icon_overlay(_serial_sys_pack_st * const pack_p) 
 }
 
 // static gt_res_t _write_wae_switch(_serial_sys_pack_st * const pack_p) {
-//     return GT_RES_OK;
+    // return _write_buffer_direct(pack_p);
 // }
 
 static gt_res_t _write_icl_switch(_serial_sys_pack_st * const pack_p) {
-    return GT_RES_OK;
+    return _write_buffer_direct(pack_p);
 }
 
 static gt_res_t _write_crc_checksum(_serial_sys_pack_st * const pack_p) {
-    return GT_RES_OK;
+    if (0x5A != pack_p->unpack.buffer[0]) {
+        return GT_RES_OK;
+    }
+    uint8_t store_type = pack_p->unpack.buffer[1];
+    /** 0x00 font; 0x02 OS; 0x03 lib */
+    if (0x00 == store_type) {
+        uint8_t font_id = pack_p->unpack.buffer[2];
+        uint8_t block_4k_count = pack_p->unpack.buffer[3];
+    } else if (0x02 == store_type) {
+        /** from 0x1000 start, size = 0x0001 ~ 0x7000 */
+    } else if (0x03 == store_type) {
+        uint16_t lib_id = gt_convert_parse_u16(&pack_p->unpack.buffer[2]);
+    }
+    /* TODO send back crc */
+
+    return _write_buffer_direct(pack_p);
 }
 
 static uint16_t _read_crc_checksum(_serial_sys_pack_st * const pack_p) {
-    return 0;
+    return _read_buffer_direct(pack_p);
 }
 
 // static uint16_t _read_area_single_bitmap_export(_serial_sys_pack_st * const pack_p) {
