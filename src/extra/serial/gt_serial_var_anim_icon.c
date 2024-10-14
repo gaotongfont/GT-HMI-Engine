@@ -34,7 +34,7 @@ typedef struct{
     uint8_t layer_mode;
     uint8_t icon_gamma;
     uint8_t pic_gamma;
-    uint8_t time;
+    uint8_t time;       // unit: 20ms
     uint8_t anim_mode;
     uint8_t filter;
 }gt_anim_icon_param_st;
@@ -140,7 +140,7 @@ static void _set_param(gt_var_st* var, gt_var_anim_icon_st* icon)
         gt_player_set_stop_index(var->obj, icon->param.icon_stop);
     }
     //
-    gt_player_set_auto_play_period(var->obj, icon->param.time);
+    gt_player_set_auto_play_period(var->obj, icon->param.time * 20);
 
     uint16_t index = 0;
     uint8_t data[2];

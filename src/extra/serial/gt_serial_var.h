@@ -44,6 +44,9 @@ typedef enum{
     VAR_TYPE_ANIM_ICON,
     VAR_TYPE_SLIDER,
     VAR_TYPE_ARTISTIC,
+    VAR_TYPE_PIC,
+    VAR_TYPE_ICON_ROTATE,
+    VAR_TYPE_BIT,
 }gt_var_type_et;
 
 typedef struct{
