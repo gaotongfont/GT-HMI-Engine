@@ -69,6 +69,9 @@ extern "C" {
 #define GT_CFG_ENABLE_GIF               1
 #endif
 
+#if GT_USE_SERIAL
+#define GT_CFG_ENABLE_BIT_VAR           1
+#endif
 /* typedef --------------------------------------------------------------*/
 
 

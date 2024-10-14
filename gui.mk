@@ -5,6 +5,7 @@ include $(HMI_DIR)/src/extra/gt_extra.mk
 include $(HMI_DIR)/src/font/gt_font.mk
 include $(HMI_DIR)/src/hal/gt_hal.mk
 include $(HMI_DIR)/src/widgets/gt_widgets.mk
+include $(HMI_DIR)/src/widgets/serial/gt_widgets_serial.mk
 include $(HMI_DIR)/src/others/gt_others.mk
 
 include $(HMI_DIR)/src/utils/gt_utils.mk

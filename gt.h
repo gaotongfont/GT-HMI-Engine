@@ -192,6 +192,9 @@ extern "C" {
 #include "src/others/gt_crc.h"
 #include "src/utils/gt_serial.h"
 
+#if GT_CFG_ENABLE_BIT_VAR
+#include "src/widgets/serial/gt_bit_var.h"
+#endif
 /* define ---------------------------------------------------------------*/
 
 
