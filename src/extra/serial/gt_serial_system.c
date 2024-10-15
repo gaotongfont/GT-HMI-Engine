@@ -492,96 +492,121 @@ static uint16_t _read_crc_checksum(_serial_sys_pack_st * const pack_p) {
 // }
 
 static gt_res_t _write_music_stream(_serial_sys_pack_st * const pack_p) {
-    return GT_RES_OK;
+    if (0x5A != pack_p->unpack.buffer[0]) {
+        return GT_RES_OK;
+    }
+    uint8_t play_mode = pack_p->unpack.buffer[1];   /* 0x00 stop(clear buffer); 0x01 stop(no clear); 0x02 play */
+    uint16_t var_addr = gt_convert_parse_u16(&pack_p->unpack.buffer[4]);
+    uint16_t var_len = gt_convert_parse_u16(&pack_p->unpack.buffer[6]);     /** such as: 0x8000 */
+
+    /* TODO copy wav to var_addr area */
+
+    return _write_buffer_direct(pack_p);
 }
 
 static gt_res_t _write_tp_draw_window(_serial_sys_pack_st * const pack_p) {
-    /** deprecated */
-    return GT_RES_OK;
+    /** v45 deprecated */
+    if (0x5A != pack_p->unpack.buffer[0]) {
+        return GT_RES_OK;
+    }
+    uint8_t handle_mode = pack_p->unpack.buffer[1]; /* 0x00 normal; 0x01 init */
+    uint8_t param_reg = pack_p->unpack.buffer[2];   /* draw buffer handler: 00b: close; 01b: reset init(normal) */
+    uint8_t line_thick = pack_p->unpack.buffer[4];  /* 0x01 ~ 0x0F */
+    uint8_t red = pack_p->unpack.buffer[5];
+    uint8_t green = pack_p->unpack.buffer[6];
+    uint8_t blue = pack_p->unpack.buffer[7];
+    uint16_t x = gt_convert_parse_u16(&pack_p->unpack.buffer[8]);
+    uint16_t y = gt_convert_parse_u16(&pack_p->unpack.buffer[10]);
+    uint16_t w = gt_convert_parse_u16(&pack_p->unpack.buffer[12]);
+    uint16_t h = gt_convert_parse_u16(&pack_p->unpack.buffer[14]);
+
+    /* 128KB window double addr 0x00 8000 ~ 0x00 FFFF max 208 * 208 */
+
+    return _write_buffer_direct(pack_p);
 }
 
 // static gt_res_t _write_gui_stop_enabled(_serial_sys_pack_st * const pack_p) {
-//     return GT_RES_OK;
+//     return _write_buffer_direct(pack_p);
 // }
 
 // static gt_res_t _write_uart_download(_serial_sys_pack_st * const pack_p) {
-//     return GT_RES_OK;
+//     return _write_buffer_direct(pack_p);
 // }
 
 // static gt_res_t _write_fsk(_serial_sys_pack_st * const pack_p) {
-//     return GT_RES_OK;
+//     return _write_buffer_direct(pack_p);
 // }
 
 // static uint16_t _read_fsk(_serial_sys_pack_st * const pack_p) {
-//     return 0;
+//    return _read_buffer_direct(pack_p);
 // }
 
 static gt_res_t _write_dynamic_curve(_serial_sys_pack_st * const pack_p) {
-    return GT_RES_OK;
+    return _write_buffer_direct(pack_p);
 }
 
 static uint16_t _read_dynamic_curve(_serial_sys_pack_st * const pack_p) {
-    return 0;
+    return _read_buffer_direct(pack_p);
 }
 
 // static gt_res_t _write_dynamic_curve_channel1(_serial_sys_pack_st * const pack_p) {
-//     return GT_RES_OK;
+//     return _write_buffer_direct(pack_p);
 // }
 
 // static gt_res_t _write_dynamic_curve_channel2(_serial_sys_pack_st * const pack_p) {
-//     return GT_RES_OK;
+//     return _write_buffer_direct(pack_p);
 // }
 
 // static gt_res_t _write_dynamic_curve_channel3(_serial_sys_pack_st * const pack_p) {
-//     return GT_RES_OK;
+//     return _write_buffer_direct(pack_p);
 // }
 
 // static gt_res_t _write_dynamic_curve_channel4(_serial_sys_pack_st * const pack_p) {
-//     return GT_RES_OK;
+//     return _write_buffer_direct(pack_p);
 // }
 
 // static gt_res_t _write_dynamic_curve_channel5(_serial_sys_pack_st * const pack_p) {
-//     return GT_RES_OK;
+//     return _write_buffer_direct(pack_p);
 // }
 
 // static gt_res_t _write_dynamic_curve_channel6(_serial_sys_pack_st * const pack_p) {
-//     return GT_RES_OK;
+//     return _write_buffer_direct(pack_p);
 // }
 
 // static gt_res_t _write_dynamic_curve_channel7(_serial_sys_pack_st * const pack_p) {
-//     return GT_RES_OK;
+//     return _write_buffer_direct(pack_p);
 // }
 
 // static gt_res_t _write_dynamic_curve_channel8(_serial_sys_pack_st * const pack_p) {
-//     return GT_RES_OK;
+//     return _write_buffer_direct(pack_p);
 // }
 
 static gt_res_t _write_wifi_connect(_serial_sys_pack_st * const pack_p) {
-    return GT_RES_OK;
+    return _write_buffer_direct(pack_p);
 }
 
 static uint16_t _read_wifi_connect(_serial_sys_pack_st * const pack_p) {
-    return 0;
+    return _read_buffer_direct(pack_p);
 }
 
 static gt_res_t _write_multi_media(_serial_sys_pack_st * const pack_p) {
-    return GT_RES_OK;
+    return _write_buffer_direct(pack_p);
 }
 
 static uint16_t _read_multi_media(_serial_sys_pack_st * const pack_p) {
-    return 0;
+    return _read_buffer_direct(pack_p);
 }
 
 static gt_res_t _write_expand_store(_serial_sys_pack_st * const pack_p) {
-    return GT_RES_OK;
+    return _write_buffer_direct(pack_p);
 }
 
 static uint16_t _read_expand_store(_serial_sys_pack_st * const pack_p) {
-    return 0;
+    return _read_buffer_direct(pack_p);
 }
 
 static uint16_t _read_value_change(_serial_sys_pack_st * const pack_p) {
-    return 0;
+    return _read_buffer_direct(pack_p);
 }
 
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY const _serial_system_st _system_list[] = {
