@@ -233,6 +233,7 @@ static gt_anim_st * _create_auto_scroll_anim(gt_obj_st * label) {
     gt_anim_st anim;
     gt_anim_init(&anim);
     gt_anim_set_target(&anim, label);
+    gt_anim_set_value(&anim, 0, 0);
     gt_anim_set_time_delay_start(&anim, 500);
     gt_anim_set_repeat_delay(&anim, 500);
     gt_anim_set_exec_cb(&anim, _auto_scroll_exec_cb);
