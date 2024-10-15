@@ -419,6 +419,7 @@ void gt_anim_restart(gt_anim_st * anim)
 {
     if (!anim) { return ; }
     if (anim->paused) { anim->paused = false; }
+    anim->time_act = 0;
     anim->tick_create = gt_tick_get();
 }
 
