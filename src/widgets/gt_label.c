@@ -115,7 +115,6 @@ static void _init_cb(gt_obj_st * obj) {
             gt_anim_set_time(style->auto_scroll->anim, style->auto_scroll->total_time);
             gt_anim_set_value(style->auto_scroll->anim, 0, box_area.w - style->auto_scroll->area.w);
             gt_anim_restart(style->auto_scroll->anim);
-            gt_anim_set_paused(style->auto_scroll->anim, false);
         }
     }
 
