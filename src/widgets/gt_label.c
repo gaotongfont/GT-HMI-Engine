@@ -111,9 +111,10 @@ static void _init_cb(gt_obj_st * obj) {
     if (style->text_style.single_line && style->auto_scroll) {
         /** first time to calc label widget need to scroll and begin to scroll */
         if (font_res.size.x > box_area.w && gt_anim_is_paused(style->auto_scroll->anim)) {
-            style->auto_scroll->area.w = font_res.size.x - box_area.w;
+            style->auto_scroll->area.w = font_res.size.x;
             gt_anim_set_time(style->auto_scroll->anim, style->auto_scroll->total_time);
-            gt_anim_set_value(style->auto_scroll->anim, 0, -style->auto_scroll->area.w);
+            gt_anim_set_value(style->auto_scroll->anim, 0, box_area.w - style->auto_scroll->area.w);
+            gt_anim_restart(style->auto_scroll->anim);
             gt_anim_set_paused(style->auto_scroll->anim, false);
         }
     }
@@ -178,7 +179,9 @@ static _auto_scroll_st * _reset_auto_scroll_st(_auto_scroll_st * as) {
     }
     if (as->anim) {
         gt_anim_restart(as->anim);
-        gt_anim_set_paused(as->anim, true);
+        if (false == gt_anim_is_paused(as->anim)) {
+            gt_anim_set_paused(as->anim, true);
+        }
         gt_anim_set_value(as->anim, 0, 0);
     }
     as->area.x = 0;
@@ -614,11 +617,10 @@ void gt_label_set_auto_scroll_total_time(gt_obj_st * label, uint32_t total_time_
         style->auto_scroll->total_time = 2000;
         gt_anim_set_paused(style->auto_scroll->anim, true);
     }
+    gt_anim_set_time(style->auto_scroll->anim, style->auto_scroll->total_time);
     if (gt_anim_is_paused(style->auto_scroll->anim)) {
         gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);   /** restart scroll */
-        return ;
     }
-    gt_anim_set_time(style->auto_scroll->anim, style->auto_scroll->total_time);
 }
 
 void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style)
