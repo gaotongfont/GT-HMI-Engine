@@ -2231,27 +2231,33 @@ void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_are
         if (dsc->raw_img) {
             dsc_img = *dsc->raw_img;
         }
+        gt_res_t result = GT_RES_FAIL;
 #if GT_USE_FILE_HEADER
-        else if (GT_RES_FAIL == gt_img_decoder_fh_open(&dsc_img, dsc->file_header)) {
+        result = gt_img_decoder_fh_open(&dsc_img, dsc->file_header);
+        if (GT_RES_OK == result) {
+            goto handler_lb;
+        } else if (GT_RES_FAIL == result) {
             GT_LOGW(GT_LOG_TAG_DATA, "Open image decoder by file header failed");
             return;
         }
 #endif
 #if GT_USE_DIRECT_ADDR
-        else if (GT_RES_FAIL == gt_img_decoder_direct_addr_open(&dsc_img, dsc->addr)) {
+        result = gt_img_decoder_direct_addr_open(&dsc_img, dsc->addr);
+        if (GT_RES_OK == result) {
+            goto handler_lb;
+        } else if (GT_RES_FAIL == result) {
             GT_LOGW(GT_LOG_TAG_DATA, "Open image decoder by direct address failed");
             return;
         }
 #endif
-        else {
-            GT_LOGW(GT_LOG_TAG_DATA, "No image source");
-            return;
-        }
+        GT_LOGW(GT_LOG_TAG_DATA, "No image source");
+        return;
     }
     else if (GT_RES_FAIL == gt_img_decoder_open(&dsc_img, dsc->bg_img_src)) {
         GT_LOGW(GT_LOG_TAG_DATA, "[%s] Open image decoder failed", dsc->bg_img_src);
         return;
     }
+handler_lb:
     coords->w = dsc_img.header.w;
     coords->h = dsc_img.header.h;
     _gt_disp_update_max_area(coords, true);
