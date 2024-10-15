@@ -1,5 +1,5 @@
 /**
- * @file gt_bit_var.c
+ * @file gt_bit_img.c
  * @author Yang
  * @brief
  * @version 0.1
@@ -8,8 +8,8 @@
  */
 
 /* include --------------------------------------------------------------*/
-#include "gt_bit_var.h"
-#if GT_CFG_ENABLE_BIT_VAR
+#include "gt_bit_img.h"
+#if GT_CFG_ENABLE_BIT_IMG
 #include "../../core/gt_mem.h"
 #include "../../others/gt_types.h"
 #include "../../core/gt_draw.h"
@@ -22,8 +22,8 @@
 #include "../../core/gt_fs.h"
 
 /* private define -------------------------------------------------------*/
-#define OBJ_TYPE    GT_TYPE_BIT_VAR
-#define MY_CLASS    &gt_bit_var_class
+#define OBJ_TYPE    GT_TYPE_BIT_IMG
+#define MY_CLASS    &gt_bit_img_class
 
 //
 #define _NO_ANIM    (0)
@@ -32,7 +32,7 @@
 #define _ANIM_ALL   (3)
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_bit_var_item_s {
+typedef struct _gt_bit_img_item_s {
     void * src;
 
 #if GT_USE_FILE_HEADER
@@ -42,29 +42,29 @@ typedef struct _gt_bit_var_item_s {
 #if GT_USE_DIRECT_ADDR
     gt_addr_t addr;
 #endif
-}_gt_bit_var_item_st;
+}_gt_bit_img_item_st;
 
 typedef struct {
     uint16_t lock : 1;
-    uint16_t real_time_update: 1;  ///< 1: real time update, 0: update when the bit_var is displayed
+    uint16_t real_time_update: 1;  ///< 1: real time update, 0: update when the bit_img is displayed
 
-}_gt_bit_var_reg_st;
+}_gt_bit_img_reg_st;
 
 
-typedef struct _gt_bit_var_s {
+typedef struct _gt_bit_img_s {
     gt_obj_st obj;
     _gt_vector_st * vector0;
     _gt_vector_st * vector1;
     _gt_timer_st * timer;
     uint32_t last_tick;
-    _gt_bit_var_reg_st reg;
+    _gt_bit_img_reg_st reg;
 
     uint16_t value;
     uint16_t act;
     uint16_t move_gap;
     uint8_t disp_mode;
     uint8_t move_mode;
-}_gt_bit_var_st;
+}_gt_bit_img_st;
 
 
 /* static prototypes ----------------------------------------------------*/
@@ -76,12 +76,12 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static const gt_obj_class_st gt_bit_var_class = {
+static const gt_obj_class_st gt_bit_img_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
-    .size_style    = sizeof(_gt_bit_var_st)
+    .size_style    = sizeof(_gt_bit_img_st)
 };
 
 
@@ -97,14 +97,14 @@ static const gt_obj_class_st gt_bit_var_class = {
  * @return void*
  */
 static inline void * _get_src(_gt_vector_st * vector) {
-    _gt_bit_var_item_st * item = (_gt_bit_var_item_st * )_gt_vector_get_item(vector, _gt_vector_get_index(vector));
+    _gt_bit_img_item_st * item = (_gt_bit_img_item_st * )_gt_vector_get_item(vector, _gt_vector_get_index(vector));
     GT_CHECK_BACK_VAL(item, NULL);
     return item->src;
 }
 
 #if GT_USE_FILE_HEADER
 static inline gt_file_header_param_st * _get_file_header_param(_gt_vector_st * vector) {
-    _gt_bit_var_item_st * item = (_gt_bit_var_item_st * )_gt_vector_get_item(vector, _gt_vector_get_index(vector));
+    _gt_bit_img_item_st * item = (_gt_bit_img_item_st * )_gt_vector_get_item(vector, _gt_vector_get_index(vector));
     GT_CHECK_BACK_VAL(item, NULL);
     return &item->fh_param;
 }
@@ -112,13 +112,13 @@ static inline gt_file_header_param_st * _get_file_header_param(_gt_vector_st * v
 
 #if GT_USE_DIRECT_ADDR
 static inline gt_addr_t _get_direct_addr_param(_gt_vector_st * vector) {
-    _gt_bit_var_item_st * item = (_gt_bit_var_item_st * )_gt_vector_get_item(vector, _gt_vector_get_index(vector));
+    _gt_bit_img_item_st * item = (_gt_bit_img_item_st * )_gt_vector_get_item(vector, _gt_vector_get_index(vector));
     GT_CHECK_BACK_VAL(item, GT_ADDR_INVALID);
     return item->addr;
 }
 #endif
 
-static bool _is_position_retain(uint8_t act, gt_bit_var_move_mode_et mv_mode)
+static bool _is_position_retain(uint8_t act, gt_bit_img_move_mode_et mv_mode)
 {
     if(!act && (MOVE_X_POSITION_NOT_RETAIN == mv_mode || MOVE_Y_POSITION_NOT_RETAIN == mv_mode)){
         return false;
@@ -126,7 +126,7 @@ static bool _is_position_retain(uint8_t act, gt_bit_var_move_mode_et mv_mode)
     return true;
 }
 
-static bool _is_move_dir_x(gt_bit_var_move_mode_et mv_mode)
+static bool _is_move_dir_x(gt_bit_img_move_mode_et mv_mode)
 {
     if(MOVE_Y_POSITION_RETAIN == mv_mode || MOVE_Y_POSITION_NOT_RETAIN == mv_mode){
         return false;
@@ -134,7 +134,7 @@ static bool _is_move_dir_x(gt_bit_var_move_mode_et mv_mode)
     return true;
 }
 
-static _gt_vector_st* _get_vector(_gt_bit_var_st * style, uint8_t val)
+static _gt_vector_st* _get_vector(_gt_bit_img_st * style, uint8_t val)
 {
     _gt_vector_st* vec = NULL;
     switch (style->disp_mode)
@@ -153,7 +153,7 @@ static _gt_vector_st* _get_vector(_gt_bit_var_st * style, uint8_t val)
     return vec;
 }
 
-static int _is_use_anim(_gt_bit_var_st * style){
+static int _is_use_anim(_gt_bit_img_st * style){
     int ret = _NO_ANIM;
     switch (style->disp_mode)
     {
@@ -175,7 +175,7 @@ static int _is_use_anim(_gt_bit_var_st * style){
     return ret;
 }
 
-static inline bool _lock(_gt_bit_var_st * style) {
+static inline bool _lock(_gt_bit_img_st * style) {
     if (NULL == style) {
         return false;
     }
@@ -187,13 +187,13 @@ static inline bool _lock(_gt_bit_var_st * style) {
 }
 
 /**
- * @brief Unlock the bit_var callback handler
+ * @brief Unlock the bit_img callback handler
  *
  * @param style
  * @return true Set unlock status success
  * @return false Unable to set unlock status
  */
-static inline bool _unlock(_gt_bit_var_st * style) {
+static inline bool _unlock(_gt_bit_img_st * style) {
     if (NULL == style) {
         return false;
     }
@@ -203,7 +203,7 @@ static inline bool _unlock(_gt_bit_var_st * style) {
 
 static void _init_cb(gt_obj_st * obj)
 {
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     GT_CHECK_BACK(style->vector0);
     GT_CHECK_BACK(style->vector1);
 
@@ -258,7 +258,7 @@ _next:
 }
 
 
-static void _destroy_timer(_gt_bit_var_st * style) {
+static void _destroy_timer(_gt_bit_img_st * style) {
 
     if(style->timer){
         _gt_timer_del(style->timer);
@@ -271,7 +271,7 @@ static void _deinit_cb(gt_obj_st * obj)
     if (NULL == obj) {
         return ;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     _destroy_timer(style);
 
     if (style->vector0) {
@@ -287,7 +287,7 @@ static void _deinit_cb(gt_obj_st * obj)
 
 static void _update_area(struct gt_obj_s * obj)
 {
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     uint16_t w = 0, h = 0;
     gt_area_st area = {0};
     area.x = obj->area.x;
@@ -345,13 +345,13 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
 
 
 static void _turn_prev_item(gt_obj_st * obj, _gt_vector_st* vector) {
-    // _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    // _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     GT_CHECK_BACK(vector);
     _gt_vector_turn_prev(vector);
 }
 
 static void _turn_next_item(gt_obj_st * obj, _gt_vector_st* vector) {
-    // _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    // _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     GT_CHECK_BACK(vector);
     _gt_vector_turn_next(vector);
 }
@@ -362,7 +362,7 @@ static inline void _change_item_handler(gt_obj_st * obj, bool is_next, _gt_vecto
 
 static void _change_timer_handler(gt_obj_st * obj)
 {
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
 
     int r_anim = _is_use_anim(style);
     if(_NO_ANIM == r_anim){
@@ -384,7 +384,7 @@ static void _auto_timer_callback(struct _gt_timer_s * timer){
         return ;
     }
 
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
 
     if (!_lock(style)) {
         /** The callback has been executed, waiting for it to be displayed */
@@ -417,7 +417,7 @@ static void _auto_timer_callback(struct _gt_timer_s * timer){
 
 
 static bool _free_item_cb(void * item) {
-    _gt_bit_var_item_st * item_p = (_gt_bit_var_item_st * )item;
+    _gt_bit_img_item_st * item_p = (_gt_bit_img_item_st * )item;
     GT_CHECK_BACK_VAL(item_p, false);
     if (item_p->src) {
         gt_mem_free(item_p->src);
@@ -428,8 +428,8 @@ static bool _free_item_cb(void * item) {
 }
 
 static bool _equal_item_cb(void * item, void * target) {
-    _gt_bit_var_item_st * item_p = (_gt_bit_var_item_st * )item;
-    _gt_bit_var_item_st * tar_p = (_gt_bit_var_item_st * )target;
+    _gt_bit_img_item_st * item_p = (_gt_bit_img_item_st * )item;
+    _gt_bit_img_item_st * tar_p = (_gt_bit_img_item_st * )target;
     GT_CHECK_BACK_VAL(item_p, false);
     GT_CHECK_BACK_VAL(tar_p, false);
 
@@ -453,14 +453,14 @@ static bool _equal_item_cb(void * item, void * target) {
 }
 
 /* global functions / API interface -------------------------------------*/
-gt_obj_st * gt_bit_var_create(gt_obj_st * parent)
+gt_obj_st * gt_bit_img_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
     if (NULL == obj) {
         return obj;
     }
 
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
 
     style->timer = _gt_timer_create(_auto_timer_callback, 500, (void * )obj);
     _gt_timer_set_paused(style->timer, true);
@@ -475,17 +475,17 @@ gt_obj_st * gt_bit_var_create(gt_obj_st * parent)
     return obj;
 }
 
-gt_size_t gt_bit_var_add_item0(gt_obj_st * obj, void * item, uint16_t item_byte_size)
+gt_size_t gt_bit_img_add_item0(gt_obj_st * obj, void * item, uint16_t item_byte_size)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return -1;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     GT_CHECK_BACK_VAL(style->vector0, -1);
 
-    _gt_bit_var_item_st * new_item = gt_mem_malloc(sizeof(_gt_bit_var_item_st));
+    _gt_bit_img_item_st * new_item = gt_mem_malloc(sizeof(_gt_bit_img_item_st));
     GT_CHECK_BACK_VAL(new_item, -1);
-    gt_memset(new_item, 0, sizeof(_gt_bit_var_item_st));
+    gt_memset(new_item, 0, sizeof(_gt_bit_img_item_st));
 
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&new_item->fh_param);
@@ -514,17 +514,17 @@ item_lb:
     return -1;
 }
 
-gt_size_t gt_bit_var_add_item1(gt_obj_st * obj, void * item, uint16_t item_byte_size)
+gt_size_t gt_bit_img_add_item1(gt_obj_st * obj, void * item, uint16_t item_byte_size)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return -1;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     GT_CHECK_BACK_VAL(style->vector1, -1);
 
-    _gt_bit_var_item_st * new_item = gt_mem_malloc(sizeof(_gt_bit_var_item_st));
+    _gt_bit_img_item_st * new_item = gt_mem_malloc(sizeof(_gt_bit_img_item_st));
     GT_CHECK_BACK_VAL(new_item, -1);
-    gt_memset(new_item, 0, sizeof(_gt_bit_var_item_st));
+    gt_memset(new_item, 0, sizeof(_gt_bit_img_item_st));
 
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&new_item->fh_param);
@@ -554,7 +554,7 @@ item_lb:
 }
 
 #if GT_USE_FILE_HEADER
-gt_size_t gt_bit_var_add_item0_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh)
+gt_size_t gt_bit_img_add_item0_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return -1;
@@ -562,12 +562,12 @@ gt_size_t gt_bit_var_add_item0_by_file_header(gt_obj_st * obj, gt_file_header_pa
     if (NULL == fh) {
         return -1;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     if (fh->idx >= gt_file_header_get_count()) {
         return -1;
     }
 
-    _gt_bit_var_item_st * new_item = gt_mem_malloc(sizeof(_gt_bit_var_item_st));
+    _gt_bit_img_item_st * new_item = gt_mem_malloc(sizeof(_gt_bit_img_item_st));
     GT_CHECK_BACK_VAL(new_item, _gt_vector_get_count(style->vector0));
     new_item->src = NULL;
     new_item->fh_param = *fh;
@@ -583,7 +583,7 @@ gt_size_t gt_bit_var_add_item0_by_file_header(gt_obj_st * obj, gt_file_header_pa
     return _gt_vector_get_count(style->vector0);
 }
 
-gt_size_t gt_bit_var_add_item0_list_by_file_header(gt_obj_st * obj, gt_file_header_param_st const * const fh_array, uint16_t count)
+gt_size_t gt_bit_img_add_item0_list_by_file_header(gt_obj_st * obj, gt_file_header_param_st const * const fh_array, uint16_t count)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return -1;
@@ -591,15 +591,15 @@ gt_size_t gt_bit_var_add_item0_list_by_file_header(gt_obj_st * obj, gt_file_head
     if (NULL == fh_array) {
         return -1;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     GT_CHECK_BACK_VAL(style->vector0, -1);
     _gt_vector_clear_all_items(style->vector0);
 
-    _gt_bit_var_item_st * new_item = NULL;
-    uint16_t instance = sizeof(_gt_bit_var_item_st);
+    _gt_bit_img_item_st * new_item = NULL;
+    uint16_t instance = sizeof(_gt_bit_img_item_st);
 
     for (gt_size_t i = 0; i < count; ++i) {
-        new_item = (_gt_bit_var_item_st * )gt_mem_malloc(instance);
+        new_item = (_gt_bit_img_item_st * )gt_mem_malloc(instance);
         GT_CHECK_BACK_VAL(new_item, -1);
         new_item->src = NULL;
         new_item->fh_param = (gt_file_header_param_st)fh_array[i];
@@ -616,7 +616,7 @@ gt_size_t gt_bit_var_add_item0_list_by_file_header(gt_obj_st * obj, gt_file_head
     return _gt_vector_get_count(style->vector0);
 }
 
-gt_size_t gt_bit_var_add_item1_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh)
+gt_size_t gt_bit_img_add_item1_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return -1;
@@ -624,12 +624,12 @@ gt_size_t gt_bit_var_add_item1_by_file_header(gt_obj_st * obj, gt_file_header_pa
     if (NULL == fh) {
         return -1;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     if (fh->idx >= gt_file_header_get_count()) {
         return -1;
     }
 
-    _gt_bit_var_item_st * new_item = gt_mem_malloc(sizeof(_gt_bit_var_item_st));
+    _gt_bit_img_item_st * new_item = gt_mem_malloc(sizeof(_gt_bit_img_item_st));
     GT_CHECK_BACK_VAL(new_item, _gt_vector_get_count(style->vector1));
     new_item->src = NULL;
     new_item->fh_param = *fh;
@@ -645,7 +645,7 @@ gt_size_t gt_bit_var_add_item1_by_file_header(gt_obj_st * obj, gt_file_header_pa
     return _gt_vector_get_count(style->vector1);
 }
 
-gt_size_t gt_bit_var_add_item1_list_by_file_header(gt_obj_st * obj, gt_file_header_param_st const * const fh_array, uint16_t count)
+gt_size_t gt_bit_img_add_item1_list_by_file_header(gt_obj_st * obj, gt_file_header_param_st const * const fh_array, uint16_t count)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return -1;
@@ -653,15 +653,15 @@ gt_size_t gt_bit_var_add_item1_list_by_file_header(gt_obj_st * obj, gt_file_head
     if (NULL == fh_array) {
         return -1;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     GT_CHECK_BACK_VAL(style->vector1, -1);
     _gt_vector_clear_all_items(style->vector1);
 
-    _gt_bit_var_item_st * new_item = NULL;
-    uint16_t instance = sizeof(_gt_bit_var_item_st);
+    _gt_bit_img_item_st * new_item = NULL;
+    uint16_t instance = sizeof(_gt_bit_img_item_st);
 
     for (gt_size_t i = 0; i < count; ++i) {
-        new_item = (_gt_bit_var_item_st * )gt_mem_malloc(instance);
+        new_item = (_gt_bit_img_item_st * )gt_mem_malloc(instance);
         GT_CHECK_BACK_VAL(new_item, -1);
         new_item->src = NULL;
         new_item->fh_param = (gt_file_header_param_st)fh_array[i];
@@ -681,7 +681,7 @@ gt_size_t gt_bit_var_add_item1_list_by_file_header(gt_obj_st * obj, gt_file_head
 
 
 #if GT_USE_DIRECT_ADDR
-gt_size_t gt_bit_var_add_item0_by_direct_addr(gt_obj_st * obj, gt_addr_t addr)
+gt_size_t gt_bit_img_add_item0_by_direct_addr(gt_obj_st * obj, gt_addr_t addr)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return -1;
@@ -689,9 +689,9 @@ gt_size_t gt_bit_var_add_item0_by_direct_addr(gt_obj_st * obj, gt_addr_t addr)
     if (gt_hal_is_invalid_addr(addr)) {
         return -1;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
 
-    _gt_bit_var_item_st * new_item = gt_mem_malloc(sizeof(_gt_bit_var_item_st));
+    _gt_bit_img_item_st * new_item = gt_mem_malloc(sizeof(_gt_bit_img_item_st));
     GT_CHECK_BACK_VAL(new_item, _gt_vector_get_count(style->vector0));
     new_item->src = NULL;
     new_item->addr = addr;
@@ -707,7 +707,7 @@ gt_size_t gt_bit_var_add_item0_by_direct_addr(gt_obj_st * obj, gt_addr_t addr)
     return _gt_vector_get_count(style->vector0);
 }
 
-gt_size_t gt_bit_var_add_item0_list_by_direct_addr(gt_obj_st * obj, gt_addr_t const * const addr_array, uint16_t count)
+gt_size_t gt_bit_img_add_item0_list_by_direct_addr(gt_obj_st * obj, gt_addr_t const * const addr_array, uint16_t count)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return -1;
@@ -715,18 +715,18 @@ gt_size_t gt_bit_var_add_item0_list_by_direct_addr(gt_obj_st * obj, gt_addr_t co
     if (NULL == addr_array) {
         return -1;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     GT_CHECK_BACK_VAL(style->vector0, -1);
     _gt_vector_clear_all_items(style->vector0);
 
-    _gt_bit_var_item_st * new_item = NULL;
-    uint16_t instance = sizeof(_gt_bit_var_item_st);
+    _gt_bit_img_item_st * new_item = NULL;
+    uint16_t instance = sizeof(_gt_bit_img_item_st);
 
     for (gt_size_t i = 0; i < count; ++i) {
         if (gt_hal_is_invalid_addr(addr_array[i])) {
             continue;
         }
-        new_item = (_gt_bit_var_item_st * )gt_mem_malloc(instance);
+        new_item = (_gt_bit_img_item_st * )gt_mem_malloc(instance);
         GT_CHECK_BACK_VAL(new_item, -1);
         new_item->src = NULL;
         new_item->addr = addr_array[i];
@@ -743,7 +743,7 @@ gt_size_t gt_bit_var_add_item0_list_by_direct_addr(gt_obj_st * obj, gt_addr_t co
     return _gt_vector_get_count(style->vector0);
 }
 
-gt_size_t gt_bit_var_add_item1_by_direct_addr(gt_obj_st * obj, gt_addr_t addr)
+gt_size_t gt_bit_img_add_item1_by_direct_addr(gt_obj_st * obj, gt_addr_t addr)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return -1;
@@ -751,9 +751,9 @@ gt_size_t gt_bit_var_add_item1_by_direct_addr(gt_obj_st * obj, gt_addr_t addr)
     if (gt_hal_is_invalid_addr(addr)) {
         return -1;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
 
-    _gt_bit_var_item_st * new_item = gt_mem_malloc(sizeof(_gt_bit_var_item_st));
+    _gt_bit_img_item_st * new_item = gt_mem_malloc(sizeof(_gt_bit_img_item_st));
     GT_CHECK_BACK_VAL(new_item, _gt_vector_get_count(style->vector1));
     new_item->src = NULL;
     new_item->addr = addr;
@@ -769,7 +769,7 @@ gt_size_t gt_bit_var_add_item1_by_direct_addr(gt_obj_st * obj, gt_addr_t addr)
     return _gt_vector_get_count(style->vector1);
 }
 
-gt_size_t gt_bit_var_add_item1_list_by_direct_addr(gt_obj_st * obj, gt_addr_t const * const addr_array, uint16_t count)
+gt_size_t gt_bit_img_add_item1_list_by_direct_addr(gt_obj_st * obj, gt_addr_t const * const addr_array, uint16_t count)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return -1;
@@ -777,18 +777,18 @@ gt_size_t gt_bit_var_add_item1_list_by_direct_addr(gt_obj_st * obj, gt_addr_t co
     if (NULL == addr_array) {
         return -1;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     GT_CHECK_BACK_VAL(style->vector1, -1);
     _gt_vector_clear_all_items(style->vector1);
 
-    _gt_bit_var_item_st * new_item = NULL;
-    uint16_t instance = sizeof(_gt_bit_var_item_st);
+    _gt_bit_img_item_st * new_item = NULL;
+    uint16_t instance = sizeof(_gt_bit_img_item_st);
 
     for (gt_size_t i = 0; i < count; ++i) {
         if (gt_hal_is_invalid_addr(addr_array[i])) {
             continue;
         }
-        new_item = (_gt_bit_var_item_st * )gt_mem_malloc(instance);
+        new_item = (_gt_bit_img_item_st * )gt_mem_malloc(instance);
         GT_CHECK_BACK_VAL(new_item, -1);
         new_item->src = NULL;
         new_item->addr = addr_array[i];
@@ -806,12 +806,12 @@ gt_size_t gt_bit_var_add_item1_list_by_direct_addr(gt_obj_st * obj, gt_addr_t co
 }
 #endif
 
-void gt_bit_var_remove_all_items(gt_obj_st * obj)
+void gt_bit_img_remove_all_items(gt_obj_st * obj)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
 
     if(style->vector0){
         _gt_vector_clear_all_items(style->vector0);
@@ -825,31 +825,31 @@ void gt_bit_var_remove_all_items(gt_obj_st * obj)
 }
 
 
-void gt_bit_var_set_active(gt_obj_st * obj, uint16_t act)
+void gt_bit_img_set_active(gt_obj_st * obj, uint16_t act)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     style->act = act;
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
-uint16_t gt_bit_var_get_active(gt_obj_st * obj)
+uint16_t gt_bit_img_get_active(gt_obj_st * obj)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return 0;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     return style->act;
 }
 
-void gt_bit_var_set_value(gt_obj_st * obj, uint16_t value)
+void gt_bit_img_set_value(gt_obj_st * obj, uint16_t value)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     style->value = value;
     _change_timer_handler(obj);
     if(style->vector0){
@@ -861,12 +861,12 @@ void gt_bit_var_set_value(gt_obj_st * obj, uint16_t value)
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_bit_var_set_value_bit(gt_obj_st* obj, uint8_t bit, bool value)
+void gt_bit_img_set_value_bit(gt_obj_st* obj, uint8_t bit, bool value)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     if (value) {
         style->value |= (1 << bit);
     } else {
@@ -876,64 +876,64 @@ void gt_bit_var_set_value_bit(gt_obj_st* obj, uint8_t bit, bool value)
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-uint16_t gt_bit_var_get_value(gt_obj_st * obj)
+uint16_t gt_bit_img_get_value(gt_obj_st * obj)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return 0;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     return style->value;
 }
 
-bool gt_bit_var_get_value_bit(gt_obj_st* obj, uint8_t bit)
+bool gt_bit_img_get_value_bit(gt_obj_st* obj, uint8_t bit)
 {
     if( false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return false;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     return (style->value & (1 << bit)) ? true : false;
 }
 
-void gt_bit_var_set_move_gap(gt_obj_st * obj, uint16_t gap)
+void gt_bit_img_set_move_gap(gt_obj_st * obj, uint16_t gap)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     style->move_gap = gap;
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
-void gt_bit_var_set_move_mode(gt_obj_st * obj, gt_bit_var_move_mode_et mode)
+void gt_bit_img_set_move_mode(gt_obj_st * obj, gt_bit_img_move_mode_et mode)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     style->move_mode = mode;
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
-void gt_bit_var_set_disp_mode(gt_obj_st * obj, gt_bit_var_disp_mode_et mode)
+void gt_bit_img_set_disp_mode(gt_obj_st * obj, gt_bit_img_disp_mode_et mode)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     style->disp_mode = mode;
 }
 
-void gt_bit_var_set_time(gt_obj_st* obj, uint16_t time)
+void gt_bit_img_set_time(gt_obj_st* obj, uint16_t time)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;
     }
-    _gt_bit_var_st * style = (_gt_bit_var_st * )obj;
+    _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     if(style->timer){
         _gt_timer_set_period(style->timer, time);
     }
 }
 
 /* end of file ----------------------------------------------------------*/
-#endif /* GT_CFG_ENABLE_BIT_VAR */
+#endif /* GT_CFG_ENABLE_BIT_IMG */
 

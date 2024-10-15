@@ -70,7 +70,7 @@ extern "C" {
 #endif
 
 #if GT_USE_SERIAL
-#define GT_CFG_ENABLE_BIT_VAR           1
+#define GT_CFG_ENABLE_BIT_IMG           1
 #endif
 /* typedef --------------------------------------------------------------*/
 
