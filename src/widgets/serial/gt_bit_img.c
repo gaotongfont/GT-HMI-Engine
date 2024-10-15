@@ -852,12 +852,14 @@ void gt_bit_img_set_value(gt_obj_st * obj, uint16_t value)
     _gt_bit_img_st * style = (_gt_bit_img_st * )obj;
     style->value = value;
     _change_timer_handler(obj);
-    if(style->vector0){
-        _gt_vector_set_index(style->vector0  ,0);
-    }
-    if(style->vector1){
-        _gt_vector_set_index(style->vector1 ,0);
-    }
+
+    // if(style->vector0){
+    //     _gt_vector_set_index(style->vector0  ,0);
+    // }
+    // if(style->vector1){
+    //     _gt_vector_set_index(style->vector1 ,0);
+    // }
+
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

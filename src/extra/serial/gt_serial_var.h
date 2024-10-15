@@ -45,7 +45,7 @@ typedef enum{
     VAR_TYPE_SLIDER,
     VAR_TYPE_ARTISTIC,
     VAR_TYPE_PIC,
-    VAR_TYPE_ICON_ROTATE,
+    VAR_TYPE_ICON_ROTATE,   // unrealized
     VAR_TYPE_BIT,
 }gt_var_type_et;
 
