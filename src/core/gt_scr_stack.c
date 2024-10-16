@@ -105,6 +105,15 @@ gt_scr_id_t gt_scr_stack_get_home_scr_id(void)
     return scr_info->home_scr.id;
 }
 
+gt_scr_id_t gt_scr_stack_get_current_id(void)
+{
+    gt_scr_stack_item_st * item = gt_scr_stack_peek();
+    if (NULL == item) {
+        return -1;
+    }
+    return item->current_scr_id;
+}
+
 bool gt_scr_stack_is_home_scr_alive(void)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();

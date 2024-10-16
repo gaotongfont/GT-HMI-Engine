@@ -113,7 +113,19 @@ bool gt_scr_stack_set_home_scr_id(gt_scr_id_t scr_id, bool alive_forever);
 void gt_scr_stack_set_home_scr(gt_obj_st * scr);
 gt_obj_st * gt_scr_stack_get_home_scr(void);
 
+/**
+ * @brief Get home screen id
+ *
+ * @return gt_scr_id_t -1: error; >= 0: current screen id
+ */
 gt_scr_id_t gt_scr_stack_get_home_scr_id(void);
+
+/**
+ * @brief Get current screen id
+ *
+ * @return gt_scr_id_t -1: error; >= 0: current screen id
+ */
+gt_scr_id_t gt_scr_stack_get_current_id(void);
 
 /**
  * @brief home screen is alive
