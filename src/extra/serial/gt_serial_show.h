@@ -126,7 +126,12 @@ void gt_serial_load_page(uint16_t index);
  */
 int16_t gt_serial_go_back(int16_t step);
 
-
+/**
+ * @brief
+ *
+ * @param value 0x0000(vp / sp) + (0x00 ...)data
+ * @param len byte length
+ */
 void gt_serial_set_value(uint8_t *value, uint16_t len);
 
 uint16_t gt_serial_get_value(uint8_t * res_buffer, uint8_t * value, uint16_t len);

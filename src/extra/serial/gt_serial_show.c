@@ -268,7 +268,7 @@ static void _read_show_file_page_info(gt_serial_page_info_st* info, uint16_t ind
 
 static uint8_t* _get_control(gt_serial_page_info_st* info, uint16_t index)
 {
-    return ((index >= info->numb) ? NULL : info->control + (index * GT_SERIAL_UI_PAGE_CONTROL_SIZE));
+    return (index < info->numb) ? info->control + (index * GT_SERIAL_UI_PAGE_CONTROL_SIZE) : NULL;
 }
 
 static void _read_sp_param_to_var_buffer(gt_serial_show_file_head_st* head, gt_serial_page_info_st* info)
