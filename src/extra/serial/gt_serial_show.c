@@ -23,6 +23,16 @@
 
 
 /* private typedef ------------------------------------------------------*/
+
+typedef struct {
+    uint32_t type;
+    uint16_t count;
+    uint32_t addr_end;
+#if GT_USE_FILE_HEADER
+    gt_file_header_st* head_list;
+#endif
+}gt_serial_img_file_info_st;
+
 typedef struct {
     uint8_t file_id;
     uint8_t sys_id[6];
@@ -40,6 +50,7 @@ typedef struct {
 typedef struct
 {
     gt_scr_list_st* page_list;
+    gt_serial_img_file_info_st img_info;
     gt_serial_show_file_head_st _show_file_head;
     gt_serial_page_info_st page_info;
     //
@@ -133,6 +144,100 @@ static void _read_show_file_head(gt_serial_show_file_head_st* head)
 
     GT_LOGI(GT_LOG_TAG_SERIAL , "file_id = 0x%X, sys_id = [%s], page_mode = 0x%X, page_numb = 0x%X",\
                                 head->file_id ,head->sys_id, head->page_mode,head->page_numb);
+}
+
+static void _push_file_header(gt_file_header_st* head, uint8_t const * const buffer)
+{
+    head->address = gt_convert_parse_u32(buffer);
+    head->info.width = gt_convert_parse_u16(buffer + 4);
+    head->info.height = gt_convert_parse_u16(buffer + 6);
+    head->info.alpha = buffer[8];
+}
+
+
+static void _read_img_file_info(gt_serial_ui_st* sl_ui)
+{
+#if GT_USE_FILE_HEADER
+    // read img head
+    uint8_t tmp[GT_SERIAL_IMG_FILE_HEAD_SIZE] = {0};
+    gt_fs_read_direct_physical(GT_SERIAL_IMG_FILE_ADDR, GT_SERIAL_IMG_FILE_HEAD_SIZE, tmp);
+    gt_serial_img_file_info_st* img_info = &(sl_ui->img_info);
+
+    img_info->type = gt_convert_parse_u32(tmp);
+    img_info->count = gt_convert_parse_u16(tmp + 4);
+    img_info->addr_end = gt_convert_parse_u32(tmp + 6);
+
+    // read img page info
+    uint8_t *info_buf = sl_ui->page_info.control;
+    uint16_t info_buf_size = GT_SERIAL_UI_PAGE_CONTROL_SIZE * GT_SERIAL_UI_PAGE_CONTROL_MAX_NUMB;
+    uint16_t max_count = info_buf_size / GT_SERIAL_IMG_FILE_INFO_SIZE;
+    info_buf_size = max_count * GT_SERIAL_IMG_FILE_INFO_SIZE;
+    //
+    uint16_t count = img_info->count / max_count;
+    uint16_t mod = img_info->count % max_count;
+    uint32_t addr = GT_SERIAL_IMG_FILE_ADDR + GT_SERIAL_IMG_FILE_HEAD_SIZE;
+
+#define TEST_IMG 01
+#if TEST_IMG
+    const static gt_file_header_st test_img_head_list[] = {
+        {.address = 0x6040, .info = {30, 30, 0}},
+        {.address = 0x6748, .info = {30, 30, 0}},
+        {.address = 0x6e50, .info = {30, 30, 0}},
+        {.address = 0x7558, .info = {30, 30, 0}},
+        {.address = 0x7c60, .info = {30, 30, 0}},
+        {.address = 0x8368, .info = {30, 30, 0}},
+        {.address = 0x8a70, .info = {30, 30, 0}},
+        {.address = 0x9178, .info = {30, 30, 0}},
+        {.address = 0x9880, .info = {30, 30, 0}},
+        {.address = 0x9f88, .info = {30, 30, 0}},
+        {.address = 0x106d0, .info = {30, 30, 0}},
+        {.address = 0x10dd8, .info = {30, 30, 0}},
+        {.address = 0x0, .info = {110, 112, 0}},
+        {.address = 0xa690, .info = {110, 112, 0}},
+        {.address = 0x114e0, .info = {110, 112, 0}},
+        {.address = 0x17520, .info = {110, 112, 0}},
+    };
+    img_info->count = sizeof(test_img_head_list) / sizeof(gt_file_header_st);
+    gt_file_header_init(test_img_head_list, img_info->count);
+    printf(">> ------ img count:%d\n", gt_file_header_get_count());
+
+    for(uint16_t i = 0; i < img_info->count; i++) {
+        gt_file_header_st const * item = gt_file_header_get(i);
+        printf("add item[%d]: addr: 0x%X , w: %d, h: %d\r\n", i, item->address, item->info.width, item->info.height);
+    }
+
+#else
+
+    //
+    img_info->head_list = (gt_file_header_st*)gt_mem_malloc(gt_file_header_get_instance_size() * img_info->count);
+    if(!img_info->head_list){
+        GT_LOGE(GT_LOG_TAG_SERIAL, "malloc head list err");
+        return;
+    }
+    gt_file_header_st* head = img_info->head_list;
+
+    uint16_t i = 0, n = 0;
+    for(i = 0; i < count; i++) {
+        gt_fs_read_direct_physical(addr, info_buf_size, info_buf);
+        addr += info_buf_size;
+        for(n = 0; n < max_count; n++) {
+            head = img_info->head_list + (i * max_count + n);
+            _push_file_header(head, info_buf + n * GT_SERIAL_IMG_FILE_INFO_SIZE);
+        }
+    }
+
+    if (mod > 0) {
+        gt_fs_read_direct_physical(addr, mod * GT_SERIAL_IMG_FILE_INFO_SIZE, info_buf);
+        addr += mod * GT_SERIAL_IMG_FILE_INFO_SIZE;
+        for(n = 0; n < mod; n++) {
+            head = img_info->head_list + (count * max_count + n);
+            _push_file_header(head, info_buf + n * GT_SERIAL_IMG_FILE_INFO_SIZE);
+        }
+    }
+    gt_file_header_init(img_info->head_list, img_info->count);
+#endif /* TEST_IMG */
+
+#endif /* GT_USE_FILE_HEADER */
 }
 
 static void _read_show_file_page_control(gt_serial_page_info_st* info)
@@ -235,12 +340,12 @@ static gt_res_t _addr_control_to_page(gt_serial_page_info_st* info, gt_obj_st* p
 }
 #define TEST_UI 1
 #if TEST_UI
-#define TEST_IS_VP   (0)
+#define TEST_IS_VP   (01)
 gt_obj_st* btn1 = NULL;
 gt_obj_st* btn2 = NULL;
 static uint16_t index_test = 0;
-static uint16_t vp_test = 0x1000;
-static uint16_t sp_test = 0x2001;
+static uint16_t sp_test = 0x1800;
+static uint16_t vp_test = 0x1900;
 static uint8_t vp_buf[4] = {0};
 static uint8_t sp_buf[4] = {0};
 static void _btn1_cb(gt_event_st* event)
@@ -253,7 +358,7 @@ static void _btn1_cb(gt_event_st* event)
 
     GT_LOGD(GT_LOG_TAG_SERIAL , ">> send vp = 0x%X param = %d",vp_test, index_test);
     gt_serial_set_value(vp_buf, sizeof(vp_buf));
-    gt_serial_get_value(pack.buffer, vp_buf, sizeof(vp_buf));
+    // gt_serial_get_value(pack.buffer, vp_buf, sizeof(vp_buf));
 #else
     index_test += 10;
     gt_convert_print_u16(sp_buf, sp_test);
@@ -261,7 +366,7 @@ static void _btn1_cb(gt_event_st* event)
 
     GT_LOGD(GT_LOG_TAG_SERIAL , ">> send sp = 0x%X param = %d",sp_test, index_test);
     gt_serial_set_value(sp_buf, sizeof(sp_buf));
-    gt_serial_get_value(pack.buffer, sp_buf, sizeof(sp_buf));
+    // gt_serial_get_value(pack.buffer, sp_buf, sizeof(sp_buf));
 #endif
 
 }
@@ -275,7 +380,7 @@ static void _btn2_cb(gt_event_st* event)
 
     GT_LOGD(GT_LOG_TAG_SERIAL , ">> send vp = 0x%X param = %d",vp_test, index_test);
     gt_serial_set_value(vp_buf, sizeof(vp_buf));
-    gt_serial_get_value(pack.buffer, vp_buf, sizeof(vp_buf));
+    // gt_serial_get_value(pack.buffer, vp_buf, sizeof(vp_buf));
 #else
     index_test -= 10;
     gt_convert_print_u16(sp_buf, sp_test);
@@ -283,7 +388,7 @@ static void _btn2_cb(gt_event_st* event)
 
     GT_LOGD(GT_LOG_TAG_SERIAL , ">> send sp = 0x%X param = %d",sp_test, index_test);
     gt_serial_set_value(sp_buf, sizeof(sp_buf));
-    gt_serial_get_value(pack.buffer, sp_buf, sizeof(sp_buf));
+    // gt_serial_get_value(pack.buffer, sp_buf, sizeof(sp_buf));
 #endif
 }
 #endif
@@ -323,6 +428,9 @@ static void _gt_serial_ui_init(void)
         GT_LOGW(GT_LOG_TAG_SERIAL , "serial ui is already init");
         return;
     }
+    // read img info
+    _read_img_file_info(&_serial_ui);
+
     // read file head
     _read_show_file_head(&_serial_ui._show_file_head);
     // create page list

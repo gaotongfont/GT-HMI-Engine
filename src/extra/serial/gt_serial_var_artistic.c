@@ -225,18 +225,14 @@ static void _set_param(gt_var_st* var, gt_var_artistic_st* icon)
     gt_obj_set_size(var->obj, icon->param.w, icon->param.h);
 
     gt_wordart_items_init(var->obj, 12);
-    gt_wordart_add_item(var->obj, 0x30, "f:img_10_30x30.jpg");
-    gt_wordart_add_item(var->obj, 0x31, "f:img_11_30x30.jpg");
-    gt_wordart_add_item(var->obj, 0x32, "f:img_12_30x30.jpg");
-    gt_wordart_add_item(var->obj, 0x33, "f:img_13_30x30.jpg");
-    gt_wordart_add_item(var->obj, 0x34, "f:img_14_30x30.jpg");
-    gt_wordart_add_item(var->obj, 0x35, "f:img_15_30x30.jpg");
-    gt_wordart_add_item(var->obj, 0x36, "f:img_16_30x30.jpg");
-    gt_wordart_add_item(var->obj, 0x37, "f:img_17_30x30.jpg");
-    gt_wordart_add_item(var->obj, 0x38, "f:img_18_30x30.jpg");
-    gt_wordart_add_item(var->obj, 0x39, "f:img_19_30x30.jpg");
-    gt_wordart_add_item(var->obj, 0x2D, "f:img_20_30x30.jpg");
-	gt_wordart_add_item(var->obj, 0x2E, "f:img_21_30x30.jpg");
+
+    uint8_t tmp[] = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x2D, 0x2E};
+    gt_file_header_param_st fh;
+    gt_file_header_param_init(&fh);
+    for(int i = 0; i < 12; i++){
+        fh.idx = icon->param.icon0 + i;
+        gt_wordart_add_item_by_file_header(var->obj, tmp[i], &fh);
+    }
     _set_text(var->obj, icon, icon->head.vp);
 }
 

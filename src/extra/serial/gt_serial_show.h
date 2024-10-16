@@ -36,7 +36,7 @@ extern "C" {
 
 #ifndef GT_SERIAL_SHOW_FILE_ADDR
     /* show file addrese */
-    #define GT_SERIAL_SHOW_FILE_ADDR        (0x0007C7AC)//(0x380000)
+    #define GT_SERIAL_SHOW_FILE_ADDR        (0x0001D560)//(0x380000)
 #endif
 
 #ifndef GT_SERIAL_SHOW_FILE_HEAD_SIZE
@@ -69,7 +69,18 @@ extern "C" {
 #endif
 
 #ifndef GT_SERIAL_UI_PAGE_CONTROL_MAX_NUMB
-    #define GT_SERIAL_UI_PAGE_CONTROL_MAX_NUMB  (255)
+    #define GT_SERIAL_UI_PAGE_CONTROL_MAX_NUMB  (256)
+#endif
+
+#ifndef GT_SERIAL_IMG_FILE_ADDR
+    #define GT_SERIAL_IMG_FILE_ADDR        (0x0001D560)//(0x380000)
+#endif
+
+#ifndef GT_SERIAL_IMG_FILE_HEAD_SIZE
+    #define GT_SERIAL_IMG_FILE_HEAD_SIZE   (10)
+#endif
+#ifndef GT_SERIAL_IMG_FILE_INFO_SIZE
+    #define GT_SERIAL_IMG_FILE_INFO_SIZE   (9)
 #endif
 /* typedef --------------------------------------------------------------*/
 

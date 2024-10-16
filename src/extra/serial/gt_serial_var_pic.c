@@ -96,16 +96,15 @@ static void _set_param(gt_var_st* var, gt_var_icon_st* icon)
     if(0 != gt_player_get_item_count(var->obj)){
         gt_player_remove_all_items(var->obj);
     }
-    gt_player_add_item(var->obj, "f:img_10_30x30.jpg", sizeof("f:img_10_30x30.jpg"));
-	gt_player_add_item(var->obj, "f:img_11_30x30.jpg", sizeof("f:img_11_30x30.jpg"));
-	gt_player_add_item(var->obj, "f:img_12_30x30.jpg", sizeof("f:img_12_30x30.jpg"));
-	gt_player_add_item(var->obj, "f:img_13_30x30.jpg", sizeof("f:img_13_30x30.jpg"));
-	gt_player_add_item(var->obj, "f:img_14_30x30.jpg", sizeof("f:img_14_30x30.jpg"));
-	gt_player_add_item(var->obj, "f:img_15_30x30.jpg", sizeof("f:img_15_30x30.jpg"));
-	gt_player_add_item(var->obj, "f:img_16_30x30.jpg", sizeof("f:img_16_30x30.jpg"));
-	gt_player_add_item(var->obj, "f:img_17_30x30.jpg", sizeof("f:img_17_30x30.jpg"));
-	gt_player_add_item(var->obj, "f:img_18_30x30.jpg", sizeof("f:img_18_30x30.jpg"));
-	gt_player_add_item(var->obj, "f:img_19_30x30.jpg", sizeof("f:img_19_30x30.jpg"));
+
+    uint16_t i = icon->param.pic_begin;
+    uint16_t len = icon->param.pic_end - icon->param.pic_begin + 1;
+    gt_file_header_param_st fh;
+    gt_file_header_param_init(&fh);
+    for(; i < len; i++){
+        fh.idx = i;
+        gt_player_add_item_by_file_header(var->obj, &fh);
+    }
     gt_player_set_auto_play_period(var->obj, icon->param.time * 8);
     gt_player_play(var->obj);
 }

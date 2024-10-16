@@ -119,15 +119,15 @@ static void _set_param(gt_var_st* var, gt_var_anim_icon_st* icon)
     if(0 != gt_player_get_item_count(var->obj)){
         gt_player_remove_all_items(var->obj);
     }
-    gt_player_add_item(var->obj, "f:img_altitude_78x78.png", sizeof("f:img_altitude_78x78.png"));
-	gt_player_add_item(var->obj, "f:img_blood_oxygen18_78x78.png", sizeof("f:img_blood_oxygen18_78x78.png"));
-	gt_player_add_item(var->obj, "f:img_heart_rate15_78x78.png", sizeof("f:img_heart_rate15_78x78.png"));
-	gt_player_add_item(var->obj, "f:img_information13_78x78.png", sizeof("f:img_information13_78x78.png"));
-	gt_player_add_item(var->obj, "f:img_music14_78x78.png", sizeof("f:img_music14_78x78.png"));
-	gt_player_add_item(var->obj, "f:img_record_78x78.png", sizeof("f:img_record_78x78.png"));
-	gt_player_add_item(var->obj, "f:img_sleep5_78x78.png", sizeof("f:img_sleep5_78x78.png"));
-	gt_player_add_item(var->obj, "f:img_sports14_78x78.png", sizeof("f:img_sports14_78x78.png"));
-	gt_player_add_item(var->obj, "f:img_sports_record14_78x78.png", sizeof("f:img_sports_record14_78x78.png"));
+
+    uint16_t i = icon->param.icon_start;
+    uint16_t len = icon->param.icon_end - icon->param.icon_start + 1;
+    gt_file_header_param_st fh;
+    gt_file_header_param_init(&fh);
+    for(; i < len; i++){
+        fh.idx = i;
+        gt_player_add_item_by_file_header(var->obj, &fh);
+    }
 
     gt_obj_set_pos(var->obj, icon->param.x, icon->param.y);
     gt_player_set_mode(var->obj, icon->param.anim_mode ? GT_PLAYER_MODE_ONCE : GT_PLAYER_MODE_LOOP);
@@ -144,25 +144,28 @@ static void _set_param(gt_var_st* var, gt_var_anim_icon_st* icon)
 
     uint16_t index = 0;
     uint8_t data[2];
-    if(0 == gt_serial_var_buffer_get_reg(icon->head.vp, data, 2)){
-        index = ((data[0] << 8) | data[1]);
+    if(0 != gt_serial_var_buffer_get_reg(icon->head.vp, data, 2)){
+        return ;
     }
+
+    index = gt_convert_parse_u16(data);
     if(index == icon->param.v_stop){
         gt_player_stop(var->obj);
     }
     else if(index == icon->param.v_start){
         gt_player_play(var->obj);
     }
-
 }
 
 static void _set_vp_value(gt_var_st* var, gt_var_value_st* value)
 {
     uint8_t data[2];
     uint16_t index = 0;
-    if(0 == gt_serial_var_buffer_get(value, data, 2)){
-        index = ((data[0] << 8) | data[1]);
+    if(0 != gt_serial_var_buffer_get(value, data, 2)){
+        return ;
     }
+
+    index = gt_convert_parse_u16(data);
 
     gt_var_anim_icon_st var_icon;
 

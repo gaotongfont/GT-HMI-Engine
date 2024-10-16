@@ -103,7 +103,7 @@ static bool _get_param(gt_var_st* var, gt_var_slider_st* icon)
     GT_LOGI(GT_LOG_TAG_SERIAL, "var type: %d", icon->head.type);
     if(icon->head.type != VAR_TYPE_SLIDER) {return false;}
 
-    GT_LOGI(GT_LOG_TAG_SERIAL, "type: %d, sp: 0x%X, vp: 0x%X x: %d, y: %d, ivon_min: %d",\
+    GT_LOGI(GT_LOG_TAG_SERIAL, "type: %d, sp: 0x%X, vp: 0x%X x: %d, y: %d",\
                                 icon->head.type, icon->head.sp, icon->head.vp, icon->param.x_begin, icon->param.y);
 
     //
@@ -147,7 +147,10 @@ static void _set_param(gt_var_st* var, gt_var_slider_st* icon)
     _set_pos_value(var->obj, icon->param.vp_data_mode, icon->head.vp);
 
     // set img
-    gt_slider_set_tag(var->obj, "f:img_altitude_78x78.png");
+    gt_file_header_param_st fh;
+    gt_file_header_param_init(&fh);
+    fh.idx = icon->param.icon_id;
+    gt_slider_set_tag_by_file_header(var->obj, &fh);
 }
 
 static void _set_vp_value(gt_var_st* var, gt_var_value_st* value)

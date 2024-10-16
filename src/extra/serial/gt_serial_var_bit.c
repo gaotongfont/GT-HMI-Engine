@@ -121,17 +121,18 @@ static void _set_value_reg(gt_obj_st* obj, uint16_t reg)
 static void _set_param(gt_var_st* var, gt_var_bit_st* icon)
 {
     gt_bit_img_remove_all_items(var->obj);
-    gt_bit_img_add_item0(var->obj, "f:img_10_30x30.jpg", sizeof("f:img_10_30x30.jpg"));
-	gt_bit_img_add_item0(var->obj, "f:img_11_30x30.jpg", sizeof("f:img_11_30x30.jpg"));
-	gt_bit_img_add_item0(var->obj, "f:img_12_30x30.jpg", sizeof("f:img_12_30x30.jpg"));
-	gt_bit_img_add_item0(var->obj, "f:img_13_30x30.jpg", sizeof("f:img_13_30x30.jpg"));
-	gt_bit_img_add_item0(var->obj, "f:img_14_30x30.jpg", sizeof("f:img_14_30x30.jpg"));
-	//
-	gt_bit_img_add_item1(var->obj, "f:img_15_30x30.jpg", sizeof("f:img_15_30x30.jpg"));
-	gt_bit_img_add_item1(var->obj, "f:img_16_30x30.jpg", sizeof("f:img_16_30x30.jpg"));
-	gt_bit_img_add_item1(var->obj, "f:img_17_30x30.jpg", sizeof("f:img_17_30x30.jpg"));
-	gt_bit_img_add_item1(var->obj, "f:img_18_30x30.jpg", sizeof("f:img_18_30x30.jpg"));
-	gt_bit_img_add_item1(var->obj, "f:img_19_30x30.jpg", sizeof("f:img_19_30x30.jpg"));
+
+    gt_file_header_param_st fh;
+    gt_file_header_param_init(&fh);
+    for (int i = icon->param.icon0s; i <= icon->param.icon0e; i++) {
+        fh.idx = i;
+        gt_bit_img_add_item0_by_file_header(var->obj, &fh);
+    }
+
+    for(int i = icon->param.icon1s; i <= icon->param.icon1e; i++) {
+        fh.idx = i;
+        gt_bit_img_add_item1_by_file_header(var->obj, &fh);
+    }
 
     gt_obj_set_pos(var->obj, icon->param.x, icon->param.y);
     gt_bit_img_set_disp_mode(var->obj, icon->param.disp_mode);
