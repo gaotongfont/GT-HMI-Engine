@@ -80,6 +80,8 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw);
  *           package_idx 0[defalut]: The index of element within item, as the first element
  */
 void gt_img_set_by_file_header(gt_obj_st * img, gt_file_header_param_st * fh);
+
+gt_file_header_param_st* gt_img_get_file_header_param(gt_obj_st * img);
 #endif
 
 #if GT_USE_DIRECT_ADDR

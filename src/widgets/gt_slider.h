@@ -21,6 +21,10 @@ extern "C" {
 #include "gt_obj_class.h"
 #include "../core/gt_style.h"
 
+#if GT_USE_FILE_HEADER
+#include "../hal/gt_hal_file_header.h"
+#endif
+
 /* define ---------------------------------------------------------------*/
 
 
@@ -125,8 +129,14 @@ uint16_t gt_slider_get_step(gt_obj_st * slider);
 void gt_slider_set_step(gt_obj_st * slider, uint16_t step);
 
 void gt_slider_set_tag(gt_obj_st * slider, char * src);
+
+#if GT_USE_FILE_HEADER
+void gt_slider_set_tag_by_file_header(gt_obj_st * slider, gt_file_header_param_st * fh);
+#endif
+
 void gt_slider_set_tag_visible(gt_obj_st * slider, bool visible);
 void gt_slider_set_tag_size(gt_obj_st * slider , uint16_t size);
+
 
 /**
  * @brief Sets the thickness of the slider

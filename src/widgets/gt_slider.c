@@ -447,7 +447,19 @@ static void _init_cb(gt_obj_st * obj) {
             tag_area.h = _h > tag_size ? tag_size : _h;
             tag_area.x += (tag_size - tag_area.w) >> 1;
             tag_area.y += (tag_size - tag_area.h) >> 1;
-        } else {
+        }
+#if GT_USE_FILE_HEADER
+        else if(GT_FS_RES_OK == gt_fs_fh_read_img_wh((gt_img_get_file_header_param(style->img)), &_w, &_h)) {
+            if (0 == _w || 0 == _h) {
+                goto draw_focus;
+            }
+            tag_area.w = _w > tag_size ? tag_size : _w;
+            tag_area.h = _h > tag_size ? tag_size : _h;
+            tag_area.x += (tag_size - tag_area.w) >> 1;
+            tag_area.y += (tag_size - tag_area.h) >> 1;
+        }
+#endif
+        else {
             goto draw_focus;
         }
         gt_obj_set_area(style->tag, tag_area);
@@ -725,6 +737,34 @@ void gt_slider_set_tag(gt_obj_st * slider, char * src)
         gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
     }
 }
+
+#if GT_USE_FILE_HEADER
+void gt_slider_set_tag_by_file_header(gt_obj_st * slider, gt_file_header_param_st * fh)
+{
+    if (false == gt_obj_is_type(slider, OBJ_TYPE)) {
+        return;
+    }
+    _gt_slider_st * style = (_gt_slider_st *)slider;
+    if(NULL == style->tag){
+        style->tag = gt_obj_create(slider);
+        gt_obj_set_touch_parent(style->tag, true);
+        gt_obj_set_bubble_notify(style->tag, true);
+        gt_obj_set_inside(style->tag, true);
+    }
+
+    if(style->tag && NULL == style->img){
+        style->img = gt_img_create(style->tag);
+        gt_obj_set_touch_parent(style->img, true);
+        gt_obj_set_bubble_notify(style->img, true);
+        gt_obj_set_inside(style->img, true);
+    }
+
+    if(style->img){
+        gt_img_set_by_file_header(style->img, fh);
+        gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+    }
+}
+#endif
 
 void gt_slider_set_tag_visible(gt_obj_st * slider, bool visible)
 {

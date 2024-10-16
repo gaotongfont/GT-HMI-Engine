@@ -265,6 +265,15 @@ void gt_img_set_by_file_header(gt_obj_st * img, gt_file_header_param_st * fh)
 
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
+
+gt_file_header_param_st* gt_img_get_file_header_param(gt_obj_st * img)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) {
+        return NULL;
+    }
+    _gt_img_st * style = (_gt_img_st *)img;
+    return &style->fh;
+}
 #endif
 
 #if GT_USE_DIRECT_ADDR
