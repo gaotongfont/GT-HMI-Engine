@@ -220,8 +220,9 @@ static void _init_cb(gt_obj_st * obj)
     area.y = obj->area.y;
 
     _gt_vector_st* vector = NULL;
-    uint8_t v_bit = 0, val = 0, act = 0;
-    for(v_bit = 0; v_bit < 16; ++v_bit) {
+    int8_t v_bit = 0;
+    uint8_t val = 0, act = 0;
+    for(v_bit = 16; v_bit >= 0; --v_bit) {
         act = (style->act >> v_bit) & 0x01;
         val = (style->value >> v_bit) & 0x01;
 
@@ -294,8 +295,9 @@ static void _update_area(struct gt_obj_s * obj)
     area.y = obj->area.y;
 
     _gt_vector_st* vector = NULL;
-    uint8_t v_bit = 0, val = 0, act = 0;
-    for(v_bit = 0; v_bit < 16; ++v_bit) {
+    int8_t v_bit = 0;
+    uint8_t val = 0, act = 0;
+    for(v_bit = 16; v_bit >= 0; --v_bit) {
         act = (style->act >> v_bit) & 0x01;
         val = (style->value >> v_bit) & 0x01;
 
