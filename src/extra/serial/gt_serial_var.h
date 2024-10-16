@@ -180,6 +180,15 @@ gt_res_t gt_serial_var_create(gt_var_st* var);
  */
 gt_res_t gt_serial_var_set_value(gt_var_st* var, gt_var_value_st* value);
 
+/**
+ * @brief get var value
+ *
+ * @param value
+ * @param res_buffer read data in to res_buffer
+ * @return uint16_t read len
+ */
+uint16_t gt_serial_var_get_value(gt_var_value_st * value, uint8_t * res_buffer);
+
 #endif  /** GT_USE_SERIAL_SHOW && GT_USE_BIN_CONVERT */
 //
 #ifdef __cplusplus

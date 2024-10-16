@@ -75,6 +75,22 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st _format[] = {
     { 0x0, (parse_cb_t)NULL, (print_cb_t)NULL },
 };
 
+static gt_res_t _get_var_head(gt_var_st *var, gt_var_head_st *var_head)
+{
+    gt_bin_convert_st bin = {
+        .tar = var_head,
+        .buffer = var->buffer,
+        .byte_len = var->len,
+    };
+    gt_bin_res_st ret = {0};
+    ret = gt_bin_convert_parse(&bin, _format);
+
+    if (GT_RES_OK != ret.res) {
+        GT_LOGE(GT_LOG_TAG_SERIAL, "var haed parse err code: %d, index: %d", ret.res, ret.index);
+    }
+    return ret.res;
+}
+
 #if _REFACTOR_PARSE
 static gt_res_t _parse_reg(void * user_data, uint8_t const * const buffer, uint32_t len){
     uint16_t* reg = (uint16_t*)user_data;
@@ -215,16 +231,8 @@ int gt_serial_var_check_value_is_sys_config(gt_var_value_st* value)
 
 int gt_serial_var_check_value_is_set_this(gt_var_st *var, gt_var_value_st* value)
 {
-    gt_var_head_st var_head;
-    gt_bin_convert_st bin = {
-        .tar = &var_head,
-        .buffer = var->buffer,
-        .byte_len = var->len,
-    };
-    gt_bin_res_st ret = {0};
-    ret = gt_bin_convert_parse(&bin, _format);
-    if (GT_RES_OK != ret.res) {
-        GT_LOGE(GT_LOG_TAG_SERIAL, "var parse err code: %d, index: %d", ret.res, ret.index);
+    gt_var_head_st var_head = {0};
+    if(GT_RES_OK != _get_var_head(var, &var_head)){
         return -1;
     }
 
@@ -255,26 +263,18 @@ gt_res_t gt_serial_var_create(gt_var_st* var)
 {
     if(!var || !var->buffer || !var->obj) {return GT_RES_INV;}
 
-    gt_var_head_st var_icon = {0};
-    gt_bin_convert_st bin = {
-        .tar = &var_icon,
-        .buffer = var->buffer,
-        .byte_len = var->len,
-    };
-    gt_bin_res_st ret = {0};
-    ret = gt_bin_convert_parse(&bin, _format);
-    if (GT_RES_OK != ret.res) {
-        GT_LOGE(GT_LOG_TAG_SERIAL, "var parse err code: %d, index: %d", ret.res, ret.index);
-        return GT_RES_INV;
+    gt_var_head_st var_head = {0};
+    if(GT_RES_OK != _get_var_head(var, &var_head)){
+        return -1;
     }
 
-    if(0xFFFF != var_icon.sp){
-        gt_serial_var_buffer_get_reg(var_icon.sp, var->buffer + 6, var_icon.len_dsc * 2);
+    if(0xFFFF != var_head.sp){
+        gt_serial_var_buffer_get_reg(var_head.sp, var->buffer + 6, var_head.len_dsc * 2);
     }
 
     gt_var_handler_st handler = {0};
     handler.var = var;
-    handler.type = var_icon.type;
+    handler.type = var_head.type;
     handler.list = _var_handler_list;
     handler.count = sizeof(_var_handler_list) / sizeof(gt_var_handler_item_st);
     return _var_create(&handler);
@@ -284,26 +284,38 @@ gt_res_t gt_serial_var_set_value(gt_var_st* var, gt_var_value_st* value)
 {
     if(!var || !var->buffer || !var->obj || !value || !value->buffer) {return GT_RES_INV;}
 
-    gt_var_head_st var_icon;
-    gt_bin_convert_st bin = {
-        .tar = &var_icon,
-        .buffer = var->buffer,
-        .byte_len = var->len,
-    };
-    gt_bin_res_st ret = {0};
-    ret = gt_bin_convert_parse(&bin, _format);
-    if (GT_RES_OK != ret.res) {
-        GT_LOGE(GT_LOG_TAG_SERIAL, "var parse err code: %d, index: %d", ret.res, ret.index);
-        return GT_RES_INV;
+    gt_var_head_st var_head = {0};
+    if(GT_RES_OK != _get_var_head(var, &var_head)){
+        return -1;
     }
 
     gt_var_handler_st handler = {0};
     handler.var = var;
     handler.value = value;
-    handler.type = var_icon.type;
+    handler.type = var_head.type;
     handler.list = _var_handler_list;
     handler.count = sizeof(_var_handler_list) / sizeof(gt_var_handler_item_st);
     return _var_set_value(&handler);
+}
+
+uint16_t gt_serial_var_get_value(gt_var_value_st * value, uint8_t * res_buffer)
+{
+    if(!value || !res_buffer || !value->buffer || value->len < 3) {return 0;}
+
+    uint16_t ret_len = value->buffer[2];;
+    // max length is 0x7C
+    if(ret_len > 0x7C) { return 0; }
+
+    ret_len <<= 1;
+
+    gt_memcpy(res_buffer, value->buffer, 3);
+
+    if(0 != gt_serial_var_buffer_get(value, res_buffer + 3, ret_len)) {
+        return 0;
+    }
+    ret_len += 3;
+
+    return ret_len;
 }
 
 

@@ -343,7 +343,7 @@ static gt_res_t _addr_control_to_page(gt_serial_page_info_st* info, gt_obj_st* p
 #define TEST_IS_VP   (01)
 gt_obj_st* btn1 = NULL;
 gt_obj_st* btn2 = NULL;
-static uint16_t index_test = 0;
+static uint16_t index_test = 0x0100;
 static uint16_t sp_test = 0x1800;
 static uint16_t vp_test = 0x1900;
 static uint8_t vp_buf[4] = {0};
@@ -356,9 +356,9 @@ static void _btn1_cb(gt_event_st* event)
     gt_convert_print_u16(vp_buf, vp_test);
     gt_convert_print_u16(vp_buf + 2, index_test);
 
-    GT_LOGD(GT_LOG_TAG_SERIAL , ">> send vp = 0x%X param = %d",vp_test, index_test);
+    GT_LOGD(GT_LOG_TAG_SERIAL , ">> send vp = 0x%X param = 0x%X",vp_test, index_test);
     gt_serial_set_value(vp_buf, sizeof(vp_buf));
-    // gt_serial_get_value(pack.buffer, vp_buf, sizeof(vp_buf));
+    gt_serial_get_value(pack.buffer, vp_buf, sizeof(vp_buf));
 #else
     index_test += 10;
     gt_convert_print_u16(sp_buf, sp_test);
@@ -380,7 +380,7 @@ static void _btn2_cb(gt_event_st* event)
 
     GT_LOGD(GT_LOG_TAG_SERIAL , ">> send vp = 0x%X param = %d",vp_test, index_test);
     gt_serial_set_value(vp_buf, sizeof(vp_buf));
-    // gt_serial_get_value(pack.buffer, vp_buf, sizeof(vp_buf));
+    gt_serial_get_value(pack.buffer, vp_buf, sizeof(vp_buf));
 #else
     index_test -= 10;
     gt_convert_print_u16(sp_buf, sp_test);
@@ -550,23 +550,7 @@ uint16_t gt_serial_get_value(uint8_t * res_buffer, uint8_t * value, uint16_t len
         return ret_len;
     }
 
-    for (index = 0; index < _serial_ui.page_info.numb;index++) {
-        var.buffer = _get_control(&_serial_ui.page_info, index);
-        var.len = GT_SERIAL_UI_PAGE_CONTROL_SIZE;
-        var.id = index;
-#if GT_USE_SERIAL_VAR
-        ret = gt_serial_var_check_value_is_set_this(&var, &var_value);
-#endif
-        if(ret < 0) {continue;}
-
-        var.id = index;
-        var.obj = gt_obj_find_by_id(var.id);
-        if(var.obj == NULL) {continue;}
-#if GT_USE_SERIAL_VAR
-        // gt_serial_var_get_value(&var, &var_value);   // TODO
-#endif
-    }
-    return ret_len;
+    return gt_serial_var_get_value(&var_value, res_buffer);
 }
 
 
