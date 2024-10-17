@@ -8,7 +8,7 @@
  */
 
 /* include --------------------------------------------------------------*/
-#include "gt_serial_var_artistic.h"
+#include "gt_serial_var_bit.h"
 #if GT_USE_SERIAL_VAR && GT_USE_BIN_CONVERT
 #include "../../utils/gt_bin_convert.h"
 #include "../../others/gt_log.h"
