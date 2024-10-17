@@ -2230,6 +2230,7 @@ void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_are
     if (NULL == dsc->bg_img_src) {
         if (dsc->raw_img) {
             dsc_img = *dsc->raw_img;
+            goto handler_lb;
         }
         gt_res_t result = GT_RES_FAIL;
 #if GT_USE_FILE_HEADER

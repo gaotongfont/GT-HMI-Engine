@@ -54,7 +54,9 @@ static gt_res_t _get_image_raw_data(_gt_img_dsc_st * dsc_img, gt_color_img_raw_s
     }
 
     raw->buffer = (gt_color_t * )cache_buffer;
-    raw->opa = (gt_opa_t * )&cache_buffer[addr_start_alpha];
+    if (is_mask) {
+        raw->opa = (gt_opa_t * )&cache_buffer[addr_start_alpha];
+    }
     raw->width = dsc_img->header.w;
     raw->height = dsc_img->header.h;
 
