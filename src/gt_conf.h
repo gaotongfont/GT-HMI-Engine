@@ -162,6 +162,15 @@ extern "C" {
     #define GT_USE_EXTRA_FULL_IMG_BUFFER    0
 #endif
 
+#ifndef GT_USE_IMG_CACHE
+    /**
+     * @brief Enabled use a separate image cache to store meta data,
+     *      @ref gt_img_cache.h, get raw object to set widget image data.
+     *      [default: 0]
+     */
+    #define GT_USE_IMG_CACHE            0
+#endif
+
 #ifndef GT_USE_WIDGET_LAYOUT
     /**
      * @brief Set the widget layout function:

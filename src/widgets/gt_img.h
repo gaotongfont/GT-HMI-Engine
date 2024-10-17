@@ -30,13 +30,6 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct gt_img_raw_s {
-    gt_color_t const * buffer;    /** color channel, necessary */
-    gt_opa_t   const * opa;       /** alpha channel, unnecessary */
-    gt_color_t color;
-    uint16_t   width;             /** width of the image */
-    uint16_t   height;            /** height of the image */
-}gt_img_raw_st;
 
 
 
@@ -68,7 +61,7 @@ void gt_img_set_src(gt_obj_st * img, char * src);
  * @param img img object
  * @param raw Raw data of the image
  */
-void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw);
+void gt_img_set_raw_data(gt_obj_st * img, gt_color_img_raw_st * raw);
 
 #if GT_USE_FILE_HEADER
 /**

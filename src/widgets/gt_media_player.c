@@ -306,7 +306,7 @@ void gt_media_player_set_stop_cb(gt_obj_st * obj, gt_media_player_handler_cb sto
     style->stop_hdr.user_data = user_data;
 }
 
-void gt_media_player_set_raw(gt_obj_st * obj, gt_img_raw_st * raw)
+void gt_media_player_set_raw(gt_obj_st * obj, gt_color_img_raw_st * raw)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;

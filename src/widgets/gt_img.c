@@ -206,7 +206,7 @@ void gt_img_set_src(gt_obj_st * img, char * src)
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
-void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw)
+void gt_img_set_raw_data(gt_obj_st * img, gt_color_img_raw_st * raw)
 {
     if (false == gt_obj_is_type(img, OBJ_TYPE)) {
         return ;

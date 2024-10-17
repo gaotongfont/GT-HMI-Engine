@@ -195,6 +195,10 @@ extern "C" {
 #if GT_CFG_ENABLE_BIT_IMG
 #include "src/widgets/serial/gt_bit_img.h"
 #endif
+
+#if GT_USE_IMG_CACHE
+#include "src/utils/gt_img_cache.h"
+#endif
 /* define ---------------------------------------------------------------*/
 
 
