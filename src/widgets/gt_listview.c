@@ -923,7 +923,7 @@ gt_obj_st * gt_listview_custom_item_set_element_by_raw(gt_obj_st * listview, gt_
     gt_obj_st * obj = NULL;
     gt_obj_st * element = NULL;
     gt_font_info_st * font_p = NULL;
-    gt_listview_custom_item_st * item = (gt_listview_custom_item_st * )item_raw;
+    gt_listview_custom_item_st * item = &item_raw->base_item;
 
     if (_GT_LISTVIEW_ELEMENT_TYPE_MAX <= item->type) {
         return NULL;

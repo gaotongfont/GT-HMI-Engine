@@ -2302,6 +2302,9 @@ handler_lb:
         }
     }
 
+    if (GT_IMG_DECODER_TYPE_RAM == dsc_img.header.type) {
+        return ;
+    }
 close_lb:
     gt_img_decoder_close(&dsc_img);
 }
