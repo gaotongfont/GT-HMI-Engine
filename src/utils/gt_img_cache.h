@@ -48,6 +48,7 @@ extern "C" {
  * @param cache_buffer The cache buffer provided by the user
  * @param byte_len The size of the cache buffer
  * @return gt_color_img_raw_st using the result to set widget image data, such as: gt_img_set_raw_data(), and so on.
+ *         If the return raw.buffer value is invalid, the image data is not cached.
  */
 gt_color_img_raw_st gt_img_cache_get_raw(char * src, uint8_t * cache_buffer, uint32_t byte_len);
 
@@ -61,6 +62,7 @@ gt_color_img_raw_st gt_img_cache_get_raw(char * src, uint8_t * cache_buffer, uin
  * @param cache_buffer The cache buffer provided by the user
  * @param byte_len The size of the cache buffer
  * @return gt_color_img_raw_st using the result to set widget image data, such as: gt_img_set_raw_data(), and so on.
+ *         If the return raw.buffer value is invalid, the image data is not cached.
  */
 gt_color_img_raw_st gt_img_cache_fh_get_raw(gt_file_header_param_st * fh, uint8_t * cache_buffer, uint32_t byte_len);
 #endif
@@ -75,6 +77,7 @@ gt_color_img_raw_st gt_img_cache_fh_get_raw(gt_file_header_param_st * fh, uint8_
  * @param cache_buffer The cache buffer provided by the user
  * @param byte_len The size of the cache buffer
  * @return gt_color_img_raw_st using the result to set widget image data, such as: gt_img_set_raw_data(), and so on.
+ *         If the return raw.buffer value is invalid, the image data is not cached.
  */
 gt_color_img_raw_st gt_img_cache_addr_get_raw(gt_addr_t addr, uint8_t * cache_buffer, uint32_t byte_len);
 #endif
