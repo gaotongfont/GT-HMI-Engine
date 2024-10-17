@@ -538,6 +538,19 @@ static gt_obj_st * _create_item_icon(gt_obj_st * listview, gt_obj_st * obj, char
     return icon;
 }
 
+static gt_obj_st * _create_item_icon_raw(gt_obj_st * listview, gt_obj_st * obj, gt_color_img_raw_st * img_raw) {
+    gt_obj_st * icon = gt_img_create(obj);
+
+    gt_img_set_raw_data(icon, img_raw);
+    gt_obj_set_inside(icon, true);
+    gt_obj_set_reduce(icon, 0);
+
+    gt_obj_set_touch_parent(icon, true);
+    gt_obj_set_bubble_notify(icon, true);
+
+    return icon;
+}
+
 /**
  * @brief Set label object property
  *
@@ -875,6 +888,63 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
             element = _create_item_icon(listview, obj, item->src);
         } else {
             gt_img_set_src(element, item->src);
+        }
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
+    } if (GT_LISTVIEW_ELEMENT_TYPE_RECT == item->type) {
+        if (NULL == element) {
+            element = _create_item_rect(listview, obj);
+        }
+        _set_rect_prop(element, &item->rect);
+#endif
+    } else {
+        if (NULL == element) {
+        #if GT_LISTVIEW_CUSTOM_FONT_STYLE
+            font_p = item->font_info_p;
+        #endif
+            element = _create_item_label_by_len(listview, obj, item->src, item->src_len, font_p);
+        } else {
+            gt_label_set_text_by_len(element, item->src, item->src_len);
+        }
+    }
+    element->area = item->area;
+    element->area.x += obj->area.x;
+    element->area.y += obj->area.y;
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+
+    return obj;
+}
+
+gt_obj_st * gt_listview_custom_item_set_element_by_raw(gt_obj_st * listview, gt_listview_custom_item_raw_st * item_raw)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return NULL;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    gt_obj_st * obj = NULL;
+    gt_obj_st * element = NULL;
+    gt_font_info_st * font_p = NULL;
+    gt_listview_custom_item_st * item = (gt_listview_custom_item_st * )item_raw;
+
+    if (_GT_LISTVIEW_ELEMENT_TYPE_MAX <= item->type) {
+        return NULL;
+    }
+
+    /** item object */
+    if (item->item_idx < listview->cnt_child) {
+        obj = listview->child[item->item_idx];
+    } else {
+        obj = _set_item_obj_prop(_create_item_obj(listview), listview);
+    }
+
+    /** element */
+    if (item->element_idx < obj->cnt_child) {
+        element = obj->child[item->element_idx];
+    }
+    if (GT_LISTVIEW_ELEMENT_TYPE_IMG == item->type) {
+        if (NULL == element) {
+            element = _create_item_icon_raw(listview, obj, &item_raw->img_raw);
+        } else {
+            gt_img_set_raw_data(element, &item_raw->img_raw);
         }
 #if GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
     } if (GT_LISTVIEW_ELEMENT_TYPE_RECT == item->type) {
