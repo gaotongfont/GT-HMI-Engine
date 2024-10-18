@@ -97,19 +97,13 @@ typedef struct gt_listview_custom_item_s {
 #if GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
     gt_listview_rect_st rect;
 #endif
+    /**
+     * @brief Using image raw data, img_raw is valid value must be set image
+     * meta data, and ignore src value.
+     * [default: NULL]
+     */
+    gt_color_img_raw_st * img_raw;
 }gt_listview_custom_item_st;
-
-typedef struct gt_listview_custom_item_raw_s {
-    /**
-     * @brief Base properties of custom item
-     */
-    gt_listview_custom_item_st base_item;
-    /**
-     * @brief Image raw data, must be get image meta data before calling
-     *      gt_listview_custom_item_set_element_by_raw()
-     */
-    gt_color_img_raw_st img_raw;
-}gt_listview_custom_item_raw_st;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -189,15 +183,6 @@ gt_obj_st * gt_listview_add_item_by_param(gt_obj_st * listview, gt_listview_para
  * @return gt_obj_st*
  */
 gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listview_custom_item_st * item);
-
-/**
- * @brief add item to listview obj by image raw data
- *
- * @param listview
- * @param item_raw include base_item and img_raw, img_raw need to be set before calling this function
- * @return gt_obj_st*
- */
-gt_obj_st * gt_listview_custom_item_set_element_by_raw(gt_obj_st * listview, gt_listview_custom_item_raw_st * item_raw);
 
 /**
  * @brief Clear all items in the listview
