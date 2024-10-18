@@ -36,7 +36,7 @@ extern "C" {
     /**
      * @brief 0[defalut]: Do not use rectangle element;
      */
-    #define GT_LISTVIEW_USE_ELEMENT_TYPE_RECT       01
+    #define GT_LISTVIEW_USE_ELEMENT_TYPE_RECT       0
 #endif
 
 /* typedef --------------------------------------------------------------*/
