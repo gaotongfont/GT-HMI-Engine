@@ -58,7 +58,7 @@ typedef struct{
 
 
 /* static functions -----------------------------------------------------*/
-static gt_res_t _parse_param(void * user_data, uint8_t const * const buffer, uint32_t len){
+static gt_res_t _parse_param(void * user_data, uint8_t const * const buffer, uint32_t len) {
     gt_var_bit_st * icon = (gt_var_bit_st *)user_data;
     gt_var_bit_param_st* param = &icon->param;
     param->vp_aux = gt_convert_parse_u16(buffer);

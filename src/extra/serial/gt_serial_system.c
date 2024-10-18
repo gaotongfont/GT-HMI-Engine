@@ -61,7 +61,8 @@ static gt_res_t _write_buffer_direct(_serial_sys_pack_st * const pack_p) {
 }
 
 /**
- * @brief 0x00f0 0x01
+ * @brief format: 0x00f0 0x01
+ *                 addr + len
  *
  * @param pack_p
  * @return uint16_t
@@ -69,7 +70,7 @@ static gt_res_t _write_buffer_direct(_serial_sys_pack_st * const pack_p) {
 static uint16_t _read_buffer_direct(_serial_sys_pack_st * const pack_p) {
     uint16_t len = 0, need_read = 0;
 
-    need_read = pack_p->unpack.buffer[pack_p->unpack.len - 1] << 1; // short
+    need_read = pack_p->unpack.buffer[pack_p->unpack.len - 1] << 1; // short 0x01 -> 2 byte
     gt_memcpy(&pack_p->pack.buffer[len], pack_p->unpack.buffer, pack_p->unpack.len);
     len += pack_p->unpack.len;
 
@@ -746,6 +747,14 @@ uint16_t gt_serial_system_get_value(uint8_t * const res, uint8_t const * const b
         break;
     }
     return byte_size;
+}
+
+uint16_t gt_serial_system_get_value_by_addr(uint8_t * const res, uint16_t addr, uint8_t short_len)
+{
+    uint8_t tmp[3] = {0}, cnt = 0;
+    cnt = gt_convert_print_u16(tmp, addr);
+    tmp[cnt++] = short_len;
+    return gt_serial_system_get_value(res, tmp, cnt);
 }
 
 

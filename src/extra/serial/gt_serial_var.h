@@ -47,6 +47,8 @@ typedef enum{
     VAR_TYPE_PIC,
     VAR_TYPE_ICON_ROTATE,   // unrealized
     VAR_TYPE_BIT,
+
+    VAR_TYPE_VALUE_PASSING = 0x30,
 }gt_var_type_et;
 
 typedef struct{

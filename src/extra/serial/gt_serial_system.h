@@ -76,9 +76,34 @@ extern "C" {
 
 /* global functions / API interface -------------------------------------*/
 
+/**
+ * @brief
+ *
+ * @param buffer 0x0000(address) + 0x00 ... (data)
+ * @param len
+ * @return gt_res_t
+ */
 gt_res_t gt_serial_system_set_value(uint8_t const * const buffer, uint32_t len);
 
+/**
+ * @brief
+ *
+ * @param res The buffer to store the read value
+ * @param buffer  0x0000(address) + 0x00(len)
+ * @param len buffer length
+ * @return uint16_t valid read byte length
+ */
 uint16_t gt_serial_system_get_value(uint8_t * const res, uint8_t const * const buffer, uint32_t len);
+
+/**
+ * @brief
+ *
+ * @param res The buffer to store the read value
+ * @param addr  0x0000
+ * @param short_len 0x00 short or word length
+ * @return uint16_t valid read byte length
+ */
+uint16_t gt_serial_system_get_value_by_addr(uint8_t * const res, uint16_t addr, uint8_t short_len);
 
 #endif  /** GT_USE_SERIAL */
 
