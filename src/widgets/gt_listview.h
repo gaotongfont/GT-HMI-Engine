@@ -36,7 +36,7 @@ extern "C" {
     /**
      * @brief 0[defalut]: Do not use rectangle element;
      */
-    #define GT_LISTVIEW_USE_ELEMENT_TYPE_RECT       0
+    #define GT_LISTVIEW_USE_ELEMENT_TYPE_RECT       01
 #endif
 
 /* typedef --------------------------------------------------------------*/
@@ -95,14 +95,14 @@ typedef struct gt_listview_custom_item_s {
     gt_font_info_st * font_info_p;
 #endif
 #if GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
-    gt_listview_rect_st rect;
+    gt_listview_rect_st * rect_p;
 #endif
     /**
      * @brief Using image raw data, img_raw is valid value must be set image
      * meta data, and ignore src value.
      * [default: NULL]
      */
-    gt_color_img_raw_st * img_raw;
+    gt_color_img_raw_st * img_raw_p;
 }gt_listview_custom_item_st;
 
 

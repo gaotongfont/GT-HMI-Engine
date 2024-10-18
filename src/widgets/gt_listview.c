@@ -695,6 +695,9 @@ static inline void _set_rect_prop(gt_obj_st * rect, gt_listview_rect_st const * 
     if (false == gt_obj_is_type(rect, GT_TYPE_RECT)) {
         return;
     }
+    if (NULL == prop) {
+        return;
+    }
     gt_rect_set_bg_color(rect, prop->bg_color);
     gt_rect_set_color_border(rect, prop->border_color);
     gt_rect_set_border(rect, prop->border);
@@ -885,11 +888,11 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
     }
     if (GT_LISTVIEW_ELEMENT_TYPE_IMG == item->type) {
         if (NULL == element) {
-            element = item->img_raw ?
-                _create_item_icon_raw(listview, obj, item->img_raw) : _create_item_icon(listview, obj, item->src);
+            element = item->img_raw_p ?
+                _create_item_icon_raw(listview, obj, item->img_raw_p) : _create_item_icon(listview, obj, item->src);
         } else {
-            if (item->img_raw) {
-                gt_img_set_raw_data(element, item->img_raw);
+            if (item->img_raw_p) {
+                gt_img_set_raw_data(element, item->img_raw_p);
             } else {
                 gt_img_set_src(element, item->src);
             }
@@ -899,7 +902,7 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
         if (NULL == element) {
             element = _create_item_rect(listview, obj);
         }
-        _set_rect_prop(element, &item->rect);
+        _set_rect_prop(element, item->rect_p);
 #endif
     } else {
         if (NULL == element) {
