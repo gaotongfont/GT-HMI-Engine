@@ -384,6 +384,12 @@ extern "C" {
      * @brief [Warn] Force enabled simulate pointer input device
      */
     #define GT_INDEV_SIMULATE_POINTER       1
+
+    #undef GT_USE_FILE_HEADER
+    /**
+     * @brief [Warn] Force enabled img file header function @ref gt_file_header_st
+     */
+    #define GT_USE_FILE_HEADER              1
 #endif  /** GT_USE_SERIAL */
 
 #ifndef GT_USE_BIN_CONVERT

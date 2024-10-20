@@ -122,6 +122,7 @@ static void _set_param(gt_var_st* var, gt_var_bit_st* icon)
 {
     gt_bit_img_remove_all_items(var->obj);
 
+#if GT_USE_FILE_HEADER
     gt_file_header_param_st fh;
     gt_file_header_param_init(&fh);
     for (int i = icon->param.icon0s; i <= icon->param.icon0e; i++) {
@@ -133,6 +134,7 @@ static void _set_param(gt_var_st* var, gt_var_bit_st* icon)
         fh.idx = i;
         gt_bit_img_add_item1_by_file_header(var->obj, &fh);
     }
+#endif
 
     gt_obj_set_pos(var->obj, icon->param.x, icon->param.y);
     gt_bit_img_set_disp_mode(var->obj, icon->param.disp_mode);
