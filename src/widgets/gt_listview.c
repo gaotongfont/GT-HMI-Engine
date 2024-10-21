@@ -71,7 +71,6 @@ typedef struct _gt_listview_s {
     gt_obj_st * last_active;
     uint16_t item_height;       /** The height of item */
     gt_font_info_st font_info;
-    gt_color_t font_color;
 
     gt_color_t item_bg_color;
     gt_color_t border_color;
@@ -724,7 +723,6 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     gt_font_info_init(&style->font_info);
 
     style->item_height = style->font_info.size + (style->font_info.size >> 1);
-    style->font_color = gt_color_hex(0x000000);
     style->align = GT_ALIGN_CENTER_MID;
     /** font */
     style->space_x = 0;
@@ -1314,7 +1312,7 @@ void gt_listview_set_font_color(gt_obj_st * listview, gt_color_t color)
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
-    style->font_color = color;
+    style->font_info.palette = color;
     _set_label_prop_by_type(listview, _LABEL_FONT_COLOR, color.full);
 }
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
