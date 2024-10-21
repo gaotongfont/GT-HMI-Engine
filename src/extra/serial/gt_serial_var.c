@@ -23,7 +23,7 @@
 #include "gt_serial_var_pic.h"
 #include "gt_serial_var_bit.h"
 #include "gt_serial_value_passing.h"
-
+#include "gt_serial_var_numb.h"
 /* private define -------------------------------------------------------*/
 #ifndef GT_SERIAL_UI_VAR_SIZE
     /* serial ui variable size */
@@ -53,6 +53,7 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_var_handler_item_st _var_handler_li
     {VAR_TYPE_ARTISTIC, gt_serial_var_artistic_create, gt_serial_var_artistic_set_value},
     {VAR_TYPE_PIC, gt_serial_var_pic_create, gt_serial_var_pic_set_value},
     {VAR_TYPE_BIT, gt_serial_var_bit_create, gt_serial_var_bit_set_value},
+    {VAR_TYPE_NUMB, gt_serial_var_numb_create, gt_serial_var_numb_set_value},
     {VAR_TYPE_VALUE_PASSING, gt_serial_value_passing_create, gt_serial_value_passing_set_value},
 };
 

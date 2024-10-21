@@ -40,15 +40,19 @@ extern "C" {
 /* typedef --------------------------------------------------------------*/
 
 typedef enum{
-    VAR_TYPE_ICON = 0,
-    VAR_TYPE_ANIM_ICON,
-    VAR_TYPE_SLIDER,
-    VAR_TYPE_ARTISTIC,
-    VAR_TYPE_PIC,
-    VAR_TYPE_ICON_ROTATE,   // unrealized
-    VAR_TYPE_BIT,
+    VAR_TYPE_ICON           = 0x00,
+    VAR_TYPE_ANIM_ICON      = 0x01,
+    VAR_TYPE_SLIDER         = 0x02,
+    VAR_TYPE_ARTISTIC       = 0x03,
+    VAR_TYPE_PIC            = 0x04,
+    VAR_TYPE_ICON_ROTATE    = 0x05,     // unrealized
+    VAR_TYPE_BIT            = 0x06,
+    VAR_TYPE_ICON_PAN       = 0x07,     // unrealized
+    VAR_TYPE_ICON_SUP       = 0x08,     // unrealized
+    VAE_TYPE_DATA_COPY      = 0x09,     // unrealized
+    VAR_TYPE_NUMB           = 0x10,
 
-    VAR_TYPE_VALUE_PASSING = 0x30,
+    VAR_TYPE_VALUE_PASSING  = 0x30,
 }gt_var_type_et;
 
 typedef struct{

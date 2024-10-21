@@ -44,6 +44,10 @@ typedef struct _gt_input_number_s {
     double step;
     double min;
     double max;
+#if GT_USE_SERIAL
+    uint8_t* unit;
+    gt_input_number_mode_et mode;  /** @ref gt_input_number.h */
+#endif
     _field_reg_st reg;
 }_gt_input_number_st;
 
@@ -85,8 +89,41 @@ static void _update_label_value(_gt_input_number_st * style) {
     if (_is_fill_zero_front(style)) {
         buffer[idx++] = '0';
     }
+
+#if GT_USE_SERIAL
+    double tmp = style->value;
+
+    if(GT_INPUT_NUMBER_MODE_INT == style->mode) {
+        uint64_t n_power = 1;
+        for(uint8_t i = 0; i < style->reg.len_decimal; i++) {
+            n_power *= 10;
+        }
+        tmp = style->value / n_power;
+    }
+    char tmp_str[50];
+    if(style->unit) {
+        sprintf(&buffer[idx], "%d.%dlf%s", style->reg.len_integer + append_len, style->reg.len_decimal, style->unit);
+    }
+    else{
+        sprintf(&buffer[idx], "%d.%dlf", style->reg.len_integer + append_len, style->reg.len_decimal);
+    }
+    sprintf(tmp_str, buffer, tmp);
+    char* d_dot = strchr(tmp_str, '.');
+    if(d_dot) {
+        if((d_dot - tmp_str) > style->reg.len_integer) {
+            gt_label_set_text(style->label, &tmp_str[(d_dot-tmp_str)-style->reg.len_integer], tmp);
+        }
+        else {
+            gt_label_set_text(style->label, tmp_str, tmp);
+        }
+    }
+    else {
+        gt_label_set_text(style->label, &tmp_str[strlen(tmp_str)-style->reg.len_integer], tmp);
+    }
+#else
     sprintf(&buffer[idx], "%d.%dlf", style->reg.len_integer + append_len, style->reg.len_decimal);
     gt_label_set_text(style->label, buffer, style->value);
+#endif
 }
 
 static void _init_cb(gt_obj_st * obj) {
@@ -428,6 +465,45 @@ void gt_input_number_set_space(gt_obj_st * obj, uint8_t space_x, uint8_t space_y
     gt_label_set_space(style->label, space_x , space_y);
 
 }
+
+#if GT_USE_SERIAL
+void gt_input_number_set_mode(gt_obj_st * obj, gt_input_number_mode_et mode)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_number_st * style = (_gt_input_number_st * )obj;
+    style->mode = mode;
+}
+
+void gt_input_number_set_uint(gt_obj_st * obj, uint8_t* unit)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    GT_CHECK_BACK(unit);
+
+    uint16_t len = strlen((char*)unit);
+    if(0 == len){ return ;}
+
+    _gt_input_number_st * style = (_gt_input_number_st * )obj;
+
+    if(style->unit) {
+        style->unit = gt_mem_realloc(style->unit, len + 1);
+    }
+    else {
+        style->unit = gt_mem_malloc(len + 1);
+    }
+
+    if (NULL == style->unit) { return ; }
+
+    printf("len: %d\n", len);
+    printf("unit: %s\n", unit);
+    gt_memcpy(style->unit, unit, len);
+    style->unit[len] = '\0';
+    _update_label_value(style);
+}
+#endif
 
 
 #endif /** #if GT_CFG_ENABLE_INPUT_NUMBER */
