@@ -136,6 +136,15 @@ void gt_serial_set_value(uint8_t *value, uint16_t len);
 
 uint16_t gt_serial_get_value(uint8_t * res_buffer, uint8_t * value, uint16_t len);
 
+/**
+ * @brief get value by addr
+ *
+ * @param res_buffer read data in to res_buffer
+ * @param addr 0x0000
+ * @param short_len the short or word length
+ * @return uint16_t
+ */
+uint16_t gt_serial_get_value_by_addr(uint8_t * res_buffer, uint16_t addr, uint8_t short_len);
 
 #endif /* GT_USE_SERIAL_CFG && GT_USE_BIN_CONVERT */
 //

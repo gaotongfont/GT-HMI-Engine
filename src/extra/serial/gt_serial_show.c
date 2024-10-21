@@ -261,7 +261,9 @@ static void _read_show_file_page_info(gt_serial_page_info_st* info, uint16_t ind
     if (GT_RES_OK != ret.res) {
         GT_LOG_A("", "Parse err code: %d, index: %d", ret.res, ret.index);
     }
-    GT_LOGI(GT_LOG_TAG_SERIAL , "page index = %d, numb = 0x%X, addr = 0x%X, ",index, info->numb, info->addr);
+    if (info->numb) {
+        GT_LOGI(GT_LOG_TAG_SERIAL , "page index = %d, numb = 0x%X, addr = 0x%X, ",index, info->numb, info->addr);
+    }
     // read control
     _read_show_file_page_control(info);
 }
@@ -535,10 +537,10 @@ uint16_t gt_serial_get_value(uint8_t * res_buffer, uint8_t * value, uint16_t len
     int ret = -1;
     uint16_t index = 0;
     uint16_t ret_len = 0;
-    gt_var_st var;
-    gt_var_value_st var_value;
-    var_value.buffer = value;
-    var_value.len = len;
+    gt_var_value_st var_value = {
+        .buffer = value,
+        .len = len,
+    };
     if (NULL == res_buffer) {
         return ret_len;
     }
@@ -546,7 +548,32 @@ uint16_t gt_serial_get_value(uint8_t * res_buffer, uint8_t * value, uint16_t len
     if(0 == gt_serial_var_check_value_is_sys_config(&var_value)) {
         /* Operation sys config */
         ret_len = gt_serial_system_get_value(res_buffer, value, len);
-        GT_LOG_ARR(res_buffer, 0, ret_len);
+        return ret_len;
+    }
+
+    return gt_serial_var_get_value(&var_value, res_buffer);
+}
+
+uint16_t gt_serial_get_value_by_addr(uint8_t * res_buffer, uint16_t addr, uint8_t short_len)
+{
+    int ret = -1;
+    uint16_t index = 0;
+    uint16_t ret_len = 0;
+    uint8_t unpack[3] = {0};
+    uint16_t len = gt_convert_print_u16(unpack, addr);
+    unpack[len++] = short_len;
+
+    gt_var_value_st var_value = {
+        .buffer = unpack,
+        .len = 3,
+    };
+    if (NULL == res_buffer) {
+        return ret_len;
+    }
+
+    if(0 == gt_serial_var_check_value_is_sys_config(&var_value)) {
+        /* Operation sys config */
+        ret_len = gt_serial_system_get_value(res_buffer, var_value.buffer, var_value.len);
         return ret_len;
     }
 

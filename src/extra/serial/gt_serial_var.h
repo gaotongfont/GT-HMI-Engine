@@ -52,6 +52,7 @@ typedef enum{
     VAE_TYPE_DATA_COPY      = 0x09,     // unrealized
     VAR_TYPE_NUMB           = 0x10,
 
+    VAR_TYPE_AREA_LIGHT     = 0x26,
     VAR_TYPE_VALUE_PASSING  = 0x30,
 }gt_var_type_et;
 
@@ -107,7 +108,7 @@ void gt_serial_var_init(void);
  *
  * @param reg   is sp or vp
  * @param data
- * @param len
+ * @param len byte length
  * @return int [0] : success [-1] : error
  */
 int gt_serial_var_buffer_get_reg(uint16_t reg, uint8_t* data, uint16_t len);
