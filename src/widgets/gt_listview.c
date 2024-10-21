@@ -565,7 +565,7 @@ static inline void _set_label_prop(gt_obj_st * listview, gt_obj_st * lab, gt_fon
     }
 
     gt_label_set_font_align(lab, style->align);
-    gt_label_set_font_color(lab, style->font_color);
+    gt_label_set_font_color(lab, font_info_p->palette);
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
     gt_label_set_font_family_cn(lab, font_info_p->style_cn);
     gt_label_set_font_family_en(lab, font_info_p->style_en);
