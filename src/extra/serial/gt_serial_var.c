@@ -78,7 +78,7 @@ static gt_res_t _get_var_head(gt_var_st *var, gt_var_head_st *var_head)
     ret = gt_bin_convert_parse(&bin, _format);
 
     if (GT_RES_OK != ret.res) {
-        GT_LOGE(GT_LOG_TAG_SERIAL, "var haed parse err code: %d, index: %d", ret.res, ret.index);
+        GT_LOGE(GT_LOG_TAG_SERIAL, "var head parse err code: %d, index: %d", ret.res, ret.index);
     }
     return ret.res;
 }
@@ -256,9 +256,9 @@ gt_res_t gt_serial_var_head_parse(void * user_data, uint8_t const * const buffer
     gt_var_head_st * var_head = (gt_var_head_st *)user_data;
     var_head->prio = buffer[0];
     var_head->type = buffer[1];
-    var_head->sp = buffer[2] << 8 | buffer[3];
-    var_head->len_dsc = buffer[4] << 8 | buffer[5];
-    var_head->vp = buffer[6] << 8 | buffer[7];
+    var_head->sp = (buffer[2] << 8) | buffer[3];
+    var_head->len_dsc = (buffer[4] << 8) | buffer[5];
+    var_head->vp = (buffer[6] << 8) | buffer[7];
     return GT_RES_OK;
 }
 

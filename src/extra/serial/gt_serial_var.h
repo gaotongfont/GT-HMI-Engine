@@ -181,7 +181,7 @@ gt_res_t gt_serial_var_create(gt_var_st* var);
  * @brief set var value
  *
  * @param var
- * @param value
+ * @param value buffer: 0x0000(vp / sp) + (0x00 ...)data, len: byte length
  * @return gt_res_t [GT_RES_OK] : success [other] : error
  */
 gt_res_t gt_serial_var_set_value(gt_var_st* var, gt_var_value_st* value);

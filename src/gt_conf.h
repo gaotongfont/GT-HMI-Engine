@@ -390,6 +390,12 @@ extern "C" {
      * @brief [Warn] Force enabled img file header function @ref gt_file_header_st
      */
     #define GT_USE_FILE_HEADER              1
+
+    #undef GT_FONT_FAMILY_OLD_ENABLE
+    /**
+     * @brief [Warn] Force use new font family
+     */
+    #define GT_FONT_FAMILY_OLD_ENABLE       0
 #endif  /** GT_USE_SERIAL */
 
 #ifndef GT_USE_BIN_CONVERT
