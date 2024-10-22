@@ -52,6 +52,10 @@ typedef struct gt_clock_time_s {
     uint8_t hour;
     uint8_t minute;
     uint8_t second;
+    uint8_t day;
+    uint8_t month;
+    uint8_t week;
+    uint16_t year;
 }gt_clock_time_st;
 
 /* macros ---------------------------------------------------------------*/
@@ -75,7 +79,8 @@ gt_obj_st * gt_clock_create(gt_obj_st * parent);
  */
 void gt_clock_set_time(gt_obj_st * obj, uint8_t hour, uint8_t minute, uint8_t second);
 void gt_clock_set_time_by_timestamp(gt_obj_st * obj, uint32_t timestamp);
-
+void gt_clock_set_date(gt_obj_st * obj, uint16_t year, uint8_t month, uint8_t day);
+void gt_clock_set_week(gt_obj_st * obj, uint8_t week);
 /**
  * @brief Set the alert time, which usd to alert callback function
  *
@@ -166,10 +171,14 @@ bool gt_clock_get_meridiem_mode(gt_obj_st * obj);
 
 /**
  * @brief Sets the format of the time display, default is "hh:mm:ss"
- *      [HH / hh]: hour
- *      [MM / mm]: minute
- *      [SS / ss]: second
- *      example: "hh|MM" -> "12|00".
+ *      [hh]: hour
+ *      [mm]: minute
+ *      [ss]: second
+ *      [yyyy]: year
+ *      [MM]: month
+ *      [dd]: day
+ *      [EEE]: week
+ *      example: "yyyy-MM-dd EEE hh:mm:ss" -> "2022-01-01 Sun 12:00:00".
  *
  * @param obj
  * @param format format string

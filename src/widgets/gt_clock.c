@@ -88,23 +88,39 @@ static const gt_obj_class_st gt_clock_class = {
     .size_style    = sizeof(_gt_clock_st)
 };
 
+static const char* _gt_weeks[] = {
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+    "Sun",
+};
 /* macros ---------------------------------------------------------------*/
 
 #define _get_hour(_time)    (_time.hour)
 #define _get_minute(_time)  (_time.minute)
 #define _get_second(_time)  (_time.second)
+#define _get_day(_time)    (_time.day)
+#define _get_month(_time)   (_time.month)
+#define _get_week(_time)    (_time.week)
+#define _get_year(_time)    (_time.year)
 
 #define _set_hour(_time, _value)    (_time.hour = _value)
 #define _set_minute(_time, _value)  (_time.minute = _value)
 #define _set_second(_time, _value)  (_time.second = _value)
-
+#define _set_day(_time, _value)    (_time.day = _value)
+#define _set_month(_time, _value)   (_time.month = _value)
+#define _set_week(_time, _value)    (_time.week = _value)
+#define _set_year(_time, _value)    (_time.year = _value)
 
 /* class ----------------------------------------------------------------*/
 
 
 
 /* static functions -----------------------------------------------------*/
-static bool _is_double_target_ignore_case(const char * const str, char target) {
+static bool _is_double_target_ignore_case(const char * const str, char target, char numb) {
     char another_case = 0;
 
     if (*str < 'A' || *str > 'z') {
@@ -113,6 +129,7 @@ static bool _is_double_target_ignore_case(const char * const str, char target) {
     if (*str > 'Z' && *str < 'a') {
         return false;
     }
+#if 0
     another_case = target < 'a' ? (target + 0x20) : (target - 0x20);
     if (*str == target && *(str + 1) == target) {
         return true;
@@ -120,11 +137,23 @@ static bool _is_double_target_ignore_case(const char * const str, char target) {
     if (*str == another_case && *(str + 1) == another_case) {
         return true;
     }
+#else
+    while(numb > 0){
+        if (str[numb-1] == target) {
+            return true;
+        }
+        numb--;
+    }
+#endif
     return false;
 }
 
 static void _gt_clock_timer_cb(struct _gt_timer_s * timer) {
     gt_clock_turn_next_second((gt_obj_st * )_gt_timer_get_user_data(timer));
+}
+
+static const char* _get_week_str(uint8_t week) {
+    return _gt_weeks[week ? ((week % 8) - 1) : 0];
 }
 
 static char * _get_time_str(_gt_clock_st * clock) {
@@ -168,19 +197,36 @@ static char * _get_time_str(_gt_clock_st * clock) {
     pointer = clock->format;
     str_ptr = str;
     while (*pointer) {
-        if (_is_double_target_ignore_case(pointer, 'h')) {
+        if (_is_double_target_ignore_case(pointer, 'h', 2)) {
             sprintf(str_ptr, "%02d", hours);
             pointer += 2;
             str_ptr += 2;
-        } else if (_is_double_target_ignore_case(pointer, 'm')) {
+        } else if (_is_double_target_ignore_case(pointer, 'm', 2)) {
             sprintf(str_ptr, "%02d", _get_minute(clock->time_current));
             pointer += 2;
             str_ptr += 2;
-        } else if (_is_double_target_ignore_case(pointer, 's')) {
+        } else if (_is_double_target_ignore_case(pointer, 's', 2)) {
             sprintf(str_ptr, "%02d", _get_second(clock->time_current));
             pointer += 2;
             str_ptr += 2;
-        } else {
+        } else if(_is_double_target_ignore_case(pointer, 'd', 2)) {
+            sprintf(str_ptr, "%02d", _get_day(clock->time_current));
+            pointer += 2;
+            str_ptr += 2;
+        } else if(_is_double_target_ignore_case(pointer, 'M', 2)) {
+            sprintf(str_ptr, "%02d", _get_month(clock->time_current));
+            pointer += 2;
+            str_ptr += 2;
+        } else if(_is_double_target_ignore_case(pointer, 'y', 4)) {
+            sprintf(str_ptr, "%04d", _get_year(clock->time_current));
+            pointer += 4;
+            str_ptr += 4;
+        } else if(_is_double_target_ignore_case(pointer, 'E', 3)) {
+            sprintf(str_ptr, "%s", _get_week_str(_get_week(clock->time_current)));
+            pointer += 3;
+            str_ptr += 3;
+        }
+        else {
             *str_ptr++ = *pointer++;
         }
     }
@@ -928,6 +974,26 @@ void gt_clock_set_space(gt_obj_st * obj, uint8_t space_x, uint8_t space_y)
         return;
     }
     gt_label_set_space(style->label, space_x , space_y);
+}
+
+void gt_clock_set_date(gt_obj_st * obj, uint16_t year, uint8_t month, uint8_t day)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_clock_st * style = (_gt_clock_st * )obj;
+    _set_year(style->time_current, year);
+    _set_month(style->time_current, month ? (month % 13) : 1);
+    _set_day(style->time_current, day ? (day % 32) : 1);
+}
+
+void gt_clock_set_week(gt_obj_st * obj, uint8_t week)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_clock_st * style = (_gt_clock_st * )obj;
+    _set_week(style->time_current, week ? (week % 8) : 1);
 }
 
 #endif /** #if GT_CFG_ENABLE_CLOCK */
