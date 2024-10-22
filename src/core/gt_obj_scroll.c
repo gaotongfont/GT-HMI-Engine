@@ -50,7 +50,7 @@ static void _scroll_by_y(void * obj, int32_t y) {
     gt_event_send((gt_obj_st * )obj, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
 }
 
-void _scroll_ready_cb(struct gt_anim_s * anim) {
+static void _scroll_ready_cb(struct gt_anim_s * anim) {
     gt_event_send((gt_obj_st * )anim->tar, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
 }
 

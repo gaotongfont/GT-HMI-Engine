@@ -248,7 +248,7 @@ static void _indev_scroll_throw_handler(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
     point_p->gesture = _get_scroll_dir(indev);
 
-    if((uint16_t)GT_DIR_NONE == point_p->gesture) {
+    if ((uint16_t)GT_DIR_NONE == point_p->gesture) {
         return ;
     }
 
@@ -311,11 +311,11 @@ static void _indev_scroll_throw_ready_cb(struct gt_anim_s * anim) {
     _indev_scroll_throw_reset(dev_p);
     if (_is_scroll_vertical((gt_dir_et)point_p->gesture)) {
         if (GT_SCROLL_SNAP_NONE == gt_obj_get_scroll_snap_y(point_p->obj_scroll)) {
-            gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
+            gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
         }
     }else {
         if (GT_SCROLL_SNAP_NONE == gt_obj_get_scroll_snap_x(point_p->obj_scroll)) {
-            gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
+            gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
         }
     }
 }
@@ -325,15 +325,7 @@ static void _indev_scroll_throw_deleted_cb(struct gt_anim_s * anim) {
     struct _point * point_p = &dev_p->data.point;
 
     _indev_scroll_throw_reset(dev_p);
-    if (_is_scroll_vertical((gt_dir_et)point_p->gesture)) {
-        if (GT_SCROLL_SNAP_NONE == gt_obj_get_scroll_snap_y(point_p->obj_scroll)) {
-            gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
-        }
-    }else {
-        if (GT_SCROLL_SNAP_NONE == gt_obj_get_scroll_snap_x(point_p->obj_scroll)) {
-            gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
-        }
-    }
+    point_p->obj_scroll = NULL;
 }
 
 static inline void _indev_scroll_throw_handler_anim_start(gt_indev_st * indev) {
@@ -372,6 +364,9 @@ static void _indev_scroll_handler(gt_indev_st * indev) {
     }
     gt_size_t dx = 0;
     gt_size_t dy = 0;
+    if (NULL == point_p->obj_scroll) {
+        gt_event_send(point_p->obj_target, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
+    }
     point_p->obj_scroll = point_p->obj_target;
 
     if (_is_indev_home_gesture(indev, NULL)) {
