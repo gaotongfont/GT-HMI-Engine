@@ -51,6 +51,7 @@ typedef enum{
     VAR_TYPE_ICON_SUP       = 0x08,     // unrealized
     VAE_TYPE_DATA_COPY      = 0x09,     // unrealized
     VAR_TYPE_NUMB           = 0x10,
+    VAE_TYPE_TEXT           = 0x11,
 
     VAR_TYPE_AREA_LIGHT     = 0x26,
     VAR_TYPE_VALUE_PASSING  = 0x30,
@@ -103,6 +104,7 @@ typedef struct {
  *
  */
 void gt_serial_var_init(void);
+uint16_t gt_serial_var_buffer_get_pointer(uint16_t reg, const uint8_t** data, uint16_t len);
 /**
  * @brief get var buffer
  *

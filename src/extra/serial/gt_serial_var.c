@@ -25,6 +25,7 @@
 #include "gt_serial_area_light.h"
 #include "gt_serial_value_passing.h"
 #include "gt_serial_var_numb.h"
+#include "gt_serial_var_text.h"
 /* private define -------------------------------------------------------*/
 #ifndef GT_SERIAL_UI_VAR_SIZE
     /* serial ui variable size */
@@ -55,6 +56,7 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_var_handler_item_st _var_handler_li
     {VAR_TYPE_PIC, gt_serial_var_pic_create, gt_serial_var_pic_set_value},
     {VAR_TYPE_BIT, gt_serial_var_bit_create, gt_serial_var_bit_set_value},
     {VAR_TYPE_NUMB, gt_serial_var_numb_create, gt_serial_var_numb_set_value},
+    {VAE_TYPE_TEXT, gt_serial_var_text_create, gt_serial_var_text_set_value},
 
     {VAR_TYPE_AREA_LIGHT, gt_serial_area_light_create, gt_serial_area_light_set_value},
     {VAR_TYPE_VALUE_PASSING, gt_serial_value_passing_create, gt_serial_value_passing_set_value},
@@ -132,6 +134,14 @@ static gt_res_t _var_set_value(gt_var_handler_st *handler)
 void gt_serial_var_init(void)
 {
     memset(_serial_var_buf, 0, sizeof(_serial_var_buf));
+}
+
+uint16_t gt_serial_var_buffer_get_pointer(uint16_t reg, const uint8_t** data, uint16_t len)
+{
+    if(!data){return 0;}
+    if(reg + len > 0xFFFF) {return 0;}
+    *data = (const char*)&_serial_var_buf[reg * 2];
+    return len;
 }
 
 int gt_serial_var_buffer_get_reg(uint16_t reg, uint8_t* data, uint16_t len)
