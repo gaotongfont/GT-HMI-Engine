@@ -63,27 +63,25 @@ static const gt_obj_class_st gt_screen_class = {
 
 /* static functions -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj) {
+    gt_area_st real_area = {0};
     gt_attr_rect_st rect_attr;
-    if (gt_obj_is_show_bg(obj)) {
-        gt_graph_init_rect_attr(&rect_attr);
-        rect_attr.reg.is_fill    = true;
-        rect_attr.radius         = obj->radius;
+    gt_graph_init_rect_attr(&rect_attr);
+    rect_attr.reg.is_fill = true;
+    rect_attr.radius = obj->radius;
+
+    if (gt_obj_get_mask_effect(obj) && GT_STATE_PRESSED == gt_obj_get_state(obj)) {
+        rect_attr.bg_opa         = GT_OPA_100;
+        rect_attr.border_color  = gt_color_hex(0x308ac5);
+        rect_attr.fg_color      = gt_color_mix(gt_color_hex(0x308ac5), obj->bgcolor, 0x44);
+        rect_attr.bg_color      = gt_color_mix(gt_color_hex(0x308ac5), obj->bgcolor, 0x44);
+    } else if (gt_obj_is_show_bg(obj)) {
         rect_attr.bg_opa         = obj->opa;
         rect_attr.bg_color      = obj->bgcolor;
-        gt_area_st real_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
-        draw_bg(obj->draw_ctx, &rect_attr, &real_area);
+    } else {
+        return;
     }
-    if ( gt_obj_get_mask_effect(obj) && GT_STATE_PRESSED == gt_obj_get_state(obj) ) {
-        gt_graph_init_rect_attr(&rect_attr);
-        rect_attr.reg.is_fill    = true;
-        rect_attr.radius         = obj->radius;
-        rect_attr.bg_opa         = 0x44;
-        rect_attr.border_color  = gt_color_hex(0x308ac5);
-        rect_attr.fg_color      = gt_color_hex(0x308ac5);
-        rect_attr.bg_color      = gt_color_hex(0x308ac5);
-        gt_area_st real_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
-        draw_bg(obj->draw_ctx, &rect_attr, &real_area);
-    }
+    real_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
+    draw_bg(obj->draw_ctx, &rect_attr, &real_area);
 }
 
 static void _screen_scroll(gt_obj_st * obj) {
