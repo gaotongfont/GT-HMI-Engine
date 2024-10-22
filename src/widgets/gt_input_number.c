@@ -497,8 +497,6 @@ void gt_input_number_set_uint(gt_obj_st * obj, uint8_t* unit)
 
     if (NULL == style->unit) { return ; }
 
-    printf("len: %d\n", len);
-    printf("unit: %s\n", unit);
     gt_memcpy(style->unit, unit, len);
     style->unit[len] = '\0';
     _update_label_value(style);

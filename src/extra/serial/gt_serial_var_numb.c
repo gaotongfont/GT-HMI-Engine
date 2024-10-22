@@ -198,7 +198,6 @@ static void _set_number(gt_obj_st* obj, gt_var_numb_st* icon, uint16_t reg)
 
     gt_input_number_set_max(obj, mix);
     gt_input_number_set_max(obj, max);
-    printf("len: %d uint: [%s] \r\n", icon->param.unit_len, icon->param.unit_str);
     gt_input_number_set_uint(obj, icon->param.unit_str);
     gt_input_number_set_value(obj, numb);
 
