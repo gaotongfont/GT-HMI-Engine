@@ -115,7 +115,7 @@ static void _set_sp_value(uint8_t reg, gt_var_st * var, gt_var_value_st * value)
 }
 
 /* global functions / API interface -------------------------------------*/
-gt_res_t gt_serial_area_light_create(gt_var_st* var)
+gt_res_t gt_serial_area_light_create(gt_var_st * var)
 {
     gt_area_light_st area_light = {0};
     if (false == _get_param(var, &area_light)) {
@@ -137,7 +137,7 @@ gt_res_t gt_serial_area_light_create(gt_var_st* var)
     return GT_RES_OK;
 }
 
-gt_res_t gt_serial_area_light_set_value(gt_var_st* var, gt_var_value_st* value)
+gt_res_t gt_serial_area_light_set_value(gt_var_st * var, gt_var_value_st * value)
 {
     int reg = gt_serial_var_check_value_is_set_this(var, value);
     if (reg < 0) { return GT_RES_FAIL; }

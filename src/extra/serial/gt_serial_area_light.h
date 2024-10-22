@@ -36,8 +36,8 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
-gt_res_t gt_serial_area_light_create(gt_var_st* var);
-gt_res_t gt_serial_area_light_set_value(gt_var_st* var, gt_var_value_st* value);
+gt_res_t gt_serial_area_light_create(gt_var_st * var);
+gt_res_t gt_serial_area_light_set_value(gt_var_st * var, gt_var_value_st * value);
 
 
 #endif  /** GT_USE_SERIAL_VAR && GT_USE_BIN_CONVERT */
