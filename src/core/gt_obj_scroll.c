@@ -148,6 +148,9 @@ void _gt_obj_scroll_internal(gt_obj_st * obj)
     } else if (right >= 0) {
         scroll->x = 0;
     }
+    if (obj->process_attr.scroll_prev.x == scroll->x && obj->process_attr.scroll_prev.y == scroll->y) {
+        return;
+    }
 
     _gt_obj_move_child_by(obj, scroll->x - obj->process_attr.scroll_prev.x, scroll->y - obj->process_attr.scroll_prev.y);
     gt_disp_invalid_area(obj);
