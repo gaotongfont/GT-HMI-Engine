@@ -99,11 +99,7 @@ void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim
     gt_anim_del(obj, _scroll_by_x);
     gt_anim_del(obj, _scroll_by_y);
 
-    gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
-
     _scroll_by_raw(obj, dx, dy);
-
-    gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
 }
 
 void gt_obj_scroll_to_x(struct gt_obj_s * obj, gt_size_t x, gt_anim_enable_et en)

@@ -306,8 +306,34 @@ static inline void _indev_scroll_throw_reset(gt_indev_st * indev) {
 
 static void _indev_scroll_throw_ready_cb(struct gt_anim_s * anim) {
     gt_indev_st * dev_p = (gt_indev_st * )anim->tar;
+    struct _point * point_p = &dev_p->data.point;
 
     _indev_scroll_throw_reset(dev_p);
+    if (_is_scroll_vertical((gt_dir_et)point_p->gesture)) {
+        if (GT_SCROLL_SNAP_NONE == gt_obj_get_scroll_snap_y(point_p->obj_scroll)) {
+            gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
+        }
+    }else {
+        if (GT_SCROLL_SNAP_NONE == gt_obj_get_scroll_snap_x(point_p->obj_scroll)) {
+            gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
+        }
+    }
+}
+
+static void _indev_scroll_throw_deleted_cb(struct gt_anim_s * anim) {
+    gt_indev_st * dev_p = (gt_indev_st * )anim->tar;
+    struct _point * point_p = &dev_p->data.point;
+
+    _indev_scroll_throw_reset(dev_p);
+    if (_is_scroll_vertical((gt_dir_et)point_p->gesture)) {
+        if (GT_SCROLL_SNAP_NONE == gt_obj_get_scroll_snap_y(point_p->obj_scroll)) {
+            gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
+        }
+    }else {
+        if (GT_SCROLL_SNAP_NONE == gt_obj_get_scroll_snap_x(point_p->obj_scroll)) {
+            gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
+        }
+    }
 }
 
 static inline void _indev_scroll_throw_handler_anim_start(gt_indev_st * indev) {
@@ -322,7 +348,7 @@ static inline void _indev_scroll_throw_handler_anim_start(gt_indev_st * indev) {
     gt_anim_set_time(&anim, 1024);
     gt_anim_set_exec_cb(&anim, _indev_scroll_throw_exec_cb);
     gt_anim_set_ready_cb(&anim, _indev_scroll_throw_ready_cb);
-    gt_anim_set_deleted_cb(&anim, _indev_scroll_throw_ready_cb);
+    gt_anim_set_deleted_cb(&anim, _indev_scroll_throw_deleted_cb);
     indev->scroll_throw_anim = gt_anim_start(&anim);
 }
 

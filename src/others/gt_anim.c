@@ -436,6 +436,7 @@ bool gt_anim_del(void const * const target, gt_anim_exec_cb_t exec_cb)
     _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         if ((ptr->tar == target || NULL == ptr->tar) && (ptr->exec_cb == exec_cb || NULL == ptr->exec_cb)) {
             if (ptr->deleted_cb) { ptr->deleted_cb(ptr); }
+            ptr->exec_cb = NULL;
             _gt_anim_free_task(ptr);
             ret = true;
         }
