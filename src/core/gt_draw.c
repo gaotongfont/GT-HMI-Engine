@@ -1648,7 +1648,6 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
                 area_font.y = coords->y + ((coords->h - dsc->font->info.size) >> 1);
             }
         }
-        // return area_font;
         ret.area = area_font;
         ret.size.x = 0xffff;
         ret.size.y = 0;
