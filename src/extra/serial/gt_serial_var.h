@@ -49,9 +49,10 @@ typedef enum{
     VAR_TYPE_BIT            = 0x06,
     VAR_TYPE_ICON_PAN       = 0x07,     // unrealized
     VAR_TYPE_ICON_SUP       = 0x08,     // unrealized
-    VAE_TYPE_DATA_COPY      = 0x09,     // unrealized
+    VAR_TYPE_DATA_COPY      = 0x09,     // unrealized
     VAR_TYPE_NUMB           = 0x10,
-    VAE_TYPE_TEXT           = 0x11,
+    VAR_TYPE_TEXT           = 0x11,
+    VAR_TYPE_RTC            = 0x12,
 
     VAR_TYPE_AREA_LIGHT     = 0x26,
     VAR_TYPE_VALUE_PASSING  = 0x30,
