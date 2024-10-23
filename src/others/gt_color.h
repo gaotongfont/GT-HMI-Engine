@@ -273,10 +273,10 @@ static inline gt_color_t gt_color_hex(uint32_t c) {
 }
 
 /**
- * @brief
+ * @brief Set the color value
  *
  * @param hex_val According to the GT_COLOR_DEPTH width
- * @return gt_color_t
+ * @return gt_color_val_t current color depth
  */
 static inline gt_color_t gt_color_set(gt_color_val_t hex_val) {
     gt_color_t ret = {
