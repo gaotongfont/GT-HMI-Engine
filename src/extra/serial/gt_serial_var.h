@@ -54,6 +54,7 @@ typedef enum{
     VAR_TYPE_TEXT           = 0x11,
     VAR_TYPE_RTC            = 0x12,
 
+    VAR_TYPE_QR_CODE        = 0x25,
     VAR_TYPE_AREA_LIGHT     = 0x26,
     VAR_TYPE_VALUE_PASSING  = 0x30,
 }gt_var_type_et;
@@ -115,6 +116,15 @@ uint16_t gt_serial_var_buffer_get_pointer(uint16_t reg, const uint8_t** data, ui
  * @return int [0] : success [-1] : error
  */
 int gt_serial_var_buffer_get_reg(uint16_t reg, uint8_t* data, uint16_t len);
+
+/**
+ * @brief
+ *
+ * @param reg
+ * @param eof_value
+ * @return uint32_t The byte length of the data
+ */
+uint32_t gt_serial_var_buffer_get_len_by_eof(uint16_t reg, uint16_t eof_value);
 
 /**
  * @brief get var buffer

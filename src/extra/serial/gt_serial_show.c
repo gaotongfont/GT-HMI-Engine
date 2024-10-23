@@ -335,7 +335,6 @@ static gt_res_t _addr_control_to_page(gt_serial_page_info_st* info, gt_obj_st* p
         var.id = i;
         if (GT_RES_FAIL == _create_control(&var)) {
             GT_LOGE(GT_LOG_TAG_SERIAL , "create control failed!, index: %d", i);
-            return GT_RES_FAIL;
         }
     }
     return GT_RES_OK;

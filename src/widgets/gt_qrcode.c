@@ -94,9 +94,13 @@ static void _Data_ReMap(unsigned char* getdate,unsigned char* putdata, unsigned 
     }
 }
 
-
-static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
-    _gt_qr_code_st * style = (_gt_qr_code_st * )qr_code;
+/**
+ * @brief obj init obj widget call back
+ *
+ * @param obj
+ */
+static void _init_cb(gt_obj_st * obj) {
+    _gt_qr_code_st * style = (_gt_qr_code_st * )obj;
     uint8_t *qr_data_buff = NULL;
     uint8_t *qr_code_buff = NULL;
 
@@ -131,8 +135,8 @@ static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
 
     area.w = 4 * style->version + 17;
     area.h = ((area.w + 7) >> 3) << 3;
-    qr_code->area.w = area.w + 8;
-    qr_code->area.h = qr_code->area.w;
+    obj->area.w = area.w + 8;
+    obj->area.h = obj->area.w;
 
     if(  ((area.h * area.h) >> 3 ) > _QRCodeDataBuf_SIZE )
     {
@@ -147,10 +151,10 @@ static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
     gt_mem_free(qr_data_buff);
     qr_data_buff = NULL;
 
-    gt_area_st box_area = gt_area_reduce(qr_code->area , gt_obj_get_reduce(qr_code));
+    gt_area_st box_area = gt_area_reduce(obj->area , gt_obj_get_reduce(obj));
     // draw background
     rect_attr.bg_color      = style->bg_color;
-    draw_bg(qr_code->draw_ctx, &rect_attr, &box_area);
+    draw_bg(obj->draw_ctx, &rect_attr, &box_area);
 
     area.w = ((area.w + 7) >> 3) << 3;
     // GT_LOGD( GT_LOG_TAG_GUI,"qrcode w = %d , h = %d" , area.w , area.h);
@@ -162,10 +166,10 @@ static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
     area.y = box_area.y+2;
     // GT_LOGD(GT_LOG_TAG_UI , "barcode gray = %d" , rect_attr.gray);
     // 1:base shape
-    draw_bg(qr_code->draw_ctx, &rect_attr, &area);
+    draw_bg(obj->draw_ctx, &rect_attr, &area);
 
     // focus
-    draw_focus(qr_code , 0);
+    draw_focus(obj , 0);
 
 err_ret:
     if(NULL != qr_data_buff)
@@ -178,17 +182,6 @@ err_ret:
         gt_mem_free(qr_code_buff);
         qr_code_buff = NULL;
     }
-}
-
-/**
- * @brief obj init qr_code widget call back
- *
- * @param obj
- */
-static void _init_cb(gt_obj_st * obj) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-
-    _gt_qr_code_init_widget(obj);
 }
 
 /**

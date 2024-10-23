@@ -22,6 +22,7 @@
 #include "gt_serial_var_artistic.h"
 #include "gt_serial_var_pic.h"
 #include "gt_serial_var_bit.h"
+#include "gt_serial_qrcode.h"
 #include "gt_serial_area_light.h"
 #include "gt_serial_value_passing.h"
 #include "gt_serial_var_numb.h"
@@ -60,6 +61,7 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_var_handler_item_st _var_handler_li
     {VAR_TYPE_TEXT, gt_serial_var_text_create, gt_serial_var_text_set_value},
     {VAR_TYPE_RTC, gt_serial_var_rtc_create, gt_serial_var_rtc_set_value},
 
+    {VAR_TYPE_QR_CODE, gt_serial_qrcode_create, gt_serial_qrcode_set_value},
     {VAR_TYPE_AREA_LIGHT, gt_serial_area_light_create, gt_serial_area_light_set_value},
     {VAR_TYPE_VALUE_PASSING, gt_serial_value_passing_create, gt_serial_value_passing_set_value},
 };
@@ -151,6 +153,22 @@ int gt_serial_var_buffer_get_reg(uint16_t reg, uint8_t* data, uint16_t len)
     if(!data){return -1;}
     if(reg + len > 0xFFFF) {return -1;}
     memcpy(data, &_serial_var_buf[reg * 2], len);
+    return 0;
+}
+
+uint32_t gt_serial_var_buffer_get_len_by_eof(uint16_t reg, uint16_t eof_value)
+{
+    uint16_t end = 0xFFFF - 1;
+    uint8_t * ptr = (uint8_t * )&_serial_var_buf[reg << 1];
+    uint8_t * end_ptr = (uint8_t * )&_serial_var_buf[end << 1];
+    uint8_t check[2] = {0};
+    gt_convert_print_u16(check, eof_value);
+    while (ptr < end_ptr) {
+        if (0 == gt_memcmp(ptr, check, 2)) {
+            return ptr - (uint8_t * )&_serial_var_buf[reg << 1];
+        }
+        ++ptr;
+    }
     return 0;
 }
 
