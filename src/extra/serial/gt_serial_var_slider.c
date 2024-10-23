@@ -1,5 +1,5 @@
 /**
- * @file gt_serial_var_slider..c
+ * @file gt_serial_var_slider.c
  * @author Yang
  * @brief
  * @version 0.1
