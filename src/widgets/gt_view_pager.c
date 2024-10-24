@@ -32,8 +32,18 @@
 #define _MAX_VIEW_PAGER_COUNT           (1 << _VIEW_PAGER_COUNT_BIT_WIDTH)
 
 /** tip area height */
-#define _TIP_BAR_HEIGHT                 24
-#define _TIP_BAR_POINT_HEIGHT           8
+#ifndef _TIP_BAR_HEIGHT
+    /**
+     * @brief The height of the tip bar
+     */
+    #define _TIP_BAR_HEIGHT             24
+#endif
+#ifndef _TIP_BAR_POINT_HEIGHT
+    /**
+     * @brief The height of the tip bar point
+     */
+    #define _TIP_BAR_POINT_HEIGHT       8
+#endif
 
 /**
  * effect
