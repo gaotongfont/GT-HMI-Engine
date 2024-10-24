@@ -79,9 +79,8 @@ static const gt_obj_class_st gt_btn_class = {
  */
 static void _btn_init_cb(gt_obj_st * obj) {
     _gt_btn_st * style = (_gt_btn_st * )obj;
-    gt_radius_t radius;
-
     gt_color_t fg_color = gt_obj_get_state(obj) == GT_STATE_PRESSED ? style->color_pressed : obj->bgcolor;
+
     char * text = (char * )_gt_vector_get_item(style->contents, _gt_vector_get_index(style->contents));
     uint32_t len = (uint32_t)strlen(text);
     GT_CHECK_BACK(text);
@@ -101,17 +100,15 @@ static void _btn_init_cb(gt_obj_st * obj) {
         obj->area.w = style->font_info.size * len + 32;
         obj->area.h = style->font_info.size + 16;
     }
-    if (obj->radius == 0) {
-        radius = obj->area.h >> 2;
-    } else {
-        radius = obj->radius;
+    if (obj->radius > GT_MIN(obj->area.w, obj->area.h) >> 1) {
+        obj->radius = GT_MIN(obj->area.w, obj->area.h) >> 1;
     }
 
     /* base shape */
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill   = style->reg.fill;
-    rect_attr.radius        = radius;
+    rect_attr.radius        = obj->radius;
     rect_attr.bg_opa        = obj->opa;
     rect_attr.border_width  = style->border_width;
     rect_attr.fg_color      = fg_color;
@@ -141,7 +138,7 @@ static void _btn_init_cb(gt_obj_st * obj) {
     draw_text(obj->draw_ctx, &font_attr, &area);
 
     // focus
-    draw_focus(obj, radius);
+    draw_focus(obj, obj->radius);
 }
 
 /**
