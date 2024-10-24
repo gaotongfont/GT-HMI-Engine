@@ -120,7 +120,14 @@ static void _set_vp_value(gt_var_st * var, gt_var_value_st * value) {
 }
 
 static void _set_param(gt_var_st* var, gt_serial_qrcode_st * qr_code) {
-
+    gt_obj_set_pos(var->obj, qr_code->param.pos.x, qr_code->param.pos.y);
+    if (qr_code->param.display_mode.color_type) {
+        gt_qrcode_set_background(var->obj, gt_color_set(qr_code->param.color0));
+        gt_qrcode_set_forecolor(var->obj, gt_color_set(qr_code->param.color1));
+    } else {
+        gt_qrcode_set_background(var->obj, gt_color_white());
+        gt_qrcode_set_forecolor(var->obj, gt_color_black());
+    }
 }
 
 static void _set_sp_value(uint8_t reg, gt_var_st * var, gt_var_value_st * value) {
