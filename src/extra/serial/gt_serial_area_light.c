@@ -81,6 +81,8 @@ static bool _get_param(gt_var_st * var, gt_area_light_st * area_light) {
 }
 
 static void _set_param(gt_var_st* var, gt_area_light_st * area_light) {
+    gt_obj_set_pos(var->obj, area_light->param.start.x, area_light->param.start.y);
+    gt_obj_set_size(var->obj, area_light->param.end.x - area_light->param.start.x, area_light->param.end.y - area_light->param.start.y);
 }
 
 static void _set_vp_value(gt_var_st * var, gt_var_value_st * value) {
