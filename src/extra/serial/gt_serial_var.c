@@ -28,6 +28,7 @@
 #include "gt_serial_var_numb.h"
 #include "gt_serial_var_text.h"
 #include "gt_serial_var_rtc.h"
+#include "gt_serial_var_hex.h"
 /* private define -------------------------------------------------------*/
 #ifndef GT_SERIAL_UI_VAR_SIZE
     /* serial ui variable size */
@@ -60,6 +61,7 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_var_handler_item_st _var_handler_li
     {VAR_TYPE_NUMB, gt_serial_var_numb_create, gt_serial_var_numb_set_value},
     {VAR_TYPE_TEXT, gt_serial_var_text_create, gt_serial_var_text_set_value},
     {VAR_TYPE_RTC, gt_serial_var_rtc_create, gt_serial_var_rtc_set_value},
+    {VAR_TYPE_HEX, gt_serial_var_hex_create, gt_serial_var_hex_set_value},
 
     {VAR_TYPE_QR_CODE, gt_serial_qrcode_create, gt_serial_qrcode_set_value},
     {VAR_TYPE_AREA_LIGHT, gt_serial_area_light_create, gt_serial_area_light_set_value},
