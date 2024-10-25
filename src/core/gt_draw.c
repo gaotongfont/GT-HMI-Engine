@@ -2250,6 +2250,15 @@ void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_are
             return;
         }
 #endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+        result = gt_img_decoder_custom_size_addr_open(&dsc_img, dsc->custom_addr);
+        if (GT_RES_OK == result) {
+            goto handler_lb;
+        } else if (GT_RES_FAIL == result) {
+            GT_LOGW(GT_LOG_TAG_DATA, "Open image decoder by custom size direct address failed");
+            return;
+        }
+#endif
         GT_LOGW(GT_LOG_TAG_DATA, "No image source");
         return;
     }

@@ -38,6 +38,9 @@ typedef struct _gt_img_s {
 #if GT_USE_DIRECT_ADDR
     gt_addr_t addr;
 #endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_direct_addr_custom_size_st custom_addr;
+#endif
 }_gt_img_st;
 
 /* static variables -----------------------------------------------------*/
@@ -79,7 +82,12 @@ static void _img_init_cb(gt_obj_st * obj) {
 
 #if GT_USE_DIRECT_ADDR
     dsc.addr = style->addr;
-    if (dsc.addr) { is_val = true; }
+    if (false == gt_hal_is_invalid_addr(dsc.addr)) { is_val = true; }
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    dsc.custom_addr = &style->custom_addr;
+    if (false == gt_hal_is_invalid_custom_size_addr(dsc.custom_addr)) { is_val = true; }
 #endif
 
     if (false == is_val) {
@@ -262,6 +270,9 @@ void gt_img_set_by_file_header(gt_obj_st * img, gt_file_header_param_st * fh)
 #if GT_USE_DIRECT_ADDR
     gt_hal_direct_addr_init(&style->addr);
 #endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&style->custom_addr);
+#endif
 
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
@@ -291,7 +302,34 @@ void gt_img_set_by_direct_addr(gt_obj_st * img, gt_addr_t addr)
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->fh);
 #endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&style->custom_addr);
+#endif
     style->addr = addr;
+
+    gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+void gt_img_set_by_custom_size_addr(gt_obj_st * img, gt_direct_addr_custom_size_st * dac)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_img_st * style = (_gt_img_st *)img;
+    gt_memset(&style->raw, 0, sizeof(_gt_img_dsc_st));
+    if (NULL != style->src) {
+        gt_mem_free(style->src);
+        style->src = NULL;
+    }
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->fh);
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->addr);
+#endif
+    style->custom_addr = *dac;
 
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }

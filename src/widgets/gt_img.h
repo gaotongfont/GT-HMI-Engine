@@ -25,6 +25,10 @@ extern "C" {
 #include "../hal/gt_hal_file_header.h"
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+#include "../hal/gt_hal_fs.h"
+#endif
+
 /* define ---------------------------------------------------------------*/
 
 
@@ -85,6 +89,16 @@ gt_file_header_param_st* gt_img_get_file_header_param(gt_obj_st * img);
  * @param addr Direct address of the image
  */
 void gt_img_set_by_direct_addr(gt_obj_st * img, gt_addr_t addr);
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+/**
+ * @brief Display the image by custom size direct address
+ *
+ * @param img
+ * @param dac Custom size direct address of the image
+ */
+void gt_img_set_by_custom_size_addr(gt_obj_st * img, gt_direct_addr_custom_size_st * dac);
 #endif
 
 /**

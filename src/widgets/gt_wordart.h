@@ -26,6 +26,10 @@ extern "C" {
 #include "../hal/gt_hal_file_header.h"
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+#include "../hal/gt_hal_fs.h"
+#endif
+
 /* define ---------------------------------------------------------------*/
 
 
@@ -81,6 +85,17 @@ void gt_wordart_add_item_by_file_header(gt_obj_st * wordart, uint32_t encode, gt
  * @param addr
  */
 void gt_wordart_add_item_by_direct_addr(gt_obj_st * wordart, uint32_t encode, gt_addr_t addr);
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+/**
+ * @brief add item by custom size direct address
+ *
+ * @param wordart
+ * @param encode
+ * @param dac custom size direct address
+ */
+void gt_wordart_add_item_by_custom_size_addr(gt_obj_st * wordart, uint32_t encode, gt_direct_addr_custom_size_st * dac);
 #endif
 
 void gt_wordart_remove_all_items(gt_obj_st * wordart);

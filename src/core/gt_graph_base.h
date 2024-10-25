@@ -125,6 +125,9 @@ typedef struct _gt_attr_rect_s {
 #if GT_USE_DIRECT_ADDR
     gt_addr_t addr;             ///< Using direct address mode to read image data
 #endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_direct_addr_custom_size_st * custom_addr;  ///< Using custom size direct address mode to read image data
+#endif
 
     gt_attr_line_st * line;     ///< use straight line
 

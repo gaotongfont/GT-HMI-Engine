@@ -11,6 +11,7 @@
 #include "gt_player.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_types.h"
+#if GT_CFG_ENABLE_PLAYER
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
 #include "../core/gt_fs.h"
@@ -19,7 +20,7 @@
 #include "../hal/gt_hal_tick.h"
 #include "../utils/gt_vector.h"
 
-#if GT_CFG_ENABLE_PLAYER
+
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE GT_TYPE_PLAYER
 #define MY_CLASS &gt_player_class
@@ -52,6 +53,10 @@ typedef struct _gt_player_item_s {
 
 #if GT_USE_DIRECT_ADDR
     gt_addr_t addr;
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_direct_addr_custom_size_st custom_addr;
 #endif
 }_gt_player_item_st;
 
@@ -146,6 +151,14 @@ static inline gt_addr_t _get_direct_addr_param(_gt_player_st * style) {
 }
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+static inline gt_direct_addr_custom_size_st * _get_custom_size_addr_param(_gt_player_st * style) {
+    _gt_player_item_st * item = (_gt_player_item_st * )_gt_vector_get_item(style->vector, _gt_vector_get_index(style->vector));
+    GT_CHECK_BACK_VAL(item, NULL);
+    return &item->custom_addr;
+}
+#endif
+
 /**
  * @brief Lock the player callback  handler
  *
@@ -220,6 +233,10 @@ static void _player_init_cb(gt_obj_st * obj) {
         dsc.addr = _get_direct_addr_param(style);
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+        dsc.custom_addr = _get_custom_size_addr_param(style);
+#endif
+
         /* start draw obj */
         draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
     }
@@ -275,6 +292,16 @@ static void _invalid_area(gt_obj_st * obj, _gt_player_st * style) {
     if (false == gt_hal_is_invalid_addr(addr)) {
         if (GT_FS_RES_OK != ret) {
             ret = gt_fs_direct_addr_read_img_wh(addr, &w, &h);
+        }
+    }
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_direct_addr_custom_size_st * custom_addr = _get_custom_size_addr_param(style);
+    if (false == gt_hal_is_invalid_custom_size_addr(custom_addr)) {
+        if (GT_FS_RES_OK != ret) {
+            w = custom_addr->w;
+            h = custom_addr->h;
+            ret = GT_FS_RES_OK;
         }
     }
 #endif
@@ -509,6 +536,14 @@ static bool _equal_item_cb(void * item, void * target) {
         }
     }
 #endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    if (false == gt_hal_is_invalid_custom_size_addr(&tar_p->custom_addr)) {
+        if (item_p->custom_addr.addr == tar_p->custom_addr.addr) {
+            return true;
+        }
+    }
+#endif
     return false;
 }
 
@@ -684,6 +719,9 @@ gt_size_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_para
 #if GT_USE_DIRECT_ADDR
     gt_hal_direct_addr_init(&new_item->addr);
 #endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&new_item->custom_addr);
+#endif
 
     if (false == _gt_vector_add_item(style->vector, new_item)) {
         gt_mem_free(new_item);
@@ -715,6 +753,9 @@ gt_size_t gt_player_add_item_list_by_file_header(gt_obj_st * obj, gt_file_header
         new_item->fh_param = (gt_file_header_param_st)fh_array[i];
 #if GT_USE_DIRECT_ADDR
         gt_hal_direct_addr_init(&new_item->addr);
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+        gt_hal_custom_size_addr_init(&new_item->custom_addr);
 #endif
 
         if (false == _gt_vector_add_item(style->vector, new_item)) {
@@ -779,6 +820,76 @@ gt_size_t gt_player_add_item_list_by_direct_addr(gt_obj_st * obj, gt_addr_t cons
         new_item->addr = addr_array[i];
 #if GT_USE_FILE_HEADER
         gt_file_header_param_init(&new_item->fh_param);
+#endif
+
+        if (false == _gt_vector_add_item(style->vector, new_item)) {
+            gt_mem_free(new_item);
+            new_item = NULL;
+            break;
+        }
+    }
+    return _gt_vector_get_count(style->vector);
+}
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+gt_size_t gt_player_add_item_by_custom_size_addr(gt_obj_st * obj, gt_direct_addr_custom_size_st * dac)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return -1;
+    }
+    if (gt_hal_is_invalid_custom_size_addr(dac)) {
+        return -1;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj;
+
+    _gt_player_item_st * new_item = gt_mem_malloc(sizeof(_gt_player_item_st));
+    GT_CHECK_BACK_VAL(new_item, _gt_vector_get_count(style->vector));
+    new_item->src = NULL;
+    new_item->custom_addr = *dac;
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&new_item->fh_param);
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&new_item->addr);
+#endif
+
+    if (false == _gt_vector_add_item(style->vector, new_item)) {
+        gt_mem_free(new_item);
+        new_item = NULL;
+        return -1;
+    }
+    return _gt_vector_get_count(style->vector);
+}
+
+gt_size_t gt_player_add_item_list_by_custom_size_addr(gt_obj_st * obj, gt_direct_addr_custom_size_st * addr_array, uint16_t count)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return -1;
+    }
+    if (NULL == addr_array) {
+        return -1;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj;
+    GT_CHECK_BACK_VAL(style->vector, -1);
+    _gt_vector_clear_all_items(style->vector);
+
+    _gt_player_item_st * new_item = NULL;
+    uint16_t instance = sizeof(_gt_player_item_st);
+
+    for (gt_size_t i = 0; i < count; ++i) {
+        if (gt_hal_is_invalid_custom_size_addr(&addr_array[i])) {
+            continue;
+        }
+        new_item = (_gt_player_item_st * )gt_mem_malloc(instance);
+        GT_CHECK_BACK_VAL(new_item, -1);
+        new_item->src = NULL;
+        new_item->custom_addr = addr_array[i];
+#if GT_USE_FILE_HEADER
+        gt_file_header_param_init(&new_item->fh_param);
+#endif
+#if GT_USE_DIRECT_ADDR
+        gt_hal_direct_addr_init(&new_item->addr);
 #endif
 
         if (false == _gt_vector_add_item(style->vector, new_item)) {

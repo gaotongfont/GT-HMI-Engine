@@ -23,7 +23,7 @@ extern "C" {
 
 
 /* define ---------------------------------------------------------------*/
-#if GT_USE_DIRECT_ADDR
+#if GT_USE_DIRECT_ADDR  || GT_USE_DIRECT_ADDR_CUSTOM_SIZE
     /**
      * @brief invalid address default value
      */
@@ -94,6 +94,15 @@ typedef struct _gt_fs_dir_s {
     struct _gt_fs_drv_s * drv;  ///< driver
 }gt_fs_dir_st;
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+typedef struct gt_direct_addr_custom_size_s {
+    gt_addr_t addr;
+    uint16_t w;
+    uint16_t h;
+    uint8_t is_alpha;
+}gt_direct_addr_custom_size_st;
+#endif
+
 /**
  * @brief virt file system drv
  */
@@ -120,6 +129,12 @@ typedef struct _gt_fs_drv_s {
 #endif
 #if GT_USE_DIRECT_ADDR
     void *( * direct_addr_open_cb)(struct _gt_fs_drv_s * drv, gt_addr_t addr, gt_fs_mode_et mode);
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    /**
+     * @brief ignore the vf file control block, and read meta data directly by size and the address
+     */
+    void *( * custom_size_addr_open_cb)(struct _gt_fs_drv_s * drv, gt_direct_addr_custom_size_st * dac, gt_fs_mode_et mode);
 #endif
     void *( * open_cb)(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode);
     void ( * close_cb)(struct _gt_fs_drv_s * drv, void * fp);
@@ -185,6 +200,11 @@ void gt_hal_direct_addr_init(gt_addr_t * info);
 
 bool gt_hal_is_invalid_addr(gt_addr_t addr);
 #endif  /** GT_USE_DIRECT_ADDR */
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+void gt_hal_custom_size_addr_init(gt_direct_addr_custom_size_st * custom_addr);
+bool gt_hal_is_invalid_custom_size_addr(gt_direct_addr_custom_size_st * custom_addr);
+#endif  /** GT_USE_DIRECT_ADDR_CUSTOM_SIZE */
 
 #ifdef __cplusplus
 } /*extern "C"*/

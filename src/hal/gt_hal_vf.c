@@ -143,6 +143,38 @@ static void * _direct_addr_open_cb(struct _gt_fs_drv_s * drv, gt_addr_t addr, gt
 }
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+static void * _custom_size_addr_open_cb(struct _gt_fs_drv_s * drv, gt_direct_addr_custom_size_st * dac, gt_fs_mode_et mode) {
+    /* check drv state */
+    if (_state == GT_FS_RES_DEINIT) {
+        GT_LOGV(GT_LOG_TAG_GUI, "vf drv is deinit");
+        return NULL;
+    }
+    if (gt_hal_is_invalid_custom_size_addr(dac)) {
+        GT_LOGE(GT_LOG_TAG_GUI, "custom size invalid addr");
+        return NULL;
+    }
+
+    gt_fs_fp_st * fp = _gt_hal_fp_init();
+    GT_CHECK_BACK_VAL(fp, NULL);
+
+    if (fp->end > _vf_dev->addr_max) {
+        GT_LOGW(GT_LOG_TAG_GUI, "out of GT_VF_FLASH_SIZE");
+    }
+
+    fp->start = dac->addr;
+    fp->end = fp->start + (sizeof(gt_color_t) + dac->is_alpha ? sizeof(gt_opa_t) : 0) * dac->w * dac->h;
+    fp->pos = fp->start;
+    fp->msg.pic.w = dac->w;
+    fp->msg.pic.h = dac->h;
+    fp->msg.pic.is_alpha = dac->is_alpha;
+    fp->drv = gt_vf_get_drv();
+
+    fp->mode = mode;
+    return fp;
+}
+#endif
+
 static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode) {
     uint16_t idx = 0;
     bool is_find = false;
@@ -330,6 +362,9 @@ static void _gt_vf_drv_init(gt_fs_drv_st * drv) {
 #endif
 #if GT_USE_DIRECT_ADDR
     drv->direct_addr_open_cb = _direct_addr_open_cb;
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    drv->custom_size_addr_open_cb = _custom_size_addr_open_cb;
 #endif
     drv->open_cb      = _open_cb;
     drv->close_cb     = _close_cb;

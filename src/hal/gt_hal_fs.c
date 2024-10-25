@@ -62,5 +62,22 @@ bool gt_hal_is_invalid_addr(gt_addr_t addr)
 }
 #endif  /** GT_USE_DIRECT_ADDR */
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+void gt_hal_custom_size_addr_init(gt_direct_addr_custom_size_st * custom_addr)
+{
+    if (NULL == custom_addr) {
+        return ;
+    }
+    custom_addr->addr = GT_ADDR_INVALID;
+    custom_addr->w = 0;
+    custom_addr->h = 0;
+    custom_addr->is_alpha = 0;
+}
+
+bool gt_hal_is_invalid_custom_size_addr(gt_direct_addr_custom_size_st * custom_addr)
+{
+    return custom_addr->addr == GT_ADDR_INVALID;
+}
+#endif  /** GT_USE_DIRECT_ADDR_CUSTOM_SIZE */
 
 /* end ------------------------------------------------------------------*/

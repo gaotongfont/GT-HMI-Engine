@@ -77,6 +77,17 @@ gt_fs_fp_st * gt_fs_fh_open(gt_file_header_param_st const * const fh_param, gt_f
 gt_fs_fp_st * gt_fs_direct_addr_open(gt_addr_t addr, gt_fs_mode_et mode);
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+/**
+ * @brief Open file by custom size direct address
+ *
+ * @param dac
+ * @param mode
+ * @return gt_fs_fp_st*
+ */
+gt_fs_fp_st * gt_fs_custom_size_addr_open(gt_direct_addr_custom_size_st * dac, gt_fs_mode_et mode);
+#endif
+
 /**
  * @brief Read file contents from file descriptor
  *

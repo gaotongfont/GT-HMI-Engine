@@ -34,6 +34,9 @@ typedef struct _gt_word_art_item_s {
 #if GT_USE_DIRECT_ADDR
     gt_addr_t addr;
 #endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_direct_addr_custom_size_st custom_addr;
+#endif
 }_gt_word_art_item_st;
 
 typedef struct _gt_wor_dart_s {
@@ -128,6 +131,10 @@ static void _init_cb(gt_obj_st * obj) {
 
 #if GT_USE_DIRECT_ADDR
         dsc.addr = style->items[tmp].addr;
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+        dsc.custom_addr = &style->items[tmp].custom_addr;
 #endif
 
         draw_bg_img(obj->draw_ctx, &dsc, &area);
@@ -271,6 +278,9 @@ void gt_wordart_add_item(gt_obj_st * wordart, uint32_t encode, char * src)
 #if GT_USE_DIRECT_ADDR
     gt_hal_direct_addr_init(&style->items[style->item_number].addr);
 #endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&style->items[style->item_number].custom_addr);
+#endif
     ++style->item_number;
 }
 
@@ -292,6 +302,9 @@ void gt_wordart_add_item_by_file_header(gt_obj_st * wordart, uint32_t encode, gt
     style->items[style->item_number].encode = encode;
 #if GT_USE_DIRECT_ADDR
     gt_hal_direct_addr_init(&style->items[style->item_number].addr);
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&style->items[style->item_number].custom_addr);
 #endif
     ++style->item_number;
 }
@@ -320,6 +333,31 @@ void gt_wordart_add_item_by_direct_addr(gt_obj_st * wordart, uint32_t encode, gt
 }
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+void gt_wordart_add_item_by_custom_size_addr(gt_obj_st * wordart, uint32_t encode, gt_direct_addr_custom_size_st * dac)
+{
+    if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {
+        return ;
+    }
+    if (gt_hal_is_invalid_custom_size_addr(dac)) {
+        return;
+    }
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
+    if (NULL == style->items || style->item_number >= style->total) {
+        return ;
+    }
+    style->items[style->item_number].img = NULL;
+    style->items[style->item_number].encode = encode;
+    style->items[style->item_number].custom_addr = *dac;
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->items[style->item_number].fh);
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->items[style->item_number].addr);
+#endif
+    ++style->item_number;
+}
+#endif
 void gt_wordart_remove_all_items(gt_obj_st * wordart)
 {
     if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {

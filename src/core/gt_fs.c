@@ -175,6 +175,19 @@ gt_fs_fp_st * gt_fs_direct_addr_open(gt_addr_t addr, gt_fs_mode_et mode)
 }
 #endif
 
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+gt_fs_fp_st * gt_fs_custom_size_addr_open(gt_direct_addr_custom_size_st * dac, gt_fs_mode_et mode)
+{
+    gt_fs_drv_st * drv = gt_vf_get_drv();
+    if (!drv || !drv->custom_size_addr_open_cb) {
+        return NULL;
+    }
+    gt_fs_fp_st * fp = drv->custom_size_addr_open_cb(drv, dac, mode);
+}
+#endif
+
+
 gt_fs_res_et gt_fs_read(gt_fs_fp_st * fp, uint8_t * out, uint32_t size, uint32_t * ret_len)
 {
     gt_fs_drv_st * drv = fp->drv;

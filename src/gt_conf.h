@@ -238,6 +238,14 @@ extern "C" {
          */
         #define GT_USE_DIRECT_ADDR      0
     #endif
+    #ifndef GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+        /**
+         * @brief Enabled direct address custom size function, such as:
+         *      { addr, w, h, is_alpha }
+         * [Default: 0]
+         */
+        #define GT_USE_DIRECT_ADDR_CUSTOM_SIZE   0
+    #endif
 #endif
 
 #ifndef GT_USE_FOLDER_SYSTEM

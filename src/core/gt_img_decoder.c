@@ -352,7 +352,7 @@ gt_res_t gt_img_decoder_direct_addr_get_info(gt_addr_t addr, _gt_img_info_st * h
 {
     _gt_img_decoder_st * ptr = NULL;
     if (gt_hal_is_invalid_addr(addr)) {
-        return GT_RES_FAIL;
+        return GT_RES_INV;
     }
     _gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
         if (NULL == ptr->direct_addr_info_cb) {
@@ -373,7 +373,7 @@ gt_res_t gt_img_decoder_direct_addr_open(_gt_img_dsc_st * dsc, gt_addr_t addr)
 {
     _gt_img_decoder_st * ptr = NULL;
     if (gt_hal_is_invalid_addr(addr)) {
-        return GT_RES_FAIL;
+        return GT_RES_INV;
     }
     dsc->decoder = NULL;    /* reset image dsc struct */
 
@@ -408,6 +408,42 @@ void gt_img_decoder_set_direct_addr_info_cb(_gt_img_decoder_st * decoder, gt_img
 void gt_img_decoder_set_direct_addr_open_cb(_gt_img_decoder_st * decoder, gt_img_decoder_direct_addr_open_t direct_addr_open_cb)
 {
     decoder->direct_addr_open_cb = direct_addr_open_cb;
+}
+#endif
+
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+gt_res_t gt_img_decoder_custom_size_addr_get_info(gt_direct_addr_custom_size_st * dac, _gt_img_info_st * header)
+{
+    if (gt_hal_is_invalid_custom_size_addr(dac)) {
+        return GT_RES_INV;
+    }
+    gt_fs_fp_st * fp = gt_fs_custom_size_addr_open(dac, GT_FS_MODE_RD);
+    if (!fp) {
+        return GT_RES_INV;
+    }
+    header->w = fp->msg.pic.w;
+    header->h = fp->msg.pic.h;
+
+    gt_fs_close(fp);
+
+    return GT_RES_OK;
+}
+
+gt_res_t gt_img_decoder_custom_size_addr_open(_gt_img_dsc_st * dsc, gt_direct_addr_custom_size_st * dac)
+{
+    if (gt_hal_is_invalid_custom_size_addr(dac)) {
+        return GT_RES_INV;
+    }
+    gt_fs_fp_st * fp = gt_fs_custom_size_addr_open(dac, GT_FS_MODE_RD);
+    if (!fp) {
+        return GT_RES_INV;
+    }
+    dsc->fp = fp;
+    dsc->header.w = fp->msg.pic.w;
+    dsc->header.h = fp->msg.pic.h;
+
+    return GT_RES_OK;
 }
 #endif
 

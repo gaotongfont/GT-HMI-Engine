@@ -183,6 +183,9 @@ static void _gt_src_drv_register(gt_fs_drv_st * drv)
 #if GT_USE_DIRECT_ADDR
     drv ->direct_addr_open_cb = NULL;
 #endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    drv->custom_size_addr_open_cb = NULL;
+#endif
     drv->open_cb      = _open_cb;
     drv->close_cb     = _close_cb;
     drv->read_cb      = _read_cb;
