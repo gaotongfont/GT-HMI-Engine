@@ -463,7 +463,6 @@ void gt_mem_check_used(void)
     float used = (float)((uintptr_t)addr_now - _addr_start) / (float)( _addr_end - _addr_start );
     gt_mem_free(addr_now);
     GT_LOGI(GT_LOG_TAG_MEM, "used:%.2f%%",used*100);
-    printf("used:%.2f%%\n",used*100);
 #endif
 }
 /* end ------------------------------------------------------------------*/
