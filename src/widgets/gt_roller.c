@@ -37,7 +37,6 @@
 typedef enum {
     _SCROLL_SNAP_NONE = 0,  //No scroll snap
     _SCROLL_SNAP_READY,     //Ready to scroll snap
-    _SCROLL_SNAP_DONE,      //Scroll snap done, ready to next scroll snap. ignore repeat scrolling event
 }_gt_roller_state_em;
 
 /**
@@ -303,13 +302,9 @@ static void _scroll_anim_ready_handler(struct gt_anim_s * anim) {
 static void _ready_scroll_snap_anim(struct gt_obj_s * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
 
-    if (_SCROLL_SNAP_DONE == style->reg.state) {
-        style->reg.state = _SCROLL_SNAP_NONE;
-        return ;
-    }
     if (_SCROLL_SNAP_READY == style->reg.state) {
-        style->reg.state = _SCROLL_SNAP_DONE;
         _select_target_item(obj);
+        style->reg.state = _SCROLL_SNAP_NONE;
         return ;
     }
 
