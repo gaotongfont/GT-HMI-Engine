@@ -291,9 +291,7 @@ static void _scroll_snap(gt_obj_st * obj) {
 
 static void _scroll_anim_ready_handler(struct gt_anim_s * anim) {
     _gt_roller_st * style = (_gt_roller_st * )anim->tar;
-    if (_SCROLL_SNAP_DONE == style->reg.state) {
-        return ;
-    }
+
     style->reg.state = _SCROLL_SNAP_READY;
     _scroll_snap((gt_obj_st * )anim->tar);
     style->anim_snap = NULL;
@@ -536,7 +534,9 @@ gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index)
     gt_size_t diff_count = index - style->selected;
 
     if (GT_ROLLER_MODE_NORMAL == style->reg.mode) {
-        if (index > style->count_total) {
+        if (index < 0) {
+            return GT_RES_FAIL;
+        } else if (index + 1 > style->count_total) {
             return GT_RES_FAIL;
         }
     } else if (GT_ROLLER_MODE_INFINITE == style->reg.mode) {
@@ -545,7 +545,7 @@ gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index)
         }
         diff_count = index - _get_infinite_real_selected_index(style->selected, style->count_total);
     }
-    if (0 == diff_count) {
+    if (0 == diff_count || index == style->selected) {
         /** avoid state can not change to done */
         return GT_RES_OK;
     }
@@ -553,6 +553,7 @@ gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index)
 
     obj->process_attr.scroll.y -= item_height * diff_count;
     _scroll_text_handler(obj);
+    style->selected = index;
 
     return GT_RES_OK;
 }
@@ -570,7 +571,9 @@ gt_res_t gt_roller_set_selected_anim(gt_obj_st * obj, gt_size_t index)
     gt_size_t diff_count = index - style->selected;
 
     if (GT_ROLLER_MODE_NORMAL == style->reg.mode) {
-        if (index > style->count_total) {
+        if (index < 0) {
+            return GT_RES_FAIL;
+        } else if (index + 1 > style->count_total) {
             return GT_RES_FAIL;
         }
     } else if (GT_ROLLER_MODE_INFINITE == style->reg.mode) {
@@ -579,7 +582,7 @@ gt_res_t gt_roller_set_selected_anim(gt_obj_st * obj, gt_size_t index)
         }
         diff_count = index - _get_infinite_real_selected_index(style->selected, style->count_total);
     }
-    if (0 == diff_count) {
+    if (0 == diff_count || index == style->selected) {
         /** avoid state can not change to done */
         return GT_RES_OK;
     }
