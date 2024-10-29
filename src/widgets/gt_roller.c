@@ -511,6 +511,64 @@ void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mo
     gt_obj_set_scroll_dir(obj, GT_SCROLL_VERTICAL);
 }
 
+
+void gt_roller_set_options_numb(gt_obj_st* obj, gt_roller_mode_em mode, \
+                                const char* fmt,double min, double max, double step)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
+
+    if (false == _set_mode(style, mode)) {
+        return;
+    }
+
+    uint16_t len = fmt ? strlen(fmt) : 0;
+    char* buffer = gt_mem_malloc(len + 4);
+    gt_memset(buffer, 0, len + 2);
+
+    if(0 == len){
+        buffer[0] = '%';
+        buffer[1] = 'd';
+        len = 2;
+        buffer[2] = '\0';
+        buffer[3] = '\0';
+    }else{
+        gt_memcpy(buffer, fmt, len);
+    }
+
+    double v_max = max + (1e-9);
+    if (GT_ROLLER_MODE_NORMAL == mode) {
+        _create_text(obj);
+        gt_label_set_text(style->text, "");
+        for(double i = min; i <= v_max; i += step) {
+            if(i > v_max - step){
+                buffer[len] = '\0';
+            }
+            else{
+                buffer[len] = '\n';
+            }
+            gt_label_add_text(style->text, buffer, i);
+        }
+    }else if (GT_ROLLER_MODE_INFINITE == mode) {
+        _create_text(obj);
+        gt_label_set_text(style->text, "");
+        for(uint8_t n = 0; n < GT_ROLLER_INFINITE_PAGES_COUNT; n++){
+            for(double i = min; i <= v_max; i += step) {
+                buffer[len] = '\n';
+                gt_label_add_text(style->text, buffer, i);
+            }
+        }
+    }
+    _resize_display_width(obj);
+    gt_label_set_space(style->text, 0, style->line_space);
+
+    gt_obj_set_fixed(style->text, true);
+    _reset_scroll_size(obj);
+    gt_obj_set_inside(style->text, true);
+    gt_obj_set_scroll_dir(obj, GT_SCROLL_VERTICAL);
+}
 void gt_roller_set_select_bgcolor(gt_obj_st * obj, gt_color_t color)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
@@ -523,7 +581,7 @@ void gt_roller_set_select_bgcolor(gt_obj_st * obj, gt_color_t color)
 
 gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index)
 {
-    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return GT_RES_FAIL;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -560,7 +618,7 @@ gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index)
 
 gt_res_t gt_roller_set_selected_anim(gt_obj_st * obj, gt_size_t index)
 {
-    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return GT_RES_FAIL;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -635,6 +693,51 @@ bool gt_roller_get_selected_text(gt_obj_st * obj, char * result)
     result[offset] = '\0';
 
     return offset ? true : false;
+}
+
+gt_res_t gt_roller_set_selected_text(gt_obj_st * obj, const char * select)
+{
+    if(NULL == select){
+        return GT_RES_FAIL;
+    }
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+    uint16_t s_len = strlen(select);
+    if(s_len == 0){
+        return GT_RES_FAIL;
+    }
+
+    _gt_roller_st * style = (_gt_roller_st * )obj;
+    char* text = gt_label_get_text(style->text);
+    uint16_t offset = 0, idx = 0;
+    uint16_t i = 0, len = strlen(text);
+
+    for(i = 0; i < len; ++i){
+        if('\n' == text[i]){
+
+            if (s_len == offset) {
+                if (0 == memcmp(text + i - offset, select, s_len)) {
+                    gt_roller_set_selected(obj, idx);
+                    return GT_RES_OK;
+                }
+            }
+
+            ++idx;
+            offset = 0;
+            continue;
+        }
+        ++offset;
+    }
+
+    if (s_len == offset) {
+        if (0 == memcmp(text + i - offset, select, s_len)) {
+            gt_roller_set_selected(obj, idx);
+            return GT_RES_OK;
+        }
+    }
+
+    return GT_RES_FAIL;
 }
 
 uint16_t gt_roller_go_prev(gt_obj_st * obj)
@@ -803,6 +906,7 @@ void gt_roller_set_font_thick_cn(gt_obj_st * obj, uint8_t thick)
     gt_label_set_font_thick_cn(style->text, thick);
     _resize_display_width(obj);
 }
+
 
 
 #endif  /** GT_CFG_ENABLE_ROLLER */

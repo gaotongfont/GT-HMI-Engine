@@ -154,6 +154,7 @@ bool gt_label_is_omit_single_line(gt_obj_st * label);
 bool gt_label_is_auto_scroll_single_line(gt_obj_st * label);
 
 
+void gt_label_add_text(gt_obj_st * label, const char * fmt, ...);
 
 #endif  /** GT_CFG_ENABLE_LABEL */
 

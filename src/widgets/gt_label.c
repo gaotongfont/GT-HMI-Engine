@@ -675,5 +675,53 @@ bool gt_label_is_auto_scroll_single_line(gt_obj_st * label)
     return true;
 }
 
+void gt_label_add_text(gt_obj_st * label, const char * fmt, ...)
+{
+    char buffer[8] = {0};
+    va_list args;
+    va_list args2;
+
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return;
+    }
+    if (NULL == fmt) {
+        return;
+    }
+
+    _gt_label_st * style = (_gt_label_st * )label;
+    _reset_auto_scroll_st(style->auto_scroll);
+    va_start(args, fmt);
+    va_copy(args2, args);
+    uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(buffer, sizeof(buffer), fmt, args) + 1);
+    va_end(args);
+    if (!size) {
+        goto free_lb;
+    }
+
+    uint16_t len = 0;
+
+    if (NULL == style->text) {
+        style->text = gt_mem_malloc(size);
+    } else {
+        len = strlen(style->text);
+        style->text = gt_mem_realloc(style->text, size + len);
+    }
+    if (NULL == style->text) {
+        goto free_lb;
+    }
+
+    gt_memset(&style->text[len], 0, size);
+    va_start(args2, fmt);
+    vsnprintf(&style->text[len], size, fmt, args2);
+    va_end(args2);
+
+    _update_label_size(label, size + len);
+    gt_event_send(label, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+
+    return;
+
+free_lb:
+    va_end(args2);
+}
 #endif  /** GT_CFG_ENABLE_LABEL */
 /* end ------------------------------------------------------------------*/

@@ -55,6 +55,8 @@ typedef enum{
     VAR_TYPE_RTC            = 0x12,
     VAR_TYPE_HEX            = 0x13,
 
+    VAR_TYPE_ROLLER         = 0x15,
+
     VAR_TYPE_QR_CODE        = 0x25,
     VAR_TYPE_AREA_LIGHT     = 0x26,
     VAR_TYPE_VALUE_PASSING  = 0x30,

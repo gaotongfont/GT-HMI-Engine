@@ -116,6 +116,8 @@ gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index);
  */
 gt_res_t gt_roller_set_selected_anim(gt_obj_st * obj, gt_size_t index);
 
+gt_res_t gt_roller_set_selected_text(gt_obj_st * obj, const char * select);
+
 /**
  * @brief Get the index of the selected item [begin with 0]
  *
@@ -181,6 +183,18 @@ void gt_roller_set_font_cjk(gt_obj_st* obj, gt_font_cjk_et cjk);
 void gt_roller_set_font_thick_en(gt_obj_st * obj, uint8_t thick);
 void gt_roller_set_font_thick_cn(gt_obj_st * obj, uint8_t thick);
 
+/**
+ * @brief Set the options content of the roller, In the middle,
+ * @param obj   Roller object
+ * @param mode  @gt_roller_mode_em
+ * @param fmt   NULL or "%f" ...
+ * @param min   Minimum value
+ * @param max   Maximum value
+ * @param step  Step value
+ *
+ */
+void gt_roller_set_options_numb(gt_obj_st* obj, gt_roller_mode_em mode, \
+                                const char* fmt,double min, double max, double step);
 #endif  /** GT_CFG_ENABLE_ROLLER */
 
 #ifdef __cplusplus
