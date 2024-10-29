@@ -131,9 +131,10 @@ gt_size_t gt_roller_get_selected(gt_obj_st * obj);
  *
  * @param obj Roller object
  * @param result The text of the selected item
+ * @param result_buffer_len The byte length of the result buffer
  * @return true Get success, false Get failed
  */
-bool gt_roller_get_selected_text(gt_obj_st * obj, char * result);
+bool gt_roller_get_selected_text(gt_obj_st * obj, char * result, uint16_t result_buffer_len);
 
 /**
  * @brief Go previous item

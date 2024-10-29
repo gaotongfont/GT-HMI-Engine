@@ -664,7 +664,7 @@ gt_size_t gt_roller_get_selected(gt_obj_st * obj)
     return style->selected;
 }
 
-bool gt_roller_get_selected_text(gt_obj_st * obj, char * result)
+bool gt_roller_get_selected_text(gt_obj_st * obj, char * result, uint16_t result_buffer_len)
 {
     if (NULL == result) {
         return false;
@@ -683,7 +683,7 @@ bool gt_roller_get_selected_text(gt_obj_st * obj, char * result)
             continue;
         }
 
-        if (count == style->selected) {
+        if (count == style->selected && offset < result_buffer_len) {
             result[offset++] = text[i];
         }
         else if (count > style->selected) {
