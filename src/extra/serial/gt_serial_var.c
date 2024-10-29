@@ -30,6 +30,7 @@
 #include "gt_serial_var_rtc.h"
 #include "gt_serial_var_hex.h"
 #include "gt_serial_var_roller.h"
+#include "gt_serial_var_progress_bar.h"
 /* private define -------------------------------------------------------*/
 #ifndef GT_SERIAL_UI_VAR_SIZE
     /* serial ui variable size */
@@ -64,6 +65,8 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_var_handler_item_st _var_handler_li
     {VAR_TYPE_RTC, gt_serial_var_rtc_create, gt_serial_var_rtc_set_value},
     {VAR_TYPE_HEX, gt_serial_var_hex_create, gt_serial_var_hex_set_value},
     {VAR_TYPE_ROLLER, gt_serial_var_roller_create, gt_serial_var_roller_set_value},
+
+    {VAR_TYPE_PROGRESS_BAR, gt_serial_var_progress_bar_create, gt_serial_var_progress_bar_set_value},
 
     {VAR_TYPE_QR_CODE, gt_serial_qrcode_create, gt_serial_qrcode_set_value},
     {VAR_TYPE_AREA_LIGHT, gt_serial_area_light_create, gt_serial_area_light_set_value},
