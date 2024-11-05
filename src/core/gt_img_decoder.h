@@ -301,8 +301,29 @@ void gt_img_decoder_set_direct_addr_open_cb(_gt_img_decoder_st * decoder, gt_img
 #endif
 
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+/**
+ * @brief Get image information by custom size direct address
+ *
+ * @param dac
+ * @param header
+ * @return gt_res_t
+ */
 gt_res_t gt_img_decoder_custom_size_addr_get_info(gt_direct_addr_custom_size_st * dac, _gt_img_info_st * header);
+/**
+ * @brief Open image file and create a file object by custom size direct address
+ *
+ * @param dsc
+ * @param dac
+ * @return gt_res_t
+ */
 gt_res_t gt_img_decoder_custom_size_addr_open(_gt_img_dsc_st * dsc, gt_direct_addr_custom_size_st * dac);
+/**
+ * @brief Close an open file object by custom size direct address
+ *
+ * @param dsc
+ * @return gt_res_t
+ */
+gt_res_t gt_img_decoder_custom_size_addr_close(_gt_img_dsc_st * dsc);
 #endif
 
 #ifdef __cplusplus

@@ -2314,6 +2314,12 @@ handler_lb:
         return ;
     }
 close_lb:
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    if (dsc->custom_addr) {
+        gt_img_decoder_custom_size_addr_close(&dsc_img);
+        return;
+    }
+#endif
     gt_img_decoder_close(&dsc_img);
 }
 

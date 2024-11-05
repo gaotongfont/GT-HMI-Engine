@@ -445,6 +445,16 @@ gt_res_t gt_img_decoder_custom_size_addr_open(_gt_img_dsc_st * dsc, gt_direct_ad
 
     return GT_RES_OK;
 }
+
+gt_res_t gt_img_decoder_custom_size_addr_close(_gt_img_dsc_st * dsc)
+{
+    GT_CHECK_BACK_VAL(dsc, GT_RES_INV);
+    if (dsc->fp) {
+        gt_fs_close(dsc->fp);
+        dsc->fp = NULL;
+    }
+    return GT_RES_OK;
+}
 #endif
 
 void gt_img_decoder_set_info_cb(_gt_img_decoder_st * decoder, gt_img_decoder_get_info_t info_cb)

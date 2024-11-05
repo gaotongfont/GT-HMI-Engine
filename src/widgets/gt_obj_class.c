@@ -247,7 +247,7 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * c, struct gt_obj_s
     }
     gt_memset_0(obj, is);
 
-    obj->classes      = c;
+    obj->classes    = c;
     obj->parent     = parent;
     obj->id         = -1;
     obj->opa        = GT_OPA_100;
