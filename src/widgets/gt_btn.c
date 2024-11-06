@@ -330,6 +330,19 @@ void gt_btn_set_border_width(gt_obj_st * btn, uint8_t width)
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+static gt_res_t _update_defalut_text(_gt_btn_st * style, char * text) {
+    if (0 == _gt_vector_get_count(style->contents)) {
+        if (false == _gt_vector_add_item(style->contents, (void * )text)) {
+            return GT_RES_FAIL;
+        }
+    } else {
+        if (false == _gt_vector_replace_item(style->contents, 0, (void * )text)) {
+            return GT_RES_FAIL;
+        }
+    }
+    return GT_RES_OK;
+}
+
 void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...)
 {
     if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
@@ -356,18 +369,10 @@ void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...)
     vsnprintf(text, size, fmt, args2);
     va_end(args2);
 
-    if (0 == _gt_vector_get_count(style->contents)) {
-        if (false == _gt_vector_add_item(style->contents, (void * )text)) {
-            goto text_lb;
-        }
-    } else {
-        if (false == _gt_vector_replace_item(style->contents, 0, (void * )text)) {
-            goto text_lb;
-        }
+    if (GT_RES_FAIL == _update_defalut_text(style, text)) {
+        goto text_lb;
     }
-
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
-
     return ;
 
 text_lb:
@@ -375,6 +380,27 @@ text_lb:
     text = NULL;
 free_lb:
     va_end(args2);
+}
+
+void gt_btn_set_text_by_len(gt_obj_st * btn, const char * text, uint16_t len)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+    char * tmp_str = gt_mem_malloc(len + 1);
+    if (NULL == tmp_str) {
+        goto err_lb;
+    }
+    if (GT_RES_FAIL == _update_defalut_text(style, tmp_str)) {
+        goto err_lb;
+    }
+    gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
+    return;
+
+err_lb:
+    gt_mem_free(tmp_str);
+    tmp_str = NULL;
 }
 
 char * gt_btn_get_text(gt_obj_st * btn)

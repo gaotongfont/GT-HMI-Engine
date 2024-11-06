@@ -88,6 +88,15 @@ void gt_btn_set_border_width(gt_obj_st * btn, uint8_t width);
 void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...);
 
 /**
+ * @brief set button text by len
+ *
+ * @param btn
+ * @param text
+ * @param len the byte length of the text
+ */
+void gt_btn_set_text_by_len(gt_obj_st * btn, const char * text, uint16_t len);
+
+/**
  * @brief get button text
  *
  * @param btn button obj
