@@ -389,6 +389,8 @@ void gt_btn_set_text_by_len(gt_obj_st * btn, const char * text, uint16_t len)
     }
     _gt_btn_st * style = (_gt_btn_st * )btn;
     char * tmp_str = gt_mem_malloc(len + 1);
+    gt_memcpy(tmp_str, text, len);
+    tmp_str[len] = '\0';
     if (NULL == tmp_str) {
         goto err_lb;
     }

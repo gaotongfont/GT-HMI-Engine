@@ -581,7 +581,7 @@ void gt_roller_set_select_bgcolor(gt_obj_st * obj, gt_color_t color)
 
 gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index)
 {
-        if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return GT_RES_FAIL;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
@@ -618,7 +618,7 @@ gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index)
 
 gt_res_t gt_roller_set_selected_anim(gt_obj_st * obj, gt_size_t index)
 {
-        if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return GT_RES_FAIL;
     }
     _gt_roller_st * style = (_gt_roller_st * )obj;
