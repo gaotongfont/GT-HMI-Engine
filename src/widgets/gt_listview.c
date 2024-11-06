@@ -515,6 +515,16 @@ static void _set_label_pos(gt_obj_st * lab, gt_obj_st * item, gt_size_t offset_x
     lab->area.w = width;
 }
 
+static gt_obj_st * _init_img_icon_prop(gt_obj_st * icon) {
+    gt_obj_set_inside(icon, true);
+    gt_obj_set_reduce(icon, 0);
+
+    gt_obj_set_touch_parent(icon, true);
+    gt_obj_set_bubble_notify(icon, true);
+
+    return icon;
+}
+
 /**
  * @brief Create a image object
  *
@@ -526,28 +536,22 @@ static void _set_label_pos(gt_obj_st * lab, gt_obj_st * item, gt_size_t offset_x
  */
 static gt_obj_st * _create_item_icon(gt_obj_st * listview, gt_obj_st * obj, char * img) {
     gt_obj_st * icon = gt_img_create(obj);
-
     gt_img_set_src(icon, img);
-    gt_obj_set_inside(icon, true);
-    gt_obj_set_reduce(icon, 0);
-
-    gt_obj_set_touch_parent(icon, true);
-    gt_obj_set_bubble_notify(icon, true);
-
-    return icon;
+    return _init_img_icon_prop(icon);
 }
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+static gt_obj_st * _create_item_icon_custom_addr(gt_obj_st * listview, gt_obj_st * obj, gt_direct_addr_custom_size_st * custom_addr) {
+    gt_obj_st * icon = gt_img_create(obj);
+    gt_img_set_by_custom_size_addr(icon, custom_addr);
+    return _init_img_icon_prop(icon);
+}
+#endif
 
 static gt_obj_st * _create_item_icon_raw(gt_obj_st * listview, gt_obj_st * obj, gt_color_img_raw_st * img_raw) {
     gt_obj_st * icon = gt_img_create(obj);
-
     gt_img_set_raw_data(icon, img_raw);
-    gt_obj_set_inside(icon, true);
-    gt_obj_set_reduce(icon, 0);
-
-    gt_obj_set_touch_parent(icon, true);
-    gt_obj_set_bubble_notify(icon, true);
-
-    return icon;
+    return _init_img_icon_prop(icon);
 }
 
 /**
@@ -886,9 +890,22 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
     }
     if (GT_LISTVIEW_ELEMENT_TYPE_IMG == item->type) {
         if (NULL == element) {
-            element = item->img_raw_p ?
-                _create_item_icon_raw(listview, obj, item->img_raw_p) : _create_item_icon(listview, obj, item->src);
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+            if (item->custom_addr) {
+                element = _create_item_icon_custom_addr(listview, obj, item->custom_addr);
+            } else
+#endif
+            if (item->img_raw_p) {
+                element = _create_item_icon_raw(listview, obj, item->img_raw_p);
+            } else {
+                element = _create_item_icon(listview, obj, item->src);
+            }
         } else {
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+            if (item->custom_addr) {
+                gt_img_set_by_custom_size_addr(element, item->custom_addr);
+            } else
+#endif
             if (item->img_raw_p) {
                 gt_img_set_raw_data(element, item->img_raw_p);
             } else {

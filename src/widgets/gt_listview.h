@@ -21,6 +21,7 @@ extern "C" {
 #include "gt_obj_class.h"
 #include "../core/gt_style.h"
 #include "../font/gt_font.h"
+#include "../hal/gt_hal_fs.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -103,6 +104,10 @@ typedef struct gt_listview_custom_item_s {
      * [default: NULL]
      */
     gt_color_img_raw_st * img_raw_p;
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_direct_addr_custom_size_st * custom_addr;
+#endif
 }gt_listview_custom_item_st;
 
 
