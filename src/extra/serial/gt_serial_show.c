@@ -19,10 +19,18 @@
 #include "gt_serial_var.h"
 
 /* private define -------------------------------------------------------*/
-
+#define _GT_SERIAL_FILE_TYPE_ZK               (0x47545A4B)
+#define _GT_SERIAL_FILE_TYPE_IMG              (0x47545450)
+#define _GT_SERIAL_FILE_TYPE_FONT_CONFIG      (0x58425A4B)
 
 
 /* private typedef ------------------------------------------------------*/
+
+typedef struct {
+    uint32_t type;
+    uint16_t count;
+    uint32_t addr_end;
+}gt_serial_zk_file_info_st;
 
 typedef struct {
     uint32_t type;
@@ -50,6 +58,8 @@ typedef struct {
 typedef struct
 {
     gt_scr_list_st* page_list;
+    gt_font_family_st* font_list;
+    gt_serial_zk_file_info_st zk_info;
     gt_serial_img_file_info_st img_info;
     gt_serial_show_file_head_st _show_file_head;
     gt_serial_page_info_st page_info;
@@ -146,67 +156,95 @@ static void _read_show_file_head(gt_serial_show_file_head_st* head)
                                 head->file_id ,head->sys_id, head->page_mode,head->page_numb);
 }
 
+static void _push_zk_address(uint8_t* buffer)
+{
+    uint16_t id = gt_convert_parse_u16(buffer);
+    uint32_t addr = gt_convert_parse_u32(buffer + 2) + GT_SERIAL_RESOURCE_ADDR;
+    //
+    gt_set_font_base_addr(id, addr);
+}
+
 static void _push_file_header(gt_file_header_st* head, uint8_t const * const buffer)
 {
-    head->address = gt_convert_parse_u32(buffer);
+    head->address = gt_convert_parse_u32(buffer) + GT_SERIAL_RESOURCE_ADDR;
     head->info.width = gt_convert_parse_u16(buffer + 4);
     head->info.height = gt_convert_parse_u16(buffer + 6);
     head->info.alpha = buffer[8];
 }
 
 
-static void _read_img_file_info(gt_serial_ui_st* sl_ui)
+static void _read_serial_resource(gt_serial_ui_st* sl_ui)
 {
+    uint8_t tmp[GT_SERIAL_RESOURCE_FILE_HEAD_SIZE] = {0};
+    uint16_t i = 0, n = 0, count = 0, mod = 0;
+    uint32_t addr = 0;
+    uint32_t img_addr = GT_SERIAL_RESOURCE_ADDR;
+
+    gt_fs_read_direct_physical(GT_SERIAL_RESOURCE_ADDR, GT_SERIAL_RESOURCE_FILE_HEAD_SIZE, tmp);
+    gt_serial_zk_file_info_st* zk_info = &(sl_ui->zk_info);
+    zk_info->type = gt_convert_parse_u32(tmp);
+    zk_info->count = gt_convert_parse_u16(tmp + 4);
+    zk_info->addr_end = gt_convert_parse_u32(tmp + 6);
+
+    //
+    if(_GT_SERIAL_FILE_TYPE_ZK != zk_info->type) {
+        GT_LOGE(GT_LOG_TAG_SERIAL, "img file type err! type: 0x%08X", zk_info->type);
+        zk_info->addr_end = GT_SERIAL_RESOURCE_ADDR;
+        goto _read_res_img;
+    }
+    //
+    uint8_t *info_buf = sl_ui->page_info.control;
+    uint16_t info_buf_size = GT_SERIAL_UI_PAGE_CONTROL_SIZE * GT_SERIAL_UI_PAGE_CONTROL_MAX_NUMB;
+    uint16_t max_count = info_buf_size / GT_SERIAL_ZK_FILE_INFO_SIZE;
+    info_buf_size = max_count * GT_SERIAL_ZK_FILE_INFO_SIZE;
+
+    count = zk_info->count / max_count;
+    mod = zk_info->count % max_count;
+    addr = GT_SERIAL_RESOURCE_ADDR + GT_SERIAL_RESOURCE_FILE_HEAD_SIZE;
+
+    for (i = 0; i < count; i++) {
+        gt_memset_0(info_buf, info_buf_size);
+        gt_fs_read_direct_physical(addr, info_buf_size, info_buf);
+        for (n = 0; n < max_count; n++) {
+            _push_zk_address(&info_buf[ n * GT_SERIAL_ZK_FILE_INFO_SIZE]);
+        }
+        addr += info_buf_size;
+    }
+
+    if (mod > 0) {
+        gt_memset_0(info_buf, info_buf_size);
+        gt_fs_read_direct_physical(addr, mod * GT_SERIAL_ZK_FILE_INFO_SIZE, info_buf);
+        for (n = 0; n < mod; n++) {
+            _push_zk_address(&info_buf[ n * GT_SERIAL_ZK_FILE_INFO_SIZE]);
+        }
+    }
+
+_read_res_img:
+//
 #if GT_USE_FILE_HEADER
+    img_addr = zk_info->addr_end;
     // read img head
-    uint8_t tmp[GT_SERIAL_IMG_FILE_HEAD_SIZE] = {0};
-    gt_fs_read_direct_physical(GT_SERIAL_IMG_FILE_ADDR, GT_SERIAL_IMG_FILE_HEAD_SIZE, tmp);
+    gt_fs_read_direct_physical(img_addr, GT_SERIAL_RESOURCE_FILE_HEAD_SIZE, tmp);
     gt_serial_img_file_info_st* img_info = &(sl_ui->img_info);
 
     img_info->type = gt_convert_parse_u32(tmp);
     img_info->count = gt_convert_parse_u16(tmp + 4);
     img_info->addr_end = gt_convert_parse_u32(tmp + 6);
 
-    // read img page info
-    uint8_t *info_buf = sl_ui->page_info.control;
-    uint16_t info_buf_size = GT_SERIAL_UI_PAGE_CONTROL_SIZE * GT_SERIAL_UI_PAGE_CONTROL_MAX_NUMB;
-    uint16_t max_count = info_buf_size / GT_SERIAL_IMG_FILE_INFO_SIZE;
-    info_buf_size = max_count * GT_SERIAL_IMG_FILE_INFO_SIZE;
-    //
-    uint16_t count = img_info->count / max_count;
-    uint16_t mod = img_info->count % max_count;
-    uint32_t addr = GT_SERIAL_IMG_FILE_ADDR + GT_SERIAL_IMG_FILE_HEAD_SIZE;
-
-#define TEST_IMG 01
-#if TEST_IMG
-    const static gt_file_header_st test_img_head_list[] = {
-        {.address = 0x6040, .info = {30, 30, 0}},
-        {.address = 0x6748, .info = {30, 30, 0}},
-        {.address = 0x6e50, .info = {30, 30, 0}},
-        {.address = 0x7558, .info = {30, 30, 0}},
-        {.address = 0x7c60, .info = {30, 30, 0}},
-        {.address = 0x8368, .info = {30, 30, 0}},
-        {.address = 0x8a70, .info = {30, 30, 0}},
-        {.address = 0x9178, .info = {30, 30, 0}},
-        {.address = 0x9880, .info = {30, 30, 0}},
-        {.address = 0x9f88, .info = {30, 30, 0}},
-        {.address = 0x106d0, .info = {30, 30, 0}},
-        {.address = 0x10dd8, .info = {30, 30, 0}},
-        {.address = 0x0, .info = {110, 112, 0}},
-        {.address = 0xa690, .info = {110, 112, 0}},
-        {.address = 0x114e0, .info = {110, 112, 0}},
-        {.address = 0x17520, .info = {110, 112, 0}},
-    };
-    img_info->count = sizeof(test_img_head_list) / sizeof(gt_file_header_st);
-    gt_file_header_init(test_img_head_list, img_info->count);
-    printf(">> ------ img count:%d\n", gt_file_header_get_count());
-
-    for(uint16_t i = 0; i < img_info->count; i++) {
-        gt_file_header_st const * item = gt_file_header_get(i);
-        printf("add item[%d]: addr: 0x%X , w: %d, h: %d\r\n", i, item->address, item->info.width, item->info.height);
+    if(_GT_SERIAL_FILE_TYPE_ZK != zk_info->type) {
+        GT_LOGE(GT_LOG_TAG_SERIAL, "img file type err! type: 0x%08X", img_info->type);
+        return ;
     }
 
-#else
+    // read img page info
+    info_buf = sl_ui->page_info.control;
+    info_buf_size = GT_SERIAL_UI_PAGE_CONTROL_SIZE * GT_SERIAL_UI_PAGE_CONTROL_MAX_NUMB;
+    max_count = info_buf_size / GT_SERIAL_IMG_FILE_INFO_SIZE;
+    info_buf_size = max_count * GT_SERIAL_IMG_FILE_INFO_SIZE;
+    //
+    count = img_info->count / max_count;
+    mod = img_info->count % max_count;
+    addr = img_addr + GT_SERIAL_RESOURCE_FILE_HEAD_SIZE;
 
     //
     img_info->head_list = (gt_file_header_st*)gt_mem_malloc(gt_file_header_get_instance_size() * img_info->count);
@@ -216,8 +254,8 @@ static void _read_img_file_info(gt_serial_ui_st* sl_ui)
     }
     gt_file_header_st* head = img_info->head_list;
 
-    uint16_t i = 0, n = 0;
     for(i = 0; i < count; i++) {
+        gt_memset_0(info_buf, info_buf_size);
         gt_fs_read_direct_physical(addr, info_buf_size, info_buf);
         addr += info_buf_size;
         for(n = 0; n < max_count; n++) {
@@ -227,6 +265,7 @@ static void _read_img_file_info(gt_serial_ui_st* sl_ui)
     }
 
     if (mod > 0) {
+        gt_memset_0(info_buf, info_buf_size);
         gt_fs_read_direct_physical(addr, mod * GT_SERIAL_IMG_FILE_INFO_SIZE, info_buf);
         addr += mod * GT_SERIAL_IMG_FILE_INFO_SIZE;
         for(n = 0; n < mod; n++) {
@@ -235,9 +274,40 @@ static void _read_img_file_info(gt_serial_ui_st* sl_ui)
         }
     }
     gt_file_header_init(img_info->head_list, img_info->count);
-#endif /* TEST_IMG */
 
 #endif /* GT_USE_FILE_HEADER */
+}
+
+static void _read_font_config_info(gt_font_family_st* font_list)
+{
+    uint8_t tmp[GT_SERIAL_FONT_CONFIG_HEAD_SIZE];
+    gt_fs_read_direct_physical(GT_SERIAL_FONT_CONFIG_ADDR, GT_SERIAL_FONT_CONFIG_HEAD_SIZE, tmp);
+    uint32_t type = gt_convert_parse_u32(tmp);
+    uint16_t count = gt_convert_parse_u16(tmp + 4);
+
+    if(_GT_SERIAL_FILE_TYPE_FONT_CONFIG != type) {
+        GT_LOGE(GT_LOG_TAG_SERIAL, "font config type err! type: 0x%08X", type);
+        return;
+    }
+
+    font_list = (gt_font_family_st*)gt_mem_malloc((sizeof(gt_font_family_st) * count));
+    if(!font_list){
+        GT_LOGE(GT_LOG_TAG_SERIAL, "malloc font list err! size: %d", (sizeof(gt_font_family_st) * count));
+        return;
+    }
+
+    uint8_t tmp_list[GT_SERIAL_FONT_CONFIG_INFO_SIZE];
+    for(int i = 0; i < count; i++) {
+        gt_fs_read_direct_physical(GT_SERIAL_FONT_CONFIG_ADDR + GT_SERIAL_FONT_CONFIG_HEAD_SIZE + (i * GT_SERIAL_FONT_CONFIG_INFO_SIZE), \
+                                    GT_SERIAL_FONT_CONFIG_INFO_SIZE, tmp_list);
+
+        font_list[i].size = tmp_list[0];
+        for(int j = 0; j < FONT_LAN_MAX_COUNT; j++){
+            font_list[i].option[j] = gt_convert_parse_u16(tmp_list + 1 + j * 2);
+        }
+    }
+
+    gt_font_family_init(font_list, count);
 }
 
 static void _read_show_file_page_control(gt_serial_page_info_st* info)
@@ -303,16 +373,6 @@ static void _read_sp_param_to_var_buffer(gt_serial_show_file_head_st* head, gt_s
     }
 }
 
-static int _set_contorl_param(uint8_t* control, uint8_t reg, uint8_t* param, uint16_t len)
-{
-    return 0;
-}
-
-static int _set_contorl_value(uint8_t* control, uint8_t* value, uint16_t len)
-{
-    return _set_contorl_param(control, 0, value, len);
-}
-
 
 static gt_res_t _create_control(gt_var_st* var)
 {
@@ -339,14 +399,14 @@ static gt_res_t _addr_control_to_page(gt_serial_page_info_st* info, gt_obj_st* p
     }
     return GT_RES_OK;
 }
-#define TEST_UI 1
+#define TEST_UI 0
 #if TEST_UI
 #define TEST_IS_VP   (01)
 gt_obj_st* btn1 = NULL;
 gt_obj_st* btn2 = NULL;
-static uint16_t index_test = 0x0100;
+static uint16_t index_test = 0x0000;
 static uint16_t sp_test = 0x1800;
-static uint16_t vp_test = 0x1900;
+static uint16_t vp_test = 0x2900;
 static uint8_t vp_buf[4] = {0};
 static uint8_t sp_buf[4] = {0};
 static void _btn1_cb(gt_event_st* event)
@@ -395,6 +455,7 @@ static void _btn2_cb(gt_event_st* event)
 #endif
 static gt_obj_st* _gt_serial_init_screen(void)
 {
+    GT_LOGI(GT_LOG_TAG_SERIAL , "serial ui init!");
     gt_obj_st* screen = gt_obj_create(NULL);
     // read page info
     _read_show_file_page_info(&_serial_ui.page_info, _serial_ui.page_index);
@@ -429,8 +490,11 @@ static void _gt_serial_ui_init(void)
         GT_LOGW(GT_LOG_TAG_SERIAL , "serial ui is already init");
         return;
     }
-    // read img info
-    _read_img_file_info(&_serial_ui);
+    // read serial resource
+    _read_serial_resource(&_serial_ui);
+
+    // read font config
+    _read_font_config_info(_serial_ui.font_list);
 
     // read file head
     _read_show_file_head(&_serial_ui._show_file_head);
