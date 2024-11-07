@@ -60,6 +60,8 @@ void gt_radio_set_selected(gt_obj_st * radio);
  */
 void gt_radio_set_text(gt_obj_st * radio, const char * fmt, ...);
 
+void gt_radio_set_text_by_len(gt_obj_st * radio, const char * text, uint16_t len);
+
 void gt_radio_set_font_color(gt_obj_st * radio, gt_color_t color);
 void gt_radio_set_font_size(gt_obj_st * radio, uint8_t size);
 void gt_radio_set_font_gray(gt_obj_st * radio, uint8_t gray);

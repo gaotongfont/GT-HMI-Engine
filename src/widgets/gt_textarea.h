@@ -77,6 +77,8 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent);
  */
 void gt_textarea_set_text(gt_obj_st * textarea, char * text);
 
+void gt_textarea_set_text_by_len(gt_obj_st * textarea, char * text, uint16_t len);
+
 /**
  * @brief hide textarea background
  *

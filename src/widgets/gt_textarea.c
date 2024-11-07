@@ -502,13 +502,17 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
 
 void gt_textarea_set_text(gt_obj_st * textarea, char * text)
 {
+    gt_textarea_set_text_by_len(textarea, text, strlen(text));
+}
+
+void gt_textarea_set_text_by_len(gt_obj_st * textarea, char * text, uint16_t len)
+{
     if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
         return ;
     }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     uint8_t style_mask = GT_FONT_STYLE_NONE;
     gt_color_t color = style->color_font;
-    uint16_t len = 0;
 
     if (style->cnt_contents) {
 #if GT_TEXTAREA_CUSTOM_FONT_STYLE
@@ -522,7 +526,6 @@ void gt_textarea_set_text(gt_obj_st * textarea, char * text)
     if (NULL == text) {
         return;
     }
-    len = strlen(text);
     style->contents  = gt_mem_malloc( sizeof(gt_textarea_param_st) );
     GT_CHECK_BACK(style->contents);
     style->contents[0].len  = len;

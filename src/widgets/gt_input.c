@@ -372,6 +372,26 @@ free_lb:
     va_end(args2);
 }
 
+void gt_input_set_value_by_len(gt_obj_st * input, const char * str, uint16_t len)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    if (NULL == style->value) {
+        style->value = gt_mem_malloc(len + 1);
+    } else if (len != strlen(style->value)) {
+        style->value = gt_mem_realloc(style->value, len + 1);
+    }
+    if (NULL == style->value) {
+        return;
+    }
+    gt_memcpy(style->value, str, len);
+    style->value[len + 1] = '\0';
+    style->pos_cursor = len;
+    gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 char * gt_input_get_value(gt_obj_st * input)
 {
     if (false == gt_obj_is_type(input, OBJ_TYPE)) {

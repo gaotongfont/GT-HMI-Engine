@@ -257,6 +257,26 @@ void gt_checkbox_set_text(gt_obj_st * checkbox, const char * fmt, ...)
 free_lb:
     va_end(args2);
 }
+
+void gt_checkbox_set_text_by_len(gt_obj_st * checkbox, const char * text, uint16_t len)
+{
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
+        return;
+    }
+    _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
+    if (NULL == style->text) {
+        style->text = gt_mem_malloc(len);
+    } else if (len != strlen(style->text) + 1) {
+        style->text = gt_mem_realloc(style->text, len);
+    }
+    if (NULL == style->text) {
+        return;
+    }
+    gt_memcpy(style->text, text, len);
+    style->text[len] = '\0';
+    gt_event_send(checkbox, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 char * gt_checkbox_get_text(gt_obj_st * checkbox)
 {
     if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {

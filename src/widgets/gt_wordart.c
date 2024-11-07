@@ -415,6 +415,25 @@ free_lb:
     va_end(args2);
 }
 
+void gt_wordart_set_text_by_len(gt_obj_st * wordart, const char * text, uint16_t len)
+{
+    if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
+    if (NULL == style->text) {
+        style->text = gt_mem_malloc(len + 1);
+    } else if (len != strlen(style->text)) {
+        style->text = gt_mem_realloc(style->text, len + 1);
+    }
+    if (NULL == style->text) {
+        return;
+    }
+    gt_memcpy(style->text, text, len);
+    style->text[len + 1] = '\0';
+    gt_event_send(wordart, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 char * gt_wordart_get_text(gt_obj_st * wordart)
 {
     if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {

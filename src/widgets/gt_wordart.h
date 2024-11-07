@@ -109,6 +109,8 @@ uint32_t gt_wordart_get_items_count(gt_obj_st * wordart);
  */
 void gt_wordart_set_text(gt_obj_st * wordart, const char * fmt, ...);
 
+void gt_wordart_set_text_by_len(gt_obj_st * wordart, const char * text, uint16_t len);
+
 char * gt_wordart_get_text(gt_obj_st * wordart);
 
 void gt_wordart_set_space(gt_obj_st * wordart, uint8_t space_x, uint8_t space_y);

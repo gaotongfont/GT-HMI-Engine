@@ -54,6 +54,8 @@ gt_obj_st * gt_input_create(gt_obj_st * parent);
  */
 void gt_input_set_value(gt_obj_st * input, const char * fmt, ...);
 
+void gt_input_set_value_by_len(gt_obj_st * input, const char * str, uint16_t len);
+
 /**
  * @brief get input obj value
  *

@@ -52,6 +52,9 @@ gt_obj_st * gt_checkbox_create(gt_obj_st * parent);
  * @param fmt text format
  */
 void gt_checkbox_set_text(gt_obj_st * checkbox, const char * fmt, ...);
+
+void gt_checkbox_set_text_by_len(gt_obj_st * checkbox, const char * text, uint16_t len);
+
 char * gt_checkbox_get_text(gt_obj_st * checkbox);
 
 void gt_checkbox_set_font_color(gt_obj_st * checkbox, gt_color_t color);

@@ -291,6 +291,25 @@ free_lb:
     va_end(args2);
 }
 
+void gt_radio_set_text_by_len(gt_obj_st * radio, const char * text, uint16_t len)
+{
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_radio_st * style = (_gt_radio_st * )radio;
+    if (NULL == style->text) {
+        style->text = gt_mem_malloc(len + 1);
+    } else if (len != strlen(style->text)) {
+        style->text = gt_mem_realloc(style->text, len + 1);
+    }
+    if (NULL == style->text) {
+        return;
+    }
+    gt_memcpy(style->text, text, len);
+    style->text[len + 1] = '\0';
+    gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 void gt_radio_set_font_color(gt_obj_st * radio, gt_color_t color)
 {
     if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
