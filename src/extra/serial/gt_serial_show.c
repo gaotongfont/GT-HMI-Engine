@@ -161,7 +161,9 @@ static void _push_zk_address(uint8_t* buffer)
     uint16_t id = gt_convert_parse_u16(buffer);
     uint32_t addr = gt_convert_parse_u32(buffer + 2) + GT_SERIAL_RESOURCE_ADDR;
     //
+#if _GT_SET_FONT_ADDR_ENABLE
     gt_set_font_base_addr(id, addr);
+#endif
 }
 
 static void _push_file_header(gt_file_header_st* head, uint8_t const * const buffer)
