@@ -118,7 +118,8 @@ static void _update_label_value(_gt_input_number_st * style) {
         }
     }
     else {
-        gt_label_set_text(style->label, &tmp_str[strlen(tmp_str)-style->reg.len_integer], tmp);
+        uint8_t unit_len = style->unit ? strlen(style->unit) : 0;
+        gt_label_set_text(style->label, &tmp_str[strlen(tmp_str)-style->reg.len_integer - unit_len], tmp);
     }
 #else
     sprintf(&buffer[idx], "%d.%dlf", style->reg.len_integer + append_len, style->reg.len_decimal);
