@@ -75,11 +75,12 @@ static gt_res_t _parse_param(void * user_data, uint8_t const * const buffer, uin
     param->y = gt_convert_parse_u16(buffer + 18);
     param->move_gap = gt_convert_parse_u16(buffer + 20);
     param->filter = buffer[22];
+    param->time = buffer[23];
     return GT_RES_OK;
 }
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st _format[] = {
     {8, gt_serial_var_head_parse, (print_cb_t)NULL,},
-    {23, _parse_param, (print_cb_t)NULL,},
+    {24, _parse_param, (print_cb_t)NULL,},
     { 0x0, (parse_cb_t)NULL, (print_cb_t)NULL },
 };
 
