@@ -91,7 +91,11 @@ typedef struct _gt_player_s {
 
 #if GT_USE_SERIAL
     gt_size_t index_offset;
-    gt_size_t stop_index;
+
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_st stop_fh;
+#endif
+
 #endif
 
 }_gt_player_st;
@@ -137,6 +141,14 @@ static inline void * _get_src(_gt_player_st * style) {
 
 #if GT_USE_FILE_HEADER
 static inline gt_file_header_param_st * _get_file_header_param(_gt_player_st * style) {
+#if GT_USE_SERIAL
+    if( style->stop_fh.idx >= 0) {
+        bool state = _gt_timer_get_paused(style->timer);
+        if(state) {
+            return &style->stop_fh;
+        }
+    }
+#endif
     _gt_player_item_st * item = (_gt_player_item_st * )_gt_vector_get_item(style->vector, _gt_vector_get_index(style->vector));
     GT_CHECK_BACK_VAL(item, NULL);
     return &item->fh_param;
@@ -469,12 +481,6 @@ static inline void _set_play_status(_gt_player_st * style, bool is_play) {
     _gt_timer_set_paused(style->timer, is_play ? false : true);
 
     if (false == is_play) {
-
-#if GT_USE_SERIAL
-        if(style->stop_index >= 0){
-            _gt_vector_set_index(style->vector, style->stop_index);
-        }
-#endif
         /** redraw */
         gt_event_send((gt_obj_st * )style, GT_EVENT_TYPE_DRAW_START, NULL);
     }
@@ -560,7 +566,7 @@ gt_obj_st * gt_player_create(gt_obj_st * parent)
     style->repeat_cnt = -1;
 
 #if GT_USE_SERIAL
-    style->stop_index = -1;
+    style->stop_fh.idx = -1;
 #endif
 
     style->timer = _gt_timer_create(_auto_play_callback, 500, (void * )obj);
@@ -1110,16 +1116,17 @@ void gt_player_set_index_offset(gt_obj_st * obj, gt_size_t offset)
     _gt_player_st * style = (_gt_player_st * )obj;
     style->index_offset = offset;
 }
-
-void gt_player_set_stop_index(gt_obj_st * obj, gt_size_t index)
+#if GT_USE_FILE_HEADER
+void gt_player_set_stop_item_by_file_header(gt_obj_st * obj, gt_file_header_param_st* fh)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;
     }
     _gt_player_st * style = (_gt_player_st * )obj;
-    style->stop_index = index;
+    style->stop_fh = *fh;
 }
-#endif
+#endif  /* GT_USE_FILE_HEADER */
+#endif   /* GT_USE_SERIAL */
 
 #endif /** GT_CFG_ENABLE_PLAYER */
 /* end ------------------------------------------------------------------*/

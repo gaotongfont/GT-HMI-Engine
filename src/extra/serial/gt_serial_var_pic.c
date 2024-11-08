@@ -97,14 +97,15 @@ static void _set_param(gt_var_st* var, gt_var_icon_st* icon)
         gt_player_remove_all_items(var->obj);
     }
 
-    uint16_t i = icon->param.pic_begin;
-    uint16_t len = icon->param.pic_end - icon->param.pic_begin + 1;
+#if GT_USE_FILE_HEADER
     gt_file_header_param_st fh;
     gt_file_header_param_init(&fh);
-    for(; i < len; i++){
+    for(uint16_t i = icon->param.pic_begin; i <= icon->param.pic_end; ++i){
         fh.idx = i;
         gt_player_add_item_by_file_header(var->obj, &fh);
     }
+#endif
+
     gt_player_set_auto_play_period(var->obj, icon->param.time * 8);
     gt_player_play(var->obj);
 }

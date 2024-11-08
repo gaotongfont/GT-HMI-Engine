@@ -226,6 +226,7 @@ static void _set_param(gt_var_st* var, gt_var_artistic_st* icon)
 
     gt_wordart_items_init(var->obj, 12);
 
+#if GT_USE_FILE_HEADER
     uint8_t tmp[] = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x2D, 0x2E};
     gt_file_header_param_st fh;
     gt_file_header_param_init(&fh);
@@ -233,6 +234,7 @@ static void _set_param(gt_var_st* var, gt_var_artistic_st* icon)
         fh.idx = icon->param.icon0 + i;
         gt_wordart_add_item_by_file_header(var->obj, tmp[i], &fh);
     }
+#endif
     _set_text(var->obj, icon, icon->head.vp);
 }
 

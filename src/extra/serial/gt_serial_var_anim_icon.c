@@ -113,6 +113,24 @@ static bool _get_param(gt_var_st* var, gt_var_anim_icon_st* icon)
     return true;
 }
 
+static void _set_paly(gt_obj_st* obj, gt_var_anim_icon_st* icon, uint16_t reg)
+{
+    uint8_t data[2];
+    uint16_t index = 0;
+    if(0 != gt_serial_var_buffer_get_reg(reg, data, 2)){
+        return;
+    }
+    index = gt_convert_parse_u16(data);
+
+    if(index == icon->param.v_stop){
+        gt_player_stop(obj);
+    }
+    else if(index == icon->param.v_start){
+        gt_player_play(obj);
+    }
+
+}
+
 static void _set_param(gt_var_st* var, gt_var_anim_icon_st* icon)
 {
     // add imge
@@ -120,52 +138,33 @@ static void _set_param(gt_var_st* var, gt_var_anim_icon_st* icon)
         gt_player_remove_all_items(var->obj);
     }
 
-    uint16_t i = icon->param.icon_start;
-    uint16_t len = icon->param.icon_end - icon->param.icon_start + 1;
+#if GT_USE_FILE_HEADER
     gt_file_header_param_st fh;
     gt_file_header_param_init(&fh);
-    for(; i < len; i++){
+    for(uint16_t i = icon->param.icon_start; i <= icon->param.icon_end; ++i){
         fh.idx = i;
         gt_player_add_item_by_file_header(var->obj, &fh);
     }
 
+    uint16_t w = 0, h = 0;
+    fh.idx = icon->param.icon_start;
+    gt_fs_fh_read_img_wh(&fh, &w, &h);
+    gt_obj_set_size(var->obj, w, h);
+
+    fh.idx = (0x0002 == icon->param.reset_icon_en) ? -1 : icon->param.icon_stop;
+    gt_player_set_stop_item_by_file_header(var->obj, &fh);
+#endif
+
     gt_obj_set_pos(var->obj, icon->param.x, icon->param.y);
     gt_player_set_mode(var->obj, icon->param.anim_mode ? GT_PLAYER_MODE_ONCE : GT_PLAYER_MODE_LOOP);
 
-    //
-    if(0x0002 == icon->param.reset_icon_en){
-        gt_player_set_stop_index(var->obj, -1);
-    }
-    else{
-        gt_player_set_stop_index(var->obj, icon->param.icon_stop);
-    }
-    //
     gt_player_set_auto_play_period(var->obj, icon->param.time * 20);
 
-    uint16_t index = 0;
-    uint8_t data[2];
-    if(0 != gt_serial_var_buffer_get_reg(icon->head.vp, data, 2)){
-        return ;
-    }
-
-    index = gt_convert_parse_u16(data);
-    if(index == icon->param.v_stop){
-        gt_player_stop(var->obj);
-    }
-    else if(index == icon->param.v_start){
-        gt_player_play(var->obj);
-    }
+    _set_paly(var->obj, icon, icon->head.vp);
 }
 
 static void _set_vp_value(gt_var_st* var, gt_var_value_st* value)
 {
-    uint8_t data[2];
-    uint16_t index = 0;
-    if(0 != gt_serial_var_buffer_get(value, data, 2)){
-        return ;
-    }
-
-    index = gt_convert_parse_u16(data);
 
     gt_var_anim_icon_st var_icon;
 
@@ -173,15 +172,8 @@ static void _set_vp_value(gt_var_st* var, gt_var_value_st* value)
         return ;
     }
 
-    if(index == var_icon.param.v_stop){
-        gt_player_stop(var->obj);
-        return ;
-    }
-
-    if(index == var_icon.param.v_start){
-        gt_player_play(var->obj);
-        return ;
-    }
+    uint16_t reg = gt_convert_parse_u16(value->buffer);
+    _set_paly(var->obj, &var_icon, reg);
 
 }
 
@@ -231,7 +223,6 @@ gt_res_t gt_serial_var_anim_icon_create(gt_var_st* var)
 
     gt_obj_st* new_obj = gt_player_create(var->obj);
     gt_obj_register_id(new_obj, var->id);
-    gt_obj_set_size(new_obj, 1, 1);
     gt_player_set_type(new_obj, GT_PLAYER_TYPE_IMG);
 
     var->obj = new_obj;

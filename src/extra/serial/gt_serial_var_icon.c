@@ -103,6 +103,17 @@ static bool _get_param(gt_var_st* var, gt_var_icon_st* icon)
     return true;
 }
 
+static void _set_index(gt_obj_st* obj, uint16_t reg)
+{
+    uint8_t data[2];
+    if(0 != gt_serial_var_buffer_get_reg(reg, data, 2)){
+        return;
+    }
+
+    uint16_t index = gt_convert_parse_u16(data);
+    gt_player_set_index(obj, index);
+}
+
 static void _set_param(gt_var_st* var, gt_var_icon_st* icon)
 {
     // add imge
@@ -110,33 +121,29 @@ static void _set_param(gt_var_st* var, gt_var_icon_st* icon)
         gt_player_remove_all_items(var->obj);
     }
 
-    uint16_t i = icon->param.icon_min;
-    uint16_t len = icon->param.icon_max - icon->param.icon_min + 1;
+#if GT_USE_FILE_HEADER
     gt_file_header_param_st fh;
     gt_file_header_param_init(&fh);
-    for(; i < len; i++){
+    for(uint16_t i = icon->param.icon_min; i <= icon->param.icon_max; ++i){
         fh.idx = i;
         gt_player_add_item_by_file_header(var->obj, &fh);
     }
+    uint16_t w = 0, h = 0;
+    fh.idx = icon->param.icon_min;
+    gt_fs_fh_read_img_wh(&fh, &w, &h);
+    gt_obj_set_size(var->obj, w, h);
+#endif
 
     gt_obj_set_pos(var->obj, icon->param.x, icon->param.y);
-    gt_player_set_index_offset(var->obj, icon->param.icon_min);
-    uint16_t index = 0;
-    uint8_t data[2];
-    if(0 == gt_serial_var_buffer_get_reg(icon->head.vp, data, 2)){
-        index = ((data[0] << 8) | data[1]);
-    }
-    gt_player_set_index(var->obj, index);
+    gt_player_set_index_offset(var->obj, icon->param.v_min);
+
+    _set_index(var->obj, icon->head.vp);
 }
 
 static void _set_vp_value(gt_var_st* var, gt_var_value_st* value)
 {
-    uint8_t data[2];
-    uint16_t index = 0;
-    if(0 == gt_serial_var_buffer_get(value, data, 2)){
-        index = ((data[0] << 8) | data[1]);
-    }
-    gt_player_set_index(var->obj, index);
+    uint16_t reg = gt_convert_parse_u16(value->buffer);
+    _set_index(var->obj, reg);
 }
 
 static void _set_sp_value(uint8_t reg, gt_var_st* var, gt_var_value_st* value)
@@ -185,7 +192,6 @@ gt_res_t gt_serial_var_icon_create(gt_var_st* var)
 
     gt_obj_st* new_obj = gt_player_create(var->obj);
     gt_obj_register_id(new_obj, var->id);
-    gt_obj_set_size(new_obj, 1, 1);
     gt_player_set_type(new_obj, GT_PLAYER_TYPE_IMG);
     gt_player_set_mode(new_obj, GT_PLAYER_MODE_NONE);
 
