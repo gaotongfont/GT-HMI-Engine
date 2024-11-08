@@ -112,7 +112,16 @@ typedef struct {
  *
  */
 void gt_serial_var_init(void);
-uint16_t gt_serial_var_buffer_get_pointer(uint16_t reg, const uint8_t** data, uint16_t len);
+
+/**
+ * @brief get var buffer pointer
+ *
+ * @param reg
+ * @param res_ptr get the pointer to the buffer
+ * @param len
+ * @return uint16_t
+ */
+uint16_t gt_serial_var_buffer_get_pointer(uint16_t reg, const uint8_t** res_ptr, uint16_t len);
 /**
  * @brief get var buffer
  *

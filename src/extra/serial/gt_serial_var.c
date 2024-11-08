@@ -147,11 +147,11 @@ void gt_serial_var_init(void)
     memset(_serial_var_buf, 0, sizeof(_serial_var_buf));
 }
 
-uint16_t gt_serial_var_buffer_get_pointer(uint16_t reg, const uint8_t** data, uint16_t len)
+uint16_t gt_serial_var_buffer_get_pointer(uint16_t reg, const uint8_t** res_ptr, uint16_t len)
 {
-    if(!data){return 0;}
+    if(!res_ptr){return 0;}
     if(reg + len > 0xFFFF) {return 0;}
-    *data = (const char*)&_serial_var_buf[reg * 2];
+    *res_ptr = (const char*)&_serial_var_buf[reg * 2];
     return len;
 }
 
