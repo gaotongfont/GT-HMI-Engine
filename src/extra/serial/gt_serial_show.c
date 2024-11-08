@@ -93,6 +93,9 @@ static gt_res_t _parse_show_head(void * user_data, uint8_t const * const buffer,
     gt_memcpy(head->sys_id, &buffer[1], 6);
     head->page_mode = buffer[7];
     head->page_numb = (buffer[8] << 8) | buffer[9];
+    if (head->page_numb > 4092) {
+        head->page_numb = 4092;
+    }
     gt_memcpy(head->reserve, &buffer[10], 6);
     return GT_RES_OK;
 }

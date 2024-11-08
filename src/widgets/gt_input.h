@@ -60,7 +60,7 @@ void gt_input_set_value_by_len(gt_obj_st * input, const char * str, uint16_t len
  * @brief get input obj value
  *
  * @param input input obj
- * @return char* value of input
+ * @return char* value of input; NULL is failed, no string
  */
 char * gt_input_get_value(gt_obj_st * input);
 

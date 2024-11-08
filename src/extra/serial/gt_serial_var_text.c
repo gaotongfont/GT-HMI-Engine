@@ -134,7 +134,7 @@ static void _set_text(gt_obj_st* obj, gt_var_text_st* icon, uint16_t reg)
             break;
     }
 
-    const uint8_t* data;
+    const uint8_t * data = NULL;
     uint16_t len = gt_serial_var_buffer_get_pointer(reg, &data, icon->param.len);
     if(0 == len) {return;}
 
