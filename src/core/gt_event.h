@@ -137,9 +137,20 @@ bool gt_event_is_enabled(void);
  * @param obj Which object need to add event callback
  * @param event The callback function
  * @param filter The event type enum @ref gt_event_type_e
- * @param user_data User data [default or unused: NULL]
+ * @param user_data memory free by user [default or unused: NULL]
  */
 void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data);
+
+/**
+ * @brief Check if the event callback is already added
+ *
+ * @param obj
+ * @param event
+ * @param filter
+ * @return true The event callback is already added
+ * @return false The event callback is not added
+ */
+bool gt_event_has_the_same_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter);
 
 /**
  * @brief [Safe] Remove the event callback

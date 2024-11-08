@@ -117,20 +117,6 @@ static inline bool _is_input_event(gt_event_type_et event) {
     return (event < _GT_EVENT_TYPE_INPUT_BEGIN || event > _GT_EVENT_TYPE_INPUT_END) ? false : true;
 }
 
-static bool _has_the_same_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter) {
-    gt_obj_event_attr_st * event_ptr = obj->event_attr;
-    if (NULL == event_ptr) {
-        return false;
-    }
-    while (event_ptr) {
-        if (event_ptr->user_cb == event && event_ptr->filter == filter) {
-            return true;
-        }
-        event_ptr = event_ptr->next_ptr;
-    }
-    return false;
-}
-
 static void _free_event_recursive(gt_obj_event_attr_st * event) {
     if (event->next_ptr) {
         _free_event_recursive(event->next_ptr);
@@ -170,7 +156,7 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
     if (NULL == obj || NULL == event) {
         return;
     }
-    if (_has_the_same_cb(obj, event, filter)) {
+    if (gt_event_has_the_same_cb(obj, event, filter)) {
         return ;
     }
     uint16_t len = sizeof(gt_obj_event_attr_st);
@@ -188,6 +174,21 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
     } else {
         obj->event_attr = new_event;
     }
+}
+
+bool gt_event_has_the_same_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter)
+{
+    gt_obj_event_attr_st * event_ptr = obj->event_attr;
+    if (NULL == event_ptr) {
+        return false;
+    }
+    while (event_ptr) {
+        if (event_ptr->user_cb == event && event_ptr->filter == filter) {
+            return true;
+        }
+        event_ptr = event_ptr->next_ptr;
+    }
+    return false;
 }
 
 void gt_obj_remove_all_event_cb(struct gt_obj_s * obj)
