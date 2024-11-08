@@ -15,6 +15,7 @@
 #include "./gt_serial_system.h"
 #include "../../others/gt_log.h"
 #include "../../../gt.h"
+#include "./gt_serial_event.h"
 //
 #include "gt_serial_var.h"
 
@@ -468,6 +469,12 @@ static gt_obj_st* _gt_serial_init_screen(void)
     if(GT_RES_OK != _addr_control_to_page(&_serial_ui.page_info, screen)){
         gt_obj_destroy(screen);
         GT_LOGE(GT_LOG_TAG_SERIAL , "create control failed!");
+        return NULL;
+    }
+
+    if (GT_RES_FAIL == gt_serial_event_init_by_page(_serial_ui.page_index, screen)) {
+        gt_obj_destroy(screen);
+        GT_LOGE(GT_LOG_TAG_SERIAL , "add event failed!");
         return NULL;
     }
 
