@@ -16,6 +16,7 @@
 #include "../../utils/gt_bin_convert.h"
 #include "../../others/gt_log.h"
 #include  "../../others/gt_anim.h"
+#include "../../core/gt_disp.h"
 #include "./gt_serial_var.h"
 #include "../../widgets/gt_btn.h"
 #include "../../widgets/gt_input.h"
@@ -656,15 +657,49 @@ static gt_res_t _number_decrease_init_cb(gt_serial_event_packet_st * packet) {
 static void _number_input_event_cb(gt_event_st * e) {
     _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
     uint16_t vp = udata->vp;
-    uint16_t len = gt_serial_var_buffer_get_len_by_eof(vp, 0x0000);
-    uint16_t len_full = gt_serial_var_buffer_get_len_by_eof(vp, 0xFFFF);
-    len = GT_MAX(len, len_full);
-    if (0 == len) {
-        return;
-    }
     char * pointer = NULL;
-    len = gt_serial_var_buffer_get_pointer(vp, (const uint8_t **)&pointer, len);
-    // gt_input_number_set_value(udata->tar, );
+    uint16_t len = gt_serial_var_buffer_get_pointer(vp, (const uint8_t **)&pointer, 8);
+    gt_input_number_set_display_integer_length(udata->tar, udata->data.cache[0]);
+    gt_input_number_set_display_decimal_length(udata->tar, udata->data.cache[1]);
+    switch (udata->data.cache[2]) {
+        case 0x00: {
+            if (len < 2) { return; }
+            gt_input_number_set_value(udata->tar, gt_convert_parse_i16(pointer));
+            break;
+        }
+        case 0x01: {
+            if (len < 4) { return; }
+            gt_input_number_set_value(udata->tar, gt_convert_parse_i32(pointer));
+            break;
+        }
+        case 0x02: {
+            if (len < 1) { return; }
+            gt_input_number_set_value(udata->tar, (uint8_t)pointer[0]);
+            break;
+        }
+        case 0x03: {
+            if (len < 2) { return; }
+            gt_input_number_set_value(udata->tar, (uint8_t)pointer[1]);
+            break;
+        }
+        case 0x04: {
+            if (len < 8) { return; }
+            gt_input_number_set_value(udata->tar, gt_convert_parse_i64(pointer));
+            break;
+        }
+        case 0x05: {
+            if (len < 2) { return; }
+            gt_input_number_set_value(udata->tar, gt_convert_parse_u16(pointer));
+            break;
+        }
+        case 0x06: {
+            if (len < 4) { return; }
+            gt_input_number_set_value(udata->tar, gt_convert_parse_u32(pointer));
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 static gt_res_t _number_input_init_cb(gt_serial_event_packet_st * packet) {
@@ -678,68 +713,229 @@ static gt_res_t _number_input_init_cb(gt_serial_event_packet_st * packet) {
     }
     user_data->vp = gt_convert_parse_u16(&packet->data[_SE_OFFSET_VP]);
     user_data->tar = base.obj_target;
+    /** len_integer, len_decimal, value_type */
     gt_memcpy(user_data->data.cache, &packet->data[_SE_OFFSET_DATA], 3);
     gt_obj_add_event_cb(base.obj_src, _number_input_event_cb, base.type, user_data);
     _free_user_data_by_deleted_event(base.obj_src, user_data);
     return GT_RES_OK;
 }
 
+static void _next_second_event_cb(gt_event_st * e) {
+    _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
+    gt_clock_turn_next_second(udata->tar);
+}
+
 static gt_res_t _next_second_init_cb(gt_serial_event_packet_st * packet) {
-    return GT_RES_OK;
+    return _common_get_vp_data(packet, _next_second_event_cb);
+}
+
+static void _prev_second_event_cb(gt_event_st * e) {
+    _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
+    gt_clock_turn_prev_second(udata->tar);
 }
 
 static gt_res_t _prev_second_init_cb(gt_serial_event_packet_st * packet) {
-    return GT_RES_OK;
+    return _common_get_vp_data(packet, _prev_second_event_cb);
+}
+
+static void _start_clock_event_cb(gt_event_st * e) {
+    _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
+    gt_clock_start(udata->tar);
 }
 
 static gt_res_t _start_clock_init_cb(gt_serial_event_packet_st * packet) {
-    return GT_RES_OK;
+    return _common_get_vp_data(packet, _start_clock_event_cb);
+}
+
+static void _pause_clock_event_cb(gt_event_st * e) {
+    _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
+    gt_clock_stop(udata->tar);
 }
 
 static gt_res_t _pause_clock_init_cb(gt_serial_event_packet_st * packet) {
-    return GT_RES_OK;
+    return _common_get_vp_data(packet, _pause_clock_event_cb);
+}
+
+static void _toggle_clock_event_cb(gt_event_st * e) {
+    _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
+    gt_clock_toggle(udata->tar);
 }
 
 static gt_res_t _toggle_clock_init_cb(gt_serial_event_packet_st * packet) {
-    return GT_RES_OK;
+    return _common_get_vp_data(packet, _toggle_clock_event_cb);
+}
+
+static void _change_clock_event_cb(gt_event_st * e) {
+    _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
+    uint16_t vp = udata->vp;
+    char * pointer = NULL;
+    uint16_t len = gt_serial_var_buffer_get_pointer(vp, (const uint8_t **)&pointer, 4);
+    gt_clock_set_time(udata->tar, pointer[0], pointer[1], pointer[2]);
 }
 
 static gt_res_t _change_clock_init_cb(gt_serial_event_packet_st * packet) {
-    return GT_RES_OK;
+    return _common_get_vp_data(packet, _change_clock_event_cb);
+}
+
+static void _select_prev_event_cb(gt_event_st * e) {
+    _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
+    gt_roller_go_prev(udata->tar);
 }
 
 static gt_res_t _select_prev_init_cb(gt_serial_event_packet_st * packet) {
-    return GT_RES_OK;
+    return _common_get_vp_data(packet, _select_prev_event_cb);
+}
+
+static void _select_next_event_cb(gt_event_st * e) {
+    _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
+    gt_roller_go_next(udata->tar);
 }
 
 static gt_res_t _select_next_init_cb(gt_serial_event_packet_st * packet) {
-    return GT_RES_OK;
+    return _common_get_vp_data(packet, _select_next_event_cb);
+}
+
+static void _slider_event_cb(gt_event_st * e) {
+    _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
+    uint16_t vp = udata->vp;
+    char * pointer = NULL;
+    uint16_t len = gt_serial_var_buffer_get_pointer(vp, (const uint8_t **)&pointer, 2);
+    uint16_t value = gt_convert_parse_u16(pointer);
+
+    gt_event_type_et type[] = {
+        GT_EVENT_TYPE_NONE,
+        GT_EVENT_TYPE_INPUT_SCROLL_UP,
+        GT_EVENT_TYPE_INPUT_SCROLL_DOWN,
+        GT_EVENT_TYPE_INPUT_SCROLL_LEFT,
+        GT_EVENT_TYPE_INPUT_SCROLL_RIGHT,
+    };
+    gt_event_send(udata->tar, value < 5 ? type[value] : type[0], NULL);
 }
 
 static gt_res_t _slider_init_cb(gt_serial_event_packet_st * packet) {
-    return GT_RES_OK;
+    return _common_get_vp_data(packet, _slider_event_cb);
+}
+
+static void _update_text_event_cb(gt_event_st * e) {
+    _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
+    uint8_t buffer[128] = {0};
+    if (false == gt_roller_get_selected_text(e->target, buffer, 128)) {
+        return;
+    }
+    gt_label_set_text(udata->tar, buffer);
 }
 
 static gt_res_t _update_text_init_cb(gt_serial_event_packet_st * packet) {
-    return GT_RES_OK;
+    return _common_get_vp_data(packet, _update_text_event_cb);
+}
+
+static void _go_back_page_stack_event_cb(gt_event_st * e) {
+    _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
+    gt_disp_stack_go_back(udata->data.value);
 }
 
 static gt_res_t _go_back_page_stack_init_cb(gt_serial_event_packet_st * packet) {
+    _serial_base_st base = _get_base_data(packet, _go_back_page_stack_event_cb);
+    if (GT_RES_OK != base.res) {
+        return base.res;
+    }
+    _serial_event_data_st * user_data = gt_mem_malloc(sizeof(_serial_event_data_st));
+    if (NULL == user_data) {
+        return GT_RES_INV;
+    }
+    user_data->vp = gt_convert_parse_u16(&packet->data[_SE_OFFSET_VP]);
+    user_data->tar = base.obj_target;
+    user_data->data.value = packet->data[_SE_OFFSET_DATA];
+    gt_obj_add_event_cb(base.obj_src, _go_back_page_stack_event_cb, base.type, user_data);
+    _free_user_data_by_deleted_event(base.obj_src, user_data);
     return GT_RES_OK;
 }
+
+// static void _show_event_cb(gt_event_st * e) {
+//     _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
+// }
 
 static gt_res_t _show_init_cb(gt_serial_event_packet_st * packet) {
+    // return _common_get_vp_data(packet, _show_event_cb);
     return GT_RES_OK;
 }
 
+// static void _hide_event_cb(gt_event_st * e) {
+//     _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
+// }
+
 static gt_res_t _hide_init_cb(gt_serial_event_packet_st * packet) {
+    // return _common_get_vp_data(packet, _hide_event_cb);
     return GT_RES_OK;
+}
+
+static gt_scr_anim_type_et _get_anim_type_by(uint8_t val) {
+    gt_scr_anim_type_et arr[9] = {
+        GT_SCR_ANIM_TYPE_NONE,
+        GT_SCR_ANIM_TYPE_MOVE_LEFT,
+        GT_SCR_ANIM_TYPE_MOVE_RIGHT,
+        GT_SCR_ANIM_TYPE_MOVE_UP,
+        GT_SCR_ANIM_TYPE_MOVE_DOWN,
+        GT_SCR_ANIM_TYPE_COVER_LEFT,
+        GT_SCR_ANIM_TYPE_COVER_RIGHT,
+        GT_SCR_ANIM_TYPE_COVER_UP,
+        GT_SCR_ANIM_TYPE_COVER_DOWN,
+    };
+    return val < 9 ? arr[val] : GT_SCR_ANIM_TYPE_NONE;
+}
+
+static void _load_page_event_cb(gt_event_st * e) {
+    _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
+    uint16_t vp = udata->vp;
+    char * pointer = NULL;
+    uint16_t len = gt_serial_var_buffer_get_pointer(vp, (const uint8_t **)&pointer, 8);
+    uint16_t total_ms = gt_convert_parse_u32(pointer);
+    uint16_t delay_ms = gt_convert_parse_u32(pointer + 4);
+    uint16_t scr_id = gt_convert_parse_u16(&udata->data.cache[0]);
+    uint8_t free_prev = udata->data.cache[2] ? true : false;
+    gt_scr_anim_type_et anim_type = _get_anim_type_by(udata->data.cache[3]);
+    gt_disp_stack_load_scr_anim(scr_id, anim_type, total_ms, delay_ms, free_prev);
 }
 
 static gt_res_t _load_page_init_cb(gt_serial_event_packet_st * packet) {
+    _serial_base_st base = _get_base_data(packet, _load_page_event_cb);
+    if (GT_RES_OK != base.res) {
+        return base.res;
+    }
+    _serial_event_data_st * user_data = gt_mem_malloc(sizeof(_serial_event_data_st));
+    if (NULL == user_data) {
+        return GT_RES_INV;
+    }
+    user_data->vp = gt_convert_parse_u16(&packet->data[_SE_OFFSET_VP]);
+    user_data->tar = base.obj_target;
+    gt_memcpy(user_data->data.cache, &packet->data[_SE_OFFSET_DATA], 4);
+    gt_obj_add_event_cb(base.obj_src, _load_page_event_cb, base.type, user_data);
+    _free_user_data_by_deleted_event(base.obj_src, user_data);
     return GT_RES_OK;
 }
 
+static void _load_wav_id_event_cb(gt_event_st * e) {
+    _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
+    uint16_t wav_id = udata->data.value;
+    // play wav here
+}
+
+static gt_res_t _load_wav_id_init_cb(gt_serial_event_packet_st * packet) {
+    _serial_base_st base = _get_base_data(packet, _load_wav_id_event_cb);
+    if (GT_RES_OK != base.res) {
+        return base.res;
+    }
+    _serial_event_data_st * user_data = gt_mem_malloc(sizeof(_serial_event_data_st));
+    if (NULL == user_data) {
+        return GT_RES_INV;
+    }
+    user_data->vp = gt_convert_parse_u16(&packet->data[_SE_OFFSET_VP]);
+    user_data->tar = base.obj_target;
+    user_data->data.value = gt_convert_parse_u16(&packet->data[_SE_OFFSET_DATA]);
+    gt_obj_add_event_cb(base.obj_src, _load_wav_id_event_cb, base.type, user_data);
+    _free_user_data_by_deleted_event(base.obj_src, user_data);
+    return GT_RES_OK;
+}
 
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY const _serial_init_event_cb _serial_event_init_list_cb[] = {
     _back_ground_color_init_cb,
@@ -775,6 +971,7 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const _serial_init_event_cb _serial_event_in
     _show_init_cb,
     _hide_init_cb,
     _load_page_init_cb,
+    _load_wav_id_init_cb,
 };
 
 /* ------------------- init callback end ------------------- */
