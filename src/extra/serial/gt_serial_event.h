@@ -1,7 +1,7 @@
 /**
  * @file gt_serial_event.h
  * @author Feyoung
- * @brief
+ * @brief Add serial event by set callback function template
  * @version 0.1
  * @date 2024-10-29 17:50:26
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.

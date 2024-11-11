@@ -1,7 +1,7 @@
 /**
  * @file gt_serial_event.c
  * @author Feyoung
- * @brief
+ * @brief Add serial event by set callback function template
  * @version 0.1
  * @date 2024-10-29 17:50:39
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
@@ -48,7 +48,7 @@
 
 #define _SERIAL_EVENT_ADDR_DATA_LEN     4
 
-#define _SERIAL_EVENT_MAX_EVENT_COUNT   0xff
+#define _SERIAL_EVENT_MAX_EVENT_COUNT   0xFF    // 256
 
 #define _SERIAL_EVENT_INVALID_TRIGGER   0xFF
 #define _SERIAL_EVENT_INVALID_TYPE      0xFF
