@@ -41,8 +41,8 @@ extern "C" {
 /* global functions / API interface -------------------------------------*/
 
 /**
- * @brief Get event header data by address
- *      [default: 0x13, 0x48, 0x4d, 0x49, 0x5f, 0x45, 0x56, page_count_h, page_count_l, event_data_len, 0x00]
+ * @brief Get event header data by address, default header data:
+ *      [0x13, 0x48, 0x4d, 0x49, 0x5f, 0x45, 0x56, page_count_h, page_count_l, event_data_len, 0x00]
  * pages:
  *   0. [event_count, addr_h, addr_m, addr_l]
  *      ...
