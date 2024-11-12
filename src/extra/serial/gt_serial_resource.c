@@ -108,14 +108,14 @@ gt_res_t gt_serial_resource_init(void)
 uint32_t gt_serial_resource_get_addr_by(uint8_t file_id)
 {
     if (NULL == _serial_res.items_list) {
-        return 0xFFFFFFFF;
+        return GT_SERIAL_RESOURCE_INVALID_ADDR;
     }
     for (uint16_t k = 0; k < _serial_res.file_count; ++k) {
         if (file_id == _serial_res.items_list[k].id) {
             return _serial_res.items_list[k].addr;
         }
     }
-    return 0xFFFFFFFF;
+    return GT_SERIAL_RESOURCE_INVALID_ADDR;
 }
 
 

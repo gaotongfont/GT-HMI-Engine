@@ -21,6 +21,7 @@ extern "C" {
 
 
 /* define ---------------------------------------------------------------*/
+#define GT_SERIAL_RESOURCE_INVALID_ADDR     (0xFFFFFFFF)
 
 
 
@@ -49,7 +50,7 @@ gt_res_t gt_serial_resource_init(void);
  * @brief Get the address of the resource by the file id
  *
  * @param file_id
- * @return uint32_t 0xFFFFFFFF: failed; other: success
+ * @return uint32_t 0xFFFFFFFF(GT_SERIAL_RESOURCE_INVALID_ADDR): failed; other: success
  */
 uint32_t gt_serial_resource_get_addr_by(uint8_t file_id);
 

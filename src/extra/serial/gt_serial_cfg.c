@@ -1,7 +1,7 @@
 /**
  * @file gt_serial_cfg.c
  * @author Feyoung
- * @brief
+ * @brief cfg file at No.0 file
  * @version 0.1
  * @date 2024-09-20 16:06:42
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
@@ -18,6 +18,8 @@
 #include "../../utils/gt_serial.h"
 #include "./gt_serial_show.h"
 #include "./gt_serial_system.h"
+#include "./gt_serial_resource.h"
+
 
 /* private define -------------------------------------------------------*/
 
@@ -462,7 +464,7 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st format[] = {
 void gt_serial_cfg_init(void)
 {
     uint8_t buffer[128] = {
-    #if 01
+    #if 0
         0x47, 0x54, 0x48, 0x4D, 0x49,
         // 0x54, 0x35, 0x4C, 0x43, 0x31,
         // 0x20,    // crc disabled
@@ -475,7 +477,7 @@ void gt_serial_cfg_init(void)
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x5A, 0x0A
-    #elif 01
+    #elif 0
         0x47, 0x54, 0x48, 0x4D, 0x49,
         // 0x54, 0x35, 0x4C, 0x43, 0x31,
         0x20, 0x80, 0x10, 0x20, 0x28, 0x01, 0x50, 0x64, 0x32, 0x00, 0x64,
@@ -493,27 +495,17 @@ void gt_serial_cfg_init(void)
     gt_bin_res_st ret = {0};
 
     /** read data from flash */
-    // gt_fs_read_direct_physical(0x000000, 128, buffer);
+    uint32_t addr = gt_serial_resource_get_addr_by(0);
+    if (GT_SERIAL_RESOURCE_INVALID_ADDR == addr) {
+        GT_LOGE(GT_LOG_TAG_SERIAL, "config file invalid address.");
+        return;
+    }
+    gt_fs_read_direct_physical(addr, 128, buffer);
 
     ret = gt_bin_convert_parse(&bin, format);
     if (GT_RES_OK != ret.res) {
         GT_LOG_A("", "Parse err code: %d, index: %d", ret.res, ret.index);
     }
-
-#if 0
-    ret = gt_bin_convert_print(&bin, format);
-    if (GT_RES_OK != ret.res) {
-        GT_LOG_A("", "Print err code: %d, index: %d", ret.res, ret.index);
-    }
-
-    for (uint8_t i = 0; i < 128; i++) {
-        if (i && 0 == (i % 16)) {
-            printf("\n");
-        }
-        printf("%02x ", buffer[i]);
-    }
-    printf("\n");
-#endif
 }
 
 gt_serial_cfg_st * const gt_serial_cfg_get_root(void)
