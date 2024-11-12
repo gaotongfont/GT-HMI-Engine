@@ -149,7 +149,6 @@ static void _auto_hide_keypad(gt_obj_st * scr) {
         kp = scr->child[i];
         if (gt_obj_is_type(kp, GT_TYPE_KEYPAD)) {
             gt_keypad_hide(kp);
-            _gt_disp_reload_max_area(scr);
             gt_disp_invalid_area(scr);
         }
     }

@@ -774,6 +774,15 @@ void gt_keypad_set_target(gt_obj_st * keypad, gt_obj_st * tar_input)
     gt_input_hooking_keypad(tar_input, keypad);
 }
 
+gt_obj_st * gt_keypad_get_target(gt_obj_st * keypad)
+{
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
+        return NULL;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
+    return gt_btnmap_get_input(style->btnmap);
+}
+
 void gt_keypad_set_color_background(gt_obj_st * keypad, gt_color_t color)
 {
     if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {

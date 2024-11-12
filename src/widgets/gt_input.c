@@ -106,6 +106,11 @@ static void _gt_input_cursor_anim(gt_obj_st * input, const gt_area_st* box_area)
     draw_bg(input->draw_ctx, &rect_attr, &area);
 }
 
+static inline bool _is_keypad_visible(_gt_input_st * style) {
+    return style->hooking_kp && gt_obj_get_visible(style->hooking_kp) &&
+    (gt_obj_st *)style == gt_keypad_get_target(style->hooking_kp);
+}
+
 static inline void _gt_input_init_widget(gt_obj_st * input) {
     _gt_input_st * style = (_gt_input_st * )input;
 
@@ -130,7 +135,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     /* draw font */
     gt_font_st font;
     gt_color_t color_font = {0};
-    if (!style->value) {
+    if (!style->value && false == _is_keypad_visible(style)) {
         font.utf8 = style->placeholder;
         font.len = strlen(style->placeholder);
         color_font = gt_color_hex(0x808080);
@@ -174,7 +179,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     style->point_pos.x = font_res.area.x;
     style->point_pos.y = font_res.area.y;
 
-    if (style->value) {
+    if (_is_keypad_visible(style)) {
         _gt_input_cursor_anim(input, &area_font);
     }
 
@@ -189,7 +194,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         font_attr.font = &font,
         font_attr.font_color = color_font,
 
-        font_attr.start_x = font_res.area.x + style->border_width + 2;
+        font_attr.start_x = font_res.area.x + (_is_keypad_visible(style) ? style->border_width + 2 : 0);
         font_attr.start_y = font_res.area.y;
         font_attr.reg.enabled_start = true;
         draw_text(input->draw_ctx, &font_attr, &area_font);
@@ -287,6 +292,7 @@ static void _input_check_keypad_switch_focus(gt_obj_st * input) {
             false == gt_obj_get_visible(style->hooking_kp) &&
             gt_keypad_get_auto_hide(style->hooking_kp)) {
             gt_obj_set_visible(style->hooking_kp, true);
+            gt_disp_invalid_area(input);
         }
 #endif
         return;
@@ -299,6 +305,10 @@ static void _input_check_keypad_switch_focus(gt_obj_st * input) {
     if (false == gt_obj_get_visible(kp)) {
         gt_obj_set_visible(kp, true);
     }
+    if (input != gt_keypad_get_target(kp)) {
+        gt_disp_invalid_area(gt_keypad_get_target(kp));
+    }
+    gt_disp_invalid_area(input);
 #if GT_CFG_ENABLE_KEYPAD
     gt_keypad_set_target(kp, input);
 #endif

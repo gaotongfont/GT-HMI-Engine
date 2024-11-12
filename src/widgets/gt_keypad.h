@@ -108,6 +108,7 @@ void gt_keypad_set_map_list(gt_obj_st * keypad, gt_keypad_map_st* map_list, uint
  * @param tar_input need to set the target input box
  */
 void gt_keypad_set_target(gt_obj_st * keypad, gt_obj_st * tar_input);
+gt_obj_st * gt_keypad_get_target(gt_obj_st * keypad);
 void gt_keypad_set_color_background(gt_obj_st * keypad, gt_color_t color);
 void gt_keypad_set_border_width_and_color(gt_obj_st * keypad, gt_size_t width, gt_color_t color);
 void gt_keypad_set_color_ctrl_key(gt_obj_st * keypad, gt_color_t color);

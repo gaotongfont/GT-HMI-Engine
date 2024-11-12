@@ -63,6 +63,7 @@ gt_obj_st * gt_btnmap_create(gt_obj_st * parent);
 void gt_btnmap_set_map(gt_obj_st* btnmap, gt_map_st* map, uint16_t map_type);
 uint16_t gt_btnmap_get_map_type(gt_obj_st* btnmap);
 void gt_btnmap_set_input(gt_obj_st * btnmap, gt_obj_st * input);
+gt_obj_st * gt_btnmap_get_input(gt_obj_st * btnmap);
 
 void gt_btnmap_set_radius(gt_obj_st* btnmap, uint8_t radius);
 void gt_btnmap_set_btn_height(gt_obj_st* btnmap, uint16_t height);

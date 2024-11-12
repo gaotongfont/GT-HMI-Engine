@@ -250,6 +250,9 @@ void gt_obj_set_visible(gt_obj_st * obj, gt_visible_et is_visible)
     GT_CHECK_BACK(obj);
     obj->visible = is_visible;
     gt_disp_invalid_area(obj);
+    if (obj->visible) {
+        _gt_disp_reload_max_area(gt_obj_within_which_scr(obj));
+    }
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
