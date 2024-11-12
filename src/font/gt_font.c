@@ -2003,7 +2003,7 @@ void gt_py_input_method_clean(gt_py_input_method_st* py_input_method)
 #endif
 }
 
-void gt_py_input_method_deinit(gt_py_input_method_st* py_input_method)
+void gt_py_input_method_destroy(gt_py_input_method_st* py_input_method)
 {
 #if ((defined(PINYIN_INPUT_METHOD_EN)) && (GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
     if(py_input_method){
