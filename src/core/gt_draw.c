@@ -1768,6 +1768,7 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
     while (idx < txt_len) {
         if (0x0A == txt[idx]) {
             ++idx;
+            ++idx_len;
             continue;
         }
 #if 0
@@ -1856,7 +1857,10 @@ static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, co
         gt_memset(tmp_font.res, 0, data_len);
         tmp_font.utf8 = (char * )&txt[idx];
         tmp_font.len = gt_font_one_char_code_len_get(&txt[idx], &uni_or_gbk, tmp_font.info.encoding);
-
+        if (0x0A == uni_or_gbk) {
+            ++idx;
+            continue;
+        }
         width = gt_font_get_one_word_width(uni_or_gbk, &tmp_font);
 
         if (_is_align_reverse(dsc->align)) {
