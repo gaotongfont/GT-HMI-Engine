@@ -2542,6 +2542,12 @@ radius_lb:
 
 void draw_focus(gt_obj_st* obj, gt_size_t radius)
 {
+    if (false == obj->focus) {
+        return;
+    }
+    if (GT_ENABLED != obj->focus_dis) {
+        return;
+    }
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.bg_opa = obj->opa;
@@ -2551,9 +2557,7 @@ void draw_focus(gt_obj_st* obj, gt_size_t radius)
     rect_attr.bg_color = gt_color_focus();
     rect_attr.border_color = gt_color_focus();
 
-    if (obj->focus && GT_ENABLED == obj->focus_dis) {
-        draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
-    }
+    draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
 }
 
 /* end ------------------------------------------------------------------*/
