@@ -38,6 +38,11 @@ extern "C" {
 
 /* global functions / API interface -------------------------------------*/
 
+/**
+ * @brief Analysis the serial resource file header data
+ *
+ * @return gt_res_t
+ */
 gt_res_t gt_serial_resource_init(void);
 
 /**
