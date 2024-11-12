@@ -50,6 +50,8 @@ typedef struct _gt_keypad_s {
     gt_keypad_default_style_st def_style;
 
     uint8_t map_total;
+
+    uint8_t auto_hide : 1;
 }_gt_keypad_st;
 
 typedef struct _gt_def_style_param_s {
@@ -80,6 +82,7 @@ typedef struct _gt_def_style_param_s {
     uint8_t key_x_space;
     uint8_t key_y_space;
 }_gt_def_style_param_st;
+
 /* static prototypes ----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
@@ -714,6 +717,36 @@ void gt_keypad_set_type(gt_obj_st * keypad, gt_keypad_type_te type)
     _gt_keypad_switch_type(keypad, type, false);
 }
 
+void gt_keypad_set_auto_hide(gt_obj_st * keypad, bool auto_hide)
+{
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
+        return;
+    }
+    _gt_keypad_st* style = (_gt_keypad_st*)keypad;
+    style->auto_hide = auto_hide ? 1 : 0;
+}
+
+bool gt_keypad_get_auto_hide(gt_obj_st * keypad)
+{
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
+        return false;
+    }
+    _gt_keypad_st* style = (_gt_keypad_st*)keypad;
+    return style->auto_hide;
+}
+
+void gt_keypad_hide(gt_obj_st * keypad)
+{
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
+        return;
+    }
+    _gt_keypad_st* style = (_gt_keypad_st*)keypad;
+    if (false == style->auto_hide) {
+        return;
+    }
+    gt_obj_set_visible(keypad, false);
+}
+
 void gt_keypad_set_map_list(gt_obj_st * keypad, gt_keypad_map_st* map_list, uint8_t map_num)
 {
     if (NULL == map_list) {
@@ -728,16 +761,17 @@ void gt_keypad_set_map_list(gt_obj_st * keypad, gt_keypad_map_st* map_list, uint
     _gt_keypad_switch_type(keypad, map_list[0].type, true);
 }
 
-void gt_keypad_set_target(gt_obj_st * keypad, gt_obj_st * ta)
+void gt_keypad_set_target(gt_obj_st * keypad, gt_obj_st * tar_input)
 {
     if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
-    if (NULL == ta) {
+    if (NULL == tar_input) {
         return;
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
-    gt_btnmap_set_input(style->btnmap, ta);
+    gt_btnmap_set_input(style->btnmap, tar_input);
+    gt_input_hooking_keypad(tar_input, keypad);
 }
 
 void gt_keypad_set_color_background(gt_obj_st * keypad, gt_color_t color)

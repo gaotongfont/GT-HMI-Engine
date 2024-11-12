@@ -227,6 +227,10 @@ bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent);
  */
 gt_obj_st * gt_obj_search_child_by_type(gt_obj_st * parent, gt_obj_type_et type);
 
+uint16_t gt_obj_search_childs_count_by_type(gt_obj_st * parent, gt_obj_type_et type);
+
+gt_obj_st * gt_obj_within_which_scr(gt_obj_st * obj);
+
 /**
  * @brief [SAFE] If you use the screen stack functionality,
  *      try to avoid using it to free screen objects directly

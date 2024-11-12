@@ -24,6 +24,9 @@
 #include "../others/gt_log.h"
 #include "../others/gt_gc.h"
 
+#if GT_CFG_ENABLE_KEYPAD
+#include "./gt_keypad.h"
+#endif
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_OBJ
@@ -139,6 +142,20 @@ static void _change_state_by_trigger_mode(gt_obj_st * obj, bool is_pressed) {
     gt_obj_set_state(obj, is_pressed ? GT_STATE_PRESSED : GT_STATE_NONE);
 }
 
+#if GT_CFG_ENABLE_KEYPAD
+static void _auto_hide_keypad(gt_obj_st * scr) {
+    gt_obj_st * kp = NULL;
+    for (uint16_t i = 0; i < scr->cnt_child; ++i) {
+        kp = scr->child[i];
+        if (gt_obj_is_type(kp, GT_TYPE_KEYPAD)) {
+            gt_keypad_hide(kp);
+            _gt_disp_reload_max_area(scr);
+            gt_disp_invalid_area(scr);
+        }
+    }
+}
+#endif
+
 static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
 
@@ -189,6 +206,12 @@ static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
         }
         case GT_EVENT_TYPE_UPDATE_STYLE: {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            break;
+        }
+        case GT_EVENT_TYPE_INPUT_RELEASED: {
+#if GT_CFG_ENABLE_KEYPAD
+            _auto_hide_keypad(obj);
+#endif
             break;
         }
         case GT_EVENT_TYPE_INPUT_SCROLL: {
@@ -348,9 +371,7 @@ bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent)
 gt_obj_st * gt_obj_search_child_by_type(gt_obj_st * parent, gt_obj_type_et type)
 {
     gt_obj_st * ch = NULL;
-    if (NULL == parent) {
-        return NULL;
-    }
+    GT_CHECK_BACK_VAL(parent, NULL);
     for (uint16_t i = 0; i < parent->cnt_child; ++i) {
         if (gt_obj_is_type(parent->child[i], type)) {
             ch = parent->child[i];
@@ -358,6 +379,31 @@ gt_obj_st * gt_obj_search_child_by_type(gt_obj_st * parent, gt_obj_type_et type)
         }
     }
     return ch;
+}
+
+uint16_t gt_obj_search_childs_count_by_type(gt_obj_st * parent, gt_obj_type_et type)
+{
+    uint16_t count = 0;
+    GT_CHECK_BACK_VAL(parent, 0);
+    for (uint16_t i = 0; i < parent->cnt_child; ++i) {
+        if (gt_obj_is_type(parent->child[i], type)) {
+            ++count;
+        }
+    }
+    return count;
+}
+
+gt_obj_st * gt_obj_within_which_scr(gt_obj_st * obj)
+{
+    GT_CHECK_BACK_VAL(obj, NULL);
+    gt_obj_st * p = obj->parent;
+    while (p) {
+        if (gt_obj_is_type(p, OBJ_TYPE_SCREEN) || gt_obj_is_type(p, GT_TYPE_LAYER_TOP)) {
+            break;
+        }
+        p = p->parent;
+    }
+    return p;
 }
 
 void gt_obj_destroy(gt_obj_st * obj)

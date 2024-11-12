@@ -32,6 +32,7 @@
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_input_s {
     gt_obj_st obj;
+    gt_obj_st * hooking_kp;      /** hooking keypad */
     char * value;
     char * placeholder;
 
@@ -275,11 +276,29 @@ static void _deinit_cb(gt_obj_st * obj) {
 }
 
 static void _input_check_keypad_switch_focus(gt_obj_st * input) {
+    _gt_input_st * style = (_gt_input_st * )input;
+    uint16_t kp_count = gt_obj_search_childs_count_by_type(input->parent, GT_TYPE_KEYPAD);
+    if (0 == kp_count) {
+        return;
+    } else if (kp_count > 1) {
+        /** display owner keypad */
+#if GT_CFG_ENABLE_KEYPAD
+        if (style->hooking_kp &&
+            false == gt_obj_get_visible(style->hooking_kp) &&
+            gt_keypad_get_auto_hide(style->hooking_kp)) {
+            gt_obj_set_visible(style->hooking_kp, true);
+        }
+#endif
+        return;
+    }
+    /** common using one keypad, maybe want to switch input object */
     gt_obj_st * kp = gt_obj_search_child_by_type(input->parent, GT_TYPE_KEYPAD);
     if (NULL == kp) {
-        return ;
+        return;
     }
-    gt_obj_set_visible(kp, true);
+    if (false == gt_obj_get_visible(kp)) {
+        gt_obj_set_visible(kp, true);
+    }
 #if GT_CFG_ENABLE_KEYPAD
     gt_keypad_set_target(kp, input);
 #endif
@@ -719,6 +738,18 @@ void gt_input_set_space(gt_obj_st * input, uint8_t space_x, uint8_t space_y)
     _gt_input_st * style = (_gt_input_st * )input;
     style->space_x = space_x;
     style->space_y = space_y;
+}
+
+void gt_input_hooking_keypad(gt_obj_st * input, gt_obj_st * keypad)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return ;
+    }
+    if (false == gt_obj_is_type(keypad, GT_TYPE_KEYPAD)) {
+        return ;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    style->hooking_kp = keypad;
 }
 
 #endif  /** GT_CFG_ENABLE_INPUT */

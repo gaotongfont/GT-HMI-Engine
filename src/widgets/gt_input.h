@@ -125,6 +125,7 @@ void gt_input_set_border_width(gt_obj_st * input, gt_size_t width);
 void gt_input_set_border_color(gt_obj_st * input, gt_color_t color);
 void gt_input_set_space(gt_obj_st * input, uint8_t space_x, uint8_t space_y);
 
+void gt_input_hooking_keypad(gt_obj_st * input, gt_obj_st * keypad);
 
 #endif  /** GT_CFG_ENABLE_INPUT */
 

@@ -82,9 +82,23 @@ gt_obj_st * gt_keypad_create(gt_obj_st * parent);
  */
 void gt_keypad_set_default_style(gt_obj_st * keypad, gt_keypad_default_style_st def_style);
 void gt_keypad_set_type(gt_obj_st * keypad, gt_keypad_type_te type);
+void gt_keypad_set_auto_hide(gt_obj_st * keypad, bool auto_hide);
+bool gt_keypad_get_auto_hide(gt_obj_st * keypad);
+/**
+ * @brief hide keypad by auto hide flag status
+ *
+ * @param keypad
+ */
+void gt_keypad_hide(gt_obj_st * keypad);
 void gt_keypad_set_map_list(gt_obj_st * keypad, gt_keypad_map_st* map_list, uint8_t map_num);
 
-void gt_keypad_set_target(gt_obj_st * keypad, gt_obj_st * ta);
+/**
+ * @brief
+ *
+ * @param keypad
+ * @param tar_input need to set the target input box
+ */
+void gt_keypad_set_target(gt_obj_st * keypad, gt_obj_st * tar_input);
 void gt_keypad_set_color_background(gt_obj_st * keypad, gt_color_t color);
 void gt_keypad_set_border_width_and_color(gt_obj_st * keypad, gt_size_t width, gt_color_t color);
 void gt_keypad_set_color_ctrl_key(gt_obj_st * keypad, gt_color_t color);
