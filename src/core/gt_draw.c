@@ -2542,9 +2542,6 @@ radius_lb:
 
 void draw_focus(gt_obj_st* obj, gt_size_t radius)
 {
-    if (0 == radius) {
-        return;
-    }
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.bg_opa = obj->opa;
