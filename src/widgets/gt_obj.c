@@ -345,6 +345,21 @@ bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent)
     return p == parent ? true : false;
 }
 
+gt_obj_st * gt_obj_search_child_by_type(gt_obj_st * parent, gt_obj_type_et type)
+{
+    gt_obj_st * ch = NULL;
+    if (NULL == parent) {
+        return NULL;
+    }
+    for (uint16_t i = 0; i < parent->cnt_child; ++i) {
+        if (gt_obj_is_type(parent->child[i], type)) {
+            ch = parent->child[i];
+            break;
+        }
+    }
+    return ch;
+}
+
 void gt_obj_destroy(gt_obj_st * obj)
 {
     // GT_LOGV(GT_LOG_TAG_GUI, "Want to destroy obj: 0x%p", obj);

@@ -219,6 +219,15 @@ gt_id_t gt_obj_get_id(gt_obj_st * obj);
 bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent);
 
 /**
+ * @brief Search the child object by type
+ *
+ * @param parent
+ * @param type
+ * @return gt_obj_st* NULL: not found
+ */
+gt_obj_st * gt_obj_search_child_by_type(gt_obj_st * parent, gt_obj_type_et type);
+
+/**
  * @brief [SAFE] If you use the screen stack functionality,
  *      try to avoid using it to free screen objects directly
  *

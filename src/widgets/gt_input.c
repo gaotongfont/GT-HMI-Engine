@@ -23,6 +23,7 @@
 #include "../hal/gt_hal_indev.h"
 #include "../core/gt_indev.h"
 #include "../others/gt_area.h"
+#include "./gt_keypad.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_INPUT
@@ -273,6 +274,16 @@ static void _deinit_cb(gt_obj_st * obj) {
     }
 }
 
+static void _input_check_keypad_switch_focus(gt_obj_st * input) {
+    gt_obj_st * kp = gt_obj_search_child_by_type(input->parent, GT_TYPE_KEYPAD);
+    if (NULL == kp) {
+        return ;
+    }
+    gt_obj_set_visible(kp, true);
+#if GT_CFG_ENABLE_KEYPAD
+    gt_keypad_set_target(kp, input);
+#endif
+}
 
 /**
  * @brief obj event handler call back
@@ -293,6 +304,11 @@ static void _input_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_KEY:
             _input_key_handler(obj, key);
             break;
+
+        case GT_EVENT_TYPE_INPUT_RELEASED: {
+            _input_check_keypad_switch_focus(obj);
+            break;
+        }
         default:
             break;
     }
