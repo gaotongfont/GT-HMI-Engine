@@ -82,8 +82,17 @@ gt_obj_st * gt_keypad_create(gt_obj_st * parent);
  */
 void gt_keypad_set_default_style(gt_obj_st * keypad, gt_keypad_default_style_st def_style);
 void gt_keypad_set_type(gt_obj_st * keypad, gt_keypad_type_te type);
+
+/**
+ * @brief When the auto hide flag is set, the keypad will be hidden automatically
+ *      when focus is on screen objects
+ *
+ * @param keypad
+ * @param auto_hide [default: false]
+ */
 void gt_keypad_set_auto_hide(gt_obj_st * keypad, bool auto_hide);
 bool gt_keypad_get_auto_hide(gt_obj_st * keypad);
+
 /**
  * @brief hide keypad by auto hide flag status
  *
