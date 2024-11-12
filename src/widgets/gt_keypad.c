@@ -964,5 +964,14 @@ void gt_keypad_set_py_input_method(gt_obj_st * keypad, gt_py_input_method_st* py
     gt_btnmap_set_py_input_method(style->btnmap, py_input_method);
 }
 
+gt_py_input_method_st* gt_keypad_get_py_input_method(gt_obj_st * keypad)
+{
+    if( false == gt_obj_is_type(keypad, OBJ_TYPE)) {
+        return NULL;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
+    return gt_btnmap_get_py_input_method(style->btnmap);
+}
+
 #endif  /** GT_CFG_ENABLE_KEYPAD */
 /* end of file ----------------------------------------------------------*/

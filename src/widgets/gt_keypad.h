@@ -118,6 +118,7 @@ void gt_keypad_set_ctrl_key_border_width_and_color(gt_obj_st * keypad, gt_size_t
 void gt_keypad_set_ctrl_key_font_color(gt_obj_st * keypad, gt_color_t color);
 
 void gt_keypad_set_py_input_method(gt_obj_st * keypad, gt_py_input_method_st* py_input_method);
+gt_py_input_method_st* gt_keypad_get_py_input_method(gt_obj_st * keypad);
 
 #ifdef __cplusplus
 } /*extern "C"*/

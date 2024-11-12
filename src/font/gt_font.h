@@ -269,6 +269,7 @@ void gt_py_input_method_last_page(gt_py_input_method_st* py_input_method);
 void gt_py_input_method_next_page(gt_py_input_method_st* py_input_method);
 void gt_py_input_method_select_text(gt_py_input_method_st* py_input_method, uint8_t index);
 void gt_py_input_method_clean(gt_py_input_method_st* py_input_method);
+void gt_py_input_method_deinit(gt_py_input_method_st* py_input_method);
 
 
 void gt_font_info_init(gt_font_info_st *font_info);

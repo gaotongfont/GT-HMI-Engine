@@ -2003,6 +2003,16 @@ void gt_py_input_method_clean(gt_py_input_method_st* py_input_method)
 #endif
 }
 
+void gt_py_input_method_deinit(gt_py_input_method_st* py_input_method)
+{
+#if ((defined(PINYIN_INPUT_METHOD_EN)) && (GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
+    if(py_input_method){
+        py_input_method->py_info = NULL;
+        gt_mem_free(py_input_method);
+        py_input_method = NULL;
+    }
+#endif
+}
 
 #if GT_CFG_USE_FONT_16_ASCII == 1
 static const uint8_t _ascii_16[] = {
