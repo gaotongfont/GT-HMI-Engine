@@ -18,6 +18,7 @@
 #include  "../../others/gt_anim.h"
 #include "../../core/gt_disp.h"
 #include "./gt_serial_var.h"
+#include "./gt_serial_resource.h"
 #include "../../widgets/gt_btn.h"
 #include "../../widgets/gt_input.h"
 #include "../../widgets/gt_label.h"
@@ -1002,7 +1003,12 @@ void gt_serial_event_init(void)
     uint8_t tmp[_SERIAL_EVENT_TOTAL_LEN] = {0};
     uint8_t cnt = 0;
 
-    _event_fh.addr = 0x000000;
+    uint32_t addr = gt_serial_resource_get_addr_by(0);
+    if (GT_SERIAL_RESOURCE_INVALID_ADDR == addr) {
+        GT_LOGE(GT_LOG_TAG_SERIAL, "get event addr err");
+        return;
+    }
+    _event_fh.addr = addr + GT_SERIAL_RESOURCE_EVENT_OFFSET;
     gt_fs_read_direct_physical(_event_fh.addr, _SERIAL_EVENT_TOTAL_LEN, tmp);
     _event_fh.id = tmp[cnt];
     cnt += _SERIAL_EVENT_FILE_ID_LEN;

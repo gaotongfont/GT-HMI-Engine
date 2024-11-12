@@ -23,7 +23,10 @@ extern "C" {
 /* define ---------------------------------------------------------------*/
 #define GT_SERIAL_RESOURCE_INVALID_ADDR     (0xFFFFFFFF)
 
-
+/**
+ * @brief event resource data offset No.0 file begin
+ */
+#define GT_SERIAL_RESOURCE_EVENT_OFFSET     (1024)
 
 /* typedef --------------------------------------------------------------*/
 
