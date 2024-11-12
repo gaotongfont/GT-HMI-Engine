@@ -644,6 +644,10 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
             if (false == gt_obj_is_untouchability(indev->data.keypad.obj_target)) {
                 gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_RELEASED, &_indev_params);
             }
+#if GT_INDEV_KEYPAD_LOG
+        GT_LOG_A(GT_LOG_TAG_TP, "keypad key: %#X, state: %d count_keydown: %d obj type: %d",
+                    indev->data.keypad.key, indev->state, indev->data.keypad.count_keydown, indev->data.keypad.obj_target->classes->type);
+#endif
         }
         indev->data.keypad.count_keydown = 0;
         last_key = GT_KEY_NONE;
@@ -672,8 +676,8 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
             }
         }
 #if GT_INDEV_KEYPAD_LOG
-        GT_LOG_A(GT_LOG_TAG_TP, "keypad key: %#X count_keydown: %d obj type: %d",
-                    indev->data.keypad.key, indev->data.keypad.count_keydown, indev->data.keypad.obj_target->classes->type);
+        GT_LOG_A(GT_LOG_TAG_TP, "keypad key: %#X, state: %d count_keydown: %d obj type: %d",
+                    indev->data.keypad.key, indev->state, indev->data.keypad.count_keydown, indev->data.keypad.obj_target->classes->type);
 #endif
         return ;
     }
