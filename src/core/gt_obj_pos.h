@@ -24,6 +24,10 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+typedef struct gt_obj_change_s {
+    gt_obj_st * src;
+    gt_obj_st * dst;
+}gt_obj_change_st;
 
 
 
@@ -51,8 +55,9 @@ void gt_area_copy(gt_area_st * dst, gt_area_st const * const src);
 gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * scr_or_top, gt_point_st * point);
 
 gt_obj_st* gt_find_clicked_obj_by_focus(gt_obj_st * parent);
-void gt_obj_next_focus_change(gt_obj_st * cur_obj);
-void gt_obj_prev_focus_change(gt_obj_st * cur_obj);
+gt_obj_change_st gt_obj_next_focus_change(gt_obj_st * cur_obj);
+gt_obj_change_st gt_obj_prev_focus_change(gt_obj_st * cur_obj);
+void gt_obj_focus_change_display(gt_obj_change_st * chg);
 
 /**
  * @brief check obj is in the disp screen now

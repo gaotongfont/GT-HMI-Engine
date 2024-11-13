@@ -673,7 +673,8 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
         last_key = data_indev.key;
         indev->data.keypad.count_keydown = 0;
         if(GT_KEY_NEXT == indev->data.keypad.key){
-            gt_obj_next_focus_change(indev->data.keypad.obj_target);
+            gt_obj_change_st chg = gt_obj_next_focus_change(indev->data.keypad.obj_target);
+            gt_obj_focus_change_display(&chg);
             _indev_params.param.keypad_key = GT_KEY_NEXT;
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
@@ -705,7 +706,8 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
     ++indev->data.keypad.count_keydown;
     if(indev->data.keypad.count_keydown >= valid_toggle_time){
         if(GT_KEY_NEXT == indev->data.keypad.key){
-            gt_obj_next_focus_change(indev->data.keypad.obj_target);
+            gt_obj_change_st chg = gt_obj_next_focus_change(indev->data.keypad.obj_target);
+            gt_obj_focus_change_display(&chg);
             _indev_params.param.keypad_key = GT_KEY_NEXT;
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }

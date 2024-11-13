@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_obj_pos.h"
+#include "./gt_obj_scroll.h"
 #include "../hal/gt_hal_disp.h"
 #include "../widgets/gt_obj.h"
 #include "../others/gt_log.h"
@@ -248,7 +249,7 @@ gt_obj_st* _gt_obj_focus_clicked(gt_obj_st * parent)
     return obj_clicked;
 }
 
-gt_obj_st* gt_find_clicked_obj_by_focus(gt_obj_st * parent)
+gt_obj_st * gt_find_clicked_obj_by_focus(gt_obj_st * parent)
 {
     gt_obj_st * obj_clicked = NULL;
 
@@ -257,62 +258,89 @@ gt_obj_st* gt_find_clicked_obj_by_focus(gt_obj_st * parent)
     return obj_clicked ? obj_clicked : parent;
 }
 
-void gt_obj_next_focus_change(gt_obj_st * cur_obj)
+gt_obj_change_st gt_obj_next_focus_change(gt_obj_st * cur_obj)
 {
-    if(NULL == cur_obj){
-        return;
+    gt_obj_change_st ret = {
+        .src = cur_obj,
+        .dst = NULL,
+    };
+    if (NULL == cur_obj) {
+        return ret;
     }
 
-    gt_obj_st* parent = gt_disp_get_scr();
-
-    gt_obj_st* next = _gt_obj_next_focus_get(parent, cur_obj, false);
-
-    if(!next){
-        next = parent;
+    gt_obj_st * scr = gt_disp_get_scr();
+    ret.dst = _gt_obj_next_focus_get(scr, cur_obj, false);
+    if (!ret.dst) {
+        ret.dst = scr;
     }
 
     gt_obj_set_focus(cur_obj, false);
-    gt_obj_set_focus(next, true);
+    gt_obj_set_focus(ret.dst, true);
+    return ret;
 }
 
-void gt_obj_prev_focus_change(gt_obj_st * cur_obj)
+gt_obj_change_st gt_obj_prev_focus_change(gt_obj_st * cur_obj)
 {
-    if(NULL == cur_obj){
-        return;
+    gt_obj_change_st ret = {
+        .src = cur_obj,
+        .dst = NULL,
+    };
+    if (NULL == cur_obj) {
+        return ret;
     }
 
-    gt_obj_st* parent = gt_disp_get_scr();
-    gt_obj_st* prev = NULL;
-    if(cur_obj == parent && parent->cnt_child > 0)
-    {
-        if(parent->cnt_child == 0 && GT_ENABLED == parent->child[0]->focus_dis)
-        {
+    gt_obj_st * parent = gt_disp_get_scr();
+    gt_obj_st * prev = NULL;
+
+    if(cur_obj == parent && parent->cnt_child > 0) {
+        if (parent->cnt_child == 0 && GT_ENABLED == parent->child[0]->focus_dis) {
             prev = parent->child[0];
-        }
-        else if(parent->cnt_child > 1)
-        {
-            if(GT_ENABLED == parent->child[parent->cnt_child-1]->focus_dis)
-            {
+        } else if (parent->cnt_child > 1) {
+            if (GT_ENABLED == parent->child[parent->cnt_child-1]->focus_dis) {
                 prev = parent->child[parent->cnt_child-1];
             }
-            else if(parent->cnt_child > 2){
+            else if (parent->cnt_child > 2) {
                 prev =  _gt_obj_prev_focus_get(parent->child[parent->cnt_child-2]);
             }
         }
-    }
-    else{
+    } else {
         prev = _gt_obj_prev_focus_get(cur_obj);
     }
 
-    if(!prev){
+    if (!prev) {
         prev = parent;
     }
 
     gt_obj_set_focus(cur_obj, false);
     gt_obj_set_focus(prev, true);
+    ret.dst = prev;
+    return ret;
 }
 
-
+void gt_obj_focus_change_display(gt_obj_change_st * chg)
+{
+    if (NULL == chg->dst) {
+        return;
+    }
+    gt_obj_st * parent = chg->dst->parent;
+    switch (gt_obj_class_get_type(parent)) {
+        case GT_TYPE_SCREEN: {
+            GT_LOG_A("", "screen display");
+            break;
+        }
+        case GT_TYPE_LISTVIEW: {
+            GT_LOG_A("", "lv display");
+            // gt_obj_scroll_to_y(parent, -20, GT_ANIM_ON);
+            break;
+        }
+        case GT_TYPE_VIEW_PAGER: {
+            GT_LOG_A("", "vp display");
+            break;
+        }
+        default:
+            break;
+    }
+}
 
 bool gt_obj_check_scr(gt_obj_st * obj)
 {
