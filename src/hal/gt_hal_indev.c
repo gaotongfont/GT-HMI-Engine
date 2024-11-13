@@ -55,7 +55,6 @@ static gt_indev_st simulate_indev = {
 /* global functions / API interface -------------------------------------*/
 void gt_indev_drv_init(gt_indev_drv_st * drv)
 {
-
     gt_memset(drv, 0, sizeof(gt_indev_drv_st));
 
     drv->type = GT_INDEV_TYPE_NONE;

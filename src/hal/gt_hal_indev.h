@@ -101,6 +101,21 @@ typedef enum {
     GT_KEY_HOME      = 2,   /*0x02, STX*/
     GT_KEY_END       = 3,   /*0x03, ETX*/
 
+    GT_KEY_F1        = 0x70,
+    GT_KEY_F2        = 0x71,
+    GT_KEY_F3        = 0x72,
+    GT_KEY_F4        = 0x73,
+    GT_KEY_F5        = 0x74,
+    GT_KEY_F6        = 0x75,
+    GT_KEY_F7        = 0x76,
+    GT_KEY_F8        = 0x77,
+    GT_KEY_F9        = 0x78,
+    GT_KEY_F10       = 0x79,
+    GT_KEY_F11       = 0x7A,
+    GT_KEY_F12       = 0x7B,
+
+    GT_KEY_MENU      = GT_KEY_F1,   /** Global event toggle key */
+
     GT_KEY_NONE      = 0xFFFFFFF,
 }gt_key_et;
 

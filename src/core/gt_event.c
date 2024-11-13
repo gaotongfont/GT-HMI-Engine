@@ -191,6 +191,20 @@ bool gt_event_has_the_same_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_eve
     return false;
 }
 
+uint16_t gt_obj_get_user_event_count(struct gt_obj_s * obj)
+{
+    uint16_t cnt = 0;
+    if (NULL == obj) {
+        return cnt;
+    }
+    gt_obj_event_attr_st * event_ptr = obj->event_attr;
+    while (event_ptr) {
+        ++cnt;
+        event_ptr = event_ptr->next_ptr;
+    }
+    return cnt;
+}
+
 void gt_obj_remove_all_event_cb(struct gt_obj_s * obj)
 {
     GT_CHECK_BACK(obj);
@@ -276,6 +290,38 @@ gt_res_t gt_event_send_by_id(gt_id_t widget_id, gt_event_type_et event, void * p
 
     return gt_event_send(target, event, parms);
 }
+
+#if GT_USE_LAYER_TOP
+void gt_global_add_event_cb(gt_event_cb_t event, gt_event_type_et filter, void * user_data)
+{
+    gt_obj_add_event_cb(gt_disp_get_layer_top(), event, filter, user_data);
+}
+
+uint16_t gt_global_get_event_count(void)
+{
+    return gt_obj_get_user_event_count(gt_disp_get_layer_top());
+}
+
+bool gt_global_event_has_the_same_cb(gt_event_cb_t event, gt_event_type_et filter)
+{
+    return gt_event_has_the_same_cb(gt_disp_get_layer_top(), event, filter);
+}
+
+void gt_global_remove_all_event_cb(void)
+{
+    gt_obj_remove_all_event_cb(gt_disp_get_layer_top());
+}
+
+void gt_global_remove_all_event_cb_immediately(void)
+{
+    gt_obj_remove_all_event_cb_immediately(gt_disp_get_layer_top());
+}
+
+gt_res_t gt_global_event_send(gt_event_type_et event, void * parms)
+{
+    return gt_event_send(gt_disp_get_layer_top(), event, parms);
+}
+#endif  /** GT_USE_LAYER_TOP */
 
 gt_event_type_et gt_event_get_code(gt_event_st * e)
 {
