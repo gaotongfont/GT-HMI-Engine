@@ -63,6 +63,10 @@ typedef enum{
     VAR_TYPE_QR_CODE        = 0x25,
     VAR_TYPE_AREA_LIGHT     = 0x26,
     VAR_TYPE_VALUE_PASSING  = 0x30,
+
+    VAR_TYPE_INPUT          = 0x40,
+    VAR_TYPE_KEYPAD         = 0x41,
+
 }gt_var_type_et;
 
 typedef struct{

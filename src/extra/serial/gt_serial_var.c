@@ -31,6 +31,8 @@
 #include "gt_serial_var_hex.h"
 #include "gt_serial_var_roller.h"
 #include "gt_serial_var_progress_bar.h"
+#include "gt_serial_var_input.h"
+#include "gt_serial_var_keypad.h"
 /* private define -------------------------------------------------------*/
 #ifndef GT_SERIAL_UI_VAR_SIZE
     /* serial ui variable size */
@@ -71,6 +73,9 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_var_handler_item_st _var_handler_li
     {VAR_TYPE_QR_CODE, gt_serial_qrcode_create, gt_serial_qrcode_set_value},
     {VAR_TYPE_AREA_LIGHT, gt_serial_area_light_create, gt_serial_area_light_set_value},
     {VAR_TYPE_VALUE_PASSING, gt_serial_value_passing_create, gt_serial_value_passing_set_value},
+
+    {VAR_TYPE_INPUT, gt_serial_var_input_create, gt_serial_var_input_set_value},
+    {VAR_TYPE_KEYPAD, gt_serial_var_keypad_create, gt_serial_var_keypad_set_value},
 };
 
 /* macros ---------------------------------------------------------------*/
