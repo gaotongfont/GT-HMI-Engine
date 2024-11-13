@@ -58,6 +58,8 @@ gt_obj_st* gt_find_clicked_obj_by_focus(gt_obj_st * parent);
 gt_obj_change_st gt_obj_next_focus_change(gt_obj_st * cur_obj);
 gt_obj_change_st gt_obj_prev_focus_change(gt_obj_st * cur_obj);
 void gt_obj_focus_change_display(gt_obj_change_st * chg);
+gt_obj_change_st gt_obj_into_focus_change(gt_obj_st * cur_obj);
+gt_obj_change_st gt_obj_out_focus_change(gt_obj_st * cur_obj);
 
 /**
  * @brief check obj is in the disp screen now
