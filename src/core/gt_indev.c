@@ -531,6 +531,9 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
         gt_obj_get_click_point_by_phy_point(point_p->obj_target, &point_p->newly, &point_ret);
         _gt_obj_set_process_point(point_p->obj_target, &point_ret);
         if( (gt_tick_get() - indev->timestamp_long_press) >= indev->drv->limit_timers_long_press ){
+            if (indev->timestamp_start == indev->timestamp_long_press) {
+                gt_event_send(point_p->obj_target, GT_EVENT_TYPE_INPUT_LONG_PRESSED, NULL);
+            }
             indev->timestamp_long_press = gt_tick_get();
             gt_event_send(point_p->obj_target, GT_EVENT_TYPE_INPUT_PRESSING, NULL);
         }
