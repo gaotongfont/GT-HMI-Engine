@@ -115,6 +115,7 @@ typedef enum {
     GT_KEY_F12       = 0x7B,
 
     GT_KEY_MENU      = GT_KEY_F1,   /** Global event toggle key */
+    GT_KEY_BACK      = GT_KEY_F12,  /** Global event */
 
     GT_KEY_NONE      = 0xFFFFFFF,
 }gt_key_et;

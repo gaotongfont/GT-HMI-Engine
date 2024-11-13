@@ -107,8 +107,9 @@ static void _gt_input_cursor_anim(gt_obj_st * input, const gt_area_st* box_area)
 }
 
 static inline bool _is_keypad_visible(_gt_input_st * style) {
-    return style->hooking_kp && gt_obj_get_visible(style->hooking_kp) &&
-    (gt_obj_st *)style == gt_keypad_get_target(style->hooking_kp);
+    return style->hooking_kp &&
+        gt_obj_get_visible(style->hooking_kp) &&
+        (gt_obj_st *)style == gt_keypad_get_target(style->hooking_kp);
 }
 
 static inline void _gt_input_init_widget(gt_obj_st * input) {
@@ -305,9 +306,11 @@ static void _input_check_keypad_switch_focus(gt_obj_st * input) {
     if (false == gt_obj_get_visible(kp)) {
         gt_obj_set_visible(kp, true);
     }
+#if GT_CFG_ENABLE_KEYPAD
     if (input != gt_keypad_get_target(kp)) {
         gt_disp_invalid_area(gt_keypad_get_target(kp));
     }
+#endif
     gt_disp_invalid_area(input);
 #if GT_CFG_ENABLE_KEYPAD
     gt_keypad_set_target(kp, input);

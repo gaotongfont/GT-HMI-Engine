@@ -624,6 +624,25 @@ static void _gt_indev_handler_button(gt_indev_st * indev)
     }
 }
 
+#if GT_USE_LAYER_TOP
+/**
+ * @brief Whether the key is a global key value, need to be captured by the top layer
+ *
+ * @param key
+ * @return true
+ * @return false
+ */
+static inline bool _kp_is_global_key_value(uint32_t key) {
+    if (GT_KEY_MENU == key) {
+        return true;
+    }
+    if (GT_KEY_BACK == key) {
+        return true;
+    }
+    return false;
+}
+#endif
+
 static void _gt_indev_handler_keypad(gt_indev_st* indev)
 {
     gt_indev_data_st data_indev = {
@@ -648,8 +667,8 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
             return;
         }
 #if GT_USE_LAYER_TOP
-        if (GT_KEY_MENU == indev->data.keypad.key && gt_global_get_event_count()) {
-            _indev_params.param.keypad_key = GT_KEY_MENU;
+        if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
+            _indev_params.param.keypad_key = indev->data.keypad.key;
             gt_global_event_send(GT_EVENT_TYPE_INPUT_RELEASED, &_indev_params);
         }
 #endif
@@ -687,7 +706,7 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
             _indev_params.param.keypad_key = indev->data.keypad.key;
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
 #if GT_USE_LAYER_TOP
-            if (GT_KEY_MENU == indev->data.keypad.key && gt_global_get_event_count()) {
+            if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
                 gt_global_event_send(GT_EVENT_TYPE_INPUT_PRESSED, &_indev_params);
             }
 #endif
@@ -726,7 +745,7 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
             if (0 == indev->data.keypad.count_keydown % valid_toggle_time) {
 #if GT_USE_LAYER_TOP
-                if (GT_KEY_MENU == indev->data.keypad.key && gt_global_get_event_count()) {
+                if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
                     if (indev->data.keypad.count_keydown == valid_toggle_time) {
                         gt_global_event_send(GT_EVENT_TYPE_INPUT_LONG_PRESSED, &_indev_params);
                     }
