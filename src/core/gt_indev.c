@@ -669,7 +669,7 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
 #if GT_USE_LAYER_TOP
         if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
             _indev_params.param.keypad_key = indev->data.keypad.key;
-            gt_global_event_send(GT_EVENT_TYPE_INPUT_RELEASED, &_indev_params);
+            _gt_global_core_indev_event_send(GT_EVENT_TYPE_INPUT_RELEASED, &_indev_params);
         }
 #endif
         if (GT_KEY_ENTER == indev->data.keypad.key) {
@@ -707,7 +707,7 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
             gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
 #if GT_USE_LAYER_TOP
             if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
-                gt_global_event_send(GT_EVENT_TYPE_INPUT_PRESSED, &_indev_params);
+                _gt_global_core_indev_event_send(GT_EVENT_TYPE_INPUT_PRESSED, &_indev_params);
             }
 #endif
             if (GT_KEY_ENTER == indev->data.keypad.key){
@@ -747,9 +747,9 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
 #if GT_USE_LAYER_TOP
                 if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
                     if (indev->data.keypad.count_keydown == valid_toggle_time) {
-                        gt_global_event_send(GT_EVENT_TYPE_INPUT_LONG_PRESSED, &_indev_params);
+                        _gt_global_core_indev_event_send(GT_EVENT_TYPE_INPUT_LONG_PRESSED, &_indev_params);
                     }
-                    gt_global_event_send(GT_EVENT_TYPE_INPUT_PRESSING, &_indev_params);
+                    _gt_global_core_indev_event_send(GT_EVENT_TYPE_INPUT_PRESSING, &_indev_params);
                 }
 #endif
                 if (GT_KEY_ENTER == indev->data.keypad.key &&

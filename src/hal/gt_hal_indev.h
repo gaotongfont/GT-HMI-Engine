@@ -199,8 +199,7 @@ typedef struct _gt_indev_s {
 }gt_indev_st;
 
 typedef struct gt_indev_param_st {
-    union
-    {
+    union {
         gt_point_st point;
         uint16_t button_id;
         uint32_t keypad_key;

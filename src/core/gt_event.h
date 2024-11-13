@@ -100,6 +100,7 @@ typedef struct _gt_event_s {
     void * user_data;
     void * param;               /** gt_event_send() param */
     gt_event_type_et code_type;
+    uint32_t key_val;           /** key value, using by keypad indev mode */
 }gt_event_st;
 
 /**
@@ -250,6 +251,17 @@ void gt_global_remove_all_event_cb_immediately(void);
  * @return gt_res_t The result status @ref gt_res_t
  */
 gt_res_t gt_global_event_send(gt_event_type_et event, void * parms);
+
+/**
+ * @brief [Warn, Called by indev] Send an event code to the global register user event.
+ *      Not for the user to call.
+ *
+ * @param event The event code to send
+ * @param parms User data [default or unused: NULL]
+ * @return gt_res_t The result status @ref gt_res_t
+ */
+gt_res_t _gt_global_core_indev_event_send(gt_event_type_et event, void * parms);
+
 #endif  /** GT_USE_LAYER_TOP */
 
 /**

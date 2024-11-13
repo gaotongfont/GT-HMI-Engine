@@ -20,6 +20,7 @@
 #include "stdbool.h"
 #include "../others/gt_gc.h"
 #include "../others/gt_anim.h"
+#include "../hal/gt_hal_indev.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -134,6 +135,32 @@ static void _anim_to_remove_all_event(struct gt_anim_s * anim) {
     _free_event_recursive(tar);
 }
 
+static gt_event_st _init_event_param(gt_obj_st * parent, gt_event_type_et event, void * parms, uint32_t key_val) {
+    gt_event_st e = {
+        .target = parent,
+        .origin = parent,
+        .code_type = event,
+        .param = parms,
+        .key_val = key_val,
+    };
+    return e;
+}
+
+static inline gt_res_t _common_event_send(gt_event_st * e) {
+#if GT_USE_SCREEN_ANIM
+    if (false == gt_event_is_enabled()) {
+        return GT_RES_INV;
+    }
+#endif
+    GT_CHECK_BACK_VAL(e->origin, GT_RES_FAIL);
+    if (GT_RES_FAIL == _gt_event_node_push(e)) {
+        return GT_RES_INV;
+    }
+    gt_res_t res = _gt_event_send_kernel(e);
+    _gt_event_node_pop(e);
+    return res;
+}
+
 /* global functions / API interface -------------------------------------*/
 #if GT_USE_SCREEN_ANIM
 void gt_event_set_enabled(bool enabled)
@@ -232,28 +259,8 @@ void gt_obj_remove_all_event_cb_immediately(struct gt_obj_s * obj)
 
 gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * parms)
 {
-#if GT_USE_SCREEN_ANIM
-    if (false == gt_event_is_enabled()) {
-        return GT_RES_INV;
-    }
-#endif
-    GT_CHECK_BACK_VAL(parent, GT_RES_FAIL);
-    gt_event_st e = {
-        .target = parent,
-        .origin = parent,
-        .code_type = event,
-        .param = parms,
-    };
-
-    if (GT_RES_FAIL == _gt_event_node_push(&e)) {
-        return GT_RES_INV;
-    }
-
-    gt_res_t res = _gt_event_send_kernel(&e);
-
-    _gt_event_node_pop(&e);
-
-    return res;
+    gt_event_st e = _init_event_param(parent, event, parms, 0);
+    return _common_event_send(&e);
 }
 
 gt_res_t gt_event_send_to_childs(struct gt_obj_s * parent, gt_event_type_et event, void * parms)
@@ -320,6 +327,13 @@ void gt_global_remove_all_event_cb_immediately(void)
 gt_res_t gt_global_event_send(gt_event_type_et event, void * parms)
 {
     return gt_event_send(gt_disp_get_layer_top(), event, parms);
+}
+
+gt_res_t _gt_global_core_indev_event_send(gt_event_type_et event, void * parms)
+{
+    gt_indev_param_st * indev = (gt_indev_param_st * )parms;
+    gt_event_st e = _init_event_param(gt_disp_get_layer_top(), event, parms, indev->param.keypad_key);
+    return _common_event_send(&e);
 }
 #endif  /** GT_USE_LAYER_TOP */
 
