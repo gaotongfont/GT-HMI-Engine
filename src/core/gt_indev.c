@@ -642,7 +642,7 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
     indev->data.keypad.obj_target = gt_find_clicked_obj_by_focus(scr);
 
     if (GT_INDEV_STATE_RELEASED == indev->state) {
-        if (0 == indev->data.keypad.count_keydown) {
+        if (GT_KEY_NONE == last_key) {
             indev->data.keypad.count_keydown = 0;
             last_key = GT_KEY_NONE;
             return;
@@ -653,7 +653,7 @@ static void _gt_indev_handler_keypad(gt_indev_st* indev)
             gt_global_event_send(GT_EVENT_TYPE_INPUT_RELEASED, &_indev_params);
         }
 #endif
-        if (indev->data.keypad.count_keydown != 0 && GT_KEY_ENTER == indev->data.keypad.key) {
+        if (GT_KEY_ENTER == indev->data.keypad.key) {
             _indev_params.param.keypad_key = GT_KEY_ENTER;
             if (false == gt_obj_is_untouchability(indev->data.keypad.obj_target)) {
                 gt_event_send(indev->data.keypad.obj_target, GT_EVENT_TYPE_INPUT_RELEASED, &_indev_params);
