@@ -2550,7 +2550,7 @@ void draw_focus(gt_obj_st* obj, gt_size_t radius)
     }
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.bg_opa = obj->opa;
+    rect_attr.bg_opa = GT_OPA_100;
     rect_attr.radius = radius;
     rect_attr.reg.is_fill = 0;
     rect_attr.border_width = 1;

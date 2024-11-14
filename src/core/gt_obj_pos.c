@@ -425,7 +425,9 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
     gt_obj_st * parent = chg->dst->parent;
     switch (gt_obj_class_get_type(parent)) {
         case GT_TYPE_SCREEN: {
-            GT_LOG_A("", "screen display");
+            gt_obj_scroll_to(parent,
+                chg->src->area.x - chg->dst->area.x,
+                chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
             break;
         }
         case GT_TYPE_LISTVIEW: {
