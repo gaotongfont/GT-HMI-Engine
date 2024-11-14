@@ -168,20 +168,20 @@ static gt_obj_st* _gt_obj_next_focus_get(const gt_obj_st * cur_obj, bool flag)
         mim_idx = GT_MIN(mim_idx, idx);
 
         if(is_find) {
-            return parent->child[idx];
+            // focus_skip
+            if(parent->child[idx]->focus_skip){
+                if(parent->child[idx]->cnt_child > 0){
+                    next = _gt_obj_next_focus_get(parent->child[idx]->child[0], true);
+                    if(next){
+                        return next;
+                    }
+                }
+            } else {
+                return parent->child[idx];
+            }
         }
 
         if(parent->child[idx] != cur_obj){
-            continue;
-        }
-        // focus_skip
-        if(parent->child[idx]->focus_skip){
-            if(parent->child[idx]->cnt_child > 0){
-                next = _gt_obj_next_focus_get(parent->child[idx]->child[0], true);
-                if(next){
-                    return next;
-                }
-            }
             continue;
         }
         is_find = true;
@@ -219,21 +219,20 @@ static gt_obj_st* _gt_obj_prev_focus_get(const gt_obj_st * cur_obj, bool flag)
         max_idx = GT_MAX(max_idx, idx);
 
         if(is_find) {
-            return parent->child[idx];
+            // focus_skip
+            if(parent->child[idx]->focus_skip){
+                if(parent->child[idx]->cnt_child > 0){
+                    prev = _gt_obj_prev_focus_get(parent->child[idx]->child[parent->child[idx]->cnt_child - 1], true);
+                    if(prev){
+                        return prev;
+                    }
+                }
+            } else {
+                return parent->child[idx];
+            }
         }
 
         if(parent->child[idx] != cur_obj){
-            continue;
-        }
-
-        // focus_skip
-        if(parent->child[idx]->focus_skip){
-            if(parent->child[idx]->cnt_child > 0){
-                prev = _gt_obj_prev_focus_get(parent->child[idx]->child[parent->child[idx]->cnt_child - 1], true);
-                if(prev){
-                    return prev;
-                }
-            }
             continue;
         }
         is_find = true;
