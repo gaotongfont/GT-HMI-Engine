@@ -81,10 +81,12 @@ static void _init_cb(gt_obj_st * obj) {
         rect_attr.bg_opa         = obj->opa;
         rect_attr.bg_color      = obj->bgcolor;
     } else {
+        draw_focus(obj, 0);
         return;
     }
     real_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
     draw_bg(obj->draw_ctx, &rect_attr, &real_area);
+    draw_focus(obj, 0);
 }
 
 static void _screen_scroll(gt_obj_st * obj) {
@@ -301,6 +303,7 @@ gt_obj_st * gt_obj_create(gt_obj_st * parent)
     GT_CHECK_BACK_VAL(obj, NULL);
 
     obj->fixed = false;
+    obj->focus_dis = GT_DISABLED;
     return obj;
 }
 

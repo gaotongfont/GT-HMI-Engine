@@ -494,6 +494,7 @@ static gt_obj_st * _create_item_obj(gt_obj_st * listview) {
     gt_obj_set_bgcolor(obj, style->item_bg_color);
     gt_obj_show_bg(obj, style->item_show_bg);
     gt_obj_set_radius(obj, style->item_radius);
+    gt_obj_set_focus_disabled(obj, GT_ENABLED);
 
     return obj;
 }
@@ -521,6 +522,7 @@ static gt_obj_st * _init_img_icon_prop(gt_obj_st * icon) {
 
     gt_obj_set_touch_parent(icon, true);
     gt_obj_set_bubble_notify(icon, true);
+    gt_obj_set_focus_disabled(icon, GT_DISABLED);
 
     return icon;
 }
@@ -588,6 +590,7 @@ static inline void _set_label_prop(gt_obj_st * listview, gt_obj_st * lab, gt_fon
     gt_obj_set_bubble_notify(lab, true);
     gt_obj_set_inside(lab, true);
     gt_obj_set_reduce(lab, 0);
+    gt_obj_set_focus_disabled(lab, GT_DISABLED);
 
     if (style->omit_sl) {
         gt_label_set_omit_single_line(lab, true);

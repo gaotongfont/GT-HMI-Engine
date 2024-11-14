@@ -125,7 +125,7 @@ typedef struct gt_obj_s {
     uint32_t visible       : 1;     /* obj visible state, @gt_visible_et */
     uint32_t disabled      : 1;     /* obj disabled state, 0:enable, 1:disable */
 
-    uint32_t focus_dis     : 1;     /* obj focus enable , 0:enable, 1:disable*/
+    uint32_t focus_dis     : 1;     /* @ref gt_disabled_et obj focus enable , 0:enable, 1:disable*/
     uint32_t fixed         : 1;     /* obj fixed state, 0:unfixed, 1:fixed then search it parent's widget to scroll(Dependent on superclass properties) */
     uint32_t scroll_dir    : 2;     /* @see gt_scroll_dir_et [default: GT_SCROLL_ALL] */
     uint32_t scroll_l_r    : 1;     /* Enabled when GT_SCROLL_HORIZONTAL or GT_SCROLL_ALL @see gt_scroll_dir_et */
