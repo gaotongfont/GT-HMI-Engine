@@ -668,9 +668,11 @@ static inline bool _kp_is_global_key_value(uint32_t key) {
 #endif
 
 static void _kp_called_global_and_enter_event(gt_indev_st * indev, gt_event_type_et event_type, gt_indev_param_st * idv_params_p) {
+#if GT_USE_LAYER_TOP
     if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
         _gt_global_core_indev_event_send(event_type, idv_params_p);
     }
+#endif
     if (GT_KEY_ENTER == indev->data.keypad.key &&
         false == gt_obj_is_untouchability(indev->data.keypad.obj_origin)) {
         gt_event_send(indev->data.keypad.obj_origin, event_type, idv_params_p);
