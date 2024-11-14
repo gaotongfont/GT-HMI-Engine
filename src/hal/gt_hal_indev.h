@@ -191,6 +191,7 @@ typedef struct _gt_indev_s {
             uint32_t key;
             uint32_t count_keydown;
             struct gt_obj_s * obj_target;    ///< The object of first touch
+            struct gt_obj_s * obj_origin;    ///< The object of first touch
         }keypad;
     }data;
 
