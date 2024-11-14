@@ -655,7 +655,10 @@ static void _gt_indev_handler_button(gt_indev_st * indev) {
  */
 static inline bool _kp_is_global_key_value(uint32_t key) {
     switch (key) {
+        case GT_KEY_NEXT:
+        case GT_KEY_PREV:
         case GT_KEY_ESC:
+        case GT_KEY_BACK:
         case GT_KEY_MENU:
         case GT_KEY_ENTER: {
             return true;
