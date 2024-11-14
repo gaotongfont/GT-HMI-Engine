@@ -117,6 +117,9 @@ static void _set_param(gt_var_st* var, gt_var_keypad_st* icon)
     gt_keypad_set_radius(var->obj, icon->param.radio);
 
     bool py_en = icon->param.regs & 0x01;
+    bool auto_hide = (icon->param.regs >> 1) & 0x01;
+    gt_keypad_set_auto_hide(var->obj, auto_hide);
+
     gt_py_input_method_st* tmp_py = gt_keypad_get_py_input_method(var->obj);
     if(py_en) {
         if(!tmp_py) {
