@@ -140,18 +140,18 @@ static gt_obj_st* _gt_obj_next_focus_get(const gt_obj_st * cur_obj, bool flag)
         return NULL;
     }
 
-    if(cur_obj == gt_disp_get_scr() && cur_obj->cnt_child > 0){
-        return cur_obj->child[0];
+    bool is_find = flag;
+    const gt_obj_st* parent = cur_obj->parent;
+    if(gt_disp_get_scr() == cur_obj){
+        parent = cur_obj;
+        is_find = true;
     }
-
-    gt_obj_st* parent = cur_obj->parent;
 
     if(parent == NULL){
         return NULL;
     }
 
     int idx = 0, mim_idx = parent->cnt_child-1;
-    bool is_find = false;
     gt_obj_st* next = NULL;
 
     for(idx = 0; idx < parent->cnt_child; ++idx){
@@ -162,14 +162,13 @@ static gt_obj_st* _gt_obj_next_focus_get(const gt_obj_st * cur_obj, bool flag)
 
         mim_idx = GT_MIN(mim_idx, idx);
 
-        if(flag) {
+        if(is_find) {
             return parent->child[idx];
         }
 
         if(parent->child[idx] != cur_obj){
             continue;
         }
-
         // virtuality
         if(parent->child[idx]->virtuality){
             if(parent->child[idx]->cnt_child > 0){
@@ -180,8 +179,7 @@ static gt_obj_st* _gt_obj_next_focus_get(const gt_obj_st * cur_obj, bool flag)
             }
             continue;
         }
-
-        return  ((idx + 1) < parent->cnt_child) ? parent->child[idx + 1] : parent->child[mim_idx];
+        is_find = true;
     }
 
     return parent->child[mim_idx];
@@ -193,18 +191,18 @@ static gt_obj_st* _gt_obj_prev_focus_get(const gt_obj_st * cur_obj, bool flag)
         return NULL;
     }
 
-    if(cur_obj == gt_disp_get_scr() && cur_obj->cnt_child > 0){
-        return cur_obj->child[cur_obj->cnt_child-1];
+    bool is_find = flag;
+    const gt_obj_st* parent = cur_obj->parent;
+    if(gt_disp_get_scr() == cur_obj){
+        parent = cur_obj;
+        is_find = true;
     }
-
-    gt_obj_st* parent = cur_obj->parent;
 
     if(parent == NULL){
         return NULL;
     }
 
     int idx = 0, max_idx = 0;
-    bool is_find = false;
     gt_obj_st* prev = NULL;
 
     for(idx = parent->cnt_child - 1; idx >= 0; --idx){
@@ -215,7 +213,7 @@ static gt_obj_st* _gt_obj_prev_focus_get(const gt_obj_st * cur_obj, bool flag)
 
         max_idx = GT_MAX(max_idx, idx);
 
-        if(flag) {
+        if(is_find) {
             return parent->child[idx];
         }
 
@@ -226,15 +224,14 @@ static gt_obj_st* _gt_obj_prev_focus_get(const gt_obj_st * cur_obj, bool flag)
         // virtuality
         if(parent->child[idx]->virtuality){
             if(parent->child[idx]->cnt_child > 0){
-                prev = _gt_obj_next_focus_get(parent->child[idx]->child[parent->child[idx]->cnt_child - 1], true);
+                prev = _gt_obj_prev_focus_get(parent->child[idx]->child[parent->child[idx]->cnt_child - 1], true);
                 if(prev){
                     return prev;
                 }
             }
             continue;
         }
-
-        return  ((idx - 1) >= 0) ? parent->child[idx - 1] : parent->child[max_idx];
+        is_find = true;
     }
 
     return parent->child[max_idx];
