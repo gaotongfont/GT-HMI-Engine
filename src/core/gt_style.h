@@ -139,6 +139,14 @@ void gt_obj_set_focus_disabled(gt_obj_st * obj, gt_disabled_et is_disabled);
 bool gt_obj_is_focus_disabled(gt_obj_st * obj);
 
 /**
+ * @brief focus box skip current object to childs
+ *
+ * @param obj
+ * @param is_skip true: skip, false: not skip
+ */
+void gt_obj_set_focus_skip(gt_obj_st * obj, bool is_skip);
+bool gt_obj_is_focus_skip(gt_obj_st * obj);
+/**
  * @brief Set the obj's fixed state, The scrolling property depends on the parent class
  *
  * @param obj

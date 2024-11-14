@@ -174,8 +174,8 @@ static gt_obj_st* _gt_obj_next_focus_get(const gt_obj_st * cur_obj, bool flag)
         if(parent->child[idx] != cur_obj){
             continue;
         }
-        // virtuality
-        if(parent->child[idx]->virtuality){
+        // focus_skip
+        if(parent->child[idx]->focus_skip){
             if(parent->child[idx]->cnt_child > 0){
                 next = _gt_obj_next_focus_get(parent->child[idx]->child[0], true);
                 if(next){
@@ -226,8 +226,8 @@ static gt_obj_st* _gt_obj_prev_focus_get(const gt_obj_st * cur_obj, bool flag)
             continue;
         }
 
-        // virtuality
-        if(parent->child[idx]->virtuality){
+        // focus_skip
+        if(parent->child[idx]->focus_skip){
             if(parent->child[idx]->cnt_child > 0){
                 prev = _gt_obj_prev_focus_get(parent->child[idx]->child[parent->child[idx]->cnt_child - 1], true);
                 if(prev){

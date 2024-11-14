@@ -121,12 +121,13 @@ typedef struct gt_obj_s {
     uint32_t touch_parent  : 1;     /* touch event will be called to parent object */
     uint32_t using_sta     : 1;     /* screen was using or not, not the widgets object. 0:using [Can not be free memory], 1:free */
     uint32_t delate        : 1;     /* The status which be prepare to free the current object 0:no delate, 1:prepare to delate */
-    uint32_t focus         : 1;     /* obj focus state 0:no focus, 1:focus */
     uint32_t visible       : 1;     /* obj visible state, @gt_visible_et */
     uint32_t disabled      : 1;     /* obj disabled state, 0:enable, 1:disable */
-
-    uint32_t focus_dis     : 1;     /* @ref gt_disabled_et obj focus enable , 0:enable, 1:disable*/
     uint32_t fixed         : 1;     /* obj fixed state, 0:unfixed, 1:fixed then search it parent's widget to scroll(Dependent on superclass properties) */
+
+    uint32_t focus         : 1;     /* obj focus state 0:no focus, 1:focus */
+    uint32_t focus_dis     : 1;     /* @ref gt_disabled_et obj focus enable , 0:enable, 1:disable*/
+    uint32_t focus_skip    : 1;     /** skip local widget directly to childs widget object */
     uint32_t scroll_dir    : 2;     /* @see gt_scroll_dir_et [default: GT_SCROLL_ALL] */
     uint32_t scroll_l_r    : 1;     /* Enabled when GT_SCROLL_HORIZONTAL or GT_SCROLL_ALL @see gt_scroll_dir_et */
     uint32_t scroll_u_d    : 1;     /* Enabled when GT_SCROLL_VERTICAL or GT_SCROLL_ALL @see gt_scroll_dir_et */
@@ -146,7 +147,7 @@ typedef struct gt_obj_s {
     uint32_t row_layout    : 1;     /* The child controls are arranged in a row layout */
     uint32_t grow_invert   : 1;     /* The child controls are arranged in a row layout, grow invert */
     uint32_t show_bg       : 1;     /* The object show background, 0: [default] hide; 1: show, bgcolor can be used */
-    uint32_t reserved      : 2;
+    uint32_t reserved      : 1;
 }gt_obj_st;
 
 

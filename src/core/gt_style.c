@@ -308,6 +308,18 @@ bool gt_obj_is_focus_disabled(gt_obj_st * obj)
     return obj->focus_dis;
 }
 
+void gt_obj_set_focus_skip(gt_obj_st * obj, bool is_skip)
+{
+    GT_CHECK_BACK(obj);
+    obj->focus_skip = is_skip;
+}
+
+bool gt_obj_is_focus_skip(gt_obj_st * obj)
+{
+    GT_CHECK_BACK_VAL(obj, false);
+    return obj->focus_skip;
+}
+
 void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new)
 {
     GT_CHECK_BACK(obj);
