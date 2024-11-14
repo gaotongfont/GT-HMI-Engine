@@ -89,7 +89,7 @@ typedef enum{
 
 typedef enum {
     GT_KEY_NEXT      = 9,   /*0x09, '\t'*/  // focus next
-    GT_KEY_ENTER     = 10,  /*0x0A, '\n'*/
+    GT_KEY_ENTER     = 10,  /*0x0A, '\n' Global or object */
     GT_KEY_PREV      = 11,  /*0x0B, '*/     // focus previous
 
     GT_KEY_UP        = 17,  /*0x11*/
@@ -189,7 +189,6 @@ typedef struct _gt_indev_s {
 
         struct _keypad {
             uint32_t key;
-            uint32_t count_keydown;
             struct gt_obj_s * obj_target;    ///< The object of first touch
             struct gt_obj_s * obj_origin;    ///< The object of first touch
         }keypad;
