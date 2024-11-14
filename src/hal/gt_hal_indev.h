@@ -31,7 +31,8 @@ extern "C" {
 /* default gesture repeat */
 
 /* ms repeat trigger once event */
-#define GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS      300
+#define GT_CFG_DEFAULT_PRESSING_TIME_MS             300
+#define GT_CFG_DEFAULT_LONG_PRESSED_TIME_MS         500
 
 #define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR     (GT_SCREEN_WIDTH >> 4)
 
@@ -142,7 +143,8 @@ typedef struct _gt_indev_drv_s
     gt_indev_type_et type;
     void (*read_cb)(struct _gt_indev_drv_s * indev_drv, gt_indev_data_st * data);
 
-    gt_size_t limit_timers_long_press;      ///< long press timers
+    gt_size_t limit_time_long_pressed;      ///< long pressed time
+    gt_size_t limit_time_pressing;          ///< pressing time
     gt_size_t limit_pixel_gesture_ver;      ///< move pixel trigger once event
     gt_size_t limit_pixel_gesture_hor;      ///< move pixel trigger once event
     uint8_t limit_pixel_scroll;             ///< scroll pixel trigger scroll event
@@ -157,13 +159,12 @@ typedef struct _gt_indev_s {
     gt_indev_drv_st * drv;
 
     uint32_t timestamp_start;
-    uint32_t timestamp_long_press;
+    uint32_t timestamp_pressing;
+    uint32_t timestamp_long_pressed;
 
     gt_indev_state_et state;
-    union
-    {
-        struct _point
-        {
+    union {
+        struct _point {
             gt_point_st act;            ///< the first point of touch input device
             gt_point_st newly;          ///< last point of touch input device
             gt_point_st last;           ///< used to judge gesture
@@ -181,14 +182,12 @@ typedef struct _gt_indev_s {
             uint16_t reserved : 13;
         }point;
 
-        struct _button
-        {
+        struct _button {
             uint16_t id;
             uint16_t count_keydown;
         }button;
 
-        struct _keypad
-        {
+        struct _keypad {
             uint32_t key;
             uint32_t count_keydown;
             struct gt_obj_s * obj_target;    ///< The object of first touch

@@ -32,7 +32,8 @@ static uint8_t cnt_indev = 0;
 static const gt_indev_drv_st simulate_drv = {
     .type = GT_INDEV_TYPE_POINTER,
     .read_cb = NULL,
-    .limit_timers_long_press = GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS,
+    .limit_time_pressing     = GT_CFG_DEFAULT_PRESSING_TIME_MS,
+    .limit_time_long_pressed = GT_CFG_DEFAULT_LONG_PRESSED_TIME_MS,
     .limit_pixel_gesture_hor = GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR,
     .limit_pixel_gesture_ver = GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_VER,
     .limit_pixel_scroll      = GT_CFG_DEFAULT_POINT_SCROLL_PIXEL,
@@ -59,7 +60,8 @@ void gt_indev_drv_init(gt_indev_drv_st * drv)
 
     drv->type = GT_INDEV_TYPE_NONE;
 
-    drv->limit_timers_long_press = GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS;
+    drv->limit_time_pressing     = GT_CFG_DEFAULT_PRESSING_TIME_MS,
+    drv->limit_time_long_pressed = GT_CFG_DEFAULT_LONG_PRESSED_TIME_MS;
     drv->limit_pixel_gesture_hor = GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR;
     drv->limit_pixel_gesture_ver = GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_VER;
     drv->limit_pixel_scroll      = GT_CFG_DEFAULT_POINT_SCROLL_PIXEL;
