@@ -404,8 +404,7 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
             break;
         }
         case GT_TYPE_LISTVIEW: {
-            GT_LOG_A("", "lv display");
-            // gt_obj_scroll_to_y(parent, -20, GT_ANIM_ON);
+            gt_obj_scroll_to_y(parent, chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
             break;
         }
         case GT_TYPE_VIEW_PAGER: {
