@@ -248,18 +248,12 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_UP:
     case GT_EVENT_TYPE_INPUT_SCROLL_LEFT: {
-        value = gt_abs(obj->process_attr.scroll.x) / style->width;
-        if (value) {
-            gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - (value - 1) * style->width, GT_ANIM_ON);
-        }
+        gt_view_pager_scroll_to_fragment(obj, style->reg.index - 1);
         break;
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_DOWN:
     case GT_EVENT_TYPE_INPUT_SCROLL_RIGHT: {
-        value = (gt_abs(obj->process_attr.scroll.x) + style->width - 1) / style->width;
-        if ((value + 1) < style->reg.count) {
-            gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - ((value + 1) * style->width), GT_ANIM_ON);
-        }
+        gt_view_pager_scroll_to_fragment(obj, style->reg.index + 1);
         break;
     }
     default:
@@ -310,6 +304,16 @@ gt_obj_st * gt_view_pager_create(gt_obj_st * parent)
 
     /** tip point can not overflow */
     return obj;
+}
+
+void gt_view_pager_scroll_to_fragment(gt_obj_st * obj, gt_size_t index)
+{
+    _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
+    if (index < 0 || index >= style->reg.count) {
+        return;
+    }
+    gt_size_t tar_x = index * style->width;
+    gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - index * style->width, GT_ANIM_ON);
 }
 
 int8_t gt_view_pager_set_fragment_count(gt_obj_st * obj, uint8_t count)
@@ -364,6 +368,18 @@ void gt_view_pager_fragment_add_widget(gt_obj_st * view_pager, uint8_t fragment_
     uint16_t new_pos = (child->area.x % scr_width) + fragment_idx * scr_width;
 
     gt_obj_set_pos(child, new_pos, child->area.y);
+}
+
+gt_size_t gt_view_pager_get_widget_belong_fragment(gt_obj_st * view_pager, gt_obj_st * child)
+{
+    if (false == gt_obj_is_type(view_pager, OBJ_TYPE)) {
+        return -1;
+    }
+    if (false == gt_obj_is_child(child, view_pager)) {
+        return -1;
+    }
+    _gt_view_pager_st * style = (_gt_view_pager_st * )view_pager;
+    return (child->area.x + gt_abs(view_pager->process_attr.scroll.x)) / style->width;
 }
 
 void gt_view_pager_set_glass(gt_obj_st * obj, bool enabled)

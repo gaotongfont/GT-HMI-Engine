@@ -16,6 +16,11 @@
 #include "gt_disp.h"
 #include "gt_indev.h"
 #include "gt_style.h"
+#include "../widgets/gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_VIEW_PAGER
+#include "../widgets/gt_view_pager.h"
+#endif
 /* private define -------------------------------------------------------*/
 
 
@@ -432,7 +437,11 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
             break;
         }
         case GT_TYPE_VIEW_PAGER: {
-            GT_LOG_A("", "vp display");
+            gt_size_t page_idx = gt_view_pager_get_widget_belong_fragment(parent, chg->dst);
+            if (-1 == page_idx) {
+                break;
+            }
+            gt_view_pager_scroll_to_fragment(parent, page_idx);
             break;
         }
         default:
