@@ -150,7 +150,7 @@ static gt_obj_st* _gt_obj_next_focus_get(const gt_obj_st * cur_obj, bool flag)
         return NULL;
     }
 
-    int idx = 0;
+    int idx = 0, mim_idx = parent->cnt_child-1;
     bool is_find = false;
     gt_obj_st* next = NULL;
 
@@ -159,6 +159,8 @@ static gt_obj_st* _gt_obj_next_focus_get(const gt_obj_st * cur_obj, bool flag)
         if(GT_ENABLED != parent->child[idx]->focus_dis){
             continue;
         }
+
+        mim_idx = GT_MIN(mim_idx, idx);
 
         if(flag) {
             return parent->child[idx];
@@ -179,10 +181,10 @@ static gt_obj_st* _gt_obj_next_focus_get(const gt_obj_st * cur_obj, bool flag)
             continue;
         }
 
-        return  ((idx + 1) < parent->cnt_child) ? parent->child[idx + 1] : parent->child[0];
+        return  ((idx + 1) < parent->cnt_child) ? parent->child[idx + 1] : parent->child[mim_idx];
     }
 
-    return parent->child[0];
+    return parent->child[mim_idx];
 }
 
 static gt_obj_st* _gt_obj_prev_focus_get(const gt_obj_st * cur_obj, bool flag)
@@ -201,7 +203,7 @@ static gt_obj_st* _gt_obj_prev_focus_get(const gt_obj_st * cur_obj, bool flag)
         return NULL;
     }
 
-    int idx = 0;
+    int idx = 0, max_idx = 0;
     bool is_find = false;
     gt_obj_st* prev = NULL;
 
@@ -210,6 +212,8 @@ static gt_obj_st* _gt_obj_prev_focus_get(const gt_obj_st * cur_obj, bool flag)
         if(GT_ENABLED != parent->child[idx]->focus_dis){
             continue;
         }
+
+        max_idx = GT_MAX(max_idx, idx);
 
         if(flag) {
             return parent->child[idx];
@@ -230,13 +234,35 @@ static gt_obj_st* _gt_obj_prev_focus_get(const gt_obj_st * cur_obj, bool flag)
             continue;
         }
 
-        return  ((idx - 1) >= 0) ? parent->child[idx - 1] : parent->child[parent->cnt_child - 1];
+        return  ((idx - 1) >= 0) ? parent->child[idx - 1] : parent->child[max_idx];
     }
 
-    return parent->child[parent->cnt_child - 1];
+    return parent->child[max_idx];
 }
 
+static gt_obj_st* _gt_obj_into_focus_get(const gt_obj_st * cur_obj)
+{
+    if(!cur_obj){
+        return NULL;
+    }
 
+    if(GT_ENABLED != cur_obj->focus_dis){
+        return NULL;
+    }
+
+    int idx = 0;
+
+    for(idx = 0; idx < cur_obj->cnt_child; ++idx)
+    {
+        if(GT_ENABLED != cur_obj->child[idx]->focus_dis){
+            continue;
+        }
+
+        return cur_obj->child[idx];
+    }
+
+    return NULL;
+}
 
 /* global functions / API interface -------------------------------------*/
 
@@ -312,8 +338,7 @@ gt_obj_change_st gt_obj_into_focus_change(gt_obj_st * cur_obj)
         return ret;
     }
 
-    ret.dst = _gt_obj_next_focus_get(cur_obj->child[0], true);
-
+    ret.dst = _gt_obj_into_focus_get(cur_obj);
     if(!ret.dst){
         return ret;
     }
