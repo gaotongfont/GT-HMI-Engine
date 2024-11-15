@@ -113,9 +113,10 @@ typedef struct {
 /* global functions / API interface -------------------------------------*/
 /**
  * @brief init serial var
+ * @param load true: load 22 file; false: load 22 file;
  *
  */
-void gt_serial_var_init(void);
+void gt_serial_var_init(bool load);
 
 /**
  * @brief get var buffer pointer

@@ -14,6 +14,7 @@
 #include "../../utils/gt_bin_convert.h"
 #include "../../others/gt_log.h"
 #include "../../../gt.h"
+#include "gt_serial_resource.h"
 
 //
 #include "gt_serial_var_icon.h"
@@ -34,6 +35,9 @@
 #include "gt_serial_var_input.h"
 #include "gt_serial_var_keypad.h"
 /* private define -------------------------------------------------------*/
+#define _GT_SERIAL_FILE_22                  (1)
+#define _GT_SERIAL_VAR_ADDR_OFFSET          (0x1000)
+
 #ifndef GT_SERIAL_UI_VAR_SIZE
     /* serial ui variable size */
     #define GT_SERIAL_UI_VAR_SIZE           (128 * 1024)
@@ -147,9 +151,16 @@ static gt_res_t _var_set_value(gt_var_handler_st *handler)
 }
 
 /* global functions / API interface -------------------------------------*/
-void gt_serial_var_init(void)
+void gt_serial_var_init(bool load)
 {
-    memset(_serial_var_buf, 0, sizeof(_serial_var_buf));
+    // memset(_serial_var_buf, 0, GT_SERIAL_UI_VAR_SIZE);
+
+    if(!load) { return; }
+    uint32_t addr = gt_serial_resource_get_addr_by(_GT_SERIAL_FILE_22) + (2 * _GT_SERIAL_VAR_ADDR_OFFSET);
+
+    gt_fs_read_direct_physical(addr, \
+                                GT_SERIAL_UI_VAR_SIZE - (2 * _GT_SERIAL_VAR_ADDR_OFFSET), \
+                                &_serial_var_buf[(2 * _GT_SERIAL_VAR_ADDR_OFFSET)]);
 }
 
 uint16_t gt_serial_var_buffer_get_pointer(uint16_t reg, const uint8_t** res_ptr, uint16_t len)
