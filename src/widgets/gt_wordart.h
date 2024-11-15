@@ -115,6 +115,9 @@ char * gt_wordart_get_text(gt_obj_st * wordart);
 
 void gt_wordart_set_space(gt_obj_st * wordart, uint8_t space_x, uint8_t space_y);
 
+void gt_wordart_set_number(gt_obj_st * wordart, double number,
+                            uint8_t integer_len, uint8_t decimal_len,
+                            bool is_float);
 #endif /* GT_CFG_ENABLE_WORDART */
 
 #ifdef __cplusplus

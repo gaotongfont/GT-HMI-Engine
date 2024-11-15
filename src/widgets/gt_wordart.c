@@ -125,6 +125,7 @@ static void _init_cb(gt_obj_st * obj) {
             continue;
         }
         dsc.bg_img_src = style->items[tmp].img;
+        printf("encode = 0x%X, tmp = %d\n", encode, tmp);
 #if GT_USE_FILE_HEADER
         dsc.file_header = gt_file_header_param_check_valid(&style->items[tmp].fh);
 #endif
@@ -407,6 +408,7 @@ void gt_wordart_set_text(gt_obj_st * wordart, const char * fmt, ...)
     vsnprintf(style->text, size, fmt, args2);
     va_end(args2);
 
+    printf("text:<%s>\n", style->text);
     gt_event_send(wordart, GT_EVENT_TYPE_DRAW_START, NULL);
 
     return ;
@@ -451,6 +453,59 @@ void gt_wordart_set_space(gt_obj_st * wordart, uint8_t space_x, uint8_t space_y)
     _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
     style->space_x = space_x;
     style->space_y = space_y;
+}
+
+void gt_wordart_set_number(gt_obj_st * wordart, double number,
+                            uint8_t integer_len, uint8_t decimal_len,
+                            bool is_float)
+{
+    if( false == gt_obj_is_type(wordart, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
+
+    char buffer[16] = {0};
+    uint8_t idx = 0;
+    uint8_t append_len = decimal_len ? decimal_len + 1 : decimal_len;
+
+    buffer[idx++] = '%';
+
+    if(is_float){
+        char tmp_str[50] = {0};
+        sprintf(buffer + idx, "%d.%dlf", integer_len + append_len, decimal_len);
+        sprintf(tmp_str, buffer, number);
+        char* d_dot = strchr(tmp_str, '.');
+        if(d_dot){
+            if((d_dot - tmp_str) > integer_len){
+                gt_wordart_set_text(wordart, &tmp_str[(d_dot - tmp_str) - integer_len]);
+            }
+            else{
+                gt_wordart_set_text(wordart, tmp_str);
+            }
+        }
+        else{
+            uint8_t len = strlen(tmp_str);
+            gt_wordart_set_text(wordart, &tmp_str[len - integer_len]);
+        }
+    }
+    else{
+        if(!decimal_len){
+            gt_wordart_set_text(wordart, "%d", number);
+            return ;
+        }
+
+        uint64_t n_power = 1;
+        for(uint8_t i = 0; i < decimal_len; i++){
+            n_power *= 10;
+        }
+
+        number = number / n_power;
+
+        sprintf(buffer + idx, "%d.%dlf", integer_len, decimal_len);
+
+        gt_wordart_set_text(wordart, buffer, number);
+    }
+
 }
 
 #endif /* GT_CFG_ENABLE_WORDART */
