@@ -34,19 +34,10 @@ extern "C" {
 
 #if GT_USE_SERIAL_SHOW && GT_USE_BIN_CONVERT
 
-#ifndef GT_SERIAL_SHOW_FILE_ADDR
-    /* show file addrese */
-    #define GT_SERIAL_SHOW_FILE_ADDR        (0x005FAA68)//(0x380000)
-#endif
-
+// show file
 #ifndef GT_SERIAL_SHOW_FILE_HEAD_SIZE
     /* show file head info size */
     #define GT_SERIAL_SHOW_FILE_HEAD_SIZE   (16)
-#endif
-
-#ifndef GT_SERIAL_SHOW_FILE_PAGE_INFO_ADDR
-    /* show file page info addr */
-    #define GT_SERIAL_SHOW_FILE_PAGE_INFO_ADDR  (GT_SERIAL_SHOW_FILE_ADDR + GT_SERIAL_SHOW_FILE_HEAD_SIZE)
 #endif
 
 #ifndef GT_SERIAL_SHOW_FILE_PAGE_INFO_SIZ
@@ -72,10 +63,7 @@ extern "C" {
     #define GT_SERIAL_UI_PAGE_CONTROL_MAX_NUMB  (256)
 #endif
 
-#ifndef GT_SERIAL_RESOURCE_ADDR
-    #define GT_SERIAL_RESOURCE_ADDR        (0x00000000)//(0x380000)
-#endif
-
+// font and img
 #ifndef GT_SERIAL_RESOURCE_FILE_HEAD_SIZE
     #define GT_SERIAL_RESOURCE_FILE_HEAD_SIZE   (10)
 #endif
@@ -86,10 +74,6 @@ extern "C" {
 
 #ifndef GT_SERIAL_IMG_FILE_INFO_SIZE
     #define GT_SERIAL_IMG_FILE_INFO_SIZE    (9)
-#endif
-
-#ifndef GT_SERIAL_FONT_CONFIG_ADDR
-    #define GT_SERIAL_FONT_CONFIG_ADDR      (0x005FAA30)
 #endif
 
 #ifndef GT_SERIAL_FONT_CONFIG_HEAD_SIZE

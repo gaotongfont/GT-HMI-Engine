@@ -18,13 +18,17 @@
 #include "./gt_serial_event.h"
 //
 #include "gt_serial_var.h"
-
+#include "gt_serial_resource.h"
+#include "gt_serial_cfg.h"
 /* private define -------------------------------------------------------*/
 #define _GT_SERIAL_FILE_TYPE_ZK               (0x47545A4B)
 #define _GT_SERIAL_FILE_TYPE_IMG              (0x47545450)
 #define _GT_SERIAL_FILE_TYPE_FONT_CONFIG      (0x58425A4B)
 
-
+// file id
+#define _GT_SERIAL_FILE_14                  (2)
+#define _GT_SERIAL_FILE_FONT                (3)
+#define _GT_SERIAL_FILE_ZK_AND_IMG_OFFSET   (1024)
 /* private typedef ------------------------------------------------------*/
 
 typedef struct {
@@ -122,7 +126,7 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st _format_show_hand[] = {
 static gt_res_t _parse_page_info(void * user_data, uint8_t const * const buffer, uint32_t len) {
     gt_serial_page_info_st* info = (gt_serial_page_info_st*)user_data;
     info->numb = buffer[0];
-    info->addr = ((buffer[1] << 16) | (buffer[2] << 8) | buffer[3]) + GT_SERIAL_SHOW_FILE_ADDR;
+    info->addr = ((buffer[1] << 16) | (buffer[2] << 8) | buffer[3]) + gt_serial_resource_get_addr_by(_GT_SERIAL_FILE_14);
     return GT_RES_OK;
 }
 
@@ -143,7 +147,8 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st _format_page_info[] = {
 static void _read_show_file_head(gt_serial_show_file_head_st* head)
 {
     uint8_t tmp[GT_SERIAL_SHOW_FILE_HEAD_SIZE] = {0};
-    gt_fs_read_direct_physical(GT_SERIAL_SHOW_FILE_ADDR, GT_SERIAL_SHOW_FILE_HEAD_SIZE, tmp);
+    uint32_t addr = gt_serial_resource_get_addr_by(_GT_SERIAL_FILE_14);
+    gt_fs_read_direct_physical(addr, GT_SERIAL_SHOW_FILE_HEAD_SIZE, tmp);
 
     gt_bin_convert_st bin = {
         .tar = head,
@@ -163,7 +168,7 @@ static void _read_show_file_head(gt_serial_show_file_head_st* head)
 static void _push_zk_address(uint8_t* buffer)
 {
     uint16_t id = gt_convert_parse_u16(buffer);
-    uint32_t addr = gt_convert_parse_u32(buffer + 2) + GT_SERIAL_RESOURCE_ADDR;
+    uint32_t addr = gt_convert_parse_u32(buffer + 2) + gt_serial_resource_get_addr_by(_GT_SERIAL_FILE_FONT) + _GT_SERIAL_FILE_ZK_AND_IMG_OFFSET;
     //
 #if _GT_SET_FONT_ADDR_ENABLE
     gt_set_font_base_addr(id, addr);
@@ -172,7 +177,7 @@ static void _push_zk_address(uint8_t* buffer)
 
 static void _push_file_header(gt_file_header_st* head, uint8_t const * const buffer)
 {
-    head->address = gt_convert_parse_u32(buffer) + GT_SERIAL_RESOURCE_ADDR;
+    head->address = gt_convert_parse_u32(buffer) + gt_serial_resource_get_addr_by(_GT_SERIAL_FILE_FONT) + _GT_SERIAL_FILE_ZK_AND_IMG_OFFSET;
     head->info.width = gt_convert_parse_u16(buffer + 4);
     head->info.height = gt_convert_parse_u16(buffer + 6);
     head->info.alpha = buffer[8];
@@ -184,9 +189,9 @@ static void _read_serial_resource(gt_serial_ui_st* sl_ui)
     uint8_t tmp[GT_SERIAL_RESOURCE_FILE_HEAD_SIZE] = {0};
     uint16_t i = 0, n = 0, count = 0, mod = 0;
     uint32_t addr = 0;
-    uint32_t img_addr = GT_SERIAL_RESOURCE_ADDR;
+    uint32_t base_addr = gt_serial_resource_get_addr_by(_GT_SERIAL_FILE_FONT) + _GT_SERIAL_FILE_ZK_AND_IMG_OFFSET;
 
-    gt_fs_read_direct_physical(GT_SERIAL_RESOURCE_ADDR, GT_SERIAL_RESOURCE_FILE_HEAD_SIZE, tmp);
+    gt_fs_read_direct_physical(base_addr, GT_SERIAL_RESOURCE_FILE_HEAD_SIZE, tmp);
     gt_serial_zk_file_info_st* zk_info = &(sl_ui->zk_info);
     zk_info->type = gt_convert_parse_u32(tmp);
     zk_info->count = gt_convert_parse_u16(tmp + 4);
@@ -195,7 +200,7 @@ static void _read_serial_resource(gt_serial_ui_st* sl_ui)
     //
     if(_GT_SERIAL_FILE_TYPE_ZK != zk_info->type) {
         GT_LOGE(GT_LOG_TAG_SERIAL, "img file type err! type: 0x%08X", zk_info->type);
-        zk_info->addr_end = GT_SERIAL_RESOURCE_ADDR;
+        zk_info->addr_end = base_addr;
         goto _read_res_img;
     }
     //
@@ -206,7 +211,7 @@ static void _read_serial_resource(gt_serial_ui_st* sl_ui)
 
     count = zk_info->count / max_count;
     mod = zk_info->count % max_count;
-    addr = GT_SERIAL_RESOURCE_ADDR + GT_SERIAL_RESOURCE_FILE_HEAD_SIZE;
+    addr = base_addr + GT_SERIAL_RESOURCE_FILE_HEAD_SIZE;
 
     for (i = 0; i < count; i++) {
         gt_memset_0(info_buf, info_buf_size);
@@ -228,9 +233,9 @@ static void _read_serial_resource(gt_serial_ui_st* sl_ui)
 _read_res_img:
 //
 #if GT_USE_FILE_HEADER
-    img_addr = zk_info->addr_end;
+    base_addr = zk_info->addr_end;
     // read img head
-    gt_fs_read_direct_physical(img_addr, GT_SERIAL_RESOURCE_FILE_HEAD_SIZE, tmp);
+    gt_fs_read_direct_physical(base_addr, GT_SERIAL_RESOURCE_FILE_HEAD_SIZE, tmp);
     gt_serial_img_file_info_st* img_info = &(sl_ui->img_info);
 
     img_info->type = gt_convert_parse_u32(tmp);
@@ -250,7 +255,7 @@ _read_res_img:
     //
     count = img_info->count / max_count;
     mod = img_info->count % max_count;
-    addr = img_addr + GT_SERIAL_RESOURCE_FILE_HEAD_SIZE;
+    addr = base_addr + GT_SERIAL_RESOURCE_FILE_HEAD_SIZE;
 
     //
     img_info->head_list = (gt_file_header_st*)gt_mem_malloc(gt_file_header_get_instance_size() * img_info->count);
@@ -281,13 +286,17 @@ _read_res_img:
     }
     gt_file_header_init(img_info->head_list, img_info->count);
 
+    for(i = 0; i < img_info->count; i++) {
+        printf(">> [%d] addr = [%#p]\r\n", i, img_info->head_list[i].address);
+    }
 #endif /* GT_USE_FILE_HEADER */
 }
 
 static void _read_font_config_info(gt_font_family_st* font_list)
 {
     uint8_t tmp[GT_SERIAL_FONT_CONFIG_HEAD_SIZE];
-    gt_fs_read_direct_physical(GT_SERIAL_FONT_CONFIG_ADDR, GT_SERIAL_FONT_CONFIG_HEAD_SIZE, tmp);
+    uint32_t addr = gt_serial_resource_get_addr_by(_GT_SERIAL_FILE_FONT);
+    gt_fs_read_direct_physical(addr, GT_SERIAL_FONT_CONFIG_HEAD_SIZE, tmp);
     uint32_t type = gt_convert_parse_u32(tmp);
     uint16_t count = gt_convert_parse_u16(tmp + 4);
 
@@ -304,7 +313,7 @@ static void _read_font_config_info(gt_font_family_st* font_list)
 
     uint8_t tmp_list[GT_SERIAL_FONT_CONFIG_INFO_SIZE];
     for(int i = 0; i < count; i++) {
-        gt_fs_read_direct_physical(GT_SERIAL_FONT_CONFIG_ADDR + GT_SERIAL_FONT_CONFIG_HEAD_SIZE + (i * GT_SERIAL_FONT_CONFIG_INFO_SIZE), \
+        gt_fs_read_direct_physical(addr + GT_SERIAL_FONT_CONFIG_HEAD_SIZE + (i * GT_SERIAL_FONT_CONFIG_INFO_SIZE), \
                                     GT_SERIAL_FONT_CONFIG_INFO_SIZE, tmp_list);
 
         font_list[i].size = tmp_list[0];
@@ -325,7 +334,8 @@ static void _read_show_file_page_control(gt_serial_page_info_st* info)
 static void _read_show_file_page_info(gt_serial_page_info_st* info, uint16_t index)
 {
     uint8_t tmp[GT_SERIAL_SHOW_FILE_PAGE_INFO_SIZ];
-    gt_fs_read_direct_physical( GT_SERIAL_SHOW_FILE_PAGE_INFO_ADDR + (index * GT_SERIAL_SHOW_FILE_PAGE_INFO_SIZ),\
+    uint32_t addr = gt_serial_resource_get_addr_by(_GT_SERIAL_FILE_14) + GT_SERIAL_SHOW_FILE_HEAD_SIZE;
+    gt_fs_read_direct_physical( addr + (index * GT_SERIAL_SHOW_FILE_PAGE_INFO_SIZ),\
                                 GT_SERIAL_SHOW_FILE_PAGE_INFO_SIZ, tmp);
     gt_bin_convert_st bin = {
         .tar = info,
@@ -405,14 +415,14 @@ static gt_res_t _addr_control_to_page(gt_serial_page_info_st* info, gt_obj_st* p
     }
     return GT_RES_OK;
 }
-#define TEST_UI 0
+#define TEST_UI 01
 #if TEST_UI
 #define TEST_IS_VP   (01)
 gt_obj_st* btn1 = NULL;
 gt_obj_st* btn2 = NULL;
 static uint16_t index_test = 0x0000;
 static uint16_t sp_test = 0x1800;
-static uint16_t vp_test = 0x2900;
+static uint16_t vp_test = 0x2000;
 static uint8_t vp_buf[4] = {0};
 static uint8_t sp_buf[4] = {0};
 static void _btn1_cb(gt_event_st* event)
@@ -519,7 +529,8 @@ static void _gt_serial_ui_init(void)
     _serial_ui.lock = true;
 
 #if GT_USE_SERIAL_VAR
-    // gt_serial_var_init();
+    gt_serial_cfg_st * const cfg = gt_serial_cfg_get_root();
+    gt_serial_var_init(cfg->system_config.param_0.load_22);
     _read_sp_param_to_var_buffer(&_serial_ui._show_file_head, &_serial_ui.page_info);
 #endif
 
