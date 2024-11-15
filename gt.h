@@ -39,6 +39,7 @@ extern "C" {
 #include "src/core/gt_draw.h"
 #include "src/core/gt_scr_stack.h"
 #include "src/core/gt_layout.h"
+#include "src/core/gt_indev.h"
 
 /* font */
 #include "src/font/gt_font.h"

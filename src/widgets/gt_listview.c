@@ -374,6 +374,10 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
     else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code_val) {
         _reset_last_active_state(obj, e->origin);
+    } else if (GT_EVENT_TYPE_INPUT_SCROLL_UP == code_val) {
+        gt_obj_scroll_to_y(obj, gt_obj_get_h(obj) >> 1, GT_ANIM_ON);
+    } else if (GT_EVENT_TYPE_INPUT_SCROLL_DOWN == code_val) {
+        gt_obj_scroll_to_y(obj, - gt_obj_get_h(obj) >> 1, GT_ANIM_ON);
     }
 }
 
