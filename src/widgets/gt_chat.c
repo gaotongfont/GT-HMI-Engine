@@ -120,6 +120,8 @@ static void _init_cb(gt_obj_st * obj) {
     rect_attr.bg_color      = style->bgcolor;
 
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
+
+    draw_focus(obj, 0);
 }
 
 
@@ -130,11 +132,18 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         gt_disp_invalid_area(obj);
         break;
     }
-
     case GT_EVENT_TYPE_INPUT_SCROLL:
         GT_LOGV(GT_LOG_TAG_GUI, "scroll");
         _scrolling_handler(obj);
         break;
+    case GT_EVENT_TYPE_INPUT_SCROLL_UP: {
+        gt_obj_scroll_to_y(obj, gt_obj_get_h(obj) >> 1, GT_ANIM_ON);
+        break;
+    }
+    case GT_EVENT_TYPE_INPUT_SCROLL_DOWN: {
+        gt_obj_scroll_to_y(obj, - gt_obj_get_h(obj) >> 1, GT_ANIM_ON);
+        break;
+    }
 
     default:
         break;

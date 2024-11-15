@@ -435,6 +435,10 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
             gt_obj_scroll_to_y(parent, chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
             break;
         }
+        case GT_TYPE_CHAT: {
+            gt_obj_scroll_to_y(parent, chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
+            break;
+        }
         case GT_TYPE_VIEW_PAGER: {
             gt_size_t page_idx = gt_view_pager_get_widget_belong_fragment(parent, chg->dst);
             if (-1 == page_idx) {
