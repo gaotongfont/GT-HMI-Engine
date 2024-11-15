@@ -1054,7 +1054,7 @@ gt_res_t gt_serial_event_init_by_page(uint16_t page_index, gt_obj_st * parent)
     // max event count: 0xff, 16 * 256 = 4096
     gt_fs_read_direct_physical(address, _event_fh.data_len * addr_data.event_count, _event_fh.src_data);
 
-    for (uint16_t i = 0, offset = 0; i < _SERIAL_EVENT_MAX_EVENT_COUNT; ++i) {
+    for (uint16_t i = 0, offset = 0; i < addr_data.event_count; ++i) {
         if (GT_RES_FAIL == _serial_add_event(parent, _event_fh.src_data + offset, _event_fh.data_len)) {
             GT_LOGE(GT_LOG_TAG_SERIAL, "add event failed, index: %d", i);
         }
