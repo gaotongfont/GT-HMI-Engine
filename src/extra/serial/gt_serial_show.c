@@ -21,13 +21,13 @@
 #include "gt_serial_resource.h"
 #include "gt_serial_cfg.h"
 /* private define -------------------------------------------------------*/
-#define _GT_SERIAL_FILE_TYPE_ZK               (0x47545A4B)
-#define _GT_SERIAL_FILE_TYPE_IMG              (0x47545450)
-#define _GT_SERIAL_FILE_TYPE_FONT_CONFIG      (0x58425A4B)
+#define _GT_SERIAL_FILE_TYPE_ZK               (0x47545A4B)  // GTZK
+#define _GT_SERIAL_FILE_TYPE_IMG              (0x47545450)  // GTHP
+#define _GT_SERIAL_FILE_TYPE_FONT_CONFIG      (0x58425A4B)  // ZXZK
 
 // file id
 #define _GT_SERIAL_FILE_14                  (2)
-#define _GT_SERIAL_FILE_FONT                (3)
+#define _GT_SERIAL_FILE_FONT                (4)
 #define _GT_SERIAL_FILE_ZK_AND_IMG_OFFSET   (1024)
 /* private typedef ------------------------------------------------------*/
 
@@ -195,14 +195,15 @@ static void _read_serial_resource(gt_serial_ui_st* sl_ui)
     gt_serial_zk_file_info_st* zk_info = &(sl_ui->zk_info);
     zk_info->type = gt_convert_parse_u32(tmp);
     zk_info->count = gt_convert_parse_u16(tmp + 4);
-    zk_info->addr_end = gt_convert_parse_u32(tmp + 6);
+    zk_info->addr_end = gt_convert_parse_u32(tmp + 6) + base_addr;
 
     //
     if(_GT_SERIAL_FILE_TYPE_ZK != zk_info->type) {
-        GT_LOGE(GT_LOG_TAG_SERIAL, "img file type err! type: 0x%08X", zk_info->type);
+        GT_LOGE(GT_LOG_TAG_SERIAL, "font file type err! addr: %p type: 0x%08X", base_addr, zk_info->type);
         zk_info->addr_end = base_addr;
         goto _read_res_img;
     }
+    GT_LOGI(GT_LOG_TAG_SERIAL, "zk addr: 0x%08X, count: %d", base_addr, zk_info->count);
     //
     uint8_t *info_buf = sl_ui->page_info.control;
     uint16_t info_buf_size = GT_SERIAL_UI_PAGE_CONTROL_SIZE * GT_SERIAL_UI_PAGE_CONTROL_MAX_NUMB;
@@ -243,9 +244,11 @@ _read_res_img:
     img_info->addr_end = gt_convert_parse_u32(tmp + 6);
 
     if(_GT_SERIAL_FILE_TYPE_ZK != zk_info->type) {
-        GT_LOGE(GT_LOG_TAG_SERIAL, "img file type err! type: 0x%08X", img_info->type);
+        GT_LOGE(GT_LOG_TAG_SERIAL, "img file type err! addr: %p type: 0x%08X", base_addr, img_info->type);
         return ;
     }
+
+    GT_LOGI(GT_LOG_TAG_SERIAL, "img file addr: 0x%08X, count: %d", base_addr, img_info->count);
 
     // read img page info
     info_buf = sl_ui->page_info.control;
@@ -260,7 +263,7 @@ _read_res_img:
     //
     img_info->head_list = (gt_file_header_st*)gt_mem_malloc(gt_file_header_get_instance_size() * img_info->count);
     if(!img_info->head_list){
-        GT_LOGE(GT_LOG_TAG_SERIAL, "malloc head list err");
+        GT_LOGE(GT_LOG_TAG_SERIAL, "malloc head list err size: %d", gt_file_header_get_instance_size() * img_info->count);
         return;
     }
     gt_file_header_st* head = img_info->head_list;
@@ -286,9 +289,6 @@ _read_res_img:
     }
     gt_file_header_init(img_info->head_list, img_info->count);
 
-    for(i = 0; i < img_info->count; i++) {
-        printf(">> [%d] addr = [%#p]\r\n", i, img_info->head_list[i].address);
-    }
 #endif /* GT_USE_FILE_HEADER */
 }
 
@@ -301,7 +301,7 @@ static void _read_font_config_info(gt_font_family_st* font_list)
     uint16_t count = gt_convert_parse_u16(tmp + 4);
 
     if(_GT_SERIAL_FILE_TYPE_FONT_CONFIG != type) {
-        GT_LOGE(GT_LOG_TAG_SERIAL, "font config type err! type: 0x%08X", type);
+        GT_LOGE(GT_LOG_TAG_SERIAL, "font config type err! addr: %p type: 0x%08X", addr, type);
         return;
     }
 
