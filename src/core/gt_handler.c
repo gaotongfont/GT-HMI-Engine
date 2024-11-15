@@ -28,6 +28,7 @@
 #include "../extra/serial/gt_serial_resource.h"
 #include "../utils/gt_serial.h"
 #include "../extra/serial/gt_serial_cfg.h"
+#include "../extra/serial/gt_serial_event.h"
 
 #if GT_SERIAL_USE_TIMER_RECV_UNPACK
     #include "../extra/serial/gt_serial_command.h"
@@ -139,6 +140,11 @@ static void _gt_serial_core_init(void) {
 #endif  /** GT_SERIAL_USE_TIMER_RECV_UNPACK */
 
 #endif  /** GT_USE_SERIAL_CFG && GT_USE_BIN_CONVERT */
+
+#if GT_USE_BIN_CONVERT
+    gt_serial_event_init();
+#endif
+
 }
 #endif  /** GT_USE_SERIAL */
 

@@ -39,6 +39,8 @@
 
 
 /* private define -------------------------------------------------------*/
+#define _GT_SERIAL_FILE_CFG_EVENT_ID    0
+
 #define _SERIAL_EVENT_FILE_ID_LEN       1
 #define _SERIAL_EVENT_TITLE_BYTE_LEN    6
 #define _SERIAL_EVENT_TOTAL_PAGE_LEN    2
@@ -1003,7 +1005,7 @@ void gt_serial_event_init(void)
     uint8_t tmp[_SERIAL_EVENT_TOTAL_LEN] = {0};
     uint8_t cnt = 0;
 
-    uint32_t addr = gt_serial_resource_get_addr_by(0);
+    uint32_t addr = gt_serial_resource_get_addr_by(_GT_SERIAL_FILE_CFG_EVENT_ID);
     if (GT_SERIAL_RESOURCE_INVALID_ADDR == addr) {
         GT_LOGE(GT_LOG_TAG_SERIAL, "get event addr err");
         return;
