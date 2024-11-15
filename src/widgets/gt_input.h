@@ -64,6 +64,14 @@ void gt_input_set_value_by_len(gt_obj_st * input, const char * str, uint16_t len
  */
 char * gt_input_get_value(gt_obj_st * input);
 
+/**
+ * @brief hide the value of the input object by "*"
+ *
+ * @param input
+ * @param hide true: hide; false[default]: show
+ */
+void gt_input_hide_value(gt_obj_st * input, bool hide);
+bool gt_input_is_hide_value(gt_obj_st * input);
 
 /**
  * @brief append content at the end
