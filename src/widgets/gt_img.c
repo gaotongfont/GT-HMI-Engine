@@ -248,6 +248,10 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_color_img_raw_st * raw)
     gt_hal_direct_addr_init(&style->addr);
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&style->custom_addr);
+#endif
+
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
