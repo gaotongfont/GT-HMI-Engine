@@ -154,6 +154,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             gt_obj_set_state(obj, GT_STATE_PRESSED);
         }
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+        gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
     }
 }
 

@@ -20,8 +20,10 @@ extern "C" {
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "../core/gt_style.h"
+#include "../core/gt_event.h"
 #include "../font/gt_font.h"
 #include "../hal/gt_hal_fs.h"
+#include "./gt_switch.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -40,6 +42,13 @@ extern "C" {
     #define GT_LISTVIEW_USE_ELEMENT_TYPE_RECT       0
 #endif
 
+#ifndef GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH
+    /**
+     * @brief 0[defalut]: Do not use switch element;
+     */
+    #define GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH     0
+#endif
+
 /* typedef --------------------------------------------------------------*/
 typedef enum gt_listview_element_type_s {
     GT_LISTVIEW_ELEMENT_TYPE_IMG = 0,
@@ -47,6 +56,9 @@ typedef enum gt_listview_element_type_s {
 
 #if GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
     GT_LISTVIEW_ELEMENT_TYPE_RECT,
+#endif
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH
+    GT_LISTVIEW_ELEMENT_TYPE_SWITCH,
 #endif
 
     _GT_LISTVIEW_ELEMENT_TYPE_MAX,
@@ -80,6 +92,19 @@ typedef struct gt_listview_rect_s {
 }gt_listview_rect_st;
 #endif
 
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH
+typedef struct gt_listview_switch_s {
+    gt_event_cb_t change_cb;
+    gt_color_t pointer;
+    gt_color_t bg_act;
+    gt_color_t bg_ina;
+    gt_color_t divider;
+    gt_switch_style_et sw_type;
+    uint8_t show_divider_line : 1;
+    uint8_t bubble_notify : 1;
+}gt_listview_switch_st;
+#endif
+
 typedef struct gt_listview_custom_item_s {
     char * src;
     uint16_t src_len;
@@ -97,6 +122,9 @@ typedef struct gt_listview_custom_item_s {
 #endif
 #if GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
     gt_listview_rect_st * rect_p;
+#endif
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH
+    gt_listview_switch_st * switch_p;
 #endif
     /**
      * @brief Using image raw data, img_raw is valid value must be set image

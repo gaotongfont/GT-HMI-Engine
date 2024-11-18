@@ -220,6 +220,15 @@ gt_id_t gt_obj_get_id(gt_obj_st * obj);
 bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent);
 
 /**
+ * @brief Get current object index from the parent object
+ *
+ * @param parent obj's parent object
+ * @param obj target object
+ * @return uint16_t 0xFFFF: failed; >= 0: found
+ */
+uint16_t gt_obj_get_child_index(gt_obj_st * parent, gt_obj_st * obj);
+
+/**
  * @brief Search the child object by type
  *
  * @param parent

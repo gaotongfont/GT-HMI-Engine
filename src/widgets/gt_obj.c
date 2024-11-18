@@ -370,6 +370,20 @@ bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent)
     return p == parent ? true : false;
 }
 
+uint16_t gt_obj_get_child_index(gt_obj_st * parent, gt_obj_st * obj)
+{
+    uint16_t ret = 0xFFFF;  /** Fail: 0xFFFF */
+    GT_CHECK_BACK_VAL(parent, ret);
+    GT_CHECK_BACK_VAL(obj, ret);
+    for (uint16_t i = 0; i < parent->cnt_child; ++i) {
+        if (parent->child[i] == obj) {
+            return i;
+        }
+    }
+    return ret;
+}
+
+
 gt_obj_st * gt_obj_search_child_by_type(gt_obj_st * parent, gt_obj_type_et type)
 {
     gt_obj_st * ch = NULL;

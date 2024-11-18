@@ -716,6 +716,41 @@ static inline void _set_rect_prop(gt_obj_st * rect, gt_listview_rect_st const * 
 }
 #endif
 
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH
+/**
+ * @brief Create a switch object
+ *
+ * @param listview
+ * @param obj
+ * @param rect rect object detail
+ * @return gt_obj_st*
+ */
+static gt_obj_st * _create_item_switch(gt_obj_st * listview, gt_obj_st * obj) {
+    gt_obj_st * r = gt_switch_create(obj);
+
+    gt_obj_set_inside(r, true);
+    return r;
+}
+
+static inline void _set_switch_prop(gt_obj_st * sw, gt_listview_switch_st const * const prop) {
+    if (false == gt_obj_is_type(sw, GT_TYPE_SWITCH)) {
+        return;
+    }
+    if (NULL == prop) {
+        return;
+    }
+    gt_obj_set_bubble_notify(sw, prop->bubble_notify);
+
+    gt_switch_set_style(sw, prop->sw_type);
+    gt_switch_set_color_point(sw, prop->pointer);
+    gt_switch_set_color_act(sw, prop->bg_act);
+    gt_switch_set_color_ina(sw, prop->bg_ina);
+    gt_switch_set_color_divider(sw, prop->divider);
+    gt_switch_set_div_line(sw, prop->show_divider_line);
+    gt_obj_add_event_cb(sw, prop->change_cb, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+#endif
+
 
 /* global functions / API interface -------------------------------------*/
 
@@ -895,6 +930,22 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
     if (item->element_idx < obj->cnt_child) {
         element = obj->child[item->element_idx];
     }
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
+    if (GT_LISTVIEW_ELEMENT_TYPE_RECT == item->type) {
+        if (NULL == element) {
+            element = _create_item_rect(listview, obj);
+        }
+        _set_rect_prop(element, item->rect_p);
+    } else
+#endif
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH
+    if (GT_LISTVIEW_ELEMENT_TYPE_SWITCH == item->type) {
+        if (NULL == element) {
+            element = _create_item_switch(listview, obj);
+        }
+        _set_switch_prop(element, item->switch_p);
+    } else
+#endif
     if (GT_LISTVIEW_ELEMENT_TYPE_IMG == item->type) {
         if (NULL == element) {
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
@@ -919,13 +970,6 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
                 gt_img_set_src(element, item->src);
             }
         }
-#if GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
-    } if (GT_LISTVIEW_ELEMENT_TYPE_RECT == item->type) {
-        if (NULL == element) {
-            element = _create_item_rect(listview, obj);
-        }
-        _set_rect_prop(element, item->rect_p);
-#endif
     } else {
         if (NULL == element) {
         #if GT_LISTVIEW_CUSTOM_FONT_STYLE
