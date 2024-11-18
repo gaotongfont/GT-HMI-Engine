@@ -133,7 +133,6 @@ static uint32_t _calc_abs_addr(uint32_t addr, uint16_t page_index) {
 
 static gt_serial_event_addr_data_st _get_event_addr_data(uint32_t offset_addr) {
     gt_serial_event_addr_data_st ret = {0};
-    GT_LOG_A("", "offset addr: 0x%x", offset_addr);
     uint8_t tmp[_SERIAL_EVENT_ADDR_DATA_LEN] = {0};
     gt_fs_read_direct_physical(offset_addr, _SERIAL_EVENT_ADDR_DATA_LEN, tmp);
 
@@ -319,7 +318,6 @@ static void _font_color_event_cb(gt_event_st * e) {
             break;
         }
         case GT_TYPE_CHAT: {
-            gt_chat_set_font_color(obj, user_data->data.color);
             break;
         }
         case GT_TYPE_CLOCK: {
@@ -982,6 +980,7 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY const _serial_init_event_cb _serial_event_in
 static gt_res_t _serial_add_event(gt_obj_st * parent, uint8_t * data, uint8_t len) {
     uint8_t event_type = data[_SE_OFFSET_EV_TYPE];
     if (_SERIAL_EVENT_INVALID_TYPE == event_type) {
+        GT_LOG_A(GT_LOG_TAG_SERIAL, "invalid event type");
         return GT_RES_INV;
     }
     if (event_type >= sizeof(_serial_event_init_list_cb) / sizeof(_serial_event_init_list_cb[0])) {
