@@ -726,7 +726,7 @@ bool gt_clock_remove_next_day_cb(gt_obj_st * obj, gt_clock_next_day_cb next_day_
         }
     }
     if (i < 0) {
-        printf("not found next_day_cb\n");
+        /** not found next_day_cb */
         return false;
     }
 

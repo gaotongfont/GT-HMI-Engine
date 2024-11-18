@@ -415,7 +415,7 @@ static gt_res_t _addr_control_to_page(gt_serial_page_info_st* info, gt_obj_st* p
     }
     return GT_RES_OK;
 }
-#define TEST_UI 01
+#define TEST_UI 0
 #if TEST_UI
 #define TEST_IS_VP   (01)
 gt_obj_st* btn1 = NULL;

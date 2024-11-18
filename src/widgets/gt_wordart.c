@@ -125,7 +125,6 @@ static void _init_cb(gt_obj_st * obj) {
             continue;
         }
         dsc.bg_img_src = style->items[tmp].img;
-        printf("encode = 0x%X, tmp = %d\n", encode, tmp);
 #if GT_USE_FILE_HEADER
         dsc.file_header = gt_file_header_param_check_valid(&style->items[tmp].fh);
 #endif
@@ -408,7 +407,6 @@ void gt_wordart_set_text(gt_obj_st * wordart, const char * fmt, ...)
     vsnprintf(style->text, size, fmt, args2);
     va_end(args2);
 
-    printf("text:<%s>\n", style->text);
     gt_event_send(wordart, GT_EVENT_TYPE_DRAW_START, NULL);
 
     return ;
