@@ -49,10 +49,17 @@ void gt_chat_add_send_voice_msg(gt_obj_st * chat, uint8_t tim_s);
 void gt_chat_add_received_text_msg(gt_obj_st * chat, const char * msg);
 void gt_chat_add_received_voice_msg(gt_obj_st * chat, uint8_t tim_s);
 
-void gt_chat_msg_set_color_background(gt_obj_st * chat, gt_color_t color);
-void gt_chat_msg_set_color_border(gt_obj_st * chat, gt_color_t color);
-void gt_chat_msg_set_border_width(gt_obj_st * chat, uint8_t width);
-void gt_chat_set_font_color(gt_obj_st * chat, gt_color_t color);
+void gt_chat_clean_all_msg(gt_obj_st * chat);
+
+void gt_chat_set_send_msg_bg_color(gt_obj_st * chat, gt_color_t color);
+void gt_chat_set_received_msg_bg_color(gt_obj_st * chat, gt_color_t color);
+void gt_chat_set_send_msg_border_color(gt_obj_st * chat, gt_color_t color);
+void gt_chat_set_received_msg_border_color(gt_obj_st * chat, gt_color_t color);
+void gt_chat_set_send_msg_border_width(gt_obj_st * chat, uint8_t width);
+void gt_chat_set_received_msg_border_width(gt_obj_st * chat, uint8_t width);
+void gt_chat_set_send_msg_font_color(gt_obj_st * chat, gt_color_t color);
+void gt_chat_set_received_msg_font_color(gt_obj_st * chat, gt_color_t color);
+
 void gt_chat_set_font_size(gt_obj_st * chat, uint8_t size);
 void gt_chat_set_font_gray(gt_obj_st * chat, uint8_t gray);
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
