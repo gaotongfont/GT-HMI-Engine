@@ -260,6 +260,11 @@ _read_res_img:
     mod = img_info->count % max_count;
     addr = base_addr + GT_SERIAL_RESOURCE_FILE_HEAD_SIZE;
 
+    if(0 == img_info->count){
+        GT_LOGW(GT_LOG_TAG_SERIAL, "img file count is 0");
+        gt_file_header_init(NULL, 0);
+        return;
+    }
     //
     img_info->head_list = (gt_file_header_st*)gt_mem_malloc(gt_file_header_get_instance_size() * img_info->count);
     if(!img_info->head_list){
@@ -302,6 +307,12 @@ static void _read_font_config_info(gt_font_family_st* font_list)
 
     if(_GT_SERIAL_FILE_TYPE_FONT_CONFIG != type) {
         GT_LOGE(GT_LOG_TAG_SERIAL, "font config type err! addr: %p type: 0x%08X", addr, type);
+        return;
+    }
+
+    if(0 == count){
+        GT_LOGW(GT_LOG_TAG_SERIAL, "font config count is 0");
+        gt_font_family_init(NULL, 0);
         return;
     }
 
