@@ -439,6 +439,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
                 }
                 obj->process_attr.scroll.y = obj->area.h - style->max_height;
             }
+            gt_disp_invalid_area(obj);
             break;
 
         case GT_EVENT_TYPE_INPUT_SCROLL_END:
