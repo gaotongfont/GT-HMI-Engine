@@ -332,6 +332,7 @@ static void _read_font_config_info(gt_font_family_st* font_list)
             font_list[i].option[j] = gt_convert_parse_u16(tmp_list + 1 + j * 2);
         }
     }
+    GT_LOGI(GT_LOG_TAG_SERIAL, "font config addr: 0x%08X, count: %d", addr, count);
 
     gt_font_family_init(font_list, count);
 }
