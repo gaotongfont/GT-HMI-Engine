@@ -207,7 +207,9 @@ static void _show_septal_line(gt_obj_st * obj, _gt_listview_st * style) {
     rect_attr.limit_area = &obj->area;  /** limit widget area range */
 
     area.x += (obj->area.w - septal_width) >> 1;
-    area.y += obj->process_attr.scroll.y;
+    if (gt_obj_get_childs_max_height(obj) >= gt_obj_get_h(obj)) {
+        area.y += obj->process_attr.scroll.y;
+    }
     area.w = septal_width;
     area.h = style->septal_line_info.size.y;
 
