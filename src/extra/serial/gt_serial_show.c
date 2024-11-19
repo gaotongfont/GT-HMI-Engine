@@ -483,8 +483,8 @@ static void _btn2_cb(gt_event_st* event)
 #endif
 static gt_obj_st* _gt_serial_init_screen(void)
 {
-    GT_LOGI(GT_LOG_TAG_SERIAL , "serial ui init!");
     gt_obj_st* screen = gt_obj_create(NULL);
+    GT_LOGI(GT_LOG_TAG_SERIAL , "----- serial ui init! %p", screen);
     // read page info
     _read_show_file_page_info(&_serial_ui.page_info, _serial_ui.page_index);
 
@@ -600,7 +600,8 @@ gt_scr_id_t gt_serial_go_back(int16_t step)
     if(!_serial_ui.lock) {return 0;}
     _serial_ui.page_index = gt_scr_stack_get_prev_id_by(step);
     GT_LOGI(GT_LOG_TAG_SERIAL , "go back to page = %d, step = %d", _serial_ui.page_index, step);
-    return gt_disp_stack_go_back(step);
+    gt_serial_load_page(_serial_ui.page_index);
+    return _serial_ui.page_index;
 }
 
 const uint8_t* gt_serial_get_info_by_obj(gt_obj_st* obj)
