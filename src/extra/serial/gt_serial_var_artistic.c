@@ -123,7 +123,7 @@ static void _set_text(gt_obj_st* obj, gt_var_artistic_st* icon, uint16_t reg)
     uint8_t i_numb = icon->param.int_numb;
     uint8_t d_numb = icon->param.dec_numb;
     uint8_t data[8] = {0};
-    char* fmt = NULL;
+    bool is_float = false;
     //
     uint8_t len = 2;
     switch (icon->param.vp_data_mode){
@@ -149,71 +149,43 @@ static void _set_text(gt_obj_st* obj, gt_var_artistic_st* icon, uint16_t reg)
         return;
     }
 
-    if(icon->param.vp_data_mode == VP_DATA_MODE_FLOAT || icon->param.vp_data_mode == VP_DATA_MODE_DOUBLE){
-        fmt = (char*)gt_mem_malloc(80);
-        GT_CHECK_BACK(fmt);
-    }
+    double number = 0;
 
     switch (icon->param.vp_data_mode)
     {
-    case VP_DATA_MODE_SHORT:
-        gt_wordart_set_text(obj, "%d", gt_convert_parse_i16(data));
-        break;
     case VP_DATA_MODE_LONG:
-        gt_wordart_set_text(obj, "%d", gt_convert_parse_i32(data));
+        number = (double)gt_convert_parse_i32(data);
         break;
     case VP_DATA_MODE_VPH_UCHAR:
-        gt_wordart_set_text(obj, "%d",data[0]);
+        number = (double)data[0];
         break;
     case VP_DATA_MODE_VPL_UCHAR:
-        gt_wordart_set_text(obj, "%d",data[1]);
+        number = (double)data[1];
         break;
     case VP_DATA_MODE_LONG_LONG:
-        gt_wordart_set_text(obj, "%lld", gt_convert_parse_i64(data));
+        number = (double)gt_convert_parse_i64(data);
         break;
     case VP_DATA_MODE_USHORT:
-        gt_wordart_set_text(obj, "%u", gt_convert_parse_u16(data));
+        number = (double)gt_convert_parse_u16(data);
         break;
     case VP_DATA_MODE_ULONG:
-        gt_wordart_set_text(obj, "%u", gt_convert_parse_u32(data));
+        number = (double)gt_convert_parse_u32(data);
         break;
     case VP_DATA_MODE_FLOAT:
-        sprintf(fmt, "%.*f",d_numb, gt_convert_parse_float(data));
-        char* f_dot = strchr(fmt, '.');
-        if(f_dot){
-            if((f_dot - fmt) > i_numb){
-                gt_wordart_set_text(obj, "%s", &fmt[(f_dot-fmt)-i_numb]);
-            }
-            else{
-                gt_wordart_set_text(obj, "%s", fmt);
-            }
-        }
-        else{
-            gt_wordart_set_text(obj, "%s", &fmt[strlen(fmt)-i_numb]);
-        }
+        number = (double)gt_convert_parse_float(data);
+        is_float = true;
         break;
     case VP_DATA_MODE_DOUBLE:
-        sprintf(fmt, "%.*f",d_numb, gt_convert_parse_double(data));
-        char* d_dot = strchr(fmt, '.');
-        if(d_dot){
-            if((d_dot - fmt) > i_numb){
-                gt_wordart_set_text(obj, "%s", &fmt[(d_dot-fmt)-i_numb]);
-            }
-            else{
-                gt_wordart_set_text(obj, "%s", fmt);
-            }
-        }
-        else{
-            gt_wordart_set_text(obj, "%s", &fmt[strlen(fmt)-i_numb]);
-        }
+        number = (double)gt_convert_parse_double(data);
+        is_float = true;
         break;
+    case VP_DATA_MODE_SHORT:
     default:
+        number = (double)gt_convert_parse_i16(data);
         break;
     }
 
-    if(icon->param.vp_data_mode == VP_DATA_MODE_FLOAT || icon->param.vp_data_mode == VP_DATA_MODE_DOUBLE){
-        free(fmt);
-    }
+    gt_wordart_set_number(obj, number, i_numb, d_numb, is_float);
 }
 
 static void _set_param(gt_var_st* var, gt_var_artistic_st* icon)
@@ -222,7 +194,8 @@ static void _set_param(gt_var_st* var, gt_var_artistic_st* icon)
         gt_wordart_remove_all_items(var->obj);
     }
     gt_obj_set_pos(var->obj, icon->param.x, icon->param.y);
-    gt_obj_set_size(var->obj, icon->param.w, icon->param.h);
+    // gt_obj_set_size(var->obj, icon->param.w, icon->param.h);
+    gt_obj_set_size(var->obj, 200, 50);
 
     gt_wordart_items_init(var->obj, 12);
 
