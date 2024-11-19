@@ -740,6 +740,7 @@ static inline void _set_switch_prop(gt_obj_st * sw, gt_listview_switch_st const 
         return;
     }
     gt_obj_set_bubble_notify(sw, prop->bubble_notify);
+    gt_obj_set_state(sw, prop->state);
 
     gt_switch_set_style(sw, prop->sw_type);
     gt_switch_set_color_point(sw, prop->pointer);

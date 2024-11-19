@@ -102,6 +102,7 @@ typedef struct gt_listview_switch_s {
     gt_switch_style_et sw_type;
     uint8_t show_divider_line : 1;
     uint8_t bubble_notify : 1;
+    uint8_t state : 1;  /** default state, value set by @ref gt_state_et */
 }gt_listview_switch_st;
 #endif
 
