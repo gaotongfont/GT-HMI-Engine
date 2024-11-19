@@ -139,16 +139,16 @@ static inline void * _get_src(_gt_player_st * style) {
     return item->src;
 }
 
+
 #if GT_USE_FILE_HEADER
-static inline gt_file_header_param_st * _get_file_header_param(_gt_player_st * style) {
+
 #if GT_USE_SERIAL
-    if( style->stop_fh.idx >= 0) {
-        bool state = _gt_timer_get_paused(style->timer);
-        if(state) {
-            return &style->stop_fh;
-        }
-    }
+static inline void _set_stop_item(_gt_player_st * style) {
+    _gt_vector_set_index(style->vector, style->stop_fh.idx);
+}
 #endif
+
+static inline gt_file_header_param_st * _get_file_header_param(_gt_player_st * style) {
     _gt_player_item_st * item = (_gt_player_item_st * )_gt_vector_get_item(style->vector, _gt_vector_get_index(style->vector));
     GT_CHECK_BACK_VAL(item, NULL);
     return &item->fh_param;
@@ -381,6 +381,9 @@ static void _turn_prev_item(gt_obj_st * obj) {
     if (_gt_vector_get_index(style->vector) > 0) {
         if (0 == style->repeat_cnt) {
             _gt_timer_set_paused(style->timer, true);
+#if GT_USE_SERIAL && GT_USE_FILE_HEADER
+            _set_stop_item(style);
+#endif
 #if GT_PLAYER_REPEAT_FINISH_CALLBACK
             _repeat_finish_callback_handler(style);
 #endif
@@ -421,6 +424,9 @@ static void _turn_next_item(gt_obj_st * obj) {
     if (false == _gt_vector_is_tail_index_now(style->vector)) {
         if (0 == style->repeat_cnt) {
             _gt_timer_set_paused(style->timer, true);
+#if GT_USE_SERIAL && GT_USE_FILE_HEADER
+            _set_stop_item(style);
+#endif
 #if GT_PLAYER_REPEAT_FINISH_CALLBACK
             _repeat_finish_callback_handler(style);
 #endif
@@ -481,6 +487,9 @@ static inline void _set_play_status(_gt_player_st * style, bool is_play) {
     _gt_timer_set_paused(style->timer, is_play ? false : true);
 
     if (false == is_play) {
+#if GT_USE_SERIAL && GT_USE_FILE_HEADER
+        _set_stop_item(style);
+#endif
         /** redraw */
         gt_event_send((gt_obj_st * )style, GT_EVENT_TYPE_DRAW_START, NULL);
     }
