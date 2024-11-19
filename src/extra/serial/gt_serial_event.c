@@ -190,12 +190,12 @@ static _serial_base_st _get_base_data(gt_serial_event_packet_st * packet, gt_eve
     _serial_base_st ret = {
         .res = GT_RES_OK,
     };
-    ret.obj_src = gt_obj_find_by_id(gt_convert_parse_u16(&packet->data[_SE_OFFSET_SRC]));
+    ret.obj_src = packet->parent->child[gt_convert_parse_u16(&packet->data[_SE_OFFSET_SRC])];
     if (NULL == ret.obj_src) {
         ret.res = GT_RES_INV;
         return ret;
     }
-    ret.obj_target = gt_obj_find_by_id(gt_convert_parse_u16(&packet->data[_SE_OFFSET_TARGET]));
+    ret.obj_target = packet->parent->child[gt_convert_parse_u16(&packet->data[_SE_OFFSET_TARGET])];
 
     ret.type = _get_trigger_type(packet->data[_SE_OFFSET_TRIGGER]);
     if (GT_EVENT_TYPE_NONE == ret.type) {
