@@ -65,6 +65,11 @@
 #define _SE_OFFSET_VP           0x07
 #define _SE_OFFSET_DATA         0x09
 
+
+#ifndef _GT_SERIAL_EVENT_LOG
+    #define _GT_SERIAL_EVENT_LOG    0
+#endif
+
 /* private typedef ------------------------------------------------------*/
 typedef struct {
     uint32_t event_count : 8;
@@ -987,7 +992,10 @@ static gt_res_t _serial_add_event(gt_obj_st * parent, uint8_t * data, uint8_t le
         GT_LOGE(GT_LOG_TAG_SERIAL, "event type over list length: 0x%x", event_type);
         return GT_RES_INV;
     }
-    GT_LOG_A("event", "type: 0x%x", event_type);
+#if _GT_SERIAL_EVENT_LOG
+    GT_LOG_A(GT_LOG_TAG_SERIAL, "@@@@ event type: 0x%x", event_type);
+    GT_LOG_ARR(data, 0, len);
+#endif
     gt_serial_event_packet_st packet = {
         .parent = parent,
         .event_type = event_type,
@@ -1048,10 +1056,16 @@ gt_res_t gt_serial_event_init_by_page(uint16_t page_index, gt_obj_st * parent)
         return GT_RES_FAIL;
     }
     uint32_t address = _calc_abs_addr(_event_fh.addr, page_index);
+#if _GT_SERIAL_EVENT_LOG
+    GT_LOGD(GT_LOG_TAG_SERIAL, "_event_fh.addr: 0x%x, addr: 0x%x",  _event_fh.addr, address);
+#endif
     gt_serial_event_addr_data_st addr_data = _get_event_addr_data(address);
-    address = addr_data.addr + _calc_abs_addr(_event_fh.addr, _event_fh.page_count);
+    address = addr_data.addr + _event_fh.addr;
     // max event count: 0xff, 16 * 256 = 4096
     gt_fs_read_direct_physical(address, _event_fh.data_len * addr_data.event_count, _event_fh.src_data);
+#if _GT_SERIAL_EVENT_LOG
+    GT_LOGD(GT_LOG_TAG_SERIAL, "page: %d, event count: %d, address: 0x%x", page_index, addr_data.event_count, address);
+#endif
 
     for (uint16_t i = 0, offset = 0; i < addr_data.event_count; ++i) {
         if (GT_RES_FAIL == _serial_add_event(parent, _event_fh.src_data + offset, _event_fh.data_len)) {
