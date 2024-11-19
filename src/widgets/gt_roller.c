@@ -59,7 +59,7 @@ typedef struct _gt_roller_s {
     gt_color_t select_color;            // The color of selected item
     uint16_t scroll_vertical_length;    // The length of vertical scroll
     uint16_t selected;                  // The index of selected item, Infinite mode need to calculate the real index
-    uint8_t count_total;                // The total count of items
+    uint16_t count_total;                // The total count of items
     uint8_t count_of_show;              // The count of items to show within area
     uint8_t line_space;                 // The space between lines
     _gt_roller_reg_st reg;
@@ -550,18 +550,25 @@ void gt_roller_set_options_numb(gt_obj_st* obj, gt_roller_mode_em mode, \
             else{
                 buffer[len] = '\n';
             }
+            if(i > -step && i < step){
+                i = 0;
+            }
             gt_label_add_text(style->text, buffer, i);
         }
     }else if (GT_ROLLER_MODE_INFINITE == mode) {
         _create_text(obj);
         gt_label_set_text(style->text, "");
+        buffer[len] = '\n';
         for(uint8_t n = 0; n < GT_ROLLER_INFINITE_PAGES_COUNT; n++){
             for(double i = min; i <= v_max; i += step) {
-                buffer[len] = '\n';
+                if(i > -step && i < step){
+                    i = 0;
+                }
                 gt_label_add_text(style->text, buffer, i);
             }
         }
     }
+
     _resize_display_width(obj);
     gt_label_set_space(style->text, 0, style->line_space);
 
