@@ -14,7 +14,7 @@
 #include "../../others/gt_log.h"
 #include "../../../gt.h"
 
-
+#include "gt_serial_show.h"
 /* private define -------------------------------------------------------*/
 
 
@@ -36,7 +36,7 @@ typedef struct{
     uint8_t icon_gamma;
     uint8_t pic_gamma;
     uint8_t filter;
-    uint16_t y_end;
+    uint16_t h;
 }gt_var_slider_param_st;
 
 typedef struct{
@@ -46,6 +46,7 @@ typedef struct{
 
 
 /* static prototypes ----------------------------------------------------*/
+static bool _get_param(gt_var_st* var, gt_var_slider_st* icon);
 
 
 
@@ -55,6 +56,49 @@ typedef struct{
 
 /* macros ---------------------------------------------------------------*/
 
+
+
+/* event cb ---------------------------------------------------------------*/
+static void _slider_event_cb(gt_event_st* e)
+{
+    const uint8_t* buffer = gt_serial_get_info_by_obj(e->target);
+    if(NULL == buffer){
+        return;
+    }
+
+    gt_var_slider_st var_icon;
+    gt_var_st var;
+    var.buffer = (uint8_t*)buffer;
+    var.len = GT_SERIAL_UI_PAGE_CONTROL_SIZE;
+
+    if(!_get_param(&var, &var_icon)){
+        return ;
+    }
+
+    uint8_t data[4] = {0};
+    data[0] = (var_icon.head.vp >> 8) & 0xff;
+    data[1] = var_icon.head.vp & 0xff;
+
+    gt_size_t pos = gt_slider_get_pos(e->target);
+
+    if(0x01 == var_icon.param.vp_data_mode){
+        if(0 != gt_serial_var_buffer_get_reg(var_icon.head.vp, &data[2], 2)){
+            return;
+        }
+        data[2] = pos & 0xff;
+    }
+    else if(0x02 == var_icon.param.vp_data_mode){
+        if(0 != gt_serial_var_buffer_get_reg(var_icon.head.vp, &data[2], 2)){
+            return;
+        }
+        data[3]  = pos & 0xff;
+    }
+    else{
+        data[2] = (pos >> 8) & 0xff;
+        data[3] = pos & 0xff;
+    }
+    gt_serial_set_value(data, 4);
+}
 
 
 /* static functions -----------------------------------------------------*/
@@ -77,7 +121,8 @@ static gt_res_t _parse_param(void * user_data, uint8_t const * const buffer, uin
     param->icon_gamma = buffer[18];
     param->pic_gamma = buffer[19];
     param->filter = buffer[20];
-    param->y_end = gt_convert_parse_u16(buffer + 21);
+    param->h = gt_convert_parse_u16(buffer + 21);
+
     return GT_RES_OK;
 }
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_bin_item_st _format[] = {
@@ -135,11 +180,11 @@ static void _set_param(gt_var_st* var, gt_var_slider_st* icon)
     if(0 == icon->param.mode){
         gt_slider_set_dir(var->obj, GT_BAR_DIR_HOR_L2R);
         w = icon->param.x_end - icon->param.x_begin + 1;
-        h = icon->param.y_end - icon->param.y + 1;
+        h = icon->param.h;
     }else
     {
         gt_slider_set_dir(var->obj, GT_BAR_DIR_VER_D2U);
-        w = icon->param.y_end - icon->param.y + 1;
+        w = icon->param.h;
         h = icon->param.x_end - icon->param.x_begin + 1;
     }
     gt_obj_set_size(var->obj, w, h);
@@ -151,6 +196,7 @@ static void _set_param(gt_var_st* var, gt_var_slider_st* icon)
     gt_file_header_param_init(&fh);
     fh.idx = icon->param.icon_id;
     gt_slider_set_tag_by_file_header(var->obj, &fh);
+
 }
 
 static void _set_vp_value(gt_var_st* var, gt_var_value_st* value)
@@ -212,7 +258,9 @@ gt_res_t gt_serial_var_slider_create(gt_var_st* var)
     gt_obj_st* new_obj = gt_slider_create(var->obj);
     gt_obj_register_id(new_obj, var->id);
     gt_slider_set_mode(new_obj, GT_SLIDER_MODE_DEFAULT);
-    gt_slider_set_tag_visible(var->obj, true);
+    gt_slider_set_tag_visible(new_obj, true);
+
+    gt_obj_add_event_cb(new_obj, _slider_event_cb, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
 
     var->obj = new_obj;
     _set_param(var, &var_icon);

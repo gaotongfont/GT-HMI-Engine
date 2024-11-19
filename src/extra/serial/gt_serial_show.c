@@ -594,6 +594,16 @@ int16_t gt_serial_go_back(int16_t step)
     return gt_disp_stack_go_back(step);
 }
 
+const uint8_t* gt_serial_get_info_by_obj(gt_obj_st* obj)
+{
+    if(!_serial_ui.lock) {return NULL;}
+    uint16_t index = obj->id;
+
+    if(obj != gt_obj_find_by_id(index)) {return NULL;}
+
+    return _get_control(&_serial_ui.page_info, index);
+}
+
 void gt_serial_set_value(uint8_t *value, uint16_t len)
 {
     int ret = -1;

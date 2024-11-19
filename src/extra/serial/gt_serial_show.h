@@ -16,6 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "../../gt_conf.h"
 #include "../../others/gt_types.h"
+#include "../../widgets/gt_obj.h"
 
 #if GT_USE_SERIAL
 
@@ -124,6 +125,8 @@ void gt_serial_load_page(uint16_t index);
  * @return int16_t
  */
 int16_t gt_serial_go_back(int16_t step);
+
+const uint8_t* gt_serial_get_info_by_obj(gt_obj_st* obj);
 
 /**
  * @brief
