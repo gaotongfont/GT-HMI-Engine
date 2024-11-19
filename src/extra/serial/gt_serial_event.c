@@ -393,14 +393,12 @@ static gt_res_t _pos_change_init_cb(gt_serial_event_packet_st * packet) {
     if (GT_RES_OK != base.res) {
         return base.res;
     }
-    uint8_t buffer[4] = {0};
     _serial_event_data_st * user_data = gt_mem_malloc(sizeof(_serial_event_data_st));
     if (NULL == user_data) {
         return GT_RES_INV;
     }
-    gt_serial_var_buffer_get_reg(gt_convert_parse_u16(&packet->data[_SE_OFFSET_VP]), buffer, 4);
-    user_data->data.pos.x = gt_convert_parse_i16(buffer);
-    user_data->data.pos.y = gt_convert_parse_i16(buffer + 2);
+    user_data->data.pos.x = gt_convert_parse_i16(&packet->data[_SE_OFFSET_DATA]);
+    user_data->data.pos.y = gt_convert_parse_i16(&packet->data[_SE_OFFSET_DATA + 2]);
     user_data->tar = base.obj_target;
     gt_obj_add_event_cb(base.obj_src, _pos_change_event_cb, base.type, user_data);
     _free_user_data_by_deleted_event(base.obj_src, user_data);
