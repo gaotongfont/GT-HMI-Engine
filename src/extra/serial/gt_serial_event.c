@@ -192,10 +192,7 @@ static _serial_base_st _get_base_data(gt_serial_event_packet_st * packet, gt_eve
         return ret;
     }
     ret.obj_target = gt_obj_find_by_id(gt_convert_parse_u16(&packet->data[_SE_OFFSET_TARGET]));
-    if (NULL == ret.obj_target) {
-        ret.res = GT_RES_INV;
-        return ret;
-    }
+
     ret.type = _get_trigger_type(packet->data[_SE_OFFSET_TRIGGER]);
     if (GT_EVENT_TYPE_NONE == ret.type) {
         ret.res = GT_RES_INV;
@@ -913,7 +910,6 @@ static gt_res_t _load_page_init_cb(gt_serial_event_packet_st * packet) {
         return GT_RES_INV;
     }
     user_data->vp = gt_convert_parse_u16(&packet->data[_SE_OFFSET_VP]);
-    user_data->tar = base.obj_target;
     gt_memcpy(user_data->data.cache, &packet->data[_SE_OFFSET_DATA], 4);
     gt_obj_add_event_cb(base.obj_src, _load_page_event_cb, base.type, user_data);
     _free_user_data_by_deleted_event(base.obj_src, user_data);
