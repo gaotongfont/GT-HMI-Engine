@@ -102,13 +102,13 @@ static bool _get_param(gt_var_st* var, gt_var_input_st* icon)
     return true;
 }
 
-static void _set_number(gt_obj_st* obj, gt_var_input_st* icon, uint16_t reg)
+static void _set_text(gt_obj_st* obj, gt_var_input_st* icon, uint16_t reg)
 {
     const uint8_t * data = NULL;
     uint16_t len = gt_serial_var_buffer_get_pointer(reg, &data, icon->param.max_len);
     if(0 == len) return;
 
-    gt_input_set_value_by_len(obj, data, len);
+    gt_input_set_value(obj, "%s", data);
 }
 
 static void _set_param(gt_var_st* var, gt_var_input_st* icon)
@@ -122,7 +122,7 @@ static void _set_param(gt_var_st* var, gt_var_input_st* icon)
     gt_input_set_font_family(var->obj, icon->param.font_id);
     gt_input_set_space(var->obj, icon->param.space_x, icon->param.space_y);
 
-    _set_number(var->obj, icon, icon->head.vp);
+    _set_text(var->obj, icon, icon->head.vp);
 }
 
 static void _set_vp_value(gt_var_st* var, gt_var_value_st* value)
@@ -134,7 +134,7 @@ static void _set_vp_value(gt_var_st* var, gt_var_value_st* value)
     }
 
     uint16_t reg = gt_convert_parse_u16(value->buffer);
-    _set_number(var->obj, &var_icon, reg);
+    _set_text(var->obj, &var_icon, reg);
 }
 
 static void _set_sp_value(uint8_t reg, gt_var_st* var, gt_var_value_st* value)
