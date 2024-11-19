@@ -115,10 +115,10 @@ static void _set_param(gt_var_st* var, gt_var_input_st* icon)
 {
     gt_obj_set_pos(var->obj, icon->param.x, icon->param.y);
     gt_obj_set_size(var->obj, icon->param.w, icon->param.h);
-    gt_input_set_bg_color(var->obj, gt_color_hex(icon->param.bg_color));
-    gt_input_set_border_color(var->obj, gt_color_hex(icon->param.border_color));
+    gt_input_set_bg_color(var->obj, gt_color_set(icon->param.bg_color));
+    gt_input_set_border_color(var->obj, gt_color_set(icon->param.border_color));
     gt_input_set_border_width(var->obj, icon->param.border_w);
-    gt_input_set_font_color(var->obj, gt_color_hex(icon->param.font_color));
+    gt_input_set_font_color(var->obj, gt_color_set(icon->param.font_color));
     gt_input_set_font_family(var->obj, icon->param.font_id);
     gt_input_set_space(var->obj, icon->param.space_x, icon->param.space_y);
 
