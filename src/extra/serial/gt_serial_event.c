@@ -191,22 +191,17 @@ static _serial_base_st _get_base_data(gt_serial_event_packet_st * packet, gt_eve
         .res = GT_RES_OK,
     };
     uint16_t idx = gt_convert_parse_u16(&packet->data[_SE_OFFSET_SRC]);
-    if (idx >= packet->parent->cnt_child) {
-        ret.res = GT_RES_INV;
-        return ret;
+    if (idx < packet->parent->cnt_child) {
+        ret.obj_src = packet->parent->child[idx];
     }
-    ret.obj_src = packet->parent->child[idx];
     if (NULL == ret.obj_src) {
         ret.res = GT_RES_INV;
         return ret;
     }
-
     idx = gt_convert_parse_u16(&packet->data[_SE_OFFSET_TARGET]);
-    if (idx >= packet->parent->cnt_child) {
-        ret.res = GT_RES_INV;
-        return ret;
+    if (idx < packet->parent->cnt_child) {
+        ret.obj_target = packet->parent->child[idx];
     }
-    ret.obj_target = packet->parent->child[idx];
 
     ret.type = _get_trigger_type(packet->data[_SE_OFFSET_TRIGGER]);
     if (GT_EVENT_TYPE_NONE == ret.type) {
