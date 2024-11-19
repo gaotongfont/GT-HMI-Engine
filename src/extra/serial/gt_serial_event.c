@@ -420,9 +420,8 @@ static gt_res_t _size_change_init_cb(gt_serial_event_packet_st * packet) {
     if (NULL == user_data) {
         return GT_RES_INV;
     }
-    gt_serial_var_buffer_get_reg(gt_convert_parse_u16(&packet->data[_SE_OFFSET_VP]), buffer, 4);
-    user_data->data.size.x = gt_convert_parse_u16(buffer);
-    user_data->data.size.y = gt_convert_parse_u16(buffer + 2);
+    user_data->data.size.x = gt_convert_parse_u16(&packet->data[_SE_OFFSET_DATA]);
+    user_data->data.size.y = gt_convert_parse_u16(&packet->data[_SE_OFFSET_DATA + 2]);
     user_data->tar = base.obj_target;
     gt_obj_add_event_cb(base.obj_src, _size_change_event_cb, base.type, user_data);
     _free_user_data_by_deleted_event(base.obj_src, user_data);
@@ -444,8 +443,7 @@ static gt_res_t _opa_change_init_cb(gt_serial_event_packet_st * packet) {
     if (NULL == user_data) {
         return GT_RES_INV;
     }
-    gt_serial_var_buffer_get_reg(gt_convert_parse_u16(&packet->data[_SE_OFFSET_VP]), buffer, 1);
-    user_data->data.opa = buffer[0];
+    user_data->data.opa = packet->data[_SE_OFFSET_DATA];
     user_data->tar = base.obj_target;
     gt_obj_add_event_cb(base.obj_src, _opa_change_event_cb, base.type, user_data);
     _free_user_data_by_deleted_event(base.obj_src, user_data);
@@ -532,14 +530,8 @@ static gt_res_t _visible_change_init_cb(gt_serial_event_packet_st * packet) {
 static void _move_anim_event_cb(gt_event_st * e) {
     _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
     uint16_t vp = udata->vp;
-    uint16_t len = gt_serial_var_buffer_get_len_by_eof(vp, 0x0000);
-    uint16_t len_full = gt_serial_var_buffer_get_len_by_eof(vp, 0xFFFF);
-    len = GT_MAX(len, len_full);
-    if (0 == len) {
-        return;
-    }
     char * pointer = NULL;
-    len = gt_serial_var_buffer_get_pointer(vp, (const uint8_t **)&pointer, len);
+    gt_serial_var_buffer_get_pointer(vp, (const uint8_t **)&pointer, 12);
 
     gt_anim_param_st param;
     gt_anim_param_init(&param);
