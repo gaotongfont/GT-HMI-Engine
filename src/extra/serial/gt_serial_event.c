@@ -999,7 +999,7 @@ static gt_res_t _serial_add_event(gt_obj_st * parent, uint8_t * data, uint8_t le
         return GT_RES_INV;
     }
 #if _GT_SERIAL_EVENT_LOG
-    GT_LOG_A(GT_LOG_TAG_SERIAL, "@@@@ event type: 0x%x", event_type);
+    GT_LOG_A(GT_LOG_TAG_SERIAL, "Event type: 0x%x", event_type);
     GT_LOG_ARR(data, 0, len);
 #endif
     gt_serial_event_packet_st packet = {
