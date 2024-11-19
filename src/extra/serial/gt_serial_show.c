@@ -69,7 +69,7 @@ typedef struct
     gt_serial_show_file_head_st _show_file_head;
     gt_serial_page_info_st page_info;
     //
-    volatile uint16_t page_index;
+    volatile gt_scr_id_t page_index;
     bool lock;
 }gt_serial_ui_st;
 
@@ -578,7 +578,7 @@ uint16_t gt_serial_page_index_get(void)
     return _serial_ui.page_index;
 }
 
-void gt_serial_load_page(uint16_t index)
+void gt_serial_load_page(gt_scr_id_t index)
 {
     if(!_serial_ui.lock) {return ;}
     _serial_ui.page_index = index;
@@ -586,7 +586,15 @@ void gt_serial_load_page(uint16_t index)
     gt_disp_stack_load_scr(_serial_ui.page_index);
 }
 
-int16_t gt_serial_go_back(int16_t step)
+void gt_serial_load_page_anim(gt_scr_id_t scr_id, gt_scr_anim_type_et type, uint32_t time, uint32_t delay, bool del_prev_scr)
+{
+    if(!_serial_ui.lock) {return ;}
+    _serial_ui.page_index = scr_id;
+    GT_LOGI(GT_LOG_TAG_SERIAL , "load page = %d", _serial_ui.page_index);
+    gt_disp_stack_load_scr_anim(_serial_ui.page_index, type, time, delay, del_prev_scr);
+}
+
+gt_scr_id_t gt_serial_go_back(int16_t step)
 {
     if(!_serial_ui.lock) {return 0;}
     _serial_ui.page_index = gt_scr_stack_get_prev_id_by(step);

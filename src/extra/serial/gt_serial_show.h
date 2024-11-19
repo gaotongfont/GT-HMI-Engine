@@ -116,15 +116,26 @@ uint16_t gt_serial_page_index_get(void);
  *
  * @param index
  */
-void gt_serial_load_page(uint16_t index);
+void gt_serial_load_page(gt_scr_id_t index);
+
+/**
+ * @brief
+ *
+ * @param scr_id
+ * @param type
+ * @param time
+ * @param delay
+ * @param del_prev_scr
+ */
+void gt_serial_load_page_anim(gt_scr_id_t scr_id, gt_scr_anim_type_et type, uint32_t time, uint32_t delay, bool del_prev_scr);
 
 /**
  * @brief Go back to previous page
  *
  * @param step
- * @return int16_t
+ * @return gt_scr_id_t
  */
-int16_t gt_serial_go_back(int16_t step);
+gt_scr_id_t gt_serial_go_back(int16_t step);
 
 const uint8_t* gt_serial_get_info_by_obj(gt_obj_st* obj);
 

@@ -18,6 +18,7 @@
 #include  "../../others/gt_anim.h"
 #include "../../core/gt_disp.h"
 #include "./gt_serial_var.h"
+#include "./gt_serial_show.h"
 #include "./gt_serial_resource.h"
 #include "../../widgets/gt_btn.h"
 #include "../../widgets/gt_input.h"
@@ -67,6 +68,9 @@
 
 
 #ifndef _GT_SERIAL_EVENT_LOG
+    /**
+     * @brief [default: 0]
+     */
     #define _GT_SERIAL_EVENT_LOG    0
 #endif
 
@@ -834,7 +838,7 @@ static gt_res_t _update_text_init_cb(gt_serial_event_packet_st * packet) {
 
 static void _go_back_page_stack_event_cb(gt_event_st * e) {
     _serial_event_data_st * udata = (_serial_event_data_st * )e->user_data;
-    gt_disp_stack_go_back(udata->data.value);
+    gt_serial_go_back(udata->data.value);
 }
 
 static gt_res_t _go_back_page_stack_init_cb(gt_serial_event_packet_st * packet) {
@@ -897,7 +901,7 @@ static void _load_page_event_cb(gt_event_st * e) {
     uint16_t scr_id = gt_convert_parse_u16(&udata->data.cache[0]);
     uint8_t free_prev = udata->data.cache[2] ? true : false;
     gt_scr_anim_type_et anim_type = _get_anim_type_by(udata->data.cache[3]);
-    gt_disp_stack_load_scr_anim(scr_id, anim_type, total_ms, delay_ms, free_prev);
+    gt_serial_load_page_anim(scr_id, anim_type, total_ms, delay_ms, free_prev);
 }
 
 static gt_res_t _load_page_init_cb(gt_serial_event_packet_st * packet) {
@@ -1014,7 +1018,12 @@ void gt_serial_event_init(void)
         return;
     }
     _event_fh.addr = addr + GT_SERIAL_RESOURCE_EVENT_OFFSET;
+#if GT_BOOTING_INFO_MSG
+    GT_LOG_A(GT_LOG_TAG_SERIAL, "addr: 0x%x event addr: 0x%x", addr, _event_fh.addr);
+#endif
+    /** Read event header data */
     gt_fs_read_direct_physical(_event_fh.addr, _SERIAL_EVENT_TOTAL_LEN, tmp);
+
     _event_fh.id = tmp[cnt];
     cnt += _SERIAL_EVENT_FILE_ID_LEN;
 
@@ -1042,7 +1051,9 @@ void gt_serial_event_init(void)
         GT_LOGE(GT_LOG_TAG_SERIAL, "alloc event page data buffer err");
         return;
     }
-    GT_LOG_A("", "event id: %d, data len: %d total: %d", _event_fh.id, _event_fh.data_len, _SERIAL_EVENT_TOTAL_LEN);
+#if GT_BOOTING_INFO_MSG
+    GT_LOG_A(GT_LOG_TAG_SERIAL, "Event id: %d, data len: %d total: %d", _event_fh.id, _event_fh.data_len, _SERIAL_EVENT_TOTAL_LEN);
+#endif
     _event_fh.inited = true;
 }
 
