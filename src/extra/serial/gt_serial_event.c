@@ -700,6 +700,16 @@ static void _number_input_event_cb(gt_event_st * e) {
             gt_input_number_set_value(udata->tar, gt_convert_parse_u32(pointer));
             break;
         }
+        case 0x07: {
+            if (len < 4) { return; }
+            gt_input_number_set_value(udata->tar, gt_convert_parse_float(pointer));
+            break;
+        }
+        case 0x08: {
+            if (len < 8) { return; }
+            gt_input_number_set_value(udata->tar, gt_convert_parse_double(pointer));
+            break;
+        }
         default:
             break;
     }
