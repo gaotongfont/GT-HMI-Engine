@@ -226,12 +226,7 @@ static void _set_param(gt_var_st* var, gt_var_numb_st* icon)
 
     gt_input_number_set_display_integer_length(var->obj, icon->param.integer);
     gt_input_number_set_display_decimal_length(var->obj, icon->param.decimal);
-    /** set step value */
-    double step = 1;
-    // for (uint8_t i = 0; i < icon->param.decimal; ++i) {
-    //     step *= 0.1;
-    // }
-    gt_input_number_set_step(var->obj, step);
+    gt_input_number_set_step(var->obj, 1);
     _set_number(var->obj, icon, icon->head.vp);
 }
 static void _set_vp_value(gt_var_st* var, gt_var_value_st* value)
