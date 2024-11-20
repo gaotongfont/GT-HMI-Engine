@@ -17,6 +17,25 @@
 #include <float.h>
 /* private define -------------------------------------------------------*/
 
+#undef FLT_MAX
+#ifndef FLT_MAX
+    #define FLT_MAX 3.402823466e+38F
+#endif
+
+#undef FLT_MIN
+#ifndef FLT_MIN
+    #define FLT_MIN 1.175494351e-38F
+#endif
+
+#undef DBL_MAX
+#ifndef DBL_MAX
+    #define DBL_MAX 1.7976931348623158e+308
+#endif
+
+#undef DBL_MIN
+#ifndef DBL_MIN
+    #define DBL_MIN 2.2250738585072014e-308
+#endif
 
 /* private typedef ------------------------------------------------------*/
 typedef enum{
@@ -226,6 +245,12 @@ static void _set_param(gt_var_st* var, gt_var_numb_st* icon)
 
     gt_input_number_set_display_integer_length(var->obj, icon->param.integer);
     gt_input_number_set_display_decimal_length(var->obj, icon->param.decimal);
+    /** set step value */
+    double step = 1;
+    // for (uint8_t i = 0; i < icon->param.decimal; ++i) {
+    //     step *= 0.1;
+    // }
+    gt_input_number_set_step(var->obj, step);
     _set_number(var->obj, icon, icon->head.vp);
 }
 static void _set_vp_value(gt_var_st* var, gt_var_value_st* value)
