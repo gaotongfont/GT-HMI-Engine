@@ -32,26 +32,6 @@ extern "C" {
 
 #endif
 
-#undef FLT_MAX
-#ifndef FLT_MAX
-    #define FLT_MAX 3.402823466e+38F
-#endif
-
-#undef FLT_MIN
-#ifndef FLT_MIN
-    #define FLT_MIN 1.175494351e-38F
-#endif
-
-#undef DBL_MAX
-#ifndef DBL_MAX
-    #define DBL_MAX 1.7976931348623158e+308
-#endif
-
-#undef DBL_MIN
-#ifndef DBL_MIN
-    #define DBL_MIN 2.2250738585072014e-308
-#endif
-
 #define REDUCE_DEFAULT     (2)
 
 /* typedef --------------------------------------------------------------*/

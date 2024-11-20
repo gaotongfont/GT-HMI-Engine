@@ -167,7 +167,7 @@ gt_obj_st * gt_input_number_create(gt_obj_st * parent)
     _gt_input_number_st * style = (_gt_input_number_st * )obj;
     style->reg.len_decimal = 2;
     style->max = DBL_MAX;
-    style->min = DBL_MIN;
+    style->min = -DBL_MAX;
 
     style->label = gt_label_create(obj);
     style->label->focus_dis = GT_DISABLED;

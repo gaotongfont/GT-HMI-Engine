@@ -13,6 +13,7 @@
 #include "../../utils/gt_bin_convert.h"
 #include "../../others/gt_log.h"
 #include "../../../gt.h"
+#include "float.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -145,58 +146,58 @@ static void _set_number(gt_obj_st* obj, gt_var_numb_st* icon, uint16_t reg)
     if(0 != gt_serial_var_buffer_get_reg(reg, data, len)){
         return;
     }
-    double numb = 0, mix = 0, max = 0;
+    double numb = 0, min = 0, max = 0;
     switch (icon->param.type)
     {
     case _TYPE_LONG:
         numb = (double)gt_convert_parse_i32(data);
-        mix = INT32_MIN;
+        min = INT32_MIN;
         max = INT32_MAX;
         break;
     case _TYPE_VPH_UCHAR:
         numb = (double)data[0];
-        mix = 0;
+        min = 0;
         max = UINT8_MAX;
         break;
     case _TYPE_VPL_UCHAR:
         numb = (double)data[1];
-        mix = 0;
+        min = 0;
         max = UINT8_MAX;
         break;
     case _TYPE_LONG_LONG:
         numb = (double)gt_convert_parse_i64(data);
-        mix = (double)INT64_MIN;
+        min = (double)INT64_MIN;
         max = (double)INT64_MAX;
         break;
     case _TYPE_USHORT:
         numb = (double)gt_convert_parse_u16(data);
-        mix = 0;
+        min = 0;
         max = UINT16_MAX;
         break;
     case _TYPE_ULONG:
         numb = (double)gt_convert_parse_u32(data);
-        mix = 0;
+        min = 0;
         max = UINT32_MAX;
         break;
     case _TYPE_FLOAT:
         numb = (double)gt_convert_parse_float(data);
-        mix = FLT_MIN;
+        min = -FLT_MAX;
         max = FLT_MAX;
         break;
     case _TYPE_DOUBLE:
         numb = (double)gt_convert_parse_double(data);
-        mix = DBL_MIN;
+        min = -DBL_MAX;
         max = DBL_MAX;
         break;
     default:
     case _TYPE_SHORT:
         numb = (double)gt_convert_parse_i16(data);
-        mix = INT16_MIN;
+        min = INT16_MIN;
         max = INT16_MAX;
         break;
     }
 
-    gt_input_number_set_max(obj, mix);
+    gt_input_number_set_min(obj, min);
     gt_input_number_set_max(obj, max);
     gt_input_number_set_uint(obj, icon->param.unit_str);
     gt_input_number_set_value(obj, numb);
