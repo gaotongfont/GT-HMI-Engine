@@ -195,9 +195,9 @@ static void _set_param(gt_var_st* var, gt_var_roller_st* icon)
     gt_obj_set_size(var->obj, icon->param.w, h);
 
     gt_roller_set_font_align(var->obj, GT_ALIGN_CENTER_MID);
-    gt_roller_set_font_color(var->obj, gt_color_hex(icon->param.font0_color));
+    gt_roller_set_font_color(var->obj, gt_color_set(icon->param.font0_color));
     gt_roller_set_display_item_count(var->obj, icon->param.numb_digit);
-    gt_roller_set_select_bgcolor(var->obj, gt_color_hex(icon->param.select_color));
+    gt_roller_set_select_bgcolor(var->obj, gt_color_set(icon->param.select_color));
     // gt_roller_set_font_size(var->obj, icon->param.font0_x);
     gt_roller_set_font_family(var->obj, icon->param.font_lib);
 

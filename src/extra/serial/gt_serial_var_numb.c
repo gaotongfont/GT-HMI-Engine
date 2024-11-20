@@ -207,7 +207,7 @@ static void _set_param(gt_var_st* var, gt_var_numb_st* icon)
 {
     gt_obj_set_pos(var->obj, icon->param.x, icon->param.y);
     gt_obj_set_size(var->obj, icon->param.w, icon->param.h);
-    gt_input_number_set_font_color(var->obj, gt_color_hex(icon->param.color));
+    gt_input_number_set_font_color(var->obj, gt_color_set(icon->param.color));
 
     bool file_zero = 0x01 & (icon->param.align >> 6);
     gt_input_number_set_fill_zero_front(var->obj, file_zero);

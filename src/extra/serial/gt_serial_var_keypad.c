@@ -110,10 +110,10 @@ static void _set_param(gt_var_st* var, gt_var_keypad_st* icon)
     gt_obj_set_pos(var->obj, icon->param.x, icon->param.y);
     gt_obj_set_size(var->obj, icon->param.w, icon->param.h);
     gt_keypad_set_font_family(var->obj, icon->param.font_id);
-    gt_keypad_set_font_color(var->obj, gt_color_hex(icon->param.font_color));
-    gt_keypad_set_color_background(var->obj, gt_color_hex(icon->param.bg_color));
-    gt_keypad_set_key_color_background(var->obj, gt_color_hex(icon->param.key_color));
-    gt_keypad_set_ctrl_key_color_background(var->obj, gt_color_hex(icon->param.ctrl_color));
+    gt_keypad_set_font_color(var->obj, gt_color_set(icon->param.font_color));
+    gt_keypad_set_color_background(var->obj, gt_color_set(icon->param.bg_color));
+    gt_keypad_set_key_color_background(var->obj, gt_color_set(icon->param.key_color));
+    gt_keypad_set_ctrl_key_color_background(var->obj, gt_color_set(icon->param.ctrl_color));
     gt_keypad_set_radius(var->obj, icon->param.radio);
 
     bool py_en = icon->param.regs & 0x01;

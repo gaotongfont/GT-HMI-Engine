@@ -195,7 +195,7 @@ static void _set_param(gt_var_st* var, gt_var_text_st* icon)
     w = icon->param.xe - icon->param.xs + 1;
     h = icon->param.ye - icon->param.ys + 1;
     gt_obj_set_size(var->obj, w, h);
-    gt_label_set_font_color(var->obj, gt_color_hex(icon->param.color));
+    gt_label_set_font_color(var->obj, gt_color_set(icon->param.color));
     gt_label_set_font_family(var->obj, icon->param.font0_id);
     gt_label_set_space(var->obj, icon->param.hor_dis, icon->param.ver_dis);
 

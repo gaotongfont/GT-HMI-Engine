@@ -132,8 +132,8 @@ static void _set_param(gt_var_st* var, gt_var_progress_bar_st* icon)
     uint16_t h = icon->param.ye - icon->param.ys + 1;
     gt_obj_set_pos(var->obj, icon->param.xs, icon->param.ys);
     gt_obj_set_size(var->obj, w, h);
-    gt_progress_bar_set_color_ina(var->obj, gt_color_hex(icon->param.bg_color));
-    gt_progress_bar_set_color_act(var->obj, gt_color_hex(icon->param.f_color));
+    gt_progress_bar_set_color_ina(var->obj, gt_color_set(icon->param.bg_color));
+    gt_progress_bar_set_color_act(var->obj, gt_color_set(icon->param.f_color));
     gt_progress_bar_set_dir(var->obj, icon->param.dir);
     gt_progress_bar_set_start_end(var->obj, icon->param.min, icon->param.max);
 

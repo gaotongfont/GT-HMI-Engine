@@ -156,7 +156,7 @@ static void _set_hex(gt_obj_st* obj, gt_var_hex_st* icon, uint16_t reg)
 static void _set_param(gt_var_st* var, gt_var_hex_st* icon)
 {
     gt_obj_set_pos(var->obj, icon->param.x, icon->param.y);
-    gt_label_set_font_color(var->obj, gt_color_hex(icon->param.color));
+    gt_label_set_font_color(var->obj, gt_color_set(icon->param.color));
     // gt_label_set_font_size(var->obj, icon->param.font_size);
     gt_label_set_font_family(var->obj, icon->param.lib_id);
     _set_hex(var->obj, icon, icon->head.vp);

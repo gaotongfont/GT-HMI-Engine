@@ -166,7 +166,7 @@ static void _set_param(gt_var_st* var, gt_var_rtc_st* icon)
 {
 
     gt_obj_set_pos(var->obj, icon->param.x, icon->param.y);
-    gt_clock_set_font_color(var->obj, gt_color_hex(icon->param.color));
+    gt_clock_set_font_color(var->obj, gt_color_set(icon->param.color));
     // gt_clock_set_font_size(var->obj, icon->param.font_size);
     gt_clock_set_font_family(var->obj, icon->param.lib_id);
     _set_format(var->obj, icon);
