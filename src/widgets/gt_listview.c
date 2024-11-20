@@ -908,6 +908,26 @@ gt_obj_st * gt_listview_add_item_by_param(gt_obj_st * listview, gt_listview_para
     return _set_item_obj_prop(obj, listview);
 }
 
+gt_obj_st * gt_listiew_get_element_by(gt_obj_st * listview, uint16_t item_idx, uint16_t element_idx)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return NULL;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    gt_obj_st * obj = NULL;
+
+    /** item object */
+    if (item_idx >= listview->cnt_child) {
+        return NULL;
+    }
+    obj = listview->child[item_idx];
+    if (NULL == obj) { return NULL; }
+    if (element_idx >= obj->cnt_child) {
+        return NULL;
+    }
+    return obj->child[element_idx];
+}
+
 gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listview_custom_item_st * item)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {

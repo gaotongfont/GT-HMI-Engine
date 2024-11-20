@@ -210,6 +210,16 @@ gt_obj_st * gt_listview_add_item_icons(gt_obj_st * listview, char * left_icon, c
 gt_obj_st * gt_listview_add_item_by_param(gt_obj_st * listview, gt_listview_param_st * param);
 
 /**
+ * @brief get element by item index and element index
+ *
+ * @param listview
+ * @param item_idx item index
+ * @param element_idx element index of item object
+ * @return gt_obj_st*
+ */
+gt_obj_st * gt_listiew_get_element_by(gt_obj_st * listview, uint16_t item_idx, uint16_t element_idx);
+
+/**
  * @brief add item to listview obj with custom element
  *
  * @param listview
