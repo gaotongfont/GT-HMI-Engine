@@ -14,8 +14,11 @@
 #include "../../others/gt_log.h"
 #include "../../../gt.h"
 
-#include <float.h>
 /* private define -------------------------------------------------------*/
+#define FLT_MIN          1.175494351e-38F        // min normalized positive value
+#define FLT_MAX          3.402823466e+38F        // max value
+#define DBL_MIN          2.2250738585072014e-308 // min positive value
+#define DBL_MAX          1.7976931348623158e+308 // max value
 
 
 
