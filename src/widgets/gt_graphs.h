@@ -172,7 +172,7 @@ void gt_graphs_set_point_value_space_between_line(gt_obj_st * obj, uint16_t seri
  *
  * @param obj
  * @param series_index The index of the series to which the point is added
- * @param font_color The font color of the value of the point
+ * @param font_color The font color of the value of the point, not the axis font color.
  */
 void gt_graphs_set_point_value_font_color(gt_obj_st * obj, uint16_t series_index, gt_color_t font_color);
 
@@ -195,6 +195,12 @@ void gt_graphs_set_point_value_bottom(gt_obj_st * obj, uint16_t series_index, bo
  */
 bool gt_graphs_is_show_point_value(gt_obj_st * obj, uint16_t series_index);
 
+/**
+ * @brief Set the font color of the graph axis
+ *
+ * @param graphs
+ * @param color Only axis font color
+ */
 void gt_graphs_set_font_color(gt_obj_st * graphs, gt_color_t color);
 
 void gt_graphs_set_font_size(gt_obj_st * graphs, uint8_t size);
