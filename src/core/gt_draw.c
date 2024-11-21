@@ -1129,42 +1129,18 @@ static gt_size_t _get_align_start_y_by_line(const gt_attr_font_st * dsc, const g
 }
 
 static gt_size_t _get_align_start_y(const gt_attr_font_st * dsc, const gt_area_st * coords, gt_font_st * tmp_font, uint8_t * txt) {
-    uint32_t ret_w = 0, lan_len = 0;
-    uint16_t line_count = 1, idx = 0, txt_len = dsc->font->len;
-    uint16_t idx_step = 0;
+    uint32_t ret_w = 0;
+    uint16_t line_count = 1;
     gt_size_t disp_w = coords->w;
     gt_align_et type = _get_align_type(dsc->align);
-    uint8_t lan = 0;
+
 
     if (dsc->reg.enabled_start) {
         disp_w = coords->w - (dsc->start_x - coords->x);
     }
 
     if (GT_ALIGN_LEFT != type && GT_ALIGN_RIGHT != type && GT_ALIGN_CENTER != type && GT_ALIGN_NONE != type) {
-        while (idx < txt_len) {
-            if (0x0A == txt[idx]) {
-                idx += 1;
-                goto _compute_line;
-            }
-            tmp_font->utf8 = (char * )&txt[idx];
-            tmp_font->len = txt_len - idx;
-            idx_step = gt_font_split(tmp_font, disp_w, coords->w, dsc->space_x, &ret_w, &lan, &lan_len);
-
-            disp_w -= ret_w;
-            if (disp_w <= 0 || 0 == idx_step) {
-                if (ret_w >= coords->w) {
-                    /** Over widget's width, forced display */
-                    idx += idx_step;
-                    goto _compute_line;
-                }
-                goto _compute_line;
-            }
-            idx += idx_step;
-            continue;
-    _compute_line:
-            ++line_count;
-            disp_w = coords->w;
-        }
+        line_count = gt_font_split_line_numb(&tmp_font->info, txt, coords->w, disp_w, dsc->space_x, &ret_w);
     }
 
     return _get_align_start_y_by_line(dsc, coords, tmp_font, txt, line_count);
