@@ -19,6 +19,7 @@ extern "C" {
 #include "string.h"
 #include "math.h"
 #include "stdlib.h"
+#include "float.h"
 
 #include "src/gt_api_mapper.h"
 
