@@ -98,8 +98,14 @@ typedef struct gt_series_points_s {
     struct gt_series_points_s * next_series_p;
     gt_float_t * x_series;
     gt_float_t * y_series;
+    char ** point_value_str;
+    gt_color_t point_value_font_color;
     gt_line_st line;
     uint16_t count_point;
+    uint8_t font_line_space;    // Spacing between point value characters and lines
+    /** point value display position, true: bottom of line; false[default]: top of line */
+    uint8_t show_point_value : 1;
+    uint8_t point_value_bottom : 1;
 }gt_series_points_st;
 
 typedef struct _gt_attr_graphs_s {

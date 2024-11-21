@@ -16,7 +16,7 @@
 #include "../others/gt_log.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
-
+#include "../font/gt_font.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -24,7 +24,9 @@
 #define MY_CLASS    &gt_graphs_class
 
 
-#define _GRAPHS_DEFAULT_PADDING_SIZE    20
+#define _GRAPHS_DEFAULT_PADDING_SIZE        20
+
+#define _GRAPHS_DEFAULT_FONT_SPACE_LINE     8
 
 
 /* private typedef ------------------------------------------------------*/
@@ -33,11 +35,16 @@ typedef struct _graphs_reg_s {
     uint8_t show_ruler : 1;
     uint8_t anti_hor_axis_dir : 1;
     uint8_t anti_ver_axis_dir : 1;
+    uint8_t full_area : 1;
 }_graphs_reg_st;
 
 typedef struct _gt_graphs_s {
     gt_obj_st obj;
     _gt_attr_graphs_st gp;
+    gt_color_t font_color;
+    gt_font_info_st font_info;
+    uint8_t font_align;         //@ref gt_align_et
+    uint8_t custom_padding;
     _graphs_reg_st reg;
 }_gt_graphs_st;
 
@@ -69,6 +76,7 @@ static bool _is_self_adaptive(gt_obj_st * obj);
 static void _draw_axis(gt_obj_st * obj);
 static void _draw_points_lines_curves(gt_obj_st * obj);
 static void _calc_self_adaptive_axis_range(gt_obj_st * obj);
+static void _draw_point_value(gt_obj_st * obj);
 
 
 /* macros ---------------------------------------------------------------*/
@@ -90,17 +98,19 @@ static inline bool _is_ver_range_zero(_gt_graphs_st const * const style) {
 
 static void _graphs_init_cb(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
-    gt_attr_rect_st rect_attr;
-    gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.reg.is_fill   = true;
-    rect_attr.radius        = obj->radius;
-    rect_attr.bg_opa        = obj->opa;
-    rect_attr.fg_color      = obj->bgcolor;
-    rect_attr.bg_color      = obj->bgcolor;
+    if (obj->show_bg) {
+        gt_attr_rect_st rect_attr;
+        gt_graph_init_rect_attr(&rect_attr);
+        rect_attr.reg.is_fill   = true;
+        rect_attr.radius        = obj->radius;
+        rect_attr.bg_opa        = obj->opa;
+        rect_attr.fg_color      = obj->bgcolor;
+        rect_attr.bg_color      = obj->bgcolor;
 
-    gt_area_st area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
-    /** base shape */
-    draw_bg(obj->draw_ctx, &rect_attr, &area);
+        gt_area_st area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
+        /** base shape */
+        draw_bg(obj->draw_ctx, &rect_attr, &area);
+    }
 
     if (_is_self_adaptive(obj) || _is_hor_range_zero(style) || _is_ver_range_zero(style)) {
         _calc_self_adaptive_axis_range(obj);
@@ -111,6 +121,9 @@ static void _graphs_init_cb(gt_obj_st * obj) {
 
     /** draw points / lines / curves */
     _draw_points_lines_curves(obj);
+
+    /** draw point value */
+    _draw_point_value(obj);
 }
 
 static void _free_series_lines(gt_series_points_st * series) {
@@ -121,6 +134,16 @@ static void _free_series_lines(gt_series_points_st * series) {
         _free_series_lines(series->next_series_p);
         gt_mem_free(series->next_series_p);
         series->next_series_p = NULL;
+    }
+    if (series->point_value_str) {
+        for (gt_size_t i = series->count_point - 1; i >= 0; --i) {
+            if (series->point_value_str[i]) {
+                gt_mem_free(series->point_value_str[i]);
+            }
+            series->point_value_str[i] = NULL;
+        }
+        gt_mem_free(series->point_value_str);
+        series->point_value_str = NULL;
     }
     if (series->y_series) {
         gt_mem_free(series->y_series);
@@ -277,13 +300,17 @@ static void _void_draw_grid_lines(gt_obj_st * obj, gt_padding_st const * const p
     }
 }
 
+static inline uint16_t _get_padding_size(_gt_graphs_st * style) {
+    return style->reg.full_area ? style->custom_padding : _GRAPHS_DEFAULT_PADDING_SIZE;
+}
+
 static gt_padding_st _get_padding_by(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_padding_st padding = {
-        .left = style->reg.show_ruler ? 60 : _GRAPHS_DEFAULT_PADDING_SIZE,
-        .right = _GRAPHS_DEFAULT_PADDING_SIZE,
-        .top = _GRAPHS_DEFAULT_PADDING_SIZE,
-        .bottom = style->reg.show_ruler ? 40 : _GRAPHS_DEFAULT_PADDING_SIZE,
+        .left = style->reg.show_ruler ? 60 : _get_padding_size(style),
+        .right = _get_padding_size(style),
+        .top = _get_padding_size(style),
+        .bottom = style->reg.show_ruler ? 40 : _get_padding_size(style),
     };
     /** calc real right and bottom padding */
     gt_point_st div_part = _calc_div_part(style);
@@ -298,6 +325,13 @@ static gt_padding_st _get_padding_by(gt_obj_st * obj) {
     }
 
     return padding;
+}
+
+static void _set_point_value_pos(gt_obj_st * obj, gt_point_st * pointer, uint16_t str_width, gt_attr_font_st * font_attr) {
+    font_attr->logical_area.x = pointer->x - (str_width >> 1);
+    font_attr->logical_area.y = pointer->y;
+    font_attr->logical_area.w = str_width + 10;
+    font_attr->logical_area.h = font_attr->font->info.size;
 }
 
 static void _draw_ruler_ver_start(gt_obj_st * obj, gt_padding_st const * const padding, gt_attr_font_st * font_attr) {
@@ -331,10 +365,13 @@ static void _draw_ruler_hor_end(gt_obj_st * obj, gt_padding_st const * const pad
 static void _draw_ruler_range(gt_obj_st * obj, gt_padding_st const * const padding) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     char buf[20] = {0};
-    gt_font_st font = {0};
+    gt_font_st font = {
+        .info = style->font_info,
+    };
     gt_attr_font_st font_attr = {
+        .align = style->font_align,
         .font = &font,
-        .font_color = style->gp.axis.scale.color,
+        .font_color = style->font_color,
         .opa = style->gp.axis.scale.opa,
     };
     _draw_ruler_pos_area_t pos_func_arr[] = {
@@ -346,11 +383,7 @@ static void _draw_ruler_range(gt_obj_st * obj, gt_padding_st const * const paddi
         style->reg.anti_hor_axis_dir ? style->gp.axis.hor.end : style->gp.axis.hor.start,
         style->reg.anti_hor_axis_dir ? style->gp.axis.hor.start : style->gp.axis.hor.end,
     };
-    gt_font_info_init(&font.info);
     gt_font_info_update_font_thick(&font.info);
-#if !(defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
-    font.info.family = GT_CFG_DEFAULT_FONT_FAMILY;
-#endif
 
     for (uint8_t i = 0; i < 4; ++i) {
         pos_func_arr[i](obj, padding, &font_attr);
@@ -554,6 +587,51 @@ static void _draw_points_lines_curves(gt_obj_st * obj) {
     }
 }
 
+static void _draw_point_value(gt_obj_st * obj) {
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    gt_series_points_st * ptr = style->gp.series_head_p;
+    _graph_css_st css = _get_css(obj);
+    gt_point_st pointer = { .x = 0, .y = 0 };
+    char buf[20] = {0};
+    gt_font_st font = {
+        .utf8 = buf,
+        .info = style->font_info,
+    };
+    gt_attr_font_st font_attr = {
+        .align = style->font_align,
+        .font = &font,
+    };
+    uint16_t offset = 0, total_width = 0;
+    gt_font_info_update_font_thick(&font.info);
+
+    while (ptr) {
+        if (false == ptr->show_point_value) {
+            ptr = ptr->next_series_p;
+            continue;
+        }
+        offset = style->font_info.size + ptr->font_line_space;
+        font_attr.opa = ptr->line.opa;
+        font_attr.font_color = ptr->point_value_font_color;
+
+        for (gt_size_t i = 0; i < ptr->count_point; ++i) {
+            pointer.x = _calc_abs_point_x(ptr->x_series[i], &css);
+            pointer.y = _calc_abs_point_y(ptr->y_series[i], &css);
+            if (ptr->point_value_bottom) {
+                pointer.y += ptr->font_line_space + (ptr->line.width >> 1);
+            } else {
+                pointer.y -= offset + (ptr->line.width >> 1);
+            }
+            font.utf8 = ptr->point_value_str[i];
+            font.len = strlen(font.utf8);
+
+            total_width = gt_font_get_string_width(&font);
+            _set_point_value_pos(obj, &pointer, total_width, &font_attr);
+            draw_text(obj->draw_ctx, &font_attr, &obj->area);
+        }
+        ptr = ptr->next_series_p;
+    }
+}
+
 static bool _is_series_valid(_gt_graphs_st * style, gt_series_points_st const * series) {
     if (NULL == style || NULL == series) {
         return false;
@@ -588,12 +666,31 @@ gt_obj_st * gt_graphs_create(gt_obj_st * parent)
     if (NULL == obj) {
         return obj;
     }
+    obj->show_bg = true;
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     style->gp.axis.scale.color = gt_color_black();
     style->gp.axis.scale.width = 2;
     style->gp.axis.scale.opa = GT_OPA_COVER;
+    style->custom_padding = _GRAPHS_DEFAULT_PADDING_SIZE;
+
+    gt_font_info_init(&style->font_info);
+    style->font_align = GT_ALIGN_LEFT;
+    gt_font_info_update_font_thick(&style->font_info);
 
     return obj;
+}
+
+void gt_graphs_set_full_area(gt_obj_st * obj, bool enabled, uint8_t padding)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    style->reg.full_area = enabled;
+    if (style->reg.full_area) {
+        style->reg.show_ruler =  false;
+    }
+    style->custom_padding = padding;
 }
 
 void gt_graphs_set_self_adaptive(gt_obj_st * obj, bool enabled)
@@ -638,6 +735,7 @@ gt_series_points_st * gt_graphs_add_series_line(gt_obj_st * obj, gt_line_st cons
     gt_memset(series, 0, size);
 
     gt_memcpy(&series->line, line_style, sizeof(gt_line_st));
+    series->font_line_space = _GRAPHS_DEFAULT_FONT_SPACE_LINE;
 
     ++style->gp.count_line;
     if (NULL == style->gp.series_head_p) {
@@ -650,7 +748,7 @@ gt_series_points_st * gt_graphs_add_series_line(gt_obj_st * obj, gt_line_st cons
     return series;
 }
 
-gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const series, gt_point_f_st const * const point)
+gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const series, gt_point_f_st const * const point, char const * const point_text)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return GT_RES_FAIL;
@@ -672,6 +770,12 @@ gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const
         if (NULL == series->y_series) {
             goto y_fail_lb;
         }
+        series->point_value_str = gt_mem_realloc(series->point_value_str, (series->count_point + 1) * sizeof(char *));
+        if (NULL == series->point_value_str) {
+            gt_mem_free(series->y_series);
+            series->y_series = NULL;
+            goto point_val_fail_lb;
+        }
     } else {
         series->x_series = gt_mem_malloc(size);
         if (NULL == series->x_series) {
@@ -683,13 +787,31 @@ gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const
             series->x_series = NULL;
             return GT_RES_FAIL;
         }
+        series->point_value_str = gt_mem_malloc(sizeof(char *));
+        if (NULL == series->point_value_str) {
+            gt_mem_free(series->y_series);
+            series->y_series = NULL;
+            gt_mem_free(series->x_series);
+            series->x_series = NULL;
+            return GT_RES_FAIL;
+        }
     }
     series->x_series[series->count_point] = point->x;
     series->y_series[series->count_point] = point->y;
+    if (point_text) {
+        uint16_t len = strlen(point_text);
+        series->point_value_str[series->count_point] = gt_mem_malloc(len + 1);
+        gt_memcpy(series->point_value_str[series->count_point], point_text, len);
+        series->point_value_str[series->count_point][len] = '\0';
+    } else {
+        series->point_value_str[series->count_point] = NULL;
+    }
     ++series->count_point;
 
     return GT_RES_OK;
 
+point_val_fail_lb:
+    series->point_value_str = gt_mem_realloc(series->point_value_str, series->count_point * sizeof(char *));
 y_fail_lb:
     series->y_series = gt_mem_realloc(series->y_series, series->count_point * size);
 x_fail_lb:
@@ -697,13 +819,14 @@ x_fail_lb:
     return GT_RES_FAIL;
 }
 
-gt_res_t gt_graphs_series_add_point_by(gt_obj_st * obj, uint16_t series_index, gt_point_f_st const * const point)
+gt_res_t gt_graphs_series_add_point_by(gt_obj_st * obj, uint16_t series_index, gt_point_f_st const * const point, char const * const point_text)
 {
     gt_series_points_st * series = _get_series_line_by(obj, series_index);
-    return gt_graphs_series_add_point(obj, series, point);
+    return gt_graphs_series_add_point(obj, series, point, point_text);
 }
 
-gt_res_t gt_graphs_series_add_point_list(gt_obj_st * obj, gt_series_points_st * const series, gt_point_f_st const * const list, uint16_t count)
+gt_res_t gt_graphs_series_add_point_list(gt_obj_st * obj, gt_series_points_st * const series,
+    gt_point_f_st const * const list, char * const text_list[], uint16_t count)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return GT_RES_FAIL;
@@ -728,6 +851,10 @@ gt_res_t gt_graphs_series_add_point_list(gt_obj_st * obj, gt_series_points_st * 
         if (NULL == series->y_series) {
             goto y_fail_lb;
         }
+        series->point_value_str = gt_mem_realloc(series->point_value_str, (series->count_point + count) * sizeof(char *));
+        if (NULL == series->point_value_str) {
+            goto point_val_fail_lb;
+        }
     } else {
         series->x_series = gt_mem_malloc(count * size);
         if (NULL == series->x_series) {
@@ -739,16 +866,34 @@ gt_res_t gt_graphs_series_add_point_list(gt_obj_st * obj, gt_series_points_st * 
             series->x_series = NULL;
             return GT_RES_FAIL;
         }
+        series->point_value_str = gt_mem_malloc(count * sizeof(char *));
+        if (NULL == series->point_value_str) {
+            gt_mem_free(series->y_series);
+            series->y_series = NULL;
+            gt_mem_free(series->x_series);
+            series->x_series = NULL;
+            return GT_RES_FAIL;
+        }
     }
-
-    for (gt_size_t i = 0; i < count; ++i) {
-        series->x_series[series->count_point] = list[i].x;
-        series->y_series[series->count_point] = list[i].y;
+    uint16_t len = 0;
+    for (gt_size_t i = 0, offset = series->count_point; i < count; ++i) {
+        series->x_series[offset + i] = list[i].x;
+        series->y_series[offset + i] = list[i].y;
+        if (text_list && text_list[i]) {
+            len = strlen(text_list[i]);
+            series->point_value_str[offset + i] = gt_mem_malloc(len + 1);
+            gt_memcpy(series->point_value_str[offset + i], text_list[i], len);
+            series->point_value_str[offset + i][len] = '\0';
+        } else {
+            series->point_value_str[offset + i] = NULL;
+        }
         ++series->count_point;
     }
 
     return GT_RES_OK;
 
+point_val_fail_lb:
+    series->point_value_str = gt_mem_realloc(series->point_value_str, series->count_point * sizeof(char *));
 y_fail_lb:
     series->y_series = gt_mem_realloc(series->y_series, series->count_point * size);
 x_fail_lb:
@@ -756,10 +901,11 @@ x_fail_lb:
     return GT_RES_FAIL;
 }
 
-gt_res_t gt_graphs_series_add_point_list_by(gt_obj_st * obj, uint16_t series_index, gt_point_f_st const * const list, uint16_t count)
+gt_res_t gt_graphs_series_add_point_list_by(gt_obj_st * obj, uint16_t series_index,
+    gt_point_f_st const * const list, char * const text_list[], uint16_t count)
 {
     gt_series_points_st * series = _get_series_line_by(obj, series_index);
-    return gt_graphs_series_add_point_list(obj, series, list, count);
+    return gt_graphs_series_add_point_list(obj, series, list, text_list, count);
 }
 
 bool gt_graphs_is_self_adaptive(gt_obj_st * obj)
@@ -796,5 +942,179 @@ void gt_graphs_set_anti_axis_ver_dir(gt_obj_st * obj, bool enabled)
     style->reg.anti_ver_axis_dir = enabled;
 }
 
+void gt_graphs_show_point_value(gt_obj_st * obj, uint16_t series_index, bool enabled)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    gt_series_points_st * series = _get_series_line_by(obj, series_index);
+    series->show_point_value = enabled;
+}
+
+void gt_graphs_set_point_value_space_between_line(gt_obj_st * obj, uint16_t series_index, uint8_t space)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    gt_series_points_st * series = _get_series_line_by(obj, series_index);
+    series->font_line_space = space;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_graphs_set_point_value_font_color(gt_obj_st * obj, uint16_t series_index, gt_color_t font_color)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    gt_series_points_st * series = _get_series_line_by(obj, series_index);
+    series->point_value_font_color = font_color;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_graphs_set_point_value_bottom(gt_obj_st * obj, uint16_t series_index, bool enabled)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    gt_series_points_st * series = _get_series_line_by(obj, series_index);
+    series->point_value_bottom = enabled;
+}
+
+bool gt_graphs_is_show_point_value(gt_obj_st * obj, uint16_t series_index)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return false;
+    }
+    gt_series_points_st * series = _get_series_line_by(obj, series_index);
+    return series->show_point_value;
+}
+
+void gt_graphs_set_font_color(gt_obj_st * graphs, gt_color_t color)
+{
+    if (false == gt_obj_is_type(graphs, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st * )graphs;
+    style->font_color = color;
+    gt_event_send(graphs, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_graphs_set_font_size(gt_obj_st * graphs, uint8_t size)
+{
+    if (false == gt_obj_is_type(graphs, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st * )graphs;
+    style->font_info.size = size;
+}
+
+void gt_graphs_set_font_gray(gt_obj_st * graphs, uint8_t gray)
+{
+    if (false == gt_obj_is_type(graphs, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st * )graphs;
+    style->font_info.gray = gray;
+}
+
+void gt_graphs_set_font_align(gt_obj_st * graphs, gt_align_et align)
+{
+    if (false == gt_obj_is_type(graphs, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st * )graphs;
+    style->font_align = align;
+    gt_event_send(graphs, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
+void gt_graphs_set_font_family_cn(gt_obj_st * graphs, gt_family_t family)
+{
+    if (false == gt_obj_is_type(graphs, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st * )graphs;
+    style->font_info.style_cn = family;
+}
+
+void gt_graphs_set_font_family_en(gt_obj_st * graphs, gt_family_t family)
+{
+    if (false == gt_obj_is_type(graphs, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st * )graphs;
+    style->font_info.style_en = family;
+}
+
+void gt_graphs_set_font_family_fl(gt_obj_st * graphs, gt_family_t family)
+{
+    if (false == gt_obj_is_type(graphs, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st * )graphs;
+    style->font_info.style_fl = family;
+}
+
+void gt_graphs_set_font_family_numb(gt_obj_st * graphs, gt_family_t family)
+{
+    if (false == gt_obj_is_type(graphs, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st * )graphs;
+    style->font_info.style_numb = family;
+}
+#else
+void gt_graphs_set_font_family(gt_obj_st * graphs, gt_family_t family)
+{
+    if (false == gt_obj_is_type(graphs, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st * )graphs;
+    gt_font_set_family(&style->font_info, family);
+}
+
+void gt_graphs_set_font_cjk(gt_obj_st* graphs, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(graphs, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st * )graphs;
+    style->font_info.cjk = cjk;
+}
+#endif
+void gt_graphs_set_font_thick_en(gt_obj_st * graphs, uint8_t thick)
+{
+    if (false == gt_obj_is_type(graphs, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st * )graphs;
+    style->font_info.thick_en = thick;
+}
+void gt_graphs_set_font_thick_cn(gt_obj_st * graphs, uint8_t thick)
+{
+    if (false == gt_obj_is_type(graphs, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st * )graphs;
+    style->font_info.thick_cn = thick;
+}
+void gt_graphs_set_font_encoding(gt_obj_st * graphs, gt_encoding_et encoding)
+{
+    if (false == gt_obj_is_type(graphs, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st * )graphs;
+    style->font_info.encoding = encoding;
+}
+
+uint8_t gt_graphs_get_font_size(gt_obj_st * graphs)
+{
+    if (false == gt_obj_is_type(graphs, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_graphs_st * style = (_gt_graphs_st * )graphs;
+    return style->font_info.size;
+}
 #endif  /** GT_CFG_ENABLE_GRAPHS */
 /* end ------------------------------------------------------------------*/

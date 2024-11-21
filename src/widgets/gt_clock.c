@@ -120,7 +120,7 @@ static const char* _gt_weeks[] = {
 
 
 /* static functions -----------------------------------------------------*/
-static bool _is_double_target_ignore_case(const char * const str, char target, char numb) {
+static bool _is_contiune_same_char(const char * const str, char target, char numb) {
     char another_case = 0;
 
     if (*str < 'A' || *str > 'z') {
@@ -197,36 +197,37 @@ static char * _get_time_str(_gt_clock_st * clock) {
     pointer = clock->format;
     str_ptr = str;
     while (*pointer) {
-        if (_is_double_target_ignore_case(pointer, 'h', 2)) {
+        if (_is_contiune_same_char(pointer, 'h', 2)) {
             sprintf(str_ptr, "%02d", hours);
             pointer += 2;
             str_ptr += 2;
-        } else if (_is_double_target_ignore_case(pointer, 'm', 2)) {
+        } else if (_is_contiune_same_char(pointer, 'm', 2)) {
             sprintf(str_ptr, "%02d", _get_minute(clock->time_current));
             pointer += 2;
             str_ptr += 2;
-        } else if (_is_double_target_ignore_case(pointer, 's', 2)) {
+        } else if (_is_contiune_same_char(pointer, 's', 2)) {
             sprintf(str_ptr, "%02d", _get_second(clock->time_current));
             pointer += 2;
             str_ptr += 2;
-        } else if(_is_double_target_ignore_case(pointer, 'd', 2)) {
+        } else if (_is_contiune_same_char(pointer, 'd', 2)) {
             sprintf(str_ptr, "%02d", _get_day(clock->time_current));
             pointer += 2;
             str_ptr += 2;
-        } else if(_is_double_target_ignore_case(pointer, 'M', 2)) {
+        } else if (_is_contiune_same_char(pointer, 'M', 2)) {
             sprintf(str_ptr, "%02d", _get_month(clock->time_current));
             pointer += 2;
             str_ptr += 2;
-        } else if(_is_double_target_ignore_case(pointer, 'y', 4)) {
+        } else if (_is_contiune_same_char(pointer, 'y', 4)) {
             sprintf(str_ptr, "%04d", _get_year(clock->time_current));
             pointer += 4;
             str_ptr += 4;
-        } else if(_is_double_target_ignore_case(pointer, 'E', 3)) {
+        } else if (_is_contiune_same_char(pointer, 'E', 3)) {
             sprintf(str_ptr, "%s", _get_week_str(_get_week(clock->time_current)));
             pointer += 3;
             str_ptr += 3;
-        }
-        else {
+        } else if (':' == *pointer) {
+            *str_ptr++ = *pointer++;    // TODO
+        } else {
             *str_ptr++ = *pointer++;
         }
     }
