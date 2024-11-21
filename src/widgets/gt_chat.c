@@ -193,7 +193,7 @@ static uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, uint8_t idx) {
     uint32_t w = 0, h = 0;
     gt_size_t x, y;
 
-    h = gt_font_split_line_numb(&style->font_info, gt_btn_get_text(style->msg_list[idx].msg_obj), _MSG_MAX_W(chat->area.w), 0, &w);
+    h = gt_font_split_line_numb(&style->font_info, gt_btn_get_text(style->msg_list[idx].msg_obj), _MSG_MAX_W(chat->area.w), _MSG_MAX_W(chat->area.w), 0, &w);
 
     if( h > 1){
         gt_btn_set_font_align(style->msg_list[idx].msg_obj, GT_ALIGN_LEFT_MID);
@@ -237,7 +237,7 @@ static void _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint8_t tim_s, 
     _gt_chat_st * style = (_gt_chat_st * )chat;
 
     if(style->msg_cnt >= GT_CHAT_MAX_MSG_CNT){
-        style->max_h -= gt_obj_get_h(style->msg_list[0].msg_obj);
+        style->max_h -= (gt_obj_get_h(style->msg_list[0].msg_obj) + _MSG_SPACE_Y);
         _gt_obj_class_destroy(style->msg_list[0].msg_obj);
         gt_memmove (style->msg_list, style->msg_list + 1, sizeof(_gt_chat_param_st) * (GT_CHAT_MAX_MSG_CNT-1));
         style->msg_cnt = GT_CHAT_MAX_MSG_CNT - 1;
@@ -268,6 +268,26 @@ static void _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint8_t tim_s, 
     style->max_h += _gt_update_msg_area_idx(chat, style->msg_cnt);
     style->msg_cnt++;
 
+    chat->process_attr.scroll.y = chat->area.h - style->max_h;
+    _gt_chat_msg_move_y(chat, chat->process_attr.scroll.y);
+}
+
+static void _gt_chat_append_msg(gt_obj_st* chat, const char* msg)
+{
+    _gt_chat_st * style = (_gt_chat_st * )chat;
+
+    int16_t index = style->msg_cnt - 1;
+    if(index < 0) return ;
+
+    if(GT_CHAT_TYPE_TEXT != style->msg_list[index].type) return ;
+
+    gt_obj_st * obj = style->msg_list[index].msg_obj;
+    char* cur_text = gt_btn_get_text(obj);
+
+    gt_btn_set_text(obj, "%s%s", cur_text, msg);
+
+    style->max_h -= (gt_obj_get_h(obj) + _MSG_SPACE_Y);
+    style->max_h += _gt_update_msg_area_idx(chat, index);
     chat->process_attr.scroll.y = chat->area.h - style->max_h;
     _gt_chat_msg_move_y(chat, chat->process_attr.scroll.y);
 }
@@ -486,6 +506,15 @@ void gt_chat_add_received_voice_msg(gt_obj_st * chat, uint8_t tim_s)
         return ;
     }
     _gt_chat_add_msg( chat, NULL, tim_s, GT_CHAT_TYPE_VOICE, false);
+    gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_chat_append_msg_text(gt_obj_st * chat, const char * msg)
+{
+    if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_chat_append_msg(chat, msg);
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

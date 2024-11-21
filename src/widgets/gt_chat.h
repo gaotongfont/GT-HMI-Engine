@@ -49,6 +49,8 @@ void gt_chat_add_send_voice_msg(gt_obj_st * chat, uint8_t tim_s);
 void gt_chat_add_received_text_msg(gt_obj_st * chat, const char * msg);
 void gt_chat_add_received_voice_msg(gt_obj_st * chat, uint8_t tim_s);
 
+void gt_chat_append_msg_text(gt_obj_st * chat, const char * msg);
+
 void gt_chat_clean_all_msg(gt_obj_st * chat);
 
 void gt_chat_set_send_msg_bg_color(gt_obj_st * chat, gt_color_t color);

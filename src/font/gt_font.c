@@ -1551,7 +1551,7 @@ _ret_dat:
     return len;
 }
 
-uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint32_t max_w, uint16_t space, uint32_t * ret_max_w)
+uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint32_t max_w, uint32_t start_w ,uint16_t space, uint32_t * ret_max_w)
 {
     uint32_t line_numb = 1;
     if(!text) return line_numb;
@@ -1570,7 +1570,7 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint3
     GT_CHECK_BACK_VAL(temp_font.res, line_numb);
 
     uint8_t lan = 0;
-    int32_t disp_w = max_w;
+    int32_t disp_w = start_w;
     uint32_t ret_w = 0, lan_len = 0;
     uint32_t idx = 0, idx_step = 0, len = strlen(text);
 
