@@ -162,9 +162,19 @@ void gt_graphs_show_point_value(gt_obj_st * obj, uint16_t series_index, bool ena
  *
  * @param obj
  * @param series_index The index of the series to which the point is added
- * @param space default: 4
+ * @param space default: 8
  */
 void gt_graphs_set_point_value_space_between_line(gt_obj_st * obj, uint16_t series_index, uint8_t space);
+
+/**
+ * @brief Set the font color of the value of the point,
+ *      which will to display near the point
+ *
+ * @param obj
+ * @param series_index The index of the series to which the point is added
+ * @param font_color The font color of the value of the point
+ */
+void gt_graphs_set_point_value_font_color(gt_obj_st * obj, uint16_t series_index, gt_color_t font_color);
 
 /**
  * @brief Set the value of the point to be displayed at the bottom of the point or line.
