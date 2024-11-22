@@ -21,6 +21,7 @@ extern "C" {
 #include "gt_obj_class.h"
 #include "stdarg.h"
 #include "stdlib.h"
+#include "../others/gt_color.h"
 #include "../core/gt_style.h"
 #include "../font/gt_font.h"
 

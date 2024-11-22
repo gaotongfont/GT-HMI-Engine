@@ -395,7 +395,7 @@ void gt_label_set_font_color(gt_obj_st * label, gt_color_t color)
 gt_color_t gt_label_get_font_color(gt_obj_st * label)
 {
     if (false == gt_obj_is_type(label, OBJ_TYPE)) {
-        return ;
+        return gt_color_black();
     }
     _gt_label_st * style = (_gt_label_st * )label;
     return style->font_color;
