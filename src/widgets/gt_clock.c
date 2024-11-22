@@ -31,7 +31,7 @@
 #define _SECOND_MAX_VALUE   60
 
 #define _SECOND_PERIOD_MS           1000
-#define _TWINKLE_COLON_PERIOD_MS    _SECOND_PERIOD_MS
+#define _TWINKLE_COLON_PERIOD_MS    500
 
 #define _MAX_NEXT_DAY_BIT_WIDTH     4
 #define _MAX_ALERT_BIT_WIDTH        4

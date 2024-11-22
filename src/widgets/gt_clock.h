@@ -140,10 +140,10 @@ gt_clock_mode_et gt_clock_get_mode(gt_obj_st * obj);
 void gt_clock_set_twinkle_colon_mode(gt_obj_st * obj, bool enabled);
 
 /**
- * @brief Set the colon twinkle period, [default: 1000ms]
+ * @brief Set the colon twinkle period, [default: 500ms]
  *
  * @param obj
- * @param period_ms default: 1000ms
+ * @param period_ms default: 500ms
  */
 void gt_clock_set_twinkle_colon_period(gt_obj_st * obj, uint32_t period_ms);
 
