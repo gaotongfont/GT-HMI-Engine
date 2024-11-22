@@ -80,6 +80,8 @@ char * gt_label_get_text(gt_obj_st * label);
  */
 void gt_label_set_font_color(gt_obj_st * label, gt_color_t color);
 
+gt_color_t gt_label_get_font_color(gt_obj_st * label);
+
 void gt_label_set_font_size(gt_obj_st * label, uint8_t size);
 void gt_label_set_font_gray(gt_obj_st * label, uint8_t gray);
 void gt_label_set_font_align(gt_obj_st * label, gt_align_et align);
@@ -102,6 +104,8 @@ uint8_t gt_label_get_font_size(gt_obj_st * label);
 
 uint8_t gt_label_get_space_x(gt_obj_st * label);
 uint8_t gt_label_get_space_y(gt_obj_st * label);
+
+gt_font_info_st * gt_label_get_font_info(gt_obj_st * label);
 
 /**
  * @brief Get max substring line width

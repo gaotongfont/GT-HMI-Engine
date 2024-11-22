@@ -624,7 +624,8 @@ static void _draw_point_value(gt_obj_st * obj) {
             font.utf8 = ptr->point_value_str[i];
             font.len = strlen(font.utf8);
 
-            total_width = gt_font_get_string_width(&font);
+            // total_width = gt_font_get_string_width(&font);
+            total_width = gt_font_get_longest_line_substring_width(&font.info, font.utf8, font_attr.space_x);
             _set_point_value_pos(obj, &pointer, total_width, &font_attr);
             draw_text(obj->draw_ctx, &font_attr, &obj->area);
         }

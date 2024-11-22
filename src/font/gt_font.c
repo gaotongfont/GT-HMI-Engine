@@ -1512,7 +1512,6 @@ uint32_t gt_font_split(gt_font_st * fonts, uint32_t width, uint32_t dot_w, uint3
             tmp_w = _get_convertor_string_width(&tmp_font, *lan, space, width - *ret_w, &ol_idx, &ol_w);
         }
         else {
-            // tmp_w = gt_font_get_string_width(&tmp_font);
             _gt_font_en_in_this_range(&tmp_font, (width - (*ret_w)), space, &tmp_w, &ol_idx, &ol_w);
         }
 #else

@@ -19,7 +19,6 @@
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
-#include "../font/gt_font.h"
 #include "../others/gt_anim.h"
 
 /* private define -------------------------------------------------------*/
@@ -83,9 +82,7 @@ static void _init_cb(gt_obj_st * obj) {
         .utf8       = (char * )style->text,
         .len        = len,
     };
-
-    font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
-    font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
+    gt_font_info_update_font_thick(&font.info);
 
     gt_area_st box_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
     /*draw font*/
@@ -395,6 +392,15 @@ void gt_label_set_font_color(gt_obj_st * label, gt_color_t color)
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+gt_color_t gt_label_get_font_color(gt_obj_st * label)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    return style->font_color;
+}
+
 void gt_label_set_font_size(gt_obj_st * label, uint8_t size)
 {
     if (false == gt_obj_is_type(label, OBJ_TYPE)) {
@@ -539,6 +545,15 @@ uint8_t gt_label_get_space_y(gt_obj_st * label)
     }
     _gt_label_st * style = (_gt_label_st * )label;
     return style->space_y;
+}
+
+gt_font_info_st * gt_label_get_font_info(gt_obj_st * label)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    return &style->font_info;
 }
 
 uint16_t gt_label_get_longest_line_substring_width(gt_obj_st * label)

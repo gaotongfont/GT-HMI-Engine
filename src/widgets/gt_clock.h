@@ -131,6 +131,23 @@ void gt_clock_set_mode(gt_obj_st * obj, gt_clock_mode_et mode);
 gt_clock_mode_et gt_clock_get_mode(gt_obj_st * obj);
 
 /**
+ * @brief Only display the hours and minutes values mode, colon twinkle.
+ *      Such as: "13:24" <=> "13 24"
+ *
+ * @param obj
+ * @param enabled false[default]: disabled; true: enabled
+ */
+void gt_clock_set_twinkle_colon_mode(gt_obj_st * obj, bool enabled);
+
+/**
+ * @brief Set the colon twinkle period, [default: 1000ms]
+ *
+ * @param obj
+ * @param period_ms default: 1000ms
+ */
+void gt_clock_set_twinkle_colon_period(gt_obj_st * obj, uint32_t period_ms);
+
+/**
  * @brief Enabled the 12-hour clock, [default: false]
  *      example: "13:25:40", enabled is: "01:25:40", otherwise is: "13:25:40".
  *
