@@ -139,6 +139,95 @@ static _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st
     return obj_clicked;
 }
 
+
+#if GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+/**
+ * @brief
+ *
+ * @param cur current obj
+ * @param find find obj
+ * @param flag flag  @gt_focus_dir_et
+ * @return true
+ * @return false
+ */
+static bool _gt_obj_cmp_focus(const gt_obj_st* cur, const gt_obj_st* find, uint8_t flag)
+{
+    if(!cur || !find) {
+        return false;
+    }
+
+    if(cur == find){
+        return false;
+    }
+
+    if(GT_FOCUS_DIR_RIGHT == flag){
+        return find->area.x > cur->area.x;
+    }
+    else if(GT_FOCUS_DIR_LEFT == flag){
+        return find->area.x < cur->area.x;
+    }
+    else if(GT_FOCUS_DIR_DOWN == flag){
+        return find->area.y > cur->area.y;
+    }
+    else if(GT_FOCUS_DIR_UP == flag){
+        return find->area.y < cur->area.y;
+    }
+
+    return false;
+}
+
+static gt_obj_st* _gt_obj_left_focus_get(const gt_obj_st* parent, const gt_obj_st* cur_obj, uint8_t flag)
+{
+    if(!parent || !cur_obj){
+        return NULL;
+    }
+
+    gt_obj_st* ret_obj = NULL, *find_obj = NULL;
+
+    // child
+    for(int i = 0; i < parent->cnt_child; ++i)
+    {
+        if(parent->child[i]->cnt_child > 0){
+            find_obj = _gt_obj_left_focus_get(parent->child[i], cur_obj, flag);
+            if(find_obj && _gt_obj_cmp_focus(cur_obj, find_obj, flag)){
+
+                if(ret_obj) {
+                    if(_gt_obj_cmp_focus(find_obj, ret_obj, flag)){
+                        ret_obj = find_obj;
+                    }
+                }
+                else{
+                    ret_obj = find_obj;
+                }
+            }
+        }
+
+        //
+        if(parent->child[i] == cur_obj){
+            continue;
+        }
+
+        if(GT_ENABLED != parent->child[i]->focus_dis){
+            continue;
+        }
+
+        if(!_gt_obj_cmp_focus(cur_obj, parent->child[i], flag)){
+            continue;
+        }
+
+        if(ret_obj) {
+            if(_gt_obj_cmp_focus(parent->child[i], ret_obj, flag)){
+                ret_obj = parent->child[i];
+            }
+        }
+        else{
+            ret_obj = parent->child[i];
+        }
+    }
+
+    return ret_obj ? ret_obj : (gt_obj_st*)cur_obj;
+}
+#else
 static gt_obj_st* _gt_obj_next_focus_get(const gt_obj_st * cur_obj, bool flag)
 {
     if(!cur_obj){
@@ -264,6 +353,7 @@ static gt_obj_st* _gt_obj_into_focus_get(const gt_obj_st * cur_obj)
 
     return NULL;
 }
+#endif
 
 /* global functions / API interface -------------------------------------*/
 
@@ -324,6 +414,29 @@ gt_obj_st * gt_find_clicked_obj_by_focus(gt_obj_st * parent)
     return obj_clicked ? obj_clicked : parent;
 }
 
+
+#if GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+gt_obj_change_st gt_obj_focus_change(gt_obj_st * cur_obj, uint8_t dir)
+{
+    gt_obj_change_st ret = {
+        .src = cur_obj,
+        .dst = NULL,
+    };
+
+    if (NULL == cur_obj) {
+        return ret;
+    }
+    ret.dst = _gt_obj_left_focus_get(gt_disp_get_scr(), cur_obj, dir);
+    if (!ret.dst) {
+        ret.dst = gt_disp_get_scr();
+    }
+
+    gt_obj_set_focus(cur_obj, false);
+    gt_obj_set_focus(ret.dst, true);
+    return ret;
+
+}
+#else
 gt_obj_change_st gt_obj_into_focus_change(gt_obj_st * cur_obj)
 {
     gt_obj_change_st ret = {
@@ -417,6 +530,7 @@ gt_obj_change_st gt_obj_prev_focus_change(gt_obj_st * cur_obj)
     gt_obj_set_focus(ret.dst, true);
     return ret;
 }
+#endif
 
 void gt_obj_focus_change_display(gt_obj_change_st * chg)
 {

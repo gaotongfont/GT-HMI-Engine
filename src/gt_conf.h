@@ -459,6 +459,15 @@ extern "C" {
      */
     #define _GT_USE_TEST       0
 #endif
+
+
+#ifndef GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+    /**
+     * @brief Use up and down left to control focus
+     *
+     */
+    #define GT_USE_UDLR_TO_CONTRIL_FOCUS_EN     0
+#endif
 /* typedef --------------------------------------------------------------*/
 
 

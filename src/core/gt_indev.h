@@ -22,9 +22,15 @@ extern "C" {
 
 
 
-/* typedef --------------------------------------------------------------*/
-
-
+/* typedef --------------------------------------------------------------*/\
+#if GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+typedef enum{
+    GT_FOCUS_DIR_RIGHT = 0,
+    GT_FOCUS_DIR_LEFT,
+    GT_FOCUS_DIR_DOWN,
+    GT_FOCUS_DIR_UP,
+}gt_focus_dir_et;
+#endif
 
 /* macros ---------------------------------------------------------------*/
 
