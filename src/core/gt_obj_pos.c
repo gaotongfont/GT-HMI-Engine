@@ -546,6 +546,11 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
             break;
         }
         case GT_TYPE_LISTVIEW: {
+#if GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+            if(!gt_obj_is_child(chg->src, parent) || !gt_obj_is_child(chg->dst, parent)){
+                break;
+            }
+#endif
             gt_obj_scroll_to_y(parent, chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
             break;
         }
