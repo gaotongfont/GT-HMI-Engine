@@ -575,6 +575,10 @@ static void _draw_points_lines_curves(gt_obj_st * obj) {
     gt_series_points_st * ptr = style->gp.series_head_p;
 
     while (ptr) {
+        if (ptr->line.opa < GT_OPA_MIN) {
+            ptr = ptr->next_series_p;
+            continue;
+        }
         if (_is_line_type(ptr, GT_GRAPHS_TYPE_LINE)) {
             _graphs_draw_line(obj, ptr);
         } else if (_is_line_type(ptr, GT_GRAPHS_TYPE_CURVE)) {
@@ -606,7 +610,7 @@ static void _draw_point_value(gt_obj_st * obj) {
     gt_font_info_update_font_thick(&font.info);
 
     while (ptr) {
-        if (false == ptr->show_point_value) {
+        if (false == ptr->show_point_value || ptr->line.opa < GT_OPA_MIN) {
             ptr = ptr->next_series_p;
             continue;
         }
