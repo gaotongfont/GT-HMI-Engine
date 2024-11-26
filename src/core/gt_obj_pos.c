@@ -150,7 +150,7 @@ static _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st
  * @return true
  * @return false
  */
-static bool _gt_obj_cmp_focus(const gt_obj_st* cur, const gt_obj_st* find, uint8_t flag)
+static bool _gt_obj_focus_cmp_positon(const gt_obj_st* cur, const gt_obj_st* find, uint8_t flag)
 {
     if(!cur || !find) {
         return false;
@@ -176,30 +176,88 @@ static bool _gt_obj_cmp_focus(const gt_obj_st* cur, const gt_obj_st* find, uint8
     return false;
 }
 
-static gt_obj_st* _gt_obj_left_focus_get(const gt_obj_st* parent, const gt_obj_st* cur_obj, uint8_t flag)
+static void _gt_obj_focus_cmp_obj(const gt_obj_st* cur, const gt_obj_st* child, gt_obj_st** ret, uint8_t flag)
+{
+    if(!cur || !child) {return ;}
+
+    if(!_gt_obj_focus_cmp_positon(cur, child, flag)){
+        return ;
+    }
+
+    if(!(*ret)) {
+        *ret = (gt_obj_st*)child;
+
+        return ;
+    }
+
+    if(_gt_obj_focus_cmp_positon(child, *ret, flag)){
+
+        if(GT_FOCUS_DIR_RIGHT == flag && gt_abs(child->area.y - cur->area.y) <= gt_abs((*ret)->area.y - cur->area.y))
+        {
+            *ret = (gt_obj_st*)child;
+            return ;
+        }
+        else if(GT_FOCUS_DIR_LEFT == flag && gt_abs(child->area.y - cur->area.y) <= gt_abs((*ret)->area.y - cur->area.y))
+        {
+            *ret = (gt_obj_st*)child;
+            return ;
+        }
+        else if(GT_FOCUS_DIR_DOWN == flag && gt_abs(child->area.x - cur->area.x) <= gt_abs((*ret)->area.x - cur->area.x))
+        {
+            *ret = (gt_obj_st*)child;
+            return ;
+        }
+        else if(GT_FOCUS_DIR_UP == flag && gt_abs(child->area.x - cur->area.x) <= gt_abs((*ret)->area.x - cur->area.x))
+        {
+            *ret = (gt_obj_st*)child;
+            return ;
+        }
+    }
+
+    if(cur == gt_disp_get_scr()){
+        return ;
+    }
+
+
+    int32_t child_dist = 0, ret_dist = 0, tmp = 0;
+
+    if(GT_FOCUS_DIR_RIGHT == flag){
+        child_dist = gt_abs(child->area.x - (cur->area.x + cur->area.w)) + gt_abs(child->area.y - cur->area.y);
+        ret_dist = gt_abs((*ret)->area.x - (cur->area.x + cur->area.w)) + gt_abs((*ret)->area.y - cur->area.y);
+    }
+    else if(GT_FOCUS_DIR_LEFT == flag){
+        child_dist = gt_abs((child->area.x + child->area.w) - cur->area.x) + gt_abs(child->area.y - cur->area.y);
+        ret_dist = gt_abs(((*ret)->area.x + (*ret)->area.w) - cur->area.x) + gt_abs((*ret)->area.y - cur->area.y);
+    }
+    else if(GT_FOCUS_DIR_DOWN == flag){
+        child_dist = gt_abs(child->area.x - cur->area.x) + gt_abs(child->area.y - (cur->area.y + cur->area.h));
+        ret_dist = gt_abs((*ret)->area.x - cur->area.x) + gt_abs((*ret)->area.y - (cur->area.y + cur->area.h));
+    }
+    else if(GT_FOCUS_DIR_UP == flag){
+        child_dist = gt_abs(child->area.x - cur->area.x) + gt_abs((child->area.y + child->area.h) - cur->area.y);
+        ret_dist = gt_abs((*ret)->area.x - cur->area.x) + gt_abs(((*ret)->area.y + (*ret)->area.h) - cur->area.y);
+    }
+
+    if((child_dist < ret_dist))
+    {
+        *ret = (gt_obj_st*)child;
+    }
+
+}
+
+static gt_obj_st* _gt_obj_dir_focus_get(const gt_obj_st* parent, const gt_obj_st* cur_obj, uint8_t flag)
 {
     if(!parent || !cur_obj){
         return NULL;
     }
 
     gt_obj_st* ret_obj = NULL, *find_obj = NULL;
-
     // child
     for(int i = 0; i < parent->cnt_child; ++i)
     {
         if(parent->child[i]->cnt_child > 0){
-            find_obj = _gt_obj_left_focus_get(parent->child[i], cur_obj, flag);
-            if(find_obj && _gt_obj_cmp_focus(cur_obj, find_obj, flag)){
-
-                if(ret_obj) {
-                    if(_gt_obj_cmp_focus(find_obj, ret_obj, flag)){
-                        ret_obj = find_obj;
-                    }
-                }
-                else{
-                    ret_obj = find_obj;
-                }
-            }
+            find_obj = _gt_obj_dir_focus_get(parent->child[i], cur_obj, flag);
+            _gt_obj_focus_cmp_obj(cur_obj, find_obj, &ret_obj, flag);
         }
 
         //
@@ -211,18 +269,7 @@ static gt_obj_st* _gt_obj_left_focus_get(const gt_obj_st* parent, const gt_obj_s
             continue;
         }
 
-        if(!_gt_obj_cmp_focus(cur_obj, parent->child[i], flag)){
-            continue;
-        }
-
-        if(ret_obj) {
-            if(_gt_obj_cmp_focus(parent->child[i], ret_obj, flag)){
-                ret_obj = parent->child[i];
-            }
-        }
-        else{
-            ret_obj = parent->child[i];
-        }
+        _gt_obj_focus_cmp_obj(cur_obj, parent->child[i], &ret_obj , flag);
     }
 
     return ret_obj ? ret_obj : (gt_obj_st*)cur_obj;
@@ -426,7 +473,7 @@ gt_obj_change_st gt_obj_focus_change(gt_obj_st * cur_obj, uint8_t dir)
     if (NULL == cur_obj) {
         return ret;
     }
-    ret.dst = _gt_obj_left_focus_get(gt_disp_get_scr(), cur_obj, dir);
+    ret.dst = _gt_obj_dir_focus_get(gt_disp_get_scr(), cur_obj, dir);
     if (!ret.dst) {
         ret.dst = gt_disp_get_scr();
     }
