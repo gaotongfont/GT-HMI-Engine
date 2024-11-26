@@ -330,7 +330,7 @@ static gt_padding_st _get_padding_by(gt_obj_st * obj) {
 static void _set_point_value_pos(gt_obj_st * obj, gt_point_st * pointer, uint16_t str_width, gt_attr_font_st * font_attr) {
     font_attr->logical_area.x = pointer->x - (str_width >> 1);
     font_attr->logical_area.y = pointer->y;
-    font_attr->logical_area.w = str_width + 10;
+    font_attr->logical_area.w = str_width + font_attr->font->info.size;
     font_attr->logical_area.h = font_attr->font->info.size;
 }
 
@@ -373,6 +373,7 @@ static void _draw_ruler_range(gt_obj_st * obj, gt_padding_st const * const paddi
         .font = &font,
         .font_color = style->font_color,
         .opa = style->gp.axis.scale.opa,
+        .logical_area = obj->area,
     };
     _draw_ruler_pos_area_t pos_func_arr[] = {
         _draw_ruler_ver_start, _draw_ruler_ver_end, _draw_ruler_hor_start, _draw_ruler_hor_end
@@ -624,7 +625,6 @@ static void _draw_point_value(gt_obj_st * obj) {
             font.utf8 = ptr->point_value_str[i];
             font.len = strlen(font.utf8);
 
-            // total_width = gt_font_get_string_width(&font);
             total_width = gt_font_get_longest_line_substring_width(&font.info, font.utf8, font_attr.space_x);
             _set_point_value_pos(obj, &pointer, total_width, &font_attr);
             draw_text(obj->draw_ctx, &font_attr, &obj->area);
