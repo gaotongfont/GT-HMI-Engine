@@ -11,7 +11,7 @@
 #include "gt_mask.h"
 #include "gt_obj_pos.h"
 #include "gt_mem.h"
-#include "gt_area.h"
+#include "../others/gt_area.h"
 /* private define -------------------------------------------------------*/
 #ifndef _GT_DRAW_USE_RADIUS_MASK_MIX
     /**
