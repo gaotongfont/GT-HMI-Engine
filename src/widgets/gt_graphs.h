@@ -97,8 +97,8 @@ void gt_graphs_set_axis(gt_obj_st * obj, gt_axis_st const * const axis);
  * @brief Using FIFO mode to display the graph, the graph will
  *      automatically delete the first or oldest point.
  *      [Warning] Must disabled self adaptive mode, otherwise it will not work normally.
- *          x-axis will be automatically calculated by hor, which was provided start and end value
- *      ignore the x-axis was provided by the user;
+ *          x-axis will be automatically calculated by hor, which was provided start and
+ *      end value ignore the x-axis was provided by the user;
  *          y-axis was provided by the user.
  *
  * @param obj
