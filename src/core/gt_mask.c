@@ -259,6 +259,10 @@ static gt_mask_res_et _gt_mask_radius_get(gt_opa_t* mask_buf, \
                                         gt_size_t abs_x, gt_size_t abs_y, uint16_t len, \
                                         gt_mask_radius_st* p)
 {
+    if(!p || !p->circle || !p->circle->buf){
+        return GT_MASK_RES_UNKNOWN;
+    }
+
     bool outer = p->outer;
     int32_t radius = p->radius;
     gt_area_st area;
@@ -854,8 +858,10 @@ void gt_mask_free(void* p_mask)
         gt_mask_radius_st* p_radius = (gt_mask_radius_st*)p_mask;
         if(p_radius->circle){
             if(p_radius->circle->count < 0){
-                gt_mem_free(p_radius->circle->opa);
+                gt_mem_free(p_radius->circle->buf);
+                p_radius->circle->buf = NULL;
                 gt_mem_free(p_radius->circle);
+                p_radius->circle = NULL;
             }
             else{
                 p_radius->circle->used_cnt--;
