@@ -2767,6 +2767,7 @@ void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const g
         in_mask_id = gt_mask_add(&in_mask);
     }
 
+    bool is_img = false;
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     if( dsc->img
@@ -2779,9 +2780,10 @@ void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const g
 #endif
 
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
-        || dsc->custom_addr
+        || !gt_hal_is_invalid_custom_size_addr(dsc->custom_addr)
 #endif
     ){
+        is_img = true;
         rect_attr.bg_img_opa = dsc->opa;
         rect_attr.bg_img_src = dsc->img;
 
@@ -2802,7 +2804,7 @@ void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const g
     }
 
     if(start_angle + 360 == end_angle || start_angle == end_angle + 360){
-        if(dsc->img){
+        if(is_img){
             draw_bg_img(draw_ctx, &rect_attr, &area_out);
         }
         else{
@@ -2840,7 +2842,7 @@ void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const g
 
     if(angle_gap > 60 && out_radius > 10){
 
-        if(dsc->img){
+        if(is_img){
             draw_bg_img(draw_ctx, &rect_attr, &area_out);
         }
         else {
@@ -2861,7 +2863,7 @@ void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const g
         }
     }
     else {
-        if(dsc->img){
+        if(is_img){
             draw_bg_img(draw_ctx, &rect_attr, &area_out);
         }
         else{
@@ -2879,5 +2881,10 @@ void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const g
         gt_mask_free(&in_mask);
         gt_mask_remove_idx(in_mask_id);
     }
+
+    if(is_img) { return ; }
+
+
+
 }
 /* end ------------------------------------------------------------------*/
