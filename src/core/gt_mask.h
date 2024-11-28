@@ -124,6 +124,12 @@ gt_mask_res_et gt_mask_get(gt_opa_t* mask_buf, gt_size_t x, gt_size_t y, uint16_
  */
 void gt_mask_remove_idx(int16_t idx);
 /**
+ * @brief remove all mask from list
+ *
+ */
+void gt_mask_remove_all(void);
+
+/**
  * @brief free mask
  *
  * @param p_mask
