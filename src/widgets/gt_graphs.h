@@ -169,6 +169,23 @@ gt_res_t gt_graphs_series_add_point_list(gt_obj_st * obj, gt_series_points_st * 
 gt_res_t gt_graphs_series_add_point_list_by(gt_obj_st * obj, uint16_t series_index,
     gt_point_f_st const * const list, char * const text_list[], uint16_t count);
 
+/**
+ * @brief Remove all points of the series line by index, not remove the series line
+ *
+ * @param obj
+ * @param series_index The index of the series to which want to remove all points
+ * @return gt_res_t
+ */
+gt_res_t gt_graphs_series_remove_all_points(gt_obj_st * obj, uint16_t series_index);
+
+/**
+ * @brief Remove all series lines, must be re-added if you want to display the series line
+ *
+ * @param obj
+ * @return gt_res_t
+ */
+gt_res_t gt_graphs_remove_all_series_lines(gt_obj_st * obj);
+
 bool gt_graphs_is_self_adaptive(gt_obj_st * obj);
 
 bool gt_graphs_is_show_ruler(gt_obj_st * obj);

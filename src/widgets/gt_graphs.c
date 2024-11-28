@@ -127,15 +127,7 @@ static void _graphs_init_cb(gt_obj_st * obj) {
     _draw_point_value(obj);
 }
 
-static void _free_series_lines(gt_series_points_st * series) {
-    if (NULL == series) {
-        return;
-    }
-    if (series->next_series_p) {
-        _free_series_lines(series->next_series_p);
-        gt_mem_free(series->next_series_p);
-        series->next_series_p = NULL;
-    }
+static void _free_series_line_points(gt_series_points_st * series) {
     if (series->point_value_str) {
         for (gt_size_t i = series->count_point - 1; i >= 0; --i) {
             if (series->point_value_str[i]) {
@@ -154,17 +146,29 @@ static void _free_series_lines(gt_series_points_st * series) {
         gt_mem_free(series->x_series);
         series->x_series = NULL;
     }
+    series->count_point = 0;
+}
+
+static void _free_all_series_lines(gt_series_points_st * series) {
+    if (NULL == series) {
+        return;
+    }
+    if (series->next_series_p) {
+        _free_all_series_lines(series->next_series_p);
+        gt_mem_free(series->next_series_p);
+        series->next_series_p = NULL;
+    }
+    _free_series_line_points(series);
 }
 
 static void _graphs_deinit_cb(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     if (style->gp.series_head_p) {
-        _free_series_lines(style->gp.series_head_p);
+        _free_all_series_lines(style->gp.series_head_p);
         gt_mem_free(style->gp.series_head_p);
         style->gp.series_head_p = NULL;
         style->gp.count_line = 0;
     }
-
 }
 
 static void _graphs_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
@@ -973,6 +977,25 @@ gt_res_t gt_graphs_series_add_point_list_by(gt_obj_st * obj, uint16_t series_ind
 {
     gt_series_points_st * series = _get_series_line_by(obj, series_index);
     return gt_graphs_series_add_point_list(obj, series, list, text_list, count);
+}
+
+gt_res_t gt_graphs_series_remove_all_points(gt_obj_st * obj, uint16_t series_index)
+{
+    gt_series_points_st * series = _get_series_line_by(obj, series_index);
+    if (NULL == series) {
+        return GT_RES_FAIL;
+    }
+    _free_series_line_points(series);
+    return GT_RES_OK;
+}
+
+gt_res_t gt_graphs_remove_all_series_lines(gt_obj_st * obj)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+    _graphs_deinit_cb(obj);
+    return GT_RES_OK;
 }
 
 bool gt_graphs_is_self_adaptive(gt_obj_st * obj)
