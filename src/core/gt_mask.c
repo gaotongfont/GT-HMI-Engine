@@ -851,6 +851,14 @@ void gt_mask_remove_idx(int16_t idx)
     _gt_mask_list[idx].p_mask = NULL;
 }
 
+void gt_mask_remove_all(void)
+{
+    int16_t i = 0;
+    for(i = 0; i < _GT_MASK_MAX_NUM; i++) {
+        _gt_mask_list[i].p_mask = NULL;
+    }
+}
+
 void gt_mask_free(void* p_mask)
 {
     _gt_mask_dsc_st* p_dsc = p_mask;
