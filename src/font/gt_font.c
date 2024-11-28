@@ -211,10 +211,10 @@ static GT_ATTRIBUTE_RAM_DATA const _font_type_group_adjust_ascii_pos_st _font_ty
 static GT_ATTRIBUTE_RAM_DATA const gt_size_t _font_type_group_arr_len = sizeof(_font_type_group_arr) / sizeof(_font_type_group_adjust_ascii_pos_st) - 1;
 
 
-static GT_ATTRIBUTE_RAM_DATA gt_font_family_list_st _font_family_list = {NULL, 0};
+static gt_font_family_list_st _font_family_list = {NULL, 0};
 
 /* macros ---------------------------------------------------------------*/
-static GT_ATTRIBUTE_RAM_DATA gt_encoding_et _gt_project_encoding = GT_ENCODING_UTF8;
+static gt_encoding_et _gt_project_encoding = GT_ENCODING_UTF8;
 #ifdef PINYIN_INPUT_METHOD_EN
 static GT_ATTRIBUTE_RAM_DATA py_info_st* _gt_py_info;
 #endif

@@ -73,11 +73,11 @@ static const gt_obj_class_st gt_graphs_class = {
     .size_style    = sizeof(_gt_graphs_st)
 };
 
-static bool _is_self_adaptive(gt_obj_st * obj);
-static void _draw_axis(gt_obj_st * obj);
-static void _draw_points_lines_curves(gt_obj_st * obj);
-static void _calc_self_adaptive_axis_range(gt_obj_st * obj);
-static void _draw_point_value(gt_obj_st * obj);
+static GT_ATTRIBUTE_RAM_TEXT bool _is_self_adaptive(gt_obj_st * obj);
+static GT_ATTRIBUTE_RAM_TEXT void _draw_axis(gt_obj_st * obj);
+static GT_ATTRIBUTE_RAM_TEXT void _draw_points_lines_curves(gt_obj_st * obj);
+static GT_ATTRIBUTE_RAM_TEXT void _calc_self_adaptive_axis_range(gt_obj_st * obj);
+static GT_ATTRIBUTE_RAM_TEXT void _draw_point_value(gt_obj_st * obj);
 
 
 /* macros ---------------------------------------------------------------*/
@@ -127,7 +127,7 @@ static void _graphs_init_cb(gt_obj_st * obj) {
     _draw_point_value(obj);
 }
 
-static void _free_series_line_points(gt_series_points_st * series) {
+static GT_ATTRIBUTE_RAM_TEXT void _free_series_line_points(gt_series_points_st * series) {
     if (series->point_value_str) {
         for (gt_size_t i = series->count_point - 1; i >= 0; --i) {
             if (series->point_value_str[i]) {
@@ -149,7 +149,7 @@ static void _free_series_line_points(gt_series_points_st * series) {
     series->count_point = 0;
 }
 
-static void _free_all_series_lines(gt_series_points_st * series) {
+static GT_ATTRIBUTE_RAM_TEXT void _free_all_series_lines(gt_series_points_st * series) {
     if (NULL == series) {
         return;
     }
@@ -161,7 +161,7 @@ static void _free_all_series_lines(gt_series_points_st * series) {
     _free_series_line_points(series);
 }
 
-static void _graphs_free_series_lines(_gt_graphs_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT void _graphs_free_series_lines(_gt_graphs_st * style) {
     if (NULL == style->gp.series_head_p) {
         return;
     }
@@ -180,12 +180,12 @@ static void _graphs_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
 }
 
-static bool _is_self_adaptive(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT bool _is_self_adaptive(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     return style->reg.self_adaptive;
 }
 
-static bool _is_show_ruler(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT bool _is_show_ruler(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     return style->reg.show_ruler;
 }
@@ -198,17 +198,17 @@ static bool _is_show_ruler(gt_obj_st * obj) {
  * @param h
  * @return gt_point_st
  */
-static gt_point_st _get_display_pixel_range(gt_padding_st const * const padding, uint16_t w, uint16_t h) {
+static GT_ATTRIBUTE_RAM_TEXT gt_point_st _get_display_pixel_range(gt_padding_st const * const padding, uint16_t w, uint16_t h) {
     gt_point_st ret = { .x = w - padding->left - padding->right, .y = h - padding->top - padding->bottom };
     return ret;
 }
 
-static gt_point_st _add_obj_offset(gt_point_st const * const p, gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT gt_point_st _add_obj_offset(gt_point_st const * const p, gt_obj_st * obj) {
     gt_point_st ret = { .x = p->x + obj->area.x, .y = p->y + obj->area.y };
     return ret;
 }
 
-static gt_padding_st _add_obj_offset_padding(gt_padding_st const * const p, gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT gt_padding_st _add_obj_offset_padding(gt_padding_st const * const p, gt_obj_st * obj) {
     gt_padding_st ret = {
         .left = p->left + obj->area.x,
         .right = p->right,
@@ -218,12 +218,12 @@ static gt_padding_st _add_obj_offset_padding(gt_padding_st const * const p, gt_o
     return ret;
 }
 
-static void _update_axis_range(gt_range_st * dir_range, gt_size_t min, gt_size_t max, uint16_t redundancy) {
+static GT_ATTRIBUTE_RAM_TEXT void _update_axis_range(gt_range_st * dir_range, gt_size_t min, gt_size_t max, uint16_t redundancy) {
     dir_range->start = min - redundancy;
     dir_range->end   = max + redundancy;
 }
 
-static void _calc_self_adaptive_axis_range(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _calc_self_adaptive_axis_range(gt_obj_st * obj) {
     gt_point_st min = { 0x7fff, 0x7fff }, max = { -0x7fff, -0x7fff };
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_series_points_st * ptr = style->gp.series_head_p;
@@ -266,7 +266,7 @@ static void _calc_self_adaptive_axis_range(gt_obj_st * obj) {
     }
 }
 
-static gt_point_st _calc_div_part(_gt_graphs_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT gt_point_st _calc_div_part(_gt_graphs_st * style) {
     gt_point_st div_part = {
         .x = gt_abs((style->gp.axis.hor.end - style->gp.axis.hor.start) / style->gp.axis.hor_unit),
         .y = gt_abs((style->gp.axis.ver.end - style->gp.axis.ver.start) / style->gp.axis.ver_unit),
@@ -276,7 +276,7 @@ static gt_point_st _calc_div_part(_gt_graphs_st * style) {
     return div_part;
 }
 
-static void _void_draw_grid_lines(gt_obj_st * obj, gt_padding_st const * const padding, gt_point_st * points) {
+static GT_ATTRIBUTE_RAM_TEXT void _void_draw_grid_lines(gt_obj_st * obj, gt_padding_st const * const padding, gt_point_st * points) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_attr_line_st line_attr = { .line = style->gp.axis.grid };
     if (line_attr.line.opa < GT_OPA_MIN) {
@@ -314,7 +314,7 @@ static inline uint16_t _get_padding_size(_gt_graphs_st * style) {
     return style->reg.full_area ? style->custom_padding : _GRAPHS_DEFAULT_PADDING_SIZE;
 }
 
-static gt_padding_st _get_padding_by(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT gt_padding_st _get_padding_by(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_padding_st padding = {
         .left = style->reg.show_ruler ? 60 : _get_padding_size(style),
@@ -337,42 +337,42 @@ static gt_padding_st _get_padding_by(gt_obj_st * obj) {
     return padding;
 }
 
-static void _set_point_value_pos(gt_obj_st * obj, gt_point_st * pointer, uint16_t str_width, gt_attr_font_st * font_attr) {
+static GT_ATTRIBUTE_RAM_TEXT void _set_point_value_pos(gt_obj_st * obj, gt_point_st * pointer, uint16_t str_width, gt_attr_font_st * font_attr) {
     font_attr->logical_area.x = pointer->x - (str_width >> 1);
     font_attr->logical_area.y = pointer->y;
     font_attr->logical_area.w = str_width + font_attr->font->info.size;
     font_attr->logical_area.h = font_attr->font->info.size;
 }
 
-static void _draw_ruler_ver_start(gt_obj_st * obj, gt_padding_st const * const padding, gt_attr_font_st * font_attr) {
+static GT_ATTRIBUTE_RAM_TEXT void _draw_ruler_ver_start(gt_obj_st * obj, gt_padding_st const * const padding, gt_attr_font_st * font_attr) {
     font_attr->logical_area.x = obj->area.x + 4;
     font_attr->logical_area.y = obj->area.y + padding->top - 6;
     font_attr->logical_area.w = padding->left - 6;
     font_attr->logical_area.h = 20;
 }
 
-static void _draw_ruler_ver_end(gt_obj_st * obj, gt_padding_st const * const padding, gt_attr_font_st * font_attr) {
+static GT_ATTRIBUTE_RAM_TEXT void _draw_ruler_ver_end(gt_obj_st * obj, gt_padding_st const * const padding, gt_attr_font_st * font_attr) {
     font_attr->logical_area.x = obj->area.x + 4;
     font_attr->logical_area.y = obj->area.y + obj->area.h - padding->bottom - 6;
     font_attr->logical_area.w = padding->left - 6;
     font_attr->logical_area.h = 20;
 }
 
-static void _draw_ruler_hor_start(gt_obj_st * obj, gt_padding_st const * const padding, gt_attr_font_st * font_attr) {
+static GT_ATTRIBUTE_RAM_TEXT void _draw_ruler_hor_start(gt_obj_st * obj, gt_padding_st const * const padding, gt_attr_font_st * font_attr) {
     font_attr->logical_area.x = obj->area.x + padding->left - 6;
     font_attr->logical_area.y = obj->area.y + obj->area.h - padding->bottom + 10;
     font_attr->logical_area.w = padding->left - 6;
     font_attr->logical_area.h = 20;
 }
 
-static void _draw_ruler_hor_end(gt_obj_st * obj, gt_padding_st const * const padding, gt_attr_font_st * font_attr) {
+static GT_ATTRIBUTE_RAM_TEXT void _draw_ruler_hor_end(gt_obj_st * obj, gt_padding_st const * const padding, gt_attr_font_st * font_attr) {
     font_attr->logical_area.x = obj->area.x + obj->area.w - padding->right - 40;
     font_attr->logical_area.y = obj->area.y + obj->area.h - padding->bottom + 10;
     font_attr->logical_area.w = padding->left - 6;
     font_attr->logical_area.h = 20;
 }
 
-static void _draw_ruler_range(gt_obj_st * obj, gt_padding_st const * const padding) {
+static GT_ATTRIBUTE_RAM_TEXT void _draw_ruler_range(gt_obj_st * obj, gt_padding_st const * const padding) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     char buf[20] = {0};
     gt_font_st font = {
@@ -405,7 +405,7 @@ static void _draw_ruler_range(gt_obj_st * obj, gt_padding_st const * const paddi
     }
 }
 
-static void _draw_axis(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _draw_axis(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_padding_st padding = _get_padding_by(obj);
 
@@ -491,7 +491,7 @@ static inline void _draw_point_by(
     gt_draw_point(obj->draw_ctx, &point_attr, &obj->area);
 }
 
-static _graph_css_st _get_css(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT _graph_css_st _get_css(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     _graph_css_st css = {
         .padding = _get_padding_by(obj),
@@ -505,7 +505,7 @@ static _graph_css_st _get_css(gt_obj_st * obj) {
     return css;
 }
 
-static void _graphs_draw_points(gt_obj_st * obj, gt_series_points_st const * const ptr) {
+static GT_ATTRIBUTE_RAM_TEXT void _graphs_draw_points(gt_obj_st * obj, gt_series_points_st const * const ptr) {
     _graph_css_st css = _get_css(obj);
 
     for (gt_size_t i = 0; i < ptr->count_point; ++i) {
@@ -513,7 +513,7 @@ static void _graphs_draw_points(gt_obj_st * obj, gt_series_points_st const * con
     }
 }
 
-static void _graphs_draw_line(gt_obj_st * obj, gt_series_points_st const * const ptr) {
+static GT_ATTRIBUTE_RAM_TEXT void _graphs_draw_line(gt_obj_st * obj, gt_series_points_st const * const ptr) {
     gt_attr_line_st line_attr = { .line = ptr->line };
     _graph_css_st css = _get_css(obj);
 
@@ -533,7 +533,7 @@ static void _graphs_draw_line(gt_obj_st * obj, gt_series_points_st const * const
     }
 }
 
-static void _graphs_draw_curve(gt_obj_st * obj, gt_series_points_st const * const ptr) {
+static GT_ATTRIBUTE_RAM_TEXT void _graphs_draw_curve(gt_obj_st * obj, gt_series_points_st const * const ptr) {
     gt_attr_curve_st bz_attr = { .line = ptr->line };
     _graph_css_st css = _get_css(obj);
 
@@ -576,7 +576,7 @@ static void _graphs_draw_curve(gt_obj_st * obj, gt_series_points_st const * cons
     }
 }
 
-static void _graphs_draw_bar(gt_obj_st * obj, gt_series_points_st const * const ptr) {
+static GT_ATTRIBUTE_RAM_TEXT void _graphs_draw_bar(gt_obj_st * obj, gt_series_points_st const * const ptr) {
     gt_attr_line_st line_attr = { .line = ptr->line };
     _graph_css_st css = _get_css(obj);
 
@@ -593,7 +593,7 @@ static void _graphs_draw_bar(gt_obj_st * obj, gt_series_points_st const * const 
     }
 }
 
-static void _draw_points_lines_curves(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _draw_points_lines_curves(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_series_points_st * ptr = style->gp.series_head_p;
 
@@ -615,7 +615,7 @@ static void _draw_points_lines_curves(gt_obj_st * obj) {
     }
 }
 
-static void _draw_point_value(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _draw_point_value(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_series_points_st * ptr = style->gp.series_head_p;
     _graph_css_st css = _get_css(obj);
@@ -660,7 +660,7 @@ static void _draw_point_value(gt_obj_st * obj) {
     }
 }
 
-static bool _is_series_valid(_gt_graphs_st * style, gt_series_points_st const * series) {
+static GT_ATTRIBUTE_RAM_TEXT bool _is_series_valid(_gt_graphs_st * style, gt_series_points_st const * series) {
     if (NULL == style || NULL == series) {
         return false;
     }
@@ -672,7 +672,7 @@ static bool _is_series_valid(_gt_graphs_st * style, gt_series_points_st const * 
     return false;
 }
 
-static gt_series_points_st * _get_series_line_by(gt_obj_st * obj, uint16_t idx) {
+static GT_ATTRIBUTE_RAM_TEXT gt_series_points_st * _get_series_line_by(gt_obj_st * obj, uint16_t idx) {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return NULL;
     }
@@ -685,6 +685,90 @@ static gt_series_points_st * _get_series_line_by(gt_obj_st * obj, uint16_t idx) 
         ptr = ptr->next_series_p;
     }
     return ptr;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _fifo_pop_item_by(gt_series_points_st * series, uint16_t pop_count) {
+    gt_size_t i = 0, k = 0;
+    if (0 == pop_count) {
+        return;
+    }
+    for (i = pop_count, k = 0; i < series->count_point; ++i, ++k) {
+        series->y_series[k] = series->y_series[i];
+        if (k < pop_count && series->point_value_str[k]) {
+            gt_mem_free(series->point_value_str[k]);
+            series->point_value_str[k] = NULL;
+        }
+        series->point_value_str[k] = series->point_value_str[i];
+    }
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _fifo_keep_latest_points(_gt_graphs_st * style) {
+    gt_series_points_st * series = style->gp.series_head_p;
+    gt_size_t i = 0, k = 0;
+    if (NULL == series) {
+        return;
+    }
+    if (0 == style->fifo_depth) {
+        return;
+    }
+    while (series) {
+        if (series->count_point < style->fifo_depth) {
+            series = series->next_series_p;
+            continue;
+        }
+        _fifo_pop_item_by(series, series->count_point - style->fifo_depth);
+        series->count_point = style->fifo_depth;
+        series = series->next_series_p;
+    }
+}
+
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _resize_memory_for_series(gt_series_points_st * series, uint16_t total_count) {
+    uint16_t size = sizeof(gt_float_t);
+    if (total_count == series->count_point) {
+        return GT_RES_OK;
+    }
+    if (series->count_point) {
+        series->x_series = gt_mem_realloc(series->x_series, total_count * size);
+        if (NULL == series->x_series) {
+            goto x_fail_lb;
+        }
+        series->y_series = gt_mem_realloc(series->y_series, total_count * size);
+        if (NULL == series->y_series) {
+            goto y_fail_lb;
+        }
+        series->point_value_str = gt_mem_realloc(series->point_value_str, total_count * sizeof(char *));
+        if (NULL == series->point_value_str) {
+            goto point_val_fail_lb;
+        }
+    } else {
+        series->x_series = gt_mem_malloc(total_count * size);
+        if (NULL == series->x_series) {
+            return GT_RES_FAIL;
+        }
+        series->y_series = gt_mem_malloc(total_count * size);
+        if (NULL == series->y_series) {
+            gt_mem_free(series->x_series);
+            series->x_series = NULL;
+            return GT_RES_FAIL;
+        }
+        series->point_value_str = gt_mem_malloc(total_count * sizeof(char *));
+        if (NULL == series->point_value_str) {
+            gt_mem_free(series->y_series);
+            series->y_series = NULL;
+            gt_mem_free(series->x_series);
+            series->x_series = NULL;
+            return GT_RES_FAIL;
+        }
+    }
+    return GT_RES_OK;
+
+point_val_fail_lb:
+    series->point_value_str = gt_mem_realloc(series->point_value_str, series->count_point * sizeof(char *));
+y_fail_lb:
+    series->y_series = gt_mem_realloc(series->y_series, series->count_point * size);
+x_fail_lb:
+    series->x_series = gt_mem_realloc(series->x_series, series->count_point * size);
+    return GT_RES_FAIL;
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -751,41 +835,6 @@ void gt_graphs_set_axis(gt_obj_st * obj, gt_axis_st const * const axis)
     gt_memcpy(&style->gp.axis, axis, sizeof(gt_axis_st));
 }
 
-static void _fifo_pop_item_by(gt_series_points_st * series, uint16_t pop_count) {
-    gt_size_t i = 0, k = 0;
-    if (0 == pop_count) {
-        return;
-    }
-    for (i = pop_count, k = 0; i < series->count_point; ++i, ++k) {
-        series->y_series[k] = series->y_series[i];
-        if (k < pop_count && series->point_value_str[k]) {
-            gt_mem_free(series->point_value_str[k]);
-            series->point_value_str[k] = NULL;
-        }
-        series->point_value_str[k] = series->point_value_str[i];
-    }
-}
-
-static void _fifo_keep_latest_points(_gt_graphs_st * style) {
-    gt_series_points_st * series = style->gp.series_head_p;
-    gt_size_t i = 0, k = 0;
-    if (NULL == series) {
-        return;
-    }
-    if (0 == style->fifo_depth) {
-        return;
-    }
-    while (series) {
-        if (series->count_point < style->fifo_depth) {
-            series = series->next_series_p;
-            continue;
-        }
-        _fifo_pop_item_by(series, series->count_point - style->fifo_depth);
-        series->count_point = style->fifo_depth;
-        series = series->next_series_p;
-    }
-}
-
 void gt_graphs_set_fifo_max_points_count(gt_obj_st * obj, uint16_t fifo_depth)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
@@ -819,55 +868,6 @@ gt_series_points_st * gt_graphs_add_series_line(gt_obj_st * obj, gt_line_st cons
     while (ptr->next_series_p) { ptr = ptr->next_series_p; }
     ptr->next_series_p = series;
     return series;
-}
-
-static gt_res_t _resize_memory_for_series(gt_series_points_st * series, uint16_t total_count) {
-    uint16_t size = sizeof(gt_float_t);
-    if (total_count == series->count_point) {
-        return GT_RES_OK;
-    }
-    if (series->count_point) {
-        series->x_series = gt_mem_realloc(series->x_series, total_count * size);
-        if (NULL == series->x_series) {
-            goto x_fail_lb;
-        }
-        series->y_series = gt_mem_realloc(series->y_series, total_count * size);
-        if (NULL == series->y_series) {
-            goto y_fail_lb;
-        }
-        series->point_value_str = gt_mem_realloc(series->point_value_str, total_count * sizeof(char *));
-        if (NULL == series->point_value_str) {
-            goto point_val_fail_lb;
-        }
-    } else {
-        series->x_series = gt_mem_malloc(total_count * size);
-        if (NULL == series->x_series) {
-            return GT_RES_FAIL;
-        }
-        series->y_series = gt_mem_malloc(total_count * size);
-        if (NULL == series->y_series) {
-            gt_mem_free(series->x_series);
-            series->x_series = NULL;
-            return GT_RES_FAIL;
-        }
-        series->point_value_str = gt_mem_malloc(total_count * sizeof(char *));
-        if (NULL == series->point_value_str) {
-            gt_mem_free(series->y_series);
-            series->y_series = NULL;
-            gt_mem_free(series->x_series);
-            series->x_series = NULL;
-            return GT_RES_FAIL;
-        }
-    }
-    return GT_RES_OK;
-
-point_val_fail_lb:
-    series->point_value_str = gt_mem_realloc(series->point_value_str, series->count_point * sizeof(char *));
-y_fail_lb:
-    series->y_series = gt_mem_realloc(series->y_series, series->count_point * size);
-x_fail_lb:
-    series->x_series = gt_mem_realloc(series->x_series, series->count_point * size);
-    return GT_RES_FAIL;
 }
 
 gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const series, gt_point_f_st const * const point, char const * const point_text)

@@ -163,7 +163,7 @@ static const gt_obj_class_st gt_listview_class = {
 
 
 /* static functions -----------------------------------------------------*/
-static void _show_background(gt_obj_st * obj, _gt_listview_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT void _show_background(gt_obj_st * obj, _gt_listview_st * style) {
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill    = true;
@@ -180,11 +180,11 @@ static inline gt_size_t _calc_remainder(gt_size_t val) {
     return val - (val >> 1);
 }
 
-static gt_size_t _calc_septal_line_width(gt_obj_st * obj, _gt_listview_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t _calc_septal_line_width(gt_obj_st * obj, _gt_listview_st * style) {
     return style->septal_line_info.size.x ? style->septal_line_info.size.x : (obj->area.w - (obj->area.w >> 3));
 }
 
-static void _show_septal_line(gt_obj_st * obj, _gt_listview_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT void _show_septal_line(gt_obj_st * obj, _gt_listview_st * style) {
     gt_attr_rect_st rect_attr;
     gt_area_st area = obj->area;
     gt_size_t offset = (gt_abs(style->item_space.y - style->septal_line_info.size.y) >> 1);
@@ -222,7 +222,7 @@ static void _show_septal_line(gt_obj_st * obj, _gt_listview_st * style) {
     }
 }
 
-static void _update_space_ver_by(_gt_listview_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT void _update_space_ver_by(_gt_listview_st * style) {
     if (style->septal_line_info.size.y > style->item_space.y) {
         style->item_space.y = style->septal_line_info.size.y;
     }
@@ -274,7 +274,7 @@ static inline uint8_t _column_plus_one(_gt_listview_st * style) {
 }
 
 
-static void _set_last_active_obj(gt_obj_st * listview, gt_obj_st * target) {
+static GT_ATTRIBUTE_RAM_TEXT void _set_last_active_obj(gt_obj_st * listview, gt_obj_st * target) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
     if (listview == target) {
         style->last_active = NULL;
@@ -283,12 +283,12 @@ static void _set_last_active_obj(gt_obj_st * listview, gt_obj_st * target) {
     style->last_active = target;
 }
 
-static gt_obj_st * _get_last_active_obj(gt_obj_st * listview) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _get_last_active_obj(gt_obj_st * listview) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
     return style->last_active;
 }
 
-static void _reset_last_active_state(gt_obj_st * listview, gt_obj_st * target) {
+static GT_ATTRIBUTE_RAM_TEXT void _reset_last_active_state(gt_obj_st * listview, gt_obj_st * target) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
     if (false == style->selected_effect) {
         return;
@@ -300,7 +300,7 @@ static void _reset_last_active_state(gt_obj_st * listview, gt_obj_st * target) {
     gt_disp_invalid_area(listview);
 }
 
-static void _highlight_set_obj_active_state(gt_obj_st * listview) {
+static GT_ATTRIBUTE_RAM_TEXT void _highlight_set_obj_active_state(gt_obj_st * listview) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
     if (false == style->highlight) {
         return;
@@ -319,7 +319,7 @@ static void _highlight_set_obj_active_state(gt_obj_st * listview) {
     }
 }
 
-static void _reset_other_active_state(gt_obj_st * listview) {
+static GT_ATTRIBUTE_RAM_TEXT void _reset_other_active_state(gt_obj_st * listview) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
     gt_obj_st * item = NULL;
     if (false == style->highlight) {
@@ -383,7 +383,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-static void _set_label_prop_by_type(gt_obj_st * listview, _label_prop_em type, int val) {
+static GT_ATTRIBUTE_RAM_TEXT void _set_label_prop_by_type(gt_obj_st * listview, _label_prop_em type, int val) {
     gt_size_t item = 0, cnt_item = 0;
     gt_obj_st * obj = NULL;
 
@@ -463,7 +463,7 @@ static inline uint16_t _get_triple_real_width(_gt_listview_st * style, gt_obj_st
     return (gt_obj_get_w(item) * value) / total;
 }
 
-static gt_obj_st * _create_item_obj(gt_obj_st * listview) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
     gt_size_t offset_line = listview->area.y;
     gt_size_t width = listview->area.w;
@@ -505,7 +505,7 @@ static gt_obj_st * _create_item_obj(gt_obj_st * listview) {
     return obj;
 }
 
-static void _center_icon_pos(gt_obj_st * icon, gt_obj_st * item, gt_size_t offset_x, uint16_t width) {
+static GT_ATTRIBUTE_RAM_TEXT void _center_icon_pos(gt_obj_st * icon, gt_obj_st * item, gt_size_t offset_x, uint16_t width) {
     gt_area_copy(&icon->area, &item->area);
     icon->area.w = width;
 
@@ -516,13 +516,13 @@ static void _center_icon_pos(gt_obj_st * icon, gt_obj_st * item, gt_size_t offse
     icon->area.y = ((gt_obj_get_h(item) - gt_img_get_height(icon)) >> 1) + gt_obj_get_y(icon);
 }
 
-static void _set_label_pos(gt_obj_st * lab, gt_obj_st * item, gt_size_t offset_x, uint16_t width) {
+static GT_ATTRIBUTE_RAM_TEXT void _set_label_pos(gt_obj_st * lab, gt_obj_st * item, gt_size_t offset_x, uint16_t width) {
     gt_area_copy(&lab->area, &item->area);
     lab->area.x += offset_x;
     lab->area.w = width;
 }
 
-static gt_obj_st * _init_img_icon_prop(gt_obj_st * icon) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _init_img_icon_prop(gt_obj_st * icon) {
     gt_obj_set_inside(icon, true);
     gt_obj_set_reduce(icon, 0);
 
@@ -542,21 +542,21 @@ static gt_obj_st * _init_img_icon_prop(gt_obj_st * icon) {
  * @param img image path
  * @return gt_obj_st* icon object
  */
-static gt_obj_st * _create_item_icon(gt_obj_st * listview, gt_obj_st * obj, char * img) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_icon(gt_obj_st * listview, gt_obj_st * obj, char * img) {
     gt_obj_st * icon = gt_img_create(obj);
     gt_img_set_src(icon, img);
     return _init_img_icon_prop(icon);
 }
 
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
-static gt_obj_st * _create_item_icon_custom_addr(gt_obj_st * listview, gt_obj_st * obj, gt_direct_addr_custom_size_st * custom_addr) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_icon_custom_addr(gt_obj_st * listview, gt_obj_st * obj, gt_direct_addr_custom_size_st * custom_addr) {
     gt_obj_st * icon = gt_img_create(obj);
     gt_img_set_by_custom_size_addr(icon, custom_addr);
     return _init_img_icon_prop(icon);
 }
 #endif
 
-static gt_obj_st * _create_item_icon_raw(gt_obj_st * listview, gt_obj_st * obj, gt_color_img_raw_st * img_raw) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_icon_raw(gt_obj_st * listview, gt_obj_st * obj, gt_color_img_raw_st * img_raw) {
     gt_obj_st * icon = gt_img_create(obj);
     gt_img_set_raw_data(icon, img_raw);
     return _init_img_icon_prop(icon);
@@ -613,7 +613,7 @@ static inline void _set_label_prop(gt_obj_st * listview, gt_obj_st * lab, gt_fon
  * @param text label text
  * @return gt_obj_st* label object
  */
-static gt_obj_st * _create_item_label(gt_obj_st * listview, gt_obj_st * obj, char const * text) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_label(gt_obj_st * listview, gt_obj_st * obj, char const * text) {
     gt_obj_st * lab = gt_label_create(obj);
 
     _set_label_prop(listview, lab, NULL);
@@ -631,7 +631,7 @@ static gt_obj_st * _create_item_label(gt_obj_st * listview, gt_obj_st * obj, cha
  * @param len encoding byte count, such as: strlen(text).
  * @return gt_obj_st* label object
  */
-static gt_obj_st * _create_item_label_by_len(gt_obj_st * listview, gt_obj_st * obj,
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_label_by_len(gt_obj_st * listview, gt_obj_st * obj,
                                                 char const * text, uint16_t len, gt_font_info_st * font_p) {
     gt_obj_st * lab = gt_label_create(obj);
 
@@ -641,7 +641,7 @@ static gt_obj_st * _create_item_label_by_len(gt_obj_st * listview, gt_obj_st * o
     return lab;
 }
 
-static gt_obj_st * _get_obj_by_item(gt_obj_st * item, gt_obj_type_et type) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _get_obj_by_item(gt_obj_st * item, gt_obj_type_et type) {
     gt_obj_st * ret = NULL;
     for (gt_size_t i = 0, cnt = item->cnt_child; i < cnt; i++) {
         if (type != gt_obj_class_get_type(item->child[i])) {
@@ -653,7 +653,7 @@ static gt_obj_st * _get_obj_by_item(gt_obj_st * item, gt_obj_type_et type) {
     return ret;
 }
 
-static void _double_calc_pos(_gt_listview_st * style, gt_obj_st * obj, gt_obj_st * icon, gt_obj_st * lab) {
+static GT_ATTRIBUTE_RAM_TEXT void _double_calc_pos(_gt_listview_st * style, gt_obj_st * obj, gt_obj_st * icon, gt_obj_st * lab) {
     uint16_t width_icon = _get_double_real_width(style, obj, _DOUBLE_POS_ICON);
     uint16_t width_lab = _get_double_real_width(style, obj, _DOUBLE_POS_LABEL);
 
@@ -666,7 +666,7 @@ static void _double_calc_pos(_gt_listview_st * style, gt_obj_st * obj, gt_obj_st
     }
 }
 
-static void _triple_calc_pos(_gt_listview_st * style, _triple_param_st * param) {
+static GT_ATTRIBUTE_RAM_TEXT void _triple_calc_pos(_gt_listview_st * style, _triple_param_st * param) {
     uint16_t width_left = _get_triple_real_width(style, param->item, _TRIPLE_POS_LEFT);
     uint16_t width_center = _get_triple_real_width(style, param->item, _TRIPLE_POS_CENTER);
     uint16_t width_right = _get_triple_real_width(style, param->item, _TRIPLE_POS_RIGHT);
@@ -676,7 +676,7 @@ static void _triple_calc_pos(_gt_listview_st * style, _triple_param_st * param) 
     _center_icon_pos(param->right, param->item, width_left + width_center, width_right);
 }
 
-static gt_obj_st * _set_item_obj_prop(gt_obj_st * obj, gt_obj_st * listview) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _set_item_obj_prop(gt_obj_st * obj, gt_obj_st * listview) {
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_INSIDE, true);
 
@@ -693,7 +693,7 @@ static gt_obj_st * _set_item_obj_prop(gt_obj_st * obj, gt_obj_st * listview) {
  * @param rect rect object detail
  * @return gt_obj_st*
  */
-static gt_obj_st * _create_item_rect(gt_obj_st * listview, gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_rect(gt_obj_st * listview, gt_obj_st * obj) {
     gt_obj_st * r = gt_rect_create(obj);
 
     gt_obj_set_inside(r, true);
@@ -727,7 +727,7 @@ static inline void _set_rect_prop(gt_obj_st * rect, gt_listview_rect_st const * 
  * @param rect rect object detail
  * @return gt_obj_st*
  */
-static gt_obj_st * _create_item_switch(gt_obj_st * listview, gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_switch(gt_obj_st * listview, gt_obj_st * obj) {
     gt_obj_st * r = gt_switch_create(obj);
 
     gt_obj_set_inside(r, true);
