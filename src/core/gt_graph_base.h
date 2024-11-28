@@ -176,7 +176,10 @@ typedef struct _gt_attr_arc_s{
     uint16_t start_angle;
     uint16_t end_angle;
     uint16_t width;
+
     gt_opa_t opa;
+
+    uint8_t rounded : 1;
 }gt_attr_arc_st;
 
 /* macros ---------------------------------------------------------------*/

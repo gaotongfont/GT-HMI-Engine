@@ -52,6 +52,8 @@ extern "C" {
  */
 gt_obj_st * gt_arc_create(gt_obj_st * parent);
 
+void gt_arc_set_rounded(gt_obj_st* obj, bool rounded);
+
 /**
  * @brief Set the arc pointer active img
  *

@@ -186,4 +186,45 @@ bool gt_area_check_legal(gt_area_st * area)
     return false;
 }
 
+
+void get_rounded_area(int16_t angle, uint16_t radius, uint8_t thickness, gt_area_st * res_area)
+{
+    const uint8_t ps = 8;
+    const uint8_t pa = 127;
+
+    int32_t thick_half = thickness / 2;
+    uint8_t thick_corr = (thickness & 0x01) ? 0 : 1;
+
+    int32_t cir_x;
+    int32_t cir_y;
+
+    cir_x = ((radius - thick_half) * gt_sin(90 - angle)) >> (GT_MATH_TRIGO_SHIFT - ps);
+    cir_y = ((radius - thick_half) * gt_sin(angle)) >> (GT_MATH_TRIGO_SHIFT - ps);
+
+    gt_size_t x2, y2;
+    /*Actually the center of the pixel need to be calculated so apply 1/2 px offset*/
+    if(cir_x > 0) {
+        cir_x = (cir_x - pa) >> ps;
+        res_area->x = cir_x - thick_half + thick_corr;
+        x2 = cir_x + thick_half;
+    }
+    else {
+        cir_x = (cir_x + pa) >> ps;
+        res_area->x = cir_x - thick_half;
+        x2 = cir_x + thick_half - thick_corr;
+    }
+
+    if(cir_y > 0) {
+        cir_y = (cir_y - pa) >> ps;
+        res_area->y = cir_y - thick_half + thick_corr;
+        y2 = cir_y + thick_half;
+    }
+    else {
+        cir_y = (cir_y + pa) >> ps;
+        res_area->y = cir_y - thick_half;
+        y2 = cir_y + thick_half - thick_corr;
+    }
+    res_area->w = x2 - res_area->x + 1;
+    res_area->h = y2 - res_area->y + 1;
+}
 /* end ------------------------------------------------------------------*/

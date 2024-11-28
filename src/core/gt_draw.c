@@ -2882,9 +2882,20 @@ void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const g
         gt_mask_remove_idx(in_mask_id);
     }
 
-    if(is_img) { return ; }
+    if(is_img || !dsc->rounded) { return ; }
 
+    gt_area_st round_area;
+    get_rounded_area(start_angle, out_radius, width, &round_area);
+    round_area.x += center.x;
+    round_area.y += center.y;
+    rect_attr.radius = round_area.w; // * Make it draw a circle
+    draw_bg(draw_ctx, &rect_attr, &round_area);
 
+    get_rounded_area(end_angle, out_radius, width, &round_area);
+    round_area.x += center.x;
+    round_area.y += center.y;
+    rect_attr.radius = round_area.w; // * Make it draw a circle
+    draw_bg(draw_ctx, &rect_attr, &round_area);
 
 }
 /* end ------------------------------------------------------------------*/

@@ -29,8 +29,7 @@
 
 
 /* private typedef ------------------------------------------------------*/
-typedef struct{
-
+typedef struct {
     char * src;             // img src, It can be a virt file name/path or an array of C
 #if GT_USE_FILE_HEADER
     gt_file_header_param_st fh;
@@ -41,18 +40,23 @@ typedef struct{
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
     gt_direct_addr_custom_size_st custom_addr;
 #endif
+}_gt_img_element_st;
+
+typedef struct {
+
+    _gt_img_element_st img;
 
     uint16_t start_angle;
     uint16_t end_angle;
     uint16_t width;
 
-}_gt_arc_node_st;
+}_gt_arc_element_st;
 
 typedef struct _gt_arc_s {
     gt_obj_st obj;
 
-    _gt_arc_node_st bg;
-    _gt_arc_node_st act;
+    _gt_arc_element_st bg;
+    _gt_arc_element_st act;
 
     gt_color_t act_color;
 
@@ -60,6 +64,8 @@ typedef struct _gt_arc_s {
     int16_t value_min;
     int16_t value_max;
     int16_t value_step;
+
+    uint8_t rounded : 1;
 } _gt_arc_st;
 
 
@@ -95,20 +101,20 @@ static void _init_cb(gt_obj_st * obj)
     gt_memset_0(&arc_attr, sizeof(gt_attr_arc_st));
     arc_attr.color = obj->bgcolor;
     arc_attr.opa = obj->opa;
-
+    arc_attr.rounded = style->rounded;
     // bg
     arc_attr.start_angle = style->bg.start_angle;
     arc_attr.end_angle = style->bg.end_angle;
     arc_attr.width = style->bg.width;
-    arc_attr.img = style->bg.src;
+    arc_attr.img = style->bg.img.src;
 #if GT_USE_FILE_HEADER
-    arc_attr.file_header = gt_file_header_param_check_valid(&style->bg.fh);
+    arc_attr.file_header = gt_file_header_param_check_valid(&style->bg.img.fh);
 #endif
 #if GT_USE_DIRECT_ADDR
-    arc_attr.addr = style->bg.addr;
+    arc_attr.addr = style->bg.img.addr;
 #endif
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
-    arc_attr.custom_addr = &style->bg.custom_addr;
+    arc_attr.custom_addr = &style->bg.img.custom_addr;
 #endif
     gt_draw_arc(obj->draw_ctx, &arc_attr, &obj->area);
 
@@ -117,17 +123,21 @@ static void _init_cb(gt_obj_st * obj)
     arc_attr.start_angle = style->act.start_angle;
     arc_attr.end_angle = style->act.end_angle;
     arc_attr.width = style->act.width;
-    arc_attr.img = style->act.src;
+    arc_attr.img = style->act.img.src;
 #if GT_USE_FILE_HEADER
-    arc_attr.file_header = gt_file_header_param_check_valid(&style->act.fh);
+    arc_attr.file_header = gt_file_header_param_check_valid(&style->act.img.fh);
 #endif
 #if GT_USE_DIRECT_ADDR
-    arc_attr.addr = style->act.addr;
+    arc_attr.addr = style->act.img.addr;
 #endif
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
-    arc_attr.custom_addr = &style->act.custom_addr;
+    arc_attr.custom_addr = &style->act.img.custom_addr;
 #endif
     gt_draw_arc(obj->draw_ctx, &arc_attr, &obj->area);
+
+    // knob
+
+
 
 }
 static void _deinit_cb(gt_obj_st * obj)
@@ -135,14 +145,14 @@ static void _deinit_cb(gt_obj_st * obj)
     GT_CHECK_BACK(obj);
 
     _gt_arc_st * style_p = (_gt_arc_st * )obj;
-    if (NULL != style_p->bg.src) {
-        gt_mem_free(style_p->bg.src);
-        style_p->bg.src = NULL;
+    if (NULL != style_p->bg.img.src) {
+        gt_mem_free(style_p->bg.img.src);
+        style_p->bg.img.src = NULL;
     }
 
-    if(NULL != style_p->act.src) {
-        gt_mem_free(style_p->act.src);
-        style_p->act.src = NULL;
+    if(NULL != style_p->act.img.src) {
+        gt_mem_free(style_p->act.img.src);
+        style_p->act.img.src = NULL;
     }
 }
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e){
@@ -184,18 +194,18 @@ gt_obj_st * gt_arc_create(gt_obj_st * parent)
     _gt_arc_st * style = (_gt_arc_st *)obj;
 
 #if GT_USE_FILE_HEADER
-    gt_file_header_param_init(&style->bg.fh);
-    gt_file_header_param_init(&style->act.fh);
+    gt_file_header_param_init(&style->bg.img.fh);
+    gt_file_header_param_init(&style->act.img.fh);
 #endif
 
 #if GT_USE_DIRECT_ADDR
-    gt_hal_direct_addr_init(&style->bg.addr);
-    gt_hal_direct_addr_init(&style->act.addr);
+    gt_hal_direct_addr_init(&style->bg.img.addr);
+    gt_hal_direct_addr_init(&style->act.img.addr);
 #endif
 
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
-    gt_hal_custom_size_addr_init(&style->bg.custom_addr);
-    gt_hal_custom_size_addr_init(&style->act.custom_addr);
+    gt_hal_custom_size_addr_init(&style->bg.img.custom_addr);
+    gt_hal_custom_size_addr_init(&style->act.img.custom_addr);
 #endif
 
 
@@ -212,33 +222,33 @@ void gt_arc_set_bg_img(gt_obj_st * obj, char * src)
         return ;
     }
     _gt_arc_st * style = (_gt_arc_st *)obj;
-    if (NULL != style->bg.src && !strcmp(src, style->bg.src)) {
+    if (NULL != style->bg.img.src && !strcmp(src, style->bg.img.src)) {
         return ;
     }
 
     uint16_t len = src == NULL ? 0 : strlen(src);
-    style->bg.src = style->bg.src ? gt_mem_realloc(style->bg.src, len + 1) : gt_mem_malloc(len + 1);
-    if (NULL == style->bg.src) {
+    style->bg.img.src = style->bg.img.src ? gt_mem_realloc(style->bg.img.src, len + 1) : gt_mem_malloc(len + 1);
+    if (NULL == style->bg.img.src) {
         return ;
     }
-    gt_memcpy(style->bg.src, src, len);
-    style->bg.src[len] = '\0';
+    gt_memcpy(style->bg.img.src, src, len);
+    style->bg.img.src[len] = '\0';
 
 #if GT_USE_FILE_HEADER
-    gt_file_header_param_init(&style->bg.fh);
+    gt_file_header_param_init(&style->bg.img.fh);
 #endif
 
 #if GT_USE_DIRECT_ADDR
-    gt_hal_direct_addr_init(&style->bg.addr);
+    gt_hal_direct_addr_init(&style->bg.img.addr);
 #endif
 
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
-    gt_hal_custom_size_addr_init(&style->bg.custom_addr);
+    gt_hal_custom_size_addr_init(&style->bg.img.custom_addr);
 #endif
 
     gt_area_st area;
     gt_area_copy(&area, &obj->area);
-    if(GT_RES_OK == gt_fs_read_img_wh(style->bg.src, &area.w, &area.h)){
+    if(GT_RES_OK == gt_fs_read_img_wh(style->bg.img.src, &area.w, &area.h)){
         if(area.w != 0 && area.h != 0){
             gt_obj_size_change(obj, &area);
         }
@@ -256,28 +266,28 @@ void gt_arc_set_act_img(gt_obj_st * obj, char * src)
         return ;
     }
     _gt_arc_st * style = (_gt_arc_st *)obj;
-    if (NULL != style->act.src && !strcmp(src, style->act.src)) {
+    if (NULL != style->act.img.src && !strcmp(src, style->act.img.src)) {
         return ;
     }
 
     uint16_t len = src == NULL ? 0 : strlen(src);
-    style->act.src = style->act.src ? gt_mem_realloc(style->act.src, len + 1) : gt_mem_malloc(len + 1);
-    if (NULL == style->act.src) {
+    style->act.img.src = style->act.img.src ? gt_mem_realloc(style->act.img.src, len + 1) : gt_mem_malloc(len + 1);
+    if (NULL == style->act.img.src) {
         return ;
     }
-    gt_memcpy(style->act.src, src, len);
-    style->act.src[len] = '\0';
+    gt_memcpy(style->act.img.src, src, len);
+    style->act.img.src[len] = '\0';
 
 #if GT_USE_FILE_HEADER
-    gt_file_header_param_init(&style->act.fh);
+    gt_file_header_param_init(&style->act.img.fh);
 #endif
 
 #if GT_USE_DIRECT_ADDR
-    gt_hal_direct_addr_init(&style->act.addr);
+    gt_hal_direct_addr_init(&style->act.img.addr);
 #endif
 
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
-    gt_hal_custom_size_addr_init(&style->act.custom_addr);
+    gt_hal_custom_size_addr_init(&style->act.img.custom_addr);
 #endif
 
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -293,23 +303,23 @@ void gt_arc_set_bg_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh)
         return ;
     }
     _gt_arc_st * style = (_gt_arc_st *)obj;
-    style->bg.fh = *fh;
+    style->bg.img.fh = *fh;
 
-    if (NULL != style->bg.src) {
-        gt_mem_free(style->bg.src);
-        style->bg.src = NULL;
+    if (NULL != style->bg.img.src) {
+        gt_mem_free(style->bg.img.src);
+        style->bg.img.src = NULL;
     }
 
 #if GT_USE_DIRECT_ADDR
-    gt_hal_direct_addr_init(&style->bg.addr);
+    gt_hal_direct_addr_init(&style->bg.img.addr);
 #endif
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
-    gt_hal_custom_size_addr_init(&style->bg.custom_addr);
+    gt_hal_custom_size_addr_init(&style->bg.img.custom_addr);
 #endif
 
     gt_area_st area;
     gt_area_copy(&area, &obj->area);
-    if(GT_RES_OK == gt_fs_fh_read_img_wh(&style->bg.fh, &area.w, &area.h)){
+    if(GT_RES_OK == gt_fs_fh_read_img_wh(&style->bg.img.fh, &area.w, &area.h)){
         if(area.w != 0 && area.h != 0){
             gt_obj_size_change(obj, &area);
         }
@@ -327,18 +337,18 @@ void gt_arc_set_act_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh
         return ;
     }
     _gt_arc_st * style = (_gt_arc_st *)obj;
-    style->act.fh = *fh;
+    style->act.img.fh = *fh;
 
-    if (NULL != style->act.src) {
-        gt_mem_free(style->act.src);
-        style->act.src = NULL;
+    if (NULL != style->act.img.src) {
+        gt_mem_free(style->act.img.src);
+        style->act.img.src = NULL;
     }
 
 #if GT_USE_DIRECT_ADDR
-    gt_hal_direct_addr_init(&style->act.addr);
+    gt_hal_direct_addr_init(&style->act.img.addr);
 #endif
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
-    gt_hal_custom_size_addr_init(&style->act.custom_addr);
+    gt_hal_custom_size_addr_init(&style->act.img.custom_addr);
 #endif
 
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -352,24 +362,24 @@ void gt_arc_set_bg_by_direct_addr(gt_obj_st * obj, gt_addr_t addr)
         return ;
     }
     _gt_arc_st * style = (_gt_arc_st *)obj;
-    style->bg.addr = addr;
+    style->bg.img.addr = addr;
 
-    if (NULL != style->bg.src) {
-        gt_mem_free(style->bg.src);
-        style->bg.src = NULL;
+    if (NULL != style->bg.img.src) {
+        gt_mem_free(style->bg.img.src);
+        style->bg.img.src = NULL;
     }
 
 #if GT_USE_FILE_HEADER
-    gt_file_header_param_init(&style->bg.fh);
+    gt_file_header_param_init(&style->bg.img.fh);
 #endif
 
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
-    gt_hal_custom_size_addr_init(&style->bg.custom_addr);
+    gt_hal_custom_size_addr_init(&style->bg.img.custom_addr);
 #endif
 
     gt_area_st area;
     gt_area_copy(&area, &obj->area);
-    if(GT_RES_OK == gt_fs_direct_addr_read_img_wh(style->bg.addr, &area.w, &area.h)){
+    if(GT_RES_OK == gt_fs_direct_addr_read_img_wh(style->bg.img.addr, &area.w, &area.h)){
         if(area.w != 0 && area.h != 0){
             gt_obj_size_change(obj, &area);
         }
@@ -384,19 +394,19 @@ void gt_arc_set_act_by_direct_addr(gt_obj_st * obj, gt_addr_t addr)
         return ;
     }
     _gt_arc_st * style = (_gt_arc_st *)obj;
-    style->act.addr = addr;
+    style->act.img.addr = addr;
 
-    if (NULL != style->act.src) {
-        gt_mem_free(style->act.src);
-        style->act.src = NULL;
+    if (NULL != style->act.img.src) {
+        gt_mem_free(style->act.img.src);
+        style->act.img.src = NULL;
     }
 
 #if GT_USE_FILE_HEADER
-    gt_file_header_param_init(&style->act.fh);
+    gt_file_header_param_init(&style->act.img.fh);
 #endif
 
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
-    gt_hal_custom_size_addr_init(&style->act.custom_addr);
+    gt_hal_custom_size_addr_init(&style->act.img.custom_addr);
 #endif
 
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -410,25 +420,25 @@ void gt_arc_set_bg_by_custom_size_addr(gt_obj_st * obj, gt_direct_addr_custom_si
         return ;
     }
     _gt_arc_st * style = (_gt_arc_st *)obj;
-    style->bg.custom_addr = *dac;
+    style->bg.img.custom_addr = *dac;
 
-    if (NULL != style->bg.src) {
-        gt_mem_free(style->bg.src);
-        style->bg.src = NULL;
+    if (NULL != style->bg.img.src) {
+        gt_mem_free(style->bg.img.src);
+        style->bg.img.src = NULL;
     }
 
 #if GT_USE_FILE_HEADER
-    gt_file_header_param_init(&style->bg.fh);
+    gt_file_header_param_init(&style->bg.img.fh);
 #endif
 
 #if GT_USE_DIRECT_ADDR
-    gt_hal_direct_addr_init(&style->bg.addr);
+    gt_hal_direct_addr_init(&style->bg.img.addr);
 #endif
 
     gt_area_st area;
     gt_area_copy(&area, &obj->area);
-    area.w = style->bg.custom_addr.w;
-    area.h = style->bg.custom_addr.h;
+    area.w = style->bg.img.custom_addr.w;
+    area.h = style->bg.img.custom_addr.h;
     if(area.w != 0 && area.h != 0){
         gt_obj_size_change(obj, &area);
     }
@@ -441,19 +451,19 @@ void gt_arc_set_act_by_custom_size_addr(gt_obj_st * obj, gt_direct_addr_custom_s
         return ;
     }
     _gt_arc_st * style = (_gt_arc_st *)obj;
-    style->act.custom_addr = *dac;
+    style->act.img.custom_addr = *dac;
 
-    if (NULL != style->act.src) {
-        gt_mem_free(style->act.src);
-        style->act.src = NULL;
+    if (NULL != style->act.img.src) {
+        gt_mem_free(style->act.img.src);
+        style->act.img.src = NULL;
     }
 
 #if GT_USE_FILE_HEADER
-    gt_file_header_param_init(&style->act.fh);
+    gt_file_header_param_init(&style->act.img.fh);
 #endif
 
 #if GT_USE_DIRECT_ADDR
-    gt_hal_direct_addr_init(&style->act.addr);
+    gt_hal_direct_addr_init(&style->act.img.addr);
 #endif
 
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -673,6 +683,17 @@ void gt_arc_set_value_decrease(gt_obj_st* obj)
     _gt_arc_st * style = (_gt_arc_st * )obj;
     gt_arc_set_value(obj, style->value - style->value_step);
 }
+
+void gt_arc_set_rounded(gt_obj_st* obj, bool rounded)
+{
+    if( false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_arc_st * style = (_gt_arc_st * )obj;
+    style->rounded = rounded;
+}
+
+
 
 /* end of file ----------------------------------------------------------*/
 #endif /* GT_CFG_ENABLE_BTN */
