@@ -66,17 +66,6 @@ typedef struct _gt_draw_font_res_s {
     gt_res_t res;
 }_gt_draw_font_res_st;
 
-typedef struct _gt_radius_mask_t{
-    uint8_t *buf;
-    uint8_t *opa;
-    uint16_t * opa_start;
-    uint16_t * x_start;
-
-    gt_area_st area;
-    uint16_t radius;
-    uint8_t outer : 1; ///< 0: inner, 1: outer
-}gt_radius_mask_st;
-
 typedef enum {
     R_DIR_TOP_LEFT = 0,
     R_DIR_TOP_RIGHT,
