@@ -867,7 +867,7 @@ uint8_t gt_gb_check_char(const uint8_t *dst, uint16_t pos, uint32_t* font_code)
  */
 gt_font_lan_et gt_font_lan_get(uint32_t unicode, uint8_t encoding)
 {
-    static GT_ATTRIBUTE_RAM_TEXT const _unicode_range_st ranges[] = {
+    static GT_ATTRIBUTE_RAM_DATA const _unicode_range_st ranges[] = {
         { 0x4E00, 0x9FA5, FONT_LAN_CN },
         { 0x0080, 0x02FF, FONT_LAN_LATIN },
         { 0x1E00, 0x1EFF, FONT_LAN_LATIN },
