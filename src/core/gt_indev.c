@@ -52,7 +52,7 @@
 
 /* static variables -----------------------------------------------------*/
 
-static gt_indev_param_st _indev_params = {
+static GT_ATTRIBUTE_RAM_DATA gt_indev_param_st _indev_params = {
     .enabled = true,
 };
 
@@ -61,11 +61,11 @@ static gt_indev_param_st _indev_params = {
 
 
 /* static functions -----------------------------------------------------*/
-static inline bool _is_scroll_vertical(gt_dir_et dir) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_scroll_vertical(gt_dir_et dir) {
     return (GT_DIR_UP == dir || GT_DIR_DOWN == dir) ? true : false;
 }
 
-static gt_size_t _scroll_predict(gt_indev_st * indev, gt_size_t v)
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t _scroll_predict(gt_indev_st * indev, gt_size_t v)
 {
     gt_size_t result = 0;
     GT_CHECK_BACK_VAL(indev, result);
@@ -79,7 +79,7 @@ static gt_size_t _scroll_predict(gt_indev_st * indev, gt_size_t v)
     return result;
 }
 
-static gt_obj_st * _search_not_fixed_by_parent_recursive(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _search_not_fixed_by_parent_recursive(gt_obj_st * obj) {
     gt_obj_st * ptr = obj;
     while(ptr) {
         if (false == ptr->fixed) {
@@ -90,7 +90,7 @@ static gt_obj_st * _search_not_fixed_by_parent_recursive(gt_obj_st * obj) {
     return ptr;
 }
 
-static gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
+static GT_ATTRIBUTE_RAM_TEXT gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
     gt_dir_et ret = (gt_dir_et)point_p->gesture;
     if (ret) {
@@ -119,7 +119,7 @@ static gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
     return ret;
 }
 
-static bool _is_indev_home_gesture(gt_indev_st * indev, gt_event_type_et* event) {
+static GT_ATTRIBUTE_RAM_TEXT bool _is_indev_home_gesture(gt_indev_st * indev, gt_event_type_et* event) {
     struct _point * point_p = &indev->data.point;
     point_p->gesture = _get_scroll_dir(indev);
 
@@ -159,7 +159,7 @@ static bool _is_indev_home_gesture(gt_indev_st * indev, gt_event_type_et* event)
     return false;
 }
 
-static bool _indev_send_home_gesture_event(gt_indev_st * indev) {
+static GT_ATTRIBUTE_RAM_TEXT bool _indev_send_home_gesture_event(gt_indev_st * indev) {
     if ((gt_tick_get() - indev->timestamp_start) > GT_CFG_DEFAULT_POINT_HOME_GESTURE_TIME) {
         return false;
     }
@@ -179,7 +179,7 @@ static bool _indev_send_home_gesture_event(gt_indev_st * indev) {
     return true;
 }
 
-static inline void _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const point_p, gt_size_t * dx, gt_size_t * dy) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const point_p, gt_size_t * dx, gt_size_t * dy) {
     uint16_t w_parent = obj_scroll->parent->area.w;
     uint16_t h_parent = obj_scroll->parent->area.h;
     gt_size_t left = 0, right = gt_disp_get_res_hor(NULL);
@@ -244,7 +244,7 @@ static inline void _absorb_handler(gt_obj_st const * const obj_scroll, struct _p
  *
  * @param indev
  */
-static void _indev_scroll_throw_handler(gt_indev_st * indev) {
+static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_handler(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
     point_p->gesture = _get_scroll_dir(indev);
 
@@ -283,7 +283,7 @@ static void _indev_scroll_throw_handler(gt_indev_st * indev) {
     gt_obj_scroll_to(obj_scroll, dx, dy, GT_ANIM_ON);
 }
 
-static void _indev_scroll_throw_exec_cb(void * indev, int32_t v) {
+static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_exec_cb(void * indev, int32_t v) {
     GT_UNUSED(v);
     gt_indev_st * ptr = (gt_indev_st *)indev;
     struct _point * point_p = &ptr->data.point;
@@ -298,13 +298,13 @@ static void _indev_scroll_throw_exec_cb(void * indev, int32_t v) {
     }
 }
 
-static inline void _indev_scroll_throw_reset(gt_indev_st * indev) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _indev_scroll_throw_reset(gt_indev_st * indev) {
     indev->scroll_throw_anim = NULL;
     indev->data.point.scroll_throw.x = 0;
     indev->data.point.scroll_throw.y = 0;
 }
 
-static void _indev_scroll_throw_ready_cb(struct gt_anim_s * anim) {
+static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_ready_cb(struct gt_anim_s * anim) {
     gt_indev_st * dev_p = (gt_indev_st * )anim->tar;
     struct _point * point_p = &dev_p->data.point;
 
@@ -320,7 +320,7 @@ static void _indev_scroll_throw_ready_cb(struct gt_anim_s * anim) {
     }
 }
 
-static void _indev_scroll_throw_deleted_cb(struct gt_anim_s * anim) {
+static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_deleted_cb(struct gt_anim_s * anim) {
     gt_indev_st * dev_p = (gt_indev_st * )anim->tar;
     struct _point * point_p = &dev_p->data.point;
 
@@ -328,7 +328,7 @@ static void _indev_scroll_throw_deleted_cb(struct gt_anim_s * anim) {
     point_p->obj_scroll = NULL;
 }
 
-static inline void _indev_scroll_throw_handler_anim_start(gt_indev_st * indev) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _indev_scroll_throw_handler_anim_start(gt_indev_st * indev) {
     if (_indev_send_home_gesture_event(indev)) {
         _indev_scroll_throw_reset(indev);
         return ;
@@ -349,7 +349,7 @@ static inline void _indev_scroll_throw_handler_anim_start(gt_indev_st * indev) {
  *
  * @param indev
  */
-static void _indev_scroll_handler(gt_indev_st * indev) {
+static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_handler(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
 
     point_p->scroll_sum.x += point_p->scroll_diff.x;
@@ -385,7 +385,7 @@ static void _indev_scroll_handler(gt_indev_st * indev) {
     gt_obj_scroll_to(point_p->obj_scroll, dx, dy, GT_ANIM_OFF);
 }
 
-static inline void _send_released_event(struct _point * point_p) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _send_released_event(struct _point * point_p) {
     gt_event_type_et event_type = GT_EVENT_TYPE_INPUT_RELEASED;
 
     if (point_p->obj_act != point_p->obj_target) {
@@ -403,7 +403,7 @@ static inline void _send_released_event(struct _point * point_p) {
     }
 }
 
-static inline void _scroll_calc_throw_distance(struct _point * point_p) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _scroll_calc_throw_distance(struct _point * point_p) {
     point_p->scroll_diff.x = point_p->newly.x - point_p->last.x;
     point_p->scroll_diff.y = point_p->newly.y - point_p->last.y;
 
@@ -411,7 +411,7 @@ static inline void _scroll_calc_throw_distance(struct _point * point_p) {
     point_p->scroll_throw.y = (point_p->scroll_throw.y + point_p->scroll_diff.y) >> 1;
 }
 
-static void _indev_released_handle(gt_indev_st * indev) {
+static GT_ATTRIBUTE_RAM_TEXT void _indev_released_handle(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
     if (NULL == point_p->obj_target) {
         goto clr_lb;
@@ -441,7 +441,7 @@ clr_lb:
  * @return true can not be activated
  * @return false can be activated
  */
-static bool _obj_outside_can_not_be_activated(void) {
+static GT_ATTRIBUTE_RAM_TEXT bool _obj_outside_can_not_be_activated(void) {
 #if GT_CFG_ENABLE_DIALOG
     if (gt_dialog_has_showing()) {
         return true;
@@ -457,7 +457,7 @@ static bool _obj_outside_can_not_be_activated(void) {
  * @param new_action true: new action, false: continue action
  * @return gt_obj_st* NULL or active object
  */
-static gt_obj_st * _search_active_obj_from_all_layers(gt_point_st * point, bool new_action) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _search_active_obj_from_all_layers(gt_point_st * point, bool new_action) {
     gt_obj_st * scr = gt_disp_get_scr();
     gt_obj_st * ret = NULL;
 #if GT_USE_LAYER_TOP
@@ -481,27 +481,27 @@ static gt_obj_st * _search_active_obj_from_all_layers(gt_point_st * point, bool 
     return ret;
 }
 
-static uint32_t _indev_reset_start_timestamp(gt_indev_st * indev) {
+static GT_ATTRIBUTE_RAM_TEXT uint32_t _indev_reset_start_timestamp(gt_indev_st * indev) {
     indev->timestamp_start = gt_tick_get();
     indev->timestamp_pressing = indev->timestamp_start;
     indev->timestamp_long_pressed = indev->timestamp_start;
     return indev->timestamp_start;
 }
 
-static inline bool _is_pressing_handler_after_long_pressed(gt_indev_st * indev) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_pressing_handler_after_long_pressed(gt_indev_st * indev) {
     return indev->timestamp_long_pressed != indev->timestamp_start;
 }
 
-static inline bool _is_pressing_timeout(gt_indev_st * indev) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_pressing_timeout(gt_indev_st * indev) {
     return (gt_tick_get() - indev->timestamp_pressing) >= indev->drv->limit_time_pressing;
 }
 
-static inline bool _is_long_pressed_timeout(gt_indev_st * indev) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_long_pressed_timeout(gt_indev_st * indev) {
     return indev->timestamp_long_pressed == indev->timestamp_start &&
         (gt_tick_get() - indev->timestamp_start) >= indev->drv->limit_time_long_pressed;
 }
 
-static void _indev_pressed_handle(gt_indev_st * indev) {
+static GT_ATTRIBUTE_RAM_TEXT void _indev_pressed_handle(gt_indev_st * indev) {
     gt_point_st point_ret;
     struct _point * point_p = &indev->data.point;
 
@@ -574,7 +574,7 @@ static void _indev_pressed_handle(gt_indev_st * indev) {
     _indev_scroll_handler(indev);
 }
 
-static void _gt_indev_handler_point(gt_indev_st * indev) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_point(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
     gt_indev_data_st data_indev = {
         .point.x = point_p->newly.x,
@@ -611,7 +611,7 @@ static void _gt_indev_handler_point(gt_indev_st * indev) {
     _gt_indev_point_set_value(&point_p->last, point_p->newly.x, point_p->newly.y);
 }
 
-static void _gt_indev_handler_button(gt_indev_st * indev) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_button(gt_indev_st * indev) {
     static uint8_t flag_key_down = 0;
     static uint32_t last_run = 0;
     gt_indev_data_st data_indev = {
@@ -653,7 +653,7 @@ static void _gt_indev_handler_button(gt_indev_st * indev) {
  * @return true
  * @return false
  */
-static inline bool _kp_is_global_key_value(uint32_t key) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _kp_is_global_key_value(uint32_t key) {
     switch (key) {
         case GT_KEY_NEXT:
         case GT_KEY_PREV:
@@ -670,7 +670,7 @@ static inline bool _kp_is_global_key_value(uint32_t key) {
 }
 #endif
 
-static void _kp_called_global_and_enter_event(gt_indev_st * indev, gt_event_type_et event_type, gt_indev_param_st * idv_params_p) {
+static GT_ATTRIBUTE_RAM_TEXT void _kp_called_global_and_enter_event(gt_indev_st * indev, gt_event_type_et event_type, gt_indev_param_st * idv_params_p) {
 #if GT_USE_LAYER_TOP
     if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
         _gt_global_core_indev_event_send(event_type, idv_params_p);
@@ -682,7 +682,7 @@ static void _kp_called_global_and_enter_event(gt_indev_st * indev, gt_event_type
     }
 }
 
-static void _gt_indev_handler_keypad(gt_indev_st* indev) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
     gt_indev_data_st data_indev = {
         .key = GT_KEY_NONE,
         .state = GT_INDEV_STATE_INVALID,

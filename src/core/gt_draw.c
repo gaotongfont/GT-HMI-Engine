@@ -93,7 +93,7 @@ static inline uint8_t _get_align_type(gt_align_et align) {
 }
 
 /* static functions -----------------------------------------------------*/
-static void _draw_quarter_circle_0(_gt_draw_ctx_st * draw_ctx , _quarter_circle_st* q) {
+static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_0(_gt_draw_ctx_st * draw_ctx , _quarter_circle_st* q) {
     gt_area_st area;
     gt_size_t x1, y1, x2, y2;
 
@@ -159,8 +159,7 @@ static void _draw_quarter_circle_0(_gt_draw_ctx_st * draw_ctx , _quarter_circle_
     }
 }
 
-static void _draw_quarter_circle_1(_gt_draw_ctx_st * draw_ctx , _quarter_circle_st* q)
-{
+static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_1(_gt_draw_ctx_st * draw_ctx , _quarter_circle_st* q) {
     gt_area_st area;
     gt_size_t x1, y1, x2, y2;
     if(q->start_quarter == 1 && q->end_quarter == 1 && q->start_angle < q->end_angle) {
@@ -224,8 +223,7 @@ static void _draw_quarter_circle_1(_gt_draw_ctx_st * draw_ctx , _quarter_circle_
     }
 }
 
-static void _draw_quarter_circle_2(_gt_draw_ctx_st * draw_ctx , _quarter_circle_st* q)
-{
+static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_2(_gt_draw_ctx_st * draw_ctx , _quarter_circle_st* q) {
     gt_area_st area;
     gt_size_t x1, y1, x2, y2;
     if(q->start_quarter == 2 && q->end_quarter == 2 && q->start_angle < q->end_angle) {
@@ -289,8 +287,7 @@ static void _draw_quarter_circle_2(_gt_draw_ctx_st * draw_ctx , _quarter_circle_
     }
 }
 
-static void _draw_quarter_circle_3(_gt_draw_ctx_st * draw_ctx , _quarter_circle_st* q)
-{
+static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_3(_gt_draw_ctx_st * draw_ctx , _quarter_circle_st* q) {
     gt_area_st area;
     gt_size_t x1, y1, x2, y2;
     if(q->start_quarter == 3 && q->end_quarter == 3 && q->start_angle < q->end_angle) {
@@ -354,7 +351,7 @@ static void _draw_quarter_circle_3(_gt_draw_ctx_st * draw_ctx , _quarter_circle_
     }
 }
 
-static uint16_t _gt_gray_and_dot_byte_get(uint8_t* gray, uint8_t width, gt_font_st font, uint8_t ret_style) {
+static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_gray_and_dot_byte_get(uint8_t* gray, uint8_t width, gt_font_st font, uint8_t ret_style) {
     uint16_t dot_byte = 0;
     uint8_t font_type = ret_style % 10;
     uint8_t font_gray = (ret_style/10) > 0 ? (ret_style/10) : 1;
@@ -377,11 +374,11 @@ static uint16_t _gt_gray_and_dot_byte_get(uint8_t* gray, uint8_t width, gt_font_
     return dot_byte;
 }
 
-static inline uint8_t _get_style_space_y(const gt_attr_font_st * dsc, uint16_t font_size) {
+static GT_ATTRIBUTE_RAM_TEXT inline uint8_t _get_style_space_y(const gt_attr_font_st * dsc, uint16_t font_size) {
     return (dsc->reg.style == GT_FONT_STYLE_NONE) ? 0 : ((font_size >> 4) ? (font_size >> 4) : 1);
 }
 
-static inline void _draw_blend_underline(
+static GT_ATTRIBUTE_RAM_TEXT inline void _draw_blend_underline(
     _gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, gt_draw_blend_dsc_st * blend_dsc_style,
     gt_area_st area_font_style, uint16_t font_size, uint16_t width, uint16_t height) {
     area_font_style.y += font_size + 1;
@@ -392,7 +389,7 @@ static inline void _draw_blend_underline(
     gt_draw_blend(draw_ctx, blend_dsc_style);
 }
 
-static inline void _draw_blend_strikethrough(
+static GT_ATTRIBUTE_RAM_TEXT inline void _draw_blend_strikethrough(
     _gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, gt_draw_blend_dsc_st * blend_dsc_style,
     gt_area_st area_font_style, uint16_t font_size, uint16_t width, uint16_t height) {
     area_font_style.y += (font_size >> 1);
@@ -405,12 +402,11 @@ static inline void _draw_blend_strikethrough(
 
 
 #if _GT_FONT_ENABLE_CONVERTOR
-static _gt_draw_font_res_st _draw_text_convertor_split(
+static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
     const gt_font_st * fonts, uint8_t lan,
     _gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc,
     const gt_attr_font_st * dsc, gt_size_t font_disp_h,
-    gt_draw_blend_dsc_st * blend_dsc_style, const gt_area_st * coords, uint8_t flag_ol)
-{
+    gt_draw_blend_dsc_st * blend_dsc_style, const gt_area_st * coords, uint8_t flag_ol) {
     uint32_t idx = 0, uni_or_gbk = 0, tmp = 0;
     _gt_draw_font_res_st ret = { .res = GT_RES_OK };
     uint16_t * text = NULL;
@@ -591,7 +587,7 @@ _ret_handle:
 #endif  /** _GT_FONT_ENABLE_CONVERTOR */
 
 #if GT_USE_SJPG
-static void _filling_by_sjpg_file(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
+static GT_ATTRIBUTE_RAM_TEXT void _filling_by_sjpg_file(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     uint16_t w, h, y = 0;
     w = dsc_img->header.w;
     h = dsc_img->header.h;
@@ -640,7 +636,7 @@ static void _filling_by_sjpg_file(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_
 }
 #endif
 
-static void _filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
+static GT_ATTRIBUTE_RAM_TEXT void _filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     blend_dsc->mask_buf = &dsc_img->alpha[0];
     blend_dsc->dst_buf = (gt_color_t *)&dsc_img->img[0];
     if (NULL == blend_dsc->dst_buf && NULL == blend_dsc->mask_buf) {
@@ -654,7 +650,7 @@ static void _filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_s
 }
 
 #if GT_USE_EXTRA_FULL_IMG_BUFFER
-static gt_res_t _filling_by_default_full_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _filling_by_default_full_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     uint32_t len = 0, addr_start_alpha = 0;
 
     len = dsc_img->header.w * dsc_img->header.h;
@@ -711,7 +707,7 @@ line_lb:
  * @param blend_dsc
  * @param dsc_img
  */
-static void _filling_by_default_line_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
+static GT_ATTRIBUTE_RAM_TEXT void _filling_by_default_line_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     uint32_t offset = 0, len = 0;
     uint32_t addr_start_alpha = 0;
     uint16_t w, h, y = 0;
@@ -782,7 +778,8 @@ line_lb:
     }
 }
 
-static inline void _filling_by_default(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _filling_by_default(_gt_draw_ctx_st * draw_ctx,
+    gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
 #if GT_USE_EXTRA_FULL_IMG_BUFFER
     if (GT_RES_OK == _filling_by_default_full_mode(draw_ctx, blend_dsc, dsc_img)) {
         return;
@@ -800,7 +797,8 @@ static inline void _filling_by_default(_gt_draw_ctx_st * draw_ctx, gt_draw_blend
  * @param string_width The string total width pixel
  * @return gt_size_t
  */
-static inline gt_size_t _get_align_start_x(gt_align_et align, gt_size_t x, uint16_t width, uint16_t string_width) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t _get_align_start_x(gt_align_et align, gt_size_t x,
+    uint16_t width, uint16_t string_width) {
     gt_align_et type = _get_align_type(align);
 
     if (GT_ALIGN_CENTER == type || GT_ALIGN_CENTER_MID == type || GT_ALIGN_CENTER_BOTTOM == type) {
@@ -816,7 +814,8 @@ static inline bool _is_multi_line(const gt_attr_font_st * dsc) {
     return false == dsc->reg.single_line ? true : false;
 }
 
-static gt_size_t _get_align_start_y_by_line(const gt_attr_font_st * dsc, const gt_area_st * coords, gt_font_st * tmp_font, uint8_t * txt, uint16_t line_count) {
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t _get_align_start_y_by_line(const gt_attr_font_st * dsc,
+    const gt_area_st * coords, gt_font_st * tmp_font, uint8_t * txt, uint16_t line_count) {
     gt_size_t offset_y = coords->y;
     uint16_t line_height = (tmp_font->info.size + (_get_style_space_y(dsc, tmp_font->info.size) << 1) + dsc->space_y) * line_count;
     gt_align_et type = _get_align_type(dsc->align);
@@ -833,7 +832,8 @@ static gt_size_t _get_align_start_y_by_line(const gt_attr_font_st * dsc, const g
     return offset_y;
 }
 
-static gt_size_t _get_align_start_y(const gt_attr_font_st * dsc, const gt_area_st * coords, gt_font_st * tmp_font, uint8_t * txt) {
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t _get_align_start_y(const gt_attr_font_st * dsc,
+    const gt_area_st * coords, gt_font_st * tmp_font, uint8_t * txt) {
     uint32_t ret_w = 0;
     uint16_t line_count = 1;
     gt_size_t disp_w = coords->w;
@@ -851,11 +851,11 @@ static gt_size_t _get_align_start_y(const gt_attr_font_st * dsc, const gt_area_s
     return _get_align_start_y_by_line(dsc, coords, tmp_font, txt, line_count);
 }
 
-static uint16_t _calc_line_height_pixel(gt_area_st * area_font, const gt_attr_font_st * dsc, uint8_t style_space_y) {
+static GT_ATTRIBUTE_RAM_TEXT uint16_t _calc_line_height_pixel(gt_area_st * area_font, const gt_attr_font_st * dsc, uint8_t style_space_y) {
     return area_font->h + dsc->space_y + (style_space_y << 1);
 }
 
-static _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, gt_area_st const * view) {
+static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, gt_area_st const * view) {
     const gt_area_st * coords = &dsc->logical_area;
     _gt_draw_font_res_st ret = {0};
     _gt_draw_font_res_st tmp_ret = {0};
@@ -1287,7 +1287,7 @@ _ret_handler:
     return ret;
 }
 
-static _omit_info_st _omit_get_font_width(gt_font_st * tmp_font) {
+static GT_ATTRIBUTE_RAM_TEXT _omit_info_st _omit_get_font_width(gt_font_st * tmp_font) {
     uint32_t uni_or_gbk = 0;
     _omit_info_st ret = {0};
 
@@ -1314,7 +1314,7 @@ static _omit_info_st _omit_get_font_width(gt_font_st * tmp_font) {
     return ret;
 }
 
-static _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, const gt_area_st * view) {
+static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, const gt_area_st * view) {
     gt_area_st * coords = (gt_area_st * )&dsc->logical_area;
     _gt_draw_font_res_st ret = { .res = GT_RES_OK };
     _gt_draw_font_res_st tmp_ret = {0};
@@ -1687,7 +1687,8 @@ ret_handler_lb:
     return ret;
 }
 
-static void _draw_dot_matrix_data(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords, gt_draw_blend_dsc_st * blend_dsc_p) {
+static GT_ATTRIBUTE_RAM_TEXT void _draw_dot_matrix_data(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc,
+    const gt_area_st * coords, gt_draw_blend_dsc_st * blend_dsc_p) {
     uint32_t len = coords->w * coords->h, index = 0, buf_idx = 0;
     uint8_t idx_bit = 0;
     uint8_t * mask_buf = gt_mem_malloc(len);
@@ -1716,6 +1717,10 @@ static void _draw_dot_matrix_data(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect
     gt_mem_free(mask_buf);
     mask_buf = NULL;
     blend_dsc_p->mask_buf = NULL;
+}
+
+static inline bool _is_brush_round(gt_line_st const * const line) {
+    return GT_BRUSH_TYPE_ROUND == line->brush;
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -2028,10 +2033,6 @@ close_lb:
     }
 #endif
     gt_img_decoder_close(&dsc_img);
-}
-
-static inline bool _is_brush_round(gt_line_st const * const line) {
-    return GT_BRUSH_TYPE_ROUND == line->brush;
 }
 
 void gt_draw_point(_gt_draw_ctx_st * draw_ctx, gt_attr_point_st const * dsc, gt_area_st const * coords)

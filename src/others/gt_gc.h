@@ -88,7 +88,7 @@ typedef struct gt_gc_s {
 #endif
 }gt_gc_st;
 
-extern gt_gc_st _gt_global_call;
+extern GT_ATTRIBUTE_RAM_TEXT gt_gc_st _gt_global_call;
 
 #define _GT_GC_GET_ROOT(_name)  ((&_gt_global_call)->_name)
 

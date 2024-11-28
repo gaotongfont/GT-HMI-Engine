@@ -71,9 +71,9 @@ typedef struct {
 }_unicode_range_st;
 
 /* static variables -----------------------------------------------------*/
-static const uint8_t _ascii_16[];
+static GT_ATTRIBUTE_RAM_DATA const uint8_t _ascii_16[];
 
-static const uint8_t _latin_16x16_width[] = {
+static GT_ATTRIBUTE_RAM_DATA const uint8_t _latin_16x16_width[] = {
     // latin
     // 1.1:0x0020UL<=unicode<=0x007FUL
     0x04,  0x04,  0x08,  0x09,  0x09,  0x10,  0x0d,  0x04,  0x06,  0x05,  0x09,  0x09,  0x04,  0x06,  0x04,  0x05,  0x09,  0x07,  0x09,  0x09,  0x09,  0x09,  0x09,  0x09,  0x09,  0x09,  0x06,  0x06,  0x09,  0x09,  0x09,  0x0a,  0x10,  0x0c,  0x0c,  0x0c,  0x0c,  0x0b,  0x0a,  0x0c,  0x0c,  0x04,  0x09,  0x0c,  0x0a,  0x0d,  0x0c,  0x0c,  0x0b,  0x0c,  0x0d,  0x0b,  0x0b,  0x0c,  0x0c,  0x10,  0x0b,  0x0b,  0x0a,  0x06,  0x05,  0x06,  0x09,  0x0a,  0x04,  0x0a,  0x0a,  0x09,  0x0a,  0x09,  0x06,  0x0a,  0x0a,  0x04,  0x04,  0x09,  0x04,  0x0e,  0x0a,  0x0a,  0x0a,  0x0a,  0x07,  0x09,  0x06,  0x0a,  0x09,  0x0e,  0x09,  0x0a,  0x09,  0x07,  0x04,  0x07,  0x0a,
@@ -89,7 +89,7 @@ static const uint8_t _latin_16x16_width[] = {
     0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0b,  0x0c,  0x0a,  0x0c,  0x0b,  0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0a,  0x0b,  0x09,  0x0b,  0x09,  0x0b,  0x09,  0x0c,  0x0b,  0x0b,  0x09,  0x0d,  0x0c,  0x0b,  0x09,  0x0b,  0x09,  0x05,  0x05,  0x04,  0x04,  0x0c,  0x0a,  0x0c,  0x0a,  0x0d,  0x0c,  0x0c,  0x0a,  0x0d,  0x0c,  0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0b,  0x0d,  0x0b,  0x0d,  0x0b,  0x0d,  0x0b,  0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0a,  0x0c,  0x0c,  0x0c,  0x0c,  0x0c,  0x0c,  0x0c,  0x0c,  0x0c,  0x0c,  0x0b,  0x0a,  0x0b,  0x0a,  0x0b,  0x0a,  0x0b,  0x0a,  0x0a,  0x0a,  0x0a,  0x0a,  0x0a,
 };
 
-static const uint32_t _latin_encoding_range[] = {
+static GT_ATTRIBUTE_RAM_DATA const uint32_t _latin_encoding_range[] = {
     //start     end
     0x0020UL, 0x007FUL,
     0x00A0UL, 0x017FUL,
@@ -102,7 +102,7 @@ static const uint32_t _latin_encoding_range[] = {
 /**
  * @brief Adjust the ascii display position according to the match between Chinese and ascii
  */
-static const _font_type_group_adjust_ascii_pos_st _font_type_group_arr[] = {
+static GT_ATTRIBUTE_RAM_DATA const _font_type_group_adjust_ascii_pos_st _font_type_group_arr[] = {
     /** 16 */
 #if defined(GT_FAMILY_GB2312_16_ST) && defined(GT_FAMILY_ASCII_16x16_T)
     {.cn_opt = gt_family_gb2312_16_st, .en_opt = gt_family_ascii_16x16_t, .offset = { .y = 1 } },
@@ -208,15 +208,15 @@ static const _font_type_group_adjust_ascii_pos_st _font_type_group_arr[] = {
 #endif
 };
 
-static const gt_size_t _font_type_group_arr_len = sizeof(_font_type_group_arr) / sizeof(_font_type_group_adjust_ascii_pos_st) - 1;
+static GT_ATTRIBUTE_RAM_DATA const gt_size_t _font_type_group_arr_len = sizeof(_font_type_group_arr) / sizeof(_font_type_group_adjust_ascii_pos_st) - 1;
 
 
-static gt_font_family_list_st _font_family_list = {NULL, 0};
+static GT_ATTRIBUTE_RAM_DATA gt_font_family_list_st _font_family_list = {NULL, 0};
 
 /* macros ---------------------------------------------------------------*/
-static gt_encoding_et _gt_project_encoding = GT_ENCODING_UTF8;
+static GT_ATTRIBUTE_RAM_DATA gt_encoding_et _gt_project_encoding = GT_ENCODING_UTF8;
 #ifdef PINYIN_INPUT_METHOD_EN
-static py_info_st* _gt_py_info;
+static GT_ATTRIBUTE_RAM_DATA py_info_st* _gt_py_info;
 #endif
 /* static functions -----------------------------------------------------*/
 /**
@@ -228,7 +228,7 @@ static py_info_st* _gt_py_info;
  * @param gray
  * @return gt_size_t
  */
-static inline gt_size_t gt_font_get_font_width_inline(uint32_t uni_or_gbk, uint16_t option, uint16_t font_size, uint8_t gray, uint8_t * res) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t gt_font_get_font_width_inline(uint32_t uni_or_gbk, uint16_t option, uint16_t font_size, uint8_t gray, uint8_t * res) {
     gt_size_t width = 0;
     if (GT_CFG_DEFAULT_FONT_FAMILY == option) {
         return width;
@@ -268,7 +268,7 @@ static inline gt_size_t gt_font_get_font_width_inline(uint32_t uni_or_gbk, uint1
  * @param unicode
  * @return uint32_t
  */
-static uint32_t _get_idx(uint32_t const * const unicode_arr, uint16_t depth, uint32_t unicode) {
+static GT_ATTRIBUTE_RAM_TEXT uint32_t _get_idx(uint32_t const * const unicode_arr, uint16_t depth, uint32_t unicode) {
     uint16_t idx = 0;
     while (idx < depth) {
         if (unicode >= unicode_arr[idx << 2] && unicode <= unicode_arr[(idx << 2) + 1]) {
@@ -288,7 +288,7 @@ static uint32_t _get_idx(uint32_t const * const unicode_arr, uint16_t depth, uin
  * @return true :the unicode is latin
  * @return false :the unicode not is latin
  */
-static bool _gt_font_latin_check(uint32_t unicode) {
+static GT_ATTRIBUTE_RAM_TEXT bool _gt_font_latin_check(uint32_t unicode) {
     bool res = false;
     const uint32_t * encoding_range_p = _latin_encoding_range;
     uint16_t len = (sizeof(_latin_encoding_range) / sizeof(_latin_encoding_range[0])) >> 1;
@@ -308,7 +308,7 @@ static bool _gt_font_latin_check(uint32_t unicode) {
  * @param font_size font size
  * @return uint8_t the latin unicode font width
  */
-static uint8_t _gt_font_latin_get_width(uint32_t unicode, uint8_t font_size) {
+static GT_ATTRIBUTE_RAM_TEXT uint8_t _gt_font_latin_get_width(uint32_t unicode, uint8_t font_size) {
     uint16_t len = (sizeof(_latin_encoding_range) / sizeof(_latin_encoding_range[0])) >> 1;
     uint32_t idx = _get_idx(_latin_encoding_range, len, unicode);
 
@@ -316,7 +316,7 @@ static uint8_t _gt_font_latin_get_width(uint32_t unicode, uint8_t font_size) {
     return _latin_16x16_width[idx];
 }
 
-static bool _gt_number_symbol_font(uint32_t unicode) {
+static GT_ATTRIBUTE_RAM_TEXT bool _gt_number_symbol_font(uint32_t unicode) {
     // 0123456789,.:'$€￥
     if ((unicode >= 0x30 && unicode <= 0x39) || \
         0x3A == unicode || 0x2C == unicode || 0x2E == unicode || \
@@ -328,7 +328,7 @@ static bool _gt_number_symbol_font(uint32_t unicode) {
     return false;
 }
 
-static uint32_t _get_font_option(gt_font_st * font, uint32_t unicode)
+static GT_ATTRIBUTE_RAM_TEXT uint32_t _get_font_option(gt_font_st * font, uint32_t unicode)
 {
     gt_font_lan_et font_lan = FONT_LAN_UNKNOWN;
 
@@ -596,7 +596,7 @@ uint8_t gt_font_one_char_code_len_get(uint8_t * utf8_or_bgk, uint32_t *res, uint
     return _gt_utf8_to_unicode(utf8_or_bgk, res);
 }
 
-static uint8_t _gt_gb_code_len_get(uint32_t gb_code)
+static GT_ATTRIBUTE_RAM_TEXT uint8_t _gt_gb_code_len_get(uint32_t gb_code)
 {
     if(gb_code <= 0x7F){
         return 1;
@@ -608,7 +608,7 @@ static uint8_t _gt_gb_code_len_get(uint32_t gb_code)
     return 2;
 }
 
-static uint8_t _gt_utf8_to_gb(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
+static GT_ATTRIBUTE_RAM_TEXT uint8_t _gt_utf8_to_gb(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
 {
     uint32_t out_len = 0;
 #if GT_CFG_ENABLE_ZK_FONT == 1
@@ -642,7 +642,7 @@ fill:
     return out_len;
 }
 
-static uint16_t _gt_gb_to_utf8(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
+static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_gb_to_utf8(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
 {
     uint32_t out_len = 0;
 #if GT_CFG_ENABLE_ZK_FONT == 1
@@ -670,7 +670,7 @@ static uint16_t _gt_gb_to_utf8(const uint8_t *src, uint16_t src_len, uint8_t* ds
     return out_len;
 }
 
-static uint16_t _gt_unicode_to_utf8_buf(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
+static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_unicode_to_utf8_buf(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
 {
     uint32_t out_len = 0;
     uint32_t font_code = 0, i = 0;
@@ -690,7 +690,7 @@ static uint16_t _gt_unicode_to_utf8_buf(const uint8_t *src, uint16_t src_len, ui
 }
 
 #if BIG5TOGBK
-static uint16_t _gt_big5_to_gbk(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
+static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_big5_to_gbk(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
 {
     uint32_t out_len = 0;
 #if GT_CFG_ENABLE_ZK_FONT == 1
@@ -728,7 +728,7 @@ fill:
 #endif
 
 #if SHIFT_JIS_TO_JIS0208
-static uint16_t _gt_shiftjis_to_jis0208(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
+static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_shiftjis_to_jis0208(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len)
 {
     uint32_t out_len = 0;
 #if GT_CFG_ENABLE_ZK_FONT == 1
@@ -867,7 +867,7 @@ uint8_t gt_gb_check_char(const uint8_t *dst, uint16_t pos, uint32_t* font_code)
  */
 gt_font_lan_et gt_font_lan_get(uint32_t unicode, uint8_t encoding)
 {
-    static const _unicode_range_st ranges[] = {
+    static GT_ATTRIBUTE_RAM_TEXT const _unicode_range_st ranges[] = {
         { 0x4E00, 0x9FA5, FONT_LAN_CN },
         { 0x0080, 0x02FF, FONT_LAN_LATIN },
         { 0x1E00, 0x1EFF, FONT_LAN_LATIN },
@@ -1266,7 +1266,7 @@ gt_encoding_et gt_project_encoding_get(void)
     return _gt_project_encoding;
 }
 
-static uint32_t _gt_font_language_split(const uint8_t *str, uint32_t len, uint8_t encoding, uint8_t *lan)
+static GT_ATTRIBUTE_RAM_TEXT uint32_t _gt_font_language_split(const uint8_t *str, uint32_t len, uint8_t encoding, uint8_t *lan)
 {
     uint32_t idx = 0 ,tmp, uni_or_gbk;
     idx += gt_font_one_char_code_len_get((uint8_t * )&str[0], &uni_or_gbk, encoding);
@@ -1287,7 +1287,7 @@ static uint32_t _gt_font_language_split(const uint8_t *str, uint32_t len, uint8_
     return idx;
 }
 
-static bool _is_punctuation(uint32_t uni_or_gbk) {
+static GT_ATTRIBUTE_RAM_TEXT bool _is_punctuation(uint32_t uni_or_gbk) {
     if (uni_or_gbk > 0x1F && uni_or_gbk < 0x2F) { return true; }
     if (uni_or_gbk > 0x39 && uni_or_gbk < 0x41) { return true; }
     if (uni_or_gbk > 0x5A && uni_or_gbk < 0x61) { return true; }
@@ -1295,7 +1295,7 @@ static bool _is_punctuation(uint32_t uni_or_gbk) {
     return false;
 }
 
-static uint32_t _gt_font_punctuation_split(const uint8_t *str, uint32_t len, uint8_t encoding)
+static GT_ATTRIBUTE_RAM_TEXT uint32_t _gt_font_punctuation_split(const uint8_t *str, uint32_t len, uint8_t encoding)
 {
     uint32_t idx = 0, uni_or_gbk = 0;
     uint8_t tmp;
@@ -1314,7 +1314,7 @@ static uint32_t _gt_font_punctuation_split(const uint8_t *str, uint32_t len, uin
     return idx;
 }
 
-static uint32_t _gt_font_cn_in_this_range(const gt_font_st *fonts, uint32_t width, uint32_t space, uint32_t* ret_w)
+static GT_ATTRIBUTE_RAM_TEXT uint32_t _gt_font_cn_in_this_range(const gt_font_st *fonts, uint32_t width, uint32_t space, uint32_t* ret_w)
 {
     uint32_t idx = 0, uni_or_gbk = 0, w = 0;
     uint8_t *str = (uint8_t * )fonts->utf8, tmp, tmp_w = 0;
@@ -1334,7 +1334,7 @@ static uint32_t _gt_font_cn_in_this_range(const gt_font_st *fonts, uint32_t widt
     return idx;
 }
 
-static uint32_t _gt_font_en_in_this_range(const gt_font_st *fonts, uint32_t width, uint32_t space, uint32_t* ret_w, uint16_t *ol_idx, uint16_t *ol_width)
+static GT_ATTRIBUTE_RAM_TEXT uint32_t _gt_font_en_in_this_range(const gt_font_st *fonts, uint32_t width, uint32_t space, uint32_t* ret_w, uint16_t *ol_idx, uint16_t *ol_width)
 {
     uint32_t idx = 0, uni_or_gbk = 0, w = 0;
     uint8_t *str = (uint8_t * )fonts->utf8, tmp, tmp_w = 0;
@@ -1358,7 +1358,7 @@ static uint32_t _gt_font_en_in_this_range(const gt_font_st *fonts, uint32_t widt
 }
 
 #if _GT_FONT_ENABLE_CONVERTOR
-static uint32_t _get_convertor_string_width(const gt_font_st *fonts, uint8_t lan, uint32_t space, uint16_t range_w, uint16_t *ol_idx, uint16_t *ol_width)
+static GT_ATTRIBUTE_RAM_TEXT uint32_t _get_convertor_string_width(const gt_font_st *fonts, uint8_t lan, uint32_t space, uint16_t range_w, uint16_t *ol_idx, uint16_t *ol_width)
 {
     uint32_t idx = 0, uni_or_gbk = 0, tmp = 0, len = fonts->info.size * fonts->len;
     uint16_t *text = NULL;
@@ -1606,7 +1606,7 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint3
 
 
 
-static uint32_t _gt_font_lang_and_punctuation_split(const uint8_t *str, uint32_t len, uint8_t encoding, uint8_t *lan, uint8_t is_lan)
+static GT_ATTRIBUTE_RAM_TEXT uint32_t _gt_font_lang_and_punctuation_split(const uint8_t *str, uint32_t len, uint8_t encoding, uint8_t *lan, uint8_t is_lan)
 {
     uint32_t idx = 0 ,tmp, uni_or_gbk;
     idx += gt_font_one_char_code_len_get((uint8_t * )&str[0], &uni_or_gbk, encoding);
@@ -2014,7 +2014,7 @@ void gt_py_input_method_destroy(gt_py_input_method_st* py_input_method)
 }
 
 #if GT_CFG_USE_FONT_16_ASCII == 1
-static const uint8_t _ascii_16[] = {
+static GT_ATTRIBUTE_RAM_TEXT const uint8_t _ascii_16[] = {
     //
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
     //!

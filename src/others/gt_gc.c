@@ -18,7 +18,7 @@
 
 /* private typedef ------------------------------------------------------*/
 
-gt_gc_st _gt_global_call = {
+GT_ATTRIBUTE_RAM_TEXT gt_gc_st _gt_global_call = {
     .scr_info = {
         .home_scr = {
             .id = -1,

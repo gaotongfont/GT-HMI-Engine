@@ -44,7 +44,7 @@
  * @return true
  * @return false
  */
-static bool _update_layer_top_widget_area(gt_obj_st * obj, gt_area_st new_area) {
+static GT_ATTRIBUTE_RAM_TEXT bool _update_layer_top_widget_area(gt_obj_st * obj, gt_area_st new_area) {
     GT_CHECK_BACK_VAL(obj, false);
     gt_disp_st * disp = gt_disp_get_default();
     if (NULL == disp->layer_top) {

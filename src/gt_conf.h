@@ -116,6 +116,13 @@ extern "C" {
     #define GT_ATTRIBUTE_LARGE_RAM_ARRAY
 #endif
 
+#ifndef GT_ATTRIBUTE_RAM_DATA
+    #define GT_ATTRIBUTE_RAM_DATA   GT_ATTRIBUTE_LARGE_RAM_ARRAY
+#endif
+
+#ifndef GT_ATTRIBUTE_RAM_TEXT
+    #define GT_ATTRIBUTE_RAM_TEXT
+#endif
 
 /* ui default style */
 #define GT_STYLE_UI_SIMPLE     0
