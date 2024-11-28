@@ -1,7 +1,10 @@
 /**
  * @file gt_graphs.h
  * @author Feyoung
- * @brief
+ * @brief Display the graph, can display line, curve, bar, point, etc.
+ *      Also can display the ruler of the coordinate system.
+ *      FIFO mode can be used to display the flow of data, but the axis
+ *      range must be proivded by the user.
  * @version 0.1
  * @date 2024-07-22 21:33:40
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
@@ -64,8 +67,20 @@ gt_obj_st * gt_graphs_create(gt_obj_st * parent);
  */
 void gt_graphs_set_full_area(gt_obj_st * obj, bool enabled, uint8_t padding);
 
+/**
+ * @brief Set the coordinate system for adaptive range based on all points
+ *
+ * @param obj
+ * @param enabled
+ */
 void gt_graphs_set_self_adaptive(gt_obj_st * obj, bool enabled);
 
+/**
+ * @brief Displays the ruler of the coordinate system
+ *
+ * @param obj
+ * @param enabled
+ */
 void gt_graphs_set_show_ruler(gt_obj_st * obj, bool enabled);
 
 /**
@@ -77,6 +92,19 @@ void gt_graphs_set_show_ruler(gt_obj_st * obj, bool enabled);
  *              when grid's opa is 0x0, the grid line will not be displayed
  */
 void gt_graphs_set_axis(gt_obj_st * obj, gt_axis_st const * const axis);
+
+/**
+ * @brief Using FIFO mode to display the graph, the graph will
+ *      automatically delete the first or oldest point.
+ *      [Warning] Must disabled self adaptive mode, otherwise it will not work normally.
+ *          x-axis will be automatically calculated by hor, which was provided start and end value
+ *      ignore the x-axis was provided by the user;
+ *          y-axis was provided by the user.
+ *
+ * @param obj
+ * @param fifo_depth 0[default]: not use fifo, unlimited points; 1~65535: fifo depth
+ */
+void gt_graphs_set_fifo_max_points_count(gt_obj_st * obj, uint16_t fifo_depth);
 
 /**
  * @brief Add a series to the graph
