@@ -201,6 +201,10 @@ extern "C" {
 #if GT_USE_IMG_CACHE
 #include "src/utils/gt_img_cache.h"
 #endif
+
+#if GT_CFG_ENABLE_ARC
+#include "src/widgets/gt_arc.h"
+#endif
 /* define ---------------------------------------------------------------*/
 
 

@@ -146,6 +146,9 @@ void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_attr_curve_st const * dsc
 
 void draw_focus(gt_obj_st* obj, gt_size_t radius);
 
+void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_area_st * coords);
+
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

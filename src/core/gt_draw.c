@@ -28,7 +28,7 @@
 #include "../font/gt_font.h"
 #include "../font/gt_symbol.h"
 #include "gt_img_decoder.h"
-
+#include "gt_mask.h"
 /* private define -------------------------------------------------------*/
 
 #define RADIUS_MAX  16
@@ -61,6 +61,16 @@ typedef struct {
     uint16_t width;
 }_omit_info_st;
 
+typedef struct {
+    const gt_point_st* center;
+    gt_attr_rect_st* rect_dsc;
+    uint16_t radius;
+    uint16_t width;
+    uint16_t start_angle;
+    uint16_t end_angle;
+    uint16_t start_quarter;
+    uint16_t end_quarter;
+}_quarter_circle_st;
 
 /* static variables -----------------------------------------------------*/
 
@@ -430,132 +440,6 @@ static void _gt_radius_put_mask_buf(const gt_radius_mask_st *r_mask, uint8_t* ma
     }
 }
 
-#if 0
-static bool _gt_draw_radius(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords) {
-    if(NULL == draw_ctx || NULL == dsc || NULL == coords) return false;
-
-    // calc radius
-    uint16_t radius = GT_MIN(coords->w >> 1, coords->h >> 1);
-    radius = GT_MIN(radius, dsc->radius);
-    uint16_t border_width = dsc->border_width;
-
-    if(0 == radius){
-        return true;
-    }
-
-    uint8_t *mask_buf = gt_mem_malloc(radius * radius);
-    if(!mask_buf){
-        GT_LOGE(GT_LOG_TAG_MEM, "draw radius malloc fail!!! size: %d", radius*radius);
-        return false;
-    }
-
-    gt_area_st area_mask;
-    gt_draw_blend_dsc_st blend_dsc = {
-        .opa        = dsc->bg_opa,
-        .color_fill = dsc->bg_color,
-        .mask_area  = &area_mask,
-        .dst_area   = &area_mask,
-        .mask_buf    = mask_buf,
-    };
-
-    gt_radius_mask_st radius_mask={0};
-    gt_size_t in_radius = radius - border_width;
-    bool flag = false;
-
-
-    flag = _gt_get_radius_mask( &radius_mask, radius);
-    if(!flag){
-        goto radius_fail;
-    }
-
-    if(border_width > 0){
-        blend_dsc.color_fill = dsc->border_color;
-        // blend_dsc.opa = dsc->border_opa;
-    }
-
-    // top-left
-    area_mask.x = coords->x;
-    area_mask.y = coords->y;
-    area_mask.w = radius;
-    area_mask.h = radius;
-    gt_memset_0(mask_buf, radius * radius);
-    _gt_radius_put_mask_buf( &radius_mask, mask_buf, 0xFF, radius, R_DIR_TOP_LEFT);
-    gt_draw_blend(draw_ctx, &blend_dsc);
-    // top-right
-    area_mask.x = coords->x + coords->w - radius;
-    gt_memset_0(mask_buf, radius * radius);
-    _gt_radius_put_mask_buf( &radius_mask, mask_buf, 0xFF, radius, R_DIR_TOP_RIGHT);
-    gt_draw_blend(draw_ctx, &blend_dsc);
-    // bottom-left
-    area_mask.x = coords->x;
-    area_mask.y = coords->y + coords->h - radius;
-    gt_memset_0(mask_buf, radius * radius);
-    _gt_radius_put_mask_buf( &radius_mask, mask_buf, 0xFF, radius, R_DIR_BOTTOM_LEFT);
-    gt_draw_blend(draw_ctx, &blend_dsc);
-    // // bottom-right
-    area_mask.x = coords->x + coords->w - radius;
-    gt_memset_0(mask_buf, radius * radius);
-    _gt_radius_put_mask_buf( &radius_mask, mask_buf, 0xFF, radius, R_DIR_BOTTOM_RIGHT);
-    gt_draw_blend(draw_ctx, &blend_dsc);
-    //
-
-    _gt_radius_mask_free(&radius_mask, radius);
-
-    flag = false;
-    if(border_width > 0 && in_radius > 0){
-        flag = _gt_get_radius_mask( &radius_mask, in_radius);
-        if(!flag){
-            goto radius_fail;
-        }
-        blend_dsc.color_fill = dsc->bg_color;
-        blend_dsc.opa = dsc->bg_opa;
-
-        // top-left
-        area_mask.x = coords->x + border_width;
-        area_mask.y = coords->y + border_width;
-        area_mask.w = in_radius;
-        area_mask.h = in_radius;
-        gt_memset_0(mask_buf, radius * radius);
-        _gt_radius_put_mask_buf( &radius_mask, mask_buf, 0xFF, in_radius, R_DIR_TOP_LEFT);
-        gt_draw_blend(draw_ctx, &blend_dsc);
-        // top-right
-        area_mask.x = coords->x + coords->w - in_radius - border_width;
-        gt_memset_0(mask_buf, radius * radius);
-        _gt_radius_put_mask_buf( &radius_mask, mask_buf, 0xFF, in_radius, R_DIR_TOP_RIGHT);
-        gt_draw_blend(draw_ctx, &blend_dsc);
-        // bottom-left
-        area_mask.x = coords->x + border_width;
-        area_mask.y = coords->y + coords->h - in_radius - border_width;
-        gt_memset_0(mask_buf, radius * radius);
-        _gt_radius_put_mask_buf( &radius_mask, mask_buf, 0xFF, in_radius, R_DIR_BOTTOM_LEFT);
-        gt_draw_blend(draw_ctx, &blend_dsc);
-        // bottom-right
-        area_mask.x = coords->x + coords->w - in_radius - border_width;
-        gt_memset_0(mask_buf, radius * radius);
-        _gt_radius_put_mask_buf( &radius_mask, mask_buf, 0xFF, in_radius, R_DIR_BOTTOM_RIGHT);
-        gt_draw_blend(draw_ctx, &blend_dsc);
-
-        _gt_radius_mask_free(&radius_mask, in_radius);
-    }
-
-    if(mask_buf){
-        gt_mem_free(mask_buf);
-        mask_buf = NULL;
-    }
-
-    return true;
-
-radius_fail:
-
-    if(mask_buf){
-        gt_mem_free(mask_buf);
-        mask_buf = NULL;
-    }
-
-    return false;
-}
-#endif
-
 static bool _gt_radius_mask_init( gt_radius_mask_st*r_mask, const gt_area_st coords, uint16_t radius, bool outer) {
     if(!r_mask) return false;
 
@@ -679,6 +563,268 @@ static bool _gt_get_radius_mask_buf(gt_opa_t* mask_line, gt_size_t x, gt_size_t 
     }
 
     return true;
+}
+
+static void _draw_quarter_circle_0(_gt_draw_ctx_st * draw_ctx , _quarter_circle_st* q)
+{
+    gt_area_st area;
+    gt_size_t x1, y1, x2, y2;
+
+    if(q->start_quarter == 0 && q->end_quarter == 0 && q->start_angle < q->end_angle) {
+        /*Small arc here*/
+        y1 = q->center->y + ((gt_sin(q->start_angle) * (q->radius - q->width)) >> GT_MATH_TRIGO_SHIFT);
+        x2 = q->center->x + ((gt_sin(q->start_angle + 90) * (q->radius)) >> GT_MATH_TRIGO_SHIFT);
+
+        y2 = q->center->y + ((gt_sin(q->end_angle) * q->radius) >> GT_MATH_TRIGO_SHIFT);
+        x1 = q->center->x + ((gt_sin(q->end_angle + 90) * (q->radius - q->width)) >> GT_MATH_TRIGO_SHIFT);
+
+        area.x = x1;
+        area.y = y1;
+        area.w = x2 - x1 + 1;
+        area.h = y2 - y1 + 1;
+        draw_bg(draw_ctx, q->rect_dsc, &area);
+    }
+    else if(q->start_quarter == 0 || q->end_quarter == 0) {
+        /*Start and/or end arcs here*/
+        if(q->start_quarter == 0) {
+            x1 = q->center->x;
+            y2 = q->center->y + q->radius;
+
+            y1 = q->center->y + ((gt_sin(q->start_angle) * (q->radius - q->width)) >> GT_MATH_TRIGO_SHIFT);
+            x2 = q->center->x + ((gt_sin(q->start_angle + 90) * (q->radius)) >> GT_MATH_TRIGO_SHIFT);
+
+            area.x = x1;
+            area.y = y1;
+            area.w = x2 - x1 + 1;
+            area.h = y2 - y1 + 1;
+            draw_bg(draw_ctx, q->rect_dsc, &area);
+
+        }
+        if(q->end_quarter == 0) {
+            x2 = q->center->x + q->radius;
+            y1 = q->center->y;
+
+            y2 = q->center->y + ((gt_sin(q->end_angle) * q->radius) >> GT_MATH_TRIGO_SHIFT);
+            x1 = q->center->x + ((gt_sin(q->end_angle + 90) * (q->radius - q->width)) >> GT_MATH_TRIGO_SHIFT);
+
+            area.x = x1;
+            area.y = y1;
+            area.w = x2 - x1 + 1;
+            area.h = y2 - y1 + 1;
+            draw_bg(draw_ctx, q->rect_dsc, &area);
+        }
+    }
+    else if((q->start_quarter == q->end_quarter && q->start_quarter != 0 && q->end_angle < q->start_angle) ||
+            (q->start_quarter == 2 && q->end_quarter == 1) ||
+            (q->start_quarter == 3 && q->end_quarter == 2) ||
+            (q->start_quarter == 3 && q->end_quarter == 1)) {
+        /*Arc crosses here*/
+        x1 = q->center->x;
+        y1 = q->center->y;
+        x2 = q->center->x + q->radius;
+        y2 = q->center->y + q->radius;
+
+        area.x = x1;
+        area.y = y1;
+        area.w = x2 - x1 + 1;
+        area.h = y2 - y1 + 1;
+        draw_bg(draw_ctx, q->rect_dsc, &area);
+    }
+}
+
+static void _draw_quarter_circle_1(_gt_draw_ctx_st * draw_ctx , _quarter_circle_st* q)
+{
+    gt_area_st area;
+    gt_size_t x1, y1, x2, y2;
+    if(q->start_quarter == 1 && q->end_quarter == 1 && q->start_angle < q->end_angle) {
+        /*Small arc here*/
+        y2 = q->center->y + ((gt_sin(q->start_angle) * (q->radius)) >> GT_MATH_TRIGO_SHIFT);
+        x2 = q->center->x + ((gt_sin(q->start_angle + 90) * (q->radius - q->width)) >> GT_MATH_TRIGO_SHIFT);
+
+        y1 = q->center->y + ((gt_sin(q->end_angle) * (q->radius - q->width)) >> GT_MATH_TRIGO_SHIFT);
+        x1 = q->center->x + ((gt_sin(q->end_angle + 90) * (q->radius)) >> GT_MATH_TRIGO_SHIFT);
+
+        area.x = x1;
+        area.y = y1;
+        area.w = x2 - x1 + 1;
+        area.h = y2 - y1 + 1;
+        draw_bg(draw_ctx, q->rect_dsc, &area);
+    }
+    else if(q->start_quarter == 1 || q->end_quarter == 1) {
+        /*Start and/or end arcs here*/
+        if(q->start_quarter == 1) {
+            x1 = q->center->x - q->radius;
+            y1 = q->center->y;
+
+            y2 = q->center->y + ((gt_sin(q->start_angle) * (q->radius)) >> GT_MATH_TRIGO_SHIFT);
+            x2 = q->center->x + ((gt_sin(q->start_angle + 90) * (q->radius - q->width)) >> GT_MATH_TRIGO_SHIFT);
+
+            area.x = x1;
+            area.y = y1;
+            area.w = x2 - x1 + 1;
+            area.h = y2 - y1 + 1;
+            draw_bg(draw_ctx, q->rect_dsc, &area);
+        }
+        if(q->end_quarter == 1) {
+            x2 = q->center->x - 1;
+            y2 = q->center->y + q->radius;
+
+            y1 = q->center->y + ((gt_sin(q->end_angle) * (q->radius - q->width)) >> GT_MATH_TRIGO_SHIFT);
+            x1 = q->center->x + ((gt_sin(q->end_angle + 90) * (q->radius)) >> GT_MATH_TRIGO_SHIFT);
+
+            area.x = x1;
+            area.y = y1;
+            area.w = x2 - x1 + 1;
+            area.h = y2 - y1 + 1;
+            draw_bg(draw_ctx, q->rect_dsc, &area);
+        }
+    }
+    else if((q->start_quarter == q->end_quarter && q->start_quarter != 1 && q->end_angle < q->start_angle) ||
+            (q->start_quarter == 0 && q->end_quarter == 2) ||
+            (q->start_quarter == 0 && q->end_quarter == 3) ||
+            (q->start_quarter == 3 && q->end_quarter == 2)) {
+        /*Arc crosses here*/
+        x1 = q->center->x - q->radius;
+        y1 = q->center->y;
+        x2 = q->center->x - 1;
+        y2 = q->center->y + q->radius;
+
+        area.x = x1;
+        area.y = y1;
+        area.w = x2 - x1 + 1;
+        area.h = y2 - y1 + 1;
+        draw_bg(draw_ctx, q->rect_dsc, &area);
+    }
+}
+
+static void _draw_quarter_circle_2(_gt_draw_ctx_st * draw_ctx , _quarter_circle_st* q)
+{
+    gt_area_st area;
+    gt_size_t x1, y1, x2, y2;
+    if(q->start_quarter == 2 && q->end_quarter == 2 && q->start_angle < q->end_angle) {
+        /*Small arc here*/
+        x1 = q->center->x + ((gt_sin(q->start_angle + 90) * (q->radius)) >> GT_MATH_TRIGO_SHIFT);
+        y2 = q->center->y + ((gt_sin(q->start_angle) * (q->radius - q->width)) >> GT_MATH_TRIGO_SHIFT);
+
+        y1 = q->center->y + ((gt_sin(q->end_angle) * q->radius) >> GT_MATH_TRIGO_SHIFT);
+        x2 = q->center->x + ((gt_sin(q->end_angle + 90) * (q->radius - q->width)) >> GT_MATH_TRIGO_SHIFT);
+
+        area.x = x1;
+        area.y = y1;
+        area.w = x2 - x1 + 1;
+        area.h = y2 - y1 + 1;
+        draw_bg(draw_ctx, q->rect_dsc, &area);
+    }
+    else if(q->start_quarter == 2 || q->end_quarter == 2) {
+        /*Start and/or end arcs here*/
+        if(q->start_quarter == 2) {
+            x2 = q->center->x - 1;
+            y1 = q->center->y - q->radius;
+
+            x1 = q->center->x + ((gt_sin(q->start_angle + 90) * (q->radius)) >> GT_MATH_TRIGO_SHIFT);
+            y2 = q->center->y + ((gt_sin(q->start_angle) * (q->radius - q->width)) >> GT_MATH_TRIGO_SHIFT);
+
+            area.x = x1;
+            area.y = y1;
+            area.w = x2 - x1 + 1;
+            area.h = y2 - y1 + 1;
+            draw_bg(draw_ctx, q->rect_dsc, &area);
+        }
+        if(q->end_quarter == 2) {
+            x1 = q->center->x - q->radius;
+            y2 = q->center->y - 1;
+
+            x2 = q->center->x + ((gt_sin(q->end_angle + 90) * (q->radius - q->width)) >> GT_MATH_TRIGO_SHIFT);
+            y1 = q->center->y + ((gt_sin(q->end_angle) * (q->radius)) >> GT_MATH_TRIGO_SHIFT);
+
+            area.x = x1;
+            area.y = y1;
+            area.w = x2 - x1 + 1;
+            area.h = y2 - y1 + 1;
+            draw_bg(draw_ctx, q->rect_dsc, &area);
+        }
+    }
+    else if((q->start_quarter == q->end_quarter && q->start_quarter != 2 && q->end_angle < q->start_angle) ||
+            (q->start_quarter == 0 && q->end_quarter == 3) ||
+            (q->start_quarter == 1 && q->end_quarter == 3) ||
+            (q->start_quarter == 1 && q->end_quarter == 0)) {
+        /*Arc crosses here*/
+        x1 = q->center->x - q->radius;
+        y1 = q->center->y - q->radius;
+        x2 = q->center->x - 1;
+        y2 = q->center->y - 1;
+
+        area.x = x1;
+        area.y = y1;
+        area.w = x2 - x1 + 1;
+        area.h = y2 - y1 + 1;
+        draw_bg(draw_ctx, q->rect_dsc, &area);
+    }
+}
+
+static void _draw_quarter_circle_3(_gt_draw_ctx_st * draw_ctx , _quarter_circle_st* q)
+{
+    gt_area_st area;
+    gt_size_t x1, y1, x2, y2;
+    if(q->start_quarter == 3 && q->end_quarter == 3 && q->start_angle < q->end_angle) {
+        /*Small arc here*/
+        x1 = q->center->x + ((gt_sin(q->start_angle + 90) * (q->radius - q->width)) >> GT_MATH_TRIGO_SHIFT);
+        y1 = q->center->y + ((gt_sin(q->start_angle) * (q->radius)) >> GT_MATH_TRIGO_SHIFT);
+
+        x2 = q->center->x + ((gt_sin(q->end_angle + 90) * (q->radius)) >> GT_MATH_TRIGO_SHIFT);
+        y2 = q->center->y + ((gt_sin(q->end_angle) * (q->radius - q->width)) >> GT_MATH_TRIGO_SHIFT);
+
+        area.x = x1;
+        area.y = y1;
+        area.w = x2 - x1 + 1;
+        area.h = y2 - y1 + 1;
+        draw_bg(draw_ctx, q->rect_dsc, &area);
+    }
+    else if(q->start_quarter == 3 || q->end_quarter == 3) {
+        /*Start and/or end arcs here*/
+        if(q->start_quarter == 3) {
+            x2 = q->center->x + q->radius;
+            y2 = q->center->y - 1;
+
+            x1 = q->center->x + ((gt_sin(q->start_angle + 90) * (q->radius - q->width)) >> GT_MATH_TRIGO_SHIFT);
+            y1 = q->center->y + ((gt_sin(q->start_angle) * (q->radius)) >> GT_MATH_TRIGO_SHIFT);
+
+            area.x = x1;
+            area.y = y1;
+            area.w = x2 - x1 + 1;
+            area.h = y2 - y1 + 1;
+            draw_bg(draw_ctx, q->rect_dsc, &area);
+        }
+        if(q->end_quarter == 3) {
+            x1 = q->center->x;
+            y1 = q->center->y - q->radius;
+
+            x2 = q->center->x + ((gt_sin(q->end_angle + 90) * (q->radius)) >> GT_MATH_TRIGO_SHIFT);
+            y2 = q->center->y + ((gt_sin(q->end_angle) * (q->radius - q->width)) >> GT_MATH_TRIGO_SHIFT);
+
+            area.x = x1;
+            area.y = y1;
+            area.w = x2 - x1 + 1;
+            area.h = y2 - y1 + 1;
+            draw_bg(draw_ctx, q->rect_dsc, &area);
+        }
+    }
+    else if((q->start_quarter == q->end_quarter && q->start_quarter != 3 && q->end_angle < q->start_angle) ||
+            (q->start_quarter == 2 && q->end_quarter == 0) ||
+            (q->start_quarter == 1 && q->end_quarter == 0) ||
+            (q->start_quarter == 2 && q->end_quarter == 1)) {
+        /*Arc crosses here*/
+        x1 = q->center->x;
+        y1 = q->center->y - q->radius;
+        x2 = q->center->x + q->radius;
+        y2 = q->center->y - 1;
+
+        area.x = x1;
+        area.y = y1;
+        area.w = x2 - x1 + 1;
+        area.h = y2 - y1 + 1;
+        draw_bg(draw_ctx, q->rect_dsc, &area);
+    }
 }
 
 static uint16_t _gt_gray_and_dot_byte_get(uint8_t* gray, uint8_t width, gt_font_st font, uint8_t ret_style) {
@@ -933,14 +1079,34 @@ static void _filling_by_sjpg_file(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_
         return;
     }
 
+    bool mask_check = gt_mask_check(blend_dsc->mask_area);
+    gt_opa_t opa = blend_dsc->opa >= GT_OPA_MAX ? GT_OPA_COVER : blend_dsc->opa;
+    if(mask_check){
+        blend_dsc->mask_buf = gt_mem_malloc(blend_dsc->dst_area->w);
+        if(NULL == blend_dsc->mask_buf){
+            GT_LOGW(GT_LOG_TAG_GUI, "Per-line mask buffer malloc failed");
+            gt_mem_free(blend_dsc->dst_buf);
+            blend_dsc->dst_buf = NULL;
+            return;
+        }
+    }
+
     while(y < h){
         if( gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area) ){
+            if(mask_check){
+                gt_memset(blend_dsc->mask_buf, opa, len);
+                gt_mask_get(blend_dsc->mask_buf, blend_dsc->dst_area->x, blend_dsc->dst_area->y, blend_dsc->dst_area->w);
+            }
             /* blend to bg */
             gt_img_decoder_read_line(dsc_img, 0, y, len, (uint8_t *)blend_dsc->dst_buf);
             gt_draw_blend(draw_ctx, blend_dsc);
         }
         ++blend_dsc->dst_area->y;
         ++y;
+    }
+    if(mask_check){
+        gt_mem_free(blend_dsc->mask_buf);
+        blend_dsc->mask_buf = NULL;
     }
     gt_mem_free(blend_dsc->dst_buf);
     blend_dsc->dst_buf = NULL;
@@ -1040,8 +1206,11 @@ static void _filling_by_default_line_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_bl
         return;
     }
 
+    gt_opa_t opa = blend_dsc->opa >= GT_OPA_MAX ? GT_OPA_COVER: blend_dsc->opa;
+    bool check_mask = gt_mask_check(blend_dsc->mask_area);
     uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
-    if (is_mask) {
+
+    if (is_mask || check_mask) {
         blend_dsc->mask_buf = gt_mem_malloc(w);
         if (!blend_dsc->mask_buf) {
             goto line_lb;
@@ -1052,8 +1221,17 @@ static void _filling_by_default_line_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_bl
         if (gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area)) {
             /*read one line color data*/
             gt_fs_read_img_offset(fp, (uint8_t *)blend_dsc->dst_buf, offset, len);
+
+            if(!is_mask && check_mask){
+                gt_memset(blend_dsc->mask_buf, opa, w);
+            }
+
             if (is_mask) {    //png
                 gt_fs_read_img_offset(fp, (uint8_t *)blend_dsc->mask_buf, addr_start_alpha, w);
+            }
+
+            if(check_mask) {
+                gt_mask_get(blend_dsc->mask_buf, blend_dsc->mask_area->x, blend_dsc->mask_area->y, w);
             }
             /* blend to bg */
             gt_draw_blend(draw_ctx, blend_dsc);
@@ -2015,20 +2193,10 @@ static void _draw_dot_matrix_data(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect
 
 /* global functions / API interface -------------------------------------*/
 
-void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
+void draw_dot_matrix(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
 {
-    if (dsc->bg_opa <= GT_OPA_MIN) {
-        return;
-    }
-    if (NULL == draw_ctx->buf) {
-        return;
-    }
-    if (0 == coords->w || 0 == coords->h) {
-        return;
-    }
-    if( !gt_area_is_intersect_screen(&draw_ctx->buf_area, coords) ){
-        return;
-    }
+    if(0 == dsc->gray) return;
+    if (!dsc->data_gray)  return;
 
     gt_draw_blend_dsc_st blend_dsc = {0};
     blend_dsc.color_fill = dsc->bg_color;
@@ -2036,156 +2204,188 @@ void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
     blend_dsc.opa = dsc->bg_opa;
     blend_dsc.mask_buf = NULL;
 
-    // Dot matrix data
-    if (dsc->gray != 0) {
-        if (!dsc->data_gray) { return; }
-        _draw_dot_matrix_data(draw_ctx, dsc, coords, &blend_dsc);
+    _draw_dot_matrix_data(draw_ctx, dsc, coords, &blend_dsc);
+    return ;
+}
+
+void draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
+{
+    if(!dsc->reg.is_fill) return ;
+
+    gt_draw_blend_dsc_st blend_dsc = {0};
+    blend_dsc.color_fill = dsc->bg_color;
+    blend_dsc.view_area = dsc->limit_area;
+    blend_dsc.opa = dsc->bg_opa;
+    blend_dsc.mask_buf = NULL;
+
+    uint16_t border_radius = GT_MIN(dsc->radius, (GT_MIN(coords->w >> 1, coords->h >> 1)));
+
+    gt_area_st bg_area = {0};
+    bg_area = gt_area_reduce(*coords, dsc->border_width);
+    uint16_t bg_radius = (border_radius < dsc->border_width) ? 0 : border_radius - dsc->border_width;
+    bg_radius = GT_MIN(bg_radius, (GT_MIN(bg_area.w >> 1, bg_area.h >> 1)));
+
+    bool mask_check = gt_mask_check(&bg_area);
+
+    if(0 == bg_radius && !mask_check){
+        blend_dsc.dst_area = &bg_area;
+        gt_draw_blend(draw_ctx, &blend_dsc);
         return ;
     }
 
-    gt_area_st area_border = {0};
-    gt_area_copy(&area_border, coords);
-    uint16_t r_bd = GT_MIN(dsc->radius, (GT_MIN(area_border.w >> 1, area_border.h >> 1)));
+    gt_opa_t* mask_line_buf = gt_mem_malloc(bg_area.w);
+    GT_CHECK_BACK(mask_line_buf);
+    int16_t bg_mask_id = -1;
+    gt_mask_radius_st bg_mask_radius = {0};
 
-    gt_area_st area_bg = {0};
-    area_bg = gt_area_reduce(area_border, dsc->border_width);
+    if(bg_radius > 0){
+        gt_mask_radius_init(&bg_mask_radius, &bg_area, bg_radius, false);
+        bg_mask_id = gt_mask_add(&bg_mask_radius);
+    }
 
-    uint16_t r_bg = (r_bd < dsc->border_width) ? 0 : r_bd - dsc->border_width;
-    r_bg = GT_MIN(r_bg, (GT_MIN(area_bg.w >> 1, area_bg.h >> 1)));
-
-    // draw bg
-    if (dsc->reg.is_fill) {
-        if (r_bg > 0) {
-            gt_radius_mask_st r_bg_radius = {0};
-            if (!_gt_radius_mask_init(&r_bg_radius, area_bg, r_bg, false)) {
-                GT_LOGE( GT_LOG_TAG_GUI,"draw bg radius init fail!!! radius = %d", r_bg);
-                return ;
-            }
-
-            gt_radius_mask_st r_cl_radius = {0};
-            if (dsc->base_area) {
-                uint16_t r_cl = GT_MIN(dsc->radius, (GT_MIN(dsc->base_area->w >> 1, dsc->base_area->h >> 1)));
-                if (!_gt_radius_mask_init(&r_cl_radius, *dsc->base_area, r_cl, false)) {
-                    _gt_radius_mask_deinit(&r_bg_radius);
-                    GT_LOGE( GT_LOG_TAG_GUI,"draw clipped radius init fail!!! radius = %d", r_cl);
-                    return ;
-                }
-            }
-
-            gt_opa_t* mask_bg_line = gt_mem_malloc(area_bg.w);
-            if (NULL == mask_bg_line) {
-                if (dsc->base_area) {
-                    _gt_radius_mask_deinit(&r_cl_radius);
-                }
-                _gt_radius_mask_deinit(&r_bg_radius);
-                GT_LOGE( GT_LOG_TAG_MEM,"draw bg mask_line malloc is fail!!! size = %d", area_bg.w);
-                return ;
-            }
-
-            gt_area_st area_line = {0};
-            area_line.x = area_bg.x;
-            area_line.w = area_bg.w;
-            area_line.h = 1;
-
-            blend_dsc.dst_area = &area_line;
-            blend_dsc.mask_buf = mask_bg_line;
-            blend_dsc.mask_area = &area_line;
-
-            for (gt_size_t i = 0; i < area_bg.h; i++) {
-                gt_memset(mask_bg_line, 0xFF, area_bg.w);
-                area_line.y = area_bg.y + i;
-                _gt_get_radius_mask_buf(mask_bg_line, area_line.x, area_line.y, area_line.w, &r_bg_radius);
-                if (dsc->base_area) {
-                    _gt_get_radius_mask_buf(mask_bg_line, area_line.x, area_line.y, area_line.w, &r_cl_radius);
-                }
-                gt_draw_blend(draw_ctx, &blend_dsc);
-            }
-
-            if (dsc->base_area) {
-                _gt_radius_mask_deinit(&r_cl_radius);
-            }
-            _gt_radius_mask_deinit(&r_bg_radius);
-            gt_mem_free(mask_bg_line);
-            mask_bg_line = NULL;
-            blend_dsc.mask_buf = NULL;
-        } else {
-            blend_dsc.dst_area = &area_bg;
-            gt_draw_blend(draw_ctx, &blend_dsc);
+    int16_t cl_mask_id = -1;
+    uint16_t cl_radius = 0;
+    gt_mask_radius_st cl_mask_radius = {0};
+    if (dsc->base_area){
+        cl_radius = GT_MIN(dsc->radius, (GT_MIN(dsc->base_area->w >> 1, dsc->base_area->h >> 1)));
+        if(cl_radius > 0){
+            gt_mask_radius_init(&cl_mask_radius, dsc->base_area, cl_radius, false);
+            cl_mask_id = gt_mask_add(&cl_mask_radius);
         }
     }
 
-    if(dsc->border_width <= 0) { return ; }
 
-    // draw board
-    gt_area_st area_bd;
-    blend_dsc.dst_area = &area_bd;
+
+    gt_opa_t mask_opa = dsc->bg_opa >= GT_OPA_MAX ? GT_OPA_COVER : dsc->bg_opa;
+    gt_area_st line_area = {0};
+    line_area.x = bg_area.x;
+    line_area.w = bg_area.w;
+    line_area.h = 1;
+    blend_dsc.dst_area = &line_area;
+    blend_dsc.mask_area = &line_area;
+    blend_dsc.mask_buf = mask_line_buf;
+
+    uint16_t i = 0;
+
+    for(i = 0; i < bg_area.h; ++i){
+        line_area.y = bg_area.y + i;
+        gt_memset(mask_line_buf, mask_opa, line_area.w);
+        gt_mask_get(mask_line_buf, line_area.x, line_area.y, line_area.w);
+        gt_draw_blend(draw_ctx, &blend_dsc);
+    }
+
+    gt_mem_free(mask_line_buf);
+    mask_line_buf = NULL;
+    blend_dsc.mask_buf = NULL;
+
+    if(bg_radius > 0){
+        gt_mask_free(&bg_mask_radius);
+        gt_mask_remove_idx(bg_mask_id);
+    }
+
+    if (dsc->base_area && cl_radius > 0){
+        gt_mask_free(&cl_mask_radius);
+        gt_mask_remove_idx(cl_mask_id);
+    }
+}
+
+void draw_bg_border(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
+{
+    if(dsc->border_width <= 0) return ;
+
+    gt_draw_blend_dsc_st blend_dsc = {0};
+    blend_dsc.view_area = dsc->limit_area;
+    blend_dsc.opa = dsc->bg_opa;
+    blend_dsc.mask_buf = NULL;
     blend_dsc.color_fill = dsc->border_color;
-    /*
-        border opa should be used here, but there was no border opa before,
-        so for compatibility, border opa is not used.
-    */
-    // blend_dsc.opa = dsc->border_opa;
-    if (r_bd > 0) {
-        gt_radius_mask_st in_r_mask = {0};
-        if (!_gt_radius_mask_init(&in_r_mask, area_bg, r_bg, true)) {
-            GT_LOGE( GT_LOG_TAG_GUI, "draw board radius init fail!!! radius = %d", r_bg);
-            return ;
-        }
 
-        gt_radius_mask_st out_r_mask = {0};
-        if (!_gt_radius_mask_init(&out_r_mask, area_border, r_bd, false)) {
-            _gt_radius_mask_deinit(&in_r_mask);
-            GT_LOGE( GT_LOG_TAG_GUI, "draw board radius init fail!!! radius = %d", r_bd);
-            return ;
-        }
+    gt_area_st border_area = {0};
+    gt_area_copy(&border_area, coords);
+    uint16_t border_radius = GT_MIN(dsc->radius, (GT_MIN(border_area.w >> 1, border_area.h >> 1)));
 
-        gt_opa_t* mask_bd_line = gt_mem_malloc(area_border.w);
-        if (NULL == mask_bd_line) {
-            _gt_radius_mask_deinit(&in_r_mask);
-            _gt_radius_mask_deinit(&out_r_mask);
-            GT_LOGE( GT_LOG_TAG_MEM, "draw board mask_line malloc is fail!!! size = %d", area_border.w);
-            return ;
-        }
+    gt_area_st line_area = {0};
 
-        area_bd.x = area_border.x;
-        area_bd.w = area_border.w;
-        area_bd.h = 1;
-
-        blend_dsc.mask_buf = mask_bd_line;
-        blend_dsc.mask_area = &area_bd;
-
-        for (gt_size_t i = 0; i < area_border.h; i++) {
-            gt_memset(mask_bd_line, 0xFF, area_border.w);
-            area_bd.y = area_border.y + i;
-            _gt_get_radius_mask_buf(mask_bd_line, area_bd.x, area_bd.y, area_border.w, &in_r_mask);
-            _gt_get_radius_mask_buf(mask_bd_line, area_bd.x, area_bd.y, area_bd.w, &out_r_mask);
-            gt_draw_blend(draw_ctx, &blend_dsc);
-        }
-        _gt_radius_mask_deinit(&in_r_mask);
-        _gt_radius_mask_deinit(&out_r_mask);
-        gt_mem_free(mask_bd_line);
-        mask_bd_line = NULL;
-        blend_dsc.mask_buf = NULL;
-    } else {
+    if(border_radius <= 0){
+        blend_dsc.dst_area = &line_area;
         // top
-        area_bd.x = area_border.x;
-        area_bd.y = area_border.y;
-        area_bd.w = area_border.w;
-        area_bd.h = dsc->border_width;
+        line_area.x = border_area.x;
+        line_area.y = border_area.y;
+        line_area.w = border_area.w;
+        line_area.h = dsc->border_width;
         gt_draw_blend(draw_ctx, &blend_dsc);
         // bottom
-        area_bd.y = area_border.y + area_border.h - dsc->border_width;
+        line_area.y = border_area.y + border_area.h - dsc->border_width;
         gt_draw_blend(draw_ctx, &blend_dsc);
         // left
-        area_bd.x = area_border.x;
-        area_bd.y = area_border.y + dsc->border_width;
-        area_bd.w = dsc->border_width;
-        area_bd.h = area_border.h - dsc->border_width;
+        line_area.x = border_area.x;
+        line_area.y = border_area.y + dsc->border_width;
+        line_area.w = dsc->border_width;
+        line_area.h = border_area.h - dsc->border_width;
         gt_draw_blend(draw_ctx, &blend_dsc);
         // right
-        area_bd.x = area_border.x + area_border.w - dsc->border_width;
+        line_area.x = border_area.x + border_area.w - dsc->border_width;
+        gt_draw_blend(draw_ctx, &blend_dsc);
+        return ;
+    }
+
+    gt_opa_t* mask_line_buf = gt_mem_malloc(border_area.w);
+    GT_CHECK_BACK(mask_line_buf);
+
+    gt_area_st in_area = {0};
+    in_area = gt_area_reduce(border_area, dsc->border_width);
+    uint16_t in_radius = (border_radius < dsc->border_width) ? 0 : border_radius - dsc->border_width;
+    in_radius = GT_MIN(in_radius, (GT_MIN(in_area.w >> 1, in_area.h >> 1)));
+
+    int16_t in_mask_id = -1;
+    gt_mask_radius_st in_mask_radius = {0};
+    gt_mask_radius_init(&in_mask_radius, &in_area, in_radius, true);
+    in_mask_id = gt_mask_add(&in_mask_radius);
+
+    int16_t border_mask_id = -1;
+    gt_mask_radius_st border_mask_radius = {0};
+    gt_mask_radius_init(&border_mask_radius, &border_area, border_radius, false);
+    border_mask_id = gt_mask_add(&border_mask_radius);
+
+    gt_opa_t mask_opa = dsc->bg_opa >= GT_OPA_MAX ? GT_OPA_COVER : dsc->bg_opa;
+
+    line_area.x = border_area.x;
+    line_area.w = border_area.w;
+    line_area.h = 1;
+    blend_dsc.dst_area = &line_area;
+    blend_dsc.mask_area = &line_area;
+    blend_dsc.mask_buf = mask_line_buf;
+
+    uint16_t i = 0;
+    for(i = 0; i < border_area.h; ++i){
+        line_area.y = border_area.y + i;
+        gt_memset(mask_line_buf, mask_opa, line_area.w);
+        gt_mask_get(mask_line_buf, line_area.x, line_area.y, line_area.w);
         gt_draw_blend(draw_ctx, &blend_dsc);
     }
+
+    gt_mem_free(mask_line_buf);
+    mask_line_buf = NULL;
+    blend_dsc.mask_buf = NULL;
+
+    gt_mask_free(&in_mask_radius);
+    gt_mask_free(&border_mask_radius);
+    gt_mask_remove_idx(in_mask_id);
+    gt_mask_remove_idx(border_mask_id);
+}
+
+void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
+{
+    if(dsc->bg_opa <= GT_OPA_MIN) return ;
+    if(0 == coords->w || 0 == coords->h) return ;
+    if(!gt_area_is_intersect_screen(&draw_ctx->buf_area, coords) ) return ;
+
+    if(dsc->gray != 0){
+        draw_dot_matrix(draw_ctx, dsc, coords);
+        return ;
+    }
+
+    draw_bg_fill(draw_ctx, dsc, coords);
+    draw_bg_border(draw_ctx, dsc, coords);
 }
 
 _gt_draw_font_res_st draw_text(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, const gt_area_st * coords)
@@ -2536,4 +2736,148 @@ void draw_focus(gt_obj_st* obj, gt_size_t radius)
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
 }
 
+void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_area_st * coords)
+{
+
+    if(dsc->opa <= GT_OPA_MIN) { return ;}
+    if(dsc->width == 0) { return ;}
+    if(dsc->start_angle == dsc->end_angle) { return ;}
+
+    uint16_t start_angle = dsc->start_angle;
+    uint16_t end_angle = dsc->end_angle;
+
+    gt_area_st area_out;
+    gt_area_copy(&area_out, coords);
+    uint16_t out_radius = GT_MIN(area_out.h, area_out.w) >> 1;
+    uint16_t width = GT_MIN(dsc->width, out_radius);
+
+    int16_t out_mask_id = -1;
+    gt_mask_radius_st out_mask = {0};
+    gt_mask_radius_init(&out_mask, &area_out, out_radius, false);
+    out_mask_id = gt_mask_add(&out_mask);
+
+    gt_area_st area_in;
+    area_in = gt_area_reduce(area_out, width);
+
+    uint16_t in_radius = GT_MIN(area_in.h, area_in.w) >> 1;
+    int16_t in_mask_id = -1;
+    gt_mask_radius_st in_mask = {0};
+    if(in_radius > 0){
+        gt_mask_radius_init(&in_mask, &area_in, in_radius, true);
+        in_mask_id = gt_mask_add(&in_mask);
+    }
+
+    gt_attr_rect_st rect_attr;
+    gt_graph_init_rect_attr(&rect_attr);
+    if( dsc->img
+#if GT_USE_FILE_HEADER
+        || dsc->file_header
+#endif
+
+#if GT_USE_DIRECT_ADDR
+        || !gt_hal_is_invalid_addr(dsc->addr)
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+        || dsc->custom_addr
+#endif
+    ){
+        rect_attr.bg_img_opa = dsc->opa;
+        rect_attr.bg_img_src = dsc->img;
+
+#if GT_USE_FILE_HEADER
+        rect_attr.file_header = dsc->file_header;
+#endif
+#if GT_USE_DIRECT_ADDR
+        rect_attr.addr = dsc->addr;
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+        rect_attr.custom_addr = dsc->custom_addr;
+#endif
+    }
+    else{
+        rect_attr.bg_opa = dsc->opa;
+        rect_attr.bg_color = dsc->color;
+        rect_attr.reg.is_fill = 1;
+    }
+
+    if(start_angle + 360 == end_angle || start_angle == end_angle + 360){
+        if(dsc->img){
+            draw_bg_img(draw_ctx, &rect_attr, &area_out);
+        }
+        else{
+            draw_bg(draw_ctx, &rect_attr, &area_out);
+        }
+
+        gt_mask_free(&out_mask);
+        gt_mask_remove_idx(out_mask_id);
+
+        if(in_radius > 0){
+            gt_mask_free(&in_mask);
+            gt_mask_remove_idx(in_mask_id);
+        }
+        return ;
+    }
+
+    while(start_angle >= 360) { start_angle -= 360; }
+    while(end_angle >= 360) { end_angle -= 360; }
+
+    gt_point_st center;
+    center.x = area_out.x + out_radius;
+    center.y = area_out.y + out_radius;
+
+    gt_mask_angle_st coords_angle_mask = {0};
+    gt_mask_angle_init(&coords_angle_mask, center.x, center.y, start_angle, end_angle);
+    int16_t angle_mask_id = gt_mask_add(&coords_angle_mask);
+
+    int32_t angle_gap;
+    if(end_angle > start_angle) {
+        angle_gap = 360 - (end_angle - start_angle);
+    }
+    else {
+        angle_gap = start_angle - end_angle;
+    }
+
+    if(angle_gap > 60 && out_radius > 10){
+
+        if(dsc->img){
+            draw_bg_img(draw_ctx, &rect_attr, &area_out);
+        }
+        else {
+            _quarter_circle_st q;
+            q.center = &center;
+            q.radius = out_radius;
+            q.width = width;
+            q.start_angle = start_angle;
+            q.end_angle = end_angle;
+            q.start_quarter = (start_angle / 90) & 0x03;
+            q.end_quarter = (end_angle / 90) & 0x03;
+            q.rect_dsc = &rect_attr;
+
+            _draw_quarter_circle_0(draw_ctx, &q);
+            _draw_quarter_circle_1(draw_ctx, &q);
+            _draw_quarter_circle_2(draw_ctx, &q);
+            _draw_quarter_circle_3(draw_ctx, &q);
+        }
+    }
+    else {
+        if(dsc->img){
+            draw_bg_img(draw_ctx, &rect_attr, &area_out);
+        }
+        else{
+            draw_bg(draw_ctx, &rect_attr, &area_out);
+        }
+    }
+
+    gt_mask_free(&coords_angle_mask);
+    gt_mask_free(&out_mask);
+
+    gt_mask_remove_idx(angle_mask_id);
+    gt_mask_remove_idx(out_mask_id);
+
+    if(in_radius > 0){
+        gt_mask_free(&in_mask);
+        gt_mask_remove_idx(in_mask_id);
+    }
+}
 /* end ------------------------------------------------------------------*/

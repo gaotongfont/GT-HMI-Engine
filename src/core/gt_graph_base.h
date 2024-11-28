@@ -160,7 +160,24 @@ typedef struct _gt_attr_rect_s {
     _gt_attr_rect_reg_st reg;
 }gt_attr_rect_st;
 
+typedef struct _gt_attr_arc_s{
+    char* img;
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_st * file_header;  ///< Using file header mode to read image data
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_addr_t addr;
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_direct_addr_custom_size_st * custom_addr;  ///< Using custom size direct address mode to read image data
+#endif
 
+    gt_color_t color;
+    uint16_t start_angle;
+    uint16_t end_angle;
+    uint16_t width;
+    gt_opa_t opa;
+}gt_attr_arc_st;
 
 /* macros ---------------------------------------------------------------*/
 

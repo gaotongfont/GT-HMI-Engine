@@ -42,12 +42,19 @@ extern "C" {
 #define GT_MIN(a,b) ((a) > (b) ? (b) : (a))
 #define GT_MAX(a,b) ((a) > (b) ? (a) : (b))
 
+#define GT_CLAMP(min, val, max) (GT_MAX(min, (GT_MIN(val, max))))
+
+
 #define GT_MATH_BEZIER_VAL_SHIFT        10  /* (1 << 10) = 1024 */
 #define GT_MATH_BEZIER_VAL_RESOLUTION   (1 << GT_MATH_BEZIER_VAL_SHIFT)
 #define GT_MATH_BEZIER_VAL_FLOAT(_val)  (uint32_t)((_val) * GT_MATH_BEZIER_VAL_RESOLUTION)
 
 #define GT_MATH_CUBIC_NEWTON_ITER       8   /** Cubic Newton iterations */
 #define GT_MATH_CUBIC_BITS              10  /** 10 or 14 bits recommended, int64_t calculation is used for >14bit precision */
+
+#define GT_MATH_TRIGO_SIN_MAX 32767
+#define GT_MATH_TRIGO_SHIFT 15 /**<  >> GT_MATH_TRIGO_SHIFT to normalize*/
+
 
 /* typedef --------------------------------------------------------------*/
 /**
