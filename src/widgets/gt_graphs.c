@@ -161,14 +161,19 @@ static void _free_all_series_lines(gt_series_points_st * series) {
     _free_series_line_points(series);
 }
 
+static void _graphs_free_series_lines(_gt_graphs_st * style) {
+    if (NULL == style->gp.series_head_p) {
+        return;
+    }
+    _free_all_series_lines(style->gp.series_head_p);
+    gt_mem_free(style->gp.series_head_p);
+    style->gp.series_head_p = NULL;
+    style->gp.count_line = 0;
+}
+
 static void _graphs_deinit_cb(gt_obj_st * obj) {
     _gt_graphs_st * style = (_gt_graphs_st *)obj;
-    if (style->gp.series_head_p) {
-        _free_all_series_lines(style->gp.series_head_p);
-        gt_mem_free(style->gp.series_head_p);
-        style->gp.series_head_p = NULL;
-        style->gp.count_line = 0;
-    }
+    _graphs_free_series_lines(style);
 }
 
 static void _graphs_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
@@ -994,7 +999,8 @@ gt_res_t gt_graphs_remove_all_series_lines(gt_obj_st * obj)
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return GT_RES_FAIL;
     }
-    _graphs_deinit_cb(obj);
+    _gt_graphs_st * style = (_gt_graphs_st *)obj;
+    _graphs_free_series_lines(style);
     return GT_RES_OK;
 }
 
