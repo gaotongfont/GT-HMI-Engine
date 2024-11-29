@@ -39,11 +39,11 @@
 
 
 /* static functions -----------------------------------------------------*/
-static uint32_t get_style_size(const gt_obj_class_st * c) {
+static inline uint32_t get_style_size(const gt_obj_class_st * c) {
     return c->size_style;
 }
 
-static gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st * self) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st * self) {
     gt_size_t i = 0;
     gt_size_t idx = -1;
     gt_disp_st * disp = gt_disp_get_default();
@@ -77,7 +77,7 @@ static gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st * self) {
     return ret_p;
 }
 
-static gt_obj_st * _gt_obj_class_destroy_from_parent(gt_obj_st * self) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_class_destroy_from_parent(gt_obj_st * self) {
     gt_size_t i = 0;
     gt_size_t idx = -1;
     gt_obj_st * parent = self->parent;
@@ -113,7 +113,7 @@ static gt_obj_st * _gt_obj_class_destroy_from_parent(gt_obj_st * self) {
     return ret_p;
 }
 
-static void _gt_obj_class_destroy_property(gt_obj_st * self) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_obj_class_destroy_property(gt_obj_st * self) {
     GT_CHECK_BACK(self);
     gt_event_send(self, GT_EVENT_TYPE_CHANGE_DELETED, NULL);
     _gt_indev_remove_want_delate_target(self);
@@ -129,7 +129,7 @@ static void _gt_obj_class_destroy_property(gt_obj_st * self) {
     self->classes = NULL;
 }
 
-static inline void _gt_obj_class_destroy_self(gt_obj_st * self) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _gt_obj_class_destroy_self(gt_obj_st * self) {
     GT_CHECK_BACK(self);
     _gt_obj_class_destroy_property(self);
     gt_mem_free(self);
@@ -144,7 +144,7 @@ static inline void _gt_obj_class_destroy_self(gt_obj_st * self) {
  * @return true The deepest child object is released, return recursively
  * @return false Go to the next level of child object
  */
-static bool _destroy_and_free_children(struct gt_obj_s * self, bool is_root) {
+static GT_ATTRIBUTE_RAM_TEXT bool _destroy_and_free_children(struct gt_obj_s * self, bool is_root) {
     gt_size_t i = 0;
 
     if (NULL == self->child || 0 == self->cnt_child) {
@@ -207,7 +207,7 @@ static inline bool _add_obj_to_parent(gt_obj_st * obj, gt_obj_st * parent) {
     return true;
 }
 
-static bool _create_new_screen_obj(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT bool _create_new_screen_obj(gt_obj_st * obj) {
     gt_disp_st * disp = gt_disp_get_default();
 
     if (disp == NULL) {

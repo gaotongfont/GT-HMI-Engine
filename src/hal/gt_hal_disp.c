@@ -42,7 +42,7 @@ typedef struct _gt_style_layer_top_s {
     static gt_color_t * graph_buf_all;
 #endif
 
-static const gt_obj_class_st gt_layer_top_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_layer_top_class = {
     ._init_cb      = (_gt_init_cb_t)NULL,
     ._deinit_cb    = (_gt_deinit_cb_t)NULL,
     ._event_cb     = (_gt_event_cb_t)NULL,

@@ -72,7 +72,7 @@ typedef void (* _font_color_cb_t)(gt_obj_st *, gt_color_t);
 static void _init_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static const gt_obj_class_st gt_status_bar_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_status_bar_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = (_gt_deinit_cb_t)NULL,
     ._event_cb     = _event_cb,

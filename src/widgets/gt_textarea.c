@@ -84,7 +84,7 @@ static void _textarea_init_cb(gt_obj_st * obj);
 static void _textarea_deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static const gt_obj_class_st gt_textarea_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_textarea_class = {
     ._init_cb      = _textarea_init_cb,
     ._deinit_cb    = _textarea_deinit_cb,
     ._event_cb     = _event_cb,

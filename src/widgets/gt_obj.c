@@ -44,7 +44,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e);
 static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e);
 
-static const gt_obj_class_st gt_obj_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_obj_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = (_gt_deinit_cb_t)NULL,
     ._event_cb     = _obj_event_cb,
@@ -52,7 +52,7 @@ static const gt_obj_class_st gt_obj_class = {
     .size_style    = sizeof(gt_obj_st)
 };
 
-static const gt_obj_class_st gt_screen_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_screen_class = {
     ._init_cb      = (_gt_init_cb_t)NULL,
     ._deinit_cb    = (_gt_deinit_cb_t)NULL,
     ._event_cb     = _screen_event_cb,
