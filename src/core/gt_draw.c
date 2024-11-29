@@ -1723,10 +1723,7 @@ static inline bool _is_brush_round(gt_line_st const * const line) {
     return GT_BRUSH_TYPE_ROUND == line->brush;
 }
 
-/* global functions / API interface -------------------------------------*/
-
-void draw_dot_matrix(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
-{
+static void draw_dot_matrix(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords) {
     if(0 == dsc->gray) return;
     if (!dsc->data_gray)  return;
 
@@ -1737,11 +1734,9 @@ void draw_dot_matrix(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, co
     blend_dsc.mask_buf = NULL;
 
     _draw_dot_matrix_data(draw_ctx, dsc, coords, &blend_dsc);
-    return ;
 }
 
-void draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
-{
+static void GT_ATTRIBUTE_RAM_TEXT draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords) {
     if(!dsc->reg.is_fill) return ;
 
     gt_draw_blend_dsc_st blend_dsc = {0};
@@ -1821,8 +1816,7 @@ void draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const
     }
 }
 
-void draw_bg_border(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
-{
+static GT_ATTRIBUTE_RAM_TEXT void draw_bg_border(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords) {
     if(dsc->border_width <= 0) return ;
 
     gt_draw_blend_dsc_st blend_dsc = {0};
@@ -1905,6 +1899,7 @@ void draw_bg_border(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, con
     gt_mask_remove_idx(border_mask_id);
 }
 
+/* global functions / API interface -------------------------------------*/
 void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords)
 {
     if(dsc->bg_opa <= GT_OPA_MIN) return ;
@@ -2035,7 +2030,7 @@ close_lb:
     gt_img_decoder_close(&dsc_img);
 }
 
-void gt_draw_point(_gt_draw_ctx_st * draw_ctx, gt_attr_point_st const * dsc, gt_area_st const * coords)
+GT_ATTRIBUTE_RAM_TEXT void gt_draw_point(_gt_draw_ctx_st * draw_ctx, gt_attr_point_st const * dsc, gt_area_st const * coords)
 {
     if (dsc->line.opa < GT_OPA_MIN) {
         return;
@@ -2088,7 +2083,7 @@ radius_lb:
     draw_ctx->parent_area = remark_area;    /** reset to before value */
 }
 
-void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const gt_area_st * coords)
+GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const gt_area_st * coords)
 {
     if (dsc->line.opa < GT_OPA_MIN) {
         return;
@@ -2174,7 +2169,7 @@ radius_lb:
     draw_ctx->parent_area = remark_area;    /** reset to before value */
 }
 
-void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_attr_curve_st const * dsc, const gt_area_st * coords)
+GT_ATTRIBUTE_RAM_TEXT void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_attr_curve_st const * dsc, const gt_area_st * coords)
 {
     if (dsc->line.opa < GT_OPA_MIN) {
         return;
@@ -2251,7 +2246,7 @@ radius_lb:
     draw_ctx->parent_area = remark_area;    /** reset to before value */
 }
 
-void draw_focus(gt_obj_st* obj, gt_size_t radius)
+GT_ATTRIBUTE_RAM_TEXT void draw_focus(gt_obj_st* obj, gt_size_t radius)
 {
     if (false == obj->focus) {
         return;
@@ -2271,7 +2266,7 @@ void draw_focus(gt_obj_st* obj, gt_size_t radius)
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
 }
 
-void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_area_st * coords)
+GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_area_st * coords)
 {
 
     if(dsc->opa <= GT_OPA_MIN) { return ;}
