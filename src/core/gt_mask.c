@@ -108,17 +108,17 @@ static const uint8_t * small_radius_make[RADIUS_MAX + 1] = {
 
 
 /* static functions -----------------------------------------------------*/
-static void _gt_circ_init(gt_point_st * c, gt_size_t * tmp, uint16_t radius) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_circ_init(gt_point_st * c, gt_size_t * tmp, uint16_t radius) {
     c->x = radius;
     c->y = 0;
     *tmp = 1 - radius;
 }
 
-static bool _gt_circ_cont(gt_point_st * c) {
+static GT_ATTRIBUTE_RAM_TEXT bool _gt_circ_cont(gt_point_st * c) {
     return c->y <= c->x ? true : false;
 }
 
-static void _gt_circ_next(gt_point_st * c, gt_size_t * tmp) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_circ_next(gt_point_st * c, gt_size_t * tmp) {
 
     if(*tmp <= 0) {
         (*tmp) += 2 * c->y + 3; /*Change in decision criterion for y -> y+1*/
@@ -130,21 +130,21 @@ static void _gt_circ_next(gt_point_st * c, gt_size_t * tmp) {
     c->y++;
 }
 
-static gt_opa_t * _get_next_line(_gt_mask_radius_circle_st * c, gt_size_t y, gt_size_t * len,
+static GT_ATTRIBUTE_RAM_TEXT gt_opa_t * _get_next_line(_gt_mask_radius_circle_st * c, gt_size_t y, gt_size_t * len,
                                 gt_size_t * x_start) {
     *len = c->opa_start_on_y[y + 1] - c->opa_start_on_y[y];
     *x_start = c->x_start_on_y[y];
     return &c->opa[c->opa_start_on_y[y]];
 }
 
-static inline gt_opa_t _gt_mask_mix(gt_opa_t mask_act, gt_opa_t mask_new) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_opa_t _gt_mask_mix(gt_opa_t mask_act, gt_opa_t mask_new) {
     if(mask_new >= GT_OPA_MAX) return mask_act;
     if(mask_new <= GT_OPA_MIN) return 0;
 
     return GT_UDIV255(mask_act * mask_new);// >> 8);
 }
 
-static void _gt_circ_calc_aa4(_gt_mask_radius_circle_st* c, uint16_t radius) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_circ_calc_aa4(_gt_mask_radius_circle_st* c, uint16_t radius) {
     if(0 == radius) return;
     c->radius = radius;
 
@@ -306,7 +306,7 @@ static void _gt_circ_calc_aa4(_gt_mask_radius_circle_st* c, uint16_t radius) {
 }
 
 
-static gt_mask_res_et _gt_mask_radius_get(gt_opa_t* mask_buf, \
+static GT_ATTRIBUTE_RAM_TEXT gt_mask_res_et _gt_mask_radius_get(gt_opa_t* mask_buf, \
                                         gt_size_t abs_x, gt_size_t abs_y, uint16_t len, \
                                         gt_mask_radius_st* p)
 {
@@ -424,7 +424,7 @@ static gt_mask_res_et _gt_mask_radius_get(gt_opa_t* mask_buf, \
     return GT_MASK_RES_CHANGE;
 }
 
-static gt_mask_res_et _gt_mask_line_flat_get(gt_opa_t* mask_buf, \
+static GT_ATTRIBUTE_RAM_TEXT gt_mask_res_et _gt_mask_line_flat_get(gt_opa_t* mask_buf, \
                                         gt_size_t abs_x, gt_size_t abs_y, uint16_t len, \
                                         gt_mask_line_st* p)
 {
@@ -522,7 +522,7 @@ static gt_mask_res_et _gt_mask_line_flat_get(gt_opa_t* mask_buf, \
 }
 
 
-static gt_mask_res_et _gt_mask_line_steep_get(gt_opa_t* mask_buf, \
+static GT_ATTRIBUTE_RAM_TEXT gt_mask_res_et _gt_mask_line_steep_get(gt_opa_t* mask_buf, \
                                         gt_size_t abs_x, gt_size_t abs_y, uint16_t len, \
                                         gt_mask_line_st* p)
 {
@@ -651,7 +651,7 @@ static gt_mask_res_et _gt_mask_line_steep_get(gt_opa_t* mask_buf, \
     return GT_MASK_RES_CHANGE;
 }
 
-static gt_mask_res_et _gt_mask_line_get(gt_opa_t* mask_buf, \
+static GT_ATTRIBUTE_RAM_TEXT gt_mask_res_et _gt_mask_line_get(gt_opa_t* mask_buf, \
                                         gt_size_t abs_x, gt_size_t abs_y, uint16_t len, \
                                         gt_mask_line_st* p)
 {
@@ -716,7 +716,7 @@ static gt_mask_res_et _gt_mask_line_get(gt_opa_t* mask_buf, \
     return res;
 }
 
-static gt_mask_res_et _gt_mask_angle_get(gt_opa_t* mask_buf, \
+static GT_ATTRIBUTE_RAM_TEXT gt_mask_res_et _gt_mask_angle_get(gt_opa_t* mask_buf, \
                                         gt_size_t abs_x, gt_size_t abs_y, uint16_t len, \
                                         gt_mask_angle_st* p)
 {

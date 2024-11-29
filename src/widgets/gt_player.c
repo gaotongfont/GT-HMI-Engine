@@ -133,7 +133,7 @@ static void _turn_next_item(gt_obj_st * obj);
  * @param style
  * @return void*
  */
-static inline void * _get_src(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline void * _get_src(_gt_player_st * style) {
     _gt_player_item_st * item = (_gt_player_item_st * )_gt_vector_get_item(style->vector, _gt_vector_get_index(style->vector));
     GT_CHECK_BACK_VAL(item, NULL);
     return item->src;
@@ -143,12 +143,12 @@ static inline void * _get_src(_gt_player_st * style) {
 #if GT_USE_FILE_HEADER
 
 #if GT_USE_SERIAL
-static inline void _set_stop_item(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _set_stop_item(_gt_player_st * style) {
     _gt_vector_set_index(style->vector, style->stop_fh.idx);
 }
 #endif
 
-static inline gt_file_header_param_st * _get_file_header_param(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_file_header_param_st * _get_file_header_param(_gt_player_st * style) {
     _gt_player_item_st * item = (_gt_player_item_st * )_gt_vector_get_item(style->vector, _gt_vector_get_index(style->vector));
     GT_CHECK_BACK_VAL(item, NULL);
     return &item->fh_param;
@@ -156,7 +156,7 @@ static inline gt_file_header_param_st * _get_file_header_param(_gt_player_st * s
 #endif
 
 #if GT_USE_DIRECT_ADDR
-static inline gt_addr_t _get_direct_addr_param(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_addr_t _get_direct_addr_param(_gt_player_st * style) {
     _gt_player_item_st * item = (_gt_player_item_st * )_gt_vector_get_item(style->vector, _gt_vector_get_index(style->vector));
     GT_CHECK_BACK_VAL(item, GT_ADDR_INVALID);
     return item->addr;
@@ -164,7 +164,7 @@ static inline gt_addr_t _get_direct_addr_param(_gt_player_st * style) {
 #endif
 
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
-static inline gt_direct_addr_custom_size_st * _get_custom_size_addr_param(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_direct_addr_custom_size_st * _get_custom_size_addr_param(_gt_player_st * style) {
     _gt_player_item_st * item = (_gt_player_item_st * )_gt_vector_get_item(style->vector, _gt_vector_get_index(style->vector));
     GT_CHECK_BACK_VAL(item, NULL);
     return &item->custom_addr;
@@ -178,7 +178,7 @@ static inline gt_direct_addr_custom_size_st * _get_custom_size_addr_param(_gt_pl
  * @return true Set lock status success
  * @return false Unable to set lock status
  */
-static inline bool _lock(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _lock(_gt_player_st * style) {
     if (NULL == style) {
         return false;
     }
@@ -196,7 +196,7 @@ static inline bool _lock(_gt_player_st * style) {
  * @return true Set unlock status success
  * @return false Unable to set unlock status
  */
-static inline bool _unlock(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _unlock(_gt_player_st * style) {
     if (NULL == style) {
         return false;
     }
@@ -211,7 +211,7 @@ static inline bool _unlock(_gt_player_st * style) {
  * @return true : Go next item direction;
  * @return false : Go previous item direction;
  */
-static inline bool _is_dir_next(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_dir_next(_gt_player_st * style) {
     return style->reg.dir ? false : true;
 }
 
@@ -221,7 +221,7 @@ static inline bool _is_dir_next(_gt_player_st * style) {
  * @param style
  * @param is_next true: Go next item direction; false: Go previous item direction
  */
-static inline void _set_dir(_gt_player_st * style, bool is_next) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _set_dir(_gt_player_st * style, bool is_next) {
     style->reg.dir = is_next ? 0 : 1;
 }
 
@@ -262,7 +262,7 @@ static void _player_init_cb(gt_obj_st * obj) {
  *
  * @param style
  */
-static void _destroy_timer(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT void _destroy_timer(_gt_player_st * style) {
     if ( !style->timer ) {
         return ;
     }
@@ -289,7 +289,7 @@ static void _player_deinit_cb(gt_obj_st * obj) {
  * @param obj
  * @param style
  */
-static void _invalid_area(gt_obj_st * obj, _gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT void _invalid_area(gt_obj_st * obj, _gt_player_st * style) {
     void * src = _get_src(style);
     uint16_t w = 0, h = 0;
     gt_fs_res_et ret = GT_FS_RES_FAIL;
@@ -330,15 +330,15 @@ static void _invalid_area(gt_obj_st * obj, _gt_player_st * style) {
     gt_disp_invalid_area(obj);
 }
 
-static inline bool _is_mode_equal(_gt_player_st * style, gt_player_mode_et mode) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_mode_equal(_gt_player_st * style, gt_player_mode_et mode) {
     return style->reg.mode == mode;
 }
 
-static inline bool _is_type_none(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_type_none(_gt_player_st * style) {
     return style->reg.type == GT_PLAYER_TYPE_NONE;
 }
 
-static void _toggle_dir_handler(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT void _toggle_dir_handler(_gt_player_st * style) {
     if (_is_type_none(style)) {
         GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
@@ -347,7 +347,7 @@ static void _toggle_dir_handler(_gt_player_st * style) {
 }
 
 #if GT_PLAYER_REPEAT_FINISH_CALLBACK
-static inline void _repeat_finish_callback_handler(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _repeat_finish_callback_handler(_gt_player_st * style) {
     if (NULL == style->repeat_finish_cb) {
         return ;
     }
@@ -361,7 +361,7 @@ static inline void _repeat_finish_callback_handler(_gt_player_st * style) {
 }
 #endif
 
-static inline void _check_repeat_count(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _check_repeat_count(_gt_player_st * style) {
     if (style->repeat_cnt < 1) {
         return ;
     }
@@ -375,7 +375,7 @@ static inline void _check_repeat_count(_gt_player_st * style) {
  *
  * @param obj
  */
-static void _turn_prev_item(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _turn_prev_item(gt_obj_st * obj) {
     _gt_player_st * style = (_gt_player_st * )obj;
     GT_CHECK_BACK(style->vector);
     if (_gt_vector_get_index(style->vector) > 0) {
@@ -418,7 +418,7 @@ static void _turn_prev_item(gt_obj_st * obj) {
  *
  * @param obj
  */
-static void _turn_next_item(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _turn_next_item(gt_obj_st * obj) {
     _gt_player_st * style = (_gt_player_st * )obj;
     GT_CHECK_BACK(style->vector);
     if (false == _gt_vector_is_tail_index_now(style->vector)) {
@@ -456,7 +456,7 @@ static void _turn_next_item(gt_obj_st * obj) {
     }
 }
 
-static inline void _change_item_handler(gt_obj_st * obj, bool is_next) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _change_item_handler(gt_obj_st * obj, bool is_next) {
     is_next ? _turn_next_item(obj) : _turn_prev_item(obj);
 }
 
@@ -470,7 +470,7 @@ static void _player_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-static inline void _set_play_status(_gt_player_st * style, bool is_play) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _set_play_status(_gt_player_st * style, bool is_play) {
     if (NULL == style) {
         return ;
     }
@@ -495,7 +495,7 @@ static inline void _set_play_status(_gt_player_st * style, bool is_play) {
     }
 }
 
-static void _auto_play_callback(struct _gt_timer_s * timer) {
+static GT_ATTRIBUTE_RAM_TEXT void _auto_play_callback(struct _gt_timer_s * timer) {
     gt_obj_st * obj = (gt_obj_st * )_gt_timer_get_user_data(timer);
     if (false == gt_obj_is_type(obj, GT_TYPE_PLAYER)) {
         return ;
@@ -518,7 +518,7 @@ static void _auto_play_callback(struct _gt_timer_s * timer) {
     style->last_player_tick =  gt_tick_get();
 }
 
-static bool _free_item_cb(void * item) {
+static GT_ATTRIBUTE_RAM_TEXT bool _free_item_cb(void * item) {
     _gt_player_item_st * item_p = (_gt_player_item_st * )item;
     GT_CHECK_BACK_VAL(item_p, false);
     if (item_p->src) {
@@ -529,7 +529,7 @@ static bool _free_item_cb(void * item) {
     return true;
 }
 
-static bool _equal_item_cb(void * item, void * target) {
+static GT_ATTRIBUTE_RAM_TEXT bool _equal_item_cb(void * item, void * target) {
     _gt_player_item_st * item_p = (_gt_player_item_st * )item;
     _gt_player_item_st * tar_p = (_gt_player_item_st * )target;
     GT_CHECK_BACK_VAL(item_p, false);

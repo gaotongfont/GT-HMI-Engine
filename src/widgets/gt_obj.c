@@ -89,7 +89,7 @@ static void _init_cb(gt_obj_st * obj) {
     draw_focus(obj, 0);
 }
 
-static void _screen_scroll(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _screen_scroll(gt_obj_st * obj) {
     if (false == gt_obj_is_type(obj, OBJ_TYPE_SCREEN)) {
         return;
     }
@@ -120,21 +120,21 @@ static void _screen_scroll(gt_obj_st * obj) {
     gt_disp_scroll_area_act(-obj->process_attr.scroll.x, -obj->process_attr.scroll.y);
 }
 
-static void _masked_effect_handler(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _masked_effect_handler(gt_obj_st * obj) {
     if (false == gt_obj_get_mask_effect(obj)) {
         return;
     }
     gt_disp_invalid_area(obj);
 }
 
-static void _unmasked_effect_handler(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _unmasked_effect_handler(gt_obj_st * obj) {
     if (false == gt_obj_get_mask_effect(obj)) {
         return;
     }
     gt_disp_invalid_area(obj);
 }
 
-static void _change_state_by_trigger_mode(gt_obj_st * obj, bool is_pressed) {
+static GT_ATTRIBUTE_RAM_TEXT void _change_state_by_trigger_mode(gt_obj_st * obj, bool is_pressed) {
     if (gt_obj_get_trigger_mode(obj)) {
         if (false == is_pressed) {
             gt_obj_set_state(obj, (gt_state_et)!gt_obj_get_state(obj));
@@ -145,7 +145,7 @@ static void _change_state_by_trigger_mode(gt_obj_st * obj, bool is_pressed) {
 }
 
 #if GT_CFG_ENABLE_KEYPAD
-static void _auto_hide_keypad(gt_obj_st * scr) {
+static GT_ATTRIBUTE_RAM_TEXT void _auto_hide_keypad(gt_obj_st * scr) {
     gt_obj_st * kp = NULL;
     for (uint16_t i = 0; i < scr->cnt_child; ++i) {
         kp = scr->child[i];
@@ -247,7 +247,7 @@ static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
  *
  * @param timer
  */
-static void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer) {
     gt_obj_st * obj = (gt_obj_st * )_gt_timer_get_user_data(timer);
     GT_CHECK_BACK(obj);
     gt_event_st * ptr = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
@@ -279,7 +279,7 @@ static void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer) {
 #endif
 }
 
-static gt_obj_st * _find_obj_recursive_by_id(gt_obj_st * self, gt_id_t widget_id) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _find_obj_recursive_by_id(gt_obj_st * self, gt_id_t widget_id) {
     gt_obj_st * target = NULL;
 
     if (widget_id == self->id) {

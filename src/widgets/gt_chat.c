@@ -91,13 +91,13 @@ typedef enum{
 static void _init_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static void _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint8_t tim_s, gt_chat_type_te type, bool is_send);
-static void _gt_chat_update_msg_size(gt_obj_st * chat);
-static void _scrolling_handler(gt_obj_st * obj);
+static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint8_t tim_s, gt_chat_type_te type, bool is_send);
+static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_update_msg_size(gt_obj_st * chat);
+static GT_ATTRIBUTE_RAM_TEXT void _scrolling_handler(gt_obj_st * obj);
 
-static void _msg_click_cb(gt_event_st * e);
-static void _msg_anim_start_cb(struct gt_anim_s * anim);
-static void _msg_anim_ready_cb(struct gt_anim_s * anim);
+static GT_ATTRIBUTE_RAM_TEXT void _msg_click_cb(gt_event_st * e);
+static GT_ATTRIBUTE_RAM_TEXT void _msg_anim_start_cb(struct gt_anim_s * anim);
+static GT_ATTRIBUTE_RAM_TEXT void _msg_anim_ready_cb(struct gt_anim_s * anim);
 
 
 /* static variables -----------------------------------------------------*/
@@ -158,7 +158,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-static void _gt_set_voice_text(gt_obj_st* obj, uint8_t tim_s, bool is_send, uint8_t start) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_set_voice_text(gt_obj_st* obj, uint8_t tim_s, bool is_send, uint8_t start) {
     // @GT_SYMBOL_VOICE_PLAY
     const char left_voice_icon[3][4] = {GT_SYMBOL_VOICE_PLAY_LEFT_1,GT_SYMBOL_VOICE_PLAY_LEFT_2,GT_SYMBOL_VOICE_PLAY_LEFT_3};
     const char right_voice_icon[3][4] = {GT_SYMBOL_VOICE_PLAY_RIGHT_1,GT_SYMBOL_VOICE_PLAY_RIGHT_2,GT_SYMBOL_VOICE_PLAY_RIGHT_3};
@@ -170,7 +170,7 @@ static void _gt_set_voice_text(gt_obj_st* obj, uint8_t tim_s, bool is_send, uint
     }
 }
 
-static void _gt_set_msg_font_info_all(gt_obj_st * msg_obj, gt_font_info_st * font_info) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_set_msg_font_info_all(gt_obj_st * msg_obj, gt_font_info_st * font_info) {
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
     gt_btn_set_font_family_cn(msg_obj, font_info->style_cn);
     gt_btn_set_font_family_en(msg_obj, font_info->style_en);
@@ -186,7 +186,7 @@ static void _gt_set_msg_font_info_all(gt_obj_st * msg_obj, gt_font_info_st * fon
     gt_btn_set_font_thick_en(msg_obj, font_info->thick_en);
 }
 
-static uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, uint8_t idx) {
+static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, uint8_t idx) {
     _gt_chat_st * style = (_gt_chat_st * )chat;
     uint32_t w = 0, h = 0;
     gt_size_t x, y;
@@ -213,7 +213,7 @@ static uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, uint8_t idx) {
     return (h + _MSG_SPACE_Y);
 }
 
-static void _gt_chat_msg_move_y(gt_obj_st * chat, gt_size_t offset_y) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_msg_move_y(gt_obj_st * chat, gt_size_t offset_y) {
     _gt_chat_st * style = (_gt_chat_st * )chat;
 
     if(offset_y > 0) return;
@@ -231,7 +231,7 @@ static void _gt_chat_msg_move_y(gt_obj_st * chat, gt_size_t offset_y) {
     }
 }
 
-static void _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint8_t tim_s, gt_chat_type_te type, bool is_send) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint8_t tim_s, gt_chat_type_te type, bool is_send) {
     _gt_chat_st * style = (_gt_chat_st * )chat;
 
     if(style->msg_cnt >= GT_CHAT_MAX_MSG_CNT){
@@ -270,7 +270,7 @@ static void _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint8_t tim_s, 
     _gt_chat_msg_move_y(chat, chat->process_attr.scroll.y);
 }
 
-static void _gt_chat_append_msg(gt_obj_st* chat, const char* msg)
+static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_append_msg(gt_obj_st* chat, const char* msg)
 {
     _gt_chat_st * style = (_gt_chat_st * )chat;
 
@@ -290,7 +290,7 @@ static void _gt_chat_append_msg(gt_obj_st* chat, const char* msg)
     _gt_chat_msg_move_y(chat, chat->process_attr.scroll.y);
 }
 
-static void _scrolling_handler(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _scrolling_handler(gt_obj_st * obj) {
     _gt_chat_st * style = (_gt_chat_st * )obj;
     gt_size_t bottom = gt_obj_get_limit_bottom(obj) + (-_MSG_SPACE_Y * 2);
 
@@ -305,7 +305,7 @@ static void _scrolling_handler(gt_obj_st * obj) {
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-static void _gt_chat_update_msg_size(gt_obj_st * chat) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_update_msg_size(gt_obj_st * chat) {
     _gt_chat_st * style = (_gt_chat_st * )chat;
     uint32_t w = 0, h = 0;
     uint16_t max_h = _MSG_SPACE_Y;
@@ -316,7 +316,7 @@ static void _gt_chat_update_msg_size(gt_obj_st * chat) {
     style->max_h = max_h;
 }
 
-static void _msg_click_cb(gt_event_st * e) {
+static GT_ATTRIBUTE_RAM_TEXT void _msg_click_cb(gt_event_st * e) {
     gt_obj_st * chat = e->user_data;
     _gt_chat_st * style = (_gt_chat_st * )chat;
 
@@ -348,7 +348,7 @@ static void _msg_click_cb(gt_event_st * e) {
     }
 }
 
-static void _msg_anim_start_cb(struct gt_anim_s * anim) {
+static GT_ATTRIBUTE_RAM_TEXT void _msg_anim_start_cb(struct gt_anim_s * anim) {
     _gt_chat_st * style = (_gt_chat_st * )anim->tar;
     style->anim_play = true;
     if(style->paly_idx >= 0 && GT_CHAT_TYPE_VOICE == style->msg_list[style->paly_idx].type){
@@ -356,7 +356,7 @@ static void _msg_anim_start_cb(struct gt_anim_s * anim) {
     }
 }
 
-static void _msg_anim_ready_cb(struct gt_anim_s * anim) {
+static GT_ATTRIBUTE_RAM_TEXT void _msg_anim_ready_cb(struct gt_anim_s * anim) {
     _gt_chat_st * style = (_gt_chat_st * )anim->tar;
     style->anim_play = false;
 
@@ -369,7 +369,7 @@ static void _msg_anim_ready_cb(struct gt_anim_s * anim) {
     style->paly_idx = -1;
 }
 
-static void _msg_anim_exec_cb(void * obj, int32_t count) {
+static GT_ATTRIBUTE_RAM_TEXT void _msg_anim_exec_cb(void * obj, int32_t count) {
     _gt_chat_st * style = (_gt_chat_st * )obj;
     if(style->paly_idx >= 0 && GT_CHAT_TYPE_VOICE == style->msg_list[style->paly_idx].type){
         _gt_set_voice_text( style->msg_list[style->paly_idx].msg_obj, \
@@ -378,7 +378,7 @@ static void _msg_anim_exec_cb(void * obj, int32_t count) {
     }
 }
 
-static void _gt_set_msg_param(gt_obj_st* chat, _gt_chat_set_msg_te set_type) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_set_msg_param(gt_obj_st* chat, _gt_chat_set_msg_te set_type) {
     _gt_chat_st * style = (_gt_chat_st * )chat;
     for (int i = 0; i < style->msg_cnt; i++) {
 
