@@ -61,6 +61,11 @@ typedef struct _alert_s {
     void * user_data;
 }_alert_st;
 
+typedef struct {
+    gt_clock_user_second_handler_cb_t user_sec_cb;
+    void * sec_data;
+}_user_second_handler_st;
+
 typedef struct _gt_clock_s {
     gt_obj_st obj;
     gt_obj_st * label;    /** @ref gt_label.h */
@@ -75,6 +80,8 @@ typedef struct _gt_clock_s {
 
     _gt_timer_st * timer_twinkle_colon;     /** twinkle colon timer */
     uint32_t period_twinkle_colon;          /** twinkle colon period, default: 1000ms */
+
+    _user_second_handler_st user_sec_hd;
 
     _reg_st reg;
 }_gt_clock_st;
@@ -138,7 +145,12 @@ static GT_ATTRIBUTE_RAM_TEXT bool _is_contiune_same_char(const char * const str,
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _gt_clock_timer_cb(struct _gt_timer_s * timer) {
-    gt_clock_turn_next_second((gt_obj_st * )_gt_timer_get_user_data(timer));
+    gt_obj_st * clock = (gt_obj_st * )_gt_timer_get_user_data(timer);
+    _gt_clock_st * style = (_gt_clock_st * )clock;
+    gt_clock_turn_next_second(clock);
+    if (style->user_sec_hd.user_sec_cb) {
+        style->user_sec_hd.user_sec_cb(clock, style->user_sec_hd.sec_data);
+    }
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _gt_clock_twinkle_colon_timer_cb(struct _gt_timer_s * timer) {
@@ -761,6 +773,19 @@ void gt_clock_set_alert_cb(gt_obj_st * obj, gt_clock_alert_cb alert_cb, void * u
     clock->alert[clock->reg.len_alert_cb]->cb = alert_cb;
     clock->alert[clock->reg.len_alert_cb]->user_data = user_data;
     ++clock->reg.len_alert_cb;
+}
+
+void gt_clock_set_second_handler_cb(gt_obj_st * obj, gt_clock_user_second_handler_cb_t hd_cb, void * user_data)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_clock_st * clock = (_gt_clock_st *)obj;
+    if (NULL == hd_cb) {
+        return;
+    }
+    clock->user_sec_hd.user_sec_cb = hd_cb;
+    clock->user_sec_hd.sec_data = user_data;
 }
 
 void gt_clock_clr_all_next_day_cb(gt_obj_st * obj)

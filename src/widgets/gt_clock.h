@@ -39,6 +39,12 @@ typedef void (* gt_clock_next_day_cb)(gt_obj_st * obj, void * user_data);
 typedef void (* gt_clock_alert_cb)(gt_obj_st * obj, void * user_data);
 
 /**
+ * @brief
+ */
+typedef void (* gt_clock_user_second_handler_cb_t)(gt_obj_st * obj, void * user_sec_data);
+
+
+/**
  * @brief Clock working mode [default: GT_CLOCK_MODE_TIME]
  */
 typedef enum gt_clock_mode_e {
@@ -220,6 +226,8 @@ void gt_clock_set_next_day_cb(gt_obj_st * obj, gt_clock_next_day_cb next_day_cb,
  * @param user_data The user data
  */
 void gt_clock_set_alert_cb(gt_obj_st * obj, gt_clock_alert_cb alert_cb, void * user_data);
+
+void gt_clock_set_second_handler_cb(gt_obj_st * obj, gt_clock_user_second_handler_cb_t hd_cb, void * user_data);
 
 /**
  * @brief clear all next day callback function

@@ -148,7 +148,7 @@ static GT_ATTRIBUTE_RAM_DATA const gt_map_st _ch_map_default_26_key[] = {
     {NULL,0},
 };
 
-static GT_ATTRIBUTE_RAM_DATA const char * _def_26_key_user_icon_key_list[] = {
+static const char * _def_26_key_user_icon_key_list[] = {
     GT_SYMBOL_BACKSPACE,
     GT_SYMBOL_NEW_LINE,
     GT_SYMBOL_LOWER_CASE,
