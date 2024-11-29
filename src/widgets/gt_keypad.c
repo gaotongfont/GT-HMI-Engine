@@ -104,11 +104,11 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_keypad_class = {
 #ifdef _DEF_STYLE_26_KEY
 
 #define _GT_KEYPADS_SPELL_NUMB      (9)
-static const char _gt_spell[_GT_KEYPADS_SPELL_NUMB][8] = {
+static GT_ATTRIBUTE_RAM_DATA const char _gt_spell[_GT_KEYPADS_SPELL_NUMB][8] = {
     "spell_0", "spell_1", "spell_2", "spell_3", "spell_4", "spell_5", "spell_6", "spell_7", "spell_8",
 };
 // h = 34 * 6 + 3 * 7 = 204 + 24 = 225
-static const gt_map_st _low_map_default_26_key[] = {
+static GT_ATTRIBUTE_RAM_DATA const gt_map_st _low_map_default_26_key[] = {
     {".",1}, {",",1}, {"?",1}, {";",1}, {":",1}, {"\'",1}, {"\"",1}, {"@",1}, {"(",1}, {")",1}, {GT_BTNMAP_NEW_LINE,0},
     {"1",1}, {"2",1}, {"3",1}, {"4",1}, {"5",1}, {"6",1}, {"7",1}, {"8",1}, {"9",1}, {"0",1}, {GT_BTNMAP_NEW_LINE,0},
     {"q",1}, {"w",1}, {"e",1}, {"r",1}, {"t",1}, {"y",1}, {"u",1}, {"i",1}, {"o",1}, {"p",1}, {GT_BTNMAP_NEW_LINE,0},
@@ -118,7 +118,7 @@ static const gt_map_st _low_map_default_26_key[] = {
     {NULL,0}
 };
 
-static const gt_map_st _up_map_default_26_key[] = {
+static GT_ATTRIBUTE_RAM_DATA const gt_map_st _up_map_default_26_key[] = {
     {".",1}, {",",1}, {"?",1}, {";",1}, {":",1}, {"\'",1}, {"\"",1}, {"@",1}, {"(",1}, {")",1}, {GT_BTNMAP_NEW_LINE,0},
     {"1",1}, {"2",1}, {"3",1}, {"4",1}, {"5",1}, {"6",1}, {"7",1}, {"8",1}, {"9",1}, {"0",1}, {GT_BTNMAP_NEW_LINE,0},
     {"Q",1}, {"W",1}, {"E",1}, {"R",1}, {"T",1}, {"Y",1}, {"U",1}, {"I",1}, {"O",1}, {"P",1}, {GT_BTNMAP_NEW_LINE,0},
@@ -128,7 +128,7 @@ static const gt_map_st _up_map_default_26_key[] = {
     {NULL,0},
 };
 
-static const gt_map_st _symbol_en_map_default_26_key[] = {
+static GT_ATTRIBUTE_RAM_DATA const gt_map_st _symbol_en_map_default_26_key[] = {
     {"1",1}, {"2",1}, {"3",1}, {"4",1}, {"5",1}, {"6",1}, {"7",1}, {"8",1}, {"9",1}, {"0",1}, {GT_BTNMAP_NEW_LINE,0},
     {"!",1}, {"@",1}, {"#",1}, {"$",1}, {"%",1}, {"^",1}, {"&",1}, {"*",1}, {"(",1}, {")",1}, {GT_BTNMAP_NEW_LINE,0},
     {NULL,1}, {"-",5}, {"+",5}, {"=",5}, {"_",5}, {"{",5}, {"}",5}, {"[",5}, {"]",5}, {"\\",5}, {NULL,1}, {GT_BTNMAP_NEW_LINE,0},
@@ -138,7 +138,7 @@ static const gt_map_st _symbol_en_map_default_26_key[] = {
     {NULL,},
 };
 
-static const gt_map_st _ch_map_default_26_key[] = {
+static GT_ATTRIBUTE_RAM_DATA const gt_map_st _ch_map_default_26_key[] = {
     {_gt_spell[0],1}, {GT_BTNMAP_NEW_LINE,0},
     {GT_SYMBOL_PREV,1}, {_gt_spell[1],1}, {_gt_spell[2],1}, {_gt_spell[3],1}, {_gt_spell[4],1}, {_gt_spell[5],1}, {_gt_spell[6],1}, {_gt_spell[7],1}, {_gt_spell[8],1}, {GT_SYMBOL_NEXT,1}, {GT_BTNMAP_NEW_LINE,0},
     {"q",1}, {"w",1}, {"e",1}, {"r",1}, {"t",1}, {"y",1}, {"u",1}, {"i",1}, {"o",1}, {"p",1}, {GT_BTNMAP_NEW_LINE,0},
@@ -148,7 +148,7 @@ static const gt_map_st _ch_map_default_26_key[] = {
     {NULL,0},
 };
 
-static const char * _def_26_key_user_icon_key_list[] = {
+static GT_ATTRIBUTE_RAM_DATA const char * _def_26_key_user_icon_key_list[] = {
     GT_SYMBOL_BACKSPACE,
     GT_SYMBOL_NEW_LINE,
     GT_SYMBOL_LOWER_CASE,
@@ -163,7 +163,7 @@ static const char * _def_26_key_user_icon_key_list[] = {
     NULL,
 };
 
-static const gt_keypad_map_st _list_default_26_key[] = {
+static GT_ATTRIBUTE_RAM_DATA const gt_keypad_map_st _list_default_26_key[] = {
     {.type = GT_KEYPAD_TYPE_LOWER, .map = _low_map_default_26_key},
     {.type = GT_KEYPAD_TYPE_UPPER, .map = _up_map_default_26_key},
     {.type = GT_KEYPAD_TYPE_SYMBOL_EN, .map = _symbol_en_map_default_26_key},
@@ -357,7 +357,7 @@ static bool _def_26_key_disp_special_btn_handler(gt_obj_st* obj, const char* con
 #ifdef _DEF_STYLE_OTHER_4x5
 // w = 44 * 4 + 3 * 5 = 176 + 15 = 191
 // h = 44 * 5 + 3 * 6 = 220 + 18 = 238
-static const gt_map_st _low_map_default_tlb[] = {
+static GT_ATTRIBUTE_RAM_DATA const gt_map_st _low_map_default_tlb[] = {
     {"a",1}, {"b",1}, {"c",1}, {"d",1}, {GT_BTNMAP_NEW_LINE,0},
     {"e",1}, {"f",1}, {"g",1}, {"h",1}, {GT_BTNMAP_NEW_LINE,0},
     {"i",1}, {"j",1}, {"k",1}, {"l",1}, {GT_BTNMAP_NEW_LINE,0},
@@ -367,7 +367,7 @@ static const gt_map_st _low_map_default_tlb[] = {
     {"y",1}, {"z",1}, {NULL,2}, {NULL,0},
 };
 
-static const gt_map_st _up_map_default_tlb[] = {
+static GT_ATTRIBUTE_RAM_DATA const gt_map_st _up_map_default_tlb[] = {
     {"A",1}, {"B",1}, {"C",1}, {"D",1}, {GT_BTNMAP_NEW_LINE,0},
     {"E",1}, {"F",1}, {"G",1}, {"H",1}, {GT_BTNMAP_NEW_LINE,0},
     {"I",1}, {"J",1}, {"K",1}, {"L",1}, {GT_BTNMAP_NEW_LINE,0},
@@ -377,7 +377,7 @@ static const gt_map_st _up_map_default_tlb[] = {
     {"Y",1}, {"Z",1}, {NULL,2}, {NULL,0},
 };
 
-static const gt_map_st _numb_map_default_tlb[] = {
+static GT_ATTRIBUTE_RAM_DATA const gt_map_st _numb_map_default_tlb[] = {
     {"1",1}, {"2",1}, {"3",1}, {"4",1}, {GT_BTNMAP_NEW_LINE,0},
     {"5",1}, {"6",1}, {"7",1}, {"8",1}, {GT_BTNMAP_NEW_LINE,0},
     {"9",1}, {"0",1}, {"@",1}, {"=",1}, {GT_BTNMAP_NEW_LINE,0},
@@ -391,7 +391,7 @@ static const gt_map_st _numb_map_default_tlb[] = {
     {"{",1}, {"}",1}, {NULL,2}, {NULL,0},
 };
 
-static const gt_keypad_map_st _list_default_tlb[] = {
+static GT_ATTRIBUTE_RAM_DATA const gt_keypad_map_st _list_default_tlb[] = {
     {.type = GT_KEYPAD_TYPE_LOWER, .map = _low_map_default_tlb},
     {.type = GT_KEYPAD_TYPE_UPPER, .map = _up_map_default_tlb},
     {.type = GT_KEYPAD_TYPE_NUMBER, .map = _numb_map_default_tlb},
@@ -401,33 +401,33 @@ static const gt_keypad_map_st _list_default_tlb[] = {
 #ifdef _DEF_STYLE_OTHER_11x3
 // w = 50 * 11 + 3 * 12 = 550 + 36 = 586
 // h = 38 * 3 + 3 * 4 = 114 + 12 = 126
-static const gt_map_st _low_map_default_fyb_369[] = {
+static GT_ATTRIBUTE_RAM_DATA const gt_map_st _low_map_default_fyb_369[] = {
     {"a",1}, {"b",1}, {"c",1}, {"d",1}, {"e",1}, {"f",1}, {"g",1}, {"h",1}, {"i",1}, {"j",1}, {"k",1}, {GT_BTNMAP_NEW_LINE,0},
     {"l",1}, {"m",1}, {"n",1}, {"o",1}, {"p",1}, {"q",1}, {"r",1}, {"s",1}, {"t",1}, {"u",1}, {"v",1}, {GT_BTNMAP_NEW_LINE,0},
     {"w",1}, {"x",1}, {"y",1}, {"z",1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,0},
 };
 
-static const gt_map_st _up_map_default_fyb_369[] = {
+static GT_ATTRIBUTE_RAM_DATA const gt_map_st _up_map_default_fyb_369[] = {
     {"A",1}, {"B",1}, {"C",1}, {"D",1}, {"E",1}, {"F",1}, {"G",1}, {"H",1}, {"I",1}, {"J",1}, {"K",1}, {GT_BTNMAP_NEW_LINE,0},
     {"L",1}, {"M",1}, {"N",1}, {"O",1}, {"P",1}, {"Q",1}, {"R",1}, {"S",1}, {"T",1}, {"U",1}, {"V",1}, {GT_BTNMAP_NEW_LINE,0},
     {"W",1}, {"X",1}, {"Y",1}, {"Z",1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,1}, {NULL,0},
 };
 
-static const gt_map_st _numb_map_default_fyb_369[] = {
+static GT_ATTRIBUTE_RAM_DATA const gt_map_st _numb_map_default_fyb_369[] = {
     {"1",1}, {"2",1}, {"3",1}, {"4",1}, {"5",1}, {"6",1}, {"7",1}, {"8",1}, {"9",1}, {"0",1}, {"@",1}, {GT_BTNMAP_NEW_LINE,0},
     {"=",1}, {"+",1}, {"-",1}, {"*",1}, {"/",1}, {",",1}, {".",1}, {";",1}, {"?",1}, {"\'",1}, {"\"",1}, {GT_BTNMAP_NEW_LINE,0},
     {":",1}, {"!",1}, {"(",1}, {")",1}, {"<",1}, {">",1}, {"[",1}, {"]",1}, {"_",1}, {"~",1}, {"\\",1}, {GT_BTNMAP_NEW_LINE,0},
     {"|",1}, {"`",1}, {"#",1}, {"$",1}, {"%",1}, {"^",1}, {"&",1}, {"{",1}, {"}",1}, {NULL,1}, {NULL,1}, {NULL,0},
 };
 
-static const gt_keypad_map_st _list_default_fyb_369[] = {
+static GT_ATTRIBUTE_RAM_DATA const gt_keypad_map_st _list_default_fyb_369[] = {
     {.type = GT_KEYPAD_TYPE_LOWER, .map = _low_map_default_fyb_369},
     {.type = GT_KEYPAD_TYPE_UPPER, .map = _up_map_default_fyb_369},
     {.type = GT_KEYPAD_TYPE_NUMBER, .map = _numb_map_default_fyb_369},
 };
 #endif // _DEF_STYLE_OTHER_11x3
 
-static const _gt_def_style_param_st _def_style_list[] = {
+static GT_ATTRIBUTE_RAM_DATA const _gt_def_style_param_st _def_style_list[] = {
 #ifdef _DEF_STYLE_26_KEY
     {
         .def_style = GT_KEYPAD_STYLE_26_KEY,
@@ -507,7 +507,7 @@ static const _gt_def_style_param_st _def_style_list[] = {
 #endif // _DEF_STYLE_OTHER_11x3
 };
 
-static void _gt_switch_default_style(gt_obj_st * keypad, gt_keypad_default_style_st def_style) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_switch_default_style(gt_obj_st * keypad, gt_keypad_default_style_st def_style) {
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
     style->def_style = def_style;
     if (GT_KEYPAD_STYLE_NONE == style->def_style) {
@@ -548,7 +548,7 @@ static void _gt_switch_default_style(gt_obj_st * keypad, gt_keypad_default_style
     gt_keypad_set_map_list(keypad, (gt_keypad_map_st*)item->map_list, item->map_total);
 }
 
-static inline void _set_minimum_width(gt_obj_st * keypad) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _set_minimum_width(gt_obj_st * keypad) {
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
 
     uint16_t minimum_width = gt_btnmap_get_calc_minimum_width(style->btnmap);
