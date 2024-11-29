@@ -8,7 +8,7 @@
  */
 
 /* include --------------------------------------------------------------*/
-#include "gt_arc.h"
+#include "./gt_arc.h"
 
 #if GT_CFG_ENABLE_BTN
 #include "../core/gt_mem.h"
