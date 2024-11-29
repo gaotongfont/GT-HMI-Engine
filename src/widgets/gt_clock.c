@@ -93,14 +93,8 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_clock_class = {
     .size_style    = sizeof(_gt_clock_st)
 };
 
-static const char* _gt_weeks[] = {
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat",
-    "Sun",
+static GT_ATTRIBUTE_RAM_DATA const char * _gt_weeks[] = {
+    "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",
 };
 /* macros ---------------------------------------------------------------*/
 
@@ -125,7 +119,7 @@ static const char* _gt_weeks[] = {
 
 
 /* static functions -----------------------------------------------------*/
-static bool _is_contiune_same_char(const char * const str, char target, char numb) {
+static GT_ATTRIBUTE_RAM_DATA bool _is_contiune_same_char(const char * const str, char target, char numb) {
     char another_case = 0;
 
     if (*str < 'A' || *str > 'z') {
@@ -134,41 +128,31 @@ static bool _is_contiune_same_char(const char * const str, char target, char num
     if (*str > 'Z' && *str < 'a') {
         return false;
     }
-#if 0
-    another_case = target < 'a' ? (target + 0x20) : (target - 0x20);
-    if (*str == target && *(str + 1) == target) {
-        return true;
-    }
-    if (*str == another_case && *(str + 1) == another_case) {
-        return true;
-    }
-#else
     while(numb > 0){
         if (str[numb-1] == target) {
             return true;
         }
         numb--;
     }
-#endif
     return false;
 }
 
-static void _gt_clock_timer_cb(struct _gt_timer_s * timer) {
+static GT_ATTRIBUTE_RAM_DATA void _gt_clock_timer_cb(struct _gt_timer_s * timer) {
     gt_clock_turn_next_second((gt_obj_st * )_gt_timer_get_user_data(timer));
 }
 
-static void _gt_clock_twinkle_colon_timer_cb(struct _gt_timer_s * timer) {
+static GT_ATTRIBUTE_RAM_DATA void _gt_clock_twinkle_colon_timer_cb(struct _gt_timer_s * timer) {
     gt_obj_st * clock = (gt_obj_st * )_gt_timer_get_user_data(timer);
     _gt_clock_st * style = (_gt_clock_st * )clock;
     style->reg.twinkle_state = !style->reg.twinkle_state;
     gt_event_send(clock, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-static const char* _get_week_str(uint8_t week) {
+static GT_ATTRIBUTE_RAM_DATA const char * _get_week_str(uint8_t week) {
     return _gt_weeks[week ? ((week % 8) - 1) : 0];
 }
 
-static char * _get_time_str(_gt_clock_st * clock) {
+static GT_ATTRIBUTE_RAM_DATA char * _get_time_str(_gt_clock_st * clock) {
     uint8_t hours = _get_hour(clock->time_current);
     uint8_t meridiem_len = 3;
     char * meridiem = NULL;
@@ -252,7 +236,7 @@ static char * _get_time_str(_gt_clock_st * clock) {
     return str;
 }
 
-static void _draw_twinkle_colon_mode(gt_obj_st * obj, _gt_clock_st * style) {
+static GT_ATTRIBUTE_RAM_DATA void _draw_twinkle_colon_mode(gt_obj_st * obj, _gt_clock_st * style) {
     char tmp_fm[4] = {0};
     gt_font_info_st * font_info = gt_label_get_font_info(style->label);
     gt_font_st font = {
@@ -311,7 +295,7 @@ static void _init_cb(gt_obj_st * obj) {
     draw_focus(obj , 0);
 }
 
-static inline void _remove_all_next_day_cb(_gt_clock_st * style) {
+static GT_ATTRIBUTE_RAM_DATA void _remove_all_next_day_cb(_gt_clock_st * style) {
     gt_size_t i = 0;
 
     if (NULL == style->next_day) {
@@ -325,7 +309,7 @@ static inline void _remove_all_next_day_cb(_gt_clock_st * style) {
     style->next_day = NULL;
 }
 
-static inline void _remove_all_alert_cb(_gt_clock_st * style) {
+static GT_ATTRIBUTE_RAM_DATA void _remove_all_alert_cb(_gt_clock_st * style) {
     gt_size_t i = 0;
 
     if (NULL == style->alert) {
@@ -380,7 +364,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-static inline bool _is_time_equal(gt_clock_time_st * dst, gt_clock_time_st * src) {
+static GT_ATTRIBUTE_RAM_DATA inline bool _is_time_equal(gt_clock_time_st * dst, gt_clock_time_st * src) {
     if (dst->second != src->second) {
         return false;
     }
@@ -393,7 +377,7 @@ static inline bool _is_time_equal(gt_clock_time_st * dst, gt_clock_time_st * src
     return true;
 }
 
-static inline bool _is_time_zero(gt_clock_time_st * time) {
+static GT_ATTRIBUTE_RAM_DATA inline bool _is_time_zero(gt_clock_time_st * time) {
     if (time->second) {
         return false;
     }
@@ -406,7 +390,7 @@ static inline bool _is_time_zero(gt_clock_time_st * time) {
     return true;
 }
 
-static void _go_next_sec(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_DATA void _go_next_sec(gt_obj_st * obj) {
     _gt_clock_st * clock = (_gt_clock_st * )obj;
     uint8_t i = 0, len = 0;
 
@@ -441,7 +425,7 @@ static void _go_next_sec(gt_obj_st * obj) {
     }
 }
 
-static bool _go_prev_sec(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_DATA bool _go_prev_sec(gt_obj_st * obj) {
     _gt_clock_st * clock = (_gt_clock_st * )obj;
     uint8_t i = 0, len = 0;
 

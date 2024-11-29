@@ -116,8 +116,6 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_chat_class = {
 /* static functions -----------------------------------------------------*/
 
 static void _init_cb(gt_obj_st * obj) {
-
-
     if(!obj || 0 == obj->area.w || 0 == obj->area.h) return;
 
     _gt_chat_st * style = (_gt_chat_st * )obj;
