@@ -62,7 +62,7 @@ typedef struct {
  * @return true clicked
  * @return false not clicked
  */
-static _check_clicked_state_em gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point ) {
+static GT_ATTRIBUTE_RAM_TEXT _check_clicked_state_em gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point ) {
 #if GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
     if (point->x + obj->touch_expand_size.x < obj->area.x ||
         point->x > (obj->area.x + obj->area.w + obj->touch_expand_size.x)) {
@@ -97,7 +97,7 @@ static _check_clicked_state_em gt_obj_check_is_clicked( gt_obj_st * obj, gt_poin
  * @param point
  * @return gt_obj_st* The clicked object
  */
-static _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st * point) {
+static GT_ATTRIBUTE_RAM_TEXT _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st * point) {
     gt_size_t idx = parent->cnt_child - 1;
     _click_obj_ret_st obj_clicked = {
         .obj = NULL,
@@ -150,8 +150,8 @@ static _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st
  * @return true
  * @return false
  */
-static bool _gt_obj_focus_cmp_positon(const gt_obj_st* cur, const gt_obj_st* find, uint8_t flag)
-{
+static GT_ATTRIBUTE_RAM_TEXT bool _gt_obj_focus_cmp_positon(const gt_obj_st* cur,
+    const gt_obj_st* find, uint8_t flag) {
     if(!cur || !find) {
         return false;
     }
@@ -176,8 +176,8 @@ static bool _gt_obj_focus_cmp_positon(const gt_obj_st* cur, const gt_obj_st* fin
     return false;
 }
 
-static void _gt_obj_focus_cmp_obj(const gt_obj_st* cur, const gt_obj_st* child, gt_obj_st** ret, uint8_t flag)
-{
+static GT_ATTRIBUTE_RAM_TEXT void _gt_obj_focus_cmp_obj(const gt_obj_st* cur, const gt_obj_st* child,
+    gt_obj_st** ret, uint8_t flag) {
     if(!cur || !child) {return ;}
 
     if(!_gt_obj_focus_cmp_positon(cur, child, flag)){
@@ -245,8 +245,8 @@ static void _gt_obj_focus_cmp_obj(const gt_obj_st* cur, const gt_obj_st* child, 
 
 }
 
-static gt_obj_st* _gt_obj_dir_focus_get(const gt_obj_st* parent, const gt_obj_st* cur_obj, uint8_t flag)
-{
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_dir_focus_get(const gt_obj_st* parent,
+    const gt_obj_st* cur_obj, uint8_t flag) {
     if(!parent || !cur_obj){
         return NULL;
     }
@@ -275,8 +275,7 @@ static gt_obj_st* _gt_obj_dir_focus_get(const gt_obj_st* parent, const gt_obj_st
     return ret_obj ? ret_obj : (gt_obj_st*)cur_obj;
 }
 #else
-static gt_obj_st* _gt_obj_next_focus_get(const gt_obj_st * cur_obj, bool flag)
-{
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_next_focus_get(const gt_obj_st * cur_obj, bool flag) {
     if(!cur_obj){
         return NULL;
     }
@@ -326,8 +325,7 @@ static gt_obj_st* _gt_obj_next_focus_get(const gt_obj_st * cur_obj, bool flag)
     return parent->child[mim_idx];
 }
 
-static gt_obj_st* _gt_obj_prev_focus_get(const gt_obj_st * cur_obj, bool flag)
-{
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_prev_focus_get(const gt_obj_st * cur_obj, bool flag) {
     if(!cur_obj){
         return NULL;
     }
@@ -377,8 +375,7 @@ static gt_obj_st* _gt_obj_prev_focus_get(const gt_obj_st * cur_obj, bool flag)
     return parent->child[max_idx];
 }
 
-static gt_obj_st* _gt_obj_into_focus_get(const gt_obj_st * cur_obj)
-{
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_into_focus_get(const gt_obj_st * cur_obj) {
     if(!cur_obj){
         return NULL;
     }

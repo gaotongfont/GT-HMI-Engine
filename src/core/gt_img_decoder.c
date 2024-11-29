@@ -45,7 +45,7 @@
  * @param header
  * @return gt_res_t
  */
-static gt_res_t _gt_img_decoder_built_in_info(struct _gt_img_decoder_s * decoder, const void * src, _gt_img_info_st * header)
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_info(struct _gt_img_decoder_s * decoder, const void * src, _gt_img_info_st * header)
 {
     GT_UNUSED(decoder);
     gt_fs_fp_st * fp = gt_fs_open(src, GT_FS_MODE_RD);
@@ -61,7 +61,7 @@ static gt_res_t _gt_img_decoder_built_in_info(struct _gt_img_decoder_s * decoder
     return GT_RES_OK;
 }
 
-static gt_res_t _gt_img_decoder_built_in_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc)
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc)
 {
     GT_UNUSED(decoder);
     gt_fs_fp_st * fp = gt_fs_open(dsc->src, GT_FS_MODE_RD);
@@ -76,7 +76,7 @@ static gt_res_t _gt_img_decoder_built_in_open(struct _gt_img_decoder_s * decoder
     return GT_RES_OK;
 }
 
-static gt_res_t _gt_img_decoder_built_in_read_line(struct _gt_img_dsc_s * dsc,
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_read_line(struct _gt_img_dsc_s * dsc,
                                                 gt_size_t x, gt_size_t y, gt_size_t len, uint8_t * buffer)
 {
     gt_fs_fp_st * fp = dsc->fp;
@@ -98,7 +98,7 @@ static gt_res_t _gt_img_decoder_built_in_read_line(struct _gt_img_dsc_s * dsc,
     return GT_RES_OK;
 }
 
-static gt_res_t _gt_img_decoder_built_in_close(struct _gt_img_dsc_s * dsc)
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_close(struct _gt_img_dsc_s * dsc)
 {
     gt_fs_close(dsc->fp);
 
@@ -106,7 +106,7 @@ static gt_res_t _gt_img_decoder_built_in_close(struct _gt_img_dsc_s * dsc)
 }
 
 #if GT_USE_FILE_HEADER
-static gt_res_t _gt_img_decoder_built_in_fh_info(struct _gt_img_decoder_s * decoder, gt_file_header_param_st const * const param, _gt_img_info_st * header) {
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_fh_info(struct _gt_img_decoder_s * decoder, gt_file_header_param_st const * const param, _gt_img_info_st * header) {
     GT_UNUSED(decoder);
     gt_fs_fp_st * fp = gt_fs_fh_open(param, GT_FS_MODE_RD);
     if (!fp) {
@@ -135,7 +135,7 @@ gt_res_t _gt_img_decoder_build_in_fh_open(struct _gt_img_decoder_s * decoder, st
 #endif
 
 #if GT_USE_DIRECT_ADDR
-static gt_res_t _gt_img_decoder_built_in_direct_addr_info(struct _gt_img_decoder_s * decoder, gt_addr_t addr, _gt_img_info_st * header) {
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_direct_addr_info(struct _gt_img_decoder_s * decoder, gt_addr_t addr, _gt_img_info_st * header) {
     GT_UNUSED(decoder);
     gt_fs_fp_st * fp = gt_fs_direct_addr_open(addr, GT_FS_MODE_RD);
     if (!fp) {

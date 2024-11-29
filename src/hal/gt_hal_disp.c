@@ -57,16 +57,16 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_layer_top_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static inline gt_size_t _gt_disp_area_get_idx(gt_size_t idx) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t _gt_disp_area_get_idx(gt_size_t idx) {
     return idx == _GT_REFR_AREA_MAX ? 0 : idx;
 }
 
-static void _gt_disp_task_handler(struct _gt_timer_s * timer) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_disp_task_handler(struct _gt_timer_s * timer) {
     GT_UNUSED(timer);
     gt_refr_timer();
 }
 
-static gt_disp_st * _gt_disp_create(gt_disp_drv_st * drv) {
+static GT_ATTRIBUTE_RAM_TEXT gt_disp_st * _gt_disp_create(gt_disp_drv_st * drv) {
     gt_disp_st * ret = gt_mem_malloc(sizeof(gt_disp_st));
     if (NULL == ret) {
         GT_LOGE(GT_LOG_TAG_GUI, "disp create failed");
@@ -92,7 +92,7 @@ static gt_disp_st * _gt_disp_create(gt_disp_drv_st * drv) {
     return ret;
 }
 
-static void _calc_max_area_recursive(gt_obj_st * obj, bool is_root) {
+static GT_ATTRIBUTE_RAM_TEXT void _calc_max_area_recursive(gt_obj_st * obj, bool is_root) {
     GT_CHECK_BACK(obj);
     gt_obj_st * ptr = NULL;
     gt_size_t i = 0, cnt = obj->cnt_child;

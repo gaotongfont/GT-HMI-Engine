@@ -91,13 +91,13 @@ typedef struct _bg_abs_area_st {
  * @return true busy now
  * @return false
  */
-static GT_ATTRIBUTE_RAM_DATA bool _gt_disp_get_state(gt_disp_st * disp) {
+static GT_ATTRIBUTE_RAM_TEXT bool _gt_disp_get_state(gt_disp_st * disp) {
     GT_CHECK_BACK_VAL(disp, GT_BUSY);
     GT_CHECK_BACK_VAL(disp->drv, GT_BUSY);
     return disp->drv->busy;
 }
 
-static GT_ATTRIBUTE_RAM_DATA void _gt_disp_set_state(gt_disp_st * disp, uint8_t state) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_disp_set_state(gt_disp_st * disp, uint8_t state) {
     GT_CHECK_BACK(disp);
     GT_CHECK_BACK(disp->drv);
     disp->drv->busy = state;
@@ -111,7 +111,7 @@ static GT_ATTRIBUTE_RAM_DATA void _gt_disp_set_state(gt_disp_st * disp, uint8_t 
  * @param area_parent All parent displayable areas
  * @return true: visible or area need to refresh, false: invisible or area not need to refresh
  */
-static GT_ATTRIBUTE_RAM_DATA inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent) {
     if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
         return false;
     }
@@ -154,7 +154,7 @@ static GT_ATTRIBUTE_RAM_DATA inline bool gt_check_obj_visible_and_copy(gt_obj_st
  * @param param
  * @param area_parent All parent displayable areas
  */
-static GT_ATTRIBUTE_RAM_DATA void _check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent) {
+static GT_ATTRIBUTE_RAM_TEXT void _check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent) {
     uint16_t idx = 0;
     gt_obj_st * child_p = NULL;
     gt_area_st area_cross = area_parent;
@@ -180,7 +180,7 @@ static GT_ATTRIBUTE_RAM_DATA void _check_and_copy_foreach(gt_obj_st * obj, _flus
     }
 }
 
-static GT_ATTRIBUTE_RAM_DATA void _gt_disp_check_and_copy_foreach(gt_obj_st * scr_or_layer, _flush_scr_param_st * param) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_disp_check_and_copy_foreach(gt_obj_st * scr_or_layer, _flush_scr_param_st * param) {
     uint16_t idx = 0;
     gt_obj_st * child_p = NULL;
     gt_area_st area_parent = param->disp->area_disp;
@@ -201,22 +201,22 @@ static GT_ATTRIBUTE_RAM_DATA void _gt_disp_check_and_copy_foreach(gt_obj_st * sc
     }
 }
 
-static GT_ATTRIBUTE_RAM_DATA void _scr_anim_exec_x_cb(void * obj, int32_t x) {
+static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_exec_x_cb(void * obj, int32_t x) {
     gt_obj_set_x((gt_obj_st * )obj, (gt_size_t)x);
 }
 
-static GT_ATTRIBUTE_RAM_DATA void _scr_anim_exec_y_cb(void * obj, int32_t y) {
+static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_exec_y_cb(void * obj, int32_t y) {
     gt_obj_set_y((gt_obj_st * )obj, (gt_size_t)y);
 }
 
-static GT_ATTRIBUTE_RAM_DATA void _scr_anim_del_ready_cb(struct gt_anim_s * anim) {
+static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_del_ready_cb(struct gt_anim_s * anim) {
     gt_obj_st * old_scr = (gt_obj_st * )anim->tar;
     old_scr->using_sta = 0;
     _gt_obj_class_destroy(old_scr);
 }
 
 #if GT_USE_SCREEN_ANIM
-static GT_ATTRIBUTE_RAM_DATA void _scr_anim_start_cb(struct gt_anim_s * anim) {
+static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_start_cb(struct gt_anim_s * anim) {
     gt_disp_st * disp = gt_disp_get_default();
     disp->scr_prev         = disp->scr_act;
     disp->scr_act          = (gt_obj_st * )anim->tar;
@@ -235,7 +235,7 @@ static GT_ATTRIBUTE_RAM_DATA void _scr_anim_start_cb(struct gt_anim_s * anim) {
  *
  * @param anim
  */
-static GT_ATTRIBUTE_RAM_DATA void _old_scr_anim_ready_cb(struct gt_anim_s * anim) {
+static GT_ATTRIBUTE_RAM_TEXT void _old_scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_area_st * area = (gt_area_st * )anim->data;
     gt_obj_st * old_scr = (gt_obj_st * )anim->tar;
     GT_CHECK_BACK(old_scr);
@@ -248,7 +248,7 @@ static GT_ATTRIBUTE_RAM_DATA void _old_scr_anim_ready_cb(struct gt_anim_s * anim
     gt_area_copy(&old_scr->area, area);
 }
 
-static GT_ATTRIBUTE_RAM_DATA void _scr_anim_ready_cb(struct gt_anim_s * anim) {
+static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_disp_st * disp = gt_disp_get_default();
     GT_CHECK_BACK(disp);
     if (disp->scr_prev && disp->scr_prev->delate) {
@@ -271,7 +271,7 @@ static GT_ATTRIBUTE_RAM_DATA void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_event_set_enabled(true);
 }
 
-static GT_ATTRIBUTE_RAM_DATA bool _is_anim_type_hor(gt_scr_anim_type_et anim_type) {
+static GT_ATTRIBUTE_RAM_TEXT bool _is_anim_type_hor(gt_scr_anim_type_et anim_type) {
     if (GT_SCR_ANIM_TYPE_MOVE_LEFT == anim_type) {
         return true;
     }
@@ -287,7 +287,7 @@ static GT_ATTRIBUTE_RAM_DATA bool _is_anim_type_hor(gt_scr_anim_type_et anim_typ
     return false;
 }
 
-static GT_ATTRIBUTE_RAM_DATA bool _is_anim_type_ver(gt_scr_anim_type_et anim_type) {
+static GT_ATTRIBUTE_RAM_TEXT bool _is_anim_type_ver(gt_scr_anim_type_et anim_type) {
     if (GT_SCR_ANIM_TYPE_MOVE_UP == anim_type) {
         return true;
     }
@@ -303,7 +303,7 @@ static GT_ATTRIBUTE_RAM_DATA bool _is_anim_type_ver(gt_scr_anim_type_et anim_typ
     return false;
 }
 
-static GT_ATTRIBUTE_RAM_DATA void _fill_color_hor(_flush_scr_param_st * param, _bg_abs_area_st * left, _bg_abs_area_st * right, bool is_left) {
+static GT_ATTRIBUTE_RAM_TEXT void _fill_color_hor(_flush_scr_param_st * param, _bg_abs_area_st * left, _bg_abs_area_st * right, bool is_left) {
     gt_disp_st * disp = param->disp;
     uint32_t cnt = 0;
     uint16_t row = 0;
@@ -338,7 +338,7 @@ static GT_ATTRIBUTE_RAM_DATA void _fill_color_hor(_flush_scr_param_st * param, _
     }
 }
 
-static GT_ATTRIBUTE_RAM_DATA void _fill_color_ver(_flush_scr_param_st * param, _bg_abs_area_st * top, _bg_abs_area_st * bottom, gt_size_t cur_row, bool is_top) {
+static GT_ATTRIBUTE_RAM_TEXT void _fill_color_ver(_flush_scr_param_st * param, _bg_abs_area_st * top, _bg_abs_area_st * bottom, gt_size_t cur_row, bool is_top) {
      gt_disp_st * disp = param->disp;
     uint16_t line = GT_REFRESH_FLUSH_LINE_PRE_TIME;
     uint32_t len = line * disp->area_act.w;
@@ -370,7 +370,7 @@ static GT_ATTRIBUTE_RAM_DATA void _fill_color_ver(_flush_scr_param_st * param, _
  *
  * @param param
  */
-static GT_ATTRIBUTE_RAM_DATA inline void _adapt_area_flush_hor(_flush_scr_param_st * param) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _adapt_area_flush_hor(_flush_scr_param_st * param) {
     gt_obj_st * prev = param->disp->scr_prev;
     gt_obj_st * scr = param->disp->scr_act;
 
@@ -404,7 +404,7 @@ static GT_ATTRIBUTE_RAM_DATA inline void _adapt_area_flush_hor(_flush_scr_param_
  *
  * @param param
  */
-static GT_ATTRIBUTE_RAM_DATA inline void _adapt_area_flush_ver(_flush_scr_param_st * param) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _adapt_area_flush_ver(_flush_scr_param_st * param) {
     gt_obj_st * prev = param->disp->scr_prev;
     gt_obj_st * scr = param->disp->scr_act;
 
@@ -433,7 +433,7 @@ static GT_ATTRIBUTE_RAM_DATA inline void _adapt_area_flush_ver(_flush_scr_param_
     }
 }
 
-static GT_ATTRIBUTE_RAM_DATA inline void _clear_buffer(_flush_scr_param_st * param, gt_color_t prev_c, gt_color_t cur_c, gt_size_t cur_row, bool is_prev) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _clear_buffer(_flush_scr_param_st * param, gt_color_t prev_c, gt_color_t cur_c, gt_size_t cur_row, bool is_prev) {
     gt_disp_st * disp = param->disp;
     _bg_abs_area_st prev = {
         .area = param->view_scr_prev_abs,
@@ -470,7 +470,7 @@ static GT_ATTRIBUTE_RAM_DATA inline void _clear_buffer(_flush_scr_param_st * par
     }
 }
 
-static GT_ATTRIBUTE_RAM_DATA inline void _adjust_clip_area_and_flush(_flush_scr_param_st * param, gt_obj_st * target_scr) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _adjust_clip_area_and_flush(_flush_scr_param_st * param, gt_obj_st * target_scr) {
     param->disp->area_disp.x = target_scr->area.x + param->valid.area_clip.x;
     param->disp->area_disp.y = target_scr->area.y + param->valid.area_clip.y;
     param->disp->area_disp.h = param->valid.area_clip.h;
@@ -496,7 +496,7 @@ static GT_ATTRIBUTE_RAM_DATA inline void _adjust_clip_area_and_flush(_flush_scr_
  * @param valid Interface intersection results and screen display start offset
  * @param line Number of rows per refresh
  */
-static GT_ATTRIBUTE_RAM_DATA inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
     gt_obj_st * prev = param->disp->scr_prev;
     gt_obj_st * scr = param->disp->scr_act;
     GT_CHECK_BACK(prev);
@@ -550,7 +550,7 @@ static GT_ATTRIBUTE_RAM_DATA inline void _flush_scr_by_anim(_flush_scr_param_st 
 }
 #endif  /** GT_USE_SCREEN_ANIM */
 
-static GT_ATTRIBUTE_RAM_DATA inline void _scr_x_equal_0(_flush_scr_param_st * param, uint16_t width) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _scr_x_equal_0(_flush_scr_param_st * param, uint16_t width) {
     if (param->area_flush.x < 0) {
         param->area_flush.w = param->area_flush.w + param->area_flush.x;
         param->area_flush.x = 0;
@@ -561,7 +561,7 @@ static GT_ATTRIBUTE_RAM_DATA inline void _scr_x_equal_0(_flush_scr_param_st * pa
     }
 }
 
-static GT_ATTRIBUTE_RAM_DATA inline void _scr_x_large_0(_flush_scr_param_st * param, uint16_t width, gt_obj_st * scr) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _scr_x_large_0(_flush_scr_param_st * param, uint16_t width, gt_obj_st * scr) {
     if (param->area_flush.x < 0) {
         param->area_flush.w = param->area_flush.w + param->area_flush.x;
         param->area_flush.x = 0;
@@ -579,7 +579,7 @@ static GT_ATTRIBUTE_RAM_DATA inline void _scr_x_large_0(_flush_scr_param_st * pa
     }
 }
 
-static GT_ATTRIBUTE_RAM_DATA inline void _scr_x_less_0(_flush_scr_param_st * param, uint16_t width, gt_obj_st * scr) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _scr_x_less_0(_flush_scr_param_st * param, uint16_t width, gt_obj_st * scr) {
     if (param->area_flush.x < 0) {
         param->area_flush.w = param->area_flush.w + param->area_flush.x - scr->area.x;
         param->area_flush.x = 0;
@@ -596,7 +596,7 @@ static GT_ATTRIBUTE_RAM_DATA inline void _scr_x_less_0(_flush_scr_param_st * par
     }
 }
 
-static GT_ATTRIBUTE_RAM_DATA inline void _scr_y_equal_0(_flush_scr_param_st * param, uint16_t height) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _scr_y_equal_0(_flush_scr_param_st * param, uint16_t height) {
     if (param->area_flush.y < 0) {
         param->area_flush.h = param->area_flush.h + param->area_flush.y;
         param->area_flush.y = 0;
@@ -607,7 +607,7 @@ static GT_ATTRIBUTE_RAM_DATA inline void _scr_y_equal_0(_flush_scr_param_st * pa
     }
 }
 
-static GT_ATTRIBUTE_RAM_DATA inline void _scr_y_large_0(_flush_scr_param_st * param, uint16_t height, gt_obj_st * scr) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _scr_y_large_0(_flush_scr_param_st * param, uint16_t height, gt_obj_st * scr) {
     if (param->area_flush.y < 0) {
         param->area_flush.h = param->area_flush.h + param->area_flush.y;
         param->area_flush.y = 0;
@@ -625,7 +625,7 @@ static GT_ATTRIBUTE_RAM_DATA inline void _scr_y_large_0(_flush_scr_param_st * pa
     }
 }
 
-static GT_ATTRIBUTE_RAM_DATA inline void _scr_y_less_0(_flush_scr_param_st * param, uint16_t height, gt_obj_st * scr) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _scr_y_less_0(_flush_scr_param_st * param, uint16_t height, gt_obj_st * scr) {
     if (param->area_flush.y <= 0) {
         param->area_flush.h = param->area_flush.h + param->area_flush.y - scr->area.y;
         param->area_flush.y = 0;
@@ -647,7 +647,7 @@ static GT_ATTRIBUTE_RAM_DATA inline void _scr_y_less_0(_flush_scr_param_st * par
  * @param scr
  * @return gt_area_st The buffer or area of display flush area.
  */
-static GT_ATTRIBUTE_RAM_DATA gt_area_st _update_area_flush_by_calc_partly_redraw_area(_flush_scr_param_st * param, gt_obj_st * scr) {
+static GT_ATTRIBUTE_RAM_TEXT gt_area_st _update_area_flush_by_calc_partly_redraw_area(_flush_scr_param_st * param, gt_obj_st * scr) {
     uint16_t width = gt_disp_get_res_hor(param->disp);
     uint16_t height = gt_disp_get_res_ver(param->disp);
 
@@ -689,7 +689,7 @@ static GT_ATTRIBUTE_RAM_DATA gt_area_st _update_area_flush_by_calc_partly_redraw
  * @param scr       The current screen absolute display area
  * @param line Number of rows per refresh
  */
-static GT_ATTRIBUTE_RAM_DATA inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     gt_obj_st * scr = param->disp->scr_act;
     gt_color_t color_fill = gt_screen_get_bgcolor(scr);
     GT_CHECK_BACK(scr);
@@ -738,7 +738,7 @@ static GT_ATTRIBUTE_RAM_DATA inline void _flush_scr_by_direct(_flush_scr_param_s
     }
 }
 
-static GT_ATTRIBUTE_RAM_DATA inline gt_scr_anim_type_et _get_anti_anim_type(gt_scr_anim_type_et type) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_scr_anim_type_et _get_anti_anim_type(gt_scr_anim_type_et type) {
 #if GT_USE_SCREEN_ANIM
     if (GT_SCR_ANIM_TYPE_MOVE_LEFT == type) { type = GT_SCR_ANIM_TYPE_MOVE_RIGHT; }
     else if (GT_SCR_ANIM_TYPE_MOVE_RIGHT == type) { type = GT_SCR_ANIM_TYPE_MOVE_LEFT; }
@@ -754,7 +754,7 @@ static GT_ATTRIBUTE_RAM_DATA inline gt_scr_anim_type_et _get_anti_anim_type(gt_s
 #endif
 }
 
-static GT_ATTRIBUTE_RAM_DATA gt_obj_st * _create_scr_by_id(gt_scr_id_t scr_id) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_scr_by_id(gt_scr_id_t scr_id) {
     gt_scr_init_func_cb_t scr_init_cb = gt_scr_stack_get_init_func(scr_id);
     if (NULL == scr_init_cb) {
         GT_LOGE(GT_LOG_TAG_GUI, "Screen[0x%X = %d] init callback is NULL", scr_id, scr_id);
@@ -763,7 +763,7 @@ static GT_ATTRIBUTE_RAM_DATA gt_obj_st * _create_scr_by_id(gt_scr_id_t scr_id) {
     return scr_init_cb();
 }
 
-static GT_ATTRIBUTE_RAM_DATA void _layer_top_destroy_handler_cb(struct _gt_timer_s * timer) {
+static GT_ATTRIBUTE_RAM_TEXT void _layer_top_destroy_handler_cb(struct _gt_timer_s * timer) {
     gt_obj_st * layer_top = (gt_obj_st * )_gt_timer_get_user_data(timer);
     for (gt_size_t i = layer_top->cnt_child - 1; i >= 0; i--) {
         if (gt_obj_is_type(layer_top->child[i], GT_TYPE_STATUS_BAR)) {

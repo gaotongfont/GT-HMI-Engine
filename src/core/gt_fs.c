@@ -35,7 +35,7 @@ typedef struct _gt_fs_dsc_s {
 /**
  * @brief default drive label
  */
-static const _gt_vf_type_label_st _drive_label[] = {
+static GT_ATTRIBUTE_RAM_DATA const _gt_vf_type_label_st _drive_label[] = {
 #if GT_USE_MODE_FLASH
     { GT_FS_TYPE_FLASH, GT_FS_LABEL_FLASH },
 #endif
@@ -60,7 +60,7 @@ static const _gt_vf_type_label_st _drive_label[] = {
  * @param index
  * @return gt_fs_type_et
  */
-static inline gt_fs_type_et _gt_fs_get_type(gt_size_t index) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_fs_type_et _gt_fs_get_type(gt_size_t index) {
     return _drive_label[index].type;
 }
 
@@ -70,11 +70,11 @@ static inline gt_fs_type_et _gt_fs_get_type(gt_size_t index) {
  * @param index
  * @return gt_fs_label_et
  */
-static inline gt_fs_label_et _gt_fs_get_label(gt_size_t index) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_fs_label_et _gt_fs_get_label(gt_size_t index) {
     return _drive_label[index].label;
 }
 
-static inline gt_fs_drv_st * _get_default_drv_by(gt_fs_type_et type) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_fs_drv_st * _get_default_drv_by(gt_fs_type_et type) {
 #if GT_USE_MODE_FLASH
     if (GT_FS_TYPE_FLASH == type) {
         return gt_vf_get_drv();
@@ -102,7 +102,7 @@ static inline gt_fs_drv_st * _get_default_drv_by(gt_fs_type_et type) {
  * @param path full path
  * @return gt_fs_drv_st* the driver of file system
  */
-static inline gt_fs_drv_st * _get_default_drv(char const * path) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_fs_drv_st * _get_default_drv(char const * path) {
     gt_fs_type_et type = gt_fs_get_src_type(path);
 
     return _get_default_drv_by(type);
