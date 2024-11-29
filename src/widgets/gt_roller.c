@@ -147,7 +147,7 @@ static inline uint16_t _get_infinite_scroll_increment(uint16_t total_length) {
  * @param obj
  * @param options The text of items
  */
-static void _calc_scroll_vertical_length(gt_obj_st * obj, char const * const options) {
+static GT_ATTRIBUTE_RAM_TEXT void _calc_scroll_vertical_length(gt_obj_st * obj, char const * const options) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
     gt_size_t len = strlen(options);
     gt_size_t count = 1;
@@ -174,7 +174,7 @@ static void _calc_scroll_vertical_length(gt_obj_st * obj, char const * const opt
  * @param val The y value of current time.
  * @return gt_size_t The real value where label be set to.
  */
-static gt_size_t _normal_limit_y(gt_obj_st * obj, gt_size_t val) {
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t _normal_limit_y(gt_obj_st * obj, gt_size_t val) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
     gt_size_t ret_val = val;
     gt_size_t top_y = (style->count_of_show >> 1) * (obj->area.h / style->count_of_show);
@@ -204,7 +204,7 @@ static gt_size_t _normal_limit_y(gt_obj_st * obj, gt_size_t val) {
     return ret_val;
 }
 
-static inline void _delay_scroll_snap_anim(_gt_roller_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _delay_scroll_snap_anim(_gt_roller_st * style) {
     if (NULL == style->anim_snap) {
         return;
     }
@@ -212,7 +212,7 @@ static inline void _delay_scroll_snap_anim(_gt_roller_st * style) {
     gt_anim_restart(style->anim_snap);
 }
 
-static void _scroll_text_handler(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _scroll_text_handler(gt_obj_st * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
     if (NULL == style->text) {
         return;
@@ -226,15 +226,15 @@ static void _scroll_text_handler(gt_obj_st * obj) {
 }
 
 
-static void _scroll_exec_cb(void * obj, int32_t y) { }
+static GT_ATTRIBUTE_RAM_TEXT void _scroll_exec_cb(void * obj, int32_t y) { }
 
-static void _notify_update_value_cb(void * obj, int32_t val) { }
+static GT_ATTRIBUTE_RAM_TEXT void _notify_update_value_cb(void * obj, int32_t val) { }
 
-static void _notify_update_value_ready_cb(struct gt_anim_s * anim) {
+static GT_ATTRIBUTE_RAM_TEXT void _notify_update_value_ready_cb(struct gt_anim_s * anim) {
     gt_event_send((gt_obj_st * )anim->tar, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
-static void _select_target_item(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _select_target_item(gt_obj_st * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
     uint16_t item_height = style->text->area.h / style->count_total;
     uint16_t item_offset = gt_abs(obj->process_attr.scroll.y - (style->count_of_show >> 1) * item_height);
@@ -251,7 +251,7 @@ static void _select_target_item(gt_obj_st * obj) {
     gt_anim_set_ready_cb(&anim, _notify_update_value_ready_cb);
     gt_anim_start(&anim);
 }
-static void _scroll_snap(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _scroll_snap(gt_obj_st * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
     gt_size_t scroll_y = gt_obj_scroll_get_y(obj);
 
@@ -289,7 +289,7 @@ static void _scroll_snap(gt_obj_st * obj) {
     gt_obj_scroll_to_y(obj, target_y - scroll_y, GT_ANIM_ON);
 }
 
-static void _scroll_anim_ready_handler(struct gt_anim_s * anim) {
+static GT_ATTRIBUTE_RAM_TEXT void _scroll_anim_ready_handler(struct gt_anim_s * anim) {
     _gt_roller_st * style = (_gt_roller_st * )anim->tar;
 
     style->reg.state = _SCROLL_SNAP_READY;
@@ -297,7 +297,7 @@ static void _scroll_anim_ready_handler(struct gt_anim_s * anim) {
     style->anim_snap = NULL;
 }
 
-static void _ready_scroll_snap_anim(struct gt_obj_s * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _ready_scroll_snap_anim(struct gt_obj_s * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
 
     if (_SCROLL_SNAP_READY == style->reg.state) {
@@ -339,7 +339,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-static inline bool _set_mode(_gt_roller_st * style, gt_roller_mode_em mode) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _set_mode(_gt_roller_st * style, gt_roller_mode_em mode) {
     if (NULL == style) {
         return false;
     }
@@ -355,7 +355,7 @@ static inline bool _set_mode(_gt_roller_st * style, gt_roller_mode_em mode) {
  *
  * @param obj
  */
-static void _resize_display_area_height(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _resize_display_area_height(gt_obj_st * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
 
     if (NULL == style->text) {
@@ -373,7 +373,7 @@ static void _resize_display_area_height(gt_obj_st * obj) {
         style->count_total * (gt_label_get_font_size(style->text) + gt_label_get_space_y(style->text)));
 }
 
-static void _reset_scroll_size(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _reset_scroll_size(gt_obj_st * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
     _calc_scroll_vertical_length(obj, gt_label_get_text(style->text));
 
@@ -384,7 +384,7 @@ static void _reset_scroll_size(gt_obj_st * obj) {
     _scroll_text_handler(obj);
 }
 
-static gt_obj_st * _create_text(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_text(gt_obj_st * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
     if (style->text) {
         return style->text;
@@ -396,7 +396,7 @@ static gt_obj_st * _create_text(gt_obj_st * obj) {
     return style->text;
 }
 
-static void _resize_display_width(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _resize_display_width(gt_obj_st * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
     if (NULL == style->text) {
         return;
