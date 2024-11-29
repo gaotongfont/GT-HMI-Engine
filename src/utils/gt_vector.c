@@ -43,11 +43,11 @@
  * @return true find it out
  * @return false not find it out
  */
-static bool _default_equal_cb(void * item, void * target) {
+static GT_ATTRIBUTE_RAM_TEXT bool _default_equal_cb(void * item, void * target) {
     return target == item ? true : false;
 }
 
-static inline void _free_item_obj(_gt_vector_st * vector, _gt_vector_item_st * item_p) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _free_item_obj(_gt_vector_st * vector, _gt_vector_item_st * item_p) {
     void * val = item_p->val;
 
     _gt_list_del(&item_p->node);
@@ -60,13 +60,13 @@ static inline void _free_item_obj(_gt_vector_st * vector, _gt_vector_item_st * i
     vector->free_item_cb(val);
 }
 
-static bool _gt_vector_iterator_has_next(_iter_dsc_st * vct_dsc) {
+static GT_ATTRIBUTE_RAM_TEXT bool _gt_vector_iterator_has_next(_iter_dsc_st * vct_dsc) {
     GT_CHECK_BACK_VAL(vct_dsc, false);
     GT_CHECK_BACK_VAL(vct_dsc->iter_ctl, false);
     return vct_dsc->iter_ctl->idx < vct_dsc->count ? true : false;
 }
 
-static void * _gt_vector_iterator_next(_iter_dsc_st * vct_dsc) {
+static GT_ATTRIBUTE_RAM_TEXT void * _gt_vector_iterator_next(_iter_dsc_st * vct_dsc) {
     GT_CHECK_BACK_VAL(vct_dsc, false);
     GT_CHECK_BACK_VAL(vct_dsc->iter_ctl, false);
 
@@ -79,7 +79,7 @@ static void * _gt_vector_iterator_next(_iter_dsc_st * vct_dsc) {
     return vct_dsc->iter_ctl->item_p->val;
 }
 
-static gt_size_t _gt_vector_iterator_index(_iter_dsc_st * vct_dsc) {
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t _gt_vector_iterator_index(_iter_dsc_st * vct_dsc) {
     GT_CHECK_BACK_VAL(vct_dsc, -1);
     GT_CHECK_BACK_VAL(vct_dsc->iter_ctl, -1);
     return vct_dsc->iter_ctl->idx;
