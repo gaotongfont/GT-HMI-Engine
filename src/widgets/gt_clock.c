@@ -148,7 +148,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_clock_twinkle_colon_timer_cb(struct _gt_ti
     gt_event_send(clock, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-static GT_ATTRIBUTE_RAM_TEXT const char * _get_week_str(uint8_t week) {
+static const char * _get_week_str(uint8_t week) {
     return _gt_weeks[week ? ((week % 8) - 1) : 0];
 }
 
