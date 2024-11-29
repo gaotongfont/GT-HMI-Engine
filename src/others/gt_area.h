@@ -89,7 +89,8 @@ bool gt_area_check_legal(gt_area_st * area);
  * @param thickness
  * @param res_area
  */
-void get_rounded_area(int16_t angle, uint16_t radius, uint8_t thickness, gt_area_st * res_area);
+void gt_rounded_area_get(int16_t angle, uint16_t radius, uint8_t thickness, gt_area_st * res_area);
+bool gt_area_intersect_get(gt_area_st * res_p, const gt_area_st * a1_p, const gt_area_st * a2_p);
 
 
 #ifdef __cplusplus

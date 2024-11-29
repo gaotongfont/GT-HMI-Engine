@@ -62,6 +62,7 @@ typedef struct {
 }_omit_info_st;
 
 typedef struct {
+    const gt_area_st* coords;
     const gt_point_st* center;
     gt_attr_rect_st* rect_dsc;
     uint16_t radius;
@@ -109,7 +110,11 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_0(_gt_draw_ctx_st * draw_
         area.y = y1;
         area.w = x2 - x1 + 1;
         area.h = y2 - y1 + 1;
-        draw_bg(draw_ctx, q->rect_dsc, &area);
+        gt_area_st inte_area;
+        if(gt_area_intersect_get(&inte_area, &area, q->coords)){
+            draw_bg(draw_ctx, q->rect_dsc, &inte_area);
+        }
+
     }
     else if(q->start_quarter == 0 || q->end_quarter == 0) {
         /*Start and/or end arcs here*/
@@ -124,7 +129,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_0(_gt_draw_ctx_st * draw_
             area.y = y1;
             area.w = x2 - x1 + 1;
             area.h = y2 - y1 + 1;
-            draw_bg(draw_ctx, q->rect_dsc, &area);
+            gt_area_st inte_area;
+        if(gt_area_intersect_get(&inte_area, &area, q->coords)){
+            draw_bg(draw_ctx, q->rect_dsc, &inte_area);
+        }
 
         }
         if(q->end_quarter == 0) {
@@ -138,7 +146,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_0(_gt_draw_ctx_st * draw_
             area.y = y1;
             area.w = x2 - x1 + 1;
             area.h = y2 - y1 + 1;
-            draw_bg(draw_ctx, q->rect_dsc, &area);
+            gt_area_st inte_area;
+        if(gt_area_intersect_get(&inte_area, &area, q->coords)){
+            draw_bg(draw_ctx, q->rect_dsc, &inte_area);
+        }
         }
     }
     else if((q->start_quarter == q->end_quarter && q->start_quarter != 0 && q->end_angle < q->start_angle) ||
@@ -155,7 +166,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_0(_gt_draw_ctx_st * draw_
         area.y = y1;
         area.w = x2 - x1 + 1;
         area.h = y2 - y1 + 1;
-        draw_bg(draw_ctx, q->rect_dsc, &area);
+        gt_area_st inte_area;
+        if(gt_area_intersect_get(&inte_area, &area, q->coords)){
+            draw_bg(draw_ctx, q->rect_dsc, &inte_area);
+        }
     }
 }
 
@@ -174,7 +188,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_1(_gt_draw_ctx_st * draw_
         area.y = y1;
         area.w = x2 - x1 + 1;
         area.h = y2 - y1 + 1;
-        draw_bg(draw_ctx, q->rect_dsc, &area);
+        gt_area_st inte_area;
+        if(gt_area_intersect_get(&inte_area, &area, q->coords)){
+            draw_bg(draw_ctx, q->rect_dsc, &inte_area);
+        }
     }
     else if(q->start_quarter == 1 || q->end_quarter == 1) {
         /*Start and/or end arcs here*/
@@ -189,7 +206,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_1(_gt_draw_ctx_st * draw_
             area.y = y1;
             area.w = x2 - x1 + 1;
             area.h = y2 - y1 + 1;
-            draw_bg(draw_ctx, q->rect_dsc, &area);
+            gt_area_st inte_area;
+        if(gt_area_intersect_get(&inte_area, &area, q->coords)){
+            draw_bg(draw_ctx, q->rect_dsc, &inte_area);
+        }
         }
         if(q->end_quarter == 1) {
             x2 = q->center->x - 1;
@@ -202,7 +222,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_1(_gt_draw_ctx_st * draw_
             area.y = y1;
             area.w = x2 - x1 + 1;
             area.h = y2 - y1 + 1;
-            draw_bg(draw_ctx, q->rect_dsc, &area);
+            gt_area_st inte_area;
+        if(gt_area_intersect_get(&inte_area, &area, q->coords)){
+            draw_bg(draw_ctx, q->rect_dsc, &inte_area);
+        }
         }
     }
     else if((q->start_quarter == q->end_quarter && q->start_quarter != 1 && q->end_angle < q->start_angle) ||
@@ -219,7 +242,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_1(_gt_draw_ctx_st * draw_
         area.y = y1;
         area.w = x2 - x1 + 1;
         area.h = y2 - y1 + 1;
-        draw_bg(draw_ctx, q->rect_dsc, &area);
+        gt_area_st inte_area;
+        if(gt_area_intersect_get(&inte_area, &area, q->coords)){
+            draw_bg(draw_ctx, q->rect_dsc, &inte_area);
+        }
     }
 }
 
@@ -238,7 +264,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_2(_gt_draw_ctx_st * draw_
         area.y = y1;
         area.w = x2 - x1 + 1;
         area.h = y2 - y1 + 1;
-        draw_bg(draw_ctx, q->rect_dsc, &area);
+        gt_area_st inte_area;
+        if(gt_area_intersect_get(&inte_area, &area, q->coords)){
+            draw_bg(draw_ctx, q->rect_dsc, &inte_area);
+        }
     }
     else if(q->start_quarter == 2 || q->end_quarter == 2) {
         /*Start and/or end arcs here*/
@@ -253,7 +282,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_2(_gt_draw_ctx_st * draw_
             area.y = y1;
             area.w = x2 - x1 + 1;
             area.h = y2 - y1 + 1;
-            draw_bg(draw_ctx, q->rect_dsc, &area);
+            gt_area_st inte_area;
+        if(gt_area_intersect_get(&inte_area, &area, q->coords)){
+            draw_bg(draw_ctx, q->rect_dsc, &inte_area);
+        }
         }
         if(q->end_quarter == 2) {
             x1 = q->center->x - q->radius;
@@ -266,7 +298,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_2(_gt_draw_ctx_st * draw_
             area.y = y1;
             area.w = x2 - x1 + 1;
             area.h = y2 - y1 + 1;
-            draw_bg(draw_ctx, q->rect_dsc, &area);
+            gt_area_st inte_area;
+        if(gt_area_intersect_get(&inte_area, &area, q->coords)){
+            draw_bg(draw_ctx, q->rect_dsc, &inte_area);
+        }
         }
     }
     else if((q->start_quarter == q->end_quarter && q->start_quarter != 2 && q->end_angle < q->start_angle) ||
@@ -283,7 +318,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_2(_gt_draw_ctx_st * draw_
         area.y = y1;
         area.w = x2 - x1 + 1;
         area.h = y2 - y1 + 1;
-        draw_bg(draw_ctx, q->rect_dsc, &area);
+        gt_area_st inte_area;
+        if(gt_area_intersect_get(&inte_area, &area, q->coords)){
+            draw_bg(draw_ctx, q->rect_dsc, &inte_area);
+        }
     }
 }
 
@@ -302,7 +340,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_3(_gt_draw_ctx_st * draw_
         area.y = y1;
         area.w = x2 - x1 + 1;
         area.h = y2 - y1 + 1;
-        draw_bg(draw_ctx, q->rect_dsc, &area);
+        gt_area_st inte_area;
+        if(gt_area_intersect_get(&inte_area, &area, q->coords)){
+            draw_bg(draw_ctx, q->rect_dsc, &inte_area);
+        }
     }
     else if(q->start_quarter == 3 || q->end_quarter == 3) {
         /*Start and/or end arcs here*/
@@ -317,7 +358,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_3(_gt_draw_ctx_st * draw_
             area.y = y1;
             area.w = x2 - x1 + 1;
             area.h = y2 - y1 + 1;
-            draw_bg(draw_ctx, q->rect_dsc, &area);
+            gt_area_st inte_area;
+        if(gt_area_intersect_get(&inte_area, &area, q->coords)){
+            draw_bg(draw_ctx, q->rect_dsc, &inte_area);
+        }
         }
         if(q->end_quarter == 3) {
             x1 = q->center->x;
@@ -330,7 +374,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_3(_gt_draw_ctx_st * draw_
             area.y = y1;
             area.w = x2 - x1 + 1;
             area.h = y2 - y1 + 1;
-            draw_bg(draw_ctx, q->rect_dsc, &area);
+            gt_area_st inte_area;
+        if(gt_area_intersect_get(&inte_area, &area, q->coords)){
+            draw_bg(draw_ctx, q->rect_dsc, &inte_area);
+        }
         }
     }
     else if((q->start_quarter == q->end_quarter && q->start_quarter != 3 && q->end_angle < q->start_angle) ||
@@ -347,7 +394,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_3(_gt_draw_ctx_st * draw_
         area.y = y1;
         area.w = x2 - x1 + 1;
         area.h = y2 - y1 + 1;
-        draw_bg(draw_ctx, q->rect_dsc, &area);
+        gt_area_st inte_area;
+        if(gt_area_intersect_get(&inte_area, &area, q->coords)){
+            draw_bg(draw_ctx, q->rect_dsc, &inte_area);
+        }
     }
 }
 
@@ -2358,9 +2408,9 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_s
     center.x = area_out.x + out_radius;
     center.y = area_out.y + out_radius;
 
-    gt_mask_angle_st coords_angle_mask = {0};
-    gt_mask_angle_init(&coords_angle_mask, center.x, center.y, start_angle, end_angle);
-    int16_t angle_mask_id = gt_mask_add(&coords_angle_mask);
+    gt_mask_angle_st angle_mask = {0};
+    gt_mask_angle_init(&angle_mask, center.x, center.y, start_angle, end_angle);
+    int16_t angle_mask_id = gt_mask_add(&angle_mask);
 
     int32_t angle_gap;
     if(end_angle > start_angle) {
@@ -2377,6 +2427,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_s
         }
         else {
             _quarter_circle_st q;
+            q.coords = &area_out;
             q.center = &center;
             q.radius = out_radius;
             q.width = width;
@@ -2401,7 +2452,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_s
         }
     }
 
-    gt_mask_free(&coords_angle_mask);
+    gt_mask_free(&angle_mask);
     gt_mask_free(&out_mask);
 
     gt_mask_remove_idx(angle_mask_id);
@@ -2415,13 +2466,13 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_s
     if(is_img || !dsc->rounded) { return ; }
 
     gt_area_st round_area;
-    get_rounded_area(start_angle, out_radius, width, &round_area);
+    gt_rounded_area_get(start_angle, out_radius, width, &round_area);
     round_area.x += center.x;
     round_area.y += center.y;
     rect_attr.radius = round_area.w; // * Make it draw a circle
     draw_bg(draw_ctx, &rect_attr, &round_area);
 
-    get_rounded_area(end_angle, out_radius, width, &round_area);
+    gt_rounded_area_get(end_angle, out_radius, width, &round_area);
     round_area.x += center.x;
     round_area.y += center.y;
     rect_attr.radius = round_area.w; // * Make it draw a circle

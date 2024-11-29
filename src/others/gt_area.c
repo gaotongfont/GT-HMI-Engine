@@ -186,8 +186,26 @@ bool gt_area_check_legal(gt_area_st * area)
     return false;
 }
 
+bool gt_area_intersect_get(gt_area_st * res_p, const gt_area_st * a1_p, const gt_area_st * a2_p)
+{
+    gt_size_t x2, y2;
+    res_p->x = GT_MAX(AREA_X1(a1_p), AREA_X1(a2_p));
+    res_p->y = GT_MAX(AREA_Y1(a1_p), AREA_Y1(a2_p));
+    x2 = GT_MIN(AREA_X2(a1_p), AREA_X2(a2_p));
+    y2 = GT_MIN(AREA_Y2(a1_p), AREA_Y2(a2_p));
+    res_p->w = x2 - res_p->x;
+    res_p->h = y2 - res_p->y;
 
-void get_rounded_area(int16_t angle, uint16_t radius, uint8_t thickness, gt_area_st * res_area)
+    bool union_ok = true;
+    if((AREA_X1(res_p) > x2) || (AREA_Y1(res_p) > y2)) {
+        return true;
+    }
+
+    return true;
+}
+
+
+void gt_rounded_area_get(int16_t angle, uint16_t radius, uint8_t thickness, gt_area_st * res_area)
 {
     const uint8_t ps = 8;
     const uint8_t pa = 127;

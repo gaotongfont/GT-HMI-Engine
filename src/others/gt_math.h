@@ -79,9 +79,11 @@ typedef struct gt_math_bezier_s {
 #if _USE_TRIGON_FLOAT
 double gt_sin(double angle);
 double gt_cos(double angle);
+double gt_atan2(double x, double y);
 #else
 int16_t gt_sin(int16_t angle);
 int16_t gt_cos(int16_t angle);
+uint16_t gt_atan2(int x, int y);
 #endif
 
 double gt_square(double n);

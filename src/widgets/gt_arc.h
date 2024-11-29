@@ -52,6 +52,12 @@ extern "C" {
  */
 gt_obj_st * gt_arc_create(gt_obj_st * parent);
 
+/**
+ * @brief Set the arc pointer rounded
+ *
+ * @param obj
+ * @param rounded
+ */
 void gt_arc_set_rounded(gt_obj_st* obj, bool rounded);
 
 /**
@@ -231,6 +237,22 @@ void gt_arc_set_value_increase(gt_obj_st* obj);
  */
 void gt_arc_set_value_decrease(gt_obj_st* obj);
 
+
+/**
+ * @brief Set the arc pointer knob color
+ *
+ * @param obj
+ * @param color
+ */
+void gt_arc_set_knob_color(gt_obj_st* obj, gt_color_t color);
+
+/**
+ * @brief Set the arc pointer knob width
+ *
+ * @param obj
+ * @param width
+ */
+void gt_arc_set_knob_width(gt_obj_st* obj, uint16_t width);
 
 #endif /*GT_CFG_ENABLE_ARC*/
 //
