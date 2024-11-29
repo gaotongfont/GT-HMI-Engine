@@ -93,7 +93,7 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_clock_class = {
     .size_style    = sizeof(_gt_clock_st)
 };
 
-static GT_ATTRIBUTE_RAM_DATA const char * _gt_weeks[] = {
+static const char * _gt_weeks[] = {
     "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",
 };
 /* macros ---------------------------------------------------------------*/
