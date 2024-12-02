@@ -1831,8 +1831,6 @@ static void GT_ATTRIBUTE_RAM_TEXT draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const
         }
     }
 
-
-
     gt_opa_t mask_opa = dsc->bg_opa >= GT_OPA_MAX ? GT_OPA_COVER : dsc->bg_opa;
     gt_area_st line_area = {0};
     line_area.x = bg_area.x;
@@ -1843,7 +1841,6 @@ static void GT_ATTRIBUTE_RAM_TEXT draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const
     blend_dsc.mask_buf = mask_line_buf;
 
     uint16_t i = 0;
-
     for(i = 0; i < bg_area.h; ++i){
         line_area.y = bg_area.y + i;
         gt_memset(mask_line_buf, mask_opa, line_area.w);

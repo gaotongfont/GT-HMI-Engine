@@ -169,9 +169,11 @@ static void _push_zk_address(uint8_t* buffer)
 {
     uint16_t id = gt_convert_parse_u16(buffer);
     uint32_t addr = gt_convert_parse_u32(buffer + 2) + gt_serial_resource_get_addr_by(_GT_SERIAL_FILE_FONT) + _GT_SERIAL_FILE_ZK_AND_IMG_OFFSET;
-    //
-#if _GT_SET_FONT_ADDR_ENABLE
+
+#ifdef _GT_SET_FONT_ADDR_ENABLE
+#ifndef _GT_PORT_SIMULATOR_ENVS
     gt_set_font_base_addr(id, addr);
+#endif
 #endif
 }
 

@@ -304,9 +304,9 @@ extern "C" {
          * @brief Use client recv timer to unpack serial data, timer period
          *      @ref GT_TASK_PERIOD_TIME_SERIAL, callback function @ref
          *      _serial_client_recv_timer_handler_cb().
-         *      [default: 0]
+         *      [default: 1]
          */
-        #define GT_SERIAL_USE_TIMER_RECV_UNPACK 0
+        #define GT_SERIAL_USE_TIMER_RECV_UNPACK 1
     #endif
 
     #ifndef GT_SERIAL_MASTER_CACHE_SIZE
