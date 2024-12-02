@@ -23,7 +23,7 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/\
-#if GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
 typedef enum{
     GT_FOCUS_DIR_RIGHT = 0,
     GT_FOCUS_DIR_LEFT,
@@ -98,7 +98,7 @@ bool gt_indev_is_enabled(void);
 
 bool _gt_indev_remove_want_delate_target(gt_obj_st * target);
 
-#if GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
 
 /**
  * @brief Release focus lock

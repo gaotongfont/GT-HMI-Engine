@@ -46,7 +46,7 @@
 #endif
 
 
-#if GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
 // keyboard lock
 #define _SET_KEYPAD_LOCK(_idv, _fg)     do{ \
                                             (_idv)->data.keypad.lock = (_fg); \
@@ -741,7 +741,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
         _indev_reset_start_timestamp(indev);
 
         _indev_params.param.keypad_key = indev->data.keypad.key;
-#if GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
         if(!_IS_KEYPAD_LOCKED(indev) && GT_KEY_RIGHT == indev->data.keypad.key){
             gt_obj_change_st chg = gt_obj_focus_change(indev->data.keypad.obj_origin, GT_FOCUS_DIR_RIGHT);
             gt_obj_focus_change_display(&chg);
@@ -793,7 +793,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
             }
 #endif
             if (GT_KEY_ENTER == indev->data.keypad.key) {
-#if GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
                 gt_obj_change_st chg;
                 chg.dst = NULL;
 #else
@@ -803,7 +803,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
                     gt_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_PRESSED, &_indev_params);
                 }
             }
-#if !GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+#if !GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
             if (GT_KEY_ESC == indev->data.keypad.key) {
                 gt_obj_out_focus_change(indev->data.keypad.obj_origin);
             }
@@ -820,7 +820,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
         if (_is_pressing_timeout(indev)) {
             indev->timestamp_pressing = gt_tick_get();
             _indev_params.param.keypad_key = indev->data.keypad.key;
-#if GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
             if(!_IS_KEYPAD_LOCKED(indev) && GT_KEY_RIGHT == indev->data.keypad.key){
                 gt_obj_change_st chg = gt_obj_focus_change(indev->data.keypad.obj_origin, GT_FOCUS_DIR_RIGHT);
                 gt_obj_focus_change_display(&chg);
@@ -937,7 +937,7 @@ void gt_indev_handler(struct _gt_timer_s * timer)
     }
 }
 
-#if GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
 void gt_indev_release_focus_lock(void)
 {
     gt_indev_st * indev;

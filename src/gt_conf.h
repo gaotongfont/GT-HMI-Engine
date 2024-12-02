@@ -467,13 +467,12 @@ extern "C" {
     #define _GT_USE_TEST       0
 #endif
 
-
-#ifndef GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+#ifndef GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
     /**
      * @brief Use up and down left to control focus
-     *
+     *      [default: 0] using next or prev logical
      */
-    #define GT_USE_UDLR_TO_CONTRIL_FOCUS_EN     0
+    #define GT_USE_UD_LR_TO_CONTROL_FOCUS_EN     0
 #endif
 
 

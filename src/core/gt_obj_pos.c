@@ -140,7 +140,7 @@ static GT_ATTRIBUTE_RAM_TEXT _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st
 }
 
 
-#if GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
 /**
  * @brief
  *
@@ -459,7 +459,7 @@ gt_obj_st * gt_find_clicked_obj_by_focus(gt_obj_st * parent)
 }
 
 
-#if GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
 gt_obj_change_st gt_obj_focus_change(gt_obj_st * cur_obj, uint8_t dir)
 {
     gt_obj_change_st ret = {
@@ -590,7 +590,7 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
             break;
         }
         case GT_TYPE_LISTVIEW: {
-#if GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
             if(!gt_obj_is_child(chg->src, parent) || !gt_obj_is_child(chg->dst, parent)){
                 break;
             }

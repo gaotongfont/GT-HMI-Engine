@@ -57,7 +57,7 @@ gt_obj_st * gt_find_clicked_obj_by_point(gt_obj_st * scr_or_top, gt_point_st * p
 gt_obj_st* gt_find_clicked_obj_by_focus(gt_obj_st * parent);
 void gt_obj_focus_change_display(gt_obj_change_st * chg);
 
-#if GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
 gt_obj_change_st gt_obj_focus_change(gt_obj_st * cur_obj, uint8_t dir);
 #else
 gt_obj_change_st gt_obj_next_focus_change(gt_obj_st * cur_obj);
