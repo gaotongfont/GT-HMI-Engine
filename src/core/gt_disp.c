@@ -1020,6 +1020,10 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         }
     }
 
+#if GT_USE_UDLR_TO_CONTRIL_FOCUS_EN
+    gt_indev_release_focus_lock();
+#endif
+
     scr->using_sta = true;
     disp->scr_anim_type = type;
 

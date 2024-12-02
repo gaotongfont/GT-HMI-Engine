@@ -22,7 +22,7 @@
 
 
 /* static variables -----------------------------------------------------*/
-static uint32_t _focus_color = 0x0078D7;
+static uint32_t _focus_color = GT_FOCUS_COLOR_SELECT;
 
 
 /* macros ---------------------------------------------------------------*/

@@ -475,6 +475,20 @@ extern "C" {
      */
     #define GT_USE_UDLR_TO_CONTRIL_FOCUS_EN     0
 #endif
+
+
+/**
+ * @brief Set the focus color
+ *
+ */
+#ifndef GT_FOCUS_COLOR_SELECT
+    #define GT_FOCUS_COLOR_SELECT   0x0078D7
+#endif
+
+#ifndef GT_FOCUS_COLOR_LOCK
+    #define GT_FOCUS_COLOR_LOCK     0xFF0000
+#endif
+
 /* typedef --------------------------------------------------------------*/
 
 
