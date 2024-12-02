@@ -413,6 +413,16 @@ uint16_t gt_serial_master_recv(uint8_t * res_buffer)
     return _serial_common_unpack_valid_data(_serial.master, &ret, res_buffer);
 }
 
+uint16_t gt_serial_master_recv_raw(uint8_t * res_buffer)
+{
+    uint8_t * ptr = res_buffer;
+    uint16_t count = gt_queue_get_count(_serial.master);
+    for (uint16_t i = 0; i < count; ++i) {
+        gt_queue_pop(_serial.master, ptr++);
+    }
+    return count;
+}
+
 gt_res_t gt_serial_client_send(uint8_t const * const data, uint16_t len)
 {
     return _serial_common_send(_serial.client, data, len);

@@ -137,6 +137,8 @@ gt_res_t gt_serial_master_send_packet(uint8_t const * const data, uint16_t len);
  */
 uint16_t gt_serial_master_recv(uint8_t * res_buffer);
 
+uint16_t gt_serial_master_recv_raw(uint8_t * res_buffer);
+
 /**
  * @brief HMI as client, ohter device send data to HMI
  *
