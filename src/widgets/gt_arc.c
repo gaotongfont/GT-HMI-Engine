@@ -23,6 +23,7 @@
 #include "../core/gt_event.h"
 #include "../core/gt_fs.h"
 #include "../others/gt_area.h"
+#include "../others/gt_anim.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_ARC
@@ -56,6 +57,8 @@ typedef struct {
 typedef struct _gt_arc_s {
     gt_obj_st obj;
 
+    gt_anim_st anim;
+
     _gt_arc_element_st bg;
     _gt_arc_element_st act;
     _gt_img_element_st knob_img;
@@ -71,6 +74,7 @@ typedef struct _gt_arc_s {
     int16_t value_step;
 
     uint8_t rounded : 1;
+    uint8_t anim_state: 1;
 } _gt_arc_st;
 
 
@@ -209,9 +213,13 @@ static void _deinit_cb(gt_obj_st * obj)
 
 }
 
-static void _knob_scroll_headler(gt_obj_st * obj)
+static void _knob_scroll_headler(gt_obj_st * obj, bool flag)
 {
     _gt_arc_st * style = (_gt_arc_st *)obj;
+
+    if(style->anim_state) {
+        return ;
+    }
 
     gt_point_st point = obj->process_attr.point;
     uint16_t radius = GT_MIN(obj->area.w, obj->area.h) >> 1;
@@ -233,14 +241,23 @@ static void _knob_scroll_headler(gt_obj_st * obj)
     }
 
     // ? movement Angle check
-    if(gt_abs(angle - style->act.end_angle) > 280){
+    int16_t diff_angle = gt_abs(angle - style->act.end_angle);
+    if(!flag && diff_angle > 280){
         return ;
     }
 
     // get value
     int16_t value = gt_map(angle, style->bg.start_angle, end_angle, style->value_min, style->value_max);
 
-    gt_arc_set_value(obj, value);
+    if(diff_angle > 90) {
+        gt_anim_set_time(&style->anim, 500);
+        gt_anim_set_value(&style->anim, style->value, value);
+        gt_anim_start(&style->anim);
+    }
+    else{
+        gt_arc_set_value(obj, value);
+    }
+
 }
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
@@ -257,13 +274,13 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
         case GT_EVENT_TYPE_DRAW_REDRAW:
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
-        case GT_EVENT_TYPE_INPUT_PRESS_LOST:
-        case GT_EVENT_TYPE_INPUT_RELEASED:
 
+        case GT_EVENT_TYPE_INPUT_PRESSED:
+            _knob_scroll_headler(obj, true);
             break;
         case GT_EVENT_TYPE_INPUT_SCROLL:
-        case GT_EVENT_TYPE_INPUT_PRESSED:
-            _knob_scroll_headler(obj);
+        case GT_EVENT_TYPE_INPUT_PRESSING:
+            _knob_scroll_headler(obj, false);
             break;
         default:
             break;
@@ -280,6 +297,23 @@ static void _updata_value(gt_obj_st* obj)
     gt_arc_set_act_start_end_angle(obj, style->bg.start_angle, angle);
 }
 
+static GT_ATTRIBUTE_RAM_TEXT void _arc_anim_exec_cb(void * obj, int32_t count)
+{
+    gt_arc_set_value(obj, count);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _arc_anim_start_cb(struct gt_anim_s * anim)
+{
+    _gt_arc_st * style = (_gt_arc_st * )anim->tar;
+    style->anim_state = true;
+
+}
+static GT_ATTRIBUTE_RAM_TEXT void _arc_anim_ready_cb(struct gt_anim_s * anim)
+{
+    _gt_arc_st * style = (_gt_arc_st * )anim->tar;
+    style->anim_state = false;
+}
+
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_arc_create(gt_obj_st * parent)
 {
@@ -288,6 +322,12 @@ gt_obj_st * gt_arc_create(gt_obj_st * parent)
 
     obj->fixed = false;
     _gt_arc_st * style = (_gt_arc_st *)obj;
+
+    gt_anim_init(&style->anim);
+    gt_anim_set_target(&style->anim, obj);
+    gt_anim_set_exec_cb(&style->anim, _arc_anim_exec_cb);
+    gt_anim_set_start_cb(&style->anim, _arc_anim_start_cb);
+    gt_anim_set_ready_cb(&style->anim, _arc_anim_ready_cb);
 
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->bg.img.fh);
