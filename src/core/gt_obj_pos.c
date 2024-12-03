@@ -472,7 +472,13 @@ gt_obj_change_st gt_obj_focus_change(gt_obj_st * cur_obj, uint8_t dir)
     }
     ret.dst = _gt_obj_dir_focus_get(gt_disp_get_scr(), cur_obj, dir);
     if (!ret.dst) {
-        ret.dst = gt_disp_get_scr();
+        ret.dst = NULL;
+        return ret;
+    }
+
+    if(ret.dst == cur_obj){
+        ret.dst = NULL;
+        return ret;
     }
 
     gt_obj_set_focus(cur_obj, false);

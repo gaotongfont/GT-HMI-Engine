@@ -734,21 +734,25 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
 #if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
         if(!_IS_KEYPAD_LOCKED(indev) && GT_KEY_RIGHT == indev->data.keypad.key){
             gt_obj_change_st chg = gt_obj_focus_change(indev->data.keypad.obj_origin, GT_FOCUS_DIR_RIGHT);
+            if(!chg.dst) { goto _key_pressed; }
             gt_obj_focus_change_display(&chg);
             gt_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
         else if(!_IS_KEYPAD_LOCKED(indev) && GT_KEY_LEFT == indev->data.keypad.key){
             gt_obj_change_st chg = gt_obj_focus_change(indev->data.keypad.obj_origin, GT_FOCUS_DIR_LEFT);
+            if(!chg.dst) { goto _key_pressed; }
             gt_obj_focus_change_display(&chg);
             gt_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
         else if(!_IS_KEYPAD_LOCKED(indev) && GT_KEY_DOWN == indev->data.keypad.key){
             gt_obj_change_st chg = gt_obj_focus_change(indev->data.keypad.obj_origin, GT_FOCUS_DIR_DOWN);
+            if(!chg.dst) { goto _key_pressed; }
             gt_obj_focus_change_display(&chg);
             gt_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
         else if(!_IS_KEYPAD_LOCKED(indev) && GT_KEY_UP == indev->data.keypad.key){
             gt_obj_change_st chg = gt_obj_focus_change(indev->data.keypad.obj_origin, GT_FOCUS_DIR_UP);
+            if(!chg.dst) { goto _key_pressed; }
             gt_obj_focus_change_display(&chg);
             gt_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
         }
@@ -776,6 +780,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
         }
 #endif
         else {
+_key_pressed:
+
 #if GT_USE_LAYER_TOP
             if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
                 _gt_global_core_indev_event_send(GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
@@ -814,21 +820,25 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
 #if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
             if(!_IS_KEYPAD_LOCKED(indev) && GT_KEY_RIGHT == indev->data.keypad.key){
                 gt_obj_change_st chg = gt_obj_focus_change(indev->data.keypad.obj_origin, GT_FOCUS_DIR_RIGHT);
+                if(!chg.dst){ goto _key_pressing; }
                 gt_obj_focus_change_display(&chg);
                 gt_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
             }
             else if(!_IS_KEYPAD_LOCKED(indev) && GT_KEY_LEFT == indev->data.keypad.key){
                 gt_obj_change_st chg = gt_obj_focus_change(indev->data.keypad.obj_origin, GT_FOCUS_DIR_LEFT);
+                if(!chg.dst){ goto _key_pressing; }
                 gt_obj_focus_change_display(&chg);
                 gt_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
             }
             else if(!_IS_KEYPAD_LOCKED(indev) && GT_KEY_DOWN == indev->data.keypad.key){
                 gt_obj_change_st chg = gt_obj_focus_change(indev->data.keypad.obj_origin, GT_FOCUS_DIR_DOWN);
+                if(!chg.dst){ goto _key_pressing; }
                 gt_obj_focus_change_display(&chg);
                 gt_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
             }
             else if(!_IS_KEYPAD_LOCKED(indev) && GT_KEY_UP == indev->data.keypad.key){
                 gt_obj_change_st chg = gt_obj_focus_change(indev->data.keypad.obj_origin, GT_FOCUS_DIR_UP);
+                if(!chg.dst){ goto _key_pressing; }
                 gt_obj_focus_change_display(&chg);
                 gt_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
             }
@@ -856,6 +866,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
             }
 #endif
             else {
+_key_pressing:
+
 #if GT_USE_LAYER_TOP
                 if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
                     _gt_global_core_indev_event_send(GT_EVENT_TYPE_INPUT_KEY_PRESSING, &_indev_params);
