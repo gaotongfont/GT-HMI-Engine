@@ -41,7 +41,10 @@ typedef enum gt_event_type_e {
     GT_EVENT_TYPE_INPUT_SCROLL_START,
     GT_EVENT_TYPE_INPUT_SCROLL,
     GT_EVENT_TYPE_INPUT_SCROLL_END,
-    GT_EVENT_TYPE_INPUT_KEY,            // keypad indev key report event
+    GT_EVENT_TYPE_INPUT_KEY,                // keypad pressed event
+    GT_EVENT_TYPE_INPUT_KEY_PRESSING,       // keypad pressing event
+    GT_EVENT_TYPE_INPUT_KEY_RELEASED,       // keypad released event
+    GT_EVENT_TYPE_INPUT_KEY_LONG_PRESSED,   // keypad long pressed event
     GT_EVENT_TYPE_INPUT_FOCUSED,
     GT_EVENT_TYPE_INPUT_SCROLL_UP,
     GT_EVENT_TYPE_INPUT_SCROLL_DOWN,
