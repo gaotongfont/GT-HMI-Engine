@@ -932,7 +932,7 @@ void gt_mask_free(void* p_mask)
 bool gt_mask_check(const gt_area_st * coords)
 {
     if(NULL == coords){
-        _gt_mask_list->p_mask ? true : false;
+        return _gt_mask_list[0].p_mask ? true : false;
     }
 
     uint8_t i = 0;
@@ -941,7 +941,7 @@ bool gt_mask_check(const gt_area_st * coords)
         if(NULL == p_dsc) continue;
 
         if(GT_MASK_TYPE_RADIUS == p_dsc->type){
-            gt_mask_radius_st* p_radius = (gt_mask_radius_st*)_gt_mask_list[i].p_mask;
+            // gt_mask_radius_st* p_radius = (gt_mask_radius_st*)_gt_mask_list[i].p_mask;
             // if(p_radius->outer) {
             //     if(!gt_area_is_intersect_screen(coords, &p_radius->area)){ return true; }
             // }else{
@@ -1112,8 +1112,8 @@ void gt_mask_line_angle_init(gt_mask_line_st* p_mask, gt_size_t p1x, gt_size_t p
 
 void gt_mask_angle_init(gt_mask_angle_st* p_mask, gt_size_t vertex_x, gt_size_t vertex_y, gt_size_t start_angle, gt_size_t end_angle)
 {
-    uint8_t start_side;
-    uint8_t end_side;
+    gt_mask_line_side_et start_side;
+    gt_mask_line_side_et end_side;
 
     if(start_angle < 0)
         start_angle = 0;
