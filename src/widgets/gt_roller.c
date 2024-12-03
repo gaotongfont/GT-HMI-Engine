@@ -619,7 +619,11 @@ gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index)
 
     obj->process_attr.scroll.y -= item_height * diff_count;
     _scroll_text_handler(obj);
-    style->selected = _get_infinite_real_selected_index(index < 0 ? (style->count_total - 1) : index, style->count_total);
+    if (GT_ROLLER_MODE_INFINITE == style->reg.mode) {
+        style->selected = _get_infinite_real_selected_index(index < 0 ? (style->count_total - 1) : index, style->count_total);
+    } else {
+        style->selected = index;
+    }
 
     return GT_RES_OK;
 }
