@@ -619,7 +619,7 @@ gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index)
 
     obj->process_attr.scroll.y -= item_height * diff_count;
     _scroll_text_handler(obj);
-    style->selected = index;
+    style->selected = _get_infinite_real_selected_index(index < 0 ? (style->count_total - 1) : index, style->count_total);
 
     return GT_RES_OK;
 }
@@ -750,13 +750,13 @@ gt_res_t gt_roller_set_selected_text(gt_obj_st * obj, const char * select)
 
 uint16_t gt_roller_go_prev(gt_obj_st * obj)
 {
-	gt_roller_set_selected(obj, gt_roller_get_selected(obj) - 1);
+	gt_roller_set_selected_anim(obj, gt_roller_get_selected(obj) - 1);
     return gt_roller_get_selected(obj);
 }
 
 uint16_t gt_roller_go_next(gt_obj_st * obj)
 {
-    gt_roller_set_selected(obj, gt_roller_get_selected(obj) + 1);
+    gt_roller_set_selected_anim(obj, gt_roller_get_selected(obj) + 1);
     return gt_roller_get_selected(obj);
 }
 
