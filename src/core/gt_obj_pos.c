@@ -486,6 +486,50 @@ gt_obj_change_st gt_obj_focus_change(gt_obj_st * cur_obj, uint8_t dir)
     return ret;
 
 }
+
+void gt_obj_focus_change_display(gt_obj_change_st * chg)
+{
+    if (NULL == chg->dst) {
+        return;
+    }
+    gt_obj_st * parent = chg->dst->parent;
+    while(parent)
+    {
+        switch (gt_obj_class_get_type(parent)) {
+            case GT_TYPE_SCREEN: {
+                gt_obj_scroll_to(parent,
+                    chg->src->area.x - chg->dst->area.x,
+                    chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
+                return;
+            }
+            case GT_TYPE_LISTVIEW: {
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
+                if(!gt_obj_is_child(chg->src, parent)){
+                    chg->src = parent;
+                }
+#endif
+                gt_obj_scroll_to_y(parent, chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
+                return;
+            }
+            case GT_TYPE_CHAT: {
+                gt_obj_scroll_to_y(parent, chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
+                return;
+            }
+            case GT_TYPE_VIEW_PAGER: {
+                gt_size_t page_idx = gt_view_pager_get_widget_belong_fragment(parent, chg->dst);
+                if (-1 == page_idx) {
+                    return;
+                }
+                gt_view_pager_scroll_to_fragment(parent, page_idx);
+                return;
+            }
+            default:
+                break;
+        }
+        parent = parent->parent;
+    }
+
+}
 #else
 gt_obj_change_st gt_obj_into_focus_change(gt_obj_st * cur_obj)
 {
@@ -580,7 +624,6 @@ gt_obj_change_st gt_obj_prev_focus_change(gt_obj_st * cur_obj)
     gt_obj_set_focus(ret.dst, true);
     return ret;
 }
-#endif
 
 void gt_obj_focus_change_display(gt_obj_change_st * chg)
 {
@@ -596,11 +639,6 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
             break;
         }
         case GT_TYPE_LISTVIEW: {
-#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
-            if(!gt_obj_is_child(chg->src, parent) || !gt_obj_is_child(chg->dst, parent)){
-                break;
-            }
-#endif
             gt_obj_scroll_to_y(parent, chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
             break;
         }
@@ -620,6 +658,7 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
             break;
     }
 }
+#endif
 
 bool gt_obj_check_scr(gt_obj_st * obj)
 {
