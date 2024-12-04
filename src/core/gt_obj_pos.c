@@ -492,31 +492,46 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
     if (NULL == chg->dst) {
         return;
     }
-    gt_obj_st * parent = chg->dst->parent;
+
+    gt_obj_change_st chg_t ={
+        .src = chg->src,
+        .dst = chg->dst,
+    };
+
+    gt_obj_st * parent = chg_t.dst->parent;
+    gt_obj_st * last_parent = NULL;
     while(parent)
     {
         switch (gt_obj_class_get_type(parent)) {
             case GT_TYPE_SCREEN: {
                 gt_obj_scroll_to(parent,
-                    chg->src->area.x - chg->dst->area.x,
-                    chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
+                    chg_t.src->area.x - chg_t.dst->area.x,
+                    chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_OFF);
                 return;
             }
             case GT_TYPE_LISTVIEW: {
-#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
-                if(!gt_obj_is_child(chg->src, parent)){
-                    chg->src = parent;
+                // * src is not child of parent
+                if(!gt_obj_is_child(chg_t.src, parent)){
+                    chg_t.src = parent;
                 }
-#endif
-                gt_obj_scroll_to_y(parent, chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
+
+                // ! listview -> obj -> other
+                // ! last is obj, dst is other
+                // * Adjust roll position
+                if(last_parent){
+                    chg_t.dst = last_parent;
+                    chg_t.src = parent;
+                }
+
+                gt_obj_scroll_to_y(parent, chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_OFF);
                 return;
             }
             case GT_TYPE_CHAT: {
-                gt_obj_scroll_to_y(parent, chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
+                gt_obj_scroll_to_y(parent, chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_OFF);
                 return;
             }
             case GT_TYPE_VIEW_PAGER: {
-                gt_size_t page_idx = gt_view_pager_get_widget_belong_fragment(parent, chg->dst);
+                gt_size_t page_idx = gt_view_pager_get_widget_belong_fragment(parent, chg_t.dst);
                 if (-1 == page_idx) {
                     return;
                 }
@@ -526,6 +541,7 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
             default:
                 break;
         }
+        last_parent = parent;
         parent = parent->parent;
     }
 
