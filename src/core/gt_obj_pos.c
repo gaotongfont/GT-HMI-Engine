@@ -522,6 +522,9 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
                     chg_t.dst = last_parent;
                     chg_t.src = parent;
                 }
+                else{
+                    chg_t.src = parent;
+                }
 
                 gt_obj_scroll_to_y(parent, chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_OFF);
                 return;
@@ -544,7 +547,6 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
         last_parent = parent;
         parent = parent->parent;
     }
-
 }
 #else
 gt_obj_change_st gt_obj_into_focus_change(gt_obj_st * cur_obj)
