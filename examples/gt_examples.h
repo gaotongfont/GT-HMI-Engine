@@ -16,7 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 
 #include "../src/gt_conf.h"
-#include "../others/gt_log.h"
+#include "../src/others/gt_log.h"
 #include "../src/core/gt_style.h"
 #include "../src/core/gt_disp.h"
 #include "../src/widgets/gt_obj.h"
