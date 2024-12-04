@@ -510,20 +510,12 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
                 return;
             }
             case GT_TYPE_LISTVIEW: {
-                // * src is not child of parent
-                if(!gt_obj_is_child(chg_t.src, parent)){
-                    chg_t.src = parent;
-                }
-
                 // ! listview -> obj -> other
                 // ! last is obj, dst is other
                 // * Adjust roll position
+                chg_t.src = parent;
                 if(last_parent){
                     chg_t.dst = last_parent;
-                    chg_t.src = parent;
-                }
-                else{
-                    chg_t.src = parent;
                 }
 
                 gt_obj_scroll_to_y(parent, chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_OFF);
