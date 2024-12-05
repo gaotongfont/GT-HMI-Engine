@@ -386,6 +386,7 @@ gt_obj_st * gt_dialog_create(bool show_close_btn)
     _gt_dialog_st * style = (_gt_dialog_st * )obj;
 
     obj->visible = GT_INVISIBLE;
+    obj->focus_dis = GT_DISABLED;
     obj->opa = GT_OPA_0;
 
     style->outside_auto_hide = true;

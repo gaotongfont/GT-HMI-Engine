@@ -260,12 +260,15 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_dir_focus_get(const gt_obj_st* 
             _gt_obj_focus_cmp_obj(cur_obj, find_obj, &ret_obj, flag);
         }
 
-        //
-        if(parent->child[i] == cur_obj){
+        if(GT_ENABLED != parent->child[i]->focus_dis){
             continue;
         }
 
-        if(GT_ENABLED != parent->child[i]->focus_dis){
+        if(GT_INVISIBLE == parent->child[i]->visible){
+            continue;
+        }
+        //
+        if(parent->child[i] == cur_obj){
             continue;
         }
 
@@ -440,6 +443,11 @@ gt_obj_st* _gt_obj_focus_clicked(gt_obj_st * parent)
             }
         }
 
+        if(GT_INVISIBLE == parent->child[idx]->visible){
+            idx++;
+            continue;
+        }
+
         if(GT_ENABLED == parent->child[idx]->focus_dis && parent->child[idx]->focus){
             obj_clicked = parent->child[idx];
             break;
@@ -470,7 +478,17 @@ gt_obj_change_st gt_obj_focus_change(gt_obj_st * cur_obj, uint8_t dir)
     if (NULL == cur_obj) {
         return ret;
     }
+#if GT_USE_LAYER_TOP
+    gt_obj_st * layer_top = gt_disp_get_layer_top();
+    if(gt_obj_is_child(cur_obj, layer_top) || cur_obj == layer_top)
+    {
+        ret.dst = _gt_obj_dir_focus_get(layer_top, cur_obj, dir);
+        goto _ret_handler;
+    }
+#endif
     ret.dst = _gt_obj_dir_focus_get(gt_disp_get_scr(), cur_obj, dir);
+
+_ret_handler:
     if (!ret.dst) {
         ret.dst = NULL;
         return ret;
@@ -480,7 +498,6 @@ gt_obj_change_st gt_obj_focus_change(gt_obj_st * cur_obj, uint8_t dir)
         ret.dst = NULL;
         return ret;
     }
-
     gt_obj_set_focus(cur_obj, false);
     gt_obj_set_focus(ret.dst, true);
     return ret;
