@@ -160,6 +160,14 @@ gt_obj_st * gt_disp_get_layer_top(void);
  * @return gt_res_t
  */
 gt_res_t gt_disp_destroy_layer_top_widgets(void);
+
+/**
+ * @brief has top layer active object, except the status bar.
+ *
+ * @return true
+ * @return false
+ */
+bool gt_disp_layer_top_has_active_obj(void);
 #endif
 
 /**

@@ -1202,6 +1202,23 @@ gt_res_t gt_disp_destroy_layer_top_widgets(void)
     _gt_timer_set_repeat_count(tmp_timer, 1);
     return GT_RES_OK;
 }
+
+bool gt_disp_layer_top_has_active_obj(void)
+{
+    gt_obj_st * layer_top = gt_disp_get_layer_top();
+    if (NULL == layer_top) {
+        return false;
+    }
+    for (gt_size_t i = layer_top->cnt_child - 1; i >= 0; i--) {
+        if (gt_obj_is_type(layer_top->child[i], GT_TYPE_STATUS_BAR)) {
+            continue;
+        }
+        if (gt_obj_get_visible(layer_top->child[i])) {
+            return true;
+        }
+    }
+    return false;
+}
 #endif
 
 void gt_disp_ref_area(const gt_area_st * coords)
