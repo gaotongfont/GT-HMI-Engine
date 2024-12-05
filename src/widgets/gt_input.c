@@ -53,7 +53,7 @@ typedef struct _gt_input_s {
     uint8_t space_x;
     uint8_t space_y;
 
-    uint8_t hide_value : 1;     /** [default: 0] show all the chars; 1: hide by "*" */
+    uint8_t hide_value  : 1;    /** [default: 0] show all the chars; 1: hide by "*" */
 }_gt_input_st;
 
 
@@ -114,6 +114,12 @@ static inline bool _is_keypad_visible(_gt_input_st * style) {
         (gt_obj_st *)style == gt_keypad_get_target(style->hooking_kp) &&
 #endif
         gt_obj_get_visible(style->hooking_kp);
+}
+
+static inline bool _is_keypad_auto_hide(_gt_input_st * style) {
+    return style->hooking_kp &&
+        false == gt_obj_get_visible(style->hooking_kp) &&
+        gt_keypad_get_auto_hide(style->hooking_kp);
 }
 
 static inline void _gt_input_init_widget(gt_obj_st * input) {
@@ -313,16 +319,14 @@ static void _input_check_keypad_switch_focus(gt_obj_st * input) {
     } else if (kp_count > 1) {
         /** display owner keypad */
 #if GT_CFG_ENABLE_KEYPAD
-        if (style->hooking_kp &&
-            false == gt_obj_get_visible(style->hooking_kp) &&
-            gt_keypad_get_auto_hide(style->hooking_kp)) {
+        if (_is_keypad_auto_hide(style)) {
             gt_obj_set_visible(style->hooking_kp, true);
             gt_disp_invalid_area(input);
         }
 #endif
         return;
     }
-    /** common using one keypad, maybe want to switch input object */
+    /** 1 == kp_count, common using one keypad, maybe want to switch input object */
     gt_obj_st * kp = gt_obj_search_child_by_type(input->parent, GT_TYPE_KEYPAD);
     if (NULL == kp) {
         return;
@@ -584,9 +588,6 @@ void gt_input_del_value(gt_obj_st * input)
     if( style->pos_cursor <= 0 ){
         return;
     }
-    // style->value = gt_txt_cut(style->value, style->font_info.encoding, style->pos_cursor - 1, style->pos_cursor);
-    // style->pos_cursor -= 1;
-
     style->pos_cursor -= gt_txt_cut(style->value, style->font_info.encoding, style->pos_cursor - 1, style->pos_cursor);
 
 lab_end:

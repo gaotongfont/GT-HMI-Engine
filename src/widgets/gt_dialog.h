@@ -50,7 +50,8 @@ typedef struct gt_dialog_param_s {
 /* global functions / API interface -------------------------------------*/
 
 /**
- * @brief Create a Empty dialog
+ * @brief Create a Empty dialog, default enabled clicks dialog outsides
+ *      auto hide dialog and free memory when dialog close
  *
  * @param show_close_btn true: show close button, false: hide close button
  * @return gt_obj_st* The dialog object
@@ -58,7 +59,8 @@ typedef struct gt_dialog_param_s {
 gt_obj_st * gt_dialog_create(bool show_close_btn);
 
 /**
- * @brief Create a message box dialog
+ * @brief Create a message box dialog, default enabled clicks dialog outsides
+ *      auto hide dialog and free memory when dialog close
  *
  * @param show_close_btn true: show close button, false: hide close button
  * @param param message box dialog parameter @ref gt_dialog_param_st

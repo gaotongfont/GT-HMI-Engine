@@ -33,18 +33,48 @@
 
 
 /* static functions -----------------------------------------------------*/
+static GT_ATTRIBUTE_RAM_TEXT void _calc_full_display_pos(gt_obj_st * obj, gt_area_st * new_area_p) {
+    gt_obj_st * scr = gt_disp_get_scr();
+    if (new_area_p->x < scr->area.x) {
+        new_area_p->x = scr->area.x;
+    } else if (new_area_p->x + obj->area.w > scr->area.x + scr->area.w) {
+        new_area_p->x = scr->area.x + scr->area.w - obj->area.w;
+    }
+    if (new_area_p->y < scr->area.y) {
+        new_area_p->y = scr->area.y;
+    } else if (new_area_p->y + obj->area.h > scr->area.y + scr->area.h) {
+        new_area_p->y = scr->area.y + scr->area.h - obj->area.h;
+    }
+}
 
 #if GT_USE_LAYER_TOP
+static GT_ATTRIBUTE_RAM_TEXT void _calc_layer_top_full_display_pos(gt_obj_st * obj, gt_disp_st * disp,
+    gt_area_st * new_area_p) {
+    if (new_area_p->x < 0) {
+        new_area_p->x = 0;
+    } else if (new_area_p->x + obj->area.w > disp->layer_top->area.w) {
+        new_area_p->x = disp->layer_top->area.w - obj->area.w;
+    }
+
+    if (new_area_p->y < 0) {
+        new_area_p->y = 0;
+    } else if (new_area_p->y + obj->area.h > disp->layer_top->area.h) {
+        new_area_p->y = disp->layer_top->area.h - obj->area.h;
+    }
+}
+
 /**
  * @brief
  *
  * @param obj
  * @param x value reset to: x % width
  * @param y value reset to: y % height
+ * @param is_full_display false[default]: normal position;
+ *      true: always full display on the screen
  * @return true
  * @return false
  */
-static GT_ATTRIBUTE_RAM_TEXT bool _update_layer_top_widget_area(gt_obj_st * obj, gt_area_st new_area) {
+static GT_ATTRIBUTE_RAM_TEXT bool _update_layer_top_widget_area(gt_obj_st * obj, gt_area_st new_area, bool is_full_display) {
     GT_CHECK_BACK_VAL(obj, false);
     gt_disp_st * disp = gt_disp_get_default();
     if (NULL == disp->layer_top) {
@@ -67,9 +97,12 @@ static GT_ATTRIBUTE_RAM_TEXT bool _update_layer_top_widget_area(gt_obj_st * obj,
     if (new_area.y > disp->layer_top->area.h) {
         new_area.y = new_area.y % disp->layer_top->area.h;
     }
-    new_area.x = new_area.x + disp->layer_top->area.x;
-    new_area.y = new_area.y + disp->layer_top->area.y;
+    new_area.x += disp->layer_top->area.x;
+    new_area.y += disp->layer_top->area.y;
 
+    if (is_full_display) {
+        _calc_layer_top_full_display_pos(obj, disp, &new_area);
+    }
     _gt_obj_move_child_by(obj, new_area.x - gt_obj_get_x(obj), new_area.y - gt_obj_get_y(obj));
 
     gt_obj_pos_change(obj, &new_area);
@@ -85,7 +118,7 @@ gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area)
 {
     GT_CHECK_BACK_VAL(obj, GT_RES_FAIL);
 #if GT_USE_LAYER_TOP
-    if (_update_layer_top_widget_area(obj, area)) {
+    if (_update_layer_top_widget_area(obj, area, false)) {
         return GT_RES_OK;
     }
 #endif
@@ -101,19 +134,21 @@ void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)
 #if GT_USE_LAYER_TOP
     area.x = x;
     area.y = y;
-    if (_update_layer_top_widget_area(obj, area)) {
+    if (_update_layer_top_widget_area(obj, area, false)) {
         return ;
     }
 #endif
     /** normal screen */
-    area = obj->area;
-    _gt_obj_move_child_by(obj, x - area.x, y - area.y);
+    area.x = x;
+    area.y = y;
+    area.w = obj->area.w;
+    area.h = obj->area.h;
+    _gt_obj_move_child_by(obj, area.x - obj->area.x, area.y - obj->area.y);
     if (gt_obj_get_virtual(obj)) {
         return ;
     }
-    area.x = x;
-    area.y = y;
     gt_obj_set_area(obj, area);
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
 #if GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
@@ -139,7 +174,7 @@ void gt_obj_set_pos_relative(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff
         .h = obj->area.h
     };
 #if GT_USE_LAYER_TOP
-    if (_update_layer_top_widget_area(obj, area)) {
+    if (_update_layer_top_widget_area(obj, area, false)) {
         return ;
     }
 #endif
@@ -149,6 +184,31 @@ void gt_obj_set_pos_relative(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff
         return ;
     }
     gt_obj_set_area(obj, area);
+}
+
+void gt_obj_set_pos_always_full_display(gt_obj_st * obj, gt_size_t x, gt_size_t y)
+{
+    GT_CHECK_BACK(obj);
+    gt_area_st area = obj->area;
+#if GT_USE_LAYER_TOP
+    area.x = x;
+    area.y = y;
+    if (_update_layer_top_widget_area(obj, area, true)) {
+        return ;
+    }
+#endif
+    /** normal screen */
+    area.x = x;
+    area.y = y;
+    area.w = obj->area.w;
+    area.h = obj->area.h;
+    _calc_full_display_pos(obj, &area);
+    _gt_obj_move_child_by(obj, area.x - obj->area.x, area.y - obj->area.y);
+    if (gt_obj_get_virtual(obj)) {
+        return ;
+    }
+    gt_obj_set_area(obj, area);
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
 void _gt_obj_move_child_by(gt_obj_st * obj, gt_size_t diff_x, gt_size_t diff_y)
@@ -182,12 +242,11 @@ void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h)
 
 void gt_obj_set_x(gt_obj_st * obj, gt_size_t x)
 {
-    // gt_obj_set_pos(obj, x, obj->area.y); // TODO
     GT_CHECK_BACK(obj);
     gt_area_st area = obj->area;
     area.x = x;
 #if GT_USE_LAYER_TOP
-    if (_update_layer_top_widget_area(obj, area)) {
+    if (_update_layer_top_widget_area(obj, area, false)) {
         return ;
     }
 #endif
@@ -199,12 +258,11 @@ void gt_obj_set_x(gt_obj_st * obj, gt_size_t x)
 
 void gt_obj_set_y(gt_obj_st * obj, gt_size_t y)
 {
-    // gt_obj_set_pos(obj, obj->area.x, y);
     GT_CHECK_BACK(obj);
     gt_area_st area = obj->area;
     area.y = y;
 #if GT_USE_LAYER_TOP
-    if (_update_layer_top_widget_area(obj, area)) {
+    if (_update_layer_top_widget_area(obj, area, false)) {
         return ;
     }
 #endif
@@ -450,7 +508,9 @@ void gt_obj_child_set_prop(gt_obj_st * obj, gt_obj_prop_type_em type, uint8_t va
 
 void gt_obj_set_state(gt_obj_st * obj, gt_state_et state)
 {
-    GT_CHECK_BACK(obj);
+    if (NULL == obj) {
+        return;
+    }
     obj->state = state;
 }
 
@@ -528,7 +588,9 @@ void gt_obj_set_trigger_mode(gt_obj_st * obj, gt_obj_trigger_mode_et is_trigger_
 
 gt_obj_trigger_mode_et gt_obj_get_trigger_mode(gt_obj_st * obj)
 {
-    GT_CHECK_BACK_VAL(obj, GT_OBJ_TRIGGER_MODE_HOLD_ON);
+    if (NULL == obj) {
+        return GT_OBJ_TRIGGER_MODE_HOLD_ON;
+    }
     return (gt_obj_trigger_mode_et)obj->trigger_mode;
 }
 

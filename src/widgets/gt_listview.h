@@ -175,7 +175,7 @@ void gt_listview_set_next_row_item_count(gt_obj_st * listview, uint8_t count);
  *
  * @param listview listview obj
  * @param text text
- * @return item object, which child[0]: label
+ * @return The item object, which child[0]: label
  */
 gt_obj_st * gt_listview_add_item(gt_obj_st * listview, char const * text);
 

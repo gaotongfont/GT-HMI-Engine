@@ -157,6 +157,7 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_listview_class = {
     .size_style    = sizeof(_gt_listview_st)
 };
 
+static GT_ATTRIBUTE_RAM_TEXT void _set_label_pos(gt_obj_st * lab, gt_obj_st * item, gt_size_t offset_x, uint16_t width);
 
 /* macros ---------------------------------------------------------------*/
 
@@ -345,6 +346,20 @@ static GT_ATTRIBUTE_RAM_TEXT void _reset_other_active_state(gt_obj_st * listview
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+static GT_ATTRIBUTE_RAM_TEXT void _update_all_item_text_style(gt_obj_st * lv) {
+    _gt_listview_st * style = (_gt_listview_st * )lv;
+    gt_obj_st * item = NULL;
+
+    for (gt_size_t i = 0, cnt = lv->cnt_child; i < cnt; ++i) {
+        item = lv->child[i];
+        if (1 == item->cnt_child && gt_obj_is_type(item->child[0], GT_TYPE_LAB)) {
+            item->area.w = lv->area.w;
+            _set_label_pos(item->child[0], item, 0, gt_obj_get_w(item));
+        }
+    }
+    gt_event_send(lv, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 /**
  * @brief obj event handler call back
  *
@@ -380,6 +395,10 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         gt_obj_scroll_to_y(obj, gt_obj_get_h(obj) >> 1, GT_ANIM_ON);
     } else if (GT_EVENT_TYPE_INPUT_SCROLL_DOWN == code_val) {
         gt_obj_scroll_to_y(obj, - gt_obj_get_h(obj) >> 1, GT_ANIM_ON);
+    } else if (GT_EVENT_TYPE_INPUT_HIDED == code_val) {
+        gt_obj_set_visible(obj, false);
+    } else if (GT_EVENT_TYPE_UPDATE_STYLE == code_val) {
+        _update_all_item_text_style(obj);
     }
 }
 

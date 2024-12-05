@@ -57,6 +57,10 @@ extern "C" {
 #define GT_CFG_ENABLE_GRAPHS            1
 #define GT_CFG_ENABLE_ARC               1
 
+#if GT_CFG_ENABLE_INPUT && GT_CFG_ENABLE_LISTVIEW
+#define GT_CFG_ENABLE_SELECT            1
+#endif
+
 #if GT_CFG_ENABLE_IMG && GT_CFG_ENABLE_SLIDER && GT_CFG_ENABLE_LABEL
 #define GT_CFG_ENABLE_MEDIA_PLAYER      1
 #endif

@@ -60,8 +60,14 @@ extern "C" {
 /* draw */
 #include "src/extra/draw/gt_draw_blend.h"
 
+/* other */
 #include "src/others/gt_types.h"
 #include "src/others/gt_anim.h"
+#include "src/others/gt_color.h"
+#include "src/others/gt_log.h"
+#include "src/others/gt_txt.h"
+#include "src/others/gt_crc.h"
+#include "src/utils/gt_serial.h"
 
 #if GT_CFG_ENABLE_BTN
 #include "src/widgets/gt_btn.h"
@@ -187,13 +193,6 @@ extern "C" {
 #include "src/widgets/gt_media_player.h"
 #endif
 
-/* other */
-#include "src/others/gt_color.h"
-#include "src/others/gt_log.h"
-#include "src/others/gt_txt.h"
-#include "src/others/gt_crc.h"
-#include "src/utils/gt_serial.h"
-
 #if GT_CFG_ENABLE_BIT_IMG
 #include "src/widgets/serial/gt_bit_img.h"
 #endif
@@ -205,6 +204,11 @@ extern "C" {
 #if GT_CFG_ENABLE_ARC
 #include "src/widgets/gt_arc.h"
 #endif
+
+#if GT_CFG_ENABLE_SELECT
+#include "src/widgets/gt_select.h"
+#endif
+
 /* define ---------------------------------------------------------------*/
 
 

@@ -341,7 +341,9 @@ void _gt_disp_update_max_area(const gt_area_st * const area, bool is_ignore_calc
 
 void _gt_disp_reload_max_area(gt_obj_st * scr)
 {
-    GT_CHECK_BACK(scr);
+    if (NULL == scr) {
+        return;
+    }
     gt_disp_st * disp = gt_disp_get_default();
     GT_CHECK_BACK(disp);
     gt_area_abs_st * max_area = &disp->area_max;

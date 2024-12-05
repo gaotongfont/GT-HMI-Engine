@@ -209,6 +209,7 @@ static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         }
+        case GT_EVENT_TYPE_INPUT_KEY_RELEASED:
         case GT_EVENT_TYPE_INPUT_RELEASED: {
 #if GT_CFG_ENABLE_KEYPAD
             _auto_hide_keypad(obj);
@@ -414,7 +415,7 @@ gt_obj_st * gt_obj_within_which_scr(gt_obj_st * obj)
     GT_CHECK_BACK_VAL(obj, NULL);
     gt_obj_st * p = obj->parent;
     while (p) {
-        if (gt_obj_is_type(p, OBJ_TYPE_SCREEN) || gt_obj_is_type(p, GT_TYPE_LAYER_TOP)) {
+        if (gt_obj_is_type(p, OBJ_TYPE_SCREEN)) {
             break;
         }
         p = p->parent;

@@ -166,6 +166,7 @@ typedef enum gt_obj_type_e {
     GT_TYPE_MEDIA_PLAYER= 34,       ///< media player
     GT_TYPE_BIT_IMG     = 35,       ///< bit img
     GT_TYPE_ARC         = 36,       ///< arc
+    GT_TYPE_SELECT      = 37,       ///< select
 
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;
