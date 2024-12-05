@@ -807,7 +807,7 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     style->item_bg_color =  obj->bgcolor;
     style->item_show_bg = false;
     style->item_reduce = 2;
-    style->item_radius = 10;
+    style->item_radius = 8;
 
     style->column.count = 1;
     style->column.idx = 0;

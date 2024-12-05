@@ -151,7 +151,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     if (!style->value && false == _is_keypad_visible(style)) {
         font.utf8 = style->placeholder;
         font.len = strlen(style->placeholder);
-        color_font = gt_color_hex(0x808080);
+        color_font = gt_color_hex(0xa7a7a7);
     } else {
         // if input value is not null
         if (style->hide_value && style->value) {
@@ -393,7 +393,7 @@ gt_obj_st * gt_input_create(gt_obj_st * parent)
     gt_font_info_init(&style->font_info);
     style->font_color     = gt_color_black();
     style->border_width   = 2;
-    style->border_color   = gt_color_black();
+    style->border_color   = gt_color_hex(0xc7c7c7);
     style->font_align     = GT_ALIGN_NONE;
     style->space_x        = 0;
     style->space_y        = 0;
