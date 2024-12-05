@@ -37,10 +37,10 @@ typedef struct _gt_btn_s {
     _gt_vector_st * contents;
 
     gt_color_t color_pressed;
-    gt_color_t font_color;
-    gt_color_t font_color_pressed;
     gt_color_t color_border;
 
+    gt_color_t font_color;
+    gt_color_t font_color_pressed;
     gt_font_info_st font_info;
 
     uint8_t border_width;

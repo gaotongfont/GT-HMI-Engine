@@ -360,7 +360,7 @@ gt_id_t gt_obj_get_id(gt_obj_st * obj)
 
 bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent)
 {
-    GT_CHECK_BACK_VAL(obj, false);
+    if (NULL == obj) { return false; }
     gt_obj_st * p = obj->parent;
     while (p) {
         if (p == parent) {

@@ -192,5 +192,133 @@ void gt_select_set_option_height(gt_obj_st * obj, uint16_t height)
     gt_listview_set_item_height(style->lv_p, height);
 }
 
+void gt_select_set_font_color(gt_obj_st * select, gt_color_t color)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    gt_input_set_font_color(style->ipt_p, color);
+    gt_listview_set_font_color(style->lv_p, color);
+}
+
+void gt_select_set_font_size(gt_obj_st * select, uint8_t size)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    gt_input_set_font_size(style->ipt_p, size);
+    gt_listview_set_font_size(style->lv_p, size);
+}
+
+void gt_select_set_font_gray(gt_obj_st * select, uint8_t gray)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    gt_input_set_font_gray(style->ipt_p, gray);
+    gt_listview_set_font_gray(style->lv_p, gray);
+}
+
+void gt_select_set_font_align(gt_obj_st * select, gt_align_et align)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    gt_input_set_font_align(style->ipt_p, align);
+    gt_listview_set_font_align(style->lv_p, align);
+}
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
+void gt_select_set_font_family_cn(gt_obj_st * select, gt_family_t family)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    gt_input_set_font_family_cn(style->ipt_p, family);
+    gt_listview_set_font_family_cn(style->lv_p, family);
+}
+void gt_select_set_font_family_en(gt_obj_st * select, gt_family_t family)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    gt_input_set_font_family_en(style->ipt_p, family);
+    gt_listview_set_font_family_en(style->lv_p, family);
+}
+
+void gt_select_set_font_family_fl(gt_obj_st * select, gt_family_t family)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    gt_input_set_font_family_fl(style->ipt_p, family);
+    gt_listview_set_font_family_fl(style->lv_p, family);
+}
+void gt_select_set_font_family_numb(gt_obj_st * select, gt_family_t family)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    gt_input_set_font_family_numb(style->ipt_p, family);
+    gt_listview_set_font_family_numb(style->lv_p, family);
+}
+#else
+void gt_select_set_font_family(gt_obj_st * select, gt_family_t family)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    gt_input_set_font_family(style->ipt_p, family);
+    gt_listview_set_font_family(style->lv_p, family);
+}
+void gt_select_set_font_cjk(gt_obj_st* select, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    gt_input_set_font_cjk(style->ipt_p, cjk);
+    gt_listview_set_font_cjk(style->lv_p, cjk);
+}
+#endif
+
+void gt_select_set_font_thick_en(gt_obj_st * select, uint8_t thick)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    gt_input_set_font_thick_en(style->ipt_p, thick);
+    gt_listview_set_font_thick_en(style->lv_p, thick);
+}
+
+void gt_select_set_font_thick_cn(gt_obj_st * select, uint8_t thick)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    gt_input_set_font_thick_cn(style->ipt_p, thick);
+    gt_listview_set_font_thick_cn(style->lv_p, thick);
+}
+
+void gt_select_set_font_encoding(gt_obj_st * select, gt_encoding_et encoding)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    gt_input_set_font_encoding(style->ipt_p, encoding);
+    gt_listview_set_font_encoding(style->lv_p, encoding);
+}
+
 #endif  /** GT_CFG_ENABLE_SELECT */
 /* end ------------------------------------------------------------------*/

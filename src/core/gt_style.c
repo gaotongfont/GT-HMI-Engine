@@ -345,8 +345,7 @@ void gt_obj_set_focus(gt_obj_st * obj, bool is_focus)
 
 bool gt_obj_is_focus(gt_obj_st * obj)
 {
-    GT_CHECK_BACK_VAL(obj, false);
-    return obj->focus;
+    return obj ? obj->focus : false;
 }
 
 void gt_obj_set_focus_disabled(gt_obj_st * obj, gt_disabled_et is_disabled)
