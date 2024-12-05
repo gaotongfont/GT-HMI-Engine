@@ -523,7 +523,7 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
             case GT_TYPE_SCREEN: {
                 gt_obj_scroll_to(parent,
                     chg_t.src->area.x - chg_t.dst->area.x,
-                    chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_OFF);
+                    chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_ON);
                 return;
             }
             case GT_TYPE_LISTVIEW: {
@@ -535,11 +535,11 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
                     chg_t.dst = last_parent;
                 }
 
-                gt_obj_scroll_to_y(parent, chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_OFF);
+                gt_obj_scroll_to_y(parent, chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_ON);
                 return;
             }
             case GT_TYPE_CHAT: {
-                gt_obj_scroll_to_y(parent, chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_OFF);
+                gt_obj_scroll_to_y(parent, chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_ON);
                 return;
             }
             case GT_TYPE_VIEW_PAGER: {
