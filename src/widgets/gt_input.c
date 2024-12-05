@@ -256,7 +256,7 @@ static void _input_key_handler( gt_obj_st* obj, uint32_t key)
         gt_input_del_value(obj);
         break;
     case GT_KEY_ENTER:
-        gt_input_append_value(obj ,"\n");
+        // gt_input_append_value(obj ,"\n");
         break;
     case GT_KEY_NEXT:
         break;
