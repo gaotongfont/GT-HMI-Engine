@@ -683,8 +683,8 @@ bool gt_obj_check_scr(gt_obj_st * obj)
         return true;
     }
 
-    gt_obj_st * scr_obj = obj->parent;
-    while( scr_obj->parent ){
+    gt_obj_st * scr_obj = obj;
+    while (scr_obj->parent) {
         scr_obj = scr_obj->parent;
     }
     if( scr_now == scr_obj ){

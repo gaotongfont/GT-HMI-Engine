@@ -1340,7 +1340,7 @@ void gt_disp_invalid_area(gt_obj_st * obj)
         invalid.x += gt_obj_get_x(scr);
         invalid.y += gt_obj_get_y(scr);
     }
-    else if( !gt_obj_check_scr(obj)){
+    else if (!gt_obj_check_scr(obj)) {
         return;
     }
 #else
