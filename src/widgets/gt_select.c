@@ -96,7 +96,7 @@ static void _update_lisview_area(gt_obj_st * obj) {
 
 static void _select_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
-    if (GT_EVENT_TYPE_INPUT_KEY_RELEASED == code_val || GT_EVENT_TYPE_INPUT_RELEASED == code_val) {
+    if (GT_EVENT_TYPE_INPUT_RELEASED == code_val) {
         _gt_select_st * style = (_gt_select_st *)obj;
         if (style->lv_p) {
             gt_obj_set_visible(style->lv_p, true);
@@ -133,7 +133,6 @@ static gt_obj_st * _create_listview(gt_obj_st * obj) {
     gt_obj_st * lv_p = gt_listview_create(gt_disp_get_layer_top());
     gt_obj_set_size(lv_p, obj->area.w, obj->area.h * 3);
     gt_obj_add_event_cb(lv_p, _select_item_cb, GT_EVENT_TYPE_INPUT_RELEASED, obj);
-    gt_obj_add_event_cb(lv_p, _select_item_cb, GT_EVENT_TYPE_INPUT_KEY_RELEASED, obj);
     gt_obj_set_visible(lv_p, false);
     gt_obj_set_focus_disabled(lv_p, GT_DISABLED);
     return lv_p;
