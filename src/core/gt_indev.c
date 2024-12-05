@@ -695,8 +695,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
 
     indev->state = data_indev.state;
     gt_obj_st* obj_target = gt_find_clicked_obj_by_focus(scr);
-    indev->data.keypad.obj_target = obj_target;
-
 #if GT_USE_LAYER_TOP
     gt_obj_st* layer_top = gt_disp_get_layer_top();
     gt_obj_st* top_obj = NULL;
@@ -705,19 +703,26 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
     }
 
     if(top_obj){
-        indev->data.keypad.obj_target = top_obj;
-        if(obj_target != scr){
-            gt_obj_set_focus(obj_target, false);
-            if(_IS_KEYPAD_LOCKED(indev) && top_obj == layer_top){
-                _SET_KEYPAD_LOCK(indev, false);
-            }
-        }
-    }
-#endif
 
-    if(_IS_KEYPAD_LOCKED(indev) && indev->data.keypad.obj_target == scr){
-        _SET_KEYPAD_LOCK(indev, false);
+        if(!gt_obj_is_child(indev->data.keypad.obj_target, layer_top) && indev->data.keypad.obj_target != layer_top){
+            _SET_KEYPAD_LOCK(indev, false);
+            gt_obj_set_focus(obj_target, gt_obj_is_focus(obj_target));
+            gt_obj_set_focus(top_obj, gt_obj_is_focus(top_obj));
+        }
+
+        indev->data.keypad.obj_target = top_obj;
     }
+    else {
+        if(!gt_obj_is_child(indev->data.keypad.obj_target, scr) && indev->data.keypad.obj_target != scr){
+            _SET_KEYPAD_LOCK(indev, false);
+            gt_obj_set_focus(obj_target, gt_obj_is_focus(indev->data.keypad.obj_target));
+
+        }
+        indev->data.keypad.obj_target = obj_target;
+    }
+#else
+        indev->data.keypad.obj_target = obj_target;
+#endif
 
 
     if (GT_INDEV_STATE_RELEASED == indev->state) {

@@ -214,6 +214,12 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_obj_focus_cmp_obj(const gt_obj_st* cur, co
         }
     }
 
+#if GT_USE_LAYER_TOP
+    if(cur == gt_disp_get_layer_top()){
+        return ;
+    }
+#endif
+
     if(cur == gt_disp_get_scr()){
         return ;
     }
@@ -255,6 +261,10 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_dir_focus_get(const gt_obj_st* 
     // child
     for(int i = 0; i < parent->cnt_child; ++i)
     {
+        if(GT_INVISIBLE == parent->child[i]->visible){
+            continue;
+        }
+
         if(parent->child[i]->cnt_child > 0){
             find_obj = _gt_obj_dir_focus_get(parent->child[i], cur_obj, flag);
             _gt_obj_focus_cmp_obj(cur_obj, find_obj, &ret_obj, flag);
@@ -264,9 +274,6 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_dir_focus_get(const gt_obj_st* 
             continue;
         }
 
-        if(GT_INVISIBLE == parent->child[i]->visible){
-            continue;
-        }
         //
         if(parent->child[i] == cur_obj){
             continue;
