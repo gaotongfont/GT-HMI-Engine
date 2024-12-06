@@ -124,6 +124,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _free_event_recursive(gt_obj_event_attr_st * e
     }
     event->next_ptr = NULL;
     event->user_cb = NULL;
+    event->user_data = NULL;
     gt_mem_free(event);
 }
 

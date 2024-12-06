@@ -70,8 +70,7 @@ static void _select_init_cb(gt_obj_st * obj) {
 static void _select_deinit_cb(gt_obj_st * obj) {
     _gt_select_st * style = (_gt_select_st *)obj;
     if (style->lv_p) {
-        gt_obj_set_visible(style->lv_p, false);
-        gt_obj_destroy(style->lv_p);
+        gt_obj_destroy_immediately(style->lv_p);
         style->lv_p = NULL;
     }
 }
@@ -120,7 +119,9 @@ static void _select_item_cb(gt_event_st * e) {
     gt_obj_st * select = (gt_obj_st *)e->user_data;
     gt_obj_st * lv = e->target;
     _gt_select_st * style = (_gt_select_st *)select;
-
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return;
+    }
     char * item = gt_listview_get_selected_item_text(lv);
     if (NULL == item) { return; }
     gt_input_set_value(style->ipt_p, item);
@@ -161,9 +162,6 @@ void gt_select_add_option(gt_obj_st * obj, const char * text)
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;
     }
-    if (NULL == style->lv_p) {
-        return;
-    }
     gt_listview_add_item(style->lv_p, text);
 }
 
@@ -173,9 +171,6 @@ void gt_select_clear_all_options(gt_obj_st * obj)
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;
     }
-    if (NULL == style->lv_p) {
-        return;
-    }
     gt_listview_clear_all_items(style->lv_p);
 }
 
@@ -183,9 +178,6 @@ void gt_select_set_option_height(gt_obj_st * obj, uint16_t height)
 {
     _gt_select_st * style = (_gt_select_st *)obj;
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
-        return;
-    }
-    if (NULL == style->lv_p) {
         return;
     }
     gt_listview_set_item_height(style->lv_p, height);

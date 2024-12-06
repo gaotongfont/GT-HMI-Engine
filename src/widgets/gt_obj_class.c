@@ -77,6 +77,12 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st 
     return ret_p;
 }
 
+/**
+ * @brief
+ *
+ * @param self
+ * @return gt_obj_st * Want to free the object
+ */
 static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_class_destroy_from_parent(gt_obj_st * self) {
     gt_size_t i = 0;
     gt_size_t idx = -1;
@@ -105,10 +111,11 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_class_destroy_from_parent(gt_ob
         gt_memmove(&parent->child[idx], &parent->child[idx + 1], (parent->cnt_child - idx) * sizeof(gt_obj_st * ));
     }
     parent->child[parent->cnt_child] = NULL;
-    parent->child = (gt_obj_st ** )gt_mem_realloc(parent->child, parent->cnt_child * sizeof(gt_obj_st * ));
-    if (NULL == parent->child) {
-        GT_CHECK_PRINT(parent->child);
-        parent->cnt_child = 0;
+    if (0 == parent->cnt_child && parent->child) {
+        gt_mem_free(parent->child);
+        parent->child = NULL;
+    } else {
+        parent->child = (gt_obj_st ** )gt_mem_realloc(parent->child, parent->cnt_child * sizeof(gt_obj_st * ));
     }
     return ret_p;
 }

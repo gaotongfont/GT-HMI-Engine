@@ -114,7 +114,7 @@ static GT_ATTRIBUTE_RAM_TEXT bool _update_layer_top_widget_area(gt_obj_st * obj,
 }
 #endif
 
-static void _opa_anim_exec_cb(void * obj, int32_t val) {
+static GT_ATTRIBUTE_RAM_TEXT void _opa_anim_exec_cb(void * obj, int32_t val) {
     gt_obj_st * tar = (gt_obj_st *)obj;
     tar->opa = (gt_opa_t)val;
     if (false == gt_obj_get_visible(tar)) {
@@ -123,6 +123,24 @@ static void _opa_anim_exec_cb(void * obj, int32_t val) {
     gt_event_send(tar, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+static GT_ATTRIBUTE_RAM_TEXT void _width_anim_exec_cb(void * obj, int32_t val) {
+    gt_obj_st * tar = (gt_obj_st * )obj;
+    gt_obj_set_size(tar, val, tar->area.h);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _height_anim_exec_cb(void * obj, int32_t val) {
+    gt_obj_st * tar = (gt_obj_st * )obj;
+    gt_obj_set_size(tar, tar->area.w, val);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _x_anim_exec_cb(void * obj, int32_t val) {
+    gt_obj_st * tar = (gt_obj_st * )obj;
+    gt_obj_set_pos(tar, val, tar->area.y);
+}
+static GT_ATTRIBUTE_RAM_TEXT void _y_anim_exec_cb(void * obj, int32_t val) {
+    gt_obj_st * tar = (gt_obj_st * )obj;
+    gt_obj_set_pos(tar, tar->area.x, val);
+}
 /* global functions / API interface -------------------------------------*/
 gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area)
 {
@@ -159,6 +177,26 @@ void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)
     }
     gt_obj_set_area(obj, area);
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
+}
+
+void gt_obj_set_pos_anim(gt_obj_st * obj, gt_size_t x, gt_size_t y)
+{
+    GT_CHECK_BACK(obj);
+    gt_anim_st anim = {0};
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_EASE_IN_OUT);
+    gt_anim_set_time(&anim, GT_ANIM_PERIOD_TRANSITION_EFFECT_MS);
+    if (obj->area.x != x) {
+        gt_anim_set_value(&anim, obj->area.x, x);
+        gt_anim_set_exec_cb(&anim, _x_anim_exec_cb);
+        gt_anim_start(&anim);
+    }
+    if (obj->area.y != y) {
+        gt_anim_set_value(&anim, obj->area.y, y);
+        gt_anim_set_exec_cb(&anim, _y_anim_exec_cb);
+        gt_anim_start(&anim);
+    }
 }
 
 #if GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
@@ -250,6 +288,29 @@ void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h)
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
+void gt_obj_set_size_anim(gt_obj_st * obj, uint16_t w, uint16_t h)
+{
+    GT_CHECK_BACK(obj);
+    if (gt_obj_get_virtual(obj)) {
+        return ;
+    }
+    gt_anim_st anim = {0};
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_EASE_IN_OUT);
+    gt_anim_set_time(&anim, GT_ANIM_PERIOD_TRANSITION_EFFECT_MS);
+    if (obj->area.w != w) {
+        gt_anim_set_value(&anim, obj->area.w, w);
+        gt_anim_set_exec_cb(&anim, _width_anim_exec_cb);
+        gt_anim_start(&anim);
+    }
+    if (obj->area.h != h) {
+        gt_anim_set_value(&anim, obj->area.h, h);
+        gt_anim_set_exec_cb(&anim, _height_anim_exec_cb);
+        gt_anim_start(&anim);
+    }
+}
+
 void gt_obj_set_x(gt_obj_st * obj, gt_size_t x)
 {
     GT_CHECK_BACK(obj);
@@ -287,9 +348,19 @@ void gt_obj_set_w(gt_obj_st * obj, uint16_t w)
     gt_obj_set_size(obj, w, obj->area.h);
 }
 
+void gt_obj_set_w_anim(gt_obj_st * obj, uint16_t w)
+{
+    gt_obj_set_size_anim(obj, w, obj->area.h);
+}
+
 void gt_obj_set_h(gt_obj_st * obj, uint16_t h)
 {
     gt_obj_set_size(obj, obj->area.w, h);
+}
+
+void gt_obj_set_h_anim(gt_obj_st * obj, uint16_t h)
+{
+    gt_obj_set_size_anim(obj, obj->area.w, h);
 }
 
 void gt_obj_set_opa(gt_obj_st * obj, gt_opa_t opa)
@@ -302,9 +373,13 @@ void gt_obj_set_opa(gt_obj_st * obj, gt_opa_t opa)
 void gt_obj_set_opa_anim(gt_obj_st * obj, gt_opa_t opa)
 {
     GT_CHECK_BACK(obj);
+    if (obj->opa == opa) {
+        return;
+    }
     gt_anim_st anim = {0};
     gt_anim_init(&anim);
     gt_anim_set_target(&anim, obj);
+    gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_EASE_IN_OUT);
     gt_anim_set_time(&anim, GT_ANIM_PERIOD_TRANSITION_EFFECT_MS);
     gt_anim_set_value(&anim, obj->opa, opa);
     gt_anim_set_exec_cb(&anim, _opa_anim_exec_cb);

@@ -202,17 +202,26 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_disp_check_and_copy_foreach(gt_obj_st * sc
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_exec_x_cb(void * obj, int32_t x) {
-    gt_obj_set_x((gt_obj_st * )obj, (gt_size_t)x);
+    gt_obj_st * scr = (gt_obj_st * )obj;
+    gt_area_st area = scr->area;
+    area.x = x;
+    gt_obj_set_area(scr, area);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_exec_y_cb(void * obj, int32_t y) {
-    gt_obj_set_y((gt_obj_st * )obj, (gt_size_t)y);
+    gt_obj_st * scr = (gt_obj_st * )obj;
+    gt_area_st area = scr->area;
+    area.y = y;
+    gt_obj_set_area(scr, area);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_del_ready_cb(struct gt_anim_s * anim) {
     gt_obj_st * old_scr = (gt_obj_st * )anim->tar;
     old_scr->using_sta = 0;
     _gt_obj_class_destroy(old_scr);
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
+    gt_indev_release_focus_lock();
+#endif
 }
 
 #if GT_USE_SCREEN_ANIM
@@ -269,6 +278,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_ready_cb(struct gt_anim_s * anim) {
     /** Enabled all of input device event */
     gt_indev_set_enabled(true);
     gt_event_set_enabled(true);
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
+    gt_indev_release_focus_lock();
+#endif
 }
 
 static GT_ATTRIBUTE_RAM_TEXT bool _is_anim_type_hor(gt_scr_anim_type_et anim_type) {
@@ -1042,9 +1054,9 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         }
     }
 
-#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
-    gt_indev_release_focus_lock();
-#endif
+// #if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
+//     gt_indev_release_focus_lock();
+// #endif
 
     scr->using_sta = true;
     disp->scr_anim_type = type;
@@ -1106,7 +1118,7 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
 
             gt_anim_set_exec_cb(&anim_new, _scr_anim_exec_x_cb);
             gt_anim_set_value(&anim_new, scr->area.x - disp->drv->res_hor, scr->area.x);
-            gt_obj_set_x(scr, scr->area.x - disp->drv->res_hor);
+            _scr_anim_exec_x_cb(scr, scr->area.x - disp->drv->res_hor);
             break;
         }
         case GT_SCR_ANIM_TYPE_MOVE_RIGHT: {
@@ -1115,7 +1127,7 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
 
             gt_anim_set_exec_cb(&anim_new, _scr_anim_exec_x_cb);
             gt_anim_set_value(&anim_new, scr->area.x + disp->drv->res_hor, scr->area.x);
-            gt_obj_set_x(scr, scr->area.x + disp->drv->res_hor);
+            _scr_anim_exec_x_cb(scr, scr->area.x + disp->drv->res_hor);
             break;
         }
         case GT_SCR_ANIM_TYPE_MOVE_UP: {
@@ -1124,7 +1136,7 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
 
             gt_anim_set_exec_cb(&anim_new, _scr_anim_exec_y_cb);
             gt_anim_set_value(&anim_new, scr->area.y - disp->drv->res_ver, scr->area.y);
-            gt_obj_set_y(scr, scr->area.y - disp->drv->res_ver);
+            _scr_anim_exec_y_cb(scr, scr->area.y - disp->drv->res_ver);
             break;
         }
         case GT_SCR_ANIM_TYPE_MOVE_DOWN: {
@@ -1133,32 +1145,32 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
 
             gt_anim_set_exec_cb(&anim_new, _scr_anim_exec_y_cb);
             gt_anim_set_value(&anim_new, scr->area.y + disp->drv->res_ver, scr->area.y);
-            gt_obj_set_y(scr, scr->area.y + disp->drv->res_ver);
+            _scr_anim_exec_y_cb(scr, scr->area.y + disp->drv->res_ver);
             break;
         }
 
         case GT_SCR_ANIM_TYPE_COVER_LEFT: {
             gt_anim_set_exec_cb(&anim_new, _scr_anim_exec_x_cb);
             gt_anim_set_value(&anim_new, scr->area.x - disp->drv->res_hor, scr->area.x);
-            gt_obj_set_x(scr, scr->area.x - disp->drv->res_hor);
+            _scr_anim_exec_x_cb(scr, scr->area.x - disp->drv->res_hor);
             break;
         }
         case GT_SCR_ANIM_TYPE_COVER_RIGHT: {
             gt_anim_set_exec_cb(&anim_new, _scr_anim_exec_x_cb);
             gt_anim_set_value(&anim_new, scr->area.x + disp->drv->res_hor, scr->area.x);
-            gt_obj_set_x(scr, scr->area.x + disp->drv->res_hor);
+            _scr_anim_exec_x_cb(scr, scr->area.x + disp->drv->res_hor);
             break;
         }
         case GT_SCR_ANIM_TYPE_COVER_UP: {
             gt_anim_set_exec_cb(&anim_new, _scr_anim_exec_y_cb);
             gt_anim_set_value(&anim_new, scr->area.y - disp->drv->res_ver, scr->area.y);
-            gt_obj_set_y(scr, scr->area.y - disp->drv->res_ver);
+            _scr_anim_exec_y_cb(scr, scr->area.y - disp->drv->res_ver);
             break;
         }
         case GT_SCR_ANIM_TYPE_COVER_DOWN: {
             gt_anim_set_exec_cb(&anim_new, _scr_anim_exec_y_cb);
             gt_anim_set_value(&anim_new, scr->area.y + disp->drv->res_ver, scr->area.y);
-            gt_obj_set_y(scr, scr->area.y + disp->drv->res_ver);
+            _scr_anim_exec_y_cb(scr, scr->area.y + disp->drv->res_ver);
             break;
         }
         default:

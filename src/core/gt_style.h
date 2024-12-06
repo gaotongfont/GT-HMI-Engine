@@ -73,6 +73,7 @@ typedef enum {
 /* global functions / API interface -------------------------------------*/
 gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area);
 void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y);
+void gt_obj_set_pos_anim(gt_obj_st * obj, gt_size_t x, gt_size_t y);
 
 #if GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
 /**
@@ -107,10 +108,14 @@ void gt_obj_set_pos_always_full_display(gt_obj_st * obj, gt_size_t x, gt_size_t 
 void _gt_obj_move_child_by(gt_obj_st * obj, gt_size_t diff_x, gt_size_t diff_y);
 
 void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h);
+void gt_obj_set_size_anim(gt_obj_st * obj, uint16_t w, uint16_t h);
+
 void gt_obj_set_x(gt_obj_st * obj, gt_size_t x);
 void gt_obj_set_y(gt_obj_st * obj, gt_size_t y);
 void gt_obj_set_w(gt_obj_st * obj, uint16_t w);
+void gt_obj_set_w_anim(gt_obj_st * obj, uint16_t w);
 void gt_obj_set_h(gt_obj_st * obj, uint16_t h);
+void gt_obj_set_h_anim(gt_obj_st * obj, uint16_t h);
 
 void gt_obj_set_opa(gt_obj_st * obj, gt_opa_t opa);
 void gt_obj_set_opa_anim(gt_obj_st * obj, gt_opa_t opa);

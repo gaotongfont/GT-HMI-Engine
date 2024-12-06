@@ -703,7 +703,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
     }
 
     if(top_obj){
-
         if(!gt_obj_is_child(indev->data.keypad.obj_target, layer_top) && indev->data.keypad.obj_target != layer_top){
             _SET_KEYPAD_LOCK(indev, false);
             gt_obj_set_focus(obj_target, gt_obj_is_focus(obj_target));
@@ -747,6 +746,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
         GT_LOG_A(GT_LOG_TAG_TP, "keypad key: %#X, state: %d obj type: %d",
                     indev->data.keypad.key, indev->state, gt_obj_class_get_type(indev->data.keypad.obj_target));
 #endif
+        indev->data.keypad.obj_target = NULL;
         indev->data.keypad.obj_origin = NULL;
         last_key = GT_KEY_NONE;
         return;
@@ -815,7 +815,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
 _key_pressed:
 
 #if GT_USE_LAYER_TOP
-
             if(GT_KEY_ESC == indev->data.keypad.key &&
                 (gt_obj_is_child(indev->data.keypad.obj_origin, layer_top) || indev->data.keypad.obj_origin == layer_top)
             ){
@@ -1023,6 +1022,9 @@ void gt_indev_release_focus_lock(void)
         switch(indev->drv->type){
             case GT_INDEV_TYPE_KEYPAD:
                 _SET_KEYPAD_LOCK(indev, false);
+                indev->data.keypad.obj_target = NULL;
+                indev->data.keypad.obj_origin = NULL;
+                // gt_memset(&indev->data.keypad, 0, sizeof(struct _keypad));
                 break;
             default:
                 break;
