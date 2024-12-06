@@ -148,7 +148,17 @@ void gt_disp_drv_register(gt_disp_drv_st * drv)
     _gt_timer_create(_gt_disp_task_handler, GT_TASK_PERIOD_TIME_REFR, NULL);
 }
 
+void gt_disp_drv_set_flushing(gt_disp_drv_st * drv, bool state)
+{
+    if(!drv){ return ; }
+    drv->flushing = state;
+}
 
+bool gt_disp_drv_check_flushing(gt_disp_drv_st * drv)
+{
+    if(!drv){ return false; }
+    return drv->flushing;
+}
 
 /*************************************/
 /*                disp               */
@@ -221,12 +231,28 @@ gt_color_t * gt_disp_graph_get_buf_default(void)
 #endif
 }
 
-gt_color_t * gt_disp_graph_get_buf_backup(void)
+bool gt_disp_graph_is_double_buf(void)
 {
-#if (GT_REFRESH_STYLE_2 == GT_REFRESH_STYLE)
-    return graph_buf2;
+#if (GT_REFRESH_STYLE == GT_REFRESH_STYLE_2)
+    if(graph_buf1 && graph_buf2){ return true; }
+#endif
+    return false;
+}
+
+gt_color_t * gt_disp_graph_get_buf_backup(gt_color_t* this_buf)
+{
+#if (GT_REFRESH_STYLE == GT_REFRESH_STYLE_2)
+    if(this_buf == NULL){
+        return gt_disp_graph_get_buf_default();
+    }
+
+    if(!gt_disp_graph_is_double_buf()){
+        return gt_disp_graph_get_buf_default();
+    }
+
+    return (this_buf == graph_buf1) ? graph_buf2 : graph_buf1;
 #else
-    return NULL;
+    return gt_disp_graph_get_buf_default();
 #endif
 }
 

@@ -53,10 +53,12 @@ typedef struct _gt_disp_drv_s
      * @param color buffer
      */
     void (* flush_cb)(struct _gt_disp_drv_s * drv, gt_area_st * area, gt_color_t * color);
+    void (* wait_cb)(struct _gt_disp_drv_s * drv);
 
     uint8_t rotated: 2;    ///< display rotation @ref gt_rotated_et
     uint8_t busy:1;        ///< display busy state
-    uint8_t reserved:5;    ///< reserved
+    uint8_t flushing:1;
+    uint8_t reserved:4;    ///< reserved
 }gt_disp_drv_st;
 
 typedef struct _gt_refr_s {
@@ -114,6 +116,9 @@ void gt_disp_drv_init(gt_disp_drv_st * disp_drv);
 void gt_disp_drv_register(gt_disp_drv_st *drv);
 gt_disp_st * gt_disp_get_default(void);
 
+void gt_disp_drv_set_flushing(gt_disp_drv_st * drv, bool state);
+bool gt_disp_drv_check_flushing(gt_disp_drv_st * drv);
+
 /**
  * @brief Get horizontal resolution value
  *
@@ -146,12 +151,13 @@ void gt_disp_graph_buf_init(gt_color_t *buf1, gt_color_t *buf2, gt_color_t *buf_
  */
 gt_color_t * gt_disp_graph_get_buf_default(void);
 
+bool gt_disp_graph_is_double_buf(void);
 /**
  * @brief Get backup color buffer, if used double screen buffer.
  *
  * @return gt_color_t* The buffer which save display color
  */
-gt_color_t * gt_disp_graph_get_buf_backup(void);
+gt_color_t * gt_disp_graph_get_buf_backup(gt_color_t* this_buf);
 
 /**
  * @brief reset the invalid redraw areas message queue

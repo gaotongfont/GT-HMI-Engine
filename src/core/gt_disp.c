@@ -542,10 +542,21 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_anim(_flush_scr_param_st 
             param->valid.layer_top = false;
         }
 #endif
+        if(gt_disp_graph_is_double_buf()){
+            while(gt_disp_drv_check_flushing(param->disp->drv)){
+                if(param->disp->drv->wait_cb){ param->disp->drv->wait_cb(param->disp->drv); }
+            }
+        }
 
+        gt_disp_drv_set_flushing(param->disp->drv, true);
         /** flush display by buffer area */
         param->disp->drv->flush_cb(param->disp->drv, &param->area_flush, param->disp->vbd_color);
         param->area_flush.y += param->line;
+
+        if(gt_disp_graph_is_double_buf()){
+            param->disp->vbd_color = gt_disp_graph_get_buf_backup(param->disp->vbd_color);
+        }
+
     }
 }
 #endif  /** GT_USE_SCREEN_ANIM */
@@ -727,6 +738,13 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
         _gt_disp_check_and_copy_foreach(param->disp->layer_top, param);
 #endif
 
+        if(gt_disp_graph_is_double_buf()){
+            while(gt_disp_drv_check_flushing(param->disp->drv)){
+                if(param->disp->drv->wait_cb){ param->disp->drv->wait_cb(param->disp->drv); }
+            }
+        }
+
+        gt_disp_drv_set_flushing(param->disp->drv, true);
         /** flush display by buffer area */
         param->disp->drv->flush_cb(param->disp->drv, &param->area_flush, param->disp->vbd_color);
         param->area_flush.y += param->line;
@@ -734,6 +752,10 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
         if( end_y - param->area_flush.y < param->line){
             param->area_flush.h = end_y - param->area_flush.y;
             param->disp->area_disp.h = param->area_flush.h;
+        }
+
+        if(gt_disp_graph_is_double_buf()){
+            param->disp->vbd_color = gt_disp_graph_get_buf_backup(param->disp->vbd_color);
         }
     }
 }
@@ -1266,6 +1288,8 @@ void gt_disp_ref_area(const gt_area_st * coords)
     _flush_scr_by_direct(&param);
 #endif
 
+    // last line
+    gt_disp_drv_set_flushing(param.disp->drv, false);
     _gt_disp_set_state(param.disp, GT_NOT_BUSY);
 }
 
