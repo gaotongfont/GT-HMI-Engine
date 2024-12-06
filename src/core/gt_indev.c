@@ -715,13 +715,12 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
     else {
         if(!gt_obj_is_child(indev->data.keypad.obj_target, scr) && indev->data.keypad.obj_target != scr){
             _SET_KEYPAD_LOCK(indev, false);
-            gt_obj_set_focus(obj_target, gt_obj_is_focus(indev->data.keypad.obj_target));
-
+            gt_obj_set_focus(obj_target, gt_obj_is_focus(obj_target));
         }
         indev->data.keypad.obj_target = obj_target;
     }
 #else
-        indev->data.keypad.obj_target = obj_target;
+    indev->data.keypad.obj_target = obj_target;
 #endif
 
 
