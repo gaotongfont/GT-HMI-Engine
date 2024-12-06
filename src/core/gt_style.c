@@ -14,6 +14,7 @@
 #include "../core/gt_layout.h"
 #include "../hal/gt_hal_disp.h"
 #include "../others/gt_log.h"
+#include "../others/gt_anim.h"
 
 /* private define -------------------------------------------------------*/
 #define _set_style_prop_val(obj, prop, val)     (obj->style->prop = val)
@@ -112,6 +113,15 @@ static GT_ATTRIBUTE_RAM_TEXT bool _update_layer_top_widget_area(gt_obj_st * obj,
     return true;
 }
 #endif
+
+static void _opa_anim_exec_cb(void * obj, int32_t val) {
+    gt_obj_st * tar = (gt_obj_st *)obj;
+    tar->opa = (gt_opa_t)val;
+    if (false == gt_obj_get_visible(tar)) {
+        return;
+    }
+    gt_event_send(tar, GT_EVENT_TYPE_DRAW_START, NULL);
+}
 
 /* global functions / API interface -------------------------------------*/
 gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area)
@@ -272,33 +282,53 @@ void gt_obj_set_y(gt_obj_st * obj, gt_size_t y)
     gt_obj_set_area(obj, area);
 }
 
-void gt_obj_set_w(gt_obj_st * obj, uint16_t w) {
+void gt_obj_set_w(gt_obj_st * obj, uint16_t w)
+{
     gt_obj_set_size(obj, w, obj->area.h);
 }
 
-void gt_obj_set_h(gt_obj_st * obj, uint16_t h) {
+void gt_obj_set_h(gt_obj_st * obj, uint16_t h)
+{
     gt_obj_set_size(obj, obj->area.w, h);
 }
 
-void gt_obj_set_opa(gt_obj_st * obj, gt_opa_t opa) {
+void gt_obj_set_opa(gt_obj_st * obj, gt_opa_t opa)
+{
     GT_CHECK_BACK(obj);
     obj->opa = opa;
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-gt_size_t gt_obj_get_x(gt_obj_st * obj) {
+void gt_obj_set_opa_anim(gt_obj_st * obj, gt_opa_t opa)
+{
+    GT_CHECK_BACK(obj);
+    gt_anim_st anim = {0};
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_time(&anim, GT_ANIM_PERIOD_TRANSITION_EFFECT_MS);
+    gt_anim_set_value(&anim, obj->opa, opa);
+    gt_anim_set_exec_cb(&anim, _opa_anim_exec_cb);
+    gt_anim_start(&anim);
+}
+
+gt_size_t gt_obj_get_x(gt_obj_st * obj)
+{
     GT_CHECK_BACK_VAL(obj, 0);
     return _get_area_prop(obj, x);
 }
-gt_size_t gt_obj_get_y(gt_obj_st * obj) {
+
+gt_size_t gt_obj_get_y(gt_obj_st * obj)
+{
     GT_CHECK_BACK_VAL(obj, 0);
     return _get_area_prop(obj, y);
 }
-uint16_t gt_obj_get_w(gt_obj_st * obj) {
+uint16_t gt_obj_get_w(gt_obj_st * obj)
+{
     GT_CHECK_BACK_VAL(obj, 0);
     return _get_area_prop(obj, w);
 }
-uint16_t gt_obj_get_h(gt_obj_st * obj) {
+uint16_t gt_obj_get_h(gt_obj_st * obj)
+{
     GT_CHECK_BACK_VAL(obj, 0);
     return _get_area_prop(obj, h);
 }

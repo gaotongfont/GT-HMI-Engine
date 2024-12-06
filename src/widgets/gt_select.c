@@ -100,7 +100,6 @@ static void _select_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         _gt_select_st * style = (_gt_select_st *)obj;
         if (style->lv_p) {
             gt_obj_set_visible(style->lv_p, true);
-            gt_obj_set_focus(gt_disp_get_layer_top(), true);
         }
     } else if (GT_EVENT_TYPE_UPDATE_STYLE == code_val) {
         _update_input_area(obj);

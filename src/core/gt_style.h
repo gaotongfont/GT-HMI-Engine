@@ -113,6 +113,7 @@ void gt_obj_set_w(gt_obj_st * obj, uint16_t w);
 void gt_obj_set_h(gt_obj_st * obj, uint16_t h);
 
 void gt_obj_set_opa(gt_obj_st * obj, gt_opa_t opa);
+void gt_obj_set_opa_anim(gt_obj_st * obj, gt_opa_t opa);
 
 gt_size_t gt_obj_get_x(gt_obj_st * obj);
 gt_size_t gt_obj_get_y(gt_obj_st * obj);

@@ -25,6 +25,7 @@ extern "C" {
 #define GT_ANIM_REPEAT_INFINITE     (0xFFFF)
 #define GT_ANIM_PLAYTIME_INFINITE   (0xFFFFFFFF)
 
+#define GT_ANIM_PERIOD_TRANSITION_EFFECT_MS     (120)
 
 /* typedef --------------------------------------------------------------*/
 /**
