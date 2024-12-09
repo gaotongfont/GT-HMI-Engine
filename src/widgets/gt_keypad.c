@@ -41,7 +41,6 @@ typedef struct _gt_keypad_s {
 
     gt_keypad_map_st * map_list;
 
-    gt_color_t bg_color;
     gt_color_t border_color;
     gt_color_t color_ctrl;
 
@@ -575,7 +574,7 @@ static void _init_cb(gt_obj_st * obj) {
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill = 1;
     rect_attr.bg_opa = obj->opa;
-    rect_attr.bg_color = style->bg_color;
+    rect_attr.bg_color = obj->bgcolor;
     rect_attr.border_color = style->border_color;
     rect_attr.border_width = style->border_width;
     rect_attr.radius = obj->radius;
@@ -788,8 +787,7 @@ void gt_keypad_set_color_background(gt_obj_st * keypad, gt_color_t color)
     if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;
     }
-    _gt_keypad_st* style = (_gt_keypad_st*)keypad;
-    style->bg_color = color;
+    gt_obj_set_bgcolor(keypad, color);
 }
 
 void gt_keypad_set_border_width_and_color(gt_obj_st * keypad, gt_size_t width, gt_color_t color)
