@@ -398,9 +398,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _reset_other_active_state(gt_obj_st * listview
 static GT_ATTRIBUTE_RAM_TEXT void _update_all_item_text_style(gt_obj_st * lv) {
     _gt_listview_st * style = (_gt_listview_st * )lv;
     gt_obj_st * item = NULL;
-    uint16_t item_count = 0;
-    uint16_t item_width = 0;
-
     /**
      * line items total max width equal to listview width, do not
      * recalculate the width of each item, just move widget to other
@@ -413,10 +410,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _update_all_item_text_style(gt_obj_st * lv) {
     for (gt_size_t i = 0, cnt = lv->cnt_child; i < cnt; ++i) {
         item = lv->child[i];
         if (1 == item->cnt_child && gt_obj_is_type(item->child[0], GT_TYPE_LAB)) {
-            item_count = _get_column_item_count_by(lv, i);
-            item_width = _get_column_item_width(style, lv->area.w, item_count);
-            item->area.w = item_width;
-            _set_label_pos(item->child[0], item, 0, item_width);
+            item->area.w = _get_column_item_width(style, lv->area.w, _get_column_item_count_by(lv, i));
+            _set_label_pos(item->child[0], item, 0, gt_obj_get_w(item));
         }
     }
     gt_event_send(lv, GT_EVENT_TYPE_DRAW_START, NULL);
