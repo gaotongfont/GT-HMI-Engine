@@ -137,10 +137,18 @@ static GT_ATTRIBUTE_RAM_TEXT void _x_anim_exec_cb(void * obj, int32_t val) {
     gt_obj_st * tar = (gt_obj_st * )obj;
     gt_obj_set_pos(tar, val, tar->area.y);
 }
+
 static GT_ATTRIBUTE_RAM_TEXT void _y_anim_exec_cb(void * obj, int32_t val) {
     gt_obj_st * tar = (gt_obj_st * )obj;
     gt_obj_set_pos(tar, tar->area.x, val);
 }
+
+static GT_ATTRIBUTE_RAM_TEXT void _radius_anim_exec_cb(void * obj, int32_t val) {
+    gt_obj_st * tar = (gt_obj_st * )obj;
+    tar->radius = val;
+    gt_event_send(tar, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 /* global functions / API interface -------------------------------------*/
 gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area)
 {
@@ -830,6 +838,21 @@ void gt_obj_set_radius(gt_obj_st * obj, gt_radius_t radius)
 {
     GT_CHECK_BACK(obj);
     obj->radius = radius;
+}
+
+void gt_obj_set_radius_anim(gt_obj_st * obj, gt_radius_t radius)
+{
+    GT_CHECK_BACK(obj);
+    gt_anim_st anim = {0};
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_EASE_IN_OUT);
+    gt_anim_set_time(&anim, GT_ANIM_PERIOD_TRANSITION_EFFECT_MS);
+    if (radius != obj->radius) {
+        gt_anim_set_value(&anim, obj->radius, radius);
+        gt_anim_set_exec_cb(&anim, _radius_anim_exec_cb);
+        gt_anim_start(&anim);
+    }
 }
 
 gt_radius_t gt_obj_get_radius(gt_obj_st * obj)

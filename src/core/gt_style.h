@@ -305,6 +305,7 @@ void gt_obj_set_reduce(gt_obj_st * obj, uint8_t reduce);
 uint8_t gt_obj_get_reduce(gt_obj_st * obj);
 
 void gt_obj_set_radius(gt_obj_st * obj, gt_radius_t radius);
+void gt_obj_set_radius_anim(gt_obj_st * obj, gt_radius_t radius);
 
 gt_radius_t gt_obj_get_radius(gt_obj_st * obj);
 
