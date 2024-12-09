@@ -111,9 +111,14 @@ void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h);
 void gt_obj_set_size_anim(gt_obj_st * obj, uint16_t w, uint16_t h);
 
 void gt_obj_set_x(gt_obj_st * obj, gt_size_t x);
+void gt_obj_set_x_anim(gt_obj_st * obj, gt_size_t x);
+
 void gt_obj_set_y(gt_obj_st * obj, gt_size_t y);
+void gt_obj_set_y_anim(gt_obj_st * obj, gt_size_t y);
+
 void gt_obj_set_w(gt_obj_st * obj, uint16_t w);
 void gt_obj_set_w_anim(gt_obj_st * obj, uint16_t w);
+
 void gt_obj_set_h(gt_obj_st * obj, uint16_t h);
 void gt_obj_set_h_anim(gt_obj_st * obj, uint16_t h);
 

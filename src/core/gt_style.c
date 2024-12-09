@@ -314,33 +314,25 @@ void gt_obj_set_size_anim(gt_obj_st * obj, uint16_t w, uint16_t h)
 void gt_obj_set_x(gt_obj_st * obj, gt_size_t x)
 {
     GT_CHECK_BACK(obj);
-    gt_area_st area = obj->area;
-    area.x = x;
-#if GT_USE_LAYER_TOP
-    if (_update_layer_top_widget_area(obj, area, false)) {
-        return ;
-    }
-#endif
-    if (gt_obj_get_virtual(obj)) {
-        return ;
-    }
-    gt_obj_set_area(obj, area);
+    gt_obj_set_pos(obj, x, obj->area.y);
+}
+
+void gt_obj_set_x_anim(gt_obj_st * obj, gt_size_t x)
+{
+    GT_CHECK_BACK(obj);
+    gt_obj_set_pos_anim(obj, x, obj->area.y);
 }
 
 void gt_obj_set_y(gt_obj_st * obj, gt_size_t y)
 {
     GT_CHECK_BACK(obj);
-    gt_area_st area = obj->area;
-    area.y = y;
-#if GT_USE_LAYER_TOP
-    if (_update_layer_top_widget_area(obj, area, false)) {
-        return ;
-    }
-#endif
-    if (gt_obj_get_virtual(obj)) {
-        return ;
-    }
-    gt_obj_set_area(obj, area);
+    gt_obj_set_pos(obj, obj->area.x, y);
+}
+
+void gt_obj_set_y_anim(gt_obj_st * obj, gt_size_t y)
+{
+    GT_CHECK_BACK(obj);
+    gt_obj_set_pos_anim(obj, obj->area.x, y);
 }
 
 void gt_obj_set_w(gt_obj_st * obj, uint16_t w)

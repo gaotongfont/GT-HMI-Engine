@@ -274,6 +274,55 @@ static inline uint8_t _column_plus_one(_gt_listview_st * style) {
     return current_idx;
 }
 
+static GT_ATTRIBUTE_RAM_TEXT uint16_t _get_column_item_width(_gt_listview_st * style, uint16_t widget_width, uint16_t column_count) {
+    if (column_count < 2) {
+        return widget_width;
+    }
+    return (widget_width - ((column_count - 1) * style->item_space.x)) / column_count;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT uint16_t _get_column_item_count_by(gt_obj_st * listview, uint16_t item_idx) {
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    if (item_idx > listview->cnt_child) {
+        return 0;
+    }
+    uint16_t valid_count = 1;   /** default one item */
+    gt_size_t cur_item_y = listview->child[item_idx]->area.y;
+    int16_t i = 0;
+    // prev same y items
+    for (i = item_idx - 1; i >= 0; --i) {
+        if (listview->child[i]->area.y < cur_item_y) {
+            break;
+        }
+        ++valid_count;
+    }
+    // next same y items
+    for (i = item_idx + 1; i < listview->cnt_child; ++i) {
+        if (listview->child[i]->area.y > cur_item_y) {
+            break;
+        }
+        ++valid_count;
+    }
+    return valid_count;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT bool _is_line_max_width_equal_to(gt_obj_st * listview) {
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    uint16_t line_max_width = 0;
+    uint16_t tmp_width = 0;
+    gt_size_t prev_y = -0x7fff;
+    for (uint16_t i = 0, cnt = listview->cnt_child; i < cnt; ++i) {
+        if (listview->child[i]->area.y > prev_y) {
+            prev_y = listview->child[i]->area.y;
+            if (tmp_width > line_max_width) {
+                line_max_width = tmp_width;
+            }
+            tmp_width = 0;
+        }
+        tmp_width += gt_obj_get_w(listview->child[i]);
+    }
+    return gt_obj_get_w(listview) == line_max_width;
+}
 
 static GT_ATTRIBUTE_RAM_TEXT void _set_last_active_obj(gt_obj_st * listview, gt_obj_st * target) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
@@ -349,12 +398,25 @@ static GT_ATTRIBUTE_RAM_TEXT void _reset_other_active_state(gt_obj_st * listview
 static GT_ATTRIBUTE_RAM_TEXT void _update_all_item_text_style(gt_obj_st * lv) {
     _gt_listview_st * style = (_gt_listview_st * )lv;
     gt_obj_st * item = NULL;
+    uint16_t item_count = 0;
+    uint16_t item_width = 0;
+
+    /**
+     * line items total max width equal to listview width, do not
+     * recalculate the width of each item, just move widget to other
+     * position.
+     */
+    if (_is_line_max_width_equal_to(lv)) {
+        return;
+    }
 
     for (gt_size_t i = 0, cnt = lv->cnt_child; i < cnt; ++i) {
         item = lv->child[i];
         if (1 == item->cnt_child && gt_obj_is_type(item->child[0], GT_TYPE_LAB)) {
-            item->area.w = lv->area.w;
-            _set_label_pos(item->child[0], item, 0, gt_obj_get_w(item));
+            item_count = _get_column_item_count_by(lv, i);
+            item_width = _get_column_item_width(style, lv->area.w, item_count);
+            item->area.w = item_width;
+            _set_label_pos(item->child[0], item, 0, item_width);
         }
     }
     gt_event_send(lv, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -485,12 +547,9 @@ static inline uint16_t _get_triple_real_width(_gt_listview_st * style, gt_obj_st
 static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
     gt_size_t offset_line = listview->area.y;
-    gt_size_t width = listview->area.w;
     uint8_t idx = _column_plus_one(style);
+    gt_size_t width = _get_column_item_width(style, listview->area.w, style->column.count);
 
-    if (style->column.count > 1) {
-        width = (listview->area.w - ((style->column.count - 1) * style->item_space.x)) / style->column.count;
-    }
     if (listview->cnt_child) {
         if (idx) {
             offset_line = style->column.offset_y;
