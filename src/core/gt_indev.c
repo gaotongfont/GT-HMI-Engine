@@ -704,7 +704,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
 
     if(top_obj){
         if(!gt_obj_is_child(indev->data.keypad.obj_target, layer_top) && indev->data.keypad.obj_target != layer_top){
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
             _SET_KEYPAD_LOCK(indev, false);
+#endif
             gt_obj_set_focus(obj_target, gt_obj_is_focus(obj_target));
             gt_obj_set_focus(top_obj, gt_obj_is_focus(top_obj));
         }
@@ -713,7 +715,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
     }
     else {
         if(!gt_obj_is_child(indev->data.keypad.obj_target, scr) && indev->data.keypad.obj_target != scr){
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
             _SET_KEYPAD_LOCK(indev, false);
+#endif
             gt_obj_set_focus(obj_target, gt_obj_is_focus(obj_target));
         }
         indev->data.keypad.obj_target = obj_target;
