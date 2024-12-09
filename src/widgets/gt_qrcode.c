@@ -39,7 +39,6 @@ typedef struct _gt_qr_code_s {
     uint8_t mask_patt;
     gt_family_t version;
     gt_color_t fg_color;
-    gt_color_t bg_color;
 }_gt_qr_code_st;
 
 
@@ -153,7 +152,7 @@ static void _init_cb(gt_obj_st * obj) {
 
     gt_area_st box_area = gt_area_reduce(obj->area , gt_obj_get_reduce(obj));
     // draw background
-    rect_attr.bg_color      = style->bg_color;
+    rect_attr.bg_color      = obj->bgcolor;
     draw_bg(obj->draw_ctx, &rect_attr, &box_area);
 
     area.w = ((area.w + 7) >> 3) << 3;
@@ -236,7 +235,7 @@ gt_obj_st * gt_qrcode_create(gt_obj_st * parent)
     style->version = GT_FAMILY_QRCODE_VERSION_10;
     style->ec_level = ECLevel_H;
     style->mask_patt = MaskPattern4;
-    style->bg_color = gt_color_white();
+    obj->bgcolor = gt_color_white();
     style->fg_color = gt_color_black();
     return obj;
 }
@@ -274,8 +273,7 @@ void gt_qrcode_set_background(gt_obj_st * qr_code , gt_color_t color)
     if (false == gt_obj_is_type(qr_code, OBJ_TYPE)) {
         return ;
     }
-    _gt_qr_code_st * style = (_gt_qr_code_st * )qr_code;
-    style->bg_color = color;
+    gt_obj_set_bgcolor(qr_code, color);
 }
 
 void gt_qrcode_set_forecolor(gt_obj_st * qr_code , gt_color_t color)
