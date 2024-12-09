@@ -48,7 +48,6 @@ typedef struct _gt_chat_s {
     _gt_chat_param_st msg_list[GT_CHAT_MAX_MSG_CNT];
     gt_font_info_st font_info;
 
-    gt_color_t bgcolor;
     gt_color_t send_bgcolor;
     gt_color_t send_border_color;
     gt_color_t send_font_color;
@@ -125,10 +124,9 @@ static void _init_cb(gt_obj_st * obj) {
     rect_attr.radius        = 0;
     rect_attr.bg_opa        = obj->opa;
     rect_attr.border_width  = 0;
-    rect_attr.bg_color      = style->bgcolor;
+    rect_attr.bg_color      = obj->bgcolor;
 
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
-
     draw_focus(obj, 0);
 }
 
@@ -467,8 +465,7 @@ void gt_chat_set_bg_color(gt_obj_st * chat, gt_color_t color)
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
         return ;
     }
-    _gt_chat_st * style = (_gt_chat_st * )chat;
-    style->bgcolor = color;
+    gt_obj_set_bgcolor(chat, color);
 }
 
 void gt_chat_add_send_text_msg(gt_obj_st * chat, const char * msg)

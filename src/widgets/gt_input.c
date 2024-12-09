@@ -646,8 +646,6 @@ void gt_input_set_bg_color(gt_obj_st * input, gt_color_t color)
     if (false == gt_obj_is_type(input, OBJ_TYPE)) {
         return ;
     }
-    // _gt_input_st * style = (_gt_input_st * )input;
-    // style->bg_color = color;
     input->bgcolor = color;
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
