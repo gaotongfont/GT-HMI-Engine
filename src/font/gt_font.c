@@ -1550,7 +1550,7 @@ _ret_dat:
     return len;
 }
 
-uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint32_t max_w, uint32_t start_w ,uint16_t space, uint32_t * ret_max_w)
+uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint32_t max_w, uint32_t start_w, uint16_t space, uint32_t * ret_max_w)
 {
     uint32_t line_numb = 1;
     if(!text) return line_numb;
@@ -1575,21 +1575,23 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint3
 
     while (idx < len) {
         if (0x0A == text[idx]) {
-            idx += 1;
+            ++idx;
             goto _compute_line;
         }
-
         temp_font.utf8 = (char*)&text[idx];
         temp_font.len = len - idx;
 
         idx_step = gt_font_split(&temp_font, disp_w, max_w, space, &ret_w, &lan, &lan_len);
-
         disp_w -= ret_w;
+
         if (disp_w <= 0 || 0 == idx_step) {
-            goto _compute_line;
+            /**
+             * if ret_w == max_w mean the words show just complete,
+             * display the word hold line.
+             */
+            if (ret_w < max_w) { goto _compute_line; }
         }
         idx += idx_step;
-
         continue;
 
     _compute_line:
@@ -1597,7 +1599,7 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint3
         disp_w = max_w;
     }
 
-    if(ret_max_w) *ret_max_w = (line_numb > 1) ? max_w : max_w - disp_w;
+    if(ret_max_w) *ret_max_w = (line_numb > 1) ? max_w : (max_w - disp_w);
 
     gt_mem_free(temp_font.res);
     temp_font.res = NULL;
