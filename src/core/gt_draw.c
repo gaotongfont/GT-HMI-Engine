@@ -897,7 +897,9 @@ static GT_ATTRIBUTE_RAM_TEXT gt_size_t _get_align_start_y_by_line(const gt_attr_
 
 static GT_ATTRIBUTE_RAM_TEXT _text_offset_line_st _get_align_start_y(const gt_attr_font_st * dsc,
     const gt_area_st * coords, gt_font_st * tmp_font, uint8_t * txt) {
-    _text_offset_line_st ret = {0};
+    _text_offset_line_st ret = {
+        .line_count = 1,
+    };
     uint32_t ret_w = 0;
     gt_size_t disp_w = coords->w;
     gt_align_et type = _get_align_type(dsc->align);
