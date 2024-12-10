@@ -193,7 +193,8 @@ typedef struct _gt_indev_s {
             struct gt_obj_s * obj_origin;    ///< The object of first touch
 
             uint16_t lock : 1;
-            uint16_t reserved : 15;
+            uint16_t last_layer : 1; // 0: scr, 1: layer top
+            uint16_t reserved : 14;
         }keypad;
     }data;
 
