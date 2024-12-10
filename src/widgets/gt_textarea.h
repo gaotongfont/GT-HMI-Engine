@@ -140,6 +140,8 @@ void gt_textarea_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t space_
 void gt_textarea_set_font_size(gt_obj_st * textarea, uint8_t size);
 void gt_textarea_set_font_gray(gt_obj_st * textarea, uint8_t gray);
 
+void gt_textarea_set_indent(gt_obj_st * textarea, uint16_t indent);
+
 /**
  * @brief Set font alignment
  *      NOTE textarea only support GT_ALIGN_LEFT

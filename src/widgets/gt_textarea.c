@@ -61,6 +61,7 @@ typedef struct _gt_textarea_s {
 
     gt_font_info_st font_info;
 
+    uint16_t indent;
     uint8_t bg_opa;     /* @ref gt_color.h */
     uint8_t space_x;
     uint8_t space_y;
@@ -198,6 +199,7 @@ static void _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_poin
         .space_x    = style->space_x,
         .space_y    = style->space_y,
         .align      = style->font_align,
+        .indent     = style->indent,
         .opa        = obj->opa,
         .reg.immediately_return = _is_hold_on_contents_for_scroll(style),
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
@@ -716,6 +718,17 @@ void gt_textarea_set_font_gray(gt_obj_st * textarea, uint8_t gray)
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->font_info.gray = gray;
 }
+
+void gt_textarea_set_indent(gt_obj_st * textarea, uint16_t indent)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    style->indent = indent;
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 void gt_textarea_set_font_align(gt_obj_st * textarea, gt_align_et align)
 {
     if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
@@ -728,6 +741,7 @@ void gt_textarea_set_font_align(gt_obj_st * textarea, gt_align_et align)
 
     style->font_align = align;
 }
+
 void gt_textarea_set_font_color(gt_obj_st * textarea, gt_color_t color)
 {
     if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
