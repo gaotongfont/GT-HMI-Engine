@@ -195,6 +195,8 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
 
     uint32_t start_w = _MSG_MAX_W(chat->area.w) - (2 * style->font_info.size);
 
+    gt_radius_t radius = style->msg_radius;
+
     h = gt_font_split_line_numb(&style->font_info, gt_btn_get_text(style->msg_list[idx].msg_obj), _MSG_MAX_W(chat->area.w), start_w, 0, &w);
 
     if (h > 1) {
@@ -209,6 +211,12 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
     w = w > _MSG_MAX_W(chat->area.w)  ? _MSG_MAX_W(chat->area.w) + 4 : w;
     x = style->msg_list[idx].is_send ? chat->area.x + chat->area.w - w - _MSG_SPACE_X : chat->area.x + _MSG_SPACE_X;
     y =  idx <= 0 ? _MSG_SPACE_Y + chat->area.y : style->msg_list[idx - 1].msg_obj->area.y + style->msg_list[idx - 1].msg_obj->area.h + _MSG_SPACE_Y;
+
+    if(radius > GT_MIN(w >> 1, h >> 1)) {
+        radius = GT_MIN(w >> 1, h >> 1);
+    }
+
+    gt_btn_set_radius(style->msg_list[idx].msg_obj, radius);
 
     style->msg_list[idx].msg_obj->area.x = x;
     style->msg_list[idx].msg_obj->area.y = y;
