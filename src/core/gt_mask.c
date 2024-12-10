@@ -310,7 +310,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_mask_res_et _gt_mask_radius_get(gt_opa_t* mask_b
                                         gt_size_t abs_x, gt_size_t abs_y, uint16_t len, \
                                         gt_mask_radius_st* p)
 {
-    if(!p || !p->circle || !p->circle->buf){
+    if(!p){
         return GT_MASK_RES_UNKNOWN;
     }
 
@@ -380,6 +380,11 @@ static GT_ATTRIBUTE_RAM_TEXT gt_mask_res_et _gt_mask_radius_get(gt_opa_t* mask_b
     else {
         cir_y = abs_y - (h - radius);
     }
+
+    if(!p->circle){
+        return GT_MASK_RES_UNKNOWN;
+    }
+
     gt_opa_t * aa_opa = _get_next_line(p->circle, cir_y, &aa_len, &x_start);
     gt_size_t cir_x_right = k + w - radius + x_start;
     gt_size_t cir_x_left = k + radius - x_start - 1;

@@ -137,6 +137,17 @@ static void _btn_init_cb(gt_obj_st * obj) {
     } else {
         font_attr.font_color = style->font_color;
     }
+
+    if( style->font_align == GT_ALIGN_LEFT
+        || style->font_align == GT_ALIGN_LEFT_MID
+        || style->font_align == GT_ALIGN_LEFT_BOTTOM
+
+    ){
+        font_attr.logical_area.x += 4;
+        font_attr.logical_area.w -= 8;
+    }
+
+
     draw_text(obj->draw_ctx, &font_attr, &area);
 
     // focus

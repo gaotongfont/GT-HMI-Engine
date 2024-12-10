@@ -57,6 +57,9 @@ typedef struct _gt_chat_s {
 
     gt_size_t paly_idx;
     gt_size_t msg_select_idx;
+
+    gt_radius_t msg_radius;
+
     uint16_t max_h;
     uint8_t msg_cnt;
 
@@ -84,6 +87,7 @@ typedef enum{
     _SET_MSG_FONT_GRAY,
     _SET_MSG_FONT_THICK_EN,
     _SET_MSG_FONT_THICK_CN,
+    _SET_MSG_RADIUS,
 }_gt_chat_set_msg_te;
 
 /* static prototypes ----------------------------------------------------*/
@@ -184,12 +188,14 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_set_msg_font_info_all(gt_obj_st * msg_obj,
     gt_btn_set_font_thick_en(msg_obj, font_info->thick_en);
 }
 
-static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, uint8_t idx) {
+static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, uint8_t idx, bool is_send) {
     _gt_chat_st * style = (_gt_chat_st * )chat;
     uint32_t w = 0, h = 0;
     gt_size_t x, y;
 
-    h = gt_font_split_line_numb(&style->font_info, gt_btn_get_text(style->msg_list[idx].msg_obj), _MSG_MAX_W(chat->area.w), _MSG_MAX_W(chat->area.w), 0, &w);
+    uint32_t start_w = _MSG_MAX_W(chat->area.w) - (2 * style->font_info.size);
+
+    h = gt_font_split_line_numb(&style->font_info, gt_btn_get_text(style->msg_list[idx].msg_obj), _MSG_MAX_W(chat->area.w), start_w, 0, &w);
 
     if (h > 1) {
         gt_btn_set_font_align(style->msg_list[idx].msg_obj, GT_ALIGN_LEFT_MID);
@@ -262,7 +268,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_add_msg(gt_obj_st * chat, const char 
         _gt_set_voice_text(style->msg_list[style->msg_cnt].msg_obj, tim_s, is_send, GT_SYMBOL_VOICE_PLAY-1);
     }
 
-    style->max_h += _gt_update_msg_area_idx(chat, style->msg_cnt);
+    style->max_h += _gt_update_msg_area_idx(chat, style->msg_cnt, is_send);
     style->msg_cnt++;
 
     chat->process_attr.scroll.y = chat->area.h - style->max_h;
@@ -284,7 +290,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_append_msg(gt_obj_st* chat, const cha
     gt_btn_set_text(obj, "%s%s", cur_text, msg);
 
     style->max_h -= (gt_obj_get_h(obj) + _MSG_SPACE_Y);
-    style->max_h += _gt_update_msg_area_idx(chat, index);
+    style->max_h += _gt_update_msg_area_idx(chat, index, style->msg_list[index].is_send);
     chat->process_attr.scroll.y = chat->area.h - style->max_h;
     _gt_chat_msg_move_y(chat, chat->process_attr.scroll.y);
 }
@@ -310,7 +316,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_update_msg_size(gt_obj_st * chat) {
     uint16_t max_h = _MSG_SPACE_Y;
     for(int i = 0; i < style->msg_cnt; i++)
     {
-        max_h += _gt_update_msg_area_idx(chat, style->msg_cnt);
+        max_h += _gt_update_msg_area_idx(chat, i, style->msg_list[i].is_send);
     }
     style->max_h = max_h;
 }
@@ -431,6 +437,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_set_msg_param(gt_obj_st* chat, _gt_chat_se
         case _SET_MSG_FONT_THICK_CN:
             gt_btn_set_font_thick_cn(style->msg_list[i].msg_obj, style->font_info.thick_cn);
             break;
+        case _SET_MSG_RADIUS:
+            gt_btn_set_radius(style->msg_list[i].msg_obj, style->msg_radius);
         default:
             break;
         }
@@ -564,6 +572,7 @@ void gt_chat_set_send_msg_border_width(gt_obj_st * chat, uint8_t width)
     _gt_chat_st * style = (_gt_chat_st * )chat;
     style->send_border_w = width;
     _gt_set_msg_param(chat, _SET_MSG_BORDER_W);
+    _gt_chat_update_msg_size(chat);
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_chat_set_received_msg_border_width(gt_obj_st * chat, uint8_t width)
@@ -574,6 +583,7 @@ void gt_chat_set_received_msg_border_width(gt_obj_st * chat, uint8_t width)
     _gt_chat_st * style = (_gt_chat_st * )chat;
     style->recv_border_w = width;
     _gt_set_msg_param(chat, _SET_MSG_BORDER_W);
+    _gt_chat_update_msg_size(chat);
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_chat_set_send_msg_font_color(gt_obj_st * chat, gt_color_t color)
@@ -725,7 +735,20 @@ void gt_chat_clean_all_msg(gt_obj_st * chat)
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-#endif /** GT_CFG_ENABLE_CHATTING */
+void gt_chat_set_msg_radius(gt_obj_st * chat, gt_radius_t radius)
+{
+    if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_chat_st * style = (_gt_chat_st * )chat;
+    style->msg_radius = radius;
+    _gt_set_msg_param(chat, _SET_MSG_RADIUS);
+    _gt_chat_update_msg_size(chat);
+    gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
+
+}
+
 /* end of file ----------------------------------------------------------*/
+#endif /** GT_CFG_ENABLE_CHATTING */
 
 

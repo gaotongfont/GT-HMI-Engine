@@ -1589,7 +1589,10 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint3
              * if ret_w == max_w mean the words show just complete,
              * display the word hold line.
              */
-            if (ret_w < max_w) { goto _compute_line; }
+            if(disp_w == 0){
+                idx += idx_step;
+            }
+            goto _compute_line;
         }
         idx += idx_step;
         continue;
