@@ -899,7 +899,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_size_t _get_align_start_y(const gt_attr_font_st 
     }
 
     if (GT_ALIGN_LEFT != type && GT_ALIGN_RIGHT != type && GT_ALIGN_CENTER != type && GT_ALIGN_NONE != type) {
-        line_count = gt_font_split_line_numb(&tmp_font->info, txt, coords->w, disp_w, dsc->space_x, &ret_w);
+        line_count = gt_font_split_line_numb(&tmp_font->info, (const char *)txt, coords->w, disp_w, dsc->space_x, &ret_w);
     }
 
     return _get_align_start_y_by_line(dsc, coords, tmp_font, txt, line_count);
