@@ -193,9 +193,11 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
 
     if( h > 1){
         gt_btn_set_font_align(style->msg_list[idx].msg_obj, GT_ALIGN_LEFT_MID);
+        gt_btn_set_indent(style->msg_list[idx].msg_obj, 2);
     }
     else{
         gt_btn_set_font_align(style->msg_list[idx].msg_obj, GT_ALIGN_CENTER_MID);
+        gt_btn_set_indent(style->msg_list[idx].msg_obj, 0);
     }
     h = (h + 1) * (style->font_info.size);
     w += style->font_info.size;
