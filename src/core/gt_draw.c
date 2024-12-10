@@ -1043,9 +1043,11 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
     }
     // disp
     if (start_x_flag) {
+        /** have direct position do not indent */
         disp_w = coords->w - (dsc->start_x - coords->x);
         is_first_line = false;
     } else if (1 == off_line.line_count && _is_align_center(dsc->align)) {
+        /** center single line do not indent */
         is_first_line = false;
     } else if (is_first_line) {
         disp_w -= _get_indent_offset(dsc);
