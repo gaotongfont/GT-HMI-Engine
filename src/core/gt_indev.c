@@ -697,7 +697,9 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st* _find_keypad_target_obj(gt_indev_st* ind
 
     if(top_obj){
         if(1 != indev->data.keypad.last_layer){
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
             _SET_KEYPAD_LOCK(indev, false);
+#endif
             if(scr_obj != scr){
                 gt_obj_set_focus(scr_obj, gt_obj_is_focus(scr_obj));
             }
@@ -708,7 +710,9 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st* _find_keypad_target_obj(gt_indev_st* ind
     }
     else{
         if(0 != indev->data.keypad.last_layer) {
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
             _SET_KEYPAD_LOCK(indev, false);
+#endif
             if(scr_obj != scr){
                 gt_obj_set_focus(scr_obj, gt_obj_is_focus(scr_obj));
             }
