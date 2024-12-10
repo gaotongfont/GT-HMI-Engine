@@ -834,8 +834,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
         }
 #endif
         else {
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
 _key_pressed:
-
+#endif
 #if GT_USE_LAYER_TOP
             if(GT_KEY_ESC == indev->data.keypad.key &&
                 (gt_obj_is_child(indev->data.keypad.obj_origin, layer_top) || indev->data.keypad.obj_origin == layer_top)
@@ -931,7 +932,9 @@ _key_pressed:
             }
 #endif
             else {
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
 _key_pressing:
+#endif
 
 #if GT_USE_LAYER_TOP
                 if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
