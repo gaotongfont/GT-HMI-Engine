@@ -46,6 +46,7 @@ typedef struct _gt_btn_s {
     uint8_t border_width;
 
     _gt_btn_reg_st reg;
+    uint16_t indent;
     uint8_t font_align;     //@ref gt_align_et
     uint8_t space_x;
     uint8_t space_y;
@@ -128,6 +129,7 @@ static void _btn_init_cb(gt_obj_st * obj) {
         .align          = style->font_align,
         .opa            = obj->opa,
         .logical_area   = area,
+        .indent         = style->indent,
     };
 
     if (gt_obj_get_state(obj) == GT_STATE_PRESSED) {
@@ -515,6 +517,16 @@ void gt_btn_set_font_cjk(gt_obj_st* btn, gt_font_cjk_et cjk)
     style->font_info.cjk = cjk;
 }
 #endif
+
+void gt_btn_set_indent(gt_obj_st * btn, uint16_t indent)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+    style->indent = indent;
+}
+
 void gt_btn_set_radius(gt_obj_st * btn, gt_radius_t radius)
 {
     if (false == gt_obj_is_type(btn, OBJ_TYPE)) {

@@ -41,6 +41,7 @@ typedef struct _gt_label_s {
     gt_color_t  font_color;
     gt_font_info_st font_info;
 
+    uint16_t indent;
     uint8_t font_align;     //@ref gt_align_et
     uint8_t space_x;
     uint8_t space_y;
@@ -95,6 +96,7 @@ static void _init_cb(gt_obj_st * obj) {
         .opa        = obj->opa,
         .reg        = style->text_style,
         .logical_area = box_area,
+        .indent     = style->indent,
     };
     if (style->text_style.single_line && style->auto_scroll) {
         font_attr.logical_area = style->auto_scroll->area;
@@ -418,6 +420,15 @@ void gt_label_set_font_gray(gt_obj_st * label, uint8_t gray)
     }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.gray = gray;
+}
+
+void gt_label_set_indent(gt_obj_st * label, uint16_t indent)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    style->indent = indent;
 }
 
 void gt_label_set_font_align(gt_obj_st * label, gt_align_et align)

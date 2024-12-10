@@ -838,6 +838,10 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _filling_by_default(_gt_draw_ctx_st * d
     _filling_by_default_line_mode(draw_ctx, blend_dsc, dsc_img);
 }
 
+static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t _get_indent_offset(const gt_attr_font_st * dsc) {
+    return dsc->indent * dsc->font->info.size;
+}
+
 /**
  * @brief
  *
@@ -1007,6 +1011,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
 #endif
     bool cov_flag_ol = false;
     bool start_x_flag = dsc->reg.enabled_start;
+    bool is_first_line = true;
     _gt_font_dot_ret_st dot_ret = {0};
     uint16_t line_height = _calc_line_height_pixel(&area_font, dsc, style_space_y);
     ret.size.y = line_height;
@@ -1026,6 +1031,9 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
     // disp
     if (start_x_flag) {
         disp_w = coords->w - (dsc->start_x - coords->x);
+        is_first_line = false;
+    } else if (is_first_line) {
+        disp_w -= _get_indent_offset(dsc);
     }
 
     while (idx < txt_len) {
@@ -1135,6 +1143,14 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
         if (start_x_flag) {
             area_font.x = dsc->start_x;
             start_x_flag = false;
+        }
+        if (is_first_line) {
+            is_first_line = false;
+            if (_is_align_reverse(dsc->align)) {
+                area_font.x -= _get_indent_offset(dsc);
+            } else {
+                area_font.x += _get_indent_offset(dsc); // add text indent
+            }
         }
         idx_2 = 0;
 #if _GT_FONT_ENABLE_CONVERTOR
@@ -1307,6 +1323,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
         }
         bidi_len = 0;
 #endif
+        if (0x0A == txt[idx - 1]) { is_first_line = true; } /** need to indent */
         idx_len = 0;
         txt_2 = &txt[idx];
         font_disp_h = dsc->font->info.size;

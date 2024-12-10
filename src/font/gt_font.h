@@ -162,6 +162,9 @@ typedef struct _gt_attr_font_s {
     gt_size_t start_x;  ///< draw text start x from coords,if not need,must set 0
     gt_size_t start_y;  ///< draw text start y from coords,if not need,must set 0
 
+    ///< over 0: set the text indent words font size, 0: not set
+    uint16_t indent;
+
     uint8_t space_x;    ///< The width of the space between characters
     uint8_t space_y;    ///< The distance between rows
 
