@@ -67,6 +67,7 @@ void gt_arc_set_rounded(gt_obj_st* obj, bool rounded);
  * @param src
  */
 void gt_arc_set_act_img(gt_obj_st * obj, char * src);
+
 /**
  * @brief Set the arc pointer background img
  *

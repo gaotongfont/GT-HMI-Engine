@@ -263,7 +263,6 @@ static void _knob_scroll_headler(gt_obj_st * obj, bool flag)
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
 {
     gt_event_type_et code_val = gt_event_get_code(e);
-    gt_area_st area;
 
     switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START:
@@ -385,7 +384,7 @@ void gt_arc_set_bg_img(gt_obj_st * obj, char * src)
 
     gt_area_st area;
     gt_area_copy(&area, &obj->area);
-    if(GT_RES_OK == gt_fs_read_img_wh(style->bg.img.src, &area.w, &area.h)){
+    if(GT_FS_RES_OK == gt_fs_read_img_wh(style->bg.img.src, &area.w, &area.h)){
         if(area.w != 0 && area.h != 0){
             gt_obj_size_change(obj, &area);
         }
