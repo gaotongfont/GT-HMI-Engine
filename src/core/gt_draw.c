@@ -73,6 +73,11 @@ typedef struct {
     uint16_t end_quarter;
 }_quarter_circle_st;
 
+typedef struct {
+    uint16_t line_count;
+    gt_size_t offset_y;
+}_text_offset_line_st;
+
 /* static variables -----------------------------------------------------*/
 
 /** Single line omit mode, such as: "..." */
@@ -842,6 +847,10 @@ static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t _get_indent_offset(const gt_attr_f
     return dsc->indent * dsc->font->info.size;
 }
 
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_align_center(gt_align_et align) {
+    return GT_ALIGN_CENTER == align || GT_ALIGN_CENTER_MID == align || GT_ALIGN_CENTER_BOTTOM == align;
+}
+
 /**
  * @brief
  *
@@ -855,7 +864,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t _get_align_start_x(gt_align_et ali
     uint16_t width, uint16_t string_width) {
     gt_align_et type = _get_align_type(align);
 
-    if (GT_ALIGN_CENTER == type || GT_ALIGN_CENTER_MID == type || GT_ALIGN_CENTER_BOTTOM == type) {
+    if (_is_align_center(type)) {
         return ((width - string_width) >> 1) + x;
     }
     if (GT_ALIGN_RIGHT == type || GT_ALIGN_RIGHT_MID == type || GT_ALIGN_RIGHT_BOTTOM == type) {
@@ -886,10 +895,10 @@ static GT_ATTRIBUTE_RAM_TEXT gt_size_t _get_align_start_y_by_line(const gt_attr_
     return offset_y;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT gt_size_t _get_align_start_y(const gt_attr_font_st * dsc,
+static GT_ATTRIBUTE_RAM_TEXT _text_offset_line_st _get_align_start_y(const gt_attr_font_st * dsc,
     const gt_area_st * coords, gt_font_st * tmp_font, uint8_t * txt) {
+    _text_offset_line_st ret = {0};
     uint32_t ret_w = 0;
-    uint16_t line_count = 1;
     gt_size_t disp_w = coords->w;
     gt_align_et type = _get_align_type(dsc->align);
 
@@ -899,10 +908,11 @@ static GT_ATTRIBUTE_RAM_TEXT gt_size_t _get_align_start_y(const gt_attr_font_st 
     }
 
     if (GT_ALIGN_LEFT != type && GT_ALIGN_RIGHT != type && GT_ALIGN_CENTER != type && GT_ALIGN_NONE != type) {
-        line_count = gt_font_split_line_numb(&tmp_font->info, (const char *)txt, coords->w, disp_w, dsc->space_x, &ret_w);
+        ret.line_count = gt_font_split_line_numb(&tmp_font->info, (const char *)txt, coords->w, disp_w, dsc->space_x, &ret_w);
     }
 
-    return _get_align_start_y_by_line(dsc, coords, tmp_font, txt, line_count);
+    ret.offset_y = _get_align_start_y_by_line(dsc, coords, tmp_font, txt, ret.line_count);
+    return ret;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT uint16_t _calc_line_height_pixel(gt_area_st * area_font, const gt_attr_font_st * dsc, uint8_t style_space_y) {
@@ -1024,13 +1034,16 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
     }
 #endif  /** _GT_FONT_ENABLE_CONVERTOR */
     // align vertical
-    area_font.y = _get_align_start_y(dsc, coords, &tmp_font, txt);
+    _text_offset_line_st off_line = _get_align_start_y(dsc, coords, &tmp_font, txt);
+    area_font.y = off_line.offset_y;
     if (dsc->reg.enabled_start) {
         area_font.y = dsc->start_y;
     }
     // disp
     if (start_x_flag) {
         disp_w = coords->w - (dsc->start_x - coords->x);
+        is_first_line = false;
+    } else if (1 == off_line.line_count && _is_align_center(dsc->align)) {
         is_first_line = false;
     } else if (is_first_line) {
         disp_w -= _get_indent_offset(dsc);
