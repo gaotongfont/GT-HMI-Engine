@@ -851,6 +851,12 @@ static GT_ATTRIBUTE_RAM_TEXT inline bool _is_align_center(gt_align_et align) {
     return GT_ALIGN_CENTER == align || GT_ALIGN_CENTER_MID == align || GT_ALIGN_CENTER_BOTTOM == align;
 }
 
+static GT_ATTRIBUTE_RAM_TEXT inline gt_align_et _is_verial_mid_or_bottom(gt_align_et align) {
+    return GT_ALIGN_LEFT_MID == align || GT_ALIGN_LEFT_BOTTOM == align ||
+        GT_ALIGN_CENTER_MID == align || GT_ALIGN_RIGHT_MID == align ||
+        GT_ALIGN_CENTER_BOTTOM == align || GT_ALIGN_RIGHT_BOTTOM == align;
+}
+
 /**
  * @brief
  *
@@ -909,8 +915,8 @@ static GT_ATTRIBUTE_RAM_TEXT _text_offset_line_st _get_align_start_y(const gt_at
         disp_w = coords->w - (dsc->start_x - coords->x);
     }
 
-    if (GT_ALIGN_LEFT != type && GT_ALIGN_RIGHT != type && GT_ALIGN_CENTER != type && GT_ALIGN_NONE != type) {
-        ret.line_count = gt_font_split_line_numb(&tmp_font->info, (const char *)txt, coords->w, disp_w, dsc->space_x, &ret_w);
+    if (_is_verial_mid_or_bottom(type)) {
+        /** calc total line count to calc position offset */
     }
 
     ret.offset_y = _get_align_start_y_by_line(dsc, coords, tmp_font, txt, ret.line_count);
@@ -1166,7 +1172,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
             if (_is_align_reverse(dsc->align)) {
                 area_font.x -= _get_indent_offset(dsc);
             } else {
-                area_font.x += _get_indent_offset(dsc); // add text indent
+                area_font.x += _get_indent_offset(dsc);
             }
         }
         idx_2 = 0;
