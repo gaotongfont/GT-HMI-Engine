@@ -843,10 +843,6 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _filling_by_default(_gt_draw_ctx_st * d
     _filling_by_default_line_mode(draw_ctx, blend_dsc, dsc_img);
 }
 
-static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t _get_indent_offset(const gt_attr_font_st * dsc) {
-    return (dsc->font->info.size >> 1) * dsc->indent;
-}
-
 static GT_ATTRIBUTE_RAM_TEXT inline bool _is_align_center(gt_align_et align) {
     return GT_ALIGN_CENTER == align || GT_ALIGN_CENTER_MID == align || GT_ALIGN_CENTER_BOTTOM == align;
 }
@@ -914,7 +910,7 @@ static GT_ATTRIBUTE_RAM_TEXT _text_offset_line_st _get_align_start_y(const gt_at
     if (dsc->reg.enabled_start) {
         disp_w = coords->w - (dsc->start_x - coords->x);
     } else {
-        indent = _get_indent_offset(dsc);
+        indent = gt_font_get_indent_width(&dsc->font->info, dsc->indent);
     }
 
     if (_is_verial_mid_or_bottom(type)) {
@@ -1065,7 +1061,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
         /** center single line do not indent */
         is_first_line = false;
     } else if (is_first_line) {
-        disp_w -= _get_indent_offset(dsc);
+        disp_w -= gt_font_get_indent_width(&dsc->font->info, dsc->indent);
     }
 
     while (idx < txt_len) {
@@ -1181,9 +1177,9 @@ _disp_font:
         if (is_first_line) {
             is_first_line = false;
             if (_is_align_reverse(dsc->align)) {
-                area_font.x -= _get_indent_offset(dsc);
+                area_font.x -= gt_font_get_indent_width(&dsc->font->info, dsc->indent);
             } else {
-                area_font.x += _get_indent_offset(dsc);
+                area_font.x += gt_font_get_indent_width(&dsc->font->info, dsc->indent);
             }
         }
         idx_2 = 0;

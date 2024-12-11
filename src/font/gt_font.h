@@ -260,11 +260,15 @@ typedef struct gt_font_split_line_s {
     uint32_t max_w;
     uint32_t start_w;
     uint16_t space;
-    uint16_t indent;
+    uint16_t indent;    /** the total width of indent which calc by font size */
 }gt_font_split_line_st;
 
 /* macros ---------------------------------------------------------------*/
-
+static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t
+gt_font_get_indent_width(gt_font_info_st const * const font_info_p, uint16_t indent) {
+    if (NULL == font_info_p) { return 0; }
+    return (font_info_p->size >> 1) * indent;
+}
 
 
 /* global functions / API interface -------------------------------------*/
