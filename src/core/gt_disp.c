@@ -219,9 +219,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_del_ready_cb(struct gt_anim_s * anim
     gt_obj_st * old_scr = (gt_obj_st * )anim->tar;
     old_scr->using_sta = 0;
     _gt_obj_class_destroy(old_scr);
-// #if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
-//     gt_indev_release_focus_lock();
-// #endif
 }
 
 #if GT_USE_SCREEN_ANIM
