@@ -418,9 +418,14 @@ void gt_obj_set_opa_anim(gt_obj_st * obj, gt_opa_t opa)
     gt_anim_start(&anim);
 }
 
-void gt_obj_set_opa_step(gt_obj_st * obj, gt_opa_t step_opa)
+void gt_obj_set_opa_step(gt_obj_st * obj, gt_size_t step_opa)
 {
-    gt_obj_set_opa(obj, obj->opa + step_opa);
+    if (obj->opa + step_opa < 0) {
+        step_opa = -(gt_size_t)obj->opa;
+    } else if (obj->opa + step_opa > GT_OPA_COVER) {
+        step_opa = (gt_size_t)GT_OPA_COVER - obj->opa;
+    }
+    gt_obj_set_opa(obj, (gt_opa_t)(obj->opa + step_opa));
 }
 
 gt_size_t gt_obj_get_x(gt_obj_st * obj)
