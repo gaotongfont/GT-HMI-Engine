@@ -540,11 +540,7 @@ void gt_btn_set_indent(gt_obj_st * btn, uint16_t indent)
 
 void gt_btn_set_radius(gt_obj_st * btn, gt_radius_t radius)
 {
-    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
-        return ;
-    }
-    btn->radius = radius;
-    gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
+    gt_obj_set_radius(btn, radius);
 }
 
 bool gt_btn_add_state_content(gt_obj_st * btn, const char * str)

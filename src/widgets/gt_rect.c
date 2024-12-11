@@ -161,11 +161,7 @@ void gt_rect_set_color_border(gt_obj_st * rect, gt_color_t color)
 }
 void gt_rect_set_radius(gt_obj_st * rect, gt_radius_t radius)
 {
-    if (false == gt_obj_is_type(rect, OBJ_TYPE)) {
-        return ;
-    }
-    rect->radius = radius;
-    gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
+    gt_obj_set_radius(rect, radius);
 }
 void gt_rect_set_border(gt_obj_st * rect, uint16_t border)
 {

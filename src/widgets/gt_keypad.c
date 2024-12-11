@@ -831,11 +831,7 @@ void gt_keypad_set_key_border_width_and_color(gt_obj_st * keypad, gt_size_t widt
 
 void gt_keypad_set_radius(gt_obj_st * keypad, uint8_t radius)
 {
-    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
-        return;
-    }
-    keypad->radius = radius;
-    gt_event_send(keypad, GT_EVENT_TYPE_DRAW_START, NULL);
+    gt_obj_set_radius(keypad, radius);
 }
 
 void gt_keypad_set_key_radius(gt_obj_st * keypad, uint8_t radius)
