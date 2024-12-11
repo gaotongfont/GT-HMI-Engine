@@ -909,14 +909,23 @@ static GT_ATTRIBUTE_RAM_TEXT _text_offset_line_st _get_align_start_y(const gt_at
     uint32_t ret_w = 0;
     gt_size_t disp_w = coords->w;
     gt_align_et type = _get_align_type(dsc->align);
-
+    uint16_t indent = 0;
 
     if (dsc->reg.enabled_start) {
         disp_w = coords->w - (dsc->start_x - coords->x);
+    } else {
+        indent = _get_indent_offset(dsc);
     }
 
     if (_is_verial_mid_or_bottom(type)) {
         /** calc total line count to calc position offset */
+        gt_font_split_line_st sp_line = {
+            .max_w = coords->w,
+            .start_w = disp_w,
+            .space = dsc->space_x,
+            .indent = indent,
+        };
+        ret.line_count = gt_font_split_line_numb(&tmp_font->info, (const char *)txt, &sp_line, &ret_w);
     }
 
     ret.offset_y = _get_align_start_y_by_line(dsc, coords, tmp_font, txt, ret.line_count);
@@ -1067,9 +1076,8 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
                 break;
             }
         }
-        // '\n'
-        if (0x0A == txt[idx]) {
-            idx_step = 0;
+        // "\n"
+        if(0x0A == txt[idx]){
             ++idx;
             goto _disp_font;
         }
@@ -1082,25 +1090,14 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
         tmp_font.utf8 = (char * )&txt[idx];
         tmp_font.len = txt_len - idx;
         idx_step = gt_font_split(&tmp_font, disp_w, coords->w, dsc->space_x, &ret_w, &lan, &lan_len);
+        disp_w -= ret_w;
 
-        if (0 == idx_step && 0 == ret_w) {
-            ++over_length;
-            if (disp_w == coords->w) {
-                ++over_length;
-            }
-        } else {
-            over_length = 0;
-        }
-        if (0 != idx_step) {
-            disp_w -= ret_w;
-        }
-        if (disp_w > tmp_font.info.size && idx_step != 0) {
-#if _GT_FONT_ENABLE_CONVERTOR
-            if (_gt_font_is_convertor_language(lan)) {
-                if (bidi_max <= bidi_len) {
+        if(disp_w == 0){
+            if(_gt_font_is_convertor_language(lan)){
+                if(bidi_max <= bidi_len){
                     ++bidi_max;
-                    bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
-                    if (NULL == bidi) {
+                    bidi = (gt_bidi_st *)gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
+                    if(NULL == bidi){
                         GT_LOGE(GT_LOG_TAG_GUI, "bidi realloc is failed!!! size = %lu", bidi_max * sizeof(gt_bidi_st));
                         goto _ret_handler;
                     }
@@ -1110,52 +1107,66 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
                 bidi[bidi_len].flag = lan;
                 ++bidi_len;
             }
-#endif
             idx += idx_step;
             idx_len += idx_step;
-
-            if (idx < txt_len) {
-                continue;
-            }
+            goto _disp_font;
         }
-    _disp_font:
-        if (over_length < 2) {
-#if _GT_FONT_ENABLE_CONVERTOR
-            if (_gt_font_is_convertor_language(lan) && (idx < txt_len)) {
-                if (bidi_max <= bidi_len) {
+        else if(disp_w < 0){
+            disp_w = 0;
+            goto _disp_font;
+        }
+
+        // ! overlength
+        if(0 == idx_step && 0 == ret_w && (disp_w == coords->w || 0 == idx_len)) {
+            if(_gt_font_is_convertor_language(lan)){
+                if(bidi_max <= bidi_len){
                     ++bidi_max;
-                    bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
-                }
-                bidi[bidi_len].idx = idx_len;
-                bidi[bidi_len].len = idx_step;
-                bidi[bidi_len].flag = lan;
-                ++bidi_len;
-            }
-#endif
-            idx_len = (idx < txt_len) ? idx_len + idx_step : idx_len;
-        } else {
-#if _GT_FONT_ENABLE_CONVERTOR
-            if (_gt_font_is_convertor_language(lan)) {
-                if (bidi_max <= bidi_len) {
-                    ++bidi_max;
-                    bidi = (gt_bidi_st * )gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
+                    bidi = (gt_bidi_st *)gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
+                    if(NULL == bidi){
+                        GT_LOGE(GT_LOG_TAG_GUI, "bidi realloc is failed!!! size = %lu", bidi_max * sizeof(gt_bidi_st));
+                        goto _ret_handler;
+                    }
                 }
                 bidi[bidi_len].idx = idx_len;
                 bidi[bidi_len].len = lan_len;
                 bidi[bidi_len].flag = lan;
                 ++bidi_len;
-
-                idx_len = lan_len;
-                disp_w = 0;
-            } else {
-                idx_len = over_length_offset;
-                disp_w = 0;
             }
-#else
-            idx_len = over_length_offset;
+            idx += lan_len;
+            idx_len += lan_len;
             disp_w = 0;
-#endif
+            over_length = 2;
+            goto _disp_font;
         }
+        else if(0 == idx_step){
+            goto _disp_font;
+        }
+
+        if(_gt_font_is_convertor_language(lan)){
+            if(bidi_max <= bidi_len){
+                ++bidi_max;
+                bidi = (gt_bidi_st *)gt_mem_realloc(bidi, bidi_max * sizeof(gt_bidi_st));
+                if(NULL == bidi){
+                    GT_LOGE(GT_LOG_TAG_GUI, "bidi realloc is failed!!! size = %lu", bidi_max * sizeof(gt_bidi_st));
+                    goto _ret_handler;
+                }
+            }
+            bidi[bidi_len].idx = idx_len;
+            bidi[bidi_len].len = idx_step;
+            bidi[bidi_len].flag = lan;
+            ++bidi_len;
+        }
+
+        idx += idx_step;
+        idx_len += idx_step;
+
+        if(idx >= txt_len){
+            goto _disp_font;
+        }
+        continue;
+
+_disp_font:
+
         /** align to left, center or right */
         if (!cov_flag_ol) {
             area_font.x = _get_align_start_x(dsc->align, coords->x, disp_w, 0);
@@ -1314,7 +1325,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
     next_line_lb:
 #if _GT_FONT_ENABLE_CONVERTOR
         if (_gt_font_is_convertor_language(lan) && over_length > 1) {
-            idx += idx_len;
+            // idx += idx_len;
             cov_flag_ol = true;
             if (_is_align_reverse(dsc->align)) {
                 disp_w = area_font.x - coords->x;
@@ -1324,7 +1335,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
         } else {
 #endif  /** _GT_FONT_ENABLE_CONVERTOR */
             cov_flag_ol = false;
-            idx += over_length < 2 ? idx_step : over_length_offset;
+            // idx += over_length < 2 ? idx_step : over_length_offset;
             if (idx < txt_len) {
                 /** LF has skipped to handler, new line or multi '\n' to handler */
                 if (0x0A != txt[idx] || (0x0A == txt[idx] && txt[idx] == txt[idx - 1])) {

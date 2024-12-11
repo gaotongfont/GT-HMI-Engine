@@ -1550,7 +1550,7 @@ _ret_dat:
     return len;
 }
 
-uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint32_t max_w, uint32_t start_w, uint16_t space, uint32_t * ret_max_w)
+uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, gt_font_split_line_st * sp_line, uint32_t * ret_max_w)
 {
     uint32_t line_numb = 1;
     if(!text) return line_numb;
@@ -1569,7 +1569,7 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint3
     GT_CHECK_BACK_VAL(temp_font.res, line_numb);
 
     uint8_t lan = 0;
-    int32_t disp_w = start_w;
+    int32_t disp_w = sp_line->start_w - sp_line->indent;
     uint32_t ret_w = 0, lan_len = 0;
     uint32_t idx = 0, idx_step = 0, len = strlen(text);
 
@@ -1581,28 +1581,36 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, uint3
         temp_font.utf8 = (char*)&text[idx];
         temp_font.len = len - idx;
 
-        idx_step = gt_font_split(&temp_font, disp_w, max_w, space, &ret_w, &lan, &lan_len);
+        idx_step = gt_font_split(&temp_font, disp_w, sp_line->max_w, sp_line->space, &ret_w, &lan, &lan_len);
         disp_w -= ret_w;
 
-        if (disp_w <= 0 || 0 == idx_step) {
-            /**
-             * if ret_w == max_w mean the words show just complete,
-             * display the word hold line.
-             */
-            if(disp_w == 0){
-                idx += idx_step;
-            }
+        if (disp_w == 0 ) {
+            idx += idx_step;
             goto _compute_line;
         }
+        else if(disp_w < 0){
+            goto _compute_line;
+
+        }
+
+        // ! overlength
+        if(0 == idx_step && 0 == ret_w && ((disp_w == sp_line->start_w) || 0 == idx)) {
+            idx += lan_len;
+            goto _compute_line;
+        }
+        else if(0 == idx_step){
+            goto _compute_line;
+        }
+
         idx += idx_step;
         continue;
 
     _compute_line:
         ++line_numb;
-        disp_w = max_w;
+        disp_w = sp_line->max_w - (0x0A == text[idx - 1] ? sp_line->indent : 0);
     }
 
-    if(ret_max_w) *ret_max_w = (line_numb > 1) ? max_w : (max_w - disp_w);
+    if(ret_max_w) *ret_max_w = (line_numb > 1) ? sp_line->max_w : (sp_line->max_w - disp_w);
 
     gt_mem_free(temp_font.res);
     temp_font.res = NULL;
