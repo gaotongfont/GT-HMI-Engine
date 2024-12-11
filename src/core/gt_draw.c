@@ -844,7 +844,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _filling_by_default(_gt_draw_ctx_st * d
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t _get_indent_offset(const gt_attr_font_st * dsc) {
-    return dsc->indent * dsc->font->info.size;
+    return (dsc->font->info.size >> 1) * dsc->indent;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline bool _is_align_center(gt_align_et align) {
