@@ -26,12 +26,18 @@
 #define MY_CLASS    &gt_switcher_class
 
 /* private typedef ------------------------------------------------------*/
+typedef struct {
+    uint16_t width;
+    uint16_t height;
+}_gt_switcher_divider_line_st;
+
 typedef struct _gt_switcher_s {
     gt_obj_st obj;
     gt_color_t color_act;
     gt_color_t color_ina;
     gt_color_t color_point;
     gt_color_t color_divider;
+    _gt_switcher_divider_line_st divider;
 
     uint8_t state : 1;          /** true: open; false: close */
     uint8_t sw_type : 2;        /** @ref gt_switch_style_et */
@@ -117,9 +123,17 @@ static void _init_cb(gt_obj_st * obj) {
     if (style->divider_line && GT_SWITCH_STYLE_AXIS != style->sw_type) {
         gt_area_st area_line = area_circle;
         area_line.x = box_area.x + (box_area.w >> 1);
-        area_line.w = box_area.w >> 6 ? box_area.w >> 6 : 1;
+        if (style->divider.width) {
+            area_line.w = style->divider.width;
+        } else {
+            area_line.w = (box_area.w >> 5) ? (box_area.w >> 5) : 2;
+        }
         area_line.y += area_circle.h >> 3;
-        area_line.h -= area_circle.h >> 2;
+        if (style->divider.height) {
+            area_line.h = style->divider.height;
+        } else {
+            area_line.h -= area_circle.h >> 2;
+        }
         rect_attr.radius = area_line.w >> 1;
         rect_attr.bg_color = style->color_divider;
         draw_bg(obj->draw_ctx, &rect_attr, &area_line);
@@ -237,6 +251,17 @@ void gt_switch_set_div_line(gt_obj_st * switcher, bool is_div_line)
     }
     _gt_switcher_st * style = (_gt_switcher_st * )switcher;
     style->divider_line = is_div_line ? 1 : 0;
+    gt_event_send(switcher, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_switch_set_div_line_size(gt_obj_st * switcher, uint16_t width, uint16_t height)
+{
+    if (false == gt_obj_is_type(switcher, OBJ_TYPE)) {
+        return;
+    }
+    _gt_switcher_st * style = (_gt_switcher_st * )switcher;
+    style->divider.width = width;
+    style->divider.height = height;
     gt_event_send(switcher, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

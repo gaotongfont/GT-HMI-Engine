@@ -96,6 +96,14 @@ void gt_switch_set_style(gt_obj_st * switcher, gt_switch_style_et sw_style);
  */
 void gt_switch_set_div_line(gt_obj_st * switcher, bool is_div_line);
 
+/**
+ * @brief Set the dividing line size
+ *
+ * @param switcher
+ * @param width 0[default]: auto calc size
+ * @param height 0[default]: auto calc size
+ */
+void gt_switch_set_div_line_size(gt_obj_st * switcher, uint16_t width, uint16_t height);
 
 #endif  /** GT_CFG_ENABLE_SWITCH */
 
