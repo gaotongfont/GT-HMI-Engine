@@ -122,18 +122,18 @@ static void _init_cb(gt_obj_st * obj) {
 
     if (style->divider_line && GT_SWITCH_STYLE_AXIS != style->sw_type) {
         gt_area_st area_line = area_circle;
-        area_line.x = box_area.x + (box_area.w >> 1);
         if (style->divider.width) {
             area_line.w = style->divider.width;
         } else {
             area_line.w = (box_area.w >> 5) ? (box_area.w >> 5) : 2;
         }
-        area_line.y += area_circle.h >> 3;
+        area_line.x = box_area.x + ((box_area.w - area_line.w) >> 1);
         if (style->divider.height) {
             area_line.h = style->divider.height;
         } else {
             area_line.h -= area_circle.h >> 2;
         }
+        area_line.y += (area_circle.h - area_line.h) >> 1;
         rect_attr.radius = area_line.w >> 1;
         rect_attr.bg_color = style->color_divider;
         draw_bg(obj->draw_ctx, &rect_attr, &area_line);
