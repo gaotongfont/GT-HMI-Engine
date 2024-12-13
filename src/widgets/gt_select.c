@@ -28,6 +28,7 @@
 #define OBJ_TYPE    GT_TYPE_SELECT
 #define MY_CLASS    &gt_select_class
 
+#define _DEFAULT_OPTION_COUNT       3
 
 
 /* private typedef ------------------------------------------------------*/
@@ -84,12 +85,14 @@ static void _update_input_area(gt_obj_st * obj) {
     gt_obj_set_area(style->ipt_p, obj->area);
 }
 
+
 static void _update_lisview_area(gt_obj_st * obj) {
     _gt_select_st * style = (_gt_select_st *)obj;
     if (NULL == style->lv_p) {
         return;
     }
-    gt_obj_set_size(style->lv_p, obj->area.w, obj->area.h * 3);
+    gt_obj_set_size(style->lv_p, obj->area.w,
+        gt_listview_get_resize_height(style->lv_p, _DEFAULT_OPTION_COUNT));
     gt_obj_set_pos_always_full_display(style->lv_p, obj->area.x, obj->area.y + obj->area.h);
 }
 
@@ -131,7 +134,7 @@ static void _select_item_cb(gt_event_st * e) {
 
 static gt_obj_st * _create_listview(gt_obj_st * obj) {
     gt_obj_st * lv_p = gt_listview_create(gt_disp_get_layer_top());
-    gt_obj_set_size(lv_p, obj->area.w, obj->area.h * 3);
+    gt_obj_set_size(lv_p, obj->area.w, gt_listview_get_resize_height(lv_p, _DEFAULT_OPTION_COUNT));
     gt_obj_add_event_cb(lv_p, _select_item_cb, GT_EVENT_TYPE_INPUT_RELEASED, obj);
     gt_obj_set_visible(lv_p, false);
     gt_obj_set_focus_disabled(lv_p, GT_DISABLED);

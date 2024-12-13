@@ -276,6 +276,8 @@ void gt_listview_set_icon_to_right(gt_obj_st * listview, bool enabled);
  */
 void gt_listview_set_item_height(gt_obj_st * listview, uint16_t height);
 
+uint16_t gt_listview_get_item_height(gt_obj_st * listview);
+
 /**
  * @brief Enabled the listview item selected effect
  *
@@ -392,6 +394,7 @@ void gt_listview_set_septal_line(gt_obj_st * listview, bool enabled);
  * @param height the line height 1[default]: 1 pixel
  */
 void gt_listview_set_septal_line_size(gt_obj_st * listview, uint16_t width, uint16_t height);
+uint16_t gt_listview_get_septal_line_height(gt_obj_st * listview);
 
 /**
  * @brief Set the split line color between each row to be displayed
@@ -417,6 +420,17 @@ void gt_listview_set_septal_line_opa(gt_obj_st * listview, gt_opa_t opa);
  * @param ver
  */
 void gt_listview_set_item_space(gt_obj_st * listview, uint16_t hor, uint16_t ver);
+uint16_t gt_listview_get_item_space_y(gt_obj_st * listview);
+
+/**
+ * @brief According to the number of items want to display in the same time,
+ *      calculate the height of the listview widget, include reduce size, border size.
+ *
+ * @param listview
+ * @param item_count The number of items want to display in the same time
+ * @return uint16_t
+ */
+uint16_t gt_listview_get_resize_height(gt_obj_st * listview, uint16_t item_count);
 
 /**
  * @brief set listview show font size

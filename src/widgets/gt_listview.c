@@ -1202,6 +1202,15 @@ void gt_listview_set_item_height(gt_obj_st * listview, uint16_t height)
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+uint16_t gt_listview_get_item_height(gt_obj_st * listview)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    return style->item_height;
+}
+
 void gt_listview_set_selected_effect(gt_obj_st * listview, bool enabled)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
@@ -1412,6 +1421,15 @@ void gt_listview_set_septal_line_size(gt_obj_st * listview, uint16_t width, uint
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+uint16_t gt_listview_get_septal_line_height(gt_obj_st * listview)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    return style->septal_line_info.size.y;
+}
+
 void gt_listview_set_septal_line_color(gt_obj_st * listview, gt_color_t color)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
@@ -1441,6 +1459,25 @@ void gt_listview_set_item_space(gt_obj_st * listview, uint16_t hor, uint16_t ver
     style->item_space.x = hor;
     style->item_space.y = ver;
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+uint16_t gt_listview_get_item_space_y(gt_obj_st * listview)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    return style->item_space.y;
+}
+
+uint16_t gt_listview_get_resize_height(gt_obj_st * listview, uint16_t item_count)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    return (listview->reduce << 1) + (item_count * style->item_height) +
+        ((item_count - 1) * (style->item_space.y + style->septal_line_info.size.y));
 }
 
 void gt_listview_set_font_size(gt_obj_st * listview, uint8_t size)
