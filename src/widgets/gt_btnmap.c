@@ -43,7 +43,7 @@ typedef struct _gt_btnmap_s {
     uint16_t* _line_w_list;
     uint16_t* _line_numb_list;      /** array of line number @ref _max_line */
 
-    gt_btnmap_disp_special_btn_cb_t _disp_special_btn_cb;
+    gt_btnmap_show_special_btn_cb_t _show_special_btn_cb;
     gt_btnmap_push_btn_kv_cb_t _push_btn_kv_cb;
 
     gt_font_info_st font_info;
@@ -145,9 +145,9 @@ static void _init_cb(struct gt_obj_s * obj) {
         font.utf8 = (char*)map[map_idx].kv;
         font.len = strlen(map[map_idx].kv);
 
-        if(style->_disp_special_btn_cb){
+        if(style->_show_special_btn_cb){
             // Attribute change
-            if(style->_disp_special_btn_cb(obj, map[map_idx].kv, &font_attr)){
+            if(style->_show_special_btn_cb(obj, map[map_idx].kv, &font_attr)){
                 rect_attr.bg_color = style->special_btn_param.bg_color;
                 rect_attr.border_color = style->special_btn_param.border_color;
                 rect_attr.border_width = style->special_btn_param.border_width;
@@ -281,7 +281,9 @@ static void _gt_update_map(gt_obj_st* btnmap) {
     gt_memset_0(style->_line_w_list, style->_max_line * sizeof(uint16_t) << 1);
     style->_line_numb_list = &style->_line_w_list[style->_max_line];
 
+
     _gt_get_line_list((const gt_map_st*)style->map, style->_line_w_list, style->_line_numb_list);
+
 
     _gt_auto_btn_height(btnmap);
 }
@@ -675,13 +677,13 @@ void gt_btnmap_set_push_btn_kv_handler(gt_obj_st * btnmap, gt_btnmap_push_btn_kv
     style->_push_btn_kv_cb = push_btn_kv_cb;
 }
 //
-void gt_btnmap_set_disp_special_btn_handler(gt_obj_st * btnmap, gt_btnmap_disp_special_btn_cb_t disp_special_btn_cb)
+void gt_btnmap_set_disp_special_btn_handler(gt_obj_st * btnmap, gt_btnmap_show_special_btn_cb_t disp_special_btn_cb)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
-    style->_disp_special_btn_cb = disp_special_btn_cb;
+    style->_show_special_btn_cb = disp_special_btn_cb;
 }
 void gt_btnmap_set_special_btn_color_background(gt_obj_st * btnmap, gt_color_t color)
 {

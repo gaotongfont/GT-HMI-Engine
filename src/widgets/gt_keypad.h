@@ -22,6 +22,7 @@ extern "C" {
 #include "gt_btnmap.h"
 /* define ---------------------------------------------------------------*/
 #define _DEF_STYLE_26_KEY
+#define _DEF_STYLE_NUMBER
 // #define _DEF_STYLE_9_KEY     //unrealized
 #define _DEF_STYLE_OTHER_4x5
 #define _DEF_STYLE_OTHER_11x3
@@ -51,6 +52,11 @@ typedef enum {
 #ifdef _DEF_STYLE_26_KEY
     GT_KEYPAD_STYLE_26_KEY,     // 26-key keyboard
 #endif
+
+#ifdef _DEF_STYLE_NUMBER
+    GT_KEYPAD_STYLE_NUMBER,     // number keyboard
+#endif
+
 #ifdef _DEF_STYLE_9_KEY
     GT_KEYPAD_STYLE_9_KEY,      // 9-key keyboard
 #endif
@@ -75,12 +81,18 @@ typedef enum {
 gt_obj_st * gt_keypad_create(gt_obj_st * parent);
 
 /**
- * @brief
+ * @brief set keypad's default style
  *
  * @param keypad
- * @param def_style The default style is 0 after map list is set
+ * @param def_style @ gt_keypad_default_style_st
  */
 void gt_keypad_set_default_style(gt_obj_st * keypad, gt_keypad_default_style_st def_style);
+/**
+ * @brief set keypad's type
+ *
+ * @param keypad
+ * @param type @ gt_keypad_type_te
+ */
 void gt_keypad_set_type(gt_obj_st * keypad, gt_keypad_type_te type);
 
 /**
