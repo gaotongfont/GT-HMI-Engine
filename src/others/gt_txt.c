@@ -118,37 +118,15 @@ char * gt_txt_ins(char * dst, uint32_t pos, char * src)
 char gt_txt_cut(char * dst, uint8_t encoding, uint32_t pos_start, uint32_t pos_end)
 {
     uint32_t len_dst = dst ? strlen(dst) : 0;
-    uint32_t ps,pe;
+    uint32_t ps = pos_start, pe = pos_end;
 
-    if (!len_dst) {
-        return 0;
-    }
-
-    if( pos_start > pos_end ){
+    if (!len_dst) { return 0; }
+    if (pos_start > pos_end) {
         pe = pos_start;
         ps = pos_end;
-    }else{
-        ps = pos_start;
-        pe = pos_end;
     }
-    if( ps > len_dst ){
-        return 0;
-    }
-    if( pe > len_dst ){
-        pe = len_dst;
-    }
-
-#if 0
-    if (len_dst > pe) {
-        gt_memcpy(&dst[ps], &dst[pe], len_dst - pe);
-    }
-    gt_memset(&dst[len_dst - (pe-ps)], 0, pe-ps);
-    len_dst = strlen(dst);
-    dst = (char * )gt_mem_realloc(dst, len_dst + 1);
-    dst[len_dst] = '\0';
-    return 1;
-#else
+    if (ps > len_dst) { return 0; }
+    if (pe > len_dst) { pe = len_dst; }
     return gt_txt_string_del(dst, encoding, ps);
-#endif
 }
 /* end ------------------------------------------------------------------*/
