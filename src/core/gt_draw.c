@@ -837,12 +837,40 @@ line_lb:
 
 static GT_ATTRIBUTE_RAM_TEXT inline void _filling_by_default(_gt_draw_ctx_st * draw_ctx,
     gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
-#if GT_USE_EXTRA_FULL_IMG_BUFFER
-    if (GT_RES_OK == _filling_by_default_full_mode(draw_ctx, blend_dsc, dsc_img)) {
+
+    gt_fs_fp_st * fp = dsc_img->fp;
+
+    if (!fp) {
+        GT_LOGW(GT_LOG_TAG_GUI, "gt_fs_get_fp failed");
         return;
     }
+
+    bool check_mask = gt_mask_check(blend_dsc->mask_area);
+
+    if(GT_FS_TYPE_ARRAY != fp->type || check_mask){
+#if GT_USE_EXTRA_FULL_IMG_BUFFER
+        if (GT_RES_OK == _filling_by_default_full_mode(draw_ctx, blend_dsc, dsc_img)) {
+            return;
+        }
 #endif
-    _filling_by_default_line_mode(draw_ctx, blend_dsc, dsc_img);
+        _filling_by_default_line_mode(draw_ctx, blend_dsc, dsc_img);
+        return;
+    }
+
+    uint32_t addr_start_alpha = dsc_img->header.w * dsc_img->header.h * sizeof(gt_color_t);
+    uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
+    blend_dsc->dst_buf = (gt_color_t*)fp->buffer;
+    if(is_mask){
+        blend_dsc->mask_buf = (gt_opa_t*)fp->buffer + addr_start_alpha;
+    }
+
+    if(NULL == blend_dsc->dst_buf && NULL == blend_dsc->mask_buf){
+        GT_LOGW(GT_LOG_TAG_GUI, "Extra buffer color or alpha pointer is NULL");
+        return ;
+    }
+    gt_draw_blend(draw_ctx, blend_dsc);
+    blend_dsc->dst_buf = NULL;
+    blend_dsc->mask_buf = NULL;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline bool _is_align_center(gt_align_et align) {
