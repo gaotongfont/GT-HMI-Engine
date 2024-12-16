@@ -1467,12 +1467,12 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_single_line(_gt_draw
     tmp_font.res = gt_mem_malloc(data_len);
     if (NULL == tmp_font.res) {
         GT_LOGE(GT_LOG_TAG_GUI, "data malloc is failed!!! size = %d", data_len);
-        goto ret_handler_lb;
+        goto direct_handler_lb;
     }
     mask_line = gt_mem_malloc( tmp_font.info.size << 1 );
     if (NULL == mask_line) {
         GT_LOGE(GT_LOG_TAG_GUI, "mask_line malloc is failed!!! size = %d", tmp_font.info.size << 1);
-        goto ret_handler_lb;
+        goto mask_handler_lb;
     }
     gt_memset(mask_line, 0xFF, tmp_font.info.size << 1);
 
@@ -1489,7 +1489,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_single_line(_gt_draw
         ret_txt = gt_mem_malloc(dsc->font->len + 1);
         if (NULL == ret_txt) {
             GT_LOGE(GT_LOG_TAG_GUI, "ret_txt malloc is failed!!! size = %d", dsc->font->len+1);
-            goto ret_handler_lb;
+            goto txt_handler_lb;
         }
         gt_memset_0(ret_txt, dsc->font->len + 1);
         if (gt_right_to_left_handler(&tmp_font, ret_txt, lan)) {
@@ -1530,7 +1530,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_single_line(_gt_draw
     gt_bidi_st * bidi = (gt_bidi_st * )gt_mem_malloc(bidi_max * sizeof(gt_bidi_st));
     if (NULL == bidi) {
         GT_LOGE(GT_LOG_TAG_GUI, "bidi malloc is failed!!! size = %lu", bidi_max * sizeof(gt_bidi_st));
-        goto ret_handler_lb;
+        goto bidi_handler_lb;
     }
 #endif
     // align vertical
@@ -1778,19 +1778,23 @@ ret_handler_lb:
         gt_mem_free(bidi);
         bidi = NULL;
     }
+bidi_handler_lb:
     if (NULL != ret_txt) {
         gt_mem_free(ret_txt);
         ret_txt = NULL;
     }
 #endif
+txt_handler_lb:
     if (NULL != mask_line) {
         gt_mem_free(mask_line);
         mask_line = NULL;
     }
+mask_handler_lb:
     if (NULL != tmp_font.res) {
         gt_mem_free(tmp_font.res);
         tmp_font.res = NULL;
     }
+direct_handler_lb:
     ret.area = area_font;
     return ret;
 }
