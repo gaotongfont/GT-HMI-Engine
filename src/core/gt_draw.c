@@ -469,7 +469,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
     text = (uint16_t * )gt_mem_malloc(fonts->len * sizeof(uint16_t));
     if (NULL == text) {
         GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %lu", fonts->len * sizeof(uint16_t));
-        goto _ret_handle;
+        goto _null_handle;
     }
     gt_font_st tmp_font = {
         .info = fonts->info,
@@ -498,7 +498,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
     font_buf = (uint8_t * )gt_mem_malloc(font_size_res.font_buff_len);
     if (NULL == font_buf) {
         GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %d", font_size_res.font_buff_len);
-        goto _ret_handle;
+        goto _buf_handle;
     }
     gt_memset_0(font_buf, font_size_res.font_buff_len);
 
@@ -632,10 +632,12 @@ _ret_handle:
         gt_mem_free(font_buf);
         font_buf = NULL;
     }
+_buf_handle:
     if(NULL !=text){
         gt_mem_free(text);
         text = NULL;
     }
+_null_handle:
     ret.area = *blend_dsc->dst_area;
     return ret;
 }
@@ -976,12 +978,12 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
     tmp_font.res = gt_mem_malloc(data_len);
     if (NULL == tmp_font.res) {
         GT_LOGE(GT_LOG_TAG_GUI, "data malloc is failed!!! size = %d", data_len);
-        goto _ret_handler;
+        goto _res_handler;
     }
     mask_line = gt_mem_malloc( tmp_font.info.size << 1 );
     if (NULL == mask_line) {
         GT_LOGE(GT_LOG_TAG_GUI, "mask_line malloc is failed!!! size = %d", tmp_font.info.size << 1);
-        goto _ret_handler;
+        goto _mask_handler;
     }
     gt_memset(mask_line, 0xFF, tmp_font.info.size << 1);
 
@@ -998,7 +1000,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
         ret_txt = gt_mem_malloc(dsc->font->len+1);
         if (NULL == ret_txt) {
             GT_LOGE(GT_LOG_TAG_GUI, "ret_txt malloc is failed!!! size = %d", dsc->font->len+1);
-            goto _ret_handler;
+            goto _txt_handler;
         }
         gt_memset_0(ret_txt, dsc->font->len+1);
         if (gt_right_to_left_handler(&tmp_font, ret_txt, lan)) {
@@ -1378,14 +1380,17 @@ _ret_handler:
         ret_txt = NULL;
     }
 #endif
+_txt_handler:
     if (NULL != mask_line) {
         gt_mem_free(mask_line);
         mask_line = NULL;
     }
+_mask_handler:
     if (NULL != tmp_font.res) {
         gt_mem_free(tmp_font.res);
         tmp_font.res = NULL;
     }
+_res_handler:
     ret.area = area_font;
     return ret;
 }
