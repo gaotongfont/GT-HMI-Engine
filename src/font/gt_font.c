@@ -1537,7 +1537,11 @@ uint32_t gt_font_split(gt_font_st * fonts, uint32_t width, uint32_t dot_w, uint3
             if (0 == idx && width == dot_w) {
                 len = ol_idx;
                 *ret_w = ol_w;
-            } else {
+            }
+            else if(0 == idx && ol_idx != 0){
+                len = ol_idx;
+            }
+            else {
                 len = idx;
             }
             break;
@@ -1594,8 +1598,8 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, gt_fo
         }
 
         // ! overlength
-        if(0 == idx_step && 0 == ret_w && ((disp_w == sp_line->start_w) || 0 == idx)) {
-            idx += lan_len;
+        if(0 == ret_w && ((disp_w == sp_line->start_w) || 0 == idx)) {
+            idx += idx_step ? idx_step : lan_len;
             goto _compute_line;
         }
         else if(0 == idx_step){

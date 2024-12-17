@@ -1145,7 +1145,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
         }
 
         // ! overlength
-        if(0 == idx_step && 0 == ret_w && (disp_w == coords->w || 0 == idx_len)) {
+        if(0 == ret_w && (disp_w == coords->w || 0 == idx_len)) {
 #if _GT_FONT_ENABLE_CONVERTOR
             if(_gt_font_is_convertor_language(lan)){
                 if(bidi_max <= bidi_len){
@@ -1157,13 +1157,14 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
                     }
                 }
                 bidi[bidi_len].idx = idx_len;
-                bidi[bidi_len].len = lan_len;
+                // bidi[bidi_len].len = lan_len;
+                bidi[bidi_len].len = idx_step ? idx_step : lan_len;
                 bidi[bidi_len].flag = lan;
                 ++bidi_len;
             }
 #endif
-            idx += lan_len;
-            idx_len += lan_len;
+            idx += idx_step ? idx_step : lan_len;
+            idx_len += idx_step ? idx_step : lan_len;
             disp_w = 0;
             over_length = 2;
             goto _disp_font;
