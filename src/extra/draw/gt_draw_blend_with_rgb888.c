@@ -10,6 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "./gt_draw_blend_with_rgb888.h"
 #include "stddef.h"
+#include "../../core/gt_mem.h"
 
 
 /* private define -------------------------------------------------------*/
