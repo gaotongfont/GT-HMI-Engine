@@ -112,6 +112,7 @@ void gt_textarea_clear_all_str(gt_obj_st * textarea);
  * @param color font color
  */
 void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et style, gt_color_t color);
+void gt_textarea_add_str_by_len(gt_obj_st * textarea, char * str, uint32_t len, gt_font_style_et style_mask, gt_color_t color);
 
 #if GT_TEXTAREA_CUSTOM_FONT_STYLE
 /**
@@ -216,6 +217,11 @@ void gt_textarea_set_font_cjk(gt_obj_st* textarea, gt_font_cjk_et cjk);
 void gt_textarea_set_font_thick_en(gt_obj_st * textarea, uint8_t thick);
 void gt_textarea_set_font_thick_cn(gt_obj_st * textarea, uint8_t thick);
 void gt_textarea_set_font_encoding(gt_obj_st * textarea, gt_encoding_et encoding);
+
+void gt_textarea_set_font_info(gt_obj_st * textarea, gt_font_info_st * font_info);
+gt_font_info_st * gt_textarea_get_font_info(gt_obj_st * textarea);
+
+uint32_t gt_textarea_get_total_height(gt_obj_st * textarea);
 
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
 void gt_textarea_set_touch_single_chinese_word(gt_obj_st * textarea, bool is_single_cn);
