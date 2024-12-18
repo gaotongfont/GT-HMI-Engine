@@ -753,7 +753,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
         _indev_params.param.keypad_key = indev->data.keypad.key;
 #if GT_USE_LAYER_TOP
         if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
-            _gt_global_core_indev_event_send(GT_EVENT_TYPE_INPUT_KEY_RELEASED, &_indev_params);
+            _gt_global_core_indev_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_KEY_RELEASED, &_indev_params);
         }
 #endif
         gt_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_KEY_RELEASED, &_indev_params);
@@ -845,7 +845,7 @@ _key_pressed:
                 return ;
             }
             if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
-                _gt_global_core_indev_event_send(GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
+                _gt_global_core_indev_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
             }
 #endif
             gt_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
@@ -938,7 +938,7 @@ _key_pressing:
 
 #if GT_USE_LAYER_TOP
                 if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
-                    _gt_global_core_indev_event_send(GT_EVENT_TYPE_INPUT_KEY_PRESSING, &_indev_params);
+                    _gt_global_core_indev_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_KEY_PRESSING, &_indev_params);
                 }
 #endif
                 gt_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_KEY_PRESSING, &_indev_params);
@@ -960,7 +960,7 @@ _key_pressing:
         _indev_params.param.keypad_key = indev->data.keypad.key;
 #if GT_USE_LAYER_TOP
         if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
-            _gt_global_core_indev_event_send(GT_EVENT_TYPE_INPUT_KEY_LONG_PRESSED, &_indev_params);
+            _gt_global_core_indev_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_KEY_LONG_PRESSED, &_indev_params);
         }
 #endif
         gt_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_KEY_LONG_PRESSED, &_indev_params);

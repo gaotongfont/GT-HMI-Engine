@@ -259,11 +259,12 @@ gt_res_t gt_global_event_send(gt_event_type_et event, void * parms);
  * @brief [Warn, Called by indev] Send an event code to the global register user event.
  *      Not for the user to call.
  *
+ * @param org The orgin object
  * @param event The event code to send
  * @param parms User data [default or unused: NULL]
  * @return gt_res_t The result status @ref gt_res_t
  */
-gt_res_t _gt_global_core_indev_event_send(gt_event_type_et event, void * parms);
+gt_res_t _gt_global_core_indev_event_send(struct gt_obj_s * org, gt_event_type_et event, void * parms);
 
 #endif  /** GT_USE_LAYER_TOP */
 

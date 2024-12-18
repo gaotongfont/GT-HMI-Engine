@@ -136,10 +136,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _anim_to_remove_all_event(struct gt_anim_s * a
     _free_event_recursive(tar);
 }
 
-static GT_ATTRIBUTE_RAM_TEXT gt_event_st _init_event_param(gt_obj_st * parent, gt_event_type_et event, void * parms, uint32_t key_val) {
+static GT_ATTRIBUTE_RAM_TEXT gt_event_st _init_event_param(gt_obj_st * tar, gt_obj_st * org, gt_event_type_et event, void * parms, uint32_t key_val) {
     gt_event_st e = {
-        .target = parent,
-        .origin = parent,
+        .target = tar,
+        .origin = org,
         .code_type = event,
         .param = parms,
         .key_val = key_val,
@@ -260,7 +260,7 @@ void gt_obj_remove_all_event_cb_immediately(struct gt_obj_s * obj)
 
 gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * parms)
 {
-    gt_event_st e = _init_event_param(parent, event, parms, 0);
+    gt_event_st e = _init_event_param(parent, parent, event, parms, 0);
     return _common_event_send(&e);
 }
 
@@ -330,10 +330,10 @@ gt_res_t gt_global_event_send(gt_event_type_et event, void * parms)
     return gt_event_send(gt_disp_get_layer_top(), event, parms);
 }
 
-gt_res_t _gt_global_core_indev_event_send(gt_event_type_et event, void * parms)
+gt_res_t _gt_global_core_indev_event_send(struct gt_obj_s * org, gt_event_type_et event, void * parms)
 {
     gt_indev_param_st * indev = (gt_indev_param_st * )parms;
-    gt_event_st e = _init_event_param(gt_disp_get_layer_top(), event, parms, indev->param.keypad_key);
+    gt_event_st e = _init_event_param(gt_disp_get_layer_top(), org, event, parms, indev->param.keypad_key);
     return _common_event_send(&e);
 }
 #endif  /** GT_USE_LAYER_TOP */
