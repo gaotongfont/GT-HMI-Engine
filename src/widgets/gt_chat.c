@@ -216,7 +216,7 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
     h = (h + 1) * (style->font_info.size);
     w += style->font_info.size;
     w = w > _MSG_MAX_W(chat->area.w)  ? _MSG_MAX_W(chat->area.w) + 4 : w;
-    x = chat->area.x + style->msg_list[idx].is_send ?  (chat->area.w - w - _MSG_SPACE_X) : _MSG_SPACE_X;
+    x = (style->msg_list[idx].is_send ?  (chat->area.w - w - _MSG_SPACE_X) : _MSG_SPACE_X) + chat->area.x;
     y =  idx <= 0 ? _MSG_SPACE_Y + chat->area.y : style->msg_list[idx - 1].msg_obj->area.y + style->msg_list[idx - 1].msg_obj->area.h + _MSG_SPACE_Y;
 
     if(radius > GT_MIN(w >> 1, h >> 1)) {
