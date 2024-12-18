@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "./gt_draw_blend_with_rgb565.h"
+#include "../../core/gt_mem.h"
 #include "stddef.h"
 
 
