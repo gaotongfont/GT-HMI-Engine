@@ -21,6 +21,7 @@
 #include "../extra/md4c/md4c.h"
 #include "./gt_label.h"
 #include "./gt_textarea.h"
+#include "./gt_line.h"
 
 
 
@@ -30,7 +31,7 @@
 
 #define _MARK_DOWN_MAX_ACT_COUNT    (10)
 
-#define _MARK_DOWN_LARGE_FONT_SIZE  (24)
+#define _MARK_DOWN_LARGE_FONT_SIZE  (28)
 #define _MARK_DOWN_MIDDLE_FONT_SIZE (20)
 #define _MARK_DOWN_SMALL_FONT_SIZE  (16)
 
@@ -245,6 +246,19 @@ _enter_md_block_li(_gt_markdown_cb_params_st * pm) {
 }
 
 static GT_ATTRIBUTE_RAM_TEXT int
+_enter_md_block_hr(_gt_markdown_cb_params_st * pm) {
+    _gt_markdown_ptr_st * ptr = (_gt_markdown_ptr_st *)pm->userdata;
+    _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
+    uint16_t padding = 4;
+
+    ptr->act_p[ptr->act_idx] = gt_line_create(ptr->markdown_p);
+    gt_line_set_color(ptr->act_p[ptr->act_idx], gt_color_hex(0x7f7f7f));
+    gt_obj_set_pos(ptr->act_p[ptr->act_idx], padding, 0);
+    gt_line_set_line_width(ptr->act_p[ptr->act_idx], 2);
+    gt_line_set_hor_line(ptr->act_p[ptr->act_idx], ptr->markdown_p->area.w - (padding << 1));
+}
+
+static GT_ATTRIBUTE_RAM_TEXT int
 _enter_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
     int ret = 0;
     _gt_markdown_ptr_st * ptr = (_gt_markdown_ptr_st *)userdata;
@@ -277,6 +291,10 @@ _enter_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
         }
         case MD_BLOCK_LI: { // 4
             ret = _enter_md_block_li(&params);
+            break;
+        }
+        case MD_BLOCK_HR: {
+            ret = _enter_md_block_hr(&params);
             break;
         }
         default:
@@ -387,7 +405,9 @@ _text_cb(MD_TEXTTYPE type, const MD_CHAR * text, MD_SIZE size, void * userdata) 
 static GT_ATTRIBUTE_RAM_TEXT void
 _markdown_init_flags(_gt_markdown_st * style) {
     style->md_parser.flags = 0;
+    // style->md_parser.flags |= MD_FLAG_TABLES;
     style->md_parser.flags |= MD_FLAG_NOHTML;
+    // style->md_parser.flags |= MD_FLAG_UNDERLINE;
     style->md_parser.flags |= MD_FLAG_STRIKETHROUGH;
     // style->md_parser.flags |= MD_FLAG_PERMISSIVEAUTOLINKS;
 }
@@ -410,9 +430,6 @@ _set_font_info_by(gt_font_info_st * font_info, uint16_t font_size) {
     if (-1 == font_fam_id) {
         return ;
     }
-#if _MARK_DOWN_LOG
-    GT_LOG_A("md", ">>> id : %d", font_fam_id);
-#endif
     gt_font_set_family(font_info, font_fam_id);
     font_info->size = font_size;
 #endif
