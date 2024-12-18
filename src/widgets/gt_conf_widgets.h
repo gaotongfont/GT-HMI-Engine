@@ -74,6 +74,10 @@ extern "C" {
 #define GT_CFG_ENABLE_GIF               1
 #endif
 
+#if GT_USE_MD4C && GT_CFG_ENABLE_TEXTAREA
+#define GT_CFG_ENABLE_MARKDOWN          1
+#endif
+
 #if GT_USE_SERIAL
 #define GT_CFG_ENABLE_BIT_IMG           1
 #endif

@@ -453,6 +453,14 @@ extern "C" {
     #define GT_USE_GIF          01
 #endif
 
+#ifndef GT_USE_MD4C
+    /**
+     * @brief use md4c markdown parser library
+     * [default: 1]
+     */
+    #define GT_USE_MD4C         01
+#endif
+
 /**
  * @brief use examples demo
  */

@@ -112,6 +112,8 @@ typedef enum gt_font_style_e {
     GT_FONT_STYLE_NONE          = 0x00,     ///< default status
     GT_FONT_STYLE_UNDERLINE     = 0x01,     ///< underline
     GT_FONT_STYLE_STRIKETHROUGH = 0x02,     ///< strikethrough
+    GT_FONT_STYLE_BOLD          = 0x03,     // TODO bold
+    GT_FONT_STYLE_ITALIC        = 0x04,     // TODO italic
 }gt_font_style_et;
 
 typedef struct _gt_text_style_s {
@@ -119,7 +121,7 @@ typedef struct _gt_text_style_s {
     uint8_t enabled_start   : 1;
 
     ///< font style value @ref gt_font_style_et
-    uint8_t style           : 2;
+    uint8_t style           : 3;
 
     ///< 0[default]: multi-line, 1: single-line
     uint8_t single_line     : 1;
@@ -257,6 +259,8 @@ typedef enum {
 }gt_font_cjk_et;
 
 typedef struct gt_font_split_line_s {
+    char * text;
+    uint32_t len;
     uint32_t max_w;
     uint32_t start_w;
     uint16_t space;
@@ -404,7 +408,7 @@ uint8_t right_to_left_lan_get(uint16_t style);
 uint8_t right_to_left_lan_get(gt_font_st* font);
 #endif
 
-uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, gt_font_split_line_st * sp_line, uint32_t * ret_max_w);
+uint32_t gt_font_split_line_numb(gt_font_info_st* info, gt_font_split_line_st * sp_line, uint32_t * ret_max_w);
 
 
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
@@ -425,9 +429,16 @@ uint16_t gt_font_get_word_byte_length(char const * const text, uint16_t length, 
 
 void gt_font_family_init(const gt_font_family_st* fam_list, uint16_t count);
 uint16_t gt_font_family_get_size(uint16_t fam);
-uint16_t gt_font_family_get_option(uint16_t fam , int16_t lan, uint8_t cjk);
+uint16_t gt_font_family_get_option(uint16_t fam, int16_t lan, uint8_t cjk);
 bool gt_font_family_is_one_style(uint16_t fam);
 void gt_font_set_family(gt_font_info_st *font_info, gt_family_t fam);
+/**
+ * @brief
+ *
+ * @param font_size
+ * @return gt_size_t -1: illegal font size, not found id.
+ */
+gt_size_t gt_font_family_get_id_by(uint16_t font_size);
 
 uint16_t gt_encoding_convert(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len, gt_encoding_convert_et enc_cov);
 

@@ -383,7 +383,7 @@ uint16_t gt_font_family_get_size(uint16_t fam)
     return _font_family_list.fam_list[fam].size;
 }
 
-uint16_t gt_font_family_get_option(uint16_t fam , int16_t lan, uint8_t cjk)
+uint16_t gt_font_family_get_option(uint16_t fam, int16_t lan, uint8_t cjk)
 {
     if(gt_font_family_is_one_style(fam)){
         return (fam & (~(GT_FONT_FAMILY_ONE_TYPE)));
@@ -417,6 +417,18 @@ void gt_font_set_family(gt_font_info_st *font_info, gt_family_t fam)
 #endif
 }
 
+gt_size_t gt_font_family_get_id_by(uint16_t font_size)
+{
+    if (NULL == _font_family_list.fam_list || 0 == _font_family_list.count) {
+        return -1;
+    }
+    for (uint16_t i = 0; i < _font_family_list.count; ++i) {
+        if (_font_family_list.fam_list[i].size == font_size) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 void gt_font_info_init(gt_font_info_st *font_info)
 {
@@ -1554,9 +1566,10 @@ _ret_dat:
     return len;
 }
 
-uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, gt_font_split_line_st * sp_line, uint32_t * ret_max_w)
+uint32_t gt_font_split_line_numb(gt_font_info_st* info, gt_font_split_line_st * sp_line, uint32_t * ret_max_w)
 {
     uint32_t line_numb = 1;
+    const char * text = (const char * )sp_line->text;
     if(!text) return line_numb;
 
     gt_font_st temp_font = {
@@ -1575,7 +1588,7 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, const char * text, gt_fo
     uint8_t lan = 0;
     int32_t disp_w = sp_line->start_w - sp_line->indent;
     uint32_t ret_w = 0, lan_len = 0;
-    uint32_t idx = 0, idx_step = 0, len = strlen(text);
+    uint32_t idx = 0, idx_step = 0, len = sp_line->len;
 
     while (idx < len) {
         if (0x0A == text[idx]) {

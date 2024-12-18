@@ -640,6 +640,14 @@ void gt_textarea_add_str_by_len(gt_obj_st * textarea, char * str, uint32_t len, 
     _set_hold_on_contents_for_scroll(style, false);
 }
 
+uint16_t gt_textarea_get_str_count(gt_obj_st * textarea)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    return style->cnt_contents;
+}
 
 #if GT_TEXTAREA_CUSTOM_FONT_STYLE
 void gt_textarea_add_str_by_param(gt_obj_st * textarea, gt_textarea_param_st * param)

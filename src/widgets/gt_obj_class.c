@@ -384,6 +384,8 @@ void _gt_obj_class_destroy_children(struct gt_obj_s * self)
     for (gt_size_t i = self->cnt_child - 1; i >= 0; i--) {
         _gt_obj_class_destroy(self->child[i]);
     }
+    self->cnt_child = 0;
+    self->child = NULL;
 }
 
 void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_obj_s * parent)

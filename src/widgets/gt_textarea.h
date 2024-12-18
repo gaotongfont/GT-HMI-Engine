@@ -114,6 +114,8 @@ void gt_textarea_clear_all_str(gt_obj_st * textarea);
 void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et style, gt_color_t color);
 void gt_textarea_add_str_by_len(gt_obj_st * textarea, char * str, uint32_t len, gt_font_style_et style_mask, gt_color_t color);
 
+uint16_t gt_textarea_get_str_count(gt_obj_st * textarea);
+
 #if GT_TEXTAREA_CUSTOM_FONT_STYLE
 /**
  * @brief Set text by custom font style

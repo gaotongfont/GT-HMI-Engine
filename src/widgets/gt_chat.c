@@ -198,12 +198,14 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
 
     w = 8;
     gt_font_split_line_st sp_line = {
+        .text = gt_btn_get_text(style->msg_list[idx].msg_obj),
         .max_w = _MSG_MAX_W(chat->area.w) - w,
-        .start_w =  _MSG_MAX_W(chat->area.w) - w - (style->font_info.size),
+        .start_w =  _MSG_MAX_W(chat->area.w) - w - style->font_info.size,
         .space = 0,
         .indent = gt_font_get_indent_width(&style->font_info, _MULTI_LINE_CONTENT_INDENT_DEFAULT),
     };
-    h = gt_font_split_line_numb(&style->font_info, gt_btn_get_text(style->msg_list[idx].msg_obj), &sp_line, &w);
+    sp_line.len = strlen(sp_line.text);
+    h = gt_font_split_line_numb(&style->font_info, &sp_line, &w);
     if (h > 1) {
         gt_btn_set_font_align(style->msg_list[idx].msg_obj, GT_ALIGN_LEFT_MID);
         gt_btn_set_indent(style->msg_list[idx].msg_obj, _MULTI_LINE_CONTENT_INDENT_DEFAULT);
@@ -214,7 +216,7 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
     h = (h + 1) * (style->font_info.size);
     w += style->font_info.size;
     w = w > _MSG_MAX_W(chat->area.w)  ? _MSG_MAX_W(chat->area.w) + 4 : w;
-    x = style->msg_list[idx].is_send ? chat->area.x + chat->area.w - w - _MSG_SPACE_X : chat->area.x + _MSG_SPACE_X;
+    x = chat->area.x + style->msg_list[idx].is_send ?  (chat->area.w - w - _MSG_SPACE_X) : _MSG_SPACE_X;
     y =  idx <= 0 ? _MSG_SPACE_Y + chat->area.y : style->msg_list[idx - 1].msg_obj->area.y + style->msg_list[idx - 1].msg_obj->area.h + _MSG_SPACE_Y;
 
     if(radius > GT_MIN(w >> 1, h >> 1)) {

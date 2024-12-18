@@ -13,6 +13,7 @@ include $(HMI_DIR)/src/utils/gt_utils.mk
 include $(HMI_DIR)/src/extra/draw/gt_draw.mk
 include $(HMI_DIR)/src/extra/gif/gt_gif.mk
 include $(HMI_DIR)/src/extra/jpeg/gt_jpeg.mk
+include $(HMI_DIR)/src/extra/md4c/gt_md4c.mk
 include $(HMI_DIR)/src/extra/png/gt_png.mk
 include $(HMI_DIR)/src/extra/serial/gt_serial.mk
 

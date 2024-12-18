@@ -946,12 +946,14 @@ static GT_ATTRIBUTE_RAM_TEXT _text_offset_line_st _get_align_start_y(const gt_at
     if (_is_verial_mid_or_bottom(type)) {
         /** calc total line count to calc position offset */
         gt_font_split_line_st sp_line = {
+            .text = (char * )txt,
+            .len = strlen(txt),
             .max_w = coords->w,
             .start_w = disp_w,
             .space = dsc->space_x,
             .indent = indent,
         };
-        ret.line_count = gt_font_split_line_numb(&tmp_font->info, (const char *)txt, &sp_line, &ret_w);
+        ret.line_count = gt_font_split_line_numb(&tmp_font->info, &sp_line, &ret_w);
     }
 
     ret.offset_y = _get_align_start_y_by_line(dsc, coords, tmp_font, txt, ret.line_count);
@@ -1265,6 +1267,9 @@ _disp_font:
                 area_font.x -= width;
             }
             if (area_font.x + width < view->x || area_font.x > (view->x + view->w)) {
+                goto next_word_multi_lb;
+            }
+            if (dsc->opa < GT_OPA_MIN) {
                 goto next_word_multi_lb;
             }
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
@@ -1686,6 +1691,9 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_single_line(_gt_draw
         }
 
         if (area_font.x + width < view->x || area_font.x > view->x + view->w) {
+            goto next_word_lb;
+        }
+        if (dsc->opa < GT_OPA_MIN) {
             goto next_word_lb;
         }
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
