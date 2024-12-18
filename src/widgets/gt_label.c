@@ -558,6 +558,18 @@ uint8_t gt_label_get_space_y(gt_obj_st * label)
     return style->space_y;
 }
 
+void gt_label_set_font_info(gt_obj_st * label, gt_font_info_st * font_info)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
+    if (NULL == font_info) {
+        return ;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    gt_memcpy(&style->font_info, font_info, sizeof(gt_font_info_st));
+}
+
 gt_font_info_st * gt_label_get_font_info(gt_obj_st * label)
 {
     if (false == gt_obj_is_type(label, OBJ_TYPE)) {
