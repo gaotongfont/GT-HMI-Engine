@@ -164,7 +164,7 @@ _enter_md_block_default(_gt_markdown_cb_params_st * pm) {
     ptr->prop.item_count = 0;
 
     ptr->act_p[ptr->act_idx] = gt_textarea_create(ptr->markdown_p);
-    gt_obj_set_pos(ptr->act_p[ptr->act_idx], 0, ptr->offset.y);
+    gt_obj_set_pos(ptr->act_p[ptr->act_idx], 0, ptr->offset.y + ptr->markdown_p->area.y);
     gt_obj_set_size(ptr->act_p[ptr->act_idx], ptr->markdown_p->area.w, 16);
     gt_obj_show_bg(ptr->act_p[ptr->act_idx], false);
     gt_obj_set_reduce(ptr->act_p[ptr->act_idx], 0);
@@ -301,13 +301,12 @@ _leave_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
 
     if (MD_BLOCK_DOC == type) {
         /** resize all widget offset and markdown height */
-        ptr->offset.y = 0;
+        ptr->offset.y = ptr->markdown_p->area.y;
         for (gt_size_t i = 0; i < ptr->markdown_p->cnt_child; ++i) {
             child = ptr->markdown_p->child[i];
             gt_obj_set_pos(child, 0, ptr->offset.y);
             ptr->offset.y += gt_obj_get_h(child);
         }
-        // gt_obj_set_h(ptr->markdown_p, ptr->offset.y);
     }
     ptr->act_p[ptr->act_idx] = NULL;
     --ptr->act_idx;
