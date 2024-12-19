@@ -1484,6 +1484,157 @@ _ret_handle:
 }
 #endif  /** _GT_FONT_ENABLE_CONVERTOR */
 
+static GT_ATTRIBUTE_RAM_TEXT uint32_t _gt_font_split(const uint8_t *str, uint32_t len, uint8_t encoding, gt_font_lan_et lan)
+{
+    uint32_t idx = 0, tmp_idx = 0;
+    uint32_t unicode;
+    while(idx < len)
+    {
+        tmp_idx = gt_font_one_char_code_len_get((uint8_t * )&str[idx], &unicode, encoding);
+        if (0 == tmp_idx) {
+            break;
+        }
+
+        if(lan != gt_font_lan_get(unicode, encoding)){
+            break;
+        }
+
+        if(_is_punctuation(unicode) || '\n' == unicode){
+            break;
+        }
+
+        idx += tmp_idx;
+    }
+    return idx ? idx : 1;
+}
+
+int32_t gt_font_split_line_str(const gt_font_st * fonts, uint32_t max_w, uint32_t space, uint32_t * width,
+                                gt_bidi_st** bidi, uint16_t* bidi_len, uint16_t* bidi_max, uint8_t * overlength,
+                                bool is_first_line)
+{
+    uint32_t idx = 0, tmp_idx = 0, tmp_w = 0;
+    uint32_t unicode = 0;
+    int32_t len = 0;
+    gt_font_lan_et lan = FONT_LAN_UNKNOWN;
+    uint16_t ol_w = 0, ol_idx = 0, w_offset = *width;
+
+    gt_font_st tmp_font = {
+        .info = fonts->info,
+        .utf8 = fonts->utf8,
+        .len = len,
+        .res = fonts->res,
+    };
+
+    *width = 0;
+    max_w -= w_offset;
+    while (idx < fonts->len)
+    {
+        tmp_idx = gt_font_one_char_code_len_get((uint8_t * )&fonts->utf8[idx], &unicode, fonts->info.encoding);
+
+        if('\n' == unicode){
+            return len;
+        }
+
+        lan = gt_font_lan_get(unicode, fonts->info.encoding);
+        if (tmp_idx == 0) {
+            break;
+        }
+
+        if (IS_CN_FONT_LAN(lan)) {
+            tmp_w = gt_font_get_one_word_width(unicode, (gt_font_st*)fonts);
+        }
+        else{
+            tmp_idx = _gt_font_split((const uint8_t *)&fonts->utf8[idx], fonts->len - idx, fonts->info.encoding, lan);
+            tmp_font.utf8 = &fonts->utf8[idx];
+            tmp_font.len = tmp_idx;
+
+#if _GT_FONT_ENABLE_CONVERTOR
+            if(_gt_font_is_convertor_language(lan)){
+                tmp_w = _get_convertor_string_width(&tmp_font, lan, space, max_w - (*width), &ol_idx, &ol_w);
+            }
+            else {
+                _gt_font_en_in_this_range(&tmp_font, max_w - (*width), space, &tmp_w, &ol_idx, &ol_w);
+            }
+#else
+            _gt_font_en_in_this_range(&tmp_font, max_w - (*width), space, &tmp_w, &ol_idx, &ol_w);
+#endif
+        }
+
+        if((*width) + tmp_w + space > max_w){
+
+            if(0 == idx){
+
+                if(w_offset != 0 && !is_first_line){
+                    break;
+                }
+                if(FONT_LAN_ARABIC == lan){
+                    len = tmp_idx;
+                    *width = tmp_w;
+                    if(overlength) { *overlength = 2; }
+                }
+                else{
+                    len = ol_idx;
+                    *width = ol_w;
+                }
+#if _GT_FONT_ENABLE_CONVERTOR
+                if(_gt_font_is_convertor_language(lan)){
+                    if(bidi && *bidi){
+                        if(*bidi_len >= *bidi_max){
+                            *bidi_max = (*bidi_max) + 5;
+                            *bidi = (gt_bidi_st*)gt_mem_realloc(*bidi, sizeof(gt_bidi_st) * (*bidi_max));
+                            if(NULL == *bidi){
+                                GT_LOGE(GT_LOG_TAG_GUI,"bild raalloc failed! size: %d\n" , ((*bidi_max) * sizeof(gt_bidi_st)));
+                                return -1;
+                            }
+                        }
+                        if(FONT_LAN_ARABIC == lan){
+                            (*bidi)[*bidi_len].idx = idx;
+                            (*bidi)[*bidi_len].len = tmp_idx;
+                            (*bidi)[*bidi_len].flag = lan;
+                            (*bidi_len)++;
+                        }
+                        else{
+                            (*bidi)[*bidi_len].idx = idx;
+                            (*bidi)[*bidi_len].len = tmp_idx;
+                            (*bidi)[*bidi_len].flag = lan;
+                            (*bidi_len)++;
+                        }
+                    }
+                }
+#endif
+            }
+            return len;
+        }
+
+#if _GT_FONT_ENABLE_CONVERTOR
+        if(_gt_font_is_convertor_language(lan)){
+            if(bidi && *bidi){
+                if(*bidi_len >= *bidi_max){
+                    *bidi_max = (*bidi_max) + 5;
+                    *bidi = (gt_bidi_st*)gt_mem_realloc(*bidi, sizeof(gt_bidi_st) * (*bidi_max));
+                    if(NULL == *bidi){
+                        GT_LOGE(GT_LOG_TAG_GUI,"bild raalloc failed! size: %d\n" , ((*bidi_max) * sizeof(gt_bidi_st)));
+                        return -1;
+                    }
+                }
+                (*bidi)[*bidi_len].idx = idx;
+                (*bidi)[*bidi_len].len = tmp_idx;
+                (*bidi)[*bidi_len].flag = lan;
+                (*bidi_len)++;
+            }
+        }
+#endif
+
+        idx += tmp_idx;
+        *width += tmp_w + space;
+        len += tmp_idx;
+    }
+
+    if(overlength) { *overlength = 2; }
+
+    return len ;
+}
+
 uint32_t gt_font_split(gt_font_st * fonts, uint32_t width, uint32_t dot_w, uint32_t space, uint32_t *ret_w, uint8_t * lan, uint32_t* lan_len)
 {
     uint32_t idx = 0, len = 0;
@@ -1588,8 +1739,14 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, gt_font_split_line_st * 
     uint8_t lan = 0;
     int32_t disp_w = sp_line->start_w - sp_line->indent;
     uint32_t ret_w = 0, lan_len = 0;
-    uint32_t idx = 0, idx_step = 0, len = sp_line->len;
+    uint32_t idx = 0, len = sp_line->len;
+    int32_t idx_step = 0;
 
+    if (0 == len) {
+        return line_numb;
+    }
+
+    line_numb = 0;
     while (idx < len) {
         if (0x0A == text[idx]) {
             ++idx;
@@ -1598,33 +1755,23 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, gt_font_split_line_st * 
         temp_font.utf8 = (char*)&text[idx];
         temp_font.len = len - idx;
 
-        idx_step = gt_font_split(&temp_font, disp_w, sp_line->max_w, sp_line->space, &ret_w, &lan, &lan_len);
-        disp_w -= ret_w;
-
-        if (disp_w == 0 ) {
-            idx += idx_step;
-            goto _compute_line;
-        }
-        else if(disp_w < 0){
-            goto _compute_line;
-
+        if(line_numb != 0){
+            disp_w = sp_line->max_w - (0x0A == text[idx - 1] ? sp_line->indent : 0);
         }
 
-        // ! overlength
-        if(0 == ret_w && ((disp_w == sp_line->start_w) || 0 == idx)) {
-            idx += idx_step ? idx_step : lan_len;
-            goto _compute_line;
-        }
-        else if(0 == idx_step){
-            goto _compute_line;
-        }
+        ret_w = sp_line->max_w - disp_w;
+        idx_step = gt_font_split_line_str(&temp_font, sp_line->max_w, sp_line->space, &ret_w,
+                                        NULL, NULL, NULL, NULL,
+                                        line_numb ? 0 : 1);
 
+        if(idx == 0 & idx_step == 0){
+            goto _compute_line;
+        }
         idx += idx_step;
-        continue;
+        disp_w -= ret_w;
 
     _compute_line:
         ++line_numb;
-        disp_w = sp_line->max_w - (0x0A == text[idx - 1] ? sp_line->indent : 0);
     }
 
     if(ret_max_w) *ret_max_w = (line_numb > 1) ? sp_line->max_w : (sp_line->max_w - disp_w);

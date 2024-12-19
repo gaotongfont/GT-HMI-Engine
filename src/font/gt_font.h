@@ -93,6 +93,12 @@ typedef struct _gt_font_info_s {
     uint8_t gray;        ///< set: font gray
     uint8_t encoding;    ///< set: font encoding
     int8_t offset_y;    ///< 0: [default] don't move; < 0: move up; > 0: move down
+
+    uint8_t bold : 1;   ///< set: font bold
+    uint8_t italic : 1; ///< set: font italic
+    uint8_t underline : 1; ///< set: font underline
+    uint8_t strikethrough : 1; ///< set: font strikethrough
+    uint8_t reserved : 4;
 }gt_font_info_st;
 
 /**
@@ -390,6 +396,9 @@ int gt_font_code_transform(font_convertor_st *convert);
 int gt_font_convertor_data_get(font_convertor_st *convert, uint32_t pos);
 #endif
 
+int32_t gt_font_split_line_str(const gt_font_st * fonts, uint32_t max_w, uint32_t space, uint32_t * width,
+                                gt_bidi_st** bidi, uint16_t* bidi_len, uint16_t* bidi_max, uint8_t * overlength,
+                                bool is_first_line);
 uint32_t gt_font_split(gt_font_st *fonts, uint32_t width, uint32_t dot_w, uint32_t space, uint32_t *ret_w, uint8_t * lan, uint32_t * lan_len);
 
 #if _GT_FONT_ENABLE_CONVERTOR
