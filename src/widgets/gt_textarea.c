@@ -189,7 +189,9 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
         .info       = style->font_info,
         .res        = NULL,
     };
-    GT_CHECK_BACK(style->contents);
+    if (NULL == style->contents) {
+        return;
+    }
     if (0 == obj->area.w || 0 == obj->area.h) {
         return;
     }
