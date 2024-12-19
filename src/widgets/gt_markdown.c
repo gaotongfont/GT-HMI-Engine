@@ -297,6 +297,48 @@ _enter_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
             ret = _enter_md_block_hr(&params);
             break;
         }
+        case MD_BLOCK_TABLE: {  // value is null
+            // ret = _enter_md_block_default(&params);
+#if _MARK_DOWN_LOG
+            GT_LOG_A("", ">>> table");
+#endif
+            break;
+        }
+        case MD_BLOCK_THEAD: {  // is null
+            // ret = _enter_md_block_default(&params);
+#if _MARK_DOWN_LOG
+            GT_LOG_A("", ">>> thead");
+#endif
+            break;
+        }
+        case MD_BLOCK_TBODY: {  // is null
+            // ret = _enter_md_block_default(&params);
+#if _MARK_DOWN_LOG
+            GT_LOG_A("", ">>> tbody");
+#endif
+            break;
+        }
+        case MD_BLOCK_TR: { // turn new row
+            // ret = _enter_md_block_default(&params);
+#if _MARK_DOWN_LOG
+            GT_LOG_A("", ">>> tr");
+#endif
+            break;
+        }
+        case MD_BLOCK_TH: { // | header title
+#if _MARK_DOWN_LOG
+            GT_LOG_A("", ">>> th");
+#endif
+            ret = _enter_md_block_default(&params);
+            break;
+        }
+        case MD_BLOCK_TD: { // | body content
+#if _MARK_DOWN_LOG
+            GT_LOG_A("", ">>> td");
+#endif
+            ret = _enter_md_block_default(&params);
+            break;
+        }
         default:
             break;
     }
@@ -316,6 +358,13 @@ _leave_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
 #if _MARK_DOWN_LOG
     GT_LOG_A("", "leave block %d [%d]", ptr->act_idx, type);
 #endif
+    if (gt_obj_is_type(ptr->act_p[ptr->act_idx], GT_TYPE_TEXTAREA)) {
+        uint32_t height = gt_textarea_get_total_height(ptr->act_p[ptr->act_idx]);
+#if _MARK_DOWN_LOG
+        GT_LOG_A("", "   height: %d", height);
+#endif
+        gt_obj_set_h(ptr->act_p[ptr->act_idx], height);
+    }
 
     if (MD_BLOCK_DOC == type) {
         /** resize all widget offset and markdown height */
@@ -394,18 +443,13 @@ _text_cb(MD_TEXTTYPE type, const MD_CHAR * text, MD_SIZE size, void * userdata) 
     if (GT_RES_OK!= _common_set_text(ptr, (const char * )text, size)) {
         return ret;
     }
-    uint32_t height = gt_textarea_get_total_height(ptr->act_p[ptr->act_idx]);
-#if _MARK_DOWN_LOG
-    GT_LOG_A("", "   height: %d", height);
-#endif
-    gt_obj_set_h(ptr->act_p[ptr->act_idx], height);
     return ret;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void
 _markdown_init_flags(_gt_markdown_st * style) {
     style->md_parser.flags = 0;
-    // style->md_parser.flags |= MD_FLAG_TABLES;
+    style->md_parser.flags |= MD_FLAG_TABLES;
     style->md_parser.flags |= MD_FLAG_NOHTML;
     // style->md_parser.flags |= MD_FLAG_UNDERLINE;
     style->md_parser.flags |= MD_FLAG_STRIKETHROUGH;
