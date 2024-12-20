@@ -69,9 +69,9 @@ gt_color_t gt_color_focus(void)
     return gt_color_hex(_focus_color);
 }
 
-void gt_color_focus_set(uint32_t col)
+void gt_color_focus_set(uint32_t color)
 {
-    _focus_color = col;
+    _focus_color = color;
 }
 
 /* end ------------------------------------------------------------------*/
