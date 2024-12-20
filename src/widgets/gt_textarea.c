@@ -245,7 +245,9 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
             continue;
         }
         font.len                = style->contents[idx].len;
-        font_attr.reg.style     = style->contents[idx].mask_style;
+        // font_attr.reg.style     = style->contents[idx].mask_style;
+        font.info.style.all = style->contents[idx].mask_style;
+
 #if GT_TEXTAREA_CUSTOM_FONT_STYLE
         font_attr.font_color    = style->contents[idx].font_info.palette;
         font.info               = style->contents[idx].font_info;

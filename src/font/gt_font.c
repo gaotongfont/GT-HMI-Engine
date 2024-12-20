@@ -449,6 +449,7 @@ void gt_font_info_init(gt_font_info_st *font_info)
     font_info->thick_cn   = 0;
     font_info->encoding   = gt_project_encoding_get();
     font_info->offset_y   = 0;
+    font_info->style.all  = 0;
 }
 
 void gt_font_info_update_font_thick(gt_font_info_st *font_info)

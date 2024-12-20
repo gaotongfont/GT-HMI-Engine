@@ -74,6 +74,23 @@ typedef enum {
     #endif
 #endif
 /* typedef --------------------------------------------------------------*/
+/**
+ * @brief The styles of the font display
+ */
+typedef enum gt_font_style_e {
+    GT_FONT_STYLE_NONE          = 0x00,     ///< default status
+    GT_FONT_STYLE_UNDERLINE     = 0x01,     ///< underline
+    GT_FONT_STYLE_STRIKETHROUGH = 0x02,     ///< strikethrough
+    GT_FONT_STYLE_BOLD          = 0x04,     // TODO bold
+    GT_FONT_STYLE_ITALIC        = 0x08,     // TODO italic
+}gt_font_style_et;
+typedef struct{
+    uint8_t underline : 1;
+    uint8_t strikethrough : 1;
+    uint8_t bold : 1;
+    uint8_t italic : 1;
+    uint8_t reserved : 4;
+}gt_font_style_st;
 
 typedef struct _gt_font_info_s {
     gt_color_t palette;  ///< set: font color
@@ -94,11 +111,13 @@ typedef struct _gt_font_info_s {
     uint8_t encoding;    ///< set: font encoding
     int8_t offset_y;    ///< 0: [default] don't move; < 0: move up; > 0: move down
 
-    uint8_t bold : 1;   ///< set: font bold
-    uint8_t italic : 1; ///< set: font italic
-    uint8_t underline : 1; ///< set: font underline
-    uint8_t strikethrough : 1; ///< set: font strikethrough
-    uint8_t reserved : 4;
+    /* font style */
+    union
+    {
+        uint8_t all;
+        gt_font_style_st reg;
+    }style;
+
 }gt_font_info_st;
 
 /**
@@ -111,23 +130,11 @@ typedef struct _gt_font_s {
     gt_font_info_st info;
 }gt_font_st;
 
-/**
- * @brief The styles of the font display
- */
-typedef enum gt_font_style_e {
-    GT_FONT_STYLE_NONE          = 0x00,     ///< default status
-    GT_FONT_STYLE_UNDERLINE     = 0x01,     ///< underline
-    GT_FONT_STYLE_STRIKETHROUGH = 0x02,     ///< strikethrough
-    GT_FONT_STYLE_BOLD          = 0x03,     // TODO bold
-    GT_FONT_STYLE_ITALIC        = 0x04,     // TODO italic
-}gt_font_style_et;
+
 
 typedef struct _gt_text_style_s {
     ///< 0[default]: Set the text beginning position by direct point, by start_x and start_y.
     uint8_t enabled_start   : 1;
-
-    ///< font style value @ref gt_font_style_et
-    uint8_t style           : 3;
 
     ///< 0[default]: multi-line, 1: single-line
     uint8_t single_line     : 1;

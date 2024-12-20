@@ -667,7 +667,7 @@ void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style)
         return ;
     }
     _gt_label_st * style = (_gt_label_st * )label;
-    style->text_style.style = font_style;
+    style->font_info.style.all = font_style;
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
