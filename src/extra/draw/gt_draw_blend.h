@@ -16,7 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "../../core/gt_graph_base.h"
 #include "../../hal/gt_hal_disp.h"
-
+#include "../../font/gt_font.h"
 
 /* define ---------------------------------------------------------------*/
 #ifndef GT_DRAW_BLEND_ALIGN
@@ -61,7 +61,7 @@ typedef struct _gt_draw_blend_fill_cache_s {
 void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st * dsc);
 
 void gt_draw_blend_text(struct _gt_draw_ctx_s *draw_ctx, const gt_draw_blend_dsc_st * dsc,
-                        uint16_t font_size, uint16_t dot_byte, uint8_t gray, const uint8_t* res);
+                        uint16_t font_size, uint16_t dot_byte, uint8_t gray, const uint8_t* res, gt_font_style_st font_style);
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

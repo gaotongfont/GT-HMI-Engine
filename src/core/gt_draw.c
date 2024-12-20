@@ -619,12 +619,20 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
         if (FONT_LAN_HINDI == lan) {
             byte_width = 2;
             blend_dsc->dst_area->w = byte_width << 3;
+            // bold and italic
+            if(tmp_font.info.style.reg.bold || tmp_font.info.style.reg.italic){
+                blend_dsc->dst_area->w += _get_style_space_x(0, (const gt_font_info_st*)&tmp_font.info);
+            }
             gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font.info.size, byte_width, font_gray,
                                 &convertor.data[idx * font_size_res.font_per_size], tmp_font.info.style.reg);
         } else {
             byte_width = (gt_font_get_one_word_width(convertor.fontcode[idx], &tmp_font) + 7) >> 3;
             byte_width = _gt_gray_and_dot_byte_get(&font_gray, byte_width, tmp_font, ret_style);
             blend_dsc->dst_area->w = byte_width << 3;
+            // bold and italic
+            if(tmp_font.info.style.reg.bold || tmp_font.info.style.reg.italic){
+                blend_dsc->dst_area->w += _get_style_space_x(0, (const gt_font_info_st*)&tmp_font.info);
+            }
             gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font.info.size, byte_width, font_gray, &convertor.data[0],tmp_font.info.style.reg);
         }
 
@@ -1713,6 +1721,9 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_single_line(_gt_draw
             if (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding)) {
                 area_font.y += offset_y;
             }
+            if(tmp_font.info.style.reg.bold || tmp_font.info.style.reg.italic){
+                area_font.w += _get_style_space_x(0, (const gt_font_info_st*)&tmp_font.info);
+            }
             gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size,
                                 byte_width, font_gray, (const uint8_t*)tmp_font.res,tmp_font.info.style.reg);
             if (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding)) {
@@ -1763,6 +1774,9 @@ next_word_lb:
         area_font.w = (byte_width / font_gray) << 3;
         idx = 0;
         while (idx < omit_info.len)  {
+            if(tmp_font.info.style.reg.bold || tmp_font.info.style.reg.italic){
+                area_font.w += _get_style_space_x(0, (const gt_font_info_st*)&tmp_font.info);
+            }
             gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size, byte_width,
                                 font_gray, (const uint8_t*)tmp_font.res,tmp_font.info.style.reg);
             if (_is_align_reverse(dsc->align)) {
