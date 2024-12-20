@@ -137,7 +137,7 @@ static void _init_cb(gt_obj_st * obj) {
     draw_text(obj->draw_ctx, &font_dsc, &area);
 
      // focus
-    draw_focus(obj , 0);
+    draw_focus(obj , obj->radius);
 }
 
 /**

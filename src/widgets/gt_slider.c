@@ -476,7 +476,7 @@ static void _init_cb(gt_obj_st * obj) {
 
 draw_focus:
     // focus
-    draw_focus(obj , 0);
+    draw_focus(obj , obj->radius);
 }
 
 /**

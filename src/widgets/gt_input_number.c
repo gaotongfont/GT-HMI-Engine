@@ -129,7 +129,7 @@ static void _update_label_value(_gt_input_number_st * style) {
 
 static void _init_cb(gt_obj_st * obj) {
     // focus
-    draw_focus(obj , 0);
+    draw_focus(obj , obj->radius);
 }
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {

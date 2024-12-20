@@ -65,7 +65,7 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_select_class = {
 
 /* static functions -----------------------------------------------------*/
 static void _select_init_cb(gt_obj_st * obj) {
-    draw_focus(obj, 0);
+    draw_focus(obj, obj->radius);
 }
 
 static void _select_deinit_cb(gt_obj_st * obj) {

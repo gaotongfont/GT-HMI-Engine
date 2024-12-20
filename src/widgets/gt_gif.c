@@ -85,7 +85,7 @@ static void _init_cb(gt_obj_st * obj) {
     draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
 
     // focus
-    draw_focus(obj , 0);
+    draw_focus(obj , obj->radius);
 
 }
 

@@ -118,7 +118,7 @@ static void _init_cb(gt_obj_st * obj) {
     }
 
     // focus
-    draw_focus(obj , 0);
+    draw_focus(obj , obj->radius);
 }
 
 static void _free_auto_scroll_st(_gt_label_st * style) {

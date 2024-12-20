@@ -188,7 +188,7 @@ static void _init_cb(gt_obj_st * obj)
     gt_draw_arc(obj->draw_ctx, &arc_attr, &area);
 
     //
-    draw_focus(obj, 0);
+    draw_focus(obj, obj->area.w);
 
 }
 static void _deinit_cb(gt_obj_st * obj)

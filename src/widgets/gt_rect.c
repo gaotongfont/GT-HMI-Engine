@@ -73,7 +73,7 @@ static inline void _gt_rect_init_widget(gt_obj_st * rect) {
     draw_bg(rect->draw_ctx, &rect_attr, &area_base);
 
     // focus
-    draw_focus(rect , 0);
+    draw_focus(rect , rect->radius);
 }
 
 /**

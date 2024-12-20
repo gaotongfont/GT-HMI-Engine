@@ -261,7 +261,7 @@ static void _init_cb(gt_obj_st * obj) {
         _show_septal_line(obj, style);
     }
 
-    draw_focus(obj, 0);
+    draw_focus(obj, obj->radius);
 }
 
 static inline uint8_t _column_plus_one(_gt_listview_st * style) {

@@ -164,7 +164,7 @@ static inline void _gt_barcode_init_widget(gt_obj_st * barcode) {
 #endif
 
     // focus
-    draw_focus(barcode , 0);
+    draw_focus(barcode , barcode->radius);
 
 RET_FREE:
     if (NULL != style->pdat) {

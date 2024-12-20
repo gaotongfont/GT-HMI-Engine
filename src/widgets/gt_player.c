@@ -254,7 +254,7 @@ static void _player_init_cb(gt_obj_st * obj) {
     }
 
     // focus
-    draw_focus(obj , 0);
+    draw_focus(obj , obj->radius);
 }
 
 /**

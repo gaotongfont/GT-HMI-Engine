@@ -304,7 +304,7 @@ static void _init_cb(gt_obj_st * obj) {
         gt_mem_free(str);
         str = NULL;
     }
-    draw_focus(obj , 0);
+    draw_focus(obj , obj->radius);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _remove_all_next_day_cb(_gt_clock_st * style) {
