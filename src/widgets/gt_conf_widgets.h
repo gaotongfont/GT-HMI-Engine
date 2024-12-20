@@ -56,6 +56,7 @@ extern "C" {
 #define GT_CFG_ENABLE_CHAT              1
 #define GT_CFG_ENABLE_GRAPHS            1
 #define GT_CFG_ENABLE_ARC               1
+#define GT_CFG_ENABLE_TABLE             1
 
 #if GT_USE_LAYER_TOP && GT_CFG_ENABLE_INPUT && GT_CFG_ENABLE_LISTVIEW
 #define GT_CFG_ENABLE_SELECT            1
@@ -74,7 +75,7 @@ extern "C" {
 #define GT_CFG_ENABLE_GIF               1
 #endif
 
-#if GT_USE_MD4C && GT_CFG_ENABLE_TEXTAREA
+#if GT_USE_MD4C && GT_CFG_ENABLE_TEXTAREA && GT_CFG_ENABLE_TABLE
 #define GT_CFG_ENABLE_MARKDOWN          1
 #endif
 

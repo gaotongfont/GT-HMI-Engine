@@ -155,10 +155,11 @@ bool _gt_vector_replace_item(_gt_vector_st * vector_p, uint16_t index, void * it
 
 bool _gt_vector_remove_item(_gt_vector_st * vector_p, void * target)
 {
-    uint16_t i = 0, count = vector_p->count;
-    uint8_t is_find = false;
     GT_CHECK_BACK_VAL(vector_p, false);
     GT_CHECK_BACK_VAL(target, false);
+
+    uint16_t i = 0, count = vector_p->count;
+    uint8_t is_find = false;
     GT_CHECK_BACK_VAL(count, false);
     GT_CHECK_BACK_VAL(vector_p->equal_item_cb, false);
 
@@ -171,6 +172,27 @@ bool _gt_vector_remove_item(_gt_vector_st * vector_p, void * target)
         _free_item_obj(vector_p, item_p);
         --vector_p->count;
         is_find = true;
+    }
+    if (vector_p->index + 1 > vector_p->count) {
+        vector_p->index = vector_p->count - 1;
+    }
+    return is_find;
+}
+
+bool _gt_vector_remove_latest_item(_gt_vector_st * vector_p)
+{
+    GT_CHECK_BACK_VAL(vector_p, false);
+    uint16_t i = 0, count = vector_p->count;
+    uint8_t is_find = false;
+    GT_CHECK_BACK_VAL(count, false);
+
+    _gt_vector_item_st * item_p = NULL;
+    _gt_vector_item_st * backup_p = NULL;
+    _gt_list_for_each_entry_safe_reverse(item_p, backup_p, &vector_p->list_head, _gt_vector_item_st, node) {
+        _free_item_obj(vector_p, item_p);
+        --vector_p->count;
+        is_find = true;
+        break;
     }
     if (vector_p->index + 1 > vector_p->count) {
         vector_p->index = vector_p->count - 1;

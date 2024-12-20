@@ -161,6 +161,15 @@ bool _gt_vector_replace_item(_gt_vector_st * vector_p, uint16_t index, void * it
 bool _gt_vector_remove_item(_gt_vector_st * vector_p, void * target);
 
 /**
+ * @brief Remove the latest item from vector
+ *
+ * @param vector_p
+ * @return true
+ * @return false
+ */
+bool _gt_vector_remove_latest_item(_gt_vector_st * vector_p);
+
+/**
  * @brief Get the prev item from vector, index will be decreased
  *
  * @param vector

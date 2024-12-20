@@ -209,6 +209,10 @@ extern "C" {
 #include "src/widgets/gt_select.h"
 #endif
 
+#if GT_CFG_ENABLE_TABLE
+#include "src/widgets/gt_table.h"
+#endif
+
 #if GT_CFG_ENABLE_MARKDOWN
 #include "src/widgets/gt_markdown.h"
 #endif

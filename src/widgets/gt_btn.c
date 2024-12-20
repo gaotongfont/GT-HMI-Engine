@@ -248,7 +248,7 @@ static void _btn_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-static bool _contents_free_cb(void * item) {
+static GT_ATTRIBUTE_RAM_TEXT bool _contents_free_cb(void * item) {
     if (NULL == item) {
         return false;
     }
@@ -256,18 +256,11 @@ static bool _contents_free_cb(void * item) {
     return true;
 }
 
-static bool _contents_equal_cb(void * item, void * target) {
+static GT_ATTRIBUTE_RAM_TEXT bool _contents_equal_cb(void * item, void * target) {
     return strcmp(item, target) ? false : true;
 }
 
 /* global functions / API interface -------------------------------------*/
-
-/**
- * @brief create a btn obj
- *
- * @param parent btn's parent element
- * @return gt_obj_st* btn obj
- */
 gt_obj_st * gt_btn_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);

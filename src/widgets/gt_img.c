@@ -172,6 +172,7 @@ gt_obj_st * gt_img_create(gt_obj_st * parent)
     if (NULL == obj) {
         return obj;
     }
+    obj->reduce = 0;
     _gt_img_st * style = (_gt_img_st *)obj;
 
 #if GT_USE_DIRECT_ADDR

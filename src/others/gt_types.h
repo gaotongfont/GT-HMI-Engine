@@ -167,7 +167,8 @@ typedef enum gt_obj_type_e {
     GT_TYPE_BIT_IMG     = 35,       ///< bit img
     GT_TYPE_ARC         = 36,       ///< arc
     GT_TYPE_SELECT      = 37,       ///< select
-    GT_TYPE_MARKDOWN    = 38,       ///< markdown
+    GT_TYPE_TABLE       = 38,       ///< table
+    GT_TYPE_MARKDOWN    = 39,       ///< markdown
 
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;

@@ -298,20 +298,21 @@ _enter_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
             break;
         }
         case MD_BLOCK_TABLE: {  // value is null
+        MD_BLOCK_TABLE_DETAIL * det = (MD_BLOCK_TABLE_DETAIL *)detail;
             // ret = _enter_md_block_default(&params);
 #if _MARK_DOWN_LOG
-            GT_LOG_A("", ">>> table");
+            GT_LOG_A("", ">>> table col: %d header row: %d, body row: %d", det->col_count, det->head_row_count, det->body_row_count);
 #endif
             break;
         }
-        case MD_BLOCK_THEAD: {  // is null
+        case MD_BLOCK_THEAD: {  // is null, tell header row
             // ret = _enter_md_block_default(&params);
 #if _MARK_DOWN_LOG
             GT_LOG_A("", ">>> thead");
 #endif
             break;
         }
-        case MD_BLOCK_TBODY: {  // is null
+        case MD_BLOCK_TBODY: {  // is null, tell body row
             // ret = _enter_md_block_default(&params);
 #if _MARK_DOWN_LOG
             GT_LOG_A("", ">>> tbody");
@@ -326,15 +327,17 @@ _enter_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
             break;
         }
         case MD_BLOCK_TH: { // | header title
+        MD_BLOCK_TD_DETAIL * det = (MD_BLOCK_TD_DETAIL *)detail;
 #if _MARK_DOWN_LOG
-            GT_LOG_A("", ">>> th");
+            GT_LOG_A("", ">>> th algin: %d", det->align);
 #endif
             ret = _enter_md_block_default(&params);
             break;
         }
         case MD_BLOCK_TD: { // | body content
+        MD_BLOCK_TD_DETAIL * det = (MD_BLOCK_TD_DETAIL *)detail;
 #if _MARK_DOWN_LOG
-            GT_LOG_A("", ">>> td");
+            GT_LOG_A("", ">>> td algin: %d", det->align);
 #endif
             ret = _enter_md_block_default(&params);
             break;
