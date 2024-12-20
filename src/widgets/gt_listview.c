@@ -564,6 +564,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) 
     obj->area.w = width;
     obj->area.h = style->item_height;
 
+    gt_obj_set_reduce(obj, 1);
     gt_obj_set_fixed(obj, true);
     gt_obj_set_inside(obj, true);
     gt_obj_set_mask_effect(obj, style->selected_effect);
