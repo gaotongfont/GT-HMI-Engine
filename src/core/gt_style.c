@@ -17,9 +17,8 @@
 #include "../others/gt_anim.h"
 
 /* private define -------------------------------------------------------*/
-#define _set_style_prop_val(obj, prop, val)     (obj->style->prop = val)
-// #define _set_area_prop_val(obj, prop, val)      (obj->area.prop = val)  // unused
 #define _get_area_prop(obj, prop)               (obj->area.prop)
+
 
 /* private typedef ------------------------------------------------------*/
 
