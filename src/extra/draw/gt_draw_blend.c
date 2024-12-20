@@ -511,6 +511,10 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
     /** buf_area: area_disp */
     gt_area_st area_draw = draw_ctx->buf_area, area_dst = *dsc->dst_area;
 
+    if(font_style.italic){
+        area_dst.w += font_size >> 1;
+    }
+
 #if GT_FLUSH_CONVERT_VERTICAL
     uint16_t width_buf = area_draw.h;
 #else
@@ -589,14 +593,15 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
     if (color_dst_p) { color_dst_p += idx_dst; }
     if (color_src_p) { color_src_p += idx_src; }
 
-    uint16_t count = 0, tmp = 0;
+    uint16_t count = 0, start_count = 0, tmp = 0;
     gt_size_t row, col;
     uint8_t ch = 0;
     gt_color_t tmp_color;
 
     if (2 == gray) {
         for (col = 0; col < area_intersect.h; col++) {
-            count = 0;
+            start_count = font_style.italic ? (area_intersect.h - col) >> 1 : 0;
+            count = start_count;
 #if GT_FLUSH_CONVERT_VERTICAL
             color_src_p = offset.x * dot_byte + res;
 #endif
@@ -611,7 +616,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
 #endif
                 if(font_style.bold){
                     tmp = (gt_per_255(ch) * dsc->opa) >> 15;
-                    if(0 == count){
+                    if(start_count == count){
                         tmp_color = gt_color_mix(dsc->color_fill, color_dst_p[count], tmp);
                         color_dst_p[count] = tmp_color;
                     }
@@ -634,7 +639,8 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
         }
     } else if (4 == gray) {
         for (col = 0; col < area_intersect.h; col++) {
-            count = 0;
+            start_count = font_style.italic ? (area_intersect.h - col) >> 1 : 0;
+            count = start_count;
 #if GT_FLUSH_CONVERT_VERTICAL
             color_src_p = offset.x * dot_byte + res;
 #endif
@@ -649,7 +655,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
 #endif
                 if(font_style.bold){
                     tmp = (gt_per_255(ch) * dsc->opa) >> 15;
-                    if(0 == count){
+                    if(start_count == count){
                         tmp_color = gt_color_mix(dsc->color_fill, color_dst_p[count], tmp);
                         color_dst_p[count] = tmp_color;
                     }
@@ -672,7 +678,8 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
         }
     } else if (3 == gray) {
         for (col = 0; col < area_intersect.h; col++) {
-            count = 0;
+            start_count = font_style.italic ? (area_intersect.h - col) >> 1 : 0;
+            count = start_count;
 #if GT_FLUSH_CONVERT_VERTICAL
             color_src_p = offset.x * dot_byte + res;
 #endif
@@ -692,7 +699,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
 
                 if(font_style.bold){
                     tmp = (gt_per_255(ch) * dsc->opa) >> 15;
-                    if(0 == count){
+                    if(start_count == count){
                         tmp_color = gt_color_mix(dsc->color_fill, color_dst_p[count], tmp);
                         color_dst_p[count] = tmp_color;
                     }
@@ -719,7 +726,8 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
         }
     } else {
         for (col = 0; col < area_intersect.h; col++) {
-            count = 0;
+            start_count = font_style.italic ? (area_intersect.h - col) >> 1 : 0;
+            count = start_count;
 #if GT_FLUSH_CONVERT_VERTICAL
             color_src_p = offset.x * dot_byte + res;
 #endif

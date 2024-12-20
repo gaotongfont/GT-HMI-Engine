@@ -1301,8 +1301,8 @@ static GT_ATTRIBUTE_RAM_TEXT uint32_t _gt_font_language_split(const uint8_t *str
 }
 
 static GT_ATTRIBUTE_RAM_TEXT bool _is_punctuation(uint32_t uni_or_gbk) {
-    if (uni_or_gbk > 0x1F && uni_or_gbk < 0x2F) { return true; }
-    if (uni_or_gbk > 0x39 && uni_or_gbk < 0x41) { return true; }
+    if (uni_or_gbk > 0x1F && uni_or_gbk < 0x41) { return true; }
+    // if (uni_or_gbk > 0x39 && uni_or_gbk < 0x41) { return true; }
     if (uni_or_gbk > 0x5A && uni_or_gbk < 0x61) { return true; }
     if (uni_or_gbk > 0x7A && uni_or_gbk < 0x7F) { return true; }
     return false;
@@ -1526,6 +1526,10 @@ int32_t gt_font_split_line_str(const gt_font_st * fonts, uint32_t max_w, uint32_
         .res = fonts->res,
     };
 
+    if(tmp_font.info.style.reg.italic){
+        max_w -= tmp_font.info.size >> 1;
+    }
+
     *width = 0;
     max_w -= w_offset;
     while (idx < fonts->len)
@@ -1661,6 +1665,10 @@ uint32_t gt_font_split(gt_font_st * fonts, uint32_t width, uint32_t dot_w, uint3
     if (IS_CN_FONT_LAN(*lan)) {
         len = _gt_font_cn_in_this_range(&tmp_font, width, space, ret_w);
         goto _ret_dat;
+    }
+
+    if(tmp_font.info.style.reg.italic){
+        dot_w -= tmp_font.info.size >> 1;
     }
 
     idx = 0;
