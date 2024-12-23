@@ -509,11 +509,13 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
     /** 绘制区域和显示屏buffer的交集区域 */
     gt_area_st area_intersect = {0};
     /** buf_area: area_disp */
-    gt_area_st area_draw = draw_ctx->buf_area, area_dst = *dsc->dst_area;
+    gt_area_st area_draw = draw_ctx->buf_area, dst_area = *dsc->dst_area;
 
     if(font_style.italic){
-        area_dst.w += font_size >> 1;
+        dst_area.w += font_size >> 1;
     }
+
+    gt_area_st area_dst = dst_area;
 
 #if GT_FLUSH_CONVERT_VERTICAL
     uint16_t width_buf = area_draw.h;
@@ -525,13 +527,13 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
     if (dsc->view_area) {
         if (draw_ctx->parent_area) {
             gt_area_cover_screen(draw_ctx->parent_area, dsc->view_area, &area_intersect);
-            offset = _get_cover_dst_area_and_offset_by(&area_intersect, dsc->dst_area, &area_dst);
+            offset = _get_cover_dst_area_and_offset_by(&area_intersect, &dst_area, &area_dst);
         } else {
-            offset = _get_cover_dst_area_and_offset_by(dsc->view_area, dsc->dst_area, &area_dst);
+            offset = _get_cover_dst_area_and_offset_by(dsc->view_area, &dst_area, &area_dst);
         }
     } else if (draw_ctx->parent_area) {
         /** Be used when obj->inside true and object has its parent */
-        offset = _get_cover_dst_area_and_offset_by(draw_ctx->parent_area, dsc->dst_area, &area_dst);
+        offset = _get_cover_dst_area_and_offset_by(draw_ctx->parent_area, &dst_area, &area_dst);
     }
 
     /** 当前重绘制起始坐标 */
@@ -606,7 +608,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
             color_src_p = offset.x * dot_byte + res;
 #endif
             for (row = offset.x; row < font_size; row++) {
-                if (row >= offset.x + area_intersect.w) break;
+                if ((row + start_count) >= offset.x + area_intersect.w) break;
 
 #if GT_FLUSH_CONVERT_VERTICAL
                 ch = ((color_src_p[col >> 2] >> (6 - ((col & 0x3)<<1))) & 0x03) * 255 / 3;
@@ -645,7 +647,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
             color_src_p = offset.x * dot_byte + res;
 #endif
             for (row = offset.x; row < font_size; row++) {
-                if (row >= offset.x + area_intersect.w) break;
+                if ((row + start_count) >= offset.x + area_intersect.w) break;
 
 #if GT_FLUSH_CONVERT_VERTICAL
                 ch = ((color_src_p[col >> 1] >> (4 - ((col & 0x1)<<2))) & 0x0F) * 255 / 15;
@@ -684,7 +686,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
             color_src_p = offset.x * dot_byte + res;
 #endif
             for (row = offset.x; row < font_size; row++) {
-                if(row >= offset.x + area_intersect.w) break;
+                if ((row + start_count) >= offset.x + area_intersect.w) break;
 
 #if GT_FLUSH_CONVERT_VERTICAL
                 tmp = col * 3;
@@ -732,7 +734,7 @@ void gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_ds
             color_src_p = offset.x * dot_byte + res;
 #endif
             for (row = offset.x; row < font_size; row++) {
-                if (row >= offset.x + area_intersect.w) break;
+                if ((row + start_count) >= offset.x + area_intersect.w) break;
 #if GT_FLUSH_CONVERT_VERTICAL
                 ch = color_src_p[col >> 3] >> (7 - (col & 0x7));
                 color_src_p += dot_byte;
