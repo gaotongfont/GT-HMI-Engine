@@ -72,10 +72,10 @@ typedef struct _gt_vector_iterator_s {
     _iter_dsc_st * dsc_t;
 }_gt_vector_iterator_st;
 
-typedef struct _gt_vector_iterator_ctl_s {
+typedef struct _gt_iterator_ctl_s {
     _gt_vector_item_st * item_p;
     gt_size_t idx;
-}_gt_vector_iterator_ctl_st;
+}_gt_iterator_ctl_st;
 
 typedef struct _gt_vector_s {
     struct _gt_list_head list_head;
@@ -86,7 +86,7 @@ typedef struct _gt_vector_s {
     gt_size_t count;
     gt_size_t index;
 
-    _gt_vector_iterator_ctl_st * iter_ctl;
+    _gt_iterator_ctl_st * iter_ctl;
 }_gt_vector_st;
 
 

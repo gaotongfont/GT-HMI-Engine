@@ -314,10 +314,10 @@ _gt_vector_iterator_st _gt_vector_get_iterator(_gt_vector_st * vector)
         .next = _gt_vector_iterator_next,
         .index = _gt_vector_iterator_index,
     };
-    uint16_t instance = sizeof(_gt_vector_iterator_ctl_st);
+    uint16_t instance = sizeof(_gt_iterator_ctl_st);
     GT_CHECK_BACK_VAL(vector, ret_iter);
     if (NULL == vector->iter_ctl) {
-        vector->iter_ctl = (_gt_vector_iterator_ctl_st * )gt_mem_malloc(instance);
+        vector->iter_ctl = (_gt_iterator_ctl_st * )gt_mem_malloc(instance);
         GT_CHECK_BACK_VAL(vector->iter_ctl, ret_iter);
     }
     gt_memset(vector->iter_ctl, 0, instance);
