@@ -68,7 +68,7 @@ typedef struct {
 typedef struct _gt_vector_iterator_s {
     has_next_cb has_next;
     next_cb next;
-    index_cb index;
+    index_cb index;         /** When the next() function is executed, index automatically increases by 1 */
     _iter_dsc_st * dsc_t;
 }_gt_vector_iterator_st;
 
