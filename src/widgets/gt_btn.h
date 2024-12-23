@@ -127,6 +127,7 @@ void gt_btn_set_font_cjk(gt_obj_st* btn, gt_font_cjk_et cjk);
 void gt_btn_set_font_thick_en(gt_obj_st * btn, uint8_t thick);
 void gt_btn_set_font_thick_cn(gt_obj_st * btn, uint8_t thick);
 void gt_btn_set_font_encoding(gt_obj_st * btn, gt_encoding_et encoding);
+void gt_btn_set_font_style(gt_obj_st * btn, gt_font_style_et fotn_style);
 void gt_btn_set_space(gt_obj_st * btn, uint8_t space_x, uint8_t space_y);
 
 void gt_btn_set_indent(gt_obj_st * btn, uint16_t indent);

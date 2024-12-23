@@ -90,6 +90,7 @@ typedef enum{
     _SET_MSG_FONT_THICK_EN,
     _SET_MSG_FONT_THICK_CN,
     _SET_MSG_RADIUS,
+    _SET_MSG_FONT_STYLE,
 }_gt_chat_set_msg_te;
 
 /* static prototypes ----------------------------------------------------*/
@@ -188,6 +189,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_set_msg_font_info_all(gt_obj_st * msg_obj,
     gt_btn_set_font_size(msg_obj, font_info->size);
     gt_btn_set_font_thick_cn(msg_obj, font_info->thick_cn);
     gt_btn_set_font_thick_en(msg_obj, font_info->thick_en);
+    gt_btn_set_font_encoding(msg_obj, font_info->encoding);
+    gt_btn_set_font_style(msg_obj, font_info->style.all);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, uint8_t idx, bool is_send) {
@@ -454,6 +457,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_set_msg_param(gt_obj_st* chat, _gt_chat_se
             break;
         case _SET_MSG_RADIUS:
             gt_btn_set_radius(style->msg_list[i].msg_obj, style->msg_radius);
+            break;
+        case _SET_MSG_FONT_STYLE:
+            gt_btn_set_font_style(style->msg_list[i].msg_obj, style->font_info.style.all);
+            break;
         default:
             break;
         }
@@ -727,6 +734,16 @@ void gt_chat_set_font_thick_cn(gt_obj_st * chat, uint8_t thick)
     _gt_chat_st * style = (_gt_chat_st * )chat;
     style->font_info.thick_cn = thick;
     _gt_set_msg_param(chat, _SET_MSG_FONT_THICK_CN);
+}
+
+void gt_chat_set_font_style(gt_obj_st * chat, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_chat_st * style = (_gt_chat_st * )chat;
+    style->font_info.style.all = font_style;
+    _gt_set_msg_param(chat, _SET_MSG_FONT_STYLE);
 }
 
 void gt_chat_clean_all_msg(gt_obj_st * chat)

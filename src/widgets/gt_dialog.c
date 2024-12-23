@@ -634,6 +634,18 @@ void gt_dialog_set_title_font_thick_cn(gt_obj_st * dialog, uint8_t thick)
     gt_label_set_font_thick_cn(style->title, thick);
 }
 
+void gt_dialog_set_title_font_style(gt_obj_st * dialog, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_style(style->title, font_style);
+}
+
 void gt_dialog_set_content_font_color(gt_obj_st * dialog, gt_color_t color)
 {
     if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
@@ -753,6 +765,18 @@ void gt_dialog_set_content_font_thick_cn(gt_obj_st * dialog, uint8_t thick)
         return ;
     }
     gt_label_set_font_thick_cn(style->content, thick);
+}
+
+void gt_dialog_set_content_font_style(gt_obj_st * dialog, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->content) {
+        return ;
+    }
+    gt_label_set_font_style(style->content, font_style);
 }
 
 #endif  /** GT_USE_LAYER_TOP && GT_CFG_ENABLE_DIALOG */

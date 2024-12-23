@@ -416,6 +416,15 @@ void gt_radio_set_font_encoding(gt_obj_st * radio, gt_encoding_et encoding)
     style->font_info.encoding = encoding;
 }
 
+void gt_radio_set_font_style(gt_obj_st * radio, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_radio_st * style = (_gt_radio_st * )radio;
+    style->font_info.style.all = font_style;
+}
+
 void gt_radio_set_space(gt_obj_st * radio, uint8_t space_x, uint8_t space_y)
 {
     if (false == gt_obj_is_type(radio, OBJ_TYPE)) {

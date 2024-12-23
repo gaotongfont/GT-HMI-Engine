@@ -1064,6 +1064,18 @@ void gt_clock_set_font_thick_cn(gt_obj_st * obj, uint8_t thick)
     gt_label_set_font_thick_cn(style->label, thick);
 }
 
+void gt_clock_set_font_style(gt_obj_st * obj, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_clock_st * style = (_gt_clock_st * )obj;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_style(style->label, font_style);
+}
+
 void gt_clock_set_space(gt_obj_st * obj, uint8_t space_x, uint8_t space_y)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {

@@ -147,6 +147,7 @@ void gt_keypad_set_font_cjk(gt_obj_st* keypad, gt_font_cjk_et cjk);
 #endif
 void gt_keypad_set_font_thick_en(gt_obj_st * keypad, uint8_t thick);
 void gt_keypad_set_font_thick_cn(gt_obj_st * keypad, uint8_t thick);
+void gt_keypad_set_font_style(gt_obj_st * keypad, gt_font_style_et font_style);
 
 void gt_keypad_set_ctrl_key_color_background(gt_obj_st * keypad, gt_color_t color);
 void gt_keypad_set_ctrl_key_border_width_and_color(gt_obj_st * keypad, gt_size_t width, gt_color_t color);

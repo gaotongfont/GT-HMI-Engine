@@ -460,6 +460,7 @@ void gt_listview_set_font_cjk(gt_obj_st* listview, gt_font_cjk_et cjk);
 void gt_listview_set_font_thick_en(gt_obj_st * listview, uint8_t thick);
 void gt_listview_set_font_thick_cn(gt_obj_st * listview, uint8_t thick);
 void gt_listview_set_font_encoding(gt_obj_st * listview, gt_encoding_et encoding);
+void gt_listview_set_font_style(gt_obj_st * listview, gt_font_style_et font_style);
 
 void gt_listview_set_font_space(gt_obj_st * listview, uint8_t space_x, uint8_t space_y);
 

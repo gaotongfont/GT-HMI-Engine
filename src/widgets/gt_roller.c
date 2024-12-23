@@ -919,7 +919,16 @@ void gt_roller_set_font_thick_cn(gt_obj_st * obj, uint8_t thick)
     _resize_display_width(obj);
 }
 
-
+void gt_roller_set_font_style(gt_obj_st * obj, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
+    _create_text(obj);
+    gt_label_set_font_style(style->text, font_style);
+    _resize_display_width(obj);
+}
 
 #endif  /** GT_CFG_ENABLE_ROLLER */
 /* end ------------------------------------------------------------------*/

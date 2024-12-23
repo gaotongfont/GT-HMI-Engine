@@ -128,6 +128,7 @@ void gt_input_set_font_align(gt_obj_st * input, gt_align_et align);
 void gt_input_set_font_thick_en(gt_obj_st * input, uint8_t thick);
 void gt_input_set_font_thick_cn(gt_obj_st * input, uint8_t thick);
 void gt_input_set_font_encoding(gt_obj_st * input, gt_encoding_et encoding);
+void gt_input_set_font_style(gt_obj_st * input, gt_font_style_et font_style);
 void gt_input_set_bg_color(gt_obj_st * input, gt_color_t color);
 void gt_input_set_border_width(gt_obj_st * input, gt_size_t width);
 void gt_input_set_border_color(gt_obj_st * input, gt_color_t color);

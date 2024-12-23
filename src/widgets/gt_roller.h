@@ -183,6 +183,7 @@ void gt_roller_set_font_cjk(gt_obj_st* obj, gt_font_cjk_et cjk);
 #endif
 void gt_roller_set_font_thick_en(gt_obj_st * obj, uint8_t thick);
 void gt_roller_set_font_thick_cn(gt_obj_st * obj, uint8_t thick);
+void gt_roller_set_font_style(gt_obj_st * obj, gt_font_style_et font_style);
 
 /**
  * @brief Set the options content of the roller, In the middle,

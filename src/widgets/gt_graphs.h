@@ -263,6 +263,7 @@ void gt_graphs_set_font_cjk(gt_obj_st* graphs, gt_font_cjk_et cjk);
 void gt_graphs_set_font_thick_en(gt_obj_st * graphs, uint8_t thick);
 void gt_graphs_set_font_thick_cn(gt_obj_st * graphs, uint8_t thick);
 void gt_graphs_set_font_encoding(gt_obj_st * graphs, gt_encoding_et encoding);
+void gt_graphs_set_font_style(gt_obj_st * graphs, gt_font_style_et font_style);
 
 uint8_t gt_graphs_get_font_size(gt_obj_st * graphs);
 

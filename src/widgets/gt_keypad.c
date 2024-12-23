@@ -1035,6 +1035,15 @@ void gt_keypad_set_font_thick_cn(gt_obj_st * keypad, uint8_t thick)
     gt_btnmap_set_font_thick_cn(style->btnmap, thick);
 }
 
+void gt_keypad_set_font_style(gt_obj_st * keypad, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
+    gt_btnmap_set_font_style(style->btnmap, font_style);
+}
+
 void gt_keypad_set_ctrl_key_color_background(gt_obj_st * keypad, gt_color_t color)
 {
     if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {

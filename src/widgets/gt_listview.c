@@ -125,6 +125,7 @@ typedef enum {
     _LABEL_FONT_ENCODING,
     _LABEL_OMIT_SL,         /** Omit single line */
     _LABEL_AUTO_SCROLL_SL,  /** Auto scroll single line */
+    _LABEL_FONT_STYLE,
 }_label_prop_em;
 
 typedef enum {
@@ -508,6 +509,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _set_label_prop_by_type(gt_obj_st * listview, 
                 gt_label_set_omit_single_line(obj->child[item], (bool)val);
             } else if (_LABEL_AUTO_SCROLL_SL == type) {
                 gt_label_set_auto_scroll_single_line(obj->child[item], (bool)val);
+            } else if(_LABEL_FONT_STYLE == type){
+                gt_label_set_font_style(obj->child[item], (gt_font_style_et)val);
             }
         }
     }
@@ -1606,6 +1609,16 @@ void gt_listview_set_font_encoding(gt_obj_st * listview, gt_encoding_et encoding
     _gt_listview_st * style = (_gt_listview_st * )listview;
     style->font_info.encoding = encoding;
     _set_label_prop_by_type(listview, _LABEL_FONT_ENCODING, encoding);
+}
+
+void gt_listview_set_font_style(gt_obj_st * listview, gt_font_style_et font_style)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->font_info.style.all = font_style;
+    _set_label_prop_by_type(listview, _LABEL_FONT_STYLE, font_style);
 }
 
 void gt_listview_set_font_space(gt_obj_st * listview, uint8_t space_x, uint8_t space_y)

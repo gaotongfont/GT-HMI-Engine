@@ -659,6 +659,16 @@ void gt_btnmap_set_font_thick_cn(gt_obj_st * btnmap, uint8_t thick)
     gt_event_send(btnmap, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+void gt_btnmap_set_font_style(gt_obj_st * btnmap, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
+        return;
+    }
+    _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
+    style->font_info.style.all = font_style;
+    gt_event_send(btnmap, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 void gt_btnmap_set_font_encoding(gt_obj_st * btnmap, gt_encoding_et encoding)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
