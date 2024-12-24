@@ -336,15 +336,6 @@ uint8_t gt_utf8_check_char(uint8_t * utf8);
  */
 _gt_font_dot_ret_st gt_font_get_dot(gt_font_st * font, uint32_t unicode);
 
-
-/**
- * @brief get string all width
- *
- * @param font string msg
- * @return uint32_t all width
- */
-uint32_t gt_font_get_string_width(gt_font_st * font);
-
 /**
  * @brief Get the width of a character
  *

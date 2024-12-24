@@ -1132,16 +1132,6 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
     return res;
 }
 #endif
-uint32_t gt_font_get_string_width(gt_font_st * font)
-{
-	uint32_t idx = 0, unicode = 0, width = 0;
-
-    while (idx < font->len) {
-        idx += gt_font_one_char_code_len_get((uint8_t * )&font->utf8[idx], &unicode, font->info.encoding);
-        width += gt_font_get_one_word_width(unicode, font);
-    }
-    return width;
-}
 
 uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const char * const text, uint16_t space)
 {
