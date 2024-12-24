@@ -637,7 +637,9 @@ static GT_ATTRIBUTE_RAM_TEXT uint8_t _gt_utf8_to_gb(const uint8_t *src, uint16_t
             tmp_len = 1;
             goto fill;
         }
+#if UNICODETOGBK
         font_code = UnicodeToGBK(font_code);
+#endif
         if(0x00 == font_code){
             font_code = 0x3F;
         }
@@ -804,7 +806,9 @@ uint8_t gt_encoding_table_one_char(uint8_t *src, uint8_t* dst, gt_encoding_conve
         // utf8_to_unicode
         len = _gt_utf8_to_unicode(src, &font_code);
         // unicode to gb
+#if UNICODETOGBK
         font_code = UnicodeToGBK(font_code);
+#endif
         gt_size_t tmp_len = _gt_gb_code_len_get(font_code);
         gt_size_t tmp_i = 0;
         for(tmp_i = 0; tmp_i < tmp_len; tmp_i++) {
