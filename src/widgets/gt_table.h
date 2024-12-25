@@ -70,6 +70,8 @@ gt_res_t gt_table_add_header_text_by_len(gt_obj_st * table, char * text, uint16_
  */
 gt_res_t gt_table_add_content_text_by_len(gt_obj_st * table, char * text, uint16_t len);
 
+gt_res_t gt_table_refresh(gt_obj_st * table);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
