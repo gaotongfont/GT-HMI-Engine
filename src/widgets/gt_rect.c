@@ -60,17 +60,19 @@ static inline void _gt_rect_init_widget(gt_obj_st * rect) {
     if( rect->area.w == 0 || rect->area.h == 0){
         return;
     }
-    gt_attr_rect_st rect_attr;
-    gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.reg.is_fill    = style->fill;
-    rect_attr.border_width   = style->border;
-    rect_attr.border_color   = style->color_border;
-    rect_attr.bg_opa         = rect->opa;
-    rect_attr.bg_color       = style->color_background;
-    rect_attr.radius         = rect->radius;
+    if (rect->show_bg) {
+        gt_attr_rect_st rect_attr;
+        gt_graph_init_rect_attr(&rect_attr);
+        rect_attr.reg.is_fill    = style->fill;
+        rect_attr.border_width   = style->border;
+        rect_attr.border_color   = style->color_border;
+        rect_attr.bg_opa         = rect->opa;
+        rect_attr.bg_color       = style->color_background;
+        rect_attr.radius         = rect->radius;
 
-    gt_area_st area_base = rect->area;
-    draw_bg(rect->draw_ctx, &rect_attr, &area_base);
+        gt_area_st area_base = rect->area;
+        draw_bg(rect->draw_ctx, &rect_attr, &area_base);
+    }
 
     // focus
     draw_focus(rect , rect->radius);
@@ -133,6 +135,7 @@ gt_obj_st * gt_rect_create(gt_obj_st * parent)
         return NULL;
     }
     obj->radius = 0;
+    obj->show_bg = true;
     _gt_rect_st * style = (_gt_rect_st * )obj;
 
     style->fill = 1;
