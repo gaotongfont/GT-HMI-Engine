@@ -81,6 +81,8 @@ void gt_select_set_font_thick_en(gt_obj_st * select, uint8_t thick);
 void gt_select_set_font_thick_cn(gt_obj_st * select, uint8_t thick);
 void gt_select_set_font_encoding(gt_obj_st * select, gt_encoding_et encoding);
 
+void gt_select_set_font_style(gt_obj_st * select, gt_font_style_et font_style);
+
 #endif  /** GT_CFG_ENABLE_SELECT */
 
 #ifdef __cplusplus

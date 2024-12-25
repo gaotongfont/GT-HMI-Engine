@@ -314,5 +314,16 @@ void gt_select_set_font_encoding(gt_obj_st * select, gt_encoding_et encoding)
     gt_listview_set_font_encoding(style->lv_p, encoding);
 }
 
+void gt_select_set_font_style(gt_obj_st * select, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    gt_input_set_font_style(style->ipt_p, font_style);
+    gt_listview_set_font_style(style->lv_p, font_style);
+    gt_event_send(select, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 #endif  /** GT_CFG_ENABLE_SELECT */
 /* end ------------------------------------------------------------------*/
