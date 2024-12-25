@@ -336,7 +336,31 @@ static inline void _blend_rgb565_with_no_opacity(_gt_draw_blend_fill_cache_st co
             }
             return;
         }
+    #if 0
         gt_memcpy(dst_p, src_p, w * h * sizeof(gt_color_t));
+    #else
+        for (y = 0; y < h; ++y) {
+            x = 0;
+#if GT_DRAW_BLEND_ALIGN
+            if ((gt_uintptr_t)&dst_p[0] & 0x1) {
+                *dst_p = *src_p;
+                ++dst_p; ++src_p;
+                ++x;
+            }
+            for (; x < w - 2; x += 2) {
+                *dst_p = *src_p;
+                dst_p[1] = src_p[1];
+                dst_p += 2; src_p += 2;
+            }
+#endif
+            for (; x < w; ++x) {
+                *dst_p = *src_p;
+                ++dst_p; ++src_p;
+            }
+            dst_p += step_dst_line;
+            src_p += step_src_line;
+        }
+    #endif
         return;
     }
 
