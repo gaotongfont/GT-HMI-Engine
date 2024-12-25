@@ -40,16 +40,15 @@ typedef struct _gt_table_s {
     uint8_t border_width;
     gt_font_info_st font_info;
 
-    _gt_table_col_st * col_list;   /** count by header items count */
+    _gt_table_col_st * col_list;    /** count by header items count */
 
     _gt_vector_st * header;
     _gt_vector_st * contents;
 
-    _gt_vector_st * row_el;
+    _gt_vector_st * row_el;         /** row element information */
 
-
-    uint16_t height_header;
-    uint16_t height_contents;
+    uint16_t height_header;         /** header total height */
+    uint16_t height_contents;       /** all row element total height */
 
     uint8_t update_col : 1;
 }_gt_table_st;
@@ -100,7 +99,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_line(gt_obj_st * obj, gt_area_st * area,
     gt_draw_line(obj->draw_ctx, &line, &obj->area);
 }
 
-static inline uint16_t _get_label_offset(_gt_table_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline uint16_t _get_label_offset(_gt_table_st * style) {
     return style->font_info.size >> 1;
 }
 
@@ -163,6 +162,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_contents(gt_obj_st * obj) {
         .res = NULL,
         .info = style->font_info,
     };
+    font.info.style.reg.bold = false;   /** Force non-bold style */
     gt_attr_font_st font_attr = {
         .font = &font,
         .font_color = gt_color_black(),
@@ -554,7 +554,173 @@ gt_res_t gt_table_refresh(gt_obj_st * table)
     return GT_RES_OK;
 }
 
+void gt_table_set_font_color(gt_obj_st * table, gt_color_t color)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    style->font_info.palette = color;
+    gt_event_send(table, GT_EVENT_TYPE_DRAW_START, NULL);
+}
 
+gt_color_t gt_table_get_font_color(gt_obj_st * table)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return gt_color_black();
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    return style->font_info.palette;
+}
+
+void gt_table_set_font_size(gt_obj_st * table, uint8_t size)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    style->font_info.size = size;
+}
+
+void gt_table_set_font_gray(gt_obj_st * table, uint8_t gray)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    style->font_info.gray = gray;
+}
+
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
+void gt_table_set_font_family_cn(gt_obj_st * table, gt_family_t family)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    style->font_info.style_cn = family;
+}
+
+void gt_table_set_font_family_en(gt_obj_st * table, gt_family_t family)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    style->font_info.style_en = family;
+}
+
+void gt_table_set_font_family_fl(gt_obj_st * table, gt_family_t family)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    style->font_info.style_fl = family;
+}
+
+void gt_table_set_font_family_numb(gt_obj_st * table, gt_family_t family)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    style->font_info.style_numb = family;
+}
+#else
+void gt_table_set_font_family(gt_obj_st * table, gt_family_t family)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    gt_font_set_family(&style->font_info, family);
+}
+
+void gt_table_set_font_cjk(gt_obj_st* table, gt_font_cjk_et cjk)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    style->font_info.cjk = cjk;
+}
+#endif
+void gt_table_set_font_thick_en(gt_obj_st * table, uint8_t thick)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    style->font_info.thick_en = thick;
+}
+
+void gt_table_set_font_thick_cn(gt_obj_st * table, uint8_t thick)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    style->font_info.thick_cn = thick;
+}
+
+void gt_table_set_font_encoding(gt_obj_st * table, gt_encoding_et encoding)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    style->font_info.encoding = encoding;
+}
+
+void gt_table_set_font_style(gt_obj_st * table, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    style->font_info.style.all = font_style;
+    gt_event_send(table, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+uint8_t gt_table_get_font_size(gt_obj_st * table)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    return style->font_info.size;
+}
+
+void gt_table_set_font_info(gt_obj_st * table, gt_font_info_st * font_info)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return ;
+    }
+    if (NULL == font_info) {
+        return ;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    gt_memcpy(&style->font_info, font_info, sizeof(gt_font_info_st));
+}
+
+gt_font_info_st * gt_table_get_font_info(gt_obj_st * table)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    return &style->font_info;
+}
+
+void gt_table_set_header_bold(gt_obj_st * table, bool is_bold)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    style->font_info.style.reg.bold = is_bold;
+}
 
 #endif  /** GT_CFG_ENABLE_TABLE */
 /* end ------------------------------------------------------------------*/

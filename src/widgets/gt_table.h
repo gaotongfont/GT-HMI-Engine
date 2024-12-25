@@ -73,6 +73,34 @@ gt_res_t gt_table_add_content_text_by_len(gt_obj_st * table, char * text, uint16
 
 gt_res_t gt_table_refresh(gt_obj_st * table);
 
+void gt_table_set_font_color(gt_obj_st * table, gt_color_t color);
+
+gt_color_t gt_table_get_font_color(gt_obj_st * table);
+
+void gt_table_set_font_size(gt_obj_st * table, uint8_t size);
+void gt_table_set_font_gray(gt_obj_st * table, uint8_t gray);
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
+void gt_table_set_font_family_cn(gt_obj_st * table, gt_family_t family);
+void gt_table_set_font_family_en(gt_obj_st * table, gt_family_t family);
+void gt_table_set_font_family_fl(gt_obj_st * table, gt_family_t family);
+void gt_table_set_font_family_numb(gt_obj_st * table, gt_family_t family);
+#else
+void gt_table_set_font_family(gt_obj_st * table, gt_family_t family);
+void gt_table_set_font_cjk(gt_obj_st* table, gt_font_cjk_et cjk);
+#endif
+void gt_table_set_font_thick_en(gt_obj_st * table, uint8_t thick);
+void gt_table_set_font_thick_cn(gt_obj_st * table, uint8_t thick);
+void gt_table_set_font_encoding(gt_obj_st * table, gt_encoding_et encoding);
+
+void gt_table_set_font_style(gt_obj_st * table, gt_font_style_et font_style);
+
+uint8_t gt_table_get_font_size(gt_obj_st * table);
+
+void gt_table_set_font_info(gt_obj_st * table, gt_font_info_st * font_info);
+gt_font_info_st * gt_table_get_font_info(gt_obj_st * table);
+
+void gt_table_set_header_bold(gt_obj_st * table, bool is_bold);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
