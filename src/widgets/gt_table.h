@@ -1,7 +1,8 @@
 /**
  * @file gt_table.h
  * @author Feyoung
- * @brief Table widget, support multi-row and multi-column table
+ * @brief Table widget, support multi-row and multi-column table.
+ *      Called gt_table_refresh() after add header and content text.
  * @version 0.1
  * @date 2024-12-19 17:35:47
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
@@ -71,6 +72,13 @@ gt_res_t gt_table_add_header_text_by_len(gt_obj_st * table, char * text, uint16_
  */
 gt_res_t gt_table_add_content_text_by_len(gt_obj_st * table, char * text, uint16_t len);
 
+/**
+ * @brief Need to call this function after adding the header and content,
+ *      calc the max width and height of each column
+ *
+ * @param table
+ * @return gt_res_t
+ */
 gt_res_t gt_table_refresh(gt_obj_st * table);
 
 void gt_table_set_font_color(gt_obj_st * table, gt_color_t color);
@@ -99,6 +107,12 @@ uint8_t gt_table_get_font_size(gt_obj_st * table);
 void gt_table_set_font_info(gt_obj_st * table, gt_font_info_st * font_info);
 gt_font_info_st * gt_table_get_font_info(gt_obj_st * table);
 
+/**
+ * @brief Header title bold style
+ *
+ * @param table
+ * @param is_bold
+ */
 void gt_table_set_header_bold(gt_obj_st * table, bool is_bold);
 
 #ifdef __cplusplus

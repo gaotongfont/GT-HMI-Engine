@@ -1,7 +1,8 @@
 /**
  * @file gt_table.c
  * @author Feyoung
- * @brief
+ * @brief Table widget, support multi-row and multi-column table.
+ *      Called gt_table_refresh() after add header and content text.
  * @version 0.1
  * @date 2024-12-19 17:35:53
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
