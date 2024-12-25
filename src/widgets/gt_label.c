@@ -531,6 +531,16 @@ void gt_label_set_space(gt_obj_st * label, uint8_t space_x, uint8_t space_y)
     _reset_auto_scroll_st(style->auto_scroll);
 }
 
+void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    style->font_info.style.all = font_style;
+    gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 uint8_t gt_label_get_font_size(gt_obj_st * label)
 {
     if (false == gt_obj_is_type(label, OBJ_TYPE)) {
@@ -659,16 +669,6 @@ void gt_label_set_auto_scroll_total_time(gt_obj_st * label, uint32_t total_time_
     if (gt_anim_is_paused(style->auto_scroll->anim)) {
         gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);   /** restart scroll */
     }
-}
-
-void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style)
-{
-    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
-        return ;
-    }
-    _gt_label_st * style = (_gt_label_st * )label;
-    style->font_info.style.all = font_style;
-    gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 bool gt_label_is_single_line(gt_obj_st * label)

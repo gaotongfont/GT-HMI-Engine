@@ -102,6 +102,8 @@ void gt_label_set_font_encoding(gt_obj_st * label, gt_encoding_et encoding);
 
 void gt_label_set_space(gt_obj_st * label, uint8_t space_x, uint8_t space_y);
 
+void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style);
+
 uint8_t gt_label_get_font_size(gt_obj_st * label);
 
 uint8_t gt_label_get_space_x(gt_obj_st * label);
@@ -153,8 +155,6 @@ void gt_label_set_auto_scroll_single_line(gt_obj_st * label, bool is_auto_scroll
  *                     = 0: set default 2s.
  */
 void gt_label_set_auto_scroll_total_time(gt_obj_st * label, uint32_t total_time_ms);
-
-void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style);
 
 bool gt_label_is_single_line(gt_obj_st * label);
 bool gt_label_is_omit_single_line(gt_obj_st * label);
