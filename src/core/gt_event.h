@@ -67,6 +67,8 @@ typedef enum gt_event_type_e {
     GT_EVENT_TYPE_DRAW_START,    // need to start draw widget
     GT_EVENT_TYPE_DRAW_END,      // draw widget ok
     GT_EVENT_TYPE_DRAW_REDRAW,
+    GT_EVENT_TYPE_SCREEN_LOAD_BEFORE,       // [Called by core inside] screen loading to draw before
+    GT_EVENT_TYPE_SCREEN_BEFORE_GO_BACK,    // [Called by core inside] screen before go back
 
     /* CHANGE events */
     GT_EVENT_TYPE_CHANGE_CHILD_REMOVE,     // [Called by core inside] remove child but not delete child
