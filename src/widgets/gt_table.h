@@ -54,7 +54,8 @@ gt_obj_st * gt_table_create(gt_obj_st * parent);
  * @param table
  * @param text
  * @param len
- * @param align @ref gt_align_et
+ * @param align @ref gt_align_et recommend:
+ *      GT_ALIGN_LEFT_MID / GT_ALIGN_CENTER_MID / GT_ALIGN_RIGHT_MID
  * @return gt_res_t
  */
 gt_res_t gt_table_add_header_text_by_len(gt_obj_st * table, char * text, uint16_t len, gt_align_et align);
