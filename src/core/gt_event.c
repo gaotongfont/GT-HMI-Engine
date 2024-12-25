@@ -80,8 +80,22 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_user_cb(gt_event_st * e)
 static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_event_cb(gt_event_st * e) {
     gt_obj_st * obj = (gt_obj_st * )e->target;
     GT_CHECK_BACK_VAL(obj, GT_RES_FAIL);
-
     const gt_obj_class_st * c = obj->classes;
+    bool is_handler = false;
+
+    /** expand event replace func */
+    gt_obj_event_attr_st * event_ptr = e->target->replace_core_event_attr;
+    while(event_ptr) {
+        if(event_ptr->user_cb && e->code_type == event_ptr->filter) {
+            e->user_data = event_ptr->user_data;
+            event_ptr->user_cb(e);
+            is_handler = true;
+        }
+        event_ptr = event_ptr->next_ptr;
+    }
+    if (is_handler) { return GT_RES_OK; }
+
+    /** inside event func */
     GT_CHECK_BACK_VAL(c, GT_RES_FAIL);
     if (c->_event_cb) {
         c->_event_cb(obj, e);
@@ -151,6 +165,36 @@ static GT_ATTRIBUTE_RAM_TEXT inline gt_res_t _common_event_send(gt_event_st * e)
     return res;
 }
 
+static GT_ATTRIBUTE_RAM_TEXT bool
+_common_event_has_the_same_cb(gt_obj_event_attr_st * event_ptr, gt_event_cb_t event, gt_event_type_et filter) {
+    if (NULL == event_ptr) {
+        return false;
+    }
+    while (event_ptr) {
+        if (event_ptr->user_cb == event && event_ptr->filter == filter) {
+            return true;
+        }
+        event_ptr = event_ptr->next_ptr;
+    }
+    return false;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_event_attr_st *
+_commen_add_event_node(gt_obj_event_attr_st ** event_root_p) {
+    uint16_t len = sizeof(gt_obj_event_attr_st);
+    gt_obj_event_attr_st * new_event = (gt_obj_event_attr_st * )gt_mem_malloc(len);
+    GT_CHECK_BACK_VAL(new_event, NULL);
+
+    gt_obj_event_attr_st * tmp_ptr = *event_root_p;
+    if (tmp_ptr) {
+        while(tmp_ptr->next_ptr) { tmp_ptr = tmp_ptr->next_ptr; }
+        tmp_ptr->next_ptr = new_event;
+    } else {
+        *event_root_p = new_event;
+    }
+    return new_event;
+}
+
 /* global functions / API interface -------------------------------------*/
 #if GT_USE_SCREEN_ANIM
 void gt_event_set_enabled(bool enabled)
@@ -173,39 +217,38 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
     if (NULL == obj || NULL == event) {
         return;
     }
-    if (gt_event_has_the_same_cb(obj, event, filter)) {
+    if (_common_event_has_the_same_cb(obj->event_attr, event, filter)) {
         return ;
     }
-    uint16_t len = sizeof(gt_obj_event_attr_st);
-    gt_obj_event_attr_st * tmp_ptr = obj->event_attr;
-    gt_obj_event_attr_st * new_event = (gt_obj_event_attr_st * )gt_mem_malloc(len);
+    gt_obj_event_attr_st * new_event = _commen_add_event_node(&obj->event_attr);
     GT_CHECK_BACK(new_event);
+
     new_event->next_ptr = NULL;
     new_event->user_cb = event;
     new_event->filter = filter;
     new_event->user_data = user_data;
+}
 
-    if (tmp_ptr) {
-        while(tmp_ptr->next_ptr) { tmp_ptr = tmp_ptr->next_ptr; }
-        tmp_ptr->next_ptr = new_event;
-    } else {
-        obj->event_attr = new_event;
+void gt_obj_add_replace_core_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data)
+{
+    if (NULL == obj || NULL == event) {
+        return;
     }
+    if (_common_event_has_the_same_cb(obj->replace_core_event_attr, event, filter)) {
+        return ;
+    }
+    gt_obj_event_attr_st * new_event = _commen_add_event_node(&obj->replace_core_event_attr);
+    GT_CHECK_BACK(new_event);
+
+    new_event->next_ptr = NULL;
+    new_event->user_cb = event;
+    new_event->filter = filter;
+    new_event->user_data = user_data;
 }
 
 bool gt_event_has_the_same_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter)
 {
-    gt_obj_event_attr_st * event_ptr = obj->event_attr;
-    if (NULL == event_ptr) {
-        return false;
-    }
-    while (event_ptr) {
-        if (event_ptr->user_cb == event && event_ptr->filter == filter) {
-            return true;
-        }
-        event_ptr = event_ptr->next_ptr;
-    }
-    return false;
+    return _common_event_has_the_same_cb(obj->event_attr, event, filter);
 }
 
 uint16_t gt_obj_get_user_event_count(struct gt_obj_s * obj)
@@ -230,11 +273,16 @@ void gt_obj_remove_all_event_cb(struct gt_obj_s * obj)
     }
     gt_anim_st anim;
     gt_anim_init(&anim);
-    gt_anim_set_target(&anim, obj->event_attr);
     gt_anim_set_time(&anim, 1);
     gt_anim_set_ready_cb(&anim, _anim_to_remove_all_event);
+
+    gt_anim_set_target(&anim, obj->event_attr);
+    gt_anim_start(&anim);
+
+    gt_anim_set_target(&anim, obj->replace_core_event_attr);
     gt_anim_start(&anim);
     obj->event_attr = NULL;
+    obj->replace_core_event_attr = NULL;
 }
 
 void gt_obj_remove_all_event_cb_immediately(struct gt_obj_s * obj)
@@ -244,7 +292,9 @@ void gt_obj_remove_all_event_cb_immediately(struct gt_obj_s * obj)
         return;
     }
     _free_event_recursive(obj->event_attr);
+    _free_event_recursive(obj->replace_core_event_attr);
     obj->event_attr = NULL;
+    obj->replace_core_event_attr = NULL;
 }
 
 gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * parms)

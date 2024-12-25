@@ -138,7 +138,7 @@ bool gt_event_is_enabled(void);
 #endif  /** GT_USE_SCREEN_ANIM */
 
 /**
- * @brief Adding an event to an object
+ * @brief Adding an user event to an object
  *
  * @param obj Which object need to add event callback
  * @param event The callback function
@@ -146,6 +146,17 @@ bool gt_event_is_enabled(void);
  * @param user_data memory free by user [default or unused: NULL]
  */
 void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data);
+
+/**
+ * @brief Using user's event() to replace the core event_cb() callback handler,
+ *      [Warn] The core event_cb() event type inline handler will be ignored.
+ *
+ * @param obj
+ * @param event The callback function
+ * @param filter
+ * @param user_data
+ */
+void gt_obj_add_replace_core_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data);
 
 /**
  * @brief Check if the event callback is already added

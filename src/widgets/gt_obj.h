@@ -93,6 +93,9 @@ typedef struct gt_obj_s {
     struct gt_obj_s ** child;
     const gt_obj_class_st * classes;
 
+    /** user's custom events callback replace core events handler */
+    gt_obj_event_attr_st * replace_core_event_attr;
+    /** user's events */
     gt_obj_event_attr_st * event_attr;
     struct _gt_draw_ctx_s * draw_ctx;
     gt_obj_process_attr_st process_attr;
