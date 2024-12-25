@@ -81,8 +81,8 @@ typedef enum gt_font_style_e {
     GT_FONT_STYLE_NONE          = 0x00,     ///< default status
     GT_FONT_STYLE_UNDERLINE     = 0x01,     ///< underline
     GT_FONT_STYLE_STRIKETHROUGH = 0x02,     ///< strikethrough
-    GT_FONT_STYLE_BOLD          = 0x04,     // TODO bold
-    GT_FONT_STYLE_ITALIC        = 0x08,     // TODO italic
+    GT_FONT_STYLE_BOLD          = 0x04,     // < bold
+    GT_FONT_STYLE_ITALIC        = 0x08,     // < italic
 }gt_font_style_et;
 typedef struct{
     uint8_t underline : 1;
