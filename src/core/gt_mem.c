@@ -460,7 +460,7 @@ void gt_mem_check_used(void)
 void gt_mem_heap_get_space(MEM_UNIT * start, MEM_UNIT * end, MEM_UNIT * current)
 {
 #if GT_MEM_CUSTOM
-    char * addr_now = gt_mem_malloc(16);
+    char * addr_now = gt_mem_malloc(1024);
     if (!addr_now) {
         GT_LOGI(GT_LOG_TAG_MEM, "Get heap get space failed");
         return;
@@ -468,7 +468,7 @@ void gt_mem_heap_get_space(MEM_UNIT * start, MEM_UNIT * end, MEM_UNIT * current)
     gt_mem_free(addr_now);
     *start = (MEM_UNIT)_addr_start;
     *end = (MEM_UNIT)_addr_end;
-    *current = (MEM_UNIT)addr_now;
+    *current = (MEM_UNIT)addr_now - 1024;
     addr_now = NULL;
 #else
     *start = 0;
