@@ -40,6 +40,13 @@ extern "C" {
         #define GT_CFG_USE_SYMBOL_16x16	        1
     #endif
 
+    #ifndef GT_CFG_USE_SYMBOL_20x20
+        /**
+         * @brief 0: Disabled; 1[default]: Use 20x20 symbol
+         */
+        #define GT_CFG_USE_SYMBOL_20x20         1
+    #endif
+
     #ifndef GT_CFG_USE_SYMBOL_24x24
         /**
          * @brief 0: Disabled; 1[default]: Use 24x24 symbol
