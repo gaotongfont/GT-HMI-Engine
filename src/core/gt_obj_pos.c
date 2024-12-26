@@ -533,6 +533,7 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
                     chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_ON);
                 return;
             }
+            case GT_TYPE_MARKDOWN:
             case GT_TYPE_LISTVIEW: {
                 // ! listview -> obj -> other
                 // ! last is obj, dst is other
