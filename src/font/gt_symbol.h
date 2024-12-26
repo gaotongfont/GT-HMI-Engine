@@ -429,24 +429,24 @@ extern "C" {
 #define GT_SYMBOL_VOICE_PLAY_RIGHT_3_GBK    "\xE1\x08"
 #endif
 
-#if !defined GT_SYMBOL_LEFT_SOILD
-#define GT_SYMBOL_LEFT_SOILD                "\xEE\x84\x89" /*57609, 0xE109*/
-#define GT_SYMBOL_LEFT_SOILD_GBK            "\xE1\x09"
+#if !defined GT_SYMBOL_LEFT_SOLID
+#define GT_SYMBOL_LEFT_SOLID                "\xEE\x84\x89" /*57609, 0xE109*/
+#define GT_SYMBOL_LEFT_SOLID_GBK            "\xE1\x09"
 #endif
 
-#if !defined GT_SYMBOL_RIGHT_SOILD
-#define GT_SYMBOL_RIGHT_SOILD               "\xEE\x84\x8a" /*57610, 0xE10a*/
-#define GT_SYMBOL_RIGHT_SOILD_GBK           "\xE1\x0a"
+#if !defined GT_SYMBOL_RIGHT_SOLID
+#define GT_SYMBOL_RIGHT_SOLID               "\xEE\x84\x8a" /*57610, 0xE10a*/
+#define GT_SYMBOL_RIGHT_SOLID_GBK           "\xE1\x0a"
 #endif
 
-#if !defined GT_SYMBOL_UP_SOILD
-#define GT_SYMBOL_UP_SOILD                  "\xEE\x84\x8b" /*57611, 0xE10b*/
-#define GT_SYMBOL_UP_SOILD_GBK              "\xE1\x0b"
+#if !defined GT_SYMBOL_UP_SOLID
+#define GT_SYMBOL_UP_SOLID                  "\xEE\x84\x8b" /*57611, 0xE10b*/
+#define GT_SYMBOL_UP_SOLID_GBK              "\xE1\x0b"
 #endif
 
-#if !defined GT_SYMBOL_DOWN_SOILD
-#define GT_SYMBOL_DOWN_SOILD                "\xEE\x84\x8c" /*57612, 0xE10c*/
-#define GT_SYMBOL_DOWN_SOILD_GBK            "\xE1\x0c"
+#if !defined GT_SYMBOL_DOWN_SOLID
+#define GT_SYMBOL_DOWN_SOLID                "\xEE\x84\x8c" /*57612, 0xE10c*/
+#define GT_SYMBOL_DOWN_SOLID_GBK            "\xE1\x0c"
 #endif
 
 #if !defined GT_SYMBOL_RECORD
@@ -454,9 +454,9 @@ extern "C" {
 #define GT_SYMBOL_RECORD_GBK                "\xE1\x0d"
 #endif
 
-#if !defined GT_SYMBOL_OK_SOILD
-#define GT_SYMBOL_OK_SOILD                  "\xEE\x84\x8e" /*57614, 0xE10e*/
-#define GT_SYMBOL_OK_SOILD_GBK              "\xE1\x0e"
+#if !defined GT_SYMBOL_OK_SOLID
+#define GT_SYMBOL_OK_SOLID                  "\xEE\x84\x8e" /*57614, 0xE10e*/
+#define GT_SYMBOL_OK_SOLID_GBK              "\xE1\x0e"
 #endif
 
 #endif // GT_CFG_USE_SYMBOL_ENABLE
