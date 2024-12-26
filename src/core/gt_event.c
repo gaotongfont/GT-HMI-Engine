@@ -180,7 +180,7 @@ _common_event_has_the_same_cb(gt_obj_event_attr_st * event_ptr, gt_event_cb_t ev
 }
 
 static GT_ATTRIBUTE_RAM_TEXT gt_obj_event_attr_st *
-_commen_add_event_node(gt_obj_event_attr_st ** event_root_p) {
+_common_add_event_node(gt_obj_event_attr_st ** event_root_p) {
     uint16_t len = sizeof(gt_obj_event_attr_st);
     gt_obj_event_attr_st * new_event = (gt_obj_event_attr_st * )gt_mem_malloc(len);
     GT_CHECK_BACK_VAL(new_event, NULL);
@@ -220,7 +220,7 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
     if (_common_event_has_the_same_cb(obj->event_attr, event, filter)) {
         return ;
     }
-    gt_obj_event_attr_st * new_event = _commen_add_event_node(&obj->event_attr);
+    gt_obj_event_attr_st * new_event = _common_add_event_node(&obj->event_attr);
     GT_CHECK_BACK(new_event);
 
     new_event->next_ptr = NULL;
@@ -237,7 +237,7 @@ void gt_obj_add_replace_core_event_cb(struct gt_obj_s * obj, gt_event_cb_t event
     if (_common_event_has_the_same_cb(obj->replace_core_event_attr, event, filter)) {
         return ;
     }
-    gt_obj_event_attr_st * new_event = _commen_add_event_node(&obj->replace_core_event_attr);
+    gt_obj_event_attr_st * new_event = _common_add_event_node(&obj->replace_core_event_attr);
     GT_CHECK_BACK(new_event);
 
     new_event->next_ptr = NULL;
