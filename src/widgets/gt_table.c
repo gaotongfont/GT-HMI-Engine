@@ -16,6 +16,7 @@
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
 #include "../utils/gt_vector.h"
+#include "../others/gt_area.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -80,16 +81,19 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_table_class = {
 /* static functions -----------------------------------------------------*/
 
 static GT_ATTRIBUTE_RAM_TEXT void _draw_line(gt_obj_st * obj, gt_area_st * area, gt_color_t color, uint8_t width) {
+    gt_area_st res = *area;
+    if (gt_obj_get_inside(obj) &&
+        false == gt_area_cover_screen(&obj->parent->area, area, &res)) {
+        return ;
+    }
     gt_attr_line_st line = {
         .start = {
-            .x = area->x,
-            .y = area->y,
-        },
-        .end = {
-            .x = area->x + area->w,
-            .y = area->y + area->h,
-        },
-        .line = {
+            .x = res.x,
+            .y = res.y,
+        }, .end = {
+            .x = res.x + res.w,
+            .y = res.y + res.h,
+        }, .line = {
             .width = width,
             .color = color,
             .opa = obj->opa,
@@ -121,13 +125,13 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_header(gt_obj_st * obj) {
         .x = obj->area.x + reduce + _get_label_offset(style),
         .y = obj->area.y + reduce,
         .w = style->border_width,
-        .h = style->height_header,
+        .h = style->height_header + style->border_width,
     };
     gt_area_st text_area = {
         .x = line_area.x,
         .y = line_area.y,
         .w = 0,
-        .h = line_area.h,
+        .h = style->height_header,
     };
     _gt_vector_iterator_st iter = _gt_vector_get_iterator(style->header);
     gt_size_t i = 0;
@@ -453,6 +457,7 @@ gt_obj_st * gt_table_create(gt_obj_st * parent)
     }
     obj->show_bg = true;
     obj->area.w = parent->area.w;
+    obj->scroll_dir = GT_SCROLL_DISABLE;
 
     _gt_table_st * style = (_gt_table_st * )obj;
     style->color_border = gt_color_hex(0x7f7f7f);
@@ -466,7 +471,7 @@ gt_obj_st * gt_table_create(gt_obj_st * parent)
     return obj;
 }
 
-gt_res_t gt_table_add_header_text_by_len(gt_obj_st * table, char * text, uint16_t len, gt_align_et align)
+gt_res_t gt_table_add_header_text_by_len(gt_obj_st * table, const char * text, uint16_t len, gt_align_et align)
 {
     if (false == gt_obj_is_type(table, OBJ_TYPE)) {
         return GT_RES_FAIL;
@@ -514,7 +519,7 @@ free_text_lb:
     return GT_RES_FAIL;
 }
 
-gt_res_t gt_table_add_content_text_by_len(gt_obj_st * table, char * text, uint16_t len)
+gt_res_t gt_table_add_content_text_by_len(gt_obj_st * table, const char * text, uint16_t len)
 {
     if (false == gt_obj_is_type(table, OBJ_TYPE)) {
         return GT_RES_FAIL;
