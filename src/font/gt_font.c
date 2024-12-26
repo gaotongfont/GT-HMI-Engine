@@ -99,7 +99,7 @@ static GT_ATTRIBUTE_RAM_DATA const uint32_t _latin_encoding_range[] = {
     0x1EA0UL, 0x1EFFUL,
 };
 
-static GT_ATTRIBUTE_RAM_DATA const uint16_t _gt_emoticon_unicode_list[] = {
+static GT_ATTRIBUTE_RAM_DATA const uint16_t _gt_emotion_unicode_list[] = {
 //模型: qwen-plus-latest
 // 基本拉丁文（Basic Latin）
     0x0028,  // ( 1
@@ -512,12 +512,11 @@ static GT_ATTRIBUTE_RAM_TEXT long _gt_binary_search_from(const uint16_t *arr, ui
     return -1;  // 未找到目标元素，返回 -1
 }
 
-static GT_ATTRIBUTE_RAM_TEXT bool _gt_emoticon_font(uint32_t unicode) {
-
-    if(-1 != _gt_binary_search_from(_gt_emoticon_unicode_list, (sizeof(_gt_emoticon_unicode_list) / sizeof(_gt_emoticon_unicode_list[0])), unicode)){
+static GT_ATTRIBUTE_RAM_TEXT bool _gt_emotion_font(uint32_t unicode) {
+    uint32_t count = sizeof(_gt_emotion_unicode_list) / sizeof(_gt_emotion_unicode_list[0]);
+    if (-1 != _gt_binary_search_from(_gt_emotion_unicode_list, count, unicode)) {
         return true;
     }
-
     return false;
 }
 
@@ -543,13 +542,13 @@ static GT_ATTRIBUTE_RAM_TEXT uint32_t _get_font_option(gt_font_st * font, uint32
     return font_style;
 #else
 
-    if(_gt_number_symbol_font(unicode)){
+    if (_gt_number_symbol_font(unicode)) {
         uint32_t tmp_option = gt_font_family_get_option(font->info.family, FONT_LAN_NUMBER, font->info.cjk);
         if(GT_CFG_DEFAULT_FONT_FAMILY != tmp_option){
             return tmp_option;
         }
     }
-    else if(_gt_emoticon_font(unicode)){
+    else if (_gt_emotion_font(unicode)) {
         uint32_t tmp_option = gt_font_family_get_option(font->info.family, FONT_LAN_EMOTION, font->info.cjk);
         if(GT_CFG_DEFAULT_FONT_FAMILY != tmp_option){
             return tmp_option;
