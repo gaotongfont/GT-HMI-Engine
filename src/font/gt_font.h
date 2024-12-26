@@ -221,7 +221,7 @@ typedef enum _gt_font_lan_e {
     FONT_LAN_JAPANESE,
     FONT_LAN_KOREAN,
     FONT_LAN_NUMBER,
-    FONT_LAN_EMOTION,
+    FONT_LAN_EMOTICON,
     //
     FONT_LAN_MAX_COUNT,
     //
