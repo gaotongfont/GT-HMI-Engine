@@ -11,7 +11,6 @@
 #include "stdint.h"
 #include "string.h"
 #include "gt_mem.h"
-#include "../gt_conf.h"
 #include "../others/gt_log.h"
 
 #include GT_MEM_CUSTOM_INCLUDE
@@ -63,14 +62,6 @@
 
 
 /* private define -------------------------------------------------------*/
-
-#ifdef GT_ARCH_64
-    #define MEM_UNIT        uint64_t
-    #define ALIGN_MASK      0x07
-#else
-    #define MEM_UNIT        uint32_t
-    #define ALIGN_MASK      0x03
-#endif
 
 #if GT_MEM_CUSTOM
     #define _DEFAULT_MALLOC_FUNC        NULL
@@ -463,6 +454,26 @@ void gt_mem_check_used(void)
     float used = (float)((uintptr_t)addr_now - _addr_start) / (float)( _addr_end - _addr_start );
     gt_mem_free(addr_now);
     GT_LOGI(GT_LOG_TAG_MEM, "used:%.2f%%",used*100);
+#endif
+}
+
+void gt_mem_heap_get_space(MEM_UNIT * start, MEM_UNIT * end, MEM_UNIT * current)
+{
+#if GT_MEM_CUSTOM
+    char * addr_now = gt_mem_malloc(16);
+    if (!addr_now) {
+        GT_LOGI(GT_LOG_TAG_MEM, "Get heap get space failed");
+        return;
+    }
+    gt_mem_free(addr_now);
+    *start = (MEM_UNIT)_addr_start;
+    *end = (MEM_UNIT)_addr_end;
+    *current = (MEM_UNIT)addr_now;
+    addr_now = NULL;
+#else
+    *start = 0;
+    *end = 0;
+    *current = 0;
 #endif
 }
 /* end ------------------------------------------------------------------*/
