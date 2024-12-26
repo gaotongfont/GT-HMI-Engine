@@ -22,7 +22,7 @@
 #include "./gt_label.h"
 #include "./gt_textarea.h"
 #include "./gt_line.h"
-
+#include "./gt_table.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -49,22 +49,30 @@ typedef struct _gt_markdown_s {
     uint8_t border_width;
 }_gt_markdown_st;
 
+/**
+ * @brief Remark previous item prop
+ */
 typedef struct {
     MD_BLOCKTYPE block;
     MD_SPANTYPE span;
     MD_TEXTTYPE text;
-    uint16_t item_count;
+    uint16_t item_count;    /** 'li' also item index */
 }_gt_markdown_type_st;
 
+/**
+ * @brief The pack struct of pass parameters each level
+ */
 typedef struct {
     gt_obj_st * markdown_p;
-    gt_obj_st * act_p[_MARK_DOWN_MAX_ACT_COUNT];
-    uint16_t act_idx;
+    gt_obj_st * act_p[_MARK_DOWN_MAX_ACT_COUNT];    /** Remark each level stach layer object */
+    uint16_t act_idx;                               /** The depth index of stash */
     gt_point_st offset;
-    gt_font_style_et font_style;
+    gt_font_style_et font_style;    /** default: GT_FONT_STYLE_NONE */
+    gt_align_et font_align;
+    uint8_t is_table_header;
 
     _gt_markdown_type_st prop;
-}_gt_markdown_ptr_st;
+}_gt_markdown_pack_st;
 
 typedef struct {
     void * detail;
@@ -134,7 +142,7 @@ static void _markdown_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-static GT_ATTRIBUTE_RAM_TEXT gt_res_t _common_set_text(_gt_markdown_ptr_st * ptr, const char * text, uint32_t len) {
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _common_set_text(_gt_markdown_pack_st * ptr, const char * text, uint32_t len) {
     gt_obj_st * obj = ptr->act_p[ptr->act_idx];
     gt_res_t ret = GT_RES_OK;
     if (NULL == obj || NULL == text) {
@@ -149,6 +157,14 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _common_set_text(_gt_markdown_ptr_st * ptr
             gt_textarea_add_str_by_len(obj, (char * )text, len, ptr->font_style, gt_color_black());
             break;
         }
+        case GT_TYPE_TABLE: {
+            if (ptr->is_table_header) {
+                gt_table_add_header_text_by_len(obj, text, len, ptr->font_align);
+            } else {
+                gt_table_add_content_text_by_len(obj, text, len);
+            }
+            break;
+        }
         default:
             ret = GT_RES_FAIL;
             break;
@@ -158,7 +174,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _common_set_text(_gt_markdown_ptr_st * ptr
 
 static GT_ATTRIBUTE_RAM_TEXT int
 _enter_md_block_default(_gt_markdown_cb_params_st * pm) {
-    _gt_markdown_ptr_st * ptr = (_gt_markdown_ptr_st *)pm->userdata;
+    _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
     _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
 
     ptr->prop.block = pm->type;
@@ -185,7 +201,7 @@ _enter_md_block_default(_gt_markdown_cb_params_st * pm) {
 static GT_ATTRIBUTE_RAM_TEXT int
 _enter_md_block_h(_gt_markdown_cb_params_st * pm) {
     MD_BLOCK_H_DETAIL * det = (MD_BLOCK_H_DETAIL *)pm->detail;
-    _gt_markdown_ptr_st * ptr = (_gt_markdown_ptr_st *)pm->userdata;
+    _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
     _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
 
     _enter_md_block_default(pm);
@@ -207,7 +223,7 @@ _enter_md_block_h(_gt_markdown_cb_params_st * pm) {
 
 static GT_ATTRIBUTE_RAM_TEXT int
 _enter_md_block_li(_gt_markdown_cb_params_st * pm) {
-    _gt_markdown_ptr_st * ptr = (_gt_markdown_ptr_st *)pm->userdata;
+    _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
     _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
     MD_BLOCK_LI_DETAIL * detail = (MD_BLOCK_LI_DETAIL *)pm->detail;
     char buf[256] = {0};
@@ -239,15 +255,14 @@ _enter_md_block_li(_gt_markdown_cb_params_st * pm) {
 
     len = strlen(buf);
     if (len <= 0) { return 0; }
-
-    gt_textarea_add_str_by_len(ptr->act_p[ptr->act_idx], buf, len, GT_FONT_STYLE_NONE, gt_color_black());
+    gt_textarea_add_str_by_len(ptr->act_p[ptr->act_idx], buf, len, ptr->font_style, gt_color_black());
 
     return 0;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT int
 _enter_md_block_hr(_gt_markdown_cb_params_st * pm) {
-    _gt_markdown_ptr_st * ptr = (_gt_markdown_ptr_st *)pm->userdata;
+    _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
     _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
     uint16_t padding = 4;
 
@@ -259,9 +274,110 @@ _enter_md_block_hr(_gt_markdown_cb_params_st * pm) {
 }
 
 static GT_ATTRIBUTE_RAM_TEXT int
+_enter_md_block_table(_gt_markdown_cb_params_st * pm) {
+    _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
+    MD_BLOCK_TABLE_DETAIL * det = (MD_BLOCK_TABLE_DETAIL *)pm->detail;
+    _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
+
+#if _MARK_DOWN_LOG
+    GT_LOG_A("", ">>> table col: %d header row: %d, body row: %d", det->col_count, det->head_row_count, det->body_row_count);
+#endif
+    ptr->prop.block = pm->type;
+    ptr->prop.item_count = 0;
+
+    ptr->act_p[ptr->act_idx] = gt_table_create(ptr->markdown_p);
+    gt_obj_set_pos(ptr->act_p[ptr->act_idx], ptr->markdown_p->area.x, ptr->offset.y + ptr->markdown_p->area.y);
+    gt_obj_set_reduce(ptr->act_p[ptr->act_idx], 0);
+    gt_obj_set_touch_parent(ptr->act_p[ptr->act_idx], true);
+    gt_obj_set_fixed(ptr->act_p[ptr->act_idx], true);
+    gt_obj_set_inside(ptr->act_p[ptr->act_idx], true);
+
+    gt_table_set_font_info(ptr->act_p[ptr->act_idx], &style->font_info_small);
+
+#if _MARK_DOWN_LOG
+    GT_LOG_A("", "enter block p[default] %p act: %p size: %d %d<<<<", ptr->markdown_p, ptr->act_p[ptr->act_idx], ptr->markdown_p->area.w, ptr->offset.y);
+#endif
+
+    return 0;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT int
+_enter_md_block_th(_gt_markdown_cb_params_st * pm) {
+    _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
+    _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
+    MD_BLOCK_TD_DETAIL * det = (MD_BLOCK_TD_DETAIL *)pm->detail;
+    gt_align_et aligns[] = {
+        GT_ALIGN_CENTER_MID,
+        GT_ALIGN_LEFT_MID,
+        GT_ALIGN_CENTER_MID,
+        GT_ALIGN_RIGHT_MID
+    };
+    ptr->act_p[ptr->act_idx] = ptr->markdown_p->child[ptr->markdown_p->cnt_child - 1];
+
+    if (gt_obj_is_type(ptr->act_p[ptr->act_idx], GT_TYPE_TABLE)) {
+        ptr->font_align = aligns[det->align];
+#if _MARK_DOWN_LOG
+        GT_LOG_A("", ">>> th algin: %d %d", det->align, ptr->font_align);
+#endif
+        return 0;
+    }
+    return 0;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT int
+_enter_md_block_thead(_gt_markdown_cb_params_st * pm) {
+    _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
+    _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
+    MD_BLOCK_TD_DETAIL * det = (MD_BLOCK_TD_DETAIL *)pm->detail;
+    gt_align_et aligns[] = {
+        GT_ALIGN_CENTER_MID,
+        GT_ALIGN_LEFT_MID,
+        GT_ALIGN_CENTER_MID,
+        GT_ALIGN_RIGHT_MID
+    };
+    ptr->act_p[ptr->act_idx] = ptr->markdown_p->child[ptr->markdown_p->cnt_child - 1];
+
+    if (gt_obj_is_type(ptr->act_p[ptr->act_idx], GT_TYPE_TABLE)) {
+        ptr->is_table_header = true;
+        return 0;
+    }
+    return 0;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT int
+_enter_md_block_tbody(_gt_markdown_cb_params_st * pm) {
+    _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
+    _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
+    MD_BLOCK_TD_DETAIL * det = (MD_BLOCK_TD_DETAIL *)pm->detail;
+
+    ptr->act_p[ptr->act_idx] = ptr->markdown_p->child[ptr->markdown_p->cnt_child - 1];
+
+    if (gt_obj_is_type(ptr->act_p[ptr->act_idx], GT_TYPE_TABLE)) {
+        ptr->is_table_header = false;
+        return 0;
+    }
+    return 0;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT int
+_enter_md_block_td(_gt_markdown_cb_params_st * pm) {
+    _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
+    _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
+    MD_BLOCK_TD_DETAIL * det = (MD_BLOCK_TD_DETAIL *)pm->detail;
+
+    ptr->act_p[ptr->act_idx] = ptr->markdown_p->child[ptr->markdown_p->cnt_child - 1];
+
+    if (gt_obj_is_type(ptr->act_p[ptr->act_idx], GT_TYPE_TABLE)) {
+        ptr->is_table_header = false;
+        return 0;
+    }
+    return 0;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT int
 _enter_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
     int ret = 0;
-    _gt_markdown_ptr_st * ptr = (_gt_markdown_ptr_st *)userdata;
+    _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)userdata;
     ++ptr->act_idx;
 #if _MARK_DOWN_LOG
     GT_LOG_A("", "enter block %d [%d]", ptr->act_idx, type);
@@ -298,48 +414,29 @@ _enter_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
             break;
         }
         case MD_BLOCK_TABLE: {  // value is null
-        MD_BLOCK_TABLE_DETAIL * det = (MD_BLOCK_TABLE_DETAIL *)detail;
-            // ret = _enter_md_block_default(&params);
-#if _MARK_DOWN_LOG
-            GT_LOG_A("", ">>> table col: %d header row: %d, body row: %d", det->col_count, det->head_row_count, det->body_row_count);
-#endif
+            ret = _enter_md_block_table(&params);
             break;
         }
         case MD_BLOCK_THEAD: {  // is null, tell header row
-            // ret = _enter_md_block_default(&params);
-#if _MARK_DOWN_LOG
-            GT_LOG_A("", ">>> thead");
-#endif
+            ret = _enter_md_block_thead(&params);
             break;
         }
         case MD_BLOCK_TBODY: {  // is null, tell body row
-            // ret = _enter_md_block_default(&params);
-#if _MARK_DOWN_LOG
-            GT_LOG_A("", ">>> tbody");
-#endif
+            ret = _enter_md_block_tbody(&params);
             break;
         }
         case MD_BLOCK_TR: { // turn new row
-            // ret = _enter_md_block_default(&params);
 #if _MARK_DOWN_LOG
             GT_LOG_A("", ">>> tr");
 #endif
             break;
         }
-        case MD_BLOCK_TH: { // | header title
-        MD_BLOCK_TD_DETAIL * det = (MD_BLOCK_TD_DETAIL *)detail;
-#if _MARK_DOWN_LOG
-            GT_LOG_A("", ">>> th algin: %d", det->align);
-#endif
-            ret = _enter_md_block_default(&params);
+        case MD_BLOCK_TH: { // | table header title
+            ret = _enter_md_block_th(&params);
             break;
         }
-        case MD_BLOCK_TD: { // | body content
-        MD_BLOCK_TD_DETAIL * det = (MD_BLOCK_TD_DETAIL *)detail;
-#if _MARK_DOWN_LOG
-            GT_LOG_A("", ">>> td algin: %d", det->align);
-#endif
-            ret = _enter_md_block_default(&params);
+        case MD_BLOCK_TD: { // | table body content
+            ret = _enter_md_block_td(&params);
             break;
         }
         default:
@@ -348,10 +445,24 @@ _enter_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
     return ret;
 }
 
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t
+_get_indent_by(gt_obj_st * obj) {
+    gt_size_t indent_val = 0;
+    switch (gt_obj_class_get_type(obj)) {
+        case GT_TYPE_TABLE: {
+            indent_val = 8;
+            break;
+        }
+        default:
+            break;
+    }
+    return indent_val;
+}
+
 static GT_ATTRIBUTE_RAM_TEXT int
 _leave_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
     int ret = 0;
-    _gt_markdown_ptr_st * ptr = (_gt_markdown_ptr_st *)userdata;
+    _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)userdata;
     gt_obj_st * child = NULL;
     _gt_markdown_cb_params_st params = {
         .type = (uint8_t)type,
@@ -374,7 +485,7 @@ _leave_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
         ptr->offset.y = ptr->markdown_p->area.y;
         for (gt_size_t i = 0; i < ptr->markdown_p->cnt_child; ++i) {
             child = ptr->markdown_p->child[i];
-            gt_obj_set_pos(child, 0, ptr->offset.y);
+            gt_obj_set_pos(child, _get_indent_by(child) + ptr->markdown_p->area.x, ptr->offset.y);
             ptr->offset.y += gt_obj_get_h(child);
         }
     }
@@ -386,7 +497,7 @@ _leave_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
 static GT_ATTRIBUTE_RAM_TEXT int
 _enter_span_cb(MD_SPANTYPE type, void * detail, void * userdata) {
     int ret = 0;
-    _gt_markdown_ptr_st * ptr = (_gt_markdown_ptr_st *)userdata;
+    _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)userdata;
 #if _MARK_DOWN_LOG
     GT_LOG_A("", " enter span %d [%d]", ptr->act_idx, type);
 #endif
@@ -397,16 +508,18 @@ _enter_span_cb(MD_SPANTYPE type, void * detail, void * userdata) {
     };
     switch (type) {
         case MD_SPAN_STRONG: {
-#if _MARK_DOWN_LOG
-            // GT_LOG_A("", " strong text");
-#endif
+            ptr->font_style |= GT_FONT_STYLE_BOLD;
             break;
         }
         case MD_SPAN_A: {
-            // MD_SPAN_A_DETAIL * det = (MD_SPAN_A_DETAIL *)detail;
 #if _MARK_DOWN_LOG
-            // GT_LOG_A("", " linking text: %s, %d", det->href.text, det->title.substr_offsets);
+            MD_SPAN_A_DETAIL * det = (MD_SPAN_A_DETAIL *)detail;
+            GT_LOG_A("", " linking text: %s, %d", det->href.text, det->title.substr_offsets);
 #endif
+            break;
+        }
+        case MD_SPAN_EM: {
+            ptr->font_style |= GT_FONT_STYLE_ITALIC;
             break;
         }
         default:
@@ -418,7 +531,7 @@ _enter_span_cb(MD_SPANTYPE type, void * detail, void * userdata) {
 static GT_ATTRIBUTE_RAM_TEXT int
 _leave_span_cb(MD_SPANTYPE type, void * detail, void * userdata) {
     int ret = 0;
-    _gt_markdown_ptr_st * ptr = (_gt_markdown_ptr_st *)userdata;
+    _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)userdata;
     _gt_markdown_cb_params_st params = {
         .type = (uint8_t)type,
         .detail = detail,
@@ -427,13 +540,14 @@ _leave_span_cb(MD_SPANTYPE type, void * detail, void * userdata) {
 #if _MARK_DOWN_LOG
     GT_LOG_A("", " leave span %d, [%d]", ptr->act_idx, type);
 #endif
+    ptr->font_style = GT_FONT_STYLE_NONE;
     return ret;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT int
 _text_cb(MD_TEXTTYPE type, const MD_CHAR * text, MD_SIZE size, void * userdata) {
     int ret = 0;
-    _gt_markdown_ptr_st * ptr = (_gt_markdown_ptr_st *)userdata;
+    _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)userdata;
     if (NULL == ptr->act_p[ptr->act_idx]) {
         return ret;
     }
@@ -519,7 +633,7 @@ void gt_markdown_set_text(gt_obj_st * markdown, const char * text, uint32_t len)
         return;
     }
     _gt_markdown_st * style = (_gt_markdown_st *)markdown;
-    _gt_markdown_ptr_st root = {
+    _gt_markdown_pack_st root = {
         .markdown_p = markdown,
     };
     if (markdown->cnt_child) {
