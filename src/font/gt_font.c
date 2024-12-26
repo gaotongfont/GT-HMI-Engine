@@ -1709,12 +1709,13 @@ int32_t gt_font_split_line_str(const gt_font_st * fonts, uint32_t max_w, uint32_
     uint32_t unicode = 0;
     int32_t len = 0;
     gt_font_lan_et lan = FONT_LAN_UNKNOWN;
+    /** over line */
     uint16_t ol_w = 0, ol_idx = 0, w_offset = *width;
 
     gt_font_st tmp_font = {
         .info = fonts->info,
         .utf8 = fonts->utf8,
-        .len = len,
+        .len = fonts->len,
         .res = fonts->res,
     };
 
@@ -1739,6 +1740,7 @@ int32_t gt_font_split_line_str(const gt_font_st * fonts, uint32_t max_w, uint32_
 
         if (IS_CN_FONT_LAN(lan)) {
             tmp_w = gt_font_get_one_word_width(unicode, (gt_font_st*)fonts);
+            ol_idx = tmp_idx;
         }
         else{
             tmp_idx = _gt_font_split((const uint8_t *)&fonts->utf8[idx], fonts->len - idx, fonts->info.encoding, lan);

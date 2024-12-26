@@ -1140,7 +1140,6 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
                 break;
             }
         }
-        // "\n"
         if(0x0A == txt[idx]){
             ++idx;
             goto _disp_font;
@@ -1154,7 +1153,6 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
         tmp_font.utf8 = (char * )&txt[idx];
         tmp_font.len = txt_len - idx;
 
-        //
         ret_w = coords->w - disp_w;
 #if _GT_FONT_ENABLE_CONVERTOR
         idx_step = gt_font_split_line_str(&tmp_font, coords->w, space_x, &ret_w,
@@ -1175,11 +1173,9 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
         disp_w -= ret_w;
         idx += idx_step;
         idx_len += idx_step;
-        if(disp_w < 0){
-            disp_w = 0;
-        }
-_disp_font:
+        if (disp_w < 0) { disp_w = 0; }
 
+_disp_font:
         /** align to left, center or right */
         if (!cov_flag_ol) {
             area_font.x = _get_align_start_x(dsc->align, coords->x, disp_w, 0);
