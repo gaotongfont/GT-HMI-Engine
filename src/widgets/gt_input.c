@@ -23,6 +23,7 @@
 #include "../hal/gt_hal_indev.h"
 #include "../core/gt_indev.h"
 #include "../others/gt_area.h"
+#include "./gt_keypad.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_INPUT
@@ -31,6 +32,7 @@
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_input_s {
     gt_obj_st obj;
+    gt_obj_st * hooking_kp;      /** hooking keypad */
     char * value;
     char * placeholder;
 
@@ -50,6 +52,8 @@ typedef struct _gt_input_s {
     uint8_t font_align;     //@ref gt_align_et
     uint8_t space_x;
     uint8_t space_y;
+
+    uint8_t hide_value  : 1;    /** [default: 0] show all the chars; 1: hide by "*" */
 }_gt_input_st;
 
 
@@ -58,7 +62,7 @@ static void _input_init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _input_event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static const gt_obj_class_st gt_input_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_input_class = {
     ._init_cb      = _input_init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _input_event_cb,
@@ -104,6 +108,20 @@ static void _gt_input_cursor_anim(gt_obj_st * input, const gt_area_st* box_area)
     draw_bg(input->draw_ctx, &rect_attr, &area);
 }
 
+static inline bool _is_keypad_visible(_gt_input_st * style) {
+    return style->hooking_kp &&
+#if GT_CFG_ENABLE_KEYPAD
+        (gt_obj_st *)style == gt_keypad_get_target(style->hooking_kp) &&
+#endif
+        gt_obj_get_visible(style->hooking_kp);
+}
+
+static inline bool _is_keypad_auto_hide(_gt_input_st * style) {
+    return style->hooking_kp &&
+        false == gt_obj_get_visible(style->hooking_kp) &&
+        gt_keypad_get_auto_hide(style->hooking_kp);
+}
+
 static inline void _gt_input_init_widget(gt_obj_st * input) {
     _gt_input_st * style = (_gt_input_st * )input;
 
@@ -128,13 +146,24 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     /* draw font */
     gt_font_st font;
     gt_color_t color_font = {0};
-    if (!style->value) {
+    char * star_str = NULL;
+
+    if (!style->value && false == _is_keypad_visible(style)) {
         font.utf8 = style->placeholder;
         font.len = strlen(style->placeholder);
-        color_font = gt_color_hex(0x808080);
+        color_font = gt_color_hex(0xa7a7a7);
     } else {
         // if input value is not null
-        font.utf8 = style->value;
+        if (style->hide_value && style->value) {
+            star_str = gt_mem_malloc(strlen(style->value) + 1);
+        }
+        if (star_str) {
+            gt_memset(star_str, '*', strlen(style->value));
+            star_str[strlen(style->value)] = '\0';
+            font.utf8 = star_str;
+        } else {
+            font.utf8 = style->value;
+        }
         font.len = style->pos_cursor;
         color_font = style->font_color;
 
@@ -172,14 +201,18 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     style->point_pos.x = font_res.area.x;
     style->point_pos.y = font_res.area.y;
 
-    if (style->value) {
+    if (_is_keypad_visible(style)) {
         _gt_input_cursor_anim(input, &area_font);
     }
 
     /*draw text after cursor*/
     gt_size_t str_len = style->value ? strlen(style->value) : 0;
     if( style->value && style->pos_cursor != str_len ){
-        font.utf8 = &style->value[style->pos_cursor];
+        if (star_str) {
+            font.utf8 = &star_str[style->pos_cursor];
+        } else {
+            font.utf8 = &style->value[style->pos_cursor];
+        }
         font.len = strlen(&style->value[style->pos_cursor]);
         font.info.size = style->font_info.size;
         color_font = style->font_color;
@@ -187,13 +220,18 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         font_attr.font = &font,
         font_attr.font_color = color_font,
 
-        font_attr.start_x = font_res.area.x + style->border_width + 2;
+        font_attr.start_x = font_res.area.x + (_is_keypad_visible(style) ? style->border_width + 2 : 0);
         font_attr.start_y = font_res.area.y;
         font_attr.reg.enabled_start = true;
         draw_text(input->draw_ctx, &font_attr, &area_font);
     }
 
     draw_focus(input , rect_attr.radius);
+
+    if (star_str) {
+        gt_mem_free(star_str);
+        star_str = NULL;
+    }
 }
 
 static void _input_key_handler( gt_obj_st* obj, uint32_t key)
@@ -218,7 +256,7 @@ static void _input_key_handler( gt_obj_st* obj, uint32_t key)
         gt_input_del_value(obj);
         break;
     case GT_KEY_ENTER:
-        gt_input_append_value(obj ,"\n");
+        // gt_input_append_value(obj ,"\n");
         break;
     case GT_KEY_NEXT:
         break;
@@ -273,6 +311,39 @@ static void _deinit_cb(gt_obj_st * obj) {
     }
 }
 
+static void _input_check_keypad_switch_focus(gt_obj_st * input) {
+    _gt_input_st * style = (_gt_input_st * )input;
+    uint16_t kp_count = gt_obj_search_childs_count_by_type(input->parent, GT_TYPE_KEYPAD);
+    if (0 == kp_count) {
+        return;
+    } else if (kp_count > 1) {
+        /** display owner keypad */
+#if GT_CFG_ENABLE_KEYPAD
+        if (_is_keypad_auto_hide(style)) {
+            gt_obj_set_visible(style->hooking_kp, true);
+            gt_disp_invalid_area(input);
+        }
+#endif
+        return;
+    }
+    /** 1 == kp_count, common using one keypad, maybe want to switch input object */
+    gt_obj_st * kp = gt_obj_search_child_by_type(input->parent, GT_TYPE_KEYPAD);
+    if (NULL == kp) {
+        return;
+    }
+    if (false == gt_obj_get_visible(kp)) {
+        gt_obj_set_visible(kp, true);
+    }
+#if GT_CFG_ENABLE_KEYPAD
+    if (input != gt_keypad_get_target(kp)) {
+        gt_disp_invalid_area(gt_keypad_get_target(kp));
+    }
+#endif
+    gt_disp_invalid_area(input);
+#if GT_CFG_ENABLE_KEYPAD
+    gt_keypad_set_target(kp, input);
+#endif
+}
 
 /**
  * @brief obj event handler call back
@@ -293,6 +364,11 @@ static void _input_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_KEY:
             _input_key_handler(obj, key);
             break;
+
+        case GT_EVENT_TYPE_INPUT_RELEASED: {
+            _input_check_keypad_switch_focus(obj);
+            break;
+        }
         default:
             break;
     }
@@ -317,7 +393,7 @@ gt_obj_st * gt_input_create(gt_obj_st * parent)
     gt_font_info_init(&style->font_info);
     style->font_color     = gt_color_black();
     style->border_width   = 2;
-    style->border_color   = gt_color_black();
+    style->border_color   = gt_color_hex(0xc7c7c7);
     style->font_align     = GT_ALIGN_NONE;
     style->space_x        = 0;
     style->space_y        = 0;
@@ -372,6 +448,26 @@ free_lb:
     va_end(args2);
 }
 
+void gt_input_set_value_by_len(gt_obj_st * input, const char * str, uint16_t len)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    if (NULL == style->value) {
+        style->value = gt_mem_malloc(len + 1);
+    } else if (len != strlen(style->value)) {
+        style->value = gt_mem_realloc(style->value, len + 1);
+    }
+    if (NULL == style->value) {
+        return;
+    }
+    gt_memcpy(style->value, str, len);
+    style->value[len + 1] = '\0';
+    style->pos_cursor = len;
+    gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 char * gt_input_get_value(gt_obj_st * input)
 {
     if (false == gt_obj_is_type(input, OBJ_TYPE)) {
@@ -379,6 +475,25 @@ char * gt_input_get_value(gt_obj_st * input)
     }
     _gt_input_st * style = (_gt_input_st * )input;
     return style->value;
+}
+
+void gt_input_hide_value(gt_obj_st * input, bool hide)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    style->hide_value = hide ? 1 : 0;
+    gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+bool gt_input_is_hide_value(gt_obj_st * input)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return false;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    return style->hide_value;
 }
 
 /**
@@ -473,9 +588,6 @@ void gt_input_del_value(gt_obj_st * input)
     if( style->pos_cursor <= 0 ){
         return;
     }
-    // style->value = gt_txt_cut(style->value, style->font_info.encoding, style->pos_cursor - 1, style->pos_cursor);
-    // style->pos_cursor -= 1;
-
     style->pos_cursor -= gt_txt_cut(style->value, style->font_info.encoding, style->pos_cursor - 1, style->pos_cursor);
 
 lab_end:
@@ -534,8 +646,6 @@ void gt_input_set_bg_color(gt_obj_st * input, gt_color_t color)
     if (false == gt_obj_is_type(input, OBJ_TYPE)) {
         return ;
     }
-    // _gt_input_st * style = (_gt_input_st * )input;
-    // style->bg_color = color;
     input->bgcolor = color;
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -675,6 +785,15 @@ void gt_input_set_font_encoding(gt_obj_st * input, gt_encoding_et encoding)
     style->font_info.encoding = encoding;
 }
 
+void gt_input_set_font_style(gt_obj_st * input, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    style->font_info.style.all = font_style;
+}
+
 void gt_input_set_space(gt_obj_st * input, uint8_t space_x, uint8_t space_y)
 {
     if (false == gt_obj_is_type(input, OBJ_TYPE)) {
@@ -683,6 +802,18 @@ void gt_input_set_space(gt_obj_st * input, uint8_t space_x, uint8_t space_y)
     _gt_input_st * style = (_gt_input_st * )input;
     style->space_x = space_x;
     style->space_y = space_y;
+}
+
+void gt_input_hooking_keypad(gt_obj_st * input, gt_obj_st * keypad)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return ;
+    }
+    if (false == gt_obj_is_type(keypad, GT_TYPE_KEYPAD)) {
+        return ;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    style->hooking_kp = keypad;
 }
 
 #endif  /** GT_CFG_ENABLE_INPUT */

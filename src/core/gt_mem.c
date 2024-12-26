@@ -150,7 +150,7 @@ static MEM_UNIT _malloc_count = 0;
 
 
 #if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT
-static size_t _gt_block_size(void * ptr) {
+static GT_ATTRIBUTE_RAM_TEXT size_t _gt_block_size(void * ptr) {
     size_t size = 0;
 
 #if GT_MEM_CUSTOM
@@ -171,7 +171,7 @@ static size_t _gt_block_size(void * ptr) {
  * @param size 内存大小, 总的字节数
  * @return void* 返回内存地址
  */
-static inline void *_gt_malloc_hooks(size_t size) {
+static GT_ATTRIBUTE_RAM_TEXT inline void *_gt_malloc_hooks(size_t size) {
     void * ptr = NULL;
 #if GT_MEM_CUSTOM
     ptr = gt_tlsf_malloc(_tlsf, size);
@@ -190,7 +190,7 @@ static inline void *_gt_malloc_hooks(size_t size) {
  * @param size
  * @return void*
  */
-static inline void *_gt_realloc_hooks(void * old_ptr, size_t size) {
+static GT_ATTRIBUTE_RAM_TEXT inline void *_gt_realloc_hooks(void * old_ptr, size_t size) {
     void * ptr = NULL;
 #if GT_MEM_CUSTOM
     ptr = gt_tlsf_realloc(_tlsf, old_ptr, size);
@@ -207,7 +207,7 @@ static inline void *_gt_realloc_hooks(void * old_ptr, size_t size) {
  *
  * @param ptr
  */
-static inline void _gt_free_hooks(void * ptr) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _gt_free_hooks(void * ptr) {
 #if GT_MEM_CUSTOM
     gt_tlsf_free(_tlsf, ptr);
 #else
@@ -463,7 +463,6 @@ void gt_mem_check_used(void)
     float used = (float)((uintptr_t)addr_now - _addr_start) / (float)( _addr_end - _addr_start );
     gt_mem_free(addr_now);
     GT_LOGI(GT_LOG_TAG_MEM, "used:%.2f%%",used*100);
-    printf("used:%.2f%%\n",used*100);
 #endif
 }
 /* end ------------------------------------------------------------------*/

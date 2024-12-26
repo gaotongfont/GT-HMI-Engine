@@ -11,6 +11,7 @@
 #include "gt_player.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_types.h"
+#if GT_CFG_ENABLE_PLAYER
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
 #include "../core/gt_fs.h"
@@ -19,7 +20,7 @@
 #include "../hal/gt_hal_tick.h"
 #include "../utils/gt_vector.h"
 
-#if GT_CFG_ENABLE_PLAYER
+
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE GT_TYPE_PLAYER
 #define MY_CLASS &gt_player_class
@@ -53,6 +54,10 @@ typedef struct _gt_player_item_s {
 #if GT_USE_DIRECT_ADDR
     gt_addr_t addr;
 #endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_direct_addr_custom_size_st custom_addr;
+#endif
 }_gt_player_item_st;
 
 /**
@@ -83,6 +88,16 @@ typedef struct _gt_player_s {
 #endif
 
     int32_t repeat_cnt;         /** -1: infinite; > 0: repeat count; 0: stop player */
+
+#if GT_USE_SERIAL
+    gt_size_t index_offset;
+
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_st stop_fh;
+#endif
+
+#endif
+
 }_gt_player_st;
 
 
@@ -92,7 +107,7 @@ static void _player_init_cb(gt_obj_st * obj);
 static void _player_deinit_cb(gt_obj_st * obj);
 static void _player_event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static const gt_obj_class_st gt_player_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_player_class = {
     ._init_cb      = _player_init_cb,
     ._deinit_cb    = _player_deinit_cb,
     ._event_cb     = _player_event_cb,
@@ -118,14 +133,22 @@ static void _turn_next_item(gt_obj_st * obj);
  * @param style
  * @return void*
  */
-static inline void * _get_src(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline void * _get_src(_gt_player_st * style) {
     _gt_player_item_st * item = (_gt_player_item_st * )_gt_vector_get_item(style->vector, _gt_vector_get_index(style->vector));
     GT_CHECK_BACK_VAL(item, NULL);
     return item->src;
 }
 
+
 #if GT_USE_FILE_HEADER
-static inline gt_file_header_param_st * _get_file_header_param(_gt_player_st * style) {
+
+#if GT_USE_SERIAL
+static GT_ATTRIBUTE_RAM_TEXT inline void _set_stop_item(_gt_player_st * style) {
+    _gt_vector_set_index(style->vector, style->stop_fh.idx);
+}
+#endif
+
+static GT_ATTRIBUTE_RAM_TEXT inline gt_file_header_param_st * _get_file_header_param(_gt_player_st * style) {
     _gt_player_item_st * item = (_gt_player_item_st * )_gt_vector_get_item(style->vector, _gt_vector_get_index(style->vector));
     GT_CHECK_BACK_VAL(item, NULL);
     return &item->fh_param;
@@ -133,10 +156,18 @@ static inline gt_file_header_param_st * _get_file_header_param(_gt_player_st * s
 #endif
 
 #if GT_USE_DIRECT_ADDR
-static inline gt_addr_t _get_direct_addr_param(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_addr_t _get_direct_addr_param(_gt_player_st * style) {
     _gt_player_item_st * item = (_gt_player_item_st * )_gt_vector_get_item(style->vector, _gt_vector_get_index(style->vector));
     GT_CHECK_BACK_VAL(item, GT_ADDR_INVALID);
     return item->addr;
+}
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+static GT_ATTRIBUTE_RAM_TEXT inline gt_direct_addr_custom_size_st * _get_custom_size_addr_param(_gt_player_st * style) {
+    _gt_player_item_st * item = (_gt_player_item_st * )_gt_vector_get_item(style->vector, _gt_vector_get_index(style->vector));
+    GT_CHECK_BACK_VAL(item, NULL);
+    return &item->custom_addr;
 }
 #endif
 
@@ -147,7 +178,7 @@ static inline gt_addr_t _get_direct_addr_param(_gt_player_st * style) {
  * @return true Set lock status success
  * @return false Unable to set lock status
  */
-static inline bool _lock(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _lock(_gt_player_st * style) {
     if (NULL == style) {
         return false;
     }
@@ -165,7 +196,7 @@ static inline bool _lock(_gt_player_st * style) {
  * @return true Set unlock status success
  * @return false Unable to set unlock status
  */
-static inline bool _unlock(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _unlock(_gt_player_st * style) {
     if (NULL == style) {
         return false;
     }
@@ -180,7 +211,7 @@ static inline bool _unlock(_gt_player_st * style) {
  * @return true : Go next item direction;
  * @return false : Go previous item direction;
  */
-static inline bool _is_dir_next(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_dir_next(_gt_player_st * style) {
     return style->reg.dir ? false : true;
 }
 
@@ -190,7 +221,7 @@ static inline bool _is_dir_next(_gt_player_st * style) {
  * @param style
  * @param is_next true: Go next item direction; false: Go previous item direction
  */
-static inline void _set_dir(_gt_player_st * style, bool is_next) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _set_dir(_gt_player_st * style, bool is_next) {
     style->reg.dir = is_next ? 0 : 1;
 }
 
@@ -214,12 +245,16 @@ static void _player_init_cb(gt_obj_st * obj) {
         dsc.addr = _get_direct_addr_param(style);
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+        dsc.custom_addr = _get_custom_size_addr_param(style);
+#endif
+
         /* start draw obj */
         draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
     }
 
     // focus
-    draw_focus(obj , 0);
+    draw_focus(obj , obj->radius);
 }
 
 /**
@@ -227,7 +262,7 @@ static void _player_init_cb(gt_obj_st * obj) {
  *
  * @param style
  */
-static void _destroy_timer(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT void _destroy_timer(_gt_player_st * style) {
     if ( !style->timer ) {
         return ;
     }
@@ -254,7 +289,7 @@ static void _player_deinit_cb(gt_obj_st * obj) {
  * @param obj
  * @param style
  */
-static void _invalid_area(gt_obj_st * obj, _gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT void _invalid_area(gt_obj_st * obj, _gt_player_st * style) {
     void * src = _get_src(style);
     uint16_t w = 0, h = 0;
     gt_fs_res_et ret = GT_FS_RES_FAIL;
@@ -272,6 +307,16 @@ static void _invalid_area(gt_obj_st * obj, _gt_player_st * style) {
         }
     }
 #endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_direct_addr_custom_size_st * custom_addr = _get_custom_size_addr_param(style);
+    if (false == gt_hal_is_invalid_custom_size_addr(custom_addr)) {
+        if (GT_FS_RES_OK != ret) {
+            w = custom_addr->w;
+            h = custom_addr->h;
+            ret = GT_FS_RES_OK;
+        }
+    }
+#endif
     if (GT_FS_RES_OK != ret) {
         if (GT_FS_RES_FAIL == gt_fs_read_img_wh((char * )src, &w, &h)) {
             return ;
@@ -285,15 +330,15 @@ static void _invalid_area(gt_obj_st * obj, _gt_player_st * style) {
     gt_disp_invalid_area(obj);
 }
 
-static inline bool _is_mode_equal(_gt_player_st * style, gt_player_mode_et mode) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_mode_equal(_gt_player_st * style, gt_player_mode_et mode) {
     return style->reg.mode == mode;
 }
 
-static inline bool _is_type_none(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_type_none(_gt_player_st * style) {
     return style->reg.type == GT_PLAYER_TYPE_NONE;
 }
 
-static void _toggle_dir_handler(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT void _toggle_dir_handler(_gt_player_st * style) {
     if (_is_type_none(style)) {
         GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
@@ -302,7 +347,7 @@ static void _toggle_dir_handler(_gt_player_st * style) {
 }
 
 #if GT_PLAYER_REPEAT_FINISH_CALLBACK
-static inline void _repeat_finish_callback_handler(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _repeat_finish_callback_handler(_gt_player_st * style) {
     if (NULL == style->repeat_finish_cb) {
         return ;
     }
@@ -316,7 +361,7 @@ static inline void _repeat_finish_callback_handler(_gt_player_st * style) {
 }
 #endif
 
-static inline void _check_repeat_count(_gt_player_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _check_repeat_count(_gt_player_st * style) {
     if (style->repeat_cnt < 1) {
         return ;
     }
@@ -330,12 +375,15 @@ static inline void _check_repeat_count(_gt_player_st * style) {
  *
  * @param obj
  */
-static void _turn_prev_item(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _turn_prev_item(gt_obj_st * obj) {
     _gt_player_st * style = (_gt_player_st * )obj;
     GT_CHECK_BACK(style->vector);
     if (_gt_vector_get_index(style->vector) > 0) {
         if (0 == style->repeat_cnt) {
             _gt_timer_set_paused(style->timer, true);
+#if GT_USE_SERIAL && GT_USE_FILE_HEADER
+            _set_stop_item(style);
+#endif
 #if GT_PLAYER_REPEAT_FINISH_CALLBACK
             _repeat_finish_callback_handler(style);
 #endif
@@ -370,12 +418,15 @@ static void _turn_prev_item(gt_obj_st * obj) {
  *
  * @param obj
  */
-static void _turn_next_item(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _turn_next_item(gt_obj_st * obj) {
     _gt_player_st * style = (_gt_player_st * )obj;
     GT_CHECK_BACK(style->vector);
     if (false == _gt_vector_is_tail_index_now(style->vector)) {
         if (0 == style->repeat_cnt) {
             _gt_timer_set_paused(style->timer, true);
+#if GT_USE_SERIAL && GT_USE_FILE_HEADER
+            _set_stop_item(style);
+#endif
 #if GT_PLAYER_REPEAT_FINISH_CALLBACK
             _repeat_finish_callback_handler(style);
 #endif
@@ -405,7 +456,7 @@ static void _turn_next_item(gt_obj_st * obj) {
     }
 }
 
-static inline void _change_item_handler(gt_obj_st * obj, bool is_next) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _change_item_handler(gt_obj_st * obj, bool is_next) {
     is_next ? _turn_next_item(obj) : _turn_prev_item(obj);
 }
 
@@ -419,7 +470,7 @@ static void _player_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-static inline void _set_play_status(_gt_player_st * style, bool is_play) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _set_play_status(_gt_player_st * style, bool is_play) {
     if (NULL == style) {
         return ;
     }
@@ -436,12 +487,15 @@ static inline void _set_play_status(_gt_player_st * style, bool is_play) {
     _gt_timer_set_paused(style->timer, is_play ? false : true);
 
     if (false == is_play) {
+#if GT_USE_SERIAL && GT_USE_FILE_HEADER
+        _set_stop_item(style);
+#endif
         /** redraw */
         gt_event_send((gt_obj_st * )style, GT_EVENT_TYPE_DRAW_START, NULL);
     }
 }
 
-static void _auto_play_callback(struct _gt_timer_s * timer) {
+static GT_ATTRIBUTE_RAM_TEXT void _auto_play_callback(struct _gt_timer_s * timer) {
     gt_obj_st * obj = (gt_obj_st * )_gt_timer_get_user_data(timer);
     if (false == gt_obj_is_type(obj, GT_TYPE_PLAYER)) {
         return ;
@@ -464,7 +518,7 @@ static void _auto_play_callback(struct _gt_timer_s * timer) {
     style->last_player_tick =  gt_tick_get();
 }
 
-static bool _free_item_cb(void * item) {
+static GT_ATTRIBUTE_RAM_TEXT bool _free_item_cb(void * item) {
     _gt_player_item_st * item_p = (_gt_player_item_st * )item;
     GT_CHECK_BACK_VAL(item_p, false);
     if (item_p->src) {
@@ -475,7 +529,7 @@ static bool _free_item_cb(void * item) {
     return true;
 }
 
-static bool _equal_item_cb(void * item, void * target) {
+static GT_ATTRIBUTE_RAM_TEXT bool _equal_item_cb(void * item, void * target) {
     _gt_player_item_st * item_p = (_gt_player_item_st * )item;
     _gt_player_item_st * tar_p = (_gt_player_item_st * )target;
     GT_CHECK_BACK_VAL(item_p, false);
@@ -497,6 +551,14 @@ static bool _equal_item_cb(void * item, void * target) {
         }
     }
 #endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    if (false == gt_hal_is_invalid_custom_size_addr(&tar_p->custom_addr)) {
+        if (item_p->custom_addr.addr == tar_p->custom_addr.addr) {
+            return true;
+        }
+    }
+#endif
     return false;
 }
 
@@ -511,6 +573,10 @@ gt_obj_st * gt_player_create(gt_obj_st * parent)
     _gt_player_st * style = (_gt_player_st * )obj;
     style->reg.type = GT_PLAYER_TYPE_IMG;
     style->repeat_cnt = -1;
+
+#if GT_USE_SERIAL
+    style->stop_fh.idx = -1;
+#endif
 
     style->timer = _gt_timer_create(_auto_play_callback, 500, (void * )obj);
     _gt_timer_set_paused(style->timer, true);
@@ -668,6 +734,9 @@ gt_size_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_para
 #if GT_USE_DIRECT_ADDR
     gt_hal_direct_addr_init(&new_item->addr);
 #endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&new_item->custom_addr);
+#endif
 
     if (false == _gt_vector_add_item(style->vector, new_item)) {
         gt_mem_free(new_item);
@@ -699,6 +768,9 @@ gt_size_t gt_player_add_item_list_by_file_header(gt_obj_st * obj, gt_file_header
         new_item->fh_param = (gt_file_header_param_st)fh_array[i];
 #if GT_USE_DIRECT_ADDR
         gt_hal_direct_addr_init(&new_item->addr);
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+        gt_hal_custom_size_addr_init(&new_item->custom_addr);
 #endif
 
         if (false == _gt_vector_add_item(style->vector, new_item)) {
@@ -775,6 +847,76 @@ gt_size_t gt_player_add_item_list_by_direct_addr(gt_obj_st * obj, gt_addr_t cons
 }
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+gt_size_t gt_player_add_item_by_custom_size_addr(gt_obj_st * obj, gt_direct_addr_custom_size_st * dac)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return -1;
+    }
+    if (gt_hal_is_invalid_custom_size_addr(dac)) {
+        return -1;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj;
+
+    _gt_player_item_st * new_item = gt_mem_malloc(sizeof(_gt_player_item_st));
+    GT_CHECK_BACK_VAL(new_item, _gt_vector_get_count(style->vector));
+    new_item->src = NULL;
+    new_item->custom_addr = *dac;
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&new_item->fh_param);
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&new_item->addr);
+#endif
+
+    if (false == _gt_vector_add_item(style->vector, new_item)) {
+        gt_mem_free(new_item);
+        new_item = NULL;
+        return -1;
+    }
+    return _gt_vector_get_count(style->vector);
+}
+
+gt_size_t gt_player_add_item_list_by_custom_size_addr(gt_obj_st * obj, gt_direct_addr_custom_size_st * addr_array, uint16_t count)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return -1;
+    }
+    if (NULL == addr_array) {
+        return -1;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj;
+    GT_CHECK_BACK_VAL(style->vector, -1);
+    _gt_vector_clear_all_items(style->vector);
+
+    _gt_player_item_st * new_item = NULL;
+    uint16_t instance = sizeof(_gt_player_item_st);
+
+    for (gt_size_t i = 0; i < count; ++i) {
+        if (gt_hal_is_invalid_custom_size_addr(&addr_array[i])) {
+            continue;
+        }
+        new_item = (_gt_player_item_st * )gt_mem_malloc(instance);
+        GT_CHECK_BACK_VAL(new_item, -1);
+        new_item->src = NULL;
+        new_item->custom_addr = addr_array[i];
+#if GT_USE_FILE_HEADER
+        gt_file_header_param_init(&new_item->fh_param);
+#endif
+#if GT_USE_DIRECT_ADDR
+        gt_hal_direct_addr_init(&new_item->addr);
+#endif
+
+        if (false == _gt_vector_add_item(style->vector, new_item)) {
+            gt_mem_free(new_item);
+            new_item = NULL;
+            break;
+        }
+    }
+    return _gt_vector_get_count(style->vector);
+}
+#endif
+
 void gt_player_set_index(gt_obj_st * obj, gt_size_t index)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
@@ -782,6 +924,18 @@ void gt_player_set_index(gt_obj_st * obj, gt_size_t index)
     }
     _gt_player_st * style = (_gt_player_st * )obj;
     GT_CHECK_BACK(style->vector);
+
+#if GT_USE_SERIAL
+    if(_is_mode_equal(style, GT_PLAYER_MODE_NONE))
+    {
+        index = index - style->index_offset;
+        if(index < 0 || index >= _gt_vector_get_count(style->vector)){
+            style->vector->index = -2;
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            return ;
+        }
+    }
+#endif
     _gt_vector_set_index(style->vector, index);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -846,6 +1000,12 @@ void gt_player_play(gt_obj_st * obj)
         return ;
     }
     _gt_player_st * style = (_gt_player_st * )obj;
+
+    if(_is_mode_equal(style, GT_PLAYER_MODE_NONE)){
+        GT_LOGV(GT_LOG_TAG_GUI, "player mode is none.");
+        return ;
+    }
+
     if (_is_type_none(style)) {
         GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
@@ -859,6 +1019,12 @@ void gt_player_stop(gt_obj_st * obj)
         return ;
     }
     _gt_player_st * style = (_gt_player_st * )obj;
+
+    if(_is_mode_equal(style, GT_PLAYER_MODE_NONE)){
+        GT_LOGV(GT_LOG_TAG_GUI, "player mode is none.");
+        return ;
+    }
+
     if (_is_type_none(style)) {
         GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
@@ -872,6 +1038,12 @@ void gt_player_toggle(gt_obj_st * obj)
         return ;
     }
     _gt_player_st * style = (_gt_player_st * )obj;
+
+    if(_is_mode_equal(style, GT_PLAYER_MODE_NONE)){
+        GT_LOGV(GT_LOG_TAG_GUI, "player mode is none.");
+        return ;
+    }
+
     if (_is_type_none(style)) {
         GT_LOGV(GT_LOG_TAG_GUI, "player type is none, please set it.");
         return ;
@@ -943,6 +1115,27 @@ bool gt_player_is_real_time_update(gt_obj_st * obj)
     _gt_player_st * style = (_gt_player_st * )obj;
     return style->reg.real_time_update;
 }
+
+#if GT_USE_SERIAL
+void gt_player_set_index_offset(gt_obj_st * obj, gt_size_t offset)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj;
+    style->index_offset = offset;
+}
+#if GT_USE_FILE_HEADER
+void gt_player_set_stop_item_by_file_header(gt_obj_st * obj, gt_file_header_param_st* fh)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj;
+    style->stop_fh = *fh;
+}
+#endif  /* GT_USE_FILE_HEADER */
+#endif   /* GT_USE_SERIAL */
 
 #endif /** GT_CFG_ENABLE_PLAYER */
 /* end ------------------------------------------------------------------*/

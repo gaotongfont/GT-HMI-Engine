@@ -30,7 +30,8 @@
 #define _MINUTE_MAX_VALUE   60
 #define _SECOND_MAX_VALUE   60
 
-#define _SECOND_PERIOD_MS   1000
+#define _SECOND_PERIOD_MS           1000
+#define _TWINKLE_COLON_PERIOD_MS    500
 
 #define _MAX_NEXT_DAY_BIT_WIDTH     4
 #define _MAX_ALERT_BIT_WIDTH        4
@@ -46,7 +47,8 @@ typedef struct _reg_s {
     uint16_t is_show_meridiem : 1;   /** display AM/PM format */
     uint16_t len_next_day_cb  : _MAX_NEXT_DAY_BIT_WIDTH;
     uint16_t len_alert_cb     : _MAX_ALERT_BIT_WIDTH;
-    uint16_t reserved         : 2;
+    uint16_t twinkle_colon    : 1;   /** Only display hours and minute, such as: "13:24" <=> "13 24" */
+    uint16_t twinkle_state    : 1;   /** twinkle state 0: hide; 1: show */
 }_reg_st;
 
 typedef struct _next_day_s {
@@ -59,6 +61,11 @@ typedef struct _alert_s {
     void * user_data;
 }_alert_st;
 
+typedef struct {
+    gt_clock_user_second_handler_cb_t user_sec_cb;
+    void * sec_data;
+}_user_second_handler_st;
+
 typedef struct _gt_clock_s {
     gt_obj_st obj;
     gt_obj_st * label;    /** @ref gt_label.h */
@@ -68,10 +75,15 @@ typedef struct _gt_clock_s {
     _next_day_st ** next_day;
     _alert_st ** alert;
 
-    _reg_st reg;
-
     gt_clock_time_st time_current;
     gt_clock_time_st time_setup;
+
+    _gt_timer_st * timer_twinkle_colon;     /** twinkle colon timer */
+    uint32_t period_twinkle_colon;          /** twinkle colon period, default: 1000ms */
+
+    _user_second_handler_st user_sec_hd;
+
+    _reg_st reg;
 }_gt_clock_st;
 
 
@@ -80,7 +92,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static const gt_obj_class_st gt_clock_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_clock_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
@@ -88,23 +100,33 @@ static const gt_obj_class_st gt_clock_class = {
     .size_style    = sizeof(_gt_clock_st)
 };
 
+static const char * _gt_weeks[] = {
+    "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",
+};
 /* macros ---------------------------------------------------------------*/
 
 #define _get_hour(_time)    (_time.hour)
 #define _get_minute(_time)  (_time.minute)
 #define _get_second(_time)  (_time.second)
+#define _get_day(_time)    (_time.day)
+#define _get_month(_time)   (_time.month)
+#define _get_week(_time)    (_time.week)
+#define _get_year(_time)    (_time.year)
 
 #define _set_hour(_time, _value)    (_time.hour = _value)
 #define _set_minute(_time, _value)  (_time.minute = _value)
 #define _set_second(_time, _value)  (_time.second = _value)
-
+#define _set_day(_time, _value)    (_time.day = _value)
+#define _set_month(_time, _value)   (_time.month = _value)
+#define _set_week(_time, _value)    (_time.week = _value)
+#define _set_year(_time, _value)    (_time.year = _value)
 
 /* class ----------------------------------------------------------------*/
 
 
 
 /* static functions -----------------------------------------------------*/
-static bool _is_double_target_ignore_case(const char * const str, char target) {
+static GT_ATTRIBUTE_RAM_TEXT bool _is_contiune_same_char(const char * const str, char target, char numb) {
     char another_case = 0;
 
     if (*str < 'A' || *str > 'z') {
@@ -113,21 +135,36 @@ static bool _is_double_target_ignore_case(const char * const str, char target) {
     if (*str > 'Z' && *str < 'a') {
         return false;
     }
-    another_case = target < 'a' ? (target + 0x20) : (target - 0x20);
-    if (*str == target && *(str + 1) == target) {
-        return true;
-    }
-    if (*str == another_case && *(str + 1) == another_case) {
-        return true;
+    while(numb > 0){
+        if (str[numb-1] == target) {
+            return true;
+        }
+        numb--;
     }
     return false;
 }
 
-static void _gt_clock_timer_cb(struct _gt_timer_s * timer) {
-    gt_clock_turn_next_second((gt_obj_st * )_gt_timer_get_user_data(timer));
+static GT_ATTRIBUTE_RAM_TEXT void _gt_clock_timer_cb(struct _gt_timer_s * timer) {
+    gt_obj_st * clock = (gt_obj_st * )_gt_timer_get_user_data(timer);
+    _gt_clock_st * style = (_gt_clock_st * )clock;
+    gt_clock_turn_next_second(clock);
+    if (style->user_sec_hd.user_sec_cb) {
+        style->user_sec_hd.user_sec_cb(clock, style->user_sec_hd.sec_data);
+    }
 }
 
-static char * _get_time_str(_gt_clock_st * clock) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_clock_twinkle_colon_timer_cb(struct _gt_timer_s * timer) {
+    gt_obj_st * clock = (gt_obj_st * )_gt_timer_get_user_data(timer);
+    _gt_clock_st * style = (_gt_clock_st * )clock;
+    style->reg.twinkle_state = !style->reg.twinkle_state;
+    gt_event_send(clock, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+static const char * _get_week_str(uint8_t week) {
+    return _gt_weeks[week ? ((week % 8) - 1) : 0];
+}
+
+static GT_ATTRIBUTE_RAM_TEXT char * _get_time_str(_gt_clock_st * clock) {
     uint8_t hours = _get_hour(clock->time_current);
     uint8_t meridiem_len = 3;
     char * meridiem = NULL;
@@ -135,6 +172,10 @@ static char * _get_time_str(_gt_clock_st * clock) {
     char * str = NULL;
     char * str_ptr = NULL;
     uint8_t len = 0;
+
+    if (clock->reg.twinkle_colon) {
+        return NULL;
+    }
 
     /** default */
     if (NULL == clock->format) {
@@ -168,18 +209,34 @@ static char * _get_time_str(_gt_clock_st * clock) {
     pointer = clock->format;
     str_ptr = str;
     while (*pointer) {
-        if (_is_double_target_ignore_case(pointer, 'h')) {
+        if (_is_contiune_same_char(pointer, 'h', 2)) {
             sprintf(str_ptr, "%02d", hours);
             pointer += 2;
             str_ptr += 2;
-        } else if (_is_double_target_ignore_case(pointer, 'm')) {
+        } else if (_is_contiune_same_char(pointer, 'm', 2)) {
             sprintf(str_ptr, "%02d", _get_minute(clock->time_current));
             pointer += 2;
             str_ptr += 2;
-        } else if (_is_double_target_ignore_case(pointer, 's')) {
+        } else if (_is_contiune_same_char(pointer, 's', 2)) {
             sprintf(str_ptr, "%02d", _get_second(clock->time_current));
             pointer += 2;
             str_ptr += 2;
+        } else if (_is_contiune_same_char(pointer, 'd', 2)) {
+            sprintf(str_ptr, "%02d", _get_day(clock->time_current));
+            pointer += 2;
+            str_ptr += 2;
+        } else if (_is_contiune_same_char(pointer, 'M', 2)) {
+            sprintf(str_ptr, "%02d", _get_month(clock->time_current));
+            pointer += 2;
+            str_ptr += 2;
+        } else if (_is_contiune_same_char(pointer, 'y', 4)) {
+            sprintf(str_ptr, "%04d", _get_year(clock->time_current));
+            pointer += 4;
+            str_ptr += 4;
+        } else if (_is_contiune_same_char(pointer, 'E', 3)) {
+            sprintf(str_ptr, "%s", _get_week_str(_get_week(clock->time_current)));
+            pointer += 3;
+            str_ptr += 3;
         } else {
             *str_ptr++ = *pointer++;
         }
@@ -191,27 +248,66 @@ static char * _get_time_str(_gt_clock_st * clock) {
     return str;
 }
 
+static GT_ATTRIBUTE_RAM_TEXT void _draw_twinkle_colon_mode(gt_obj_st * obj, _gt_clock_st * style) {
+    char tmp_fm[4] = {0};
+    gt_font_info_st * font_info = gt_label_get_font_info(style->label);
+    gt_font_st font = {
+        .info = *font_info,
+        .res = NULL,
+        .utf8 = tmp_fm,
+        .len = 2,
+    };
+    gt_attr_font_st font_attr = {
+        .font = &font,
+        .font_color = gt_label_get_font_color(style->label),
+        .logical_area = obj->area,
+        .opa = obj->opa,
+        .space_x = gt_label_get_space_x(style->label),
+        .space_y = gt_label_get_space_y(style->label),
+    };
+    gt_font_info_update_font_thick(&font.info);
+    sprintf(tmp_fm, "%02d", _get_hour(style->time_current));
+    tmp_fm[2] = style->reg.twinkle_state ? ':' : '\0';
+    font.len = tmp_fm[2] ? 3 : 2;
+    _gt_draw_font_res_st font_res = draw_text(obj->draw_ctx, &font_attr, &obj->area);
+    font_attr.reg.enabled_start = true;
+    font_attr.start_x = font_res.area.x;
+    font_attr.start_y = font_res.area.y;
+
+    if (false == style->reg.twinkle_state) {
+        tmp_fm[0] = ':';
+        tmp_fm[1] = '\0';
+        font_attr.start_x += gt_font_get_longest_line_substring_width(&font.info, tmp_fm, 0);
+    }
+
+    gt_memset(tmp_fm, 0, sizeof(tmp_fm));
+    sprintf(tmp_fm, "%02d", _get_minute(style->time_current));
+    font.len = 2;
+    draw_text(obj->draw_ctx, &font_attr, &obj->area);
+}
+
 static void _init_cb(gt_obj_st * obj) {
     _gt_clock_st * style = (_gt_clock_st * )obj;
-    char * str = _get_time_str(style);
+    char * str = NULL;
     if (NULL == style->label) {
         return;
     }
-    if (NULL == str) {
-        return;
+    if (style->reg.twinkle_colon) {
+        _draw_twinkle_colon_mode(obj, style);
+    } else {
+        str = _get_time_str(style);
+        gt_area_copy(&style->label->area, &obj->area);
+        gt_label_set_text(style->label, str);
     }
-    gt_area_copy(&style->label->area, &obj->area);
-    gt_label_set_text(style->label, str);
 
-    gt_mem_free(str);
-    str = NULL;
-
-    // focus
-    draw_focus(obj , 0);
-
+    if (str) {
+        gt_mem_free(str);
+        str = NULL;
+    }
+    draw_focus(obj , obj->radius);
 }
 
-static inline void _remove_all_next_day_cb(_gt_clock_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT void _remove_all_next_day_cb(_gt_clock_st * style) {
     gt_size_t i = 0;
 
     if (NULL == style->next_day) {
@@ -225,7 +321,7 @@ static inline void _remove_all_next_day_cb(_gt_clock_st * style) {
     style->next_day = NULL;
 }
 
-static inline void _remove_all_alert_cb(_gt_clock_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT void _remove_all_alert_cb(_gt_clock_st * style) {
     gt_size_t i = 0;
 
     if (NULL == style->alert) {
@@ -241,6 +337,11 @@ static inline void _remove_all_alert_cb(_gt_clock_st * style) {
 
 static void _deinit_cb(gt_obj_st * obj) {
     _gt_clock_st * style = (_gt_clock_st * )obj;
+
+    if (style->timer_twinkle_colon) {
+        _gt_timer_del(style->timer_twinkle_colon);
+        style->timer_twinkle_colon = NULL;
+    }
 
     if (style->timer) {
         _gt_timer_del(style->timer);
@@ -275,7 +376,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-static inline bool _is_time_equal(gt_clock_time_st * dst, gt_clock_time_st * src) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_time_equal(gt_clock_time_st * dst, gt_clock_time_st * src) {
     if (dst->second != src->second) {
         return false;
     }
@@ -288,7 +389,7 @@ static inline bool _is_time_equal(gt_clock_time_st * dst, gt_clock_time_st * src
     return true;
 }
 
-static inline bool _is_time_zero(gt_clock_time_st * time) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_time_zero(gt_clock_time_st * time) {
     if (time->second) {
         return false;
     }
@@ -301,7 +402,7 @@ static inline bool _is_time_zero(gt_clock_time_st * time) {
     return true;
 }
 
-static void _go_next_sec(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _go_next_sec(gt_obj_st * obj) {
     _gt_clock_st * clock = (_gt_clock_st * )obj;
     uint8_t i = 0, len = 0;
 
@@ -336,7 +437,7 @@ static void _go_next_sec(gt_obj_st * obj) {
     }
 }
 
-static bool _go_prev_sec(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT bool _go_prev_sec(gt_obj_st * obj) {
     _gt_clock_st * clock = (_gt_clock_st * )obj;
     uint8_t i = 0, len = 0;
 
@@ -381,11 +482,13 @@ gt_obj_st * gt_clock_create(gt_obj_st * parent)
         return obj;
     }
     _gt_clock_st * style = (_gt_clock_st * )obj;
+    style->period_twinkle_colon = _TWINKLE_COLON_PERIOD_MS;
 
     style->label = gt_label_create(obj);
     gt_obj_set_inside(style->label, true);
     style->label->focus_dis = GT_DISABLED;
     gt_label_set_text(style->label , "");
+
     return obj;
 }
 
@@ -517,6 +620,36 @@ gt_clock_mode_et gt_clock_get_mode(gt_obj_st * obj)
     return (gt_clock_mode_et)clock->reg.mode;
 }
 
+void gt_clock_set_twinkle_colon_mode(gt_obj_st * obj, bool enabled)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_clock_st * style = (_gt_clock_st *)obj;
+    style->reg.twinkle_colon = enabled ? 1 : 0;
+
+    if (style->reg.twinkle_colon) {
+        if (NULL == style->timer_twinkle_colon) {
+            style->timer_twinkle_colon = _gt_timer_create(_gt_clock_twinkle_colon_timer_cb, style->period_twinkle_colon, (void * )obj);
+        }
+        _gt_timer_set_paused(style->timer_twinkle_colon, false);
+        return;
+    }
+    _gt_timer_set_paused(style->timer_twinkle_colon, true);
+}
+
+void gt_clock_set_twinkle_colon_period(gt_obj_st * obj, uint32_t period_ms)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_clock_st * style = (_gt_clock_st *)obj;
+    style->period_twinkle_colon = period_ms;
+    if (style->timer_twinkle_colon) {
+        _gt_timer_set_period(style->timer_twinkle_colon, style->period_twinkle_colon);
+    }
+}
+
 void gt_clock_set_12_hours_mode(gt_obj_st * obj, bool enabled)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
@@ -642,6 +775,19 @@ void gt_clock_set_alert_cb(gt_obj_st * obj, gt_clock_alert_cb alert_cb, void * u
     ++clock->reg.len_alert_cb;
 }
 
+void gt_clock_set_second_handler_cb(gt_obj_st * obj, gt_clock_user_second_handler_cb_t hd_cb, void * user_data)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_clock_st * clock = (_gt_clock_st *)obj;
+    if (NULL == hd_cb) {
+        return;
+    }
+    clock->user_sec_hd.user_sec_cb = hd_cb;
+    clock->user_sec_hd.sec_data = user_data;
+}
+
 void gt_clock_clr_all_next_day_cb(gt_obj_st * obj)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
@@ -680,7 +826,7 @@ bool gt_clock_remove_next_day_cb(gt_obj_st * obj, gt_clock_next_day_cb next_day_
         }
     }
     if (i < 0) {
-        printf("not found next_day_cb\n");
+        /** not found next_day_cb */
         return false;
     }
 
@@ -918,6 +1064,18 @@ void gt_clock_set_font_thick_cn(gt_obj_st * obj, uint8_t thick)
     gt_label_set_font_thick_cn(style->label, thick);
 }
 
+void gt_clock_set_font_style(gt_obj_st * obj, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_clock_st * style = (_gt_clock_st * )obj;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_style(style->label, font_style);
+}
+
 void gt_clock_set_space(gt_obj_st * obj, uint8_t space_x, uint8_t space_y)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
@@ -928,6 +1086,26 @@ void gt_clock_set_space(gt_obj_st * obj, uint8_t space_x, uint8_t space_y)
         return;
     }
     gt_label_set_space(style->label, space_x , space_y);
+}
+
+void gt_clock_set_date(gt_obj_st * obj, uint16_t year, uint8_t month, uint8_t day)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_clock_st * style = (_gt_clock_st * )obj;
+    _set_year(style->time_current, year);
+    _set_month(style->time_current, month ? (month % 13) : 1);
+    _set_day(style->time_current, day ? (day % 32) : 1);
+}
+
+void gt_clock_set_week(gt_obj_st * obj, uint8_t week)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_clock_st * style = (_gt_clock_st * )obj;
+    _set_week(style->time_current, week ? (week % 8) : 1);
 }
 
 #endif /** #if GT_CFG_ENABLE_CLOCK */

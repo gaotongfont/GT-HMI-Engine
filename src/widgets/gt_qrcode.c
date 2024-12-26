@@ -39,7 +39,6 @@ typedef struct _gt_qr_code_s {
     uint8_t mask_patt;
     gt_family_t version;
     gt_color_t fg_color;
-    gt_color_t bg_color;
 }_gt_qr_code_st;
 
 
@@ -48,7 +47,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static const gt_obj_class_st gt_qr_code_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_qr_code_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
@@ -94,9 +93,13 @@ static void _Data_ReMap(unsigned char* getdate,unsigned char* putdata, unsigned 
     }
 }
 
-
-static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
-    _gt_qr_code_st * style = (_gt_qr_code_st * )qr_code;
+/**
+ * @brief obj init obj widget call back
+ *
+ * @param obj
+ */
+static void _init_cb(gt_obj_st * obj) {
+    _gt_qr_code_st * style = (_gt_qr_code_st * )obj;
     uint8_t *qr_data_buff = NULL;
     uint8_t *qr_code_buff = NULL;
 
@@ -131,8 +134,8 @@ static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
 
     area.w = 4 * style->version + 17;
     area.h = ((area.w + 7) >> 3) << 3;
-    qr_code->area.w = area.w + 8;
-    qr_code->area.h = qr_code->area.w;
+    obj->area.w = area.w + 8;
+    obj->area.h = obj->area.w;
 
     if(  ((area.h * area.h) >> 3 ) > _QRCodeDataBuf_SIZE )
     {
@@ -147,10 +150,10 @@ static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
     gt_mem_free(qr_data_buff);
     qr_data_buff = NULL;
 
-    gt_area_st box_area = gt_area_reduce(qr_code->area , gt_obj_get_reduce(qr_code));
+    gt_area_st box_area = gt_area_reduce(obj->area , gt_obj_get_reduce(obj));
     // draw background
-    rect_attr.bg_color      = style->bg_color;
-    draw_bg(qr_code->draw_ctx, &rect_attr, &box_area);
+    rect_attr.bg_color      = obj->bgcolor;
+    draw_bg(obj->draw_ctx, &rect_attr, &box_area);
 
     area.w = ((area.w + 7) >> 3) << 3;
     // GT_LOGD( GT_LOG_TAG_GUI,"qrcode w = %d , h = %d" , area.w , area.h);
@@ -162,10 +165,10 @@ static inline void _gt_qr_code_init_widget(gt_obj_st * qr_code) {
     area.y = box_area.y+2;
     // GT_LOGD(GT_LOG_TAG_UI , "barcode gray = %d" , rect_attr.gray);
     // 1:base shape
-    draw_bg(qr_code->draw_ctx, &rect_attr, &area);
+    draw_bg(obj->draw_ctx, &rect_attr, &area);
 
     // focus
-    draw_focus(qr_code , 0);
+    draw_focus(obj , obj->radius);
 
 err_ret:
     if(NULL != qr_data_buff)
@@ -178,17 +181,6 @@ err_ret:
         gt_mem_free(qr_code_buff);
         qr_code_buff = NULL;
     }
-}
-
-/**
- * @brief obj init qr_code widget call back
- *
- * @param obj
- */
-static void _init_cb(gt_obj_st * obj) {
-    GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
-
-    _gt_qr_code_init_widget(obj);
 }
 
 /**
@@ -243,7 +235,7 @@ gt_obj_st * gt_qrcode_create(gt_obj_st * parent)
     style->version = GT_FAMILY_QRCODE_VERSION_10;
     style->ec_level = ECLevel_H;
     style->mask_patt = MaskPattern4;
-    style->bg_color = gt_color_white();
+    obj->bgcolor = gt_color_white();
     style->fg_color = gt_color_black();
     return obj;
 }
@@ -281,8 +273,7 @@ void gt_qrcode_set_background(gt_obj_st * qr_code , gt_color_t color)
     if (false == gt_obj_is_type(qr_code, OBJ_TYPE)) {
         return ;
     }
-    _gt_qr_code_st * style = (_gt_qr_code_st * )qr_code;
-    style->bg_color = color;
+    gt_obj_set_bgcolor(qr_code, color);
 }
 
 void gt_qrcode_set_forecolor(gt_obj_st * qr_code , gt_color_t color)

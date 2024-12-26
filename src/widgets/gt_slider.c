@@ -72,7 +72,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static const gt_obj_class_st gt_slider_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_slider_class = {
     ._init_cb       = _init_cb,
     ._deinit_cb     = _deinit_cb,
     ._event_cb      = _event_cb,
@@ -397,7 +397,9 @@ static void _init_cb(gt_obj_st * obj) {
     _calc_all_layer_area(obj, &area_base, &area_val, &tag_area);
     if(style->pos < style->end){
         /** background area */
+#if !GT_USE_SERIAL
         draw_bg(obj->draw_ctx, &rect_attr, &area_base);
+#endif
     }
 
     rect_attr.bg_color = style->color_act;
@@ -408,14 +410,18 @@ static void _init_cb(gt_obj_st * obj) {
             rect_attr.base_area = &area_base;
         }
         /** active area */
+#if !GT_USE_SERIAL
         draw_bg(obj->draw_ctx, &rect_attr, &area_val);
+#endif
 
         if (style->repeat_mode) {
             gt_attr_rect_st repeat_attr = rect_attr;
             repeat_attr.bg_color = style->repeat_info.color;
             gt_area_st repeat_area = _calc_repeat_mode_area(obj, &area_val);
             /** AB repeat area */
+#if !GT_USE_SERIAL
             draw_bg(obj->draw_ctx, &repeat_attr, &repeat_area);
+#endif
         }
         rect_attr.base_area = NULL;
     }
@@ -441,7 +447,19 @@ static void _init_cb(gt_obj_st * obj) {
             tag_area.h = _h > tag_size ? tag_size : _h;
             tag_area.x += (tag_size - tag_area.w) >> 1;
             tag_area.y += (tag_size - tag_area.h) >> 1;
-        } else {
+        }
+#if GT_USE_FILE_HEADER
+        else if(GT_FS_RES_OK == gt_fs_fh_read_img_wh((gt_img_get_file_header_param(style->img)), &_w, &_h)) {
+            if (0 == _w || 0 == _h) {
+                goto draw_focus;
+            }
+            tag_area.w = _w > tag_size ? tag_size : _w;
+            tag_area.h = _h > tag_size ? tag_size : _h;
+            tag_area.x += (tag_size - tag_area.w) >> 1;
+            tag_area.y += (tag_size - tag_area.h) >> 1;
+        }
+#endif
+        else {
             goto draw_focus;
         }
         gt_obj_set_area(style->tag, tag_area);
@@ -452,11 +470,13 @@ static void _init_cb(gt_obj_st * obj) {
     }
 
     // draw tag
+#if !GT_USE_SERIAL
     draw_bg(obj->draw_ctx, &rect_attr, &tag_area);
+#endif
 
 draw_focus:
     // focus
-    draw_focus(obj , 0);
+    draw_focus(obj , obj->radius);
 }
 
 /**
@@ -717,6 +737,34 @@ void gt_slider_set_tag(gt_obj_st * slider, char * src)
         gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
     }
 }
+
+#if GT_USE_FILE_HEADER
+void gt_slider_set_tag_by_file_header(gt_obj_st * slider, gt_file_header_param_st * fh)
+{
+    if (false == gt_obj_is_type(slider, OBJ_TYPE)) {
+        return;
+    }
+    _gt_slider_st * style = (_gt_slider_st *)slider;
+    if(NULL == style->tag){
+        style->tag = gt_obj_create(slider);
+        gt_obj_set_touch_parent(style->tag, true);
+        gt_obj_set_bubble_notify(style->tag, true);
+        gt_obj_set_inside(style->tag, true);
+    }
+
+    if(style->tag && NULL == style->img){
+        style->img = gt_img_create(style->tag);
+        gt_obj_set_touch_parent(style->img, true);
+        gt_obj_set_bubble_notify(style->img, true);
+        gt_obj_set_inside(style->img, true);
+    }
+
+    if(style->img){
+        gt_img_set_by_file_header(style->img, fh);
+        gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+    }
+}
+#endif
 
 void gt_slider_set_tag_visible(gt_obj_st * slider, bool visible)
 {

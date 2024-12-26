@@ -38,6 +38,9 @@ typedef struct _gt_img_s {
 #if GT_USE_DIRECT_ADDR
     gt_addr_t addr;
 #endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_direct_addr_custom_size_st custom_addr;
+#endif
 }_gt_img_st;
 
 /* static variables -----------------------------------------------------*/
@@ -45,7 +48,7 @@ static void _img_init_cb(gt_obj_st * obj);
 static void _img_deinit_cb(gt_obj_st * obj);
 static void _img_event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static const gt_obj_class_st gt_img_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_img_class = {
     ._init_cb      = _img_init_cb,
     ._deinit_cb    = _img_deinit_cb,
     ._event_cb     = _img_event_cb,
@@ -79,7 +82,12 @@ static void _img_init_cb(gt_obj_st * obj) {
 
 #if GT_USE_DIRECT_ADDR
     dsc.addr = style->addr;
-    if (dsc.addr) { is_val = true; }
+    if (false == gt_hal_is_invalid_addr(dsc.addr)) { is_val = true; }
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    dsc.custom_addr = &style->custom_addr;
+    if (false == gt_hal_is_invalid_custom_size_addr(dsc.custom_addr)) { is_val = true; }
 #endif
 
     if (false == is_val) {
@@ -90,7 +98,7 @@ static void _img_init_cb(gt_obj_st * obj) {
     draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
 
     // focus
-    draw_focus(obj , 0);
+    draw_focus(obj , obj->radius);
 }
 
 /**
@@ -164,6 +172,7 @@ gt_obj_st * gt_img_create(gt_obj_st * parent)
     if (NULL == obj) {
         return obj;
     }
+    obj->reduce = 0;
     _gt_img_st * style = (_gt_img_st *)obj;
 
 #if GT_USE_DIRECT_ADDR
@@ -206,7 +215,7 @@ void gt_img_set_src(gt_obj_st * img, char * src)
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
-void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw)
+void gt_img_set_raw_data(gt_obj_st * img, gt_color_img_raw_st * raw)
 {
     if (false == gt_obj_is_type(img, OBJ_TYPE)) {
         return ;
@@ -240,6 +249,10 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw)
     gt_hal_direct_addr_init(&style->addr);
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&style->custom_addr);
+#endif
+
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
@@ -262,8 +275,20 @@ void gt_img_set_by_file_header(gt_obj_st * img, gt_file_header_param_st * fh)
 #if GT_USE_DIRECT_ADDR
     gt_hal_direct_addr_init(&style->addr);
 #endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&style->custom_addr);
+#endif
 
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+gt_file_header_param_st* gt_img_get_file_header_param(gt_obj_st * img)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) {
+        return NULL;
+    }
+    _gt_img_st * style = (_gt_img_st *)img;
+    return &style->fh;
 }
 #endif
 
@@ -282,7 +307,34 @@ void gt_img_set_by_direct_addr(gt_obj_st * img, gt_addr_t addr)
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->fh);
 #endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&style->custom_addr);
+#endif
     style->addr = addr;
+
+    gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+void gt_img_set_by_custom_size_addr(gt_obj_st * img, gt_direct_addr_custom_size_st * dac)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_img_st * style = (_gt_img_st *)img;
+    gt_memset(&style->raw, 0, sizeof(_gt_img_dsc_st));
+    if (NULL != style->src) {
+        gt_mem_free(style->src);
+        style->src = NULL;
+    }
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->fh);
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->addr);
+#endif
+    style->custom_addr = *dac;
 
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }

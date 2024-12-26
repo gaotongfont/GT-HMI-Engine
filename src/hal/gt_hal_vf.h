@@ -21,6 +21,12 @@ extern "C" {
 
 
 /* define ---------------------------------------------------------------*/
+#ifndef GT_HAL_FLASH_READ_CMD
+    /**
+     * @brief Flash read command
+     */
+    #define GT_HAL_FLASH_READ_CMD       0x03
+#endif
 
 
 /* typedef --------------------------------------------------------------*/

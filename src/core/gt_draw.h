@@ -66,17 +66,6 @@ typedef struct _gt_draw_font_res_s {
     gt_res_t res;
 }_gt_draw_font_res_st;
 
-typedef struct _gt_radius_mask_t{
-    uint8_t *buf;
-    uint8_t *opa;
-    uint16_t * opa_start;
-    uint16_t * x_start;
-
-    gt_area_st area;
-    uint16_t radius;
-    uint8_t outer : 1; ///< 0: inner, 1: outer
-}gt_radius_mask_st;
-
 typedef enum {
     R_DIR_TOP_LEFT = 0,
     R_DIR_TOP_RIGHT,
@@ -118,33 +107,36 @@ _gt_draw_font_res_st draw_text(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st
 void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_area_st * coords);
 
 /**
- * @brief
+ * @brief Draw point
  *
  * @param draw_ctx
  * @param dsc
  * @param coords
  */
-void gt_draw_point(_gt_draw_ctx_st * draw_ctx, gt_attr_point_st const * dsc, gt_area_st const * coords);
+GT_ATTRIBUTE_RAM_TEXT void gt_draw_point(_gt_draw_ctx_st * draw_ctx, gt_attr_point_st const * dsc, gt_area_st const * coords);
 
 /**
- * @brief
+ * @brief Draw line
  *
  * @param draw_ctx
  * @param dsc
  * @param coords
  */
-void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const gt_area_st * coords);
+GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const gt_area_st * coords);
 
 /**
- * @brief
+ * @brief Draw catmullrom curve
  *
  * @param draw_ctx
  * @param dsc
  * @param coords
  */
-void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_attr_curve_st const * dsc, const gt_area_st * coords);
+GT_ATTRIBUTE_RAM_TEXT void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_attr_curve_st const * dsc, const gt_area_st * coords);
 
-void draw_focus(gt_obj_st* obj, gt_size_t radius);
+GT_ATTRIBUTE_RAM_TEXT void draw_focus(gt_obj_st* obj, gt_size_t radius);
+
+GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_area_st * coords);
+
 
 #ifdef __cplusplus
 } /*extern "C"*/

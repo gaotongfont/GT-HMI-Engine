@@ -21,6 +21,7 @@ extern "C" {
 #include "gt_obj_class.h"
 #include "stdarg.h"
 #include "stdlib.h"
+#include "../others/gt_color.h"
 #include "../core/gt_style.h"
 #include "../font/gt_font.h"
 
@@ -80,8 +81,11 @@ char * gt_label_get_text(gt_obj_st * label);
  */
 void gt_label_set_font_color(gt_obj_st * label, gt_color_t color);
 
+gt_color_t gt_label_get_font_color(gt_obj_st * label);
+
 void gt_label_set_font_size(gt_obj_st * label, uint8_t size);
 void gt_label_set_font_gray(gt_obj_st * label, uint8_t gray);
+void gt_label_set_indent(gt_obj_st * label, uint16_t indent);
 void gt_label_set_font_align(gt_obj_st * label, gt_align_et align);
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_label_set_font_family_cn(gt_obj_st * label, gt_family_t family);
@@ -98,10 +102,15 @@ void gt_label_set_font_encoding(gt_obj_st * label, gt_encoding_et encoding);
 
 void gt_label_set_space(gt_obj_st * label, uint8_t space_x, uint8_t space_y);
 
+void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style);
+
 uint8_t gt_label_get_font_size(gt_obj_st * label);
 
 uint8_t gt_label_get_space_x(gt_obj_st * label);
 uint8_t gt_label_get_space_y(gt_obj_st * label);
+
+void gt_label_set_font_info(gt_obj_st * label, gt_font_info_st * font_info);
+gt_font_info_st * gt_label_get_font_info(gt_obj_st * label);
 
 /**
  * @brief Get max substring line width
@@ -142,17 +151,17 @@ void gt_label_set_auto_scroll_single_line(gt_obj_st * label, bool is_auto_scroll
  * @brief Set auto scroll speed
  *
  * @param label
- * @param speed [default: 20] 1 ~ 99: speed from fast -> slow; 0: stop auto scroll.
+ * @param total_time_ms > 0: total time(ms) for auto scroll each time;
+ *                     = 0: set default 2s.
  */
-void gt_label_set_auto_scroll_speed(gt_obj_st * label, uint8_t speed);
-
-void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style);
+void gt_label_set_auto_scroll_total_time(gt_obj_st * label, uint32_t total_time_ms);
 
 bool gt_label_is_single_line(gt_obj_st * label);
 bool gt_label_is_omit_single_line(gt_obj_st * label);
 bool gt_label_is_auto_scroll_single_line(gt_obj_st * label);
 
 
+void gt_label_add_text(gt_obj_st * label, const char * fmt, ...);
 
 #endif  /** GT_CFG_ENABLE_LABEL */
 

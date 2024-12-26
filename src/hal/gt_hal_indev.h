@@ -20,11 +20,19 @@ extern "C" {
 #include "../others/gt_anim.h"
 
 /* define ---------------------------------------------------------------*/
+#ifndef GT_INDEV_SIMULATE_POINTER
+    /**
+     * @brief Simulate pointer input device
+     *      [default: 0]
+     */
+    #define GT_INDEV_SIMULATE_POINTER       0
+#endif
 
 /* default gesture repeat */
 
 /* ms repeat trigger once event */
-#define GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS      300
+#define GT_CFG_DEFAULT_PRESSING_TIME_MS             300
+#define GT_CFG_DEFAULT_LONG_PRESSED_TIME_MS         500
 
 #define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR     (GT_SCREEN_WIDTH >> 4)
 
@@ -81,7 +89,7 @@ typedef enum{
 
 typedef enum {
     GT_KEY_NEXT      = 9,   /*0x09, '\t'*/  // focus next
-    GT_KEY_ENTER     = 10,  /*0x0A, '\n'*/
+    GT_KEY_ENTER     = 10,  /*0x0A, '\n' Global or object */
     GT_KEY_PREV      = 11,  /*0x0B, '*/     // focus previous
 
     GT_KEY_UP        = 17,  /*0x11*/
@@ -93,6 +101,22 @@ typedef enum {
     GT_KEY_BACKSPACE = 8,   /*0x08*/
     GT_KEY_HOME      = 2,   /*0x02, STX*/
     GT_KEY_END       = 3,   /*0x03, ETX*/
+
+    GT_KEY_F1        = 0x70,
+    GT_KEY_F2        = 0x71,
+    GT_KEY_F3        = 0x72,
+    GT_KEY_F4        = 0x73,
+    GT_KEY_F5        = 0x74,
+    GT_KEY_F6        = 0x75,
+    GT_KEY_F7        = 0x76,
+    GT_KEY_F8        = 0x77,
+    GT_KEY_F9        = 0x78,
+    GT_KEY_F10       = 0x79,
+    GT_KEY_F11       = 0x7A,
+    GT_KEY_F12       = 0x7B,
+
+    GT_KEY_MENU      = GT_KEY_F1,   /** Global event toggle key */
+    GT_KEY_BACK      = GT_KEY_F12,  /** Global event */
 
     GT_KEY_NONE      = 0xFFFFFFF,
 }gt_key_et;
@@ -119,7 +143,8 @@ typedef struct _gt_indev_drv_s
     gt_indev_type_et type;
     void (*read_cb)(struct _gt_indev_drv_s * indev_drv, gt_indev_data_st * data);
 
-    gt_size_t limit_timers_long_press;      ///< long press timers
+    gt_size_t limit_time_long_pressed;      ///< long pressed time
+    gt_size_t limit_time_pressing;          ///< pressing time
     gt_size_t limit_pixel_gesture_ver;      ///< move pixel trigger once event
     gt_size_t limit_pixel_gesture_hor;      ///< move pixel trigger once event
     uint8_t limit_pixel_scroll;             ///< scroll pixel trigger scroll event
@@ -134,13 +159,12 @@ typedef struct _gt_indev_s {
     gt_indev_drv_st * drv;
 
     uint32_t timestamp_start;
-    uint32_t timestamp_long_press;
+    uint32_t timestamp_pressing;
+    uint32_t timestamp_long_pressed;
 
     gt_indev_state_et state;
-    union
-    {
-        struct _point
-        {
+    union {
+        struct _point {
             gt_point_st act;            ///< the first point of touch input device
             gt_point_st newly;          ///< last point of touch input device
             gt_point_st last;           ///< used to judge gesture
@@ -158,17 +182,19 @@ typedef struct _gt_indev_s {
             uint16_t reserved : 13;
         }point;
 
-        struct _button
-        {
+        struct _button {
             uint16_t id;
             uint16_t count_keydown;
         }button;
 
-        struct _keypad
-        {
+        struct _keypad {
             uint32_t key;
-            uint32_t count_keydown;
             struct gt_obj_s * obj_target;    ///< The object of first touch
+            struct gt_obj_s * obj_origin;    ///< The object of first touch
+
+            uint16_t lock : 1;
+            uint16_t last_layer : 1; // 0: scr, 1: layer top
+            uint16_t reserved : 14;
         }keypad;
     }data;
 
@@ -176,8 +202,7 @@ typedef struct _gt_indev_s {
 }gt_indev_st;
 
 typedef struct gt_indev_param_st {
-    union
-    {
+    union {
         gt_point_st point;
         uint16_t button_id;
         uint32_t keypad_key;
@@ -245,6 +270,10 @@ gt_indev_st * gt_indev_get_dev_by_idx(uint8_t idx);
  * @return uint8_t
  */
 uint8_t gt_indev_get_dev_count(void);
+
+#if GT_INDEV_SIMULATE_POINTER
+gt_indev_st * gt_hal_indev_get_simulate_drv(void);
+#endif
 
 #ifdef __cplusplus
 } /*extern "C"*/

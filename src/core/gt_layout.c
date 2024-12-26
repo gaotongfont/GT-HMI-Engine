@@ -46,7 +46,7 @@ typedef struct {
 
 
 /* static functions -----------------------------------------------------*/
-static gt_size_t _row_grow_inside(gt_obj_st * target, gt_point_st * offset) {
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t _row_grow_inside(gt_obj_st * target, gt_point_st * offset) {
     gt_obj_st * child = NULL;
     gt_size_t y = 0;
     for (gt_size_t i = 0, cnt = target->cnt_child; i < cnt; ++i) {
@@ -71,7 +71,7 @@ static gt_size_t _row_grow_inside(gt_obj_st * target, gt_point_st * offset) {
     return offset->x;
 }
 
-static gt_size_t _row_grow_inside_invert(gt_obj_st * target, gt_point_st * offset) {
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t _row_grow_inside_invert(gt_obj_st * target, gt_point_st * offset) {
     gt_obj_st * child = NULL;
     gt_size_t y = 0;
     for (gt_size_t i = 0, cnt = target->cnt_child; i < cnt; ++i) {
@@ -97,11 +97,11 @@ static gt_size_t _row_grow_inside_invert(gt_obj_st * target, gt_point_st * offse
 }
 
 #if GT_USE_WIDGET_LAYOUT
-static inline bool _is_flex_row_dir(gt_layout_flex_direction_t dir) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_flex_row_dir(gt_layout_flex_direction_t dir) {
     return (GT_LAYOUT_FLEX_DIR_ROW == dir || GT_LAYOUT_FLEX_DIR_ROW_REVERSE ==  dir) ? true : false;
 }
 
-static void _update_flex_align_pos_row(gt_obj_st * child, gt_area_st * pos, gt_size_t second_dir_height, gt_layout_align_items_t align) {
+static GT_ATTRIBUTE_RAM_TEXT void _update_flex_align_pos_row(gt_obj_st * child, gt_area_st * pos, gt_size_t second_dir_height, gt_layout_align_items_t align) {
     if (GT_LAYOUT_ALIGN_ITEMS_START == align) {
         gt_obj_set_pos(child, pos->x + pos->w, pos->y);
     } else if (GT_LAYOUT_ALIGN_ITEMS_END == align) {
@@ -111,7 +111,7 @@ static void _update_flex_align_pos_row(gt_obj_st * child, gt_area_st * pos, gt_s
     }
 }
 
-static void _update_flex_align_pos_column(gt_obj_st * child, gt_area_st * pos, gt_size_t second_dir_height, gt_layout_align_items_t align) {
+static GT_ATTRIBUTE_RAM_TEXT void _update_flex_align_pos_column(gt_obj_st * child, gt_area_st * pos, gt_size_t second_dir_height, gt_layout_align_items_t align) {
     if (GT_LAYOUT_ALIGN_ITEMS_START == align) {
         gt_obj_set_pos(child, pos->x, pos->y + pos->h);
     } else if (GT_LAYOUT_ALIGN_ITEMS_END == align) {
@@ -121,21 +121,21 @@ static void _update_flex_align_pos_column(gt_obj_st * child, gt_area_st * pos, g
     }
 }
 
-static void _update_flex_area_max_size_row(gt_obj_st * child, gt_area_st * pos, gt_size_t gap) {
+static GT_ATTRIBUTE_RAM_TEXT void _update_flex_area_max_size_row(gt_obj_st * child, gt_area_st * pos, gt_size_t gap) {
     pos->w += child->area.w + gap;
     if (child->area.h > pos->h) {
         pos->h = child->area.h;
     }
 }
 
-static void _update_flex_area_max_size_column(gt_obj_st * child, gt_area_st * pos, gt_size_t gap) {
+static GT_ATTRIBUTE_RAM_TEXT void _update_flex_area_max_size_column(gt_obj_st * child, gt_area_st * pos, gt_size_t gap) {
     pos->h += child->area.h + gap;
     if (child->area.w > pos->w) {
         pos->w = child->area.w;
     }
 }
 
-static _update_align_cb_st _get_update_align_pos_cb(bool is_row) {
+static GT_ATTRIBUTE_RAM_TEXT _update_align_cb_st _get_update_align_pos_cb(bool is_row) {
     _update_align_cb_st ret = { 0 };
     if (is_row) {
         ret.update_align_pos_p = _update_flex_align_pos_row;
@@ -147,13 +147,13 @@ static _update_align_cb_st _get_update_align_pos_cb(bool is_row) {
     return ret;
 }
 
-static bool _is_justify_content_space_mode(gt_layout_justify_content_t jc) {
+static GT_ATTRIBUTE_RAM_TEXT bool _is_justify_content_space_mode(gt_layout_justify_content_t jc) {
     return (GT_LAYOUT_JUSTIFY_CONTENT_SPACE_AROUND == jc ||
             GT_LAYOUT_JUSTIFY_CONTENT_SPACE_BETWEEN == jc ||
             GT_LAYOUT_JUSTIFY_CONTENT_SPACE_EVENLY == jc) ? true : false;
 }
 
-static _content_space_around_st _common_calc_space_gap_and_offset(
+static GT_ATTRIBUTE_RAM_TEXT _content_space_around_st _common_calc_space_gap_and_offset(
     uint16_t obj_size, uint16_t gap_count, uint16_t parent_radius,
     uint16_t total_size, gt_layout_justify_content_t jc) {
     _content_space_around_st ret = {0};
@@ -179,7 +179,7 @@ static _content_space_around_st _common_calc_space_gap_and_offset(
     return ret;
 }
 
-static _content_space_around_st _calc_space_mode_gap_and_offset(
+static GT_ATTRIBUTE_RAM_TEXT _content_space_around_st _calc_space_mode_gap_and_offset(
     gt_obj_st * parent, bool is_row_dir, gt_layout_justify_content_t jc) {
     uint16_t total_size = 0;
 
@@ -196,7 +196,7 @@ static _content_space_around_st _calc_space_mode_gap_and_offset(
     return _common_calc_space_gap_and_offset(parent->area.h, parent->cnt_child, parent->radius, total_size, jc);
 }
 
-static void _sort_order_by_grow_dir(gt_obj_st * parent, gt_area_st * pos, uint8_t is_row) {
+static GT_ATTRIBUTE_RAM_TEXT void _sort_order_by_grow_dir(gt_obj_st * parent, gt_area_st * pos, uint8_t is_row) {
     _update_align_cb_st cb_st = _get_update_align_pos_cb(is_row);
     gt_obj_st * child = NULL;
     gt_size_t i = 0, cnt = parent->cnt_child;
@@ -221,7 +221,7 @@ static void _sort_order_by_grow_dir(gt_obj_st * parent, gt_area_st * pos, uint8_
     }
 }
 
-static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
+static GT_ATTRIBUTE_RAM_TEXT gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
     gt_area_st pos = {
         .x = parent->area.x + (parent->radius >> 1),
         .y = parent->area.y + (parent->radius >> 1),
@@ -297,7 +297,7 @@ static gt_area_st _childs_sort_by_flex_direction(gt_obj_st * parent) {
  * @param content_pos Overall position of all elements
  * @return gt_area_st
  */
-static gt_area_st _childs_adjust_justify_content(gt_obj_st * parent, gt_area_st * content_pos) {
+static GT_ATTRIBUTE_RAM_TEXT gt_area_st _childs_adjust_justify_content(gt_obj_st * parent, gt_area_st * content_pos) {
     gt_layout_justify_content_t jc = parent->container.justify_content;
     gt_point_st diff = {0};
 
@@ -320,7 +320,7 @@ static gt_area_st _childs_adjust_justify_content(gt_obj_st * parent, gt_area_st 
     return *content_pos;
 }
 
-static void _adjust_flex_content(gt_obj_st * target) {
+static GT_ATTRIBUTE_RAM_TEXT void _adjust_flex_content(gt_obj_st * target) {
     if (false == gt_layout_is_type(target, GT_LAYOUT_TYPE_FLEX)) {
         return ;
     }

@@ -1,23 +1,22 @@
 /**
- * @file gt_effects.h
+ * @file gt_serial_area_light.h
  * @author Feyoung
- * @brief The effect of control
+ * @brief
  * @version 0.1
- * @date 2022-07-05 18:59:47
+ * @date 2024-10-18 16:30:47
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
  */
-#ifndef _GT_EFFECTS_H_
-#define _GT_EFFECTS_H_
+#ifndef _GT_SERIAL_AREA_LIGHT_H_
+#define _GT_SERIAL_AREA_LIGHT_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-#include "../gt_conf.h"
-#include "gt_color.h"
-#include "stdint.h"
-#include "../widgets/gt_obj.h"
+#include "gt_serial_var.h"
+
+#if GT_USE_SERIAL_VAR && GT_USE_BIN_CONVERT
 
 
 /* define ---------------------------------------------------------------*/
@@ -37,13 +36,14 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
+gt_res_t gt_serial_area_light_create(gt_var_st * var);
+gt_res_t gt_serial_area_light_set_value(gt_var_st * var, gt_var_value_st * value);
 
-#if 0
-uint8_t gt_anti_aliasing_div(gt_color_t * buffer,gt_area_st * area, gt_point_st * coord, gt_point_st * last);
-#endif
+
+#endif  /** GT_USE_SERIAL_VAR && GT_USE_BIN_CONVERT */
 
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
 
-#endif //!_GT_EFFECTS_H_
+#endif //!_GT_SERIAL_AREA_LIGHT_H_

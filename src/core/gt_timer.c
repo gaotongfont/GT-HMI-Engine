@@ -45,15 +45,15 @@ static uint32_t idle_last = 0;
 
 /* static functions -----------------------------------------------------*/
 
-static inline void _gt_timer_task_set_ready_flag(bool value) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _gt_timer_task_set_ready_flag(bool value) {
     _gt_timer_task_ready_flag = value;
 }
 
-static inline bool _gt_timer_task_is_ready(void) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _gt_timer_task_is_ready(void) {
     return _gt_timer_task_ready_flag;
 }
 
-static void _gt_timer_remove_task(_gt_timer_st *ptr) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_timer_remove_task(_gt_timer_st *ptr) {
     GT_CHECK_BACK(ptr);
     _gt_list_del(&ptr->list);
     gt_mem_free(ptr);
@@ -62,7 +62,7 @@ static void _gt_timer_remove_task(_gt_timer_st *ptr) {
 /**
  * @brief execute the timer tasks list
  */
-static inline uint32_t _gt_timer_for_each_exec(void) {
+static GT_ATTRIBUTE_RAM_TEXT inline uint32_t _gt_timer_for_each_exec(void) {
     _gt_timer_st * ptr        = NULL;
     _gt_timer_st * backup_ptr = NULL;
     uint32_t     period       = 0;

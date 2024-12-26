@@ -28,6 +28,22 @@ static gt_indev_st * indev;
 static gt_indev_st * indev_act[_CNT_INDEV_MAX];
 static uint8_t cnt_indev = 0;
 
+#if GT_INDEV_SIMULATE_POINTER
+static const gt_indev_drv_st simulate_drv = {
+    .type = GT_INDEV_TYPE_POINTER,
+    .read_cb = NULL,
+    .limit_time_pressing     = GT_CFG_DEFAULT_PRESSING_TIME_MS,
+    .limit_time_long_pressed = GT_CFG_DEFAULT_LONG_PRESSED_TIME_MS,
+    .limit_pixel_gesture_hor = GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR,
+    .limit_pixel_gesture_ver = GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_VER,
+    .limit_pixel_scroll      = GT_CFG_DEFAULT_POINT_SCROLL_PIXEL,
+    .limit_scroll_throw      = GT_CFG_DEFAULT_POINT_SCROLL_THROW,
+};
+
+static gt_indev_st simulate_indev = {
+    .drv = (gt_indev_drv_st * )&simulate_drv,
+};
+#endif  /** GT_INDEV_SIMULATE_POINTER */
 
 /* macros ---------------------------------------------------------------*/
 
@@ -40,12 +56,12 @@ static uint8_t cnt_indev = 0;
 /* global functions / API interface -------------------------------------*/
 void gt_indev_drv_init(gt_indev_drv_st * drv)
 {
-
     gt_memset(drv, 0, sizeof(gt_indev_drv_st));
 
     drv->type = GT_INDEV_TYPE_NONE;
 
-    drv->limit_timers_long_press = GT_CFG_DEFAULT_POINT_LONG_PRESS_TIMERS;
+    drv->limit_time_pressing     = GT_CFG_DEFAULT_PRESSING_TIME_MS,
+    drv->limit_time_long_pressed = GT_CFG_DEFAULT_LONG_PRESSED_TIME_MS;
     drv->limit_pixel_gesture_hor = GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR;
     drv->limit_pixel_gesture_ver = GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_VER;
     drv->limit_pixel_scroll      = GT_CFG_DEFAULT_POINT_SCROLL_PIXEL;
@@ -110,5 +126,11 @@ uint8_t gt_indev_get_dev_count(void)
 }
 
 
+#if GT_INDEV_SIMULATE_POINTER
+gt_indev_st * gt_hal_indev_get_simulate_drv(void)
+{
+    return &simulate_indev;
+}
+#endif
 
 /* end ------------------------------------------------------------------*/

@@ -54,14 +54,24 @@ gt_obj_st * gt_input_create(gt_obj_st * parent);
  */
 void gt_input_set_value(gt_obj_st * input, const char * fmt, ...);
 
+void gt_input_set_value_by_len(gt_obj_st * input, const char * str, uint16_t len);
+
 /**
  * @brief get input obj value
  *
  * @param input input obj
- * @return char* value of input
+ * @return char* value of input; NULL is failed, no string
  */
 char * gt_input_get_value(gt_obj_st * input);
 
+/**
+ * @brief hide the value of the input object by "*"
+ *
+ * @param input
+ * @param hide true: hide; false[default]: show
+ */
+void gt_input_hide_value(gt_obj_st * input, bool hide);
+bool gt_input_is_hide_value(gt_obj_st * input);
 
 /**
  * @brief append content at the end
@@ -118,11 +128,13 @@ void gt_input_set_font_align(gt_obj_st * input, gt_align_et align);
 void gt_input_set_font_thick_en(gt_obj_st * input, uint8_t thick);
 void gt_input_set_font_thick_cn(gt_obj_st * input, uint8_t thick);
 void gt_input_set_font_encoding(gt_obj_st * input, gt_encoding_et encoding);
+void gt_input_set_font_style(gt_obj_st * input, gt_font_style_et font_style);
 void gt_input_set_bg_color(gt_obj_st * input, gt_color_t color);
 void gt_input_set_border_width(gt_obj_st * input, gt_size_t width);
 void gt_input_set_border_color(gt_obj_st * input, gt_color_t color);
 void gt_input_set_space(gt_obj_st * input, uint8_t space_x, uint8_t space_y);
 
+void gt_input_hooking_keypad(gt_obj_st * input, gt_obj_st * keypad);
 
 #endif  /** GT_CFG_ENABLE_INPUT */
 

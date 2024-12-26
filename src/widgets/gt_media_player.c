@@ -64,7 +64,7 @@ static void _media_player_init_cb(gt_obj_st * obj);
 static void _media_player_deinit_cb(gt_obj_st * obj);
 static void _media_player_event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static const gt_obj_class_st gt_media_player_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_media_player_class = {
     ._init_cb      = _media_player_init_cb,
     ._deinit_cb    = _media_player_deinit_cb,
     ._event_cb     = _media_player_event_cb,
@@ -306,7 +306,7 @@ void gt_media_player_set_stop_cb(gt_obj_st * obj, gt_media_player_handler_cb sto
     style->stop_hdr.user_data = user_data;
 }
 
-void gt_media_player_set_raw(gt_obj_st * obj, gt_img_raw_st * raw)
+void gt_media_player_set_raw(gt_obj_st * obj, gt_color_img_raw_st * raw)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;

@@ -57,6 +57,14 @@ gt_obj_st * gt_view_pager_create(gt_obj_st * parent);
 int8_t gt_view_pager_set_fragment_count(gt_obj_st * obj, uint8_t count);
 
 /**
+ * @brief view pager scroll to target fragment index
+ *
+ * @param obj
+ * @param index The target fragment index
+ */
+void gt_view_pager_scroll_to_fragment(gt_obj_st * obj, gt_size_t index);
+
+/**
  * @brief add a fragment
  *
  * @param obj
@@ -72,6 +80,15 @@ int8_t gt_view_pager_add_fragment(gt_obj_st * obj);
  * @param child
  */
 void gt_view_pager_fragment_add_widget(gt_obj_st * view_pager, uint8_t fragment_idx, gt_obj_st * child);
+
+/**
+ * @brief Get the fragment index of the child widget belong
+ *
+ * @param view_pager
+ * @param child The child widget which want to be found
+ * @return gt_size_t -1: not found
+ */
+gt_size_t gt_view_pager_get_widget_belong_fragment(gt_obj_st * view_pager, gt_obj_st * child);
 
 /**
  * @brief Enabled or disabled the background glass effect

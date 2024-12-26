@@ -50,7 +50,8 @@ typedef struct gt_dialog_param_s {
 /* global functions / API interface -------------------------------------*/
 
 /**
- * @brief Create a Empty dialog
+ * @brief Create a Empty dialog, default enabled clicks dialog outsides
+ *      auto hide dialog and free memory when dialog close
  *
  * @param show_close_btn true: show close button, false: hide close button
  * @return gt_obj_st* The dialog object
@@ -58,7 +59,8 @@ typedef struct gt_dialog_param_s {
 gt_obj_st * gt_dialog_create(bool show_close_btn);
 
 /**
- * @brief Create a message box dialog
+ * @brief Create a message box dialog, default enabled clicks dialog outsides
+ *      auto hide dialog and free memory when dialog close
  *
  * @param show_close_btn true: show close button, false: hide close button
  * @param param message box dialog parameter @ref gt_dialog_param_st
@@ -158,6 +160,8 @@ void gt_dialog_set_title_font_cjk(gt_obj_st * dialog, gt_font_cjk_et cjk);
 #endif
 void gt_dialog_set_title_font_thick_en(gt_obj_st * dialog, uint8_t thick);
 void gt_dialog_set_title_font_thick_cn(gt_obj_st * dialog, uint8_t thick);
+void gt_dialog_set_title_font_style(gt_obj_st * dialog, gt_font_style_et font_style);
+
 void gt_dialog_set_content_font_color(gt_obj_st * dialog, gt_color_t color);
 void gt_dialog_set_content_font_size(gt_obj_st * dialog, uint8_t size);
 void gt_dialog_set_content_font_align(gt_obj_st * dialog, gt_align_et align);
@@ -171,6 +175,7 @@ void gt_dialog_set_content_font_cjk(gt_obj_st * dialog, gt_font_cjk_et cjk);
 #endif
 void gt_dialog_set_content_font_thick_en(gt_obj_st * dialog, uint8_t thick);
 void gt_dialog_set_content_font_thick_cn(gt_obj_st * dialog, uint8_t thick);
+void gt_dialog_set_content_font_style(gt_obj_st * dialog, gt_font_style_et font_style);
 
 
 #endif  /** GT_CFG_ENABLE_DIALOG */

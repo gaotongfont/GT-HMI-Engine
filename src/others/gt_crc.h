@@ -33,9 +33,9 @@ extern "C" {
 #ifndef GT_ENABLED_CRC16
     /**
      * @brief crc16 enable flag
-     *  [default: 0]
+     *  [default: 1]
      */
-    #define GT_ENABLED_CRC16        0
+    #define GT_ENABLED_CRC16        01
 #endif
 
 #ifndef GT_ENABLED_CRC32

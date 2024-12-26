@@ -14,11 +14,11 @@
 #include "../core/gt_layout.h"
 #include "../hal/gt_hal_disp.h"
 #include "../others/gt_log.h"
+#include "../others/gt_anim.h"
 
 /* private define -------------------------------------------------------*/
-#define _set_style_prop_val(obj, prop, val)     (obj->style->prop = val)
-// #define _set_area_prop_val(obj, prop, val)      (obj->area.prop = val)  // unused
 #define _get_area_prop(obj, prop)               (obj->area.prop)
+
 
 /* private typedef ------------------------------------------------------*/
 
@@ -33,18 +33,48 @@
 
 
 /* static functions -----------------------------------------------------*/
+static GT_ATTRIBUTE_RAM_TEXT void _calc_full_display_pos(gt_obj_st * obj, gt_area_st * new_area_p) {
+    gt_obj_st * scr = gt_disp_get_scr();
+    if (new_area_p->x < scr->area.x) {
+        new_area_p->x = scr->area.x;
+    } else if (new_area_p->x + obj->area.w > scr->area.x + scr->area.w) {
+        new_area_p->x = scr->area.x + scr->area.w - obj->area.w;
+    }
+    if (new_area_p->y < scr->area.y) {
+        new_area_p->y = scr->area.y;
+    } else if (new_area_p->y + obj->area.h > scr->area.y + scr->area.h) {
+        new_area_p->y = scr->area.y + scr->area.h - obj->area.h;
+    }
+}
 
 #if GT_USE_LAYER_TOP
+static GT_ATTRIBUTE_RAM_TEXT void _calc_layer_top_full_display_pos(gt_obj_st * obj, gt_disp_st * disp,
+    gt_area_st * new_area_p) {
+    if (new_area_p->x < 0) {
+        new_area_p->x = 0;
+    } else if (new_area_p->x + obj->area.w > disp->layer_top->area.w) {
+        new_area_p->x = disp->layer_top->area.w - obj->area.w;
+    }
+
+    if (new_area_p->y < 0) {
+        new_area_p->y = 0;
+    } else if (new_area_p->y + obj->area.h > disp->layer_top->area.h) {
+        new_area_p->y = disp->layer_top->area.h - obj->area.h;
+    }
+}
+
 /**
  * @brief
  *
  * @param obj
  * @param x value reset to: x % width
  * @param y value reset to: y % height
+ * @param is_full_display false[default]: normal position;
+ *      true: always full display on the screen
  * @return true
  * @return false
  */
-static bool _update_layer_top_widget_area(gt_obj_st * obj, gt_area_st new_area) {
+static GT_ATTRIBUTE_RAM_TEXT bool _update_layer_top_widget_area(gt_obj_st * obj, gt_area_st new_area, bool is_full_display) {
     GT_CHECK_BACK_VAL(obj, false);
     gt_disp_st * disp = gt_disp_get_default();
     if (NULL == disp->layer_top) {
@@ -67,9 +97,12 @@ static bool _update_layer_top_widget_area(gt_obj_st * obj, gt_area_st new_area) 
     if (new_area.y > disp->layer_top->area.h) {
         new_area.y = new_area.y % disp->layer_top->area.h;
     }
-    new_area.x = new_area.x + disp->layer_top->area.x;
-    new_area.y = new_area.y + disp->layer_top->area.y;
+    new_area.x += disp->layer_top->area.x;
+    new_area.y += disp->layer_top->area.y;
 
+    if (is_full_display) {
+        _calc_layer_top_full_display_pos(obj, disp, &new_area);
+    }
     _gt_obj_move_child_by(obj, new_area.x - gt_obj_get_x(obj), new_area.y - gt_obj_get_y(obj));
 
     gt_obj_pos_change(obj, &new_area);
@@ -80,12 +113,47 @@ static bool _update_layer_top_widget_area(gt_obj_st * obj, gt_area_st new_area) 
 }
 #endif
 
+static GT_ATTRIBUTE_RAM_TEXT void _opa_anim_exec_cb(void * obj, int32_t val) {
+    gt_obj_st * tar = (gt_obj_st *)obj;
+    tar->opa = (gt_opa_t)val;
+    if (false == gt_obj_get_visible(tar)) {
+        return;
+    }
+    gt_event_send(tar, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _width_anim_exec_cb(void * obj, int32_t val) {
+    gt_obj_st * tar = (gt_obj_st * )obj;
+    gt_obj_set_size(tar, val, tar->area.h);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _height_anim_exec_cb(void * obj, int32_t val) {
+    gt_obj_st * tar = (gt_obj_st * )obj;
+    gt_obj_set_size(tar, tar->area.w, val);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _x_anim_exec_cb(void * obj, int32_t val) {
+    gt_obj_st * tar = (gt_obj_st * )obj;
+    gt_obj_set_pos(tar, val, tar->area.y);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _y_anim_exec_cb(void * obj, int32_t val) {
+    gt_obj_st * tar = (gt_obj_st * )obj;
+    gt_obj_set_pos(tar, tar->area.x, val);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _radius_anim_exec_cb(void * obj, int32_t val) {
+    gt_obj_st * tar = (gt_obj_st * )obj;
+    tar->radius = val;
+    gt_event_send(tar, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 /* global functions / API interface -------------------------------------*/
 gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area)
 {
     GT_CHECK_BACK_VAL(obj, GT_RES_FAIL);
 #if GT_USE_LAYER_TOP
-    if (_update_layer_top_widget_area(obj, area)) {
+    if (_update_layer_top_widget_area(obj, area, false)) {
         return GT_RES_OK;
     }
 #endif
@@ -101,19 +169,46 @@ void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)
 #if GT_USE_LAYER_TOP
     area.x = x;
     area.y = y;
-    if (_update_layer_top_widget_area(obj, area)) {
+    if (_update_layer_top_widget_area(obj, area, false)) {
         return ;
     }
 #endif
     /** normal screen */
-    area = obj->area;
-    _gt_obj_move_child_by(obj, x - area.x, y - area.y);
+    area.x = x;
+    area.y = y;
+    area.w = obj->area.w;
+    area.h = obj->area.h;
+    _gt_obj_move_child_by(obj, area.x - obj->area.x, area.y - obj->area.y);
     if (gt_obj_get_virtual(obj)) {
         return ;
     }
-    area.x = x;
-    area.y = y;
     gt_obj_set_area(obj, area);
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
+}
+
+void gt_obj_set_pos_anim(gt_obj_st * obj, gt_size_t x, gt_size_t y)
+{
+    GT_CHECK_BACK(obj);
+    gt_anim_st anim = {0};
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_EASE_IN_OUT);
+    gt_anim_set_time(&anim, GT_ANIM_PERIOD_TRANSITION_EFFECT_MS);
+    if (obj->area.x != x) {
+        gt_anim_set_value(&anim, obj->area.x, x);
+        gt_anim_set_exec_cb(&anim, _x_anim_exec_cb);
+        gt_anim_start(&anim);
+    }
+    if (obj->area.y != y) {
+        gt_anim_set_value(&anim, obj->area.y, y);
+        gt_anim_set_exec_cb(&anim, _y_anim_exec_cb);
+        gt_anim_start(&anim);
+    }
+}
+
+void gt_obj_set_pos_step(gt_obj_st * obj, gt_size_t step_x, gt_size_t step_y)
+{
+    gt_obj_set_pos(obj, obj->area.x + step_x, obj->area.y + step_y);
 }
 
 #if GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
@@ -139,7 +234,7 @@ void gt_obj_set_pos_relative(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff
         .h = obj->area.h
     };
 #if GT_USE_LAYER_TOP
-    if (_update_layer_top_widget_area(obj, area)) {
+    if (_update_layer_top_widget_area(obj, area, false)) {
         return ;
     }
 #endif
@@ -149,6 +244,31 @@ void gt_obj_set_pos_relative(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff
         return ;
     }
     gt_obj_set_area(obj, area);
+}
+
+void gt_obj_set_pos_always_full_display(gt_obj_st * obj, gt_size_t x, gt_size_t y)
+{
+    GT_CHECK_BACK(obj);
+    gt_area_st area = obj->area;
+#if GT_USE_LAYER_TOP
+    area.x = x;
+    area.y = y;
+    if (_update_layer_top_widget_area(obj, area, true)) {
+        return ;
+    }
+#endif
+    /** normal screen */
+    area.x = x;
+    area.y = y;
+    area.w = obj->area.w;
+    area.h = obj->area.h;
+    _calc_full_display_pos(obj, &area);
+    _gt_obj_move_child_by(obj, area.x - obj->area.x, area.y - obj->area.y);
+    if (gt_obj_get_virtual(obj)) {
+        return ;
+    }
+    gt_obj_set_area(obj, area);
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
 void _gt_obj_move_child_by(gt_obj_st * obj, gt_size_t diff_x, gt_size_t diff_y)
@@ -180,67 +300,151 @@ void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h)
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
-void gt_obj_set_x(gt_obj_st * obj, gt_size_t x)
+void gt_obj_set_size_anim(gt_obj_st * obj, uint16_t w, uint16_t h)
 {
-    // gt_obj_set_pos(obj, x, obj->area.y); // TODO
     GT_CHECK_BACK(obj);
-    gt_area_st area = obj->area;
-    area.x = x;
-#if GT_USE_LAYER_TOP
-    if (_update_layer_top_widget_area(obj, area)) {
-        return ;
-    }
-#endif
     if (gt_obj_get_virtual(obj)) {
         return ;
     }
-    gt_obj_set_area(obj, area);
+    gt_anim_st anim = {0};
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_EASE_IN_OUT);
+    gt_anim_set_time(&anim, GT_ANIM_PERIOD_TRANSITION_EFFECT_MS);
+    if (obj->area.w != w) {
+        gt_anim_set_value(&anim, obj->area.w, w);
+        gt_anim_set_exec_cb(&anim, _width_anim_exec_cb);
+        gt_anim_start(&anim);
+    }
+    if (obj->area.h != h) {
+        gt_anim_set_value(&anim, obj->area.h, h);
+        gt_anim_set_exec_cb(&anim, _height_anim_exec_cb);
+        gt_anim_start(&anim);
+    }
+}
+
+void gt_obj_set_size_step(gt_obj_st * obj, gt_size_t step_w, gt_size_t step_h)
+{
+    if (obj->area.w + step_w < 0) { step_w = -obj->area.w; }
+    if (obj->area.h + step_h < 0) { step_h = -obj->area.h; }
+    gt_obj_set_size(obj, obj->area.w + step_w, obj->area.h + step_h);
+}
+
+void gt_obj_set_x(gt_obj_st * obj, gt_size_t x)
+{
+    GT_CHECK_BACK(obj);
+    gt_obj_set_pos(obj, x, obj->area.y);
+}
+
+void gt_obj_set_x_anim(gt_obj_st * obj, gt_size_t x)
+{
+    GT_CHECK_BACK(obj);
+    gt_obj_set_pos_anim(obj, x, obj->area.y);
+}
+
+void gt_obj_set_x_step(gt_obj_st * obj, gt_size_t step_x)
+{
+    gt_obj_set_pos(obj, obj->area.x + step_x, obj->area.y);
 }
 
 void gt_obj_set_y(gt_obj_st * obj, gt_size_t y)
 {
-    // gt_obj_set_pos(obj, obj->area.x, y);
     GT_CHECK_BACK(obj);
-    gt_area_st area = obj->area;
-    area.y = y;
-#if GT_USE_LAYER_TOP
-    if (_update_layer_top_widget_area(obj, area)) {
-        return ;
-    }
-#endif
-    if (gt_obj_get_virtual(obj)) {
-        return ;
-    }
-    gt_obj_set_area(obj, area);
+    gt_obj_set_pos(obj, obj->area.x, y);
 }
 
-void gt_obj_set_w(gt_obj_st * obj, uint16_t w) {
+void gt_obj_set_y_anim(gt_obj_st * obj, gt_size_t y)
+{
+    GT_CHECK_BACK(obj);
+    gt_obj_set_pos_anim(obj, obj->area.x, y);
+}
+
+void gt_obj_set_y_step(gt_obj_st * obj, gt_size_t step_y)
+{
+    gt_obj_set_pos(obj, obj->area.x, obj->area.y + step_y);
+}
+
+void gt_obj_set_w(gt_obj_st * obj, uint16_t w)
+{
     gt_obj_set_size(obj, w, obj->area.h);
 }
 
-void gt_obj_set_h(gt_obj_st * obj, uint16_t h) {
+void gt_obj_set_w_anim(gt_obj_st * obj, uint16_t w)
+{
+    gt_obj_set_size_anim(obj, w, obj->area.h);
+}
+
+void gt_obj_set_w_step(gt_obj_st * obj, gt_size_t step_w)
+{
+    gt_obj_set_size(obj, obj->area.w + step_w, obj->area.h);
+}
+
+void gt_obj_set_h(gt_obj_st * obj, uint16_t h)
+{
     gt_obj_set_size(obj, obj->area.w, h);
 }
 
-void gt_obj_set_opa(gt_obj_st * obj, gt_opa_t opa) {
+void gt_obj_set_h_anim(gt_obj_st * obj, uint16_t h)
+{
+    gt_obj_set_size_anim(obj, obj->area.w, h);
+}
+
+void gt_obj_set_h_step(gt_obj_st * obj, gt_size_t step_h)
+{
+    gt_obj_set_size(obj, obj->area.w, obj->area.h + step_h);
+}
+
+void gt_obj_set_opa(gt_obj_st * obj, gt_opa_t opa)
+{
     GT_CHECK_BACK(obj);
     obj->opa = opa;
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-gt_size_t gt_obj_get_x(gt_obj_st * obj) {
+void gt_obj_set_opa_anim(gt_obj_st * obj, gt_opa_t opa)
+{
+    GT_CHECK_BACK(obj);
+    if (obj->opa == opa) {
+        return;
+    }
+    gt_anim_st anim = {0};
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_EASE_IN_OUT);
+    gt_anim_set_time(&anim, GT_ANIM_PERIOD_TRANSITION_EFFECT_MS);
+    gt_anim_set_value(&anim, obj->opa, opa);
+    gt_anim_set_exec_cb(&anim, _opa_anim_exec_cb);
+    gt_anim_start(&anim);
+}
+
+void gt_obj_set_opa_step(gt_obj_st * obj, gt_size_t step_opa)
+{
+    if (obj->opa + step_opa < 0) {
+        step_opa = -(gt_size_t)obj->opa;
+    } else if (obj->opa + step_opa > GT_OPA_COVER) {
+        step_opa = (gt_size_t)GT_OPA_COVER - obj->opa;
+    }
+    gt_obj_set_opa(obj, (gt_opa_t)(obj->opa + step_opa));
+}
+
+gt_size_t gt_obj_get_x(gt_obj_st * obj)
+{
     GT_CHECK_BACK_VAL(obj, 0);
     return _get_area_prop(obj, x);
 }
-gt_size_t gt_obj_get_y(gt_obj_st * obj) {
+
+gt_size_t gt_obj_get_y(gt_obj_st * obj)
+{
     GT_CHECK_BACK_VAL(obj, 0);
     return _get_area_prop(obj, y);
 }
-uint16_t gt_obj_get_w(gt_obj_st * obj) {
+uint16_t gt_obj_get_w(gt_obj_st * obj)
+{
     GT_CHECK_BACK_VAL(obj, 0);
     return _get_area_prop(obj, w);
 }
-uint16_t gt_obj_get_h(gt_obj_st * obj) {
+uint16_t gt_obj_get_h(gt_obj_st * obj)
+{
     GT_CHECK_BACK_VAL(obj, 0);
     return _get_area_prop(obj, h);
 }
@@ -250,6 +454,9 @@ void gt_obj_set_visible(gt_obj_st * obj, gt_visible_et is_visible)
     GT_CHECK_BACK(obj);
     obj->visible = is_visible;
     gt_disp_invalid_area(obj);
+    if (obj->visible) {
+        _gt_disp_reload_max_area(gt_obj_within_which_scr(obj));
+    }
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -284,8 +491,7 @@ void gt_obj_set_focus(gt_obj_st * obj, bool is_focus)
 
 bool gt_obj_is_focus(gt_obj_st * obj)
 {
-    GT_CHECK_BACK_VAL(obj, false);
-    return obj->focus;
+    return obj ? obj->focus : false;
 }
 
 void gt_obj_set_focus_disabled(gt_obj_st * obj, gt_disabled_et is_disabled)
@@ -303,6 +509,18 @@ bool gt_obj_is_focus_disabled(gt_obj_st * obj)
 {
     GT_CHECK_BACK_VAL(obj, false);
     return obj->focus_dis;
+}
+
+void gt_obj_set_focus_skip(gt_obj_st * obj, bool is_skip)
+{
+    GT_CHECK_BACK(obj);
+    obj->focus_skip = is_skip;
+}
+
+bool gt_obj_is_focus_skip(gt_obj_st * obj)
+{
+    GT_CHECK_BACK_VAL(obj, false);
+    return obj->focus_skip;
 }
 
 void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new)
@@ -435,7 +653,9 @@ void gt_obj_child_set_prop(gt_obj_st * obj, gt_obj_prop_type_em type, uint8_t va
 
 void gt_obj_set_state(gt_obj_st * obj, gt_state_et state)
 {
-    GT_CHECK_BACK(obj);
+    if (NULL == obj) {
+        return;
+    }
     obj->state = state;
 }
 
@@ -513,7 +733,9 @@ void gt_obj_set_trigger_mode(gt_obj_st * obj, gt_obj_trigger_mode_et is_trigger_
 
 gt_obj_trigger_mode_et gt_obj_get_trigger_mode(gt_obj_st * obj)
 {
-    GT_CHECK_BACK_VAL(obj, GT_OBJ_TRIGGER_MODE_HOLD_ON);
+    if (NULL == obj) {
+        return GT_OBJ_TRIGGER_MODE_HOLD_ON;
+    }
     return (gt_obj_trigger_mode_et)obj->trigger_mode;
 }
 
@@ -657,6 +879,27 @@ void gt_obj_set_radius(gt_obj_st * obj, gt_radius_t radius)
 {
     GT_CHECK_BACK(obj);
     obj->radius = radius;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_obj_set_radius_anim(gt_obj_st * obj, gt_radius_t radius)
+{
+    GT_CHECK_BACK(obj);
+    gt_anim_st anim = {0};
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_EASE_IN_OUT);
+    gt_anim_set_time(&anim, GT_ANIM_PERIOD_TRANSITION_EFFECT_MS);
+    if (radius != obj->radius) {
+        gt_anim_set_value(&anim, obj->radius, radius);
+        gt_anim_set_exec_cb(&anim, _radius_anim_exec_cb);
+        gt_anim_start(&anim);
+    }
+}
+
+void  gt_obj_set_radius_step(gt_obj_st * obj, gt_radius_t step_radius)
+{
+    gt_obj_set_radius(obj, obj->radius + step_radius);
 }
 
 gt_radius_t gt_obj_get_radius(gt_obj_st * obj)

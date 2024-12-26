@@ -22,7 +22,7 @@
 
 
 /* static variables -----------------------------------------------------*/
-static uint32_t _focus_color = 0x0078D7;
+static uint32_t _focus_color = GT_FOCUS_COLOR_SELECT;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -69,9 +69,9 @@ gt_color_t gt_color_focus(void)
     return gt_color_hex(_focus_color);
 }
 
-void gt_color_focus_set(uint32_t col)
+void gt_color_focus_set(uint32_t color)
 {
-    _focus_color = col;
+    _focus_color = color;
 }
 
 /* end ------------------------------------------------------------------*/

@@ -76,7 +76,7 @@ void gt_media_player_set_stop_cb(gt_obj_st * obj, gt_media_player_handler_cb sto
  * @param obj
  * @param raw  Raw data of the frame
  */
-void gt_media_player_set_raw(gt_obj_st * obj, gt_img_raw_st * raw);
+void gt_media_player_set_raw(gt_obj_st * obj, gt_color_img_raw_st * raw);
 
 /**
  * @brief Setting media total second time

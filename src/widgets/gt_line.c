@@ -34,12 +34,11 @@ typedef struct _gt_line_s {
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static const gt_obj_class_st gt_line_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_line_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
+    ._deinit_cb    = (_gt_deinit_cb_t)NULL,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_line_st)
@@ -58,45 +57,12 @@ static const gt_obj_class_st gt_line_class = {
  */
 static void _init_cb(gt_obj_st * obj) {
     _gt_line_st * widget = (_gt_line_st * )obj;
-    gt_attr_line_st * style = &widget->line;
-    uint8_t r = (style->line.width + 1) >> 1;
-    obj->area.x = style->start.x;
-    obj->area.y = style->start.y;
-
-    obj->area.w = r << 1;
-    obj->area.h = r << 1;
-    if (obj->area.w > GT_SCREEN_WIDTH) {
-        obj->area.w = GT_SCREEN_WIDTH;
-    }
-    if (obj->area.h > GT_SCREEN_HEIGHT) {
-        obj->area.h = GT_SCREEN_HEIGHT;
-    }
-
-    // gt_attr_rect_st rect_attr;
-    // gt_graph_init_rect_attr(&rect_attr);
-    // rect_attr.reg.is_fill    = true;
-    // rect_attr.border_width   = 0;
-    // rect_attr.radius         = r;
-    // rect_attr.reg.is_line    = true;
-    // rect_attr.color       = gt_color_black();
-    // gt_area_st area_base = obj->area;
-
-    // rect_attr.obj = style;
-    // draw_bg(obj->draw_ctx, &rect_attr, &area_base);
+    gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
+    style->line.opa = obj->opa;
+    style->line.type = GT_GRAPHS_TYPE_LINE;
+    style->line.brush = GT_BRUSH_TYPE_ROUND;
+    gt_draw_line(obj->draw_ctx, style, &obj->area);
 }
-
-/**
- * @brief obj deinit call back
- *
- * @param obj
- */
-static void _deinit_cb(gt_obj_st * obj) {
-    if (NULL == obj) {
-        return ;
-    }
-
-}
-
 
 /**
  * @brief obj event handler call back
@@ -106,45 +72,19 @@ static void _deinit_cb(gt_obj_st * obj) {
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
-    switch(code_val) {
-        case GT_EVENT_TYPE_DRAW_START:
-            GT_LOGV(GT_LOG_TAG_GUI, "start draw");
-            gt_disp_invalid_area(obj);
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
-            break;
-
-        case GT_EVENT_TYPE_DRAW_END:
-            GT_LOGV(GT_LOG_TAG_GUI, "end draw");
-            break;
-
-        case GT_EVENT_TYPE_UPDATE_VALUE:
-            GT_LOGV(GT_LOG_TAG_GUI, "value update");
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_REMOVE: /* remove child from screen but not delete */
-            GT_LOGV(GT_LOG_TAG_GUI, "child remove");
-			break;
-
-        case GT_EVENT_TYPE_CHANGE_CHILD_DELETE: /* delete child */
-            GT_LOGV(GT_LOG_TAG_GUI, "child delete");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            GT_LOGV(GT_LOG_TAG_GUI, "clicking");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_SCROLL:
-            GT_LOGV(GT_LOG_TAG_GUI, "scroll");
-            break;
-
-        case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            GT_LOGV(GT_LOG_TAG_GUI, "processed");
-            break;
-
-        default:
-            break;
+    if (GT_EVENT_TYPE_DRAW_START == code_val) {
+        gt_disp_invalid_area(obj);
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
+    } else if (GT_EVENT_TYPE_UPDATE_VALUE == code_val) {
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
     }
+}
+
+static void _resize_area(gt_obj_st * line, gt_attr_line_st * style) {
+    line->area.x = GT_MIN(style->start.x, style->end.x) - (style->line.width >> 1);
+    line->area.y = GT_MIN(style->start.y, style->end.y) - (style->line.width >> 1);
+    line->area.w = gt_abs(style->end.x - style->start.x) + style->line.width + 1;
+    line->area.h = gt_abs(style->end.y - style->start.y) + style->line.width + 1;
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -161,7 +101,7 @@ gt_obj_st * gt_line_create(gt_obj_st * parent)
         return obj;
     }
     _gt_line_st * widget = (_gt_line_st * )obj;
-    gt_attr_line_st * style = &widget->line;
+    gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
 
     style->line.width = 1;
     style->line.color = gt_color_black();
@@ -174,7 +114,7 @@ void gt_line_set_color(gt_obj_st * line, gt_color_t color)
         return ;
     }
     _gt_line_st * widget = (_gt_line_st * )line;
-    gt_attr_line_st * style = &widget->line;
+    gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
     style->line.color = color;
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
@@ -185,9 +125,11 @@ void gt_line_set_start_point(gt_obj_st * line, uint16_t xs, uint16_t ys)
         return ;
     }
     _gt_line_st * widget = (_gt_line_st * )line;
-    gt_attr_line_st * style = &widget->line;
+    gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
     style->start.x = xs;
     style->start.y = ys;
+
+    _resize_area(line, style);
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
@@ -197,9 +139,43 @@ void gt_line_set_end_point(gt_obj_st * line, uint16_t xe, uint16_t ye)
         return ;
     }
     _gt_line_st * widget = (_gt_line_st * )line;
-    gt_attr_line_st * style = &widget->line;
+    gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
     style->end.x = xe;
     style->end.y = ye;
+
+    _resize_area(line, style);
+    gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+void gt_line_set_hor_line(gt_obj_st * line, uint16_t length)
+{
+    if (false == gt_obj_is_type(line, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_line_st * widget = (_gt_line_st * )line;
+    gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
+    style->start.x = line->area.x;
+    style->start.y = line->area.y + (widget->line.line.width >> 1);
+    style->end.x = line->area.x + length;
+    style->end.y = style->start.y;
+
+    _resize_area(line, style);
+    gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+void gt_line_set_ver_line(gt_obj_st * line, uint16_t length)
+{
+    if (false == gt_obj_is_type(line, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_line_st * widget = (_gt_line_st * )line;
+    gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
+    style->start.x = line->area.x + (widget->line.line.width >> 1);
+    style->start.y = line->area.y;
+    style->end.x = line->area.x;
+    style->end.y = style->start.y + length;
+
+    _resize_area(line, style);
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
@@ -209,7 +185,7 @@ void gt_line_set_line_width(gt_obj_st * line, uint16_t line_width)
         return ;
     }
     _gt_line_st * widget = (_gt_line_st * )line;
-    gt_attr_line_st * style = &widget->line;
+    gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
     style->line.width = line_width;
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }

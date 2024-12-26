@@ -98,8 +98,14 @@ typedef struct gt_series_points_s {
     struct gt_series_points_s * next_series_p;
     gt_float_t * x_series;
     gt_float_t * y_series;
+    char ** point_value_str;
+    gt_color_t point_value_font_color;
     gt_line_st line;
     uint16_t count_point;
+    uint8_t font_line_space;    // Spacing between point value characters and lines
+    /** point value display position, true: bottom of line; false[default]: top of line */
+    uint8_t show_point_value : 1;
+    uint8_t point_value_bottom : 1;
 }gt_series_points_st;
 
 typedef struct _gt_attr_graphs_s {
@@ -124,6 +130,9 @@ typedef struct _gt_attr_rect_s {
 #endif
 #if GT_USE_DIRECT_ADDR
     gt_addr_t addr;             ///< Using direct address mode to read image data
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_direct_addr_custom_size_st * custom_addr;  ///< Using custom size direct address mode to read image data
 #endif
 
     gt_attr_line_st * line;     ///< use straight line
@@ -151,7 +160,27 @@ typedef struct _gt_attr_rect_s {
     _gt_attr_rect_reg_st reg;
 }gt_attr_rect_st;
 
+typedef struct _gt_attr_arc_s{
+    char* img;
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_st * file_header;  ///< Using file header mode to read image data
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_addr_t addr;
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_direct_addr_custom_size_st * custom_addr;  ///< Using custom size direct address mode to read image data
+#endif
 
+    gt_color_t color;
+    uint16_t start_angle;
+    uint16_t end_angle;
+    uint16_t width;
+
+    gt_opa_t opa;
+
+    uint8_t rounded : 1;
+}gt_attr_arc_st;
 
 /* macros ---------------------------------------------------------------*/
 

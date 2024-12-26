@@ -25,18 +25,15 @@ extern "C" {
 #include "../hal/gt_hal_file_header.h"
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+#include "../hal/gt_hal_fs.h"
+#endif
+
 /* define ---------------------------------------------------------------*/
 
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct gt_img_raw_s {
-    gt_color_t const * buffer;    /** color channel, necessary */
-    gt_opa_t   const * opa;       /** alpha channel, unnecessary */
-    gt_color_t color;
-    uint16_t   width;             /** width of the image */
-    uint16_t   height;            /** height of the image */
-}gt_img_raw_st;
 
 
 
@@ -68,7 +65,7 @@ void gt_img_set_src(gt_obj_st * img, char * src);
  * @param img img object
  * @param raw Raw data of the image
  */
-void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw);
+void gt_img_set_raw_data(gt_obj_st * img, gt_color_img_raw_st * raw);
 
 #if GT_USE_FILE_HEADER
 /**
@@ -80,6 +77,8 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_img_raw_st * raw);
  *           package_idx 0[defalut]: The index of element within item, as the first element
  */
 void gt_img_set_by_file_header(gt_obj_st * img, gt_file_header_param_st * fh);
+
+gt_file_header_param_st* gt_img_get_file_header_param(gt_obj_st * img);
 #endif
 
 #if GT_USE_DIRECT_ADDR
@@ -90,6 +89,16 @@ void gt_img_set_by_file_header(gt_obj_st * img, gt_file_header_param_st * fh);
  * @param addr Direct address of the image
  */
 void gt_img_set_by_direct_addr(gt_obj_st * img, gt_addr_t addr);
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+/**
+ * @brief Display the image by custom size direct address
+ *
+ * @param img
+ * @param dac Custom size direct address of the image
+ */
+void gt_img_set_by_custom_size_addr(gt_obj_st * img, gt_direct_addr_custom_size_st * dac);
 #endif
 
 /**

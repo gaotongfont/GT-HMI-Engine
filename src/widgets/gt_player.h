@@ -26,6 +26,10 @@ extern "C" {
 #include "../hal/gt_hal_file_header.h"
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+#include "../hal/gt_hal_fs.h"
+#endif
+
 /* define ---------------------------------------------------------------*/
 
 #ifndef GT_PLAYER_REPEAT_FINISH_CALLBACK
@@ -173,6 +177,26 @@ gt_size_t gt_player_add_item_by_direct_addr(gt_obj_st * obj, gt_addr_t addr);
 gt_size_t gt_player_add_item_list_by_direct_addr(gt_obj_st * obj, gt_addr_t const * const addr_array, uint16_t count);
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+/**
+ * @brief Add the player project content by custom size direct address
+ *
+ * @param obj
+ * @param dac
+ * @return gt_size_t
+ */
+gt_size_t gt_player_add_item_by_custom_size_addr(gt_obj_st * obj, gt_direct_addr_custom_size_st * dac);
+
+/**
+ * @brief Add the player project content by custom size direct address list
+ *
+ * @param obj
+ * @param addr_array  The array of gt_direct_addr_custom_size_st
+ * @param count The count of gt_direct_addr_custom_size_st[]
+ * @return gt_size_t
+ */
+gt_size_t gt_player_add_item_list_by_custom_size_addr(gt_obj_st * obj, gt_direct_addr_custom_size_st * addr_array, uint16_t count);
+#endif
 /**
  * @brief Set player item index
  *
@@ -238,6 +262,16 @@ bool gt_player_dir_is_forward(gt_obj_st * obj);
  */
 void gt_player_set_real_time_update(gt_obj_st * obj, bool is_real_time_update);
 bool gt_player_is_real_time_update(gt_obj_st * obj);
+
+
+#if GT_USE_SERIAL
+void gt_player_set_index_offset(gt_obj_st * obj, gt_size_t offset);
+
+#if GT_USE_FILE_HEADER
+void gt_player_set_stop_item_by_file_header(gt_obj_st * obj, gt_file_header_param_st* fh);
+#endif // GT_USE_FILE_HEADER
+
+#endif // GT_USE_SERIAL
 
 #endif /** GT_CFG_ENABLE_PLAYER */
 #ifdef __cplusplus

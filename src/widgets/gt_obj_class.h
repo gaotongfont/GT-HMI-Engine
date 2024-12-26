@@ -23,21 +23,21 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 /** Control drawing logic */
-typedef void (* _gt_init_cb)(struct gt_obj_s *);
+typedef void (* _gt_init_cb_t)(struct gt_obj_s *);
 
 /** Can only be used to free additional memory requested by the control when it is created */
-typedef void (* _gt_deinit_cb)(struct gt_obj_s *);
+typedef void (* _gt_deinit_cb_t)(struct gt_obj_s *);
 
 /** Controls all behavior events */
-typedef void (* _gt_event_cb)(struct gt_obj_s *, struct _gt_event_s *);
+typedef void (* _gt_event_cb_t)(struct gt_obj_s *, struct _gt_event_s *);
 
 /**
  * @brief interface for other widgets
  */
 typedef struct _gt_obj_class_s {
-    _gt_init_cb     _init_cb;
-    _gt_deinit_cb   _deinit_cb;
-    _gt_event_cb    _event_cb;
+    _gt_init_cb_t     _init_cb;
+    _gt_deinit_cb_t   _deinit_cb;
+    _gt_event_cb_t    _event_cb;
     /** Control type @ref gt_obj_type_et */
     gt_obj_type_et type;
     /** Control styles contain the memory size of the base object,

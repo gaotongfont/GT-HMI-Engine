@@ -45,7 +45,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static const gt_obj_class_st gt_radio_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_radio_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
@@ -146,7 +146,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     draw_text(radio->draw_ctx, &font_attr, &area_font);
 
     // focus
-    draw_focus(radio , 0);
+    draw_focus(radio , radio->radius);
 }
 
 /**
@@ -291,6 +291,25 @@ free_lb:
     va_end(args2);
 }
 
+void gt_radio_set_text_by_len(gt_obj_st * radio, const char * text, uint16_t len)
+{
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_radio_st * style = (_gt_radio_st * )radio;
+    if (NULL == style->text) {
+        style->text = gt_mem_malloc(len + 1);
+    } else if (len != strlen(style->text)) {
+        style->text = gt_mem_realloc(style->text, len + 1);
+    }
+    if (NULL == style->text) {
+        return;
+    }
+    gt_memcpy(style->text, text, len);
+    style->text[len + 1] = '\0';
+    gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 void gt_radio_set_font_color(gt_obj_st * radio, gt_color_t color)
 {
     if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
@@ -395,6 +414,15 @@ void gt_radio_set_font_encoding(gt_obj_st * radio, gt_encoding_et encoding)
     }
     _gt_radio_st * style = (_gt_radio_st * )radio;
     style->font_info.encoding = encoding;
+}
+
+void gt_radio_set_font_style(gt_obj_st * radio, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_radio_st * style = (_gt_radio_st * )radio;
+    style->font_info.style.all = font_style;
 }
 
 void gt_radio_set_space(gt_obj_st * radio, uint8_t space_x, uint8_t space_y)

@@ -45,7 +45,7 @@
  * @param header
  * @return gt_res_t
  */
-static gt_res_t _gt_img_decoder_built_in_info(struct _gt_img_decoder_s * decoder, const void * src, _gt_img_info_st * header)
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_info(struct _gt_img_decoder_s * decoder, const void * src, _gt_img_info_st * header)
 {
     GT_UNUSED(decoder);
     gt_fs_fp_st * fp = gt_fs_open(src, GT_FS_MODE_RD);
@@ -61,7 +61,7 @@ static gt_res_t _gt_img_decoder_built_in_info(struct _gt_img_decoder_s * decoder
     return GT_RES_OK;
 }
 
-static gt_res_t _gt_img_decoder_built_in_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc)
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc)
 {
     GT_UNUSED(decoder);
     gt_fs_fp_st * fp = gt_fs_open(dsc->src, GT_FS_MODE_RD);
@@ -76,7 +76,7 @@ static gt_res_t _gt_img_decoder_built_in_open(struct _gt_img_decoder_s * decoder
     return GT_RES_OK;
 }
 
-static gt_res_t _gt_img_decoder_built_in_read_line(struct _gt_img_dsc_s * dsc,
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_read_line(struct _gt_img_dsc_s * dsc,
                                                 gt_size_t x, gt_size_t y, gt_size_t len, uint8_t * buffer)
 {
     gt_fs_fp_st * fp = dsc->fp;
@@ -98,7 +98,7 @@ static gt_res_t _gt_img_decoder_built_in_read_line(struct _gt_img_dsc_s * dsc,
     return GT_RES_OK;
 }
 
-static gt_res_t _gt_img_decoder_built_in_close(struct _gt_img_dsc_s * dsc)
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_close(struct _gt_img_dsc_s * dsc)
 {
     gt_fs_close(dsc->fp);
 
@@ -106,7 +106,7 @@ static gt_res_t _gt_img_decoder_built_in_close(struct _gt_img_dsc_s * dsc)
 }
 
 #if GT_USE_FILE_HEADER
-static gt_res_t _gt_img_decoder_built_in_fh_info(struct _gt_img_decoder_s * decoder, gt_file_header_param_st const * const param, _gt_img_info_st * header) {
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_fh_info(struct _gt_img_decoder_s * decoder, gt_file_header_param_st const * const param, _gt_img_info_st * header) {
     GT_UNUSED(decoder);
     gt_fs_fp_st * fp = gt_fs_fh_open(param, GT_FS_MODE_RD);
     if (!fp) {
@@ -135,7 +135,7 @@ gt_res_t _gt_img_decoder_build_in_fh_open(struct _gt_img_decoder_s * decoder, st
 #endif
 
 #if GT_USE_DIRECT_ADDR
-static gt_res_t _gt_img_decoder_built_in_direct_addr_info(struct _gt_img_decoder_s * decoder, gt_addr_t addr, _gt_img_info_st * header) {
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_direct_addr_info(struct _gt_img_decoder_s * decoder, gt_addr_t addr, _gt_img_info_st * header) {
     GT_UNUSED(decoder);
     gt_fs_fp_st * fp = gt_fs_direct_addr_open(addr, GT_FS_MODE_RD);
     if (!fp) {
@@ -352,7 +352,7 @@ gt_res_t gt_img_decoder_direct_addr_get_info(gt_addr_t addr, _gt_img_info_st * h
 {
     _gt_img_decoder_st * ptr = NULL;
     if (gt_hal_is_invalid_addr(addr)) {
-        return GT_RES_FAIL;
+        return GT_RES_INV;
     }
     _gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
         if (NULL == ptr->direct_addr_info_cb) {
@@ -373,7 +373,7 @@ gt_res_t gt_img_decoder_direct_addr_open(_gt_img_dsc_st * dsc, gt_addr_t addr)
 {
     _gt_img_decoder_st * ptr = NULL;
     if (gt_hal_is_invalid_addr(addr)) {
-        return GT_RES_FAIL;
+        return GT_RES_INV;
     }
     dsc->decoder = NULL;    /* reset image dsc struct */
 
@@ -408,6 +408,52 @@ void gt_img_decoder_set_direct_addr_info_cb(_gt_img_decoder_st * decoder, gt_img
 void gt_img_decoder_set_direct_addr_open_cb(_gt_img_decoder_st * decoder, gt_img_decoder_direct_addr_open_t direct_addr_open_cb)
 {
     decoder->direct_addr_open_cb = direct_addr_open_cb;
+}
+#endif
+
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+gt_res_t gt_img_decoder_custom_size_addr_get_info(gt_direct_addr_custom_size_st * dac, _gt_img_info_st * header)
+{
+    if (gt_hal_is_invalid_custom_size_addr(dac)) {
+        return GT_RES_INV;
+    }
+    gt_fs_fp_st * fp = gt_fs_custom_size_addr_open(dac, GT_FS_MODE_RD);
+    if (!fp) {
+        return GT_RES_INV;
+    }
+    header->w = fp->msg.pic.w;
+    header->h = fp->msg.pic.h;
+
+    gt_fs_close(fp);
+
+    return GT_RES_OK;
+}
+
+gt_res_t gt_img_decoder_custom_size_addr_open(_gt_img_dsc_st * dsc, gt_direct_addr_custom_size_st * dac)
+{
+    if (gt_hal_is_invalid_custom_size_addr(dac)) {
+        return GT_RES_INV;
+    }
+    gt_fs_fp_st * fp = gt_fs_custom_size_addr_open(dac, GT_FS_MODE_RD);
+    if (!fp) {
+        return GT_RES_INV;
+    }
+    dsc->fp = fp;
+    dsc->header.w = fp->msg.pic.w;
+    dsc->header.h = fp->msg.pic.h;
+
+    return GT_RES_OK;
+}
+
+gt_res_t gt_img_decoder_custom_size_addr_close(_gt_img_dsc_st * dsc)
+{
+    GT_CHECK_BACK_VAL(dsc, GT_RES_INV);
+    if (dsc->fp) {
+        gt_fs_close(dsc->fp);
+        dsc->fp = NULL;
+    }
+    return GT_RES_OK;
 }
 #endif
 

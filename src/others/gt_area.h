@@ -81,6 +81,18 @@ void gt_area_join(gt_area_st * res, const gt_area_st * const src, const gt_area_
 
 bool gt_area_check_legal(gt_area_st * area);
 
+/**
+ * @brief Get the rounded area object
+ *
+ * @param angle
+ * @param radius
+ * @param thickness
+ * @param res_area
+ */
+void gt_rounded_area_get(int16_t angle, uint16_t radius, uint8_t thickness, gt_area_st * res_area);
+bool gt_area_intersect_get(gt_area_st * res_p, const gt_area_st * a1_p, const gt_area_st * a2_p);
+
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

@@ -42,20 +42,15 @@ static _gt_src_dev_st * _self = NULL;
 
 /* static functions -----------------------------------------------------*/
 
-static inline _gt_src_dev_st * _get_dev(void)
-{
+static inline _gt_src_dev_st * _get_dev(void) {
     return _self;
 }
 
-static inline gt_fs_drv_st * _get_drv(void)
-{
+static inline gt_fs_drv_st * _get_drv(void) {
     return _self ? &_self->drv : NULL;
 }
 
-/* -------------------------------------------- */
-
-static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode)
-{
+static GT_ATTRIBUTE_RAM_TEXT void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode) {
     uint16_t idx = 0;
     bool is_find = false;
     _gt_src_dev_st * dev = _get_dev();
@@ -99,14 +94,13 @@ static void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mod
     return (void * )fp;
 }
 
-static void _close_cb(struct _gt_fs_drv_s * drv, void * fp)
-{
+static GT_ATTRIBUTE_RAM_TEXT void _close_cb(struct _gt_fs_drv_s * drv, void * fp) {
     drv->seek_cb(drv, fp, 0, GT_FS_SEEK_SET);
     gt_mem_free(fp);
 }
 
-static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len)
-{
+static GT_ATTRIBUTE_RAM_TEXT gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data,
+    uint32_t len, uint32_t * ret_len) {
     gt_fs_res_et ret = GT_FS_RES_OK;
     _gt_src_dev_st * dev = _get_dev();
     gt_fs_fp_st * file_p = (gt_fs_fp_st * )fp;
@@ -119,7 +113,8 @@ static gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * dat
     return ret;
 }
 
-static gt_fs_res_et _seek_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos, gt_fs_whence_et whence)
+static GT_ATTRIBUTE_RAM_TEXT gt_fs_res_et _seek_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos,
+    gt_fs_whence_et whence)
 {
     gt_fs_fp_st * file_p = (gt_fs_fp_st * )fp;
 
@@ -147,8 +142,7 @@ static gt_fs_res_et _seek_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos,
     return GT_FS_RES_OK;
 }
 
-static gt_fs_res_et _tell_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t * pos)
-{
+static GT_ATTRIBUTE_RAM_TEXT gt_fs_res_et _tell_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t * pos) {
     gt_fs_fp_st * file_p = (gt_fs_fp_st * )fp;
 
     *pos = file_p->pos - file_p->start;
@@ -157,7 +151,7 @@ static gt_fs_res_et _tell_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t * po
 }
 
 #if GT_USE_FS_NAME_BY_INDEX
-static char const * const _get_name_by_cb(uint16_t index_of_list) {
+static GT_ATTRIBUTE_RAM_TEXT char const * const _get_name_by_cb(uint16_t index_of_list) {
     uint16_t idx = 0;
     char * ret_name = NULL;
     _gt_src_dev_st * dev = _get_dev();
@@ -173,8 +167,7 @@ static char const * const _get_name_by_cb(uint16_t index_of_list) {
 }
 #endif
 
-static void _gt_src_drv_register(gt_fs_drv_st * drv)
-{
+static GT_ATTRIBUTE_RAM_TEXT void _gt_src_drv_register(gt_fs_drv_st * drv) {
     drv->letter       = GT_FS_LABEL_ARRAY;
 
 #if GT_USE_FILE_HEADER
@@ -182,6 +175,9 @@ static void _gt_src_drv_register(gt_fs_drv_st * drv)
 #endif
 #if GT_USE_DIRECT_ADDR
     drv ->direct_addr_open_cb = NULL;
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    drv->custom_size_addr_open_cb = NULL;
 #endif
     drv->open_cb      = _open_cb;
     drv->close_cb     = _close_cb;

@@ -73,6 +73,8 @@ typedef enum {
 /* global functions / API interface -------------------------------------*/
 gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area);
 void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y);
+void gt_obj_set_pos_anim(gt_obj_st * obj, gt_size_t x, gt_size_t y);
+void gt_obj_set_pos_step(gt_obj_st * obj, gt_size_t step_x, gt_size_t step_y);
 
 #if GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
 /**
@@ -96,6 +98,7 @@ void gt_obj_set_touch_expand_area(gt_obj_st * obj, gt_size_t hor, gt_size_t ver)
  * @param diff_y offset
  */
 void gt_obj_set_pos_relative(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff_x, gt_size_t diff_y);
+void gt_obj_set_pos_always_full_display(gt_obj_st * obj, gt_size_t x, gt_size_t y);
 /**
  * @brief
  *
@@ -106,12 +109,28 @@ void gt_obj_set_pos_relative(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff
 void _gt_obj_move_child_by(gt_obj_st * obj, gt_size_t diff_x, gt_size_t diff_y);
 
 void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h);
+void gt_obj_set_size_anim(gt_obj_st * obj, uint16_t w, uint16_t h);
+void gt_obj_set_size_step(gt_obj_st * obj, gt_size_t step_w, gt_size_t step_h);
+
 void gt_obj_set_x(gt_obj_st * obj, gt_size_t x);
+void gt_obj_set_x_anim(gt_obj_st * obj, gt_size_t x);
+void gt_obj_set_x_step(gt_obj_st * obj, gt_size_t step_x);
+
 void gt_obj_set_y(gt_obj_st * obj, gt_size_t y);
+void gt_obj_set_y_anim(gt_obj_st * obj, gt_size_t y);
+void gt_obj_set_y_step(gt_obj_st * obj, gt_size_t step_y);
+
 void gt_obj_set_w(gt_obj_st * obj, uint16_t w);
+void gt_obj_set_w_anim(gt_obj_st * obj, uint16_t w);
+void gt_obj_set_w_step(gt_obj_st * obj, gt_size_t step_w);
+
 void gt_obj_set_h(gt_obj_st * obj, uint16_t h);
+void gt_obj_set_h_anim(gt_obj_st * obj, uint16_t h);
+void gt_obj_set_h_step(gt_obj_st * obj, gt_size_t step_h);
 
 void gt_obj_set_opa(gt_obj_st * obj, gt_opa_t opa);
+void gt_obj_set_opa_anim(gt_obj_st * obj, gt_opa_t opa);
+void gt_obj_set_opa_step(gt_obj_st * obj, gt_size_t step_opa);
 
 gt_size_t gt_obj_get_x(gt_obj_st * obj);
 gt_size_t gt_obj_get_y(gt_obj_st * obj);
@@ -138,6 +157,14 @@ bool gt_obj_is_focus(gt_obj_st * obj);
 void gt_obj_set_focus_disabled(gt_obj_st * obj, gt_disabled_et is_disabled);
 bool gt_obj_is_focus_disabled(gt_obj_st * obj);
 
+/**
+ * @brief focus box skip current object to childs
+ *
+ * @param obj
+ * @param is_skip true: skip, false: not skip
+ */
+void gt_obj_set_focus_skip(gt_obj_st * obj, bool is_skip);
+bool gt_obj_is_focus_skip(gt_obj_st * obj);
 /**
  * @brief Set the obj's fixed state, The scrolling property depends on the parent class
  *
@@ -285,6 +312,8 @@ void gt_obj_set_reduce(gt_obj_st * obj, uint8_t reduce);
 uint8_t gt_obj_get_reduce(gt_obj_st * obj);
 
 void gt_obj_set_radius(gt_obj_st * obj, gt_radius_t radius);
+void gt_obj_set_radius_anim(gt_obj_st * obj, gt_radius_t radius);
+void  gt_obj_set_radius_step(gt_obj_st * obj, gt_radius_t step_radius);
 
 gt_radius_t gt_obj_get_radius(gt_obj_st * obj);
 

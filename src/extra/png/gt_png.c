@@ -91,7 +91,7 @@ static void _gt_png_color_convert_depth(uint8_t * image, uint8_t * alpha, uint32
     }
 #elif GT_COLOR_DEPTH == 1
     gt_color32_t * img_argb = (gt_color32_t * )image;
-    uint8_t color;
+    gt_color_t color;
     uint32_t i;
     for (i = 0; i < size; i++) {
 #if _COLOR_BYTE_REVERSE
@@ -100,7 +100,7 @@ static void _gt_png_color_convert_depth(uint8_t * image, uint8_t * alpha, uint32
         color = GT_COLOR_GET_R32(img_argb[i]) | GT_COLOR_GET_G32(img_argb[i]) | GT_COLOR_GET_B32(img_argb[i]);
 #endif
         image[(i << 1) + 1] = GT_COLOR_GET_A32(img_argb[i]);
-        image[i << 1]       = color;
+        image[i << 1]       = color.full;
     }
 #endif
 }

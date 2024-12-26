@@ -26,6 +26,10 @@ extern "C" {
 #include "../hal/gt_hal_file_header.h"
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+#include "../hal/gt_hal_fs.h"
+#endif
+
 /* define ---------------------------------------------------------------*/
 
 
@@ -83,6 +87,20 @@ void gt_wordart_add_item_by_file_header(gt_obj_st * wordart, uint32_t encode, gt
 void gt_wordart_add_item_by_direct_addr(gt_obj_st * wordart, uint32_t encode, gt_addr_t addr);
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+/**
+ * @brief add item by custom size direct address
+ *
+ * @param wordart
+ * @param encode
+ * @param dac custom size direct address
+ */
+void gt_wordart_add_item_by_custom_size_addr(gt_obj_st * wordart, uint32_t encode, gt_direct_addr_custom_size_st * dac);
+#endif
+
+void gt_wordart_remove_all_items(gt_obj_st * wordart);
+uint32_t gt_wordart_get_items_count(gt_obj_st * wordart);
+
 /**
  * @brief Set the text, which display by wordart image character
  *
@@ -91,10 +109,15 @@ void gt_wordart_add_item_by_direct_addr(gt_obj_st * wordart, uint32_t encode, gt
  */
 void gt_wordart_set_text(gt_obj_st * wordart, const char * fmt, ...);
 
+void gt_wordart_set_text_by_len(gt_obj_st * wordart, const char * text, uint16_t len);
+
 char * gt_wordart_get_text(gt_obj_st * wordart);
 
 void gt_wordart_set_space(gt_obj_st * wordart, uint8_t space_x, uint8_t space_y);
 
+void gt_wordart_set_number(gt_obj_st * wordart, double number,
+                            uint8_t integer_len, uint8_t decimal_len,
+                            bool is_float);
 #endif /* GT_CFG_ENABLE_WORDART */
 
 #ifdef __cplusplus

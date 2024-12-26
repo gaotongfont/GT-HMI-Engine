@@ -35,7 +35,7 @@ typedef struct _gt_fs_dsc_s {
 /**
  * @brief default drive label
  */
-static const _gt_vf_type_label_st _drive_label[] = {
+static GT_ATTRIBUTE_RAM_DATA const _gt_vf_type_label_st _drive_label[] = {
 #if GT_USE_MODE_FLASH
     { GT_FS_TYPE_FLASH, GT_FS_LABEL_FLASH },
 #endif
@@ -60,7 +60,7 @@ static const _gt_vf_type_label_st _drive_label[] = {
  * @param index
  * @return gt_fs_type_et
  */
-static inline gt_fs_type_et _gt_fs_get_type(gt_size_t index) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_fs_type_et _gt_fs_get_type(gt_size_t index) {
     return _drive_label[index].type;
 }
 
@@ -70,11 +70,11 @@ static inline gt_fs_type_et _gt_fs_get_type(gt_size_t index) {
  * @param index
  * @return gt_fs_label_et
  */
-static inline gt_fs_label_et _gt_fs_get_label(gt_size_t index) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_fs_label_et _gt_fs_get_label(gt_size_t index) {
     return _drive_label[index].label;
 }
 
-static inline gt_fs_drv_st * _get_default_drv_by(gt_fs_type_et type) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_fs_drv_st * _get_default_drv_by(gt_fs_type_et type) {
 #if GT_USE_MODE_FLASH
     if (GT_FS_TYPE_FLASH == type) {
         return gt_vf_get_drv();
@@ -102,7 +102,7 @@ static inline gt_fs_drv_st * _get_default_drv_by(gt_fs_type_et type) {
  * @param path full path
  * @return gt_fs_drv_st* the driver of file system
  */
-static inline gt_fs_drv_st * _get_default_drv(char const * path) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_fs_drv_st * _get_default_drv(char const * path) {
     gt_fs_type_et type = gt_fs_get_src_type(path);
 
     return _get_default_drv_by(type);
@@ -174,6 +174,19 @@ gt_fs_fp_st * gt_fs_direct_addr_open(gt_addr_t addr, gt_fs_mode_et mode)
     return fp;
 }
 #endif
+
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+gt_fs_fp_st * gt_fs_custom_size_addr_open(gt_direct_addr_custom_size_st * dac, gt_fs_mode_et mode)
+{
+    gt_fs_drv_st * drv = gt_vf_get_drv();
+    if (!drv || !drv->custom_size_addr_open_cb) {
+        return NULL;
+    }
+    gt_fs_fp_st * fp = drv->custom_size_addr_open_cb(drv, dac, mode);
+}
+#endif
+
 
 gt_fs_res_et gt_fs_read(gt_fs_fp_st * fp, uint8_t * out, uint32_t size, uint32_t * ret_len)
 {
@@ -289,6 +302,27 @@ gt_fs_res_et gt_fs_direct_addr_read_img_wh(gt_addr_t addr, uint16_t * w, uint16_
     return GT_FS_RES_OK;
 }
 #endif
+
+uint32_t gt_fs_read_direct_physical(gt_addr_t addr, uint32_t len, uint8_t * data)
+{
+    gt_fs_drv_st * drv = gt_vf_get_drv();
+    if (!drv) {
+        return 0;
+    }
+    uint8_t data_write[5] = {GT_HAL_FLASH_READ_CMD, (uint8_t)(addr>>16), (uint8_t)(addr>>8), (uint8_t)addr };
+    uint8_t len_write = 4;
+
+    if (addr > 0xffffff) {
+        data_write[1] = (uint8_t)(addr >> 24);
+        data_write[2] = (uint8_t)(addr >> 16);
+        data_write[3] = (uint8_t)(addr >> 8);
+        data_write[4] = (uint8_t)addr;
+        ++len_write;
+    }
+
+    /* start read */
+    return drv->rw_cb(data_write, len_write, data, len);
+}
 
 void gt_fs_close(gt_fs_fp_st * fp)
 {

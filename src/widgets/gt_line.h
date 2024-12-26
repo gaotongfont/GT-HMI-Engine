@@ -42,8 +42,26 @@ extern "C" {
 gt_obj_st * gt_line_create(gt_obj_st * parent);
 
 void gt_line_set_color(gt_obj_st * line, gt_color_t color);
+
 void gt_line_set_start_point(gt_obj_st * line, uint16_t xs, uint16_t ys);
 void gt_line_set_end_point(gt_obj_st * line, uint16_t xe, uint16_t ye);
+
+/**
+ * @brief Set line length, set position by gt_obj_set_pos()
+ *
+ * @param line
+ * @param length the length of the horizontal line
+ */
+void gt_line_set_hor_line(gt_obj_st * line, uint16_t length);
+
+/**
+ * @brief Set line length, set position by gt_obj_set_pos()
+ *
+ * @param line
+ * @param length the length of the vertical line
+ */
+void gt_line_set_ver_line(gt_obj_st * line, uint16_t length);
+
 void gt_line_set_line_width(gt_obj_st * line, uint16_t line_width);
 
 

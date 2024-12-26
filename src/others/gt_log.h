@@ -85,6 +85,7 @@ extern "C" {
 #define GT_LOG_TAG_EXTRA        "EXTRA"
 #define GT_LOG_TAG_GUI          "GUI"
 #define GT_LOG_TAG_ASSERT       "ASSERT"
+#define GT_LOG_TAG_SERIAL       "SERIAL"
 
 #define GT_LOG_TAG_TEST         "TEST"
 
@@ -201,7 +202,7 @@ extern "C" {
 
     #define GT_LOG_COLOR_ARR(_arr, _start, _len) do { \
             unsigned int i = _start; \
-            printf("\n%s:\n", #_arr); \
+            printf("[HMI][%s]:\n", #_arr); \
             while (i < _len + _start) { \
                 printf("[%d]=%04x ", i, _arr[i].full); \
                 ++i; \
@@ -211,7 +212,7 @@ extern "C" {
 
     #define GT_LOG_ARR(_arr, _start, _len) do { \
             unsigned int i = _start; \
-            printf("\n%s:\n", #_arr); \
+            printf("[HMI][%s]:\n", #_arr); \
             while (i<_len + _start) { \
                 printf("[%d]=%02x ", i, _arr[i]); \
                 ++i; \

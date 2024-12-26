@@ -35,11 +35,11 @@
 
 
 /* static functions -----------------------------------------------------*/
-static gt_scr_mapping_table_st * _get_scr_mapping_table(_gt_gc_scr_st * scr_info) {
+static GT_ATTRIBUTE_RAM_TEXT gt_scr_mapping_table_st * _get_scr_mapping_table(_gt_gc_scr_st * scr_info) {
     return &scr_info->mapping_table;
 }
 
-static bool _equal_current_id_cb(void * item, void * target) {
+static GT_ATTRIBUTE_RAM_TEXT bool _equal_current_id_cb(void * item, void * target) {
     gt_scr_stack_item_st * it = (gt_scr_stack_item_st * )item;
     gt_scr_stack_item_st * tar_stack = (gt_scr_stack_item_st * )target;
     return it->current_scr_id == tar_stack->current_scr_id;
@@ -103,6 +103,15 @@ gt_scr_id_t gt_scr_stack_get_home_scr_id(void)
         return -1;
     }
     return scr_info->home_scr.id;
+}
+
+gt_scr_id_t gt_scr_stack_get_current_id(void)
+{
+    gt_scr_stack_item_st * item = gt_scr_stack_peek();
+    if (NULL == item) {
+        return -1;
+    }
+    return item->current_scr_id;
 }
 
 bool gt_scr_stack_is_home_scr_alive(void)

@@ -91,6 +91,14 @@ void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mo
 void gt_roller_set_display_item_count(gt_obj_st * obj, uint8_t count);
 
 /**
+ * @brief set select item background color
+ *
+ * @param obj
+ * @param color default color value: 0x00a8ff
+ */
+void gt_roller_set_select_bgcolor(gt_obj_st * obj, gt_color_t color);
+
+/**
  * @brief Set the selected item of the roller immediately
  *
  * @param obj Roller object
@@ -108,6 +116,8 @@ gt_res_t gt_roller_set_selected(gt_obj_st * obj, gt_size_t index);
  */
 gt_res_t gt_roller_set_selected_anim(gt_obj_st * obj, gt_size_t index);
 
+gt_res_t gt_roller_set_selected_text(gt_obj_st * obj, const char * select);
+
 /**
  * @brief Get the index of the selected item [begin with 0]
  *
@@ -121,9 +131,10 @@ gt_size_t gt_roller_get_selected(gt_obj_st * obj);
  *
  * @param obj Roller object
  * @param result The text of the selected item
+ * @param result_buffer_len The byte length of the result buffer
  * @return true Get success, false Get failed
  */
-bool gt_roller_get_selected_text(gt_obj_st * obj, char * result);
+bool gt_roller_get_selected_text(gt_obj_st * obj, char * result, uint16_t result_buffer_len);
 
 /**
  * @brief Go previous item
@@ -172,7 +183,20 @@ void gt_roller_set_font_cjk(gt_obj_st* obj, gt_font_cjk_et cjk);
 #endif
 void gt_roller_set_font_thick_en(gt_obj_st * obj, uint8_t thick);
 void gt_roller_set_font_thick_cn(gt_obj_st * obj, uint8_t thick);
+void gt_roller_set_font_style(gt_obj_st * obj, gt_font_style_et font_style);
 
+/**
+ * @brief Set the options content of the roller, In the middle,
+ * @param obj   Roller object
+ * @param mode  @gt_roller_mode_em
+ * @param fmt   NULL or "%f" ...
+ * @param min   Minimum value
+ * @param max   Maximum value
+ * @param step  Step value
+ *
+ */
+void gt_roller_set_options_numb(gt_obj_st* obj, gt_roller_mode_em mode, \
+                                const char* fmt,double min, double max, double step);
 #endif  /** GT_CFG_ENABLE_ROLLER */
 
 #ifdef __cplusplus

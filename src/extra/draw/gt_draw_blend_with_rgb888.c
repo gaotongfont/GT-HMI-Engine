@@ -10,6 +10,7 @@
 /* include --------------------------------------------------------------*/
 #include "./gt_draw_blend_with_rgb888.h"
 #include "stddef.h"
+#include "../../core/gt_mem.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -336,6 +337,9 @@ static inline void _blend_rgb888_with_no_opacity(_gt_draw_blend_fill_cache_st co
             }
             return;
         }
+    #if 0
+        gt_memcpy(dst_p, src_p, w * h * sizeof(gt_color_t));
+    #else
         for (y = 0; y < h; ++y) {
             x = 0;
 #if GT_DRAW_BLEND_ALIGN
@@ -357,6 +361,7 @@ static inline void _blend_rgb888_with_no_opacity(_gt_draw_blend_fill_cache_st co
             dst_p += step_dst_line;
             src_p += step_src_line;
         }
+    #endif
         return;
     }
 

@@ -71,13 +71,14 @@ extern "C" {
 #define GT_TASK_PERIOD_TIME_EVENT   10
 #define GT_TASK_PERIOD_TIME_ANIM    10
 #define GT_TASK_PERIOD_TIME_REFR    10
+#define GT_TASK_PERIOD_TIME_SERIAL  20
 
 /** Free object memory after N ms timer */
 #define GT_TASK_PERIOD_TIME_DESTROY 10
 
 /* user: virt file device setting */
 #ifndef GT_VF_FLASH_SIZE
-    //flash size 16*1024*1024   16M
+    //HMI-chip or flash size 16*1024*1024   16M
     #define GT_VF_FLASH_SIZE        0x1000000
 #endif
 #ifndef GT_VF_FLASH_START
@@ -115,6 +116,13 @@ extern "C" {
     #define GT_ATTRIBUTE_LARGE_RAM_ARRAY
 #endif
 
+#ifndef GT_ATTRIBUTE_RAM_DATA
+    #define GT_ATTRIBUTE_RAM_DATA   GT_ATTRIBUTE_LARGE_RAM_ARRAY
+#endif
+
+#ifndef GT_ATTRIBUTE_RAM_TEXT
+    #define GT_ATTRIBUTE_RAM_TEXT
+#endif
 
 /* ui default style */
 #define GT_STYLE_UI_SIMPLE     0
@@ -161,6 +169,15 @@ extern "C" {
     #define GT_USE_EXTRA_FULL_IMG_BUFFER    0
 #endif
 
+#ifndef GT_USE_IMG_CACHE
+    /**
+     * @brief Enabled use a separate image cache to store meta data,
+     *      @ref gt_img_cache.h, get raw object to set widget image data.
+     *      [default: 0]
+     */
+    #define GT_USE_IMG_CACHE            0
+#endif
+
 #ifndef GT_USE_WIDGET_LAYOUT
     /**
      * @brief Set the widget layout function:
@@ -190,13 +207,13 @@ extern "C" {
 #define GT_CFG_DEFAULT_FONT_FAMILY_NUMB     GT_CFG_DEFAULT_FONT_FAMILY
 #endif
 
-#ifndef GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+#ifndef GT_FONT_USE_ASCII_WIDTH_CACHE
     /**
      * @brief 1: Cache the width of the ASCII font, 0: Do not cache.
      *      Almost 94 characters, (94 * _FONT_ASCII_WIDTH_CACHE_BYTE_SIZE) bytes
      *      [default: 01]
      */
-    #define GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE     01
+    #define GT_FONT_USE_ASCII_WIDTH_CACHE     01
 #endif
 
 #ifndef GT_USE_MODE_SRC
@@ -227,6 +244,14 @@ extern "C" {
          *        GT_VF_FLASH_START -> GT_VF_FLASH_START + GT_VF_FLASH_SIZE
          */
         #define GT_USE_DIRECT_ADDR      0
+    #endif
+    #ifndef GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+        /**
+         * @brief Enabled direct address custom size function, such as:
+         *      { addr, w, h, is_alpha }
+         * [Default: 0]
+         */
+        #define GT_USE_DIRECT_ADDR_CUSTOM_SIZE   0
     #endif
 #endif
 
@@ -265,6 +290,137 @@ extern "C" {
 /** display idle time */
 #define GT_USE_DISPLAY_PREF_IDLE        0
 
+#ifndef GT_USE_SERIAL
+    /**
+     * @brief Enabled serial communications function @ref gt_serial.h
+     *      [default: 0]
+     */
+    #define GT_USE_SERIAL       0
+#endif
+
+#if GT_USE_SERIAL
+    #ifndef GT_SERIAL_USE_TIMER_RECV_UNPACK
+        /**
+         * @brief Use client recv timer to unpack serial data, timer period
+         *      @ref GT_TASK_PERIOD_TIME_SERIAL, callback function @ref
+         *      _serial_client_recv_timer_handler_cb().
+         *      [default: 1]
+         */
+        #define GT_SERIAL_USE_TIMER_RECV_UNPACK 1
+    #endif
+
+    #ifndef GT_SERIAL_MASTER_CACHE_SIZE
+        /**
+         * @brief The size of the send cache cycle buffer
+         */
+        #define GT_SERIAL_MASTER_CACHE_SIZE     512
+    #endif
+
+    #ifndef GT_SERIAL_CLIENT_CACHE_SIZE
+        /**
+         * @brief The size of the recv cache cycle buffer
+         */
+        #define GT_SERIAL_CLIENT_CACHE_SIZE     512
+    #endif
+
+    #ifndef GT_SERIAL_PACK_CACHE_SIZE
+        /**
+         * @brief The size of the pack data cache for each time
+         */
+        #define GT_SERIAL_PACK_CACHE_SIZE       512
+    #endif
+
+    #ifndef GT_SERIAL_UNPACK_CACHE_SIZE
+        /**
+         * @brief The size of the unpack data cache for each time
+         */
+        #define GT_SERIAL_UNPACK_CACHE_SIZE     512
+    #endif
+
+    #ifndef GT_SERIAL_HEADER_BYTE
+        /**
+         * @brief The serial communication header byte
+         *      [Warn] Range: 1 ~ 4 bytes
+         */
+        #define GT_SERIAL_HEADER_BYTE           { 0x5A, 0xA5 }
+    #endif
+
+    #ifndef GT_SERIAL_WIDTH_BYTE_LENGTH
+        /**
+         * @brief The serial communication width byte length to store recv valid byte data
+         *      [default: 1]
+         */
+        #define GT_SERIAL_WIDTH_BYTE_LENGTH     1
+    #endif
+
+    #ifndef GT_SERIAL_USE_AUTO_PACK
+        /**
+         * @brief Set auto pack, such as: [0x83, 0x00, 0x10, 0x04],
+         *      result: [0x5a, 0xa5, 0x06, 0x83, 0x00, 0x10, 0x04, 0x25, 0xa3]
+         *      [default: 1]
+         */
+        #define GT_SERIAL_USE_AUTO_PACK         1
+    #endif
+
+    #ifndef GT_SERIAL_GET_ONLY_VALID_DATA
+        /**
+         * @brief Only valid byte data is kept, remove headers, length, and crc16 byte data;
+         *      otherwise, keep all data.
+         *      such as: 0x5a, 0xa5, 0x06, 0x83, 0x00, 0x10, 0x04, 0x25, 0xa3
+         *      result:  0x83, 0x00, 0x10, 0x04
+         *      [default: 1]
+         */
+        #define GT_SERIAL_GET_ONLY_VALID_DATA   1
+    #endif
+
+    #undef GT_QUEUE_USE_PRE_CHECK_VALID
+    /**
+     * @brief [Warn] Force Use pre-check data by callback function, such as: check uart data is valid.
+     *      Must be used with GT_USE_SERIAL.
+     */
+    #define GT_QUEUE_USE_PRE_CHECK_VALID        1
+
+    #undef GT_USE_CRC
+    /**
+     * @brief [Warn] Force enabled CRC function @ref gt_crc.h
+     *      Must be used with GT_USE_SERIAL.
+     */
+    #define GT_USE_CRC          1
+
+    #undef GT_USE_BIN_CONVERT
+    /**
+     * @brief [Warn] Force enabled bin convert function @ref gt_bin_convert.h
+     *      Must be used with GT_USE_SERIAL.
+     */
+    #define GT_USE_BIN_CONVERT  1
+
+    #undef GT_INDEV_SIMULATE_POINTER
+    /**
+     * @brief [Warn] Force enabled simulate pointer input device
+     */
+    #define GT_INDEV_SIMULATE_POINTER       1
+
+    #undef GT_USE_FILE_HEADER
+    /**
+     * @brief [Warn] Force enabled img file header function @ref gt_file_header_st
+     */
+    #define GT_USE_FILE_HEADER              1
+
+    #undef GT_FONT_FAMILY_OLD_ENABLE
+    /**
+     * @brief [Warn] Force use new font family
+     */
+    #define GT_FONT_FAMILY_OLD_ENABLE       0
+#endif  /** GT_USE_SERIAL */
+
+#ifndef GT_USE_BIN_CONVERT
+    /**
+     * @brief Enabled bin convert function @ref gt_bin_convert.h
+     *      [default: 0]
+     */
+    #define GT_USE_BIN_CONVERT  0
+#endif
+
 #ifndef GT_USE_CRC
     /**
      * @brief Enabled CRC function @ref gt_crc.h
@@ -297,6 +453,14 @@ extern "C" {
     #define GT_USE_GIF          01
 #endif
 
+#ifndef GT_USE_MD4C
+    /**
+     * @brief use md4c markdown parser library
+     * [default: 1]
+     */
+    #define GT_USE_MD4C         01
+#endif
+
 /**
  * @brief use examples demo
  */
@@ -310,6 +474,28 @@ extern "C" {
      */
     #define _GT_USE_TEST       0
 #endif
+
+#ifndef GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
+    /**
+     * @brief Use up and down left to control focus
+     *      [default: 0] using next or prev logical
+     */
+    #define GT_USE_UD_LR_TO_CONTROL_FOCUS_EN     0
+#endif
+
+
+/**
+ * @brief Set the focus color
+ *
+ */
+#ifndef GT_FOCUS_COLOR_SELECT
+    #define GT_FOCUS_COLOR_SELECT   0x0078D7
+#endif
+
+#ifndef GT_FOCUS_COLOR_LOCK
+    #define GT_FOCUS_COLOR_LOCK     0xFF0000
+#endif
+
 /* typedef --------------------------------------------------------------*/
 
 

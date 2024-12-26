@@ -34,14 +34,17 @@ typedef enum gt_event_type_e {
     _GT_EVENT_TYPE_INPUT_BEGIN,
 
     GT_EVENT_TYPE_INPUT_RELEASED = _GT_EVENT_TYPE_INPUT_BEGIN,     // release event
-    GT_EVENT_TYPE_INPUT_PRESSING,                                  // pressing
+    GT_EVENT_TYPE_INPUT_PRESSING,                                  // pressing, not scroll
     GT_EVENT_TYPE_INPUT_PRESSED,                                   // pressed
     GT_EVENT_TYPE_INPUT_LONG_PRESSED,
     GT_EVENT_TYPE_INPUT_PRESS_LOST,    // move off and lost focus handler
     GT_EVENT_TYPE_INPUT_SCROLL_START,
     GT_EVENT_TYPE_INPUT_SCROLL,
     GT_EVENT_TYPE_INPUT_SCROLL_END,
-    GT_EVENT_TYPE_INPUT_KEY,
+    GT_EVENT_TYPE_INPUT_KEY,                // keypad pressed event
+    GT_EVENT_TYPE_INPUT_KEY_PRESSING,       // keypad pressing event
+    GT_EVENT_TYPE_INPUT_KEY_RELEASED,       // keypad released event
+    GT_EVENT_TYPE_INPUT_KEY_LONG_PRESSED,   // keypad long pressed event
     GT_EVENT_TYPE_INPUT_FOCUSED,
     GT_EVENT_TYPE_INPUT_SCROLL_UP,
     GT_EVENT_TYPE_INPUT_SCROLL_DOWN,
@@ -100,6 +103,7 @@ typedef struct _gt_event_s {
     void * user_data;
     void * param;               /** gt_event_send() param */
     gt_event_type_et code_type;
+    uint32_t key_val;           /** key value, using by keypad indev mode */
 }gt_event_st;
 
 /**
@@ -137,16 +141,42 @@ bool gt_event_is_enabled(void);
  * @param obj Which object need to add event callback
  * @param event The callback function
  * @param filter The event type enum @ref gt_event_type_e
- * @param user_data User data [default or unused: NULL]
+ * @param user_data memory free by user [default or unused: NULL]
  */
 void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data);
 
 /**
- * @brief
+ * @brief Check if the event callback is already added
+ *
+ * @param obj
+ * @param event
+ * @param filter
+ * @return true The event callback is already added
+ * @return false The event callback is not added
+ */
+bool gt_event_has_the_same_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter);
+
+/**
+ * @brief Get the user event count
+ *
+ * @param obj
+ * @return uint16_t
+ */
+uint16_t gt_obj_get_user_event_count(struct gt_obj_s * obj);
+
+/**
+ * @brief [Safe] Remove the event callback
  *
  * @param obj
  */
 void gt_obj_remove_all_event_cb(struct gt_obj_s * obj);
+
+/**
+ * @brief [Unsafe] Remove all event callback immediately
+ *
+ * @param obj
+ */
+void gt_obj_remove_all_event_cb_immediately(struct gt_obj_s * obj);
 
 /**
  * @brief Send an event code to the object kernel.
@@ -177,6 +207,66 @@ gt_res_t gt_event_send_to_childs(struct gt_obj_s * parent, gt_event_type_et even
  * @return gt_res_t
  */
 gt_res_t gt_event_send_by_id(gt_id_t widget_id, gt_event_type_et event, void * parms);
+
+#if GT_USE_LAYER_TOP
+/**
+ * @brief Adding an event to the global, can be called by any time, any screen or widget
+ *
+ * @param event
+ * @param filter
+ * @param user_data
+ */
+void gt_global_add_event_cb(gt_event_cb_t event, gt_event_type_et filter, void * user_data);
+
+/**
+ * @brief Check global user event if the event callback is already added
+ *
+ * @param event
+ * @param filter
+ * @return true The event callback is already added
+ * @return false The event callback is not added
+ */
+bool gt_global_event_has_the_same_cb(gt_event_cb_t event, gt_event_type_et filter);
+
+/**
+ * @brief Get the global event count
+ *
+ * @return uint16_t
+ */
+uint16_t gt_global_get_event_count(void);
+
+/**
+ * @brief [Safe] Remove global event callback, not the widget object
+ */
+void gt_global_remove_all_event_cb(void);
+
+/**
+ * @brief [Unsafe] Remove global all event callback immediately, not
+ *      the widget object
+ */
+void gt_global_remove_all_event_cb_immediately(void);
+
+/**
+ * @brief Send an event code to the global register user event.
+ *
+ * @param event The event code to send
+ * @param parms User data [default or unused: NULL]
+ * @return gt_res_t The result status @ref gt_res_t
+ */
+gt_res_t gt_global_event_send(gt_event_type_et event, void * parms);
+
+/**
+ * @brief [Warn, Called by indev] Send an event code to the global register user event.
+ *      Not for the user to call.
+ *
+ * @param org The orgin object
+ * @param event The event code to send
+ * @param parms User data [default or unused: NULL]
+ * @return gt_res_t The result status @ref gt_res_t
+ */
+gt_res_t _gt_global_core_indev_event_send(struct gt_obj_s * org, gt_event_type_et event, void * parms);
+
+#endif  /** GT_USE_LAYER_TOP */
 
 /**
  * @brief Get the code value for the event

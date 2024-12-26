@@ -42,10 +42,10 @@ typedef struct _gt_style_layer_top_s {
     static gt_color_t * graph_buf_all;
 #endif
 
-static const gt_obj_class_st gt_layer_top_class = {
-    ._init_cb      = (_gt_init_cb)NULL,
-    ._deinit_cb    = (_gt_deinit_cb)NULL,
-    ._event_cb     = (_gt_event_cb)NULL,
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_layer_top_class = {
+    ._init_cb      = (_gt_init_cb_t)NULL,
+    ._deinit_cb    = (_gt_deinit_cb_t)NULL,
+    ._event_cb     = (_gt_event_cb_t)NULL,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_style_layer_top_st)
 };
@@ -57,16 +57,16 @@ static const gt_obj_class_st gt_layer_top_class = {
 
 /* static functions -----------------------------------------------------*/
 
-static inline gt_size_t _gt_disp_area_get_idx(gt_size_t idx) {
+static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t _gt_disp_area_get_idx(gt_size_t idx) {
     return idx == _GT_REFR_AREA_MAX ? 0 : idx;
 }
 
-static void _gt_disp_task_handler(struct _gt_timer_s * timer) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_disp_task_handler(struct _gt_timer_s * timer) {
     GT_UNUSED(timer);
     gt_refr_timer();
 }
 
-static gt_disp_st * _gt_disp_create(gt_disp_drv_st * drv) {
+static GT_ATTRIBUTE_RAM_TEXT gt_disp_st * _gt_disp_create(gt_disp_drv_st * drv) {
     gt_disp_st * ret = gt_mem_malloc(sizeof(gt_disp_st));
     if (NULL == ret) {
         GT_LOGE(GT_LOG_TAG_GUI, "disp create failed");
@@ -92,7 +92,7 @@ static gt_disp_st * _gt_disp_create(gt_disp_drv_st * drv) {
     return ret;
 }
 
-static void _calc_max_area_recursive(gt_obj_st * obj, bool is_root) {
+static GT_ATTRIBUTE_RAM_TEXT void _calc_max_area_recursive(gt_obj_st * obj, bool is_root) {
     GT_CHECK_BACK(obj);
     gt_obj_st * ptr = NULL;
     gt_size_t i = 0, cnt = obj->cnt_child;
@@ -148,7 +148,17 @@ void gt_disp_drv_register(gt_disp_drv_st * drv)
     _gt_timer_create(_gt_disp_task_handler, GT_TASK_PERIOD_TIME_REFR, NULL);
 }
 
+void gt_disp_drv_set_flushing(gt_disp_drv_st * drv, bool state)
+{
+    if(!drv){ return ; }
+    drv->flushing = state;
+}
 
+bool gt_disp_drv_check_flushing(gt_disp_drv_st * drv)
+{
+    if(!drv){ return false; }
+    return drv->flushing;
+}
 
 /*************************************/
 /*                disp               */
@@ -221,12 +231,28 @@ gt_color_t * gt_disp_graph_get_buf_default(void)
 #endif
 }
 
-gt_color_t * gt_disp_graph_get_buf_backup(void)
+bool gt_disp_graph_is_double_buf(void)
 {
-#if (GT_REFRESH_STYLE_2 == GT_REFRESH_STYLE)
-    return graph_buf2;
+#if (GT_REFRESH_STYLE == GT_REFRESH_STYLE_2)
+    if(graph_buf1 && graph_buf2){ return true; }
+#endif
+    return false;
+}
+
+gt_color_t * gt_disp_graph_get_buf_backup(gt_color_t* this_buf)
+{
+#if (GT_REFRESH_STYLE == GT_REFRESH_STYLE_2)
+    if(this_buf == NULL){
+        return gt_disp_graph_get_buf_default();
+    }
+
+    if(!gt_disp_graph_is_double_buf()){
+        return gt_disp_graph_get_buf_default();
+    }
+
+    return (this_buf == graph_buf1) ? graph_buf2 : graph_buf1;
 #else
-    return NULL;
+    return gt_disp_graph_get_buf_default();
 #endif
 }
 
@@ -341,7 +367,9 @@ void _gt_disp_update_max_area(const gt_area_st * const area, bool is_ignore_calc
 
 void _gt_disp_reload_max_area(gt_obj_st * scr)
 {
-    GT_CHECK_BACK(scr);
+    if (NULL == scr) {
+        return;
+    }
     gt_disp_st * disp = gt_disp_get_default();
     GT_CHECK_BACK(disp);
     gt_area_abs_st * max_area = &disp->area_max;

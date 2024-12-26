@@ -39,7 +39,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static const gt_obj_class_st gt_rect_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_rect_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
@@ -73,7 +73,7 @@ static inline void _gt_rect_init_widget(gt_obj_st * rect) {
     draw_bg(rect->draw_ctx, &rect_attr, &area_base);
 
     // focus
-    draw_focus(rect , 0);
+    draw_focus(rect , rect->radius);
 }
 
 /**
@@ -161,11 +161,7 @@ void gt_rect_set_color_border(gt_obj_st * rect, gt_color_t color)
 }
 void gt_rect_set_radius(gt_obj_st * rect, gt_radius_t radius)
 {
-    if (false == gt_obj_is_type(rect, OBJ_TYPE)) {
-        return ;
-    }
-    rect->radius = radius;
-    gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
+    gt_obj_set_radius(rect, radius);
 }
 void gt_rect_set_border(gt_obj_st * rect, uint16_t border)
 {

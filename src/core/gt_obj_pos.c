@@ -9,12 +9,18 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_obj_pos.h"
+#include "./gt_obj_scroll.h"
 #include "../hal/gt_hal_disp.h"
 #include "../widgets/gt_obj.h"
 #include "../others/gt_log.h"
 #include "gt_disp.h"
 #include "gt_indev.h"
 #include "gt_style.h"
+#include "../widgets/gt_conf_widgets.h"
+
+#if GT_CFG_ENABLE_VIEW_PAGER
+#include "../widgets/gt_view_pager.h"
+#endif
 /* private define -------------------------------------------------------*/
 
 
@@ -56,7 +62,7 @@ typedef struct {
  * @return true clicked
  * @return false not clicked
  */
-static _check_clicked_state_em gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point ) {
+static GT_ATTRIBUTE_RAM_TEXT _check_clicked_state_em gt_obj_check_is_clicked( gt_obj_st * obj, gt_point_st * point ) {
 #if GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
     if (point->x + obj->touch_expand_size.x < obj->area.x ||
         point->x > (obj->area.x + obj->area.w + obj->touch_expand_size.x)) {
@@ -91,7 +97,7 @@ static _check_clicked_state_em gt_obj_check_is_clicked( gt_obj_st * obj, gt_poin
  * @param point
  * @return gt_obj_st* The clicked object
  */
-static _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st * point) {
+static GT_ATTRIBUTE_RAM_TEXT _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st * point) {
     gt_size_t idx = parent->cnt_child - 1;
     _click_obj_ret_st obj_clicked = {
         .obj = NULL,
@@ -133,71 +139,275 @@ static _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st
     return obj_clicked;
 }
 
-static gt_obj_st* _gt_obj_next_focus_get( gt_obj_st * parent, const gt_obj_st * cur_obj, bool flag)
-{
-    gt_obj_st * next = NULL;
-    int idx = 0;
-    bool tmp = flag;
 
-    tmp = parent == cur_obj ? true : false;
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
+/**
+ * @brief
+ *
+ * @param cur current obj
+ * @param find find obj
+ * @param flag flag  @gt_focus_dir_et
+ * @return true
+ * @return false
+ */
+static GT_ATTRIBUTE_RAM_TEXT bool _gt_obj_focus_cmp_positon(const gt_obj_st* cur,
+    const gt_obj_st* find, uint8_t flag) {
+    if(!cur || !find) {
+        return false;
+    }
 
-    while (idx < parent->cnt_child)
+    if(cur == find){
+        return false;
+    }
+
+    if(GT_FOCUS_DIR_RIGHT == flag){
+        return find->area.x > cur->area.x;
+    }
+    else if(GT_FOCUS_DIR_LEFT == flag){
+        return find->area.x < cur->area.x;
+    }
+    else if(GT_FOCUS_DIR_DOWN == flag){
+        return find->area.y > cur->area.y;
+    }
+    else if(GT_FOCUS_DIR_UP == flag){
+        return find->area.y < cur->area.y;
+    }
+
+    return false;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _gt_obj_focus_cmp_obj(const gt_obj_st* cur, const gt_obj_st* child,
+    gt_obj_st** ret, uint8_t flag) {
+    if(!cur || !child) {return ;}
+
+    if(!_gt_obj_focus_cmp_positon(cur, child, flag)){
+        return ;
+    }
+
+    if(!(*ret)) {
+        *ret = (gt_obj_st*)child;
+
+        return ;
+    }
+
+    if(_gt_obj_focus_cmp_positon(child, *ret, flag)){
+
+        if(GT_FOCUS_DIR_RIGHT == flag && gt_abs(child->area.y - cur->area.y) <= gt_abs((*ret)->area.y - cur->area.y))
+        {
+            *ret = (gt_obj_st*)child;
+            return ;
+        }
+        else if(GT_FOCUS_DIR_LEFT == flag && gt_abs(child->area.y - cur->area.y) <= gt_abs((*ret)->area.y - cur->area.y))
+        {
+            *ret = (gt_obj_st*)child;
+            return ;
+        }
+        else if(GT_FOCUS_DIR_DOWN == flag && gt_abs(child->area.x - cur->area.x) <= gt_abs((*ret)->area.x - cur->area.x))
+        {
+            *ret = (gt_obj_st*)child;
+            return ;
+        }
+        else if(GT_FOCUS_DIR_UP == flag && gt_abs(child->area.x - cur->area.x) <= gt_abs((*ret)->area.x - cur->area.x))
+        {
+            *ret = (gt_obj_st*)child;
+            return ;
+        }
+    }
+
+#if GT_USE_LAYER_TOP
+    if(cur == gt_disp_get_layer_top()){
+        return ;
+    }
+#endif
+
+    if(cur == gt_disp_get_scr()){
+        return ;
+    }
+
+
+    int32_t child_dist = 0, ret_dist = 0, tmp = 0;
+
+    if(GT_FOCUS_DIR_RIGHT == flag){
+        child_dist = gt_abs(child->area.x - (cur->area.x + cur->area.w)) + gt_abs(child->area.y - cur->area.y);
+        ret_dist = gt_abs((*ret)->area.x - (cur->area.x + cur->area.w)) + gt_abs((*ret)->area.y - cur->area.y);
+    }
+    else if(GT_FOCUS_DIR_LEFT == flag){
+        child_dist = gt_abs((child->area.x + child->area.w) - cur->area.x) + gt_abs(child->area.y - cur->area.y);
+        ret_dist = gt_abs(((*ret)->area.x + (*ret)->area.w) - cur->area.x) + gt_abs((*ret)->area.y - cur->area.y);
+    }
+    else if(GT_FOCUS_DIR_DOWN == flag){
+        child_dist = gt_abs(child->area.x - cur->area.x) + gt_abs(child->area.y - (cur->area.y + cur->area.h));
+        ret_dist = gt_abs((*ret)->area.x - cur->area.x) + gt_abs((*ret)->area.y - (cur->area.y + cur->area.h));
+    }
+    else if(GT_FOCUS_DIR_UP == flag){
+        child_dist = gt_abs(child->area.x - cur->area.x) + gt_abs((child->area.y + child->area.h) - cur->area.y);
+        ret_dist = gt_abs((*ret)->area.x - cur->area.x) + gt_abs(((*ret)->area.y + (*ret)->area.h) - cur->area.y);
+    }
+
+    if((child_dist < ret_dist))
     {
-        if(tmp){
-            if(GT_ENABLED == parent->child[idx]->focus_dis){
+        *ret = (gt_obj_st*)child;
+    }
+
+}
+
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_dir_focus_get(const gt_obj_st* parent,
+    const gt_obj_st* cur_obj, uint8_t flag) {
+    if(!parent || !cur_obj){
+        return NULL;
+    }
+
+    gt_obj_st* ret_obj = NULL, *find_obj = NULL;
+    // child
+    for(int i = 0; i < parent->cnt_child; ++i)
+    {
+        if(GT_INVISIBLE == parent->child[i]->visible){
+            continue;
+        }
+
+        if(parent->child[i]->cnt_child > 0){
+            find_obj = _gt_obj_dir_focus_get(parent->child[i], cur_obj, flag);
+            _gt_obj_focus_cmp_obj(cur_obj, find_obj, &ret_obj, flag);
+        }
+
+        if(GT_ENABLED != parent->child[i]->focus_dis){
+            continue;
+        }
+
+        //
+        if(parent->child[i] == cur_obj){
+            continue;
+        }
+
+        _gt_obj_focus_cmp_obj(cur_obj, parent->child[i], &ret_obj , flag);
+    }
+
+    return ret_obj ? ret_obj : (gt_obj_st*)cur_obj;
+}
+#else
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_next_focus_get(const gt_obj_st * cur_obj, bool flag) {
+    if(!cur_obj){
+        return NULL;
+    }
+
+    bool is_find = flag;
+    const gt_obj_st* parent = cur_obj->parent;
+    if(gt_disp_get_scr() == cur_obj){
+        parent = cur_obj;
+        is_find = true;
+    }
+
+    if(parent == NULL){
+        return NULL;
+    }
+
+    int idx = 0, mim_idx = parent->cnt_child-1;
+    gt_obj_st* next = NULL;
+
+    for(idx = 0; idx < parent->cnt_child; ++idx){
+
+        if(GT_ENABLED != parent->child[idx]->focus_dis){
+            continue;
+        }
+
+        mim_idx = GT_MIN(mim_idx, idx);
+
+        if(is_find) {
+            // focus_skip
+            if(parent->child[idx]->focus_skip){
+                if(parent->child[idx]->cnt_child > 0){
+                    next = _gt_obj_next_focus_get(parent->child[idx]->child[0], true);
+                    if(next){
+                        return next;
+                    }
+                }
+            } else {
                 return parent->child[idx];
             }
         }
 
-        next = _gt_obj_next_focus_get(parent->child[idx], cur_obj, tmp);
-
-        if(cur_obj == parent->child[idx]){
-            tmp = true;
+        if(parent->child[idx] != cur_obj){
+            continue;
         }
-
-        idx++;
+        is_find = true;
     }
 
-    return next;
+    return parent->child[mim_idx];
 }
 
-static gt_obj_st* _gt_obj_prev_focus_get( const gt_obj_st * cur_obj)
-{
-    gt_obj_st * prev = NULL;
-    gt_obj_st *  parent = NULL;
-    bool flag = false;
-
-    parent = cur_obj->parent;
-    if(NULL == parent){
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_prev_focus_get(const gt_obj_st * cur_obj, bool flag) {
+    if(!cur_obj){
         return NULL;
     }
 
-    int idx = parent->cnt_child;
-    prev = cur_obj->parent;
+    bool is_find = flag;
+    const gt_obj_st* parent = cur_obj->parent;
+    if(gt_disp_get_scr() == cur_obj){
+        parent = cur_obj;
+        is_find = true;
+    }
 
-    while (idx >= 0)
-    {
-        if(flag){
-            if(GT_ENABLED == parent->child[idx]->focus_dis){
-                prev = parent->child[idx];
-                break;
+    if(parent == NULL){
+        return NULL;
+    }
+
+    int idx = 0, max_idx = 0;
+    gt_obj_st* prev = NULL;
+
+    for(idx = parent->cnt_child - 1; idx >= 0; --idx){
+
+        if(GT_ENABLED != parent->child[idx]->focus_dis){
+            continue;
+        }
+
+        max_idx = GT_MAX(max_idx, idx);
+
+        if(is_find) {
+            // focus_skip
+            if(parent->child[idx]->focus_skip){
+                if(parent->child[idx]->cnt_child > 0){
+                    prev = _gt_obj_prev_focus_get(parent->child[idx]->child[parent->child[idx]->cnt_child - 1], true);
+                    if(prev){
+                        return prev;
+                    }
+                }
+            } else {
+                return parent->child[idx];
             }
         }
 
-        if(cur_obj == parent->child[idx])
-        {
-            flag = true;
+        if(parent->child[idx] != cur_obj){
+            continue;
         }
-        --idx;
+        is_find = true;
     }
 
-    if(idx < 0){
-        prev =  _gt_obj_prev_focus_get(parent);
-    }
-    return prev;
+    return parent->child[max_idx];
 }
 
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_into_focus_get(const gt_obj_st * cur_obj) {
+    if(!cur_obj){
+        return NULL;
+    }
 
+    if(GT_ENABLED != cur_obj->focus_dis){
+        return NULL;
+    }
+
+    int idx = 0;
+
+    for(idx = 0; idx < cur_obj->cnt_child; ++idx)
+    {
+        if(GT_ENABLED != cur_obj->child[idx]->focus_dis){
+            continue;
+        }
+
+        return cur_obj->child[idx];
+    }
+
+    return NULL;
+}
+#endif
 
 /* global functions / API interface -------------------------------------*/
 
@@ -240,15 +450,21 @@ gt_obj_st* _gt_obj_focus_clicked(gt_obj_st * parent)
             }
         }
 
+        if(GT_INVISIBLE == parent->child[idx]->visible){
+            idx++;
+            continue;
+        }
+
         if(GT_ENABLED == parent->child[idx]->focus_dis && parent->child[idx]->focus){
             obj_clicked = parent->child[idx];
+            break;
         }
         idx++;
     }
     return obj_clicked;
 }
 
-gt_obj_st* gt_find_clicked_obj_by_focus(gt_obj_st * parent)
+gt_obj_st * gt_find_clicked_obj_by_focus(gt_obj_st * parent)
 {
     gt_obj_st * obj_clicked = NULL;
 
@@ -257,62 +473,226 @@ gt_obj_st* gt_find_clicked_obj_by_focus(gt_obj_st * parent)
     return obj_clicked ? obj_clicked : parent;
 }
 
-void gt_obj_next_focus_change(gt_obj_st * cur_obj)
+
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
+gt_obj_change_st gt_obj_focus_change(gt_obj_st * cur_obj, uint8_t dir)
 {
-    if(NULL == cur_obj){
-        return;
+    gt_obj_change_st ret = {
+        .src = cur_obj,
+        .dst = NULL,
+    };
+
+    if (NULL == cur_obj) {
+        return ret;
     }
-
-    gt_obj_st* parent = gt_disp_get_scr();
-
-    gt_obj_st* next = _gt_obj_next_focus_get(parent, cur_obj, false);
-
-    if(!next){
-        next = parent;
-    }
-
-    gt_obj_set_focus(cur_obj, false);
-    gt_obj_set_focus(next, true);
-}
-
-void gt_obj_prev_focus_change(gt_obj_st * cur_obj)
-{
-    if(NULL == cur_obj){
-        return;
-    }
-
-    gt_obj_st* parent = gt_disp_get_scr();
-    gt_obj_st* prev = NULL;
-    if(cur_obj == parent && parent->cnt_child > 0)
+#if GT_USE_LAYER_TOP
+    gt_obj_st * layer_top = gt_disp_get_layer_top();
+    if(gt_obj_is_child(cur_obj, layer_top) || cur_obj == layer_top)
     {
-        if(parent->cnt_child == 0 && GT_ENABLED == parent->child[0]->focus_dis)
-        {
-            prev = parent->child[0];
-        }
-        else if(parent->cnt_child > 1)
-        {
-            if(GT_ENABLED == parent->child[parent->cnt_child-1]->focus_dis)
-            {
-                prev = parent->child[parent->cnt_child-1];
-            }
-            else if(parent->cnt_child > 2){
-                prev =  _gt_obj_prev_focus_get(parent->child[parent->cnt_child-2]);
-            }
-        }
+        ret.dst = _gt_obj_dir_focus_get(layer_top, cur_obj, dir);
+        goto _ret_handler;
     }
-    else{
-        prev = _gt_obj_prev_focus_get(cur_obj);
+#endif
+    ret.dst = _gt_obj_dir_focus_get(gt_disp_get_scr(), cur_obj, dir);
+
+_ret_handler:
+    if (!ret.dst) {
+        ret.dst = NULL;
+        return ret;
     }
 
-    if(!prev){
-        prev = parent;
+    if(ret.dst == cur_obj){
+        ret.dst = NULL;
+        return ret;
+    }
+    gt_obj_set_focus(cur_obj, false);
+    gt_obj_set_focus(ret.dst, true);
+    return ret;
+
+}
+
+void gt_obj_focus_change_display(gt_obj_change_st * chg)
+{
+    if (NULL == chg->dst) {
+        return;
+    }
+
+    gt_obj_change_st chg_t ={
+        .src = chg->src,
+        .dst = chg->dst,
+    };
+
+    gt_obj_st * parent = chg_t.dst->parent;
+    gt_obj_st * last_parent = NULL;
+    while(parent)
+    {
+        switch (gt_obj_class_get_type(parent)) {
+            case GT_TYPE_SCREEN: {
+                gt_obj_scroll_to(parent,
+                    chg_t.src->area.x - chg_t.dst->area.x,
+                    chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_ON);
+                return;
+            }
+            case GT_TYPE_LISTVIEW: {
+                // ! listview -> obj -> other
+                // ! last is obj, dst is other
+                // * Adjust roll position
+                chg_t.src = parent;
+                if(last_parent){
+                    chg_t.dst = last_parent;
+                }
+
+                gt_obj_scroll_to_y(parent, chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_ON);
+                return;
+            }
+            case GT_TYPE_CHAT: {
+                gt_obj_scroll_to_y(parent, chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_ON);
+                return;
+            }
+            case GT_TYPE_VIEW_PAGER: {
+                gt_size_t page_idx = gt_view_pager_get_widget_belong_fragment(parent, chg_t.dst);
+                if (-1 == page_idx) {
+                    return;
+                }
+                gt_view_pager_scroll_to_fragment(parent, page_idx);
+                return;
+            }
+            default:
+                break;
+        }
+        last_parent = parent;
+        parent = parent->parent;
+    }
+}
+#else
+gt_obj_change_st gt_obj_into_focus_change(gt_obj_st * cur_obj)
+{
+    gt_obj_change_st ret = {
+        .src = cur_obj,
+        .dst = NULL,
+    };
+
+    if (NULL == cur_obj) {
+        return ret;
+    }
+
+    if(0 == cur_obj->cnt_child){
+        return ret;
+    }
+
+    ret.dst = _gt_obj_into_focus_get(cur_obj);
+    if(!ret.dst){
+        return ret;
     }
 
     gt_obj_set_focus(cur_obj, false);
-    gt_obj_set_focus(prev, true);
+    gt_obj_set_focus(ret.dst, true);
+    return ret;
 }
 
+gt_obj_change_st gt_obj_out_focus_change(gt_obj_st * cur_obj)
+{
+    gt_obj_change_st ret = {
+        .src = cur_obj,
+        .dst = NULL,
+    };
 
+    if (NULL == cur_obj) {
+        return ret;
+    }
+
+    if(cur_obj->parent == NULL){
+        return ret;
+    }
+
+    ret.dst = _gt_obj_next_focus_get(cur_obj->parent, true);
+
+    if(!ret.dst){
+        return ret;
+    }
+
+
+    gt_obj_set_focus(cur_obj, false);
+    gt_obj_set_focus(ret.dst, true);
+
+    return ret;
+}
+
+gt_obj_change_st gt_obj_next_focus_change(gt_obj_st * cur_obj)
+{
+    gt_obj_change_st ret = {
+        .src = cur_obj,
+        .dst = NULL,
+    };
+    if (NULL == cur_obj) {
+        return ret;
+    }
+
+    ret.dst = _gt_obj_next_focus_get(cur_obj, false);
+    if (!ret.dst) {
+        ret.dst = gt_disp_get_scr();
+    }
+
+    gt_obj_set_focus(cur_obj, false);
+    gt_obj_set_focus(ret.dst, true);
+    return ret;
+}
+
+gt_obj_change_st gt_obj_prev_focus_change(gt_obj_st * cur_obj)
+{
+    gt_obj_change_st ret = {
+        .src = cur_obj,
+        .dst = NULL,
+    };
+    if (NULL == cur_obj) {
+        return ret;
+    }
+
+    ret.dst = _gt_obj_prev_focus_get(cur_obj, false);
+    //
+    if (!ret.dst) {
+        ret.dst = gt_disp_get_scr();
+    }
+
+    gt_obj_set_focus(cur_obj, false);
+    gt_obj_set_focus(ret.dst, true);
+    return ret;
+}
+
+void gt_obj_focus_change_display(gt_obj_change_st * chg)
+{
+    if (NULL == chg->dst) {
+        return;
+    }
+    gt_obj_st * parent = chg->dst->parent;
+    switch (gt_obj_class_get_type(parent)) {
+        case GT_TYPE_SCREEN: {
+            gt_obj_scroll_to(parent,
+                chg->src->area.x - chg->dst->area.x,
+                chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
+            break;
+        }
+        case GT_TYPE_LISTVIEW: {
+            gt_obj_scroll_to_y(parent, chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
+            break;
+        }
+        case GT_TYPE_CHAT: {
+            gt_obj_scroll_to_y(parent, chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
+            break;
+        }
+        case GT_TYPE_VIEW_PAGER: {
+            gt_size_t page_idx = gt_view_pager_get_widget_belong_fragment(parent, chg->dst);
+            if (-1 == page_idx) {
+                break;
+            }
+            gt_view_pager_scroll_to_fragment(parent, page_idx);
+            break;
+        }
+        default:
+            break;
+    }
+}
+#endif
 
 bool gt_obj_check_scr(gt_obj_st * obj)
 {
@@ -327,8 +707,8 @@ bool gt_obj_check_scr(gt_obj_st * obj)
         return true;
     }
 
-    gt_obj_st * scr_obj = obj->parent;
-    while( scr_obj->parent ){
+    gt_obj_st * scr_obj = obj;
+    while (scr_obj->parent) {
         scr_obj = scr_obj->parent;
     }
     if( scr_now == scr_obj ){

@@ -35,7 +35,7 @@ typedef struct _btnmap_btn_param_s {
 
 typedef struct _gt_btnmap_s {
     gt_obj_st obj;
-    gt_obj_st* _input;
+    gt_obj_st* input_ptr;
     gt_map_st* map;
     gt_py_input_method_st* py_input_method;
     char* press_btn;
@@ -43,7 +43,7 @@ typedef struct _gt_btnmap_s {
     uint16_t* _line_w_list;
     uint16_t* _line_numb_list;      /** array of line number @ref _max_line */
 
-    gt_btnmap_disp_special_btn_cb_t _disp_special_btn_cb;
+    gt_btnmap_show_special_btn_cb_t _show_special_btn_cb;
     gt_btnmap_push_btn_kv_cb_t _push_btn_kv_cb;
 
     gt_font_info_st font_info;
@@ -78,7 +78,7 @@ static void _gt_clean_press_btn(gt_obj_st* obj);
 static void _gt_push_btn_kv(gt_obj_st* obj);
 
 /* static variables -----------------------------------------------------*/
-static const gt_obj_class_st gt_btnmap_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_btnmap_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
@@ -145,9 +145,9 @@ static void _init_cb(struct gt_obj_s * obj) {
         font.utf8 = (char*)map[map_idx].kv;
         font.len = strlen(map[map_idx].kv);
 
-        if(style->_disp_special_btn_cb){
+        if(style->_show_special_btn_cb){
             // Attribute change
-            if(style->_disp_special_btn_cb(obj, map[map_idx].kv, &font_attr)){
+            if(style->_show_special_btn_cb(obj, map[map_idx].kv, &font_attr)){
                 rect_attr.bg_color = style->special_btn_param.bg_color;
                 rect_attr.border_color = style->special_btn_param.border_color;
                 rect_attr.border_width = style->special_btn_param.border_width;
@@ -281,7 +281,9 @@ static void _gt_update_map(gt_obj_st* btnmap) {
     gt_memset_0(style->_line_w_list, style->_max_line * sizeof(uint16_t) << 1);
     style->_line_numb_list = &style->_line_w_list[style->_max_line];
 
+
     _gt_get_line_list((const gt_map_st*)style->map, style->_line_w_list, style->_line_numb_list);
+
 
     _gt_auto_btn_height(btnmap);
 }
@@ -404,11 +406,11 @@ static void _gt_push_btn_kv(gt_obj_st* obj) {
     if(!style->press_btn) return ;
 
     if(style->_push_btn_kv_cb){
-        style->_push_btn_kv_cb( obj, style->_input, style->press_btn);
+        style->_push_btn_kv_cb( obj, style->input_ptr, style->press_btn);
     }
 #if GT_CFG_ENABLE_INPUT
-    else if(style->_input){
-        gt_input_append_value(style->_input, style->press_btn);
+    else if (style->input_ptr) {
+        gt_input_append_value(style->input_ptr, style->press_btn);
     }
 #endif
 }
@@ -467,7 +469,16 @@ void gt_btnmap_set_input(gt_obj_st * btnmap, gt_obj_st * input)
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
-    style->_input = input;
+    style->input_ptr = input;
+}
+
+gt_obj_st * gt_btnmap_get_input(gt_obj_st * btnmap)
+{
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
+        return NULL;
+    }
+    _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
+    return style->input_ptr;
 }
 
 void gt_btnmap_set_radius(gt_obj_st* btnmap, uint8_t radius)
@@ -648,6 +659,16 @@ void gt_btnmap_set_font_thick_cn(gt_obj_st * btnmap, uint8_t thick)
     gt_event_send(btnmap, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+void gt_btnmap_set_font_style(gt_obj_st * btnmap, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
+        return;
+    }
+    _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
+    style->font_info.style.all = font_style;
+    gt_event_send(btnmap, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 void gt_btnmap_set_font_encoding(gt_obj_st * btnmap, gt_encoding_et encoding)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
@@ -666,13 +687,13 @@ void gt_btnmap_set_push_btn_kv_handler(gt_obj_st * btnmap, gt_btnmap_push_btn_kv
     style->_push_btn_kv_cb = push_btn_kv_cb;
 }
 //
-void gt_btnmap_set_disp_special_btn_handler(gt_obj_st * btnmap, gt_btnmap_disp_special_btn_cb_t disp_special_btn_cb)
+void gt_btnmap_set_disp_special_btn_handler(gt_obj_st * btnmap, gt_btnmap_show_special_btn_cb_t disp_special_btn_cb)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;
     }
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
-    style->_disp_special_btn_cb = disp_special_btn_cb;
+    style->_show_special_btn_cb = disp_special_btn_cb;
 }
 void gt_btnmap_set_special_btn_color_background(gt_obj_st * btnmap, gt_color_t color)
 {

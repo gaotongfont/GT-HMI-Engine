@@ -32,7 +32,7 @@ static const gt_vfs_st virt_file_sys[] ={
 
 #if GT_USE_MODE_FLASH
 /**
- * @brief [flash] write or read data from flash
+ * @brief [HMI-chip or flash] write or read data from HMI-chip or flash
  *
  * @param data_write the data to be written
  * @param len_write the length of the data to be written

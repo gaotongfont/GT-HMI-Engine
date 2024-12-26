@@ -55,6 +55,12 @@ extern "C" {
 #define GT_CFG_ENABLE_BTNMAP            1
 #define GT_CFG_ENABLE_CHAT              1
 #define GT_CFG_ENABLE_GRAPHS            1
+#define GT_CFG_ENABLE_ARC               1
+#define GT_CFG_ENABLE_TABLE             1
+
+#if GT_USE_LAYER_TOP && GT_CFG_ENABLE_INPUT && GT_CFG_ENABLE_LISTVIEW
+#define GT_CFG_ENABLE_SELECT            1
+#endif
 
 #if GT_CFG_ENABLE_IMG && GT_CFG_ENABLE_SLIDER && GT_CFG_ENABLE_LABEL
 #define GT_CFG_ENABLE_MEDIA_PLAYER      1
@@ -69,6 +75,13 @@ extern "C" {
 #define GT_CFG_ENABLE_GIF               1
 #endif
 
+#if GT_USE_MD4C && GT_CFG_ENABLE_TEXTAREA && GT_CFG_ENABLE_TABLE
+#define GT_CFG_ENABLE_MARKDOWN          1
+#endif
+
+#if GT_USE_SERIAL
+#define GT_CFG_ENABLE_BIT_IMG           1
+#endif
 /* typedef --------------------------------------------------------------*/
 
 

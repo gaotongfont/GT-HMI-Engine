@@ -43,7 +43,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static const gt_obj_class_st gt_checkbox_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_checkbox_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
@@ -137,7 +137,7 @@ static void _init_cb(gt_obj_st * obj) {
     draw_text(obj->draw_ctx, &font_dsc, &area);
 
      // focus
-    draw_focus(obj , 0);
+    draw_focus(obj , obj->radius);
 }
 
 /**
@@ -257,6 +257,26 @@ void gt_checkbox_set_text(gt_obj_st * checkbox, const char * fmt, ...)
 free_lb:
     va_end(args2);
 }
+
+void gt_checkbox_set_text_by_len(gt_obj_st * checkbox, const char * text, uint16_t len)
+{
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
+        return;
+    }
+    _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
+    if (NULL == style->text) {
+        style->text = gt_mem_malloc(len);
+    } else if (len != strlen(style->text) + 1) {
+        style->text = gt_mem_realloc(style->text, len);
+    }
+    if (NULL == style->text) {
+        return;
+    }
+    gt_memcpy(style->text, text, len);
+    style->text[len] = '\0';
+    gt_event_send(checkbox, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 char * gt_checkbox_get_text(gt_obj_st * checkbox)
 {
     if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
@@ -364,6 +384,15 @@ void gt_checkbox_set_font_encoding(gt_obj_st * checkbox, gt_encoding_et encoding
     }
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
     style->font_info.encoding = encoding;
+}
+
+void gt_checkbox_set_font_style(gt_obj_st * checkbox, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(checkbox, OBJ_TYPE)) {
+        return;
+    }
+    _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
+    style->font_info.style.all = font_style;
 }
 
 void gt_checkbox_set_space(gt_obj_st * checkbox, uint8_t space_x, uint8_t space_y)

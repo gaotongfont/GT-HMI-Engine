@@ -60,6 +60,8 @@ void gt_radio_set_selected(gt_obj_st * radio);
  */
 void gt_radio_set_text(gt_obj_st * radio, const char * fmt, ...);
 
+void gt_radio_set_text_by_len(gt_obj_st * radio, const char * text, uint16_t len);
+
 void gt_radio_set_font_color(gt_obj_st * radio, gt_color_t color);
 void gt_radio_set_font_size(gt_obj_st * radio, uint8_t size);
 void gt_radio_set_font_gray(gt_obj_st * radio, uint8_t gray);
@@ -75,6 +77,7 @@ void gt_radio_set_font_cjk(gt_obj_st* radio, gt_font_cjk_et cjk);
 void gt_radio_set_font_thick_en(gt_obj_st * radio, uint8_t thick);
 void gt_radio_set_font_thick_cn(gt_obj_st * radio, uint8_t thick);
 void gt_radio_set_font_encoding(gt_obj_st * radio, gt_encoding_et encoding);
+void gt_radio_set_font_style(gt_obj_st * radio, gt_font_style_et font_style);
 void gt_radio_set_space(gt_obj_st * radio, uint8_t space_x, uint8_t space_y);
 
 void gt_radio_set_font_point_offset_x(gt_obj_st * radio , gt_size_t x);

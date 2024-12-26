@@ -18,7 +18,7 @@
 
 /* private typedef ------------------------------------------------------*/
 
-gt_gc_st _gt_global_call = {
+GT_ATTRIBUTE_RAM_DATA gt_gc_st _gt_global_call = {
     .scr_info = {
         .home_scr = {
             .id = -1,
@@ -47,7 +47,7 @@ gt_gc_st _gt_global_call = {
         .enabled = true,
     },
 #endif
-#if GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+#if GT_FONT_USE_ASCII_WIDTH_CACHE
     .ascii_width_cache = {
         .option = GT_CFG_DEFAULT_FONT_FAMILY,
     },
@@ -112,7 +112,7 @@ _gt_gc_full_img_buffer_st * _gt_gc_get_full_img_buffer(void)
 }
 #endif
 
-#if GT_FONT_USE_ASCII_ASCII_WIDTH_CACHE
+#if GT_FONT_USE_ASCII_WIDTH_CACHE
 /**
  * @brief Get the ASCII font width cache object
  *

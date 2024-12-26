@@ -39,6 +39,12 @@ typedef void (* gt_clock_next_day_cb)(gt_obj_st * obj, void * user_data);
 typedef void (* gt_clock_alert_cb)(gt_obj_st * obj, void * user_data);
 
 /**
+ * @brief
+ */
+typedef void (* gt_clock_user_second_handler_cb_t)(gt_obj_st * obj, void * user_sec_data);
+
+
+/**
  * @brief Clock working mode [default: GT_CLOCK_MODE_TIME]
  */
 typedef enum gt_clock_mode_e {
@@ -52,6 +58,10 @@ typedef struct gt_clock_time_s {
     uint8_t hour;
     uint8_t minute;
     uint8_t second;
+    uint8_t day;
+    uint8_t month;
+    uint8_t week;
+    uint16_t year;
 }gt_clock_time_st;
 
 /* macros ---------------------------------------------------------------*/
@@ -75,7 +85,8 @@ gt_obj_st * gt_clock_create(gt_obj_st * parent);
  */
 void gt_clock_set_time(gt_obj_st * obj, uint8_t hour, uint8_t minute, uint8_t second);
 void gt_clock_set_time_by_timestamp(gt_obj_st * obj, uint32_t timestamp);
-
+void gt_clock_set_date(gt_obj_st * obj, uint16_t year, uint8_t month, uint8_t day);
+void gt_clock_set_week(gt_obj_st * obj, uint8_t week);
 /**
  * @brief Set the alert time, which usd to alert callback function
  *
@@ -126,6 +137,23 @@ void gt_clock_set_mode(gt_obj_st * obj, gt_clock_mode_et mode);
 gt_clock_mode_et gt_clock_get_mode(gt_obj_st * obj);
 
 /**
+ * @brief Only display the hours and minutes values mode, colon twinkle.
+ *      Such as: "13:24" <=> "13 24"
+ *
+ * @param obj
+ * @param enabled false[default]: disabled; true: enabled
+ */
+void gt_clock_set_twinkle_colon_mode(gt_obj_st * obj, bool enabled);
+
+/**
+ * @brief Set the colon twinkle period, [default: 500ms]
+ *
+ * @param obj
+ * @param period_ms default: 500ms
+ */
+void gt_clock_set_twinkle_colon_period(gt_obj_st * obj, uint32_t period_ms);
+
+/**
  * @brief Enabled the 12-hour clock, [default: false]
  *      example: "13:25:40", enabled is: "01:25:40", otherwise is: "13:25:40".
  *
@@ -166,10 +194,14 @@ bool gt_clock_get_meridiem_mode(gt_obj_st * obj);
 
 /**
  * @brief Sets the format of the time display, default is "hh:mm:ss"
- *      [HH / hh]: hour
- *      [MM / mm]: minute
- *      [SS / ss]: second
- *      example: "hh|MM" -> "12|00".
+ *      [hh]: hour
+ *      [mm]: minute
+ *      [ss]: second
+ *      [yyyy]: year
+ *      [MM]: month
+ *      [dd]: day
+ *      [EEE]: week
+ *      example: "yyyy-MM-dd EEE hh:mm:ss" -> "2022-01-01 Sun 12:00:00".
  *
  * @param obj
  * @param format format string
@@ -194,6 +226,8 @@ void gt_clock_set_next_day_cb(gt_obj_st * obj, gt_clock_next_day_cb next_day_cb,
  * @param user_data The user data
  */
 void gt_clock_set_alert_cb(gt_obj_st * obj, gt_clock_alert_cb alert_cb, void * user_data);
+
+void gt_clock_set_second_handler_cb(gt_obj_st * obj, gt_clock_user_second_handler_cb_t hd_cb, void * user_data);
 
 /**
  * @brief clear all next day callback function
@@ -265,6 +299,7 @@ void gt_clock_set_font_cjk(gt_obj_st* obj, gt_font_cjk_et cjk);
 #endif
 void gt_clock_set_font_thick_en(gt_obj_st * obj, uint8_t thick);
 void gt_clock_set_font_thick_cn(gt_obj_st * obj, uint8_t thick);
+void gt_clock_set_font_style(gt_obj_st * obj, gt_font_style_et font_style);
 void gt_clock_set_space(gt_obj_st * obj, uint8_t space_x, uint8_t space_y);
 
 

@@ -24,6 +24,9 @@
 #include "../others/gt_log.h"
 #include "../others/gt_gc.h"
 
+#if GT_CFG_ENABLE_KEYPAD
+#include "./gt_keypad.h"
+#endif
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_OBJ
@@ -41,17 +44,17 @@ static void _init_cb(gt_obj_st * obj);
 static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e);
 static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e);
 
-static const gt_obj_class_st gt_obj_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_obj_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = (_gt_deinit_cb)NULL,
+    ._deinit_cb    = (_gt_deinit_cb_t)NULL,
     ._event_cb     = _obj_event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(gt_obj_st)
 };
 
-static const gt_obj_class_st gt_screen_class = {
-    ._init_cb      = (_gt_init_cb)NULL,
-    ._deinit_cb    = (_gt_deinit_cb)NULL,
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_screen_class = {
+    ._init_cb      = (_gt_init_cb_t)NULL,
+    ._deinit_cb    = (_gt_deinit_cb_t)NULL,
     ._event_cb     = _screen_event_cb,
     .type          = OBJ_TYPE_SCREEN,
     .size_style    = sizeof(gt_obj_st)
@@ -63,30 +66,30 @@ static const gt_obj_class_st gt_screen_class = {
 
 /* static functions -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj) {
+    gt_area_st real_area = {0};
     gt_attr_rect_st rect_attr;
-    if (gt_obj_is_show_bg(obj)) {
-        gt_graph_init_rect_attr(&rect_attr);
-        rect_attr.reg.is_fill    = true;
-        rect_attr.radius         = obj->radius;
+    gt_graph_init_rect_attr(&rect_attr);
+    rect_attr.reg.is_fill = true;
+    rect_attr.radius = obj->radius;
+
+    if (gt_obj_get_mask_effect(obj) && GT_STATE_PRESSED == gt_obj_get_state(obj)) {
+        rect_attr.bg_opa         = GT_OPA_100;
+        rect_attr.border_color  = gt_color_hex(0x308ac5);
+        rect_attr.fg_color      = gt_color_mix(gt_color_hex(0x308ac5), obj->bgcolor, 0x44);
+        rect_attr.bg_color      = gt_color_mix(gt_color_hex(0x308ac5), obj->bgcolor, 0x44);
+    } else if (gt_obj_is_show_bg(obj)) {
         rect_attr.bg_opa         = obj->opa;
         rect_attr.bg_color      = obj->bgcolor;
-        gt_area_st real_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
-        draw_bg(obj->draw_ctx, &rect_attr, &real_area);
+    } else {
+        draw_focus(obj, obj->radius);
+        return;
     }
-    if ( gt_obj_get_mask_effect(obj) && GT_STATE_PRESSED == gt_obj_get_state(obj) ) {
-        gt_graph_init_rect_attr(&rect_attr);
-        rect_attr.reg.is_fill    = true;
-        rect_attr.radius         = obj->radius;
-        rect_attr.bg_opa         = 0x44;
-        rect_attr.border_color  = gt_color_hex(0x308ac5);
-        rect_attr.fg_color      = gt_color_hex(0x308ac5);
-        rect_attr.bg_color      = gt_color_hex(0x308ac5);
-        gt_area_st real_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
-        draw_bg(obj->draw_ctx, &rect_attr, &real_area);
-    }
+    real_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
+    draw_bg(obj->draw_ctx, &rect_attr, &real_area);
+    draw_focus(obj, obj->radius);
 }
 
-static void _screen_scroll(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _screen_scroll(gt_obj_st * obj) {
     if (false == gt_obj_is_type(obj, OBJ_TYPE_SCREEN)) {
         return;
     }
@@ -117,21 +120,21 @@ static void _screen_scroll(gt_obj_st * obj) {
     gt_disp_scroll_area_act(-obj->process_attr.scroll.x, -obj->process_attr.scroll.y);
 }
 
-static void _masked_effect_handler(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _masked_effect_handler(gt_obj_st * obj) {
     if (false == gt_obj_get_mask_effect(obj)) {
         return;
     }
     gt_disp_invalid_area(obj);
 }
 
-static void _unmasked_effect_handler(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _unmasked_effect_handler(gt_obj_st * obj) {
     if (false == gt_obj_get_mask_effect(obj)) {
         return;
     }
     gt_disp_invalid_area(obj);
 }
 
-static void _change_state_by_trigger_mode(gt_obj_st * obj, bool is_pressed) {
+static GT_ATTRIBUTE_RAM_TEXT void _change_state_by_trigger_mode(gt_obj_st * obj, bool is_pressed) {
     if (gt_obj_get_trigger_mode(obj)) {
         if (false == is_pressed) {
             gt_obj_set_state(obj, (gt_state_et)!gt_obj_get_state(obj));
@@ -140,6 +143,19 @@ static void _change_state_by_trigger_mode(gt_obj_st * obj, bool is_pressed) {
     }
     gt_obj_set_state(obj, is_pressed ? GT_STATE_PRESSED : GT_STATE_NONE);
 }
+
+#if GT_CFG_ENABLE_KEYPAD
+static GT_ATTRIBUTE_RAM_TEXT void _auto_hide_keypad(gt_obj_st * scr) {
+    gt_obj_st * kp = NULL;
+    for (uint16_t i = 0; i < scr->cnt_child; ++i) {
+        kp = scr->child[i];
+        if (gt_obj_is_type(kp, GT_TYPE_KEYPAD)) {
+            gt_keypad_hide(kp);
+            gt_disp_invalid_area(scr);
+        }
+    }
+}
+#endif
 
 static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
@@ -193,6 +209,13 @@ static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         }
+        case GT_EVENT_TYPE_INPUT_KEY_RELEASED:
+        case GT_EVENT_TYPE_INPUT_RELEASED: {
+#if GT_CFG_ENABLE_KEYPAD
+            _auto_hide_keypad(obj);
+#endif
+            break;
+        }
         case GT_EVENT_TYPE_INPUT_SCROLL: {
             _screen_scroll(obj);
             break;
@@ -225,7 +248,7 @@ static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
  *
  * @param timer
  */
-static void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer) {
     gt_obj_st * obj = (gt_obj_st * )_gt_timer_get_user_data(timer);
     GT_CHECK_BACK(obj);
     gt_event_st * ptr = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
@@ -257,7 +280,7 @@ static void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer) {
 #endif
 }
 
-static gt_obj_st * _find_obj_recursive_by_id(gt_obj_st * self, gt_id_t widget_id) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _find_obj_recursive_by_id(gt_obj_st * self, gt_id_t widget_id) {
     gt_obj_st * target = NULL;
 
     if (widget_id == self->id) {
@@ -281,6 +304,7 @@ gt_obj_st * gt_obj_create(gt_obj_st * parent)
     GT_CHECK_BACK_VAL(obj, NULL);
 
     obj->fixed = false;
+    obj->focus_dis = GT_DISABLED;
     return obj;
 }
 
@@ -336,7 +360,7 @@ gt_id_t gt_obj_get_id(gt_obj_st * obj)
 
 bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent)
 {
-    GT_CHECK_BACK_VAL(obj, false);
+    if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(obj)) { return false; }
     gt_obj_st * p = obj->parent;
     while (p) {
         if (p == parent) {
@@ -345,6 +369,58 @@ bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent)
         p = p->parent;
     }
     return p == parent ? true : false;
+}
+
+uint16_t gt_obj_get_child_index(gt_obj_st * parent, gt_obj_st * obj)
+{
+    uint16_t ret = 0xFFFF;  /** Fail: 0xFFFF */
+    GT_CHECK_BACK_VAL(parent, ret);
+    GT_CHECK_BACK_VAL(obj, ret);
+    for (uint16_t i = 0; i < parent->cnt_child; ++i) {
+        if (parent->child[i] == obj) {
+            return i;
+        }
+    }
+    return ret;
+}
+
+
+gt_obj_st * gt_obj_search_child_by_type(gt_obj_st * parent, gt_obj_type_et type)
+{
+    gt_obj_st * ch = NULL;
+    GT_CHECK_BACK_VAL(parent, NULL);
+    for (uint16_t i = 0; i < parent->cnt_child; ++i) {
+        if (gt_obj_is_type(parent->child[i], type)) {
+            ch = parent->child[i];
+            break;
+        }
+    }
+    return ch;
+}
+
+uint16_t gt_obj_search_childs_count_by_type(gt_obj_st * parent, gt_obj_type_et type)
+{
+    uint16_t count = 0;
+    GT_CHECK_BACK_VAL(parent, 0);
+    for (uint16_t i = 0; i < parent->cnt_child; ++i) {
+        if (gt_obj_is_type(parent->child[i], type)) {
+            ++count;
+        }
+    }
+    return count;
+}
+
+gt_obj_st * gt_obj_within_which_scr(gt_obj_st * obj)
+{
+    GT_CHECK_BACK_VAL(obj, NULL);
+    gt_obj_st * p = obj->parent;
+    while (p) {
+        if (gt_obj_is_type(p, OBJ_TYPE_SCREEN)) {
+            break;
+        }
+        p = p->parent;
+    }
+    return p;
 }
 
 void gt_obj_destroy(gt_obj_st * obj)

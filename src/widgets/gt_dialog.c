@@ -52,7 +52,6 @@ typedef struct _gt_dialog_s {
 
     gt_color_t border_color;
     uint8_t border_width;
-    uint8_t border_radius;
 
     uint8_t outside_auto_hide : 1;
     uint8_t reserved : 7;
@@ -63,9 +62,9 @@ typedef struct _gt_dialog_s {
 static void _init_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static const gt_obj_class_st gt_dialog_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_dialog_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = NULL,
+    ._deinit_cb    = (_gt_deinit_cb_t)NULL,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_dialog_st)
@@ -94,7 +93,7 @@ static void _init_cb(gt_obj_st * obj) {
 
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill   = true;
-    rect_attr.radius        = style->border_radius;
+    rect_attr.radius        = obj->radius;
     rect_attr.bg_opa        = obj->opa;
     rect_attr.border_width  = style->border_width;
     rect_attr.border_color  = style->border_color;
@@ -386,12 +385,13 @@ gt_obj_st * gt_dialog_create(bool show_close_btn)
     _gt_dialog_st * style = (_gt_dialog_st * )obj;
 
     obj->visible = GT_INVISIBLE;
+    obj->focus_dis = GT_DISABLED;
     obj->opa = GT_OPA_0;
+    obj->radius = 10;
 
     style->outside_auto_hide = true;
     style->border_color = gt_color_hex(0xc7c7c7);
     style->border_width = 2;
-    style->border_radius = 10;
     style->anim_time = 250;
 
     /** Center 50% area */
@@ -489,11 +489,7 @@ void gt_dialog_set_bgcolor(gt_obj_st * dialog, gt_color_t color)
 
 void gt_dialog_set_border_radius(gt_obj_st * dialog, uint8_t radius)
 {
-    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
-        return ;
-    }
-    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
-    style->border_radius = radius;
+    gt_obj_set_radius(dialog, radius);
 }
 
 void gt_dialog_set_outside_auto_hide(gt_obj_st * dialog, bool auto_hide)
@@ -638,6 +634,18 @@ void gt_dialog_set_title_font_thick_cn(gt_obj_st * dialog, uint8_t thick)
     gt_label_set_font_thick_cn(style->title, thick);
 }
 
+void gt_dialog_set_title_font_style(gt_obj_st * dialog, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->title) {
+        return ;
+    }
+    gt_label_set_font_style(style->title, font_style);
+}
+
 void gt_dialog_set_content_font_color(gt_obj_st * dialog, gt_color_t color)
 {
     if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
@@ -757,6 +765,18 @@ void gt_dialog_set_content_font_thick_cn(gt_obj_st * dialog, uint8_t thick)
         return ;
     }
     gt_label_set_font_thick_cn(style->content, thick);
+}
+
+void gt_dialog_set_content_font_style(gt_obj_st * dialog, gt_font_style_et font_style)
+{
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->content) {
+        return ;
+    }
+    gt_label_set_font_style(style->content, font_style);
 }
 
 #endif  /** GT_USE_LAYER_TOP && GT_CFG_ENABLE_DIALOG */

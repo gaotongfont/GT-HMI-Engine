@@ -32,8 +32,18 @@
 #define _MAX_VIEW_PAGER_COUNT           (1 << _VIEW_PAGER_COUNT_BIT_WIDTH)
 
 /** tip area height */
-#define _TIP_BAR_HEIGHT                 24
-#define _TIP_BAR_POINT_HEIGHT           8
+#ifndef _TIP_BAR_HEIGHT
+    /**
+     * @brief The height of the tip bar
+     */
+    #define _TIP_BAR_HEIGHT             24
+#endif
+#ifndef _TIP_BAR_POINT_HEIGHT
+    /**
+     * @brief The height of the tip bar point
+     */
+    #define _TIP_BAR_POINT_HEIGHT       8
+#endif
 
 /**
  * effect
@@ -70,9 +80,9 @@ typedef struct _gt_view_pager_s {
 static void _init_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static const gt_obj_class_st _gt_view_pager_class = {
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st _gt_view_pager_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = NULL,
+    ._deinit_cb    = (_gt_deinit_cb_t)NULL,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_view_pager_st)
@@ -88,7 +98,7 @@ static const gt_obj_class_st _gt_view_pager_class = {
 
 
 /* static functions -----------------------------------------------------*/
-static void _draw_tip_bar(gt_obj_st * obj, gt_attr_rect_st * rect_attr) {
+static GT_ATTRIBUTE_RAM_TEXT void _draw_tip_bar(gt_obj_st * obj, gt_attr_rect_st * rect_attr) {
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
     uint8_t count = style->reg.count;
     uint16_t total_width = count * _TIP_BAR_POINT_SELECT_WIDTH;
@@ -142,8 +152,8 @@ static void _init_cb(gt_obj_st * obj) {
             area_bg.x += width;
         }
     }
-
     _draw_tip_bar(obj, &rect_attr);
+    draw_focus(obj, obj->radius);
 }
 
 /**
@@ -153,7 +163,7 @@ static void _init_cb(gt_obj_st * obj) {
  * @return true Target object can slide or disable view pager scroll
  * @return false
  */
-static inline bool _ignore_view_pager_slider_control(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _ignore_view_pager_slider_control(gt_obj_st * obj) {
     gt_obj_type_et type = gt_obj_class_get_type(obj);
     if (GT_TYPE_SLIDER == type) {
         return true;
@@ -178,7 +188,7 @@ static inline bool _ignore_view_pager_slider_control(gt_obj_st * obj) {
  * @returns true: childs has slider control
  *          false: childs has no slider control
  */
-static bool _unfixed_slider_widgets(gt_obj_st * self, bool is_root) {
+static GT_ATTRIBUTE_RAM_TEXT bool _unfixed_slider_widgets(gt_obj_st * self, bool is_root) {
     gt_obj_st * child = NULL;
     uint8_t is_slider = false, is_cur_slider = false;
 
@@ -206,7 +216,7 @@ static bool _unfixed_slider_widgets(gt_obj_st * self, bool is_root) {
     return is_cur_slider;
 }
 
-static inline void _init_child_prop(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _init_child_prop(gt_obj_st * obj) {
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_INSIDE, true);
 
@@ -238,18 +248,12 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_UP:
     case GT_EVENT_TYPE_INPUT_SCROLL_LEFT: {
-        value = gt_abs(obj->process_attr.scroll.x) / style->width;
-        if (value) {
-            gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - (value - 1) * style->width, GT_ANIM_ON);
-        }
+        gt_view_pager_scroll_to_fragment(obj, style->reg.index - 1);
         break;
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_DOWN:
     case GT_EVENT_TYPE_INPUT_SCROLL_RIGHT: {
-        value = (gt_abs(obj->process_attr.scroll.x) + style->width - 1) / style->width;
-        if ((value + 1) < style->reg.count) {
-            gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - ((value + 1) * style->width), GT_ANIM_ON);
-        }
+        gt_view_pager_scroll_to_fragment(obj, style->reg.index + 1);
         break;
     }
     default:
@@ -262,15 +266,15 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
  *
  * @param val
  */
-static inline bool _is_over_max_page(uint8_t val) {
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_over_max_page(uint8_t val) {
     return ((val + 1) < _MAX_VIEW_PAGER_COUNT) ? false : true;
 }
 
-static bool _child_is_group(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT bool _child_is_group(gt_obj_st * obj) {
     return (GT_TYPE_GROUP == obj->classes->type) ? true : false;
 }
 
-static void _child_set_group_area(gt_obj_st const * const view_pager, gt_obj_st * group) {
+static GT_ATTRIBUTE_RAM_TEXT void _child_set_group_area(gt_obj_st const * const view_pager, gt_obj_st * group) {
     gt_area_copy(&group->area, &view_pager->area);
 }
 
@@ -300,6 +304,16 @@ gt_obj_st * gt_view_pager_create(gt_obj_st * parent)
 
     /** tip point can not overflow */
     return obj;
+}
+
+void gt_view_pager_scroll_to_fragment(gt_obj_st * obj, gt_size_t index)
+{
+    _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
+    if (index < 0 || index >= style->reg.count) {
+        return;
+    }
+    gt_size_t tar_x = index * style->width;
+    gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - index * style->width, GT_ANIM_ON);
 }
 
 int8_t gt_view_pager_set_fragment_count(gt_obj_st * obj, uint8_t count)
@@ -354,6 +368,18 @@ void gt_view_pager_fragment_add_widget(gt_obj_st * view_pager, uint8_t fragment_
     uint16_t new_pos = (child->area.x % scr_width) + fragment_idx * scr_width;
 
     gt_obj_set_pos(child, new_pos, child->area.y);
+}
+
+gt_size_t gt_view_pager_get_widget_belong_fragment(gt_obj_st * view_pager, gt_obj_st * child)
+{
+    if (false == gt_obj_is_type(view_pager, OBJ_TYPE)) {
+        return -1;
+    }
+    if (false == gt_obj_is_child(child, view_pager)) {
+        return -1;
+    }
+    _gt_view_pager_st * style = (_gt_view_pager_st * )view_pager;
+    return (child->area.x + gt_abs(view_pager->process_attr.scroll.x)) / style->width;
 }
 
 void gt_view_pager_set_glass(gt_obj_st * obj, bool enabled)

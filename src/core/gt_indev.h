@@ -22,9 +22,15 @@ extern "C" {
 
 
 
-/* typedef --------------------------------------------------------------*/
-
-
+/* typedef --------------------------------------------------------------*/\
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
+typedef enum{
+    GT_FOCUS_DIR_RIGHT = 0,
+    GT_FOCUS_DIR_LEFT,
+    GT_FOCUS_DIR_DOWN,
+    GT_FOCUS_DIR_UP,
+}gt_focus_dir_et;
+#endif
 
 /* macros ---------------------------------------------------------------*/
 
@@ -91,6 +97,20 @@ void gt_indev_set_enabled(bool enabled);
 bool gt_indev_is_enabled(void);
 
 bool _gt_indev_remove_want_delate_target(gt_obj_st * target);
+
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
+
+/**
+ * @brief Release focus lock
+ *
+ */
+void gt_indev_release_focus_lock(void);
+#endif
+
+
+#if GT_INDEV_SIMULATE_POINTER
+void gt_indev_simulate_handler(gt_indev_state_et state, gt_size_t x, gt_size_t y);
+#endif
 
 #ifdef __cplusplus
 } /*extern "C"*/

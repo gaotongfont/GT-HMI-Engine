@@ -215,16 +215,6 @@ gt_res_t gt_img_decoder_read_line(_gt_img_dsc_st * dsc, gt_size_t x, gt_size_t y
  */
 gt_res_t gt_img_decoder_close(_gt_img_dsc_st * dsc);
 
-#if GT_USE_FILE_HEADER
-gt_res_t gt_img_decoder_fh_get_info(gt_file_header_param_st const * const param, _gt_img_info_st * header);
-gt_res_t gt_img_decoder_fh_open(_gt_img_dsc_st * dsc, gt_file_header_param_st const * const param);
-#endif
-
-#if GT_USE_DIRECT_ADDR
-gt_res_t gt_img_decoder_direct_addr_get_info(gt_addr_t addr, _gt_img_info_st * header);
-gt_res_t gt_img_decoder_direct_addr_open(_gt_img_dsc_st * dsc, gt_addr_t addr);
-#endif
-
 /**
  * @brief Set the information callback function pointer into image decoder object.
  *
@@ -263,6 +253,8 @@ void gt_img_decoder_set_read_line_cb(_gt_img_decoder_st * decoder, gt_img_decode
 void gt_img_decoder_set_close_cb(_gt_img_decoder_st * decoder, gt_img_decoder_close_t close_cb);
 
 #if GT_USE_FILE_HEADER
+gt_res_t gt_img_decoder_fh_get_info(gt_file_header_param_st const * const param, _gt_img_info_st * header);
+gt_res_t gt_img_decoder_fh_open(_gt_img_dsc_st * dsc, gt_file_header_param_st const * const param);
 /**
  * @brief Set the information callback function pointer into image decoder object
  *      by file header.
@@ -285,6 +277,8 @@ void gt_img_decoder_set_fh_open_cb(_gt_img_decoder_st * decoder, gt_img_decoder_
 #endif
 
 #if GT_USE_DIRECT_ADDR
+gt_res_t gt_img_decoder_direct_addr_get_info(gt_addr_t addr, _gt_img_info_st * header);
+gt_res_t gt_img_decoder_direct_addr_open(_gt_img_dsc_st * dsc, gt_addr_t addr);
 /**
  * @brief Set the information callback function pointer into image decoder object
  *      by direct address.
@@ -304,6 +298,32 @@ void gt_img_decoder_set_direct_addr_info_cb(_gt_img_decoder_st * decoder, gt_img
  *      create image file object.
  */
 void gt_img_decoder_set_direct_addr_open_cb(_gt_img_decoder_st * decoder, gt_img_decoder_direct_addr_open_t direct_addr_open_cb);
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+/**
+ * @brief Get image information by custom size direct address
+ *
+ * @param dac
+ * @param header
+ * @return gt_res_t
+ */
+gt_res_t gt_img_decoder_custom_size_addr_get_info(gt_direct_addr_custom_size_st * dac, _gt_img_info_st * header);
+/**
+ * @brief Open image file and create a file object by custom size direct address
+ *
+ * @param dsc
+ * @param dac
+ * @return gt_res_t
+ */
+gt_res_t gt_img_decoder_custom_size_addr_open(_gt_img_dsc_st * dsc, gt_direct_addr_custom_size_st * dac);
+/**
+ * @brief Close an open file object by custom size direct address
+ *
+ * @param dsc
+ * @return gt_res_t
+ */
+gt_res_t gt_img_decoder_custom_size_addr_close(_gt_img_dsc_st * dsc);
 #endif
 
 #ifdef __cplusplus

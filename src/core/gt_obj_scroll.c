@@ -35,22 +35,22 @@
 
 
 /* static functions -----------------------------------------------------*/
-static void _scroll_by_raw(gt_obj_st * obj, int32_t x, int32_t y) {
+static GT_ATTRIBUTE_RAM_TEXT void _scroll_by_raw(gt_obj_st * obj, int32_t x, int32_t y) {
     _gt_obj_set_process_scroll_xy(obj, x, y);
     gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
 }
 
-static void _scroll_by_x(void * obj, int32_t x) {
+static GT_ATTRIBUTE_RAM_TEXT void _scroll_by_x(void * obj, int32_t x) {
     _gt_obj_set_process_scroll_xy((gt_obj_st * )obj, x - ((gt_obj_st * )obj)->process_attr.scroll.x, 0);
     gt_event_send((gt_obj_st * )obj, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
 }
 
-static void _scroll_by_y(void * obj, int32_t y) {
+static GT_ATTRIBUTE_RAM_TEXT void _scroll_by_y(void * obj, int32_t y) {
     _gt_obj_set_process_scroll_xy((gt_obj_st * )obj, 0, y - ((gt_obj_st * )obj)->process_attr.scroll.y);
     gt_event_send((gt_obj_st * )obj, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
 }
 
-void _scroll_ready_cb(struct gt_anim_s * anim) {
+static GT_ATTRIBUTE_RAM_TEXT void _scroll_ready_cb(struct gt_anim_s * anim) {
     gt_event_send((gt_obj_st * )anim->tar, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
 }
 
@@ -99,11 +99,7 @@ void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim
     gt_anim_del(obj, _scroll_by_x);
     gt_anim_del(obj, _scroll_by_y);
 
-    gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
-
     _scroll_by_raw(obj, dx, dy);
-
-    gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
 }
 
 void gt_obj_scroll_to_x(struct gt_obj_s * obj, gt_size_t x, gt_anim_enable_et en)
@@ -147,6 +143,9 @@ void _gt_obj_scroll_internal(gt_obj_st * obj)
         scroll->x = right;
     } else if (right >= 0) {
         scroll->x = 0;
+    }
+    if (obj->process_attr.scroll_prev.x == scroll->x && obj->process_attr.scroll_prev.y == scroll->y) {
+        return;
     }
 
     _gt_obj_move_child_by(obj, scroll->x - obj->process_attr.scroll_prev.x, scroll->y - obj->process_attr.scroll_prev.y);

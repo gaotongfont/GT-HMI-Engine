@@ -43,11 +43,11 @@
  * @return true find it out
  * @return false not find it out
  */
-static bool _default_equal_cb(void * item, void * target) {
+static GT_ATTRIBUTE_RAM_TEXT bool _default_equal_cb(void * item, void * target) {
     return target == item ? true : false;
 }
 
-static inline void _free_item_obj(_gt_vector_st * vector, _gt_vector_item_st * item_p) {
+static GT_ATTRIBUTE_RAM_TEXT inline void _free_item_obj(_gt_vector_st * vector, _gt_vector_item_st * item_p) {
     void * val = item_p->val;
 
     _gt_list_del(&item_p->node);
@@ -60,13 +60,13 @@ static inline void _free_item_obj(_gt_vector_st * vector, _gt_vector_item_st * i
     vector->free_item_cb(val);
 }
 
-static bool _gt_vector_iterator_has_next(_iter_dsc_st * vct_dsc) {
+static GT_ATTRIBUTE_RAM_TEXT bool _gt_vector_iterator_has_next(_iter_dsc_st * vct_dsc) {
     GT_CHECK_BACK_VAL(vct_dsc, false);
     GT_CHECK_BACK_VAL(vct_dsc->iter_ctl, false);
     return vct_dsc->iter_ctl->idx < vct_dsc->count ? true : false;
 }
 
-static void * _gt_vector_iterator_next(_iter_dsc_st * vct_dsc) {
+static GT_ATTRIBUTE_RAM_TEXT void * _gt_vector_iterator_next(_iter_dsc_st * vct_dsc) {
     GT_CHECK_BACK_VAL(vct_dsc, false);
     GT_CHECK_BACK_VAL(vct_dsc->iter_ctl, false);
 
@@ -79,7 +79,7 @@ static void * _gt_vector_iterator_next(_iter_dsc_st * vct_dsc) {
     return vct_dsc->iter_ctl->item_p->val;
 }
 
-static gt_size_t _gt_vector_iterator_index(_iter_dsc_st * vct_dsc) {
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t _gt_vector_iterator_index(_iter_dsc_st * vct_dsc) {
     GT_CHECK_BACK_VAL(vct_dsc, -1);
     GT_CHECK_BACK_VAL(vct_dsc->iter_ctl, -1);
     return vct_dsc->iter_ctl->idx;
@@ -155,10 +155,11 @@ bool _gt_vector_replace_item(_gt_vector_st * vector_p, uint16_t index, void * it
 
 bool _gt_vector_remove_item(_gt_vector_st * vector_p, void * target)
 {
-    uint16_t i = 0, count = vector_p->count;
-    uint8_t is_find = false;
     GT_CHECK_BACK_VAL(vector_p, false);
     GT_CHECK_BACK_VAL(target, false);
+
+    uint16_t i = 0, count = vector_p->count;
+    uint8_t is_find = false;
     GT_CHECK_BACK_VAL(count, false);
     GT_CHECK_BACK_VAL(vector_p->equal_item_cb, false);
 
@@ -171,6 +172,27 @@ bool _gt_vector_remove_item(_gt_vector_st * vector_p, void * target)
         _free_item_obj(vector_p, item_p);
         --vector_p->count;
         is_find = true;
+    }
+    if (vector_p->index + 1 > vector_p->count) {
+        vector_p->index = vector_p->count - 1;
+    }
+    return is_find;
+}
+
+bool _gt_vector_remove_latest_item(_gt_vector_st * vector_p)
+{
+    GT_CHECK_BACK_VAL(vector_p, false);
+    uint16_t i = 0, count = vector_p->count;
+    uint8_t is_find = false;
+    GT_CHECK_BACK_VAL(count, false);
+
+    _gt_vector_item_st * item_p = NULL;
+    _gt_vector_item_st * backup_p = NULL;
+    _gt_list_for_each_entry_safe_reverse(item_p, backup_p, &vector_p->list_head, _gt_vector_item_st, node) {
+        _free_item_obj(vector_p, item_p);
+        --vector_p->count;
+        is_find = true;
+        break;
     }
     if (vector_p->index + 1 > vector_p->count) {
         vector_p->index = vector_p->count - 1;
@@ -292,10 +314,10 @@ _gt_vector_iterator_st _gt_vector_get_iterator(_gt_vector_st * vector)
         .next = _gt_vector_iterator_next,
         .index = _gt_vector_iterator_index,
     };
-    uint16_t instance = sizeof(_gt_vector_iterator_ctl_st);
+    uint16_t instance = sizeof(_gt_iterator_ctl_st);
     GT_CHECK_BACK_VAL(vector, ret_iter);
     if (NULL == vector->iter_ctl) {
-        vector->iter_ctl = (_gt_vector_iterator_ctl_st * )gt_mem_malloc(instance);
+        vector->iter_ctl = (_gt_iterator_ctl_st * )gt_mem_malloc(instance);
         GT_CHECK_BACK_VAL(vector->iter_ctl, ret_iter);
     }
     gt_memset(vector->iter_ctl, 0, instance);

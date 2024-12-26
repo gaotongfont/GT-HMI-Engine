@@ -23,6 +23,14 @@ unsigned int UnicodeToGBK(unsigned int fontcode)
 {
     return 0;
 }
+unsigned int BIG5ToGBK(unsigned int fontcode)
+{
+    return 0;
+}
+unsigned int Shift_JIS_To_JIS0208(unsigned int fontcode)
+{
+    return 0;
+}
 
 
 const struct gt_font_func_s gt_get_font_func[] = {

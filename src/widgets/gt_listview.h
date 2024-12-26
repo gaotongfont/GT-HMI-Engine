@@ -20,7 +20,10 @@ extern "C" {
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "../core/gt_style.h"
+#include "../core/gt_event.h"
 #include "../font/gt_font.h"
+#include "../hal/gt_hal_fs.h"
+#include "./gt_switch.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -39,6 +42,13 @@ extern "C" {
     #define GT_LISTVIEW_USE_ELEMENT_TYPE_RECT       0
 #endif
 
+#ifndef GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH
+    /**
+     * @brief 0[defalut]: Do not use switch element;
+     */
+    #define GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH     0
+#endif
+
 /* typedef --------------------------------------------------------------*/
 typedef enum gt_listview_element_type_s {
     GT_LISTVIEW_ELEMENT_TYPE_IMG = 0,
@@ -46,6 +56,9 @@ typedef enum gt_listview_element_type_s {
 
 #if GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
     GT_LISTVIEW_ELEMENT_TYPE_RECT,
+#endif
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH
+    GT_LISTVIEW_ELEMENT_TYPE_SWITCH,
 #endif
 
     _GT_LISTVIEW_ELEMENT_TYPE_MAX,
@@ -79,6 +92,20 @@ typedef struct gt_listview_rect_s {
 }gt_listview_rect_st;
 #endif
 
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH
+typedef struct gt_listview_switch_s {
+    gt_event_cb_t change_cb;
+    gt_color_t pointer;
+    gt_color_t bg_act;
+    gt_color_t bg_ina;
+    gt_color_t divider;
+    gt_switch_style_et sw_type;
+    uint8_t show_divider_line : 1;
+    uint8_t bubble_notify : 1;
+    uint8_t state : 1;  /** default state, value set by @ref gt_state_et */
+}gt_listview_switch_st;
+#endif
+
 typedef struct gt_listview_custom_item_s {
     char * src;
     uint16_t src_len;
@@ -95,7 +122,20 @@ typedef struct gt_listview_custom_item_s {
     gt_font_info_st * font_info_p;
 #endif
 #if GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
-    gt_listview_rect_st rect;
+    gt_listview_rect_st * rect_p;
+#endif
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH
+    gt_listview_switch_st * switch_p;
+#endif
+    /**
+     * @brief Using image raw data, img_raw is valid value must be set image
+     * meta data, and ignore src value.
+     * [default: NULL]
+     */
+    gt_color_img_raw_st * img_raw_p;
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_direct_addr_custom_size_st * custom_addr;
 #endif
 }gt_listview_custom_item_st;
 
@@ -135,7 +175,7 @@ void gt_listview_set_next_row_item_count(gt_obj_st * listview, uint8_t count);
  *
  * @param listview listview obj
  * @param text text
- * @return item object, which child[0]: label
+ * @return The item object, which child[0]: label
  */
 gt_obj_st * gt_listview_add_item(gt_obj_st * listview, char const * text);
 
@@ -168,6 +208,16 @@ gt_obj_st * gt_listview_add_item_icons(gt_obj_st * listview, char * left_icon, c
  * @return item object, which child[0]: label
  */
 gt_obj_st * gt_listview_add_item_by_param(gt_obj_st * listview, gt_listview_param_st * param);
+
+/**
+ * @brief get element by item index and element index
+ *
+ * @param listview
+ * @param item_idx item index
+ * @param element_idx element index of item object
+ * @return gt_obj_st*
+ */
+gt_obj_st * gt_listiew_get_element_by(gt_obj_st * listview, uint16_t item_idx, uint16_t element_idx);
 
 /**
  * @brief add item to listview obj with custom element
@@ -225,6 +275,8 @@ void gt_listview_set_icon_to_right(gt_obj_st * listview, bool enabled);
  * @param height The height of the item
  */
 void gt_listview_set_item_height(gt_obj_st * listview, uint16_t height);
+
+uint16_t gt_listview_get_item_height(gt_obj_st * listview);
 
 /**
  * @brief Enabled the listview item selected effect
@@ -342,6 +394,7 @@ void gt_listview_set_septal_line(gt_obj_st * listview, bool enabled);
  * @param height the line height 1[default]: 1 pixel
  */
 void gt_listview_set_septal_line_size(gt_obj_st * listview, uint16_t width, uint16_t height);
+uint16_t gt_listview_get_septal_line_height(gt_obj_st * listview);
 
 /**
  * @brief Set the split line color between each row to be displayed
@@ -367,6 +420,17 @@ void gt_listview_set_septal_line_opa(gt_obj_st * listview, gt_opa_t opa);
  * @param ver
  */
 void gt_listview_set_item_space(gt_obj_st * listview, uint16_t hor, uint16_t ver);
+uint16_t gt_listview_get_item_space_y(gt_obj_st * listview);
+
+/**
+ * @brief According to the number of items want to display in the same time,
+ *      calculate the height of the listview widget, include reduce size, border size.
+ *
+ * @param listview
+ * @param item_count The number of items want to display in the same time
+ * @return uint16_t
+ */
+uint16_t gt_listview_get_resize_height(gt_obj_st * listview, uint16_t item_count);
 
 /**
  * @brief set listview show font size
@@ -396,6 +460,7 @@ void gt_listview_set_font_cjk(gt_obj_st* listview, gt_font_cjk_et cjk);
 void gt_listview_set_font_thick_en(gt_obj_st * listview, uint8_t thick);
 void gt_listview_set_font_thick_cn(gt_obj_st * listview, uint8_t thick);
 void gt_listview_set_font_encoding(gt_obj_st * listview, gt_encoding_et encoding);
+void gt_listview_set_font_style(gt_obj_st * listview, gt_font_style_et font_style);
 
 void gt_listview_set_font_space(gt_obj_st * listview, uint8_t space_x, uint8_t space_y);
 

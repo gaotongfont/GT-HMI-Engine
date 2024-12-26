@@ -25,6 +25,9 @@ extern "C" {
 #include "../hal/gt_hal_file_header.h"
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+#include "../hal/gt_hal_fs.h"
+#endif
 
 /* define ---------------------------------------------------------------*/
 
@@ -158,6 +161,18 @@ void gt_imgbtn_set_src_release_by_direct_addr(gt_obj_st * imgbtn, gt_addr_t addr
 bool gt_imgbtn_add_state_item_by_direct_addr(gt_obj_st * obj, gt_addr_t addr);
 
 bool gt_imgbtn_remove_state_item_by_direct_addr(gt_obj_st * obj, gt_addr_t addr);
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+void gt_imgbtn_set_src_by_custom_size_addr(gt_obj_st * imgbtn, gt_direct_addr_custom_size_st * dac);
+
+void gt_imgbtn_set_src_press_by_custom_size_addr(gt_obj_st * imgbtn, gt_direct_addr_custom_size_st * dac);
+
+void gt_imgbtn_set_src_release_by_custom_size_addr(gt_obj_st * imgbtn, gt_direct_addr_custom_size_st * dac);
+
+bool gt_imgbtn_add_state_item_by_custom_size_addr(gt_obj_st * obj, gt_direct_addr_custom_size_st * dac);
+
+bool gt_imgbtn_remove_state_item_by_custom_size_addr(gt_obj_st * obj, gt_direct_addr_custom_size_st * dac);
 #endif
 
 /**

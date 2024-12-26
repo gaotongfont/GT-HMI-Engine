@@ -77,6 +77,17 @@ gt_fs_fp_st * gt_fs_fh_open(gt_file_header_param_st const * const fh_param, gt_f
 gt_fs_fp_st * gt_fs_direct_addr_open(gt_addr_t addr, gt_fs_mode_et mode);
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+/**
+ * @brief Open file by custom size direct address
+ *
+ * @param dac
+ * @param mode
+ * @return gt_fs_fp_st*
+ */
+gt_fs_fp_st * gt_fs_custom_size_addr_open(gt_direct_addr_custom_size_st * dac, gt_fs_mode_et mode);
+#endif
+
 /**
  * @brief Read file contents from file descriptor
  *
@@ -160,6 +171,16 @@ gt_fs_res_et gt_fs_fh_read_img_wh(gt_file_header_param_st * fh, uint16_t * w, ui
  */
 gt_fs_res_et gt_fs_direct_addr_read_img_wh(gt_addr_t addr, uint16_t * w, uint16_t * h);
 #endif
+
+/**
+ * @brief Directly read the physical data from vf(HMI-chip, flash, etc) the address
+ *
+ * @param addr HMI-chip or Flash address
+ * @param len The number of bytes to read
+ * @param data The buffer to save the data
+ * @return uint32_t The number of bytes read back
+ */
+uint32_t gt_fs_read_direct_physical(gt_addr_t addr, uint32_t len, uint8_t * data);
 
 /**
  * @brief Close the file operation handler, which need to

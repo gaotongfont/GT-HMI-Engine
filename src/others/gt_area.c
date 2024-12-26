@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_area.h"
+#include "../core/gt_disp.h"
 #include "../gt_conf.h"
 #include "./gt_log.h"
 
@@ -175,13 +176,73 @@ void gt_area_join(gt_area_st * res, const gt_area_st * const src, const gt_area_
 
 bool gt_area_check_legal(gt_area_st * area)
 {
-    if ( !(area->w > GT_SCREEN_WIDTH || area->h > GT_SCREEN_HEIGHT) ) {
+    uint16_t hor = gt_disp_get_res_hor(NULL);
+    uint16_t ver = gt_disp_get_res_ver(NULL);
+    if ( !(area->w > hor || area->h > ver) ) {
         return true;
     }
-
-    area->w = GT_SCREEN_WIDTH;
-    area->h = GT_SCREEN_HEIGHT;
+    area->w = hor;
+    area->h = ver;
     return false;
 }
 
+bool gt_area_intersect_get(gt_area_st * res_p, const gt_area_st * a1_p, const gt_area_st * a2_p)
+{
+    gt_size_t x2, y2;
+    res_p->x = GT_MAX(AREA_X1(a1_p), AREA_X1(a2_p));
+    res_p->y = GT_MAX(AREA_Y1(a1_p), AREA_Y1(a2_p));
+    x2 = GT_MIN(AREA_X2(a1_p), AREA_X2(a2_p));
+    y2 = GT_MIN(AREA_Y2(a1_p), AREA_Y2(a2_p));
+    res_p->w = x2 - res_p->x;
+    res_p->h = y2 - res_p->y;
+
+    bool union_ok = true;
+    if((AREA_X1(res_p) > x2) || (AREA_Y1(res_p) > y2)) {
+        return true;
+    }
+
+    return true;
+}
+
+
+void gt_rounded_area_get(int16_t angle, uint16_t radius, uint8_t thickness, gt_area_st * res_area)
+{
+    const uint8_t ps = 8;
+    const uint8_t pa = 127;
+
+    int32_t thick_half = thickness / 2;
+    uint8_t thick_corr = (thickness & 0x01) ? 0 : 1;
+
+    int32_t cir_x;
+    int32_t cir_y;
+
+    cir_x = ((radius - thick_half) * gt_sin(90 - angle)) >> (GT_MATH_TRIGO_SHIFT - ps);
+    cir_y = ((radius - thick_half) * gt_sin(angle)) >> (GT_MATH_TRIGO_SHIFT - ps);
+
+    gt_size_t x2, y2;
+    /*Actually the center of the pixel need to be calculated so apply 1/2 px offset*/
+    if(cir_x > 0) {
+        cir_x = (cir_x - pa) >> ps;
+        res_area->x = cir_x - thick_half + thick_corr;
+        x2 = cir_x + thick_half;
+    }
+    else {
+        cir_x = (cir_x + pa) >> ps;
+        res_area->x = cir_x - thick_half;
+        x2 = cir_x + thick_half - thick_corr;
+    }
+
+    if(cir_y > 0) {
+        cir_y = (cir_y - pa) >> ps;
+        res_area->y = cir_y - thick_half + thick_corr;
+        y2 = cir_y + thick_half;
+    }
+    else {
+        cir_y = (cir_y + pa) >> ps;
+        res_area->y = cir_y - thick_half;
+        y2 = cir_y + thick_half - thick_corr;
+    }
+    res_area->w = x2 - res_area->x + 1;
+    res_area->h = y2 - res_area->y + 1;
+}
 /* end ------------------------------------------------------------------*/

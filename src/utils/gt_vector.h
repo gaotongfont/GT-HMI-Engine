@@ -68,14 +68,14 @@ typedef struct {
 typedef struct _gt_vector_iterator_s {
     has_next_cb has_next;
     next_cb next;
-    index_cb index;
+    index_cb index;         /** When the next() function is executed, index automatically increases by 1 */
     _iter_dsc_st * dsc_t;
 }_gt_vector_iterator_st;
 
-typedef struct _gt_vector_iterator_ctl_s {
+typedef struct _gt_iterator_ctl_s {
     _gt_vector_item_st * item_p;
     gt_size_t idx;
-}_gt_vector_iterator_ctl_st;
+}_gt_iterator_ctl_st;
 
 typedef struct _gt_vector_s {
     struct _gt_list_head list_head;
@@ -86,7 +86,7 @@ typedef struct _gt_vector_s {
     gt_size_t count;
     gt_size_t index;
 
-    _gt_vector_iterator_ctl_st * iter_ctl;
+    _gt_iterator_ctl_st * iter_ctl;
 }_gt_vector_st;
 
 
@@ -159,6 +159,15 @@ bool _gt_vector_replace_item(_gt_vector_st * vector_p, uint16_t index, void * it
  * @return false
  */
 bool _gt_vector_remove_item(_gt_vector_st * vector_p, void * target);
+
+/**
+ * @brief Remove the latest item from vector
+ *
+ * @param vector_p
+ * @return true
+ * @return false
+ */
+bool _gt_vector_remove_latest_item(_gt_vector_st * vector_p);
 
 /**
  * @brief Get the prev item from vector, index will be decreased

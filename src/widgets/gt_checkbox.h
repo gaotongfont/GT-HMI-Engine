@@ -52,6 +52,9 @@ gt_obj_st * gt_checkbox_create(gt_obj_st * parent);
  * @param fmt text format
  */
 void gt_checkbox_set_text(gt_obj_st * checkbox, const char * fmt, ...);
+
+void gt_checkbox_set_text_by_len(gt_obj_st * checkbox, const char * text, uint16_t len);
+
 char * gt_checkbox_get_text(gt_obj_st * checkbox);
 
 void gt_checkbox_set_font_color(gt_obj_st * checkbox, gt_color_t color);
@@ -69,6 +72,7 @@ void gt_checkbox_set_font_gray(gt_obj_st * checkbox, uint8_t gray);
 void gt_checkbox_set_font_thick_en(gt_obj_st * checkbox, uint8_t thick);
 void gt_checkbox_set_font_thick_cn(gt_obj_st * checkbox, uint8_t thick);
 void gt_checkbox_set_font_encoding(gt_obj_st * checkbox, gt_encoding_et encoding);
+void gt_checkbox_set_font_style(gt_obj_st * checkbox, gt_font_style_et font_style);
 void gt_checkbox_set_space(gt_obj_st * checkbox, uint8_t space_x, uint8_t space_y);
 
 void gt_checkbox_set_font_point_offset_x(gt_obj_st * checkbox , gt_size_t x);

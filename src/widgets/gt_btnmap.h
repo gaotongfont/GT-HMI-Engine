@@ -35,14 +35,14 @@ typedef struct _gt_map_s
 }gt_map_st;
 
 /**
- * @brief disp special buttons
+ * @brief show special buttons
  *
  * @param kv buttons kv
  * @param rect_attr @gt_attr_rect_st
  * @param font_attr @gt_attr_font_st
  * @return  true: Revise  false: Not Revise
  */
-typedef bool (* gt_btnmap_disp_special_btn_cb_t)(gt_obj_st* obj, const char* const kv, gt_attr_font_st* font_attr);
+typedef bool (* gt_btnmap_show_special_btn_cb_t)(gt_obj_st* obj, const char* const kv, gt_attr_font_st* font_attr);
 
 /**
  * @brief push button
@@ -63,6 +63,7 @@ gt_obj_st * gt_btnmap_create(gt_obj_st * parent);
 void gt_btnmap_set_map(gt_obj_st* btnmap, gt_map_st* map, uint16_t map_type);
 uint16_t gt_btnmap_get_map_type(gt_obj_st* btnmap);
 void gt_btnmap_set_input(gt_obj_st * btnmap, gt_obj_st * input);
+gt_obj_st * gt_btnmap_get_input(gt_obj_st * btnmap);
 
 void gt_btnmap_set_radius(gt_obj_st* btnmap, uint8_t radius);
 void gt_btnmap_set_btn_height(gt_obj_st* btnmap, uint16_t height);
@@ -88,8 +89,9 @@ void gt_btnmap_set_font_cjk(gt_obj_st* btnmap, gt_font_cjk_et cjk);
 void gt_btnmap_set_font_thick_en(gt_obj_st * btnmap, uint8_t thick);
 void gt_btnmap_set_font_thick_cn(gt_obj_st * btnmap, uint8_t thick);
 void gt_btnmap_set_font_encoding(gt_obj_st * btnmap, gt_encoding_et encoding);
+void gt_btnmap_set_font_style(gt_obj_st * btnmap, gt_font_style_et font_style);
 
-void gt_btnmap_set_disp_special_btn_handler(gt_obj_st * btnmap, gt_btnmap_disp_special_btn_cb_t disp_special_btn_cb);
+void gt_btnmap_set_disp_special_btn_handler(gt_obj_st * btnmap, gt_btnmap_show_special_btn_cb_t disp_special_btn_cb);
 void gt_btnmap_set_push_btn_kv_handler(gt_obj_st * btnmap, gt_btnmap_push_btn_kv_cb_t push_btn_kv_cb);
 void gt_btnmap_set_special_btn_color_background(gt_obj_st * btnmap, gt_color_t color);
 void gt_btnmap_set_special_btn_border_width_and_color(gt_obj_st * btnmap, gt_size_t width, gt_color_t color);
