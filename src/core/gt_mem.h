@@ -137,8 +137,9 @@ void gt_mem_check_used(void);
  * @param start Get the start address of the memory pool
  * @param end Get the end address of the memory pool
  * @param current Get the current address of the memory pool
+ * @param blocks Get the using blocks of the memory pool
  */
-void gt_mem_heap_get_space(MEM_UNIT * start, MEM_UNIT * end, MEM_UNIT * current);
+void gt_mem_heap_get_space(MEM_UNIT * start, MEM_UNIT * end, MEM_UNIT * current, MEM_UNIT * blocks);
 
 #define gt_mem_malloc(size) _mem_malloc(size, _GT_LOG_PRINT_FILE, __func__, __LINE__)
 #define gt_mem_realloc(ptr, size) _mem_realloc(ptr, size, _GT_LOG_PRINT_FILE, __func__, __LINE__)
