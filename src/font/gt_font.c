@@ -550,7 +550,7 @@ static GT_ATTRIBUTE_RAM_TEXT uint32_t _get_font_option(gt_font_st * font, uint32
         }
     }
     else if(_gt_emoticon_font(unicode)){
-        uint32_t tmp_option = gt_font_family_get_option(font->info.family, FONT_LAN_EMOTICON, font->info.cjk);
+        uint32_t tmp_option = gt_font_family_get_option(font->info.family, FONT_LAN_EMOTION, font->info.cjk);
         if(GT_CFG_DEFAULT_FONT_FAMILY != tmp_option){
             return tmp_option;
         }
