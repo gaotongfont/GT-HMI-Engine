@@ -501,20 +501,20 @@ void gt_mem_heap_get_space(MEM_UNIT * start, MEM_UNIT * end, MEM_UNIT * current,
         return;
     }
     gt_mem_free(addr_now);
-    *start = (MEM_UNIT)_heap_info.addr_start;
-    *end = (MEM_UNIT)_heap_info.addr_end;
-    *current = (MEM_UNIT)addr_now - 1024;
+    if (start)  { *start = (MEM_UNIT)_heap_info.addr_start; }
+    if  (end) { *end = (MEM_UNIT)_heap_info.addr_end; }
+    if (current) { *current = (MEM_UNIT)addr_now - 1024; }
 #if USE_MEM_BLOCKS_REMARK
-    *blocks = _heap_info.blocks;
+    if (blocks) { *blocks = _heap_info.blocks; }
 #else
-    *blocks = 0;
+    if (blocks) { *blocks = 0; }
+#endif
+#else
+    if (start)  { *start = 0; }
+    if (end) { *end = 0; }
+    if (current) { *current = 0; }
+    if (blocks) { *blocks = 0; }
 #endif
     addr_now = NULL;
-#else
-    *start = 0;
-    *end = 0;
-    *current = 0;
-    *blocks = 0;
-#endif
 }
 /* end ------------------------------------------------------------------*/
