@@ -502,7 +502,7 @@ void gt_mem_check_used(void)
         _heap_info.blocks, _heap_info.used * 100.0 / total_size, _heap_info.used, total_size, total_size / 1024);
 #else
     GT_LOGI(GT_LOG_TAG_MEM, "used: %.2f%%",used * 100);
-#endif
+#endif  /** USE_MEM_REAL_USED_REMARK */
 #endif
 }
 
