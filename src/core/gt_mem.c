@@ -42,12 +42,12 @@
  */
 #define USE_MEM_MAX_REMARK              0
 
-#ifndef USE_MEM_BLOCKS_REMARK
+#ifndef USE_MEM_REAL_USED_REMARK
     /**
-     * @brief Remark memory blocks at runtime
+     * @brief Remark the real used memory and block count
      *      default: 0
      */
-    #define USE_MEM_BLOCKS_REMARK       0
+    #define USE_MEM_REAL_USED_REMARK    0
 #endif
 
 #if USE_MEM_TRACE_DEBUG_BY_FILE
@@ -120,7 +120,8 @@ typedef struct {
     MEM_UNIT addr_start;
     MEM_UNIT addr_end;
 
-#if USE_MEM_BLOCKS_REMARK
+#if USE_MEM_REAL_USED_REMARK
+    MEM_UNIT used;
     MEM_UNIT blocks;        /** current using block count */
 #endif
 
@@ -157,7 +158,7 @@ static GT_ATTRIBUTE_RAM_DATA gt_mem_hooks_st _self = {
 /* static functions -----------------------------------------------------*/
 
 
-#if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT
+#if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT || USE_MEM_REAL_USED_REMARK
 static GT_ATTRIBUTE_RAM_TEXT size_t _gt_block_size(void * ptr) {
     size_t size = 0;
 
@@ -267,7 +268,7 @@ void * _mem_malloc(size_t size, char const * file_name, char const * func_name, 
 {
     void * ret = _gt_malloc_hooks(size);
 
-#if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT
+#if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT || USE_MEM_REAL_USED_REMARK
     size_t block_size = _gt_block_size(ret);
 #endif
 
@@ -306,7 +307,8 @@ void * _mem_malloc(size_t size, char const * file_name, char const * func_name, 
     }
 #endif
 
-#if USE_MEM_BLOCKS_REMARK
+#if USE_MEM_REAL_USED_REMARK
+    _heap_info.used += block_size;
     ++_heap_info.blocks;
 #endif
     return ret;
@@ -314,13 +316,13 @@ void * _mem_malloc(size_t size, char const * file_name, char const * func_name, 
 
 void * _mem_realloc(void * ptr, size_t size, char const * file_name, char const * func_name, size_t line)
 {
-#if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT
+#if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT || USE_MEM_REAL_USED_REMARK
     size_t old_size = _gt_block_size(ptr);
 #endif
 
     void * ret = _gt_realloc_hooks(ptr, size);
 
-#if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT
+#if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT || USE_MEM_REAL_USED_REMARK
     size_t block_size = _gt_block_size(ret);
 #endif
 
@@ -377,12 +379,20 @@ void * _mem_realloc(void * ptr, size_t size, char const * file_name, char const 
                     file_name, func_name, line, ++_heap_info.max_count, _heap_info.max_addr, size, old_size, block_size);
     }
 #endif
+
+#if USE_MEM_REAL_USED_REMARK
+    if (NULL == ptr) {
+        --_heap_info.blocks;
+    }
+    _heap_info.used += block_size - old_size;
+#endif
+
     return ret;
 }
 
 void _mem_free(void * ptr, char const * file_name, char const * func_name, size_t line)
 {
-#if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT
+#if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT || USE_MEM_REAL_USED_REMARK
     size_t block_size = _gt_block_size(ptr);
 #endif
 
@@ -419,8 +429,9 @@ void _mem_free(void * ptr, char const * file_name, char const * func_name, size_
         fp = NULL;
     }
 #endif
-#if USE_MEM_BLOCKS_REMARK
+#if USE_MEM_REAL_USED_REMARK
     if (ptr) {
+        _heap_info.used -= block_size;
         --_heap_info.blocks;
     }
 #endif
@@ -434,7 +445,7 @@ void gt_mem_print_info(void)
 	GT_LOG_A(GT_LOG_TAG_MEM, "\t--- addr: %p -> %p, size: 0x%x(%d) max addr: %p, used: 0x%x(%.3f KB), blocks/max: %d / %d ---",
                 _heap_info.addr_start, _heap_info.addr_end, GT_MEM_SIZE, GT_MEM_SIZE, _heap_info.max_addr,
                 _heap_info.max_addr - _heap_info.addr_start, (_heap_info.max_addr - _heap_info.addr_start) * 1.0 / 1024,
-#if USE_MEM_BLOCKS_REMARK
+#if USE_MEM_REAL_USED_REMARK
                 _heap_info.blocks,
 #else
                 0,
@@ -483,17 +494,28 @@ void gt_mem_check_used(void)
         GT_LOGI(GT_LOG_TAG_MEM, "mem is less 1024byte");
         return;
     }
-    float used = (float)((uintptr_t)addr_now - _heap_info.addr_start) / (float)(_heap_info.addr_end - _heap_info.addr_start);
+    float total_size = (float)(_heap_info.addr_end - _heap_info.addr_start);
+    float used = (float)((uintptr_t)addr_now - _heap_info.addr_start) / total_size;
     gt_mem_free(addr_now);
-    GT_LOGI(GT_LOG_TAG_MEM, "used:%.2f%%",used * 100);
+    GT_LOGI(GT_LOG_TAG_MEM, "used: %.2f%%",used * 100);
 #endif
-#if USE_MEM_BLOCKS_REMARK
-    GT_LOGI(GT_LOG_TAG_MEM, "blocks:%d", _heap_info.blocks);
+#if USE_MEM_REAL_USED_REMARK
+    GT_LOGI(GT_LOG_TAG_MEM, "reality blocks: %d, used: %.2f%% [%d / %.0f(%.2f kB) Byte]",
+        _heap_info.blocks, _heap_info.used * 100.0 / total_size, _heap_info.used, total_size, total_size / 1024);
 #endif
 }
 
-void gt_mem_heap_get_space(MEM_UNIT * start, MEM_UNIT * end, MEM_UNIT * current, MEM_UNIT * blocks)
+void gt_mem_heap_get_space(gt_mem_info_st * mem_info)
 {
+    if (NULL == mem_info) {
+        return;
+    }
+    mem_info->start = 0;
+    mem_info->end = 0;
+    mem_info->current = 0;
+    mem_info->used = 0;
+    mem_info->blocks = 0;
+
 #if GT_MEM_CUSTOM
     char * addr_now = gt_mem_malloc(1024);
     if (!addr_now) {
@@ -501,19 +523,16 @@ void gt_mem_heap_get_space(MEM_UNIT * start, MEM_UNIT * end, MEM_UNIT * current,
         return;
     }
     gt_mem_free(addr_now);
-    if (start)  { *start = (MEM_UNIT)_heap_info.addr_start; }
-    if  (end) { *end = (MEM_UNIT)_heap_info.addr_end; }
-    if (current) { *current = (MEM_UNIT)addr_now; }
-#if USE_MEM_BLOCKS_REMARK
-    if (blocks) { *blocks = _heap_info.blocks; }
-#else
-    if (blocks) { *blocks = 0; }
-#endif
-#else
-    if (start)  { *start = 0; }
-    if (end) { *end = 0; }
-    if (current) { *current = 0; }
-    if (blocks) { *blocks = 0; }
+
+    mem_info->start = (MEM_UNIT)_heap_info.addr_start;
+    mem_info->end = (MEM_UNIT)_heap_info.addr_end;
+    mem_info->current = (MEM_UNIT)addr_now;
+
+#if USE_MEM_REAL_USED_REMARK
+    mem_info->used = _heap_info.used;
+    mem_info->blocks = _heap_info.blocks;
+#endif  /** USE_MEM_REAL_USED_REMARK */
+
 #endif
     addr_now = NULL;
 }
