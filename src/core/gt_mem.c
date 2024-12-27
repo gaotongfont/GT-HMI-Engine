@@ -503,7 +503,7 @@ void gt_mem_heap_get_space(MEM_UNIT * start, MEM_UNIT * end, MEM_UNIT * current,
     gt_mem_free(addr_now);
     if (start)  { *start = (MEM_UNIT)_heap_info.addr_start; }
     if  (end) { *end = (MEM_UNIT)_heap_info.addr_end; }
-    if (current) { *current = (MEM_UNIT)addr_now - 1024; }
+    if (current) { *current = (MEM_UNIT)addr_now; }
 #if USE_MEM_BLOCKS_REMARK
     if (blocks) { *blocks = _heap_info.blocks; }
 #else
