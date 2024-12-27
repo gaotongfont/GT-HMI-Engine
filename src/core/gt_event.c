@@ -83,8 +83,8 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_event_cb(gt_event_st * e
     const gt_obj_class_st * c = obj->classes;
     bool is_handler = false;
 
-    /** expand event replace func */
-    gt_obj_event_attr_st * event_ptr = e->target->replace_core_event_attr;
+    /** Expand event replace func */
+    gt_obj_event_attr_st * event_ptr = obj->replace_core_event_attr;
     while(event_ptr) {
         if(event_ptr->user_cb && e->code_type == event_ptr->filter) {
             e->user_data = event_ptr->user_data;
@@ -95,7 +95,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_event_cb(gt_event_st * e
     }
     if (is_handler) { return GT_RES_OK; }
 
-    /** inside event func */
+    /** Default core event func */
     GT_CHECK_BACK_VAL(c, GT_RES_FAIL);
     if (c->_event_cb) {
         c->_event_cb(obj, e);
@@ -110,7 +110,6 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_send_kernel(gt_event_st * e) {
     if (GT_RES_OK != res) {
         return res;
     }
-
     res = _gt_event_calling_user_cb(e);
     if (GT_RES_OK != res) {
         return res;
@@ -124,7 +123,6 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_send_kernel(gt_event_st * e) {
             return res;
         }
     }
-
     return res;
 }
 
