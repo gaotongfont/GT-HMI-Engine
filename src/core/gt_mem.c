@@ -497,11 +497,12 @@ void gt_mem_check_used(void)
     float total_size = (float)(_heap_info.addr_end - _heap_info.addr_start);
     float used = (float)((uintptr_t)addr_now - _heap_info.addr_start) / total_size;
     gt_mem_free(addr_now);
-    GT_LOGI(GT_LOG_TAG_MEM, "used: %.2f%%",used * 100);
-#endif
 #if USE_MEM_REAL_USED_REMARK
     GT_LOGI(GT_LOG_TAG_MEM, "reality blocks: %d, used: %.2f%% [%d / %.0f(%.2f kB) Byte]",
         _heap_info.blocks, _heap_info.used * 100.0 / total_size, _heap_info.used, total_size, total_size / 1024);
+#else
+    GT_LOGI(GT_LOG_TAG_MEM, "used: %.2f%%",used * 100);
+#endif
 #endif
 }
 
