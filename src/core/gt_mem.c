@@ -17,30 +17,39 @@
 
 
 /* private define -------------------------------------------------------*/
-/**
- * @brief printf memory log information by console
- */
-#define USE_MEM_LOG_PRINT               0
+#ifndef USE_MEM_LOG_PRINT
+    /**
+     * @brief printf memory log information by console
+     */
+    #define USE_MEM_LOG_PRINT           0
+#endif
 
-/**
- * @brief Keep track of large memory calls
- */
-#define USE_MEM_BIG_UNIT_REMARK         0
+#ifndef USE_MEM_BIG_UNIT_REMARK
+    /**
+     * @brief Keep track of large memory calls
+     */
+    #define USE_MEM_BIG_UNIT_REMARK     0
+#endif
+
 #if USE_MEM_BIG_UNIT_REMARK
     /** Memory that exceeds this limit needs to be tracked  */
     #define _BIG_UNIT_REMARK_SIZE       2048
 #endif
 
-/**
- * @brief [TRACE] Memory trace debug, using to debug memory leak
- *
- */
-#define USE_MEM_TRACE_DEBUG_BY_FILE     0
+#ifndef USE_MEM_TRACE_DEBUG_BY_FILE
+    /**
+     * @brief [TRACE] Memory trace debug, using to debug memory leak
+     *
+     */
+    #define USE_MEM_TRACE_DEBUG_BY_FILE 0
+#endif
 
-/**
- * @brief Display max memory remark address
- */
-#define USE_MEM_MAX_REMARK              0
+#ifndef USE_MEM_MAX_REMARK
+    /**
+     * @brief Display max memory remark address
+     */
+    #define USE_MEM_MAX_REMARK          0
+#endif
 
 #ifndef USE_MEM_REAL_USED_REMARK
     /**
@@ -494,9 +503,9 @@ void gt_mem_check_used(void)
         GT_LOGI(GT_LOG_TAG_MEM, "mem is less 1024byte");
         return;
     }
+    gt_mem_free(addr_now);
     float total_size = (float)(_heap_info.addr_end - _heap_info.addr_start);
     float used = (float)((uintptr_t)addr_now - _heap_info.addr_start) / total_size;
-    gt_mem_free(addr_now);
 #if USE_MEM_REAL_USED_REMARK
     GT_LOGI(GT_LOG_TAG_MEM, "reality blocks: %d, used: %.2f%% [%d / %.0f(%.2f kB) Byte]",
         _heap_info.blocks, _heap_info.used * 100.0 / total_size, _heap_info.used, total_size, total_size / 1024);
