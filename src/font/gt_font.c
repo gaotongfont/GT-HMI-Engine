@@ -100,7 +100,6 @@ static GT_ATTRIBUTE_RAM_DATA const uint32_t _latin_encoding_range[] = {
 };
 
 static GT_ATTRIBUTE_RAM_DATA const uint16_t _gt_emoticon_unicode_list[] = {
-//模型: qwen-plus-latest
 // 基本拉丁文（Basic Latin）
     0x0028,  // ( 1
     0x0029,  // ) 2

@@ -217,6 +217,9 @@ extern "C" {
 #include "src/widgets/gt_markdown.h"
 #endif
 
+#if GT_CFG_ENABLE_BASE_LAYOUT
+#include  "src/widgets/gt_base_layout.h"
+#endif
 /* define ---------------------------------------------------------------*/
 
 
