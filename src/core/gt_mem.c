@@ -503,6 +503,7 @@ void gt_mem_check_used(void)
 #else
     GT_LOGI(GT_LOG_TAG_MEM, "used: %.2f%%",used * 100);
 #endif  /** USE_MEM_REAL_USED_REMARK */
+    addr_now = NULL;
 #endif
 }
 
