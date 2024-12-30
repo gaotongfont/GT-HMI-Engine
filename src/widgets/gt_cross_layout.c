@@ -1,5 +1,5 @@
 /**
- * @file gt_base_layout.c
+ * @file gt_cross_layout.c
  * @author Yang
  * @brief
  * @version 0.1
@@ -8,8 +8,8 @@
  */
 
 /* include --------------------------------------------------------------*/
-#include "./gt_base_layout.h"
-#if GT_CFG_ENABLE_BASE_LAYOUT
+#include "./gt_cross_layout.h"
+#if GT_CFG_ENABLE_CROSS_LAYOUT
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -22,14 +22,13 @@
 #include "../utils/gt_vector.h"
 #include "gt_rect.h"
 /* private define -------------------------------------------------------*/
-#define OBJ_TYPE    GT_TYPE_BASE_LAYOUT
-#define MY_CLASS    &gt_base_layout_class
+#define OBJ_TYPE    GT_TYPE_CROSS_LAYOUT
+#define MY_CLASS    &gt_cross_layout_class
 
 /* private typedef ------------------------------------------------------*/
-typedef struct _gt_base_layout_s {
+typedef struct _gt_cross_layout_s {
     gt_obj_st obj;
 
-#if GT_USE_BASE_LAYOUT_CROSS
     gt_obj_st* hor_obj;
     gt_obj_st* ver_obj;
     _gt_vector_st * hor_itmes;
@@ -40,15 +39,10 @@ typedef struct _gt_base_layout_s {
     gt_size_t ver_offset;
     gt_cross_roll_mode_et roll_mode;
 
-#endif
-
-    gt_base_layout_type_et layout_type;
-    uint8_t hor_numb;
-    uint8_t ver_numb;
     uint8_t hor_gap;
     uint8_t ver_gap;
 
-}_gt_base_layout_st;
+}_gt_cross_layout_st;
 
 
 /* static prototypes ----------------------------------------------------*/
@@ -60,12 +54,12 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_base_layout_class = {
-    ._init_cb      = _init_cb,
+static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_cross_layout_class = {
+    ._init_cb      = NULL,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
-    .size_style    = sizeof(_gt_base_layout_st)
+    .size_style    = sizeof(_gt_cross_layout_st)
 };
 
 
@@ -74,7 +68,6 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_base_layout_class = {
 
 
 /* static functions -----------------------------------------------------*/
-#if GT_USE_BASE_LAYOUT_CROSS
 static bool _hor_itmes_free_cb(void * item)
 {
     _gt_vector_free((_gt_vector_st*)item);
@@ -83,7 +76,7 @@ static bool _hor_itmes_free_cb(void * item)
 
 static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_handler(gt_obj_st* obj)
 {
-    _gt_base_layout_st * style = (_gt_base_layout_st *)obj;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
     if(!style->ver_obj){
         return ;
     }
@@ -163,7 +156,7 @@ _ret_handler:
 
 static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_set_hidden(gt_obj_st* obj, uint16_t ver_index)
 {
-    _gt_base_layout_st * style = (_gt_base_layout_st *)obj;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
 
     if(!style->hor_itmes){
         return ;
@@ -186,7 +179,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_set_hidden(gt_obj_st* obj, uint16_t
 
 static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_handler(gt_obj_st* obj)
 {
-    _gt_base_layout_st * style = (_gt_base_layout_st *)obj;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
     if(!style->hor_obj){
         return ;
     }
@@ -288,7 +281,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_layout_handler(gt_obj_st* obj)
 
 static GT_ATTRIBUTE_RAM_TEXT gt_point_st _cross_hor_scroll_to(gt_obj_st* obj, gt_point_st dist)
 {
-    _gt_base_layout_st * style = (_gt_base_layout_st *)obj;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
 
     if(!style->hor_obj){
         return dist;
@@ -382,7 +375,7 @@ _ret_handler:
 
 static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_set_index_scroll(gt_obj_st* obj, gt_size_t index)
 {
-    _gt_base_layout_st * style = (_gt_base_layout_st *)obj;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
 
     if(!style->hor_obj){
         return ;
@@ -429,7 +422,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_set_index_scroll(gt_obj_st* obj, gt
 static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_scroll_handler(gt_event_st* e)
 {
     gt_obj_st* obj = (gt_obj_st* )e->user_data;
-    _gt_base_layout_st * style = (_gt_base_layout_st *)obj;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
 
     if(style->hor_obj != e->target){
         return ;
@@ -460,7 +453,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_scroll_handler(gt_event_st* e)
 
 static GT_ATTRIBUTE_RAM_TEXT gt_point_st _cross_ver_scroll_to(gt_obj_st* obj, gt_point_st dist)
 {
-    _gt_base_layout_st * style = (_gt_base_layout_st *)obj;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
     gt_size_t count = _gt_vector_get_count(style->ver_itmes);
     if(count <= 0){
         return dist;
@@ -532,7 +525,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_point_st _cross_ver_scroll_to(gt_obj_st* obj, gt
 
 static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_set_index_scroll(gt_obj_st* obj, gt_size_t index)
 {
-    _gt_base_layout_st * style = (_gt_base_layout_st *)obj;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
     gt_size_t count = _gt_vector_get_count(style->ver_itmes);
     if(index >= count){
         return ;
@@ -563,7 +556,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_set_index_scroll(gt_obj_st* obj, gt
 static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_scroll_handler(gt_event_st* e)
 {
     gt_obj_st* obj = (gt_obj_st* )e->user_data;
-    _gt_base_layout_st * style = (_gt_base_layout_st *)obj;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
 
     if(style->ver_obj != e->target){
         return ;
@@ -592,32 +585,11 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_scroll_handler(gt_event_st* e)
     }
 }
 
-#endif
 
-static GT_ATTRIBUTE_RAM_TEXT void _base_layout_updata(gt_obj_st* obj)
-{
-    _gt_base_layout_st * style = (_gt_base_layout_st *)obj;
-
-    switch(style->layout_type){
-        case GT_BASE_LAYOUT_TYPE_CROSS:
-            _cross_layout_handler(obj);
-            break;
-        default:
-            break;
-    }
-}
-
-
-
-static void _init_cb(gt_obj_st * obj)
-{
-
-}
 
 static void _deinit_cb(gt_obj_st * obj)
 {
-    _gt_base_layout_st * style = (_gt_base_layout_st *)obj;
-#if GT_USE_BASE_LAYOUT_CROSS
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
     if(style->hor_itmes){
         _gt_vector_free(style->hor_itmes);
         style->hor_itmes = NULL;
@@ -626,7 +598,6 @@ static void _deinit_cb(gt_obj_st * obj)
         _gt_vector_free(style->ver_itmes);
         style->ver_itmes = NULL;
     }
-#endif
 }
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
@@ -638,7 +609,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
         case GT_EVENT_TYPE_UPDATE_VALUE:
-            _base_layout_updata(obj);
+            _cross_layout_handler(obj);
             break;
         case GT_EVENT_TYPE_INPUT_SCROLL:
             break;
@@ -650,7 +621,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
 
 /* global functions / API interface -------------------------------------*/
 
-gt_obj_st * gt_base_layout_create(gt_obj_st * parent, gt_base_layout_type_et layout_type)
+gt_obj_st * gt_cross_layout_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
     if (NULL == obj) {
@@ -658,139 +629,118 @@ gt_obj_st * gt_base_layout_create(gt_obj_st * parent, gt_base_layout_type_et lay
     }
     obj->focus_dis = GT_DISABLED;
 
-    _gt_base_layout_st * style = (_gt_base_layout_st *)obj;
-    style->layout_type = layout_type;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
 
-#if GT_USE_BASE_LAYOUT_CROSS
-        style->hor_itmes = _gt_vector_create(_hor_itmes_free_cb, NULL);
-    if(GT_BASE_LAYOUT_TYPE_CROSS == style->layout_type){
-        style->ver_itmes = _gt_vector_create(NULL, NULL);
+    style->hor_itmes = _gt_vector_create(_hor_itmes_free_cb, NULL);
+    style->ver_itmes = _gt_vector_create(NULL, NULL);
 
-        style->hor_obj = gt_obj_create(obj);
-        GT_CHECK_BACK_VAL(style->hor_obj, obj);
+    style->hor_obj = gt_obj_create(obj);
+    GT_CHECK_BACK_VAL(style->hor_obj, obj);
 
-        style->ver_obj = gt_obj_create(obj);
-        GT_CHECK_BACK_VAL(style->ver_obj, obj);
+    style->ver_obj = gt_obj_create(obj);
+    GT_CHECK_BACK_VAL(style->ver_obj, obj);
 
-        style->hor_obj->focus_dis = GT_DISABLED;
-        style->hor_obj->scroll_dir = GT_SCROLL_HORIZONTAL;
-        gt_obj_add_replace_core_event_cb(style->hor_obj, _cross_hor_scroll_handler, GT_EVENT_TYPE_INPUT_SCROLL, (void*)obj);
+    style->hor_obj->focus_dis = GT_DISABLED;
+    style->hor_obj->scroll_dir = GT_SCROLL_HORIZONTAL;
+    gt_obj_add_replace_core_event_cb(style->hor_obj, _cross_hor_scroll_handler, GT_EVENT_TYPE_INPUT_SCROLL, (void*)obj);
 
 
-        style->ver_obj->focus_dis = GT_DISABLED;
-        style->ver_obj->scroll_dir = GT_SCROLL_VERTICAL;
-        gt_obj_add_replace_core_event_cb(style->ver_obj, _cross_ver_scroll_handler, GT_EVENT_TYPE_INPUT_SCROLL, (void*)obj);
-    }
-#endif
+    style->ver_obj->focus_dis = GT_DISABLED;
+    style->ver_obj->scroll_dir = GT_SCROLL_VERTICAL;
+    gt_obj_add_replace_core_event_cb(style->ver_obj, _cross_ver_scroll_handler, GT_EVENT_TYPE_INPUT_SCROLL, (void*)obj);
 
     return obj;
 }
 
-void gt_base_layout_set_hor_ver_numb(gt_obj_st* layout, uint8_t hor_numb, uint8_t ver_numb)
+
+void gt_cross_layout_set_gap(gt_obj_st* layout, uint8_t hor_gap, uint8_t ver_gap)
 {
     GT_CHECK_BACK(layout);
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
     }
-    _gt_base_layout_st * style = (_gt_base_layout_st *)layout;
-
-    style->hor_numb = hor_numb;
-    style->ver_numb = ver_numb;
-}
-
-void gt_base_layout_set_gap(gt_obj_st* layout, uint8_t hor_gap, uint8_t ver_gap)
-{
-    GT_CHECK_BACK(layout);
-
-    if(false == gt_obj_is_type(layout, OBJ_TYPE)){
-        return;
-    }
-    _gt_base_layout_st * style = (_gt_base_layout_st *)layout;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
     style->hor_gap = hor_gap;
     style->ver_gap = ver_gap;
 }
 
 
-#if GT_USE_BASE_LAYOUT_CROSS
-gt_obj_st* gt_base_layout_cross_get_hor_obj(gt_obj_st* layout)
+gt_obj_st* gt_cross_layout_get_hor_obj(gt_obj_st* layout)
 {
     GT_CHECK_BACK_VAL(layout, NULL);
-    _gt_base_layout_st * style = (_gt_base_layout_st *)layout;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
     return style->hor_obj;
 }
 
-gt_obj_st* gt_base_layout_cross_get_ver_obj(gt_obj_st* layout)
+gt_obj_st* gt_cross_layout_get_ver_obj(gt_obj_st* layout)
 {
     GT_CHECK_BACK_VAL(layout, NULL);
-    _gt_base_layout_st * style = (_gt_base_layout_st *)layout;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
     return style->ver_obj;
 }
 
-void gt_base_layout_cross_set_roll_mode(gt_obj_st* layout, gt_cross_roll_mode_et roll_mode)
+void gt_cross_layout_set_roll_mode(gt_obj_st* layout, gt_cross_roll_mode_et roll_mode)
 {
     GT_CHECK_BACK(layout);
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
     }
-    _gt_base_layout_st * style = (_gt_base_layout_st *)layout;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
     style->roll_mode = roll_mode;
 }
 
-void gt_base_layout_cross_set_hor_obj_area(gt_obj_st* layout, gt_size_t x, gt_size_t y, uint16_t w, uint16_t h)
+void gt_cross_layout_set_hor_obj_area(gt_obj_st* layout, gt_size_t x, gt_size_t y, uint16_t w, uint16_t h)
 {
     GT_CHECK_BACK(layout);
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
     }
-    _gt_base_layout_st * style = (_gt_base_layout_st *)layout;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
     GT_CHECK_BACK(style->hor_obj);
 
     gt_area_st area = {x, y, w, h};
     gt_obj_set_area(style->hor_obj, area);
 }
 
-void gt_base_layout_cross_set_ver_obj_area(gt_obj_st* layout, gt_size_t x, gt_size_t y, uint16_t w, uint16_t h)
+void gt_cross_layout_set_ver_obj_area(gt_obj_st* layout, gt_size_t x, gt_size_t y, uint16_t w, uint16_t h)
 {
     GT_CHECK_BACK(layout);
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
     }
-    _gt_base_layout_st * style = (_gt_base_layout_st *)layout;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
     GT_CHECK_BACK(style->ver_obj);
     gt_area_st area = {x, y, w, h};
     gt_obj_set_area(style->ver_obj, area);
 }
 
-void gt_base_layout_cross_set_hor_offset(gt_obj_st* layout, gt_size_t offset)
+void gt_cross_layout_set_hor_offset(gt_obj_st* layout, gt_size_t offset)
 {
     GT_CHECK_BACK(layout);
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
     }
-    _gt_base_layout_st * style = (_gt_base_layout_st *)layout;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
     style->hor_offset = offset;
 }
 
-void gt_base_layout_cross_set_ver_offset(gt_obj_st* layout, gt_size_t offset)
+void gt_cross_layout_set_ver_offset(gt_obj_st* layout, gt_size_t offset)
 {
     GT_CHECK_BACK(layout);
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
     }
-    _gt_base_layout_st * style = (_gt_base_layout_st *)layout;
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
     style->ver_offset = offset;
 }
 
-void gt_base_layout_cross_set_ver_offset(gt_obj_st* layout, gt_size_t offset);
-
-
-void gt_base_layout_cross_hor_add_itme(gt_obj_st* layout, gt_obj_st* obj, uint8_t ver_index)
+void gt_cross_layout_hor_add_itme(gt_obj_st* layout, gt_obj_st* obj, uint8_t ver_index)
 {
     GT_CHECK_BACK(layout);
     GT_CHECK_BACK(obj);
@@ -800,10 +750,7 @@ void gt_base_layout_cross_hor_add_itme(gt_obj_st* layout, gt_obj_st* obj, uint8_
         return;
     }
 
-    _gt_base_layout_st * style = (_gt_base_layout_st *)layout;
-    if(GT_BASE_LAYOUT_TYPE_CROSS != style->layout_type){
-        return;
-    }
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
 
     if(obj->parent != style->hor_obj){
         return;
@@ -836,7 +783,7 @@ void gt_base_layout_cross_hor_add_itme(gt_obj_st* layout, gt_obj_st* obj, uint8_
 }
 
 
-void gt_base_layout_cross_ver_add_item(gt_obj_st* layout, gt_obj_st* obj)
+void gt_cross_layout_ver_add_item(gt_obj_st* layout, gt_obj_st* obj)
 {
     GT_CHECK_BACK(layout);
     GT_CHECK_BACK(obj);
@@ -846,10 +793,7 @@ void gt_base_layout_cross_ver_add_item(gt_obj_st* layout, gt_obj_st* obj)
         return;
     }
 
-    _gt_base_layout_st * style = (_gt_base_layout_st *)layout;
-    if(GT_BASE_LAYOUT_TYPE_CROSS != style->layout_type){
-        return;
-    }
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
 
     if(obj->parent != style->ver_obj){
         return;
@@ -866,7 +810,7 @@ void gt_base_layout_cross_ver_add_item(gt_obj_st* layout, gt_obj_st* obj)
 }
 
 
-void gt_base_layout_cross_set_ver_index(gt_obj_st* layout, uint8_t ver_index)
+void gt_cross_layout_set_ver_index(gt_obj_st* layout, uint8_t ver_index)
 {
     GT_CHECK_BACK(layout);
 
@@ -874,10 +818,7 @@ void gt_base_layout_cross_set_ver_index(gt_obj_st* layout, uint8_t ver_index)
         return;
     }
 
-    _gt_base_layout_st * style = (_gt_base_layout_st *)layout;
-    if(GT_BASE_LAYOUT_TYPE_CROSS != style->layout_type){
-        return;
-    }
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
 
     GT_CHECK_BACK(style->ver_itmes);
 
@@ -896,7 +837,7 @@ void gt_base_layout_cross_set_ver_index(gt_obj_st* layout, uint8_t ver_index)
     _cross_hor_handler(layout);
 }
 
-void gt_base_layout_cross_set_hor_index(gt_obj_st* layout, uint8_t hor_index)
+void gt_cross_layout_set_hor_index(gt_obj_st* layout, uint8_t hor_index)
 {
     GT_CHECK_BACK(layout);
 
@@ -904,15 +845,12 @@ void gt_base_layout_cross_set_hor_index(gt_obj_st* layout, uint8_t hor_index)
         return;
     }
 
-    _gt_base_layout_st * style = (_gt_base_layout_st *)layout;
-    if(GT_BASE_LAYOUT_TYPE_CROSS != style->layout_type){
-        return;
-    }
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
 
     _cross_hor_set_index_scroll(layout, hor_index);
 }
 
-gt_size_t gt_base_layout_cross_get_hor_count(gt_obj_st* layout)
+gt_size_t gt_cross_layout_get_hor_count(gt_obj_st* layout)
 {
     GT_CHECK_BACK_VAL(layout, -1);
 
@@ -920,10 +858,7 @@ gt_size_t gt_base_layout_cross_get_hor_count(gt_obj_st* layout)
         return -1;
     }
 
-    _gt_base_layout_st * style = (_gt_base_layout_st *)layout;
-    if(GT_BASE_LAYOUT_TYPE_CROSS != style->layout_type){
-        return -1;
-    }
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
 
     if(!style->hor_itmes && !style->ver_itmes){
         return -1;
@@ -942,9 +877,7 @@ gt_size_t gt_base_layout_cross_get_hor_count(gt_obj_st* layout)
     return _gt_vector_get_count(hor_itme);
 }
 
-#endif // ! GT_USE_BASE_LAYOUT_CROSS
-
 
 /* end of file ----------------------------------------------------------*/
-#endif //!GT_CFG_ENABLE_BASE_LAYOUT
+#endif //!GT_CFG_ENABLE_CROSS_LAYOUT
 
