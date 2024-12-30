@@ -60,16 +60,19 @@ void gt_base_layout_set_gap(gt_obj_st* layout, uint8_t hor_gap, uint8_t ver_gap)
 #if GT_USE_BASE_LAYOUT_CROSS
 gt_obj_st* gt_base_layout_cross_get_hor_obj(gt_obj_st* layout);
 gt_obj_st* gt_base_layout_cross_get_ver_obj(gt_obj_st* layout);
-void gt_base_layout_cross_set_roll_mode(gt_obj_st* layout, gt_cross_roll_mode_et roll_mode);
 void gt_base_layout_cross_set_hor_obj_area(gt_obj_st* layout, gt_size_t x, gt_size_t y, uint16_t w, uint16_t h);
 void gt_base_layout_cross_set_ver_obj_area(gt_obj_st* layout, gt_size_t x, gt_size_t y, uint16_t w, uint16_t h);
+
+void gt_base_layout_cross_set_hor_offset(gt_obj_st* layout, gt_size_t offset);
+void gt_base_layout_cross_set_ver_offset(gt_obj_st* layout, gt_size_t offset);
+
 void gt_base_layout_cross_hor_add_itme(gt_obj_st* layout, gt_obj_st* obj, uint8_t ver_index);
 void gt_base_layout_cross_ver_add_item(gt_obj_st* layout, gt_obj_st* obj);
-void gt_base_layout_cross_hor_clear_item(gt_obj_st* layout, uint8_t ver_index);
 //
 void gt_base_layout_cross_set_hor_index(gt_obj_st* layout, uint8_t hor_index);
 void gt_base_layout_cross_set_ver_index(gt_obj_st* layout, uint8_t ver_index);
 gt_size_t gt_base_layout_cross_get_hor_count(gt_obj_st* layout);
+void gt_base_layout_cross_set_roll_mode(gt_obj_st* layout, gt_cross_roll_mode_et roll_mode);
 
 #endif
 
