@@ -321,7 +321,13 @@ uint32_t gt_fs_read_direct_physical(gt_addr_t addr, uint32_t len, uint8_t * data
     }
 
     /* start read */
+#ifdef _GT_PORT_SIMULATOR_ENVS
+    // TODO change to call back function,  do not force to use direct read
+    extern unsigned long r_dat_bat(unsigned long address, unsigned long DataLen, unsigned char * pBuff);
+    return r_dat_bat(addr, len, data);
+#else
     return drv->rw_cb(data_write, len_write, data, len);
+#endif
 }
 
 void gt_fs_close(gt_fs_fp_st * fp)
