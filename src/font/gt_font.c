@@ -252,6 +252,129 @@ static GT_ATTRIBUTE_RAM_DATA const uint16_t _gt_emoticon_unicode_list[] = {
     0xFFE3,  // ￣ 136
 };
 
+static GT_ATTRIBUTE_RAM_DATA const  uint32_t _gt_emoji_unicode_list[] = {
+// 表情	Unicode 编码
+    0x200D,     //😵‍💫
+    0x261D,     //
+    0x270A,     //
+    0x270B,     //
+    0x270C,     //
+    0x2764,     //
+    0x2B50,     //
+    0x1F308,    //🌈
+    0x1F31A,    //🌚
+    0x1F31C,    //🌜
+    0x1F31D,    //🌝
+    0x1F31E,    //🌞
+    0x1F31F,    //🌟
+    0x1F332,    //🌲
+    0x1F333,    //🌳
+    0x1F334,    //🌴
+    0x1F335,    //
+    0x1F336,    //🌶
+    0x1F339,    //
+    0x1F33A,    //
+    0x1F340,    //🍀
+    0x1F341,    //🍁
+    0x1F343,    //🍃
+    0x1F345,    //🍅
+    0x1F346,    //🍆
+    0x1F347,    //🍇
+    0x1F348,    //🍈
+    0x1F349,    //🍉
+    0x1F34A,    //🍊
+    0x1F34B,    //🍋
+    0x1F34C,    //🍌
+    0x1F34D,    //🍍
+    0x1F34E,    //🍎
+    0x1F350,    //🍐
+    0x1F351,    //🍑
+    0x1F352,    //🍒
+    0x1F353,    //🍓
+    0x1F381,    //🎁
+    0x1F383,    //🎃
+    0x1F384,    //🎄
+    0x1F385,    //🎅
+    0x1F388,    //🎈
+    0x1F389,    //🎉
+    0x1F38A,    //🎊
+    0x1F42D,    //🐭
+    0x1F430,    //🐰
+    0x1F436,    //🐶
+    0x1F439,    //🐹
+    0x1F43B,    //🐻
+    0x1F43C,    //🐼
+    0x1F43E,    //🐾
+    0x1F446,    //👆
+    0x1F447,    //👇
+    0x1F448,    //👈
+    0x1F449,    //👉
+    0x1F44B,    //👋
+    0x1F44C,    //👌
+    0x1F44D,    //👍
+    0x1F44F,    //👏
+    0x1F48B,    //💋
+    0x1F494,    //💔
+    0x1F498,    //💘
+    0x1F49D,    //💝
+    0x1F4A9,    //💩
+    0x1F4AA,    //💪
+    0x1F4E8,    //📨
+    0x1F4E9,    //📩
+    0x1F600,    //😀
+    0x1F602,    //😂
+    0x1F605,    //😅
+    0x1F607,    //😇
+    0x1F60A,    //😊
+    0x1F60D,    //😍
+    0x1F60E,    //😎
+    0x1F613,    //😓
+    0x1F616,    //😖
+    0x1F619,    //😙
+    0x1F61C,    //😜
+    0x1F620,    //😠
+    0x1F621,    //😡
+    0x1F622,    //😢
+    0x1F623,    //😣
+    0x1F624,    //😤
+    0x1F625,    //😥
+    0x1F62D,    //😭
+    0x1F62E,    //😮
+    0x1F62F,    //😯
+    0x1F631,    //😱
+    0x1F632,    //😲
+    0x1F634,    //😴
+    0x1F635,    //😵
+    0x1F637,    //😷
+    0x1F638,    //😸
+    0x1F639,    //😹
+    0x1F63A,    //😺
+    0x1F63B,    //😻
+    0x1F642,    //🙂
+    0x1F64C,    //🙌
+    0x1F64F,    //🙏
+    0x1F910,    //🤐
+    0x1F914,    //🤔
+    0x1F916,    //🤖
+    0x1F917,    //🤗
+    0x1F92B,    //🤫
+    0x1F92D,    //🤭
+    0x1F951,    //🥑
+    0x1F954,    //🥔
+    0x1F955,    //🥕
+    0x1F95D,    //🥝
+    0x1F970,    //🥰
+    0x1F971,    //🥱
+    0x1F973,    //🥳
+    0x1F979,    //🥹
+    0x1F97A,    //🥺
+    0x1F98A,    //🦊
+    0x1F9E7,    //🧧
+    0x1F9E8,    //🧨
+    0x1FAF0,    //
+    0x1FAF5,    //
+};
+
 /**
  * @brief Adjust the ascii display position according to the match between Chinese and ascii
  */
@@ -482,7 +605,36 @@ static GT_ATTRIBUTE_RAM_TEXT bool _gt_number_symbol_font(uint32_t unicode) {
 }
 
 // 二分查找函数
-static GT_ATTRIBUTE_RAM_TEXT long _gt_binary_search_from(const uint16_t *arr, uint32_t size, uint32_t target)
+static GT_ATTRIBUTE_RAM_TEXT long _gt_binary_search_from_u16(const uint16_t *arr, uint32_t size, uint32_t target)
+{
+    if (!arr || !size) {
+        return -1;  // 如果数组为空或大小为 0，直接返回 -1
+    }
+
+    uint32_t left = 0;
+    uint32_t right = size - 1;
+
+    // 检查目标值是否在数组范围内
+    if (target < arr[left] || target > arr[right]) {
+        return -1;
+    }
+
+    while (left <= right) {
+        uint32_t mid = left + ((right - left) >> 1);  // 计算中间位置，避免溢出
+
+        if (arr[mid] == target) {
+            return mid;  // 找到目标元素，返回索引
+        } else if (arr[mid] < target) {
+            left = mid + 1;  // 目标在右半部分，调整左边界
+        } else {
+            right = mid - 1;  // 目标在左半部分，调整右边界
+        }
+    }
+
+    return -1;  // 未找到目标元素，返回 -1
+}
+
+static GT_ATTRIBUTE_RAM_TEXT long _gt_binary_search_from_u32(const uint32_t *arr, uint32_t size, uint32_t target)
 {
     if (!arr || !size) {
         return -1;  // 如果数组为空或大小为 0，直接返回 -1
@@ -513,7 +665,15 @@ static GT_ATTRIBUTE_RAM_TEXT long _gt_binary_search_from(const uint16_t *arr, ui
 
 static GT_ATTRIBUTE_RAM_TEXT bool _gt_emoticon_font(uint32_t unicode) {
     uint32_t count = sizeof(_gt_emoticon_unicode_list) / sizeof(_gt_emoticon_unicode_list[0]);
-    if (-1 != _gt_binary_search_from(_gt_emoticon_unicode_list, count, unicode)) {
+    if (-1 != _gt_binary_search_from_u16(_gt_emoticon_unicode_list, count, unicode)) {
+        return true;
+    }
+    return false;
+}
+static GT_ATTRIBUTE_RAM_TEXT bool _gt_emoji_font(uint32_t unicode) {
+
+    uint32_t count = sizeof(_gt_emoji_unicode_list) / sizeof(_gt_emoji_unicode_list[0]);
+    if (-1 != _gt_binary_search_from_u32(_gt_emoji_unicode_list, count, unicode)) {
         return true;
     }
     return false;
@@ -553,6 +713,13 @@ static GT_ATTRIBUTE_RAM_TEXT uint32_t _get_font_option(gt_font_st * font, uint32
             return tmp_option;
         }
     }
+    else if(_gt_emoji_font(unicode)){
+        uint32_t tmp_option = gt_font_family_get_option(font->info.family, FONT_LAN_EMOJI, font->info.cjk);
+        if(GT_CFG_DEFAULT_FONT_FAMILY != tmp_option){
+            return tmp_option;
+        }
+    }
+
     font_lan = gt_font_lan_get(unicode, font->info.encoding);
     return gt_font_family_get_option(font->info.family, font_lan, font->info.cjk);
 #endif

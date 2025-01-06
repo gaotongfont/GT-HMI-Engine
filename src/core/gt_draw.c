@@ -1290,26 +1290,58 @@ _disp_font:
                 gt_memset(&tmp_font.res[data_len >> 1], 0, data_len >> 1);
                 dot_ret = gt_font_get_dot(&tmp_font, uni_or_gbk);
 
-                uint8_t byte_width = (width + 7) >> 3;
-                uint8_t font_gray = 1;
+                if (GT_FONT_TYPE_FLAG_EMOJI == dot_ret.type) {
+                    uint8_t byte_width = width << 1;
+                    gt_addr_t emoji_addr =  tmp_font.res[0] << 24 | tmp_font.res[1] << 16 | tmp_font.res[2] << 8 | tmp_font.res[3];
+                    gt_addr_t alpha_offset = emoji_addr + (width * tmp_font.info.size) * 2;
+                    gt_area_st emoji_area = area_font;
+                    emoji_area.h = 1;
 
-                byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type);
-                area_font.w = (byte_width / font_gray) << 3;
-                if (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding)) {
-                    area_font.y += offset_y;
+                    _gt_img_dsc_st emoji_raw = {0};
+                    emoji_raw.img = (uint8_t*)tmp_font.res;
+                    emoji_raw.alpha = (uint8_t*)mask_line;
+                    emoji_raw.header.w = width;
+                    emoji_raw.header.h = 1;
+                    emoji_raw.header.type = GT_IMG_DECODER_TYPE_RAM;
+                    emoji_raw.header.color_format = GT_IMG_CF_TRUE_COLOR;
+
+                    gt_attr_rect_st dsc_emoji = {0};
+                    dsc_emoji.bg_opa = dsc->opa;
+                    dsc_emoji.raw_img = &emoji_raw;
+
+                    for(uint8_t i = 0; i < tmp_font.info.size; ++i){
+                        gt_fs_read_direct_physical(emoji_addr, byte_width, tmp_font.res);
+                        gt_fs_read_direct_physical(alpha_offset, width, mask_line);
+                        draw_bg_img(draw_ctx, &dsc_emoji, &emoji_area);
+                        emoji_addr += byte_width;
+                        alpha_offset += width;
+                        ++emoji_area.y;
+                    }
+                    gt_memset(mask_line, 0xFF, tmp_font.info.size << 1);
                 }
+                else{
+                    uint8_t byte_width = (width + 7) >> 3;
+                    uint8_t font_gray = 1;
 
-                // bold
-                if(tmp_font.info.style.reg.bold){
-                    area_font.w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font.info);
-                }
+                    byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type);
+                    area_font.w = (byte_width / font_gray) << 3;
+                    if (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding)) {
+                        area_font.y += offset_y;
+                    }
 
-                gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size,
-                                    byte_width, font_gray, (const uint8_t*)tmp_font.res,tmp_font.info.style.reg);
-                if (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding)) {
-                    area_font.y -= offset_y;
+                    // bold
+                    if(tmp_font.info.style.reg.bold){
+                        area_font.w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font.info);
+                    }
+
+                    gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size,
+                                        byte_width, font_gray, (const uint8_t*)tmp_font.res,tmp_font.info.style.reg);
+                    if (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding)) {
+                        area_font.y -= offset_y;
+                    }
                 }
             } else {
+
                 uint8_t * temp = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, tmp_font.info.size);
                 if( temp == NULL ){
                     area_font.x += width + space_x;
@@ -1719,21 +1751,53 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_single_line(_gt_draw
             gt_memset(&tmp_font.res[data_len >> 1], 0, data_len >> 1);
             dot_ret = gt_font_get_dot(&tmp_font, uni_or_gbk);
 
-            byte_width = (width + 7) >> 3;
-            font_gray = 1;
+            if (GT_FONT_TYPE_FLAG_EMOJI == dot_ret.type) {
+                byte_width = width << 1;
+                gt_addr_t emoji_addr =  tmp_font.res[0] << 24 | tmp_font.res[1] << 16 | tmp_font.res[2] << 8 | tmp_font.res[3];
+                gt_addr_t alpha_offset = emoji_addr + (width * tmp_font.info.size) * 2;
+                gt_area_st emoji_area = area_font;
+                emoji_area.h = 1;
 
-            byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type);
-            area_font.w = (byte_width / font_gray) << 3;
-            if (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding)) {
-                area_font.y += offset_y;
+                _gt_img_dsc_st emoji_raw = {0};
+                emoji_raw.img = (uint8_t*)tmp_font.res;
+                emoji_raw.alpha = (uint8_t*)mask_line;
+                emoji_raw.header.w = width;
+                emoji_raw.header.h = 1;
+                emoji_raw.header.type = GT_IMG_DECODER_TYPE_RAM;
+                emoji_raw.header.color_format = GT_IMG_CF_TRUE_COLOR;
+
+                gt_attr_rect_st dsc_emoji = {0};
+                dsc_emoji.bg_opa = dsc->opa;
+                dsc_emoji.raw_img = &emoji_raw;
+
+                for(uint8_t i = 0; i < tmp_font.info.size; ++i){
+                    gt_fs_read_direct_physical(emoji_addr, byte_width, tmp_font.res);
+                    gt_fs_read_direct_physical(alpha_offset, width, mask_line);
+                    draw_bg_img(draw_ctx, &dsc_emoji, &emoji_area);
+                    emoji_addr += byte_width;
+                    alpha_offset += width;
+                    ++emoji_area.y;
+                }
+                gt_memset(mask_line, 0xFF, tmp_font.info.size << 1);
             }
-            if(tmp_font.info.style.reg.bold){
-                area_font.w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font.info);
-            }
-            gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size,
-                                byte_width, font_gray, (const uint8_t*)tmp_font.res,tmp_font.info.style.reg);
-            if (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding)) {
-                area_font.y -= offset_y;
+            else{
+
+                byte_width = (width + 7) >> 3;
+                font_gray = 1;
+
+                byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type);
+                area_font.w = (byte_width / font_gray) << 3;
+                if (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding)) {
+                    area_font.y += offset_y;
+                }
+                if(tmp_font.info.style.reg.bold){
+                    area_font.w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font.info);
+                }
+                gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size,
+                                    byte_width, font_gray, (const uint8_t*)tmp_font.res,tmp_font.info.style.reg);
+                if (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding)) {
+                    area_font.y -= offset_y;
+                }
             }
         } else {
             blend_dsc.mask_buf = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, tmp_font.info.size);

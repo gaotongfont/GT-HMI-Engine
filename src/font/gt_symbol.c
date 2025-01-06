@@ -1698,7 +1698,7 @@ bool gt_symbol_is_valid_range(uint32_t uni_or_gbk)
      *          |
      *      0xF800 - 0xF83F
      */
-    uint8_t encodeByte = uni_or_gbk >> 8;
+    uint32_t encodeByte = uni_or_gbk >> 8;
     if (encodeByte < 0xE0 || encodeByte > 0xF8) {
         return false;
     }

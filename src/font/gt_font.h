@@ -27,6 +27,9 @@ typedef enum {
     GT_FONT_TYPE_FLAG_DOT_MATRIX           = 1,
     GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH = 2,
     GT_FONT_TYPE_FLAG_VEC                  = 3,
+
+    GT_FONT_TYPE_FLAG_EMOJI                = 6,
+
 }gt_font_type_em;
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
@@ -222,6 +225,7 @@ typedef enum _gt_font_lan_e {
     FONT_LAN_KOREAN,
     FONT_LAN_NUMBER,
     FONT_LAN_EMOTICON,
+    FONT_LAN_EMOJI,
     //
     FONT_LAN_MAX_COUNT,
     //
