@@ -220,6 +220,10 @@ extern "C" {
 #if GT_CFG_ENABLE_CROSS_LAYOUT
 #include  "src/widgets/gt_cross_layout.h"
 #endif
+
+#if GT_CFG_ENABLE_CALENDAR
+#include "src/widgets/gt_calendar.h"
+#endif
 /* define ---------------------------------------------------------------*/
 
 

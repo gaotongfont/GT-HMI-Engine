@@ -33,6 +33,13 @@ extern "C" {
 #endif
 
 #if GT_CFG_USE_SYMBOL_ENABLE
+    #ifndef GT_CFG_USE_SYMBOL_12x12
+        /**
+         * @brief 0: Disabled; 1[default]: Use 12x12 symbol
+         */
+        #define GT_CFG_USE_SYMBOL_12x12	        1
+    #endif
+
     #ifndef GT_CFG_USE_SYMBOL_16x16
         /**
          * @brief 0: Disabled; 1[default]: Use 16x16 symbol
@@ -457,6 +464,16 @@ extern "C" {
 #if !defined GT_SYMBOL_OK_SOLID
 #define GT_SYMBOL_OK_SOLID                  "\xEE\x84\x8e" /*57614, 0xE10e*/
 #define GT_SYMBOL_OK_SOLID_GBK              "\xE1\x0e"
+#endif
+
+#if !defined GT_SYMBOL_CALENDAR_HOLIDAY
+    #define GT_SYMBOL_CALENDAR_HOLIDAY         "\xEE\x84\x8f" /*57615, 0xE10f*/
+    #define GT_SYMBOL_CALENDAR_HOLIDAY_GBK     "\xE1\x0f"
+#endif
+
+#if !defined GT_SYMBOL_CALENDAR_WORKDAY
+    #define GT_SYMBOL_CALENDAR_WORKDAY         "\xEE\x84\x90" /*57616, 0xE110*/
+    #define GT_SYMBOL_CALENDAR_WORKDAY_GBK     "\xE1\x10"
 #endif
 
 #endif // GT_CFG_USE_SYMBOL_ENABLE

@@ -58,6 +58,7 @@ extern "C" {
 #define GT_CFG_ENABLE_ARC               1
 #define GT_CFG_ENABLE_TABLE             1
 #define GT_CFG_ENABLE_CROSS_LAYOUT      1
+#define GT_CFG_ENABLE_CALENDAR          1
 
 #if GT_USE_LAYER_TOP && GT_CFG_ENABLE_INPUT && GT_CFG_ENABLE_LISTVIEW
 #define GT_CFG_ENABLE_SELECT            1

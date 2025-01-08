@@ -365,6 +365,7 @@ static inline gt_color_t gt_color_gray(void) { return gt_color_make(0x80, 0x80, 
 static inline gt_color_t gt_color_dark_gray(void) { return gt_color_make(0x40, 0x40, 0x40); }
 static inline gt_color_t gt_color_bright_gray(void) { return gt_color_make(0xc0, 0xc0, 0xc0); }
 static inline gt_color_t gt_color_orange(void) { return gt_color_make(0xFF, 0xA5, 0x00); }
+static inline gt_color_t gt_color_green(void) { return gt_color_make(0x00, 0xFF, 0x00); }
 
 
 /**
