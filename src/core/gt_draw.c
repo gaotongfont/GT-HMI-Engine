@@ -975,7 +975,7 @@ static GT_ATTRIBUTE_RAM_TEXT _text_offset_line_st _get_align_start_y(const gt_at
     if (dsc->reg.enabled_start) {
         disp_w = coords->w - (dsc->start_x - coords->x);
     } else {
-        indent = gt_font_get_indent_width(&dsc->font->info, dsc->indent);
+        indent = dsc->indent;
     }
 
     if (_is_verial_mid_or_bottom(type)) {
@@ -1406,7 +1406,10 @@ _disp_font:
         }
         bidi_len = 0;
 #endif
-        if (0x0A == txt[idx - 1]) { is_first_line = true; } /** need to indent */
+        if (0x0A == txt[idx - 1]) {
+            is_first_line = true;
+            disp_w -= gt_font_get_indent_width(&tmp_font.info, dsc->indent);
+        } /** need to indent */
         idx_len = 0;
         txt_2 = &txt[idx];
         font_disp_h = dsc->font->info.size;

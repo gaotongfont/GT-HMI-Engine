@@ -203,9 +203,9 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
     gt_font_split_line_st sp_line = {
         .text = gt_btn_get_text(style->msg_list[idx].msg_obj),
         .max_w = _MSG_MAX_W(chat->area.w) - w,
-        .start_w =  _MSG_MAX_W(chat->area.w) - w - style->font_info.size,
+        .start_w =  _MSG_MAX_W(chat->area.w) - w,
         .space = 0,
-        .indent = gt_font_get_indent_width(&style->font_info, _MULTI_LINE_CONTENT_INDENT_DEFAULT),
+        .indent = _MULTI_LINE_CONTENT_INDENT_DEFAULT,
     };
     sp_line.len = strlen(sp_line.text);
     h = gt_font_split_line_numb(&style->font_info, &sp_line, &w);

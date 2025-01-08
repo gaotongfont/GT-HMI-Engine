@@ -2105,11 +2105,11 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, gt_font_split_line_st * 
     GT_CHECK_BACK_VAL(temp_font.res, line_numb);
 
     uint8_t lan = 0;
-    int32_t disp_w = sp_line->start_w - sp_line->indent;
+    int32_t disp_w = sp_line->start_w - gt_font_get_indent_width(&temp_font.info, sp_line->indent);
     uint32_t ret_w = 0, lan_len = 0;
     uint32_t idx = 0, len = sp_line->len;
     int32_t idx_step = 0;
-
+    bool is_first_line = true;
     if (0 == len) {
         return line_numb;
     }
@@ -2118,25 +2118,30 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, gt_font_split_line_st * 
     while (idx < len) {
         if (0x0A == text[idx]) {
             ++idx;
+            is_first_line = true;
             goto _compute_line;
         }
         temp_font.utf8 = (char*)&text[idx];
         temp_font.len = len - idx;
 
         if(line_numb != 0){
-            disp_w = sp_line->max_w - (0x0A == text[idx - 1] ? sp_line->indent : 0);
+            disp_w = sp_line->max_w - (0x0A == text[idx - 1] ? gt_font_get_indent_width(&temp_font.info, sp_line->indent) : 0);
         }
 
         ret_w = sp_line->max_w - disp_w;
         idx_step = gt_font_split_line_str(&temp_font, sp_line->max_w, sp_line->space, &ret_w,
                                         NULL, NULL, NULL, NULL,
-                                        line_numb ? 0 : 1);
+                                        is_first_line);
+        is_first_line = false;
 
-        if(idx == 0 & idx_step == 0){
+        if(idx == 0 && idx_step == 0){
             goto _compute_line;
         }
         idx += idx_step;
         disp_w -= ret_w;
+        if (0x0A == text[idx]) {
+            ++idx;
+        }
 
     _compute_line:
         ++line_numb;
