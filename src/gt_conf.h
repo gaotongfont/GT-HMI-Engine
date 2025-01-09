@@ -197,7 +197,7 @@ extern "C" {
 #endif
 
 /* default font style and size */
-#define GT_CFG_DEFAULT_FONT_FAMILY          (0xFFFF)
+#define GT_CFG_DEFAULT_FONT_FAMILY          (0)
 #define GT_CFG_DEFAULT_FONT_SIZE            (16)
 
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
