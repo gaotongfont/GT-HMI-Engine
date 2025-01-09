@@ -523,9 +523,9 @@ void gt_mem_check_used(void)
         GT_LOGI(GT_LOG_TAG_MEM, "used: %.2f%%",used * 100);
         prev_used = used;
     }
-#endif  /** USE_MEM_REAL_USED_REMARK */
     addr_now = NULL;
-#endif
+#endif  /** USE_MEM_REAL_USED_REMARK */
+#endif  /** GT_MEM_CUSTOM */
 }
 
 void gt_mem_heap_get_space(gt_mem_info_st * mem_info)
