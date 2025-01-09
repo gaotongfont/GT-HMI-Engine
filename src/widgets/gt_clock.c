@@ -164,17 +164,17 @@ static const char * _get_week_str(uint8_t week) {
     return _gt_weeks[week ? ((week % 8) - 1) : 0];
 }
 
-static GT_ATTRIBUTE_RAM_TEXT char * _get_time_str(_gt_clock_st * clock) {
-    uint8_t hours = _get_hour(clock->time_current);
-    uint8_t meridiem_len = 3;
+static GT_ATTRIBUTE_RAM_TEXT void _update_time_str(_gt_clock_st * clock) {
     char * meridiem = NULL;
     char * pointer = NULL;
     char * str = NULL;
     char * str_ptr = NULL;
+    uint8_t hours = _get_hour(clock->time_current);
+    uint8_t meridiem_len = 3;
     uint8_t len = 0;
 
     if (clock->reg.twinkle_colon) {
-        return NULL;
+        return;
     }
 
     /** default */
@@ -184,7 +184,7 @@ static GT_ATTRIBUTE_RAM_TEXT char * _get_time_str(_gt_clock_st * clock) {
 
         clock->format = gt_mem_malloc(len + 1);
         if (NULL == clock->format) {
-            return NULL;
+            return;
         }
         gt_memset(clock->format, 0, len + 1);
         gt_memcpy(clock->format, format_default, len);
@@ -192,10 +192,7 @@ static GT_ATTRIBUTE_RAM_TEXT char * _get_time_str(_gt_clock_st * clock) {
 
     len = strlen(clock->format) + meridiem_len + 1;
     str = gt_mem_malloc(len);
-    if (NULL == str) {
-        return str;
-    }
-    gt_memset(str, 0, len);
+    if (NULL == str) { return; }
 
     if (clock->reg.is_12_mode) {
         if (clock->reg.is_show_meridiem) {
@@ -243,9 +240,13 @@ static GT_ATTRIBUTE_RAM_TEXT char * _get_time_str(_gt_clock_st * clock) {
     }
     if (meridiem) {
         gt_memcpy(str_ptr, meridiem, meridiem_len);
+        str_ptr += meridiem_len;
     }
+    *str_ptr = '\0';
 
-    return str;
+    gt_label_set_text(clock->label, str);
+    gt_mem_free(str);
+    str = NULL;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _draw_twinkle_colon_mode(gt_obj_st * obj, _gt_clock_st * style) {
@@ -288,21 +289,14 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_twinkle_colon_mode(gt_obj_st * obj, _gt_
 
 static void _init_cb(gt_obj_st * obj) {
     _gt_clock_st * style = (_gt_clock_st * )obj;
-    char * str = NULL;
     if (NULL == style->label) {
         return;
     }
     if (style->reg.twinkle_colon) {
         _draw_twinkle_colon_mode(obj, style);
     } else {
-        str = _get_time_str(style);
+        _update_time_str(style);
         gt_area_copy(&style->label->area, &obj->area);
-        gt_label_set_text(style->label, str);
-    }
-
-    if (str) {
-        gt_mem_free(str);
-        str = NULL;
     }
     draw_focus(obj , obj->radius);
 }
