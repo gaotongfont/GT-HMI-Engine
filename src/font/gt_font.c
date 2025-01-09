@@ -1521,7 +1521,7 @@ uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const 
 #else
     _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&temp_font.info, FONT_LAN_UNKNOWN, 0);
 #endif
-    temp_font.res = gt_mem_malloc(font_size_res.font_buff_len);
+    temp_font.res = gt_mem_malloc(font_size_res.font_per_size);
     GT_CHECK_BACK_VAL(temp_font.res, max_width);
 
     while (idx < len) {
@@ -2101,7 +2101,7 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, gt_font_split_line_st * 
 #else
     _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&temp_font.info, FONT_LAN_UNKNOWN, 0);
 #endif
-    temp_font.res = gt_mem_malloc(font_size_res.font_buff_len);
+    temp_font.res = gt_mem_malloc(font_size_res.font_per_size);
     GT_CHECK_BACK_VAL(temp_font.res, line_numb);
 
     uint8_t lan = 0;
