@@ -527,7 +527,7 @@ void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new)
 {
     GT_CHECK_BACK(obj);
     gt_area_st area_old = obj->area;
-    gt_area_st area;
+    gt_area_st area = {0};
     if (area_new->x <= area_old.x) {
         area.x = area_new->x;
     } else {

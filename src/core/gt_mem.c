@@ -39,7 +39,6 @@
 #ifndef USE_MEM_TRACE_DEBUG_BY_FILE
     /**
      * @brief [TRACE] Memory trace debug, using to debug memory leak
-     *
      */
     #define USE_MEM_TRACE_DEBUG_BY_FILE 0
 #endif
@@ -502,14 +501,7 @@ int gt_memcmp(const void * dst, const void * src, size_t size)
 void gt_mem_check_used(void)
 {
 #if GT_MEM_CUSTOM
-    char * addr_now = gt_mem_malloc(1024);
-    if( !addr_now ){
-        GT_LOGI(GT_LOG_TAG_MEM, "mem is less 1024byte");
-        return;
-    }
-    gt_mem_free(addr_now);
     float total_size = (float)(_heap_info.addr_end - _heap_info.addr_start);
-    float used = (float)((uintptr_t)addr_now - _heap_info.addr_start) / total_size;
 #if USE_MEM_REAL_USED_REMARK
     static MEM_UNIT prev_blocks = 0, prev_used = 0;
     if (prev_blocks != _heap_info.blocks || prev_used != _heap_info.used) {
@@ -519,7 +511,18 @@ void gt_mem_check_used(void)
         prev_used = _heap_info.used;
     }
 #else
-    GT_LOGI(GT_LOG_TAG_MEM, "used: %.2f%%",used * 100);
+    char * addr_now = gt_mem_malloc(1024);
+    if( !addr_now ){
+        GT_LOGI(GT_LOG_TAG_MEM, "mem is less 1024byte");
+        return;
+    }
+    gt_mem_free(addr_now);
+    float used = (float)((uintptr_t)addr_now - _heap_info.addr_start) / total_size;
+    static float prev_used = 0;
+    if (prev_used != used) {
+        GT_LOGI(GT_LOG_TAG_MEM, "used: %.2f%%",used * 100);
+        prev_used = used;
+    }
 #endif  /** USE_MEM_REAL_USED_REMARK */
     addr_now = NULL;
 #endif
