@@ -89,8 +89,9 @@ typedef struct _gt_listview_s {
     uint8_t space_x;    /** font space */
     uint8_t space_y;
 
-    uint8_t item_reduce;    /** The reduce of item area */
+    uint8_t item_reduce;   /** The reduce of item area */
     uint8_t item_radius;    /** The radius of item */
+    uint8_t item_focus_w;
 
     uint8_t highlight       : 1;    /** holding highlight state the last active item, 0: release restores the effect, 1: switch state */
     uint8_t septal_line     : 1;    /** Display septal line between items */
@@ -561,10 +562,12 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) 
     }
     gt_obj_st * obj = gt_obj_create(listview);
     /** set object item size */
-    obj->area.x = listview->area.x + (width + (idx ? style->item_space.x : 0)) * idx;
-    obj->area.y = offset_line + listview->process_attr.scroll.y;
-    obj->area.w = width;
+    obj->area.x = style->border_width + listview->area.x + (width + (idx ? style->item_space.x : 0)) * idx;
+    obj->area.y = style->border_width + offset_line + listview->process_attr.scroll.y;
+    obj->area.w = width - (style->border_width << 1);
     obj->area.h = style->item_height;
+    //
+    obj->area = gt_area_reduce(obj->area, style->item_reduce);
 
     gt_obj_set_fixed(obj, true);
     gt_obj_set_inside(obj, true);
@@ -860,8 +863,9 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
 
     style->item_bg_color =  obj->bgcolor;
     style->item_show_bg = false;
-    style->item_reduce = 2;
+    style->item_reduce = 0;
     style->item_radius = 8;
+    style->item_focus_w = FOCUS_W_DEFAULT;
 
     style->column.count = 1;
     style->column.idx = 0;
@@ -898,6 +902,15 @@ void gt_listview_set_next_row_item_count(gt_obj_st * listview, uint8_t count)
     _gt_listview_st * style = (_gt_listview_st * )listview;
     style->column.count = count;
     style->column.idx = 0;
+}
+
+void gt_listview_set_item_reduce(gt_obj_st * listview, uint8_t reduce)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->item_reduce = reduce;
 }
 
 gt_obj_st * gt_listview_add_item(gt_obj_st * listview, char const * text)
@@ -1305,15 +1318,15 @@ void gt_listview_show_item_bg(gt_obj_st * listview, bool show)
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_listview_set_item_focus_w(gt_obj_st * listview, uint8_t reduce)
+void gt_listview_set_item_focus_w(gt_obj_st * listview, uint8_t focus_w)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
-    style->item_reduce = reduce;
+    style->item_focus_w = focus_w;
     for (gt_size_t i = 0, cnt = listview->cnt_child; i < cnt; i++) {
-        gt_obj_set_focus_w(listview->child[i], reduce);
+        gt_obj_set_focus_w(listview->child[i], focus_w);
     }
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
