@@ -67,6 +67,8 @@ typedef struct _gt_chat_s {
 
     uint8_t send_border_w;
     uint8_t recv_border_w;
+    uint8_t space_x;
+    uint8_t space_y;
 
     uint8_t anim_play : 1;
 }_gt_chat_st;
@@ -204,7 +206,7 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
         .text = gt_btn_get_text(style->msg_list[idx].msg_obj),
         .max_w = _MSG_MAX_W(chat->area.w) - w,
         .start_w =  _MSG_MAX_W(chat->area.w) - w,
-        .space = 0,
+        .space = style->space_x,
         .indent = _MULTI_LINE_CONTENT_INDENT_DEFAULT,
     };
     sp_line.len = strlen(sp_line.text);
@@ -212,11 +214,14 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
     if (h > 1) {
         gt_btn_set_font_align(style->msg_list[idx].msg_obj, GT_ALIGN_LEFT_MID);
         gt_btn_set_indent(style->msg_list[idx].msg_obj, _MULTI_LINE_CONTENT_INDENT_DEFAULT);
+        gt_btn_set_space(style->msg_list[idx].msg_obj, style->space_x, style->space_y);
+        h = (h + 1) * (style->font_info.size + style->space_y);
     } else {
         gt_btn_set_font_align(style->msg_list[idx].msg_obj, GT_ALIGN_CENTER_MID);
         gt_btn_set_indent(style->msg_list[idx].msg_obj, 0);
+        gt_btn_set_space(style->msg_list[idx].msg_obj, style->space_x, 0);
+        h = (h + 1) * (style->font_info.size);
     }
-    h = (h + 1) * (style->font_info.size);
     w += style->font_info.size;
     w = w > _MSG_MAX_W(chat->area.w)  ? _MSG_MAX_W(chat->area.w) + 4 : w;
     x = (style->msg_list[idx].is_send ?  (chat->area.w - w - _MSG_SPACE_X) : _MSG_SPACE_X) + chat->area.x;
@@ -778,6 +783,18 @@ void gt_chat_set_msg_radius(gt_obj_st * chat, gt_radius_t radius)
     _gt_chat_update_msg_size(chat);
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
 
+}
+
+void gt_chat_set_msg_space(gt_obj_st * chat, uint8_t space_x, uint8_t space_y)
+{
+    if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_chat_st * style = (_gt_chat_st * )chat;
+    style->space_x = space_x;
+    style->space_y = space_y;
+    _gt_chat_update_msg_size(chat);
+    gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 /* end of file ----------------------------------------------------------*/

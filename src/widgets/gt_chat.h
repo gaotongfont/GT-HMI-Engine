@@ -54,6 +54,7 @@ void gt_chat_append_msg_text(gt_obj_st * chat, const char * msg);
 void gt_chat_clean_all_msg(gt_obj_st * chat);
 
 void gt_chat_set_msg_radius(gt_obj_st * chat, gt_radius_t radius);
+void gt_chat_set_msg_space(gt_obj_st * chat, uint8_t space_x, uint8_t space_y);
 
 void gt_chat_set_send_msg_bg_color(gt_obj_st * chat, gt_color_t color);
 void gt_chat_set_received_msg_bg_color(gt_obj_st * chat, gt_color_t color);
