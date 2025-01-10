@@ -2459,16 +2459,21 @@ GT_ATTRIBUTE_RAM_TEXT void draw_focus(gt_obj_st* obj)
     if (GT_ENABLED != obj->focus_dis) {
         return;
     }
+
+    gt_size_t rd_val = gt_obj_get_focus_w(obj);
+    gt_area_st area = gt_area_reduce(obj->area, -rd_val);
+    gt_size_t radius = obj->radius + rd_val;
+
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.bg_opa = GT_OPA_100;
-    rect_attr.radius = obj->radius;
+    rect_attr.radius = radius;
     rect_attr.reg.is_fill = 0;
-    rect_attr.border_width = 1;
+    rect_attr.border_width = gt_obj_get_focus_w(obj);
     rect_attr.bg_color = gt_color_focus();
     rect_attr.border_color = gt_color_focus();
 
-    draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
+    draw_bg(obj->draw_ctx, &rect_attr, &area);
 }
 
 GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_area_st * coords)

@@ -32,7 +32,7 @@ extern "C" {
 
 #endif
 
-#define REDUCE_DEFAULT     (2)
+#define FOCUS_W_DEFAULT     (2)
 
 /* typedef --------------------------------------------------------------*/
 

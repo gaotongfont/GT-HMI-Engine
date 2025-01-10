@@ -560,14 +560,12 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) 
         style->column.offset_y = offset_line;
     }
     gt_obj_st * obj = gt_obj_create(listview);
-    gt_obj_set_reduce(obj, style->item_reduce);
     /** set object item size */
     obj->area.x = listview->area.x + (width + (idx ? style->item_space.x : 0)) * idx;
     obj->area.y = offset_line + listview->process_attr.scroll.y;
     obj->area.w = width;
     obj->area.h = style->item_height;
 
-    gt_obj_set_reduce(obj, 1);
     gt_obj_set_fixed(obj, true);
     gt_obj_set_inside(obj, true);
     gt_obj_set_mask_effect(obj, style->selected_effect);
@@ -601,7 +599,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _set_label_pos(gt_obj_st * lab, gt_obj_st * it
 
 static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _init_img_icon_prop(gt_obj_st * icon) {
     gt_obj_set_inside(icon, true);
-    gt_obj_set_reduce(icon, 0);
 
     gt_obj_set_touch_parent(icon, true);
     gt_obj_set_bubble_notify(icon, true);
@@ -672,7 +669,6 @@ static inline void _set_label_prop(gt_obj_st * listview, gt_obj_st * lab, gt_fon
     gt_obj_set_touch_parent(lab, true);
     gt_obj_set_bubble_notify(lab, true);
     gt_obj_set_inside(lab, true);
-    gt_obj_set_reduce(lab, 0);
     gt_obj_set_focus_disabled(lab, GT_DISABLED);
 
     if (style->omit_sl) {
@@ -1309,7 +1305,7 @@ void gt_listview_show_item_bg(gt_obj_st * listview, bool show)
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_listview_set_item_reduce(gt_obj_st * listview, uint8_t reduce)
+void gt_listview_set_item_focus_w(gt_obj_st * listview, uint8_t reduce)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
@@ -1317,7 +1313,7 @@ void gt_listview_set_item_reduce(gt_obj_st * listview, uint8_t reduce)
     _gt_listview_st * style = (_gt_listview_st * )listview;
     style->item_reduce = reduce;
     for (gt_size_t i = 0, cnt = listview->cnt_child; i < cnt; i++) {
-        gt_obj_set_reduce(listview->child[i], reduce);
+        gt_obj_set_focus_w(listview->child[i], reduce);
     }
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -1480,7 +1476,7 @@ uint16_t gt_listview_get_resize_height(gt_obj_st * listview, uint16_t item_count
         return 0;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
-    return (listview->reduce << 1) + (item_count * style->item_height) +
+    return (item_count * style->item_height) +
         ((item_count - 1) * (style->item_space.y + style->septal_line_info.size.y));
 }
 

@@ -1365,7 +1365,7 @@ void gt_disp_invalid_area(gt_obj_st * obj)
         obj->area.w = gt_disp_get_res_hor(NULL);
         obj->area.h = gt_disp_get_res_ver(NULL);
     }
-    gt_area_st invalid = obj->area;
+    gt_area_st invalid = gt_area_reduce(obj->area, -(gt_obj_get_focus_w(obj)));
 #if GT_USE_LAYER_TOP
     gt_obj_st * top = gt_disp_get_layer_top();
 

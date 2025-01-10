@@ -115,7 +115,7 @@ typedef struct gt_obj_s {
     uint16_t cnt_child;
     gt_radius_t radius;
     uint8_t opa;            /* @ref gt_color.h */
-    uint8_t reduce;
+    uint8_t focus_w;       /* focus width */
 #if GT_USE_WIDGET_LAYOUT
     gt_obj_container_st container;
 #endif

@@ -302,14 +302,14 @@ void gt_obj_set_untouchability(gt_obj_st * obj, bool is_untouchability);
 bool gt_obj_is_untouchability(gt_obj_st * obj);
 
 /**
- * @brief Reduce the object background area
+ * @brief focus_w the object focus width
  *
  * @param obj
- * @param reduce REDUCE_DEFAULT [default]: 2
+ * @param focus_w FOCUS_W_DEFAULT [default]: 2
  */
-void gt_obj_set_reduce(gt_obj_st * obj, uint8_t reduce);
+void gt_obj_set_focus_w(gt_obj_st * obj, uint8_t focus_w);
 
-uint8_t gt_obj_get_reduce(gt_obj_st * obj);
+uint8_t gt_obj_get_focus_w(gt_obj_st * obj);
 
 void gt_obj_set_radius(gt_obj_st * obj, gt_radius_t radius);
 void gt_obj_set_radius_anim(gt_obj_st * obj, gt_radius_t radius);

@@ -223,7 +223,7 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
     font_attr.logical_area.y += scroll_y;
     font_attr.logical_area.h = 0xffff;
 
-    uint16_t height = obj->reduce + font_attr.font->info.size + (font_attr.space_y << 1);
+    uint16_t height = font_attr.font->info.size + (font_attr.space_y << 1);
 
 #if GT_TEXTAREA_SUB_STRING_SCROLL_CACHE
     gt_area_st cur_offset = {0};
@@ -304,8 +304,6 @@ static void _textarea_init_cb(gt_obj_st * obj) {
 
     /** draw border */
     if (obj->show_bg) {
-        gt_area_st area_font = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
-
         gt_attr_rect_st rect_attr;
         gt_graph_init_rect_attr(&rect_attr);
         rect_attr.radius = obj->radius;
@@ -315,7 +313,7 @@ static void _textarea_init_cb(gt_obj_st * obj) {
         rect_attr.border_color = style->color_border;
         rect_attr.bg_opa = style->bg_opa;
 
-        draw_bg(obj->draw_ctx, &rect_attr, &area_font);
+        draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
     }
 
     _draw_content_or_get_words(obj, NULL, false);

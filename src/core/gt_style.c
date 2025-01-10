@@ -863,16 +863,16 @@ bool gt_obj_is_untouchability(gt_obj_st * obj)
     return obj->untouchability;
 }
 
-void gt_obj_set_reduce(gt_obj_st * obj, uint8_t reduce)
+void gt_obj_set_focus_w(gt_obj_st * obj, uint8_t focus_w)
 {
     GT_CHECK_BACK(obj);
-    obj->reduce = reduce;
+    obj->focus_w = focus_w;
 }
 
-uint8_t gt_obj_get_reduce(gt_obj_st * obj)
+uint8_t gt_obj_get_focus_w(gt_obj_st * obj)
 {
     GT_CHECK_BACK_VAL(obj, 0);
-    return obj->reduce;
+    return obj->focus_w;
 }
 
 void gt_obj_set_radius(gt_obj_st * obj, gt_radius_t radius)

@@ -262,7 +262,7 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * c, struct gt_obj_s
     obj->scroll_dir = GT_SCROLL_ALL;
     obj->bgcolor    = gt_color_white();
     obj->radius     = 4;
-    obj->reduce     = REDUCE_DEFAULT;
+    obj->focus_w    = FOCUS_W_DEFAULT;
 
     /** Inherit from the parent class */
     if (parent) {

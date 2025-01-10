@@ -150,7 +150,7 @@ static void _init_cb(gt_obj_st * obj) {
     gt_mem_free(qr_data_buff);
     qr_data_buff = NULL;
 
-    gt_area_st box_area = gt_area_reduce(obj->area , gt_obj_get_reduce(obj));
+    gt_area_st box_area = gt_area_reduce(obj->area , 2);
     // draw background
     rect_attr.bg_color      = obj->bgcolor;
     draw_bg(obj->draw_ctx, &rect_attr, &box_area);

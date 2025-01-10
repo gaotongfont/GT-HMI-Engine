@@ -274,9 +274,6 @@ gt_obj_st * gt_media_player_create(gt_obj_st * parent)
 
     style->status_p = gt_label_create(obj);
     gt_obj_set_touch_parent(style->status_p, true);
-
-    gt_obj_set_reduce(obj, 0);
-
     return obj;
 }
 

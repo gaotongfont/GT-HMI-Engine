@@ -183,7 +183,6 @@ _enter_md_block_default(_gt_markdown_cb_params_st * pm) {
     gt_obj_set_pos(ptr->act_p[ptr->act_idx], 0, ptr->offset.y + ptr->markdown_p->area.y);
     gt_obj_set_size(ptr->act_p[ptr->act_idx], ptr->markdown_p->area.w, 16);
     gt_obj_show_bg(ptr->act_p[ptr->act_idx], false);
-    gt_obj_set_reduce(ptr->act_p[ptr->act_idx], 0);
     gt_obj_set_touch_parent(ptr->act_p[ptr->act_idx], true);
     gt_obj_set_fixed(ptr->act_p[ptr->act_idx], true);
 
@@ -286,7 +285,6 @@ _enter_md_block_table(_gt_markdown_cb_params_st * pm) {
 
     ptr->act_p[ptr->act_idx] = gt_table_create(ptr->markdown_p);
     gt_obj_set_pos(ptr->act_p[ptr->act_idx], ptr->markdown_p->area.x, ptr->offset.y + ptr->markdown_p->area.y);
-    gt_obj_set_reduce(ptr->act_p[ptr->act_idx], 0);
     gt_obj_set_touch_parent(ptr->act_p[ptr->act_idx], true);
     gt_obj_set_fixed(ptr->act_p[ptr->act_idx], true);
     gt_obj_set_inside(ptr->act_p[ptr->act_idx], true);

@@ -111,7 +111,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline uint16_t _get_label_offset(_gt_table_st * st
 static GT_ATTRIBUTE_RAM_TEXT void _draw_header(gt_obj_st * obj) {
     _gt_table_st * style = (_gt_table_st * )obj;
     uint16_t count = _gt_vector_get_count(style->header);
-    uint16_t reduce = gt_obj_get_reduce(obj);
+    uint16_t reduce = style->border_width;
     gt_font_st font = {
         .res = NULL,
         .info = style->font_info,
@@ -162,7 +162,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_header(gt_obj_st * obj) {
 static GT_ATTRIBUTE_RAM_TEXT void _draw_contents(gt_obj_st * obj) {
     _gt_table_st * style = (_gt_table_st * )obj;
     uint16_t count = _gt_vector_get_count(style->header);
-    uint16_t reduce = gt_obj_get_reduce(obj);
+    uint16_t reduce = style->border_width;
     gt_font_st font = {
         .res = NULL,
         .info = style->font_info,
@@ -175,7 +175,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_contents(gt_obj_st * obj) {
     };
     gt_area_st line_area = {
         .x = obj->area.x + reduce + _get_label_offset(style),
-        .y = obj->area.y + style->height_header + style->border_width,
+        .y = obj->area.y + reduce + style->height_header + style->border_width,
         .w = style->border_width,
         .h = 0,
     };
@@ -219,7 +219,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_contents(gt_obj_st * obj) {
         text_area.x = obj->area.x + reduce + _get_label_offset(style);
         text_area.y += row_item->max_height + style->border_width;
         line_area.x = text_area.x;
-        line_area.y = text_area.y;
+        line_area.y = text_area.y + reduce;
         if (iter.has_next(iter.dsc_t)) {
             hor_line_area.y = text_area.y;
             _draw_line(obj, &hor_line_area, style->color_border, style->border_width);
@@ -249,8 +249,7 @@ static void _table_init_cb(gt_obj_st * obj) {
         rect_attr.border_width  = style->border_width;
         rect_attr.border_color  = style->color_border;
 
-        gt_area_st area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
-        draw_bg(obj->draw_ctx, &rect_attr, &area);
+        draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
     }
 
     _draw_header(obj);
@@ -369,7 +368,7 @@ _calc_each_column_display_max_width(gt_obj_st * table) {
     }
 
     uint16_t total_width = _get_row_max_width(style, count) + style->font_info.size;
-    total_width += (gt_obj_get_reduce(table) + style->border_width) << 1;
+    total_width += style->border_width << 1;
     if (table->area.w > total_width) {
         gt_obj_set_w(table, total_width);
     } else {
@@ -444,7 +443,7 @@ _calc_total_height(gt_obj_st * table) {
     } else {
         row_count = 0;
     }
-    return style->height_header + style->height_contents + row_count + style->border_width + (table->reduce << 1);
+    return style->height_header + style->height_contents + row_count + style->border_width;// + (table->reduce << 1);
 }
 
 
