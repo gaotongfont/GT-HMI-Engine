@@ -256,7 +256,7 @@ static void _table_init_cb(gt_obj_st * obj) {
     _draw_header(obj);
     _draw_contents(obj);
 
-    draw_focus(obj, obj->radius);
+    draw_focus(obj);
 }
 
 static void _table_deinit_cb(gt_obj_st * obj) {

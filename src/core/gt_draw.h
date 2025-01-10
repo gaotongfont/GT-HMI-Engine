@@ -133,7 +133,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
  */
 GT_ATTRIBUTE_RAM_TEXT void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_attr_curve_st const * dsc, const gt_area_st * coords);
 
-GT_ATTRIBUTE_RAM_TEXT void draw_focus(gt_obj_st* obj, gt_size_t radius);
+GT_ATTRIBUTE_RAM_TEXT void draw_focus(gt_obj_st* obj);
 
 GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_area_st * coords);
 

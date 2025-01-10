@@ -146,7 +146,7 @@ static void _init_cb(gt_obj_st * obj) {
     draw_bg(obj->draw_ctx, &rect_attr, &area_circle);
 
     // focus
-    draw_focus(obj , rect_attr.radius);
+    draw_focus(obj);
 }
 
 /**

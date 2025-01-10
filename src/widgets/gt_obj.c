@@ -81,12 +81,12 @@ static void _init_cb(gt_obj_st * obj) {
         rect_attr.bg_opa         = obj->opa;
         rect_attr.bg_color      = obj->bgcolor;
     } else {
-        draw_focus(obj, obj->radius);
+        draw_focus(obj);
         return;
     }
     real_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
     draw_bg(obj->draw_ctx, &rect_attr, &real_area);
-    draw_focus(obj, obj->radius);
+    draw_focus(obj);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _screen_scroll(gt_obj_st * obj) {

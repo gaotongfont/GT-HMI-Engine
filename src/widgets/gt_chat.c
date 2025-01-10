@@ -136,7 +136,7 @@ static void _init_cb(gt_obj_st * obj) {
     rect_attr.bg_color      = obj->bgcolor;
 
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
-    draw_focus(obj, obj->radius);
+    draw_focus(obj);
 }
 
 

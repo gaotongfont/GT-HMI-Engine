@@ -226,7 +226,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         draw_text(input->draw_ctx, &font_attr, &area_font);
     }
 
-    draw_focus(input , rect_attr.radius);
+    draw_focus(input);
 
     if (star_str) {
         gt_mem_free(star_str);

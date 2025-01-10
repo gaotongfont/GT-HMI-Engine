@@ -321,7 +321,7 @@ static void _textarea_init_cb(gt_obj_st * obj) {
     _draw_content_or_get_words(obj, NULL, false);
 
     // focus
-    draw_focus(obj, obj->radius);
+    draw_focus(obj);
 }
 
 static inline void _reset_scroll_value(gt_obj_process_attr_st * process_attr) {

@@ -151,7 +151,7 @@ static void _btn_init_cb(gt_obj_st * obj) {
     draw_text(obj->draw_ctx, &font_attr, &area);
 
     // focus
-    draw_focus(obj, obj->radius);
+    draw_focus(obj);
 }
 
 /**

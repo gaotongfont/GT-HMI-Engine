@@ -75,7 +75,7 @@ static inline void _gt_rect_init_widget(gt_obj_st * rect) {
     }
 
     // focus
-    draw_focus(rect , rect->radius);
+    draw_focus(rect);
 }
 
 /**

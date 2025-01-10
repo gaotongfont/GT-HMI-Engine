@@ -125,7 +125,7 @@ static void _init_cb(gt_obj_st * progress_bar) {
         draw_bg(progress_bar->draw_ctx, &rect_attr, &area_val);
     }
     // focus
-    draw_focus(progress_bar , progress_bar->radius);
+    draw_focus(progress_bar);
 }
 
 /**

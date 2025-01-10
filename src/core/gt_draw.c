@@ -2451,7 +2451,7 @@ radius_lb:
     draw_ctx->parent_area = remark_area;    /** reset to before value */
 }
 
-GT_ATTRIBUTE_RAM_TEXT void draw_focus(gt_obj_st* obj, gt_size_t radius)
+GT_ATTRIBUTE_RAM_TEXT void draw_focus(gt_obj_st* obj)
 {
     if (false == obj->focus) {
         return;
@@ -2462,7 +2462,7 @@ GT_ATTRIBUTE_RAM_TEXT void draw_focus(gt_obj_st* obj, gt_size_t radius)
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.bg_opa = GT_OPA_100;
-    rect_attr.radius = radius;
+    rect_attr.radius = obj->radius;
     rect_attr.reg.is_fill = 0;
     rect_attr.border_width = 1;
     rect_attr.bg_color = gt_color_focus();

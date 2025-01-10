@@ -298,7 +298,7 @@ static void _init_cb(gt_obj_st * obj) {
         _update_time_str(style);
         gt_area_copy(&style->label->area, &obj->area);
     }
-    draw_focus(obj , obj->radius);
+    draw_focus(obj);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _remove_all_next_day_cb(_gt_clock_st * style) {
