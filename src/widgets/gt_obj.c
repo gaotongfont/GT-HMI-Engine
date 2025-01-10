@@ -84,8 +84,7 @@ static void _init_cb(gt_obj_st * obj) {
         draw_focus(obj);
         return;
     }
-    real_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
-    draw_bg(obj->draw_ctx, &rect_attr, &real_area);
+    draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
     draw_focus(obj);
 }
 

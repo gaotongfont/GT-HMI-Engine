@@ -82,7 +82,7 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
         radio->area.h = style->font_info.size + 4;  // Force height equal to font size
     }
 
-    gt_area_st area_base = gt_area_reduce(radio->area, gt_obj_get_reduce(radio));
+    gt_area_st area_base = radio->area;
     area_base.w = style->font_info.size + 4;
     area_base.h = area_base.w;
     // area_base.y = radio->area.y + ((radio->area.h - area_base.h) >> 1);

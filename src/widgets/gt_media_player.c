@@ -92,13 +92,12 @@ static void _hide_center_content(gt_obj_st * media) {
 }
 
 static void _show_center_content(gt_obj_st * media, gt_size_t font_size, char const * const text) {
-    gt_area_st real_area = gt_area_reduce(media->area, gt_obj_get_reduce(media));
     _gt_media_player_st * style = (_gt_media_player_st *)media;
     gt_obj_st * status_p = style->status_p;
     if (NULL == status_p) {
         return;
     }
-    status_p->area = real_area;
+    status_p->area = media->area;
     gt_label_set_text(status_p, (const char * )text);
     gt_label_set_font_size(status_p, font_size);
     gt_label_set_font_color(status_p, gt_color_white());
@@ -190,8 +189,7 @@ static void _media_player_init_cb(gt_obj_st * obj) {
         rect_attr.radius      = obj->radius;
         rect_attr.bg_opa      = obj->opa;
         rect_attr.bg_color    = obj->bgcolor;
-        gt_area_st real_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
-        draw_bg(obj->draw_ctx, &rect_attr, &real_area);
+        draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
 
         // text
         if (false == style->reg.hide_title) {

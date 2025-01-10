@@ -116,10 +116,10 @@ static void _btn_init_cb(gt_obj_st * obj) {
     rect_attr.bg_color      = fg_color;
     rect_attr.border_color  = style->color_border;
 
-    gt_area_st area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
     // 1:base shape
-    draw_bg(obj->draw_ctx, &rect_attr, &area);
+    draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
 
+    gt_area_st area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
     // 2:font
     gt_attr_font_st font_attr = {
         .font           = &font,

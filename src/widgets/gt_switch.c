@@ -87,7 +87,7 @@ static void _init_cb(gt_obj_st * obj) {
         fg_color = style->color_ina;
     }
 
-    gt_area_st box_area = gt_area_reduce(obj->area , gt_obj_get_reduce(obj));
+    gt_area_st box_area = obj->area;
     gt_attr_rect_st rect_attr;
     uint16_t space = box_area.h >> 3;
     uint16_t diameter = _calc_diameter_by(style->sw_type, box_area.h);

@@ -108,9 +108,8 @@ static void _graphs_init_cb(gt_obj_st * obj) {
         rect_attr.fg_color      = obj->bgcolor;
         rect_attr.bg_color      = obj->bgcolor;
 
-        gt_area_st area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
         /** base shape */
-        draw_bg(obj->draw_ctx, &rect_attr, &area);
+        draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
     }
 
     if (_is_self_adaptive(obj) || _is_hor_range_zero(style) || _is_ver_range_zero(style)) {

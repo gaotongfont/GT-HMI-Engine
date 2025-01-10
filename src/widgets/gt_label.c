@@ -85,7 +85,7 @@ static void _init_cb(gt_obj_st * obj) {
     };
     gt_font_info_update_font_thick(&font.info);
 
-    gt_area_st box_area = gt_area_reduce(obj->area, gt_obj_get_reduce(obj));
+    gt_area_st box_area = obj->area;
     /*draw font*/
     gt_attr_font_st font_attr = {
         .font       = &font,

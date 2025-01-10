@@ -98,7 +98,7 @@ static void _init_cb(gt_obj_st * obj) {
         rect_attr.bg_color = gt_color_white();
         rect_attr.border_color = gt_color_hex(0x409EFF);
     }
-    gt_area_st area = gt_area_reduce(obj->area , gt_obj_get_reduce(obj));
+    gt_area_st area = obj->area;
 
     gt_area_st area_box = area;
     area_box.w = style->font_info.size+4;
