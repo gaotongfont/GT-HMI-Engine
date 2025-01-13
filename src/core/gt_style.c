@@ -875,6 +875,24 @@ uint8_t gt_obj_get_focus_w(gt_obj_st * obj)
     return obj->focus_w;
 }
 
+void gt_obj_set_focus_gap(gt_obj_st * obj, uint8_t focus_gap)
+{
+    GT_CHECK_BACK(obj);
+    obj->focus_gap = focus_gap;
+}
+
+uint8_t gt_obj_get_focus_gap(gt_obj_st * obj)
+{
+    GT_CHECK_BACK_VAL(obj, 0);
+    return obj->focus_gap;
+}
+
+uint16_t gt_obj_get_focus_offset_value(gt_obj_st * obj)
+{
+    GT_CHECK_BACK_VAL(obj, 0);
+    return obj->focus_w + obj->focus_gap;
+}
+
 void gt_obj_set_radius(gt_obj_st * obj, gt_radius_t radius)
 {
     GT_CHECK_BACK(obj);

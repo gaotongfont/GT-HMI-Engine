@@ -529,8 +529,8 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
         switch (gt_obj_class_get_type(parent)) {
             case GT_TYPE_SCREEN: {
                 gt_obj_scroll_to(parent,
-                    chg_t.src->area.x - chg_t.dst->area.x,
-                    chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_ON);
+                    chg_t.src->area.x - (chg_t.dst->area.x - gt_obj_get_focus_offset_value(chg_t.dst)),
+                    chg_t.src->area.y - (chg_t.dst->area.y - gt_obj_get_focus_offset_value(chg_t.dst)), GT_ANIM_ON);
                 return;
             }
             case GT_TYPE_MARKDOWN:
@@ -543,11 +543,11 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
                     chg_t.dst = last_parent;
                 }
 
-                gt_obj_scroll_to_y(parent, chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_ON);
+                gt_obj_scroll_to_y(parent, chg_t.src->area.y - (chg_t.dst->area.y - gt_obj_get_focus_offset_value(chg_t.dst)), GT_ANIM_ON);
                 return;
             }
             case GT_TYPE_CHAT: {
-                gt_obj_scroll_to_y(parent, chg_t.src->area.y - chg_t.dst->area.y, GT_ANIM_ON);
+                gt_obj_scroll_to_y(parent, chg_t.src->area.y - (chg_t.dst->area.y - gt_obj_get_focus_offset_value(chg_t.dst)), GT_ANIM_ON);
                 return;
             }
             case GT_TYPE_VIEW_PAGER: {

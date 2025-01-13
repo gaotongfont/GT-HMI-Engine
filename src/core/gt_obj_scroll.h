@@ -67,7 +67,7 @@ void gt_obj_scroll_to_y(struct gt_obj_s * obj, gt_size_t y, gt_anim_enable_et en
 gt_size_t gt_obj_scroll_get_x(gt_obj_st * obj);
 gt_size_t gt_obj_scroll_get_y(gt_obj_st * obj);
 
-void _gt_obj_scroll_internal(gt_obj_st * obj);
+void _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset);
 
 void _gt_obj_set_process_point(gt_obj_st * obj, gt_point_st * point);
 void _gt_obj_set_process_scroll_xy(gt_obj_st * obj, gt_size_t x_scroll, gt_size_t y_scroll);

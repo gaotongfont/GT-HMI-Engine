@@ -427,6 +427,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _update_all_item_text_style(gt_obj_st * lv) {
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
+    _gt_listview_st * style = (_gt_listview_st * )obj;
 
     if (GT_EVENT_TYPE_DRAW_START == code_val) {
         gt_disp_invalid_area(obj);
@@ -438,7 +439,8 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             _set_last_active_obj(obj, NULL);
             return;
         }
-        _gt_obj_scroll_internal(obj);
+
+        _gt_obj_scroll_internal(obj, style->border_width);
     }
     else if (GT_EVENT_TYPE_INPUT_PRESSED == code_val) {
         _set_last_active_obj(obj, e->origin);
@@ -562,9 +564,9 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) 
     }
     gt_obj_st * obj = gt_obj_create(listview);
     /** set object item size */
-    obj->area.x = style->border_width + listview->area.x + (width + (idx ? style->item_space.x : 0)) * idx;
-    obj->area.y = style->border_width + offset_line + listview->process_attr.scroll.y;
-    obj->area.w = width - (style->border_width << 1);
+    obj->area.x = listview->area.x + (width + (idx ? style->item_space.x : 0)) * idx;
+    obj->area.y = offset_line + listview->process_attr.scroll.y;
+    obj->area.w = width ;
     obj->area.h = style->item_height;
     //
     obj->area = gt_area_reduce(obj->area, style->item_reduce);

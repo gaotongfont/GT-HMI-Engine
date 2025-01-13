@@ -2460,7 +2460,7 @@ GT_ATTRIBUTE_RAM_TEXT void draw_focus(gt_obj_st* obj)
         return;
     }
 
-    gt_size_t rd_val = gt_obj_get_focus_w(obj);
+    gt_size_t rd_val = gt_obj_get_focus_offset_value(obj);
     gt_area_st area = gt_area_reduce(obj->area, -rd_val);
     gt_size_t radius = obj->radius + rd_val;
 

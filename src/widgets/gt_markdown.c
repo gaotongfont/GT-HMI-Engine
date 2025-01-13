@@ -126,10 +126,11 @@ static void _markdown_deinit_cb(gt_obj_st * obj) {
 
 static void _markdown_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
+    _gt_markdown_st * style = (_gt_markdown_st * )obj;
 
     switch(code_val) {
         case GT_EVENT_TYPE_INPUT_SCROLL: {
-            _gt_obj_scroll_internal(obj);
+            _gt_obj_scroll_internal(obj, style->border_width);
             break;
         }
         case GT_EVENT_TYPE_DRAW_START: {

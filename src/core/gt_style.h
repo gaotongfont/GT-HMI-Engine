@@ -311,6 +311,11 @@ void gt_obj_set_focus_w(gt_obj_st * obj, uint8_t focus_w);
 
 uint8_t gt_obj_get_focus_w(gt_obj_st * obj);
 
+void gt_obj_set_focus_gap(gt_obj_st * obj, uint8_t focus_gap);
+uint8_t gt_obj_get_focus_gap(gt_obj_st * obj);
+uint16_t gt_obj_get_focus_offset_value(gt_obj_st * obj);
+
+
 void gt_obj_set_radius(gt_obj_st * obj, gt_radius_t radius);
 void gt_obj_set_radius_anim(gt_obj_st * obj, gt_radius_t radius);
 void  gt_obj_set_radius_step(gt_obj_st * obj, gt_radius_t step_radius);
