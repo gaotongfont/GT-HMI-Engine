@@ -41,6 +41,7 @@ typedef enum {
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_cross_layout_create(gt_obj_st * parent);
 void gt_cross_layout_set_gap(gt_obj_st* layout, uint8_t hor_gap, uint8_t ver_gap);
+void gt_cross_layout_set_roll_mode(gt_obj_st* layout, gt_cross_roll_mode_et roll_mode);
 
 gt_obj_st* gt_cross_layout_get_hor_obj(gt_obj_st* layout);
 gt_obj_st* gt_cross_layout_get_ver_obj(gt_obj_st* layout);
@@ -56,7 +57,11 @@ void gt_cross_layout_ver_add_item(gt_obj_st* layout, gt_obj_st* obj);
 void gt_cross_layout_set_hor_index(gt_obj_st* layout, uint8_t hor_index);
 void gt_cross_layout_set_ver_index(gt_obj_st* layout, uint8_t ver_index);
 gt_size_t gt_cross_layout_get_hor_count(gt_obj_st* layout);
-void gt_cross_layout_set_roll_mode(gt_obj_st* layout, gt_cross_roll_mode_et roll_mode);
+gt_size_t gt_cross_layout_get_hor_index(gt_obj_st* layout);
+gt_obj_st* gt_cross_layout_get_hor_select_obj(gt_obj_st* layout);
+gt_size_t gt_cross_layout_get_ver_count(gt_obj_st* layout);
+gt_size_t gt_cross_layout_get_ver_index(gt_obj_st* layout);
+gt_obj_st* gt_cross_layout_get_ver_select_obj(gt_obj_st* layout);
 
 
 #endif //!GT_CFG_ENABLE_CROSS_LAYOUT

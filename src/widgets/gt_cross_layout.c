@@ -127,6 +127,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_handler(gt_obj_st* obj)
                 continue;
             }
             itme->visible = GT_VISIBLE;
+            x = gt_obj_get_x(style->ver_obj) + ((gt_obj_get_w(style->ver_obj) - itme->area.w) >> 1);
             _gt_obj_move_child_by(itme, x - itme->area.x, y - itme->area.y);
             itme->area.x = x;
             itme->area.y = y;
@@ -146,6 +147,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_handler(gt_obj_st* obj)
             itme->visible = GT_VISIBLE;
             style->ver_move_max += gt_obj_get_h(itme) + style->ver_gap;
             y -= (gt_obj_get_h(itme) + style->ver_gap);
+            x = gt_obj_get_x(style->ver_obj) + ((gt_obj_get_w(style->ver_obj) - itme->area.w) >> 1);
             _gt_obj_move_child_by(itme, x - itme->area.x, y - itme->area.y);
             itme->area.x = x;
             itme->area.y = y;
@@ -159,6 +161,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_handler(gt_obj_st* obj)
             gt_obj_st* itme = (gt_obj_st*)_gt_vector_get_item(style->ver_itmes, i);
             if(itme){
                 itme->visible = GT_VISIBLE;
+                x = gt_obj_get_x(style->ver_obj) + ((gt_obj_get_w(style->ver_obj) - itme->area.w) >> 1);
                 _gt_obj_move_child_by(itme, x - itme->area.x, y - itme->area.y);
                 itme->area.x = x;
                 itme->area.y = y;
@@ -226,6 +229,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_handler(gt_obj_st* obj)
                 continue;
             }
             itme->visible = GT_VISIBLE;
+            y = gt_obj_get_y(style->hor_obj) + ((gt_obj_get_h(style->hor_obj) - itme->area.h) >> 1);
             _gt_obj_move_child_by(itme, x - itme->area.x, y - itme->area.y);
             itme->area.x = x;
             itme->area.y = y;
@@ -246,6 +250,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_handler(gt_obj_st* obj)
             itme->visible = GT_VISIBLE;
             x -= (gt_obj_get_w(itme) + style->hor_gap);
             style->hor_move_max += gt_obj_get_w(itme) + style->hor_gap;
+            y = gt_obj_get_y(style->hor_obj) + ((gt_obj_get_h(style->hor_obj) - itme->area.h) >> 1);
             _gt_obj_move_child_by(itme, x - itme->area.x, y - itme->area.y);
             itme->area.x = x;
             itme->area.y = y;
@@ -259,6 +264,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_handler(gt_obj_st* obj)
             gt_obj_st* itme = (gt_obj_st*)_gt_vector_get_item(hor_itme, i);
             if(itme){
                 itme->visible = GT_VISIBLE;
+                y = gt_obj_get_y(style->hor_obj) + ((gt_obj_get_h(style->hor_obj) - itme->area.h) >> 1);
                 _gt_obj_move_child_by(itme, x - itme->area.x, y - itme->area.y);
                 itme->area.x = x;
                 itme->area.y = y;
@@ -892,7 +898,108 @@ gt_size_t gt_cross_layout_get_hor_count(gt_obj_st* layout)
     return _gt_vector_get_count(hor_itme);
 }
 
+gt_size_t gt_cross_layout_get_ver_count(gt_obj_st* layout)
+{
+    GT_CHECK_BACK_VAL(layout, -1);
 
+    if(false == gt_obj_is_type(layout, OBJ_TYPE)){
+        return -1;
+    }
+
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
+
+    if(!style->ver_itmes){
+        return -1;
+    }
+
+    return _gt_vector_get_count(style->ver_itmes);
+}
+
+gt_size_t gt_cross_layout_get_hor_index(gt_obj_st* layout)
+{
+    GT_CHECK_BACK_VAL(layout, -1);
+
+    if(false == gt_obj_is_type(layout, OBJ_TYPE)){
+        return -1;
+    }
+
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
+
+    if(!style->hor_itmes && !style->ver_itmes){
+        return -1;
+    }
+
+    gt_size_t ver_index = _gt_vector_get_index(style->ver_itmes);
+    if(-1 == ver_index){
+        return -1;
+    }
+
+    _gt_vector_st * hor_itme = (_gt_vector_st *)_gt_vector_get_item(style->hor_itmes, ver_index);
+    if(!hor_itme){
+        return -1;
+    }
+
+    return _gt_vector_get_index(hor_itme);
+}
+
+gt_size_t gt_cross_layout_get_ver_index(gt_obj_st* layout)
+{
+    GT_CHECK_BACK_VAL(layout, -1);
+
+    if(false == gt_obj_is_type(layout, OBJ_TYPE)){
+        return -1;
+    }
+
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
+
+    if(!style->ver_itmes){
+        return -1;
+    }
+    return _gt_vector_get_index(style->ver_itmes);
+}
+
+gt_obj_st* gt_cross_layout_get_hor_select_obj(gt_obj_st* layout)
+{
+    GT_CHECK_BACK_VAL(layout, NULL);
+
+    if(false == gt_obj_is_type(layout, OBJ_TYPE)){
+        return NULL;
+    }
+
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
+
+    if(!style->hor_itmes && !style->ver_itmes){
+        return NULL;
+    }
+
+    gt_size_t ver_index = _gt_vector_get_index(style->ver_itmes);
+    if(-1 == ver_index){
+        return NULL;
+    }
+
+    _gt_vector_st * hor_itme = (_gt_vector_st *)_gt_vector_get_item(style->hor_itmes, ver_index);
+    if(!hor_itme){
+        return NULL;
+    }
+
+    return _gt_vector_get_item(hor_itme, _gt_vector_get_index(hor_itme));
+}
+
+gt_obj_st* gt_cross_layout_get_ver_select_obj(gt_obj_st* layout)
+{
+    GT_CHECK_BACK_VAL(layout, NULL);
+
+    if(false == gt_obj_is_type(layout, OBJ_TYPE)){
+        return NULL;
+    }
+
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
+
+    if(!style->ver_itmes){
+        return NULL;
+    }
+    return _gt_vector_get_item(style->ver_itmes, _gt_vector_get_index(style->ver_itmes));
+}
 /* end of file ----------------------------------------------------------*/
 #endif //!GT_CFG_ENABLE_CROSS_LAYOUT
 
