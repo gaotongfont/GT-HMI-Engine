@@ -1353,7 +1353,9 @@ _disp_font:
                 }
                 blend_dsc.mask_buf = temp;
                 area_font.w = symbol_size;
+                area_font.h = symbol_size;
                 gt_draw_blend(draw_ctx, &blend_dsc);
+                area_font.h = font_disp_h;
                 blend_dsc.mask_buf = NULL;
             }
 
@@ -1817,7 +1819,9 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_single_line(_gt_draw
                 continue;
             }
             area_font.w = symbol_size;
+            area_font.h = symbol_size;
             gt_draw_blend(draw_ctx, &blend_dsc);
+            area_font.h = font_disp_h;
             blend_dsc.mask_buf = NULL;
         }
 
