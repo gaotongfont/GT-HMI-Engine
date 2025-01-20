@@ -325,5 +325,40 @@ void gt_select_set_font_style(gt_obj_st * select, gt_font_style_et font_style)
     gt_event_send(select, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+void gt_select_set_selected_anti_font(gt_obj_st * select, bool enabled)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    gt_listview_set_selected_anti_font(style->lv_p, enabled);
+}
+
+bool gt_select_is_selected_anti_font(gt_obj_st * select)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return false;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    return gt_listview_is_selected_anti_font(style->lv_p);
+}
+void gt_select_set_selected_anti_font_color(gt_obj_st * select, gt_color_t anti_color)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    gt_listview_set_selected_anti_font_color(style->lv_p, anti_color);
+}
+gt_color_t gt_select_get_selected_anti_font_color(gt_obj_st * select)
+{
+    if (false == gt_obj_is_type(select, OBJ_TYPE)) {
+        return gt_color_black();
+    }
+    _gt_select_st * style = (_gt_select_st * )select;
+    return gt_listview_get_selected_anti_font_color(style->lv_p);
+}
+
+
 #endif  /** GT_CFG_ENABLE_SELECT */
 /* end ------------------------------------------------------------------*/

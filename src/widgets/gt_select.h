@@ -83,6 +83,17 @@ void gt_select_set_font_encoding(gt_obj_st * select, gt_encoding_et encoding);
 
 void gt_select_set_font_style(gt_obj_st * select, gt_font_style_et font_style);
 
+/**
+ * @brief  Set the font to be reversed color when the item is selected
+ *
+ * @param select
+ * @param enabled 0[default]: no font change color when item selected; 1: font change color when item selected
+ */
+void gt_select_set_selected_anti_font(gt_obj_st * select, bool enabled);
+bool gt_select_is_selected_anti_font(gt_obj_st * select);
+void gt_select_set_selected_anti_font_color(gt_obj_st * select, gt_color_t anti_color);
+gt_color_t gt_select_get_selected_anti_font_color(gt_obj_st * select);
+
 #endif  /** GT_CFG_ENABLE_SELECT */
 
 #ifdef __cplusplus

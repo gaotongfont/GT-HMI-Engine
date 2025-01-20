@@ -74,6 +74,7 @@ typedef struct _gt_listview_s {
 
     gt_color_t item_bg_color;
     gt_color_t border_color;
+    gt_color_t selected_anti_font_color;
 
     _septal_line_info_st septal_line_info;
 
@@ -103,6 +104,7 @@ typedef struct _gt_listview_s {
     uint8_t selected_effect : 1;    /** 1[defalut]: Enabled  effect; 0: close selected effect */
 
     uint8_t show_background : 1;    /** 1[defalut]: show background; 0: hide background */
+    uint8_t anti_font_color : 1;    /** 0[default]: no font change color when item selected */
 }_gt_listview_st;
 
 
@@ -326,6 +328,18 @@ static GT_ATTRIBUTE_RAM_TEXT bool _is_line_max_width_equal_to(gt_obj_st * listvi
     return gt_obj_get_w(listview) == line_max_width;
 }
 
+static GT_ATTRIBUTE_RAM_TEXT void _set_label_color_by_item(gt_obj_st * item, gt_color_t font_color) {
+    gt_obj_st * ptr = NULL;
+    if (NULL == item) { return; }
+
+    for (gt_size_t i = 0; i < item->cnt_child; ++i) {
+        ptr = item->child[i];
+        if (gt_obj_is_type(ptr, GT_TYPE_LAB)) {
+            gt_label_set_font_color(ptr, font_color);
+        }
+    }
+}
+
 static GT_ATTRIBUTE_RAM_TEXT void _set_last_active_obj(gt_obj_st * listview, gt_obj_st * target) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
     if (listview == target) {
@@ -333,6 +347,15 @@ static GT_ATTRIBUTE_RAM_TEXT void _set_last_active_obj(gt_obj_st * listview, gt_
         return;
     }
     style->last_active = target;
+    if (style->anti_font_color) {
+        if (false == style->highlight) {
+            _set_label_color_by_item(style->last_active, style->selected_anti_font_color);
+        } else if (style->multiple) {
+            _set_label_color_by_item(style->last_active,
+                GT_STATE_NONE == gt_obj_get_state(style->last_active) ?
+                style->font_info.palette: style->selected_anti_font_color);
+        }
+    }
 }
 
 static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _get_last_active_obj(gt_obj_st * listview) {
@@ -340,21 +363,31 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _get_last_active_obj(gt_obj_st * listvi
     return style->last_active;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT void _reset_last_active_state(gt_obj_st * listview, gt_obj_st * target) {
+static GT_ATTRIBUTE_RAM_TEXT void _reset_last_active_state(gt_obj_st * listview, gt_obj_st * item) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
+    if (NULL == item) {
+        return;
+    }
+    if (style->anti_font_color) {
+        _set_label_color_by_item(item, style->font_info.palette);
+    }
     if (false == style->selected_effect) {
         return;
     }
-    if (gt_obj_get_trigger_mode(target)) {
+    if (gt_obj_get_trigger_mode(item)) {
         return;
     }
-    gt_obj_set_state(target, GT_STATE_NONE);
+    gt_obj_set_state(item, GT_STATE_NONE);
     gt_disp_invalid_area(listview);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _highlight_set_obj_active_state(gt_obj_st * listview) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
     if (false == style->highlight) {
+        if (style->anti_font_color) {
+            /** default short mode */
+            _set_label_color_by_item(style->last_active, style->font_info.palette);
+        }
         return;
     }
     if (style->multiple) {
@@ -362,6 +395,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _highlight_set_obj_active_state(gt_obj_st * li
     }
     if (false == style->selected_effect) {
         return;
+    }
+    if (style->anti_font_color) {
+        _set_label_color_by_item(style->last_active, style->selected_anti_font_color);
     }
     if (false == gt_obj_get_trigger_mode(style->last_active)) {
         return;
@@ -391,6 +427,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _reset_other_active_state(gt_obj_st * listview
         }
         if (false == gt_obj_get_trigger_mode(item)) {
             continue;
+        }
+        if (style->anti_font_color) {
+            _set_label_color_by_item(item, style->font_info.palette);
         }
         gt_obj_set_state(item, GT_STATE_NONE);
     }
@@ -439,6 +478,9 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             _set_last_active_obj(obj, NULL);
             return;
         }
+        if (style->highlight) {
+            gt_obj_set_trigger_mode(style->last_active, false);
+        }
 
         _gt_obj_scroll_internal(obj, style->border_width);
     }
@@ -451,7 +493,10 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         _highlight_set_obj_active_state(obj);
     }
     else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code_val) {
-        _reset_last_active_state(obj, e->origin);
+        if (style->highlight) {
+            gt_obj_set_trigger_mode(style->last_active, true);
+        }
+        _reset_last_active_state(obj, _get_last_active_obj(obj));
     } else if (GT_EVENT_TYPE_INPUT_SCROLL_UP == code_val) {
         gt_obj_scroll_to_y(obj, gt_obj_get_h(obj) >> 1, GT_ANIM_ON);
     } else if (GT_EVENT_TYPE_INPUT_SCROLL_DOWN == code_val) {
@@ -1248,11 +1293,16 @@ void gt_listview_set_highlight_mode(gt_obj_st * listview, bool enabled)
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
+    gt_obj_st * selected_item = NULL;
 
     if (false == enabled) {
         style->multiple = false;
         _reset_other_active_state(listview);
-        gt_obj_set_state(_get_last_active_obj(listview), false);
+        selected_item= _get_last_active_obj(listview);
+        if (style->anti_font_color) {
+            _set_label_color_by_item(selected_item, style->font_info.palette);
+        }
+        gt_obj_set_state(selected_item, GT_STATE_NONE);
     }
     style->highlight = enabled ? 1 : 0;
 
@@ -1663,6 +1713,44 @@ void gt_listview_set_label_auto_scroll_single_line_by(gt_obj_st * listview, bool
     style->omit_sl = 0;
     style->auto_scroll_sl = is_auto_scroll ? 1 : 0;
     _set_label_prop_by_type(listview, _LABEL_AUTO_SCROLL_SL, is_auto_scroll);
+}
+
+void gt_listview_set_selected_anti_font(gt_obj_st * listview, bool enabled)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->anti_font_color = enabled ? 1 : 0;
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+bool gt_listview_is_selected_anti_font(gt_obj_st * listview)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return false;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    return style->anti_font_color;
+}
+
+void gt_listview_set_selected_anti_font_color(gt_obj_st * listview, gt_color_t anti_color)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->selected_anti_font_color = anti_color;
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+gt_color_t gt_listview_get_selected_anti_font_color(gt_obj_st * listview)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return gt_color_black();
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    return style->selected_anti_font_color;
 }
 
 #endif  /** GT_CFG_ENABLE_LISTVIEW */

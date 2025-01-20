@@ -476,6 +476,16 @@ void gt_listview_set_font_space(gt_obj_st * listview, uint8_t space_x, uint8_t s
 void gt_listview_set_label_omit_single_line_by(gt_obj_st * listview, bool is_omit);
 void gt_listview_set_label_auto_scroll_single_line_by(gt_obj_st * listview, bool is_auto_scroll);
 
+/**
+ * @brief  Set the font to be reversed color when the item is selected
+ *
+ * @param listview
+ * @param enabled 0[default]: no font change color when item selected; 1: font change color when item selected
+ */
+void gt_listview_set_selected_anti_font(gt_obj_st * listview, bool enabled);
+bool gt_listview_is_selected_anti_font(gt_obj_st * listview);
+void gt_listview_set_selected_anti_font_color(gt_obj_st * listview, gt_color_t anti_color);
+gt_color_t gt_listview_get_selected_anti_font_color(gt_obj_st * listview);
 
 
 #endif  /** GT_CFG_ENABLE_LISTVIEW */
