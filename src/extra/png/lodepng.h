@@ -1079,6 +1079,17 @@ to handle such files and decode in-memory.
 */
 unsigned lodepng_load_file(unsigned char** out, size_t* outsize, const char* filename);
 
+/**
+ * @brief Get the png by raw data
+ *
+ * @param out
+ * @param outsize
+ * @param raw_data
+ * @param len The length of raw_data
+ * @return unsigned as lodepng_load_file()
+ */
+unsigned lodepng_load_file_raw(unsigned char** out, size_t* outsize, const char* raw_data, uint32_t len);
+
 #if GT_USE_FILE_HEADER
 unsigned lodepng_load_file_fh(unsigned char** out, size_t* outsize, gt_file_header_param_st const * const param);
 #endif

@@ -137,6 +137,12 @@ typedef struct _gt_fs_drv_s {
     void *( * custom_size_addr_open_cb)(struct _gt_fs_drv_s * drv, gt_direct_addr_custom_size_st * dac, gt_fs_mode_et mode);
 #endif
     void *( * open_cb)(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode);
+    /**
+     * @brief
+     * @param raw_data normal the raw data pointer, otherwise (uint32_t)flash address
+     * @param raw_len The buffer length of the raw data
+     */
+    void *( * open_cb_raw)(struct _gt_fs_drv_s * drv, uint8_t * raw_data, uint32_t raw_len, gt_fs_mode_et mode);
     void ( * close_cb)(struct _gt_fs_drv_s * drv, void * fp);
     gt_fs_res_et ( * read_cb )(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len);
     gt_fs_res_et ( * write_cb)(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len);

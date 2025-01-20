@@ -219,7 +219,7 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_color_img_raw_st * raw)
     if (false == gt_obj_is_type(img, OBJ_TYPE)) {
         return ;
     }
-    if (NULL == raw->buffer && NULL == raw->opa) {
+    if (NULL == raw->file_raw_p && NULL == raw->buffer && NULL == raw->opa) {
         return ;
     }
     _gt_img_st * style = (_gt_img_st *)img;
@@ -227,6 +227,8 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_color_img_raw_st * raw)
         gt_mem_free(style->src);
         style->src = NULL;
     }
+    style->raw.raw_p = raw->file_raw_p;
+    style->raw.raw_len = raw->raw_len;
     style->raw.img = (uint8_t * )raw->buffer;
     style->raw.alpha = (gt_opa_t * )raw->opa;
     style->raw.header.w = raw->width;

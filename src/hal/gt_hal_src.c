@@ -94,6 +94,31 @@ static GT_ATTRIBUTE_RAM_TEXT void * _open_cb(struct _gt_fs_drv_s * drv, char * n
     return (void * )fp;
 }
 
+static GT_ATTRIBUTE_RAM_TEXT void * _open_cb_raw(struct _gt_fs_drv_s * drv, uint8_t * raw_data, uint32_t raw_len, gt_fs_mode_et mode) {
+    _gt_src_dev_st * dev = _get_dev();
+    GT_UNUSED(drv);
+
+    if (NULL == raw_data) {
+        return NULL;
+    }
+
+    gt_fs_fp_st * fp = _gt_hal_fp_init();
+    GT_CHECK_BACK_VAL(fp, NULL);
+    fp->start = 0;
+    fp->end = raw_len;
+    fp->type = GT_FS_TYPE_ARRAY;
+    fp->mode = mode;
+    fp->pos = fp->start;
+    fp->buffer = (void * )raw_data;
+
+    // fp->msg.pic.w = dev->sys[idx].w;
+    // fp->msg.pic.h = dev->sys[idx].h;
+    // fp->msg.pic.is_alpha = dev->sys[idx].is_alpha;
+    fp->drv = &dev->drv;
+
+    return (void * )fp;
+}
+
 static GT_ATTRIBUTE_RAM_TEXT void _close_cb(struct _gt_fs_drv_s * drv, void * fp) {
     drv->seek_cb(drv, fp, 0, GT_FS_SEEK_SET);
     gt_mem_free(fp);
@@ -180,6 +205,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_src_drv_register(gt_fs_drv_st * drv) {
     drv->custom_size_addr_open_cb = NULL;
 #endif
     drv->open_cb      = _open_cb;
+    drv->open_cb_raw  = _open_cb_raw;
     drv->close_cb     = _close_cb;
     drv->read_cb      = _read_cb;
     drv->seek_cb      = _seek_cb;
@@ -196,6 +222,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_src_drv_register(gt_fs_drv_st * drv) {
 }
 
 #endif  /** GT_USE_MODE_SRC */
+
 /* global functions / API interface -------------------------------------*/
 
 void gt_src_init(const gt_src_st * const src_sys, uint32_t sys_count)

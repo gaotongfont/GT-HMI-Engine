@@ -67,6 +67,8 @@ typedef struct _gt_img_dsc_s {
     struct _gt_img_decoder_s * decoder; ///< iamge decoder
     gt_fs_fp_st * fp;           ///< file object
     void * src;                 ///< path or destination of image
+    char * raw_p;               ///< raw data pointer by ram buffer
+    uint32_t raw_len;           ///< raw data length
 #if GT_USE_FILE_HEADER
     gt_file_header_param_st * file_header;  ///< Using file header mode to read image data
 #endif
@@ -75,7 +77,7 @@ typedef struct _gt_img_dsc_s {
 #endif
     uint8_t * img;              ///< temp buffer which is used to save image data
     gt_opa_t * alpha;           ///< temp buffer which is used to save alpha data
-    void * customs_data;        ///< customs data
+    void * customs_data;        ///< customs data, by core inside used
     gt_color_t fill_color;      ///< fill color
     _gt_img_info_st header;     ///< the header information of image
     gt_fs_type_et type;         ///< file driver type, such as: SD, Flash...
@@ -89,6 +91,17 @@ typedef struct _gt_img_dsc_s {
  * @return gt_res_t The return status
  */
 typedef gt_res_t ( * gt_img_decoder_get_info_t)(struct _gt_img_decoder_s * decoder, const void * src, _gt_img_info_st * header);
+
+/**
+ * @brief function pointer to decode image information, @ref _gt_img_info_st
+ * @param decoder image decoder
+ * @param raw_data
+ * @param raw_len The length of the raw data
+ * @param header Get the result which is image header information, from src
+ * @return gt_res_t The return status
+ */
+typedef gt_res_t ( * gt_img_decoder_get_info_raw_t)(struct _gt_img_decoder_s * decoder, const void * raw_data, uint32_t raw_len, _gt_img_info_st * header);
+
 /**
  * @brief function pointer to open image file
  */
@@ -122,6 +135,7 @@ typedef struct _gt_img_decoder_s {
     struct _gt_list_head list;   // GUI system used, Do not modify!
 
     gt_img_decoder_get_info_t info_cb;          ///< get image base information
+    gt_img_decoder_get_info_raw_t info_raw_cb;  ///< get image base information
     gt_img_decoder_open_t open_cb;              ///< open image file and create file object
     gt_img_decoder_read_line_t read_line_cb;    ///< read image data
     gt_img_decoder_close_t close_cb;            ///< close image file object
@@ -195,6 +209,17 @@ gt_res_t gt_img_decoder_get_info(const char * name, _gt_img_info_st * header);
 gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name);
 
 /**
+ * @brief Open image file and create a file object by raw data or array. The file
+ * object is a identifier for subsequent operations to the file.
+ *
+ * @param dsc The Description of the image file.
+ * @param raw_data The raw data pointer, otherwise (uint32_t)flash address
+ * @param data_len The length of the raw data
+ * @return gt_res_t The return status
+ */
+gt_res_t gt_img_decoder_open_raw(_gt_img_dsc_st * dsc, const char * const raw_data, uint32_t data_len);
+
+/**
  * @brief Image data read a row of data
  *
  * @param dsc The Description of the image file.
@@ -223,6 +248,15 @@ gt_res_t gt_img_decoder_close(_gt_img_dsc_st * dsc);
  * @param info_cb The callback function pointer
  */
 void gt_img_decoder_set_info_cb(_gt_img_decoder_st * decoder, gt_img_decoder_get_info_t info_cb);
+
+/**
+ * @brief Set the information callback function pointer into image decoder object.
+ *
+ * @param decoder Image decoder, Which need to be init function and get information.
+ *      information.
+ * @param info_raw_cb The callback function pointer
+ */
+void gt_img_decoder_set_info_raw_cb(_gt_img_decoder_st * decoder, gt_img_decoder_get_info_raw_t info_raw_cb);
 
 /**
  * @brief Set the open image file callback function pointer into image decoder object.

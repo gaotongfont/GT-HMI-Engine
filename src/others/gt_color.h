@@ -247,12 +247,20 @@ typedef GT_CONCAT3(gt_color, GT_COLOR_DEPTH, _t) gt_color_t;
 
 typedef uint8_t gt_opa_t;
 
+/**
+ * @brief Select one of the invocation modes, mode 1 or 2.
+ */
 typedef struct gt_color_img_raw_s {
-    gt_color_t const * buffer;    /** color channel, necessary */
-    gt_opa_t   const * opa;       /** alpha channel, unnecessary */
+    /** MODE 1 */
+    gt_color_t const * buffer;      /** color channel, necessary */
+    gt_opa_t   const * opa;         /** alpha channel, unnecessary */
+    /** MODE 2 */
+    char * file_raw_p;           /** file raw data, such as: png, jpeg, bmp... */
+    uint32_t raw_len;               /** raw data len */
+
     gt_color_t color;
-    uint16_t   width;             /** width of the image */
-    uint16_t   height;            /** height of the image */
+    uint16_t   width;               /** width of the image */
+    uint16_t   height;              /** height of the image */
 }gt_color_img_raw_st;
 
 /* macros ---------------------------------------------------------------*/

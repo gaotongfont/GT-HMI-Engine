@@ -150,6 +150,16 @@ gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode)
     return (gt_fs_fp_st * )drv->open_cb(drv, (char *)path, mode);
 }
 
+gt_fs_fp_st * gt_fs_open_raw(const char * raw_data, uint32_t raw_len, gt_fs_mode_et mode)
+{
+    gt_fs_drv_st * drv = gt_src_get_drv();
+
+    if (!drv || !drv->open_cb_raw) {
+        return NULL;
+    }
+    return (gt_fs_fp_st * )drv->open_cb_raw(drv, (char *)raw_data, raw_len, mode);
+}
+
 #if GT_USE_FILE_HEADER
 gt_fs_fp_st * gt_fs_fh_open(gt_file_header_param_st const * const fh_param, gt_fs_mode_et mode)
 {

@@ -61,10 +61,39 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_info(struct _gt_i
     return GT_RES_OK;
 }
 
+/**
+ * @brief use default constructor for image decoder
+ *
+ * @param decoder
+ * @param src
+ * @param header
+ * @return gt_res_t
+ */
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_info_raw(struct _gt_img_decoder_s * decoder, const void * raw_data, uint32_t raw_len, _gt_img_info_st * header)
+{
+    GT_UNUSED(decoder);
+    gt_fs_fp_st * fp = gt_fs_open_raw(raw_data, raw_len, GT_FS_MODE_RD);
+    if (!fp) {
+        return GT_RES_INV;
+    }
+
+    header->w = fp->msg.pic.w;
+    header->h = fp->msg.pic.h;
+
+    gt_fs_close(fp);
+
+    return GT_RES_OK;
+}
+
 static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc)
 {
     GT_UNUSED(decoder);
-    gt_fs_fp_st * fp = gt_fs_open(dsc->src, GT_FS_MODE_RD);
+    gt_fs_fp_st * fp = NULL;
+    if (dsc->src) {
+        fp = gt_fs_open(dsc->src, GT_FS_MODE_RD);
+    } else if (dsc->raw_p) {
+        fp = gt_fs_open_raw(dsc->raw_p, dsc->raw_len, GT_FS_MODE_RD);
+    }
     if (!fp) {
         return GT_RES_INV;
     }
@@ -172,6 +201,7 @@ void _gt_img_decoder_init(void)
     _gt_img_decoder_st * decoder = gt_img_decoder_create();
 
     gt_img_decoder_set_info_cb(decoder, _gt_img_decoder_built_in_info);
+    gt_img_decoder_set_info_raw_cb(decoder, _gt_img_decoder_built_in_info_raw);
     gt_img_decoder_set_open_cb(decoder, _gt_img_decoder_built_in_open);
     gt_img_decoder_set_read_line_cb(decoder, _gt_img_decoder_built_in_read_line);
     gt_img_decoder_set_close_cb(decoder, _gt_img_decoder_built_in_close);
@@ -236,6 +266,7 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name)
 {
     _gt_img_decoder_st * ptr = NULL;
     dsc->decoder = NULL;    /* reset image dsc struct */
+    dsc->raw_p = NULL;
     dsc->src = NULL;
 
     _gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
@@ -249,6 +280,37 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name)
         }
 
         dsc->src = (void * )name;
+        if (ptr->open_cb(ptr, dsc)) {
+            continue;
+        }
+
+        dsc->decoder = ptr;
+
+        break;
+    }
+
+    return dsc->decoder ? GT_RES_OK : GT_RES_FAIL;
+}
+
+gt_res_t gt_img_decoder_open_raw(_gt_img_dsc_st * dsc, const char * const raw_data, uint32_t raw_len)
+{
+    _gt_img_decoder_st * ptr = NULL;
+    dsc->decoder = NULL;    /* reset image dsc struct */
+    dsc->raw_p = NULL;
+    dsc->src = NULL;
+
+    _gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
+        if (NULL == ptr->open_cb || NULL == ptr->info_raw_cb) {
+            continue;
+        }
+
+        if (ptr->info_raw_cb(ptr, raw_data, raw_len, &dsc->header)) {
+            gt_memset(&dsc->header, 0, sizeof(_gt_img_info_st));
+            continue;
+        }
+
+        dsc->raw_p = (char * )raw_data;
+        dsc->raw_len = raw_len;
         if (ptr->open_cb(ptr, dsc)) {
             continue;
         }
@@ -460,6 +522,11 @@ gt_res_t gt_img_decoder_custom_size_addr_close(_gt_img_dsc_st * dsc)
 void gt_img_decoder_set_info_cb(_gt_img_decoder_st * decoder, gt_img_decoder_get_info_t info_cb)
 {
     decoder->info_cb = info_cb;
+}
+
+void gt_img_decoder_set_info_raw_cb(_gt_img_decoder_st * decoder, gt_img_decoder_get_info_raw_t info_raw_cb)
+{
+    decoder->info_raw_cb = info_raw_cb;
 }
 
 void gt_img_decoder_set_open_cb(_gt_img_decoder_st * decoder, gt_img_decoder_open_t open_cb)

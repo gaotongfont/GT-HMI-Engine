@@ -382,6 +382,13 @@ static long lodepng_filesize(const char* filename) {
   return lodepng_common_filesize(fp);
 }
 
+static long lodepng_filesize_raw(const char* raw_data, uint32_t raw_len) {
+  gt_fs_fp_st * fp = gt_fs_open_raw(raw_data, raw_len, GT_FS_MODE_RD);
+  if (!fp) { return -1; }
+
+  return lodepng_common_filesize(fp);
+}
+
 #if GT_USE_FILE_HEADER
 static long lodepng_filesize_fh(gt_file_header_param_st const * const param) {
   gt_fs_fp_st * fp = gt_fs_fh_open(param, GT_FS_MODE_RD);
@@ -419,6 +426,13 @@ static unsigned lodepng_buffer_file(unsigned char* out, size_t size, const char*
   return lodepng_common_buffer_file(out, size, fp);
 }
 
+static unsigned lodepng_buffer_file_raw(unsigned char* out, size_t size, const char* raw_data, uint32_t len) {
+  gt_fs_fp_st * fp = gt_fs_open_raw(raw_data, len, GT_FS_MODE_RD);
+  if (!fp) { return 78; }
+
+  return lodepng_common_buffer_file(out, size, fp);
+}
+
 unsigned lodepng_load_file(unsigned char** out, size_t* outsize, const char* filename) {
   long size = lodepng_filesize(filename);
   if(size < 0) return 78;
@@ -427,6 +441,16 @@ unsigned lodepng_load_file(unsigned char** out, size_t* outsize, const char* fil
   *out = (unsigned char*)lodepng_malloc((size_t)size);
   if(!(*out) && size > 0) return 83; /*the above malloc failed*/
   return lodepng_buffer_file(*out, (size_t)size, filename);
+}
+
+unsigned lodepng_load_file_raw(unsigned char** out, size_t* outsize, const char* raw_data, uint32_t len) {
+  long size = lodepng_filesize_raw(raw_data, len);
+  if(size < 0) return 78;
+  *outsize = (size_t)size;
+
+  *out = (unsigned char*)lodepng_malloc((size_t)size);
+  if(!(*out) && size > 0) return 83; /*the above malloc failed*/
+  return lodepng_buffer_file_raw(*out, (size_t)size, raw_data, len);
 }
 
 #if GT_USE_FILE_HEADER

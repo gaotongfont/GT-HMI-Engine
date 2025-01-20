@@ -183,6 +183,14 @@ static gt_res_t _gt_png_info(struct _gt_img_decoder_s * decoder, const void * sr
     return _common_png_info(decoder, fp, header);
 }
 
+static gt_res_t _gt_png_info_raw(struct _gt_img_decoder_s * decoder, const void * raw_data, uint32_t raw_len, _gt_img_info_st * header) {
+    gt_fs_fp_st * fp = gt_fs_open_raw(raw_data, raw_len, GT_FS_MODE_RD);
+    if (!fp) {
+        return GT_RES_INV;
+    }
+    return _common_png_info(decoder, fp, header);
+}
+
 static gt_res_t _common_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_s * dsc, int32_t png_size, uint8_t * png_data) {
     unsigned int png_width = 0, png_height = 0;
     gt_res_t ret = lodepng_decode32(&dsc->img, &png_width, &png_height, png_data, png_size);
@@ -219,11 +227,16 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
     uint8_t * png_data = NULL;
     const char * path = (char * )dsc->src;
     gt_res_t ret = GT_RES_INV;
+    gt_fs_fp_st * fp = NULL;
 
-    if (!_is_png_file_ext(path)) {
-        return GT_RES_INV;
+    if (path) {
+        if (!_is_png_file_ext(path)) {
+            return GT_RES_INV;
+        }
+        fp = gt_fs_open(path, GT_FS_MODE_RD);
+    } else if (dsc->raw_p) {
+        fp = gt_fs_open_raw(dsc->raw_p, dsc->raw_len, GT_FS_MODE_RD);
     }
-    gt_fs_fp_st * fp = gt_fs_open(dsc->src, GT_FS_MODE_RD);
     if (NULL == fp) {
         return GT_RES_INV;
     }
@@ -232,7 +245,10 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
         return GT_RES_INV;
     }
 
-    if (0 != lodepng_load_file(&png_data, (size_t * )&png_size, dsc->src)) {
+    if (path && 0 != lodepng_load_file(&png_data, (size_t * )&png_size, path)) {
+        goto err_lb;
+    } else if (dsc->raw_p &&
+        0 != lodepng_load_file_raw(&png_data, (size_t * )&png_size, dsc->raw_p, dsc->raw_len)) {
         goto err_lb;
     }
     ret = _common_png_open(decoder, dsc, png_size, png_data);
@@ -350,6 +366,7 @@ void gt_png_init(void)
     _gt_img_decoder_st * decoder = gt_img_decoder_create();
 
     gt_img_decoder_set_info_cb(decoder, _gt_png_info);
+    gt_img_decoder_set_info_raw_cb(decoder, _gt_png_info_raw);
     gt_img_decoder_set_open_cb(decoder, _gt_png_open);
     gt_img_decoder_set_read_line_cb(decoder, _gt_png_read_line);
     gt_img_decoder_set_close_cb(decoder, _gt_png_close);

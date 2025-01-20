@@ -53,6 +53,16 @@ gt_fs_type_et gt_fs_get_src_type(const void * src);
  */
 gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode);
 
+/**
+ * @brief
+ *
+ * @param raw_data
+ * @param raw_len
+ * @param mode
+ * @return gt_fs_fp_st*
+ */
+gt_fs_fp_st * gt_fs_open_raw(const char * raw_data, uint32_t raw_len, gt_fs_mode_et mode);
+
 #if GT_USE_FILE_HEADER
 /**
  * @brief open file by file header control
