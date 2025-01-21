@@ -142,7 +142,11 @@ typedef struct {
 /* static variables -----------------------------------------------------*/
 
 #if GT_MEM_CUSTOM
+#if GT_MEM_CUSTOM_POINTER
+static GT_ATTRIBUTE_LARGE_RAM_ARRAY MEM_UNIT * _mem_pool_int = NULL;
+#else
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY MEM_UNIT _mem_pool_int[GT_MEM_SIZE / sizeof(MEM_UNIT)];
+#endif  /** GT_MEM_CUSTOM_POINTER */
 
 static GT_ATTRIBUTE_RAM_DATA gt_tlsf_t _tlsf;
 static GT_ATTRIBUTE_RAM_DATA _mem_heap_info_st _heap_info;
@@ -271,6 +275,13 @@ void gt_mem_deinit(void)
     gt_tlsf_destroy(_tlsf);
 #endif
 }
+
+#if GT_MEM_CUSTOM_POINTER
+void gt_mem_set_pool_pointer(char * pool_pointer)
+{
+    _mem_pool_int = (MEM_UNIT *)pool_pointer;
+}
+#endif
 
 void * _mem_malloc(size_t size, char const * file_name, char const * func_name, size_t line)
 {

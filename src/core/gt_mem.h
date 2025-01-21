@@ -68,6 +68,17 @@ void gt_mem_init(void);
  */
 void gt_mem_deinit(void);
 
+#if GT_MEM_CUSTOM_POINTER
+/**
+ * @brief Set the memory pool pointer, The memory size is defined
+ *      by GT_MEM_SIZE and must be aligned with MEM_UNIT bytes
+ *      [Warning: This function must be called before gt_init()]
+ *
+ * @param pool_pointer The memory size is defined by GT_MEM_SIZE
+ *      and must be aligned with MEM_UNIT bytes
+ */
+void gt_mem_set_pool_pointer(char * pool_pointer);
+#endif
 /**
  * @brief malloc memory
  *

@@ -99,6 +99,15 @@ extern "C" {
     #define GT_MEM_SIZE             (24 * 1024U)    //Byte
 
     #define gt_tlsf_assert(_expr)   ( (void)0 )
+
+#ifndef GT_MEM_CUSTOM_POINTER
+    /**
+     * @brief Using custom memory pool pointer:
+     *      1: use custom memory pool pointer, 0: use default memory pool pointer
+     *      [default: 0]
+     */
+    #define GT_MEM_CUSTOM_POINTER   0
+#endif
 #else
     #define GT_MEM_CUSTOM_INCLUDE   "stdlib.h"
 
