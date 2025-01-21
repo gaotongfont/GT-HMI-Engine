@@ -409,7 +409,7 @@ void _mem_free(void * ptr, char const * file_name, char const * func_name, size_
 #endif
 
 #if USE_MEM_BIG_UNIT_REMARK
-    if (size >= _BIG_UNIT_REMARK_SIZE) {
+    if (block_size >= _BIG_UNIT_REMARK_SIZE) {
         GT_LOG_A(GT_LOG_TAG_MEM, "[%s%s:%d] ### - %p big unit: 0x%x(%d) ###",
                     file_name, func_name, line, ptr, block_size, block_size);
     }
