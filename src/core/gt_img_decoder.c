@@ -251,14 +251,27 @@ gt_res_t gt_img_decoder_get_info(const char * name, _gt_img_info_st * header)
         if (NULL == ptr->info_cb) {
             continue;
         }
-
         if (ptr->info_cb(ptr, name, header)) {
             continue;
         }
-
         break;
     }
+    return GT_RES_OK;
+}
 
+gt_res_t gt_img_decoder_get_info_raw(const char * raw_data, uint32_t raw_len, _gt_img_info_st * header)
+{
+    _gt_img_decoder_st * ptr = NULL;
+
+    _gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_img_decoder_ll), _gt_img_decoder_st, list) {
+        if (NULL == ptr->info_raw_cb) {
+            continue;
+        }
+        if (ptr->info_raw_cb(ptr, raw_data, raw_len, header)) {
+            continue;
+        }
+        break;
+    }
     return GT_RES_OK;
 }
 

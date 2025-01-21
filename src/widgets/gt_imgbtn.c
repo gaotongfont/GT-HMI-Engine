@@ -76,7 +76,7 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_imgbtn_class = {
 
 
 /* static functions -----------------------------------------------------*/
-static void _gt_imgbtn_set_src(gt_obj_st * imgbtn, _item_st * src) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_imgbtn_set_src(gt_obj_st * imgbtn, _item_st * src) {
     _gt_imgbtn_st * style = (_gt_imgbtn_st * )imgbtn;
 
     if (src == NULL) {
@@ -86,7 +86,7 @@ static void _gt_imgbtn_set_src(gt_obj_st * imgbtn, _item_st * src) {
     style->src.name = src->name;
 }
 
-static char * _gt_imgbtn_get_src(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT char * _gt_imgbtn_get_src(gt_obj_st * obj) {
     _gt_imgbtn_st * style = (_gt_imgbtn_st * )obj;
     return style->src.name;
 }
@@ -156,7 +156,7 @@ static void _imgbtn_deinit_cb(gt_obj_st * obj) {
     style_p->src.name = NULL;
 }
 
-static void _invalid_area(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _invalid_area(gt_obj_st * obj) {
     char * src = _gt_imgbtn_get_src(obj);
     uint16_t w = 0, h = 0;
     if (GT_FS_RES_FAIL == gt_fs_read_img_wh(src, &w, &h)) {
@@ -170,7 +170,7 @@ static void _invalid_area(gt_obj_st * obj) {
     gt_disp_invalid_area(obj);
 }
 
-static bool _turn_next_image(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT bool _turn_next_image(gt_obj_st * obj) {
     _gt_imgbtn_st * style = (_gt_imgbtn_st * )obj;
     if (NULL == style->imgs) {
         return false;
@@ -225,7 +225,7 @@ static void _imgbtn_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 }
 
 
-static bool _imgs_free_cb(void * item) {
+static GT_ATTRIBUTE_RAM_TEXT bool _imgs_free_cb(void * item) {
     _item_st * item_p = (_item_st * )item;
     if (NULL == item_p) {
         return true;
@@ -238,7 +238,7 @@ static bool _imgs_free_cb(void * item) {
     return true;
 }
 
-static bool _imgs_equal_cb(void * item, void * target) {
+static GT_ATTRIBUTE_RAM_TEXT bool _imgs_equal_cb(void * item, void * target) {
     _item_st * item_p = (_item_st * )item;
     _item_st * target_p = (_item_st * )target;
 #if GT_USE_FILE_HEADER

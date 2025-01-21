@@ -54,9 +54,9 @@ typedef enum gt_img_color_format_e {
  */
 typedef struct _gt_img_info_s {
     uint32_t color_format : 5;  // TODO adjust import @ref gt_img_color_format_et
-    uint32_t reserved : 3;
-    uint32_t w : 12;
-    uint32_t h : 12;
+    uint32_t reserved : 1;
+    uint32_t w : 13;            // 0 - 8192
+    uint32_t h : 13;
     uint8_t type;               ///< record this decoder image type @ref gt_img_decoder_type_em
 }_gt_img_info_st;
 
@@ -198,6 +198,15 @@ gt_img_decoder_type_em gt_img_decoder_get_type(_gt_img_info_st * header);
  */
 gt_res_t gt_img_decoder_get_info(const char * name, _gt_img_info_st * header);
 
+/**
+ * @brief Get image decoder information by raw data
+ *
+ * @param raw_data raw data array or pointer
+ * @param raw_len The length of the raw data
+ * @param header The struct to save image data.
+ * @return gt_res_t The return status
+ */
+gt_res_t gt_img_decoder_get_info_raw(const char * raw_data, uint32_t raw_len, _gt_img_info_st * header);
 /**
  * @brief Open image file and create a file object. The file object is a
  *      identifier for subsequent operations to the file.

@@ -182,6 +182,18 @@ gt_fs_res_et gt_fs_fh_read_img_wh(gt_file_header_param_st * fh, uint16_t * w, ui
 gt_fs_res_et gt_fs_direct_addr_read_img_wh(gt_addr_t addr, uint16_t * w, uint16_t * h);
 #endif
 
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+/**
+ * @brief Get the image width and height, by direct addr custom size of file item.
+ *
+ * @param addr The address of the image data
+ * @param w Get image width value
+ * @param h Get image height value
+ * @return gt_fs_res_et The result status
+ */
+gt_fs_res_et gt_fs_direct_addr_custom_size_read_img_wh(gt_direct_addr_custom_size_st * custom_addr, uint16_t * w, uint16_t * h);
+#endif
+
 /**
  * @brief Directly read the physical data from vf(HMI-chip, flash, etc) the address
  *

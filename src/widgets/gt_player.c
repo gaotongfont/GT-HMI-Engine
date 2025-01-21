@@ -332,6 +332,16 @@ static GT_ATTRIBUTE_RAM_TEXT void _invalid_area(gt_obj_st * obj, _gt_player_st *
         }
     }
 #endif
+#if GT_PLAYER_USE_RAW_DATA
+    _gt_img_dsc_st * raw = _get_raw(style);
+    _gt_img_info_st header = {0};
+    if (GT_FS_RES_OK != ret && raw->raw_p && raw->raw_len &&
+        gt_img_decoder_get_info_raw(raw->raw_p, raw->raw_len, &header)) {
+        w = header.w;
+        h = header.h;
+        ret = GT_FS_RES_OK;
+    }
+#endif
     if (GT_FS_RES_OK != ret) {
         if (GT_FS_RES_FAIL == gt_fs_read_img_wh((char * )src, &w, &h)) {
             return ;

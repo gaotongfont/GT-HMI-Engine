@@ -117,6 +117,40 @@ static void _img_deinit_cb(gt_obj_st * obj) {
     }
 }
 
+static GT_ATTRIBUTE_RAM_TEXT void _resize_by_img(gt_obj_st * obj) {
+    _gt_img_st * style = (_gt_img_st * )obj;
+    _gt_img_info_st info = {0};
+    gt_area_st area = obj->area;
+    bool is_ok = false;
+
+    if (GT_FS_RES_OK == gt_fs_read_img_wh(style->src, &area.w, &area.h)) {
+        is_ok = true;
+#if GT_USE_FILE_HEADER
+    } else if (GT_FS_RES_OK == gt_fs_fh_read_img_wh(&style->fh, &area.w, &area.h)) {
+        is_ok = true;
+#endif
+#if GT_USE_DIRECT_ADDR
+    } else if (GT_FS_RES_OK == gt_fs_direct_addr_read_img_wh(style->addr, &area.w, &area.h)) {
+        is_ok = true;
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    } else if (GT_FS_RES_OK == gt_fs_direct_addr_custom_size_read_img_wh(&style->custom_addr, &area.w, &area.h)) {
+        is_ok = true;
+#endif
+    } else if (style->raw.raw_p &&
+        GT_FS_RES_OK == gt_img_decoder_get_info_raw(style->raw.raw_p, style->raw.raw_len, &info)) {
+        area.w = info.w;
+        area.h = info.h;
+        is_ok = true;
+    }
+    if (false == is_ok) { return; }
+    if (0 == area.w || 0 == area.h) {
+        return;
+    }
+    gt_obj_size_change(obj, &area);
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 /**
  * @brief obj event handler call back
  *
@@ -125,7 +159,6 @@ static void _img_deinit_cb(gt_obj_st * obj) {
  */
 static void _img_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
-    gt_area_st area;
 
     switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START:
@@ -134,15 +167,7 @@ static void _img_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             break;
 
         case GT_EVENT_TYPE_UPDATE_VALUE:
-            area = obj->area;
-            if (GT_FS_RES_FAIL == gt_fs_read_img_wh(gt_img_get_src(obj), &area.w, &area.h)) {
-                return ;
-            }
-            if (0 == area.w || 0 == area.h) {
-                return ;
-            }
-            gt_obj_size_change(obj, &area);
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+            _resize_by_img(obj);
             break;
 
         case GT_EVENT_TYPE_DRAW_REDRAW: {
