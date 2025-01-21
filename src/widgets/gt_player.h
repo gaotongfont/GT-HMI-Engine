@@ -40,6 +40,13 @@ extern "C" {
     #define GT_PLAYER_REPEAT_FINISH_CALLBACK    0
 #endif
 
+#ifndef GT_PLAYER_USE_RAW_DATA
+    /**
+     * @brief Using raw data to display image
+     *      [default]: 0
+     */
+    #define GT_PLAYER_USE_RAW_DATA              0
+#endif
 
 
 /* typedef --------------------------------------------------------------*/
@@ -132,6 +139,16 @@ void gt_player_remove_item_by_index(gt_obj_st * obj, gt_size_t idx);
  * @return gt_size_t -1: failed, The item count of player
  */
 gt_size_t gt_player_add_item(gt_obj_st * obj, void * item, uint16_t item_byte_size);
+
+#if GT_PLAYER_USE_RAW_DATA
+/**
+ * @brief Display the image directly with raw data
+ *
+ * @param obj player object
+ * @param raw Raw data of the image
+ */
+gt_size_t gt_player_add_item_raw(gt_obj_st * obj, gt_color_img_raw_st * raw);
+#endif
 
 #if GT_USE_FILE_HEADER
 /**

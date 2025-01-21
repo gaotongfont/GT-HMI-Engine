@@ -47,6 +47,10 @@
 typedef struct _gt_player_item_s {
     void * src;
 
+#if GT_PLAYER_USE_RAW_DATA
+    _gt_img_dsc_st raw;     // raw data buffer draw directly
+#endif
+
 #if GT_USE_FILE_HEADER
     gt_file_header_param_st fh_param;
 #endif
@@ -139,6 +143,13 @@ static GT_ATTRIBUTE_RAM_TEXT inline void * _get_src(_gt_player_st * style) {
     return item->src;
 }
 
+#if GT_PLAYER_USE_RAW_DATA
+static GT_ATTRIBUTE_RAM_TEXT inline _gt_img_dsc_st * _get_raw(_gt_player_st * style) {
+    _gt_player_item_st * item = (_gt_player_item_st * )_gt_vector_get_item(style->vector, _gt_vector_get_index(style->vector));
+    GT_CHECK_BACK_VAL(item, NULL);
+    return &item->raw;
+}
+#endif
 
 #if GT_USE_FILE_HEADER
 
@@ -247,6 +258,10 @@ static void _player_init_cb(gt_obj_st * obj) {
 
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
         dsc.custom_addr = _get_custom_size_addr_param(style);
+#endif
+
+#if GT_PLAYER_USE_RAW_DATA
+        dsc.raw_img = dsc.bg_img_src ? NULL : _get_raw(style);
 #endif
 
         /* start draw obj */
@@ -712,6 +727,51 @@ item_lb:
     new_item = NULL;
     return -1;
 }
+
+#if GT_PLAYER_USE_RAW_DATA
+gt_size_t gt_player_add_item_raw(gt_obj_st * obj, gt_color_img_raw_st * raw)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return -1;
+    }
+    _gt_player_st * style = (_gt_player_st * )obj;
+    GT_CHECK_BACK_VAL(style->vector, -1);
+
+    _gt_player_item_st * new_item = gt_mem_malloc(sizeof(_gt_player_item_st));
+    GT_CHECK_BACK_VAL(new_item, -1);
+    gt_memset(new_item, 0, sizeof(_gt_player_item_st));
+
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&new_item->fh_param);
+#endif
+    // sizeof(_gt_player_item_st);
+
+    new_item->raw.raw_p = raw->file_raw_p;
+    new_item->raw.raw_len = raw->raw_len;
+    new_item->raw.img = (uint8_t * )raw->buffer;
+    new_item->raw.alpha = (gt_opa_t * )raw->opa;
+    new_item->raw.header.w = raw->width;
+    new_item->raw.header.h = raw->height;
+    new_item->raw.header.type = GT_IMG_DECODER_TYPE_RAM;
+    new_item->raw.fill_color = raw->color;
+
+    if (new_item->raw.img && new_item->raw.alpha) {
+        new_item->raw.header.color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;
+    } else {
+        new_item->raw.header.color_format = GT_IMG_CF_TRUE_COLOR;
+    }
+
+    if (false == _gt_vector_add_item(style->vector, new_item)) {
+        goto item_lb;
+    }
+    return _gt_vector_get_count(style->vector);
+
+item_lb:
+    gt_mem_free(new_item);
+    new_item = NULL;
+    return -1;
+}
+#endif
 
 #if GT_USE_FILE_HEADER
 gt_size_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh)

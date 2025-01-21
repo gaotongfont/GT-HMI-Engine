@@ -611,7 +611,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) 
     /** set object item size */
     obj->area.x = listview->area.x + (width + (idx ? style->item_space.x : 0)) * idx;
     obj->area.y = offset_line + listview->process_attr.scroll.y;
-    obj->area.w = width ;
+    obj->area.w = width;
     obj->area.h = style->item_height;
     //
     obj->area = gt_area_reduce(obj->area, style->item_reduce);
