@@ -434,7 +434,7 @@ static gt_res_t _gt_sjpg_read_line(struct _gt_img_dsc_s * dsc,
     uint8_t * cache = (uint8_t *)&sjpg->frame_cache[(x + (y % sjpg->sjpeg_single_frame_height) * sjpg->sjpeg_x_res) * color_depth];
 
 #if GT_COLOR_DEPTH == 32
-    for (uint32_t i = 0, offset = 0; i < len; i++) {
+    for (uint32_t i = 0, offset = 0, length = len / color_depth; i < length; i++) {
         buffer[offset + 3] = 0xff;
         buffer[offset + 2] = *cache++;
         buffer[offset + 1] = *cache++;
@@ -442,7 +442,16 @@ static gt_res_t _gt_sjpg_read_line(struct _gt_img_dsc_s * dsc,
         offset += 4;
     }
 #elif GT_COLOR_DEPTH == 16
+#if GT_COLOR_16_SWAP
+    len >>= 1;
+    for (uint32_t i = 0, offset = 0; i < len; i++) {
+        buffer[offset + 1] = *cache++;
+        buffer[offset] = *cache++;
+        offset += 2;
+    }
+#else
     gt_memcpy(buffer, cache, len);
+#endif
 #elif GT_COLOR_DEPTH == 8
     uint8_t color = 0;
     for (uint32_t i = 0, offset = 0; i < len; i++) {
