@@ -127,7 +127,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _close_cb(struct _gt_fs_drv_s * drv, void * fp
 static GT_ATTRIBUTE_RAM_TEXT gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data,
     uint32_t len, uint32_t * ret_len) {
     gt_fs_res_et ret = GT_FS_RES_OK;
-    _gt_src_dev_st * dev = _get_dev();
     gt_fs_fp_st * file_p = (gt_fs_fp_st * )fp;
     const uint8_t *buffer = (const uint8_t * )file_p->buffer;
 

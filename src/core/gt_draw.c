@@ -1002,7 +1002,6 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _calc_line_height_pixel(gt_area_st * area_
 static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, gt_area_st const * view) {
     const gt_area_st * coords = &dsc->logical_area;
     _gt_draw_font_res_st ret = {0};
-    _gt_draw_font_res_st tmp_ret = {0};
     gt_area_st area_font = {
         .x = coords->x, .y = coords->y, .w = dsc->font->info.size, .h = dsc->font->info.size
     };
@@ -1090,7 +1089,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_multiple_line(_gt_dr
     uint16_t per_line_h = (style_space_y << 1) + dsc->font->info.size + dsc->space_y;
 
     gt_size_t disp_w = coords->w;
-    uint32_t uni_or_gbk = 0, ret_w = 0, lan_len = 0;
+    uint32_t uni_or_gbk = 0, ret_w = 0;
     uint16_t idx = 0, idx_2 = 0, idx_len = 0, txt_len = dsc->font->len;
     uint8_t over_length = 0;
     int32_t idx_step = 0;
@@ -1216,7 +1215,10 @@ _disp_font:
             if (bidi_pos < bidi_len && idx_2 == bidi[bidi_pos].idx) {
                 tmp_font.utf8 = (char * )&txt_2[idx_2];
                 tmp_font.len = bidi[bidi_pos].len;
-                tmp_ret = _draw_text_convertor_split(&tmp_font, bidi[bidi_pos].flag,
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+                _gt_draw_font_res_st tmp_ret =
+#endif
+                _draw_text_convertor_split(&tmp_font, bidi[bidi_pos].flag,
                                             draw_ctx, &blend_dsc, dsc, font_disp_h,
                                             &blend_dsc_style, coords,
                                             over_length < 2 ? 0 : 1);
@@ -1482,7 +1484,6 @@ static GT_ATTRIBUTE_RAM_TEXT _omit_info_st _omit_get_font_width(gt_font_st * tmp
 static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, const gt_area_st * view) {
     gt_area_st * coords = (gt_area_st * )&dsc->logical_area;
     _gt_draw_font_res_st ret = { .res = GT_RES_OK };
-    _gt_draw_font_res_st tmp_ret = {0};
     gt_area_st area_font = {
         .x = coords->x, .y = coords->y, .w = dsc->font->info.size, .h = dsc->font->info.size
     };
@@ -1685,7 +1686,10 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_single_line(_gt_draw
         if (bidi_pos < bidi_len && idx == bidi[bidi_pos].idx) {
             tmp_font.utf8 = (char * )&txt[idx];
             tmp_font.len = bidi[bidi_pos].len;
-            tmp_ret = _draw_text_convertor_split(&tmp_font, bidi[bidi_pos].flag, draw_ctx,
+#if _GT_FONT_GET_WORD_BY_TOUCH_POINT
+            _gt_draw_font_res_st tmp_ret =
+#endif
+            _draw_text_convertor_split(&tmp_font, bidi[bidi_pos].flag, draw_ctx,
                                         &blend_dsc, dsc, font_disp_h, &blend_dsc_style,
                                         coords, (over_length < 2 ? 0 : 1));
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
@@ -2162,7 +2166,9 @@ void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_are
             }
             goto handler_lb;
         }
+#if GT_USE_FILE_HEADER || GT_USE_DIRECT_ADDR || GT_USE_DIRECT_ADDR_CUSTOM_SIZE
         gt_res_t result = GT_RES_FAIL;
+#endif
 #if GT_USE_FILE_HEADER
         result = gt_img_decoder_fh_open(&dsc_img, dsc->file_header);
         if (GT_RES_OK == result) {
@@ -2270,6 +2276,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_point(_gt_draw_ctx_st * draw_ctx, gt_attr_poi
     bool is_round = _is_brush_round(&dsc->line);
     gt_mask_radius_st r_mask = {0};
     gt_size_t mask_id = -1;
+    gt_area_st * remark_area = draw_ctx->parent_area;
     if (is_round) {
         gt_mask_radius_init(&r_mask, &area_line, rd_val, false);
         mask_id = gt_mask_add(&r_mask);
@@ -2277,7 +2284,6 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_point(_gt_draw_ctx_st * draw_ctx, gt_attr_poi
             goto radius_lb;
         }
     }
-    gt_area_st * remark_area = draw_ctx->parent_area;
     draw_ctx->parent_area = (gt_area_st * )coords;  /** remark before parent area value, return will reload */
 
     area_line.h = 1;
@@ -2322,6 +2328,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
     gt_area_st area_line = { dsc->start.x - (rd_val >> 1), dsc->start.y - (rd_val >> 1), rd_val, rd_val };
     gt_mask_radius_st r_mask = {0};
     gt_size_t mask_id = -1;
+    gt_area_st * remark_area = draw_ctx->parent_area;
     bool is_round = _is_brush_round(&dsc->line);
     if (is_round) {
         gt_mask_radius_init(&r_mask, &area_line, rd_val, false);
@@ -2330,7 +2337,6 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
             goto radius_lb;
         }
     }
-    gt_area_st * remark_area = draw_ctx->parent_area;
     draw_ctx->parent_area = (gt_area_st * )coords;  /** remark before parent area value, return will reload */
 
     area_line.h = 1;
@@ -2408,6 +2414,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_att
     gt_area_st area_line = { dsc->p0.x - (rd_val >> 1), dsc->p0.y - (rd_val >> 1), rd_val, rd_val };
     gt_mask_radius_st r_mask = {0};
     gt_size_t mask_id = -1;
+    gt_area_st * remark_area = draw_ctx->parent_area;
     bool is_round = _is_brush_round(&dsc->line);
     if (is_round) {
         gt_mask_radius_init(&r_mask, &area_line, rd_val, false);
@@ -2416,7 +2423,6 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_att
             goto radius_lb;
         }
     }
-    gt_area_st * remark_area = draw_ctx->parent_area;
     draw_ctx->parent_area = (gt_area_st * )coords;  /** remark before parent area value, return will reload */
 
     area_line.h = 1;
