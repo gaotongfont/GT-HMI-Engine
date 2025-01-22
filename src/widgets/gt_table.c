@@ -388,7 +388,6 @@ _calc_vec_total_height_by(_gt_table_st * style, uint16_t col_count, _gt_vector_i
         .space = 0,
         .indent = 0,
     };
-    gt_size_t row_count = row_vector ? _gt_vector_get_count(row_vector) : 0;
     _gt_table_row_item_st * row_item = NULL;
 
     while (iter.has_next(iter.dsc_t)) {

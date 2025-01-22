@@ -226,7 +226,6 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _init_child_prop(gt_obj_st * obj) {
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
     gt_event_type_et code_val = gt_event_get_code(e);
-    gt_size_t value = 0;
 
     switch (code_val) {
     case GT_EVENT_TYPE_DRAW_START: {
@@ -312,7 +311,6 @@ void gt_view_pager_scroll_to_fragment(gt_obj_st * obj, gt_size_t index)
     if (index < 0 || index >= style->reg.count) {
         return;
     }
-    gt_size_t tar_x = index * style->width;
     gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - index * style->width, GT_ANIM_ON);
 }
 

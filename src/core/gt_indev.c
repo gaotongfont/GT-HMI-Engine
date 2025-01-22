@@ -682,8 +682,6 @@ static GT_ATTRIBUTE_RAM_TEXT inline bool _kp_is_global_key_value(uint32_t key) {
 
 
 static GT_ATTRIBUTE_RAM_TEXT gt_obj_st* _find_keypad_target_obj(gt_indev_st* indev) {
-
-    gt_obj_st* target_obj = NULL;
     gt_obj_st * scr = gt_disp_get_scr();
 
     gt_obj_st* top_obj = NULL;
@@ -732,7 +730,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
         .state = GT_INDEV_STATE_INVALID,
     };
     static uint32_t last_key = GT_KEY_NONE;
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
     gt_obj_st * scr = gt_disp_get_scr();
+#endif
 
     indev->drv->read_cb(indev->drv, &data_indev);
     if (GT_INDEV_STATE_INVALID == data_indev.state) {

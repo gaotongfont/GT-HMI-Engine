@@ -81,7 +81,6 @@ static void _update_input_area(gt_obj_st * obj) {
     if (NULL == style->ipt_p) {
         return;
     }
-    gt_area_st area = obj->area;
     gt_obj_set_area(style->ipt_p, obj->area);
 }
 

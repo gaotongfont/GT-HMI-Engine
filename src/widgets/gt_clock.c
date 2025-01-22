@@ -127,8 +127,6 @@ static const char * _gt_weeks[] = {
 
 /* static functions -----------------------------------------------------*/
 static GT_ATTRIBUTE_RAM_TEXT bool _is_contiune_same_char(const char * const str, char target, char numb) {
-    char another_case = 0;
-
     if (*str < 'A' || *str > 'z') {
         return false;
     }

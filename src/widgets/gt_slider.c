@@ -843,12 +843,13 @@ void gt_slider_set_AB_repeat_remark_point(gt_obj_st * slider)
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+#if 0
 void gt_slider_set_AB_repeat_start_by(gt_obj_st * slider, gt_size_t start_value)
 {
     if (false == gt_obj_is_type(slider, OBJ_TYPE)) {
         return;
     }
-    _gt_slider_st * style = (_gt_slider_st * )slider;
+    // _gt_slider_st * style = (_gt_slider_st * )slider;
     // TODO
 }
 
@@ -857,10 +858,11 @@ void gt_slider_set_AB_repeat_stop_by(gt_obj_st * slider, gt_size_t stop_value)
     if (false == gt_obj_is_type(slider, OBJ_TYPE)) {
         return;
     }
-    _gt_slider_st * style = (_gt_slider_st * )slider;
+    // _gt_slider_st * style = (_gt_slider_st * )slider;
     // TODO
 
 }
+#endif
 
 void gt_slider_unset_AB_repeat(gt_obj_st * slider)
 {

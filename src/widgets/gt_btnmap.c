@@ -347,9 +347,9 @@ static void _gt_set_press_btn(gt_obj_st* obj) {
     _gt_btnmap_st * style = (_gt_btnmap_st * )obj;
     const gt_map_st* map = (const gt_map_st*)style->map;
 
-    const char* const press_old_btn = style->press_btn;
+    // const char* const press_old_btn = style->press_btn;
     uint16_t map_idx = 0, line = 0, col = 0, sum_w = 0;
-    gt_area_st btn_area = {0}, area_tmp = {0};
+    gt_area_st btn_area = {0};
     while (map[map_idx].kv || map[map_idx].w > 0)
     {
         if(!map[map_idx].kv){

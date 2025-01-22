@@ -1025,7 +1025,7 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_gb_to_utf8(const uint8_t *src, uint16_
     uint32_t out_len = 0;
 #if GT_CFG_ENABLE_ZK_FONT == 1
     uint32_t font_code = 0, i = 0;
-    uint8_t len = 0, tmp_len = 0, tmp_i = 0;
+    uint8_t len = 0, tmp_len = 0;
 
     for(i = 0; i < src_len; ){
         len = _gt_gb_font_one_char_code_len_get(&src[i], &font_code);
@@ -2104,7 +2104,6 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, gt_font_split_line_st * 
     temp_font.res = gt_mem_malloc(font_size_res.font_per_size);
     GT_CHECK_BACK_VAL(temp_font.res, line_numb);
 
-    uint8_t lan = 0;
     int32_t disp_w = sp_line->start_w - gt_font_get_indent_width(&temp_font.info, sp_line->indent);
     uint32_t ret_w = 0, lan_len = 0;
     uint32_t idx = 0, len = sp_line->len;

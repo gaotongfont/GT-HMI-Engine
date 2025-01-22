@@ -223,8 +223,8 @@ _enter_md_block_h(_gt_markdown_cb_params_st * pm) {
 static GT_ATTRIBUTE_RAM_TEXT int
 _enter_md_block_li(_gt_markdown_cb_params_st * pm) {
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
-    _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
-    MD_BLOCK_LI_DETAIL * detail = (MD_BLOCK_LI_DETAIL *)pm->detail;
+    // _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
+    // MD_BLOCK_LI_DETAIL * detail = (MD_BLOCK_LI_DETAIL *)pm->detail;
     char buf[256] = {0};
     gt_size_t len = 0;
 
@@ -262,7 +262,7 @@ _enter_md_block_li(_gt_markdown_cb_params_st * pm) {
 static GT_ATTRIBUTE_RAM_TEXT int
 _enter_md_block_hr(_gt_markdown_cb_params_st * pm) {
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
-    _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
+    // _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
     uint16_t padding = 4;
 
     ptr->act_p[ptr->act_idx] = gt_line_create(ptr->markdown_p);
@@ -302,7 +302,7 @@ _enter_md_block_table(_gt_markdown_cb_params_st * pm) {
 static GT_ATTRIBUTE_RAM_TEXT int
 _enter_md_block_th(_gt_markdown_cb_params_st * pm) {
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
-    _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
+    // _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
     MD_BLOCK_TD_DETAIL * det = (MD_BLOCK_TD_DETAIL *)pm->detail;
     gt_align_et aligns[] = {
         GT_ALIGN_CENTER_MID,
@@ -325,14 +325,8 @@ _enter_md_block_th(_gt_markdown_cb_params_st * pm) {
 static GT_ATTRIBUTE_RAM_TEXT int
 _enter_md_block_thead(_gt_markdown_cb_params_st * pm) {
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
-    _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
-    MD_BLOCK_TD_DETAIL * det = (MD_BLOCK_TD_DETAIL *)pm->detail;
-    gt_align_et aligns[] = {
-        GT_ALIGN_CENTER_MID,
-        GT_ALIGN_LEFT_MID,
-        GT_ALIGN_CENTER_MID,
-        GT_ALIGN_RIGHT_MID
-    };
+    // _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
+    // MD_BLOCK_TD_DETAIL * det = (MD_BLOCK_TD_DETAIL *)pm->detail;
     ptr->act_p[ptr->act_idx] = ptr->markdown_p->child[ptr->markdown_p->cnt_child - 1];
 
     if (gt_obj_is_type(ptr->act_p[ptr->act_idx], GT_TYPE_TABLE)) {
@@ -345,8 +339,8 @@ _enter_md_block_thead(_gt_markdown_cb_params_st * pm) {
 static GT_ATTRIBUTE_RAM_TEXT int
 _enter_md_block_tbody(_gt_markdown_cb_params_st * pm) {
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
-    _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
-    MD_BLOCK_TD_DETAIL * det = (MD_BLOCK_TD_DETAIL *)pm->detail;
+    // _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
+    // MD_BLOCK_TD_DETAIL * det = (MD_BLOCK_TD_DETAIL *)pm->detail;
 
     ptr->act_p[ptr->act_idx] = ptr->markdown_p->child[ptr->markdown_p->cnt_child - 1];
 
@@ -360,8 +354,8 @@ _enter_md_block_tbody(_gt_markdown_cb_params_st * pm) {
 static GT_ATTRIBUTE_RAM_TEXT int
 _enter_md_block_td(_gt_markdown_cb_params_st * pm) {
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
-    _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
-    MD_BLOCK_TD_DETAIL * det = (MD_BLOCK_TD_DETAIL *)pm->detail;
+    // _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
+    // MD_BLOCK_TD_DETAIL * det = (MD_BLOCK_TD_DETAIL *)pm->detail;
 
     ptr->act_p[ptr->act_idx] = ptr->markdown_p->child[ptr->markdown_p->cnt_child - 1];
 
@@ -380,7 +374,6 @@ _enter_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
 #if _MARK_DOWN_LOG
     GT_LOG_A("", "enter block %d [%d]", ptr->act_idx, type);
 #endif
-
     _gt_markdown_cb_params_st params = {
         .type = (uint8_t)type,
         .detail = detail,
@@ -462,11 +455,6 @@ _leave_block_cb(MD_BLOCKTYPE type, void * detail, void * userdata) {
     int ret = 0;
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)userdata;
     gt_obj_st * child = NULL;
-    _gt_markdown_cb_params_st params = {
-        .type = (uint8_t)type,
-        .detail = detail,
-        .userdata = userdata
-    };
 #if _MARK_DOWN_LOG
     GT_LOG_A("", "leave block %d [%d]", ptr->act_idx, type);
 #endif
@@ -499,11 +487,6 @@ _enter_span_cb(MD_SPANTYPE type, void * detail, void * userdata) {
 #if _MARK_DOWN_LOG
     GT_LOG_A("", " enter span %d [%d]", ptr->act_idx, type);
 #endif
-    _gt_markdown_cb_params_st params = {
-        .type = (uint8_t)type,
-        .detail = detail,
-        .userdata = userdata
-    };
     switch (type) {
         case MD_SPAN_STRONG: {
             ptr->font_style |= GT_FONT_STYLE_BOLD;
@@ -530,11 +513,6 @@ static GT_ATTRIBUTE_RAM_TEXT int
 _leave_span_cb(MD_SPANTYPE type, void * detail, void * userdata) {
     int ret = 0;
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)userdata;
-    _gt_markdown_cb_params_st params = {
-        .type = (uint8_t)type,
-        .detail = detail,
-        .userdata = userdata
-    };
 #if _MARK_DOWN_LOG
     GT_LOG_A("", " leave span %d, [%d]", ptr->act_idx, type);
 #endif

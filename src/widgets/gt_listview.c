@@ -286,7 +286,6 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _get_column_item_width(_gt_listview_st * s
 }
 
 static GT_ATTRIBUTE_RAM_TEXT uint16_t _get_column_item_count_by(gt_obj_st * listview, uint16_t item_idx) {
-    _gt_listview_st * style = (_gt_listview_st * )listview;
     if (item_idx > listview->cnt_child) {
         return 0;
     }
@@ -311,7 +310,6 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _get_column_item_count_by(gt_obj_st * list
 }
 
 static GT_ATTRIBUTE_RAM_TEXT bool _is_line_max_width_equal_to(gt_obj_st * listview) {
-    _gt_listview_st * style = (_gt_listview_st * )listview;
     uint16_t line_max_width = 0;
     uint16_t tmp_width = 0;
     gt_size_t prev_y = -0x7fff;
@@ -1046,7 +1044,6 @@ gt_obj_st * gt_listiew_get_element_by(gt_obj_st * listview, uint16_t item_idx, u
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return NULL;
     }
-    _gt_listview_st * style = (_gt_listview_st * )listview;
     gt_obj_st * obj = NULL;
 
     /** item object */
@@ -1066,7 +1063,6 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return NULL;
     }
-    _gt_listview_st * style = (_gt_listview_st * )listview;
     gt_obj_st * obj = NULL;
     gt_obj_st * element = NULL;
     gt_font_info_st * font_p = NULL;

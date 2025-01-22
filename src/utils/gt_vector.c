@@ -158,7 +158,7 @@ bool _gt_vector_remove_item(_gt_vector_st * vector_p, void * target)
     GT_CHECK_BACK_VAL(vector_p, false);
     GT_CHECK_BACK_VAL(target, false);
 
-    uint16_t i = 0, count = vector_p->count;
+    uint16_t count = vector_p->count;
     uint8_t is_find = false;
     GT_CHECK_BACK_VAL(count, false);
     GT_CHECK_BACK_VAL(vector_p->equal_item_cb, false);
@@ -182,7 +182,7 @@ bool _gt_vector_remove_item(_gt_vector_st * vector_p, void * target)
 bool _gt_vector_remove_latest_item(_gt_vector_st * vector_p)
 {
     GT_CHECK_BACK_VAL(vector_p, false);
-    uint16_t i = 0, count = vector_p->count;
+    uint16_t count = vector_p->count;
     uint8_t is_find = false;
     GT_CHECK_BACK_VAL(count, false);
 

@@ -588,7 +588,6 @@ void gt_textarea_clear_all_str(gt_obj_st * textarea)
     if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
         return;
     }
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     _free_contents(textarea);
 }
 

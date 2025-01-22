@@ -460,8 +460,6 @@ void gt_wordart_set_number(gt_obj_st * wordart, double number,
     if( false == gt_obj_is_type(wordart, OBJ_TYPE)) {
         return ;
     }
-    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
-
     char buffer[16] = {0};
     uint8_t idx = 0;
     uint8_t append_len = decimal_len ? decimal_len + 1 : decimal_len;

@@ -197,12 +197,21 @@ gt_obj_st * gt_img_create(gt_obj_st * parent)
     if (NULL == obj) {
         return obj;
     }
+#if GT_USE_DIRECT_ADDR || GT_USE_FILE_HEADER || GT_USE_DIRECT_ADDR_CUSTOM_SIZE
     _gt_img_st * style = (_gt_img_st *)obj;
+#endif
 
 #if GT_USE_DIRECT_ADDR
     gt_hal_direct_addr_init(&style->addr);
 #endif
 
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->fh);
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&style->custom_addr);
+#endif
     return obj;
 }
 

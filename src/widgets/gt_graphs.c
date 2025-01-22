@@ -703,7 +703,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _fifo_pop_item_by(gt_series_points_st * series
 
 static GT_ATTRIBUTE_RAM_TEXT void _fifo_keep_latest_points(_gt_graphs_st * style) {
     gt_series_points_st * series = style->gp.series_head_p;
-    gt_size_t i = 0, k = 0;
     if (NULL == series) {
         return;
     }
@@ -881,7 +880,6 @@ gt_res_t gt_graphs_series_add_point(gt_obj_st * obj, gt_series_points_st * const
     if (false == _is_series_valid(style, series)) {
         return GT_RES_FAIL;
     }
-    uint16_t size = sizeof(gt_float_t);
     if (style->fifo_depth) {
         _fifo_keep_latest_points(style);
         if (GT_RES_OK != _resize_memory_for_series(series, style->fifo_depth)) {
@@ -1042,7 +1040,6 @@ void gt_graphs_show_point_value(gt_obj_st * obj, uint16_t series_index, bool ena
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;
     }
-    _gt_graphs_st * style = (_gt_graphs_st *)obj;
     gt_series_points_st * series = _get_series_line_by(obj, series_index);
     if (NULL == series) {
         return;

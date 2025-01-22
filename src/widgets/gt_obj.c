@@ -66,7 +66,6 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_screen_class = {
 
 /* static functions -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj) {
-    gt_area_st real_area = {0};
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill = true;

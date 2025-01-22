@@ -126,7 +126,6 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_chat_class = {
 static void _init_cb(gt_obj_st * obj) {
     if(!obj || 0 == obj->area.w || 0 == obj->area.h) return;
 
-    _gt_chat_st * style = (_gt_chat_st * )obj;
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill   = true;
@@ -319,7 +318,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_append_msg(gt_obj_st* chat, const cha
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _scrolling_handler(gt_obj_st * obj) {
-    _gt_chat_st * style = (_gt_chat_st * )obj;
     gt_size_t bottom = gt_obj_get_limit_bottom(obj) + (-_MSG_SPACE_Y * 2);
 
     if (gt_obj_scroll_get_y(obj) > 0) {
@@ -335,7 +333,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _scrolling_handler(gt_obj_st * obj) {
 
 static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_update_msg_size(gt_obj_st * chat) {
     _gt_chat_st * style = (_gt_chat_st * )chat;
-    uint32_t w = 0, h = 0;
     uint16_t max_h = _MSG_SPACE_Y;
     for(int i = 0; i < style->msg_cnt; i++)
     {
