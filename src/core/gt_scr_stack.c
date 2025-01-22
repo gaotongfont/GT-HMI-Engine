@@ -147,7 +147,6 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
     gt_scr_stack_item_st * item = NULL;
-    gt_obj_st * prev = NULL;
     gt_scr_id_t home_id = gt_scr_stack_get_home_scr_id();
 
     if (count < 0) {
@@ -169,7 +168,6 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
             item->prev_scr_alive->using_sta = false;
             _gt_obj_class_destroy(item->prev_scr_alive);
             item->prev_scr_alive = NULL;
-            prev = item->prev_scr_alive;
         }
         item = (gt_scr_stack_item_st * )gt_stack_pop(scr_info->stack);
         if (home_id != item->current_scr_id || false == gt_scr_stack_is_home_scr_alive()) {
