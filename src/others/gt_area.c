@@ -196,11 +196,9 @@ bool gt_area_intersect_get(gt_area_st * res_p, const gt_area_st * a1_p, const gt
     res_p->w = x2 - res_p->x;
     res_p->h = y2 - res_p->y;
 
-    bool union_ok = true;
     if((AREA_X1(res_p) > x2) || (AREA_Y1(res_p) > y2)) {
         return true;
     }
-
     return true;
 }
 

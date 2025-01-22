@@ -514,6 +514,7 @@ void gt_anim_set_path_type(gt_anim_st * anim, gt_anim_path_type_em type)
         }
         case GT_ANIM_PATH_TYPE_STEP: {
             anim->_path_cb = _gt_anim_path_step;
+            break;
         }
         case GT_ANIM_PATH_TYPE_LINEAR:
         default: {
