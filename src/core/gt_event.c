@@ -77,23 +77,35 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_user_cb(gt_event_st * e)
     return GT_RES_OK;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_event_cb(gt_event_st * e) {
-    gt_obj_st * obj = (gt_obj_st * )e->target;
-    GT_CHECK_BACK_VAL(obj, GT_RES_FAIL);
-    const gt_obj_class_st * c = obj->classes;
-    bool is_handler = false;
-
-    /** Expand event replace func */
-    gt_obj_event_attr_st * event_ptr = obj->replace_core_event_attr;
+/**
+ * @brief Expand event replace func
+ *
+ * @param event_ptr
+ * @param e
+ * @return gt_res_t GT_RES_OK or GT_RES_FAIL
+ */
+static GT_ATTRIBUTE_RAM_TEXT inline gt_res_t
+_using_replace_core_user_cb(gt_obj_event_attr_st * event_ptr, gt_event_st * e) {
+    gt_res_t res = GT_RES_FAIL;
     while(event_ptr) {
         if(event_ptr->user_cb && e->code_type == event_ptr->filter) {
             e->user_data = event_ptr->user_data;
             event_ptr->user_cb(e);
-            is_handler = true;
+            res = GT_RES_OK;
         }
         event_ptr = event_ptr->next_ptr;
     }
-    if (is_handler) { return GT_RES_OK; }
+    return res;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_event_cb(gt_event_st * e) {
+    gt_obj_st * obj = (gt_obj_st * )e->target;
+    GT_CHECK_BACK_VAL(obj, GT_RES_FAIL);
+    const gt_obj_class_st * c = obj->classes;
+
+    if (GT_RES_OK == _using_replace_core_user_cb(obj->replace_core_event_attr, e)) {
+        return GT_RES_OK;
+    }
 
     /** Default core event func */
     GT_CHECK_BACK_VAL(c, GT_RES_FAIL);
