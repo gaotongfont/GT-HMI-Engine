@@ -498,7 +498,7 @@ extern "C" {
      * apply for memory and gave up the jump and displayed the new screen.
      * [default: 0]
      */
-    #define GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM    01
+    #define GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM    0
 #endif
 
 
