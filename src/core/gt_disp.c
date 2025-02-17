@@ -823,16 +823,17 @@ static GT_ATTRIBUTE_RAM_TEXT bool _create_scr_by_stack_item(gt_scr_stack_item_st
     gt_mem_reset_failed_count();
 #endif
     item_p->current_scr = _create_scr_by_id(item_p->current_scr_id);
-#if GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM
-    if (gt_mem_has_failed()) {
-        GT_LOGE(GT_LOG_TAG_GUI, "New screen has memory failed, abort loading.");
-        return false;
-    }
-#endif
     if (NULL == item_p->current_scr) {
         GT_LOGE(GT_LOG_TAG_GUI, "item_p->current_scr is NULL! Create screen failed.");
         return false;
     }
+#if GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM
+    if (gt_mem_has_failed()) {
+        _gt_obj_class_destroy(item_p->current_scr);
+        GT_LOGE(GT_LOG_TAG_GUI, "New screen has memory failed, abort loading.");
+        return false;
+    }
+#endif
     if (home_id == item_p->current_scr_id) {
         gt_scr_stack_set_home_scr(item_p->current_scr);
     }
