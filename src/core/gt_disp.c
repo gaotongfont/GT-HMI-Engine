@@ -808,6 +808,37 @@ static GT_ATTRIBUTE_RAM_TEXT void _layer_top_destroy_handler_cb(struct _gt_timer
     }
 }
 
+/**
+ * @brief Create new screen by stack item
+ *
+ * @param item_p
+ * @param home_id screen id
+ * @return bool true: Create new screen successfully, false: Create new screen failed.
+ */
+static GT_ATTRIBUTE_RAM_TEXT bool _create_scr_by_stack_item(gt_scr_stack_item_st * item_p, gt_scr_id_t home_id) {
+    if (item_p->current_scr) {
+        return true;
+    }
+#if GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM
+    gt_mem_reset_failed_count();
+#endif
+    item_p->current_scr = _create_scr_by_id(item_p->current_scr_id);
+#if GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM
+    if (gt_mem_has_failed()) {
+        GT_LOGE(GT_LOG_TAG_GUI, "New screen has memory failed, abort loading.");
+        return false;
+    }
+#endif
+    if (NULL == item_p->current_scr) {
+        GT_LOGE(GT_LOG_TAG_GUI, "item_p->current_scr is NULL! Create screen failed.");
+        return false;
+    }
+    if (home_id == item_p->current_scr_id) {
+        gt_scr_stack_set_home_scr(item_p->current_scr);
+    }
+    return true;
+}
+
 /* global functions / API interface -------------------------------------*/
 gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
 {
@@ -982,12 +1013,9 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
     }
     gt_scr_stack_item_st * item_p = gt_scr_stack_peek();
     GT_CHECK_BACK_VAL(item_p, ret);
-    if (NULL == item_p->current_scr) {
-        item_p->current_scr = _create_scr_by_id(item_p->current_scr_id);
-        GT_CHECK_BACK_VAL(item_p->current_scr, ret);
-        if (home_id == item_p->current_scr_id) {
-            gt_scr_stack_set_home_scr(item_p->current_scr);
-        }
+    if (false == _create_scr_by_stack_item(item_p, home_id)) {
+        gt_scr_stack_pop(1);
+        return ret;
     }
     if (NULL == item_p->current_scr) {
         gt_scr_stack_pop(1);
@@ -996,12 +1024,9 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
     new_item_p->current_scr = item_p->current_scr;
 #else
     /** ready to init and load screen */
-    if (NULL == new_item_p->current_scr) {
-        new_item_p->current_scr = _create_scr_by_id(new_item_p->current_scr_id);
-        GT_CHECK_BACK_VAL(new_item_p->current_scr, ret);
-        if (home_id == new_item_p->current_scr_id) {
-            gt_scr_stack_set_home_scr(new_item_p->current_scr);
-        }
+    if (false == _create_scr_by_stack_item(new_item_p, home_id)) {
+        gt_scr_stack_pop(1);
+        return ret;
     }
     if (false == gt_scr_stack_push(new_item_p)) {
         GT_LOGE(GT_LOG_TAG_GUI, "Push stack failed");

@@ -492,6 +492,15 @@ extern "C" {
     #define GT_USE_UD_LR_TO_CONTROL_FOCUS_EN     0
 #endif
 
+#ifndef GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM
+    /**
+     * @brief When creating a new screen, the memory pool failed to
+     * apply for memory and gave up the jump and displayed the new screen.
+     * [default: 0]
+     */
+    #define GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM    01
+#endif
+
 
 /**
  * @brief Set the focus color

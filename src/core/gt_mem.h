@@ -156,6 +156,21 @@ void * gt_memset(void * ptr, uint8_t val, size_t size);
  */
 int gt_memcmp(const void * dst, const void * src, size_t size);
 
+#if GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM
+/**
+ * @brief Reset the count number of memory malloc / realloc failures
+ */
+void gt_mem_reset_failed_count(void);
+
+/**
+ * @brief Check whether the memory malloc / realloc has failed
+ *
+ * @return true The memory malloc / realloc has failed
+ * @return false normal memory malloc / realloc
+ */
+bool gt_mem_has_failed(void);
+#endif
+
 void gt_mem_check_used(void);
 
 /**

@@ -137,6 +137,10 @@ typedef struct {
     MEM_UNIT max_addr;
     MEM_UNIT max_count;
 #endif
+
+#if GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM
+    uint32_t failed_count;
+#endif
 }_mem_heap_info_st;
 
 /* static variables -----------------------------------------------------*/
@@ -148,8 +152,8 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY MEM_UNIT * _mem_pool_int = NULL;
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY MEM_UNIT _mem_pool_int[GT_MEM_SIZE / sizeof(MEM_UNIT)];
 #endif  /** GT_MEM_CUSTOM_POINTER */
 
-static GT_ATTRIBUTE_RAM_DATA gt_tlsf_t _tlsf;
-static GT_ATTRIBUTE_RAM_DATA _mem_heap_info_st _heap_info;
+static GT_ATTRIBUTE_RAM_DATA gt_tlsf_t _tlsf = NULL;
+static GT_ATTRIBUTE_RAM_DATA _mem_heap_info_st _heap_info = {0};
 
 #else
 /**
@@ -245,6 +249,9 @@ void gt_mem_init(void)
     _tlsf = gt_tlsf_create_with_pool((void *)_mem_pool_int, GT_MEM_SIZE);
     _heap_info.addr_start = (uintptr_t)_mem_pool_int;
     _heap_info.addr_end = (uintptr_t)_mem_pool_int + GT_MEM_SIZE;
+#if GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM
+    _heap_info.failed_count = 0;
+#endif
 #if GT_BOOTING_INFO_MSG
 	GT_LOG_A(GT_LOG_TAG_MEM, "Custom memory pool addr: %lx -> %lx, size: 0x%x(%d)", (uintptr_t)_heap_info.addr_start, (uintptr_t)_heap_info.addr_end, GT_MEM_SIZE, GT_MEM_SIZE);
 #else
@@ -289,6 +296,10 @@ void * _mem_malloc(size_t size, char const * file_name, char const * func_name, 
 
 #if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT || USE_MEM_REAL_USED_REMARK
     size_t block_size = _gt_block_size(ret);
+#endif
+
+#if GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM
+    if (NULL == ret) { ++_heap_info.failed_count; }
 #endif
 
 #if USE_MEM_LOG_PRINT
@@ -345,6 +356,10 @@ void * _mem_realloc(void * ptr, size_t size, char const * file_name, char const 
 
 #if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT || USE_MEM_REAL_USED_REMARK
     size_t block_size = _gt_block_size(ret);
+#endif
+
+#if GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM
+    if (NULL == ret) { ++_heap_info.failed_count; }
 #endif
 
 #if USE_MEM_LOG_PRINT
@@ -508,6 +523,18 @@ int gt_memcmp(const void * dst, const void * src, size_t size)
 {
     return memcmp(dst, src, size);
 }
+
+#if GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM
+void gt_mem_reset_failed_count(void)
+{
+    _heap_info.failed_count = 0;
+}
+
+bool gt_mem_has_failed(void)
+{
+    return _heap_info.failed_count ? true : false;
+}
+#endif
 
 void gt_mem_check_used(void)
 {
