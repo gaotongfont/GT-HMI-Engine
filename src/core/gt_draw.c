@@ -10,6 +10,7 @@
  /* include --------------------------------------------------------------*/
 #include "stdlib.h"
 #include "stdbool.h"
+#include "../gt_conf.h"
 
 #include "gt_graph_base.h"
 #include "gt_obj_pos.h"
@@ -48,6 +49,22 @@
     #define _GT_DRAW_MASK_MIX(opa, mask_val)    GT_MIN(opa, mask_val)
 #endif
 
+#ifndef _GT_DRAW_STATIC_LINE_BUFFER
+    /**
+     * @brief [default: 0] Use the static buffer to draw the line,
+     *      the buffer size over width * sizeof(gt_color_t).
+     */
+    #define _GT_DRAW_STATIC_LINE_BUFFER         0
+#endif
+
+#if _GT_DRAW_STATIC_LINE_BUFFER
+    #ifndef _GT_DRAW_STATIC_LINE_MAX_WIDTH
+        /**
+         * @brief
+         */
+        #define _GT_DRAW_STATIC_LINE_MAX_WIDTH  GT_SCREEN_WIDTH
+    #endif
+# endif
 
 
 /* private typedef ------------------------------------------------------*/
@@ -88,6 +105,11 @@ static const GT_ATTRIBUTE_LARGE_RAM_ARRAY char _utf8_dots[] = {
 static const GT_ATTRIBUTE_LARGE_RAM_ARRAY char _utf8_full_stops[] = {
     0xe3, 0x80, 0x82, 0xe3, 0x80, 0x82, 0xe3, 0x80, 0x82
 };
+
+#if _GT_DRAW_STATIC_LINE_BUFFER
+static GT_ATTRIBUTE_RAM_DATA gt_color_t _static_line_color_buffer[_GT_DRAW_STATIC_LINE_MAX_WIDTH];
+static GT_ATTRIBUTE_RAM_DATA gt_opa_t _static_line_opa_buffer[_GT_DRAW_STATIC_LINE_MAX_WIDTH];
+#endif
 
 /* macros ---------------------------------------------------------------*/
 static inline bool _is_align_reverse(gt_align_et align) {
@@ -688,14 +710,21 @@ static GT_ATTRIBUTE_RAM_TEXT void _filling_by_sjpg_file(_gt_draw_ctx_st * draw_c
 
     /* line by line to blend */
     uint32_t len = w * sizeof(gt_color_t);
+#if _GT_DRAW_STATIC_LINE_BUFFER
+    blend_dsc->dst_buf = _static_line_color_buffer;
+#else
     blend_dsc->dst_buf = gt_mem_malloc(len);
     if (NULL == blend_dsc->dst_buf) {
         GT_LOGW(GT_LOG_TAG_GUI, "Per-line buffer malloc failed");
         return;
     }
+#endif
 
     bool mask_check = gt_mask_check(blend_dsc->mask_area);
     gt_opa_t opa = blend_dsc->opa >= GT_OPA_MAX ? GT_OPA_COVER : blend_dsc->opa;
+#if _GT_DRAW_STATIC_LINE_BUFFER
+        blend_dsc->mask_buf = _static_line_opa_buffer;
+#else
     if(mask_check){
         blend_dsc->mask_buf = gt_mem_malloc(blend_dsc->dst_area->w);
         if(NULL == blend_dsc->mask_buf){
@@ -705,6 +734,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _filling_by_sjpg_file(_gt_draw_ctx_st * draw_c
             return;
         }
     }
+#endif
 
     while(y < h){
         if( gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area) ){
@@ -719,12 +749,17 @@ static GT_ATTRIBUTE_RAM_TEXT void _filling_by_sjpg_file(_gt_draw_ctx_st * draw_c
         ++blend_dsc->dst_area->y;
         ++y;
     }
+#if _GT_DRAW_STATIC_LINE_BUFFER
+    blend_dsc->mask_buf = NULL;
+    blend_dsc->dst_buf = NULL;
+#else
     if(mask_check){
         gt_mem_free(blend_dsc->mask_buf);
         blend_dsc->mask_buf = NULL;
     }
     gt_mem_free(blend_dsc->dst_buf);
     blend_dsc->dst_buf = NULL;
+#endif
 }
 #endif
 
@@ -815,21 +850,29 @@ static GT_ATTRIBUTE_RAM_TEXT void _filling_by_default_line_mode(_gt_draw_ctx_st 
     }
 
     blend_dsc->dst_area->h = 1;     /** Read and cover line by line */
+#if _GT_DRAW_STATIC_LINE_BUFFER
+    blend_dsc->dst_buf = _static_line_color_buffer;
+#else
     blend_dsc->dst_buf = gt_mem_malloc( len );
     if (!blend_dsc->dst_buf) {
         GT_LOGW(GT_LOG_TAG_GUI, "Per-line buffer malloc failed");
         return;
     }
+#endif
 
     gt_opa_t opa = blend_dsc->opa >= GT_OPA_MAX ? GT_OPA_COVER: blend_dsc->opa;
     bool check_mask = gt_mask_check(blend_dsc->mask_area);
     uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
 
     if (is_mask || check_mask) {
+#if _GT_DRAW_STATIC_LINE_BUFFER
+        blend_dsc->mask_buf = _static_line_opa_buffer;
+#else
         blend_dsc->mask_buf = gt_mem_malloc(w);
         if (!blend_dsc->mask_buf) {
             goto line_lb;
         }
+#endif
     }
 
     while (y < h) {
@@ -859,6 +902,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _filling_by_default_line_mode(_gt_draw_ctx_st 
         ++y;
     }
 
+#if _GT_DRAW_STATIC_LINE_BUFFER
+    blend_dsc->mask_buf = NULL;
+    blend_dsc->dst_buf = NULL;
+#else
     if (blend_dsc->mask_buf) {
         gt_mem_free(blend_dsc->mask_buf);
         blend_dsc->mask_buf = NULL;
@@ -868,6 +915,7 @@ line_lb:
         gt_mem_free(blend_dsc->dst_buf);
         blend_dsc->dst_buf = NULL;
     }
+#endif
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline void _filling_by_default(_gt_draw_ctx_st * draw_ctx,
