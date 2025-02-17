@@ -16,8 +16,11 @@
 
 
 /* private define -------------------------------------------------------*/
-#if GT_USE_MODE_SRC
 
+#ifndef _SRC_MALLOC_DEV
+    /** default: 0 */
+    #define _SRC_MALLOC_DEV    0
+#endif
 
 /* private typedef ------------------------------------------------------*/
 
@@ -27,10 +30,53 @@ typedef struct {
     gt_size_t sys_count;
 }_gt_src_dev_st;
 
+static GT_ATTRIBUTE_RAM_TEXT void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode);
+static GT_ATTRIBUTE_RAM_TEXT void * _open_cb_raw(struct _gt_fs_drv_s * drv, uint8_t * raw_data, uint32_t raw_len, gt_fs_mode_et mode);
+static GT_ATTRIBUTE_RAM_TEXT void _close_cb(struct _gt_fs_drv_s * drv, void * fp);
+static GT_ATTRIBUTE_RAM_TEXT gt_fs_res_et _read_cb(struct _gt_fs_drv_s * drv, void * fp, uint8_t * data, uint32_t len, uint32_t * ret_len);
+static GT_ATTRIBUTE_RAM_TEXT gt_fs_res_et _seek_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t pos, gt_fs_whence_et whence);
+static GT_ATTRIBUTE_RAM_TEXT gt_fs_res_et _tell_cb(struct _gt_fs_drv_s * drv, void * fp, uint32_t * pos);
+#if GT_USE_FS_NAME_BY_INDEX
+static GT_ATTRIBUTE_RAM_TEXT char const * const _get_name_by_cb(uint16_t index_of_list);
+#endif
 
 /* static variables -----------------------------------------------------*/
 
+#if _SRC_MALLOC_DEV
 static _gt_src_dev_st * _self = NULL;
+#else
+static GT_ATTRIBUTE_RAM_DATA _gt_src_dev_st _self = {
+    .sys = NULL,
+    .sys_count = 0,
+    .drv = {
+        .letter       = GT_FS_LABEL_ARRAY,
+#if GT_USE_FILE_HEADER
+        .fh_open_cb   = NULL,
+#endif
+#if GT_USE_DIRECT_ADDR
+        .direct_addr_open_cb = NULL,
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+        .custom_size_addr_open_cb = NULL,
+#endif
+        .open_cb      = _open_cb,
+        .open_cb_raw  = _open_cb_raw,
+        .close_cb     = _close_cb,
+        .read_cb      = _read_cb,
+        .seek_cb      = _seek_cb,
+        .tell_cb      = _tell_cb,
+        .write_cb     = NULL,
+#if GT_USE_FOLDER_SYSTEM
+        .dir_open_cb  = NULL,
+        .dir_read_cb  = NULL,
+        .dir_close_cb = NULL,
+#endif
+#if GT_USE_FS_NAME_BY_INDEX
+        .get_name_by_cb = _get_name_by_cb,
+#endif
+    },
+};
+#endif  /** _SRC_MALLOC_DEV */
 
 /* macros ---------------------------------------------------------------*/
 
@@ -43,12 +89,21 @@ static _gt_src_dev_st * _self = NULL;
 /* static functions -----------------------------------------------------*/
 
 static inline _gt_src_dev_st * _get_dev(void) {
+#if _SRC_MALLOC_DEV
     return _self;
+#else
+    return &_self;
+#endif
 }
 
 static inline gt_fs_drv_st * _get_drv(void) {
+#if _SRC_MALLOC_DEV
     return _self ? &_self->drv : NULL;
+#else
+    return &_self.drv;
+#endif
 }
+
 
 static GT_ATTRIBUTE_RAM_TEXT void * _open_cb(struct _gt_fs_drv_s * drv, char * name, gt_fs_mode_et mode) {
     uint16_t idx = 0;
@@ -191,6 +246,7 @@ static GT_ATTRIBUTE_RAM_TEXT char const * const _get_name_by_cb(uint16_t index_o
 }
 #endif
 
+#if _SRC_MALLOC_DEV
 static GT_ATTRIBUTE_RAM_TEXT void _gt_src_drv_register(gt_fs_drv_st * drv) {
     drv->letter       = GT_FS_LABEL_ARRAY;
 
@@ -198,7 +254,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_src_drv_register(gt_fs_drv_st * drv) {
     drv->fh_open_cb   = NULL;
 #endif
 #if GT_USE_DIRECT_ADDR
-    drv ->direct_addr_open_cb = NULL;
+    drv->direct_addr_open_cb = NULL;
 #endif
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
     drv->custom_size_addr_open_cb = NULL;
@@ -219,8 +275,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_src_drv_register(gt_fs_drv_st * drv) {
     drv->get_name_by_cb = _get_name_by_cb;
 #endif
 }
-
-#endif  /** GT_USE_MODE_SRC */
+#endif
 
 /* global functions / API interface -------------------------------------*/
 
@@ -237,6 +292,7 @@ void gt_src_init(const gt_src_st * const src_sys, uint32_t sys_count)
         return ;
     }
 
+#if _SRC_MALLOC_DEV
     if (!_self) {
         _self = (_gt_src_dev_st * )gt_mem_malloc(sizeof(_gt_src_dev_st));
         GT_CHECK_BACK(_self);
@@ -247,15 +303,17 @@ void gt_src_init(const gt_src_st * const src_sys, uint32_t sys_count)
     _self->sys_count = sys_count;
 
     _gt_src_drv_register(&_self->drv);
+#else
+    _self.sys = (const gt_src_st * )src_sys;
+    _self.sys_count = sys_count;
 #endif
+#endif  /** GT_USE_MODE_SRC */
 }
 
-#if GT_USE_MODE_SRC
 gt_fs_drv_st * gt_src_get_drv(void)
 {
     return _get_drv();
 }
-#endif
 
 
 /* end ------------------------------------------------------------------*/

@@ -57,7 +57,6 @@ typedef struct gt_src_s {
  */
 void gt_src_init(const gt_src_st * const src_sys, uint32_t sys_count);
 
-#if GT_USE_MODE_SRC
 /**
  * @brief Get the driver from the resource mode.
  *
@@ -65,7 +64,6 @@ void gt_src_init(const gt_src_st * const src_sys, uint32_t sys_count);
  */
 gt_fs_drv_st * gt_src_get_drv(void);
 
-#endif  /** GT_USE_MODE_SRC */
 
 #ifdef __cplusplus
 } /*extern "C"*/
