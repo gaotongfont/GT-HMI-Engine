@@ -97,10 +97,10 @@ static bool _get_param(gt_var_st* var, gt_var_progress_bar_st* icon)
         GT_LOGE(GT_LOG_TAG_SERIAL, "Parse err code: %d, index: %d", ret.res, ret.index);
         return false;
     }
-    GT_LOGI(GT_LOG_TAG_SERIAL, "var type: %d", icon->head.type);
+    GT_LOGI(GT_LOG_TAG_SERIAL, "var type: 0x%X", icon->head.type);
     if(icon->head.type != VAR_TYPE_PROGRESS_BAR) {return false;}
 
-    GT_LOGI(GT_LOG_TAG_SERIAL, "type: %d, sp: 0x%X, vp: 0x%X x: %d, y: %d",\
+    GT_LOGI(GT_LOG_TAG_SERIAL, "type: 0x%X, sp: 0x%X, vp: 0x%X x: %d, y: %d",\
                                 icon->head.type, icon->head.sp, icon->head.vp, icon->param.xs, icon->param.ys);
 
     //

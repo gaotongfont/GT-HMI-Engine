@@ -57,7 +57,11 @@
 /**
  * @brief serial ui variable
  */
+#if GT_SERIAL_UI_VAR_MALLOC_ENABLE
+static uint8_t* _serial_var_buf = NULL;
+#else
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY uint8_t _serial_var_buf[GT_SERIAL_UI_VAR_SIZE] = {0};
+#endif
 
 static GT_ATTRIBUTE_LARGE_RAM_ARRAY const gt_var_handler_item_st _var_handler_list[] = {
     {VAR_TYPE_ICON, gt_serial_var_icon_create, gt_serial_var_icon_set_value},
@@ -151,11 +155,24 @@ static gt_res_t _var_set_value(gt_var_handler_st *handler)
 }
 
 /* global functions / API interface -------------------------------------*/
+void _gt_serial_var_buffer_malloc_init(void)
+{
+#if GT_SERIAL_UI_VAR_MALLOC_ENABLE
+    _serial_var_buf = (uint8_t*)gt_mem_malloc(GT_SERIAL_UI_VAR_SIZE);
+    if(!_serial_var_buf) {
+        GT_LOGE(GT_LOG_TAG_SERIAL, "serial var buffer malloc failed! size: %d", GT_SERIAL_UI_VAR_SIZE);
+        return;
+    }
+#endif
+    memset(_serial_var_buf, 0, GT_SERIAL_UI_VAR_SIZE);
+}
+
 void gt_serial_var_init(bool load)
 {
-    // memset(_serial_var_buf, 0, GT_SERIAL_UI_VAR_SIZE);
-
-    if(!load) { return; }
+    if(!load) {
+        GT_LOGW(GT_LOG_TAG_SERIAL, "serial var init no load!");
+        return;
+    }
     uint32_t addr = gt_serial_resource_get_addr_by(_GT_SERIAL_FILE_22) + (2 * _GT_SERIAL_VAR_ADDR_OFFSET);
 
     gt_fs_read_direct_physical(addr, \

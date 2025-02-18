@@ -80,10 +80,10 @@ static bool _get_param(gt_var_st* var, gt_var_icon_st* icon)
         GT_LOGE(GT_LOG_TAG_SERIAL, "Parse err code: %d, index: %d", ret.res, ret.index);
         return false;
     }
-    GT_LOGI(GT_LOG_TAG_SERIAL, "var type: %d", icon->head.type);
+    GT_LOGI(GT_LOG_TAG_SERIAL, "var type: 0x%X", icon->head.type);
     if(icon->head.type != VAR_TYPE_PIC) {return false;}
 
-    GT_LOGI(GT_LOG_TAG_SERIAL, "type: %d, sp: 0x%X, vp: 0x%X pic_end_exp: %d",\
+    GT_LOGI(GT_LOG_TAG_SERIAL, "type: 0x%X, sp: 0x%X, vp: 0x%X pic_end_exp: %d",\
                                 icon->head.type, icon->head.sp, icon->head.vp, icon->param.pic_end_exp);
 
     //

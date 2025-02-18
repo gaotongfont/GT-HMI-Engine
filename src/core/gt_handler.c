@@ -130,6 +130,9 @@ static void _gt_serial_core_init(void) {
     if (GT_RES_OK != gt_serial_resource_init()) {
         return;
     }
+
+    _gt_serial_var_buffer_malloc_init();
+
     gt_serial_init();
 
 #if GT_USE_SERIAL_CFG && GT_USE_BIN_CONVERT

@@ -32,6 +32,11 @@ extern "C" {
 //
 #if GT_USE_SERIAL_VAR && GT_USE_BIN_CONVERT
 //
+#ifndef GT_SERIAL_UI_VAR_MALLOC_ENABLE
+    /* serial ui variable buff malloc enable */
+    #define GT_SERIAL_UI_VAR_MALLOC_ENABLE  01
+#endif
+//
 #define GT_VAR_REG_LEN  2
 #define GT_VAR_IS_VP(reg, vp) ((reg) == (vp))
 #define GT_VAR_IS_SP(reg, sp, len_dsc) (((reg) >= (sp)) && ((reg) < (sp) + (len_dsc)))
@@ -111,6 +116,11 @@ typedef struct {
 
 
 /* global functions / API interface -------------------------------------*/
+/**
+ * @brief malloc init
+ *
+ */
+void _gt_serial_var_buffer_malloc_init(void);
 /**
  * @brief init serial var
  * @param load true: load 22 file; false: load 22 file;

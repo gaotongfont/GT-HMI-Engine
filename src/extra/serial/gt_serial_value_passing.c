@@ -95,7 +95,7 @@ gt_res_t gt_serial_value_passing_create(gt_var_st * var)
         GT_LOGE(GT_LOG_TAG_SERIAL, "Parse err code: %d, index: %d", ret.res, ret.index);
         return GT_RES_FAIL;
     }
-    GT_LOGI(GT_LOG_TAG_SERIAL, "var type: %d", value_passing.head.type);
+    GT_LOGI(GT_LOG_TAG_SERIAL, "var type: 0x%X", value_passing.head.type);
     if (VAR_TYPE_VALUE_PASSING != value_passing.head.type) { return GT_RES_FAIL; }
 
     /** move pre_defined data to vp buffer */
