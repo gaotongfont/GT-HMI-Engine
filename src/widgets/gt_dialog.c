@@ -51,6 +51,7 @@ typedef struct _gt_dialog_s {
     uint32_t anim_time;
 
     gt_color_t border_color;
+    gt_opa_t max_opa;
     uint8_t border_width;
 
     uint8_t outside_auto_hide : 1;
@@ -330,12 +331,12 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         }
         case GT_EVENT_TYPE_INPUT_HIDED: {
             if (style->outside_auto_hide) {
-                _create_anim_handler(obj, false, GT_OPA_100, GT_OPA_0);
+                _create_anim_handler(obj, false, style->max_opa, GT_OPA_0);
             }
             break;
         }
         case GT_EVENT_TYPE_NOTIFY_CLOSE: {
-            _create_anim_handler(obj, false, GT_OPA_100, GT_OPA_0);
+            _create_anim_handler(obj, false, style->max_opa, GT_OPA_0);
             break;
         }
         case GT_EVENT_TYPE_UPDATE_STYLE: {
@@ -393,6 +394,7 @@ gt_obj_st * gt_dialog_create(bool show_close_btn)
     style->border_color = gt_color_hex(0xc7c7c7);
     style->border_width = 2;
     style->anim_time = 250;
+    style->max_opa = GT_OPA_100;
 
     /** Center 50% area */
     _update_display_area(obj, disp->layer_top);
@@ -428,13 +430,22 @@ gt_obj_st * gt_dialog_create_issue(bool show_close_btn, gt_dialog_param_st const
     return obj;
 }
 
+void gt_dialog_set_max_opa(gt_obj_st * obj, gt_opa_t max_opa)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )obj;
+    style->max_opa = max_opa;
+}
+
 void gt_dialog_show(gt_obj_st * obj)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;
     }
-
-    _create_anim_handler(obj, true, GT_OPA_0, GT_OPA_100);
+    _gt_dialog_st * style = (_gt_dialog_st * )obj;
+    _create_anim_handler(obj, true, GT_OPA_0, style->max_opa);
 }
 
 void gt_dialog_close(gt_obj_st * obj)
@@ -443,7 +454,7 @@ void gt_dialog_close(gt_obj_st * obj)
         return ;
     }
 
-    /** Better than: _create_anim_handler(obj, false, GT_OPA_100, GT_OPA_0); */
+    /** Better than: _create_anim_handler(obj, false, style->max_opa, GT_OPA_0); */
     gt_event_send(obj, GT_EVENT_TYPE_NOTIFY_CLOSE, NULL);
 }
 

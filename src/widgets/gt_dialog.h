@@ -69,6 +69,14 @@ gt_obj_st * gt_dialog_create(bool show_close_btn);
 gt_obj_st * gt_dialog_create_issue(bool show_close_btn, gt_dialog_param_st const * const param);
 
 /**
+ * @brief Set the maximum transparency of the dialog
+ *
+ * @param obj
+ * @param max_opa GT_OPA_0 ~ GT_OPA_100
+ */
+void gt_dialog_set_max_opa(gt_obj_st * obj, gt_opa_t max_opa);
+
+/**
  * @brief Begin to show the dialog
  *
  * @param obj The dialog object
