@@ -1341,9 +1341,6 @@ _disp_font:
                 dot_ret = gt_font_get_dot(&tmp_font, uni_or_gbk);
 
                 if (GT_FONT_TYPE_FLAG_EMOJI == dot_ret.type) {
-                    uint8_t byte_width = width << 1;
-                    gt_addr_t emoji_addr =  tmp_font.res[0] << 24 | tmp_font.res[1] << 16 | tmp_font.res[2] << 8 | tmp_font.res[3];
-                    gt_addr_t alpha_offset = emoji_addr + (width * tmp_font.info.size) * 2;
                     gt_area_st emoji_area = area_font;
                     emoji_area.h = 1;
 
@@ -1360,11 +1357,13 @@ _disp_font:
                     dsc_emoji.raw_img = &emoji_raw;
 
                     for(uint8_t i = 0; i < tmp_font.info.size; ++i){
-                        gt_fs_read_direct_physical(emoji_addr, byte_width, tmp_font.res);
-                        gt_fs_read_direct_physical(alpha_offset, width, mask_line);
+
+                        int emj_ret = gt_font_get_emoji_dot(uni_or_gbk, dot_ret.option, emoji_raw.img, emoji_raw.alpha, i);
+                        if(emj_ret <= 0) {
+                            GT_LOGD(GT_LOG_TAG_GUI, "get emoji dot failed!!! ret: %d",emj_ret);
+                            break;
+                        }
                         draw_bg_img(draw_ctx, &dsc_emoji, &emoji_area);
-                        emoji_addr += byte_width;
-                        alpha_offset += width;
                         ++emoji_area.y;
                     }
                     gt_memset(mask_line, 0xFF, tmp_font.info.size << 1);
@@ -1812,9 +1811,6 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_single_line(_gt_draw
             dot_ret = gt_font_get_dot(&tmp_font, uni_or_gbk);
 
             if (GT_FONT_TYPE_FLAG_EMOJI == dot_ret.type) {
-                byte_width = width << 1;
-                gt_addr_t emoji_addr =  tmp_font.res[0] << 24 | tmp_font.res[1] << 16 | tmp_font.res[2] << 8 | tmp_font.res[3];
-                gt_addr_t alpha_offset = emoji_addr + (width * tmp_font.info.size) * 2;
                 gt_area_st emoji_area = area_font;
                 emoji_area.h = 1;
 
@@ -1831,11 +1827,13 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_single_line(_gt_draw
                 dsc_emoji.raw_img = &emoji_raw;
 
                 for(uint8_t i = 0; i < tmp_font.info.size; ++i){
-                    gt_fs_read_direct_physical(emoji_addr, byte_width, tmp_font.res);
-                    gt_fs_read_direct_physical(alpha_offset, width, mask_line);
+
+                    int emj_ret = gt_font_get_emoji_dot(uni_or_gbk, dot_ret.option, emoji_raw.img, emoji_raw.alpha, i);
+                    if(emj_ret <= 0) {
+                        GT_LOGD(GT_LOG_TAG_GUI, "get emoji dot failed!!! ret: %d",emj_ret);
+                        break;
+                    }
                     draw_bg_img(draw_ctx, &dsc_emoji, &emoji_area);
-                    emoji_addr += byte_width;
-                    alpha_offset += width;
                     ++emoji_area.y;
                 }
                 gt_memset(mask_line, 0xFF, tmp_font.info.size << 1);

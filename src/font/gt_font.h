@@ -257,6 +257,7 @@ typedef struct gt_py_input_method_s {
 typedef struct _gt_font_dot_ret_s {
     gt_font_type_em type;
     uint16_t size;
+    uint16_t option;
 }_gt_font_dot_ret_st;
 
 
@@ -340,6 +341,7 @@ uint8_t gt_utf8_check_char(uint8_t * utf8);
  * @return _gt_font_dot_ret_st
  */
 _gt_font_dot_ret_st gt_font_get_dot(gt_font_st * font, uint32_t unicode);
+int gt_font_get_emoji_dot(uint32_t unicode, uint16_t option, uint8_t *data, uint8_t *opa, uint16_t line);
 
 /**
  * @brief Get the width of a character

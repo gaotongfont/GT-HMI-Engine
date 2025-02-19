@@ -23,6 +23,7 @@ typedef struct gt_font_func_s
     {
         int (*read_dot_font)(unsigned long , unsigned int , unsigned char*);
         int (*read_vec_font)(unsigned char* , unsigned int ,unsigned long ,unsigned int , unsigned char , unsigned char);
+        int (*read_img_font)(unsigned long , unsigned int , unsigned char*, unsigned char*, unsigned int);
     }func;
     unsigned char type;
 }gt_font_func_st;

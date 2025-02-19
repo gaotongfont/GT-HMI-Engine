@@ -1328,6 +1328,7 @@ _gt_font_dot_ret_st gt_font_get_dot(gt_font_st * font, uint32_t unicode)
     _gt_font_dot_ret_st ret = {
         .type = GT_FONT_TYPE_FLAG_NONE,
         .size = font->info.size,
+        .option = 0,
     };
     font_lan =  gt_font_lan_get(unicode, font->info.encoding);
 #if GT_CFG_ENABLE_ZK_FONT == 1
@@ -1336,6 +1337,12 @@ _gt_font_dot_ret_st gt_font_get_dot(gt_font_st * font, uint32_t unicode)
     if (!font_func) {
         goto default_font;
     }
+    ret.type = font_func->type;
+    ret.option = font_option;
+    if(GT_FONT_TYPE_FLAG_EMOJI == font_func->type){
+        return ret;
+    }
+
     if (!GT_Check_Is_Vec(font_option)) {
         // Dot font
         if(!font_func->func.read_dot_font) {
@@ -1365,12 +1372,35 @@ default_font:
         gt_memcpy(font->res, &_ascii_16[ (unicode - 0x20) << 5 ], 32);
         ret.type = GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH;
         ret.size = 16;
+        ret.option = 0;
         font->info.size = 16;
 #endif
     }
     return ret;
 }
 
+int gt_font_get_emoji_dot(uint32_t unicode, uint16_t option, uint8_t *data, uint8_t *opa, uint16_t line)
+{
+#if GT_CFG_ENABLE_ZK_FONT == 1
+
+    struct gt_font_func_s * font_func = GT_Get_Font_Func_S(option);
+    if (!font_func) {
+        return -1;
+    }
+    if(GT_FONT_TYPE_FLAG_EMOJI != font_func->type){
+        return -1;
+    }
+
+    if(!font_func->func.read_img_font){
+        return -1;
+    }
+    int temp = font_func->func.read_img_font(unicode,option, data, opa, line);
+    return temp;
+#else
+    return -1;
+#endif
+
+}
 
 uint8_t gt_font_type_get(unsigned int style)
 {
