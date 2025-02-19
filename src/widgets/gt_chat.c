@@ -126,15 +126,17 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_chat_class = {
 static void _init_cb(gt_obj_st * obj) {
     if(!obj || 0 == obj->area.w || 0 == obj->area.h) return;
 
-    gt_attr_rect_st rect_attr;
-    gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.reg.is_fill   = true;
-    rect_attr.radius        = 0;
-    rect_attr.bg_opa        = obj->opa;
-    rect_attr.border_width  = 0;
-    rect_attr.bg_color      = obj->bgcolor;
+    if (obj->show_bg) {
+        gt_attr_rect_st rect_attr;
+        gt_graph_init_rect_attr(&rect_attr);
+        rect_attr.reg.is_fill   = true;
+        rect_attr.radius        = 0;
+        rect_attr.bg_opa        = obj->opa;
+        rect_attr.border_width  = 0;
+        rect_attr.bg_color      = obj->bgcolor;
 
-    draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
+        draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
+    }
     draw_focus(obj);
 }
 
