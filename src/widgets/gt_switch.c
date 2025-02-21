@@ -146,6 +146,7 @@ static void _init_cb(gt_obj_st * obj) {
     draw_bg(obj->draw_ctx, &rect_attr, &area_circle);
 
     // focus
+    obj->radius = diameter;
     draw_focus(obj);
 }
 
