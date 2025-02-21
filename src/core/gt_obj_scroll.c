@@ -123,22 +123,22 @@ gt_size_t gt_obj_scroll_get_y(gt_obj_st * obj)
     return obj->process_attr.scroll.y;
 }
 
-void _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset)
+void _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offset_y)
 {
     gt_point_st * scroll = &obj->process_attr.scroll;
-    gt_size_t right = gt_obj_get_limit_right(obj) - (offset * 3);
-    gt_size_t bottom = gt_obj_get_limit_bottom(obj) - (offset * 3);
+    gt_size_t right = gt_obj_get_limit_right(obj) - (offset_x);
+    gt_size_t bottom = gt_obj_get_limit_bottom(obj) - (offset_y);
 
-    if (scroll->y > offset) {
-        scroll->y = offset;
+    if (scroll->y > 0) {
+        scroll->y = 0;
     } else if (bottom < 0 && scroll->y < bottom) {
         scroll->y = bottom;
     } else if (bottom >= 0) {
         scroll->y = 0;
     }
 
-    if (scroll->x > offset) {
-        scroll->x = offset;
+    if (scroll->x > 0) {
+        scroll->x = 0;
     } else if (right < 0 && scroll->x < right) {
         scroll->x = right;
     } else if (right >= 0) {

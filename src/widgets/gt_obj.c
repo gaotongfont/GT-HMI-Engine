@@ -168,7 +168,7 @@ static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
             break;
         }
         case GT_EVENT_TYPE_INPUT_SCROLL: {
-            _gt_obj_scroll_internal(obj, 0);
+            _gt_obj_scroll_internal(obj, 0, 0);
             break;
         }
         case GT_EVENT_TYPE_INPUT_SCROLL_END: {

@@ -479,8 +479,8 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         if (style->highlight) {
             gt_obj_set_trigger_mode(style->last_active, false);
         }
-
-        _gt_obj_scroll_internal(obj, style->border_width);
+        gt_size_t offset_y = (style->border_width + style->item_reduce) << 2;
+        _gt_obj_scroll_internal(obj, 0, offset_y);
     }
     else if (GT_EVENT_TYPE_INPUT_PRESSED == code_val) {
         _set_last_active_obj(obj, e->origin);
