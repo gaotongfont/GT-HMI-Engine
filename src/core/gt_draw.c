@@ -1356,7 +1356,10 @@ _disp_font:
                     dsc_emoji.bg_opa = dsc->opa;
                     dsc_emoji.raw_img = &emoji_raw;
 
-                    for(uint8_t i = 0; i < tmp_font.info.size; ++i){
+                    uint8_t emoji_h = gt_font_get_one_word_height(uni_or_gbk, &tmp_font);
+                    emoji_area.y += ((tmp_font.info.size - emoji_h) >> 1);
+
+                    for(uint8_t i = 0; i < emoji_h; ++i){
 
                         int emj_ret = gt_font_get_emoji_dot(uni_or_gbk, dot_ret.option, emoji_raw.img, emoji_raw.alpha, i);
                         if(emj_ret <= 0) {
@@ -1826,7 +1829,10 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_single_line(_gt_draw
                 dsc_emoji.bg_opa = dsc->opa;
                 dsc_emoji.raw_img = &emoji_raw;
 
-                for(uint8_t i = 0; i < tmp_font.info.size; ++i){
+                uint8_t emoji_h = gt_font_get_one_word_height(uni_or_gbk, &tmp_font);
+                emoji_area.y += ((tmp_font.info.size - emoji_h) >> 1);
+
+                for(uint8_t i = 0; i < emoji_h; ++i){
 
                     int emj_ret = gt_font_get_emoji_dot(uni_or_gbk, dot_ret.option, emoji_raw.img, emoji_raw.alpha, i);
                     if(emj_ret <= 0) {

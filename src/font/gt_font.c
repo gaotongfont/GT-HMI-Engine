@@ -1608,9 +1608,26 @@ uint8_t gt_font_get_one_word_width(uint32_t uni_or_gbk, gt_font_st * font)
     return width;
 #else
     if (_gt_font_latin_check(uni_or_gbk)) {
-        return _gt_font_latin_get_width(uni_or_gbk, font->size);
+        return _gt_font_latin_get_width(uni_or_gbk, font->info.size;);
     }
-    return font->size;
+    return font->info.size;
+#endif
+
+}
+
+uint8_t gt_font_get_one_word_height(uint32_t uni_or_gbk, gt_font_st * font)
+{
+    if (gt_symbol_is_valid_range(uni_or_gbk)) {
+        return font->info.size;
+    }
+
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    gt_size_t width = 0;
+    uint16_t option = _get_font_option(font, uni_or_gbk);
+    uint8_t h = GT_Get_Font_Height(uni_or_gbk, option, font->info.size, font->info.gray);
+    return h ? h : font->info.size;
+#else
+    return font->info.size;
 #endif
 
 }

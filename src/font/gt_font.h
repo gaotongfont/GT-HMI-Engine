@@ -356,6 +356,9 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
 #else
 _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, uint8_t langue, uint32_t text_len);
 #endif
+
+uint8_t gt_font_get_one_word_height(uint32_t uni_or_gbk, gt_font_st * font);
+
 /**
  * @brief Get max substring line width
  *
