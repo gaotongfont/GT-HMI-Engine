@@ -428,10 +428,22 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_3(_gt_draw_ctx_st * draw_
     }
 }
 
-static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_gray_and_dot_byte_get(uint8_t* gray, uint8_t width, gt_font_st font, uint8_t ret_style) {
+static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_gray_and_dot_byte_get(uint8_t* gray, uint8_t width, gt_font_st font, uint8_t ret_style, uint32_t unicode) {
     uint16_t dot_byte = 0;
     uint8_t font_type = ret_style % 10;
     uint8_t font_gray = (ret_style/10) > 0 ? (ret_style/10) : 1;
+
+    dot_byte = gt_font_get_one_word_dot_width(unicode, &font);
+    if (dot_byte){
+
+        if (GT_FONT_TYPE_FLAG_VEC == font_type){
+            font_gray = font.info.gray;
+        }
+
+        dot_byte = ((dot_byte + 7) >> 3) * font_gray;
+        *gray = font_gray;
+        return dot_byte;
+    }
 
     if ( (GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH) == font_type) {
         dot_byte = ((font.info.size + 7) >> 3) * font_gray;
@@ -448,6 +460,7 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_gray_and_dot_byte_get(uint8_t* gray, u
         dot_byte = ((width + 7) >> 3) * font_gray;
     }
     *gray = font_gray;
+
     return dot_byte;
 }
 
@@ -657,7 +670,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
                                 &convertor.data[idx * font_size_res.font_per_size], tmp_font.info.style.reg);
         } else {
             byte_width = (gt_font_get_one_word_width(convertor.fontcode[idx], &tmp_font) + 7) >> 3;
-            byte_width = _gt_gray_and_dot_byte_get(&font_gray, byte_width, tmp_font, ret_style);
+            byte_width = _gt_gray_and_dot_byte_get(&font_gray, byte_width, tmp_font, ret_style, uni_or_gbk);
             blend_dsc->dst_area->w = byte_width << 3;
             // bold and italic
             if(tmp_font.info.style.reg.bold){
@@ -1375,7 +1388,7 @@ _disp_font:
                     uint8_t byte_width = (width + 7) >> 3;
                     uint8_t font_gray = 1;
 
-                    byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type);
+                    byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type, uni_or_gbk);
                     area_font.w = (byte_width / font_gray) << 3;
                     if (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding)) {
                         area_font.y += offset_y;
@@ -1849,7 +1862,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_single_line(_gt_draw
                 byte_width = (width + 7) >> 3;
                 font_gray = 1;
 
-                byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type);
+                byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type, uni_or_gbk);
                 area_font.w = (byte_width / font_gray) << 3;
                 if (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding)) {
                     area_font.y += offset_y;
@@ -1910,7 +1923,7 @@ next_word_lb:
         byte_width = (width + 7) >> 3;
         font_gray = 1;
 
-        byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type);
+        byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type, uni_or_gbk);
         area_font.w = (byte_width / font_gray) << 3;
         idx = 0;
         while (idx < omit_info.len)  {
