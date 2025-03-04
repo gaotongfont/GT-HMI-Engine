@@ -117,6 +117,9 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_event_cb(gt_event_st * e
 
 static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_send_kernel(gt_event_st * e) {
     gt_res_t res = GT_RES_OK;
+    if (NULL == e->target) {
+        return GT_RES_INV;
+    }
 
     res = _gt_event_calling_event_cb(e);
     if (GT_RES_OK != res) {
@@ -126,7 +129,6 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_send_kernel(gt_event_st * e) {
     if (GT_RES_OK != res) {
         return res;
     }
-
     gt_obj_st * parent_p = gt_obj_get_parent(e->target);
     if (parent_p && gt_obj_is_bubble_notify(e->target)) {
         e->target = parent_p;

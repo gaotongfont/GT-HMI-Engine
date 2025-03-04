@@ -326,6 +326,7 @@ void gt_anim_restart(gt_anim_st * anim);
 
 /**
  * @brief delete animation object in core
+ *      [unsafe]
  *
  * @param target Which animation object want to be deleted
  * @param exec_cb Which animation object exec callback function want to be deleted
@@ -336,6 +337,7 @@ bool gt_anim_del(void const * const target, gt_anim_exec_cb_t exec_cb);
 
 /**
  * @brief delete animation object in core
+ *      [unsafe]
  *
  * @param anim Which animation object want to be deleted
  * @return true Delete animation object successfully
@@ -347,6 +349,16 @@ bool gt_anim_del_by(gt_anim_st * anim);
  * @brief Delete all animation object
  */
 void gt_anim_del_all(void);
+
+/**
+ * @brief Delete animation object safely, release memory by core inside
+ *      [safe]
+ *
+ * @param target which widget object's anim want to be deleted
+ * @return true Delete animation object successfully
+ * @return false Delete animation object failed
+ */
+bool gt_anim_del_safe_by(void * target);
 
 /**
  * @brief Set the animation object path type

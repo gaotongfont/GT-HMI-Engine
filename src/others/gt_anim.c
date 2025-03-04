@@ -269,7 +269,7 @@ refresh_lb:
         if (ptr->time_act > ptr->time) {
             ptr->time_act = ptr->time;
         }
-        new_value = ptr->_path_cb(ptr);
+        new_value = ptr->_path_cb ? ptr->_path_cb(ptr) : ptr->value_end;
         if (new_value != ptr->value_current) {
             ptr->value_current = new_value;
             if (ptr->exec_cb) {
@@ -487,6 +487,29 @@ void gt_anim_del_all(void)
     if (ret) {
         _gt_anim_change_list();
     }
+}
+
+bool gt_anim_del_safe_by(void * target)
+{
+    bool ret = false;
+    gt_anim_st * ptr        = NULL;
+
+    if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
+        return ret;
+    }
+
+    _gt_list_for_each_entry(ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
+        if (ptr->tar != target) {
+            continue;
+        }
+        ptr->exec_cb = NULL;
+        ptr->start_cb = NULL;
+        ptr->ready_cb = NULL;
+        ptr->deleted_cb = NULL;
+        ptr->repeat_count = 0;
+        ret = true;
+    }
+    return ret;
 }
 
 void gt_anim_set_path_type(gt_anim_st * anim, gt_anim_path_type_em type)

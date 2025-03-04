@@ -10,6 +10,7 @@
  /* include --------------------------------------------------------------*/
 #include "gt_obj_class.h"
 #include "./gt_obj.h"
+#include "../core/gt_obj_pos.h"
 #include "../core/gt_mem.h"
 #include "../core/gt_style.h"
 #include "../core/gt_disp.h"
@@ -123,6 +124,9 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_class_destroy_from_parent(gt_ob
 static GT_ATTRIBUTE_RAM_TEXT void _gt_obj_class_destroy_property(gt_obj_st * self) {
     GT_CHECK_BACK(self);
     gt_event_send(self, GT_EVENT_TYPE_CHANGE_DELETED, NULL);
+    if (false == gt_obj_check_scr(self)) {
+        gt_anim_del_safe_by(self);
+    }
     _gt_indev_remove_want_delate_target(self);
 
     // free event attribute
