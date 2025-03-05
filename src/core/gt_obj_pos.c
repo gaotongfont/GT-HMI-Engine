@@ -709,8 +709,13 @@ bool gt_obj_check_scr(gt_obj_st * obj)
     }
 
     gt_obj_st * scr_obj = obj;
+    gt_obj_type_et obj_type = GT_TYPE_UNKNOWN;
     while (scr_obj->parent) {
         scr_obj = scr_obj->parent;
+        obj_type = gt_obj_class_get_type(scr_obj);
+        if (GT_TYPE_UNKNOWN == obj_type || obj_type >= GT_TYPE_TOTAL) {
+            return false;
+        }
     }
     if( scr_now == scr_obj ){
         return true;
