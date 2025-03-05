@@ -54,7 +54,13 @@ typedef struct gt_mem_info_s {
 
 
 /* macros ---------------------------------------------------------------*/
+static inline bool gt_is_same_string(const char * str1, const char * str2) {
+    return (0 == strcmp(str1, str2));
+}
 
+static inline bool gt_is_same_memory(const void * mem1, const void * mem2, size_t size) {
+    return (0 == memcmp(mem1, mem2, size));
+}
 
 
 /* global functions / API interface -------------------------------------*/
