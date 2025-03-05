@@ -319,6 +319,25 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_append_msg(gt_obj_st* chat, const cha
     _gt_chat_msg_move_y(chat, chat->process_attr.scroll.y);
 }
 
+static GT_ATTRIBUTE_RAM_TEXT void  _gt_chat_replace_msg(gt_obj_st* chat, const char* msg)
+{
+    _gt_chat_st * style = (_gt_chat_st * )chat;
+
+    int16_t index = style->msg_cnt - 1;
+    if(index < 0) return ;
+
+    if(GT_CHAT_TYPE_TEXT != style->msg_list[index].type) return ;
+
+    gt_obj_st * obj = style->msg_list[index].msg_obj;
+
+    gt_btn_set_text(obj, msg);
+
+    style->max_h -= (gt_obj_get_h(obj) + _MSG_SPACE_Y);
+    style->max_h += _gt_update_msg_area_idx(chat, index, style->msg_list[index].is_send);
+    chat->process_attr.scroll.y = chat->area.h - style->max_h;
+    _gt_chat_msg_move_y(chat, chat->process_attr.scroll.y);
+}
+
 static GT_ATTRIBUTE_RAM_TEXT void _scrolling_handler(gt_obj_st * obj) {
     gt_size_t bottom = gt_obj_get_limit_bottom(obj) + (-_MSG_SPACE_Y * 2);
 
@@ -545,6 +564,15 @@ void gt_chat_append_msg_text(gt_obj_st * chat, const char * msg)
         return ;
     }
     _gt_chat_append_msg(chat, msg);
+    gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_chat_replace_msg_text(gt_obj_st * chat, const char * msg)
+{
+    if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_chat_replace_msg(chat, msg);
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
