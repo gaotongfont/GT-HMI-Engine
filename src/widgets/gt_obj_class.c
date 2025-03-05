@@ -138,6 +138,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_obj_class_destroy_property(gt_obj_st * sel
     }
     self->draw_ctx = NULL;
     self->classes = NULL;
+    self->parent = NULL;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline void _gt_obj_class_destroy_self(gt_obj_st * self) {

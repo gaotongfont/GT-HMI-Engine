@@ -711,9 +711,6 @@ bool gt_obj_check_scr(gt_obj_st * obj)
     gt_obj_st * scr_obj = obj;
     while (scr_obj->parent) {
         scr_obj = scr_obj->parent;
-        if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(scr_obj)) {
-            return false;
-        }
     }
     if( scr_now == scr_obj ){
         return true;
