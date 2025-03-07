@@ -63,7 +63,8 @@ typedef struct _gt_slider_s {
     uint8_t mode        : 2;    /** @ref gt_slider_mode_et */
     uint8_t tag_visible : 1;
     uint8_t repeat_mode : 1;
-    uint8_t reserved : 4;
+    uint8_t touch_mode  : 1;    /** 0: default , 1 : pos can only be changed by swiping */
+    uint8_t reserved : 3;
 }_gt_slider_st;
 
 
@@ -179,9 +180,35 @@ static gt_size_t _calc_touch_point_pos(gt_obj_st * obj) {
         return style->offset;
     }
 
+    if(style->touch_mode){
+
+        gt_point_st dist_scroll = {0};
+        dist_scroll.x = obj->process_attr.scroll.x - obj->process_attr.scroll_prev.x;
+        dist_scroll.y = obj->process_attr.scroll.y - obj->process_attr.scroll_prev.y;
+
+        if(obj->process_attr.scroll.x != obj->process_attr.scroll_prev.x ||
+            obj->process_attr.scroll.y != obj->process_attr.scroll_prev.y)
+        {
+            obj->process_attr.scroll_prev.x = obj->process_attr.scroll.x;
+            obj->process_attr.scroll_prev.y = obj->process_attr.scroll.y;
+        }
+
+        if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_L2R
+            || gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_R2L
+        ){
+            temp_offset = style->offset + dist_scroll.x;
+        }else
+        {
+            temp_offset = style->offset + dist_scroll.y;
+        }
+
+        temp_offset += _gt_slider_get_tag_size(obj) >> 1;
+        return temp_offset;
+    }
+
+
     point_click.x += scr->area.x;
     point_click.y += scr->area.y;
-
     if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_L2R ){
         temp_offset = point_click.x - obj->area.x;
     }else if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_R2L ){
@@ -505,6 +532,7 @@ static void _deinit_cb(gt_obj_st * obj) {
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
+    _gt_slider_st * style = (_gt_slider_st * )obj;
 
     switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START:
@@ -513,13 +541,19 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             break;
 
         case GT_EVENT_TYPE_INPUT_PRESSED:
+            if(style->touch_mode){
+                break;
+            }
             _gt_slider_set_offset(obj, _calc_touch_point_pos(obj));
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
-        case GT_EVENT_TYPE_INPUT_SCROLL:
         case GT_EVENT_TYPE_INPUT_PRESS_LOST:
         case GT_EVENT_TYPE_INPUT_RELEASED:
+            if(style->touch_mode){
+                break;
+            }
+        case GT_EVENT_TYPE_INPUT_SCROLL:
             _gt_slider_set_offset(obj, _calc_touch_point_pos(obj));
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             int pos = gt_slider_get_pos(obj);
@@ -875,6 +909,14 @@ void gt_slider_unset_AB_repeat(gt_obj_st * slider)
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+void gt_slider_set_touch_mode(gt_obj_st* slider, bool touch_mode)
+{
+    if (false == gt_obj_is_type(slider, OBJ_TYPE)) {
+        return;
+    }
+    _gt_slider_st * style = (_gt_slider_st * )slider;
+    style->touch_mode = touch_mode;
+}
 
 #endif  /** GT_CFG_ENABLE_SLIDER */
 /* end ------------------------------------------------------------------*/

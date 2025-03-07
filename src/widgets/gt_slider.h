@@ -181,6 +181,14 @@ void gt_slider_set_AB_repeat_remark_point(gt_obj_st * slider);
 void gt_slider_unset_AB_repeat(gt_obj_st * slider);
 
 
+/**
+ * @brief  Set the slider to the touch mode
+ *
+ * @param slider
+ * @param touch_mode  0: default , 1 : pos can only be changed by swiping
+ */
+void gt_slider_set_touch_mode(gt_obj_st* slider, bool touch_mode);
+
 #endif  /** GT_CFG_ENABLE_SLIDER */
 
 #ifdef __cplusplus
