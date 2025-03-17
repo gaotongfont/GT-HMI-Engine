@@ -350,6 +350,7 @@ void gt_listview_set_item_reduce(gt_obj_st * listview, uint8_t reduce);
  * @param focus_w FOCUS_W_DEFAULT[default]: 2
  */
 void gt_listview_set_item_focus_w(gt_obj_st * listview, uint8_t focus_w);
+void gt_listview_set_item_focus_gap(gt_obj_st * listview, uint8_t focus_gap);
 
 /**
  * @brief Set the listview item radius

@@ -93,6 +93,7 @@ typedef struct _gt_listview_s {
     uint8_t item_reduce;   /** The reduce of item area */
     uint8_t item_radius;    /** The radius of item */
     uint8_t item_focus_w;
+    uint8_t item_focus_gap;
 
     uint8_t highlight       : 1;    /** holding highlight state the last active item, 0: release restores the effect, 1: switch state */
     uint8_t septal_line     : 1;    /** Display septal line between items */
@@ -590,9 +591,9 @@ static inline uint16_t _get_triple_real_width(_gt_listview_st * style, gt_obj_st
 
 static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
-    gt_size_t offset_line = listview->area.y;
     uint8_t idx = _column_plus_one(style);
-    gt_size_t width = _get_column_item_width(style, listview->area.w, style->column.count);
+    gt_size_t offset_line = listview->area.y + style->item_reduce;
+    gt_size_t width = _get_column_item_width(style, listview->area.w, style->column.count) - (style->item_reduce << 1);
 
     if (listview->cnt_child) {
         if (idx) {
@@ -607,12 +608,11 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) 
     }
     gt_obj_st * obj = gt_obj_create(listview);
     /** set object item size */
-    obj->area.x = listview->area.x + (width + (idx ? style->item_space.x : 0)) * idx;
+    obj->area.x = listview->area.x + (width + (idx ? style->item_space.x : 0)) * idx + style->item_reduce;
     obj->area.y = offset_line + listview->process_attr.scroll.y;
     obj->area.w = width;
-    obj->area.h = style->item_height;
+    obj->area.h = style->item_height - (style->item_reduce << 1);
     //
-    obj->area = gt_area_reduce(obj->area, style->item_reduce);
 
     gt_obj_set_fixed(obj, true);
     gt_obj_set_inside(obj, true);
@@ -624,6 +624,8 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) 
     gt_obj_show_bg(obj, style->item_show_bg);
     gt_obj_set_radius(obj, style->item_radius);
     gt_obj_set_focus_disabled(obj, GT_ENABLED);
+    gt_obj_set_focus_gap(obj, style->item_focus_gap);
+    gt_obj_set_focus_w(obj, style->item_focus_w);
 
     return obj;
 }
@@ -911,6 +913,7 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     style->item_reduce = 0;
     style->item_radius = 8;
     style->item_focus_w = FOCUS_W_DEFAULT;
+    style->item_focus_gap = FOCUS_W_DEFAULT;
 
     style->column.count = 1;
     style->column.idx = 0;
@@ -1375,6 +1378,19 @@ void gt_listview_set_item_focus_w(gt_obj_st * listview, uint8_t focus_w)
     style->item_focus_w = focus_w;
     for (gt_size_t i = 0, cnt = listview->cnt_child; i < cnt; i++) {
         gt_obj_set_focus_w(listview->child[i], focus_w);
+    }
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_listview_set_item_focus_gap(gt_obj_st * listview, uint8_t focus_gap)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->item_focus_gap = focus_gap;
+    for (gt_size_t i = 0, cnt = listview->cnt_child; i < cnt; i++) {
+        gt_obj_set_focus_gap(listview->child[i], focus_gap);
     }
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
