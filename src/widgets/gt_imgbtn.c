@@ -461,6 +461,45 @@ item_lb:
     return false;
 }
 
+bool gt_imgbtn_replace_state_item(gt_obj_st * obj, uint16_t index, char * src)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return false;
+    }
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
+    uint16_t len = src == NULL ? 0 : strlen(src);
+    if (NULL == src || !len) {
+        return false;
+    }
+    if (index >= _gt_vector_get_count(style->imgs)) {
+        return false;
+    }
+    _item_st * item = (_item_st * )gt_mem_malloc(sizeof(_item_st));
+    GT_CHECK_BACK(item);
+
+    item->name = (char * )gt_mem_malloc(len + 1);
+    if (NULL == item->name) {
+        GT_CHECK_PRINT(item->name);
+        goto item_lb;
+    }
+    gt_memcpy(item->name, src, len);
+    item->name[len] = '\0';
+
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&item.fh);
+#endif
+
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&item.addr);
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&item.custom_addr);
+#endif
+
+    return _gt_vector_replace_item(style->imgs, index, item);
+}
+
 bool gt_imgbtn_remove_state_item(gt_obj_st * obj, char * src)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {

@@ -86,6 +86,17 @@ void gt_imgbtn_set_src_release(gt_obj_st * imgbtn, char * src);
 bool gt_imgbtn_add_state_item(gt_obj_st * obj, char * src);
 
 /**
+ * @brief Replace a state item from the imgbtn
+ *
+ * @param obj
+ * @param index The target index
+ * @param src
+ * @return true
+ * @return false
+ */
+bool gt_imgbtn_replace_state_item(gt_obj_st * obj, uint16_t index, char * src);
+
+/**
  * @brief Remove a state item from the imgbtn
  *
  * @param obj
