@@ -217,7 +217,7 @@ gt_obj_st * gt_listview_add_item_by_param(gt_obj_st * listview, gt_listview_para
  * @param element_idx element index of item object
  * @return gt_obj_st*
  */
-gt_obj_st * gt_listiew_get_element_by(gt_obj_st * listview, uint16_t item_idx, uint16_t element_idx);
+gt_obj_st * gt_listview_get_element_by(gt_obj_st * listview, uint16_t item_idx, uint16_t element_idx);
 
 /**
  * @brief add item to listview obj with custom element
