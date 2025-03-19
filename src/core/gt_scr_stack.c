@@ -280,7 +280,9 @@ static bool _free_alive_scr_object_cb(gt_stack_item_st item, void * data) {
             return true;
         }
     }
-    GT_CHECK_BACK_VAL(p->prev_scr_alive, true);
+    if (NULL == p->prev_scr_alive) {
+        return true;
+    }
     _gt_obj_class_destroy(p->prev_scr_alive);
     p->prev_scr_alive = NULL;
     return true;
