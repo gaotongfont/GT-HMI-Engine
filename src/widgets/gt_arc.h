@@ -255,6 +255,14 @@ void gt_arc_set_knob_color(gt_obj_st* obj, gt_color_t color);
  */
 void gt_arc_set_knob_width(gt_obj_st* obj, uint16_t width);
 
+/**
+ * @brief Set the arc pointer touch disable
+ *
+ * @param obj
+ * @param disable true: disable touch, false: enable touch
+ */
+void gt_arc_set_touch_disable(gt_obj_st* obj, bool disable);
+
 #endif /*GT_CFG_ENABLE_ARC*/
 //
 #ifdef __cplusplus

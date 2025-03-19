@@ -75,6 +75,8 @@ typedef struct _gt_arc_s {
 
     uint8_t rounded : 1;
     uint8_t anim_state: 1;
+    uint8_t touch_disable : 1;
+    uint8_t reverse : 5;
 } _gt_arc_st;
 
 
@@ -263,6 +265,7 @@ static void _knob_scroll_headler(gt_obj_st * obj, bool flag)
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
 {
     gt_event_type_et code_val = gt_event_get_code(e);
+    _gt_arc_st * style = (_gt_arc_st *)obj;
 
     switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START:
@@ -275,11 +278,15 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
             break;
 
         case GT_EVENT_TYPE_INPUT_PRESSED:
-            _knob_scroll_headler(obj, true);
+            if(false == style->touch_disable){
+                _knob_scroll_headler(obj, true);
+            }
             break;
         case GT_EVENT_TYPE_INPUT_SCROLL:
         case GT_EVENT_TYPE_INPUT_PRESSING:
-            _knob_scroll_headler(obj, false);
+            if(false == style->touch_disable){
+                _knob_scroll_headler(obj, false);
+            }
             break;
         default:
             break;
@@ -930,6 +937,14 @@ void gt_arc_set_knob_width(gt_obj_st* obj, uint16_t width)
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+void gt_arc_set_touch_disable(gt_obj_st* obj, bool disable)
+{
+    if( false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_arc_st * style = (_gt_arc_st * )obj;
+    style->touch_disable = disable;
+}
 /* end of file ----------------------------------------------------------*/
 #endif /* GT_CFG_ENABLE_BTN */
 
