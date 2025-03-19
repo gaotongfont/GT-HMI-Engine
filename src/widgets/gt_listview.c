@@ -106,6 +106,7 @@ typedef struct _gt_listview_s {
 
     uint8_t show_background : 1;    /** 1[defalut]: show background; 0: hide background */
     uint8_t anti_font_color : 1;    /** 0[default]: no font change color when item selected */
+    uint8_t latest_always   : 1;    /** 0[default]: the latest item is always displayed at the bottom */
 }_gt_listview_st;
 
 
@@ -803,7 +804,14 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _set_item_obj_prop(gt_obj_st * obj, gt_
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_FIXED, true);
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_INSIDE, true);
 
+    _gt_listview_st * style = (_gt_listview_st * )listview;
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+
+    gt_size_t count = gt_listview_get_list_items_cnt(listview);
+    if (style->latest_always && count) {
+        gt_size_t idx = gt_listview_get_idx_selected(listview);
+        gt_obj_scroll_to_y(listview, -(count - idx) * (style->item_height + style->item_space.y), GT_ANIM_ON);
+    }
     return obj;
 }
 
@@ -950,6 +958,16 @@ void gt_listview_set_next_row_item_count(gt_obj_st * listview, uint8_t count)
     _gt_listview_st * style = (_gt_listview_st * )listview;
     style->column.count = count;
     style->column.idx = 0;
+}
+
+void gt_listview_show_latest_always(gt_obj_st * listview, bool show)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->latest_always = show ? true : false;
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_listview_set_item_reduce(gt_obj_st * listview, uint8_t reduce)
