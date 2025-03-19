@@ -475,7 +475,7 @@ bool gt_imgbtn_replace_state_item(gt_obj_st * obj, uint16_t index, char * src)
         return false;
     }
     _item_st * item = (_item_st * )gt_mem_malloc(sizeof(_item_st));
-    GT_CHECK_BACK(item);
+    GT_CHECK_BACK_VAL(item, false);
 
     item->name = (char * )gt_mem_malloc(len + 1);
     if (NULL == item->name) {
@@ -498,6 +498,10 @@ bool gt_imgbtn_replace_state_item(gt_obj_st * obj, uint16_t index, char * src)
 #endif
 
     return _gt_vector_replace_item(style->imgs, index, item);
+item_lb:
+    gt_mem_free(item);
+    item = NULL;
+    return false;
 }
 
 bool gt_imgbtn_remove_state_item(gt_obj_st * obj, char * src)
