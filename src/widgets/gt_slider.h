@@ -189,6 +189,16 @@ void gt_slider_unset_AB_repeat(gt_obj_st * slider);
  */
 void gt_slider_set_touch_mode(gt_obj_st* slider, bool touch_mode);
 
+/**
+ * @brief Set the position range of the slider
+ *
+ * @param slider
+ * @param min       min value >= start pos  @ gt_slider_set_start_end
+ * @param max       max value <= end pos    @ gt_slider_set_start_end
+ *                  max value == min value means the slider is not limited
+ */
+void gt_slider_set_pos_range(gt_obj_st * slider, gt_size_t min, gt_size_t max);
+
 #endif  /** GT_CFG_ENABLE_SLIDER */
 
 #ifdef __cplusplus

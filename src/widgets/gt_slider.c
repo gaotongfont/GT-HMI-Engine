@@ -53,6 +53,8 @@ typedef struct _gt_slider_s {
     gt_size_t start;    /** The starting value of the range */
     gt_size_t end;      /** The end value of the range */
     gt_size_t pos;      /** The current value of the range */
+    gt_size_t pos_min;    /** The range of the slider */
+    gt_size_t pos_max;   /** The maximum value of the range */
     uint16_t step;      /** Increments/decreases in units each time */
 
     uint16_t offset;    /** Offset pixels from the start pixel */
@@ -411,6 +413,18 @@ static void _init_cb(gt_obj_st * obj) {
         obj->area.w = 100;
         obj->area.h = 16;
     };
+
+    // Set the position range of the slider
+    if(style->pos_min != style->pos_max) {
+
+        if(style->pos < style->pos_min){
+            style->pos = style->pos_min;
+        }
+        else if(style->pos > style->pos_max){
+            style->pos = style->pos_max;
+        }
+        _gt_slider_set_offset_by_pos(obj , style->pos);
+    }
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
@@ -917,6 +931,17 @@ void gt_slider_set_touch_mode(gt_obj_st* slider, bool touch_mode)
     _gt_slider_st * style = (_gt_slider_st * )slider;
     style->touch_mode = touch_mode;
 }
+
+void gt_slider_set_pos_range(gt_obj_st * slider, gt_size_t min, gt_size_t max)
+{
+    if (false == gt_obj_is_type(slider, OBJ_TYPE)) {
+        return;
+    }
+    _gt_slider_st * style = (_gt_slider_st * )slider;
+    style->pos_min = min;
+    style->pos_max = max;
+}
+
 
 #endif  /** GT_CFG_ENABLE_SLIDER */
 /* end ------------------------------------------------------------------*/
