@@ -19,6 +19,7 @@
 #include "../others/gt_log.h"
 #include "../core/gt_obj_pos.h"
 #include "../core/gt_obj_scroll.h"
+#include "../others/gt_anim.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -223,7 +224,6 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _init_child_prop(gt_obj_st * obj) {
 
     _unfixed_slider_widgets(obj, true);
 }
-#include "../others/gt_anim.h"
 
 static GT_ATTRIBUTE_RAM_TEXT void _calling_statical_scroll_exec_cb(void * indev, int32_t v) {}
 
