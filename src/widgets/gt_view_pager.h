@@ -65,6 +65,15 @@ int8_t gt_view_pager_set_fragment_count(gt_obj_st * obj, uint8_t count);
 void gt_view_pager_scroll_to_fragment(gt_obj_st * obj, gt_size_t index);
 
 /**
+ * @brief Set the view pager scroll statical. If statical is true, the view pager
+ *      will not scroll anim.
+ *
+ * @param obj
+ * @param statical 0[default]: scroll anim; 1: no scroll anim
+ */
+void gt_view_pager_set_statical_scroll(gt_obj_st * obj, bool statical);
+
+/**
  * @brief add a fragment
  *
  * @param obj
