@@ -230,14 +230,14 @@ static GT_ATTRIBUTE_RAM_TEXT void _calling_statical_scroll_exec_cb(void * indev,
 static GT_ATTRIBUTE_RAM_TEXT void _calling_statical_scroll_ready_cb(struct gt_anim_s * anim) {
     gt_obj_st * obj = (gt_obj_st * )anim->tar;
     gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
-    GT_LOG_A("", ">>>>>>>>>>>>>>>>> ready to calc scroll <<<<<<<<<<<<<<<<<<<<");
 }
+
 static GT_ATTRIBUTE_RAM_TEXT void _create_delay_scroll_event(gt_obj_st * obj) {
     gt_anim_st delay_event = {0};
     gt_anim_init(&delay_event);
     gt_anim_set_target(&delay_event, obj);
     gt_anim_set_value(&delay_event, 0, 1024);
-    gt_anim_set_time(&delay_event, 300);
+    gt_anim_set_time(&delay_event, 120);
     gt_anim_set_exec_cb(&delay_event, _calling_statical_scroll_exec_cb);
     gt_anim_set_ready_cb(&delay_event, _calling_statical_scroll_ready_cb);
     gt_anim_start(&delay_event);
