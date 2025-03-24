@@ -322,6 +322,12 @@ void gt_obj_show_bg(gt_obj_st * obj, bool show);
 bool gt_obj_is_show_bg(gt_obj_st * obj);
 
 #if GT_USE_WIDGET_DYNAMIC_FRAME_RATE
+/**
+ * @brief Set widget dynamic anim frame rate
+ *
+ * @param obj
+ * @param frame_rate @see gt_obj_frame_rate_et
+ */
 void gt_obj_set_frame_rate(gt_obj_st * obj, gt_obj_frame_rate_et frame_rate);
 #endif
 
