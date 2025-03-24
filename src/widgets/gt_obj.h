@@ -85,6 +85,20 @@ typedef struct gt_obj_container_s {
 }gt_obj_container_st;
 #endif
 
+#if GT_USE_WIDGET_DYNAMIC_FRAME_RATE
+/**
+ * @brief object anim frame rate
+ */
+typedef enum {
+    GT_OBJ_FRAME_RATE_DEFAULT = 0,
+    GT_OBJ_FRAME_RATE_HIGH = GT_OBJ_FRAME_RATE_DEFAULT,
+    GT_OBJ_FRAME_RATE_MIDDLE,
+    GT_OBJ_FRAME_RATE_LOW,
+
+    _GT_OBJ_FRAME_RATE_MAX_COUNT,
+}gt_obj_frame_rate_et;
+#endif
+
 /**
  * @brief obj base struct
  */
@@ -151,7 +165,9 @@ typedef struct gt_obj_s {
     uint32_t row_layout    : 1;     /* The child controls are arranged in a row layout */
     uint32_t grow_invert   : 1;     /* The child controls are arranged in a row layout, grow invert */
     uint32_t show_bg       : 1;     /* The object show background, 0: [default] hide; 1: show, bgcolor can be used */
-    uint32_t reserved      : 1;
+#if GT_USE_WIDGET_DYNAMIC_FRAME_RATE
+    uint32_t frame_rate    : 3;     /* Set widget dynamic anim frame rate */
+#endif
 }gt_obj_st;
 
 
@@ -304,6 +320,10 @@ void gt_obj_show_bg(gt_obj_st * obj, bool show);
  * @return false hide background
  */
 bool gt_obj_is_show_bg(gt_obj_st * obj);
+
+#if GT_USE_WIDGET_DYNAMIC_FRAME_RATE
+void gt_obj_set_frame_rate(gt_obj_st * obj, gt_obj_frame_rate_et frame_rate);
+#endif
 
 #ifdef __cplusplus
 } /*extern "C"*/
