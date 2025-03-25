@@ -66,7 +66,9 @@ struct _reg_s {
     uint16_t index : _VIEW_PAGER_COUNT_BIT_WIDTH;
     uint16_t glass : 1;     /** display background glass */
     uint16_t statical : 1;  /** No scroll anim */
-    uint16_t reserved : 6;
+    uint16_t finger_unfollow : 1;   /** No finger follow */
+    uint16_t pressing : 1;
+    uint16_t reserved : 4;
 };
 
 typedef struct _gt_view_pager_s {
@@ -225,7 +227,17 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _init_child_prop(gt_obj_st * obj) {
     _unfixed_slider_widgets(obj, true);
 }
 
-static GT_ATTRIBUTE_RAM_TEXT void _calling_statical_scroll_exec_cb(void * indev, int32_t v) {}
+static GT_ATTRIBUTE_RAM_TEXT inline void
+_set_pressing(_gt_view_pager_st * style, bool pressing) {
+    style->reg.pressing = pressing;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT inline bool
+_is_pressing(_gt_view_pager_st * style) {
+    return style->reg.pressing;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _calling_null_scroll_exec_cb(void * indev, int32_t v) {}
 
 static GT_ATTRIBUTE_RAM_TEXT void _calling_statical_scroll_ready_cb(struct gt_anim_s * anim) {
     gt_obj_st * obj = (gt_obj_st * )anim->tar;
@@ -238,8 +250,54 @@ static GT_ATTRIBUTE_RAM_TEXT void _create_delay_scroll_event(gt_obj_st * obj) {
     gt_anim_set_target(&delay_event, obj);
     gt_anim_set_value(&delay_event, 0, 1024);
     gt_anim_set_time(&delay_event, 120);
-    gt_anim_set_exec_cb(&delay_event, _calling_statical_scroll_exec_cb);
+    gt_anim_set_exec_cb(&delay_event, _calling_null_scroll_exec_cb);
     gt_anim_set_ready_cb(&delay_event, _calling_statical_scroll_ready_cb);
+    gt_anim_start(&delay_event);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _finger_unfollow_scroll_new_page(gt_obj_st * obj) {
+    _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
+    uint16_t prev_idx = style->reg.index;
+    int16_t right_edge = -(style->width * (style->reg.count - 1));
+    if (obj->process_attr.scroll.x == obj->process_attr.scroll_prev.x) {
+        return;
+    }
+    if (obj->process_attr.scroll.x > 0) {
+        obj->process_attr.scroll.x = 0;
+        style->reg.index = 0;
+    } else if (obj->process_attr.scroll.x < right_edge) {
+        obj->process_attr.scroll.x =  right_edge;
+        style->reg.index = style->reg.count - 1;
+    } else {
+        if (obj->process_attr.scroll_prev.x < obj->process_attr.scroll.x) {
+            /** scroll to left */
+            if (style->reg.index) {
+                prev_idx = style->reg.index - 1;
+            }
+        } else {
+            /** scroll to right */
+            if (style->reg.index + 1 < style->reg.count) {
+                prev_idx = style->reg.index + 1;
+            }
+        }
+    }
+    gt_view_pager_scroll_to_fragment(obj, prev_idx);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _calling_scroll_ready_cb(struct gt_anim_s * anim) {
+    gt_obj_st * obj = (gt_obj_st * )anim->tar;
+    // gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
+    _finger_unfollow_scroll_new_page(obj);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _create_finger_unfollow_scroll_event(gt_obj_st * obj) {
+    gt_anim_st delay_event = {0};
+    gt_anim_init(&delay_event);
+    gt_anim_set_target(&delay_event, obj);
+    gt_anim_set_value(&delay_event, 0, 1024);
+    gt_anim_set_time(&delay_event, 120);
+    gt_anim_set_exec_cb(&delay_event, _calling_null_scroll_exec_cb);
+    gt_anim_set_ready_cb(&delay_event, _calling_scroll_ready_cb);
     gt_anim_start(&delay_event);
 }
 
@@ -247,6 +305,10 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _scrolling_handler(gt_obj_st * obj) {
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
     if (style->reg.statical) {
         _create_delay_scroll_event(obj);
+        return;
+    }
+    if (style->reg.finger_unfollow && _is_pressing(style)) {
+        _create_finger_unfollow_scroll_event(obj);
         return;
     }
     gt_obj_set_pos(obj, obj->process_attr.scroll.x, obj->area.y);
@@ -293,6 +355,12 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _scroll_end_handler(gt_obj_st * obj) {
     if (style->reg.statical) {
         _statical_scroll_calc_new_page(obj);
     }
+    if (style->reg.finger_unfollow) {
+        if (_is_pressing(style)) {
+            return;
+        }
+        obj->process_attr.scroll_prev.x = obj->process_attr.scroll.x;
+    }
     style->reg.index = gt_abs(obj->process_attr.scroll.x) / style->width;
 }
 
@@ -303,6 +371,15 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     switch (code_val) {
     case GT_EVENT_TYPE_DRAW_START: {
         gt_disp_invalid_area(obj);
+        break;
+    }
+    case GT_EVENT_TYPE_INPUT_PRESSED: {
+        _set_pressing(style, true);
+        break;
+    }
+    case GT_EVENT_TYPE_INPUT_PRESS_LOST:
+    case GT_EVENT_TYPE_INPUT_RELEASED: {
+        _set_pressing(style, false);
         break;
     }
     case GT_EVENT_TYPE_CHANGE_CHILD_ADD: {
@@ -391,13 +468,19 @@ void gt_view_pager_scroll_to_fragment(gt_obj_st * obj, gt_size_t index)
                         style->reg.statical ? GT_ANIM_OFF : GT_ANIM_ON);
 }
 
-void gt_view_pager_set_statical_scroll(gt_obj_st * obj, bool statical)
+void gt_view_pager_set_scroll_effect(gt_obj_st * obj, gt_view_pager_scroll_effect_et effect)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;
     }
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
-    style->reg.statical = statical;
+    style->reg.statical = false;
+    style->reg.finger_unfollow = false;
+    if (GT_VIEW_PAGER_SCROLL_EFFECT_STATIC == effect) {
+        style->reg.statical = true;
+    } else if (GT_VIEW_PAGER_SCROLL_EFFECT_NO_FINGER_FOLLOW == effect) {
+        style->reg.finger_unfollow = true;
+    }
 }
 
 int8_t gt_view_pager_set_fragment_count(gt_obj_st * obj, uint8_t count)
