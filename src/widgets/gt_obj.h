@@ -165,6 +165,7 @@ typedef struct gt_obj_s {
     uint32_t row_layout    : 1;     /* The child controls are arranged in a row layout */
     uint32_t grow_invert   : 1;     /* The child controls are arranged in a row layout, grow invert */
     uint32_t show_bg       : 1;     /* The object show background, 0: [default] hide; 1: show, bgcolor can be used */
+    uint32_t finger_unfollow : 1;   /* The object scroll effect, 0: [default] follow finger; 1: unfollow finger */
 #if GT_USE_WIDGET_DYNAMIC_FRAME_RATE
     uint32_t frame_rate    : 3;     /* Set widget dynamic anim frame rate */
 #endif
