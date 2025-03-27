@@ -1387,7 +1387,7 @@ _disp_font:
                 else{
                     uint8_t byte_width = (width + 7) >> 3;
                     uint8_t font_gray = 1;
-
+                    uint8_t font_height = gt_font_get_one_word_height(uni_or_gbk, &tmp_font);
                     byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type, uni_or_gbk);
                     area_font.w = (byte_width / font_gray) << 3;
                     if (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding)) {
@@ -1399,8 +1399,11 @@ _disp_font:
                         area_font.w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font.info);
                     }
 
+                    area_font.y += ((tmp_font.info.size - font_height) >> 1);
                     gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size,
                                         byte_width, font_gray, (const uint8_t*)tmp_font.res,tmp_font.info.style.reg);
+
+                    area_font.y -= ((tmp_font.info.size - font_height) >> 1);
                     if (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding)) {
                         area_font.y -= offset_y;
                     }
@@ -2556,7 +2559,7 @@ GT_ATTRIBUTE_RAM_TEXT void draw_focus(gt_obj_st* obj)
 
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.bg_opa = GT_OPA_100;
+    rect_attr.bg_opa = obj->opa;
     rect_attr.radius = radius;
     rect_attr.reg.is_fill = 0;
     rect_attr.border_width = gt_obj_get_focus_w(obj);

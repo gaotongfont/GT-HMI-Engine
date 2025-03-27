@@ -485,7 +485,6 @@ void gt_obj_set_focus(gt_obj_st * obj, bool is_focus)
 {
     GT_CHECK_BACK(obj);
     obj->focus = is_focus;
-    gt_disp_invalid_area(obj);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
