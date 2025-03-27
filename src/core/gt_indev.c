@@ -385,6 +385,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_handler(gt_indev_st * indev) {
     if (_is_indev_home_gesture(indev, NULL)) {
         return ;
     }
+    if (point_p->obj_scroll->finger_unfollow) {
+        return ;
+    }
 
     if (_is_scroll_vertical((gt_dir_et)point_p->gesture)) {
         dy = point_p->scroll_diff.y;

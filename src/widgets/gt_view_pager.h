@@ -26,6 +26,11 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+typedef enum {
+    GT_VIEW_PAGER_SCROLL_EFFECT_DEFAULT = 0,
+    GT_VIEW_PAGER_SCROLL_EFFECT_STATIC,
+    GT_VIEW_PAGER_SCROLL_EFFECT_NO_FINGER_FOLLOW,
+}gt_view_pager_scroll_effect_et;
 
 
 
@@ -63,6 +68,16 @@ int8_t gt_view_pager_set_fragment_count(gt_obj_st * obj, uint8_t count);
  * @param index The target fragment index
  */
 void gt_view_pager_scroll_to_fragment(gt_obj_st * obj, gt_size_t index);
+
+/**
+ * @brief Set the view pager scroll effect. If statical is true, the view pager
+ *      will not scroll anim. If no_finger_follow is true, the view pager will
+ *      not follow the finger when the finger is pressing.
+ *
+ * @param obj
+ * @param effect 0[default]: GT_VIEW_PAGER_SCROLL_EFFECT_DEFAULT
+ */
+void gt_view_pager_set_scroll_effect(gt_obj_st * obj, gt_view_pager_scroll_effect_et effect);
 
 /**
  * @brief add a fragment

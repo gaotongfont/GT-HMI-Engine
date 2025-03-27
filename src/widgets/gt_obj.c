@@ -558,4 +558,20 @@ bool gt_obj_is_show_bg(gt_obj_st * obj)
     return obj->show_bg;
 }
 
+#if GT_USE_WIDGET_DYNAMIC_FRAME_RATE
+void gt_obj_set_frame_rate(gt_obj_st * obj, gt_obj_frame_rate_et frame_rate)
+{
+    if (false == gt_obj_is_type(obj, GT_TYPE_TOTAL)) {
+        return;
+    }
+    if (frame_rate < GT_OBJ_FRAME_RATE_DEFAULT) {
+        return;
+    }
+    if (frame_rate >= _GT_OBJ_FRAME_RATE_MAX_COUNT) {
+        return;
+    }
+    obj->frame_rate = frame_rate;
+}
+#endif
+
 /* end ------------------------------------------------------------------*/

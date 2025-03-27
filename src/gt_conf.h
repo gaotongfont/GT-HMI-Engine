@@ -145,7 +145,7 @@ extern "C" {
      * @brief Print Engine information when booting, 0: no display, 1: display
      * [Default: 0]
      */
-    #define GT_BOOTING_INFO_MSG     0
+    #define GT_BOOTING_INFO_MSG         0
 #endif
 
 #ifndef GT_USE_LAYER_TOP
@@ -155,7 +155,7 @@ extern "C" {
      *      Such as: dialog, pop-up window, status bar, etc.
      *      [Default: 1]
      */
-    #define GT_USE_LAYER_TOP    01
+    #define GT_USE_LAYER_TOP            1
 #endif
 
 #ifndef GT_USE_SCREEN_ANIM
@@ -164,7 +164,15 @@ extern "C" {
      *      [default: 1] 0: only GT_SCR_ANIM_TYPE_NONE can be used.
      * @ref gt_scr_anim_type_et
      */
-    #define GT_USE_SCREEN_ANIM  01
+    #define GT_USE_SCREEN_ANIM          1
+#endif
+
+#ifndef GT_USE_WIDGET_DYNAMIC_FRAME_RATE
+    /**
+     * @brief widget anim dynamic frame rate
+     *      [default: 0] 0: Use the default frame rate
+     */
+    #define GT_USE_WIDGET_DYNAMIC_FRAME_RATE    0
 #endif
 
 #ifndef GT_USE_EXTRA_FULL_IMG_BUFFER
@@ -194,7 +202,7 @@ extern "C" {
      *      1: layout function
      * [Default: 1]
      */
-    #define GT_USE_WIDGET_LAYOUT        01
+    #define GT_USE_WIDGET_LAYOUT        1
 #endif
 
 #ifndef GT_FONT_FAMILY_OLD_ENABLE

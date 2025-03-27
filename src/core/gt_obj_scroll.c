@@ -58,7 +58,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _scroll_ready_cb(struct gt_anim_s * anim) {
 void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim_enable_et en)
 {
     GT_CHECK_BACK(obj);
-
     if (0 == dx && 0 == dy) {
         return;
     }
@@ -74,7 +73,13 @@ void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim
             int32_t d = gt_anim_speed_to_time(gt_disp_get_res_hor(NULL) >> 1, 0, dx);
             if (d < _SCROLL_ANIM_TIME_MIN) d = _SCROLL_ANIM_TIME_MIN;
             if (d > _SCROLL_ANIM_TIME_MAX) d = _SCROLL_ANIM_TIME_MAX;
-
+#if GT_USE_WIDGET_DYNAMIC_FRAME_RATE
+            if (GT_OBJ_FRAME_RATE_LOW == obj->frame_rate) {
+                d >>= 2;
+            } else if (GT_OBJ_FRAME_RATE_MIDDLE == obj->frame_rate) {
+                d >>= 1;
+            }
+#endif
             gt_anim_set_time(&anim, d);
             gt_anim_set_value(&anim, obj->process_attr.scroll.x, obj->process_attr.scroll.x + dx);
             gt_anim_set_exec_cb(&anim, _scroll_by_x);
@@ -86,7 +91,13 @@ void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim
             int32_t d = gt_anim_speed_to_time(gt_disp_get_res_ver(NULL) >> 1, 0, dy);
             if (d < _SCROLL_ANIM_TIME_MIN) d = _SCROLL_ANIM_TIME_MIN;
             if (d > _SCROLL_ANIM_TIME_MAX) d = _SCROLL_ANIM_TIME_MAX;
-
+#if GT_USE_WIDGET_DYNAMIC_FRAME_RATE
+            if (GT_OBJ_FRAME_RATE_LOW == obj->frame_rate) {
+                d >>= 2;
+            } else if (GT_OBJ_FRAME_RATE_MIDDLE == obj->frame_rate) {
+                d >>= 1;
+            }
+#endif
             gt_anim_set_time(&anim, d);
             gt_anim_set_value(&anim, obj->process_attr.scroll.y, obj->process_attr.scroll.y + dy);
             gt_anim_set_exec_cb(&anim, _scroll_by_y);

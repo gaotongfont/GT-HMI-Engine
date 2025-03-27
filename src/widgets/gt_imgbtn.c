@@ -486,15 +486,15 @@ bool gt_imgbtn_replace_state_item(gt_obj_st * obj, uint16_t index, char * src)
     item->name[len] = '\0';
 
 #if GT_USE_FILE_HEADER
-    gt_file_header_param_init(&item.fh);
+    gt_file_header_param_init(&item->fh);
 #endif
 
 #if GT_USE_DIRECT_ADDR
-    gt_hal_direct_addr_init(&item.addr);
+    gt_hal_direct_addr_init(&item->addr);
 #endif
 
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
-    gt_hal_custom_size_addr_init(&item.custom_addr);
+    gt_hal_custom_size_addr_init(&item->custom_addr);
 #endif
 
     return _gt_vector_replace_item(style->imgs, index, item);
