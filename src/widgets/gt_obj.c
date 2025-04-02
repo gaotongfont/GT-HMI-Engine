@@ -408,6 +408,33 @@ uint16_t gt_obj_search_childs_count_by_type(gt_obj_st * parent, gt_obj_type_et t
     return count;
 }
 
+gt_res_t gt_obj_bring_to_front(gt_obj_st * obj)
+{
+    if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(obj)) {
+        return GT_RES_FAIL;
+    }
+    gt_obj_st * parent = obj->parent;
+    gt_res_t ret = GT_RES_FAIL;
+    if (parent->cnt_child < 2) {
+        return GT_RES_INV;
+    }
+    if (parent->child[parent->cnt_child - 1] == obj) {
+        return GT_RES_OK;
+    }
+    for (uint16_t i = 0; i < parent->cnt_child; ++i) {
+        if (parent->child[i] == obj) {
+            gt_memmove(&parent->child[i], &parent->child[i + 1], (parent->cnt_child - i - 1) * sizeof(gt_obj_st *));
+            parent->child[parent->cnt_child - 1] = obj;
+            ret = GT_RES_OK;
+            break;
+        }
+    }
+    if (GT_RES_OK == ret) {
+        gt_disp_invalid_area(gt_obj_within_which_scr(obj));
+    }
+    return ret;
+}
+
 gt_obj_st * gt_obj_within_which_scr(gt_obj_st * obj)
 {
     GT_CHECK_BACK_VAL(obj, NULL);

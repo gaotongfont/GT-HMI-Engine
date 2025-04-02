@@ -258,8 +258,29 @@ uint16_t gt_obj_get_child_index(gt_obj_st * parent, gt_obj_st * obj);
  */
 gt_obj_st * gt_obj_search_child_by_type(gt_obj_st * parent, gt_obj_type_et type);
 
+/**
+ * @brief Search the child object count by type in the parent object
+ *
+ * @param parent
+ * @param type
+ * @return uint16_t
+ */
 uint16_t gt_obj_search_childs_count_by_type(gt_obj_st * parent, gt_obj_type_et type);
 
+/**
+ * @brief object move to front of the parent object
+ *
+ * @param obj
+ * @return gt_res_t
+ */
+gt_res_t gt_obj_bring_to_front(gt_obj_st * obj);
+
+/**
+ * @brief Get the screen object by the object
+ *
+ * @param obj
+ * @return gt_obj_st*
+ */
 gt_obj_st * gt_obj_within_which_scr(gt_obj_st * obj);
 
 /**
