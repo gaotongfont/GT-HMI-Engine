@@ -452,6 +452,9 @@ uint16_t gt_obj_get_h(gt_obj_st * obj)
 void gt_obj_set_visible(gt_obj_st * obj, gt_visible_et is_visible)
 {
     GT_CHECK_BACK(obj);
+    if (is_visible == obj->visible) {
+        return;
+    }
     obj->visible = is_visible;
     gt_disp_invalid_area(obj);
     if (obj->visible) {
