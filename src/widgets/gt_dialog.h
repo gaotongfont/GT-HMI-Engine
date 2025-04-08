@@ -106,6 +106,14 @@ gt_obj_st * gt_dialog_get_active_obj(void);
 bool gt_dialog_has_showing(void);
 
 /**
+ * @brief Set dialog content
+ *
+ * @param dialog
+ * @param content
+ */
+void gt_dialog_set_content(gt_obj_st * dialog, char * content);
+
+/**
  * @brief Set dialog border color
  *
  * @param dialog

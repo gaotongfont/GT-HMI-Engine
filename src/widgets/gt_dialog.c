@@ -472,6 +472,18 @@ bool gt_dialog_has_showing(void)
     return gt_dialog_get_active_obj() ? true : false;
 }
 
+void gt_dialog_set_content(gt_obj_st * dialog, char * content)
+{
+    if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_dialog_st * style = (_gt_dialog_st * )dialog;
+    if (NULL == style->content) {
+        return ;
+    }
+    gt_label_set_text(style->content, content);
+}
+
 void gt_dialog_set_border_color(gt_obj_st * dialog, gt_color_t color)
 {
     if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
