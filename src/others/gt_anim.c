@@ -293,7 +293,14 @@ refresh_lb:
     _time_last_run = gt_tick_get();
 }
 
-static void _default_exec_cb(void * obj, int32_t value) {
+GT_ATTRIBUTE_RAM_TEXT static void
+_default_null_exec_cb(void * obj, int32_t value) {
+    GT_UNUSED(obj);
+    GT_UNUSED(value);
+}
+
+GT_ATTRIBUTE_RAM_TEXT static void
+_default_exec_cb(void * obj, int32_t value) {
     gt_anim_st * anim = _gt_anim_get_act();
     gt_point_st * point = (gt_point_st * )gt_anim_get_data();
 
@@ -367,8 +374,9 @@ void gt_anim_init(gt_anim_st * anim)
     anim->time_act = 0;
     anim->value_start = 0;
     anim->value_end = 100;
-    anim->_path_cb = _gt_anim_path_linear;
     anim->data = NULL;
+    anim->_path_cb = _gt_anim_path_linear;
+    anim->exec_cb = _default_null_exec_cb;
 }
 
 gt_anim_st * gt_anim_start(const gt_anim_st * anim)
