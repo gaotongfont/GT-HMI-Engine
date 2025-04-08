@@ -458,7 +458,9 @@ bool gt_anim_del_by(gt_anim_st * anim)
     bool ret = false;
     gt_anim_st * ptr        = NULL;
     gt_anim_st * backup_ptr = NULL;
-
+    if (NULL == anim) {
+        return ret;
+    }
     if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
         return ret;
     }
