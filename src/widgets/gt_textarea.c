@@ -65,6 +65,7 @@ typedef struct _gt_textarea_s {
     uint8_t space_x;
     uint8_t space_y;
     uint8_t font_align;     //@ref gt_align_et
+    uint8_t padding;
 
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
     /** detail @ref gt_font.h */
@@ -218,7 +219,8 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
 
     gt_size_t scroll_y = obj->process_attr.scroll.y;
     _gt_draw_font_res_st font_res = {0};
-    gt_area_st area_font = gt_area_reduce(obj->area, style->border_width + 2);
+    gt_area_st padding_font = gt_area_reduce(obj->area, style->padding);
+    gt_area_st area_font = gt_area_reduce(padding_font, style->border_width + 2);
     font_attr.logical_area = area_font;
     font_attr.logical_area.y += scroll_y;
     font_attr.logical_area.h = 0xffff;
@@ -955,6 +957,16 @@ gt_font_touch_word_st gt_textarea_get_touch_word(gt_obj_st * textarea)
     return style->select_word;
 }
 #endif
+
+void gt_textarea_set_padding(gt_obj_st * textarea, uint8_t padding)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    style->padding = padding;
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
+}
 
 #endif  /** GT_CFG_ENABLE_TEXTAREA */
 /* end ------------------------------------------------------------------*/

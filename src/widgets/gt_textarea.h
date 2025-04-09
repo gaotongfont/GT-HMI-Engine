@@ -230,6 +230,13 @@ void gt_textarea_set_touch_single_chinese_word(gt_obj_st * textarea, bool is_sin
 gt_font_touch_word_st gt_textarea_get_touch_word(gt_obj_st * textarea);
 #endif
 
+/**
+ * @brief set textarea font padding
+ *
+ * @param textarea
+ * @param padding [default: 0] The width of padding
+ */
+void gt_textarea_set_padding(gt_obj_st * textarea, uint8_t padding);
 
 #endif  /** GT_CFG_ENABLE_TEXTAREA */
 
