@@ -728,7 +728,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _filling_by_sjpg_file(_gt_draw_ctx_st * draw_c
 #else
     blend_dsc->dst_buf = gt_mem_malloc(len);
     if (NULL == blend_dsc->dst_buf) {
-        GT_LOGW(GT_LOG_TAG_GUI, "Per-line buffer malloc failed");
+        GT_LOGW(GT_LOG_TAG_GUI, "Per-line buffer malloc failed, size: %d, %d", w, h);
         return;
     }
 #endif
@@ -741,7 +741,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _filling_by_sjpg_file(_gt_draw_ctx_st * draw_c
     if(mask_check){
         blend_dsc->mask_buf = gt_mem_malloc(blend_dsc->dst_area->w);
         if(NULL == blend_dsc->mask_buf){
-            GT_LOGW(GT_LOG_TAG_GUI, "Per-line mask buffer malloc failed");
+            GT_LOGW(GT_LOG_TAG_GUI, "Per-line mask buffer malloc failed, size: %d, %d", w, h);
             gt_mem_free(blend_dsc->dst_buf);
             blend_dsc->dst_buf = NULL;
             return;
@@ -868,7 +868,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _filling_by_default_line_mode(_gt_draw_ctx_st 
 #else
     blend_dsc->dst_buf = gt_mem_malloc( len );
     if (!blend_dsc->dst_buf) {
-        GT_LOGW(GT_LOG_TAG_GUI, "Per-line buffer malloc failed");
+        GT_LOGW(GT_LOG_TAG_GUI, "Per-line buffer malloc failed, size: %d, %d", w, h);
         return;
     }
 #endif
