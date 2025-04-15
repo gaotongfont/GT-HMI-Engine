@@ -412,7 +412,7 @@ static void _load_more(struct gt_obj_s * obj) {
 GT_ATTRIBUTE_RAM_TEXT static inline bool
 _is_scroll_to_bottom(gt_obj_st * obj) {
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
-    return gt_abs(obj->process_attr.scroll.y) + obj->area.h + (style->padding << 1) > style->max_height ? true : false;
+    return gt_abs(obj->process_attr.scroll.y) + obj->area.h - style->padding > style->max_height ? true : false;
 }
 
 GT_ATTRIBUTE_RAM_TEXT static void
@@ -439,7 +439,7 @@ _anim_scroll_ready_cb(struct gt_anim_s * anim) {
 GT_ATTRIBUTE_RAM_TEXT static void
 _create_auto_scoll_to(gt_obj_st * textarea) {
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
-    int32_t scroll_time = 10 * 1000;    /** predicted value */
+    int32_t scroll_time = 60 * 1000;    /** predicted value */
     if (style->scroll_to_newest_anim) {
         /** update time */
         gt_anim_set_time(style->scroll_to_newest_anim, scroll_time);
