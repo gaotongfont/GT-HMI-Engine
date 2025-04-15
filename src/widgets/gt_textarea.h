@@ -70,6 +70,16 @@ typedef struct gt_textarea_param_s {
 gt_obj_st * gt_textarea_create(gt_obj_st * parent);
 
 /**
+ * @brief Always scroll to the newest string, when add new string by
+ *          anim event.
+ *
+ * @param textarea
+ * @param always_scroll_to_newest
+ * @return gt_res_t
+ */
+gt_res_t gt_textarea_set_always_scroll_to_newest(gt_obj_st * textarea, bool always_scroll_to_newest);
+
+/**
  * @brief set string to textarea widget
  *
  * @param textarea obj pointer

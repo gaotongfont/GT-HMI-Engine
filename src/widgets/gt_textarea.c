@@ -27,12 +27,13 @@
 /* private typedef ------------------------------------------------------*/
 
 typedef struct _textarea_reg_s {
-    uint8_t hold_on : 1;            /** hold on content for scroll */
-    uint8_t click_valid : 1;        /** click status: scroll will set to false, only click event valid */
-    uint8_t click_single_cn : 1;    /** click single chinese character */
-    uint8_t pull_to_refresh : 1;    /** pull to refresh */
-    uint8_t load_more : 1;          /** load more */
-    uint8_t reserved : 3;
+    uint8_t hold_on : 1;                    /** finger hold on content for scroll */
+    uint8_t click_valid : 1;                /** click status: scroll will set to false, only click event valid */
+    uint8_t click_single_cn : 1;            /** click single chinese character */
+    uint8_t pull_to_refresh : 1;            /** pull to refresh */
+    uint8_t load_more : 1;                  /** load more */
+    uint8_t always_scroll_to_newest : 1;    /** always scroll to newest string */
+    uint8_t reserved : 2;
 }_textarea_reg_st;
 
 #if GT_TEXTAREA_SUB_STRING_SCROLL_CACHE
@@ -51,7 +52,8 @@ typedef struct _gt_textarea_s {
     gt_obj_st obj;
     gt_textarea_param_st * contents;
     uint16_t cnt_contents;
-    uint16_t max_height;
+    uint16_t max_height;            /** update when current display max height */
+    gt_anim_st * scroll_to_newest_anim;     /** when add newest string */
 
     gt_color_t color_background;
     gt_color_t color_border;
@@ -84,6 +86,7 @@ typedef struct _gt_textarea_s {
 static void _textarea_init_cb(gt_obj_st * obj);
 static void _textarea_deinit_cb(gt_obj_st * obj);
 static void _textarea_event_cb(struct gt_obj_s * obj, gt_event_st * e);
+GT_ATTRIBUTE_RAM_TEXT static void _create_auto_scoll_to(gt_obj_st * textarea);
 
 static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_textarea_class = {
     ._init_cb      = _textarea_init_cb,
@@ -293,6 +296,9 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
     height += font_res.area.y + font.info.size - font_attr.logical_area.y;
     if (height > style->max_height) {
         style->max_height = height;
+        if (style->reg.always_scroll_to_newest) {
+            _create_auto_scoll_to(obj);
+        }
     }
 }
 
@@ -402,6 +408,53 @@ static void _load_more(struct gt_obj_s * obj) {
     gt_anim_set_ready_cb(&anim, _ready_load_more_cb);
     gt_anim_start(&anim);
 }
+
+GT_ATTRIBUTE_RAM_TEXT static inline bool
+_is_scroll_to_bottom(gt_obj_st * obj) {
+    _gt_textarea_st * style = (_gt_textarea_st * )obj;
+    return gt_abs(obj->process_attr.scroll.y) + obj->area.h + (style->padding << 1) > style->max_height ? true : false;
+}
+
+GT_ATTRIBUTE_RAM_TEXT static void
+_anim_scroll_exec_cb(void * tv, int32_t val) {
+    gt_obj_st * obj = (gt_obj_st * )tv;
+    _gt_textarea_st * style = (_gt_textarea_st * )tv;
+
+    if (_is_scroll_to_bottom(obj)) {
+        gt_anim_stop(style->scroll_to_newest_anim);
+        gt_anim_del_safe_by(style->scroll_to_newest_anim);
+        style->scroll_to_newest_anim = NULL;
+        return;
+    }
+    obj->process_attr.scroll.y -= 1;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+GT_ATTRIBUTE_RAM_TEXT static void
+_anim_scroll_ready_cb(struct gt_anim_s * anim) {
+    _gt_textarea_st * style = (_gt_textarea_st * )anim->tar;
+    style->scroll_to_newest_anim = NULL;
+}
+
+GT_ATTRIBUTE_RAM_TEXT static void
+_create_auto_scoll_to(gt_obj_st * textarea) {
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    int32_t scroll_time = 10 * 1000;    /** predicted value */
+    if (style->scroll_to_newest_anim) {
+        /** update time */
+        gt_anim_set_time(style->scroll_to_newest_anim, scroll_time);
+        return;
+    }
+    gt_anim_st anim;
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, textarea);
+    gt_anim_set_time(&anim, scroll_time);
+    gt_anim_set_value(&anim, 0, 0xffff);
+    gt_anim_set_exec_cb(&anim, _anim_scroll_exec_cb);
+    gt_anim_set_ready_cb(&anim, _anim_scroll_ready_cb);
+    style->scroll_to_newest_anim = gt_anim_start(&anim);
+}
+
 /**
  * @brief obj event handler call back
  *
@@ -412,19 +465,19 @@ static void _textarea_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
     switch(code_val) {
-        case GT_EVENT_TYPE_DRAW_START:
+        case GT_EVENT_TYPE_DRAW_START: {
             gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
-
-        case GT_EVENT_TYPE_INPUT_PRESSED:
+        }
+        case GT_EVENT_TYPE_INPUT_PRESSED: {
             style->reg.click_valid = true;
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
             _set_touch_word(style, NULL, 0);
 #endif
             break;
-
-        case GT_EVENT_TYPE_INPUT_SCROLL:
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL: {
             style->reg.click_valid = false;
             if (style->max_height < obj->area.h) {
                 _reset_scroll_value(&obj->process_attr);
@@ -437,7 +490,7 @@ static void _textarea_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
                     style->reg.pull_to_refresh = true;
                 }
                 _reset_scroll_value(&obj->process_attr);
-            } else if (gt_abs(obj->process_attr.scroll.y) + obj->area.h > style->max_height) {
+            } else if (_is_scroll_to_bottom(obj)) {
                 if (false == style->reg.load_more &&
                     gt_abs(obj->process_attr.scroll.y) + obj->area.h - (obj->area.h >> 4) > style->max_height) {
                     style->reg.load_more = true;
@@ -446,8 +499,8 @@ static void _textarea_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             }
             gt_disp_invalid_area(obj);
             break;
-
-        case GT_EVENT_TYPE_INPUT_SCROLL_END:
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL_END: {
             if (style->reg.pull_to_refresh) {
                 _pull_wait_to_refresh(obj);
             } else if (style->reg.load_more) {
@@ -457,8 +510,9 @@ static void _textarea_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
                 gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             }
             break;
-
-        case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
+        }
+        case GT_EVENT_TYPE_INPUT_RELEASED: {
+            /* click event finish */
             if (false == style->reg.click_valid) {
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
                 _set_touch_word(style, NULL, 0);
@@ -471,7 +525,7 @@ static void _textarea_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 #endif
             // gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
-
+        }
         default:
             break;
     }
@@ -504,6 +558,16 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
 
     _set_hold_on_contents_for_scroll(style, false);
     return obj;
+}
+
+gt_res_t gt_textarea_set_always_scroll_to_newest(gt_obj_st * textarea, bool always_scroll_to_newest)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    style->reg.always_scroll_to_newest = always_scroll_to_newest ? true : false;
+    return GT_RES_OK;
 }
 
 void gt_textarea_set_text(gt_obj_st * textarea, char * text)
@@ -641,6 +705,7 @@ void gt_textarea_add_str_by_len(gt_obj_st * textarea, char * str, uint32_t len, 
     _resize_scroll_cache(style, style->cnt_contents);
 #endif
     _set_hold_on_contents_for_scroll(style, false);
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 uint16_t gt_textarea_get_str_count(gt_obj_st * textarea)
