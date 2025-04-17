@@ -2094,13 +2094,13 @@ static void GT_ATTRIBUTE_RAM_TEXT draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const
     blend_dsc.mask_buf = NULL;
 
     if(bg_radius > 0){
-        gt_mask_free(&bg_mask_radius);
         gt_mask_remove_idx(bg_mask_id);
+        gt_mask_free(&bg_mask_radius);
     }
 
     if (dsc->base_area && cl_radius > 0){
-        gt_mask_free(&cl_mask_radius);
         gt_mask_remove_idx(cl_mask_id);
+        gt_mask_free(&cl_mask_radius);
     }
 }
 
@@ -2181,10 +2181,10 @@ static GT_ATTRIBUTE_RAM_TEXT void draw_bg_border(_gt_draw_ctx_st * draw_ctx, con
     mask_line_buf = NULL;
     blend_dsc.mask_buf = NULL;
 
-    gt_mask_free(&in_mask_radius);
+    gt_mask_remove_idx(border_mask_id);
     gt_mask_free(&border_mask_radius);
     gt_mask_remove_idx(in_mask_id);
-    gt_mask_remove_idx(border_mask_id);
+    gt_mask_free(&in_mask_radius);
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -2644,12 +2644,12 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_s
             draw_bg(draw_ctx, &rect_attr, &area_out);
         }
 
-        gt_mask_free(&out_mask);
         gt_mask_remove_idx(out_mask_id);
+        gt_mask_free(&out_mask);
 
         if(in_radius > 0){
-            gt_mask_free(&in_mask);
             gt_mask_remove_idx(in_mask_id);
+            gt_mask_free(&in_mask);
         }
         return ;
     }
@@ -2705,15 +2705,15 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_s
         }
     }
 
+    gt_mask_remove_idx(angle_mask_id);
     gt_mask_free(&angle_mask);
+
+    gt_mask_remove_idx(out_mask_id);
     gt_mask_free(&out_mask);
 
-    gt_mask_remove_idx(angle_mask_id);
-    gt_mask_remove_idx(out_mask_id);
-
     if(in_radius > 0){
-        gt_mask_free(&in_mask);
         gt_mask_remove_idx(in_mask_id);
+        gt_mask_free(&in_mask);
     }
 
     if(is_img || !dsc->rounded) { return ; }
