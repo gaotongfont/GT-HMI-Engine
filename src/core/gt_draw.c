@@ -715,6 +715,7 @@ _null_handle:
 
 #if GT_USE_SJPG
 static GT_ATTRIBUTE_RAM_TEXT void _filling_by_sjpg_file(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
+    gt_area_st * mask_area = blend_dsc->mask_area;
     uint16_t w, h, y = 0;
     w = dsc_img->header.w;
     h = dsc_img->header.h;
@@ -733,13 +734,13 @@ static GT_ATTRIBUTE_RAM_TEXT void _filling_by_sjpg_file(_gt_draw_ctx_st * draw_c
     }
 #endif
 
-    bool mask_check = gt_mask_check(blend_dsc->mask_area);
+    bool mask_check = gt_mask_check(mask_area);
     gt_opa_t opa = blend_dsc->opa >= GT_OPA_MAX ? GT_OPA_COVER : blend_dsc->opa;
 #if _GT_DRAW_STATIC_LINE_BUFFER
         blend_dsc->mask_buf = _static_line_opa_buffer;
 #else
     if(mask_check){
-        blend_dsc->mask_buf = gt_mem_malloc(blend_dsc->dst_area->w);
+        blend_dsc->mask_buf = gt_mem_malloc(mask_area->w);
         if(NULL == blend_dsc->mask_buf){
             GT_LOGW(GT_LOG_TAG_GUI, "Per-line mask buffer malloc failed, size: %d, %d", w, h);
             gt_mem_free(blend_dsc->dst_buf);
@@ -752,8 +753,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _filling_by_sjpg_file(_gt_draw_ctx_st * draw_c
     while(y < h){
         if( gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area) ){
             if(mask_check){
-                gt_memset(blend_dsc->mask_buf, opa, len);
-                gt_mask_get(blend_dsc->mask_buf, blend_dsc->dst_area->x, blend_dsc->dst_area->y, blend_dsc->dst_area->w);
+                gt_memset(blend_dsc->mask_buf, opa, mask_area->w);
+                gt_mask_get(blend_dsc->mask_buf, mask_area->x, mask_area->y, mask_area->w);
             }
             /* blend to bg */
             gt_img_decoder_read_line(dsc_img, 0, y, len, (uint8_t *)blend_dsc->dst_buf);
