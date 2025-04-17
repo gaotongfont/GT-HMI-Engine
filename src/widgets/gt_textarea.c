@@ -24,6 +24,8 @@
 #define OBJ_TYPE    GT_TYPE_TEXTAREA
 #define MY_CLASS    &gt_textarea_class
 
+#define _FONT_AREA_REDUCE_SIZE      2
+
 /* private typedef ------------------------------------------------------*/
 
 typedef struct _textarea_reg_s {
@@ -223,7 +225,7 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
     gt_size_t scroll_y = obj->process_attr.scroll.y;
     _gt_draw_font_res_st font_res = {0};
     gt_area_st padding_font = gt_area_reduce(obj->area, style->padding);
-    gt_area_st area_font = gt_area_reduce(padding_font, style->border_width + 2);
+    gt_area_st area_font = gt_area_reduce(padding_font, style->border_width + _FONT_AREA_REDUCE_SIZE);
     font_attr.logical_area = area_font;
     font_attr.logical_area.y += scroll_y;
     font_attr.logical_area.h = 0xffff;
@@ -250,7 +252,6 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
             continue;
         }
         font.len                = style->contents[idx].len;
-        // font_attr.reg.style     = style->contents[idx].mask_style;
         font.info.style.all = style->contents[idx].mask_style;
 
 #if GT_TEXTAREA_CUSTOM_FONT_STYLE
@@ -1000,6 +1001,40 @@ uint32_t gt_textarea_get_total_height(gt_obj_st * textarea)
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     _draw_content_or_get_words(textarea, NULL, true);
     return style->max_height;
+}
+
+uint32_t gt_textarea_get_display_offset(gt_obj_st * textarea)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return 0;
+    }
+    return gt_abs(textarea->process_attr.scroll.y);
+}
+
+float gt_textarea_get_scroll_percent(gt_obj_st * textarea)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return 0.0;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    if (0 == style->max_height) {
+        return 0.0;
+    }
+    return (float)(100.0 * gt_abs(textarea->process_attr.scroll.y) / style->max_height);
+}
+
+gt_res_t gt_textarea_display_by_precent(gt_obj_st * textarea, float percent)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    if (percent < 0.0)          { return GT_RES_FAIL; }
+    if (percent > 100.0)        { percent = 100.0; }
+    if (0 == style->max_height) { return GT_RES_FAIL; }
+    textarea->process_attr.scroll.y = -(int32_t)(style->max_height * percent / 100.0);
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
+    return GT_RES_OK;
 }
 
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT

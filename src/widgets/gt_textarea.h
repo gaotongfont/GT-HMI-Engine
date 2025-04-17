@@ -233,7 +233,38 @@ void gt_textarea_set_font_encoding(gt_obj_st * textarea, gt_encoding_et encoding
 void gt_textarea_set_font_info(gt_obj_st * textarea, gt_font_info_st * font_info);
 gt_font_info_st * gt_textarea_get_font_info(gt_obj_st * textarea);
 
+/**
+ * @brief get the total height of the textarea
+ *
+ * @param textarea
+ * @return uint32_t height pixel value
+ */
 uint32_t gt_textarea_get_total_height(gt_obj_st * textarea);
+
+/**
+ * @brief get the display offset of the textarea
+ *
+ * @param textarea
+ * @return uint32_t offset pixel value
+ */
+uint32_t gt_textarea_get_display_offset(gt_obj_st * textarea);
+
+/**
+ * @brief Get the scroll percentage of the textarea
+ *
+ * @param textarea
+ * @return float range: [0.00%, 100.00%)
+ */
+float gt_textarea_get_scroll_percent(gt_obj_st * textarea);
+
+/**
+ * @brief set the textarea display area by percentage
+ *
+ * @param textarea
+ * @param percent float range: [0.00%, 100.00%)
+ * @return gt_res_t
+ */
+gt_res_t gt_textarea_display_by_precent(gt_obj_st * textarea, float percent);
 
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
 void gt_textarea_set_touch_single_chinese_word(gt_obj_st * textarea, bool is_single_cn);
