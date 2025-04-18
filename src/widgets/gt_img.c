@@ -32,6 +32,7 @@ typedef struct _gt_img_s {
     gt_obj_st obj;
     char * src;             // img src, It can be a virt file name/path or an array of C
     _gt_img_dsc_st raw;     // raw data buffer draw directly
+    gt_color_masking_st masking;
 #if GT_USE_FILE_HEADER
     gt_file_header_param_st fh;
 #endif
@@ -73,6 +74,7 @@ static void _img_init_cb(gt_obj_st * obj) {
     gt_attr_rect_st dsc = {
         .bg_img_src = style->src,
         .bg_opa = obj->opa,
+        .masking = &style->masking,
     };
 
 #if GT_USE_FILE_HEADER
@@ -409,6 +411,20 @@ uint16_t gt_img_get_height(gt_obj_st * img)
         return 0;
     }
     return info.h;
+}
+
+gt_res_t gt_img_set_masking(gt_obj_st * img, gt_color_masking_st * masking)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+    _gt_img_st * style = (_gt_img_st * )img;
+    if (NULL == masking) {
+        return GT_RES_FAIL;
+    }
+    style->masking = *masking;
+    gt_event_send(img, GT_EVENT_TYPE_DRAW_START, NULL);
+    return GT_RES_OK;
 }
 
 #endif  /** #if GT_CFG_ENABLE_IMG */

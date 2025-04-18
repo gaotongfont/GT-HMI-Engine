@@ -263,6 +263,11 @@ typedef struct gt_color_img_raw_s {
     uint16_t   height;              /** height of the image */
 }gt_color_img_raw_st;
 
+typedef struct gt_color_masking_s {
+    uint16_t radius;
+    uint16_t gap;   /** Range of transparency variation */
+}gt_color_masking_st;
+
 /* macros ---------------------------------------------------------------*/
 
 /* static functions / API inteface-------------------------------------- */

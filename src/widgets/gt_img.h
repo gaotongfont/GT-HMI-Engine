@@ -125,6 +125,14 @@ uint16_t gt_img_get_width(gt_obj_st * img);
  */
 uint16_t gt_img_get_height(gt_obj_st * img);
 
+/**
+ * @brief Set the image outline masking effect
+ *
+ * @param img
+ * @param masking
+ * @return gt_res_t
+ */
+gt_res_t gt_img_set_masking(gt_obj_st * img, gt_color_masking_st * masking);
 
 #endif  /** GT_CFG_ENABLE_IMG */
 

@@ -38,7 +38,7 @@ typedef struct _gt_draw_blend_dsc_s {
     gt_color_t  color_fill;  /*blend color*/
 
     gt_area_st * view_area;   /** The area(window) within the control where characters or element can be displayed only */
-
+    gt_color_masking_st * masking;
     gt_opt_t    opa;         /** value of the overall opacity */
 }gt_draw_blend_dsc_st;
 

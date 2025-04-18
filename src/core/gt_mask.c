@@ -863,6 +863,122 @@ static GT_ATTRIBUTE_RAM_TEXT gt_mask_res_et _gt_mask_angle_get(gt_opa_t* mask_bu
         else return GT_MASK_RES_CHANGE;
     }
 }
+
+
+/* 快速整数平方根近似算法（Q7.8精度） */
+static uint16_t _approx_sqrt16(uint16_t val) {
+    uint16_t r = val;
+    uint16_t b = 0x4000;
+    uint16_t q = 0;
+    while(b > 0x40) {
+        uint16_t t = q + b;
+        if(r >= t) {
+            r -= t;
+            q = t + b;
+        }
+        r <<= 1;
+        b >>= 1;
+    }
+    return q >> 8;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT gt_mask_res_et _gt_mask_edge_blur_get(gt_opa_t* mask_buf, \
+                                        gt_size_t abs_x, gt_size_t abs_y, uint16_t len, \
+                                        gt_mask_edge_blur_st* p)
+{
+    if(!mask_buf || !p) return GT_MASK_RES_UNKNOWN;
+
+    uint8_t gap = p->gap;
+    gt_area_st area;
+    gt_area_copy(&area, &p->area);
+
+    if( abs_y < area.y || abs_y > area.y + area.h
+        || abs_x + len < area.x || abs_x > area.x + area.w
+    ){
+
+        return GT_MASK_RES_TRANSP;
+    }
+    bool full = false;
+    uint8_t opa_step = 255 / gap;
+    gt_opa_t opa = 0;
+
+    gt_size_t rel_y = abs_y - area.y;
+    gt_size_t y_off = rel_y;
+    if(rel_y < gap){
+        full = true;
+        opa = (rel_y + 1) * opa_step;
+        y_off = rel_y;
+    }
+    else if (rel_y >= area.h - gap) {
+        full = true;
+        opa = (area.h - rel_y + 1) * opa_step;
+        y_off = area.h - rel_y - 1;
+    }
+    gt_size_t k = area.x - abs_x;
+    gt_size_t left = k;
+    gt_size_t right = left + area.w;
+    gt_size_t i = 0;
+
+    if(full) {
+        gt_size_t clr_start = GT_CLAMP(0, left, len);
+        gt_size_t clr_len = GT_CLAMP(0, right - clr_start, len - clr_start);
+
+        for(i = clr_start; i < clr_len; ++i) {
+            // if(clr_start + i >= 0 && clr_start + i < gap) {
+            //     continue;
+            // }
+            // else if(clr_start + i >= (right - gap + 1) && clr_start + i < len) {
+            //     continue;
+            // }
+            mask_buf[i] = _GT_DRAW_MASK_MIX(opa,  mask_buf[i]);
+        }
+    }
+
+    for(i = 0; i < gap; ++i) {
+        opa = opa_step * (i + 1);
+        if(left + i >= 0 && left + i < len) {
+
+            if(full) {
+                gt_size_t dx = (gap - (left + i));
+                gt_size_t dy = (gap - y_off);
+                gt_size_t dist = dx*dx + dy*dy;
+                dist = _approx_sqrt16(dist);
+                if(dist < gap) {
+                    gt_opa_t r_opa = (gap - dist) * opa_step;
+                    mask_buf[left + i] = _GT_DRAW_MASK_MIX(r_opa, mask_buf[left + i]);
+                }
+                else {
+                    mask_buf[left + i] = _GT_DRAW_MASK_MIX(0, mask_buf[left + i]);
+                }
+            }
+            else{
+                mask_buf[left + i] = _GT_DRAW_MASK_MIX(opa, mask_buf[left + i]);
+            }
+        }
+        if(right - i >= 0 && right - i < len) {
+            if(full) {
+                gt_size_t dx = ((right - i) - (area.w - gap) );
+                gt_size_t dy = (gap - y_off);
+                gt_size_t dist = dx*dx + dy*dy;
+                dist = _approx_sqrt16(dist);
+                if(dist < gap) {
+                    gt_opa_t r_opa = (gap - dist) * opa_step;
+
+                    mask_buf[right - i] = _GT_DRAW_MASK_MIX(r_opa, mask_buf[right - i]);
+                }
+                else{
+                    mask_buf[right - i] = _GT_DRAW_MASK_MIX(0, mask_buf[right - i]);
+                }
+
+            }
+            else {
+                mask_buf[right - i] = _GT_DRAW_MASK_MIX(opa, mask_buf[right - i]);
+            }
+        }
+    }
+
+    return GT_MASK_RES_CHANGE;
+}
 /* global functions / API interface -------------------------------------*/
 int16_t gt_mask_add(void* p_mask)
 {
@@ -1169,7 +1285,19 @@ void gt_mask_angle_init(gt_mask_angle_st* p_mask, gt_size_t vertex_x, gt_size_t 
     gt_mask_line_angle_init(&p_mask->end_line, vertex_x, vertex_y, end_angle, end_side);
 }
 
+void gt_mask_edge_blur_init(gt_mask_edge_blur_st* p_mask, const gt_area_st* coords, uint8_t gap)
+{
+    if(!p_mask || !coords) return;
+    uint16_t g = GT_MIN(coords->w >> 1, coords->h >> 1);
+    g = GT_MIN(g, gap);
+    if(0 == g) return;
 
+    gt_area_copy(&p_mask->area, coords);
+    p_mask->gap = g;
+    p_mask->dsc.mask_get_cb = (gt_mask_get_cb_t)_gt_mask_edge_blur_get;
+    p_mask->dsc.type = GT_MASK_TYPE_EDGE_BLUR;
+
+}
 /* end of file ----------------------------------------------------------*/
 
 

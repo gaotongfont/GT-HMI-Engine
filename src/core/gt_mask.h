@@ -36,6 +36,7 @@ typedef enum {
     GT_MASK_TYPE_RADIUS = 0,
     GT_MASK_TYPE_LINE,
     GT_MASK_TYPE_ANGLE,
+    GT_MASK_TYPE_EDGE_BLUR,
 }gt_mask_type_et;
 
 typedef enum {
@@ -94,6 +95,11 @@ typedef struct {
     uint16_t delta_deg;
 }gt_mask_angle_st;
 
+typedef struct {
+    _gt_mask_dsc_st dsc;
+    gt_area_st area;
+    uint8_t gap;
+}gt_mask_edge_blur_st;
 /* macros ---------------------------------------------------------------*/
 
 
@@ -185,6 +191,9 @@ void gt_mask_line_angle_init(gt_mask_line_st* p_mask, gt_size_t p1x, gt_size_t p
  * @param end_angle
  */
 void gt_mask_angle_init(gt_mask_angle_st* p_mask, gt_size_t vertex_x, gt_size_t vertex_y, gt_size_t start_angle, gt_size_t end_angle);
+
+
+void gt_mask_edge_blur_init(gt_mask_edge_blur_st* p_mask, const gt_area_st* coords, uint8_t gap);
 
 #ifdef __cplusplus
 } /*extern "C"*/

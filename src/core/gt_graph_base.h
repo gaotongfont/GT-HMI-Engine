@@ -140,6 +140,9 @@ typedef struct _gt_attr_rect_s {
     gt_area_st * limit_area;
 
     gt_area_st * base_area;
+
+    gt_color_masking_st * masking;
+
     // Dot matrix data
     uint8_t * data_gray;
     uint8_t gray;
