@@ -286,14 +286,14 @@ static GT_ATTRIBUTE_RAM_TEXT void _scroll_snap(gt_obj_st * obj) {
         return;
     }
     target_y = _normal_limit_y(obj, target_y);
-    gt_obj_scroll_to_y(obj, target_y - scroll_y, GT_ANIM_ON);
+    gt_obj_scroll_to_y(obj, target_y - scroll_y, GT_ROLLER_SNAP_ANIM_STATE);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _scroll_anim_ready_handler(struct gt_anim_s * anim) {
     _gt_roller_st * style = (_gt_roller_st * )anim->tar;
-
     style->reg.state = _SCROLL_SNAP_READY;
     _scroll_snap((gt_obj_st * )anim->tar);
+    style->reg.state = _SCROLL_SNAP_NONE;
     style->anim_snap = NULL;
 }
 
@@ -305,7 +305,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _ready_scroll_snap_anim(struct gt_obj_s * obj)
         style->reg.state = _SCROLL_SNAP_NONE;
         return ;
     }
-
     if (NULL == style->anim_snap) {
         gt_anim_st anim;
         gt_anim_init(&anim);

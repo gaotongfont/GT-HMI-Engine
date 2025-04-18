@@ -30,6 +30,16 @@ extern "C" {
  */
 #define GT_ROLLER_INFINITE_PAGES_COUNT  7
 
+#ifndef GT_ROLLER_SNAP_ANIM_STATE
+    /**
+     * @brief GT_ANIM_OFF[default]: Do not use the animation of the roller snap,
+     *          snap immediately;
+     *        GT_ANIM_ON: Use the animation of the roller snap; maybe delay 200 ~ 400ms
+     *          to select the item;
+     */
+    #define GT_ROLLER_SNAP_ANIM_STATE   GT_ANIM_OFF
+#endif
+
 /**
  * @brief Roller work mode
  */
