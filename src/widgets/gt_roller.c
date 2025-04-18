@@ -204,11 +204,12 @@ static GT_ATTRIBUTE_RAM_TEXT gt_size_t _normal_limit_y(gt_obj_st * obj, gt_size_
     return ret_val;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT inline void _delay_scroll_snap_anim(_gt_roller_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline void
+_delay_scroll_snap_anim(_gt_roller_st * style, int32_t time_ms) {
     if (NULL == style->anim_snap) {
         return;
     }
-    gt_anim_set_time_delay_start(style->anim_snap, 100);
+    gt_anim_set_time_delay_start(style->anim_snap, time_ms);
     gt_anim_restart(style->anim_snap);
 }
 
@@ -221,7 +222,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _scroll_text_handler(gt_obj_st * obj) {
     gt_obj_set_pos(style->text, obj->area.x, obj->area.y + obj->process_attr.scroll.y + (style->line_space >> 1));
 
     if (_SCROLL_SNAP_READY == style->reg.state) {
-        _delay_scroll_snap_anim(style);
+        _delay_scroll_snap_anim(style, 300);
     }
 }
 
@@ -293,14 +294,20 @@ static GT_ATTRIBUTE_RAM_TEXT void _scroll_anim_ready_handler(struct gt_anim_s * 
     _gt_roller_st * style = (_gt_roller_st * )anim->tar;
     style->reg.state = _SCROLL_SNAP_READY;
     _scroll_snap((gt_obj_st * )anim->tar);
-    style->reg.state = _SCROLL_SNAP_NONE;
     style->anim_snap = NULL;
+    if (GT_ANIM_OFF == GT_ROLLER_SNAP_ANIM_STATE) {
+        /** select immediately */
+        style->reg.state = _SCROLL_SNAP_NONE;
+        _select_target_item((gt_obj_st * )anim->tar);
+    }
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _ready_scroll_snap_anim(struct gt_obj_s * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
 
-    if (_SCROLL_SNAP_READY == style->reg.state) {
+    if (GT_ANIM_ON == GT_ROLLER_SNAP_ANIM_STATE &&
+        _SCROLL_SNAP_READY == style->reg.state) {
+        /** after snap handler, get the select one */
         _select_target_item(obj);
         style->reg.state = _SCROLL_SNAP_NONE;
         return ;
@@ -318,7 +325,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _ready_scroll_snap_anim(struct gt_obj_s * obj)
         return ;
     }
 
-    _delay_scroll_snap_anim(style);
+    _delay_scroll_snap_anim(style, 150);
 }
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
