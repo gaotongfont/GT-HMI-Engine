@@ -378,6 +378,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_handler(gt_indev_st * indev) {
     gt_size_t dx = 0;
     gt_size_t dy = 0;
     if (NULL == point_p->obj_scroll) {
+        if (point_p->obj_target->fixed) {
+            /** if widget fixed, then search it parent's widget to scroll */
+            point_p->obj_target = _search_not_fixed_by_parent_recursive(point_p->obj_target);
+        }
         gt_event_send(point_p->obj_target, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
     }
     point_p->obj_scroll = point_p->obj_target;
@@ -577,13 +581,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_pressed_handle(gt_indev_st * indev) {
             gt_event_send(point_p->obj_target, GT_EVENT_TYPE_INPUT_LONG_PRESSED, NULL);
         }
     }
-    if (point_p->obj_target->fixed && point_p->obj_scroll) {
-        /** if widget fixed, then search it parent's widget to scroll */
-        if (point_p->obj_scroll == point_p->obj_target) {
-            point_p->obj_target = _search_not_fixed_by_parent_recursive(point_p->obj_target);
-        }
-    }
-
     _scroll_calc_throw_distance(point_p);
 
     GT_CHECK_BACK(point_p->obj_target);
