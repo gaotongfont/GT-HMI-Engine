@@ -85,6 +85,8 @@ typedef enum{
 
     GT_DIR_LEFT ,     ///< left
     GT_DIR_RIGHT,     ///< right
+
+    _GT_DIR_MAX_COUNT,
 }gt_dir_et;
 
 typedef enum {

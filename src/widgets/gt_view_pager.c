@@ -74,6 +74,7 @@ typedef struct _gt_view_pager_s {
     struct _reg_s reg;
     uint16_t width;
     gt_color_t color_glass;
+    gt_anim_st * delay_anim_p;
 }_gt_view_pager_st;
 
 
@@ -229,10 +230,19 @@ static GT_ATTRIBUTE_RAM_TEXT void _calling_null_scroll_exec_cb(void * indev, int
 
 static GT_ATTRIBUTE_RAM_TEXT void _calling_statical_scroll_ready_cb(struct gt_anim_s * anim) {
     gt_obj_st * obj = (gt_obj_st * )anim->tar;
+    _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
+    style->delay_anim_p = NULL;
     gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _create_delay_scroll_event(gt_obj_st * obj) {
+    _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
+    if (style->delay_anim_p) {
+        gt_anim_set_time_delay_start(style->delay_anim_p, 120);
+        gt_anim_restart(style->delay_anim_p);
+        return;
+    }
     gt_anim_st delay_event = {0};
     gt_anim_init(&delay_event);
     gt_anim_set_target(&delay_event, obj);
@@ -240,7 +250,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _create_delay_scroll_event(gt_obj_st * obj) {
     gt_anim_set_time(&delay_event, 120);
     gt_anim_set_exec_cb(&delay_event, _calling_null_scroll_exec_cb);
     gt_anim_set_ready_cb(&delay_event, _calling_statical_scroll_ready_cb);
-    gt_anim_start(&delay_event);
+    style->delay_anim_p = gt_anim_start(&delay_event);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline void _scrolling_handler(gt_obj_st * obj) {
