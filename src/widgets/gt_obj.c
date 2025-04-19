@@ -103,7 +103,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _screen_scroll(gt_obj_st * obj) {
         obj->process_attr.scroll.y = 0;
         return;
     }
-
     if (-obj->process_attr.scroll.x < max_area_p->left) {
         obj->process_attr.scroll.x = -max_area_p->left;
     }
@@ -115,7 +114,14 @@ static GT_ATTRIBUTE_RAM_TEXT void _screen_scroll(gt_obj_st * obj) {
     }else if (-obj->process_attr.scroll.y + obj->area.h > max_area_p->bottom) {
         obj->process_attr.scroll.y = -max_area_p->bottom + obj->area.h;
     }
+
+    if (obj->process_attr.scroll_prev.x == obj->process_attr.scroll.x &&
+        obj->process_attr.scroll_prev.y == obj->process_attr.scroll.y) {
+        /** Reduce the unnecessary drawing overhead of invalid scrolling animations */
+        return;
+    }
     gt_disp_scroll_area_act(-obj->process_attr.scroll.x, -obj->process_attr.scroll.y);
+    obj->process_attr.scroll_prev = obj->process_attr.scroll;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _masked_effect_handler(gt_obj_st * obj) {
