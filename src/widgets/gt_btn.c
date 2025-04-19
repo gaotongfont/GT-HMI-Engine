@@ -179,26 +179,33 @@ static bool _turn_next_content(gt_obj_st * obj) {
 }
 
 static void _press_btn_handler(gt_obj_st * obj) {
-    if (GT_TYPE_GROUP == gt_obj_class_get_type(obj->parent)) {
-        gt_obj_st * parent = obj->parent;
-        /** reset group all btn state */
-        for (uint16_t i = 0, cnt = parent->cnt_child; i < cnt; i++) {
-            if (OBJ_TYPE != gt_obj_class_get_type(parent->child[i])) {
-                continue;
-            }
-            if (GT_STATE_PRESSED != gt_obj_get_state(parent->child[i])) {
-                continue;
-            }
-            gt_obj_set_state(parent->child[i], GT_STATE_NONE);
-            gt_event_send(parent->child[i], GT_EVENT_TYPE_DRAW_START, NULL);
-        }
-    }
     gt_obj_set_state(obj, GT_STATE_PRESSED);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-static inline void _released_btn_handler(gt_obj_st * obj) {
-    if (GT_TYPE_GROUP != gt_obj_class_get_type(obj->parent)) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_reset_other_btn_state_except_current_btn(gt_obj_st * obj) {
+    gt_obj_st * parent = obj->parent;
+    /** reset group all btn state */
+    for (uint16_t i = 0, cnt = parent->cnt_child; i < cnt; i++) {
+        if (OBJ_TYPE != gt_obj_class_get_type(parent->child[i])) {
+            continue;
+        }
+        if (GT_STATE_PRESSED != gt_obj_get_state(parent->child[i])) {
+            continue;
+        }
+        gt_obj_set_state(parent->child[i], GT_STATE_NONE);
+        gt_event_send(parent->child[i], GT_EVENT_TYPE_DRAW_START, NULL);
+    }
+    gt_obj_set_state(obj, GT_STATE_PRESSED);
+}
+
+
+static GT_ATTRIBUTE_RAM_TEXT inline void
+_released_btn_handler(gt_obj_st * obj) {
+    if (GT_TYPE_GROUP == gt_obj_class_get_type(obj->parent)) {
+        _reset_other_btn_state_except_current_btn(obj);
+    } else {
         gt_obj_set_state(obj, GT_STATE_NONE);
     }
     if (!_turn_next_content(obj)) {
@@ -206,9 +213,31 @@ static inline void _released_btn_handler(gt_obj_st * obj) {
     }
 }
 
-static inline void _lost_focus_btn_handler(gt_obj_st *obj) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_reset_btn_state_when_group_has_pressed_btn_before(gt_obj_st *obj) {
+    gt_obj_st * parent = obj->parent;
+    bool has_pressed = false;
+    for (uint16_t i = 0, cnt = parent->cnt_child; i < cnt; i++) {
+        if (OBJ_TYPE != gt_obj_class_get_type(parent->child[i])) {
+            continue;
+        }
+        if (parent->child[i] == obj) {
+            continue;
+        }
+        if (GT_STATE_PRESSED == gt_obj_get_state(parent->child[i])) {
+            has_pressed = true;
+            break;
+        }
+    }
+    if (has_pressed) { gt_obj_set_state(obj, GT_STATE_NONE); }
+}
+
+static GT_ATTRIBUTE_RAM_TEXT inline void
+_lost_focus_btn_handler(gt_obj_st *obj) {
     if (GT_TYPE_GROUP != gt_obj_class_get_type(obj->parent)) {
         gt_obj_set_state(obj, GT_STATE_NONE);
+    } else {
+        _reset_btn_state_when_group_has_pressed_btn_before(obj);
     }
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
