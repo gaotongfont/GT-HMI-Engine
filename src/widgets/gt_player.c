@@ -83,6 +83,9 @@ typedef struct _gt_player_s {
     gt_obj_st obj;
     _gt_vector_st * vector;
     _gt_timer_st * timer;
+
+    gt_color_masking_st masking;        /** masking effect */
+
     uint32_t last_player_tick;
     _gt_player_reg_st reg;
 
@@ -247,6 +250,7 @@ static void _player_init_cb(gt_obj_st * obj) {
         gt_attr_rect_st dsc = {
             .bg_img_src = (void * )_get_src(style),
             .bg_opa = obj->opa,
+            .masking = &style->masking,
         };
 #if GT_USE_FILE_HEADER
         dsc.file_header = gt_file_header_param_check_valid(_get_file_header_param(style));
@@ -1184,6 +1188,20 @@ bool gt_player_is_real_time_update(gt_obj_st * obj)
     }
     _gt_player_st * style = (_gt_player_st * )obj;
     return style->reg.real_time_update;
+}
+
+gt_res_t gt_player_set_masking(gt_obj_st * player, gt_color_masking_st * masking)
+{
+    if (false == gt_obj_is_type(player, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+    _gt_player_st * style = (_gt_player_st * )player;
+    if (NULL == masking) {
+        return GT_RES_FAIL;
+    }
+    style->masking = *masking;
+    gt_event_send(player, GT_EVENT_TYPE_DRAW_START, NULL);
+    return GT_RES_OK;
 }
 
 #if GT_USE_SERIAL

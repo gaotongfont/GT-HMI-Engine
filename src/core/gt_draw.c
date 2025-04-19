@@ -2297,13 +2297,13 @@ handler_lb:
     gt_size_t edge_mask_id = -1;
     gt_mask_radius_st r_mask = {0};
     gt_mask_edge_blur_st edge_blur = {0};
-    if(blend_dsc.masking){
-        if(0 != blend_dsc.masking->gap) {
+    if (blend_dsc.masking) {
+        if (0 != blend_dsc.masking->gap) {
             gt_mask_edge_blur_init(&edge_blur, &mask_area, blend_dsc.masking->gap);
             edge_mask_id = gt_mask_add(&edge_blur);
         }
 
-        if(0 != blend_dsc.masking->radius) {
+        if (0 != blend_dsc.masking->radius) {
             gt_mask_radius_init(&r_mask, &mask_area, blend_dsc.masking->radius, false);
             mask_id = gt_mask_add(&r_mask);
         }
@@ -2333,18 +2333,16 @@ handler_lb:
         }
     }
 
-    if(blend_dsc.masking){
-        if(0 != blend_dsc.masking->gap) {
-            gt_mask_remove_idx(edge_mask_id);
-            gt_mask_free(&edge_blur);
-        }
-
-        if(0 != blend_dsc.masking->radius) {
+    if (blend_dsc.masking) {
+        if (0 != blend_dsc.masking->radius) {
             gt_mask_remove_idx(mask_id);
             gt_mask_free(&r_mask);
         }
+        if (0 != blend_dsc.masking->gap) {
+            gt_mask_remove_idx(edge_mask_id);
+            gt_mask_free(&edge_blur);
+        }
     }
-
     if (GT_IMG_DECODER_TYPE_RAM == dsc_img.header.type) {
         return ;
     }
