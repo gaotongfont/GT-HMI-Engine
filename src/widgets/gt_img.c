@@ -394,7 +394,10 @@ uint16_t gt_img_get_width(gt_obj_st * img)
     }
     _gt_img_st * obj = (_gt_img_st * )img;
     _gt_img_info_st info = {0};
-    if (GT_RES_OK != gt_img_decoder_get_info(obj->src, &info)) {
+    if (obj->src && GT_RES_OK != gt_img_decoder_get_info(obj->src, &info)) {
+        return 0;
+    }
+    else if (GT_RES_OK != gt_img_decoder_get_info_raw(obj->raw.raw_p, obj->raw.raw_len, &info)) {
         return 0;
     }
     return info.w;
@@ -407,7 +410,10 @@ uint16_t gt_img_get_height(gt_obj_st * img)
     }
     _gt_img_st * obj = (_gt_img_st * )img;
     _gt_img_info_st info = {0};
-    if (GT_RES_OK != gt_img_decoder_get_info(obj->src, &info)) {
+    if (obj->src && GT_RES_OK != gt_img_decoder_get_info(obj->src, &info)) {
+        return 0;
+    }
+    else if (GT_RES_OK != gt_img_decoder_get_info_raw(obj->raw.raw_p, obj->raw.raw_len, &info)) {
         return 0;
     }
     return info.h;
