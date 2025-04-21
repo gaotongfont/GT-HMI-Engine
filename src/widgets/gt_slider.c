@@ -42,8 +42,8 @@ typedef struct _repeat_mode_s {
 typedef struct _gt_slider_s {
     gt_obj_st obj;
 
-    gt_obj_st *tag;
-    gt_obj_st *img;         /** The img object within tag area */
+    gt_obj_st * tag;
+    gt_obj_st * img;         /** The img object within tag area */
 
     _repeat_mode_st repeat_info;    /** AB repeat mode */
 
@@ -89,7 +89,8 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_slider_class = {
 
 
 /* static functions -----------------------------------------------------*/
-static uint16_t _gt_slider_get_tag_size(gt_obj_st * slider)
+static GT_ATTRIBUTE_RAM_TEXT uint16_t
+_gt_slider_get_tag_size(gt_obj_st * slider)
 {
     _gt_slider_st * style = (_gt_slider_st * )slider;
     uint16_t max = 0;
@@ -103,7 +104,8 @@ static uint16_t _gt_slider_get_tag_size(gt_obj_st * slider)
     return ((style->tag_size > 0 && style->tag_size <= max) ? style->tag_size : max);
 }
 
-static uint16_t _gt_slider_get_size(gt_obj_st * slider)
+static GT_ATTRIBUTE_RAM_TEXT uint16_t
+_gt_slider_get_size(gt_obj_st * slider)
 {
     _gt_slider_st * style = (_gt_slider_st * )slider;
     uint16_t max = 0;
@@ -131,7 +133,8 @@ static uint16_t _gt_slider_get_size(gt_obj_st * slider)
  * @param pos need to limit pos
  * @return gt_size_t reasonable pos
  */
-static gt_size_t _limit_total_range_pos(_gt_slider_st * style, gt_size_t pos) {
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t
+_limit_total_range_pos(_gt_slider_st * style, gt_size_t pos) {
     if (pos < style->start) {
         pos = style->start;
     }
@@ -141,7 +144,8 @@ static gt_size_t _limit_total_range_pos(_gt_slider_st * style, gt_size_t pos) {
     return pos;
 }
 
-static inline void _reset_repeat_mode(_gt_slider_st * style) {
+static GT_ATTRIBUTE_RAM_TEXT inline void
+_reset_repeat_mode(_gt_slider_st * style) {
     style->repeat_mode = false;
     style->repeat_info.begin = 0;
     style->repeat_info.stop = 0;
@@ -154,7 +158,8 @@ static inline void _reset_repeat_mode(_gt_slider_st * style) {
  * @param pos need to limit pos
  * @return gt_size_t reasonable pos
  */
-static gt_size_t _limit_repeat_range_pos(_gt_slider_st * style, gt_size_t pos) {
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t
+_limit_repeat_range_pos(_gt_slider_st * style, gt_size_t pos) {
     if (GT_SLIDER_MODE_DEFAULT != style->mode) {
         return pos;
     }
@@ -172,7 +177,8 @@ static gt_size_t _limit_repeat_range_pos(_gt_slider_st * style, gt_size_t pos) {
     return pos;
 }
 
-static gt_size_t _calc_touch_point_pos(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t
+_calc_touch_point_pos(gt_obj_st * obj) {
     _gt_slider_st * style = (_gt_slider_st * )obj;
     gt_obj_st * scr = gt_disp_get_scr();
     gt_point_st point_click = gt_indev_get_point();
@@ -223,7 +229,8 @@ static gt_size_t _calc_touch_point_pos(gt_obj_st * obj) {
     return temp_offset;
 }
 
-static gt_size_t _calc_pixel_offset_by_value(gt_obj_st * slider, gt_size_t value) {
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t
+_calc_pixel_offset_by_value(gt_obj_st * slider, gt_size_t value) {
     _gt_slider_st * style = (_gt_slider_st * )slider;
     uint16_t max = 0;
 
@@ -237,7 +244,8 @@ static gt_size_t _calc_pixel_offset_by_value(gt_obj_st * slider, gt_size_t value
     return (value - style->start) * max / (style->end - style->start);
 }
 
-static void _gt_slider_set_offset_by_pos(gt_obj_st * slider, gt_size_t pos)
+static GT_ATTRIBUTE_RAM_TEXT void
+_gt_slider_set_offset_by_pos(gt_obj_st * slider, gt_size_t pos)
 {
     _gt_slider_st * style = (_gt_slider_st * )slider;
 
@@ -248,7 +256,8 @@ static void _gt_slider_set_offset_by_pos(gt_obj_st * slider, gt_size_t pos)
     style->offset = _calc_pixel_offset_by_value(slider, style->pos);
 }
 
-static void _gt_slider_set_offset(gt_obj_st * slider , gt_size_t offset)
+static GT_ATTRIBUTE_RAM_TEXT void
+_gt_slider_set_offset(gt_obj_st * slider , gt_size_t offset)
 {
     _gt_slider_st * style = (_gt_slider_st * )slider;
     uint16_t max_offset = 0;
@@ -295,7 +304,8 @@ static void _gt_slider_set_offset(gt_obj_st * slider , gt_size_t offset)
     style->pos = tmp_pos;
 }
 
-static void _scroll_dir_ver(gt_obj_st * obj, bool is_up) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_scroll_dir_ver(gt_obj_st * obj, bool is_up) {
     _gt_slider_st * style = (_gt_slider_st * )obj;
     gt_size_t val = is_up ? style->step : -style->step;
 
@@ -307,7 +317,8 @@ static void _scroll_dir_ver(gt_obj_st * obj, bool is_up) {
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-static void _scroll_dir_hor(gt_obj_st * obj, bool is_right) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_scroll_dir_hor(gt_obj_st * obj, bool is_right) {
     _gt_slider_st * style = (_gt_slider_st * )obj;
     gt_size_t val = is_right ? style->step : -style->step;
 
@@ -319,7 +330,8 @@ static void _scroll_dir_hor(gt_obj_st * obj, bool is_right) {
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-static void _calc_all_layer_area(gt_obj_st * slider, gt_area_st * base, gt_area_st * val, gt_area_st * tag) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_calc_all_layer_area(gt_obj_st * slider, gt_area_st * base, gt_area_st * val, gt_area_st * tag) {
     _gt_slider_st * style = (_gt_slider_st * )slider;
     uint16_t size = _gt_slider_get_size(slider);
     uint16_t tag_size = _gt_slider_get_tag_size(slider);
@@ -363,7 +375,8 @@ static void _calc_all_layer_area(gt_obj_st * slider, gt_area_st * base, gt_area_
     }
 }
 
-static gt_area_st _calc_repeat_mode_area(gt_obj_st * slider, gt_area_st const * const val) {
+static GT_ATTRIBUTE_RAM_TEXT gt_area_st
+_calc_repeat_mode_area(gt_obj_st * slider, gt_area_st const * const val) {
     _gt_slider_st * style = (_gt_slider_st * )slider;
     gt_area_st repeat_area = *val;
 
@@ -404,7 +417,8 @@ static gt_area_st _calc_repeat_mode_area(gt_obj_st * slider, gt_area_st const * 
  *
  * @param obj
  */
-static void _init_cb(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_init_cb(gt_obj_st * obj) {
     _gt_slider_st * style = (_gt_slider_st * )obj;
     gt_size_t dist_min = 0;
 
@@ -525,7 +539,8 @@ draw_focus:
  *
  * @param obj
  */
-static void _deinit_cb(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     if (NULL == obj) {
         return ;
@@ -544,7 +559,8 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param obj
  * @param e event
  */
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
     _gt_slider_st * style = (_gt_slider_st * )obj;
 
@@ -594,6 +610,32 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             break;
     }
 }
+
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st *
+_create_img_obj(gt_obj_st * slider) {
+    _gt_slider_st * style = (_gt_slider_st *)slider;
+    if (NULL == style->tag) {
+        style->tag = gt_obj_create(slider);
+        if (NULL == style->tag) {
+            return NULL;
+        }
+    }
+    gt_obj_set_touch_parent(style->tag, true);
+    gt_obj_set_bubble_notify(style->tag, true);
+    gt_obj_set_inside(style->tag, true);
+
+    if (NULL == style->img) {
+        style->img = gt_img_create(style->tag);
+        if (NULL == style->img) {
+            return NULL;
+        }
+    }
+    gt_obj_set_touch_parent(style->img, true);
+    gt_obj_set_bubble_notify(style->img, true);
+    gt_obj_set_inside(style->img, true);
+    return style->img;
+}
+
 
 /* global functions / API interface -------------------------------------*/
 
@@ -766,24 +808,27 @@ void gt_slider_set_tag(gt_obj_st * slider, char * src)
         return;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
-    if(NULL == style->tag){
-        style->tag = gt_obj_create(slider);
-        gt_obj_set_touch_parent(style->tag, true);
-        gt_obj_set_bubble_notify(style->tag, true);
-        gt_obj_set_inside(style->tag, true);
-    }
 
-    if(style->tag && NULL == style->img){
-        style->img = gt_img_create(style->tag);
-        gt_obj_set_touch_parent(style->img, true);
-        gt_obj_set_bubble_notify(style->img, true);
-        gt_obj_set_inside(style->img, true);
+    style->img = _create_img_obj(slider);
+    if (NULL == style->img) {
+        return;
     }
+    gt_img_set_src(style->img, src);
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+}
 
-    if(style->img){
-        gt_img_set_src(style->img, src);
-        gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+void gt_slider_set_tag_raw_data(gt_obj_st * slider, gt_color_img_raw_st * raw)
+{
+    if (false == gt_obj_is_type(slider, OBJ_TYPE)) {
+        return ;
     }
+    _gt_slider_st * style = (_gt_slider_st *)slider;
+    style->img = _create_img_obj(slider);
+    if (NULL == style->img) {
+        return;
+    }
+    gt_img_set_raw_data(style->img, raw);
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 #if GT_USE_FILE_HEADER
@@ -793,24 +838,44 @@ void gt_slider_set_tag_by_file_header(gt_obj_st * slider, gt_file_header_param_s
         return;
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
-    if(NULL == style->tag){
-        style->tag = gt_obj_create(slider);
-        gt_obj_set_touch_parent(style->tag, true);
-        gt_obj_set_bubble_notify(style->tag, true);
-        gt_obj_set_inside(style->tag, true);
+    style->img = _create_img_obj(slider);
+    if (NULL == style->img) {
+        return;
     }
+    gt_img_set_by_file_header(style->img, fh);
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+#endif
 
-    if(style->tag && NULL == style->img){
-        style->img = gt_img_create(style->tag);
-        gt_obj_set_touch_parent(style->img, true);
-        gt_obj_set_bubble_notify(style->img, true);
-        gt_obj_set_inside(style->img, true);
+#if GT_USE_DIRECT_ADDR
+void gt_slider_set_tag_by_direct_addr(gt_obj_st * slider, gt_addr_t addr)
+{
+    if (false == gt_obj_is_type(slider, OBJ_TYPE)) {
+        return;
     }
+    _gt_slider_st * style = (_gt_slider_st *)slider;
+    style->img = _create_img_obj(slider);
+    if (NULL == style->img) {
+        return;
+    }
+    gt_img_set_by_direct_addr(style->img, addr);
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+#endif
 
-    if(style->img){
-        gt_img_set_by_file_header(style->img, fh);
-        gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+void gt_slider_set_tag_by_custom_size_addr(gt_obj_st * slider, gt_direct_addr_custom_size_st * dac)
+{
+    if (false == gt_obj_is_type(slider, OBJ_TYPE)) {
+        return;
     }
+    _gt_slider_st * style = (_gt_slider_st *)slider;
+    style->img = _create_img_obj(slider);
+    if (NULL == style->img) {
+        return;
+    }
+    gt_img_set_by_custom_size_addr(style->img, dac);
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 #endif
 

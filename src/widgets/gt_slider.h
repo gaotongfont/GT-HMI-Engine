@@ -128,10 +128,44 @@ uint16_t gt_slider_get_step(gt_obj_st * slider);
  */
 void gt_slider_set_step(gt_obj_st * slider, uint16_t step);
 
+/**
+ * @brief Set tag image
+ *
+ * @param slider
+ * @param src image path
+ */
 void gt_slider_set_tag(gt_obj_st * slider, char * src);
+
+/**
+ * @brief Display the tag image directly with raw data
+ *
+ * @param slider slider object
+ * @param raw Raw data of the image
+ */
+void gt_slider_set_tag_raw_data(gt_obj_st * slider, gt_color_img_raw_st * raw);
 
 #if GT_USE_FILE_HEADER
 void gt_slider_set_tag_by_file_header(gt_obj_st * slider, gt_file_header_param_st * fh);
+#endif
+
+#if GT_USE_DIRECT_ADDR
+/**
+ * @brief Display the tag image by direct address
+ *
+ * @param slider
+ * @param addr Direct address of the image
+ */
+void gt_slider_set_tag_by_direct_addr(gt_obj_st * slider, gt_addr_t addr);
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+/**
+ * @brief Display the tag image by custom size direct address
+ *
+ * @param slider
+ * @param dac Custom size direct address of the image
+ */
+void gt_slider_set_tag_by_custom_size_addr(gt_obj_st * slider, gt_direct_addr_custom_size_st * dac);
 #endif
 
 void gt_slider_set_tag_visible(gt_obj_st * slider, bool visible);
