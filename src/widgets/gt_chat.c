@@ -99,7 +99,7 @@ typedef enum{
 static void _init_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint8_t tim_s, gt_chat_type_te type, bool is_send);
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st* _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint8_t tim_s, gt_chat_type_te type, bool is_send);
 static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_update_msg_size(gt_obj_st * chat);
 static GT_ATTRIBUTE_RAM_TEXT void _scrolling_handler(gt_obj_st * obj);
 
@@ -260,7 +260,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_msg_move_y(gt_obj_st * chat, gt_size_
     }
 }
 
-static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint8_t tim_s, gt_chat_type_te type, bool is_send) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st* _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint8_t tim_s, gt_chat_type_te type, bool is_send) {
     _gt_chat_st * style = (_gt_chat_st * )chat;
 
     if(style->msg_cnt >= GT_CHAT_MAX_MSG_CNT){
@@ -297,6 +297,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_add_msg(gt_obj_st * chat, const char 
 
     chat->process_attr.scroll.y = chat->area.h - style->max_h;
     _gt_chat_msg_move_y(chat, chat->process_attr.scroll.y);
+
+    return style->msg_list[style->msg_cnt - 1].msg_obj;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_append_msg(gt_obj_st* chat, const char* msg)
@@ -522,40 +524,44 @@ void gt_chat_set_bg_color(gt_obj_st * chat, gt_color_t color)
     gt_obj_set_bgcolor(chat, color);
 }
 
-void gt_chat_add_send_text_msg(gt_obj_st * chat, const char * msg)
+gt_obj_st* gt_chat_add_send_text_msg(gt_obj_st * chat, const char * msg)
 {
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
-        return ;
+        return NULL;
     }
-    _gt_chat_add_msg( chat, msg, 0, GT_CHAT_TYPE_TEXT, true);
+    gt_obj_st* item = _gt_chat_add_msg( chat, msg, 0, GT_CHAT_TYPE_TEXT, true);
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
+    return item;
 }
 
-void gt_chat_add_send_voice_msg(gt_obj_st * chat, uint8_t tim_s)
+gt_obj_st* gt_chat_add_send_voice_msg(gt_obj_st * chat, uint8_t tim_s)
 {
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
-        return ;
+        return NULL;
     }
-    _gt_chat_add_msg( chat, NULL, tim_s, GT_CHAT_TYPE_VOICE, true);
+    gt_obj_st* item = _gt_chat_add_msg( chat, NULL, tim_s, GT_CHAT_TYPE_VOICE, true);
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
+    return item;
 }
 //
-void gt_chat_add_received_text_msg(gt_obj_st * chat, const char * msg)
+gt_obj_st* gt_chat_add_received_text_msg(gt_obj_st * chat, const char * msg)
 {
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
-        return ;
+        return NULL;
     }
-    _gt_chat_add_msg( chat, msg, 0, GT_CHAT_TYPE_TEXT, false);
+    gt_obj_st* item = _gt_chat_add_msg( chat, msg, 0, GT_CHAT_TYPE_TEXT, false);
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
+    return item;
 }
 
-void gt_chat_add_received_voice_msg(gt_obj_st * chat, uint8_t tim_s)
+gt_obj_st* gt_chat_add_received_voice_msg(gt_obj_st * chat, uint8_t tim_s)
 {
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
-        return ;
+        return NULL;
     }
-    _gt_chat_add_msg( chat, NULL, tim_s, GT_CHAT_TYPE_VOICE, false);
+    gt_obj_st* item = _gt_chat_add_msg( chat, NULL, tim_s, GT_CHAT_TYPE_VOICE, false);
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
+    return item;
 }
 
 void gt_chat_append_msg_text(gt_obj_st * chat, const char * msg)

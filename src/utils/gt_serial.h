@@ -46,7 +46,9 @@ extern "C" {
 #include "stdbool.h"
 #include "../others/gt_types.h"
 
-
+#if GT_USE_SERIAL_MIDDLEWARE
+#include "../../driver/gt_serial_middleware.h"
+#endif
 /* define ---------------------------------------------------------------*/
 
 
