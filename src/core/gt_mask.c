@@ -934,15 +934,16 @@ static GT_ATTRIBUTE_RAM_TEXT gt_mask_res_et _gt_mask_edge_blur_get(gt_opa_t* mas
             mask_buf[i] = _GT_DRAW_MASK_MIX(opa,  mask_buf[i]);
     #else
             if(i >= 0 && i < gap) {
-                tmp_opa = opa;
+                // tmp_opa = opa;
+                continue;
             }
             else if(i >= (right - gap) && i < len) {
-                tmp_opa = opa;
+                // tmp_opa = opa;
+                continue;
             }
             else{
                 tmp_opa = (gt_per_255(opa) * (gap * opa_step) >> 15);
             }
-
             mask_buf[i] = _GT_DRAW_MASK_MIX(tmp_opa,  mask_buf[i]);
     #endif
 
@@ -970,12 +971,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_mask_res_et _gt_mask_edge_blur_get(gt_opa_t* mas
                 mask_buf[left + i] = _GT_DRAW_MASK_MIX(opa, mask_buf[left + i]);
             }
     #else
-            if(full) {
-                tmp_opa = (gt_per_255(opa) * mask_buf[left + i] >> 15);
-            }
-            else {
-                tmp_opa = (gt_per_255(opa) * y_opa >> 15);
-            }
+            tmp_opa = (gt_per_255(opa) * y_opa >> 15);
             mask_buf[left + i] = _GT_DRAW_MASK_MIX(tmp_opa, mask_buf[left + i]);
     #endif
         }
@@ -999,12 +995,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_mask_res_et _gt_mask_edge_blur_get(gt_opa_t* mas
                 mask_buf[right - i - 1] = _GT_DRAW_MASK_MIX(opa, mask_buf[right - i - 1]);
             }
     #else
-            if(full) {
-                tmp_opa = (gt_per_255(opa) * mask_buf[right - i - 1] >> 15);
-            }
-            else {
-                tmp_opa = (gt_per_255(opa) * y_opa >> 15);
-            }
+            tmp_opa = (gt_per_255(opa) * y_opa >> 15);
             mask_buf[right - i - 1] = _GT_DRAW_MASK_MIX(tmp_opa, mask_buf[right - i - 1]);
     #endif
         }
