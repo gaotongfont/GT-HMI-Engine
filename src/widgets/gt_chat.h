@@ -43,14 +43,14 @@ gt_obj_st * gt_chat_create(gt_obj_st * parent);
 
 void gt_chat_set_bg_color(gt_obj_st * chat, gt_color_t color);
 
-void gt_chat_add_send_text_msg(gt_obj_st * chat, const char * msg);
-void gt_chat_add_send_voice_msg(gt_obj_st * chat, uint8_t tim_s);
+gt_obj_st * gt_chat_add_send_text_msg(gt_obj_st * chat, const char * msg);
+gt_obj_st * gt_chat_add_send_voice_msg(gt_obj_st * chat, uint8_t tim_s);
 
-void gt_chat_add_received_text_msg(gt_obj_st * chat, const char * msg);
-void gt_chat_add_received_voice_msg(gt_obj_st * chat, uint8_t tim_s);
+gt_obj_st * gt_chat_add_received_text_msg(gt_obj_st * chat, const char * msg);
+gt_obj_st * gt_chat_add_received_voice_msg(gt_obj_st * chat, uint8_t tim_s);
 
-void gt_chat_append_msg_text(gt_obj_st * chat, const char * msg);
-void gt_chat_replace_msg_text(gt_obj_st * chat, const char * msg);
+gt_obj_st * gt_chat_append_msg_text(gt_obj_st * chat, const char * msg);
+gt_obj_st * gt_chat_replace_msg_text(gt_obj_st * chat, const char * msg);
 
 void gt_chat_clean_all_msg(gt_obj_st * chat);
 
