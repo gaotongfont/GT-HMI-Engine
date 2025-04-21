@@ -18,7 +18,7 @@
 
 
 /* private typedef ------------------------------------------------------*/
-typedef struct{
+typedef struct {
     uint16_t x;
     uint16_t y;
     uint16_t v_min;
@@ -32,7 +32,7 @@ typedef struct{
     uint8_t pic_gamma;
     uint8_t filter;
 }gt_icon_param_st;
-typedef struct{
+typedef struct {
     gt_var_head_st head;
     gt_icon_param_st param;
 }gt_var_icon_st;

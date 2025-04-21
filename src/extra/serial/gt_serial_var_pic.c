@@ -20,7 +20,7 @@
 
 
 /* private typedef ------------------------------------------------------*/
-typedef struct{
+typedef struct {
     uint16_t pic_begin;
     uint16_t pic_end;
     uint8_t time;   // unit: 8ms
@@ -28,7 +28,7 @@ typedef struct{
     uint16_t pic_end_exp;
 }gt_pic_param_st;
 
-typedef struct{
+typedef struct {
     gt_var_head_st head;
     gt_pic_param_st param;
 }gt_var_icon_st;

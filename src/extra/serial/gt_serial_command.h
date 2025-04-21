@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-#include "../utils/gt_serial.h"
+#include "../../utils/gt_serial.h"
 
 #if GT_USE_SERIAL && GT_SERIAL_USE_TIMER_RECV_UNPACK
 

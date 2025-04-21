@@ -74,7 +74,7 @@ typedef enum{
 
 }gt_var_type_et;
 
-typedef struct{
+typedef struct {
     uint8_t prio;
     gt_var_type_et type; // @ gt_var_type_et
     uint16_t sp;
@@ -82,7 +82,7 @@ typedef struct{
     uint16_t vp;
 }gt_var_head_st;
 
-typedef struct{
+typedef struct {
     gt_obj_st* obj;
     uint8_t* buffer;
     uint32_t len;
@@ -95,7 +95,7 @@ typedef struct gt_serial_pack_buffer_s gt_var_value_st;
 typedef gt_res_t (*create_cb_t)(gt_var_st* );
 typedef gt_res_t (*set_value_cb_t)(gt_var_st* , gt_var_value_st* );
 
-typedef struct{
+typedef struct {
     gt_var_type_et type;
     create_cb_t create_cb;
     set_value_cb_t set_value_cb;

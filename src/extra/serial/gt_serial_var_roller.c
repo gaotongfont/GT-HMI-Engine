@@ -24,7 +24,7 @@ bit 0: 1-fill zero  0-no fill zero
 bit 1: 1-fill +     0-no fill +
 bit 2: 1-Infinite   0-Limited
 */
-typedef struct{
+typedef struct {
     int16_t v_min;
     int16_t v_max;
     uint8_t integer;
@@ -42,7 +42,7 @@ typedef struct{
     uint8_t font_lib;
 }gt_roller_param_st;
 
-typedef struct{
+typedef struct {
     gt_var_head_st head;
     gt_roller_param_st param;
 }gt_var_roller_st;

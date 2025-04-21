@@ -22,7 +22,7 @@
 /* regs
 bit 0: 1-enable py 0-disable
 */
-typedef struct{
+typedef struct {
     uint16_t x;
     uint16_t y;
     uint16_t w;
@@ -37,7 +37,7 @@ typedef struct{
     uint8_t regs;
 }gt_var_keypad_param_st;
 
-typedef struct{
+typedef struct {
     gt_var_head_st head;
     gt_var_keypad_param_st param;
 }gt_var_keypad_st;

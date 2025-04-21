@@ -19,7 +19,7 @@
 
 
 /* private typedef ------------------------------------------------------*/
-typedef struct{
+typedef struct {
     uint16_t xs;
     uint16_t ys;
     uint16_t xe;
@@ -36,7 +36,7 @@ typedef struct{
     uint16_t vp_rt;
 }gt_progress_bar_param_st;
 
-typedef struct{
+typedef struct {
     gt_var_head_st head;
     gt_progress_bar_param_st param;
 }gt_var_progress_bar_st;

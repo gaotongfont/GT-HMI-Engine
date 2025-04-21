@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-#include "../utils/gt_serial.h"
+#include "../../utils/gt_serial.h"
 
 #if GT_USE_SERIAL && GT_USE_BIN_CONVERT
 #include "../../others/gt_types.h"

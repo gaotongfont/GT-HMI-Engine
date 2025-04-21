@@ -19,7 +19,7 @@
 
 
 /* private typedef ------------------------------------------------------*/
-typedef struct{
+typedef struct {
     uint16_t x;
     uint16_t y;
     uint16_t w;
@@ -34,7 +34,7 @@ typedef struct{
     uint16_t max_len;
 }gt_var_input_param_st;
 
-typedef struct{
+typedef struct {
     gt_var_head_st head;
     gt_var_input_param_st param;
 }gt_var_input_st;

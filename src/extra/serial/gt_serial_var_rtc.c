@@ -19,7 +19,7 @@
 
 
 /* private typedef ------------------------------------------------------*/
-typedef struct{
+typedef struct {
     uint16_t x;
     uint16_t y;
     uint16_t color;
@@ -28,7 +28,7 @@ typedef struct{
     uint8_t string_code[16];
 }gt_rtc_param_st;
 
-typedef struct{
+typedef struct {
     gt_var_head_st head;
     gt_rtc_param_st param;
 }gt_var_rtc_st;

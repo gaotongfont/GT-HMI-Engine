@@ -32,7 +32,7 @@ typedef enum{
     _TYPE_DOUBLE,            //双精度浮点数 8byte
 }_gt_vp_data_mode_et;
 
-typedef struct{
+typedef struct {
     uint16_t x;
     uint16_t y;
     uint16_t color;
@@ -48,7 +48,7 @@ typedef struct{
     uint16_t h;
 }gt_numb_param_st;
 
-typedef struct{
+typedef struct {
     gt_var_head_st head;
     gt_numb_param_st param;
 }gt_var_numb_st;

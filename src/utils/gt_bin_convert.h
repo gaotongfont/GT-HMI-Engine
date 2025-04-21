@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-#include "../../gt_conf.h"
+#include "../gt_conf.h"
 
 #if GT_USE_BIN_CONVERT
 
