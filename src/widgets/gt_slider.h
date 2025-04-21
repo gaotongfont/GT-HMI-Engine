@@ -20,6 +20,7 @@ extern "C" {
 #include "gt_obj.h"
 #include "gt_obj_class.h"
 #include "../core/gt_style.h"
+#include "../hal/gt_hal_fs.h"
 
 #if GT_USE_FILE_HEADER
 #include "../hal/gt_hal_file_header.h"
