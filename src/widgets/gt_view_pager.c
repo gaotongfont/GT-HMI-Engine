@@ -47,16 +47,23 @@
 #endif
 
 /**
- * effect
+ * effect span: +++ is selected.
  * (+++)( + )( + )
  * ( + )(+++)( + )
  * ( + )( + )(+++)
  */
 
-/** The unselect point */
+/** The unselect point span size*/
 #define _TIP_BAR_POINT_UNSELECT_WIDTH       _TIP_BAR_POINT_HEIGHT
 #define _TIP_BAR_POINT_UNSELECT_OFFSET_X    (_TIP_BAR_POINT_UNSELECT_WIDTH >> 1)
-#define _TIP_BAR_POINT_SELECT_WIDTH         (_TIP_BAR_POINT_UNSELECT_WIDTH << 1)
+#define _TIP_BAR_POINT_PER_ITEM_WIDTH       (_TIP_BAR_POINT_UNSELECT_WIDTH << 1)
+
+#ifndef _TIP_BAR_POINT_SELECT_WIDTH
+    /**
+     * @brief The width of the selected point width
+     */
+    #define _TIP_BAR_POINT_SELECT_WIDTH     (_TIP_BAR_POINT_HEIGHT << 1)
+#endif
 
 #define _TIP_BAR_OFFSET_Y               (_TIP_BAR_HEIGHT - _TIP_BAR_POINT_HEIGHT)
 
@@ -104,7 +111,7 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st _gt_view_pager_class = {
 static GT_ATTRIBUTE_RAM_TEXT void _draw_tip_bar(gt_obj_st * obj, gt_attr_rect_st * rect_attr) {
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
     uint8_t count = style->reg.count;
-    uint16_t total_width = count * _TIP_BAR_POINT_SELECT_WIDTH;
+    uint16_t total_width = count * _TIP_BAR_POINT_PER_ITEM_WIDTH;
     uint8_t i = 0;
     gt_area_st area_tip = obj->area;
 
@@ -117,14 +124,15 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_tip_bar(gt_obj_st * obj, gt_attr_rect_st
     for (i = 0; i < count; i++) {
         area_tip.w = _TIP_BAR_POINT_HEIGHT;
         draw_bg(obj->draw_ctx, rect_attr, &area_tip);
-        area_tip.x += _TIP_BAR_POINT_SELECT_WIDTH;
+        area_tip.x += _TIP_BAR_POINT_PER_ITEM_WIDTH;
     }
 
+    area_tip.w = _TIP_BAR_POINT_SELECT_WIDTH;
     area_tip.x = ((style->width - total_width) >> 1);
     if (style->width) {
-        area_tip.x += -obj->process_attr.scroll.x * _TIP_BAR_POINT_SELECT_WIDTH / style->width;
+        area_tip.x += -(obj->process_attr.scroll.x * _TIP_BAR_POINT_PER_ITEM_WIDTH / style->width) +
+            ((_TIP_BAR_POINT_PER_ITEM_WIDTH - area_tip.w) >> 1);
     }
-    area_tip.w = _TIP_BAR_POINT_HEIGHT << 1;
     rect_attr->bg_opa = GT_OPA_100;
     draw_bg(obj->draw_ctx, rect_attr, &area_tip);
 }
