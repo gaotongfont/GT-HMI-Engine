@@ -215,7 +215,7 @@ static void _deinit_cb(gt_obj_st * obj)
 
 }
 
-static void _knob_scroll_headler(gt_obj_st * obj, bool flag)
+static void _knob_scroll_handler(gt_obj_st * obj, bool flag)
 {
     _gt_arc_st * style = (_gt_arc_st *)obj;
 
@@ -279,13 +279,13 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
 
         case GT_EVENT_TYPE_INPUT_PRESSED:
             if(false == style->touch_disable){
-                _knob_scroll_headler(obj, true);
+                _knob_scroll_handler(obj, true);
             }
             break;
         case GT_EVENT_TYPE_INPUT_SCROLL:
         case GT_EVENT_TYPE_INPUT_PRESSING:
             if(false == style->touch_disable){
-                _knob_scroll_headler(obj, false);
+                _knob_scroll_handler(obj, false);
             }
             break;
         default:
