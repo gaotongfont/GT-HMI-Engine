@@ -581,7 +581,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_pressed_handle(gt_indev_st * indev) {
         /* save pressed obj */
         point_p->gesture = GT_DIR_NONE;
         point_p->obj_act = _search_active_obj_from_all_layers(&point_p->newly, true);
-        GT_CHECK_BACK(point_p->obj_act);
+        if (NULL == point_p->obj_act) { return; }
         if (gt_obj_is_untouchability(point_p->obj_act)) {
             return;
         }
