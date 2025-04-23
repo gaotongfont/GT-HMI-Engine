@@ -159,6 +159,15 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
 void gt_obj_add_replace_core_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data);
 
 /**
+ * @brief Check if the user event callback is already added
+ *
+ * @param obj
+ * @param filter
+ * @return true
+ * @return false
+ */
+bool gt_event_has_event_cb(struct gt_obj_s * obj, gt_event_type_et filter);
+/**
  * @brief Check if the event callback is already added
  *
  * @param obj

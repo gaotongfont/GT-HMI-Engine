@@ -445,6 +445,10 @@ gt_obj_st * gt_obj_within_which_scr(gt_obj_st * obj)
 {
     GT_CHECK_BACK_VAL(obj, NULL);
     gt_obj_st * p = obj->parent;
+
+    /** screen itself */
+    if (NULL == p) { return obj; }
+
     while (p) {
         if (gt_obj_is_type(p, OBJ_TYPE_SCREEN)) {
             break;

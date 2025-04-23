@@ -129,7 +129,20 @@ static GT_ATTRIBUTE_RAM_TEXT gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
     return ret;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT bool _is_indev_home_gesture(gt_indev_st * indev, gt_event_type_et* event) {
+static GT_ATTRIBUTE_RAM_TEXT bool
+_scr_has_home_gesture_events(gt_obj_st * target, gt_event_type_et event) {
+    if (GT_EVENT_TYPE_NONE == event) {
+        return false;
+    }
+    if (NULL == target) {
+        return false;
+    }
+    gt_obj_st * tar_scr = gt_obj_within_which_scr(target);
+    return gt_event_has_event_cb(tar_scr, event);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT bool
+_is_indev_home_gesture(gt_indev_st * indev, gt_obj_st * target, gt_event_type_et * event) {
     struct _point * point_p = &indev->data.point;
     point_p->gesture = _get_scroll_dir(indev);
 
@@ -137,36 +150,34 @@ static GT_ATTRIBUTE_RAM_TEXT bool _is_indev_home_gesture(gt_indev_st * indev, gt
         return false;
     }
 
+    gt_event_type_et tmp_e = GT_EVENT_TYPE_NONE;
     if (GT_DIR_DOWN == point_p->gesture) {
         // top
         if (GT_CFG_DEFAULT_AREA_HOME_GESTURE_TOP >= point_p->act.y) {
-            if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_TOP;
-            return true;
+            tmp_e = GT_EVENT_TYPE_INPUT_HOME_GESTURE_TOP;
         }
     }
     else if (GT_DIR_UP == point_p->gesture) {
         // bottom
         if (GT_CFG_DEFAULT_AREA_HOME_GESTURE_BOTTOM >= gt_disp_get_res_ver(NULL) - point_p->act.y) {
-            if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_BOTTOM;
-            return true;
+            tmp_e = GT_EVENT_TYPE_INPUT_HOME_GESTURE_BOTTOM;
         }
     }
     else if (GT_DIR_LEFT == point_p->gesture) {
         // right
         if (GT_CFG_DEFAULT_AREA_HOME_GESTURE_RIGHT >= gt_disp_get_res_hor(NULL) - point_p->act.x) {
-            if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_RIGHT;
-            return true;
+            tmp_e = GT_EVENT_TYPE_INPUT_HOME_GESTURE_RIGHT;
         }
     }
     else if (GT_DIR_RIGHT == point_p->gesture) {
         // left
         if (GT_CFG_DEFAULT_AREA_HOME_GESTURE_LEFT >= point_p->act.x) {
-            if(event) *event = GT_EVENT_TYPE_INPUT_HOME_GESTURE_LEFT;
-            return true;
+            tmp_e = GT_EVENT_TYPE_INPUT_HOME_GESTURE_LEFT;
         }
     }
 
-    return false;
+    if (event) { *event = tmp_e; }
+    return _scr_has_home_gesture_events(target, tmp_e);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT bool _indev_send_home_gesture_event(gt_indev_st * indev) {
@@ -177,7 +188,7 @@ static GT_ATTRIBUTE_RAM_TEXT bool _indev_send_home_gesture_event(gt_indev_st * i
     gt_obj_st * scr = gt_disp_get_scr();
     gt_event_type_et e = GT_EVENT_TYPE_NONE;
 
-    if (false == _is_indev_home_gesture(indev, &e)) {
+    if (false == _is_indev_home_gesture(indev, scr, &e)) {
         return false;
     }
 
@@ -427,7 +438,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_handler(gt_indev_st * indev) {
     }
     point_p->obj_scroll = point_p->obj_target;
 
-    if (_is_indev_home_gesture(indev, NULL)) {
+    if (_is_indev_home_gesture(indev, point_p->obj_scroll, NULL)) {
         return ;
     }
     if (point_p->obj_scroll->finger_unfollow) {

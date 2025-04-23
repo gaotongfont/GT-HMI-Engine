@@ -258,6 +258,22 @@ void gt_obj_add_replace_core_event_cb(struct gt_obj_s * obj, gt_event_cb_t event
     new_event->user_data = user_data;
 }
 
+bool gt_event_has_event_cb(struct gt_obj_s * obj, gt_event_type_et filter)
+{
+    gt_obj_event_attr_st * event_ptr = obj->event_attr;
+    if (NULL == event_ptr) {
+        return false;
+    }
+    while (event_ptr) {
+        if (event_ptr->filter == filter) {
+            return true;
+        }
+        event_ptr = event_ptr->next_ptr;
+    }
+    return false;
+}
+
+
 bool gt_event_has_the_same_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter)
 {
     return _common_event_has_the_same_cb(obj->event_attr, event, filter);
