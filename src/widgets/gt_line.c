@@ -147,6 +147,36 @@ void gt_line_set_end_point(gt_obj_st * line, uint16_t xe, uint16_t ye)
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
+gt_res_t gt_line_get_start_point(gt_obj_st * line, gt_point_st * ret_p)
+{
+    if (false == gt_obj_is_type(line, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+    if (NULL == ret_p) {
+        return GT_RES_FAIL;
+    }
+    _gt_line_st * widget = (_gt_line_st * )line;
+    gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
+    ret_p->x = style->start.x;
+    ret_p->y = style->start.y;
+    return GT_RES_OK;
+}
+
+gt_res_t gt_line_get_end_point(gt_obj_st * line, gt_point_st * ret_p)
+{
+    if (false == gt_obj_is_type(line, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+    if (NULL == ret_p) {
+        return GT_RES_FAIL;
+    }
+    _gt_line_st * widget = (_gt_line_st * )line;
+    gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
+    ret_p->x = style->end.x;
+    ret_p->y = style->end.y;
+    return GT_RES_OK;
+}
+
 void gt_line_set_hor_line(gt_obj_st * line, uint16_t length)
 {
     if (false == gt_obj_is_type(line, OBJ_TYPE)) {

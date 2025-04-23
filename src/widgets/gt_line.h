@@ -47,6 +47,24 @@ void gt_line_set_start_point(gt_obj_st * line, uint16_t xs, uint16_t ys);
 void gt_line_set_end_point(gt_obj_st * line, uint16_t xe, uint16_t ye);
 
 /**
+ * @brief Get line start point
+ *
+ * @param line
+ * @param ret_p
+ * @return gt_res_t
+ */
+gt_res_t gt_line_get_start_point(gt_obj_st * line, gt_point_st * ret_p);
+
+/**
+ * @brief Get line end point
+ *
+ * @param line
+ * @param ret_p
+ * @return gt_res_t
+ */
+gt_res_t gt_line_get_end_point(gt_obj_st * line, gt_point_st * ret_p);
+
+/**
  * @brief Set line length, set position by gt_obj_set_pos()
  *
  * @param line
