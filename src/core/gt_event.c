@@ -100,7 +100,7 @@ _using_replace_core_user_cb(gt_obj_event_attr_st * event_ptr, gt_event_st * e) {
 
 static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_event_cb(gt_event_st * e) {
     gt_obj_st * obj = (gt_obj_st * )e->target;
-    GT_CHECK_BACK_VAL(obj, GT_RES_FAIL);
+    if (NULL == obj) { return GT_RES_FAIL; }
     const gt_obj_class_st * c = obj->classes;
 
     if (GT_RES_OK == _using_replace_core_user_cb(obj->replace_core_event_attr, e)) {
@@ -168,7 +168,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline gt_res_t _common_event_send(gt_event_st * e)
         return GT_RES_INV;
     }
 #endif
-    GT_CHECK_BACK_VAL(e->origin, GT_RES_FAIL);
+    if (NULL == e->origin) { return GT_RES_FAIL;}
     if (GT_RES_FAIL == _gt_event_node_push(e)) {
         return GT_RES_INV;
     }
