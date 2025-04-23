@@ -212,6 +212,11 @@ int gt_abs(int n)
     return abs(n);
 }
 
+long gt_round(double val)
+{
+    return (long)(val + 0.5);
+}
+
 uint32_t gt_per_255(uint8_t n)
 {
     return _gt_tab_per_255[n];
@@ -312,6 +317,133 @@ found:
 #else
     return do_cubic_bezier(t, ay, by, cy);
 #endif
+}
+
+gt_res_t
+gt_math_line_get(gt_math_line_st * line,
+    gt_point_f_st const * const p1, gt_point_f_st const * const p2)
+{
+    /* 提取两点坐标 */
+    const float x1 = p1->x;
+    const float y1 = p1->y;
+    const float x2 = p2->x;
+    const float y2 = p2->y;
+
+    /* 计算方向向量分量 */
+    const float dx = x2 - x1;
+    const float dy = y2 - y1;
+
+    /* 检查两点是否重合 */
+    if (fabsf(dx) < 1e-6f && fabsf(dy) < 1e-6f) {
+        return GT_RES_INV;  // 无效输入，两点重合
+    }
+
+    /* 计算一般式系数 */
+    line->a = dy;          // A = y2 - y1
+    line->b = -dx;         // B = x1 - x2
+    line->c = dx*y1 - dy*x1;  // C = x2y1 - x1y2
+
+    /* 优化系数符号（可选）*/
+    if (line->a < 0 || (line->a == 0 && line->b < 0)) {
+        line->a = -line->a;
+        line->b = -line->b;
+        line->c = -line->c;
+    }
+
+    return GT_RES_OK;
+}
+
+gt_res_t
+gt_math_line_get_perpendicular(gt_math_line_st *line,
+    gt_point_f_st const * const perpendicular_point,
+    gt_point_f_st const * const p1, gt_point_f_st const * const p2)
+{
+    /* 计算原直线方向向量 */
+    const float dx = p2->x - p1->x;
+    const float dy = p2->y - p1->y;
+
+    /* 检查原直线有效性 */
+    if (fabsf(dx) < 1e-6f && fabsf(dy) < 1e-6f) {
+        return GT_RES_INV; // 两点重合，无法构成直线
+    }
+
+    /* 垂线系数：A=dx, B=dy */
+    float A = dx;
+    float B = dy;
+    float C = -(A * perpendicular_point->x + B * perpendicular_point->y);
+
+    /* 符号规范化（保证A≥0，且当A=0时B≥0）*/
+    if (A < 0.0f || (A == 0.0f && B < 0.0f)) {
+        A = -A;
+        B = -B;
+        C = -C;
+    }
+
+    /* 存储结果 */
+    line->a = A;
+    line->b = B;
+    line->c = C;
+
+    return GT_RES_OK;
+}
+
+gt_res_t
+gt_math_line_circle_intersect(
+    gt_point_f_st * ret_p1, gt_point_f_st * ret_p2,
+    const gt_math_line_st * line, const gt_math_circle_st * circle)
+{
+    /* 从直线结构体获取参数 */
+    float A = line->a;
+    float B = line->b;
+    float C = line->c;
+
+    /* 从圆结构体获取参数 */
+    float cx = circle->center.x;
+    float cy = circle->center.y;
+    float r = circle->radius;
+
+    /* 检查直线有效性（A和B不能同时为0）*/
+    if (fabsf(A) < 1e-6f && fabsf(B) < 1e-6f) {
+        return GT_RES_INV; // 无效直线
+    }
+
+    /* 计算圆心到直线的距离 */
+    float numerator = A * cx + B * cy + C;
+    float denom_sq = A * A + B * B;
+    float denom = sqrtf(denom_sq);
+    float d = fabsf(numerator) / denom;
+
+    /* 无交点 */
+    if (d > r + 1e-6f) { // 考虑浮点误差
+        return GT_RES_FAIL;
+    }
+
+    /* 计算垂足点（直线离圆心最近的点）*/
+    float factor = numerator / denom_sq;
+    float x0 = cx - A * factor;
+    float y0 = cy - B * factor;
+
+    /* 相切情况（填充两个相同点）*/
+    if (fabsf(d - r) < 1e-6f) {
+        ret_p1->x = ret_p2->x = x0;
+        ret_p1->y = ret_p2->y = y0;
+        return GT_RES_OK;
+    }
+
+    /* 两个交点情况 */
+    float t = sqrtf(r*r - d*d) / denom;
+
+    /* 沿直线方向向量的偏移量 */
+    float dx = B * t;
+    float dy = -A * t;
+
+    /* 计算两个交点 */
+    ret_p1->x = x0 + dx;  // 第一交点
+    ret_p1->y = y0 + dy;
+    ret_p2->x = x0 - dx;  // 第二交点
+    ret_p2->y = y0 - dy;
+
+    return GT_RES_OK;
 }
 
 gt_point_f_st gt_math_catmullrom(float t, gt_point_f_st const * p0, gt_point_f_st const * p1, gt_point_f_st const * p2, gt_point_f_st const * p3)

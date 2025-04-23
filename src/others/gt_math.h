@@ -68,6 +68,23 @@ typedef struct gt_math_bezier_s {
     uint32_t p3;
 }gt_math_bezier_st;
 
+/**
+ * @brief line Ax + By + C = 0
+ */
+typedef struct {
+    float a;
+    float b;
+    float c;
+}gt_math_line_st;
+
+/**
+ * @brief Circle structure
+ */
+typedef struct {
+    gt_point_f_st center; ///< Center point coordinates
+    double radius;        ///< Circle radius
+}gt_math_circle_st;
+
 
 
 /* macros ---------------------------------------------------------------*/
@@ -89,6 +106,15 @@ uint16_t gt_atan2(int x, int y);
 double gt_square(double n);
 
 int gt_abs(int n);
+
+/**
+ * @brief get the round value, such as:
+ *        1.2 -> 1
+ *        1.7 -> 2
+ * @param val
+ * @return long
+ */
+long gt_round(double val);
 
 uint32_t gt_per_255(uint8_t n);
 
@@ -123,6 +149,42 @@ uint32_t gt_math_calc_bezier(gt_math_bezier_st const * const bezier);
  * @return int32_t y value
  */
 int32_t gt_cubic_bezier(int32_t x, int32_t x1, int32_t y1, int32_t x2, int32_t y2);
+
+/**
+ * @brief Get line Ax + By + C = 0
+ *
+ * @param line Output
+ * @param p1
+ * @param p2
+ * @return gt_res_t
+ */
+gt_res_t gt_math_line_get(gt_math_line_st * line,
+    gt_point_f_st const * const p1, gt_point_f_st const * const p2);
+
+/**
+ * @brief Get perpendicular line base on two points of line
+ *
+ * @param line Output
+ * @param perpendicular_point The perpendicular line
+ *          passing through the coordinate point
+ * @param p1
+ * @param p2
+ * @return gt_res_t
+ */
+gt_res_t gt_math_line_get_perpendicular(gt_math_line_st *line,
+    gt_point_f_st const * const perpendicular_point,
+    gt_point_f_st const * const p1, gt_point_f_st const * const p2);
+
+/**
+ * @brief Calculate intersection points between line and circle
+ * @param p1 First intersection point (output)
+ * @param p2 Second intersection point (output)
+ * @param line Pointer to line structure
+ * @param circle Pointer to circle structure
+ * @return gt_res_t
+ */
+gt_res_t gt_math_line_circle_intersect(gt_point_f_st * ret_p1, gt_point_f_st* ret_p2,
+    const gt_math_line_st * line, const gt_math_circle_st * circle);
 
 /**
  * @brief
