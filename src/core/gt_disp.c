@@ -1071,7 +1071,7 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
 #if !GT_USE_SCREEN_ANIM
     type = GT_SCR_ANIM_TYPE_NONE;
 #endif
-
+    _gt_indev_reset_status();
     _gt_disp_refr_reset_areas();
     if (NULL == scr_old) {
         if (GT_SCR_ANIM_TYPE_NONE != type) {

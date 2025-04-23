@@ -96,6 +96,13 @@ void gt_indev_set_enabled(bool enabled);
  */
 bool gt_indev_is_enabled(void);
 
+/**
+ * @brief reset all info when screen load new one.
+ *
+ * @return gt_res_t
+ */
+gt_res_t _gt_indev_reset_status(void);
+
 bool _gt_indev_remove_want_delate_target(gt_obj_st * target);
 
 #if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN

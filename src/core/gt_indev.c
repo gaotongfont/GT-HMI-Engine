@@ -1113,6 +1113,29 @@ bool gt_indev_is_enabled(void)
     return _indev_params.enabled;
 }
 
+gt_res_t _gt_indev_reset_status(void)
+{
+    gt_indev_st * indev = NULL;
+    uint8_t i, cnt_indev;
+    union data_union * data_p = NULL;
+
+    if (false == gt_indev_is_enabled()) {
+        return GT_RES_INV;
+    }
+
+    cnt_indev = gt_indev_get_dev_count();
+    for (i = 0; i < cnt_indev; i++) {
+        indev = gt_indev_get_dev_by_idx(i);
+        union data_union * data_p = &indev->data;
+        if (indev->scroll_throw_anim) {
+            gt_anim_del_by(indev->scroll_throw_anim);
+        }
+        gt_memset(data_p, 0, sizeof(union data_union));
+        indev->state = GT_INDEV_STATE_INVALID;
+    }
+    return GT_RES_OK;
+}
+
 bool _gt_indev_remove_want_delate_target(gt_obj_st * target)
 {
     gt_indev_st * indev = NULL;

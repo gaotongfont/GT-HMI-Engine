@@ -184,7 +184,7 @@ typedef struct _gt_indev_s {
     uint32_t timestamp_long_pressed;
 
     gt_indev_state_et state;
-    union {
+    union data_union {
         struct _point {
             gt_point_st act;            ///< the first point of touch input device
             gt_point_st newly;          ///< last point of touch input device
