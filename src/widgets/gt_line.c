@@ -83,8 +83,8 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 static void _resize_area(gt_obj_st * line, gt_attr_line_st * style) {
     line->area.x = GT_MIN(style->start.x, style->end.x) - (style->line.width >> 1);
     line->area.y = GT_MIN(style->start.y, style->end.y) - (style->line.width >> 1);
-    line->area.w = gt_abs(style->end.x - style->start.x) + style->line.width + 1;
-    line->area.h = gt_abs(style->end.y - style->start.y) + style->line.width + 1;
+    line->area.w = gt_abs(style->end.x - style->start.x) + style->line.width;
+    line->area.h = gt_abs(style->end.y - style->start.y) + style->line.width;
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -216,7 +216,8 @@ void gt_line_set_line_width(gt_obj_st * line, uint16_t line_width)
     }
     _gt_line_st * widget = (_gt_line_st * )line;
     gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
-    style->line.width = line_width;
+    style->line.width = line_width % 2 ? line_width + 1: line_width ;
+    _resize_area(line, style);
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
