@@ -374,16 +374,32 @@ _get_scroll_direct_event_type_by(gt_dir_et gesture) {
     return (int)gesture < _GT_DIR_MAX_COUNT ? scroll_dir[gesture] : GT_EVENT_TYPE_NONE;
 }
 
+static GT_ATTRIBUTE_RAM_TEXT inline void
+_scroll_raw_handler(struct _point * point_p, gt_size_t dx, gt_size_t dy) {
+    if (_is_scroll_vertical((gt_dir_et)point_p->gesture)) {
+        dx = 0;
+        point_p->scroll_throw.x = 0;
+        gt_obj_set_scroll_ud(point_p->obj_scroll, GT_DIR_DOWN == point_p->gesture ? true : false);
+    } else {
+        dy = 0;
+        point_p->scroll_throw.y = 0;
+        gt_obj_set_scroll_lr(point_p->obj_scroll, GT_DIR_RIGHT == point_p->gesture ? true : false);
+    }
+    gt_obj_scroll_to(point_p->obj_scroll, dx, dy, GT_ANIM_OFF);
+}
+
 static GT_ATTRIBUTE_RAM_TEXT void
 _indev_scroll_throw_start_cb(struct gt_anim_s * anim) {
     gt_indev_st * dev_p = (gt_indev_st * )anim->tar;
     struct _point * point_p = &dev_p->data.point;
     bool is_scroll = _indev_is_scroll(dev_p);
-    bool is_scroll_throw = _indev_is_scroll_throw(dev_p);
 
-    if (is_scroll_throw) { return; }
+    if (false == point_p->obj_scroll->ignore_throw) {
+        return;
+    }
     if (false == is_scroll) { return; }
-    /** scroll but no throw, immediately end throw */
+    /** Throw scroll handler immediately by ignore_throw */
+    _scroll_raw_handler(point_p, point_p->scroll_sum.x, point_p->scroll_sum.y);
     gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
     _indev_scroll_throw_deleted_cb(anim);
     gt_anim_del_safe_by(dev_p);
@@ -402,20 +418,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_exec_cb(void * indev, int3
     if (0 == point_p->scroll_throw.x && 0 == point_p->scroll_throw.y) {
         gt_anim_set_time(ptr->scroll_throw_anim, 0);
     }
-}
-
-static GT_ATTRIBUTE_RAM_TEXT inline void
-_scroll_raw_handler(struct _point * point_p, gt_size_t dx, gt_size_t dy) {
-    if (_is_scroll_vertical((gt_dir_et)point_p->gesture)) {
-        dx = 0;
-        point_p->scroll_throw.x = 0;
-        gt_obj_set_scroll_ud(point_p->obj_scroll, GT_DIR_DOWN == point_p->gesture ? true : false);
-    } else {
-        dy = 0;
-        point_p->scroll_throw.y = 0;
-        gt_obj_set_scroll_lr(point_p->obj_scroll, GT_DIR_RIGHT == point_p->gesture ? true : false);
-    }
-    gt_obj_scroll_to(point_p->obj_scroll, dx, dy, GT_ANIM_OFF);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_ready_cb(struct gt_anim_s * anim) {

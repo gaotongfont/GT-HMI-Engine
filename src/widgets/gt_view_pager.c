@@ -72,8 +72,7 @@ struct _reg_s {
     uint16_t count : _VIEW_PAGER_COUNT_BIT_WIDTH;
     uint16_t index : _VIEW_PAGER_COUNT_BIT_WIDTH;
     uint16_t glass : 1;     /** display background glass */
-    uint16_t statical : 1;  /** No scroll anim */
-    uint16_t reserved : 6;
+    uint16_t reserved : 7;
 };
 
 typedef struct _gt_view_pager_s {
@@ -234,8 +233,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _init_child_prop(gt_obj_st * obj) {
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline void _scrolling_handler(gt_obj_st * obj) {
-    _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
-    if (style->reg.statical) {
+    if (obj->ignore_throw) {
         return;
     }
     gt_obj_set_pos(obj, obj->process_attr.scroll.x, obj->area.y);
@@ -271,7 +269,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _statical_scroll_calc_new_page(gt_obj_st * obj
 
 static GT_ATTRIBUTE_RAM_TEXT inline void _scroll_end_handler(gt_obj_st * obj) {
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
-    if (style->reg.statical) {
+    if (obj->ignore_throw) {
         _statical_scroll_calc_new_page(obj);
     }
     style->reg.index = gt_abs(obj->process_attr.scroll.x) / style->width;
@@ -369,7 +367,7 @@ void gt_view_pager_scroll_to_fragment(gt_obj_st * obj, gt_size_t index)
         return;
     }
     gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - index * style->width,
-                        style->reg.statical ? GT_ANIM_OFF : GT_ANIM_ON);
+                        obj->ignore_throw ? GT_ANIM_OFF : GT_ANIM_ON);
 }
 
 void gt_view_pager_set_scroll_effect(gt_obj_st * obj, gt_view_pager_scroll_effect_et effect)
@@ -378,10 +376,10 @@ void gt_view_pager_set_scroll_effect(gt_obj_st * obj, gt_view_pager_scroll_effec
         return;
     }
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
-    style->reg.statical = false;
+    obj->ignore_throw = false;
     obj->finger_unfollow = false;
     if (GT_VIEW_PAGER_SCROLL_EFFECT_STATIC == effect) {
-        style->reg.statical = true;
+        obj->ignore_throw = true;
     } else if (GT_VIEW_PAGER_SCROLL_EFFECT_NO_FINGER_FOLLOW == effect) {
         obj->finger_unfollow = true;
     }
