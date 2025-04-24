@@ -278,26 +278,18 @@ static GT_ATTRIBUTE_RAM_TEXT void _statical_scroll_calc_new_page(gt_obj_st * obj
         return;
     }
     /** limit scroll range */
-    if (obj->process_attr.scroll.x > 0) {
-        obj->process_attr.scroll.x = 0;
-        style->reg.index = 0;
-    } else if (obj->process_attr.scroll.x < -(style->width * style->reg.count)) {
-        obj->process_attr.scroll.x =  - style->width * (style->reg.count - 1);
-        style->reg.index = style->reg.count - 1;
-    } else {
-        if (obj->process_attr.scroll_prev.x < obj->process_attr.scroll.x) {
-            /** scroll to left */
-            if (style->reg.index) {
-                --style->reg.index;
-            }
-        } else {
-            /** scroll to right */
-            if (style->reg.index + 1 < style->reg.count) {
-                ++style->reg.index;
-            }
+    if (obj->process_attr.scroll_prev.x < obj->process_attr.scroll.x) {
+        /** scroll to left */
+        if (style->reg.index) {
+            --style->reg.index;
         }
-        obj->process_attr.scroll.x = - style->reg.index * style->width;
+    } else {
+        /** scroll to right */
+        if (style->reg.index + 1 < style->reg.count) {
+            ++style->reg.index;
+        }
     }
+    obj->process_attr.scroll.x = - style->reg.index * style->width;
     /** remark prev scroll position */
     obj->process_attr.scroll_prev.x = obj->process_attr.scroll.x;
     if (prev_idx == style->reg.index) {
