@@ -233,9 +233,6 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _init_child_prop(gt_obj_st * obj) {
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline void _scrolling_handler(gt_obj_st * obj) {
-    if (obj->ignore_throw) {
-        return;
-    }
     gt_obj_set_pos(obj, obj->process_attr.scroll.x, obj->area.y);
 }
 
@@ -384,6 +381,7 @@ void gt_view_pager_set_scroll_effect(gt_obj_st * obj, gt_view_pager_scroll_effec
     obj->finger_unfollow = false;
     if (GT_VIEW_PAGER_SCROLL_EFFECT_STATIC == effect) {
         obj->ignore_throw = true;
+        obj->finger_unfollow = true;
     } else if (GT_VIEW_PAGER_SCROLL_EFFECT_NO_FINGER_FOLLOW == effect) {
         obj->finger_unfollow = true;
     }
