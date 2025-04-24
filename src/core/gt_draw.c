@@ -2428,32 +2428,35 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
     uint16_t rd_val = dsc->line.width;
     uint16_t radius = rd_val >> 1;
     gt_area_st area_line = { coords->x , coords->y , coords->w, 1 };
-    gt_area_st dst_area;
+    gt_area_st dst_area = { .w = rd_val, .h = rd_val };
 
-    bool is_round = (_is_brush_round(&dsc->line) && (radius > 0) ? true : false);
-    bool is_straight_line = ((dsc->start.x == dsc->end.x) || (dsc->start.y == dsc->end.y)) ? true : false;
+    bool is_ver = dsc->start.x == dsc->end.x;
+    bool is_hor = dsc->start.y == dsc->end.y;
+    bool is_round = _is_brush_round(&dsc->line) && (radius > 0) ? true : false;
+    bool is_straight_line = ( is_ver || is_hor ) ? true : false;
 
     if (is_straight_line) {
-        if(is_round){
-            gt_area_copy(&dst_area, coords);
+        if (is_ver) {
+            dst_area.x = dsc->start.x - radius;
+        } else {
+            dst_area.x = GT_MIN(dsc->start.x, dsc->end.x);
+            dst_area.w = GT_MAX(dsc->start.x, dsc->end.x) - dst_area.x;
         }
-        else{
-            if(dsc->start.x == dsc->end.x){
-                dst_area.x = dsc->start.x - radius;
-                dst_area.w = rd_val;
-            }
-            else {
-                dst_area.x = GT_MIN(dsc->start.x, dsc->end.x);
-                dst_area.w = GT_MAX(dsc->start.x, dsc->end.x) - dst_area.x;
-            }
 
-            if(dsc->start.y == dsc->end.y){
-                dst_area.y = dsc->start.y - radius;
-                dst_area.h = rd_val;
+        if (is_hor) {
+            dst_area.y = dsc->start.y - radius;
+        } else {
+            dst_area.y = GT_MIN(dsc->start.y, dsc->end.y);
+            dst_area.h = GT_MAX(dsc->start.y, dsc->end.y) - dst_area.y;
+        }
+        if (is_round) {
+            if (is_ver) {
+                dst_area.y -= radius;
+                dst_area.h += rd_val;
             }
-            else {
-                dst_area.y = GT_MIN(dsc->start.y, dsc->end.y);
-                dst_area.h = GT_MAX(dsc->start.y, dsc->end.y) - dst_area.y;
+            if (is_hor) {
+                dst_area.x -= radius;
+                dst_area.w += rd_val;
             }
         }
     }
@@ -2480,7 +2483,6 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
 
     // straight line and round
     if(is_straight_line) {
-
         gt_mask_radius_st r_mask = {0};
         gt_size_t r_mask_id = -1;
 
@@ -2500,10 +2502,8 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
             gt_mask_remove_idx(r_mask_id);
             gt_mask_free(&r_mask);
         }
-    }
-    else{
-
-        if(is_round) {
+    } else {
+        if (is_round) {
             gt_area_st round_area = { dsc->start.x - radius, dsc->start.y - radius, rd_val, rd_val };
             area_line.x = round_area.x;
             area_line.y = round_area.y;
@@ -2515,7 +2515,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
             gt_mask_radius_init(&r_mask, &round_area, radius, false);
             r_mask_id = gt_mask_add(&r_mask);
 
-            for(uint16_t i = 0; i < round_area.h; ++i) {
+            for (uint16_t i = 0; i < round_area.h; ++i) {
                 area_line.y = round_area.y + i;
                 gt_memset(blend_dsc.mask_buf, blend_dsc.opa, area_line.w);
                 gt_mask_get(blend_dsc.mask_buf, area_line.x, area_line.y, area_line.w);
@@ -2529,7 +2529,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
             area_line.x = round_area.x;
             area_line.y = round_area.y;
 
-            for(uint16_t i = 0; i < round_area.h; ++i) {
+            for (uint16_t i = 0; i < round_area.h; ++i) {
                 area_line.y = round_area.y + i;
                 gt_memset(blend_dsc.mask_buf, blend_dsc.opa, area_line.w);
                 gt_mask_get(blend_dsc.mask_buf, area_line.x, area_line.y, area_line.w);
@@ -2629,10 +2629,10 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
         gt_size_t ss_make_id = -1;
         gt_mask_line_st ee_mask = {0};
         gt_size_t ee_make_id = -1;
-        if(!is_round) {
+        if (!is_round) {
             gt_mask_line_side_et ss_side, ee_side;
-            if(ll_start.x > rl_start.x && ll_start.y > rl_start.y) {
-                if(dsc->start.y < dsc->end.y) {
+            if (ll_start.x > rl_start.x && ll_start.y > rl_start.y) {
+                if (dsc->start.y < dsc->end.y) {
                     ss_side = GT_MASK_LINE_SIDE_LEFT;
                     ee_side = GT_MASK_LINE_SIDE_RIGHT;
                 } else {
@@ -2640,12 +2640,11 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
                     ee_side = GT_MASK_LINE_SIDE_LEFT;
                 }
             }
-            else if(ll_start.x > rl_start.x && ll_start.y < rl_start.y) {
-                if(dsc->start.y < dsc->end.y) {
+            else if (ll_start.x > rl_start.x && ll_start.y < rl_start.y) {
+                if (dsc->start.y < dsc->end.y) {
                     ss_side = GT_MASK_LINE_SIDE_RIGHT;
                     ee_side = GT_MASK_LINE_SIDE_LEFT;
-                }
-                else{
+                } else {
                     ss_side = GT_MASK_LINE_SIDE_LEFT;
                     ee_side = GT_MASK_LINE_SIDE_RIGHT;
                 }
@@ -2657,7 +2656,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
             ee_make_id = gt_mask_add(&ee_mask);
         }
 
-        for(uint16_t i = 0; i < dst_area.h; ++i) {
+        for (uint16_t i = 0; i < dst_area.h; ++i) {
             area_line.y = dst_area.y + i;
             gt_memset(blend_dsc.mask_buf, blend_dsc.opa, area_line.w);
             gt_mask_get(blend_dsc.mask_buf, area_line.x, area_line.y, area_line.w);
@@ -2669,16 +2668,14 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
         gt_mask_free(&ll_mask);
         gt_mask_free(&rl_mask);
 
-        if(!is_round) {
+        if (!is_round) {
             gt_mask_remove_idx(ss_make_id);
             gt_mask_remove_idx(ee_make_id);
             gt_mask_free(&ss_mask);
             gt_mask_free(&ee_mask);
         }
     }
-
     gt_mem_free(blend_dsc.mask_buf);
-
 }
 
 GT_ATTRIBUTE_RAM_TEXT void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_attr_curve_st const * dsc, const gt_area_st * coords)
