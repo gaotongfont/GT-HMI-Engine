@@ -138,6 +138,17 @@ _scr_has_home_gesture_events(gt_obj_st * target, gt_event_type_et event) {
         return false;
     }
     gt_obj_st * tar_scr = gt_obj_within_which_scr(target);
+#if GT_CFG_ENABLE_DIALOG
+    if (gt_dialog_has_showing()) {
+        gt_obj_st * top = gt_disp_get_layer_top();
+        if (target == top || gt_obj_is_child(target, top)) {
+            tar_scr = top;
+        }
+    }
+#endif
+    if (NULL == tar_scr) {
+        return false;
+    }
     return gt_event_has_event_cb(tar_scr, event);
 }
 
@@ -188,6 +199,16 @@ static GT_ATTRIBUTE_RAM_TEXT bool _indev_send_home_gesture_event(gt_indev_st * i
     gt_obj_st * scr = gt_disp_get_scr();
     gt_event_type_et e = GT_EVENT_TYPE_NONE;
 
+#if GT_CFG_ENABLE_DIALOG
+    if (gt_dialog_has_showing()) {
+        if (gt_obj_is_type(indev->data.point.obj_scroll, GT_TYPE_LAYER_TOP)) {
+            return false;
+        }
+        if (gt_obj_is_child(indev->data.point.obj_scroll, gt_disp_get_layer_top())) {
+            return false;
+        }
+    }
+#endif
     if (false == _is_indev_home_gesture(indev, scr, &e)) {
         return false;
     }
