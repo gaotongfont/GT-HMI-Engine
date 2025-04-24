@@ -251,11 +251,15 @@ static GT_ATTRIBUTE_RAM_TEXT void _statical_scroll_calc_new_page(gt_obj_st * obj
         /** scroll to left */
         if (style->reg.index) {
             --style->reg.index;
+        } else {
+            style->reg.index = style->reg.count - 1;
         }
     } else {
         /** scroll to right */
         if (style->reg.index + 1 < style->reg.count) {
             ++style->reg.index;
+        } else {
+            style->reg.index = 0;
         }
     }
     obj->process_attr.scroll.x = - style->reg.index * style->width;
