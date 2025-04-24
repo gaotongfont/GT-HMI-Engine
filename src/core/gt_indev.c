@@ -326,24 +326,22 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_handler(gt_indev_st * inde
     gt_obj_scroll_to(obj_scroll, dx, dy, GT_ANIM_ON);
 }
 
-static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_exec_cb(void * indev, int32_t v) {
-    GT_UNUSED(v);
-    gt_indev_st * ptr = (gt_indev_st *)indev;
-    struct _point * point_p = &ptr->data.point;
-
-    _indev_scroll_throw_handler(ptr);
-
-    if (GT_DIR_NONE == ptr->data.point.gesture) {
-        gt_anim_set_time(ptr->scroll_throw_anim, 0);
+static GT_ATTRIBUTE_RAM_TEXT inline bool
+_indev_is_scroll(gt_indev_st * indev) {
+    struct _point * point_p = &indev->data.point;
+    if (gt_abs(point_p->scroll_sum.x) >= indev->drv->limit_pixel_scroll) {
+        return true;
     }
-    if (0 == point_p->scroll_throw.x && 0 == point_p->scroll_throw.y) {
-        gt_anim_set_time(ptr->scroll_throw_anim, 0);
+    if (gt_abs(point_p->scroll_sum.y) >= indev->drv->limit_pixel_scroll) {
+        return true;
     }
+    return false;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline bool
 _indev_is_scroll_throw(gt_indev_st * indev) {
-    return indev->data.point.scroll_throw.x || indev->data.point.scroll_throw.y ? true : false;
+    struct _point * point_p = &indev->data.point;
+    return point_p->scroll_throw.x || point_p->scroll_throw.y ? true : false;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline void
@@ -351,6 +349,14 @@ _indev_scroll_throw_reset(gt_indev_st * indev) {
     indev->scroll_throw_anim = NULL;
     indev->data.point.scroll_throw.x = 0;
     indev->data.point.scroll_throw.y = 0;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_deleted_cb(struct gt_anim_s * anim) {
+    gt_indev_st * dev_p = (gt_indev_st * )anim->tar;
+    struct _point * point_p = &dev_p->data.point;
+
+    _indev_scroll_throw_reset(dev_p);
+    point_p->obj_scroll = NULL;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT gt_event_type_et
@@ -366,6 +372,36 @@ _get_scroll_direct_event_type_by(gt_dir_et gesture) {
         return GT_EVENT_TYPE_NONE;
     }
     return (int)gesture < _GT_DIR_MAX_COUNT ? scroll_dir[gesture] : GT_EVENT_TYPE_NONE;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void
+_indev_scroll_throw_start_cb(struct gt_anim_s * anim) {
+    gt_indev_st * dev_p = (gt_indev_st * )anim->tar;
+    struct _point * point_p = &dev_p->data.point;
+    bool is_scroll = _indev_is_scroll(dev_p);
+    bool is_scroll_throw = _indev_is_scroll_throw(dev_p);
+
+    if (is_scroll_throw) { return; }
+    if (false == is_scroll) { return; }
+    /** scroll but no throw, immediately end throw */
+    gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
+    _indev_scroll_throw_deleted_cb(anim);
+    gt_anim_del_safe_by(dev_p);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_exec_cb(void * indev, int32_t v) {
+    GT_UNUSED(v);
+    gt_indev_st * ptr = (gt_indev_st *)indev;
+    struct _point * point_p = &ptr->data.point;
+
+    _indev_scroll_throw_handler(ptr);
+
+    if (GT_DIR_NONE == ptr->data.point.gesture) {
+        gt_anim_set_time(ptr->scroll_throw_anim, 0);
+    }
+    if (0 == point_p->scroll_throw.x && 0 == point_p->scroll_throw.y) {
+        gt_anim_set_time(ptr->scroll_throw_anim, 0);
+    }
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline void
@@ -408,15 +444,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_ready_cb(struct gt_anim_s 
     }
 }
 
-static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_deleted_cb(struct gt_anim_s * anim) {
-    gt_indev_st * dev_p = (gt_indev_st * )anim->tar;
-    struct _point * point_p = &dev_p->data.point;
-
-    _indev_scroll_throw_reset(dev_p);
-    point_p->obj_scroll = NULL;
-}
-
-static GT_ATTRIBUTE_RAM_TEXT inline void _indev_scroll_throw_handler_anim_start(gt_indev_st * indev) {
+static GT_ATTRIBUTE_RAM_TEXT inline void
+_indev_scroll_throw_handler_anim_start(gt_indev_st * indev) {
     if (_indev_send_home_gesture_event(indev)) {
         _indev_scroll_throw_reset(indev);
         return ;
@@ -426,6 +455,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _indev_scroll_throw_handler_anim_start(
     gt_anim_set_target(&anim, indev);
     gt_anim_set_value(&anim, 0, 1024);
     gt_anim_set_time(&anim, 1024);
+    gt_anim_set_start_cb(&anim, _indev_scroll_throw_start_cb);
     gt_anim_set_exec_cb(&anim, _indev_scroll_throw_exec_cb);
     gt_anim_set_ready_cb(&anim, _indev_scroll_throw_ready_cb);
     gt_anim_set_deleted_cb(&anim, _indev_scroll_throw_deleted_cb);
