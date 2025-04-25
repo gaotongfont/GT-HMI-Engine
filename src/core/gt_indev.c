@@ -633,6 +633,11 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_pressed_handle(gt_indev_st * indev) {
         _gt_indev_point_set_value(&point_p->scroll_diff, 0, 0);
         /* save pressed obj */
         point_p->gesture = GT_DIR_NONE;
+        if (indev->scroll_throw_anim) {
+            gt_anim_set_paused(indev->scroll_throw_anim, true);
+            gt_anim_del_by(indev->scroll_throw_anim);
+            _indev_scroll_throw_reset(indev);
+        }
         point_p->obj_act = _search_active_obj_from_all_layers(&point_p->newly, true);
         if (NULL == point_p->obj_act) { return; }
         if (gt_obj_is_untouchability(point_p->obj_act)) {
