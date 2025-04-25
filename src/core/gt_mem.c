@@ -543,7 +543,7 @@ void gt_mem_check_used(void)
 #if USE_MEM_REAL_USED_REMARK
     static MEM_UNIT prev_blocks = 0, prev_used = 0;
     if (prev_blocks != _heap_info.blocks || prev_used != _heap_info.used) {
-        GT_LOGI(GT_LOG_TAG_MEM, "reality blocks: %d, used: %.2f%% [%d / %.0f(%.2f kB) Byte]",
+        GT_LOGI(GT_LOG_TAG_MEM, "blks: %d, used: %.2f%% [%d / %.0f(%.2f kB) Byte]",
             _heap_info.blocks, _heap_info.used * 100.0 / total_size, _heap_info.used, total_size, total_size / 1024);
         prev_blocks = _heap_info.blocks;
         prev_used = _heap_info.used;
