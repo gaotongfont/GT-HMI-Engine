@@ -163,6 +163,16 @@ uint16_t gt_roller_go_prev(gt_obj_st * obj);
 uint16_t gt_roller_go_next(gt_obj_st * obj);
 
 /**
+ * @brief Set the inertia scroll snap, maybe scroll to next one according to the velocity;
+ *        0[default]: it will scroll to the nearest item
+ *
+ * @param obj
+ * @param enable 0[default]: nearby scroll snap; 1: inertia scroll snap
+ * @return gt_res_t
+ */
+gt_res_t gt_roller_set_inertia_snap(gt_obj_st * obj, bool enable);
+
+/**
  * @brief Get the total count of the roller options
  *
  * @param obj Roller object

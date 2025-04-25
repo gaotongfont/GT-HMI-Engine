@@ -46,7 +46,8 @@ typedef struct {
     uint8_t mode : 2;       //Roller running mode @ref gt_roller_mode_em
     uint8_t state : 2;      //Item scroll snap state @ref _gt_roller_state_em
     uint8_t show_background : 1;    /** 1[default]: show background;  */
-    uint8_t reserved : 3;
+    uint8_t inertia_snap : 1;    /** 0[default]: nearby scroll snap; 1: inertia scroll snap, maybe scroll to next one */
+    uint8_t reserved : 2;
 }_gt_roller_reg_st;
 
 /**
@@ -252,6 +253,52 @@ static GT_ATTRIBUTE_RAM_TEXT void _select_target_item(gt_obj_st * obj) {
     gt_anim_set_ready_cb(&anim, _notify_update_value_ready_cb);
     gt_anim_start(&anim);
 }
+
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t
+_calc_nearby_snap_target_y(gt_obj_st * obj, gt_size_t scroll_y, gt_size_t item_height) {
+    gt_size_t target_y = scroll_y;
+    gt_size_t less = scroll_y % item_height;
+    gt_size_t less_abs = gt_abs(less);
+    gt_size_t half_h = item_height >> 1;
+    if (scroll_y < 0) {
+        if (less_abs <= half_h) {
+            target_y -= less;
+        } else {
+            target_y -= less + item_height;
+        }
+    } else {
+        if (scroll_y > half_h) {
+            target_y += less_abs;
+        } else if (less_abs <= half_h) {
+            target_y -= less;
+        }
+    }
+    return target_y;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t
+_calc_inertia_snap_target_y(gt_obj_st * obj, gt_size_t scroll_y, gt_size_t item_height) {
+    gt_size_t target_y = scroll_y;
+    gt_size_t less = scroll_y % item_height;
+    if (gt_obj_is_scroll_up(obj)) {
+        /** item go up */
+        if (scroll_y < 0) {
+            target_y -= less + item_height;
+        } else {
+            /** top limit */
+            target_y -= less;
+        }
+    }
+    else if (gt_obj_is_scroll_down(obj)) {
+        if (scroll_y < 0) {
+            target_y -= less;
+        } else {
+            target_y -= less - item_height;
+        }
+    }
+    return target_y;
+}
+
 static GT_ATTRIBUTE_RAM_TEXT void _scroll_snap(gt_obj_st * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
     gt_size_t scroll_y = gt_obj_scroll_get_y(obj);
@@ -260,23 +307,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _scroll_snap(gt_obj_st * obj) {
         scroll_y = _normal_limit_y(obj, scroll_y);
     }
 
-    gt_size_t target_y = scroll_y;
     gt_size_t item_height = gt_label_get_font_size(style->text) + gt_label_get_space_y(style->text);
+    gt_size_t target_y = style->reg.inertia_snap ?
+        _calc_inertia_snap_target_y(obj, scroll_y, item_height) : _calc_nearby_snap_target_y(obj, scroll_y, item_height);
 
-    if (gt_obj_is_scroll_up(obj)) {
-        if (scroll_y < 0) {
-            target_y -= (scroll_y % item_height) + item_height;
-        } else {
-            target_y -= scroll_y % item_height;
-        }
-    }
-    else if (gt_obj_is_scroll_down(obj)) {
-        if (scroll_y < 0) {
-            target_y -= scroll_y % item_height;
-        } else {
-            target_y -= (scroll_y % item_height) - item_height;
-        }
-    }
     if (gt_abs(target_y - scroll_y) >= item_height) {
         /** Do not scroll by anim when variation over item height */
         _select_target_item(obj);
@@ -302,15 +336,24 @@ static GT_ATTRIBUTE_RAM_TEXT void _scroll_anim_ready_handler(struct gt_anim_s * 
     }
 }
 
+static GT_ATTRIBUTE_RAM_TEXT inline bool
+_scroll_pos_need_to_snap(struct gt_obj_s * obj) {
+    _gt_roller_st * style = (_gt_roller_st * )obj;
+    uint16_t item_height = style->text->area.h / style->count_total;
+    return obj->process_attr.scroll.y % item_height ? true : false;
+}
+
 static GT_ATTRIBUTE_RAM_TEXT void _ready_scroll_snap_anim(struct gt_obj_s * obj) {
     _gt_roller_st * style = (_gt_roller_st * )obj;
 
     if (GT_ANIM_ON == GT_ROLLER_SNAP_ANIM_STATE &&
         _SCROLL_SNAP_READY == style->reg.state) {
         /** after snap handler, get the select one */
-        _select_target_item(obj);
-        style->reg.state = _SCROLL_SNAP_NONE;
-        return ;
+        if (false == _scroll_pos_need_to_snap(obj)) {
+            _select_target_item(obj);
+            style->reg.state = _SCROLL_SNAP_NONE;
+            return ;
+        }
     }
     if (NULL == style->anim_snap) {
         gt_anim_st anim;
@@ -768,6 +811,16 @@ uint16_t gt_roller_go_next(gt_obj_st * obj)
 {
     gt_roller_set_selected_anim(obj, gt_roller_get_selected(obj) + 1);
     return gt_roller_get_selected(obj);
+}
+
+gt_res_t gt_roller_set_inertia_snap(gt_obj_st * obj, bool enable)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+    _gt_roller_st * style = (_gt_roller_st * )obj;
+    style->reg.inertia_snap = enable ? true : false;
+    return GT_RES_OK;
 }
 
 uint8_t gt_roller_get_total_count(gt_obj_st * obj)
