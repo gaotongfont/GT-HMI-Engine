@@ -309,7 +309,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _scroll_snap(gt_obj_st * obj) {
 
     gt_size_t item_height = gt_label_get_font_size(style->text) + gt_label_get_space_y(style->text);
     gt_size_t target_y = style->reg.inertia_snap ?
-        _calc_inertia_snap_target_y(obj, scroll_y, item_height) : _calc_nearby_snap_target_y(obj, scroll_y, item_height);
+        _calc_inertia_snap_target_y(obj, scroll_y, item_height) :
+        _calc_nearby_snap_target_y(obj, scroll_y, item_height);
 
     if (target_y == scroll_y) {
         /** Do not scroll by anim when target y equal to current scroll value */
