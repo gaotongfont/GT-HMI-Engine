@@ -78,7 +78,8 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_btn_class = {
  *
  * @param obj
  */
-static void _btn_init_cb(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_btn_init_cb(gt_obj_st * obj) {
     _gt_btn_st * style = (_gt_btn_st * )obj;
     gt_color_t fg_color = gt_obj_get_state(obj) == GT_STATE_PRESSED ? style->color_pressed : obj->bgcolor;
 
@@ -140,13 +141,10 @@ static void _btn_init_cb(gt_obj_st * obj) {
 
     if( style->font_align == GT_ALIGN_LEFT
         || style->font_align == GT_ALIGN_LEFT_MID
-        || style->font_align == GT_ALIGN_LEFT_BOTTOM
-
-    ){
+        || style->font_align == GT_ALIGN_LEFT_BOTTOM){
         font_attr.logical_area.x += 4;
         font_attr.logical_area.w -= 8;
     }
-
 
     draw_text(obj->draw_ctx, &font_attr, &area);
 
@@ -159,7 +157,7 @@ static void _btn_init_cb(gt_obj_st * obj) {
  *
  * @param obj
  */
-static void _btn_deinit_cb(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _btn_deinit_cb(gt_obj_st * obj) {
     _gt_btn_st * style_p = (_gt_btn_st * )obj;
 
     if (NULL != style_p->contents) {
@@ -168,7 +166,7 @@ static void _btn_deinit_cb(gt_obj_st * obj) {
     }
 }
 
-static bool _turn_next_content(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT bool _turn_next_content(gt_obj_st * obj) {
     _gt_btn_st * style = (_gt_btn_st * )obj;
     if (NULL == style->contents) {
         return false;
@@ -178,7 +176,7 @@ static bool _turn_next_content(gt_obj_st * obj) {
     return true;
 }
 
-static void _press_btn_handler(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void _press_btn_handler(gt_obj_st * obj) {
     gt_obj_set_state(obj, GT_STATE_PRESSED);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
