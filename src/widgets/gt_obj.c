@@ -196,6 +196,22 @@ static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
             _unmasked_effect_handler(obj);
             break;
         }
+        case GT_EVENT_TYPE_INPUT_SCROLL_UP: {
+            gt_obj_scroll_to_y(obj, obj->area.h >> 1, GT_ANIM_ON);
+            break;
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL_DOWN: {
+            gt_obj_scroll_to_y(obj, -(obj->area.h >> 1), GT_ANIM_ON);
+            break;
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL_LEFT: {
+            gt_obj_scroll_to_x(obj, obj->area.x >> 1, GT_ANIM_ON);
+            break;
+        }
+        case GT_EVENT_TYPE_INPUT_SCROLL_RIGHT: {
+            gt_obj_scroll_to_x(obj, -(obj->area.x >> 1), GT_ANIM_ON);
+            break;
+        }
         default:
             break;
     }
