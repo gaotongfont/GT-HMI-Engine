@@ -1054,14 +1054,14 @@ void gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const param)
         return;
     }
     gt_scr_stack_item_st * item_p = &ret.new_item;
-    if (ret.scr_old == item_p->current_scr) {
-        gt_disp_invalid_area(item_p->current_scr);
-        return;
-    }
 #if _GT_STACK_USE_LOADING_LOG
     GT_LOGD(GT_LOG_TAG_GUI, "layer[%d], id: [0x%X = %d], scr: %p", gt_scr_stack_get_count(),
         item_p->current_scr_id, item_p->current_scr_id, item_p->current_scr);
 #endif
+    if (ret.scr_old == item_p->current_scr) {
+        gt_disp_invalid_area(item_p->current_scr);
+        return;
+    }
     gt_disp_load_scr_anim(item_p->current_scr, item_p->anim_type, item_p->time, item_p->delay, ret.del_prev_scr);
 }
 
