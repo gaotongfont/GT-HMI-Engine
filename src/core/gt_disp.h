@@ -81,6 +81,14 @@ typedef struct gt_disp_stack_param_s {
      */
     uint8_t ignore_repeat_screen_id : 1;
 #endif
+    /**
+     * @brief force create a new screen object to reload. If the same screen id
+     *      is in the stack list before, it will be free and create a new screen
+     *      object to reload.  Even the same screen id is not TOP screen, it will
+     *      be free.
+     *      0[default]: just redraw screen object which create before;
+     *      1: force create a new screen object to reload
+     */
     uint8_t force_create_reload : 1;
     uint8_t reserved : 5;
 }gt_disp_stack_param_st;
