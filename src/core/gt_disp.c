@@ -1087,6 +1087,10 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         if (GT_SCR_ANIM_TYPE_NONE != type) {
             type = GT_SCR_ANIM_TYPE_NONE;
         }
+    } else if (scr && scr_old == scr) {
+        /** reload current screen */
+        gt_disp_invalid_area(scr);
+        return;
     }
     scr->using_sta = true;
     disp->scr_anim_type = type;
