@@ -171,7 +171,7 @@ void gt_listview_hide_background(gt_obj_st * listview, bool hide);
 void gt_listview_set_next_row_item_count(gt_obj_st * listview, uint8_t count);
 
 /**
- * @brief Show the lateest one item always
+ * @brief Show the latest one item always
  *
  * @param listview
  * @param show 0[default]: not show; 1: show
