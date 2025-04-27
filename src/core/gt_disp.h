@@ -35,6 +35,20 @@ extern "C" {
      *      in the stack list, it will be free and create a new screen object to reload.
      *      If the same screen id is not TOP screen but before current screen,
      *      it will NOT be FREE.
+     *
+     *  ignore_repeat_screen_id: true
+     *      status: a -> b -> c1, want to load c id:
+     *          a -> b -> c2        (c1 will be free)
+     *
+     *      status: a -> b1 -> c, want to load b id:
+     *          a -> b1 -> c -> b2  (b1 will not be free!)
+     *
+     *  ignore_repeat_screen_id: false
+     *      status: a -> b -> c1, want to load c id:
+     *          a -> b -> c1        (c1 do nothing about refresh)
+     *
+     *      status a -> b1 -> c1, want to load b id:
+     *          a -> b1             (b1 will be refresh but not re-create, and pop(free) all after b1 create screen)
      */
     #define GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID   0
 #endif
