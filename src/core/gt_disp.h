@@ -53,9 +53,16 @@ typedef struct gt_disp_stack_param_s {
     uint8_t del_prev_scr : 1;
 #if GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
     /**
-     * @brief 0[default] free middle screen object; reload the same screen object
-     *      before.
-     *  detail see @ref GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID brief
+     * @brief detail see @ref GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID brief
+     *
+     *  0[Default]: The same screen id will be reloaded before within stack list,
+     *      and free lot of screens which create after that same screen;
+     *
+     *  1: Ignore the same screen id, create a new screen object to load;
+     *      [WARN] if TOP screen is the same screen id which want to be reload
+     *      in the stack list, it will be free and create a new screen object to reload.
+     *      If the same screen id is not TOP screen but before current screen,
+     *      it will NOT be FREE.
      */
     uint8_t ignore_repeat_screen_id : 1;
 #endif
