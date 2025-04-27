@@ -476,12 +476,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_handler(gt_indev_st * indev) {
     point_p->scroll_sum.y += point_p->scroll_diff.y;
     point_p->gesture = _get_scroll_dir(indev);
 
-    if ((uint16_t)GT_DIR_NONE == point_p->gesture) {
-        return;
-    }
-    if (GT_SCROLL_DISABLE == point_p->obj_target->scroll_dir) {
-        return;
-    }
+    if ((uint16_t)GT_DIR_NONE == point_p->gesture) { return; }
+
+    if (GT_SCROLL_DISABLE == point_p->obj_target->scroll_dir) { return; }
+
     if (NULL == point_p->obj_scroll) {
         if (point_p->obj_target->fixed) {
             /** if widget fixed, then search it parent's widget to scroll */
@@ -491,13 +489,11 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_handler(gt_indev_st * indev) {
     }
     point_p->obj_scroll = point_p->obj_target;
 
-    if (_is_indev_home_gesture(indev, point_p->obj_scroll, NULL)) {
-        return ;
-    }
-    if (point_p->obj_scroll->finger_unfollow) {
-        return ;
-    }
-    _scroll_raw_handler(point_p, point_p->scroll_throw.x, point_p->scroll_throw.y);
+    if (_is_indev_home_gesture(indev, point_p->obj_scroll, NULL)) { return ; }
+
+    if (point_p->obj_scroll->finger_unfollow) { return ; }
+
+    _scroll_raw_handler(point_p, point_p->scroll_diff.x, point_p->scroll_diff.y);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline void _send_released_event(struct _point * point_p) {
