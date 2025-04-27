@@ -67,7 +67,7 @@ typedef struct gt_disp_stack_param_s {
      *
      *  ignore_repeat_screen_id: true
      *      status: a -> b -> c1, want to load c id:
-     *          a -> b -> c2        ([WARN] c1 will be free)
+     *          a -> b -> c1 -> c2  (c1 will not be free!)
      *
      *      status: a -> b1 -> c, want to load b id:
      *          a -> b1 -> c -> b2  (b1 will not be free!)

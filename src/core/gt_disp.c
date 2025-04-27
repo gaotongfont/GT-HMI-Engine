@@ -978,26 +978,22 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
     bool is_last_page = result.index_from_top + 1 == gt_scr_stack_get_count();
 #if GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
     if (param->ignore_repeat_screen_id) {
-        if (false == is_last_page) {
+        if (false == param->force_create_reload) {
             result.data = NULL; /** Need to create a new screen to load */
         }
     }
 #endif
     if (result.data) {
         gt_scr_stack_item_st * same_scr = gt_scr_stack_pop(result.index_from_top);
-        if (is_last_page && same_scr->current_scr_id == new_item_p->current_scr_id) {
-            new_item_p->current_scr = NULL;
+        new_item_p->prev_scr_id = same_scr->prev_scr_id;
+        new_item_p->prev_scr_alive = same_scr->prev_scr_alive;
+        if (false == param->force_create_reload) {
+            new_item_p->current_scr = same_scr->current_scr;
         } else {
-            new_item_p->prev_scr_id = same_scr->prev_scr_id;
-            new_item_p->prev_scr_alive = same_scr->prev_scr_alive;
-            if (param->force_create_reload) {
-                if (false == is_last_page && same_scr->current_scr) {
-                    gt_obj_destroy_immediately(same_scr->current_scr);
-                }
-                new_item_p->current_scr = NULL;
-            } else {
-                new_item_p->current_scr = same_scr->current_scr;
+            if (false == is_last_page && same_scr->current_scr) {
+                gt_obj_destroy_immediately(same_scr->current_scr);
             }
+            new_item_p->current_scr = NULL;
         }
         ret.del_prev_scr = true;    /** Must free old screen memory */
     } else {
