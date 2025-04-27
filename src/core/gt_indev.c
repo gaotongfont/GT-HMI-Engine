@@ -630,6 +630,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_pressed_handle(gt_indev_st * indev) {
         /* save pressed obj */
         point_p->gesture = GT_DIR_NONE;
         if (indev->scroll_throw_anim) {
+            if (point_p->obj_scroll) {
+                /** End of prev scroll event */
+                gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
+            }
             gt_anim_set_paused(indev->scroll_throw_anim, true);
             gt_anim_del_by(indev->scroll_throw_anim);
             _indev_scroll_throw_reset(indev);
