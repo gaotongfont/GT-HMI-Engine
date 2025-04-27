@@ -969,13 +969,13 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
     new_item_p->delay = param->delay;
     new_item_p->anim_type = param->type;
     gt_scr_id_t home_id = gt_scr_stack_get_home_scr_id();
-    bool is_last_page = false;  /** ignore repeat screen valid */
 
     /** Has the same page before and pop unused stack item */
     gt_stack_item_st result = gt_scr_stack_has_before(new_item_p);
+    /** ignore repeat screen valid */
+    bool is_last_page = result.index_from_top + 1 == gt_scr_stack_get_count();
 #if GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
     if (param->ignore_repeat_screen_id) {
-        is_last_page = result.index_from_top + 1 == gt_scr_stack_get_count();
         if (false == is_last_page) {
             result.data = NULL; /** Need to create a new screen to load */
         }
@@ -988,10 +988,12 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
         } else {
             new_item_p->prev_scr_id = same_scr->prev_scr_id;
             new_item_p->prev_scr_alive = same_scr->prev_scr_alive;
-            if (param->force_create_reload && same_scr->current_scr) {
-                gt_obj_destroy_immediately(same_scr->current_scr);
+            if (param->force_create_reload) {
+                if (false == is_last_page && same_scr->current_scr) {
+                    gt_obj_destroy_immediately(same_scr->current_scr);
+                }
                 new_item_p->current_scr = NULL;
-            } else  {
+            } else {
                 new_item_p->current_scr = same_scr->current_scr;
             }
         }
