@@ -180,7 +180,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _show_background(gt_obj_st * obj, _gt_listview
     rect_attr.border_color  = style->border_color;
     rect_attr.bg_color      = obj->bgcolor;
     // 外框
-    draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
+    gt_area_st area = gt_area_reduce(obj->area, -style->border_width);
+    draw_bg(obj->draw_ctx, &rect_attr, &area);
 }
 
 static inline gt_size_t _calc_remainder(gt_size_t val) {
@@ -472,7 +473,8 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         gt_disp_invalid_area(obj);
     }
     else if (GT_EVENT_TYPE_INPUT_SCROLL == code_val) {
-        if (gt_obj_get_childs_max_height(obj) < gt_obj_get_h(obj)) {
+        if (0 == obj->process_attr.scroll.y &&
+            gt_obj_get_childs_max_height(obj) < gt_obj_get_h(obj)) {
             /** all items can display with current page, reset scroll selected effect */
             _reset_last_active_state(obj, _get_last_active_obj(obj));
             _set_last_active_obj(obj, NULL);
@@ -481,7 +483,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         if (style->highlight) {
             gt_obj_set_trigger_mode(style->last_active, false);
         }
-        gt_size_t offset_y = (style->border_width + style->item_reduce) << 2;
+        gt_size_t offset_y = ( style->item_reduce) << 2;
         _gt_obj_scroll_internal(obj, 0, offset_y);
     }
     else if (GT_EVENT_TYPE_INPUT_PRESSED == code_val) {
@@ -1159,6 +1161,37 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 
     return obj;
+}
+
+gt_res_t gt_listview_del_item(gt_obj_st * listview, uint16_t item_idx)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    gt_size_t item_height = style->item_height + style->item_space.y;
+
+    if (item_idx >= listview->cnt_child) { item_idx = listview->cnt_child - 1; }
+    if (item_idx == listview->cnt_child - 1) {
+        /** last one item */
+        if (1 == style->column.count) {
+            style->column.offset_y -= item_height;
+            gt_obj_destroy_immediately(listview->child[item_idx]);
+
+            if (style->column.offset_y < listview->area.h) {
+                gt_obj_scroll_to_y(listview,  - listview->process_attr.scroll.y, GT_ANIM_ON);
+            } else {
+                gt_obj_scroll_to_y(listview, -style->column.offset_y, GT_ANIM_ON);
+            }
+        }
+        // TODO: del multiple column item
+    }
+    // TODO: del random item mode
+
+    if (0 == listview->cnt_child) { gt_listview_clear_all_items(listview); }
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+    return GT_RES_OK;
 }
 
 void gt_listview_clear_all_items(gt_obj_st * listview)

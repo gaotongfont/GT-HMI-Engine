@@ -237,6 +237,16 @@ gt_obj_st * gt_listview_get_element_by(gt_obj_st * listview, uint16_t item_idx, 
 gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listview_custom_item_st * item);
 
 /**
+ * @brief delete item
+ *      [WARNING] Only single column mode is supported delete last one item.
+ *
+ * @param listview
+ * @param item_idx item index, begin from 0; 0xFFFF: default delete the last item
+ * @return gt_res_t
+ */
+gt_res_t gt_listview_del_item(gt_obj_st * listview, uint16_t item_idx);
+
+/**
  * @brief Clear all items in the listview
  *
  * @param listview
