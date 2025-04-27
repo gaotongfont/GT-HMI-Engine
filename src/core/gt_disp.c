@@ -968,19 +968,27 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
     new_item_p->delay = param->delay;
     new_item_p->anim_type = param->type;
     gt_scr_id_t home_id = gt_scr_stack_get_home_scr_id();
+    bool is_last_page = false;  /** ignore repeat screen valid */
 
     /** Has the same page before and pop unused stack item */
     gt_stack_item_st result = gt_scr_stack_has_before(new_item_p);
 #if GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
     if (param->ignore_repeat_screen_id) {
-        result.data = NULL; /** Need to create a new screen to load */
+        is_last_page = result.index_from_top + 1 == gt_scr_stack_get_count();
+        if (false == is_last_page) {
+            result.data = NULL; /** Need to create a new screen to load */
+        }
     }
 #endif
     if (result.data) {
         gt_scr_stack_item_st * same_scr = gt_scr_stack_pop(result.index_from_top);
-        new_item_p->prev_scr_id = same_scr->prev_scr_id;
-        new_item_p->prev_scr_alive = same_scr->prev_scr_alive;
-        new_item_p->current_scr = same_scr->current_scr;
+        if (is_last_page && same_scr->current_scr_id == new_item_p->current_scr_id) {
+            new_item_p->current_scr = NULL;
+        } else {
+            new_item_p->prev_scr_id = same_scr->prev_scr_id;
+            new_item_p->prev_scr_alive = same_scr->prev_scr_alive;
+            new_item_p->current_scr = same_scr->current_scr;
+        }
         ret.del_prev_scr = true;    /** Must free old screen memory */
     } else {
         gt_scr_stack_item_st * prev = gt_scr_stack_peek();

@@ -27,7 +27,9 @@ extern "C" {
      *      before screen id, it will not be reloaded and free the last
      *      intermediate page with the same id and the current page.
      *      [Default]0: The same screen id will be reloaded before within stack list;
-     *               1: Ignore the same screen id, create a new screen object to load.
+     *               1: Ignore the same screen id, create a new screen object to load;
+     *      [WARN] if top screen is the same screen id in the stack list, it will be free
+     *               and create a new screen object to reload.
      */
     #define GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID   0
 #endif
