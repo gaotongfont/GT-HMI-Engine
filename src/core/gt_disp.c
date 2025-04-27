@@ -988,7 +988,12 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
         } else {
             new_item_p->prev_scr_id = same_scr->prev_scr_id;
             new_item_p->prev_scr_alive = same_scr->prev_scr_alive;
-            new_item_p->current_scr = same_scr->current_scr;
+            if (param->force_create_reload && same_scr->current_scr) {
+                gt_obj_destroy_immediately(same_scr->current_scr);
+                new_item_p->current_scr = NULL;
+            } else  {
+                new_item_p->current_scr = same_scr->current_scr;
+            }
         }
         ret.del_prev_scr = true;    /** Must free old screen memory */
     } else {

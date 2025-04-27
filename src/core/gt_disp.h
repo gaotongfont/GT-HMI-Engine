@@ -81,7 +81,8 @@ typedef struct gt_disp_stack_param_s {
      */
     uint8_t ignore_repeat_screen_id : 1;
 #endif
-    uint8_t reserved : 6;
+    uint8_t force_create_reload : 1;
+    uint8_t reserved : 5;
 }gt_disp_stack_param_st;
 
 
