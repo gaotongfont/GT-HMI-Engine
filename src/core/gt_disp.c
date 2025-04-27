@@ -911,7 +911,8 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
 
     if (scr_old != new_item.current_scr) {
 #if _GT_STACK_USE_LOADING_LOG
-        GT_LOGD(GT_LOG_TAG_GUI, "layer[%d] = new_scr[0x%X = %d]", gt_scr_stack_get_count(), new_item.current_scr_id, new_item.current_scr_id);
+        GT_LOGD(GT_LOG_TAG_GUI, "layer[%d], id: [0x%X = %d], scr: %p", gt_scr_stack_get_count(),
+            new_item.current_scr_id, new_item.current_scr_id, new_item.current_scr);
 #endif
         gt_event_send(new_item.current_scr, GT_EVENT_TYPE_SCREEN_BEFORE_GO_BACK, NULL);
         gt_disp_load_scr_anim(new_item.current_scr, new_item.anim_type, new_item.time, new_item.delay, true);
@@ -1058,7 +1059,8 @@ void gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const param)
         return;
     }
 #if _GT_STACK_USE_LOADING_LOG
-    GT_LOGD(GT_LOG_TAG_GUI, "layer[%d] = new_scr[0x%X = %d]", gt_scr_stack_get_count(), item_p->current_scr_id, item_p->current_scr_id);
+    GT_LOGD(GT_LOG_TAG_GUI, "layer[%d], id: [0x%X = %d], scr: %p", gt_scr_stack_get_count(),
+        item_p->current_scr_id, item_p->current_scr_id, item_p->current_scr);
 #endif
     gt_disp_load_scr_anim(item_p->current_scr, item_p->anim_type, item_p->time, item_p->delay, ret.del_prev_scr);
 }
