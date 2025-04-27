@@ -134,13 +134,18 @@ _is_continue_same_char(const char * const str, char target, char numb) {
     if (*str > 'Z' && *str < 'a') {
         return false;
     }
-    while (numb > 0) {
-        if (str[numb-1] == target) {
-            return true;
+    if (numb <= 0) { return false; }
+
+    char idx = 0;
+    while (idx < numb) {
+        if ('\0' == str[idx]) {
+            return false;
         }
-        numb--;
+        if (str[idx++] != target) {
+            return false;
+        }
     }
-    return false;
+    return true;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _gt_clock_timer_cb(struct _gt_timer_s * timer) {
