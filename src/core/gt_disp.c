@@ -32,7 +32,7 @@
     /**
      * @brief 0[defalut]: Close the page stack log
      */
-    #define _GT_STACK_USE_LOADING_LOG   0
+    #define _GT_STACK_USE_LOADING_LOG           0
 #endif
 
 #ifndef _GT_STACK_PUSH_BEFORE_INIT_SCR
