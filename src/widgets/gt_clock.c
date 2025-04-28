@@ -476,6 +476,8 @@ gt_obj_st * gt_clock_create(gt_obj_st * parent)
     style->period_twinkle_colon = _TWINKLE_COLON_PERIOD_MS;
 
     style->label = gt_label_create(obj);
+    gt_obj_set_touch_parent(style->label, true);
+    gt_obj_set_bubble_notify(style->label, true);
     gt_obj_set_inside(style->label, true);
     style->label->focus_dis = GT_DISABLED;
     gt_label_set_text(style->label , "");
