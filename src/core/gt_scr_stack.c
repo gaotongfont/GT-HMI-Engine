@@ -152,7 +152,6 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
     if (count < 0) {
         return item;
     }
-
     if (count > gt_stack_get_count(scr_info->stack)) {
         count = gt_stack_get_count(scr_info->stack);
     }
@@ -160,21 +159,17 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
     if (count) {
         /** top stack do not free here, need to free by load scr anim */
         item = (gt_scr_stack_item_st * )gt_stack_pop(scr_info->stack);
-        --count;
+        item->current_scr = NULL;
     }
-
-    for (gt_size_t i = 0; i < count; i++) {
-        if (item && item->prev_scr_alive) {
-            item->prev_scr_alive->using_sta = false;
-            _gt_obj_class_destroy(item->prev_scr_alive);
-            item->prev_scr_alive = NULL;
-        }
+    while (--count > 0) {
         item = (gt_scr_stack_item_st * )gt_stack_pop(scr_info->stack);
-        if (home_id != item->current_scr_id || false == gt_scr_stack_is_home_scr_alive()) {
+        if (count > 1 && item) {
+            /** Free middle screen, keep top and reload one */
+            item->current_scr->using_sta = false;
+            _gt_obj_class_destroy(item->current_scr);
             item->current_scr = NULL;
         }
     }
-
     return item;
 }
 

@@ -1000,6 +1000,10 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
         gt_scr_stack_item_st * prev = gt_scr_stack_peek();
         if (prev) {
             new_item_p->prev_scr_id = prev->current_scr_id;
+            if (param->force_create_reload) {
+                prev->current_scr = NULL;
+                ret.del_prev_scr = true;
+            }
             if (false == ret.del_prev_scr) {
                 new_item_p->prev_scr_alive = prev->current_scr;
             }
