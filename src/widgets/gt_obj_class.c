@@ -366,12 +366,13 @@ void _gt_obj_class_destroy(struct gt_obj_s * self)
     if (NULL == self->parent) {
         ret_p = _gt_obj_class_destroy_screen(self);
         if (NULL == ret_p) {
-            GT_LOGW(GT_LOG_TAG_GUI, "Destroy screen failed");
+            GT_LOGW(GT_LOG_TAG_GUI, "Destroy screen(%p) failed", self);
         }
     } else {
         ret_p = _gt_obj_class_destroy_from_parent(self);
         if (NULL == ret_p) {
-            GT_LOGW(GT_LOG_TAG_GUI, "Destroy obj from parent failed");
+            GT_LOGW(GT_LOG_TAG_GUI, "Destroy obj: %p(%d) from parent: %p(%d) failed", self,
+                gt_obj_class_get_type(self), self->parent, gt_obj_class_get_type(self->parent));
         }
     }
 
