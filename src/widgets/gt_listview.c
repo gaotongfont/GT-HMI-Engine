@@ -1163,6 +1163,36 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
     return obj;
 }
 
+static GT_ATTRIBUTE_RAM_TEXT void
+_column_multiple_del_item(gt_obj_st * listview, uint16_t item_idx) {
+    // TODO: del multiple column item
+
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void
+_column_single_del_item(gt_obj_st * listview, uint16_t item_idx) {
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    gt_size_t item_height = style->item_height + style->item_space.y;
+    gt_area_st tar_area = listview->child[item_idx]->area;
+
+    style->column.offset_y -= item_height;
+    gt_obj_destroy_immediately(listview->child[item_idx]);
+
+    if (listview->process_attr.scroll.y < tar_area.y) {
+        for (gt_size_t i = item_idx, cnt = listview->cnt_child; i < cnt; i++) {
+            listview->child[i]->area.y -= item_height;
+            _gt_obj_move_child_by(listview->child[i], 0, -item_height);
+        }
+    }
+
+    gt_size_t offset = (listview->area.y + listview->area.h) - (listview->child[listview->cnt_child - 1]->area.y + item_height);
+    if (offset <= 0) {
+        /** Last one item outside display area, just keep redraw current display area */
+        return;
+    }
+    gt_obj_scroll_to_y(listview, offset, GT_ANIM_ON);
+}
+
 gt_res_t gt_listview_del_item(gt_obj_st * listview, uint16_t item_idx)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
@@ -1170,26 +1200,20 @@ gt_res_t gt_listview_del_item(gt_obj_st * listview, uint16_t item_idx)
     }
 
     _gt_listview_st * style = (_gt_listview_st * )listview;
-    gt_size_t item_height = style->item_height + style->item_space.y;
-
     if (item_idx >= listview->cnt_child) { item_idx = listview->cnt_child - 1; }
-    if (item_idx == listview->cnt_child - 1) {
-        /** last one item */
-        if (1 == style->column.count) {
-            style->column.offset_y -= item_height;
-            gt_obj_destroy_immediately(listview->child[item_idx]);
 
-            if (style->column.offset_y < listview->area.h) {
-                gt_obj_scroll_to_y(listview,  - listview->process_attr.scroll.y, GT_ANIM_ON);
-            } else {
-                gt_obj_scroll_to_y(listview, -style->column.offset_y, GT_ANIM_ON);
-            }
-        }
-        // TODO: del multiple column item
+    if (listview->cnt_child < 2) {
+        gt_listview_clear_all_items(listview);
+        return GT_RES_OK;
     }
-    // TODO: del random item mode
+    if (style->column.count > 1) {
+        /** multiple column */
+        _column_multiple_del_item(listview, item_idx);
 
-    if (0 == listview->cnt_child) { gt_listview_clear_all_items(listview); }
+    } else if (style->column.count) {
+        /** single column */
+        _column_single_del_item(listview, item_idx);
+    }
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
     return GT_RES_OK;
 }
@@ -1206,7 +1230,7 @@ void gt_listview_clear_all_items(gt_obj_st * listview)
 
     _gt_listview_st * style = (_gt_listview_st * )listview;
     style->column.idx = 0;
-    style->column.offset_y = 0;
+    style->column.offset_y = listview->area.y + style->item_reduce;
 
     _gt_obj_class_destroy_children(listview);
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
