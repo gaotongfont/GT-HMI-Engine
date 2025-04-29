@@ -168,14 +168,27 @@ static const char * _get_week_str(uint8_t week) {
     return _gt_weeks[week ? ((week % 8) - 1) : 0];
 }
 
+static GT_ATTRIBUTE_RAM_TEXT bool
+_has_target_substr(const char * const str, const char target, uint8_t len) {
+    char const * tmp_ptr = str;
+    while (*tmp_ptr) {
+        if (_is_continue_same_char(tmp_ptr, target, len)) {
+            return true;
+        }
+        ++tmp_ptr;
+    }
+    return false;
+}
+
 static GT_ATTRIBUTE_RAM_TEXT void _update_time_str(_gt_clock_st * clock) {
     char * meridiem = NULL;
     char * pointer = NULL;
     char * str = NULL;
     char * str_ptr = NULL;
+    char * remark_min_ptr = NULL;
     uint8_t hours = _get_hour(clock->time_current);
-    uint8_t meridiem_len = 3;
-    uint8_t len = 0;
+    uint8_t meridiem_len = 3, len = 0;
+    bool is_count_down = GT_CLOCK_MODE_COUNTDOWN == clock->reg.mode;
 
     if (clock->reg.twinkle_colon) { return; }
     /** default */
@@ -194,6 +207,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _update_time_str(_gt_clock_st * clock) {
     len = strlen(clock->format) + meridiem_len + 1;
     str = gt_mem_malloc(len);
     if (NULL == str) { return; }
+    str_ptr = str;
 
     if (clock->reg.is_12_mode) {
         if (clock->reg.is_show_meridiem) {
@@ -204,17 +218,30 @@ static GT_ATTRIBUTE_RAM_TEXT void _update_time_str(_gt_clock_st * clock) {
         }
     }
 
+    bool has_hours_show = false;
     pointer = clock->format;
-    str_ptr = str;
+    if (is_count_down) {
+        has_hours_show = _has_target_substr(pointer, 'h', 2);
+    }
+    uint16_t minute_max_val = _get_minute(clock->time_current) +
+        (false == has_hours_show ? _get_hour(clock->time_current) * _MINUTE_MAX_VALUE : 0);
+
     while (*pointer) {
         if (_is_continue_same_char(pointer, 'h', 2)) {
             sprintf(str_ptr, "%02d", hours);
             pointer += 2; str_ptr += 2;
-        } else if (_is_continue_same_char(pointer, 'm', 3)) {
-            sprintf(str_ptr, "%03d", _get_minute(clock->time_current));
+        } else if ( _is_continue_same_char(pointer, 'm', 3)) {
+            if (minute_max_val > 999) {
+                minute_max_val = 999;
+            }
+            sprintf(str_ptr, "%03d", minute_max_val);
+            remark_min_ptr = str_ptr;
             pointer += 3; str_ptr += 3;
         } else if (_is_continue_same_char(pointer, 'm', 2)) {
-            sprintf(str_ptr, "%02d", _get_minute(clock->time_current));
+            if (minute_max_val > 99) {
+                minute_max_val = 99;
+            }
+            sprintf(str_ptr, "%02d", minute_max_val);
             pointer += 2; str_ptr += 2;
         } else if (_is_continue_same_char(pointer, 's', 2)) {
             sprintf(str_ptr, "%02d", _get_second(clock->time_current));
@@ -491,9 +518,15 @@ void gt_clock_set_time(gt_obj_st * obj, uint8_t hour, uint8_t minute, uint8_t se
         return;
     }
     _gt_clock_st * clock = (_gt_clock_st *)obj;
-    _set_hour(clock->time_current, hour < _HOUR_MAX_VALUE ? hour : 0);
-    _set_minute(clock->time_current, minute < _MINUTE_MAX_VALUE ? minute : 0);
-    _set_second(clock->time_current, second < _SECOND_MAX_VALUE ? second : 0);
+    uint8_t new_val = 0;
+    _set_second(clock->time_current, second % _SECOND_MAX_VALUE);
+
+    new_val = second / _SECOND_MAX_VALUE + minute;
+    _set_minute(clock->time_current, new_val % _MINUTE_MAX_VALUE);
+
+    new_val = new_val / _MINUTE_MAX_VALUE + hour;
+    _set_hour(clock->time_current, new_val % _HOUR_MAX_VALUE);
+
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
