@@ -220,11 +220,11 @@ static GT_ATTRIBUTE_RAM_TEXT void _update_time_str(_gt_clock_st * clock) {
 
     bool has_hours_show = false;
     pointer = clock->format;
+    uint16_t minute_max_val = _get_minute(clock->time_current);
     if (is_count_down) {
         has_hours_show = _has_target_substr(pointer, 'h', 2);
+        minute_max_val += (false == has_hours_show ? _get_hour(clock->time_current) * _MINUTE_MAX_VALUE : 0);
     }
-    uint16_t minute_max_val = _get_minute(clock->time_current) +
-        (false == has_hours_show ? _get_hour(clock->time_current) * _MINUTE_MAX_VALUE : 0);
 
     while (*pointer) {
         if (_is_continue_same_char(pointer, 'h', 2)) {
