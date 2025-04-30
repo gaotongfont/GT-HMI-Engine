@@ -163,7 +163,7 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
     }
     while (--count > 0) {
         item = (gt_scr_stack_item_st * )gt_stack_pop(scr_info->stack);
-        if (count > 1 && item) {
+        if (count > 0 && item) {
             /** Free middle screen, keep top and reload one */
             item->current_scr->using_sta = false;
             _gt_obj_class_destroy(item->current_scr);
