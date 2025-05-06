@@ -995,7 +995,11 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
             }
             new_item_p->current_scr = NULL;
         }
-        ret.del_prev_scr = true;    /** Must free old screen memory */
+        if (home_id == new_item_p->current_scr_id && gt_scr_stack_is_home_scr_alive()) {
+            ret.del_prev_scr = false;
+        } else {
+            ret.del_prev_scr = true;    /** Must free old screen memory */
+        }
     } else {
         gt_scr_stack_item_st * prev = gt_scr_stack_peek();
         if (prev) {
