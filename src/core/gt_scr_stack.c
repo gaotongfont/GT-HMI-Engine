@@ -160,7 +160,9 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
     if (count) {
         /** top stack do not free here, need to free by load scr anim */
         item = (gt_scr_stack_item_st * )gt_stack_pop(scr_info->stack);
-        item->current_scr = NULL;
+        if (home_id != item->current_scr_id || false == is_home_alive) {
+            item->current_scr = NULL;
+        }
     }
     while (--count > 0) {
         item = (gt_scr_stack_item_st * )gt_stack_pop(scr_info->stack);
