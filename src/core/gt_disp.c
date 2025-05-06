@@ -976,6 +976,7 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
     gt_stack_item_st result = gt_scr_stack_has_before(new_item_p);
     /** ignore repeat screen valid */
     bool is_last_page = result.index_from_top + 1 == gt_scr_stack_get_count();
+    bool is_home_alive = gt_scr_stack_is_home_scr_alive();
 #if GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
     if (param->ignore_repeat_screen_id) {
         if (false == param->force_create_reload) {
@@ -987,7 +988,7 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
         gt_scr_stack_item_st * same_scr = gt_scr_stack_pop(result.index_from_top);
         new_item_p->prev_scr_id = same_scr->prev_scr_id;
         new_item_p->prev_scr_alive = same_scr->prev_scr_alive;
-        if (home_id == same_scr->current_scr_id && gt_scr_stack_is_home_scr_alive()) {
+        if (home_id == same_scr->current_scr_id && is_home_alive) {
             new_item_p->current_scr = same_scr->current_scr;
             ret.del_prev_scr = is_last_page ? false : true;
         } else {
@@ -1005,16 +1006,17 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
         gt_scr_stack_item_st * prev = gt_scr_stack_peek();
         if (prev) {
             new_item_p->prev_scr_id = prev->current_scr_id;
-            if (param->force_create_reload) {
-                prev->current_scr = NULL;
-                ret.del_prev_scr = true;
-            }
-            if (false == ret.del_prev_scr) {
-                new_item_p->prev_scr_alive = prev->current_scr;
-            }
-            if (home_id == new_item_p->prev_scr_id && gt_scr_stack_is_home_scr_alive()) {
+            if (home_id == new_item_p->prev_scr_id && is_home_alive) {
                 new_item_p->prev_scr_alive = NULL;
                 ret.del_prev_scr = false;
+            } else {
+                if (is_last_page && param->force_create_reload) {
+                    prev->current_scr = NULL;
+                    ret.del_prev_scr = true;
+                }
+                if (false == ret.del_prev_scr) {
+                    new_item_p->prev_scr_alive = prev->current_scr;
+                }
             }
             if (ret.del_prev_scr) {
                 prev->current_scr = NULL;
@@ -1026,7 +1028,9 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
         if (false == gt_scr_stack_is_empty()) {
             gt_scr_stack_clear();
         }
+        // TODO: reload current page, limit by ret.scr_old == item_p->current_scr
         ret.del_prev_scr = true;
+
         new_item_p->prev_scr_id = -1;
         new_item_p->prev_scr_alive = NULL;
     }
