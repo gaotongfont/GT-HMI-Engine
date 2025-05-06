@@ -1026,6 +1026,7 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
         if (false == gt_scr_stack_is_empty()) {
             gt_scr_stack_clear();
         }
+        ret.del_prev_scr = true;
         new_item_p->prev_scr_id = -1;
         new_item_p->prev_scr_alive = NULL;
     }
