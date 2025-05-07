@@ -478,8 +478,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_handler(gt_indev_st * indev) {
 
     if ((uint16_t)GT_DIR_NONE == point_p->gesture) { return; }
 
-    if (GT_SCROLL_DISABLE == point_p->obj_target->scroll_dir) { return; }
-
     if (NULL == point_p->obj_scroll) {
         if (point_p->obj_target->fixed) {
             /** if widget fixed, then search it parent's widget to scroll */
@@ -490,6 +488,11 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_handler(gt_indev_st * indev) {
     point_p->obj_scroll = point_p->obj_target;
 
     if (_is_indev_home_gesture(indev, point_p->obj_scroll, NULL)) { return ; }
+
+    if (GT_SCROLL_DISABLE == point_p->obj_scroll->scroll_dir) {
+        point_p->obj_scroll = NULL;
+        return;
+    }
 
     if (point_p->obj_scroll->finger_unfollow) { return ; }
 
