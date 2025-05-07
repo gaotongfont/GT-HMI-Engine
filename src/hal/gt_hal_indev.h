@@ -200,7 +200,8 @@ typedef struct _gt_indev_s {
             struct gt_obj_s * obj_scroll;    ///< The object of gesture
 
             uint16_t gesture : 3;           ///< @ref gt_dir_et gesture of touch input device point
-            uint16_t reserved : 13;
+            uint16_t is_home_gesture : 1;   ///< gestrue is home handler
+            uint16_t reserved : 12;
         }point;
 
         struct _button {

@@ -487,7 +487,13 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_handler(gt_indev_st * indev) {
     }
     point_p->obj_scroll = point_p->obj_target;
 
-    if (_is_indev_home_gesture(indev, point_p->obj_scroll, NULL)) { return ; }
+    if (_is_indev_home_gesture(indev, point_p->obj_scroll, NULL)) {
+        if (false == point_p->is_home_gesture) {
+            point_p->is_home_gesture = true;
+            gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_PRESS_LOST, NULL);
+        }
+        return ;
+    }
 
     if (GT_SCROLL_DISABLE == point_p->obj_scroll->scroll_dir) {
         point_p->obj_scroll = NULL;
@@ -549,6 +555,7 @@ tar_clr_lb:
     point_p->obj_target = NULL;
 clr_lb:
     point_p->obj_origin = NULL;
+    point_p->is_home_gesture = false;
 }
 
 /**
