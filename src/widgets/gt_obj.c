@@ -91,6 +91,11 @@ static GT_ATTRIBUTE_RAM_TEXT void _screen_scroll(gt_obj_st * obj) {
     if (false == gt_obj_is_type(obj, OBJ_TYPE_SCREEN)) {
         return;
     }
+    if (GT_SCROLL_DISABLE == obj->scroll_dir) {
+        obj->process_attr.scroll.x = 0;
+        obj->process_attr.scroll.y = 0;
+        return;
+    }
     gt_area_abs_st * max_area_p = gt_disp_get_area_max();
     if (gt_disp_get_res_hor(NULL) == max_area_p->right &&
         gt_disp_get_res_ver(NULL) == max_area_p->bottom &&
