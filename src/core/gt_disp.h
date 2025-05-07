@@ -145,8 +145,11 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
  * @brief [Use screen stack manager] Use custom param to load and display screen
  *
  * @param param @ref gt_disp_stack_param_st
+ * @return gt_res_t GT_RES_FAIL: create new screen failed;
+ *                  GT_RES_INV: reload current screen again;
+ *                  GT_RES_OK: load new page success.
  */
-void gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const param);
+gt_res_t gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const param);
 
 /**
  * @brief [Unused screen stack manager] display screen by default param.

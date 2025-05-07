@@ -1066,11 +1066,11 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
     return ret;
 }
 
-void gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const param)
+gt_res_t gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const param)
 {
     gt_disp_stack_res_st ret = gt_disp_stack_push_scr_only_st(param);
     if (false == ret.ok) {
-        return;
+        return GT_RES_FAIL;
     }
     gt_scr_stack_item_st * item_p = &ret.new_item;
 #if _GT_STACK_USE_LOADING_LOG
@@ -1079,9 +1079,10 @@ void gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const param)
 #endif
     if (ret.scr_old == item_p->current_scr) {
         gt_disp_invalid_area(item_p->current_scr);
-        return;
+        return GT_RES_INV;
     }
     gt_disp_load_scr_anim(item_p->current_scr, item_p->anim_type, item_p->time, item_p->delay, ret.del_prev_scr);
+    return GT_RES_OK;
 }
 
 void gt_disp_load_scr(gt_obj_st * scr)
