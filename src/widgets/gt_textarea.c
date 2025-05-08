@@ -308,7 +308,8 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
  *
  * @param obj
  */
-static void _textarea_init_cb(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_textarea_init_cb(gt_obj_st * obj) {
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
 
     /** draw border */
@@ -331,12 +332,14 @@ static void _textarea_init_cb(gt_obj_st * obj) {
     draw_focus(obj);
 }
 
-static inline void _reset_scroll_value(gt_obj_process_attr_st * process_attr) {
+static GT_ATTRIBUTE_RAM_TEXT inline void
+_reset_scroll_value(gt_obj_process_attr_st * process_attr) {
     process_attr->scroll.y = 0;
     process_attr->scroll_prev.y = 0;
 }
 
-static void _free_contents(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_free_contents(gt_obj_st * obj) {
     _gt_textarea_st * style_p = (_gt_textarea_st * )obj;
     if (style_p->contents) {
         _set_hold_on_contents_for_scroll(style_p, false);
@@ -366,7 +369,8 @@ static void _free_contents(gt_obj_st * obj) {
  *
  * @param obj
  */
-static void _textarea_deinit_cb(gt_obj_st * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_textarea_deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
     if (NULL == obj) {
         return ;
@@ -374,7 +378,8 @@ static void _textarea_deinit_cb(gt_obj_st * obj) {
     _free_contents(obj);
 }
 
-static void _ready_pull_to_refresh_cb(struct gt_anim_s * anim) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_ready_pull_to_refresh_cb(struct gt_anim_s * anim) {
     gt_obj_st * obj = (gt_obj_st *)anim->tar;
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
 
@@ -382,7 +387,8 @@ static void _ready_pull_to_refresh_cb(struct gt_anim_s * anim) {
     gt_event_send(obj, GT_EVENT_TYPE_PULL_TO_REFRESH, NULL);
 }
 
-static void _pull_wait_to_refresh(struct gt_obj_s * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_pull_wait_to_refresh(struct gt_obj_s * obj) {
     gt_anim_st anim;
     gt_anim_init(&anim);
     gt_anim_set_target(&anim, obj);
@@ -392,7 +398,8 @@ static void _pull_wait_to_refresh(struct gt_obj_s * obj) {
     gt_anim_start(&anim);
 }
 
-static void _ready_load_more_cb(struct gt_anim_s * anim) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_ready_load_more_cb(struct gt_anim_s * anim) {
     gt_obj_st * obj = (gt_obj_st *)anim->tar;
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
 
@@ -400,7 +407,8 @@ static void _ready_load_more_cb(struct gt_anim_s * anim) {
     gt_event_send(obj, GT_EVENT_TYPE_LOAD_MORE, NULL);
 }
 
-static void _load_more(struct gt_obj_s * obj) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_load_more(struct gt_obj_s * obj) {
     gt_anim_st anim;
     gt_anim_init(&anim);
     gt_anim_set_target(&anim, obj);
@@ -462,7 +470,8 @@ _create_auto_scoll_to(gt_obj_st * textarea) {
  * @param obj
  * @param e event
  */
-static void _textarea_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
+static GT_ATTRIBUTE_RAM_TEXT void
+_textarea_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
     switch(code_val) {

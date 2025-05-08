@@ -19,6 +19,7 @@
 #include "../core/gt_obj_scroll.h"
 #include "../others/gt_assert.h"
 #include "../others/gt_area.h"
+#include "../others/gt_anim.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
 #include "../widgets/gt_obj.h"
@@ -107,6 +108,8 @@ typedef struct _gt_listview_s {
     uint8_t show_background : 1;    /** 1[defalut]: show background; 0: hide background */
     uint8_t anti_font_color : 1;    /** 0[default]: no font change color when item selected */
     uint8_t latest_always   : 1;    /** 0[default]: the latest item is always displayed at the bottom */
+    uint8_t pull_to_refresh : 1;
+    uint8_t load_more       : 1;
 }_gt_listview_st;
 
 
@@ -459,6 +462,70 @@ static GT_ATTRIBUTE_RAM_TEXT void _update_all_item_text_style(gt_obj_st * lv) {
     gt_event_send(lv, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+static GT_ATTRIBUTE_RAM_TEXT inline void
+_reset_pull_refresh_or_load_more(struct gt_obj_s * obj) {
+    _gt_listview_st * style = (_gt_listview_st * )obj;
+
+    style->pull_to_refresh = false;
+    style->load_more = false;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void
+_check_pull_refresh_or_load_more(struct gt_obj_s * obj) {
+    _gt_listview_st * style = (_gt_listview_st * )obj;
+    uint16_t distance = obj->area.h >> 3;
+    if (false == style->pull_to_refresh) {
+        if (obj->process_attr.scroll.y > distance) {
+            style->pull_to_refresh = true;
+        }
+    }
+    if (false == style->load_more) {
+        if (gt_abs(obj->process_attr.scroll.y) + obj->area.h > style->column.offset_y + distance) {
+            style->load_more = true;
+        }
+    }
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void
+_ready_pull_to_refresh_cb(struct gt_anim_s * anim) {
+    gt_obj_st * obj = (gt_obj_st *)anim->tar;
+    _gt_listview_st * style = (_gt_listview_st * )obj;
+
+    style->pull_to_refresh = false;
+    gt_event_send(obj, GT_EVENT_TYPE_PULL_TO_REFRESH, NULL);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void
+_send_pull_refresh_event(struct gt_obj_s * obj) {
+    gt_anim_st anim;
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_time(&anim, 0);
+    gt_anim_set_time_delay_start(&anim, 200);
+    gt_anim_set_ready_cb(&anim, _ready_pull_to_refresh_cb);
+    gt_anim_start(&anim);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void
+_ready_load_more_cb(struct gt_anim_s * anim) {
+    gt_obj_st * obj = (gt_obj_st *)anim->tar;
+    _gt_listview_st * style = (_gt_listview_st * )obj;
+
+    style->load_more = false;
+    gt_event_send(obj, GT_EVENT_TYPE_LOAD_MORE, NULL);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void
+_send_load_more_event(struct gt_obj_s * obj) {
+    gt_anim_st anim;
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_time(&anim, 0);
+    gt_anim_set_time_delay_start(&anim, 200);
+    gt_anim_set_ready_cb(&anim, _ready_load_more_cb);
+    gt_anim_start(&anim);
+}
+
 /**
  * @brief obj event handler call back
  *
@@ -484,6 +551,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             gt_obj_set_trigger_mode(style->last_active, false);
         }
         gt_size_t offset_y = ( style->item_reduce) << 2;
+        _check_pull_refresh_or_load_more(obj);
         _gt_obj_scroll_internal(obj, 0, offset_y);
     }
     else if (GT_EVENT_TYPE_INPUT_PRESSED == code_val) {
@@ -494,11 +562,20 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         _reset_other_active_state(obj);
         _highlight_set_obj_active_state(obj);
     }
+    else if (GT_EVENT_TYPE_INPUT_SCROLL_START == code_val) {
+        _reset_pull_refresh_or_load_more(obj);
+    }
     else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code_val) {
         if (style->highlight) {
             gt_obj_set_trigger_mode(style->last_active, true);
         }
         _reset_last_active_state(obj, _get_last_active_obj(obj));
+        if (style->pull_to_refresh) {
+            _send_pull_refresh_event(obj);
+        }
+        if (style->load_more) {
+            _send_load_more_event(obj);
+        }
     } else if (GT_EVENT_TYPE_INPUT_SCROLL_UP == code_val) {
         gt_obj_scroll_to_y(obj, gt_obj_get_h(obj) >> 1, GT_ANIM_ON);
     } else if (GT_EVENT_TYPE_INPUT_SCROLL_DOWN == code_val) {
