@@ -149,7 +149,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         break;
     }
     case GT_EVENT_TYPE_INPUT_SCROLL:
-        GT_LOGV(GT_LOG_TAG_GUI, "scroll");
         _scrolling_handler(obj);
         break;
     case GT_EVENT_TYPE_INPUT_SCROLL_UP: {

@@ -200,6 +200,38 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_disp_check_and_copy_foreach(gt_obj_st * sc
     }
 }
 
+#if GT_USE_LAYER_TOP
+/**
+ * @brief if top widget full cover display, layer base will ignore
+ *      draw by this function.
+ *
+ * @param layer_top
+ * @return bool true: ignore draw base layer; false: both need to draw.
+ */
+static GT_ATTRIBUTE_RAM_TEXT bool
+_gt_disp_is_top_full_cover_display(gt_obj_st * layer_top) {
+    uint16_t idx = 0;
+    gt_obj_st * child_p = NULL;
+    if (GT_INVISIBLE == gt_obj_get_visible(layer_top)) {
+        return false;
+    }
+    while (idx < layer_top->cnt_child) {
+        child_p = layer_top->child[idx++];
+        if (GT_INVISIBLE == gt_obj_get_visible(child_p)) {
+            continue;
+        }
+        if (NULL == child_p->classes->_init_cb) {
+            continue;
+        }
+        if (gt_area_is_equal(&layer_top->area, &child_p->area) &&
+            child_p->opa >= GT_OPA_COVER) {
+            return true;
+        }
+    }
+    return false;
+}
+#endif
+
 static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_exec_x_cb(void * obj, int32_t x) {
     gt_obj_st * scr = (gt_obj_st * )obj;
     gt_area_st area = scr->area;
@@ -723,6 +755,15 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
     }
     _update_area_flush_by_calc_partly_redraw_area(param, scr);
 
+#if GT_USE_LAYER_TOP
+    /**
+     * Check layer top obj is full screen display and GT_OPA_COVER
+     * to ignore base layer load.
+     */
+    bool is_normal_display_layer_base =
+        _gt_disp_is_top_full_cover_display(param->disp->layer_top) ? false : true;
+#endif
+
     uint16_t end_y = param->area_flush.y + param->area_flush.h;
     param->disp->area_disp.y = param->area_flush.y;
     param->disp->area_disp.w = param->area_flush.w;
@@ -739,13 +780,17 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
         param->disp->area_disp.x = param->area_flush.x + scr->area.x;
         param->disp->area_disp.y = param->area_flush.y + scr->area.y;
 
-        _gt_disp_check_and_copy_foreach(scr, param);
-
 #if GT_USE_LAYER_TOP
+        if (is_normal_display_layer_base) {
+            _gt_disp_check_and_copy_foreach(scr, param);
+        }
+
         // flush top layer
         param->disp->area_disp.x = param->area_flush.x;
         param->disp->area_disp.y = param->area_flush.y;
         _gt_disp_check_and_copy_foreach(param->disp->layer_top, param);
+#else
+        _gt_disp_check_and_copy_foreach(scr, param);
 #endif
 
         if(gt_disp_graph_is_double_buf()){

@@ -79,6 +79,8 @@ bool gt_area_cover_screen(gt_area_st const * const area1, gt_area_st const * con
 bool gt_area_is_on(gt_area_st * a1_p, gt_area_st * a2_p);
 void gt_area_join(gt_area_st * res, const gt_area_st * const src, const gt_area_st * const dst);
 
+bool gt_area_is_equal(gt_area_st const * const a1_p, gt_area_st const * const a2_p);
+
 bool gt_area_check_legal(gt_area_st * area);
 
 /**

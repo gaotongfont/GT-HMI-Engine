@@ -174,6 +174,18 @@ void gt_area_join(gt_area_st * res, const gt_area_st * const src, const gt_area_
     res->h = max_y - min_y;
 }
 
+bool gt_area_is_equal(gt_area_st const * const a1_p, gt_area_st const * const a2_p)
+{
+    if (NULL == a1_p || NULL == a2_p) {
+        return false;
+    }
+    if (a1_p->x != a2_p->x) { return false; }
+    if (a1_p->y != a2_p->y) { return false; }
+    if (a1_p->w != a2_p->w) { return false; }
+    if (a1_p->h != a2_p->h) { return false; }
+    return true;
+}
+
 bool gt_area_check_legal(gt_area_st * area)
 {
     uint16_t hor = gt_disp_get_res_hor(NULL);
