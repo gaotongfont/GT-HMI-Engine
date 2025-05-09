@@ -474,15 +474,18 @@ static GT_ATTRIBUTE_RAM_TEXT void
 _check_pull_refresh_or_load_more(struct gt_obj_s * obj) {
     _gt_listview_st * style = (_gt_listview_st * )obj;
     uint16_t distance = obj->area.h >> 3;
+    if (style->pull_to_refresh || style->load_more) {
+        return;
+    }
     if (false == style->pull_to_refresh) {
         if (obj->process_attr.scroll.y > distance) {
             style->pull_to_refresh = true;
+            return;
         }
     }
-    if (false == style->load_more) {
-        if (gt_abs(obj->process_attr.scroll.y) + obj->area.h > style->column.offset_y + distance) {
-            style->load_more = true;
-        }
+    /** load more */
+    if (gt_abs(obj->process_attr.scroll.y) + obj->area.h > style->column.offset_y + distance) {
+        style->load_more = true;
     }
 }
 
