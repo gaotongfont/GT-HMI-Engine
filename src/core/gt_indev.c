@@ -140,10 +140,7 @@ _scr_has_home_gesture_events(gt_obj_st * target, gt_event_type_et event) {
     gt_obj_st * tar_scr = gt_obj_within_which_scr(target);
 #if GT_CFG_ENABLE_DIALOG
     if (gt_dialog_has_showing()) {
-        gt_obj_st * top = gt_disp_get_layer_top();
-        if (target == top || gt_obj_is_child(target, top)) {
-            tar_scr = top;
-        }
+        tar_scr = gt_dialog_get_active_obj();
     }
 #endif
     if (NULL == tar_scr) {
@@ -201,12 +198,11 @@ static GT_ATTRIBUTE_RAM_TEXT bool _indev_send_home_gesture_event(gt_indev_st * i
 
 #if GT_CFG_ENABLE_DIALOG
     if (gt_dialog_has_showing()) {
-        if (gt_obj_is_type(indev->data.point.obj_scroll, GT_TYPE_LAYER_TOP)) {
+        if (false == _is_indev_home_gesture(indev, gt_disp_get_layer_top(), &e)) {
             return false;
         }
-        if (gt_obj_is_child(indev->data.point.obj_scroll, gt_disp_get_layer_top())) {
-            return false;
-        }
+        gt_event_send(gt_dialog_get_active_obj(), e, NULL);
+        goto scroll_throw_lb;
     }
 #endif
     if (false == _is_indev_home_gesture(indev, scr, &e)) {
@@ -215,6 +211,7 @@ static GT_ATTRIBUTE_RAM_TEXT bool _indev_send_home_gesture_event(gt_indev_st * i
 
     gt_event_send(scr, e, NULL);
 
+scroll_throw_lb:
     if (indev->scroll_throw_anim) {
         gt_anim_set_time(indev->scroll_throw_anim, 0);
     }
