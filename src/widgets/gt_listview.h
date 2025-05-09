@@ -506,6 +506,7 @@ bool gt_listview_is_selected_anti_font(gt_obj_st * listview);
 void gt_listview_set_selected_anti_font_color(gt_obj_st * listview, gt_color_t anti_color);
 gt_color_t gt_listview_get_selected_anti_font_color(gt_obj_st * listview);
 
+gt_res_t gt_listview_set_timeout_refresh_or_load_more(gt_obj_st * listview, uint16_t timeout);
 
 #endif  /** GT_CFG_ENABLE_LISTVIEW */
 

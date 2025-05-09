@@ -85,6 +85,7 @@ typedef struct _gt_listview_s {
     _column_st column;
 
     gt_point_st item_space; /** The space between items with hor or ver direct */
+    uint16_t timeout_event;      /** pull to refresh or load more */
 
     uint8_t align;      //@ref gt_align_et
     uint8_t border_width;
@@ -473,7 +474,7 @@ _reset_pull_refresh_or_load_more(struct gt_obj_s * obj) {
 static GT_ATTRIBUTE_RAM_TEXT void
 _check_pull_refresh_or_load_more(struct gt_obj_s * obj) {
     _gt_listview_st * style = (_gt_listview_st * )obj;
-    uint16_t distance = obj->area.h >> 3;
+    uint16_t distance = obj->area.h >> 4;
     if (style->pull_to_refresh || style->load_more) {
         return;
     }
@@ -484,6 +485,14 @@ _check_pull_refresh_or_load_more(struct gt_obj_s * obj) {
         }
     }
     /** load more */
+    if (style->column.offset_y < obj->area.h) {
+        /** items height short than listview height, just check scroll range */
+        if (obj->process_attr.scroll.y < 0 &&
+            gt_abs(obj->process_attr.scroll.y) > distance) {
+            style->load_more = true;
+        }
+        return;
+    }
     if (gt_abs(obj->process_attr.scroll.y) + obj->area.h > style->column.offset_y + distance) {
         style->load_more = true;
     }
@@ -500,11 +509,12 @@ _ready_pull_to_refresh_cb(struct gt_anim_s * anim) {
 
 static GT_ATTRIBUTE_RAM_TEXT void
 _send_pull_refresh_event(struct gt_obj_s * obj) {
+    _gt_listview_st * style = (_gt_listview_st * )obj;
     gt_anim_st anim;
     gt_anim_init(&anim);
     gt_anim_set_target(&anim, obj);
     gt_anim_set_time(&anim, 0);
-    gt_anim_set_time_delay_start(&anim, 200);
+    gt_anim_set_time_delay_start(&anim, style->timeout_event);
     gt_anim_set_ready_cb(&anim, _ready_pull_to_refresh_cb);
     gt_anim_start(&anim);
 }
@@ -520,11 +530,12 @@ _ready_load_more_cb(struct gt_anim_s * anim) {
 
 static GT_ATTRIBUTE_RAM_TEXT void
 _send_load_more_event(struct gt_obj_s * obj) {
+    _gt_listview_st * style = (_gt_listview_st * )obj;
     gt_anim_st anim;
     gt_anim_init(&anim);
     gt_anim_set_target(&anim, obj);
     gt_anim_set_time(&anim, 0);
-    gt_anim_set_time_delay_start(&anim, 200);
+    gt_anim_set_time_delay_start(&anim, style->timeout_event);
     gt_anim_set_ready_cb(&anim, _ready_load_more_cb);
     gt_anim_start(&anim);
 }
@@ -543,6 +554,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         gt_disp_invalid_area(obj);
     }
     else if (GT_EVENT_TYPE_INPUT_SCROLL == code_val) {
+        _check_pull_refresh_or_load_more(obj);
         if (0 == obj->process_attr.scroll.y &&
             gt_obj_get_childs_max_height(obj) < gt_obj_get_h(obj)) {
             /** all items can display with current page, reset scroll selected effect */
@@ -554,7 +566,6 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             gt_obj_set_trigger_mode(style->last_active, false);
         }
         gt_size_t offset_y = ( style->item_reduce) << 2;
-        _check_pull_refresh_or_load_more(obj);
         _gt_obj_scroll_internal(obj, 0, offset_y);
     }
     else if (GT_EVENT_TYPE_INPUT_PRESSED == code_val) {
@@ -989,6 +1000,7 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     /** font */
     style->space_x = 0;
     style->space_y = 0;
+    style->timeout_event = 200;
 
     _items_space_init(style);
 
@@ -1918,6 +1930,16 @@ gt_color_t gt_listview_get_selected_anti_font_color(gt_obj_st * listview)
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
     return style->selected_anti_font_color;
+}
+
+gt_res_t gt_listview_set_timeout_refresh_or_load_more(gt_obj_st * listview, uint16_t timeout)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->timeout_event = timeout;
+    return GT_RES_OK;
 }
 
 #endif  /** GT_CFG_ENABLE_LISTVIEW */
