@@ -20,6 +20,7 @@
 #include "gt_disp.h"
 #include "../extra/draw/gt_draw_blend.h"
 #include "../core/gt_draw.h"
+#include "./gt_mem.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -83,6 +84,9 @@ void gt_refr_timer(void)
     } else {
         // gt_disp_invalid_area(NULL);
     }
+#ifdef _GT_PORT_SIMULATOR_ENVS
+    gt_mem_check_used();
+#endif
 }
 
 
