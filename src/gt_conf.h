@@ -96,7 +96,10 @@ extern "C" {
 #if GT_MEM_CUSTOM
     #define GT_MEM_CUSTOM_INCLUDE   "../others/gt_tlsf.h"
 
-    #define GT_MEM_SIZE             (24 * 1024U)    //Byte
+#ifndef GT_MEM_SIZE
+    /** unit: byte */
+    #define GT_MEM_SIZE             (24 * 1024U)
+#endif
 
     #define gt_tlsf_assert(_expr)   ( (void)0 )
 
