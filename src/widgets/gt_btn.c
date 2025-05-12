@@ -29,7 +29,8 @@
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_btn_reg_s {
     uint8_t fill: 1;
-    uint8_t reserved: 7;
+    uint8_t state_enabled : 1;  /** 1[default]: change state */
+    uint8_t reserved: 6;
 }_gt_btn_reg_st;
 
 typedef struct _gt_btn_s {
@@ -177,6 +178,10 @@ static GT_ATTRIBUTE_RAM_TEXT bool _turn_next_content(gt_obj_st * obj) {
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _press_btn_handler(gt_obj_st * obj) {
+    _gt_btn_st * style = (_gt_btn_st * )obj;
+    if (false == style->reg.state_enabled) {
+        return;
+    }
     gt_obj_set_state(obj, GT_STATE_PRESSED);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -201,6 +206,10 @@ _reset_other_btn_state_except_current_btn(gt_obj_st * obj) {
 
 static GT_ATTRIBUTE_RAM_TEXT inline void
 _released_btn_handler(gt_obj_st * obj) {
+    _gt_btn_st * style = (_gt_btn_st * )obj;
+    if (false == style->reg.state_enabled) {
+        return;
+    }
     if (GT_TYPE_GROUP == gt_obj_class_get_type(obj->parent)) {
         _reset_other_btn_state_except_current_btn(obj);
     } else {
@@ -303,6 +312,7 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent)
     style->color_border     = gt_color_hex(0x00a8ff);    //default color_border
     style->border_width     = 0;
     style->reg.fill         = 1;
+    style->reg.state_enabled = 1;
     style->font_color       = gt_color_white();        //default color_font
     style->font_color_pressed    = gt_color_gray();        //default color_font
     gt_font_info_init(&style->font_info);
@@ -669,6 +679,18 @@ void gt_btn_set_selected(gt_obj_st * obj)
         return;
     }
     _press_btn_handler(obj);
+}
+
+void gt_btn_set_state_enabled(gt_obj_st * obj, bool enabled)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )obj;
+    if (false == enabled) {
+        _released_btn_handler(obj);
+    }
+    style->reg.state_enabled = enabled ? true : false;
 }
 
 #endif  /** GT_CFG_ENABLE_BTN */

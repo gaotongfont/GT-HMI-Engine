@@ -184,6 +184,14 @@ int16_t gt_btn_get_state_content_index(gt_obj_st * obj);
  */
 void gt_btn_set_selected(gt_obj_st * obj);
 
+/**
+ * @brief Close state change function.
+ *
+ * @param obj
+ * @param enabled 1[default]: enabled; 0: disalbed.
+ */
+void gt_btn_set_state_enabled(gt_obj_st * obj, bool enabled);
+
 #endif  /** GT_CFG_ENABLE_BTN */
 
 #ifdef __cplusplus
