@@ -241,6 +241,10 @@ _reset_btn_state_when_group_has_pressed_btn_before(gt_obj_st *obj) {
 
 static GT_ATTRIBUTE_RAM_TEXT inline void
 _lost_focus_btn_handler(gt_obj_st *obj) {
+    _gt_btn_st * style = (_gt_btn_st * )obj;
+    if (false == style->reg.state_enabled) {
+        return;
+    }
     if (GT_TYPE_GROUP != gt_obj_class_get_type(obj->parent)) {
         gt_obj_set_state(obj, GT_STATE_NONE);
     } else {
