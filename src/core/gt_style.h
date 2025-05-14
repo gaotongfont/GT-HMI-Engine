@@ -338,6 +338,26 @@ void gt_obj_set_row_layout(gt_obj_st * obj, bool is_row_layout);
  */
 void gt_obj_set_grow_invert(gt_obj_st * obj, bool is_grow_invert);
 
+/**
+ * @brief Enabled or disabled swipe direction, need to binding event callback,
+ *      such as: GT_EVENT_TYPE_SWIPE_UP, ...DOWN, ...LEFT, ...RIGHT;
+ *      [Warn]: Object must set fixed prop to false!
+ * @ref gt_event_type_et
+ *
+ * @param obj
+ * @param enabled false[default]: disabled; true: enabled
+ */
+void gt_obj_set_swipe_dir(gt_obj_st * obj, bool enabled);
+
+/**
+ * @brief Get object is enabled swipe direction callback function.
+ *
+ * @param obj
+ * @return true
+ * @return false
+ */
+bool gt_obj_get_swipe_dir_enabled(gt_obj_st * obj);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

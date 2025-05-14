@@ -81,6 +81,10 @@ typedef enum gt_event_type_e {
     /* scroll boundary events */
     GT_EVENT_TYPE_PULL_TO_REFRESH,         // [Called by core inside] scroll to top, pull to refresh event
     GT_EVENT_TYPE_LOAD_MORE,               // [Called by core inside] scroll to bottom, load more event
+    GT_EVENT_TYPE_SWIPE_UP,                 // [Called by core inside] Need to enabled object's swipe_dir prop
+    GT_EVENT_TYPE_SWIPE_DOWN,               // [Called by core inside] Need to enabled object's swipe_dir prop
+    GT_EVENT_TYPE_SWIPE_LEFT,               // [Called by core inside] Need to enabled object's swipe_dir prop
+    GT_EVENT_TYPE_SWIPE_RIGHT,              // [Called by core inside] Need to enabled object's swipe_dir prop
 
     /* notify event */
     GT_EVENT_TYPE_NOTIFY_CLOSE,     // notify widget to close

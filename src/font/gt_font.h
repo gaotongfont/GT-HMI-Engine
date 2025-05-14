@@ -115,8 +115,7 @@ typedef struct _gt_font_info_s {
     int8_t offset_y;    ///< 0: [default] don't move; < 0: move up; > 0: move down
 
     /* font style */
-    union
-    {
+    union {
         uint8_t all;
         gt_font_style_st reg;
     }style;

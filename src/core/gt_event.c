@@ -103,7 +103,8 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_event_cb(gt_event_st * e
     if (NULL == obj) { return GT_RES_FAIL; }
     const gt_obj_class_st * c = obj->classes;
 
-    if (GT_RES_OK == _using_replace_core_user_cb(obj->replace_core_event_attr, e)) {
+    if (obj->replace_core_event_attr &&
+        GT_RES_OK == _using_replace_core_user_cb(obj->replace_core_event_attr, e)) {
         return GT_RES_OK;
     }
 

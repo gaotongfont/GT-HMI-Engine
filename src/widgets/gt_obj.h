@@ -167,6 +167,7 @@ typedef struct gt_obj_s {
     uint32_t show_bg       : 1;     /* The object show background, 0: [default] hide; 1: show, bgcolor can be used */
     uint32_t finger_unfollow : 1;   /* finger unfollow scroll effect, 0: [default] follow finger; 1: unfollow finger */
     uint32_t ignore_throw  : 1;     /* ignore scroll throw animation, immediately stop throw effect. 0: [default] */
+    uint32_t swipe_dir     : 1;     /* Get swipe direction event, @see GT_EVENT_TYPE_SWIPE_UP, ... */
 #if GT_USE_WIDGET_DYNAMIC_FRAME_RATE
     uint32_t frame_rate    : 3;     /* Set widget dynamic anim frame rate */
 #endif

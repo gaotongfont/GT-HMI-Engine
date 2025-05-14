@@ -955,4 +955,16 @@ void gt_obj_set_grow_invert(gt_obj_st * obj, bool is_grow_invert)
     }
 }
 
+void gt_obj_set_swipe_dir(gt_obj_st * obj, bool enabled)
+{
+    GT_CHECK_BACK(obj);
+    obj->swipe_dir = enabled ? true : false;
+}
+
+bool gt_obj_get_swipe_dir_enabled(gt_obj_st * obj)
+{
+    GT_CHECK_BACK_VAL(obj, false);
+    return obj->swipe_dir;
+}
+
 /* end ------------------------------------------------------------------*/
