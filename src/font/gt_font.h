@@ -285,6 +285,12 @@ typedef struct gt_font_split_line_s {
     uint16_t indent;    /** the total width of indent which calc by font size */
 }gt_font_split_line_st;
 
+typedef struct gt_split_line_ret_s {
+    uint32_t line_numb;
+    uint32_t max_w;
+    uint32_t disp_w;
+}gt_split_line_ret_st;
+
 /* macros ---------------------------------------------------------------*/
 static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t
 gt_font_get_indent_width(gt_font_info_st const * const font_info_p, uint16_t indent) {
@@ -425,7 +431,7 @@ uint8_t right_to_left_lan_get(uint16_t style);
 uint8_t right_to_left_lan_get(gt_font_st* font);
 #endif
 
-uint32_t gt_font_split_line_numb(gt_font_info_st* info, gt_font_split_line_st * sp_line, uint32_t * ret_max_w);
+gt_split_line_ret_st gt_font_split_line_numb(gt_font_info_st* info, gt_font_split_line_st * sp_line);
 
 
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT

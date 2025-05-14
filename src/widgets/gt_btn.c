@@ -697,5 +697,51 @@ void gt_btn_set_state_enabled(gt_obj_st * obj, bool enabled)
     style->reg.state_enabled = enabled ? true : false;
 }
 
+gt_split_line_ret_st gt_btn_get_font_split_line_numb(gt_obj_st* obj, gt_font_split_line_st* sp_line)
+{
+    gt_split_line_ret_st s_line_ret;
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return s_line_ret;
+    }
+
+    _gt_btn_st * style = (_gt_btn_st * )obj;
+    gt_font_split_line_st sp_line_tmp;
+    if (sp_line) {
+        sp_line_tmp.indent = sp_line->indent;
+        sp_line_tmp.max_w = sp_line->max_w;
+        sp_line_tmp.space = sp_line->space;
+        sp_line_tmp.start_w = sp_line->start_w;
+    }else{
+        sp_line_tmp.indent = style->indent;
+        sp_line_tmp.max_w = obj->area.w;
+        sp_line_tmp.start_w = obj->area.w;
+        sp_line_tmp.space = style->space_x;
+    }
+
+    sp_line_tmp.text = (char * )_gt_vector_get_item(style->contents, _gt_vector_get_index(style->contents));
+    if(!sp_line_tmp.text) {
+        return s_line_ret;
+    }
+    sp_line_tmp.len = strlen(sp_line_tmp.text);
+
+    s_line_ret = gt_font_split_line_numb(&style->font_info, &sp_line_tmp);
+    return s_line_ret;
+}
+
+void gt_btn_append_text(gt_obj_st * obj, const char * str)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )obj;
+
+    char* cur_str = (char * )_gt_vector_get_item(style->contents, _gt_vector_get_index(style->contents));
+    if(cur_str) {
+        gt_btn_set_text(obj, "%s%s", cur_str, str);
+    }else{
+        gt_btn_set_text(obj, str);
+    }
+}
+
 #endif  /** GT_CFG_ENABLE_BTN */
 /* end ------------------------------------------------------------------*/

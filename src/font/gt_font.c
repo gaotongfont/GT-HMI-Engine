@@ -2141,11 +2141,16 @@ _ret_dat:
     return len;
 }
 
-uint32_t gt_font_split_line_numb(gt_font_info_st* info, gt_font_split_line_st * sp_line, uint32_t * ret_max_w)
+gt_split_line_ret_st gt_font_split_line_numb(gt_font_info_st* info, gt_font_split_line_st * sp_line)
 {
-    uint32_t line_numb = 1;
+    gt_split_line_ret_st line_ret = {
+        .line_numb = 1,
+        .max_w = 0,
+        .disp_w = 0,
+    };
+
     const char * text = (const char * )sp_line->text;
-    if(!text) return line_numb;
+    if(!text) return line_ret;
 
     gt_font_st temp_font = {
         .info = *info,
@@ -2158,7 +2163,7 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, gt_font_split_line_st * 
     _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&temp_font.info, FONT_LAN_UNKNOWN, 0);
 #endif
     temp_font.res = gt_mem_malloc(font_size_res.font_per_size);
-    GT_CHECK_BACK_VAL(temp_font.res, line_numb);
+    GT_CHECK_BACK_VAL(temp_font.res, line_ret);
 
     int32_t disp_w = sp_line->start_w - gt_font_get_indent_width(&temp_font.info, sp_line->indent);
     uint32_t ret_w = 0, lan_len = 0;
@@ -2166,10 +2171,11 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, gt_font_split_line_st * 
     int32_t idx_step = 0;
     bool is_first_line = true;
     if (0 == len) {
-        return line_numb;
+        return line_ret;
     }
 
-    line_numb = 0;
+    line_ret.line_numb = 0;
+
     while (idx < len) {
         if (0x0A == text[idx]) {
             ++idx;
@@ -2179,7 +2185,7 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, gt_font_split_line_st * 
         temp_font.utf8 = (char*)&text[idx];
         temp_font.len = len - idx;
 
-        if(line_numb != 0){
+        if(line_ret.line_numb != 0){
             disp_w = sp_line->max_w - (0x0A == text[idx - 1] ? gt_font_get_indent_width(&temp_font.info, sp_line->indent) : 0);
         }
 
@@ -2199,14 +2205,15 @@ uint32_t gt_font_split_line_numb(gt_font_info_st* info, gt_font_split_line_st * 
         }
 
     _compute_line:
-        ++line_numb;
+        ++line_ret.line_numb;
     }
 
-    if(ret_max_w) *ret_max_w = (line_numb > 1) ? sp_line->max_w : (sp_line->max_w - disp_w);
+    line_ret.max_w = (line_ret.line_numb > 1) ? sp_line->max_w : (sp_line->max_w - disp_w);
+    line_ret.disp_w = disp_w;
 
     gt_mem_free(temp_font.res);
     temp_font.res = NULL;
-    return line_numb;
+    return line_ret;
 }
 
 

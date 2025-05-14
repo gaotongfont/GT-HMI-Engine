@@ -380,7 +380,7 @@ _calc_each_column_display_max_width(gt_obj_st * table) {
 
 static GT_ATTRIBUTE_RAM_TEXT uint16_t
 _calc_vec_total_height_by(_gt_table_st * style, uint16_t col_count, _gt_vector_iterator_st iter, _gt_vector_st * row_vector) {
-    uint32_t ret_w = 0;
+    gt_split_line_ret_st s_line_ret;
     uint16_t total_height = 0, line_height = 0, row_idx = 0;
     gt_size_t i = 0, line_count;
     gt_font_split_line_st sp_line = {
@@ -398,7 +398,8 @@ _calc_vec_total_height_by(_gt_table_st * style, uint16_t col_count, _gt_vector_i
             sp_line.max_w = style->col_list[iter.index(iter.dsc_t) % col_count].max_width;
             sp_line.start_w = sp_line.max_w;
             sp_line.text = (char * )iter.next(iter.dsc_t);
-            line_count = gt_font_split_line_numb(&style->font_info, &sp_line, &ret_w);
+            s_line_ret = gt_font_split_line_numb(&style->font_info, &sp_line);
+            line_count = s_line_ret.line_numb;
             if (style->font_info.size * line_count > line_height) {
                 line_height = style->font_info.size * line_count;
             }

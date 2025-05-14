@@ -96,6 +96,7 @@ void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...);
  */
 void gt_btn_set_text_by_len(gt_obj_st * btn, const char * text, uint16_t len);
 
+void gt_btn_append_text(gt_obj_st * obj, const char * str);
 /**
  * @brief get button text
  *
@@ -191,6 +192,16 @@ void gt_btn_set_selected(gt_obj_st * obj);
  * @param enabled 1[default]: enabled; 0: disalbed.
  */
 void gt_btn_set_state_enabled(gt_obj_st * obj, bool enabled);
+
+/**
+ * @brief Get the font split line number
+ *
+ * @param obj
+ * @param sp_line
+ * @param ret_max_w
+ * @return uint32_t
+ */
+gt_split_line_ret_st gt_btn_get_font_split_line_numb(gt_obj_st* obj, gt_font_split_line_st* sp_line);
 
 #endif  /** GT_CFG_ENABLE_BTN */
 

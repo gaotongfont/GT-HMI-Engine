@@ -33,10 +33,85 @@ typedef enum {
     GT_CHAT_TYPE_VOICE,
 }gt_chat_type_te;
 
-
+typedef struct gt_chat_item_cb_s
+{
+    gt_obj_st* (*create_cb)( gt_obj_st* );
+    void (*set_text_cb)(gt_obj_st * , const char * , ...);
+    void (*append_text_cb)(gt_obj_st * , const char * );
+    void (*set_color_background_cb)(gt_obj_st * , gt_color_t );
+    void (*set_color_border_cb)(gt_obj_st * , gt_color_t);
+    void (*set_border_width_cb)(gt_obj_st * , uint8_t );
+    void (*set_font_color_cb)(gt_obj_st * , gt_color_t );
+    void (*set_font_size_cb)(gt_obj_st * , uint8_t );
+    void (*set_font_gray_cb)(gt_obj_st * , uint8_t );
+    void (*set_font_align_cb)(gt_obj_st * , gt_align_et );
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
+    void (*set_font_family_cn_cb)(gt_obj_st * , gt_family_t );
+    void (*set_font_family_en_cb)(gt_obj_st * , gt_family_t );
+    void (*set_font_family_fl_cb)(gt_obj_st * , gt_family_t );
+    void (*set_font_family_numb_cb)(gt_obj_st * , gt_family_t );
+#else
+    void (*set_font_family_cb)(gt_obj_st * , gt_family_t );
+    void (*set_font_cjk_cb)(gt_obj_st* , gt_font_cjk_et );
+#endif
+    void (*set_font_thick_en_cb)(gt_obj_st * , uint8_t );
+    void (*set_font_thick_cn_cb)(gt_obj_st * , uint8_t );
+    void (*set_font_encoding_cb)(gt_obj_st * , gt_encoding_et );
+    void (*set_font_style_cb)(gt_obj_st * , gt_font_style_et );
+    void (*set_space_cb)(gt_obj_st * , uint8_t , uint8_t );
+    void (*set_indent_cb)(gt_obj_st * , uint16_t );
+    gt_split_line_ret_st (*get_font_split_line_numb_cb)(gt_obj_st* , gt_font_split_line_st* );
+}gt_chat_item_cb_st;
 /* macros ---------------------------------------------------------------*/
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
+#define GT_CHAT_BTN_ITEM_CB_INIT(_item) do{\
+    _item.create_cb = gt_btn_create; \
+    _item.set_text_cb = gt_btn_set_text; \
+    _item.append_text_cb = gt_btn_append_text; \
+    _item.set_color_background_cb = gt_btn_set_color_background; \
+    _item.set_color_border_cb = gt_btn_set_color_border; \
+    _item.set_border_width_cb = gt_btn_set_border_width; \
+    _item.set_font_color_cb = gt_btn_set_font_color; \
+    _item.set_font_size_cb = gt_btn_set_font_size; \
+    _item.set_font_gray_cb = gt_btn_set_font_gray; \
+    _item.set_font_align_cb = gt_btn_set_font_align; \
+    _item.set_font_family_cn_cb = gt_btn_set_font_family_cn; \
+    _item.set_font_family_en_cb = gt_btn_set_font_family_en; \
+    _item.set_font_family_fl_cb = gt_btn_set_font_family_fl; \
+    _item.set_font_family_numb_cb = gt_btn_set_font_family_numb; \
+    _item.set_font_thick_en_cb = gt_btn_set_font_thick_en; \
+    _item.set_font_thick_cn_cb = gt_btn_set_font_thick_cn; \
+    _item.set_font_encoding_cb = gt_btn_set_font_encoding; \
+    _item.set_font_style_cb = gt_btn_set_font_style; \
+    _item.set_space_cb = gt_btn_set_space; \
+    _item.set_indent_cb = gt_btn_set_indent; \
+    _item.get_font_split_line_numb_cb = gt_btn_get_font_split_line_numb; \
+}while(0)
 
+#else
+#define GT_CHAT_BTN_ITEM_CB_INIT(_item) do{\
+    _item.create_cb = gt_btn_create; \
+    _item.set_text_cb = gt_btn_set_text; \
+    _item.append_text_cb = gt_btn_append_text; \
+    _item.set_color_background_cb = gt_btn_set_color_background; \
+    _item.set_color_border_cb = gt_btn_set_color_border; \
+    _item.set_border_width_cb = gt_btn_set_border_width; \
+    _item.set_font_color_cb = gt_btn_set_font_color; \
+    _item.set_font_size_cb = gt_btn_set_font_size; \
+    _item.set_font_gray_cb = gt_btn_set_font_gray; \
+    _item.set_font_align_cb = gt_btn_set_font_align; \
+    _item.set_font_family_cb = gt_btn_set_font_family; \
+    _item.set_font_cjk_cb = gt_btn_set_font_cjk; \
+    _item.set_font_thick_en_cb = gt_btn_set_font_thick_en; \
+    _item.set_font_thick_cn_cb = gt_btn_set_font_thick_cn; \
+    _item.set_font_encoding_cb = gt_btn_set_font_encoding; \
+    _item.set_font_style_cb = gt_btn_set_font_style; \
+    _item.set_space_cb = gt_btn_set_space; \
+    _item.set_indent_cb = gt_btn_set_indent; \
+    _item.get_font_split_line_numb_cb = gt_btn_get_font_split_line_numb; \
+}while(0)
 
+#endif
 
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_chat_create(gt_obj_st * parent);
@@ -50,7 +125,9 @@ gt_obj_st * gt_chat_add_received_text_msg(gt_obj_st * chat, const char * msg);
 gt_obj_st * gt_chat_add_received_voice_msg(gt_obj_st * chat, uint8_t tim_s);
 
 gt_obj_st * gt_chat_append_msg_text(gt_obj_st * chat, const char * msg);
+gt_obj_st * gt_chat_append_msg_text_control_scroll(gt_obj_st * chat, const char * msg, bool is_scroll);
 gt_obj_st * gt_chat_replace_msg_text(gt_obj_st * chat, const char * msg);
+gt_obj_st * gt_chat_replace_msg_text_control_scroll(gt_obj_st * chat, const char * msg, bool is_scroll);
 
 void gt_chat_clean_all_msg(gt_obj_st * chat);
 
