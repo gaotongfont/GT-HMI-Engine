@@ -84,7 +84,7 @@ void gt_refr_timer(void)
     } else {
         // gt_disp_invalid_area(NULL);
     }
-#if defined(_GT_PORT_SIMULATOR_ENVS) || 0
+#if (defined(_GT_PORT_SIMULATOR_ENVS) && defined(USE_MEM_REAL_USED_REMARK)) || 0
     gt_mem_check_used();
 #endif
 }
