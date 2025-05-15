@@ -16,6 +16,13 @@
 
 /* private define -------------------------------------------------------*/
 
+#ifndef _GT_SCR_STACK_TRACE_LOG
+    /**
+     * @brief print all stack trace log
+     *      [default]: 0
+     */
+    #define _GT_SCR_STACK_TRACE_LOG             0
+#endif
 
 
 /* private typedef ------------------------------------------------------*/
@@ -35,6 +42,26 @@
 
 
 /* static functions -----------------------------------------------------*/
+#if _GT_SCR_STACK_TRACE_LOG
+static GT_ATTRIBUTE_RAM_TEXT bool
+_print_stack_item_info_cb(gt_stack_item_st item, void * data) {
+    gt_scr_stack_item_st * p = (gt_scr_stack_item_st * )item.data;
+    if (0 == item.index_from_top) {
+        return true;
+    }
+    GT_LOGD(GT_LOG_TAG_STACK,
+        "stack info:\n"
+        "  top idx: %d\n"
+        "  scr  id: 0x%4x(%4d)  %p\n"
+        "  time: %d, delay: %d, type: %d",
+        item.index_from_top,
+        p->current_scr_id, p->current_scr_id, p->current_scr,
+        p->time, p->delay, p->anim_type);
+
+    return true;
+}
+#endif
+
 static GT_ATTRIBUTE_RAM_TEXT gt_scr_mapping_table_st * _get_scr_mapping_table(_gt_gc_scr_st * scr_info) {
     return &scr_info->mapping_table;
 }
@@ -47,19 +74,23 @@ static GT_ATTRIBUTE_RAM_TEXT bool _equal_current_id_cb(void * item, void * targe
 
 static GT_ATTRIBUTE_RAM_TEXT bool
 _free_alive_scr_object_cb(gt_stack_item_st item, void * data) {
+    gt_obj_st const * const active_scr = gt_disp_get_scr();
     gt_scr_stack_item_st * p = (gt_scr_stack_item_st * )item.data;
-    _gt_scr_home_st * home = (_gt_scr_home_st * )data;
+    _gt_scr_home_st const * const home = (_gt_scr_home_st * )data;
 
-    if (p->prev_scr_alive == home->screen) {
+    if (NULL == p->current_scr) {
+        return true;
+    }
+    if (active_scr == p->current_scr) {
+        return true;
+    }
+    if (home->screen == p->current_scr) {
         if (home->alive) {
             return true;
         }
     }
-    if (NULL == p->prev_scr_alive) {
-        return true;
-    }
-    _gt_obj_class_destroy(p->prev_scr_alive);
-    p->prev_scr_alive = NULL;
+    _gt_obj_class_destroy(p->current_scr);
+    p->current_scr = NULL;
     return true;
 }
 
@@ -69,8 +100,9 @@ _remove_scr_pointer_it_cb(gt_stack_item_st item, void * data) {
     gt_obj_st const * const remove_scr = (gt_obj_st const * const)data;
     if (NULL == remove_scr) { return true; }
 
-    if (remove_scr == p->current_scr)       { p->current_scr = NULL; }
-    if (remove_scr == p->prev_scr_alive)    { p->prev_scr_alive = NULL; }
+    if (remove_scr == p->current_scr) {
+        p->current_scr = NULL;
+    }
     return true;
 }
 
@@ -318,7 +350,17 @@ bool gt_scr_stack_push(gt_scr_stack_item_st * scr)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
 
+#if _GT_SCR_STACK_TRACE_LOG
+    GT_LOGD("", "scr before: %p", scr->current_scr);
+    bool is_ok = gt_stack_push(scr_info->stack, (void * )scr);
+    GT_LOGD("", "scr: %p", scr->current_scr);
+    if (is_ok) {
+        gt_stack_iterator(scr_info->stack, _print_stack_item_info_cb, NULL);
+    }
+    return is_ok;
+#else
     return gt_stack_push(scr_info->stack, (void * )scr);
+#endif
 }
 
 gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
@@ -353,6 +395,9 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
             }
         }
     }
+#if _GT_SCR_STACK_TRACE_LOG
+    gt_stack_iterator(scr_info->stack, _print_stack_item_info_cb, NULL);
+#endif
     return item;
 }
 
@@ -376,41 +421,22 @@ gt_scr_stack_item_st * gt_scr_stack_peek_by(gt_stack_size_t step)
 
 gt_obj_st * gt_scr_stack_get_prev_scr(void)
 {
-    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
-
-    gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek(scr_info->stack);
-    GT_CHECK_BACK_VAL(item, NULL);
-    if (item->prev_scr_id == gt_scr_stack_get_home_scr_id() && gt_scr_stack_is_home_scr_alive()) {
-        return gt_scr_stack_get_home_scr();
-    }
-    return item->prev_scr_alive;
+    return gt_scr_stack_get_prev_scr_by(1);
 }
 
 bool gt_scr_stack_is_prev(gt_scr_id_t prev_scr_id)
 {
-    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
-
-    gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek(scr_info->stack);
-    GT_CHECK_BACK_VAL(item, false);
-    return item->prev_scr_id == prev_scr_id;
+    return gt_scr_stack_get_prev_id_by(1) == prev_scr_id;
 }
 
 bool gt_scr_stack_is_current(gt_scr_id_t scr_id)
 {
-    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
-
-    gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek(scr_info->stack);
-    GT_CHECK_BACK_VAL(item, false);
-    return item->current_scr_id == scr_id;
+    return gt_scr_stack_get_prev_id_by(0) == scr_id;
 }
 
 gt_scr_id_t gt_scr_stack_get_prev_id(void)
 {
-    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
-
-    gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek(scr_info->stack);
-    GT_CHECK_BACK_VAL(item, -1);
-    return item->prev_scr_id;
+    return gt_scr_stack_get_prev_id_by(1);
 }
 
 gt_scr_id_t gt_scr_stack_get_prev_id_by(gt_stack_size_t step)

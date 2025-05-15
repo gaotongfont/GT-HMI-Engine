@@ -80,6 +80,14 @@ typedef bool ( * gt_stack_iterator_cb_t)(gt_stack_item_st , void * );
  */
 gt_stack_st * gt_stack_create(gt_stack_size_t depth, uint16_t item_size, bool is_cycle_stack);
 
+/**
+ * @brief
+ *
+ * @param stack
+ * @param item
+ * @return true push ok
+ * @return false full stack
+ */
 bool gt_stack_push(gt_stack_st * stack, void * item);
 
 void * gt_stack_pop(gt_stack_st * stack);

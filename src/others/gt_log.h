@@ -86,6 +86,7 @@ extern "C" {
 #define GT_LOG_TAG_GUI          "GUI"
 #define GT_LOG_TAG_ASSERT       "ASSERT"
 #define GT_LOG_TAG_SERIAL       "SERIAL"
+#define GT_LOG_TAG_STACK        "STACK"
 
 #define GT_LOG_TAG_TEST         "TEST"
 

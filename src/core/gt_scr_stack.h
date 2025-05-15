@@ -33,20 +33,11 @@ typedef struct gt_scr_mapping_table_s {
     gt_scr_id_t count;
 }gt_scr_mapping_table_st;
 
-
-
 /**
- * @brief
+ * @brief Screen stack item info
  */
 typedef struct gt_scr_stack_item_s {
-    gt_scr_id_t prev_scr_id;    /** remark last screen id from current_scr_id */
-    gt_scr_id_t current_scr_id; /** current screen id */
-
-    /** NULL[default]: need to reload screen by prev_scr_id -> init_cb,
-     * otherwise load current scj object directly.
-     * [Warn] home screen always NULL!
-     */
-    gt_obj_st * prev_scr_alive;
+    gt_scr_id_t current_scr_id;     /** default: -1 */
     gt_obj_st * current_scr;
 
     uint32_t time;
@@ -176,6 +167,7 @@ bool gt_scr_stack_set_depth(gt_stack_size_t stack_depth);
 bool gt_scr_stack_push(gt_scr_stack_item_st * scr);
 
 gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count);
+
 gt_scr_stack_item_st * gt_scr_stack_peek(void);
 
 /**
