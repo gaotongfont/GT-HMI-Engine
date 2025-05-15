@@ -817,14 +817,14 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
 
 static GT_ATTRIBUTE_RAM_TEXT inline gt_scr_anim_type_et _get_anti_anim_type(gt_scr_anim_type_et type) {
 #if GT_USE_SCREEN_ANIM
-    if (GT_SCR_ANIM_TYPE_MOVE_LEFT == type) { type = GT_SCR_ANIM_TYPE_MOVE_RIGHT; }
-    else if (GT_SCR_ANIM_TYPE_MOVE_RIGHT == type) { type = GT_SCR_ANIM_TYPE_MOVE_LEFT; }
-    else if (GT_SCR_ANIM_TYPE_MOVE_UP == type) { type = GT_SCR_ANIM_TYPE_MOVE_DOWN; }
-    else if (GT_SCR_ANIM_TYPE_MOVE_DOWN == type) { type =  GT_SCR_ANIM_TYPE_MOVE_UP; }
-    else if (GT_SCR_ANIM_TYPE_COVER_LEFT == type) { type = GT_SCR_ANIM_TYPE_COVER_RIGHT; }
-    else if (GT_SCR_ANIM_TYPE_COVER_RIGHT == type) { type = GT_SCR_ANIM_TYPE_COVER_LEFT; }
-    else if (GT_SCR_ANIM_TYPE_COVER_UP == type) { type = GT_SCR_ANIM_TYPE_COVER_DOWN; }
-    else if (GT_SCR_ANIM_TYPE_COVER_DOWN == type) { type = GT_SCR_ANIM_TYPE_COVER_UP; }
+    if (GT_SCR_ANIM_TYPE_MOVE_LEFT == type)         { type = GT_SCR_ANIM_TYPE_MOVE_RIGHT;   }
+    else if (GT_SCR_ANIM_TYPE_MOVE_RIGHT == type)   { type = GT_SCR_ANIM_TYPE_MOVE_LEFT;    }
+    else if (GT_SCR_ANIM_TYPE_MOVE_UP == type)      { type = GT_SCR_ANIM_TYPE_MOVE_DOWN;    }
+    else if (GT_SCR_ANIM_TYPE_MOVE_DOWN == type)    { type =  GT_SCR_ANIM_TYPE_MOVE_UP;     }
+    else if (GT_SCR_ANIM_TYPE_COVER_LEFT == type)   { type = GT_SCR_ANIM_TYPE_COVER_RIGHT;  }
+    else if (GT_SCR_ANIM_TYPE_COVER_RIGHT == type)  { type = GT_SCR_ANIM_TYPE_COVER_LEFT;   }
+    else if (GT_SCR_ANIM_TYPE_COVER_UP == type)     { type = GT_SCR_ANIM_TYPE_COVER_DOWN;   }
+    else if (GT_SCR_ANIM_TYPE_COVER_DOWN == type)   { type = GT_SCR_ANIM_TYPE_COVER_UP;     }
     return type;
 #else
     return GT_SCR_ANIM_TYPE_NONE;
@@ -860,7 +860,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _layer_top_destroy_handler_cb(struct _gt_timer
  * @param home_id screen id
  * @return bool true: Create new screen successfully, false: Create new screen failed.
  */
-static GT_ATTRIBUTE_RAM_TEXT bool _create_scr_by_stack_item(gt_scr_stack_item_st * item_p, gt_scr_id_t home_id) {
+static bool GT_ATTRIBUTE_RAM_TEXT
+_create_scr_by_stack_item(gt_scr_stack_item_st * item_p, gt_scr_id_t home_id) {
     if (item_p->current_scr) {
         return true;
     }
@@ -885,6 +886,32 @@ static GT_ATTRIBUTE_RAM_TEXT bool _create_scr_by_stack_item(gt_scr_stack_item_st
     return true;
 }
 
+static void inline GT_ATTRIBUTE_RAM_TEXT
+_clear_stack_when_home_scr_id_current_valid(
+    gt_scr_stack_item_st * reload_p, gt_scr_stack_item_st const * const target, gt_scr_id_t home_id, bool is_home_scr_alive) {
+    if (-1 == reload_p->current_scr_id) {
+        if (false == gt_scr_stack_is_empty()) {
+            gt_scr_stack_clear();
+        }
+        /** set bottom stack screen */
+        reload_p->current_scr_id = (-1 != home_id) ? home_id : target->current_scr_id;
+        if (-1 == home_id) {
+            return;
+        }
+        if (is_home_scr_alive && NULL == reload_p->current_scr && target->current_scr) {
+            reload_p->current_scr = target->current_scr;
+        }
+        return;
+    }
+    if (home_id != reload_p->current_scr_id) {
+        return;
+    }
+    if (gt_scr_stack_is_empty()) {
+        return;
+    }
+    gt_scr_stack_clear();
+}
+
 /* global functions / API interface -------------------------------------*/
 gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
 {
@@ -906,7 +933,7 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
 
     gt_scr_stack_item_st * prev = gt_scr_stack_peek();
     bool is_home_scr_alive = gt_scr_stack_is_home_scr_alive();
-    gt_scr_stack_item_st new_item = {
+    gt_scr_stack_item_st reload_item = {
         .current_scr = prev ? prev->current_scr :
             (is_home_scr_alive ? gt_scr_stack_get_home_scr() : NULL),
         .current_scr_id = prev ? prev->current_scr_id : home_id,
@@ -914,59 +941,31 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
         .time = target->time,
         .delay = target->delay,
     };
-    new_item.anim_type = _get_anti_anim_type(new_item.anim_type);
+    reload_item.anim_type = _get_anti_anim_type(reload_item.anim_type);
 
-    if (-1 == new_item.current_scr_id) {
-        if (false == gt_scr_stack_is_empty()) {
-            gt_scr_stack_clear();
-        }
-        if (-1 != home_id) {
-            new_item.current_scr_id = home_id;
-            if (is_home_scr_alive) {
-                if (NULL == new_item.current_scr && target->current_scr) {
-                    new_item.current_scr = target->current_scr;
-                }
-            }
-        }
-        if (-1 == new_item.current_scr_id) {
-            /** set bottom stack screen */
-            new_item.current_scr_id = target->current_scr_id;
-        }
-    } else if (home_id == new_item.current_scr_id) {
-        if (false == gt_scr_stack_is_empty()) {
-            gt_scr_stack_clear();
-        }
+    _clear_stack_when_home_scr_id_current_valid(&reload_item, target, home_id, is_home_scr_alive);
+
+    if (false == _create_scr_by_stack_item(&reload_item, home_id)) {
+        return -1;
     }
-
-    if (NULL == new_item.current_scr) {
-        new_item.current_scr = _create_scr_by_id(new_item.current_scr_id);
-        GT_CHECK_BACK_VAL(new_item.current_scr, -1);
-        /** update prev current screen object */
-        if (prev && prev->current_scr_id == new_item.current_scr_id) {
-            prev->current_scr = new_item.current_scr;
-        }
-        if (home_id == new_item.current_scr_id) {
-            gt_scr_stack_set_home_scr(new_item.current_scr);
-        }
+    if (prev && prev->current_scr_id == reload_item.current_scr_id) {
+        prev->current_scr = reload_item.current_scr;
     }
-
-    if (home_id == new_item.current_scr_id || gt_scr_stack_is_empty()) {
-        if (false == gt_scr_stack_push(&new_item)) {
+    if (home_id == reload_item.current_scr_id || gt_scr_stack_is_empty()) {
+        if (false == gt_scr_stack_push(&reload_item)) {
             return -1;
         }
     }
-
-    if (scr_old != new_item.current_scr) {
+    if (scr_old != reload_item.current_scr) {
 #if _GT_STACK_USE_LOADING_LOG
         GT_LOGD(GT_LOG_TAG_GUI, "go back %d:\n  stack depth: %d, scr id: 0x%X(%d), %p", step,
             gt_scr_stack_get_count(),
-            new_item.current_scr_id, new_item.current_scr_id, new_item.current_scr);
+            reload_item.current_scr_id, reload_item.current_scr_id, reload_item.current_scr);
 #endif
-        gt_event_send(new_item.current_scr, GT_EVENT_TYPE_SCREEN_BEFORE_GO_BACK, NULL);
-        gt_disp_load_scr_anim(new_item.current_scr, new_item.anim_type, new_item.time, new_item.delay, true);
+        gt_event_send(reload_item.current_scr, GT_EVENT_TYPE_SCREEN_BEFORE_GO_BACK, NULL);
+        gt_disp_load_scr_anim(reload_item.current_scr, reload_item.anim_type, reload_item.time, reload_item.delay, true);
     }
-
-    return new_item.current_scr_id;
+    return reload_item.current_scr_id;
 }
 
 void gt_disp_stack_load_scr(gt_scr_id_t scr_id)
