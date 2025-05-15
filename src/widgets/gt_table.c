@@ -380,7 +380,7 @@ _calc_each_column_display_max_width(gt_obj_st * table) {
 
 static GT_ATTRIBUTE_RAM_TEXT uint16_t
 _calc_vec_total_height_by(_gt_table_st * style, uint16_t col_count, _gt_vector_iterator_st iter, _gt_vector_st * row_vector) {
-    gt_split_line_ret_st s_line_ret;
+    gt_split_line_ret_st s_line_ret = {0};
     uint16_t total_height = 0, line_height = 0, row_idx = 0;
     gt_size_t i = 0, line_count;
     gt_font_split_line_st sp_line = {

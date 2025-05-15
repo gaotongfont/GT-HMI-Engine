@@ -20,7 +20,8 @@ extern "C" {
 #include "./gt_obj.h"
 #include "../core/gt_style.h"
 #include "../font/gt_font.h"
-
+#include "../widgets/gt_btn.h"
+#include "../widgets/gt_textarea.h"
 
 /* define ---------------------------------------------------------------*/
 #define GT_CHAT_MAX_MSG_CNT    (20)
@@ -60,6 +61,7 @@ typedef struct gt_chat_item_cb_s
     void (*set_font_style_cb)(gt_obj_st * , gt_font_style_et );
     void (*set_space_cb)(gt_obj_st * , uint8_t , uint8_t );
     void (*set_indent_cb)(gt_obj_st * , uint16_t );
+    void (*set_start_point_offset_cb)(gt_obj_st* , uint8_t , uint8_t );
     gt_split_line_ret_st (*get_font_split_line_numb_cb)(gt_obj_st* , gt_font_split_line_st* );
 }gt_chat_item_cb_st;
 /* macros ---------------------------------------------------------------*/
@@ -85,10 +87,12 @@ typedef struct gt_chat_item_cb_s
     _item.set_font_style_cb = gt_btn_set_font_style; \
     _item.set_space_cb = gt_btn_set_space; \
     _item.set_indent_cb = gt_btn_set_indent; \
+    _item.set_start_point_offset_cb = NULL; \
     _item.get_font_split_line_numb_cb = gt_btn_get_font_split_line_numb; \
 }while(0)
 
 #else
+/* btn */
 #define GT_CHAT_BTN_ITEM_CB_INIT(_item) do{\
     _item.create_cb = gt_btn_create; \
     _item.set_text_cb = gt_btn_set_text; \
@@ -108,7 +112,32 @@ typedef struct gt_chat_item_cb_s
     _item.set_font_style_cb = gt_btn_set_font_style; \
     _item.set_space_cb = gt_btn_set_space; \
     _item.set_indent_cb = gt_btn_set_indent; \
+    _item.set_start_point_offset_cb = NULL; \
     _item.get_font_split_line_numb_cb = gt_btn_get_font_split_line_numb; \
+}while(0)
+
+/* textarea */
+#define GT_CHAT_TEXTAREA_ITEM_CB_INIT(_item) do{ \
+    _item.create_cb = gt_textarea_create; \
+    _item.set_text_cb = gt_textarea_set_text; \
+    _item.append_text_cb = gt_textarea_append_text; \
+    _item.set_color_background_cb = gt_textarea_set_bg_color; \
+    _item.set_color_border_cb = gt_textarea_set_border_color; \
+    _item.set_border_width_cb = gt_textarea_set_border_width; \
+    _item.set_font_color_cb = gt_textarea_set_font_color; \
+    _item.set_font_size_cb = gt_textarea_set_font_size; \
+    _item.set_font_gray_cb = gt_textarea_set_font_gray; \
+    _item.set_font_align_cb = gt_textarea_set_font_align; \
+    _item.set_font_family_cb = gt_textarea_set_font_family; \
+    _item.set_font_cjk_cb = gt_textarea_set_font_cjk; \
+    _item.set_font_thick_en_cb = gt_textarea_set_font_thick_en; \
+    _item.set_font_thick_cn_cb = gt_textarea_set_font_thick_cn; \
+    _item.set_font_encoding_cb = gt_textarea_set_font_encoding; \
+    _item.set_font_style_cb = NULL; \
+    _item.set_space_cb = gt_textarea_set_space; \
+    _item.set_indent_cb = gt_textarea_set_indent; \
+    _item.set_start_point_offset_cb = gt_textarea_set_start_point_offset; \
+    _item.get_font_split_line_numb_cb = gt_textarea_get_font_split_line_numb; \
 }while(0)
 
 #endif
@@ -158,6 +187,9 @@ void gt_chat_set_font_thick_en(gt_obj_st * chat, uint8_t thick);
 void gt_chat_set_font_thick_cn(gt_obj_st * chat, uint8_t thick);
 void gt_chat_set_font_style(gt_obj_st * chat, gt_font_style_et font_style);
 
+
+void gt_chat_set_item_cb(gt_obj_st * chat, gt_chat_item_cb_st* cb);
+void gt_chat_updata_item_size(gt_obj_st * chat, bool is_scroll);
 
 #ifdef __cplusplus
 } /*extern "C"*/

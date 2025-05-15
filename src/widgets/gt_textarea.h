@@ -18,6 +18,7 @@ extern "C" {
 
 #if GT_CFG_ENABLE_TEXTAREA
 #include "gt_obj.h"
+#include "stdarg.h"
 #include "gt_obj_class.h"
 #include "../font/gt_font.h"
 #include "../core/gt_draw.h"
@@ -85,7 +86,8 @@ gt_res_t gt_textarea_set_always_scroll_to_newest(gt_obj_st * textarea, bool alwa
  * @param textarea obj pointer
  * @param text set text content
  */
-void gt_textarea_set_text(gt_obj_st * textarea, char * text);
+// void gt_textarea_set_text(gt_obj_st * textarea, char * text);
+void gt_textarea_set_text(gt_obj_st * textarea, const char * fmt, ...);
 
 void gt_textarea_set_text_by_len(gt_obj_st * textarea, char * text, uint16_t len);
 
@@ -278,6 +280,34 @@ gt_font_touch_word_st gt_textarea_get_touch_word(gt_obj_st * textarea);
  * @param padding [default: 0] The width of padding
  */
 void gt_textarea_set_padding(gt_obj_st * textarea, uint8_t padding);
+
+/**
+ * @brief get the total line number of the textarea
+ *
+ * @param obj textarea obj pointer
+ * @param sp_line split line info
+ * @return gt_split_line_ret_st
+ */
+gt_split_line_ret_st gt_textarea_get_font_split_line_numb(gt_obj_st* obj, gt_font_split_line_st* sp_line);
+
+/**
+ * @brief append text to textarea
+ *
+ * @param obj
+ * @param str
+ */
+void gt_textarea_append_text(gt_obj_st * obj, const char * str);
+
+
+/**
+ * @brief set textarea start point offset
+ *
+ * @param textarea
+ * @param x_off
+ * @param y_off
+ */
+void gt_textarea_set_start_point_offset(gt_obj_st * textarea, uint8_t x_off, uint8_t y_off);
+
 
 #endif  /** GT_CFG_ENABLE_TEXTAREA */
 

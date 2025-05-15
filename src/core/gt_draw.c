@@ -1029,7 +1029,7 @@ static GT_ATTRIBUTE_RAM_TEXT _text_offset_line_st _get_align_start_y(const gt_at
     _text_offset_line_st ret = {
         .line_count = 1,
     };
-    gt_split_line_ret_st s_line_ret;
+    gt_split_line_ret_st s_line_ret = {0};
     gt_size_t disp_w = coords->w;
     gt_align_et type = _get_align_type(dsc->align);
     uint16_t indent = 0;

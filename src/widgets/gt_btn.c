@@ -121,7 +121,7 @@ _btn_init_cb(gt_obj_st * obj) {
     // 1:base shape
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
 
-    gt_area_st area = obj->area;
+    gt_area_st area = gt_area_reduce(obj->area, style->border_width);
     // 2:font
     gt_attr_font_st font_attr = {
         .font           = &font,
@@ -699,7 +699,7 @@ void gt_btn_set_state_enabled(gt_obj_st * obj, bool enabled)
 
 gt_split_line_ret_st gt_btn_get_font_split_line_numb(gt_obj_st* obj, gt_font_split_line_st* sp_line)
 {
-    gt_split_line_ret_st s_line_ret;
+    gt_split_line_ret_st s_line_ret = {0};
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return s_line_ret;
     }

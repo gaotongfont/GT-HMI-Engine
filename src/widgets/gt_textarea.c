@@ -57,7 +57,6 @@ typedef struct _gt_textarea_s {
     uint16_t max_height;            /** update when current display max height */
     gt_anim_st * scroll_to_newest_anim;     /** when add newest string */
 
-    gt_color_t color_background;
     gt_color_t color_border;
     gt_color_t color_font;
     uint8_t border_width;
@@ -70,6 +69,9 @@ typedef struct _gt_textarea_s {
     uint8_t space_y;
     uint8_t font_align;     //@ref gt_align_et
     uint8_t padding;
+
+    uint8_t start_x_off;
+    uint8_t start_y_off;
 
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
     /** detail @ref gt_font.h */
@@ -245,6 +247,12 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
     }
 #endif
 
+    if(0 != style->start_x_off || 0 != style->start_y_off) {
+        font_attr.start_x = style->start_x_off + area_font.x + gt_font_get_indent_width(&font.info, style->indent);
+        font_attr.start_y = style->start_y_off + area_font.y;
+        font_attr.reg.enabled_start = true;
+    }
+
     while (idx < style->cnt_contents) {
         font.utf8               = style->contents[idx].text;
         if (NULL == font.utf8) {
@@ -319,7 +327,7 @@ _textarea_init_cb(gt_obj_st * obj) {
         rect_attr.radius = obj->radius;
         rect_attr.border_width = style->border_width;
         rect_attr.reg.is_fill = 1;
-        rect_attr.bg_color = style->color_background;
+        rect_attr.bg_color = obj->bgcolor;
         rect_attr.border_color = style->color_border;
         rect_attr.bg_opa = style->bg_opa;
 
@@ -557,7 +565,7 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
     gt_font_info_init(&style->font_info);
 
-    style->color_background  = gt_color_white();
+    obj->bgcolor             = gt_color_white();
     style->color_font        = gt_color_black();
     style->bg_opa            = GT_OPA_100;
     style->font_align        = GT_ALIGN_NONE;
@@ -580,9 +588,37 @@ gt_res_t gt_textarea_set_always_scroll_to_newest(gt_obj_st * textarea, bool alwa
     return GT_RES_OK;
 }
 
-void gt_textarea_set_text(gt_obj_st * textarea, char * text)
+void gt_textarea_set_text(gt_obj_st * textarea, const char * fmt, ...)
 {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+
+    char buffer[8] = {0};
+    va_list args;
+    va_list args2;
+    va_start(args, fmt);
+    va_copy(args2, args);
+    uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(buffer, sizeof(buffer), fmt, args) + 1);
+    va_end(args);
+    if (!size) {
+        goto free_lb;
+    }
+    char * text = gt_mem_malloc(size);
+    if (NULL == text) {
+        goto free_lb;
+    }
+    gt_memset(text, 0, size);
+    va_start(args2, fmt);
+    vsnprintf(text, size, fmt, args2);
+    va_end(args2);
+
     gt_textarea_set_text_by_len(textarea, text, strlen(text));
+
+    gt_mem_free(text);
+    return ;
+free_lb:
+    va_end(args2);
 }
 
 void gt_textarea_set_text_by_len(gt_obj_st * textarea, char * text, uint16_t len)
@@ -856,8 +892,7 @@ void gt_textarea_set_bg_color(gt_obj_st * textarea, gt_color_t color)
     if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
         return ;
     }
-    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
-    style->color_background = color;
+    textarea->bgcolor = color;
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -1075,6 +1110,87 @@ void gt_textarea_set_padding(gt_obj_st * textarea, uint8_t padding)
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     style->padding = padding;
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+gt_split_line_ret_st gt_textarea_get_font_split_line_numb(gt_obj_st* obj, gt_font_split_line_st* sp_line)
+{
+    gt_split_line_ret_st s_line_ret = {0};
+
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return s_line_ret;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )obj;
+    uint16_t idx = 0;
+
+    gt_font_split_line_st sp_line_tmp;
+    if (sp_line) {
+        sp_line_tmp.indent = sp_line->indent;
+        sp_line_tmp.max_w = sp_line->max_w;
+        sp_line_tmp.space = sp_line->space;
+        sp_line_tmp.start_w = sp_line->start_w;
+    }else{
+        sp_line_tmp.indent = style->indent;
+        sp_line_tmp.max_w = obj->area.w;
+        sp_line_tmp.start_w = obj->area.w;
+        sp_line_tmp.space = style->space_x;
+    }
+    gt_split_line_ret_st s_line_tmp_ret = {0};
+
+    while (idx < style->cnt_contents) {
+
+        sp_line_tmp.text = style->contents[idx].text;
+        sp_line_tmp.len = style->contents[idx].len;
+
+        s_line_tmp_ret = gt_font_split_line_numb(&style->font_info, &sp_line_tmp);
+
+        printf("idx: %d line_numb: %d max_w: %d disp_w: %d\n",\
+                idx, s_line_tmp_ret.line_numb, s_line_tmp_ret.max_w, s_line_tmp_ret.disp_w);
+
+        if(1 == s_line_tmp_ret.line_numb && 0x0A == sp_line_tmp.text[sp_line_tmp.len-1]) {
+            s_line_ret.line_numb += s_line_tmp_ret.line_numb;
+        }
+        else{
+            s_line_ret.line_numb += s_line_tmp_ret.line_numb - 1;
+        }
+        s_line_ret.max_w = GT_MAX(s_line_ret.max_w, s_line_tmp_ret.max_w);
+        sp_line_tmp.start_w = s_line_tmp_ret.disp_w;
+
+_next_line:
+        ++idx;
+    }
+
+    s_line_ret.line_numb += 1;
+
+    return s_line_ret;
+}
+
+void gt_textarea_append_text(gt_obj_st * obj, const char * str)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )obj;
+
+#if 01
+    if(style->cnt_contents > 0) {
+        char * text = style->contents[0].text;
+        gt_textarea_set_text(obj, "%s%s", text, str);
+    }else{
+        gt_textarea_set_text(obj, "%s", str);
+    }
+#else
+    gt_textarea_add_str(obj, (char* )str, GT_FONT_STYLE_NONE, style->color_font);
+#endif
+}
+
+void gt_textarea_set_start_point_offset(gt_obj_st * textarea, uint8_t x_off, uint8_t y_off)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    style->start_x_off = x_off;
+    style->start_y_off = y_off;
 }
 
 #endif  /** GT_CFG_ENABLE_TEXTAREA */
