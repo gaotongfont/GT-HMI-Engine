@@ -54,6 +54,14 @@ typedef struct gt_scr_stack_item_s {
     gt_scr_anim_type_et anim_type;
 }gt_scr_stack_item_st;
 
+/**
+ * @brief App layer pop stack screen remark info
+ */
+typedef struct gt_scr_stack_pop_remark_s {
+    gt_obj_st ** pop_scr_list;
+    gt_stack_size_t cnt;
+}gt_scr_stack_pop_remark_st;
+
 typedef struct _gt_scr_home_s {
     gt_scr_id_t id;             /** -1: unset home page, >= 0: Have home page */
     gt_obj_st * screen;
@@ -65,6 +73,9 @@ typedef struct _gt_scr_home_s {
 typedef struct _gt_gc_scr_s {
     gt_stack_st * stack;
     _gt_scr_home_st home_scr;
+
+    /** Remark pop screen to release memory by core */
+    gt_scr_stack_pop_remark_st pop_remark;
 
     gt_scr_mapping_table_st mapping_table;
 }_gt_gc_scr_st;
@@ -135,12 +146,45 @@ gt_scr_id_t gt_scr_stack_get_current_id(void);
  */
 bool gt_scr_stack_is_home_scr_alive(void);
 
+/**
+ * @brief judge the screen has pop before by app layer
+ *
+ * @param scr
+ * @return true
+ * @return false
+ */
+bool _gt_scr_stack_has_pop_before(gt_obj_st const * const scr);
+
+/**
+ * @brief Remove the pop screen from pop_scr_list
+ *
+ * @param scr
+ * @return gt_res_t
+ */
+gt_res_t _gt_scr_stack_remove_pop_scr(gt_obj_st const * const scr);
+
+/**
+ * @brief Release unused pop screen
+ *
+ * @param active_scr
+ * @return gt_res_t
+ */
+gt_res_t _gt_scr_stack_clean_unused_pop_scrs(gt_obj_st const * const active_scr);
+
 bool gt_scr_stack_set_depth(gt_stack_size_t stack_depth);
 
 bool gt_scr_stack_push(gt_scr_stack_item_st * scr);
 
 gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count);
 gt_scr_stack_item_st * gt_scr_stack_peek(void);
+
+/**
+ * @brief
+ *
+ * @param step 0: equal to gt_scr_stack_peek
+ * @return gt_scr_stack_item_st*
+ */
+gt_scr_stack_item_st * gt_scr_stack_peek_by(gt_stack_size_t step);
 
 gt_obj_st * gt_scr_stack_get_prev_scr(void);
 

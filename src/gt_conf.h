@@ -301,14 +301,20 @@ extern "C" {
     #define GT_USE_CUSTOM_TOUCH_EXPAND_SIZE     0
 #endif
 
-/** display refresh time */
-#define GT_USE_DISPLAY_PREF_MSG         0
+#ifndef GT_USE_DISPLAY_PREF_MSG
+    /** display refresh time */
+    #define GT_USE_DISPLAY_PREF_MSG             0
+#endif
 
-/** display destroy object time */
-#define GT_USE_DISPLAY_PREF_DESTROY     0
+#ifndef GT_USE_DISPLAY_PREF_DESTROY
+    /** display destroy object time */
+    #define GT_USE_DISPLAY_PREF_DESTROY         0
+#endif
 
-/** display idle time */
-#define GT_USE_DISPLAY_PREF_IDLE        0
+#ifndef GT_USE_DISPLAY_PREF_IDLE
+    /** display idle time */
+    #define GT_USE_DISPLAY_PREF_IDLE            0
+#endif
 
 #ifndef GT_USE_SERIAL
     /**

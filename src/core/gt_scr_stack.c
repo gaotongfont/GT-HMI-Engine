@@ -45,6 +45,122 @@ static GT_ATTRIBUTE_RAM_TEXT bool _equal_current_id_cb(void * item, void * targe
     return it->current_scr_id == tar_stack->current_scr_id;
 }
 
+static GT_ATTRIBUTE_RAM_TEXT bool
+_free_alive_scr_object_cb(gt_stack_item_st item, void * data) {
+    gt_scr_stack_item_st * p = (gt_scr_stack_item_st * )item.data;
+    _gt_scr_home_st * home = (_gt_scr_home_st * )data;
+
+    if (p->prev_scr_alive == home->screen) {
+        if (home->alive) {
+            return true;
+        }
+    }
+    if (NULL == p->prev_scr_alive) {
+        return true;
+    }
+    _gt_obj_class_destroy(p->prev_scr_alive);
+    p->prev_scr_alive = NULL;
+    return true;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT bool
+_remove_scr_pointer_it_cb(gt_stack_item_st item, void * data) {
+    gt_scr_stack_item_st * p = (gt_scr_stack_item_st * )item.data;
+    gt_obj_st const * const remove_scr = (gt_obj_st const * const)data;
+    if (NULL == remove_scr) { return true; }
+
+    if (remove_scr == p->current_scr)       { p->current_scr = NULL; }
+    if (remove_scr == p->prev_scr_alive)    { p->prev_scr_alive = NULL; }
+    return true;
+}
+
+/**
+ * @brief Try to release pop remark pointer and list space.
+ *
+ * @param scr_info
+ * @param active_scr The current screen object
+ * @return gt_res_t GT_ERS_OK: Have empty space to record screen ptr;
+ *                  GT_RES_FAIL: Have no enough space to record.
+ */
+static gt_res_t GT_ATTRIBUTE_RAM_TEXT
+_release_all_pop_remark_except_active_scr(_gt_gc_scr_st * scr_info, gt_obj_st const * const active_scr) {
+    gt_obj_st * pop_scr = NULL;
+    gt_obj_st * temp_scr = NULL;
+    gt_stack_size_t i = scr_info->pop_remark.cnt - 1;
+    gt_scr_id_t stack_idx = 0, stack_count = gt_scr_stack_get_count();
+    bool is_alive = false;
+
+    while (i >= 0) {
+        is_alive = false;
+        pop_scr = scr_info->pop_remark.pop_scr_list[i];
+        for (stack_idx = 0; stack_idx < stack_count; stack_idx++) {
+            temp_scr = gt_scr_stack_get_prev_scr_by(stack_idx);
+            if (pop_scr == temp_scr) {
+                is_alive = true;
+                break;
+            }
+        }
+        if (false == is_alive) {
+            if (pop_scr == active_scr) {
+                --i;
+                continue;
+            }
+            gt_obj_destroy_immediately(pop_scr);
+            scr_info->pop_remark.pop_scr_list[i] = NULL;
+            if (i + 1 < scr_info->pop_remark.cnt) {
+                gt_memmove(&scr_info->pop_remark.pop_scr_list[i],
+                    &scr_info->pop_remark.pop_scr_list[i + 1],
+                    sizeof(gt_obj_st *) * (scr_info->pop_remark.cnt - i - 1));
+            }
+            --scr_info->pop_remark.cnt;
+        }
+        --i;
+    }
+    return scr_info->pop_remark.cnt + 1 < scr_info->stack->depth ? GT_RES_OK : GT_RES_FAIL;
+}
+
+/**
+ * @brief
+ *
+ * @param scr_info
+ * @param pop_item Just pop_item->current_scr vaild.
+ * @return gt_res_t GT_ERS_OK: Have empty space to record screen ptr;
+ *                  GT_RES_FAIL: Have no enough space to record.
+ */
+static gt_res_t GT_ATTRIBUTE_RAM_TEXT
+_gt_scr_stack_add_pop_remark(_gt_gc_scr_st * scr_info, gt_scr_stack_item_st * pop_item) {
+    gt_obj_st * active_scr = gt_disp_get_scr();
+    if (NULL == scr_info) {
+        return GT_RES_INV;
+    }
+    if (scr_info->pop_remark.cnt >= scr_info->stack->depth) {
+        /** Free unused screen */
+        if (GT_RES_FAIL == _release_all_pop_remark_except_active_scr(scr_info, active_scr)) {
+            GT_LOGE(GT_LOG_TAG_GUI, "Release all pop screen failed!");
+            return GT_RES_FAIL;
+        }
+    }
+    if (NULL == pop_item->current_scr) {
+        return GT_RES_OK;
+    }
+#if GT_USE_LAYER_TOP
+    gt_obj_st const * const top_scr = gt_disp_get_layer_top();
+    if (top_scr && top_scr == pop_item->current_scr) {
+        /** Do not free layer top memory. */
+        return GT_RES_OK;
+    }
+#endif
+    for (int16_t i = 0, cnt = scr_info->pop_remark.cnt; i < cnt; i++) {
+        if (pop_item->current_scr == scr_info->pop_remark.pop_scr_list[i]) {
+            /** has before */
+            return GT_RES_OK;
+        }
+    }
+    scr_info->pop_remark.pop_scr_list[scr_info->pop_remark.cnt] = pop_item->current_scr;
+    ++scr_info->pop_remark.cnt;
+    return GT_RES_OK;
+}
+
 /* global functions / API interface -------------------------------------*/
 gt_scr_init_func_cb_t gt_scr_stack_get_init_func(gt_scr_id_t scr_id)
 {
@@ -120,6 +236,57 @@ bool gt_scr_stack_is_home_scr_alive(void)
     return scr_info->home_scr.alive;
 }
 
+bool _gt_scr_stack_has_pop_before(gt_obj_st const * const scr)
+{
+    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+    if (NULL == scr) {
+        return false;
+    }
+    if (NULL == scr_info) {
+        return false;
+    }
+    for (int16_t i = 0, cnt = scr_info->pop_remark.cnt; i < cnt; i++) {
+        if (scr == scr_info->pop_remark.pop_scr_list[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+gt_res_t _gt_scr_stack_remove_pop_scr(gt_obj_st const * const scr)
+{
+    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+    if (NULL == scr) {
+        return GT_RES_FAIL;
+    }
+    if (NULL == scr_info) {
+        return GT_RES_FAIL;
+    }
+    for (int16_t i = 0, cnt = scr_info->pop_remark.cnt; i < cnt; i++) {
+        if (scr != scr_info->pop_remark.pop_scr_list[i]) {
+            continue;
+        }
+        if (i + 1 < scr_info->pop_remark.cnt) {
+            gt_memmove(&scr_info->pop_remark.pop_scr_list[i], &scr_info->pop_remark.pop_scr_list[i + 1],
+                sizeof(gt_obj_st *) * (scr_info->pop_remark.cnt - i - 1));
+        }
+        --scr_info->pop_remark.cnt;
+        break;
+    }
+
+    gt_stack_iterator(scr_info->stack, _remove_scr_pointer_it_cb, (void *)scr);
+    if (scr == scr_info->home_scr.screen) {
+        scr_info->home_scr.screen = NULL;
+    }
+    return GT_RES_OK;
+}
+
+gt_res_t _gt_scr_stack_clean_unused_pop_scrs(gt_obj_st const * const active_scr)
+{
+    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+    return _release_all_pop_remark_except_active_scr(scr_info, active_scr);
+}
+
 bool gt_scr_stack_set_depth(gt_stack_size_t stack_depth)
 {
     if (stack_depth <= 0) {
@@ -132,7 +299,18 @@ bool gt_scr_stack_set_depth(gt_stack_size_t stack_depth)
     }
     scr_info->stack = gt_stack_create(stack_depth, sizeof(gt_scr_stack_item_st), false);
     GT_CHECK_BACK_VAL(scr_info->stack, false);
-
+    if (NULL == scr_info->pop_remark.pop_scr_list) {
+        scr_info->pop_remark.pop_scr_list = gt_mem_malloc(sizeof(gt_obj_st *) * stack_depth);
+    } else {
+        scr_info->pop_remark.pop_scr_list = gt_mem_realloc(scr_info->pop_remark.pop_scr_list,
+            sizeof(gt_obj_st *) * stack_depth);
+    }
+    if (NULL == scr_info->pop_remark.pop_scr_list) {
+        GT_LOGE(GT_LOG_TAG_GUI, "Pop screen list malloc memory failed!");
+        gt_stack_destroy(scr_info->stack);
+        scr_info->stack = NULL;
+        return false;
+    }
     return true;
 }
 
@@ -161,12 +339,12 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
         /** top stack do not free here, need to free by load scr anim */
         item = (gt_scr_stack_item_st * )gt_stack_pop(scr_info->stack);
         if (home_id != item->current_scr_id || false == is_home_alive) {
-            item->current_scr = NULL;
+            _gt_scr_stack_add_pop_remark(scr_info, item);
         }
     }
     while (--count > 0) {
         item = (gt_scr_stack_item_st * )gt_stack_pop(scr_info->stack);
-        if (count > 0 && item) {
+        if (count > 0 && item && item->current_scr) {
             /** Free middle screen, keep top and reload one */
             if (home_id != item->current_scr_id || false == is_home_alive) {
                 item->current_scr->using_sta = false;
@@ -181,8 +359,19 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
 gt_scr_stack_item_st * gt_scr_stack_peek(void)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
-
+    if (NULL == scr_info) {
+        return NULL;
+    }
     return (gt_scr_stack_item_st * )gt_stack_peek(scr_info->stack);
+}
+
+gt_scr_stack_item_st * gt_scr_stack_peek_by(gt_stack_size_t step)
+{
+    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+    if (NULL == scr_info) {
+        return NULL;
+    }
+    return (gt_scr_stack_item_st * )gt_stack_peek_by(scr_info->stack, step);
 }
 
 gt_obj_st * gt_scr_stack_get_prev_scr(void)
@@ -269,23 +458,6 @@ gt_stack_size_t gt_scr_stack_get_count(void)
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
 
     return gt_stack_get_count(scr_info->stack);
-}
-
-static bool _free_alive_scr_object_cb(gt_stack_item_st item, void * data) {
-    gt_scr_stack_item_st * p = (gt_scr_stack_item_st * )item.data;
-    _gt_scr_home_st * home = (_gt_scr_home_st * )data;
-
-    if (p->prev_scr_alive == home->screen) {
-        if (home->alive) {
-            return true;
-        }
-    }
-    if (NULL == p->prev_scr_alive) {
-        return true;
-    }
-    _gt_obj_class_destroy(p->prev_scr_alive);
-    p->prev_scr_alive = NULL;
-    return true;
 }
 
 void gt_scr_stack_clear(void)

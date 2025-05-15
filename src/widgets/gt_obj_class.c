@@ -368,6 +368,7 @@ void _gt_obj_class_destroy(struct gt_obj_s * self)
         if (NULL == ret_p) {
             GT_LOGW(GT_LOG_TAG_GUI, "Destroy screen(%p) failed", self);
         }
+        _gt_scr_stack_remove_pop_scr(self);
     } else {
         ret_p = _gt_obj_class_destroy_from_parent(self);
         if (NULL == ret_p) {
