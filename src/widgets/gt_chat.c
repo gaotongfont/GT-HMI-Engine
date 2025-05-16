@@ -239,7 +239,9 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
         h = (h + 1) * (style->font_info.size) + (is_send ? style->send_border_w << 1 : style->recv_border_w << 1);
         //
         if(style->item_cb.set_start_point_offset_cb) {
-            style->item_cb.set_start_point_offset_cb(style->msg_list[idx].msg_obj, (w - s_line_ret.max_w) >> 1, (style->font_info.size) >> 1);
+            style->item_cb.set_start_point_offset_cb(style->msg_list[idx].msg_obj,
+                                                    gt_font_get_indent_width(&style->font_info, _MULTI_LINE_CONTENT_INDENT_DEFAULT) + (w - s_line_ret.max_w) >> 1 ,
+                                                    (style->font_info.size) >> 1);
         }
     }
 

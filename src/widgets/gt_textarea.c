@@ -1143,9 +1143,6 @@ gt_split_line_ret_st gt_textarea_get_font_split_line_numb(gt_obj_st* obj, gt_fon
 
         s_line_tmp_ret = gt_font_split_line_numb(&style->font_info, &sp_line_tmp);
 
-        printf("idx: %d line_numb: %d max_w: %d disp_w: %d\n",\
-                idx, s_line_tmp_ret.line_numb, s_line_tmp_ret.max_w, s_line_tmp_ret.disp_w);
-
         if(1 == s_line_tmp_ret.line_numb && 0x0A == sp_line_tmp.text[sp_line_tmp.len-1]) {
             s_line_ret.line_numb += s_line_tmp_ret.line_numb;
         }
