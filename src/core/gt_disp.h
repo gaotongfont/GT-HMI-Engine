@@ -36,12 +36,17 @@ extern "C" {
      *      If the same screen id is not TOP screen but before current screen,
      *      it will NOT be FREE.
      */
-    #define GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID   0
+    #define GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID   01
 #endif
 
 
 /* typedef --------------------------------------------------------------*/
 
+/**
+ * @brief [Use screen stack manager] Use custom param to load and display screen
+ *      Handler priority:
+ *      clear_stack_except_home > ignore_repeat_screen_id > force_create_reload > del_prev_scr
+ */
 typedef struct gt_disp_stack_param_s {
     gt_scr_id_t scr_id;
     gt_scr_anim_type_et type;
@@ -90,7 +95,12 @@ typedef struct gt_disp_stack_param_s {
      *      1: force create a new screen object to reload
      */
     uint8_t force_create_reload : 1;
-    uint8_t reserved : 5;
+    /**
+     * @brief Clean all screen stack except home screen, home screen will be
+     *      push into bottom of stack by core.
+     */
+    uint8_t clear_stack_except_home : 1;
+    uint8_t reserved : 4;
 }gt_disp_stack_param_st;
 
 

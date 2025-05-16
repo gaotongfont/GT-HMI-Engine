@@ -1000,6 +1000,44 @@ void gt_disp_stack_load_scr_anim(gt_scr_id_t scr_id, gt_scr_anim_type_et type, u
     gt_disp_stack_load_scr_anim_st(&param);
 }
 
+static gt_res_t GT_ATTRIBUTE_RAM_TEXT
+_reset_stack_or_push_item_after_home(
+    gt_disp_stack_res_st * ret_p, gt_scr_stack_item_st * new_item_p, gt_scr_id_t home_id, bool is_clear_stack_except_home) {
+    if (-1 != home_id && new_item_p->current_scr_id == home_id) {
+        /** Home page reset stack */
+        if (false == gt_scr_stack_is_empty()) {
+            gt_scr_stack_clear();
+        }
+        if (new_item_p->current_scr && ret_p->scr_old == new_item_p->current_scr) {
+            /** reload current screen */
+            ret_p->del_prev_scr = false;
+        } else {
+            /** release current screen memory, try to reload home page screen */
+            ret_p->del_prev_scr = true;
+            new_item_p->current_scr = gt_scr_stack_get_home_scr();
+        }
+        return GT_RES_OK;
+    }
+    bool is_stack_empty = gt_scr_stack_is_empty();
+    if (is_clear_stack_except_home && false == is_stack_empty) {
+        gt_scr_stack_clear();
+        is_stack_empty = true;
+        ret_p->del_prev_scr = true;
+    }
+    if (is_stack_empty && new_item_p->current_scr_id != home_id) {
+        /** Push home into stack root, then push current screen to second one. */
+        gt_scr_stack_item_st home_item = {
+            .current_scr = gt_scr_stack_get_home_scr(),
+            .current_scr_id = home_id,
+        };
+        if (false == gt_scr_stack_push(&home_item)) {
+            GT_LOGE(GT_LOG_TAG_GUI, "Push home root stack failed");
+            return GT_RES_FAIL;
+        }
+    }
+    return GT_RES_OK;
+}
+
 gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const * const param)
 {
     gt_disp_stack_res_st ret = {
@@ -1058,31 +1096,10 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
             ret.del_prev_scr = true;
         }
     }
-    if (-1 != home_id && new_item_p->current_scr_id == home_id) {
-        /** Home page reset stack */
-        if (false == gt_scr_stack_is_empty()) {
-            gt_scr_stack_clear();
-        }
-        if (new_item_p->current_scr && ret.scr_old == new_item_p->current_scr) {
-            /** reload current screen */
-            ret.del_prev_scr = false;
-        } else {
-            /** release current screen memory, try to reload home page screen */
-            ret.del_prev_scr = true;
-            new_item_p->current_scr = gt_scr_stack_get_home_scr();
-        }
-    } else if (gt_scr_stack_is_empty() && new_item_p->current_scr_id != home_id) {
-        /** Push home into stack root, then push current screen to second one. */
-        gt_scr_stack_item_st home_item = {
-            .current_scr = gt_scr_stack_get_home_scr(),
-            .current_scr_id = home_id,
-        };
-        if (false == gt_scr_stack_push(&home_item)) {
-            GT_LOGE(GT_LOG_TAG_GUI, "Push home root stack failed");
-            return ret;
-        }
+    if (GT_RES_FAIL == _reset_stack_or_push_item_after_home(
+        &ret, new_item_p, home_id, param->clear_stack_except_home)) {
+        return ret;
     }
-
 #if _GT_STACK_PUSH_BEFORE_INIT_SCR
     if (false == gt_scr_stack_push(new_item_p)) {
         GT_LOGE(GT_LOG_TAG_GUI, "Push stack failed");

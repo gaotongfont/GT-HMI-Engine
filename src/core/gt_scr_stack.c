@@ -42,6 +42,9 @@
 
 
 /* static functions -----------------------------------------------------*/
+static gt_res_t GT_ATTRIBUTE_RAM_TEXT
+_gt_scr_stack_add_pop_remark(_gt_gc_scr_st * scr_info, gt_scr_stack_item_st * pop_item);
+
 #if _GT_SCR_STACK_TRACE_LOG
 static GT_ATTRIBUTE_RAM_TEXT bool
 _print_stack_item_info_cb(gt_stack_item_st item, void * data) {
@@ -76,7 +79,8 @@ static GT_ATTRIBUTE_RAM_TEXT bool
 _free_alive_scr_object_cb(gt_stack_item_st item, void * data) {
     gt_obj_st const * const active_scr = gt_disp_get_scr();
     gt_scr_stack_item_st * p = (gt_scr_stack_item_st * )item.data;
-    _gt_scr_home_st const * const home = (_gt_scr_home_st * )data;
+    _gt_gc_scr_st * scr_info = (_gt_gc_scr_st * )data;
+    _gt_scr_home_st const * const home = (_gt_scr_home_st * )&scr_info->home_scr;
 
     if (NULL == p->current_scr) {
         return true;
@@ -351,9 +355,7 @@ bool gt_scr_stack_push(gt_scr_stack_item_st * scr)
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
 
 #if _GT_SCR_STACK_TRACE_LOG
-    GT_LOGD("", "scr before: %p", scr->current_scr);
     bool is_ok = gt_stack_push(scr_info->stack, (void * )scr);
-    GT_LOGD("", "scr: %p", scr->current_scr);
     if (is_ok) {
         gt_stack_iterator(scr_info->stack, _print_stack_item_info_cb, NULL);
     }
@@ -491,7 +493,7 @@ void gt_scr_stack_clear(void)
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
 
     // Clear screen object
-    gt_stack_iterator(scr_info->stack, _free_alive_scr_object_cb, (void * )&scr_info->home_scr);
+    gt_stack_iterator(scr_info->stack, _free_alive_scr_object_cb, (void * )scr_info);
 
     gt_stack_clear(scr_info->stack);
 }
