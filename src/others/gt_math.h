@@ -119,6 +119,22 @@ long gt_round(double val);
 uint32_t gt_per_255(uint8_t n);
 
 /**
+ * @brief set random seed
+ *
+ * @param seed
+ */
+void gt_srandom(uint32_t seed);
+/**
+ * @brief get random value
+ *
+ * @param min minimum value
+ * @param max maximum value
+ * @return uint32_t random value, min <= value <= max
+ */
+uint32_t gt_random(uint32_t min, uint32_t max);
+
+
+/**
  * @brief get the value of range [in_min, in_max] map onto [out_min, out_max]
  *
  * @param x current value of range [in_min, in_max]

@@ -74,4 +74,24 @@ void gt_color_focus_set(uint32_t color)
     _focus_color = color;
 }
 
+gt_color_t gt_gradient_color_get(gt_gradient_color_st gradient, uint16_t step)
+{
+    if(gradient.steps < 2) {
+        return gradient.start;
+    }
+
+    if(step >= gradient.steps) {
+        return gradient.end;
+    }
+
+    float ratio = (float)step / (gradient.steps - 1);
+    gt_color_t color;
+
+    color.ch.red = gradient.start.ch.red + ratio * (gradient.end.ch.red - gradient.start.ch.red);
+    color.ch.green = gradient.start.ch.green + ratio * (gradient.end.ch.green - gradient.start.ch.green);
+    color.ch.blue = gradient.start.ch.blue + ratio * (gradient.end.ch.blue - gradient.start.ch.blue);
+
+    return color;
+}
+
 /* end ------------------------------------------------------------------*/

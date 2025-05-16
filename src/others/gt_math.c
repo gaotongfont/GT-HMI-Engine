@@ -56,7 +56,7 @@ static const GT_ATTRIBUTE_LARGE_RAM_ARRAY uint32_t _gt_tab_per_255[] = {
 
 
 /* static variables -----------------------------------------------------*/
-
+static volatile uint32_t _random_seed = 0x13579BDF;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -496,6 +496,31 @@ uint32_t gt_math_calc_bezier(gt_math_bezier_st const * const bezier)
     uint32_t v4 = _GT_MATH_GET_BEZIER_SHIFT_VALUE(bezier->p3 * t3);
 
     return v1 + v2 + v3 + v4;
+}
+
+void gt_srandom(uint32_t seed)
+{
+    _random_seed = seed;
+}
+
+uint32_t gt_random(uint32_t min, uint32_t max)
+{
+    if (min > max) {
+        uint32_t tmp = min;
+        min = max;
+        max = tmp;
+    }
+
+    uint32_t x = _random_seed;
+    x ^= x << 13;
+    x ^= x >> 17;
+    x ^= x << 5;
+    _random_seed = x;
+
+    const uint64_t range = (uint64_t)max - min + 1;
+    const uint64_t rand_val = ((uint64_t)x * range) >> 32;
+
+    return min + (uint32_t)rand_val;
 }
 
 /* end ------------------------------------------------------------------*/

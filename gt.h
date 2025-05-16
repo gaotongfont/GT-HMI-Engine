@@ -225,6 +225,10 @@ extern "C" {
 #if GT_CFG_ENABLE_CALENDAR
 #include "src/widgets/gt_calendar.h"
 #endif
+
+#if GT_CFG_ENABLE_SPECTRUM
+#include "src/widgets/gt_spectrum.h"
+#endif
 /* define ---------------------------------------------------------------*/
 
 

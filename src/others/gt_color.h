@@ -268,6 +268,13 @@ typedef struct gt_color_masking_s {
     uint16_t gap;   /** Range of transparency variation */
 }gt_color_masking_st;
 
+
+typedef struct gt_gradient_color_s
+{
+    gt_color_t start;
+    gt_color_t end;
+    uint16_t steps;
+}gt_gradient_color_st;
 /* macros ---------------------------------------------------------------*/
 
 /* static functions / API inteface-------------------------------------- */
@@ -454,6 +461,9 @@ gt_color_t gt_color_focus(void);
  * @param color default: GT_FOCUS_COLOR_SELECT
  */
 void gt_color_focus_set(uint32_t color);
+
+
+gt_color_t gt_gradient_color_get(gt_gradient_color_st gradient, uint16_t step);
 
 #ifdef __cplusplus
 } /*extern "C"*/
