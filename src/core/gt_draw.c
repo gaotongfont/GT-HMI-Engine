@@ -1686,16 +1686,9 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st draw_text_single_line(_gt_draw
             ++idx_len;
             continue;
         }
-#if 0
-        tmp_font.info.size = dsc->font->info.size;
-        tmp_font.utf8 = (char * )&txt[idx];
-        tmp_font.len = gt_font_one_char_code_len_get(&txt[idx], &uni_or_gbk, tmp_font.info.encoding);
-        width = gt_font_get_one_word_width(uni_or_gbk, &tmp_font);
-#else
         tmp_font.utf8 = (char * )&txt[idx];
         tmp_font.len = txt_len - idx;
         tmp_font.len = gt_font_split(&tmp_font, view_width, coords->w, space_x, &ret_w, &lan, &lan_len);
-#endif
         if (0 == tmp_font.len) {
             ++idx;
             continue;
