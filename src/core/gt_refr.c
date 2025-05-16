@@ -89,5 +89,14 @@ void gt_refr_timer(void)
 #endif
 }
 
+void gt_refr_force_flush(void)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    if (NULL == disp) {
+        return;
+    }
+    gt_disp_ref_area(&disp->area_act);
+}
+
 
 /* end ------------------------------------------------------------------*/

@@ -64,6 +64,12 @@ extern "C" {
 /* global functions / API interface -------------------------------------*/
 void gt_refr_timer(void);
 
+/**
+ * @brief Force flush the screen
+ *      [Warn] Unsafe, should load screen init before flush
+ */
+void gt_refr_force_flush(void);
+
 
 
 #ifdef __cplusplus
