@@ -195,6 +195,16 @@ gt_fs_res_et gt_fs_direct_addr_custom_size_read_img_wh(gt_direct_addr_custom_siz
 #endif
 
 /**
+ * @brief Directly write the physical data to vf(HMI-chip, flash, etc).
+ *
+ * @param addr
+ * @param len
+ * @param data
+ * @return uint32_t
+ */
+uint32_t gt_fs_write_direct_physical(gt_addr_t addr, uint32_t len, uint8_t * data);
+
+/**
  * @brief Directly read the physical data from vf(HMI-chip, flash, etc) the address
  *
  * @param addr HMI-chip or Flash address
