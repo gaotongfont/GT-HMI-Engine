@@ -84,12 +84,17 @@ gt_color_t gt_gradient_color_get(gt_gradient_color_st gradient, uint16_t step)
         return gradient.end;
     }
 
-    float ratio = (float)step / (gradient.steps - 1);
+#if 0
     gt_color_t color;
-
+    float ratio = (float)step / (gradient.steps - 1);
     color.ch.red = gradient.start.ch.red + ratio * (gradient.end.ch.red - gradient.start.ch.red);
     color.ch.green = gradient.start.ch.green + ratio * (gradient.end.ch.green - gradient.start.ch.green);
     color.ch.blue = gradient.start.ch.blue + ratio * (gradient.end.ch.blue - gradient.start.ch.blue);
+#else
+    gt_color_t color;
+    uint16_t ratio = step * GT_OPA_COVER / (gradient.steps - 1);
+    color = gt_color_mix( gradient.end, gradient.start, ratio);
+#endif
 
     return color;
 }

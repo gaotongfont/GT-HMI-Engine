@@ -462,7 +462,12 @@ gt_color_t gt_color_focus(void);
  */
 void gt_color_focus_set(uint32_t color);
 
-
+/**
+ * @brief Get gradient color
+ * @param gradient @ gt_gradient_color_st
+ * @param step
+ * @return gt_color_t
+ */
 gt_color_t gt_gradient_color_get(gt_gradient_color_st gradient, uint16_t step);
 
 #ifdef __cplusplus

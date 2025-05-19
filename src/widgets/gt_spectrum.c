@@ -75,6 +75,7 @@ GT_ATTRIBUTE_RAM_TEXT static uint16_t
 _get_item_range_size(_gt_spectrum_st * style){
     return (style->range.max - style->range.min) / style->range.steps;
 }
+
 GT_ATTRIBUTE_RAM_TEXT static uint16_t
 _get_item_ratio_size(_gt_spectrum_st * style, uint16_t value)
 {
@@ -86,7 +87,17 @@ _get_item_ratio_size(_gt_spectrum_st * style, uint16_t value)
     return size - style->gap;
 }
 
-
+GT_ATTRIBUTE_RAM_TEXT static void
+_get_item_param(_gt_spectrum_st * style, uint16_t value, uint16_t * gap, uint16_t* ratio_size, uint16_t* range_size)
+{
+    *gap = style->gap;
+    *ratio_size = _get_item_ratio_size(style, value);
+    *range_size = _get_item_range_size(style);
+    if(0 == *ratio_size){
+        *ratio_size = 1;
+        *gap = (*gap > *ratio_size) ? *gap - *ratio_size : 0;
+    }
+}
 
 GT_ATTRIBUTE_RAM_TEXT static void
 _draw_circle_spectrum(gt_obj_st * obj)
@@ -97,33 +108,71 @@ _draw_circle_spectrum(gt_obj_st * obj)
     arc_attr.color = obj->bgcolor;
     arc_attr.opa = obj->opa;
 
-    uint16_t angle_gap = style->gap;
-    uint16_t angle_size = _get_item_ratio_size(style, 360);
-    if(0 == angle_size){
-        angle_size = 1;
-        angle_gap = (angle_gap > angle_size) ? angle_gap - angle_size : 0;
-    }
-    uint16_t range_size = _get_item_range_size(style);
+    uint16_t angle_gap = 0, angle_size = 0, range_size = 0;
+    _get_item_param(style, 360, &angle_gap, &angle_size, &range_size);
+
     uint32_t random = 0;
-    gt_area_st area = {0};
+    gt_area_st item_area = {0};
 
     for (uint16_t i = 0; i < style->numb; i++)
     {
         arc_attr.start_angle = i * (angle_size + angle_gap);
         arc_attr.end_angle = arc_attr.start_angle + angle_size;
 
-        random = gt_random(0, style->range.steps);
+        random = gt_random(0, style->range.steps - 1);
         arc_attr.width = style->range.min + random * range_size;
 
         if(style->gradient.steps >= 2) {
             arc_attr.color = gt_gradient_color_get(style->gradient, random);
         }
 
-        area = gt_area_reduce(obj->area,  style->range.max - arc_attr.width);
-        gt_draw_arc(obj->draw_ctx, &arc_attr, &area);
+        item_area = gt_area_reduce(obj->area,  style->range.max - arc_attr.width);
+        gt_draw_arc(obj->draw_ctx, &arc_attr, &item_area);
     }
 }
 
+GT_ATTRIBUTE_RAM_TEXT static void
+_draw_rect_spectrum(gt_obj_st * obj)
+{
+    _gt_spectrum_st * style = (_gt_spectrum_st *)obj;
+
+    gt_attr_rect_st rect_attr = {0};
+    gt_graph_init_rect_attr(&rect_attr);
+    rect_attr.reg.is_fill   = true;
+    rect_attr.bg_opa        = obj->opa;
+    rect_attr.fg_color      = obj->bgcolor;
+    rect_attr.bg_color      = obj->bgcolor;
+    rect_attr.radius        = obj->radius;
+
+    uint16_t rect_gap = 0, rect_size = 0, range_size = 0;
+    _get_item_param(style, obj->area.w, &rect_gap, &rect_size, &range_size);
+
+    uint32_t random = 0;
+    gt_area_st item_area = {0};
+
+    for (uint16_t i = 0; i < style->numb; i++)
+    {
+        item_area.x = i * (rect_size + rect_gap) + obj->area.x;
+        item_area.w = rect_size;
+
+        random = gt_random(0, style->range.steps - 1);
+
+        item_area.h = style->range.min + random * range_size;
+        item_area.y = obj->area.y + style->range.max;
+        if(GT_SPECTRUM_TYPE_RECT_UD == style->type) {
+            item_area.y -= (item_area.h >> 1);
+        }
+        else {
+            item_area.y -= item_area.h;
+        }
+
+        if(style->gradient.steps >= 2) {
+            rect_attr.bg_color = gt_gradient_color_get(style->gradient, random);
+        }
+
+        draw_bg(obj->draw_ctx, &rect_attr, &item_area);
+    }
+}
 
 GT_ATTRIBUTE_RAM_TEXT static void
 _init_cb(gt_obj_st * obj)
@@ -134,6 +183,11 @@ _init_cb(gt_obj_st * obj)
     {
     case GT_SPECTRUM_TYPE_CIRCLE:
         _draw_circle_spectrum(obj);
+        break;
+
+    case GT_SPECTRUM_TYPE_RECT:
+    case GT_SPECTRUM_TYPE_RECT_UD:
+        _draw_rect_spectrum(obj);
         break;
 
     default:
@@ -186,6 +240,7 @@ gt_spectrum_create(gt_obj_st * parent)
     GT_CHECK_BACK_VAL(obj, NULL);
 
     _gt_spectrum_st * style = (_gt_spectrum_st *)obj;
+    obj->radius = 0;
     style->type = GT_SPECTRUM_TYPE_CIRCLE;
     style->gap = 4;
     style->numb = 20;
