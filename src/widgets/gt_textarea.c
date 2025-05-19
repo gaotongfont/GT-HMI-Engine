@@ -292,8 +292,8 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
             _scroll_cache_remark_item(style, idx, &cur_offset);
         }
 #endif
-        font_attr.start_x       = font_res.area.x;
-        font_attr.start_y       = font_res.area.y;
+        font_attr.start_x       = font_res.abs_pos.x;
+        font_attr.start_y       = font_res.abs_pos.y;
         font_attr.reg.enabled_start = true;
         ++idx;
     }
@@ -302,7 +302,7 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
         /** Get touch word handler, do not calc all text height to scroll */
         return ;
     }
-    height += font_res.area.y + font.info.size - font_attr.logical_area.y;
+    height += font_res.abs_pos.y + font.info.size - font_attr.logical_area.y;
     if (height > style->max_height) {
         style->max_height = height;
         if (style->reg.always_scroll_to_newest) {

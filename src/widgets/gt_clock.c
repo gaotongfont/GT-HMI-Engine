@@ -296,8 +296,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_twinkle_colon_mode(gt_obj_st * obj, _gt_
     font.len = tmp_fm[2] ? 3 : 2;
     _gt_draw_font_res_st font_res = draw_text(obj->draw_ctx, &font_attr, &obj->area);
     font_attr.reg.enabled_start = true;
-    font_attr.start_x = font_res.area.x;
-    font_attr.start_y = font_res.area.y;
+    font_attr.start_x = font_res.abs_pos.x;
+    font_attr.start_y = font_res.abs_pos.y;
 
     if (false == style->reg.twinkle_state) {
         tmp_fm[0] = ':';

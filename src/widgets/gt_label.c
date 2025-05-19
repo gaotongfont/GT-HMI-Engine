@@ -69,12 +69,8 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_label_class = {
 
 /* static functions -----------------------------------------------------*/
 
-/**
- * @brief obj init label widget call back
- *
- * @param obj
- */
-static void _init_cb(gt_obj_st * obj) {
+static _gt_draw_font_res_st GT_ATTRIBUTE_RAM_TEXT
+_draw_or_calc_dislpay_content(gt_obj_st * obj, bool is_only_calc) {
     _gt_label_st * style = (_gt_label_st * )obj;
     uint32_t len = strlen((char * )style->text);
     gt_font_st font = {
@@ -86,6 +82,9 @@ static void _init_cb(gt_obj_st * obj) {
     gt_font_info_update_font_thick(&font.info);
 
     gt_area_st box_area = obj->area;
+    _gt_text_style_st text_sty = style->text_style;
+    text_sty.only_calc_display_info = is_only_calc ? true : false;
+
     /*draw font*/
     gt_attr_font_st font_attr = {
         .font       = &font,
@@ -94,7 +93,7 @@ static void _init_cb(gt_obj_st * obj) {
         .space_y    = style->space_y,
         .align      = style->font_align,
         .opa        = obj->opa,
-        .reg        = style->text_style,
+        .reg        = text_sty,
         .logical_area = box_area,
         .indent     = style->indent,
     };
@@ -105,8 +104,20 @@ static void _init_cb(gt_obj_st * obj) {
         font_attr.logical_area.y += box_area.y;
         font_attr.logical_area.h = box_area.h;
     }
+    return draw_text(obj->draw_ctx, &font_attr, &box_area);
+}
 
-    _gt_draw_font_res_st font_res = draw_text(obj->draw_ctx, &font_attr, &box_area);
+/**
+ * @brief obj init label widget call back
+ *
+ * @param obj
+ */
+static void GT_ATTRIBUTE_RAM_TEXT
+_init_cb(gt_obj_st * obj) {
+    _gt_label_st * style = (_gt_label_st * )obj;
+    gt_area_st box_area = obj->area;
+    _gt_draw_font_res_st font_res = _draw_or_calc_dislpay_content(obj, 0);
+
     if (style->text_style.single_line && style->auto_scroll) {
         /** first time to calc label widget need to scroll and begin to scroll */
         if (font_res.size.x > box_area.w && gt_anim_is_paused(style->auto_scroll->anim)) {
@@ -116,12 +127,11 @@ static void _init_cb(gt_obj_st * obj) {
             gt_anim_restart(style->auto_scroll->anim);
         }
     }
-
-    // focus
     draw_focus(obj);
 }
 
-static void _free_auto_scroll_st(_gt_label_st * style) {
+static void GT_ATTRIBUTE_RAM_TEXT
+_free_auto_scroll_st(_gt_label_st * style) {
     if (NULL == style->auto_scroll) {
         return ;
     }
@@ -160,7 +170,8 @@ static void _deinit_cb(gt_obj_st * obj) {
  * @param obj
  * @param e event
  */
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
+static void GT_ATTRIBUTE_RAM_TEXT
+_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
 
     if (GT_EVENT_TYPE_DRAW_START == code_val) {
@@ -171,7 +182,8 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
 }
 
-static _auto_scroll_st * _reset_auto_scroll_st(_auto_scroll_st * as) {
+static _auto_scroll_st * GT_ATTRIBUTE_RAM_TEXT
+_reset_auto_scroll_st(_auto_scroll_st * as) {
     if (NULL == as) {
         return NULL;
     }
@@ -190,7 +202,8 @@ static _auto_scroll_st * _reset_auto_scroll_st(_auto_scroll_st * as) {
     return as;
 }
 
-static void _auto_scroll_init(_auto_scroll_st * const auto_scroll_p) {
+static void GT_ATTRIBUTE_RAM_TEXT
+_auto_scroll_init(_auto_scroll_st * const auto_scroll_p) {
     if (NULL == auto_scroll_p) {
         return ;
     }
@@ -199,7 +212,8 @@ static void _auto_scroll_init(_auto_scroll_st * const auto_scroll_p) {
     auto_scroll_p->area.w = 0xffff;
 }
 
-static _auto_scroll_st * _create_auto_scroll_st(gt_obj_st * label) {
+static _auto_scroll_st * GT_ATTRIBUTE_RAM_TEXT
+_create_auto_scroll_st(gt_obj_st * label) {
     _gt_label_st * style = (_gt_label_st * )label;
     if (NULL == style->auto_scroll) {
         style->auto_scroll = gt_mem_malloc(sizeof(_auto_scroll_st));
@@ -209,7 +223,8 @@ static _auto_scroll_st * _create_auto_scroll_st(gt_obj_st * label) {
     return _reset_auto_scroll_st(style->auto_scroll);
 }
 
-static void _auto_scroll_exec_cb(void * obj, int32_t value) {
+static void GT_ATTRIBUTE_RAM_TEXT
+_auto_scroll_exec_cb(void * obj, int32_t value) {
     _gt_label_st * style = (_gt_label_st * )obj;
     if (NULL == style->auto_scroll) {
         return ;
@@ -218,7 +233,8 @@ static void _auto_scroll_exec_cb(void * obj, int32_t value) {
     gt_event_send((gt_obj_st * )obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-static gt_anim_st * _create_auto_scroll_anim(gt_obj_st * label) {
+static gt_anim_st * GT_ATTRIBUTE_RAM_TEXT
+_create_auto_scroll_anim(gt_obj_st * label) {
     _gt_label_st * style = (_gt_label_st * )label;
     if (NULL == style->auto_scroll) {
         style->auto_scroll = _create_auto_scroll_st(label);
@@ -243,7 +259,8 @@ static gt_anim_st * _create_auto_scroll_anim(gt_obj_st * label) {
     return style->auto_scroll->anim;
 }
 
-static void _update_label_size(gt_obj_st * obj, uint16_t len) {
+static void GT_ATTRIBUTE_RAM_TEXT
+_update_label_size(gt_obj_st * obj, uint16_t len) {
     _gt_label_st * style = (_gt_label_st * )obj;
     if (obj->area.w && obj->area.h) {
         return;
@@ -761,5 +778,17 @@ void gt_label_add_text(gt_obj_st * label, const char * fmt, ...)
 free_lb:
     va_end(args2);
 }
+
+gt_point_st gt_label_calc_display_limit_size_once(gt_obj_st * label)
+{
+    gt_point_st ret_limit_size = {0};
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ret_limit_size;
+    }
+    _gt_draw_font_res_st font_res = _draw_or_calc_dislpay_content(label, 1);
+    ret_limit_size = font_res.size_show_limit;
+    return ret_limit_size;
+}
+
 #endif  /** GT_CFG_ENABLE_LABEL */
 /* end ------------------------------------------------------------------*/

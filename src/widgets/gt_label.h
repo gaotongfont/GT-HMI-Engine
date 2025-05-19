@@ -163,6 +163,15 @@ bool gt_label_is_auto_scroll_single_line(gt_obj_st * label);
 
 void gt_label_add_text(gt_obj_st * label, const char * fmt, ...);
 
+/**
+ * @brief calc label display limit size
+ *      [Warn] Must call all label prop init func before call this func!
+ *
+ * @param label
+ * @return gt_point_st content limit display area
+ */
+gt_point_st gt_label_calc_display_limit_size_once(gt_obj_st * label);
+
 #endif  /** GT_CFG_ENABLE_LABEL */
 
 #ifdef __cplusplus

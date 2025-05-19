@@ -197,8 +197,8 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     font_res = draw_text(input->draw_ctx, &font_attr, &area_font);
 
     /*draw cursor*/
-    style->point_pos.x = font_res.area.x;
-    style->point_pos.y = font_res.area.y;
+    style->point_pos.x = font_res.abs_pos.x;
+    style->point_pos.y = font_res.abs_pos.y;
 
     if (_is_keypad_visible(style)) {
         _gt_input_cursor_anim(input, &area_font);
@@ -219,8 +219,8 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
         font_attr.font = &font,
         font_attr.font_color = color_font,
 
-        font_attr.start_x = font_res.area.x + (_is_keypad_visible(style) ? style->border_width + 2 : 0);
-        font_attr.start_y = font_res.area.y;
+        font_attr.start_x = font_res.abs_pos.x + (_is_keypad_visible(style) ? style->border_width + 2 : 0);
+        font_attr.start_y = font_res.abs_pos.y;
         font_attr.reg.enabled_start = true;
         draw_text(input->draw_ctx, &font_attr, &area_font);
     }

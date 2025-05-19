@@ -152,6 +152,9 @@ typedef struct _gt_text_style_s {
 #endif
     ///< 0[default]: not immediately return, 1: immediately return when the text is bottom over the display area
     uint8_t immediately_return : 1;
+
+    ///< 0[default]: normal draw font and display; 1: Only calculate font display info except draw font.
+    uint8_t only_calc_display_info : 1;
 }_gt_text_style_st;
 
 /**
@@ -413,7 +416,6 @@ int gt_font_convertor_data_get(font_convertor_st *convert, uint32_t pos);
 int32_t gt_font_split_line_str(const gt_font_st * fonts, uint32_t max_w, uint32_t space, uint32_t * width,
                                 gt_bidi_st** bidi, uint16_t* bidi_len, uint16_t* bidi_max, uint8_t * overlength,
                                 bool is_first_line);
-uint32_t gt_font_split(gt_font_st *fonts, uint32_t width, uint32_t dot_w, uint32_t space, uint32_t *ret_w, uint8_t * lan, uint32_t * lan_len);
 
 #if _GT_FONT_ENABLE_CONVERTOR
 bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_t r2l_lan);
