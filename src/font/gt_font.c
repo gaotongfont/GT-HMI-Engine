@@ -71,7 +71,7 @@ typedef struct {
 }_unicode_range_st;
 
 typedef struct {
-    gt_font_offset_st *list;
+    const gt_font_offset_st *list;
     uint16_t count;
 }_gt_font_offset_list_st;
 /* static variables -----------------------------------------------------*/
@@ -608,68 +608,11 @@ static GT_ATTRIBUTE_RAM_TEXT bool _gt_number_symbol_font(uint32_t unicode) {
     return false;
 }
 
-// 二分查找函数
-static GT_ATTRIBUTE_RAM_TEXT long _gt_binary_search_from_u16(const uint16_t *arr, uint32_t size, uint32_t target)
-{
-    if (!arr || !size) {
-        return -1;  // 如果数组为空或大小为 0，直接返回 -1
-    }
 
-    uint32_t left = 0;
-    uint32_t right = size - 1;
-
-    // 检查目标值是否在数组范围内
-    if (target < arr[left] || target > arr[right]) {
-        return -1;
-    }
-
-    while (left <= right) {
-        uint32_t mid = left + ((right - left) >> 1);  // 计算中间位置，避免溢出
-
-        if (arr[mid] == target) {
-            return mid;  // 找到目标元素，返回索引
-        } else if (arr[mid] < target) {
-            left = mid + 1;  // 目标在右半部分，调整左边界
-        } else {
-            right = mid - 1;  // 目标在左半部分，调整右边界
-        }
-    }
-
-    return -1;  // 未找到目标元素，返回 -1
-}
-
-static GT_ATTRIBUTE_RAM_TEXT long _gt_binary_search_from_u32(const uint32_t *arr, uint32_t size, uint32_t target)
-{
-    if (!arr || !size) {
-        return -1;  // 如果数组为空或大小为 0，直接返回 -1
-    }
-
-    uint32_t left = 0;
-    uint32_t right = size - 1;
-
-    // 检查目标值是否在数组范围内
-    if (target < arr[left] || target > arr[right]) {
-        return -1;
-    }
-
-    while (left <= right) {
-        uint32_t mid = left + ((right - left) >> 1);  // 计算中间位置，避免溢出
-
-        if (arr[mid] == target) {
-            return mid;  // 找到目标元素，返回索引
-        } else if (arr[mid] < target) {
-            left = mid + 1;  // 目标在右半部分，调整左边界
-        } else {
-            right = mid - 1;  // 目标在左半部分，调整右边界
-        }
-    }
-
-    return -1;  // 未找到目标元素，返回 -1
-}
 
 static GT_ATTRIBUTE_RAM_TEXT bool _gt_emoticon_font(uint32_t unicode) {
     uint32_t count = sizeof(_gt_emoticon_unicode_list) / sizeof(_gt_emoticon_unicode_list[0]);
-    if (-1 != _gt_binary_search_from_u16(_gt_emoticon_unicode_list, count, unicode)) {
+    if (-1 != gt_binary_search_from_u16(_gt_emoticon_unicode_list, count, unicode)) {
         return true;
     }
     return false;
@@ -677,7 +620,7 @@ static GT_ATTRIBUTE_RAM_TEXT bool _gt_emoticon_font(uint32_t unicode) {
 static GT_ATTRIBUTE_RAM_TEXT bool _gt_emoji_font(uint32_t unicode) {
 
     uint32_t count = sizeof(_gt_emoji_unicode_list) / sizeof(_gt_emoji_unicode_list[0]);
-    if (-1 != _gt_binary_search_from_u32(_gt_emoji_unicode_list, count, unicode)) {
+    if (-1 != gt_binary_search_from_u32(_gt_emoji_unicode_list, count, unicode)) {
         return true;
     }
     return false;

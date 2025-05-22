@@ -523,4 +523,65 @@ uint32_t gt_random(uint32_t min, uint32_t max)
     return min + (uint32_t)rand_val;
 }
 
+
+// 二分查找函数
+GT_ATTRIBUTE_RAM_TEXT long
+gt_binary_search_from_u16(const uint16_t *arr, uint32_t size, uint32_t target)
+{
+    if (!arr || !size) {
+        return -1;  // 如果数组为空或大小为 0，直接返回 -1
+    }
+
+    uint32_t left = 0;
+    uint32_t right = size - 1;
+
+    // 检查目标值是否在数组范围内
+    if (target < arr[left] || target > arr[right]) {
+        return -1;
+    }
+
+    while (left <= right) {
+        uint32_t mid = left + ((right - left) >> 1);  // 计算中间位置，避免溢出
+
+        if (arr[mid] == target) {
+            return mid;  // 找到目标元素，返回索引
+        } else if (arr[mid] < target) {
+            left = mid + 1;  // 目标在右半部分，调整左边界
+        } else {
+            right = mid - 1;  // 目标在左半部分，调整右边界
+        }
+    }
+
+    return -1;  // 未找到目标元素，返回 -1
+}
+
+GT_ATTRIBUTE_RAM_TEXT long
+gt_binary_search_from_u32(const uint32_t *arr, uint32_t size, uint32_t target)
+{
+    if (!arr || !size) {
+        return -1;  // 如果数组为空或大小为 0，直接返回 -1
+    }
+
+    uint32_t left = 0;
+    uint32_t right = size - 1;
+
+    // 检查目标值是否在数组范围内
+    if (target < arr[left] || target > arr[right]) {
+        return -1;
+    }
+
+    while (left <= right) {
+        uint32_t mid = left + ((right - left) >> 1);  // 计算中间位置，避免溢出
+
+        if (arr[mid] == target) {
+            return mid;  // 找到目标元素，返回索引
+        } else if (arr[mid] < target) {
+            left = mid + 1;  // 目标在右半部分，调整左边界
+        } else {
+            right = mid - 1;  // 目标在左半部分，调整右边界
+        }
+    }
+
+    return -1;  // 未找到目标元素，返回 -1
+}
 /* end ------------------------------------------------------------------*/

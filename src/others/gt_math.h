@@ -133,6 +133,17 @@ void gt_srandom(uint32_t seed);
  */
 uint32_t gt_random(uint32_t min, uint32_t max);
 
+/**
+ * @brief binary search
+ *
+ * @param arr   array
+ * @param size  array size
+ * @param target target value
+ * @return long index of target value, -1 if not found
+ */
+long gt_binary_search_from_u16(const uint16_t *arr, uint32_t size, uint32_t target);
+long gt_binary_search_from_u32(const uint32_t *arr, uint32_t size, uint32_t target);
+
 
 /**
  * @brief get the value of range [in_min, in_max] map onto [out_min, out_max]

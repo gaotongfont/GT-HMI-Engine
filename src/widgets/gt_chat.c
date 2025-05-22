@@ -881,6 +881,7 @@ void gt_chat_clean_all_msg(gt_obj_st * chat)
     _gt_chat_st * style = (_gt_chat_st * )chat;
 
     style->msg_cnt = 0;
+    style->max_h = 0;
     style->msg_select_idx = -1;
     style->paly_idx = -1;
     gt_memset_0(style->msg_list, sizeof(style->msg_list));
