@@ -70,6 +70,10 @@ typedef struct {
     gt_font_lan_et language;
 }_unicode_range_st;
 
+typedef struct {
+    gt_font_offset_st *list;
+    uint16_t count;
+}_gt_font_offset_list_st;
 /* static variables -----------------------------------------------------*/
 static GT_ATTRIBUTE_RAM_DATA const uint8_t _ascii_16[];
 
@@ -488,7 +492,7 @@ static GT_ATTRIBUTE_RAM_DATA const gt_size_t _font_type_group_arr_len = sizeof(_
 
 
 static gt_font_family_list_st _font_family_list = {NULL, 0};
-
+static _gt_font_offset_list_st _font_offset_list = {NULL, 0};
 /* macros ---------------------------------------------------------------*/
 static gt_encoding_et _gt_project_encoding = GT_ENCODING_UTF8;
 #ifdef PINYIN_INPUT_METHOD_EN
@@ -791,6 +795,29 @@ gt_size_t gt_font_family_get_id_by(uint16_t font_size)
         }
     }
     return -1;
+}
+
+void gt_font_offset_init(const gt_font_offset_st *list, uint16_t count)
+{
+    _font_offset_list.list = list;
+    _font_offset_list.count = count;
+}
+
+gt_point_st gt_font_offset_get(uint16_t option, uint32_t font_code)
+{
+    gt_point_st offset = {0, 0};
+
+    if (NULL == _font_offset_list.list || 0 == _font_offset_list.count) {
+        return offset;
+    }
+
+    for (uint16_t i = 0; i < _font_offset_list.count; ++i) {
+        if (_font_offset_list.list[i].option == option) {
+            return _font_offset_list.list[i].get_offset(option, font_code);
+        }
+    }
+
+    return offset;
 }
 
 void gt_font_info_init(gt_font_info_st *font_info)

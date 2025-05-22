@@ -294,6 +294,11 @@ typedef struct gt_split_line_ret_s {
     uint32_t disp_w;
 }gt_split_line_ret_st;
 
+typedef struct gt_font_offset_s {
+    uint16_t option;
+    gt_point_st (*get_offset)(uint16_t , uint32_t );
+}gt_font_offset_st;
+
 /* macros ---------------------------------------------------------------*/
 static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t
 gt_font_get_indent_width(gt_font_info_st const * const font_info_p, uint16_t indent) {
@@ -457,6 +462,24 @@ uint16_t gt_font_family_get_size(uint16_t fam);
 uint16_t gt_font_family_get_option(uint16_t fam, int16_t lan, uint8_t cjk);
 bool gt_font_family_is_one_style(uint16_t fam);
 void gt_font_set_family(gt_font_info_st *font_info, gt_family_t fam);
+
+/**
+ * @brief font offset init
+ *
+ * @param list font offset list @ gt_font_offset_st
+ * @param count font offset list count
+ */
+void gt_font_offset_init(const gt_font_offset_st *list, uint16_t count);
+
+/**
+ * @brief get font offset
+ *
+ * @param option font option
+ * @param unicode font code
+ * @return gt_point_st font offset
+ */
+gt_point_st gt_font_offset_get(uint16_t option, uint32_t font_code);
+
 /**
  * @brief
  *

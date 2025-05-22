@@ -666,8 +666,17 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
             if(tmp_font.info.style.reg.bold){
                 blend_dsc->dst_area->w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font.info);
             }
+
+            gt_point_st off_point = gt_font_offset_get(font_option, uni_or_gbk);
+            blend_dsc->dst_area->x += off_point.x;
+            blend_dsc->dst_area->y += off_point.y;
             gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font.info.size, byte_width, font_gray,
                                 &convertor.data[idx * font_size_res.font_per_size], tmp_font.info.style.reg);
+
+            blend_dsc->dst_area->x -= off_point.x;
+            blend_dsc->dst_area->y -= off_point.y;
+
+
         } else {
             byte_width = (gt_font_get_one_word_width(convertor.fontcode[idx], &tmp_font) + 7) >> 3;
             byte_width = _gt_gray_and_dot_byte_get(&font_gray, byte_width, tmp_font, ret_style, uni_or_gbk);
@@ -676,7 +685,14 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
             if(tmp_font.info.style.reg.bold){
                 blend_dsc->dst_area->w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font.info);
             }
+
+            gt_point_st off_point = gt_font_offset_get(font_option, uni_or_gbk);
+            blend_dsc->dst_area->x += off_point.x;
+            blend_dsc->dst_area->y += off_point.y;
             gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font.info.size, byte_width, font_gray, &convertor.data[0],tmp_font.info.style.reg);
+            blend_dsc->dst_area->x -= off_point.x;
+            blend_dsc->dst_area->y -= off_point.y;
+
         }
 
         /* use style */
@@ -1436,10 +1452,18 @@ _disp_font:
                     }
 
                     area_font.y += ((tmp_font.info.size - font_height) >> 1);
+
+                    gt_point_st off_point = gt_font_offset_get(dot_ret.option, uni_or_gbk);
+                    area_font.x += off_point.x;
+                    area_font.y += off_point.y;
                     gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size,
                                         byte_width, font_gray, (const uint8_t*)tmp_font.res,tmp_font.info.style.reg);
 
+                    area_font.x -= off_point.x;
+                    area_font.y -= off_point.y;
+
                     area_font.y -= ((tmp_font.info.size - font_height) >> 1);
+
                     if (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding)) {
                         area_font.y -= offset_y;
                     }
@@ -1902,8 +1926,16 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
                 if(tmp_font.info.style.reg.bold){
                     area_font.w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font.info);
                 }
+
+                gt_point_st off_point = gt_font_offset_get(dot_ret.option, uni_or_gbk);
+                area_font.x += off_point.x;
+                area_font.y += off_point.y;
                 gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size,
                                     byte_width, font_gray, (const uint8_t*)tmp_font.res,tmp_font.info.style.reg);
+
+                area_font.x -= off_point.x;
+                area_font.y -= off_point.y;
+
                 if (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding)) {
                     area_font.y -= offset_y;
                 }
@@ -1962,8 +1994,16 @@ next_word_lb:
             if(tmp_font.info.style.reg.bold){
                 area_font.w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font.info);
             }
+
+            gt_point_st off_point = gt_font_offset_get(dot_ret.option, uni_or_gbk);
+            area_font.x += off_point.x;
+            area_font.y += off_point.y;
             gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size, byte_width,
                                 font_gray, (const uint8_t*)tmp_font.res,tmp_font.info.style.reg);
+
+            area_font.x -= off_point.x;
+            area_font.y += off_point.y;
+
             if (_is_align_reverse(dsc->align)) {
                 area_font.x -= space_x;
             } else {
