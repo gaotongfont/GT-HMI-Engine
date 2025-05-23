@@ -99,4 +99,38 @@ gt_color_t gt_gradient_color_get(gt_gradient_color_st gradient, uint16_t step)
     return color;
 }
 
+void gt_gradient_color_get_by_vector( gt_color_t * color, _gt_vector_st* vector, uint16_t step)
+{
+    if(!color || !vector) {
+        return ;
+    }
+
+    uint16_t count = _gt_vector_get_count(vector);
+    uint16_t numb = 0;
+
+    if(1 == count) {
+        gt_gradient_color_st * gradient = (gt_gradient_color_st *)_gt_vector_get_item(vector, 0);
+        if(!gradient) {
+            return ;
+        }
+        *color = gt_gradient_color_get(*gradient, step);
+        return ;
+    }
+
+    for(uint16_t i = 0; i < count; i++) {
+        gt_gradient_color_st * gradient = (gt_gradient_color_st *)_gt_vector_get_item(vector, i);
+
+        if(!gradient) {
+            continue;
+        }
+        numb += gradient->steps;
+
+        if(step < numb) {
+            *color = gt_gradient_color_get(*gradient, step % gradient->steps);
+            return;
+        }
+    }
+
+}
+
 /* end ------------------------------------------------------------------*/

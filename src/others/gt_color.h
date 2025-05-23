@@ -19,7 +19,7 @@ extern "C" {
 #include "gt_types.h"
 #include "gt_math.h"
 #include "gt_assert.h"
-
+#include "../utils/gt_vector.h"
 /* define ---------------------------------------------------------------*/
 
 enum {
@@ -469,6 +469,9 @@ void gt_color_focus_set(uint32_t color);
  * @return gt_color_t
  */
 gt_color_t gt_gradient_color_get(gt_gradient_color_st gradient, uint16_t step);
+
+void gt_gradient_color_get_by_vector( gt_color_t * color, _gt_vector_st* vector, uint16_t step);
+
 
 #ifdef __cplusplus
 } /*extern "C"*/

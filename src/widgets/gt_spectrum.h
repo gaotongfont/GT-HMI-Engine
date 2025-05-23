@@ -31,9 +31,13 @@ typedef enum
     GT_SPECTRUM_TYPE_CIRCLE = 0,    // circle
     GT_SPECTRUM_TYPE_RECT,          // rect
     GT_SPECTRUM_TYPE_RECT_UD,       // rect up-down
+    GT_SPECTRUM_TYPE_STAIR,         // stair
 } gt_spectrum_type_et;
 
-
+typedef enum {
+    GT_SPECTRUM_COLOR_TYPE_RANGE = 0,    /* Enter the color gradient according to the steps of the spectrum range. @ gt_spectrum_set_item_range */
+    GT_SPECTRUM_COLOR_TYPE_NUMB,        /* Enter the color gradient according to the steps of the spectrum number. @ gt_spectrum_set_item_numb */
+}gt_spectrum_color_type_et;
 /* macros ---------------------------------------------------------------*/
 
 
@@ -78,33 +82,76 @@ void gt_spectrum_play(gt_obj_st * obj);
 void gt_spectrum_stop(gt_obj_st * obj);
 
 /**
- * @brief set spectrum number
+ * @brief set spectrum item number
  *
  * @param obj
  * @param numb number of spectrum
  * @param gap gap between spectrum
  */
-void gt_spectrum_set_numb(gt_obj_st * obj, uint16_t numb, uint16_t gap);
+void gt_spectrum_set_item_numb(gt_obj_st * obj, uint16_t numb, uint16_t gap);
 
 /**
- * @brief set spectrum range
+ * @brief set spectrum item range
  *
  * @param obj
  * @param min min value
  * @param max max value
  * @param steps steps
  */
-void gt_spectrum_set_range(gt_obj_st * obj, uint16_t min, uint16_t max, uint16_t steps);
+void gt_spectrum_set_item_range(gt_obj_st * obj, uint16_t min, uint16_t max, uint16_t steps);
 
 /**
- * @brief set spectrum gradient color
+ * @brief set spectrum item range gap, only for stair type
+ *
+ * @param obj
+ * @param gap gap
+ */
+void gt_spectrum_set_item_range_gap(gt_obj_st * obj, uint16_t gap);
+
+/**
+ * @brief set spectrum item range reflect, only for stair type
+ *
+ * @param obj
+ * @param reflect 1: reflect, 0: not reflect
+ */
+void gt_spectrum_set_item_range_reflect(gt_obj_st * obj, bool reflect);
+
+
+/**
+ * @brief set spectrum color type
+ *
+ * @param obj
+ * @param type color type @ gt_spectrum_color_type_et
+ */
+void gt_spectrum_set_color_type(gt_obj_st * obj, gt_spectrum_color_type_et type);
+
+/**
+ * @brief add spectrum gradient color
  *
  * @param obj
  * @param start start color
  * @param end end color
- * @param steps steps
+ * @param steps steps >= 2
  */
-void gt_spectrum_set_gradient_color(gt_obj_st * obj, gt_color_t start, gt_color_t end, uint16_t steps);
+void gt_spectrum_add_gradient_color(gt_obj_st * obj, gt_color_t start, gt_color_t end, uint16_t steps);
+
+/**
+ * @brief clear spectrum gradient color
+ *
+ * @param obj
+ */
+void gt_spectrum_clear_gradient_color(gt_obj_st * obj);
+
+/**
+ * @brief set spectrum color move
+ *
+ * @param obj
+ * @param enable 1: enable, 0: disable
+ * @param dir  1: move left , 0: move right
+ * @param step move step
+ */
+void gt_spectrum_set_color_move(gt_obj_st* obj, bool enable, bool dir, uint8_t step);
+
 
 
 #endif // !GT_CFG_ENABLE_SPECTRUM
