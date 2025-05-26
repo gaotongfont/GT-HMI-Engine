@@ -117,7 +117,7 @@ void gt_gradient_color_get_by_vector( gt_color_t * color, _gt_vector_st* vector,
         return ;
     }
 
-    for(uint16_t i = 0; i < count; i++) {
+    for(uint16_t i = 0; i < count; ) {
         gt_gradient_color_st * gradient = (gt_gradient_color_st *)_gt_vector_get_item(vector, i);
 
         if(!gradient) {
@@ -126,11 +126,12 @@ void gt_gradient_color_get_by_vector( gt_color_t * color, _gt_vector_st* vector,
         numb += gradient->steps;
 
         if(step < numb) {
-            *color = gt_gradient_color_get(*gradient, (numb - step) % gradient->steps);
+            *color = gt_gradient_color_get(*gradient, step % gradient->steps);
             return;
         }
+        ++i;
 
-        if((count - 1) == i) {
+        if(count == i) {
             step = step - numb;
             numb = 0;
             i = 0;
