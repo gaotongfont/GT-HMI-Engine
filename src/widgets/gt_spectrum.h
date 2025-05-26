@@ -116,6 +116,23 @@ void gt_spectrum_set_item_range_gap(gt_obj_st * obj, uint16_t gap);
  */
 void gt_spectrum_set_item_range_reflect(gt_obj_st * obj, bool reflect);
 
+/**
+ * @brief set spectrum item range not random
+ *
+ * @param obj
+ * @param not_random 1: not random, 0: random
+ */
+void gt_spectrum_set_item_range_not_random(gt_obj_st * obj, bool not_random);
+
+
+/**
+ * @brief push spectrum item range value, this function is only used when not_random is set to 1.
+ *
+ * @param obj spectrum object
+ * @param value value
+ */
+void gt_spectrum_push_item_range_value(gt_obj_st * obj, uint16_t value);
+
 
 /**
  * @brief set spectrum color type
