@@ -126,11 +126,16 @@ void gt_gradient_color_get_by_vector( gt_color_t * color, _gt_vector_st* vector,
         numb += gradient->steps;
 
         if(step < numb) {
-            *color = gt_gradient_color_get(*gradient, step % gradient->steps);
+            *color = gt_gradient_color_get(*gradient, (numb - step) % gradient->steps);
             return;
         }
-    }
 
+        if((count - 1) == i) {
+            step = step - numb;
+            numb = 0;
+            i = 0;
+        }
+    }
 }
 
 /* end ------------------------------------------------------------------*/
