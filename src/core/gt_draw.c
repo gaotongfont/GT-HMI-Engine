@@ -1143,12 +1143,33 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
     uint16_t data_len = font_size_res.font_per_size;
     uint8_t * mask_line = NULL;
 
-    tmp_font.res = gt_mem_malloc(data_len);
+#if GT_USE_EXTRA_FULL_FONT_BUFFER
+    gt_buffer_st * gc_font_p = _gt_gc_get_full_font_buffer();
+    bool is_extend_font_valid = _gt_gc_full_font_buffer_is_valid() && (data_len < gc_font_p->len);
+#endif
+
+    tmp_font.res =
+#if GT_USE_EXTRA_FULL_FONT_BUFFER
+        is_extend_font_valid ? gc_font_p->ptr :
+#endif
+        gt_mem_malloc(data_len);
+
     if (NULL == tmp_font.res) {
         GT_LOGE(GT_LOG_TAG_GUI, "data malloc is failed!!! size = %d", data_len);
         goto _res_handler;
     }
-    mask_line = gt_mem_malloc( tmp_font.info.size << 1 );
+#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
+    gt_buffer_st * gc_font_mask_p = _gt_gc_get_full_font_mask_buffer();
+    bool is_extend_font_mask_valid = _gt_gc_full_font_mask_buffer_is_valid() &&
+                                    ((tmp_font.info.size << 1) < gc_font_mask_p->len);
+#endif
+
+    mask_line =
+#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
+        is_extend_font_mask_valid ? gc_font_mask_p->ptr :
+#endif
+        gt_mem_malloc( tmp_font.info.size << 1 );
+
     if (NULL == mask_line) {
         GT_LOGE(GT_LOG_TAG_GUI, "mask_line malloc is failed!!! size = %d", tmp_font.info.size << 1);
         goto _mask_handler;
@@ -1566,13 +1587,25 @@ _ret_handler:
     }
 #endif
 _txt_handler:
-    if (NULL != mask_line) {
-        gt_mem_free(mask_line);
+    if (mask_line) {
+#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
+        if (false == is_extend_font_mask_valid) {
+#endif
+            gt_mem_free(mask_line);
+#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
+        }
+#endif
         mask_line = NULL;
     }
 _mask_handler:
-    if (NULL != tmp_font.res) {
-        gt_mem_free(tmp_font.res);
+    if (tmp_font.res) {
+#if GT_USE_EXTRA_FULL_FONT_BUFFER
+        if (false == is_extend_font_valid) {
+#endif
+            gt_mem_free(tmp_font.res);
+#if GT_USE_EXTRA_FULL_FONT_BUFFER
+        }
+#endif
         tmp_font.res = NULL;
     }
 _res_handler:
@@ -1638,12 +1671,33 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
     uint16_t data_len = font_size_res.font_per_size;
     uint8_t * mask_line = NULL;
 
-    tmp_font.res = gt_mem_malloc(data_len);
+#if GT_USE_EXTRA_FULL_FONT_BUFFER
+    gt_buffer_st * gc_font_p = _gt_gc_get_full_font_buffer();
+    bool is_extend_font_valid = _gt_gc_full_font_buffer_is_valid() && (data_len < gc_font_p->len);
+#endif
+
+    tmp_font.res =
+#if GT_USE_EXTRA_FULL_FONT_BUFFER
+        is_extend_font_valid ? gc_font_p->ptr :
+#endif
+        gt_mem_malloc(data_len);
+
     if (NULL == tmp_font.res) {
         GT_LOGE(GT_LOG_TAG_GUI, "data malloc is failed!!! size = %d", data_len);
         goto direct_handler_lb;
     }
-    mask_line = gt_mem_malloc( tmp_font.info.size << 1 );
+#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
+    gt_buffer_st * gc_font_mask_p = _gt_gc_get_full_font_mask_buffer();
+    bool is_extend_font_mask_valid = _gt_gc_full_font_mask_buffer_is_valid() &&
+                                    ((tmp_font.info.size << 1) < gc_font_mask_p->len);
+#endif
+
+    mask_line =
+#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
+        is_extend_font_mask_valid ? gc_font_mask_p->ptr :
+#endif
+        gt_mem_malloc( tmp_font.info.size << 1 );
+
     if (NULL == mask_line) {
         GT_LOGE(GT_LOG_TAG_GUI, "mask_line malloc is failed!!! size = %d", tmp_font.info.size << 1);
         goto mask_handler_lb;
@@ -2033,13 +2087,23 @@ bidi_handler_lb:
     }
 #endif
 txt_handler_lb:
-    if (NULL != mask_line) {
-        gt_mem_free(mask_line);
+    if (mask_line) {
+#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
+        if (false == is_extend_font_mask_valid) {
+#endif
+            gt_mem_free(mask_line);
+        }
         mask_line = NULL;
     }
 mask_handler_lb:
-    if (NULL != tmp_font.res) {
-        gt_mem_free(tmp_font.res);
+    if (tmp_font.res) {
+#if GT_USE_EXTRA_FULL_FONT_BUFFER
+        if (false == is_extend_font_valid) {
+#endif
+            gt_mem_free(tmp_font.res);
+#if GT_USE_EXTRA_FULL_FONT_BUFFER
+        }
+#endif
         tmp_font.res = NULL;
     }
 direct_handler_lb:

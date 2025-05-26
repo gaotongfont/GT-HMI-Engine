@@ -16,6 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "gt_ll.h"
 #include "stdint.h"
+#include "./gt_types.h"
 #include "../gt_conf.h"
 #include "../core/gt_timer.h"
 #include "../others/gt_list.h"
@@ -75,6 +76,14 @@ typedef struct gt_gc_s {
 
 #if GT_USE_EXTRA_FULL_IMG_BUFFER
     _gt_gc_full_img_buffer_st full_img_buffer;
+#endif
+
+#if GT_USE_EXTRA_FULL_FONT_BUFFER
+    gt_buffer_st full_font_buffer;
+#endif
+
+#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
+    gt_buffer_st full_font_mask_buffer;
 #endif
 
 #if GT_USE_FILE_HEADER
@@ -137,7 +146,39 @@ void gt_gc_set_full_img_buffer(uint8_t * buffer, uint32_t len);
 void gt_gc_set_full_img_buffer_offset(uint32_t offset);
 #endif
 
+bool _gt_gc_full_img_buffer_is_valid(void);
+
 _gt_gc_full_img_buffer_st * _gt_gc_get_full_img_buffer(void);
+#endif
+
+#if GT_USE_EXTRA_FULL_FONT_BUFFER
+/**
+ * @brief Set external full font buffer, this buffer will be used by font getting
+ *      data from flash or SD nand flash, etc.
+ *
+ * @param buffer Also can used gt_gc_set_full_img_buffer()'s buffer as font buffer.
+ * @param len Recommend larger than: max_font_size * max_font_size * font_gray * sizeof(gt_color_t).
+ */
+void gt_gc_set_full_font_buffer(uint8_t * buffer, uint32_t len);
+
+bool _gt_gc_full_font_buffer_is_valid(void);
+
+gt_buffer_st * _gt_gc_get_full_font_buffer(void);
+#endif
+
+#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
+/**
+ * @brief Set external full font mask buffer, this buffer will be used by font mask getting
+ *      data from flash or SD nand flash, etc.
+ *
+ * @param buffer [WARN] DO NOT REUSE gt_gc_set_full_font_buffer()'s buffer for store font mask data.
+ * @param len Recommend larger than: max_font_size * max_font_size * sizeof(gt_opa_t).
+ */
+void gt_gc_set_full_font_mask_buffer(uint8_t * buffer, uint32_t len);
+
+bool _gt_gc_full_font_mask_buffer_is_valid(void);
+
+gt_buffer_st * _gt_gc_get_full_font_mask_buffer(void);
 #endif
 
 #if GT_FONT_USE_ASCII_WIDTH_CACHE

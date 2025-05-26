@@ -189,6 +189,27 @@ extern "C" {
     #define GT_USE_EXTRA_FULL_IMG_BUFFER    0
 #endif
 
+#ifndef GT_USE_EXTRA_FULL_FONT_BUFFER
+    /**
+     * @brief Set a font cache to obtain font data from flash, reduce the number
+     *      of malloc and free, improve performance.
+     *      [Tips]: recommended to reuse with GT_USE_EXTRA_FULL_IMG_BUFFER's buffer,
+     *      if GT_USE_EXTRA_FULL_IMG_BUFFER Enabled.
+     * @see ./src/extra/gt_extra.c -> gt_gc_set_full_font_buffer()
+     */
+    #define GT_USE_EXTRA_FULL_FONT_BUFFER   0
+#endif
+
+#ifndef GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
+    /**
+     * @brief Set a font mask external buffer, restore the font mask data to the
+     *      external buffer, reduce the number of malloc and free, improve performance.
+     *      [WARN]: DO NOT REUSE WITH GT_USE_EXTRA_FULL_FONT_BUFFER's buffer memory.
+     * @see ./src/extra/gt_extra.c -> gt_gc_set_full_font_mask_buffer()
+     */
+    #define GT_USE_EXTRA_FULL_FONT_MASK_BUFFER   0
+#endif
+
 #ifndef GT_USE_IMG_CACHE
     /**
      * @brief Enabled use a separate image cache to store meta data,

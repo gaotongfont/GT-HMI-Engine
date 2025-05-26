@@ -53,7 +53,21 @@
 void _gt_extra_init(void)
 {
 #if GT_USE_EXTRA_FULL_IMG_BUFFER
-    gt_gc_set_full_img_buffer(NULL, 0);
+    if (false == _gt_gc_full_img_buffer_is_valid()) {
+        gt_gc_set_full_img_buffer(NULL, 0);
+    }
+#endif
+
+#if GT_USE_EXTRA_FULL_FONT_BUFFER
+    if (false == _gt_gc_full_font_buffer_is_valid()) {
+        gt_gc_set_full_font_buffer(NULL, 0);
+    }
+#endif
+
+#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
+    if (false == _gt_gc_full_font_mask_buffer_is_valid()) {
+        gt_gc_set_full_font_mask_buffer(NULL, 0);
+    }
 #endif
 
 #if GT_USE_PNG

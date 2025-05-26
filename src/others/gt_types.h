@@ -289,6 +289,11 @@ typedef struct gt_area_abs_s {
     gt_size_t bottom;
 }gt_area_abs_st;
 
+typedef struct gt_buffer_s {
+    uint32_t len;
+    uint8_t * ptr;
+}gt_buffer_st;
+
 /**
  * @brief widget selected state
  */
