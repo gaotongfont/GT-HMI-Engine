@@ -1587,27 +1587,23 @@ _ret_handler:
     }
 #endif
 _txt_handler:
-    if (mask_line) {
+    if (
 #if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
-        if (false == is_extend_font_mask_valid) {
+        false == is_extend_font_mask_valid &&
 #endif
-            gt_mem_free(mask_line);
-#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
-        }
-#endif
-        mask_line = NULL;
+        mask_line) {
+        gt_mem_free(mask_line);
     }
+    mask_line = NULL;
 _mask_handler:
-    if (tmp_font.res) {
+    if (
 #if GT_USE_EXTRA_FULL_FONT_BUFFER
-        if (false == is_extend_font_valid) {
+        false == is_extend_font_valid &&
 #endif
-            gt_mem_free(tmp_font.res);
-#if GT_USE_EXTRA_FULL_FONT_BUFFER
-        }
-#endif
-        tmp_font.res = NULL;
+        tmp_font.res) {
+        gt_mem_free(tmp_font.res);
     }
+    tmp_font.res = NULL;
 _res_handler:
     ret.abs_pos.x = area_font.x;
     ret.abs_pos.y = area_font.y;
@@ -2087,25 +2083,23 @@ bidi_handler_lb:
     }
 #endif
 txt_handler_lb:
-    if (mask_line) {
+    if (
 #if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
-        if (false == is_extend_font_mask_valid) {
+        false == is_extend_font_mask_valid &&
 #endif
-            gt_mem_free(mask_line);
-        }
-        mask_line = NULL;
+        mask_line) {
+        gt_mem_free(mask_line);
     }
+    mask_line = NULL;
 mask_handler_lb:
-    if (tmp_font.res) {
+    if (
 #if GT_USE_EXTRA_FULL_FONT_BUFFER
-        if (false == is_extend_font_valid) {
+        false == is_extend_font_valid &&
 #endif
-            gt_mem_free(tmp_font.res);
-#if GT_USE_EXTRA_FULL_FONT_BUFFER
-        }
-#endif
-        tmp_font.res = NULL;
+        tmp_font.res) {
+        gt_mem_free(tmp_font.res);
     }
+    tmp_font.res = NULL;
 direct_handler_lb:
     ret.abs_pos.x = area_font.x;
     ret.abs_pos.y = area_font.y;
