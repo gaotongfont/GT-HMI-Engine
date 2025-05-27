@@ -470,6 +470,12 @@ void gt_color_focus_set(uint32_t color);
  */
 gt_color_t gt_gradient_color_get(gt_gradient_color_st gradient, uint16_t step);
 
+/**
+ * @brief Get gradient color by vector
+ * @param color The obtained color
+ * @param vector The vector used to obtain the gradient color @ gt_gradient_color_st
+ * @param step The step of the gradient color
+ */
 void gt_gradient_color_get_by_vector( gt_color_t * color, _gt_vector_st* vector, uint16_t step);
 
 

@@ -37,8 +37,7 @@ typedef struct
     gt_circular_array_st * aim;   // Circular array for target values
     gt_anim_st anim;
     uint16_t anim_count;
-    uint16_t max;
-    uint16_t min;
+    uint16_t height;
     uint16_t steps;
     uint8_t gap;
     uint8_t reflect :       1;
@@ -54,8 +53,9 @@ typedef struct {
 
 typedef struct{
     _gt_vector_st* gradient;
+    uint16_t max_steps;
     uint16_t move_dist;
-    uint8_t move_step;
+    uint8_t move_gap;
     uint8_t move_dir :     1;
     uint8_t move_enable :  1;
     uint8_t type :         4;
@@ -95,32 +95,35 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_spectrum_class = {
 
 /* static functions -----------------------------------------------------*/
 GT_ATTRIBUTE_RAM_TEXT static uint16_t
-_get_item_range_size(_gt_spectrum_st * style){
-    return (style->item.range.max - style->item.range.min) / (style->item.range.steps - 1);
+_get_item_range_size(_gt_spectrum_st * style, uint16_t value, uint16_t* gap){
+    uint16_t size = value / style->item.range.steps;
+    if(!gap) {
+        return size;
+    }
+
+    if(size <= style->item.range.gap){
+        size = 1;
+        *gap = (style->item.range.gap > size) ? style->item.range.gap - size : 0;
+        return size;
+    }
+
+    return size - style->item.range.gap;
 }
 
 GT_ATTRIBUTE_RAM_TEXT static uint16_t
-_get_item_ratio_size(_gt_spectrum_st * style, uint16_t value)
+_get_item_ratio_size(_gt_spectrum_st * style, uint16_t value, uint16_t* gap)
 {
-    uint16_t size = value / (style->item.numb - 1);
-    if (size < style->item.gap) {
-        return 0;
+    uint16_t size = value / (style->item.numb);
+    *gap = style->item.gap;
+    if(size <= style->item.gap){
+        size = 1;
+        *gap = (*gap > size) ? *gap - size : 0;
+        return size;
     }
 
     return size - style->item.gap;
 }
 
-GT_ATTRIBUTE_RAM_TEXT static void
-_get_item_param(_gt_spectrum_st * style, uint16_t value, uint16_t * gap, uint16_t* ratio_size, uint16_t* range_size)
-{
-    *gap = style->item.gap;
-    *ratio_size = _get_item_ratio_size(style, value);
-    *range_size = _get_item_range_size(style);
-    if(0 == *ratio_size){
-        *ratio_size = 1;
-        *gap = (*gap > *ratio_size) ? *gap - *ratio_size : 0;
-    }
-}
 
 
 GT_ATTRIBUTE_RAM_TEXT static uint16_t
@@ -158,6 +161,28 @@ _get_item_range_step(_gt_spectrum_st * style, uint16_t numb_step)
     return _get_item_value(style, numb_step) % style->item.range.steps;
 }
 
+
+GT_ATTRIBUTE_RAM_TEXT static uint16_t
+_get_gradient_color_move_step(_gt_spectrum_st * style, uint16_t step)
+{
+    uint32_t move_step = step;
+    if(style->color.move_enable) {
+        if(style->color.move_dir) {
+            move_step = (uint32_t)(step + style->color.move_dist) % style->color.max_steps;
+        } else {
+            move_step = (uint32_t)(style->color.max_steps + step - style->color.move_dist) % style->color.max_steps;
+        }
+    }
+    return (uint16_t)move_step;
+}
+
+GT_ATTRIBUTE_RAM_TEXT static void
+_gt_gradient_color_move_dist_inc(_gt_spectrum_st * style)
+{
+    style->color.move_dist = (style->color.move_dist + style->color.move_gap) % style->color.max_steps;
+}
+
+
 GT_ATTRIBUTE_RAM_TEXT static void
 _get_item_gradient_color(_gt_spectrum_st * style, gt_color_t* color, uint16_t range_step, uint16_t numb_step)
 {
@@ -169,24 +194,10 @@ _get_item_gradient_color(_gt_spectrum_st * style, gt_color_t* color, uint16_t ra
     uint32_t step = 0;
 
     if(GT_SPECTRUM_COLOR_TYPE_NUMB == style->color.type) {
-        step = numb_step;
-        if(style->color.move_enable) {
-            if(style->color.move_dir) {
-                step = (step + style->color.move_dist) % style->item.numb;
-            } else {
-                step = (style->item.numb + step - style->color.move_dist) % style->item.numb;
-            }
-        }
+        step = _get_gradient_color_move_step(style, numb_step);
     }
     else{
-        step = range_step;
-        if(style->color.move_enable) {
-            if(style->color.move_dir) {
-                step = (step + style->color.move_dist) % style->item.range.steps;
-            } else {
-                step = (style->item.range.steps + step - style->color.move_dist) % style->item.range.steps;
-            }
-        }
+        step = _get_gradient_color_move_step(style, range_step);
     }
     gt_gradient_color_get_by_vector(color, style->color.gradient, step);
 }
@@ -201,7 +212,8 @@ _draw_circle_spectrum(gt_obj_st * obj)
     arc_attr.opa = obj->opa;
 
     uint16_t angle_gap = 0, angle_size = 0, range_size = 0;
-    _get_item_param(style, 360, &angle_gap, &angle_size, &range_size);
+    angle_size = _get_item_ratio_size(style, 360, &angle_gap);
+    range_size = _get_item_range_size(style, style->item.range.height, NULL);
 
     uint16_t range_step = 0;
     gt_area_st item_area = {0};
@@ -212,57 +224,15 @@ _draw_circle_spectrum(gt_obj_st * obj)
         arc_attr.end_angle = arc_attr.start_angle + angle_size;
 
         range_step = _get_item_range_step(style , i);
-        arc_attr.width = style->item.range.min + range_step * range_size;
+        arc_attr.width = (range_step + 1) * range_size;
 
         if(style->color.gradient) {
             _get_item_gradient_color(style, &arc_attr.color, range_step, i);
         }
 
-        item_area = gt_area_reduce(obj->area,  style->item.range.max - arc_attr.width);
+        item_area = gt_area_reduce(obj->area,  style->item.range.height - arc_attr.width);
         gt_draw_arc(obj->draw_ctx, &arc_attr, &item_area);
     }
-}
-
-GT_ATTRIBUTE_RAM_TEXT static void
-_draw_stair_range(gt_obj_st* obj, gt_attr_rect_st* rect_attr, gt_area_st* item_area, uint16_t range_step)
-{
-    _gt_spectrum_st * style = (_gt_spectrum_st *)obj;
-
-    uint16_t range_gap = style->item.range.gap;
-    uint16_t h = (style->item.range.max) / style->item.range.steps;
-    if(h < range_gap) {
-        h = 1;
-        range_gap = (range_gap > h) ? range_gap - h : 0;
-    }
-    else{
-        h -= range_gap;
-    }
-
-    gt_area_st stair_area = {0};
-    gt_area_copy(&stair_area, item_area);
-    stair_area.h = h;
-    stair_area.y = obj->area.y + style->item.range.max - h;
-
-    for(uint16_t i = 0; i < (range_step + 1); ++i) {
-        draw_bg(obj->draw_ctx, rect_attr, &stair_area);
-        stair_area.y -= (h + range_gap);
-    }
-
-    if( !style->item.range.reflect ) { return ; }
-
-    gt_gradient_color_st gradient = {0};
-    gradient.start = rect_attr->bg_color;
-    gradient.end = obj->bgcolor;
-    gradient.steps = style->item.range.steps << 1;
-    stair_area.y = obj->area.y + + style->item.range.max + (range_gap << 1);
-
-    for(uint16_t i = 0; i < (range_step + 1); ++i) {
-
-        rect_attr->bg_color = gt_gradient_color_get(gradient, i + (style->item.range.steps));
-        draw_bg(obj->draw_ctx, rect_attr, &stair_area);
-        stair_area.y += (h + range_gap);
-    }
-
 }
 
 GT_ATTRIBUTE_RAM_TEXT static void
@@ -280,40 +250,106 @@ _draw_rect_spectrum(gt_obj_st * obj)
     rect_attr.limit_area    = &obj->area;
 
     uint16_t rect_gap = 0, rect_size = 0, range_size = 0;
-    _get_item_param(style, obj->area.w, &rect_gap, &rect_size, &range_size);
+    rect_size = _get_item_ratio_size(style, obj->area.w, &rect_gap);
+    range_size = _get_item_range_size(style, obj->area.h, NULL);
 
     uint16_t range_step = 0;
     gt_area_st item_area = {0};
     item_area.w = rect_size;
-    item_area.x = obj->area.x + ((obj->area.w - (rect_size + rect_gap) * style->item.numb) >> 1);
+    item_area.x = obj->area.x + ((obj->area.w - ((rect_size + rect_gap) * style->item.numb) + rect_gap) >> 1);
     for (uint16_t i = 0; i < style->item.numb; ++i)
     {
         range_step = _get_item_range_step(style , i);
 
-        item_area.h = style->item.range.min + range_step * range_size;
-        item_area.y = obj->area.y + style->item.range.max;
+        item_area.h = (range_step + 1) * range_size;
+        item_area.y = obj->area.y;
         if (GT_SPECTRUM_TYPE_RECT == style->type) {
-            item_area.y -= item_area.h;
+            item_area.y += (obj->area.h - item_area.h);
         }
         else if(GT_SPECTRUM_TYPE_RECT_UD == style->type) {
-            item_area.y -= (item_area.h >> 1);
+            item_area.y += ((obj->area.h - item_area.h) >> 1);
         }
 
         if(style->color.gradient) {
             _get_item_gradient_color(style, &rect_attr.bg_color, range_step, i);
         }
 
-        if(GT_SPECTRUM_TYPE_STAIR == style->type) {
-            _draw_stair_range(obj, &rect_attr, &item_area, range_step);
-        }
-        else {
-            draw_bg(obj->draw_ctx, &rect_attr, &item_area);
-        }
+        draw_bg(obj->draw_ctx, &rect_attr, &item_area);
 
         item_area.x += rect_size + rect_gap;
     }
 }
 
+GT_ATTRIBUTE_RAM_TEXT static void
+_draw_stair_spectrum(gt_obj_st * obj)
+{
+    _gt_spectrum_st * style = (_gt_spectrum_st *)obj;
+
+    gt_attr_rect_st rect_attr = {0};
+    gt_graph_init_rect_attr(&rect_attr);
+    rect_attr.reg.is_fill   = true;
+    rect_attr.bg_opa        = obj->opa;
+    rect_attr.fg_color      = obj->bgcolor;
+    rect_attr.bg_color      = obj->bgcolor;
+    rect_attr.radius        = obj->radius;
+    rect_attr.limit_area    = &obj->area;
+
+    uint16_t range_gap = style->item.range.gap;
+    uint16_t rect_gap = 0, rect_size = 0, range_size = 0;
+    rect_size = _get_item_ratio_size(style, obj->area.w, &rect_gap);
+
+    if(style->item.range.reflect) {
+        range_size = _get_item_range_size(style, obj->area.h >> 1, &range_gap);
+    }
+    else {
+        range_size = _get_item_range_size(style, obj->area.h, &range_gap);
+    }
+
+    uint16_t range_step = 0;
+    gt_area_st item_area = {0};
+    item_area.x = obj->area.x + ((obj->area.w - ((rect_size + rect_gap) * style->item.numb) + rect_gap) >> 1);
+
+    item_area.w = rect_size;
+    item_area.h = range_size;
+
+    for (uint16_t i = 0; i < style->item.numb; ++i)
+    {
+        range_step = _get_item_range_step(style , i);
+
+        if(style->color.gradient) {
+            _get_item_gradient_color(style, &rect_attr.bg_color, range_step, i);
+        }
+
+        if(style->item.range.reflect) {
+            item_area.y = obj->area.y + (obj->area.h >> 1) - range_size - range_gap;
+        }
+        else {
+            item_area.y = obj->area.y + obj->area.h - range_size;
+        }
+
+        for(uint16_t n = 0; n < (range_step + 1); ++n) {
+            draw_bg(obj->draw_ctx, &rect_attr, &item_area);
+            item_area.y -= (range_size + range_gap);
+        }
+
+        if( style->item.range.reflect )
+        {
+            item_area.y = obj->area.y + ((obj->area.h) >> 1) + range_gap;
+
+            gt_gradient_color_st gradient = {0};
+            gradient.start = rect_attr.bg_color;
+            gradient.end = obj->bgcolor;
+            gradient.steps = style->item.range.steps << 1;
+
+            for(uint16_t n = 0; n < (range_step + 1); ++n) {
+                rect_attr.bg_color = gt_gradient_color_get(gradient, n + (style->item.range.steps));
+                draw_bg(obj->draw_ctx, &rect_attr, &item_area);
+                item_area.y += (range_size + range_gap);
+            }
+        }
+        item_area.x += rect_size + rect_gap;
+    }
+}
 
 GT_ATTRIBUTE_RAM_TEXT static void
 _init_cb(gt_obj_st * obj)
@@ -337,8 +373,10 @@ _init_cb(gt_obj_st * obj)
 
     case GT_SPECTRUM_TYPE_RECT:
     case GT_SPECTRUM_TYPE_RECT_UD:
-    case GT_SPECTRUM_TYPE_STAIR:
         _draw_rect_spectrum(obj);
+        break;
+    case GT_SPECTRUM_TYPE_STAIR:
+        _draw_stair_spectrum(obj);
         break;
 
     default:
@@ -346,7 +384,7 @@ _init_cb(gt_obj_st * obj)
     }
 
     //
-    style->color.move_dist += style->color.move_step;
+    _gt_gradient_color_move_dist_inc(style);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void
@@ -485,8 +523,7 @@ gt_spectrum_create(gt_obj_st * parent)
     style->type = GT_SPECTRUM_TYPE_CIRCLE;
     style->item.gap = 4;
     style->item.numb = 20;
-    style->item.range.max = 40;
-    style->item.range.min = 10;
+    style->item.range.height = 40;
     style->item.range.steps = 4;
 
     style->color.gradient = _gt_vector_create(_gradient_free_cb, _gradient_equal_cb);
@@ -606,20 +643,13 @@ gt_spectrum_set_item_numb(gt_obj_st * obj, uint16_t numb, uint16_t gap)
 }
 
 GT_ATTRIBUTE_RAM_TEXT void
-gt_spectrum_set_item_range(gt_obj_st * obj, uint16_t min, uint16_t max, uint16_t steps)
+gt_spectrum_set_item_range(gt_obj_st * obj, uint16_t height, uint16_t steps)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;
     }
     _gt_spectrum_st * style = (_gt_spectrum_st *)obj;
-    if(min > max) {
-        style->item.range.min = max;
-        style->item.range.max = min;
-    }
-    else {
-        style->item.range.min = min;
-        style->item.range.max = max;
-    }
+    style->item.range.height = height;
     style->item.range.steps = steps;
 }
 
@@ -685,7 +715,7 @@ gt_spectrum_set_color_type(gt_obj_st * obj, gt_spectrum_color_type_et type)
 }
 
 GT_ATTRIBUTE_RAM_TEXT void
-gt_spectrum_set_color_move(gt_obj_st* obj, bool enable, bool dir, uint8_t step)
+gt_spectrum_set_color_move(gt_obj_st* obj, bool enable, bool dir, uint8_t gap)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;
@@ -693,7 +723,7 @@ gt_spectrum_set_color_move(gt_obj_st* obj, bool enable, bool dir, uint8_t step)
     _gt_spectrum_st * style = (_gt_spectrum_st *)obj;
     style->color.move_enable = enable;
     style->color.move_dir = dir;
-    style->color.move_step = step;
+    style->color.move_gap = gap;
 }
 
 GT_ATTRIBUTE_RAM_TEXT void
@@ -721,7 +751,7 @@ gt_spectrum_add_gradient_color(gt_obj_st * obj, gt_color_t start, gt_color_t end
     gradient->start = start;
     gradient->end = end;
     gradient->steps = steps;
-
+    style->color.max_steps += steps;
     _gt_vector_add_item(style->color.gradient, (void *)gradient);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -739,6 +769,7 @@ gt_spectrum_clear_gradient_color(gt_obj_st * obj)
     }
 
     _gt_vector_clear_all_items(style->color.gradient);
+    style->color.max_steps = 0;
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

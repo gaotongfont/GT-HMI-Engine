@@ -90,18 +90,18 @@ void gt_spectrum_stop(gt_obj_st * obj);
  */
 void gt_spectrum_set_item_numb(gt_obj_st * obj, uint16_t numb, uint16_t gap);
 
+
 /**
  * @brief set spectrum item range
  *
  * @param obj
- * @param min min value
- * @param max max value
- * @param steps steps
+ * @param height height of spectrum, only for type GT_SPECTRUM_TYPE_CIRCLE
+ * @param steps steps of spectrum
  */
-void gt_spectrum_set_item_range(gt_obj_st * obj, uint16_t min, uint16_t max, uint16_t steps);
+void gt_spectrum_set_item_range(gt_obj_st * obj, uint16_t height, uint16_t steps);
 
 /**
- * @brief set spectrum item range gap, only for stair type
+ * @brief set spectrum item range gap, only for type GT_SPECTRUM_TYPE_STAIR
  *
  * @param obj
  * @param gap gap
@@ -109,7 +109,7 @@ void gt_spectrum_set_item_range(gt_obj_st * obj, uint16_t min, uint16_t max, uin
 void gt_spectrum_set_item_range_gap(gt_obj_st * obj, uint16_t gap);
 
 /**
- * @brief set spectrum item range reflect, only for stair type
+ * @brief set spectrum item range reflect, only for type GT_SPECTRUM_TYPE_STAIR
  *
  * @param obj
  * @param reflect 1: reflect, 0: not reflect
@@ -165,9 +165,9 @@ void gt_spectrum_clear_gradient_color(gt_obj_st * obj);
  * @param obj
  * @param enable 1: enable, 0: disable
  * @param dir  1: move left , 0: move right
- * @param step move step
+ * @param gap  gap between color move
  */
-void gt_spectrum_set_color_move(gt_obj_st* obj, bool enable, bool dir, uint8_t step);
+void gt_spectrum_set_color_move(gt_obj_st* obj, bool enable, bool dir, uint8_t gap);
 
 
 
