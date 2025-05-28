@@ -101,6 +101,7 @@ _get_item_range_size(_gt_spectrum_st * style, uint16_t value, uint16_t* gap){
         return size;
     }
 
+    *gap = style->item.range.gap;
     if(size <= style->item.range.gap){
         size = 1;
         *gap = (style->item.range.gap > size) ? style->item.range.gap - size : 0;
@@ -385,6 +386,9 @@ _init_cb(gt_obj_st * obj)
 
     //
     _gt_gradient_color_move_dist_inc(style);
+
+    // focus
+    draw_focus(obj);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void

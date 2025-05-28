@@ -129,9 +129,9 @@ void gt_srandom(uint32_t seed);
  *
  * @param min minimum value
  * @param max maximum value
- * @return uint32_t random value, min <= value <= max
+ * @return int32_t random value, min <= value <= max
  */
-uint32_t gt_random(uint32_t min, uint32_t max);
+int32_t gt_random(int32_t min, int32_t max);
 
 /**
  * @brief binary search

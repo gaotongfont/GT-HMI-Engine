@@ -503,10 +503,10 @@ void gt_srandom(uint32_t seed)
     _random_seed = seed;
 }
 
-uint32_t gt_random(uint32_t min, uint32_t max)
+int32_t gt_random(int32_t min, int32_t max)
 {
     if (min > max) {
-        uint32_t tmp = min;
+        int32_t tmp = min;
         min = max;
         max = tmp;
     }
@@ -517,12 +517,11 @@ uint32_t gt_random(uint32_t min, uint32_t max)
     x ^= x << 5;
     _random_seed = x;
 
-    const uint64_t range = (uint64_t)max - min + 1;
+    const uint64_t range = (uint64_t)(max - min) + 1;
     const uint64_t rand_val = ((uint64_t)x * range) >> 32;
 
-    return min + (uint32_t)rand_val;
+    return min + (int32_t)rand_val;
 }
-
 
 // 二分查找函数
 GT_ATTRIBUTE_RAM_TEXT long
