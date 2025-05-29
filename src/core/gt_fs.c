@@ -340,7 +340,7 @@ uint32_t gt_fs_write_direct_physical(gt_addr_t addr, uint32_t len, uint8_t * dat
         return 0;
     }
     uint8_t data_write[5] = {0x02, (uint8_t)(addr>>16), (uint8_t)(addr>>8), (uint8_t)addr, 0x00 };
-    uint8_t len_write = 4;
+    uint32_t len_write = 4;
 
     if (addr > 0xffffff) {
         data_write[1] = (uint8_t)(addr >> 24);
@@ -360,7 +360,7 @@ uint32_t gt_fs_read_direct_physical(gt_addr_t addr, uint32_t len, uint8_t * data
         return 0;
     }
     uint8_t data_write[5] = {GT_HAL_FLASH_READ_CMD, (uint8_t)(addr>>16), (uint8_t)(addr>>8), (uint8_t)addr };
-    uint8_t len_write = 4;
+    uint32_t len_write = 4;
 
     if (addr > 0xffffff) {
         data_write[1] = (uint8_t)(addr >> 24);
