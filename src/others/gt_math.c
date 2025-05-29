@@ -523,6 +523,35 @@ int32_t gt_random(int32_t min, int32_t max)
     return min + (int32_t)rand_val;
 }
 
+int32_t gt_sawtooth_generator_next(gt_generator_st *gen)
+{
+    int32_t value = gen->cur_val;
+
+    gen->cur_val += gen->step;
+    if(gen->cur_val > gen->max_val) {
+        gen->cur_val = gen->min_val;
+    }
+
+    return value;
+}
+
+int32_t gt_triangle_generator_next(gt_generator_st *gen)
+{
+    int32_t value = gen->cur_val;
+
+    gen->cur_val += gen->step * gen->dir;
+
+    if(gen->cur_val >= gen->max_val) {
+        gen->cur_val = gen->max_val;
+        gen->dir = -1;
+    } else if(gen->cur_val <= gen->min_val) {
+        gen->cur_val = gen->min_val;
+        gen->dir = 1;
+    }
+
+    return value;
+}
+
 // 二分查找函数
 GT_ATTRIBUTE_RAM_TEXT long
 gt_binary_search_from_u16(const uint16_t *arr, uint32_t size, uint32_t target)

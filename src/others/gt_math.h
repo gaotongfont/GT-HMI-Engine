@@ -85,7 +85,13 @@ typedef struct {
     double radius;        ///< Circle radius
 }gt_math_circle_st;
 
-
+typedef struct {
+    int32_t min_val;
+    int32_t max_val;
+    int32_t step;
+    int32_t cur_val;
+    int8_t dir;
+}gt_generator_st;
 
 /* macros ---------------------------------------------------------------*/
 
@@ -132,6 +138,9 @@ void gt_srandom(uint32_t seed);
  * @return int32_t random value, min <= value <= max
  */
 int32_t gt_random(int32_t min, int32_t max);
+
+int32_t gt_sawtooth_generator_next(gt_generator_st *gen);
+int32_t gt_triangle_generator_next(gt_generator_st *gen);
 
 /**
  * @brief binary search
