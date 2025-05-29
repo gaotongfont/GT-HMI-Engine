@@ -265,7 +265,7 @@ typedef struct gt_color_img_raw_s {
 
 typedef struct gt_color_masking_s {
     uint16_t radius;
-    uint16_t gap;   /** Range of transparency variation */
+    uint16_t gap;       /** default: 1/8 of width, Range of transparency variation */
 }gt_color_masking_st;
 
 
