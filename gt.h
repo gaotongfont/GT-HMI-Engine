@@ -231,7 +231,7 @@ extern "C" {
 #endif
 
 #if GT_CFG_ENABLE_SPECTRUM_LINE
-#include "src/widgets/gt_spectrum_lien.h"
+#include "src/widgets/gt_spectrum_line.h"
 #endif
 /* define ---------------------------------------------------------------*/
 
