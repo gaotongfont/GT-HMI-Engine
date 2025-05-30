@@ -1,13 +1,13 @@
 /**
- * @file gt_spectrum_lien.h
+ * @file gt_spectrum_line.h
  * @author Yang
  * @brief
  * @version 0.1
  * @date 2025-05-28 15:39:29
  * @copyright Copyright (c) 2014-2025, Company Genitop. Co., Ltd.
  */
-#ifndef _GT_SPECTRUM_LIEN_H_
-#define _GT_SPECTRUM_LIEN_H_
+#ifndef _GT_SPECTRUM_LINE_H_
+#define _GT_SPECTRUM_LINE_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -115,7 +115,7 @@ void gt_spectrum_line_set_gen_next_func(gt_obj_st * obj, get_generator_next func
 } /*extern "C"*/
 #endif
 
-#endif //!_GT_SPECTRUM_LIEN_H_
+#endif //!_GT_SPECTRUM_LINE_H_
 
 /* end of file ----------------------------------------------------------*/
 

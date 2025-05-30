@@ -1,5 +1,5 @@
 /**
- * @file gt_spectrum_lien.c
+ * @file gt_spectrum_line.c
  * @author Yang
  * @brief
  * @version 0.1
@@ -8,7 +8,7 @@
  */
 
 /* include --------------------------------------------------------------*/
-#include "gt_spectrum_lien.h"
+#include "gt_spectrum_line.h"
 #if GT_CFG_ENABLE_SPECTRUM_LINE
 #include "../core/gt_mem.h"
 #include "../hal/gt_hal_disp.h"
