@@ -2058,6 +2058,7 @@ gt_split_line_ret_st gt_font_split_line_numb(gt_font_info_st* info, gt_font_spli
         return line_ret;
     }
 
+    uint8_t overlength = 0;
     line_ret.line_numb = 0;
 
     while (idx < len) {
@@ -2079,7 +2080,14 @@ gt_split_line_ret_st gt_font_split_line_numb(gt_font_info_st* info, gt_font_spli
                                         is_first_line);
         is_first_line = false;
 
-        if(idx == 0 && idx_step == 0){
+        if(idx_step == 0){
+            if(overlength) {
+                overlength = 0;
+                ++idx;
+                disp_w -= ret_w;
+                continue;
+            }
+            ++overlength;
             goto _compute_line;
         }
         idx += idx_step;

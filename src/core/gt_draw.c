@@ -1042,7 +1042,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_size_t _get_align_start_y_by_line(const gt_attr_
 }
 
 static GT_ATTRIBUTE_RAM_TEXT _text_offset_line_st _get_align_start_y(const gt_attr_font_st * dsc,
-    const gt_area_st * coords, gt_font_st * tmp_font, uint8_t * txt) {
+    const gt_area_st * coords, gt_font_st * tmp_font, uint8_t * txt, uint16_t txt_len) {
     _text_offset_line_st ret = {
         .line_count = 1,
     };
@@ -1061,7 +1061,7 @@ static GT_ATTRIBUTE_RAM_TEXT _text_offset_line_st _get_align_start_y(const gt_at
         /** calc total line count to calc position offset */
         gt_font_split_line_st sp_line = {
             .text = (char * )txt,
-            .len = strlen(txt),
+            .len = txt_len,
             .max_w = coords->w,
             .start_w = disp_w,
             .space = _get_style_space_x(dsc->space_x, (const gt_font_info_st *)&tmp_font->info),
@@ -1239,7 +1239,7 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
     }
 #endif  /** _GT_FONT_ENABLE_CONVERTOR */
     // align vertical
-    _text_offset_line_st off_line = _get_align_start_y(dsc, coords, &tmp_font, txt);
+    _text_offset_line_st off_line = _get_align_start_y(dsc, coords, &tmp_font, txt, txt_len);
     area_font.y = off_line.offset_y;
     if (dsc->reg.enabled_start) {
         area_font.y = dsc->start_y;
@@ -1291,7 +1291,8 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
             goto _ret_handler;
         }
         else if(idx_step == 0 && coords->w != disp_w){
-            idx_len = 0;
+            ++idx_len;
+            ++idx;
             goto _disp_font;
         }
         disp_w -= ret_w;
@@ -1299,6 +1300,11 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
         idx_len += idx_step;
         if (disp_w < 0) { disp_w = 0; }
 
+        if(0 == idx_len && 0 == idx_step) {
+            ++idx;
+            idx_len = 1;
+        }
+        // printf("[%d] idx_len: %d, idx_step: %d\n", idx, idx_len, idx_step);
 _disp_font:
         /** align to left, center or right */
         if (!cov_flag_ol) {
