@@ -12,6 +12,7 @@
 #include "stdint.h"
 #include "stdbool.h"
 #include "../others/gt_log.h"
+#include "../others/gt_math.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_gc.h"
 #include "gt_symbol.h"
