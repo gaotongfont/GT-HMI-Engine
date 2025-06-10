@@ -1807,7 +1807,7 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
                     ret.size_show_limit.x = string_total_width + width;
                 }
             }
-            else if (0 == remark_idx && view_width <= omit_info.width) {
+            else if (0 == remark_idx && view_width <= width + omit_info.width) {
                 remark_idx = idx + tmp_font.len;
                 /** Over display string widget's width */
                 ret.size_show_limit.x = string_total_width + width + omit_info.width;
