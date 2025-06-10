@@ -1751,6 +1751,7 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
     uint8_t over_length = 0;
     _omit_info_st omit_info = {0};
     bool start_x_flag = dsc->reg.enabled_start;
+    bool is_omit_display = false;
     _gt_font_dot_ret_st dot_ret = {0};
     uint8_t width, byte_width, font_gray;
 
@@ -1781,8 +1782,6 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
             omit_info.width = 0;
             string_total_width = 0;
             view_width = coords->w;
-        } else {
-            view_width -= omit_info.width;
         }
     }
     while (idx < txt_len) {
@@ -1802,11 +1801,21 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
 
         if (dsc->reg.omit_line) {
             view_width -= width;
-            if (0 == remark_idx && view_width < omit_info.width) {
+            if (idx + tmp_font.len >= txt_len) {
+                /** all display string */
+                if (view_width >= 0) {
+                    ret.size_show_limit.x = string_total_width + width;
+                }
+            }
+            else if (0 == remark_idx && view_width <= omit_info.width) {
                 remark_idx = idx + tmp_font.len;
                 /** Over display string widget's width */
-                ret.size_show_limit.x = string_total_width + omit_info.width;
+                ret.size_show_limit.x = string_total_width + width + omit_info.width;
+                is_omit_display = true;
             } else if (view_width <= 0) {
+                if (tmp_font.len) {
+                    string_total_width += width;
+                }
                 break;
             }
         }
@@ -2034,7 +2043,7 @@ next_word_lb:
         idx += tmp_font.len;
     }
 
-    if (dsc->reg.omit_line && view_width < omit_info.width && idx_len < txt_len) {
+    if (dsc->reg.omit_line && is_omit_display) {
         // Display "..." or "。。。"
         tmp_font.utf8 = omit_info.utf8;
         tmp_font.len = gt_font_one_char_code_len_get((uint8_t * )omit_info.utf8, &uni_or_gbk, tmp_font.info.encoding);
