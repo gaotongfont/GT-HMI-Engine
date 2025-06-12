@@ -673,14 +673,19 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
                 chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
             break;
         }
+#if GT_CFG_ENABLE_LISTVIEW
         case GT_TYPE_LISTVIEW: {
             gt_obj_scroll_to_y(parent, chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
             break;
         }
+#endif
+#if GT_CFG_ENABLE_CHAT
         case GT_TYPE_CHAT: {
             gt_obj_scroll_to_y(parent, chg->src->area.y - chg->dst->area.y, GT_ANIM_OFF);
             break;
         }
+#endif
+#if GT_CFG_ENABLE_VIEW_PAGER
         case GT_TYPE_VIEW_PAGER: {
             gt_size_t page_idx = gt_view_pager_get_widget_belong_fragment(parent, chg->dst);
             if (-1 == page_idx) {
@@ -689,6 +694,7 @@ void gt_obj_focus_change_display(gt_obj_change_st * chg)
             gt_view_pager_scroll_to_fragment(parent, page_idx);
             break;
         }
+#endif
         default:
             break;
     }
