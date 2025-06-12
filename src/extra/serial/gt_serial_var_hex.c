@@ -150,7 +150,7 @@ static void _set_hex(gt_obj_st* obj, gt_var_hex_st* icon, uint16_t reg)
     max_len = GT_MAX(tmp_len, max_len) + 4;
     uint8_t size = gt_font_family_get_size(icon->param.lib_id);
     gt_obj_set_size(obj, max_len * (size >> 1), (size + 6) * line);
-    gt_label_set_text(obj, tmp_str);
+    gt_label_set_text_by_len(obj, tmp_str, strlen(tmp_str));
 }
 
 static void _set_param(gt_var_st* var, gt_var_hex_st* icon)

@@ -268,7 +268,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _update_time_str(_gt_clock_st * clock) {
     }
     *str_ptr = '\0';
 
-    gt_label_set_text(clock->label, str);
+    gt_label_set_text_by_len(clock->label, str, strlen(str));
     gt_mem_free(str);
     str = NULL;
 }
@@ -507,7 +507,7 @@ gt_obj_st * gt_clock_create(gt_obj_st * parent)
     gt_obj_set_bubble_notify(style->label, true);
     gt_obj_set_inside(style->label, true);
     style->label->focus_dis = GT_DISABLED;
-    gt_label_set_text(style->label , "");
+    gt_label_set_text_by_len(style->label , "", strlen(""));
 
     return obj;
 }

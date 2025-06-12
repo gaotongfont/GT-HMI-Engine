@@ -835,7 +835,7 @@ static void _update_text_event_cb(gt_event_st * e) {
     if (false == gt_roller_get_selected_text(e->target, buffer, 128)) {
         return;
     }
-    gt_label_set_text(udata->tar, buffer);
+    gt_label_set_text_by_len(udata->tar, buffer, strlen(buffer));
 }
 
 static gt_res_t _update_text_init_cb(gt_serial_event_packet_st * packet) {

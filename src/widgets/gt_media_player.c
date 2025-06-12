@@ -98,7 +98,7 @@ static void _show_center_content(gt_obj_st * media, gt_size_t font_size, char co
         return;
     }
     status_p->area = media->area;
-    gt_label_set_text(status_p, (const char * )text);
+    gt_label_set_text_by_len(status_p, (const char * )text, strlen((const char * )text));
     gt_label_set_font_size(status_p, font_size);
     gt_label_set_font_color(status_p, gt_color_white());
     gt_label_set_font_align(status_p, GT_ALIGN_CENTER_MID);

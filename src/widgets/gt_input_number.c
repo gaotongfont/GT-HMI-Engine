@@ -171,7 +171,7 @@ gt_obj_st * gt_input_number_create(gt_obj_st * parent)
 
     style->label = gt_label_create(obj);
     style->label->focus_dis = GT_DISABLED;
-    gt_label_set_text(style->label , "");
+    gt_label_set_text_by_len(style->label, "", strlen(""));
     return obj;
 }
 

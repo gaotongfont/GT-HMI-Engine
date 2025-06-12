@@ -216,7 +216,7 @@ static gt_obj_st * _create_title(gt_obj_st * dialog, char * title_text) {
     gt_obj_set_inside(title, true);
     gt_label_set_font_align(title, GT_ALIGN_LEFT_MID);
     gt_label_set_font_color(title, gt_color_hex(0x2f2f2f));
-    gt_label_set_text(title, title_text);
+    gt_label_set_text_by_len(title, title_text, strlen(title_text));
 
     return title;
 }
@@ -247,7 +247,7 @@ static gt_obj_st * _create_content(gt_obj_st * dialog, char * content_text) {
     gt_obj_set_inside(content, true);
     gt_label_set_font_align(content, GT_ALIGN_LEFT);
     gt_label_set_font_color(content, gt_color_hex(0x4f4f4f));
-    gt_label_set_text(content, content_text);
+    gt_label_set_text_by_len(content, content_text, strlen(content_text));
 
     return content;
 }
@@ -481,7 +481,7 @@ void gt_dialog_set_content(gt_obj_st * dialog, char * content)
     if (NULL == style->content) {
         return ;
     }
-    gt_label_set_text(style->content, content);
+    gt_label_set_text_by_len(style->content, content, strlen(content));
 }
 
 void gt_dialog_set_border_color(gt_obj_st * dialog, gt_color_t color)

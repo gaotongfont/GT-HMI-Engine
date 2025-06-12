@@ -267,7 +267,7 @@ static gt_obj_st * _create_lab_obj(gt_obj_st * parent, _gt_status_bar_st * style
     gt_label_set_font_thick_cn(lab, style->font_info.thick_cn);
     gt_label_set_font_thick_en(lab, style->font_info.thick_en);
     gt_label_set_font_color(lab, style->font_color);
-    gt_label_set_text(lab, text);
+    gt_label_set_text_by_len(lab, text, strlen(text));
     gt_label_set_font_align(lab, GT_ALIGN_CENTER_MID);
     gt_obj_set_size(lab, width, gt_obj_get_h(parent));
 
@@ -324,7 +324,7 @@ static bool _change_lab_text(gt_obj_st * parent, gt_obj_st * lab, char * text) {
     if (false == gt_obj_is_type(lab, GT_TYPE_LAB)) {
         return false;
     }
-    gt_label_set_text(lab, text);
+    gt_label_set_text_by_len(lab, text, strlen(text));
 
     return true;
 }
@@ -622,7 +622,7 @@ gt_obj_st * gt_status_bar_center_set_text(char * text)
 
     gt_obj_st * lab =  _create_lab_obj(style->center.obj, style, text, gt_obj_get_w(style->center.obj));
     if (strcmp(text, gt_label_get_text(lab))) {
-        gt_label_set_text(lab, text);
+        gt_label_set_text_by_len(lab, text, strlen(text));
     }
     return lab;
 }

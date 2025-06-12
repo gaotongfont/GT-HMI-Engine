@@ -834,7 +834,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_label(gt_obj_st * listview
     gt_obj_st * lab = gt_label_create(obj);
 
     _set_label_prop(listview, lab, NULL);
-    gt_label_set_text(lab, text);
+    gt_label_set_text_by_len(lab, text, strlen(text));
 
     return lab;
 }

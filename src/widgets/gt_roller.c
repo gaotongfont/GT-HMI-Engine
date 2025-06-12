@@ -523,7 +523,7 @@ void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mo
 
     if (GT_ROLLER_MODE_NORMAL == mode) {
         _create_text(obj);
-        gt_label_set_text(style->text, options);
+        gt_label_set_text_by_len(style->text, options, strlen(options));
     }
     else if (GT_ROLLER_MODE_INFINITE == mode) {
         _create_text(obj);
@@ -537,7 +537,7 @@ void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mo
             infinite_options[(i + 1) * len - 1] = '\n';
         }
         infinite_options[GT_ROLLER_INFINITE_PAGES_COUNT * len - 1] = '\0';
-        gt_label_set_text(style->text, infinite_options);
+        gt_label_set_text_by_len(style->text, infinite_options, strlen(infinite_options));
 
         if (infinite_options) {
             gt_mem_free(infinite_options);
@@ -587,7 +587,7 @@ void gt_roller_set_options_numb(gt_obj_st* obj, gt_roller_mode_em mode, \
     double v_max = max + (1e-9);
     if (GT_ROLLER_MODE_NORMAL == mode) {
         _create_text(obj);
-        gt_label_set_text(style->text, "");
+        gt_label_set_text_by_len(style->text, "", strlen(""));
         for(double i = min; i <= v_max; i += step) {
             if(i > v_max - step){
                 buffer[len] = '\0';
@@ -602,7 +602,7 @@ void gt_roller_set_options_numb(gt_obj_st* obj, gt_roller_mode_em mode, \
         }
     }else if (GT_ROLLER_MODE_INFINITE == mode) {
         _create_text(obj);
-        gt_label_set_text(style->text, "");
+        gt_label_set_text_by_len(style->text, "", strlen(""));
         buffer[len] = '\n';
         for(uint8_t n = 0; n < GT_ROLLER_INFINITE_PAGES_COUNT; n++){
             for(double i = min; i <= v_max; i += step) {
