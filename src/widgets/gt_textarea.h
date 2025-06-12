@@ -89,7 +89,7 @@ gt_res_t gt_textarea_set_always_scroll_to_newest(gt_obj_st * textarea, bool alwa
 // void gt_textarea_set_text(gt_obj_st * textarea, char * text);
 void gt_textarea_set_text(gt_obj_st * textarea, const char * fmt, ...);
 
-void gt_textarea_set_text_by_len(gt_obj_st * textarea, char * text, uint16_t len);
+void gt_textarea_set_text_by_len(gt_obj_st * textarea, const char * text, uint16_t len);
 
 /**
  * @brief hide textarea background

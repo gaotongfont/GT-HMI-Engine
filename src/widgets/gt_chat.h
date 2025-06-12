@@ -122,7 +122,7 @@ typedef struct gt_chat_item_cb_s
 /* textarea */
 #define GT_CHAT_TEXTAREA_ITEM_CB_INIT(_item) do{ \
     _item.create_cb = gt_textarea_create; \
-    _item.set_text_by_len_cb = gt_textarea_add_str_by_len; \
+    _item.set_text_by_len_cb = gt_textarea_set_text_by_len; \
     _item.set_text_cb = gt_textarea_set_text; \
     _item.append_text_cb = gt_textarea_append_text; \
     _item.set_color_background_cb = gt_textarea_set_bg_color; \

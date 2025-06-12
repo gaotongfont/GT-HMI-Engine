@@ -613,7 +613,7 @@ void gt_textarea_set_text(gt_obj_st * textarea, const char * fmt, ...)
     vsnprintf(text, size, fmt, args2);
     va_end(args2);
 
-    gt_textarea_set_text_by_len(textarea, text, strlen(text));
+    gt_textarea_set_text_by_len(textarea, (const char* )text, strlen(text));
 
     gt_mem_free(text);
     return ;
@@ -621,7 +621,7 @@ free_lb:
     va_end(args2);
 }
 
-void gt_textarea_set_text_by_len(gt_obj_st * textarea, char * text, uint16_t len)
+void gt_textarea_set_text_by_len(gt_obj_st * textarea, const char * text, uint16_t len)
 {
     if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
         return ;
