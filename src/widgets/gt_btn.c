@@ -739,7 +739,7 @@ void gt_btn_append_text(gt_obj_st * obj, const char * str)
     if(cur_str) {
         gt_btn_set_text(obj, "%s%s", cur_str, str);
     }else{
-        gt_btn_set_text(obj, str);
+        gt_btn_set_text_by_len(obj, str, strlen(str));
     }
 }
 

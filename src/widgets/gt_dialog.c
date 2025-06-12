@@ -183,7 +183,7 @@ static gt_obj_st * _create_close_btn(gt_obj_st * dialog) {
     gt_btn_set_font_color(close_btn, gt_color_hex(0x7f7f7f));
     gt_btn_set_color_pressed(close_btn, gt_color_hex(0xdfdfdf));
     gt_obj_set_opa(close_btn, GT_OPA_0);
-    gt_btn_set_text(close_btn, GT_SYMBOL_CLOSE);
+    gt_btn_set_text_by_len(close_btn, GT_SYMBOL_CLOSE, strlen(GT_SYMBOL_CLOSE));
     gt_obj_add_event_cb(close_btn, _close_release_cb, GT_EVENT_TYPE_INPUT_RELEASED, dialog);
     gt_obj_set_inside(close_btn, true);
 
@@ -280,7 +280,7 @@ static gt_obj_st * _create_cancel_btn(gt_obj_st * dialog, gt_event_cb_t cancel_c
     gt_btn_set_color_border(cancel_btn, gt_color_hex(0x7f7f7f));
 
     gt_obj_set_opa(cancel_btn, GT_OPA_0);
-    gt_btn_set_text(cancel_btn, GT_SYMBOL_CLOSE);
+    gt_btn_set_text_by_len(cancel_btn, GT_SYMBOL_CLOSE, strlen(GT_SYMBOL_CLOSE));
     gt_btn_set_radius(cancel_btn, _BTN_SIZE_16 >> 2);
     gt_obj_set_inside(cancel_btn, true);
     if (cancel_cb) {
@@ -309,7 +309,7 @@ static gt_obj_st * _create_confirm_btn(gt_obj_st * dialog, gt_event_cb_t confirm
     _set_confirm_btn_pos(confirm_btn, dialog);
 
     gt_obj_set_opa(confirm_btn, GT_OPA_0);
-    gt_btn_set_text(confirm_btn, GT_SYMBOL_OK);
+    gt_btn_set_text_by_len(confirm_btn, GT_SYMBOL_OK, strlen(GT_SYMBOL_OK));
     gt_btn_set_radius(confirm_btn, _BTN_SIZE_16 >> 2);
     gt_obj_set_inside(confirm_btn, true);
     if (confirm_cb) {
