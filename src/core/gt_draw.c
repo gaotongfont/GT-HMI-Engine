@@ -1806,8 +1806,9 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
                 if (view_width >= 0) {
                     ret.size_show_limit.x = string_total_width + width;
                 }
+                is_omit_display = false;
             }
-            else if (0 == remark_idx && view_width <= width + omit_info.width) {
+            else if ( view_width >= omit_info.width) {
                 remark_idx = idx + tmp_font.len;
                 /** Over display string widget's width */
                 ret.size_show_limit.x = string_total_width + width + omit_info.width;
@@ -1841,8 +1842,8 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
         idx += tmp_font.len;
         idx_len += tmp_font.len;
     }
-    if (dsc->reg.omit_line) {
-        if (view_width < 0)             { idx_len = remark_idx; }
+    if (dsc->reg.omit_line && is_omit_display) {
+        if (view_width <= 0) { idx_len = remark_idx; }
         if (0 == ret.size_show_limit.x) { ret.size_show_limit.x = string_total_width; }
         ret.size.x = ret.size_show_limit.x;
     } else {
