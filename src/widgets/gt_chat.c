@@ -98,7 +98,7 @@ typedef enum{
 static void _init_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static GT_ATTRIBUTE_RAM_TEXT gt_obj_st* _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint8_t tim_s, gt_chat_type_te type, bool is_send);
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st* _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint16_t msg_len, uint8_t tim_s, gt_chat_type_te type, bool is_send);
 static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_update_msg_size(gt_obj_st * chat);
 static GT_ATTRIBUTE_RAM_TEXT void _scrolling_handler(gt_obj_st * obj);
 
@@ -280,7 +280,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_msg_move_y(gt_obj_st * chat, gt_size_
     }
 }
 
-static GT_ATTRIBUTE_RAM_TEXT gt_obj_st* _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint8_t tim_s, gt_chat_type_te type, bool is_send) {
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st*
+_gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint16_t msg_len, uint8_t tim_s, gt_chat_type_te type, bool is_send) {
     _gt_chat_st * style = (_gt_chat_st * )chat;
 
     if(style->msg_cnt >= GT_CHAT_MAX_MSG_CNT){
@@ -306,7 +307,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st* _gt_chat_add_msg(gt_obj_st * chat, const
     style->item_cb.set_font_color_cb(style->msg_list[style->msg_cnt].msg_obj, is_send ? style->send_font_color : style->recv_font_color);
 
     if(GT_CHAT_TYPE_TEXT == type ){
-        style->item_cb.set_text_cb(style->msg_list[style->msg_cnt].msg_obj, msg);
+        style->item_cb.set_text_by_len_cb(style->msg_list[style->msg_cnt].msg_obj, msg, msg_len);
     }
     else if(GT_CHAT_TYPE_VOICE == type){
         _gt_set_voice_text(style, style->msg_list[style->msg_cnt].msg_obj, tim_s, is_send, GT_SYMBOL_VOICE_PLAY-1);
@@ -567,7 +568,17 @@ gt_obj_st * gt_chat_add_send_text_msg(gt_obj_st * chat, const char * msg)
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
         return NULL;
     }
-    gt_obj_st * item = _gt_chat_add_msg( chat, msg, 0, GT_CHAT_TYPE_TEXT, true);
+    gt_obj_st * item = _gt_chat_add_msg( chat, msg, msg ? strlen(msg) : 0, 0, GT_CHAT_TYPE_TEXT, true);
+    gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
+    return item;
+}
+
+gt_obj_st * gt_chat_add_send_text_msg_by_len(gt_obj_st * chat, const char * msg, uint16_t len)
+{
+    if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
+        return NULL;
+    }
+    gt_obj_st * item = _gt_chat_add_msg( chat, msg, len, 0, GT_CHAT_TYPE_TEXT, true);
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
     return item;
 }
@@ -577,7 +588,7 @@ gt_obj_st * gt_chat_add_send_voice_msg(gt_obj_st * chat, uint8_t tim_s)
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
         return NULL;
     }
-    gt_obj_st * item = _gt_chat_add_msg( chat, NULL, tim_s, GT_CHAT_TYPE_VOICE, true);
+    gt_obj_st * item = _gt_chat_add_msg( chat, NULL, 0, tim_s, GT_CHAT_TYPE_VOICE, true);
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
     return item;
 }
@@ -587,7 +598,17 @@ gt_obj_st * gt_chat_add_received_text_msg(gt_obj_st * chat, const char * msg)
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
         return NULL;
     }
-    gt_obj_st * item = _gt_chat_add_msg( chat, msg, 0, GT_CHAT_TYPE_TEXT, false);
+    gt_obj_st * item = _gt_chat_add_msg( chat, msg, msg ? strlen(msg) : 0, 0, GT_CHAT_TYPE_TEXT, false);
+    gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
+    return item;
+}
+
+gt_obj_st * gt_chat_add_received_text_msg_by_len(gt_obj_st * chat, const char * msg, uint16_t len)
+{
+    if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
+        return NULL;
+    }
+    gt_obj_st * item = _gt_chat_add_msg( chat, msg, len, 0, GT_CHAT_TYPE_TEXT, false);
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
     return item;
 }
@@ -597,7 +618,7 @@ gt_obj_st * gt_chat_add_received_voice_msg(gt_obj_st * chat, uint8_t tim_s)
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
         return NULL;
     }
-    gt_obj_st * item = _gt_chat_add_msg( chat, NULL, tim_s, GT_CHAT_TYPE_VOICE, false);
+    gt_obj_st * item = _gt_chat_add_msg( chat, NULL, 0, tim_s, GT_CHAT_TYPE_VOICE, false);
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
     return item;
 }

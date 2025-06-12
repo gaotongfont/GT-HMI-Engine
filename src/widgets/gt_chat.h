@@ -37,6 +37,7 @@ typedef enum {
 typedef struct gt_chat_item_cb_s
 {
     gt_obj_st* (*create_cb)( gt_obj_st* );
+    void (*set_text_by_len_cb)(gt_obj_st * , const char * , uint16_t );
     void (*set_text_cb)(gt_obj_st * , const char * , ...);
     void (*append_text_cb)(gt_obj_st * , const char * );
     void (*set_color_background_cb)(gt_obj_st * , gt_color_t );
@@ -68,6 +69,7 @@ typedef struct gt_chat_item_cb_s
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 #define GT_CHAT_BTN_ITEM_CB_INIT(_item) do{\
     _item.create_cb = gt_btn_create; \
+    _item.set_text_by_len_cb = gt_btn_set_text_by_len; \
     _item.set_text_cb = gt_btn_set_text; \
     _item.append_text_cb = gt_btn_append_text; \
     _item.set_color_background_cb = gt_btn_set_color_background; \
@@ -95,6 +97,7 @@ typedef struct gt_chat_item_cb_s
 /* btn */
 #define GT_CHAT_BTN_ITEM_CB_INIT(_item) do{\
     _item.create_cb = gt_btn_create; \
+    _item.set_text_by_len_cb = gt_btn_set_text_by_len; \
     _item.set_text_cb = gt_btn_set_text; \
     _item.append_text_cb = gt_btn_append_text; \
     _item.set_color_background_cb = gt_btn_set_color_background; \
@@ -119,6 +122,7 @@ typedef struct gt_chat_item_cb_s
 /* textarea */
 #define GT_CHAT_TEXTAREA_ITEM_CB_INIT(_item) do{ \
     _item.create_cb = gt_textarea_create; \
+    _item.set_text_by_len_cb = gt_textarea_add_str_by_len; \
     _item.set_text_cb = gt_textarea_set_text; \
     _item.append_text_cb = gt_textarea_append_text; \
     _item.set_color_background_cb = gt_textarea_set_bg_color; \
@@ -148,9 +152,11 @@ gt_obj_st * gt_chat_create(gt_obj_st * parent);
 void gt_chat_set_bg_color(gt_obj_st * chat, gt_color_t color);
 
 gt_obj_st * gt_chat_add_send_text_msg(gt_obj_st * chat, const char * msg);
+gt_obj_st * gt_chat_add_send_text_msg_by_len(gt_obj_st * chat, const char * msg, uint16_t len);
 gt_obj_st * gt_chat_add_send_voice_msg(gt_obj_st * chat, uint8_t tim_s);
 
 gt_obj_st * gt_chat_add_received_text_msg(gt_obj_st * chat, const char * msg);
+gt_obj_st * gt_chat_add_received_text_msg_by_len(gt_obj_st * chat, const char * msg, uint16_t len);
 gt_obj_st * gt_chat_add_received_voice_msg(gt_obj_st * chat, uint8_t tim_s);
 
 gt_obj_st * gt_chat_append_msg_text(gt_obj_st * chat, const char * msg);
