@@ -360,14 +360,8 @@ void gt_label_set_text_by_len(gt_obj_st * label, const char * text, uint16_t len
     }
 
     _gt_label_st * style = (_gt_label_st * )label;
-    char * ptr = (char * )text;
-    char * dst = NULL;
-    uint16_t i = 0;
     uint16_t real_len = strlen(text);
-
-    if (real_len < len) {
-        len = real_len;
-    }
+    if (real_len < len) { len = real_len; }
 
     _reset_auto_scroll_st(style->auto_scroll);
 
@@ -380,14 +374,8 @@ void gt_label_set_text_by_len(gt_obj_st * label, const char * text, uint16_t len
         return;
     }
 
-    dst = style->text;
-    while (i < len) {
-        *dst = *ptr;
-        ++dst;
-        ++ptr;
-        ++i;
-    }
-    *dst = '\0';
+    gt_memcpy(style->text, text, len);
+    style->text[len] = '\0';
 
     _update_label_size(label, len);
     gt_event_send(label, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
