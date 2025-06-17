@@ -351,6 +351,15 @@ void gt_img_set_by_direct_addr(gt_obj_st * img, gt_addr_t addr)
 
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
+
+gt_addr_t gt_img_get_direct_addr(gt_obj_st * img)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_img_st * style = (_gt_img_st *)img;
+    return style->addr;
+}
 #endif
 
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
@@ -374,6 +383,15 @@ void gt_img_set_by_custom_size_addr(gt_obj_st * img, gt_direct_addr_custom_size_
     style->custom_addr = *dac;
 
     gt_event_send(img, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+gt_direct_addr_custom_size_st * gt_img_get_custom_size_addr(gt_obj_st * img)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_img_st * style = (_gt_img_st *)img;
+    return &style->custom_addr;
 }
 #endif
 
