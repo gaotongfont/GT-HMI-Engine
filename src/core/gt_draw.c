@@ -1788,6 +1788,10 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
         if (0x0A == txt[idx]) {
             ++idx;
             ++idx_len;
+            if (dsc->reg.omit_line && view_width >= 0) {
+                ret.size_show_limit.x = string_total_width;
+                is_omit_display = false;
+            }
             continue;
         }
         tmp_font.info.size = dsc->font->info.size;
