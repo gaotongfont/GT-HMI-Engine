@@ -355,7 +355,7 @@ void gt_img_set_by_direct_addr(gt_obj_st * img, gt_addr_t addr)
 gt_addr_t gt_img_get_direct_addr(gt_obj_st * img)
 {
     if (false == gt_obj_is_type(img, OBJ_TYPE)) {
-        return ;
+        return 0;
     }
     _gt_img_st * style = (_gt_img_st *)img;
     return style->addr;
@@ -388,7 +388,7 @@ void gt_img_set_by_custom_size_addr(gt_obj_st * img, gt_direct_addr_custom_size_
 gt_direct_addr_custom_size_st * gt_img_get_custom_size_addr(gt_obj_st * img)
 {
     if (false == gt_obj_is_type(img, OBJ_TYPE)) {
-        return ;
+        return NULL;
     }
     _gt_img_st * style = (_gt_img_st *)img;
     return &style->custom_addr;
