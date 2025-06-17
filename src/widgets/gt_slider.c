@@ -499,10 +499,10 @@ _init_cb(gt_obj_st * obj) {
             || GT_FS_RES_OK == gt_fs_fh_read_img_wh((gt_img_get_file_header_param(style->img)), &_w, &_h)
 #endif
 #if GT_USE_DIRECT_ADDR
-            || GT_FS_RES_OK == gt_fs_direct_addr_read_img_wh(gt_img_get_direct_addr(style->img), &w, &h)
+            || GT_FS_RES_OK == gt_fs_direct_addr_read_img_wh(gt_img_get_direct_addr(style->img), &_w, &_h)
 #endif
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
-            || GT_FS_RES_OK == gt_fs_direct_addr_custom_size_read_img_wh(gt_img_get_custom_size_addr(style->img), &w, &h)
+            || GT_FS_RES_OK == gt_fs_direct_addr_custom_size_read_img_wh(gt_img_get_custom_size_addr(style->img), &_w, &_h)
 #endif
         ) {
             if (0 == _w || 0 == _h) {
