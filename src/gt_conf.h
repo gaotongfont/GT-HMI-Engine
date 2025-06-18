@@ -88,6 +88,7 @@ extern "C" {
 
 /**
  * @brief memory mode. 1: array as memory pool; 0:  c library api.
+ *      Want more detail info @ref gt_mem.h.
  */
 #ifndef GT_MEM_CUSTOM
     #define GT_MEM_CUSTOM           01

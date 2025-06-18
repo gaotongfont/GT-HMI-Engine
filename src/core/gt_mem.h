@@ -215,6 +215,9 @@ void gt_mem_heap_get_space(gt_mem_info_st * mem_info);
 /**
  * @brief Third-party memory allocation interface, such as: src/extra/.
  *      Maybe you want to use psram memory pool.
+ *      [Warning]: malloc/calloc/realloc/free must be used in pairs,
+ *          free() must be the same properly as malloc/calloc/realloc!!!
+ *          DO NOT MIXED with OTHER memory allocation interface!!!
  */
 #ifndef gt_extern_malloc
     /**
