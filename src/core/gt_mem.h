@@ -219,29 +219,29 @@ void gt_mem_heap_get_space(gt_mem_info_st * mem_info);
  *          free() must be the same properly as malloc/calloc/realloc!!!
  *          DO NOT MIXED with OTHER memory allocation interface!!!
  */
-#ifndef gt_extern_malloc
+#ifndef gt_mem_extern_malloc
     /**
      * @brief Default using gt_mem_malloc()
      */
-    #define gt_extern_malloc(size)          gt_mem_malloc(size)
+    #define gt_mem_extern_malloc(size)          gt_mem_malloc(size)
 #endif
-#ifndef gt_extern_calloc
+#ifndef gt_mem_extern_calloc
     /**
      * @brief Default using gt_mem_calloc()
      */
-    #define gt_extern_calloc(num, size)     gt_mem_calloc(num, size)
+    #define gt_mem_extern_calloc(num, size)     gt_mem_calloc(num, size)
 #endif
-#ifndef gt_extern_realloc
+#ifndef gt_mem_extern_realloc
     /**
      * @brief Default using gt_mem_realloc()
      */
-    #define gt_extern_realloc(ptr, size)    gt_mem_realloc(ptr, size)
+    #define gt_mem_extern_realloc(ptr, size)    gt_mem_realloc(ptr, size)
 #endif
-#ifndef gt_extern_free
+#ifndef gt_mem_extern_free
     /**
      * @brief Default using gt_mem_free()
      */
-    #define gt_extern_free(ptr)             gt_mem_free(ptr)
+    #define gt_mem_extern_free(ptr)             gt_mem_free(ptr)
 #endif
 
 
