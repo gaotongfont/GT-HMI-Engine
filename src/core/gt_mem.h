@@ -94,6 +94,19 @@ void gt_mem_set_pool_pointer(char * pool_pointer);
 void * _mem_malloc(size_t size, char const * file_name, char const * func_name, size_t line);
 
 /**
+ * @brief calloc memory and init memory data to zero.
+ *      Base on malloc() and memset().
+ *
+ * @param num number of elements
+ * @param size size of each element
+ * @param file_name
+ * @param func_name
+ * @param line
+ * @return void*
+ */
+void * _mem_calloc(size_t num, size_t size, char const * file_name, char const * func_name, size_t line);
+
+/**
  * @brief Realloc memory buffer size
  *
  * @param ptr The newly buffer memory buffer pointer
@@ -186,9 +199,48 @@ void gt_mem_check_used(void);
  */
 void gt_mem_heap_get_space(gt_mem_info_st * mem_info);
 
-#define gt_mem_malloc(size) _mem_malloc(size, _GT_LOG_PRINT_FILE, __func__, __LINE__)
-#define gt_mem_realloc(ptr, size) _mem_realloc(ptr, size, _GT_LOG_PRINT_FILE, __func__, __LINE__)
-#define gt_mem_free(ptr) _mem_free(ptr, _GT_LOG_PRINT_FILE, __func__, __LINE__)
+#ifndef gt_mem_malloc
+    #define gt_mem_malloc(size)         _mem_malloc(size, _GT_LOG_PRINT_FILE, __func__, __LINE__)
+#endif
+#ifndef gt_mem_calloc
+    #define gt_mem_calloc(num, size)    _mem_calloc(num, size, _GT_LOG_PRINT_FILE, __func__, __LINE__)
+#endif
+#ifndef gt_mem_realloc
+    #define gt_mem_realloc(ptr, size)   _mem_realloc(ptr, size, _GT_LOG_PRINT_FILE, __func__, __LINE__)
+#endif
+#ifndef gt_mem_free
+    #define gt_mem_free(ptr)            _mem_free(ptr, _GT_LOG_PRINT_FILE, __func__, __LINE__)
+#endif
+
+/**
+ * @brief Third-party memory allocation interface, such as: src/extra/.
+ *      Maybe you want to use psram memory pool.
+ */
+#ifndef gt_extern_malloc
+    /**
+     * @brief Default using gt_mem_malloc()
+     */
+    #define gt_extern_malloc(size)          gt_mem_malloc(size)
+#endif
+#ifndef gt_extern_calloc
+    /**
+     * @brief Default using gt_mem_calloc()
+     */
+    #define gt_extern_calloc(num, size)     gt_mem_calloc(num, size)
+#endif
+#ifndef gt_extern_realloc
+    /**
+     * @brief Default using gt_mem_realloc()
+     */
+    #define gt_extern_realloc(ptr, size)    gt_mem_realloc(ptr, size)
+#endif
+#ifndef gt_extern_free
+    /**
+     * @brief Default using gt_mem_free()
+     */
+    #define gt_extern_free(ptr)             gt_mem_free(ptr)
+#endif
+
 
 #ifdef __cplusplus
 } /*extern "C"*/

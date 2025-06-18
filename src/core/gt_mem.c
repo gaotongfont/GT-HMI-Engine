@@ -346,6 +346,17 @@ void * _mem_malloc(size_t size, char const * file_name, char const * func_name, 
     return ret;
 }
 
+void * _mem_calloc(size_t num, size_t size, char const * file_name, char const * func_name, size_t line)
+{
+    uint32_t len = num * size;
+    void * ptr = _mem_malloc(len, file_name, func_name, line);
+    if (NULL == ptr) {
+        return ptr;
+    }
+    gt_memset(ptr, 0, len);
+    return ptr;
+}
+
 void * _mem_realloc(void * ptr, size_t size, char const * file_name, char const * func_name, size_t line)
 {
 #if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT || USE_MEM_REAL_USED_REMARK
