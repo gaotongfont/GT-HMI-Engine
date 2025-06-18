@@ -420,9 +420,9 @@ gt_obj_st * gt_dialog_create_issue(bool show_close_btn, gt_dialog_param_st const
     if (param->content) {
         style->content = _create_content(obj, param->content);
     }
-    /** Must exist */
-    style->btn_confirm = _create_confirm_btn(obj, param->confirm_cb, param->confirm_cb_user_data);
-
+    if (param->confirm_cb) {
+        style->btn_confirm = _create_confirm_btn(obj, param->confirm_cb, param->confirm_cb_user_data);
+    }
     if (param->cancel_cb) {
         style->btn_cancel = _create_cancel_btn(obj, param->cancel_cb, param->cancel_cb_user_data);
     }
