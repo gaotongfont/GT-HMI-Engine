@@ -550,6 +550,9 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _send_released_event(struct _point * po
     }
 
     gt_event_send(point_p->obj_target, event_type, NULL);
+#if GT_USE_LAYER_TOP
+    gt_global_event_send(event_type, NULL);
+#endif
 
     if (point_p->obj_origin != point_p->obj_target) {
         gt_event_send(point_p->obj_origin, GT_EVENT_TYPE_INPUT_PRESS_LOST, NULL);
@@ -696,6 +699,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_pressed_handle(gt_indev_st * indev) {
         _gt_indev_point_set_value(&point_p->last, point_p->newly.x, point_p->newly.y);
         _gt_obj_set_process_point(point_p->obj_act, &point_ret);
         gt_event_send(point_p->obj_act, GT_EVENT_TYPE_INPUT_PRESSED, NULL);
+#if GT_USE_LAYER_TOP
+        gt_global_event_send(GT_EVENT_TYPE_INPUT_PRESSED, NULL);
+#endif
     }
 
     if (point_p->obj_target && point_p->obj_scroll) {
@@ -720,11 +726,17 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_pressed_handle(gt_indev_st * indev) {
             if (_is_pressing_timeout(indev)) {
                 indev->timestamp_pressing = gt_tick_get();
                 gt_event_send(point_p->obj_target, GT_EVENT_TYPE_INPUT_PRESSING, NULL);
+#if GT_USE_LAYER_TOP
+                gt_global_event_send(GT_EVENT_TYPE_INPUT_PRESSING, NULL);
+#endif
             }
         } else if (_is_long_pressed_timeout(indev)) {
             indev->timestamp_long_pressed = gt_tick_get();
             indev->timestamp_pressing = indev->timestamp_long_pressed;  /** skip pressing time to toggle */
             gt_event_send(point_p->obj_target, GT_EVENT_TYPE_INPUT_LONG_PRESSED, NULL);
+#if GT_USE_LAYER_TOP
+            gt_global_event_send(GT_EVENT_TYPE_INPUT_LONG_PRESSED, NULL);
+#endif
         }
     }
     _scroll_calc_throw_distance(point_p);
@@ -901,7 +913,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
 
         _indev_params.param.keypad_key = indev->data.keypad.key;
 #if GT_USE_LAYER_TOP
-        if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
+        if (_kp_is_global_key_value(indev->data.keypad.key)) {
             _gt_global_core_indev_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_KEY_RELEASED, &_indev_params);
         }
 #endif
@@ -993,7 +1005,7 @@ _key_pressed:
                 _gt_disp_hided_layer_top_widgets(layer_top);
                 return ;
             }
-            if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
+            if (_kp_is_global_key_value(indev->data.keypad.key)) {
                 _gt_global_core_indev_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
             }
 #endif
@@ -1086,7 +1098,7 @@ _key_pressing:
 #endif
 
 #if GT_USE_LAYER_TOP
-                if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
+                if (_kp_is_global_key_value(indev->data.keypad.key)) {
                     _gt_global_core_indev_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_KEY_PRESSING, &_indev_params);
                 }
 #endif
@@ -1108,7 +1120,7 @@ _key_pressing:
 
         _indev_params.param.keypad_key = indev->data.keypad.key;
 #if GT_USE_LAYER_TOP
-        if (_kp_is_global_key_value(indev->data.keypad.key) && gt_global_get_event_count()) {
+        if (_kp_is_global_key_value(indev->data.keypad.key)) {
             _gt_global_core_indev_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_KEY_LONG_PRESSED, &_indev_params);
         }
 #endif

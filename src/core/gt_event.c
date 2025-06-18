@@ -401,6 +401,9 @@ void gt_global_remove_all_event_cb_immediately(void)
 
 gt_res_t gt_global_event_send(gt_event_type_et event, void * parms)
 {
+    if (0 == gt_global_get_event_count()) {
+        return GT_RES_INV;
+    }
     return gt_event_send(gt_disp_get_layer_top(), event, parms);
 }
 
@@ -414,6 +417,9 @@ gt_res_t _gt_global_core_indev_event_send(struct gt_obj_s * org, gt_event_type_e
         .param = parms,
         .key_val = indev->param.keypad_key,
     };
+    if (0 == gt_global_get_event_count()) {
+        return GT_RES_INV;
+    }
     return _common_event_send(&e);
 }
 #endif  /** GT_USE_LAYER_TOP */
