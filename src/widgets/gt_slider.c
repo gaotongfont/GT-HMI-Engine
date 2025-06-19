@@ -42,7 +42,6 @@ typedef struct _repeat_mode_s {
 typedef struct _gt_slider_s {
     gt_obj_st obj;
 
-    gt_obj_st * tag;
     gt_obj_st * img;         /** The img object within tag area */
 
     _repeat_mode_st repeat_info;    /** AB repeat mode */
@@ -492,7 +491,7 @@ _init_cb(gt_obj_st * obj) {
     rect_attr.radius = tag_size >> 1;
 
     // draw img tag
-    if(style->tag && style->img){
+    if (style->img) {
         uint16_t _w = 0,_h = 0;
         if (GT_FS_RES_OK == gt_fs_read_img_wh(gt_img_get_src(style->img), &_w, &_h)
 #if GT_USE_FILE_HEADER
@@ -512,7 +511,6 @@ _init_cb(gt_obj_st * obj) {
             tag_area.h = _h > tag_size ? tag_size : _h;
             tag_area.x += (tag_size - tag_area.w) >> 1;
             tag_area.y += (tag_size - tag_area.h) >> 1;
-            gt_obj_set_area(style->tag, tag_area);
             gt_obj_set_area(style->img , tag_area);
         }
         goto draw_focus;
@@ -520,7 +518,6 @@ _init_cb(gt_obj_st * obj) {
         rect_attr.bg_color = style->repeat_mode ? style->repeat_info.color : style->color_act;
     }
 
-    // draw tag
 #if !GT_USE_SERIAL
     draw_bg(obj->draw_ctx, &rect_attr, &tag_area);
 #endif
@@ -543,10 +540,7 @@ _deinit_cb(gt_obj_st * obj) {
     }
 
     _gt_slider_st * style_p = (_gt_slider_st * )obj;
-    if (NULL != style_p->tag) {
-        gt_mem_free(style_p->tag);
-        style_p->tag = NULL;
-    }
+    style_p->img = NULL;
 }
 
 /**
@@ -610,18 +604,8 @@ _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 static GT_ATTRIBUTE_RAM_TEXT gt_obj_st *
 _create_img_obj(gt_obj_st * slider) {
     _gt_slider_st * style = (_gt_slider_st *)slider;
-    if (NULL == style->tag) {
-        style->tag = gt_obj_create(slider);
-        if (NULL == style->tag) {
-            return NULL;
-        }
-    }
-    gt_obj_set_touch_parent(style->tag, true);
-    gt_obj_set_bubble_notify(style->tag, true);
-    gt_obj_set_inside(style->tag, true);
-
     if (NULL == style->img) {
-        style->img = gt_img_create(style->tag);
+        style->img = gt_img_create(slider);
         if (NULL == style->img) {
             return NULL;
         }
