@@ -269,6 +269,7 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * c, struct gt_obj_s
     obj->radius     = 4;
     obj->focus_w    = FOCUS_W_DEFAULT;
     obj->focus_gap  = FOCUS_W_DEFAULT;
+    obj->focus_dis  = GT_DISABLED;
 
     /** Inherit from the parent class */
     if (parent) {
