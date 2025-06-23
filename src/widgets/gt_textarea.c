@@ -1120,7 +1120,7 @@ gt_split_line_ret_st gt_textarea_get_font_split_line_numb(gt_obj_st* obj, gt_fon
         return s_line_ret;
     }
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
-    uint16_t idx = 0;
+    uint16_t idx = 0, max_w = 0;
 
     gt_font_split_line_st sp_line_tmp;
     if (sp_line) {
@@ -1140,7 +1140,7 @@ gt_split_line_ret_st gt_textarea_get_font_split_line_numb(gt_obj_st* obj, gt_fon
 
         sp_line_tmp.text = style->contents[idx].text;
         sp_line_tmp.len = style->contents[idx].len;
-
+        sp_line_tmp.indent = idx == 0 ? sp_line_tmp.indent : 0;
         if(0 == sp_line_tmp.len) {
             ++idx;
             continue;
@@ -1148,19 +1148,27 @@ gt_split_line_ret_st gt_textarea_get_font_split_line_numb(gt_obj_st* obj, gt_fon
 
         s_line_tmp_ret = gt_font_split_line_numb(&style->font_info, &sp_line_tmp);
 
-        if(1 == s_line_tmp_ret.line_numb && 0x0A == sp_line_tmp.text[sp_line_tmp.len-1]) {
-            s_line_ret.line_numb += s_line_tmp_ret.line_numb;
+        max_w += s_line_tmp_ret.max_w;
+        if(0 == idx && s_line_tmp_ret.line_numb > 1) {
+            s_line_ret.line_numb = s_line_tmp_ret.line_numb - 1;
+            s_line_ret.max_w = GT_MIN(max_w, sp_line_tmp.max_w);
+            max_w = 0;
         }
-        else{
-            s_line_ret.line_numb += s_line_tmp_ret.line_numb - 1;
+        if(max_w >= sp_line_tmp.max_w) {
+            s_line_ret.line_numb += s_line_tmp_ret.line_numb > 1 ? s_line_tmp_ret.line_numb - 1 : 1;
+            s_line_ret.max_w = GT_MIN(max_w, sp_line_tmp.max_w);
+            max_w = 0;
         }
-        s_line_ret.max_w = GT_MAX(s_line_ret.max_w, s_line_tmp_ret.max_w);
-        sp_line_tmp.start_w = s_line_tmp_ret.disp_w;
+        else if(0x0A == sp_line_tmp.text[sp_line_tmp.len-1]) {
+            s_line_ret.line_numb += (idx == style->cnt_contents-1) ? s_line_tmp_ret.line_numb - 1 : s_line_tmp_ret.line_numb;
+            s_line_ret.max_w = GT_MIN(max_w, sp_line_tmp.max_w);
+            max_w = 0;
+        }
 
-_next_line:
         ++idx;
     }
 
+    s_line_ret.max_w = GT_MAX(s_line_ret.max_w, max_w);
     s_line_ret.line_numb += 1;
 
     return s_line_ret;

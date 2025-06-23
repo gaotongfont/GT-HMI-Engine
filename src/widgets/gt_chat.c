@@ -208,7 +208,8 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
     gt_size_t x, y;
     gt_radius_t radius = style->msg_radius;
 
-    w = 8 + (is_send ? style->send_border_w << 1 : style->recv_border_w << 1);
+    // w = 8 + (is_send ? style->send_border_w << 1 : style->recv_border_w << 1);
+    w = (is_send ? style->send_border_w << 1 : style->recv_border_w << 1);
     gt_font_split_line_st sp_line = {
         .text = NULL,
         .max_w = _MSG_MAX_W(chat->area.w) - w,
