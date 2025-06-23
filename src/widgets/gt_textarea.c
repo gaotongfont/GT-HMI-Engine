@@ -1141,6 +1141,11 @@ gt_split_line_ret_st gt_textarea_get_font_split_line_numb(gt_obj_st* obj, gt_fon
         sp_line_tmp.text = style->contents[idx].text;
         sp_line_tmp.len = style->contents[idx].len;
 
+        if(0 == sp_line_tmp.len) {
+            ++idx;
+            continue;
+        }
+
         s_line_tmp_ret = gt_font_split_line_numb(&style->font_info, &sp_line_tmp);
 
         if(1 == s_line_tmp_ret.line_numb && 0x0A == sp_line_tmp.text[sp_line_tmp.len-1]) {
