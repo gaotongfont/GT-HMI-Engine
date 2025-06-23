@@ -76,6 +76,14 @@ void gt_arc_set_act_img(gt_obj_st * obj, char * src);
  */
 void gt_arc_set_bg_img(gt_obj_st * obj, char * src);
 
+/**
+ * @brief Set the arc pointer knob img
+ *
+ * @param obj
+ * @param src
+ */
+void gt_arc_set_knob_img(gt_obj_st * obj, char * src);
+
 #if GT_USE_FILE_HEADER
 /**
  * @brief Set the arc pointer active img by file header
@@ -91,6 +99,14 @@ void gt_arc_set_act_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh
  * @param fh
  */
 void gt_arc_set_bg_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh);
+
+/**
+ * @brief Set the knob pointer active img by file header
+ *
+ * @param obj
+ * @param fh
+ */
+void gt_arc_set_knob_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh);
 #endif
 
 #if GT_USE_DIRECT_ADDR
@@ -108,6 +124,15 @@ void gt_arc_set_act_by_direct_addr(gt_obj_st * obj, gt_addr_t addr);
  * @param addr
  */
 void gt_arc_set_bg_by_direct_addr(gt_obj_st * obj, gt_addr_t addr);
+
+/**
+ * @brief Set the arc pointer knob img by direct address
+ *
+ * @param obj
+ * @param addr
+ */
+void gt_arc_set_knob_by_direct_addr(gt_obj_st * obj, gt_addr_t addr);
+
 #endif
 
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
@@ -125,6 +150,14 @@ void gt_arc_set_act_by_custom_size_addr(gt_obj_st * obj, gt_direct_addr_custom_s
  * @param dac
  */
 void gt_arc_set_bg_by_custom_size_addr(gt_obj_st * obj, gt_direct_addr_custom_size_st * dac);
+
+/**
+ * @brief Set the arc pointer knob img by direct address and custom size
+ *
+ * @param obj
+ * @param dac
+ */
+void gt_arc_set_knob_by_custom_size_addr(gt_obj_st * obj, gt_direct_addr_custom_size_st * dac);
 #endif
 
 //

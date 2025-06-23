@@ -400,6 +400,48 @@ void gt_arc_set_bg_img(gt_obj_st * obj, char * src)
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+void gt_arc_set_knob_img(gt_obj_st * obj, char * src)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    if (NULL == src) {
+        return ;
+    }
+    _gt_arc_st * style = (_gt_arc_st *)obj;
+    if (NULL != style->knob_img.src && !strcmp(src, style->knob_img.src)) {
+        return ;
+    }
+
+    uint16_t len = src == NULL ? 0 : strlen(src);
+    style->knob_img.src = style->knob_img.src ? gt_mem_realloc(style->knob_img.src, len + 1) : gt_mem_malloc(len + 1);
+    if (NULL == style->knob_img.src) {
+        return ;
+    }
+    gt_memcpy(style->knob_img.src, src, len);
+    style->knob_img.src[len] = '\0';
+
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->knob_img.fh);
+#endif
+
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->knob_img.addr);
+#endif
+
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&style->knob_img.custom_addr);
+#endif
+
+    uint16_t w = 0, h = 0;
+    if(GT_FS_RES_OK == gt_fs_read_img_wh(style->knob_img.src, &w, &h)){
+        if(w != 0 && h != 0){
+            gt_arc_set_knob_width(obj, GT_MAX(w, h));
+        }
+    }
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 void gt_arc_set_act_img(gt_obj_st * obj, char * src)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
@@ -520,6 +562,13 @@ void gt_arc_set_knob_by_file_header(gt_obj_st * obj, gt_file_header_param_st * f
     gt_hal_custom_size_addr_init(&style->knob_img.custom_addr);
 #endif
 
+    uint16_t w = 0, h = 0;
+    if(GT_FS_RES_OK == gt_fs_fh_read_img_wh(&style->knob_img.fh, &w, &h)){
+        if(w != 0 && h != 0){
+            gt_arc_set_knob_width(obj, GT_MAX(w, h));
+        }
+    }
+
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -603,6 +652,13 @@ void gt_arc_set_knob_by_direct_addr(gt_obj_st * obj, gt_addr_t addr)
     gt_hal_custom_size_addr_init(&style->knob_img.custom_addr);
 #endif
 
+    uint16_t w = 0, h = 0;
+    if(GT_FS_RES_OK == gt_fs_direct_addr_read_img_wh(style->knob_img.addr, &w, &h)){
+        if(w != 0 && h != 0){
+            gt_arc_set_knob_width(obj, GT_MAX(w, h));
+        }
+    }
+
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 #endif
@@ -683,6 +739,12 @@ void gt_arc_set_knob_by_custom_size_addr(gt_obj_st * obj, gt_direct_addr_custom_
 #if GT_USE_DIRECT_ADDR
     gt_hal_direct_addr_init(&style->knob_img.addr);
 #endif
+
+    uint16_t w = style->knob_img.custom_addr.w;
+    uint16_t h = style->knob_img.custom_addr.h;
+    if(w != 0 && h != 0){
+        gt_arc_set_knob_width(obj, GT_MAX(w, h));
+    }
 
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
