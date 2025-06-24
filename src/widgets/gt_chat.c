@@ -208,8 +208,6 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
     gt_size_t x, y;
     gt_radius_t radius = style->msg_radius;
 
-    // w = 8 + (is_send ? style->send_border_w << 1 : style->recv_border_w << 1);
-    w = (is_send ? style->send_border_w << 1 : style->recv_border_w << 1);
     gt_font_split_line_st sp_line = {
         .text = NULL,
         .max_w = _MSG_MAX_W(chat->area.w) - w,
@@ -222,8 +220,7 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
     h = s_line_ret.line_numb;
     w = s_line_ret.max_w;
 
-    w += style->font_info.size;
-    w = w > _MSG_MAX_W(chat->area.w)  ? _MSG_MAX_W(chat->area.w) + 4 : w;
+    w += 4 + (is_send ? style->send_border_w << 1 : style->recv_border_w << 1);
     if (s_line_ret.line_numb > 1) {
         style->item_cb.set_font_align_cb(style->msg_list[idx].msg_obj, GT_ALIGN_LEFT_MID);
         style->item_cb.set_indent_cb(style->msg_list[idx].msg_obj, _MULTI_LINE_CONTENT_INDENT_DEFAULT);

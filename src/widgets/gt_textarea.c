@@ -1135,6 +1135,7 @@ gt_split_line_ret_st gt_textarea_get_font_split_line_numb(gt_obj_st* obj, gt_fon
         sp_line_tmp.space = style->space_x;
     }
     gt_split_line_ret_st s_line_tmp_ret = {0};
+    s_line_tmp_ret.disp_w = sp_line_tmp.start_w;
 
     while (idx < style->cnt_contents) {
 
@@ -1147,28 +1148,27 @@ gt_split_line_ret_st gt_textarea_get_font_split_line_numb(gt_obj_st* obj, gt_fon
         }
 
         s_line_tmp_ret = gt_font_split_line_numb(&style->font_info, &sp_line_tmp);
+        sp_line_tmp.start_w = s_line_tmp_ret.disp_w;
 
-        max_w += s_line_tmp_ret.max_w;
-        if(0 == idx && s_line_tmp_ret.line_numb > 1) {
-            s_line_ret.line_numb = s_line_tmp_ret.line_numb - 1;
-            s_line_ret.max_w = GT_MIN(max_w, sp_line_tmp.max_w);
-            max_w = 0;
+        if(s_line_tmp_ret.line_numb > 1) {
+            s_line_ret.line_numb += s_line_tmp_ret.line_numb - 1;
+            s_line_ret.max_w = GT_MIN(s_line_tmp_ret.max_w, sp_line_tmp.max_w);
         }
-        if(max_w >= sp_line_tmp.max_w) {
-            s_line_ret.line_numb += s_line_tmp_ret.line_numb > 1 ? s_line_tmp_ret.line_numb - 1 : 1;
-            s_line_ret.max_w = GT_MIN(max_w, sp_line_tmp.max_w);
-            max_w = 0;
+        else if(s_line_tmp_ret.disp_w < style->font_info.size && idx != style->cnt_contents -1){
+            s_line_ret.line_numb += 1;
+            s_line_ret.max_w = GT_MIN(s_line_tmp_ret.max_w, sp_line_tmp.max_w);
+            sp_line_tmp.start_w = sp_line_tmp.max_w;
         }
         else if(0x0A == sp_line_tmp.text[sp_line_tmp.len-1]) {
             s_line_ret.line_numb += (idx == style->cnt_contents-1) ? s_line_tmp_ret.line_numb - 1 : s_line_tmp_ret.line_numb;
-            s_line_ret.max_w = GT_MIN(max_w, sp_line_tmp.max_w);
-            max_w = 0;
+            s_line_ret.max_w = GT_MIN(s_line_tmp_ret.max_w, sp_line_tmp.max_w);
+            sp_line_tmp.start_w = sp_line_tmp.max_w;
         }
 
         ++idx;
     }
 
-    s_line_ret.max_w = GT_MAX(s_line_ret.max_w, max_w);
+    s_line_ret.max_w = GT_MAX(s_line_ret.max_w, s_line_tmp_ret.max_w);
     s_line_ret.line_numb += 1;
 
     return s_line_ret;

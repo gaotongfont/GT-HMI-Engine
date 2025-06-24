@@ -1291,6 +1291,13 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
             goto _ret_handler;
         }
         else if(idx_step == 0 && coords->w != disp_w){
+            if(ret_w == 0 ) {
+                if(coords->w >= tmp_font.info.size) {
+                    goto _disp_font;
+                }
+
+                return ret;
+            }
             ++idx_len;
             ++idx;
             goto _disp_font;
