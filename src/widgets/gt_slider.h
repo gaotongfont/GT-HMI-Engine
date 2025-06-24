@@ -116,6 +116,14 @@ void gt_slider_set_color_act(gt_obj_st * slider, gt_color_t color);
  */
 void gt_slider_set_color_ina(gt_obj_st * slider, gt_color_t color);
 
+/**
+ * @brief Set the tag color of the slider
+ *
+ * @param slider
+ * @param color
+ */
+void gt_slider_set_color_tag(gt_obj_st * slider, gt_color_t color);
+
 void gt_slider_set_dir(gt_obj_st * slider, gt_bar_dir_et dir);
 gt_bar_dir_et gt_slider_get_dir(gt_obj_st * slider);
 

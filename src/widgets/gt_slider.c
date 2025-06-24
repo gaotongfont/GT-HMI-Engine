@@ -49,6 +49,8 @@ typedef struct _gt_slider_s {
     gt_color_t color_act;   /** The active color of the slider */
     gt_color_t color_ina;   /** The inactive color of the slider */
 
+    gt_color_t color_tag;   /** The tag color of the slider */
+
     gt_size_t start;    /** The starting value of the range */
     gt_size_t end;      /** The end value of the range */
     gt_size_t pos;      /** The current value of the range */
@@ -515,7 +517,7 @@ _init_cb(gt_obj_st * obj) {
         }
         goto draw_focus;
     } else {
-        rect_attr.bg_color = style->repeat_mode ? style->repeat_info.color : style->color_act;
+        rect_attr.bg_color = style->repeat_mode ? style->repeat_info.color : style->color_tag;
     }
 
 #if !GT_USE_SERIAL
@@ -634,6 +636,7 @@ gt_obj_st * gt_slider_create(gt_obj_st * parent)
     _gt_slider_st * style = (_gt_slider_st *)obj;
 
     style->color_act = gt_color_hex(0x409eff);
+    style->color_tag = style->color_act;
     style->color_ina = gt_color_hex(0xebeef5);
     style->step = 1;
     style->start = 0;
@@ -738,6 +741,16 @@ void gt_slider_set_color_ina(gt_obj_st * slider, gt_color_t color)
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
     style->color_ina = color;
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_slider_set_color_tag(gt_obj_st * slider, gt_color_t color)
+{
+    if (false == gt_obj_is_type(slider, OBJ_TYPE)) {
+        return;
+    }
+    _gt_slider_st * style = (_gt_slider_st *)slider;
+    style->color_tag = color;
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
