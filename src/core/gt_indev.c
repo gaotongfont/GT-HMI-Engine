@@ -1253,19 +1253,52 @@ gt_res_t _gt_indev_reset_status(void)
 bool _gt_indev_remove_want_delate_target(gt_obj_st * target)
 {
     gt_indev_st * indev = NULL;
-    struct _point * point_p = &indev->data.point;
+    struct _point * point_p = NULL;
+    struct _keypad * keypad_p = NULL;
     uint8_t i, cnt_indev = gt_indev_get_dev_count();
     bool ret = false;
 
     for (i = 0; i < cnt_indev; i++) {
         indev = gt_indev_get_dev_by_idx(i);
-        point_p = &indev->data.point;
-        if (target != point_p->obj_target) {
-            continue;
+        switch (indev->drv->type) {
+            case GT_INDEV_TYPE_POINTER: {
+                point_p = &indev->data.point;
+                if (target == point_p->obj_target) {
+                    point_p->obj_target = NULL;
+                    ret = true;
+                }
+                if (target == point_p->obj_scroll) {
+                    point_p->obj_scroll = NULL;
+                    ret = true;
+                }
+                if (target == point_p->obj_origin) {
+                    point_p->obj_origin = NULL;
+                    ret = true;
+                }
+                if (target == point_p->obj_act) {
+                    point_p->obj_act = NULL;
+                    ret = true;
+                }
+                break;
+            }
+            case GT_INDEV_TYPE_BUTTON: {
+                break;
+            }
+            case GT_INDEV_TYPE_KEYPAD: {
+                keypad_p = &indev->data.keypad;
+                if (target == keypad_p->obj_origin) {
+                    keypad_p->obj_origin = NULL;
+                    ret = true;
+                }
+                if (target == keypad_p->obj_target) {
+                    keypad_p->obj_target = NULL;
+                    ret = true;
+                }
+                break;
+            }
+            default:
+                break;
         }
-        point_p->obj_target = NULL;
-        point_p->obj_scroll = NULL;
-        ret = true;
     }
     return ret;
 }
