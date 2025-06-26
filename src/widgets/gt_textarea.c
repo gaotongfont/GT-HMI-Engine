@@ -1061,10 +1061,14 @@ float gt_textarea_get_scroll_percent(gt_obj_st * textarea)
         return 0.0;
     }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+    int16_t scroll_height = style->max_height - gt_obj_get_h(textarea);
     if (0 == style->max_height) {
         return 0.0;
     }
-    return (float)(100.0 * gt_abs(textarea->process_attr.scroll.y) / style->max_height);
+    if (scroll_height <= 0) {
+        return 100.0;
+    }
+    return (float)(100.0 * gt_abs(textarea->process_attr.scroll.y) / scroll_height);
 }
 
 gt_res_t gt_textarea_display_by_precent(gt_obj_st * textarea, float percent)
@@ -1076,7 +1080,13 @@ gt_res_t gt_textarea_display_by_precent(gt_obj_st * textarea, float percent)
     if (percent < 0.0)          { return GT_RES_FAIL; }
     if (percent > 100.0)        { percent = 100.0; }
     if (0 == style->max_height) { return GT_RES_FAIL; }
-    textarea->process_attr.scroll.y = -(int32_t)(style->max_height * percent / 100.0);
+
+    int16_t scroll_height = style->max_height - gt_obj_get_h(textarea);
+    if (scroll_height <= 0) {
+        textarea->process_attr.scroll.y = 0;
+    } else {
+        textarea->process_attr.scroll.y = -(int32_t)(scroll_height * percent / 100.0);
+    }
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
     return GT_RES_OK;
 }
