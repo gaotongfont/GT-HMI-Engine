@@ -30,6 +30,11 @@
 #include "../font/gt_symbol.h"
 #include "gt_img_decoder.h"
 #include "gt_mask.h"
+
+#if GT_USE_LIB_TEX_PRINTF
+#include "../extra/libtexprintf/gt_tex.h"
+#endif
+
 /* private define -------------------------------------------------------*/
 
 #define RADIUS_MAX  16
@@ -1183,15 +1188,28 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
     uint8_t lan = right_to_left_lan_get(&tmp_font);
 #endif
 
+    uint16_t txt_len = dsc->font->len;
+    // lib tex printf
+#if GT_USE_LIB_TEX_PRINTF
+    char* latex_txt = NULL;
+    if(dsc->reg.use_latex) {
+        latex_txt = gt_tex_string_by_len(txt, txt_len);
+        if(latex_txt) {
+            txt = (uint8_t*)latex_txt;
+            txt_len = strlen(latex_txt);
+        }
+    }
+#endif
+
 #if _GT_FONT_ENABLE_CONVERTOR
     uint8_t * ret_txt = NULL;
     if (lan == FONT_LAN_HEBREW || lan == FONT_LAN_ARABIC) {
-        ret_txt = gt_mem_malloc(dsc->font->len+1);
+        ret_txt = gt_mem_malloc(txt_len+1);
         if (NULL == ret_txt) {
-            GT_LOGE(GT_LOG_TAG_GUI, "ret_txt malloc is failed!!! size = %d", dsc->font->len+1);
+            GT_LOGE(GT_LOG_TAG_GUI, "ret_txt malloc is failed!!! size = %d", txt_len+1);
             goto _txt_handler;
         }
-        gt_memset_0(ret_txt, dsc->font->len+1);
+        gt_memset_0(ret_txt, txt_len+1);
         if (gt_right_to_left_handler(&tmp_font, ret_txt, lan)) {
             txt = ret_txt;
         }
@@ -1215,7 +1233,7 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
 
     gt_size_t disp_w = coords->w;
     uint32_t uni_or_gbk = 0, ret_w = 0;
-    uint16_t idx = 0, idx_2 = 0, idx_len = 0, txt_len = dsc->font->len;
+    uint16_t idx = 0, idx_2 = 0, idx_len = 0;
     uint8_t over_length = 0;
     int32_t idx_step = 0;
 
@@ -1296,7 +1314,8 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
                     goto _disp_font;
                 }
 
-                return ret;
+                goto _ret_handler;
+
             }
             ++idx_len;
             ++idx;
@@ -1608,6 +1627,14 @@ _txt_handler:
         gt_mem_free(mask_line);
     }
     mask_line = NULL;
+
+#if GT_USE_LIB_TEX_PRINTF
+    if(latex_txt) {
+        gt_tex_string_free(latex_txt);
+        latex_txt = NULL;
+    }
+#endif
+
 _mask_handler:
     if (
 #if GT_USE_EXTRA_FULL_FONT_BUFFER
@@ -1617,6 +1644,7 @@ _mask_handler:
         gt_mem_free(tmp_font.res);
     }
     tmp_font.res = NULL;
+
 _res_handler:
     ret.abs_pos.x = area_font.x;
     ret.abs_pos.y = area_font.y;

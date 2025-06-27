@@ -778,5 +778,28 @@ gt_point_st gt_label_calc_display_limit_size_once(gt_obj_st * label)
     return ret_limit_size;
 }
 
+#if GT_USE_LIB_TEX_PRINTF
+void gt_label_set_use_latex(gt_obj_st * label, bool use_latex)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    style->text_style.use_latex = use_latex;
+
+    gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+bool gt_label_is_use_latex(gt_obj_st * label)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return false;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+
+    return style->text_style.use_latex ? true : false;
+}
+#endif
+
 #endif  /** GT_CFG_ENABLE_LABEL */
 /* end ------------------------------------------------------------------*/

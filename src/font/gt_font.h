@@ -155,6 +155,12 @@ typedef struct _gt_text_style_s {
 
     ///< 0[default]: normal draw font and display; 1: Only calculate font display info except draw font.
     uint8_t only_calc_display_info : 1;
+
+#if GT_USE_LIB_TEX_PRINTF
+    ///< 0[default]: not use LaTeX text, 1: use LaTeX text
+    uint8_t use_latex       : 1;
+#endif
+
 }_gt_text_style_st;
 
 /**
@@ -228,6 +234,7 @@ typedef enum _gt_font_lan_e {
     FONT_LAN_NUMBER,
     FONT_LAN_EMOTICON,
     FONT_LAN_EMOJI,
+    FONT_LAN_MATH,
     //
     FONT_LAN_MAX_COUNT,
     //

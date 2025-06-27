@@ -172,6 +172,21 @@ void gt_label_add_text(gt_obj_st * label, const char * fmt, ...);
  */
 gt_point_st gt_label_calc_display_limit_size_once(gt_obj_st * label);
 
+
+
+#if GT_USE_LIB_TEX_PRINTF
+/**
+ * @brief Set label use latex format or not.
+ *
+ * @param label
+ * @param use_latex true: use latex format, false: use normal format
+ */
+void gt_label_set_use_latex(gt_obj_st * label, bool use_latex);
+bool gt_label_is_use_latex(gt_obj_st * label);
+#endif  /** GT_USE_LIB_TEX_PRINTF */
+
+
+//
 #endif  /** GT_CFG_ENABLE_LABEL */
 
 #ifdef __cplusplus
