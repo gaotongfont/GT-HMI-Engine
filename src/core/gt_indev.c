@@ -156,6 +156,9 @@ _scr_has_home_gesture_events(gt_obj_st * target, gt_event_type_et event) {
 static GT_ATTRIBUTE_RAM_TEXT bool
 _is_indev_home_gesture(gt_indev_st * indev, gt_obj_st * target, gt_event_type_et * event) {
     struct _point * point_p = &indev->data.point;
+    if ((gt_tick_get() - indev->timestamp_start) > GT_CFG_DEFAULT_POINT_HOME_GESTURE_TIME) {
+        return false;
+    }
     point_p->gesture = _get_scroll_dir(indev);
 
     if ((uint16_t)GT_DIR_NONE == point_p->gesture) {
@@ -192,7 +195,8 @@ _is_indev_home_gesture(gt_indev_st * indev, gt_obj_st * target, gt_event_type_et
     return _scr_has_home_gesture_events(target, tmp_e);
 }
 
-static GT_ATTRIBUTE_RAM_TEXT bool _indev_send_home_gesture_event(gt_indev_st * indev) {
+static GT_ATTRIBUTE_RAM_TEXT bool
+_indev_send_home_gesture_event(gt_indev_st * indev) {
     if ((gt_tick_get() - indev->timestamp_start) > GT_CFG_DEFAULT_POINT_HOME_GESTURE_TIME) {
         return false;
     }
@@ -481,10 +485,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_ready_cb(struct gt_anim_s 
 
 static GT_ATTRIBUTE_RAM_TEXT inline void
 _indev_scroll_throw_handler_anim_start(gt_indev_st * indev) {
-    if (_indev_send_home_gesture_event(indev)) {
-        _indev_scroll_throw_reset(indev);
-        return ;
-    }
     gt_anim_st anim;
     gt_anim_init(&anim);
     gt_anim_set_target(&anim, indev);
@@ -526,6 +526,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_handler(gt_indev_st * indev) {
             gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_PRESS_LOST, NULL);
         }
         return ;
+    } else if (point_p->is_home_gesture) {
+        point_p->is_home_gesture = false;
     }
 
     if (GT_SCROLL_DISABLE == point_p->obj_scroll->scroll_dir) {
@@ -538,7 +540,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_handler(gt_indev_st * indev) {
     _scroll_raw_handler(point_p, point_p->scroll_diff.x, point_p->scroll_diff.y);
 }
 
-static GT_ATTRIBUTE_RAM_TEXT inline void _send_released_event(struct _point * point_p) {
+static inline void GT_ATTRIBUTE_RAM_TEXT
+_send_released_event(struct _point * point_p) {
     gt_event_type_et event_type = GT_EVENT_TYPE_INPUT_RELEASED;
 
     if (point_p->obj_act != point_p->obj_target) {
@@ -572,12 +575,15 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_released_handle(gt_indev_st * indev) {
     if (NULL == point_p->obj_target) {
         goto clr_lb;
     }
+    bool is_home_gesture = point_p->obj_scroll ? _indev_send_home_gesture_event(indev) : false;
 
 #if GT_INDEV_POINT_LOG
     GT_LOG_A(GT_LOG_TAG_TP, "release %p (%d, %d)", point_p->obj_target, point_p->newly.x, point_p->newly.y);
 #endif
 
-    _send_released_event(point_p);
+    if (false == is_home_gesture) {
+        _send_released_event(point_p);
+    }
     point_p->obj_act = NULL;
 
     if (NULL == point_p->obj_scroll) {
@@ -586,7 +592,11 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_released_handle(gt_indev_st * indev) {
 #if GT_INDEV_SCROLL_THROW_SPEED_UP
     _scroll_calc_throw_distance(point_p);
 #endif
-    _indev_scroll_throw_handler_anim_start(indev);
+    if (is_home_gesture) {
+        _indev_scroll_throw_reset(indev);
+    } else {
+        _indev_scroll_throw_handler_anim_start(indev);
+    }
 tar_clr_lb:
     point_p->obj_target = NULL;
 clr_lb:
@@ -710,12 +720,13 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_pressed_handle(gt_indev_st * indev) {
         point_p->scroll_throw.y = 0;
     }
 
+    point_p->obj_act = _search_active_obj_from_all_layers(&point_p->newly, false);
+
 #if GT_INDEV_POINT_LOG
-    GT_LOG_A(GT_LOG_TAG_TP, "press %p (%d, %d) diff: (%d, %d)", point_p->obj_target, point_p->newly.x, point_p->newly.y,
+    GT_LOG_A(GT_LOG_TAG_TP, "press %p %p (%d, %d) diff: (%d, %d)", point_p->obj_act, point_p->obj_target,
+                point_p->newly.x, point_p->newly.y,
                 point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
 #endif
-
-    point_p->obj_act = _search_active_obj_from_all_layers(&point_p->newly, false);
 
     if (point_p->obj_act == point_p->obj_target) {
         /** Hold for a long time to trigger multiple times */
