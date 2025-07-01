@@ -599,7 +599,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_released_handle(gt_indev_st * indev) {
 #endif
     if (is_home_gesture) {
         _indev_scroll_throw_reset(indev);
-    } else if (_is_indev_home_gesture_check_timeout(indev)) {
+    } else {
         _indev_scroll_throw_handler_anim_start(indev);
     }
 tar_clr_lb:
