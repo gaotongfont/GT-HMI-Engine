@@ -238,7 +238,9 @@ const CombiningMarks  Combining[] = {
 	{PD_COMB_TILDE,     0x00303, 0x007E, 0x007E}, // alt ~
 	{PD_COMB_BREVE,     0x00306, 0x25E1, 0}, // alt unicode lower half circle
 	{PD_COMB_OVERLINE,  0x00305, 0x02581, 0x005F}, // alt
-	{PD_COMB_UNDERLINE, 0x00332, 0x02500, 0x002D}, // alt
+	// {PD_COMB_UNDERLINE, 0x00332, 0x02500, 0x002D}, // alt
+	{PD_COMB_UNDERLINE, 0x00332, 0x00AF, 0x002D}, // alt
+
 	{PD_COMB_UNDERBAR , 0x00332,0x02500,0x002D}, // underline==underbar
 	{PD_COMB_DOT,       0x00307, 0x002E, 0x002E}, // alt
 	{PD_COMB_DIAERESIS, 0x00308, 0, 0},
@@ -985,7 +987,7 @@ const Symbol  Symbols[] = {
 	{"\\blacksquare", 0x02B1B},
 	{"\\square", 0x02B1C},
 	/* mathematical alphanumeric symbols */
-	{"\\partial", 0x1D715},
+	{"\\partial", 0x02202},  // 𝜕∂ 0x1D715 0x02202
 	/* terminate the table */
 	/* modify some emojic characters to full blown emojis , e.g. ☠ → ☠️ (\skull  \rightarrow  \emojify \skull)*/
 	/* this is a combining diacritiocal mark but not like a tex accent so it is not a function*/

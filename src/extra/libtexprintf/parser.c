@@ -15,7 +15,7 @@
 
 Style STYLE_UNI={
 	1,
-	0,
+	1, // 0,
 	/* plain brackets */
 	{0x28   ,0x0239D,0x0239C,0x0239B}, // single, lower, extender, upper
 	{0x29   ,0x023A0,0x0239F,0x0239E},
@@ -1127,6 +1127,8 @@ void AddBoxBelowAbove(box *b, unsigned int u, boxalign A, int above, int rep, in
 		n=NumByte(ustr);
 
 		ustr=_TEX_REALLOC(ustr, (n*w+1)*sizeof(char));
+		ustr[n*w]='\0'; // make sure it is null terminated
+
 		for (i=1;i<w;i++)
 		{
 			for (j=0;j<n;j++)
