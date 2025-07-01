@@ -153,10 +153,15 @@ _scr_has_home_gesture_events(gt_obj_st * target, gt_event_type_et event) {
     return gt_event_has_event_cb(tar_scr, event);
 }
 
+static inline bool GT_ATTRIBUTE_RAM_TEXT
+_is_indev_home_gesture_check_timeout(gt_indev_st * indev) {
+    return gt_tick_get() > (indev->timestamp_start + GT_CFG_DEFAULT_POINT_HOME_GESTURE_TIME);
+}
+
 static GT_ATTRIBUTE_RAM_TEXT bool
 _is_indev_home_gesture(gt_indev_st * indev, gt_obj_st * target, gt_event_type_et * event) {
     struct _point * point_p = &indev->data.point;
-    if ((gt_tick_get() - indev->timestamp_start) > GT_CFG_DEFAULT_POINT_HOME_GESTURE_TIME) {
+    if (_is_indev_home_gesture_check_timeout(indev)) {
         return false;
     }
     point_p->gesture = _get_scroll_dir(indev);
@@ -197,7 +202,7 @@ _is_indev_home_gesture(gt_indev_st * indev, gt_obj_st * target, gt_event_type_et
 
 static GT_ATTRIBUTE_RAM_TEXT bool
 _indev_send_home_gesture_event(gt_indev_st * indev) {
-    if ((gt_tick_get() - indev->timestamp_start) > GT_CFG_DEFAULT_POINT_HOME_GESTURE_TIME) {
+    if (_is_indev_home_gesture_check_timeout(indev)) {
         return false;
     }
 
@@ -594,7 +599,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_released_handle(gt_indev_st * indev) {
 #endif
     if (is_home_gesture) {
         _indev_scroll_throw_reset(indev);
-    } else {
+    } else if (_is_indev_home_gesture_check_timeout(indev)) {
         _indev_scroll_throw_handler_anim_start(indev);
     }
 tar_clr_lb:
