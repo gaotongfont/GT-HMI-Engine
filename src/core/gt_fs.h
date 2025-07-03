@@ -33,7 +33,12 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
-
+/**
+ * @brief Search the files type from backward
+ *
+ * @param path "f:xxx.img"
+ * @return const char* xxx.img, return "img"
+ */
 const char * gt_fs_get_ext(const char * path);
 
 /**
