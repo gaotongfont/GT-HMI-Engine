@@ -50,7 +50,8 @@ Style STYLE_UNI={
 	 *                     │      ─      ┌      ┬      ┐      ├      ┼      ┤      └      ┴      ┘       */
 	{0x2502,0x2500,0x250C,0x252C,0x2510,0x251C,0x253C,0x2524,0x2514,0x2534,0x2518},
 	/* integrals and sqrt */
-	{0x02572,0x02502,0x0250C,0x02500,0x02510}, // downward diagonal, vertical, left top corner, horizontal, right top corner
+	// {0x02572,0x02502,0x0250C,0x02500,0x02510}, // downward diagonal, vertical, left top corner, horizontal, right top corner
+	{0x02572,0x02502,0x0250C,0x02500,0x02500,0x0221A}, // downward diagonal, vertical, left top corner, horizontal, right top corner
 	{0x02321,0x023AE,0x02320}, // bottom, extender, top
 	{0x0222B,0x0222C,0x0222D,0x022EF}, // single, double, tripple, dots
 	{0x02E26,0x02E27}, // quasi-circle
@@ -1289,41 +1290,48 @@ void MakeSqrt(TOKEN *T, box *b, int Font)
 
 	/* we will add many unit boxes to the posbox to draw the radical sign, allocate the offset coordinate array of the posbox */
 
-	sqrt->content=_TEX_REALLOC(sqrt->content, (2*(h+(h/2+1)+3+w)+sqrt->Nc)*sizeof(int));
+	uint16_t d_line = 1; // h/2+1;
+	// sqrt->content=_TEX_REALLOC(sqrt->content, (2*(h+(h/2+1)+3+w)+sqrt->Nc)*sizeof(int));
+	sqrt->content=_TEX_REALLOC(sqrt->content, (2*(h+(d_line)+3+w)+sqrt->Nc)*sizeof(int));
+
 	xy=(int *)sqrt->content;
 	if (ioff)
 	{
 		xy[0]=0;
-		xy[1]=h/2+1;
+		xy[1]=d_line;
 	}
 
-	xy[2*ioff]=h/2+2+xoff; /* shift main box to make room for the sqrt sign */
+	xy[2*ioff]=d_line+1+xoff; /* shift main box to make room for the sqrt sign */
 	xy[2*ioff+1]=0; /* shift main box to make room for the sqrt sign */
 	for (i=0;i<h;i++)
 	{
-		AddChild(sqrt, B_UNIT, (void *)Unicode2Utf8(style->SQRTCHAR[1])); // upward vertical
-		xy[2*(i+1+ioff)]=h/2+xoff+1;
+		if((0) == i) {
+			AddChild(sqrt, B_UNIT, (void *)Unicode2Utf8(style->SQRTCHAR[5])); // downward diagonal
+		}else{
+			AddChild(sqrt, B_UNIT, (void *)Unicode2Utf8(style->SQRTCHAR[1])); // upward vertical
+		}
+		xy[2*(i+1+ioff)]=d_line+xoff;
 		xy[2*(i+1+ioff)+1]=i;
 	}
-
-	for (i=0;i<h/2+1;i++)
+/*
+	for (i=0;i<d_line;i++)
 	{
 		AddChild(sqrt, B_UNIT, (void *)Unicode2Utf8(style->SQRTCHAR[0])); // downward diagonal
 		xy[2*(i+1+h+ioff)]=i+xoff;
 		xy[2*(i+1+h+ioff)+1]=h/2-i;
 	}
-
+*/
 	AddChild(sqrt, B_UNIT, (void *)Unicode2Utf8(style->SQRTCHAR[2])); // left top corner
-	xy[2*(sqrt->Nc-1)]=h/2+1+xoff;
+	xy[2*(sqrt->Nc-1)]=d_line+xoff;
 	xy[2*(sqrt->Nc-1)+1]=h;
 	for (i=0;i<w;i++) // horizontal
 	{
 		AddChild(sqrt, B_UNIT, (void *)Unicode2Utf8(style->SQRTCHAR[3])); // left top corner
-		xy[2*(sqrt->Nc-1)]=h/2+2+xoff+i;
+		xy[2*(sqrt->Nc-1)]=d_line+1+xoff+i;
 		xy[2*(sqrt->Nc-1)+1]=h;
 	}
 	AddChild(sqrt, B_UNIT, (void *)Unicode2Utf8(style->SQRTCHAR[4])); // right top corner
-	xy[2*(sqrt->Nc-1)]=h/2+2+xoff+w;
+	xy[2*(sqrt->Nc-1)]=d_line+1+xoff+w;
 	xy[2*(sqrt->Nc-1)+1]=h;
 
 	BoxSetState(sqrt, RELPOSKNOWN);

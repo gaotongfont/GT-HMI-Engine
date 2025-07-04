@@ -46,7 +46,7 @@ typedef struct Style {
 	*                     │      ─      ┌      ┬      ┐      ├      ┼      ┤      └      ┴      ┘       */
 	int ARRAYCHAR[11];
 	/* integrals and sqrt */
-	int SQRTCHAR[5]; // downward diagonal, vertical, left top corner, horizontal, right top corner
+	int SQRTCHAR[6]; // downward diagonal, vertical, left top corner, horizontal, right top corner
 	int INTCHAR[3]; // bottom, extender, top
 	int IINTCHAR[4]; // single, double, tripple, dots
 	int OINTCHAR[2]; // quasi-circle
