@@ -30,6 +30,10 @@ typedef struct _gt_fs_dsc_s {
     gt_fs_fp_st * fp;
 }_gt_fs_dsc_st;
 
+typedef struct _gt_fs_ctrl_s {
+    uint8_t enabled : 1;
+}_gt_fs_ctrl_st;
+
 /* static variables -----------------------------------------------------*/
 
 /**
@@ -47,6 +51,9 @@ static GT_ATTRIBUTE_RAM_DATA const _gt_vf_type_label_st _drive_label[] = {
 #endif
 };
 
+static GT_ATTRIBUTE_RAM_DATA _gt_fs_ctrl_st _gt_fs_ctrl = {
+    .enabled = true,
+};
 
 /* macros ---------------------------------------------------------------*/
 
@@ -140,11 +147,23 @@ gt_fs_type_et gt_fs_get_src_type(const void * src)
     return ret;
 }
 
+void gt_fs_set_enabled(bool enabled)
+{
+    _gt_fs_ctrl.enabled = enabled;
+}
+
+bool gt_fs_is_enabled(void)
+{
+    return _gt_fs_ctrl.enabled;
+}
+
 gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode)
 {
     gt_fs_drv_st * drv = _get_default_drv(path);
-
     if (!drv || !drv->open_cb) {
+        return NULL;
+    }
+    if (false == gt_fs_is_enabled()) {
         return NULL;
     }
     return (gt_fs_fp_st * )drv->open_cb(drv, (char *)path, mode);
@@ -153,8 +172,10 @@ gt_fs_fp_st * gt_fs_open(const char * path, gt_fs_mode_et mode)
 gt_fs_fp_st * gt_fs_open_raw(const char * raw_data, uint32_t raw_len, gt_fs_mode_et mode)
 {
     gt_fs_drv_st * drv = gt_src_get_drv();
-
     if (!drv || !drv->open_cb_raw) {
+        return NULL;
+    }
+    if (false == gt_fs_is_enabled()) {
         return NULL;
     }
     return (gt_fs_fp_st * )drv->open_cb_raw(drv, (char *)raw_data, raw_len, mode);
@@ -167,9 +188,10 @@ gt_fs_fp_st * gt_fs_fh_open(gt_file_header_param_st const * const fh_param, gt_f
     if (!drv || !drv->fh_open_cb) {
         return NULL;
     }
-    gt_fs_fp_st * fp = drv->fh_open_cb(drv, fh_param, mode);
-
-    return fp;
+    if (false == gt_fs_is_enabled()) {
+        return NULL;
+    }
+    return drv->fh_open_cb(drv, fh_param, mode);
 }
 #endif
 
@@ -180,8 +202,10 @@ gt_fs_fp_st * gt_fs_direct_addr_open(gt_addr_t addr, gt_fs_mode_et mode)
     if (!drv || !drv->direct_addr_open_cb) {
         return NULL;
     }
-    gt_fs_fp_st * fp = drv->direct_addr_open_cb(drv, addr, mode);
-    return fp;
+    if (false == gt_fs_is_enabled()) {
+        return NULL;
+    }
+    return drv->direct_addr_open_cb(drv, addr, mode);
 }
 #endif
 
@@ -193,7 +217,10 @@ gt_fs_fp_st * gt_fs_custom_size_addr_open(gt_direct_addr_custom_size_st * dac, g
     if (!drv || !drv->custom_size_addr_open_cb) {
         return NULL;
     }
-    gt_fs_fp_st * fp = drv->custom_size_addr_open_cb(drv, dac, mode);
+    if (false == gt_fs_is_enabled()) {
+        return NULL;
+    }
+    return drv->custom_size_addr_open_cb(drv, dac, mode);
 }
 #endif
 
@@ -339,6 +366,9 @@ uint32_t gt_fs_write_direct_physical(gt_addr_t addr, uint32_t len, uint8_t * dat
     if (!drv) {
         return 0;
     }
+    if (false == gt_fs_is_enabled()) {
+        return 0;
+    }
     uint8_t data_write[5] = {0x02, (uint8_t)(addr>>16), (uint8_t)(addr>>8), (uint8_t)addr, 0x00 };
     uint32_t len_write = 4;
 
@@ -357,6 +387,9 @@ uint32_t gt_fs_read_direct_physical(gt_addr_t addr, uint32_t len, uint8_t * data
 {
     gt_fs_drv_st * drv = gt_vf_get_drv();
     if (!drv) {
+        return 0;
+    }
+    if (false == gt_fs_is_enabled()) {
         return 0;
     }
     uint8_t data_write[5] = {GT_HAL_FLASH_READ_CMD, (uint8_t)(addr>>16), (uint8_t)(addr>>8), (uint8_t)addr };

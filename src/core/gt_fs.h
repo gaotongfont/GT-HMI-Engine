@@ -50,6 +50,16 @@ const char * gt_fs_get_ext(const char * path);
 gt_fs_type_et gt_fs_get_src_type(const void * src);
 
 /**
+ * @brief Enable or disable the file system called.
+ *      [WARN] Dangerous behavior!
+ *
+ * @param enabled [default: 1]
+ */
+void gt_fs_set_enabled(bool enabled);
+
+bool gt_fs_is_enabled(void);
+
+/**
  * @brief Try to identify the file and driver and open the file
  *
  * @param path The full path of file, see port file lists
