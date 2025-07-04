@@ -64,6 +64,7 @@ typedef enum {
     GT_OBJ_PROP_TYPE_INSIDE,
     GT_OBJ_PROP_TYPE_OPA,
     GT_OBJ_PROP_TYPE_UNTOUCHABILITY,
+    GT_OBJ_PROP_TYPE_BUBBLE_NOTIFY,
 }gt_obj_prop_type_em;
 
 /* macros ---------------------------------------------------------------*/

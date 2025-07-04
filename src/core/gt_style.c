@@ -643,6 +643,10 @@ void gt_obj_child_set_prop(gt_obj_st * obj, gt_obj_prop_type_em type, uint8_t va
                 gt_obj_set_untouchability(child, val);
                 break;
             }
+            case GT_OBJ_PROP_TYPE_BUBBLE_NOTIFY: {
+                gt_obj_set_bubble_notify(child, val);
+                break;
+            }
             default:
                 break;
         }
