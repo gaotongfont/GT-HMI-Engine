@@ -52,6 +52,9 @@ void gt_refr_timer(void)
     uint16_t align_val = 0;
 #endif
     GT_CHECK_BACK(disp);
+    if (false == gt_refr_is_enabled(disp)) {
+        return;
+    }
     if (_gt_disp_refr_check(disp)) {
 #if GT_USE_DISPLAY_PREF_MSG
         uint32_t start = gt_tick_get();
@@ -98,5 +101,18 @@ void gt_refr_force_flush(void)
     gt_disp_ref_area(&disp->area_act);
 }
 
+void gt_refr_set_enabled(bool enabled)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    disp->enabled = enabled;
+}
+
+bool gt_refr_is_enabled(gt_disp_st * disp)
+{
+    if (NULL == disp) {
+        disp = gt_disp_get_default();
+    }
+    return disp->enabled;
+}
 
 /* end ------------------------------------------------------------------*/

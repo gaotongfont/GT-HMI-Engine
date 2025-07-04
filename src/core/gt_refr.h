@@ -70,6 +70,22 @@ void gt_refr_timer(void);
  */
 void gt_refr_force_flush(void);
 
+/**
+ * @brief Set refresh enabled or not
+ *      [WARN] Dangerous behavior!
+ *
+ * @param enabled [default: 1]
+ */
+void gt_refr_set_enabled(bool enabled);
+
+/**
+ * @brief ignore the refresh area check and redraw
+ *
+ * @param disp NULL: Using default
+ * @return true [default]
+ * @return false
+ */
+bool gt_refr_is_enabled(gt_disp_st * disp);
 
 
 #ifdef __cplusplus

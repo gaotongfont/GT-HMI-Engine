@@ -16,6 +16,7 @@
 #include "gt_disp.h"
 #include "../extra/draw/gt_draw_blend.h"
 #include "./gt_draw.h"
+#include "./gt_refr.h"
 #include "./gt_obj_pos.h"
 #include "../others/gt_area.h"
 #include "../others/gt_anim.h"
@@ -920,7 +921,9 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
     gt_obj_st * scr_old = gt_disp_get_scr();
     gt_scr_id_t home_id = gt_scr_stack_get_home_scr_id();
     GT_CHECK_BACK_VAL(disp, -1);
-
+    if (false == gt_refr_is_enabled(disp)) {
+        return -1;
+    }
     if (step <= 0) {
         target = gt_scr_stack_peek();
         return target ? target->current_scr_id : -1;
@@ -1045,6 +1048,9 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
     };
     gt_scr_stack_item_st * new_item_p = &ret.new_item;
     GT_CHECK_BACK_VAL(param, ret);
+    if (false == gt_refr_is_enabled(NULL)) {
+        return ret;
+    }
     ret.scr_old = gt_disp_get_scr();
     ret.del_prev_scr = param->del_prev_scr;
 
@@ -1166,8 +1172,10 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
 {
     gt_disp_st * disp = gt_disp_get_default();
     gt_obj_st * scr_old = gt_disp_get_scr();
-
     if (!disp) {
+        return;
+    }
+    if (false == gt_refr_is_enabled(disp)) {
         return;
     }
 #if !GT_USE_SCREEN_ANIM
@@ -1405,6 +1413,9 @@ void gt_disp_ref_area(const gt_area_st * coords)
         },
         .line = GT_REFRESH_FLUSH_LINE_PRE_TIME,
     };
+    if (false == gt_refr_is_enabled(param.disp)) {
+        return;
+    }
 
     GT_CHECK_BACK(param.disp->scr_act);
     if ( _gt_disp_get_state(param.disp) == GT_BUSY ) {
@@ -1485,6 +1496,9 @@ void gt_disp_scroll_area_act(gt_size_t dist_x, gt_size_t dist_y)
 
 void gt_disp_invalid_area(gt_obj_st * obj)
 {
+    if (false == gt_refr_is_enabled(NULL)) {
+        return;
+    }
 #if GT_USE_WIDGET_LAYOUT
     gt_layout_update_core(obj);          // TODO pref handler, unstable
 #endif

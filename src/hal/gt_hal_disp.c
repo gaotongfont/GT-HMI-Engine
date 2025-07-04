@@ -67,29 +67,29 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_disp_task_handler(struct _gt_timer_s * tim
 }
 
 static GT_ATTRIBUTE_RAM_TEXT gt_disp_st * _gt_disp_create(gt_disp_drv_st * drv) {
-    gt_disp_st * ret = gt_mem_malloc(sizeof(gt_disp_st));
-    if (NULL == ret) {
+    gt_disp_st * disp_p = gt_mem_malloc(sizeof(gt_disp_st));
+    if (NULL == disp_p) {
         GT_LOGE(GT_LOG_TAG_GUI, "disp create failed");
         return NULL;
     }
-    gt_memset(ret, 0, sizeof(gt_disp_st));
+    gt_memset(disp_p, 0, sizeof(gt_disp_st));
+    disp_p->vbd_color = gt_disp_graph_get_buf_default();
+    disp_p->drv = drv;
+    disp_p->enabled = true;
 
-    ret->vbd_color = gt_disp_graph_get_buf_default();
-    ret->drv = drv;
-
-    _gt_gc_set_disp(ret);
+    _gt_gc_set_disp(disp_p);
 
 #if GT_USE_LAYER_TOP
-    ret->layer_top = gt_obj_class_create(MY_CLASS, NULL);
-    if (NULL == ret->layer_top) {
+    disp_p->layer_top = gt_obj_class_create(MY_CLASS, NULL);
+    if (NULL == disp_p->layer_top) {
         GT_LOGE(GT_LOG_TAG_GUI, "Layer top create failed");
-        return ret;
+        return disp_p;
     }
-    gt_screen_set_bgcolor(ret->layer_top, gt_color_hex(0x000000));
-    gt_obj_set_virtual(ret->layer_top, true);
+    gt_screen_set_bgcolor(disp_p->layer_top, gt_color_hex(0x000000));
+    gt_obj_set_virtual(disp_p->layer_top, true);
 #endif
 
-    return ret;
+    return disp_p;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _calc_max_area_recursive(gt_obj_st * obj, bool is_root) {

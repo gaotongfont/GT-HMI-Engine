@@ -101,7 +101,8 @@ typedef struct _gt_disp_s {
     _gt_refr_st refr;
 
     uint8_t scr_anim_type : 4;          // @ref gt_scr_anim_type_et
-    uint8_t reserved      : 4;
+    uint8_t enabled       : 1;
+    uint8_t reserved      : 3;
 }gt_disp_st;
 
 
