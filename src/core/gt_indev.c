@@ -757,7 +757,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_pressed_handle(gt_indev_st * indev) {
     }
     _scroll_calc_throw_distance(point_p);
 
-    GT_CHECK_BACK(point_p->obj_target);
+    if (NULL == point_p->obj_target) { return ; }
     _indev_scroll_handler(indev);
 }
 
