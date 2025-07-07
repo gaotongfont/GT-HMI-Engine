@@ -208,6 +208,7 @@ static void _def_26_key_push_btn_kv_handler( gt_obj_st * obj,  gt_obj_st * input
     gt_keypad_type_te tmp_keypad_type;
     gt_size_t idx = -1;
     uint16_t type = gt_btnmap_get_map_type(obj);
+    gt_obj_st* keypad_obj = obj->parent;
 
     if (0 == strcmp(kv, GT_SYMBOL_SPACE)) {
         gt_input_append_value(input, " ");
@@ -223,42 +224,21 @@ static void _def_26_key_push_btn_kv_handler( gt_obj_st * obj,  gt_obj_st * input
         gt_input_append_value(input, "\n");
     }
     else if (0 == strcmp(kv, GT_SYMBOL_UPPER_CASE) || 0 == strcmp(kv, GT_SYMBOL_EN)) {
-
-        idx = _gt_get_map_index((gt_keypad_map_st*)_list_default_26_key, sizeof(_list_default_26_key)/sizeof(gt_keypad_map_st), GT_KEYPAD_TYPE_LOWER);
-        if(idx < 0){
-            GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d, type = %d", GT_KEYPAD_STYLE_26_KEY, GT_KEYPAD_TYPE_LOWER);
-            return ;
-        }
-        gt_btnmap_set_map( obj, (gt_map_st*)_list_default_26_key[idx].map, GT_KEYPAD_TYPE_LOWER);
+        gt_keypad_set_type(keypad_obj, GT_KEYPAD_TYPE_LOWER);
     }
     else if (0 == strcmp(kv, GT_SYMBOL_LOWER_CASE)) {
-        idx = _gt_get_map_index((gt_keypad_map_st*)_list_default_26_key, sizeof(_list_default_26_key)/sizeof(gt_keypad_map_st), GT_KEYPAD_TYPE_UPPER);
-        if(idx < 0){
-            GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d, type = %d", GT_KEYPAD_STYLE_26_KEY, GT_KEYPAD_TYPE_UPPER);
-            return ;
-        }
-        gt_btnmap_set_map( obj, (gt_map_st*)_list_default_26_key[idx].map, GT_KEYPAD_TYPE_UPPER);
+        gt_keypad_set_type(keypad_obj, GT_KEYPAD_TYPE_UPPER);
     }
     else if (0 == strcmp(kv, GT_SYMBOL_WELL_NUMBER)) {
         tmp_keypad_type = (type != GT_KEYPAD_TYPE_SYMBOL_EN) ? GT_KEYPAD_TYPE_SYMBOL_EN : GT_KEYPAD_TYPE_LOWER;
-        idx = _gt_get_map_index((gt_keypad_map_st*)_list_default_26_key, sizeof(_list_default_26_key)/sizeof(gt_keypad_map_st), tmp_keypad_type);
-        if (idx < 0) {
-            GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d, type = %d", GT_KEYPAD_STYLE_26_KEY, tmp_keypad_type);
-            return ;
-        }
-        gt_btnmap_set_map( obj, (gt_map_st*)_list_default_26_key[idx].map, tmp_keypad_type);
+        gt_keypad_set_type(keypad_obj, tmp_keypad_type);
     }
     else if (0 == strcmp(kv, GT_SYMBOL_CH)) {
         if (!py_input_mt) {
             GT_LOGW(GT_LOG_TAG_GUI, "Keyboard does not create pinyin input method!!!");
             return ;
         }
-        idx = _gt_get_map_index((gt_keypad_map_st*)_list_default_26_key, sizeof(_list_default_26_key)/sizeof(gt_keypad_map_st), GT_KEYPAD_TYPE_CH);
-        if (idx < 0) {
-            GT_LOGW(GT_LOG_TAG_GUI, "keypad type is not exist!!! def_style = %d, type = %d", GT_KEYPAD_STYLE_26_KEY, GT_KEYPAD_TYPE_CH);
-            return ;
-        }
-        gt_btnmap_set_map( obj, (gt_map_st*)_list_default_26_key[idx].map, GT_KEYPAD_TYPE_CH);
+        gt_keypad_set_type(keypad_obj, GT_KEYPAD_TYPE_CH);
     }
     else if (0 == strcmp(kv, GT_SYMBOL_LEFT)) {
         gt_input_move_left_pos_cursor(input);
