@@ -476,6 +476,11 @@ extern "C" {
     #define GT_SYMBOL_CALENDAR_WORKDAY_GBK     "\xE1\x10"
 #endif
 
+#if !defined GT_SYMBOL_HISTORY
+    #define GT_SYMBOL_HISTORY                 "\xEE\x84\x91" /*57617, 0xE111*/
+    #define GT_SYMBOL_HISTORY_GBK             "\xE1\x11"
+#endif
+
 #endif // GT_CFG_USE_SYMBOL_ENABLE
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_symbol_s{
