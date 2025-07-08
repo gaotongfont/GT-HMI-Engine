@@ -51,9 +51,6 @@ typedef struct _gt_imgbtn_s {
     gt_point_st prev_size;
 
     _gt_vector_st * imgs;
-
-    uint8_t selected: 1;
-    uint8_t reserved: 7;
 }_gt_imgbtn_st;
 
 
@@ -98,11 +95,16 @@ static GT_ATTRIBUTE_RAM_TEXT char * _gt_imgbtn_get_src(gt_obj_st * obj) {
  */
 static void _imgbtn_init_cb(gt_obj_st * obj) {
     _gt_imgbtn_st * style = (_gt_imgbtn_st * )obj;
-    _item_st * img = style->press.name && style->selected ? &style->press : &style->src;
+    bool is_mask_effect = gt_obj_get_mask_effect(obj);
+    bool is_selected = GT_STATE_PRESSED == gt_obj_get_state(obj);
+    _item_st * img = style->press.name && is_selected ? &style->press : &style->src;
     gt_attr_rect_st dsc = {
         .bg_img_src = img->name,
-        .bg_opa = obj->opa
+        .bg_opa = obj->opa,
     };
+    if (is_mask_effect && is_selected) {
+        dsc.bg_opa = GT_OPA_70;
+    }
 #if GT_USE_FILE_HEADER
     dsc.file_header = gt_file_header_param_check_valid(&img->fh);
 #endif
@@ -197,7 +199,7 @@ static void _imgbtn_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
         case GT_EVENT_TYPE_INPUT_PRESSED:
         case GT_EVENT_TYPE_INPUT_PRESSING:   /* add clicking style and process clicking event */
-            style->selected = 1;
+            gt_obj_set_state(obj, GT_STATE_PRESSED);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
 
@@ -206,7 +208,7 @@ static void _imgbtn_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             break;
 
         case GT_EVENT_TYPE_INPUT_RELEASED: /* click event finish */
-            style->selected = 0;
+            gt_obj_set_state(obj, GT_STATE_NONE);
             if (!_turn_next_image(obj)) {
                 _gt_imgbtn_set_src(obj, (_item_st * )_gt_vector_get_item(style->imgs, 0));
             }
@@ -214,7 +216,7 @@ static void _imgbtn_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             break;
 
         case GT_EVENT_TYPE_INPUT_PRESS_LOST: {
-            style->selected = 0;
+            gt_obj_set_state(obj, GT_STATE_NONE);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             break;
         }
@@ -274,7 +276,7 @@ gt_obj_st * gt_imgbtn_create(gt_obj_st * parent)
         return obj;
     }
     _gt_imgbtn_st * style = (_gt_imgbtn_st * )obj;
-	style->selected = 0;
+    gt_obj_set_state(obj, GT_STATE_NONE);
     style->src.name = NULL;
 
 #if GT_USE_DIRECT_ADDR
@@ -301,7 +303,7 @@ void gt_imgbtn_style_set_selected(gt_obj_st * imgbtn, uint8_t selected)
         return ;
     }
     _gt_imgbtn_st * style = (_gt_imgbtn_st * )imgbtn;
-    style->selected = selected ? 1 : 0;
+    gt_obj_set_state(imgbtn, selected ? GT_STATE_PRESSED : GT_STATE_NONE);
     gt_event_send(imgbtn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
