@@ -16,6 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "stdint.h"
 #include "../gt_conf.h"
+#include "./gt_color_palette.h"
 #include "gt_types.h"
 #include "gt_math.h"
 #include "gt_assert.h"
