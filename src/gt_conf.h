@@ -137,6 +137,10 @@ extern "C" {
     #define GT_ATTRIBUTE_RAM_TEXT
 #endif
 
+#ifndef GT_ATTRIBUTE_RAM_ROM
+    #define GT_ATTRIBUTE_RAM_ROM
+#endif
+
 /* ui default style */
 #define GT_STYLE_UI_SIMPLE     0
 #define GT_STYLE_UI_DARK       1
