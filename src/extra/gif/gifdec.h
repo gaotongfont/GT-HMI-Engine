@@ -8,6 +8,7 @@
 
 #include "../../others/gt_types.h"
 #include "../../core/gt_fs.h"
+#include "../../core/gt_img_decoder.h"
 
 #if GT_USE_FILE_HEADER
 #include "../../hal/gt_hal_file_header.h"
@@ -53,6 +54,8 @@ typedef struct gd_GIF {
 } gd_GIF;
 
 gd_GIF * gd_open_gif(const char *fname);
+
+gd_GIF * gd_open_gif_raw(_gt_img_dsc_st * dsc);
 
 #if GT_USE_FILE_HEADER
 gd_GIF * gd_fh_open_gif(gt_file_header_param_st const * const file_header);

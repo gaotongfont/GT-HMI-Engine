@@ -38,6 +38,10 @@ static inline gt_fs_fp_st * _gif_open(const char * path, gt_fs_mode_et mode) {
     return gt_fs_open(path, mode);
 }
 
+static inline gt_fs_fp_st * _gif_open_raw(const char * raw_data, uint32_t raw_len, gt_fs_mode_et mode) {
+    return gt_fs_open_raw(raw_data, raw_len, mode);
+}
+
 #if GT_USE_FILE_HEADER
 static inline gt_fs_fp_st * _fh_gif_open(gt_file_header_param_st const * const fh, gt_fs_mode_et mode) {
     return gt_fs_fh_open(fh, mode);
@@ -196,6 +200,23 @@ gd_open_gif(const char *fname)
     gt_memset(gif, 0, sizeof(gd_GIF));
 
     gif->fd = _gif_open(fname, GT_FS_MODE_RD);
+    if (!gif->fd) {
+        goto free_gif;
+    }
+    return _common_open_gif(gif);
+free_gif:
+    gt_mem_free(gif);
+    return NULL;
+}
+
+gd_GIF *
+gd_open_gif_raw(_gt_img_dsc_st * dsc)
+{
+    gd_GIF * gif = gt_mem_malloc(sizeof(gd_GIF));
+    if (!gif) return NULL;
+    gt_memset(gif, 0, sizeof(gd_GIF));
+
+    gif->fd = _gif_open_raw(dsc->raw_p, dsc->raw_len, GT_FS_MODE_RD);
     if (!gif->fd) {
         goto free_gif;
     }

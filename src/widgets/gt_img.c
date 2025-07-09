@@ -239,6 +239,7 @@ void gt_img_set_src(gt_obj_st * img, char * src)
     gt_memcpy(style->src, src, len);
     style->src[len] = '\0';
 
+    gt_img_dsc_raw_init(&style->raw);
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->fh);
 #endif
@@ -263,20 +264,7 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_color_img_raw_st * raw)
         gt_mem_free(style->src);
         style->src = NULL;
     }
-    style->raw.raw_p = raw->file_raw_p;
-    style->raw.raw_len = raw->raw_len;
-    style->raw.img = (uint8_t * )raw->buffer;
-    style->raw.alpha = (gt_opa_t * )raw->opa;
-    style->raw.header.w = raw->width;
-    style->raw.header.h = raw->height;
-    style->raw.header.type = GT_IMG_DECODER_TYPE_RAM;
-    style->raw.fill_color = raw->color;
-
-    if (style->raw.img && style->raw.alpha) {
-        style->raw.header.color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;
-    } else {
-        style->raw.header.color_format = GT_IMG_CF_TRUE_COLOR;
-    }
+    gt_img_dsc_raw_set(&style->raw, raw);
 
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->fh);
@@ -309,6 +297,7 @@ void gt_img_set_by_file_header(gt_obj_st * img, gt_file_header_param_st * fh)
         style->src = NULL;
     }
     style->fh = *fh;
+    gt_img_dsc_raw_init(&style->raw);
 #if GT_USE_DIRECT_ADDR
     gt_hal_direct_addr_init(&style->addr);
 #endif
@@ -341,6 +330,7 @@ void gt_img_set_by_direct_addr(gt_obj_st * img, gt_addr_t addr)
         gt_mem_free(style->src);
         style->src = NULL;
     }
+    gt_img_dsc_raw_init(&style->raw);
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->fh);
 #endif

@@ -240,6 +240,7 @@ void gt_gif_set_src(gt_obj_st * obj, char * src)
     gt_memcpy(style->src, src, len);
     style->src[len] = 0;
 
+    gt_img_dsc_raw_init(&style->dsc);
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->fh);
 #endif
@@ -249,6 +250,35 @@ void gt_gif_set_src(gt_obj_st * obj, char * src)
 #endif
 
     style->gif = gd_open_gif(style->src);
+    if (NULL == style->gif) {
+        return ;
+    }
+    _set_dsc_info_restart_timer(style, is_running);
+}
+
+void gt_gif_set_src_by_raw(gt_obj_st * obj, gt_color_img_raw_st * raw)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_gif_st * style = (_gt_gif_st * )obj;
+    bool is_running = style->timer ? !_gt_timer_get_paused(style->timer) : false;
+    if (GT_RES_OK != _reset_gif_status(style)) {
+        return ;
+    }
+    if (style->src) {
+        gt_mem_free(style->src);
+        style->src = NULL;
+    }
+    gt_img_dsc_raw_set(&style->dsc, raw);
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->fh);
+#endif
+
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->addr);
+#endif
+    style->gif =gd_open_gif_raw(&style->dsc);
     if (NULL == style->gif) {
         return ;
     }
@@ -270,7 +300,12 @@ void gt_gif_set_src_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh
         return ;
     }
     style->fh = *fh;
+    if (style->src) {
+        gt_mem_free(style->src);
+        style->src = NULL;
+    }
 
+    gt_img_dsc_raw_init(&style->dsc);
 #if GT_USE_DIRECT_ADDR
     gt_hal_direct_addr_init(&style->addr);
 #endif
@@ -297,6 +332,11 @@ void gt_gif_set_src_by_direct_addr(gt_obj_st * obj, gt_addr_t addr)
     }
     style->addr = addr;
 
+    if (style->src) {
+        gt_mem_free(style->src);
+        style->src = NULL;
+    }
+    gt_img_dsc_raw_init(&style->dsc);
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->fh);
 #endif

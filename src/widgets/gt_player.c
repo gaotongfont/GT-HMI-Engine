@@ -758,22 +758,7 @@ gt_size_t gt_player_add_item_raw(gt_obj_st * obj, gt_color_img_raw_st * raw)
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&new_item->fh_param);
 #endif
-    // sizeof(_gt_player_item_st);
-
-    new_item->raw.raw_p = raw->file_raw_p;
-    new_item->raw.raw_len = raw->raw_len;
-    new_item->raw.img = (uint8_t * )raw->buffer;
-    new_item->raw.alpha = (gt_opa_t * )raw->opa;
-    new_item->raw.header.w = raw->width;
-    new_item->raw.header.h = raw->height;
-    new_item->raw.header.type = GT_IMG_DECODER_TYPE_RAM;
-    new_item->raw.fill_color = raw->color;
-
-    if (new_item->raw.img && new_item->raw.alpha) {
-        new_item->raw.header.color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;
-    } else {
-        new_item->raw.header.color_format = GT_IMG_CF_TRUE_COLOR;
-    }
+    gt_img_dsc_raw_set(&new_item->raw, raw);
 
     if (false == _gt_vector_add_item(style->vector, new_item)) {
         goto item_lb;
@@ -805,6 +790,9 @@ gt_size_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_para
     GT_CHECK_BACK_VAL(new_item, _gt_vector_get_count(style->vector));
     new_item->src = NULL;
     new_item->fh_param = *fh;
+#if GT_PLAYER_USE_RAW_DATA
+    gt_img_dsc_raw_init(&new_item->raw);
+#endif
 #if GT_USE_DIRECT_ADDR
     gt_hal_direct_addr_init(&new_item->addr);
 #endif
@@ -872,6 +860,9 @@ gt_size_t gt_player_add_item_by_direct_addr(gt_obj_st * obj, gt_addr_t addr)
     GT_CHECK_BACK_VAL(new_item, _gt_vector_get_count(style->vector));
     new_item->src = NULL;
     new_item->addr = addr;
+#if GT_PLAYER_USE_RAW_DATA
+    gt_img_dsc_raw_init(&new_item->raw);
+#endif
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&new_item->fh_param);
 #endif
@@ -936,6 +927,9 @@ gt_size_t gt_player_add_item_by_custom_size_addr(gt_obj_st * obj, gt_direct_addr
     GT_CHECK_BACK_VAL(new_item, _gt_vector_get_count(style->vector));
     new_item->src = NULL;
     new_item->custom_addr = *dac;
+#if GT_PLAYER_USE_RAW_DATA
+    gt_img_dsc_raw_init(&new_item->raw);
+#endif
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&new_item->fh_param);
 #endif

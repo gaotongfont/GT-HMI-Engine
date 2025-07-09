@@ -369,6 +369,10 @@ gt_res_t gt_img_decoder_custom_size_addr_open(_gt_img_dsc_st * dsc, gt_direct_ad
 gt_res_t gt_img_decoder_custom_size_addr_close(_gt_img_dsc_st * dsc);
 #endif
 
+
+void gt_img_dsc_raw_init(_gt_img_dsc_st * dsc_tar);
+void gt_img_dsc_raw_set(_gt_img_dsc_st * dsc_tar, gt_color_img_raw_st const * const raw);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

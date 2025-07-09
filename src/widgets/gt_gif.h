@@ -47,6 +47,14 @@ gt_obj_st * gt_gif_create(gt_obj_st * parent);
 
 void gt_gif_set_src(gt_obj_st * obj, char * src);
 
+/**
+ * @brief
+ *
+ * @param obj
+ * @param raw
+ */
+void gt_gif_set_src_by_raw(gt_obj_st * obj, gt_color_img_raw_st * raw);
+
 char * gt_gif_get_src(gt_obj_st *  obj);
 
 #if GT_USE_FILE_HEADER

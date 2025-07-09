@@ -557,4 +557,27 @@ void gt_img_decoder_set_close_cb(_gt_img_decoder_st * decoder, gt_img_decoder_cl
     decoder->close_cb = close_cb;
 }
 
+void gt_img_dsc_raw_init(_gt_img_dsc_st * dsc_tar)
+{
+    dsc_tar->raw_p = NULL;
+}
+
+void gt_img_dsc_raw_set(_gt_img_dsc_st * dsc_tar, gt_color_img_raw_st const * const raw)
+{
+    dsc_tar->raw_p = raw->file_raw_p;
+    dsc_tar->raw_len = raw->raw_len;
+    dsc_tar->img = (uint8_t * )raw->buffer;
+    dsc_tar->alpha = (gt_opa_t * )raw->opa;
+    dsc_tar->header.w = raw->width;
+    dsc_tar->header.h = raw->height;
+    dsc_tar->header.type = GT_IMG_DECODER_TYPE_RAM;
+    dsc_tar->fill_color = raw->color;
+
+    if (dsc_tar->img && dsc_tar->alpha) {
+        dsc_tar->header.color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;
+    } else {
+        dsc_tar->header.color_format = GT_IMG_CF_TRUE_COLOR;
+    }
+}
+
 /* end ------------------------------------------------------------------*/
