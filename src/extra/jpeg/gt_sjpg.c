@@ -200,6 +200,9 @@ static gt_res_t _common_sjpg_info(struct _gt_img_decoder_s * decoder, gt_fs_fp_s
     if (gt_fs_read(fp, buffer, sizeof(buffer), &ret_len)) {
         return GT_RES_INV;
     }
+    if (ret_len < 10) {
+        return GT_RES_INV;
+    }
 
     if (0 == gt_memcmp(buffer, "_SJPG__", strlen("_SJPG__"))) {
         header->w = (buffer[SJPEG_X_RES_OFFSET + 1] << 8) | buffer[SJPEG_X_RES_OFFSET];
