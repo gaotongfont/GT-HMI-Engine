@@ -2411,13 +2411,11 @@ void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_are
     _gt_img_dsc_st dsc_img = {0};
     if (NULL == dsc->bg_img_src) {
         if (dsc->raw_img) {
-            if (dsc->raw_img->raw_p) {
+            if (dsc->raw_img->raw_p && false == dsc->reg.ignore_img_decoder) {
                 /** MODE 2 */
                 if (GT_RES_FAIL == gt_img_decoder_open_raw(&dsc_img, dsc->raw_img->raw_p, dsc->raw_img->raw_len)) {
                     GT_LOGW(GT_LOG_TAG_DATA, "Open raw data image decoder failed");
                     return;
-                } else if (GT_IMG_DECODER_TYPE_RAM == dsc->raw_img->header.type) {
-                    dsc_img = *dsc->raw_img;
                 }
             } else { /** MODE 1 */
                 dsc_img = *dsc->raw_img;

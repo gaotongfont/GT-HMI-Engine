@@ -80,6 +80,9 @@ static void _init_cb(gt_obj_st * obj) {
         .bg_opa = obj->opa,
         .bg_img_src = NULL,
         .raw_img = &style->dsc,
+        .reg = {
+            .ignore_img_decoder = true,
+        }
     };
     /* start draw obj */
     draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
