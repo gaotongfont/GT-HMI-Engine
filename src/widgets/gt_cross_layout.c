@@ -102,7 +102,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_handler(gt_obj_st* obj)
         return ;
     }
     gt_size_t x = gt_obj_get_x(style->ver_obj);
-    gt_size_t y = gt_obj_get_y(style->ver_obj);
+    gt_size_t y = gt_obj_get_y(style->ver_obj) + style->ver_offset;
     gt_size_t count = _gt_vector_get_count(style->ver_itmes);
     style->ver_move_max = 0;
     if(GT_CROSS_ROLL_LOOP == style->roll_mode)
@@ -189,7 +189,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_handler(gt_obj_st* obj)
         return ;
     }
 
-    gt_size_t x = gt_obj_get_x(style->hor_obj);
+    gt_size_t x = gt_obj_get_x(style->hor_obj) + style->hor_offset;
     gt_size_t y = gt_obj_get_y(style->hor_obj);
 
     if(0 == _gt_vector_get_count(style->ver_itmes)){
