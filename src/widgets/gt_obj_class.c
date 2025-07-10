@@ -328,7 +328,7 @@ gt_obj_type_et gt_obj_class_get_type(struct gt_obj_s * obj)
 bool gt_obj_is_type(struct gt_obj_s * obj, gt_obj_type_et type)
 {
     if (NULL == obj || NULL == obj->classes) {
-        return false;
+        return GT_TYPE_UNKNOWN == type ? true : false;
     }
     if (GT_TYPE_TOTAL == type) {
         if (GT_TYPE_UNKNOWN == obj->classes->type) {

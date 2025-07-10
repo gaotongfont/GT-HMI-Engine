@@ -100,7 +100,6 @@ _using_replace_core_user_cb(gt_obj_event_attr_st * event_ptr, gt_event_st * e) {
 
 static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_event_cb(gt_event_st * e) {
     gt_obj_st * obj = (gt_obj_st * )e->target;
-    if (NULL == obj) { return GT_RES_FAIL; }
     const gt_obj_class_st * c = obj->classes;
 
     if (obj->replace_core_event_attr &&
@@ -109,7 +108,6 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_event_cb(gt_event_st * e
     }
 
     /** Default core event func */
-    GT_CHECK_BACK_VAL(c, GT_RES_FAIL);
     if (c->_event_cb) {
         c->_event_cb(obj, e);
     }
@@ -118,10 +116,10 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_event_cb(gt_event_st * e
 
 static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_send_kernel(gt_event_st * e) {
     gt_res_t res = GT_RES_OK;
-    if (NULL == e->target) {
+    if (gt_obj_is_type(e->target, GT_TYPE_UNKNOWN)) {
+        GT_LOGW(GT_LOG_TAG_CHECK, "Unknown object: %p(%d)", e->target, gt_obj_class_get_type(e->target));
         return GT_RES_INV;
     }
-
     res = _gt_event_calling_event_cb(e);
     if (GT_RES_OK != res) {
         return res;
@@ -169,7 +167,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline gt_res_t _common_event_send(gt_event_st * e)
         return GT_RES_INV;
     }
 #endif
-    if (NULL == e->origin) { return GT_RES_FAIL;}
+    if (gt_obj_is_type(e->origin, GT_TYPE_UNKNOWN)) { return GT_RES_FAIL; }
     if (GT_RES_FAIL == _gt_event_node_push(e)) {
         return GT_RES_INV;
     }
@@ -335,6 +333,10 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
         .param = parms,
         .key_val = 0,
     };
+    if (gt_obj_is_type(parent, GT_TYPE_UNKNOWN)) {
+        GT_LOGW(GT_LOG_TAG_CHECK, "Invalid obj: %p(%d)", parent, gt_obj_class_get_type(parent));
+        return GT_RES_INV;
+    }
     return _common_event_send(&e);
 }
 
@@ -418,6 +420,10 @@ gt_res_t _gt_global_core_indev_event_send(struct gt_obj_s * org, gt_event_type_e
         .key_val = indev->param.keypad_key,
     };
     if (0 == gt_global_get_event_count()) {
+        return GT_RES_INV;
+    }
+    if (gt_obj_is_type(org, GT_TYPE_UNKNOWN)) {
+        GT_LOGW(GT_LOG_TAG_CHECK, "Invalid obj: %p(%d)", org, gt_obj_class_get_type(org));
         return GT_RES_INV;
     }
     return _common_event_send(&e);

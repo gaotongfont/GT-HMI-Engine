@@ -947,7 +947,11 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
     reload_item.anim_type = _get_anti_anim_type(reload_item.anim_type);
 
     _clear_stack_when_home_scr_id_current_valid(&reload_item, target, home_id, is_home_scr_alive);
-
+    if (reload_item.current_scr && false == gt_obj_is_type(reload_item.current_scr, GT_TYPE_SCREEN)) {
+        GT_LOGE(GT_LOG_TAG_UI, "Current screen is not screen type: %p(%d)",
+            reload_item.current_scr, gt_obj_class_get_type(reload_item.current_scr));
+        return -1;
+    }
     if (false == _create_scr_by_stack_item(&reload_item, home_id)) {
         return -1;
     }
@@ -1182,6 +1186,10 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         return;
     }
     if (false == gt_refr_is_enabled(disp)) {
+        return;
+    }
+    if (false == gt_obj_is_type(scr, GT_TYPE_SCREEN)) {
+        GT_LOGE(GT_LOG_TAG_UI, "Invalid screen: %p(%d)", scr, gt_obj_class_get_type(scr));
         return;
     }
 #if !GT_USE_SCREEN_ANIM
