@@ -197,6 +197,10 @@ static void _gt_anim_ready_handler(gt_anim_st * anim) {
 
     if (!anim->repeat_count && (anim->invert || !anim->playback_time)) {
         if (anim->ready_cb) { anim->ready_cb(anim); }
+        if (anim->time_act < anim->time || anim->repeat_count) {
+            /** Want to play continue */
+            return ;
+        }
         if (anim->deleted_cb) { anim->deleted_cb(anim); }
         _gt_anim_free_task(anim);
         return ;

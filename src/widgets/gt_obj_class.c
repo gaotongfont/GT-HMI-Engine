@@ -24,6 +24,13 @@
 #include "../core/gt_layout.h"
 
 /* private define -------------------------------------------------------*/
+#ifndef _GT_OBJ_CLASS_SCREEN_LOG
+    #define _GT_OBJ_CLASS_SCREEN_LOG        0
+#endif
+
+#ifndef _GT_OBJ_CLASS_WIDGETS_LOG
+    #define _GT_OBJ_CLASS_WIDGETS_LOG       0
+#endif
 
 
 
@@ -282,6 +289,9 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * c, struct gt_obj_s
         if (false == _create_new_screen_obj(obj)) {
             goto obj_lb;
         }
+#if _GT_OBJ_CLASS_SCREEN_LOG
+        GT_LOGD(GT_LOG_TAG_CHECK, "Create obj: %p(%d)", obj, gt_obj_class_get_type(obj));
+#endif
         return obj;
     }
 
@@ -291,7 +301,9 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * c, struct gt_obj_s
     if (false == _add_obj_to_parent(obj, parent)) {
         goto obj_lb;
     }
-
+#if _GT_OBJ_CLASS_WIDGETS_LOG
+        GT_LOGD(GT_LOG_TAG_CHECK, "Create obj: %p(%d)", obj, gt_obj_class_get_type(obj));
+#endif
     return obj;
 
 obj_lb:
@@ -370,12 +382,18 @@ void _gt_obj_class_destroy(struct gt_obj_s * self)
             GT_LOGW(GT_LOG_TAG_GUI, "Destroy screen(%p) failed", self);
         }
         _gt_scr_stack_remove_pop_scr(self);
+#if _GT_OBJ_CLASS_SCREEN_LOG
+        GT_LOGD(GT_LOG_TAG_CHECK, "Destroy obj: %p(%d)", self, gt_obj_class_get_type(self));
+#endif
     } else {
         ret_p = _gt_obj_class_destroy_from_parent(self);
         if (NULL == ret_p) {
             GT_LOGW(GT_LOG_TAG_GUI, "Destroy obj: %p(%d) from parent: %p(%d) failed", self,
                 gt_obj_class_get_type(self), self->parent, gt_obj_class_get_type(self->parent));
         }
+#if _GT_OBJ_CLASS_WIDGETS_LOG
+        GT_LOGD(GT_LOG_TAG_CHECK, "Destroy obj: %p(%d)", self, gt_obj_class_get_type(self));
+#endif
     }
 
 #if GT_USE_LAYER_TOP

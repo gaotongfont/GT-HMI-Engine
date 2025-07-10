@@ -58,7 +58,7 @@ typedef bool ( * gt_stack_equal_cb_t)(void * , void *);
  * @param item The item
  * @param data The object data or user data
  */
-typedef bool ( * gt_stack_iterator_cb_t)(gt_stack_item_st , void * );
+typedef bool ( * gt_stack_iterator_cb_t)(gt_stack_item_st const * , void * );
 
 /* macros ---------------------------------------------------------------*/
 

@@ -42,14 +42,11 @@
 
 
 /* static functions -----------------------------------------------------*/
-static gt_res_t GT_ATTRIBUTE_RAM_TEXT
-_gt_scr_stack_add_pop_remark(_gt_gc_scr_st * scr_info, gt_scr_stack_item_st * pop_item);
-
 #if _GT_SCR_STACK_TRACE_LOG
 static GT_ATTRIBUTE_RAM_TEXT bool
-_print_stack_item_info_cb(gt_stack_item_st item, void * data) {
-    gt_scr_stack_item_st * p = (gt_scr_stack_item_st * )item.data;
-    if (0 == item.index_from_top) {
+_print_stack_item_info_cb(gt_stack_item_st const * item, void * data) {
+    gt_scr_stack_item_st * p = (gt_scr_stack_item_st * )item->data;
+    if (0 == item->index_from_top) {
         return true;
     }
     GT_LOGD(GT_LOG_TAG_STACK,
@@ -57,7 +54,7 @@ _print_stack_item_info_cb(gt_stack_item_st item, void * data) {
         "  top idx: %d\n"
         "  scr  id: 0x%4x(%4d)  %p\n"
         "  time: %d, delay: %d, type: %d",
-        item.index_from_top,
+        item->index_from_top,
         p->current_scr_id, p->current_scr_id, p->current_scr,
         p->time, p->delay, p->anim_type);
 
@@ -76,9 +73,9 @@ static GT_ATTRIBUTE_RAM_TEXT bool _equal_current_id_cb(void * item, void * targe
 }
 
 static GT_ATTRIBUTE_RAM_TEXT bool
-_free_alive_scr_object_cb(gt_stack_item_st item, void * data) {
+_free_alive_scr_object_cb(gt_stack_item_st const * item, void * data) {
     gt_obj_st const * const active_scr = gt_disp_get_scr();
-    gt_scr_stack_item_st * p = (gt_scr_stack_item_st * )item.data;
+    gt_scr_stack_item_st * p = (gt_scr_stack_item_st * )item->data;
     _gt_gc_scr_st * scr_info = (_gt_gc_scr_st * )data;
     _gt_scr_home_st const * const home = (_gt_scr_home_st * )&scr_info->home_scr;
 
@@ -99,8 +96,8 @@ _free_alive_scr_object_cb(gt_stack_item_st item, void * data) {
 }
 
 static GT_ATTRIBUTE_RAM_TEXT bool
-_remove_scr_pointer_it_cb(gt_stack_item_st item, void * data) {
-    gt_scr_stack_item_st * p = (gt_scr_stack_item_st * )item.data;
+_remove_scr_pointer_it_cb(gt_stack_item_st const * item, void * data) {
+    gt_scr_stack_item_st * p = (gt_scr_stack_item_st * )item->data;
     gt_obj_st const * const remove_scr = (gt_obj_st const * const)data;
     if (NULL == remove_scr) { return true; }
 

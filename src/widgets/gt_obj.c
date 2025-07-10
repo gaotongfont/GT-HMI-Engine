@@ -287,7 +287,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_obj_destroy_handler_cb(struct _gt_timer_s 
     }
 
     if (obj->using_sta) {
-        GT_LOGW("obj", "Try to delete an object %p that is in use.", obj);
+        GT_LOGW("obj", "Try to delete an object %p(%d) that is in use.", obj, gt_obj_class_get_type(obj));
         _gt_timer_set_repeat_count(timer, 1);   // retry to destroy object
         return;
     }

@@ -270,7 +270,7 @@ bool gt_stack_iterator(gt_stack_st * stack, gt_stack_iterator_cb_t it_cb, void *
     for (gt_stack_size_t i = 0, cnt = stack->count; i < cnt; ++i) {
         ptr.index_from_top = i;
         ptr.data = _get_offset_by_top(stack, top);
-        if (false == it_cb(ptr, data)) {
+        if (false == it_cb(&ptr, data)) {
             return false;
         }
         top = top ? (top - 1) : stack->depth;
