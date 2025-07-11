@@ -25,6 +25,26 @@
 #define OBJ_TYPE    GT_TYPE_CROSS_LAYOUT
 #define MY_CLASS    &gt_cross_layout_class
 
+
+/** tip area size */
+#ifndef _TIP_BAR_SIZE
+    /**
+     * @brief The SIZE of the tip bar
+     */
+    #define _TIP_BAR_SIZE             10
+#endif
+#ifndef _TIP_BAR_POINT_SIZE
+    /**
+     * @brief The SIZE of the tip bar point
+     */
+    #define _TIP_BAR_POINT_SIZE      8
+#endif
+
+#define _VER_BAR_POINT_UNSELECT_SIZE            (_TIP_BAR_POINT_SIZE)
+#define _VER_BAR_POINT_UNSELECT_OFFSET_Y        (_TIP_BAR_POINT_SIZE >> 1)
+#define _VER_BAR_POINT_SELECT_SIZE              (_TIP_BAR_POINT_SIZE << 1)
+
+
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_cross_layout_s {
     gt_obj_st obj;
@@ -48,6 +68,7 @@ typedef struct _gt_cross_layout_s {
 
     uint8_t ver_anim_en : 1;
     uint8_t ver_anim_flag  : 1;
+    uint8_t ver_bar_en : 1;
 
 }_gt_cross_layout_st;
 
@@ -57,14 +78,14 @@ typedef struct _gt_cross_layout_s {
 
 
 /* static variables -----------------------------------------------------*/
-static void _init_cb(gt_obj_st * obj);
-static void _deinit_cb(gt_obj_st * obj);
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
+static void _cross_init_cb(gt_obj_st * obj);
+static void _cross_deinit_cb(gt_obj_st * obj);
+static void _cross_event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
 static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_cross_layout_class = {
-    ._init_cb      = NULL,
-    ._deinit_cb    = _deinit_cb,
-    ._event_cb     = _event_cb,
+    ._init_cb      = _cross_init_cb,
+    ._deinit_cb    = _cross_deinit_cb,
+    ._event_cb     = _cross_event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_cross_layout_st)
 };
@@ -108,7 +129,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_handler(gt_obj_st* obj)
     if(!style->ver_obj){
         return ;
     }
-    gt_size_t x = gt_obj_get_x(style->ver_obj);
+    gt_size_t x = gt_obj_get_x(style->ver_obj) + (style->ver_bar_en ? _TIP_BAR_SIZE : 0);
     gt_size_t y = gt_obj_get_y(style->ver_obj) + style->ver_offset;
     gt_size_t count = _gt_vector_get_count(style->ver_itmes);
     style->ver_move_max = 0;
@@ -134,7 +155,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_handler(gt_obj_st* obj)
                 continue;
             }
             itme->visible = GT_VISIBLE;
-            x = gt_obj_get_x(style->ver_obj) + ((gt_obj_get_w(style->ver_obj) - itme->area.w) >> 1);
+            x = gt_obj_get_x(style->ver_obj) + (style->ver_bar_en ? _TIP_BAR_SIZE : 0);
+            if((gt_obj_get_w(style->ver_obj) - (style->ver_bar_en ? _TIP_BAR_SIZE : 0)) > itme->area.w) {
+                x += (((gt_obj_get_w(style->ver_obj) - (style->ver_bar_en ? _TIP_BAR_SIZE : 0)) - itme->area.w) >> 1);
+            }
             _gt_obj_move_child_by(itme, x - itme->area.x, y - itme->area.y);
             itme->area.x = x;
             itme->area.y = y;
@@ -154,7 +178,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_handler(gt_obj_st* obj)
             itme->visible = GT_VISIBLE;
             style->ver_move_max += gt_obj_get_h(itme) + style->ver_gap;
             y -= (gt_obj_get_h(itme) + style->ver_gap);
-            x = gt_obj_get_x(style->ver_obj) + ((gt_obj_get_w(style->ver_obj) - itme->area.w) >> 1);
+            x = gt_obj_get_x(style->ver_obj) + (style->ver_bar_en ? _TIP_BAR_SIZE : 0);
+            if((gt_obj_get_w(style->ver_obj) - (style->ver_bar_en ? _TIP_BAR_SIZE : 0)) > itme->area.w) {
+                x += (((gt_obj_get_w(style->ver_obj) - (style->ver_bar_en ? _TIP_BAR_SIZE : 0)) - itme->area.w) >> 1);
+            }
             _gt_obj_move_child_by(itme, x - itme->area.x, y - itme->area.y);
             itme->area.x = x;
             itme->area.y = y;
@@ -168,7 +195,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_handler(gt_obj_st* obj)
             gt_obj_st* itme = (gt_obj_st*)_gt_vector_get_item(style->ver_itmes, i);
             if(itme){
                 itme->visible = GT_VISIBLE;
-                x = gt_obj_get_x(style->ver_obj) + ((gt_obj_get_w(style->ver_obj) - itme->area.w) >> 1);
+                x = gt_obj_get_x(style->ver_obj) + (style->ver_bar_en ? _TIP_BAR_SIZE : 0);
+                if((gt_obj_get_w(style->ver_obj) - (style->ver_bar_en ? _TIP_BAR_SIZE : 0)) > itme->area.w) {
+                    x += (((gt_obj_get_w(style->ver_obj) - (style->ver_bar_en ? _TIP_BAR_SIZE : 0)) - itme->area.w) >> 1);
+                }
                 _gt_obj_move_child_by(itme, x - itme->area.x, y - itme->area.y);
                 itme->area.x = x;
                 itme->area.y = y;
@@ -585,6 +615,7 @@ GT_ATTRIBUTE_RAM_TEXT static void _cross_ver_anim_ready_cb (struct gt_anim_s *an
     _cross_hor_handler(obj);
     style->ver_anim_flag = false;
     style->ver_anim_count = 0;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_scroll_anim(gt_obj_st* obj, gt_size_t index, gt_size_t dist_y)
@@ -737,10 +768,68 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_scroll_end_handler(gt_event_st* e)
     }
 
     gt_cross_layout_set_ver_index(obj, index);
-
 }
 
-static void _deinit_cb(gt_obj_st * obj)
+
+static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_draw_tip_bar(gt_obj_st* obj)
+{
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
+
+    if(!style->ver_bar_en || !style->ver_obj) {
+        return ;
+    }
+
+    gt_size_t count = _gt_vector_get_count(style->ver_itmes);
+    if(count <= 0){
+        return ;
+    }
+
+    gt_attr_rect_st rect_attr;
+    gt_graph_init_rect_attr(&rect_attr);
+    rect_attr.reg.is_fill   = true;
+    rect_attr.radius        = 10;
+    rect_attr.bg_opa        = obj->opa;
+    rect_attr.border_width  = 0;
+    rect_attr.bg_color      = gt_color_white();
+    rect_attr.bg_opa = GT_OPA_50;
+
+    uint8_t i = 0;
+    uint16_t total_size = count * _VER_BAR_POINT_SELECT_SIZE;
+
+    gt_area_st area_tip = style->ver_obj->area;
+    area_tip.w = _TIP_BAR_POINT_SIZE;
+    area_tip.y += ((style->ver_obj->area.h - total_size) >> 1) + _VER_BAR_POINT_UNSELECT_OFFSET_Y;
+
+    for(i = 0; i < count; ++i) {
+        area_tip.h = _VER_BAR_POINT_UNSELECT_SIZE;
+        draw_bg(obj->draw_ctx, &rect_attr, &area_tip);
+        area_tip.y +=  _VER_BAR_POINT_SELECT_SIZE;
+    }
+
+    gt_size_t this_index = _gt_vector_get_index(style->ver_itmes);
+    if(this_index < 0) {
+        return ;
+    }
+
+    gt_obj_st* itme = (gt_obj_st*)_gt_vector_get_item(style->ver_itmes, this_index);
+    if(!itme){
+        return ;
+    }
+
+    gt_size_t dist = itme->area.y - (style->ver_obj->area.y + style->ver_offset);
+    area_tip.y = style->ver_obj->area.y + ((style->ver_obj->area.h - total_size) >> 1) + (this_index * _VER_BAR_POINT_SELECT_SIZE);
+    area_tip.y += (-(dist / count));
+    area_tip.h = _VER_BAR_POINT_SELECT_SIZE;
+    rect_attr.bg_opa = GT_OPA_100;
+    draw_bg(obj->draw_ctx, &rect_attr, &area_tip);
+}
+
+static void _cross_init_cb(gt_obj_st * obj)
+{
+    _cross_ver_draw_tip_bar(obj);
+}
+
+static void _cross_deinit_cb(gt_obj_st * obj)
 {
     _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
     if(style->hor_itmes){
@@ -753,7 +842,7 @@ static void _deinit_cb(gt_obj_st * obj)
     }
 }
 
-static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
+static void _cross_event_cb(struct gt_obj_s * obj, gt_event_st * e)
 {
     gt_event_type_et code_val = gt_event_get_code(e);
     switch(code_val){
@@ -1168,6 +1257,18 @@ gt_obj_st* gt_cross_layout_get_ver_select_obj(gt_obj_st* layout)
         return NULL;
     }
     return _gt_vector_get_item(style->ver_itmes, _gt_vector_get_index(style->ver_itmes));
+}
+
+void gt_cross_layou_set_ver_bar_en(gt_obj_st* layout, bool en)
+{
+    GT_CHECK_BACK(layout);
+
+    if(false == gt_obj_is_type(layout, OBJ_TYPE)){
+        return;
+    }
+
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
+    style->ver_bar_en = en;
 }
 /* end of file ----------------------------------------------------------*/
 #endif //!GT_CFG_ENABLE_CROSS_LAYOUT
