@@ -65,7 +65,7 @@ gt_size_t gt_cross_layout_get_ver_count(gt_obj_st* layout);
 gt_size_t gt_cross_layout_get_ver_index(gt_obj_st* layout);
 gt_obj_st* gt_cross_layout_get_ver_select_obj(gt_obj_st* layout);
 void gt_cross_layout_set_ver_anim_en(gt_obj_st* layout, bool en);
-void gt_cross_layou_set_ver_bar_en(gt_obj_st* layout, bool en);
+void gt_cross_layout_set_ver_bar_en(gt_obj_st* layout, bool en);
 
 
 #endif //!GT_CFG_ENABLE_CROSS_LAYOUT

@@ -1259,7 +1259,7 @@ gt_obj_st* gt_cross_layout_get_ver_select_obj(gt_obj_st* layout)
     return _gt_vector_get_item(style->ver_itmes, _gt_vector_get_index(style->ver_itmes));
 }
 
-void gt_cross_layou_set_ver_bar_en(gt_obj_st* layout, bool en)
+void gt_cross_layout_set_ver_bar_en(gt_obj_st* layout, bool en)
 {
     GT_CHECK_BACK(layout);
 
