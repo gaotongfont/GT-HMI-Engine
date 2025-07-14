@@ -202,12 +202,22 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_handler(gt_obj_st* obj)
                 _gt_obj_move_child_by(itme, x - itme->area.x, y - itme->area.y);
                 itme->area.x = x;
                 itme->area.y = y;
-                style->ver_move_max += gt_obj_get_h(itme) + style->ver_gap;
+                if( (GT_CROSS_ROLL_MOVE == style->ver_roll_mode && ((count - 1) == i)) ) {
+                    style->ver_move_max += (gt_obj_get_h(itme) >> 1);
+                }
+                else {
+                    style->ver_move_max += gt_obj_get_h(itme) + style->ver_gap;
+                }
                 y += gt_obj_get_h(itme) + style->ver_gap;
             }
         }
 
+        if(GT_CROSS_ROLL_MOVE == style->ver_roll_mode) {
+            style->ver_move_max += style->ver_offset;
+            goto _ret_handler;
+        }
         style->ver_move_max -=style->ver_gap;
+
         if(style->ver_move_max < gt_obj_get_h(style->ver_obj)){
             style->ver_move_max = 0;
         }
@@ -615,7 +625,15 @@ GT_ATTRIBUTE_RAM_TEXT static void _cross_ver_anim_ready_cb (struct gt_anim_s *an
     _cross_hor_handler(obj);
     style->ver_anim_flag = false;
     style->ver_anim_count = 0;
-    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+    if(GT_CROSS_ROLL_MOVE == style->ver_roll_mode) {
+        gt_obj_st* itme = (gt_obj_st*)_gt_vector_get_item(style->ver_itmes, 0);
+        if(itme){
+            gt_size_t y = gt_obj_get_y(itme) - (gt_obj_get_y(style->ver_obj) + style->ver_offset);
+            style->ver_obj->process_attr.scroll.y = y;
+            style->ver_obj->process_attr.scroll_prev.y = y;
+        }
+    }
+    gt_disp_invalid_area(style->ver_obj);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_scroll_anim(gt_obj_st* obj, gt_size_t index, gt_size_t dist_y)
@@ -656,7 +674,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_set_index_scroll(gt_obj_st* obj, gt
     }
     gt_point_st dist = {0};
     dist.y = gt_obj_get_y(style->ver_obj) - gt_obj_get_y(itme);
-    if(GT_CROSS_ROLL_LOOP == style->ver_roll_mode){
+    if(GT_CROSS_ROLL_LOOP == style->ver_roll_mode \
+        || (GT_CROSS_ROLL_MOVE == style->ver_roll_mode)
+    ){
         dist.y += style->ver_offset;
         if(is_anim) {
             _cross_ver_scroll_anim(obj, index, dist.y);
@@ -664,9 +684,17 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_set_index_scroll(gt_obj_st* obj, gt
         }
         else {
             _cross_ver_scroll_to(obj, dist);
+            if(GT_CROSS_ROLL_MOVE == style->ver_roll_mode) {
+                gt_obj_st* itme = (gt_obj_st*)_gt_vector_get_item(style->ver_itmes, 0);
+                if(itme){
+                    gt_size_t y = gt_obj_get_y(itme) - (gt_obj_get_y(style->ver_obj) + style->ver_offset);
+                    style->ver_obj->process_attr.scroll.y = y;
+                    style->ver_obj->process_attr.scroll_prev.y = y;
+                }
+            }
         }
     }
-    else{
+    else {
         style->ver_obj->process_attr.scroll = dist;
         gt_event_send(style->ver_obj, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
     }
@@ -684,10 +712,25 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_scroll_handler(gt_event_st* e)
 
     gt_point_st *scroll = &e->target->process_attr.scroll;
 
-    if(GT_CROSS_ROLL_LOOP == style->ver_roll_mode){
+    if(GT_CROSS_ROLL_LOOP == style->ver_roll_mode ){
         if(style->ver_move_max < gt_obj_get_h(style->ver_obj)){
             return ;
         }
+    }
+    else if(GT_CROSS_ROLL_MOVE == style->ver_roll_mode){
+        gt_size_t tmp = style->ver_offset;
+        gt_obj_st* itme = (gt_obj_st*)_gt_vector_get_item(style->ver_itmes, 0);
+        if(itme){
+            tmp += (gt_obj_get_h(itme) >> 1);
+        }
+
+        if(scroll->y >= gt_obj_get_h(style->ver_obj) - tmp) {
+            scroll->y = gt_obj_get_h(style->ver_obj) - tmp;
+        }
+        else if(scroll->y < 0 && scroll->y < -style->ver_move_max){
+            scroll->y = -style->ver_move_max;
+        }
+
     }
     else{
         if(scroll->y > 0){
@@ -721,7 +764,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_scroll_end_handler(gt_event_st* e)
 
     gt_point_st *scroll = &e->target->process_attr.scroll;
 
-    if(GT_CROSS_ROLL_LOOP != style->ver_roll_mode){
+    if(GT_CROSS_ROLL_DEFAULT == style->ver_roll_mode){
         return ;
     }
 

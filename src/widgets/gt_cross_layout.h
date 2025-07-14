@@ -32,6 +32,7 @@ extern "C" {
 typedef enum {
     GT_CROSS_ROLL_DEFAULT = 0,
     GT_CROSS_ROLL_LOOP,
+    GT_CROSS_ROLL_MOVE,
 }gt_cross_roll_mode_et;
 
 /* macros ---------------------------------------------------------------*/
