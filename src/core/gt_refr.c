@@ -95,10 +95,29 @@ void gt_refr_timer(void)
 void gt_refr_force_flush(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
+#if GT_REFR_AREA_ALIGN_HOR || GT_REFR_AREA_ALIGN_VER
+    uint16_t align_val = 0;
+#endif
     if (NULL == disp) {
         return;
     }
-    gt_disp_ref_area(&disp->area_act);
+    gt_area_st reflush_area = disp->area_act;
+#if GT_REFR_AREA_ALIGN_HOR
+        align_val = gt_abs(reflush_area.x % GT_REFR_AREA_ALIGN_HOR_PIXEL);
+        if (align_val) {
+            reflush_area.x -= align_val;
+            reflush_area.w = ((uint16_t)(align_val + GT_REFR_AREA_ALIGN_HOR_PIXEL + reflush_area.w) / GT_REFR_AREA_ALIGN_HOR_PIXEL) * GT_REFR_AREA_ALIGN_HOR_PIXEL;
+        }
+ #endif
+
+#if GT_REFR_AREA_ALIGN_VER
+        align_val = gt_abs(reflush_area.y % GT_REFR_AREA_ALIGN_VER_PIXEL);
+        if (align_val) {
+            reflush_area.y -= align_val;
+            reflush_area.h = ((uint16_t)(align_val + GT_REFR_AREA_ALIGN_VER_PIXEL + reflush_area.h) / GT_REFR_AREA_ALIGN_VER_PIXEL) * GT_REFR_AREA_ALIGN_VER_PIXEL;
+        }
+#endif
+    gt_disp_ref_area(&reflush_area);
 }
 
 void gt_refr_set_enabled(bool enabled)
