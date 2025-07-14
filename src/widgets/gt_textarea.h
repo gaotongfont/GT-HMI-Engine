@@ -255,7 +255,7 @@ uint32_t gt_textarea_get_display_offset(gt_obj_st * textarea);
  * @brief Get the scroll percentage of the textarea
  *
  * @param textarea
- * @return float range: [0.00%, 100.00%)
+ * @return float range: [0.00%, 100.00%]
  */
 float gt_textarea_get_scroll_percent(gt_obj_st * textarea);
 
