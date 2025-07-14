@@ -621,8 +621,14 @@ GT_ATTRIBUTE_RAM_TEXT static void _cross_ver_anim_ready_cb (struct gt_anim_s *an
     gt_size_t this_index = _gt_vector_get_index(style->ver_itmes);
 
     _gt_vector_set_index(style->ver_itmes, index);
-    _cross_hor_set_hidden(obj, this_index);
-    _cross_hor_handler(obj);
+
+    if(this_index != index) {
+        style->hor_obj->process_attr.scroll.x = 0;
+        style->hor_obj->process_attr.scroll_prev.x = 0;
+        _cross_hor_set_hidden(obj, this_index);
+        _cross_hor_handler(obj);
+    }
+
     style->ver_anim_flag = false;
     style->ver_anim_count = 0;
     if(GT_CROSS_ROLL_MOVE == style->ver_roll_mode) {
@@ -743,7 +749,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_scroll_handler(gt_event_st* e)
     gt_point_st offset;
     offset.y = scroll->y - e->target->process_attr.scroll_prev.y;
 
-    _cross_ver_scroll_to(obj, offset);
+    if(0 != offset.y) {
+        _cross_ver_scroll_to(obj, offset);
+    }
     if(GT_CROSS_ROLL_LOOP == style->ver_roll_mode){
         scroll->y = 0;
     }
@@ -799,14 +807,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_scroll_end_handler(gt_event_st* e)
     gt_size_t this_index = _gt_vector_get_index(style->ver_itmes);
 
     if(this_index == index) {
-
-        // style->hor_obj->process_attr.scroll.x = 0;
-        // style->hor_obj->process_attr.scroll_prev.x = 0;
         _cross_ver_set_index_scroll(obj, index , style->ver_anim_en);
-        if(!style->ver_anim_en) {
-            _cross_hor_set_hidden(obj, this_index);
-            _cross_hor_handler(obj);
-        }
         return ;
     }
 
