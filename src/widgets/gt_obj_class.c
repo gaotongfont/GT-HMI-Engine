@@ -343,10 +343,10 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
 {
     gt_obj_st * parent = obj->parent;
     bool is_success = false;
-    if (NULL == parent) {
+    if (gt_obj_is_type(parent, GT_TYPE_UNKNOWN)) {
         return NULL;
     }
-    if (NULL == to) {
+    if (gt_obj_is_type(to, GT_TYPE_UNKNOWN)) {
         return parent;
     }
     if (parent == to) {
@@ -368,18 +368,19 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
     return obj->parent;
 }
 
-void _gt_obj_class_destroy(struct gt_obj_s * self)
+gt_res_t _gt_obj_class_destroy(struct gt_obj_s * self)
 {
     gt_obj_st * ret_p = NULL;
-    if (NULL == self) {
-        return ;
+    if (gt_obj_is_type(self, GT_TYPE_UNKNOWN)) {
+        GT_LOGW(GT_LOG_TAG_CHECK, "Want to destroy unknown obj: %p(%d)", self, gt_obj_class_get_type(self));
+        return GT_RES_FAIL;
     }
     _destroy_and_free_children(self, true);
 
     if (NULL == self->parent) {
         ret_p = _gt_obj_class_destroy_screen(self);
         if (NULL == ret_p) {
-            GT_LOGW(GT_LOG_TAG_GUI, "Destroy screen(%p) failed", self);
+            GT_LOGW(GT_LOG_TAG_CHECK, "Destroy screen(%p) failed", self);
         }
         _gt_scr_stack_remove_pop_scr(self);
 #if _GT_OBJ_CLASS_SCREEN_LOG
@@ -388,7 +389,7 @@ void _gt_obj_class_destroy(struct gt_obj_s * self)
     } else {
         ret_p = _gt_obj_class_destroy_from_parent(self);
         if (NULL == ret_p) {
-            GT_LOGW(GT_LOG_TAG_GUI, "Destroy obj: %p(%d) from parent: %p(%d) failed", self,
+            GT_LOGW(GT_LOG_TAG_CHECK, "Destroy obj: %p(%d) from parent: %p(%d) failed", self,
                 gt_obj_class_get_type(self), self->parent, gt_obj_class_get_type(self->parent));
         }
 #if _GT_OBJ_CLASS_WIDGETS_LOG
@@ -399,32 +400,36 @@ void _gt_obj_class_destroy(struct gt_obj_s * self)
 #if GT_USE_LAYER_TOP
     if (gt_disp_get_layer_top() == self) {
         /** Do not release layer top object */
-        return;
+        return GT_RES_OK;
     }
 #endif
     _gt_obj_class_destroy_self(self);
     self = NULL;
+    return GT_RES_OK;
 }
 
-void _gt_obj_class_destroy_children(struct gt_obj_s * self)
+gt_res_t _gt_obj_class_destroy_children(struct gt_obj_s * self)
 {
-    if (NULL == self) {
-        return ;
+    if (gt_obj_is_type(self, GT_TYPE_UNKNOWN)) {
+        GT_LOGW(GT_LOG_TAG_CHECK, "Want to destroy unknown obj's childs: %p(%d)", self, gt_obj_class_get_type(self));
+        return GT_RES_FAIL;
     }
     for (gt_size_t i = self->cnt_child - 1; i >= 0; i--) {
         _gt_obj_class_destroy(self->child[i]);
     }
     self->cnt_child = 0;
     self->child = NULL;
+    return GT_RES_OK;
 }
 
-void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_obj_s * parent)
+gt_res_t _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_obj_s * parent)
 {
-    if (NULL == obj || NULL == parent) {
-        return;
+    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN) || gt_obj_is_type(parent,  GT_TYPE_UNKNOWN)) {
+        return GT_RES_FAIL;
     }
     gt_obj_set_overflow(obj, parent->overflow);
     gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_OVERFLOW, parent->overflow);
+    return GT_RES_OK;
 }
 
 /* end ------------------------------------------------------------------*/

@@ -77,7 +77,7 @@ _free_alive_scr_object_cb(gt_stack_item_st const * item, void * data) {
     gt_obj_st const * const active_scr = gt_disp_get_scr();
     gt_scr_stack_item_st * p = (gt_scr_stack_item_st * )item->data;
     _gt_gc_scr_st * scr_info = (_gt_gc_scr_st * )data;
-    _gt_scr_home_st const * const home = (_gt_scr_home_st * )&scr_info->home_scr;
+    _gt_scr_home_st * const home = (_gt_scr_home_st * )&scr_info->home_scr;
 
     if (NULL == p->current_scr) {
         return true;
@@ -89,6 +89,7 @@ _free_alive_scr_object_cb(gt_stack_item_st const * item, void * data) {
         if (home->alive) {
             return true;
         }
+        home->screen = NULL;
     }
     _gt_obj_class_destroy(p->current_scr);
     p->current_scr = NULL;

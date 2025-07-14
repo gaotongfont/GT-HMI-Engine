@@ -1111,7 +1111,7 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
         &ret, new_item_p, home_id, param->clear_stack_except_home)) {
         return ret;
     }
-    if (prev && home_id == prev->current_scr_id && is_home_alive) {
+    if ((gt_scr_stack_get_home_scr() == ret.scr_old || (prev && home_id == prev->current_scr_id)) && is_home_alive) {
         ret.del_prev_scr = false;
     }
 #if _GT_STACK_PUSH_BEFORE_INIT_SCR

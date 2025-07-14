@@ -334,7 +334,7 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
         .key_val = 0,
     };
     if (gt_obj_is_type(parent, GT_TYPE_UNKNOWN)) {
-        GT_LOGW(GT_LOG_TAG_CHECK, "Invalid obj: %p(%d)", parent, gt_obj_class_get_type(parent));
+        GT_LOGW(GT_LOG_TAG_CHECK, "Invalid obj: %p(%d), ev: %d", parent, gt_obj_class_get_type(parent), event);
         return GT_RES_INV;
     }
     return _common_event_send(&e);
@@ -423,7 +423,7 @@ gt_res_t _gt_global_core_indev_event_send(struct gt_obj_s * org, gt_event_type_e
         return GT_RES_INV;
     }
     if (gt_obj_is_type(org, GT_TYPE_UNKNOWN)) {
-        GT_LOGW(GT_LOG_TAG_CHECK, "Invalid obj: %p(%d)", org, gt_obj_class_get_type(org));
+        GT_LOGW(GT_LOG_TAG_CHECK, "Invalid obj: %p(%d), ev: %d", org, gt_obj_class_get_type(org), event);
         return GT_RES_INV;
     }
     return _common_event_send(&e);

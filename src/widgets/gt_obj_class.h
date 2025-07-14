@@ -92,23 +92,26 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
  *      immediately and recursively.
  *
  * @param self
+ * @return gt_res_t
  */
-void _gt_obj_class_destroy(struct gt_obj_s * self);
+gt_res_t _gt_obj_class_destroy(struct gt_obj_s * self);
 
 /**
  * @brief delete all child controls, immediately and recursively.
  *
  * @param self
+ * @return gt_res_t
  */
-void _gt_obj_class_destroy_children(struct gt_obj_s * self);
+gt_res_t _gt_obj_class_destroy_children(struct gt_obj_s * self);
 
 /**
  * @brief Multiple properties that can be inherited from the superclass
  *
  * @param obj The object to be inherited
  * @param parent The parent object
+ * @return gt_res_t
  */
-void _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_obj_s * parent);
+gt_res_t _gt_obj_class_inherent_attr_from_parent(struct gt_obj_s * obj, struct gt_obj_s * parent);
 
 #ifdef __cplusplus
 } /*extern "C"*/
