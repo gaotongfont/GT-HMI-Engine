@@ -84,6 +84,7 @@ void gt_radio_set_font_point_offset_x(gt_obj_st * radio , gt_size_t x);
 void gt_radio_set_font_point_offset_y(gt_obj_st * radio , gt_size_t y);
 void gt_radio_set_font_point_offset(gt_obj_st * radio , gt_size_t x , gt_size_t y);
 
+void gt_radio_set_selected_color(gt_obj_st * radio, gt_color_t color);
 
 #endif  /** GT_CFG_ENABLE_RADIO */
 

@@ -32,6 +32,8 @@ typedef struct _gt_radio_s {
 
     gt_font_info_st font_info;
 
+    gt_color_t selected_color;
+
     uint8_t     space_x;
     uint8_t     space_y;
 
@@ -108,17 +110,17 @@ static inline void _gt_radio_init_widget(gt_obj_st * radio) {
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill    = 0;
     rect_attr.border_width   = 1;
-    rect_attr.border_color   = gt_color_hex(0xA0A0A0);
+    rect_attr.border_color   = radio->bgcolor;
     rect_attr.bg_opa         = radio->opa;
-    rect_attr.bg_color       = gt_color_hex(0xA0A0A0);
+    rect_attr.bg_color       = radio->bgcolor;
     rect_attr.radius         = area_base.h>>1;
 
     draw_bg(radio->draw_ctx, &rect_attr, &area_base);
 
-    gt_color_t color = gt_color_white();
+    gt_color_t color = radio->bgcolor;
 
     if (gt_obj_get_state(radio) == GT_STATE_PRESSED) {
-        color = gt_color_hex(0x808080);
+        color = style->selected_color;
     }
 
     rect_attr.reg.is_fill   = 1;
@@ -225,6 +227,10 @@ gt_obj_st * gt_radio_create(gt_obj_st * parent)
     gt_font_info_init(&style->font_info);
     style->space_x           = 0;
     style->space_y           = 0;
+
+
+    obj->bgcolor = gt_color_white();
+    style->selected_color = gt_color_hex(0x0F97FF);
 
     return obj;
 }
@@ -460,6 +466,15 @@ void gt_radio_set_font_point_offset(gt_obj_st * radio , gt_size_t x , gt_size_t 
     }
     gt_radio_set_font_point_offset_x( radio , x);
     gt_radio_set_font_point_offset_y( radio , y);
+}
+
+void gt_radio_set_selected_color(gt_obj_st * radio, gt_color_t color)
+{
+    if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_radio_st * style = (_gt_radio_st * )radio;
+    style->selected_color = color;
 }
 
 #endif  /** GT_CFG_ENABLE_RADIO */
