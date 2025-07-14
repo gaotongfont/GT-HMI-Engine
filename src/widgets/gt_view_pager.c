@@ -333,6 +333,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _child_set_group_area(gt_obj_st const * const 
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_view_pager_create(gt_obj_st * parent)
 {
+    if (gt_obj_is_type(parent, GT_TYPE_DIALOG)) {
+        GT_LOGE(GT_LOG_TAG_CHECK, "view pager can not be child of dialog");
+        return NULL;
+    }
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
     if (NULL == obj) {
         return obj;
