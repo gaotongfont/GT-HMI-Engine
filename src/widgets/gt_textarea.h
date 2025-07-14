@@ -290,6 +290,7 @@ void gt_textarea_set_padding(gt_obj_st * textarea, uint8_t padding);
  */
 gt_split_line_ret_st gt_textarea_get_font_split_line_numb(gt_obj_st* obj, gt_font_split_line_st* sp_line);
 
+#if 0
 /**
  * @brief append text to textarea
  *
@@ -297,6 +298,7 @@ gt_split_line_ret_st gt_textarea_get_font_split_line_numb(gt_obj_st* obj, gt_fon
  * @param str
  */
 void gt_textarea_append_text(gt_obj_st * obj, const char * str);
+#endif
 
 
 /**

@@ -379,6 +379,28 @@ _gt_chat_replace_msg(gt_obj_st* chat, const char* msg, bool is_scroll)
     return obj;
 }
 
+static gt_obj_st * GT_ATTRIBUTE_RAM_TEXT
+_gt_chat_replace_msg_by_len(gt_obj_st* chat, const char* msg, uint16_t msg_len, bool is_scroll)
+{
+    _gt_chat_st * style = (_gt_chat_st * )chat;
+
+    int16_t index = style->msg_cnt - 1;
+    if(index < 0) return NULL;
+
+    if(GT_CHAT_TYPE_TEXT != style->msg_list[index].type) return NULL;
+
+    gt_obj_st * obj = style->msg_list[index].msg_obj;
+
+    style->item_cb.set_text_by_len_cb(obj, msg, msg_len);
+
+    style->max_h -= (gt_obj_get_h(obj) + _MSG_SPACE_Y);
+    style->max_h += _gt_update_msg_area_idx(chat, index, style->msg_list[index].is_send);
+    if(is_scroll) {
+        chat->process_attr.scroll.y = chat->area.h - style->max_h;
+        _gt_chat_msg_move_y(chat, chat->process_attr.scroll.y);
+    }
+    return obj;
+}
 static GT_ATTRIBUTE_RAM_TEXT void _scrolling_handler(gt_obj_st * obj) {
     gt_size_t bottom = gt_obj_get_limit_bottom(obj) + (-_MSG_SPACE_Y * 2);
 
@@ -690,6 +712,25 @@ gt_obj_st * gt_chat_replace_msg_text_control_scroll(gt_obj_st * chat, const char
     return item;
 }
 
+gt_obj_st * gt_chat_replace_msg_text_by_len(gt_obj_st * chat, const char * msg, uint16_t len)
+{
+    if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
+        return NULL;
+    }
+    gt_obj_st * item = _gt_chat_replace_msg_by_len(chat, msg, len, true);
+    gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
+    return item;
+}
+
+gt_obj_st * gt_chat_replace_msg_text_by_len_control_scroll(gt_obj_st * chat, const char * msg, uint16_t len, bool is_scroll)
+{
+    if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
+        return NULL;
+    }
+    gt_obj_st * item = _gt_chat_replace_msg_by_len(chat, msg, len, is_scroll);
+    gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
+    return item;
+}
 void gt_chat_updata_item_size(gt_obj_st * chat, bool is_scroll)
 {
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {

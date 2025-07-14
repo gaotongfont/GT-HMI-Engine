@@ -124,7 +124,7 @@ typedef struct gt_chat_item_cb_s
     _item.create_cb = gt_textarea_create; \
     _item.set_text_by_len_cb = gt_textarea_set_text_by_len; \
     _item.set_text_cb = gt_textarea_set_text; \
-    _item.append_text_cb = gt_textarea_append_text; \
+    _item.append_text_cb = NULL; \
     _item.set_color_background_cb = gt_textarea_set_bg_color; \
     _item.set_color_border_cb = gt_textarea_set_border_color; \
     _item.set_border_width_cb = gt_textarea_set_border_width; \
@@ -163,6 +163,9 @@ gt_obj_st * gt_chat_append_msg_text(gt_obj_st * chat, const char * msg);
 gt_obj_st * gt_chat_append_msg_text_control_scroll(gt_obj_st * chat, const char * msg, bool is_scroll);
 gt_obj_st * gt_chat_replace_msg_text(gt_obj_st * chat, const char * msg);
 gt_obj_st * gt_chat_replace_msg_text_control_scroll(gt_obj_st * chat, const char * msg, bool is_scroll);
+
+gt_obj_st * gt_chat_replace_msg_text_by_len(gt_obj_st * chat, const char * msg, uint16_t len);
+gt_obj_st * gt_chat_replace_msg_text_by_len_control_scroll(gt_obj_st * chat, const char * msg, uint16_t len, bool is_scroll);
 
 void gt_chat_clean_all_msg(gt_obj_st * chat);
 

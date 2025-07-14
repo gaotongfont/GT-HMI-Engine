@@ -1184,6 +1184,7 @@ gt_split_line_ret_st gt_textarea_get_font_split_line_numb(gt_obj_st* obj, gt_fon
     return s_line_ret;
 }
 
+#if 0
 void gt_textarea_append_text(gt_obj_st * obj, const char * str)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
@@ -1202,6 +1203,7 @@ void gt_textarea_append_text(gt_obj_st * obj, const char * str)
     gt_textarea_add_str(obj, (char* )str, GT_FONT_STYLE_NONE, style->color_font);
 #endif
 }
+#endif
 
 void gt_textarea_set_start_point_offset(gt_obj_st * textarea, uint8_t x_off, uint8_t y_off)
 {
