@@ -216,46 +216,47 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
         .indent = _MULTI_LINE_CONTENT_INDENT_DEFAULT,
     };
     gt_split_line_ret_st s_line_ret = {0};
-    s_line_ret = style->item_cb.get_font_split_line_numb_cb(style->msg_list[idx].msg_obj, &sp_line);
+    _gt_chat_param_st * msg_p = &style->msg_list[idx];
+    s_line_ret = style->item_cb.get_font_split_line_numb_cb(msg_p->msg_obj, &sp_line);
     h = s_line_ret.line_numb;
     w = s_line_ret.max_w;
 
     w += 4 + (is_send ? style->send_border_w << 1 : style->recv_border_w << 1);
     if (s_line_ret.line_numb > 1) {
-        style->item_cb.set_font_align_cb(style->msg_list[idx].msg_obj, GT_ALIGN_LEFT_MID);
-        style->item_cb.set_indent_cb(style->msg_list[idx].msg_obj, _MULTI_LINE_CONTENT_INDENT_DEFAULT);
-        style->item_cb.set_space_cb(style->msg_list[idx].msg_obj, style->space_x, style->space_y);
+        style->item_cb.set_font_align_cb(msg_p->msg_obj, GT_ALIGN_LEFT_MID);
+        style->item_cb.set_indent_cb(msg_p->msg_obj, _MULTI_LINE_CONTENT_INDENT_DEFAULT);
+        style->item_cb.set_space_cb(msg_p->msg_obj, style->space_x, style->space_y);
         h = (h + 1) * (style->font_info.size + style->space_y) + (is_send ? style->send_border_w << 1 : style->recv_border_w << 1);
         //
         if(style->item_cb.set_start_point_offset_cb) {
-            style->item_cb.set_start_point_offset_cb(style->msg_list[idx].msg_obj, 0, (style->font_info.size + style->space_y) >> 1);
+            style->item_cb.set_start_point_offset_cb(msg_p->msg_obj, 0, (style->font_info.size + style->space_y) >> 1);
         }
     } else {
-        style->item_cb.set_font_align_cb(style->msg_list[idx].msg_obj, GT_ALIGN_CENTER_MID);
-        style->item_cb.set_indent_cb(style->msg_list[idx].msg_obj, 0);
-        style->item_cb.set_space_cb(style->msg_list[idx].msg_obj, style->space_x, 0);
+        style->item_cb.set_font_align_cb(msg_p->msg_obj, GT_ALIGN_CENTER_MID);
+        style->item_cb.set_indent_cb(msg_p->msg_obj, 0);
+        style->item_cb.set_space_cb(msg_p->msg_obj, style->space_x, 0);
         h = (h + 1) * (style->font_info.size) + (is_send ? style->send_border_w << 1 : style->recv_border_w << 1);
         //
         if(style->item_cb.set_start_point_offset_cb) {
-            style->item_cb.set_start_point_offset_cb(style->msg_list[idx].msg_obj,
+            style->item_cb.set_start_point_offset_cb(msg_p->msg_obj,
                                                     gt_font_get_indent_width(&style->font_info, _MULTI_LINE_CONTENT_INDENT_DEFAULT) + (w - s_line_ret.max_w) >> 1 ,
                                                     (style->font_info.size) >> 1);
         }
     }
 
-    x = (style->msg_list[idx].is_send ?  (chat->area.w - w - _MSG_SPACE_X) : _MSG_SPACE_X) + chat->area.x;
+    x = (msg_p->is_send ?  (chat->area.w - w - _MSG_SPACE_X) : _MSG_SPACE_X) + chat->area.x;
     y =  idx <= 0 ? _MSG_SPACE_Y + chat->area.y : style->msg_list[idx - 1].msg_obj->area.y + style->msg_list[idx - 1].msg_obj->area.h + _MSG_SPACE_Y;
 
     if(radius > GT_MIN(w >> 1, h >> 1)) {
         radius = GT_MIN(w >> 1, h >> 1);
     }
 
-    gt_obj_set_radius(style->msg_list[idx].msg_obj, radius);
+    gt_obj_set_radius(msg_p->msg_obj, radius);
 
-    style->msg_list[idx].msg_obj->area.x = x;
-    style->msg_list[idx].msg_obj->area.y = y;
-    style->msg_list[idx].msg_obj->area.w = w;
-    style->msg_list[idx].msg_obj->area.h = h;
+    msg_p->msg_obj->area.x = x;
+    msg_p->msg_obj->area.y = y;
+    msg_p->msg_obj->area.w = w;
+    msg_p->msg_obj->area.h = h;
 
     return (h + _MSG_SPACE_Y);
 }
@@ -282,33 +283,43 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st*
 _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint16_t msg_len, uint8_t tim_s, gt_chat_type_te type, bool is_send) {
     _gt_chat_st * style = (_gt_chat_st * )chat;
 
-    if(style->msg_cnt >= GT_CHAT_MAX_MSG_CNT){
+    if (style->msg_cnt >= GT_CHAT_MAX_MSG_CNT) {
         style->max_h -= (gt_obj_get_h(style->msg_list[0].msg_obj) + _MSG_SPACE_Y);
         _gt_obj_class_destroy(style->msg_list[0].msg_obj);
         gt_memmove (style->msg_list, style->msg_list + 1, sizeof(_gt_chat_param_st) * (GT_CHAT_MAX_MSG_CNT-1));
         style->msg_cnt = GT_CHAT_MAX_MSG_CNT - 1;
     }
-    style->msg_list[style->msg_cnt].tim_s = tim_s;
-    style->msg_list[style->msg_cnt].type = type;
-    style->msg_list[style->msg_cnt].is_send = is_send;
-    style->msg_list[style->msg_cnt].msg_obj = style->item_cb.create_cb(chat);
+    _gt_chat_param_st * msg_p = &style->msg_list[style->msg_cnt];
+    msg_p->tim_s = tim_s;
+    msg_p->type = type;
+    msg_p->is_send = is_send;
+    msg_p->msg_obj = style->item_cb.create_cb(chat);
+    if (gt_obj_is_type(msg_p->msg_obj, GT_TYPE_UNKNOWN)) {
+        return NULL;
+    }
 
-    gt_obj_set_inside(style->msg_list[style->msg_cnt].msg_obj, true);
-    gt_obj_set_fixed(style->msg_list[style->msg_cnt].msg_obj, true);
-    gt_obj_add_event_cb(style->msg_list[style->msg_cnt].msg_obj, _msg_click_cb, GT_EVENT_TYPE_INPUT_RELEASED, chat);
-    _gt_set_msg_font_info_all(style, style->msg_list[style->msg_cnt].msg_obj, &style->font_info);
+    gt_obj_set_inside(msg_p->msg_obj, true);
+    gt_obj_set_fixed(msg_p->msg_obj, true);
+    gt_obj_add_event_cb(msg_p->msg_obj, _msg_click_cb, GT_EVENT_TYPE_INPUT_RELEASED, chat);
+    _gt_set_msg_font_info_all(style, msg_p->msg_obj, &style->font_info);
 
-    //
-    style->item_cb.set_color_background_cb(style->msg_list[style->msg_cnt].msg_obj, is_send ? style->send_bgcolor : style->recv_bgcolor);
-    style->item_cb.set_color_border_cb(style->msg_list[style->msg_cnt].msg_obj, is_send ? style->send_border_color : style->recv_border_color);
-    style->item_cb.set_border_width_cb(style->msg_list[style->msg_cnt].msg_obj, is_send ? style->send_border_w : style->recv_border_w);
-    style->item_cb.set_font_color_cb(style->msg_list[style->msg_cnt].msg_obj, is_send ? style->send_font_color : style->recv_font_color);
+    if (is_send) {
+        style->item_cb.set_color_background_cb(msg_p->msg_obj, style->send_bgcolor);
+        style->item_cb.set_color_border_cb(msg_p->msg_obj, style->send_border_color);
+        style->item_cb.set_border_width_cb(msg_p->msg_obj, style->send_border_w);
+        style->item_cb.set_font_color_cb(msg_p->msg_obj, style->send_font_color);
+    } else {
+        style->item_cb.set_color_background_cb(msg_p->msg_obj, style->recv_bgcolor);
+        style->item_cb.set_color_border_cb(msg_p->msg_obj, style->recv_border_color);
+        style->item_cb.set_border_width_cb(msg_p->msg_obj, style->recv_border_w);
+        style->item_cb.set_font_color_cb(msg_p->msg_obj, style->recv_font_color);
+    }
 
     if(GT_CHAT_TYPE_TEXT == type ){
-        style->item_cb.set_text_by_len_cb(style->msg_list[style->msg_cnt].msg_obj, msg, msg_len);
+        style->item_cb.set_text_by_len_cb(msg_p->msg_obj, msg, msg_len);
     }
     else if(GT_CHAT_TYPE_VOICE == type){
-        _gt_set_voice_text(style, style->msg_list[style->msg_cnt].msg_obj, tim_s, is_send, GT_SYMBOL_VOICE_PLAY-1);
+        _gt_set_voice_text(style, msg_p->msg_obj, tim_s, is_send, GT_SYMBOL_VOICE_PLAY-1);
     }
 
     style->max_h += _gt_update_msg_area_idx(chat, style->msg_cnt, is_send);
@@ -317,7 +328,7 @@ _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint16_t msg_len, uint8_t t
     chat->process_attr.scroll.y = chat->area.h - style->max_h;
     _gt_chat_msg_move_y(chat, chat->process_attr.scroll.y);
 
-    return style->msg_list[style->msg_cnt - 1].msg_obj;
+    return msg_p->msg_obj;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT gt_obj_st *
@@ -567,6 +578,9 @@ gt_obj_st * gt_chat_add_send_text_msg(gt_obj_st * chat, const char * msg)
         return NULL;
     }
     gt_obj_st * item = _gt_chat_add_msg( chat, msg, msg ? strlen(msg) : 0, 0, GT_CHAT_TYPE_TEXT, true);
+    if (NULL == item) {
+        return NULL;
+    }
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
     return item;
 }
@@ -577,6 +591,9 @@ gt_obj_st * gt_chat_add_send_text_msg_by_len(gt_obj_st * chat, const char * msg,
         return NULL;
     }
     gt_obj_st * item = _gt_chat_add_msg( chat, msg, len, 0, GT_CHAT_TYPE_TEXT, true);
+    if (NULL == item) {
+        return NULL;
+    }
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
     return item;
 }
@@ -587,6 +604,9 @@ gt_obj_st * gt_chat_add_send_voice_msg(gt_obj_st * chat, uint8_t tim_s)
         return NULL;
     }
     gt_obj_st * item = _gt_chat_add_msg( chat, NULL, 0, tim_s, GT_CHAT_TYPE_VOICE, true);
+    if (NULL == item) {
+        return NULL;
+    }
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
     return item;
 }
@@ -597,6 +617,9 @@ gt_obj_st * gt_chat_add_received_text_msg(gt_obj_st * chat, const char * msg)
         return NULL;
     }
     gt_obj_st * item = _gt_chat_add_msg( chat, msg, msg ? strlen(msg) : 0, 0, GT_CHAT_TYPE_TEXT, false);
+    if (NULL == item) {
+        return NULL;
+    }
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
     return item;
 }
@@ -607,6 +630,9 @@ gt_obj_st * gt_chat_add_received_text_msg_by_len(gt_obj_st * chat, const char * 
         return NULL;
     }
     gt_obj_st * item = _gt_chat_add_msg( chat, msg, len, 0, GT_CHAT_TYPE_TEXT, false);
+    if (NULL == item) {
+        return NULL;
+    }
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
     return item;
 }
@@ -617,6 +643,9 @@ gt_obj_st * gt_chat_add_received_voice_msg(gt_obj_st * chat, uint8_t tim_s)
         return NULL;
     }
     gt_obj_st * item = _gt_chat_add_msg( chat, NULL, 0, tim_s, GT_CHAT_TYPE_VOICE, false);
+    if (NULL == item) {
+        return NULL;
+    }
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
     return item;
 }
