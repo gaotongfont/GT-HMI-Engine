@@ -57,7 +57,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _scroll_ready_cb(struct gt_anim_s * anim) {
 /* global functions / API interface -------------------------------------*/
 void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim_enable_et en)
 {
-    GT_CHECK_BACK(obj);
+    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+        GT_LOGE(GT_LOG_TAG_CHECK, "Unvaild obj type: %p(%d)", obj, gt_obj_class_get_type(obj));
+        return;
+    }
     if (0 == dx && 0 == dy) {
         return;
     }
@@ -126,11 +129,17 @@ void gt_obj_scroll_to_y(struct gt_obj_s * obj, gt_size_t y, gt_anim_enable_et en
 
 gt_size_t gt_obj_scroll_get_x(gt_obj_st * obj)
 {
+    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+        return 0;
+    }
     return obj->process_attr.scroll.x;
 }
 
 gt_size_t gt_obj_scroll_get_y(gt_obj_st * obj)
 {
+    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+        return 0;
+    }
     return obj->process_attr.scroll.y;
 }
 
@@ -178,6 +187,9 @@ void _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offs
  */
 void _gt_obj_set_process_point(gt_obj_st * obj, gt_point_st * point)
 {
+    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+        return ;
+    }
     obj->process_attr.point.x = point->x;
     obj->process_attr.point.y = point->y;
 }
@@ -191,6 +203,9 @@ void _gt_obj_set_process_point(gt_obj_st * obj, gt_point_st * point)
  */
 void _gt_obj_set_process_scroll_xy(gt_obj_st * obj, gt_size_t x_scroll, gt_size_t y_scroll)
 {
+    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+        return ;
+    }
     obj->process_attr.scroll.x += x_scroll;
     obj->process_attr.scroll.y += y_scroll;
 }
