@@ -1066,7 +1066,7 @@ float gt_textarea_get_scroll_percent(gt_obj_st * textarea)
         return 0.0;
     }
     if (scroll_height <= 0) {
-        return 100.0;
+        return 0.0;
     }
     return (float)(100.0 * gt_abs(textarea->process_attr.scroll.y) / scroll_height);
 }
