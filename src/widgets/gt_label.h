@@ -27,7 +27,13 @@ extern "C" {
 
 
 /* define ---------------------------------------------------------------*/
-
+#ifndef GT_LABEL_DEFAULT_AUTO_SCROLL_MODE
+    /**
+     * @brief set default auto scroll mode
+     *      [default: 0]
+     */
+    #define GT_LABEL_DEFAULT_AUTO_SCROLL_MODE       0
+#endif
 
 
 /* typedef --------------------------------------------------------------*/

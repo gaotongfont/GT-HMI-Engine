@@ -301,6 +301,10 @@ gt_obj_st * gt_label_create(gt_obj_st * parent) {
 
     _update_label_size(obj, len);
 
+#if GT_LABEL_DEFAULT_AUTO_SCROLL_MODE
+    gt_label_set_auto_scroll_single_line(obj, true);
+#endif
+
     return obj;
 }
 
