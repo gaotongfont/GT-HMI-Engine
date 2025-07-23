@@ -20,6 +20,7 @@
 #include "gt_disp.h"
 #include "../extra/draw/gt_draw_blend.h"
 #include "../core/gt_draw.h"
+#include "../core/gt_handler.h"
 #include "./gt_mem.h"
 
 

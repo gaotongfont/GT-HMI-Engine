@@ -41,13 +41,19 @@
 #endif
 
 /* private define -------------------------------------------------------*/
+typedef struct {
+    uint8_t inited : 1;
+    uint8_t paused : 1;
+}_gt_hdl_st;
 
 
 
 /* private typedef ------------------------------------------------------*/
 
-static GT_ATTRIBUTE_LARGE_RAM_ARRAY bool _gt_init_done_flag = false;
-
+static _gt_hdl_st GT_ATTRIBUTE_RAM_DATA _gt_hdl_ctrl = {
+    .inited = false,
+    .paused = false,
+};
 
 /* static variables -----------------------------------------------------*/
 
@@ -108,11 +114,11 @@ static void gt_print_info_end(void) {
 #endif
 
 static void _gt_init_set_flag(bool flag) {
-    _gt_init_done_flag = flag;
+    _gt_hdl_ctrl.inited = flag;
 }
 
 static bool _gt_init_is_done(void) {
-    return _gt_init_done_flag;
+    return _gt_hdl_ctrl.inited;
 }
 
 static void _gt_port_init(void) {
@@ -191,6 +197,9 @@ void gt_task_handler(void)
     if (!_gt_init_is_done()) {
         return ;
     }
+    if (gt_task_is_paused()) {
+        return ;
+    }
     _gt_timer_handler();
 
 #if _GT_TEST_RAND_WIDGET_EVENT
@@ -198,6 +207,14 @@ void gt_task_handler(void)
 #endif
 }
 
+void gt_task_set_paused(bool paused)
+{
+    _gt_hdl_ctrl.paused = paused;
+}
 
+bool gt_task_is_paused(void)
+{
+    return _gt_hdl_ctrl.paused;
+}
 
 /* end ------------------------------------------------------------------*/

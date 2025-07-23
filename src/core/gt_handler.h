@@ -14,6 +14,7 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "stdbool.h"
 
 
 
@@ -51,6 +52,9 @@ void gt_init(void);
  * @brief GT-HMI task handler function called by task
  */
 void gt_task_handler(void);
+
+void gt_task_set_paused(bool paused);
+bool gt_task_is_paused(void);
 
 #ifdef __cplusplus
 } /*extern "C"*/
