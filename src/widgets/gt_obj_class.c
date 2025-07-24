@@ -97,7 +97,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_class_destroy_from_parent(gt_ob
     gt_obj_st * parent = self->parent;
     gt_obj_st * ret_p = NULL;
 
-    if (NULL == parent) {
+    if (gt_obj_is_type(parent, GT_TYPE_UNKNOWN)) {
         return ret_p;
     }
 
@@ -149,7 +149,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_obj_class_destroy_property(gt_obj_st * sel
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline void _gt_obj_class_destroy_self(gt_obj_st * self) {
-    GT_CHECK_BACK(self);
+    if (gt_obj_is_type(self, GT_TYPE_UNKNOWN)) {
+        return;
+    }
     _gt_obj_class_destroy_property(self);
     gt_mem_free(self);
     self = NULL;
@@ -176,7 +178,9 @@ static GT_ATTRIBUTE_RAM_TEXT bool _destroy_and_free_children(struct gt_obj_s * s
         }
         return true;
     }
-
+    if (gt_obj_is_type(self, GT_TYPE_UNKNOWN)) {
+        return false;
+    }
     gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETE, NULL);
 
     // release child object from bottom to top

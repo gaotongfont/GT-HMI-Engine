@@ -15,6 +15,8 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "stdbool.h"
+#include "stdint.h"
+#include "../gt_conf.h"
 
 
 
@@ -55,6 +57,10 @@ void gt_task_handler(void);
 
 void gt_task_set_paused(bool paused);
 bool gt_task_is_paused(void);
+
+bool gt_task_is_running(void);
+
+bool GT_ATTRIBUTE_RAM_TEXT gt_task_check_idle_timeout(uint32_t timeout);
 
 #ifdef __cplusplus
 } /*extern "C"*/

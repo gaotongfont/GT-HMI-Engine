@@ -126,11 +126,26 @@ typedef struct gt_disp_stack_res_s {
 gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step);
 
 /**
+ * @brief [Use screen stack manager] Go back to previous screen
+ *
+ * @param step 0: Only get current scr info; > 0: reload previous screen
+ * @return gt_scr_id_t The previous screen id
+ */
+gt_scr_id_t gt_disp_stack_go_back_thread_safe(gt_stack_size_t step);
+
+/**
  * @brief [Use screen stack manager] Use default param to load and display screen
  *
  * @param scr_id need to register id with init callback function @ref gt_scr_list_st
  */
 void gt_disp_stack_load_scr(gt_scr_id_t scr_id);
+
+/**
+ * @brief [Use screen stack manager] Use default param to load and display screen
+ *
+ * @param scr_id need to register id with init callback function @ref gt_scr_list_st
+ */
+void gt_disp_stack_load_scr_thread_safe(gt_scr_id_t scr_id);
 
 /**
  * @brief [Use screen stack manager] Use Custom param to load and display screen
@@ -144,12 +159,15 @@ void gt_disp_stack_load_scr(gt_scr_id_t scr_id);
 void gt_disp_stack_load_scr_anim(gt_scr_id_t scr_id, gt_scr_anim_type_et type, uint32_t time, uint32_t delay, bool del_prev_scr);
 
 /**
- * @brief [Warning] Only push screen object into stack, but not display or reload screen.
+ * @brief [Use screen stack manager] Use Custom param to load and display screen
  *
- * @param param
- * @return gt_disp_stack_res_st
+ * @param scr_id need to register id with init callback function @ref gt_scr_list_st
+ * @param type animation type
+ * @param time animation whole time
+ * @param delay delay time to start animation
+ * @param del_prev_scr true: free previous screen object; false: keep previous screen object alive
  */
-gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const * const param);
+void gt_disp_stack_load_scr_anim_thread_safe(gt_scr_id_t scr_id, gt_scr_anim_type_et type, uint32_t time, uint32_t delay, bool del_prev_scr);
 
 /**
  * @brief [Use screen stack manager] Use custom param to load and display screen
@@ -162,6 +180,16 @@ gt_disp_stack_res_st gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const
 gt_res_t gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const param);
 
 /**
+ * @brief [Use screen stack manager] Use custom param to load and display screen
+ *
+ * @param param @ref gt_disp_stack_param_st
+ * @return gt_res_t GT_RES_FAIL: create new screen failed;
+ *                  GT_RES_INV: reload current screen again;
+ *                  GT_RES_OK: load new page success.
+ */
+gt_res_t gt_disp_stack_load_scr_anim_st_thread_safe(gt_disp_stack_param_st const * const param);
+
+/**
  * @brief [Unused screen stack manager] display screen by default param.
  *      [Warn] It is not recommended to use with screen stack api, please use
  *      gt_disp_stack_load_scr() instead.
@@ -169,6 +197,15 @@ gt_res_t gt_disp_stack_load_scr_anim_st(gt_disp_stack_param_st const * const par
  * @param scr screen object
  */
 void gt_disp_load_scr(gt_obj_st * scr);
+
+/**
+ * @brief [Unused screen stack manager] display screen by default param.
+ *      [Warn] It is not recommended to use with screen stack api, please use
+ *      gt_disp_stack_load_scr() instead.
+ *
+ * @param scr screen object
+ */
+void gt_disp_load_scr_thread_safe(gt_obj_st * scr);
 
 /**
  * @brief [Unused screen stack manager] display screen by custom param.
@@ -183,6 +220,20 @@ void gt_disp_load_scr(gt_obj_st * scr);
  *                  must be free by yourself.
  */
 void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t time, uint32_t delay, bool del_prev_scr);
+
+/**
+ * @brief [Unused screen stack manager] display screen by custom param.
+ *      [Warn] It is not recommended to use with screen stack api, please use
+ *      gt_disp_stack_load_scr_anim() instead.
+ *
+ * @param scr screen object
+ * @param type loading screen animation type
+ * @param time loading screen animation whole time
+ * @param delay loading screen delay time to start animation
+ * @param del_prev_scr true: free previous screen object; false: keep previous screen object alive,
+ *                  must be free by yourself.
+ */
+void gt_disp_load_scr_anim_thread_safe(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t time, uint32_t delay, bool del_prev_scr);
 
 /**
  * @brief Set display screen

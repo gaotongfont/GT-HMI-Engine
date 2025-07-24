@@ -66,9 +66,17 @@ void gt_refr_timer(void);
 
 /**
  * @brief Force flush the screen
- *      [Warn] Unsafe, should load screen init before flush
+ *      [Warn] Thread Unsafe, should load screen init before flush
  */
 void gt_refr_force_flush(void);
+
+/**
+ * @brief Force flush the screen
+ *      [Warn] Thread Safe, should load screen init before flush
+ * @param timeout
+ * @return true ok
+ */
+gt_res_t gt_refr_force_flush_thread_safe(uint32_t timeout);
 
 /**
  * @brief Set refresh enabled or not

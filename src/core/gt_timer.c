@@ -20,16 +20,17 @@
 
 
 /* private typedef ------------------------------------------------------*/
-
-/**
- * @brief timer task list ready to run
- */
-static GT_ATTRIBUTE_LARGE_RAM_ARRAY bool _gt_timer_task_ready_flag = false;
-
-
+typedef struct {
 #if GT_USE_DISPLAY_PREF_IDLE
-static uint32_t idle_last = 0;
+    uint32_t idle_last;
 #endif
+    uint8_t ready : 1;
+}_gt_timer_hdl_st;
+
+static GT_ATTRIBUTE_RAM_DATA _gt_timer_hdl_st _gt_timer_ctrl = {
+    .ready =  false,
+};
+
 
 /* static variables -----------------------------------------------------*/
 
@@ -46,11 +47,11 @@ static uint32_t idle_last = 0;
 /* static functions -----------------------------------------------------*/
 
 static GT_ATTRIBUTE_RAM_TEXT inline void _gt_timer_task_set_ready_flag(bool value) {
-    _gt_timer_task_ready_flag = value;
+    _gt_timer_ctrl.ready = value;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline bool _gt_timer_task_is_ready(void) {
-    return _gt_timer_task_ready_flag;
+    return _gt_timer_ctrl.ready;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _gt_timer_remove_task(_gt_timer_st *ptr) {
@@ -104,7 +105,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline uint32_t _gt_timer_for_each_exec(void) {
 #if GT_USE_DISPLAY_PREF_IDLE
 uint32_t gt_timer_get_idle(void)
 {
-    return idle_last;
+    return _gt_timer_ctrl.idle_last;
 }
 #endif
 
@@ -167,9 +168,9 @@ void _gt_timer_handler(void)
     busy_time += gt_tick_elapse(handler_start);
     uint32_t idle_period_time = gt_tick_elapse(idle_period_start);
     if (idle_period_time >= _IDLE_PERIOD) {
-        idle_last = (busy_time * 100) / idle_period_time;
-        idle_last = idle_last > 100 ? 0 : 100 - idle_last;
-        GT_LOGD(GT_LOG_TAG_GUI, "CPU used: %d/100\n", 100 - idle_last);
+        _gt_timer_ctrl.idle_last = (busy_time * 100) / idle_period_time;
+        _gt_timer_ctrl.idle_last = _gt_timer_ctrl.idle_last > 100 ? 0 : 100 - _gt_timer_ctrl.idle_last;
+        GT_LOGD(GT_LOG_TAG_GUI, "CPU used: %d/100\n", 100 - _gt_timer_ctrl.idle_last);
         busy_time = 0;
         idle_period_start = gt_tick_get();
     }

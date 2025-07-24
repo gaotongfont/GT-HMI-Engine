@@ -10,6 +10,7 @@
  /* include --------------------------------------------------------------*/
 #include "gt_hal_tick.h"
 #include "stdint.h"
+#include "../core/gt_handler.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -61,6 +62,10 @@ uint32_t gt_tick_elapse(uint32_t prev_tick)
     //overflow uint32_t
     prev_tick = UINT32_MAX - prev_tick + 1;
     return prev_tick + tick;
+}
+
+void gt_sleep_ms(uint32_t ms)
+{
 }
 
 /* end ------------------------------------------------------------------*/

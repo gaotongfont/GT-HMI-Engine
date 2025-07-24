@@ -9,8 +9,6 @@
 
  /* include --------------------------------------------------------------*/
 #include "./gt_handler.h"
-#include "stdbool.h"
-#include "../gt_conf.h"
 #include "./gt_mem.h"
 #include "./gt_timer.h"
 #include "../../driver/gt_port_disp.h"
@@ -44,6 +42,7 @@
 typedef struct {
     uint8_t inited : 1;
     uint8_t paused : 1;
+    volatile uint8_t running : 1;
 }_gt_hdl_st;
 
 
@@ -53,6 +52,7 @@ typedef struct {
 static _gt_hdl_st GT_ATTRIBUTE_RAM_DATA _gt_hdl_ctrl = {
     .inited = false,
     .paused = false,
+    .running = false,
 };
 
 /* static variables -----------------------------------------------------*/
@@ -113,12 +113,16 @@ static void gt_print_info_end(void) {
 }
 #endif
 
-static void _gt_init_set_flag(bool flag) {
+static GT_ATTRIBUTE_RAM_TEXT void _gt_init_set_flag(bool flag) {
     _gt_hdl_ctrl.inited = flag;
 }
 
-static bool _gt_init_is_done(void) {
+static GT_ATTRIBUTE_RAM_TEXT bool _gt_init_is_done(void) {
     return _gt_hdl_ctrl.inited;
+}
+
+static inline void GT_ATTRIBUTE_RAM_TEXT _gt_task_set_running(bool running) {
+    _gt_hdl_ctrl.running = running;
 }
 
 static void _gt_port_init(void) {
@@ -200,7 +204,9 @@ void gt_task_handler(void)
     if (gt_task_is_paused()) {
         return ;
     }
+    _gt_task_set_running(true);
     _gt_timer_handler();
+    _gt_task_set_running(false);
 
 #if _GT_TEST_RAND_WIDGET_EVENT
     _gt_test_rand_widget();
@@ -209,12 +215,36 @@ void gt_task_handler(void)
 
 void gt_task_set_paused(bool paused)
 {
+    uint32_t timeout = 0;
+    if (paused) {
+        while (gt_task_is_running() && (++timeout < 100)) {
+            gt_sleep_ms(5);
+        }
+    }
     _gt_hdl_ctrl.paused = paused;
 }
 
 bool gt_task_is_paused(void)
 {
     return _gt_hdl_ctrl.paused;
+}
+
+bool GT_ATTRIBUTE_RAM_TEXT gt_task_is_running(void)
+{
+    return _gt_hdl_ctrl.running;
+}
+
+bool GT_ATTRIBUTE_RAM_TEXT gt_task_check_idle_timeout(uint32_t timeout)
+{
+    uint32_t count = 0;
+    while (gt_task_is_running()) {
+        if (++count < timeout) {
+            gt_sleep_ms(1);
+            continue;
+        }
+        return false;
+    }
+    return true;
 }
 
 /* end ------------------------------------------------------------------*/

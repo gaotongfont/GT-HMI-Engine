@@ -121,6 +121,15 @@ void gt_refr_force_flush(void)
     gt_disp_ref_area(&reflush_area);
 }
 
+gt_res_t gt_refr_force_flush_thread_safe(uint32_t timeout)
+{
+    if (false == gt_task_check_idle_timeout(timeout)) {
+        return GT_RES_INV;
+    }
+    gt_refr_force_flush();
+    return GT_RES_OK;
+}
+
 void gt_refr_set_enabled(bool enabled)
 {
     gt_disp_st * disp = gt_disp_get_default();

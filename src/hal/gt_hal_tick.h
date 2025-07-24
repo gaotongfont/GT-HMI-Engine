@@ -52,6 +52,8 @@ uint32_t gt_tick_get(void);
  */
 uint32_t gt_tick_elapse(uint32_t prev_tick);
 
+void gt_sleep_ms(uint32_t ms);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
