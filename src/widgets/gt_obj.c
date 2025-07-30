@@ -530,6 +530,7 @@ gt_color_t gt_obj_get_bgcolor(gt_obj_st * obj)
 
 gt_size_t gt_obj_get_limit_right(gt_obj_st * obj)
 {
+#if 0
     gt_obj_st * child = NULL;
     gt_size_t max_x = -0x7fff;
     gt_size_t temp = 0, min_x = 0x7fff;
@@ -546,10 +547,16 @@ gt_size_t gt_obj_get_limit_right(gt_obj_st * obj)
         }
     }
     return min_x - max_x + obj->area.w;
+#else
+    GT_CHECK_BACK_VAL(obj, 0);
+    gt_size_t max_x = gt_obj_get_childs_max_width(obj);
+    return obj->area.x - max_x;
+#endif
 }
 
 gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj)
 {
+#if 0
     gt_obj_st * child = NULL;
     gt_size_t max_y = -0x7fff;
     gt_size_t temp = 0, min_y = 0x7fff;
@@ -566,6 +573,11 @@ gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj)
         }
     }
     return min_y - max_y + obj->area.h;
+#else
+    GT_CHECK_BACK_VAL(obj, 0);
+    gt_size_t max_y = gt_obj_get_childs_max_height(obj);
+    return obj->area.y - max_y;
+#endif
 }
 
 gt_point_st gt_obj_get_childs_max_size(gt_obj_st * parent)
