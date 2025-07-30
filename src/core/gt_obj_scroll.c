@@ -147,23 +147,24 @@ void _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offs
 {
     gt_point_st * scroll = &obj->process_attr.scroll;
     gt_size_t right = gt_obj_get_limit_right(obj) - (offset_x);
-    gt_size_t bottom = gt_obj_get_limit_bottom(obj) - (offset_y);
+    gt_size_t bottom = gt_obj_get_limit_bottom(obj) + (offset_y);
 
-    if (scroll->y > 0) {
-        scroll->y = 0;
-    } else if (bottom < 0 && scroll->y < bottom) {
-        scroll->y = bottom;
-    } else if (bottom >= 0) {
+    if( scroll->y > 0 ) {
         scroll->y = 0;
     }
+    if(bottom < obj->area.y + obj->area.h ||
+            ((bottom == obj->area.y + obj->area.h) && (scroll->y < obj->process_attr.scroll_prev.y))) {
+        scroll->y = obj->process_attr.scroll_prev.y + ((obj->area.y + obj->area.h - bottom));
+    }
 
-    if (scroll->x > 0) {
-        scroll->x = 0;
-    } else if (right < 0 && scroll->x < right) {
-        scroll->x = right;
-    } else if (right >= 0) {
+    if( scroll->x >0 ) {
         scroll->x = 0;
     }
+    else if (right < obj->area.x + obj->area.w ||
+            ((right == obj->area.x + obj->area.w) && (scroll->x < obj->process_attr.scroll_prev.x))) {
+        scroll->x = obj->process_attr.scroll_prev.x + ((obj->area.x + obj->area.w - right));
+    }
+
     if (obj->process_attr.scroll_prev.x == scroll->x && obj->process_attr.scroll_prev.y == scroll->y) {
         return;
     }

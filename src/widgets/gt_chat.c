@@ -402,17 +402,29 @@ _gt_chat_replace_msg_by_len(gt_obj_st* chat, const char* msg, uint16_t msg_len, 
     return obj;
 }
 static GT_ATTRIBUTE_RAM_TEXT void _scrolling_handler(gt_obj_st * obj) {
-    gt_size_t bottom = gt_obj_get_limit_bottom(obj) + (-_MSG_SPACE_Y * 2);
+    gt_size_t bottom = gt_obj_get_limit_bottom(obj) + (_MSG_SPACE_Y << 1);
 
-    if (gt_obj_scroll_get_y(obj) > 0) {
-        obj->process_attr.scroll.y = 0;
+    gt_point_st * scroll = &obj->process_attr.scroll;
+
+    if( scroll->y > 0 ) {
+        scroll->y = 0;
     }
-    else if (gt_obj_scroll_get_y(obj) < bottom) {
-        obj->process_attr.scroll.y = bottom;
+    if(bottom < obj->area.y + obj->area.h ||
+            ((bottom == obj->area.y + obj->area.h) && (scroll->y < obj->process_attr.scroll_prev.y))) {
+        scroll->y = obj->process_attr.scroll_prev.y + ((obj->area.y + obj->area.h - bottom));
     }
+
+    if (obj->process_attr.scroll_prev.y == scroll->y) {
+        return;
+    }
+
     _gt_chat_msg_move_y(obj, gt_obj_scroll_get_y(obj));
-
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+
+    if (obj->process_attr.scroll_prev.y != scroll->y) {
+        obj->process_attr.scroll_prev.y = scroll->y;
+    }
+
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_update_msg_size(gt_obj_st * chat) {

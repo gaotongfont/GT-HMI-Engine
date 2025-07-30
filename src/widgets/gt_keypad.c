@@ -27,7 +27,7 @@
 #include "gt_conf_widgets.h"
 
 #include "gt_input.h"
-
+#include "../core/gt_style.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_KEYPAD
@@ -655,22 +655,30 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 static void _scrolling_handler(gt_obj_st * obj)
 {
     gt_size_t bottom = gt_obj_get_limit_bottom(obj);
-    uint16_t height = gt_obj_get_childs_max_height(obj);
 
-    if (height < obj->area.h) {
-        obj->process_attr.scroll.y = 0;
+    gt_point_st * scroll = &obj->process_attr.scroll;
+
+    if( scroll->y > 0 ) {
+        scroll->y = 0;
+    }
+    if(bottom < obj->area.y + obj->area.h ||
+            ((bottom == obj->area.y + obj->area.h) && (scroll->y < obj->process_attr.scroll_prev.y))) {
+        scroll->y = obj->process_attr.scroll_prev.y + ((obj->area.y + obj->area.h - bottom));
+    }
+
+    if (obj->process_attr.scroll_prev.y == scroll->y) {
         return;
     }
-    else if (gt_obj_scroll_get_y(obj) > 0) {
-        obj->process_attr.scroll.y = 0;
-    }
-    else if (gt_obj_scroll_get_y(obj) < bottom) {
-        obj->process_attr.scroll.y = bottom;
-    }
+
     gt_size_t offset = obj->area.y + gt_obj_scroll_get_y(obj);
     for (gt_size_t i = 0, cnt = obj->cnt_child; i < cnt; i++) {
         gt_obj_set_pos(obj->child[i], gt_obj_get_x(obj->child[i]), offset);
     }
+
+    if (obj->process_attr.scroll_prev.y != scroll->y) {
+        obj->process_attr.scroll_prev.y = scroll->y;
+    }
+
 }
 
 static gt_size_t _gt_get_map_index(gt_keypad_map_st * map_list, uint8_t map_total, gt_keypad_type_te type)
