@@ -146,7 +146,7 @@ gt_size_t gt_obj_scroll_get_y(gt_obj_st * obj)
 void _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offset_y)
 {
     gt_point_st * scroll = &obj->process_attr.scroll;
-    gt_size_t right = gt_obj_get_limit_right(obj) - (offset_x);
+    gt_size_t right = gt_obj_get_limit_right(obj) + (offset_x);
     gt_size_t bottom = gt_obj_get_limit_bottom(obj) + (offset_y);
 
     if( scroll->y > 0 ) {
