@@ -568,6 +568,34 @@ gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj)
     return max_y;
 }
 
+gt_padding_st gt_obj_get_limit_padding(gt_obj_st * parent)
+{
+    gt_obj_st * child = NULL;
+    gt_point_st ret_size = { .x = 0, .y = 0 };
+    gt_padding_st ret = {
+        .left = 0,
+        .top = 0,
+        .right = 0,
+        .bottom = 0
+    };
+    gt_point_st min = { .x = 0x7fff, .y = 0x7fff };
+    gt_point_st max = { .x = -0x7fff, .y = -0x7fff };
+    GT_CHECK_BACK_VAL(parent, ret);
+
+    for (gt_size_t i = parent->cnt_child - 1; i >= 0; --i) {
+        child = parent->child[i];
+        if (child->area.x < min.x) { min.x = child->area.x; }
+        if (child->area.y < min.y) { min.y = child->area.y; }
+        if (child->area.x + child->area.w > max.x) { max.x = child->area.x + child->area.w; }
+        if (child->area.y + child->area.h > max.y) { max.y = child->area.y + child->area.h; }
+    }
+    ret.left = min.x;
+    ret.top = min.y;
+    ret.right = max.x;
+    ret.bottom = max.y;
+    return ret;
+}
+
 gt_point_st gt_obj_get_childs_max_size(gt_obj_st * parent)
 {
     gt_obj_st * child = NULL;

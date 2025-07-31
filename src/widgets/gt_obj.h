@@ -323,6 +323,7 @@ gt_color_t gt_obj_get_bgcolor(gt_obj_st * obj);
 
 gt_size_t gt_obj_get_limit_right(gt_obj_st * obj);
 gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj);
+gt_padding_st gt_obj_get_limit_padding(gt_obj_st * parent);
 
 gt_point_st gt_obj_get_childs_max_size(gt_obj_st * parent);
 gt_size_t gt_obj_get_childs_max_width(gt_obj_st * parent);
