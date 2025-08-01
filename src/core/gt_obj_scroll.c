@@ -158,7 +158,8 @@ void _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offs
         scroll->y = 0;
     }
     else if(padding.top >= obj->area.y && padding.bottom <= (obj->area.y + obj->area.h)) {
-        scroll->y = (0 == prev->y) ? 0 : padding.top - obj->area.y;
+        // scroll->y = (0 == prev->y) ? 0 : padding.top - obj->area.y;
+        scroll->y = prev->y;
     }
     else if((padding.bottom + diff_y) < obj->area.y + obj->area.h ||
             (((padding.bottom + diff_y) == obj->area.y + obj->area.h) && (scroll->y < prev->y))) {
@@ -170,7 +171,8 @@ void _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offs
         scroll->x = 0;
     }
     else if(padding.left >= obj->area.x && padding.right <= (obj->area.x + obj->area.w)) {
-        scroll->x = (0 == prev->x) ? 0 : padding.left - obj->area.x;
+        // scroll->x = (0 == prev->x) ? 0 : padding.left - obj->area.x;
+        scroll->x = prev->x;
     }
     else if((padding.right + diff_x) < obj->area.x + obj->area.w ||
             (((padding.right + diff_x) == obj->area.x + obj->area.w) && (scroll->x < prev->x))) {
