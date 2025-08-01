@@ -1522,7 +1522,8 @@ _disp_font:
                     }
                 }
             } else {
-                gt_size_t symbol_size = ((tmp_font.info.size >> 3) << 3);
+                uint8_t symbol_size = gt_symbol_get_size(tmp_font.info.size);
+
                 if (symbol_size != tmp_font.info.size) {
                     gt_memset(tmp_font.res, 0, data_len);
                 }
@@ -2048,7 +2049,7 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
                 }
             }
         } else {
-            gt_size_t symbol_size = ((tmp_font.info.size >> 3) << 3);
+            uint8_t symbol_size = gt_symbol_get_size(tmp_font.info.size);
             if (symbol_size != tmp_font.info.size) {
                 gt_memset(tmp_font.res, 0, data_len);
             }

@@ -497,6 +497,9 @@ typedef struct _gt_symbol_s{
 bool gt_symbol_is_valid_range(uint32_t uni_or_gbk);
 const uint8_t * gt_symbol_get_mask_buf(uint32_t uni_or_gbk, uint8_t size);
 
+gt_size_t gt_symbol_get_size(uint8_t size);
+
+
 #if _GT_SYMBOL_PRINTF_VALID_CODE
 /**
  * @brief Print all valid symbol can be use utf8 code, unicode and gbk(gb18030) common valid range:

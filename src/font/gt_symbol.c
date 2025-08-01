@@ -1911,6 +1911,24 @@ bool gt_symbol_is_valid_range(uint32_t uni_or_gbk)
     return true;
 }
 
+gt_size_t gt_symbol_get_size(uint8_t size)
+{
+    const uint8_t symbol_size[] = {12, 16, 20, 24};
+    uint8_t idx = 0, len = sizeof(symbol_size) / sizeof(symbol_size[0]);
+    uint8_t s_idx = 0, min_s = 0xFF;
+    for(idx = 0; idx < len; ++idx) {
+        if(symbol_size[idx] == size) {
+            return size;
+        }
+        uint8_t diff = gt_abs(symbol_size[idx] - size);
+        if(diff < min_s) {
+            min_s = diff;
+            s_idx = idx;
+        }
+    }
+    return symbol_size[idx];
+}
+
 const uint8_t * gt_symbol_get_mask_buf(uint32_t uni_or_gbk, uint8_t size)
 {
     uint16_t cnt = 0, idx = 0;
