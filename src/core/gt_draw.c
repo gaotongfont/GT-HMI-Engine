@@ -821,6 +821,8 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _filling_by_default_full_mode(_gt_draw_ctx
 
     gt_fs_fp_st * fp = dsc_img->fp;
     uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
+    bool check_mask = gt_mask_check(blend_dsc->mask_area);
+
     if (!fp) {
         GT_LOGW(GT_LOG_TAG_GUI, "gt_fs_get_fp failed");
         return GT_RES_FAIL;
@@ -831,7 +833,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _filling_by_default_full_mode(_gt_draw_ctx
         GT_LOGV(GT_LOG_TAG_GUI, "Extra buffer color or alpha pointer is NULL");
         return GT_RES_INV;
     }
-    if (full_img->len < (is_mask ? len : 0) + addr_start_alpha) {
+    if (full_img->len < ((is_mask || check_mask) ? len : 0) + addr_start_alpha) {
         GT_LOGV(GT_LOG_TAG_GUI, "Extra buffer color or alpha size is not enough to store image data");
         return GT_RES_INV;
     }
@@ -844,12 +846,24 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _filling_by_default_full_mode(_gt_draw_ctx
     blend_dsc->dst_buf = (gt_color_t * )full_img->buffer;
 #endif
 
-    if (is_mask) {
+    if (is_mask || check_mask) {
 #if GT_USE_EXTRA_FULL_IMG_OFFSET
         blend_dsc->mask_buf = (gt_opa_t * )&full_img->buffer[addr_start_alpha + full_img->offset];
 #else
         blend_dsc->mask_buf = (gt_opa_t * )&full_img->buffer[addr_start_alpha];
 #endif
+    }
+
+    if(check_mask) {
+        gt_opa_t opa = blend_dsc->opa >= GT_OPA_MAX ? GT_OPA_COVER: blend_dsc->opa;
+        uint8_t *opa_buf = blend_dsc->mask_buf;
+        for(uint32_t i = 0; i < dsc_img->header.h; ++i) {
+            if(!is_mask) {
+                gt_memset(opa_buf, opa, dsc_img->header.w);
+            }
+            gt_mask_get(opa_buf, blend_dsc->mask_area->x, blend_dsc->mask_area->y + i, dsc_img->header.w);
+            opa_buf += dsc_img->header.w;
+        }
     }
 
     gt_draw_blend(draw_ctx, blend_dsc);
@@ -1534,11 +1548,15 @@ _disp_font:
                     idx_2 += tmp_font.len;
                     continue;
                 }
+
+                gt_size_t off = (tmp_font.info.size - symbol_size) >> 1;
+                area_font.y += off;
                 blend_dsc.mask_buf = temp;
                 area_font.w = symbol_size;
                 area_font.h = symbol_size;
                 gt_draw_blend(draw_ctx, &blend_dsc);
                 area_font.h = font_disp_h;
+                area_font.y -= off;
                 blend_dsc.mask_buf = NULL;
             }
 
@@ -2061,10 +2079,13 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
                 idx += tmp_font.len;
                 continue;
             }
+            gt_size_t off = (tmp_font.info.size - symbol_size) >> 1;
+            area_font.y += off;
             area_font.w = symbol_size;
             area_font.h = symbol_size;
             gt_draw_blend(draw_ctx, &blend_dsc);
             area_font.h = font_disp_h;
+            area_font.y -= off;
             blend_dsc.mask_buf = NULL;
         }
 
