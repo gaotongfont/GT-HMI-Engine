@@ -1473,6 +1473,7 @@ _disp_font:
                     gt_attr_rect_st dsc_emoji = {0};
                     dsc_emoji.bg_opa = dsc->opa;
                     dsc_emoji.raw_img = &emoji_raw;
+                    dsc_emoji.limit_area = (gt_area_st*)view;
 
                     uint8_t emoji_h = gt_font_get_one_word_height(uni_or_gbk, &tmp_font);
                     emoji_area.y += ((tmp_font.info.size - emoji_h) >> 1);
@@ -2005,6 +2006,7 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
                 gt_attr_rect_st dsc_emoji = {0};
                 dsc_emoji.bg_opa = dsc->opa;
                 dsc_emoji.raw_img = &emoji_raw;
+                dsc_emoji.limit_area = (gt_area_st*)view;
 
                 uint8_t emoji_h = gt_font_get_one_word_height(uni_or_gbk, &tmp_font);
                 emoji_area.y += ((tmp_font.info.size - emoji_h) >> 1);
@@ -2477,7 +2479,7 @@ handler_lb:
         .dst_area = &dst_area,
         .mask_area = &mask_area,
         .masking = dsc->masking,
-        // .view_area = dsc->limit_area,   // TODO feat limit area range
+        .view_area = dsc->limit_area,   // TODO feat limit area range
         .opa = dsc->bg_opa
     };
 
