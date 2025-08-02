@@ -654,32 +654,9 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
 static void _scrolling_handler(gt_obj_st * obj)
 {
-    gt_size_t bottom = gt_obj_get_limit_bottom(obj);
-
-    gt_point_st * scroll = &obj->process_attr.scroll;
-
-    if( scroll->y > 0 ) {
-        scroll->y = 0;
-    }
-    if(bottom < obj->area.y + obj->area.h ||
-            ((bottom == obj->area.y + obj->area.h) && (scroll->y < obj->process_attr.scroll_prev.y))) {
-        scroll->y = obj->process_attr.scroll_prev.y + ((obj->area.y + obj->area.h - bottom));
-    }
-
-    if (obj->process_attr.scroll_prev.y == scroll->y) {
-        return;
-    }
-
-    gt_size_t offset = obj->area.y + gt_obj_scroll_get_y(obj);
-    for (gt_size_t i = 0, cnt = obj->cnt_child; i < cnt; i++) {
-        gt_obj_set_pos(obj->child[i], gt_obj_get_x(obj->child[i]), offset);
-    }
-
-    if (obj->process_attr.scroll_prev.y != scroll->y) {
-        obj->process_attr.scroll_prev.y = scroll->y;
-    }
-
+    _gt_obj_scroll_internal(obj, 0, 0);
 }
+
 
 static gt_size_t _gt_get_map_index(gt_keypad_map_st * map_list, uint8_t map_total, gt_keypad_type_te type)
 {
@@ -716,6 +693,7 @@ static void _gt_keypad_switch_type(gt_obj_st * keypad, gt_keypad_type_te type, b
     }
     style->type = type;
     keypad->process_attr.scroll.y = 0;
+    keypad->process_attr.scroll_prev.y = 0;
     gt_obj_set_pos(style->btnmap, keypad->area.x, keypad->area.y);
     gt_btnmap_set_map(style->btnmap, (gt_map_st*)style->map_list[idx].map, style->map_list[idx].type);
 
