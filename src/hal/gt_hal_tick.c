@@ -68,4 +68,10 @@ void gt_sleep_ms(uint32_t ms)
 {
 }
 
+void gt_sleep_sec(uint32_t sec)
+{
+    gt_sleep_ms(1000);
+}
+
+
 /* end ------------------------------------------------------------------*/
