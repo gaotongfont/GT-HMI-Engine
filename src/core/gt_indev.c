@@ -1260,8 +1260,6 @@ gt_res_t _gt_indev_reset_status(void)
         if (indev->scroll_throw_anim) {
             gt_anim_del_by(indev->scroll_throw_anim);
         }
-        gt_memset(data_p, 0, sizeof(union data_union));
-        indev->state = GT_INDEV_STATE_INVALID;
     }
     return GT_RES_OK;
 }
