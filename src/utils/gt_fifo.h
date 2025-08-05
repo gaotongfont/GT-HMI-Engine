@@ -30,6 +30,7 @@ typedef struct gt_fifo_s {
     int32_t tail;
     bool _is_full : 1;
     bool _is_malloc_inside : 1;
+    bool _is_init : 1;
 }gt_fifo_st;
 
 
@@ -60,6 +61,8 @@ int32_t gt_fifo_avail(gt_fifo_st * fifo);
  * @return length
  */
 int32_t gt_fifo_used(gt_fifo_st * fifo);
+
+int32_t gt_fifo_get_size(gt_fifo_st * fifo);
 
 bool gt_fifo_is_empty(gt_fifo_st * fifo);
 
