@@ -245,6 +245,15 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _gt_free_hooks(void * ptr) {
 /* global functions / API interface -------------------------------------*/
 void gt_mem_init(void)
 {
+#if GT_MEM_CUSTOM_POINTER
+    if (NULL == _mem_pool_int) {
+        _mem_pool_int = (MEM_UNIT * )gt_mem_extern_malloc(sizeof(MEM_UNIT) * GT_MEM_SIZE);
+        if (NULL == _mem_pool_int) {
+            GT_LOGE(GT_LOG_TAG_MEM, "custom malloc failed");
+            return;
+        }
+    }
+#endif
 #if GT_MEM_CUSTOM
     _tlsf = gt_tlsf_create_with_pool((void *)_mem_pool_int, GT_MEM_SIZE);
     _heap_info.addr_start = (uintptr_t)_mem_pool_int;
@@ -280,6 +289,12 @@ void gt_mem_deinit(void)
 {
 #if GT_MEM_CUSTOM
     gt_tlsf_destroy(_tlsf);
+#endif
+#if GT_MEM_CUSTOM_POINTER
+    if (_mem_pool_int) {
+        gt_mem_extern_free(_mem_pool_int);
+        _mem_pool_int = NULL;
+    }
 #endif
 }
 
