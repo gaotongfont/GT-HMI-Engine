@@ -807,6 +807,52 @@ static GT_ATTRIBUTE_RAM_TEXT void _filling_by_ram_data(_gt_draw_ctx_st * draw_ct
         return;
     }
 
+    bool check_mask = gt_mask_check(blend_dsc->mask_area);
+    if(check_mask){
+        gt_opa_t* alpha = NULL;
+        if(dsc_img->alpha) {
+            alpha = &dsc_img->alpha[0];
+        }
+        uint16_t w, h, y = 0;
+        uint32_t offset = 0, len = 0;
+        w = dsc_img->header.w;
+        h = dsc_img->header.h;
+        len = w * sizeof(gt_opa_t);
+
+        blend_dsc->mask_buf = gt_mem_malloc(w);
+        if (!blend_dsc->mask_buf) {
+            GT_LOGE(GT_LOG_TAG_GUI, "Mask buffer malloc failed, size: %d, %d", w, h);
+            return;
+        }
+
+        gt_opa_t opa = blend_dsc->opa >= GT_OPA_MAX ? GT_OPA_COVER: blend_dsc->opa;
+        blend_dsc->dst_area->h = 1;
+        while (y < h) {
+            if (gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area)) {
+
+                if (alpha) {
+                    gt_memcpy(blend_dsc->mask_buf, &alpha[offset], w);
+                }
+                else{
+                    gt_memset(blend_dsc->mask_buf, opa, w);
+                }
+
+                gt_mask_get(blend_dsc->mask_buf, blend_dsc->mask_area->x, blend_dsc->mask_area->y, w);
+                gt_draw_blend(draw_ctx, blend_dsc);
+            }
+            blend_dsc->dst_buf += len;
+            offset += w;
+            ++blend_dsc->dst_area->y;
+            ++blend_dsc->mask_area->y;
+            ++y;
+        }
+
+        gt_mem_free(blend_dsc->mask_buf);
+        blend_dsc->mask_buf = NULL;
+        blend_dsc->dst_buf = NULL;
+        return;
+    }
+
     gt_draw_blend(draw_ctx, blend_dsc);
     blend_dsc->dst_buf = NULL;
     blend_dsc->mask_buf = NULL;
