@@ -54,7 +54,7 @@ void gt_cross_layout_set_ver_obj_area(gt_obj_st* layout, gt_size_t x, gt_size_t 
 void gt_cross_layout_set_hor_offset(gt_obj_st* layout, gt_size_t offset);
 void gt_cross_layout_set_ver_offset(gt_obj_st* layout, gt_size_t offset);
 
-void gt_cross_layout_hor_add_itme(gt_obj_st* layout, gt_obj_st* obj, uint8_t ver_index);
+void gt_cross_layout_hor_add_item(gt_obj_st* layout, gt_obj_st* obj, uint8_t ver_index);
 void gt_cross_layout_ver_add_item(gt_obj_st* layout, gt_obj_st* obj);
 //
 void gt_cross_layout_set_hor_index(gt_obj_st* layout, uint8_t hor_index);

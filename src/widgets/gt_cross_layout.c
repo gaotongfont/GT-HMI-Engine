@@ -1050,7 +1050,7 @@ void gt_cross_layout_set_ver_offset(gt_obj_st* layout, gt_size_t offset)
     style->ver_offset = offset;
 }
 
-void gt_cross_layout_hor_add_itme(gt_obj_st* layout, gt_obj_st* obj, uint8_t ver_index)
+void gt_cross_layout_hor_add_item(gt_obj_st* layout, gt_obj_st* obj, uint8_t ver_index)
 {
     GT_CHECK_BACK(layout);
     GT_CHECK_BACK(obj);
