@@ -99,6 +99,8 @@ void gt_obj_set_touch_expand_area(gt_obj_st * obj, gt_size_t hor, gt_size_t ver)
  * @param diff_y offset
  */
 void gt_obj_set_pos_relative(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff_x, gt_size_t diff_y);
+void gt_obj_set_pos_relative_x(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff_x);
+void gt_obj_set_pos_relative_y(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff_y);
 void gt_obj_set_pos_always_full_display(gt_obj_st * obj, gt_size_t x, gt_size_t y);
 /**
  * @brief

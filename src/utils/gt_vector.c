@@ -239,8 +239,7 @@ void * _gt_vector_turn_next(_gt_vector_st * vector)
 
 gt_size_t _gt_vector_get_count(_gt_vector_st const * vector)
 {
-    GT_CHECK_BACK_VAL(vector, -1);
-    return vector->count;
+    return vector ? vector->count : -1;
 }
 
 gt_size_t _gt_vector_set_index(_gt_vector_st * vector, gt_size_t index)
@@ -266,16 +265,17 @@ gt_size_t _gt_vector_set_index(_gt_vector_st * vector, gt_size_t index)
 gt_size_t _gt_vector_get_index(_gt_vector_st const * vector)
 {
     GT_CHECK_BACK_VAL(vector, -1);
-    GT_CHECK_BACK_VAL(vector->count, -1);
 
-    return vector->index;
+    return (0 == vector->count) ? -1 : vector->index;
 }
 
 void * _gt_vector_get_item(_gt_vector_st const * vector, gt_size_t index)
 {
     GT_CHECK_BACK_VAL(vector, NULL);
-    GT_CHECK_BACK_VAL(vector->count, NULL);
     if (index < 0) {
+        return NULL;
+    }
+    if (0 == vector->count) {
         return NULL;
     }
     if (index >= vector->count) {

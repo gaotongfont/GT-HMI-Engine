@@ -148,6 +148,21 @@ static GT_ATTRIBUTE_RAM_TEXT void _radius_anim_exec_cb(void * obj, int32_t val) 
     gt_event_send(tar, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+static void GT_ATTRIBUTE_RAM_TEXT
+_common_pos_relative_handle(gt_obj_st * obj, gt_area_st * area_p) {
+#if GT_USE_LAYER_TOP
+    if (_update_layer_top_widget_area(obj, *area_p, false)) {
+        return ;
+    }
+#endif
+    /** normal screen */
+    _gt_obj_move_child_by(obj, area_p->x - obj->area.x, area_p->y - obj->area.y);
+    if (gt_obj_get_virtual(obj)) {
+        return ;
+    }
+    gt_obj_set_area(obj, *area_p);
+}
+
 /* global functions / API interface -------------------------------------*/
 gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area)
 {
@@ -233,17 +248,39 @@ void gt_obj_set_pos_relative(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff
         .w = obj->area.w,
         .h = obj->area.h
     };
-#if GT_USE_LAYER_TOP
-    if (_update_layer_top_widget_area(obj, area, false)) {
-        return ;
+    _common_pos_relative_handle(obj, &area);
+}
+
+void gt_obj_set_pos_relative_x(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff_x)
+{
+    GT_CHECK_BACK(obj);
+    if (NULL == target) {
+        target = obj->parent;
+        GT_CHECK_BACK(target);
     }
-#endif
-    /** normal screen */
-    _gt_obj_move_child_by(obj, area.x - obj->area.x, area.y - obj->area.y);
-    if (gt_obj_get_virtual(obj)) {
-        return ;
+    gt_area_st area = {
+        .x = target->area.x + diff_x,
+        .y = obj->area.y,
+        .w = obj->area.w,
+        .h = obj->area.h
+    };
+    _common_pos_relative_handle(obj, &area);
+}
+
+void gt_obj_set_pos_relative_y(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff_y)
+{
+    GT_CHECK_BACK(obj);
+    if (NULL == target) {
+        target = obj->parent;
+        GT_CHECK_BACK(target);
     }
-    gt_obj_set_area(obj, area);
+    gt_area_st area = {
+        .x = obj->area.x,
+        .y = target->area.y + diff_y,
+        .w = obj->area.w,
+        .h = obj->area.h
+    };
+    _common_pos_relative_handle(obj, &area);
 }
 
 void gt_obj_set_pos_always_full_display(gt_obj_st * obj, gt_size_t x, gt_size_t y)
