@@ -195,8 +195,8 @@ static void _gt_anim_ready_handler(gt_anim_st * anim) {
         --anim->repeat_count;
     }
 
+    if (anim->ready_cb) { anim->ready_cb(anim); }
     if (!anim->repeat_count && (anim->invert || !anim->playback_time)) {
-        if (anim->ready_cb) { anim->ready_cb(anim); }
         if (anim->time_act < anim->time || anim->repeat_count) {
             /** Want to play continue */
             return ;
@@ -243,6 +243,11 @@ static void _gt_anim_task_handler(struct _gt_timer_s * timer)
 refresh_lb:
     _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         _is_list_change = false;
+
+        if(ptr->deleted){
+            _gt_anim_ready_handler(ptr);
+            continue;
+        }
 
         if (ptr->run_already == _is_run_same_time) {
             continue;
@@ -516,11 +521,15 @@ bool gt_anim_del_safe_by(void * target)
         if (ptr->tar != target) {
             continue;
         }
+        if( ptr->deleted_cb) { ptr->deleted_cb(ptr); }
         ptr->exec_cb = NULL;
         ptr->start_cb = NULL;
         ptr->ready_cb = NULL;
         ptr->deleted_cb = NULL;
         ptr->repeat_count = 0;
+        ptr->deleted = true;
+        ptr->time_act = 0;
+        ptr->time = 0;
         ret = true;
     }
     return ret;

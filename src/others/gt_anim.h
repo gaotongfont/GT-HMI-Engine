@@ -123,7 +123,8 @@ typedef struct gt_anim_s {
     uint8_t invert      : 1;    // remark playback current status [0: forward, 1: backward]
     uint8_t playback    : 1;    // TODO enabled playback
     uint8_t paused      : 1;    // paused status
-    uint8_t reserved    : 4;
+    uint8_t deleted     : 1;    // deleted status by safe @ gt_anim_del_safe_by()
+    uint8_t reserved    : 3;
 }gt_anim_st;
 
 

@@ -370,6 +370,12 @@ _free_contents(gt_obj_st * obj) {
         style_p->cnt_contents = 0;
         _reset_scroll_value(&obj->process_attr);
     }
+
+    if (style_p->scroll_to_newest_anim) {
+        gt_anim_stop(style_p->scroll_to_newest_anim);
+        gt_anim_del_safe_by(obj);
+        style_p->scroll_to_newest_anim = NULL;
+    }
 }
 
 /**
@@ -439,7 +445,7 @@ _anim_scroll_exec_cb(void * tv, int32_t val) {
 
     if (_is_scroll_to_bottom(obj)) {
         gt_anim_stop(style->scroll_to_newest_anim);
-        gt_anim_del_safe_by(style->scroll_to_newest_anim);
+        gt_anim_set_repeat_count(style->scroll_to_newest_anim, 0);
         style->scroll_to_newest_anim = NULL;
         return;
     }
