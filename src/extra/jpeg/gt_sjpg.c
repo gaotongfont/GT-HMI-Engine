@@ -132,22 +132,22 @@ static void _sjpg_free(_sjpg_st * sjpg) {
         return ;
     }
     if (sjpg->jdec_hdc) {
-        gt_mem_free(sjpg->jdec_hdc);
+        gt_mem_extern_free(sjpg->jdec_hdc);
         sjpg->jdec_hdc = NULL;
     }
     if (sjpg->work_buf) {
-        gt_mem_free(sjpg->work_buf);
+        gt_mem_extern_free(sjpg->work_buf);
         sjpg->work_buf = NULL;
     }
     if (sjpg->frame_cache) {
-        gt_mem_free(sjpg->frame_cache);
+        gt_mem_extern_free(sjpg->frame_cache);
         sjpg->frame_cache = NULL;
     }
     if (sjpg->frame_base_offset) {
-        gt_mem_free(sjpg->frame_base_offset);
+        gt_mem_extern_free(sjpg->frame_base_offset);
         sjpg->frame_base_offset = NULL;
     }
-    gt_mem_free(sjpg);
+    gt_mem_extern_free(sjpg);
 }
 
 static size_t input_func(JDEC * jdec,uint8_t * buff, size_t len) {
@@ -209,12 +209,12 @@ static gt_res_t _common_sjpg_info(struct _gt_img_decoder_s * decoder, gt_fs_fp_s
         header->h = (buffer[SJPEG_y_RES_OFFSET + 1] << 8) | buffer[SJPEG_y_RES_OFFSET];
     }
     else if (_is_jpg(buffer, buffer_eod, ret_len)) {
-        uint8_t * work_buffer = gt_mem_malloc(TJPGD_WORK_BUFF_SIZE);
+        uint8_t * work_buffer = gt_mem_extern_malloc(TJPGD_WORK_BUFF_SIZE);
         if (!work_buffer) {
             return GT_RES_INV;
         }
         if (gt_fs_seek(fp, 0, GT_FS_SEEK_SET)) {
-            gt_mem_free(work_buffer);
+            gt_mem_extern_free(work_buffer);
             return GT_RES_INV;
         }
         JDEC jdec_hdc = {0};
@@ -222,7 +222,7 @@ static gt_res_t _common_sjpg_info(struct _gt_img_decoder_s * decoder, gt_fs_fp_s
             .file = fp,
         };
         JRESULT j_ret = jd_prepare(&jdec_hdc, input_func, work_buffer, (size_t)TJPGD_WORK_BUFF_SIZE, (void *)&dev);
-        gt_mem_free(work_buffer);
+        gt_mem_extern_free(work_buffer);
         if (JDR_OK != j_ret) {
             return GT_RES_INV;
         }
@@ -277,7 +277,7 @@ static inline _sjpg_st * _malloc_sjpg_st(struct _gt_img_dsc_s * dsc) {
         return sjpg;
     }
     /** first time malloc memory */
-    sjpg = gt_mem_malloc(sizeof(_sjpg_st));
+    sjpg = gt_mem_extern_malloc(sizeof(_sjpg_st));
     if (NULL == sjpg) {
         return NULL;
     }
@@ -320,7 +320,7 @@ static gt_res_t _common_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt
         sjpg->sjpeg_total_frames = (buffer[SJPEG_TOTAL_FRAMES_OFFSET + 1] << 8) | buffer[SJPEG_TOTAL_FRAMES_OFFSET];
         sjpg->sjpeg_single_frame_height = (buffer[SJPEG_BLOCK_WIDTH_OFFSET + 1] << 8) | buffer[SJPEG_BLOCK_WIDTH_OFFSET];
 
-        sjpg->frame_base_offset = gt_mem_malloc(sizeof(uint8_t * ) * sjpg->sjpeg_total_frames);
+        sjpg->frame_base_offset = gt_mem_extern_malloc(sizeof(uint8_t * ) * sjpg->sjpeg_total_frames);
         if (NULL == sjpg->frame_base_offset) {
             goto err_lb;
         }
@@ -342,7 +342,7 @@ static gt_res_t _common_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt
             goto err_lb;
         }
 
-        uint8_t * work_buffer = gt_mem_malloc(TJPGD_WORK_BUFF_SIZE);
+        uint8_t * work_buffer = gt_mem_extern_malloc(TJPGD_WORK_BUFF_SIZE);
         if (!work_buffer) {
             goto err_lb;
         }
@@ -351,7 +351,7 @@ static gt_res_t _common_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt
             .file = dsc->fp,
         };
         JRESULT j_ret = jd_prepare(&jdec_hdc, input_func, work_buffer, (size_t)TJPGD_WORK_BUFF_SIZE, (void *)&dev);
-        gt_mem_free(work_buffer);
+        gt_mem_extern_free(work_buffer);
         if (JDR_OK != j_ret) {
             goto err_lb;
         }
@@ -359,7 +359,7 @@ static gt_res_t _common_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt
         sjpg->sjpeg_y_res = jdec_hdc.height;
         sjpg->sjpeg_total_frames = 1;
         sjpg->sjpeg_single_frame_height = jdec_hdc.height;
-        sjpg->frame_base_offset = gt_mem_malloc(sizeof(uint8_t * ) * sjpg->sjpeg_total_frames);
+        sjpg->frame_base_offset = gt_mem_extern_malloc(sizeof(uint8_t * ) * sjpg->sjpeg_total_frames);
         if (NULL == sjpg->frame_base_offset) {
             goto err_lb;
         }
@@ -370,15 +370,15 @@ static gt_res_t _common_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt
 
     /** common */
     sjpg->sjpeg_cache_frame_index = -1;
-    sjpg->frame_cache = gt_mem_malloc(sjpg->sjpeg_x_res * sjpg->sjpeg_single_frame_height * sizeof(gt_color_t));
+    sjpg->frame_cache = gt_mem_extern_malloc(sjpg->sjpeg_x_res * sjpg->sjpeg_single_frame_height * sizeof(gt_color_t));
     if (NULL == sjpg->frame_cache) {
         goto err_lb;
     }
-    sjpg->work_buf = gt_mem_malloc(TJPGD_WORK_BUFF_SIZE);
+    sjpg->work_buf = gt_mem_extern_malloc(TJPGD_WORK_BUFF_SIZE);
     if (NULL == sjpg->work_buf) {
         goto err_lb;
     }
-    sjpg->jdec_hdc = gt_mem_malloc(sizeof(JDEC));
+    sjpg->jdec_hdc = gt_mem_extern_malloc(sizeof(JDEC));
     if (NULL == sjpg->jdec_hdc) {
         goto err_lb;
     }

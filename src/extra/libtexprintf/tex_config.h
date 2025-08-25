@@ -25,10 +25,10 @@ extern "C" {
 /* define ---------------------------------------------------------------*/
 
 #if 01
-    #define _TEX_MALLOC(size)  			gt_mem_malloc(size)
-    #define _TEX_REALLOC(ptr, size)  	gt_mem_realloc(ptr, size)
-    #define _TEX_CALLOC(num, size)  	gt_mem_calloc(num, size)
-    #define _TEX_FREE(ptr)      		gt_mem_free(ptr)
+    #define _TEX_MALLOC(size)  			gt_mem_extern_malloc(size)
+    #define _TEX_REALLOC(ptr, size)  	gt_mem_extern_realloc(ptr, size)
+    #define _TEX_CALLOC(num, size)  	gt_mem_extern_calloc(num, size)
+    #define _TEX_FREE(ptr)      		gt_mem_extern_free(ptr)
     #define _TEX_FPRINTF(...)  		    GT_LOGE(__VA_ARGS__)  /* GT_LOGE(__VA_ARGS__) */
 #else
     #define _TEX_MALLOC(size)  			malloc(size)

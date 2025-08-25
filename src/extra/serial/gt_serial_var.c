@@ -158,7 +158,7 @@ static gt_res_t _var_set_value(gt_var_handler_st *handler)
 void _gt_serial_var_buffer_malloc_init(void)
 {
 #if GT_SERIAL_UI_VAR_MALLOC_ENABLE
-    _serial_var_buf = (uint8_t*)gt_mem_malloc(GT_SERIAL_UI_VAR_SIZE);
+    _serial_var_buf = (uint8_t*)gt_mem_extern_malloc(GT_SERIAL_UI_VAR_SIZE);
     if(!_serial_var_buf) {
         GT_LOGE(GT_LOG_TAG_SERIAL, "serial var buffer malloc failed! size: %d", GT_SERIAL_UI_VAR_SIZE);
         return;

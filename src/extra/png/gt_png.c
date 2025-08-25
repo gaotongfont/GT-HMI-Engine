@@ -201,7 +201,7 @@ static gt_res_t _common_png_open(struct _gt_img_decoder_s * decoder, struct _gt_
         goto png_lb;
     }
 
-    dsc->alpha = gt_mem_malloc(png_width * png_height);
+    dsc->alpha = gt_mem_extern_malloc(png_width * png_height);
     if (!dsc->alpha) {
         goto png_lb;
     }
@@ -214,7 +214,7 @@ static gt_res_t _common_png_open(struct _gt_img_decoder_s * decoder, struct _gt_
 
 png_lb:
     if (dsc->img) {
-        gt_mem_free(dsc->img);
+        gt_mem_extern_free(dsc->img);
         dsc->img = NULL;
     }
     return GT_RES_FAIL;
@@ -255,7 +255,7 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
 
 err_lb:
     if (png_data) {
-        gt_mem_free(png_data);
+        gt_mem_extern_free(png_data);
     }
     gt_fs_close(fp);
     return ret;
@@ -272,11 +272,11 @@ static gt_res_t _gt_png_read_line(struct _gt_img_dsc_s * dsc,
 static gt_res_t _gt_png_close(struct _gt_img_dsc_s * dsc)
 {
     if (dsc->img) {
-        gt_mem_free(dsc->img);
+        gt_mem_extern_free(dsc->img);
         dsc->img = NULL;
     }
     if( dsc->alpha ){
-        gt_mem_free(dsc->alpha);
+        gt_mem_extern_free(dsc->alpha);
         dsc->alpha = NULL;
     }
     if (dsc->fp) {
@@ -316,7 +316,7 @@ gt_res_t _gt_png_fh_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_
 
 err_lb:
     if (png_data) {
-        gt_mem_free(png_data);
+        gt_mem_extern_free(png_data);
     }
     gt_fs_close(fp);
     return ret;
@@ -352,7 +352,7 @@ gt_res_t _gt_png_direct_addr_open(struct _gt_img_decoder_s * decoder, struct _gt
 
 err_lb:
     if (png_data) {
-        gt_mem_free(png_data);
+        gt_mem_extern_free(png_data);
     }
     gt_fs_close(fp);
     return ret;

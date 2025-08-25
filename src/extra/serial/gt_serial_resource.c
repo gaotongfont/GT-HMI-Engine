@@ -59,7 +59,7 @@ static gt_res_t _get_resource_data_by(uint32_t addr, uint8_t file_count, _serial
         return GT_RES_FAIL;
     }
     uint16_t length = file_count * GT_SERIAL_RESOURCE_FILE_LENGTH;
-    uint8_t * buffer = gt_mem_malloc(length);
+    uint8_t * buffer = gt_mem_extern_malloc(length);
     if (NULL == buffer) {
         return GT_RES_FAIL;
     }
@@ -74,7 +74,7 @@ static gt_res_t _get_resource_data_by(uint32_t addr, uint8_t file_count, _serial
         ptr += GT_SERIAL_RESOURCE_FILE_LENGTH;
     }
 
-    gt_mem_free(buffer);
+    gt_mem_extern_free(buffer);
     buffer = NULL;
     return GT_RES_OK;
 }
@@ -92,12 +92,12 @@ gt_res_t gt_serial_resource_init(void)
     gt_fs_read_direct_physical(addr, 16, tmp);  /** get file count */
     addr += 16;
     _serial_res.file_count = tmp[_SERIAL_RESOURCE_FILE_COUNT_OFFSET];
-    _serial_res.items_list = (_serial_bin_item_st *)gt_mem_malloc(_serial_res.file_count * sizeof(_serial_bin_item_st));
+    _serial_res.items_list = (_serial_bin_item_st *)gt_mem_extern_malloc(_serial_res.file_count * sizeof(_serial_bin_item_st));
     if (NULL == _serial_res.items_list) {
         return GT_RES_FAIL;
     }
     if (GT_RES_OK != _get_resource_data_by(addr, _serial_res.file_count, _serial_res.items_list)) {
-        gt_mem_free(_serial_res.items_list);
+        gt_mem_extern_free(_serial_res.items_list);
         _serial_res.items_list = NULL;
         return GT_RES_FAIL;
     }

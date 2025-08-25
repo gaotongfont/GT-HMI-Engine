@@ -153,7 +153,7 @@ static void _set_text(gt_obj_st* obj, gt_var_text_st* icon, uint16_t reg)
         case 3:
             // big5
             gt_label_set_font_encoding(obj, GT_ENCODING_GB);
-            uint8_t *data_gbk = gt_mem_malloc(len);
+            uint8_t *data_gbk = gt_mem_extern_malloc(len);
             if(!data_gbk){
                 GT_LOGE(GT_LOG_TAG_SERIAL, "big5 to gbk malloc err! len: %d\r\n", len);
                 return;
@@ -162,7 +162,7 @@ static void _set_text(gt_obj_st* obj, gt_var_text_st* icon, uint16_t reg)
             if(len != 0){
                 gt_label_set_text_by_len(obj, data_gbk, len);
             }
-            gt_mem_free(data_gbk);
+            gt_mem_extern_free(data_gbk);
             break;
         case 4:
             // sjis
@@ -172,7 +172,7 @@ static void _set_text(gt_obj_st* obj, gt_var_text_st* icon, uint16_t reg)
         case 5:
             // unicode
             gt_label_set_font_encoding(obj, GT_ENCODING_UTF8);
-            uint8_t *data_utf8 = gt_mem_malloc(len + (len >> 1));
+            uint8_t *data_utf8 = gt_mem_extern_malloc(len + (len >> 1));
             if(!data_utf8){
                 GT_LOGE(GT_LOG_TAG_SERIAL, "unicode to utf8 malloc err! len: %d\r\n", len + (len >> 1));
                 return;
@@ -181,7 +181,7 @@ static void _set_text(gt_obj_st* obj, gt_var_text_st* icon, uint16_t reg)
             if(len != 0){
                 gt_label_set_text_by_len(obj, data_utf8, len);
             }
-            gt_mem_free(data_utf8);
+            gt_mem_extern_free(data_utf8);
             break;
         default:
             break;

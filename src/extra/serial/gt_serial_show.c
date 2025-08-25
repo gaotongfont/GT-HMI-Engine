@@ -268,7 +268,7 @@ _read_res_img:
         return;
     }
     //
-    img_info->head_list = (gt_file_header_st*)gt_mem_malloc(gt_file_header_get_instance_size() * img_info->count);
+    img_info->head_list = (gt_file_header_st*)gt_mem_extern_malloc(gt_file_header_get_instance_size() * img_info->count);
     if(!img_info->head_list){
         GT_LOGE(GT_LOG_TAG_SERIAL, "malloc head list err size: %d", gt_file_header_get_instance_size() * img_info->count);
         return;
@@ -318,7 +318,7 @@ static void _read_font_config_info(gt_font_family_st* font_list)
         return;
     }
 
-    font_list = (gt_font_family_st*)gt_mem_malloc((sizeof(gt_font_family_st) * count));
+    font_list = (gt_font_family_st*)gt_mem_extern_malloc((sizeof(gt_font_family_st) * count));
     if(!font_list){
         GT_LOGE(GT_LOG_TAG_SERIAL, "malloc font list err! size: %d", (sizeof(gt_font_family_st) * count));
         return;
@@ -535,7 +535,7 @@ static void _gt_serial_ui_init(void)
     // read file head
     _read_show_file_head(&_serial_ui._show_file_head);
     // create page list
-    _serial_ui.page_list = (gt_scr_list_st*)gt_mem_malloc(sizeof(gt_scr_list_st) * _serial_ui._show_file_head.page_numb);
+    _serial_ui.page_list = (gt_scr_list_st*)gt_mem_extern_malloc(sizeof(gt_scr_list_st) * _serial_ui._show_file_head.page_numb);
     if(!_serial_ui.page_list){
         GT_LOGE(GT_LOG_TAG_SERIAL , "malloc page list failed");
         return;

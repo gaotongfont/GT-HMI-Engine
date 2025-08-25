@@ -219,7 +219,7 @@ static void _free_user_data_cb(gt_event_st * e) {
     if (NULL == e->user_data) {
         return;
     }
-    gt_mem_free(e->user_data);
+    gt_mem_extern_free(e->user_data);
     e->user_data = NULL;
 }
 
@@ -232,7 +232,7 @@ static gt_res_t _common_get_vp_data(gt_serial_event_packet_st * packet, gt_event
     if (GT_RES_OK != base.res) {
         return base.res;
     }
-    _serial_event_data_st * user_data = gt_mem_malloc(sizeof(_serial_event_data_st));
+    _serial_event_data_st * user_data = gt_mem_extern_malloc(sizeof(_serial_event_data_st));
     if (NULL == user_data) {
         return GT_RES_INV;
     }
@@ -280,7 +280,7 @@ static gt_res_t _back_ground_color_init_cb(gt_serial_event_packet_st * packet) {
         return base.res;
     }
     uint8_t buffer[3] = {0};
-    _serial_event_data_st * user_data = gt_mem_malloc(sizeof(_serial_event_data_st));
+    _serial_event_data_st * user_data = gt_mem_extern_malloc(sizeof(_serial_event_data_st));
     if (NULL == user_data) {
         return GT_RES_INV;
     }
@@ -366,7 +366,7 @@ static gt_res_t _font_color_init_cb(gt_serial_event_packet_st * packet) {
         return base.res;
     }
     uint8_t buffer[3] = {0};
-    _serial_event_data_st * user_data = gt_mem_malloc(sizeof(_serial_event_data_st));
+    _serial_event_data_st * user_data = gt_mem_extern_malloc(sizeof(_serial_event_data_st));
     if (NULL == user_data) {
         return GT_RES_INV;
     }
@@ -393,7 +393,7 @@ static gt_res_t _pos_change_init_cb(gt_serial_event_packet_st * packet) {
     if (GT_RES_OK != base.res) {
         return base.res;
     }
-    _serial_event_data_st * user_data = gt_mem_malloc(sizeof(_serial_event_data_st));
+    _serial_event_data_st * user_data = gt_mem_extern_malloc(sizeof(_serial_event_data_st));
     if (NULL == user_data) {
         return GT_RES_INV;
     }
@@ -416,7 +416,7 @@ static gt_res_t _size_change_init_cb(gt_serial_event_packet_st * packet) {
         return base.res;
     }
     uint8_t buffer[4] = {0};
-    _serial_event_data_st * user_data = gt_mem_malloc(sizeof(_serial_event_data_st));
+    _serial_event_data_st * user_data = gt_mem_extern_malloc(sizeof(_serial_event_data_st));
     if (NULL == user_data) {
         return GT_RES_INV;
     }
@@ -439,7 +439,7 @@ static gt_res_t _opa_change_init_cb(gt_serial_event_packet_st * packet) {
         return base.res;
     }
     uint8_t buffer[2] = {0};
-    _serial_event_data_st * user_data = gt_mem_malloc(sizeof(_serial_event_data_st));
+    _serial_event_data_st * user_data = gt_mem_extern_malloc(sizeof(_serial_event_data_st));
     if (NULL == user_data) {
         return GT_RES_INV;
     }
@@ -516,7 +516,7 @@ static gt_res_t _visible_change_init_cb(gt_serial_event_packet_st * packet) {
     if (GT_RES_OK != base.res) {
         return base.res;
     }
-    _serial_event_data_st * user_data = gt_mem_malloc(sizeof(_serial_event_data_st));
+    _serial_event_data_st * user_data = gt_mem_extern_malloc(sizeof(_serial_event_data_st));
     if (NULL == user_data) {
         return GT_RES_INV;
     }
@@ -720,7 +720,7 @@ static gt_res_t _number_input_init_cb(gt_serial_event_packet_st * packet) {
     if (GT_RES_OK != base.res) {
         return base.res;
     }
-    _serial_event_data_st * user_data = gt_mem_malloc(sizeof(_serial_event_data_st));
+    _serial_event_data_st * user_data = gt_mem_extern_malloc(sizeof(_serial_event_data_st));
     if (NULL == user_data) {
         return GT_RES_INV;
     }
@@ -852,7 +852,7 @@ static gt_res_t _go_back_page_stack_init_cb(gt_serial_event_packet_st * packet) 
     if (GT_RES_OK != base.res) {
         return base.res;
     }
-    _serial_event_data_st * user_data = gt_mem_malloc(sizeof(_serial_event_data_st));
+    _serial_event_data_st * user_data = gt_mem_extern_malloc(sizeof(_serial_event_data_st));
     if (NULL == user_data) {
         return GT_RES_INV;
     }
@@ -915,7 +915,7 @@ static gt_res_t _load_page_init_cb(gt_serial_event_packet_st * packet) {
     if (GT_RES_OK != base.res) {
         return base.res;
     }
-    _serial_event_data_st * user_data = gt_mem_malloc(sizeof(_serial_event_data_st));
+    _serial_event_data_st * user_data = gt_mem_extern_malloc(sizeof(_serial_event_data_st));
     if (NULL == user_data) {
         return GT_RES_INV;
     }
@@ -937,7 +937,7 @@ static gt_res_t _load_wav_id_init_cb(gt_serial_event_packet_st * packet) {
     if (GT_RES_OK != base.res) {
         return base.res;
     }
-    _serial_event_data_st * user_data = gt_mem_malloc(sizeof(_serial_event_data_st));
+    _serial_event_data_st * user_data = gt_mem_extern_malloc(sizeof(_serial_event_data_st));
     if (NULL == user_data) {
         return GT_RES_INV;
     }
@@ -1049,9 +1049,9 @@ void gt_serial_event_init(void)
         return;
     }
     if (NULL == _event_fh.src_data) {
-        _event_fh.src_data = (uint8_t*)gt_mem_malloc(_event_fh.data_len * _SERIAL_EVENT_MAX_EVENT_COUNT);
+        _event_fh.src_data = (uint8_t*)gt_mem_extern_malloc(_event_fh.data_len * _SERIAL_EVENT_MAX_EVENT_COUNT);
     } else if (before_data_len != _event_fh.data_len) {
-        _event_fh.src_data = (uint8_t*)gt_mem_realloc(_event_fh.src_data, _event_fh.data_len * _SERIAL_EVENT_MAX_EVENT_COUNT);
+        _event_fh.src_data = (uint8_t*)gt_mem_extern_realloc(_event_fh.src_data, _event_fh.data_len * _SERIAL_EVENT_MAX_EVENT_COUNT);
     }
     if (NULL == _event_fh.src_data) {
         GT_LOGE(GT_LOG_TAG_SERIAL, "alloc event page data buffer err");

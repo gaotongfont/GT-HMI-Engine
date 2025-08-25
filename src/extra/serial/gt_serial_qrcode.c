@@ -102,12 +102,12 @@ static void _set_qr_code_string(gt_obj_st * qr, gt_serial_qrcode_st * qr_code) {
         return;
     }
     if (len > 459) { len = 459; }
-    uint8_t * str = (uint8_t *)gt_mem_malloc(len);
+    uint8_t * str = (uint8_t *)gt_mem_extern_malloc(len);
     if (str) {
         gt_serial_var_buffer_get_reg(qr_code->head.vp, str, len);
         gt_qrcode_set_str(qr, (char *)str);
     }
-    gt_mem_free(str);
+    gt_mem_extern_free(str);
     str = NULL;
 }
 

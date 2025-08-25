@@ -41,7 +41,7 @@
 char * gt_tex_string(const char *str)
 {
     uint32_t len = str ? strlen(str) : 0;
-    char *s = gt_mem_malloc(len + 1);
+    char *s = gt_mem_extern_malloc(len + 1);
     if(!s) {
         GT_LOGE(GT_LOG_TAG_GUI,"malloc failed!!! len: %d", len + 1);
         return NULL;
@@ -51,13 +51,13 @@ char * gt_tex_string(const char *str)
     s[len] = '\0';
 
     char* ret = texstring(s);
-    gt_mem_free(s);
+    gt_mem_extern_free(s);
     return ret;
 }
 
 char * gt_tex_string_by_len(const char *str, int len)
 {
-    char *s = gt_mem_malloc(len + 1);
+    char *s = gt_mem_extern_malloc(len + 1);
     if(!s) {
         GT_LOGE(GT_LOG_TAG_GUI,"malloc failed!!! len: %d", len + 1);
         return NULL;
@@ -66,7 +66,7 @@ char * gt_tex_string_by_len(const char *str, int len)
     s[len] = '\0';
 
     char* ret = texstring(s);
-    gt_mem_free(s);
+    gt_mem_extern_free(s);
     return ret;
 }
 

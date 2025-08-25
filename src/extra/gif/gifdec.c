@@ -128,11 +128,11 @@ static gd_GIF * _common_open_gif(gd_GIF * gif) {
     gif->palette = &gif->gct;
 
 #if GT_COLOR_DEPTH == 32
-    gif->frame = gt_mem_malloc(size * 5);
+    gif->frame = gt_mem_extern_malloc(size * 5);
 #elif GT_COLOR_DEPTH == 16
-    gif->frame = gt_mem_malloc(size * 4);
+    gif->frame = gt_mem_extern_malloc(size * 4);
 #elif GT_COLOR_DEPTH == 8 || GT_COLOR_DEPTH == 1
-    gif->frame = gt_mem_malloc(size * 3);
+    gif->frame = gt_mem_extern_malloc(size * 3);
 #endif
     if (!gif->frame) {
         goto fail;
@@ -195,7 +195,7 @@ fail:
 gd_GIF *
 gd_open_gif(const char *fname)
 {
-    gd_GIF * gif = gt_mem_malloc(sizeof(gd_GIF));
+    gd_GIF * gif = gt_mem_extern_malloc(sizeof(gd_GIF));
     if (!gif) return NULL;
     gt_memset(gif, 0, sizeof(gd_GIF));
 
@@ -205,14 +205,14 @@ gd_open_gif(const char *fname)
     }
     return _common_open_gif(gif);
 free_gif:
-    gt_mem_free(gif);
+    gt_mem_extern_free(gif);
     return NULL;
 }
 
 gd_GIF *
 gd_open_gif_raw(_gt_img_dsc_st * dsc)
 {
-    gd_GIF * gif = gt_mem_malloc(sizeof(gd_GIF));
+    gd_GIF * gif = gt_mem_extern_malloc(sizeof(gd_GIF));
     if (!gif) return NULL;
     gt_memset(gif, 0, sizeof(gd_GIF));
 
@@ -222,7 +222,7 @@ gd_open_gif_raw(_gt_img_dsc_st * dsc)
     }
     return _common_open_gif(gif);
 free_gif:
-    gt_mem_free(gif);
+    gt_mem_extern_free(gif);
     return NULL;
 }
 
@@ -230,7 +230,7 @@ free_gif:
 gd_GIF *
 gd_fh_open_gif(gt_file_header_param_st const * const file_header)
 {
-    gd_GIF * gif = gt_mem_malloc(sizeof(gd_GIF));
+    gd_GIF * gif = gt_mem_extern_malloc(sizeof(gd_GIF));
     if (!gif) return NULL;
     gt_memset(gif, 0, sizeof(gd_GIF));
 
@@ -240,7 +240,7 @@ gd_fh_open_gif(gt_file_header_param_st const * const file_header)
     }
     return _common_open_gif(gif);
 free_gif:
-    gt_mem_free(gif);
+    gt_mem_extern_free(gif);
     return NULL;
 }
 #endif
@@ -249,7 +249,7 @@ free_gif:
 gd_GIF *
 gd_direct_addr_open_gif(gt_addr_t addr)
 {
-    gd_GIF * gif = gt_mem_malloc(sizeof(gd_GIF));
+    gd_GIF * gif = gt_mem_extern_malloc(sizeof(gd_GIF));
     if (!gif) return NULL;
     gt_memset(gif, 0, sizeof(gd_GIF));
 
@@ -259,7 +259,7 @@ gd_direct_addr_open_gif(gt_addr_t addr)
     }
     return _common_open_gif(gif);
 free_gif:
-    gt_mem_free(gif);
+    gt_mem_extern_free(gif);
     return NULL;
 }
 #endif
@@ -396,7 +396,7 @@ new_table(int key_size)
 {
     int key;
     int init_bulk = MAX(1 << (key_size + 1), 0x100);
-    Table *table = gt_mem_malloc(sizeof(*table) + sizeof(Entry) * init_bulk);
+    Table *table = gt_mem_extern_malloc(sizeof(*table) + sizeof(Entry) * init_bulk);
     if (table) {
         table->bulk = init_bulk;
         table->nentries = (1 << key_size) + 2;
@@ -417,7 +417,7 @@ add_entry(Table **tablep, uint16_t length, uint16_t prefix, uint8_t suffix)
     Table *table = *tablep;
     if (table->nentries == table->bulk) {
         table->bulk *= 2;
-        table = gt_mem_realloc(table, sizeof(*table) + sizeof(Entry) * table->bulk);
+        table = gt_mem_extern_realloc(table, sizeof(*table) + sizeof(Entry) * table->bulk);
         if (!table) return -1;
         table->entries = (Entry *) &table[1];
         *tablep = table;
@@ -526,7 +526,7 @@ read_image_data(gd_GIF *gif, int interlace)
         } else if (!table_is_full) {
             ret = add_entry(&table, str_len + 1, key, entry.suffix);
             if (ret == -1) {
-                gt_mem_free(table);
+                gt_mem_extern_free(table);
                 return -1;
             }
             if (table->nentries == 0x1000) {
@@ -556,7 +556,7 @@ read_image_data(gd_GIF *gif, int interlace)
         if (key < table->nentries - 1 && !table_is_full)
             table->entries[table->nentries - 1].suffix = entry.suffix;
     }
-    gt_mem_free(table);
+    gt_mem_extern_free(table);
     if (key == stop) {
         _gif_read(gif->fd, &sub_len, 1); /* Must be zero! */
     }
@@ -742,9 +742,9 @@ gd_rewind(gd_GIF *gif)
 void
 gd_close_gif(gd_GIF *gif)
 {
-    gt_mem_free(gif->frame);
+    gt_mem_extern_free(gif->frame);
     _gif_close(gif->fd);
-    gt_mem_free(gif);
+    gt_mem_extern_free(gif);
 }
 
 #endif  /** GT_USE_GIF */
