@@ -29,7 +29,7 @@ extern "C" {
 
 #ifndef GT_LISTVIEW_CUSTOM_FONT_STYLE
     /**
-     * @brief 0[defalut]: Use listview default font style, only support one font style;
+     * @brief 0[default]: Use listview default font style, only support one font style;
      *        1: One of the listview items uses custom font style, which is defined by user.
      */
     #define GT_LISTVIEW_CUSTOM_FONT_STYLE           0
@@ -37,14 +37,14 @@ extern "C" {
 
 #ifndef GT_LISTVIEW_USE_ELEMENT_TYPE_RECT
     /**
-     * @brief 0[defalut]: Do not use rectangle element;
+     * @brief 0[default]: Do not use rectangle element;
      */
     #define GT_LISTVIEW_USE_ELEMENT_TYPE_RECT       0
 #endif
 
 #ifndef GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH
     /**
-     * @brief 0[defalut]: Do not use switch element;
+     * @brief 0[default]: Do not use switch element;
      */
     #define GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH     0
 #endif

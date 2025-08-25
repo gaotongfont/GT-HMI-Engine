@@ -50,7 +50,7 @@
 #define GT_FONT_FAMILY_CHECK(_list, _family) ((!_list.fam_list) || (_list.count == 0) || ((_family) >= (_list.count)))
 /* private typedef ------------------------------------------------------*/
 /**
- * @brief 0: defalut, < 0: up, > 0: down
+ * @brief 0: default, < 0: up, > 0: down
  */
 typedef struct {
     int8_t y;

@@ -32,14 +32,14 @@
 
 #ifndef _GT_STACK_USE_LOADING_LOG
     /**
-     * @brief 0[defalut]: Close the page stack log
+     * @brief 0[default]: Close the page stack log
      */
     #define _GT_STACK_USE_LOADING_LOG           0
 #endif
 
 #ifndef _GT_STACK_PUSH_BEFORE_INIT_SCR
     /**
-     * @brief 0[defalut]: The screen object is initialized before the stack is pushed
+     * @brief 0[default]: The screen object is initialized before the stack is pushed
      */
     #define _GT_STACK_PUSH_BEFORE_INIT_SCR      0
 #endif

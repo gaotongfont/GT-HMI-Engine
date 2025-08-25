@@ -80,9 +80,9 @@ gt_size_t gt_bit_img_add_item1(gt_obj_st * obj, void * item, uint16_t item_byte_
  * @brief Add the bit_img project content by file header
  *
  * @param obj
- * @param fh idx -1[defalut]: Disabled file header, using img path to open file; >=0: index number, valid value
+ * @param fh idx -1[default]: Disabled file header, using img path to open file; >=0: index number, valid value
  *              < 0: invalid value.
- *           package_idx 0[defalut]: The index of element within item, as the first element
+ *           package_idx 0[default]: The index of element within item, as the first element
  * @return gt_size_t -1: failed, The item count of bit_img
  */
 gt_size_t gt_bit_img_add_item0_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh);

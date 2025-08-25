@@ -27,7 +27,7 @@ extern "C" {
 
 #ifndef GT_TEXTAREA_CUSTOM_FONT_STYLE
     /**
-     * @brief 0[defalut]: Use textarea default font style, only support one font style;
+     * @brief 0[default]: Use textarea default font style, only support one font style;
      *        1: One of the textarea items uses custom font style, which is defined by user.
      */
     #define GT_TEXTAREA_CUSTOM_FONT_STYLE   0
@@ -36,7 +36,7 @@ extern "C" {
 #ifndef GT_TEXTAREA_SUB_STRING_SCROLL_CACHE
     /**
      * @brief Use sub string scroll cache, improve scrolling performance and takes up some memory
-     *      0[defalut]: disable
+     *      0[default]: disable
      */
     #define GT_TEXTAREA_SUB_STRING_SCROLL_CACHE    0
 #endif
@@ -193,7 +193,7 @@ void gt_textarea_set_bg_opa(gt_obj_st * textarea, uint8_t opa);
  * @brief Set the border color of the textarea
  *
  * @param textarea
- * @param width 2[defalut]: 2px
+ * @param width 2[default]: 2px
  */
 void gt_textarea_set_border_width(gt_obj_st * textarea, uint8_t width);
 
@@ -201,7 +201,7 @@ void gt_textarea_set_border_width(gt_obj_st * textarea, uint8_t width);
  * @brief Set the border color of the textarea
  *
  * @param textarea
- * @param color 0xc7c7c7[defalut]
+ * @param color 0xc7c7c7[default]
  */
 void gt_textarea_set_border_color(gt_obj_st * textarea, gt_color_t color);
 
@@ -209,7 +209,7 @@ void gt_textarea_set_border_color(gt_obj_st * textarea, gt_color_t color);
  * @brief Set the border radius of the textarea
  *
  * @param textarea
- * @param radius 4[defalut]
+ * @param radius 4[default]
  */
 void gt_textarea_set_radius(gt_obj_st * textarea, gt_radius_t radius);
 

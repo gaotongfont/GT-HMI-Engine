@@ -104,9 +104,9 @@ typedef struct _gt_listview_s {
     uint8_t item_show_bg    : 1;
     uint8_t omit_sl         : 1;    /** Omit single line */
     uint8_t auto_scroll_sl  : 1;    /** auto scroll single line */
-    uint8_t selected_effect : 1;    /** 1[defalut]: Enabled  effect; 0: close selected effect */
+    uint8_t selected_effect : 1;    /** 1[default]: Enabled  effect; 0: close selected effect */
 
-    uint8_t show_background : 1;    /** 1[defalut]: show background; 0: hide background */
+    uint8_t show_background : 1;    /** 1[default]: show background; 0: hide background */
     uint8_t anti_font_color : 1;    /** 0[default]: no font change color when item selected */
     uint8_t latest_always   : 1;    /** 0[default]: the latest item is always displayed at the bottom */
     uint8_t pull_to_refresh : 1;

@@ -57,8 +57,8 @@ extern "C" {
 
 
 //字库相关能显示的调试信息等级
-#ifndef GT_LOG_LEVEL_DEFALUT
-    #define GT_LOG_LEVEL_DEFALUT    GT_LOG_LEVEL_ERROR
+#ifndef GT_LOG_LEVEL_DEFAULT
+    #define GT_LOG_LEVEL_DEFAULT    GT_LOG_LEVEL_ERROR
 #endif
 
 /* TAG ------------------------------------------------------------------*/
@@ -102,7 +102,7 @@ extern "C" {
 #endif
 
 //冗余信息
-#if GT_USE_LOG && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_VERBOSE)
+#if GT_USE_LOG && (GT_LOG_LEVEL_DEFAULT <= GT_LOG_LEVEL_VERBOSE)
     #define GT_LOGV(_tag, _fmt, _arg...) do { \
             _GT_PRINT("[GT_VERB][%s][%s%s():%lu] " _fmt "\n", _tag, _GT_LOG_PRINT_FILE, __func__, (unsigned long)__LINE__, ##_arg); \
         }while(0)
@@ -111,7 +111,7 @@ extern "C" {
 #endif
 
 //调试信息
-#if GT_USE_LOG && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_DEBUG)
+#if GT_USE_LOG && (GT_LOG_LEVEL_DEFAULT <= GT_LOG_LEVEL_DEBUG)
     #define GT_LOGD(_tag, _fmt, _arg...) do { \
             _GT_PRINT("[GT_DEBG][%s][%s%s():%lu] " _fmt "\n", _tag, _GT_LOG_PRINT_FILE, __func__, (unsigned long)__LINE__, ##_arg); \
         }while(0)
@@ -120,7 +120,7 @@ extern "C" {
 #endif
 
 //日志信息
-#if GT_USE_LOG && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_INFO)
+#if GT_USE_LOG && (GT_LOG_LEVEL_DEFAULT <= GT_LOG_LEVEL_INFO)
     #define GT_LOGI(_tag, _fmt, _arg...) do { \
             _GT_PRINT("[GT_INFO][%s][%s%s():%lu] " _fmt "\n", _tag, _GT_LOG_PRINT_FILE, __func__, (unsigned long)__LINE__, ##_arg); \
         }while(0)
@@ -129,7 +129,7 @@ extern "C" {
 #endif
 
 //警告信息
-#if GT_USE_LOG && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_WARNING)
+#if GT_USE_LOG && (GT_LOG_LEVEL_DEFAULT <= GT_LOG_LEVEL_WARNING)
     #define GT_LOGW(_tag, _fmt, _arg...) do { \
             _GT_PRINT("[GT_WARN][%s][%s%s():%lu] " _fmt "\n", _tag, _GT_LOG_PRINT_FILE, __func__, (unsigned long)__LINE__, ##_arg); \
         }while(0)
@@ -138,7 +138,7 @@ extern "C" {
 #endif
 
 //错误信息
-#if GT_USE_LOG && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_ERROR)
+#if GT_USE_LOG && (GT_LOG_LEVEL_DEFAULT <= GT_LOG_LEVEL_ERROR)
     #define GT_LOGE(_tag, _fmt, _arg...) do { \
             _GT_PRINT("[GT_ERRO][%s][%s%s():%lu] " _fmt "\n", _tag, _GT_LOG_PRINT_FILE, __func__, (unsigned long)__LINE__, ##_arg); \
         }while(0)
@@ -162,7 +162,7 @@ extern "C" {
     }while(0)
 
 //崩溃信息
-#if GT_USE_LOG && (GT_LOG_LEVEL_DEFALUT <= GT_LOG_LEVEL_CRASH)
+#if GT_USE_LOG && (GT_LOG_LEVEL_DEFAULT <= GT_LOG_LEVEL_CRASH)
     #define GT_LOGC(_tag, _fmt, _arg...) do { \
             _GT_PRINT("[GT_CRAS] [%s] [%s%s():%lu] " _fmt "\n", _tag, _GT_LOG_PRINT_FILE, __func__, (unsigned long)__LINE__, ##_arg); \
             GT_CATCH_FAULT(); \

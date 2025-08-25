@@ -377,7 +377,7 @@ void gt_btn_set_border_width(gt_obj_st * btn, uint8_t width)
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-static gt_res_t _update_defalut_text(_gt_btn_st * style, char * text) {
+static gt_res_t _update_default_text(_gt_btn_st * style, char * text) {
     if (0 == _gt_vector_get_count(style->contents)) {
         if (false == _gt_vector_add_item(style->contents, (void * )text)) {
             return GT_RES_FAIL;
@@ -416,7 +416,7 @@ void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...)
     vsnprintf(text, size, fmt, args2);
     va_end(args2);
 
-    if (GT_RES_FAIL == _update_defalut_text(style, text)) {
+    if (GT_RES_FAIL == _update_default_text(style, text)) {
         goto text_lb;
     }
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -441,7 +441,7 @@ void gt_btn_set_text_by_len(gt_obj_st * btn, const char * text, uint16_t len)
     }
     gt_memcpy(tmp_str, text, len);
     tmp_str[len] = '\0';
-    if (GT_RES_FAIL == _update_defalut_text(style, tmp_str)) {
+    if (GT_RES_FAIL == _update_default_text(style, tmp_str)) {
         goto err_lb;
     }
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);

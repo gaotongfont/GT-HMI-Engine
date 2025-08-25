@@ -72,9 +72,9 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_color_img_raw_st * raw);
  * @brief Display the image by file header information
  *
  * @param img
- * @param fh idx -1[defalut]: Disabled file header, using img path to open file; >=0: index number, valid value
+ * @param fh idx -1[default]: Disabled file header, using img path to open file; >=0: index number, valid value
  *              < 0: invalid value.
- *           package_idx 0[defalut]: The index of element within item, as the first element
+ *           package_idx 0[default]: The index of element within item, as the first element
  */
 void gt_img_set_by_file_header(gt_obj_st * img, gt_file_header_param_st * fh);
 

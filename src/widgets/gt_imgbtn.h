@@ -111,9 +111,9 @@ bool gt_imgbtn_remove_state_item(gt_obj_st * obj, char * src);
  * @brief set the path of the imgbtn
  *
  * @param imgbtn imgbtn obj
- * @param fh idx -1[defalut]: Disabled file header, using img path to open file; >=0: index number, valid value
+ * @param fh idx -1[default]: Disabled file header, using img path to open file; >=0: index number, valid value
  *              < 0: invalid value.
- *           package_idx 0[defalut]: The index of element within item, as the first element
+ *           package_idx 0[default]: The index of element within item, as the first element
  */
 void gt_imgbtn_set_src_by_file_header(gt_obj_st * imgbtn, gt_file_header_param_st * fh);
 
@@ -121,9 +121,9 @@ void gt_imgbtn_set_src_by_file_header(gt_obj_st * imgbtn, gt_file_header_param_s
  * @brief set the path of imgbtn of press
  *
  * @param imgbtn
- * @param fh idx -1[defalut]: Disabled file header, using img path to open file; >=0: index number, valid value
+ * @param fh idx -1[default]: Disabled file header, using img path to open file; >=0: index number, valid value
  *              < 0: invalid value.
- *           package_idx 0[defalut]: The index of element within item, as the first element
+ *           package_idx 0[default]: The index of element within item, as the first element
  */
 void gt_imgbtn_set_src_press_by_file_header(gt_obj_st * imgbtn, gt_file_header_param_st * fh);
 
@@ -131,9 +131,9 @@ void gt_imgbtn_set_src_press_by_file_header(gt_obj_st * imgbtn, gt_file_header_p
  * @brief set the path of imgbtn of release
  *
  * @param imgbtn
- * @param fh idx -1[defalut]: Disabled file header, using img path to open file; >=0: index number, valid value
+ * @param fh idx -1[default]: Disabled file header, using img path to open file; >=0: index number, valid value
  *              < 0: invalid value.
- *           package_idx 0[defalut]: The index of element within item, as the first element
+ *           package_idx 0[default]: The index of element within item, as the first element
  */
 void gt_imgbtn_set_src_release_by_file_header(gt_obj_st * imgbtn, gt_file_header_param_st * fh);
 
@@ -141,9 +141,9 @@ void gt_imgbtn_set_src_release_by_file_header(gt_obj_st * imgbtn, gt_file_header
  * @brief Add a state item to the imgbtn
  *
  * @param obj
- * @param fh idx -1[defalut]: Disabled file header, using img path to open file; >=0: index number, valid value
+ * @param fh idx -1[default]: Disabled file header, using img path to open file; >=0: index number, valid value
  *              < 0: invalid value.
- *           package_idx 0[defalut]: The index of element within item, as the first element
+ *           package_idx 0[default]: The index of element within item, as the first element
  * @return true success
  * @return false failed
  */
@@ -153,9 +153,9 @@ bool gt_imgbtn_add_state_item_by_file_header(gt_obj_st * obj, gt_file_header_par
  * @brief Remove a state item from the imgbtn
  *
  * @param obj
- * @param fh idx -1[defalut]: Disabled file header, using img path to open file; >=0: index number, valid value
+ * @param fh idx -1[default]: Disabled file header, using img path to open file; >=0: index number, valid value
  *              < 0: invalid value.
- *           package_idx 0[defalut]: The index of element within item, as the first element
+ *           package_idx 0[default]: The index of element within item, as the first element
  * @return true success
  * @return false failed
  */

@@ -155,9 +155,9 @@ gt_size_t gt_player_add_item_raw(gt_obj_st * obj, gt_color_img_raw_st * raw);
  * @brief Add the player project content by file header
  *
  * @param obj
- * @param fh idx -1[defalut]: Disabled file header, using img path to open file; >=0: index number, valid value
+ * @param fh idx -1[default]: Disabled file header, using img path to open file; >=0: index number, valid value
  *              < 0: invalid value.
- *           package_idx 0[defalut]: The index of element within item, as the first element
+ *           package_idx 0[default]: The index of element within item, as the first element
  * @return gt_size_t -1: failed, The item count of player
  */
 gt_size_t gt_player_add_item_by_file_header(gt_obj_st * obj, gt_file_header_param_st * fh);

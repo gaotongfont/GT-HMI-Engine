@@ -61,11 +61,11 @@ extern "C" {
  * @brief Must be gt_file_header_param_init() before using.
  */
 typedef struct gt_file_header_param_s {
-    /** -1[defalut]: Disabled, using path to open img file; otherwise open file by file header */
+    /** -1[default]: Disabled, using path to open img file; otherwise open file by file header */
     gt_file_header_idx_t idx;
 
 #if _GT_FILE_HEADER_IMG_PACKAGE
-    /** 0[defalut]: The first element of item */
+    /** 0[default]: The first element of item */
     gt_file_header_idx_t package_idx;
 #endif
 }gt_file_header_param_st;

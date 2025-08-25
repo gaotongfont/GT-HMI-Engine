@@ -141,7 +141,7 @@ void gt_gc_set_full_img_buffer(uint8_t * buffer, uint32_t len);
 /**
  * @brief Using the full image buffer, set the offset of the buffer is valid.
  *
- * @param offset 0[defalut]: Buffer begin address
+ * @param offset 0[default]: Buffer begin address
  */
 void gt_gc_set_full_img_buffer_offset(uint32_t offset);
 #endif
