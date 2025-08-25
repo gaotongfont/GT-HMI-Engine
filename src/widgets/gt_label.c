@@ -607,6 +607,15 @@ uint16_t gt_label_get_longest_line_substring_width(gt_obj_st * label)
     return gt_font_get_longest_line_substring_width(&style->font_info, style->text, style->space_x);
 }
 
+uint16_t gt_label_get_single_line_width(gt_obj_st * label)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    return gt_font_get_single_line_width(&style->font_info, style->text, style->space_x);
+}
+
 void gt_label_set_single_line(gt_obj_st * label, bool is_single_line)
 {
     if (false == gt_obj_is_type(label, OBJ_TYPE)) {

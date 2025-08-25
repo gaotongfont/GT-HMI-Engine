@@ -1554,6 +1554,46 @@ uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const 
     return max_width;
 }
 
+uint16_t gt_font_get_single_line_width(gt_font_info_st * info, const char * const text, uint16_t space)
+{
+    uint32_t idx = 0, len = strlen(text), unicode = 0;
+    uint16_t max_width = 0;
+    gt_font_st temp_font = {
+        .info = *info,
+        .utf8 = (char * )text,
+        .len = len,
+        .res = NULL,
+    };
+    uint8_t count_byte = 0, word_width = 0;
+
+    if (NULL == text) {
+        return max_width;
+    }
+
+#if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
+    _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(info, 2, 0, 0);
+#else
+    _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&temp_font.info, FONT_LAN_UNKNOWN, 0);
+#endif
+    temp_font.res = gt_mem_malloc(font_size_res.font_per_size);
+    GT_CHECK_BACK_VAL(temp_font.res, max_width);
+
+    while (idx < len) {
+        count_byte = gt_font_one_char_code_len_get((uint8_t*)&text[idx], &unicode, info->encoding);
+        idx += count_byte;
+
+        if (0x0A == unicode || 0x00 == unicode) {
+            continue;
+        }
+        word_width = gt_font_get_one_word_width(unicode, &temp_font);
+        max_width += word_width + space;
+    }
+
+    gt_mem_free(temp_font.res);
+    temp_font.res = NULL;
+    return max_width;
+}
+
 uint8_t gt_font_get_one_word_width(uint32_t uni_or_gbk, gt_font_st * font)
 {
     if (0x20 == uni_or_gbk) {

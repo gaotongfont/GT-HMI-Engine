@@ -86,6 +86,10 @@ extern "C" {
 #if GT_USE_SERIAL
 #define GT_CFG_ENABLE_BIT_IMG           1
 #endif
+
+#if GT_CFG_ENABLE_LABEL && GT_USE_LAYER_TOP
+#define GT_CFG_ENABLE_TOAST             1
+#endif
 /* typedef --------------------------------------------------------------*/
 
 

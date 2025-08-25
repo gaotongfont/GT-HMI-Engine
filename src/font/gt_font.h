@@ -390,6 +390,16 @@ uint8_t gt_font_get_one_word_dot_width(uint32_t uni_or_gbk, gt_font_st * font);
  */
 uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const char * const text, uint16_t space);
 
+/**
+ * @brief Get single line max width
+ *
+ * @param info
+ * @param text
+ * @param space
+ * @return uint16_t
+ */
+uint16_t gt_font_get_single_line_width(gt_font_info_st * info, const char * const text, uint16_t space);
+
 void gt_project_encoding_set(gt_encoding_et charset);
 gt_encoding_et gt_project_encoding_get(void);
 int8_t _gt_font_get_type_group_offset_y(uint16_t cn_option, uint16_t en_option);

@@ -173,6 +173,7 @@ typedef enum gt_obj_type_e {
     GT_TYPE_CALENDAR    = 41,       ///< calendar
     GT_TYPE_SPECTRUM    = 42,       ///< spectrum
     GT_TYPE_SPECTRUM_LINE = 43,     ///<< spectrum line
+    GT_TYPE_TOAST       = 44,       ///<< Toast
 
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;

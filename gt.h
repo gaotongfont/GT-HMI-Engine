@@ -234,6 +234,10 @@ extern "C" {
 #if GT_CFG_ENABLE_SPECTRUM_LINE
 #include "src/widgets/gt_spectrum_line.h"
 #endif
+
+#if GT_CFG_ENABLE_TOAST
+#include "src/widgets/gt_toast.h"
+#endif
 /* define ---------------------------------------------------------------*/
 
 

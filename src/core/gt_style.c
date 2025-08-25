@@ -438,11 +438,11 @@ void gt_obj_set_opa(gt_obj_st * obj, gt_opa_t opa)
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_obj_set_opa_anim(gt_obj_st * obj, gt_opa_t opa)
+gt_anim_st * gt_obj_set_opa_anim(gt_obj_st * obj, gt_opa_t opa)
 {
-    GT_CHECK_BACK(obj);
+    GT_CHECK_BACK_VAL(obj, NULL);
     if (obj->opa == opa) {
-        return;
+        return NULL;
     }
     gt_anim_st anim = {0};
     gt_anim_init(&anim);
@@ -451,7 +451,7 @@ void gt_obj_set_opa_anim(gt_obj_st * obj, gt_opa_t opa)
     gt_anim_set_time(&anim, GT_ANIM_PERIOD_TRANSITION_EFFECT_MS);
     gt_anim_set_value(&anim, obj->opa, opa);
     gt_anim_set_exec_cb(&anim, _opa_anim_exec_cb);
-    gt_anim_start(&anim);
+    return gt_anim_start(&anim);
 }
 
 void gt_obj_set_opa_step(gt_obj_st * obj, gt_size_t step_opa)

@@ -127,6 +127,14 @@ gt_font_info_st * gt_label_get_font_info(gt_obj_st * label);
 uint16_t gt_label_get_longest_line_substring_width(gt_obj_st * label);
 
 /**
+ * @brief Get single line max width
+ *
+ * @param label
+ * @return uint16_t
+ */
+uint16_t gt_label_get_single_line_width(gt_obj_st * label);
+
+/**
  * @brief Set single line, label first time init is multi-line.
  *      The characters that can be displayed in the display area, without
  *      "..." or "。。。" at the end of the line.
