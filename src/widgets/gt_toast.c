@@ -271,8 +271,14 @@ _calc_position_by_type(_gt_toast_st * style) {
     }
 
     obj->area.h = font_size + (font_size >> 1);
-    /** (100% / 6) - h/2 */
-    obj->area.y = (gt_disp_get_res_ver(NULL) / 6) - (obj->area.h >> 1);
+    if (GT_TOAST_POS_TOP == style->position) {
+        /** (100% / 6) - h/2 */
+        obj->area.y = (gt_disp_get_res_ver(NULL) / 6) - (obj->area.h >> 1);
+    } else if (GT_TOAST_POS_BOTTOM == style->position) {
+        obj->area.y = (gt_disp_get_res_ver(NULL) * 5 / 6) - (obj->area.h >> 1);
+    } else {
+        obj->area.y = (gt_disp_get_res_ver(NULL) >> 1) - (obj->area.h >> 1);
+    }
 
     if (max_w > str_len + font_size) {
         obj->area.w = str_len + font_size;
