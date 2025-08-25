@@ -724,7 +724,7 @@ gt_obj_st * gt_chat_replace_msg_text_by_len_control_scroll(gt_obj_st * chat, con
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
     return item;
 }
-void gt_chat_updata_item_size(gt_obj_st * chat, bool is_scroll)
+void gt_chat_update_item_size(gt_obj_st * chat, bool is_scroll)
 {
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
         return ;

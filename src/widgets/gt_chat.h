@@ -198,7 +198,7 @@ void gt_chat_set_font_style(gt_obj_st * chat, gt_font_style_et font_style);
 
 
 void gt_chat_set_item_cb(gt_obj_st * chat, gt_chat_item_cb_st* cb);
-void gt_chat_updata_item_size(gt_obj_st * chat, bool is_scroll);
+void gt_chat_update_item_size(gt_obj_st * chat, bool is_scroll);
 
 #ifdef __cplusplus
 } /*extern "C"*/

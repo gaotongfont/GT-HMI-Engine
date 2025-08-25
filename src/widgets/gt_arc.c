@@ -293,7 +293,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e)
     }
 }
 
-static void _updata_value(gt_obj_st* obj)
+static void _update_value(gt_obj_st* obj)
 {
     _gt_arc_st * style = (_gt_arc_st *)obj;
     uint16_t end_angle = (style->bg.start_angle < style->bg.end_angle) ? style->bg.end_angle : (style->bg.end_angle + 360);
@@ -763,7 +763,7 @@ void gt_arc_set_bg_start_angle(gt_obj_st* obj, uint16_t angle)
     }
 
     style->bg.start_angle = angle;
-    _updata_value(obj);
+    _update_value(obj);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -779,7 +779,7 @@ void gt_arc_set_bg_end_angle(gt_obj_st* obj, uint16_t angle)
     }
 
     style->bg.end_angle = angle;
-    _updata_value(obj);
+    _update_value(obj);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -900,7 +900,7 @@ void gt_arc_set_value(gt_obj_st* obj, int16_t value)
     }
 
     style->value = new_value;
-    _updata_value(obj);
+    _update_value(obj);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -938,7 +938,7 @@ void gt_arc_set_value_min_max(gt_obj_st* obj, int16_t min, int16_t max)
 
 
 
-    _updata_value(obj);
+    _update_value(obj);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
