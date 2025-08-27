@@ -52,6 +52,7 @@ typedef struct _gt_btn_s {
     uint8_t font_align;     //@ref gt_align_et
     uint8_t space_x;
     uint8_t space_y;
+    uint8_t roll_space;
     _gt_text_style_st text_style;
 }_gt_btn_st;
 
@@ -96,6 +97,12 @@ _draw_or_calc_dislpay_content(gt_obj_st * obj, bool is_only_calc)
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
 
     gt_area_st area = gt_area_reduce(obj->area, style->border_width);
+    if (style->text_style.single_line && style->auto_scroll)
+    {
+        area.x += style->roll_space;
+        area.w -= style->roll_space << 1;
+    }
+
     gt_area_st box_area = obj->area;
     _gt_text_style_st text_sty = style->text_style;
     text_sty.only_calc_display_info = is_only_calc ? true : false;
@@ -375,6 +382,7 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent)
     style->font_align = GT_ALIGN_CENTER_MID;
     style->space_x          = 0;
     style->space_y          = 0;
+    style->roll_space       = 2;
 
     style->contents = _gt_vector_create(_contents_free_cb, _contents_equal_cb);
     _auto_scroll_init(obj, style->auto_scroll);
@@ -965,6 +973,29 @@ bool gt_btn_is_auto_scroll_single_line(gt_obj_st * btn)
         return false;
     }
     return true;
+}
+
+void gt_btn_set_roll_space(gt_obj_st * btn, uint8_t roll_space)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+
+    style->roll_space = roll_space;
+}
+
+uint8_t gt_btn_get_roll_space(gt_obj_st * btn)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE))
+    {
+        return 0;
+    }
+
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+
+    return style->roll_space;
 }
 
 #endif  /** GT_CFG_ENABLE_BTN */

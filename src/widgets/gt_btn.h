@@ -249,6 +249,15 @@ bool gt_btn_is_single_line(gt_obj_st * btn);
 bool gt_btn_is_omit_single_line(gt_obj_st * btn);
 bool gt_btn_is_auto_scroll_single_line(gt_obj_st * btn);
 
+/**
+ * @brief Set the offset of the display area when the btn is scrolling
+ *
+ * @param btn
+ * @param roll_space
+ */
+void gt_btn_set_roll_space(gt_obj_st * btn, uint8_t roll_space);
+uint8_t gt_btn_get_roll_space(gt_obj_st * btn);
+
 #endif  /** GT_CFG_ENABLE_BTN */
 
 #ifdef __cplusplus
