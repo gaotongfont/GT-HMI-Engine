@@ -244,6 +244,13 @@ void gt_label_set_text(gt_obj_st * label, const char * fmt, ...)
     vsnprintf(style->text, size, fmt, args2);
     va_end(args2);
 
+    #if GT_LABEL_DEFAULT_AUTO_SCROLL_TIME_MODE
+    if (style->text_style.single_line)
+    {
+        gt_label_set_one_word_scroll_time(label, 500);
+    }
+    #endif //!GT_LABEL_DEFAULT_AUTO_SCROLL_TIME_MODE
+
     _update_label_size(label, size);
     gt_event_send(label, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 
@@ -279,6 +286,13 @@ void gt_label_set_text_by_len(gt_obj_st * label, const char * text, uint16_t len
 
     gt_memcpy(style->text, text, len);
     style->text[len] = '\0';
+
+    #if GT_LABEL_DEFAULT_AUTO_SCROLL_TIME_MODE
+    if (style->text_style.single_line)
+    {
+        gt_label_set_one_word_scroll_time(label, 500);
+    }
+    #endif //!GT_LABEL_DEFAULT_AUTO_SCROLL_TIME_MODE
 
     _update_label_size(label, len);
     gt_event_send(label, GT_EVENT_TYPE_UPDATE_VALUE, NULL);

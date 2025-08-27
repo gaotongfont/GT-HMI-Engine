@@ -80,7 +80,6 @@ static _gt_draw_font_res_st GT_ATTRIBUTE_RAM_TEXT
 _draw_or_calc_dislpay_content(gt_obj_st * obj, bool is_only_calc)
 {
     _gt_btn_st * style = (_gt_btn_st * )obj;
-    gt_color_t fg_color = gt_obj_get_state(obj) == GT_STATE_PRESSED ? style->color_pressed : obj->bgcolor;
     _gt_draw_font_res_st ret = {0} ;
     char * text = (char * )_gt_vector_get_item(style->contents, _gt_vector_get_index(style->contents));
     uint32_t len = (uint32_t)strlen(text);
@@ -98,6 +97,8 @@ _draw_or_calc_dislpay_content(gt_obj_st * obj, bool is_only_calc)
 
     gt_area_st area = gt_area_reduce(obj->area, style->border_width);
     gt_area_st box_area = obj->area;
+    _gt_text_style_st text_sty = style->text_style;
+    text_sty.only_calc_display_info = is_only_calc ? true : false;
 
     // 2:font
     gt_attr_font_st font_attr = {
@@ -107,7 +108,7 @@ _draw_or_calc_dislpay_content(gt_obj_st * obj, bool is_only_calc)
         .font_color     = style->font_color,
         .align          = style->font_align,
         .opa            = obj->opa,
-        .reg        = style->text_style,
+        .reg            = text_sty,
         .logical_area   = area,
         .indent         = style->indent,
     };
@@ -204,7 +205,9 @@ static GT_ATTRIBUTE_RAM_TEXT bool _turn_next_content(gt_obj_st * obj) {
         return false;
     }
 
-    if (_gt_vector_get_count(style->contents) <= 1)
+    _gt_draw_font_res_st font_res = _draw_or_calc_dislpay_content(obj, 1);
+
+    if (font_res.size.x > obj->area.w && _gt_vector_get_count(style->contents) <= 1)
     {
         return true;
     }
@@ -479,6 +482,14 @@ void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...)
     if (GT_RES_FAIL == _update_default_text(style, text)) {
         goto text_lb;
     }
+
+    #if GT_BTN_DEFAULT_AUTO_SCROLL_TIME_MODE
+    if (style->text_style.single_line)
+    {
+        gt_btn_set_one_word_scroll_time(btn, 500);
+    }
+    #endif //!GT_BTN_DEFAULT_AUTO_SCROLL_TIME_MODE
+
     _update_btn_size(btn, size);
     gt_event_send(btn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
     return ;
@@ -506,6 +517,14 @@ void gt_btn_set_text_by_len(gt_obj_st * btn, const char * text, uint16_t len)
     if (GT_RES_FAIL == _update_default_text(style, tmp_str)) {
         goto err_lb;
     }
+
+    #if GT_BTN_DEFAULT_AUTO_SCROLL_TIME_MODE
+    if (style->text_style.single_line)
+    {
+        gt_btn_set_one_word_scroll_time(btn, 500);
+    }
+    #endif //!GT_BTN_DEFAULT_AUTO_SCROLL_TIME_MODE
+
     _update_btn_size(btn, len);
     gt_event_send(btn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
     return;
