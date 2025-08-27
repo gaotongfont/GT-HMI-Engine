@@ -431,7 +431,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _turn_prev_item(gt_obj_st * obj) {
         return ;
     }
     if (_is_mode_equal(style, GT_PLAYER_MODE_ONCE)) {
-        _destroy_timer(style);
+        gt_player_stop(obj);
         return ;
     }
     if (_is_mode_equal(style, GT_PLAYER_MODE_PLAYBACK)) {
@@ -474,7 +474,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _turn_next_item(gt_obj_st * obj) {
         return ;
     }
     if (_is_mode_equal(style, GT_PLAYER_MODE_ONCE)) {
-        _destroy_timer(style);
+        gt_player_stop(obj);
         return ;
     }
     if (_is_mode_equal(style, GT_PLAYER_MODE_PLAYBACK)) {
@@ -545,6 +545,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _auto_play_callback(struct _gt_timer_s * timer
     }
 
     style->last_player_tick =  gt_tick_get();
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT bool _free_item_cb(void * item) {
@@ -653,7 +654,7 @@ void gt_player_set_auto_play_period(gt_obj_st * obj, uint32_t period)
     style->reg.auto_play = period ? 1 : 0;
 
     if (!style->reg.auto_play) {
-        _destroy_timer(style);
+        gt_player_stop(obj);
         return ;
     }
     if (style->timer) {
