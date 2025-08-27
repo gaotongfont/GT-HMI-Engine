@@ -229,6 +229,9 @@ static gt_res_t _common_sjpg_info(struct _gt_img_decoder_s * decoder, gt_fs_fp_s
         header->w = jdec_hdc.width;
         header->h = jdec_hdc.height;
     }
+    else {
+        return GT_RES_INV;
+    }
 
     _sjpg_set_type(header);
 
