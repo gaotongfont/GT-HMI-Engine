@@ -24,6 +24,7 @@ extern "C" {
 #include "../others/gt_color.h"
 #include "../core/gt_style.h"
 #include "../font/gt_font.h"
+#include "../utils/gt_roll_anim.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -33,6 +34,15 @@ extern "C" {
      *      [default: 0]
      */
     #define GT_LABEL_DEFAULT_AUTO_SCROLL_MODE       0
+#endif
+
+#ifndef GT_LABEL_DEFAULT_AUTO_SCROLL_TIME_MODE
+    /**
+     * @brief set default auto scroll time mode
+     *      [default: 0]        Total rolling duration
+     *                1         Duration of single character scrolling
+     */
+    #define GT_LABEL_DEFAULT_AUTO_SCROLL_TIME_MODE       0
 #endif
 
 
@@ -169,6 +179,15 @@ void gt_label_set_auto_scroll_single_line(gt_obj_st * label, bool is_auto_scroll
  *                     = 0: set default 2s.
  */
 void gt_label_set_auto_scroll_total_time(gt_obj_st * label, uint32_t total_time_ms);
+
+/**
+ * @brief Set the duration required for a character to scroll
+ *
+ * @param label
+ * @param time_ms > 0: The time(ms) for a single character to scroll
+ *                = 0: Set default total duration 2s
+ */
+void gt_label_set_one_word_scroll_time(gt_obj_st * label, uint32_t time_ms);
 
 bool gt_label_is_single_line(gt_obj_st * label);
 bool gt_label_is_omit_single_line(gt_obj_st * label);

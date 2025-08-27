@@ -27,12 +27,6 @@
 
 /* private typedef ------------------------------------------------------*/
 
-typedef struct _auto_scroll_s {
-    gt_anim_st * anim;
-    gt_area_st area;        // single line auto scroll
-    uint32_t total_time;    // scroll total time [ms]
-}_auto_scroll_st;
-
 typedef struct _gt_label_s {
     gt_obj_st obj;
     char * text;
@@ -118,31 +112,10 @@ _init_cb(gt_obj_st * obj) {
     gt_area_st box_area = obj->area;
     _gt_draw_font_res_st font_res = _draw_or_calc_dislpay_content(obj, 0);
 
-    if (style->text_style.single_line && style->auto_scroll) {
-        /** first time to calc label widget need to scroll and begin to scroll */
-        if (font_res.size.x > box_area.w && gt_anim_is_paused(style->auto_scroll->anim)) {
-            style->auto_scroll->area.w = font_res.size.x;
-            gt_anim_set_time(style->auto_scroll->anim, style->auto_scroll->total_time);
-            gt_anim_set_value(style->auto_scroll->anim, 0, box_area.w - style->auto_scroll->area.w);
-            gt_anim_restart(style->auto_scroll->anim);
-        }
-    }
+    _first_restart_scroll(style->text_style, style->auto_scroll, box_area, font_res);
     draw_focus(obj);
 }
 
-static void GT_ATTRIBUTE_RAM_TEXT
-_free_auto_scroll_st(_gt_label_st * style) {
-    if (NULL == style->auto_scroll) {
-        return ;
-    }
-
-    if (style->auto_scroll->anim) {
-        gt_anim_del_by(style->auto_scroll->anim);
-        style->auto_scroll->anim = NULL;
-    }
-    gt_mem_free(style->auto_scroll);
-    style->auto_scroll = NULL;
-}
 
 /**
  * @brief obj deinit call back
@@ -156,7 +129,7 @@ static void _deinit_cb(gt_obj_st * obj) {
     }
 
     _gt_label_st * style_p = (_gt_label_st * )obj;
-    _free_auto_scroll_st(style_p);
+    _free_auto_scroll_st(&style_p->auto_scroll);
 
     if (style_p->text) {
         gt_mem_free(style_p->text);
@@ -180,83 +153,6 @@ _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     else if (GT_EVENT_TYPE_UPDATE_VALUE == code_val) {
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
     }
-}
-
-static _auto_scroll_st * GT_ATTRIBUTE_RAM_TEXT
-_reset_auto_scroll_st(_auto_scroll_st * as) {
-    if (NULL == as) {
-        return NULL;
-    }
-    if (as->anim) {
-        gt_anim_restart(as->anim);
-        if (false == gt_anim_is_paused(as->anim)) {
-            gt_anim_set_paused(as->anim, true);
-        }
-        gt_anim_set_value(as->anim, 0, 0);
-    }
-    as->area.x = 0;
-    as->area.y = 0;
-    as->area.w = 0xffff;
-    as->area.h = 0;
-
-    return as;
-}
-
-static void GT_ATTRIBUTE_RAM_TEXT
-_auto_scroll_init(_auto_scroll_st * const auto_scroll_p) {
-    if (NULL == auto_scroll_p) {
-        return ;
-    }
-    gt_memset(auto_scroll_p, 0, sizeof(_auto_scroll_st));
-    auto_scroll_p->total_time = 2000;   /** 2s */
-    auto_scroll_p->area.w = 0xffff;
-}
-
-static _auto_scroll_st * GT_ATTRIBUTE_RAM_TEXT
-_create_auto_scroll_st(gt_obj_st * label) {
-    _gt_label_st * style = (_gt_label_st * )label;
-    if (NULL == style->auto_scroll) {
-        style->auto_scroll = gt_mem_malloc(sizeof(_auto_scroll_st));
-        GT_CHECK_BACK_VAL(style->auto_scroll, NULL);
-        _auto_scroll_init(style->auto_scroll);
-    }
-    return _reset_auto_scroll_st(style->auto_scroll);
-}
-
-static void GT_ATTRIBUTE_RAM_TEXT
-_auto_scroll_exec_cb(void * obj, int32_t value) {
-    _gt_label_st * style = (_gt_label_st * )obj;
-    if (NULL == style->auto_scroll) {
-        return ;
-    }
-    style->auto_scroll->area.x = value;
-    gt_event_send((gt_obj_st * )obj, GT_EVENT_TYPE_DRAW_START, NULL);
-}
-
-static gt_anim_st * GT_ATTRIBUTE_RAM_TEXT
-_create_auto_scroll_anim(gt_obj_st * label) {
-    _gt_label_st * style = (_gt_label_st * )label;
-    if (NULL == style->auto_scroll) {
-        style->auto_scroll = _create_auto_scroll_st(label);
-        GT_CHECK_BACK_VAL(style->auto_scroll, NULL);
-    }
-    if (style->auto_scroll->anim) {
-        _reset_auto_scroll_st(style->auto_scroll);
-        return style->auto_scroll->anim;
-    }
-    gt_anim_st anim;
-    gt_anim_init(&anim);
-    gt_anim_set_target(&anim, label);
-    gt_anim_set_value(&anim, 0, 0);
-    gt_anim_set_time_delay_start(&anim, 500);
-    gt_anim_set_repeat_delay(&anim, 500);
-    gt_anim_set_exec_cb(&anim, _auto_scroll_exec_cb);
-    gt_anim_set_playback(&anim, true);
-    gt_anim_set_repeat_count(&anim, GT_ANIM_REPEAT_INFINITE);
-    style->auto_scroll->anim = gt_anim_start(&anim);
-    gt_anim_set_paused(style->auto_scroll->anim, true);
-
-    return style->auto_scroll->anim;
 }
 
 static void GT_ATTRIBUTE_RAM_TEXT
@@ -297,12 +193,15 @@ gt_obj_st * gt_label_create(gt_obj_st * parent) {
     style->space_x              = 0;
     style->space_y              = 0;
 
-    _auto_scroll_init(style->auto_scroll);
+    _auto_scroll_init(obj, style->auto_scroll);
 
     _update_label_size(obj, len);
 
 #if GT_LABEL_DEFAULT_AUTO_SCROLL_MODE
     gt_label_set_auto_scroll_single_line(obj, true);
+    #if GT_LABEL_DEFAULT_AUTO_SCROLL_TIME_MODE
+    gt_label_set_one_word_scroll_time(obj, 500);
+    #endif //!GT_LABEL_DEFAULT_AUTO_SCROLL_TIME_MODE
 #endif
 
     return obj;
@@ -628,7 +527,7 @@ void gt_label_set_single_line(gt_obj_st * label, bool is_single_line)
     style->text_style.single_line = is_single_line;
 
     if (false == style->text_style.single_line) {
-        _free_auto_scroll_st(style);
+        _free_auto_scroll_st(&style->auto_scroll);
     }
 
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -643,7 +542,7 @@ void gt_label_set_omit_single_line(gt_obj_st * label, bool is_omit)
     style->text_style.omit_line = is_omit;
     style->text_style.single_line = is_omit;
 
-    _free_auto_scroll_st(style);
+    _free_auto_scroll_st(&style->auto_scroll);
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -656,9 +555,9 @@ void gt_label_set_auto_scroll_single_line(gt_obj_st * label, bool is_auto_scroll
     if (is_auto_scroll) {
         style->text_style.single_line = true;
         style->text_style.omit_line = false;
-        _create_auto_scroll_anim(label);
+        _create_auto_scroll_anim(label, &style->auto_scroll);
     } else {
-        _free_auto_scroll_st(style);
+        _free_auto_scroll_st(&style->auto_scroll);
         style->text_style.omit_line = true;
     }
 
@@ -687,6 +586,28 @@ void gt_label_set_auto_scroll_total_time(gt_obj_st * label, uint32_t total_time_
     if (gt_anim_is_paused(style->auto_scroll->anim)) {
         gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);   /** restart scroll */
     }
+}
+
+void gt_label_set_one_word_scroll_time(gt_obj_st * label, uint32_t time_ms)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    if (NULL == style->auto_scroll) {
+        return ;
+    }
+
+    char * text_p = gt_label_get_text(label);
+    if (style->font_info.size == 0)
+    {
+        GT_LOGE(GT_LOG_TAG_GUI, "label font size error");
+        return ;
+    }
+
+    _gt_draw_font_res_st font_res = _draw_or_calc_dislpay_content(label, 1);
+    uint16_t text_font_num = font_res.size.x / (style->font_info.size) + (font_res.size.x % (style->font_info.size) ? 1 : 0);
+    gt_label_set_auto_scroll_total_time(label, text_font_num * time_ms);
 }
 
 bool gt_label_is_single_line(gt_obj_st * label)
