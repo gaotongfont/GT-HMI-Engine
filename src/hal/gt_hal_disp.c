@@ -169,6 +169,15 @@ gt_disp_st * gt_disp_get_default(void)
     return _gt_gc_get_disp();
 }
 
+uint32_t gt_hal_disp_get_full_screen_size(void)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    if (NULL == disp) {
+        return 0;
+    }
+    return disp->drv->res_hor * disp->drv->res_ver * sizeof(gt_color_t);
+}
+
 uint16_t gt_disp_get_res_hor(gt_disp_st * disp)
 {
     if( NULL == disp ) disp = gt_disp_get_default();

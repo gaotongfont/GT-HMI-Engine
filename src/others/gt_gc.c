@@ -67,6 +67,10 @@ GT_ATTRIBUTE_RAM_DATA gt_gc_st _gt_global_call = {
 
 
 /* static functions -----------------------------------------------------*/
+static gt_gc_st * GT_ATTRIBUTE_RAM_TEXT _get_gc_ctrl(void) {
+    return &_gt_global_call;
+}
+
 
 
 
@@ -74,17 +78,20 @@ GT_ATTRIBUTE_RAM_DATA gt_gc_st _gt_global_call = {
 
 gt_disp_st * _gt_gc_get_disp(void)
 {
-    return _gt_global_call.disp;
+    gt_gc_st * gc = _get_gc_ctrl();
+    return gc->disp;
 }
 
 void _gt_gc_set_disp(gt_disp_st * disp)
 {
-    _gt_global_call.disp = disp;
+    gt_gc_st * gc = _get_gc_ctrl();
+    gc->disp = disp;
 }
 
 _gt_gc_scr_st * _gt_gc_get_scr_info(void)
 {
-    return &_gt_global_call.scr_info;
+    gt_gc_st * gc = _get_gc_ctrl();
+    return &gc->scr_info;
 }
 
 uint16_t _gt_gc_get_size(void)
@@ -95,63 +102,94 @@ uint16_t _gt_gc_get_size(void)
 #if GT_USE_EXTRA_FULL_IMG_BUFFER
 void gt_gc_set_full_img_buffer(uint8_t * buffer, uint32_t len)
 {
-    _gt_global_call.full_img_buffer.buffer = buffer;
-    _gt_global_call.full_img_buffer.len = len;
+    gt_gc_st * gc = _get_gc_ctrl();
+    gc->full_img_buffer.buffer = buffer;
+    gc->full_img_buffer.len = len;
 }
 
 #if GT_USE_EXTRA_FULL_IMG_OFFSET
 void gt_gc_set_full_img_buffer_offset(uint32_t offset)
 {
-    _gt_global_call.full_img_buffer.offset = offset;
+    gt_gc_st * gc = _get_gc_ctrl();
+    gc->full_img_buffer.offset = offset;
 }
 #endif  /** GT_USE_EXTRA_FULL_IMG_OFFSET */
 
 bool _gt_gc_full_img_buffer_is_valid(void)
 {
-    return _gt_global_call.full_img_buffer.buffer && _gt_global_call.full_img_buffer.len;
+    gt_gc_st * gc = _get_gc_ctrl();
+    return gc->full_img_buffer.buffer && gc->full_img_buffer.len;
 }
 
 _gt_gc_full_img_buffer_st * _gt_gc_get_full_img_buffer(void)
 {
-    return &_gt_global_call.full_img_buffer;
+    gt_gc_st * gc = _get_gc_ctrl();
+    return &gc->full_img_buffer;
 }
 #endif  /** GT_USE_EXTRA_FULL_IMG_BUFFER */
 
 #if GT_USE_EXTRA_FULL_FONT_BUFFER
 void gt_gc_set_full_font_buffer(uint8_t * buffer, uint32_t len)
 {
-    _gt_global_call.full_font_buffer.ptr = buffer;
-    _gt_global_call.full_font_buffer.len = len;
+    gt_gc_st * gc = _get_gc_ctrl();
+    gc->full_font_buffer.ptr = buffer;
+    gc->full_font_buffer.len = len;
 }
 
 bool _gt_gc_full_font_buffer_is_valid(void)
 {
-    return _gt_global_call.full_font_buffer.ptr && _gt_global_call.full_font_buffer.len;
+    gt_gc_st * gc = _get_gc_ctrl();
+    return gc->full_font_buffer.ptr && gc->full_font_buffer.len;
 }
 
 gt_buffer_st * _gt_gc_get_full_font_buffer(void)
 {
-    return &_gt_global_call.full_font_buffer;
+    gt_gc_st * gc = _get_gc_ctrl();
+    return &gc->full_font_buffer;
 }
 #endif  /** GT_USE_EXTRA_FULL_FONT_BUFFER */
 
 #if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
 void gt_gc_set_full_font_mask_buffer(uint8_t * buffer, uint32_t len)
 {
-    _gt_global_call.full_font_mask_buffer.ptr = buffer;
-    _gt_global_call.full_font_mask_buffer.len = len;
+    gt_gc_st * gc = _get_gc_ctrl();
+    gc->full_font_mask_buffer.ptr = buffer;
+    gc->full_font_mask_buffer.len = len;
 }
 
 bool _gt_gc_full_font_mask_buffer_is_valid(void)
 {
-    return _gt_global_call.full_font_mask_buffer.ptr && _gt_global_call.full_font_mask_buffer.len;
+    gt_gc_st * gc = _get_gc_ctrl();
+    return gc->full_font_mask_buffer.ptr && gc->full_font_mask_buffer.len;
 }
 
 gt_buffer_st * _gt_gc_get_full_font_mask_buffer(void)
 {
-    return &_gt_global_call.full_font_mask_buffer;
+    gt_gc_st * gc = _get_gc_ctrl();
+    return &gc->full_font_mask_buffer;
 }
 #endif  /** GT_USE_EXTRA_FULL_FONT_MASK_BUFFER */
+
+#if GT_LAYER_TOP_SCREENSHOT_CACHE
+void _gt_gc_set_screenshot_cache(char * cache, uint32_t cache_len)
+{
+    gt_gc_st * gc = _get_gc_ctrl();
+    gc->screenshot_cache.ptr = cache;
+    gc->screenshot_cache.len = cache_len;
+}
+
+bool _gt_gc_screenshot_cache_is_valid(void)
+{
+    gt_gc_st * gc = _get_gc_ctrl();
+    return gc->screenshot_cache.ptr && gc->screenshot_cache.len;
+}
+
+gt_buffer_st * _gt_gc_get_screenshot_cache(void)
+{
+    gt_gc_st * gc = _get_gc_ctrl();
+    return &gc->screenshot_cache;
+}
+#endif
 
 #if GT_FONT_USE_ASCII_WIDTH_CACHE
 /**
@@ -161,7 +199,8 @@ gt_buffer_st * _gt_gc_get_full_font_mask_buffer(void)
  */
 _gt_gc_ascii_width_cache_st * _gt_gc_get_ascii_width_cache(void)
 {
-    return &_gt_global_call.ascii_width_cache;
+    gt_gc_st * gc = _get_gc_ctrl();
+    return &gc->ascii_width_cache;
 }
 #endif
 /* end ------------------------------------------------------------------*/

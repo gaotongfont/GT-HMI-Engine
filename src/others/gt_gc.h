@@ -89,6 +89,11 @@ typedef struct gt_gc_s {
 #if GT_USE_FILE_HEADER
     _gt_file_header_ctl_st file_header_ctl;
 #endif
+
+#if GT_LAYER_TOP_SCREENSHOT_CACHE
+    gt_buffer_st screenshot_cache;
+#endif
+
 #if GT_USE_SCREEN_ANIM
     _gt_gc_event_st event_ctl;
 #endif
@@ -180,6 +185,33 @@ bool _gt_gc_full_font_mask_buffer_is_valid(void);
 
 gt_buffer_st * _gt_gc_get_full_font_mask_buffer(void);
 #endif
+
+#if GT_LAYER_TOP_SCREENSHOT_CACHE
+/**
+ * @brief Register screenshot cache buffer to pref top layer full cover draw,
+ *      reduce base screen loading time.
+ *
+ * @param cache
+ * @param cache_len full screen cache buffer size
+ */
+void _gt_gc_set_screenshot_cache(char * cache, uint32_t cache_len);
+
+/**
+ * @brief
+ *
+ * @return true Has init screenshot cache buffer before
+ * @return false
+ */
+bool _gt_gc_screenshot_cache_is_valid(void);
+
+/**
+ * @brief Get screenshot cache buffer
+ *
+ * @return gt_buffer_st*
+ */
+gt_buffer_st * _gt_gc_get_screenshot_cache(void);
+#endif
+
 
 #if GT_FONT_USE_ASCII_WIDTH_CACHE
 /**

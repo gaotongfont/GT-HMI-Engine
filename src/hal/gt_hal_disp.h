@@ -102,7 +102,10 @@ typedef struct _gt_disp_s {
 
     uint8_t scr_anim_type : 4;          // @ref gt_scr_anim_type_et
     uint8_t enabled       : 1;
-    uint8_t reserved      : 3;
+#if GT_LAYER_TOP_SCREENSHOT_CACHE
+    uint8_t screenshot    : 1;
+#endif
+    uint8_t reserved      : 2;
 }gt_disp_st;
 
 
@@ -116,6 +119,8 @@ void gt_disp_drv_init(gt_disp_drv_st * disp_drv);
 
 void gt_disp_drv_register(gt_disp_drv_st *drv);
 gt_disp_st * gt_disp_get_default(void);
+
+uint32_t gt_hal_disp_get_full_screen_size(void);
 
 void gt_disp_drv_set_flushing(gt_disp_drv_st * drv, bool state);
 bool gt_disp_drv_check_flushing(gt_disp_drv_st * drv);

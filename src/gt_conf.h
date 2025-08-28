@@ -166,6 +166,18 @@ extern "C" {
     #define GT_USE_LAYER_TOP            1
 #endif
 
+#if GT_USE_LAYER_TOP
+    #ifndef GT_LAYER_TOP_SCREENSHOT_CACHE
+        /**
+         * @brief Set the top layer screen shot cache, 0: no cache, 1: cache
+         *      by user defined full screen buffer to store the screen shot.
+         *      Reduce base screen draw time.
+         *      [default: 0]
+         */
+        #define GT_LAYER_TOP_SCREENSHOT_CACHE   0
+    #endif
+#endif
+
 #ifndef GT_USE_SCREEN_ANIM
     /**
      * @brief Set the screen animation effect, the screen animation
