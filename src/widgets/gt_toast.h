@@ -81,6 +81,7 @@ void gt_toast_reset(gt_toast_param_st * toast);
 void gt_toast(gt_toast_param_st * toast);
 void gt_toast_loading(gt_toast_param_st * toast);
 
+void gt_toast_close(void);
 
 
 void gt_toast_global_set_font_size(uint8_t size);

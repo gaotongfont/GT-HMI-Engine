@@ -27,7 +27,7 @@
 typedef struct {
     gt_obj_st obj;
     gt_obj_st * lab_p;
-    gt_anim_st * anim_open;
+    gt_anim_st * anim_transit;
 
     gt_toast_cb open_cb;
     gt_toast_cb close_cb;
@@ -175,17 +175,17 @@ _create_transit_anim(_gt_toast_st * toast, bool is_open) {
         gt_obj_set_visible(obj, GT_VISIBLE);
         gt_obj_set_opa(obj, GT_OPA_0);
         gt_obj_set_opa_anim(toast->lab_p, toast->max_opa);
-        toast->anim_open = gt_obj_set_opa_anim(obj, toast->max_opa);
-        gt_anim_set_ready_cb(toast->anim_open, _transit_open_ready_cb);
+        toast->anim_transit = gt_obj_set_opa_anim(obj, toast->max_opa);
+        gt_anim_set_ready_cb(toast->anim_transit, _transit_open_ready_cb);
     } else {
         gt_obj_set_opa_anim(toast->lab_p, 0);
-        toast->anim_open = gt_obj_set_opa_anim(obj, GT_OPA_0);
-        gt_anim_set_ready_cb(toast->anim_open, _transit_close_ready_cb);
+        toast->anim_transit = gt_obj_set_opa_anim(obj, GT_OPA_0);
+        gt_anim_set_ready_cb(toast->anim_transit, _transit_close_ready_cb);
     }
 }
 
 static void GT_ATTRIBUTE_RAM_TEXT
-_holding_open_ready_cb(gt_anim_st * anim) {
+_holding_open_start_cb(gt_anim_st * anim) {
     _gt_toast_st * toast = (_gt_toast_st * )anim->tar;
     if (toast->open_cb) {
         toast->open_cb(toast->data_p);
@@ -208,7 +208,7 @@ _create_holding_display_anim(_gt_toast_st * toast) {
     gt_anim_init(&holding);
     gt_anim_set_target(&holding, toast);
     gt_anim_set_time(&holding, toast->duration);
-    gt_anim_set_ready_cb(&holding, _holding_open_ready_cb);
+    gt_anim_set_start_cb(&holding, _holding_open_start_cb);
     gt_anim_set_ready_cb(&holding, _holding_close_ready_cb);
     gt_anim_start(&holding);
 }
@@ -359,6 +359,22 @@ void gt_toast_loading(gt_toast_param_st * toast)
     _common_update_toast_data(style, toast);
     _calc_position_by_type(style);
     _create_transit_anim(style, true);
+}
+
+void gt_toast_close(void)
+{
+    _gt_toast_st * style = _toast_create();
+    gt_obj_st * obj = (gt_obj_st * )style;
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        GT_LOGE(GT_LOG_TAG_DATA, "Create toast failed.");
+        return;
+    }
+    if (style->anim_transit) {
+        gt_anim_del_safe_by(obj);
+        style->anim_transit = NULL;
+    }
+    gt_obj_set_visible(obj, GT_INVISIBLE);
+    gt_obj_set_opa(obj, GT_OPA_0);
 }
 
 void gt_toast_global_set_font_size(uint8_t size)
