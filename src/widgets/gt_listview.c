@@ -120,6 +120,7 @@ typedef struct _gt_listview_s {
     uint8_t latest_always   : 1;    /** 0[default]: the latest item is always displayed at the bottom */
     uint8_t pull_to_refresh : 1;
     uint8_t load_more       : 1;
+    uint8_t empty_margin    : 1;
 }_gt_listview_st;
 
 
@@ -230,6 +231,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _show_septal_line(gt_obj_st * obj, _gt_listvie
     area.x += (obj->area.w - septal_width) >> 1;
     if (gt_obj_get_childs_max_height(obj) >= gt_obj_get_h(obj)) {
         area.y += obj->process_attr.scroll.y;
+        area.y += style->empty_margin ? 0 : (style->item_space.y >> 1);
     }
     area.w = septal_width;
     area.h = style->septal_line_info.size.y;
@@ -295,10 +297,11 @@ static inline uint8_t _column_plus_one(_gt_listview_st * style) {
 }
 
 static GT_ATTRIBUTE_RAM_TEXT uint16_t _get_column_item_width(_gt_listview_st * style, uint16_t widget_width, uint16_t column_count) {
+    uint8_t margin_val = style->empty_margin ? false : true;
     if (column_count < 2) {
-        return widget_width - style->item_space.x;
+        return widget_width - margin_val * style->item_space.x;
     }
-    return (widget_width - (column_count * style->item_space.x)) / column_count;
+    return (widget_width - ((column_count - style->empty_margin) * style->item_space.x)) / column_count;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _set_label_color_by_item(gt_obj_st * item, gt_color_t font_color) {
@@ -698,7 +701,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _calculate_item_pagination(gt_obj_st * listvie
 static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
     uint8_t idx = _column_plus_one(style);
-    gt_size_t offset_line = listview->area.y + style->item_reduce + (style->item_space.y >> 1);
+    gt_size_t offset_line = listview->area.y + style->item_reduce + (style->empty_margin ? 0 : (style->item_space.y >> 1));
     gt_size_t width = _get_column_item_width(style, listview->area.w, style->column.count) - (style->item_reduce << 1);
 
     if (listview->cnt_child) {
@@ -715,7 +718,9 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) 
     gt_obj_st * obj = gt_obj_create(listview);
     /** set object item size */
     obj->area.x = listview->area.x + (width + (idx ? style->item_space.x : 0)) * idx + style->item_reduce;
-    obj->area.x += style->item_space.x >> 1;
+    if (false == style->empty_margin) {
+        obj->area.x += style->item_space.x >> 1;
+    }
     obj->area.y = offset_line + listview->process_attr.scroll.y;
     obj->area.w = width;
     obj->area.h = style->item_height - (style->item_reduce << 1);
@@ -1722,6 +1727,16 @@ void gt_listview_set_item_space(gt_obj_st * listview, uint16_t hor, uint16_t ver
     _gt_listview_st * style = (_gt_listview_st * )listview;
     style->item_space.x = hor;
     style->item_space.y = ver;
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_listview_set_item_empty_margin(gt_obj_st * listview, bool is_empty_margin)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->empty_margin = is_empty_margin ? 1 : 0;
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
