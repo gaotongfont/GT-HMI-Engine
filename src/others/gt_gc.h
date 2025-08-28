@@ -191,6 +191,9 @@ gt_buffer_st * _gt_gc_get_full_font_mask_buffer(void);
  * @brief Register screenshot cache buffer to pref top layer full cover draw,
  *      reduce base screen loading time.
  *
+ *      [Warn] gt-hmi default will malloc a buffer by gt_mem_extern_malloc(), if
+ *      you want to use your own buffer, you can call this function to register it.
+ *
  * @param cache
  * @param cache_len full screen cache buffer size
  */
