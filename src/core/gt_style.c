@@ -1008,4 +1008,10 @@ bool gt_obj_get_swipe_dir_enabled(gt_obj_st * obj)
     return obj->swipe_dir;
 }
 
+void gt_obj_set_ignore_throw(gt_obj_st * obj, bool is_ignore_throw)
+{
+    GT_CHECK_BACK(obj);
+    obj->ignore_throw = is_ignore_throw;
+}
+
 /* end ------------------------------------------------------------------*/

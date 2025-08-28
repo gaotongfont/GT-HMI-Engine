@@ -362,6 +362,16 @@ void gt_obj_set_swipe_dir(gt_obj_st * obj, bool enabled);
  */
 bool gt_obj_get_swipe_dir_enabled(gt_obj_st * obj);
 
+
+/**
+ * @brief ignore scroll throw animation, immediately stop throw effect. 0: [default]
+ *
+ * @param obj
+ * @param is_ignore_throw
+ */
+void gt_obj_set_ignore_throw(gt_obj_st * obj, bool is_ignore_throw);
+
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
