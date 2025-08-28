@@ -297,11 +297,13 @@ static inline uint8_t _column_plus_one(_gt_listview_st * style) {
 }
 
 static GT_ATTRIBUTE_RAM_TEXT uint16_t _get_column_item_width(_gt_listview_st * style, uint16_t widget_width, uint16_t column_count) {
-    uint8_t margin_val = style->zero_margin ? false : true;
+    uint8_t margin_val = style->zero_margin ? 0 : 1;
+    uint8_t count = column_count;
     if (column_count < 2) {
         return widget_width - margin_val * style->item_space.x;
     }
-    return (widget_width - ((column_count - style->zero_margin) * style->item_space.x)) / column_count;
+    count -= style->zero_margin ? 1 : 0;
+    return (widget_width - (count * style->item_space.x)) / column_count;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _set_label_color_by_item(gt_obj_st * item, gt_color_t font_color) {
