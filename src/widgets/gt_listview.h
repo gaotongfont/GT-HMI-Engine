@@ -454,13 +454,13 @@ void gt_listview_set_septal_line_opa(gt_obj_st * listview, gt_opa_t opa);
  */
 void gt_listview_set_item_space(gt_obj_st * listview, uint16_t hor, uint16_t ver);
 /**
- * @brief The elements are closely attached to the edge of the control.
+ * @brief The elements are closely attached to the edge of the parent(lv) control.
  *
  * @param listview
- * @param is_empty_margin true: empty margin; false[default]: not empty margin,
+ * @param is_zero_margin true: zero margin; false[default]: has margin value,
  *            calc by half of item_space width.
  */
-void gt_listview_set_item_empty_margin(gt_obj_st * listview, bool is_empty_margin);
+void gt_listview_set_item_zero_margin(gt_obj_st * listview, bool is_zero_margin);
 
 uint16_t gt_listview_get_item_space_y(gt_obj_st * listview);
 
