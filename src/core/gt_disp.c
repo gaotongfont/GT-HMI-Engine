@@ -913,8 +913,8 @@ static GT_ATTRIBUTE_RAM_TEXT inline gt_scr_anim_type_et _get_anti_anim_type(gt_s
     else if (GT_SCR_ANIM_TYPE_MOVE_DOWN == type)    { type =  GT_SCR_ANIM_TYPE_MOVE_UP;     }
     else if (GT_SCR_ANIM_TYPE_COVER_LEFT == type)   { type = GT_SCR_ANIM_TYPE_COVER_RIGHT;  }
     else if (GT_SCR_ANIM_TYPE_COVER_RIGHT == type)  { type = GT_SCR_ANIM_TYPE_COVER_LEFT;   }
-    else if (GT_SCR_ANIM_TYPE_COVER_UP == type)     { type = GT_SCR_ANIM_TYPE_COVER_DOWN;   }
-    else if (GT_SCR_ANIM_TYPE_COVER_DOWN == type)   { type = GT_SCR_ANIM_TYPE_COVER_UP;     }
+    else if (GT_SCR_ANIM_TYPE_COVER_UP == type)     { type = GT_SCR_ANIM_TYPE_NONE;         }
+    else if (GT_SCR_ANIM_TYPE_COVER_DOWN == type)   { type = GT_SCR_ANIM_TYPE_NONE;         }
     return type;
 #else
     return GT_SCR_ANIM_TYPE_NONE;
