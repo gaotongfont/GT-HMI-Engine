@@ -691,7 +691,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _calculate_item_pagination(gt_obj_st * listvie
         h = listview->child[i]->area.h + listview->child[i]->area.y - listview->area.y;
         if (h <= listview->area.h) {
             style->page_mode.height = GT_MAX(
-                h + (style->zero_margin ? 0 : (style->item_space.y >> 1)), style->page_mode.height);
+                h + (style->zero_margin ? style->item_space.y : (style->item_space.y >> 1)), style->page_mode.height);
             continue;
         }
 
