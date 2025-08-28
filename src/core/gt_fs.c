@@ -39,7 +39,7 @@ typedef struct _gt_fs_ctrl_s {
 /**
  * @brief default drive label
  */
-static GT_ATTRIBUTE_RAM_DATA const _gt_vf_type_label_st _drive_label[] = {
+static const _gt_vf_type_label_st _drive_label[] = {
 #if GT_USE_MODE_FLASH
     { GT_FS_TYPE_FLASH, GT_FS_LABEL_FLASH },
 #endif
