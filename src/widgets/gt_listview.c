@@ -67,6 +67,13 @@ typedef struct {
     gt_opa_t opa;
 }_septal_line_info_st;
 
+typedef struct {
+    gt_listview_page_mode_et mode;
+    uint16_t height;
+    uint16_t count;
+    uint16_t idx;
+}_page_mode_st;
+
 typedef struct _gt_listview_s {
     gt_obj_st obj;
     gt_obj_st * last_active;
@@ -86,6 +93,8 @@ typedef struct _gt_listview_s {
 
     gt_point_st item_space; /** The space between items with hor or ver direct */
     uint16_t timeout_event;      /** pull to refresh or load more */
+
+    _page_mode_st page_mode;    /** page mode */
 
     uint8_t align;      //@ref gt_align_et
     uint8_t border_width;
@@ -477,6 +486,29 @@ _send_load_more_event(struct gt_obj_s * obj) {
     gt_anim_start(&anim);
 }
 
+static GT_ATTRIBUTE_RAM_TEXT void
+_paging_mode_handler(gt_obj_st * obj, bool is_down)
+{
+    _gt_listview_st * style = (_gt_listview_st * )obj;
+
+    if(is_down) {
+        if(style->page_mode.idx >= style->page_mode.count - 1) {
+            return ;
+        }
+        ++style->page_mode.idx;
+        _gt_obj_move_child_by(obj, 0, -style->page_mode.height);
+        gt_disp_invalid_area(obj);
+    }
+    else{
+        if(style->page_mode.idx <= 0) {
+            return ;
+        }
+        --style->page_mode.idx;
+        _gt_obj_move_child_by(obj, 0, style->page_mode.height);
+        gt_disp_invalid_area(obj);
+    }
+}
+
 /**
  * @brief obj event handler call back
  *
@@ -491,6 +523,10 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         gt_disp_invalid_area(obj);
     }
     else if (GT_EVENT_TYPE_INPUT_SCROLL == code_val) {
+        if(GT_LISTVIEW_PAGE_MODE_PAGING == style->page_mode.mode) {
+            return ;
+        }
+
         _check_pull_refresh_or_load_more(obj);
         if (0 == obj->process_attr.scroll.y &&
             gt_obj_get_childs_max_height(obj) < gt_obj_get_h(obj)) {
@@ -514,9 +550,23 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         _highlight_set_obj_active_state(obj);
     }
     else if (GT_EVENT_TYPE_INPUT_SCROLL_START == code_val) {
+        if(GT_LISTVIEW_PAGE_MODE_PAGING == style->page_mode.mode) {
+            return ;
+        }
+
         _reset_pull_refresh_or_load_more(obj);
     }
     else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code_val) {
+        if(GT_LISTVIEW_PAGE_MODE_PAGING == style->page_mode.mode) {
+            if(gt_obj_is_scroll_down(obj)) {
+                _paging_mode_handler(obj, false);
+            }
+            else{
+                _paging_mode_handler(obj, true);
+            }
+            return ;
+        }
+
         if (style->highlight) {
             gt_obj_set_trigger_mode(style->last_active, true);
         }
@@ -528,8 +578,16 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             _send_load_more_event(obj);
         }
     } else if (GT_EVENT_TYPE_INPUT_SCROLL_UP == code_val) {
+        if(GT_LISTVIEW_PAGE_MODE_PAGING == style->page_mode.mode) {
+            _paging_mode_handler(obj, false);
+            return ;
+        }
         gt_obj_scroll_to_y(obj, gt_obj_get_h(obj) >> 1, GT_ANIM_ON);
     } else if (GT_EVENT_TYPE_INPUT_SCROLL_DOWN == code_val) {
+        if(GT_LISTVIEW_PAGE_MODE_PAGING == style->page_mode.mode) {
+            _paging_mode_handler(obj, true);
+            return ;
+        }
         gt_obj_scroll_to_y(obj, - gt_obj_get_h(obj) >> 1, GT_ANIM_ON);
     } else if (GT_EVENT_TYPE_INPUT_HIDED == code_val) {
         gt_obj_set_visible(obj, false);
@@ -618,6 +676,25 @@ static inline uint16_t _get_triple_real_width(_gt_listview_st * style, gt_obj_st
     return (gt_obj_get_w(item) * value) / total;
 }
 
+static GT_ATTRIBUTE_RAM_TEXT void _calculate_item_pagination(gt_obj_st * listview)
+{
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    int32_t h = 0;
+
+    for(gt_size_t i = 0; i < listview->cnt_child; ++i) {
+        h = listview->child[i]->area.h + listview->child[i]->area.y - listview->area.y;
+        if (h <= listview->area.h) {
+            style->page_mode.height = GT_MAX(h + (style->item_space.y >> 1), style->page_mode.height);
+            continue;
+        }
+
+        if(h - (style->page_mode.height * (style->page_mode.count-1)) > listview->area.h) {
+            ++style->page_mode.count;
+        }
+    }
+
+}
+
 static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
     uint8_t idx = _column_plus_one(style);
@@ -657,6 +734,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) 
     gt_obj_set_focus_gap(obj, style->item_focus_gap);
     gt_obj_set_focus_w(obj, style->item_focus_w);
 
+    _calculate_item_pagination(listview);
     return obj;
 }
 
@@ -966,6 +1044,8 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     style->selected_effect = true;
     style->show_background = true;
 
+    style->page_mode.count = 1;
+
     gt_obj_set_scroll_dir(obj, GT_SCROLL_VERTICAL);
     return obj;
 }
@@ -1259,6 +1339,10 @@ void gt_listview_clear_all_items(gt_obj_st * listview)
     _gt_listview_st * style = (_gt_listview_st * )listview;
     style->column.idx = 0;
     style->column.offset_y = listview->area.y + style->item_reduce;
+
+    style->page_mode.idx = 0;
+    style->page_mode.count = 1;
+    style->page_mode.height = 0;
 
     _gt_obj_class_destroy_children(listview);
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -1877,6 +1961,23 @@ gt_res_t gt_listview_set_timeout_refresh_or_load_more(gt_obj_st * listview, uint
     style->timeout_event = timeout;
     return GT_RES_OK;
 }
+
+void gt_listview_set_page_mode(gt_obj_st* listview, gt_listview_page_mode_et mode)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->page_mode.mode = mode;
+
+    if (GT_LISTVIEW_PAGE_MODE_PAGING == style->page_mode.mode) {
+        listview->process_attr.scroll.y = 0;
+        gt_size_t offset_y = ( style->item_reduce) << 2;
+        _gt_obj_scroll_internal(listview, 0, offset_y);
+        _calculate_item_pagination(listview);
+    }
+}
+
 
 #endif  /** GT_CFG_ENABLE_LISTVIEW */
 /* end ------------------------------------------------------------------*/

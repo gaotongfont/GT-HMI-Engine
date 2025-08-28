@@ -64,6 +64,11 @@ typedef enum gt_listview_element_type_s {
     _GT_LISTVIEW_ELEMENT_TYPE_MAX,
 }gt_listview_element_type_st;
 
+typedef enum {
+    GT_LISTVIEW_PAGE_MODE_SLIDING = 0,      /** default  sliding mode */
+    GT_LISTVIEW_PAGE_MODE_PAGING,           /** paging mode */
+} gt_listview_page_mode_et;
+
 /**
  * @brief Only used by gt_listview_add_item_by_param() function.
  */
@@ -507,6 +512,8 @@ void gt_listview_set_selected_anti_font_color(gt_obj_st * listview, gt_color_t a
 gt_color_t gt_listview_get_selected_anti_font_color(gt_obj_st * listview);
 
 gt_res_t gt_listview_set_timeout_refresh_or_load_more(gt_obj_st * listview, uint16_t timeout);
+
+void gt_listview_set_page_mode(gt_obj_st* listview, gt_listview_page_mode_et mode);
 
 #endif  /** GT_CFG_ENABLE_LISTVIEW */
 
