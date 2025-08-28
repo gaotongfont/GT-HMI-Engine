@@ -752,12 +752,13 @@ static GT_ATTRIBUTE_RAM_TEXT gt_area_st _update_area_flush_by_calc_partly_redraw
  * @param line Number of rows per refresh
  */
 static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
-    gt_obj_st * scr = param->disp->scr_act;
+    gt_disp_st * disp = param->disp;
+    gt_obj_st * scr = disp->scr_act;
     gt_color_t color_fill = gt_screen_get_bgcolor(scr);
     GT_CHECK_BACK(scr);
 
-    scr->area.x = param->disp->area_act.x;
-    scr->area.y = param->disp->area_act.y;
+    scr->area.x = disp->area_act.x;
+    scr->area.y = disp->area_act.y;
 
     if (false == gt_area_is_intersect_screen(&scr->area, &param->area_flush)) {
         return ;
@@ -769,57 +770,57 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
      * Check layer top obj is full screen display and GT_OPA_COVER
      * to ignore base layer load.
      */
-    bool is_normal_display_layer_base =
-        _gt_disp_is_top_full_cover_display(param->disp->layer_top) ? false : true;
+    bool is_normal_display_base_layer =
+        _gt_disp_is_top_full_cover_display(disp->layer_top) ? false : true;
 #endif
 
     uint16_t end_y = param->area_flush.y + param->area_flush.h;
-    param->disp->area_disp.y = param->area_flush.y;
-    param->disp->area_disp.w = param->area_flush.w;
+    disp->area_disp.y = param->area_flush.y;
+    disp->area_disp.w = param->area_flush.w;
     if (param->area_flush.h > param->line) {
         param->area_flush.h = param->line;
     }
-    param->disp->area_disp.h = param->area_flush.h;
+    disp->area_disp.h = param->area_flush.h;
 
-    uint32_t len = param->disp->area_disp.w * param->disp->area_disp.h;
+    uint32_t len = disp->area_disp.w * disp->area_disp.h;
 
     while (param->area_flush.y < end_y) {
-        gt_color_fill(param->disp->vbd_color, len, color_fill);
+        gt_color_fill(disp->vbd_color, len, color_fill);
 
-        param->disp->area_disp.x = param->area_flush.x + scr->area.x;
-        param->disp->area_disp.y = param->area_flush.y + scr->area.y;
+        disp->area_disp.x = param->area_flush.x + scr->area.x;
+        disp->area_disp.y = param->area_flush.y + scr->area.y;
 
 #if GT_USE_LAYER_TOP
-        if (is_normal_display_layer_base) {
+        if (is_normal_display_base_layer) {
             _gt_disp_check_and_copy_foreach(scr, param);
         }
 
         // flush top layer
-        param->disp->area_disp.x = param->area_flush.x;
-        param->disp->area_disp.y = param->area_flush.y;
-        _gt_disp_check_and_copy_foreach(param->disp->layer_top, param);
+        disp->area_disp.x = param->area_flush.x;
+        disp->area_disp.y = param->area_flush.y;
+        _gt_disp_check_and_copy_foreach(disp->layer_top, param);
 #else
         _gt_disp_check_and_copy_foreach(scr, param);
 #endif
 
-        if(gt_disp_graph_is_double_buf()){
-            while(gt_disp_drv_check_flushing(param->disp->drv)){
-                if(param->disp->drv->wait_cb){ param->disp->drv->wait_cb(param->disp->drv); }
+        if (gt_disp_graph_is_double_buf()) {
+            while (gt_disp_drv_check_flushing(disp->drv)) {
+                if(disp->drv->wait_cb){ disp->drv->wait_cb(disp->drv); }
             }
         }
 
-        gt_disp_drv_set_flushing(param->disp->drv, true);
+        gt_disp_drv_set_flushing(disp->drv, true);
         /** flush display by buffer area */
-        param->disp->drv->flush_cb(param->disp->drv, &param->area_flush, param->disp->vbd_color);
+        disp->drv->flush_cb(disp->drv, &param->area_flush, disp->vbd_color);
         param->area_flush.y += param->line;
 
         if( end_y - param->area_flush.y < param->line){
             param->area_flush.h = end_y - param->area_flush.y;
-            param->disp->area_disp.h = param->area_flush.h;
+            disp->area_disp.h = param->area_flush.h;
         }
 
         if(gt_disp_graph_is_double_buf()){
-            param->disp->vbd_color = gt_disp_graph_get_buf_backup(param->disp->vbd_color);
+            disp->vbd_color = gt_disp_graph_get_buf_backup(disp->vbd_color);
         }
     }
 }
