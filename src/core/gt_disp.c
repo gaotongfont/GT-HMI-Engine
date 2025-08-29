@@ -848,7 +848,13 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
     uint32_t len = disp->area_disp.w * disp->area_disp.h;
 
     while (param->area_flush.y < end_y) {
+#if GT_LAYER_TOP_SCREENSHOT_CACHE
+        if (!is_screenshot_vaild || !disp->screenshot) {
+            gt_color_fill(disp->vbd_color, len, color_fill);
+        }
+#else
         gt_color_fill(disp->vbd_color, len, color_fill);
+#endif
 
         disp->area_disp.x = param->area_flush.x + scr->area.x;
         disp->area_disp.y = param->area_flush.y + scr->area.y;
