@@ -57,13 +57,11 @@ void _gt_extra_init(void)
 #if GT_LAYER_TOP_SCREENSHOT_CACHE
     if (false == _gt_gc_screenshot_cache_is_valid()) {
         size = GT_SCREEN_WIDTH * GT_SCREEN_HEIGHT * sizeof(gt_color_t);
-        if (size < GT_MEM_SIZE) {
-            buffer = gt_mem_extern_malloc(size);
-            if (NULL == buffer) {
-                size = 0;
-            }
-            _gt_gc_set_screenshot_cache(buffer, size);
+        buffer = gt_mem_extern_malloc(size);
+        if (NULL == buffer) {
+            size = 0;
         }
+        _gt_gc_set_screenshot_cache(buffer, size);
     }
 #endif
 
