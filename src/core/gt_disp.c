@@ -1691,6 +1691,19 @@ void gt_disp_invalid_area(gt_obj_st * obj)
         return;
     }
 #endif
+#if GT_LAYER_TOP_SCREENSHOT_CACHE
+    else {
+        gt_disp_st * disp = gt_disp_get_default();
+        _gt_top_ret_st top_show = _gt_disp_is_top_full_cover_display(top);
+        bool is_half_opa = top_show.full_cover && top_show.is_opa;
+        bool is_screenshot_vaild = _gt_gc_screenshot_cache_is_valid();
+        if (is_half_opa && is_screenshot_vaild) {
+            /** redraw full screen */
+            gt_memcpy(&invalid, &scr->area, sizeof(gt_area_st));
+            disp->screenshot = false;
+        }
+    }
+#endif
     _gt_disp_refr_append_area(&invalid);
 }
 
