@@ -777,7 +777,7 @@ static void GT_ATTRIBUTE_RAM_TEXT
 _gt_disp_paste_screenshot(_flush_scr_param_st * param) {
     gt_disp_st * disp = param->disp;
     gt_buffer_st * scr_shot = _gt_gc_get_screenshot_cache();
-    uint32_t dst_offset = (param->area_flush.y * disp->area_disp.w + param->area_flush.x) * sizeof(gt_color_t);
+    uint32_t dst_offset = (disp->area_disp.y * disp->area_disp.w + disp->area_disp.x) * sizeof(gt_color_t);
     uint32_t copy_size = disp->area_disp.w * disp->area_disp.h * sizeof(gt_color_t);
     if (dst_offset + copy_size > scr_shot->len) {
         GT_LOGW("", "cache overflow: %d + %d > %d", dst_offset, copy_size, scr_shot->len);
@@ -790,7 +790,7 @@ static void GT_ATTRIBUTE_RAM_TEXT
 _gt_disp_copy_screenshot(_flush_scr_param_st * param) {
     gt_disp_st * disp = param->disp;
     gt_buffer_st * scr_shot = _gt_gc_get_screenshot_cache();
-    uint32_t dst_offset = (param->area_flush.y * disp->area_disp.w + param->area_flush.x) * sizeof(gt_color_t);
+    uint32_t dst_offset = (disp->area_disp.y * disp->area_disp.w + disp->area_disp.x) * sizeof(gt_color_t);
     uint32_t copy_size = disp->area_disp.w * disp->area_disp.h * sizeof(gt_color_t);
     if (dst_offset + copy_size > scr_shot->len) {
         GT_LOGW("", "cache overflow: %d + %d > %d", dst_offset, copy_size, scr_shot->len);
