@@ -1228,6 +1228,9 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
             return -1;
         }
     }
+#if GT_LAYER_TOP_SCREENSHOT_CACHE
+    disp->screenshot = false;
+#endif
     if (scr_old != reload_item.current_scr) {
 #if _GT_STACK_USE_LOADING_LOG
         GT_LOGD(GT_LOG_TAG_GUI, "go back %d:\n  stack depth: %d, scr id: 0x%X(%d), %p", step,
@@ -1365,6 +1368,9 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         gt_disp_invalid_area(scr);
         return;
     }
+#if GT_LAYER_TOP_SCREENSHOT_CACHE
+    disp->screenshot = false;
+#endif
     scr->using_sta = true;
     disp->scr_anim_type = type;
 
