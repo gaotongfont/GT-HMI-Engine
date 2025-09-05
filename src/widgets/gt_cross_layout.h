@@ -35,6 +35,11 @@ typedef enum {
     GT_CROSS_ROLL_MOVE,
 }gt_cross_roll_mode_et;
 
+typedef enum {
+    GT_CROSS_TOUCH_MODE_INDEPENDENT = 0,
+    GT_CROSS_TOUCH_MODE_MERGE,
+}gt_cross_touch_mode_et;
+
 /* macros ---------------------------------------------------------------*/
 
 
@@ -68,6 +73,7 @@ gt_obj_st* gt_cross_layout_get_ver_select_obj(gt_obj_st* layout);
 void gt_cross_layout_set_ver_anim_en(gt_obj_st* layout, bool en);
 void gt_cross_layout_set_ver_bar_en(gt_obj_st* layout, bool en);
 
+void gt_cross_layout_set_touch_mode(gt_obj_st* layout, gt_cross_touch_mode_et mode);
 
 #endif //!GT_CFG_ENABLE_CROSS_LAYOUT
 //

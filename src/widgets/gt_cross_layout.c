@@ -69,6 +69,7 @@ typedef struct _gt_cross_layout_s {
     uint8_t ver_anim_en : 1;
     uint8_t ver_anim_flag  : 1;
     uint8_t ver_bar_en : 1;
+    uint8_t touch_mode : 1;
 
 }_gt_cross_layout_st;
 
@@ -104,6 +105,39 @@ static bool _hor_items_free_cb(void * item)
 static bool _default_items_free_cb(void * item)
 {
     return true;
+}
+
+GT_ATTRIBUTE_RAM_TEXT
+static void _set_hor_process_attr_scroll_x(gt_obj_st* obj, gt_size_t scroll_x)
+{
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
+    obj->process_attr.scroll.x = scroll_x;
+    style->hor_obj->process_attr.scroll.x = scroll_x;
+}
+
+GT_ATTRIBUTE_RAM_TEXT
+static void _set_hor_process_attr_scroll_prev_x(gt_obj_st* obj, gt_size_t prev_x)
+{
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
+    obj->process_attr.scroll_prev.x = prev_x;
+    style->hor_obj->process_attr.scroll_prev.x = prev_x;
+}
+
+
+GT_ATTRIBUTE_RAM_TEXT
+static  void _set_ver_process_attr_scroll_y(gt_obj_st* obj, gt_size_t scroll_y)
+{
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
+    obj->process_attr.scroll.y = scroll_y;
+    style->ver_obj->process_attr.scroll.y = scroll_y;
+}
+
+GT_ATTRIBUTE_RAM_TEXT
+static void _set_ver_process_attr_scroll_prev_y(gt_obj_st* obj, gt_size_t prev_y)
+{
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
+    obj->process_attr.scroll_prev.y = prev_y;
+    style->ver_obj->process_attr.scroll_prev.y = prev_y;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_set_hidden(gt_obj_st* obj, uint16_t ver_index)
@@ -477,7 +511,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_set_index_scroll(gt_obj_st* obj, gt
         _cross_hor_scroll_to(obj, dist);
     }
     else{
-        style->hor_obj->process_attr.scroll = dist;
+        _set_hor_process_attr_scroll_x(obj, dist.x);
         gt_event_send(style->hor_obj, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
     }
     _gt_vector_set_index(hor_itme, index);
@@ -516,8 +550,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_scroll_handler(gt_event_st* e)
     }
 
     if(scroll->x != e->target->process_attr.scroll_prev.x){
-        e->target->process_attr.scroll_prev.x = scroll->x;
+        _set_hor_process_attr_scroll_prev_x(obj, scroll->x);
     }
+
+    _set_hor_process_attr_scroll_x(obj, scroll->x);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_scroll_to(gt_obj_st* obj, gt_point_st dist)
@@ -633,8 +669,8 @@ GT_ATTRIBUTE_RAM_TEXT static void _cross_ver_anim_ready_cb (struct gt_anim_s *an
     gt_event_send(style->ver_obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 
     if(this_index != index) {
-        style->hor_obj->process_attr.scroll.x = 0;
-        style->hor_obj->process_attr.scroll_prev.x = 0;
+        _set_hor_process_attr_scroll_x(obj, 0);
+        _set_hor_process_attr_scroll_prev_x(obj, 0);
         _cross_hor_set_hidden(obj, this_index);
         _cross_hor_handler(obj);
     }
@@ -645,8 +681,8 @@ GT_ATTRIBUTE_RAM_TEXT static void _cross_ver_anim_ready_cb (struct gt_anim_s *an
         gt_obj_st* itme = (gt_obj_st*)_gt_vector_get_item(style->ver_items, 0);
         if(itme){
             gt_size_t y = gt_obj_get_y(itme) - (gt_obj_get_y(style->ver_obj) + style->ver_offset);
-            style->ver_obj->process_attr.scroll.y = y;
-            style->ver_obj->process_attr.scroll_prev.y = y;
+            _set_ver_process_attr_scroll_y(obj, y);
+            _set_ver_process_attr_scroll_prev_y(obj, y);
         }
     }
     gt_disp_invalid_area(style->ver_obj);
@@ -707,14 +743,14 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_set_index_scroll(gt_obj_st* obj, gt
                 gt_obj_st* itme = (gt_obj_st*)_gt_vector_get_item(style->ver_items, 0);
                 if(itme){
                     gt_size_t y = gt_obj_get_y(itme) - (gt_obj_get_y(style->ver_obj) + style->ver_offset);
-                    style->ver_obj->process_attr.scroll.y = y;
-                    style->ver_obj->process_attr.scroll_prev.y = y;
+                    _set_ver_process_attr_scroll_y(obj, y);
+                    _set_ver_process_attr_scroll_prev_y(obj, y);
                 }
             }
         }
     }
     else {
-        style->ver_obj->process_attr.scroll = dist;
+        _set_ver_process_attr_scroll_y(obj, dist.y);
         gt_event_send(style->ver_obj, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
     }
     _gt_vector_set_index(style->ver_items, index);
@@ -773,8 +809,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_scroll_handler(gt_event_st* e)
     }
 
     if(scroll->y != e->target->process_attr.scroll_prev.y){
-        e->target->process_attr.scroll_prev.y = scroll->y;
+        _set_ver_process_attr_scroll_prev_y(obj, scroll->y);
     }
+    _set_ver_process_attr_scroll_y(obj, scroll->y);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_scroll_end_handler(gt_event_st* e)
@@ -909,6 +946,8 @@ static void _cross_deinit_cb(gt_obj_st * obj)
 static void _cross_event_cb(struct gt_obj_s * obj, gt_event_st * e)
 {
     gt_event_type_et code_val = gt_event_get_code(e);
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
+
     switch(code_val){
         case GT_EVENT_TYPE_DRAW_START:
             gt_disp_invalid_area(obj);
@@ -918,7 +957,20 @@ static void _cross_event_cb(struct gt_obj_s * obj, gt_event_st * e)
             _cross_layout_handler(obj);
             break;
         case GT_EVENT_TYPE_INPUT_SCROLL:
+            if(GT_CROSS_TOUCH_MODE_MERGE == style->touch_mode) {
+                _set_hor_process_attr_scroll_x(obj, e->target->process_attr.scroll.x);
+                _set_ver_process_attr_scroll_y(obj, e->target->process_attr.scroll.y);
+                gt_event_send(style->hor_obj, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
+                gt_event_send(style->ver_obj, GT_EVENT_TYPE_INPUT_SCROLL, NULL);
+            }
             break;
+        case GT_EVENT_TYPE_INPUT_SCROLL_END:
+            if(GT_CROSS_TOUCH_MODE_MERGE == style->touch_mode) {
+                _set_hor_process_attr_scroll_x(obj, e->target->process_attr.scroll.x);
+                _set_ver_process_attr_scroll_y(obj, e->target->process_attr.scroll.y);
+                gt_event_send(style->hor_obj, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
+                gt_event_send(style->ver_obj, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
+            }
         default:
             break;
     }
@@ -1170,8 +1222,8 @@ void gt_cross_layout_set_ver_index(gt_obj_st* layout, uint8_t ver_index)
         return;
     }
 
-    style->hor_obj->process_attr.scroll.x = 0;
-    style->hor_obj->process_attr.scroll_prev.x = 0;
+    _set_hor_process_attr_scroll_x(layout, 0);
+    _set_hor_process_attr_scroll_prev_x(layout, 0);
 
     _cross_ver_set_index_scroll(layout, ver_index , style->ver_anim_en);
     if(!style->ver_anim_en) {
@@ -1334,6 +1386,37 @@ void gt_cross_layout_set_ver_bar_en(gt_obj_st* layout, bool en)
     _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
     style->ver_bar_en = en;
 }
+
+void gt_cross_layout_set_touch_mode(gt_obj_st* layout, gt_cross_touch_mode_et mode)
+{
+    if(false == gt_obj_is_type(layout, OBJ_TYPE)){
+        return;
+    }
+
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
+    GT_CHECK_BACK(style->hor_obj);
+    GT_CHECK_BACK(style->ver_obj);
+
+    style->touch_mode = mode;
+    if(GT_CROSS_TOUCH_MODE_MERGE == mode) {
+        style->hor_obj->fixed = true;
+        style->ver_obj->fixed = true;
+        layout->fixed = false;
+    }
+    else{
+        style->hor_obj->fixed = false;
+        style->ver_obj->fixed = false;
+        layout->fixed = true;
+    }
+
+    _set_hor_process_attr_scroll_x(layout, 0);
+    _set_hor_process_attr_scroll_prev_x(layout, 0);
+    _set_ver_process_attr_scroll_y(layout, 0);
+    _set_ver_process_attr_scroll_prev_y(layout, 0);
+
+    gt_event_send(layout, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
 /* end of file ----------------------------------------------------------*/
 #endif //!GT_CFG_ENABLE_CROSS_LAYOUT
 
