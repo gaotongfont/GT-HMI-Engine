@@ -20,6 +20,7 @@
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
+#include "../core/gt_obj_scroll.h"
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_RECT
 #define MY_CLASS    &gt_rect_class
@@ -114,8 +115,9 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     if (GT_EVENT_TYPE_DRAW_START == code_val) {
         gt_disp_invalid_area(obj);
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
-    }
-    else if (GT_EVENT_TYPE_INPUT_RELEASED == code_val) {
+    } else if (GT_EVENT_TYPE_INPUT_SCROLL == code_val) {
+        _gt_obj_scroll_internal(obj, 0, 0);
+    } else if (GT_EVENT_TYPE_INPUT_RELEASED == code_val) {
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
     }
 }
