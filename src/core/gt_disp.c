@@ -1730,4 +1730,13 @@ void gt_disp_invalid_area(gt_obj_st * obj)
     _gt_disp_refr_append_area(&invalid);
 }
 
+void gt_disp_force_release_busy(void)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    if (NULL == disp) {
+        return;
+    }
+    _gt_disp_set_state(disp, GT_NOT_BUSY);
+}
+
 /* end ------------------------------------------------------------------*/

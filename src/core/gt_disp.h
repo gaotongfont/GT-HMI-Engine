@@ -304,6 +304,12 @@ void gt_disp_scroll_area_act(gt_size_t dist_x, gt_size_t dist_y);
  */
 void gt_disp_invalid_area(gt_obj_st * obj);
 
+/**
+ * @brief
+ *      [Warn] Be carefully
+ */
+void gt_disp_force_release_busy(void);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
