@@ -20,7 +20,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 #include "gt_event.h"
-#include "gt_color.h"
+#include "../others/gt_color.h"
 /* define ---------------------------------------------------------------*/
 
 
