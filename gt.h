@@ -238,6 +238,10 @@ extern "C" {
 #if GT_CFG_ENABLE_TOAST
 #include "src/widgets/gt_toast.h"
 #endif
+
+#if GT_CFG_ENABLE_INDEV_EFFECTS
+#include "src/core/gt_indev_effects.h"
+#endif
 /* define ---------------------------------------------------------------*/
 
 

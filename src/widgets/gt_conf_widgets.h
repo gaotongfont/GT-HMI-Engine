@@ -90,6 +90,11 @@ extern "C" {
 #if GT_CFG_ENABLE_LABEL && GT_USE_LAYER_TOP
 #define GT_CFG_ENABLE_TOAST             1
 #endif
+
+#if GT_USE_LAYER_TOP && GT_CFG_ENABLE_RECT
+#define GT_CFG_ENABLE_INDEV_EFFECTS     1
+#endif
+
 /* typedef --------------------------------------------------------------*/
 
 

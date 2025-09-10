@@ -21,7 +21,7 @@
 #include "gt_obj_scroll.h"
 #include "gt_style.h"
 #include "../widgets/gt_dialog.h"
-
+#include "gt_indev_effects.h"
 /* private define -------------------------------------------------------*/
 #ifndef GT_INDEV_SCROLL_THROW_SPEED_UP
     /**
@@ -245,7 +245,11 @@ _home_gesture_scroll_effects(gt_indev_st * indev) {
         return;
     }
     uint32_t distance = _home_gesture_calc_overflow_distance(indev, gt_abs(point_p->scroll_sum.x));
-    // TODO feat go back effects
+
+#if GT_CFG_ENABLE_INDEV_EFFECTS
+    gt_indev_effects_show(gesture_type, distance);
+#endif
+
 }
 
 static bool GT_ATTRIBUTE_RAM_TEXT
@@ -269,6 +273,10 @@ _indev_send_home_gesture_event(gt_indev_st * indev) {
     gt_event_send(scr, e, NULL);
 
 scroll_throw_lb:
+
+#if GT_CFG_ENABLE_INDEV_EFFECTS
+    gt_indev_effects_hide();
+#endif
     if (indev->scroll_throw_anim) {
         gt_anim_set_time(indev->scroll_throw_anim, 0);
     }
@@ -638,6 +646,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_released_handle(gt_indev_st * indev) {
     } else {
         _indev_scroll_throw_handler_anim_start(indev);
     }
+#if GT_CFG_ENABLE_INDEV_EFFECTS
+    gt_indev_effects_hide();
+#endif
+
 tar_clr_lb:
     point_p->obj_target = NULL;
 clr_lb:
