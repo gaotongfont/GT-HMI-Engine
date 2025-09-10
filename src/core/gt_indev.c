@@ -276,6 +276,11 @@ _indev_send_home_gesture_event(gt_indev_st * indev) {
         if (false == _is_indev_home_gesture(indev, gt_disp_get_layer_top(), &e)) {
             return false;
         }
+
+#if GT_CFG_ENABLE_INDEV_EFFECTS
+    gt_indev_effects_hide();
+#endif
+
         gt_event_send(gt_dialog_get_active_obj(), e, NULL);
         goto scroll_throw_lb;
     }
@@ -284,13 +289,13 @@ _indev_send_home_gesture_event(gt_indev_st * indev) {
         return false;
     }
 
-    gt_event_send(scr, e, NULL);
-
-scroll_throw_lb:
-
 #if GT_CFG_ENABLE_INDEV_EFFECTS
     gt_indev_effects_hide();
 #endif
+
+    gt_event_send(scr, e, NULL);
+
+scroll_throw_lb:
     if (indev->scroll_throw_anim) {
         gt_anim_set_time(indev->scroll_throw_anim, 0);
     }
