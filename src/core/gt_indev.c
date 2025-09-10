@@ -56,7 +56,6 @@
 #define _IS_KEYPAD_LOCKED(_idv)           ((_idv)->data.keypad.lock)
 #endif
 /* private typedef ------------------------------------------------------*/
-
 typedef struct {
     bool val;
     gt_event_type_et ( * get_direct_event_type_cb)(gt_dir_et gesture);
@@ -113,16 +112,16 @@ static GT_ATTRIBUTE_RAM_TEXT gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
     }
 
     if (gt_abs(point_p->scroll_sum.x) > gt_abs(point_p->scroll_sum.y)) {
-        if (point_p->scroll_sum.x > indev->drv->limit_pixel_scroll) {
+        if (point_p->scroll_sum.x > indev->drv->limit_pixel_gesture_hor) {
             ret = GT_DIR_RIGHT;
-        } else if (point_p->scroll_sum.x < -indev->drv->limit_pixel_scroll) {
+        } else if (point_p->scroll_sum.x < -indev->drv->limit_pixel_gesture_hor) {
             ret = GT_DIR_LEFT;
         }
         point_p->scroll_throw.y = 0;
     } else if (point_p->scroll_sum.x || point_p->scroll_sum.y) {
-        if (point_p->scroll_sum.y > indev->drv->limit_pixel_scroll) {
+        if (point_p->scroll_sum.y > indev->drv->limit_pixel_gesture_ver) {
             ret = GT_DIR_DOWN;
-        } else if (point_p->scroll_sum.y < -indev->drv->limit_pixel_scroll) {
+        } else if (point_p->scroll_sum.y < -indev->drv->limit_pixel_gesture_ver) {
             ret = GT_DIR_UP;
         }
         point_p->scroll_throw.x = 0;

@@ -25,29 +25,39 @@ extern "C" {
      * @brief Simulate pointer input device
      *      [default: 0]
      */
-    #define GT_INDEV_SIMULATE_POINTER       0
+    #define GT_INDEV_SIMULATE_POINTER                       0
 #endif
 
 /* default gesture repeat */
 
 #ifndef GT_CFG_DEFAULT_PRESSING_TIME_MS
     /* ms repeat trigger once event */
-    #define GT_CFG_DEFAULT_PRESSING_TIME_MS         300
+    #define GT_CFG_DEFAULT_PRESSING_TIME_MS                 300
 #endif
 
 #ifndef GT_CFG_DEFAULT_LONG_PRESSED_TIME_MS
-    #define GT_CFG_DEFAULT_LONG_PRESSED_TIME_MS     500
+    #define GT_CFG_DEFAULT_LONG_PRESSED_TIME_MS             500
 #endif
 
-#define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR     (GT_SCREEN_WIDTH >> 4)
+#ifndef GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR
+    /**
+     * @brief determine slider pixel range
+     */
+    #define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_HOR         5
+#endif
 
-#define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_VER     (GT_SCREEN_HEIGHT >> 4)
+#ifndef GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_VER
+    /**
+     * @brief determine slider pixel range
+     */
+    #define GT_CFG_DEFAULT_POINT_GERSTURE_PIXEL_VER         5
+#endif
 
 #ifndef GT_CFG_DEFAULT_POINT_SCROLL_PIXEL
     /**
      * @brief The initial sliding distance used to determine the sliding direction.
      */
-    #define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL       5
+    #define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL               5
 #endif
 
 #ifndef GT_CFG_DEFAULT_POINT_SCROLL_THROW
@@ -55,7 +65,7 @@ extern "C" {
      * @brief Drag throw slow-down in [%]. Greater value:
      *      faster(far)[0] -> slow-down[100]
      */
-    #define GT_CFG_DEFAULT_POINT_SCROLL_THROW       10
+    #define GT_CFG_DEFAULT_POINT_SCROLL_THROW               10
 #endif
 
 /** home gesture default time and pix */
