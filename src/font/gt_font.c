@@ -1554,6 +1554,31 @@ uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const 
     return max_width;
 }
 
+gt_font_words_ret_st gt_font_get_words_number(char const * const str, uint16_t len, gt_encoding_et encoding)
+{
+    uint32_t unicode = 0;
+    uint16_t total_words = 0, idx = 0;
+    uint16_t count_byte = 0;
+    gt_font_words_ret_st ret = {0};
+    uint8_t * ptr = (uint8_t * )str;
+    if (NULL == ptr || 0 == len) {
+        return ret;
+    }
+    gt_size_t str_len = strlen(str);
+    len = len < str_len ? len : str_len;
+    while (idx < len) {
+        count_byte = gt_font_one_char_code_len_get((uint8_t * )ptr, &unicode, encoding);
+        if (!count_byte) {
+            count_byte = 1;
+        }
+        ++ret.words_cnt;
+        ret.byte_len += count_byte;
+        idx += count_byte;
+        ptr += count_byte;
+    }
+    return ret;
+}
+
 uint16_t gt_font_get_single_line_width(gt_font_info_st * info, const char * const text, uint16_t space)
 {
     uint32_t idx = 0, len = strlen(text), unicode = 0;

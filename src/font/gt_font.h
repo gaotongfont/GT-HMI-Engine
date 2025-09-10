@@ -87,6 +87,7 @@ typedef enum gt_font_style_e {
     GT_FONT_STYLE_BOLD          = 0x04,     // < bold
     GT_FONT_STYLE_ITALIC        = 0x08,     // < italic
 }gt_font_style_et;
+
 typedef struct {
     uint8_t underline : 1;
     uint8_t strikethrough : 1;
@@ -306,6 +307,11 @@ typedef struct gt_font_offset_s {
     gt_point_st (*get_offset)(uint16_t , uint32_t );
 }gt_font_offset_st;
 
+typedef struct gt_font_words_ret_s {
+    uint16_t words_cnt;
+    uint16_t byte_len;
+}gt_font_words_ret_st;
+
 /* macros ---------------------------------------------------------------*/
 static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t
 gt_font_get_indent_width(gt_font_info_st const * const font_info_p, uint16_t indent) {
@@ -389,6 +395,19 @@ uint8_t gt_font_get_one_word_dot_width(uint32_t uni_or_gbk, gt_font_st * font);
  * @return uint16_t The max width of the substring
  */
 uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const char * const text, uint16_t space);
+
+/**
+ * @brief Calc words number, such as:
+ *          "你好!"         = 3 words, 7 byte
+ *          "Hello!"        = 6 words, 6 byte
+ *          "你好!-Hello!"  = 10 words, 14 byte
+ *
+ * @param str
+ * @param len  max string length
+ * @param encoding
+ * @return gt_font_words_ret_st words number and byte len, including CN, ASCII.
+ */
+gt_font_words_ret_st gt_font_get_words_number(char const * const str, uint16_t len, gt_encoding_et encoding);
 
 /**
  * @brief Get single line max width
