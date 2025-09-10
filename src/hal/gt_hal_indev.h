@@ -68,12 +68,6 @@ extern "C" {
     #define GT_CFG_DEFAULT_POINT_SCROLL_THROW               10
 #endif
 
-/** home gesture default time and pix */
-#ifndef GT_CFG_DEFAULT_POINT_HOME_GESTURE_TIME
-    /** ms */
-    #define GT_CFG_DEFAULT_POINT_HOME_GESTURE_TIME          (500)
-#endif
-
 #ifndef GT_CFG_DEFAULT_POINT_HOME_GESTURE_PIXEL
     /** Min 1/8 */
     #define GT_CFG_DEFAULT_POINT_HOME_GESTURE_PIXEL         (GT_MIN(GT_SCREEN_WIDTH, GT_SCREEN_HEIGHT) >> 4)
@@ -234,8 +228,10 @@ typedef struct _gt_indev_s {
             struct gt_obj_s * obj_scroll;    ///< The object of gesture
 
             uint16_t gesture : 3;           ///< @ref gt_dir_et gesture of touch input device point
+            // TODO remove
             uint16_t is_home_gesture : 1;   ///< gestrue is home handler
-            uint16_t reserved : 12;
+            uint16_t home_gesture_area : 3; ///< @ref gt_indev_home_gesture_area_et
+            uint16_t reserved : 8;
         }point;
 
         struct _button {

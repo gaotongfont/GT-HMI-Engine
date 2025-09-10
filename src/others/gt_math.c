@@ -209,7 +209,7 @@ double gt_square(double n)
 
 int gt_abs(int n)
 {
-    return abs(n);
+    return n < 0 ? -n : n;
 }
 
 long gt_round(double val)
