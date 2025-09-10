@@ -56,7 +56,7 @@ static void GT_ATTRIBUTE_RAM_TEXT _indev_effects_event_cb(struct gt_obj_s * obj,
 static const gt_obj_class_st gt_indev_effects_class = {
     ._init_cb      = NULL,
     ._deinit_cb    = NULL,
-    ._event_cb     = NULL,
+    ._event_cb     = _indev_effects_event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_indev_effects_st)
 };
@@ -78,7 +78,11 @@ static void GT_ATTRIBUTE_RAM_TEXT _indev_effects_deinit_cb(gt_obj_st * obj) {
 }
 
 static void GT_ATTRIBUTE_RAM_TEXT _indev_effects_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
-
+    gt_event_type_et code_val = gt_event_get_code(e);
+    if (GT_EVENT_TYPE_DRAW_START == code_val) {
+        gt_disp_invalid_area(obj);
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
+    }
 }
 
 static inline _gt_indev_effects_ctrl_st* GT_ATTRIBUTE_RAM_TEXT _get_effect_ctrl(void) {
@@ -106,6 +110,7 @@ static void GT_ATTRIBUTE_RAM_TEXT _effects_set_pos(gt_obj_st* obj, bool is_left,
     }
 
     gt_obj_set_pos(style->rect_p, x, y);
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 static _gt_indev_effects_st* GT_ATTRIBUTE_RAM_TEXT _effects_create(void) {
