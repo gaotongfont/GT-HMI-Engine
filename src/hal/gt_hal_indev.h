@@ -156,6 +156,17 @@ typedef enum {
 }gt_key_et;
 
 /**
+ * @brief Gesture home first point at top, bottom, left, right
+ */
+typedef enum {
+    GT_INDEV_FP_HOME_GESTURE_NONE = 0,
+    GT_INDEV_FP_HOME_GESTURE_TOP,
+    GT_INDEV_FP_HOME_GESTURE_BOTTOM,
+    GT_INDEV_FP_HOME_GESTURE_LEFT,
+    GT_INDEV_FP_HOME_GESTURE_RIGHT,
+}gt_indev_home_gesture_area_et;
+
+/**
  * @brief Describes input device related data
  */
 typedef struct {
