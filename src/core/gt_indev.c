@@ -212,6 +212,7 @@ _is_indev_home_gesture(gt_indev_st * indev, gt_obj_st * target, gt_event_type_et
     return _scr_has_home_gesture_events(target, gesture_type);
 }
 
+#if GT_CFG_ENABLE_INDEV_EFFECTS
 /**
  * @brief
  *
@@ -236,20 +237,33 @@ _home_gesture_calc_overflow_distance(gt_indev_st * indev, uint16_t distance) {
 
     return (uint32_t)(value >= 0 ? value : -value);
 }
+#endif  /** GT_CFG_ENABLE_INDEV_EFFECTS */
 
-static void GT_ATTRIBUTE_RAM_TEXT
+/**
+ * @brief
+ *
+ * @param indev
+ * @return true: is gesture
+ */
+static bool GT_ATTRIBUTE_RAM_TEXT
 _home_gesture_scroll_effects(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
-    gt_event_type_et gesture_type = _get_home_gesture_event_type(indev);
-    if (GT_EVENT_TYPE_NONE == gesture_type) {
-        return;
-    }
-    uint32_t distance = _home_gesture_calc_overflow_distance(indev, gt_abs(point_p->scroll_sum.x));
+    gt_event_type_et gesture_type = GT_EVENT_TYPE_NONE;
 
+    if (_is_indev_home_gesture(indev, point_p->obj_scroll, &gesture_type)) {
+        if (false == point_p->is_home_gesture) {
+            point_p->is_home_gesture = true;
+            gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_PRESS_LOST, NULL);
+        }
 #if GT_CFG_ENABLE_INDEV_EFFECTS
-    gt_indev_effects_show(gesture_type, distance);
+        uint32_t distance = _home_gesture_calc_overflow_distance(indev, gt_abs(point_p->scroll_sum.x));
+        gt_indev_effects_show(gesture_type, distance);
 #endif
-
+        return true;
+    } else if (point_p->is_home_gesture) {
+        point_p->is_home_gesture = false;
+    }
+    return false;
 }
 
 static bool GT_ATTRIBUTE_RAM_TEXT
@@ -577,7 +591,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_handler(gt_indev_st * indev) {
     }
     point_p->obj_scroll = point_p->obj_target;
 
-    _home_gesture_scroll_effects(indev);
+    if (_home_gesture_scroll_effects(indev)) {
+        return;
+    }
 
     if (GT_SCROLL_DISABLE == point_p->obj_scroll->scroll_dir) {
         point_p->obj_scroll = NULL;
