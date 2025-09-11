@@ -1371,6 +1371,7 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
 #if GT_LAYER_TOP_SCREENSHOT_CACHE
     disp->screenshot = false;
 #endif
+    if (scr_old) { gt_event_send(scr_old, GT_EVENT_TYPE_SCREEN_HIDE, NULL); }
     scr->using_sta = true;
     disp->scr_anim_type = type;
 

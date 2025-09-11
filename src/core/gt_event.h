@@ -68,6 +68,7 @@ typedef enum gt_event_type_e {
     GT_EVENT_TYPE_DRAW_END,      // draw widget ok
     GT_EVENT_TYPE_DRAW_REDRAW,
     GT_EVENT_TYPE_SCREEN_LOAD_BEFORE,       // [Called by core inside] screen loading to draw before
+    GT_EVENT_TYPE_SCREEN_HIDE,              // [Called by core inside] cureent screen hide when new one is loading
     GT_EVENT_TYPE_SCREEN_BEFORE_GO_BACK,    // [Called by core inside] screen before go back
 
     /* CHANGE events */
