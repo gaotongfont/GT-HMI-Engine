@@ -28,8 +28,18 @@
      * @brief 0[default]: do not append release scroll throw sum calc distance;
      *        1: append release scroll throw sum calc distance;
      */
-    #define GT_INDEV_SCROLL_THROW_SPEED_UP      0
+    #define GT_INDEV_SCROLL_THROW_SPEED_UP              0
 #endif
+
+#ifdef GT_INDEV_SCROLL_THROW_SPEED_UP
+    #ifndef GT_INDEV_SCROLL_THROW_SPEED_UP_VER
+        #define GT_INDEV_SCROLL_THROW_SPEED_UP_VER      1
+    #endif
+
+    #ifndef GT_INDEV_SCROLL_THROW_SPEED_UP_HOR
+        #define GT_INDEV_SCROLL_THROW_SPEED_UP_HOR      1
+    #endif
+#endif  /** GT_INDEV_SCROLL_THROW_SPEED_UP */
 
 #ifndef GT_INDEV_POINT_LOG
     /**
@@ -639,6 +649,20 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _scroll_calc_throw_distance(struct _poi
     point_p->scroll_throw.y = (point_p->scroll_throw.y + point_p->scroll_diff.y) >> 1;
 }
 
+#if GT_INDEV_SCROLL_THROW_SPEED_UP_VER && !GT_INDEV_SCROLL_THROW_SPEED_UP_HOR
+static GT_ATTRIBUTE_RAM_TEXT inline void _scroll_calc_throw_distance_ver(struct _point * point_p) {
+    point_p->scroll_diff.y = point_p->newly.y - point_p->last.y;
+    point_p->scroll_throw.y = (point_p->scroll_throw.y + point_p->scroll_diff.y) >> 1;
+}
+#endif
+
+#if GT_INDEV_SCROLL_THROW_SPEED_UP_HOR && !GT_INDEV_SCROLL_THROW_SPEED_UP_VER
+static GT_ATTRIBUTE_RAM_TEXT inline void _scroll_calc_throw_distance_hor(struct _point * point_p) {
+    point_p->scroll_diff.x = point_p->newly.x - point_p->last.x;
+    point_p->scroll_throw.x = (point_p->scroll_throw.x + point_p->scroll_diff.x) >> 1;
+}
+#endif
+
 static GT_ATTRIBUTE_RAM_TEXT void _indev_released_handle(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
     if (NULL == point_p->obj_target) {
@@ -659,7 +683,13 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_released_handle(gt_indev_st * indev) {
         goto tar_clr_lb;
     }
 #if GT_INDEV_SCROLL_THROW_SPEED_UP
+#if GT_INDEV_SCROLL_THROW_SPEED_UP_VER && GT_INDEV_SCROLL_THROW_SPEED_UP_HOR
     _scroll_calc_throw_distance(point_p);
+#elif GT_INDEV_SCROLL_THROW_SPEED_UP_VER
+    _scroll_calc_throw_distance_ver(point_p);
+#elif GT_INDEV_SCROLL_THROW_SPEED_UP_HOR
+    _scroll_calc_throw_distance_hor(point_p);
+#endif
 #endif
     if (is_home_gesture) {
         _indev_scroll_throw_reset(indev);
