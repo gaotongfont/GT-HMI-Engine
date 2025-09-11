@@ -223,11 +223,10 @@ _is_indev_home_gesture(gt_indev_st * indev, gt_obj_st * target, gt_event_type_et
 static uint32_t GT_ATTRIBUTE_RAM_TEXT
 _home_gesture_calc_overflow_distance(gt_indev_st * indev, uint16_t distance) {
     struct _point * point_p = &indev->data.point;
-    if (distance > (GT_SCREEN_WIDTH >> 1)) {
-        distance = GT_SCREEN_WIDTH >> 1;
-    }
+    uint16_t width = GT_SCREEN_WIDTH >> 1;
+    if (distance > width) { distance = width; }
     gt_math_bezier_st bezier = {
-        .t = gt_map(distance, 0, GT_SCREEN_WIDTH >> 1, 0, GT_MATH_BEZIER_VAL_RESOLUTION),
+        .t = gt_map(distance, 0, width, 0, GT_MATH_BEZIER_VAL_RESOLUTION),
         .p0 = 80, .p1 = 900, .p2 = 1000, .p3 = GT_MATH_BEZIER_VAL_RESOLUTION
     };
     int32_t step = gt_math_calc_bezier(&bezier);
