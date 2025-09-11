@@ -21,7 +21,7 @@
 #define MY_CLASS    &gt_indev_effects_class
 
 //
-#define _GT_EFFECTS_W           (GT_SCREEN_WIDTH >> 3)
+#define _GT_EFFECTS_W           (GT_INDEV_HOME_GESTURE_HOR_MAX_DISTANCE)
 #define _GT_EFFECTS_H           (GT_SCREEN_HEIGHT >> 1)
 #define _GT_EFFECTS_Y           (GT_SCREEN_HEIGHT >> 2)
 #define _GT_EFFECTS_X_L         (0)
