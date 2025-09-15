@@ -28,6 +28,16 @@ extern "C" {
     #define GT_INDEV_SIMULATE_POINTER                       0
 #endif
 
+#ifndef GT_INDEV_CFG_VELOCITY
+    /**
+     * @brief Using velocity speed to calc throw distance.
+     *      [Warn] To improve performance, it is recommended to
+     *  disable this function.
+     *      [default: 1]
+     */
+    #define GT_INDEV_CFG_VELOCITY                           1
+#endif
+
 /* default gesture repeat */
 
 #ifndef GT_CFG_DEFAULT_PRESSING_TIME_MS
@@ -210,6 +220,10 @@ typedef struct _gt_indev_s {
     uint32_t timestamp_start;
     uint32_t timestamp_pressing;
     uint32_t timestamp_long_pressed;
+#if GT_INDEV_CFG_VELOCITY
+    uint32_t timestamp_prev_press;          /** press/scroll touching timestamp */
+    uint32_t timestamp_throw_prev_scroll;   /** remark prevous scroll by throw timestamp */
+#endif
 
     gt_indev_state_et state;
     union data_union {
@@ -226,7 +240,10 @@ typedef struct _gt_indev_s {
             struct gt_obj_s * obj_target;    ///< The object of first touch
             struct gt_obj_s * obj_origin;    //< The object of first touch
             struct gt_obj_s * obj_scroll;    ///< The object of gesture
-
+#if GT_INDEV_CFG_VELOCITY
+            int32_t throw_velocity;         ///< px/s The begin velocity of throw
+            uint16_t diff_points;           /** record scrolling valid distance points number */
+#endif
             uint16_t gesture : 3;           ///< @ref gt_dir_et gesture of touch input device point
             // TODO remove
             uint16_t is_home_gesture : 1;   ///< gestrue is home handler
