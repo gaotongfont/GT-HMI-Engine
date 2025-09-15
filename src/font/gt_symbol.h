@@ -481,7 +481,12 @@ extern "C" {
     #define GT_SYMBOL_HISTORY_GBK             "\xE1\x11"
 #endif
 
-#endif // GT_CFG_USE_SYMBOL_ENABLE
+#if !defined GT_SYMBOL_AI_SOLID
+    #define GT_SYMBOL_AI_SOLID                     "\xEE\x84\x92" /*57618, 0xE112*/
+    #define GT_SYMBOL_AI_SOLID_GBK                 "\xE1\x12"
+#endif
+
+#endif //GT_CFG_USE_SYMBOL_ENABLE
 /* typedef --------------------------------------------------------------*/
 typedef struct _gt_symbol_s{
     char * utf8;
