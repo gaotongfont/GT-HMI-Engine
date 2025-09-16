@@ -423,6 +423,19 @@ gt_obj_st * gt_obj_search_child_by_type(gt_obj_st * parent, gt_obj_type_et type)
     return ch;
 }
 
+gt_obj_st* gt_obj_search_child_by_id(gt_obj_st * parent, gt_id_t id)
+{
+    gt_obj_st * ch = NULL;
+    GT_CHECK_BACK_VAL(parent, NULL);
+    for (uint16_t i = 0; i < parent->cnt_child; ++i) {
+        if (parent->child[i]->id == id) {
+            ch = parent->child[i];
+            break;
+        }
+    }
+    return ch;
+}
+
 uint16_t gt_obj_search_childs_count_by_type(gt_obj_st * parent, gt_obj_type_et type)
 {
     uint16_t count = 0;

@@ -261,6 +261,15 @@ uint16_t gt_obj_get_child_index(gt_obj_st * parent, gt_obj_st * obj);
 gt_obj_st * gt_obj_search_child_by_type(gt_obj_st * parent, gt_obj_type_et type);
 
 /**
+ * @brief Search the child object by id
+ *
+ * @param parent
+ * @param id
+ * @return gt_obj_st* NULL: not found
+ */
+gt_obj_st* gt_obj_search_child_by_id(gt_obj_st * parent, gt_id_t id);
+
+/**
  * @brief Search the child object count by type in the parent object
  *
  * @param parent
