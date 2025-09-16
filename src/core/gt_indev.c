@@ -461,14 +461,16 @@ _velocity_less_scroll_points_need_to_speed_up(gt_indev_st * indev) {
  * @brief Touch gestures make the act of throwing
  *
  * @param indev
+ * @return bool true: start scroll anim; false: scroll by raw
  */
-static void GT_ATTRIBUTE_RAM_TEXT
+static bool GT_ATTRIBUTE_RAM_TEXT
 _indev_scroll_throw_handler(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
+    bool is_anim_scroll = false;
     point_p->gesture = _get_scroll_dir(indev);
 
     if ((uint16_t)GT_DIR_NONE == point_p->gesture) {
-        return ;
+        return is_anim_scroll;
     }
 
     gt_obj_st * obj_scroll = point_p->obj_scroll;
@@ -477,6 +479,7 @@ _indev_scroll_throw_handler(gt_indev_st * indev) {
 #if GT_INDEV_CFG_VELOCITY
     uint32_t cur_time = gt_tick_get();
     int32_t detla_time = cur_time - indev->timestamp_throw_prev_scroll;
+    int8_t dir = 0;
     if (detla_time < 0) {
         detla_time = 0;
     }
@@ -489,27 +492,29 @@ _indev_scroll_throw_handler(gt_indev_st * indev) {
     if (_is_scroll_vertical((gt_dir_et)point_p->gesture)) {
         if (GT_SCROLL_SNAP_NONE == gt_obj_get_scroll_snap_y(obj_scroll)) {
 #if GT_INDEV_CFG_VELOCITY
-            dy = _calc_distance_inline((point_p->scroll_sum.y < 0 ? -1 : 1) * point_p->throw_velocity * detla_time);
+            dir = point_p->scroll_sum.y < 0 ? -1 : 1;
+            dy = _calc_distance_inline(dir * point_p->throw_velocity * detla_time);
             indev->timestamp_throw_prev_scroll = cur_time;
             gt_obj_scroll_to(obj_scroll, dx, dy, GT_ANIM_OFF);
 #else
             point_p->scroll_throw.y = point_p->scroll_throw.y * (100 - indev->drv->limit_scroll_throw) / 100;
             gt_obj_scroll_to(obj_scroll, 0, point_p->scroll_throw.y, GT_ANIM_OFF);
 #endif
-            return;
+            return is_anim_scroll;
         }
         dy = _scroll_predict(indev, point_p->scroll_throw.y);
     } else {
         if (GT_SCROLL_SNAP_NONE == gt_obj_get_scroll_snap_x(obj_scroll)) {
 #if GT_INDEV_CFG_VELOCITY
-            dx = _calc_distance_inline((point_p->scroll_sum.x < 0 ? -1 : 1) * point_p->throw_velocity * detla_time);
+            dir = point_p->scroll_sum.x < 0 ? -1 : 1;
+            dx = _calc_distance_inline(dir * point_p->throw_velocity * detla_time);
             indev->timestamp_throw_prev_scroll = cur_time;
             gt_obj_scroll_to(obj_scroll, dx, dy, GT_ANIM_OFF);
 #else
             point_p->scroll_throw.x = point_p->scroll_throw.x * (100 - indev->drv->limit_scroll_throw) / 100;
             gt_obj_scroll_to(obj_scroll, point_p->scroll_throw.x, 0, GT_ANIM_OFF);
 #endif
-            return;
+            return is_anim_scroll;
         }
         dx = _scroll_predict(indev, point_p->scroll_throw.x);
     }
@@ -519,6 +524,8 @@ _indev_scroll_throw_handler(gt_indev_st * indev) {
         gt_anim_set_time(indev->scroll_throw_anim, 0);
     }
     gt_obj_scroll_to(obj_scroll, dx, dy, GT_ANIM_ON);
+    is_anim_scroll = true;
+    return is_anim_scroll;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline bool
@@ -624,9 +631,17 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_exec_cb(void * indev, int3
     GT_UNUSED(v);
     gt_indev_st * ptr = (gt_indev_st *)indev;
     struct _point * point_p = &ptr->data.point;
+    gt_obj_st * obj_scroll = point_p->obj_scroll;
+    gt_point_st prev_scroll_pos = obj_scroll->process_attr.scroll;
 
-    _indev_scroll_throw_handler(ptr);
-
+    if (false == _indev_scroll_throw_handler(ptr)) {
+        // TODO refactor to rebound
+        /** pos has not change, stop anim right now */
+        if (prev_scroll_pos.x == obj_scroll->process_attr.scroll.x &&
+            prev_scroll_pos.y == obj_scroll->process_attr.scroll.y) {
+            gt_anim_set_time(ptr->scroll_throw_anim, 0);
+        }
+    }
     if (GT_DIR_NONE == ptr->data.point.gesture) {
         gt_anim_set_time(ptr->scroll_throw_anim, 0);
     }
@@ -703,7 +718,7 @@ _indev_scroll_throw_handler_anim_start(gt_indev_st * indev) {
 anim_lb:
     gt_anim_set_time(&anim, 50000);
 #else
-    gt_anim_set_time(&anim, 1024);
+    gt_anim_set_time(&anim, 2000);
 #endif
     gt_anim_set_target(&anim, indev);
     gt_anim_set_value(&anim, 0, 1024);
