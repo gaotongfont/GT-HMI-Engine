@@ -640,9 +640,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_exec_cb(void * indev, int3
         if (prev_scroll_pos.x == obj_scroll->process_attr.scroll.x &&
             prev_scroll_pos.y == obj_scroll->process_attr.scroll.y) {
             gt_anim_set_time(ptr->scroll_throw_anim, 0);
+            point_p->scroll_throw.x = 0;
+            point_p->scroll_throw.y = 0;
         }
-        point_p->scroll_throw.x = 0;
-        point_p->scroll_throw.y = 0;
     }
     if (GT_DIR_NONE == ptr->data.point.gesture) {
         gt_anim_set_time(ptr->scroll_throw_anim, 0);
