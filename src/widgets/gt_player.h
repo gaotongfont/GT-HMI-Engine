@@ -253,7 +253,7 @@ void gt_player_set_repeat_count(gt_obj_st * obj, int32_t count);
 
 #if GT_PLAYER_REPEAT_FINISH_CALLBACK
 /**
- * @brief
+ * @brief repeat / once play finish callback
  *
  * @param obj
  * @param cb

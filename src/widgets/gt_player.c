@@ -432,6 +432,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _turn_prev_item(gt_obj_st * obj) {
     }
     if (_is_mode_equal(style, GT_PLAYER_MODE_ONCE)) {
         gt_player_stop(obj);
+#if GT_PLAYER_REPEAT_FINISH_CALLBACK
+        _repeat_finish_callback_handler(style);
+#endif
         return ;
     }
     if (_is_mode_equal(style, GT_PLAYER_MODE_PLAYBACK)) {
@@ -475,6 +478,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _turn_next_item(gt_obj_st * obj) {
     }
     if (_is_mode_equal(style, GT_PLAYER_MODE_ONCE)) {
         gt_player_stop(obj);
+#if GT_PLAYER_REPEAT_FINISH_CALLBACK
+        _repeat_finish_callback_handler(style);
+#endif
         return ;
     }
     if (_is_mode_equal(style, GT_PLAYER_MODE_PLAYBACK)) {
