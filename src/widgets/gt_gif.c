@@ -45,6 +45,8 @@ typedef struct _gt_gif_s {
     _gt_timer_st * timer;
     uint32_t last_run;
     _gt_img_dsc_st dsc;
+    uint8_t once : 1;
+    uint8_t play_done : 1;
 }_gt_gif_st;
 
 
@@ -149,6 +151,9 @@ static void _gif_next_frame_handler_cb(struct _gt_timer_s * timer) {
     if (time_gone < style->gif->gce.delay * 10) {
         return;
     }
+    if (style->once && style->play_done) {
+        goto ret_lb;
+    }
     gt_size_t has_next = gd_get_frame(style->gif);
     if (0 == has_next) {
         if (1 != style->gif->loop_count) {
@@ -159,10 +164,15 @@ static void _gif_next_frame_handler_cb(struct _gt_timer_s * timer) {
         } else {
             /** last repeat */
         }
+        if (style->once && 0 == style->gif->loop_count) {
+            style->play_done = true;
+        }
     }
     gd_render_frame(style->gif, style->dsc.img, style->dsc.alpha);
-    style->last_run = gt_tick_get();
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+
+ret_lb:
+    style->last_run = gt_tick_get();
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -201,6 +211,7 @@ static gt_res_t _reset_gif_status(_gt_gif_st * style) {
         gd_close_gif(style->gif);
         style->gif = NULL;
     }
+    style->play_done = false;
     return GT_RES_OK;
 }
 
@@ -389,6 +400,7 @@ void gt_gif_play(gt_obj_st * obj)
     if (NULL == style->gif) {
         return ;
     }
+    style->play_done = false;
     _gt_timer_set_paused(style->timer, false);
 }
 
@@ -401,6 +413,7 @@ void gt_gif_stop(gt_obj_st * obj)
     if (NULL == style->gif) {
         return ;
     }
+    style->play_done = false;
     _gt_timer_set_paused(style->timer, true);
 }
 
@@ -413,6 +426,7 @@ void gt_gif_toggle(gt_obj_st * obj)
     if (NULL == style->gif) {
         return ;
     }
+    style->play_done = false;
     _gt_timer_set_paused(style->timer, !_gt_timer_get_paused(style->timer));
 }
 
@@ -434,10 +448,21 @@ void gt_gif_reset(gt_obj_st * obj)
         return ;
     }
     _gt_gif_st * style = (_gt_gif_st * )obj;
+    style->play_done = false;
     if (NULL == style->gif) {
         return ;
     }
     gd_rewind(style->gif);
+}
+
+void gt_gif_set_mode(gt_obj_st * obj, gt_gif_mode_et mode)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_gif_st * style = (_gt_gif_st * )obj;
+    style->play_done = false;
+    style->once = GT_GIF_MODE_REPEAT == mode ? 0 : 1;
 }
 
 #endif  /** GT_CFG_ENABLE_GIF */

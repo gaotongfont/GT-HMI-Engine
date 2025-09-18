@@ -30,6 +30,15 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+/**
+ * @brief default: GT_GIF_MODE_REPEAT
+ */
+typedef enum {
+    GT_GIF_MODE_REPEAT = 0,
+    GT_GIF_MODE_ONCE,
+
+    _GT_GIF_MODE_MAX_COUNT,
+}gt_gif_mode_et;
 
 
 
@@ -93,7 +102,13 @@ bool gt_gif_is_play(gt_obj_st * obj);
 
 void gt_gif_reset(gt_obj_st * obj);
 
-
+/**
+ * @brief
+ *
+ * @param obj
+ * @param mode default: GT_GIF_MODE_REPEAT
+ */
+void gt_gif_set_mode(gt_obj_st * obj, gt_gif_mode_et mode);
 
 #endif  /** GT_CFG_ENABLE_GIF */
 
