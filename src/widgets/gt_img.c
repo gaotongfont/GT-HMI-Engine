@@ -144,6 +144,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _resize_by_img(gt_obj_st * obj) {
         area.w = info.w;
         area.h = info.h;
         is_ok = true;
+    } else if(style->raw.img) {
+        area.w = style->raw.header.w;
+        area.h = style->raw.header.h;
+        is_ok = true;
     }
     if (false == is_ok) { return; }
     if (0 == area.w || 0 == area.h) {
