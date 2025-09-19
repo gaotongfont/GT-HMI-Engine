@@ -40,6 +40,7 @@ typedef struct _gt_btn_s {
     gt_color_t color_pressed;
     gt_color_t color_border;
 
+    _auto_scroll_st * auto_scroll;
     gt_color_t font_color;
     gt_color_t font_color_pressed;
     gt_font_info_st font_info;
@@ -51,6 +52,8 @@ typedef struct _gt_btn_s {
     uint8_t font_align;     //@ref gt_align_et
     uint8_t space_x;
     uint8_t space_y;
+    uint8_t roll_space;
+    _gt_text_style_st text_style;
 }_gt_btn_st;
 
 
@@ -74,19 +77,14 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_btn_class = {
 
 /* static functions -----------------------------------------------------*/
 
-/**
- * @brief obj init btn widget call back
- *
- * @param obj
- */
-static GT_ATTRIBUTE_RAM_TEXT void
-_btn_init_cb(gt_obj_st * obj) {
+static _gt_draw_font_res_st GT_ATTRIBUTE_RAM_TEXT
+_draw_or_calc_dislpay_content(gt_obj_st * obj, bool is_only_calc)
+{
     _gt_btn_st * style = (_gt_btn_st * )obj;
-    gt_color_t fg_color = gt_obj_get_state(obj) == GT_STATE_PRESSED ? style->color_pressed : obj->bgcolor;
-
+    _gt_draw_font_res_st ret = {0} ;
     char * text = (char * )_gt_vector_get_item(style->contents, _gt_vector_get_index(style->contents));
     uint32_t len = (uint32_t)strlen(text);
-    GT_CHECK_BACK(text);
+    if (!text) { GT_LOGW(GT_LOG_TAG_CHECK, "Failed: [%s] value is NULL!", text); return ret; }
 
     gt_font_st font = {
         .res        = NULL,
@@ -97,6 +95,68 @@ _btn_init_cb(gt_obj_st * obj) {
 
     font.info.thick_en = style->font_info.thick_en == 0 ? style->font_info.size + 6: style->font_info.thick_en;
     font.info.thick_cn = style->font_info.thick_cn == 0 ? style->font_info.size + 6: style->font_info.thick_cn;
+
+    gt_area_st area = gt_area_reduce(obj->area, style->border_width);
+    if (style->text_style.single_line && style->auto_scroll)
+    {
+        area.x += style->roll_space;
+        area.w -= style->roll_space << 1;
+    }
+
+    gt_area_st box_area = obj->area;
+    _gt_text_style_st text_sty = style->text_style;
+    text_sty.only_calc_display_info = is_only_calc ? true : false;
+
+    // 2:font
+    gt_attr_font_st font_attr = {
+        .font           = &font,
+        .space_x        = style->space_x,
+        .space_y        = style->space_y,
+        .font_color     = style->font_color,
+        .align          = style->font_align,
+        .opa            = obj->opa,
+        .reg            = text_sty,
+        .logical_area   = area,
+        .indent         = style->indent,
+    };
+
+    if (gt_obj_get_state(obj) == GT_STATE_PRESSED) {
+        font_attr.font_color = style->font_color_pressed;
+    } else {
+        font_attr.font_color = style->font_color;
+    }
+
+    if (style->text_style.single_line && style->auto_scroll) {
+        font_attr.logical_area = style->auto_scroll->area;
+        font_attr.logical_area.x += box_area.x;
+
+        font_attr.logical_area.y += box_area.y;
+        font_attr.logical_area.h = box_area.h;
+    }
+    else
+    {
+        if( style->font_align == GT_ALIGN_LEFT
+        || style->font_align == GT_ALIGN_LEFT_MID
+        || style->font_align == GT_ALIGN_LEFT_BOTTOM){
+        font_attr.logical_area.x += 4;
+        font_attr.logical_area.w -= 8;
+        }
+    }
+
+    return draw_text(obj->draw_ctx, &font_attr, &area);
+}
+
+/**
+ * @brief obj init btn widget call back
+ *
+ * @param obj
+ */
+static GT_ATTRIBUTE_RAM_TEXT void
+_btn_init_cb(gt_obj_st * obj) {
+    _gt_btn_st * style = (_gt_btn_st * )obj;
+    gt_color_t fg_color = gt_obj_get_state(obj) == GT_STATE_PRESSED ? style->color_pressed : obj->bgcolor;
+    char * text = (char * )_gt_vector_get_item(style->contents, _gt_vector_get_index(style->contents));
+    uint32_t len = (uint32_t)strlen(text);
 
     // set default size
     if (obj->area.w == 0 || obj->area.h == 0) {
@@ -122,33 +182,11 @@ _btn_init_cb(gt_obj_st * obj) {
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
 
     gt_area_st area = gt_area_reduce(obj->area, style->border_width);
-    // 2:font
-    gt_attr_font_st font_attr = {
-        .font           = &font,
-        .space_x        = style->space_x,
-        .space_y        = style->space_y,
-        .font_color     = style->font_color,
-        .align          = style->font_align,
-        .opa            = obj->opa,
-        .logical_area   = area,
-        .indent         = style->indent,
-    };
+    gt_area_st box_area = obj->area;
 
-    if (gt_obj_get_state(obj) == GT_STATE_PRESSED) {
-        font_attr.font_color = style->font_color_pressed;
-    } else {
-        font_attr.font_color = style->font_color;
-    }
+    _gt_draw_font_res_st font_res = _draw_or_calc_dislpay_content(obj, 0);
 
-    if( style->font_align == GT_ALIGN_LEFT
-        || style->font_align == GT_ALIGN_LEFT_MID
-        || style->font_align == GT_ALIGN_LEFT_BOTTOM){
-        font_attr.logical_area.x += 4;
-        font_attr.logical_area.w -= 8;
-    }
-
-    draw_text(obj->draw_ctx, &font_attr, &area);
-
+    _first_restart_scroll(style->text_style, style->auto_scroll, box_area, font_res);
     // focus
     draw_focus(obj);
 }
@@ -160,6 +198,7 @@ _btn_init_cb(gt_obj_st * obj) {
  */
 static GT_ATTRIBUTE_RAM_TEXT void _btn_deinit_cb(gt_obj_st * obj) {
     _gt_btn_st * style_p = (_gt_btn_st * )obj;
+    _free_auto_scroll_st(&style_p->auto_scroll);
 
     if (NULL != style_p->contents) {
         _gt_vector_free(style_p->contents);
@@ -173,6 +212,12 @@ static GT_ATTRIBUTE_RAM_TEXT bool _turn_next_content(gt_obj_st * obj) {
         return false;
     }
 
+    _gt_draw_font_res_st font_res = _draw_or_calc_dislpay_content(obj, 1);
+
+    if (font_res.size.x > obj->area.w && _gt_vector_get_count(style->contents) <= 1)
+    {
+        return true;
+    }
     gt_btn_set_text(obj, (char * )_gt_vector_turn_next(style->contents));
     return true;
 }
@@ -283,6 +328,10 @@ static void _btn_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             _lost_focus_btn_handler(obj);
             break;
 
+        case GT_EVENT_TYPE_UPDATE_VALUE:
+            gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+        break;
+
         default:
             break;
     }
@@ -298,6 +347,16 @@ static GT_ATTRIBUTE_RAM_TEXT bool _contents_free_cb(void * item) {
 
 static GT_ATTRIBUTE_RAM_TEXT bool _contents_equal_cb(void * item, void * target) {
     return strcmp(item, target) ? false : true;
+}
+
+static void GT_ATTRIBUTE_RAM_TEXT
+_update_btn_size(gt_obj_st * obj, uint16_t len) {
+    _gt_btn_st * style = (_gt_btn_st * )obj;
+    if (obj->area.w && obj->area.h) {
+        return;
+    }
+    obj->area.h = style->font_info.size + 6;
+    obj->area.w = style->font_info.size * len;
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -323,8 +382,10 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent)
     style->font_align = GT_ALIGN_CENTER_MID;
     style->space_x          = 0;
     style->space_y          = 0;
+    style->roll_space       = 2;
 
     style->contents = _gt_vector_create(_contents_free_cb, _contents_equal_cb);
+    _auto_scroll_init(obj, style->auto_scroll);
 
     uint16_t len = strlen("btn");
     char * str = gt_mem_malloc(len);
@@ -338,6 +399,15 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent)
         gt_mem_free(str);
         str = NULL;
     }
+    _update_btn_size(obj, len);
+
+#if GT_BTN_DEFAULT_AUTO_SCROLL_MODE
+    gt_btn_set_auto_scroll_single_line(obj, true);
+    #if GT_BTN_DEFAULT_AUTO_SCROLL_TIME_MODE
+    gt_btn_set_one_word_scroll_time(obj, 500);
+    #endif //!GT_BTN_DEFAULT_AUTO_SCROLL_TIME_MODE
+#endif //GT_BTN_DEFAULT_AUTO_SCROLL_MODE
+
     return obj;
 }
 
@@ -400,6 +470,7 @@ void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...)
     va_list args2;
 
     _gt_btn_st * style = (_gt_btn_st * )btn;
+    _reset_auto_scroll_st(style->auto_scroll);
     va_start(args, fmt);
     va_copy(args2, args);
     uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(buffer, sizeof(buffer), fmt, args) + 1);
@@ -419,7 +490,16 @@ void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...)
     if (GT_RES_FAIL == _update_default_text(style, text)) {
         goto text_lb;
     }
-    gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
+
+    #if GT_BTN_DEFAULT_AUTO_SCROLL_TIME_MODE
+    if (style->text_style.single_line)
+    {
+        gt_btn_set_one_word_scroll_time(btn, 500);
+    }
+    #endif //!GT_BTN_DEFAULT_AUTO_SCROLL_TIME_MODE
+
+    _update_btn_size(btn, size);
+    gt_event_send(btn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
     return ;
 
 text_lb:
@@ -435,6 +515,7 @@ void gt_btn_set_text_by_len(gt_obj_st * btn, const char * text, uint16_t len)
         return ;
     }
     _gt_btn_st * style = (_gt_btn_st * )btn;
+    _reset_auto_scroll_st(style->auto_scroll);
     char * tmp_str = gt_mem_malloc(len + 1);
     if (NULL == tmp_str) {
         goto err_lb;
@@ -444,7 +525,16 @@ void gt_btn_set_text_by_len(gt_obj_st * btn, const char * text, uint16_t len)
     if (GT_RES_FAIL == _update_default_text(style, tmp_str)) {
         goto err_lb;
     }
-    gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
+
+    #if GT_BTN_DEFAULT_AUTO_SCROLL_TIME_MODE
+    if (style->text_style.single_line)
+    {
+        gt_btn_set_one_word_scroll_time(btn, 500);
+    }
+    #endif //!GT_BTN_DEFAULT_AUTO_SCROLL_TIME_MODE
+
+    _update_btn_size(btn, len);
+    gt_event_send(btn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
     return;
 
 err_lb:
@@ -488,6 +578,7 @@ void gt_btn_set_font_size(gt_obj_st * btn, uint8_t size)
     }
     _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_info.size = size;
+    _reset_auto_scroll_st(style->auto_scroll);
 }
 
 void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray)
@@ -675,6 +766,7 @@ void gt_btn_set_space(gt_obj_st * btn, uint8_t space_x, uint8_t space_y)
     _gt_btn_st * style = (_gt_btn_st * )btn;
     style->space_x = space_x;
     style->space_y = space_y;
+    _reset_auto_scroll_st(style->auto_scroll);
 }
 
 void gt_btn_set_selected(gt_obj_st * obj)
@@ -741,6 +833,169 @@ void gt_btn_append_text(gt_obj_st * obj, const char * str)
     }else{
         gt_btn_set_text_by_len(obj, str, strlen(str));
     }
+}
+
+void gt_btn_set_single_line(gt_obj_st * btn, bool is_single_line)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+    if (is_single_line == style->text_style.single_line) {
+        return ;
+    }
+    style->text_style.single_line = is_single_line;
+
+    if (false == style->text_style.single_line) {
+        _free_auto_scroll_st(&style->auto_scroll);
+    }
+
+    gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_btn_set_omit_single_line(gt_obj_st * btn, bool is_omit)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+    style->text_style.omit_line = is_omit;
+    style->text_style.single_line = is_omit;
+
+    _free_auto_scroll_st(&style->auto_scroll);
+    gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+
+void gt_btn_set_auto_scroll_single_line(gt_obj_st * obj, bool is_auto_scroll)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )obj;
+    if (is_auto_scroll) {
+        style->text_style.single_line = true;
+        style->text_style.omit_line = false;
+        _create_auto_scroll_anim(obj, &style->auto_scroll);
+    } else {
+        _free_auto_scroll_st(&style->auto_scroll);
+        style->text_style.omit_line = true;
+    }
+
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+
+void gt_btn_set_auto_scroll_total_time(gt_obj_st * btn, uint32_t total_time_ms)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+    if (NULL == style->auto_scroll) {
+        return ;
+    }
+
+    style->auto_scroll->total_time = total_time_ms;
+    if (NULL == style->auto_scroll->anim) {
+        return ;
+    }
+    if (0 == style->auto_scroll->total_time) {
+        style->auto_scroll->total_time = 2000;
+        gt_anim_set_paused(style->auto_scroll->anim, true);
+    }
+    gt_anim_set_time(style->auto_scroll->anim, style->auto_scroll->total_time);
+
+    if (gt_anim_is_paused(style->auto_scroll->anim)) {
+        gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);   /** restart scroll */
+    }
+}
+
+void gt_btn_set_one_word_scroll_time(gt_obj_st * btn, uint32_t time_ms)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+    if (NULL == style->auto_scroll) {
+        return ;
+    }
+
+    char * text_p = (char * )_gt_vector_get_item(style->contents, _gt_vector_get_index(style->contents));
+    if (style->font_info.size == 0)
+    {
+        GT_LOGE(GT_LOG_TAG_GUI, "btn font size error");
+        return ;
+    }
+
+    _gt_draw_font_res_st font_res = _draw_or_calc_dislpay_content(btn, 1);
+    uint16_t text_font_num = font_res.size.x / (style->font_info.size) + (font_res.size.x % (style->font_info.size) ? 1 : 0);
+    gt_btn_set_auto_scroll_total_time(btn, text_font_num * time_ms);
+}
+
+bool gt_btn_is_single_line(gt_obj_st * btn)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return false;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+
+    return style->text_style.single_line ? true : false;
+}
+
+bool gt_btn_is_omit_single_line(gt_obj_st * btn)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return false;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+
+    return style->text_style.omit_line ? true : false;
+}
+
+bool gt_btn_is_auto_scroll_single_line(gt_obj_st * btn)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return false;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+
+    if (true == style->text_style.omit_line) {
+        return false;
+    }
+    else if (false == style->text_style.single_line) {
+        return false;
+    }
+    if (NULL == style->auto_scroll) {
+        return false;
+    }
+    if (NULL == style->auto_scroll->anim) {
+        return false;
+    }
+    return true;
+}
+
+void gt_btn_set_roll_space(gt_obj_st * btn, uint8_t roll_space)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+
+    style->roll_space = roll_space;
+}
+
+uint8_t gt_btn_get_roll_space(gt_obj_st * btn)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE))
+    {
+        return 0;
+    }
+
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+
+    return style->roll_space;
 }
 
 #endif  /** GT_CFG_ENABLE_BTN */
