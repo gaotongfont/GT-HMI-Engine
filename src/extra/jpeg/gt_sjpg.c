@@ -581,7 +581,7 @@ gt_jpeg_raw_st gt_jpeg_decode(gt_jpeg_st const * const jpeg)
         GT_LOGE("JPEG", "The file is not jpeg.");
         goto free_lb;
     }
-    uint16_t len = sizeof(_sjpg_st);
+    uint32_t len = sizeof(_sjpg_st);
     _sjpg_st * sjpg = gt_mem_extern_malloc(len);
     if (NULL == sjpg) {
         GT_LOGE("JPEG", "Malloc jpeg failed.");
