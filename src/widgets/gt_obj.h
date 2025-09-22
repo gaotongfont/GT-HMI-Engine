@@ -332,7 +332,29 @@ gt_color_t gt_obj_get_bgcolor(gt_obj_st * obj);
 
 gt_size_t gt_obj_get_limit_right(gt_obj_st * obj);
 gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj);
+/**
+ * @brief All childs' limit padding
+ *
+ * @param parent
+ * @return gt_padding_st
+ */
 gt_padding_st gt_obj_get_limit_padding(gt_obj_st * parent);
+
+/**
+ * @brief
+ *
+ * @param parent
+ * @return gt_point_st right/bottom can be scroll max distance
+ */
+gt_point_st gt_obj_calc_scroll_limit(gt_obj_st * parent);
+/**
+ * @brief calc scroll over limit distance which is before over_scroll,
+ *      about 1/8 widget size can over run.
+ *
+ * @param parent
+ * @return gt_point_st
+ */
+gt_point_st gt_obj_calc_scroll_limit_detla_distance(gt_obj_st * parent, gt_size_t dx, gt_size_t dy);
 
 gt_point_st gt_obj_get_childs_max_size(gt_obj_st * parent);
 gt_size_t gt_obj_get_childs_max_width(gt_obj_st * parent);

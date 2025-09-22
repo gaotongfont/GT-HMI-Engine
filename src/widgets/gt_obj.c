@@ -586,14 +586,16 @@ gt_padding_st gt_obj_get_limit_padding(gt_obj_st * parent)
     gt_obj_st * child = NULL;
     gt_point_st ret_size = { .x = 0, .y = 0 };
     gt_padding_st ret = {
-        .left = 0,
-        .top = 0,
-        .right = 0,
+        .left   = 0,
+        .top    = 0,
+        .right  = 0,
         .bottom = 0
     };
     gt_point_st min = { .x = 0x7fff, .y = 0x7fff };
     gt_point_st max = { .x = -0x7fff, .y = -0x7fff };
-    GT_CHECK_BACK_VAL(parent, ret);
+    if (gt_obj_is_type(parent, GT_TYPE_UNKNOWN)) {
+        return ret;
+    }
 
     for (gt_size_t i = parent->cnt_child - 1; i >= 0; --i) {
         child = parent->child[i];
@@ -602,10 +604,75 @@ gt_padding_st gt_obj_get_limit_padding(gt_obj_st * parent)
         if (child->area.x + child->area.w > max.x) { max.x = child->area.x + child->area.w; }
         if (child->area.y + child->area.h > max.y) { max.y = child->area.y + child->area.h; }
     }
-    ret.left = min.x;
-    ret.top = min.y;
-    ret.right = max.x;
+    gt_point_st * prev = &parent->process_attr.scroll_prev;
+    /** calc end border offset */
+    gt_point_st border = {
+        .x = gt_abs((min.x - parent->area.x) - prev->x) << 1,
+        .y = gt_abs((min.y - parent->area.y) - prev->y) << 1,
+    };
+
+    ret.left   = min.x;
+    ret.top    = min.y;
+    ret.right  = max.x;
     ret.bottom = max.y;
+    if (gt_abs(max.x - min.x) > parent->area.w) { ret.right += border.x; }
+    if (gt_abs(max.y - min.y) > parent->area.h) { ret.bottom += border.y; }
+    return ret;
+}
+
+gt_point_st gt_obj_calc_scroll_limit(gt_obj_st * parent)
+{
+    if (gt_obj_is_type(parent, GT_TYPE_UNKNOWN)) {
+        gt_point_st ret = {0};
+        return ret;
+    }
+    gt_padding_st padding = gt_obj_get_limit_padding(parent);
+    gt_point_st scroll_limt = {
+        /** scroll limit abs position */
+        .x = parent->area.w - gt_abs(padding.right - padding.left),
+        .y = parent->area.h - gt_abs(padding.bottom - padding.top),
+    };
+    /** right/bottom scroll limit abs position */
+    if (scroll_limt.x > 0) { scroll_limt.x = 0; }
+    if (scroll_limt.y > 0) { scroll_limt.y = 0; }
+    return scroll_limt;
+}
+
+gt_point_st gt_obj_calc_scroll_limit_detla_distance(gt_obj_st * parent, gt_size_t dx, gt_size_t dy)
+{
+    gt_point_st ret = {
+        .x = dx,
+        .y = dy,
+    };
+    if (gt_obj_is_type(parent, GT_TYPE_UNKNOWN)) {
+        return ret;
+    }
+    gt_point_st scroll_limt = gt_obj_calc_scroll_limit(parent);
+    gt_point_st over_area = {
+        .x = parent->area.w >> 3,
+        .y = parent->area.h >> 3,
+    };
+    gt_padding_st detla_distance = {
+        .left = gt_abs(parent->process_attr.scroll.x) + over_area.x,
+        .right = scroll_limt.x - parent->process_attr.scroll.x - over_area.x,
+        .top = gt_abs(parent->process_attr.scroll.y) + over_area.y,
+        .bottom = scroll_limt.y - parent->process_attr.scroll.y - over_area.y,
+    };
+
+    if (dx) {
+        if (dx > 0 && dx > detla_distance.left) {
+            ret.x = detla_distance.left;
+        } else if (dx < 0 && dx < detla_distance.right) {
+            ret.x = detla_distance.right;
+        }
+    }
+    if (dy) {
+        if (dy > 0 && dy > detla_distance.top) {
+            ret.y = detla_distance.top;
+        } else if (dy < 0 && dy < detla_distance.bottom) {
+            ret.y = detla_distance.bottom;
+        }
+    }
     return ret;
 }
 
@@ -615,7 +682,9 @@ gt_point_st gt_obj_get_childs_max_size(gt_obj_st * parent)
     gt_point_st ret_size = { .x = 0, .y = 0 };
     gt_point_st min = { .x = 0x7fff, .y = 0x7fff };
     gt_point_st max = { .x = -0x7fff, .y = -0x7fff };
-    GT_CHECK_BACK_VAL(parent, ret_size);
+    if (gt_obj_is_type(parent, GT_TYPE_UNKNOWN)) {
+        return ret_size;
+    }
 
     for (gt_size_t i = parent->cnt_child - 1; i >= 0; --i) {
         child = parent->child[i];

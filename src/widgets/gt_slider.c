@@ -22,6 +22,7 @@
 #include "../core/gt_disp.h"
 #include "../core/gt_fs.h"
 #include "../core/gt_indev.h"
+#include "../core/gt_obj_scroll.h"
 #include "gt_img.h"
 
 /* private define -------------------------------------------------------*/
@@ -185,36 +186,31 @@ _calc_touch_point_pos(gt_obj_st * obj) {
     gt_point_st point_click = gt_indev_get_point();
     gt_size_t temp_offset = 0;
 
-    if(NULL == scr){
+    if (NULL == scr) {
         return style->offset;
     }
 
-    if(style->touch_mode){
-
+    if (style->touch_mode) {
         gt_point_st dist_scroll = {0};
         dist_scroll.x = obj->process_attr.scroll.x - obj->process_attr.scroll_prev.x;
         dist_scroll.y = obj->process_attr.scroll.y - obj->process_attr.scroll_prev.y;
 
-        if(obj->process_attr.scroll.x != obj->process_attr.scroll_prev.x ||
-            obj->process_attr.scroll.y != obj->process_attr.scroll_prev.y)
-        {
+        if (obj->process_attr.scroll.x != obj->process_attr.scroll_prev.x ||
+            obj->process_attr.scroll.y != obj->process_attr.scroll_prev.y) {
             obj->process_attr.scroll_prev.x = obj->process_attr.scroll.x;
             obj->process_attr.scroll_prev.y = obj->process_attr.scroll.y;
         }
 
-        if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_L2R
-            || gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_R2L
-        ){
+        if (gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_L2R ||
+            gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_R2L) {
             temp_offset = style->offset + dist_scroll.x;
-        }else
-        {
+        } else {
             temp_offset = style->offset + dist_scroll.y;
         }
 
         temp_offset += _gt_slider_get_tag_size(obj) >> 1;
         return temp_offset;
     }
-
 
     point_click.x += scr->area.x;
     point_click.y += scr->area.y;

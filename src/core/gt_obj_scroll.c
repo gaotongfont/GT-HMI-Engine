@@ -10,7 +10,6 @@
 /* include --------------------------------------------------------------*/
 #include "gt_obj_scroll.h"
 #include "gt_timer.h"
-#include "../hal/gt_hal_indev.h"
 #include "../hal/gt_hal_disp.h"
 #include "../others/gt_anim.h"
 #include "./gt_style.h"
@@ -143,16 +142,91 @@ gt_size_t gt_obj_scroll_get_y(gt_obj_st * obj)
     return obj->process_attr.scroll.y;
 }
 
-void _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offset_y)
+gt_indev_over_scroll_res_st _gt_obj_get_over_scroll(gt_obj_st * obj, gt_dir_et direct)
+{
+    gt_indev_over_scroll_res_st ret = {0};
+    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+        return ret;
+    }
+    if (obj->overflow) {
+        return ret;
+    }
+    gt_scroll_dir_et dir = obj->scroll_dir;
+    if (GT_SCROLL_DISABLE == dir) {
+        return ret;
+    }
+    gt_point_st * p = &obj->process_attr.scroll;
+    gt_point_st scroll_limt = gt_obj_calc_scroll_limit(obj);
+
+    // change diff dir if need to recover
+    bool is_dir_ver = GT_DIR_NONE == direct || GT_DIR_UP == direct || GT_DIR_DOWN == direct;
+    bool is_dir_hor = GT_DIR_NONE == direct || GT_DIR_LEFT == direct || GT_DIR_RIGHT == direct;
+
+    if (dir & GT_SCROLL_VERTICAL) {
+        bool top_en = is_dir_hor || GT_DIR_DOWN == direct;
+        bool down_en = is_dir_hor || GT_DIR_UP == direct;
+
+        if (top_en && p->y > 0) {
+            ret.distance.y = -p->y;
+            ret.top = true;
+            ret.is_over_scroll = true;
+        } else if (down_en && p->y < 0 && p->y < scroll_limt.y) {
+            ret.distance.y = scroll_limt.y - p->y;
+            ret.bottom = true;
+            ret.is_over_scroll = true;
+        }
+    }
+    if (dir & GT_SCROLL_HORIZONTAL) {
+        bool left_en = is_dir_ver || GT_DIR_RIGHT == direct;
+        bool right_en = is_dir_ver || GT_DIR_LEFT == direct;
+        if (left_en && p->x > 0) {
+            ret.distance.x = -p->x;
+            ret.left = true;
+            ret.is_over_scroll = true;
+        } else if (right_en && p->x < 0 && p->x < scroll_limt.x) {
+            ret.distance.x = scroll_limt.x - p->x;
+            ret.right = true;
+            ret.is_over_scroll = true;
+        }
+    }
+    return ret;
+}
+
+#if GT_INDEV_CFG_VELOCITY
+gt_point_st _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offset_y)
+{
+    gt_point_st * scroll = &obj->process_attr.scroll;
+    gt_point_st * prev = &obj->process_attr.scroll_prev;
+    gt_scroll_dir_et dir = obj->scroll_dir;
+
+    if (!(dir & GT_SCROLL_VERTICAL))   { scroll->y = prev->y = 0; }
+    if (!(dir & GT_SCROLL_HORIZONTAL)) { scroll->x = prev->x = 0; }
+    gt_point_st diff_ret = {
+        .x = scroll->x - prev->x,
+        .y = scroll->y - prev->y,
+    };
+
+    if(scroll->x != prev->x || scroll->y != prev->y) {
+        _gt_obj_move_child_by(obj, diff_ret.x, diff_ret.y);
+        gt_disp_invalid_area(obj);
+
+        if(scroll->x != prev->x) { prev->x = scroll->x; }
+        if(scroll->y != prev->y) { prev->y = scroll->y; }
+    }
+    return diff_ret;
+}
+#else
+gt_point_st _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offset_y)
 {
     gt_point_st * scroll = &obj->process_attr.scroll;
     gt_point_st * prev = &obj->process_attr.scroll_prev;
     gt_padding_st padding = gt_obj_get_limit_padding(obj);
     padding.right += offset_x;
     padding.bottom += offset_y;
-
-    gt_size_t diff_y = scroll->y - prev->y;
-    gt_size_t diff_x = scroll->x - prev->x;
+    gt_point_st diff_ret = {
+        .x = scroll->x - prev->x,
+        .y = scroll->y - prev->y,
+    };
 
     if(scroll->y > 0) {
         scroll->y = 0;
@@ -161,8 +235,8 @@ void _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offs
         // scroll->y = (0 == prev->y) ? 0 : padding.top - obj->area.y;
         scroll->y = prev->y;
     }
-    else if((padding.bottom + diff_y) < obj->area.y + obj->area.h ||
-            (((padding.bottom + diff_y) == obj->area.y + obj->area.h) && (scroll->y < prev->y))) {
+    else if((padding.bottom + diff_ret.y) < obj->area.y + obj->area.h ||
+            (((padding.bottom + diff_ret.y) == obj->area.y + obj->area.h) && (scroll->y < prev->y))) {
 
         scroll->y = prev->y + ((obj->area.y + obj->area.h - padding.bottom));
     }
@@ -174,8 +248,8 @@ void _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offs
         // scroll->x = (0 == prev->x) ? 0 : padding.left - obj->area.x;
         scroll->x = prev->x;
     }
-    else if((padding.right + diff_x) < obj->area.x + obj->area.w ||
-            (((padding.right + diff_x) == obj->area.x + obj->area.w) && (scroll->x < prev->x))) {
+    else if((padding.right + diff_ret.x) < obj->area.x + obj->area.w ||
+            (((padding.right + diff_ret.x) == obj->area.x + obj->area.w) && (scroll->x < prev->x))) {
 
         scroll->x = prev->x + ((obj->area.x + obj->area.w - padding.right));
     }
@@ -191,7 +265,9 @@ void _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offs
             prev->y = scroll->y;
         }
     }
+    return diff_ret;
 }
+#endif
 
 
 /**

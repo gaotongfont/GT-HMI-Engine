@@ -211,6 +211,16 @@ typedef struct _gt_indev_drv_s
 
 }gt_indev_drv_st;
 
+typedef struct {
+    gt_point_st distance;
+
+    uint8_t is_over_scroll : 1;
+    uint8_t top            : 1;
+    uint8_t bottom         : 1;
+    uint8_t left           : 1;
+    uint8_t right          : 1;
+}gt_indev_over_scroll_res_st;
+
 /**
  * @brief input device information
  */
@@ -241,6 +251,8 @@ typedef struct _gt_indev_s {
             struct gt_obj_s * obj_origin;    //< The object of first touch
             struct gt_obj_s * obj_scroll;    ///< The object of gesture
 #if GT_INDEV_CFG_VELOCITY
+            gt_indev_over_scroll_res_st over_scroll;
+            gt_point_st over_scroll_prev;
             int32_t throw_velocity;         ///< px/s The begin velocity of throw
             uint16_t diff_points;           /** record scrolling valid distance points number */
 #endif

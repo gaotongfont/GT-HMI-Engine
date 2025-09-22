@@ -15,6 +15,7 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "stdint.h"
+#include "../hal/gt_hal_indev.h"
 #include "../others/gt_types.h"
 #include "../widgets/gt_obj.h"
 
@@ -67,7 +68,24 @@ void gt_obj_scroll_to_y(struct gt_obj_s * obj, gt_size_t y, gt_anim_enable_et en
 gt_size_t gt_obj_scroll_get_x(gt_obj_st * obj);
 gt_size_t gt_obj_scroll_get_y(gt_obj_st * obj);
 
-void _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offset_y);
+/**
+ * @brief Get scroll over limit range status
+ *
+ * @param obj
+ * @param dir indev direction
+ * @return
+ */
+gt_indev_over_scroll_res_st _gt_obj_get_over_scroll(gt_obj_st * obj, gt_dir_et direct);
+
+/**
+ * @brief
+ *
+ * @param obj
+ * @param offset_x
+ * @param offset_y
+ * @return gt_point_st The different between the current position and the previous position
+ */
+gt_point_st _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offset_y);
 
 void _gt_obj_set_process_point(gt_obj_st * obj, gt_point_st * point);
 void _gt_obj_set_process_scroll_xy(gt_obj_st * obj, gt_size_t x_scroll, gt_size_t y_scroll);
