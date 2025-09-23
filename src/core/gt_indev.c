@@ -524,6 +524,9 @@ _scrolling_over_limit_area_effects(gt_indev_st * indev) {
 static gt_res_t GT_ATTRIBUTE_RAM_TEXT
 _throw_scroll_rebound_slow_down_handler(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
+    if (false == point_p->obj_scroll->rebound) {
+        return GT_RES_OK;
+    }
     point_p->over_scroll =  _gt_obj_get_over_scroll(point_p->obj_scroll, point_p->gesture);
     if (false == point_p->over_scroll.is_over_scroll) {
         return GT_RES_OK;
@@ -539,6 +542,9 @@ _indev_rebound_recover_handler(gt_indev_st * indev, gt_obj_st * target) {
     struct _point * point_p = &indev->data.point;
     if (NULL == target) {
         return GT_RES_INV;
+    }
+    if (false == target->rebound) {
+        return GT_RES_OK;
     }
     point_p->over_scroll =  _gt_obj_get_over_scroll(target, point_p->gesture);
     gt_indev_over_scroll_res_st * over_p = &point_p->over_scroll;
@@ -880,13 +886,15 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_handler(gt_indev_st * indev) {
 
 #if GT_INDEV_CFG_VELOCITY
     _calc_throw_velocity(indev);
-    _indev_over_scroll_ret_st os_ret = _scrolling_over_limit_area_effects(indev);
-    if (os_ret.is_over_scroll) {
-        _scroll_raw_handler(point_p,
-            os_ret.distance.x - point_p->over_scroll_prev.x,
-            os_ret.distance.y - point_p->over_scroll_prev.y);
-        point_p->over_scroll_prev = os_ret.distance;
-        return;
+    if (point_p->obj_scroll->rebound) {
+        _indev_over_scroll_ret_st os_ret = _scrolling_over_limit_area_effects(indev);
+        if (os_ret.is_over_scroll) {
+            _scroll_raw_handler(point_p,
+                os_ret.distance.x - point_p->over_scroll_prev.x,
+                os_ret.distance.y - point_p->over_scroll_prev.y);
+            point_p->over_scroll_prev = os_ret.distance;
+            return;
+        }
     }
 #endif
 

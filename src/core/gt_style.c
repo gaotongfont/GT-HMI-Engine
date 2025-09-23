@@ -1014,4 +1014,16 @@ void gt_obj_set_ignore_throw(gt_obj_st * obj, bool is_ignore_throw)
     obj->ignore_throw = is_ignore_throw;
 }
 
+void gt_obj_set_rebound(gt_obj_st * obj, bool enabled)
+{
+    GT_CHECK_BACK(obj);
+    obj->rebound = enabled ? true : false;
+}
+
+bool gt_obj_is_rebound(gt_obj_st * obj)
+{
+    GT_CHECK_BACK_VAL(obj, false);
+    return obj->rebound;
+}
+
 /* end ------------------------------------------------------------------*/

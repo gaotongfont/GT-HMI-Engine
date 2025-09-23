@@ -604,19 +604,21 @@ gt_padding_st gt_obj_get_limit_padding(gt_obj_st * parent)
         if (child->area.x + child->area.w > max.x) { max.x = child->area.x + child->area.w; }
         if (child->area.y + child->area.h > max.y) { max.y = child->area.y + child->area.h; }
     }
-    gt_point_st * prev = &parent->process_attr.scroll_prev;
-    /** calc end border offset */
-    gt_point_st border = {
-        .x = gt_abs((min.x - parent->area.x) - prev->x) << 1,
-        .y = gt_abs((min.y - parent->area.y) - prev->y) << 1,
-    };
 
     ret.left   = min.x;
     ret.top    = min.y;
     ret.right  = max.x;
     ret.bottom = max.y;
-    if (gt_abs(max.x - min.x) > parent->area.w) { ret.right += border.x; }
-    if (gt_abs(max.y - min.y) > parent->area.h) { ret.bottom += border.y; }
+    if (parent->rebound) {
+        gt_point_st * prev = &parent->process_attr.scroll_prev;
+        /** calc end border offset */
+        gt_point_st border = {
+            .x = gt_abs((min.x - parent->area.x) - prev->x) << 1,
+            .y = gt_abs((min.y - parent->area.y) - prev->y) << 1,
+        };
+        if (gt_abs(max.x - min.x) > parent->area.w) { ret.right += border.x; }
+        if (gt_abs(max.y - min.y) > parent->area.h) { ret.bottom += border.y; }
+    }
     return ret;
 }
 

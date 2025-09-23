@@ -371,6 +371,22 @@ bool gt_obj_get_swipe_dir_enabled(gt_obj_st * obj);
  */
 void gt_obj_set_ignore_throw(gt_obj_st * obj, bool is_ignore_throw);
 
+/**
+ * @brief object rebound effect
+ *
+ * @param obj
+ * @param enabled
+ */
+void gt_obj_set_rebound(gt_obj_st * obj, bool enabled);
+
+/**
+ * @brief
+ *
+ * @param obj
+ * @return true
+ * @return false
+ */
+bool gt_obj_is_rebound(gt_obj_st * obj);
 
 #ifdef __cplusplus
 } /*extern "C"*/

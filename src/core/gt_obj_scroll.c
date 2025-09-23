@@ -193,11 +193,101 @@ gt_indev_over_scroll_res_st _gt_obj_get_over_scroll(gt_obj_st * obj, gt_dir_et d
 }
 
 #if GT_INDEV_CFG_VELOCITY
+static void GT_ATTRIBUTE_RAM_TEXT
+_calc_non_rebound_limit_scroll(
+    gt_point_st * res_scroll_p,
+    gt_point_st const * const prev_scroll_p,
+    gt_point_st const * const diff,
+    gt_point_st const * const offset,
+    gt_obj_st const * const obj) {
+    gt_padding_st padding = gt_obj_get_limit_padding((gt_obj_st *)obj);
+    padding.right += offset->x;
+    padding.bottom += offset->y;
+    if(res_scroll_p->y > 0) {
+       res_scroll_p->y = 0;
+    }
+    else if(padding.top >= obj->area.y && padding.bottom <= (obj->area.y + obj->area.h)) {
+        res_scroll_p->y = prev_scroll_p->y;
+    }
+    else if((padding.bottom + diff->y) < obj->area.y + obj->area.h ||
+            (((padding.bottom + diff->y) == obj->area.y + obj->area.h) && (res_scroll_p->y < prev_scroll_p->y))) {
+        res_scroll_p->y = prev_scroll_p->y + ((obj->area.y + obj->area.h - padding.bottom));
+    }
+
+    if(res_scroll_p->x > 0) {
+        res_scroll_p->x = 0;
+    }
+    else if(padding.left >= obj->area.x && padding.right <= (obj->area.x + obj->area.w)) {
+        res_scroll_p->x = prev_scroll_p->x;
+    }
+    else if((padding.right + diff->x) < obj->area.x + obj->area.w ||
+            (((padding.right + diff->x) == obj->area.x + obj->area.w) && (res_scroll_p->x < prev_scroll_p->x))) {
+        res_scroll_p->x = prev_scroll_p->x + ((obj->area.x + obj->area.w - padding.right));
+    }
+}
+
+static gt_point_st
+_gt_obj_scroll_internal_inline(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offset_y) {
+    gt_point_st * scroll = &obj->process_attr.scroll;
+    gt_point_st * prev = &obj->process_attr.scroll_prev;
+    gt_padding_st padding = gt_obj_get_limit_padding(obj);
+    padding.right += offset_x;
+    padding.bottom += offset_y;
+    gt_point_st diff_ret = {
+        .x = scroll->x - prev->x,
+        .y = scroll->y - prev->y,
+    };
+    // BUG border limit error right / bottom
+
+    if(scroll->y > 0) {
+        scroll->y = 0;
+    }
+    else if(padding.top >= obj->area.y && padding.bottom <= (obj->area.y + obj->area.h)) {
+        // scroll->y = (0 == prev->y) ? 0 : padding.top - obj->area.y;
+        scroll->y = prev->y;
+    }
+    else if((padding.bottom + diff_ret.y) < obj->area.y + obj->area.h ||
+            (((padding.bottom + diff_ret.y) == obj->area.y + obj->area.h) && (scroll->y < prev->y))) {
+
+        scroll->y = prev->y + ((obj->area.y + obj->area.h - padding.bottom));
+    }
+
+    if(scroll->x > 0) {
+        scroll->x = 0;
+    }
+    else if(padding.left >= obj->area.x && padding.right <= (obj->area.x + obj->area.w)) {
+        // scroll->x = (0 == prev->x) ? 0 : padding.left - obj->area.x;
+        scroll->x = prev->x;
+    }
+    else if((padding.right + diff_ret.x) < obj->area.x + obj->area.w ||
+            (((padding.right + diff_ret.x) == obj->area.x + obj->area.w) && (scroll->x < prev->x))) {
+
+        scroll->x = prev->x + ((obj->area.x + obj->area.w - padding.right));
+    }
+
+    if(scroll->x != prev->x || scroll->y != prev->y) {
+        _gt_obj_move_child_by(obj, scroll->x - prev->x, scroll->y - prev->y);
+        gt_disp_invalid_area(obj);
+
+        if(scroll->x != prev->x) {
+            prev->x = scroll->x;
+        }
+        if(scroll->y != prev->y) {
+            prev->y = scroll->y;
+        }
+    }
+    return diff_ret;
+}
+
 gt_point_st _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offset_y)
 {
     gt_point_st * scroll = &obj->process_attr.scroll;
     gt_point_st * prev = &obj->process_attr.scroll_prev;
     gt_scroll_dir_et dir = obj->scroll_dir;
+    if (false == obj->rebound) {
+        /** non rebound */
+        return _gt_obj_scroll_internal_inline(obj, offset_x, offset_y);
+    }
 
     if (!(dir & GT_SCROLL_VERTICAL))   { scroll->y = prev->y = 0; }
     if (!(dir & GT_SCROLL_HORIZONTAL)) { scroll->x = prev->x = 0; }

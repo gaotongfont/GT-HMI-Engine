@@ -560,6 +560,8 @@ gt_obj_st * gt_chat_create(gt_obj_st * parent)
     }
     _gt_chat_st * style = (_gt_chat_st * )obj;
 
+    gt_obj_set_scroll_dir(obj, GT_SCROLL_VERTICAL);
+
     //set default style
     GT_CHAT_BTN_ITEM_CB_INIT(style->item_cb);
 
