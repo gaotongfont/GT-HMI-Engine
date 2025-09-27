@@ -633,7 +633,7 @@ _indev_scroll_throw_handler(gt_indev_st * indev) {
 
 #if GT_INDEV_CFG_VELOCITY
 raw_lb:
-    if (false == point_p->over_scroll.is_over_scroll) {
+    if (false == point_p->over_scroll.is_over_scroll && obj_scroll->rebound) {
         // limit max scroll distance to border
         detla_range = gt_obj_calc_scroll_limit_detla_distance(obj_scroll, dx, dy);
         dx = detla_range.x;
