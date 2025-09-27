@@ -138,6 +138,12 @@ static void _create_anim_handler(gt_obj_st *obj, bool is_create, int32_t start, 
     }
     _gt_dialog_st * style = (_gt_dialog_st * )obj;
 
+    if(is_create && 0 == style->anim_time) {
+        gt_obj_set_opa(obj, style->max_opa);
+        gt_obj_set_visible(obj, GT_VISIBLE);
+        return ;
+    }
+
     gt_anim_init(&anim);
     gt_anim_set_value(&anim, start, end);
     gt_anim_set_target(&anim, obj);
