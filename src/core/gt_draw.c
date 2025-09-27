@@ -2487,7 +2487,12 @@ void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_are
                     GT_LOGW(GT_LOG_TAG_DATA, "Open raw data image decoder failed");
                     return;
                 }
-            } else { /** MODE 1 */
+            }
+            else {
+                /** MODE 1 */
+                if(GT_IMG_DECODER_TYPE_NONE == dsc->raw_img->header.type && NULL == dsc->raw_img->fp){
+                    return;
+                }
                 dsc_img = *dsc->raw_img;
             }
             goto handler_lb;
