@@ -90,18 +90,21 @@ static void _update_display_area(gt_obj_st * obj, gt_obj_st * top) {
 
 static void _init_cb(gt_obj_st * obj) {
     _gt_dialog_st * style = (_gt_dialog_st * )obj;
-    gt_attr_rect_st rect_attr;
 
-    gt_graph_init_rect_attr(&rect_attr);
-    rect_attr.reg.is_fill   = true;
-    rect_attr.radius        = obj->radius;
-    rect_attr.bg_opa        = obj->opa;
-    rect_attr.border_width  = style->border_width;
-    rect_attr.border_color  = style->border_color;
-    rect_attr.bg_color      = obj->bgcolor;
+    if (obj->show_bg) {
+        gt_attr_rect_st rect_attr;
 
-    // 1:base shape
-    draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
+        gt_graph_init_rect_attr(&rect_attr);
+        rect_attr.reg.is_fill   = true;
+        rect_attr.radius        = obj->radius;
+        rect_attr.bg_opa        = obj->opa;
+        rect_attr.border_width  = style->border_width;
+        rect_attr.border_color  = style->border_color;
+        rect_attr.bg_color      = obj->bgcolor;
+
+        // 1:base shape
+        draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
+    }
 }
 
 static void _dialog_anim_exec_cb(void * obj, int32_t val) {
@@ -395,6 +398,7 @@ gt_obj_st * gt_dialog_create(bool show_close_btn)
     obj->focus_dis = GT_DISABLED;
     obj->opa = GT_OPA_0;
     obj->radius = 10;
+    obj->show_bg = true;
 
     style->outside_auto_hide = true;
     style->border_color = gt_color_hex(0xc7c7c7);
