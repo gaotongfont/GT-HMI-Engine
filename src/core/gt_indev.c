@@ -559,6 +559,24 @@ _indev_rebound_recover_handler(gt_indev_st * indev, gt_obj_st * target) {
     }
     return GT_RES_OK;
 }
+
+static gt_res_t GT_ATTRIBUTE_RAM_TEXT
+_gt_indev_check_childs_rebound(gt_indev_st * indev, gt_obj_st * obj) {
+    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+        return GT_RES_OK;
+    }
+    if (gt_obj_is_rebound(obj)) {
+        _indev_rebound_recover_handler(indev, obj);
+    }
+    if (0 == obj->cnt_child) {
+        return GT_RES_OK;
+    }
+    gt_size_t i = 0, cnt = obj->cnt_child;
+    for (; i < cnt; i++) {
+        _gt_indev_check_childs_rebound(indev, obj->child[i]);
+    }
+    return GT_RES_OK;
+}
 #endif
 
 /**
@@ -1671,6 +1689,35 @@ gt_res_t _gt_indev_reset_status(void)
         if (indev->scroll_throw_anim) {
             gt_anim_del_by(indev->scroll_throw_anim);
         }
+    }
+    return GT_RES_OK;
+}
+
+gt_res_t _gt_indev_check_reset_widgets_illegal_status(gt_obj_st * screen)
+{
+    gt_indev_st * indev = NULL;
+    uint8_t i, cnt_indev;
+    union data_union * data_p = NULL;
+
+    if (false == gt_indev_is_enabled()) {
+        return GT_RES_INV;
+    }
+    if (gt_obj_is_type(screen, GT_TYPE_UNKNOWN)) {
+        return GT_RES_INV;
+    }
+
+    cnt_indev = gt_indev_get_dev_count();
+    for (i = 0; i < cnt_indev; i++) {
+        indev = gt_indev_get_dev_by_idx(i);
+        if (NULL == indev) {
+            continue;
+        }
+        if (GT_INDEV_TYPE_POINTER != indev->drv->type) {
+            continue;
+        }
+#if GT_INDEV_CFG_VELOCITY
+        _gt_indev_check_childs_rebound(indev, screen);
+#endif
     }
     return GT_RES_OK;
 }

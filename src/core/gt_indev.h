@@ -110,6 +110,15 @@ bool gt_indev_is_enabled(void);
  */
 gt_res_t _gt_indev_reset_status(void);
 
+/**
+ * @brief check widget is illegal status, and reset to normal status.
+ *      such as: rebound effect.
+ *
+ * @param screen
+ * @return gt_res_t
+ */
+gt_res_t _gt_indev_check_reset_widgets_illegal_status(gt_obj_st * screen);
+
 bool _gt_indev_remove_want_delate_target(gt_obj_st * target);
 
 #if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN

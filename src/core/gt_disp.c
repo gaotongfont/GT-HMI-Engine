@@ -1366,6 +1366,7 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
     } else if (scr && scr_old == scr) {
         /** reload current screen */
         gt_disp_invalid_area(scr);
+        _gt_indev_check_reset_widgets_illegal_status(scr);
         return;
     }
 #if GT_LAYER_TOP_SCREENSHOT_CACHE
@@ -1503,6 +1504,7 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         }
     }
 #endif
+    _gt_indev_check_reset_widgets_illegal_status(scr);
 }
 
 void gt_disp_load_scr_anim_thread_safe(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t time, uint32_t delay, bool del_prev_scr)
