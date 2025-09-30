@@ -39,40 +39,34 @@
 
 
 /* global functions / API interface -------------------------------------*/
-gt_res_t gt_fifo_init(gt_fifo_st * fifo, int32_t size)
+gt_fifo_st * gt_fifo_init(gt_fifo_param_st const * const param)
 {
-    if (NULL == fifo || size <= 0) {
-        return GT_RES_FAIL;
+    if (NULL == param || param->size <= 0) {
+        return NULL;
     }
-    if (fifo->_is_init) {
-        if (size != fifo->size) {
-            if (fifo->_is_malloc_inside) {
-                fifo->buffer = gt_mem_extern_realloc(fifo->buffer, size);
-                if (NULL== fifo->buffer) {
-                    GT_LOGE(GT_LOG_TAG_MEM, "fifo realloc %d buffer fail", size);
-                    return GT_RES_FAIL;
-                }
-            }
-        }
-        goto reset_lb;
+    gt_size_t len = sizeof(gt_fifo_st);
+    gt_fifo_st * ret_p = gt_mem_extern_malloc(len);
+    if (NULL == ret_p) {
+        return NULL;
     }
-    if (NULL == fifo->buffer) {
-        fifo->buffer = gt_mem_extern_malloc(size);
-        if (NULL== fifo->buffer) {
-            GT_LOGE(GT_LOG_TAG_MEM, "fifo malloc %d buffer fail", size);
-            return GT_RES_FAIL;
+    gt_memset(ret_p, 0, len);
+    ret_p->size = param->size;
+    if (NULL == param->buffer) {
+        ret_p->buffer = gt_mem_extern_malloc(ret_p->size);
+        if (NULL == ret_p->buffer) {
+            goto fail_lb;
         }
-        fifo->_is_malloc_inside = true;
+        ret_p->_is_malloc_inside = true;
     } else {
-        fifo->_is_malloc_inside = false;
+        ret_p->buffer = param->buffer;
     }
-reset_lb:
-    fifo->size = size;
-    fifo->head = 0;
-    fifo->tail = 0;
-    fifo->_is_full = false;
-    fifo->_is_init = true;
-    return GT_RES_OK;
+    ret_p->_is_init = true;
+    return ret_p;
+
+fail_lb:
+    gt_mem_extern_free(ret_p);
+    ret_p = NULL;
+    return NULL;
 }
 
 void gt_fifo_free(gt_fifo_st * fifo)
@@ -83,12 +77,8 @@ void gt_fifo_free(gt_fifo_st * fifo)
     if (fifo->_is_malloc_inside && fifo->buffer) {
         gt_mem_extern_free(fifo->buffer);
     }
-    fifo->buffer = NULL;
-    fifo->size = 0;
-    fifo->head = 0;
-    fifo->tail = 0;
-    fifo->_is_full = false;
-    fifo->_is_malloc_inside = false;
+    gt_memset(fifo, 0, sizeof(gt_fifo_st));
+    gt_mem_extern_free(fifo);
 }
 
 int32_t gt_fifo_avail(gt_fifo_st * fifo)

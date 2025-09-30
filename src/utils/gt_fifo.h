@@ -33,6 +33,10 @@ typedef struct gt_fifo_s {
     bool _is_init : 1;
 }gt_fifo_st;
 
+typedef struct gt_fifo_param_s {
+    uint8_t * buffer;
+    int32_t size;
+}gt_fifo_param_st;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -50,9 +54,15 @@ typedef struct gt_fifo_s {
  *          will be set to true, free by inside; otherwise, it will not malloc inside.
  *          Using static buffer by user.
  * @param size
+ * @return
  */
-gt_res_t gt_fifo_init(gt_fifo_st * fifo, int32_t size);
+gt_fifo_st * gt_fifo_init(gt_fifo_param_st const * const param);
 
+/**
+ * @brief
+ *
+ * @param fifo
+ */
 void gt_fifo_free(gt_fifo_st * fifo);
 
 int32_t gt_fifo_avail(gt_fifo_st * fifo);
