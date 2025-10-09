@@ -1910,8 +1910,11 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
                 /** all display string */
                 if (view_width >= 0) {
                     ret.size_show_limit.x = string_total_width + width;
+                    is_omit_display = false;
                 }
-                is_omit_display = false;
+                else{
+                    is_omit_display = true;
+                }
             }
             else if ( view_width >= omit_info.width) {
                 remark_idx = idx + tmp_font.len;
