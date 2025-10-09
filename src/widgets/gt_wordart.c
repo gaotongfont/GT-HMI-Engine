@@ -9,21 +9,24 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_wordart.h"
+
+#if GT_CFG_ENABLE_WORDART
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
-#include "../font/gt_font.h"
+#include "../core/gt_fs.h"
+#include "string.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
+#include "../core/gt_event.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_WORDART
 #define MY_CLASS    &gt_word_art_class
 
-#if GT_CFG_ENABLE_WORDART
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_word_art_item_s {
     uint32_t encode;
@@ -82,6 +85,68 @@ static int _gt_wordart_items_find(_gt_wor_dart_st * style, uint32_t encode) {
     return -1;
 }
 
+static bool _get_img_size(_gt_word_art_item_st* item ,uint16_t * w, uint16_t * h) {
+    _gt_img_info_st info = {0};
+    bool is_ok = false;
+
+    if (GT_FS_RES_OK == gt_fs_read_img_wh(item->img, w, h)) {
+        is_ok = true;
+#if GT_USE_FILE_HEADER
+    } else if (GT_FS_RES_OK == gt_fs_fh_read_img_wh(&item->fh, w, h)) {
+        is_ok = true;
+#endif
+#if GT_USE_DIRECT_ADDR
+    } else if (GT_FS_RES_OK == gt_fs_direct_addr_read_img_wh(item->addr, w, h)) {
+        is_ok = true;
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    } else if (GT_FS_RES_OK == gt_fs_direct_addr_custom_size_read_img_wh(&item->custom_addr, w, h)) {
+        is_ok = true;
+#endif
+    }
+
+    if (false == is_ok) { return false; }
+    if (0 == w || 0 == h) {
+        return false;
+    }
+
+    return true;
+}
+
+static void _calc_obj_size(gt_obj_st* obj) {
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )obj;
+    if(NULL == style->items || 0 == style->item_number){
+        return ;
+    }
+
+    uint32_t len = (NULL == style->text) ? 0 : strlen(style->text);
+    uint32_t idx = 0, encode = 0;
+    int tmp = 0;
+    uint32_t width = 0, height = 0;
+
+    while(idx < len) {
+        tmp = _gt_utf8_to_unicode((uint8_t * )&style->text[idx], &encode);
+        if (0 == tmp) {
+            return ;
+        }
+        idx += tmp;
+        tmp = _gt_wordart_items_find(style, encode);
+        if (tmp < 0) {
+            continue;
+        }
+        uint16_t w = 0, h = 0;
+        if(false == _get_img_size(&style->items[tmp], &w, &h)){
+            GT_LOGW(GT_LOG_TAG_GUI, "wordart get img size fail!! [%d]encode:0x%x", tmp, encode);
+            continue;
+        }
+
+        width += w + style->space_x;
+        height = GT_MAX(height, h);
+    }
+
+    gt_obj_set_size(obj, width, height);
+}
+
 /**
  * @brief obj init wordart widget call back
  *
@@ -121,7 +186,6 @@ static void _init_cb(gt_obj_st * obj) {
         idx += tmp;
         tmp = _gt_wordart_items_find(style, encode);
         if (tmp < 0) {
-            area.x += area.w + style->space_x;
             continue;
         }
         dsc.bg_img_src = style->items[tmp].img;
@@ -406,6 +470,8 @@ void gt_wordart_set_text(gt_obj_st * wordart, const char * fmt, ...)
     va_start(args2, fmt);
     vsnprintf(style->text, size, fmt, args2);
     va_end(args2);
+
+    _calc_obj_size(wordart);
 
     gt_event_send(wordart, GT_EVENT_TYPE_DRAW_START, NULL);
 
