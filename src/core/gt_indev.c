@@ -1007,9 +1007,6 @@ _indev_released_handle(gt_indev_st * indev) {
     } else {
         _indev_scroll_throw_handler_anim_start(indev);
     }
-#if GT_CFG_ENABLE_INDEV_EFFECTS
-    gt_indev_effects_hide();
-#endif
 
 tar_clr_lb:
     point_p->obj_target = NULL;
@@ -1019,6 +1016,11 @@ clr_lb:
 #if GT_INDEV_CFG_VELOCITY
     point_p->diff_points = 0;
 #endif
+
+#if GT_CFG_ENABLE_INDEV_EFFECTS
+    gt_indev_effects_hide();
+#endif
+
 }
 
 /**
