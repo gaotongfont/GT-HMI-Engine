@@ -40,6 +40,7 @@
 typedef struct {
     gt_obj_st obj;
     gt_obj_st* rect_p;
+    gt_anim_st* anim_p;
 }_gt_indev_effects_st;
 
 typedef struct {
@@ -70,15 +71,18 @@ _gt_indev_effects_ctrl_st _effects_ctrl = {
 
 
 /* static functions -----------------------------------------------------*/
-static void GT_ATTRIBUTE_RAM_TEXT _indev_effects_init_cb(gt_obj_st * obj) {
+GT_ATTRIBUTE_RAM_TEXT
+static void _indev_effects_init_cb(gt_obj_st * obj) {
 
 }
 
-static void GT_ATTRIBUTE_RAM_TEXT _indev_effects_deinit_cb(gt_obj_st * obj) {
+GT_ATTRIBUTE_RAM_TEXT
+static void _indev_effects_deinit_cb(gt_obj_st * obj) {
 
 }
 
-static void GT_ATTRIBUTE_RAM_TEXT _indev_effects_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
+GT_ATTRIBUTE_RAM_TEXT
+static void _indev_effects_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
     if (GT_EVENT_TYPE_DRAW_START == code_val) {
         gt_disp_invalid_area(obj);
@@ -86,16 +90,19 @@ static void GT_ATTRIBUTE_RAM_TEXT _indev_effects_event_cb(struct gt_obj_s * obj,
     }
 }
 
-static inline _gt_indev_effects_ctrl_st* GT_ATTRIBUTE_RAM_TEXT _get_effect_ctrl(void) {
+GT_ATTRIBUTE_RAM_TEXT
+static inline _gt_indev_effects_ctrl_st* _get_effect_ctrl(void) {
     return &_effects_ctrl;
 }
 
-static void GT_ATTRIBUTE_RAM_TEXT _del_effect_cb(gt_event_st * e) {
+GT_ATTRIBUTE_RAM_TEXT
+static void _del_effect_cb(gt_event_st * e) {
     _effects_ctrl._effects_p = NULL;
 }
 
 
-static void GT_ATTRIBUTE_RAM_TEXT _effects_set_pos(gt_obj_st* obj, bool is_left, uint32_t distance) {
+GT_ATTRIBUTE_RAM_TEXT
+static void _effects_set_pos(gt_obj_st* obj, bool is_left, uint32_t distance) {
     _gt_indev_effects_st* style = (_gt_indev_effects_st*) obj;
     gt_obj_set_pos(obj, is_left ? _GT_EFFECTS_X_L : _GT_EFFECTS_X_R, _GT_EFFECTS_Y);
     gt_size_t x = gt_obj_get_x(obj);
@@ -114,7 +121,8 @@ static void GT_ATTRIBUTE_RAM_TEXT _effects_set_pos(gt_obj_st* obj, bool is_left,
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-static _gt_indev_effects_st* GT_ATTRIBUTE_RAM_TEXT _effects_create(void) {
+GT_ATTRIBUTE_RAM_TEXT
+static _gt_indev_effects_st*  _effects_create(void) {
     _gt_indev_effects_ctrl_st* ctrl = _get_effect_ctrl();
     if(false == gt_obj_is_type((gt_obj_st*)ctrl->_effects_p, OBJ_TYPE)) {
 #if GT_USE_LAYER_TOP
@@ -139,9 +147,38 @@ static _gt_indev_effects_st* GT_ATTRIBUTE_RAM_TEXT _effects_create(void) {
     return ctrl->_effects_p;
 }
 
+GT_ATTRIBUTE_RAM_TEXT
+void _effects_anim_ready_cb(struct gt_anim_s * anim) {
+    gt_indev_effects_hide();
+}
 
+GT_ATTRIBUTE_RAM_TEXT
+static void _effects_anim_create(gt_obj_st* obj)
+{
+    _gt_indev_effects_st* style = (_gt_indev_effects_st*)obj;
+    if(style->anim_p) {
+        gt_anim_restart(style->anim_p);
+        return;
+    }
 
+    gt_anim_st anim = {0};
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_time(&anim, 200);
+    gt_anim_set_ready_cb(&anim, _effects_anim_ready_cb);
+    style->anim_p = gt_anim_start(&anim);
+}
+GT_ATTRIBUTE_RAM_TEXT
+static void _effects_anim_del(gt_obj_st* obj)
+{
+    _gt_indev_effects_st* style = (_gt_indev_effects_st*)obj;
+    if(style->anim_p) {
+        gt_anim_del_safe_by(obj);
+        style->anim_p = NULL;
+    }
+}
 /* global functions / API interface -------------------------------------*/
+GT_ATTRIBUTE_RAM_TEXT
 void gt_indev_effects_show(gt_event_type_et gesture_type, uint32_t distance)
 {
     _gt_indev_effects_st* style = _effects_create();
@@ -160,8 +197,10 @@ void gt_indev_effects_show(gt_event_type_et gesture_type, uint32_t distance)
     if(gt_obj_get_visible(obj) == GT_INVISIBLE){
         gt_obj_set_visible(obj, GT_VISIBLE);
     }
+    _effects_anim_create(obj);
 }
 
+GT_ATTRIBUTE_RAM_TEXT
 void gt_indev_effects_hide(void)
 {
     _gt_indev_effects_st* style = _effects_create();
@@ -170,14 +209,18 @@ void gt_indev_effects_hide(void)
     if(gt_obj_get_visible(obj) == GT_VISIBLE) {
         gt_obj_set_visible(obj, GT_INVISIBLE);
     }
+
+    _effects_anim_del(obj);
 }
 
+GT_ATTRIBUTE_RAM_TEXT
 void gt_indev_effects_set_color(gt_color_t color)
 {
     _gt_indev_effects_st* style = _effects_create();
     gt_rect_set_bg_color(style->rect_p, color);
 }
 
+GT_ATTRIBUTE_RAM_TEXT
 void gt_indev_effects_set_opa(uint8_t opa)
 {
     _gt_indev_effects_st* style = _effects_create();
