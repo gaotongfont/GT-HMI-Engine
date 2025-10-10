@@ -144,6 +144,10 @@ static void _calc_obj_size(gt_obj_st* obj) {
         height = GT_MAX(height, h);
     }
 
+    if(0 == width || 0 == height){
+        return ;
+    }
+
     gt_obj_set_size(obj, width, height);
 }
 
