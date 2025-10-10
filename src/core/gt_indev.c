@@ -482,6 +482,7 @@ _velocity_less_scroll_points_need_to_speed_up(gt_indev_st * indev) {
     }
 }
 
+#if GT_CFG_ENABLE_INDEV_EFFECTS
 static _indev_over_scroll_ret_st GT_ATTRIBUTE_RAM_TEXT
 _scrolling_over_limit_area_effects(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
@@ -521,6 +522,8 @@ _scrolling_over_limit_area_effects(gt_indev_st * indev) {
     ret.is_over_scroll = true;
     return ret;
 }
+#endif
+
 static gt_res_t GT_ATTRIBUTE_RAM_TEXT
 _throw_scroll_rebound_slow_down_handler(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
@@ -904,6 +907,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_handler(gt_indev_st * indev) {
 
 #if GT_INDEV_CFG_VELOCITY
     _calc_throw_velocity(indev);
+#if GT_CFG_ENABLE_INDEV_EFFECTS
     if (point_p->obj_scroll->rebound) {
         _indev_over_scroll_ret_st os_ret = _scrolling_over_limit_area_effects(indev);
         if (os_ret.is_over_scroll) {
@@ -914,6 +918,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_handler(gt_indev_st * indev) {
             return;
         }
     }
+#endif  /** GT_CFG_ENABLE_INDEV_EFFECTS */
 #endif
 
     _scroll_raw_handler(point_p, point_p->scroll_diff.x, point_p->scroll_diff.y);
