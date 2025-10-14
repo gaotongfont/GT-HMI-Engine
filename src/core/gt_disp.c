@@ -1692,7 +1692,7 @@ void gt_disp_invalid_area(gt_obj_st * obj)
     gt_layout_update_core(obj);          // TODO pref handler, unstable
 #endif
     gt_obj_st * scr = gt_disp_get_scr();
-    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN) && gt_obj_is_type(scr, GT_TYPE_UNKNOWN)) {
+    if (NULL == scr) {
         return;
     }
     if (NULL == obj) {
