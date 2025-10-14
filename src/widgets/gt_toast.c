@@ -343,6 +343,7 @@ void gt_toast(gt_toast_param_st * toast)
         GT_LOGE(GT_LOG_TAG_DATA, "Create toast failed.");
         return;
     }
+    gt_obj_bring_to_front((gt_obj_st * )style);
     _common_update_toast_data(style, toast);
     _calc_position_by_type(style);
     _create_transit_anim(style, true);
@@ -356,6 +357,7 @@ void gt_toast_loading(gt_toast_param_st * toast)
         GT_LOGE(GT_LOG_TAG_DATA, "Create toast failed.");
         return;
     }
+    gt_obj_bring_to_front((gt_obj_st * )style);
     _common_update_toast_data(style, toast);
     _calc_position_by_type(style);
     _create_transit_anim(style, true);
