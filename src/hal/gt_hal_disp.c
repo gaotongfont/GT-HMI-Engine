@@ -281,24 +281,22 @@ void _gt_disp_refr_reset_areas(void)
 {
     gt_disp_st * disp = gt_disp_get_default();
 
-    gt_memset(disp->refr.areas, 0, sizeof(gt_area_st) * _GT_REFR_AREA_MAX);
-    gt_memset(disp->refr.joined, 0, sizeof(uint8_t) * _GT_REFR_AREA_MAX);
-    disp->refr.idx_r = 0;
-    disp->refr.idx_w = 0;
+    gt_memset(&disp->refr, 0, sizeof(_gt_refr_st));
 }
 
 void _gt_disp_refr_append_area(gt_area_st * area)
 {
     gt_disp_st * disp = gt_disp_get_default();
     gt_area_st * area_p = &disp->refr.areas[0];
-    gt_area_st res_area;
+    gt_area_st res_area = {0};
     gt_size_t i = 0;
-    gt_size_t idx, idx_newly;
-    gt_size_t len = disp->refr.idx_w < disp->refr.idx_r ? _GT_REFR_AREA_MAX : 0;
+    gt_size_t idx = disp->refr.idx_r, idx_newly = disp->refr.idx_w;
+    gt_size_t len = idx_newly < idx ? _GT_REFR_AREA_MAX : 0;
     bool is_on = false;
+    if (NULL == area) {
+        return;
+    }
 
-    idx = disp->refr.idx_r;
-    idx_newly = disp->refr.idx_w;
     disp->refr.areas[idx_newly] = *area;
     len += idx_newly - idx; /* except the newly one */
 
