@@ -40,7 +40,8 @@ typedef struct {
 }_gt_custom_list_st;
 
 /* static prototypes ----------------------------------------------------*/
-_gt_custom_list_st _custom_list = {0};
+
+
 
 /* static variables -----------------------------------------------------*/
 
@@ -198,6 +199,8 @@ static const uint32_t _gt_emoji_unicode_list[] = {
 #endif
 
 
+GT_ATTRIBUTE_RAM_DATA
+static _gt_custom_list_st _custom_list = {0};
 /* macros ---------------------------------------------------------------*/
 
 
