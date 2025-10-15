@@ -38,6 +38,10 @@
 #include "../../test/gt_test_rand_widget.h"
 #endif
 
+#if GT_CUSTOM_FONT_ENABLE
+#include "../font/gt_custom_font.h"
+#endif
+
 /* private define -------------------------------------------------------*/
 typedef struct {
     uint8_t inited : 1;
@@ -194,6 +198,11 @@ void gt_init(void)
 #if GT_BOOTING_INFO_MSG
     gt_print_info_end();
 #endif
+
+#if GT_CUSTOM_FONT_ENABLE
+    gt_custom_font_init();
+#endif
+
 }
 
 void gt_task_handler(void)

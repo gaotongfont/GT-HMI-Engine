@@ -16,6 +16,7 @@
 #include "../core/gt_mem.h"
 #include "../others/gt_gc.h"
 #include "gt_symbol.h"
+#include "gt_custom_font.h"
 /* private define -------------------------------------------------------*/
 
 #ifndef GT_CFG_USE_FONT_16_ASCII
@@ -257,128 +258,7 @@ static GT_ATTRIBUTE_RAM_DATA const uint16_t _gt_emoticon_unicode_list[] = {
     0xFFE3,  // ￣ 136
 };
 
-static GT_ATTRIBUTE_RAM_DATA const  uint32_t _gt_emoji_unicode_list[] = {
-// 表情	Unicode 编码
-    0x200D,     //😵‍💫
-    0x261D,     //
-    0x270A,     //
-    0x270B,     //
-    0x270C,     //
-    0x2764,     //
-    0x2B50,     //
-    0x1F308,    //🌈
-    0x1F31A,    //🌚
-    0x1F31C,    //🌜
-    0x1F31D,    //🌝
-    0x1F31E,    //🌞
-    0x1F31F,    //🌟
-    0x1F332,    //🌲
-    0x1F333,    //🌳
-    0x1F334,    //🌴
-    0x1F335,    //
-    0x1F336,    //🌶
-    0x1F339,    //
-    0x1F33A,    //
-    0x1F340,    //🍀
-    0x1F341,    //🍁
-    0x1F343,    //🍃
-    0x1F345,    //🍅
-    0x1F346,    //🍆
-    0x1F347,    //🍇
-    0x1F348,    //🍈
-    0x1F349,    //🍉
-    0x1F34A,    //🍊
-    0x1F34B,    //🍋
-    0x1F34C,    //🍌
-    0x1F34D,    //🍍
-    0x1F34E,    //🍎
-    0x1F350,    //🍐
-    0x1F351,    //🍑
-    0x1F352,    //🍒
-    0x1F353,    //🍓
-    0x1F381,    //🎁
-    0x1F383,    //🎃
-    0x1F384,    //🎄
-    0x1F385,    //🎅
-    0x1F388,    //🎈
-    0x1F389,    //🎉
-    0x1F38A,    //🎊
-    0x1F42D,    //🐭
-    0x1F430,    //🐰
-    0x1F436,    //🐶
-    0x1F439,    //🐹
-    0x1F43B,    //🐻
-    0x1F43C,    //🐼
-    0x1F43E,    //🐾
-    0x1F446,    //👆
-    0x1F447,    //👇
-    0x1F448,    //👈
-    0x1F449,    //👉
-    0x1F44B,    //👋
-    0x1F44C,    //👌
-    0x1F44D,    //👍
-    0x1F44F,    //👏
-    0x1F48B,    //💋
-    0x1F494,    //💔
-    0x1F498,    //💘
-    0x1F49D,    //💝
-    0x1F4A9,    //💩
-    0x1F4AA,    //💪
-    0x1F4E8,    //📨
-    0x1F4E9,    //📩
-    0x1F600,    //😀
-    0x1F602,    //😂
-    0x1F605,    //😅
-    0x1F607,    //😇
-    0x1F60A,    //😊
-    0x1F60D,    //😍
-    0x1F60E,    //😎
-    0x1F613,    //😓
-    0x1F616,    //😖
-    0x1F619,    //😙
-    0x1F61C,    //😜
-    0x1F620,    //😠
-    0x1F621,    //😡
-    0x1F622,    //😢
-    0x1F623,    //😣
-    0x1F624,    //😤
-    0x1F625,    //😥
-    0x1F62D,    //😭
-    0x1F62E,    //😮
-    0x1F62F,    //😯
-    0x1F631,    //😱
-    0x1F632,    //😲
-    0x1F634,    //😴
-    0x1F635,    //😵
-    0x1F637,    //😷
-    0x1F638,    //😸
-    0x1F639,    //😹
-    0x1F63A,    //😺
-    0x1F63B,    //😻
-    0x1F642,    //🙂
-    0x1F64C,    //🙌
-    0x1F64F,    //🙏
-    0x1F910,    //🤐
-    0x1F914,    //🤔
-    0x1F916,    //🤖
-    0x1F917,    //🤗
-    0x1F92B,    //🤫
-    0x1F92D,    //🤭
-    0x1F951,    //🥑
-    0x1F954,    //🥔
-    0x1F955,    //🥕
-    0x1F95D,    //🥝
-    0x1F970,    //🥰
-    0x1F971,    //🥱
-    0x1F973,    //🥳
-    0x1F979,    //🥹
-    0x1F97A,    //🥺
-    0x1F98A,    //🦊
-    0x1F9E7,    //🧧
-    0x1F9E8,    //🧨
-    0x1FAF0,    //
-    0x1FAF5,    //
-};
+
 
 /**
  * @brief Adjust the ascii display position according to the match between Chinese and ascii
@@ -500,6 +380,32 @@ static gt_encoding_et _gt_project_encoding = GT_ENCODING_UTF8;
 static GT_ATTRIBUTE_RAM_DATA py_info_st* _gt_py_info;
 #endif
 /* static functions -----------------------------------------------------*/
+static int _get_font_width(uint32_t uni_or_gbk, uint16_t option, uint16_t font_size, uint8_t gray, uint8_t * res)
+{
+#if GT_CUSTOM_FONT_ENABLE
+    if(IS_GT_CUSTOM_FONT_OPTION(option)) {
+        gt_custom_font_st* cf = gt_custom_get_font(option);
+        if(cf && cf->get_width) {
+            return cf->get_width(cf, uni_or_gbk);
+        }
+    }
+#endif
+    return GT_Get_Font_Width(uni_or_gbk, option, font_size, gray, res);
+}
+
+struct gt_font_func_s* _get_font_func_s(uint32_t option)
+{
+#if GT_CUSTOM_FONT_ENABLE
+    if(IS_GT_CUSTOM_FONT_OPTION(option)) {
+        gt_custom_font_st* cf = gt_custom_get_font(option);
+        if(cf) {
+            return &cf->ffs;
+        }
+    }
+#endif
+    return GT_Get_Font_Func_S(option);
+}
+
 /**
  * @brief get font width by cache
  *
@@ -517,7 +423,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t gt_font_get_font_width_inline(uint
 #if GT_FONT_USE_ASCII_WIDTH_CACHE
     _gt_gc_ascii_width_cache_st * const cache = _gt_gc_get_ascii_width_cache();
     if (uni_or_gbk < 0x20|| uni_or_gbk > 0x7F) {
-        return GT_Get_Font_Width(uni_or_gbk, option, font_size, gray, res);
+        return _get_font_width(uni_or_gbk, option, font_size, gray, res);
     }
     if (cache->option != option || cache->size != font_size || cache->gray != gray) {
         // check cache valid
@@ -525,18 +431,18 @@ static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t gt_font_get_font_width_inline(uint
         cache->option = option;
         cache->size = font_size;
         cache->gray = gray;
-        width = GT_Get_Font_Width(uni_or_gbk, option, font_size, gray, res);
+        width = _get_font_width(uni_or_gbk, option, font_size, gray, res);
         cache->ascii_width_cache[uni_or_gbk - 0x20] = (gt_font_width_t)width;
     } else {
         // read width from cache
         width = cache->ascii_width_cache[uni_or_gbk - 0x20];
     }
     if (0 == width) {
-        width = GT_Get_Font_Width(uni_or_gbk, option, font_size, gray, res);
+        width = _get_font_width(uni_or_gbk, option, font_size, gray, res);
         cache->ascii_width_cache[uni_or_gbk - 0x20] = (gt_font_width_t)width;
     }
 #else
-    width = GT_Get_Font_Width(uni_or_gbk, option, font_size, gray, res);
+    width = _get_font_width(uni_or_gbk, option, font_size, gray, res);
 #endif
     return width;
 }
@@ -618,13 +524,14 @@ static GT_ATTRIBUTE_RAM_TEXT bool _gt_emoticon_font(uint32_t unicode) {
     }
     return false;
 }
-static GT_ATTRIBUTE_RAM_TEXT bool _gt_emoji_font(uint32_t unicode) {
+static GT_ATTRIBUTE_RAM_TEXT bool _gt_emoji_font(uint32_t option ,uint32_t unicode) {
 
-    uint32_t count = sizeof(_gt_emoji_unicode_list) / sizeof(_gt_emoji_unicode_list[0]);
-    if (-1 != gt_binary_search_from_u32(_gt_emoji_unicode_list, count, unicode)) {
-        return true;
-    }
+#if GT_CUSTOM_FONT_ENABLE
+    return gt_custom_is_emoji(option, unicode);
+#else
     return false;
+#endif
+
 }
 
 static GT_ATTRIBUTE_RAM_TEXT uint32_t _get_font_option(gt_font_st * font, uint32_t unicode)
@@ -649,23 +556,19 @@ static GT_ATTRIBUTE_RAM_TEXT uint32_t _get_font_option(gt_font_st * font, uint32
     return font_style;
 #else
 
-    if (_gt_number_symbol_font(unicode)) {
-        uint32_t tmp_option = gt_font_family_get_option(font->info.family, FONT_LAN_NUMBER, font->info.cjk);
-        if(GT_CFG_DEFAULT_FONT_FAMILY != tmp_option){
-            return tmp_option;
-        }
+    uint32_t tmp_option = gt_font_family_get_option(font->info.family, FONT_LAN_NUMBER, font->info.cjk);
+    if(GT_CFG_DEFAULT_FONT_FAMILY != tmp_option && _gt_number_symbol_font(unicode)){
+        return tmp_option;
     }
-    else if (_gt_emoticon_font(unicode)) {
-        uint32_t tmp_option = gt_font_family_get_option(font->info.family, FONT_LAN_EMOTICON, font->info.cjk);
-        if(GT_CFG_DEFAULT_FONT_FAMILY != tmp_option){
-            return tmp_option;
-        }
+
+    tmp_option = gt_font_family_get_option(font->info.family, FONT_LAN_EMOTICON, font->info.cjk);
+    if(GT_CFG_DEFAULT_FONT_FAMILY != tmp_option && _gt_emoticon_font(unicode)){
+        return tmp_option;
     }
-    else if(_gt_emoji_font(unicode)){
-        uint32_t tmp_option = gt_font_family_get_option(font->info.family, FONT_LAN_EMOJI, font->info.cjk);
-        if(GT_CFG_DEFAULT_FONT_FAMILY != tmp_option){
-            return tmp_option;
-        }
+
+    tmp_option = gt_font_family_get_option(font->info.family, FONT_LAN_EMOJI, font->info.cjk);
+    if(GT_CFG_DEFAULT_FONT_FAMILY != tmp_option && _gt_emoji_font( tmp_option, unicode)) {
+        return tmp_option;
     }
 
     font_lan = gt_font_lan_get(unicode, font->info.encoding);
@@ -1309,7 +1212,7 @@ _gt_font_dot_ret_st gt_font_get_dot(gt_font_st * font, uint32_t unicode)
     font_lan =  gt_font_lan_get(unicode, font->info.encoding);
 #if GT_CFG_ENABLE_ZK_FONT == 1
     font_option = _get_font_option(font, unicode);
-    struct gt_font_func_s * font_func = GT_Get_Font_Func_S(font_option);
+    struct gt_font_func_s * font_func = _get_font_func_s(font_option);
     if (!font_func) {
         goto default_font;
     }
@@ -1359,7 +1262,7 @@ int gt_font_get_emoji_dot(uint32_t unicode, uint16_t option, uint8_t *data, uint
 {
 #if GT_CFG_ENABLE_ZK_FONT == 1
 
-    struct gt_font_func_s * font_func = GT_Get_Font_Func_S(option);
+    struct gt_font_func_s * font_func = _get_font_func_s(option);
     if (!font_func) {
         return -1;
     }
@@ -1370,7 +1273,7 @@ int gt_font_get_emoji_dot(uint32_t unicode, uint16_t option, uint8_t *data, uint
     if(!font_func->func.read_img_font){
         return -1;
     }
-    int temp = font_func->func.read_img_font(unicode,option, data, opa, line);
+    int temp = font_func->func.read_img_font(unicode, option, data, opa, line);
     return temp;
 #else
     return -1;
@@ -1381,6 +1284,16 @@ int gt_font_get_emoji_dot(uint32_t unicode, uint16_t option, uint8_t *data, uint
 uint8_t gt_font_type_get(unsigned int style)
 {
 #if GT_CFG_ENABLE_ZK_FONT == 1
+
+#if GT_CUSTOM_FONT_ENABLE
+    if(IS_GT_CUSTOM_FONT_OPTION(style)) {
+        gt_custom_font_st* cf = gt_custom_get_font(style);
+        if(cf) {
+            return cf->ffs.type;
+        }
+    }
+#endif
+
     return GT_Get_Font_Type(style);
 #else
     return 0;
@@ -1393,7 +1306,7 @@ int gt_font_code_transform(font_convertor_st *convert)
 unsigned int len = 0;
 #if GT_CFG_ENABLE_ZK_FONT == 1
     struct gt_font_func_s* font_func;
-    font_func = GT_Get_Font_Func_S(convert->font_option);
+    font_func = _get_font_func_s(convert->font_option);
 
     if (NULL == font_func) {
         return len;
@@ -1664,6 +1577,16 @@ uint8_t gt_font_get_one_word_height(uint32_t uni_or_gbk, gt_font_st * font)
 
 #if GT_CFG_ENABLE_ZK_FONT == 1
     uint16_t option = _get_font_option(font, uni_or_gbk);
+
+#if GT_CUSTOM_FONT_ENABLE
+    if(IS_GT_CUSTOM_FONT_OPTION(option)) {
+        gt_custom_font_st* cf = gt_custom_get_font(option);
+        if(cf && cf->get_height) {
+            return cf->get_height(cf, uni_or_gbk);
+        }
+    }
+#endif
+
     uint8_t h = GT_Get_Font_Height(uni_or_gbk, option, font->info.size, font->info.gray);
     return h ? h : font->info.size;
 #else
@@ -1677,6 +1600,16 @@ uint8_t gt_font_get_one_word_dot_width(uint32_t uni_or_gbk, gt_font_st * font)
     uint8_t dot_w = 0;
 #if defined(_GT_GET_FONT_DOT_WIDTH_ENABLE) && (_GT_GET_FONT_DOT_WIDTH_ENABLE == 1) && (GT_CFG_ENABLE_ZK_FONT == 1)
     uint16_t option = _get_font_option(font, uni_or_gbk);
+
+#if GT_CUSTOM_FONT_ENABLE
+    if(IS_GT_CUSTOM_FONT_OPTION(option)) {
+        gt_custom_font_st* cf = gt_custom_get_font(option);
+        if(cf && cf->get_dot_width) {
+            return cf->get_dot_width(cf, uni_or_gbk);
+        }
+    }
+#endif
+
     dot_w = GT_Get_Font_Dot_Width(uni_or_gbk, option, font->info.size, font->info.gray);
 #endif
     return dot_w;

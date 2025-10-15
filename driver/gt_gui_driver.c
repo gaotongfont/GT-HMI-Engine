@@ -1,6 +1,11 @@
 ﻿#include "gt_gui_driver.h"
 #include <string.h>
 
+int GT_Font_Init(void)
+{
+    return 0;
+}
+
 typedef enum _gt_font_charset_s {
     GT_CHARSET_UTF8 = 0,
     GT_CHARSET_GB ,
@@ -31,7 +36,6 @@ unsigned int Shift_JIS_To_JIS0208(unsigned int fontcode)
 {
     return 0;
 }
-
 
 const struct gt_font_func_s gt_get_font_func[] = {
     {.option = 0 , .func.read_dot_font = NULL , .type = 1},

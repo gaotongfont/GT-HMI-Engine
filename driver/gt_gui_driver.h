@@ -12,13 +12,16 @@ extern "C" {
 extern unsigned long r_dat_bat(unsigned long address, unsigned long DataLen, unsigned char* pBuff);
 /*------------------------------------------------------------------  数据地址  -----------------------------------------------------------------*/
 
+//字库初始化
+int GT_Font_Init(void);
+
 typedef enum {
 	FONT_OPTION_MAX_LEN,
 }font_option_et;
 
 typedef struct gt_font_func_s
 {
-    font_option_et option;
+    uint32_t option;
     union
     {
         int (*read_dot_font)(unsigned long , unsigned int , unsigned char*);

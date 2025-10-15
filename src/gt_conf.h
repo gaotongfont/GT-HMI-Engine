@@ -254,6 +254,14 @@ extern "C" {
     #define GT_FONT_FAMILY_OLD_ENABLE   01
 #endif
 
+#ifndef GT_CUSTOM_FONT_ENABLE
+    /**
+     * @brief use custom font
+     *
+     */
+    #define GT_CUSTOM_FONT_ENABLE       01
+#endif
+
 /* default font style and size */
 #define GT_CFG_DEFAULT_FONT_FAMILY          (0)
 #define GT_CFG_DEFAULT_FONT_SIZE            (16)
