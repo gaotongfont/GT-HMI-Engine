@@ -287,7 +287,6 @@ void _gt_disp_refr_reset_areas(void)
 void _gt_disp_refr_append_area(gt_area_st * area)
 {
     gt_disp_st * disp = gt_disp_get_default();
-    gt_disp_st * disp = gt_disp_get_default();
     if (NULL == disp || NULL == area) {
         return;
     }
