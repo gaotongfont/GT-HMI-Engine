@@ -259,7 +259,7 @@ extern "C" {
      * @brief use custom font
      *
      */
-    #define GT_CUSTOM_FONT_ENABLE       01
+    #define GT_CUSTOM_FONT_ENABLE       0
 #endif
 
 /* default font style and size */
