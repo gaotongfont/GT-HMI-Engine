@@ -2059,7 +2059,7 @@ gt_split_line_ret_st gt_font_split_line_numb(gt_font_info_st* info, gt_font_spli
     int32_t idx_step = 0;
     bool is_first_line = true;
     if (0 == len) {
-        return line_ret;
+        goto _clr_res;
     }
 
     uint8_t overlength = 0;
@@ -2107,6 +2107,7 @@ gt_split_line_ret_st gt_font_split_line_numb(gt_font_info_st* info, gt_font_spli
     line_ret.max_w = (line_ret.line_numb > 1) ? sp_line->max_w : (sp_line->max_w - disp_w);
     line_ret.disp_w = disp_w;
 
+_clr_res:
     gt_mem_free(temp_font.res);
     temp_font.res = NULL;
     return line_ret;
