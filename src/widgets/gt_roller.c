@@ -438,6 +438,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_text(gt_obj_st * obj) {
     style->text = gt_label_create(obj);
     gt_label_set_single_line(style->text, false);
     gt_label_set_font_align(style->text, GT_ALIGN_CENTER);
+    gt_label_set_text_by_len(style->text, "", sizeof(""));
     gt_obj_set_focus_disabled(style->text, GT_DISABLED);
     return style->text;
 }
