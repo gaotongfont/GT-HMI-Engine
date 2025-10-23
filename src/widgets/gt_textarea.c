@@ -442,7 +442,9 @@ GT_ATTRIBUTE_RAM_TEXT static void
 _anim_scroll_exec_cb(void * tv, int32_t val) {
     gt_obj_st * obj = (gt_obj_st * )tv;
     _gt_textarea_st * style = (_gt_textarea_st * )tv;
-
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
     if (_is_scroll_to_bottom(obj)) {
         gt_anim_stop(style->scroll_to_newest_anim);
         gt_anim_set_repeat_count(style->scroll_to_newest_anim, 0);
@@ -456,6 +458,9 @@ _anim_scroll_exec_cb(void * tv, int32_t val) {
 GT_ATTRIBUTE_RAM_TEXT static void
 _anim_scroll_ready_cb(struct gt_anim_s * anim) {
     _gt_textarea_st * style = (_gt_textarea_st * )anim->tar;
+    if (false == gt_obj_is_type((gt_obj_st * )style, OBJ_TYPE)) {
+        return;
+    }
     style->scroll_to_newest_anim = NULL;
 }
 
