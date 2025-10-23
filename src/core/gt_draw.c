@@ -1905,11 +1905,11 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
         }
 
         if (dsc->reg.omit_line) {
-            view_width -= width;
+            view_width -= width + space_x;
             if (idx + tmp_font.len >= txt_len) {
                 /** all display string */
                 if (view_width >= 0) {
-                    ret.size_show_limit.x = string_total_width + width;
+                    ret.size_show_limit.x = string_total_width + width + space_x;
                     is_omit_display = false;
                 }
                 else{
@@ -1919,17 +1919,17 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
             else if ( view_width >= omit_info.width) {
                 remark_idx = idx + tmp_font.len;
                 /** Over display string widget's width */
-                ret.size_show_limit.x = string_total_width + width + omit_info.width;
+                ret.size_show_limit.x = string_total_width + width + space_x + omit_info.width;
                 is_omit_display = true;
             } else if (view_width <= 0) {
                 if (tmp_font.len) {
-                    string_total_width += width;
+                    string_total_width += width + space_x;
                 }
                 break;
             }
         }
         if (tmp_font.len) {
-            string_total_width += width;
+            string_total_width += width + space_x;
         }
 #if _GT_FONT_ENABLE_CONVERTOR
         if (_gt_font_is_convertor_language(lan)) {
