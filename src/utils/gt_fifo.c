@@ -141,40 +141,31 @@ bool gt_fifo_push(gt_fifo_st * fifo, uint8_t data)
     if (NULL == fifo) {
         return false;
     }
-    if (fifo->_is_full) {
-        return false;
-    }
-    if (0 == gt_fifo_used(fifo)) {
-        gt_fifo_reset(fifo);
-    }
+    int32_t new_head = fifo->head + 1;
 
     fifo->buffer[fifo->head] = data;
-    fifo->head = (fifo->head + 1) % fifo->size;
 
-    if (fifo->head == fifo->tail) {
+    if (fifo->head < fifo->tail && new_head >= fifo->tail) {
+        fifo->tail = (new_head  + 1) % fifo->size;
         fifo->_is_full = true;
     }
+    fifo->head = new_head % fifo->size;
 
     return true;
 }
 
 int32_t gt_fifo_push_multi(gt_fifo_st * fifo, const uint8_t * data, int32_t length)
 {
-    int32_t avail = gt_fifo_avail(fifo);
-    if (0 == avail) {
+    if (NULL == fifo) {
         return 0;
     }
-    if (avail < length) {
-        length = avail;
-    }
+
     if (0 == length) {
         return 0;
     }
-    if (0 == gt_fifo_used(fifo)) {
-        gt_fifo_reset(fifo);
-    }
 
     int32_t contig_avail = fifo->size - fifo->head;
+    int32_t new_head = fifo->head + length;
 
     if (contig_avail >= length) {
         gt_memcpy(&fifo->buffer[fifo->head], data, length);
@@ -183,11 +174,11 @@ int32_t gt_fifo_push_multi(gt_fifo_st * fifo, const uint8_t * data, int32_t leng
         gt_memcpy(fifo->buffer, data + contig_avail, length - contig_avail);
     }
 
-    fifo->head = (fifo->head + length) % fifo->size;
-
-    if (length == avail) {
+    if (fifo->head < fifo->tail && new_head >= fifo->tail) {
+        fifo->tail = (new_head  + 1) % fifo->size;
         fifo->_is_full = true;
     }
+    fifo->head = new_head % fifo->size;
 
     return length;
 }
