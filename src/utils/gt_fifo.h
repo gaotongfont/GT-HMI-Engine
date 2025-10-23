@@ -1,7 +1,7 @@
 /**
  * @file gt_fifo.h
  * @author Feyoung
- * @brief
+ * @brief when fifo is full, new data will cover the oldest data
  * @version 0.1
  * @date 2025-07-18
  * @copyright Copyright (c) 2014-present, Company Genitop. Co., Ltd.
@@ -78,8 +78,24 @@ bool gt_fifo_is_empty(gt_fifo_st * fifo);
 
 void gt_fifo_reset(gt_fifo_st * fifo);
 
+/**
+ * @brief when fifo is full, new data will cover the oldest data
+ *
+ * @param fifo
+ * @param data
+ * @return true
+ * @return false
+ */
 bool gt_fifo_push(gt_fifo_st * fifo, uint8_t data);
 
+/**
+ * @brief when fifo is full, new data will cover the oldest data
+ *
+ * @param fifo
+ * @param data
+ * @param length
+ * @return int32_t
+ */
 int32_t gt_fifo_push_multi(gt_fifo_st * fifo, const uint8_t * data, int32_t length);
 
 bool gt_fifo_pop(gt_fifo_st * fifo, uint8_t * data);
