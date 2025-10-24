@@ -256,8 +256,10 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
 err_lb:
     if (png_data) {
         gt_mem_extern_free(png_data);
+        png_data = NULL;
     }
     gt_fs_close(fp);
+    fp = NULL;
     return ret;
 }
 
@@ -275,7 +277,7 @@ static gt_res_t _gt_png_close(struct _gt_img_dsc_s * dsc)
         gt_mem_extern_free(dsc->img);
         dsc->img = NULL;
     }
-    if( dsc->alpha ){
+    if (dsc->alpha) {
         gt_mem_extern_free(dsc->alpha);
         dsc->alpha = NULL;
     }
@@ -384,7 +386,52 @@ void gt_png_init(void)
     gt_img_decoder_register(decoder);
 }
 
+gt_png_raw_st gt_png_decode(gt_fs_file_st const * const png)
+{
+    uint32_t len = 0;
+    gt_size_t ret = 0;
+    gt_png_raw_st ret_raw = {0};
+    if (NULL == png) {
+        return ret_raw;
+    }
+    if (NULL == png->file_data || 0 == png->size) {
+        return ret_raw;
+    }
+    ret = lodepng_decode32((uint8_t ** )&ret_raw.buffer, (uint32_t * )&ret_raw.width, (uint32_t * )&ret_raw.height, png->file_data, png->size);
+    if (ret) {
+        goto fail_lb;
+    }
+    len = ret_raw.width * ret_raw.height;
+    ret_raw.alpha = gt_mem_extern_malloc(len);
+    if (NULL == ret_raw.alpha) {
+        goto fail_lb;
+    }
+    _gt_png_color_convert_depth((uint8_t * )ret_raw.buffer, (uint8_t * )ret_raw.alpha, len);
 
+    return ret_raw;
+
+fail_lb:
+    gt_png_free(&ret_raw);
+    return ret_raw;
+}
+
+gt_res_t gt_png_free(gt_png_raw_st * png_raw)
+{
+    if (NULL == png_raw) {
+        return GT_RES_INV;
+    }
+    if (png_raw->alpha) {
+        gt_mem_extern_free(png_raw->alpha);
+        png_raw->alpha = NULL;
+    }
+    if (png_raw->buffer) {
+        gt_mem_extern_free(png_raw->buffer);
+        png_raw->buffer = NULL;
+    }
+    png_raw->width = 0;
+    png_raw->height = 0;
+    return GT_RES_OK;
+}
 
 
 #endif   /* GT_USE_PNG */

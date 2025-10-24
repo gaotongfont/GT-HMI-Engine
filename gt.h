@@ -62,6 +62,7 @@ extern "C" {
 /* draw */
 #include "src/extra/draw/gt_draw_blend.h"
 #include "src/extra/jpeg/gt_sjpg.h"
+#include "src/extra/png/gt_png.h"
 
 /* other */
 #include "src/others/gt_types.h"

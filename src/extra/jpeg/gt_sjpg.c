@@ -559,7 +559,7 @@ void gt_sjpg_init(void)
     gt_img_decoder_register(decoder);
 }
 
-gt_jpeg_raw_st gt_jpeg_decode(gt_jpeg_st const * const jpeg)
+gt_jpeg_raw_st gt_jpeg_decode(gt_fs_file_st const * const jpeg)
 {
     gt_jpeg_raw_st ret_jpeg = {0};
     if (NULL == jpeg || NULL == jpeg->file_data || 0 == jpeg->size) {

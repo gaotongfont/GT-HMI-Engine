@@ -25,6 +25,30 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+typedef void * ( * malloc_cb_t)(size_t size);
+
+typedef void ( * free_cb_t)(void * ptr);
+
+typedef struct gt_fs_file_mem_cb_s {
+    /**
+     * @brief custom malloc function, otherwise use @ref gt_mem_extern_malloc()
+     */
+    malloc_cb_t malloc_cb;
+    /**
+     * @brief custom free function, otherwise use @ref gt_mem_extern_free()
+     */
+    free_cb_t free_cb;
+}gt_fs_file_mem_cb_st;
+
+typedef struct gt_fs_file_s {
+    char const * file_data;
+    uint32_t size;
+
+    /**
+     * @brief Using custom memory function, must give pair of func.
+     */
+    gt_fs_file_mem_cb_st mem_ctrl;
+}gt_fs_file_st;
 
 
 
