@@ -20,6 +20,7 @@ extern "C" {
 #include "../../core/gt_fs.h"
 #include "../../others/gt_types.h"
 #include "../../others/gt_color.h"
+#include "../../core/gt_img_decoder.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -27,17 +28,7 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
-typedef struct gt_jpeg_raw_s {
-    /**
-     * only rgb pixel data, length = width * height
-     * [WARN: Free must by gt_jpeg_free()]
-     */
-    gt_color_t * buffer;
-    uint32_t width;
-    uint32_t height;
 
-    gt_fs_file_mem_cb_st mem_ctrl;
-}gt_jpeg_raw_st;
 
 
 /* macros ---------------------------------------------------------------*/
@@ -59,11 +50,10 @@ void gt_sjpg_init(void);
  *      [WARN: Only adjust rgb565 color depth now]
  *
  * @param jpeg
- * @return gt_jpeg_raw_st [WARN] Free must used @ref gt_jpeg_free()
+ * @return gt_img_raw_st [WARN] Free must used @ref gt_img_raw_free()
  */
-gt_jpeg_raw_st gt_jpeg_decode(gt_fs_file_st const * const jpeg);
+gt_img_raw_st gt_jpeg_decode(gt_fs_file_st const * const jpeg);
 
-gt_res_t gt_jpeg_free(gt_jpeg_raw_st * jpeg_raw);
 
 #endif /** GT_USE_SJPG */
 

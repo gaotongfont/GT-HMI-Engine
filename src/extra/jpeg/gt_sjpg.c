@@ -559,9 +559,9 @@ void gt_sjpg_init(void)
     gt_img_decoder_register(decoder);
 }
 
-gt_jpeg_raw_st gt_jpeg_decode(gt_fs_file_st const * const jpeg)
+gt_img_raw_st gt_jpeg_decode(gt_fs_file_st const * const jpeg)
 {
-    gt_jpeg_raw_st ret_jpeg = {0};
+    gt_img_raw_st ret_jpeg = {0};
     if (NULL == jpeg || NULL == jpeg->file_data || 0 == jpeg->size) {
         return ret_jpeg;
     }
@@ -658,21 +658,6 @@ free_lb:
     return ret_jpeg;
 }
 
-gt_res_t gt_jpeg_free(gt_jpeg_raw_st * jpeg_raw)
-{
-    if (NULL == jpeg_raw) {
-        return GT_RES_INV;
-    }
-    if (jpeg_raw->buffer) {
-        if (jpeg_raw->mem_ctrl.free_cb) {
-            jpeg_raw->mem_ctrl.free_cb(jpeg_raw->buffer);
-        } else {
-            gt_mem_extern_free(jpeg_raw->buffer);
-        }
-    }
-    gt_memset(jpeg_raw, 0, sizeof(gt_jpeg_raw_st));
-    return GT_RES_OK;
-}
 
 #endif /** GT_USE_SJPG */
 /* end ------------------------------------------------------------------*/

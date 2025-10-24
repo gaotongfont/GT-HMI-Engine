@@ -12,7 +12,6 @@
 #include "gt_img_decoder.h"
 #include "../others/gt_gc.h"
 #include "../others/gt_log.h"
-#include "./gt_fs.h"
 #include "./gt_mem.h"
 
 /* private define -------------------------------------------------------*/
@@ -578,6 +577,29 @@ void gt_img_dsc_raw_set(_gt_img_dsc_st * dsc_tar, gt_color_img_raw_st const * co
     } else {
         dsc_tar->header.color_format = GT_IMG_CF_TRUE_COLOR;
     }
+}
+
+gt_res_t gt_img_raw_free(gt_img_raw_st * img_raw)
+{
+    if (NULL == img_raw) {
+        return GT_RES_INV;
+    }
+    if (img_raw->alpha) {
+        if (img_raw->mem_ctrl.free_cb) {
+            img_raw->mem_ctrl.free_cb(img_raw->alpha);
+        } else {
+            gt_mem_extern_free(img_raw->alpha);
+        }
+    }
+    if (img_raw->buffer) {
+        if (img_raw->mem_ctrl.free_cb) {
+            img_raw->mem_ctrl.free_cb(img_raw->buffer);
+        } else {
+            gt_mem_extern_free(img_raw->buffer);
+        }
+    }
+    gt_memset(img_raw, 0, sizeof(gt_img_raw_st));
+    return GT_RES_OK;
 }
 
 /* end ------------------------------------------------------------------*/

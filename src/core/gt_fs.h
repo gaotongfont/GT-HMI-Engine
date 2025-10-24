@@ -271,6 +271,7 @@ void gt_fs_close(gt_fs_fp_st * fp);
 char const * const gt_fs_get_name_by_index(gt_fs_type_et file_type, uint16_t index_of_list);
 #endif
 
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

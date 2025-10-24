@@ -18,6 +18,7 @@ extern "C" {
 
 #if GT_USE_PNG
 #include "../../core/gt_fs.h"
+#include "../../core/gt_img_decoder.h"
 #include "../../others/gt_color.h"
 
 /* define ---------------------------------------------------------------*/
@@ -25,17 +26,6 @@ extern "C" {
 // #define LODEPNG_NO_COMPILE_ERROR_TEXT
 
 /* typedef --------------------------------------------------------------*/
-typedef struct gt_png_raw_s {
-    /**
-     * only rgb pixel data, length = width * height
-     * [WARN: Free must by gt_png_free()]
-     */
-    gt_color_t * buffer;
-    gt_opa_t * alpha;
-
-    uint32_t width;
-    uint32_t height;
-}gt_png_raw_st;
 
 
 
@@ -59,11 +49,10 @@ void gt_png_init(void);
  *
  * @param png
  *         png.mem_ctrl unused
- * @return gt_png_raw_st [WARN] Free must used @ref gt_png_free()
+ * @return gt_png_raw_st [WARN] Free must used @ref gt_img_raw_free()
  */
-gt_png_raw_st gt_png_decode(gt_fs_file_st const * const png);
+gt_img_raw_st gt_png_decode(gt_fs_file_st const * const png);
 
-gt_res_t gt_png_free(gt_png_raw_st * png_raw);
 
 #endif   /* GT_USE_PNG */
 

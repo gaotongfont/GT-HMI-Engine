@@ -16,6 +16,7 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "../gt_conf.h"
+#include "./gt_fs.h"
 #include "../others/gt_list.h"
 #include "../others/gt_types.h"
 #include "../hal/gt_hal_fs.h"
@@ -27,6 +28,31 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+/**
+ * @brief Must free by @ref gt_img_raw_free()
+ *
+ */
+typedef struct gt_img_raw_s {
+    /**
+     * only rgb pixel data, length = width * height
+     * [WARN: Free must by gt_img_raw_free()]
+     */
+    gt_color_t * buffer;
+    /**
+     * @brief png maybe need it
+     * [WARN: Free must by gt_img_raw_free()]
+     */
+    gt_opa_t * alpha;
+
+    uint32_t width;
+    uint32_t height;
+
+    /**
+     * @brief Using custom memory function, must give pair of func.
+     */
+    gt_fs_file_mem_cb_st mem_ctrl;
+}gt_img_raw_st;
+
 /**
  * @brief Support extra image decoder type
  */
@@ -372,6 +398,14 @@ gt_res_t gt_img_decoder_custom_size_addr_close(_gt_img_dsc_st * dsc);
 
 void gt_img_dsc_raw_init(_gt_img_dsc_st * dsc_tar);
 void gt_img_dsc_raw_set(_gt_img_dsc_st * dsc_tar, gt_color_img_raw_st const * const raw);
+
+/**
+ * @brief free raw data
+ *
+ * @param img_raw
+ * @return
+ */
+gt_res_t gt_img_raw_free(gt_img_raw_st * img_raw);
 
 #ifdef __cplusplus
 } /*extern "C"*/
