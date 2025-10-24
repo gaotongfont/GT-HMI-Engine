@@ -15,6 +15,7 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "stdint.h"
+#include "stddef.h"
 #include "../hal/gt_hal_fs.h"
 #include "../hal/gt_hal_vf.h"
 #include "../hal/gt_hal_src.h"
