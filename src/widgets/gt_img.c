@@ -270,6 +270,10 @@ void gt_img_set_raw_data(gt_obj_st * img, gt_color_img_raw_st * raw)
     }
     gt_img_dsc_raw_set(&style->raw, raw);
 
+    if (NULL == raw->file_raw_p && raw->buffer) {
+        gt_obj_set_size(img, style->raw.header.w, style->raw.header.h);
+    }
+
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->fh);
 #endif
