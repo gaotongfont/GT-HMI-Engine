@@ -1110,6 +1110,8 @@ gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const * const param) {
             if (param->force_create_reload) {
                 if (false == is_last_page && ret.scr_old != same_scr->current_scr) {
                     gt_obj_destroy_immediately(same_scr->current_scr);
+                } else {
+                    _gt_obj_class_destroy_children(same_scr->current_scr);
                 }
                 new_item_p->current_scr = NULL;
             } else {
@@ -1123,6 +1125,7 @@ gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const * const param) {
             if (home_id == prev->current_scr_id && is_home_alive) {
                 ret.del_prev_scr = false;
             } else if (is_last_page && param->force_create_reload) {
+                _gt_obj_class_destroy_children(prev->current_scr);
                 ret.del_prev_scr = true;
             }
             if (ret.del_prev_scr) { prev->current_scr = NULL; }
