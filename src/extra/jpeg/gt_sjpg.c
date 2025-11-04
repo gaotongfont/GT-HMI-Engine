@@ -611,9 +611,10 @@ gt_img_raw_st gt_jpeg_decode(gt_fs_file_st const * const jpeg)
     sjpg->sjpeg_y_res = sjpg->jdec_hdc->height;
     sjpg->sjpeg_total_frames = 1;
     sjpg->sjpeg_single_frame_height = sjpg->jdec_hdc->height;
-    sjpg->frame_base_offset = gt_mem_extern_malloc(sizeof(uint8_t * ) * sjpg->sjpeg_total_frames);
+    len = sizeof(uint8_t * ) * sjpg->sjpeg_total_frames;
+    sjpg->frame_base_offset = gt_mem_extern_malloc(len);
     if (NULL == sjpg->frame_base_offset) {
-        GT_LOGE("JPEG", "frame_base_offset malloc fail, len: %d", sizeof(uint8_t * ) * sjpg->sjpeg_total_frames);
+        GT_LOGE("JPEG", "frame_base_offset malloc fail, len: %d", len);
         goto sjpg_lb;
     }
     sjpg->frame_base_offset[0] = 0;     /** img_frame_start_offset */
