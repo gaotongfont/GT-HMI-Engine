@@ -613,6 +613,7 @@ gt_img_raw_st gt_jpeg_decode(gt_fs_file_st const * const jpeg)
     sjpg->sjpeg_single_frame_height = sjpg->jdec_hdc->height;
     sjpg->frame_base_offset = gt_mem_extern_malloc(sizeof(uint8_t * ) * sjpg->sjpeg_total_frames);
     if (NULL == sjpg->frame_base_offset) {
+        GT_LOGE("JPEG", "frame_base_offset malloc fail, len: %d", sizeof(uint8_t * ) * sjpg->sjpeg_total_frames);
         goto sjpg_lb;
     }
     sjpg->frame_base_offset[0] = 0;     /** img_frame_start_offset */
@@ -626,6 +627,7 @@ gt_img_raw_st gt_jpeg_decode(gt_fs_file_st const * const jpeg)
         sjpg->frame_cache = gt_mem_extern_malloc(len);
     }
     if (NULL == sjpg->frame_cache) {
+        GT_LOGE("JPEG", "frame_cache malloc fail, len: %d", len);
         goto sjpg_lb;
     }
     sjpg->dev.img_cache_x_res = sjpg->sjpeg_x_res;
@@ -634,6 +636,7 @@ gt_img_raw_st gt_jpeg_decode(gt_fs_file_st const * const jpeg)
     /** ------------------------------------------ */
     j_ret = jd_decomp(sjpg->jdec_hdc, output_func, 0);
     if (JDR_OK != j_ret) {
+        GT_LOGE("JPEG", "jd_decomp fail");
         goto sjpg_lb;
     }
     ret_jpeg.buffer = (gt_color_t * )sjpg->frame_cache;
