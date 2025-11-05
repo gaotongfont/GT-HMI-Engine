@@ -862,6 +862,14 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_label(gt_obj_st * listview
     return lab;
 }
 
+static inline GT_ATTRIBUTE_RAM_TEXT gt_obj_st *
+_set_item_label_by_len(gt_obj_st * listview, gt_obj_st * lab,
+                            char const * text, uint16_t len, gt_font_info_st * font_p) {
+    _set_label_prop(listview, lab, font_p);
+    gt_label_set_text_by_len(lab, text, len);
+    return lab;
+}
+
 /**
  * @brief Create a label object
  *
@@ -871,14 +879,10 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_label(gt_obj_st * listview
  * @param len encoding byte count, such as: strlen(text).
  * @return gt_obj_st* label object
  */
-static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_label_by_len(gt_obj_st * listview, gt_obj_st * obj,
-                                                char const * text, uint16_t len, gt_font_info_st * font_p) {
-    gt_obj_st * lab = gt_label_create(obj);
-
-    _set_label_prop(listview, lab, font_p);
-    gt_label_set_text_by_len(lab, text, len);
-
-    return lab;
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st *
+_create_item_label_by_len(gt_obj_st * listview, gt_obj_st * obj,
+                            char const * text, uint16_t len, gt_font_info_st * font_p) {
+    return _set_item_label_by_len(listview, gt_label_create(obj), text, len, font_p);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _get_obj_by_item(gt_obj_st * item, gt_obj_type_et type) {
@@ -1263,13 +1267,13 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
             }
         }
     } else {
+#if GT_LISTVIEW_CUSTOM_FONT_STYLE
+        font_p = item->font_info_p;
+#endif
         if (NULL == element) {
-        #if GT_LISTVIEW_CUSTOM_FONT_STYLE
-            font_p = item->font_info_p;
-        #endif
             element = _create_item_label_by_len(listview, obj, item->src, item->src_len, font_p);
         } else {
-            gt_label_set_text_by_len(element, item->src, item->src_len);
+            _set_item_label_by_len(listview, element, item->src, item->src_len, font_p);
         }
     }
     element->area = item->area;
