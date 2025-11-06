@@ -799,44 +799,57 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_exec_cb(void * indev, int3
 }
 
 static inline void GT_ATTRIBUTE_RAM_TEXT
-_indev_send_object_prop_event(struct _point * point_p) {
-    gt_event_type_et e_type = GT_EVENT_TYPE_NONE;
-    _indev_obj_props_handler_st props_hdl[] = {
-        { point_p->obj_scroll->finger_unfollow, _get_scroll_direct_event_type_by },
-        { point_p->obj_scroll->swipe_dir,       _get_swipe_direct_event_type_by }
-    };
-
-    for (gt_size_t i = 0, cnt = sizeof(props_hdl) / sizeof(_indev_obj_props_handler_st); i < cnt; ++i) {
-        if (0 == props_hdl[i].val) {
-            continue;
-        }
-        e_type = props_hdl[i].get_direct_event_type_cb((gt_dir_et)point_p->gesture);
-        if (GT_EVENT_TYPE_NONE == e_type) {
-            continue;
-        }
-        gt_event_send(point_p->obj_scroll, e_type, NULL);
+_indev_send_props_swipe_event(struct _point * point_p,
+    _indev_obj_props_handler_st const * const props_hdl) {
+    if (0 == props_hdl->val) {
+        return;
     }
+    gt_event_type_et e_type = props_hdl->get_direct_event_type_cb((gt_dir_et)point_p->gesture);
+    if (GT_EVENT_TYPE_NONE == e_type) {
+        return;
+    }
+    gt_event_send(point_p->obj_scroll, e_type, NULL);
+}
+
+static void GT_ATTRIBUTE_RAM_TEXT
+_indev_send_finger_unfollow_event(struct _point * point_p) {
+    _indev_obj_props_handler_st prop = {
+        .val = point_p->obj_scroll->finger_unfollow,
+        .get_direct_event_type_cb = _get_scroll_direct_event_type_by,
+    };
+    _indev_send_props_swipe_event(point_p, &prop);
+}
+
+static void GT_ATTRIBUTE_RAM_TEXT
+_indev_send_swipe_event(struct _point * point_p) {
+    _indev_obj_props_handler_st prop = {
+    .val = point_p->obj_scroll->swipe_dir,
+    .get_direct_event_type_cb = _get_swipe_direct_event_type_by,
+    };
+    _indev_send_props_swipe_event(point_p, &prop);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_ready_cb(struct gt_anim_s * anim) {
     gt_indev_st * dev_p = (gt_indev_st * )anim->tar;
     struct _point * point_p = &dev_p->data.point;
+    gt_obj_st * scroll_obj = point_p->obj_scroll;
     bool is_scroll_throw = _indev_is_scroll_throw(dev_p);
 
     _indev_scroll_throw_reset(dev_p);
-    if (false == gt_obj_check_scr(point_p->obj_scroll)) {
+    if (false == gt_obj_check_scr(scroll_obj)) {
         return ;
     }
     if (false == is_scroll_throw) {
-        _indev_send_object_prop_event(point_p);
+        _indev_send_finger_unfollow_event(point_p);
     }
+    _indev_send_swipe_event(point_p);
     if (_is_scroll_vertical((gt_dir_et)point_p->gesture)) {
-        if (GT_SCROLL_SNAP_NONE == gt_obj_get_scroll_snap_y(point_p->obj_scroll)) {
-            gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
+        if (GT_SCROLL_SNAP_NONE == gt_obj_get_scroll_snap_y(scroll_obj)) {
+            gt_event_send(scroll_obj, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
         }
     }else {
-        if (GT_SCROLL_SNAP_NONE == gt_obj_get_scroll_snap_x(point_p->obj_scroll)) {
-            gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
+        if (GT_SCROLL_SNAP_NONE == gt_obj_get_scroll_snap_x(scroll_obj)) {
+            gt_event_send(scroll_obj, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
         }
     }
 }
