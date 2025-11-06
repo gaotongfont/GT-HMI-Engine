@@ -1164,7 +1164,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_pressed_handle(gt_indev_st * indev) {
     point_p->obj_act = _search_active_obj_from_all_layers(&point_p->newly, false);
 
 #if GT_INDEV_POINT_LOG
-    GT_LOG_A(GT_LOG_TAG_TP, "press %p %p (%d, %d) diff: (%d, %d)", point_p->obj_act, point_p->obj_target,
+    GT_LOG_A(GT_LOG_TAG_TP, "press %p(%d) %p(%d) (%d, %d) diff: (%d, %d)",
+                point_p->obj_act, gt_obj_class_get_type(point_p->obj_act),
+                point_p->obj_target, gt_obj_class_get_type(point_p->obj_target),
                 point_p->newly.x, point_p->newly.y,
                 point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
 #endif

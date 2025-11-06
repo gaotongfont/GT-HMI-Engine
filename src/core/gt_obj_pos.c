@@ -86,6 +86,9 @@ static GT_ATTRIBUTE_RAM_TEXT _check_clicked_state_em gt_obj_check_is_clicked( gt
     if (gt_obj_get_virtual(obj)) {
         return _CHECK_CLICKED_STATE_CONTINUE;
     }
+    if (gt_obj_is_untouchability(obj)) {
+        return _CHECK_CLICKED_STATE_CONTINUE;
+    }
     return _CHECK_CLICKED_STATE_OK;
 }
 
