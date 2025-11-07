@@ -27,7 +27,7 @@
 #define MY_CLASS    &_gt_view_pager_class
 
 /** Stores the bit-width of the maximum number of pages */
-#define _VIEW_PAGER_COUNT_BIT_WIDTH     4
+#define _VIEW_PAGER_COUNT_BIT_WIDTH     7
 
 /** The maximum number of pages to store */
 #define _MAX_VIEW_PAGER_COUNT           (1 << _VIEW_PAGER_COUNT_BIT_WIDTH)
@@ -72,7 +72,7 @@ struct _reg_s {
     uint16_t count : _VIEW_PAGER_COUNT_BIT_WIDTH;
     uint16_t index : _VIEW_PAGER_COUNT_BIT_WIDTH;
     uint16_t glass : 1;     /** display background glass */
-    uint16_t reserved : 7;
+    uint16_t reserved : 1;
 };
 
 typedef struct _gt_view_pager_s {
