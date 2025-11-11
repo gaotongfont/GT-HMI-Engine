@@ -123,6 +123,13 @@ extern "C" {
 #endif
 
 
+#ifndef GT_ATTRIBUTE_SRAM_TEXT
+    #define GT_ATTRIBUTE_SRAM_TEXT
+#endif
+
+#ifndef GT_ATTRIBUTE_SRAM_DATA
+    #define GT_ATTRIBUTE_SRAM_DATA
+#endif
 
 /* Compiler prefix for a big array declaration in RAM */
 #ifndef GT_ATTRIBUTE_LARGE_RAM_ARRAY
