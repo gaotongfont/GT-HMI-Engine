@@ -72,8 +72,15 @@ gt_size_t gt_cross_layout_get_ver_index(gt_obj_st* layout);
 gt_obj_st* gt_cross_layout_get_ver_select_obj(gt_obj_st* layout);
 void gt_cross_layout_set_ver_anim_en(gt_obj_st* layout, bool en);
 void gt_cross_layout_set_ver_bar_en(gt_obj_st* layout, bool en);
-
+void gt_cross_layout_set_hor_bar_en(gt_obj_st* layout, bool en);
 void gt_cross_layout_set_touch_mode(gt_obj_st* layout, gt_cross_touch_mode_et mode);
+
+void gt_cross_layout_set_ver_adsorb_en(gt_obj_st* layout, bool en);
+void gt_cross_layout_set_hor_adsorb_en(gt_obj_st* layout, bool en);
+
+void gt_cross_layout_set_ver_bar_size(gt_obj_st* layout, uint8_t w, uint8_t h);
+void gt_cross_layout_set_hor_bar_size(gt_obj_st* layout, uint8_t w, uint8_t h);
+
 
 #endif //!GT_CFG_ENABLE_CROSS_LAYOUT
 //
