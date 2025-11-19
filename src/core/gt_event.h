@@ -216,6 +216,17 @@ void gt_obj_remove_all_event_cb_immediately(struct gt_obj_s * obj);
 gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * parms);
 
 /**
+ * @brief
+ *
+ * @param parent
+ * @param event
+ * @param parms
+ * @param delay_ms
+ * @return gt_res_t
+ */
+gt_res_t gt_event_send_delay(struct gt_obj_s * parent, gt_event_type_et event, void * parms, int32_t delay_ms);
+
+/**
  * @brief Send an event to the child object, excluding the parent object.
  *
  * @param parent object

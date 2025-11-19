@@ -27,6 +27,13 @@
 
 
 /* private typedef ------------------------------------------------------*/
+/**
+ * @brief delay send event
+ */
+typedef struct {
+    gt_event_type_et event;
+    void * parms;
+}_event_delay_param_st;
 
 
 
@@ -206,6 +213,15 @@ _common_add_event_node(gt_obj_event_attr_st ** event_root_p) {
     return new_event;
 }
 
+static void GT_ATTRIBUTE_RAM_TEXT
+_event_delay_send_ready_cb(gt_anim_st * anim) {
+    _event_delay_param_st * p = (_event_delay_param_st * )anim->data;
+    if (NULL == p) {
+        return;
+    }
+    gt_event_send(anim->tar, p->event, p->parms);
+}
+
 /* global functions / API interface -------------------------------------*/
 #if GT_USE_SCREEN_ANIM
 void gt_event_set_enabled(bool enabled)
@@ -338,6 +354,22 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
         return GT_RES_INV;
     }
     return _common_event_send(&e);
+}
+
+gt_res_t gt_event_send_delay(struct gt_obj_s * parent, gt_event_type_et event, void * parms, int32_t delay_ms)
+{
+    gt_anim_st an = {0};
+    _event_delay_param_st param = {
+        .event = event,
+        .parms = parms,
+    };
+    gt_anim_init(&an);
+    gt_anim_set_target(&an, parent);
+    gt_anim_set_data(&an, &param, sizeof(_event_delay_param_st));
+    gt_anim_set_time(&an, 0);
+    gt_anim_set_time_delay_start(&an, delay_ms);
+    gt_anim_set_ready_cb(&an, _event_delay_send_ready_cb);
+    gt_anim_start(&an);
 }
 
 gt_res_t gt_event_send_to_childs(struct gt_obj_s * parent, gt_event_type_et event, void * parms)
