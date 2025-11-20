@@ -425,7 +425,7 @@ void gt_input_set_value(gt_obj_st * input, const char * fmt, ...)
     uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(buffer, sizeof(buffer), fmt, args) + 1);
     va_end(args);
 
-    if (style->max_char > 0 && size > style->max_char) {
+    if (style->max_char > 0 && (size - 1) > style->max_char) {
         return ;
     }
 
