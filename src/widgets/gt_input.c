@@ -36,6 +36,8 @@ typedef struct _gt_input_s {
     char * value;
     char * placeholder;
 
+    uint32_t max_char;        /** max char can input */
+
     uint16_t pos_selected_start;
     uint16_t pos_selected_end;
     uint16_t pos_cursor;
@@ -422,6 +424,11 @@ void gt_input_set_value(gt_obj_st * input, const char * fmt, ...)
     va_copy(args2, args);
     uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(buffer, sizeof(buffer), fmt, args) + 1);
     va_end(args);
+
+    if (style->max_char > 0 && size > style->max_char) {
+        return ;
+    }
+
     if (!size) {
         goto free_lb;
     }
@@ -453,6 +460,11 @@ void gt_input_set_value_by_len(gt_obj_st * input, const char * str, uint16_t len
         return ;
     }
     _gt_input_st * style = (_gt_input_st * )input;
+
+    if (style->max_char > 0 && len > style->max_char) {
+        return ;
+    }
+
     if (NULL == style->value) {
         style->value = gt_mem_malloc(len + 1);
     } else if (len != strlen(style->value)) {
@@ -508,6 +520,12 @@ void gt_input_append_value(gt_obj_st * input, char * value)
     }
     _gt_input_st * style = (_gt_input_st * )input;
     uint16_t len = value == NULL ? 0 : strlen(value);
+
+    uint32_t str_len = style->value ? strlen(style->value) : 0;
+    if (style->max_char > 0 && str_len + len > style->max_char) {
+        return ;
+    }
+
     if (!style->value) {
         style->value = gt_mem_malloc(len + 1);
         GT_CHECK_BACK(style->value);
@@ -528,6 +546,13 @@ void gt_input_append_char(gt_obj_st * input, char chr)
     if (false == gt_obj_is_type(input, OBJ_TYPE)) {
         return ;
     }
+
+    _gt_input_st * style = (_gt_input_st * )input;
+    uint32_t str_len = style->value ? strlen(style->value) : 0;
+    if (style->max_char > 0 && str_len + 1 > style->max_char) {
+        return ;
+    }
+
     char tmp[2];
     tmp[0] = chr;
     tmp[1] = '\0';
@@ -549,6 +574,12 @@ void gt_input_append_value_encoding(gt_obj_st * input, char * value, uint8_t enc
 #if GT_CFG_ENABLE_ZK_FONT == 1
     uint16_t len = value == NULL ? 0 : strlen(value);
     uint16_t idx = 0;
+
+    uint32_t str_len = style->value ? strlen(style->value) : 0;
+    if (style->max_char > 0 && str_len + 1 > style->max_char) {
+        return ;
+    }
+
     char *tmp_str = gt_mem_malloc(len + 1);
     GT_CHECK_BACK(tmp_str);
 
@@ -813,6 +844,15 @@ void gt_input_hooking_keypad(gt_obj_st * input, gt_obj_st * keypad)
     }
     _gt_input_st * style = (_gt_input_st * )input;
     style->hooking_kp = keypad;
+}
+
+void gt_input_set_max_char(gt_obj_st * input, uint32_t max_char)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    style->max_char = max_char;
 }
 
 #endif  /** GT_CFG_ENABLE_INPUT */

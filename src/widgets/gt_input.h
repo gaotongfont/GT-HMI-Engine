@@ -136,6 +136,15 @@ void gt_input_set_space(gt_obj_st * input, uint8_t space_x, uint8_t space_y);
 
 void gt_input_hooking_keypad(gt_obj_st * input, gt_obj_st * keypad);
 
+/**
+ * @brief set max char number, if the input content exceed max_char, then ignore input
+ *
+ * @param input
+ * @param max_char
+ */
+void gt_input_set_max_char(gt_obj_st * input, uint32_t max_char);
+
+
 #endif  /** GT_CFG_ENABLE_INPUT */
 
 #ifdef __cplusplus
