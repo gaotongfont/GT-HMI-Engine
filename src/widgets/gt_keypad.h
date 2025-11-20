@@ -28,6 +28,8 @@ extern "C" {
 #define _DEF_STYLE_OTHER_11x3
 
 /* typedef --------------------------------------------------------------*/
+typedef void (*gt_keypad_enter_cb_t)(void);
+
 typedef enum {
     GT_KEYPAD_TYPE_NONE = 0,
     GT_KEYPAD_TYPE_LOWER,
@@ -155,6 +157,9 @@ void gt_keypad_set_ctrl_key_font_color(gt_obj_st * keypad, gt_color_t color);
 
 void gt_keypad_set_py_input_method(gt_obj_st * keypad, gt_py_input_method_st* py_input_method);
 gt_py_input_method_st* gt_keypad_get_py_input_method(gt_obj_st * keypad);
+
+//
+void gt_keypad_set_enter_callback(gt_obj_st * keypad, gt_keypad_enter_cb_t cb);
 
 #ifdef __cplusplus
 } /*extern "C"*/

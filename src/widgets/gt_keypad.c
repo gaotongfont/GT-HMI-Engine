@@ -41,6 +41,8 @@ typedef struct _gt_keypad_s {
 
     gt_keypad_map_st * map_list;
 
+    gt_keypad_enter_cb_t enter_cb;
+
     gt_color_t border_color;
     gt_color_t color_ctrl;
 
@@ -221,7 +223,15 @@ static void _def_26_key_push_btn_kv_handler( gt_obj_st * obj,  gt_obj_st * input
         gt_input_del_value(input);
     }
     else if (0 == strcmp(kv, GT_SYMBOL_NEW_LINE)) {
-        gt_input_append_value(input, "\n");
+        gt_obj_st* parent = gt_obj_get_parent(obj);
+        if (false == gt_obj_is_type(parent, OBJ_TYPE)) {
+            return ;
+        }
+        _gt_keypad_st* kp = (_gt_keypad_st*)parent;
+        if(kp->enter_cb) {
+            kp->enter_cb();
+        }
+        // gt_input_append_value(input, "\n");
     }
     else if (0 == strcmp(kv, GT_SYMBOL_UPPER_CASE) || 0 == strcmp(kv, GT_SYMBOL_EN)) {
         gt_keypad_set_type(keypad_obj, GT_KEYPAD_TYPE_LOWER);
@@ -358,7 +368,15 @@ static bool _def_number_show_special_btn_handler(gt_obj_st* obj, const char* con
 
 static void _def_number_push_btn_kv_handler( gt_obj_st * obj,  gt_obj_st * input, const char* const kv) {
     if (0 == strcmp(kv, GT_SYMBOL_NEW_LINE)) {
-        gt_input_append_value(input, "\n");
+        // gt_input_append_value(input, "\n");
+        gt_obj_st* parent = gt_obj_get_parent(obj);
+        if (false == gt_obj_is_type(parent, OBJ_TYPE)) {
+            return ;
+        }
+        _gt_keypad_st* kp = (_gt_keypad_st*)parent;
+        if(kp->enter_cb) {
+            kp->enter_cb();
+        }
     }
     else if(0 == strcmp(kv, GT_SYMBOL_BACKSPACE)) {
         gt_input_del_value(input);
@@ -1051,6 +1069,15 @@ gt_py_input_method_st* gt_keypad_get_py_input_method(gt_obj_st * keypad)
     }
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     return gt_btnmap_get_py_input_method(style->btnmap);
+}
+
+void gt_keypad_set_enter_callback(gt_obj_st * keypad, gt_keypad_enter_cb_t cb)
+{
+    if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
+        return;
+    }
+    _gt_keypad_st * style = (_gt_keypad_st * )keypad;
+    style->enter_cb = cb;
 }
 
 #endif  /** GT_CFG_ENABLE_KEYPAD */
