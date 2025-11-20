@@ -175,6 +175,7 @@ typedef enum gt_obj_type_e {
     GT_TYPE_SPECTRUM_LINE = 43,     ///<< spectrum line
     GT_TYPE_TOAST       = 44,       ///<< Toast
     GT_TYPE_INDEV_EFFECTS = 45,       ///<< indev effects
+    GT_TYPE_LRC         = 46,       ///<< lrc
 
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;

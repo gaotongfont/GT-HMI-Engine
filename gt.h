@@ -245,6 +245,10 @@ extern "C" {
 #if GT_CFG_ENABLE_INDEV_EFFECTS
 #include "src/core/gt_indev_effects.h"
 #endif
+
+#if GT_CFG_ENABLE_LRC
+#include "src/widgets/gt_lrc.h"
+#endif
 /* define ---------------------------------------------------------------*/
 
 
