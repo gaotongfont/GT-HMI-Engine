@@ -168,6 +168,8 @@ static gt_obj_st* _lrc_add_text(gt_obj_st* obj, uint32_t time, const char* text,
     gt_label_set_font_align(child, GT_ALIGN_CENTER);
     gt_label_set_indent(child, 0);
     gt_label_set_space(child, style->space_x, style->space_y);
+    gt_label_set_font_color(child, style->font_info.palette);
+    gt_label_set_single_line(child, false);
 
     gt_font_split_line_st sp_line = {
         .text = (char*)text,
