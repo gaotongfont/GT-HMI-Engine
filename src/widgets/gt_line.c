@@ -28,6 +28,7 @@
 
 typedef struct _gt_line_s {
     gt_obj_st obj;
+    gt_area_st prev_pos;
     gt_attr_line_st line;
 }_gt_line_st;
 
@@ -50,6 +51,26 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_line_class = {
 
 
 /* static functions -----------------------------------------------------*/
+static inline bool
+_is_move_pos(gt_area_st * prev, gt_area_st * cur) {
+    return prev->x != cur->x || prev->y != cur->y;
+}
+
+static void GT_ATTRIBUTE_RAM_TEXT
+_move_pos(gt_obj_st * obj) {
+    _gt_line_st * widget = (_gt_line_st * )obj;
+    gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
+    gt_point_st diff = {
+        .x = obj->area.x - widget->prev_pos.x,
+        .y = obj->area.y - widget->prev_pos.y,
+    };
+    style->start.x += diff.x;
+    style->start.y += diff.y;
+    style->end.x += diff.x;
+    style->end.y += diff.y;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 /**
  * @brief obj init line widget call back
  *
@@ -61,7 +82,12 @@ static void _init_cb(gt_obj_st * obj) {
     style->line.opa = obj->opa;
     style->line.type = GT_GRAPHS_TYPE_LINE;
     style->line.brush = GT_BRUSH_TYPE_ROUND;
+
+    if (_is_move_pos(&widget->prev_pos, &obj->area)) {
+        _move_pos(obj);
+    }
     gt_draw_line(obj->draw_ctx, style, &obj->area);
+    gt_memcpy(&widget->prev_pos, &obj->area, sizeof(gt_area_st));
 }
 
 /**
@@ -81,10 +107,13 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 }
 
 static void _resize_area(gt_obj_st * line, gt_attr_line_st * style) {
+    _gt_line_st * widget = (_gt_line_st * )line;
     line->area.x = GT_MIN(style->start.x, style->end.x) - (style->line.width >> 1);
     line->area.y = GT_MIN(style->start.y, style->end.y) - (style->line.width >> 1);
     line->area.w = gt_abs(style->end.x - style->start.x) + style->line.width;
     line->area.h = gt_abs(style->end.y - style->start.y) + style->line.width;
+
+    gt_memcpy(&widget->prev_pos, &line->area, sizeof(gt_area_st));
 }
 
 /* global functions / API interface -------------------------------------*/
