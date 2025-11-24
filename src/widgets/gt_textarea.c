@@ -712,6 +712,7 @@ void gt_textarea_clear_all_str(gt_obj_st * textarea)
         return;
     }
     _free_contents(textarea);
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et style_mask, gt_color_t color)
