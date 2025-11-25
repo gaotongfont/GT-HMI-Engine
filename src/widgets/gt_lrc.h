@@ -66,6 +66,7 @@ void gt_lrc_set_border_color(gt_obj_st * obj, gt_color_t color);
  * @return gt_obj_st*
  */
 gt_obj_st* gt_lrc_add_text(gt_obj_st* obj, uint32_t time, const char* text);
+gt_obj_st* gt_lrc_add_text_by_len(gt_obj_st* obj, uint32_t time, const char* text, uint16_t len);
 
 /**
  * @brief clear all text

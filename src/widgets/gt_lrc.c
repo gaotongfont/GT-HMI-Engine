@@ -338,6 +338,20 @@ gt_obj_st* gt_lrc_add_text(gt_obj_st* obj, uint32_t time, const char* text)
 }
 
 GT_ATTRIBUTE_RAM_TEXT
+gt_obj_st* gt_lrc_add_text_by_len(gt_obj_st* obj, uint32_t time, const char* text, uint16_t len)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return NULL;
+    }
+
+    if(!text || len == 0) {
+        return NULL;
+    }
+
+    return _lrc_add_text(obj, time, text, len);
+}
+
+GT_ATTRIBUTE_RAM_TEXT
 void gt_lrc_clear_all_text(gt_obj_st* obj)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
