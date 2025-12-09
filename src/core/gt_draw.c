@@ -2310,7 +2310,10 @@ static void GT_ATTRIBUTE_RAM_TEXT draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const
     }
 
     gt_opa_t* mask_line_buf = gt_mem_malloc(bg_area.w);
-    GT_CHECK_BACK(mask_line_buf);
+    if (NULL == mask_line_buf) {
+        GT_LOGE(GT_LOG_TAG_GUI, "mask_line_buf is NULL!");
+        goto free_lb;
+    }
     int16_t bg_mask_id = -1;
     gt_mask_radius_st bg_mask_radius = {0};
 
@@ -2349,6 +2352,7 @@ static void GT_ATTRIBUTE_RAM_TEXT draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const
 
     gt_mem_free(mask_line_buf);
     mask_line_buf = NULL;
+free_lb:
     blend_dsc.mask_buf = NULL;
 
     if(bg_radius > 0){
@@ -2401,8 +2405,10 @@ static GT_ATTRIBUTE_RAM_TEXT void draw_bg_border(_gt_draw_ctx_st * draw_ctx, con
     }
 
     gt_opa_t* mask_line_buf = gt_mem_malloc(border_area.w);
-    GT_CHECK_BACK(mask_line_buf);
-
+    if (NULL == mask_line_buf) {
+        GT_LOGE(GT_LOG_TAG_GUI, "mask_line_buf is NULL!");
+        goto free_lb;
+    }
     gt_area_st in_area = {0};
     in_area = gt_area_reduce(border_area, dsc->border_width);
     uint16_t in_radius = (border_radius < dsc->border_width) ? 0 : border_radius - dsc->border_width;
@@ -2437,6 +2443,7 @@ static GT_ATTRIBUTE_RAM_TEXT void draw_bg_border(_gt_draw_ctx_st * draw_ctx, con
 
     gt_mem_free(mask_line_buf);
     mask_line_buf = NULL;
+free_lb:
     blend_dsc.mask_buf = NULL;
 
     gt_mask_remove_idx(border_mask_id);
