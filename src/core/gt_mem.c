@@ -13,6 +13,10 @@
 #include "gt_mem.h"
 #include "../others/gt_log.h"
 
+#if GT_USE_MEM_ILLEGAL_POINTER_HANDLE
+#include "../hal/gt_hal_tick.h"
+#endif
+
 #include GT_MEM_CUSTOM_INCLUDE
 
 
@@ -128,6 +132,10 @@ typedef struct {
     MEM_UNIT addr_start;
     MEM_UNIT addr_end;
 
+#if GT_USE_MEM_ILLEGAL_POINTER_HANDLE
+    gt_illegal_pointer_hdl_cb illegal_pointer_cb;
+#endif
+
 #if USE_MEM_REAL_USED_REMARK
     MEM_UNIT used;
     MEM_UNIT blocks;        /** current using block count */
@@ -241,8 +249,41 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _gt_free_hooks(void * ptr) {
     }
 #endif
 }
+#if GT_USE_MEM_ILLEGAL_POINTER_HANDLE
+static inline bool GT_ATTRIBUTE_RAM_TEXT
+_mem_illegal_pointer_hdl(char * name, void * ptr) {
+    if (NULL == _heap_info.illegal_pointer_cb) {
+        return false;
+    }
+    if (NULL == ptr) {
+        return false;
+    }
+    volatile uintptr_t start = _heap_info.addr_start;
+    volatile uintptr_t end = _heap_info.addr_end;
+    if ((uintptr_t)ptr >= start && (uintptr_t)ptr <= end) {
+        return false;
+    }
+    if (start == end) {
+        return false;
+    }
+    if (0 == start && 0 == end) {
+        return false;
+    }
+    GT_LOGE(GT_LOG_TAG_MEM, "[%s] event get illegal ptr: %p", name, ptr);
+    gt_sleep_ms(10);
+    _heap_info.illegal_pointer_cb();
+    return true;
+}
+#endif
 
 /* global functions / API interface -------------------------------------*/
+#if GT_USE_MEM_ILLEGAL_POINTER_HANDLE
+void gt_mem_register_illegal_pointer_event(gt_illegal_pointer_hdl_cb cb)
+{
+    _heap_info.illegal_pointer_cb = cb;
+}
+#endif
+
 void gt_mem_init(void)
 {
 #if GT_MEM_CUSTOM
@@ -358,6 +399,13 @@ void * _mem_malloc(size_t size, char const * file_name, char const * func_name, 
         ++_heap_info.blocks;
     }
 #endif
+
+#if GT_USE_MEM_ILLEGAL_POINTER_HANDLE
+    if (_mem_illegal_pointer_hdl("malloc", ret)) {
+        return NULL;
+    }
+#endif
+
     return ret;
 }
 
@@ -369,6 +417,13 @@ void * _mem_calloc(size_t num, size_t size, char const * file_name, char const *
         return ptr;
     }
     gt_memset(ptr, 0, len);
+
+#if GT_USE_MEM_ILLEGAL_POINTER_HANDLE
+    if (_mem_illegal_pointer_hdl("calloc", ptr)) {
+        return NULL;
+    }
+#endif
+
     return ptr;
 }
 
@@ -451,11 +506,22 @@ void * _mem_realloc(void * ptr, size_t size, char const * file_name, char const 
     _heap_info.used += block_size - old_size;
 #endif
 
+#if GT_USE_MEM_ILLEGAL_POINTER_HANDLE
+    if (_mem_illegal_pointer_hdl("realloc", ptr)) {
+        return NULL;
+    }
+#endif
+
     return ret;
 }
 
 void _mem_free(void * ptr, char const * file_name, char const * func_name, size_t line)
 {
+#if GT_USE_MEM_ILLEGAL_POINTER_HANDLE
+    if (_mem_illegal_pointer_hdl("free", ptr)) {
+        return;
+    }
+#endif
 #if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT || USE_MEM_REAL_USED_REMARK
     size_t block_size = _gt_block_size(ptr);
 #endif

@@ -22,6 +22,14 @@ extern "C" {
 #include "../others/gt_types.h"
 
 /* define ---------------------------------------------------------------*/
+#ifndef GT_USE_MEM_ILLEGAL_POINTER_HANDLE
+    /**
+     * @brief Register illegal memory pointer handle callback
+     *      default: 0
+     */
+    #define GT_USE_MEM_ILLEGAL_POINTER_HANDLE      0
+#endif
+
 
 #ifdef GT_ARCH_64
     #define MEM_UNIT        uint64_t
@@ -34,6 +42,10 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+#if GT_USE_MEM_ILLEGAL_POINTER_HANDLE
+typedef void ( * gt_illegal_pointer_hdl_cb)(void);
+#endif
+
 /**
  * @brief
  *
@@ -64,6 +76,15 @@ static inline bool gt_is_same_memory(const void * mem1, const void * mem2, size_
 
 
 /* global functions / API interface -------------------------------------*/
+#if GT_USE_MEM_ILLEGAL_POINTER_HANDLE
+/**
+ * @brief Register illegal pointger handle event, which want to reboot or do someting else.
+ *
+ * @param cb default: NULL
+ */
+void gt_mem_register_illegal_pointer_event(gt_illegal_pointer_hdl_cb cb);
+#endif
+
 /**
  * @brief init memory allocation
  */
