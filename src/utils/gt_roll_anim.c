@@ -55,6 +55,9 @@ _auto_scroll_exec_cb(void * obj, int32_t value) {
         return ;
     }
     auto_scroll_p->area.x = value;
+    if (GT_INVISIBLE == gt_obj_get_visible(auto_scroll_p->parent)) {
+        return;
+    }
     gt_event_send(auto_scroll_p->parent, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
