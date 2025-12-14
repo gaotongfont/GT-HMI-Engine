@@ -155,7 +155,9 @@ static void _gif_next_frame_handler_cb(struct _gt_timer_s * timer) {
         goto ret_lb;
     }
     gt_size_t has_next = gd_get_frame(style->gif);
-    if (0 == has_next) {
+    if (-1 == has_next) {
+        goto ret_lb;
+    } else if (0 == has_next) {
         if (1 != style->gif->loop_count) {
             if (style->gif->loop_count > 1) {
                 --style->gif->loop_count;

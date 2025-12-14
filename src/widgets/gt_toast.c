@@ -131,6 +131,15 @@ static void GT_ATTRIBUTE_RAM_TEXT _del_toast_cb(gt_event_st * e) {
     _toast_ctrl.toast_p = NULL;
 }
 
+static gt_obj_st * GT_ATTRIBUTE_RAM_TEXT
+_get_toast_obj(void) {
+    _gt_toast_ctrl_st * ctrl_p = _get_ctrl();
+    if (gt_obj_is_type((gt_obj_st * )ctrl_p->toast_p, OBJ_TYPE)) {
+        return (gt_obj_st * )ctrl_p->toast_p;
+    }
+    return NULL;
+}
+
 static _gt_toast_st * GT_ATTRIBUTE_RAM_TEXT _toast_create(void) {
     _gt_toast_ctrl_st * ctrl_p = _get_ctrl();
     if (false == gt_obj_is_type((gt_obj_st * )ctrl_p->toast_p, OBJ_TYPE)) {
@@ -361,6 +370,15 @@ void gt_toast_loading(gt_toast_param_st * toast)
     _common_update_toast_data(style, toast);
     _calc_position_by_type(style);
     _create_transit_anim(style, true);
+}
+
+bool gt_toast_is_showing(void)
+{
+    gt_obj_st * toast = _get_toast_obj();
+    if (NULL == toast) {
+        return false;
+    }
+    return GT_VISIBLE == gt_obj_get_visible(toast);
 }
 
 void gt_toast_close(void)
