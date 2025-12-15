@@ -139,14 +139,8 @@ _release_all_pop_remark_except_active_scr(_gt_gc_scr_st * scr_info, gt_obj_st co
                 --i;
                 continue;
             }
+            /** scr_info->pop_remark.cnt-- */
             gt_obj_destroy_immediately(pop_scr);
-            scr_info->pop_remark.pop_scr_list[i] = NULL;
-            if (i + 1 < scr_info->pop_remark.cnt) {
-                gt_memmove(&scr_info->pop_remark.pop_scr_list[i],
-                    &scr_info->pop_remark.pop_scr_list[i + 1],
-                    sizeof(gt_obj_st *) * (scr_info->pop_remark.cnt - i - 1));
-            }
-            --scr_info->pop_remark.cnt;
         }
         --i;
     }
@@ -296,14 +290,12 @@ gt_res_t _gt_scr_stack_remove_pop_scr(gt_obj_st const * const scr)
     if (NULL == scr_info) {
         return GT_RES_FAIL;
     }
-    for (int16_t i = 0, cnt = scr_info->pop_remark.cnt; i < cnt; i++) {
+    for (gt_size_t i = scr_info->pop_remark.cnt - 1; i >= 0; i--) {
         if (scr != scr_info->pop_remark.pop_scr_list[i]) {
             continue;
         }
-        if (i + 1 < scr_info->pop_remark.cnt) {
-            gt_memmove(&scr_info->pop_remark.pop_scr_list[i], &scr_info->pop_remark.pop_scr_list[i + 1],
-                sizeof(gt_obj_st *) * (scr_info->pop_remark.cnt - i - 1));
-        }
+        gt_memmove(&scr_info->pop_remark.pop_scr_list[i], &scr_info->pop_remark.pop_scr_list[i + 1],
+            sizeof(gt_obj_st *) * (scr_info->pop_remark.cnt - i - 1));
         --scr_info->pop_remark.cnt;
         break;
     }

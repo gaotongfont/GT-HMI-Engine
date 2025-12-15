@@ -37,6 +37,13 @@
     #define _GT_STACK_USE_LOADING_LOG           0
 #endif
 
+#ifndef _GT_STACK_USE_LOADING_LOG_DETAIL
+    /**
+     * @brief 0[default]
+     */
+    #define _GT_STACK_USE_LOADING_LOG_DETAIL    0
+#endif
+
 #ifndef _GT_STACK_PUSH_BEFORE_INIT_SCR
     /**
      * @brief 0[default]: The screen object is initialized before the stack is pushed
@@ -996,6 +1003,9 @@ _create_scr_by_stack_item(gt_scr_stack_item_st * item_p, gt_scr_id_t home_id) {
     if (home_id == item_p->current_scr_id) {
         gt_scr_stack_set_home_scr(item_p->current_scr);
     }
+#if _GT_STACK_USE_LOADING_LOG_DETAIL
+    GT_LOGI(GT_LOG_TAG_GUI, "create screen id %d(0x%x) obj: 0x%x", item_p->current_scr_id, item_p->current_scr_id, item_p->current_scr);
+#endif
     return true;
 }
 
