@@ -91,8 +91,15 @@ typedef struct {
     _device_st dev;
 } _sjpg_st;
 
+typedef struct {
+    uint8_t lock : 1;   /** using: true; free: false */
+}_sjpg_ctrl_st;
+
 
 /* static variables -----------------------------------------------------*/
+static _sjpg_ctrl_st _sjpg_ctrl = {
+    .lock = 0,
+};
 
 
 
@@ -105,6 +112,21 @@ typedef struct {
 
 
 /* static functions -----------------------------------------------------*/
+static inline bool  GT_ATTRIBUTE_RAM_TEXT
+_is_sjpg_lock(void) {
+    return _sjpg_ctrl.lock;
+}
+
+static inline void  GT_ATTRIBUTE_RAM_TEXT
+_sjpg_lock(void) {
+    _sjpg_ctrl.lock = 1;
+}
+
+static inline void  GT_ATTRIBUTE_RAM_TEXT
+_sjpg_unlock(void) {
+    _sjpg_ctrl.lock = 0;
+}
+
 static bool _is_jpg(const uint8_t * raw_data, const uint8_t * eod_data, size_t len) {
     uint8_t jpg_soi[] = {0xFF, 0xD8};   /** Start of Image */
     uint8_t jpg_eod[] = {0xFF, 0xD9};   /** End of Image */
@@ -319,6 +341,9 @@ static gt_res_t _common_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt
     if (GT_RES_OK != res_info.ret) {
         goto err_lb;
     }
+    if ((res_info.is_sjpg || res_info.is_jpeg) && _is_sjpg_lock()) {
+        goto err_lb;
+    }
     if (res_info.is_sjpg) {
         // FIX: need to test
         sjpg = _malloc_sjpg_st(dsc);
@@ -388,6 +413,7 @@ static gt_res_t _common_sjpg_open(struct _gt_img_decoder_s * decoder, struct _gt
     sjpg->dev.img_cache_x_res = sjpg->sjpeg_x_res;
     sjpg->dev.img_cache_buff = sjpg->frame_cache;
 
+    _sjpg_lock();
     return GT_RES_OK;
 err_lb:
     _sjpg_free(sjpg);
@@ -472,6 +498,7 @@ static gt_res_t _gt_sjpg_read_line(struct _gt_img_dsc_s * dsc,
 
 static gt_res_t _gt_sjpg_close(struct _gt_img_dsc_s * dsc)
 {
+    _sjpg_unlock();
     _sjpg_st * sjpg = (_sjpg_st *)dsc->customs_data;
     if (NULL == sjpg) {
         return GT_RES_OK;
@@ -602,10 +629,16 @@ gt_img_raw_st gt_jpeg_decode(gt_fs_file_st const * const jpeg)
     }
     gt_memset(sjpg->jdec_hdc, 0, len);
     sjpg->dev.file = fp;
+    if (_is_sjpg_lock()) {
+        ret_jpeg.hw_lock = true;
+        GT_LOGW("JPEG", "Jpeg decoder is busy, hold on...");
+        goto sjpg_lb;
+    }
+    _sjpg_lock();
     JRESULT j_ret = jd_prepare(sjpg->jdec_hdc, input_func, sjpg->work_buf, (size_t)TJPGD_WORK_BUFF_SIZE, (void *)&sjpg->dev);
     if (JDR_OK != j_ret) {
         GT_LOGE("JPEG", "jd_prepare failed, ret: %d", j_ret);
-        goto sjpg_lb;
+        goto sjpg_unlock_lb;
     }
     sjpg->sjpeg_x_res = sjpg->jdec_hdc->width;
     sjpg->sjpeg_y_res = sjpg->jdec_hdc->height;
@@ -615,7 +648,7 @@ gt_img_raw_st gt_jpeg_decode(gt_fs_file_st const * const jpeg)
     sjpg->frame_base_offset = gt_mem_extern_malloc(len);
     if (NULL == sjpg->frame_base_offset) {
         GT_LOGE("JPEG", "frame_base_offset malloc fail, len: %d", len);
-        goto sjpg_lb;
+        goto sjpg_unlock_lb;
     }
     sjpg->frame_base_offset[0] = 0;     /** img_frame_start_offset */
 
@@ -629,7 +662,7 @@ gt_img_raw_st gt_jpeg_decode(gt_fs_file_st const * const jpeg)
     }
     if (NULL == sjpg->frame_cache) {
         GT_LOGE("JPEG", "frame_cache malloc fail, len: %d", len);
-        goto sjpg_lb;
+        goto sjpg_unlock_lb;
     }
     sjpg->dev.img_cache_x_res = sjpg->sjpeg_x_res;
     sjpg->dev.img_cache_buff = sjpg->frame_cache;
@@ -638,7 +671,7 @@ gt_img_raw_st gt_jpeg_decode(gt_fs_file_st const * const jpeg)
     j_ret = jd_decomp(sjpg->jdec_hdc, output_func, 0);
     if (JDR_OK != j_ret) {
         GT_LOGE("JPEG", "jd_decomp fail");
-        goto sjpg_lb;
+        goto sjpg_unlock_lb;
     }
     ret_jpeg.buffer = (gt_color_t * )sjpg->frame_cache;
     ret_jpeg.width = sjpg->sjpeg_x_res;
@@ -649,6 +682,8 @@ gt_img_raw_st gt_jpeg_decode(gt_fs_file_st const * const jpeg)
 
     // TODO Adjust different color depth format.
 
+sjpg_unlock_lb:
+    _sjpg_unlock();
 sjpg_lb:
     if (jpeg->mem_ctrl.free_cb && sjpg->frame_cache) {
         jpeg->mem_ctrl.free_cb(sjpg->frame_cache);

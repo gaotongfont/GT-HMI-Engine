@@ -51,6 +51,7 @@ typedef struct gt_img_raw_s {
      * @brief Using custom memory function, must give pair of func.
      */
     gt_fs_file_mem_cb_st mem_ctrl;
+    uint8_t hw_lock : 1;    /** true: decoder is busy, by hardware locking. */
 }gt_img_raw_st;
 
 /**

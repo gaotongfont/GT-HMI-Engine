@@ -27,10 +27,16 @@
 
 
 /* private typedef ------------------------------------------------------*/
+typedef struct {
+    uint8_t lock : 1;   /** using: true; free: false */
+}_png_ctrl_st;
 
 
 
 /* static variables -----------------------------------------------------*/
+static _png_ctrl_st _png_ctrl = {
+    .lock = 0,
+};
 
 
 
@@ -43,6 +49,20 @@
 
 
 /* static functions -----------------------------------------------------*/
+static inline bool  GT_ATTRIBUTE_RAM_TEXT
+_is_png_lock(void) {
+    return _png_ctrl.lock;
+}
+
+static inline void  GT_ATTRIBUTE_RAM_TEXT
+_png_lock(void) {
+    _png_ctrl.lock = 1;
+}
+
+static inline void  GT_ATTRIBUTE_RAM_TEXT
+_png_unlock(void) {
+    _png_ctrl.lock = 0;
+}
 
 static inline bool _is_png_file_ext(const char * path) {
     return strcmp(&path[strlen(path) - 3], "png") ? false : true;
@@ -241,10 +261,13 @@ static gt_res_t _gt_png_open(struct _gt_img_decoder_s * decoder, struct _gt_img_
         return GT_RES_INV;
     }
     if (false == _is_png_file_type(fp)) {
-        gt_fs_close(fp);
-        return GT_RES_INV;
+        ret = GT_RES_INV;
+        goto free_lb;
     }
-
+    if (_is_png_lock()) {
+        ret = GT_RES_INV;
+        goto free_lb;
+    }
     if (path && 0 != lodepng_load_file(&png_data, (size_t * )&png_size, path)) {
         goto err_lb;
     } else if (dsc->raw_p &&
@@ -258,6 +281,7 @@ err_lb:
         gt_mem_extern_free(png_data);
         png_data = NULL;
     }
+free_lb:
     gt_fs_close(fp);
     fp = NULL;
     return ret;
@@ -273,6 +297,7 @@ static gt_res_t _gt_png_read_line(struct _gt_img_dsc_s * dsc,
 
 static gt_res_t _gt_png_close(struct _gt_img_dsc_s * dsc)
 {
+    _png_unlock();
     if (dsc->img) {
         gt_mem_extern_free(dsc->img);
         dsc->img = NULL;
@@ -310,7 +335,10 @@ gt_res_t _gt_png_fh_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_
         gt_fs_close(fp);
         return GT_RES_INV;
     }
-
+    if (_is_png_lock()) {
+        ret = GT_RES_INV;
+        goto free_lb;
+    }
     if (0 != lodepng_load_file_fh(&png_data, (size_t * )&png_size, dsc->file_header)) {
         goto err_lb;
     }
@@ -346,7 +374,10 @@ gt_res_t _gt_png_direct_addr_open(struct _gt_img_decoder_s * decoder, struct _gt
         gt_fs_close(fp);
         return GT_RES_INV;
     }
-
+    if (_is_png_lock()) {
+        ret = GT_RES_INV;
+        goto free_lb;
+    }
     if (0 != lodepng_load_file_direct_addr(&png_data, (size_t * )&png_size, dsc->addr)) {
         goto err_lb;
     }
@@ -397,7 +428,13 @@ gt_img_raw_st gt_png_decode(gt_fs_file_st const * const png)
     if (NULL == png->file_data || 0 == png->size) {
         return ret_raw;
     }
+    if (_is_png_lock()) {
+        GT_LOGW("PNG", "Png decoder is busy, hold on...");
+        return ret_raw;
+    }
+    _png_lock();
     ret = lodepng_decode32((uint8_t ** )&ret_raw.buffer, (uint32_t * )&ret_raw.width, (uint32_t * )&ret_raw.height, png->file_data, png->size);
+    _png_unlock();
     if (ret) {
         goto fail_lb;
     }
