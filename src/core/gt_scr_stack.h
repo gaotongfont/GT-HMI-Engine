@@ -230,6 +230,16 @@ gt_obj_st * gt_scr_stack_get_prev_scr_by(gt_stack_size_t step);
  */
 gt_stack_item_st gt_scr_stack_has_before(gt_scr_stack_item_st * scr);
 
+/**
+ * @brief
+ *
+ * @param id_list Which screen id want to search
+ * @param count
+ * @return true
+ * @return false
+ */
+bool gt_scr_stack_has_id_before(gt_scr_id_t const * const id_list, uint16_t count);
+
 bool gt_scr_stack_is_empty(void);
 bool gt_scr_stack_is_full(void);
 

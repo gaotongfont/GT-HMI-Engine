@@ -40,7 +40,11 @@ typedef struct gt_stack_s {
 }gt_stack_st;
 
 typedef struct gt_stack_ret_s {
-    gt_stack_size_t index_from_top;    /** The index of the item from the top */
+    /**
+     * The index of the item from the top
+     * -1: not found, failed
+     */
+    gt_stack_size_t index_from_top;
     void * data;
 }gt_stack_item_st;
 

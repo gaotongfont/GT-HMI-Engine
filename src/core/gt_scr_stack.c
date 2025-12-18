@@ -457,6 +457,25 @@ gt_stack_item_st gt_scr_stack_has_before(gt_scr_stack_item_st * scr)
     return gt_stack_search_item_from_bottom(scr_info->stack, _equal_current_id_cb, scr);
 }
 
+bool gt_scr_stack_has_id_before(gt_scr_id_t const * const id_list, uint16_t count)
+{
+    gt_stack_item_st ret = {0};
+    gt_scr_stack_item_st item = {
+        .current_scr_id = -1,
+    };
+    if (NULL == id_list) {
+        return false;
+    }
+    for (gt_size_t i = 0; i < count; i++) {
+        item.current_scr_id = id_list[i];
+        ret = gt_scr_stack_has_before(&item);
+        if (ret.index_from_top >= 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool gt_scr_stack_is_empty(void)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
