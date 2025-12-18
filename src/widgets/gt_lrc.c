@@ -43,6 +43,7 @@ typedef struct _gt_lrc_s {
     gt_color_t color_border;
     gt_color_t select_color;
 
+    uint8_t font_align;     //@ref gt_align_et
     uint8_t border_width;
     uint8_t space_x;
     uint8_t space_y;
@@ -165,7 +166,7 @@ static gt_obj_st* _lrc_add_text(gt_obj_st* obj, uint32_t time, const char* text,
     gt_label_set_text_by_len(child, text, len);
     gt_obj_set_pos_relative(child, obj, 0, style->offset_h);
     gt_label_set_font_info(child, &style->font_info);
-    gt_label_set_font_align(child, GT_ALIGN_CENTER);
+    gt_label_set_font_align(child, style->font_align);
     gt_label_set_indent(child, 0);
     gt_label_set_space(child, style->space_x, style->space_y);
     gt_label_set_font_color(child, style->font_info.palette);
@@ -300,6 +301,7 @@ gt_obj_st * gt_lrc_create(gt_obj_st * parent)
 
     _gt_lrc_st* style = (_gt_lrc_st*)obj;
     gt_font_info_init(&style->font_info);
+    style->font_align = GT_ALIGN_CENTER;
     return obj;
 }
 
@@ -638,6 +640,18 @@ void gt_lrc_set_font_cjk(gt_obj_st* obj, gt_font_cjk_et cjk)
 
 #endif
 
+GT_ATTRIBUTE_RAM_TEXT
+void gt_lrc_set_font_align(gt_obj_st * obj, gt_align_et align)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_lrc_st* style = (_gt_lrc_st*)obj;
+    style->font_align = align;
+    for(uint32_t i = 0; i < obj->cnt_child; ++i) {
+        gt_label_set_font_align(obj->child[i], style->font_align);
+    }
+}
 
 /* end of file ----------------------------------------------------------*/
 #endif // !GT_CFG_ENABLE_LRC

@@ -151,6 +151,7 @@ void gt_lrc_set_font_family_numb(gt_obj_st* obj, gt_family_t family);
 void gt_lrc_set_font_family(gt_obj_st* obj, gt_family_t family);
 void gt_lrc_set_font_cjk(gt_obj_st* obj, gt_font_cjk_et cjk);
 #endif
+void gt_lrc_set_font_align(gt_obj_st * obj, gt_align_et align);
 
 
 //
