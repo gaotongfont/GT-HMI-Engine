@@ -388,6 +388,22 @@ void gt_obj_set_rebound(gt_obj_st * obj, bool enabled);
  */
 bool gt_obj_is_rebound(gt_obj_st * obj);
 
+/**
+ * @brief
+ *
+ * @param obj
+ * @param mode GT_SCROLL_TIP_NONE[default]
+ */
+void gt_obj_set_scroll_tip(gt_obj_st * obj, gt_scroll_tip_et mode);
+
+/**
+ * @brief
+ *
+ * @param obj
+ * @return gt_scroll_tip_et
+ */
+gt_scroll_tip_et gt_obj_get_scroll_tip(gt_obj_st * obj);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

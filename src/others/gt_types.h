@@ -180,6 +180,16 @@ typedef enum gt_obj_type_e {
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;
 
+
+typedef enum gt_scroll_tip_e {
+    GT_SCROLL_TIP_NONE   = 0x0,
+    GT_SCROLL_TIP_LEFT   = 0x1,
+    GT_SCROLL_TIP_RIGHT  = 0x2,
+    GT_SCROLL_TIP_TOP    = 0x4,
+    GT_SCROLL_TIP_BOTTOM = 0x8,
+    _GT_SCROLL_TIP_MAX   = 1 << 4,
+}gt_scroll_tip_et;
+
 /**
  * @brief graphs type enum definition
  */

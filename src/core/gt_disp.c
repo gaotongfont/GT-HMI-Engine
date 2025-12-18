@@ -26,6 +26,7 @@
 #include "./gt_layout.h"
 #include "../others/gt_gc.h"
 
+#include "./gt_scroll_tip.h"
 #include "./gt_obj_scroll.h"
 
 /* private define -------------------------------------------------------*/
@@ -140,7 +141,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_disp_set_state(gt_disp_st * disp, uint8_t 
  * @param area_parent All parent displayable areas
  * @return true: visible or area need to refresh, false: invisible or area not need to refresh
  */
-static GT_ATTRIBUTE_RAM_TEXT inline bool gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent) {
+static inline bool GT_ATTRIBUTE_RAM_TEXT
+gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent) {
     if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
         return false;
     }
@@ -176,6 +178,41 @@ static GT_ATTRIBUTE_RAM_TEXT inline bool gt_check_obj_visible_and_copy(gt_obj_st
     return true;
 }
 
+static inline void GT_ATTRIBUTE_RAM_TEXT
+gt_check_obj_visible_and_copy_after_scroll_tip(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent) {
+    if (GT_SCROLL_TIP_NONE == obj->scroll_tip) {
+        return;
+    }
+    if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
+        return;
+    }
+    if (false == gt_area_is_intersect_screen(&param->disp->area_disp, &obj->area)) {
+        return;
+    }
+
+#if _GT_DISP_USE_MALLOC_DRAW_CTX
+    obj->draw_ctx = gt_mem_malloc(sizeof(struct _gt_draw_ctx_s));
+    GT_CHECK_BACK_VAL(obj->draw_ctx, false);
+    obj->draw_ctx->valid       = param->disp->scr_prev ? &param->valid : NULL;
+    obj->draw_ctx->parent_area = obj->inside ? &area_parent : NULL;
+    obj->draw_ctx->buf         = param->disp->vbd_color;
+    obj->draw_ctx->buf_area    = param->disp->area_disp;
+
+    gt_scroll_tip_draw(obj);
+    gt_mem_free(obj->draw_ctx);
+#else
+    struct _gt_draw_ctx_s tmp_draw_ctx = {
+        .valid       = param->disp->scr_prev ? &param->valid : NULL,
+        .parent_area = obj->inside ? &area_parent : NULL,
+        .buf         = param->disp->vbd_color,
+        .buf_area    = param->disp->area_disp,
+    };
+    obj->draw_ctx = &tmp_draw_ctx;
+    gt_scroll_tip_draw(obj);
+#endif
+    obj->draw_ctx = NULL;
+}
+
 /**
  * @brief
  *
@@ -206,6 +243,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _check_and_copy_foreach(gt_obj_st * obj, _flus
         }
         _check_and_copy_foreach(child_p, param, area_cross);
     }
+    gt_check_obj_visible_and_copy_after_scroll_tip(obj, param, area_cross);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _gt_disp_check_and_copy_foreach(gt_obj_st * scr_or_layer, _flush_scr_param_st * param) {
@@ -227,6 +265,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_disp_check_and_copy_foreach(gt_obj_st * sc
         }
         _check_and_copy_foreach(child_p, param, area_parent);
     }
+    gt_check_obj_visible_and_copy_after_scroll_tip(scr_or_layer, param, area_parent);
 }
 
 #if GT_USE_LAYER_TOP

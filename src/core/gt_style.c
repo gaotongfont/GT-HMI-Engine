@@ -1236,4 +1236,22 @@ bool gt_obj_is_rebound(gt_obj_st * obj)
     return obj->rebound;
 }
 
+void gt_obj_set_scroll_tip(gt_obj_st * obj, gt_scroll_tip_et mode)
+{
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
+    obj->scroll_tip = mode;
+}
+
+gt_scroll_tip_et gt_obj_get_scroll_tip(gt_obj_st * obj)
+{
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return GT_SCROLL_TIP_NONE;
+    }
+    return obj->scroll_tip;
+}
+
 /* end ------------------------------------------------------------------*/
