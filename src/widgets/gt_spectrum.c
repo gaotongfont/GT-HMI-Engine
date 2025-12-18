@@ -520,7 +520,10 @@ GT_ATTRIBUTE_RAM_TEXT gt_obj_st *
 gt_spectrum_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    GT_CHECK_BACK_VAL(obj, NULL);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return NULL;
+    }
 
     _gt_spectrum_st * style = (_gt_spectrum_st *)obj;
     obj->radius = 0;

@@ -316,7 +316,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_start_cb(struct gt_anim_s * anim) {
 static GT_ATTRIBUTE_RAM_TEXT void _old_scr_anim_ready_cb(struct gt_anim_s * anim) {
     gt_area_st * area = (gt_area_st * )anim->data;
     gt_obj_st * old_scr = (gt_obj_st * )anim->tar;
-    GT_CHECK_BACK(old_scr);
+    gt_obj_type_et type = gt_obj_class_get_type(old_scr);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
     if (old_scr->delate) {
         return ;
     }
@@ -580,8 +583,14 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _adjust_clip_area_and_flush(_flush_scr_
 static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_anim(_flush_scr_param_st * param) {
     gt_obj_st * prev = param->disp->scr_prev;
     gt_obj_st * scr = param->disp->scr_act;
-    GT_CHECK_BACK(prev);
-    GT_CHECK_BACK(scr);
+    gt_obj_type_et type = gt_obj_class_get_type(prev);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
+    type = gt_obj_class_get_type(scr);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
     bool is_cover = false;
 
     // 计算scr 在屏幕的显示区域
@@ -837,7 +846,10 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
     gt_disp_st * disp = param->disp;
     gt_obj_st * scr = disp->scr_act;
     gt_color_t color_fill = gt_screen_get_bgcolor(scr);
-    GT_CHECK_BACK(scr);
+    gt_obj_type_et type = gt_obj_class_get_type(scr);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     scr->area.x = disp->area_act.x;
     scr->area.y = disp->area_act.y;
@@ -1619,7 +1631,10 @@ void gt_disp_ref_area(const gt_area_st * coords)
         return;
     }
 
-    GT_CHECK_BACK(param.disp->scr_act);
+    gt_obj_type_et type = gt_obj_class_get_type(param.disp->scr_act);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
     if ( _gt_disp_get_state(param.disp) == GT_BUSY ) {
         GT_LOGD(GT_LOG_TAG_GUI, "disp is busy");
         return;

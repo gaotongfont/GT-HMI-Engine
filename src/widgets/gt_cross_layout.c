@@ -1168,10 +1168,16 @@ gt_obj_st * gt_cross_layout_create(gt_obj_st * parent)
     style->ver_items = _gt_vector_create(_default_items_free_cb, NULL);
 
     style->hor_obj = gt_obj_create(obj);
-    GT_CHECK_BACK_VAL(style->hor_obj, obj);
+    gt_obj_type_et type = gt_obj_class_get_type(style->hor_obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return obj;
+    }
 
     style->ver_obj = gt_obj_create(obj);
-    GT_CHECK_BACK_VAL(style->ver_obj, obj);
+    type = gt_obj_class_get_type(style->ver_obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return obj;
+    }
 
     style->hor_obj->focus_dis = GT_DISABLED;
     style->hor_obj->scroll_dir = GT_SCROLL_HORIZONTAL;
@@ -1190,7 +1196,10 @@ gt_obj_st * gt_cross_layout_create(gt_obj_st * parent)
 
 void gt_cross_layout_set_gap(gt_obj_st* layout, uint8_t hor_gap, uint8_t ver_gap)
 {
-    GT_CHECK_BACK(layout);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
@@ -1203,21 +1212,30 @@ void gt_cross_layout_set_gap(gt_obj_st* layout, uint8_t hor_gap, uint8_t ver_gap
 
 gt_obj_st* gt_cross_layout_get_hor_obj(gt_obj_st* layout)
 {
-    GT_CHECK_BACK_VAL(layout, NULL);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return NULL;
+    }
     _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
     return style->hor_obj;
 }
 
 gt_obj_st* gt_cross_layout_get_ver_obj(gt_obj_st* layout)
 {
-    GT_CHECK_BACK_VAL(layout, NULL);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return NULL;
+    }
     _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
     return style->ver_obj;
 }
 
 void gt_cross_layout_set_roll_mode(gt_obj_st* layout, gt_cross_roll_mode_et roll_mode)
 {
-    GT_CHECK_BACK(layout);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
@@ -1229,7 +1247,10 @@ void gt_cross_layout_set_roll_mode(gt_obj_st* layout, gt_cross_roll_mode_et roll
 
 void gt_cross_layout_set_hor_roll_mode(gt_obj_st* layout, gt_cross_roll_mode_et roll_mode)
 {
-    GT_CHECK_BACK(layout);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
@@ -1240,7 +1261,10 @@ void gt_cross_layout_set_hor_roll_mode(gt_obj_st* layout, gt_cross_roll_mode_et 
 
 void gt_cross_layout_set_ver_roll_mode(gt_obj_st* layout, gt_cross_roll_mode_et roll_mode)
 {
-    GT_CHECK_BACK(layout);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
@@ -1251,7 +1275,10 @@ void gt_cross_layout_set_ver_roll_mode(gt_obj_st* layout, gt_cross_roll_mode_et 
 
 void gt_cross_layout_set_hor_obj_area(gt_obj_st* layout, gt_size_t x, gt_size_t y, uint16_t w, uint16_t h)
 {
-    GT_CHECK_BACK(layout);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
@@ -1265,7 +1292,10 @@ void gt_cross_layout_set_hor_obj_area(gt_obj_st* layout, gt_size_t x, gt_size_t 
 
 void gt_cross_layout_set_ver_obj_area(gt_obj_st* layout, gt_size_t x, gt_size_t y, uint16_t w, uint16_t h)
 {
-    GT_CHECK_BACK(layout);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
@@ -1278,7 +1308,10 @@ void gt_cross_layout_set_ver_obj_area(gt_obj_st* layout, gt_size_t x, gt_size_t 
 
 void gt_cross_layout_set_hor_offset(gt_obj_st* layout, gt_size_t offset)
 {
-    GT_CHECK_BACK(layout);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
@@ -1289,7 +1322,10 @@ void gt_cross_layout_set_hor_offset(gt_obj_st* layout, gt_size_t offset)
 
 void gt_cross_layout_set_ver_offset(gt_obj_st* layout, gt_size_t offset)
 {
-    GT_CHECK_BACK(layout);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
@@ -1300,8 +1336,14 @@ void gt_cross_layout_set_ver_offset(gt_obj_st* layout, gt_size_t offset)
 
 void gt_cross_layout_hor_add_item(gt_obj_st* layout, gt_obj_st* obj, uint8_t ver_index)
 {
-    GT_CHECK_BACK(layout);
-    GT_CHECK_BACK(obj);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
+    type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
     GT_CHECK_BACK(obj->parent);
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
@@ -1343,8 +1385,14 @@ void gt_cross_layout_hor_add_item(gt_obj_st* layout, gt_obj_st* obj, uint8_t ver
 
 void gt_cross_layout_ver_add_item(gt_obj_st* layout, gt_obj_st* obj)
 {
-    GT_CHECK_BACK(layout);
-    GT_CHECK_BACK(obj);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
+    type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
     GT_CHECK_BACK(obj->parent);
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
@@ -1369,7 +1417,10 @@ void gt_cross_layout_ver_add_item(gt_obj_st* layout, gt_obj_st* obj)
 
 void gt_cross_layout_set_ver_anim_en(gt_obj_st* layout, bool en)
 {
-    GT_CHECK_BACK(layout);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
@@ -1381,7 +1432,10 @@ void gt_cross_layout_set_ver_anim_en(gt_obj_st* layout, bool en)
 
 void gt_cross_layout_set_ver_index(gt_obj_st* layout, uint8_t ver_index)
 {
-    GT_CHECK_BACK(layout);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
@@ -1410,7 +1464,10 @@ void gt_cross_layout_set_ver_index(gt_obj_st* layout, uint8_t ver_index)
 
 void gt_cross_layout_set_hor_index(gt_obj_st* layout, uint8_t hor_index)
 {
-    GT_CHECK_BACK(layout);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
@@ -1423,7 +1480,10 @@ void gt_cross_layout_set_hor_index(gt_obj_st* layout, uint8_t hor_index)
 
 gt_size_t gt_cross_layout_get_hor_count(gt_obj_st* layout)
 {
-    GT_CHECK_BACK_VAL(layout, -1);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return -1;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return -1;
@@ -1450,7 +1510,10 @@ gt_size_t gt_cross_layout_get_hor_count(gt_obj_st* layout)
 
 gt_size_t gt_cross_layout_get_ver_count(gt_obj_st* layout)
 {
-    GT_CHECK_BACK_VAL(layout, -1);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return -1;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return -1;
@@ -1467,7 +1530,10 @@ gt_size_t gt_cross_layout_get_ver_count(gt_obj_st* layout)
 
 gt_size_t gt_cross_layout_get_hor_index(gt_obj_st* layout)
 {
-    GT_CHECK_BACK_VAL(layout, -1);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return -1;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return -1;
@@ -1494,7 +1560,10 @@ gt_size_t gt_cross_layout_get_hor_index(gt_obj_st* layout)
 
 gt_size_t gt_cross_layout_get_ver_index(gt_obj_st* layout)
 {
-    GT_CHECK_BACK_VAL(layout, -1);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return -1;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return -1;
@@ -1510,7 +1579,10 @@ gt_size_t gt_cross_layout_get_ver_index(gt_obj_st* layout)
 
 gt_obj_st* gt_cross_layout_get_hor_select_obj(gt_obj_st* layout)
 {
-    GT_CHECK_BACK_VAL(layout, NULL);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return NULL;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return NULL;
@@ -1537,7 +1609,10 @@ gt_obj_st* gt_cross_layout_get_hor_select_obj(gt_obj_st* layout)
 
 gt_obj_st* gt_cross_layout_get_ver_select_obj(gt_obj_st* layout)
 {
-    GT_CHECK_BACK_VAL(layout, NULL);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return NULL;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return NULL;
@@ -1553,7 +1628,10 @@ gt_obj_st* gt_cross_layout_get_ver_select_obj(gt_obj_st* layout)
 
 void gt_cross_layout_set_ver_bar_en(gt_obj_st* layout, bool en)
 {
-    GT_CHECK_BACK(layout);
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     if(false == gt_obj_is_type(layout, OBJ_TYPE)){
         return;
@@ -1582,8 +1660,14 @@ void gt_cross_layout_set_touch_mode(gt_obj_st* layout, gt_cross_touch_mode_et mo
     }
 
     _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
-    GT_CHECK_BACK(style->hor_obj);
-    GT_CHECK_BACK(style->ver_obj);
+    gt_obj_type_et type = gt_obj_class_get_type(style->hor_obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
+    type = gt_obj_class_get_type(style->ver_obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     style->touch_mode = mode;
     if(GT_CROSS_TOUCH_MODE_MERGE == mode) {

@@ -310,7 +310,10 @@ uint16_t gt_obj_get_user_event_count(struct gt_obj_s * obj)
 
 void gt_obj_remove_all_event_cb(struct gt_obj_s * obj)
 {
-    GT_CHECK_BACK(obj);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
     if (NULL == obj->event_attr) {
         return;
     }
@@ -330,7 +333,10 @@ void gt_obj_remove_all_event_cb(struct gt_obj_s * obj)
 
 void gt_obj_remove_all_event_cb_immediately(struct gt_obj_s * obj)
 {
-    GT_CHECK_BACK(obj);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
     if (NULL == obj->event_attr) {
         return;
     }

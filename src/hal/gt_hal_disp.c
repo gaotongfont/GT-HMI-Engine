@@ -93,7 +93,10 @@ static GT_ATTRIBUTE_RAM_TEXT gt_disp_st * _gt_disp_create(gt_disp_drv_st * drv) 
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _calc_max_area_recursive(gt_obj_st * obj, bool is_root) {
-    GT_CHECK_BACK(obj);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
     gt_obj_st * ptr = NULL;
     gt_size_t i = 0, cnt = obj->cnt_child;
 
@@ -393,7 +396,10 @@ void _gt_disp_reload_max_area(gt_obj_st * scr)
 void _gt_disp_hided_layer_top_widgets(gt_obj_st * top)
 {
     gt_obj_st * obj = NULL;
-    GT_CHECK_BACK(top);
+    gt_obj_type_et type = gt_obj_class_get_type(top);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     for (gt_size_t i = 0; i < top->cnt_child; i++) {
         obj = top->child[i];

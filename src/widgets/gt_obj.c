@@ -275,7 +275,10 @@ static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
  */
 static GT_ATTRIBUTE_RAM_TEXT void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer) {
     gt_obj_st * obj = (gt_obj_st * )_gt_timer_get_user_data(timer);
-    GT_CHECK_BACK(obj);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
     gt_event_st * ptr = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
     while(ptr) {
         if (ptr->target == obj) {
@@ -326,7 +329,10 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _find_obj_recursive_by_id(gt_obj_st * s
 gt_obj_st * gt_obj_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(parent ? MY_CLASS : MY_CLASS_SCREEN, parent);
-    GT_CHECK_BACK_VAL(obj, NULL);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return NULL;
+    }
 
     obj->fixed = false;
     obj->focus_dis = GT_DISABLED;
@@ -335,7 +341,10 @@ gt_obj_st * gt_obj_create(gt_obj_st * parent)
 
 gt_obj_st * gt_obj_get_parent(gt_obj_st * obj)
 {
-    GT_CHECK_BACK_VAL(obj, NULL);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return NULL;
+    }
     return obj->parent;
 }
 
@@ -371,7 +380,10 @@ gt_obj_st * gt_obj_find_by_id(gt_id_t widget_id)
 
 void gt_obj_register_id(gt_obj_st * obj, gt_id_t id)
 {
-    GT_CHECK_BACK(obj);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
     obj->id = id;
 }
 
@@ -399,8 +411,14 @@ bool gt_obj_is_child(gt_obj_st * obj, gt_obj_st * parent)
 uint16_t gt_obj_get_child_index(gt_obj_st * parent, gt_obj_st * obj)
 {
     uint16_t ret = 0xFFFF;  /** Fail: 0xFFFF */
-    GT_CHECK_BACK_VAL(parent, ret);
-    GT_CHECK_BACK_VAL(obj, ret);
+    gt_obj_type_et type = gt_obj_class_get_type(parent);
+    if (GT_TYPE_UNKNOWN == type) {
+        return ret;
+    }
+    type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return ret;
+    }
     for (uint16_t i = 0; i < parent->cnt_child; ++i) {
         if (parent->child[i] == obj) {
             return i;
@@ -413,7 +431,10 @@ uint16_t gt_obj_get_child_index(gt_obj_st * parent, gt_obj_st * obj)
 gt_obj_st * gt_obj_search_child_by_type(gt_obj_st * parent, gt_obj_type_et type)
 {
     gt_obj_st * ch = NULL;
-    GT_CHECK_BACK_VAL(parent, NULL);
+    gt_obj_type_et t = gt_obj_class_get_type(parent);
+    if (GT_TYPE_UNKNOWN == t) {
+        return NULL;
+    }
     for (uint16_t i = 0; i < parent->cnt_child; ++i) {
         if (gt_obj_is_type(parent->child[i], type)) {
             ch = parent->child[i];
@@ -426,7 +447,10 @@ gt_obj_st * gt_obj_search_child_by_type(gt_obj_st * parent, gt_obj_type_et type)
 gt_obj_st* gt_obj_search_child_by_id(gt_obj_st * parent, gt_id_t id)
 {
     gt_obj_st * ch = NULL;
-    GT_CHECK_BACK_VAL(parent, NULL);
+    gt_obj_type_et type = gt_obj_class_get_type(parent);
+    if (GT_TYPE_UNKNOWN == type) {
+        return NULL;
+    }
     for (uint16_t i = 0; i < parent->cnt_child; ++i) {
         if (parent->child[i]->id == id) {
             ch = parent->child[i];
@@ -439,7 +463,10 @@ gt_obj_st* gt_obj_search_child_by_id(gt_obj_st * parent, gt_id_t id)
 uint16_t gt_obj_search_childs_count_by_type(gt_obj_st * parent, gt_obj_type_et type)
 {
     uint16_t count = 0;
-    GT_CHECK_BACK_VAL(parent, 0);
+    gt_obj_type_et t = gt_obj_class_get_type(parent);
+    if (GT_TYPE_UNKNOWN == t) {
+        return 0;
+    }
     for (uint16_t i = 0; i < parent->cnt_child; ++i) {
         if (gt_obj_is_type(parent->child[i], type)) {
             ++count;
@@ -477,7 +504,10 @@ gt_res_t gt_obj_bring_to_front(gt_obj_st * obj)
 
 gt_obj_st * gt_obj_within_which_scr(gt_obj_st * obj)
 {
-    GT_CHECK_BACK_VAL(obj, NULL);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return NULL;
+    }
     gt_obj_st * p = obj->parent;
 
     /** screen itself */
@@ -546,7 +576,10 @@ gt_size_t gt_obj_get_limit_right(gt_obj_st * obj)
     gt_obj_st * child = NULL;
     gt_size_t max_x = -0x7fff;
     gt_size_t temp = 0, min_x = 0x7fff;
-    GT_CHECK_BACK_VAL(obj, 0);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return 0;
+    }
 
     for (gt_size_t i = 0, cnt = obj->cnt_child; i < cnt; i++) {
         child = obj->child[i];
@@ -566,7 +599,10 @@ gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj)
     gt_obj_st * child = NULL;
     gt_size_t max_y = -0x7fff;
     gt_size_t temp = 0, min_y = 0x7fff;
-    GT_CHECK_BACK_VAL(obj, 0);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return 0;
+    }
 
     for (gt_size_t i = 0, cnt = obj->cnt_child; i < cnt; i++) {
         child = obj->child[i];

@@ -110,7 +110,10 @@ static void _img_init_cb(gt_obj_st * obj) {
  */
 static void _img_deinit_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start deinit_cb");
-    GT_CHECK_BACK(obj);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     _gt_img_st * style_p = (_gt_img_st * )obj;
     if (NULL != style_p->src) {

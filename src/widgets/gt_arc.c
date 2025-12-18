@@ -195,7 +195,10 @@ static void _init_cb(gt_obj_st * obj)
 }
 static void _deinit_cb(gt_obj_st * obj)
 {
-    GT_CHECK_BACK(obj);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
 
     _gt_arc_st * style_p = (_gt_arc_st * )obj;
     if (NULL != style_p->bg.img.src) {
@@ -324,7 +327,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _arc_anim_ready_cb(struct gt_anim_s * anim)
 gt_obj_st * gt_arc_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
-    GT_CHECK_BACK_VAL(obj, NULL);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return NULL;
+    }
 
     obj->fixed = false;
     _gt_arc_st * style = (_gt_arc_st *)obj;

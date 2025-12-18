@@ -336,7 +336,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _adjust_flex_content(gt_obj_st * target) {
 
 void gt_layout_row_grow(gt_obj_st * obj)
 {
-    GT_CHECK_BACK(obj);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
     if (false == obj->row_layout) {
         return ;
     }
@@ -359,7 +362,10 @@ void gt_layout_row_grow(gt_obj_st * obj)
 #if GT_USE_WIDGET_LAYOUT
 void gt_layout_init(gt_obj_st * obj, gt_obj_container_st const * const container)
 {
-    GT_CHECK_BACK(obj);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
     GT_CHECK_BACK(container);
 
     obj->container = *container;
@@ -397,7 +403,10 @@ gt_res_t gt_layout_update_core(gt_obj_st * obj)
 
 enum gt_layout_type_e gt_layout_get_type(gt_obj_st * obj)
 {
-    GT_CHECK_BACK_VAL(obj, GT_LAYOUT_TYPE_FIXED);
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return GT_LAYOUT_TYPE_FIXED;
+    }
     return obj->container.layout_type;
 }
 
