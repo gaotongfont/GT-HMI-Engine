@@ -429,6 +429,7 @@ gt_img_raw_st gt_png_decode(gt_fs_file_st const * const png)
         return ret_raw;
     }
     if (_is_png_lock()) {
+        ret_raw.hw_lock = true;
         GT_LOGW("PNG", "Png decoder is busy, hold on...");
         return ret_raw;
     }

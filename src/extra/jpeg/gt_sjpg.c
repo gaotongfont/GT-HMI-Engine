@@ -592,6 +592,11 @@ gt_img_raw_st gt_jpeg_decode(gt_fs_file_st const * const jpeg)
     if (NULL == jpeg || NULL == jpeg->file_data || 0 == jpeg->size) {
         return ret_jpeg;
     }
+    if (_is_sjpg_lock()) {
+        ret_jpeg.hw_lock = true;
+        GT_LOGW("JPEG", "Jpeg decoder is busy, hold on...");
+        return ret_jpeg;
+    }
     gt_fs_fp_st * fp = gt_fs_open_raw(jpeg->file_data, jpeg->size, GT_FS_MODE_RD);
     if (NULL == fp) {
         GT_LOGE("JPEG", "Open jpeg file failed");
@@ -629,11 +634,6 @@ gt_img_raw_st gt_jpeg_decode(gt_fs_file_st const * const jpeg)
     }
     gt_memset(sjpg->jdec_hdc, 0, len);
     sjpg->dev.file = fp;
-    if (_is_sjpg_lock()) {
-        ret_jpeg.hw_lock = true;
-        GT_LOGW("JPEG", "Jpeg decoder is busy, hold on...");
-        goto sjpg_lb;
-    }
     _sjpg_lock();
     JRESULT j_ret = jd_prepare(sjpg->jdec_hdc, input_func, sjpg->work_buf, (size_t)TJPGD_WORK_BUFF_SIZE, (void *)&sjpg->dev);
     if (JDR_OK != j_ret) {
