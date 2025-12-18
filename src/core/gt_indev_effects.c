@@ -41,6 +41,12 @@ typedef struct {
     gt_obj_st obj;
     gt_obj_st* rect_p;
     gt_anim_st* anim_p;
+
+    gt_indev_effects_distance_cb_t left_cb;
+    gt_indev_effects_distance_cb_t right_cb;
+    gt_indev_effects_distance_cb_t top_cb;
+    gt_indev_effects_distance_cb_t bottom_cb;
+    gt_indev_effects_hide_cb_t hide_cb;
 }_gt_indev_effects_st;
 
 typedef struct {
@@ -177,6 +183,36 @@ static void _effects_anim_del(gt_obj_st* obj)
         style->anim_p = NULL;
     }
 }
+
+static void _effects_distance_cb(gt_event_type_et gesture_type, uint32_t distance)
+{
+    _gt_indev_effects_st* style = _effects_create();
+
+    switch(gesture_type) {
+        case GT_EVENT_TYPE_INPUT_HOME_GESTURE_LEFT:
+            if(style->left_cb) {
+                style->left_cb(distance);
+            }
+            break;
+        case GT_EVENT_TYPE_INPUT_HOME_GESTURE_RIGHT:
+            if(style->right_cb) {
+                style->right_cb(distance);
+            }
+            break;
+        case GT_EVENT_TYPE_INPUT_HOME_GESTURE_TOP:
+            if(style->top_cb) {
+                style->top_cb(distance);
+            }
+            break;
+        case GT_EVENT_TYPE_INPUT_HOME_GESTURE_BOTTOM:
+            if(style->bottom_cb) {
+                style->bottom_cb(distance);
+            }
+            break;
+        default:
+            break;
+    }
+}
 /* global functions / API interface -------------------------------------*/
 GT_ATTRIBUTE_RAM_TEXT
 void gt_indev_effects_show(gt_event_type_et gesture_type, uint32_t distance)
@@ -198,6 +234,8 @@ void gt_indev_effects_show(gt_event_type_et gesture_type, uint32_t distance)
         gt_obj_set_visible(obj, GT_VISIBLE);
     }
     _effects_anim_create(obj);
+
+    _effects_distance_cb(gesture_type, distance);
 }
 
 GT_ATTRIBUTE_RAM_TEXT
@@ -208,6 +246,9 @@ void gt_indev_effects_hide(void)
 
     if(gt_obj_get_visible(obj) == GT_VISIBLE) {
         gt_obj_set_visible(obj, GT_INVISIBLE);
+        if(style->hide_cb) {
+            style->hide_cb();
+        }
     }
 
     _effects_anim_del(obj);
@@ -226,6 +267,26 @@ void gt_indev_effects_set_opa(uint8_t opa)
     _gt_indev_effects_st* style = _effects_create();
     gt_obj_set_opa(style->rect_p, opa);
 }
+
+GT_ATTRIBUTE_RAM_TEXT
+void gt_indev_effects_set_distance_cb(gt_indev_effects_distance_cb_t left_cb,
+                                    gt_indev_effects_distance_cb_t right_cb,
+                                    gt_indev_effects_distance_cb_t top_cb,
+                                    gt_indev_effects_distance_cb_t bottom_cb)
+{
+    _gt_indev_effects_st* style = _effects_create();
+    style->left_cb = left_cb;
+    style->right_cb = right_cb;
+    style->top_cb = top_cb;
+    style->bottom_cb = bottom_cb;
+}
+GT_ATTRIBUTE_RAM_TEXT
+void gt_indev_effects_set_hide_cb(gt_indev_effects_hide_cb_t hide_cb)
+{
+    _gt_indev_effects_st* style = _effects_create();
+    style->hide_cb = hide_cb;
+}
+
 /* end of file ----------------------------------------------------------*/
 #endif //! GT_CFG_ENABLE_INDEV_EFFECTS
 
