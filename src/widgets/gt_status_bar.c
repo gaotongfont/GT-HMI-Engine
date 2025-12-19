@@ -114,8 +114,8 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 }
 
 static gt_obj_st * _find_obj_recursive_by_type(gt_obj_st * self, gt_obj_type_et type) {
-    gt_obj_type_et type = gt_obj_class_get_type(self);
-    if (GT_TYPE_UNKNOWN == type) {
+    gt_obj_type_et t = gt_obj_class_get_type(self);
+    if (GT_TYPE_UNKNOWN == t) {
         return NULL;
     }
     if (gt_obj_is_type(self, type)) {
