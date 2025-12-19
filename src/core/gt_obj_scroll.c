@@ -142,6 +142,24 @@ gt_size_t gt_obj_scroll_get_y(gt_obj_st * obj)
     return obj->process_attr.scroll.y;
 }
 
+bool gt_obj_scroll_is_move(gt_obj_st * obj)
+{
+    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+        return false;
+    }
+#if 01
+    return obj->process_attr.is_scrolling;
+#else
+    if (obj->process_attr.scroll_prev.y != obj->process_attr.scroll.y) {
+        return true;
+    }
+    if (obj->process_attr.scroll_prev.x != obj->process_attr.scroll.x) {
+        return true;
+    }
+    return false;
+#endif
+}
+
 gt_indev_over_scroll_res_st _gt_obj_get_over_scroll(gt_obj_st * obj, gt_dir_et direct)
 {
     gt_indev_over_scroll_res_st ret = {0};

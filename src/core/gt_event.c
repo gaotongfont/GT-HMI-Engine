@@ -105,7 +105,26 @@ _using_replace_core_user_cb(gt_obj_event_attr_st * event_ptr, gt_event_st * e) {
     return res;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_event_cb(gt_event_st * e) {
+static inline gt_res_t GT_ATTRIBUTE_RAM_TEXT
+_event_check_scroll_begin(gt_obj_st * obj, gt_event_type_et t) {
+    if (GT_EVENT_TYPE_INPUT_SCROLL_START != t) {
+        return GT_RES_INV;
+    }
+    obj->process_attr.is_scrolling = true;
+    return GT_RES_OK;
+}
+
+static inline gt_res_t GT_ATTRIBUTE_RAM_TEXT
+_event_check_scroll_end(gt_obj_st * obj, gt_event_type_et t) {
+    if (GT_EVENT_TYPE_INPUT_SCROLL_END != t) {
+        return GT_RES_INV;
+    }
+    obj->process_attr.is_scrolling = false;
+    return GT_RES_OK;
+}
+
+static gt_res_t GT_ATTRIBUTE_RAM_TEXT
+_gt_event_calling_event_cb(gt_event_st * e) {
     gt_obj_st * obj = (gt_obj_st * )e->target;
     const gt_obj_class_st * c = obj->classes;
 
@@ -114,14 +133,20 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_event_cb(gt_event_st * e
         return GT_RES_OK;
     }
 
+    _event_check_scroll_begin(obj, e->code_type);
+
     /** Default core event func */
     if (c->_event_cb) {
         c->_event_cb(obj, e);
     }
+
+    _event_check_scroll_end(obj, e->code_type);
+
     return GT_RES_OK;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_send_kernel(gt_event_st * e) {
+static gt_res_t GT_ATTRIBUTE_RAM_TEXT
+_gt_event_send_kernel(gt_event_st * e) {
     gt_res_t res = GT_RES_OK;
     if (gt_obj_is_type(e->target, GT_TYPE_UNKNOWN)) {
         GT_LOGW(GT_LOG_TAG_CHECK, "Unknown object: %p(%d)", e->target, gt_obj_class_get_type(e->target));

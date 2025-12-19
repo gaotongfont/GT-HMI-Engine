@@ -34,6 +34,8 @@ extern "C" {
 
 #define FOCUS_W_DEFAULT     (2)
 
+#define GT_SCROLL_TIP_BAR_MAX_OPA           GT_OPA_60
+
 /* typedef --------------------------------------------------------------*/
 
 #if defined(__cplusplus) || __STDC_VERSION__ >= 199901L

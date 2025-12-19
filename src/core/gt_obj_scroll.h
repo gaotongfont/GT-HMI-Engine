@@ -69,6 +69,15 @@ gt_size_t gt_obj_scroll_get_x(gt_obj_st * obj);
 gt_size_t gt_obj_scroll_get_y(gt_obj_st * obj);
 
 /**
+ * @brief Check scroll is scrolling, while obj display position has change.
+ *
+ * @param obj
+ * @return true has move handle
+ * @return false
+ */
+bool gt_obj_scroll_is_move(gt_obj_st * obj);
+
+/**
  * @brief Get scroll over limit range status
  *
  * @param obj

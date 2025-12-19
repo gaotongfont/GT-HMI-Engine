@@ -11,7 +11,7 @@
 #include "./gt_scroll_tip.h"
 #include "../core/gt_graph_base.h"
 #include "./gt_draw.h"
-
+#include "./gt_obj_scroll.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -27,7 +27,7 @@
 
 
 /* macros ---------------------------------------------------------------*/
-#define _IS_SCROLL_TIP_MODE(val, em)        (em & val)
+#define _IS_SCROLL_TIP_MODE(val, em)                    (em & val)
 
 #define _CALC_TIP_NEARBY_POS(p_v, p_size, size)         (p_v + (size >> 1))
 #define _CALC_TIP_FAR_POS(p_v, p_size, size)            (p_v + p_size - ((size >> 1) + size))
@@ -84,6 +84,9 @@ _calc_scroll_tip_bar_area(gt_obj_st * obj, gt_scroll_tip_et type) {
 
 static void GT_ATTRIBUTE_RAM_TEXT
 _tip_bar_init(gt_obj_st * obj) {
+    if (obj->opa_tip_bar < GT_OPA_MIN) {
+        return;
+    }
     gt_area_st area_base = obj->area;
     gt_attr_rect_st rect_attr = {0};
     gt_graph_init_rect_attr(&rect_attr);
@@ -92,7 +95,7 @@ _tip_bar_init(gt_obj_st * obj) {
     rect_attr.radius         = 2;
     rect_attr.border_color   = gt_color_hex(GT_COLOR_DARK_GRAY);
     rect_attr.bg_color       = gt_color_hex(GT_COLOR_DARK_GRAY);
-    rect_attr.bg_opa         = GT_OPA_60;
+    rect_attr.bg_opa         = obj->opa_tip_bar;
 
     if (_IS_SCROLL_TIP_MODE(obj->scroll_tip, GT_SCROLL_TIP_RIGHT)) {
         area_base = _calc_scroll_tip_bar_area(obj, GT_SCROLL_TIP_RIGHT);
@@ -115,7 +118,34 @@ _tip_bar_init(gt_obj_st * obj) {
     }
 }
 
+static void GT_ATTRIBUTE_RAM_TEXT
+_hide_tip_bar_exec_cb(void * tar, int32_t val) {
+    gt_obj_st * obj = (gt_obj_st * )tar;
+    obj->opa_tip_bar = val;
+    if (gt_obj_scroll_is_move(obj)) {
+        return;
+    }
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
 
+static bool GT_ATTRIBUTE_RAM_TEXT
+_silence_hide_tip_bar(gt_obj_st * obj) {
+    if (GT_SCROLL_TIP_BAR_MAX_OPA != obj->opa_tip_bar) {
+        return false;
+    }
+    if (gt_obj_get_scroll_tip_always(obj)) {
+        return false;
+    }
+    gt_anim_st hide = {0};
+    gt_anim_init(&hide);
+    gt_anim_set_target(&hide, obj);
+    gt_anim_set_value(&hide, GT_SCROLL_TIP_BAR_MAX_OPA, GT_OPA_0);
+    gt_anim_set_exec_cb(&hide, _hide_tip_bar_exec_cb);
+    gt_anim_set_time(&hide, GT_SCROLL_TIP_BAR_AUTO_HIDE_TRANSITION_MS);
+    gt_anim_set_time_delay_start(&hide, GT_SCROLL_TIP_BAR_AUTO_HIDE_DELAY_MS);
+    gt_anim_start(&hide);
+    return true;
+}
 
 /* global functions / API interface -------------------------------------*/
 gt_res_t gt_scroll_tip_draw(gt_obj_st * obj)
@@ -131,7 +161,12 @@ gt_res_t gt_scroll_tip_draw(gt_obj_st * obj)
         return GT_RES_INV;
     }
 
+    if (gt_obj_scroll_is_move(obj)) {
+        obj->opa_tip_bar = GT_SCROLL_TIP_BAR_MAX_OPA;
+    }
     _tip_bar_init(obj);
+
+    _silence_hide_tip_bar(obj);
 
     return GT_RES_OK;
 }

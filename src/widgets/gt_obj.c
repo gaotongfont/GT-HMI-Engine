@@ -171,6 +171,7 @@ static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
 
     switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START: {
+            gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
         }
@@ -227,6 +228,7 @@ static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
 
     switch(code_val) {
         case GT_EVENT_TYPE_DRAW_START: {
+            gt_disp_invalid_area(obj);
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
             break;
         }

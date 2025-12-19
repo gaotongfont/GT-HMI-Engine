@@ -39,6 +39,7 @@ typedef struct _gt_obj_process_attr_s {
     gt_point_st point;          //click point(note: the point is for object inside offset)
     gt_point_st scroll;         //scroll distance, default is 0
     gt_point_st scroll_prev;    // remark previous scroll distance
+    uint8_t is_scrolling : 1;   // scroll_start untill scroll_end
 }gt_obj_process_attr_st;
 
 typedef enum {
@@ -129,6 +130,7 @@ typedef struct gt_obj_s {
     uint16_t cnt_child;
     gt_radius_t radius;
     uint8_t opa;            /* @ref gt_color.h */
+    uint8_t opa_tip_bar;    /* scrolling tip bar @ref scroll_tip */
     uint8_t focus_w;        /* focus width */
     uint8_t focus_gap;      /* focus gap */
 #if GT_USE_WIDGET_LAYOUT
@@ -172,7 +174,7 @@ typedef struct gt_obj_s {
 
     /** display scrolling tip @ref gt_scroll_tip_et, default: GT_SCROLL_TIP_NONE */
     uint32_t scroll_tip    : 4;
-    // uint32_t scroll_tip_auto_hide : 1;
+    uint32_t scroll_tip_always : 1;  /** Auto hide scroll tip bar */
 #if GT_USE_WIDGET_DYNAMIC_FRAME_RATE
     uint32_t frame_rate    : 3;     /* Set widget dynamic anim frame rate */
 #endif

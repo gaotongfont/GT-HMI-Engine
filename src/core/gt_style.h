@@ -404,6 +404,16 @@ void gt_obj_set_scroll_tip(gt_obj_st * obj, gt_scroll_tip_et mode);
  */
 gt_scroll_tip_et gt_obj_get_scroll_tip(gt_obj_st * obj);
 
+/**
+ * @brief
+ *
+ * @param obj
+ * @param auto_hide true: dislay scroll tip bar always; false: auto hide
+ */
+void gt_obj_set_scroll_tip_always(gt_obj_st * obj, bool always);
+
+bool gt_obj_get_scroll_tip_always(gt_obj_st * obj);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

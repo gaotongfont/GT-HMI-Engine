@@ -1254,4 +1254,22 @@ gt_scroll_tip_et gt_obj_get_scroll_tip(gt_obj_st * obj)
     return obj->scroll_tip;
 }
 
+void gt_obj_set_scroll_tip_always(gt_obj_st * obj, bool always)
+{
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
+    obj->scroll_tip_always = always;
+}
+
+bool gt_obj_get_scroll_tip_always(gt_obj_st * obj)
+{
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return false;
+    }
+    return obj->scroll_tip_always;
+}
+
 /* end ------------------------------------------------------------------*/

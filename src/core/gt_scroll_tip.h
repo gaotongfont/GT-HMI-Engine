@@ -20,7 +20,19 @@ extern "C" {
 
 
 /* define ---------------------------------------------------------------*/
+#ifndef GT_SCROLL_TIP_BAR_AUTO_HIDE_DELAY_MS
+    /**
+     * @brief Delay n ms to hide scroll tip bar
+     */
+    #define GT_SCROLL_TIP_BAR_AUTO_HIDE_DELAY_MS        500
+#endif
 
+#ifndef GT_SCROLL_TIP_BAR_AUTO_HIDE_TRANSITION_MS
+    /**
+     * @brief scroll tip bar transition n ms period from 60% -> 0%
+     */
+    #define GT_SCROLL_TIP_BAR_AUTO_HIDE_TRANSITION_MS   100
+#endif
 
 
 /* typedef --------------------------------------------------------------*/
