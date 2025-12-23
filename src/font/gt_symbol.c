@@ -1881,7 +1881,11 @@ static GT_ATTRIBUTE_RAM_DATA const uint8_t symbol_24x24_download[] = {
 
 #endif  /** GT_CFG_USE_SYMBOL_24x24 */
 /* private typedef ------------------------------------------------------*/
-
+typedef struct {
+    uint8_t size;
+    uint16_t count;
+    _gt_symbol_st* list;
+}_gt_symbol_list_st;
 
 
 /* static variables -----------------------------------------------------*/
@@ -2003,12 +2007,39 @@ static GT_ATTRIBUTE_RAM_DATA const _gt_symbol_st symbols_24x24[] = {
     { NULL, NULL }
 #endif
 };
+
+// ! Please sort by size from smallest to largest.
+static GT_ATTRIBUTE_RAM_DATA const _gt_symbol_list_st _symbols_list[] = {
+    {.size = 12, .count = sizeof(symbols_12x12) / sizeof(_gt_symbol_st), .list = (_gt_symbol_st *)symbols_12x12, },
+    {.size = 16, .count = sizeof(symbols_16x16) / sizeof(_gt_symbol_st), .list = (_gt_symbol_st *)symbols_16x16, },
+    {.size = 20, .count = sizeof(symbols_20x20) / sizeof(_gt_symbol_st), .list = (_gt_symbol_st *)symbols_20x20, },
+    {.size = 24, .count = sizeof(symbols_24x24) / sizeof(_gt_symbol_st), .list = (_gt_symbol_st *)symbols_24x24, },
+};
 /* macros ---------------------------------------------------------------*/
 
 
 
 /* static functions -----------------------------------------------------*/
+static int _gt_symbol_list_get_index(uint8_t size)
+{
+    uint16_t count = sizeof(_symbols_list) / sizeof(_gt_symbol_list_st);
+    uint16_t idx = 0;
+    for(idx = 0; idx < count; ++idx) {
+        if(_symbols_list[idx].size == size) {
+            return idx;
+        }
+    }
 
+    // not found, find < size
+    int min_idx = -1;
+    for(idx = 0; idx < count; ++idx) {
+        if(_symbols_list[idx].size < size) {
+            min_idx = GT_MAX(min_idx, idx);
+        }
+    }
+
+    return min_idx;
+}
 
 
 /* global functions / API interface -------------------------------------*/
@@ -2040,25 +2071,7 @@ bool gt_symbol_is_valid_range(uint32_t uni_or_gbk)
     return true;
 }
 
-gt_size_t gt_symbol_get_size(uint8_t size)
-{
-    const uint8_t symbol_size[] = {12, 16, 20, 24};
-    uint8_t idx = 0, len = sizeof(symbol_size) / sizeof(symbol_size[0]);
-    uint8_t s_idx = 0, min_s = 0xFF;
-    for(idx = 0; idx < len; ++idx) {
-        if(symbol_size[idx] == size) {
-            return size;
-        }
-        uint8_t diff = gt_abs(symbol_size[idx] - size);
-        if(diff < min_s) {
-            min_s = diff;
-            s_idx = idx;
-        }
-    }
-    return symbol_size[idx];
-}
-
-const uint8_t * gt_symbol_get_mask_buf(uint32_t uni_or_gbk, uint8_t size)
+const uint8_t * gt_symbol_get_mask_buf(uint32_t uni_or_gbk, uint8_t size, uint8_t* r_size)
 {
     uint16_t cnt = 0, idx = 0;
     _gt_symbol_st * tmp_symbol = NULL;
@@ -2066,28 +2079,27 @@ const uint8_t * gt_symbol_get_mask_buf(uint32_t uni_or_gbk, uint8_t size)
 
     gt_unicode_to_utf8((uint8_t * )utf8, uni_or_gbk);
 
-    if (16 == size) {
-        cnt = sizeof(symbols_16x16) / sizeof(_gt_symbol_st);
-        tmp_symbol = (_gt_symbol_st * )symbols_16x16;
-    } else if (24 == size) {
-        cnt = sizeof(symbols_24x24) / sizeof(_gt_symbol_st);
-        tmp_symbol = (_gt_symbol_st * )symbols_24x24;
-    } else if (20 == size) {
-        cnt = sizeof(symbols_20x20) / sizeof(_gt_symbol_st);
-        tmp_symbol = (_gt_symbol_st * )symbols_20x20;
-    } else if (12 == size) {
-        cnt = sizeof(symbols_12x12) / sizeof(_gt_symbol_st);
-        tmp_symbol = (_gt_symbol_st * )symbols_12x12;
-    }
+    int index = _gt_symbol_list_get_index(size);
 
-    if (NULL == tmp_symbol) {
-        return NULL;
-    }
-    while (idx < cnt) {
-        if (gt_memcmp(utf8, tmp_symbol[idx].utf8, 3) == 0) {
-            return tmp_symbol[idx].mask_buf;
+    while(index >= 0) {
+        cnt = _symbols_list[index].count;
+        tmp_symbol = _symbols_list[index].list;
+
+        if(r_size) {
+            *r_size = _symbols_list[index].size;
         }
-        ++idx;
+
+        if (NULL == tmp_symbol) {
+            --index;
+            continue;
+        }
+
+        for(idx = 0; idx < cnt; ++idx) {
+            if (0 == gt_memcmp(utf8, tmp_symbol[idx].utf8, 3)) {
+                return tmp_symbol[idx].mask_buf;
+            }
+        }
+        --index;
     }
 
     return NULL;

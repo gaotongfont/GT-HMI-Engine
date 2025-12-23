@@ -1583,12 +1583,13 @@ _disp_font:
                     }
                 }
             } else {
-                uint8_t symbol_size = gt_symbol_get_size(tmp_font.info.size);
+                uint8_t symbol_size = tmp_font.info.size;
+                uint8_t * temp = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, tmp_font.info.size, &symbol_size);
 
                 if (symbol_size != tmp_font.info.size) {
                     gt_memset(tmp_font.res, 0, data_len);
                 }
-                uint8_t * temp = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, symbol_size);
+
                 if( temp == NULL ){
                     area_font.x += width + space_x;
                     idx_2 += tmp_font.len;
@@ -2118,11 +2119,12 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
                 }
             }
         } else {
-            uint8_t symbol_size = gt_symbol_get_size(tmp_font.info.size);
+            uint8_t symbol_size = tmp_font.info.size;
+            uint8_t * temp = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, tmp_font.info.size, &symbol_size);
             if (symbol_size != tmp_font.info.size) {
                 gt_memset(tmp_font.res, 0, data_len);
             }
-            blend_dsc.mask_buf = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, symbol_size);
+
             if (NULL == blend_dsc.mask_buf) {
                 area_font.x += width + space_x;
                 idx += tmp_font.len;

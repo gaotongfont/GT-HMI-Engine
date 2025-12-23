@@ -500,9 +500,7 @@ typedef struct _gt_symbol_s{
 
 /* global functions / API interface -------------------------------------*/
 bool gt_symbol_is_valid_range(uint32_t uni_or_gbk);
-const uint8_t * gt_symbol_get_mask_buf(uint32_t uni_or_gbk, uint8_t size);
-
-gt_size_t gt_symbol_get_size(uint8_t size);
+const uint8_t * gt_symbol_get_mask_buf(uint32_t uni_or_gbk, uint8_t size, uint8_t* r_size);
 
 
 #if _GT_SYMBOL_PRINTF_VALID_CODE
