@@ -239,6 +239,11 @@ _common_add_event_node(gt_obj_event_attr_st ** event_root_p) {
 }
 
 static void GT_ATTRIBUTE_RAM_TEXT
+_event_delay_exec_cb(void * tar, int32_t val) {
+    // NULL
+}
+
+static void GT_ATTRIBUTE_RAM_TEXT
 _event_delay_send_ready_cb(gt_anim_st * anim) {
     _event_delay_param_st * p = (_event_delay_param_st * )anim->data;
     if (NULL == p) {
@@ -399,6 +404,7 @@ gt_res_t gt_event_send_delay(struct gt_obj_s * parent, gt_event_type_et event, v
     gt_anim_set_data(&an, &param, sizeof(_event_delay_param_st));
     gt_anim_set_time(&an, 0);
     gt_anim_set_time_delay_start(&an, delay_ms);
+    gt_anim_set_exec_cb(&an, _event_delay_exec_cb);
     gt_anim_set_ready_cb(&an, _event_delay_send_ready_cb);
     gt_anim_start(&an);
 }
