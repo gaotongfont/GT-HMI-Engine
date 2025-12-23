@@ -1584,21 +1584,18 @@ _disp_font:
                 }
             } else {
                 uint8_t symbol_size = tmp_font.info.size;
-                uint8_t * temp = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, tmp_font.info.size, &symbol_size);
-
+                blend_dsc.mask_buf = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, tmp_font.info.size, &symbol_size);
                 if (symbol_size != tmp_font.info.size) {
                     gt_memset(tmp_font.res, 0, data_len);
                 }
 
-                if( temp == NULL ){
+                if (NULL == blend_dsc.mask_buf) {
                     area_font.x += width + space_x;
                     idx_2 += tmp_font.len;
                     continue;
                 }
-
                 gt_size_t off = (tmp_font.info.size - symbol_size) >> 1;
                 area_font.y += off;
-                blend_dsc.mask_buf = temp;
                 area_font.w = symbol_size;
                 area_font.h = symbol_size;
                 gt_draw_blend(draw_ctx, &blend_dsc);
@@ -2120,7 +2117,7 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
             }
         } else {
             uint8_t symbol_size = tmp_font.info.size;
-            uint8_t * temp = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, tmp_font.info.size, &symbol_size);
+            blend_dsc.mask_buf = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, tmp_font.info.size, &symbol_size);
             if (symbol_size != tmp_font.info.size) {
                 gt_memset(tmp_font.res, 0, data_len);
             }
