@@ -62,7 +62,8 @@ typedef enum {
 
 #define __GT_CHECK_NAME_IS_SAME(_name1, _name2)     (strcmp(#_name1,#_name2)==0)
 
-#define GT_PY_MAX_NUMB  (8)
+#define GT_PY_MAX_NUMB            (8)
+#define GT_PY_ASCII_RMS_COUNT     (6)
 
 #define GT_FONT_FAMILY_ONE_TYPE  (1 << 15)
 

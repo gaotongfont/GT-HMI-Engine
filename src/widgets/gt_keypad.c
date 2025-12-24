@@ -33,8 +33,29 @@
 #define OBJ_TYPE    GT_TYPE_KEYPAD
 #define MY_CLASS    &gt_keypad_class
 
-
+//
+#define _GT_KEYPADS_SPELL_NUMB      (9)
 /* private typedef ------------------------------------------------------*/
+typedef enum {
+    _CMD_NONE = 0,
+    _CMD_BACKSPACE,
+    _CMD_ENTER,
+    _CMD_LOWER_CASE,
+    _CMD_UPPER_CASE,
+    _CMD_CH,
+    _CMD_EN,
+    _CMD_WELL_NUMBER,
+    _CMD_LEFT,
+    _CMD_RIGHT,
+    _CMD_PREV,
+    _CMD_NEXT,
+}_cmd_type;
+
+typedef struct {
+    const char* const kv;
+    _cmd_type cmd;
+}_cmd_map_st;
+
 typedef struct _gt_keypad_s {
     gt_obj_st obj;
     gt_obj_st* btnmap;
@@ -73,8 +94,6 @@ typedef struct _gt_def_style_param_s {
     gt_radius_t radius;
     gt_radius_t key_radius;
 
-    uint16_t w;
-    uint16_t h;
     uint16_t key_h;
 
     gt_keypad_default_style_st def_style;
@@ -88,9 +107,10 @@ typedef struct _gt_def_style_param_s {
 static void _init_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 static void _scrolling_handler(gt_obj_st * obj);
-static gt_size_t _gt_get_map_index(gt_keypad_map_st * map_list, uint8_t map_total, gt_keypad_type_te type);
 
-
+//
+static void _key_push_btn_kv_cb(gt_obj_st * obj, gt_obj_st * input, const char* const kv);
+static bool _show_special_btn_cb(gt_obj_st* obj, const char* const kv, gt_attr_font_st* font_attr);
 /* static variables -----------------------------------------------------*/
 static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_keypad_class = {
     ._init_cb      = _init_cb,
@@ -100,27 +120,41 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_keypad_class = {
     .size_style    = sizeof(_gt_keypad_st)
 };
 
+static GT_ATTRIBUTE_RAM_DATA const _cmd_map_st _cmd_map_list[] = {
+    {GT_SYMBOL_BACKSPACE, _CMD_BACKSPACE},
+    {GT_SYMBOL_NEW_LINE,  _CMD_ENTER},
+    {GT_SYMBOL_LOWER_CASE,_CMD_LOWER_CASE},
+    {GT_SYMBOL_UPPER_CASE,_CMD_UPPER_CASE},
+    {GT_SYMBOL_CH,        _CMD_CH},
+    {GT_SYMBOL_EN,        _CMD_EN},
+    {GT_SYMBOL_WELL_NUMBER,_CMD_WELL_NUMBER},
+    {GT_SYMBOL_LEFT,      _CMD_LEFT},
+    {GT_SYMBOL_RIGHT,     _CMD_RIGHT},
+    {GT_SYMBOL_PREV,      _CMD_PREV},
+    {GT_SYMBOL_NEXT,      _CMD_NEXT},
 
-/* keypad default style -----------------------------------------------------*/
-#ifdef _DEF_STYLE_26_KEY
-
-#define _GT_KEYPADS_SPELL_NUMB      (9)
+    //
+    {NULL,_CMD_NONE}
+};
 static GT_ATTRIBUTE_RAM_DATA const char _gt_spell[_GT_KEYPADS_SPELL_NUMB][8] = {
     "spell_0", "spell_1", "spell_2", "spell_3", "spell_4", "spell_5", "spell_6", "spell_7", "spell_8",
 };
+/* keypad default style -----------------------------------------------------*/
+
+#ifdef _DEF_STYLE_26_KEY
 // h = 34 * 6 + 3 * 7 = 204 + 24 = 225
 static GT_ATTRIBUTE_RAM_DATA const gt_map_st _low_map_default_26_key[] = {
-    {".",1}, {",",1}, {"?",1}, {";",1}, {":",1}, {"\'",1}, {"\"",1}, {"@",1}, {"(",1}, {")",1}, {GT_BTNMAP_NEW_LINE,0},
+    // {".",1}, {",",1}, {"?",1}, {";",1}, {":",1}, {"\'",1}, {"\"",1}, {"@",1}, {"(",1}, {")",1}, {GT_BTNMAP_NEW_LINE,0},
     {"1",1}, {"2",1}, {"3",1}, {"4",1}, {"5",1}, {"6",1}, {"7",1}, {"8",1}, {"9",1}, {"0",1}, {GT_BTNMAP_NEW_LINE,0},
     {"q",1}, {"w",1}, {"e",1}, {"r",1}, {"t",1}, {"y",1}, {"u",1}, {"i",1}, {"o",1}, {"p",1}, {GT_BTNMAP_NEW_LINE,0},
-    {NULL,1}, {"a",3}, {"s",3}, {"d",3}, {"f",3}, {"g",3}, {"h",3}, {"j",3}, {"k",3}, {"l",3}, {NULL,1}, {GT_BTNMAP_NEW_LINE,0}, {GT_SYMBOL_LOWER_CASE,5},
-    {NULL,1}, {"z",4}, {"x",4}, {"c",4}, {"v",4}, {"b",4}, {"n",4}, {"m",4}, {NULL,1}, {GT_SYMBOL_BACKSPACE,5}, {GT_BTNMAP_NEW_LINE,0},
+    {NULL,1}, {"a",3}, {"s",3}, {"d",3}, {"f",3}, {"g",3}, {"h",3}, {"j",3}, {"k",3}, {"l",3}, {NULL,1}, {GT_BTNMAP_NEW_LINE,0},
+    {GT_SYMBOL_LOWER_CASE,5},{NULL,1}, {"z",4}, {"x",4}, {"c",4}, {"v",4}, {"b",4}, {"n",4}, {"m",4}, {NULL,1}, {GT_SYMBOL_BACKSPACE,5}, {GT_BTNMAP_NEW_LINE,0},
     {GT_SYMBOL_CH,5}, {GT_SYMBOL_WELL_NUMBER,5}, {GT_SYMBOL_LEFT,4}, {GT_SYMBOL_SPACE,12}, {GT_SYMBOL_RIGHT,4}, {GT_SYMBOL_NEW_LINE,8},
     {NULL,0}
 };
 
 static GT_ATTRIBUTE_RAM_DATA const gt_map_st _up_map_default_26_key[] = {
-    {".",1}, {",",1}, {"?",1}, {";",1}, {":",1}, {"\'",1}, {"\"",1}, {"@",1}, {"(",1}, {")",1}, {GT_BTNMAP_NEW_LINE,0},
+    // {".",1}, {",",1}, {"?",1}, {";",1}, {":",1}, {"\'",1}, {"\"",1}, {"@",1}, {"(",1}, {")",1}, {GT_BTNMAP_NEW_LINE,0},
     {"1",1}, {"2",1}, {"3",1}, {"4",1}, {"5",1}, {"6",1}, {"7",1}, {"8",1}, {"9",1}, {"0",1}, {GT_BTNMAP_NEW_LINE,0},
     {"Q",1}, {"W",1}, {"E",1}, {"R",1}, {"T",1}, {"Y",1}, {"U",1}, {"I",1}, {"O",1}, {"P",1}, {GT_BTNMAP_NEW_LINE,0},
     {NULL,1}, {"A",3}, {"S",3}, {"D",3}, {"F",3}, {"G",3}, {"H",3}, {"J",3}, {"K",3}, {"L",3}, {NULL,1}, {GT_BTNMAP_NEW_LINE,0},
@@ -130,7 +164,7 @@ static GT_ATTRIBUTE_RAM_DATA const gt_map_st _up_map_default_26_key[] = {
 };
 
 static GT_ATTRIBUTE_RAM_DATA const gt_map_st _symbol_en_map_default_26_key[] = {
-    {"1",1}, {"2",1}, {"3",1}, {"4",1}, {"5",1}, {"6",1}, {"7",1}, {"8",1}, {"9",1}, {"0",1}, {GT_BTNMAP_NEW_LINE,0},
+    // {"1",1}, {"2",1}, {"3",1}, {"4",1}, {"5",1}, {"6",1}, {"7",1}, {"8",1}, {"9",1}, {"0",1}, {GT_BTNMAP_NEW_LINE,0},
     {"!",1}, {"@",1}, {"#",1}, {"$",1}, {"%",1}, {"^",1}, {"&",1}, {"*",1}, {"(",1}, {")",1}, {GT_BTNMAP_NEW_LINE,0},
     {NULL,1}, {"-",5}, {"+",5}, {"=",5}, {"_",5}, {"{",5}, {"}",5}, {"[",5}, {"]",5}, {"\\",5}, {NULL,1}, {GT_BTNMAP_NEW_LINE,0},
     {NULL,1}, {";",3}, {":",3}, {"\"",3}, {"\'",3}, {"~",3}, {"`",3}, {"/ ",3}, {" |",3}, {NULL,1}, {GT_BTNMAP_NEW_LINE,0},
@@ -140,7 +174,7 @@ static GT_ATTRIBUTE_RAM_DATA const gt_map_st _symbol_en_map_default_26_key[] = {
 };
 
 static GT_ATTRIBUTE_RAM_DATA const gt_map_st _ch_map_default_26_key[] = {
-    {_gt_spell[0],1}, {GT_BTNMAP_NEW_LINE,0},
+    // {_gt_spell[0],1}, {GT_BTNMAP_NEW_LINE,0},
     {GT_SYMBOL_PREV,1}, {_gt_spell[1],1}, {_gt_spell[2],1}, {_gt_spell[3],1}, {_gt_spell[4],1}, {_gt_spell[5],1}, {_gt_spell[6],1}, {_gt_spell[7],1}, {_gt_spell[8],1}, {GT_SYMBOL_NEXT,1}, {GT_BTNMAP_NEW_LINE,0},
     {"q",1}, {"w",1}, {"e",1}, {"r",1}, {"t",1}, {"y",1}, {"u",1}, {"i",1}, {"o",1}, {"p",1}, {GT_BTNMAP_NEW_LINE,0},
     {NULL,1}, {"a",3}, {"s",3}, {"d",3}, {"f",3}, {"g",3}, {"h",3}, {"j",3}, {"k",3}, {"l",3}, {NULL,1}, {GT_BTNMAP_NEW_LINE,0},
@@ -149,197 +183,12 @@ static GT_ATTRIBUTE_RAM_DATA const gt_map_st _ch_map_default_26_key[] = {
     {NULL,0},
 };
 
-static const char * _def_26_key_user_icon_key_list[] = {
-    GT_SYMBOL_BACKSPACE,
-    GT_SYMBOL_NEW_LINE,
-    GT_SYMBOL_LOWER_CASE,
-    GT_SYMBOL_UPPER_CASE,
-    GT_SYMBOL_CH,
-    GT_SYMBOL_EN,
-    GT_SYMBOL_WELL_NUMBER,
-    GT_SYMBOL_LEFT,
-    GT_SYMBOL_RIGHT,
-    GT_SYMBOL_PREV,
-    GT_SYMBOL_NEXT,
-    NULL,
-};
-
 static GT_ATTRIBUTE_RAM_DATA const gt_keypad_map_st _list_default_26_key[] = {
     {.type = GT_KEYPAD_TYPE_LOWER, .map = _low_map_default_26_key},
     {.type = GT_KEYPAD_TYPE_UPPER, .map = _up_map_default_26_key},
     {.type = GT_KEYPAD_TYPE_SYMBOL_EN, .map = _symbol_en_map_default_26_key},
     {.type = GT_KEYPAD_TYPE_CH, .map = _ch_map_default_26_key},
 };
-
-
-static gt_size_t _gt_get_spell_index(char const * const kv) {
-    gt_size_t idx = 0;
-
-    if (kv == NULL) {
-        return -1;
-    }
-
-    for (idx = 0; idx < _GT_KEYPADS_SPELL_NUMB; idx++) {
-        if(strcmp((const char * )_gt_spell[idx], kv) == 0) {
-            return idx;
-        }
-    }
-
-    return -1;
-}
-
-static uint8_t * _gt_spell_get_text(gt_py_input_method_st * py_input_mt,  uint8_t index) {
-    if (!py_input_mt) {
-        return (uint8_t * )"";
-    }
-
-    if (index == 0 && py_input_mt->ascii_numb > 0) {
-        return py_input_mt->ascii;
-    }
-    else if (index > 0 && py_input_mt->chinese_numb > 0) {
-        return py_input_mt->chinese[index-1];
-    }
-    return (uint8_t * )"";
-}
-
-static void _def_26_key_push_btn_kv_handler( gt_obj_st * obj,  gt_obj_st * input, const char* const kv) {
-    if (!obj || !kv) {
-        return ;
-    }
-    gt_py_input_method_st* py_input_mt = gt_btnmap_get_py_input_method(obj);
-    gt_keypad_type_te tmp_keypad_type;
-    gt_size_t idx = -1;
-    uint16_t type = gt_btnmap_get_map_type(obj);
-    gt_obj_st* keypad_obj = obj->parent;
-
-    if (0 == strcmp(kv, GT_SYMBOL_SPACE)) {
-        gt_input_append_value(input, " ");
-    }
-    else if (0 == strcmp(kv, GT_SYMBOL_BACKSPACE)) {
-        if(py_input_mt && GT_KEYPAD_TYPE_CH == type && gt_py_input_method_get_ascii_numb(py_input_mt) > 0){
-            gt_py_input_method_pop_ascii(py_input_mt);
-            goto _get_chinese;
-        }
-        gt_input_del_value(input);
-    }
-    else if (0 == strcmp(kv, GT_SYMBOL_NEW_LINE)) {
-        gt_obj_st* parent = gt_obj_get_parent(obj);
-        if (false == gt_obj_is_type(parent, OBJ_TYPE)) {
-            return ;
-        }
-        _gt_keypad_st* kp = (_gt_keypad_st*)parent;
-        if(kp->enter_cb) {
-            kp->enter_cb();
-        }
-        // gt_input_append_value(input, "\n");
-    }
-    else if (0 == strcmp(kv, GT_SYMBOL_UPPER_CASE) || 0 == strcmp(kv, GT_SYMBOL_EN)) {
-        gt_keypad_set_type(keypad_obj, GT_KEYPAD_TYPE_LOWER);
-    }
-    else if (0 == strcmp(kv, GT_SYMBOL_LOWER_CASE)) {
-        gt_keypad_set_type(keypad_obj, GT_KEYPAD_TYPE_UPPER);
-    }
-    else if (0 == strcmp(kv, GT_SYMBOL_WELL_NUMBER)) {
-        tmp_keypad_type = (type != GT_KEYPAD_TYPE_SYMBOL_EN) ? GT_KEYPAD_TYPE_SYMBOL_EN : GT_KEYPAD_TYPE_LOWER;
-        gt_keypad_set_type(keypad_obj, tmp_keypad_type);
-    }
-    else if (0 == strcmp(kv, GT_SYMBOL_CH)) {
-        if (!py_input_mt) {
-            GT_LOGW(GT_LOG_TAG_GUI, "Keyboard does not create pinyin input method!!!");
-            return ;
-        }
-        gt_keypad_set_type(keypad_obj, GT_KEYPAD_TYPE_CH);
-    }
-    else if (0 == strcmp(kv, GT_SYMBOL_LEFT)) {
-        gt_input_move_left_pos_cursor(input);
-    }
-    else if (0 == strcmp(kv, GT_SYMBOL_RIGHT)) {
-        gt_input_move_right_pos_cursor(input);
-    }
-    else if (0 == strcmp(kv, GT_SYMBOL_PREV)) {
-        if (!py_input_mt || py_input_mt->chinese_numb <= 0) return ;
-        gt_py_input_method_last_page(py_input_mt);
-        gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
-    }
-    else if (0 == strcmp(kv, GT_SYMBOL_NEXT)) {
-        if(!py_input_mt || py_input_mt->chinese_numb <= 0) return ;
-        gt_py_input_method_next_page(py_input_mt);
-        gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
-    }
-    else {
-        idx = _gt_get_spell_index(kv);
-        if (idx < 0 && GT_KEYPAD_TYPE_CH != type) {
-            gt_input_append_value(input, (char*)kv);
-            return ;
-        }
-
-        if (!py_input_mt) return ;
-
-        if (idx < 0 && GT_KEYPAD_TYPE_CH == type) {
-            if (py_input_mt->ascii_numb >= GT_PY_MAX_NUMB) {
-                return ;
-            }
-
-            gt_py_input_method_push_ascii(py_input_mt, *kv);
-
-_get_chinese:
-            if (!gt_py_input_method_get_chinese(py_input_mt)) {
-                gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
-                return ;
-            }
-
-            gt_py_input_method_chinese_data_handler(py_input_mt);
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
-            return ;
-        }
-        else if (0 == idx) {
-            uint8_t *tmp_str = _gt_spell_get_text(py_input_mt, idx);
-            gt_input_append_value(input, (char*)tmp_str);
-            gt_py_input_method_clean(py_input_mt);
-            gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
-            return ;
-        }
-
-        uint8_t *tmp_str = _gt_spell_get_text(py_input_mt, idx);
-        gt_input_append_value(input, (char*)tmp_str);
-
-        gt_py_input_method_select_text(py_input_mt, idx);
-        gt_py_input_method_chinese_data_handler(py_input_mt);
-        gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
-    }
-}
-
-static bool _gt_keypad_check_key_is_ctl(char const * const kv) {
-    if (kv == NULL) {
-        return false;
-    }
-    gt_size_t idx = 0;
-    while (_def_26_key_user_icon_key_list[idx] != NULL) {
-        if (strcmp(_def_26_key_user_icon_key_list[idx], kv) == 0) {
-            return true;
-        }
-        idx++;
-    }
-    return false;
-}
-
-static bool _def_26_key_show_special_btn_handler(gt_obj_st* obj, const char* const kv, gt_attr_font_st* font_attr) {
-    if (_gt_keypad_check_key_is_ctl(kv)) {
-        return true;
-    }
-
-    gt_size_t idx = _gt_get_spell_index(kv);
-    if (idx < 0) {
-        return false;
-    }
-
-    gt_py_input_method_st* py_input_mt = gt_btnmap_get_py_input_method(obj);
-    uint8_t *tmp_str = _gt_spell_get_text(py_input_mt, idx);
-
-    font_attr->font->utf8 = (char * )tmp_str;
-    font_attr->font->len = strlen((const char * )tmp_str);
-    return false;
-}
 
 #endif // _DEF_STYLE_26_KEY
 
@@ -355,36 +204,6 @@ static GT_ATTRIBUTE_RAM_DATA const gt_map_st _numb_map_default_number[] = {
 static GT_ATTRIBUTE_RAM_DATA const gt_keypad_map_st _list_default_number[] = {
     {.type = GT_KEYPAD_TYPE_NUMBER, .map = _numb_map_default_number},
 };
-
-static bool _def_number_show_special_btn_handler(gt_obj_st* obj, const char* const kv, gt_attr_font_st* font_attr) {
-    if ( 0 == strcmp(GT_SYMBOL_BACKSPACE, kv)
-        || 0 == strcmp(GT_SYMBOL_NEW_LINE, kv)
-    ) {
-        return true;
-    }
-
-    return false;
-}
-
-static void _def_number_push_btn_kv_handler( gt_obj_st * obj,  gt_obj_st * input, const char* const kv) {
-    if (0 == strcmp(kv, GT_SYMBOL_NEW_LINE)) {
-        // gt_input_append_value(input, "\n");
-        gt_obj_st* parent = gt_obj_get_parent(obj);
-        if (false == gt_obj_is_type(parent, OBJ_TYPE)) {
-            return ;
-        }
-        _gt_keypad_st* kp = (_gt_keypad_st*)parent;
-        if(kp->enter_cb) {
-            kp->enter_cb();
-        }
-    }
-    else if(0 == strcmp(kv, GT_SYMBOL_BACKSPACE)) {
-        gt_input_del_value(input);
-    }
-    else {
-        gt_input_append_value(input, (char*)kv);
-    }
-}
 
 #endif // _DEF_STYLE_NUMBER
 
@@ -467,8 +286,6 @@ static GT_ATTRIBUTE_RAM_DATA const _gt_def_style_param_st _def_style_list[] = {
         .def_style = GT_KEYPAD_STYLE_26_KEY,
         .map_list = _list_default_26_key,
         .map_total = sizeof(_list_default_26_key) / sizeof(gt_keypad_map_st),
-        .w = 304,
-        .h = 225,
         .radius = 6,
         .bg_color = 0xD2D3D7,
         .border_width = 0,
@@ -480,8 +297,8 @@ static GT_ATTRIBUTE_RAM_DATA const _gt_def_style_param_st _def_style_list[] = {
         .key_border_color = 0xFFFFFF,
         .key_x_space = 3,
         .key_y_space = 3,
-        ._show_special_btn_cb = _def_26_key_show_special_btn_handler,
-        ._push_btn_kv_cb = _def_26_key_push_btn_kv_handler,
+        ._show_special_btn_cb = _show_special_btn_cb,
+        ._push_btn_kv_cb = _key_push_btn_kv_cb,
         .ctrl_key_bg_color = 0xBAC1CB,
         .ctrl_key_border_width = 0,
         .ctrl_key_border_color = 0xBAC1CB,
@@ -493,8 +310,6 @@ static GT_ATTRIBUTE_RAM_DATA const _gt_def_style_param_st _def_style_list[] = {
         .def_style = GT_KEYPAD_STYLE_NUMBER,
         .map_list = _list_default_number,
         .map_total = sizeof(_list_default_number) / sizeof(gt_keypad_map_st),
-        .w = 200,
-        .h = 200,
         .radius = 6,
         .bg_color = 0x242424,
         .border_width = 0,
@@ -506,8 +321,8 @@ static GT_ATTRIBUTE_RAM_DATA const _gt_def_style_param_st _def_style_list[] = {
         .key_border_color = 0x646464,
         .key_x_space = 3,
         .key_y_space = 6,
-        ._show_special_btn_cb = _def_number_show_special_btn_handler,
-        ._push_btn_kv_cb = _def_number_push_btn_kv_handler,
+        ._show_special_btn_cb = _show_special_btn_cb,
+        ._push_btn_kv_cb = _key_push_btn_kv_cb,
         .ctrl_key_bg_color = 0x3E3E3E,
         .ctrl_key_border_width = 0,
         .ctrl_key_border_color = 0x3E3E3E,
@@ -519,8 +334,6 @@ static GT_ATTRIBUTE_RAM_DATA const _gt_def_style_param_st _def_style_list[] = {
         .def_style = GT_KEYPAD_STYLE_OTHER_4x5,
         .map_list = _list_default_tlb,
         .map_total = sizeof(_list_default_tlb) / sizeof(gt_keypad_map_st),
-        .w = 191,
-        .h = 238,
         .radius = 6,
         .bg_color = 0x0A1143,
         .border_width = 0,
@@ -545,8 +358,6 @@ static GT_ATTRIBUTE_RAM_DATA const _gt_def_style_param_st _def_style_list[] = {
         .def_style = GT_KEYPAD_STYLE_OTHER_11x3,
         .map_list = _list_default_fyb_369,
         .map_total = sizeof(_list_default_fyb_369) / sizeof(gt_keypad_map_st),
-        .w = 586,
-        .h = 126,
         .radius = 6,
         .bg_color = 0x000000,
         .border_width = 0,
@@ -566,6 +377,332 @@ static GT_ATTRIBUTE_RAM_DATA const _gt_def_style_param_st _def_style_list[] = {
     },
 #endif // _DEF_STYLE_OTHER_11x3
 };
+
+/* macros ---------------------------------------------------------------*/
+
+
+/* static functions -----------------------------------------------------*/
+static _cmd_type _get_cmd_type(const char* const kv)
+{
+    if(NULL == kv) {
+        return _CMD_NONE;
+    }
+
+    uint16_t count = sizeof(_cmd_map_list) / sizeof(_cmd_map_st);
+
+    for (uint16_t i = 0; i < count; i++) {
+        const char* _cmd = _cmd_map_list[i].kv;
+        if(NULL == _cmd) {
+            return _CMD_NONE;
+        }
+
+        int kv_len = strlen(kv);
+        int cmd_len = strlen(_cmd_map_list[i].kv);
+
+        if(kv_len != cmd_len) {
+            continue;
+        }
+
+        if (strcmp(kv, _cmd) == 0) {
+            return _cmd_map_list[i].cmd;
+        }
+    }
+    return _CMD_NONE;
+}
+
+static gt_size_t _gt_get_spell_index(char const * const kv) {
+    gt_size_t idx = 0;
+
+    if (kv == NULL) {
+        return -1;
+    }
+
+    for (idx = 0; idx < _GT_KEYPADS_SPELL_NUMB; idx++) {
+        if(strcmp((const char * )_gt_spell[idx], kv) == 0) {
+            return idx;
+        }
+    }
+
+    return -1;
+}
+
+static uint8_t * _gt_spell_get_text(gt_py_input_method_st * py_input_mt,  uint8_t index) {
+    if (!py_input_mt) {
+        return (uint8_t * )"";
+    }
+
+    if (index == 0 && py_input_mt->ascii_numb > 0) {
+        return py_input_mt->ascii;
+    }
+    else if (index > 0 && py_input_mt->chinese_numb > 0) {
+        return py_input_mt->chinese[index-1];
+    }
+    return (uint8_t * )"";
+}
+
+static void _py_input_method_get_chinese(gt_py_input_method_st* py_input_mt)
+{
+    if (!gt_py_input_method_get_chinese(py_input_mt)) {
+        return ;
+    }
+
+    gt_py_input_method_chinese_data_handler(py_input_mt);
+}
+
+static void _cmd_backspace_handler(gt_obj_st * obj, gt_obj_st * input, const char* const kv)
+{
+    uint16_t type = gt_btnmap_get_map_type(obj);
+    gt_py_input_method_st* py_input_mt = gt_btnmap_get_py_input_method(obj);
+
+    gt_input_del_value(input);
+
+    if( py_input_mt
+        && GT_KEYPAD_TYPE_CH == type
+        && gt_py_input_method_get_ascii_numb(py_input_mt) > 0
+    ) {
+        gt_py_input_method_pop_ascii(py_input_mt);
+        _py_input_method_get_chinese(py_input_mt);
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
+    }
+}
+
+static void _cmd_enter_handler(gt_obj_st * obj, gt_obj_st * input, const char* const kv)
+{
+    gt_obj_st* parent = gt_obj_get_parent(obj);
+    if(false == gt_obj_is_type(parent, OBJ_TYPE)) {
+        return ;
+    }
+
+    _gt_keypad_st* kp = (_gt_keypad_st*)parent;
+    if(kp->enter_cb) {
+        kp->enter_cb();
+    }
+}
+
+static void _cmd_lower_case_handler(gt_obj_st * obj)
+{
+    gt_obj_st* parent = gt_obj_get_parent(obj);
+    if(false == gt_obj_is_type(parent, OBJ_TYPE)) {
+        return ;
+    }
+    gt_keypad_set_type(parent, GT_KEYPAD_TYPE_LOWER);
+}
+
+static void _cmd_upper_case_handler(gt_obj_st * obj)
+{
+    gt_obj_st* parent = gt_obj_get_parent(obj);
+    if(false == gt_obj_is_type(parent, OBJ_TYPE)) {
+        return ;
+    }
+    gt_keypad_set_type(parent, GT_KEYPAD_TYPE_UPPER);
+}
+
+static void _cmd_ch_handler(gt_obj_st * obj, gt_obj_st * input, const char* const kv)
+{
+    gt_obj_st* parent = gt_obj_get_parent(obj);
+    if(false == gt_obj_is_type(parent, OBJ_TYPE)) {
+        return ;
+    }
+    gt_py_input_method_st* py_input_mt = gt_btnmap_get_py_input_method(obj);
+    if(py_input_mt) {
+        gt_py_input_method_clean(py_input_mt);
+    }
+
+    gt_keypad_set_type(parent, GT_KEYPAD_TYPE_CH);
+}
+
+static void _cmd_en_handler(gt_obj_st * obj)
+{
+    gt_obj_st* parent = gt_obj_get_parent(obj);
+    if(false == gt_obj_is_type(parent, OBJ_TYPE)) {
+        return ;
+    }
+
+    gt_keypad_set_type(parent, GT_KEYPAD_TYPE_LOWER);
+}
+
+static void _cmd_well_number_handler(gt_obj_st * obj)
+{
+    gt_obj_st* parent = gt_obj_get_parent(obj);
+    if(false == gt_obj_is_type(parent, OBJ_TYPE)) {
+        return ;
+    }
+
+    uint16_t type = gt_btnmap_get_map_type(obj);
+    gt_keypad_type_te tmp_type = (type != GT_KEYPAD_TYPE_SYMBOL_EN) ? GT_KEYPAD_TYPE_SYMBOL_EN : GT_KEYPAD_TYPE_LOWER;
+    gt_keypad_set_type(parent, tmp_type);
+}
+
+static void _cmd_left_handler(gt_obj_st * obj, gt_obj_st * input, const char* const kv)
+{
+    uint16_t type = gt_btnmap_get_map_type(obj);
+    gt_py_input_method_st* py_input_mt = gt_btnmap_get_py_input_method(obj);
+
+    if(GT_KEYPAD_TYPE_CH == type && py_input_mt->ascii_numb > 0) {
+        return ;
+    }
+
+    gt_input_move_left_pos_cursor(input);
+}
+
+static void _cmd_right_handler(gt_obj_st * obj, gt_obj_st * input, const char* const kv)
+{
+    uint16_t type = gt_btnmap_get_map_type(obj);
+    gt_py_input_method_st* py_input_mt = gt_btnmap_get_py_input_method(obj);
+
+    if(GT_KEYPAD_TYPE_CH == type && py_input_mt->ascii_numb > 0) {
+        return ;
+    }
+
+    gt_input_move_right_pos_cursor(input);
+}
+
+static void _cmd_prev_handler(gt_obj_st * obj, gt_obj_st * input, const char* const kv)
+{
+    uint16_t type = gt_btnmap_get_map_type(obj);
+    gt_py_input_method_st* py_input_mt = gt_btnmap_get_py_input_method(obj);
+
+    if (!py_input_mt || py_input_mt->chinese_numb <= 0) {
+        return;
+    }
+
+    gt_py_input_method_last_page(py_input_mt);
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
+}
+
+static void _cmd_next_handler(gt_obj_st * obj, gt_obj_st * input, const char* const kv)
+{
+    uint16_t type = gt_btnmap_get_map_type(obj);
+    gt_py_input_method_st* py_input_mt = gt_btnmap_get_py_input_method(obj);
+
+    if (!py_input_mt || py_input_mt->chinese_numb <= 0) {
+        return;
+    }
+
+    gt_py_input_method_next_page(py_input_mt);
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
+}
+
+static void _cmd_default_handler(gt_obj_st * obj, gt_obj_st * input, const char* const kv)
+{
+    uint16_t type = gt_btnmap_get_map_type(obj);
+    gt_py_input_method_st* py_input_mt = gt_btnmap_get_py_input_method(obj);
+    gt_size_t idx = _gt_get_spell_index(kv);
+
+    if(GT_KEYPAD_TYPE_CH != type) {
+        gt_input_append_value(input, (char*)kv);
+        return ;
+    }
+
+    if(!py_input_mt) {
+        return ;
+    }
+
+    if(idx < 0) {
+        if(py_input_mt->ascii_numb >= GT_PY_ASCII_RMS_COUNT) {
+            return ;
+        }
+        gt_input_append_value(input, (char*)kv);
+        gt_py_input_method_push_ascii(py_input_mt, *kv);
+        _py_input_method_get_chinese(py_input_mt);
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
+        return ;
+    }
+    else if(0 == idx){
+        gt_py_input_method_clean(py_input_mt);
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
+        return ;
+    }
+
+    // idx > 0
+    uint8_t *tmp_str = _gt_spell_get_text(py_input_mt, idx);
+    for(uint8_t i = 0; i < py_input_mt->ascii_numb; ++i) {
+        gt_input_del_value(input);
+    }
+    gt_input_append_value(input, (char*)tmp_str);
+
+    if(0 == py_input_mt->ascii_numb && 0 == py_input_mt->chinese_numb) {
+        return ;
+    }
+
+    gt_py_input_method_select_text(py_input_mt, idx);
+    gt_py_input_method_chinese_data_handler(py_input_mt);
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_REDRAW, NULL);
+}
+
+static void _key_push_btn_kv_cb(gt_obj_st * obj, gt_obj_st * input, const char* const kv) {
+    if(!obj || !kv) {
+        return ;
+    }
+
+    int len = strlen(kv);
+    if(strlen(GT_SYMBOL_SPACE) == len && 0 == strcmp(kv, GT_SYMBOL_SPACE)) {
+        gt_input_append_value(input, " ");
+        return ;
+    }
+
+    _cmd_type cmd = _get_cmd_type(kv);
+
+    switch (cmd) {
+        case _CMD_BACKSPACE:
+            _cmd_backspace_handler(obj, input, kv);
+            break;
+        case _CMD_ENTER:
+            _cmd_enter_handler(obj, input, kv);
+            break;
+        case _CMD_LOWER_CASE:
+            _cmd_upper_case_handler(obj);
+            break;
+        case _CMD_UPPER_CASE:
+            _cmd_lower_case_handler(obj);
+            break;
+        case _CMD_CH:
+            _cmd_ch_handler(obj, input, kv);
+            break;
+        case _CMD_EN:
+            _cmd_en_handler(obj);
+            break;
+        case _CMD_WELL_NUMBER:
+            _cmd_well_number_handler(obj);
+            break;
+        case _CMD_LEFT:
+            _cmd_left_handler(obj, input, kv);
+            break;
+        case _CMD_RIGHT:
+            _cmd_right_handler(obj, input, kv);
+            break;
+        case _CMD_PREV:
+            _cmd_prev_handler(obj, input, kv);
+            break;
+        case _CMD_NEXT:
+            _cmd_next_handler(obj, input, kv);
+            break;
+        default:
+            _cmd_default_handler(obj, input, kv);
+            break;
+    }
+
+}
+
+static bool _show_special_btn_cb(gt_obj_st* obj, const char* const kv, gt_attr_font_st* font_attr)
+{
+    _cmd_type cmd_type = _get_cmd_type(kv);
+    if(_CMD_NONE != cmd_type) {
+        return true;
+    }
+
+    gt_size_t idx = _gt_get_spell_index(kv);
+    if (idx < 0) {
+        return false;
+    }
+
+    gt_py_input_method_st* py_input_mt = gt_btnmap_get_py_input_method(obj);
+    uint8_t *tmp_str = _gt_spell_get_text(py_input_mt, idx);
+
+    font_attr->font->utf8 = (char * )tmp_str;
+    font_attr->font->len = strlen((const char * )tmp_str);
+    return false;
+}
 
 static GT_ATTRIBUTE_RAM_TEXT void _gt_switch_default_style(gt_obj_st * keypad, gt_keypad_default_style_st def_style) {
     _gt_keypad_st* style = (_gt_keypad_st*)keypad;
@@ -595,7 +732,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_switch_default_style(gt_obj_st * keypad, g
     gt_keypad_set_key_xy_space(keypad, item->key_x_space, item->key_y_space);
     gt_keypad_set_ctrl_key_color_background(keypad, gt_color_hex(item->ctrl_key_bg_color));
     gt_keypad_set_ctrl_key_border_width_and_color(keypad, item->ctrl_key_border_width, gt_color_hex(item->ctrl_key_border_color));
-    gt_obj_set_size(keypad, item->w, item->h);
+
     // def
     if( GT_KEYPAD_STYLE_OTHER_4x5 == style->def_style
         || GT_KEYPAD_STYLE_OTHER_11x3 == style->def_style
@@ -620,10 +757,6 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _set_minimum_width(gt_obj_st * keypad) 
     }
 }
 
-/* macros ---------------------------------------------------------------*/
-
-
-/* static functions -----------------------------------------------------*/
 /**
  * @brief obj init keypad widget call back
  *

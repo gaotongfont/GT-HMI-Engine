@@ -377,7 +377,7 @@ static _gt_font_offset_list_st _font_offset_list = {NULL, 0};
 /* macros ---------------------------------------------------------------*/
 static gt_encoding_et _gt_project_encoding = GT_ENCODING_UTF8;
 #ifdef PINYIN_INPUT_METHOD_EN
-static GT_ATTRIBUTE_RAM_DATA py_info_st* _gt_py_info;
+static py_info_st* _gt_py_info;
 #endif
 /* static functions -----------------------------------------------------*/
 static int _get_font_width(uint32_t uni_or_gbk, uint16_t option, uint16_t font_size, uint8_t gray, uint8_t * res)
@@ -2417,7 +2417,7 @@ input_met_ret:
 void gt_py_input_method_push_ascii(gt_py_input_method_st* py_input_method, uint8_t ch)
 {
 #if ((defined(PINYIN_INPUT_METHOD_EN)) && (GT_CFG_ENABLE_ZK_SPELL == 1)&&(GT_CFG_ENABLE_ZK_FONT == 1))
-    if(!py_input_method || py_input_method->ascii_numb >= 6){
+    if(!py_input_method || py_input_method->ascii_numb >= GT_PY_ASCII_RMS_COUNT){
         return;
     }
 
@@ -2508,6 +2508,7 @@ void gt_py_input_method_clean(gt_py_input_method_st* py_input_method)
     py_input_method->ascii_numb = 0;
     py_input_method->chinese_numb = 0;
     py_input_method->ascii[py_input_method->ascii_numb] = '\0';
+    py_input_method->ascii[py_input_method->chinese_numb] = '\0';
 #endif
 }
 
