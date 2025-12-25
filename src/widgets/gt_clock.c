@@ -573,6 +573,9 @@ uint32_t gt_clock_get_time(gt_obj_st * obj, gt_clock_time_st * time)
         time->hour = _get_hour(clock->time_current);
         time->minute = _get_minute(clock->time_current);
         time->second = _get_second(clock->time_current);
+        time->day = _get_day(clock->time_current);
+        time->month = _get_month(clock->time_current);
+        time->year = _get_year(clock->time_current);
     }
     return _get_hour(clock->time_current) * 3600 + _get_minute(clock->time_current) * 60 + _get_second(clock->time_current);
 }
@@ -587,6 +590,9 @@ uint32_t gt_clock_get_alert_time(gt_obj_st * obj, gt_clock_time_st * time)
         time->hour = _get_hour(clock->time_setup);
         time->minute = _get_minute(clock->time_setup);
         time->second = _get_second(clock->time_setup);
+        time->day = _get_day(clock->time_setup);
+        time->month = _get_month(clock->time_setup);
+        time->year = _get_year(clock->time_setup);
     }
     return _get_hour(clock->time_setup) * 3600 + _get_minute(clock->time_setup) * 60 + _get_second(clock->time_setup);
 }
