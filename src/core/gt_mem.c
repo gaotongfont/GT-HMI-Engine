@@ -149,6 +149,11 @@ typedef struct {
 #if GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM
     uint32_t failed_count;
 #endif
+
+#if GT_MEM_USE_MUTEX
+    gt_mem_mutex_st mutex_ctrl;
+#endif
+
 }_mem_heap_info_st;
 
 /* static variables -----------------------------------------------------*/
@@ -162,7 +167,6 @@ static GT_ATTRIBUTE_LARGE_RAM_ARRAY MEM_UNIT _mem_pool_int[GT_MEM_SIZE / sizeof(
 
 static GT_ATTRIBUTE_RAM_DATA gt_tlsf_t _tlsf = NULL;
 static GT_ATTRIBUTE_RAM_DATA _mem_heap_info_st _heap_info = {0};
-
 #else
 /**
  * @brief 映射底层函数接口
@@ -180,6 +184,25 @@ static GT_ATTRIBUTE_RAM_DATA gt_mem_hooks_st _self = {
 
 
 /* static functions -----------------------------------------------------*/
+#if GT_MEM_USE_MUTEX
+static inline gt_res_t GT_ATTRIBUTE_RAM_TEXT
+_mem_mutex_lock(void) {
+    if (NULL == _heap_info.mutex_ctrl.lock_cb) {
+        return GT_RES_OK;
+    }
+    _heap_info.mutex_ctrl.lock_cb(_heap_info.mutex_ctrl.mtx_hdl, _heap_info.mutex_ctrl.wait_ms);
+    return GT_RES_OK;
+}
+
+static inline gt_res_t GT_ATTRIBUTE_RAM_TEXT
+_mem_mutex_unlock(void) {
+    if (NULL == _heap_info.mutex_ctrl.unlock_cb) {
+        return GT_RES_OK;
+    }
+    _heap_info.mutex_ctrl.unlock_cb(_heap_info.mutex_ctrl.mtx_hdl);
+    return GT_RES_OK;
+}
+#endif
 
 
 #if USE_MEM_TRACE_DEBUG_BY_FILE || USE_MEM_MAX_REMARK || USE_MEM_BIG_UNIT_REMARK || USE_MEM_LOG_PRINT || USE_MEM_REAL_USED_REMARK
@@ -206,12 +229,18 @@ static GT_ATTRIBUTE_RAM_TEXT size_t _gt_block_size(void * ptr) {
  */
 static GT_ATTRIBUTE_RAM_TEXT inline void *_gt_malloc_hooks(size_t size) {
     void * ptr = NULL;
+#if GT_MEM_USE_MUTEX
+    _mem_mutex_lock();
+#endif
 #if GT_MEM_CUSTOM
     ptr = gt_tlsf_malloc(_tlsf, size);
 #else
     if (_self.malloc_hooks) {
         ptr = _self.malloc_hooks(size);
     }
+#endif
+#if GT_MEM_USE_MUTEX
+    _mem_mutex_unlock();
 #endif
     return ptr;
 }
@@ -225,12 +254,18 @@ static GT_ATTRIBUTE_RAM_TEXT inline void *_gt_malloc_hooks(size_t size) {
  */
 static GT_ATTRIBUTE_RAM_TEXT inline void *_gt_realloc_hooks(void * old_ptr, size_t size) {
     void * ptr = NULL;
+#if GT_MEM_USE_MUTEX
+    _mem_mutex_lock();
+#endif
 #if GT_MEM_CUSTOM
     ptr = gt_tlsf_realloc(_tlsf, old_ptr, size);
 #else
     if (_self.realloc_hooks) {
         ptr = _self.realloc_hooks(old_ptr, size);
     }
+#endif
+#if GT_MEM_USE_MUTEX
+    _mem_mutex_unlock();
 #endif
     return ptr;
 }
@@ -241,6 +276,9 @@ static GT_ATTRIBUTE_RAM_TEXT inline void *_gt_realloc_hooks(void * old_ptr, size
  * @param ptr
  */
 static GT_ATTRIBUTE_RAM_TEXT inline void _gt_free_hooks(void * ptr) {
+#if GT_MEM_USE_MUTEX
+    _mem_mutex_lock();
+#endif
 #if GT_MEM_CUSTOM
     gt_tlsf_free(_tlsf, ptr);
 #else
@@ -248,7 +286,11 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _gt_free_hooks(void * ptr) {
         _self.free_hooks(ptr);
     }
 #endif
+#if GT_MEM_USE_MUTEX
+    _mem_mutex_unlock();
+#endif
 }
+
 #if GT_USE_MEM_ILLEGAL_POINTER_HANDLE
 static inline bool GT_ATTRIBUTE_RAM_TEXT
 _mem_illegal_pointer_hdl(char * name, void * ptr) {
@@ -269,7 +311,7 @@ _mem_illegal_pointer_hdl(char * name, void * ptr) {
     if (0 == start && 0 == end) {
         return false;
     }
-    GT_LOGE(GT_LOG_TAG_MEM, "[%s] event get illegal ptr: %p", name, ptr);
+    GT_LOGE(GT_LOG_TAG_MEM, "[%s] get illegal ptr: %p, legal: [0x%x, 0x%x]", name, ptr, start, end);
     gt_sleep_ms(10);
     _heap_info.illegal_pointer_cb();
     return true;
@@ -277,6 +319,18 @@ _mem_illegal_pointer_hdl(char * name, void * ptr) {
 #endif
 
 /* global functions / API interface -------------------------------------*/
+#if GT_MEM_USE_MUTEX
+void gt_mem_register_mutex(gt_mem_mutex_st const * const mutex_params)
+{
+    gt_memcpy(&_heap_info.mutex_ctrl, mutex_params, sizeof(gt_mem_mutex_st));
+}
+
+gt_mem_mutex_st * gt_mem_get_mutex_hdl(void)
+{
+    return &_heap_info.mutex_ctrl;
+}
+#endif
+
 #if GT_USE_MEM_ILLEGAL_POINTER_HANDLE
 void gt_mem_register_illegal_pointer_event(gt_illegal_pointer_hdl_cb cb)
 {

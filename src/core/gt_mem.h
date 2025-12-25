@@ -22,12 +22,20 @@ extern "C" {
 #include "../others/gt_types.h"
 
 /* define ---------------------------------------------------------------*/
+#ifndef GT_MEM_USE_MUTEX
+    /**
+     * @brief Mult thread mode suggest enabled
+     *      default: 0
+     */
+    #define GT_MEM_USE_MUTEX                        0
+#endif
+
 #ifndef GT_USE_MEM_ILLEGAL_POINTER_HANDLE
     /**
      * @brief Register illegal memory pointer handle callback
      *      default: 0
      */
-    #define GT_USE_MEM_ILLEGAL_POINTER_HANDLE      0
+    #define GT_USE_MEM_ILLEGAL_POINTER_HANDLE       0
 #endif
 
 
@@ -65,6 +73,19 @@ typedef struct gt_mem_info_s {
 }gt_mem_info_st;
 
 
+#if GT_MEM_USE_MUTEX
+typedef gt_res_t ( * gt_mem_mutex_lock_t)(void * mutex, uint32_t wait_ms);
+typedef gt_res_t ( * gt_mem_mutex_unlock_t)(void * mutex);
+
+typedef struct gt_mem_mutex_s {
+    gt_mem_mutex_lock_t lock_cb;
+    gt_mem_mutex_unlock_t unlock_cb;
+
+    void * mtx_hdl;
+    uint32_t wait_ms;
+}gt_mem_mutex_st;
+#endif
+
 /* macros ---------------------------------------------------------------*/
 static inline bool gt_is_same_string(const char * str1, const char * str2) {
     return (0 == strcmp(str1, str2));
@@ -76,6 +97,11 @@ static inline bool gt_is_same_memory(const void * mem1, const void * mem2, size_
 
 
 /* global functions / API interface -------------------------------------*/
+#if GT_MEM_USE_MUTEX
+void gt_mem_register_mutex(gt_mem_mutex_st const * const mutex_params);
+gt_mem_mutex_st * gt_mem_get_mutex_hdl(void);
+#endif
+
 #if GT_USE_MEM_ILLEGAL_POINTER_HANDLE
 /**
  * @brief Register illegal pointger handle event, which want to reboot or do someting else.
