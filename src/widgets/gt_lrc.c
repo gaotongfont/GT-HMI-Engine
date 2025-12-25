@@ -106,7 +106,7 @@ static void _lrc_deinit_cb(gt_obj_st * obj)
         style->times = NULL;
         style->times_count = 0;
         style->times_total = 0;
-        style->index = 1;
+        style->index = 0;
     }
 
     if(style->anim) {
