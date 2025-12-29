@@ -186,7 +186,7 @@ _btn_init_cb(gt_obj_st * obj) {
 
     _gt_draw_font_res_st font_res = _draw_or_calc_dislpay_content(obj, 0);
 
-    _first_restart_scroll(style->text_style, style->auto_scroll, box_area, font_res);
+    _roll_anim_first_restart_scroll(style->text_style, style->auto_scroll, box_area, font_res);
     // focus
     draw_focus(obj);
 }
@@ -198,7 +198,7 @@ _btn_init_cb(gt_obj_st * obj) {
  */
 static GT_ATTRIBUTE_RAM_TEXT void _btn_deinit_cb(gt_obj_st * obj) {
     _gt_btn_st * style_p = (_gt_btn_st * )obj;
-    _free_auto_scroll_st(&style_p->auto_scroll);
+    _roll_anim_free_auto_ctrl(&style_p->auto_scroll);
 
     if (NULL != style_p->contents) {
         _gt_vector_free(style_p->contents);
@@ -385,7 +385,7 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent)
     style->roll_space       = 2;
 
     style->contents = _gt_vector_create(_contents_free_cb, _contents_equal_cb);
-    _auto_scroll_init(obj, style->auto_scroll);
+    _roll_anim_auto_scroll_init(obj, style->auto_scroll);
 
     uint16_t len = strlen("btn");
     char * str = gt_mem_malloc(len);
@@ -470,7 +470,7 @@ void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...)
     va_list args2;
 
     _gt_btn_st * style = (_gt_btn_st * )btn;
-    _reset_auto_scroll_st(style->auto_scroll);
+    _roll_anim_reset_auto_scroll_ctrl(style->auto_scroll);
     va_start(args, fmt);
     va_copy(args2, args);
     uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(buffer, sizeof(buffer), fmt, args) + 1);
@@ -515,7 +515,7 @@ void gt_btn_set_text_by_len(gt_obj_st * btn, const char * text, uint16_t len)
         return ;
     }
     _gt_btn_st * style = (_gt_btn_st * )btn;
-    _reset_auto_scroll_st(style->auto_scroll);
+    _roll_anim_reset_auto_scroll_ctrl(style->auto_scroll);
     char * tmp_str = gt_mem_malloc(len + 1);
     if (NULL == tmp_str) {
         goto err_lb;
@@ -578,7 +578,7 @@ void gt_btn_set_font_size(gt_obj_st * btn, uint8_t size)
     }
     _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_info.size = size;
-    _reset_auto_scroll_st(style->auto_scroll);
+    _roll_anim_reset_auto_scroll_ctrl(style->auto_scroll);
 }
 
 void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray)
@@ -766,7 +766,7 @@ void gt_btn_set_space(gt_obj_st * btn, uint8_t space_x, uint8_t space_y)
     _gt_btn_st * style = (_gt_btn_st * )btn;
     style->space_x = space_x;
     style->space_y = space_y;
-    _reset_auto_scroll_st(style->auto_scroll);
+    _roll_anim_reset_auto_scroll_ctrl(style->auto_scroll);
 }
 
 void gt_btn_set_selected(gt_obj_st * obj)
@@ -847,7 +847,7 @@ void gt_btn_set_single_line(gt_obj_st * btn, bool is_single_line)
     style->text_style.single_line = is_single_line;
 
     if (false == style->text_style.single_line) {
-        _free_auto_scroll_st(&style->auto_scroll);
+        _roll_anim_free_auto_ctrl(&style->auto_scroll);
     }
 
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -862,7 +862,7 @@ void gt_btn_set_omit_single_line(gt_obj_st * btn, bool is_omit)
     style->text_style.omit_line = is_omit;
     style->text_style.single_line = is_omit;
 
-    _free_auto_scroll_st(&style->auto_scroll);
+    _roll_anim_free_auto_ctrl(&style->auto_scroll);
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -876,9 +876,9 @@ void gt_btn_set_auto_scroll_single_line(gt_obj_st * obj, bool is_auto_scroll)
     if (is_auto_scroll) {
         style->text_style.single_line = true;
         style->text_style.omit_line = false;
-        _create_auto_scroll_anim(obj, &style->auto_scroll);
+        style->auto_scroll = _roll_anim_create_auto_scroll_anim(obj, style->auto_scroll);
     } else {
-        _free_auto_scroll_st(&style->auto_scroll);
+        _roll_anim_free_auto_ctrl(&style->auto_scroll);
         style->text_style.omit_line = true;
     }
 
@@ -996,6 +996,21 @@ uint8_t gt_btn_get_roll_space(gt_obj_st * btn)
     _gt_btn_st * style = (_gt_btn_st * )btn;
 
     return style->roll_space;
+}
+
+gt_res_t gt_btn_scroll_pause(gt_obj_st * btn, bool paused)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return GT_RES_INV;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+    if (NULL == style->auto_scroll) {
+        return GT_RES_INV;
+    }
+    if (NULL == style->auto_scroll->anim) {
+        return GT_RES_INV;
+    }
+    _roll_anim_paused(style->auto_scroll, paused);
 }
 
 #endif  /** GT_CFG_ENABLE_BTN */

@@ -112,7 +112,7 @@ _init_cb(gt_obj_st * obj) {
     gt_area_st box_area = obj->area;
     _gt_draw_font_res_st font_res = _draw_or_calc_dislpay_content(obj, 0);
 
-    _first_restart_scroll(style->text_style, style->auto_scroll, box_area, font_res);
+    _roll_anim_first_restart_scroll(style->text_style, style->auto_scroll, box_area, font_res);
     draw_focus(obj);
 }
 
@@ -129,7 +129,7 @@ static void _deinit_cb(gt_obj_st * obj) {
     }
 
     _gt_label_st * style_p = (_gt_label_st * )obj;
-    _free_auto_scroll_st(&style_p->auto_scroll);
+    _roll_anim_free_auto_ctrl(&style_p->auto_scroll);
 
     if (style_p->text) {
         gt_mem_free(style_p->text);
@@ -193,7 +193,7 @@ gt_obj_st * gt_label_create(gt_obj_st * parent) {
     style->space_x              = 0;
     style->space_y              = 0;
 
-    _auto_scroll_init(obj, style->auto_scroll);
+    _roll_anim_auto_scroll_init(obj, style->auto_scroll);
 
     _update_label_size(obj, len);
 
@@ -222,7 +222,7 @@ void gt_label_set_text(gt_obj_st * label, const char * fmt, ...)
     }
 
     _gt_label_st * style = (_gt_label_st * )label;
-    _reset_auto_scroll_st(style->auto_scroll);
+    _roll_anim_reset_auto_scroll_ctrl(style->auto_scroll);
     va_start(args, fmt);
     va_copy(args2, args);
     uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(buffer, sizeof(buffer), fmt, args) + 1);
@@ -273,7 +273,7 @@ void gt_label_set_text_by_len(gt_obj_st * label, const char * text, uint16_t len
     uint16_t real_len = strlen(text);
     if (real_len < len) { len = real_len; }
 
-    _reset_auto_scroll_st(style->auto_scroll);
+    _roll_anim_reset_auto_scroll_ctrl(style->auto_scroll);
 
     if (NULL == style->text) {
         style->text = gt_mem_malloc(len + 1);
@@ -332,7 +332,7 @@ void gt_label_set_font_size(gt_obj_st * label, uint8_t size)
     }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_info.size = size;
-    _reset_auto_scroll_st(style->auto_scroll);
+    _roll_anim_reset_auto_scroll_ctrl(style->auto_scroll);
 }
 
 void gt_label_set_font_gray(gt_obj_st * label, uint8_t gray)
@@ -450,7 +450,7 @@ void gt_label_set_space(gt_obj_st * label, uint8_t space_x, uint8_t space_y)
     _gt_label_st * style = (_gt_label_st * )label;
     style->space_x = space_x;
     style->space_y = space_y;
-    _reset_auto_scroll_st(style->auto_scroll);
+    _roll_anim_reset_auto_scroll_ctrl(style->auto_scroll);
 }
 
 void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style)
@@ -541,7 +541,7 @@ void gt_label_set_single_line(gt_obj_st * label, bool is_single_line)
     style->text_style.single_line = is_single_line;
 
     if (false == style->text_style.single_line) {
-        _free_auto_scroll_st(&style->auto_scroll);
+        _roll_anim_free_auto_ctrl(&style->auto_scroll);
     }
 
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
@@ -556,7 +556,7 @@ void gt_label_set_omit_single_line(gt_obj_st * label, bool is_omit)
     style->text_style.omit_line = is_omit;
     style->text_style.single_line = is_omit;
 
-    _free_auto_scroll_st(&style->auto_scroll);
+    _roll_anim_free_auto_ctrl(&style->auto_scroll);
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -569,9 +569,9 @@ void gt_label_set_auto_scroll_single_line(gt_obj_st * label, bool is_auto_scroll
     if (is_auto_scroll) {
         style->text_style.single_line = true;
         style->text_style.omit_line = false;
-        _create_auto_scroll_anim(label, &style->auto_scroll);
+        style->auto_scroll = _roll_anim_create_auto_scroll_anim(label, style->auto_scroll);
     } else {
-        _free_auto_scroll_st(&style->auto_scroll);
+        _roll_anim_free_auto_ctrl(&style->auto_scroll);
         style->text_style.omit_line = true;
     }
 
@@ -680,7 +680,7 @@ void gt_label_add_text(gt_obj_st * label, const char * fmt, ...)
     }
 
     _gt_label_st * style = (_gt_label_st * )label;
-    _reset_auto_scroll_st(style->auto_scroll);
+    _roll_anim_reset_auto_scroll_ctrl(style->auto_scroll);
     va_start(args, fmt);
     va_copy(args2, args);
     uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(buffer, sizeof(buffer), fmt, args) + 1);
@@ -724,6 +724,21 @@ gt_point_st gt_label_calc_display_limit_size_once(gt_obj_st * label)
     _gt_draw_font_res_st font_res = _draw_or_calc_dislpay_content(label, 1);
     ret_limit_size = font_res.size_show_limit;
     return ret_limit_size;
+}
+
+gt_res_t gt_label_scroll_pause(gt_obj_st * label, bool paused)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return GT_RES_INV;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    if (NULL == style->auto_scroll) {
+        return GT_RES_INV;
+    }
+    if (NULL == style->auto_scroll->anim) {
+        return GT_RES_INV;
+    }
+    _roll_anim_paused(style->auto_scroll, paused);
 }
 
 #if GT_USE_LIB_TEX_PRINTF

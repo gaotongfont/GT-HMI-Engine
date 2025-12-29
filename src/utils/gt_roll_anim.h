@@ -29,6 +29,7 @@ typedef struct _auto_scroll_s {
     gt_anim_st * anim;
     gt_area_st area;        // single line auto scroll
     uint32_t total_time;    // scroll total time [ms]
+    uint8_t paused : 1;
 }_auto_scroll_st;
 
 /* macros ---------------------------------------------------------------*/
@@ -41,11 +42,19 @@ typedef struct _auto_scroll_s {
 
 /* global functions / API interface -------------------------------------*/
 
-void _free_auto_scroll_st(_auto_scroll_st ** auto_scroll_p);
-_auto_scroll_st * _reset_auto_scroll_st(_auto_scroll_st * as);
-void _auto_scroll_init(gt_obj_st * obj, _auto_scroll_st * const auto_scroll_p);
-_auto_scroll_st * _create_auto_scroll_anim(gt_obj_st * obj, _auto_scroll_st ** auto_scroll_p);
-void _first_restart_scroll(_gt_text_style_st text_style, _auto_scroll_st * auto_scroll, gt_area_st box_area, _gt_draw_font_res_st font_res);
+void _roll_anim_free_auto_ctrl(_auto_scroll_st ** auto_scroll_p);
+_auto_scroll_st * _roll_anim_reset_auto_scroll_ctrl(_auto_scroll_st * as);
+void _roll_anim_auto_scroll_init(gt_obj_st * obj, _auto_scroll_st * const auto_scroll_p);
+_auto_scroll_st * _roll_anim_create_auto_scroll_anim(gt_obj_st * obj, _auto_scroll_st * auto_scroll);
+void _roll_anim_first_restart_scroll(_gt_text_style_st text_style, _auto_scroll_st * auto_scroll, gt_area_st box_area, _gt_draw_font_res_st font_res);
+
+/**
+ * @brief
+ *
+ * @param auto_scroll
+ * @param paused
+ */
+void _roll_anim_paused(_auto_scroll_st * auto_scroll, bool paused);
 
 #ifdef __cplusplus
 } /*extern "C"*/

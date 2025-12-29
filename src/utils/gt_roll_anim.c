@@ -42,10 +42,10 @@ _create_auto_scroll_st(gt_obj_st * obj) {
     if (NULL == auto_scroll_p) {
         auto_scroll_p = gt_mem_malloc(sizeof(_auto_scroll_st));
         GT_CHECK_BACK_VAL(auto_scroll_p, NULL);
-        _auto_scroll_init(obj, auto_scroll_p);
+        _roll_anim_auto_scroll_init(obj, auto_scroll_p);
     }
 
-    return _reset_auto_scroll_st(auto_scroll_p);
+    return _roll_anim_reset_auto_scroll_ctrl(auto_scroll_p);
 }
 
 static void GT_ATTRIBUTE_RAM_TEXT
@@ -53,6 +53,9 @@ _auto_scroll_exec_cb(void * obj, int32_t value) {
     _auto_scroll_st * auto_scroll_p = (_auto_scroll_st *)obj;
     if (NULL == auto_scroll_p) {
         return ;
+    }
+    if (auto_scroll_p->paused) {
+        return;
     }
     auto_scroll_p->area.x = value;
     if (GT_INVISIBLE == gt_obj_get_visible(auto_scroll_p->parent)) {
@@ -64,7 +67,8 @@ _auto_scroll_exec_cb(void * obj, int32_t value) {
 /* global functions / API interface -------------------------------------*/
 
 void GT_ATTRIBUTE_RAM_TEXT
-_free_auto_scroll_st(_auto_scroll_st ** auto_scroll) {
+_roll_anim_free_auto_ctrl(_auto_scroll_st ** auto_scroll)
+{
     _auto_scroll_st * auto_scroll_p = *auto_scroll;
     if (NULL == auto_scroll_p) {
         return ;
@@ -80,7 +84,8 @@ _free_auto_scroll_st(_auto_scroll_st ** auto_scroll) {
 }
 
 _auto_scroll_st * GT_ATTRIBUTE_RAM_TEXT
-_reset_auto_scroll_st(_auto_scroll_st * as) {
+_roll_anim_reset_auto_scroll_ctrl(_auto_scroll_st * as)
+{
     if (NULL == as) {
         return NULL;
     }
@@ -99,7 +104,8 @@ _reset_auto_scroll_st(_auto_scroll_st * as) {
 }
 
 void GT_ATTRIBUTE_RAM_TEXT
-_auto_scroll_init(gt_obj_st * obj, _auto_scroll_st * const auto_scroll_p) {
+_roll_anim_auto_scroll_init(gt_obj_st * obj, _auto_scroll_st * const auto_scroll_p)
+{
     if (NULL == auto_scroll_p) {
         return ;
     }
@@ -110,15 +116,15 @@ _auto_scroll_init(gt_obj_st * obj, _auto_scroll_st * const auto_scroll_p) {
 }
 
 _auto_scroll_st * GT_ATTRIBUTE_RAM_TEXT
-_create_auto_scroll_anim(gt_obj_st * obj, _auto_scroll_st ** auto_scroll) {
-    _auto_scroll_st * auto_scroll_p = *auto_scroll;
+_roll_anim_create_auto_scroll_anim(gt_obj_st * obj, _auto_scroll_st * auto_scroll)
+{
+    _auto_scroll_st * auto_scroll_p = auto_scroll;
     if (NULL == auto_scroll_p) {
         auto_scroll_p = _create_auto_scroll_st(obj);
         GT_CHECK_BACK_VAL(auto_scroll_p, NULL);
     }
     if (auto_scroll_p->anim) {
-        _reset_auto_scroll_st(auto_scroll_p);
-        *auto_scroll = auto_scroll_p;
+        _roll_anim_reset_auto_scroll_ctrl(auto_scroll_p);
         return auto_scroll_p;
     }
     gt_anim_st anim;
@@ -133,24 +139,36 @@ _create_auto_scroll_anim(gt_obj_st * obj, _auto_scroll_st ** auto_scroll) {
     auto_scroll_p->anim = gt_anim_start(&anim);
     gt_anim_set_paused(auto_scroll_p->anim, true);
 
-    *auto_scroll = auto_scroll_p;
     return auto_scroll_p;
 }
 
 
 void GT_ATTRIBUTE_RAM_TEXT
-_first_restart_scroll(_gt_text_style_st text_style, _auto_scroll_st * auto_scroll, gt_area_st box_area, \
-                      _gt_draw_font_res_st font_res) {
+_roll_anim_first_restart_scroll(_gt_text_style_st text_style, _auto_scroll_st * auto_scroll,
+    gt_area_st box_area, _gt_draw_font_res_st font_res)
+{
     if (!text_style.single_line || NULL == auto_scroll) {
         return ;
     }
 
     /** first time to calc label widget need to scroll and begin to scroll */
+    if (auto_scroll->paused) {
+        return;
+    }
     if (font_res.size.x > box_area.w && gt_anim_is_paused(auto_scroll->anim)) {
         auto_scroll->area.w = font_res.size.x;
         gt_anim_set_time(auto_scroll->anim, auto_scroll->total_time);
         gt_anim_set_value(auto_scroll->anim, 0, box_area.w - auto_scroll->area.w);
         gt_anim_restart(auto_scroll->anim);
     }
+}
+
+void GT_ATTRIBUTE_RAM_TEXT
+_roll_anim_paused(_auto_scroll_st * auto_scroll, bool paused)
+{
+    if (NULL == auto_scroll) {
+        return ;
+    }
+    auto_scroll->paused = paused;
 }
 /* end ------------------------------------------------------------------*/

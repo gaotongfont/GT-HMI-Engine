@@ -205,6 +205,8 @@ void gt_label_add_text(gt_obj_st * label, const char * fmt, ...);
  */
 gt_point_st gt_label_calc_display_limit_size_once(gt_obj_st * label);
 
+gt_res_t gt_label_scroll_pause(gt_obj_st * label, bool paused);
+
 
 
 #if GT_USE_LIB_TEX_PRINTF

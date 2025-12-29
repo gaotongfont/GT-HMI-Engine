@@ -258,6 +258,15 @@ bool gt_btn_is_auto_scroll_single_line(gt_obj_st * btn);
 void gt_btn_set_roll_space(gt_obj_st * btn, uint8_t roll_space);
 uint8_t gt_btn_get_roll_space(gt_obj_st * btn);
 
+/**
+ * @brief
+ *
+ * @param btn
+ * @param paused true: paused
+ * @return gt_res_t
+ */
+gt_res_t gt_btn_scroll_pause(gt_obj_st * btn, bool paused);
+
 #endif  /** GT_CFG_ENABLE_BTN */
 
 #ifdef __cplusplus

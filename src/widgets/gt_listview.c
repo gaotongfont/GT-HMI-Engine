@@ -24,6 +24,8 @@
 #include "../core/gt_disp.h"
 #include "../widgets/gt_obj.h"
 #include "../widgets/gt_rect.h"
+#include "../widgets/gt_btn.h"
+
 
 #include "./gt_label.h"
 #include "./gt_img.h"
@@ -519,6 +521,22 @@ _paging_mode_handler(gt_obj_st * obj, bool is_down)
     }
 }
 
+static gt_res_t GT_ATTRIBUTE_RAM_TEXT
+_childs_text_content_scroll(gt_obj_st * root, bool paused) {
+    gt_obj_st * ptr = NULL;
+    gt_size_t i = 0, cnt = root->cnt_child;
+    for (; i < cnt; i++) {
+        ptr = root->child[i];
+        if (gt_obj_is_type(ptr, GT_TYPE_LAB)) {
+            gt_label_scroll_pause(ptr, paused);
+        }
+        if (gt_obj_is_type(ptr, GT_TYPE_BTN)) {
+            gt_btn_scroll_pause(ptr, paused);
+        }
+        _childs_text_content_scroll(ptr, paused);
+    }
+}
+
 /**
  * @brief obj event handler call back
  *
@@ -565,6 +583,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         }
 
         _reset_pull_refresh_or_load_more(obj);
+        _childs_text_content_scroll(obj, true);
     }
     else if (GT_EVENT_TYPE_INPUT_SCROLL_END == code_val) {
         if(GT_LISTVIEW_PAGE_MODE_PAGING == style->page_mode.mode) {
@@ -577,6 +596,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             return ;
         }
 
+        _childs_text_content_scroll(obj, false);
         if (style->highlight) {
             gt_obj_set_trigger_mode(style->last_active, true);
         }
