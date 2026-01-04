@@ -293,6 +293,7 @@ gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * const name)
 
         dsc->src = (void * )name;
         if (ptr->open_cb(ptr, dsc)) {
+            gt_memset(&dsc->header, 0, sizeof(_gt_img_info_st));
             continue;
         }
 
@@ -324,6 +325,7 @@ gt_res_t gt_img_decoder_open_raw(_gt_img_dsc_st * dsc, const char * const raw_da
         dsc->raw_p = (char * )raw_data;
         dsc->raw_len = raw_len;
         if (ptr->open_cb(ptr, dsc)) {
+            gt_memset(&dsc->header, 0, sizeof(_gt_img_info_st));
             continue;
         }
 
@@ -399,6 +401,7 @@ gt_res_t gt_img_decoder_fh_open(_gt_img_dsc_st * dsc, gt_file_header_param_st co
 
         dsc->file_header = (gt_file_header_param_st * )param;
         if (ptr->fh_open_cb(ptr, dsc)) {
+            gt_memset(&dsc->header, 0, sizeof(_gt_img_info_st));
             continue;
         }
 
@@ -463,6 +466,7 @@ gt_res_t gt_img_decoder_direct_addr_open(_gt_img_dsc_st * dsc, gt_addr_t addr)
 
         dsc->addr = addr;
         if (ptr->direct_addr_open_cb(ptr, dsc)) {
+            gt_memset(&dsc->header, 0, sizeof(_gt_img_info_st));
             continue;
         }
 
