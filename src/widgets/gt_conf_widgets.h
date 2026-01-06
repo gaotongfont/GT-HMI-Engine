@@ -62,6 +62,7 @@ extern "C" {
 #define GT_CFG_ENABLE_SPECTRUM          1
 #define GT_CFG_ENABLE_SPECTRUM_LINE     1
 #define GT_CFG_ENABLE_LRC               1
+#define GT_CFG_ENABLE_QR_EXT            1
 
 #if GT_USE_LAYER_TOP && GT_CFG_ENABLE_INPUT && GT_CFG_ENABLE_LISTVIEW
 #define GT_CFG_ENABLE_SELECT            1

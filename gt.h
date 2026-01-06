@@ -249,6 +249,11 @@ extern "C" {
 #if GT_CFG_ENABLE_LRC
 #include "src/widgets/gt_lrc.h"
 #endif
+
+#if GT_CFG_ENABLE_QR_EXT
+#include "src/widgets/gt_qr_ext.h"
+#endif
+
 /* define ---------------------------------------------------------------*/
 
 
