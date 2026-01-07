@@ -60,9 +60,10 @@ gt_obj_st * gt_qr_ext_create(gt_obj_st * parent);
  * @brief 设置二维码内容 set qr content
  *
  * @param obj
- * @param text
+ * @param fmt
+ * @param ...
  */
-void gt_qr_ext_set_text(gt_obj_st * obj, const char * text);
+void gt_qr_ext_set_text(gt_obj_st * obj, const char * fmt, ...);
 void gt_qr_ext_set_text_by_len(gt_obj_st * obj, const char * text, int len);
 
 /**

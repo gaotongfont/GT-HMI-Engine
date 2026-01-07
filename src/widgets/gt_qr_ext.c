@@ -102,7 +102,7 @@ void _qr_ext_init_cb(gt_obj_st * obj)
         goto _free_buf;
     }
     size = size * style->module_size;
-    uint32_t width = size + style->margin << 1;
+    uint32_t width = size + (style->margin << 1);
     uint16_t mag_w = style->margin, mag_h = style->margin;
 
     if(width > obj->area.w) {
@@ -218,7 +218,7 @@ void gt_qr_ext_set_text_by_len(gt_obj_st * obj, const char * text, int len)
 
     int old_len = style->text ? strlen(style->text) : 0;
 
-    if(old_len == len && 0 == gt_memcmp(style->text, text, len)) {
+    if(old_len == len && 0 == gt_memcmp(style->text, text, old_len)) {
         return ;
     }
     else if(old_len == len) {
@@ -237,6 +237,7 @@ void gt_qr_ext_set_text_by_len(gt_obj_st * obj, const char * text, int len)
         GT_LOGE(GT_LOG_TAG_GUI, "malloc failed!! len: %d", len);
         return ;
     }
+    memset(new_text, 0, len + 1);
     gt_memcpy(new_text, text, len);
     new_text[len] = '\0';
 
@@ -249,19 +250,68 @@ void gt_qr_ext_set_text_by_len(gt_obj_st * obj, const char * text, int len)
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_qr_ext_set_text(gt_obj_st * obj, const char * text)
+void gt_qr_ext_set_text(gt_obj_st * obj, const char * fmt, ...)
 {
+    char buffer[8] = {0};
+    va_list args;
+    va_list args2;
+
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;
     }
 
-    if(!text) {
+    if (NULL == fmt) {
+        return;
+    }
+    _gt_qr_ext_st * style = (_gt_qr_ext_st *)obj;
+
+    va_start(args, fmt);
+    va_copy(args2, args);
+    uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(buffer, sizeof(buffer), fmt, args));
+    va_end(args);
+    if (!size) {
+        goto free_lb;
+    }
+
+    int old_len = style->text ? strlen(style->text) : 0;
+
+    if(old_len == size && 0 == gt_memcmp(style->text, buffer, old_len)) {
+        goto free_lb;
+    }
+    else if(old_len == size) {
+        va_start(args2, fmt);
+        vsnprintf(style->text,  size + 1, fmt, args2);
+        va_end(args2);
         return ;
     }
 
-    int len = strlen(text);
+    char* old_text = NULL;
+    if(style->text) {
+        old_text = style->text;
+    }
 
-    gt_qr_ext_set_text_by_len(obj, text, len);
+    char* new_text = (char *)gt_mem_malloc(size + 1);
+    if(!new_text) {
+        GT_LOGE(GT_LOG_TAG_GUI, "malloc failed!! len: %d", size);
+        return ;
+    }
+    memset(new_text, 0, size + 1);
+    va_start(args2, fmt);
+    vsnprintf(new_text, size + 1, fmt, args2);
+    va_end(args2);
+
+    style->text = new_text;
+
+    if(old_text) {
+        gt_mem_free(old_text);
+        old_text = NULL;
+    }
+
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+    return ;
+
+free_lb:
+    va_end(args2);
 }
 
 void gt_qr_ext_set_module_size(gt_obj_st * obj, uint8_t size)
