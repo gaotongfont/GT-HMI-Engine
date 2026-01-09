@@ -343,7 +343,7 @@ void gt_mem_init(void)
 #if GT_MEM_CUSTOM
 #if GT_MEM_CUSTOM_POINTER
     if (NULL == _mem_pool_int) {
-        _mem_pool_int = (MEM_UNIT * )gt_mem_extern_malloc(sizeof(MEM_UNIT) * GT_MEM_SIZE);
+        _mem_pool_int = (MEM_UNIT * )gt_mem_extern_malloc(GT_MEM_SIZE / sizeof(MEM_UNIT));
         if (NULL == _mem_pool_int) {
             GT_LOGE(GT_LOG_TAG_MEM, "custom malloc failed");
             return;
