@@ -38,6 +38,13 @@ extern "C" {
     #define GT_USE_MEM_ILLEGAL_POINTER_HANDLE       0
 #endif
 
+#ifndef _GT_MEM_MALLOC_POOL_POINTER
+    /**
+     * @brief Extern malloc func api
+     */
+    #define _GT_MEM_MALLOC_POOL_POINTER             malloc
+#endif
+
 
 #ifdef GT_ARCH_64
     #define MEM_UNIT        uint64_t
