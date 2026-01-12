@@ -260,7 +260,8 @@ typedef struct _gt_indev_s {
             // TODO remove
             uint16_t is_home_gesture : 1;   ///< gestrue is home handler
             uint16_t home_gesture_area : 3; ///< @ref gt_indev_home_gesture_area_et
-            uint16_t reserved : 8;
+            uint16_t breaking_scrolling : 1;
+            uint16_t reserved : 7;
         }point;
 
         struct _button {

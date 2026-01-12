@@ -948,6 +948,9 @@ _send_released_event(struct _point * point_p) {
     if (gt_obj_is_untouchability(point_p->obj_target)) {
         return;
     }
+    if (point_p->breaking_scrolling) {
+        event_type = GT_EVENT_TYPE_INPUT_PRESS_LOST;
+    }
 
     gt_event_send(point_p->obj_target, event_type, NULL);
 #if GT_USE_LAYER_TOP
@@ -1034,11 +1037,11 @@ clr_lb:
 #if GT_INDEV_CFG_VELOCITY
     point_p->diff_points = 0;
 #endif
+    point_p->breaking_scrolling = false;
 
 #if GT_CFG_ENABLE_INDEV_EFFECTS
     gt_indev_effects_hide();
 #endif
-
 }
 
 /**
@@ -1135,6 +1138,7 @@ _touch_reset_base_info(gt_indev_st * indev) {
         gt_anim_set_paused(indev->scroll_throw_anim, true);
         gt_anim_del_by(indev->scroll_throw_anim);
         _indev_scroll_throw_reset(indev);
+        indev->data.point.breaking_scrolling = true;
     }
 }
 
