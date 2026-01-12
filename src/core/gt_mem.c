@@ -343,7 +343,7 @@ void gt_mem_init(void)
 #if GT_MEM_CUSTOM
 #if GT_MEM_CUSTOM_POINTER
     if (NULL == _mem_pool_int) {
-        _mem_pool_int = (MEM_UNIT * )gt_mem_extern_malloc(GT_MEM_SIZE / sizeof(MEM_UNIT));
+        _mem_pool_int = (MEM_UNIT * )_GT_MEM_MALLOC_POOL_POINTER(GT_MEM_SIZE);
         if (NULL == _mem_pool_int) {
             GT_LOGE(GT_LOG_TAG_MEM, "custom malloc failed");
             return;
@@ -685,11 +685,11 @@ bool gt_mem_has_failed(void)
 void gt_mem_check_used(void)
 {
 #if GT_MEM_CUSTOM
-    float total_size = (float)(_heap_info.addr_end - _heap_info.addr_start);
+    double total_size = (double)(_heap_info.addr_end - _heap_info.addr_start);
 #if USE_MEM_REAL_USED_REMARK
     static MEM_UNIT prev_blocks = 0, prev_used = 0;
     if (prev_blocks != _heap_info.blocks || prev_used != _heap_info.used) {
-        GT_LOGI(GT_LOG_TAG_MEM, "blks: %d, used: %.2f%% [%d / %.0f(%.2f kB) Byte]",
+        GT_LOGI(GT_LOG_TAG_MEM, "blks: %d, used: %.2lf%% [%ld / %.0lf(%.2lf kB) Byte]",
             _heap_info.blocks, _heap_info.used * 100.0 / total_size, _heap_info.used, total_size, total_size / 1024);
         prev_blocks = _heap_info.blocks;
         prev_used = _heap_info.used;
@@ -701,8 +701,8 @@ void gt_mem_check_used(void)
         return;
     }
     gt_mem_free(addr_now);
-    float used = (float)((uintptr_t)addr_now - _heap_info.addr_start) / total_size;
-    static float prev_used = 0;
+    double used = (double)((uintptr_t)addr_now - _heap_info.addr_start) / total_size;
+    static double prev_used = 0;
     if (prev_used != used) {
         GT_LOGI(GT_LOG_TAG_MEM, "used: %.2f%%",used * 100);
         prev_used = used;
