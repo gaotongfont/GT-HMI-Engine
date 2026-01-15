@@ -396,7 +396,8 @@ static inline gt_color_t gt_color_green(void) { return gt_color_make(0x00, 0xFF,
  * @param mix The ratio of the colors. 0: full `c2`, 255: full `c1`, 127: half `c1` and half`c2`
  * @return the mixed color
  */
-static inline gt_color_t gt_color_mix(gt_color_t c1, gt_color_t c2, uint8_t mix) {
+static inline gt_color_t GT_ATTRIBUTE_SRAM_TEXT
+gt_color_mix(gt_color_t c1, gt_color_t c2, uint8_t mix) {
     gt_color_t ret;
 
 #if 1 == GT_COLOR_DEPTH

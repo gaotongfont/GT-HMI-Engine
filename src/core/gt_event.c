@@ -66,7 +66,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_event_node_pop(gt_event_st *e) {
     _GT_GC_GET_ROOT(_gt_event_node_header_ll) = e->prev;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_user_cb(gt_event_st * e) {
+static GT_ATTRIBUTE_SRAM_TEXT gt_res_t _gt_event_calling_user_cb(gt_event_st * e) {
     gt_obj_event_attr_st * event_ptr = e->target->event_attr;
     if (NULL == event_ptr) {
         return GT_RES_OK;
@@ -91,7 +91,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_calling_user_cb(gt_event_st * e)
  * @param e
  * @return gt_res_t GT_RES_OK or GT_RES_FAIL
  */
-static GT_ATTRIBUTE_RAM_TEXT inline gt_res_t
+static GT_ATTRIBUTE_SRAM_TEXT inline gt_res_t
 _using_replace_core_user_cb(gt_obj_event_attr_st * event_ptr, gt_event_st * e) {
     gt_res_t res = GT_RES_FAIL;
     while(event_ptr) {
@@ -105,7 +105,7 @@ _using_replace_core_user_cb(gt_obj_event_attr_st * event_ptr, gt_event_st * e) {
     return res;
 }
 
-static inline gt_res_t GT_ATTRIBUTE_RAM_TEXT
+static inline gt_res_t GT_ATTRIBUTE_SRAM_TEXT
 _event_check_scroll_begin(gt_obj_st * obj, gt_event_type_et t) {
     if (GT_EVENT_TYPE_INPUT_SCROLL_START != t) {
         return GT_RES_INV;
@@ -114,7 +114,7 @@ _event_check_scroll_begin(gt_obj_st * obj, gt_event_type_et t) {
     return GT_RES_OK;
 }
 
-static inline gt_res_t GT_ATTRIBUTE_RAM_TEXT
+static inline gt_res_t GT_ATTRIBUTE_SRAM_TEXT
 _event_check_scroll_end(gt_obj_st * obj, gt_event_type_et t) {
     if (GT_EVENT_TYPE_INPUT_SCROLL_END != t) {
         return GT_RES_INV;
@@ -123,7 +123,7 @@ _event_check_scroll_end(gt_obj_st * obj, gt_event_type_et t) {
     return GT_RES_OK;
 }
 
-static gt_res_t GT_ATTRIBUTE_RAM_TEXT
+static gt_res_t GT_ATTRIBUTE_SRAM_TEXT
 _gt_event_calling_event_cb(gt_event_st * e) {
     gt_obj_st * obj = (gt_obj_st * )e->target;
     const gt_obj_class_st * c = obj->classes;
@@ -145,7 +145,7 @@ _gt_event_calling_event_cb(gt_event_st * e) {
     return GT_RES_OK;
 }
 
-static gt_res_t GT_ATTRIBUTE_RAM_TEXT
+static gt_res_t GT_ATTRIBUTE_SRAM_TEXT
 _gt_event_send_kernel(gt_event_st * e) {
     gt_res_t res = GT_RES_OK;
     if (gt_obj_is_type(e->target, GT_TYPE_UNKNOWN)) {
@@ -193,7 +193,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _anim_to_remove_all_event(struct gt_anim_s * a
     _free_event_recursive(tar);
 }
 
-static GT_ATTRIBUTE_RAM_TEXT inline gt_res_t _common_event_send(gt_event_st * e) {
+static inline gt_res_t GT_ATTRIBUTE_SRAM_TEXT
+_common_event_send(gt_event_st * e) {
 #if GT_USE_SCREEN_ANIM
     if (false == gt_event_is_enabled()) {
         return GT_RES_INV;
@@ -208,7 +209,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline gt_res_t _common_event_send(gt_event_st * e)
     return res;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT bool
+static bool GT_ATTRIBUTE_SRAM_TEXT
 _common_event_has_the_same_cb(gt_obj_event_attr_st * event_ptr, gt_event_cb_t event, gt_event_type_et filter) {
     if (NULL == event_ptr) {
         return false;
@@ -222,7 +223,7 @@ _common_event_has_the_same_cb(gt_obj_event_attr_st * event_ptr, gt_event_cb_t ev
     return false;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT gt_obj_event_attr_st *
+static gt_obj_event_attr_st * GT_ATTRIBUTE_RAM_TEXT
 _common_add_event_node(gt_obj_event_attr_st ** event_root_p) {
     uint16_t len = sizeof(gt_obj_event_attr_st);
     gt_obj_event_attr_st * new_event = (gt_obj_event_attr_st * )gt_mem_malloc(len);

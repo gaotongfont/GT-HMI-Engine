@@ -101,7 +101,8 @@ static inline void _blend_rgb565_with_opacity_vertical(_gt_draw_blend_fill_cache
     }
 }
 #else   /** 0 == GT_FLUSH_CONVERT_VERTICAL */
-static inline void _blend_rgb565_with_opacity(_gt_draw_blend_fill_cache_st const * const fc) {
+static inline void GT_ATTRIBUTE_SRAM_TEXT
+_blend_rgb565_with_opacity(_gt_draw_blend_fill_cache_st const * const fc) {
     gt_color_t * src_p = fc->color_src_p;
     gt_opa_t * mask_p = fc->mask_buf_p;
     gt_color_t * dst_p = fc->color_dst_p;

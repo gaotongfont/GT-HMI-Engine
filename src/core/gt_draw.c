@@ -1184,7 +1184,7 @@ _font_get_group_offset_by_type(gt_font_st const * const tmp_font_p) {
 #endif
 }
 
-static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st
+static _gt_draw_font_res_st GT_ATTRIBUTE_SRAM_TEXT
 draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, gt_area_st const * view) {
     const gt_area_st * coords = &dsc->logical_area;
     _gt_draw_font_res_st ret = { .res = GT_RES_OK };
@@ -1743,7 +1743,7 @@ _omit_get_font_width(gt_font_st * tmp_font) {
     return ret;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st
+static _gt_draw_font_res_st GT_ATTRIBUTE_SRAM_TEXT
 draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, const gt_area_st * view) {
     gt_area_st * coords = (gt_area_st * )&dsc->logical_area;
     _gt_draw_font_res_st ret = {
@@ -2284,7 +2284,8 @@ static void draw_dot_matrix(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * 
     _draw_dot_matrix_data(draw_ctx, dsc, coords, &blend_dsc);
 }
 
-static void GT_ATTRIBUTE_RAM_TEXT draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords) {
+static void GT_ATTRIBUTE_SRAM_TEXT//GT_ATTRIBUTE_RAM_TEXT
+draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords) {
     if(!dsc->reg.is_fill) return ;
 
     gt_draw_blend_dsc_st blend_dsc = {0};
@@ -2365,7 +2366,8 @@ free_lb:
     }
 }
 
-static GT_ATTRIBUTE_RAM_TEXT void draw_bg_border(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords) {
+static void GT_ATTRIBUTE_SRAM_TEXT
+draw_bg_border(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords) {
     if(dsc->border_width <= 0) return ;
 
     gt_draw_blend_dsc_st blend_dsc = {0};

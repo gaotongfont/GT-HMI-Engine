@@ -178,7 +178,7 @@ gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param, gt_a
     return true;
 }
 
-static inline void GT_ATTRIBUTE_RAM_TEXT
+static inline void GT_ATTRIBUTE_SRAM_TEXT
 gt_check_obj_visible_and_copy_after_scroll_tip(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent) {
     if (GT_SCROLL_TIP_NONE == obj->scroll_tip) {
         return;
@@ -220,7 +220,8 @@ gt_check_obj_visible_and_copy_after_scroll_tip(gt_obj_st * obj, _flush_scr_param
  * @param param
  * @param area_parent All parent displayable areas
  */
-static GT_ATTRIBUTE_RAM_TEXT void _check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent) {
+static void GT_ATTRIBUTE_RAM_TEXT
+_check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent) {
     uint16_t idx = 0;
     gt_obj_st * child_p = NULL;
     gt_area_st area_cross = area_parent;
@@ -246,7 +247,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _check_and_copy_foreach(gt_obj_st * obj, _flus
     gt_check_obj_visible_and_copy_after_scroll_tip(obj, param, area_cross);
 }
 
-static GT_ATTRIBUTE_RAM_TEXT void _gt_disp_check_and_copy_foreach(gt_obj_st * scr_or_layer, _flush_scr_param_st * param) {
+static void GT_ATTRIBUTE_SRAM_TEXT
+_gt_disp_check_and_copy_foreach(gt_obj_st * scr_or_layer, _flush_scr_param_st * param) {
     uint16_t idx = 0;
     gt_obj_st * child_p = NULL;
     gt_area_st area_parent = param->disp->area_disp;
