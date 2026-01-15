@@ -887,8 +887,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
     gt_disp_st * disp = param->disp;
     gt_obj_st * scr = disp->scr_act;
     gt_color_t color_fill = gt_screen_get_bgcolor(scr);
-    gt_obj_type_et type = gt_obj_class_get_type(scr);
-    if (GT_TYPE_UNKNOWN == type) {
+    if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(scr)) {
         return;
     }
 
