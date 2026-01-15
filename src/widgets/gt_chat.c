@@ -1015,6 +1015,22 @@ void gt_chat_set_item_cb(gt_obj_st * chat, gt_chat_item_cb_st* cb)
     }
 }
 
+int32_t gt_chat_get_item_index(gt_obj_st* chat, gt_obj_st* item)
+{
+    if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
+        return -1;
+    }
+
+    _gt_chat_st * style = (_gt_chat_st * )chat;
+
+    for(int32_t i = 0; i < style->msg_cnt; i++) {
+        if(item == style->msg_list[i].msg_obj) {
+            return i;
+        }
+    }
+
+    return -1;
+}
 
 /* end of file ----------------------------------------------------------*/
 #endif /** GT_CFG_ENABLE_CHATTING */
