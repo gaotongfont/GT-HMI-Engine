@@ -406,6 +406,15 @@ int8_t gt_view_pager_set_fragment_count(gt_obj_st * obj, uint8_t count)
     return style->reg.count;
 }
 
+uint8_t gt_view_pager_get_cur_page(gt_obj_st * obj)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
+    return style->reg.index;
+}
+
 int8_t gt_view_pager_add_fragment(gt_obj_st * obj)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {

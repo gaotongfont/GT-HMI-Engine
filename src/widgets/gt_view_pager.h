@@ -80,6 +80,14 @@ void gt_view_pager_scroll_to_fragment(gt_obj_st * obj, gt_size_t index);
 void gt_view_pager_set_scroll_effect(gt_obj_st * obj, gt_view_pager_scroll_effect_et effect);
 
 /**
+ * @brief Get cur page
+ *
+ * @param obj
+ * @return uint8_t
+ */
+uint8_t gt_view_pager_get_cur_page(gt_obj_st * obj);
+
+/**
  * @brief add a fragment
  *
  * @param obj

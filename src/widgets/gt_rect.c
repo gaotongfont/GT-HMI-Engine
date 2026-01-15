@@ -74,9 +74,6 @@ static inline void _gt_rect_init_widget(gt_obj_st * rect) {
         gt_area_st area_base = rect->area;
         draw_bg(rect->draw_ctx, &rect_attr, &area_base);
     }
-
-    // focus
-    draw_focus(rect);
 }
 
 /**
@@ -88,6 +85,9 @@ static void _init_cb(gt_obj_st * obj) {
     GT_LOGV(GT_LOG_TAG_GUI, "start init_cb");
 
     _gt_rect_init_widget(obj);
+
+    // focus
+    draw_focus(obj);
 }
 
 /**
