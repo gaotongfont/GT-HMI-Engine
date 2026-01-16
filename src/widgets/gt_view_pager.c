@@ -274,6 +274,9 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _scroll_end_handler(gt_obj_st * obj) {
         _statical_scroll_calc_new_page(obj);
     }
     style->reg.index = gt_abs(obj->process_attr.scroll.x) / style->width;
+    if (obj->process_attr.scroll.x % style->width) {
+        gt_view_pager_scroll_to_fragment(obj, style->reg.index);
+    }
 }
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
@@ -296,6 +299,13 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_END: {
         _scroll_end_handler(obj);
+        break;
+    }
+    case GT_EVENT_TYPE_INPUT_PRESS_LOST:
+    case GT_EVENT_TYPE_INPUT_RELEASED: {
+        if (obj->process_attr.scroll.x % style->width) {
+            gt_view_pager_scroll_to_fragment(obj, style->reg.index);
+        }
         break;
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_UP:
