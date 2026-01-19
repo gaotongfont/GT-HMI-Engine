@@ -341,7 +341,8 @@ static inline void _fill_opacity(
 }
 #endif
 
-static inline gt_point_st _get_cover_dst_area_and_offset_by(
+static inline gt_point_st _GT_DRAW_BLEND_ATTRIBUTE_SRAM_TEXT
+_get_cover_dst_area_and_offset_by(
     gt_area_st const * const parent_or_limit, gt_area_st const * const dst_area, gt_area_st * ret
 ) {
     gt_point_st offset = {0};
