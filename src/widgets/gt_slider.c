@@ -201,11 +201,22 @@ _calc_touch_point_pos(gt_obj_st * obj) {
             obj->process_attr.scroll_prev.y = obj->process_attr.scroll.y;
         }
 
-        if (gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_L2R ||
-            gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_R2L) {
-            temp_offset = style->offset + dist_scroll.x;
-        } else {
-            temp_offset = style->offset + dist_scroll.y;
+        gt_bar_dir_et dir = gt_slider_get_dir(obj);
+        switch(dir) {
+            case GT_BAR_DIR_HOR_L2R:
+                temp_offset = style->offset + dist_scroll.x;
+                break;
+            case GT_BAR_DIR_HOR_R2L:
+                temp_offset = style->offset - dist_scroll.x;
+                break;
+            case GT_BAR_DIR_VER_U2D:
+                temp_offset = style->offset + dist_scroll.y;
+                break;
+            case GT_BAR_DIR_VER_D2U:
+                temp_offset = style->offset - dist_scroll.y;
+                break;
+            default:
+                break;
         }
 
         temp_offset += _gt_slider_get_tag_size(obj) >> 1;
