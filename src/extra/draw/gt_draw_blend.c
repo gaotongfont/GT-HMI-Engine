@@ -24,6 +24,12 @@
 
 /* private define -------------------------------------------------------*/
 
+#ifndef _GT_DRAW_BLEND_ATTRIBUTE_SRAM_TEXT
+    /**
+     * @brief Default: GT_ATTRIBUTE_SRAM_TEXT
+     */
+    #define _GT_DRAW_BLEND_ATTRIBUTE_SRAM_TEXT      GT_ATTRIBUTE_SRAM_TEXT
+#endif
 
 
 /* private typedef ------------------------------------------------------*/
@@ -360,7 +366,7 @@ static inline gt_point_st _get_cover_dst_area_and_offset_by(
  * @param draw_ctx draw content
  * @param dsc
  */
-void GT_ATTRIBUTE_SRAM_TEXT
+void _GT_DRAW_BLEND_ATTRIBUTE_SRAM_TEXT
 gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st * dsc)
 {
     if (dsc->opa < GT_OPA_MIN) {
@@ -494,7 +500,7 @@ gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st * dsc
 }
 
 
-void GT_ATTRIBUTE_SRAM_TEXT
+void _GT_DRAW_BLEND_ATTRIBUTE_SRAM_TEXT
 gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st * dsc,
                         uint16_t font_size, uint16_t dot_byte, uint8_t gray, const uint8_t* res, gt_font_style_st font_style)
 {

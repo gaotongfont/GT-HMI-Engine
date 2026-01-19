@@ -30,6 +30,9 @@
 #include "./gt_obj_scroll.h"
 
 /* private define -------------------------------------------------------*/
+#ifndef _GT_DISP_ATTRIBUTE_SRAM_TEXT
+    #define _GT_DISP_ATTRIBUTE_SRAM_TEXT        GT_ATTRIBUTE_SRAM_TEXT
+#endif
 
 #ifndef _GT_STACK_USE_LOADING_LOG
     /**
@@ -178,7 +181,7 @@ gt_check_obj_visible_and_copy(gt_obj_st * obj, _flush_scr_param_st * param, gt_a
     return true;
 }
 
-static inline void GT_ATTRIBUTE_SRAM_TEXT
+static inline void _GT_DISP_ATTRIBUTE_SRAM_TEXT
 gt_check_obj_visible_and_copy_after_scroll_tip(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_parent) {
     if (GT_SCROLL_TIP_NONE == obj->scroll_tip) {
         return;
@@ -247,7 +250,7 @@ _check_and_copy_foreach(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st
     gt_check_obj_visible_and_copy_after_scroll_tip(obj, param, area_cross);
 }
 
-static void GT_ATTRIBUTE_SRAM_TEXT
+static void _GT_DISP_ATTRIBUTE_SRAM_TEXT
 _gt_disp_check_and_copy_foreach(gt_obj_st * scr_or_layer, _flush_scr_param_st * param) {
     uint16_t idx = 0;
     gt_obj_st * child_p = NULL;

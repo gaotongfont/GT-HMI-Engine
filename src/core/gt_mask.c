@@ -13,6 +13,13 @@
 #include "gt_mem.h"
 #include "../others/gt_area.h"
 /* private define -------------------------------------------------------*/
+#ifndef _GT_MASK_ATTRIBUTE_SRAM_TEXT
+    /**
+     * @brief default GT_ATTRIBUTE_SRAM_TEXT
+     */
+    #define _GT_MASK_ATTRIBUTE_SRAM_TEXT           GT_ATTRIBUTE_SRAM_TEXT
+#endif
+
 #ifndef _GT_DRAW_USE_RADIUS_MASK_MIX
     /**
      * @brief Use the mask to mix the color of the radius, or use the minimum value of the two colors mask
@@ -148,7 +155,7 @@ _gt_mask_mix(gt_opa_t mask_act, gt_opa_t mask_new) {
     return GT_UDIV255(mask_act * mask_new);// >> 8);
 }
 
-static void GT_ATTRIBUTE_SRAM_TEXT
+static void _GT_MASK_ATTRIBUTE_SRAM_TEXT
 _gt_circ_calc_aa4(_gt_mask_radius_circle_st* c, uint16_t radius) {
     if(0 == radius) return;
     c->radius = radius;
@@ -311,7 +318,7 @@ _gt_circ_calc_aa4(_gt_mask_radius_circle_st* c, uint16_t radius) {
 }
 
 
-static gt_mask_res_et GT_ATTRIBUTE_SRAM_TEXT
+static gt_mask_res_et _GT_MASK_ATTRIBUTE_SRAM_TEXT
 _gt_mask_radius_get(gt_opa_t* mask_buf, \
     gt_size_t abs_x, gt_size_t abs_y, uint16_t len, \
     gt_mask_radius_st* p)
@@ -435,7 +442,7 @@ _gt_mask_radius_get(gt_opa_t* mask_buf, \
     return GT_MASK_RES_CHANGE;
 }
 
-static gt_mask_res_et GT_ATTRIBUTE_SRAM_TEXT
+static gt_mask_res_et _GT_MASK_ATTRIBUTE_SRAM_TEXT
 _gt_mask_line_flat_get(gt_opa_t* mask_buf, \
     gt_size_t abs_x, gt_size_t abs_y, uint16_t len, \
     gt_mask_line_st* p)
@@ -534,7 +541,7 @@ _gt_mask_line_flat_get(gt_opa_t* mask_buf, \
 }
 
 
-static gt_mask_res_et GT_ATTRIBUTE_SRAM_TEXT
+static gt_mask_res_et _GT_MASK_ATTRIBUTE_SRAM_TEXT
 _gt_mask_line_steep_get(gt_opa_t* mask_buf, \
     gt_size_t abs_x, gt_size_t abs_y, uint16_t len, \
     gt_mask_line_st* p)
@@ -664,7 +671,7 @@ _gt_mask_line_steep_get(gt_opa_t* mask_buf, \
     return GT_MASK_RES_CHANGE;
 }
 
-static gt_mask_res_et GT_ATTRIBUTE_SRAM_TEXT
+static gt_mask_res_et _GT_MASK_ATTRIBUTE_SRAM_TEXT
 _gt_mask_line_get(gt_opa_t* mask_buf, \
     gt_size_t abs_x, gt_size_t abs_y, uint16_t len, \
     gt_mask_line_st* p)
@@ -730,7 +737,7 @@ _gt_mask_line_get(gt_opa_t* mask_buf, \
     return res;
 }
 
-static gt_mask_res_et GT_ATTRIBUTE_SRAM_TEXT
+static gt_mask_res_et _GT_MASK_ATTRIBUTE_SRAM_TEXT
 _gt_mask_angle_get(gt_opa_t* mask_buf, \
     gt_size_t abs_x, gt_size_t abs_y, uint16_t len, \
     gt_mask_angle_st* p)
@@ -876,7 +883,7 @@ _gt_mask_angle_get(gt_opa_t* mask_buf, \
 
 
 /* 快速整数平方根近似算法（Q7.8精度） */
-static uint16_t GT_ATTRIBUTE_SRAM_TEXT
+static uint16_t _GT_MASK_ATTRIBUTE_SRAM_TEXT
 _approx_sqrt16(uint16_t val) {
     uint16_t r = val;
     uint16_t b = 0x4000;
@@ -893,7 +900,7 @@ _approx_sqrt16(uint16_t val) {
     return q >> 8;
 }
 
-static gt_mask_res_et GT_ATTRIBUTE_SRAM_TEXT
+static gt_mask_res_et _GT_MASK_ATTRIBUTE_SRAM_TEXT
 _gt_mask_edge_blur_get(gt_opa_t* mask_buf, \
     gt_size_t abs_x, gt_size_t abs_y, uint16_t len, \
     gt_mask_edge_blur_st* p)
