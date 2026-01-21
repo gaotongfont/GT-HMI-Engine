@@ -512,6 +512,9 @@ bool gt_anim_del_safe_by(void * target)
 {
     bool ret = false;
     gt_anim_st * ptr        = NULL;
+    if (NULL == target) {
+        return ret;
+    }
 
     if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
         return ret;
@@ -537,6 +540,9 @@ bool gt_anim_del_safe_by(void * target)
 
 void gt_anim_set_path_type(gt_anim_st * anim, gt_anim_path_type_em type)
 {
+    if (NULL == anim) {
+        return;
+    }
     switch(type) {
         case GT_ANIM_PATH_TYPE_EASE_IN: {
             anim->_path_cb = _gt_anim_path_ease_in;

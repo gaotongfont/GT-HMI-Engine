@@ -137,23 +137,28 @@ typedef struct gt_anim_s {
  * @param target widget object
  */
 static inline void gt_anim_set_target(gt_anim_st * anim, void * const target) {
+    if (NULL == anim) { return; }
     anim->tar = target;
 }
 
 static inline void gt_anim_set_time_delay_start(gt_anim_st * anim, int32_t time_ms) {
+    if (NULL == anim) { return; }
     anim->time_delay_start = time_ms;
 }
 
 static inline void gt_anim_set_time(gt_anim_st * anim, int32_t time_ms) {
+    if (NULL == anim) { return; }
     anim->time = time_ms;
 }
 
 static inline void gt_anim_set_value(gt_anim_st * anim, int32_t start, int32_t end) {
+    if (NULL == anim) { return; }
     anim->value_start = start;
     anim->value_end   = end;
 }
 
 static inline void gt_anim_set_playback(gt_anim_st * anim, bool enabled) {
+    if (NULL == anim) { return; }
     anim->playback = enabled ? 1 : 0;
 }
 
@@ -164,6 +169,7 @@ static inline void gt_anim_set_playback(gt_anim_st * anim, bool enabled) {
  * @param count Default: 0, infinite: GT_ANIM_REPEAT_INFINITE
  */
 static inline void gt_anim_set_repeat_count(gt_anim_st * anim, uint16_t count) {
+    if (NULL == anim) { return; }
     anim->repeat_count = count;
 }
 
@@ -174,30 +180,37 @@ static inline void gt_anim_set_repeat_count(gt_anim_st * anim, uint16_t count) {
  * @param delay Set delay time to playback animation [ms]
  */
 static inline void gt_anim_set_repeat_delay(gt_anim_st * anim, uint32_t delay) {
+    if (NULL == anim) { return; }
     anim->repeat_delay = delay;
 }
 
 static inline void gt_anim_set_paused(gt_anim_st * anim, bool paused) {
+    if (NULL == anim) { return; }
     anim->paused = paused ? 1 : 0;
 }
 
 static inline bool gt_anim_is_paused(const gt_anim_st * anim) {
+    if (NULL == anim) { return true; }
     return anim->paused;
 }
 
 static inline void gt_anim_set_start_cb(gt_anim_st * anim, gt_anim_start_cb_t start_cb) {
+    if (NULL == anim) { return; }
     anim->start_cb = start_cb;
 }
 
 static inline void gt_anim_set_exec_cb(gt_anim_st * anim, gt_anim_exec_cb_t exec_cb) {
+    if (NULL == anim) { return; }
     anim->exec_cb = exec_cb;
 }
 
 static inline void gt_anim_set_ready_cb(gt_anim_st * anim, gt_anim_ready_cb_t ready_cb) {
+    if (NULL == anim) { return; }
     anim->ready_cb = ready_cb;
 }
 
 static inline void gt_anim_set_deleted_cb(gt_anim_st * anim, gt_anim_deleted_cb_t deleted_cb) {
+    if (NULL == anim) { return; }
     anim->deleted_cb = deleted_cb;
 }
 
@@ -208,6 +221,7 @@ static inline void gt_anim_set_deleted_cb(gt_anim_st * anim, gt_anim_deleted_cb_
  * @param data
  */
 static inline void gt_anim_set_data(gt_anim_st * anim, void * data, gt_size_t size) {
+    if (NULL == anim) { return; }
     if (NULL == data || 0 == size) {
         return ;
     }
@@ -228,6 +242,9 @@ static inline void gt_anim_set_data(gt_anim_st * anim, void * data, gt_size_t si
  * @param time_anim  The time which animation playing the whole time
  */
 static inline void gt_anim_param_set_time(gt_anim_param_st * param, int32_t time_delay_start_ms, int32_t time_anim_ms) {
+    if (NULL == param) {
+        return;
+    }
     param->time_delay_start = time_delay_start_ms;
     param->time_anim_exec = time_anim_ms;
 }
@@ -240,6 +257,9 @@ static inline void gt_anim_param_set_time(gt_anim_param_st * param, int32_t time
  * @param y The destination y position
  */
 static inline void gt_anim_param_set_dst_point(gt_anim_param_st * param, gt_size_t x, gt_size_t y) {
+    if (NULL == param) {
+        return;
+    }
     param->dst.x = x;
     param->dst.y = y;
 }
@@ -251,6 +271,9 @@ static inline void gt_anim_param_set_dst_point(gt_anim_param_st * param, gt_size
  * @param type @ref gt_anim_path_type_em
  */
 static inline void gt_anim_param_set_path_type(gt_anim_param_st * param, gt_anim_path_type_em type) {
+    if (NULL == param) {
+        return;
+    }
     param->type = type;
 }
 /* class ----------------------------------------------------------------*/
