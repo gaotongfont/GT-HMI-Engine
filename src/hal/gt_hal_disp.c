@@ -35,11 +35,11 @@ typedef struct _gt_style_layer_top_s {
 
 /* static variables -----------------------------------------------------*/
 #if (GT_REFRESH_STYLE_1 == GT_REFRESH_STYLE)
-    static gt_color_t * graph_buf1;
+    static gt_color_t * graph_buf1 = NULL;
 #elif (GT_REFRESH_STYLE_2 == GT_REFRESH_STYLE)
-    static gt_color_t * graph_buf1, * graph_buf2;
+    static gt_color_t * graph_buf1 = NULL, * graph_buf2 = NULL;
 #elif (GT_REFRESH_STYLE_3 == GT_REFRESH_STYLE)
-    static gt_color_t * graph_buf_all;
+    static gt_color_t * graph_buf_all = NULL;
 #endif
 
 static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_layer_top_class = {

@@ -24,8 +24,8 @@
 
 
 /* static variables -----------------------------------------------------*/
-static gt_indev_st * indev;
-static gt_indev_st * indev_act[_CNT_INDEV_MAX];
+static gt_indev_st * indev = NULL;
+static gt_indev_st * indev_act[_CNT_INDEV_MAX] = {0};
 static uint8_t cnt_indev = 0;
 
 #if GT_INDEV_SIMULATE_POINTER

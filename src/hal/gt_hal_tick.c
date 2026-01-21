@@ -22,7 +22,7 @@
 
 /* static variables -----------------------------------------------------*/
 static uint32_t _tick = 0;
-static volatile uint8_t tick_irq_flag;
+static volatile uint8_t tick_irq_flag = 0;
 
 /* macros ---------------------------------------------------------------*/
 
