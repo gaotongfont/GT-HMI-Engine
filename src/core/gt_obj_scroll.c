@@ -187,17 +187,21 @@ gt_indev_over_scroll_res_st _gt_obj_get_over_scroll(gt_obj_st * obj, gt_dir_et d
     if (dir & GT_SCROLL_VERTICAL) {
         bool top_en = is_dir_hor || GT_DIR_DOWN == direct;
         bool down_en = is_dir_hor || GT_DIR_UP == direct;
+        gt_size_t height = gt_disp_get_res_ver(NULL);
 
-        if (top_en && p->y > 0) {
-            ret.distance.y = -p->y;
-            ret.top = true;
-            ret.is_over_scroll = true;
+        if (top_en) {
+            if (obj->overflow && p->y < 0 && gt_abs(p->y) < (height >> 1)) {
+                ret.is_over_scroll = true;
+            } else if (p->y > 0) {
+                ret.distance.y = -p->y;
+                ret.top = true;
+                ret.is_over_scroll = true;
+            }
         } else if (down_en) {
             if (obj->overflow) {
-                gt_size_t height = gt_disp_get_res_ver(NULL);
-                if (p->y < 0 && p->y + obj->area.h < height) {
-                    ret.distance.y = height - p->y;
-                    ret.bottom= true;
+                if (p->y < 0 && p->y + obj->area.h < height + (height >> 1)) {
+                    ret.distance.y = height + (height >> 1) - obj->area.h - p->y;
+                    ret.bottom = true;
                     ret.is_over_scroll = true;
                 }
             } else if (p->y < 0 && p->y < scroll_limit.y) {
@@ -210,16 +214,21 @@ gt_indev_over_scroll_res_st _gt_obj_get_over_scroll(gt_obj_st * obj, gt_dir_et d
     if (dir & GT_SCROLL_HORIZONTAL) {
         bool left_en = is_dir_ver || GT_DIR_RIGHT == direct;
         bool right_en = is_dir_ver || GT_DIR_LEFT == direct;
+        gt_size_t width = gt_disp_get_res_hor(NULL);
 
-        if (left_en && p->x > 0) {
-            ret.distance.x = -p->x;
-            ret.left = true;
-            ret.is_over_scroll = true;
+        if (left_en) {
+            if (obj->overflow && p->x < 0 && gt_abs(p->x) < (width >> 1)) {
+                ret.is_over_scroll = true;
+            } else if (p->x > 0) {
+                ret.distance.x = -p->x;
+                ret.left = true;
+                ret.is_over_scroll = true;
+            }
         } else if (right_en) {
             if (obj->overflow) {
-                gt_size_t width = gt_disp_get_res_hor(NULL);
-                if (p->x < 0 && p->x + obj->area.w < width) {
-                    ret.distance.x = width - p->x;
+                /** large limit screen size */
+                if (p->x < 0 && p->x + obj->area.w < width + (width >> 1)) {
+                    ret.distance.x = width + (width >> 1) - obj->area.w - p->x;
                     ret.right = true;
                     ret.is_over_scroll = true;
                 }
