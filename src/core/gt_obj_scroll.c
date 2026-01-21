@@ -50,7 +50,14 @@ static GT_ATTRIBUTE_RAM_TEXT void _scroll_by_y(void * obj, int32_t y) {
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _scroll_ready_cb(struct gt_anim_s * anim) {
-    gt_event_send((gt_obj_st * )anim->tar, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
+    gt_obj_st * obj = (gt_obj_st * )anim->tar;
+    if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(obj)) {
+        return;
+    }
+    if (false == obj->process_attr.is_scrolling) {
+        return;
+    }
+    gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -166,15 +173,12 @@ gt_indev_over_scroll_res_st _gt_obj_get_over_scroll(gt_obj_st * obj, gt_dir_et d
     if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
         return ret;
     }
-    if (obj->overflow) {
-        return ret;
-    }
     gt_scroll_dir_et dir = obj->scroll_dir;
     if (GT_SCROLL_DISABLE == dir) {
         return ret;
     }
     gt_point_st * p = &obj->process_attr.scroll;
-    gt_point_st scroll_limt = gt_obj_calc_scroll_limit(obj);
+    gt_point_st scroll_limit = gt_obj_calc_scroll_limit(obj);
 
     // change diff dir if need to recover
     bool is_dir_ver = GT_DIR_NONE == direct || GT_DIR_UP == direct || GT_DIR_DOWN == direct;
@@ -188,23 +192,42 @@ gt_indev_over_scroll_res_st _gt_obj_get_over_scroll(gt_obj_st * obj, gt_dir_et d
             ret.distance.y = -p->y;
             ret.top = true;
             ret.is_over_scroll = true;
-        } else if (down_en && p->y < 0 && p->y < scroll_limt.y) {
-            ret.distance.y = scroll_limt.y - p->y;
-            ret.bottom = true;
-            ret.is_over_scroll = true;
+        } else if (down_en) {
+            if (obj->overflow) {
+                gt_size_t height = gt_disp_get_res_ver(NULL);
+                if (p->y < 0 && p->y + obj->area.h < height) {
+                    ret.distance.y = height - p->y;
+                    ret.bottom= true;
+                    ret.is_over_scroll = true;
+                }
+            } else if (p->y < 0 && p->y < scroll_limit.y) {
+                ret.distance.y = scroll_limit.y - p->y;
+                ret.bottom = true;
+                ret.is_over_scroll = true;
+            }
         }
     }
     if (dir & GT_SCROLL_HORIZONTAL) {
         bool left_en = is_dir_ver || GT_DIR_RIGHT == direct;
         bool right_en = is_dir_ver || GT_DIR_LEFT == direct;
+
         if (left_en && p->x > 0) {
             ret.distance.x = -p->x;
             ret.left = true;
             ret.is_over_scroll = true;
-        } else if (right_en && p->x < 0 && p->x < scroll_limt.x) {
-            ret.distance.x = scroll_limt.x - p->x;
-            ret.right = true;
-            ret.is_over_scroll = true;
+        } else if (right_en) {
+            if (obj->overflow) {
+                gt_size_t width = gt_disp_get_res_hor(NULL);
+                if (p->x < 0 && p->x + obj->area.w < width) {
+                    ret.distance.x = width - p->x;
+                    ret.right = true;
+                    ret.is_over_scroll = true;
+                }
+            } else if (p->x < 0 && p->x < scroll_limit.x) {
+                ret.distance.x = scroll_limit.x - p->x;
+                ret.right = true;
+                ret.is_over_scroll = true;
+            }
         }
     }
     return ret;

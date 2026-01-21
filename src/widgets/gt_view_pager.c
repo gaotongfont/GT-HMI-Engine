@@ -303,6 +303,9 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
     case GT_EVENT_TYPE_INPUT_PRESS_LOST:
     case GT_EVENT_TYPE_INPUT_RELEASED: {
+        if (obj->process_attr.is_scrolling) {
+            break;
+        }
         if (obj->process_attr.scroll.x % style->width) {
             gt_view_pager_scroll_to_fragment(obj, style->reg.index);
         }
