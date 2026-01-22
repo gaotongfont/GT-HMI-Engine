@@ -33,7 +33,6 @@ typedef struct _gt_lrc_s {
 
     gt_anim_st *anim;
     uint32_t* times;
-    uint32_t offset_h;
     uint32_t fixed_line;
     uint32_t times_total;
     uint32_t times_count;
@@ -155,6 +154,12 @@ static gt_obj_st* _lrc_add_text(gt_obj_st* obj, uint32_t time, const char* text,
         style->times = tmp;
         gt_memset_0(&style->times[style->times_count], (style->times_total - style->times_count) * sizeof(uint32_t));
     }
+
+    gt_size_t x_off = obj->area.x;
+    gt_size_t y_off = obj->area.y;
+    if(obj->cnt_child > 0) {
+        y_off = obj->child[obj->cnt_child - 1]->area.y + obj->child[obj->cnt_child - 1]->area.h;
+    }
     gt_obj_st* child = gt_label_create(obj);
     if (NULL == child) {
         GT_LOGE(GT_LOG_TAG_UI,"create child failed");
@@ -164,7 +169,7 @@ static gt_obj_st* _lrc_add_text(gt_obj_st* obj, uint32_t time, const char* text,
 
     //
     gt_label_set_text_by_len(child, text, len);
-    gt_obj_set_pos_relative(child, obj, 0, style->offset_h);
+    gt_obj_set_pos(child, x_off, y_off);
     gt_label_set_font_info(child, &style->font_info);
     gt_label_set_font_align(child, style->font_align);
     gt_label_set_indent(child, 0);
@@ -184,7 +189,6 @@ static gt_obj_st* _lrc_add_text(gt_obj_st* obj, uint32_t time, const char* text,
     gt_split_line_ret_st line_ret = gt_font_split_line_numb(&style->font_info, &sp_line);
     uint32_t h = line_ret.line_numb * (style->font_info.size + style->space_y);
     gt_obj_set_size(child, obj->area.w, h);
-    style->offset_h += h;
     return child;
 }
 
@@ -361,7 +365,6 @@ void gt_lrc_clear_all_text(gt_obj_st* obj)
     }
     _gt_lrc_st* style = (_gt_lrc_st*)obj;
     style->times_count = 0;
-    style->offset_h = 0;
     style->index = 0;
     _gt_obj_class_destroy_children(obj);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
