@@ -525,9 +525,23 @@ _scrolling_over_limit_area_effects(gt_indev_st * indev) {
 #endif
 
 static gt_res_t GT_ATTRIBUTE_RAM_TEXT
+_throw_scroll_prop_slow_down_handler(gt_indev_st * indev) {
+    struct _point * point_p = &indev->data.point;
+    gt_obj_st * scroll_obj = point_p->obj_scroll;
+    if (false == scroll_obj->absorb) {
+        return GT_RES_OK;
+    }
+    if (point_p->throw_velocity > GT_INDEV_THROW_PIXEL_PER_SECOND) {
+        point_p->throw_velocity = _calc_final_speed(point_p->throw_velocity, -(GT_INDEV_THROW_PIXEL_PER_SECOND >> 2));
+    }
+    return GT_RES_OK;
+}
+
+static gt_res_t GT_ATTRIBUTE_RAM_TEXT
 _throw_scroll_rebound_slow_down_handler(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
     gt_obj_st * scroll_obj = point_p->obj_scroll;
+    int32_t max_v = GT_INDEV_OVER_SCROLL_MAX_VELOCITY;
     if (false == scroll_obj->rebound && false == scroll_obj->overflow) {
         return GT_RES_OK;
     }
@@ -535,9 +549,12 @@ _throw_scroll_rebound_slow_down_handler(gt_indev_st * indev) {
     if (false == point_p->over_scroll.is_over_scroll) {
         return GT_RES_OK;
     }
+    if (point_p->over_scroll.is_slow_down) {
+        max_v >>= 5;
+    }
     do {
         point_p->throw_velocity = _calc_final_speed(point_p->throw_velocity, -point_p->throw_velocity);
-    } while (point_p->throw_velocity > GT_INDEV_OVER_SCROLL_MAX_VELOCITY);
+    } while (point_p->throw_velocity > max_v);
     return GT_RES_OK;
 }
 
@@ -610,6 +627,7 @@ _indev_scroll_throw_handler(gt_indev_st * indev) {
         detla_time = 0;
     }
     point_p->throw_velocity -= _calc_distance_inline(GT_INDEV_THROW_PIXEL_PER_SECOND * detla_time);
+    _throw_scroll_prop_slow_down_handler(indev);
     _throw_scroll_rebound_slow_down_handler(indev);
     if (point_p->throw_velocity <= 0) {
         point_p->throw_velocity = 0;

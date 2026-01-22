@@ -192,6 +192,7 @@ gt_indev_over_scroll_res_st _gt_obj_get_over_scroll(gt_obj_st * obj, gt_dir_et d
         if (top_en) {
             if (obj->overflow && p->y < 0 && gt_abs(p->y) < (height >> 1)) {
                 ret.is_over_scroll = true;
+                ret.is_slow_down = true;
             } else if (p->y > 0) {
                 ret.distance.y = -p->y;
                 ret.top = true;
@@ -219,6 +220,7 @@ gt_indev_over_scroll_res_st _gt_obj_get_over_scroll(gt_obj_st * obj, gt_dir_et d
         if (left_en) {
             if (obj->overflow && p->x < 0 && gt_abs(p->x) < (width >> 1)) {
                 ret.is_over_scroll = true;
+                ret.is_slow_down = true;
             } else if (p->x > 0) {
                 ret.distance.x = -p->x;
                 ret.left = true;
