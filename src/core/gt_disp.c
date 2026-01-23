@@ -1207,6 +1207,16 @@ gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const * const param) {
         ret.del_prev_scr = false;
     }
 #if _GT_STACK_PUSH_BEFORE_INIT_SCR
+    if (gt_scr_stack_is_empty() && gt_scr_stack_get_home_scr()) {
+        gt_scr_stack_item_st home = {
+            .current_scr_id = gt_scr_stack_get_home_scr_id(),
+            .current_scr = gt_scr_stack_get_home_scr(),
+        };
+        if (false == gt_scr_stack_push(&home)) {
+            GT_LOGE(GT_LOG_TAG_GUI, "Push home stack failed");
+            return ret;
+        }
+    }
     if (false == gt_scr_stack_push(new_item_p)) {
         GT_LOGE(GT_LOG_TAG_GUI, "Push stack failed");
         return ret;
