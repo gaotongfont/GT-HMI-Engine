@@ -78,7 +78,9 @@ _free_alive_scr_object_cb(gt_stack_item_st const * item, void * data) {
     gt_scr_stack_item_st * p = (gt_scr_stack_item_st * )item->data;
     _gt_gc_scr_st * scr_info = (_gt_gc_scr_st * )data;
     _gt_scr_home_st * const home = (_gt_scr_home_st * )&scr_info->home_scr;
-
+    if (0 == item->index_from_top) {
+        return true;
+    }
     if (NULL == p->current_scr) {
         return true;
     }

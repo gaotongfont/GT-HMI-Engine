@@ -532,7 +532,7 @@ _throw_scroll_prop_slow_down_handler(gt_indev_st * indev) {
         return GT_RES_OK;
     }
     if (point_p->throw_velocity > GT_INDEV_THROW_PIXEL_PER_SECOND) {
-        point_p->throw_velocity = _calc_final_speed(point_p->throw_velocity, -(GT_INDEV_THROW_PIXEL_PER_SECOND >> 2));
+        point_p->throw_velocity = _calc_final_speed(point_p->throw_velocity, -(GT_INDEV_THROW_PIXEL_PER_SECOND >> 5));
     }
     return GT_RES_OK;
 }
