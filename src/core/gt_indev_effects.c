@@ -110,7 +110,10 @@ static void _del_effect_cb(gt_event_st * e) {
 GT_ATTRIBUTE_RAM_TEXT
 static void _effects_set_pos(gt_obj_st* obj, bool is_left, uint32_t distance) {
     _gt_indev_effects_st* style = (_gt_indev_effects_st*) obj;
-    gt_obj_set_pos(obj, is_left ? _GT_EFFECTS_X_L : _GT_EFFECTS_X_R, _GT_EFFECTS_Y);
+    gt_size_t obj_x = is_left ? _GT_EFFECTS_X_L : _GT_EFFECTS_X_R;
+    if (obj_x != gt_obj_get_x(obj)) {
+        gt_obj_set_pos(obj, obj_x, _GT_EFFECTS_Y);
+    }
     gt_size_t x = gt_obj_get_x(obj);
     gt_size_t y = gt_obj_get_y(obj);
 
@@ -122,7 +125,9 @@ static void _effects_set_pos(gt_obj_st* obj, bool is_left, uint32_t distance) {
     else {
         x = x + _GT_EFFECTS_W - distance;
     }
-
+    if (gt_obj_get_x(style->rect_p) == x) {
+        return;
+    }
     gt_obj_set_pos(style->rect_p, x, y);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -130,24 +135,26 @@ static void _effects_set_pos(gt_obj_st* obj, bool is_left, uint32_t distance) {
 GT_ATTRIBUTE_RAM_TEXT
 static _gt_indev_effects_st*  _effects_create(void) {
     _gt_indev_effects_ctrl_st* ctrl = _get_effect_ctrl();
-    if(false == gt_obj_is_type((gt_obj_st*)ctrl->_effects_p, OBJ_TYPE)) {
-#if GT_USE_LAYER_TOP
-        ctrl->_effects_p = (_gt_indev_effects_st*) gt_obj_class_create(MY_CLASS, gt_disp_get_layer_top());
-        gt_obj_add_event_cb((gt_obj_st * )ctrl->_effects_p, _del_effect_cb, GT_EVENT_TYPE_CHANGE_DELETED, NULL);
-        //
-        gt_obj_set_pos((gt_obj_st*)ctrl->_effects_p, _GT_EFFECTS_X_L, _GT_EFFECTS_Y);
-        gt_obj_set_size((gt_obj_st*)ctrl->_effects_p, _GT_EFFECTS_W, _GT_EFFECTS_H);
-        gt_obj_set_visible((gt_obj_st*)ctrl->_effects_p, GT_INVISIBLE);
-#endif
-        if(ctrl->_effects_p) {
-            ctrl->_effects_p->rect_p = gt_rect_create((gt_obj_st*)ctrl->_effects_p);
-            _effects_set_pos((gt_obj_st*)ctrl->_effects_p, true, 0);
+    if(gt_obj_is_type((gt_obj_st*)ctrl->_effects_p, OBJ_TYPE)) {
+        return ctrl->_effects_p;
+    }
 
-            gt_obj_set_size(ctrl->_effects_p->rect_p, _GT_EFFECTS_RECT_W, _GT_EFFECTS_RECT_H);
-            gt_obj_set_radius(ctrl->_effects_p->rect_p, _GT_EFFECTS_RECT_RADIUS);
-            gt_rect_set_bg_color(ctrl->_effects_p->rect_p, _GT_EFFECTS_RECT_COLOR);
-            gt_obj_set_opa(ctrl->_effects_p->rect_p, _GT_EFFECTS_RECT_OPA);
-        }
+#if GT_USE_LAYER_TOP
+    ctrl->_effects_p = (_gt_indev_effects_st*) gt_obj_class_create(MY_CLASS, gt_disp_get_layer_top());
+    gt_obj_add_event_cb((gt_obj_st * )ctrl->_effects_p, _del_effect_cb, GT_EVENT_TYPE_CHANGE_DELETED, NULL);
+    //
+    gt_obj_set_pos((gt_obj_st*)ctrl->_effects_p, _GT_EFFECTS_X_L, _GT_EFFECTS_Y);
+    gt_obj_set_size((gt_obj_st*)ctrl->_effects_p, _GT_EFFECTS_W, _GT_EFFECTS_H);
+    gt_obj_set_visible((gt_obj_st*)ctrl->_effects_p, GT_INVISIBLE);
+#endif
+    if(ctrl->_effects_p) {
+        ctrl->_effects_p->rect_p = gt_rect_create((gt_obj_st*)ctrl->_effects_p);
+        _effects_set_pos((gt_obj_st*)ctrl->_effects_p, true, 0);
+
+        gt_obj_set_size(ctrl->_effects_p->rect_p, _GT_EFFECTS_RECT_W, _GT_EFFECTS_RECT_H);
+        gt_obj_set_radius(ctrl->_effects_p->rect_p, _GT_EFFECTS_RECT_RADIUS);
+        gt_rect_set_bg_color(ctrl->_effects_p->rect_p, _GT_EFFECTS_RECT_COLOR);
+        gt_obj_set_opa(ctrl->_effects_p->rect_p, _GT_EFFECTS_RECT_OPA);
     }
 
     return ctrl->_effects_p;
@@ -243,6 +250,9 @@ void gt_indev_effects_hide(void)
 {
     _gt_indev_effects_st* style = _effects_create();
     gt_obj_st* obj = (gt_obj_st*)style;
+    if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
+        return;
+    }
 
     if(gt_obj_get_visible(obj) == GT_VISIBLE) {
         gt_obj_set_visible(obj, GT_INVISIBLE);
@@ -258,6 +268,9 @@ GT_ATTRIBUTE_RAM_TEXT
 void gt_indev_effects_set_color(gt_color_t color)
 {
     _gt_indev_effects_st* style = _effects_create();
+    if (color.full == style->rect_p->bgcolor.full) {
+        return;
+    }
     gt_rect_set_bg_color(style->rect_p, color);
 }
 
@@ -265,6 +278,9 @@ GT_ATTRIBUTE_RAM_TEXT
 void gt_indev_effects_set_opa(uint8_t opa)
 {
     _gt_indev_effects_st* style = _effects_create();
+    if (opa == style->rect_p->opa) {
+        return;
+    }
     gt_obj_set_opa(style->rect_p, opa);
 }
 
@@ -280,6 +296,7 @@ void gt_indev_effects_set_distance_cb(gt_indev_effects_distance_cb_t left_cb,
     style->top_cb = top_cb;
     style->bottom_cb = bottom_cb;
 }
+
 GT_ATTRIBUTE_RAM_TEXT
 void gt_indev_effects_set_hide_cb(gt_indev_effects_hide_cb_t hide_cb)
 {
