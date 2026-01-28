@@ -310,7 +310,7 @@ typedef struct font_convertor_s
 
     uint8_t fontgray;
     uint8_t thick;
-    uint8_t * data ;
+    uint8_t * data_p;
 
     bool is_rev ; // false is normal, true is reverse
     bool is_vec ;

@@ -580,7 +580,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
         .fontgray = tmp_font.info.gray,
         .font_option = font_option,
         .thick = tmp_font.info.thick_en,
-        .data = font_buf,
+        .data_p = font_buf,
         .data_len = font_size_res.font_buff_len,
         .is_rev = _is_align_reverse(dsc->align) ? 0 : 1,
         .is_vec = ret_style == GT_FONT_TYPE_FLAG_VEC ? 1 : 0,
@@ -598,18 +598,18 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
     tmp_font.res = &font_buf[font_size_res.font_buff_len - font_size_res.font_per_size];
     while (idx < text_len) {
         if (FONT_LAN_HINDI == lan) {
-            width = gt_font_get_word_width_figure_up(&convertor.data[idx * font_size_res.font_per_size],
+            width = gt_font_get_word_width_figure_up(&convertor.data_p[idx * font_size_res.font_per_size],
                                                         16, 24, 1);
             tmp = 1;
         }
         else{
-            gt_memset_0(&convertor.data[0], font_size_res.font_buff_len);
+            gt_memset_0(&convertor.data_p[0], font_size_res.font_buff_len);
             if (0x20 == convertor.fontcode[idx]) {
                 width = convertor.fontsize >> 1;
             }
             else{
                 tmp = gt_font_convertor_data_get(&convertor, idx);
-                width = gt_font_get_word_width_figure_up(&convertor.data[0], font_size_res.dot_width,
+                width = gt_font_get_word_width_figure_up(&convertor.data_p[0], font_size_res.dot_width,
                                                             convertor.fontsize, convertor.fontgray);
             }
         }
@@ -680,7 +680,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
             blend_dsc->dst_area->x += off_point.x;
             blend_dsc->dst_area->y += off_point.y;
             gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font.info.size, byte_width, font_gray,
-                                &convertor.data[idx * font_size_res.font_per_size], tmp_font.info.style.reg);
+                                &convertor.data_p[idx * font_size_res.font_per_size], tmp_font.info.style.reg);
 
             blend_dsc->dst_area->x -= off_point.x;
             blend_dsc->dst_area->y -= off_point.y;
@@ -698,7 +698,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
             gt_point_st off_point = gt_font_offset_get(font_option, uni_or_gbk);
             blend_dsc->dst_area->x += off_point.x;
             blend_dsc->dst_area->y += off_point.y;
-            gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font.info.size, byte_width, font_gray, &convertor.data[0],tmp_font.info.style.reg);
+            gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font.info.size, byte_width, font_gray, &convertor.data_p[0],tmp_font.info.style.reg);
             blend_dsc->dst_area->x -= off_point.x;
             blend_dsc->dst_area->y -= off_point.y;
 
