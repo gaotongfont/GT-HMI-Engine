@@ -525,19 +525,6 @@ _scrolling_over_limit_area_effects(gt_indev_st * indev) {
 #endif
 
 static gt_res_t GT_ATTRIBUTE_RAM_TEXT
-_throw_scroll_prop_slow_down_handler(gt_indev_st * indev) {
-    struct _point * point_p = &indev->data.point;
-    gt_obj_st * scroll_obj = point_p->obj_scroll;
-    if (false == scroll_obj->absorb) {
-        return GT_RES_OK;
-    }
-    if (point_p->throw_velocity > GT_INDEV_THROW_PIXEL_PER_SECOND) {
-        point_p->throw_velocity = _calc_final_speed(point_p->throw_velocity, -(GT_INDEV_THROW_PIXEL_PER_SECOND >> 5));
-    }
-    return GT_RES_OK;
-}
-
-static gt_res_t GT_ATTRIBUTE_RAM_TEXT
 _throw_scroll_rebound_slow_down_handler(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
     gt_obj_st * scroll_obj = point_p->obj_scroll;
@@ -598,22 +585,50 @@ _gt_indev_check_childs_rebound(gt_indev_st * indev, gt_obj_st * obj) {
     }
     return GT_RES_OK;
 }
+
+static bool GT_ATTRIBUTE_RAM_TEXT
+_calc_absorb_next_scroll_distance(
+    struct _point * point_p, gt_obj_st * obj_scroll, gt_size_t * dx_p, gt_size_t * dy_p) {
+    bool stop_throw_anim = false;
+    gt_size_t dx = *dx_p, dy = *dy_p;
+    if (0 == point_p->scroll_absorb_max_dist.x && 0 == point_p->scroll_absorb_max_dist.y) {
+        gt_size_t absorb_dx = dx, absorb_dy = dy;
+        _absorb_handler(obj_scroll, point_p, &absorb_dx, &absorb_dx);
+        point_p->scroll_absorb_max_dist.x = obj_scroll->process_attr.scroll.x + absorb_dx;
+        point_p->scroll_absorb_max_dist.y = obj_scroll->process_attr.scroll.y + absorb_dx;
+    }
+    gt_point_st diff = {
+        .x = point_p->scroll_absorb_max_dist.x - obj_scroll->process_attr.scroll.x,
+        .y = point_p->scroll_absorb_max_dist.y - obj_scroll->process_attr.scroll.y,
+    };
+
+    if (gt_abs(dx) >= gt_abs(diff.x)) {
+        *dx_p = diff.x;
+        stop_throw_anim = true;
+    }
+    if (gt_abs(dy) >= gt_abs(diff.y)) {
+        *dy_p = diff.y;
+        stop_throw_anim = true;
+    }
+    return stop_throw_anim;
+}
 #endif
 
 /**
  * @brief Touch gestures make the act of throwing
  *
  * @param indev
- * @return bool true: start scroll anim; false: scroll by raw
+ * @return bool stop throw anim
  */
-static void GT_ATTRIBUTE_RAM_TEXT
+static bool GT_ATTRIBUTE_RAM_TEXT
 _indev_scroll_throw_handler(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
     gt_point_st detla_range = {0};
     point_p->gesture = _get_scroll_dir(indev);
+    bool stop_throw_anim = false;
 
     if ((uint16_t)GT_DIR_NONE == point_p->gesture) {
-        return;
+        return stop_throw_anim;
     }
 
     gt_obj_st * obj_scroll = point_p->obj_scroll;
@@ -627,7 +642,6 @@ _indev_scroll_throw_handler(gt_indev_st * indev) {
         detla_time = 0;
     }
     point_p->throw_velocity -= _calc_distance_inline(GT_INDEV_THROW_PIXEL_PER_SECOND * detla_time);
-    _throw_scroll_prop_slow_down_handler(indev);
     _throw_scroll_rebound_slow_down_handler(indev);
     if (point_p->throw_velocity <= 0) {
         point_p->throw_velocity = 0;
@@ -641,7 +655,7 @@ _indev_scroll_throw_handler(gt_indev_st * indev) {
 #else
         point_p->scroll_throw.y = point_p->scroll_throw.y * (100 - indev->drv->limit_scroll_throw) / 100;
         gt_obj_scroll_to(obj_scroll, 0, point_p->scroll_throw.y, GT_ANIM_OFF);
-        return;
+        return stop_throw_anim;
 #endif
     } else {
 #if GT_INDEV_CFG_VELOCITY
@@ -650,7 +664,7 @@ _indev_scroll_throw_handler(gt_indev_st * indev) {
 #else
         point_p->scroll_throw.x = point_p->scroll_throw.x * (100 - indev->drv->limit_scroll_throw) / 100;
         gt_obj_scroll_to(obj_scroll, point_p->scroll_throw.x, 0, GT_ANIM_OFF);
-        return;
+        return stop_throw_anim;
 #endif
     }
 
@@ -662,8 +676,13 @@ _indev_scroll_throw_handler(gt_indev_st * indev) {
         dy = detla_range.y;
     }
     indev->timestamp_throw_prev_scroll = cur_time;
+
+    if (obj_scroll->absorb) {
+        stop_throw_anim = _calc_absorb_next_scroll_distance(point_p, obj_scroll, &dx, &dy);
+    }
     gt_obj_scroll_to(obj_scroll, dx, dy, GT_ANIM_OFF);
 #endif
+    return stop_throw_anim;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline bool
@@ -758,13 +777,16 @@ _indev_scroll_throw_start_cb(struct gt_anim_s * anim) {
     gt_obj_st * obj = (gt_obj_st * )point_p->obj_scroll;
     bool is_scroll = _indev_is_scroll(dev_p);
 
+    if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(obj)) {
+        return;
+    }
     if (false == obj->ignore_throw) {
         return;
     }
     if (false == is_scroll) { return; }
     /** Throw scroll handler immediately by ignore_throw */
     _scroll_raw_handler(point_p, point_p->scroll_sum.x, point_p->scroll_sum.y);
-    gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
+    gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
     _indev_scroll_throw_deleted_cb(anim);
     gt_anim_del_safe_by(dev_p);
 }
@@ -776,26 +798,33 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_exec_cb(void * indev, int3
     gt_obj_st * obj_scroll = point_p->obj_scroll;
     gt_point_st prev_scroll_pos = obj_scroll->process_attr.scroll;
 
-    _indev_scroll_throw_handler(ptr);
+    if (_indev_scroll_throw_handler(ptr)) {
+        goto reset_stop_anim_lb;
+    }
     /** pos has not change, stop anim right now */
     if (prev_scroll_pos.x == obj_scroll->process_attr.scroll.x &&
         prev_scroll_pos.y == obj_scroll->process_attr.scroll.y) {
-        gt_anim_set_time(ptr->scroll_throw_anim, 0);
-        point_p->scroll_throw.x = 0;
-        point_p->scroll_throw.y = 0;
+        goto reset_stop_anim_lb;
     }
     if (GT_DIR_NONE == ptr->data.point.gesture) {
-        gt_anim_set_time(ptr->scroll_throw_anim, 0);
+        goto stop_anim_lb;
     }
 #if GT_INDEV_CFG_VELOCITY
     if (false == _indev_is_scroll_throw(indev)) {
-        gt_anim_set_time(ptr->scroll_throw_anim, 0);
+        goto stop_anim_lb;
     }
 #else
     if (0 == point_p->scroll_throw.x && 0 == point_p->scroll_throw.y) {
-        gt_anim_set_time(ptr->scroll_throw_anim, 0);
+        goto stop_anim_lb;
     }
 #endif
+    return;
+
+reset_stop_anim_lb:
+    point_p->scroll_throw.x = 0;
+    point_p->scroll_throw.y = 0;
+stop_anim_lb:
+    gt_anim_set_time(ptr->scroll_throw_anim, 0);
 }
 
 static inline void GT_ATTRIBUTE_RAM_TEXT
@@ -1181,6 +1210,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_pressed_handle(gt_indev_st * indev) {
         gt_obj_get_click_point_by_phy_point(point_p->obj_act, &point_p->newly, &point_ret);
         _gt_indev_point_set_value(&point_p->act, point_p->newly.x, point_p->newly.y);
         _gt_indev_point_set_value(&point_p->last, point_p->newly.x, point_p->newly.y);
+        _gt_indev_point_set_value(&point_p->scroll_absorb_max_dist, 0, 0);
         _gt_obj_set_process_point(point_p->obj_act, &point_ret);
         point_p->home_gesture_area = _is_first_point_at_home_gesture_area(&point_p->act);
         gt_event_send(point_p->obj_act, GT_EVENT_TYPE_INPUT_PRESSED, NULL);

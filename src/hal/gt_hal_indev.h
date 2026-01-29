@@ -246,6 +246,7 @@ typedef struct _gt_indev_s {
             gt_point_st scroll_diff;     ///< the distance between two coordinates
             gt_point_st scroll_sum;      ///< the sum of distance
             gt_point_st scroll_throw;    ///< used to judge scroll
+            gt_point_st scroll_absorb_max_dist;
 
             struct gt_obj_s * obj_act;       ///< The object which is touching now
             struct gt_obj_s * obj_target;    ///< The object of first touch
