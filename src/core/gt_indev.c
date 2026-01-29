@@ -894,17 +894,12 @@ _indev_scroll_throw_handler_anim_start(gt_indev_st * indev) {
     gt_anim_init(&anim);
 
 #if GT_INDEV_CFG_VELOCITY
-    struct _point * point_p = &indev->data.point;
     int32_t delta_time = gt_tick_get() - indev->timestamp_prev_press;
-    int32_t velocity = 0, throw = 0;
-    if (0 == delta_time) {
-        goto anim_lb;
+    if (delta_time) {
+        _velocity_less_scroll_points_need_to_speed_up(indev);
+        _calc_throw_velocity(indev);
     }
 
-    _velocity_less_scroll_points_need_to_speed_up(indev);
-    _calc_throw_velocity(indev);
-
-anim_lb:
     gt_anim_set_time(&anim, 50000);
 #else
     gt_anim_set_time(&anim, 2000);

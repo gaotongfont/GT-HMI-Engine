@@ -161,8 +161,8 @@ void gt_obj_scroll_to_fast(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt
     }
     _obj_scroll_anim_st sap = {
         .obj = obj,
-        .anim_time_min = _SCROLL_ANIM_TIME_MIN >> 3,
-        .anim_time_max = _SCROLL_ANIM_TIME_MAX >> 3,
+        .anim_time_min = _SCROLL_ANIM_TIME_MIN >> 1,
+        .anim_time_max = _SCROLL_ANIM_TIME_MAX >> 1,
         .dx = dx,
         .dy = dy,
     };
