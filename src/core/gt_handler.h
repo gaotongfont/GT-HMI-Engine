@@ -33,14 +33,14 @@ extern "C" {
     /**
      * @brief 次版本号
      */
-    #define GT_HMI_ENGINE_MINOR_VERSION     3
+    #define GT_HMI_ENGINE_MINOR_VERSION     4
 #endif
 
 #ifndef GT_HMI_ENGINE_PATCH_VERSION
     /**
      * @brief 修订号
      */
-    #define GT_HMI_ENGINE_PATCH_VERSION     5
+    #define GT_HMI_ENGINE_PATCH_VERSION     0
 #endif
 
 /* typedef --------------------------------------------------------------*/
