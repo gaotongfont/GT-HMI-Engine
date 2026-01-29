@@ -389,6 +389,15 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
             }
         }
     }
+    if (gt_scr_stack_is_empty() && gt_scr_stack_is_home_scr_alive()) {
+        gt_scr_stack_item_st home = {
+            .current_scr_id = gt_scr_stack_get_home_scr_id(),
+            .current_scr = gt_scr_stack_get_home_scr(),
+        };
+        if (false == gt_scr_stack_push(&home)) {
+            GT_LOGD(GT_LOG_TAG_STACK, "push home failed");
+        }
+    }
 #if _GT_SCR_STACK_TRACE_LOG
     gt_stack_iterator(scr_info->stack, _print_stack_item_info_cb, NULL);
 #endif

@@ -1072,11 +1072,11 @@ _clear_stack_when_home_scr_id_current_valid(
             gt_scr_stack_clear();
         }
         /** set bottom stack screen */
-        reload_p->current_scr_id = (-1 != home_id) ? home_id : target->current_scr_id;
+        reload_p->current_scr_id = (-1 != home_id) ? home_id : (target ? target->current_scr_id : -1);
         if (-1 == home_id) {
             return;
         }
-        if (is_home_scr_alive && NULL == reload_p->current_scr && target->current_scr) {
+        if (is_home_scr_alive && NULL == reload_p->current_scr && target && target->current_scr) {
             reload_p->current_scr = target->current_scr;
         }
         return;
@@ -1275,7 +1275,6 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
     target = gt_scr_stack_pop(
         -1 == home_id && step >= gt_scr_stack_get_count() ?
         gt_scr_stack_get_count() - 1 : step);
-    GT_CHECK_BACK_VAL(target, -1);
 
     gt_scr_stack_item_st * prev = gt_scr_stack_peek();
     bool is_home_scr_alive = gt_scr_stack_is_home_scr_alive();
@@ -1283,9 +1282,9 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
         .current_scr = prev ? prev->current_scr :
             (is_home_scr_alive ? gt_scr_stack_get_home_scr() : NULL),
         .current_scr_id = prev ? prev->current_scr_id : home_id,
-        .anim_type = target->anim_type,
-        .time = target->time,
-        .delay = target->delay,
+        .anim_type = target ? target->anim_type : GT_SCR_ANIM_TYPE_NONE,
+        .time = target ? target->time : 0,
+        .delay = target ? target->delay : 0,
     };
     reload_item.anim_type = _get_anti_anim_type(reload_item.anim_type);
 
@@ -1293,15 +1292,24 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
     if (reload_item.current_scr && false == gt_obj_is_type(reload_item.current_scr, GT_TYPE_SCREEN)) {
         GT_LOGE(GT_LOG_TAG_UI, "Current screen is not screen type: %p(%d)",
             reload_item.current_scr, gt_obj_class_get_type(reload_item.current_scr));
-        return -1;
     }
     if (false == _create_scr_by_stack_item(&reload_item, home_id)) {
-        return -1;
+        GT_LOGE(GT_LOG_TAG_UI, "Create screen falied");
     }
     if (prev && prev->current_scr_id == reload_item.current_scr_id) {
         prev->current_scr = reload_item.current_scr;
     }
-    if (home_id == reload_item.current_scr_id || gt_scr_stack_is_empty()) {
+    bool is_empty = gt_scr_stack_is_empty();
+    if (home_id == reload_item.current_scr_id || is_empty) {
+        if (is_empty && is_home_scr_alive) {
+            reload_item.current_scr = gt_scr_stack_get_home_scr();
+            reload_item.current_scr_id = home_id;
+            if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(reload_item.current_scr) &&
+                false == _create_scr_by_stack_item(&reload_item, home_id)) {
+                GT_LOGE(GT_LOG_TAG_UI, "Create screen falied");
+            }
+            scr_old = NULL;
+        }
         if (false == gt_scr_stack_push(&reload_item)) {
             return -1;
         }
