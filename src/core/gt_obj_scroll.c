@@ -22,6 +22,13 @@
 
 
 /* private typedef ------------------------------------------------------*/
+typedef struct _obj_scroll_anim_s {
+    struct gt_obj_s * obj;
+    gt_size_t dx;
+    gt_size_t dy;
+    gt_size_t anim_time_min;
+    gt_size_t anim_time_max;
+}_obj_scroll_anim_st;
 
 
 
@@ -60,6 +67,53 @@ static GT_ATTRIBUTE_RAM_TEXT void _scroll_ready_cb(struct gt_anim_s * anim) {
     gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
 }
 
+static void GT_ATTRIBUTE_RAM_TEXT
+_obj_scroll_to_anim_common(_obj_scroll_anim_st * sap) {
+    gt_obj_st * obj = sap->obj;
+    gt_anim_st anim;
+    gt_anim_init(&anim);
+    gt_anim_set_target(&anim, obj);
+    gt_anim_set_ready_cb(&anim, _scroll_ready_cb);
+    gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_EASE_OUT);
+
+    if (sap->dx) {
+        int32_t d = gt_anim_speed_to_time(gt_disp_get_res_hor(NULL) >> 1, 0, sap->dx);
+        if (d < sap->anim_time_min) d = sap->anim_time_min;
+        if (d > sap->anim_time_max) d = sap->anim_time_max;
+#if GT_USE_WIDGET_DYNAMIC_FRAME_RATE
+        if (GT_OBJ_FRAME_RATE_LOW == obj->frame_rate) {
+            d >>= 2;
+        } else if (GT_OBJ_FRAME_RATE_MIDDLE == obj->frame_rate) {
+            d >>= 1;
+        }
+#endif
+        gt_anim_set_time(&anim, d);
+        gt_anim_set_value(&anim, obj->process_attr.scroll.x, obj->process_attr.scroll.x + sap->dx);
+        gt_anim_set_exec_cb(&anim, _scroll_by_x);
+        gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
+        gt_anim_start(&anim);
+    }
+
+    if (sap->dy) {
+        int32_t d = gt_anim_speed_to_time(gt_disp_get_res_ver(NULL) >> 1, 0, sap->dy);
+        if (d < sap->anim_time_min) d = sap->anim_time_min;
+        if (d > sap->anim_time_max) d = sap->anim_time_max;
+#if GT_USE_WIDGET_DYNAMIC_FRAME_RATE
+        if (GT_OBJ_FRAME_RATE_LOW == obj->frame_rate) {
+            d >>= 2;
+        } else if (GT_OBJ_FRAME_RATE_MIDDLE == obj->frame_rate) {
+            d >>= 1;
+        }
+#endif
+        gt_anim_set_time(&anim, d);
+        gt_anim_set_value(&anim, obj->process_attr.scroll.y, obj->process_attr.scroll.y + sap->dy);
+        gt_anim_set_exec_cb(&anim, _scroll_by_y);
+        gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
+        gt_anim_start(&anim);
+    }
+}
+
+
 /* global functions / API interface -------------------------------------*/
 void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim_enable_et en)
 {
@@ -71,55 +125,58 @@ void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim
         return;
     }
 
-    if (GT_ANIM_ON == en) {
-        gt_anim_st anim;
-        gt_anim_init(&anim);
-        gt_anim_set_target(&anim, obj);
-        gt_anim_set_ready_cb(&anim, _scroll_ready_cb);
-        gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_EASE_OUT);
+    if (GT_ANIM_ON != en) {
+        gt_anim_del(obj, _scroll_by_x);
+        gt_anim_del(obj, _scroll_by_y);
 
-        if (dx) {
-            int32_t d = gt_anim_speed_to_time(gt_disp_get_res_hor(NULL) >> 1, 0, dx);
-            if (d < _SCROLL_ANIM_TIME_MIN) d = _SCROLL_ANIM_TIME_MIN;
-            if (d > _SCROLL_ANIM_TIME_MAX) d = _SCROLL_ANIM_TIME_MAX;
-#if GT_USE_WIDGET_DYNAMIC_FRAME_RATE
-            if (GT_OBJ_FRAME_RATE_LOW == obj->frame_rate) {
-                d >>= 2;
-            } else if (GT_OBJ_FRAME_RATE_MIDDLE == obj->frame_rate) {
-                d >>= 1;
-            }
-#endif
-            gt_anim_set_time(&anim, d);
-            gt_anim_set_value(&anim, obj->process_attr.scroll.x, obj->process_attr.scroll.x + dx);
-            gt_anim_set_exec_cb(&anim, _scroll_by_x);
-            gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
-            gt_anim_start(&anim);
-        }
+        _scroll_by_raw(obj, dx, dy);
+        return;
+    }
+    _obj_scroll_anim_st sap = {
+        .obj = obj,
+        .anim_time_min = _SCROLL_ANIM_TIME_MIN,
+        .anim_time_max = _SCROLL_ANIM_TIME_MAX,
+        .dx = dx,
+        .dy = dy,
+    };
+    _obj_scroll_to_anim_common(&sap);
+}
 
-        if (dy) {
-            int32_t d = gt_anim_speed_to_time(gt_disp_get_res_ver(NULL) >> 1, 0, dy);
-            if (d < _SCROLL_ANIM_TIME_MIN) d = _SCROLL_ANIM_TIME_MIN;
-            if (d > _SCROLL_ANIM_TIME_MAX) d = _SCROLL_ANIM_TIME_MAX;
-#if GT_USE_WIDGET_DYNAMIC_FRAME_RATE
-            if (GT_OBJ_FRAME_RATE_LOW == obj->frame_rate) {
-                d >>= 2;
-            } else if (GT_OBJ_FRAME_RATE_MIDDLE == obj->frame_rate) {
-                d >>= 1;
-            }
-#endif
-            gt_anim_set_time(&anim, d);
-            gt_anim_set_value(&anim, obj->process_attr.scroll.y, obj->process_attr.scroll.y + dy);
-            gt_anim_set_exec_cb(&anim, _scroll_by_y);
-            gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
-            gt_anim_start(&anim);
-        }
+void gt_obj_scroll_to_fast(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim_enable_et en)
+{
+    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+        GT_LOGE(GT_LOG_TAG_CHECK, "Unvaild obj type: %p(%d)", obj, gt_obj_class_get_type(obj));
+        return;
+    }
+    if (0 == dx && 0 == dy) {
         return;
     }
 
-    gt_anim_del(obj, _scroll_by_x);
-    gt_anim_del(obj, _scroll_by_y);
+    if (GT_ANIM_ON != en) {
+        gt_anim_del(obj, _scroll_by_x);
+        gt_anim_del(obj, _scroll_by_y);
 
-    _scroll_by_raw(obj, dx, dy);
+        _scroll_by_raw(obj, dx, dy);
+        return;
+    }
+    _obj_scroll_anim_st sap = {
+        .obj = obj,
+        .anim_time_min = _SCROLL_ANIM_TIME_MIN >> 3,
+        .anim_time_max = _SCROLL_ANIM_TIME_MAX >> 3,
+        .dx = dx,
+        .dy = dy,
+    };
+    _obj_scroll_to_anim_common(&sap);
+}
+
+void gt_obj_scroll_to_x_fast(struct gt_obj_s * obj, gt_size_t x, gt_anim_enable_et en)
+{
+    gt_obj_scroll_to_fast(obj, x, 0, en);
+}
+
+void gt_obj_scroll_to_y_tast(struct gt_obj_s * obj, gt_size_t y, gt_anim_enable_et en)
+{
+    gt_obj_scroll_to_fast(obj, 0, y, en);
 }
 
 void gt_obj_scroll_to_x(struct gt_obj_s * obj, gt_size_t x, gt_anim_enable_et en)
@@ -192,7 +249,6 @@ gt_indev_over_scroll_res_st _gt_obj_get_over_scroll(gt_obj_st * obj, gt_dir_et d
         if (top_en) {
             if (obj->overflow && p->y < 0 && gt_abs(p->y) < (height >> 1)) {
                 ret.is_over_scroll = true;
-                ret.is_slow_down = true;
             } else if (p->y > 0) {
                 ret.distance.y = -p->y;
                 ret.top = true;
@@ -220,7 +276,6 @@ gt_indev_over_scroll_res_st _gt_obj_get_over_scroll(gt_obj_st * obj, gt_dir_et d
         if (left_en) {
             if (obj->overflow && p->x < 0 && gt_abs(p->x) < (width >> 1)) {
                 ret.is_over_scroll = true;
-                ret.is_slow_down = true;
             } else if (p->x > 0) {
                 ret.distance.x = -p->x;
                 ret.left = true;

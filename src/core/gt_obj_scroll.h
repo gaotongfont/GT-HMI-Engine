@@ -47,6 +47,18 @@ typedef enum{
 void gt_obj_scroll_to(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim_enable_et en);
 
 /**
+ * @brief scroll obj to position x,y fast. About 1/8 period.
+ *
+ * @param obj obj
+ * @param dx x coordinate of virtual screen object
+ * @param dy y coordinate of virtual screen object
+ * @param en enable scroll anim
+ */
+void gt_obj_scroll_to_fast(struct gt_obj_s * obj, gt_size_t dx, gt_size_t dy, gt_anim_enable_et en);
+
+void gt_obj_scroll_to_x_fast(struct gt_obj_s * obj, gt_size_t x, gt_anim_enable_et en);
+void gt_obj_scroll_to_y_tast(struct gt_obj_s * obj, gt_size_t y, gt_anim_enable_et en);
+/**
  * @brief scroll obj to position x
  *
  * @param obj obj

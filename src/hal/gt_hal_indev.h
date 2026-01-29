@@ -215,7 +215,6 @@ typedef struct {
     gt_point_st distance;
 
     uint8_t is_over_scroll : 1;
-    uint8_t is_slow_down   : 1;
     uint8_t top            : 1;
     uint8_t bottom         : 1;
     uint8_t left           : 1;

@@ -384,7 +384,7 @@ void gt_view_pager_scroll_to_fragment(gt_obj_st * obj, gt_size_t index)
     if (index < 0 || index >= style->reg.count) {
         return;
     }
-    gt_obj_scroll_to_x(obj, gt_abs(obj->process_attr.scroll.x) - index * style->width,
+    gt_obj_scroll_to_x_fast(obj, gt_abs(obj->process_attr.scroll.x) - index * style->width,
                         obj->ignore_throw ? GT_ANIM_OFF : GT_ANIM_ON);
 }
 

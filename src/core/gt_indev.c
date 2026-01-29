@@ -361,58 +361,49 @@ _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const 
     uint16_t h_parent = obj_scroll->parent->area.h;
     gt_size_t left = 0, right = gt_disp_get_res_hor(NULL);
     gt_size_t top = 0, bottom = gt_disp_get_res_ver(NULL);
+    gt_size_t rmk_x = *dx, rmk_y = *dy;
 
     if (false == obj_scroll->absorb_dir) {
         /** hor */
-        gt_size_t x = obj_scroll->area.x + *dx;  /** target x position */
+        gt_size_t x = obj_scroll->area.x + rmk_x;  /** target x position */
         // outside the left
         if (x > left) {
-            *dx = -obj_scroll->area.x;
+            rmk_x = -obj_scroll->area.x;
         }
         // outside the right
-        else if (x + obj_scroll->area.w < right) {
-            *dx = right - obj_scroll->area.w - obj_scroll->area.x;
+        else if (x + obj_scroll->area.w <= right) {
+            rmk_x = right - obj_scroll->area.w - obj_scroll->area.x;
         }
         // inside
         else if (obj_scroll->scroll_snap_x) {
-            if (0 == *dx) {
-                // start algin
-                *dx = (x / w_parent) * w_parent - x;
-                if (*dx % w_parent  > (w_parent >> 1)) {
-                    *dx -= w_parent;
-                }
-            }
-            else if ((uint16_t)GT_DIR_LEFT == point_p->gesture) {
-                *dx = ((x - w_parent) / w_parent) * w_parent - obj_scroll->area.x;
+            gt_size_t tmp_x = 0 == rmk_x ? x : obj_scroll->area.x;
+            if ((uint16_t)GT_DIR_LEFT == point_p->gesture) {
+                rmk_x = ((x - w_parent) / w_parent) * w_parent - tmp_x;
             } else if ((uint16_t)GT_DIR_RIGHT == point_p->gesture) {
-                *dx = (x / w_parent) * w_parent - obj_scroll->area.x;
+                rmk_x = (x / w_parent) * w_parent - tmp_x;
             }
         }
+        *dx = rmk_x;
     } else {
         /** ver */
-        gt_size_t y = obj_scroll->area.y + *dy;
+        gt_size_t y = obj_scroll->area.y + rmk_y;
         // top
         if (y > top) {
-            *dy = -obj_scroll->area.y;
+            rmk_y = -obj_scroll->area.y;
         }
         // bottom
-        else if (y + obj_scroll->area.h < bottom) {
-            *dy = bottom - obj_scroll->area.h - obj_scroll->area.y;
+        else if (y + obj_scroll->area.h <= bottom) {
+            rmk_y = bottom - obj_scroll->area.h - obj_scroll->area.y;
         }
         else if (obj_scroll->scroll_snap_y) {
-            if (0 == *dy) {
-                // start algin
-                *dy = (y / obj_scroll->parent->area.y) * obj_scroll->parent->area.y - y;
-                if (*dy > (obj_scroll->parent->area.y >> 1)) {
-                    *dy -= obj_scroll->parent->area.y;
-                }
-            }
-            else if ((uint16_t)GT_DIR_UP == point_p->gesture) {
-                *dy = ((y - h_parent) / h_parent) * h_parent - obj_scroll->area.y;
-            } else if ((uint16_t)GT_DIR_DOWN == point_p->gesture) {
-                *dy = (y / h_parent) * h_parent - obj_scroll->area.y;
+            gt_size_t tmp_y = 0 == rmk_y ? y : obj_scroll->area.y;
+            if ((uint16_t)GT_DIR_LEFT == point_p->gesture) {
+                rmk_y = ((y - h_parent) / h_parent) * h_parent - tmp_y;
+            } else if ((uint16_t)GT_DIR_RIGHT == point_p->gesture) {
+                rmk_y = (y / h_parent) * h_parent - tmp_y;
             }
         }
+        *dy = rmk_y;
     }
 }
 
@@ -475,9 +466,9 @@ _velocity_less_scroll_points_need_to_speed_up(gt_indev_st * indev) {
     int32_t total_time = cur_time - indev->timestamp_start;
     gt_point_st diff = {0};
     if ((delta_time << 1) > total_time) {
-        diff.x = point_p->scroll_diff.x * 9;
-        diff.y = point_p->scroll_diff.y * 9;
-        int32_t v = _calc_average_speed((gt_dir_et)point_p->gesture, &diff, total_time - delta_time);
+        diff.x = point_p->scroll_sum.x << 6;
+        diff.y = point_p->scroll_sum.y << 6;
+        int32_t v = _calc_average_speed((gt_dir_et)point_p->gesture, &diff, total_time);
         point_p->throw_velocity = _calc_final_speed(point_p->throw_velocity, v);
     }
 }
@@ -536,9 +527,6 @@ _throw_scroll_rebound_slow_down_handler(gt_indev_st * indev) {
     if (false == point_p->over_scroll.is_over_scroll) {
         return GT_RES_OK;
     }
-    if (point_p->over_scroll.is_slow_down) {
-        max_v >>= 5;
-    }
     do {
         point_p->throw_velocity = _calc_final_speed(point_p->throw_velocity, -point_p->throw_velocity);
     } while (point_p->throw_velocity > max_v);
@@ -593,9 +581,9 @@ _calc_absorb_next_scroll_distance(
     gt_size_t dx = *dx_p, dy = *dy_p;
     if (0 == point_p->scroll_absorb_max_dist.x && 0 == point_p->scroll_absorb_max_dist.y) {
         gt_size_t absorb_dx = dx, absorb_dy = dy;
-        _absorb_handler(obj_scroll, point_p, &absorb_dx, &absorb_dx);
+        _absorb_handler(obj_scroll, point_p, &absorb_dx, &absorb_dy);
         point_p->scroll_absorb_max_dist.x = obj_scroll->process_attr.scroll.x + absorb_dx;
-        point_p->scroll_absorb_max_dist.y = obj_scroll->process_attr.scroll.y + absorb_dx;
+        point_p->scroll_absorb_max_dist.y = obj_scroll->process_attr.scroll.y + absorb_dy;
     }
     gt_point_st diff = {
         .x = point_p->scroll_absorb_max_dist.x - obj_scroll->process_attr.scroll.x,
@@ -876,7 +864,7 @@ _indev_scroll_snap(struct _point * point_p) {
         return;
     }
     _absorb_handler(scroll_obj, point_p, &dx, &dy);
-    gt_obj_scroll_to(scroll_obj, dx, dy, GT_ANIM_ON);
+    gt_obj_scroll_to_fast(scroll_obj, dx, dy, GT_ANIM_ON);
     return;
 
 non_snap:
