@@ -460,6 +460,9 @@ static GT_ATTRIBUTE_RAM_TEXT void
 _ready_pull_to_refresh_cb(struct gt_anim_s * anim) {
     gt_obj_st * obj = (gt_obj_st *)anim->tar;
     _gt_listview_st * style = (_gt_listview_st * )obj;
+    if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(obj)) {
+        return;
+    }
 
     style->pull_to_refresh = false;
     gt_event_send(obj, GT_EVENT_TYPE_PULL_TO_REFRESH, NULL);
@@ -481,6 +484,9 @@ static GT_ATTRIBUTE_RAM_TEXT void
 _ready_load_more_cb(struct gt_anim_s * anim) {
     gt_obj_st * obj = (gt_obj_st *)anim->tar;
     _gt_listview_st * style = (_gt_listview_st * )obj;
+    if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(obj)) {
+        return;
+    }
 
     style->load_more = false;
     gt_event_send(obj, GT_EVENT_TYPE_LOAD_MORE, NULL);

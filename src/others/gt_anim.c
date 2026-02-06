@@ -86,10 +86,23 @@ static void _gt_anim_change_list(void)
     }
 }
 
+static void _reset_anim_prop(gt_anim_st * ptr) {
+    ptr->tar = NULL;
+    ptr->exec_cb = NULL;
+    ptr->start_cb = NULL;
+    ptr->ready_cb = NULL;
+    ptr->deleted_cb = NULL;
+    ptr->repeat_count = 0;
+    ptr->deleted = true;
+    ptr->time_act = 0;
+    ptr->time = 0;
+}
+
 static void _gt_anim_free_task(gt_anim_st * anim) {
     _gt_list_del(&anim->list);
     _gt_anim_change_list();
     _gt_anim_free_data(anim);
+    _reset_anim_prop(anim);
     gt_mem_free(anim);
 }
 
@@ -244,7 +257,7 @@ refresh_lb:
     _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         _is_list_change = false;
 
-        if(ptr->deleted){
+        if (ptr->deleted) {
             _gt_anim_ready_handler(ptr);
             continue;
         }
@@ -525,14 +538,7 @@ bool gt_anim_del_safe_by(void * target)
             continue;
         }
         if( ptr->deleted_cb) { ptr->deleted_cb(ptr); }
-        ptr->exec_cb = NULL;
-        ptr->start_cb = NULL;
-        ptr->ready_cb = NULL;
-        ptr->deleted_cb = NULL;
-        ptr->repeat_count = 0;
-        ptr->deleted = true;
-        ptr->time_act = 0;
-        ptr->time = 0;
+        _reset_anim_prop(ptr);
         ret = true;
     }
     return ret;

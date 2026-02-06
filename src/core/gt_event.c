@@ -72,6 +72,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_event_node_pop(gt_event_st *e) {
 
 static gt_res_t _GT_EVENT_ATTRIBUTE_SRAM_TEXT
 _gt_event_calling_user_cb(gt_event_st * e) {
+    if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(e->target)) {
+        return GT_RES_INV;
+    }
     gt_obj_event_attr_st * event_ptr = e->target->event_attr;
     if (NULL == event_ptr) {
         return GT_RES_OK;
@@ -131,6 +134,9 @@ _event_check_scroll_end(gt_obj_st * obj, gt_event_type_et t) {
 static gt_res_t _GT_EVENT_ATTRIBUTE_SRAM_TEXT
 _gt_event_calling_event_cb(gt_event_st * e) {
     gt_obj_st * obj = (gt_obj_st * )e->target;
+    if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(obj)) {
+        return GT_RES_INV;
+    }
     const gt_obj_class_st * c = obj->classes;
 
     if (obj->replace_core_event_attr &&
@@ -181,6 +187,9 @@ static GT_ATTRIBUTE_RAM_TEXT inline bool _is_input_event(gt_event_type_et event)
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _free_event_recursive(gt_obj_event_attr_st * event) {
+    if (NULL == event) {
+        return;
+    }
     if (event->next_ptr) {
         _free_event_recursive(event->next_ptr);
     }
@@ -196,6 +205,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _anim_to_remove_all_event(struct gt_anim_s * a
         return;
     }
     _free_event_recursive(tar);
+    anim->tar = NULL;
 }
 
 static inline gt_res_t _GT_EVENT_ATTRIBUTE_SRAM_TEXT
@@ -350,7 +360,7 @@ void gt_obj_remove_all_event_cb(struct gt_obj_s * obj)
     if (GT_TYPE_UNKNOWN == type) {
         return;
     }
-    if (NULL == obj->event_attr) {
+    if (NULL == obj->event_attr && NULL == obj->replace_core_event_attr) {
         return;
     }
     gt_anim_st anim;
@@ -358,13 +368,17 @@ void gt_obj_remove_all_event_cb(struct gt_obj_s * obj)
     gt_anim_set_time(&anim, 1);
     gt_anim_set_ready_cb(&anim, _anim_to_remove_all_event);
 
-    gt_anim_set_target(&anim, obj->event_attr);
-    gt_anim_start(&anim);
+    if (obj->event_attr) {
+        gt_anim_set_target(&anim, obj->event_attr);
+        gt_anim_start(&anim);
+        obj->event_attr = NULL;
+    }
 
-    gt_anim_set_target(&anim, obj->replace_core_event_attr);
-    gt_anim_start(&anim);
-    obj->event_attr = NULL;
-    obj->replace_core_event_attr = NULL;
+    if (obj->replace_core_event_attr) {
+        gt_anim_set_target(&anim, obj->replace_core_event_attr);
+        gt_anim_start(&anim);
+        obj->replace_core_event_attr = NULL;
+    }
 }
 
 void gt_obj_remove_all_event_cb_immediately(struct gt_obj_s * obj)
@@ -373,13 +387,14 @@ void gt_obj_remove_all_event_cb_immediately(struct gt_obj_s * obj)
     if (GT_TYPE_UNKNOWN == type) {
         return;
     }
-    if (NULL == obj->event_attr) {
-        return;
+    if (obj->event_attr) {
+        _free_event_recursive(obj->event_attr);
+        obj->event_attr = NULL;
     }
-    _free_event_recursive(obj->event_attr);
-    _free_event_recursive(obj->replace_core_event_attr);
-    obj->event_attr = NULL;
-    obj->replace_core_event_attr = NULL;
+    if (obj->replace_core_event_attr) {
+        _free_event_recursive(obj->replace_core_event_attr);
+        obj->replace_core_event_attr = NULL;
+    }
 }
 
 gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * parms)

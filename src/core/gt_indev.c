@@ -536,7 +536,7 @@ _throw_scroll_rebound_slow_down_handler(gt_indev_st * indev) {
 static gt_res_t GT_ATTRIBUTE_RAM_TEXT
 _indev_rebound_recover_handler(gt_indev_st * indev, gt_obj_st * target) {
     struct _point * point_p = &indev->data.point;
-    if (NULL == target) {
+    if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(target)) {
         return GT_RES_INV;
     }
     if (false == target->rebound) {
