@@ -86,23 +86,28 @@ static void _gt_anim_change_list(void)
     }
 }
 
-static void _reset_anim_prop(gt_anim_st * ptr) {
-    ptr->tar = NULL;
-    ptr->exec_cb = NULL;
-    ptr->start_cb = NULL;
-    ptr->ready_cb = NULL;
-    ptr->deleted_cb = NULL;
-    ptr->repeat_count = 0;
-    ptr->deleted = true;
-    ptr->time_act = 0;
-    ptr->time = 0;
+static void _gt_anim_reset_prop(gt_anim_st * anim) {
+    anim->repeat_count = 0;
+    anim->start_cb = NULL;
+    anim->exec_cb = NULL;
+    anim->deleted_cb = NULL;
+    anim->_path_cb = NULL;
+    anim->ready_cb = NULL;
+    anim->deleted = true;
+    anim->time_act = 0;
+    anim->time = 0;
+}
+
+static void _gt_anim_free_safe_task(gt_anim_st * anim) {
+    _gt_list_del(&anim->list);
+    _gt_anim_change_list();
+    _gt_anim_reset_prop(anim);
+    anim->tar = NULL;
 }
 
 static void _gt_anim_free_task(gt_anim_st * anim) {
-    _gt_list_del(&anim->list);
-    _gt_anim_change_list();
+    _gt_anim_free_safe_task(anim);
     _gt_anim_free_data(anim);
-    _reset_anim_prop(anim);
     gt_mem_free(anim);
 }
 
@@ -430,7 +435,7 @@ gt_anim_st * gt_anim_start(const gt_anim_st * anim)
             continue;
         }
         if (ptr->deleted_cb) { ptr->deleted_cb(ptr); }
-        _gt_anim_free_task(ptr);
+        _gt_anim_reset_prop(ptr);
     }
 
     _gt_list_add(&new_obj->list, &_GT_GC_GET_ROOT(_gt_anim_ll));
@@ -466,7 +471,6 @@ bool gt_anim_del(void const * const target, gt_anim_exec_cb_t exec_cb)
     _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         if ((ptr->tar == target || NULL == ptr->tar) && (ptr->exec_cb == exec_cb || NULL == ptr->exec_cb)) {
             if (ptr->deleted_cb) { ptr->deleted_cb(ptr); }
-            ptr->exec_cb = NULL;
             _gt_anim_free_task(ptr);
             ret = true;
         }
@@ -538,7 +542,7 @@ bool gt_anim_del_safe_by(void * target)
             continue;
         }
         if( ptr->deleted_cb) { ptr->deleted_cb(ptr); }
-        _reset_anim_prop(ptr);
+        _gt_anim_reset_prop(ptr);
         ret = true;
     }
     return ret;
