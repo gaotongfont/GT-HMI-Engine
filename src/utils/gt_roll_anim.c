@@ -11,6 +11,7 @@
 
 #include "gt_roll_anim.h"
 
+#include "../core/gt_disp.h"
 #include "../widgets/gt_label.h"
 #include "../widgets/gt_btn.h"
 
@@ -52,9 +53,16 @@ static void GT_ATTRIBUTE_RAM_TEXT
 _auto_scroll_exec_cb(void * obj, int32_t value) {
     _auto_scroll_st * auto_scroll_p = (_auto_scroll_st *)obj;
     if (NULL == auto_scroll_p) {
-        return ;
+        return;
     }
     if (auto_scroll_p->paused) {
+        return;
+    }
+    if (false == gt_obj_is_child(auto_scroll_p->parent, gt_disp_get_scr())
+#if GT_USE_LAYER_TOP
+        || false == gt_obj_is_child(auto_scroll_p->parent, gt_disp_get_layer_top())
+#endif
+    ) {
         return;
     }
     auto_scroll_p->area.x = value;

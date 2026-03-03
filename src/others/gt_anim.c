@@ -513,11 +513,12 @@ void gt_anim_del_all(void)
     }
 
     _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
-        if (ptr) {
-            if (ptr->deleted_cb) { ptr->deleted_cb(ptr); }
-            _gt_anim_free_task(ptr);
-            ret = true;
+        if (NULL == ptr) {
+            continue;
         }
+        if (ptr->deleted_cb) { ptr->deleted_cb(ptr); }
+        _gt_anim_free_task(ptr);
+        ret = true;
     }
 
     if (ret) {
