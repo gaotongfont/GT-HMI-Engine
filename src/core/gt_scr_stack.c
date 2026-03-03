@@ -160,7 +160,7 @@ _release_all_pop_remark_except_active_scr(_gt_gc_scr_st * scr_info, gt_obj_st co
 static gt_res_t GT_ATTRIBUTE_RAM_TEXT
 _gt_scr_stack_add_pop_remark(_gt_gc_scr_st * scr_info, gt_scr_stack_item_st * pop_item) {
     gt_obj_st * active_scr = gt_disp_get_scr();
-    if (NULL == scr_info) {
+    if (NULL == scr_info || NULL == pop_item) {
         return GT_RES_INV;
     }
     if (scr_info->pop_remark.cnt >= scr_info->stack->depth) {
@@ -374,8 +374,10 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
     if (count) {
         /** top stack do not free here, need to free by load scr anim */
         item = (gt_scr_stack_item_st * )gt_stack_pop(scr_info->stack);
-        if (home_id != item->current_scr_id || false == is_home_alive) {
-            _gt_scr_stack_add_pop_remark(scr_info, item);
+        if (item) {
+            if (home_id != item->current_scr_id || false == is_home_alive) {
+                _gt_scr_stack_add_pop_remark(scr_info, item);
+            }
         }
     }
     while (--count > 0) {
