@@ -1024,7 +1024,9 @@ static inline void _set_rect_prop(gt_obj_st * rect, gt_listview_rect_st const * 
     gt_rect_set_bg_color(rect, prop->bg_color);
     gt_rect_set_color_border(rect, prop->border_color);
     gt_rect_set_border(rect, prop->border);
-    gt_obj_set_opa(rect, prop->bg_opa);
+    if (prop->opa_en) {
+        gt_obj_set_opa(rect, prop->bg_opa);
+    }
     gt_rect_set_radius(rect, prop->radius);
     gt_rect_set_fill(rect, prop->is_fill);
 }
