@@ -92,6 +92,7 @@ typedef struct gt_listview_rect_s {
     gt_color_t bg_color;
     gt_color_t border_color;
     uint16_t border;
+    gt_opa_t bg_opa;
     uint8_t radius;
     uint8_t is_fill;
 }gt_listview_rect_st;
