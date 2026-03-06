@@ -740,7 +740,8 @@ _null_handle:
 #endif  /** _GT_FONT_ENABLE_CONVERTOR */
 
 #if GT_USE_SJPG
-static GT_ATTRIBUTE_RAM_TEXT void _filling_by_sjpg_file(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
+static void GT_ATTRIBUTE_RAM_TEXT
+_filling_by_sjpg_file(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     gt_area_st * dst_ap = blend_dsc->dst_area;
     uint16_t w, h, y = 0;
     w = dsc_img->header.w;
@@ -803,7 +804,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _filling_by_sjpg_file(_gt_draw_ctx_st * draw_c
 }
 #endif
 
-static GT_ATTRIBUTE_RAM_TEXT void _filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
+static void GT_ATTRIBUTE_RAM_TEXT
+_filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     blend_dsc->mask_buf = &dsc_img->alpha[0];
     blend_dsc->dst_buf = (gt_color_t *)&dsc_img->img[0];
     if (NULL == blend_dsc->dst_buf && NULL == blend_dsc->mask_buf) {
@@ -863,7 +865,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _filling_by_ram_data(_gt_draw_ctx_st * draw_ct
 }
 
 #if GT_USE_EXTRA_FULL_IMG_BUFFER
-static GT_ATTRIBUTE_RAM_TEXT gt_res_t _filling_by_default_full_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
+static gt_res_t GT_ATTRIBUTE_RAM_TEXT
+_filling_by_default_full_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     uint32_t len = 0, addr_start_alpha = 0;
 
     len = dsc_img->header.w * dsc_img->header.h;
@@ -934,7 +937,8 @@ line_lb:
  * @param blend_dsc
  * @param dsc_img
  */
-static GT_ATTRIBUTE_RAM_TEXT void _filling_by_default_line_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
+static void GT_ATTRIBUTE_RAM_TEXT
+_filling_by_default_line_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     uint32_t offset = 0, len = 0;
     uint32_t addr_start_alpha = 0;
     uint16_t w, h, y = 0;
@@ -1018,9 +1022,8 @@ line_lb:
 #endif
 }
 
-static GT_ATTRIBUTE_RAM_TEXT inline void _filling_by_default(_gt_draw_ctx_st * draw_ctx,
-    gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
-
+static inline void GT_ATTRIBUTE_RAM_TEXT
+_filling_by_default(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     gt_fs_fp_st * fp = dsc_img->fp;
 
     if (!fp) {
@@ -1092,7 +1095,8 @@ static inline bool _is_multi_line(const gt_attr_font_st * dsc) {
     return false == dsc->reg.single_line ? true : false;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT gt_size_t _get_align_start_y_by_line(const gt_attr_font_st * dsc,
+static gt_size_t GT_ATTRIBUTE_RAM_TEXT
+_get_align_start_y_by_line(const gt_attr_font_st * dsc,
     const gt_area_st * coords, gt_font_st * tmp_font, uint8_t * txt, uint16_t line_count) {
     gt_size_t offset_y = coords->y;
     uint16_t line_height = (tmp_font->info.size + (_get_style_space_y((const gt_font_info_st*)&tmp_font->info) << 1) + dsc->space_y) * line_count;
@@ -1110,7 +1114,8 @@ static GT_ATTRIBUTE_RAM_TEXT gt_size_t _get_align_start_y_by_line(const gt_attr_
     return offset_y;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT _text_offset_line_st _get_align_start_y(const gt_attr_font_st * dsc,
+static _text_offset_line_st GT_ATTRIBUTE_RAM_TEXT
+_get_align_start_y(const gt_attr_font_st * dsc,
     const gt_area_st * coords, gt_font_st * tmp_font, uint8_t * txt, uint16_t txt_len) {
     _text_offset_line_st ret = {
         .line_count = 1,
@@ -1145,7 +1150,8 @@ static GT_ATTRIBUTE_RAM_TEXT _text_offset_line_st _get_align_start_y(const gt_at
     return ret;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT uint16_t _calc_line_height_pixel(gt_area_st * area_font, const gt_attr_font_st * dsc, uint8_t style_space_y) {
+static uint16_t GT_ATTRIBUTE_RAM_TEXT
+_calc_line_height_pixel(gt_area_st * area_font, const gt_attr_font_st * dsc, uint8_t style_space_y) {
     return area_font->h + dsc->space_y + (style_space_y << 1);
 }
 
