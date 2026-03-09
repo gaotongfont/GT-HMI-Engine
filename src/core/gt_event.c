@@ -354,6 +354,10 @@ uint16_t gt_obj_get_user_event_count(struct gt_obj_s * obj)
     return cnt;
 }
 
+static void _event_attr_exec_cb(void * tar, int32_t val) {}
+
+static void _replace_core_event_attr_exec_cb(void * tar, int32_t val) {}
+
 void gt_obj_remove_all_event_cb(struct gt_obj_s * obj)
 {
     gt_obj_type_et type = gt_obj_class_get_type(obj);
@@ -370,12 +374,14 @@ void gt_obj_remove_all_event_cb(struct gt_obj_s * obj)
 
     if (obj->event_attr) {
         gt_anim_set_target(&anim, obj->event_attr);
+        gt_anim_set_exec_cb(&anim, _event_attr_exec_cb);
         gt_anim_start(&anim);
         obj->event_attr = NULL;
     }
 
     if (obj->replace_core_event_attr) {
         gt_anim_set_target(&anim, obj->replace_core_event_attr);
+        gt_anim_set_exec_cb(&anim, _replace_core_event_attr_exec_cb);
         gt_anim_start(&anim);
         obj->replace_core_event_attr = NULL;
     }
@@ -428,6 +434,8 @@ gt_res_t gt_event_send_delay(struct gt_obj_s * parent, gt_event_type_et event, v
     gt_anim_set_exec_cb(&an, _event_delay_exec_cb);
     gt_anim_set_ready_cb(&an, _event_delay_send_ready_cb);
     gt_anim_start(&an);
+
+    return GT_RES_OK;
 }
 
 gt_res_t gt_event_send_to_childs(struct gt_obj_s * parent, gt_event_type_et event, void * parms)
