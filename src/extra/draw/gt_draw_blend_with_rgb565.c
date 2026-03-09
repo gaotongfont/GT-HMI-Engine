@@ -36,68 +36,70 @@
 /* static functions -----------------------------------------------------*/
 #if GT_FLUSH_CONVERT_VERTICAL
 static inline void _blend_rgb565_with_opacity_vertical(_gt_draw_blend_fill_cache_st const * const fc) {
-    gt_color_t * src_p = fc->color_src_p;
     gt_opa_t * mask_p = fc->mask_buf_p;
     gt_color_t * dst_p = fc->color_dst_p;
     uint16_t w = fc->area_intersect.w;
     uint16_t h = fc->area_intersect.h;
-    uint16_t step_src_line = fc->width_src - w;
     uint16_t step_dst_line = fc->width_buf - w;
     uint16_t x, y;
     uint16_t src_width = fc->width_src;
     gt_opa_t opa = fc->opa;
 
-    if (src_p) {
+    if (fc->color_src_p) {
         if (opa > GT_OPA_MAX) {
-            /* be called too much */
             for (y = 0; y < h; ++y) {
-                mask_p = fc->mask_buf_p + y;
-                src_p = fc->color_src_p + y;
+                /* reset to column y, then step by src_width each x (vertical layout) */
+                const gt_color_t * src_col = fc->color_src_p + y;
+                const gt_opa_t   * msk_col = fc->mask_buf_p  + y;
                 for (x = 0; x < w; ++x) {
-                    *dst_p = gt_color_mix(*src_p, *dst_p, *mask_p);
+                    *dst_p = gt_color_mix(*src_col, *dst_p, *msk_col);
                     ++dst_p;
-                    src_p += src_width;
-                    mask_p += src_width;
+                    src_col += src_width;
+                    msk_col += src_width;
                 }
                 dst_p += step_dst_line;
             }
             return;
         }
-        // opa < GT_OPA_MAX color mixed
+        /* precompute gt_per_255(opa) once, saves one table lookup per pixel */
+        const uint32_t opa_factor = gt_per_255(opa);
         for (y = 0; y < h; ++y) {
-            mask_p = fc->mask_buf_p + y;
-            src_p = fc->color_src_p + y;
+            const gt_color_t * src_col = fc->color_src_p + y;
+            const gt_opa_t   * msk_col = fc->mask_buf_p  + y;
             for (x = 0; x < w; ++x) {
-                *dst_p = gt_color_mix(*src_p, *dst_p, (gt_per_255(*mask_p) * opa) >> 15);
+                *dst_p = gt_color_mix(*src_col, *dst_p, (opa_factor * (*msk_col)) >> 15);
                 ++dst_p;
-                src_p += src_width;
-                mask_p += src_width;
+                src_col += src_width;
+                msk_col += src_width;
             }
             dst_p += step_dst_line;
         }
         return;
     }
-    // draw circle, color_scr_p is NULL
+    // draw circle, color_src_p is NULL
     if (opa > GT_OPA_MAX) {
         for (y = 0; y < h; ++y) {
-            mask_p = fc->mask_buf_p + y;
+            const gt_opa_t * msk_col = fc->mask_buf_p + y;
             for (x = 0; x < w; ++x) {
-                *dst_p = gt_color_mix(fc->color, *dst_p, *mask_p);
+                *dst_p = gt_color_mix(fc->color, *dst_p, *msk_col);
                 ++dst_p;
-                mask_p += src_width;
+                msk_col += src_width;
             }
             dst_p += step_dst_line;
         }
         return;
     }
-    for (y = 0; y < h; ++y) {
-        mask_p = fc->mask_buf_p + y;
-        for (x = 0; x < w; ++x) {
-            *dst_p = gt_color_mix(fc->color, *dst_p, (gt_per_255(*mask_p) * opa) >> 15);
-            ++dst_p;
-            mask_p += src_width;
+    {
+        const uint32_t opa_factor = gt_per_255(opa);
+        for (y = 0; y < h; ++y) {
+            const gt_opa_t * msk_col = fc->mask_buf_p + y;
+            for (x = 0; x < w; ++x) {
+                *dst_p = gt_color_mix(fc->color, *dst_p, (opa_factor * (*msk_col)) >> 15);
+                ++dst_p;
+                msk_col += src_width;
+            }
+            dst_p += step_dst_line;
         }
-        dst_p += step_dst_line;
     }
 }
 #else   /** 0 == GT_FLUSH_CONVERT_VERTICAL */
@@ -121,13 +123,14 @@ _blend_rgb565_with_opacity(_gt_draw_blend_fill_cache_st const * const fc) {
 #if GT_DRAW_BLEND_ALIGN
                 if ((gt_uintptr_t)&dst_p[0] & 0x1) {
                     *dst_p = gt_color_mix(*src_p, *dst_p, *mask_p);
-                    ++dst_p; ++src_p; ++mask_p;
-                    ++x;
+                    ++dst_p; ++src_p; ++mask_p; ++x;
                 }
-                for (; x < w - 2; x += 2) {
-                    *dst_p = gt_color_mix(*src_p, *dst_p, *mask_p);
+                for (; x < w - 4; x += 4) {
+                    *dst_p   = gt_color_mix(*src_p,   *dst_p,   *mask_p);
                     dst_p[1] = gt_color_mix(src_p[1], dst_p[1], mask_p[1]);
-                    dst_p += 2; src_p += 2; mask_p += 2;
+                    dst_p[2] = gt_color_mix(src_p[2], dst_p[2], mask_p[2]);
+                    dst_p[3] = gt_color_mix(src_p[3], dst_p[3], mask_p[3]);
+                    dst_p += 4; src_p += 4; mask_p += 4;
                 }
 #endif
                 for (; x < w; ++x) {
@@ -140,23 +143,27 @@ _blend_rgb565_with_opacity(_gt_draw_blend_fill_cache_st const * const fc) {
             }
             return;
         }
-        // opa < GT_OPA_MAX color mixed
+        /* opa < GT_OPA_MAX: precompute gt_per_255(opa) once outside loop.
+         * (gt_per_255(mask) * opa) >> 15 == (gt_per_255(opa) * mask) >> 15
+         * saves one table lookup per pixel. */
+        const uint32_t opa_factor = gt_per_255(opa);
         for (y = 0; y < h; ++y) {
             x = 0;
 #if GT_DRAW_BLEND_ALIGN
             if ((gt_uintptr_t)&dst_p[0] & 0x1) {
-                *dst_p = gt_color_mix(*src_p, *dst_p, (gt_per_255(*mask_p) * opa) >> 15);
-                ++dst_p; ++src_p; ++mask_p;
-                ++x;
+                *dst_p = gt_color_mix(*src_p, *dst_p, (opa_factor * (*mask_p)) >> 15);
+                ++dst_p; ++src_p; ++mask_p; ++x;
             }
-            for (; x < w - 2; x += 2) {
-                *dst_p = gt_color_mix(*src_p, *dst_p, (gt_per_255(*mask_p) * opa) >> 15);
-                dst_p[1] = gt_color_mix(src_p[1], dst_p[1], (gt_per_255(mask_p[1]) * opa) >> 15);
-                dst_p += 2; src_p += 2; mask_p += 2;
+            for (; x < w - 4; x += 4) {
+                *dst_p   = gt_color_mix(*src_p,   *dst_p,   (opa_factor * mask_p[0]) >> 15);
+                dst_p[1] = gt_color_mix(src_p[1], dst_p[1], (opa_factor * mask_p[1]) >> 15);
+                dst_p[2] = gt_color_mix(src_p[2], dst_p[2], (opa_factor * mask_p[2]) >> 15);
+                dst_p[3] = gt_color_mix(src_p[3], dst_p[3], (opa_factor * mask_p[3]) >> 15);
+                dst_p += 4; src_p += 4; mask_p += 4;
             }
 #endif
             for (; x < w; ++x) {
-                *dst_p = gt_color_mix(*src_p, *dst_p, (gt_per_255(*mask_p) * opa) >> 15);
+                *dst_p = gt_color_mix(*src_p, *dst_p, (opa_factor * (*mask_p)) >> 15);
                 ++dst_p; ++src_p; ++mask_p;
             }
             dst_p += step_dst_line;
@@ -172,13 +179,14 @@ _blend_rgb565_with_opacity(_gt_draw_blend_fill_cache_st const * const fc) {
 #if GT_DRAW_BLEND_ALIGN
             if ((gt_uintptr_t)&dst_p[0] & 0x1) {
                 *dst_p = gt_color_mix(fc->color, *dst_p, *mask_p);
-                ++dst_p;
-                ++x;
+                ++dst_p; ++mask_p; ++x;
             }
-            for (; x < w - 2; x += 2) {
-                *dst_p = gt_color_mix(fc->color, *dst_p, *mask_p);
+            for (; x < w - 4; x += 4) {
+                *dst_p   = gt_color_mix(fc->color, *dst_p,   mask_p[0]);
                 dst_p[1] = gt_color_mix(fc->color, dst_p[1], mask_p[1]);
-                dst_p += 2; mask_p += 2;
+                dst_p[2] = gt_color_mix(fc->color, dst_p[2], mask_p[2]);
+                dst_p[3] = gt_color_mix(fc->color, dst_p[3], mask_p[3]);
+                dst_p += 4; mask_p += 4;
             }
 #endif
             for (; x < w; ++x) {
@@ -190,22 +198,24 @@ _blend_rgb565_with_opacity(_gt_draw_blend_fill_cache_st const * const fc) {
         }
         return;
     }
+    const uint32_t opa_factor = gt_per_255(opa);
     for (y = 0; y < h; ++y) {
         x = 0;
 #if GT_DRAW_BLEND_ALIGN
         if ((gt_uintptr_t)&dst_p[0] & 0x1) {
-            *dst_p = gt_color_mix(fc->color, *dst_p, (gt_per_255(*mask_p) * opa) >> 15);
-            ++dst_p; ++mask_p;
-            ++x;
+            *dst_p = gt_color_mix(fc->color, *dst_p, (opa_factor * (*mask_p)) >> 15);
+            ++dst_p; ++mask_p; ++x;
         }
-        for (; x < w - 2; x += 2) {
-            *dst_p = gt_color_mix(fc->color, *dst_p, (gt_per_255(*mask_p) * opa) >> 15);
-            dst_p[1] = gt_color_mix(fc->color, dst_p[1], (gt_per_255(mask_p[1]) * opa) >> 15);
-            dst_p += 2; mask_p += 2;
+        for (; x < w - 4; x += 4) {
+            *dst_p   = gt_color_mix(fc->color, *dst_p,   (opa_factor * mask_p[0]) >> 15);
+            dst_p[1] = gt_color_mix(fc->color, dst_p[1], (opa_factor * mask_p[1]) >> 15);
+            dst_p[2] = gt_color_mix(fc->color, dst_p[2], (opa_factor * mask_p[2]) >> 15);
+            dst_p[3] = gt_color_mix(fc->color, dst_p[3], (opa_factor * mask_p[3]) >> 15);
+            dst_p += 4; mask_p += 4;
         }
 #endif
         for (; x < w; ++x) {
-            *dst_p = gt_color_mix(fc->color, *dst_p, (gt_per_255(*mask_p) * opa) >> 15);
+            *dst_p = gt_color_mix(fc->color, *dst_p, (opa_factor * (*mask_p)) >> 15);
             ++dst_p; ++mask_p;
         }
         dst_p += step_dst_line;
