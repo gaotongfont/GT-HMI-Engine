@@ -869,4 +869,276 @@ void gt_init_screen_home(void)
 
 <br/>
 
+---
+
+## :file_folder: **详细目录结构**
+
+<br/>
+
+```
+GT-HMI-Engine/
+├── gt.h                    # 主头文件，统一包含所有模块
+├── gui.mk                  # Makefile 构建配置
+├── CMakeLists.txt          # CMake 构建配置
+├── driver/                 # 硬件驱动移植层
+│   ├── gt_port_disp.c/h    # 显示屏刷新接口
+│   ├── gt_port_indev.c/h   # 输入设备接口（触摸/按键）
+│   ├── gt_port_src.c/h     # 素材资源管理（RAM 数组模式）
+│   ├── gt_port_vf.c/h      # 素材资源管理（外接 Flash 模式）
+│   ├── gt_font_config.c/h  # 字体配置
+│   └── gt_gui_driver.c/h   # 驱动主文件
+├── src/                    # GUI 框架核心代码
+│   ├── gt_conf.h           # 全局配置文件（分辨率/颜色深度/内存等）
+│   ├── core/               # GUI 内核逻辑
+│   ├── widgets/            # UI 控件库（60+ 控件）
+│   │   └── gt_conf_widgets.h  # 控件启用/禁用开关
+│   ├── font/               # 字体驱动（点阵/矢量）
+│   ├── hal/                # 硬件抽象层（中间层）
+│   ├── extra/              # 扩展功能（PNG/JPEG/GIF/QR/Markdown）
+│   ├── utils/              # 工具类（队列/栈/FIFO/缓存等）
+│   └── others/             # 基础工具（颜色/动画/内存/日志等）
+├── examples/               # 控件调用示例代码
+├── test/                   # 单元测试代码
+└── sources/                # GUI 内部使用的图像素材
+```
+
+<br/>
+
+---
+
+## :gear: **配置说明**
+
+<br/>
+
+### gt_conf.h 核心配置项
+
+配置文件路径：`src/gt_conf.h`，移植时需根据目标硬件修改以下关键参数：
+
+<table>
+ <tr>
+  <th style="width:35%">配置项</th>
+  <th style="width:25%">默认值</th>
+  <th style="width:40%">说明</th>
+ </tr>
+ <tr><td>GT_SCREEN_WIDTH</td><td>800</td><td>屏幕水平分辨率（像素）</td></tr>
+ <tr><td>GT_SCREEN_HEIGHT</td><td>480</td><td>屏幕垂直分辨率（像素）</td></tr>
+ <tr><td>GT_COLOR_DEPTH</td><td>16</td><td>颜色深度：16(RGB565) / 24(RGB888) / 32(ARGB8888)</td></tr>
+ <tr><td>GT_REFRESH_STYLE</td><td>GT_REFRESH_STYLE_3</td><td>刷新缓冲模式（见下表）</td></tr>
+ <tr><td>GT_MEM_SIZE</td><td>24 * 1024</td><td>动态内存池大小（字节）</td></tr>
+ <tr><td>GT_USE_PNG</td><td>1</td><td>PNG 图像解码支持</td></tr>
+ <tr><td>GT_USE_SJPG</td><td>1</td><td>JPEG 图像解码支持</td></tr>
+ <tr><td>GT_USE_GIF</td><td>1</td><td>GIF 动画支持</td></tr>
+ <tr><td>GT_USE_MD4C</td><td>1</td><td>Markdown 渲染支持</td></tr>
+ <tr><td>GT_USE_SCREEN_ANIM</td><td>1</td><td>屏幕切换动画支持</td></tr>
+ <tr><td>GT_USE_LAYER_TOP</td><td>1</td><td>顶层浮动层支持（对话框/Toast 依赖）</td></tr>
+</table>
+
+<br/>
+
+### 刷新缓冲模式说明
+
+<table>
+ <tr>
+  <th style="width:30%">模式</th>
+  <th style="width:70%">说明</th>
+ </tr>
+ <tr><td>GT_REFRESH_STYLE_0</td><td>无缓冲，适合极低资源 MCU</td></tr>
+ <tr><td>GT_REFRESH_STYLE_1</td><td>单缓冲（10行），低性能 MCU 推荐</td></tr>
+ <tr><td>GT_REFRESH_STYLE_2</td><td>双缓冲（10行×2），中等性能 MCU 推荐</td></tr>
+ <tr><td>GT_REFRESH_STYLE_3</td><td>全屏缓冲，高性能 MCU / 有外部 SRAM 时推荐</td></tr>
+</table>
+
+<br/>
+
+---
+
+## :electric_plug: **移植步骤**
+
+<br/>
+
+### 第一步：复制文件
+
+将 `src/` 和 `driver/` 目录复制到目标工程，并将路径加入编译系统：
+
+- **Makefile 工程**：在主 Makefile 中 `include gui.mk`，并设置 `HMI_DIR` 变量指向本目录
+- **CMake 工程**：在 `CMakeLists.txt` 中 `add_subdirectory` 引入本目录
+
+### 第二步：修改 gt_conf.h
+
+```c
+/* 根据实际屏幕修改分辨率 */
+#define GT_SCREEN_WIDTH     240
+#define GT_SCREEN_HEIGHT    320
+
+/* 根据 MCU 资源选择刷新模式 */
+#define GT_REFRESH_STYLE    GT_REFRESH_STYLE_1
+
+/* 根据可用 RAM 调整内存池 */
+#define GT_MEM_SIZE         (8 * 1024U)
+```
+
+### 第三步：实现驱动接口
+
+**显示驱动** (`driver/gt_port_disp.c`)：实现 `flush_cb` 回调，将 GUI 渲染的像素数据写入 LCD：
+
+```c
+static void _gt_disp_flush_cb(gt_disp_drv_st * drv, gt_area_st * area, gt_color_t * color) {
+    /* 调用 LCD 驱动，将 color 数据写入 area 指定区域 */
+    lcd_draw_bitmap(area->x, area->y, area->w, area->h, (uint16_t *)color);
+    gt_disp_flush_ready(drv);  /* 通知 GUI 刷新完成 */
+}
+```
+
+**输入驱动** (`driver/gt_port_indev.c`)：实现 `read_cb` 回调，返回触摸坐标和状态：
+
+```c
+static void _gt_indev_read_cb(gt_indev_drv_st * indev_drv, gt_indev_data_st * data) {
+    data->point.x = touch_get_x();
+    data->point.y = touch_get_y();
+    data->state   = touch_is_pressed() ? GT_INDEV_STATE_PRESSED : GT_INDEV_STATE_RELEASED;
+}
+```
+
+### 第四步：配置心跳与主循环
+
+```c
+/* 在 1ms 定时器中断中调用 */
+void TIM_IRQHandler(void) {
+    gt_tick_inc(1);
+}
+
+/* 主循环 */
+int main(void) {
+    gt_init();                  /* GUI 初始化 */
+    gt_init_screen_home();      /* 加载初始界面 */
+    while (1) {
+        gt_task_handler();      /* GUI 任务处理（建议每 5~10ms 调用一次）*/
+    }
+}
+```
+
+<br/>
+
+---
+
+## :jigsaw: **控件列表**
+
+<br/>
+
+### 基础显示控件
+
+<table>
+ <tr><th>控件</th><th>头文件</th><th>说明</th></tr>
+ <tr><td>Label 标签</td><td>gt_label.h</td><td>文本显示，支持多字体/多语言/自动换行</td></tr>
+ <tr><td>Img 图像</td><td>gt_img.h</td><td>显示 PNG/JPEG/BMP/RAW 图像</td></tr>
+ <tr><td>Rect 矩形</td><td>gt_rect.h</td><td>矩形填充/边框/圆角</td></tr>
+ <tr><td>Line 直线</td><td>gt_line.h</td><td>任意方向直线绘制</td></tr>
+ <tr><td>Arc 圆弧</td><td>gt_arc.h</td><td>圆弧/扇形绘制</td></tr>
+ <tr><td>Gif GIF动画</td><td>gt_gif.h</td><td>播放 GIF 动画文件</td></tr>
+ <tr><td>Clock 时钟</td><td>gt_clock.h</td><td>模拟/数字时钟表盘</td></tr>
+ <tr><td>Wordart 艺术字</td><td>gt_wordart.h</td><td>艺术字体渲染</td></tr>
+</table>
+
+### 交互输入控件
+
+<table>
+ <tr><th>控件</th><th>头文件</th><th>说明</th></tr>
+ <tr><td>Btn 按钮</td><td>gt_btn.h</td><td>可点击按钮，支持文字/颜色/圆角</td></tr>
+ <tr><td>Imgbtn 图片按钮</td><td>gt_imgbtn.h</td><td>普通/按下两态图片按钮</td></tr>
+ <tr><td>Checkbox 复选框</td><td>gt_checkbox.h</td><td>多选控件</td></tr>
+ <tr><td>Radio 单选框</td><td>gt_radio.h</td><td>单选控件（配合 Group 使用）</td></tr>
+ <tr><td>Switch 开关</td><td>gt_switch.h</td><td>拨动开关</td></tr>
+ <tr><td>Slider 滑块</td><td>gt_slider.h</td><td>水平/垂直滑动条</td></tr>
+ <tr><td>Input 输入框</td><td>gt_input.h</td><td>单行文本输入</td></tr>
+ <tr><td>Input Number 数字输入</td><td>gt_input_number.h</td><td>数字步进输入</td></tr>
+ <tr><td>Keypad 键盘</td><td>gt_keypad.h</td><td>内置中英文数字键盘</td></tr>
+ <tr><td>Roller 滚轮</td><td>gt_roller.h</td><td>滚动选择器</td></tr>
+</table>
+
+### 容器与布局控件
+
+<table>
+ <tr><th>控件</th><th>头文件</th><th>说明</th></tr>
+ <tr><td>Group 分组</td><td>gt_group.h</td><td>控件分组容器</td></tr>
+ <tr><td>Listview 列表视图</td><td>gt_listview.h</td><td>可滚动列表</td></tr>
+ <tr><td>Textarea 文本区域</td><td>gt_textarea.h</td><td>多行文本显示/滚动</td></tr>
+ <tr><td>View Pager 分页视图</td><td>gt_view_pager.h</td><td>左右滑动翻页</td></tr>
+ <tr><td>Btnmap 按钮映射</td><td>gt_btnmap.h</td><td>按钮矩阵布局</td></tr>
+ <tr><td>Table 表格</td><td>gt_table.h</td><td>表格数据展示</td></tr>
+ <tr><td>Cross Layout 交叉布局</td><td>gt_cross_layout.h</td><td>交叉方向自动布局</td></tr>
+ <tr><td>Calendar 日历</td><td>gt_calendar.h</td><td>月历控件</td></tr>
+</table>
+
+### 高级功能控件
+
+<table>
+ <tr><th>控件</th><th>头文件</th><th>说明</th></tr>
+ <tr><td>Progress Bar 进度条</td><td>gt_progress_bar.h</td><td>水平/垂直进度条</td></tr>
+ <tr><td>Player 播放器</td><td>gt_player.h</td><td>图片序列帧/幻灯片播放</td></tr>
+ <tr><td>Media Player 媒体播放器</td><td>gt_media_player.h</td><td>带进度条的媒体播放界面</td></tr>
+ <tr><td>Dialog 对话框</td><td>gt_dialog.h</td><td>模态对话框（依赖 LAYER_TOP）</td></tr>
+ <tr><td>Select 选择器</td><td>gt_select.h</td><td>下拉选择框</td></tr>
+ <tr><td>Toast 提示</td><td>gt_toast.h</td><td>临时浮动提示信息</td></tr>
+ <tr><td>Status Bar 状态栏</td><td>gt_status_bar.h</td><td>顶部状态栏</td></tr>
+ <tr><td>Chat 聊天</td><td>gt_chat.h</td><td>聊天气泡列表</td></tr>
+ <tr><td>Graphs 图表</td><td>gt_graphs.h</td><td>折线/柱状图表</td></tr>
+ <tr><td>Spectrum 频谱</td><td>gt_spectrum.h</td><td>频谱可视化</td></tr>
+ <tr><td>QR Code 二维码</td><td>gt_qrcode.h</td><td>动态生成二维码</td></tr>
+ <tr><td>Barcode 条形码</td><td>gt_barcode.h</td><td>条形码生成</td></tr>
+ <tr><td>Markdown</td><td>gt_markdown.h</td><td>Markdown 文本渲染</td></tr>
+ <tr><td>LRC 歌词</td><td>gt_lrc.h</td><td>LRC 格式歌词滚动显示</td></tr>
+</table>
+
+<br/>
+
+---
+
+## :wrench: **构建系统**
+
+<br/>
+
+### Makefile 方式
+
+在项目 Makefile 中设置 `HMI_DIR` 并引入 `gui.mk`：
+
+```makefile
+HMI_DIR := path/to/GT-HMI-Engine
+include $(HMI_DIR)/gui.mk
+
+# gui.mk 会自动添加以下变量：
+# CSRCS   - 所有 .c 源文件列表
+# CFLAGS  - 编译标志（含头文件路径 -I）
+```
+
+### CMake 方式
+
+```cmake
+add_subdirectory(GT-HMI-Engine)
+target_link_libraries(your_target gt_gui gt_gui_driver)
+```
+
+<br/>
+
+---
+
+## :memo: **日志与调试**
+
+<br/>
+
+在 `src/others/gt_log.h` 中配置日志等级：
+
+```c
+/* 日志等级：GT_LOG_LEVEL_NONE / WARN / INFO / USER / ERROR / TRACE */
+#define GT_LOG_LEVEL    GT_LOG_LEVEL_INFO
+```
+
+使用日志宏输出调试信息：
+
+```c
+GT_LOGI("my_tag", "value = %d", val);   /* INFO 级别 */
+GT_LOGW("my_tag", "warning msg");       /* WARN 级别 */
+GT_LOGE("my_tag", "error: %s", msg);    /* ERROR 级别 */
+```
+
+<br/>
 
