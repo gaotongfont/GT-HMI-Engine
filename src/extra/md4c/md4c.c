@@ -97,7 +97,7 @@
 
     #define MD_UNREACHABLE()        MD_ASSERT(1 == 0)
 #else
-    #ifdef __GNUC__
+    #if defined(__GNUC__) && ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)) && !defined(__ARMCC_VERSION)
         #define MD_ASSERT(cond)     do { if(!(cond)) __builtin_unreachable(); } while(0)
         #define MD_UNREACHABLE()    do { __builtin_unreachable(); } while(0)
     #elif defined _MSC_VER  &&  _MSC_VER > 120
