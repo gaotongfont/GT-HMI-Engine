@@ -29,6 +29,9 @@
 
 #include "./gt_label.h"
 #include "./gt_img.h"
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_LINE
+#include "./gt_line.h"
+#endif
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_LISTVIEW
@@ -1068,6 +1071,29 @@ static inline void _set_switch_prop(gt_obj_st * sw, gt_listview_switch_st const 
 }
 #endif
 
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_LINE
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_line(gt_obj_st * listview, gt_obj_st * obj) {
+    gt_obj_st * r = gt_line_create(obj);
+    gt_obj_set_inside(r, true);
+    gt_obj_set_touch_parent(r, true);
+    gt_obj_set_bubble_notify(r, true);
+    return r;
+}
+
+static inline void _set_line_prop(gt_obj_st * line, gt_listview_line_st const * const prop) {
+    if (false == gt_obj_is_type(line, GT_TYPE_LINE)) {
+        return;
+    }
+    if (NULL == prop) {
+        return;
+    }
+    gt_line_set_color(line, prop->color);
+    gt_line_set_start_point(line, prop->xs, prop->ys);
+    gt_line_set_end_point(line, prop->xe, prop->ye);
+    gt_line_set_line_width(line, prop->line_width);
+}
+#endif
+
 
 /* global functions / API interface -------------------------------------*/
 
@@ -1307,6 +1333,14 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
             element = _create_item_switch(listview, obj);
         }
         _set_switch_prop(element, item->switch_p);
+    } else
+#endif
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_LINE
+    if (GT_LISTVIEW_ELEMENT_TYPE_LINE == item->type) {
+        if (NULL == element) {
+            element = _create_item_line(listview, obj);
+        }
+        _set_line_prop(element, item->line_p);
     } else
 #endif
     if (GT_LISTVIEW_ELEMENT_TYPE_IMG == item->type) {

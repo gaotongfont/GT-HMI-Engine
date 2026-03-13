@@ -49,6 +49,13 @@ extern "C" {
     #define GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH     0
 #endif
 
+#ifndef GT_LISTVIEW_USE_ELEMENT_TYPE_LINE
+    /**
+     * @brief 0[default]: Do not use line element;
+     */
+    #define GT_LISTVIEW_USE_ELEMENT_TYPE_LINE       0
+#endif
+
 /* typedef --------------------------------------------------------------*/
 typedef enum gt_listview_element_type_s {
     GT_LISTVIEW_ELEMENT_TYPE_IMG = 0,
@@ -59,6 +66,9 @@ typedef enum gt_listview_element_type_s {
 #endif
 #if GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH
     GT_LISTVIEW_ELEMENT_TYPE_SWITCH,
+#endif
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_LINE
+    GT_LISTVIEW_ELEMENT_TYPE_LINE,
 #endif
 
     _GT_LISTVIEW_ELEMENT_TYPE_MAX,
@@ -113,6 +123,17 @@ typedef struct gt_listview_switch_s {
 }gt_listview_switch_st;
 #endif
 
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_LINE
+typedef struct gt_listview_line_s {
+    gt_color_t color;
+    uint16_t xs;
+    uint16_t ys;
+    uint16_t xe;
+    uint16_t ye;
+    uint16_t line_width;
+}gt_listview_line_st;
+#endif
+
 typedef struct gt_listview_custom_item_s {
     char * src;
     uint16_t src_len;
@@ -133,6 +154,9 @@ typedef struct gt_listview_custom_item_s {
 #endif
 #if GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH
     gt_listview_switch_st * switch_p;
+#endif
+#if GT_LISTVIEW_USE_ELEMENT_TYPE_LINE
+    gt_listview_line_st * line_p;
 #endif
     /**
      * @brief Using image raw data, img_raw is valid value must be set image
