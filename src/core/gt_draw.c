@@ -1197,6 +1197,122 @@ _font_get_group_offset_by_type(gt_font_st const * const tmp_font_p) {
 #endif
 }
 
+/**
+ * @brief Draw one character (emoji / normal / symbol) plus underline/strikethrough styles.
+ *
+ * @param font_height  Actual glyph height (used for vertical centering). Pass
+ *                     tmp_font->info.size when no centering is needed (single-line).
+ * @return true  if the character was actually rendered (not skipped)
+ * @return false if the character was skipped (out of view, zero opa, etc.)
+ */
+static bool _GT_DRAW_ATTRIBUTE_SRAM_TEXT
+_draw_one_char(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
+               gt_font_st * tmp_font, gt_area_st * area_font,
+               uint32_t uni_or_gbk, uint8_t width,
+               gt_draw_blend_dsc_st * blend_dsc,
+               gt_draw_blend_dsc_st * blend_dsc_style,
+               uint8_t * mask_line, uint16_t data_len,
+               gt_size_t font_disp_h, int8_t offset_y,
+               uint8_t style_space_y, bool do_center_glyph)
+{
+    _gt_font_dot_ret_st dot_ret = {0};
+
+    if (!gt_symbol_is_valid_range(uni_or_gbk)) {
+        /* --- normal font (non-symbol) --- */
+        gt_memset(&tmp_font->res[data_len >> 1], 0, data_len >> 1);
+        dot_ret = gt_font_get_dot(tmp_font, uni_or_gbk);
+
+        if (GT_FONT_TYPE_FLAG_EMOJI == dot_ret.type) {
+            /* emoji */
+            gt_area_st emoji_area = *area_font;
+            emoji_area.h = 1;
+
+            _gt_img_dsc_st emoji_raw = {0};
+            emoji_raw.img   = (uint8_t*)tmp_font->res;
+            emoji_raw.alpha = (uint8_t*)mask_line;
+            emoji_raw.header.w = width;
+            emoji_raw.header.h = 1;
+            emoji_raw.header.type = GT_IMG_DECODER_TYPE_RAM;
+            emoji_raw.header.color_format = GT_IMG_CF_TRUE_COLOR;
+
+            gt_attr_rect_st dsc_emoji = {0};
+            dsc_emoji.bg_opa    = dsc->opa;
+            dsc_emoji.raw_img   = &emoji_raw;
+            dsc_emoji.limit_area = (gt_area_st*)blend_dsc->view_area;
+
+            uint8_t emoji_h = gt_font_get_one_word_height(uni_or_gbk, tmp_font);
+            emoji_area.y += ((tmp_font->info.size - emoji_h) >> 1);
+
+            for (uint8_t i = 0; i < emoji_h; ++i) {
+                int emj_ret = gt_font_get_emoji_dot(uni_or_gbk, dot_ret.option,
+                                                    emoji_raw.img, emoji_raw.alpha, i);
+                if (emj_ret <= 0) {
+                    GT_LOGD(GT_LOG_TAG_GUI, "get emoji dot failed!!! ret: %d", emj_ret);
+                    break;
+                }
+                draw_bg_img(draw_ctx, &dsc_emoji, &emoji_area);
+                ++emoji_area.y;
+            }
+            gt_memset(mask_line, 0xFF, tmp_font->info.size << 1);
+        } else {
+            /* normal glyph */
+            uint8_t byte_width = (width + 7) >> 3;
+            uint8_t font_gray  = 1;
+            uint8_t glyph_h    = gt_font_get_one_word_height(uni_or_gbk, tmp_font);
+            byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type, uni_or_gbk);
+            area_font->w = (byte_width / font_gray) << 3;
+            const bool is_ascii = (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font->info.encoding));
+            if (is_ascii) { area_font->y += offset_y; }
+            if (tmp_font->info.style.reg.bold) {
+                area_font->w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font->info);
+            }
+            if (do_center_glyph) {
+                area_font->y += ((tmp_font->info.size - glyph_h) >> 1);
+            }
+
+            gt_point_st off_point = gt_font_offset_get(dot_ret.option, uni_or_gbk);
+            area_font->x += off_point.x;
+            area_font->y += off_point.y;
+            gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font->info.size,
+                               byte_width, font_gray, (const uint8_t*)tmp_font->res,
+                               tmp_font->info.style.reg);
+            area_font->x -= off_point.x;
+            area_font->y -= off_point.y;
+
+            if (do_center_glyph) {
+                area_font->y -= ((tmp_font->info.size - glyph_h) >> 1);
+            }
+            if (is_ascii) { area_font->y -= offset_y; }
+        }
+    } else {
+        /* --- symbol --- */
+        uint8_t symbol_size = tmp_font->info.size;
+        blend_dsc->mask_buf = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, tmp_font->info.size, &symbol_size);
+        if (symbol_size != tmp_font->info.size) { gt_memset(tmp_font->res, 0, data_len); }
+        if (NULL == blend_dsc->mask_buf) { return false; }
+        gt_size_t off = (tmp_font->info.size - symbol_size) >> 1;
+        area_font->y += off;
+        area_font->w  = symbol_size;
+        area_font->h  = symbol_size;
+        gt_draw_blend(draw_ctx, blend_dsc);
+        area_font->h  = font_disp_h;
+        area_font->y -= off;
+        blend_dsc->mask_buf = NULL;
+    }
+
+    /* underline / strikethrough */
+    if (tmp_font->info.style.reg.underline && font_disp_h == tmp_font->info.size) {
+        _draw_blend_underline(draw_ctx, dsc, blend_dsc_style, *area_font,
+                              (const gt_font_info_st*)&tmp_font->info, width, style_space_y);
+    }
+    if (tmp_font->info.style.reg.strikethrough &&
+        (font_disp_h > ((tmp_font->info.size >> 1) + (style_space_y << 1)))) {
+        _draw_blend_strikethrough(draw_ctx, dsc, blend_dsc_style, *area_font,
+                                  (const gt_font_info_st*)&tmp_font->info, width, style_space_y);
+    }
+    return true;
+}
+
 static _gt_draw_font_res_st _GT_DRAW_ATTRIBUTE_SRAM_TEXT
 draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, gt_area_st const * view) {
     const gt_area_st * coords = &dsc->logical_area;
@@ -1319,11 +1435,15 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
     bool cov_flag_ol = false;
     bool start_x_flag = dsc->reg.enabled_start;
     bool is_first_line = true;
-    _gt_font_dot_ret_st dot_ret = {0};
     uint16_t line_height = _calc_line_height_pixel(&area_font, dsc, style_space_y);
+    /* loop-invariant precomputed values */
+    const gt_size_t view_bottom   = view->y + view->h;
+    const gt_size_t coords_bottom = coords->y + coords->h;
     ret.size.y = line_height;
 #if _GT_FONT_ENABLE_CONVERTOR
-    uint16_t bidi_len = 0, bidi_max = 1, bidi_pos = 0;
+    /* pre-allocate enough slots for one full line to avoid realloc inside the loop */
+    uint16_t bidi_len = 0, bidi_pos = 0;
+    uint16_t bidi_max = (uint16_t)(coords->w / (dsc->font->info.size > 0 ? dsc->font->info.size : 1)) + 2;
     gt_bidi_st * bidi = (gt_bidi_st * )gt_mem_malloc(bidi_max * sizeof(gt_bidi_st));
     if (NULL == bidi) {
         GT_LOGE(GT_LOG_TAG_GUI, "bidi malloc is failed!!! size = %lu", bidi_max * sizeof(gt_bidi_st));
@@ -1349,9 +1469,9 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
     }
 
     while (idx < txt_len) {
-        // out of range
-        if ( (area_font.y + style_space_y + area_font.h) > (coords->y + coords->h) ) {
-            font_disp_h = (coords->y + coords->h) - area_font.y;
+        /* out of range: clip last partial line */
+        if ( (area_font.y + style_space_y + area_font.h) > coords_bottom ) {
+            font_disp_h = coords_bottom - area_font.y;
             if(font_disp_h < 2){
                 break;
             }
@@ -1360,7 +1480,7 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
             ++idx;
             goto _disp_font;
         }
-        if (area_font.y > view->y + view->h) {
+        if (area_font.y > view_bottom) {
             if (dsc->reg.immediately_return) {
                 ret.res = GT_RES_INV;
                 goto _ret_handler;
@@ -1404,7 +1524,6 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
             ++idx;
             idx_len = 1;
         }
-        // printf("[%d] idx_len: %d, idx_step: %d\n", idx, idx_len, idx_step);
 _disp_font:
         /** align to left, center or right */
         if (!cov_flag_ol) {
@@ -1431,11 +1550,7 @@ _disp_font:
 #endif
         area_font.h = font_disp_h;
 
-        if (area_font.y + per_line_h < view->y) {
-            area_font.x += ret_w;
-            goto next_line_lb;
-        }
-        else if (area_font.y > view->y + view->h) {
+        if (area_font.y + per_line_h < view->y || area_font.y > view_bottom) {
             area_font.x += ret_w;
             goto next_line_lb;
         }
@@ -1473,7 +1588,6 @@ _disp_font:
             }
 #endif  /** _GT_FONT_ENABLE_CONVERTOR */
 
-            gt_memset(tmp_font.res, 0, data_len);
             tmp_font.utf8 = (char * )&txt_2[idx_2];
             tmp_font.len = gt_font_one_char_code_len_get(&txt_2[idx_2], &uni_or_gbk, tmp_font.info.encoding);
 
@@ -1528,105 +1642,17 @@ _disp_font:
                 goto next_word_multi_lb;
             }
 #endif
-            if (!gt_symbol_is_valid_range(uni_or_gbk)) {
-                gt_memset(&tmp_font.res[data_len >> 1], 0, data_len >> 1);
-                dot_ret = gt_font_get_dot(&tmp_font, uni_or_gbk);
-
-                if (GT_FONT_TYPE_FLAG_EMOJI == dot_ret.type) {
-                    gt_area_st emoji_area = area_font;
-                    emoji_area.h = 1;
-
-                    _gt_img_dsc_st emoji_raw = {0};
-                    emoji_raw.img = (uint8_t*)tmp_font.res;
-                    emoji_raw.alpha = (uint8_t*)mask_line;
-                    emoji_raw.header.w = width;
-                    emoji_raw.header.h = 1;
-                    emoji_raw.header.type = GT_IMG_DECODER_TYPE_RAM;
-                    emoji_raw.header.color_format = GT_IMG_CF_TRUE_COLOR;
-
-                    gt_attr_rect_st dsc_emoji = {0};
-                    dsc_emoji.bg_opa = dsc->opa;
-                    dsc_emoji.raw_img = &emoji_raw;
-                    dsc_emoji.limit_area = (gt_area_st*)view;
-
-                    uint8_t emoji_h = gt_font_get_one_word_height(uni_or_gbk, &tmp_font);
-                    emoji_area.y += ((tmp_font.info.size - emoji_h) >> 1);
-
-                    for(uint8_t i = 0; i < emoji_h; ++i){
-
-                        int emj_ret = gt_font_get_emoji_dot(uni_or_gbk, dot_ret.option, emoji_raw.img, emoji_raw.alpha, i);
-                        if(emj_ret <= 0) {
-                            GT_LOGD(GT_LOG_TAG_GUI, "get emoji dot failed!!! ret: %d",emj_ret);
-                            break;
-                        }
-                        draw_bg_img(draw_ctx, &dsc_emoji, &emoji_area);
-                        ++emoji_area.y;
-                    }
-                    gt_memset(mask_line, 0xFF, tmp_font.info.size << 1);
-                }
-                else{
-                    uint8_t byte_width = (width + 7) >> 3;
-                    uint8_t font_gray = 1;
-                    uint8_t font_height = gt_font_get_one_word_height(uni_or_gbk, &tmp_font);
-                    byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, &tmp_font, dot_ret.type, uni_or_gbk);
-                    area_font.w = (byte_width / font_gray) << 3;
-                    const bool is_ascii_ml = (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding));
-                    if (is_ascii_ml) {
-                        area_font.y += offset_y;
-                    }
-
-                    // bold
-                    if(tmp_font.info.style.reg.bold){
-                        area_font.w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font.info);
-                    }
-
-                    area_font.y += ((tmp_font.info.size - font_height) >> 1);
-
-                    gt_point_st off_point = gt_font_offset_get(dot_ret.option, uni_or_gbk);
-                    area_font.x += off_point.x;
-                    area_font.y += off_point.y;
-                    gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size,
-                                        byte_width, font_gray, (const uint8_t*)tmp_font.res,tmp_font.info.style.reg);
-
-                    area_font.x -= off_point.x;
-                    area_font.y -= off_point.y;
-
-                    area_font.y -= ((tmp_font.info.size - font_height) >> 1);
-
-                    if (is_ascii_ml) {
-                        area_font.y -= offset_y;
-                    }
-                }
-            } else {
-                uint8_t symbol_size = tmp_font.info.size;
-                blend_dsc.mask_buf = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, tmp_font.info.size, &symbol_size);
-                if (symbol_size != tmp_font.info.size) {
-                    gt_memset(tmp_font.res, 0, data_len);
-                }
-
-                if (NULL == blend_dsc.mask_buf) {
-                    area_font.x += width + space_x;
-                    idx_2 += tmp_font.len;
-                    continue;
-                }
-                gt_size_t off = (tmp_font.info.size - symbol_size) >> 1;
-                area_font.y += off;
-                area_font.w = symbol_size;
-                area_font.h = symbol_size;
-                gt_draw_blend(draw_ctx, &blend_dsc);
-                area_font.h = font_disp_h;
-                area_font.y -= off;
-                blend_dsc.mask_buf = NULL;
-            }
-
-            /* use style */
-            if (tmp_font.info.style.reg.underline && font_disp_h == tmp_font.info.size) {
-                _draw_blend_underline(draw_ctx, dsc, &blend_dsc_style, area_font,
-                                        (const gt_font_info_st*)&tmp_font.info, width, style_space_y);
-            }
-            if (tmp_font.info.style.reg.strikethrough && (font_disp_h > ((tmp_font.info.size >> 1) + (style_space_y << 1)))) {
-                _draw_blend_strikethrough(draw_ctx, dsc, &blend_dsc_style, area_font,
-                                            (const gt_font_info_st*)&tmp_font.info, width, style_space_y);
+            gt_memset(tmp_font.res, 0, data_len);
+            if (!_draw_one_char(draw_ctx, dsc, &tmp_font, &area_font,
+                                uni_or_gbk, width,
+                                &blend_dsc, &blend_dsc_style,
+                                mask_line, data_len,
+                                font_disp_h, offset_y, style_space_y, true)) {
+                /* symbol mask was NULL — advance and continue */
+                if (!align_reverse) { area_font.x += width + space_x; }
+                else { area_font.x -= space_x; }
+                idx_2 += tmp_font.len;
+                continue;
             }
         next_word_multi_lb:
             if (align_reverse) {
@@ -1871,7 +1897,9 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
     const bool align_reverse = _is_align_reverse(dsc->align);
 
 #if _GT_FONT_ENABLE_CONVERTOR
-    uint16_t bidi_len = 0, bidi_max = 1, bidi_pos = 0;
+    /* pre-allocate enough slots for the full line to avoid realloc inside the loop */
+    uint16_t bidi_len = 0, bidi_pos = 0;
+    uint16_t bidi_max = (uint16_t)(coords->w / (dsc->font->info.size > 0 ? dsc->font->info.size : 1)) + 2;
     gt_bidi_st * bidi = (gt_bidi_st * )gt_mem_malloc(bidi_max * sizeof(gt_bidi_st));
     if (NULL == bidi) {
         GT_LOGE(GT_LOG_TAG_GUI, "bidi malloc is failed!!! size = %lu", bidi_max * sizeof(gt_bidi_st));
@@ -2067,100 +2095,15 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
             goto next_word_lb;
         }
 #endif
-        if( !gt_symbol_is_valid_range(uni_or_gbk) ){
-            gt_memset(&tmp_font.res[data_len >> 1], 0, data_len >> 1);
-            dot_ret = gt_font_get_dot(&tmp_font, uni_or_gbk);
-
-            if (GT_FONT_TYPE_FLAG_EMOJI == dot_ret.type) {
-                gt_area_st emoji_area = area_font;
-                emoji_area.h = 1;
-
-                _gt_img_dsc_st emoji_raw = {0};
-                emoji_raw.img = (uint8_t*)tmp_font.res;
-                emoji_raw.alpha = (uint8_t*)mask_line;
-                emoji_raw.header.w = width;
-                emoji_raw.header.h = 1;
-                emoji_raw.header.type = GT_IMG_DECODER_TYPE_RAM;
-                emoji_raw.header.color_format = GT_IMG_CF_TRUE_COLOR;
-
-                gt_attr_rect_st dsc_emoji = {0};
-                dsc_emoji.bg_opa = dsc->opa;
-                dsc_emoji.raw_img = &emoji_raw;
-                dsc_emoji.limit_area = (gt_area_st*)view;
-
-                uint8_t emoji_h = gt_font_get_one_word_height(uni_or_gbk, &tmp_font);
-                emoji_area.y += ((tmp_font.info.size - emoji_h) >> 1);
-
-                for(uint8_t i = 0; i < emoji_h; ++i){
-
-                    int emj_ret = gt_font_get_emoji_dot(uni_or_gbk, dot_ret.option, emoji_raw.img, emoji_raw.alpha, i);
-                    if(emj_ret <= 0) {
-                        GT_LOGD(GT_LOG_TAG_GUI, "get emoji dot failed!!! ret: %d",emj_ret);
-                        break;
-                    }
-                    draw_bg_img(draw_ctx, &dsc_emoji, &emoji_area);
-                    ++emoji_area.y;
-                }
-                gt_memset(mask_line, 0xFF, tmp_font.info.size << 1);
-            }
-            else{
-
-                byte_width = (width + 7) >> 3;
-                font_gray = 1;
-
-                byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, &tmp_font, dot_ret.type, uni_or_gbk);
-                area_font.w = (byte_width / font_gray) << 3;
-                const bool is_ascii_sl = (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding));
-                if (is_ascii_sl) {
-                    area_font.y += offset_y;
-                }
-                if(tmp_font.info.style.reg.bold){
-                    area_font.w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font.info);
-                }
-
-                gt_point_st off_point = gt_font_offset_get(dot_ret.option, uni_or_gbk);
-                area_font.x += off_point.x;
-                area_font.y += off_point.y;
-                gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size,
-                                    byte_width, font_gray, (const uint8_t*)tmp_font.res,tmp_font.info.style.reg);
-
-                area_font.x -= off_point.x;
-                area_font.y -= off_point.y;
-
-                if (is_ascii_sl) {
-                    area_font.y -= offset_y;
-                }
-            }
-        } else {
-            uint8_t symbol_size = tmp_font.info.size;
-            blend_dsc.mask_buf = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, tmp_font.info.size, &symbol_size);
-            if (symbol_size != tmp_font.info.size) {
-                gt_memset(tmp_font.res, 0, data_len);
-            }
-
-            if (NULL == blend_dsc.mask_buf) {
-                area_font.x += width + space_x;
-                idx += tmp_font.len;
-                continue;
-            }
-            gt_size_t off = (tmp_font.info.size - symbol_size) >> 1;
-            area_font.y += off;
-            area_font.w = symbol_size;
-            area_font.h = symbol_size;
-            gt_draw_blend(draw_ctx, &blend_dsc);
-            area_font.h = font_disp_h;
-            area_font.y -= off;
-            blend_dsc.mask_buf = NULL;
-        }
-
-        /* use style */
-        if (tmp_font.info.style.reg.underline && font_disp_h == tmp_font.info.size) {
-            _draw_blend_underline(draw_ctx, dsc, &blend_dsc_style, area_font,
-                                    (const gt_font_info_st*)&tmp_font.info, width, style_space_y);
-        }
-        if (tmp_font.info.style.reg.strikethrough && (font_disp_h > ((tmp_font.info.size >> 1) + (style_space_y << 1)))) {
-            _draw_blend_strikethrough(draw_ctx, dsc, &blend_dsc_style, area_font,
-                                        (const gt_font_info_st*)&tmp_font.info, width, style_space_y);
+        if (!_draw_one_char(draw_ctx, dsc, &tmp_font, &area_font,
+                            uni_or_gbk, width,
+                            &blend_dsc, &blend_dsc_style,
+                            mask_line, data_len,
+                            font_disp_h, offset_y, style_space_y, false)) {
+            /* symbol mask was NULL — advance and continue */
+            area_font.x += width + space_x;
+            idx += tmp_font.len;
+            continue;
         }
 next_word_lb:
         if (align_reverse) {
