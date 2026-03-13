@@ -446,15 +446,13 @@ static GT_ATTRIBUTE_RAM_TEXT void _fill_color_hor(_flush_scr_param_st * param, _
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _fill_color_ver(_flush_scr_param_st * param, _bg_abs_area_st * top, _bg_abs_area_st * bottom, gt_size_t cur_row, bool is_top) {
-     gt_disp_st * disp = param->disp;
+    gt_disp_st * disp = param->disp;
     uint16_t line = GT_REFRESH_FLUSH_LINE_PRE_TIME;
     uint32_t len = line * disp->area_act.w;
-    uint32_t top_len = 0;
 
     if (cur_row < top->area.h) {
-        // top
         if (cur_row + line > top->area.h) {
-            top_len = (top->area.h - cur_row) * disp->area_act.w;
+            uint32_t top_len = (top->area.h - cur_row) * disp->area_act.w;
             if (is_top) {
                 gt_color_fill(disp->vbd_color, top_len, top->color);
             } else {
@@ -465,7 +463,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _fill_color_ver(_flush_scr_param_st * param, _
                 gt_color_fill(disp->vbd_color, len, top->color);
             }
         }
-    } else if (cur_row >= top->area.h) {
+    } else {
         if (false == is_top) {
             gt_color_fill(disp->vbd_color, len, bottom->color);
         }
@@ -488,22 +486,11 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _adapt_area_flush_hor(_flush_scr_param_
     param->view_scr_abs.w = scr->area.w;
     param->view_scr_prev_abs.w = prev->area.w;
 
-    switch (param->disp->scr_anim_type) {
-        case GT_SCR_ANIM_TYPE_COVER_LEFT:
-        case GT_SCR_ANIM_TYPE_MOVE_LEFT: {
-            param->view_scr_abs.x = prev->area.w;
-            param->view_scr_prev_abs.x = 0;
-            break;
-        }
-        case GT_SCR_ANIM_TYPE_COVER_RIGHT:
-        case GT_SCR_ANIM_TYPE_MOVE_RIGHT: {
-            param->view_scr_abs.x = 0;
-            param->view_scr_prev_abs.x = scr->area.w;
-            break;
-        }
-        default:
-            break;
-    }
+    /* LEFT: new screen enters from left → abs.x = prev.w; RIGHT: new enters from right → abs.x = 0 */
+    bool is_left = (GT_SCR_ANIM_TYPE_COVER_LEFT == param->disp->scr_anim_type ||
+                    GT_SCR_ANIM_TYPE_MOVE_LEFT  == param->disp->scr_anim_type);
+    param->view_scr_abs.x      = is_left ? prev->area.w : 0;
+    param->view_scr_prev_abs.x = is_left ? 0 : scr->area.w;
 }
 
 /**
@@ -522,22 +509,11 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _adapt_area_flush_ver(_flush_scr_param_
     param->view_scr_abs.h = scr->area.h;
     param->view_scr_prev_abs.h = prev->area.h;
 
-    switch (param->disp->scr_anim_type) {
-        case GT_SCR_ANIM_TYPE_COVER_UP:
-        case GT_SCR_ANIM_TYPE_MOVE_UP: {
-            param->view_scr_abs.y = prev->area.h;
-            param->view_scr_prev_abs.y = 0;
-            break;
-        }
-        case GT_SCR_ANIM_TYPE_COVER_DOWN:
-        case GT_SCR_ANIM_TYPE_MOVE_DOWN: {
-            param->view_scr_abs.y = 0;
-            param->view_scr_prev_abs.y = scr->area.h;
-            break;
-        }
-        default:
-            break;
-    }
+    /* UP: new screen enters from top → abs.y = prev.h; DOWN: new enters from bottom → abs.y = 0 */
+    bool is_up = (GT_SCR_ANIM_TYPE_COVER_UP == param->disp->scr_anim_type ||
+                  GT_SCR_ANIM_TYPE_MOVE_UP  == param->disp->scr_anim_type);
+    param->view_scr_abs.y      = is_up ? prev->area.h : 0;
+    param->view_scr_prev_abs.y = is_up ? 0 : scr->area.h;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline void _clear_buffer(_flush_scr_param_st * param, gt_color_t prev_c, gt_color_t cur_c, gt_size_t cur_row, bool is_prev) {
@@ -615,12 +591,11 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_anim(_flush_scr_param_st 
         return;
     }
     bool is_cover = false;
-
-    // 计算scr 在屏幕的显示区域
-    if (_is_anim_type_hor((gt_scr_anim_type_et)param->disp->scr_anim_type)) {
+    bool is_double_buf = gt_disp_graph_is_double_buf();
+    gt_scr_anim_type_et anim_type = (gt_scr_anim_type_et)param->disp->scr_anim_type;
+    if (_is_anim_type_hor(anim_type)) {
         _adapt_area_flush_hor(param);
-    }
-    if (_is_anim_type_ver((gt_scr_anim_type_et)param->disp->scr_anim_type)) {
+    } else if (_is_anim_type_ver(anim_type)) {
         _adapt_area_flush_ver(param);
     }
 
@@ -655,7 +630,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_anim(_flush_scr_param_st 
             param->valid.layer_top = false;
         }
 #endif
-        if(gt_disp_graph_is_double_buf()){
+        if (is_double_buf) {
             while(gt_disp_drv_check_flushing(param->disp->drv)){
                 if(param->disp->drv->wait_cb){ param->disp->drv->wait_cb(param->disp->drv); }
             }
@@ -666,7 +641,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_anim(_flush_scr_param_st 
         param->disp->drv->flush_cb(param->disp->drv, &param->area_flush, param->disp->vbd_color);
         param->area_flush.y += param->line;
 
-        if(gt_disp_graph_is_double_buf()){
+        if (is_double_buf) {
             param->disp->vbd_color = gt_disp_graph_get_buf_backup(param->disp->vbd_color);
         }
 
@@ -712,9 +687,7 @@ _scr_x_less_0(_flush_scr_param_st * param, uint16_t width, gt_obj_st * scr) {
         param->area_flush.x = 0;
     }
 
-    if (param->area_flush.x > scr->area.x) {
-        param->area_flush.x = param->area_flush.x - scr->area.x;
-    } else if (param->area_flush.x > 0) {
+    if (param->area_flush.x > scr->area.x || param->area_flush.x > 0) {
         param->area_flush.x = param->area_flush.x - scr->area.x;
     }
 
@@ -904,6 +877,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
     disp->area_disp.h = param->area_flush.h;
 
     uint32_t len = disp->area_disp.w * disp->area_disp.h;
+    bool is_double_buf = gt_disp_graph_is_double_buf();
 
     while (param->area_flush.y < end_y) {
 #if GT_LAYER_TOP_SCREENSHOT_CACHE
@@ -944,7 +918,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
         _gt_disp_check_and_copy_foreach(scr, param);
 #endif  /** !GT_USE_LAYER_TOP */
 
-        if (gt_disp_graph_is_double_buf()) {
+        if (is_double_buf) {
             while (gt_disp_drv_check_flushing(disp->drv)) {
                 if(disp->drv->wait_cb){ disp->drv->wait_cb(disp->drv); }
             }
@@ -960,7 +934,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
             disp->area_disp.h = param->area_flush.h;
         }
 
-        if(gt_disp_graph_is_double_buf()){
+        if (is_double_buf) {
             disp->vbd_color = gt_disp_graph_get_buf_backup(disp->vbd_color);
         }
     }
@@ -969,16 +943,17 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
 #endif
 }
 
-static GT_ATTRIBUTE_RAM_TEXT inline gt_scr_anim_type_et _get_anti_anim_type(gt_scr_anim_type_et type) {
+static inline gt_scr_anim_type_et GT_ATTRIBUTE_RAM_TEXT
+_get_anti_anim_type(gt_scr_anim_type_et type) {
 #if GT_USE_SCREEN_ANIM
-    if (GT_SCR_ANIM_TYPE_MOVE_LEFT == type)         { type = GT_SCR_ANIM_TYPE_MOVE_RIGHT;   }
-    else if (GT_SCR_ANIM_TYPE_MOVE_RIGHT == type)   { type = GT_SCR_ANIM_TYPE_MOVE_LEFT;    }
-    else if (GT_SCR_ANIM_TYPE_MOVE_UP == type)      { type = GT_SCR_ANIM_TYPE_MOVE_DOWN;    }
-    else if (GT_SCR_ANIM_TYPE_MOVE_DOWN == type)    { type =  GT_SCR_ANIM_TYPE_MOVE_UP;     }
-    else if (GT_SCR_ANIM_TYPE_COVER_LEFT == type)   { type = GT_SCR_ANIM_TYPE_COVER_RIGHT;  }
-    else if (GT_SCR_ANIM_TYPE_COVER_RIGHT == type)  { type = GT_SCR_ANIM_TYPE_COVER_LEFT;   }
-    else if (GT_SCR_ANIM_TYPE_COVER_UP == type)     { type = GT_SCR_ANIM_TYPE_NONE;         }
-    else if (GT_SCR_ANIM_TYPE_COVER_DOWN == type)   { type = GT_SCR_ANIM_TYPE_NONE;         }
+    /* COVER_UP/DOWN have no inverse */
+    if (GT_SCR_ANIM_TYPE_COVER_UP == type || GT_SCR_ANIM_TYPE_COVER_DOWN == type) {
+        return GT_SCR_ANIM_TYPE_NONE;
+    }
+    /* Pairs (1,2),(3,4),(5,6) are adjacent: flip within pair via ((type-1)^1)+1 */
+    if (GT_SCR_ANIM_TYPE_NONE != type) {
+        type = (gt_scr_anim_type_et)(((type - 1u) ^ 1u) + 1u);
+    }
     return type;
 #else
     return GT_SCR_ANIM_TYPE_NONE;
