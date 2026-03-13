@@ -9,3 +9,8 @@ obj/
 bin/
 
 .cache/
+**/*.o
+**/*.d
+
+**/claude.md
+**/CLAUDE.md
