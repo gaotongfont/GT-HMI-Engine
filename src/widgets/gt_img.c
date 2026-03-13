@@ -22,6 +22,9 @@
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
 #include "../core/gt_event.h"
+#if GT_USE_IMG_TRANSFORM
+#include "../extra/draw/gt_img_transform.h"
+#endif
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_IMG
@@ -42,6 +45,18 @@ typedef struct _gt_img_s {
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
     gt_direct_addr_custom_size_st custom_addr;
 #endif
+#if GT_USE_IMG_TRANSFORM
+    uint16_t angle;         // rotation angle, unit 0.1 degree (0~3599)
+    uint16_t zoom;          // scale: 256 = 1.0x
+    uint16_t prev_angle;    // angle at last draw, used to detect motion for NN/bilinear switch
+    int16_t  pivot_x;       // pivot x relative to image top-left (-1 = center)
+    int16_t  pivot_y;       // pivot y relative to image top-left (-1 = center)
+    /* Decoded pixel cache for transform — avoids re-decoding every frame */
+    gt_color_t * transform_cache;   // decoded RGB pixels, w*h*sizeof(gt_color_t)
+    uint16_t cache_w;
+    uint16_t cache_h;
+    uint8_t  cache_is_rom : 1;      // 1 = transform_cache is a ROM/RAM pointer, do NOT free
+#endif /* GT_USE_IMG_TRANSFORM */
 }_gt_img_st;
 
 /* static variables -----------------------------------------------------*/
@@ -96,10 +111,50 @@ static void _img_init_cb(gt_obj_st * obj) {
         dsc.raw_img = style->src ? NULL : &style->raw;
     }
 
-    /* start draw obj */
-    draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
+#if GT_USE_IMG_TRANSFORM
+    bool need_transform = (style->angle != GT_ANGLE_NONE) || (style->zoom != GT_ZOOM_NONE);
+    if (!need_transform) {
+        /* No transform: clear cache and draw normally */
+        if (style->transform_cache) {
+            if (!style->cache_is_rom) { gt_mem_free(style->transform_cache); }
+            style->transform_cache = NULL;
+            style->cache_w = 0;
+            style->cache_h = 0;
+            style->cache_is_rom = 0;
+        }
+        draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
+        draw_focus(obj);
+        return;
+    }
 
-    // focus
+    /* Transform path: build pixel cache on first call or after src change */
+    if (!style->transform_cache) {
+        bool is_rom = false;
+        style->transform_cache = gt_img_decode_to_cache(&dsc, &style->cache_w, &style->cache_h,
+                                                        &is_rom);
+        style->cache_is_rom = is_rom ? 1 : 0;
+        if (!style->transform_cache) {
+            draw_focus(obj);
+            return;
+        }
+    }
+
+    int16_t px = (style->pivot_x < 0) ? (int16_t)(style->cache_w / 2) : style->pivot_x;
+    int16_t py = (style->pivot_y < 0) ? (int16_t)(style->cache_h / 2) : style->pivot_y;
+
+    /* Use nearest-neighbor while rotating (fast), bilinear when stopped (smooth).
+     * Threshold: 5 degrees (50 units of 0.1-degree) of change triggers NN mode. */
+    uint16_t angle_delta = (uint16_t)((3600 + style->angle - style->prev_angle) % 3600);
+    if (angle_delta > 1800) angle_delta = 3600 - angle_delta; /* shortest arc */
+    bool use_nn = (angle_delta >= 50);
+    style->prev_angle = style->angle;
+
+    gt_img_transform_draw_cached(obj->draw_ctx, &obj->area, obj->opa,
+                                 style->transform_cache, style->cache_w, style->cache_h,
+                                 style->angle, style->zoom, px, py, use_nn);
+#else
+    draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
+#endif /* GT_USE_IMG_TRANSFORM */
     draw_focus(obj);
 }
 
@@ -120,6 +175,12 @@ static void _img_deinit_cb(gt_obj_st * obj) {
         gt_mem_free(style_p->src);
         style_p->src = NULL;
     }
+#if GT_USE_IMG_TRANSFORM
+    if (NULL != style_p->transform_cache) {
+        if (!style_p->cache_is_rom) { gt_mem_free(style_p->transform_cache); }
+        style_p->transform_cache = NULL;
+    }
+#endif /* GT_USE_IMG_TRANSFORM */
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _resize_by_img(gt_obj_st * obj) {
@@ -206,8 +267,13 @@ gt_obj_st * gt_img_create(gt_obj_st * parent)
     if (NULL == obj) {
         return obj;
     }
-#if GT_USE_DIRECT_ADDR || GT_USE_FILE_HEADER || GT_USE_DIRECT_ADDR_CUSTOM_SIZE
     _gt_img_st * style = (_gt_img_st *)obj;
+    style->angle   = GT_ANGLE_NONE;
+    style->zoom    = GT_ZOOM_NONE;
+#if GT_USE_IMG_TRANSFORM
+    style->pivot_x = -1;  /* -1 means use image center */
+    style->pivot_y = -1;
+    style->cache_is_rom = 0;
 #endif
 
 #if GT_USE_DIRECT_ADDR
@@ -245,6 +311,17 @@ void gt_img_set_src(gt_obj_st * img, char * src)
     }
     gt_memcpy(style->src, src, len);
     style->src[len] = '\0';
+
+    /* Invalidate transform cache — src changed */
+#if GT_USE_IMG_TRANSFORM
+    if (style->transform_cache) {
+        if (!style->cache_is_rom) { gt_mem_free(style->transform_cache); }
+        style->transform_cache = NULL;
+        style->cache_w = 0;
+        style->cache_h = 0;
+        style->cache_is_rom = 0;
+    }
+#endif /* GT_USE_IMG_TRANSFORM */
 
     gt_img_dsc_raw_init(&style->raw);
 #if GT_USE_FILE_HEADER
@@ -451,6 +528,34 @@ gt_res_t gt_img_set_masking(gt_obj_st * img, gt_color_masking_st * masking)
     gt_event_send(img, GT_EVENT_TYPE_DRAW_START, NULL);
     return GT_RES_OK;
 }
+
+#if GT_USE_IMG_TRANSFORM
+void gt_img_set_angle(gt_obj_st * img, uint16_t angle)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) { return; }
+    _gt_img_st * style = (_gt_img_st *)img;
+    style->angle = angle % 3600;
+    gt_event_send(img, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_img_set_zoom(gt_obj_st * img, uint16_t zoom)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) { return; }
+    if (zoom == 0) { return; }
+    _gt_img_st * style = (_gt_img_st *)img;
+    style->zoom = zoom;
+    gt_event_send(img, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_img_set_pivot(gt_obj_st * img, int16_t pivot_x, int16_t pivot_y)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) { return; }
+    _gt_img_st * style = (_gt_img_st *)img;
+    style->pivot_x = pivot_x;
+    style->pivot_y = pivot_y;
+    gt_event_send(img, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+#endif
 
 #endif  /** #if GT_CFG_ENABLE_IMG */
 /* end ------------------------------------------------------------------*/

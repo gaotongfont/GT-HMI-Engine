@@ -138,6 +138,33 @@ uint16_t gt_img_get_height(gt_obj_st * img);
  */
 gt_res_t gt_img_set_masking(gt_obj_st * img, gt_color_masking_st * masking);
 
+#if GT_USE_IMG_TRANSFORM
+/**
+ * @brief Set image rotation angle
+ *
+ * @param img   Image object
+ * @param angle Angle in 0.1-degree units (0~3599), e.g. 900 = 90 degrees
+ */
+void gt_img_set_angle(gt_obj_st * img, uint16_t angle);
+
+/**
+ * @brief Set image zoom scale
+ *
+ * @param img  Image object
+ * @param zoom Scale factor: 256 = 1.0x, 128 = 0.5x, 512 = 2.0x
+ */
+void gt_img_set_zoom(gt_obj_st * img, uint16_t zoom);
+
+/**
+ * @brief Set the pivot point for rotation/zoom (relative to image top-left)
+ *
+ * @param img     Image object
+ * @param pivot_x Pivot x in pixels (default: image center)
+ * @param pivot_y Pivot y in pixels (default: image center)
+ */
+void gt_img_set_pivot(gt_obj_st * img, int16_t pivot_x, int16_t pivot_y);
+#endif
+
 #endif  /** GT_CFG_ENABLE_IMG */
 
 #ifdef __cplusplus

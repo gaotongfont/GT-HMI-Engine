@@ -108,6 +108,21 @@ _gt_draw_font_res_st draw_text(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st
 void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_area_st * coords);
 
 /**
+ * @brief Draw image with rotation and/or scaling
+ *
+ * @param draw_ctx Drawing context
+ * @param dsc      Image attribute descriptor
+ * @param coords   Widget area (position on screen, w/h = output size)
+ * @param angle    Rotation angle, unit 0.1 degree (0~3599)
+ * @param zoom     Scale: 256 = 1.0x, 128 = 0.5x, 512 = 2.0x
+ * @param pivot_x  Pivot x relative to image (-1 = center)
+ * @param pivot_y  Pivot y relative to image (-1 = center)
+ */
+void draw_bg_img_transform(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc,
+                           gt_area_st * coords, uint16_t angle, uint16_t zoom,
+                           int16_t pivot_x, int16_t pivot_y);
+
+/**
  * @brief Draw point
  *
  * @param draw_ctx

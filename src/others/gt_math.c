@@ -92,46 +92,37 @@ double gt_atan2(double x, double y)
  * @param angle degrees of angle
  * @return int16_t get value 1 degrees of 32767
  */
-int16_t gt_sin(int16_t angle)
+int32_t gt_sin_01deg(int32_t angle_01deg)
 {
-    int16_t ret = 0;
+    angle_01deg = ((angle_01deg % 3600) + 3600) % 3600;
+    int32_t deg  = angle_01deg / 10;
+    int32_t frac = angle_01deg % 10;   /* 0~9 */
+    int32_t quadrant = deg / 90;
+    int32_t idx      = deg % 90;
 
-    angle = angle % 360;
-
-    if (angle < 0) {
-        angle += 360;
+    int32_t v0, v1;
+    switch (quadrant) {
+        case 0:  v0 =  _gt_sin_90_table[idx];      v1 =  _gt_sin_90_table[idx + 1]; break;
+        case 1:  v0 =  _gt_sin_90_table[90 - idx]; v1 =  _gt_sin_90_table[90 - idx - 1]; break;
+        case 2:  v0 = -_gt_sin_90_table[idx];      v1 = -_gt_sin_90_table[idx + 1]; break;
+        default: v0 = -_gt_sin_90_table[90 - idx]; v1 = -_gt_sin_90_table[90 - idx - 1]; break;
     }
-
-    if (angle < 90) {
-        ret = _gt_sin_90_table[angle];
-    }
-    else if (angle < 180) {
-        angle = 180 - angle;
-        ret = _gt_sin_90_table[angle];
-    }
-    else if (angle < 270) {
-        angle -= 180;
-        ret = -_gt_sin_90_table[angle];
-    }
-    else {
-        /* >= 270 */
-        angle = 360 - angle;
-        ret = -_gt_sin_90_table[angle];
-    }
-
-    return ret;
+    return v0 + (v1 - v0) * frac / 10;
 }
 
-/**
- * @brief return with cos of an angle, such as:
- *  sin[0] = 32767, sin[180] = -32767
- *
- * @param angle degrees of angle
- * @return int16_t get value 1 degrees of 32767
- */
+int32_t gt_cos_01deg(int32_t angle_01deg)
+{
+    return gt_sin_01deg(angle_01deg + 900);
+}
+
+int16_t gt_sin(int16_t angle)
+{
+    return (int16_t)gt_sin_01deg((int32_t)angle * 10);
+}
+
 int16_t gt_cos(int16_t angle)
 {
-    return gt_sin(angle + 90);
+    return (int16_t)gt_sin_01deg((int32_t)angle * 10 + 900);
 }
 
 uint16_t gt_atan2(int x, int y)

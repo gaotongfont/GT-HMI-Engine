@@ -30,6 +30,7 @@
 #include "../font/gt_symbol.h"
 #include "gt_img_decoder.h"
 #include "gt_mask.h"
+#include "../extra/draw/gt_img_transform.h"
 
 #if GT_USE_LIB_TEX_PRINTF
 #include "../extra/libtexprintf/gt_tex.h"
@@ -3226,4 +3227,88 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_s
     draw_bg(draw_ctx, &rect_attr, &round_area);
 
 }
+
+void draw_bg_img_transform(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc,
+                           gt_area_st * coords, uint16_t angle, uint16_t zoom,
+                           int16_t pivot_x, int16_t pivot_y)
+{
+    if (dsc->bg_opa < GT_OPA_MIN) return;
+    if (NULL == draw_ctx->buf) return;
+
+    _gt_img_dsc_st dsc_img = {0};
+
+    /* Open image source (same logic as draw_bg_img) */
+    if (NULL == dsc->bg_img_src) {
+        if (dsc->raw_img) {
+            if (dsc->raw_img->raw_p && false == dsc->reg.ignore_img_decoder) {
+                if (GT_RES_FAIL == gt_img_decoder_open_raw(&dsc_img, dsc->raw_img->raw_p, dsc->raw_img->raw_len)) {
+                    return;
+                }
+            } else {
+                if (GT_IMG_DECODER_TYPE_NONE == dsc->raw_img->header.type && NULL == dsc->raw_img->fp) {
+                    return;
+                }
+                dsc_img = *dsc->raw_img;
+            }
+            goto handler_lb;
+        }
+#if GT_USE_FILE_HEADER
+        {
+            gt_res_t r = gt_img_decoder_fh_open(&dsc_img, dsc->file_header);
+            if (GT_RES_OK == r) goto handler_lb;
+            if (GT_RES_FAIL == r) return;
+        }
+#endif
+#if GT_USE_DIRECT_ADDR
+        {
+            gt_res_t r = gt_img_decoder_direct_addr_open(&dsc_img, dsc->addr);
+            if (GT_RES_OK == r) goto handler_lb;
+            if (GT_RES_FAIL == r) return;
+        }
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+        {
+            gt_res_t r = gt_img_decoder_custom_size_addr_open(&dsc_img, dsc->custom_addr);
+            if (GT_RES_OK == r) goto handler_lb;
+            if (GT_RES_FAIL == r) return;
+        }
+#endif
+        return;
+    } else if (GT_RES_FAIL == gt_img_decoder_open(&dsc_img, dsc->bg_img_src)) {
+        return;
+    }
+
+handler_lb:
+    _gt_disp_update_max_area(coords, true);
+    if (NULL == draw_ctx->buf) goto close_lb;
+
+    /* Resolve pivot: -1 means image center */
+    int16_t px = (pivot_x < 0) ? (int16_t)(dsc_img.header.w / 2) : pivot_x;
+    int16_t py = (pivot_y < 0) ? (int16_t)(dsc_img.header.h / 2) : pivot_y;
+
+    gt_area_st dst_area = *coords, mask_area = *coords;
+    gt_draw_blend_dsc_st blend_dsc = {
+        .dst_buf    = NULL,
+        .mask_buf   = NULL,
+        .color_fill = dsc->raw_img ? dsc->raw_img->fill_color : gt_color_black(),
+        .dst_area   = &dst_area,
+        .mask_area  = &mask_area,
+        .masking    = dsc->masking,
+        .view_area  = dsc->limit_area,
+        .opa        = dsc->bg_opa,
+    };
+
+    gt_img_transform_draw(draw_ctx, &blend_dsc, &dsc_img, angle, zoom, px, py);
+
+    if (GT_IMG_DECODER_TYPE_RAM == dsc_img.header.type) return;
+close_lb:
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    if (dsc->custom_addr) {
+        gt_img_decoder_custom_size_addr_close(&dsc_img);
+        return;
+    }
+#endif
+    gt_img_decoder_close(&dsc_img);
+}
+
 /* end ------------------------------------------------------------------*/

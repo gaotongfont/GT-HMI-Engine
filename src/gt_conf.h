@@ -520,6 +520,18 @@ extern "C" {
     #define GT_USE_PNG          01
 #endif
 
+#ifndef GT_USE_IMG_TRANSFORM
+    /**
+     * @brief Enable image rotation and scaling (gt_img_transform).
+     *      Uses bilinear interpolation for smooth rendering and nearest-neighbor
+     *      during animation for performance. Requires a full-image decode buffer
+     *      (src_w * src_h * 2 bytes) in RAM.
+     *      Disable on MCUs with very limited RAM.
+     * [default: 1]
+     */
+    #define GT_USE_IMG_TRANSFORM    1
+#endif
+
 #ifndef GT_USE_SJPG
     /**
      * @brief use TJpgDec

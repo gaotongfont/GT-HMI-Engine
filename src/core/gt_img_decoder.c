@@ -111,15 +111,14 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_read_line(struct 
     if (!fp) {
         return GT_RES_INV;
     }
-    uint16_t line_pixel = dsc->header.w * y;
-    uint32_t offset = ( line_pixel + x ) * sizeof(gt_color_t);
+    uint32_t offset = ((uint32_t)dsc->header.w * y + x) * sizeof(gt_color_t);
 
     if (gt_fs_seek(fp, offset, GT_FS_SEEK_SET)) {
         return GT_RES_FAIL;
     }
 
     uint32_t ret_size = 0;
-    if (gt_fs_read(fp, buffer, line_pixel * sizeof(gt_color_t), &ret_size)) {
+    if (gt_fs_read(fp, buffer, len, &ret_size)) {
         return GT_RES_FAIL;
     }
 

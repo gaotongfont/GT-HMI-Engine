@@ -107,6 +107,18 @@ double gt_atan2(double x, double y);
 int16_t gt_sin(int16_t angle);
 int16_t gt_cos(int16_t angle);
 uint16_t gt_atan2(int x, int y);
+
+/**
+ * @brief sin with 0.1-degree precision, returns Q15 fixed-point (sin * 32767).
+ *        angle_01deg: 0~3599 (unit: 0.1 degree)
+ */
+int32_t gt_sin_01deg(int32_t angle_01deg);
+
+/**
+ * @brief cos with 0.1-degree precision, returns Q15 fixed-point (cos * 32767).
+ *        angle_01deg: 0~3599 (unit: 0.1 degree)
+ */
+int32_t gt_cos_01deg(int32_t angle_01deg);
 #endif
 
 double gt_square(double n);
