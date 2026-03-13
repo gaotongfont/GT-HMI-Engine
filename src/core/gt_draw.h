@@ -107,6 +107,7 @@ _gt_draw_font_res_st draw_text(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st
  */
 void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_area_st * coords);
 
+#if GT_USE_IMG_TRANSFORM
 /**
  * @brief Draw image with rotation and/or scaling
  *
@@ -121,6 +122,7 @@ void draw_bg_img(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, gt_are
 void draw_bg_img_transform(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc,
                            gt_area_st * coords, uint16_t angle, uint16_t zoom,
                            int16_t pivot_x, int16_t pivot_y);
+#endif
 
 /**
  * @brief Draw point

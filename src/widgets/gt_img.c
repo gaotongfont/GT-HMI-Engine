@@ -268,9 +268,9 @@ gt_obj_st * gt_img_create(gt_obj_st * parent)
         return obj;
     }
     _gt_img_st * style = (_gt_img_st *)obj;
+#if GT_USE_IMG_TRANSFORM
     style->angle   = GT_ANGLE_NONE;
     style->zoom    = GT_ZOOM_NONE;
-#if GT_USE_IMG_TRANSFORM
     style->pivot_x = -1;  /* -1 means use image center */
     style->pivot_y = -1;
     style->cache_is_rom = 0;

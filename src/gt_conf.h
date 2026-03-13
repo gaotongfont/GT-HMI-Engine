@@ -527,9 +527,9 @@ extern "C" {
      *      during animation for performance. Requires a full-image decode buffer
      *      (src_w * src_h * 2 bytes) in RAM.
      *      Disable on MCUs with very limited RAM.
-     * [default: 1]
+     * [default: 0]
      */
-    #define GT_USE_IMG_TRANSFORM    1
+    #define GT_USE_IMG_TRANSFORM    0
 #endif
 
 #ifndef GT_USE_SJPG

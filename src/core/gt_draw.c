@@ -3228,6 +3228,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_s
 
 }
 
+#if GT_USE_IMG_TRANSFORM
 void draw_bg_img_transform(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc,
                            gt_area_st * coords, uint16_t angle, uint16_t zoom,
                            int16_t pivot_x, int16_t pivot_y)
@@ -3310,5 +3311,6 @@ close_lb:
 #endif
     gt_img_decoder_close(&dsc_img);
 }
+#endif  /** GT_USE_IMG_TRANSFORM */
 
 /* end ------------------------------------------------------------------*/
