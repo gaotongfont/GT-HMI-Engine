@@ -455,7 +455,7 @@ int gt_font_code_transform(font_convertor_st *convert);
 int gt_font_convertor_data_get(font_convertor_st *convert, uint32_t pos);
 #endif
 
-int32_t gt_font_split_line_str(const gt_font_st * fonts, uint32_t max_w, uint32_t space, uint32_t * width,
+int32_t gt_font_split_line_str(gt_font_st * fonts, uint32_t max_w, uint32_t space, uint32_t * width,
                                 gt_bidi_st** bidi, uint16_t* bidi_len, uint16_t* bidi_max, uint8_t * overlength,
                                 bool is_first_line);
 

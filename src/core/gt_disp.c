@@ -136,6 +136,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_disp_set_state(gt_disp_st * disp, uint8_t 
     disp->drv->busy = state;
 }
 
+static inline void _gt_scroll_tip_draw_inline(gt_obj_st * obj) {
+    gt_scroll_tip_draw(obj);
+}
+
 /**
  * @brief Checked the obj is display area visible
  *
@@ -195,7 +199,7 @@ gt_check_obj_visible_and_copy_after_scroll_tip(gt_obj_st * obj, _flush_scr_param
     if (false == gt_area_is_intersect_screen(&param->disp->area_disp, &obj->area)) {
         return;
     }
-    _build_and_call_draw_ctx(obj, param, &area_parent, gt_scroll_tip_draw);
+    _build_and_call_draw_ctx(obj, param, &area_parent, _gt_scroll_tip_draw_inline);
 }
 
 /**

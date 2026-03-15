@@ -439,7 +439,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_3(_gt_draw_ctx_st * draw_
 }
 
 static uint16_t GT_ATTRIBUTE_RAM_TEXT
-_gt_gray_and_dot_byte_get(uint8_t* gray, uint8_t width, const gt_font_st * font, uint8_t ret_style, uint32_t unicode) {
+_gt_gray_and_dot_byte_get(uint8_t* gray, uint8_t width, gt_font_st * font, uint8_t ret_style, uint32_t unicode) {
     uint16_t dot_byte = 0;
     uint8_t font_type = ret_style % 10;
     uint8_t font_gray = (ret_style/10) > 0 ? (ret_style/10) : 1;
@@ -530,7 +530,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _draw_blend_strikethrough(
 
 #if _GT_FONT_ENABLE_CONVERTOR
 static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
-    const gt_font_st * fonts, uint8_t lan,
+    gt_font_st * fonts, uint8_t lan,
     _gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc,
     const gt_attr_font_st * dsc, gt_size_t font_disp_h,
     gt_draw_blend_dsc_st * blend_dsc_style, const gt_area_st * coords, uint8_t flag_ol) {
