@@ -1649,10 +1649,11 @@ _disp_font:
             ret.size_show_limit.y = view->h;
         }
         if (dsc->reg.only_calc_display_info) { goto next_line_lb; }
+        if (dsc->opa < GT_OPA_MIN) { goto next_line_lb; }
 
         /** ------------- Display current line chars ------------- */
+        tmp_font.info.size = dsc->font->info.size;
         while (idx_2 < idx_len) {
-            tmp_font.info.size = dsc->font->info.size;
 #if _GT_FONT_ENABLE_CONVERTOR
             if (bidi_pos < bidi_len && idx_2 == bidi[bidi_pos].idx) {
                 tmp_font.utf8 = (char * )&txt_2[idx_2];
@@ -1677,16 +1678,14 @@ _disp_font:
 
             tmp_font.utf8 = (char * )&txt_2[idx_2];
             tmp_font.len = gt_font_one_char_code_len_get(&txt_2[idx_2], &uni_or_gbk, tmp_font.info.encoding);
-
-            uint8_t width = gt_font_get_one_word_width(uni_or_gbk, &tmp_font);
+            const bool is_symbol_ml = gt_symbol_is_valid_range(uni_or_gbk);
+            uint8_t width = is_symbol_ml ? tmp_font.info.size
+                                         : gt_font_get_one_word_width(uni_or_gbk, &tmp_font);
 
             if (align_reverse) {
                 area_font.x -= width;
             }
             if (area_font.x + width < view->x || area_font.x > (view->x + view->w)) {
-                goto next_word_multi_lb;
-            }
-            if (dsc->opa < GT_OPA_MIN) {
                 goto next_word_multi_lb;
             }
             gt_memset(tmp_font.res, 0, data_len);
@@ -1730,7 +1729,7 @@ _disp_font:
                 goto next_word_multi_lb;
             }
 #endif
-            if (!gt_symbol_is_valid_range(uni_or_gbk)) {
+            if (!is_symbol_ml) {
                 dot_ret = gt_font_get_dot(&tmp_font, uni_or_gbk);
                 _draw_one_char_glyph(draw_ctx, &blend_dsc, mask_line, &tmp_font,
                                      dot_ret, &area_font, offset_y,
@@ -1978,6 +1977,7 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
             view_width = coords->w;
         }
     }
+    tmp_font.info.size = dsc->font->info.size;
     while (idx < txt_len) {
         if (0x0A == txt[idx]) {
             ++idx;
@@ -1988,10 +1988,10 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
             }
             continue;
         }
-        tmp_font.info.size = dsc->font->info.size;
         tmp_font.utf8 = (char * )&txt[idx];
         tmp_font.len = gt_font_one_char_code_len_get(&txt[idx], &uni_or_gbk, tmp_font.info.encoding);
-        width = gt_font_get_one_word_width(uni_or_gbk, &tmp_font);
+        width = gt_symbol_is_valid_range(uni_or_gbk) ? tmp_font.info.size
+                                                      : gt_font_get_one_word_width(uni_or_gbk, &tmp_font);
         if (0 == tmp_font.len) {
             ++idx;
             continue;
@@ -2068,8 +2068,9 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
 
     idx = 0;
     area_font.h = font_disp_h;
+    tmp_font.info.size = dsc->font->info.size;
+    if (dsc->opa >= GT_OPA_MIN)
     while (idx < idx_len) {
-        tmp_font.info.size = dsc->font->info.size;
 #if _GT_FONT_ENABLE_CONVERTOR
         if (bidi_pos < bidi_len && idx == bidi[bidi_pos].idx) {
             tmp_font.utf8 = (char * )&txt[idx];
@@ -2097,15 +2098,14 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
             ++idx;
             continue;
         }
-        width = gt_font_get_one_word_width(uni_or_gbk, &tmp_font);
+        const bool is_symbol_sl = gt_symbol_is_valid_range(uni_or_gbk);
+        width = is_symbol_sl ? tmp_font.info.size
+                             : gt_font_get_one_word_width(uni_or_gbk, &tmp_font);
 
         if (align_reverse) {
             area_font.x -= width;
         }
         if (area_font.x + width < view->x || area_font.x > view->x + view->w) {
-            goto next_word_lb;
-        }
-        if (dsc->opa < GT_OPA_MIN) {
             goto next_word_lb;
         }
         gt_memset(tmp_font.res, 0, data_len);
@@ -2146,7 +2146,7 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
             goto next_word_lb;
         }
 #endif
-        if( !gt_symbol_is_valid_range(uni_or_gbk) ){
+        if( !is_symbol_sl ){
             dot_ret = gt_font_get_dot(&tmp_font, uni_or_gbk);
             _draw_one_char_glyph(draw_ctx, &blend_dsc, mask_line, &tmp_font,
                                  dot_ret, &area_font, offset_y,
