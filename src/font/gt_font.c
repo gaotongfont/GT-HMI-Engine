@@ -699,26 +699,29 @@ uint8_t _gt_gb_font_one_char_code_len_get(uint8_t const * const gbk_code, uint32
 {
     if (NULL == gbk_code) { return 0; }
 
-    uint32_t len = strlen((char * )gbk_code);
-    uint16_t high_val = 0;
-
-    if (len >= 1 && gbk_code[0] <= 0x7F) {
+    /* ASCII: 单字节 */
+    if (gbk_code[0] <= 0x7F) {
         if (res) { *res = gbk_code[0]; }
         return 1;
     }
 
-    high_val = (gbk_code[0] << 8) | gbk_code[1];
-    if( len >= 4 && ((high_val == 0x8139) || (high_val >= 0x8230 && high_val <= 0x8235))) {
+    /* 残缺字节（末尾或非法输入），让调用方循环安全退出 */
+    if (gbk_code[1] == 0x00) { return 0; }
+
+    uint16_t high_val = ((uint16_t)gbk_code[0] << 8) | gbk_code[1];
+
+    /* GB18030 四字节：保持与原始逻辑一致的码位范围 */
+    if ((high_val == 0x8139) ||
+        (high_val >= 0x8230 && high_val <= 0x8235)) {
         if (res) {
-            *res = (high_val << 16) | (gbk_code[2] << 8) | gbk_code[3];
+            *res = ((uint32_t)high_val << 16) | ((uint32_t)gbk_code[2] << 8) | gbk_code[3];
         }
         return 4;
     }
-    else if (len >= 2) {
-        if (res) { *res = high_val; }
-        return 2;
-    }
-    return len;
+
+    /* GBK 双字节 */
+    if (res) { *res = high_val; }
+    return 2;
 }
 
 uint8_t _gt_sjis_oen_char_code_len_get(uint8_t const * const gbk_code, uint32_t *res)
@@ -749,50 +752,45 @@ uint8_t _gt_sjis_oen_char_code_len_get(uint8_t const * const gbk_code, uint32_t 
  */
 uint8_t gt_unicode_to_utf8(uint8_t* utf8, uint32_t unicode)
 {
-    if(NULL == utf8){
-        return 0;
-    }
+    if (NULL == utf8) { return 0; }
 
-    if(unicode <= 0x007FUL){
-        *utf8 = (unicode & 0x7F);
+    if (unicode <= 0x7FUL) {
+        utf8[0] = (uint8_t)(unicode & 0x7F);
         return 1;
     }
-    else if( unicode >= 0x0080UL && unicode <= 0x07FFUL ){
-        *(utf8+1) = (unicode & 0x3F) | 0x80;
-        *utf8     = ((unicode >> 6) & 0x1F) | 0xC0;
+    if (unicode <= 0x7FFUL) {
+        utf8[1] = (uint8_t)((unicode & 0x3F) | 0x80);
+        utf8[0] = (uint8_t)((unicode >> 6) | 0xC0);
         return 2;
     }
-    else if ( unicode >= 0x0800UL && unicode <= 0xFFFFUL )
-    {
-        *(utf8+2) = (unicode & 0x3F) | 0x80;
-        *(utf8+1) = ((unicode >>  6) & 0x3F) | 0x80;
-        *utf8     = ((unicode >> 12) & 0x0F) | 0xE0;
+    if (unicode <= 0xFFFFUL) {
+        utf8[2] = (uint8_t)((unicode & 0x3F) | 0x80);
+        utf8[1] = (uint8_t)(((unicode >>  6) & 0x3F) | 0x80);
+        utf8[0] = (uint8_t)((unicode >> 12) | 0xE0);
         return 3;
     }
-    else if ( unicode >= 0x00010000  && unicode <= 0x001FFFFF ){
-        *(utf8+3) = (unicode & 0x3F) | 0x80;
-        *(utf8+2) = ((unicode >>  6) & 0x3F) | 0x80;
-        *(utf8+1) = ((unicode >> 12) & 0x3F) | 0x80;
-        *utf8     = ((unicode >> 18) & 0x07) | 0xF0;
+    if (unicode <= 0x1FFFFFUL) {
+        utf8[3] = (uint8_t)((unicode & 0x3F) | 0x80);
+        utf8[2] = (uint8_t)(((unicode >>  6) & 0x3F) | 0x80);
+        utf8[1] = (uint8_t)(((unicode >> 12) & 0x3F) | 0x80);
+        utf8[0] = (uint8_t)((unicode >> 18) | 0xF0);
         return 4;
     }
-    else if ( unicode >= 0x200000UL && unicode <= 0x3FFFFFFUL )
-    {
-        *(utf8+4) = (unicode & 0x3F) | 0x80;
-        *(utf8+3) = ((unicode >>  6) & 0x3F) | 0x80;
-        *(utf8+2) = ((unicode >> 12) & 0x3F) | 0x80;
-        *(utf8+1) = ((unicode >> 18) & 0x3F) | 0x80;
-        *utf8     = ((unicode >> 24) & 0x03) | 0xF8;
+    if (unicode <= 0x3FFFFFFUL) {
+        utf8[4] = (uint8_t)((unicode & 0x3F) | 0x80);
+        utf8[3] = (uint8_t)(((unicode >>  6) & 0x3F) | 0x80);
+        utf8[2] = (uint8_t)(((unicode >> 12) & 0x3F) | 0x80);
+        utf8[1] = (uint8_t)(((unicode >> 18) & 0x3F) | 0x80);
+        utf8[0] = (uint8_t)((unicode >> 24) | 0xF8);
         return 5;
     }
-    else if ( unicode >= 0x4000000UL && unicode <= 0x7FFFFFFFUL )
-    {
-        *(utf8+5) = (unicode & 0x3F) | 0x80;
-        *(utf8+4) = ((unicode >>  6) & 0x3F) | 0x80;
-        *(utf8+3) = ((unicode >> 12) & 0x3F) | 0x80;
-        *(utf8+2) = ((unicode >> 18) & 0x3F) | 0x80;
-        *(utf8+1) = ((unicode >> 24) & 0x3F) | 0x80;
-        *utf8     = ((unicode >> 30) & 0x01) | 0xFC;
+    if (unicode <= 0x7FFFFFFFUL) {
+        utf8[5] = (uint8_t)((unicode & 0x3F) | 0x80);
+        utf8[4] = (uint8_t)(((unicode >>  6) & 0x3F) | 0x80);
+        utf8[3] = (uint8_t)(((unicode >> 12) & 0x3F) | 0x80);
+        utf8[2] = (uint8_t)(((unicode >> 18) & 0x3F) | 0x80);
+        utf8[1] = (uint8_t)(((unicode >> 24) & 0x3F) | 0x80);
+        utf8[0] = (uint8_t)((unicode >> 30) | 0xFC);
         return 6;
     }
     return 0;
@@ -1066,27 +1064,14 @@ uint8_t gt_encoding_table_one_char(uint8_t *src, uint8_t* dst, gt_encoding_conve
 
 uint8_t gt_utf8_check_char(uint8_t * utf8)
 {
-    uint32_t len = strlen((char * )utf8);
+    if (NULL == utf8) { return 0; }
 
-    if(len >= 1 && utf8[0] < 0x80){
-        return 1;
-    }
-    if(len >=2 && (utf8[0] >> 5) == 0x06){
-        return 2;
-    }
-    if(len >=3 && (utf8[0] >> 4) == 0x0E){
-        return 3;
-    }
-    if(len >=4 && (utf8[0] >> 3) == 0x1E){
-        return 4;
-    }
-    if(len >=5 && (utf8[0] >> 2) == 0x3E){
-        return 5;
-    }
-    if(len >=6 && (utf8[0] >> 1) == 0x7E){
-        return 6;
-    }
-
+    if (utf8[0] < 0x80)              { return 1; }
+    if ((utf8[0] >> 5) == 0x06)      { return 2; }
+    if ((utf8[0] >> 4) == 0x0E)      { return 3; }
+    if ((utf8[0] >> 3) == 0x1E)      { return 4; }
+    if ((utf8[0] >> 2) == 0x3E)      { return 5; }
+    if ((utf8[0] >> 1) == 0x7E)      { return 6; }
     return 0;
 }
 
