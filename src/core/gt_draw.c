@@ -669,14 +669,19 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_omit_chars(
         area_font->w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font->info);
     }
     const gt_point_st off_point = gt_font_offset_get(dot_ret.option, uni_or_gbk);
+    const bool has_off = (off_point.x | off_point.y) != 0;
     uint16_t idx = 0;
     while (idx < omit_info->len) {
-        area_font->x += off_point.x;
-        area_font->y += off_point.y;
+        if (has_off) {
+            area_font->x += off_point.x;
+            area_font->y += off_point.y;
+        }
         gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font->info.size, byte_width,
                            font_gray, (const uint8_t*)tmp_font->res, tmp_font->info.style.reg);
-        area_font->x -= off_point.x;
-        area_font->y -= off_point.y;
+        if (has_off) {
+            area_font->x -= off_point.x;
+            area_font->y -= off_point.y;
+        }
         _advance_x(&area_font->x, width, space_x, align_reverse);
         idx += tmp_font->len;
     }
@@ -741,7 +746,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
         uint8_t byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type, uni_or_gbk);
         area_font->w = (byte_width / font_gray) << 3;
 
-        const bool is_ascii = (FONT_LAN_ASCII == gt_font_lan_get(uni_or_gbk, tmp_font->info.encoding));
+        const bool is_ascii = (uni_or_gbk < 0x80);
         if (is_ascii) { area_font->y += offset_y; }
         if (tmp_font->info.style.reg.bold) {
             area_font->w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font->info);
@@ -751,12 +756,17 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
         area_font->y += height_off;
 
         gt_point_st off_point = gt_font_offset_get(dot_ret.option, uni_or_gbk);
-        area_font->x += off_point.x;
-        area_font->y += off_point.y;
-        gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font->info.size,
-                            byte_width, font_gray, (const uint8_t*)tmp_font->res, tmp_font->info.style.reg);
-        area_font->x -= off_point.x;
-        area_font->y -= off_point.y;
+        if (off_point.x | off_point.y) {
+            area_font->x += off_point.x;
+            area_font->y += off_point.y;
+            gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font->info.size,
+                                byte_width, font_gray, (const uint8_t*)tmp_font->res, tmp_font->info.style.reg);
+            area_font->x -= off_point.x;
+            area_font->y -= off_point.y;
+        } else {
+            gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font->info.size,
+                                byte_width, font_gray, (const uint8_t*)tmp_font->res, tmp_font->info.style.reg);
+        }
 
         area_font->y -= height_off;
         if (is_ascii) { area_font->y -= offset_y; }
@@ -835,6 +845,9 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
 
     idx = 0;
     tmp = 0;
+    const int32_t cvt_coords_y_bottom = (int32_t)coords->y + coords->h;
+    const int32_t cvt_view_y_bottom   = (int32_t)blend_dsc->view_area->y + blend_dsc->view_area->h;
+    const gt_size_t cvt_view_x_right    = blend_dsc->view_area->x + blend_dsc->view_area->w;
     tmp_font.res = &font_buf[font_size_res.font_buff_len - font_size_res.font_per_size];
     while (idx < text_len) {
         if (FONT_LAN_HINDI == lan) {
@@ -862,8 +875,8 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
                 if((blend_dsc->dst_area->x) < (coords->x)){
                     blend_dsc->dst_area->x = coords->x + coords->w - width;
                     blend_dsc->dst_area->y += blend_dsc->dst_area->h;
-                    if((blend_dsc->dst_area->y + style_space_y + blend_dsc->dst_area->h) > (coords->y + coords->h)){
-                        font_disp_h = (coords->y + coords->h) - blend_dsc->dst_area->y;
+                    if((blend_dsc->dst_area->y + style_space_y + blend_dsc->dst_area->h) > cvt_coords_y_bottom){
+                        font_disp_h = cvt_coords_y_bottom - blend_dsc->dst_area->y;
                         if(font_disp_h < 2){
                             goto _ret_handle;
                         }
@@ -874,8 +887,8 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
                 if ((blend_dsc->dst_area->x + width) > (coords->x + coords->w)) {
                     blend_dsc->dst_area->x = coords->x;
                     blend_dsc->dst_area->y += blend_dsc->dst_area->h;
-                    if ((blend_dsc->dst_area->y + style_space_y + blend_dsc->dst_area->h) > (coords->y + coords->h)) {
-                        font_disp_h = (coords->y + coords->h) - blend_dsc->dst_area->y;
+                    if ((blend_dsc->dst_area->y + style_space_y + blend_dsc->dst_area->h) > cvt_coords_y_bottom) {
+                        font_disp_h = cvt_coords_y_bottom - blend_dsc->dst_area->y;
                         if (font_disp_h < 2) {
                             goto _ret_handle;
                         }
@@ -885,11 +898,11 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
         }
         blend_dsc->dst_area->h = font_disp_h;
         if (blend_dsc->dst_area->y + style_space_y + blend_dsc->dst_area->h < blend_dsc->view_area->y ||
-            blend_dsc->dst_area->y > (blend_dsc->view_area->y + blend_dsc->view_area->h)) {
+            blend_dsc->dst_area->y > cvt_view_y_bottom) {
             goto _next_word_cvt_lb;
         }
         else if (blend_dsc->dst_area->x + width < blend_dsc->view_area->x ||
-            blend_dsc->dst_area->x > (blend_dsc->view_area->x + blend_dsc->view_area->w)) {
+            blend_dsc->dst_area->x > cvt_view_x_right) {
             goto _next_word_cvt_lb;
         }
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
@@ -913,7 +926,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
             byte_width = 2;
             cvt_data_p = &convertor.data_p[idx * font_size_res.font_per_size];
         } else {
-            byte_width = (gt_font_get_one_word_width(convertor.fontcode[idx], &tmp_font) + 7) >> 3;
+            byte_width = (width + 7) >> 3;
             byte_width = _gt_gray_and_dot_byte_get(&font_gray, byte_width, &tmp_font, ret_style, uni_or_gbk);
             cvt_data_p = &convertor.data_p[0];
         }
@@ -922,12 +935,17 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
             blend_dsc->dst_area->w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font.info);
         }
         gt_point_st off_point = gt_font_offset_get(font_option, uni_or_gbk);
-        blend_dsc->dst_area->x += off_point.x;
-        blend_dsc->dst_area->y += off_point.y;
-        gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font.info.size, byte_width, font_gray,
-                            cvt_data_p, tmp_font.info.style.reg);
-        blend_dsc->dst_area->x -= off_point.x;
-        blend_dsc->dst_area->y -= off_point.y;
+        if (off_point.x | off_point.y) {
+            blend_dsc->dst_area->x += off_point.x;
+            blend_dsc->dst_area->y += off_point.y;
+            gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font.info.size, byte_width, font_gray,
+                                cvt_data_p, tmp_font.info.style.reg);
+            blend_dsc->dst_area->x -= off_point.x;
+            blend_dsc->dst_area->y -= off_point.y;
+        } else {
+            gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font.info.size, byte_width, font_gray,
+                                cvt_data_p, tmp_font.info.style.reg);
+        }
 
         /* use style */
         _draw_char_style(draw_ctx, dsc, blend_dsc_style, *blend_dsc->dst_area,
@@ -1561,10 +1579,14 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
         disp_w -= gt_font_get_indent_width(&dsc->font->info, dsc->indent);
     }
 
+    const int32_t coords_y_bottom = (int32_t)coords->y + coords->h;
+    const int32_t view_y_bottom   = (int32_t)view->y + view->h;
+    const gt_size_t view_x_right    = view->x + view->w;
+
     while (idx < txt_len) {
         // out of range
-        if ( (area_font.y + style_space_y + area_font.h) > (coords->y + coords->h) ) {
-            font_disp_h = (coords->y + coords->h) - area_font.y;
+        if ( (area_font.y + style_space_y + area_font.h) > coords_y_bottom ) {
+            font_disp_h = coords_y_bottom - area_font.y;
             if(font_disp_h < 2){
                 break;
             }
@@ -1573,7 +1595,7 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
             ++idx;
             goto _disp_font;
         }
-        if (area_font.y > view->y + view->h) {
+        if (area_font.y > view_y_bottom) {
             if (dsc->reg.immediately_return) {
                 ret.res = GT_RES_INV;
                 goto _ret_handler;
@@ -1637,7 +1659,7 @@ _disp_font:
             area_font.x += ret_w;
             goto next_line_lb;
         }
-        else if (area_font.y > view->y + view->h) {
+        else if (area_font.y > view_y_bottom) {
             area_font.x += ret_w;
             goto next_line_lb;
         }
@@ -1685,7 +1707,7 @@ _disp_font:
             if (align_reverse) {
                 area_font.x -= width;
             }
-            if (area_font.x + width < view->x || area_font.x > (view->x + view->w)) {
+            if (area_font.x + width < view->x || area_font.x > view_x_right) {
                 goto next_word_multi_lb;
             }
             gt_memset(tmp_font.res, 0, data_len);
@@ -1961,9 +1983,11 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
     if (dsc->reg.enabled_start) {
         area_font.y = dsc->start_y;
     }
+    const int32_t coords_y_bottom_sl = (int32_t)coords->y + coords->h;
+    const gt_size_t view_x_right_sl    = view->x + view->w;
     // out of range
-    if ( (area_font.y + style_space_y + area_font.h) > (coords->y + coords->h) ) {
-        font_disp_h = (coords->y + coords->h) - area_font.y;
+    if ( (area_font.y + style_space_y + area_font.h) > coords_y_bottom_sl ) {
+        font_disp_h = coords_y_bottom_sl - area_font.y;
         if(font_disp_h < 2){
             goto ret_handler_lb;
         }
@@ -2105,7 +2129,7 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
         if (align_reverse) {
             area_font.x -= width;
         }
-        if (area_font.x + width < view->x || area_font.x > view->x + view->w) {
+        if (area_font.x + width < view->x || area_font.x > view_x_right_sl) {
             goto next_word_lb;
         }
         gt_memset(tmp_font.res, 0, data_len);
