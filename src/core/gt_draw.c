@@ -493,38 +493,86 @@ static GT_ATTRIBUTE_RAM_TEXT inline uint8_t _get_style_space_x( uint8_t org_spac
     return org_space_x + _get_style_bold_offset_x(font_info);
 }
 
+static GT_ATTRIBUTE_RAM_TEXT inline void _draw_blend_style_line(
+    _gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, gt_draw_blend_dsc_st * blend_dsc_style,
+    gt_area_st area_font_style, const gt_font_info_st* font_info, uint16_t width, uint16_t height,
+    gt_size_t y_offset) {
+    area_font_style.y += y_offset;
+    area_font_style.w = width + _get_style_bold_offset_x(font_info);
+    area_font_style.h = height;
+    if (font_info->style.reg.italic) {
+        area_font_style.w += font_info->size >> 1;
+    }
+    blend_dsc_style->color_fill = dsc->font_color;
+    blend_dsc_style->dst_area = &area_font_style;
+    gt_draw_blend(draw_ctx, blend_dsc_style);
+}
+
 static GT_ATTRIBUTE_RAM_TEXT inline void _draw_blend_underline(
     _gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, gt_draw_blend_dsc_st * blend_dsc_style,
     gt_area_st area_font_style, const gt_font_info_st* font_info, uint16_t width, uint16_t height) {
-    area_font_style.y += font_info->size + 1;
-    area_font_style.w = width;
-    area_font_style.h = height;
-    blend_dsc_style->color_fill = dsc->font_color;
-    blend_dsc_style->dst_area = &area_font_style;
-
-    area_font_style.w += _get_style_bold_offset_x(font_info);
-    if(font_info->style.reg.italic){
-        area_font_style.w += font_info->size >> 1;
-    }
-
-    gt_draw_blend(draw_ctx, blend_dsc_style);
+    _draw_blend_style_line(draw_ctx, dsc, blend_dsc_style, area_font_style, font_info, width, height,
+                           font_info->size + 1);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline void _draw_blend_strikethrough(
     _gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, gt_draw_blend_dsc_st * blend_dsc_style,
     gt_area_st area_font_style, const gt_font_info_st* font_info, uint16_t width, uint16_t height) {
-    area_font_style.y += (font_info->size >> 1);
-    area_font_style.w = width;
-    area_font_style.h = height;
-    blend_dsc_style->color_fill = dsc->font_color;
-    blend_dsc_style->dst_area = &area_font_style;
+    _draw_blend_style_line(draw_ctx, dsc, blend_dsc_style, area_font_style, font_info, width, height,
+                           font_info->size >> 1);
+}
 
-    area_font_style.w += _get_style_bold_offset_x(font_info);
-    if(font_info->style.reg.italic){
-        area_font_style.w += font_info->size >> 1;
+/** @brief 推进字符 x 坐标到下一个字符位置 */
+static inline void GT_ATTRIBUTE_RAM_TEXT
+_advance_x(gt_size_t * x, uint8_t width, uint8_t space_x, bool align_reverse) {
+    if (align_reverse) {
+        *x -= space_x;
+    } else {
+        *x += width + space_x;
     }
+}
 
-    gt_draw_blend(draw_ctx, blend_dsc_style);
+/**
+ * @brief 渲染单个 symbol 字形
+ * @return true  渲染成功；false  mask 为 NULL，调用方应跳过本字符
+ */
+static GT_ATTRIBUTE_RAM_TEXT bool _draw_one_symbol(
+    _gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc,
+    gt_font_st * tmp_font, gt_area_st * area_font,
+    uint32_t uni_or_gbk, uint16_t data_len, gt_size_t font_disp_h)
+{
+    uint8_t symbol_size = tmp_font->info.size;
+    blend_dsc->mask_buf = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, tmp_font->info.size, &symbol_size);
+    if (symbol_size != tmp_font->info.size) {
+        gt_memset(tmp_font->res, 0, data_len);
+    }
+    if (NULL == blend_dsc->mask_buf) {
+        return false;
+    }
+    gt_size_t off = (tmp_font->info.size - symbol_size) >> 1;
+    area_font->y += off;
+    area_font->w = symbol_size;
+    area_font->h = symbol_size;
+    gt_draw_blend(draw_ctx, blend_dsc);
+    area_font->h = font_disp_h;
+    area_font->y -= off;
+    blend_dsc->mask_buf = NULL;
+    return true;
+}
+
+/** @brief 渲染下划线和删除线装饰 */
+static GT_ATTRIBUTE_RAM_TEXT inline void _draw_char_style(
+    _gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
+    gt_draw_blend_dsc_st * blend_dsc_style, gt_area_st area_font,
+    const gt_font_info_st * font_info, uint16_t width,
+    uint8_t style_space_y, gt_size_t font_disp_h)
+{
+    if (font_info->style.reg.underline && font_disp_h == font_info->size) {
+        _draw_blend_underline(draw_ctx, dsc, blend_dsc_style, area_font, font_info, width, style_space_y);
+    }
+    if (font_info->style.reg.strikethrough && (font_disp_h > ((font_info->size >> 1) + (style_space_y << 1)))) {
+        _draw_blend_strikethrough(draw_ctx, dsc, blend_dsc_style, area_font, font_info, width, style_space_y);
+    }
 }
 
 /**
@@ -773,20 +821,10 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
         blend_dsc->dst_area->y -= off_point.y;
 
         /* use style */
-        if (tmp_font.info.style.reg.underline && font_disp_h == tmp_font.info.size) {
-            _draw_blend_underline(draw_ctx, dsc, blend_dsc_style, *blend_dsc->dst_area,
-                                    (const gt_font_info_st*)&tmp_font.info, width, style_space_y);
-        }
-        if (tmp_font.info.style.reg.strikethrough && (font_disp_h > ((tmp_font.info.size >> 1) + (style_space_y << 1)))) {
-            _draw_blend_strikethrough(draw_ctx, dsc, blend_dsc_style, *blend_dsc->dst_area,
-                                        (const gt_font_info_st*)&tmp_font.info, width, style_space_y);
-        }
+        _draw_char_style(draw_ctx, dsc, blend_dsc_style, *blend_dsc->dst_area,
+                         (const gt_font_info_st*)&tmp_font.info, width, style_space_y, font_disp_h);
     _next_word_cvt_lb:
-        if (align_reverse) {
-            blend_dsc->dst_area->x -= space_x;
-        } else {
-            blend_dsc->dst_area->x += width + space_x;
-        }
+        _advance_x(&blend_dsc->dst_area->x, width, space_x, align_reverse);
         idx += tmp;
     }
 
@@ -1157,10 +1195,6 @@ static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t _get_align_start_x(gt_align_et ali
         return (width - string_width) + x;
     }
     return x;
-}
-
-static inline bool _is_multi_line(const gt_attr_font_st * dsc) {
-    return !dsc->reg.single_line;
 }
 
 static gt_size_t GT_ATTRIBUTE_RAM_TEXT
@@ -1600,42 +1634,19 @@ _disp_font:
                                      dot_ret, &area_font, offset_y,
                                      width, uni_or_gbk, dsc, true);
             } else {
-                uint8_t symbol_size = tmp_font.info.size;
-                blend_dsc.mask_buf = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, tmp_font.info.size, &symbol_size);
-                if (symbol_size != tmp_font.info.size) {
-                    gt_memset(tmp_font.res, 0, data_len);
-                }
-
-                if (NULL == blend_dsc.mask_buf) {
+                if (!_draw_one_symbol(draw_ctx, &blend_dsc, &tmp_font, &area_font,
+                                      uni_or_gbk, data_len, font_disp_h)) {
                     area_font.x += width + space_x;
                     idx_2 += tmp_font.len;
                     continue;
                 }
-                gt_size_t off = (tmp_font.info.size - symbol_size) >> 1;
-                area_font.y += off;
-                area_font.w = symbol_size;
-                area_font.h = symbol_size;
-                gt_draw_blend(draw_ctx, &blend_dsc);
-                area_font.h = font_disp_h;
-                area_font.y -= off;
-                blend_dsc.mask_buf = NULL;
             }
 
             /* use style */
-            if (tmp_font.info.style.reg.underline && font_disp_h == tmp_font.info.size) {
-                _draw_blend_underline(draw_ctx, dsc, &blend_dsc_style, area_font,
-                                        (const gt_font_info_st*)&tmp_font.info, width, style_space_y);
-            }
-            if (tmp_font.info.style.reg.strikethrough && (font_disp_h > ((tmp_font.info.size >> 1) + (style_space_y << 1)))) {
-                _draw_blend_strikethrough(draw_ctx, dsc, &blend_dsc_style, area_font,
-                                            (const gt_font_info_st*)&tmp_font.info, width, style_space_y);
-            }
+            _draw_char_style(draw_ctx, dsc, &blend_dsc_style, area_font,
+                             (const gt_font_info_st*)&tmp_font.info, width, style_space_y, font_disp_h);
         next_word_multi_lb:
-            if (align_reverse) {
-                area_font.x -= space_x;
-            } else {
-                area_font.x += width + space_x;
-            }
+            _advance_x(&area_font.x, width, space_x, align_reverse);
             idx_2 += tmp_font.len;
         }
 
@@ -2076,42 +2087,19 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
                                  dot_ret, &area_font, offset_y,
                                  width, uni_or_gbk, dsc, false);
         } else {
-            uint8_t symbol_size = tmp_font.info.size;
-            blend_dsc.mask_buf = (uint8_t*)gt_symbol_get_mask_buf(uni_or_gbk, tmp_font.info.size, &symbol_size);
-            if (symbol_size != tmp_font.info.size) {
-                gt_memset(tmp_font.res, 0, data_len);
-            }
-
-            if (NULL == blend_dsc.mask_buf) {
+            if (!_draw_one_symbol(draw_ctx, &blend_dsc, &tmp_font, &area_font,
+                                  uni_or_gbk, data_len, font_disp_h)) {
                 area_font.x += width + space_x;
                 idx += tmp_font.len;
                 continue;
             }
-            gt_size_t off = (tmp_font.info.size - symbol_size) >> 1;
-            area_font.y += off;
-            area_font.w = symbol_size;
-            area_font.h = symbol_size;
-            gt_draw_blend(draw_ctx, &blend_dsc);
-            area_font.h = font_disp_h;
-            area_font.y -= off;
-            blend_dsc.mask_buf = NULL;
         }
 
         /* use style */
-        if (tmp_font.info.style.reg.underline && font_disp_h == tmp_font.info.size) {
-            _draw_blend_underline(draw_ctx, dsc, &blend_dsc_style, area_font,
-                                    (const gt_font_info_st*)&tmp_font.info, width, style_space_y);
-        }
-        if (tmp_font.info.style.reg.strikethrough && (font_disp_h > ((tmp_font.info.size >> 1) + (style_space_y << 1)))) {
-            _draw_blend_strikethrough(draw_ctx, dsc, &blend_dsc_style, area_font,
-                                        (const gt_font_info_st*)&tmp_font.info, width, style_space_y);
-        }
+        _draw_char_style(draw_ctx, dsc, &blend_dsc_style, area_font,
+                         (const gt_font_info_st*)&tmp_font.info, width, style_space_y, font_disp_h);
 next_word_lb:
-        if (align_reverse) {
-            area_font.x -= space_x;
-        } else {
-            area_font.x += width + space_x;
-        }
+        _advance_x(&area_font.x, width, space_x, align_reverse);
         idx += tmp_font.len;
     }
 
@@ -2121,7 +2109,6 @@ next_word_lb:
         tmp_font.len = gt_font_one_char_code_len_get((uint8_t * )omit_info.utf8, &uni_or_gbk, tmp_font.info.encoding);
         width = gt_font_get_one_word_width(uni_or_gbk, &tmp_font);
 
-        tmp_font.info.size = dsc->font->info.size;
         dot_ret = gt_font_get_dot(&tmp_font, uni_or_gbk);
         font_gray = 1;
         byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, &tmp_font, dot_ret.type, uni_or_gbk);
@@ -2136,15 +2123,9 @@ next_word_lb:
             area_font.y += omit_off_point.y;
             gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size, byte_width,
                                 font_gray, (const uint8_t*)tmp_font.res,tmp_font.info.style.reg);
-
             area_font.x -= omit_off_point.x;
             area_font.y -= omit_off_point.y;
-
-            if (align_reverse) {
-                area_font.x -= space_x;
-            } else {
-                area_font.x += width + space_x;
-            }
+            _advance_x(&area_font.x, width, space_x, align_reverse);
             idx += tmp_font.len;
         }
     }
