@@ -1190,7 +1190,7 @@ bool _gt_font_is_convertor_by(uint32_t unicode, uint8_t encoding)
 
 _gt_font_dot_ret_st gt_font_get_dot(gt_font_st * font, uint32_t unicode)
 {
-    uint16_t font_option = 0, font_lan = FONT_LAN_UNKNOWN, temp = 0;
+    uint16_t font_option = 0, font_lan = FONT_LAN_UNKNOWN;
     _gt_font_dot_ret_st ret = {
         .type = GT_FONT_TYPE_FLAG_NONE,
         .size = font->info.size,
@@ -1214,17 +1214,17 @@ _gt_font_dot_ret_st gt_font_get_dot(gt_font_st * font, uint32_t unicode)
         if(!font_func->func.read_dot_font) {
             return ret;
         }
-        temp = font_func->func.read_dot_font(unicode, font_option, font->res);
+        ret.len = font_func->func.read_dot_font(unicode, font_option, font->res);
 
     } else {
         // Vector font
         if(!font_func->func.read_vec_font) {
             return ret;
         }
-        temp = font_func->func.read_vec_font(font->res, font_option, unicode, font->info.size, font->info.gray,
+        ret.len = font_func->func.read_vec_font(font->res, font_option, unicode, font->info.size, font->info.gray,
                                             IS_CN_FONT_LAN(font_lan) ? font->info.thick_cn : font->info.thick_en);
     }
-    if (0 == temp) {
+    if (0 == ret.len) {
         return ret;
     }
     ret.type = font_func->type;
@@ -1234,10 +1234,10 @@ _gt_font_dot_ret_st gt_font_get_dot(gt_font_st * font, uint32_t unicode)
 default_font:
     if (FONT_LAN_ASCII == font_lan) {
 #if GT_CFG_USE_FONT_16_ASCII == 1
-        temp = 32;
         gt_memcpy(font->res, &_ascii_16[ (unicode - 0x20) << 5 ], 32);
         ret.type = GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH;
         ret.size = 16;
+        ret.len = 32;
         ret.option = 0;
         font->info.size = 16;
 #endif

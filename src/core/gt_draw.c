@@ -1544,6 +1544,7 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
     uint32_t uni_or_gbk = 0, ret_w = 0;
     uint16_t idx = 0, idx_2 = 0, idx_len = 0;
     uint8_t over_length = 0;
+    uint16_t prev_rendered_size = data_len;
     int32_t idx_step = 0;
     const bool align_reverse = _is_align_reverse(dsc->align);
 
@@ -1715,7 +1716,6 @@ _disp_font:
             if (area_font.x + width < view->x || area_font.x > view_x_right) {
                 goto next_word_multi_lb;
             }
-            gt_memset(tmp_font.res, 0, data_len);
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
             if (dsc->reg.touch_point) {
                 cur_sty = gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding);
@@ -1758,6 +1758,10 @@ _disp_font:
 #endif
             if (!is_symbol_ml) {
                 dot_ret = gt_font_get_dot(&tmp_font, uni_or_gbk);
+                if (dot_ret.len < prev_rendered_size) {
+                    gt_memset(&tmp_font.res[dot_ret.len], 0, prev_rendered_size - dot_ret.len);
+                }
+                if (dot_ret.len > 0) { prev_rendered_size = dot_ret.len; }
                 _draw_one_char_glyph(draw_ctx, &blend_dsc, mask_line, &tmp_font,
                                      dot_ret, &area_font, offset_y,
                                      width, uni_or_gbk, dsc, true);
@@ -1970,6 +1974,7 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
     uint32_t uni_or_gbk = 0, remark_idx = 0, lan_len = 0;
     uint16_t idx = 0, idx_len = 0, txt_len = dsc->font->len;
     uint8_t over_length = 0;
+    uint16_t prev_rendered_size = data_len;
     _omit_info_st omit_info = {0};
     bool start_x_flag = dsc->reg.enabled_start;
     bool is_omit_display = false;
@@ -2139,7 +2144,6 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
         if (area_font.x + width < view->x || area_font.x > view_x_right_sl) {
             goto next_word_lb;
         }
-        gt_memset(tmp_font.res, 0, data_len);
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
         if (dsc->reg.touch_point) {
             cur_sty = gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding);
@@ -2179,6 +2183,10 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
 #endif
         if( !is_symbol_sl ){
             dot_ret = gt_font_get_dot(&tmp_font, uni_or_gbk);
+            if (dot_ret.len < prev_rendered_size) {
+                gt_memset(&tmp_font.res[dot_ret.len], 0, prev_rendered_size - dot_ret.len);
+            }
+            if (dot_ret.len > 0) { prev_rendered_size = dot_ret.len; }
             _draw_one_char_glyph(draw_ctx, &blend_dsc, mask_line, &tmp_font,
                                  dot_ret, &area_font, offset_y,
                                  width, uni_or_gbk, dsc, false);

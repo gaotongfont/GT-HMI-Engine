@@ -269,6 +269,8 @@ typedef struct _gt_font_dot_ret_s {
     gt_font_type_em type;
     uint16_t size;
     uint16_t option;
+    uint16_t len;
+    uint8_t  width;     /** character pixel width, filled by gt_font_get_dot */
 }_gt_font_dot_ret_st;
 
 
