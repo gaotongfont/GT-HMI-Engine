@@ -577,6 +577,112 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _draw_char_style(
 }
 
 /**
+ * @brief 字体渲染资源（res 点阵缓冲 + mask_line）分配结果
+ */
+typedef struct {
+    uint8_t * res;       /**< 点阵数据缓冲，NULL 表示分配失败 */
+    uint8_t * mask_line; /**< emoji alpha 行缓冲，NULL 表示分配失败 */
+#if GT_USE_EXTRA_FULL_FONT_BUFFER
+    bool is_extend_font_valid;
+#endif
+#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
+    bool is_extend_font_mask_valid;
+#endif
+} _draw_font_buf_st;
+
+/**
+ * @brief 分配字体渲染所需的 res 缓冲和 mask_line 缓冲
+ * @param font_size  字体像素尺寸（用于 mask_line 大小）
+ * @param data_len   res 缓冲字节数
+ * @return 分配结果，res/mask_line 为 NULL 表示对应分配失败
+ */
+static GT_ATTRIBUTE_RAM_TEXT _draw_font_buf_st _draw_font_buf_alloc(uint8_t font_size, uint16_t data_len)
+{
+    _draw_font_buf_st r = {0};
+#if GT_USE_EXTRA_FULL_FONT_BUFFER
+    gt_buffer_st * gc_font_p = _gt_gc_get_full_font_buffer();
+    r.is_extend_font_valid = _gt_gc_full_font_buffer_is_valid() && (data_len < gc_font_p->len);
+    r.res = r.is_extend_font_valid ? gc_font_p->ptr : gt_mem_malloc(data_len);
+#else
+    r.res = gt_mem_malloc(data_len);
+#endif
+    if (NULL == r.res) {
+        GT_LOGE(GT_LOG_TAG_GUI, "data malloc is failed!!! size = %d", data_len);
+        return r;
+    }
+#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
+    gt_buffer_st * gc_font_mask_p = _gt_gc_get_full_font_mask_buffer();
+    r.is_extend_font_mask_valid = _gt_gc_full_font_mask_buffer_is_valid() &&
+                                  ((font_size << 1) < gc_font_mask_p->len);
+    r.mask_line = r.is_extend_font_mask_valid ? gc_font_mask_p->ptr : gt_mem_malloc(font_size << 1);
+#else
+    r.mask_line = gt_mem_malloc(font_size << 1);
+#endif
+    if (NULL == r.mask_line) {
+        GT_LOGE(GT_LOG_TAG_GUI, "mask_line malloc is failed!!! size = %d", font_size << 1);
+    }
+    return r;
+}
+
+/**
+ * @brief 释放 _draw_font_buf_alloc 分配的缓冲（尊重扩展缓冲标志）
+ */
+static GT_ATTRIBUTE_RAM_TEXT inline void _draw_font_buf_free(_draw_font_buf_st * b)
+{
+#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
+    if (!b->is_extend_font_mask_valid && b->mask_line) {
+#else
+    if (b->mask_line) {
+#endif
+        gt_mem_free(b->mask_line);
+    }
+    b->mask_line = NULL;
+#if GT_USE_EXTRA_FULL_FONT_BUFFER
+    if (!b->is_extend_font_valid && b->res) {
+#else
+    if (b->res) {
+#endif
+        gt_mem_free(b->res);
+    }
+    b->res = NULL;
+}
+
+/**
+ * @brief 渲染省略号字符序列（draw_text_single_line 末尾使用）
+ */
+static GT_ATTRIBUTE_RAM_TEXT void _draw_omit_chars(
+    _gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc,
+    gt_font_st * tmp_font, gt_area_st * area_font,
+    const _omit_info_st * omit_info,
+    uint8_t space_x, bool align_reverse)
+{
+    uint32_t uni_or_gbk = 0;
+    tmp_font->utf8 = omit_info->utf8;
+    tmp_font->len = gt_font_one_char_code_len_get((uint8_t*)omit_info->utf8, &uni_or_gbk, tmp_font->info.encoding);
+    uint8_t width = gt_font_get_one_word_width(uni_or_gbk, tmp_font);
+
+    _gt_font_dot_ret_st dot_ret = gt_font_get_dot(tmp_font, uni_or_gbk);
+    uint8_t font_gray = 1;
+    uint8_t byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type, uni_or_gbk);
+    area_font->w = (byte_width / font_gray) << 3;
+    if (tmp_font->info.style.reg.bold) {
+        area_font->w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font->info);
+    }
+    const gt_point_st off_point = gt_font_offset_get(dot_ret.option, uni_or_gbk);
+    uint16_t idx = 0;
+    while (idx < omit_info->len) {
+        area_font->x += off_point.x;
+        area_font->y += off_point.y;
+        gt_draw_blend_text(draw_ctx, blend_dsc, tmp_font->info.size, byte_width,
+                           font_gray, (const uint8_t*)tmp_font->res, tmp_font->info.style.reg);
+        area_font->x -= off_point.x;
+        area_font->y -= off_point.y;
+        _advance_x(&area_font->x, width, space_x, align_reverse);
+        idx += tmp_font->len;
+    }
+}
+
+/**
  * @brief 渲染单个普通字形（非 symbol），处理 emoji 和点阵两种情况
  *
  * @param draw_ctx            绘制上下文
@@ -1201,6 +1307,35 @@ static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t _get_align_start_x(gt_align_et ali
     return x;
 }
 
+/**
+ * @brief 计算行首 x 坐标（含对齐、reverse、start_x、首行缩进）
+ * @param dsc           字体属性
+ * @param coords        控件区域
+ * @param disp_w        当前行可用宽度
+ * @param align_reverse 是否右到左对齐
+ * @param start_x_flag  是否使用 dsc->start_x 直接定位
+ * @param is_first_line 是否首行（需要缩进）
+ * @param font_info     字体信息（用于缩进宽度计算）
+ * @return 行首 x 坐标
+ */
+static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t _calc_line_start_x(
+    const gt_attr_font_st * dsc, const gt_area_st * coords,
+    gt_size_t disp_w, bool align_reverse,
+    bool start_x_flag, bool is_first_line,
+    const gt_font_info_st * font_info)
+{
+    if (start_x_flag) { return dsc->start_x; }
+    gt_size_t x = _get_align_start_x(dsc->align, coords->x, disp_w, 0);
+    if (align_reverse) {
+        x = (coords->x + coords->w) - (x - coords->x);
+    }
+    if (is_first_line) {
+        gt_size_t indent = gt_font_get_indent_width(font_info, dsc->indent);
+        x = align_reverse ? x - indent : x + indent;
+    }
+    return x;
+}
+
 static gt_size_t GT_ATTRIBUTE_RAM_TEXT
 _get_align_start_y_by_line(const gt_attr_font_st * dsc,
     const gt_area_st * coords, gt_font_st * tmp_font, uint8_t * txt, uint16_t line_count) {
@@ -1322,39 +1457,12 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
     _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&tmp_font.info, FONT_LAN_UNKNOWN, 0);
 #endif
     uint16_t data_len = font_size_res.font_per_size;
-    uint8_t * mask_line = NULL;
+    _draw_font_buf_st font_buf = _draw_font_buf_alloc(tmp_font.info.size, data_len);
+    tmp_font.res = font_buf.res;
+    uint8_t * mask_line = font_buf.mask_line;
 
-#if GT_USE_EXTRA_FULL_FONT_BUFFER
-    gt_buffer_st * gc_font_p = _gt_gc_get_full_font_buffer();
-    bool is_extend_font_valid = _gt_gc_full_font_buffer_is_valid() && (data_len < gc_font_p->len);
-#endif
-
-    tmp_font.res =
-#if GT_USE_EXTRA_FULL_FONT_BUFFER
-        is_extend_font_valid ? gc_font_p->ptr :
-#endif
-        gt_mem_malloc(data_len);
-
-    if (NULL == tmp_font.res) {
-        GT_LOGE(GT_LOG_TAG_GUI, "data malloc is failed!!! size = %d", data_len);
-        goto _res_handler;
-    }
-#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
-    gt_buffer_st * gc_font_mask_p = _gt_gc_get_full_font_mask_buffer();
-    bool is_extend_font_mask_valid = _gt_gc_full_font_mask_buffer_is_valid() &&
-                                    ((tmp_font.info.size << 1) < gc_font_mask_p->len);
-#endif
-
-    mask_line =
-#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
-        is_extend_font_mask_valid ? gc_font_mask_p->ptr :
-#endif
-        gt_mem_malloc( tmp_font.info.size << 1 );
-
-    if (NULL == mask_line) {
-        GT_LOGE(GT_LOG_TAG_GUI, "mask_line malloc is failed!!! size = %d", tmp_font.info.size << 1);
-        goto _mask_handler;
-    }
+    if (NULL == tmp_font.res) { goto _res_handler; }
+    if (NULL == mask_line)    { goto _mask_handler; }
     gt_memset(mask_line, 0xFF, tmp_font.info.size << 1);
 
     uint8_t * txt = (uint8_t * )dsc->font->utf8;
@@ -1513,22 +1621,11 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
 _disp_font:
         /** align to left, center or right */
         if (!cov_flag_ol) {
-            area_font.x = _get_align_start_x(dsc->align, coords->x, disp_w, 0);
-        }
-        if (align_reverse && !cov_flag_ol) {
-            area_font.x = (coords->x + coords->w) - (area_font.x - coords->x);
-        }
-        if (start_x_flag) {
-            area_font.x = dsc->start_x;
-            start_x_flag = false;
-        }
-        if (is_first_line) {
-            is_first_line = false;
-            if (align_reverse) {
-                area_font.x -= gt_font_get_indent_width(&dsc->font->info, dsc->indent);
-            } else {
-                area_font.x += gt_font_get_indent_width(&dsc->font->info, dsc->indent);
-            }
+            area_font.x = _calc_line_start_x(dsc, coords, disp_w, align_reverse,
+                                              start_x_flag, is_first_line,
+                                              (const gt_font_info_st*)&tmp_font.info);
+            if (start_x_flag) { start_x_flag = false; }
+            if (is_first_line) { is_first_line = false; }
         }
         idx_2 = 0;
 #if _GT_FONT_ENABLE_CONVERTOR
@@ -1717,14 +1814,11 @@ _ret_handler:
     }
 #endif
 _txt_handler:
-    if (
-#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
-        false == is_extend_font_mask_valid &&
-#endif
-        mask_line) {
-        gt_mem_free(mask_line);
-    }
+    font_buf.mask_line = mask_line;
+    font_buf.res = tmp_font.res;
+    _draw_font_buf_free(&font_buf);
     mask_line = NULL;
+    tmp_font.res = NULL;
 
 #if GT_USE_LIB_TEX_PRINTF
     if(latex_txt) {
@@ -1734,15 +1828,6 @@ _txt_handler:
 #endif
 
 _mask_handler:
-    if (
-#if GT_USE_EXTRA_FULL_FONT_BUFFER
-        false == is_extend_font_valid &&
-#endif
-        tmp_font.res) {
-        gt_mem_free(tmp_font.res);
-    }
-    tmp_font.res = NULL;
-
 _res_handler:
     ret.abs_pos.x = area_font.x;
     ret.abs_pos.y = area_font.y;
@@ -1804,39 +1889,12 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
     _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&tmp_font.info, FONT_LAN_UNKNOWN, 0);
 #endif
     uint16_t data_len = font_size_res.font_per_size;
-    uint8_t * mask_line = NULL;
+    _draw_font_buf_st font_buf = _draw_font_buf_alloc(tmp_font.info.size, data_len);
+    tmp_font.res = font_buf.res;
+    uint8_t * mask_line = font_buf.mask_line;
 
-#if GT_USE_EXTRA_FULL_FONT_BUFFER
-    gt_buffer_st * gc_font_p = _gt_gc_get_full_font_buffer();
-    bool is_extend_font_valid = _gt_gc_full_font_buffer_is_valid() && (data_len < gc_font_p->len);
-#endif
-
-    tmp_font.res =
-#if GT_USE_EXTRA_FULL_FONT_BUFFER
-        is_extend_font_valid ? gc_font_p->ptr :
-#endif
-        gt_mem_malloc(data_len);
-
-    if (NULL == tmp_font.res) {
-        GT_LOGE(GT_LOG_TAG_GUI, "data malloc is failed!!! size = %d", data_len);
-        goto direct_handler_lb;
-    }
-#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
-    gt_buffer_st * gc_font_mask_p = _gt_gc_get_full_font_mask_buffer();
-    bool is_extend_font_mask_valid = _gt_gc_full_font_mask_buffer_is_valid() &&
-                                    ((tmp_font.info.size << 1) < gc_font_mask_p->len);
-#endif
-
-    mask_line =
-#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
-        is_extend_font_mask_valid ? gc_font_mask_p->ptr :
-#endif
-        gt_mem_malloc( tmp_font.info.size << 1 );
-
-    if (NULL == mask_line) {
-        GT_LOGE(GT_LOG_TAG_GUI, "mask_line malloc is failed!!! size = %d", tmp_font.info.size << 1);
-        goto mask_handler_lb;
-    }
+    if (NULL == tmp_font.res) { goto direct_handler_lb; }
+    if (NULL == mask_line)    { goto mask_handler_lb; }
     gt_memset(mask_line, 0xFF, tmp_font.info.size << 1);
 
     uint8_t * txt = (uint8_t * )dsc->font->utf8;
@@ -2112,30 +2170,8 @@ next_word_lb:
     }
 
     if (dsc->reg.omit_line && is_omit_display) {
-        // Display "..." or "。。。"
-        tmp_font.utf8 = omit_info.utf8;
-        tmp_font.len = gt_font_one_char_code_len_get((uint8_t * )omit_info.utf8, &uni_or_gbk, tmp_font.info.encoding);
-        width = gt_font_get_one_word_width(uni_or_gbk, &tmp_font);
-
-        dot_ret = gt_font_get_dot(&tmp_font, uni_or_gbk);
-        font_gray = 1;
-        byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, &tmp_font, dot_ret.type, uni_or_gbk);
-        area_font.w = (byte_width / font_gray) << 3;
-        if (tmp_font.info.style.reg.bold) {
-            area_font.w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font.info);
-        }
-        const gt_point_st omit_off_point = gt_font_offset_get(dot_ret.option, uni_or_gbk);
-        idx = 0;
-        while (idx < omit_info.len)  {
-            area_font.x += omit_off_point.x;
-            area_font.y += omit_off_point.y;
-            gt_draw_blend_text(draw_ctx, &blend_dsc, tmp_font.info.size, byte_width,
-                                font_gray, (const uint8_t*)tmp_font.res,tmp_font.info.style.reg);
-            area_font.x -= omit_off_point.x;
-            area_font.y -= omit_off_point.y;
-            _advance_x(&area_font.x, width, space_x, align_reverse);
-            idx += tmp_font.len;
-        }
+        _draw_omit_chars(draw_ctx, &blend_dsc, &tmp_font, &area_font,
+                         &omit_info, space_x, align_reverse);
     }
 
     area_font.w = tmp_font.info.size;
@@ -2158,23 +2194,12 @@ bidi_handler_lb:
     }
 #endif
 txt_handler_lb:
-    if (
-#if GT_USE_EXTRA_FULL_FONT_MASK_BUFFER
-        false == is_extend_font_mask_valid &&
-#endif
-        mask_line) {
-        gt_mem_free(mask_line);
-    }
+    font_buf.mask_line = mask_line;
+    font_buf.res = tmp_font.res;
+    _draw_font_buf_free(&font_buf);
     mask_line = NULL;
-mask_handler_lb:
-    if (
-#if GT_USE_EXTRA_FULL_FONT_BUFFER
-        false == is_extend_font_valid &&
-#endif
-        tmp_font.res) {
-        gt_mem_free(tmp_font.res);
-    }
     tmp_font.res = NULL;
+mask_handler_lb:
 direct_handler_lb:
     ret.abs_pos.x = area_font.x;
     ret.abs_pos.y = area_font.y;
