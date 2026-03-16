@@ -560,17 +560,18 @@ static GT_ATTRIBUTE_RAM_TEXT bool _draw_one_symbol(
     return true;
 }
 
-/** @brief 渲染下划线和删除线装饰 */
+/** @brief 渲染下划线和删除线装饰（has_ul/has_st 在循环外预计算，避免每字符访问位域） */
 static GT_ATTRIBUTE_RAM_TEXT inline void _draw_char_style(
     _gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
     gt_draw_blend_dsc_st * blend_dsc_style, gt_area_st area_font,
     const gt_font_info_st * font_info, uint16_t width,
-    uint8_t style_space_y, gt_size_t font_disp_h)
+    uint8_t style_space_y, gt_size_t font_disp_h,
+    bool has_ul, bool has_st)
 {
-    if (font_info->style.reg.underline && font_disp_h == font_info->size) {
+    if (has_ul && font_disp_h == font_info->size) {
         _draw_blend_underline(draw_ctx, dsc, blend_dsc_style, area_font, font_info, width, style_space_y);
     }
-    if (font_info->style.reg.strikethrough && (font_disp_h > ((font_info->size >> 1) + (style_space_y << 1)))) {
+    if (has_st && (font_disp_h > ((font_info->size >> 1) + (style_space_y << 1)))) {
         _draw_blend_strikethrough(draw_ctx, dsc, blend_dsc_style, area_font, font_info, width, style_space_y);
     }
 }
@@ -704,6 +705,8 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
     gt_memset_0(font_buf, font_size_res.font_buff_len);
 
     uint8_t style_space_y = _get_style_space_y((const gt_font_info_st*)&tmp_font.info);
+    const bool cvt_has_ul = tmp_font.info.style.reg.underline;
+    const bool cvt_has_st = tmp_font.info.style.reg.strikethrough;
     font_convertor_st convertor = {
         .fontcode = text,
         .code_len = text_len,
@@ -734,7 +737,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
             tmp = 1;
         }
         else{
-            gt_memset_0(&convertor.data_p[0], font_size_res.font_buff_len);
+            gt_memset_0(&convertor.data_p[0], font_size_res.font_per_size);
             if (0x20 == convertor.fontcode[idx]) {
                 width = convertor.fontsize >> 1;
             }
@@ -822,7 +825,8 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
 
         /* use style */
         _draw_char_style(draw_ctx, dsc, blend_dsc_style, *blend_dsc->dst_area,
-                         (const gt_font_info_st*)&tmp_font.info, width, style_space_y, font_disp_h);
+                         (const gt_font_info_st*)&tmp_font.info, width, style_space_y, font_disp_h,
+                         cvt_has_ul, cvt_has_st);
     _next_word_cvt_lb:
         _advance_x(&blend_dsc->dst_area->x, width, space_x, align_reverse);
         idx += tmp;
@@ -1402,6 +1406,8 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
 
     uint8_t style_space_y = _get_style_space_y((const gt_font_info_st*)&tmp_font.info);
     uint16_t per_line_h = (style_space_y << 1) + dsc->font->info.size + dsc->space_y;
+    const bool ml_has_ul = dsc->font->info.style.reg.underline;
+    const bool ml_has_st = dsc->font->info.style.reg.strikethrough;
 
     gt_size_t disp_w = coords->w;
     uint32_t uni_or_gbk = 0, ret_w = 0;
@@ -1572,7 +1578,6 @@ _disp_font:
             }
 #endif  /** _GT_FONT_ENABLE_CONVERTOR */
 
-            gt_memset(tmp_font.res, 0, data_len);
             tmp_font.utf8 = (char * )&txt_2[idx_2];
             tmp_font.len = gt_font_one_char_code_len_get(&txt_2[idx_2], &uni_or_gbk, tmp_font.info.encoding);
 
@@ -1587,6 +1592,7 @@ _disp_font:
             if (dsc->opa < GT_OPA_MIN) {
                 goto next_word_multi_lb;
             }
+            gt_memset(tmp_font.res, 0, data_len);
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
             if (dsc->reg.touch_point) {
                 cur_sty = gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding);
@@ -1628,7 +1634,6 @@ _disp_font:
             }
 #endif
             if (!gt_symbol_is_valid_range(uni_or_gbk)) {
-                gt_memset(&tmp_font.res[data_len >> 1], 0, data_len >> 1);
                 dot_ret = gt_font_get_dot(&tmp_font, uni_or_gbk);
                 _draw_one_char_glyph(draw_ctx, &blend_dsc, mask_line, &tmp_font,
                                      dot_ret, &area_font, offset_y,
@@ -1644,7 +1649,8 @@ _disp_font:
 
             /* use style */
             _draw_char_style(draw_ctx, dsc, &blend_dsc_style, area_font,
-                             (const gt_font_info_st*)&tmp_font.info, width, style_space_y, font_disp_h);
+                             (const gt_font_info_st*)&tmp_font.info, width, style_space_y, font_disp_h,
+                             ml_has_ul, ml_has_st);
         next_word_multi_lb:
             _advance_x(&area_font.x, width, space_x, align_reverse);
             idx_2 += tmp_font.len;
@@ -1867,6 +1873,8 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
     blend_dsc_style.mask_buf    = mask_line;
     uint8_t style_space_y = _get_style_space_y((const gt_font_info_st*)&tmp_font.info);
     uint8_t space_x = _get_style_space_x(dsc->space_x, (const gt_font_info_st *)&tmp_font.info);
+    const bool sl_has_ul = dsc->font->info.style.reg.underline;
+    const bool sl_has_st = dsc->font->info.style.reg.strikethrough;
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
     gt_font_touch_word_st tmp_word = {0};
     gt_font_lan_et prev_sty = FONT_LAN_UNKNOWN;
@@ -2025,7 +2033,6 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
         }
 #endif  /** _GT_FONT_ENABLE_CONVERTOR */
 
-        gt_memset(tmp_font.res, 0, data_len);
         tmp_font.utf8 = (char * )&txt[idx];
         tmp_font.len = gt_font_one_char_code_len_get(&txt[idx], &uni_or_gbk, tmp_font.info.encoding);
         if (0x0A == uni_or_gbk) {
@@ -2043,6 +2050,7 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
         if (dsc->opa < GT_OPA_MIN) {
             goto next_word_lb;
         }
+        gt_memset(tmp_font.res, 0, data_len);
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
         if (dsc->reg.touch_point) {
             cur_sty = gt_font_lan_get(uni_or_gbk, tmp_font.info.encoding);
@@ -2081,7 +2089,6 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
         }
 #endif
         if( !gt_symbol_is_valid_range(uni_or_gbk) ){
-            gt_memset(&tmp_font.res[data_len >> 1], 0, data_len >> 1);
             dot_ret = gt_font_get_dot(&tmp_font, uni_or_gbk);
             _draw_one_char_glyph(draw_ctx, &blend_dsc, mask_line, &tmp_font,
                                  dot_ret, &area_font, offset_y,
@@ -2097,7 +2104,8 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
 
         /* use style */
         _draw_char_style(draw_ctx, dsc, &blend_dsc_style, area_font,
-                         (const gt_font_info_st*)&tmp_font.info, width, style_space_y, font_disp_h);
+                         (const gt_font_info_st*)&tmp_font.info, width, style_space_y, font_disp_h,
+                         sl_has_ul, sl_has_st);
 next_word_lb:
         _advance_x(&area_font.x, width, space_x, align_reverse);
         idx += tmp_font.len;
