@@ -1519,29 +1519,28 @@ uint16_t gt_font_get_single_line_width(gt_font_info_st * info, const char * cons
     return max_width;
 }
 
-uint8_t gt_font_get_one_word_width(uint32_t uni_or_gbk, gt_font_st * font)
+/**
+ * @brief 已知 font_option 时直接计算字符宽度，跳过 _get_font_option 查表
+ *        供 gt_draw.c 在 gt_font_get_dot 之后调用，避免重复查表
+ */
+GT_ATTRIBUTE_RAM_TEXT uint8_t gt_font_get_one_word_width_by_option(
+    uint32_t uni_or_gbk, gt_font_st * font, uint16_t option)
 {
     if (0x20 == uni_or_gbk) {
         return font->info.size >> 1;
     }
-
     if (gt_symbol_is_valid_range(uni_or_gbk)) {
         return font->info.size;
     }
-
 #if GT_CFG_ENABLE_ZK_FONT == 1
-    gt_size_t width = 0;
-    uint16_t option = _get_font_option(font, uni_or_gbk);
-
     if (GT_Check_Is_Vec(option)) {
         uint32_t font_dot_w = (((font->info.size + 15) >> 4) << 4) * font->info.gray;
-        font_dot_w = (font_dot_w*font_dot_w) >> 3;
+        font_dot_w = (font_dot_w * font_dot_w) >> 3;
         gt_memset(font->res, 0, font_dot_w);
     }
-
-    width = gt_font_get_font_width_inline(uni_or_gbk, option, font->info.size, font->info.gray, font->res);
+    gt_size_t width = gt_font_get_font_width_inline(uni_or_gbk, option, font->info.size, font->info.gray, font->res);
     if (0 == width) {
-        if(_gt_font_latin_check(uni_or_gbk)) {
+        if (_gt_font_latin_check(uni_or_gbk)) {
             return _gt_font_latin_get_width(uni_or_gbk, font->info.size);
         }
         return font->info.size;
@@ -1549,37 +1548,54 @@ uint8_t gt_font_get_one_word_width(uint32_t uni_or_gbk, gt_font_st * font)
     return width;
 #else
     if (_gt_font_latin_check(uni_or_gbk)) {
-        return _gt_font_latin_get_width(uni_or_gbk, font->info.size;);
+        return _gt_font_latin_get_width(uni_or_gbk, font->info.size);
     }
     return font->info.size;
 #endif
-
 }
 
-uint8_t gt_font_get_one_word_height(uint32_t uni_or_gbk, gt_font_st * font)
+uint8_t gt_font_get_one_word_width(uint32_t uni_or_gbk, gt_font_st * font)
+{
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    return gt_font_get_one_word_width_by_option(uni_or_gbk, font, _get_font_option(font, uni_or_gbk));
+#else
+    return gt_font_get_one_word_width_by_option(uni_or_gbk, font, 0);
+#endif
+}
+
+/**
+ * @brief 已知 font_option 时直接获取字符高度，跳过 _get_font_option 查表
+ *        供 _draw_one_char_glyph 在 gt_font_get_dot 之后调用，避免重复查表
+ */
+GT_ATTRIBUTE_RAM_TEXT uint8_t gt_font_get_one_word_height_by_option(
+    uint32_t uni_or_gbk, gt_font_st * font, uint16_t option)
 {
     if (gt_symbol_is_valid_range(uni_or_gbk)) {
         return font->info.size;
     }
-
 #if GT_CFG_ENABLE_ZK_FONT == 1
-    uint16_t option = _get_font_option(font, uni_or_gbk);
-
 #if GT_CUSTOM_FONT_ENABLE
-    if(IS_GT_CUSTOM_FONT_OPTION(option)) {
+    if (IS_GT_CUSTOM_FONT_OPTION(option)) {
         gt_custom_font_st* cf = gt_custom_get_font(option);
-        if(cf && cf->get_height) {
+        if (cf && cf->get_height) {
             return cf->get_height(cf, uni_or_gbk);
         }
     }
 #endif
-
     uint8_t h = GT_Get_Font_Height(uni_or_gbk, option, font->info.size, font->info.gray);
     return h ? h : font->info.size;
 #else
     return font->info.size;
 #endif
+}
 
+uint8_t gt_font_get_one_word_height(uint32_t uni_or_gbk, gt_font_st * font)
+{
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    return gt_font_get_one_word_height_by_option(uni_or_gbk, font, _get_font_option(font, uni_or_gbk));
+#else
+    return font->info.size;
+#endif
 }
 
 uint8_t gt_font_get_one_word_dot_width(uint32_t uni_or_gbk, gt_font_st * font)

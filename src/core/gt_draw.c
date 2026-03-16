@@ -659,9 +659,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_omit_chars(
     uint32_t uni_or_gbk = 0;
     tmp_font->utf8 = omit_info->utf8;
     tmp_font->len = gt_font_one_char_code_len_get((uint8_t*)omit_info->utf8, &uni_or_gbk, tmp_font->info.encoding);
-    uint8_t width = gt_font_get_one_word_width(uni_or_gbk, tmp_font);
-
     _gt_font_dot_ret_st dot_ret = gt_font_get_dot(tmp_font, uni_or_gbk);
+    uint8_t width = gt_font_get_one_word_width_by_option(uni_or_gbk, tmp_font, dot_ret.option);
     uint8_t font_gray = 1;
     uint8_t byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type, uni_or_gbk);
     area_font->w = (byte_width / font_gray) << 3;
@@ -744,7 +743,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
         uint8_t font_gray = 1;
         const uint8_t info_size = tmp_font->info.size;
         const gt_font_style_st style_reg = tmp_font->info.style.reg;
-        uint8_t font_height = gt_font_get_one_word_height(uni_or_gbk, tmp_font);
+        uint8_t font_height = gt_font_get_one_word_height_by_option(uni_or_gbk, tmp_font, dot_ret.option);
         uint8_t byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type, uni_or_gbk);
         area_font->w = (byte_width / font_gray) << 3;
 

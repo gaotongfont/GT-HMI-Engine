@@ -378,6 +378,7 @@ int gt_font_get_emoji_dot(uint32_t unicode, uint16_t option, uint8_t *data, uint
  * @return uint8_t The width of the character
  */
 uint8_t gt_font_get_one_word_width(uint32_t uni_or_gbk, gt_font_st * font);
+uint8_t gt_font_get_one_word_width_by_option(uint32_t uni_or_gbk, gt_font_st * font, uint16_t option);
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, uint8_t font_style, uint8_t langue, uint32_t text_len);
 #else
@@ -385,6 +386,7 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
 #endif
 
 uint8_t gt_font_get_one_word_height(uint32_t uni_or_gbk, gt_font_st * font);
+uint8_t gt_font_get_one_word_height_by_option(uint32_t uni_or_gbk, gt_font_st * font, uint16_t option);
 uint8_t gt_font_get_one_word_dot_width(uint32_t uni_or_gbk, gt_font_st * font);
 
 /**
