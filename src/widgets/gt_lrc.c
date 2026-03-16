@@ -569,9 +569,9 @@ void gt_lrc_set_font_family_cn(gt_obj_st* obj, gt_family_t family)
         return ;
     }
     _gt_lrc_st* style = (_gt_lrc_st*)obj;
-    style->font_info.family_cn = family;
+    style->font_info.style_cn = family;
     for(uint32_t i = 0; i < obj->cnt_child; ++i) {
-        gt_label_set_font_family_cn(obj->child[i], style->font_info.family_cn);
+        gt_label_set_font_family_cn(obj->child[i], style->font_info.style_cn);
     }
 }
 
@@ -582,9 +582,9 @@ void gt_lrc_set_font_family_en(gt_obj_st* obj, gt_family_t family)
         return ;
     }
     _gt_lrc_st* style = (_gt_lrc_st*)obj;
-    style->font_info.family_en = family;
+    style->font_info.style_en = family;
     for(uint32_t i = 0; i < obj->cnt_child; ++i) {
-        gt_label_set_font_family_en(obj->child[i], style->font_info.family_en);
+        gt_label_set_font_family_en(obj->child[i], style->font_info.style_en);
     }
 }
 
@@ -595,9 +595,9 @@ void gt_lrc_set_font_family_fl(gt_obj_st* obj, gt_family_t family)
         return ;
     }
     _gt_lrc_st* style = (_gt_lrc_st*)obj;
-    style->font_info.family_fl = family;
+    style->font_info.style_fl = family;
     for(uint32_t i = 0; i < obj->cnt_child; ++i) {
-        gt_label_set_font_family_fl(obj->child[i], style->font_info.family_fl);
+        gt_label_set_font_family_fl(obj->child[i], style->font_info.style_fl);
     }
 }
 
@@ -608,9 +608,9 @@ void gt_lrc_set_font_family_numb(gt_obj_st* obj, gt_family_t family)
         return ;
     }
     _gt_lrc_st* style = (_gt_lrc_st*)obj;
-    style->font_info.family_numb = family;
+    style->font_info.style_numb = family;
     for(uint32_t i = 0; i < obj->cnt_child; ++i) {
-        gt_label_set_font_family_numb(obj->child[i], style->font_info.family_numb);
+        gt_label_set_font_family_numb(obj->child[i], style->font_info.style_numb);
     }
 }
 #else
