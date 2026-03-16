@@ -273,6 +273,27 @@ extern "C" {
     #define GT_CUSTOM_FONT_ENABLE       0
 #endif
 
+#ifndef GT_USE_FONT_GLYPH_CACHE
+    /**
+     * @brief Enable a small LRU glyph cache to avoid repeated flash/file reads
+     *      for the same character within a render pass.
+     *      Each slot stores the dot-matrix data + width for one glyph.
+     *      Memory cost: GT_FONT_GLYPH_CACHE_SIZE * (data_len + sizeof(cache_entry))
+     *      [default: 0]
+     */
+    #define GT_USE_FONT_GLYPH_CACHE     0
+#endif
+
+#ifndef GT_FONT_GLYPH_CACHE_SIZE
+    /**
+     * @brief Number of glyph slots in the LRU cache.
+     *      Recommended: 16~32 for typical embedded use.
+     *      Only effective when GT_USE_FONT_GLYPH_CACHE == 1.
+     *      [default: 16]
+     */
+    #define GT_FONT_GLYPH_CACHE_SIZE    16
+#endif
+
 /* default font style and size */
 #define GT_CFG_DEFAULT_FONT_FAMILY          (0)
 #define GT_CFG_DEFAULT_FONT_SIZE            (16)

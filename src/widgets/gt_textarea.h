@@ -41,6 +41,27 @@ extern "C" {
     #define GT_TEXTAREA_SUB_STRING_SCROLL_CACHE    0
 #endif
 
+#ifndef GT_TEXTAREA_LINE_CACHE
+    /**
+     * @brief Line-level scroll cache: records (byte_offset, y) checkpoints every
+     *        GT_TEXTAREA_LINE_CACHE_STEP lines so that draw_text can skip
+     *        gt_font_split_line_str calls for off-screen lines above the viewport.
+     *      0[default]: disable
+     *      1: enable
+     */
+    #define GT_TEXTAREA_LINE_CACHE  0
+#endif
+
+#ifndef GT_TEXTAREA_LINE_CACHE_STEP
+    /**
+     * @brief How many lines between two adjacent line-cache checkpoints.
+     *        Smaller = faster scroll seek, more memory.
+     *        Larger  = slower seek (re-scan up to STEP-1 lines), less memory.
+     *      8[default]
+     */
+    #define GT_TEXTAREA_LINE_CACHE_STEP  8
+#endif
+
 
 /* typedef --------------------------------------------------------------*/
 typedef struct gt_textarea_param_s {

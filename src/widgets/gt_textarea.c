@@ -50,6 +50,20 @@ typedef struct {
 }_sub_string_scroll_cache_st;
 #endif
 
+#if GT_TEXTAREA_LINE_CACHE
+typedef struct {
+    uint16_t byte_offset;   /** byte offset from contents[seg_idx].text start */
+    uint16_t seg_idx;       /** which contents[] segment this line belongs to */
+    gt_size_t y;            /** absolute y of this line (logical_area.y based) */
+}_line_cache_item_st;
+
+typedef struct {
+    _line_cache_item_st * list;
+    uint16_t count;
+    uint16_t capacity;
+}_line_cache_st;
+#endif  /** GT_TEXTAREA_LINE_CACHE */
+
 typedef struct _gt_textarea_s {
     gt_obj_st obj;
     gt_textarea_param_st * contents;
@@ -80,6 +94,10 @@ typedef struct _gt_textarea_s {
 
 #if GT_TEXTAREA_SUB_STRING_SCROLL_CACHE
     _sub_string_scroll_cache_st scroll_cache;
+#endif
+
+#if GT_TEXTAREA_LINE_CACHE
+    _line_cache_st line_cache;
 #endif
 
     _textarea_reg_st reg;
@@ -181,6 +199,179 @@ static void _scroll_cache_remark_item(_gt_textarea_st * style, gt_size_t idx, gt
 }
 #endif  /** GT_TEXTAREA_SUB_STRING_SCROLL_CACHE */
 
+#if GT_TEXTAREA_LINE_CACHE
+static void _line_cache_free(_gt_textarea_st * style) {
+    if (style->line_cache.list) {
+        gt_mem_free(style->line_cache.list);
+        style->line_cache.list = NULL;
+    }
+    style->line_cache.count = 0;
+    style->line_cache.capacity = 0;
+}
+
+static gt_res_t _line_cache_push(_gt_textarea_st * style,
+                                  uint16_t seg_idx, uint16_t byte_offset, gt_size_t y) {
+    if (style->line_cache.count >= style->line_cache.capacity) {
+        uint16_t new_cap = style->line_cache.capacity ? style->line_cache.capacity * 2 : 16;
+        _line_cache_item_st * p = (_line_cache_item_st *)gt_mem_realloc(
+            style->line_cache.list, new_cap * sizeof(_line_cache_item_st));
+        if (NULL == p) { return GT_RES_FAIL; }
+        style->line_cache.list = p;
+        style->line_cache.capacity = new_cap;
+    }
+    _line_cache_item_st * item = &style->line_cache.list[style->line_cache.count++];
+    item->seg_idx    = seg_idx;
+    item->byte_offset = byte_offset;
+    item->y          = y;
+    return GT_RES_OK;
+}
+
+/**
+ * Binary search: find the last checkpoint whose y_offset <= target_offset.
+ * target_offset = gt_abs(scroll_y) — pixels scrolled past the top.
+ * Returns NULL if none found.
+ */
+static const _line_cache_item_st * _line_cache_find(_line_cache_st * lc, gt_size_t target_offset) {
+    if (NULL == lc->list || 0 == lc->count) { return NULL; }
+    if (lc->list[0].y > target_offset) { return NULL; }
+    int32_t lo = 0, hi = (int32_t)lc->count - 1, mid;
+    while (lo < hi) {
+        mid = lo + ((hi - lo + 1) >> 1);
+        if (lc->list[mid].y <= target_offset) { lo = mid; }
+        else { hi = mid - 1; }
+    }
+    return &lc->list[lo];
+}
+#endif  /** GT_TEXTAREA_LINE_CACHE */
+
+#if GT_TEXTAREA_LINE_CACHE
+/**
+ * Pre-scan all segments and record a checkpoint every GT_TEXTAREA_LINE_CACHE_STEP lines.
+ * Each checkpoint stores (seg_idx, byte_offset, y) so that during scrolling we can
+ * jump font.utf8 directly to the right byte and set start_y, skipping all
+ * gt_font_split_line_str calls for lines above the viewport.
+ *
+ * Called once after a full (non-scroll) render completes.
+ */
+static void _line_cache_build(gt_obj_st * obj) {
+    _gt_textarea_st * style = (_gt_textarea_st *)obj;
+    if (NULL == style->contents || 0 == style->cnt_contents) { return; }
+
+    _line_cache_free(style);
+
+    gt_area_st padding_font = gt_area_reduce(obj->area, style->padding);
+    gt_area_st area_font    = gt_area_reduce(padding_font, style->border_width + _FONT_AREA_REDUCE_SIZE);
+    uint32_t max_w = (uint32_t)area_font.w;
+    uint8_t  space_x = style->space_x;
+    uint16_t line_height = style->font_info.size + (style->space_y << 1);
+    if (0 == line_height) { return; }
+
+    /** cur_y_offset: pixel offset from area_font.y (0 = first line top) */
+    gt_size_t cur_y_offset = 0;
+    uint16_t  line_counter = 0;
+
+    for (uint16_t si = 0; si < style->cnt_contents; ++si) {
+        if (NULL == style->contents[si].text) { continue; }
+
+        gt_font_st tmp_font = {
+            .info = style->font_info,
+            .utf8 = style->contents[si].text,
+            .len  = style->contents[si].len,
+            .res  = NULL,
+        };
+#if GT_TEXTAREA_CUSTOM_FONT_STYLE
+        tmp_font.info = style->contents[si].font_info;
+#endif
+        uint32_t seg_len = (uint32_t)style->contents[si].len;
+        uint32_t byte_idx = 0;
+        bool is_first_line = true;
+        uint32_t disp_w = max_w;
+
+        while (byte_idx < seg_len) {
+            if (0 == (line_counter % GT_TEXTAREA_LINE_CACHE_STEP)) {
+                _line_cache_push(style, si, (uint16_t)byte_idx, cur_y_offset);
+            }
+
+            gt_font_st scan_font = tmp_font;
+            scan_font.utf8 = &style->contents[si].text[byte_idx];
+            scan_font.len  = (uint16_t)(seg_len - byte_idx);
+
+            uint32_t line_w = max_w - disp_w;
+            int32_t step = gt_font_split_line_str(&scan_font, max_w, space_x,
+                                                   &line_w, NULL, NULL, NULL, NULL,
+                                                   is_first_line);
+            if (step < 0) { break; }
+            if (step == 0) { step = 1; }
+
+            if (byte_idx < seg_len && '\n' == style->contents[si].text[byte_idx]) {
+                byte_idx++;
+                cur_y_offset += line_height;
+                ++line_counter;
+                is_first_line = true;
+                disp_w = max_w;
+                continue;
+            }
+
+            byte_idx += (uint32_t)step;
+            cur_y_offset += line_height;
+            ++line_counter;
+            is_first_line = false;
+            disp_w = max_w;
+        }
+    }
+    GT_LOGV(GT_LOG_TAG_GUI, "[lc_build] checkpoints=%u total_lines=%u",
+            style->line_cache.count, line_counter);
+}
+
+/**
+ * Apply a line-cache hit: adjust font.utf8/len and font_attr start position
+ * so draw_text begins at the cached line instead of the segment start.
+ * Returns the segment index to start the outer loop from.
+ */
+static uint16_t _line_cache_apply(gt_obj_st * obj,
+                                   gt_font_st * font,
+                                   gt_attr_font_st * font_attr,
+                                   gt_size_t scroll_y) {
+    _gt_textarea_st * style = (_gt_textarea_st *)obj;
+    /**
+     * scroll_y is negative when scrolled down (e.g. -200 means 200px scrolled).
+     * target_offset = pixels scrolled past the top = gt_abs(scroll_y).
+     * Checkpoints store y as offset from area_font.y (0 = first line).
+     */
+    gt_size_t target_offset = (gt_size_t)gt_abs(scroll_y);
+
+    const _line_cache_item_st * hit = _line_cache_find(&style->line_cache, target_offset);
+    if (NULL == hit) { return 0; }
+
+    uint16_t si = hit->seg_idx;
+    if (NULL == style->contents[si].text) { return 0; }
+
+    uint16_t off = hit->byte_offset;
+    if (off >= style->contents[si].len) { return si + 1; }
+
+    font->utf8 = style->contents[si].text + off;
+    font->len  = style->contents[si].len  - off;
+#if GT_TEXTAREA_CUSTOM_FONT_STYLE
+    font->info = style->contents[si].font_info;
+#endif
+
+    font_attr->start_x = font_attr->logical_area.x;
+    /**
+     * hit->y is the line's offset from area_font.y.
+     * logical_area.y = area_font.y + scroll_y  (scroll_y < 0)
+     * So the screen y of this cached line = area_font.y - target_offset + hit->y
+     *                                     = logical_area.y + hit->y
+     */
+    font_attr->start_y = font_attr->logical_area.y + (gt_size_t)hit->y;
+    font_attr->reg.enabled_start = true;
+
+    GT_LOGV(GT_LOG_TAG_GUI, "[lc_apply] scroll=%d offset=%u hit_y=%d start_y=%d si=%u byte=%u",
+            (int)scroll_y, (unsigned)target_offset, (int)hit->y,
+            (int)font_attr->start_y, (unsigned)si, (unsigned)off);
+    return si;
+}
+#endif  /** GT_TEXTAREA_LINE_CACHE */
+
 static inline void _set_hold_on_contents_for_scroll(_gt_textarea_st * style, bool hold_on) {
     style->reg.hold_on = hold_on;
 }
@@ -226,6 +417,15 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
 
     gt_size_t scroll_y = obj->process_attr.scroll.y;
     _gt_draw_font_res_st font_res = {0};
+    GT_LOGV(GT_LOG_TAG_GUI, "[ta_draw] hold=%d scroll_y=%d cnt=%u lc_count=%u",
+            (int)_is_hold_on_contents_for_scroll(style), (int)scroll_y,
+            (unsigned)style->cnt_contents,
+#if GT_TEXTAREA_LINE_CACHE
+            (unsigned)style->line_cache.count
+#else
+            0u
+#endif
+            );
     gt_area_st padding_font = gt_area_reduce(obj->area, style->padding);
     gt_area_st area_font = gt_area_reduce(padding_font, style->border_width + _FONT_AREA_REDUCE_SIZE);
     font_attr.logical_area = area_font;
@@ -247,6 +447,20 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
     }
 #endif
 
+#if GT_TEXTAREA_LINE_CACHE
+    bool _lc_is_scroll = _is_hold_on_contents_for_scroll(style);
+    bool _lc_seg_applied = false;
+    char * _lc_utf8_start = NULL;
+    uint16_t _lc_utf8_len = 0;
+    if (_lc_is_scroll && scroll_y < 0 && style->line_cache.count > 0) {
+        idx = _line_cache_apply(obj, &font, &font_attr, scroll_y);
+        /* save the adjusted pointer so the loop doesn't overwrite it */
+        _lc_utf8_start = font.utf8;
+        _lc_utf8_len   = font.len;
+        _lc_seg_applied = (_lc_utf8_start != NULL);
+    }
+#endif
+
     if(0 != style->start_x_off || 0 != style->start_y_off) {
         font_attr.start_x = style->start_x_off + area_font.x + gt_font_get_indent_width(&font.info, style->indent);
         font_attr.start_y = style->start_y_off + area_font.y;
@@ -261,6 +475,14 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
         }
         font.len                = style->contents[idx].len;
         font.info.style.all = style->contents[idx].mask_style;
+#if GT_TEXTAREA_LINE_CACHE
+        /** First iteration after a cache hit: use the offset pointer, not segment start */
+        if (_lc_seg_applied) {
+            font.utf8 = _lc_utf8_start;
+            font.len  = _lc_utf8_len;
+            _lc_seg_applied = false;
+        }
+#endif
 
 #if GT_TEXTAREA_CUSTOM_FONT_STYLE
         font_attr.font_color    = style->contents[idx].font_info.palette;
@@ -309,6 +531,13 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
             _create_auto_scoll_to(obj);
         }
     }
+#if GT_TEXTAREA_LINE_CACHE
+    /** Build line cache after a full render (not during scroll, not touch-word query) */
+    if (false == _lc_is_scroll) {
+        _line_cache_build(obj);
+        _set_hold_on_contents_for_scroll(style, true);
+    }
+#endif
 }
 
 /**
@@ -353,6 +582,9 @@ _free_contents(gt_obj_st * obj) {
         _set_hold_on_contents_for_scroll(style_p, false);
 #if GT_TEXTAREA_SUB_STRING_SCROLL_CACHE
         _free_reset_scroll_cache(style_p);
+#endif
+#if GT_TEXTAREA_LINE_CACHE
+        _line_cache_free(style_p);
 #endif
 
         for (gt_size_t i = style_p->cnt_contents - 1; i >= 0; i--) {
@@ -526,6 +758,12 @@ _textarea_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
                 }
                 obj->process_attr.scroll.y = obj->area.h - style->max_height;
             }
+#if GT_TEXTAREA_LINE_CACHE
+            /** Enable cache-assisted rendering during scroll if cache is ready */
+            if (style->line_cache.count > 0) {
+                _set_hold_on_contents_for_scroll(style, true);
+            }
+#endif
             gt_disp_invalid_area(obj);
             break;
         }
