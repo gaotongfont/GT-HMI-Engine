@@ -412,6 +412,9 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
         .param = parms,
         .key_val = 0,
     };
+    if (NULL == parent) {
+        return GT_RES_INV;
+    }
     if (gt_obj_is_type(parent, GT_TYPE_UNKNOWN)) {
         GT_LOGW(GT_LOG_TAG_CHECK, "Invalid obj: %p(%d), ev: %d", parent, gt_obj_class_get_type(parent), event);
         return GT_RES_INV;
