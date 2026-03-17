@@ -292,6 +292,27 @@ static void _lrc_correction_time(gt_obj_st* obj, uint32_t time)
     gt_anim_set_time(style->anim, pt);
     gt_anim_set_paused(style->anim, false);
 }
+GT_ATTRIBUTE_RAM_TEXT
+static void _lrc_set_current_time(gt_obj_st* obj, uint32_t time)
+{
+    _gt_lrc_st* style = (_gt_lrc_st*)obj;
+    if(false == gt_anim_is_paused(style->anim)) {
+        return ;
+    }
+
+    uint32_t index = 0;
+    for(uint32_t i = 0; i < style->times_count; ++i) {
+        if(time >= style->times[i]) {
+            index = i;
+            continue;
+        }
+
+        if(time < style->times[i]) {
+            break;
+        }
+    }
+    gt_lrc_set_select_index(obj, index);
+}
 
 /* global functions / API interface -------------------------------------*/
 GT_ATTRIBUTE_RAM_TEXT
@@ -376,6 +397,8 @@ void gt_lrc_start(gt_obj_st* obj)
     if(false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;
     }
+    _gt_lrc_st* style = (_gt_lrc_st*)obj;
+    style->index = 0;
     _lrc_start_anim(obj);
 }
 
@@ -467,6 +490,19 @@ void gt_lrc_correction_time(gt_obj_st* obj, uint32_t time)
         _lrc_correction_time(obj, time);
     }
 }
+
+GT_ATTRIBUTE_RAM_TEXT
+void gt_lrc_set_current_time(gt_obj_st* obj, uint32_t time)
+{
+    if(false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+
+    _gt_lrc_st* style = (_gt_lrc_st*)obj;
+    _lrc_set_current_time(obj, time);
+}
+
+
 
 GT_ATTRIBUTE_RAM_TEXT
 void gt_lrc_set_space(gt_obj_st * obj, uint8_t space_x, uint8_t space_y)

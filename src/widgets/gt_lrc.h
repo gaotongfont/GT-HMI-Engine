@@ -76,21 +76,21 @@ gt_obj_st* gt_lrc_add_text_by_len(gt_obj_st* obj, uint32_t time, const char* tex
 void gt_lrc_clear_all_text(gt_obj_st* obj);
 
 /**
- * @brief start lrc
+ * @brief Start the lrc internal timer
  *
  * @param obj
  */
 void gt_lrc_start(gt_obj_st* obj);
 
 /**
- * @brief pause lrc
+ * @brief pause the lrc internal timer
  *
  * @param obj
  */
 void gt_lrc_paused(gt_obj_st* obj);
 
 /**
- * @brief resume lrc
+ * @brief resume the lrc internal timer
  *
  * @param obj
  */
@@ -103,8 +103,9 @@ void gt_lrc_resume(gt_obj_st* obj);
  * @param color
  */
 void gt_lrc_set_select_color(gt_obj_st * obj, gt_color_t color);
+
 /**
- * @brief set select index
+ * @brief Setting up the selection index does not necessarily require calling the gt_lrc_start() function beforehand.
  *
  * @param obj
  * @param index
@@ -120,12 +121,21 @@ void gt_lrc_set_select_index(gt_obj_st* obj, uint32_t index);
 void gt_lrc_set_fixed_line(gt_obj_st* obj, uint32_t line);
 
 /**
- * @brief correction time
+ * @brief correction time, need gt_lrc_start() before
  *
  * @param obj
- * @param time
+ * @param time time in ms
  */
 void gt_lrc_correction_time(gt_obj_st* obj, uint32_t time);
+
+/**
+ * @brief set current time, not need gt_lrc_start() before
+ *
+ * @param obj
+ * @param time time in ms
+ */
+void gt_lrc_set_current_time(gt_obj_st* obj, uint32_t time);
+
 
 /**
  * @brief set space between text
