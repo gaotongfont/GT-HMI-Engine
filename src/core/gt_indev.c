@@ -1745,6 +1745,10 @@ gt_res_t _gt_indev_reset_status(void)
         if (indev->scroll_throw_anim) {
             gt_anim_del_by(indev->scroll_throw_anim);
         }
+        if (GT_INDEV_TYPE_KEYPAD == indev->drv->type) {
+            indev->data.keypad.obj_target = NULL;
+            indev->data.keypad.obj_origin = NULL;
+        }
     }
     return GT_RES_OK;
 }
