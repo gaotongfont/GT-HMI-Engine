@@ -336,8 +336,8 @@ gt_res_t _gt_png_fh_open(struct _gt_img_decoder_s * decoder, struct _gt_img_dsc_
         return GT_RES_INV;
     }
     if (_is_png_lock()) {
-        ret = GT_RES_INV;
-        goto free_lb;
+        gt_fs_close(fp);
+        return GT_RES_INV;
     }
     if (0 != lodepng_load_file_fh(&png_data, (size_t * )&png_size, dsc->file_header)) {
         goto err_lb;
