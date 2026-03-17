@@ -375,8 +375,8 @@ gt_res_t _gt_png_direct_addr_open(struct _gt_img_decoder_s * decoder, struct _gt
         return GT_RES_INV;
     }
     if (_is_png_lock()) {
-        ret = GT_RES_INV;
-        goto free_lb;
+        gt_fs_close(fp);
+        return GT_RES_INV;
     }
     if (0 != lodepng_load_file_direct_addr(&png_data, (size_t * )&png_size, dsc->addr)) {
         goto err_lb;
