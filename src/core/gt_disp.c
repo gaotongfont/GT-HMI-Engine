@@ -117,6 +117,101 @@ typedef struct _bg_abs_area_st {
 
 
 /* static functions -----------------------------------------------------*/
+
+#if GT_DISP_SW_ROTATE_SUPPORT
+/**
+ * @brief Transpose pixels from logical area into physical full-screen buffer.
+ *        Supports GT_ROTATED_0/90/180/270.
+ */
+static GT_ATTRIBUTE_RAM_TEXT void
+_gt_disp_sw_rotate(gt_disp_st * disp, const gt_area_st * area,
+                   const gt_color_t * src, gt_color_t * dst)
+{
+    const uint16_t phy_w = disp->drv->res_hor;
+    const uint16_t phy_h = disp->drv->res_ver;
+    const int32_t xe = area->x + area->w;
+    const int32_t ye = area->y + area->h;
+    uint32_t idx = 0;
+    int32_t x, y;
+
+    switch ((gt_rotated_et)disp->drv->rotated) {
+        case GT_ROTATED_90:
+            /* logical (lx,ly) -> physical (phy_w-1-ly, lx) */
+            for (y = area->y; y < ye; y++) {
+                int32_t px_base = (phy_w - 1) - y;
+                for (x = area->x; x < xe; x++) {
+                    dst[(uint32_t)x * phy_w + px_base] = src[idx++];
+                }
+            }
+            break;
+        case GT_ROTATED_180:
+            for (y = area->y; y < ye; y++) {
+                int32_t py = (phy_h - 1) - y;
+                for (x = area->x; x < xe; x++) {
+                    dst[(uint32_t)py * phy_w + (phy_w - 1 - x)] = src[idx++];
+                }
+            }
+            break;
+        case GT_ROTATED_270:
+            /* logical (lx,ly) -> physical (ly, phy_h-1-lx) */
+            for (y = area->y; y < ye; y++) {
+                for (x = area->x; x < xe; x++) {
+                    dst[(uint32_t)(phy_h - 1 - x) * phy_w + y] = src[idx++];
+                }
+            }
+            break;
+        default: /* GT_ROTATED_0 */
+            for (y = area->y; y < ye; y++) {
+                for (x = area->x; x < xe; x++) {
+                    dst[(uint32_t)y * phy_w + x] = src[idx++];
+                }
+            }
+            break;
+    }
+}
+#endif /* GT_DISP_SW_ROTATE_SUPPORT */
+
+/**
+ * @brief Unified flush: optionally transpose pixels then call flush_cb.
+ *        When sw_rotate is enabled, only accumulates into sw_rotate_buf;
+ *        caller must invoke _gt_disp_flush_commit() after the tile loop.
+ */
+static GT_ATTRIBUTE_RAM_TEXT inline void
+_gt_disp_flush_one(gt_disp_st * disp, gt_area_st * area, gt_color_t * src)
+{
+#if GT_DISP_SW_ROTATE_SUPPORT
+    if (disp->drv->sw_rotate && disp->sw_rotate_buf) {
+        /* Accumulate tile into the physical-layout buffer; flush deferred. */
+        _gt_disp_sw_rotate(disp, area, src, disp->sw_rotate_buf);
+        return;
+    }
+#endif
+    gt_disp_drv_set_flushing(disp->drv, true);
+    disp->drv->flush_cb(disp->drv, area, src);
+}
+
+#if GT_DISP_SW_ROTATE_SUPPORT
+/**
+ * @brief Flush the fully-composed sw_rotate_buf to the display driver.
+ *        Call once after the tile loop completes a full logical frame.
+ */
+static GT_ATTRIBUTE_RAM_TEXT inline void
+_gt_disp_flush_commit(gt_disp_st * disp)
+{
+    if (!disp->drv->sw_rotate || !disp->sw_rotate_buf) {
+        return;
+    }
+    gt_area_st phy_area = {
+        .x = 0, .y = 0,
+        .w = disp->drv->res_hor,
+        .h = disp->drv->res_ver
+    };
+    gt_disp_drv_set_flushing(disp->drv, true);
+    disp->drv->flush_cb(disp->drv, &phy_area, disp->sw_rotate_buf);
+}
+#endif /* GT_DISP_SW_ROTATE_SUPPORT */
+
+
 /**
  * @brief Is display busy
  *
@@ -613,9 +708,8 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_anim(_flush_scr_param_st 
             }
         }
 
-        gt_disp_drv_set_flushing(param->disp->drv, true);
         /** flush display by buffer area */
-        param->disp->drv->flush_cb(param->disp->drv, &param->area_flush, param->disp->vbd_color);
+        _gt_disp_flush_one(param->disp, &param->area_flush, param->disp->vbd_color);
         param->area_flush.y += param->line;
 
         if (is_double_buf) {
@@ -623,6 +717,9 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_anim(_flush_scr_param_st 
         }
 
     }
+#if GT_DISP_SW_ROTATE_SUPPORT
+    _gt_disp_flush_commit(param->disp);
+#endif
 }
 #endif  /** GT_USE_SCREEN_ANIM */
 
@@ -901,9 +998,8 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
             }
         }
 
-        gt_disp_drv_set_flushing(disp->drv, true);
         /** flush display by buffer area */
-        disp->drv->flush_cb(disp->drv, &param->area_flush, disp->vbd_color);
+        _gt_disp_flush_one(disp, &param->area_flush, disp->vbd_color);
         param->area_flush.y += param->line;
 
         if( end_y - param->area_flush.y < param->line){
@@ -915,6 +1011,9 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
             disp->vbd_color = gt_disp_graph_get_buf_backup(disp->vbd_color);
         }
     }
+#if GT_DISP_SW_ROTATE_SUPPORT
+    _gt_disp_flush_commit(disp);
+#endif
 #if GT_LAYER_TOP_SCREENSHOT_CACHE
     disp->screenshot = screenshot_backup || is_half_opa;
 #endif
@@ -1403,8 +1502,8 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         }
         gt_disp_set_scr(scr);
 
-        disp->area_act.h = disp->drv->res_ver;
-        disp->area_act.w = disp->drv->res_hor;
+        disp->area_act.h = gt_disp_get_res_ver(disp);
+        disp->area_act.w = gt_disp_get_res_hor(disp);
 #if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
         gt_indev_release_focus_lock();
 #endif

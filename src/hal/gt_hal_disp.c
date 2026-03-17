@@ -42,7 +42,13 @@ typedef struct _gt_style_layer_top_s {
     static gt_color_t * graph_buf_all = NULL;
 #endif
 
-static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_layer_top_class = {
+#if GT_DISP_SW_ROTATE_SUPPORT
+static gt_color_t GT_ATTRIBUTE_RAM_DATA
+_gt_sw_rotate_buf[GT_SCREEN_WIDTH * GT_SCREEN_HEIGHT] = {0};
+#endif
+
+static const GT_ATTRIBUTE_RAM_RODATA
+gt_obj_class_st gt_layer_top_class = {
     ._init_cb      = (_gt_init_cb_t)NULL,
     ._deinit_cb    = (_gt_deinit_cb_t)NULL,
     ._event_cb     = (_gt_event_cb_t)NULL,
@@ -140,6 +146,9 @@ void gt_disp_drv_register(gt_disp_drv_st * drv)
         GT_LOGW(GT_LOG_TAG_GUI,"flush_cb is null");
         return;
     }
+#if GT_DISP_SW_ROTATE_SUPPORT
+    drv->sw_rotate = 1;
+#endif
     gt_disp_st * disp_p = _gt_gc_get_disp();
 
     if( disp_p == NULL ){
@@ -410,5 +419,47 @@ void _gt_disp_hided_layer_top_widgets(gt_obj_st * top)
     }
 }
 
+/*************************************/
+/*          rotation API             */
+/*************************************/
+
+void gt_disp_set_rotation(gt_rotated_et rotation)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    GT_CHECK_BACK(disp);
+    if ((gt_rotated_et)disp->drv->rotated == rotation) {
+        return;
+    }
+    disp->drv->rotated = (uint8_t)rotation;
+
+#if GT_DISP_SW_ROTATE_SUPPORT
+    if (disp->drv->sw_rotate) {
+        disp->sw_rotate_buf = _gt_sw_rotate_buf;
+    }
+#endif
+
+    /* Swap logical screen size when switching between portrait/landscape */
+    _gt_disp_reload_max_area(disp->scr_act);
+
+    /* Resize active screen object to new logical dimensions */
+    if (disp->scr_act) {
+        disp->scr_act->area.w = gt_disp_get_res_hor(disp);
+        disp->scr_act->area.h = gt_disp_get_res_ver(disp);
+    }
+    disp->area_act.w = gt_disp_get_res_hor(disp);
+    disp->area_act.h = gt_disp_get_res_ver(disp);
+
+    /* Trigger full-screen redraw */
+    gt_disp_ref_area(&disp->area_act);
+}
+
+gt_rotated_et gt_disp_get_rotation(void)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    if (NULL == disp) {
+        return GT_ROTATED_0;
+    }
+    return (gt_rotated_et)disp->drv->rotated;
+}
 
 /* end ------------------------------------------------------------------*/

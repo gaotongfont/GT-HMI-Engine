@@ -121,6 +121,29 @@ _indev_rebound_recover_handler(gt_indev_st * indev, gt_obj_st * target);
 
 
 /* static functions -----------------------------------------------------*/
+static GT_ATTRIBUTE_RAM_TEXT inline void _rotate_point_inv(
+    gt_rotated_et rotation, uint16_t phy_w, uint16_t phy_h,
+    gt_size_t * x, gt_size_t * y)
+{
+    gt_size_t tmp;
+    switch (rotation) {
+        case GT_ROTATED_90:
+            /* physical(px,py) -> logical x=py, y=phy_w-1-px */
+            tmp = *x; *x = *y; *y = (gt_size_t)(phy_w - 1) - tmp;
+            break;
+        case GT_ROTATED_180:
+            *x = (gt_size_t)(phy_w - 1) - *x;
+            *y = (gt_size_t)(phy_h - 1) - *y;
+            break;
+        case GT_ROTATED_270:
+            /* physical(px,py) -> logical x=phy_h-1-py, y=px */
+            tmp = *x; *x = (gt_size_t)(phy_h - 1) - *y; *y = tmp;
+            break;
+        default:
+            break;
+    }
+}
+
 static GT_ATTRIBUTE_RAM_TEXT inline bool _is_scroll_vertical(gt_dir_et dir) {
     return (GT_DIR_UP == dir || GT_DIR_DOWN == dir) ? true : false;
 }
@@ -1258,6 +1281,14 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_point(gt_indev_st * indev) {
     indev->drv->read_cb(indev->drv, &data_indev);
     if (GT_INDEV_STATE_INVALID == data_indev.state) {
         return;
+    }
+
+    /* transform physical touch coordinates to logical (UI) coordinates */
+    gt_disp_st * _disp = gt_disp_get_default();
+    if (_disp && GT_ROTATED_0 != (gt_rotated_et)_disp->drv->rotated) {
+        _rotate_point_inv((gt_rotated_et)_disp->drv->rotated,
+                          _disp->drv->res_hor, _disp->drv->res_ver,
+                          &data_indev.point.x, &data_indev.point.y);
     }
 
     if (data_indev.point.x > gt_disp_get_res_hor(NULL) ||

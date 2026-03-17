@@ -599,6 +599,25 @@ extern "C" {
     #define GT_USE_UD_LR_TO_CONTROL_FOCUS_EN     0
 #endif
 
+#ifndef GT_DISP_SW_ROTATE_SUPPORT
+    /**
+     * @brief Enable software rotation support via a static intermediate buffer.
+     *      When enabled, the engine accumulates all flush tiles into a full-screen
+     *      physical-layout buffer (_gt_sw_rotate_buf), performing pixel transpose
+     *      according to the current rotation angle (0/90/180/270). After all tiles
+     *      are composed, flush_cb is called once with the complete physical frame.
+     *      flush_cb always receives physically-ordered data regardless of rotation.
+     *
+     *      1: software rotation enabled. flush_cb receives transposed full-screen data.
+     *         RAM cost: GT_SCREEN_WIDTH * GT_SCREEN_HEIGHT * sizeof(gt_color_t) bytes
+     *         (static array, allocated at compile time).
+     *      0: disabled. Rotation handling (if any) is left to the hardware or flush_cb.
+     *         Saves code size and the intermediate buffer RAM.
+     * [default: 0]
+     */
+    #define GT_DISP_SW_ROTATE_SUPPORT   0
+#endif
+
 #ifndef GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM
     /**
      * @brief When creating a new screen, the memory pool failed to

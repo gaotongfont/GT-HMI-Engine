@@ -14,6 +14,7 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
+#include "../gt_conf.h"
 #include "../widgets/gt_obj.h"
 #include "../others/gt_color.h"
 
@@ -58,7 +59,8 @@ typedef struct _gt_disp_drv_s
     uint8_t rotated: 2;    ///< display rotation @ref gt_rotated_et
     uint8_t busy:1;        ///< display busy state
     uint8_t flushing:1;
-    uint8_t reserved:4;    ///< reserved
+    uint8_t sw_rotate:1;   ///< 1=software transpose before flush_cb, 0=hardware rotation
+    uint8_t reserved:3;    ///< reserved
 }gt_disp_drv_st;
 
 typedef struct _gt_refr_s {
@@ -99,6 +101,10 @@ typedef struct _gt_disp_s {
 
     // round-robin queue
     _gt_refr_st refr;
+
+#if GT_DISP_SW_ROTATE_SUPPORT
+    gt_color_t * sw_rotate_buf;     ///< intermediate buffer for software rotation, NULL=not allocated
+#endif
 
     uint8_t scr_anim_type : 4;          // @ref gt_scr_anim_type_et
     uint8_t enabled       : 1;
@@ -224,6 +230,22 @@ void _gt_disp_reload_max_area(gt_obj_st * scr);
  * @param top The top layer object
  */
 void _gt_disp_hided_layer_top_widgets(gt_obj_st * top);
+
+/**
+ * @brief Set display rotation at runtime. Triggers a full-screen redraw.
+ *        Physical res_hor/res_ver in the driver remain unchanged;
+ *        gt_disp_get_res_hor/ver swap them automatically for 90/270.
+ *
+ * @param rotation @ref gt_rotated_et  GT_ROTATED_0 / 90 / 180 / 270
+ */
+void gt_disp_set_rotation(gt_rotated_et rotation);
+
+/**
+ * @brief Get current display rotation.
+ *
+ * @return gt_rotated_et current rotation value
+ */
+gt_rotated_et gt_disp_get_rotation(void);
 
 #ifdef __cplusplus
 } /*extern "C"*/
