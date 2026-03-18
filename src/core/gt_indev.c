@@ -177,14 +177,16 @@ static GT_ATTRIBUTE_RAM_TEXT gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
     gt_dir_et ret = (gt_dir_et)point_p->gesture;
 
-    if (gt_abs(point_p->scroll_sum.x) > gt_abs(point_p->scroll_sum.y)) {
+    gt_size_t abs_sx = gt_abs(point_p->scroll_sum.x);
+    gt_size_t abs_sy = gt_abs(point_p->scroll_sum.y);
+    if (abs_sx > abs_sy) {
         if (point_p->scroll_sum.x > indev->drv->limit_pixel_gesture_hor) {
             ret = GT_DIR_RIGHT;
         } else if (point_p->scroll_sum.x < -indev->drv->limit_pixel_gesture_hor) {
             ret = GT_DIR_LEFT;
         }
         point_p->scroll_throw.y = 0;
-    } else if (point_p->scroll_sum.x || point_p->scroll_sum.y) {
+    } else if (abs_sx || abs_sy) {
         if (point_p->scroll_sum.y > indev->drv->limit_pixel_gesture_ver) {
             ret = GT_DIR_DOWN;
         } else if (point_p->scroll_sum.y < -indev->drv->limit_pixel_gesture_ver) {
@@ -221,17 +223,19 @@ _scr_has_home_gesture_events(gt_obj_st * target, gt_event_type_et event) {
 static gt_indev_home_gesture_area_et GT_ATTRIBUTE_RAM_TEXT
 _is_first_point_at_home_gesture_area(gt_point_st const * const p) {
     gt_indev_home_gesture_area_et first_area = GT_INDEV_FP_HOME_GESTURE_NONE;
+    gt_size_t res_ver = gt_disp_get_res_ver(NULL);
+    gt_size_t res_hor = gt_disp_get_res_hor(NULL);
 
     if (p->y + 1 < GT_CFG_DEFAULT_AREA_HOME_GESTURE_TOP) {
         first_area = GT_INDEV_FP_HOME_GESTURE_TOP;
     }
-    else if (p->y + GT_CFG_DEFAULT_AREA_HOME_GESTURE_BOTTOM + 1 > gt_disp_get_res_ver(NULL)) {
+    else if (p->y + GT_CFG_DEFAULT_AREA_HOME_GESTURE_BOTTOM + 1 > res_ver) {
         first_area = GT_INDEV_FP_HOME_GESTURE_BOTTOM;
     }
     if (p->x + 1 < GT_CFG_DEFAULT_AREA_HOME_GESTURE_LEFT) {
         first_area = GT_INDEV_FP_HOME_GESTURE_LEFT;
     }
-    else if (p->x + GT_CFG_DEFAULT_AREA_HOME_GESTURE_RIGHT + 1 > gt_disp_get_res_hor(NULL)) {
+    else if (p->x + GT_CFG_DEFAULT_AREA_HOME_GESTURE_RIGHT + 1 > res_hor) {
         first_area = GT_INDEV_FP_HOME_GESTURE_RIGHT;
     }
     return first_area;
@@ -382,24 +386,29 @@ static GT_ATTRIBUTE_RAM_TEXT inline void
 _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const point_p, gt_size_t * dx, gt_size_t * dy) {
     uint16_t w_parent = obj_scroll->parent->area.w;
     uint16_t h_parent = obj_scroll->parent->area.h;
-    gt_size_t left = 0, right = gt_disp_get_res_hor(NULL);
-    gt_size_t top = 0, bottom = gt_disp_get_res_ver(NULL);
+    gt_size_t right = gt_disp_get_res_hor(NULL);
+    gt_size_t bottom = gt_disp_get_res_ver(NULL);
     gt_size_t rmk_x = *dx, rmk_y = *dy;
+    /* 缓存重复解引用的成员 */
+    gt_size_t obj_x = obj_scroll->area.x;
+    gt_size_t obj_y = obj_scroll->area.y;
+    gt_size_t obj_w = obj_scroll->area.w;
+    gt_size_t obj_h = obj_scroll->area.h;
 
     if (false == obj_scroll->absorb_dir) {
         /** hor */
-        gt_size_t x = obj_scroll->area.x + rmk_x;  /** target x position */
+        gt_size_t x = obj_x + rmk_x;  /** target x position */
         // outside the left
-        if (x > left) {
-            rmk_x = -obj_scroll->area.x;
+        if (x > 0) {
+            rmk_x = -obj_x;
         }
         // outside the right
-        else if (x + obj_scroll->area.w <= right) {
-            rmk_x = right - obj_scroll->area.w - obj_scroll->area.x;
+        else if (x + obj_w <= right) {
+            rmk_x = right - obj_w - obj_x;
         }
         // inside
         else if (obj_scroll->scroll_snap_x) {
-            gt_size_t tmp_x = 0 == rmk_x ? x : obj_scroll->area.x;
+            gt_size_t tmp_x = 0 == rmk_x ? x : obj_x;
             if ((uint16_t)GT_DIR_LEFT == point_p->gesture) {
                 rmk_x = ((x - w_parent) / w_parent) * w_parent - tmp_x;
             } else if ((uint16_t)GT_DIR_RIGHT == point_p->gesture) {
@@ -409,17 +418,17 @@ _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const 
         *dx = rmk_x;
     } else {
         /** ver */
-        gt_size_t y = obj_scroll->area.y + rmk_y;
+        gt_size_t y = obj_y + rmk_y;
         // top
-        if (y > top) {
-            rmk_y = -obj_scroll->area.y;
+        if (y > 0) {
+            rmk_y = -obj_y;
         }
         // bottom
-        else if (y + obj_scroll->area.h <= bottom) {
-            rmk_y = bottom - obj_scroll->area.h - obj_scroll->area.y;
+        else if (y + obj_h <= bottom) {
+            rmk_y = bottom - obj_h - obj_y;
         }
         else if (obj_scroll->scroll_snap_y) {
-            gt_size_t tmp_y = 0 == rmk_y ? y : obj_scroll->area.y;
+            gt_size_t tmp_y = 0 == rmk_y ? y : obj_y;
             if ((uint16_t)GT_DIR_LEFT == point_p->gesture) {
                 rmk_y = ((y - h_parent) / h_parent) * h_parent - tmp_y;
             } else if ((uint16_t)GT_DIR_RIGHT == point_p->gesture) {
@@ -580,19 +589,28 @@ _indev_rebound_recover_handler(gt_indev_st * indev, gt_obj_st * target) {
 }
 
 static gt_res_t GT_ATTRIBUTE_RAM_TEXT
-_gt_indev_check_childs_rebound(gt_indev_st * indev, gt_obj_st * obj) {
-    if (gt_obj_is_type(obj, GT_TYPE_UNKNOWN)) {
+_gt_indev_check_childs_rebound(gt_indev_st * indev, gt_obj_st * root) {
+    /* 用显式栈替代递归，避免深层对象树的栈溢出和函数调用开销 */
+    gt_obj_st * stack[64];
+    int top = 0;
+
+    if (gt_obj_is_type(root, GT_TYPE_UNKNOWN)) {
         return GT_RES_OK;
     }
-    if (gt_obj_is_rebound(obj)) {
-        _indev_rebound_recover_handler(indev, obj);
-    }
-    if (0 == obj->cnt_child) {
-        return GT_RES_OK;
-    }
-    gt_size_t i = 0, cnt = obj->cnt_child;
-    for (; i < cnt; i++) {
-        _gt_indev_check_childs_rebound(indev, obj->child[i]);
+    stack[top++] = root;
+
+    while (top > 0) {
+        gt_obj_st * obj = stack[--top];
+        if (gt_obj_is_rebound(obj)) {
+            _indev_rebound_recover_handler(indev, obj);
+        }
+        gt_size_t i = obj->cnt_child;
+        while (i-- > 0) {
+            gt_obj_st * child = obj->child[i];
+            if (!gt_obj_is_type(child, GT_TYPE_UNKNOWN) && top < 64) {
+                stack[top++] = child;
+            }
+        }
     }
     return GT_RES_OK;
 }
@@ -699,10 +717,11 @@ _indev_scroll_throw_handler(gt_indev_st * indev) {
 static GT_ATTRIBUTE_RAM_TEXT inline bool
 _indev_is_scroll(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
-    if (gt_abs(point_p->scroll_sum.x) >= indev->drv->limit_pixel_scroll) {
+    gt_size_t limit = indev->drv->limit_pixel_scroll;
+    if (gt_abs(point_p->scroll_sum.x) >= limit) {
         return true;
     }
-    if (gt_abs(point_p->scroll_sum.y) >= indev->drv->limit_pixel_scroll) {
+    if (gt_abs(point_p->scroll_sum.y) >= limit) {
         return true;
     }
     return false;
@@ -1019,14 +1038,14 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _scroll_calc_throw_distance(struct _poi
     diff.x = point_p->newly.x - point_p->last.x;
     diff.y = point_p->newly.y - point_p->last.y;
 
-    point_p->scroll_throw.x = (point_p->scroll_throw.x + diff.x) >> 1;
-    point_p->scroll_throw.y = (point_p->scroll_throw.y + diff.y) >> 1;
-#if GT_INDEV_CFG_VELOCITY
-    if (diff.x || diff.y) {
-        ++point_p->diff_points;
-    }
-#endif
     point_p->scroll_diff = diff;
+    if (diff.x || diff.y) {
+        point_p->scroll_throw.x = (point_p->scroll_throw.x + diff.x) >> 1;
+        point_p->scroll_throw.y = (point_p->scroll_throw.y + diff.y) >> 1;
+#if GT_INDEV_CFG_VELOCITY
+        ++point_p->diff_points;
+#endif
+    }
 }
 
 #if GT_INDEV_SCROLL_THROW_SPEED_UP_VER && !GT_INDEV_SCROLL_THROW_SPEED_UP_HOR
@@ -1231,7 +1250,11 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_pressed_handle(gt_indev_st * indev) {
         point_p->scroll_throw.y = 0;
     }
 
-    point_p->obj_act = _search_active_obj_from_all_layers(&point_p->newly, false);
+    /* 持续按压帧：重新搜索当前坐标下的对象（检测手指是否移到其他对象）
+     * 新按下帧（obj_act 已在上方初始化块中赋值）跳过此次遍历 */
+    if (point_p->obj_target) {
+        point_p->obj_act = _search_active_obj_from_all_layers(&point_p->newly, false);
+    }
 
 #if GT_INDEV_POINT_LOG
     GT_LOG_A(GT_LOG_TAG_TP, "press %p(%d) %p(%d) (%d, %d) diff: (%d, %d)",

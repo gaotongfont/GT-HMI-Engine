@@ -9,12 +9,20 @@
 #include <assert.h>
 #include <limits.h>
 #include <stddef.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "gt_tlsf.h"
+#include "gt_log.h"
 #include "../core/gt_mem.h"
+
+/**
+ * @brief TLSF 内部日志适配宏，可通过修改此处切换底层输出方式：
+ *        - 使用项目日志系统：GT_LOGE(GT_LOG_TAG_MEM, ...)
+ *        - 使用裸 printf：_GT_PRINT(...)
+ *        - 嵌入式静默：((void)0)
+ */
+#define _TLSF_LOG(_fmt, ...)    GT_LOGE(GT_LOG_TAG_MEM, _fmt, ##__VA_ARGS__)
 
 #if GT_MEM_CUSTOM
 
@@ -63,6 +71,7 @@
 
 gt_tlsf_decl int gt_tlsf_ffs(unsigned int word)
 {
+	if (!word) { return -1; }
 	const unsigned int reverse = word & (~word + 1);
 	const int bit = 32 - __builtin_clz(reverse);
 	return bit - 1;
@@ -909,7 +918,7 @@ int gt_tlsf_check(gt_tlsf_t tlsf)
 static void default_walker(void* ptr, size_t size, int used, void* user)
 {
 	(void)user;
-	printf("\t%p %s size: %x (%p)\n", ptr, used ? "used" : "free", (unsigned int)size, block_from_ptr(ptr));
+	_TLSF_LOG("\t%p %s size: %x (%p)", ptr, used ? "used" : "free", (unsigned int)size, block_from_ptr(ptr));
 }
 
 void gt_tlsf_walk_pool(pool_t pool, gt_tlsf_walker walker, void* user)
@@ -994,23 +1003,31 @@ pool_t gt_tlsf_add_pool(gt_tlsf_t tlsf, void* mem, size_t bytes)
 	block_header_t* next;
 
 	const size_t pool_overhead = gt_tlsf_pool_overhead();
-	const size_t pool_bytes = align_down(bytes - pool_overhead, ALIGN_SIZE);
 
 	if (((ptrdiff_t)mem % ALIGN_SIZE) != 0)
 	{
-		printf("gt_tlsf_add_pool: Memory must be aligned by %u bytes.\n",
+		_TLSF_LOG("gt_tlsf_add_pool: Memory must be aligned by %u bytes.",
 			(unsigned int)ALIGN_SIZE);
 		return 0;
 	}
 
+	if (bytes < pool_overhead)
+	{
+		_TLSF_LOG("gt_tlsf_add_pool: Memory size %u too small (min overhead %u bytes).",
+			(unsigned int)bytes, (unsigned int)pool_overhead);
+		return 0;
+	}
+
+	const size_t pool_bytes = align_down(bytes - pool_overhead, ALIGN_SIZE);
+
 	if (pool_bytes < block_size_min || pool_bytes > block_size_max)
 	{
 #if defined (TLSF_64BIT)
-		printf("gt_tlsf_add_pool: Memory size must be between 0x%x and 0x%x00 bytes.\n",
+		_TLSF_LOG("gt_tlsf_add_pool: Memory size must be between 0x%x and 0x%x00 bytes.",
 			(unsigned int)(pool_overhead + block_size_min),
 			(unsigned int)((pool_overhead + block_size_max) / 256));
 #else
-		printf("gt_tlsf_add_pool: Memory size must be between %u and %u bytes.\n",
+		_TLSF_LOG("gt_tlsf_add_pool: Memory size must be between %u and %u bytes.",
 			(unsigned int)(pool_overhead + block_size_min),
 			(unsigned int)(pool_overhead + block_size_max));
 #endif
@@ -1078,7 +1095,7 @@ int test_ffs_fls()
 
 	if (rv)
 	{
-		printf("test_ffs_fls: %x ffs/fls tests failed.\n", rv);
+		_TLSF_LOG("test_ffs_fls: 0x%x ffs/fls tests failed.", rv);
 	}
 	return rv;
 }
@@ -1095,7 +1112,7 @@ gt_tlsf_t gt_tlsf_create(void* mem)
 
 	if (((tlsfptr_t)mem % ALIGN_SIZE) != 0)
 	{
-		printf("gt_tlsf_create: Memory must be aligned to %u bytes.\n",
+		_TLSF_LOG("gt_tlsf_create: Memory must be aligned to %u bytes.",
 			(unsigned int)ALIGN_SIZE);
 		return 0;
 	}
@@ -1108,7 +1125,10 @@ gt_tlsf_t gt_tlsf_create(void* mem)
 gt_tlsf_t gt_tlsf_create_with_pool(void* mem, size_t bytes)
 {
 	gt_tlsf_t tlsf = gt_tlsf_create(mem);
-	gt_tlsf_add_pool(tlsf, (char*)mem + gt_tlsf_size(), bytes - gt_tlsf_size());
+	if (tlsf)
+	{
+		gt_tlsf_add_pool(tlsf, (char*)mem + gt_tlsf_size(), bytes - gt_tlsf_size());
+	}
 	return tlsf;
 }
 
@@ -1234,14 +1254,17 @@ void* gt_tlsf_realloc(gt_tlsf_t tlsf, void* ptr, size_t size)
 	else
 	{
 		block_header_t* block = block_from_ptr(ptr);
-		block_header_t* next = block_next(block);
-
 		const size_t cursize = block_size(block);
-		const size_t combined = cursize + block_size(next) + block_header_overhead;
 		const size_t adjust = adjust_request_size(size, ALIGN_SIZE);
-		if (size > cursize && 0 == adjust) {
+
+		/* size 超出 block_size_max，adjust_request_size 返回 0，拒绝分配 */
+		if (size > 0 && adjust == 0)
+		{
 			return NULL;
 		}
+
+		block_header_t* next = block_next(block);
+		const size_t combined = cursize + block_size(next) + block_header_overhead;
 
 		gt_tlsf_assert(!block_is_free(block) && "block already marked as free");
 
