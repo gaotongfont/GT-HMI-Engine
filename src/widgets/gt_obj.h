@@ -133,6 +133,7 @@ typedef struct gt_obj_s {
     uint8_t opa_tip_bar;    /* scrolling tip bar @ref scroll_tip */
     uint8_t focus_w;        /* focus width */
     uint8_t focus_gap;      /* focus gap */
+    uint8_t event_cb_depth; /* nesting depth of event callback iteration, guard against immediate free */
 #if GT_USE_WIDGET_LAYOUT
     gt_obj_container_st container;
 #endif

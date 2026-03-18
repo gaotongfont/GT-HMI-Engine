@@ -51,7 +51,13 @@ typedef struct {
 /* static functions -----------------------------------------------------*/
 static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_node_push(gt_event_st * e) {
     gt_event_st * ptr = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
-    while (ptr) {
+    /* fast path: stack is empty, no duplicate check needed */
+    if (NULL == ptr) {
+        e->prev = NULL;
+        _GT_GC_GET_ROOT(_gt_event_node_header_ll) = e;
+        return GT_RES_OK;
+    }
+    do {
         if (e == ptr) {
             return GT_RES_FAIL;
         }
@@ -59,7 +65,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_event_node_push(gt_event_st * e) {
             return GT_RES_FAIL;
         }
         ptr = ptr->prev;
-    }
+    } while (ptr);
     e->prev = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
     _GT_GC_GET_ROOT(_gt_event_node_header_ll) = e;
     return GT_RES_OK;
@@ -71,23 +77,30 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_event_node_pop(gt_event_st *e) {
 
 static gt_res_t _GT_EVENT_ATTRIBUTE_SRAM_TEXT
 _gt_event_calling_user_cb(gt_event_st * e) {
-    if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(e->target)) {
-        return GT_RES_INV;
-    }
-    gt_obj_event_attr_st * event_ptr = e->target->event_attr;
+    gt_obj_st * obj = (gt_obj_st *)e->target;
+    /* type already validated by caller, access fields directly */
+    gt_obj_event_attr_st * event_ptr = obj->event_attr;
     if (NULL == event_ptr) {
         return GT_RES_OK;
     }
-    if (gt_obj_is_disabled(e->target)) {
+    if (obj->disabled) {
         return GT_RES_OK;
     }
+    ++obj->event_cb_depth;
     while(event_ptr) {
-        if(event_ptr->user_cb && e->code_type == event_ptr->filter) {
+        gt_obj_event_attr_st * next = event_ptr->next_ptr;  /* cache before cb, in case cb removes events */
+        if(event_ptr->user_cb &&
+           (event_ptr->filter == GT_EVENT_TYPE_ALL || e->code_type == event_ptr->filter)) {
             e->user_data = event_ptr->user_data;
             event_ptr->user_cb(e);
+            /* re-validate: cb may have destroyed the object and freed the event chain */
+            if (gt_obj_is_type((struct gt_obj_s *)obj, GT_TYPE_UNKNOWN)) {
+                return GT_RES_OK;
+            }
         }
-        event_ptr = event_ptr->next_ptr;
+        event_ptr = next;
     }
+    --obj->event_cb_depth;
     return GT_RES_OK;
 }
 
@@ -101,14 +114,23 @@ _gt_event_calling_user_cb(gt_event_st * e) {
 static inline gt_res_t _GT_EVENT_ATTRIBUTE_SRAM_TEXT
 _using_replace_core_user_cb(gt_obj_event_attr_st * event_ptr, gt_event_st * e) {
     gt_res_t res = GT_RES_FAIL;
+    gt_obj_st * obj = (gt_obj_st *)e->target;
+    ++obj->event_cb_depth;
     while(event_ptr) {
-        if(event_ptr->user_cb && e->code_type == event_ptr->filter) {
+        gt_obj_event_attr_st * next = event_ptr->next_ptr;  /* cache before cb, in case cb removes events */
+        if(event_ptr->user_cb &&
+           (event_ptr->filter == GT_EVENT_TYPE_ALL || e->code_type == event_ptr->filter)) {
             e->user_data = event_ptr->user_data;
             event_ptr->user_cb(e);
             res = GT_RES_OK;
+            /* re-validate: cb may have destroyed the object and freed the event chain */
+            if (gt_obj_is_type((struct gt_obj_s *)obj, GT_TYPE_UNKNOWN)) {
+                return res;
+            }
         }
-        event_ptr = event_ptr->next_ptr;
+        event_ptr = next;
     }
+    --obj->event_cb_depth;
     return res;
 }
 
@@ -133,14 +155,18 @@ _event_check_scroll_end(gt_obj_st * obj, gt_event_type_et t) {
 static gt_res_t _GT_EVENT_ATTRIBUTE_SRAM_TEXT
 _gt_event_calling_event_cb(gt_event_st * e) {
     gt_obj_st * obj = (gt_obj_st * )e->target;
-    if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(obj)) {
-        return GT_RES_INV;
-    }
+    /* type already validated by caller, access fields directly */
     const gt_obj_class_st * c = obj->classes;
 
-    if (obj->replace_core_event_attr &&
-        GT_RES_OK == _using_replace_core_user_cb(obj->replace_core_event_attr, e)) {
-        return GT_RES_OK;
+    if (obj->replace_core_event_attr) {
+        gt_res_t rr = _using_replace_core_user_cb(obj->replace_core_event_attr, e);
+        /* re-validate: replace cb may have destroyed the object */
+        if (gt_obj_is_type((struct gt_obj_s *)obj, GT_TYPE_UNKNOWN)) {
+            return GT_RES_OK;
+        }
+        if (GT_RES_OK == rr) {
+            return GT_RES_OK;
+        }
     }
 
     _event_check_scroll_begin(obj, e->code_type);
@@ -148,6 +174,10 @@ _gt_event_calling_event_cb(gt_event_st * e) {
     /** Default core event func */
     if (c->_event_cb) {
         c->_event_cb(obj, e);
+        /* re-validate: core cb may have destroyed the object */
+        if (gt_obj_is_type((struct gt_obj_s *)obj, GT_TYPE_UNKNOWN)) {
+            return GT_RES_OK;
+        }
     }
 
     _event_check_scroll_end(obj, e->code_type);
@@ -168,12 +198,20 @@ _gt_event_send_kernel(gt_event_st * e) {
         if (GT_RES_OK != res) {
             return res;
         }
+        /* re-validate: core cb may have destroyed the object */
+        if (gt_obj_is_type(e->target, GT_TYPE_UNKNOWN)) {
+            return res;
+        }
         res = _gt_event_calling_user_cb(e);
         if (GT_RES_OK != res) {
             return res;
         }
+        /* re-validate: user cb may have destroyed the object */
+        if (gt_obj_is_type(e->target, GT_TYPE_UNKNOWN)) {
+            break;
+        }
         gt_obj_st * parent_p = gt_obj_get_parent(e->target);
-        if (parent_p && gt_obj_is_bubble_notify(e->target)) {
+        if (parent_p && ((gt_obj_st *)e->target)->bubble_notify) {
             e->target = parent_p;
         } else {
             break;
@@ -214,6 +252,8 @@ _common_event_send(gt_event_st * e) {
     }
 #endif
     if (gt_obj_is_type(e->origin, GT_TYPE_UNKNOWN)) { return GT_RES_FAIL; }
+    /* also validate target (may differ from origin in global indev path) */
+    if (gt_obj_is_type(e->target, GT_TYPE_UNKNOWN)) { return GT_RES_FAIL; }
     if (GT_RES_FAIL == _gt_event_node_push(e)) {
         return GT_RES_INV;
     }
@@ -241,6 +281,10 @@ _common_add_event_node(gt_obj_event_attr_st ** event_root_p) {
     uint16_t len = sizeof(gt_obj_event_attr_st);
     gt_obj_event_attr_st * new_event = (gt_obj_event_attr_st * )gt_mem_malloc(len);
     GT_CHECK_BACK_VAL(new_event, NULL);
+    new_event->next_ptr = NULL;
+    new_event->user_cb = NULL;
+    new_event->user_data = NULL;
+    new_event->filter = GT_EVENT_TYPE_NONE;
 
     gt_obj_event_attr_st * tmp_ptr = *event_root_p;
     if (tmp_ptr) {
@@ -294,7 +338,6 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
     gt_obj_event_attr_st * new_event = _common_add_event_node(&obj->event_attr);
     GT_CHECK_BACK(new_event);
 
-    new_event->next_ptr = NULL;
     new_event->user_cb = event;
     new_event->filter = filter;
     new_event->user_data = user_data;
@@ -311,7 +354,6 @@ void gt_obj_add_replace_core_event_cb(struct gt_obj_s * obj, gt_event_cb_t event
     gt_obj_event_attr_st * new_event = _common_add_event_node(&obj->replace_core_event_attr);
     GT_CHECK_BACK(new_event);
 
-    new_event->next_ptr = NULL;
     new_event->user_cb = event;
     new_event->filter = filter;
     new_event->user_data = user_data;
@@ -327,7 +369,7 @@ bool gt_event_has_event_cb(struct gt_obj_s * obj, gt_event_type_et filter)
         return false;
     }
     while (event_ptr) {
-        if (event_ptr->filter == filter) {
+        if (event_ptr->filter == GT_EVENT_TYPE_ALL || event_ptr->filter == filter) {
             return true;
         }
         event_ptr = event_ptr->next_ptr;
@@ -397,6 +439,11 @@ void gt_obj_remove_all_event_cb_immediately(struct gt_obj_s * obj)
     if (GT_TYPE_UNKNOWN == type) {
         return;
     }
+    /* downgrade to safe deferred removal if callback chain is being iterated */
+    if (obj->event_cb_depth) {
+        gt_obj_remove_all_event_cb(obj);
+        return;
+    }
     if (obj->event_attr) {
         _free_event_recursive(obj->event_attr);
         obj->event_attr = NULL;
@@ -455,8 +502,11 @@ gt_res_t gt_event_send_to_childs(struct gt_obj_s * parent, gt_event_type_et even
     gt_res_t res = GT_RES_OK;
     GT_CHECK_BACK_VAL(parent, GT_RES_FAIL);
 
-    gt_size_t idx = parent->cnt_child - 1;
+    uint16_t cnt = parent->cnt_child;   /* snapshot: child cb may modify the child list */
+    if (0 == cnt) { return GT_RES_OK; } /* guard against underflow on unsigned gt_size_t */
+    gt_size_t idx = (gt_size_t)cnt - 1;
     for (; idx >= 0; idx--) {
+        if (idx >= (gt_size_t)parent->cnt_child) { continue; }  /* child was removed during iteration */
         res = gt_event_send(parent->child[idx], event, parms);
         if (GT_RES_OK != res) {
             break;
@@ -476,7 +526,9 @@ gt_res_t gt_event_send_by_id(gt_id_t widget_id, gt_event_type_et event, void * p
         return GT_RES_FAIL;
     }
     gt_obj_st * target = gt_obj_find_by_id(widget_id);
-
+    if (NULL == target) {
+        return GT_RES_FAIL;
+    }
     return gt_event_send(target, event, parms);
 }
 
@@ -537,6 +589,7 @@ gt_res_t _gt_global_core_indev_event_send(struct gt_obj_s * org, gt_event_type_e
 
 gt_event_type_et gt_event_get_code(gt_event_st * e)
 {
+    if (NULL == e) { return GT_EVENT_TYPE_NONE; }
     return e->code_type;
 }
 
