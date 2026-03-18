@@ -140,6 +140,10 @@ extern "C" {
     #define GT_ATTRIBUTE_RAM_DATA   GT_ATTRIBUTE_LARGE_RAM_ARRAY
 #endif
 
+#ifndef GT_ATTRIBUTE_RAM_RODATA
+    #define GT_ATTRIBUTE_RAM_RODATA
+#endif
+
 #ifndef GT_ATTRIBUTE_RAM_TEXT
     #define GT_ATTRIBUTE_RAM_TEXT
 #endif

@@ -1267,7 +1267,6 @@ gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const * const param) {
 #else
     /** ready to init and load screen */
     if (false == _create_scr_by_stack_item(new_item_p, home_id)) {
-        gt_scr_stack_pop(1);
         return ret;
     }
     if (false == gt_scr_stack_push(new_item_p)) {

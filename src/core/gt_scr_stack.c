@@ -141,8 +141,15 @@ _release_all_pop_remark_except_active_scr(_gt_gc_scr_st * scr_info, gt_obj_st co
                 --i;
                 continue;
             }
-            /** scr_info->pop_remark.cnt-- */
+            /**
+             * gt_obj_destroy_immediately -> _gt_obj_class_destroy ->
+             * _gt_scr_stack_remove_pop_scr: removes this entry and decrements cnt.
+             * Do NOT touch pop_scr_list or cnt here to avoid double-removal.
+             * Re-read cnt after destroy since it may have changed.
+             */
             gt_obj_destroy_immediately(pop_scr);
+            i = scr_info->pop_remark.cnt - 1;
+            continue;
         }
         --i;
     }
@@ -361,6 +368,7 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
     gt_scr_stack_item_st * item = NULL;
+    gt_scr_stack_item_st * mid = NULL;
     gt_scr_id_t home_id = gt_scr_stack_get_home_scr_id();
     bool is_home_alive = gt_scr_stack_is_home_scr_alive();
 
@@ -381,13 +389,13 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
         }
     }
     while (--count > 0) {
-        item = (gt_scr_stack_item_st * )gt_stack_pop(scr_info->stack);
-        if (count > 0 && item && item->current_scr) {
+        mid = (gt_scr_stack_item_st * )gt_stack_pop(scr_info->stack);
+        if (mid && mid->current_scr) {
             /** Free middle screen, keep top and reload one */
-            if (home_id != item->current_scr_id || false == is_home_alive) {
-                item->current_scr->using_sta = false;
-                _gt_obj_class_destroy(item->current_scr);
-                item->current_scr = NULL;
+            if (home_id != mid->current_scr_id || false == is_home_alive) {
+                mid->current_scr->using_sta = false;
+                _gt_obj_class_destroy(mid->current_scr);
+                mid->current_scr = NULL;
             }
         }
     }
