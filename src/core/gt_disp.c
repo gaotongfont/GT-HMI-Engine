@@ -723,138 +723,68 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_anim(_flush_scr_param_st 
 }
 #endif  /** GT_USE_SCREEN_ANIM */
 
-static GT_ATTRIBUTE_RAM_TEXT inline void
-_scr_x_equal_0(_flush_scr_param_st * param, uint16_t width) {
-    if (param->area_flush.x < 0) {
-        param->area_flush.w = param->area_flush.w + param->area_flush.x;
-        param->area_flush.x = 0;
-    }
-
-    if ((param->area_flush.x % width) + param->area_flush.w > width) {
-        param->area_flush.w = width - (param->area_flush.x % width);
-    }
-}
-
-static GT_ATTRIBUTE_RAM_TEXT inline void
-_scr_x_large_0(_flush_scr_param_st * param, uint16_t width, gt_obj_st * scr) {
-    if (param->area_flush.x < 0) {
-        param->area_flush.w = param->area_flush.w + param->area_flush.x;
-        param->area_flush.x = 0;
-    }
-
-    if (param->area_flush.x > scr->area.x) {
-        param->area_flush.x = param->area_flush.x - scr->area.x;
-    } else {
-        param->area_flush.w = (param->area_flush.w + param->area_flush.x) - scr->area.x;
-        param->area_flush.x = 0;
-    }
-
-    if ((param->area_flush.x % width) + param->area_flush.w > width) {
-        param->area_flush.w = width - (param->area_flush.x % width);
-    }
-}
-
-static GT_ATTRIBUTE_RAM_TEXT inline void
-_scr_x_less_0(_flush_scr_param_st * param, uint16_t width, gt_obj_st * scr) {
-    if (param->area_flush.x < 0) {
-        param->area_flush.w = param->area_flush.w + param->area_flush.x - scr->area.x;
-        param->area_flush.x = 0;
-    }
-
-    if (param->area_flush.x > scr->area.x || param->area_flush.x > 0) {
-        param->area_flush.x = param->area_flush.x - scr->area.x;
-    }
-
-    if ((param->area_flush.x % width) + param->area_flush.w > width) {
-        param->area_flush.w = width - (param->area_flush.x % width);
-    }
-}
-
-static GT_ATTRIBUTE_RAM_TEXT inline void
-_scr_y_equal_0(_flush_scr_param_st * param, uint16_t height) {
-    if (param->area_flush.y < 0) {
-        param->area_flush.h = param->area_flush.h + param->area_flush.y;
-        param->area_flush.y = 0;
-    }
-
-    if ((param->area_flush.y % height) + param->area_flush.h > height) {
-        param->area_flush.h = height - (param->area_flush.y % height);
-    }
-}
-
-static GT_ATTRIBUTE_RAM_TEXT inline void
-_scr_y_large_0(_flush_scr_param_st * param, uint16_t height, gt_obj_st * scr) {
-    if (param->area_flush.y < 0) {
-        param->area_flush.h = param->area_flush.h + param->area_flush.y;
-        param->area_flush.y = 0;
-    }
-
-    if (param->area_flush.y > scr->area.y) {
-        param->area_flush.y = param->area_flush.y - scr->area.y;
-    } else {
-        param->area_flush.h = (param->area_flush.h + param->area_flush.y) - scr->area.y;
-        param->area_flush.y = 0;
-    }
-
-    if ((param->area_flush.y % height) + param->area_flush.h > height) {
-        param->area_flush.h = height - (param->area_flush.y % height);
-    }
-}
-
-static GT_ATTRIBUTE_RAM_TEXT inline void
-_scr_y_less_0(_flush_scr_param_st * param, uint16_t height, gt_obj_st * scr) {
-    if (param->area_flush.y <= 0) {
-        param->area_flush.h = param->area_flush.h + param->area_flush.y - scr->area.y;
-        param->area_flush.y = 0;
-    }
-
-    if (param->area_flush.y > 0) {
-        param->area_flush.y = param->area_flush.y - scr->area.y;
-    }
-
-    if ((param->area_flush.y % height) + param->area_flush.h > height) {
-        param->area_flush.h = height - (param->area_flush.y % height);
-    }
-}
-
 /**
- * @brief Calculate the area of the display buffer that needs to be refreshed
+ * @brief Map area_flush from logical screen space to physical display space,
+ *        then clamp to screen bounds.
  *
  * @param param
  * @param scr
- * @return gt_area_st The buffer or area of display flush area.
+ * @return gt_area_st The adjusted flush area.
  */
 static GT_ATTRIBUTE_RAM_TEXT gt_area_st
 _update_area_flush_by_calc_partly_redraw_area(_flush_scr_param_st * param, gt_obj_st * scr) {
-    uint16_t width = gt_disp_get_res_hor(param->disp);
-    uint16_t height = gt_disp_get_res_ver(param->disp);
+    const uint16_t width  = gt_disp_get_res_hor(param->disp);
+    const uint16_t height = gt_disp_get_res_ver(param->disp);
 
-    if(width == param->area_flush.w && height == param->area_flush.h){
-        if (param->area_flush.x < 0 || (param->area_flush.x + param->area_flush.w > width)) {
+    /** Full-screen fast path: only clamp origin, size is already correct */
+    if (width == param->area_flush.w && height == param->area_flush.h) {
+        if (param->area_flush.x < 0 || param->area_flush.x + param->area_flush.w > width) {
             param->area_flush.x = 0;
         }
-        if (param->area_flush.y < 0 || (param->area_flush.y + param->area_flush.h > height)) {
+        if (param->area_flush.y < 0 || param->area_flush.y + param->area_flush.h > height) {
             param->area_flush.y = 0;
         }
         return param->area_flush;
     }
-    // Calculate the area_flush x coordinates and width
-    if (0 == scr->area.x) {
-        _scr_x_equal_0(param, width);
-    } else if (scr->area.x > 0) {
-        _scr_x_large_0(param, width, scr);
-    } else if (scr->area.x < 0) {
-        _scr_x_less_0(param, width, scr);
-    }
 
-    // Calculate the area_flush y coordinates and height
-    if (0 == scr->area.y) {
-        _scr_y_equal_0(param, height);
-    } else if (scr->area.y > 0) {
-        _scr_y_large_0(param, height, scr);
-    } else if (scr->area.y < 0) {
-        _scr_y_less_0(param, height, scr);
+    /** X axis */
+    int32_t x = param->area_flush.x;
+    int32_t w = param->area_flush.w;
+    const int32_t sx = scr->area.x;
+
+    if (sx == 0) {
+        if (x < 0) { w += x; x = 0; }
+    } else if (sx > 0) {
+        if (x < 0) { w += x; x = 0; }
+        if (x > sx) { x -= sx; }
+        else        { w = (w + x) - sx; x = 0; }
+    } else { /* sx < 0 */
+        if (x < 0) { w += x - sx; x = 0; }
+        if (x > sx || x > 0) { x -= sx; }
     }
+    if (x + w > width) { w = (int32_t)width - x; }
+    param->area_flush.x = (gt_size_t)x;
+    param->area_flush.w = (uint16_t)(w > 0 ? w : 0);
+
+    /** Y axis */
+    int32_t y = param->area_flush.y;
+    int32_t h = param->area_flush.h;
+    const int32_t sy = scr->area.y;
+
+    if (sy == 0) {
+        if (y < 0) { h += y; y = 0; }
+    } else if (sy > 0) {
+        if (y < 0) { h += y; y = 0; }
+        if (y > sy) { y -= sy; }
+        else        { h = (h + y) - sy; y = 0; }
+    } else { /* sy < 0 */
+        if (y < 0) { h += y - sy; y = 0; }
+        if (y > sy || y > 0) { y -= sy; }
+    }
+    if (y + h > height) { h = (int32_t)height - y; }
+    param->area_flush.y = (gt_size_t)y;
+    param->area_flush.h = (uint16_t)(h > 0 ? h : 0);
+
     return param->area_flush;
 }
 
@@ -915,47 +845,46 @@ _gt_disp_copy_screenshot(_flush_scr_param_st * param) {
 static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_st * param) {
     gt_disp_st * disp = param->disp;
     gt_obj_st * scr = disp->scr_act;
-    gt_color_t color_fill = gt_screen_get_bgcolor(scr);
+
+    /** Type check before any member access */
     if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(scr)) {
         return;
     }
 
+    gt_color_t color_fill = gt_screen_get_bgcolor(scr);
     scr->area.x = disp->area_act.x;
     scr->area.y = disp->area_act.y;
 
     if (false == gt_area_is_intersect_screen(&scr->area, &param->area_flush)) {
-        return ;
+        return;
     }
     _update_area_flush_by_calc_partly_redraw_area(param, scr);
 
 #if GT_USE_LAYER_TOP
-    /**
-     * Check layer top obj is full screen display and GT_OPA_COVER
-     * to ignore base layer load.
-     */
+    /** Check if top layer fully covers screen with GT_OPA_COVER to skip base layer draw */
     _gt_top_ret_st top_show = _gt_disp_is_top_full_cover_display(disp->layer_top);
     bool is_full_cover = top_show.full_cover && false == top_show.is_opa;
 #if GT_LAYER_TOP_SCREENSHOT_CACHE
     bool is_half_opa = top_show.full_cover && top_show.is_opa;
-    bool screenshot_backup = false == disp->screenshot && is_half_opa ? true : false;
-    bool is_screenshot_vaild = _gt_gc_screenshot_cache_is_valid();
+    bool need_screenshot_backup = is_half_opa && false == disp->screenshot;
+    bool is_screenshot_valid = _gt_gc_screenshot_cache_is_valid();
 #endif
 #endif  /** GT_USE_LAYER_TOP */
 
-    uint16_t end_y = param->area_flush.y + param->area_flush.h;
-    disp->area_disp.y = param->area_flush.y;
+    int32_t end_y = (int32_t)param->area_flush.y + param->area_flush.h;
     disp->area_disp.w = param->area_flush.w;
     if (param->area_flush.h > param->line) {
         param->area_flush.h = param->line;
     }
     disp->area_disp.h = param->area_flush.h;
 
-    uint32_t len = disp->area_disp.w * disp->area_disp.h;
     bool is_double_buf = gt_disp_graph_is_double_buf();
 
     while (param->area_flush.y < end_y) {
+        uint32_t len = (uint32_t)disp->area_disp.w * disp->area_disp.h;
+
 #if GT_LAYER_TOP_SCREENSHOT_CACHE
-        if (!is_screenshot_vaild || !disp->screenshot) {
+        if (!is_screenshot_valid || !disp->screenshot) {
             gt_color_fill(disp->vbd_color, len, color_fill);
         }
 #else
@@ -967,14 +896,13 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
 
 #if GT_USE_LAYER_TOP
 #if GT_LAYER_TOP_SCREENSHOT_CACHE
-        if (is_screenshot_vaild && disp->screenshot) {
+        if (is_screenshot_valid && disp->screenshot) {
             _gt_disp_paste_screenshot(param);
         } else {
             if (false == is_full_cover) {
                 _gt_disp_check_and_copy_foreach(scr, param);
             }
-            if (is_screenshot_vaild && screenshot_backup) {
-                /** backup buffer to cache */
+            if (is_screenshot_valid && need_screenshot_backup) {
                 _gt_disp_copy_screenshot(param);
             }
         }
@@ -984,25 +912,25 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
         }
 #endif  /** GT_LAYER_TOP_SCREENSHOT_CACHE */
 
-        // flush top layer
+        /** flush top layer */
         disp->area_disp.x = param->area_flush.x;
         disp->area_disp.y = param->area_flush.y;
         _gt_disp_check_and_copy_foreach(disp->layer_top, param);
 #else   /** !GT_USE_LAYER_TOP */
         _gt_disp_check_and_copy_foreach(scr, param);
-#endif  /** !GT_USE_LAYER_TOP */
+#endif  /** GT_USE_LAYER_TOP */
 
         if (is_double_buf) {
             while (gt_disp_drv_check_flushing(disp->drv)) {
-                if(disp->drv->wait_cb){ disp->drv->wait_cb(disp->drv); }
+                if (disp->drv->wait_cb) { disp->drv->wait_cb(disp->drv); }
             }
         }
 
-        /** flush display by buffer area */
         _gt_disp_flush_one(disp, &param->area_flush, disp->vbd_color);
         param->area_flush.y += param->line;
 
-        if( end_y - param->area_flush.y < param->line){
+        /** Clamp last tile height to avoid over-drawing */
+        if (param->area_flush.y < end_y && end_y - param->area_flush.y < param->line) {
             param->area_flush.h = end_y - param->area_flush.y;
             disp->area_disp.h = param->area_flush.h;
         }
@@ -1015,18 +943,14 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
     _gt_disp_flush_commit(disp);
 #endif
 #if GT_LAYER_TOP_SCREENSHOT_CACHE
-    disp->screenshot = screenshot_backup || is_half_opa;
+    disp->screenshot = is_half_opa;
 #endif
 }
 
 static inline gt_scr_anim_type_et GT_ATTRIBUTE_RAM_TEXT
 _get_anti_anim_type(gt_scr_anim_type_et type) {
 #if GT_USE_SCREEN_ANIM
-    /* COVER_UP/DOWN have no inverse */
-    if (GT_SCR_ANIM_TYPE_COVER_UP == type || GT_SCR_ANIM_TYPE_COVER_DOWN == type) {
-        return GT_SCR_ANIM_TYPE_NONE;
-    }
-    /* Pairs (1,2),(3,4),(5,6) are adjacent: flip within pair via ((type-1)^1)+1 */
+    /* Pairs (1,2),(3,4),(5,6),(7,8) are adjacent: flip within pair via ((type-1)^1)+1 */
     if (GT_SCR_ANIM_TYPE_NONE != type) {
         type = (gt_scr_anim_type_et)(((type - 1u) ^ 1u) + 1u);
     }
