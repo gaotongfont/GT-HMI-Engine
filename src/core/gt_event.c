@@ -41,7 +41,6 @@ typedef struct {
 
 
 /* static variables -----------------------------------------------------*/
-GT_ATTRIBUTE_LARGE_RAM_ARRAY static bool _is_event_user_del_tmp_obj_en = 0;
 
 
 
@@ -159,44 +158,43 @@ _gt_event_calling_event_cb(gt_event_st * e) {
 static gt_res_t _GT_EVENT_ATTRIBUTE_SRAM_TEXT
 _gt_event_send_kernel(gt_event_st * e) {
     gt_res_t res = GT_RES_OK;
-    if (gt_obj_is_type(e->target, GT_TYPE_UNKNOWN)) {
-        GT_LOGW(GT_LOG_TAG_CHECK, "Unknown object: %p(%d)", e->target, gt_obj_class_get_type(e->target));
-        return GT_RES_INV;
-    }
-    res = _gt_event_calling_event_cb(e);
-    if (GT_RES_OK != res) {
-        return res;
-    }
-    res = _gt_event_calling_user_cb(e);
-    if (GT_RES_OK != res) {
-        return res;
-    }
-    gt_obj_st * parent_p = gt_obj_get_parent(e->target);
-    if (parent_p && gt_obj_is_bubble_notify(e->target)) {
-        e->target = parent_p;
-        res = _gt_event_send_kernel(e);
+
+    while (1) {
+        if (gt_obj_is_type(e->target, GT_TYPE_UNKNOWN)) {
+            GT_LOGW(GT_LOG_TAG_CHECK, "Unknown object: %p(%d)", e->target, gt_obj_class_get_type(e->target));
+            return GT_RES_INV;
+        }
+        res = _gt_event_calling_event_cb(e);
         if (GT_RES_OK != res) {
             return res;
+        }
+        res = _gt_event_calling_user_cb(e);
+        if (GT_RES_OK != res) {
+            return res;
+        }
+        gt_obj_st * parent_p = gt_obj_get_parent(e->target);
+        if (parent_p && gt_obj_is_bubble_notify(e->target)) {
+            e->target = parent_p;
+        } else {
+            break;
         }
     }
     return res;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline bool _is_input_event(gt_event_type_et event) {
-    return (event < _GT_EVENT_TYPE_INPUT_BEGIN || event > _GT_EVENT_TYPE_INPUT_END) ? false : true;
+    return (event >= _GT_EVENT_TYPE_INPUT_BEGIN && event < _GT_EVENT_TYPE_INPUT_END);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _free_event_recursive(gt_obj_event_attr_st * event) {
-    if (NULL == event) {
-        return;
+    while (event) {
+        gt_obj_event_attr_st * next = event->next_ptr;
+        event->next_ptr = NULL;
+        event->user_cb = NULL;
+        event->user_data = NULL;
+        gt_mem_free(event);
+        event = next;
     }
-    if (event->next_ptr) {
-        _free_event_recursive(event->next_ptr);
-    }
-    event->next_ptr = NULL;
-    event->user_cb = NULL;
-    event->user_data = NULL;
-    gt_mem_free(event);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _anim_to_remove_all_event(struct gt_anim_s * anim) {
@@ -321,6 +319,9 @@ void gt_obj_add_replace_core_event_cb(struct gt_obj_s * obj, gt_event_cb_t event
 
 bool gt_event_has_event_cb(struct gt_obj_s * obj, gt_event_type_et filter)
 {
+    if (NULL == obj) {
+        return false;
+    }
     gt_obj_event_attr_st * event_ptr = obj->event_attr;
     if (NULL == event_ptr) {
         return false;
@@ -337,6 +338,9 @@ bool gt_event_has_event_cb(struct gt_obj_s * obj, gt_event_type_et filter)
 
 bool gt_event_has_the_same_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter)
 {
+    if (NULL == obj) {
+        return false;
+    }
     return _common_event_has_the_same_cb(obj->event_attr, event, filter);
 }
 
@@ -405,13 +409,6 @@ void gt_obj_remove_all_event_cb_immediately(struct gt_obj_s * obj)
 
 gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * parms)
 {
-    gt_event_st e = {
-        .target = parent,
-        .origin = parent,
-        .code_type = event,
-        .param = parms,
-        .key_val = 0,
-    };
     if (NULL == parent) {
         return GT_RES_INV;
     }
@@ -419,6 +416,13 @@ gt_res_t gt_event_send(struct gt_obj_s * parent, gt_event_type_et event, void * 
         GT_LOGW(GT_LOG_TAG_CHECK, "Invalid obj: %p(%d), ev: %d", parent, gt_obj_class_get_type(parent), event);
         return GT_RES_INV;
     }
+    gt_event_st e = {
+        .target = parent,
+        .origin = parent,
+        .code_type = event,
+        .param = parms,
+        .key_val = 0,
+    };
     return _common_event_send(&e);
 }
 
@@ -512,14 +516,6 @@ gt_res_t gt_global_event_send(gt_event_type_et event, void * parms)
 
 gt_res_t _gt_global_core_indev_event_send(struct gt_obj_s * org, gt_event_type_et event, void * parms)
 {
-    gt_indev_param_st * indev = (gt_indev_param_st * )parms;
-    gt_event_st e = {
-        .target = gt_disp_get_layer_top(),
-        .origin = org,
-        .code_type = event,
-        .param = parms,
-        .key_val = indev->param.keypad_key,
-    };
     if (0 == gt_global_get_event_count()) {
         return GT_RES_INV;
     }
@@ -527,6 +523,14 @@ gt_res_t _gt_global_core_indev_event_send(struct gt_obj_s * org, gt_event_type_e
         GT_LOGW(GT_LOG_TAG_CHECK, "Invalid obj: %p(%d), ev: %d", org, gt_obj_class_get_type(org), event);
         return GT_RES_INV;
     }
+    gt_indev_param_st * indev = (gt_indev_param_st * )parms;
+    gt_event_st e = {
+        .target = gt_disp_get_layer_top(),
+        .origin = org,
+        .code_type = event,
+        .param = parms,
+        .key_val = indev ? indev->param.keypad_key : 0,
+    };
     return _common_event_send(&e);
 }
 #endif  /** GT_USE_LAYER_TOP */
