@@ -1127,6 +1127,9 @@ _reset_stack_or_push_item_after_home(
         /** Home page reset stack */
         if (false == gt_scr_stack_is_empty()) {
             gt_scr_stack_clear();
+            /** scr_old is now a dangling pointer after clear, reset it to avoid
+             *  false equality when new home screen is allocated at the same address */
+            ret_p->scr_old = NULL;
         }
         if (new_item_p->current_scr && ret_p->scr_old == new_item_p->current_scr) {
             /** reload current screen */
