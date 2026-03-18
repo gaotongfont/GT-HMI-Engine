@@ -27,15 +27,24 @@
 
 
 /* private typedef ------------------------------------------------------*/
-
+typedef struct {
+    _gt_timer_st * timer;
+    gt_anim_st   * act;
+    uint32_t       time_last_run;
+    bool           is_run_same_time;
+    bool           is_del_all;
+} _gt_anim_ctx_st;
 
 
 /* static variables -----------------------------------------------------*/
-static _gt_timer_st * _anim_timer = NULL;
-static uint32_t _time_last_run    = 0;
-static bool _is_list_change       = false;
-static bool _is_run_same_time     = false;
-static gt_anim_st * _anim_act     = NULL;
+static _gt_anim_ctx_st GT_ATTRIBUTE_RAM_DATA
+_ctx = {
+    .timer           = NULL,
+    .act             = NULL,
+    .time_last_run   = 0,
+    .is_run_same_time = false,
+    .is_del_all      = false,
+};
 
 /* macros ---------------------------------------------------------------*/
 
@@ -48,15 +57,15 @@ static gt_anim_st * _anim_act     = NULL;
 /* static functions -----------------------------------------------------*/
 
 static inline void _gt_anim_set_act(gt_anim_st * anim) {
-    _anim_act = anim;
+    _ctx.act = anim;
 }
 
 static inline gt_anim_st * _gt_anim_get_act(void) {
-    return _anim_act;
+    return _ctx.act;
 }
 
 static inline void _gt_anim_clr_act(void) {
-    _anim_act = NULL;
+    _ctx.act = NULL;
 }
 
 static inline bool _gt_anim_free_data(gt_anim_st * anim) {
@@ -69,16 +78,15 @@ static inline bool _gt_anim_free_data(gt_anim_st * anim) {
 }
 
 static inline _gt_timer_st * _gt_anim_get_timer(void) {
-    return _anim_timer;
+    return _ctx.timer;
 }
 
 static inline void _gt_anim_set_timer(struct _gt_timer_s * timer) {
-    _anim_timer = timer;
+    _ctx.timer = timer;
 }
 
 static void _gt_anim_change_list(void)
 {
-    _is_list_change = true;
     if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
         _gt_timer_set_paused(_gt_anim_get_timer(), true);
     } else {
@@ -214,13 +222,15 @@ static void _gt_anim_ready_handler(gt_anim_st * anim) {
     }
 
     if (anim->ready_cb) { anim->ready_cb(anim); }
+    if (anim->deleted) { return; }
     if (!anim->repeat_count && (anim->invert || !anim->playback_time)) {
-        if (anim->time_act < anim->time || anim->repeat_count) {
+        if (anim->time_act < anim->time) {
             /** Want to play continue */
             return ;
         }
         if (anim->deleted_cb) { anim->deleted_cb(anim); }
-        _gt_anim_free_task(anim);
+        /* Mark for deferred cleanup; actual free happens in task handler cleanup pass */
+        anim->deleted = true;
         return ;
     }
 
@@ -230,10 +240,9 @@ static void _gt_anim_ready_handler(gt_anim_st * anim) {
         return ;
     }
     if (!anim->invert) {
-        // FIXME
         anim->time_act = -(int32_t)anim->playback_delay;
 
-        anim->invert = anim->invert ? 0 : 1;
+        anim->invert ^= 1;
 
         /* swap start and end value, and swap anim time */
         int32_t tmp = anim->value_start;
@@ -253,31 +262,33 @@ static void _gt_anim_task_handler(struct _gt_timer_s * timer)
         return ;
     }
 
+    /* Cache tick values once per frame to avoid repeated syscalls */
+    uint32_t now     = gt_tick_get();
+    uint32_t elapsed = gt_tick_elapse(_ctx.time_last_run);
+
     int32_t    new_value    = 0;
     gt_anim_st * ptr        = NULL;
     gt_anim_st * backup_ptr = NULL;
 
-    _is_run_same_time = _is_run_same_time ? false : true;
-refresh_lb:
+    _ctx.is_run_same_time = _ctx.is_run_same_time ? false : true;
+
     _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
-        _is_list_change = false;
-
         if (ptr->deleted) {
-            _gt_anim_ready_handler(ptr);
             continue;
         }
 
-        if (ptr->run_already == _is_run_same_time) {
+        if (ptr->run_already == _ctx.is_run_same_time) {
             continue;
         }
-        ptr->run_already = _is_run_same_time ? 1 : 0;
+        ptr->run_already = _ctx.is_run_same_time ? 1 : 0;
 
         if (ptr->paused) {
-            ptr->tick_create = gt_tick_elapse(ptr->tick_create);
+            /* Advance tick_create so paused time is not counted */
+            ptr->tick_create = now - ptr->tick_create;
             continue;
         }
         if (ptr->time_delay_start > 0) {
-            if (gt_tick_elapse(ptr->tick_create) < ptr->time_delay_start) {
+            if ((now - ptr->tick_create) < (uint32_t)ptr->time_delay_start) {
                 continue;
             }
             ptr->time_delay_start = 0;
@@ -288,8 +299,9 @@ refresh_lb:
         if (ptr->time_act <= 0 && ptr->start_cb) {
             ptr->start_cb(ptr);
         }
+        if (_ctx.is_del_all) { break; }
 
-        ptr->time_act += gt_tick_elapse(_time_last_run);    // time has gone
+        ptr->time_act += (int32_t)elapsed;
         if (ptr->time_act < 0) {
             continue;
         }
@@ -303,21 +315,27 @@ refresh_lb:
                 ptr->exec_cb(ptr->tar, ptr->value_current);
             }
         }
+        if (_ctx.is_del_all) { break; }
+        if (ptr->deleted) { continue; }
         if (ptr->time_act >= ptr->time) {
             _gt_anim_ready_handler(ptr);
         }
+        if (_ctx.is_del_all) { break; }
+    }
 
-        if (_is_list_change) {
-            break;
+    /* Cleanup pass: free all nodes marked deleted during this frame */
+    if (!_ctx.is_del_all) {
+        _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
+            if (ptr->deleted) {
+                _gt_anim_free_task(ptr);
+            }
         }
     }
+    _ctx.is_del_all = false;
 
-    if (_is_list_change) {
-        _is_list_change = false;
-        goto refresh_lb;
-    }
+    _gt_anim_change_list();
     _gt_anim_clr_act();
-    _time_last_run = gt_tick_get();
+    _ctx.time_last_run = now;
 }
 
 GT_ATTRIBUTE_RAM_TEXT static void
@@ -332,8 +350,8 @@ _default_exec_cb(void * obj, int32_t value) {
     gt_point_st * point = (gt_point_st * )gt_anim_get_data();
 
     gt_obj_set_pos((gt_obj_st * )obj,
-        ((point[1].x - point[0].x) * anim->value_current / anim->value_end) + point[0].x,
-        ((point[1].y - point[0].y) * anim->value_current / anim->value_end) + point[0].y);
+        (((point[1].x - point[0].x) * anim->value_current) >> _GT_ANIM_PATH_SHIFT) + point[0].x,
+        (((point[1].y - point[0].y) * anim->value_current) >> _GT_ANIM_PATH_SHIFT) + point[0].y);
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -366,7 +384,7 @@ void gt_anim_pos_move(gt_obj_st * obj, gt_anim_param_st * param)
     gt_anim_st anim;
     gt_anim_init(&anim);
     gt_anim_set_target(&anim, obj);
-    gt_anim_set_value(&anim, 0, 100);
+    gt_anim_set_value(&anim, 0, _GT_ANIM_PATH_RESOLUTION);
     gt_anim_set_path_type(&anim, param->type);
     gt_anim_set_time(&anim, param->time_anim_exec);
     gt_anim_set_time_delay_start(&anim, param->time_delay_start);
@@ -387,7 +405,6 @@ void _gt_anim_core_init(void)
 
     _gt_anim_set_timer(_gt_timer_create(_gt_anim_task_handler, GT_TASK_PERIOD_TIME_ANIM, NULL));
     _gt_anim_change_list();
-    _is_list_change = false;
 }
 
 void gt_anim_init(gt_anim_st * anim)
@@ -416,7 +433,7 @@ gt_anim_st * gt_anim_start(const gt_anim_st * anim)
     GT_CHECK_BACK_VAL(new_obj, NULL);
 
     if (_gt_gc_is_ll_empty(&_GT_GC_GET_ROOT(_gt_anim_ll))) {
-        _time_last_run = gt_tick_get();
+        _ctx.time_last_run = gt_tick_get();
     }
 
     gt_memcpy(new_obj, anim, sizeof(gt_anim_st));
@@ -434,7 +451,7 @@ gt_anim_st * gt_anim_start(const gt_anim_st * anim)
         if (new_obj->exec_cb != ptr->exec_cb) {
             continue;
         }
-        if (ptr->deleted_cb) { ptr->deleted_cb(ptr); }
+        if (!ptr->deleted && ptr->deleted_cb) { ptr->deleted_cb(ptr); }
         _gt_anim_reset_prop(ptr);
     }
 
@@ -470,8 +487,10 @@ bool gt_anim_del(void const * const target, gt_anim_exec_cb_t exec_cb)
 
     _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         if ((ptr->tar == target || NULL == ptr->tar) && (ptr->exec_cb == exec_cb || NULL == ptr->exec_cb)) {
-            if (ptr->deleted_cb) { ptr->deleted_cb(ptr); }
-            _gt_anim_free_task(ptr);
+            if (!ptr->deleted) {
+                if (ptr->deleted_cb) { ptr->deleted_cb(ptr); }
+                ptr->deleted = true;
+            }
             ret = true;
         }
     }
@@ -493,8 +512,10 @@ bool gt_anim_del_by(gt_anim_st * anim)
 
     _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         if (ptr == anim) {
-            if (ptr->deleted_cb) { ptr->deleted_cb(ptr); }
-            _gt_anim_free_task(ptr);
+            if (!ptr->deleted) {
+                if (ptr->deleted_cb) { ptr->deleted_cb(ptr); }
+                ptr->deleted = true;
+            }
             ret = true;
         }
     }
@@ -504,7 +525,6 @@ bool gt_anim_del_by(gt_anim_st * anim)
 
 void gt_anim_del_all(void)
 {
-    bool ret = false;
     gt_anim_st * ptr        = NULL;
     gt_anim_st * backup_ptr = NULL;
 
@@ -512,18 +532,15 @@ void gt_anim_del_all(void)
         return ;
     }
 
+    _ctx.is_del_all = true;
     _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
         if (NULL == ptr) {
             continue;
         }
-        if (ptr->deleted_cb) { ptr->deleted_cb(ptr); }
+        if (!ptr->deleted && ptr->deleted_cb) { ptr->deleted_cb(ptr); }
         _gt_anim_free_task(ptr);
-        ret = true;
     }
-
-    if (ret) {
-        _gt_anim_change_list();
-    }
+    _ctx.is_del_all = false;
 }
 
 bool gt_anim_del_safe_by(void * target)
@@ -542,7 +559,7 @@ bool gt_anim_del_safe_by(void * target)
         if (ptr->tar != target) {
             continue;
         }
-        if( ptr->deleted_cb) { ptr->deleted_cb(ptr); }
+        if (!ptr->deleted && ptr->deleted_cb) { ptr->deleted_cb(ptr); }
         _gt_anim_reset_prop(ptr);
         ret = true;
     }

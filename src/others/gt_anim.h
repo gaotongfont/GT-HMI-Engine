@@ -103,7 +103,7 @@ typedef struct gt_anim_s {
 
     void * data;
 
-    int32_t tick_create;        // [Tick Timestamp] create this animation tick timer
+    uint32_t tick_create;       // [Tick Timestamp] create this animation tick timer
     int32_t time_delay_start;   // The animation is executed after this delay [ms]
     int32_t time;               // remark animation running total time [ms]
     int32_t time_act;           // remark active animation time [0 -> time ms]

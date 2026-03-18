@@ -21,7 +21,7 @@
 
 
 /* static variables -----------------------------------------------------*/
-static uint32_t _tick = 0;
+static volatile uint32_t _tick = 0;
 static volatile uint8_t tick_irq_flag = 0;
 
 /* macros ---------------------------------------------------------------*/
@@ -35,19 +35,20 @@ static volatile uint8_t tick_irq_flag = 0;
 /* global functions / API interface -------------------------------------*/
 void gt_tick_inc(uint32_t ms)
 {
-    tick_irq_flag = 0;
     _tick += ms;
+    tick_irq_flag = 0;
 }
 
 uint32_t gt_tick_get(void)
 {
-    uint32_t ret = 0;
-
-    do {
-        tick_irq_flag = 1;
+    uint32_t ret;
+    tick_irq_flag = 1;
+    ret = _tick;
+    /* If an interrupt fired gt_tick_inc() between the two lines above,
+     * tick_irq_flag was cleared to 0 — re-read once to get the updated value. */
+    if (!tick_irq_flag) {
         ret = _tick;
-    } while(!tick_irq_flag);
-
+    }
     return ret;
 }
 

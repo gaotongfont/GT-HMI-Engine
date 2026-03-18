@@ -78,7 +78,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline uint32_t _gt_timer_for_each_exec(void) {
             continue;
         }
 
-        period = gt_tick_get() - ptr->last_run;
+        period = start_time - ptr->last_run;
 
         if (period < ptr->period) {
             continue;
@@ -91,7 +91,6 @@ static GT_ATTRIBUTE_RAM_TEXT inline uint32_t _gt_timer_for_each_exec(void) {
             }
 
             ptr->timer_cb(ptr);
-            // GT_LOGD(GT_LOG_TAG_TIM, "[%d, %d, +%d]", ptr->last_run, start_time, gt_tick_get() - ptr->last_run);
             ptr->last_run = gt_tick_get();
         }
     }
