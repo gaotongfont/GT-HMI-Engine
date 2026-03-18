@@ -2295,7 +2295,7 @@ static void draw_dot_matrix(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * 
 }
 
 static void _GT_DRAW_ATTRIBUTE_SRAM_TEXT
-draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords) {
+draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords, uint16_t border_radius) {
     if(!dsc->reg.is_fill) return ;
 
     gt_draw_blend_dsc_st blend_dsc = {0};
@@ -2303,8 +2303,6 @@ draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
     blend_dsc.view_area = dsc->limit_area;
     blend_dsc.opa = dsc->bg_opa;
     blend_dsc.mask_buf = NULL;
-
-    uint16_t border_radius = GT_MIN(dsc->radius, (GT_MIN(coords->w >> 1, coords->h >> 1)));
 
     gt_area_st bg_area = {0};
     bg_area = gt_area_reduce(*coords, dsc->border_width);
@@ -2350,14 +2348,63 @@ draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
     line_area.h = 1;
     blend_dsc.dst_area = &line_area;
     blend_dsc.mask_area = &line_area;
-    blend_dsc.mask_buf = mask_line_buf;
 
-    uint16_t i = 0;
-    for(i = 0; i < bg_area.h; ++i){
-        line_area.y = bg_area.y + i;
-        gt_memset(mask_line_buf, mask_opa, line_area.w);
-        gt_mask_get(mask_line_buf, line_area.x, line_area.y, line_area.w);
-        gt_draw_blend(draw_ctx, &blend_dsc);
+    /* 无额外 mask 时，圆角矩形中间段可合并为一次矩形 blend */
+    if(!mask_check && bg_radius > 0 && bg_area.h > (int16_t)(bg_radius << 1)){
+        gt_size_t mid_y_start = bg_area.y + bg_radius;
+        gt_size_t mid_y_end   = bg_area.y + bg_area.h - bg_radius;
+        uint16_t i = 0;
+        /* 顶部圆角区域 */
+        for (i = 0; i < bg_radius; ++i) {
+            line_area.y = bg_area.y + i;
+            gt_memset(mask_line_buf, mask_opa, line_area.w);
+            gt_mask_res_et res = gt_mask_get(mask_line_buf, line_area.x, line_area.y, line_area.w);
+            if(res == GT_MASK_RES_TRANSP) continue;
+            blend_dsc.mask_buf = (res == GT_MASK_RES_FULL_COVER) ? NULL : mask_line_buf;
+            gt_draw_blend(draw_ctx, &blend_dsc);
+        }
+        /* 中间矩形段 */
+        gt_area_st mid_area = bg_area;
+        mid_area.y = mid_y_start;
+        mid_area.h = mid_y_end - mid_y_start;
+        blend_dsc.dst_area  = &mid_area;
+        blend_dsc.mask_area = NULL;
+        if (mask_opa >= GT_OPA_MAX) {
+            /* 完全不透明：无需 mask，一次 blend 覆盖整个中间段 */
+            blend_dsc.mask_buf = NULL;
+            gt_draw_blend(draw_ctx, &blend_dsc);
+        } else {
+            /* 半透明：逐行处理，保持与圆角区域一致的透明度行为 */
+            blend_dsc.dst_area  = &line_area;
+            blend_dsc.mask_area = &line_area;
+            for(i = bg_radius; i < bg_area.h - bg_radius; ++i){
+                line_area.y = bg_area.y + i;
+                gt_memset(mask_line_buf, mask_opa, line_area.w);
+                blend_dsc.mask_buf = mask_line_buf;
+                gt_draw_blend(draw_ctx, &blend_dsc);
+            }
+        }
+        /* 底部圆角区域 */
+        blend_dsc.dst_area  = &line_area;
+        blend_dsc.mask_area = &line_area;
+        for (i = bg_area.h - bg_radius; i < bg_area.h; ++i) {
+            line_area.y = bg_area.y + i;
+            gt_memset(mask_line_buf, mask_opa, line_area.w);
+            gt_mask_res_et res = gt_mask_get(mask_line_buf, line_area.x, line_area.y, line_area.w);
+            if(res == GT_MASK_RES_TRANSP) continue;
+            blend_dsc.mask_buf = (res == GT_MASK_RES_FULL_COVER) ? NULL : mask_line_buf;
+            gt_draw_blend(draw_ctx, &blend_dsc);
+        }
+    } else {
+        uint16_t i = 0;
+        for (i = 0; i < bg_area.h; ++i) {
+            line_area.y = bg_area.y + i;
+            gt_memset(mask_line_buf, mask_opa, line_area.w);
+            gt_mask_res_et res = gt_mask_get(mask_line_buf, line_area.x, line_area.y, line_area.w);
+            if(res == GT_MASK_RES_TRANSP) continue;
+            blend_dsc.mask_buf = (res == GT_MASK_RES_FULL_COVER) ? NULL : mask_line_buf;
+            gt_draw_blend(draw_ctx, &blend_dsc);
+        }
     }
 
     gt_mem_free(mask_line_buf);
@@ -2377,7 +2424,7 @@ free_lb:
 }
 
 static void _GT_DRAW_ATTRIBUTE_SRAM_TEXT
-draw_bg_border(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords) {
+draw_bg_border(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords, uint16_t border_radius) {
     if(dsc->border_width <= 0) return ;
 
     gt_draw_blend_dsc_st blend_dsc = {0};
@@ -2388,7 +2435,6 @@ draw_bg_border(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt
 
     gt_area_st border_area = {0};
     gt_area_copy(&border_area, coords);
-    uint16_t border_radius = GT_MIN(dsc->radius, (GT_MIN(border_area.w >> 1, border_area.h >> 1)));
 
     gt_area_st line_area = {0};
 
@@ -2442,13 +2488,18 @@ draw_bg_border(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt
     line_area.h = 1;
     blend_dsc.dst_area = &line_area;
     blend_dsc.mask_area = &line_area;
-    blend_dsc.mask_buf = mask_line_buf;
 
     uint16_t i = 0;
     for(i = 0; i < border_area.h; ++i){
         line_area.y = border_area.y + i;
         gt_memset(mask_line_buf, mask_opa, line_area.w);
-        gt_mask_get(mask_line_buf, line_area.x, line_area.y, line_area.w);
+        gt_mask_res_et res = gt_mask_get(mask_line_buf, line_area.x, line_area.y, line_area.w);
+        if(res == GT_MASK_RES_TRANSP) continue;
+        if(res == GT_MASK_RES_FULL_COVER){
+            blend_dsc.mask_buf = NULL;
+        } else {
+            blend_dsc.mask_buf = mask_line_buf;
+        }
         gt_draw_blend(draw_ctx, &blend_dsc);
     }
 
@@ -2475,8 +2526,9 @@ void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
         return ;
     }
 
-    draw_bg_fill(draw_ctx, dsc, coords);
-    draw_bg_border(draw_ctx, dsc, coords);
+    uint16_t border_radius = GT_MIN(dsc->radius, (GT_MIN(coords->w >> 1, coords->h >> 1)));
+    draw_bg_fill(draw_ctx, dsc, coords, border_radius);
+    draw_bg_border(draw_ctx, dsc, coords, border_radius);
 }
 
 _gt_draw_font_res_st draw_text(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, const gt_area_st * coords)

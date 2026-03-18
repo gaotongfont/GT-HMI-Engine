@@ -361,8 +361,7 @@ _gt_mask_radius_get(gt_opa_t* mask_buf, \
             else if(first < len) {
                 gt_memset_0(&mask_buf[first], len - first);
             }
-            if(last == 0 && first == len) return GT_MASK_RES_FULL_COVER;
-            else return GT_MASK_RES_FULL_COVER;
+            return GT_MASK_RES_FULL_COVER;
         }
         else {
             int32_t first = area.x - abs_x;
@@ -403,17 +402,22 @@ _gt_mask_radius_get(gt_opa_t* mask_buf, \
     gt_size_t cir_x_left = k + radius - x_start - 1;
     gt_size_t i;
 
-    if(outer == false) {
-        for(i = 0; i < aa_len; i++) {
-            gt_opa_t opa = aa_opa[aa_len - i - 1];
-            if(cir_x_right + i >= 0 && cir_x_right + i < len) {
-                mask_buf[cir_x_right + i] = _GT_DRAW_MASK_MIX(opa, mask_buf[cir_x_right + i]);
+    /* 预计算右侧和左侧的有效迭代范围，消除循环内边界检查 */
+    gt_size_t i_r0 = (cir_x_right < 0) ? (gt_size_t)(-cir_x_right) : 0;
+    gt_size_t i_r1 = (cir_x_right < (gt_size_t)len) ? GT_MIN(aa_len, (gt_size_t)len - cir_x_right) : 0;
+    gt_size_t i_l0 = (cir_x_left >= (gt_size_t)len) ? (gt_size_t)(cir_x_left - len + 1) : 0;
+    gt_size_t i_l1 = (cir_x_left >= 0) ? GT_MIN(aa_len, (gt_size_t)(cir_x_left + 1)) : 0;
 
-            }
-            if(cir_x_left - i >= 0 && cir_x_left - i < len) {
-                mask_buf[cir_x_left - i] = _GT_DRAW_MASK_MIX(opa, mask_buf[cir_x_left - i]);
-            }
+    if(outer == false) {
+        for(i = i_r0; i < i_r1; i++) {
+            gt_opa_t opa = aa_opa[aa_len - i - 1];
+            mask_buf[cir_x_right + i] = _GT_DRAW_MASK_MIX(opa, mask_buf[cir_x_right + i]);
         }
+        for(i = i_l0; i < i_l1; i++) {
+            gt_opa_t opa = aa_opa[aa_len - i - 1];
+            mask_buf[cir_x_left - i] = _GT_DRAW_MASK_MIX(opa, mask_buf[cir_x_left - i]);
+        }
+        i = aa_len;
 
         /*Clean the right side*/
         cir_x_right = GT_CLAMP(0, cir_x_right + i, len);
@@ -424,14 +428,13 @@ _gt_mask_radius_get(gt_opa_t* mask_buf, \
         gt_memset_0(&mask_buf[0], cir_x_left);
     }
     else {
-        for(i = 0; i < aa_len; i++) {
+        for(i = i_r0; i < i_r1; i++) {
             gt_opa_t opa = 255 - (aa_opa[aa_len - 1 - i]);
-            if(cir_x_right + i >= 0 && cir_x_right + i < len) {
-                mask_buf[cir_x_right + i] = _GT_DRAW_MASK_MIX(opa, mask_buf[cir_x_right + i]);
-            }
-            if(cir_x_left - i >= 0 && cir_x_left - i < len) {
-                mask_buf[cir_x_left - i] = _GT_DRAW_MASK_MIX(opa, mask_buf[cir_x_left - i]);
-            }
+            mask_buf[cir_x_right + i] = _GT_DRAW_MASK_MIX(opa, mask_buf[cir_x_right + i]);
+        }
+        for(i = i_l0; i < i_l1; i++) {
+            gt_opa_t opa = 255 - (aa_opa[aa_len - 1 - i]);
+            mask_buf[cir_x_left - i] = _GT_DRAW_MASK_MIX(opa, mask_buf[cir_x_left - i]);
         }
 
         gt_size_t clr_start = GT_CLAMP(0, cir_x_left + 1, len);
@@ -1135,6 +1138,8 @@ void gt_mask_radius_init(gt_mask_radius_st* p_mask, const gt_area_st* coords, ui
         p_mask->circle = NULL;
     }
 
+    /* 一次遍历：同时查找 radius 命中 和 最佳淘汰槽 */
+    _gt_mask_radius_circle_st* circle = NULL;
     uint32_t i = 0;
     for(i = 0; i < _GT_MASK_CIRCLE_MAX_NUM; ++i) {
         if(_gt_circle_list[i].radius == radius){
@@ -1143,15 +1148,8 @@ void gt_mask_radius_init(gt_mask_radius_st* p_mask, const gt_area_st* coords, ui
             p_mask->circle = &_gt_circle_list[i];
             return;
         }
-    }
-
-    /* If no identical one is found, use the one with the smallest count */
-    _gt_mask_radius_circle_st* circle = NULL;
-    for(i = 0; i < _GT_MASK_CIRCLE_MAX_NUM; ++i){
         if(0 == _gt_circle_list[i].used_cnt){
-            if(!circle){
-                circle = &_gt_circle_list[i];
-            }else if(_gt_circle_list[i].count < circle->count){
+            if(!circle || _gt_circle_list[i].count < circle->count){
                 circle = &_gt_circle_list[i];
             }
         }
