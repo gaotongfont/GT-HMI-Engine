@@ -76,7 +76,7 @@ double gt_sin(double angle)
 
 double gt_cos(double angle)
 {
-    return 0;
+    return cos( angle * __GT_ARCH_VAL );
 }
 
 double gt_atan2(double x, double y)
@@ -133,6 +133,8 @@ uint16_t gt_atan2(int x, int y)
     unsigned int degree;     // this will hold the result
     unsigned int ux;
     unsigned int uy;
+
+    if(x == 0 && y == 0) return 0;
 
     // Save the sign flags then remove signs and get XY as unsigned ints
     negflag = 0;
@@ -195,17 +197,17 @@ uint16_t gt_atan2(int x, int y)
 
 double gt_square(double n)
 {
-    return pow(n,2);
+    return n * n;
 }
 
-int gt_abs(int n)
+int32_t gt_abs(int32_t n)
 {
     return n < 0 ? -n : n;
 }
 
 long gt_round(double val)
 {
-    return (long)(val + 0.5);
+    return (val >= 0.0) ? (long)(val + 0.5) : (long)(val - 0.5);
 }
 
 uint32_t gt_per_255(uint8_t n)
@@ -272,7 +274,11 @@ int32_t gt_cubic_bezier(int32_t x, int32_t x1, int32_t y1, int32_t x2, int32_t y
         d = ((d + 2 * bx) * t) >> GT_MATH_CUBIC_BITS;
         d += cx;
 
+#if GT_MATH_CUBIC_BITS > 14
+        if((d >= 0 ? d : -d) <= 1) break;
+#else
         if(gt_abs(d) <= 1) break;
+#endif
 
         d = ((int64_t)xs * (1L << GT_MATH_CUBIC_BITS)) / d;
         if(d == 0) break;  /*Reached precision limits*/
@@ -443,12 +449,12 @@ gt_point_f_st gt_math_catmullrom(float t, gt_point_f_st const * p0, gt_point_f_s
     float t2 = t * t;
     float t3 = t2 * t;
 
-    result.x = 0.5 * (2 * p1->x +
+    result.x = 0.5f * (2 * p1->x +
                 (p2->x - p0->x) * t +
                 (2 * p0->x - 5 * p1->x + 4 * p2->x - p3->x) * t2 +
                 (-p0->x + 3 * p1->x - 3 * p2->x + p3->x) * t3);
 
-    result.y = 0.5 * (2 * p1->y +
+    result.y = 0.5f * (2 * p1->y +
                 (p2->y - p0->y) * t +
                 (2 * p0->y - 5 * p1->y + 4 * p2->y - p3->y) * t2 +
                 (-p0->y + 3 * p1->y - 3 * p2->y + p3->y) * t3);
@@ -458,11 +464,13 @@ gt_point_f_st gt_math_catmullrom(float t, gt_point_f_st const * p0, gt_point_f_s
 
 int32_t gt_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max)
 {
-    if (in_max >= in_min) {
+    if (in_min == in_max) return out_min;
+
+    if (in_max > in_min) {
         if (x >= in_max) return out_max;
         if (x <= in_min) return out_min;
     }
-    if (in_max <= in_min) {
+    if (in_max < in_min) {
         if (x >= in_min) return out_min;
         if (x <= in_max) return out_max;
     }
@@ -475,6 +483,11 @@ int32_t gt_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32
 
 uint32_t gt_math_calc_bezier(gt_math_bezier_st const * const bezier)
 {
+    /*
+     * t, p0~p3 are expected in [0, GT_MATH_BEZIER_VAL_RESOLUTION] (1024).
+     * All intermediate products fit within uint32_t (max ~3*1024*1024 = 3M).
+     * Shift-then-multiply order keeps values small without needing uint64_t.
+     */
     uint32_t t_res  = GT_MATH_BEZIER_VAL_RESOLUTION - bezier->t;
     uint32_t t_res2 = _GT_MATH_GET_BEZIER_SHIFT_VALUE(t_res * t_res);
     uint32_t t_res3 = _GT_MATH_GET_BEZIER_SHIFT_VALUE(t_res2 * t_res);
@@ -482,8 +495,8 @@ uint32_t gt_math_calc_bezier(gt_math_bezier_st const * const bezier)
     uint32_t t3     = _GT_MATH_GET_BEZIER_SHIFT_VALUE(t2 * bezier->t);
 
     uint32_t v1 = _GT_MATH_GET_BEZIER_SHIFT_VALUE(bezier->p0 * t_res3);
-    uint32_t v2 = _GT_MATH_GET_BEZIER_SHIFT_VALUE(_GT_MATH_GET_BEZIER_SHIFT_VALUE(3 * bezier->p1 * t_res2));
-    uint32_t v3 = _GT_MATH_GET_BEZIER_SHIFT_VALUE(_GT_MATH_GET_BEZIER_SHIFT_VALUE(3 * bezier->p2 * t2 * t_res));
+    uint32_t v2 = _GT_MATH_GET_BEZIER_SHIFT_VALUE(3 * _GT_MATH_GET_BEZIER_SHIFT_VALUE(bezier->p1 * t_res2) * bezier->t);
+    uint32_t v3 = _GT_MATH_GET_BEZIER_SHIFT_VALUE(3 * _GT_MATH_GET_BEZIER_SHIFT_VALUE(bezier->p2 * t2) * t_res);
     uint32_t v4 = _GT_MATH_GET_BEZIER_SHIFT_VALUE(bezier->p3 * t3);
 
     return v1 + v2 + v3 + v4;
@@ -508,10 +521,9 @@ int32_t gt_random(int32_t min, int32_t max)
     x ^= x << 5;
     _random_seed = x;
 
-    const uint64_t range = (uint64_t)(max - min) + 1;
-    const uint64_t rand_val = ((uint64_t)x * range) >> 32;
+    uint32_t range = (uint32_t)(max - min) + 1;
 
-    return min + (int32_t)rand_val;
+    return min + (int32_t)(x % range);
 }
 
 int32_t gt_sawtooth_generator_next(gt_generator_st *gen)
@@ -548,59 +560,59 @@ GT_ATTRIBUTE_RAM_TEXT long
 gt_binary_search_from_u16(const uint16_t *arr, uint32_t size, uint32_t target)
 {
     if (!arr || !size) {
-        return -1;  // 如果数组为空或大小为 0，直接返回 -1
+        return -1;
     }
 
     uint32_t left = 0;
     uint32_t right = size - 1;
 
-    // 检查目标值是否在数组范围内
     if (target < arr[left] || target > arr[right]) {
         return -1;
     }
 
     while (left <= right) {
-        uint32_t mid = left + ((right - left) >> 1);  // 计算中间位置，避免溢出
+        uint32_t mid = left + ((right - left) >> 1);
 
         if (arr[mid] == target) {
-            return mid;  // 找到目标元素，返回索引
+            return mid;
         } else if (arr[mid] < target) {
-            left = mid + 1;  // 目标在右半部分，调整左边界
+            left = mid + 1;
         } else {
-            right = mid - 1;  // 目标在左半部分，调整右边界
+            if (mid == 0) break;
+            right = mid - 1;
         }
     }
 
-    return -1;  // 未找到目标元素，返回 -1
+    return -1;
 }
 
 GT_ATTRIBUTE_RAM_TEXT long
 gt_binary_search_from_u32(const uint32_t *arr, uint32_t size, uint32_t target)
 {
     if (!arr || !size) {
-        return -1;  // 如果数组为空或大小为 0，直接返回 -1
+        return -1;
     }
 
     uint32_t left = 0;
     uint32_t right = size - 1;
 
-    // 检查目标值是否在数组范围内
     if (target < arr[left] || target > arr[right]) {
         return -1;
     }
 
     while (left <= right) {
-        uint32_t mid = left + ((right - left) >> 1);  // 计算中间位置，避免溢出
+        uint32_t mid = left + ((right - left) >> 1);
 
         if (arr[mid] == target) {
-            return mid;  // 找到目标元素，返回索引
+            return mid;
         } else if (arr[mid] < target) {
-            left = mid + 1;  // 目标在右半部分，调整左边界
+            left = mid + 1;
         } else {
-            right = mid - 1;  // 目标在左半部分，调整右边界
+            if (mid == 0) break;
+            right = mid - 1;
         }
     }
 
-    return -1;  // 未找到目标元素，返回 -1
+    return -1;
 }
 /* end ------------------------------------------------------------------*/

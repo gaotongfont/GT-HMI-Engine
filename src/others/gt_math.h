@@ -82,7 +82,7 @@ typedef struct {
  */
 typedef struct {
     gt_point_f_st center; ///< Center point coordinates
-    double radius;        ///< Circle radius
+    float radius;         ///< Circle radius
 }gt_math_circle_st;
 
 typedef struct {
@@ -123,7 +123,7 @@ int32_t gt_cos_01deg(int32_t angle_01deg);
 
 double gt_square(double n);
 
-int gt_abs(int n);
+int32_t gt_abs(int32_t n);
 
 /**
  * @brief get the round value, such as:
