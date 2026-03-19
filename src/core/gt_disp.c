@@ -28,6 +28,7 @@
 
 #include "./gt_scroll_tip.h"
 #include "./gt_obj_scroll.h"
+#include "./gt_style.h"
 
 /* private define -------------------------------------------------------*/
 #ifndef _GT_DISP_ATTRIBUTE_SRAM_TEXT
@@ -401,6 +402,23 @@ static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_exec_y_cb(void * obj, int32_t y) {
     gt_obj_set_area(scr, area);
 }
 
+/** UNCOVER: screen + children move together as a whole */
+static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_uncover_exec_x_cb(void * obj, int32_t x) {
+    gt_obj_st * scr = (gt_obj_st * )obj;
+    _gt_obj_move_child_by(scr, (gt_size_t)(x - scr->area.x), 0);
+    gt_area_st area = scr->area;
+    area.x = (gt_size_t)x;
+    gt_obj_set_area(scr, area);
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_uncover_exec_y_cb(void * obj, int32_t y) {
+    gt_obj_st * scr = (gt_obj_st * )obj;
+    _gt_obj_move_child_by(scr, 0, (gt_size_t)(y - scr->area.y));
+    gt_area_st area = scr->area;
+    area.y = (gt_size_t)y;
+    gt_obj_set_area(scr, area);
+}
+
 static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_del_ready_cb(struct gt_anim_s * anim) {
     gt_obj_st * old_scr = (gt_obj_st * )anim->tar;
     old_scr->using_sta = 0;
@@ -467,12 +485,14 @@ static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_ready_cb(struct gt_anim_s * anim) {
 #endif
 }
 
-/* Bitmask for horizontal anim types: MOVE_LEFT=1,MOVE_RIGHT=2,COVER_LEFT=5,COVER_RIGHT=6 */
+/* Bitmask for horizontal anim types: MOVE_LEFT=1,MOVE_RIGHT=2,COVER_LEFT=5,COVER_RIGHT=6,UNCOVER_LEFT=9,UNCOVER_RIGHT=10 */
 #define _ANIM_TYPE_HOR_MASK  ((1u<<GT_SCR_ANIM_TYPE_MOVE_LEFT)|(1u<<GT_SCR_ANIM_TYPE_MOVE_RIGHT)|\
-                              (1u<<GT_SCR_ANIM_TYPE_COVER_LEFT)|(1u<<GT_SCR_ANIM_TYPE_COVER_RIGHT))
-/* Bitmask for vertical anim types: MOVE_UP=3,MOVE_DOWN=4,COVER_UP=7,COVER_DOWN=8 */
+                              (1u<<GT_SCR_ANIM_TYPE_COVER_LEFT)|(1u<<GT_SCR_ANIM_TYPE_COVER_RIGHT)|\
+                              (1u<<GT_SCR_ANIM_TYPE_UNCOVER_LEFT)|(1u<<GT_SCR_ANIM_TYPE_UNCOVER_RIGHT))
+/* Bitmask for vertical anim types: MOVE_UP=3,MOVE_DOWN=4,COVER_UP=7,COVER_DOWN=8,UNCOVER_UP=11,UNCOVER_DOWN=12 */
 #define _ANIM_TYPE_VER_MASK  ((1u<<GT_SCR_ANIM_TYPE_MOVE_UP)|(1u<<GT_SCR_ANIM_TYPE_MOVE_DOWN)|\
-                              (1u<<GT_SCR_ANIM_TYPE_COVER_UP)|(1u<<GT_SCR_ANIM_TYPE_COVER_DOWN))
+                              (1u<<GT_SCR_ANIM_TYPE_COVER_UP)|(1u<<GT_SCR_ANIM_TYPE_COVER_DOWN)|\
+                              (1u<<GT_SCR_ANIM_TYPE_UNCOVER_UP)|(1u<<GT_SCR_ANIM_TYPE_UNCOVER_DOWN))
 
 static GT_ATTRIBUTE_RAM_TEXT bool _is_anim_type_hor(gt_scr_anim_type_et anim_type) {
     return (_ANIM_TYPE_HOR_MASK >> anim_type) & 1u;
@@ -550,8 +570,25 @@ static GT_ATTRIBUTE_RAM_TEXT void _fill_color_ver(_flush_scr_param_st * param, _
 static GT_ATTRIBUTE_RAM_TEXT inline void _adapt_area_flush_hor(_flush_scr_param_st * param) {
     gt_obj_st * prev = param->disp->scr_prev;
     gt_obj_st * scr = param->disp->scr_act;
+    gt_scr_anim_type_et anim_type = param->disp->scr_anim_type;
 
     param->valid.is_hor = true;
+
+    if (GT_SCR_ANIM_TYPE_UNCOVER_LEFT == anim_type || GT_SCR_ANIM_TYPE_UNCOVER_RIGHT == anim_type) {
+        /* UNCOVER: old screen (prev) moves, new screen (scr) stays still.
+         * Visible width of prev = res - |prev.x| (UNCOVER_LEFT: prev.x < 0)
+         *                       = res - prev.x   (UNCOVER_RIGHT: prev.x > 0) */
+        uint16_t res = gt_disp_get_res_hor(param->disp);
+        prev->area.w = res - (uint16_t)gt_abs(prev->area.x);
+        scr->area.w  = res - prev->area.w;
+        param->view_scr_abs.w      = scr->area.w;
+        param->view_scr_prev_abs.w = prev->area.w;
+        /* UNCOVER_LEFT: prev slides left, new screen appears on the right */
+        bool is_uncover_left = (GT_SCR_ANIM_TYPE_UNCOVER_LEFT == anim_type);
+        param->view_scr_abs.x      = is_uncover_left ? prev->area.w : 0;
+        param->view_scr_prev_abs.x = is_uncover_left ? 0 : scr->area.w;
+        return;
+    }
 
     scr->area.w = gt_abs(scr->area.x - param->disp->anim_scr_remark.x);
     prev->area.w = gt_disp_get_res_hor(param->disp) - scr->area.w;
@@ -559,8 +596,8 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _adapt_area_flush_hor(_flush_scr_param_
     param->view_scr_prev_abs.w = prev->area.w;
 
     /* LEFT: new screen enters from left → abs.x = prev.w; RIGHT: new enters from right → abs.x = 0 */
-    bool is_left = (GT_SCR_ANIM_TYPE_COVER_LEFT == param->disp->scr_anim_type ||
-                    GT_SCR_ANIM_TYPE_MOVE_LEFT  == param->disp->scr_anim_type);
+    bool is_left = (GT_SCR_ANIM_TYPE_COVER_LEFT == anim_type ||
+                    GT_SCR_ANIM_TYPE_MOVE_LEFT  == anim_type);
     param->view_scr_abs.x      = is_left ? prev->area.w : 0;
     param->view_scr_prev_abs.x = is_left ? 0 : scr->area.w;
 }
@@ -573,8 +610,23 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _adapt_area_flush_hor(_flush_scr_param_
 static GT_ATTRIBUTE_RAM_TEXT inline void _adapt_area_flush_ver(_flush_scr_param_st * param) {
     gt_obj_st * prev = param->disp->scr_prev;
     gt_obj_st * scr = param->disp->scr_act;
+    gt_scr_anim_type_et anim_type = param->disp->scr_anim_type;
 
     param->valid.is_hor = false;
+
+    if (GT_SCR_ANIM_TYPE_UNCOVER_UP == anim_type || GT_SCR_ANIM_TYPE_UNCOVER_DOWN == anim_type) {
+        /* UNCOVER: old screen (prev) moves, new screen (scr) stays still. */
+        uint16_t res = gt_disp_get_res_ver(param->disp);
+        prev->area.h = res - (uint16_t)gt_abs(prev->area.y);
+        scr->area.h  = res - prev->area.h;
+        param->view_scr_abs.h      = scr->area.h;
+        param->view_scr_prev_abs.h = prev->area.h;
+        /* UNCOVER_UP: prev slides up, new screen appears at the bottom */
+        bool is_uncover_up = (GT_SCR_ANIM_TYPE_UNCOVER_UP == anim_type);
+        param->view_scr_abs.y      = is_uncover_up ? prev->area.h : 0;
+        param->view_scr_prev_abs.y = is_uncover_up ? 0 : scr->area.h;
+        return;
+    }
 
     scr->area.h = gt_abs(scr->area.y - param->disp->anim_scr_remark.y);
     prev->area.h = gt_disp_get_res_ver(param->disp) - scr->area.h;
@@ -582,8 +634,8 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _adapt_area_flush_ver(_flush_scr_param_
     param->view_scr_prev_abs.h = prev->area.h;
 
     /* UP: new screen enters from top → abs.y = prev.h; DOWN: new enters from bottom → abs.y = 0 */
-    bool is_up = (GT_SCR_ANIM_TYPE_COVER_UP == param->disp->scr_anim_type ||
-                  GT_SCR_ANIM_TYPE_MOVE_UP  == param->disp->scr_anim_type);
+    bool is_up = (GT_SCR_ANIM_TYPE_COVER_UP == anim_type ||
+                  GT_SCR_ANIM_TYPE_MOVE_UP  == anim_type);
     param->view_scr_abs.y      = is_up ? prev->area.h : 0;
     param->view_scr_prev_abs.y = is_up ? 0 : scr->area.h;
 }
@@ -601,22 +653,26 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _clear_buffer(_flush_scr_param_st * par
 
     switch (disp->scr_anim_type) {
         case GT_SCR_ANIM_TYPE_MOVE_LEFT:
-        case GT_SCR_ANIM_TYPE_COVER_LEFT: {
+        case GT_SCR_ANIM_TYPE_COVER_LEFT:
+        case GT_SCR_ANIM_TYPE_UNCOVER_LEFT: {
             _fill_color_hor(param, &prev, &next, is_prev);
             break;
         }
         case GT_SCR_ANIM_TYPE_MOVE_RIGHT:
-        case GT_SCR_ANIM_TYPE_COVER_RIGHT: {
+        case GT_SCR_ANIM_TYPE_COVER_RIGHT:
+        case GT_SCR_ANIM_TYPE_UNCOVER_RIGHT: {
             _fill_color_hor(param, &next, &prev, !is_prev);
             break;
         }
         case GT_SCR_ANIM_TYPE_MOVE_UP:
-        case GT_SCR_ANIM_TYPE_COVER_UP: {
+        case GT_SCR_ANIM_TYPE_COVER_UP:
+        case GT_SCR_ANIM_TYPE_UNCOVER_UP: {
             _fill_color_ver(param, &prev, &next, cur_row, is_prev);
             break;
         }
         case GT_SCR_ANIM_TYPE_MOVE_DOWN:
-        case GT_SCR_ANIM_TYPE_COVER_DOWN: {
+        case GT_SCR_ANIM_TYPE_COVER_DOWN:
+        case GT_SCR_ANIM_TYPE_UNCOVER_DOWN: {
             _fill_color_ver(param, &next, &prev, cur_row, !is_prev);
             break;
         }
@@ -626,8 +682,17 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _clear_buffer(_flush_scr_param_st * par
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline void _adjust_clip_area_and_flush(_flush_scr_param_st * param, gt_obj_st * target_scr) {
-    param->disp->area_disp.x = target_scr->area.x + param->valid.area_clip.x;
-    param->disp->area_disp.y = target_scr->area.y + param->valid.area_clip.y;
+    gt_size_t scr_offset_x = target_scr->area.x;
+    gt_size_t scr_offset_y = target_scr->area.y;
+    /* UNCOVER: children already moved with screen, area_disp must not
+     * double-count the screen offset for the prev (old) screen */
+    if (param->disp->scr_anim_type >= GT_SCR_ANIM_TYPE_UNCOVER_LEFT &&
+        target_scr == param->disp->scr_prev) {
+        scr_offset_x = 0;
+        scr_offset_y = 0;
+    }
+    param->disp->area_disp.x = scr_offset_x + param->valid.area_clip.x;
+    param->disp->area_disp.y = scr_offset_y + param->valid.area_clip.y;
     param->disp->area_disp.h = param->valid.area_clip.h;
 
     if (param->area_flush.y == param->valid.area_clip.y) {
@@ -950,11 +1015,23 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _flush_scr_by_direct(_flush_scr_param_s
 static inline gt_scr_anim_type_et GT_ATTRIBUTE_RAM_TEXT
 _get_anti_anim_type(gt_scr_anim_type_et type) {
 #if GT_USE_SCREEN_ANIM
-    /* Pairs (1,2),(3,4),(5,6),(7,8) are adjacent: flip within pair via ((type-1)^1)+1 */
-    if (GT_SCR_ANIM_TYPE_NONE != type) {
-        type = (gt_scr_anim_type_et)(((type - 1u) ^ 1u) + 1u);
+    if (GT_SCR_ANIM_TYPE_NONE == type) {
+        return GT_SCR_ANIM_TYPE_NONE;
     }
-    return type;
+    /* COVER_x → UNCOVER in reverse direction (old screen slides back out the way it came):
+     * COVER_LEFT(5)→UNCOVER_RIGHT(10), COVER_RIGHT(6)→UNCOVER_LEFT(9)
+     * COVER_UP(7)→UNCOVER_DOWN(12),    COVER_DOWN(8)→UNCOVER_UP(11)  */
+    if (type >= GT_SCR_ANIM_TYPE_COVER_LEFT && type <= GT_SCR_ANIM_TYPE_COVER_DOWN) {
+        static const gt_scr_anim_type_et cover_anti[] = {
+            GT_SCR_ANIM_TYPE_UNCOVER_RIGHT, /* COVER_LEFT  → UNCOVER_RIGHT */
+            GT_SCR_ANIM_TYPE_UNCOVER_LEFT,  /* COVER_RIGHT → UNCOVER_LEFT  */
+            GT_SCR_ANIM_TYPE_UNCOVER_DOWN,  /* COVER_UP    → UNCOVER_DOWN  */
+            GT_SCR_ANIM_TYPE_UNCOVER_UP,    /* COVER_DOWN  → UNCOVER_UP    */
+        };
+        return cover_anti[type - GT_SCR_ANIM_TYPE_COVER_LEFT];
+    }
+    /* MOVE_x: pairs (1,2),(3,4) flip within pair */
+    return (gt_scr_anim_type_et)(((type - 1u) ^ 1u) + 1u);
 #else
     return GT_SCR_ANIM_TYPE_NONE;
 #endif
@@ -1471,23 +1548,36 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         gt_anim_set_path_type(&anim_new, GT_ANIM_PATH_TYPE_EASE_IN_OUT);
 
         gt_scr_anim_type_et anim_type = disp->scr_anim_type;
-        bool is_hor  = _is_anim_type_hor(anim_type);
-        bool is_move = (anim_type < GT_SCR_ANIM_TYPE_COVER_LEFT);
-        /* Odd enum value = LEFT/UP direction → negative new_start offset; even = RIGHT/DOWN → positive */
-        int32_t sign = (anim_type & 1u) ? 1 : -1;
+        bool is_hor     = _is_anim_type_hor(anim_type);
+        bool is_move    = (anim_type < GT_SCR_ANIM_TYPE_COVER_LEFT);
+        bool is_uncover = (anim_type >= GT_SCR_ANIM_TYPE_UNCOVER_LEFT);
+        /* For MOVE/COVER: odd = LEFT/UP (sign +1 → new enters from positive side);
+         * For UNCOVER: odd = LEFT/UP (sign -1 → old exits to negative side) */
+        int32_t sign;
+        if (is_uncover) {
+            sign = (anim_type & 1u) ? -1 : 1;
+        } else {
+            sign = (anim_type & 1u) ? 1 : -1;
+        }
         gt_anim_exec_cb_t exec_cb = is_hor ? _scr_anim_exec_x_cb : _scr_anim_exec_y_cb;
         int32_t res    = is_hor ? (int32_t)disp->drv->res_hor : (int32_t)disp->drv->res_ver;
         int32_t old_v  = is_hor ? area.x : area.y;
         int32_t new_v  = is_hor ? scr->area.x : scr->area.y;
         int32_t offset = sign * res;
 
-        gt_anim_set_exec_cb(&anim_new, exec_cb);
-        gt_anim_set_value(&anim_new, new_v - offset, new_v);
-        exec_cb(scr, new_v - offset);
-
-        if (is_move) {
-            gt_anim_set_exec_cb(&anim_old, exec_cb);
+        if (is_uncover) {
+            /* UNCOVER: old screen + children slide out together */
+            gt_anim_exec_cb_t uncover_cb = is_hor ? _scr_anim_uncover_exec_x_cb : _scr_anim_uncover_exec_y_cb;
+            gt_anim_set_exec_cb(&anim_old, uncover_cb);
             gt_anim_set_value(&anim_old, old_v, old_v + offset);
+        } else {
+            gt_anim_set_exec_cb(&anim_new, exec_cb);
+            gt_anim_set_value(&anim_new, new_v - offset, new_v);
+            exec_cb(scr, new_v - offset);
+            if (is_move) {
+                gt_anim_set_exec_cb(&anim_old, exec_cb);
+                gt_anim_set_value(&anim_old, old_v, old_v + offset);
+            }
         }
 
         gt_anim_start(&anim_new);

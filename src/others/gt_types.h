@@ -121,6 +121,11 @@ typedef enum gt_scr_anim_type_e {
     GT_SCR_ANIM_TYPE_COVER_UP,      // Cover the interface from the up
     GT_SCR_ANIM_TYPE_COVER_DOWN,    // Cover the interface from the down
 
+    GT_SCR_ANIM_TYPE_UNCOVER_LEFT,  // Old screen slides left out, new screen stays still
+    GT_SCR_ANIM_TYPE_UNCOVER_RIGHT, // Old screen slides right out, new screen stays still
+    GT_SCR_ANIM_TYPE_UNCOVER_UP,    // Old screen slides up out, new screen stays still
+    GT_SCR_ANIM_TYPE_UNCOVER_DOWN,  // Old screen slides down out, new screen stays still
+
     GT_SCR_ANIM_TYPE_TOTAL,
 }gt_scr_anim_type_et;
 
