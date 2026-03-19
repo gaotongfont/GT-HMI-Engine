@@ -73,6 +73,34 @@
         #define GT_INDEV_THROW_PIXEL_PER_SECOND         1300
     #endif
 
+    /**
+     * @brief Scroll throw deceleration style
+     *      Configured by GT_INDEV_THROW_STYLE in gt_conf.h
+     */
+    #if GT_INDEV_THROW_STYLE == 0
+        /** iOS style parameters */
+        #ifndef GT_INDEV_THROW_FRICTION
+            #define GT_INDEV_THROW_FRICTION              5
+        #endif
+        #ifndef GT_INDEV_THROW_LOW_SPEED_THRESHOLD
+            #define GT_INDEV_THROW_LOW_SPEED_THRESHOLD   40
+        #endif
+        #ifndef GT_INDEV_THROW_LINEAR_DECEL
+            #define GT_INDEV_THROW_LINEAR_DECEL          10
+        #endif
+    #else
+        /** Android style parameters */
+        #ifndef GT_INDEV_THROW_FRICTION
+            #define GT_INDEV_THROW_FRICTION              12
+        #endif
+        #ifndef GT_INDEV_THROW_LOW_SPEED_THRESHOLD
+            #define GT_INDEV_THROW_LOW_SPEED_THRESHOLD   80
+        #endif
+        #ifndef GT_INDEV_THROW_LINEAR_DECEL
+            #define GT_INDEV_THROW_LINEAR_DECEL          20
+        #endif
+    #endif
+
     #ifndef GT_INDEV_OVER_SCROLL_MAX_VELOCITY
         /**
          * @brief Limit over scroll max velocity
@@ -670,7 +698,14 @@ _indev_scroll_throw_handler(gt_indev_st * indev) {
     if (detla_time < 0) {
         detla_time = 0;
     }
-    point_p->throw_velocity -= _calc_distance_inline(GT_INDEV_THROW_PIXEL_PER_SECOND * detla_time);
+    if (point_p->throw_velocity > GT_INDEV_THROW_LOW_SPEED_THRESHOLD) {
+        /** Exponential decay: smooth deceleration with sliding feel */
+        point_p->throw_velocity = (point_p->throw_velocity
+            * (256 - GT_INDEV_THROW_FRICTION)) >> 8;
+    } else {
+        /** Linear deceleration: crisp stop without lingering */
+        point_p->throw_velocity -= GT_INDEV_THROW_LINEAR_DECEL;
+    }
     _throw_scroll_rebound_slow_down_handler(indev);
     if (point_p->throw_velocity <= 0) {
         point_p->throw_velocity = 0;

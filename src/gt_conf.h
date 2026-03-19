@@ -163,6 +163,16 @@ extern "C" {
 
 #define GT_CFG_DEFAULT_POINT_SCROLL_PIXEL_INVALID   80
 
+#ifndef GT_INDEV_THROW_STYLE
+    /**
+     * @brief Scroll throw deceleration style
+     *      0: iOS style    - light friction, long glide, silky feel
+     *      1: Android style - heavier friction, shorter glide, snappy stop
+     *      [Default: 0]
+     */
+    #define GT_INDEV_THROW_STYLE    0
+#endif
+
 #ifndef GT_BOOTING_INFO_MSG
     /**
      * @brief Print Engine information when booting, 0: no display, 1: display
