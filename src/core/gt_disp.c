@@ -1784,46 +1784,53 @@ void gt_disp_scroll_area_act(gt_size_t dist_x, gt_size_t dist_y)
 
 void gt_disp_invalid_area(gt_obj_st * obj)
 {
-    if (false == gt_refr_is_enabled(NULL)) {
+    gt_disp_st * disp = gt_disp_get_default();
+    if (NULL == disp || !disp->enabled) {
         return;
     }
 #if GT_USE_WIDGET_LAYOUT
-    gt_layout_update_core(obj);          // TODO pref handler, unstable
+    gt_layout_update_core(obj);
 #endif
-    gt_obj_st * scr = gt_disp_get_scr();
+    gt_obj_st * scr = disp->scr_act;
     if (NULL == scr) {
         return;
     }
     if (NULL == obj) {
-        /** full screen refresh */
         obj = scr;
-        obj->area.w = gt_disp_get_res_hor(NULL);
-        obj->area.h = gt_disp_get_res_ver(NULL);
+        switch (disp->drv->rotated) {
+            case GT_ROTATED_90:
+            case GT_ROTATED_270:
+                obj->area.w = disp->drv->res_ver;
+                obj->area.h = disp->drv->res_hor;
+                break;
+            default:
+                obj->area.w = disp->drv->res_hor;
+                obj->area.h = disp->drv->res_ver;
+                break;
+        }
     }
     gt_area_st invalid = gt_area_reduce(obj->area, -(gt_obj_get_focus_offset_value(obj)));
 #if GT_USE_LAYER_TOP
-    gt_obj_st * top = gt_disp_get_layer_top();
+    gt_obj_st * top = disp->layer_top;
 
     if (top && gt_obj_is_child(obj, top)) {
-        invalid.x += gt_obj_get_x(scr);
-        invalid.y += gt_obj_get_y(scr);
+        invalid.x += scr->area.x;
+        invalid.y += scr->area.y;
     }
     else if (!gt_obj_check_scr(obj)) {
         return;
     }
 #else
-    if( !gt_obj_check_scr(obj)){
+    if (!gt_obj_check_scr(obj)) {
         return;
     }
 #endif
 #if GT_LAYER_TOP_SCREENSHOT_CACHE
     else {
-        gt_disp_st * disp = gt_disp_get_default();
         _gt_top_ret_st top_show = _gt_disp_is_top_full_cover_display(top);
         bool is_half_opa = top_show.full_cover && top_show.is_opa;
         bool is_screenshot_vaild = _gt_gc_screenshot_cache_is_valid();
         if (is_half_opa && is_screenshot_vaild) {
-            /** redraw full screen */
             gt_memcpy(&invalid, &scr->area, sizeof(gt_area_st));
             disp->screenshot = false;
         }

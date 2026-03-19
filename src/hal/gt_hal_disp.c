@@ -98,9 +98,29 @@ static GT_ATTRIBUTE_RAM_TEXT gt_disp_st * _gt_disp_create(gt_disp_drv_st * drv) 
     return disp_p;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT void _calc_max_area_recursive(gt_obj_st * obj, bool is_root) {
-    gt_obj_type_et type = gt_obj_class_get_type(obj);
-    if (GT_TYPE_UNKNOWN == type) {
+/**
+ * @brief 直接更新 max_area，跳过 gt_disp_get_default() 查找
+ */
+static inline void GT_ATTRIBUTE_RAM_TEXT
+_update_max_area_direct(gt_area_abs_st * max_area, const gt_area_st * area) {
+    if (area->x < max_area->left) {
+        max_area->left = area->x;
+    }
+    if (area->y < max_area->top) {
+        max_area->top = area->y;
+    }
+    if (area->x + area->w > max_area->right) {
+        max_area->right = area->x + area->w;
+    }
+    if (area->y + area->h > max_area->bottom) {
+        max_area->bottom = area->y + area->h;
+    }
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _calc_max_area_recursive(
+    gt_obj_st * obj, gt_area_abs_st * max_area, bool is_root)
+{
+    if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(obj)) {
         return;
     }
     gt_obj_st * ptr = NULL;
@@ -112,21 +132,25 @@ static GT_ATTRIBUTE_RAM_TEXT void _calc_max_area_recursive(gt_obj_st * obj, bool
             GT_CHECK_PRINT(ptr);
             continue;
         }
-
-        if (false == gt_obj_get_visible(ptr)) {
+        /* 直接读位域，避免重复 gt_obj_class_get_type 校验；
+           classes 为空说明对象未初始化，跳过 */
+        if (NULL == ptr->classes || !ptr->visible) {
             continue;
         }
-        if (ptr->cnt_child || gt_obj_get_virtual(ptr)) {
-            _calc_max_area_recursive(ptr, false);
+        if (ptr->cnt_child || ptr->virtuality) {
+            _calc_max_area_recursive(ptr, max_area, false);
         }
-
-        _gt_disp_update_max_area(&ptr->area, _gt_obj_is_ignore_calc_max_area(ptr));
+        if (!_gt_obj_is_ignore_calc_max_area(ptr)) {
+            _update_max_area_direct(max_area, &ptr->area);
+        }
     }
 
-    if (is_root || gt_obj_get_virtual(obj)) {
+    if (is_root || obj->virtuality) {
         return;
     }
-    _gt_disp_update_max_area(&obj->area, _gt_obj_is_ignore_calc_max_area(obj));
+    if (!_gt_obj_is_ignore_calc_max_area(obj)) {
+        _update_max_area_direct(max_area, &obj->area);
+    }
 }
 
 /* global functions / API interface -------------------------------------*/
@@ -396,10 +420,19 @@ void _gt_disp_reload_max_area(gt_obj_st * scr)
 
     max_area->left = 0;
     max_area->top = 0;
-    max_area->right = gt_disp_get_res_hor(disp);
-    max_area->bottom = gt_disp_get_res_ver(disp);
+    switch (disp->drv->rotated) {
+        case GT_ROTATED_90:
+        case GT_ROTATED_270:
+            max_area->right  = disp->drv->res_ver;
+            max_area->bottom = disp->drv->res_hor;
+            break;
+        default:
+            max_area->right  = disp->drv->res_hor;
+            max_area->bottom = disp->drv->res_ver;
+            break;
+    }
 
-    _calc_max_area_recursive(scr, true);
+    _calc_max_area_recursive(scr, max_area, true);
 }
 
 void _gt_disp_hided_layer_top_widgets(gt_obj_st * top)

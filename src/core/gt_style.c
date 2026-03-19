@@ -15,6 +15,7 @@
 #include "../hal/gt_hal_disp.h"
 #include "../others/gt_log.h"
 #include "../others/gt_anim.h"
+#include "../others/gt_area.h"
 
 /* private define -------------------------------------------------------*/
 #define _get_area_prop(obj, prop)               (obj->area.prop)
@@ -670,32 +671,8 @@ void gt_obj_size_change(gt_obj_st * obj, gt_area_st * area_new)
     if (GT_TYPE_UNKNOWN == type) {
         return;
     }
-    gt_area_st area_old = obj->area;
-    gt_area_st area = {0};
-    if (area_new->x <= area_old.x) {
-        area.x = area_new->x;
-    } else {
-        area.x = area_old.x;
-    }
-
-    if (area_new->y <= area_old.y) {
-        area.y = area_new->y;
-    } else {
-        area.y = area_old.y;
-    }
-
-    /* need refactor */
-    if (area_new->w <= area_old.w) {
-        area.w = area_old.w;
-    } else {
-        area.w = area_new->w;
-    }
-
-    if (area_new->h <= area_old.h) {
-        area.h = area_old.h;
-    } else {
-        area.h = area_new->h;
-    }
+    gt_area_st area;
+    gt_area_join(&area, &obj->area, area_new);
     obj->area = *area_new;
     _gt_disp_refr_append_area(&area);
 }
@@ -707,36 +684,8 @@ void gt_obj_pos_change(gt_obj_st * obj, gt_area_st * area_new)
         return;
     }
     GT_CHECK_BACK(area_new);
-    gt_area_st area_old = obj->area;
     gt_area_st area;
-
-    if (area_new->x <= area_old.x) {
-        area.x = area_new->x;
-    } else {
-        area.x = area_old.x;
-    }
-
-    if (area_new->y <= area_old.y) {
-        area.y = area_new->y;
-    } else {
-        area.y = area_old.y;
-    }
-
-    int y2_old = area_old.y + area_old.h, x2_old = area_old.x + area_old.w;
-    int y2_new = area_new->y + area_new->h, x2_new = area_new->x + area_new->w;
-
-    if (y2_old <= y2_new) {
-        area.h = y2_new - area.y;
-    } else {
-        area.h = y2_old - area.y;
-    }
-
-    if (x2_old <= x2_new) {
-        area.w = x2_new - area.x;
-    } else {
-        area.w = x2_old - area.x;
-    }
-
+    gt_area_join(&area, &obj->area, area_new);
     obj->area = *area_new;
     _gt_disp_refr_append_area(&area);
 }
