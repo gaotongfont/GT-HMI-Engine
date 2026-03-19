@@ -1029,7 +1029,7 @@ _get_anti_anim_type(gt_scr_anim_type_et type) {
     if (GT_SCR_ANIM_TYPE_NONE == type) {
         return GT_SCR_ANIM_TYPE_NONE;
     }
-    /* COVER_x → UNCOVER in reverse direction (old screen slides back out the way it came):
+    /* COVER_x → UNCOVER in reverse direction:
      * COVER_LEFT(5)→UNCOVER_RIGHT(10), COVER_RIGHT(6)→UNCOVER_LEFT(9)
      * COVER_UP(7)→UNCOVER_DOWN(12),    COVER_DOWN(8)→UNCOVER_UP(11)  */
     if (type >= GT_SCR_ANIM_TYPE_COVER_LEFT && type <= GT_SCR_ANIM_TYPE_COVER_DOWN) {
@@ -1040,6 +1040,18 @@ _get_anti_anim_type(gt_scr_anim_type_et type) {
             GT_SCR_ANIM_TYPE_UNCOVER_UP,    /* COVER_DOWN  → UNCOVER_UP    */
         };
         return cover_anti[type - GT_SCR_ANIM_TYPE_COVER_LEFT];
+    }
+    /* UNCOVER_x → COVER in reverse direction:
+     * UNCOVER_LEFT(9)→COVER_RIGHT(6), UNCOVER_RIGHT(10)→COVER_LEFT(5)
+     * UNCOVER_UP(11)→COVER_DOWN(8),   UNCOVER_DOWN(12)→COVER_UP(7)  */
+    if (type >= GT_SCR_ANIM_TYPE_UNCOVER_LEFT && type <= GT_SCR_ANIM_TYPE_UNCOVER_DOWN) {
+        static const gt_scr_anim_type_et uncover_anti[] = {
+            GT_SCR_ANIM_TYPE_COVER_RIGHT,   /* UNCOVER_LEFT  → COVER_RIGHT */
+            GT_SCR_ANIM_TYPE_COVER_LEFT,     /* UNCOVER_RIGHT → COVER_LEFT  */
+            GT_SCR_ANIM_TYPE_COVER_DOWN,     /* UNCOVER_UP    → COVER_DOWN  */
+            GT_SCR_ANIM_TYPE_COVER_UP,       /* UNCOVER_DOWN  → COVER_UP    */
+        };
+        return uncover_anti[type - GT_SCR_ANIM_TYPE_UNCOVER_LEFT];
     }
     /* MOVE_x: pairs (1,2),(3,4) flip within pair */
     return (gt_scr_anim_type_et)(((type - 1u) ^ 1u) + 1u);
@@ -1303,54 +1315,65 @@ gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const * const param) {
 /* global functions / API interface -------------------------------------*/
 gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
 {
-    gt_scr_stack_item_st * target = NULL;
     gt_disp_st * disp = gt_disp_get_default();
-    gt_obj_st * scr_old = gt_disp_get_scr();
-    gt_scr_id_t home_id = gt_scr_stack_get_home_scr_id();
     GT_CHECK_BACK_VAL(disp, -1);
     if (false == gt_refr_is_enabled(disp)) {
         return -1;
     }
     if (step <= 0) {
-        target = gt_scr_stack_peek();
-        return target ? target->current_scr_id : -1;
+        gt_scr_stack_item_st * top = gt_scr_stack_peek();
+        return top ? top->current_scr_id : -1;
     }
 
-    target = gt_scr_stack_pop(
-        -1 == home_id && step >= gt_scr_stack_get_count() ?
-        gt_scr_stack_get_count() - 1 : step);
+    gt_obj_st * scr_old = gt_disp_get_scr();
+    gt_scr_id_t home_id = gt_scr_stack_get_home_scr_id();
+    bool is_home_alive = gt_scr_stack_is_home_scr_alive();
 
+    /* Pop step layers, but keep at least the bottom when no home is set */
+    gt_stack_size_t pop_cnt = step;
+    if (-1 == home_id && pop_cnt >= gt_scr_stack_get_count()) {
+        pop_cnt = gt_scr_stack_get_count() - 1;
+    }
+    gt_scr_stack_item_st * target = gt_scr_stack_pop(pop_cnt);
     gt_scr_stack_item_st * prev = gt_scr_stack_peek();
-    bool is_home_scr_alive = gt_scr_stack_is_home_scr_alive();
-    gt_scr_stack_item_st reload_item = {
-        .current_scr = prev ? prev->current_scr :
-            (is_home_scr_alive ? gt_scr_stack_get_home_scr() : NULL),
-        .current_scr_id = prev ? prev->current_scr_id : home_id,
-        .anim_type = target ? target->anim_type : GT_SCR_ANIM_TYPE_NONE,
-        .time = target ? target->time : 0,
-        .delay = target ? target->delay : 0,
-    };
-    reload_item.anim_type = _get_anti_anim_type(reload_item.anim_type);
 
-    _clear_stack_when_home_scr_id_current_valid(&reload_item, target, home_id, is_home_scr_alive);
+    /* Build reload screen info from previous stack item */
+    gt_scr_stack_item_st reload_item = { 0 };
+    if (prev) {
+        reload_item.current_scr    = prev->current_scr;
+        reload_item.current_scr_id = prev->current_scr_id;
+    } else {
+        reload_item.current_scr    = is_home_alive ? gt_scr_stack_get_home_scr() : NULL;
+        reload_item.current_scr_id = home_id;
+    }
+    if (target) {
+        reload_item.anim_type = _get_anti_anim_type(target->anim_type);
+        reload_item.time      = target->time;
+        reload_item.delay     = target->delay;
+    }
+
+    _clear_stack_when_home_scr_id_current_valid(&reload_item, target, home_id, is_home_alive);
+
     if (reload_item.current_scr && false == gt_obj_is_type(reload_item.current_scr, GT_TYPE_SCREEN)) {
         GT_LOGE(GT_LOG_TAG_UI, "Current screen is not screen type: %p(%d)",
             reload_item.current_scr, gt_obj_class_get_type(reload_item.current_scr));
     }
     if (false == _create_scr_by_stack_item(&reload_item, home_id)) {
-        GT_LOGE(GT_LOG_TAG_UI, "Create screen falied");
+        GT_LOGE(GT_LOG_TAG_UI, "Create screen failed");
     }
     if (prev && prev->current_scr_id == reload_item.current_scr_id) {
         prev->current_scr = reload_item.current_scr;
     }
+
+    /* Ensure home screen is pushed when stack is empty or returning to home */
     bool is_empty = gt_scr_stack_is_empty();
     if (home_id == reload_item.current_scr_id || is_empty) {
-        if (is_empty && is_home_scr_alive) {
-            reload_item.current_scr = gt_scr_stack_get_home_scr();
+        if (is_empty && is_home_alive) {
+            reload_item.current_scr    = gt_scr_stack_get_home_scr();
             reload_item.current_scr_id = home_id;
             if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(reload_item.current_scr) &&
                 false == _create_scr_by_stack_item(&reload_item, home_id)) {
-                GT_LOGE(GT_LOG_TAG_UI, "Create screen falied");
+                GT_LOGE(GT_LOG_TAG_UI, "Create screen failed");
             }
             scr_old = NULL;
         }
@@ -1358,6 +1381,7 @@ gt_scr_id_t gt_disp_stack_go_back(gt_stack_size_t step)
             return -1;
         }
     }
+
 #if GT_LAYER_TOP_SCREENSHOT_CACHE
     disp->screenshot = false;
 #endif
