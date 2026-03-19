@@ -23,6 +23,7 @@
 #define MY_CLASS    &gt_btnmap_class
 
 #define _DEFAULT_SPACE  5
+#define _IS_NEW_LINE(kv)  ((kv) && '\n' == (kv)[0])
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _btnmap_btn_param_s {
@@ -73,7 +74,6 @@ static void _gt_get_line_list(const gt_map_st* map, uint16_t* w_list, uint16_t* 
 static void _gt_update_map(gt_obj_st* btnmap);
 static gt_area_st _gt_get_btn_area_idx(gt_obj_st* btnmap, uint16_t idx, uint16_t line, uint16_t col, uint16_t sum_w);
 static void _gt_set_press_btn(gt_obj_st* obj);
-static char* _gt_get_press_btn(gt_obj_st* obj);
 static void _gt_clean_press_btn(gt_obj_st* obj);
 static void _gt_push_btn_kv(gt_obj_st* obj);
 
@@ -98,7 +98,7 @@ static void _init_cb(struct gt_obj_s * obj) {
     _gt_auto_btn_height(obj);
 
     if(obj->area.w == 0 || obj->area.h == 0) return ;
-    if(NULL == style->map || style->btn_height <= 0) return ;
+    if(NULL == style->map || 0 == style->btn_height) return ;
 
     gt_attr_rect_st rect_attr = {0};
     gt_graph_init_rect_attr(&rect_attr);
@@ -120,21 +120,25 @@ static void _init_cb(struct gt_obj_s * obj) {
         .opa = obj->opa,
     };
     gt_map_st* map = style->map;
+    const _btnmap_btn_param_st * const bp = &style->btn_param;
     gt_area_st btn_area;
     uint16_t map_idx = 0, line = 0, col = 0, sum_w = 0;
     uint8_t r, g, b;
+    const char* kv;
 
     while (map[map_idx].kv || map[map_idx].w > 0) {
-        rect_attr.bg_color = style->btn_param.bg_color;
-        rect_attr.border_color = style->btn_param.border_color;
-        rect_attr.border_width = style->btn_param.border_width;
-        font_attr.font_color = style->btn_param.font_color;
+        kv = map[map_idx].kv;
 
-        if(!map[map_idx].kv){
+        rect_attr.bg_color = bp->bg_color;
+        rect_attr.border_color = bp->border_color;
+        rect_attr.border_width = bp->border_width;
+        font_attr.font_color = bp->font_color;
+
+        if(!kv){
             goto g_NEXT;
         }
 
-        if(_gt_btn_cmp(map[map_idx].kv, GT_BTNMAP_NEW_LINE)){
+        if(_IS_NEW_LINE(kv)){
             line++;
             map_idx++;
             col = 0;
@@ -142,12 +146,11 @@ static void _init_cb(struct gt_obj_s * obj) {
             continue;
         }
 
-        font.utf8 = (char*)map[map_idx].kv;
-        font.len = strlen(map[map_idx].kv);
+        font.utf8 = (char*)kv;
+        font.len = strlen(kv);
 
         if(style->_show_special_btn_cb){
-            // Attribute change
-            if(style->_show_special_btn_cb(obj, map[map_idx].kv, &font_attr)){
+            if(style->_show_special_btn_cb(obj, kv, &font_attr)){
                 rect_attr.bg_color = style->special_btn_param.bg_color;
                 rect_attr.border_color = style->special_btn_param.border_color;
                 rect_attr.border_width = style->special_btn_param.border_width;
@@ -155,7 +158,7 @@ static void _init_cb(struct gt_obj_s * obj) {
             }
         }
 
-        if(_gt_get_press_btn(obj) && _gt_btn_cmp(map[map_idx].kv, _gt_get_press_btn(obj))){
+        if(style->press_btn && _gt_btn_cmp(kv, style->press_btn)){
             r = GT_COLOR_GET_R(rect_attr.bg_color) >> 1;
             g = GT_COLOR_GET_G(rect_attr.bg_color) >> 1;
             b = GT_COLOR_GET_B(rect_attr.bg_color) >> 1;
@@ -164,7 +167,6 @@ static void _init_cb(struct gt_obj_s * obj) {
 
         btn_area = _gt_get_btn_area_idx(obj, map_idx, line, col, sum_w);
         draw_bg(obj->draw_ctx, &rect_attr, &btn_area);
-        // draw text
         font_attr.logical_area = btn_area;
         draw_text(obj->draw_ctx, &font_attr, &btn_area);
 
@@ -180,8 +182,8 @@ static void _deinit_cb(struct gt_obj_s *obj) {
     if(style->_line_w_list){
         gt_mem_free(style->_line_w_list);
         style->_line_w_list = NULL;
+        style->_line_numb_list = NULL;
     }
-
 }
 
 static void _event_cb(struct gt_obj_s *obj, struct _gt_event_s *e) {
@@ -235,13 +237,8 @@ static void _event_cb(struct gt_obj_s *obj, struct _gt_event_s *e) {
 }
 
 static bool _gt_btn_cmp(const char* key1, const char* key2) {
-    if(!key1 || !key2) return false;
-    else if(!key1 && !key2) true;
-
-    if(0 == strcmp(key1, key2)){
-        return true;
-    }
-    return false;
+    if(!key1 || !key2) return (key1 == key2);
+    return (0 == strcmp(key1, key2));
 }
 
 static void _gt_auto_btn_height(gt_obj_st* btnmap) {
@@ -260,30 +257,28 @@ static void _gt_auto_btn_height(gt_obj_st* btnmap) {
 
 static void _gt_update_map(gt_obj_st* btnmap) {
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
-    static uint16_t buf_max = 0;
     if(!style->map) return ;
 
-    style->_max_line = _gt_get_map_max_line((const gt_map_st*)style->map);
+    uint16_t new_max_line = _gt_get_map_max_line((const gt_map_st*)style->map);
+    uint16_t alloc_size = (uint16_t)(new_max_line * sizeof(uint16_t) * 2);
 
-    if(style->_max_line > buf_max && style->_line_w_list){
+    if(new_max_line > style->_max_line && style->_line_w_list){
         gt_mem_free(style->_line_w_list);
         style->_line_w_list = NULL;
     }
-    //
+    style->_max_line = new_max_line;
+
     if(!style->_line_w_list) {
-        style->_line_w_list = gt_mem_malloc(style->_max_line * sizeof(uint16_t) << 1);
+        style->_line_w_list = gt_mem_malloc(alloc_size);
         if(NULL == style->_line_w_list) {
-            GT_LOGE(GT_LOG_TAG_GUI, "btnmap malloc failed!!! size = %lu", style->_max_line * sizeof(uint16_t) << 1);
+            GT_LOGE(GT_LOG_TAG_GUI, "btnmap malloc failed!!! size = %u", alloc_size);
             return ;
         }
-        buf_max = style->_max_line;
     }
-    gt_memset_0(style->_line_w_list, style->_max_line * sizeof(uint16_t) << 1);
+    gt_memset_0(style->_line_w_list, alloc_size);
     style->_line_numb_list = &style->_line_w_list[style->_max_line];
 
-
     _gt_get_line_list((const gt_map_st*)style->map, style->_line_w_list, style->_line_numb_list);
-
 
     _gt_auto_btn_height(btnmap);
 }
@@ -294,7 +289,7 @@ static uint16_t _gt_get_map_max_line(const gt_map_st *map) {
 
     while (map[map_idx].kv || map[map_idx].w > 0)
     {
-        if(_gt_btn_cmp(map[map_idx].kv, GT_BTNMAP_NEW_LINE)){
+        if(_IS_NEW_LINE(map[map_idx].kv)){
             max_line++;
         }
         map_idx++;
@@ -310,13 +305,15 @@ static void _gt_get_line_list(const gt_map_st* map, uint16_t* w_list, uint16_t* 
 
     while (map[map_idx].kv || map[map_idx].w > 0)
     {
-        w_list[max_line] += map[map_idx].w;
+        if(_IS_NEW_LINE(map[map_idx].kv)){
+            max_line++;
+            map_idx++;
+            continue;
+        }
 
+        w_list[max_line] += map[map_idx].w;
         numb_list[max_line] += (map[map_idx].w ? 1 : 0);
 
-        if(_gt_btn_cmp(map[map_idx].kv, GT_BTNMAP_NEW_LINE)){
-            max_line++;
-        }
         map_idx++;
     }
 }
@@ -324,21 +321,23 @@ static void _gt_get_line_list(const gt_map_st* map, uint16_t* w_list, uint16_t* 
 static gt_area_st _gt_get_btn_area_idx(gt_obj_st* btnmap, uint16_t idx, uint16_t line, uint16_t col, uint16_t sum_w) {
     gt_area_st btn_area = {0};
     _gt_btnmap_st * style = (_gt_btnmap_st * )btnmap;
-    if(!style->_line_w_list || !style->_line_numb_list){
+    if(!style->_line_w_list || !style->_line_numb_list || 0 == style->_line_w_list[line]){
         return btn_area;
     }
 
     uint16_t line_numb = style->_line_numb_list[line];
     uint16_t line_w = style->_line_w_list[line];
+    uint16_t space_w = (line_numb + 1) * style->btn_x_space;
+    if(space_w >= btnmap->area.w) return btn_area;
+    uint16_t usable_w = btnmap->area.w - space_w;
 
     gt_area_copy(&btn_area, &btnmap->area);
 
     btn_area.y += style->btn_height * line + style->btn_y_space * (line+1);
     btn_area.h = style->btn_height;
 
-    btn_area.x += sum_w * (btnmap->area.w - ((line_numb+1)*style->btn_x_space)) / line_w + style->btn_x_space * (col+1);
-
-    btn_area.w = style->map[idx].w * (btnmap->area.w - ((line_numb+1)*style->btn_x_space)) / line_w;
+    btn_area.x += sum_w * usable_w / line_w + style->btn_x_space * (col+1);
+    btn_area.w = style->map[idx].w * usable_w / line_w;
 
     return btn_area;
 }
@@ -346,8 +345,11 @@ static gt_area_st _gt_get_btn_area_idx(gt_obj_st* btnmap, uint16_t idx, uint16_t
 static void _gt_set_press_btn(gt_obj_st* obj) {
     _gt_btnmap_st * style = (_gt_btnmap_st * )obj;
     const gt_map_st* map = (const gt_map_st*)style->map;
+    if(!map) return;
 
-    // const char* const press_old_btn = style->press_btn;
+    gt_size_t click_x = obj->process_attr.point.x + obj->area.x;
+    gt_size_t click_y = obj->process_attr.point.y + obj->area.y;
+
     uint16_t map_idx = 0, line = 0, col = 0, sum_w = 0;
     gt_area_st btn_area = {0};
     while (map[map_idx].kv || map[map_idx].w > 0)
@@ -355,8 +357,7 @@ static void _gt_set_press_btn(gt_obj_st* obj) {
         if(!map[map_idx].kv){
             goto g_NEXT;
         }
-        //
-        if(_gt_btn_cmp(map[map_idx].kv, GT_BTNMAP_NEW_LINE)){
+        if(_IS_NEW_LINE(map[map_idx].kv)){
             line++;
             map_idx++;
             col = 0;
@@ -365,21 +366,14 @@ static void _gt_set_press_btn(gt_obj_st* obj) {
         }
         btn_area = _gt_get_btn_area_idx(obj, map_idx, line, col, sum_w);
 
-        if ((btn_area.x < obj->process_attr.point.x + obj->area.x) &&
-            ((btn_area.x + btn_area.w) > obj->process_attr.point.x + obj->area.x) &&
-            (btn_area.y < obj->process_attr.point.y + obj->area.y) &&
-            ((btn_area.y + btn_area.h) > obj->process_attr.point.y + obj->area.y)) {
+        /* Y 轴行过滤：点击点不在当前行范围内则跳过整行 */
+        if(click_y < btn_area.y || click_y >= btn_area.y + btn_area.h){
+            goto g_NEXT;
+        }
 
+        if (btn_area.x < click_x && click_x < btn_area.x + btn_area.w) {
             style->press_btn = (char*)map[map_idx].kv;
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-
-            // if(press_old_btn != style->press_btn){
-            //     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-            // }
-
-            // if(style->press_btn){
-            //     _gt_disp_refr_append_area(&btn_area);
-            // }
             return;
         }
 g_NEXT:
@@ -390,13 +384,9 @@ g_NEXT:
     _gt_clean_press_btn(obj);
 }
 
-static char * _gt_get_press_btn(gt_obj_st* obj) {
-    _gt_btnmap_st * style = (_gt_btnmap_st * )obj;
-    return style->press_btn;
-}
-
 static void _gt_clean_press_btn(gt_obj_st* obj) {
     _gt_btnmap_st * style = (_gt_btnmap_st * )obj;
+    if(!style->press_btn) return;
     style->press_btn = NULL;
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -750,6 +740,7 @@ uint16_t gt_btnmap_get_max_key_count_of_lines(gt_obj_st * btnmap)
         return 0;
     }
     _gt_btnmap_st* style = (_gt_btnmap_st*)btnmap;
+    if(!style->_line_numb_list) return 0;
     uint16_t max_key_count = 0;
     for (uint16_t i = 0; i < style->_max_line; ++i) {
         if (style->_line_numb_list[i] > max_key_count) {
