@@ -464,13 +464,11 @@ gt_point_f_st gt_math_catmullrom(float t, gt_point_f_st const * p0, gt_point_f_s
 
 int32_t gt_map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max)
 {
-    if (in_min == in_max) return out_min;
-
-    if (in_max > in_min) {
+    if (in_max >= in_min) {
         if (x >= in_max) return out_max;
         if (x <= in_min) return out_min;
     }
-    if (in_max < in_min) {
+    if (in_max <= in_min) {
         if (x >= in_min) return out_min;
         if (x <= in_max) return out_max;
     }
