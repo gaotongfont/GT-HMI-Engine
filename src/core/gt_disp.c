@@ -1186,6 +1186,79 @@ _reset_stack_or_push_item_after_home(
 }
 
 /**
+ * @brief Handle duplicate screen found in stack: decide whether to reuse or rebuild screen object
+ *
+ * @param ret result (del_prev_scr may be modified)
+ * @param new_item_p new stack item to push
+ * @param same_scr popped stack item with the same screen id
+ * @param param push parameters
+ * @param home_id home screen id
+ * @param is_home_alive whether home screen object is alive
+ * @param is_at_stack_bottom whether the duplicate item was at stack bottom
+ */
+static void GT_ATTRIBUTE_RAM_TEXT
+_handle_duplicate_scr(
+    gt_disp_stack_res_st * ret,
+    gt_scr_stack_item_st * new_item_p,
+    gt_scr_stack_item_st * same_scr,
+    gt_disp_stack_param_st const * const param,
+    gt_scr_id_t home_id,
+    bool is_home_alive,
+    bool is_at_stack_bottom)
+{
+    if (home_id == same_scr->current_scr_id && is_home_alive) {
+        new_item_p->current_scr = same_scr->current_scr;
+        ret->del_prev_scr = is_at_stack_bottom ? false : true;
+        return;
+    }
+    if (param->force_create_reload) {
+        if (false == is_at_stack_bottom && ret->scr_old != same_scr->current_scr) {
+            gt_obj_destroy_immediately(same_scr->current_scr);
+        } else {
+            _gt_obj_class_destroy_children(same_scr->current_scr);
+        }
+        new_item_p->current_scr = NULL;
+    } else {
+        new_item_p->current_scr = same_scr->current_scr;
+    }
+    ret->del_prev_scr = true;    /** Must free old screen memory */
+}
+
+/**
+ * @brief Handle new screen (no duplicate in stack): check stack top and decide whether to free old screen
+ *
+ * @param ret result (del_prev_scr may be modified)
+ * @param param push parameters
+ * @param home_id home screen id
+ * @param is_home_alive whether home screen object is alive
+ * @param is_at_stack_bottom whether the top item is at stack bottom
+ * @return gt_scr_stack_item_st* stack top item pointer (may be NULL)
+ */
+static gt_scr_stack_item_st * GT_ATTRIBUTE_RAM_TEXT
+_handle_new_scr(
+    gt_disp_stack_res_st * ret,
+    gt_disp_stack_param_st const * const param,
+    gt_scr_id_t home_id,
+    bool is_home_alive,
+    bool is_at_stack_bottom)
+{
+    gt_scr_stack_item_st * prev = gt_scr_stack_peek();
+    if (prev) {
+        if (home_id == prev->current_scr_id && is_home_alive) {
+            ret->del_prev_scr = false;
+        } else if (is_at_stack_bottom && param->force_create_reload) {
+            _gt_obj_class_destroy_children(prev->current_scr);
+            ret->del_prev_scr = true;
+        }
+        if (ret->del_prev_scr) { prev->current_scr = NULL; }
+    }
+    if (false == ret->del_prev_scr && _gt_scr_stack_has_pop_before(ret->scr_old)) {
+        ret->del_prev_scr = true;
+    }
+    return prev;
+}
+
+/**
  * @brief [Warning] Only push screen object into stack, but not display or reload screen.
  *
  * @param param
@@ -1208,14 +1281,16 @@ gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const * const param) {
     new_item_p->time = param->time;
     new_item_p->delay = param->delay;
     new_item_p->anim_type = param->type;
+
     gt_scr_id_t home_id = gt_scr_stack_get_home_scr_id();
+    gt_obj_st * home_scr = gt_scr_stack_get_home_scr();
+    bool is_home_alive = gt_scr_stack_is_home_scr_alive();
 
     /** Has the same page before and pop unused stack item */
     gt_stack_item_st result = gt_scr_stack_has_before(new_item_p);
+    bool is_at_stack_bottom = result.index_from_top + 1 == gt_scr_stack_get_count();
     gt_scr_stack_item_st * prev = NULL;
-    /** ignore repeat screen valid */
-    bool is_last_page = result.index_from_top + 1 == gt_scr_stack_get_count();
-    bool is_home_alive = gt_scr_stack_is_home_scr_alive();
+
 #if GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
     if (param->ignore_repeat_screen_id) {
         if (false == param->force_create_reload) {
@@ -1223,51 +1298,28 @@ gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const * const param) {
         }
     }
 #endif
+
     if (result.data) {
         gt_scr_stack_item_st * same_scr = gt_scr_stack_pop(result.index_from_top);
-        if (home_id == same_scr->current_scr_id && is_home_alive) {
-            new_item_p->current_scr = same_scr->current_scr;
-            ret.del_prev_scr = is_last_page ? false : true;
-        } else {
-            if (param->force_create_reload) {
-                if (false == is_last_page && ret.scr_old != same_scr->current_scr) {
-                    gt_obj_destroy_immediately(same_scr->current_scr);
-                } else {
-                    _gt_obj_class_destroy_children(same_scr->current_scr);
-                }
-                new_item_p->current_scr = NULL;
-            } else {
-                new_item_p->current_scr = same_scr->current_scr;
-            }
-            ret.del_prev_scr = true;    /** Must free old screen memory */
-        }
+        _handle_duplicate_scr(&ret, new_item_p, same_scr, param,
+                              home_id, is_home_alive, is_at_stack_bottom);
     } else {
-        prev = gt_scr_stack_peek();
-        if (prev) {
-            if (home_id == prev->current_scr_id && is_home_alive) {
-                ret.del_prev_scr = false;
-            } else if (is_last_page && param->force_create_reload) {
-                _gt_obj_class_destroy_children(prev->current_scr);
-                ret.del_prev_scr = true;
-            }
-            if (ret.del_prev_scr) { prev->current_scr = NULL; }
-        }
-        if (false == ret.del_prev_scr && _gt_scr_stack_has_pop_before(ret.scr_old)) {
-            ret.del_prev_scr = true;
-        }
+        prev = _handle_new_scr(&ret, param, home_id, is_home_alive, is_at_stack_bottom);
     }
+
     if (GT_RES_FAIL == _reset_stack_or_push_item_after_home(
         &ret, new_item_p, home_id, param->clear_stack_except_home)) {
         return ret;
     }
-    if ((gt_scr_stack_get_home_scr() == ret.scr_old || (prev && home_id == prev->current_scr_id)) && is_home_alive) {
+    if ((home_scr == ret.scr_old || (prev && home_id == prev->current_scr_id)) && is_home_alive) {
         ret.del_prev_scr = false;
     }
+
 #if _GT_STACK_PUSH_BEFORE_INIT_SCR
-    if (gt_scr_stack_is_empty() && gt_scr_stack_get_home_scr()) {
+    if (gt_scr_stack_is_empty() && home_scr) {
         gt_scr_stack_item_st home = {
-            .current_scr_id = gt_scr_stack_get_home_scr_id(),
-            .current_scr = gt_scr_stack_get_home_scr(),
+            .current_scr_id = home_id,
+            .current_scr = home_scr,
         };
         if (false == gt_scr_stack_push(&home)) {
             GT_LOGE(GT_LOG_TAG_GUI, "Push home stack failed");
@@ -1292,16 +1344,13 @@ gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const * const param) {
     }
     new_item_p->current_scr = item_p->current_scr;
 #else
-    /** ready to init and load screen */
     if (false == _create_scr_by_stack_item(new_item_p, home_id)) {
         return ret;
     }
     if (false == gt_scr_stack_push(new_item_p)) {
         GT_LOGE(GT_LOG_TAG_GUI, "Push stack failed");
-
         if (new_item_p->current_scr != ret.scr_old &&
-            new_item_p->current_scr != gt_scr_stack_get_home_scr()) {
-            /** Release immediately next screen which has not been loaded */
+            new_item_p->current_scr != home_scr) {
             gt_obj_destroy_immediately(new_item_p->current_scr);
             new_item_p->current_scr = NULL;
         }
