@@ -455,7 +455,18 @@ static GT_ATTRIBUTE_RAM_TEXT void _old_scr_anim_ready_cb(struct gt_anim_s * anim
     if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(old_scr)) {
         return;
     }
-    gt_area_copy(&old_scr->area, (gt_area_st * )anim->data);
+    gt_area_st * saved = (gt_area_st * )anim->data;
+    /* UNCOVER exec_cb moved children with _gt_obj_move_child_by,
+     * restore them back to original positions */
+    gt_disp_st * disp = gt_disp_get_default();
+    if (disp && disp->scr_anim_type >= GT_SCR_ANIM_TYPE_UNCOVER_LEFT) {
+        gt_size_t dx = saved->x - old_scr->area.x;
+        gt_size_t dy = saved->y - old_scr->area.y;
+        if (dx || dy) {
+            _gt_obj_move_child_by(old_scr, dx, dy);
+        }
+    }
+    gt_area_copy(&old_scr->area, saved);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _scr_anim_ready_cb(struct gt_anim_s * anim) {
