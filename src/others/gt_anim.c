@@ -255,6 +255,58 @@ static void _gt_anim_ready_handler(gt_anim_st * anim) {
     }
 }
 
+/**
+ * @brief Process a single animation node for one frame tick
+ *
+ * @param ptr animation node
+ * @param elapsed time elapsed since last frame [ms]
+ * @param now current tick timestamp
+ * @return true: continue iteration, false: break (del_all requested)
+ */
+static bool _gt_anim_tick_one(gt_anim_st * ptr, uint32_t elapsed, uint32_t now) {
+    if (ptr->paused) {
+        /* Flip-store tick_create each frame so paused time is not counted */
+        ptr->tick_create = now - ptr->tick_create;
+        return true;
+    }
+    if (ptr->time_delay_start > 0) {
+        if ((now - ptr->tick_create) < (uint32_t)ptr->time_delay_start) {
+            return true;
+        }
+        ptr->time_delay_start = 0;
+    }
+
+    _gt_anim_set_act(ptr);
+
+    if (ptr->time_act <= 0 && ptr->start_cb) {
+        ptr->start_cb(ptr);
+    }
+    if (_ctx.is_del_all) { return false; }
+
+    ptr->time_act += (int32_t)elapsed;
+    if (ptr->time_act < 0) {
+        return true;
+    }
+    if (ptr->time_act > ptr->time) {
+        ptr->time_act = ptr->time;
+    }
+
+    int32_t new_value = ptr->_path_cb ? ptr->_path_cb(ptr) : ptr->value_end;
+    if (new_value != ptr->value_current) {
+        ptr->value_current = new_value;
+        if (ptr->exec_cb) {
+            ptr->exec_cb(ptr->tar, ptr->value_current);
+        }
+    }
+    if (_ctx.is_del_all) { return false; }
+    if (ptr->deleted) { return true; }
+
+    if (ptr->time_act >= ptr->time) {
+        _gt_anim_ready_handler(ptr);
+    }
+    return !_ctx.is_del_all;
+}
+
 static void _gt_anim_task_handler(struct _gt_timer_s * timer)
 {
     GT_UNUSED(timer);
@@ -262,65 +314,23 @@ static void _gt_anim_task_handler(struct _gt_timer_s * timer)
         return ;
     }
 
-    /* Cache tick values once per frame to avoid repeated syscalls */
     uint32_t now     = gt_tick_get();
     uint32_t elapsed = gt_tick_elapse(_ctx.time_last_run);
 
-    int32_t    new_value    = 0;
     gt_anim_st * ptr        = NULL;
     gt_anim_st * backup_ptr = NULL;
 
-    _ctx.is_run_same_time = _ctx.is_run_same_time ? false : true;
+    _ctx.is_run_same_time = !_ctx.is_run_same_time;
 
     _gt_list_for_each_entry_safe(ptr, backup_ptr, &_GT_GC_GET_ROOT(_gt_anim_ll), gt_anim_st, list) {
-        if (ptr->deleted) {
+        if (ptr->deleted || ptr->run_already == _ctx.is_run_same_time) {
             continue;
         }
+        ptr->run_already = _ctx.is_run_same_time;
 
-        if (ptr->run_already == _ctx.is_run_same_time) {
-            continue;
+        if (!_gt_anim_tick_one(ptr, elapsed, now)) {
+            break;
         }
-        ptr->run_already = _ctx.is_run_same_time ? 1 : 0;
-
-        if (ptr->paused) {
-            /* Advance tick_create so paused time is not counted */
-            ptr->tick_create = now - ptr->tick_create;
-            continue;
-        }
-        if (ptr->time_delay_start > 0) {
-            if ((now - ptr->tick_create) < (uint32_t)ptr->time_delay_start) {
-                continue;
-            }
-            ptr->time_delay_start = 0;
-        }
-
-        _gt_anim_set_act(ptr);
-
-        if (ptr->time_act <= 0 && ptr->start_cb) {
-            ptr->start_cb(ptr);
-        }
-        if (_ctx.is_del_all) { break; }
-
-        ptr->time_act += (int32_t)elapsed;
-        if (ptr->time_act < 0) {
-            continue;
-        }
-        if (ptr->time_act > ptr->time) {
-            ptr->time_act = ptr->time;
-        }
-        new_value = ptr->_path_cb ? ptr->_path_cb(ptr) : ptr->value_end;
-        if (new_value != ptr->value_current) {
-            ptr->value_current = new_value;
-            if (ptr->exec_cb) {
-                ptr->exec_cb(ptr->tar, ptr->value_current);
-            }
-        }
-        if (_ctx.is_del_all) { break; }
-        if (ptr->deleted) { continue; }
-        if (ptr->time_act >= ptr->time) {
-            _gt_anim_ready_handler(ptr);
-        }
-        if (_ctx.is_del_all) { break; }
     }
 
     /* Cleanup pass: free all nodes marked deleted during this frame */
