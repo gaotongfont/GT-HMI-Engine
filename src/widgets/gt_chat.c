@@ -221,26 +221,29 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
     h = s_line_ret.line_numb;
     w = s_line_ret.max_w;
 
-    w += 4 + (is_send ? style->send_border_w << 1 : style->recv_border_w << 1);
+    uint8_t border_w = is_send ? style->send_border_w : style->recv_border_w;
+    uint8_t border_w2 = border_w << 1;
+    uint16_t font_size = style->font_info.size;
+    uint8_t space_y = style->space_y;
+
+    w += 4 + border_w2;
     if (s_line_ret.line_numb > 1) {
         style->item_cb.set_font_align_cb(msg_p->msg_obj, GT_ALIGN_LEFT_MID);
         style->item_cb.set_indent_cb(msg_p->msg_obj, _MULTI_LINE_CONTENT_INDENT_DEFAULT);
-        style->item_cb.set_space_cb(msg_p->msg_obj, style->space_x, style->space_y);
-        h = (h + 1) * (style->font_info.size + style->space_y) + (is_send ? style->send_border_w << 1 : style->recv_border_w << 1);
-        //
+        style->item_cb.set_space_cb(msg_p->msg_obj, style->space_x, space_y);
+        h = (h + 1) * (font_size + space_y) + border_w2;
         if(style->item_cb.set_start_point_offset_cb) {
-            style->item_cb.set_start_point_offset_cb(msg_p->msg_obj, 0, (style->font_info.size + style->space_y) >> 1);
+            style->item_cb.set_start_point_offset_cb(msg_p->msg_obj, 0, (font_size + space_y) >> 1);
         }
     } else {
         style->item_cb.set_font_align_cb(msg_p->msg_obj, GT_ALIGN_CENTER_MID);
         style->item_cb.set_indent_cb(msg_p->msg_obj, 0);
         style->item_cb.set_space_cb(msg_p->msg_obj, style->space_x, 0);
-        h = (h + 1) * (style->font_info.size) + (is_send ? style->send_border_w << 1 : style->recv_border_w << 1);
-        //
+        h = (h + 1) * font_size + border_w2;
         if(style->item_cb.set_start_point_offset_cb) {
             style->item_cb.set_start_point_offset_cb(msg_p->msg_obj,
                                                     gt_font_get_indent_width(&style->font_info, _MULTI_LINE_CONTENT_INDENT_DEFAULT) + (w - s_line_ret.max_w) >> 1 ,
-                                                    (style->font_info.size) >> 1);
+                                                    font_size >> 1);
         }
     }
 
@@ -287,7 +290,7 @@ _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint16_t msg_len, uint8_t t
     _gt_chat_st * style = (_gt_chat_st * )chat;
 
     if (style->msg_cnt >= GT_CHAT_MAX_MSG_CNT) {
-        style->max_h -= (gt_obj_get_h(style->msg_list[0].msg_obj) + _MSG_SPACE_Y);
+        style->max_h -= (style->msg_list[0].msg_obj->area.h + _MSG_SPACE_Y);
         _gt_obj_class_destroy(style->msg_list[0].msg_obj);
         gt_memmove (style->msg_list, style->msg_list + 1, sizeof(_gt_chat_param_st) * (GT_CHAT_MAX_MSG_CNT-1));
         style->msg_cnt = GT_CHAT_MAX_MSG_CNT - 1;
@@ -306,17 +309,15 @@ _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint16_t msg_len, uint8_t t
     gt_obj_add_event_cb(msg_p->msg_obj, _msg_click_cb, GT_EVENT_TYPE_INPUT_RELEASED, chat);
     _gt_set_msg_font_info_all(style, msg_p->msg_obj, &style->font_info);
 
-    if (is_send) {
-        style->item_cb.set_color_background_cb(msg_p->msg_obj, style->send_bgcolor);
-        style->item_cb.set_color_border_cb(msg_p->msg_obj, style->send_border_color);
-        style->item_cb.set_border_width_cb(msg_p->msg_obj, style->send_border_w);
-        style->item_cb.set_font_color_cb(msg_p->msg_obj, style->send_font_color);
-    } else {
-        style->item_cb.set_color_background_cb(msg_p->msg_obj, style->recv_bgcolor);
-        style->item_cb.set_color_border_cb(msg_p->msg_obj, style->recv_border_color);
-        style->item_cb.set_border_width_cb(msg_p->msg_obj, style->recv_border_w);
-        style->item_cb.set_font_color_cb(msg_p->msg_obj, style->recv_font_color);
-    }
+    gt_color_t* bg_color = is_send ? &style->send_bgcolor : &style->recv_bgcolor;
+    gt_color_t* border_color = is_send ? &style->send_border_color : &style->recv_border_color;
+    uint8_t* border_w = is_send ? &style->send_border_w : &style->recv_border_w;
+    gt_color_t* font_color = is_send ? &style->send_font_color : &style->recv_font_color;
+
+    style->item_cb.set_color_background_cb(msg_p->msg_obj, *bg_color);
+    style->item_cb.set_color_border_cb(msg_p->msg_obj, *border_color);
+    style->item_cb.set_border_width_cb(msg_p->msg_obj, *border_w);
+    style->item_cb.set_font_color_cb(msg_p->msg_obj, *font_color);
 
     if(GT_CHAT_TYPE_TEXT == type ){
         style->item_cb.set_text_by_len_cb(msg_p->msg_obj, msg, msg_len);
@@ -350,7 +351,7 @@ _gt_chat_append_msg(gt_obj_st* chat, const char* msg, bool is_scroll)
         style->item_cb.append_text_cb(obj, msg);
     }
 
-    style->max_h -= (gt_obj_get_h(obj) + _MSG_SPACE_Y);
+    style->max_h -= (obj->area.h + _MSG_SPACE_Y);
     style->max_h += _gt_update_msg_area_idx(chat, index, style->msg_list[index].is_send);
     if(is_scroll) {
         chat->process_attr.scroll.y = chat->area.h - style->max_h;
@@ -373,7 +374,7 @@ _gt_chat_replace_msg(gt_obj_st* chat, const char* msg, bool is_scroll)
 
     style->item_cb.set_text_cb(obj, msg);
 
-    style->max_h -= (gt_obj_get_h(obj) + _MSG_SPACE_Y);
+    style->max_h -= (obj->area.h + _MSG_SPACE_Y);
     style->max_h += _gt_update_msg_area_idx(chat, index, style->msg_list[index].is_send);
     if(is_scroll) {
         chat->process_attr.scroll.y = chat->area.h - style->max_h;
@@ -396,7 +397,7 @@ _gt_chat_replace_msg_by_len(gt_obj_st* chat, const char* msg, uint16_t msg_len, 
 
     style->item_cb.set_text_by_len_cb(obj, msg, msg_len);
 
-    style->max_h -= (gt_obj_get_h(obj) + _MSG_SPACE_Y);
+    style->max_h -= (obj->area.h + _MSG_SPACE_Y);
     style->max_h += _gt_update_msg_area_idx(chat, index, style->msg_list[index].is_send);
     if(is_scroll) {
         chat->process_attr.scroll.y = chat->area.h - style->max_h;
@@ -426,9 +427,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _msg_click_cb(gt_event_st * e) {
     for(int i = 0; i < style->msg_cnt; i++){
         if(style->msg_list[i].msg_obj == e->target){
             style->msg_select_idx = i;
+            break;
         }
     }
-    //
+
     if(style->anim_play && GT_CHAT_TYPE_VOICE == style->msg_list[style->msg_select_idx].type)
     {
         if(style->paly_idx == style->msg_select_idx){
@@ -442,7 +444,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _msg_click_cb(gt_event_st * e) {
                                 style->msg_list[style->paly_idx].is_send, GT_SYMBOL_VOICE_PLAY - 1);
         }
     }
-    //
     if(GT_CHAT_TYPE_VOICE == style->msg_list[style->msg_select_idx].type){
         style->paly_idx = style->msg_select_idx;
         gt_anim_set_time(&style->msg_anim, style->msg_list[style->paly_idx].tim_s * 1000);
@@ -742,7 +743,7 @@ void gt_chat_update_item_size(gt_obj_st * chat, bool is_scroll)
 
     gt_obj_st * obj = style->msg_list[index].msg_obj;
 
-    style->max_h -= (gt_obj_get_h(obj) + _MSG_SPACE_Y);
+    style->max_h -= (obj->area.h + _MSG_SPACE_Y);
     style->max_h += _gt_update_msg_area_idx(chat, index, style->msg_list[index].is_send);
     if(is_scroll) {
         chat->process_attr.scroll.y = chat->area.h - style->max_h;
