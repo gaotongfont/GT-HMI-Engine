@@ -328,15 +328,13 @@ static gt_area_st _gt_get_btn_area_idx(gt_obj_st* btnmap, uint16_t idx, uint16_t
     uint16_t line_numb = style->_line_numb_list[line];
     uint16_t line_w = style->_line_w_list[line];
     uint16_t space_w = (line_numb + 1) * style->btn_x_space;
-    if(space_w >= btnmap->area.w) return btn_area;
+    if(space_w >= btnmap->area.w || 0 == line_w) return btn_area;
     uint16_t usable_w = btnmap->area.w - space_w;
 
-    gt_area_copy(&btn_area, &btnmap->area);
-
-    btn_area.y += style->btn_height * line + style->btn_y_space * (line+1);
+    btn_area.y = btnmap->area.y + style->btn_height * line + style->btn_y_space * (line+1);
     btn_area.h = style->btn_height;
 
-    btn_area.x += sum_w * usable_w / line_w + style->btn_x_space * (col+1);
+    btn_area.x = btnmap->area.x + sum_w * usable_w / line_w + style->btn_x_space * (col+1);
     btn_area.w = style->map[idx].w * usable_w / line_w;
 
     return btn_area;
@@ -366,12 +364,16 @@ static void _gt_set_press_btn(gt_obj_st* obj) {
         }
         btn_area = _gt_get_btn_area_idx(obj, map_idx, line, col, sum_w);
 
-        /* Y 轴行过滤：点击点不在当前行范围内则跳过整行 */
-        if(click_y < btn_area.y || click_y >= btn_area.y + btn_area.h){
+        if (0 == btn_area.w || 0 == btn_area.h) {
             goto g_NEXT;
         }
 
-        if (btn_area.x < click_x && click_x < btn_area.x + btn_area.w) {
+        /* Y 轴行过滤：点击点不在当前行范围内则跳过整行 */
+        if(click_y < btn_area.y || click_y - btn_area.y >= btn_area.h){
+            goto g_NEXT;
+        }
+
+        if (click_x > btn_area.x && click_x - btn_area.x < btn_area.w) {
             style->press_btn = (char*)map[map_idx].kv;
             gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             return;

@@ -266,14 +266,15 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_msg_move_y(gt_obj_st * chat, gt_size_
 
     if(offset_y > 0) return;
 
+    gt_size_t prev_offset = chat->process_attr.scroll_prev.y;
     chat->process_attr.scroll_prev.y = offset_y;
 
-    gt_size_t y = offset_y + chat->area.y + _MSG_SPACE_Y;
+    gt_size_t diff_y = offset_y - prev_offset;
+    if (0 == diff_y) return;
 
     for(int i = 0; i < style->msg_cnt; i++)
     {
-        style->msg_list[i].msg_obj->area.y = y;
-        y += style->msg_list[i].msg_obj->area.h + _MSG_SPACE_Y;
+        style->msg_list[i].msg_obj->area.y += diff_y;
 
         if(GT_STATE_PRESSED == gt_obj_get_state(style->msg_list[i].msg_obj)){
             gt_obj_set_state(style->msg_list[i].msg_obj, GT_STATE_NONE);
