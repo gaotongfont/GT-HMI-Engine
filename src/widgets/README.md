@@ -123,6 +123,11 @@
 | **CrossLayout** | `gt_cross_layout.h` | 十字布局容器，子控件按上下左右方向自动排列 |
 | **StatusBar** | `gt_status_bar.h` | 状态栏，固定显示在屏幕顶部，显示系统状态信息 |
 
+> **Flex 布局**：通过 `gt_layout_init(container, &ct)` 为任意容器（如 `gt_rect`）启用 Flex 排列，
+> 支持 ROW / COLUMN 方向、SPACE_BETWEEN / CENTER 等对齐方式。
+> 运行时可用 `gt_layout_set_type(container, GT_LAYOUT_TYPE_FLEX/FIXED)` 动态切换，
+> 切换时自动保存/恢复子元素相对坐标。
+
 ---
 
 ## 内部基础类

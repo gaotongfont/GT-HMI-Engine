@@ -920,8 +920,10 @@ GT-HMI-Engine/
   <th style="width:25%">默认值</th>
   <th style="width:40%">说明</th>
  </tr>
- <tr><td>GT_SCREEN_WIDTH</td><td>800</td><td>屏幕水平分辨率（像素）</td></tr>
- <tr><td>GT_SCREEN_HEIGHT</td><td>480</td><td>屏幕垂直分辨率（像素）</td></tr>
+ <tr><td>GT_SCREEN_WIDTH</td><td>800</td><td>目标硬件实际屏幕宽度（像素），配合 GT_DPX 宏在编译时缩放 UI 坐标</td></tr>
+ <tr><td>GT_SCREEN_HEIGHT</td><td>480</td><td>目标硬件实际屏幕高度（像素），配合 GT_DPY 宏在编译时缩放 UI 坐标</td></tr>
+ <tr><td>GT_DESIGN_WIDTH</td><td>GT_SCREEN_WIDTH</td><td>UI 设计稿基准宽度，默认等于屏幕宽度（不缩放）</td></tr>
+ <tr><td>GT_DESIGN_HEIGHT</td><td>GT_SCREEN_HEIGHT</td><td>UI 设计稿基准高度，默认等于屏幕高度（不缩放）</td></tr>
  <tr><td>GT_COLOR_DEPTH</td><td>16</td><td>颜色深度：16(RGB565) / 24(RGB888) / 32(ARGB8888)</td></tr>
  <tr><td>GT_REFRESH_STYLE</td><td>GT_REFRESH_STYLE_3</td><td>刷新缓冲模式（见下表）</td></tr>
  <tr><td>GT_MEM_SIZE</td><td>24 * 1024</td><td>动态内存池大小（字节）</td></tr>
@@ -940,13 +942,38 @@ GT-HMI-Engine/
 <table>
  <tr>
   <th style="width:30%">模式</th>
-  <th style="width:70%">说明</th>
+  <th style="width:30%">RAM 占用（680×480 RGB565）</th>
+  <th style="width:40%">适用场景</th>
  </tr>
- <tr><td>GT_REFRESH_STYLE_0</td><td>无缓冲，适合极低资源 MCU</td></tr>
- <tr><td>GT_REFRESH_STYLE_1</td><td>单缓冲（10行），低性能 MCU 推荐</td></tr>
- <tr><td>GT_REFRESH_STYLE_2</td><td>双缓冲（10行×2），中等性能 MCU 推荐</td></tr>
- <tr><td>GT_REFRESH_STYLE_3</td><td>全屏缓冲，高性能 MCU / 有外部 SRAM 时推荐</td></tr>
+ <tr><td>GT_REFRESH_STYLE_0</td><td>0（无缓冲）</td><td>极低资源 MCU，刷新质量差</td></tr>
+ <tr><td>GT_REFRESH_STYLE_1</td><td>680×10×2 = <b>13.3 KB</b></td><td>Cortex-M0/M3，低性能 MCU</td></tr>
+ <tr><td>GT_REFRESH_STYLE_2</td><td>680×10×2×2 = <b>26.6 KB</b></td><td>中等性能 MCU，双缓冲减少撕裂</td></tr>
+ <tr><td>GT_REFRESH_STYLE_3</td><td>680×480×2 = <b>637.5 KB</b></td><td>高性能 MCU / 有外部 SRAM</td></tr>
 </table>
+
+<br/>
+
+### RAM 占用总览（680×480 RGB565 默认配置）
+
+<table>
+ <tr>
+  <th style="width:35%">资源</th>
+  <th style="width:25%">配置项</th>
+  <th style="width:15%">默认</th>
+  <th style="width:25%">占用大小</th>
+ </tr>
+ <tr><td>内存池（TLSF）</td><td>GT_MEM_SIZE</td><td>24 KB</td><td>24 KB</td></tr>
+ <tr><td>帧缓冲（STYLE_3）</td><td>GT_REFRESH_STYLE</td><td>STYLE_3</td><td>637.5 KB</td></tr>
+ <tr><td>顶层截图缓存</td><td>GT_LAYER_TOP_SCREENSHOT_CACHE</td><td>关闭</td><td>启用时 637.5 KB（Dialog/Toast 依赖）</td></tr>
+ <tr><td>脏区队列</td><td>_GT_REFR_AREA_MAX=32</td><td>32 个</td><td>~1 KB</td></tr>
+ <tr><td>软件旋转缓冲</td><td>GT_DISP_SW_ROTATE_SUPPORT</td><td>关闭</td><td>启用时 +637.5 KB（静态）</td></tr>
+ <tr><td>字形 LRU 缓存</td><td>GT_USE_FONT_GLYPH_CACHE</td><td>关闭</td><td>启用时按字号×槽数</td></tr>
+ <tr><td>单个控件对象</td><td>gt_obj_st</td><td>—</td><td>~100–120 B</td></tr>
+</table>
+
+> **最小配置**（STYLE_1 + 关闭截图缓存）：24 KB + 13.3 KB ≈ **37 KB RAM**
+> **默认配置**（STYLE_3，无截图缓存）：24 KB + 637.5 KB ≈ **662 KB RAM**
+> **典型配置**（STYLE_3 + 截图缓存）：24 KB + 637.5 KB + 637.5 KB ≈ **1.3 MB RAM**
 
 <br/>
 
@@ -966,15 +993,31 @@ GT-HMI-Engine/
 ### 第二步：修改 gt_conf.h
 
 ```c
-/* 根据实际屏幕修改分辨率 */
+/**
+ * Actual screen resolution of the target hardware.
+ * Used by GT_DPX/GT_DPY to scale UI coordinates from design resolution
+ * to actual resolution at compile time.
+ */
 #define GT_SCREEN_WIDTH     240
 #define GT_SCREEN_HEIGHT    320
 
-/* 根据 MCU 资源选择刷新模式 */
+/**
+ * Design resolution: the resolution used when writing UI coordinates.
+ * Set to match the resolution your UI code was originally written for.
+ */
+/* #define GT_DESIGN_WIDTH  800 */
+/* #define GT_DESIGN_HEIGHT 480 */
+
+/* GT_REFRESH_STYLE type don't change */
+/* cache 10 lines buf, It is suitable for MCU with low refresh requirements and low performance */
 #define GT_REFRESH_STYLE    GT_REFRESH_STYLE_1
 
-/* 根据可用 RAM 调整内存池 */
-#define GT_MEM_SIZE         (8 * 1024U)
+/**
+ * @brief memory mode. 1: array as memory pool; 0: c library api.
+ */
+#define GT_MEM_CUSTOM   1
+/** unit: byte */
+#define GT_MEM_SIZE     (8 * 1024U)
 ```
 
 ### 第三步：实现驱动接口
@@ -1016,6 +1059,77 @@ int main(void) {
     }
 }
 ```
+
+<br/>
+
+---
+
+## :arrows_counterclockwise: **弹性适配**
+
+<br/>
+
+GT-HMI-Engine 提供两套互补的弹性适配机制。
+
+### 一、编译时分辨率缩放
+
+UI 代码用 `GT_DPX/GT_DPY/GT_DPW/GT_DPH` 宏写坐标，编译时自动按比例缩放，**零运行时开销**。
+
+**配置**（`src/gt_conf.h`）：
+
+```c
+/**
+ * Actual screen resolution of the target hardware.
+ * Used by GT_DPX/GT_DPY to scale UI coordinates from design resolution
+ * to actual resolution at compile time.
+ */
+#define GT_SCREEN_WIDTH   480
+#define GT_SCREEN_HEIGHT  272
+
+/**
+ * Design resolution: the resolution used when writing UI coordinates.
+ * Set to match the resolution your UI code was originally written for.
+ */
+#define GT_DESIGN_WIDTH   800
+#define GT_DESIGN_HEIGHT  480
+```
+
+**使用**：
+
+```c
+/**
+ * @brief Scale a design-resolution X coordinate to actual screen X at compile time.
+ *        Usage: gt_obj_set_pos(obj, GT_DPX(100), GT_DPY(50));
+ */
+gt_obj_set_pos(btn, GT_DPX(100), GT_DPY(50));   /* 编译后 → (60, 28) */
+gt_obj_set_size(btn, GT_DPW(80), GT_DPH(40));   /* 编译后 → (48, 22) */
+```
+
+`GT_DESIGN_WIDTH/HEIGHT` 默认等于 `GT_SCREEN_WIDTH/HEIGHT`，不影响现有项目。字体大小需手动指定。
+
+### 二、运行时 Flex 布局
+
+子控件根据容器尺寸自动排列，支持运行时动态切换。
+
+```c
+/* 初始化 Flex 容器 */
+gt_obj_container_st ct = {
+    .layout_type     = GT_LAYOUT_TYPE_FLEX,
+    .flex_direction  = GT_LAYOUT_FLEX_DIR_ROW,
+    .justify_content = GT_LAYOUT_JUSTIFY_CONTENT_SPACE_BETWEEN,
+    .align_items     = GT_LAYOUT_ALIGN_ITEMS_CENTER,
+};
+gt_layout_init(container, &ct);
+
+/* 运行时切换（自动保存/恢复子元素坐标） */
+gt_layout_set_type(container, GT_LAYOUT_TYPE_FLEX);
+gt_layout_set_type(container, GT_LAYOUT_TYPE_FIXED);
+```
+
+| 参数 | 可选值 |
+|------|--------|
+| `flex_direction` | `ROW` / `COLUMN` / `ROW_REVERSE` / `COLUMN_REVERSE` |
+| `justify_content` | `START` / `END` / `CENTER` / `SPACE_BETWEEN` / `SPACE_AROUND` / `SPACE_EVENLY` |
+| `align_items` | `START` / `END` / `CENTER` |
 
 <br/>
 
