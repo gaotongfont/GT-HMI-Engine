@@ -320,10 +320,34 @@ void _gt_disp_refr_reset_areas(void)
     gt_memset(&disp->refr, 0, sizeof(_gt_refr_st));
 }
 
+void _gt_disp_refr_suspend(void)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    if (NULL == disp) { return; }
+    disp->refr.suspended++;
+}
+
+void _gt_disp_refr_resume(void)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    if (NULL == disp || 0 == disp->refr.suspended) { return; }
+    disp->refr.suspended--;
+}
+
+bool _gt_disp_refr_is_suspended(void)
+{
+    gt_disp_st * disp = gt_disp_get_default();
+    if (NULL == disp) { return false; }
+    return disp->refr.suspended > 0;
+}
+
 void _gt_disp_refr_append_area(gt_area_st * area)
 {
     gt_disp_st * disp = gt_disp_get_default();
     if (NULL == disp || NULL == area) {
+        return;
+    }
+    if (disp->refr.suspended) {
         return;
     }
     gt_area_st * area_p = &disp->refr.areas[0];

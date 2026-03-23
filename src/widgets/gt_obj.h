@@ -179,6 +179,9 @@ typedef struct gt_obj_s {
 #if GT_USE_WIDGET_DYNAMIC_FRAME_RATE
     uint32_t frame_rate    : 3;     /* Set widget dynamic anim frame rate */
 #endif
+#if GT_USE_WIDGET_LAYOUT
+    uint32_t layout_dirty  : 1;     /* flex layout needs recalculate: 0=clean, 1=dirty */
+#endif
 }gt_obj_st;
 
 

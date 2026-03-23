@@ -22,6 +22,7 @@
 #include "../core/gt_draw.h"
 #include "../core/gt_handler.h"
 #include "./gt_mem.h"
+#include "./gt_layout.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -56,6 +57,9 @@ void gt_refr_timer(void)
     if (false == gt_refr_is_enabled(disp)) {
         return;
     }
+#if GT_USE_WIDGET_LAYOUT
+    gt_layout_flush_dirty();
+#endif
     if (_gt_disp_refr_check(disp)) {
 #if GT_USE_DISPLAY_PREF_MSG
         uint32_t start = gt_tick_get();

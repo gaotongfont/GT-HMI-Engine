@@ -68,6 +68,7 @@ typedef struct _gt_refr_s {
     uint8_t joined[_GT_REFR_AREA_MAX];      // the area is not joined into before area: 1: is joined into before.
     uint8_t idx_w;                          // index of write now
     uint8_t idx_r;                          // index of read now
+    uint8_t suspended;                      // >0: suspend dirty area append (layout batch mode)
 }_gt_refr_st;
 
 /**
@@ -170,6 +171,24 @@ bool gt_disp_graph_is_double_buf(void);
  * @return gt_color_t* The buffer which save display color
  */
 gt_color_t * gt_disp_graph_get_buf_backup(gt_color_t* this_buf);
+
+/**
+ * @brief Suspend dirty area appending during layout batch calculation.
+ *        Uses a counter to support nested calls.
+ */
+void _gt_disp_refr_suspend(void);
+
+/**
+ * @brief Resume dirty area appending after layout batch calculation.
+ */
+void _gt_disp_refr_resume(void);
+
+/**
+ * @brief Check if dirty area appending is currently suspended.
+ *
+ * @return true if suspended (layout batch in progress)
+ */
+bool _gt_disp_refr_is_suspended(void);
 
 /**
  * @brief reset the invalid redraw areas message queue

@@ -1861,9 +1861,6 @@ void gt_disp_invalid_area(gt_obj_st * obj)
     if (NULL == disp || !disp->enabled) {
         return;
     }
-#if GT_USE_WIDGET_LAYOUT
-    gt_layout_update_core(obj);
-#endif
     gt_obj_st * scr = disp->scr_act;
     if (NULL == scr) {
         return;

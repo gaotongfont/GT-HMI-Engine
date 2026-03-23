@@ -54,6 +54,21 @@ gt_res_t gt_layout_update_core(gt_obj_st * obj);
 enum gt_layout_type_e gt_layout_get_type(gt_obj_st * obj);
 
 bool gt_layout_is_type(gt_obj_st * obj, enum gt_layout_type_e type);
+
+/**
+ * @brief Mark a flex container as needing layout recalculation.
+ *        Called when a child's position or size changes.
+ *        Actual recalculation is deferred to gt_layout_flush_dirty().
+ *
+ * @param obj The flex container object
+ */
+void gt_layout_mark_dirty(gt_obj_st * obj);
+
+/**
+ * @brief Process all dirty flex containers in the active screen tree.
+ *        Called once per frame in gt_refr_timer() before dirty area check.
+ */
+void gt_layout_flush_dirty(void);
 #endif
 
 #ifdef __cplusplus
