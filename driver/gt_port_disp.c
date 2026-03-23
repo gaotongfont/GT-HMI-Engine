@@ -24,7 +24,8 @@
 static gt_disp_drv_st drv;
 
 #if(GT_REFRESH_STYLE == GT_REFRESH_STYLE_0)
-
+	/* STYLE_0: 1-line buffer, flush one row at a time to minimize RAM usage */
+	static gt_color_t buf1[GT_SCREEN_WIDTH];
 #elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_1)
 	static gt_color_t buf1[GT_SCREEN_WIDTH * GT_REFRESH_FLUSH_LINE_PRE_TIME];
 #elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_2)
@@ -56,7 +57,7 @@ void gt_port_disp_init(void)
 	drv.rotated = GT_ROTATED_0;
 
 #if(GT_REFRESH_STYLE == GT_REFRESH_STYLE_0)
-
+	gt_disp_graph_buf_init(buf1, NULL, NULL);
 #elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_1)
 	gt_disp_graph_buf_init(buf1, NULL, NULL);
 #elif(GT_REFRESH_STYLE == GT_REFRESH_STYLE_2)

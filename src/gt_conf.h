@@ -19,12 +19,29 @@ extern "C" {
 
 /* define ---------------------------------------------------------------*/
 
-/* user: screen width and height config */
+/**
+ * Actual screen resolution of the target hardware.
+ * Set these to match the physical display size.
+ * Used by GT_DPX/GT_DPY to scale UI coordinates from design resolution
+ * to actual resolution at compile time.
+ */
 #ifndef GT_SCREEN_WIDTH
     #define GT_SCREEN_WIDTH     800
 #endif
 #ifndef GT_SCREEN_HEIGHT
     #define GT_SCREEN_HEIGHT    480
+#endif
+
+/**
+ * Design resolution: the resolution used when writing UI coordinates.
+ * GT_DPX/GT_DPY macros scale from design resolution to actual resolution at compile time.
+ * Set to match the resolution your UI code was originally written for.
+ */
+#ifndef GT_DESIGN_WIDTH
+    #define GT_DESIGN_WIDTH     GT_SCREEN_WIDTH
+#endif
+#ifndef GT_DESIGN_HEIGHT
+    #define GT_DESIGN_HEIGHT    GT_SCREEN_HEIGHT
 #endif
 
 /* GT_REFRESH_STYLE type don't change */
@@ -37,7 +54,9 @@ extern "C" {
 #define GT_REFRESH_STYLE        GT_REFRESH_STYLE_3
 
 /* screen refresh flush pre time lines count [default: 10] */
-#if GT_REFRESH_STYLE == GT_REFRESH_STYLE_1
+#if GT_REFRESH_STYLE == GT_REFRESH_STYLE_0
+#define GT_REFRESH_FLUSH_LINE_PRE_TIME   1
+#elif GT_REFRESH_STYLE == GT_REFRESH_STYLE_1
 #define GT_REFRESH_FLUSH_LINE_PRE_TIME   40
 #elif GT_REFRESH_STYLE == GT_REFRESH_STYLE_2
 #define GT_REFRESH_FLUSH_LINE_PRE_TIME   10

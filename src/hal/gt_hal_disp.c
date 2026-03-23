@@ -34,7 +34,9 @@ typedef struct _gt_style_layer_top_s {
 
 
 /* static variables -----------------------------------------------------*/
-#if (GT_REFRESH_STYLE_1 == GT_REFRESH_STYLE)
+#if (GT_REFRESH_STYLE_0 == GT_REFRESH_STYLE)
+    static gt_color_t * graph_buf1 = NULL;
+#elif (GT_REFRESH_STYLE_1 == GT_REFRESH_STYLE)
     static gt_color_t * graph_buf1 = NULL;
 #elif (GT_REFRESH_STYLE_2 == GT_REFRESH_STYLE)
     static gt_color_t * graph_buf1 = NULL, * graph_buf2 = NULL;
@@ -246,6 +248,7 @@ void gt_disp_graph_buf_init(gt_color_t *buf1, gt_color_t *buf2, gt_color_t *buf_
 
 #if (GT_REFRESH_STYLE == GT_REFRESH_STYLE_0)
     GT_LOGV(GT_LOG_TAG_GUI, "use refresh style 0");
+    graph_buf1 = buf1;
 #elif (GT_REFRESH_STYLE == GT_REFRESH_STYLE_1)
     GT_LOGV(GT_LOG_TAG_GUI, "use refresh style 1");
     graph_buf1 = buf1;
@@ -265,7 +268,9 @@ void gt_disp_graph_buf_init(gt_color_t *buf1, gt_color_t *buf2, gt_color_t *buf_
 
 gt_color_t * gt_disp_graph_get_buf_default(void)
 {
-#if (GT_REFRESH_STYLE_1 == GT_REFRESH_STYLE)
+#if (GT_REFRESH_STYLE_0 == GT_REFRESH_STYLE)
+    return graph_buf1;
+#elif (GT_REFRESH_STYLE_1 == GT_REFRESH_STYLE)
     return graph_buf1;
 #elif (GT_REFRESH_STYLE_2 == GT_REFRESH_STYLE)
     return graph_buf1;
