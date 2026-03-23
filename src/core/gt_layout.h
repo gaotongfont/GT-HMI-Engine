@@ -69,6 +69,16 @@ void gt_layout_mark_dirty(gt_obj_st * obj);
  *        Called once per frame in gt_refr_timer() before dirty area check.
  */
 void gt_layout_flush_dirty(void);
+
+/**
+ * @brief 动态切换容器布局类型，支持 FIXED ↔ FLEX 运行时切换。
+ *        FIXED→FLEX：保存所有子元素相对坐标，触发 flex 排列。
+ *        FLEX→FIXED：恢复子元素原始相对坐标，触发重绘。
+ *
+ * @param obj  容器对象
+ * @param type 目标布局类型 @ref gt_layout_type_e
+ */
+void gt_layout_set_type(gt_obj_st * obj, enum gt_layout_type_e type);
 #endif
 
 #ifdef __cplusplus

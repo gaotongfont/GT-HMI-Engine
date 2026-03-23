@@ -136,6 +136,7 @@ typedef struct gt_obj_s {
     uint8_t event_cb_depth; /* nesting depth of event callback iteration, guard against immediate free */
 #if GT_USE_WIDGET_LAYOUT
     gt_obj_container_st container;
+    gt_point_st fixed_pos;          /* FLEX 前保存的相对坐标（相对于父容器） */
 #endif
 
     uint32_t state         : 2;     /* obj selected state @ref gt_state_et */
@@ -181,6 +182,7 @@ typedef struct gt_obj_s {
 #endif
 #if GT_USE_WIDGET_LAYOUT
     uint32_t layout_dirty  : 1;     /* flex layout needs recalculate: 0=clean, 1=dirty */
+    uint32_t fixed_pos_saved : 1;   /* 1=fixed_pos is valid (saved before FLEX switch) */
 #endif
 }gt_obj_st;
 

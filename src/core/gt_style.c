@@ -165,6 +165,10 @@ _common_pos_relative_handle(gt_obj_st * obj, gt_area_st * area_p) {
         return ;
     }
     gt_obj_set_area(obj, *area_p);
+#if GT_USE_WIDGET_LAYOUT
+    if (obj->parent) { gt_layout_mark_dirty(obj->parent); }
+    if (_gt_disp_refr_is_suspended()) { return; }
+#endif
 }
 
 /* global functions / API interface -------------------------------------*/

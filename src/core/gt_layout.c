@@ -464,6 +464,40 @@ void gt_layout_flush_dirty(void)
     if (NULL == disp || NULL == disp->scr_act) { return; }
     _flush_dirty_recursive(disp->scr_act);
 }
+
+void gt_layout_set_type(gt_obj_st * obj, enum gt_layout_type_e type)
+{
+    if (NULL == obj) { return; }
+    if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(obj)) { return; }
+    if ((gt_layout_type_t)type == obj->container.layout_type) { return; }
+
+    if (GT_LAYOUT_TYPE_FLEX == type) {
+        /* FIXED → FLEX：保存子元素相对坐标 */
+        for (uint16_t i = 0; i < obj->cnt_child; i++) {
+            gt_obj_st * child = obj->child[i];
+            child->fixed_pos.x = child->area.x - obj->area.x;
+            child->fixed_pos.y = child->area.y - obj->area.y;
+            child->fixed_pos_saved = 1;
+        }
+        obj->container.layout_type = GT_LAYOUT_TYPE_FLEX;
+        _adjust_flex_content(obj);
+    } else {
+        /* FLEX → FIXED：先改类型，再恢复坐标（避免 mark_dirty 再触发 flex） */
+        obj->container.layout_type = GT_LAYOUT_TYPE_FIXED;
+        _gt_disp_refr_suspend();
+        for (uint16_t i = 0; i < obj->cnt_child; i++) {
+            gt_obj_st * child = obj->child[i];
+            if (child->fixed_pos_saved) {
+                gt_obj_set_pos(child,
+                    obj->area.x + child->fixed_pos.x,
+                    obj->area.y + child->fixed_pos.y);
+                child->fixed_pos_saved = 0;
+            }
+        }
+        _gt_disp_refr_resume();
+        _gt_disp_refr_append_area(&obj->area);
+    }
+}
 #endif
 
 /* end ------------------------------------------------------------------*/
