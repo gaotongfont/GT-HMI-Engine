@@ -24,12 +24,20 @@ extern "C" {
  * @brief Scale a design-resolution X coordinate to actual screen X at compile time.
  *        Usage: gt_obj_set_pos(obj, GT_DPX(100), GT_DPY(50));
  */
-#define GT_DPX(x)   ((x) * GT_SCREEN_WIDTH  / GT_DESIGN_WIDTH)
-#define GT_DPY(y)   ((y) * GT_SCREEN_HEIGHT / GT_DESIGN_HEIGHT)
+#ifndef GT_DPX
+    #define GT_DPX(x)   ((x) * GT_SCREEN_WIDTH  / GT_DESIGN_WIDTH)
+#endif
+#ifndef GT_DPY
+    #define GT_DPY(y)   ((y) * GT_SCREEN_HEIGHT / GT_DESIGN_HEIGHT)
+#endif
 
 /** Scale a size value (width/height) — same formula, provided as alias for clarity */
-#define GT_DPW(w)   GT_DPX(w)
-#define GT_DPH(h)   GT_DPY(h)
+#ifndef GT_DPW
+    #define GT_DPW(w)   GT_DPX(w)
+#endif
+#ifndef GT_DPH
+    #define GT_DPH(h)   GT_DPY(h)
+#endif
 
 // If __UINTPTR_MAX__ or UINTPTR_MAX are available, use them to determine arch size
 #if defined(__UINTPTR_MAX__) && __UINTPTR_MAX__ > 0xFFFFFFFF
