@@ -134,8 +134,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _calc_max_area_recursive(
             GT_CHECK_PRINT(ptr);
             continue;
         }
-        /* 直接读位域，避免重复 gt_obj_class_get_type 校验；
-           classes 为空说明对象未初始化，跳过 */
         if (NULL == ptr->classes || !ptr->visible) {
             continue;
         }
