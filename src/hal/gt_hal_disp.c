@@ -28,7 +28,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_style_layer_top_s {
-    gt_obj_st obj;
+    gt_obj_st base;
 }_gt_style_layer_top_st;
 
 

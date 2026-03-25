@@ -39,7 +39,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_markdown_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     MD_PARSER md_parser;
     gt_font_info_st font_info_large;
     gt_font_info_st font_info_middle;

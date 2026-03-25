@@ -48,7 +48,7 @@ typedef struct {
 }_media_player_cb_st;
 
 typedef struct _gt_media_player_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     gt_obj_st * media_p;
     gt_obj_st * slider_p;
     gt_obj_st * status_p;

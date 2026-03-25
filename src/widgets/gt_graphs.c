@@ -39,7 +39,7 @@ typedef struct _graphs_reg_s {
 }_graphs_reg_st;
 
 typedef struct _gt_graphs_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     _gt_attr_graphs_st gp;
     gt_color_t font_color;
     gt_font_info_st font_info;

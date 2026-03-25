@@ -34,7 +34,7 @@
 #define _QR_EXT_BUFFER_SIZE_GET(version)    (qrcodegen_BUFFER_LEN_FOR_VERSION((version)))
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_qr_ext_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     char* text;
 
     gt_color_t module_color;

@@ -34,7 +34,7 @@ typedef struct _gt_btn_reg_s {
 }_gt_btn_reg_st;
 
 typedef struct _gt_btn_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     _gt_vector_st * contents;
 
     gt_color_t color_pressed;

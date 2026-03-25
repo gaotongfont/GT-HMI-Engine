@@ -38,7 +38,7 @@ typedef struct {
 }_sp_line_st;
 
 typedef struct _gt_spectrum_line_s{
-    gt_obj_st obj;
+    gt_obj_st base;
     _gt_vector_st* sp_line;
     _gt_timer_st* timer;
     get_generator_next get_gen_next;

@@ -27,7 +27,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_rect_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     gt_color_t  color_background;
     gt_color_t  color_border;
     uint16_t    border;

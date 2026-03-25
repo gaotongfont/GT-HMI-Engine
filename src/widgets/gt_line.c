@@ -27,7 +27,7 @@
 /* private typedef ------------------------------------------------------*/
 
 typedef struct _gt_line_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     gt_area_st prev_pos;
     gt_attr_line_st line;
 }_gt_line_st;

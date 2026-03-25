@@ -80,7 +80,7 @@ typedef struct _gt_player_reg_s {
 }_gt_player_reg_st;
 
 typedef struct _gt_player_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     _gt_vector_st * vector;
     _gt_timer_st * timer;
 

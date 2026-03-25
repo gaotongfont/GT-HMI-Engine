@@ -27,7 +27,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_template_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     char * template;
 }_gt_template_st;
 

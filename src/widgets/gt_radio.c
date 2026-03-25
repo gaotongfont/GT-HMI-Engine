@@ -26,7 +26,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_radio_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     char *      text;
     gt_color_t  font_color;
 

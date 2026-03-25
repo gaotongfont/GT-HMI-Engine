@@ -37,7 +37,7 @@ typedef struct _field_length_s {
 }_field_reg_st;
 
 typedef struct _gt_input_number_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     gt_obj_st * label;  /** @ref gt_label.h */
 
     double value;

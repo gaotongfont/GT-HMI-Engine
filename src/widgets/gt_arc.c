@@ -55,7 +55,7 @@ typedef struct {
 }_gt_arc_element_st;
 
 typedef struct _gt_arc_s {
-    gt_obj_st obj;
+    gt_obj_st base;
 
     gt_anim_st anim;
 

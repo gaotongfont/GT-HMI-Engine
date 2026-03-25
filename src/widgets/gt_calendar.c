@@ -48,7 +48,7 @@ typedef struct {
 }_gt_calendar_day_type_st;
 
 typedef struct _gt_calendar_s {
-    gt_obj_st obj;
+    gt_obj_st base;
 
     _gt_calendar_day_type_st day_type;
     _gt_calendar_days_st today;

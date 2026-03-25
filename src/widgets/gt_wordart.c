@@ -43,7 +43,7 @@ typedef struct _gt_word_art_item_s {
 }_gt_word_art_item_st;
 
 typedef struct _gt_wor_dart_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     _gt_word_art_item_st * items;
     uint32_t total;
     uint32_t item_number;

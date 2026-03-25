@@ -43,7 +43,7 @@ typedef struct _part_item_s {
 }_part_item_st;
 
 typedef struct _gt_status_bar_s {
-    gt_obj_st obj;
+    gt_obj_st base;
 
 #if GT_STATUS_BAR_THREE_PART_SCALE_MODE
     _part_item_st left;

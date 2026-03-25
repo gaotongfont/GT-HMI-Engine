@@ -33,7 +33,7 @@
  * @brief The gif object
  */
 typedef struct _gt_gif_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     char * src;
 #if GT_USE_FILE_HEADER
     gt_file_header_param_st fh;

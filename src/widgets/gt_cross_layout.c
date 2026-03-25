@@ -50,7 +50,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_cross_layout_s {
-    gt_obj_st obj;
+    gt_obj_st base;
 
     gt_obj_st* hor_obj;
     gt_obj_st* ver_obj;

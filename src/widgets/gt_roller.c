@@ -54,7 +54,7 @@ typedef struct {
  * @brief Roller style struct
  */
 typedef struct _gt_roller_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     gt_obj_st * text;                   // Options text, free by class
     gt_anim_st * anim_snap;             // The anim object to scroll snap
     gt_color_t select_color;            // The color of selected item

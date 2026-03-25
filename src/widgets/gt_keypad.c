@@ -57,7 +57,7 @@ typedef struct {
 }_cmd_map_st;
 
 typedef struct _gt_keypad_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     gt_obj_st* btnmap;
 
     gt_keypad_map_st * map_list;

@@ -25,7 +25,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct {
-    gt_obj_st obj;
+    gt_obj_st base;
     gt_obj_st * lab_p;
     gt_anim_st * anim_transit;
 

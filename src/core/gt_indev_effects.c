@@ -38,7 +38,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct {
-    gt_obj_st obj;
+    gt_obj_st base;
     gt_obj_st* rect_p;
     gt_anim_st* anim_p;
 

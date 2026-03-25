@@ -41,7 +41,7 @@ typedef struct _repeat_mode_s {
 
 
 typedef struct _gt_slider_s {
-    gt_obj_st obj;
+    gt_obj_st base;
 
     gt_obj_st * img;         /** The img object within tag area */
 

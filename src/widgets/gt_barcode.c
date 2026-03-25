@@ -32,7 +32,7 @@
 /* private typedef ------------------------------------------------------*/
 
 typedef struct _gt_barcode_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     barcode_st info;
 }_gt_barcode_st;
 

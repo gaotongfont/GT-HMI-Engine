@@ -40,7 +40,7 @@
 /* private typedef ------------------------------------------------------*/
 
 typedef struct _gt_dialog_s {
-    gt_obj_st obj;
+    gt_obj_st base;
 
     gt_obj_st * btn_close;
     gt_obj_st * title;

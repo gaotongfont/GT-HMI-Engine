@@ -27,7 +27,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_progress_bar_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     gt_color_t color_act;
     gt_color_t color_ina;
     gt_size_t start;

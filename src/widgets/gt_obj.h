@@ -104,18 +104,21 @@ typedef enum {
  * @brief obj base struct
  */
 typedef struct gt_obj_s {
-    struct gt_obj_s * parent;
-    struct gt_obj_s ** child;
+    gt_area_st area;                /* base area */
     const gt_obj_class_st * classes;
+    struct gt_obj_s ** child;
+    struct gt_obj_s * parent;
+    uint16_t cnt_child;
+    gt_id_t id;                     /* obj id, register by user, default: [-1] invalid id, normal begin from 0. */
 
-    /** user's custom events callback replace core events handler */
-    gt_obj_event_attr_st * replace_core_event_attr;
     /** user's events */
     gt_obj_event_attr_st * event_attr;
     struct _gt_draw_ctx_s * draw_ctx;
     gt_obj_process_attr_st process_attr;
 
-    gt_area_st area;                /* base area */
+    /** user's custom events callback replace core events handler */
+    gt_obj_event_attr_st * replace_core_event_attr;
+
 #if GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
     /**
      * @brief Enabled custom touch expand size, such as:
@@ -124,10 +127,8 @@ typedef struct gt_obj_s {
     gt_point_st touch_expand_size;
 #endif
 
-    gt_id_t id;                     /* obj id, register by user, default: [-1] invalid id, normal begin from 0. */
     gt_color_t bgcolor;
 
-    uint16_t cnt_child;
     gt_radius_t radius;
     uint8_t opa;            /* @ref gt_color.h */
     uint8_t opa_tip_bar;    /* scrolling tip bar @ref scroll_tip */

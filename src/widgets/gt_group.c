@@ -27,7 +27,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_group_s {
-    gt_obj_st obj;
+    gt_obj_st base;
 }_gt_group_st;
 
 /* static variables -----------------------------------------------------*/

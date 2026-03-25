@@ -64,7 +64,7 @@ typedef struct{
 
 
 typedef struct _gt_spectrum_s{
-    gt_obj_st obj;
+    gt_obj_st base;
     _gt_timer_st* timer;
     _gt_spectrum_item_st item;
     _gt_spectrum_color_st color;

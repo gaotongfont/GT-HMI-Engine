@@ -28,7 +28,7 @@
 /* private typedef ------------------------------------------------------*/
 
 typedef struct _gt_label_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     char * text;
 
     _auto_scroll_st * auto_scroll;

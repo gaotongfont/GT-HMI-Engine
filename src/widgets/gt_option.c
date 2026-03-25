@@ -23,7 +23,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_option_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     uint8_t idx;
 }_gt_option_st;
 

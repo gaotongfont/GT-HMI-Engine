@@ -35,7 +35,7 @@ typedef struct _btnmap_btn_param_s {
 
 
 typedef struct _gt_btnmap_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     gt_obj_st* input_ptr;
     gt_map_st* map;
     gt_py_input_method_st* py_input_method;

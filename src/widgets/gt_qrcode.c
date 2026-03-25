@@ -32,7 +32,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_qr_code_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     uint16_t str_len;
     uint8_t * str;
     uint8_t ec_level;

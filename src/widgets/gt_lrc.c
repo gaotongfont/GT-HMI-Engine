@@ -29,7 +29,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_lrc_s {
-    gt_obj_st obj;
+    gt_obj_st base;
 
     gt_anim_st *anim;
     uint32_t* times;

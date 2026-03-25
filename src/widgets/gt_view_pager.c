@@ -76,7 +76,7 @@ struct _reg_s {
 };
 
 typedef struct _gt_view_pager_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     struct _reg_s reg;
     uint16_t width;
     gt_color_t color_glass;

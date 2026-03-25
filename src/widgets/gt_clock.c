@@ -67,7 +67,7 @@ typedef struct {
 }_user_second_handler_st;
 
 typedef struct _gt_clock_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     gt_obj_st * label;    /** @ref gt_label.h */
     char * format;
 

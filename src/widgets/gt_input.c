@@ -31,7 +31,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_input_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     gt_obj_st * hooking_kp;      /** hooking keypad */
     char * value;
     char * placeholder;

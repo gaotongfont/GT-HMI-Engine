@@ -42,7 +42,7 @@ typedef struct _item_s {
 }_item_st;
 
 typedef struct _gt_imgbtn_s {
-    gt_obj_st obj;
+    gt_obj_st base;
 
     _item_st src;
     _item_st press;     ///< imgbtn src when press, It can be a virt file name/path or an array of C

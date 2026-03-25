@@ -32,7 +32,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_img_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     char * src;             // img src, It can be a virt file name/path or an array of C
     _gt_img_dsc_st raw;     // raw data buffer draw directly
     gt_color_masking_st masking;

@@ -65,7 +65,7 @@ typedef struct {
 #endif  /** GT_TEXTAREA_LINE_CACHE */
 
 typedef struct _gt_textarea_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     gt_textarea_param_st * contents;
     uint16_t cnt_contents;
     uint16_t max_height;            /** update when current display max height */

@@ -81,7 +81,7 @@ typedef struct {
 }_page_mode_st;
 
 typedef struct _gt_listview_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     gt_obj_st * last_active;
     uint16_t item_height;       /** The height of item */
     gt_font_info_st font_info;

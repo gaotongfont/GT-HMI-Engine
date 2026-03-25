@@ -52,7 +52,7 @@ typedef struct {
 
 
 typedef struct _gt_bit_img_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     _gt_vector_st * vector0;
     _gt_vector_st * vector1;
     _gt_timer_st * timer;

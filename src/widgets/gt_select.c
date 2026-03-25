@@ -33,7 +33,7 @@
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_select_s {
-    gt_obj_st obj;
+    gt_obj_st base;
     gt_obj_st * ipt_p;      /** input */
     gt_obj_st * lv_p;       /** listview */
 
