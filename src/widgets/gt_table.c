@@ -36,7 +36,7 @@ typedef struct {
 }_gt_table_row_item_st;
 
 typedef struct _gt_table_s {
-    gt_obj_st obj;
+    gt_obj_st base;
 
     gt_color_t color_border;
     uint8_t border_width;
