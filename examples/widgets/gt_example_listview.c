@@ -37,25 +37,31 @@ void _listview_event_cb(gt_event_st * e)
 
 
 /* static functions -----------------------------------------------------*/
-void gt_examples_listview(void)
+gt_obj_st * gt_examples_listview(void)
 {
     int i = 0;
-    char * names[] = { "foo1", "foo2", "foo3", "foo4", "foo5", "foo6", "foo7" };
+    char * names[] = {
+        "foo0", "foo1", "foo2", "foo3", "foo4", "foo5", "foo6", "foo7", "foo8", "foo9",
+        "foo10", "foo11", "foo12", "foo13", "foo14", "foo15", "foo16", "foo17", "foo18", "foo19",
+    };
     int length = sizeof(names) / sizeof(char *);
 
     gt_obj_st * screen;
     screen = gt_obj_create(NULL);
 
     gt_obj_st * listview = gt_listview_create(screen);
+    gt_obj_set_pos(listview, 0, 0);
+    gt_obj_set_size(listview, 300, 200);
+    gt_listview_set_item_height(listview, 40);
+
     for (i = 0; i < length; i++) {
         gt_listview_add_item(listview, names[i]);
     }
     gt_listview_set_selected_item_by_idx(listview, 2);
-	gt_obj_set_pos(listview, 0, 0);
-    gt_obj_set_size(listview, 120, 60);
     gt_obj_add_event_cb(listview, _listview_event_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
 
-    gt_disp_load_scr(screen);
+    GT_EXAMPLE_ADD_BACK_BTN(screen);
+    return screen;
 }
 
 

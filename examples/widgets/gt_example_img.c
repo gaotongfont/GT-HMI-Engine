@@ -42,18 +42,16 @@ static void _image_one_cb(gt_event_st * e) {
     GT_LOGD(GT_LOG_TAG_EXTRA, "image one call back");
     static int _cnt_1 = 0;
     gt_img_set_src(image, (_cnt_1++ % 2) ? "./2.png" : "./1.png");
-    gt_disp_load_scr(_screen);
 }
 
 static void _image_two_cb(gt_event_st * e) {
     GT_LOGD(GT_LOG_TAG_EXTRA, "image two call back");
     static int _cnt_2 = 0;
     gt_img_set_src(image2, (_cnt_2++ % 2) ? "./1.png" : "./2.png");
-    gt_disp_load_scr(_screen);
 }
 /* global functions / API interface -------------------------------------*/
 
-void gt_examples_img(void)
+gt_obj_st * gt_examples_img(void)
 {
     _screen = gt_obj_create(NULL);
 
@@ -67,7 +65,8 @@ void gt_examples_img(void)
 	gt_obj_set_pos(image2, 0, 100);
     gt_obj_add_event_cb(image2, _image_two_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
 
-    gt_disp_load_scr(_screen);
+    GT_EXAMPLE_ADD_BACK_BTN(_screen);
+    return _screen;
 }
 
 

@@ -610,10 +610,13 @@ extern "C" {
     #define GT_USE_MD4C         01
 #endif
 
-/**
- * @brief use examples demo
- */
-#define GT_USE_EXAMPLES             01
+#ifndef GT_USE_EXAMPLES
+    /**
+     * @brief use examples demo
+     * [default: 0]
+     */
+    #define GT_USE_EXAMPLES         0
+#endif
 
 #define GT_CONFIG_GUI_DRIVER_LIB    01
 

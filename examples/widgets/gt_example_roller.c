@@ -8,7 +8,7 @@
  */
 
 /* include --------------------------------------------------------------*/
-#include "gt_examples.h"
+#include "../gt_examples.h"
 #include "../../src/widgets/gt_roller.h"
 #include "../../src/widgets/gt_btn.h"
 #include "../../src/core/gt_event.h"
@@ -53,7 +53,7 @@ static void gt_roller_next_cb(gt_event_st * e) {
 
 /* global functions / API interface -------------------------------------*/
 
-void gt_examples_roller(void)
+gt_obj_st * gt_examples_roller(void)
 {
 	gt_obj_st * screen_home = gt_obj_create(NULL);
 	gt_screen_set_bgcolor(screen_home, gt_color_hex(0xffffff));
@@ -68,7 +68,7 @@ void gt_examples_roller(void)
 		GT_ROLLER_MODE_INFINITE);
 #else
 	gt_roller_set_options(roller,
-		"test0\ntest1\ntest2\ntest3\ntest4\ntest5\ntest6\ntest7\ntest8\ntest9\ntest10",
+		"test0\ntest1\ntest2\ntest3\ntest4\ntest5\ntest6\ntest7\ntest8\ntest9",
 		GT_ROLLER_MODE_NORMAL);
 #endif
 	// gt_roller_set_line_space(roller, 20);
@@ -82,6 +82,9 @@ void gt_examples_roller(void)
 	gt_obj_set_pos(next, 100, 0);
 	gt_btn_set_text(next, "next");
 	gt_obj_add_event_cb(next, gt_roller_next_cb, GT_EVENT_TYPE_INPUT_RELEASED, roller);
+
+	GT_EXAMPLE_ADD_BACK_BTN(screen_home);
+	return screen_home;
 }
 
 

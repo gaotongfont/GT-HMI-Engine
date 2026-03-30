@@ -43,7 +43,7 @@
 /**
  * @brief create a keyboard.
  */
-void gt_examples_keyboard(void)
+gt_obj_st * gt_examples_keyboard(void)
 {
     gt_obj_st * screen;
     screen = gt_obj_create(NULL);
@@ -57,7 +57,8 @@ void gt_examples_keyboard(void)
     gt_keypad_set_target(keyboard , input);
 
 
-    gt_disp_load_scr(screen);
+    GT_EXAMPLE_ADD_BACK_BTN(screen);
+    return screen;
 
 }
 

@@ -43,7 +43,7 @@ static void _progress_bar_event_cb(gt_event_st * e)
 }
 
 /* global functions / API interface -------------------------------------*/
-void gt_examples_progress_bar(void)
+gt_obj_st * gt_examples_progress_bar(void)
 {
     gt_obj_st * screen;
 
@@ -57,7 +57,8 @@ void gt_examples_progress_bar(void)
     gt_obj_set_size(progress_bar, 380, 40);
     gt_obj_add_event_cb(progress_bar, _progress_bar_event_cb, GT_EVENT_TYPE_INPUT_PRESSING, NULL);
 
-    gt_disp_load_scr(screen);
+    GT_EXAMPLE_ADD_BACK_BTN(screen);
+    return screen;
 }
 
 

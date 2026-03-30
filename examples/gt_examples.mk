@@ -1,4 +1,5 @@
 CSRCS += $(notdir $(wildcard $(HMI_DIR)/examples/*.c))
+CSRCS += $(notdir $(wildcard $(HMI_DIR)/examples/widgets/*.c))
 
 DEPPATH += --dep-path $(HMI_DIR)/examples
 VPATH += :$(HMI_DIR)/examples

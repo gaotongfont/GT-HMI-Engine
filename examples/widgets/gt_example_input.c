@@ -44,7 +44,7 @@ static void _click_cb(gt_event_st * e)
 
 /* global functions / API interface -------------------------------------*/
 
-void gt_example_input(void)
+gt_obj_st * gt_example_input(void)
 {
     gt_obj_st * screen;
     screen = gt_obj_create(NULL);
@@ -55,7 +55,8 @@ void gt_example_input(void)
 	gt_obj_set_size(input, 180, 80);
 	gt_obj_add_event_cb(input, _click_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
 
-    gt_disp_load_scr(screen);
+    GT_EXAMPLE_ADD_BACK_BTN(screen);
+    return screen;
 }
 
 #endif

@@ -77,7 +77,7 @@ static void btn_click_cb(gt_event_st * e) {
  * @brief create a button, and click it will printf touch count and display
  *  animation
  */
-void gt_examples_anim1(void)
+gt_obj_st * gt_examples_anim1(void)
 {
     gt_obj_st * screen;
     screen = gt_obj_create(NULL);
@@ -87,7 +87,8 @@ void gt_examples_anim1(void)
 	gt_obj_set_size(btn, 200, 100);
 	gt_obj_add_event_cb(btn, btn_click_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
 
-    gt_disp_load_scr(screen);
+    GT_EXAMPLE_ADD_BACK_BTN(screen);
+    return screen;
 }
 
 #endif

@@ -44,7 +44,7 @@
 /**
  * @brief create a line.
  */
-void gt_examples_line(void)
+gt_obj_st * gt_examples_line(void)
 {
     gt_obj_st * screen;
     screen = gt_obj_create(NULL);
@@ -55,7 +55,8 @@ void gt_examples_line(void)
 	gt_line_set_line_width(line,1);
 	gt_line_set_start_point(line,100,100);
 	gt_line_set_end_point(line,400,133);
-    gt_disp_load_scr(screen);
+    GT_EXAMPLE_ADD_BACK_BTN(screen);
+    return screen;
 }
 
 #endif

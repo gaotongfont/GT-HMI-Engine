@@ -41,7 +41,7 @@ static void _gt_check_event_cb(gt_event_st * e)
 
 
 /* global functions / API interface -------------------------------------*/
-void gt_examples_checkbox(void)
+gt_obj_st * gt_examples_checkbox(void)
 {
     gt_obj_st * screen;
     screen = gt_obj_create(NULL);
@@ -52,7 +52,8 @@ void gt_examples_checkbox(void)
 	gt_obj_set_size(checkbox, 80, 20);
 	gt_obj_add_event_cb(checkbox, _gt_check_event_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
 
-    gt_disp_load_scr(screen);
+    GT_EXAMPLE_ADD_BACK_BTN(screen);
+    return screen;
 }
 
 

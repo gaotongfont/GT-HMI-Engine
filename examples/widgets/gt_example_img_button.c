@@ -38,7 +38,7 @@
 
 /* global functions / API interface -------------------------------------*/
 
-void gt_examples_img_button(void)
+gt_obj_st * gt_examples_img_button(void)
 {
     gt_obj_st * screen;
     screen = gt_obj_create(NULL);
@@ -49,7 +49,8 @@ void gt_examples_img_button(void)
     gt_imgbtn_set_src_release(image_btn, "./2.png");
 	gt_obj_set_pos(image_btn, 100, 100);
 
-    gt_disp_load_scr(screen);
+    GT_EXAMPLE_ADD_BACK_BTN(screen);
+    return screen;
 }
 
 
