@@ -60,7 +60,7 @@ _auto_scroll_exec_cb(void * obj, int32_t value) {
     }
     if (false == gt_obj_is_child(auto_scroll_p->parent, gt_disp_get_scr())
 #if GT_USE_LAYER_TOP
-        || false == gt_obj_is_child(auto_scroll_p->parent, gt_disp_get_layer_top())
+        && false == gt_obj_is_child(auto_scroll_p->parent, gt_disp_get_layer_top())
 #endif
     ) {
         return;
