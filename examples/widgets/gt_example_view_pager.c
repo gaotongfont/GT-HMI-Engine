@@ -42,14 +42,17 @@ gt_obj_st * gt_examples_view_pager(void)
 
     gt_obj_st * lbl0 = gt_label_create(screen);
     gt_label_set_text(lbl0, "Page 1");
+    gt_obj_set_pos(lbl0, vp->area.w >> 1, vp->area.h >> 1);
     gt_view_pager_fragment_add_widget(vp, 0, lbl0);
 
     gt_obj_st * lbl1 = gt_label_create(screen);
     gt_label_set_text(lbl1, "Page 2");
+    gt_obj_set_pos(lbl1, vp->area.w >> 1, vp->area.h >> 1);
     gt_view_pager_fragment_add_widget(vp, 1, lbl1);
 
     gt_obj_st * lbl2 = gt_label_create(screen);
     gt_label_set_text(lbl2, "Page 3");
+    gt_obj_set_pos(lbl2, vp->area.w >> 1, vp->area.h >> 1);
     gt_view_pager_fragment_add_widget(vp, 2, lbl2);
 
     GT_EXAMPLE_ADD_BACK_BTN(screen);

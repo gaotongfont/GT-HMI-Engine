@@ -98,7 +98,9 @@ gt_obj_st * gt_examples_flex_layout(void)
 gt_obj_st * gt_examples_flex_layout(void)
 {
     gt_obj_st * screen = gt_obj_create(NULL);
+#if GT_USE_EXAMPLES
     GT_EXAMPLE_ADD_BACK_BTN(screen);
+#endif
     return screen;
 }
 #endif
