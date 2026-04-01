@@ -295,7 +295,7 @@ extern "C" {
      * @brief use old font family
      *
      */
-    #define GT_FONT_FAMILY_OLD_ENABLE   01
+    #define GT_FONT_FAMILY_OLD_ENABLE   0
 #endif
 
 #ifndef GT_CUSTOM_FONT_ENABLE
