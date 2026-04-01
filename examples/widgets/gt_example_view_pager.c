@@ -39,6 +39,7 @@ gt_obj_st * gt_examples_view_pager(void)
     gt_obj_set_pos(vp, 10, 10);
     gt_obj_set_size(vp, 300, 200);
     gt_view_pager_set_fragment_count(vp, 3);
+    gt_view_pager_set_glass_color(vp, gt_color_dark_gray());
 
     gt_obj_st * lbl0 = gt_label_create(screen);
     gt_label_set_text(lbl0, "Page 1");
