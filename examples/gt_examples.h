@@ -79,6 +79,7 @@ typedef enum {
 
 /* macros ---------------------------------------------------------------*/
 
+#if GT_USE_EXAMPLES
 /** @brief 在 example 屏幕上添加返回按钮 */
 #define GT_EXAMPLE_ADD_BACK_BTN(parent) \
     do { \
@@ -98,7 +99,6 @@ typedef enum {
 
 /* global functions / API interface -------------------------------------*/
 
-#if GT_USE_EXAMPLES
 
 /** @brief 通用返回按钮回调 */
 void _gt_example_back_cb(gt_event_st * e);
