@@ -63,6 +63,14 @@ gt_obj_st * gt_select_create(gt_obj_st * parent);
 void gt_select_add_option(gt_obj_st * obj, const char * text);
 void gt_select_clear_all_options(gt_obj_st * obj);
 void gt_select_set_option_height(gt_obj_st * obj, uint16_t height);
+/**
+ * @brief set obj placeholder
+ *
+ * @param obj obj
+ * @param placeholder placeholder content
+ */
+void gt_select_set_placeholder(gt_obj_st * obj, const char * placeholder);
+
 
 void gt_select_set_font_color(gt_obj_st * select, gt_color_t color);
 void gt_select_set_font_size(gt_obj_st * select, uint8_t size);

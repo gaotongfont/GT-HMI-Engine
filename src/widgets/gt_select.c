@@ -185,6 +185,16 @@ void gt_select_set_option_height(gt_obj_st * obj, uint16_t height)
     gt_listview_set_item_height(style->lv_p, height);
 }
 
+void gt_select_set_placeholder(gt_obj_st * obj, const char * placeholder)
+{
+    _gt_select_st * style = (_gt_select_st *)obj;
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    gt_input_set_placeholder(style->ipt_p, placeholder);
+}
+
+
 void gt_select_set_font_color(gt_obj_st * select, gt_color_t color)
 {
     if (false == gt_obj_is_type(select, OBJ_TYPE)) {
