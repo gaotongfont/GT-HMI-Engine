@@ -2758,7 +2758,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
 
     if(dsc->line.width <= 0) { return ;}
 
-    draw_ctx->parent_area = (gt_area_st * )coords;  /** remark before parent area value, return will reload */
+    gt_area_st * remark_area = draw_ctx->parent_area;
 
     uint16_t rd_val = dsc->line.width;
     uint16_t radius = rd_val >> 1;
@@ -2808,11 +2808,13 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
     if(is_straight_line && !is_round) {
         blend_dsc.dst_area = &dst_area;
         gt_draw_blend(draw_ctx, &blend_dsc);
+        draw_ctx->parent_area = remark_area;
         return ;
     }
 
     blend_dsc.mask_buf = gt_mem_malloc(area_line.w);
     if(!blend_dsc.mask_buf) {
+        draw_ctx->parent_area = remark_area;
         return ;
     }
 
@@ -2840,14 +2842,16 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
     } else {
         if (is_round) {
             gt_area_st round_area = { dsc->start.x - radius, dsc->start.y - radius, rd_val, rd_val };
-            area_line.x = round_area.x;
-            area_line.y = round_area.y;
-            area_line.w = round_area.w;
-            area_line.h = 1;
-
+            gt_area_st round_orig = round_area;
             gt_mask_radius_st r_mask = {0};
             gt_size_t r_mask_id = -1;
-            gt_mask_radius_init(&r_mask, &round_area, radius, false);
+
+            area_line.x = round_area.x;
+            area_line.y = round_area.y;
+            area_line.w = GT_MIN(round_area.w, coords->w);
+            area_line.h = 1;
+
+            gt_mask_radius_init(&r_mask, &round_orig, radius, false);
             r_mask_id = gt_mask_add(&r_mask);
 
             for (uint16_t i = 0; i < round_area.h; ++i) {
@@ -2857,12 +2861,18 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
                 gt_draw_blend(draw_ctx, &blend_dsc);
             }
 
-            round_area.x = dsc->end.x - radius;
-            round_area.y = dsc->end.y - radius;
-            r_mask.area.x = round_area.x;
-            r_mask.area.y = round_area.y;
+            gt_mask_remove_idx(r_mask_id);
+            gt_mask_free(&r_mask);
+
+            round_orig.x = dsc->end.x - radius;
+            round_orig.y = dsc->end.y - radius;
+            round_area = round_orig;
             area_line.x = round_area.x;
             area_line.y = round_area.y;
+            area_line.w = GT_MIN(round_area.w, coords->w);
+
+            gt_mask_radius_init(&r_mask, &round_orig, radius, false);
+            r_mask_id = gt_mask_add(&r_mask);
 
             for (uint16_t i = 0; i < round_area.h; ++i) {
                 area_line.y = round_area.y + i;
@@ -2947,7 +2957,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
 
         area_line.x = dst_area.x;
         area_line.y = dst_area.y;
-        area_line.w = dst_area.w;
+        area_line.w = GT_MIN(dst_area.w, coords->w);   /** cap to malloc size */
         area_line.h = 1;
 
         gt_mask_line_st ll_mask = {0};
@@ -2965,7 +2975,8 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
         gt_mask_line_st ee_mask = {0};
         gt_size_t ee_make_id = -1;
         if (!is_round) {
-            gt_mask_line_side_et ss_side, ee_side;
+            gt_mask_line_side_et ss_side = GT_MASK_LINE_SIDE_LEFT;
+            gt_mask_line_side_et ee_side = GT_MASK_LINE_SIDE_RIGHT;
             if (ll_start.x > rl_start.x && ll_start.y > rl_start.y) {
                 if (dsc->start.y < dsc->end.y) {
                     ss_side = GT_MASK_LINE_SIDE_LEFT;
@@ -3010,6 +3021,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
             gt_mask_free(&ee_mask);
         }
     }
+    draw_ctx->parent_area = remark_area;
     gt_mem_free(blend_dsc.mask_buf);
 }
 

@@ -131,6 +131,7 @@ typedef struct gt_listview_line_s {
     uint16_t xe;
     uint16_t ye;
     uint16_t line_width;
+    uint8_t relative_pos : 1;
 }gt_listview_line_st;
 #endif
 

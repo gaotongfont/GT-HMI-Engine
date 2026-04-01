@@ -1080,7 +1080,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_line(gt_obj_st * listview,
     return r;
 }
 
-static inline void _set_line_prop(gt_obj_st * line, gt_listview_line_st const * const prop) {
+static inline void _set_line_prop(gt_obj_st * line, gt_listview_line_st const * const prop, gt_obj_st * item) {
     if (false == gt_obj_is_type(line, GT_TYPE_LINE)) {
         return;
     }
@@ -1088,8 +1088,13 @@ static inline void _set_line_prop(gt_obj_st * line, gt_listview_line_st const * 
         return;
     }
     gt_line_set_color(line, prop->color);
-    gt_line_set_start_point(line, prop->xs, prop->ys);
-    gt_line_set_end_point(line, prop->xe, prop->ye);
+    if (prop->relative_pos) {
+        gt_line_set_start_point(line, prop->xs + item->area.x, prop->ys + item->area.y);
+        gt_line_set_end_point(line, prop->xe + item->area.x, prop->ye + item->area.y);
+    } else {
+        gt_line_set_start_point(line, prop->xs, prop->ys);
+        gt_line_set_end_point(line, prop->xe, prop->ye);
+    }
     gt_line_set_line_width(line, prop->line_width);
 }
 #endif
@@ -1340,7 +1345,8 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
         if (NULL == element) {
             element = _create_item_line(listview, obj);
         }
-        _set_line_prop(element, item->line_p);
+        _set_line_prop(element, item->line_p, obj);
+        goto redraw_lb;
     } else
 #endif
     if (GT_LISTVIEW_ELEMENT_TYPE_IMG == item->type) {
@@ -1380,8 +1386,9 @@ gt_obj_st * gt_listview_custom_item_set_element(gt_obj_st * listview, gt_listvie
     element->area = item->area;
     element->area.x += obj->area.x;
     element->area.y += obj->area.y;
-    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 
+redraw_lb:
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
     return obj;
 }
 
