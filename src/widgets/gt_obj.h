@@ -16,6 +16,7 @@ extern "C" {
 /* include --------------------------------------------------------------*/
 #include "../others/gt_types.h"
 #include "../others/gt_color.h"
+#include "../core/gt_cold.h"
 #include "gt_obj_class.h"
 #include "../core/gt_event.h"
 #include "stdbool.h"
@@ -34,12 +35,13 @@ typedef struct _gt_obj_event_attr_s {
 
 /**
  * @brief save all indev/disp/others dev data
+ *
+ * Hot data only - contains only frequently accessed fields.
+ * Scroll-related cold data is now in gt_scroll_cold_st (from gt_cold.h).
  */
 typedef struct _gt_obj_process_attr_s {
-    gt_point_st point;          //click point(note: the point is for object inside offset)
-    gt_point_st scroll;         //scroll distance, default is 0
-    gt_point_st scroll_prev;    // remark previous scroll distance
-    uint8_t is_scrolling : 1;   // scroll_start untill scroll_end
+    gt_point_st point;          /**< click point (note: the point is for object inside offset) */
+    gt_point_st scroll;         /**< scroll distance, default is 0 */
 }gt_obj_process_attr_st;
 
 typedef enum {
@@ -116,6 +118,9 @@ typedef struct gt_obj_s {
     struct _gt_draw_ctx_s * draw_ctx;
     gt_obj_process_attr_st process_attr;
 
+    /** Scroll cold data - allocated from slab when scroll feature is used */
+    gt_scroll_cold_st * scroll_cold;
+
     /** user's custom events callback replace core events handler */
     gt_obj_event_attr_st * replace_core_event_attr;
 
@@ -186,6 +191,33 @@ typedef struct gt_obj_s {
     uint32_t fixed_pos_saved : 1;   /* 1=fixed_pos is valid (saved before FLEX switch) */
 #endif
 }gt_obj_st;
+
+/**
+ * @name Backward compatibility macros for scroll_cold
+ * @brief These macros provide transparent access to scroll_prev and is_scrolling
+ *        which are now stored in scroll_cold (allocated from slab when needed)
+ * @{
+ */
+/** @brief Get scroll_prev - returns from scroll_cold if available, else 0 (initial value) */
+#define gt_obj_get_scroll_prev_x(obj)  ((obj)->scroll_cold ? (obj)->scroll_cold->scroll_prev.x : 0)
+#define gt_obj_get_scroll_prev_y(obj)  ((obj)->scroll_cold ? (obj)->scroll_cold->scroll_prev.y : 0)
+/** @brief Set scroll_prev - lazily allocates scroll_cold if needed */
+#define gt_obj_set_scroll_prev(obj, _px, _py)  do { \
+    if ((obj)->scroll_cold == NULL) { \
+        (obj)->scroll_cold = gt_cold_scroll_alloc(obj); \
+    } \
+    if ((obj)->scroll_cold) { (obj)->scroll_cold->scroll_prev.x = (_px); (obj)->scroll_cold->scroll_prev.y = (_py); } \
+} while(0)
+/** @brief Get is_scrolling state */
+#define gt_obj_is_scrolling(obj)       ((obj)->scroll_cold ? (obj)->scroll_cold->is_scrolling : 0)
+/** @brief Set is_scrolling state - lazily allocates scroll_cold if needed */
+#define gt_obj_set_scrolling(obj, val) do { \
+    if ((obj)->scroll_cold == NULL) { \
+        (obj)->scroll_cold = gt_cold_scroll_alloc(obj); \
+    } \
+    if ((obj)->scroll_cold) { (obj)->scroll_cold->is_scrolling = (val); } \
+} while(0)
+/** @} */
 
 
 /* private typedef  */

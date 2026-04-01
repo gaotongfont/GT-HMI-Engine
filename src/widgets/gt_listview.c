@@ -1454,8 +1454,7 @@ void gt_listview_clear_all_items(gt_obj_st * listview)
     }
     listview->process_attr.scroll.x = 0;
     listview->process_attr.scroll.y = 0;
-    listview->process_attr.scroll_prev.x = 0;
-    listview->process_attr.scroll_prev.y = 0;
+    gt_obj_set_scroll_prev(listview, 0, 0);
 
     _gt_listview_st * style = (_gt_listview_st * )listview;
     style->column.idx = 0;

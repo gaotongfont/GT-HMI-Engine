@@ -269,8 +269,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_msg_move_y(gt_obj_st * chat, gt_size_
 
     if(offset_y > 0) return;
 
-    gt_size_t prev_offset = chat->process_attr.scroll_prev.y;
-    chat->process_attr.scroll_prev.y = offset_y;
+    gt_size_t prev_offset = gt_obj_get_scroll_prev_y(chat);
+    gt_obj_set_scroll_prev(chat, gt_obj_get_scroll_prev_x(chat), offset_y);
 
     gt_size_t diff_y = offset_y - prev_offset;
     if (0 == diff_y) return;
@@ -962,8 +962,7 @@ void gt_chat_clean_all_msg(gt_obj_st * chat)
 
     chat->process_attr.scroll.x = 0;
     chat->process_attr.scroll.y = 0;
-    chat->process_attr.scroll_prev.x = 0;
-    chat->process_attr.scroll_prev.y = 0;
+    gt_obj_set_scroll_prev(chat, 0, 0);
     _gt_chat_st * style = (_gt_chat_st * )chat;
 
     style->msg_cnt = 0;

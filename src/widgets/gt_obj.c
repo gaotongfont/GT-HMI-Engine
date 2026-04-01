@@ -120,13 +120,13 @@ static GT_ATTRIBUTE_RAM_TEXT void _screen_scroll(gt_obj_st * obj) {
         obj->process_attr.scroll.y = -max_area_p->bottom + obj->area.h;
     }
 
-    if (obj->process_attr.scroll_prev.x == obj->process_attr.scroll.x &&
-        obj->process_attr.scroll_prev.y == obj->process_attr.scroll.y) {
+    if (gt_obj_get_scroll_prev_x(obj) == obj->process_attr.scroll.x &&
+        gt_obj_get_scroll_prev_y(obj) == obj->process_attr.scroll.y) {
         /** Reduce the unnecessary drawing overhead of invalid scrolling animations */
         return;
     }
     gt_disp_scroll_area_act(-obj->process_attr.scroll.x, -obj->process_attr.scroll.y);
-    obj->process_attr.scroll_prev = obj->process_attr.scroll;
+    gt_obj_set_scroll_prev(obj, obj->process_attr.scroll.x, obj->process_attr.scroll.y);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _masked_effect_handler(gt_obj_st * obj) {
@@ -648,11 +648,14 @@ gt_padding_st gt_obj_get_limit_padding(gt_obj_st * parent)
     ret.right  = max.x;
     ret.bottom = max.y;
     if (parent->rebound) {
-        gt_point_st * prev = &parent->process_attr.scroll_prev;
+        gt_point_st prev = {
+            .x = gt_obj_get_scroll_prev_x(parent),
+            .y = gt_obj_get_scroll_prev_y(parent),
+        };
         /** calc end border offset */
         gt_point_st border = {
-            .x = gt_abs((min.x - parent->area.x) - prev->x) << 1,
-            .y = gt_abs((min.y - parent->area.y) - prev->y) << 1,
+            .x = gt_abs((min.x - parent->area.x) - prev.x) << 1,
+            .y = gt_abs((min.y - parent->area.y) - prev.y) << 1,
         };
         if (gt_abs(max.x - min.x) > parent->area.w) { ret.right += border.x; }
         if (gt_abs(max.y - min.y) > parent->area.h) { ret.bottom += border.y; }

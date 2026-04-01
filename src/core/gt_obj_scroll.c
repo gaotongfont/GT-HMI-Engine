@@ -61,7 +61,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _scroll_ready_cb(struct gt_anim_s * anim) {
     if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(obj)) {
         return;
     }
-    if (false == obj->process_attr.is_scrolling) {
+    if (false == gt_obj_is_scrolling(obj)) {
         return;
     }
     gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
@@ -212,12 +212,12 @@ bool gt_obj_scroll_is_move(gt_obj_st * obj)
         return false;
     }
 #if 01
-    return obj->process_attr.is_scrolling;
+    return gt_obj_is_scrolling(obj);
 #else
-    if (obj->process_attr.scroll_prev.y != obj->process_attr.scroll.y) {
+    if (gt_obj_get_scroll_prev_y(obj) != obj->process_attr.scroll.y) {
         return true;
     }
-    if (obj->process_attr.scroll_prev.x != obj->process_attr.scroll.x) {
+    if (gt_obj_get_scroll_prev_x(obj) != obj->process_attr.scroll.x) {
         return true;
     }
     return false;
@@ -336,7 +336,9 @@ _calc_non_rebound_limit_scroll(
 static gt_point_st
 _gt_obj_scroll_internal_inline(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offset_y) {
     gt_point_st * scroll = &obj->process_attr.scroll;
-    gt_point_st * prev = &obj->process_attr.scroll_prev;
+    if (!obj->scroll_cold) { obj->scroll_cold = gt_cold_scroll_alloc(obj); }
+    static const gt_point_st _zero = {0, 0};
+    gt_point_st * prev = obj->scroll_cold ? &obj->scroll_cold->scroll_prev : (gt_point_st *)&_zero;
     gt_padding_st padding = gt_obj_get_limit_padding(obj);
     padding.right += offset_x;
     padding.bottom += offset_y;
@@ -389,7 +391,9 @@ _gt_obj_scroll_internal_inline(gt_obj_st * obj, gt_size_t offset_x, gt_size_t of
 gt_point_st _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offset_y)
 {
     gt_point_st * scroll = &obj->process_attr.scroll;
-    gt_point_st * prev = &obj->process_attr.scroll_prev;
+    if (!obj->scroll_cold) { obj->scroll_cold = gt_cold_scroll_alloc(obj); }
+    static const gt_point_st _zero = {0, 0};
+    gt_point_st * prev = obj->scroll_cold ? &obj->scroll_cold->scroll_prev : (gt_point_st *)&_zero;
     gt_scroll_dir_et dir = obj->scroll_dir;
     if (false == obj->rebound) {
         /** non rebound */
@@ -416,7 +420,9 @@ gt_point_st _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size
 gt_point_st _gt_obj_scroll_internal(gt_obj_st * obj, gt_size_t offset_x, gt_size_t offset_y)
 {
     gt_point_st * scroll = &obj->process_attr.scroll;
-    gt_point_st * prev = &obj->process_attr.scroll_prev;
+    if (!obj->scroll_cold) { obj->scroll_cold = gt_cold_scroll_alloc(obj); }
+    static const gt_point_st _zero = {0, 0};
+    gt_point_st * prev = obj->scroll_cold ? &obj->scroll_cold->scroll_prev : (gt_point_st *)&_zero;
     gt_padding_st padding = gt_obj_get_limit_padding(obj);
     padding.right += offset_x;
     padding.bottom += offset_y;

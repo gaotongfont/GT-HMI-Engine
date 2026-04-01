@@ -131,8 +131,8 @@ GT_ATTRIBUTE_RAM_TEXT
 static void _set_hor_process_attr_scroll_prev_x(gt_obj_st* obj, gt_size_t prev_x)
 {
     _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
-    obj->process_attr.scroll_prev.x = prev_x;
-    style->hor_obj->process_attr.scroll_prev.x = prev_x;
+    gt_obj_set_scroll_prev(obj, prev_x, gt_obj_get_scroll_prev_y(obj));
+    gt_obj_set_scroll_prev(style->hor_obj, prev_x, gt_obj_get_scroll_prev_y(style->hor_obj));
 }
 
 
@@ -148,8 +148,8 @@ GT_ATTRIBUTE_RAM_TEXT
 static void _set_ver_process_attr_scroll_prev_y(gt_obj_st* obj, gt_size_t prev_y)
 {
     _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
-    obj->process_attr.scroll_prev.y = prev_y;
-    style->ver_obj->process_attr.scroll_prev.y = prev_y;
+    gt_obj_set_scroll_prev(obj, gt_obj_get_scroll_prev_x(obj), prev_y);
+    gt_obj_set_scroll_prev(style->ver_obj, gt_obj_get_scroll_prev_x(style->ver_obj), prev_y);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_set_hidden(gt_obj_st* obj, uint16_t ver_index)
@@ -558,14 +558,14 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_scroll_handler(gt_event_st* e)
     }
 
     gt_point_st offset;
-    offset.x = scroll->x - e->target->process_attr.scroll_prev.x;
+    offset.x = scroll->x - gt_obj_get_scroll_prev_x(e->target);
     _cross_hor_scroll_to(obj, offset);
 
     if(GT_CROSS_ROLL_LOOP == style->hor_roll_mode){
         scroll->x = 0;
     }
 
-    if(scroll->x != e->target->process_attr.scroll_prev.x){
+    if(scroll->x != gt_obj_get_scroll_prev_x(e->target)){
         _set_hor_process_attr_scroll_prev_x(obj, scroll->x);
     }
 
@@ -815,7 +815,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_scroll_handler(gt_event_st* e)
     }
 
     gt_point_st offset;
-    offset.y = scroll->y - e->target->process_attr.scroll_prev.y;
+    offset.y = scroll->y - gt_obj_get_scroll_prev_y(e->target);
 
     if(0 != offset.y) {
         _cross_ver_scroll_to(obj, offset);
@@ -824,7 +824,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_scroll_handler(gt_event_st* e)
         scroll->y = 0;
     }
 
-    if(scroll->y != e->target->process_attr.scroll_prev.y){
+    if(scroll->y != gt_obj_get_scroll_prev_y(e->target)){
         _set_ver_process_attr_scroll_prev_y(obj, scroll->y);
     }
     _set_ver_process_attr_scroll_y(obj, scroll->y);
@@ -1737,6 +1737,39 @@ void gt_cross_layout_set_hor_bar_size(gt_obj_st* layout, uint8_t w, uint8_t h)
     style->hor_bar_w = w;
     style->hor_bar_h = h;
 }
+
+void gt_cross_layout_set_ver_item_index(gt_obj_st* layout, uint8_t item_index)
+{
+    gt_obj_type_et type = gt_obj_class_get_type(layout);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
+
+    if(false == gt_obj_is_type(layout, OBJ_TYPE)){
+        return;
+    }
+
+    _gt_cross_layout_st * style = (_gt_cross_layout_st *)layout;
+
+    GT_CHECK_BACK(style->ver_items);
+
+    gt_size_t this_index = _gt_vector_get_index(style->ver_items);
+    gt_size_t count = _gt_vector_get_count(style->ver_items);
+
+    if(item_index >= count || this_index == item_index){
+        return;
+    }
+
+    _set_hor_process_attr_scroll_x(layout, 0);
+    _set_hor_process_attr_scroll_prev_x(layout, 0);
+
+    _cross_ver_set_index_scroll(layout, item_index , style->ver_anim_en);
+    if(!style->ver_anim_en) {
+        _cross_hor_set_hidden(layout, this_index);
+        _cross_hor_handler(layout);
+    }
+}
+
 /* end of file ----------------------------------------------------------*/
 #endif //!GT_CFG_ENABLE_CROSS_LAYOUT
 

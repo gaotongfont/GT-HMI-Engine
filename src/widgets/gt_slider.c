@@ -192,13 +192,12 @@ _calc_touch_point_pos(gt_obj_st * obj) {
 
     if (style->touch_mode) {
         gt_point_st dist_scroll = {0};
-        dist_scroll.x = obj->process_attr.scroll.x - obj->process_attr.scroll_prev.x;
-        dist_scroll.y = obj->process_attr.scroll.y - obj->process_attr.scroll_prev.y;
+        dist_scroll.x = obj->process_attr.scroll.x - gt_obj_get_scroll_prev_x(obj);
+        dist_scroll.y = obj->process_attr.scroll.y - gt_obj_get_scroll_prev_y(obj);
 
-        if (obj->process_attr.scroll.x != obj->process_attr.scroll_prev.x ||
-            obj->process_attr.scroll.y != obj->process_attr.scroll_prev.y) {
-            obj->process_attr.scroll_prev.x = obj->process_attr.scroll.x;
-            obj->process_attr.scroll_prev.y = obj->process_attr.scroll.y;
+        if (obj->process_attr.scroll.x != gt_obj_get_scroll_prev_x(obj) ||
+            obj->process_attr.scroll.y != gt_obj_get_scroll_prev_y(obj)) {
+            gt_obj_set_scroll_prev(obj, obj->process_attr.scroll.x, obj->process_attr.scroll.y);
         }
 
         gt_bar_dir_et dir = gt_slider_get_dir(obj);

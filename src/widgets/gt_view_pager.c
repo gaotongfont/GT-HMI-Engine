@@ -240,11 +240,11 @@ static GT_ATTRIBUTE_RAM_TEXT void _statical_scroll_calc_new_page(gt_obj_st * obj
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
     uint16_t prev_idx = style->reg.index;
 
-    if (obj->process_attr.scroll.x == obj->process_attr.scroll_prev.x) {
+    if (obj->process_attr.scroll.x == gt_obj_get_scroll_prev_x(obj)) {
         return;
     }
     /** limit scroll range */
-    if (obj->process_attr.scroll_prev.x < obj->process_attr.scroll.x) {
+    if (gt_obj_get_scroll_prev_x(obj) < obj->process_attr.scroll.x) {
         /** scroll to left */
         if (style->reg.index) {
             --style->reg.index;
@@ -261,7 +261,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _statical_scroll_calc_new_page(gt_obj_st * obj
     }
     obj->process_attr.scroll.x = - style->reg.index * style->width;
     /** remark prev scroll position */
-    obj->process_attr.scroll_prev.x = obj->process_attr.scroll.x;
+    gt_obj_set_scroll_prev(obj, obj->process_attr.scroll.x, gt_obj_get_scroll_prev_y(obj));
     if (prev_idx == style->reg.index) {
         return;
     }
@@ -303,7 +303,7 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     }
     case GT_EVENT_TYPE_INPUT_PRESS_LOST:
     case GT_EVENT_TYPE_INPUT_RELEASED: {
-        if (obj->process_attr.is_scrolling) {
+        if (gt_obj_is_scrolling(obj)) {
             break;
         }
         if (obj->process_attr.scroll.x % style->width) {

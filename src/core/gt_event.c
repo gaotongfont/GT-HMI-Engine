@@ -139,7 +139,7 @@ _event_check_scroll_begin(gt_obj_st * obj, gt_event_type_et t) {
     if (GT_EVENT_TYPE_INPUT_SCROLL_START != t) {
         return GT_RES_INV;
     }
-    obj->process_attr.is_scrolling = true;
+    gt_obj_set_scrolling(obj, true);
     return GT_RES_OK;
 }
 
@@ -148,7 +148,7 @@ _event_check_scroll_end(gt_obj_st * obj, gt_event_type_et t) {
     if (GT_EVENT_TYPE_INPUT_SCROLL_END != t) {
         return GT_RES_INV;
     }
-    obj->process_attr.is_scrolling = false;
+    gt_obj_set_scrolling(obj, false);
     return GT_RES_OK;
 }
 

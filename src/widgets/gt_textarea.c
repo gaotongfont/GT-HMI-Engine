@@ -263,12 +263,21 @@ static void _line_cache_build(gt_obj_st * obj) {
     gt_area_st area_font    = gt_area_reduce(padding_font, style->border_width + _FONT_AREA_REDUCE_SIZE);
     uint32_t max_w = (uint32_t)area_font.w;
     uint8_t  space_x = style->space_x;
-    uint16_t line_height = style->font_info.size + (style->space_y << 1);
+    uint16_t line_height = style->font_info.size + style->space_y;
     if (0 == line_height) { return; }
+    uint32_t indent_w = (uint32_t)gt_font_get_indent_width(&style->font_info, style->indent);
 
     /** cur_y_offset: pixel offset from area_font.y (0 = first line top) */
     gt_size_t cur_y_offset = 0;
     uint16_t  line_counter = 0;
+    /**
+     * Carry-over state between segments: draw_text continues the next
+     * segment on the same line as the previous segment's last line
+     * (unless that line ended with '\n').  We track the remaining
+     * width so _line_cache_build mirrors draw_text exactly.
+     */
+    uint32_t carry_disp_w = max_w - indent_w;   /** first line has indent */
+    bool     carry_first  = true;    /** is_first_line for next segment */
 
     for (uint16_t si = 0; si < style->cnt_contents; ++si) {
         if (NULL == style->contents[si].text) { continue; }
@@ -284,11 +293,15 @@ static void _line_cache_build(gt_obj_st * obj) {
 #endif
         uint32_t seg_len = (uint32_t)style->contents[si].len;
         uint32_t byte_idx = 0;
-        bool is_first_line = true;
-        uint32_t disp_w = max_w;
+        bool is_first_line = carry_first;
+        uint32_t disp_w = carry_disp_w;
 
         while (byte_idx < seg_len) {
-            if (0 == (line_counter % GT_TEXTAREA_LINE_CACHE_STEP)) {
+            if (0 == (line_counter % GT_TEXTAREA_LINE_CACHE_STEP) &&
+                (0 == line_counter || disp_w == max_w)) {
+                /** Record checkpoints at the start of a full line.
+                 *  Always record the very first checkpoint (line_counter==0)
+                 *  so _line_cache_find has a base entry. */
                 _line_cache_push(style, si, (uint16_t)byte_idx, cur_y_offset);
             }
 
@@ -301,26 +314,55 @@ static void _line_cache_build(gt_obj_st * obj) {
                                                    &line_w, NULL, NULL, NULL, NULL,
                                                    is_first_line);
             if (step < 0) { break; }
-            if (step == 0) { step = 1; }
 
-            if (byte_idx < seg_len && '\n' == style->contents[si].text[byte_idx]) {
-                byte_idx++;
+            if (byte_idx + (uint32_t)step < seg_len &&
+                '\n' == style->contents[si].text[byte_idx + (uint32_t)step]) {
+                byte_idx += (uint32_t)step + 1;
                 cur_y_offset += line_height;
                 ++line_counter;
                 is_first_line = true;
-                disp_w = max_w;
+                disp_w = max_w - indent_w;
                 continue;
             }
 
+            if (step == 0) {
+                if (disp_w < max_w) {
+                    /**
+                     * Remaining width on a continuation line is too narrow
+                     * for even one character.  draw_text wraps to a new line
+                     * without consuming any bytes (goto _disp_font path).
+                     */
+                    cur_y_offset += line_height;
+                    ++line_counter;
+                    is_first_line = false;
+                    disp_w = max_w;
+                    continue;
+                }
+                step = 1;
+            }
             byte_idx += (uint32_t)step;
-            cur_y_offset += line_height;
-            ++line_counter;
-            is_first_line = false;
-            disp_w = max_w;
+            disp_w -= line_w;
+
+            if (byte_idx < seg_len) {
+                /** mid-segment wrap: advance to next line */
+                cur_y_offset += line_height;
+                ++line_counter;
+                is_first_line = false;
+                disp_w = max_w;
+            }
+            /** else: last piece of segment — do NOT advance y.
+             *  draw_text does not advance area_font.y here either;
+             *  the next segment will continue on this same line. */
         }
+        /** Propagate line state to next segment */
+        carry_disp_w = disp_w;
+        carry_first  = is_first_line;
+        /**
+         * If segment ended with '\n', draw_text advances y in the
+         * else-if branch of next_line_lb.  We already did that above.
+         * carry_disp_w = max_w and carry_first = true from the \n path.
+         */
     }
-    GT_LOGV(GT_LOG_TAG_GUI, "[lc_build] checkpoints=%u total_lines=%u",
-            style->line_cache.count, line_counter);
 }
 
 /**
@@ -365,15 +407,19 @@ static uint16_t _line_cache_apply(gt_obj_st * obj,
     font_attr->start_y = font_attr->logical_area.y + (gt_size_t)hit->y;
     font_attr->reg.enabled_start = true;
 
-    GT_LOGV(GT_LOG_TAG_GUI, "[lc_apply] scroll=%d offset=%u hit_y=%d start_y=%d si=%u byte=%u",
-            (int)scroll_y, (unsigned)target_offset, (int)hit->y,
-            (int)font_attr->start_y, (unsigned)si, (unsigned)off);
     return si;
 }
 #endif  /** GT_TEXTAREA_LINE_CACHE */
 
 static inline void _set_hold_on_contents_for_scroll(_gt_textarea_st * style, bool hold_on) {
     style->reg.hold_on = hold_on;
+#if GT_TEXTAREA_LINE_CACHE
+    /** When content changes (hold_on=false), invalidate stale cache immediately
+     *  so _line_cache_apply never jumps to a checkpoint from old content. */
+    if (false == hold_on) {
+        _line_cache_free(style);
+    }
+#endif
 }
 
 static inline bool _is_hold_on_contents_for_scroll(_gt_textarea_st * style) {
@@ -417,15 +463,6 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
 
     gt_size_t scroll_y = obj->process_attr.scroll.y;
     _gt_draw_font_res_st font_res = {0};
-    GT_LOGV(GT_LOG_TAG_GUI, "[ta_draw] hold=%d scroll_y=%d cnt=%u lc_count=%u",
-            (int)_is_hold_on_contents_for_scroll(style), (int)scroll_y,
-            (unsigned)style->cnt_contents,
-#if GT_TEXTAREA_LINE_CACHE
-            (unsigned)style->line_cache.count
-#else
-            0u
-#endif
-            );
     gt_area_st padding_font = gt_area_reduce(obj->area, style->padding);
     gt_area_st area_font = gt_area_reduce(padding_font, style->border_width + _FONT_AREA_REDUCE_SIZE);
     font_attr.logical_area = area_font;
@@ -570,9 +607,9 @@ _textarea_init_cb(gt_obj_st * obj) {
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline void
-_reset_scroll_value(gt_obj_process_attr_st * process_attr) {
-    process_attr->scroll.y = 0;
-    process_attr->scroll_prev.y = 0;
+_reset_scroll_value(gt_obj_st * obj) {
+    obj->process_attr.scroll.y = 0;
+    gt_obj_set_scroll_prev(obj, gt_obj_get_scroll_prev_x(obj), 0);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void
@@ -582,9 +619,6 @@ _free_contents(gt_obj_st * obj) {
         _set_hold_on_contents_for_scroll(style_p, false);
 #if GT_TEXTAREA_SUB_STRING_SCROLL_CACHE
         _free_reset_scroll_cache(style_p);
-#endif
-#if GT_TEXTAREA_LINE_CACHE
-        _line_cache_free(style_p);
 #endif
 
         for (gt_size_t i = style_p->cnt_contents - 1; i >= 0; i--) {
@@ -600,7 +634,7 @@ _free_contents(gt_obj_st * obj) {
         style_p->contents = NULL;
         style_p->max_height = 0;
         style_p->cnt_contents = 0;
-        _reset_scroll_value(&obj->process_attr);
+        _reset_scroll_value(obj);
     }
 
     if (style_p->scroll_to_newest_anim) {
@@ -741,7 +775,7 @@ _textarea_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_SCROLL: {
             style->reg.click_valid = false;
             if (style->max_height < obj->area.h) {
-                _reset_scroll_value(&obj->process_attr);
+                _reset_scroll_value(obj);
                 break;
             }
             style->reg.load_more = false;
@@ -750,7 +784,7 @@ _textarea_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
                 if (false == style->reg.pull_to_refresh && obj->process_attr.scroll.y > obj->area.h >> 4) {
                     style->reg.pull_to_refresh = true;
                 }
-                _reset_scroll_value(&obj->process_attr);
+                _reset_scroll_value(obj);
             } else if (_is_scroll_to_bottom(obj)) {
                 if (false == style->reg.load_more &&
                     gt_abs(obj->process_attr.scroll.y) + obj->area.h - (obj->area.h >> 4) > style->max_height) {
@@ -773,7 +807,15 @@ _textarea_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             } else if (style->reg.load_more) {
                 _load_more(obj);
             } else {
+#if GT_TEXTAREA_LINE_CACHE
+                /** Only set hold_on=true if cache is valid; otherwise keep false
+                 *  so the next draw triggers a full render to rebuild cache. */
+                if (style->line_cache.count > 0) {
+                    _set_hold_on_contents_for_scroll(style, true);
+                }
+#else
                 _set_hold_on_contents_for_scroll(style, true);
+#endif
                 gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
             }
             break;

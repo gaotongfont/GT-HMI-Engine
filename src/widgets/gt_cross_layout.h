@@ -81,6 +81,7 @@ void gt_cross_layout_set_hor_adsorb_en(gt_obj_st* layout, bool en);
 void gt_cross_layout_set_ver_bar_size(gt_obj_st* layout, uint8_t w, uint8_t h);
 void gt_cross_layout_set_hor_bar_size(gt_obj_st* layout, uint8_t w, uint8_t h);
 
+void gt_cross_layout_set_ver_item_index(gt_obj_st* layout, uint8_t item_index);
 
 #endif //!GT_CFG_ENABLE_CROSS_LAYOUT
 //

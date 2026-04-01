@@ -844,7 +844,7 @@ static void _gt_keypad_switch_type(gt_obj_st * keypad, gt_keypad_type_te type, b
     }
     style->type = type;
     keypad->process_attr.scroll.y = 0;
-    keypad->process_attr.scroll_prev.y = 0;
+    gt_obj_set_scroll_prev(keypad, gt_obj_get_scroll_prev_x(keypad), 0);
     gt_obj_set_pos(style->btnmap, keypad->area.x, keypad->area.y);
     gt_btnmap_set_map(style->btnmap, (gt_map_st*)style->map_list[idx].map, style->map_list[idx].type);
 
