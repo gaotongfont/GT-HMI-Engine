@@ -79,6 +79,7 @@ typedef struct _gt_view_pager_s {
     gt_obj_st base;
     struct _reg_s reg;
     uint16_t width;
+    gt_size_t scroll_start_x;   /** scroll_x when scroll started */
     gt_color_t color_glass;
 }_gt_view_pager_st;
 
@@ -233,6 +234,27 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _init_child_prop(gt_obj_st * obj) {
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline void _scrolling_handler(gt_obj_st * obj) {
+    _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
+    gt_size_t scroll_x = obj->process_attr.scroll.x;
+
+    if (style->width && style->reg.count > 1) {
+        gt_size_t base = style->scroll_start_x;
+        gt_size_t total_min = -(gt_size_t)(style->reg.count - 1) * style->width;
+
+        /**
+         * @brief limit scroll to start position +/- (1 page - 1px),
+         *      but allow over-scroll at first/last page for rebound effect.
+         */
+        if (base - (gt_size_t)style->width + 1 >= total_min) {
+            gt_size_t min_x = base - (gt_size_t)style->width + 1;
+            if (scroll_x < min_x) { scroll_x = min_x; }
+        }
+        if (base + (gt_size_t)style->width - 1 <= 0) {
+            gt_size_t max_x = base + (gt_size_t)style->width - 1;
+            if (scroll_x > max_x) { scroll_x = max_x; }
+        }
+        obj->process_attr.scroll.x = scroll_x;
+    }
     gt_obj_set_pos(obj, obj->process_attr.scroll.x, obj->area.y);
 }
 
@@ -272,11 +294,23 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _scroll_end_handler(gt_obj_st * obj) {
     _gt_view_pager_st * style = (_gt_view_pager_st * )obj;
     if (obj->ignore_throw) {
         _statical_scroll_calc_new_page(obj);
+        return;
     }
-    style->reg.index = gt_abs(obj->process_attr.scroll.x) / style->width;
-    if (obj->process_attr.scroll.x % style->width) {
-        gt_view_pager_scroll_to_fragment(obj, style->reg.index);
+    uint16_t prev_idx = style->reg.index;
+    gt_size_t offset = gt_abs(obj->process_attr.scroll.x) - prev_idx * style->width;
+    uint16_t half_w = style->width >> 1;
+
+    /** scroll over half page, go to next/prev page */
+    if (offset > 0 && (uint16_t)offset >= half_w) {
+        if (prev_idx + 1 < style->reg.count) {
+            style->reg.index = prev_idx + 1;
+        }
+    } else if (offset < 0 && (uint16_t)gt_abs(offset) >= half_w) {
+        if (prev_idx > 0) {
+            style->reg.index = prev_idx - 1;
+        }
     }
+    gt_view_pager_scroll_to_fragment(obj, style->reg.index);
 }
 
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
@@ -291,6 +325,10 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     case GT_EVENT_TYPE_CHANGE_CHILD_ADD: {
         // NOTE change to last child when be reset prop
         _init_child_prop(obj);
+        break;
+    }
+    case GT_EVENT_TYPE_INPUT_SCROLL_START: {
+        style->scroll_start_x = obj->process_attr.scroll.x;
         break;
     }
     case GT_EVENT_TYPE_INPUT_SCROLL: {
