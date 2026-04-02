@@ -151,7 +151,8 @@ static void _img_init_cb(gt_obj_st * obj) {
 
     gt_img_transform_draw_cached(obj->draw_ctx, &obj->area, obj->opa,
                                  style->transform_cache, style->cache_w, style->cache_h,
-                                 style->angle, style->zoom, px, py, use_nn);
+                                 style->angle, style->zoom, px, py, use_nn,
+                                 &style->masking);
 #else
     draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
 #endif /* GT_USE_IMG_TRANSFORM */

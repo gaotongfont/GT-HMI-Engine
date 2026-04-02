@@ -36,6 +36,7 @@
 #include "../../others/gt_area.h"
 #include "../../core/gt_img_decoder.h"
 #include "../../others/gt_math.h"
+#include "../../core/gt_mask.h"
 
 #if GT_USE_IMG_TRANSFORM
 
@@ -283,10 +284,28 @@ void gt_img_transform_draw_cached(struct _gt_draw_ctx_s * draw_ctx,
                                   uint16_t src_w, uint16_t src_h,
                                   gt_angle_t angle, gt_zoom_t zoom,
                                   int16_t pivot_x, int16_t pivot_y,
-                                  bool use_nn)
+                                  bool use_nn,
+                                  const gt_color_masking_st * masking)
 {
     if (!src_buf || src_w == 0 || src_h == 0 || zoom == 0) return;
     if (!draw_ctx->buf) return;
+
+    /* Register masking (radius + edge-blur) if requested */
+    gt_size_t _mask_id      = -1;
+    gt_size_t _edge_mask_id = -1;
+    gt_mask_radius_st    _r_mask    = {0};
+    gt_mask_edge_blur_st _edge_blur = {0};
+    bool has_masking = (masking != NULL) && (masking->radius != 0 || masking->gap != 0);
+    if (has_masking) {
+        if (masking->gap != 0) {
+            gt_mask_edge_blur_init(&_edge_blur, coords, masking->gap);
+            _edge_mask_id = gt_mask_add(&_edge_blur);
+        }
+        if (masking->radius != 0) {
+            gt_mask_radius_init(&_r_mask, coords, masking->radius, GT_MASK_RADIUS_CFG_INNER);
+            _mask_id = gt_mask_add(&_r_mask);
+        }
+    }
 
     int32_t cos_v = gt_cos_01deg(angle);
     int32_t sin_v = gt_sin_01deg(angle);
@@ -360,7 +379,25 @@ void gt_img_transform_draw_cached(struct _gt_draw_ctx_s * draw_ctx,
             .mask_buf  = out_opa,
             .opa       = GT_OPA_COVER,
         };
+
+        /* Apply registered masks (radius/edge-blur) to the per-row opa buffer */
+        if (has_masking) {
+            gt_mask_get(out_opa, row_area.x, row_area.y, (uint16_t)dst_w);
+        }
+
         gt_draw_blend(draw_ctx, &row_dsc);
+    }
+
+    /* Unregister masks */
+    if (has_masking) {
+        if (masking->radius != 0) {
+            gt_mask_remove_idx(_mask_id);
+            gt_mask_free(&_r_mask);
+        }
+        if (masking->gap != 0) {
+            gt_mask_remove_idx(_edge_mask_id);
+            gt_mask_free(&_edge_blur);
+        }
     }
 }
 

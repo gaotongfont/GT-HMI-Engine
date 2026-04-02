@@ -85,6 +85,7 @@ gt_color_t * gt_img_decode_to_cache(const gt_attr_rect_st * dsc,
 /**
  * @param use_nn  true = nearest-neighbor (fast, for animation),
  *                false = bilinear (smooth, for static display)
+ * @param masking Optional masking (radius/gap), NULL = no masking
  */
 void gt_img_transform_draw_cached(struct _gt_draw_ctx_s * draw_ctx,
                                   const gt_area_st * coords,
@@ -93,7 +94,8 @@ void gt_img_transform_draw_cached(struct _gt_draw_ctx_s * draw_ctx,
                                   uint16_t src_w, uint16_t src_h,
                                   gt_angle_t angle, gt_zoom_t zoom,
                                   int16_t pivot_x, int16_t pivot_y,
-                                  bool use_nn);
+                                  bool use_nn,
+                                  const gt_color_masking_st * masking);
 
 #endif /* GT_USE_IMG_TRANSFORM */
 
