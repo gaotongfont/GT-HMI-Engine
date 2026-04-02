@@ -14,8 +14,8 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-#include "../others/gt_types.h"
-#include "../widgets/gt_obj.h"
+#include "../../others/gt_types.h"
+#include "../../widgets/gt_obj.h"
 
 
 

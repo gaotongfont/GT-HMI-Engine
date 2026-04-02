@@ -21,7 +21,7 @@
 #include "gt_obj_scroll.h"
 #include "gt_style.h"
 #include "../widgets/gt_dialog.h"
-#include "gt_indev_effects.h"
+#include "effects/gt_indev_effects.h"
 /* private define -------------------------------------------------------*/
 #ifndef GT_INDEV_SCROLL_THROW_SPEED_UP
     /**

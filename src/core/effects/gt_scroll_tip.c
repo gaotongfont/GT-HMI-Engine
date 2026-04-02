@@ -9,9 +9,9 @@
 
 /* include --------------------------------------------------------------*/
 #include "./gt_scroll_tip.h"
-#include "../core/gt_graph_base.h"
-#include "./gt_draw.h"
-#include "./gt_obj_scroll.h"
+#include "../../core/gt_graph_base.h"
+#include "../gt_draw.h"
+#include "../gt_obj_scroll.h"
 
 
 /* private define -------------------------------------------------------*/

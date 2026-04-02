@@ -14,13 +14,13 @@ extern "C" {
 #endif
 
 /* include --------------------------------------------------------------*/
-#include "../widgets/gt_conf_widgets.h"
+#include "../../widgets/gt_conf_widgets.h"
 
 #if GT_CFG_ENABLE_INDEV_EFFECTS
 #include <stdbool.h>
 #include <stdint.h>
-#include "gt_event.h"
-#include "../others/gt_color.h"
+#include "../gt_event.h"
+#include "../../others/gt_color.h"
 /* define ---------------------------------------------------------------*/
 
 

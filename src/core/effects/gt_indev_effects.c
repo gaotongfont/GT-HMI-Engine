@@ -11,11 +11,11 @@
 #include "gt_indev_effects.h"
 
 #if GT_CFG_ENABLE_INDEV_EFFECTS
-#include "../core/gt_disp.h"
-#include "../core/gt_draw.h"
-#include "../core/gt_indev.h"
-#include "../others/gt_color.h"
-#include "../widgets/gt_rect.h"
+#include "../../core/gt_disp.h"
+#include "../../core/gt_draw.h"
+#include "../../core/gt_indev.h"
+#include "../../others/gt_color.h"
+#include "../../widgets/gt_rect.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_INDEV_EFFECTS

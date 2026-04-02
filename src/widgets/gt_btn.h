@@ -15,6 +15,7 @@ extern "C" {
 
 /* include --------------------------------------------------------------*/
 #include "gt_conf_widgets.h"
+#include "../core/effects/gt_effect_click.h"
 
 #if GT_CFG_ENABLE_BTN
 #include "gt_obj.h"

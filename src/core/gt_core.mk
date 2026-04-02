@@ -5,3 +5,5 @@ DEPPATH += --dep-path $(HMI_DIR)/src/core
 VPATH += :$(HMI_DIR)/src/core
 
 CFLAGS += "-I$(HMI_DIR)/src/core"
+
+include $(HMI_DIR)/src/core/effects/effects.mk

@@ -26,7 +26,7 @@
 #include "./gt_layout.h"
 #include "../others/gt_gc.h"
 
-#include "./gt_scroll_tip.h"
+#include "./effects/gt_scroll_tip.h"
 #include "./gt_obj_scroll.h"
 #include "./gt_style.h"
 

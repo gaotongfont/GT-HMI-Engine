@@ -41,7 +41,7 @@ extern "C" {
 #include "src/core/gt_scr_stack.h"
 #include "src/core/gt_layout.h"
 #include "src/core/gt_indev.h"
-#include "src/core/gt_indev_effects.h"
+#include "src/core/effects/gt_indev_effects.h"
 #include "src/core/gt_refr.h"
 
 /* font */
@@ -243,7 +243,7 @@ extern "C" {
 #endif
 
 #if GT_CFG_ENABLE_INDEV_EFFECTS
-#include "src/core/gt_indev_effects.h"
+#include "src/core/effects/gt_indev_effects.h"
 #endif
 
 #if GT_CFG_ENABLE_LRC

@@ -239,6 +239,15 @@ extern "C" {
     #define GT_USE_WIDGET_DYNAMIC_FRAME_RATE    0
 #endif
 
+#ifndef GT_USE_CLICK_EFFECT
+    /**
+     * @brief Enable generic click feedback effect (opacity dim/restore).
+     *      Register on any widget via gt_effect_click_register().
+     *      [default: 1]
+     */
+    #define GT_USE_CLICK_EFFECT     1
+#endif
+
 #ifndef GT_USE_EXTRA_FULL_IMG_BUFFER
     /**
      * @brief Set with the maximum width and height of the material,

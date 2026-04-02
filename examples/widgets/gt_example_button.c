@@ -61,9 +61,15 @@ gt_obj_st * gt_examples_button(void)
     screen = gt_obj_create(NULL);
 
     gt_obj_st * btn = gt_btn_create(screen);
+	gt_effect_click_register(btn);
 	gt_obj_set_pos(btn, 0, 30);
 	gt_obj_set_size(btn, 80, 40);
 	gt_obj_add_event_cb(btn, btn_click_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
+
+    gt_obj_st * btn1 = gt_btn_create(screen);
+	gt_effect_click_register(btn1);
+	gt_obj_set_pos(btn1, 0, 130);
+	gt_obj_set_size(btn1, 80, 40);
 
     GT_EXAMPLE_ADD_BACK_BTN(screen);
     return screen;
