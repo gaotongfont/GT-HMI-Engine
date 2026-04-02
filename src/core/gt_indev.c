@@ -849,7 +849,10 @@ _indev_scroll_throw_start_cb(struct gt_anim_s * anim) {
         return;
     }
     if (false == is_scroll) { return; }
-    /** Throw scroll handler immediately by ignore_throw */
+    /**
+     * Using sum distance replace throw anim handle,
+     * Throw scroll handler immediately by ignore_throw
+     */
     _scroll_raw_handler(point_p, point_p->scroll_sum.x, point_p->scroll_sum.y);
     gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
     _indev_scroll_throw_deleted_cb(anim);

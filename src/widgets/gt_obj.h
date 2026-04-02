@@ -177,7 +177,7 @@ typedef struct gt_obj_s {
     uint32_t grow_invert   : 1;     /* The child controls are arranged in a row layout, grow invert */
     uint32_t show_bg       : 1;     /* The object show background, 0: [default] hide; 1: show, bgcolor can be used */
     uint32_t finger_unfollow : 1;   /* finger unfollow scroll effect, 0: [default] follow finger; 1: unfollow finger */
-    uint32_t ignore_throw  : 1;     /* ignore scroll throw animation, immediately stop throw effect. 0: [default] */
+    uint32_t ignore_throw  : 1;     /* ignore scroll throw animation, immediately stop throw effect, used scroll_sum to scroll handle. 0: [default] */
     uint32_t swipe_dir     : 1;     /* Get swipe direction event, @see GT_EVENT_TYPE_SWIPE_UP, ... */
 
     /** display scrolling tip @ref gt_scroll_tip_et, default: GT_SCROLL_TIP_NONE */
