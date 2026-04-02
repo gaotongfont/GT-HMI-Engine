@@ -2326,7 +2326,8 @@ draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
     gt_mask_radius_st bg_mask_radius = {0};
 
     if(bg_radius > 0){
-        gt_mask_radius_init(&bg_mask_radius, &bg_area, bg_radius, false);
+        gt_mask_radius_cfg_st bg_cfg = { .outer = 0, .corner_mask = dsc->corner_mask };
+        gt_mask_radius_init(&bg_mask_radius, &bg_area, bg_radius, bg_cfg);
         bg_mask_id = gt_mask_add(&bg_mask_radius);
     }
 
@@ -2336,7 +2337,7 @@ draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
     if (dsc->base_area){
         cl_radius = GT_MIN(dsc->radius, (GT_MIN(dsc->base_area->w >> 1, dsc->base_area->h >> 1)));
         if(cl_radius > 0){
-            gt_mask_radius_init(&cl_mask_radius, dsc->base_area, cl_radius, false);
+            gt_mask_radius_init(&cl_mask_radius, dsc->base_area, cl_radius, GT_MASK_RADIUS_CFG_INNER);
             cl_mask_id = gt_mask_add(&cl_mask_radius);
         }
     }
@@ -2473,12 +2474,14 @@ draw_bg_border(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt
 
     int16_t in_mask_id = -1;
     gt_mask_radius_st in_mask_radius = {0};
-    gt_mask_radius_init(&in_mask_radius, &in_area, in_radius, true);
+    gt_mask_radius_cfg_st in_cfg = { .outer = 1, .corner_mask = dsc->corner_mask };
+    gt_mask_radius_init(&in_mask_radius, &in_area, in_radius, in_cfg);
     in_mask_id = gt_mask_add(&in_mask_radius);
 
     int16_t border_mask_id = -1;
     gt_mask_radius_st border_mask_radius = {0};
-    gt_mask_radius_init(&border_mask_radius, &border_area, border_radius, false);
+    gt_mask_radius_cfg_st border_cfg = { .outer = 0, .corner_mask = dsc->corner_mask };
+    gt_mask_radius_init(&border_mask_radius, &border_area, border_radius, border_cfg);
     border_mask_id = gt_mask_add(&border_mask_radius);
 
     gt_opa_t mask_opa = dsc->bg_opa >= GT_OPA_MAX ? GT_OPA_COVER : dsc->bg_opa;
@@ -2639,7 +2642,7 @@ handler_lb:
         }
 
         if (0 != blend_dsc.masking->radius) {
-            gt_mask_radius_init(&r_mask, &mask_area, blend_dsc.masking->radius, false);
+            gt_mask_radius_init(&r_mask, &mask_area, blend_dsc.masking->radius, GT_MASK_RADIUS_CFG_INNER);
             mask_id = gt_mask_add(&r_mask);
         }
     }
@@ -2709,7 +2712,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_point(_gt_draw_ctx_st * draw_ctx, gt_attr_poi
     gt_size_t mask_id = -1;
     gt_area_st * remark_area = draw_ctx->parent_area;
     if (is_round) {
-        gt_mask_radius_init(&r_mask, &area_line, rd_val, false);
+        gt_mask_radius_init(&r_mask, &area_line, rd_val, GT_MASK_RADIUS_CFG_INNER);
         mask_id = gt_mask_add(&r_mask);
         if (-1 == mask_id) {
             goto radius_lb;
@@ -2824,7 +2827,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
         gt_size_t r_mask_id = -1;
 
         if(is_round) {
-            gt_mask_radius_init(&r_mask, &dst_area, radius, false);
+            gt_mask_radius_init(&r_mask, &dst_area, radius, GT_MASK_RADIUS_CFG_INNER);
             r_mask_id = gt_mask_add(&r_mask);
         }
 
@@ -2851,7 +2854,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
             area_line.w = GT_MIN(round_area.w, coords->w);
             area_line.h = 1;
 
-            gt_mask_radius_init(&r_mask, &round_orig, radius, false);
+            gt_mask_radius_init(&r_mask, &round_orig, radius, GT_MASK_RADIUS_CFG_INNER);
             r_mask_id = gt_mask_add(&r_mask);
 
             for (uint16_t i = 0; i < round_area.h; ++i) {
@@ -2871,7 +2874,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
             area_line.y = round_area.y;
             area_line.w = GT_MIN(round_area.w, coords->w);
 
-            gt_mask_radius_init(&r_mask, &round_orig, radius, false);
+            gt_mask_radius_init(&r_mask, &round_orig, radius, GT_MASK_RADIUS_CFG_INNER);
             r_mask_id = gt_mask_add(&r_mask);
 
             for (uint16_t i = 0; i < round_area.h; ++i) {
@@ -3043,7 +3046,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_att
     gt_area_st * remark_area = draw_ctx->parent_area;
     bool is_round = _is_brush_round(&dsc->line);
     if (is_round) {
-        gt_mask_radius_init(&r_mask, &area_line, rd_val, false);
+        gt_mask_radius_init(&r_mask, &area_line, rd_val, GT_MASK_RADIUS_CFG_INNER);
         mask_id = gt_mask_add(&r_mask);
         if (-1 == mask_id) {
             goto radius_lb;
@@ -3144,7 +3147,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_s
 
     int16_t out_mask_id = -1;
     gt_mask_radius_st out_mask = {0};
-    gt_mask_radius_init(&out_mask, &area_out, out_radius, false);
+    gt_mask_radius_init(&out_mask, &area_out, out_radius, GT_MASK_RADIUS_CFG_INNER);
     out_mask_id = gt_mask_add(&out_mask);
 
     gt_area_st area_in;
@@ -3154,7 +3157,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_s
     int16_t in_mask_id = -1;
     gt_mask_radius_st in_mask = {0};
     if(in_radius > 0){
-        gt_mask_radius_init(&in_mask, &area_in, in_radius, true);
+        gt_mask_radius_init(&in_mask, &area_in, in_radius, GT_MASK_RADIUS_CFG_OUTER);
         in_mask_id = gt_mask_add(&in_mask);
     }
 

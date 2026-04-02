@@ -48,6 +48,7 @@ void gt_graph_init_rect_attr(gt_attr_rect_st * rect_attr)
 	rect_attr->bg_opa = GT_OPA_COVER;
 	rect_attr->border_color = gt_color_black();
 	rect_attr->border_opa = GT_OPA_COVER;
+	rect_attr->corner_mask = 0x0F;  /* GT_MASK_CORNER_ALL */
 }
 
 

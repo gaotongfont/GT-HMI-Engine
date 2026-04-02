@@ -16,6 +16,7 @@
 #include "../others/gt_log.h"
 #include "string.h"
 #include "../core/gt_graph_base.h"
+#include "../core/gt_mask.h"
 #include "../core/gt_obj_pos.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
@@ -30,7 +31,11 @@
 typedef struct _gt_btn_reg_s {
     uint8_t fill: 1;
     uint8_t state_enabled : 1;  /** 1[default]: change state */
-    uint8_t reserved: 6;
+    uint8_t corner_tl : 1;      /** 1[default]: top-left corner rounded */
+    uint8_t corner_tr : 1;      /** 1[default]: top-right corner rounded */
+    uint8_t corner_bl : 1;      /** 1[default]: bottom-left corner rounded */
+    uint8_t corner_br : 1;      /** 1[default]: bottom-right corner rounded */
+    uint8_t reserved: 2;
 }_gt_btn_reg_st;
 
 typedef struct _gt_btn_s {
@@ -167,16 +172,22 @@ _btn_init_cb(gt_obj_st * obj) {
         obj->radius = GT_MIN(obj->area.w, obj->area.h) >> 1;
     }
 
+    uint8_t cm = (style->reg.corner_tl ? GT_MASK_CORNER_TL : 0)
+               | (style->reg.corner_tr ? GT_MASK_CORNER_TR : 0)
+               | (style->reg.corner_bl ? GT_MASK_CORNER_BL : 0)
+               | (style->reg.corner_br ? GT_MASK_CORNER_BR : 0);
+
     /* base shape */
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill   = style->reg.fill;
-    rect_attr.radius        = obj->radius;
+    rect_attr.radius        = cm ? obj->radius : 0;
     rect_attr.bg_opa        = obj->opa;
     rect_attr.border_width  = style->border_width;
     rect_attr.fg_color      = fg_color;
     rect_attr.bg_color      = fg_color;
     rect_attr.border_color  = style->color_border;
+    rect_attr.corner_mask   = cm;
 
     // 1:base shape
     draw_bg(obj->draw_ctx, &rect_attr, &obj->area);
@@ -376,6 +387,10 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent)
     style->border_width     = 0;
     style->reg.fill         = 1;
     style->reg.state_enabled = 1;
+    style->reg.corner_tl    = 1;
+    style->reg.corner_tr    = 1;
+    style->reg.corner_bl    = 1;
+    style->reg.corner_br    = 1;
     style->font_color       = gt_color_white();        //default color_font
     style->font_color_pressed    = gt_color_gray();        //default color_font
     gt_font_info_init(&style->font_info);
@@ -1011,6 +1026,19 @@ gt_res_t gt_btn_scroll_pause(gt_obj_st * btn, bool paused)
         return GT_RES_INV;
     }
     _roll_anim_paused(style->auto_scroll, paused);
+}
+
+void gt_btn_set_corner_radius(gt_obj_st * btn, bool tl, bool tr, bool bl, bool br)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+    style->reg.corner_tl = tl ? 1 : 0;
+    style->reg.corner_tr = tr ? 1 : 0;
+    style->reg.corner_bl = bl ? 1 : 0;
+    style->reg.corner_br = br ? 1 : 0;
+    gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 #endif  /** GT_CFG_ENABLE_BTN */

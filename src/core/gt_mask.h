@@ -22,6 +22,31 @@ extern "C" {
 #define _GT_MASK_MAX_NUM         (16)
 #define _GT_MASK_CIRCLE_MAX_NUM  (4)
 
+/** corner_mask bit definitions for gt_mask_radius_st / gt_mask_radius_init */
+#define GT_MASK_CORNER_TL   (1 << 0)    ///< top-left
+#define GT_MASK_CORNER_TR   (1 << 1)    ///< top-right
+#define GT_MASK_CORNER_BL   (1 << 2)    ///< bottom-left
+#define GT_MASK_CORNER_BR   (1 << 3)    ///< bottom-right
+#define GT_MASK_CORNER_ALL  (0x0F)      ///< all four corners rounded
+
+/**
+ * @brief Configuration for gt_mask_radius_init.
+ *        Use GT_MASK_RADIUS_CFG_INNER / GT_MASK_RADIUS_CFG_OUTER macros
+ *        for the common cases.
+ */
+typedef struct gt_mask_radius_cfg_s {
+    uint8_t outer;          ///< 0: inner clip (keep inside), 1: outer clip (keep outside)
+    uint8_t corner_mask;    ///< @ref GT_MASK_CORNER_* bits, GT_MASK_CORNER_ALL = all rounded
+} gt_mask_radius_cfg_st;
+
+/** Inner clip, all corners rounded — the most common case */
+#define GT_MASK_RADIUS_CFG_INNER \
+    ((gt_mask_radius_cfg_st){ .outer = 0, .corner_mask = GT_MASK_CORNER_ALL })
+
+/** Outer clip, all corners rounded — used for border inner-edge masking */
+#define GT_MASK_RADIUS_CFG_OUTER \
+    ((gt_mask_radius_cfg_st){ .outer = 1, .corner_mask = GT_MASK_CORNER_ALL })
+
 
 /* typedef --------------------------------------------------------------*/
 typedef enum{
@@ -69,6 +94,7 @@ typedef struct {
     gt_area_st area;
     uint16_t radius;
     uint8_t outer;
+    uint8_t corner_mask;    ///< @ref GT_MASK_CORNER_* bits, default GT_MASK_CORNER_ALL
 }gt_mask_radius_st;
 
 typedef struct {
@@ -158,8 +184,18 @@ bool gt_mask_check(const gt_area_st * coords);
  * @param coords
  * @param radius
  * @param outer
+ * @param corner_mask  which corners are rounded @ref GT_MASK_CORNER_*, use GT_MASK_CORNER_ALL for all
  */
-void gt_mask_radius_init(gt_mask_radius_st* p_mask, const gt_area_st* coords, uint16_t radius, bool outer);
+/**
+ * @brief init mask radius
+ *
+ * @param p_mask
+ * @param coords
+ * @param radius
+ * @param cfg     clip config: use GT_MASK_RADIUS_CFG_INNER / GT_MASK_RADIUS_CFG_OUTER
+ *                for common cases, or build a custom gt_mask_radius_cfg_st.
+ */
+void gt_mask_radius_init(gt_mask_radius_st* p_mask, const gt_area_st* coords, uint16_t radius, gt_mask_radius_cfg_st cfg);
 /**
  * @brief init mask line
  *

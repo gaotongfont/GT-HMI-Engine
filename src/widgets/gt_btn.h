@@ -159,6 +159,19 @@ void gt_btn_set_indent(gt_obj_st * btn, uint16_t indent);
 void gt_btn_set_radius(gt_obj_st * btn, gt_radius_t radius);
 
 /**
+ * @brief Control which corners of the button are rounded independently.
+ *        Disabled corners are filled with the parent background color,
+ *        effectively making them square.
+ *
+ * @param btn  button obj
+ * @param tl   top-left corner rounded (true) or square (false)
+ * @param tr   top-right corner rounded (true) or square (false)
+ * @param bl   bottom-left corner rounded (true) or square (false)
+ * @param br   bottom-right corner rounded (true) or square (false)
+ */
+void gt_btn_set_corner_radius(gt_obj_st * btn, bool tl, bool tr, bool bl, bool br);
+
+/**
  * @brief Button add switching status text content
  *
  * @param btn button obj

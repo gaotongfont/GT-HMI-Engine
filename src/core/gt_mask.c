@@ -402,44 +402,68 @@ _gt_mask_radius_get(gt_opa_t* mask_buf, \
     gt_size_t cir_x_left = k + radius - x_start - 1;
     gt_size_t i;
 
+    /* determine which corners are active for this row */
+    bool is_top = (abs_y < radius);
+    uint8_t cm = p->corner_mask;
+    bool left_active  = is_top ? (cm & GT_MASK_CORNER_TL) : (cm & GT_MASK_CORNER_BL);
+    bool right_active = is_top ? (cm & GT_MASK_CORNER_TR) : (cm & GT_MASK_CORNER_BR);
+
+    /* For disabled corners, replace the arc boundary with the rect edge so no
+     * arc-shaped clipping occurs at all on that side. */
+    gt_size_t eff_right = right_active ? cir_x_right : (gt_size_t)(k + w);
+    gt_size_t eff_left  = left_active  ? cir_x_left  : (gt_size_t)(k - 1);
+
     /* 预计算右侧和左侧的有效迭代范围，消除循环内边界检查 */
-    gt_size_t i_r0 = (cir_x_right < 0) ? (gt_size_t)(-cir_x_right) : 0;
-    gt_size_t i_r1 = (cir_x_right < (gt_size_t)len) ? GT_MIN(aa_len, (gt_size_t)len - cir_x_right) : 0;
-    gt_size_t i_l0 = (cir_x_left >= (gt_size_t)len) ? (gt_size_t)(cir_x_left - len + 1) : 0;
-    gt_size_t i_l1 = (cir_x_left >= 0) ? GT_MIN(aa_len, (gt_size_t)(cir_x_left + 1)) : 0;
+    gt_size_t i_r0 = (eff_right < 0) ? (gt_size_t)(-eff_right) : 0;
+    gt_size_t i_r1 = (eff_right < (gt_size_t)len) ? GT_MIN(aa_len, (gt_size_t)len - eff_right) : 0;
+    gt_size_t i_l0 = (eff_left >= (gt_size_t)len) ? (gt_size_t)(eff_left - len + 1) : 0;
+    gt_size_t i_l1 = (eff_left >= 0) ? GT_MIN(aa_len, (gt_size_t)(eff_left + 1)) : 0;
 
     if(outer == false) {
-        for(i = i_r0; i < i_r1; i++) {
-            gt_opa_t opa = aa_opa[aa_len - i - 1];
-            mask_buf[cir_x_right + i] = _GT_DRAW_MASK_MIX(opa, mask_buf[cir_x_right + i]);
+        /* right corner AA */
+        if(right_active) {
+            for(i = i_r0; i < i_r1; i++) {
+                gt_opa_t opa = aa_opa[aa_len - i - 1];
+                mask_buf[eff_right + i] = _GT_DRAW_MASK_MIX(opa, mask_buf[eff_right + i]);
+            }
         }
-        for(i = i_l0; i < i_l1; i++) {
-            gt_opa_t opa = aa_opa[aa_len - i - 1];
-            mask_buf[cir_x_left - i] = _GT_DRAW_MASK_MIX(opa, mask_buf[cir_x_left - i]);
+        /* left corner AA */
+        if(left_active) {
+            for(i = i_l0; i < i_l1; i++) {
+                gt_opa_t opa = aa_opa[aa_len - i - 1];
+                mask_buf[eff_left - i] = _GT_DRAW_MASK_MIX(opa, mask_buf[eff_left - i]);
+            }
         }
-        i = aa_len;
 
-        /*Clean the right side*/
-        cir_x_right = GT_CLAMP(0, cir_x_right + i, len);
-        gt_memset_0(&mask_buf[cir_x_right], len - cir_x_right);
+        /* Clean outside: right side starts after AA fringe (0 fringe for square corner) */
+        gt_size_t r_fringe = right_active ? aa_len : 0;
+        gt_size_t clr_r = GT_CLAMP(0, eff_right + r_fringe, len);
+        gt_memset_0(&mask_buf[clr_r], len - clr_r);
 
-        /*Clean the left side*/
-        cir_x_left = GT_CLAMP(0, cir_x_left - aa_len + 1, len);
-        gt_memset_0(&mask_buf[0], cir_x_left);
+        /* Clean outside: left side */
+        gt_size_t l_fringe = left_active ? aa_len : 0;
+        gt_size_t clr_l = GT_CLAMP(0, eff_left - l_fringe + 1, len);
+        gt_memset_0(&mask_buf[0], clr_l);
     }
     else {
-        for(i = i_r0; i < i_r1; i++) {
-            gt_opa_t opa = 255 - (aa_opa[aa_len - 1 - i]);
-            mask_buf[cir_x_right + i] = _GT_DRAW_MASK_MIX(opa, mask_buf[cir_x_right + i]);
+        if(right_active) {
+            for(i = i_r0; i < i_r1; i++) {
+                gt_opa_t opa = 255 - (aa_opa[aa_len - 1 - i]);
+                mask_buf[eff_right + i] = _GT_DRAW_MASK_MIX(opa, mask_buf[eff_right + i]);
+            }
         }
-        for(i = i_l0; i < i_l1; i++) {
-            gt_opa_t opa = 255 - (aa_opa[aa_len - 1 - i]);
-            mask_buf[cir_x_left - i] = _GT_DRAW_MASK_MIX(opa, mask_buf[cir_x_left - i]);
+        if(left_active) {
+            for(i = i_l0; i < i_l1; i++) {
+                gt_opa_t opa = 255 - (aa_opa[aa_len - 1 - i]);
+                mask_buf[eff_left - i] = _GT_DRAW_MASK_MIX(opa, mask_buf[eff_left - i]);
+            }
         }
 
-        gt_size_t clr_start = GT_CLAMP(0, cir_x_left + 1, len);
-        gt_size_t clr_len = GT_CLAMP(0, cir_x_right - clr_start, len - clr_start);
-        gt_memset_0(&mask_buf[clr_start], clr_len);
+        gt_size_t clr_start = GT_CLAMP(0, eff_left  + 1, len);
+        gt_size_t clr_end   = GT_CLAMP(0, eff_right,     len);
+        if(clr_end > clr_start) {
+            gt_memset_0(&mask_buf[clr_start], clr_end - clr_start);
+        }
     }
 
     return GT_MASK_RES_CHANGE;
@@ -1123,14 +1147,15 @@ bool gt_mask_check(const gt_area_st * coords)
     return false;
 }
 
-void gt_mask_radius_init(gt_mask_radius_st* p_mask, const gt_area_st* coords, uint16_t radius, bool outer)
+void gt_mask_radius_init(gt_mask_radius_st* p_mask, const gt_area_st* coords, uint16_t radius, gt_mask_radius_cfg_st cfg)
 {
     uint16_t min = GT_MIN(coords->w, coords->h) >> 1;
     if(radius > min) { radius = min; }
 
     gt_area_copy(&p_mask->area, coords);
     p_mask->radius = radius;
-    p_mask->outer = outer ? 1 : 0;
+    p_mask->outer = cfg.outer ? 1 : 0;
+    p_mask->corner_mask = cfg.corner_mask;
     p_mask->dsc.mask_get_cb = (gt_mask_get_cb_t)_gt_mask_radius_get;
     p_mask->dsc.type = GT_MASK_TYPE_RADIUS;
 
