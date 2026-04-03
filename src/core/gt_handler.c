@@ -11,6 +11,7 @@
 #include "./gt_handler.h"
 #include "./gt_mem.h"
 #include "./gt_timer.h"
+#include "../extra/draw/gt_draw_blend_dir.h"
 #include "../../driver/gt_port_disp.h"
 #include "../../driver/gt_port_indev.h"
 #include "../../driver/gt_port_vf.h"
@@ -178,6 +179,8 @@ void gt_init(void)
 #endif
 
     gt_mem_init();
+
+    gt_draw_blend_dir_init();
 
     _gt_timer_core_init();
 

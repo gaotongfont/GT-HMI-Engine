@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "./gt_draw_blend_with_rgb888.h"
+#include "./gt_draw_blend_dir.h"
 #include "stddef.h"
 #include "../../core/gt_mem.h"
 
@@ -34,7 +35,6 @@
 
 
 /* static functions -----------------------------------------------------*/
-#if GT_FLUSH_CONVERT_VERTICAL
 static inline void _blend_rgb888_with_opacity_vertical(_gt_draw_blend_fill_cache_st const * const fc) {
     gt_color_t * dst_p = fc->color_dst_p;
     uint16_t w = fc->area_intersect.w;
@@ -97,7 +97,6 @@ static inline void _blend_rgb888_with_opacity_vertical(_gt_draw_blend_fill_cache
         dst_p += step_dst_line;
     }
 }
-#else   /** 0 == GT_FLUSH_CONVERT_VERTICAL */
 static inline void _blend_rgb888_with_opacity(_gt_draw_blend_fill_cache_st const * const fc) {
     gt_color_t * src_p = fc->color_src_p;
     gt_opa_t * mask_p = fc->mask_buf_p;
@@ -214,18 +213,15 @@ static inline void _blend_rgb888_with_opacity(_gt_draw_blend_fill_cache_st const
         mask_p += step_src_line;
     }
 }
-#endif  /** GT_FLUSH_CONVERT_VERTICAL */
 
 
-#if GT_FLUSH_CONVERT_VERTICAL
 static inline void _blend_rgb888_with_no_opacity_vertical(_gt_draw_blend_fill_cache_st const * const fc) {
     gt_color_t * src_p = fc->color_src_p;
     gt_color_t * dst_p = fc->color_dst_p;
     uint16_t w = fc->area_intersect.w;
     uint16_t h = fc->area_intersect.h;
-    uint16_t step_src_line = fc->width_src - w;
     uint16_t step_dst_line = fc->width_buf - w;
-    uint16_t x, y, width = w * sizeof(gt_color_t);
+    uint16_t x, y;
     uint16_t src_width = fc->width_src;
     gt_opa_t opa = fc->opa;
 
@@ -300,7 +296,6 @@ static inline void _blend_rgb888_with_no_opacity_vertical(_gt_draw_blend_fill_ca
         dst_p += step_dst_line;
     }
 }
-#else   /** 0 == GT_FLUSH_CONVERT_VERTICAL */
 static inline void _blend_rgb888_with_no_opacity(_gt_draw_blend_fill_cache_st const * const fc) {
     gt_color_t * src_p = fc->color_src_p;
     gt_color_t * dst_p = fc->color_dst_p;
@@ -423,27 +418,28 @@ static inline void _blend_rgb888_with_no_opacity(_gt_draw_blend_fill_cache_st co
         dst_p += step_dst_line;
     }
 }
-#endif  /** GT_FLUSH_CONVERT_VERTICAL */
 
 
 
 /* global functions / API interface -------------------------------------*/
 void gt_draw_blend_with_rgb888_opacity(_gt_draw_blend_fill_cache_st const * const fc)
 {
-#if GT_FLUSH_CONVERT_VERTICAL
-    _blend_rgb888_with_opacity_vertical(fc);
-#else
-    _blend_rgb888_with_opacity(fc);
-#endif
+    const int is_vert = gt_draw_blend_is_vertical();
+    if (is_vert) {
+        _blend_rgb888_with_opacity_vertical(fc);
+    } else {
+        _blend_rgb888_with_opacity(fc);
+    }
 }
 
 void gt_draw_blend_with_rgb888_no_opacity(_gt_draw_blend_fill_cache_st const * const fc)
 {
-#if GT_FLUSH_CONVERT_VERTICAL
-    _blend_rgb888_with_no_opacity_vertical(fc);
-#else
-    _blend_rgb888_with_no_opacity(fc);
-#endif
+    const int is_vert = gt_draw_blend_is_vertical();
+    if (is_vert) {
+        _blend_rgb888_with_no_opacity_vertical(fc);
+    } else {
+        _blend_rgb888_with_no_opacity(fc);
+    }
 }
 
 

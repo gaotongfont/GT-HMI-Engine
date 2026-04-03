@@ -12,6 +12,7 @@
 #include "stdbool.h"
 
 #include "gt_draw_blend.h"
+#include "gt_draw_blend_dir.h"
 #include "../../core/gt_mem.h"
 #include "../../others/gt_math.h"
 #include "../../others/gt_log.h"
@@ -41,6 +42,25 @@ typedef struct _valid_param_s {
     gt_point_st * flush_buffer_offset;
 }_valid_param_st;
 
+/** Context passed to each gray-depth pixel loop */
+typedef struct _blend_text_ctx_s {
+    gt_color_t *       color_dst_p;
+    const uint8_t *    color_src_p;
+    const uint8_t *    res;
+    gt_area_st         area_intersect;
+    gt_point_st        offset;
+    uint16_t           width_buf;
+    uint16_t           font_size;
+    uint16_t           dot_byte;
+    gt_color_t         fill_color;
+    gt_opa_t           opa;
+    uint32_t           opa_factor;
+    int                is_vert;
+    int                is_bold;
+    int                is_italic;
+    int                opa_full;
+} _blend_text_ctx_st;
+
 
 /* static variables -----------------------------------------------------*/
 
@@ -51,296 +71,6 @@ typedef struct _valid_param_s {
 
 
 /* static functions -----------------------------------------------------*/
-#if 0
-static inline void _fill_no_opacity(
-    gt_color_t * color_dst_p, gt_area_st const * const area_intersect,
-    uint16_t step_dst_line, gt_color_t color_fill, gt_opa_t opa,
-    gt_color_t const * const color_src_p, uint16_t src_width) {
-
-    gt_color_t * src_p = (gt_color_t *)color_src_p;
-    gt_color_t * dst_p = color_dst_p;
-    uint16_t w = area_intersect->w;
-    uint16_t h = area_intersect->h;
-    uint16_t step_src_line = src_width - w;
-    uint16_t x, y, width = w * sizeof(gt_color_t);
-
-    if (opa < GT_OPA_MIN) {
-        return ;
-    }
-    /** fill dsc->dst_buf use opa */
-    if (src_p) {
-        if (opa < GT_OPA_MAX) {
-            for (y = 0; y < h; y++) {
-#if GT_FLUSH_CONVERT_VERTICAL
-                src_p = (gt_color_t * )color_src_p + y;
-#endif
-                for (x = 0; x < w; x++) {
-                    *dst_p = gt_color_mix(*src_p, *dst_p, opa);
-                    ++dst_p;
-#if GT_FLUSH_CONVERT_VERTICAL
-                    src_p += src_width;
-#else
-                    ++src_p;
-#endif
-                }
-                dst_p += step_dst_line;
-#if !GT_FLUSH_CONVERT_VERTICAL
-                src_p += step_src_line;
-#endif
-            }
-        } else {
-            for (y = 0; y < h; y++) {
-#if GT_FLUSH_CONVERT_VERTICAL
-                src_p = (gt_color_t * )color_src_p + y;
-#endif
-                for (x = 0; x < w; x++) {
-                    *dst_p = *src_p;
-                    ++dst_p;
-#if GT_FLUSH_CONVERT_VERTICAL
-                    src_p += src_width;
-#else
-                    ++src_p;
-#endif
-                }
-                dst_p += step_dst_line;
-#if !GT_FLUSH_CONVERT_VERTICAL
-                src_p += step_src_line;
-#endif
-            }
-        }
-        return;
-    }
-
-    // only fill color by opacity
-    if (opa < GT_OPA_MAX) {
-        for (y = 0; y < h; y++) {
-            for (x = 0; x < w; x++) {
-                *dst_p = gt_color_mix(color_fill, *dst_p, opa);
-                ++dst_p;
-            }
-            dst_p += step_dst_line;
-        }
-        return;
-    }
-
-    // Direct color overlay, opa >= GT_OPA_MAX
-    for (y = 0; y < h; y++) {
-        for (x = 0; x < w; x++) {
-            *dst_p = color_fill;
-            ++dst_p;
-        }
-        dst_p += step_dst_line;
-    }
-}
-
-static inline void _fill_opacity(
-    gt_color_t * color_dst_p, gt_area_st * area_intersect,
-    uint16_t step_dst_line, gt_color_t color_fill, gt_opa_t opa, gt_opa_t const * const mask,
-    gt_color_t const * const color_src_p, uint16_t src_width) {
-
-    gt_color_t * src_p = (gt_color_t *)color_src_p;
-    gt_opa_t * mask_p = (gt_opa_t *)mask;
-    gt_color_t * dst_p = color_dst_p;
-    uint16_t w = area_intersect->w;
-    uint16_t h = area_intersect->h;
-    uint16_t step_src_line = src_width - w;
-    uint16_t x, y;
-
-    gt_color_t dst_save_c = gt_color_black();
-    gt_color_t src_save_c = gt_color_black();
-    gt_color_t res_save_c = gt_color_black();
-    gt_opa_t opa_save = GT_OPA_0;
-    gt_opa_t opa_tmp = GT_OPA_0;
-
-    if (src_p) {
-        if (opa > GT_OPA_MAX) {
-            /* be called too much */
-            for (y = 0; y < h; y++) {
-#if GT_FLUSH_CONVERT_VERTICAL
-                mask_p = (gt_opa_t * )mask + y;
-                src_p = (gt_color_t * )color_src_p + y;
-#endif
-                for (x = 0; x < w; x++) {
-                    opa_tmp = *mask_p;
-#if GT_FLUSH_CONVERT_VERTICAL
-                    mask_p += src_width;
-#else
-                    ++mask_p;
-#endif
-                    if (opa_tmp > GT_OPA_MAX) {
-                        *dst_p = *src_p;
-#if GT_FLUSH_CONVERT_VERTICAL
-                        src_p += src_width;
-#else
-                        ++src_p;
-#endif
-                        ++dst_p;
-                        continue;
-                    }
-                    else if (opa_tmp < GT_OPA_MIN) {
-#if GT_FLUSH_CONVERT_VERTICAL
-                        src_p += src_width;
-#else
-                        ++src_p;
-#endif
-                        ++dst_p;
-                        continue;
-                    }
-                    if (src_save_c.full != (*src_p).full ||
-                        dst_save_c.full != (*dst_p).full ||
-                        opa_save != opa_tmp) {
-                        src_save_c = *src_p;
-                        dst_save_c = *dst_p;
-                        opa_save = opa_tmp;
-                        res_save_c = gt_color_mix(*src_p, *dst_p, opa_tmp);
-                    }
-                    *dst_p = res_save_c;
-                    ++dst_p;
-#if GT_FLUSH_CONVERT_VERTICAL
-                    src_p += src_width;
-#else
-                    ++src_p;
-#endif
-                }
-                dst_p += step_dst_line;
-#if !GT_FLUSH_CONVERT_VERTICAL
-                src_p += step_src_line;
-                mask_p += step_src_line;
-#endif
-            }
-            return;
-        }
-        // opa < GT_OPA_MAX color mixed
-        for (y = 0; y < h; y++) {
-#if GT_FLUSH_CONVERT_VERTICAL
-            mask_p = (gt_opa_t * )mask + y;
-            src_p = (gt_color_t * )color_src_p + y;
-#endif
-            for (x = 0; x < w; x++) {
-                opa_tmp = (gt_per_255(*mask_p) * opa) >> 15;
-#if GT_FLUSH_CONVERT_VERTICAL
-                mask_p += src_width;
-#else
-                ++mask_p;
-#endif
-                if (opa_tmp > GT_OPA_MAX) {
-                    *dst_p = *src_p;
-                    ++dst_p;
-#if GT_FLUSH_CONVERT_VERTICAL
-                    src_p += src_width;
-#else
-                    ++src_p;
-#endif
-                    continue;
-                }
-                else if (opa_tmp < GT_OPA_MIN) {
-                    ++dst_p;
-#if GT_FLUSH_CONVERT_VERTICAL
-                    src_p += src_width;
-#else
-                    ++src_p;
-#endif
-                    continue;
-                }
-                if (src_save_c.full != (*src_p).full ||
-                    dst_save_c.full != (*dst_p).full ||
-                    opa_save != opa_tmp) {
-                    src_save_c = *src_p;
-                    dst_save_c = *dst_p;
-                    opa_save = opa_tmp;
-                    res_save_c = gt_color_mix(*src_p, *dst_p, opa_tmp);
-                }
-                *dst_p = res_save_c;
-                ++dst_p;
-#if GT_FLUSH_CONVERT_VERTICAL
-                src_p += src_width;
-#else
-                ++src_p;
-#endif
-            }
-            dst_p += step_dst_line;
-#if !GT_FLUSH_CONVERT_VERTICAL
-            src_p += step_src_line;
-            mask_p += step_src_line;
-#endif
-        }
-        return;
-    }
-    // draw circle, color_scr_p is NULL
-    if (opa > GT_OPA_MAX) {
-        for (y = 0; y < h; y++) {
-#if GT_FLUSH_CONVERT_VERTICAL
-            mask_p = (gt_opa_t * )mask + y;
-#endif
-            for (x = 0; x < w; x++) {
-                opa_tmp = *mask_p;
-#if GT_FLUSH_CONVERT_VERTICAL
-                mask_p += src_width;
-#else
-                ++mask_p;
-#endif
-                if (opa_tmp > GT_OPA_MAX) {
-                    *dst_p = color_fill;
-                    ++dst_p;
-                    continue;
-                }
-                else if (opa_tmp < GT_OPA_MIN) {
-                    ++dst_p;
-                    continue;
-                }
-                if (dst_save_c.full != (*dst_p).full ||
-                    opa_save != opa_tmp) {
-                    dst_save_c = *dst_p;
-                    opa_save = opa_tmp;
-                    res_save_c = gt_color_mix(color_fill, *dst_p, opa_tmp);
-                }
-                *dst_p = res_save_c;
-                ++dst_p;
-            }
-            dst_p += step_dst_line;
-#if !GT_FLUSH_CONVERT_VERTICAL
-            mask_p += step_src_line;
-#endif
-        }
-        return;
-    }
-    for (y = 0; y < h; y++) {
-#if GT_FLUSH_CONVERT_VERTICAL
-        mask_p = (gt_opa_t * )mask + y;
-#endif
-        for (x = 0; x < w; x++) {
-            opa_tmp = (gt_per_255(*mask_p) * opa) >> 15;
-#if GT_FLUSH_CONVERT_VERTICAL
-            mask_p += src_width;
-#else
-            ++mask_p;
-#endif
-            if (opa_tmp > GT_OPA_MAX) {
-                *dst_p = color_fill;
-                ++dst_p;
-                continue;
-            }
-            else if (opa_tmp < GT_OPA_MIN) {
-                ++dst_p;
-                continue;
-            }
-            if (dst_save_c.full != (*dst_p).full ||
-                opa_save != opa_tmp) {
-                dst_save_c = *dst_p;
-                opa_save = opa_tmp;
-                res_save_c = gt_color_mix(color_fill, *dst_p, opa_tmp);
-            }
-            *dst_p = res_save_c;
-            ++dst_p;
-        }
-        dst_p += step_dst_line;
-#if !GT_FLUSH_CONVERT_VERTICAL
-        mask_p += step_src_line;
-#endif
-    }
-}
-#endif
-
 static inline gt_point_st _GT_DRAW_BLEND_ATTRIBUTE_SRAM_TEXT
 _get_cover_dst_area_and_offset_by(
     gt_area_st const * const parent_or_limit, gt_area_st const * const dst_area, gt_area_st * ret
@@ -360,6 +90,260 @@ _get_cover_dst_area_and_offset_by(
     return offset;
 }
 
+static inline void _blend_text_gray2(const _blend_text_ctx_st * c) {
+    gt_color_t * color_dst_p = c->color_dst_p;
+    const uint8_t * color_src_p = c->color_src_p;
+    gt_size_t row, col;
+    uint16_t count, start_count, tmp;
+    uint8_t ch;
+    gt_color_t tmp_color;
+
+    if (c->is_vert) {
+        for (col = 0; col < c->area_intersect.h; col++) {
+            start_count = c->is_italic ? (c->font_size - c->offset.y - col) >> 1 : 0;
+            count = start_count;
+            color_src_p = c->offset.x * c->dot_byte + c->res;
+            for (row = c->offset.x; row < c->font_size; row++) {
+                if ((row + start_count) >= c->offset.x + c->area_intersect.w) break;
+                ch = ((color_src_p[col >> 2] >> (6 - ((col & 0x3)<<1))) & 0x03) * 85;
+                color_src_p += c->dot_byte;
+                tmp = c->opa_full ? ch : (uint16_t)((c->opa_factor * ch) >> 15);
+                if (c->is_bold) {
+                    if (start_count == count) {
+                        tmp_color = gt_color_mix(c->fill_color, color_dst_p[count], tmp);
+                        color_dst_p[count] = tmp_color;
+                    } else {
+                        gt_color_t this_color = color_dst_p[count];
+                        color_dst_p[count] = gt_color_mix(c->fill_color, tmp_color, tmp);
+                        tmp_color = gt_color_mix(c->fill_color, this_color, tmp);
+                    }
+                } else {
+                    color_dst_p[count] = gt_color_mix(c->fill_color, color_dst_p[count], tmp);
+                }
+                ++count;
+            }
+            color_dst_p += c->width_buf;
+        }
+    } else {
+        for (col = 0; col < c->area_intersect.h; col++) {
+            start_count = c->is_italic ? (c->font_size - c->offset.y - col) >> 1 : 0;
+            count = start_count;
+            for (row = c->offset.x; row < c->font_size; row++) {
+                if ((row + start_count) >= c->offset.x + c->area_intersect.w) break;
+                ch = ((color_src_p[row >> 2] >> (6 - ((row & 0x3)<<1))) & 0x03) * 85;
+                tmp = c->opa_full ? ch : (uint16_t)((c->opa_factor * ch) >> 15);
+                if (c->is_bold) {
+                    if (start_count == count) {
+                        tmp_color = gt_color_mix(c->fill_color, color_dst_p[count], tmp);
+                        color_dst_p[count] = tmp_color;
+                    } else {
+                        gt_color_t this_color = color_dst_p[count];
+                        color_dst_p[count] = gt_color_mix(c->fill_color, tmp_color, tmp);
+                        tmp_color = gt_color_mix(c->fill_color, this_color, tmp);
+                    }
+                } else {
+                    color_dst_p[count] = gt_color_mix(c->fill_color, color_dst_p[count], tmp);
+                }
+                ++count;
+            }
+            color_src_p += c->dot_byte;
+            color_dst_p += c->width_buf;
+        }
+    }
+}
+
+static inline void _blend_text_gray4(const _blend_text_ctx_st * c) {
+    gt_color_t * color_dst_p = c->color_dst_p;
+    const uint8_t * color_src_p = c->color_src_p;
+    gt_size_t row, col;
+    uint16_t count, start_count, tmp;
+    uint8_t ch;
+    gt_color_t tmp_color;
+
+    if (c->is_vert) {
+        for (col = 0; col < c->area_intersect.h; col++) {
+            start_count = c->is_italic ? (c->font_size - c->offset.y - col) >> 1 : 0;
+            count = start_count;
+            color_src_p = c->offset.x * c->dot_byte + c->res;
+            for (row = c->offset.x; row < c->font_size; row++) {
+                if ((row + start_count) >= c->offset.x + c->area_intersect.w) break;
+                ch = ((color_src_p[col >> 1] >> (4 - ((col & 0x1)<<2))) & 0x0F) * 17;
+                tmp = c->opa_full ? ch : (uint16_t)((c->opa_factor * ch) >> 15);
+                if (c->is_bold) {
+                    if (start_count == count) {
+                        tmp_color = gt_color_mix(c->fill_color, color_dst_p[count], tmp);
+                        color_dst_p[count] = tmp_color;
+                    } else {
+                        gt_color_t this_color = color_dst_p[count];
+                        color_dst_p[count] = gt_color_mix(c->fill_color, tmp_color, tmp);
+                        tmp_color = gt_color_mix(c->fill_color, this_color, tmp);
+                    }
+                } else {
+                    color_dst_p[count] = gt_color_mix(c->fill_color, color_dst_p[count], tmp);
+                }
+                color_src_p += c->dot_byte;
+                ++count;
+            }
+            color_dst_p += c->width_buf;
+        }
+    } else {
+        for (col = 0; col < c->area_intersect.h; col++) {
+            start_count = c->is_italic ? (c->font_size - c->offset.y - col) >> 1 : 0;
+            count = start_count;
+            for (row = c->offset.x; row < c->font_size; row++) {
+                if ((row + start_count) >= c->offset.x + c->area_intersect.w) break;
+                ch = ((color_src_p[row >> 1] >> (4 - ((row & 0x1)<<2))) & 0x0F) * 17;
+                tmp = c->opa_full ? ch : (uint16_t)((c->opa_factor * ch) >> 15);
+                if (c->is_bold) {
+                    if (start_count == count) {
+                        tmp_color = gt_color_mix(c->fill_color, color_dst_p[count], tmp);
+                        color_dst_p[count] = tmp_color;
+                    } else {
+                        gt_color_t this_color = color_dst_p[count];
+                        color_dst_p[count] = gt_color_mix(c->fill_color, tmp_color, tmp);
+                        tmp_color = gt_color_mix(c->fill_color, this_color, tmp);
+                    }
+                } else {
+                    color_dst_p[count] = gt_color_mix(c->fill_color, color_dst_p[count], tmp);
+                }
+                ++count;
+            }
+            color_src_p += c->dot_byte;
+            color_dst_p += c->width_buf;
+        }
+    }
+}
+
+static inline void _blend_text_gray3(const _blend_text_ctx_st * c) {
+    gt_color_t * color_dst_p = c->color_dst_p;
+    const uint8_t * color_src_p = c->color_src_p;
+    gt_size_t row, col;
+    uint16_t count, start_count, tmp, tmp3;
+    uint8_t ch;
+    gt_color_t tmp_color;
+
+    if (c->is_vert) {
+        for (col = 0; col < c->area_intersect.h; col++) {
+            start_count = c->is_italic ? (c->font_size - c->offset.y - col) >> 1 : 0;
+            count = start_count;
+            color_src_p = c->offset.x * c->dot_byte + c->res;
+            tmp3 = (uint16_t)col * 3;
+            for (row = c->offset.x; row < c->font_size; row++) {
+                if ((row + start_count) >= c->offset.x + c->area_intersect.w) break;
+                if ((tmp3 & 0x7) <= 5) {
+                    ch = ((color_src_p[tmp3 >> 3] >> (5 - (tmp3 & 0x7))) & 0x07) * 255 / 7;
+                } else {
+                    ch = ((((color_src_p[tmp3 >> 3]<<(tmp3 & 0x7))|(color_src_p[(tmp3>>3)+1]>>(8-(tmp3&0x7)))) >> 5) & 0x07) * 255 / 7;
+                }
+                tmp = c->opa_full ? ch : (uint16_t)((c->opa_factor * ch) >> 15);
+                if (c->is_bold) {
+                    if (start_count == count) {
+                        tmp_color = gt_color_mix(c->fill_color, color_dst_p[count], tmp);
+                        color_dst_p[count] = tmp_color;
+                    } else {
+                        gt_color_t this_color = color_dst_p[count];
+                        color_dst_p[count] = gt_color_mix(c->fill_color, tmp_color, tmp);
+                        tmp_color = gt_color_mix(c->fill_color, this_color, tmp);
+                    }
+                } else {
+                    color_dst_p[count] = gt_color_mix(c->fill_color, color_dst_p[count], tmp);
+                }
+                color_src_p += c->dot_byte;
+                ++count;
+            }
+            color_dst_p += c->width_buf;
+        }
+    } else {
+        for (col = 0; col < c->area_intersect.h; col++) {
+            start_count = c->is_italic ? (c->font_size - c->offset.y - col) >> 1 : 0;
+            count = start_count;
+            for (row = c->offset.x; row < c->font_size; row++) {
+                if ((row + start_count) >= c->offset.x + c->area_intersect.w) break;
+                tmp3 = (uint16_t)row * 3;
+                if ((tmp3 & 0x7) <= 5) {
+                    ch = ((color_src_p[tmp3 >> 3] >> (5 - (tmp3 & 0x7))) & 0x07) * 255 / 7;
+                } else {
+                    ch = ((((color_src_p[tmp3 >> 3]<<(tmp3 & 0x7))|(color_src_p[(tmp3>>3)+1]>>(8-(tmp3&0x7)))) >> 5) & 0x07) * 255 / 7;
+                }
+                tmp = c->opa_full ? ch : (uint16_t)((c->opa_factor * ch) >> 15);
+                if (c->is_bold) {
+                    if (start_count == count) {
+                        tmp_color = gt_color_mix(c->fill_color, color_dst_p[count], tmp);
+                        color_dst_p[count] = tmp_color;
+                    } else {
+                        gt_color_t this_color = color_dst_p[count];
+                        color_dst_p[count] = gt_color_mix(c->fill_color, tmp_color, tmp);
+                        tmp_color = gt_color_mix(c->fill_color, this_color, tmp);
+                    }
+                } else {
+                    color_dst_p[count] = gt_color_mix(c->fill_color, color_dst_p[count], tmp);
+                }
+                ++count;
+            }
+            color_src_p += c->dot_byte;
+            color_dst_p += c->width_buf;
+        }
+    }
+}
+
+static inline void _blend_text_gray1(const _blend_text_ctx_st * c) {
+    gt_color_t * color_dst_p = c->color_dst_p;
+    const uint8_t * color_src_p = c->color_src_p;
+    gt_size_t row, col;
+    uint16_t count, start_count;
+    uint8_t ch;
+    gt_color_t tmp_color;
+
+    if (c->is_vert) {
+        for (col = 0; col < c->area_intersect.h; col++) {
+            start_count = c->is_italic ? (c->font_size - c->offset.y - col) >> 1 : 0;
+            count = start_count;
+            color_src_p = c->offset.x * c->dot_byte + c->res;
+            for (row = c->offset.x; row < c->font_size; row++) {
+                if ((row + start_count) >= c->offset.x + c->area_intersect.w) break;
+                ch = color_src_p[col >> 3] >> (7 - (col & 0x7));
+                if (c->is_bold) {
+                    if (ch & 0x01) {
+                        tmp_color = gt_color_mix(c->fill_color, color_dst_p[count], c->opa);
+                        color_dst_p[count] = tmp_color;
+                        color_dst_p[count+1] = tmp_color;
+                    }
+                } else {
+                    if (ch & 0x01) {
+                        color_dst_p[count] = gt_color_mix(c->fill_color, color_dst_p[count], c->opa);
+                    }
+                }
+                color_src_p += c->dot_byte;
+                ++count;
+            }
+            color_dst_p += c->width_buf;
+        }
+    } else {
+        for (col = 0; col < c->area_intersect.h; col++) {
+            start_count = c->is_italic ? (c->font_size - c->offset.y - col) >> 1 : 0;
+            count = start_count;
+            for (row = c->offset.x; row < c->font_size; row++) {
+                if ((row + start_count) >= c->offset.x + c->area_intersect.w) break;
+                ch = color_src_p[row >> 3] >> (7 - (row & 0x7));
+                if (c->is_bold) {
+                    if (ch & 0x01) {
+                        tmp_color = gt_color_mix(c->fill_color, color_dst_p[count], c->opa);
+                        color_dst_p[count] = tmp_color;
+                        color_dst_p[count+1] = tmp_color;
+                    }
+                } else {
+                    if (ch & 0x01) {
+                        color_dst_p[count] = gt_color_mix(c->fill_color, color_dst_p[count], c->opa);
+                    }
+                }
+                ++count;
+            }
+            color_src_p += c->dot_byte;
+            color_dst_p += c->width_buf;
+        }
+    }
+}
+
 /* global functions / API interface -------------------------------------*/
 /**
  * @brief blend fore_color buf to back_color draw ctx
@@ -377,6 +361,7 @@ gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st * dsc
         return;
     }
 
+    const int is_vert = gt_draw_blend_is_vertical();
     _gt_draw_blend_fill_cache_st fill_cache = {
         .color = dsc->color_fill,
         .opa = dsc->opa,
@@ -384,13 +369,13 @@ gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st * dsc
     /** area_draw x/y screen offset; w/h need to redraw area, which pos by dst_area */
     gt_area_st area_draw = draw_ctx->buf_area, area_dst = *dsc->dst_area;
 
-#if GT_FLUSH_CONVERT_VERTICAL
-    fill_cache.width_src = area_dst.h;
-    fill_cache.width_buf = area_draw.h;
-#else
-    fill_cache.width_src = area_dst.w;
-    fill_cache.width_buf = area_draw.w;
-#endif
+    if (is_vert) {
+        fill_cache.width_src = area_dst.h;
+        fill_cache.width_buf = area_draw.h;
+    } else {
+        fill_cache.width_src = area_dst.w;
+        fill_cache.width_buf = area_draw.w;
+    }
     gt_point_st offset = {0};   /** src data buffer offset set */
 
     if (dsc->view_area) {
@@ -425,38 +410,35 @@ gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st * dsc
         return;
     }
 
-#if GT_FLUSH_CONVERT_VERTICAL
-    gt_area_st convert = {
-        .x = fill_cache.area_intersect.y,
-        .y = fill_cache.area_intersect.x,
-        .w = fill_cache.area_intersect.h,
-        .h = fill_cache.area_intersect.w,
-    };
-    fill_cache.area_intersect = convert;
+    if (is_vert) {
+        gt_area_st convert = {
+            .x = fill_cache.area_intersect.y,
+            .y = fill_cache.area_intersect.x,
+            .w = fill_cache.area_intersect.h,
+            .h = fill_cache.area_intersect.w,
+        };
+        fill_cache.area_intersect = convert;
 
-    gt_point_st convert_offset = {
-        .x = flush_buffer_offset.y,
-        .y = flush_buffer_offset.x,
-    };
-    flush_buffer_offset = convert_offset;
+        gt_point_st convert_offset = {
+            .x = flush_buffer_offset.y,
+            .y = flush_buffer_offset.x,
+        };
+        flush_buffer_offset = convert_offset;
 
-    gt_point_st convert_parent = {
-        .x = offset.y,
-        .y = offset.x,
-    };
-    offset = convert_parent;
-#endif
+        gt_point_st convert_parent = {
+            .x = offset.y,
+            .y = offset.x,
+        };
+        offset = convert_parent;
+    }
 
     offset.x += fill_cache.area_intersect.x;
     offset.y += fill_cache.area_intersect.y;
 
-    // from area_intersect cpy to flush_buffer_offset
     uint32_t idx_dst = flush_buffer_offset.y * fill_cache.width_buf + flush_buffer_offset.x;
-#if GT_FLUSH_CONVERT_VERTICAL
-    uint32_t idx_src = offset.x * fill_cache.width_src + offset.y;
-#else
-    uint32_t idx_src = offset.y * fill_cache.width_src + offset.x;
-#endif
+    uint32_t idx_src = is_vert
+        ? (offset.x * fill_cache.width_src + offset.y)
+        : (offset.y * fill_cache.width_src + offset.x);
 
     if (0 == fill_cache.area_intersect.w || 0 == fill_cache.area_intersect.h) {
         return;
@@ -516,6 +498,7 @@ gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
     }
 
     /** 绘制区域和显示屏buffer的交集区域 */
+    const int is_vert = gt_draw_blend_is_vertical();
     gt_area_st area_intersect = {0};
     /** buf_area: area_disp */
     gt_area_st area_draw = draw_ctx->buf_area, dst_area = *dsc->dst_area;
@@ -526,11 +509,7 @@ gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
 
     gt_area_st area_dst = dst_area;
 
-#if GT_FLUSH_CONVERT_VERTICAL
-    uint16_t width_buf = area_draw.h;
-#else
-    uint16_t width_buf = area_draw.w;
-#endif
+    uint16_t width_buf = is_vert ? area_draw.h : area_draw.w;
     gt_point_st offset = {0};   /** src data buffer offset set */
 
     if (dsc->view_area) {
@@ -569,27 +548,27 @@ gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
         return;
     }
 
-#if GT_FLUSH_CONVERT_VERTICAL
-    gt_area_st convert = {
-        .x = area_intersect.y,
-        .y = area_intersect.x,
-        .w = area_intersect.h,
-        .h = area_intersect.w,
-    };
-    area_intersect = convert;
+    if (is_vert) {
+        gt_area_st convert = {
+            .x = area_intersect.y,
+            .y = area_intersect.x,
+            .w = area_intersect.h,
+            .h = area_intersect.w,
+        };
+        area_intersect = convert;
 
-    gt_point_st convert_offset = {
-        .x = flush_buffer_offset.y,
-        .y = flush_buffer_offset.x,
-    };
-    flush_buffer_offset = convert_offset;
+        gt_point_st convert_offset = {
+            .x = flush_buffer_offset.y,
+            .y = flush_buffer_offset.x,
+        };
+        flush_buffer_offset = convert_offset;
 
-    gt_point_st convert_parent = {
-        .x = offset.y,
-        .y = offset.x,
-    };
-    offset = convert_parent;
-#endif
+        gt_point_st convert_parent = {
+            .x = offset.y,
+            .y = offset.x,
+        };
+        offset = convert_parent;
+    }
 
     gt_color_t * color_dst_p = (gt_color_t *)draw_ctx->buf;
     const uint8_t * color_src_p = res;
@@ -604,172 +583,26 @@ gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
     if (color_dst_p) { color_dst_p += idx_dst; }
     if (color_src_p) { color_src_p += idx_src; }
 
-    uint16_t count = 0, start_count = 0, tmp = 0;
-    gt_size_t row, col;
-    uint8_t ch = 0;
-    gt_color_t tmp_color;
+    _blend_text_ctx_st ctx;
+    ctx.color_dst_p  = color_dst_p;
+    ctx.color_src_p  = color_src_p;
+    ctx.res          = res;
+    ctx.area_intersect = area_intersect;
+    ctx.offset       = offset;
+    ctx.width_buf    = width_buf;
+    ctx.font_size    = font_size;
+    ctx.dot_byte     = dot_byte;
+    ctx.fill_color   = dsc->color_fill;
+    ctx.opa          = dsc->opa;
+    ctx.is_vert      = is_vert;
+    ctx.is_bold      = font_style.bold;
+    ctx.is_italic    = font_style.italic;
+    ctx.opa_full     = (dsc->opa >= GT_OPA_MAX);
+    ctx.opa_factor   = ctx.opa_full ? 0 : gt_per_255(dsc->opa);
 
-    if (2 == gray) {
-        for (col = 0; col < area_intersect.h; col++) {
-            start_count = font_style.italic ? (font_size - offset.y - col) >> 1 : 0;
-            count = start_count;
-#if GT_FLUSH_CONVERT_VERTICAL
-            color_src_p = offset.x * dot_byte + res;
-#endif
-            for (row = offset.x; row < font_size; row++) {
-                if ((row + start_count) >= offset.x + area_intersect.w) break;
-
-#if GT_FLUSH_CONVERT_VERTICAL
-                ch = ((color_src_p[col >> 2] >> (6 - ((col & 0x3)<<1))) & 0x03) * 255 / 3;
-                color_src_p += dot_byte;
-#else
-                ch = ((color_src_p[row >> 2] >> (6 - ((row & 0x3)<<1))) & 0x03) * 255 / 3;
-#endif
-                if(font_style.bold){
-                    tmp = (gt_per_255(ch) * dsc->opa) >> 15;
-                    if(start_count == count){
-                        tmp_color = gt_color_mix(dsc->color_fill, color_dst_p[count], tmp);
-                        color_dst_p[count] = tmp_color;
-                    }
-                    else{
-                        gt_color_t this_color = color_dst_p[count];
-                        color_dst_p[count] = gt_color_mix(dsc->color_fill, tmp_color, tmp);
-                        tmp_color = gt_color_mix(dsc->color_fill, this_color, tmp);
-                    }
-                }
-                else{
-                    tmp = (gt_per_255(ch) * dsc->opa) >> 15;
-                    color_dst_p[count] = gt_color_mix(dsc->color_fill, color_dst_p[count], tmp);
-                }
-                ++count;
-            }
-#if !GT_FLUSH_CONVERT_VERTICAL
-            color_src_p += dot_byte;
-#endif
-            color_dst_p += width_buf;
-        }
-    } else if (4 == gray) {
-        for (col = 0; col < area_intersect.h; col++) {
-            start_count = font_style.italic ? (font_size - offset.y - col) >> 1 : 0;
-            count = start_count;
-#if GT_FLUSH_CONVERT_VERTICAL
-            color_src_p = offset.x * dot_byte + res;
-#endif
-            for (row = offset.x; row < font_size; row++) {
-                if ((row + start_count) >= offset.x + area_intersect.w) break;
-
-#if GT_FLUSH_CONVERT_VERTICAL
-                ch = ((color_src_p[col >> 1] >> (4 - ((col & 0x1)<<2))) & 0x0F) * 255 / 15;
-                color_src_p += dot_byte;
-#else
-                ch = ((color_src_p[row >> 1] >> (4 - ((row & 0x1)<<2))) & 0x0F) * 255 / 15;
-#endif
-                if(font_style.bold){
-                    tmp = (gt_per_255(ch) * dsc->opa) >> 15;
-                    if(start_count == count){
-                        tmp_color = gt_color_mix(dsc->color_fill, color_dst_p[count], tmp);
-                        color_dst_p[count] = tmp_color;
-                    }
-                    else{
-                        gt_color_t this_color = color_dst_p[count];
-                        color_dst_p[count] = gt_color_mix(dsc->color_fill, tmp_color, tmp);
-                        tmp_color = gt_color_mix(dsc->color_fill, this_color, tmp);
-                    }
-                }
-                else{
-                    tmp = (gt_per_255(ch) * dsc->opa) >> 15;
-                    color_dst_p[count] = gt_color_mix(dsc->color_fill, color_dst_p[count], tmp);
-                }
-                ++count;
-            }
-#if !GT_FLUSH_CONVERT_VERTICAL
-            color_src_p += dot_byte;
-#endif
-            color_dst_p += width_buf;
-        }
-    } else if (3 == gray) {
-        for (col = 0; col < area_intersect.h; col++) {
-            start_count = font_style.italic ? (font_size - offset.y - col) >> 1 : 0;
-            count = start_count;
-#if GT_FLUSH_CONVERT_VERTICAL
-            color_src_p = offset.x * dot_byte + res;
-#endif
-            for (row = offset.x; row < font_size; row++) {
-                if ((row + start_count) >= offset.x + area_intersect.w) break;
-
-#if GT_FLUSH_CONVERT_VERTICAL
-                tmp = col * 3;
-#else
-                tmp = row * 3;
-#endif
-                if ((tmp & 0x7) <= 5) {
-                    ch = ((color_src_p[tmp >> 3] >> (5 - (tmp & 0x7))) & 0x07) * 255 / 7;
-                } else {
-                    ch = ((((color_src_p[tmp >> 3]<<(tmp & 0x7))|(color_src_p[(tmp >> 3)+1]>>(8-(tmp & 0x7)))) >> 5) & 0x07) * 255 / 7;
-                }
-
-                if(font_style.bold){
-                    tmp = (gt_per_255(ch) * dsc->opa) >> 15;
-                    if(start_count == count){
-                        tmp_color = gt_color_mix(dsc->color_fill, color_dst_p[count], tmp);
-                        color_dst_p[count] = tmp_color;
-                    }
-                    else{
-                        gt_color_t this_color = color_dst_p[count];
-                        color_dst_p[count] = gt_color_mix(dsc->color_fill, tmp_color, tmp);
-                        tmp_color = gt_color_mix(dsc->color_fill, this_color, tmp);
-                    }
-                }
-                else{
-                    tmp = (gt_per_255(ch) * dsc->opa) >> 15;
-                    color_dst_p[count] = gt_color_mix(dsc->color_fill, color_dst_p[count], tmp);
-                }
-
-#if GT_FLUSH_CONVERT_VERTICAL
-                color_src_p += dot_byte;
-#endif
-                ++count;
-            }
-#if !GT_FLUSH_CONVERT_VERTICAL
-            color_src_p += dot_byte;
-#endif
-            color_dst_p += width_buf;
-        }
-    } else {
-        for (col = 0; col < area_intersect.h; col++) {
-            start_count = font_style.italic ? (font_size - offset.y - col) >> 1 : 0;
-            count = start_count;
-#if GT_FLUSH_CONVERT_VERTICAL
-            color_src_p = offset.x * dot_byte + res;
-#endif
-            for (row = offset.x; row < font_size; row++) {
-                if ((row + start_count) >= offset.x + area_intersect.w) break;
-#if GT_FLUSH_CONVERT_VERTICAL
-                ch = color_src_p[col >> 3] >> (7 - (col & 0x7));
-                color_src_p += dot_byte;
-#else
-                ch = color_src_p[row >> 3] >> (7 - (row & 0x7));
-#endif
-                if(font_style.bold){
-                    if (ch & 0x01) {
-                        tmp_color = gt_color_mix(dsc->color_fill, color_dst_p[count], dsc->opa);
-                        color_dst_p[count] = tmp_color;
-                        color_dst_p[count+1] = tmp_color;
-                    }
-                }
-                else{
-                    if (ch & 0x01) {
-                        color_dst_p[count] =gt_color_mix(dsc->color_fill, color_dst_p[count], dsc->opa);
-                    }
-                }
-                ++count;
-            }
-#if !GT_FLUSH_CONVERT_VERTICAL
-            color_src_p += dot_byte;
-#endif
-            color_dst_p += width_buf;
-        }
-    }
-
+    if      (2 == gray) { _blend_text_gray2(&ctx); }
+    else if (4 == gray) { _blend_text_gray4(&ctx); }
+    else if (3 == gray) { _blend_text_gray3(&ctx); }
+    else                { _blend_text_gray1(&ctx); }
 }
 /* end ------------------------------------------------------------------*/
