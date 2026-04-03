@@ -648,6 +648,199 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _draw_font_buf_free(_draw_font_buf_st *
 }
 
 /**
+ * @brief Read one pixel value (gray bits) from packed dot-matrix data.
+ *        Supports gray = 1 / 2 / 4.
+ *
+ * @param src      packed source buffer
+ * @param dot_byte bytes per row in src
+ * @param x        column index (pixel unit)
+ * @param y        row index
+ * @param gray     bits per pixel: 1 / 2 / 4
+ * @return pixel value in range [0, (1<<gray)-1]
+ */
+static inline uint8_t _font_dot_read(const uint8_t * src, uint16_t dot_byte,
+                                     uint16_t x, uint16_t y, uint8_t gray)
+{
+    uint32_t bit_idx = ((uint32_t)y * dot_byte * 8) + (uint32_t)x * gray;
+    uint8_t byte_val = src[bit_idx >> 3];
+    uint8_t bit_off  = (uint8_t)(bit_idx & 7);
+    uint8_t mask     = (uint8_t)((1u << gray) - 1u);
+    return (byte_val >> (8u - gray - bit_off)) & mask;
+}
+
+/**
+ * @brief Write one pixel value (gray bits) into packed dot-matrix data.
+ */
+static inline void _font_dot_write(uint8_t * dst, uint16_t dot_byte,
+                                   uint16_t x, uint16_t y, uint8_t gray, uint8_t val)
+{
+    uint32_t bit_idx = ((uint32_t)y * dot_byte * 8) + (uint32_t)x * gray;
+    uint8_t * p      = &dst[bit_idx >> 3];
+    uint8_t bit_off  = (uint8_t)(bit_idx & 7);
+    uint8_t mask     = (uint8_t)((1u << gray) - 1u);
+    *p = (*p & ~(mask << (8u - gray - bit_off))) | ((val & mask) << (8u - gray - bit_off));
+}
+
+/**
+ * @brief Scale font dot-matrix using nearest-neighbor (gray=1 only).
+ *
+ * @param src       source dot-matrix buffer
+ * @param src_size  source glyph size (pixels, square)
+ * @param src_byte  bytes per row in src (dot_byte)
+ * @param dst       destination buffer (caller ensures size)
+ * @param dst_size  target glyph size (pixels)
+ * @param dst_byte  bytes per row in dst
+ */
+static void GT_ATTRIBUTE_RAM_TEXT
+_font_scale_nearest(const uint8_t * src, uint16_t src_w, uint16_t src_h, uint16_t src_byte,
+                    uint8_t * dst, uint16_t dst_w, uint16_t dst_h, uint16_t dst_byte)
+{
+    uint16_t dx, dy;
+    for (dy = 0; dy < dst_h; ++dy) {
+        uint16_t sy = (uint16_t)((uint32_t)dy * src_h / dst_h);
+        for (dx = 0; dx < dst_w; ++dx) {
+            uint16_t sx = (uint16_t)((uint32_t)dx * src_w / dst_w);
+            uint8_t v = _font_dot_read(src, src_byte, sx, sy, 1);
+            _font_dot_write(dst, dst_byte, dx, dy, 1, v);
+        }
+    }
+}
+
+/**
+ * @brief Scale font dot-matrix using bilinear interpolation (gray = 2 / 4).
+ *        gray=1 is handled by _font_scale_nearest.
+ *        Supports non-square glyphs (src_w may differ from src_h).
+ */
+static void GT_ATTRIBUTE_RAM_TEXT
+_font_scale_bilinear(const uint8_t * src, uint16_t src_w, uint16_t src_h, uint16_t src_byte,
+                     uint8_t * dst, uint16_t dst_w, uint16_t dst_h, uint16_t dst_byte, uint8_t gray)
+{
+    const uint8_t max_val = (uint8_t)((1u << gray) - 1u);
+    /* Q16 step per axis */
+    const uint32_t step_x = (dst_w > 1) ? (((uint32_t)(src_w - 1) << 16) / (dst_w - 1)) : 0;
+    const uint32_t step_y = (dst_h > 1) ? (((uint32_t)(src_h - 1) << 16) / (dst_h - 1)) : 0;
+    const uint32_t expand = 255u / max_val;
+    uint16_t dx, dy;
+    uint32_t fy = 0;
+    for (dy = 0; dy < dst_h; ++dy, fy += step_y) {
+        uint16_t sy0 = (uint16_t)(fy >> 16);
+        uint16_t sy1 = (sy0 + 1 < src_h) ? sy0 + 1 : sy0;
+        uint32_t wy1 = fy & 0xFFFFu;
+        uint32_t wy0 = 0x10000u - wy1;
+        uint32_t fx = 0;
+        for (dx = 0; dx < dst_w; ++dx, fx += step_x) {
+            uint16_t sx0 = (uint16_t)(fx >> 16);
+            uint16_t sx1 = (sx0 + 1 < src_w) ? sx0 + 1 : sx0;
+            uint32_t wx1 = fx & 0xFFFFu;
+            uint32_t wx0 = 0x10000u - wx1;
+            uint32_t p00 = _font_dot_read(src, src_byte, sx0, sy0, gray) * expand;
+            uint32_t p10 = _font_dot_read(src, src_byte, sx1, sy0, gray) * expand;
+            uint32_t p01 = _font_dot_read(src, src_byte, sx0, sy1, gray) * expand;
+            uint32_t p11 = _font_dot_read(src, src_byte, sx1, sy1, gray) * expand;
+            uint32_t v255 = (((p00 * wx0 + p10 * wx1) >> 16) * wy0 +
+                             ((p01 * wx0 + p11 * wx1) >> 16) * wy1) >> 16;
+            uint8_t v = (uint8_t)(v255 * max_val / 255u);
+            _font_dot_write(dst, dst_byte, dx, dy, gray, v);
+        }
+    }
+}
+
+/**
+ * @brief Apply software scaling to font glyph buffer.
+ *        For gray=1 (dot-matrix), converts to 4-bit grayscale via bilinear interpolation
+ *        to achieve smooth edges (no binarization).
+ *
+ * @param font      font structure (font->res will be updated to scaled buffer)
+ * @param gray      input gray depth (1/2/4)
+ * @param out_gray  [out] output gray depth (may change from 1→4 for dot-matrix)
+ * @param src_byte  bytes per row in original buffer
+ * @param src_size  source glyph size (height in pixels)
+ * @param dst_size  target glyph size (height in pixels)
+ * @return scaled dst_byte (0 on failure)
+ */
+static uint16_t GT_ATTRIBUTE_RAM_TEXT
+_font_scale_apply(gt_font_st * font, uint8_t gray, uint8_t * out_gray,
+                  uint16_t src_byte, uint16_t src_size, uint16_t dst_size)
+{
+    /* derive actual pixel dimensions */
+    uint16_t src_w    = (uint16_t)((src_byte / gray) << 3);  /* pixel width (byte-aligned) */
+    uint16_t src_h    = src_size;
+    uint16_t dst_w    = (uint16_t)((uint32_t)src_w * dst_size / src_size);
+    uint16_t dst_h    = dst_size;
+
+    if (1 == gray) {
+        /* 点阵字体平滑缩放：转4bit灰度 → 双线性插值 → 直接输出4bit（不二值化） */
+        uint16_t gray4_byte = (uint16_t)(((src_w << 2) + 7u) >> 3);  /* 4bit: 2 pixels/byte */
+        uint16_t gray4_size = gray4_byte * src_h;
+        uint8_t * gray4_src = (uint8_t *)gt_mem_malloc(gray4_size);
+
+        if (gray4_src) {
+            gt_memset_0(gray4_src, gray4_size);
+
+            /* Step 1: 1bit → 4bit (0→0, 1→15) */
+            for (uint16_t y = 0; y < src_h; y++) {
+                for (uint16_t x = 0; x < src_w; x++) {
+                    uint8_t bit = _font_dot_read(font->res, src_byte, x, y, 1);
+                    uint8_t val = bit ? 0x0F : 0x00;
+                    _font_dot_write(gray4_src, gray4_byte, x, y, 4, val);
+                }
+            }
+
+            /* Step 2: 双线性插值到目标尺寸（输出4bit灰度） */
+            uint16_t dst_byte = (uint16_t)(((dst_w << 2) + 7u) >> 3);  /* 4bit byte width */
+            uint16_t dst_need = dst_byte * dst_h;
+            uint8_t * dst_buf = (uint8_t *)gt_mem_malloc(dst_need);
+
+            if (dst_buf) {
+                gt_memset_0(dst_buf, dst_need);
+                _font_scale_bilinear(gray4_src, src_w, src_h, gray4_byte,
+                                     dst_buf, dst_w, dst_h, dst_byte, 4);
+
+                gt_mem_free(gray4_src);
+
+                /* 更新输出灰度为4bit */
+                *out_gray = 4;
+
+                /* caller saves old font->res and frees it; we only update the pointer */
+                font->res = dst_buf;
+                return dst_byte;
+            }
+
+            gt_mem_free(gray4_src);
+        }
+
+        /* 内存不足，回退最近邻（保持1bit） */
+        uint16_t dst_byte = (uint16_t)(((dst_w * gray + 7u) >> 3));
+        uint16_t dst_need = dst_byte * dst_h;
+        uint8_t * dst_buf = (uint8_t *)gt_mem_malloc(dst_need);
+        if (NULL == dst_buf) { return 0; }
+        gt_memset_0(dst_buf, dst_need);
+
+        _font_scale_nearest(font->res, src_w, src_h, src_byte,
+                            dst_buf, dst_w, dst_h, dst_byte);
+
+        font->res = dst_buf;
+        *out_gray = 1;  /* 回退路径保持1bit */
+        return dst_byte;
+
+    } else {
+        /* 灰度字体直接双线性插值 */
+        uint16_t dst_byte = (uint16_t)(((dst_w * gray + 7u) >> 3));
+        uint16_t dst_need = dst_byte * dst_h;
+        uint8_t * dst_buf = (uint8_t *)gt_mem_malloc(dst_need);
+        if (NULL == dst_buf) { return 0; }
+        gt_memset_0(dst_buf, dst_need);
+
+        _font_scale_bilinear(font->res, src_w, src_h, src_byte,
+                             dst_buf, dst_w, dst_h, dst_byte, gray);
+
+        font->res = dst_buf;
+        *out_gray = gray;  /* 保持原灰度 */
+        return dst_byte;
+    }
+}
+
+/**
  * @brief 渲染省略号字符序列（draw_text_single_line 末尾使用）
  */
 static GT_ATTRIBUTE_RAM_TEXT void _draw_omit_chars(
@@ -705,7 +898,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
     _gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc,
     uint8_t * mask_line, gt_font_st * tmp_font,
     _gt_font_dot_ret_st dot_ret, gt_area_st * area_font,
-    int8_t offset_y, uint8_t width,
+    int8_t offset_y, uint8_t * p_width,
     uint32_t uni_or_gbk, const gt_attr_font_st * dsc,
     bool apply_height_center)
 {
@@ -716,7 +909,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
         _gt_img_dsc_st emoji_raw = {0};
         emoji_raw.img   = (uint8_t*)tmp_font->res;
         emoji_raw.alpha = mask_line;
-        emoji_raw.header.w = width;
+        emoji_raw.header.w = *p_width;
         emoji_raw.header.h = 1;
         emoji_raw.header.type = GT_IMG_DECODER_TYPE_RAM;
         emoji_raw.header.color_format = GT_IMG_CF_TRUE_COLOR;
@@ -744,8 +937,31 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
         const uint8_t info_size = tmp_font->info.size;
         const gt_font_style_st style_reg = tmp_font->info.style.reg;
         uint8_t font_height = gt_font_get_one_word_height_by_option(uni_or_gbk, tmp_font, dot_ret.option);
-        uint8_t byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type, uni_or_gbk);
+        uint8_t byte_width = _gt_gray_and_dot_byte_get(&font_gray, *p_width, tmp_font, dot_ret.type, uni_or_gbk);
         area_font->w = (byte_width / font_gray) << 3;
+
+        /* --- software scaling --- */
+        const uint8_t scale_size = tmp_font->info.scale_size;
+        uint8_t render_size = info_size;
+        uint8_t * scaled_res = NULL;          /* non-NULL: scaled buffer to free after blend */
+        uint8_t * font_buf_res_orig = tmp_font->res;  /* original res to restore after blend */
+        if (scale_size > 0 && scale_size != info_size) {
+            uint16_t scaled_byte = _font_scale_apply(tmp_font, font_gray, &font_gray, byte_width, info_size, scale_size);
+            if (scaled_byte > 0) {
+                scaled_res   = tmp_font->res;  /* new buffer allocated by _font_scale_apply */
+                byte_width   = scaled_byte;
+                render_size  = scale_size;
+                /* 使用更新后的 font_gray 计算宽度（点阵可能变为4bit） */
+                area_font->w = (byte_width / font_gray) << 3;
+                area_font->h = scale_size;
+                /* update advance width and font_height proportionally */
+                *p_width = (uint8_t)((uint32_t)(*p_width) * scale_size / info_size);
+                font_height = (uint8_t)((uint32_t)font_height * scale_size / info_size);
+            } else {
+                tmp_font->res = font_buf_res_orig;  /* restore on failure */
+            }
+        }
+        /* --- end scaling --- */
 
         const bool is_ascii = (uni_or_gbk < 0x80);
         if (is_ascii) { area_font->y += offset_y; }
@@ -753,24 +969,31 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
             area_font->w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font->info);
         }
 
-        int8_t height_off = apply_height_center ? (int8_t)((info_size - font_height) >> 1) : 0;
+        int8_t height_off = apply_height_center ? (int8_t)((render_size - font_height) >> 1) : 0;
         area_font->y += height_off;
 
         gt_point_st off_point = gt_font_offset_get(dot_ret.option, uni_or_gbk);
         if (off_point.x | off_point.y) {
             area_font->x += off_point.x;
             area_font->y += off_point.y;
-            gt_draw_blend_text(draw_ctx, blend_dsc, info_size,
+            gt_draw_blend_text(draw_ctx, blend_dsc, render_size,
                                 byte_width, font_gray, (const uint8_t*)tmp_font->res, style_reg);
             area_font->x -= off_point.x;
             area_font->y -= off_point.y;
         } else {
-            gt_draw_blend_text(draw_ctx, blend_dsc, info_size,
+            gt_draw_blend_text(draw_ctx, blend_dsc, render_size,
                                 byte_width, font_gray, (const uint8_t*)tmp_font->res, style_reg);
         }
 
         area_font->y -= height_off;
         if (is_ascii) { area_font->y -= offset_y; }
+        /* free scaled buffer and restore original res pointer */
+        if (scaled_res) {
+            gt_mem_free(scaled_res);
+            tmp_font->res = font_buf_res_orig;
+        }
+        /* restore area_font->h for next character */
+        area_font->h = info_size;
     }
 }
 
@@ -1764,7 +1987,7 @@ _disp_font:
                 if (dot_ret.len > 0) { prev_rendered_size = dot_ret.len; }
                 _draw_one_char_glyph(draw_ctx, &blend_dsc, mask_line, &tmp_font,
                                      dot_ret, &area_font, offset_y,
-                                     width, uni_or_gbk, dsc, true);
+                                     &width, uni_or_gbk, dsc, true);
             } else {
                 if (!_draw_one_symbol(draw_ctx, &blend_dsc, &tmp_font, &area_font,
                                       uni_or_gbk, data_len, font_disp_h)) {
@@ -2189,7 +2412,7 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
             if (dot_ret.len > 0) { prev_rendered_size = dot_ret.len; }
             _draw_one_char_glyph(draw_ctx, &blend_dsc, mask_line, &tmp_font,
                                  dot_ret, &area_font, offset_y,
-                                 width, uni_or_gbk, dsc, false);
+                                 &width, uni_or_gbk, dsc, false);
         } else {
             if (!_draw_one_symbol(draw_ctx, &blend_dsc, &tmp_font, &area_font,
                                   uni_or_gbk, data_len, font_disp_h)) {

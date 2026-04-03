@@ -149,6 +149,18 @@ void gt_input_number_set_font_size(gt_obj_st * obj, uint8_t size);
 
 void gt_input_number_set_font_gray(gt_obj_st * obj, uint8_t gray);
 
+/**
+ * @brief Set software scale target size for font rendering.
+ *        The font library size (set by gt_input_number_set_font_size) is used as source;
+ *        the glyph is scaled to scale_size pixels before display.
+ *        0 or equal to font size: no scaling.
+ *        gray=1 uses nearest-neighbor; gray=2/4 uses bilinear interpolation.
+ *
+ * @param obj        input_number obj
+ * @param scale_size target display size in pixels, 0 = disabled
+ */
+void gt_input_number_set_font_scale_size(gt_obj_st * obj, uint8_t scale_size);
+
 void gt_input_number_set_font_align(gt_obj_st * obj, gt_align_et align);
 
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))

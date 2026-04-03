@@ -605,6 +605,16 @@ void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray)
     style->font_info.gray = gray;
 }
 
+void gt_btn_set_font_scale_size(gt_obj_st * btn, uint8_t scale_size)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_btn_st * style = (_gt_btn_st * )btn;
+    style->font_info.scale_size = scale_size;
+    gt_event_send(btn, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
+}
+
 void gt_btn_set_font_align(gt_obj_st * btn, gt_align_et align)
 {
     if (false == gt_obj_is_type(btn, OBJ_TYPE)) {

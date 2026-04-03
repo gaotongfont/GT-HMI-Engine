@@ -596,6 +596,16 @@ void gt_table_set_font_gray(gt_obj_st * table, uint8_t gray)
     style->font_info.gray = gray;
 }
 
+void gt_table_set_font_scale_size(gt_obj_st * table, uint8_t scale_size)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    style->font_info.scale_size = scale_size;
+    gt_event_send(table, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
+}
+
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_table_set_font_family_cn(gt_obj_st * table, gt_family_t family)
 {

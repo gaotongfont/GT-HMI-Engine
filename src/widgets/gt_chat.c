@@ -859,6 +859,17 @@ void gt_chat_set_font_gray(gt_obj_st * chat, uint8_t gray)
     style->font_info.gray = gray;
     _gt_set_msg_param(chat, _SET_MSG_FONT_GRAY);
 }
+
+void gt_chat_set_font_scale_size(gt_obj_st * chat, uint8_t scale_size)
+{
+    if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_chat_st * style = (_gt_chat_st * )chat;
+    style->font_info.scale_size = scale_size;
+    _gt_set_msg_param(chat, _SET_MSG_FONT_SIZE);
+}
+
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_chat_set_font_family_cn(gt_obj_st * chat, gt_family_t font_family_cn)
 {

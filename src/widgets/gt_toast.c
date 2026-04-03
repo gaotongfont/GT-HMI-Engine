@@ -415,6 +415,15 @@ void gt_toast_global_set_font_gray(uint8_t gray)
     gt_label_set_font_gray(style->lab_p, gray);
 }
 
+void gt_toast_global_set_font_scale_size(uint8_t scale_size)
+{
+    _gt_toast_st * style = _toast_create();
+    if (false == gt_obj_is_type((gt_obj_st * )style, OBJ_TYPE)) {
+        return ;
+    }
+    gt_label_set_font_scale_size(style->lab_p, scale_size);
+}
+
 void gt_toast_set_indent(uint16_t indent)
 {
     _gt_toast_st * style = _toast_create();

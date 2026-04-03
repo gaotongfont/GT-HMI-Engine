@@ -149,6 +149,19 @@ void gt_lrc_set_space(gt_obj_st * obj, uint8_t space_x, uint8_t space_y);
 void gt_lrc_set_font_color(gt_obj_st* obj, gt_color_t color);
 void gt_lrc_set_font_size(gt_obj_st * obj, uint8_t size);
 void gt_lrc_set_font_gray(gt_obj_st * obj, uint8_t gray);
+
+/**
+ * @brief Set software scale target size for font rendering.
+ *        The font library size (set by gt_lrc_set_font_size) is used as source;
+ *        the glyph is scaled to scale_size pixels before display.
+ *        0 or equal to font size: no scaling.
+ *        gray=1 uses nearest-neighbor; gray=2/4 uses bilinear interpolation.
+ *
+ * @param obj        lrc obj
+ * @param scale_size target display size in pixels, 0 = disabled
+ */
+void gt_lrc_set_font_scale_size(gt_obj_st * obj, uint8_t scale_size);
+
 void gt_lrc_set_font_thick_en(gt_obj_st * obj, uint8_t thick);
 void gt_lrc_set_font_thick_cn(gt_obj_st * obj, uint8_t thick);
 void gt_lrc_set_font_encoding(gt_obj_st * obj, gt_encoding_et encoding);

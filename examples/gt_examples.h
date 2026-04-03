@@ -22,6 +22,7 @@ extern "C" {
 #include "../src/core/gt_scr_stack.h"
 #include "../src/widgets/gt_obj.h"
 #include "../src/widgets/gt_btn.h"
+#include "../../driver/gt_font_config.h"
 
 
 /* define ---------------------------------------------------------------*/

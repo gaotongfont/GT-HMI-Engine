@@ -87,6 +87,18 @@ void gt_toast_close(void);
 
 void gt_toast_global_set_font_size(uint8_t size);
 void gt_toast_global_set_font_gray(uint8_t gray);
+
+/**
+ * @brief Set software scale target size for font rendering (global setting).
+ *        The font library size (set by gt_toast_global_set_font_size) is used as source;
+ *        the glyph is scaled to scale_size pixels before display.
+ *        0 or equal to font size: no scaling.
+ *        gray=1 uses nearest-neighbor; gray=2/4 uses bilinear interpolation.
+ *
+ * @param scale_size target display size in pixels, 0 = disabled
+ */
+void gt_toast_global_set_font_scale_size(uint8_t scale_size);
+
 void gt_toast_set_indent(uint16_t indent);
 void gt_toast_global_set_font_align(gt_align_et align);
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))

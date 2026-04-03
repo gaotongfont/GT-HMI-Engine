@@ -345,6 +345,18 @@ void gt_input_number_set_font_gray(gt_obj_st * obj, uint8_t gray)
     gt_label_set_font_gray(style->label, gray);
 }
 
+void gt_input_number_set_font_scale_size(gt_obj_st * obj, uint8_t scale_size)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_number_st * style = (_gt_input_number_st * )obj;
+    if (NULL == style->label) {
+        return;
+    }
+    gt_label_set_font_scale_size(style->label, scale_size);
+}
+
 void gt_input_number_set_font_align(gt_obj_st * obj, gt_align_et align)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {

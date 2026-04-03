@@ -116,6 +116,13 @@ typedef struct _gt_font_info_s {
     uint8_t encoding;    ///< set: font encoding
     int8_t offset_y;    ///< 0: [default] don't move; < 0: move up; > 0: move down
 
+    /**
+     * @brief Target display size after software scaling.
+     *        0 or equal to size: no scaling (zero overhead).
+     *        Otherwise: bilinear scale from size to scale_size (gray=1 uses nearest-neighbor).
+     */
+    uint8_t scale_size;
+
     /* font style */
     union {
         uint8_t all;

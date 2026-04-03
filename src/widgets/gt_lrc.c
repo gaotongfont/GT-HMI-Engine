@@ -559,6 +559,17 @@ void gt_lrc_set_font_gray(gt_obj_st * obj, uint8_t gray)
 }
 
 GT_ATTRIBUTE_RAM_TEXT
+void gt_lrc_set_font_scale_size(gt_obj_st * obj, uint8_t scale_size)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_lrc_st* style = (_gt_lrc_st*)obj;
+    style->font_info.scale_size = scale_size;
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
+}
+
+GT_ATTRIBUTE_RAM_TEXT
 void gt_lrc_set_font_thick_en(gt_obj_st * obj, uint8_t thick)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {

@@ -122,6 +122,19 @@ void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style);
 
 uint8_t gt_label_get_font_size(gt_obj_st * label);
 
+/**
+ * @brief Set software scale target size for font rendering.
+ *        The font library size (set by gt_label_set_font_size) is used as source;
+ *        the glyph is scaled to scale_size pixels before display.
+ *        0 or equal to font size: no scaling.
+ *        gray=1 uses nearest-neighbor; gray=2/4 uses bilinear interpolation.
+ *
+ * @param label      label obj
+ * @param scale_size target display size in pixels, 0 = disabled
+ */
+void gt_label_set_font_scale_size(gt_obj_st * label, uint8_t scale_size);
+uint8_t gt_label_get_font_scale_size(gt_obj_st * label);
+
 uint8_t gt_label_get_space_x(gt_obj_st * label);
 uint8_t gt_label_get_space_y(gt_obj_st * label);
 

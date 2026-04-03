@@ -472,6 +472,25 @@ uint8_t gt_label_get_font_size(gt_obj_st * label)
     return style->font_info.size;
 }
 
+void gt_label_set_font_scale_size(gt_obj_st * label, uint8_t scale_size)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    style->font_info.scale_size = scale_size;
+    gt_event_send(label, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
+}
+
+uint8_t gt_label_get_font_scale_size(gt_obj_st * label)
+{
+    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_label_st * style = (_gt_label_st * )label;
+    return style->font_info.scale_size;
+}
+
 uint8_t gt_label_get_space_x(gt_obj_st * label)
 {
     if (false == gt_obj_is_type(label, OBJ_TYPE)) {

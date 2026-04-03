@@ -183,6 +183,19 @@ void gt_chat_set_received_msg_font_color(gt_obj_st * chat, gt_color_t color);
 
 void gt_chat_set_font_size(gt_obj_st * chat, uint8_t size);
 void gt_chat_set_font_gray(gt_obj_st * chat, uint8_t gray);
+
+/**
+ * @brief Set software scale target size for font rendering.
+ *        The font library size (set by gt_chat_set_font_size) is used as source;
+ *        the glyph is scaled to scale_size pixels before display.
+ *        0 or equal to font size: no scaling.
+ *        gray=1 uses nearest-neighbor; gray=2/4 uses bilinear interpolation.
+ *
+ * @param chat       chat obj
+ * @param scale_size target display size in pixels, 0 = disabled
+ */
+void gt_chat_set_font_scale_size(gt_obj_st * chat, uint8_t scale_size);
+
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_chat_set_font_family_cn(gt_obj_st * chat, gt_family_t font_family_cn);
 void gt_chat_set_font_family_en(gt_obj_st * chat, gt_family_t font_family_en);

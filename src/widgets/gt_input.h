@@ -124,6 +124,19 @@ void gt_input_set_font_cjk(gt_obj_st* input, gt_font_cjk_et cjk);
 #endif
 void gt_input_set_font_size(gt_obj_st * input, uint8_t size);
 void gt_input_set_font_gray(gt_obj_st * input, uint8_t gray);
+
+/**
+ * @brief Set software scale target size for font rendering.
+ *        The font library size (set by gt_input_set_font_size) is used as source;
+ *        the glyph is scaled to scale_size pixels before display.
+ *        0 or equal to font size: no scaling.
+ *        gray=1 uses nearest-neighbor; gray=2/4 uses bilinear interpolation.
+ *
+ * @param input      input obj
+ * @param scale_size target display size in pixels, 0 = disabled
+ */
+void gt_input_set_font_scale_size(gt_obj_st * input, uint8_t scale_size);
+
 void gt_input_set_font_align(gt_obj_st * input, gt_align_et align);
 void gt_input_set_font_thick_en(gt_obj_st * input, uint8_t thick);
 void gt_input_set_font_thick_cn(gt_obj_st * input, uint8_t thick);

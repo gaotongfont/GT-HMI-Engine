@@ -760,6 +760,17 @@ void gt_input_set_font_gray(gt_obj_st * input, uint8_t gray)
     _gt_input_st * style = (_gt_input_st * )input;
     style->font_info.gray = gray;
 }
+
+void gt_input_set_font_scale_size(gt_obj_st * input, uint8_t scale_size)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    style->font_info.scale_size = scale_size;
+    gt_event_send(input, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
+}
+
 void gt_input_set_font_align(gt_obj_st * input, gt_align_et align)
 {
     if (false == gt_obj_is_type(input, OBJ_TYPE)) {
