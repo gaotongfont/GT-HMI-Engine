@@ -1666,6 +1666,9 @@ kp_released_clr_lb:
         indev->data.keypad.obj_target = NULL;
         indev->data.keypad.obj_origin = NULL;
         indev->data.keypad.last_key = GT_KEY_NONE;
+#if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
+        _SET_KEYPAD_LOCK(indev, false);
+#endif
         return;
     }
     // 新的按键
