@@ -21,6 +21,7 @@
 #include "gt_obj_scroll.h"
 #include "gt_style.h"
 #include "../widgets/gt_dialog.h"
+#include "../widgets/gt_btn.h"
 #include "effects/gt_indev_effects.h"
 /* private define -------------------------------------------------------*/
 #ifndef GT_INDEV_SCROLL_THROW_SPEED_UP
@@ -149,7 +150,8 @@ _indev_rebound_recover_handler(gt_indev_st * indev, gt_obj_st * target);
 
 
 /* static functions -----------------------------------------------------*/
-static GT_ATTRIBUTE_RAM_TEXT inline void _rotate_point_inv(
+static inline void GT_ATTRIBUTE_RAM_TEXT
+_rotate_point_inv(
     gt_rotated_et rotation, uint16_t phy_w, uint16_t phy_h,
     gt_size_t * x, gt_size_t * y)
 {
@@ -172,12 +174,13 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _rotate_point_inv(
     }
 }
 
-static GT_ATTRIBUTE_RAM_TEXT inline bool _is_scroll_vertical(gt_dir_et dir) {
+static inline bool GT_ATTRIBUTE_RAM_TEXT
+_is_scroll_vertical(gt_dir_et dir) {
     return (GT_DIR_UP == dir || GT_DIR_DOWN == dir) ? true : false;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT gt_size_t _scroll_predict(gt_indev_st * indev, gt_size_t v)
-{
+static gt_size_t GT_ATTRIBUTE_RAM_TEXT
+_scroll_predict(gt_indev_st * indev, gt_size_t v) {
     gt_size_t result = 0;
     GT_CHECK_BACK_VAL(indev, result);
 
@@ -190,7 +193,8 @@ static GT_ATTRIBUTE_RAM_TEXT gt_size_t _scroll_predict(gt_indev_st * indev, gt_s
     return result;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _search_not_fixed_by_parent_recursive(gt_obj_st * obj) {
+static gt_obj_st * GT_ATTRIBUTE_RAM_TEXT
+_search_not_fixed_by_parent_recursive(gt_obj_st * obj) {
     gt_obj_st * ptr = obj;
     while(ptr) {
         if (false == ptr->fixed) {
@@ -412,6 +416,9 @@ scroll_throw_lb:
 
 static GT_ATTRIBUTE_RAM_TEXT inline void
 _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const point_p, gt_size_t * dx, gt_size_t * dy) {
+    if (NULL == obj_scroll->parent) {
+        return;
+    }
     uint16_t w_parent = obj_scroll->parent->area.w;
     uint16_t h_parent = obj_scroll->parent->area.h;
     gt_size_t right = gt_disp_get_res_hor(NULL);
@@ -435,7 +442,7 @@ _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const 
             rmk_x = right - obj_w - obj_x;
         }
         // inside
-        else if (obj_scroll->scroll_snap_x) {
+        else if (obj_scroll->scroll_snap_x && w_parent) {
             gt_size_t tmp_x = 0 == rmk_x ? x : obj_x;
             if ((uint16_t)GT_DIR_LEFT == point_p->gesture) {
                 rmk_x = ((x - w_parent) / w_parent) * w_parent - tmp_x;
@@ -455,7 +462,7 @@ _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const 
         else if (y + obj_h <= bottom) {
             rmk_y = bottom - obj_h - obj_y;
         }
-        else if (obj_scroll->scroll_snap_y) {
+        else if (obj_scroll->scroll_snap_y && h_parent) {
             gt_size_t tmp_y = 0 == rmk_y ? y : obj_y;
             if ((uint16_t)GT_DIR_LEFT == point_p->gesture) {
                 rmk_y = ((y - h_parent) / h_parent) * h_parent - tmp_y;
@@ -1296,8 +1303,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_pressed_handle(gt_indev_st * indev) {
 
 #if GT_INDEV_POINT_LOG
     GT_LOG_A(GT_LOG_TAG_TP, "press %p(%d) %p(%d) (%d, %d) diff: (%d, %d)",
-                point_p->obj_act, gt_obj_class_get_type(point_p->obj_act),
-                point_p->obj_target, gt_obj_class_get_type(point_p->obj_target),
+                (void*)(uintptr_t)point_p->obj_act, point_p->obj_act ? gt_obj_class_get_type(point_p->obj_act) : 0,
+                (void*)(uintptr_t)point_p->obj_target, gt_obj_class_get_type(point_p->obj_target),
                 point_p->newly.x, point_p->newly.y,
                 point_p->newly.x - point_p->last.x, point_p->newly.y - point_p->last.y);
 #endif
@@ -1375,11 +1382,89 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_point(gt_indev_st * indev) {
     _gt_indev_point_set_value(&point_p->last, point_p->newly.x, point_p->newly.y);
 }
 
+/**
+ * @brief Recursively find a button object matching the given button_id.
+ *
+ * @param parent parent object to search in
+ * @param button_id physical button id to match
+ * @return gt_obj_st* matching button object, or NULL if not found
+ */
+static gt_obj_st * GT_ATTRIBUTE_RAM_TEXT
+_find_btn_by_id_recursive(gt_obj_st * parent, uint8_t button_id) {
+    if (NULL == parent || GT_BTN_ID_INVALID == button_id) {
+        return NULL;
+    }
+
+    for (int idx = 0; idx < parent->cnt_child; idx++) {
+        gt_obj_st * child = parent->child[idx];
+
+        if (child->cnt_child > 0) {
+            gt_obj_st * found = _find_btn_by_id_recursive(child, button_id);
+            if (found) {
+                return found;
+            }
+        }
+
+        if (GT_INVISIBLE == child->visible) {
+            continue;
+        }
+
+        if (gt_obj_is_type(child, GT_TYPE_BTN)) {
+            uint8_t btn_id = gt_btn_get_button_id(child);
+            if (btn_id == button_id) {
+                return child;
+            }
+        }
+    }
+    return NULL;
+}
+
+static gt_obj_st * GT_ATTRIBUTE_RAM_TEXT
+_find_button_target_obj(gt_indev_st * indev) {
+    gt_obj_st * scr = gt_disp_get_scr();
+    if (NULL == scr) {
+        return NULL;
+    }
+
+    uint8_t btn_id = indev->data.button.id;
+    gt_obj_st * btn_by_id = NULL;
+
+    /** First, try to find button by button_id mapping */
+    if (GT_BTN_ID_INVALID != btn_id) {
+#if GT_USE_LAYER_TOP
+        gt_obj_st * layer_top = gt_disp_get_layer_top();
+        if (gt_disp_layer_top_has_active_obj()) {
+            btn_by_id = _find_btn_by_id_recursive(layer_top, btn_id);
+        }
+#endif
+        if (NULL == btn_by_id) {
+            btn_by_id = _find_btn_by_id_recursive(scr, btn_id);
+        }
+        if (btn_by_id) {
+            return btn_by_id;
+        }
+    }
+
+    /** Fallback: find by focus */
+#if GT_USE_LAYER_TOP
+    gt_obj_st * layer_top = gt_disp_get_layer_top();
+    if (gt_disp_layer_top_has_active_obj()) {
+        gt_obj_st * top_obj = gt_find_clicked_obj_by_focus(layer_top);
+        if (top_obj) {
+            return top_obj;
+        }
+        /** layer_top active but no focus obj: dialog is showing, block scr access */
+        if (_obj_outside_can_not_be_activated()) {
+            return NULL;
+        }
+    }
+#endif
+    return gt_find_clicked_obj_by_focus(scr);
+}
+
 static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_button(gt_indev_st * indev) {
-    static uint8_t flag_key_down = 0;
-    static uint32_t last_run = 0;
     gt_indev_data_st data_indev = {
-        .btn_id = indev->data.button.id,
+        .btn_id = 0,
         .state = GT_INDEV_STATE_INVALID,
     };
     indev->drv->read_cb(indev->drv, &data_indev);
@@ -1387,25 +1472,75 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_button(gt_indev_st * indev) 
         return;
     }
 
-    indev->state = data_indev.state;
-    if (indev->state == GT_INDEV_STATE_PRESSED) {
-        if (!flag_key_down) {
-            flag_key_down = 1;
-            last_run = gt_tick_get();
-            indev->data.button.id = data_indev.btn_id;
-            GT_LOGV(GT_LOG_TAG_GUI, "keydown the key id[%d]", indev->data.button.id);
-        }
-        indev->data.button.count_keydown++;
-    }
-    else {
-        flag_key_down = 0;
-        indev->data.button.count_keydown = 0;
-    }
+    struct _button * btn_p = &indev->data.button;
+    uint32_t cur_time = gt_tick_get();
 
-    if (indev->data.button.count_keydown != 0 && (gt_tick_get() - last_run) % indev->drv->limit_time_pressing == 0) {
-        /* trigger an button event:continue mode */
-        indev->data.button.count_keydown = 0;
-        GT_LOGV(GT_LOG_TAG_GUI, "continue mode trigger an button event, key id[%d]",indev->data.button.id );
+    indev->state = data_indev.state;
+
+    if (data_indev.state == GT_INDEV_STATE_PRESSED) {
+        if (0 == btn_p->state) {
+            /** new press: initialize all timestamps uniformly */
+            btn_p->state = 1;
+            btn_p->id = data_indev.btn_id;
+
+            _indev_reset_start_timestamp(indev);
+
+            /** find target object and send pressed event */
+            btn_p->obj_target = _find_button_target_obj(indev);
+            btn_p->obj_origin = btn_p->obj_target;
+
+            _indev_params.param.button_id = btn_p->id;
+            if (btn_p->obj_target && !gt_obj_is_untouchability(btn_p->obj_target)) {
+                gt_event_send(btn_p->obj_target, GT_EVENT_TYPE_INPUT_PRESSED, &_indev_params);
+#if GT_USE_LAYER_TOP
+                gt_global_event_send(GT_EVENT_TYPE_INPUT_PRESSED, NULL);
+#endif
+            }
+
+            GT_LOGV(GT_LOG_TAG_GUI, "button pressed: id[%d]", btn_p->id);
+        } else {
+            /** holding press - reuse shared helpers consistent with pointer/keypad */
+            if (_is_long_pressed_timeout(indev)) {
+                indev->timestamp_long_pressed = cur_time;
+                indev->timestamp_pressing = cur_time;
+                _indev_params.param.button_id = btn_p->id;
+                if (btn_p->obj_target && !gt_obj_is_untouchability(btn_p->obj_target)) {
+                    gt_event_send(btn_p->obj_target, GT_EVENT_TYPE_INPUT_LONG_PRESSED, &_indev_params);
+#if GT_USE_LAYER_TOP
+                    gt_global_event_send(GT_EVENT_TYPE_INPUT_LONG_PRESSED, NULL);
+#endif
+                }
+                GT_LOGV(GT_LOG_TAG_GUI, "button long pressed: id[%d]", btn_p->id);
+            } else if (_is_pressing_handler_after_long_pressed(indev) && _is_pressing_timeout(indev)) {
+                indev->timestamp_pressing = cur_time;
+                _indev_params.param.button_id = btn_p->id;
+                if (btn_p->obj_target && !gt_obj_is_untouchability(btn_p->obj_target)) {
+                    gt_event_send(btn_p->obj_target, GT_EVENT_TYPE_INPUT_PRESSING, &_indev_params);
+#if GT_USE_LAYER_TOP
+                    gt_global_event_send(GT_EVENT_TYPE_INPUT_PRESSING, NULL);
+#endif
+                }
+                GT_LOGV(GT_LOG_TAG_GUI, "button pressing: id[%d]", btn_p->id);
+            }
+        }
+    } else {
+        /** released */
+        if (btn_p->state == 1) {
+            btn_p->state = 0;
+
+            _indev_params.param.button_id = btn_p->id;
+            if (btn_p->obj_target && !gt_obj_is_untouchability(btn_p->obj_target)) {
+                gt_event_send(btn_p->obj_target, GT_EVENT_TYPE_INPUT_RELEASED, &_indev_params);
+#if GT_USE_LAYER_TOP
+                gt_global_event_send(GT_EVENT_TYPE_INPUT_RELEASED, NULL);
+#endif
+            }
+            GT_LOGV(GT_LOG_TAG_GUI, "button released: id[%d]", btn_p->id);
+
+            /** clear button state */
+            btn_p->obj_target = NULL;
+            btn_p->obj_origin = NULL;
+        }
     }
 }
 
@@ -1435,8 +1570,12 @@ static GT_ATTRIBUTE_RAM_TEXT inline bool _kp_is_global_key_value(uint32_t key) {
 #endif
 
 
-static GT_ATTRIBUTE_RAM_TEXT gt_obj_st* _find_keypad_target_obj(gt_indev_st* indev) {
+static gt_obj_st * GT_ATTRIBUTE_RAM_TEXT
+_find_keypad_target_obj(gt_indev_st* indev) {
     gt_obj_st * scr = gt_disp_get_scr();
+    if (NULL == scr) {
+        return NULL;
+    }
 
     gt_obj_st* top_obj = NULL;
     gt_obj_st* scr_obj = gt_find_clicked_obj_by_focus(scr);
@@ -1478,12 +1617,12 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st* _find_keypad_target_obj(gt_indev_st* ind
     return top_obj ? top_obj : scr_obj;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
+static void GT_ATTRIBUTE_RAM_TEXT
+_gt_indev_handler_keypad(gt_indev_st* indev) {
     gt_indev_data_st data_indev = {
         .key = GT_KEY_NONE,
         .state = GT_INDEV_STATE_INVALID,
     };
-    static uint32_t last_key = GT_KEY_NONE;
 #if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
     gt_obj_st * scr = gt_disp_get_scr();
 #endif
@@ -1494,17 +1633,19 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
     }
 
     indev->state = data_indev.state;
+#if GT_USE_LAYER_TOP
     gt_obj_st* layer_top = gt_disp_get_layer_top();
-    gt_obj_st* obj_target = _find_keypad_target_obj(indev);
-
+#endif
 
     if (GT_INDEV_STATE_RELEASED == indev->state) {
-        if (GT_KEY_NONE == last_key) {
-            last_key = GT_KEY_NONE;
+        if (GT_KEY_NONE == indev->data.keypad.last_key) {
             return;
         }
 
         _indev_params.param.keypad_key = indev->data.keypad.key;
+        if (NULL == indev->data.keypad.obj_origin) {
+            goto kp_released_clr_lb;
+        }
 #if GT_USE_LAYER_TOP
         if (_kp_is_global_key_value(indev->data.keypad.key)) {
             _gt_global_core_indev_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_KEY_RELEASED, &_indev_params);
@@ -1521,19 +1662,25 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
         GT_LOG_A(GT_LOG_TAG_TP, "keypad key: %#X, state: %d obj type: %d",
                     indev->data.keypad.key, indev->state, gt_obj_class_get_type(indev->data.keypad.obj_target));
 #endif
+kp_released_clr_lb:
         indev->data.keypad.obj_target = NULL;
         indev->data.keypad.obj_origin = NULL;
-        last_key = GT_KEY_NONE;
+        indev->data.keypad.last_key = GT_KEY_NONE;
         return;
     }
     // 新的按键
-    if (GT_KEY_NONE == last_key || last_key != data_indev.key) {
+    if (GT_KEY_NONE == indev->data.keypad.last_key || indev->data.keypad.last_key != data_indev.key) {
+        gt_obj_st* obj_target = _find_keypad_target_obj(indev);
         indev->data.keypad.key = data_indev.key;
-        last_key = data_indev.key;
+        indev->data.keypad.last_key = data_indev.key;
         indev->data.keypad.obj_target = obj_target;
         indev->data.keypad.obj_origin = obj_target;
         _indev_reset_start_timestamp(indev);
         _indev_params.param.keypad_key = indev->data.keypad.key;
+        if (NULL == indev->data.keypad.obj_origin) {
+            indev->data.keypad.last_key = GT_KEY_NONE;
+            return;
+        }
 #if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
         if(!_IS_KEYPAD_LOCKED(indev) && GT_KEY_RIGHT == indev->data.keypad.key){
             gt_obj_change_st chg = gt_obj_focus_change(indev->data.keypad.obj_origin, GT_FOCUS_DIR_RIGHT);
@@ -1568,6 +1715,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_keypad(gt_indev_st* indev) {
             _SET_KEYPAD_LOCK(indev, true);
             gt_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_FOCUSED, &_indev_params);
             gt_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_KEY, &_indev_params);
+            if (false == gt_obj_is_untouchability(indev->data.keypad.obj_origin)) {
+                gt_event_send(indev->data.keypad.obj_origin, GT_EVENT_TYPE_INPUT_PRESSED, &_indev_params);
+            }
             gt_disp_invalid_area(indev->data.keypad.obj_origin);
         }
         else if (_IS_KEYPAD_LOCKED(indev) && GT_KEY_ESC == indev->data.keypad.key){
@@ -1629,6 +1779,9 @@ _key_pressed:
     }
     // 长按
     if (_is_pressing_handler_after_long_pressed(indev)) {
+        if (NULL == indev->data.keypad.obj_origin) {
+            return;
+        }
         if (_is_pressing_timeout(indev)) {
             indev->timestamp_pressing = gt_tick_get();
             _indev_params.param.keypad_key = indev->data.keypad.key;
@@ -1708,6 +1861,9 @@ _key_pressing:
 #endif
     }
     else if (_is_long_pressed_timeout(indev)) {
+        if (NULL == indev->data.keypad.obj_origin) {
+            return;
+        }
         indev->timestamp_long_pressed = gt_tick_get();
         indev->timestamp_pressing = indev->timestamp_long_pressed;  /** skip pressing time to toggle */
 
@@ -1824,7 +1980,6 @@ gt_res_t _gt_indev_reset_status(void)
 {
     gt_indev_st * indev = NULL;
     uint8_t i, cnt_indev;
-    union data_union * data_p = NULL;
 
     if (false == gt_indev_is_enabled()) {
         return GT_RES_INV;
@@ -1833,13 +1988,17 @@ gt_res_t _gt_indev_reset_status(void)
     cnt_indev = gt_indev_get_dev_count();
     for (i = 0; i < cnt_indev; i++) {
         indev = gt_indev_get_dev_by_idx(i);
-        union data_union * data_p = &indev->data;
         if (indev->scroll_throw_anim) {
             gt_anim_del_by(indev->scroll_throw_anim);
         }
         if (GT_INDEV_TYPE_KEYPAD == indev->drv->type) {
             indev->data.keypad.obj_target = NULL;
             indev->data.keypad.obj_origin = NULL;
+        }
+        if (GT_INDEV_TYPE_BUTTON == indev->drv->type) {
+            indev->data.button.state = 0;
+            indev->data.button.obj_target = NULL;
+            indev->data.button.obj_origin = NULL;
         }
     }
     return GT_RES_OK;
@@ -1849,7 +2008,6 @@ gt_res_t _gt_indev_check_reset_widgets_illegal_status(gt_obj_st * screen)
 {
     gt_indev_st * indev = NULL;
     uint8_t i, cnt_indev;
-    union data_union * data_p = NULL;
 
     if (false == gt_indev_is_enabled()) {
         return GT_RES_INV;
@@ -1906,6 +2064,15 @@ bool _gt_indev_remove_want_delate_target(gt_obj_st * target)
                 break;
             }
             case GT_INDEV_TYPE_BUTTON: {
+                struct _button * btn_p = &indev->data.button;
+                if (target == btn_p->obj_target) {
+                    btn_p->obj_target = NULL;
+                    ret = true;
+                }
+                if (target == btn_p->obj_origin) {
+                    btn_p->obj_origin = NULL;
+                    ret = true;
+                }
                 break;
             }
             case GT_INDEV_TYPE_KEYPAD: {

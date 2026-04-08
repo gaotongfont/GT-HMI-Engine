@@ -29,6 +29,9 @@ extern "C" {
 
 /* define ---------------------------------------------------------------*/
 
+/** Invalid button id, means the button is not mapped to any physical button */
+#define GT_BTN_ID_INVALID    0xFF
+
 #ifndef GT_BTN_DEFAULT_AUTO_SCROLL_MODE
     /**
      * @brief set default auto scroll mode
@@ -293,6 +296,24 @@ uint8_t gt_btn_get_roll_space(gt_obj_st * btn);
  * @return gt_res_t
  */
 gt_res_t gt_btn_scroll_pause(gt_obj_st * btn, bool paused);
+
+/**
+ * @brief Set the physical button id for GT_INDEV_TYPE_BUTTON driver.
+ *        When a physical button with matching button_id is pressed,
+ *        this button object will receive the input events.
+ *
+ * @param btn button obj
+ * @param button_id physical button id (0-255), use GT_BTN_ID_INVALID to clear mapping
+ */
+void gt_btn_set_button_id(gt_obj_st * btn, uint8_t button_id);
+
+/**
+ * @brief Get the physical button id
+ *
+ * @param btn button obj
+ * @return uint8_t button id, GT_BTN_ID_INVALID if not set
+ */
+uint8_t gt_btn_get_button_id(gt_obj_st * btn);
 
 #endif  /** GT_CFG_ENABLE_BTN */
 

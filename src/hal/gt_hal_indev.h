@@ -267,11 +267,16 @@ typedef struct _gt_indev_s {
 
         struct _button {
             uint16_t id;
-            uint16_t count_keydown;
+            uint16_t state : 1;              ///< 0: released, 1: pressed
+            uint16_t reserved : 15;
+
+            struct gt_obj_s * obj_target;    ///< The object of current button target
+            struct gt_obj_s * obj_origin;    ///< The object of first pressed
         }button;
 
         struct _keypad {
             uint32_t key;
+            uint32_t last_key;               ///< last pressed key, per-device (avoid multi-device conflict)
             struct gt_obj_s * obj_target;    ///< The object of first touch
             struct gt_obj_s * obj_origin;    ///< The object of first touch
 

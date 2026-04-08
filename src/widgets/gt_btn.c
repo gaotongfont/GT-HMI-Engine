@@ -38,6 +38,9 @@ typedef struct _gt_btn_reg_s {
     uint8_t reserved: 2;
 }_gt_btn_reg_st;
 
+/** Invalid button id, means the button is not mapped to any physical button */
+#define GT_BTN_ID_INVALID    0xFF
+
 typedef struct _gt_btn_s {
     gt_obj_st base;
     _gt_vector_st * contents;
@@ -58,6 +61,7 @@ typedef struct _gt_btn_s {
     uint8_t space_x;
     uint8_t space_y;
     uint8_t roll_space;
+    uint8_t button_id;      /** physical button id, GT_BTN_ID_INVALID means not mapped */
     _gt_text_style_st text_style;
 }_gt_btn_st;
 
@@ -398,6 +402,7 @@ gt_obj_st * gt_btn_create(gt_obj_st * parent)
     style->space_x          = 0;
     style->space_y          = 0;
     style->roll_space       = 2;
+    style->button_id        = GT_BTN_ID_INVALID;  /** default: not mapped to any physical button */
 
     style->contents = _gt_vector_create(_contents_free_cb, _contents_equal_cb);
     _roll_anim_auto_scroll_init(obj, style->auto_scroll);
@@ -1049,6 +1054,24 @@ void gt_btn_set_corner_radius(gt_obj_st * btn, bool tl, bool tr, bool bl, bool b
     style->reg.corner_bl = bl ? 1 : 0;
     style->reg.corner_br = br ? 1 : 0;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_btn_set_button_id(gt_obj_st * btn, uint8_t button_id)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return;
+    }
+    _gt_btn_st * style = (_gt_btn_st *)btn;
+    style->button_id = button_id;
+}
+
+uint8_t gt_btn_get_button_id(gt_obj_st * btn)
+{
+    if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
+        return GT_BTN_ID_INVALID;
+    }
+    _gt_btn_st * style = (_gt_btn_st *)btn;
+    return style->button_id;
 }
 
 #endif  /** GT_CFG_ENABLE_BTN */
