@@ -59,6 +59,7 @@ static const gt_scr_list_st _example_scr_list[] = {
     { GT_EXAMPLE_SCR_FLEX_LAYOUT,   gt_examples_flex_layout },
     { GT_EXAMPLE_SCR_DYNAMIC_STYLE, gt_examples_dynamic_style },
     { GT_EXAMPLE_SCR_FORM,          gt_examples_form },
+    { GT_EXAMPLE_SCR_BUTTON_DRIVER, gt_examples_button_driver },
 };
 
 /* macros ---------------------------------------------------------------*/

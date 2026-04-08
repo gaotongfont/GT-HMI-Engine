@@ -73,6 +73,7 @@ typedef enum {
     GT_EXAMPLE_SCR_FLEX_LAYOUT,
     GT_EXAMPLE_SCR_DYNAMIC_STYLE,
     GT_EXAMPLE_SCR_FORM,
+    GT_EXAMPLE_SCR_BUTTON_DRIVER,
     GT_EXAMPLE_SCR_TOTAL,
 }gt_example_scr_id_et;
 
@@ -152,6 +153,7 @@ gt_obj_st * gt_examples_option(void);
 gt_obj_st * gt_examples_flex_layout(void);
 gt_obj_st * gt_examples_dynamic_style(void);
 gt_obj_st * gt_examples_form(void);
+gt_obj_st * gt_examples_button_driver(void);
 
 #endif  /* !GT_USE_EXAMPLES */
 

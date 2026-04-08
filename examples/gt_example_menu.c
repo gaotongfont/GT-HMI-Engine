@@ -62,6 +62,7 @@ static const _menu_item_st _menu_items[] = {
     { "[Flex Layout]",  GT_EXAMPLE_SCR_FLEX_LAYOUT },
     { "[Dynamic Style]",GT_EXAMPLE_SCR_DYNAMIC_STYLE },
     { "[Form]",         GT_EXAMPLE_SCR_FORM },
+    { "Button Driver",  GT_EXAMPLE_SCR_BUTTON_DRIVER },
 };
 
 #define _MENU_ITEM_COUNT  (sizeof(_menu_items) / sizeof(_menu_items[0]))
