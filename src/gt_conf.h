@@ -686,7 +686,7 @@ extern "C" {
      * @brief Use the gt_latex library to render LaTeX text.
      *
      */
-    #define GT_USE_LATEX_LIB        01
+    #define GT_USE_LATEX_LIB        0
     #if GT_USE_LATEX_LIB
         #include "../lib/gt_latex/gt_latex.h"
     #endif
