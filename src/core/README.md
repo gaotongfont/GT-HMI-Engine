@@ -25,6 +25,126 @@ GUI 内核，负责绘制、渲染、事件、布局、对象系统等核心逻�
 | `gt_scroll_tip.c/h` | 滚动提示条 |
 | `gt_scr_stack.c/h` | 屏幕栈管理（页面切换/动画） |
 | `gt_graph_base.c/h` | 图形基础绘制 |
+| `gt_gradient.c/h` | 渐变色描述符 + 3D 阴影描述符（`GT_USE_GRADIENT` / `GT_USE_SHADOW`） |
+
+---
+
+## 渐变色（GT_USE_GRADIENT）
+
+### 功能开关
+
+```c
+// gt_conf.h 或编译宏
+#define GT_USE_GRADIENT  1   // 0 = 禁用，节省代码体积
+```
+
+### 渐变方向
+
+| 枚举 | 效果 |
+|------|------|
+| `GT_GRAD_DIR_HOR` | 左 → 右 |
+| `GT_GRAD_DIR_VER` | 上 → 下 |
+| `GT_GRAD_DIR_DIAG_TL` | 左上 → 右下 |
+| `GT_GRAD_DIR_DIAG_TR` | 右上 → 左下 |
+| `GT_GRAD_DIR_SYM_VER` | 中心 → 上下对称 |
+| `GT_GRAD_DIR_SYM_HOR` | 中心 → 左右对称 |
+
+### 快速上手
+
+```c
+// 双色水平渐变
+gt_gradient_dsc_st * g = gt_gradient_dsc_create(GT_GRAD_DIR_HOR);
+gt_gradient_dsc_add_stop(g, gt_color_hex(0x0000FF), gt_color_hex(0xFF0000), 60);
+gt_rect_set_gradient(rect, g);
+
+// 三色垂直渐变
+gt_gradient_dsc_st * g = gt_gradient_dsc_create(GT_GRAD_DIR_VER);
+gt_gradient_dsc_add_stop(g, gt_color_hex(0xFF0000), gt_color_hex(0xFFFF00), 30);
+gt_gradient_dsc_add_stop(g, gt_color_hex(0xFFFF00), gt_color_hex(0x00FF00), 30);
+gt_rect_set_gradient(rect, g);
+
+// 彩虹色（预设 6 段 HSV 循环）
+gt_rect_set_gradient(rect, gt_gradient_dsc_rainbow(GT_GRAD_DIR_HOR, 30));
+```
+
+### 抗色带（Floyd-Steinberg 抖动）
+
+RGB565 显示器 R/B 仅 5bit（32 级），大面积渐变会出现明显阶梯色带。
+`draw_bg_fill` 内部已对所有渐变方向启用 Floyd-Steinberg 误差扩散抖动：
+- 理想颜色通过 `gt_gradient_dsc_get_color24_pos` 在 8bit 空间插值（避免 RGB565 预量化误差）
+- 量化误差按 7/16、3/16、5/16、1/16 扩散到相邻像素
+- 无需用户干预，自动生效
+
+### API
+
+```c
+gt_gradient_dsc_st * gt_gradient_dsc_create(gt_grad_dir_et dir);
+void gt_gradient_dsc_destroy(gt_gradient_dsc_st * dsc);
+void gt_gradient_dsc_add_stop(gt_gradient_dsc_st * dsc, gt_color_t start, gt_color_t end, uint16_t steps);
+void gt_gradient_dsc_set_loop(gt_gradient_dsc_st * dsc, uint8_t loop);
+gt_gradient_dsc_st * gt_gradient_dsc_rainbow(gt_grad_dir_et dir, uint16_t steps_per_seg);
+```
+
+---
+
+## 3D 阴影（GT_USE_SHADOW）
+
+### 功能开关
+
+```c
+#define GT_USE_SHADOW  1   // 0 = 禁用
+```
+
+### 原理
+
+阴影 = 偏移实心矩形，绘制在控件下方。无模糊，适合资源受限 MCU。
+
+```
+控件区域:                    阴影区域 (offset_x=4, offset_y=4, spread=2):
+┌──────────┐                  ┌────────────┐
+│  Widget  │──┐               │   Shadow   │
+└──────────┘  │ ← 右侧可见    └────────────┘
+     └────────┘ ← 下方可见
+
+sh_area.x = widget.x + offset_x - spread
+sh_area.y = widget.y + offset_y - spread
+sh_area.w = widget.w + spread * 2
+sh_area.h = widget.h + spread * 2
+```
+
+### 预设样式
+
+```c
+gt_shadow_dsc_st * sh = gt_shadow_dsc_create(GT_SHADOW_STYLE_BOTTOM_RIGHT);
+gt_rect_set_shadow(rect, sh);
+```
+
+| 枚举 | offset | spread | opa | 适用场景 |
+|------|--------|--------|-----|---------|
+| `GT_SHADOW_STYLE_BOTTOM_RIGHT` | (4,4) | 0 | 50% | 经典 3D 按钮 |
+| `GT_SHADOW_STYLE_BOTTOM` | (0,6) | 2 | 50% | 卡片底部阴影 |
+| `GT_SHADOW_STYLE_AROUND` | (0,0) | 6 | 40% | 四周发光 / 浮层 |
+| `GT_SHADOW_STYLE_DEEP` | (6,8) | 4 | 70% | 深度感强 |
+| `GT_SHADOW_STYLE_SUBTLE` | (2,2) | 4 | 30% | 微弱扁平阴影 |
+| `GT_SHADOW_STYLE_CUSTOM` | (4,4) | 0 | 50% | 自行修改字段 |
+
+### 自定义
+
+```c
+gt_shadow_dsc_st * sh = gt_shadow_dsc_create(GT_SHADOW_STYLE_CUSTOM);
+sh->offset_x = 8;
+sh->offset_y = 8;
+sh->spread   = 4;
+sh->color    = gt_color_hex(0xFF6600);  // 彩色阴影
+sh->opa      = GT_OPA_40;
+gt_rect_set_shadow(rect, sh);
+```
+
+### 注意事项
+
+- 阴影描述符由控件 `deinit_cb` 自动释放，无需手动 `gt_shadow_dsc_destroy`
+- `draw_bg_fill` 内部需 `sh_dsc.reg.is_fill = 1`，已在 `draw_bg` 中正确设置
+- 阴影颜色默认深灰 `0x404040`，可通过 `sh->color` 修改
 
 ---
 
