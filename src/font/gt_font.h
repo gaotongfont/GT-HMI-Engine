@@ -141,7 +141,11 @@ typedef struct _gt_font_s {
     gt_font_info_st info;
 }gt_font_st;
 
-
+typedef struct {
+    uint16_t font_w;
+    uint16_t dot_w;
+    uint16_t font_h;
+}gt_font_metrics_st;
 
 typedef struct _gt_text_style_s {
     ///< 0[default]: Set the text beginning position by direct point, by start_x and start_y.
@@ -397,6 +401,9 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
 uint8_t gt_font_get_one_word_height(uint32_t uni_or_gbk, gt_font_st * font);
 uint8_t gt_font_get_one_word_height_by_option(uint32_t uni_or_gbk, gt_font_st * font, uint16_t option);
 uint8_t gt_font_get_one_word_dot_width(uint32_t uni_or_gbk, gt_font_st * font);
+
+gt_font_metrics_st gt_font_get_metrics(uint32_t uni_or_gbk, gt_font_st * font);
+gt_font_metrics_st gt_font_get_metrics_by_info(uint32_t uni_or_gbk, gt_font_info_st* info);
 
 /**
  * @brief Get max substring line width

@@ -681,6 +681,17 @@ extern "C" {
 
 #endif
 
+#ifndef GT_USE_LATEX_LIB
+    /**
+     * @brief Use the gt_latex library to render LaTeX text.
+     *
+     */
+    #define GT_USE_LATEX_LIB        01
+    #if GT_USE_LATEX_LIB
+        #include "../lib/gt_latex/gt_latex.h"
+    #endif
+#endif
+
 /**
  * @brief Set the focus color
  *

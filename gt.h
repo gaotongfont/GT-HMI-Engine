@@ -254,6 +254,9 @@ extern "C" {
 #include "src/widgets/gt_qr_ext.h"
 #endif
 
+#if GT_CFG_ENABLE_FORMULA
+#include "src/widgets/gt_formula.h"
+#endif
 /* define ---------------------------------------------------------------*/
 
 

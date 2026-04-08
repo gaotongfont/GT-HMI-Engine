@@ -166,6 +166,24 @@ static void _gt_serial_core_init(void) {
 }
 #endif  /** GT_USE_SERIAL */
 
+#if GT_USE_LATEX_LIB && GT_LATEX_ENABLE
+inline static void* _latex_malloc(size_t size) {
+    return gt_mem_extern_malloc(size);
+}
+inline static void _latex_free(void *ptr) {
+    gt_mem_extern_free(ptr);
+}
+inline static void* _latex_realloc(void *ptr, size_t size) {
+    return gt_mem_extern_realloc(ptr, size);
+}
+static void _latex_init(void)
+{
+    gt_latex_init();
+    gt_latex_font_set_mode(GT_LATEX_FONT_MODE_5);
+    gt_latex_mem_register(_latex_malloc, _latex_free, _latex_realloc);
+}
+#endif /* GT_USE_LATEX_LIB && GT_LATEX_ENABLE */
+
 /* global functions / API interface -------------------------------------*/
 
 void gt_init(void)
@@ -206,6 +224,9 @@ void gt_init(void)
     gt_custom_font_init();
 #endif
 
+#if GT_USE_LATEX_LIB && GT_LATEX_ENABLE
+    _latex_init();
+#endif
 }
 
 void gt_task_handler(void)

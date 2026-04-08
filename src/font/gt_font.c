@@ -1618,6 +1618,58 @@ uint8_t gt_font_get_one_word_dot_width(uint32_t uni_or_gbk, gt_font_st * font)
     return dot_w;
 }
 
+gt_font_metrics_st gt_font_get_metrics(uint32_t uni_or_gbk, gt_font_st * font)
+{
+    gt_font_metrics_st metrics;
+    metrics.font_w = gt_font_get_one_word_width(uni_or_gbk, font);
+    metrics.font_h = gt_font_get_one_word_height(uni_or_gbk, font);
+    metrics.dot_w = gt_font_get_one_word_dot_width(uni_or_gbk, font);
+    return metrics;
+}
+
+gt_font_metrics_st gt_font_get_metrics_by_info(uint32_t uni_or_gbk, gt_font_info_st* info)
+{
+    gt_font_metrics_st metrics = {0};
+    gt_font_st font = {
+        .info = *info,
+        .utf8 = NULL,
+        .len = 0,
+        .res = NULL,
+    };
+    uint8_t buf[4] = {0};
+    uint32_t option = _get_font_option(&font, uni_or_gbk);
+
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    if (GT_Check_Is_Vec(option)) {
+        uint32_t font_dot_w = (((font.info.size + 15) >> 4) << 4) * font.info.gray;
+        font_dot_w = (font_dot_w * font_dot_w) >> 3;
+
+        font.res = gt_mem_malloc(font_dot_w);
+        if (NULL == font.res) {
+            GT_LOGE(GT_LOG_TAG_GUI,"malloc font res failed");
+            return metrics;
+        }
+        gt_memset(font.res, 0, font_dot_w);
+    }
+    else{
+        font.res = buf;
+    }
+#endif
+
+    metrics.font_w = gt_font_get_one_word_width_by_option(uni_or_gbk, &font, option);
+    metrics.font_h = gt_font_get_one_word_height_by_option(uni_or_gbk, &font, option);
+    metrics.dot_w = gt_font_get_one_word_dot_width(uni_or_gbk, &font);
+
+#if GT_CFG_ENABLE_ZK_FONT == 1
+    if (GT_Check_Is_Vec(option)) {
+        gt_mem_free(font.res);
+    }
+#endif
+
+    return metrics;
+}
+
+
 /**
  * @brief 得到灰度文字的宽度
  *

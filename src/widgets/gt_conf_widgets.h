@@ -98,6 +98,10 @@ extern "C" {
 #define GT_CFG_ENABLE_INDEV_EFFECTS     1
 #endif
 
+#if GT_USE_LATEX_LIB && GT_LATEX_ENABLE
+#define GT_CFG_ENABLE_FORMULA           1
+#endif
+
 /* typedef --------------------------------------------------------------*/
 
 
