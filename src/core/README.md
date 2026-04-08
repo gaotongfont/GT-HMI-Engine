@@ -138,3 +138,168 @@ void gt_layout_set_type(gt_obj_st * obj, enum gt_layout_type_e type);
 void gt_layout_mark_dirty(gt_obj_st * obj);
 void gt_layout_flush_dirty(void);
 ```
+
+---
+
+## 输入设备（gt_indev）
+
+引擎支持三种输入设备类型，通过 `gt_indev_drv_st.type` 区分，统一由 `gt_indev_handler()` 每帧调度。
+
+### 三种类型对比
+
+| 类型 | 枚举 | 典型硬件 | 核心数据 |
+|------|------|---------|---------|
+| 触摸/鼠标 | `GT_INDEV_TYPE_POINTER` | 电容屏、电阻屏、鼠标 | `data.point.x/y` + `state` |
+| 键盘 | `GT_INDEV_TYPE_KEYPAD` | 矩阵键盘、编码器、PC 键盘 | `data.key` + `state` |
+| 物理按键 | `GT_INDEV_TYPE_BUTTON` | 独立按键、侧键 | `data.btn_id` + `state` |
+
+---
+
+### GT_INDEV_TYPE_POINTER（触摸/鼠标）
+
+**用途**：坐标输入，点击、滑动、抛掷滚动、手势识别。
+
+**驱动 read_cb 规范**：
+
+```c
+static void _touch_read_cb(gt_indev_drv_st * drv, gt_indev_data_st * data) {
+    data->point.x = touch_get_x();
+    data->point.y = touch_get_y();
+    data->state = touch_is_pressed() ? GT_INDEV_STATE_PRESSED : GT_INDEV_STATE_RELEASED;
+    // 驱动无数据时返回 INVALID，引擎跳过
+}
+```
+
+**注意事项**：
+- `RELEASED` 只需上报一次，之后返回 `INVALID`
+- 坐标在 `RELEASED` 时可保持最后一次有效值
+- 支持软件旋转：`gt_disp_drv_st.rotated` 设置后引擎自动转换坐标
+
+**事件序列**：
+```
+PRESSED → INPUT_PRESSED
+PRESSED（持续 500ms）→ INPUT_LONG_PRESSED
+PRESSED（持续，每 300ms）→ INPUT_PRESSING
+RELEASED → INPUT_RELEASED 或 INPUT_PRESS_LOST（手指移出控件时）
+```
+
+---
+
+### GT_INDEV_TYPE_KEYPAD（键盘）
+
+**用途**：焦点导航（上下左右切换焦点）、Enter 确认、ESC 取消、文本输入。
+
+**驱动 read_cb 规范**：
+
+```c
+static void _keypad_read_cb(gt_indev_drv_st * drv, gt_indev_data_st * data) {
+    data->key   = get_current_key();   // GT_KEY_UP/DOWN/LEFT/RIGHT/ENTER/ESC/...
+    data->state = key_is_pressed() ? GT_INDEV_STATE_PRESSED : GT_INDEV_STATE_RELEASED;
+    // 无按键时返回 INVALID
+}
+```
+
+**按键映射（`gt_key_et`）**：
+
+| 按键值 | 功能 |
+|--------|------|
+| `GT_KEY_UP/DOWN/LEFT/RIGHT` | 焦点移动（需 `GT_USE_UD_LR_TO_CONTROL_FOCUS_EN=1`） |
+| `GT_KEY_NEXT/PREV` | 焦点切换（Tab/Shift+Tab 风格） |
+| `GT_KEY_ENTER` | 确认/激活焦点控件，触发 `INPUT_PRESSED` + `INPUT_RELEASED` |
+| `GT_KEY_ESC` | 取消/退出锁定状态 |
+| `GT_KEY_MENU/BACK` | 全局事件（F1/F12），由顶层捕获 |
+| 其他字符键 | 发送 `INPUT_KEY` 事件，由控件自行处理（如 input 框） |
+
+**焦点锁定机制（`GT_USE_UD_LR_TO_CONTROL_FOCUS_EN=1`）**：
+- 未锁定：方向键移动焦点，Enter 锁定当前控件（`lock=1`）
+- 锁定后：方向键事件传给控件内部（如 slider 调值），ESC 解锁
+- 释放时：`lock` 自动清除，焦点恢复导航模式
+
+**注意事项**：
+- `RELEASED` 只上报一次后必须重置为 `INVALID`，否则引擎每帧都触发释放逻辑
+- `PRESSED` 持续上报是必须的，引擎依赖它处理长按和 pressing 重复事件
+- 同一时刻只能有一个 key 处于 PRESSED 状态（单键模型）
+
+**事件序列（Enter 键）**：
+```
+PRESSED → INPUT_FOCUSED + INPUT_KEY + INPUT_PRESSED（lock=1）
+PRESSED（持续 500ms）→ INPUT_LONG_PRESSED
+PRESSED（持续，每 300ms）→ INPUT_PRESSING
+RELEASED → INPUT_KEY_RELEASED + INPUT_RELEASED（lock 清除）
+```
+
+---
+
+### GT_INDEV_TYPE_BUTTON（物理按键）
+
+**用途**：独立物理按键，通过 `button_id` 映射到屏幕上的 `gt_btn` 控件，触发点击/长按效果。
+
+**驱动 read_cb 规范**：
+
+```c
+static void _button_read_cb(gt_indev_drv_st * drv, gt_indev_data_st * data) {
+    data->btn_id = get_pressed_button_id();  // 0~254，0xFF(GT_BTN_ID_INVALID) 表示无效
+    data->state  = button_is_pressed() ? GT_INDEV_STATE_PRESSED : GT_INDEV_STATE_RELEASED;
+    // 无事件时返回 INVALID
+}
+```
+
+**button_id 映射**：
+
+```c
+// 给 btn 控件绑定物理按键 id
+gt_btn_set_button_id(btn, 0);   // 物理按键 id=0 → 此控件
+
+// 引擎查找优先级：
+// 1. layer_top（Dialog/Toast 浮层）中按 button_id 查找
+// 2. 当前屏幕中按 button_id 查找
+// 3. 均无匹配 → fallback 到焦点控件
+```
+
+**注意事项**：
+- `button_id` 范围 0~254，`0xFF` 为 `GT_BTN_ID_INVALID`（不参与 id 匹配）
+- 驱动每次只上报一个按键（单键模型）
+- 与 KEYPAD 不同：BUTTON 不涉及焦点导航，只做点击触发
+
+**事件序列**：
+```
+PRESSED → INPUT_PRESSED
+PRESSED（持续 500ms）→ INPUT_LONG_PRESSED
+PRESSED（持续，每 300ms）→ INPUT_PRESSING
+RELEASED → INPUT_RELEASED
+```
+
+---
+
+### 驱动注册（gt_port_indev.c）
+
+```c
+void gt_port_indev_init(void) {
+    static gt_indev_drv_st drv_touch;
+    gt_indev_drv_init(&drv_touch);
+    drv_touch.type    = GT_INDEV_TYPE_POINTER;
+    drv_touch.read_cb = _touch_read_cb;
+    gt_indev_drv_register(&drv_touch);
+
+    // 键盘（可选）
+    static gt_indev_drv_st drv_keypad;
+    gt_indev_drv_init(&drv_keypad);
+    drv_keypad.type    = GT_INDEV_TYPE_KEYPAD;
+    drv_keypad.read_cb = _keypad_read_cb;
+    gt_indev_drv_register(&drv_keypad);
+
+    // 物理按键（可选）
+    static gt_indev_drv_st drv_btn;
+    gt_indev_drv_init(&drv_btn);
+    drv_btn.type    = GT_INDEV_TYPE_BUTTON;
+    drv_btn.read_cb = _button_read_cb;
+    gt_indev_drv_register(&drv_btn);
+}
+```
+
+**时间参数调整**：
+
+```c
+drv.limit_time_long_pressed = 500;   // 长按触发时间 ms（默认 500）
+drv.limit_time_pressing     = 300;   // 长按后重复间隔 ms（默认 300）
+```
