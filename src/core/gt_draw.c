@@ -3069,14 +3069,7 @@ void draw_bg(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
 
 #if GT_USE_SHADOW
     /* ---- Shadow: draw offset solid rect behind the widget ----------- */
-    if (dsc->shadow) {
-        GT_LOGD(GT_LOG_TAG_GUI, "draw_bg: shadow=%p opa=%d bg_opa=%d coords=(%d,%d,%d,%d)",
-                dsc->shadow, dsc->shadow->opa, dsc->bg_opa,
-                coords->x, coords->y, coords->w, coords->h);
-    }
     if (dsc->shadow && dsc->shadow->opa > GT_OPA_MIN) {
-        GT_LOGD(GT_LOG_TAG_GUI, "draw_bg: shadow rendering offset=(%d,%d) spread=%d",
-                dsc->shadow->offset_x, dsc->shadow->offset_y, dsc->shadow->spread);
         gt_shadow_dsc_st const * sh = dsc->shadow;
         gt_area_st sh_area = {
             .x = coords->x + sh->offset_x - sh->spread,

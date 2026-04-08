@@ -81,10 +81,6 @@ static inline void _gt_rect_init_widget(gt_obj_st * rect) {
 #endif
 #if GT_USE_SHADOW
         rect_attr.shadow         = style->shadow;
-        GT_LOGD(GT_LOG_TAG_GUI, "gt_rect draw: shadow=%p opa=%d bg_opa=%d",
-                style->shadow,
-                style->shadow ? style->shadow->opa : 0,
-                rect_attr.bg_opa);
 #endif
 
         gt_area_st area_base = rect->area;

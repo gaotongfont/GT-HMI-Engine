@@ -24,6 +24,7 @@
 #include "../core/gt_timer.h"
 #include "../utils/gt_vector.h"
 #include "../utils/gt_circular_array.h"
+#include "../core/gt_gradient.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_SPECTRUM_LINE
@@ -321,20 +322,20 @@ gt_spectrum_line_move_copy(gt_obj_st* obj, uint16_t count, gt_color_t start, gt_
         return ;
     }
 
-    gt_gradient_color_st gradient = {
-        .start = start,
-        .end = end,
-        .steps = count,
-    };
+    /* Build a temporary gradient descriptor for color sampling */
+    gt_gradient_dsc_st * grad = gt_gradient_dsc_create(GT_GRAD_DIR_HOR);
+    if (!grad) { return; }
+    gt_gradient_dsc_add_stop(grad, start, end, count);
 
     _sp_line_st * sp_line_1 = (_sp_line_st*)_gt_vector_get_item(style->sp_line, 0);
     gt_size_t point_count = _gt_vector_get_count(sp_line_1->sp_point);
 
     if(point_count < 2) {
+        gt_gradient_dsc_destroy(grad);
         return ;
     }
 
-    sp_line_1->line.color = gt_gradient_color_get(gradient, 0);
+    sp_line_1->line.color = gt_gradient_dsc_get_color_pos(grad, 0);
     gt_size_t i = 0;
     for( i = line_count; i < count; i++) {
         gt_spectrum_line_add(obj, sp_line_1->line.width, gt_color_black());
@@ -345,12 +346,10 @@ gt_spectrum_line_move_copy(gt_obj_st* obj, uint16_t count, gt_color_t start, gt_
         _sp_line_st * sp_line = (_sp_line_st*)_gt_vector_get_item(style->sp_line, i);
         if(!sp_line) {
             continue;
-
         }
-        sp_line->line.color = gt_gradient_color_get(gradient, i);
+        uint16_t pos = (uint16_t)((i * 65535u) / (count > 1 ? count - 1 : 1));
+        sp_line->line.color = gt_gradient_dsc_get_color_pos(grad, pos);
         _gt_vector_clear_all_items(sp_line->sp_point);
-
-
 
         for(gt_size_t j = 0; j < point_count; j++) {
             gt_sp_point_st * point = (gt_sp_point_st*)_gt_vector_get_item(sp_line_1->sp_point, j);
@@ -362,7 +361,6 @@ gt_spectrum_line_move_copy(gt_obj_st* obj, uint16_t count, gt_color_t start, gt_
             };
             gt_spectrum_line_add_point(obj, i, new_point);
         }
-
     }
 
     for(gt_size_t j = 0; j < point_count; j++) {
@@ -370,6 +368,7 @@ gt_spectrum_line_move_copy(gt_obj_st* obj, uint16_t count, gt_color_t start, gt_
         point->gen.cur_val = point->point.y;
     }
 
+    gt_gradient_dsc_destroy(grad);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

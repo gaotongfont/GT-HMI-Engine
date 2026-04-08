@@ -24,6 +24,7 @@
 #include "../core/gt_timer.h"
 #include "../utils/gt_vector.h"
 #include "../utils/gt_circular_array.h"
+#include "../core/gt_gradient.h"
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_SPECTRUM
 #define MY_CLASS    &gt_spectrum_class
@@ -52,8 +53,7 @@ typedef struct {
 }_gt_spectrum_item_st;
 
 typedef struct{
-    _gt_vector_st* gradient;
-    uint16_t max_steps;
+    gt_gradient_dsc_st * gradient;  ///< New gradient descriptor (GT_USE_GRADIENT)
     uint16_t move_dist;
     uint8_t move_gap;
     uint8_t move_dir :     1;
@@ -166,12 +166,15 @@ _get_item_range_step(_gt_spectrum_st * style, uint16_t numb_step)
 GT_ATTRIBUTE_RAM_TEXT static uint16_t
 _get_gradient_color_move_step(_gt_spectrum_st * style, uint16_t step)
 {
-    uint32_t move_step = step;
-    if(style->color.move_enable) {
-        if(style->color.move_dir) {
-            move_step = (uint32_t)(step + style->color.move_dist) % style->color.max_steps;
+    uint16_t total = gt_gradient_dsc_total_steps(style->color.gradient);
+    if (total == 0) { return 0; }
+
+    uint32_t move_step = step % total;   /* clamp step into [0..total-1] */
+    if (style->color.move_enable) {
+        if (style->color.move_dir) {
+            move_step = (move_step + style->color.move_dist) % total;
         } else {
-            move_step = (uint32_t)(style->color.max_steps + step - style->color.move_dist) % style->color.max_steps;
+            move_step = (total + move_step - style->color.move_dist % total) % total;
         }
     }
     return (uint16_t)move_step;
@@ -180,27 +183,24 @@ _get_gradient_color_move_step(_gt_spectrum_st * style, uint16_t step)
 GT_ATTRIBUTE_RAM_TEXT static void
 _gt_gradient_color_move_dist_inc(_gt_spectrum_st * style)
 {
-    style->color.move_dist = (style->color.move_dist + style->color.move_gap) % style->color.max_steps;
+    uint16_t total = gt_gradient_dsc_total_steps(style->color.gradient);
+    if (total == 0) { return; }
+    style->color.move_dist = (style->color.move_dist + style->color.move_gap) % total;
 }
 
 
 GT_ATTRIBUTE_RAM_TEXT static void
 _get_item_gradient_color(_gt_spectrum_st * style, gt_color_t* color, uint16_t range_step, uint16_t numb_step)
 {
-    if(NULL == style->color.gradient) {return ;}
+    if (NULL == style->color.gradient) { return; }
 
-    gt_size_t count = _gt_vector_get_count(style->color.gradient);
-    if(count <= 0) {return ;}
-
-    uint32_t step = 0;
-
-    if(GT_SPECTRUM_COLOR_TYPE_NUMB == style->color.type) {
+    uint16_t step = 0;
+    if (GT_SPECTRUM_COLOR_TYPE_NUMB == style->color.type) {
         step = _get_gradient_color_move_step(style, numb_step);
-    }
-    else{
+    } else {
         step = _get_gradient_color_move_step(style, range_step);
     }
-    gt_gradient_color_get_by_vector(color, style->color.gradient, step);
+    *color = gt_gradient_dsc_get_color(style->color.gradient, step);
 }
 
 GT_ATTRIBUTE_RAM_TEXT static void
@@ -336,15 +336,16 @@ _draw_stair_spectrum(gt_obj_st * obj)
         if( style->item.range.reflect )
         {
             item_area.y = obj->area.y + ((obj->area.h) >> 1) + range_gap;
-
-            gt_gradient_color_st gradient = {0};
-            gradient.start = rect_attr.bg_color;
-            gradient.end = obj->bgcolor;
-            gradient.steps = style->item.range.steps << 1;
+            uint16_t reflect_steps = style->item.range.steps;
 
             for(uint16_t n = 0; n < (range_step + 1); ++n) {
-                rect_attr.bg_color = gt_gradient_color_get(gradient, n + (style->item.range.steps));
-                draw_bg(obj->draw_ctx, &rect_attr, &item_area);
+                /* map n within [steps..2*steps-1] → pos [0..65535] for fade-out */
+                uint16_t pos = (uint16_t)(((uint32_t)(reflect_steps + n) * 65535u) /
+                               (reflect_steps * 2u > 1 ? reflect_steps * 2u - 1 : 1));
+                gt_color_t fade = gt_color_mix(obj->bgcolor, rect_attr.bg_color, pos >> 8);
+                gt_attr_rect_st fade_attr = rect_attr;
+                fade_attr.bg_color = fade;
+                draw_bg(obj->draw_ctx, &fade_attr, &item_area);
                 item_area.y += (range_size + range_gap);
             }
         }
@@ -407,7 +408,7 @@ _deinit_cb(gt_obj_st * obj)
     _destroy_timer(style);
 
     if (NULL != style->color.gradient) {
-        _gt_vector_free(style->color.gradient);
+        gt_gradient_dsc_destroy(style->color.gradient);
         style->color.gradient = NULL;
     }
     if (NULL != style->item.range.value) {
@@ -503,18 +504,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _item_anim_exec_cb(void * obj, int32_t count) 
 
 }
 
-static GT_ATTRIBUTE_RAM_TEXT bool _gradient_free_cb(void * item) {
-    if (NULL == item) {
-        return false;
-    }
-    gt_mem_free(item);
-    return true;
-}
-
-static GT_ATTRIBUTE_RAM_TEXT bool _gradient_equal_cb(void * item, void * target) {
-    return strcmp(item, target) ? false : true;
-}
-
 /* global functions / API interface -------------------------------------*/
 GT_ATTRIBUTE_RAM_TEXT gt_obj_st *
 gt_spectrum_create(gt_obj_st * parent)
@@ -533,10 +522,7 @@ gt_spectrum_create(gt_obj_st * parent)
     style->item.range.height = 40;
     style->item.range.steps = 4;
 
-    style->color.gradient = _gt_vector_create(_gradient_free_cb, _gradient_equal_cb);
-    if(!style->color.gradient) {
-        GT_LOGW(GT_LOG_TAG_GUI,"create gradient vector failed!!!");
-    }
+    style->color.gradient = NULL;  /* created on first gt_spectrum_add_gradient_color call */
 
     style->timer = _gt_timer_create(_auto_play_callback, 200, (void * )obj);
     _gt_timer_set_paused(style->timer, true);
@@ -741,25 +727,16 @@ gt_spectrum_add_gradient_color(gt_obj_st * obj, gt_color_t start, gt_color_t end
     }
     _gt_spectrum_st * style = (_gt_spectrum_st *)obj;
 
-    if(!style->color.gradient) {
-        style->color.gradient = _gt_vector_create(_gradient_free_cb, _gradient_equal_cb);
-        if(!style->color.gradient) {
-            GT_LOGW(GT_LOG_TAG_GUI,"create gradient vector failed!!!");
+    if (!style->color.gradient) {
+        style->color.gradient = gt_gradient_dsc_create(GT_GRAD_DIR_HOR);
+        if (!style->color.gradient) {
+            GT_LOGW(GT_LOG_TAG_GUI, "create gradient dsc failed!!!");
             return;
         }
+        style->color.gradient->loop = 1;
     }
 
-    gt_gradient_color_st* gradient = gt_mem_malloc(sizeof(gt_gradient_color_st));
-    if(!gradient) {
-        GT_LOGW(GT_LOG_TAG_GUI,"create gradient color failed!!!");
-        return;
-    }
-
-    gradient->start = start;
-    gradient->end = end;
-    gradient->steps = steps;
-    style->color.max_steps += steps;
-    _gt_vector_add_item(style->color.gradient, (void *)gradient);
+    gt_gradient_dsc_add_stop(style->color.gradient, start, end, steps);
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -771,12 +748,13 @@ gt_spectrum_clear_gradient_color(gt_obj_st * obj)
     }
     _gt_spectrum_st * style = (_gt_spectrum_st *)obj;
 
-    if(!style->color.gradient) {
+    if (!style->color.gradient) {
         return ;
     }
 
-    _gt_vector_clear_all_items(style->color.gradient);
-    style->color.max_steps = 0;
+    gt_gradient_dsc_destroy(style->color.gradient);
+    style->color.gradient = NULL;
+    style->color.move_dist = 0;
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
