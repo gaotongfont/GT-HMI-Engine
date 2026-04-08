@@ -32,6 +32,12 @@ typedef struct _gt_rect_s {
     gt_color_t  color_border;
     uint16_t    border;
     uint8_t     fill;
+#if GT_USE_GRADIENT
+    gt_gradient_dsc_st * grad;
+#endif
+#if GT_USE_SHADOW
+    gt_shadow_dsc_st * shadow;
+#endif
 }_gt_rect_st;
 
 
@@ -70,6 +76,16 @@ static inline void _gt_rect_init_widget(gt_obj_st * rect) {
         rect_attr.bg_opa         = rect->opa;
         rect_attr.bg_color       = style->color_background;
         rect_attr.radius         = rect->radius;
+#if GT_USE_GRADIENT
+        rect_attr.grad           = style->grad;
+#endif
+#if GT_USE_SHADOW
+        rect_attr.shadow         = style->shadow;
+        GT_LOGD(GT_LOG_TAG_GUI, "gt_rect draw: shadow=%p opa=%d bg_opa=%d",
+                style->shadow,
+                style->shadow ? style->shadow->opa : 0,
+                rect_attr.bg_opa);
+#endif
 
         gt_area_st area_base = rect->area;
         draw_bg(rect->draw_ctx, &rect_attr, &area_base);
@@ -100,7 +116,13 @@ static void _deinit_cb(gt_obj_st * obj) {
     if (NULL == obj) {
         return ;
     }
-
+    _gt_rect_st * style = (_gt_rect_st * )obj;
+#if GT_USE_GRADIENT
+    if (style->grad) { gt_gradient_dsc_destroy(style->grad); style->grad = NULL; }
+#endif
+#if GT_USE_SHADOW
+    if (style->shadow) { gt_shadow_dsc_destroy(style->shadow); style->shadow = NULL; }
+#endif
 }
 
 
@@ -186,6 +208,28 @@ void gt_rect_set_fill(gt_obj_st * rect, uint8_t fill)
     style->fill = fill;
     gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
 }
+
+#if GT_USE_GRADIENT
+void gt_rect_set_gradient(gt_obj_st * rect, gt_gradient_dsc_st * grad)
+{
+    if (false == gt_obj_is_type(rect, OBJ_TYPE)) { return; }
+    _gt_rect_st * style = (_gt_rect_st * )rect;
+    if (style->grad) { gt_gradient_dsc_destroy(style->grad); }
+    style->grad = grad;
+    gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+#endif
+
+#if GT_USE_SHADOW
+void gt_rect_set_shadow(gt_obj_st * rect, gt_shadow_dsc_st * shadow)
+{
+    if (false == gt_obj_is_type(rect, OBJ_TYPE)) { return; }
+    _gt_rect_st * style = (_gt_rect_st * )rect;
+    if (style->shadow) { gt_shadow_dsc_destroy(style->shadow); }
+    style->shadow = shadow;
+    gt_event_send(rect, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+#endif
 
 #endif  /** GT_CFG_ENABLE_RECT */
 /* end ------------------------------------------------------------------*/

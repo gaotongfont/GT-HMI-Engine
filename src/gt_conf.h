@@ -619,6 +619,24 @@ extern "C" {
     #define GT_USE_MD4C         01
 #endif
 
+#ifndef GT_USE_GRADIENT
+    /**
+     * @brief Enable widget gradient color support (horizontal, vertical,
+     *        diagonal, radial, multi-stop, rainbow).
+     * [default: 1]
+     */
+    #define GT_USE_GRADIENT     1
+#endif
+
+#ifndef GT_USE_SHADOW
+    /**
+     * @brief Enable lightweight 3-D shadow effect (offset solid rect + opacity).
+     *        No blur — suitable for resource-constrained MCUs.
+     * [default: 1]
+     */
+    #define GT_USE_SHADOW       1
+#endif
+
 #ifndef GT_USE_EXAMPLES
     /**
      * @brief use examples demo

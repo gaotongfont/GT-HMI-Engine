@@ -19,6 +19,7 @@ extern "C" {
 #include "../others/gt_types.h"
 #include "../widgets/gt_obj.h"
 #include "./gt_img_decoder.h"
+#include "./gt_gradient.h"
 
 /* define ---------------------------------------------------------------*/
 #define GT_SET_BIT(byte, bit)	( byte |= (bit) )
@@ -161,6 +162,13 @@ typedef struct _gt_attr_rect_s {
     gt_opt_t bg_img_opa;        ///< image opacity
     gt_opt_t bg_opa;            ///< background opacity @ref gt_color.h
     gt_opa_t border_opa;        ///< border opacity
+
+#if GT_USE_GRADIENT
+    gt_gradient_dsc_st * grad;  ///< Gradient descriptor; NULL = solid bg_color
+#endif
+#if GT_USE_SHADOW
+    gt_shadow_dsc_st * shadow;  ///< Shadow descriptor; NULL = no shadow
+#endif
 
     _gt_attr_rect_reg_st reg;
 }gt_attr_rect_st;
