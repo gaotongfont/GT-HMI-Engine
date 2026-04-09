@@ -78,7 +78,12 @@ void gt_refr_timer(void)
         align_val = gt_abs(area->y % GT_REFR_AREA_ALIGN_VER_PIXEL);
         if (align_val) {
             area->y -= align_val;
-            area->h = ((uint16_t)(align_val + GT_REFR_AREA_ALIGN_VER_PIXEL + area->h) / GT_REFR_AREA_ALIGN_VER_PIXEL) * GT_REFR_AREA_ALIGN_VER_PIXEL;
+            area->h += align_val;
+        }
+        /* h must also be aligned up independently, regardless of y alignment */
+        align_val = area->h % GT_REFR_AREA_ALIGN_VER_PIXEL;
+        if (align_val) {
+            area->h += GT_REFR_AREA_ALIGN_VER_PIXEL - align_val;
         }
 #endif
         gt_disp_ref_area(area);
@@ -119,7 +124,12 @@ void gt_refr_force_flush(void)
         align_val = gt_abs(reflush_area.y % GT_REFR_AREA_ALIGN_VER_PIXEL);
         if (align_val) {
             reflush_area.y -= align_val;
-            reflush_area.h = ((uint16_t)(align_val + GT_REFR_AREA_ALIGN_VER_PIXEL + reflush_area.h) / GT_REFR_AREA_ALIGN_VER_PIXEL) * GT_REFR_AREA_ALIGN_VER_PIXEL;
+            reflush_area.h += align_val;
+        }
+        /* h must also be aligned up independently, regardless of y alignment */
+        align_val = reflush_area.h % GT_REFR_AREA_ALIGN_VER_PIXEL;
+        if (align_val) {
+            reflush_area.h += GT_REFR_AREA_ALIGN_VER_PIXEL - align_val;
         }
 #endif
     gt_disp_ref_area(&reflush_area);

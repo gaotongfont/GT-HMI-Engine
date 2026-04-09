@@ -36,6 +36,7 @@
 #if GT_USE_LIB_TEX_PRINTF
 #include "../extra/libtexprintf/gt_tex.h"
 #endif
+#include "../extra/draw/gt_draw_blend_dir.h"
 
 /* private define -------------------------------------------------------*/
 
@@ -1265,6 +1266,39 @@ _filling_by_sjpg_file(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_d
 }
 #endif
 
+/**
+ * @brief In vertical flush mode the blend engine reads src in column-major
+ *        order (stride = dst_area->h).  Raw/array image data is always
+ *        row-major, so a full-image blend produces garbage when w != h.
+ *        This helper splits any such blend into one-row-at-a-time calls so
+ *        the stride seen by the blend engine is always 1.
+ *
+ * @param color_base  First pixel of the image (row-major, RGB565)
+ * @param alpha_base  Per-pixel opacity array, or NULL if none
+ * @param w           Image width in pixels
+ * @param h           Image height in pixels
+ */
+static GT_ATTRIBUTE_RAM_TEXT void _blend_rowwise_in_vert(
+    _gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc,
+    const gt_color_t * color_base, const gt_opa_t * alpha_base,
+    uint16_t w, uint16_t h)
+{
+    uint16_t y = 0;
+    blend_dsc->dst_area->h = 1;
+    while (y < h) {
+        if (gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area)) {
+            blend_dsc->dst_buf  = (gt_color_t *)(color_base + (uint32_t)y * w);
+            blend_dsc->mask_buf = alpha_base ? (gt_opa_t *)(alpha_base + (uint32_t)y * w) : NULL;
+            gt_draw_blend(draw_ctx, blend_dsc);
+        }
+        ++blend_dsc->dst_area->y;
+        ++blend_dsc->mask_area->y;
+        ++y;
+    }
+    blend_dsc->dst_buf  = NULL;
+    blend_dsc->mask_buf = NULL;
+}
+
 static void GT_ATTRIBUTE_RAM_TEXT
 _filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
     blend_dsc->mask_buf = &dsc_img->alpha[0];
@@ -1317,6 +1351,14 @@ _filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_ds
         gt_mem_free(blend_dsc->mask_buf);
         blend_dsc->mask_buf = NULL;
         blend_dsc->dst_buf = NULL;
+        return;
+    }
+
+    if (gt_draw_blend_is_vertical() && dsc_img->header.h > 1) {
+        _blend_rowwise_in_vert(draw_ctx, blend_dsc,
+            (const gt_color_t *)&dsc_img->img[0],
+            dsc_img->alpha ? (const gt_opa_t *)&dsc_img->alpha[0] : NULL,
+            dsc_img->header.w, dsc_img->header.h);
         return;
     }
 
@@ -1378,6 +1420,14 @@ _filling_by_default_full_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st *
             gt_mask_get(opa_buf, blend_dsc->mask_area->x, blend_dsc->mask_area->y + i, dsc_img->header.w);
             opa_buf += dsc_img->header.w;
         }
+    }
+
+    if (gt_draw_blend_is_vertical() && dsc_img->header.h > 1) {
+        _blend_rowwise_in_vert(draw_ctx, blend_dsc,
+            (const gt_color_t *)blend_dsc->dst_buf,
+            (is_mask || check_mask) ? (const gt_opa_t *)blend_dsc->mask_buf : NULL,
+            dsc_img->header.w, dsc_img->header.h);
+        goto line_lb;
     }
 
     gt_draw_blend(draw_ctx, blend_dsc);
@@ -1514,6 +1564,13 @@ _filling_by_default(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc
     if(NULL == blend_dsc->dst_buf && NULL == blend_dsc->mask_buf){
         GT_LOGW(GT_LOG_TAG_GUI, "Extra buffer color or alpha pointer is NULL");
         return ;
+    }
+    if (gt_draw_blend_is_vertical() && dsc_img->header.h > 1) {
+        _blend_rowwise_in_vert(draw_ctx, blend_dsc,
+            (const gt_color_t *)blend_dsc->dst_buf,
+            is_mask ? (const gt_opa_t *)blend_dsc->mask_buf : NULL,
+            dsc_img->header.w, dsc_img->header.h);
+        return;
     }
     gt_draw_blend(draw_ctx, blend_dsc);
     blend_dsc->dst_buf = NULL;
