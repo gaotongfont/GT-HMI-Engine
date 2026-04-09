@@ -156,7 +156,7 @@ extern "C" {
 #endif
 
 #ifndef GT_ATTRIBUTE_RAM_DATA
-    #define GT_ATTRIBUTE_RAM_DATA   GT_ATTRIBUTE_LARGE_RAM_ARRAY
+    #define GT_ATTRIBUTE_RAM_DATA
 #endif
 
 #ifndef GT_ATTRIBUTE_RAM_RODATA
