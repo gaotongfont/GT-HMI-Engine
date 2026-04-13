@@ -473,15 +473,38 @@ _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const 
         else if (x + obj_w <= right) {
             rmk_x = right - obj_w - obj_x;
         }
-        // inside — snap to page boundary
+        // inside — snap to page boundary according to snap mode
         else if (obj_scroll->scroll_snap_x && w_parent) {
-            gt_size_t rel_x = x - parent_x;   /* position relative to parent left edge */
+            gt_scroll_snap_em snap = (gt_scroll_snap_em)obj_scroll->scroll_snap_x;
             gt_size_t tmp_x = 0 == rmk_x ? x : obj_x;
-            if ((uint16_t)GT_DIR_LEFT == point_p->gesture) {
-                rmk_x = parent_x + ((rel_x - (gt_size_t)w_parent) / (gt_size_t)w_parent) * (gt_size_t)w_parent - tmp_x;
-            } else if ((uint16_t)GT_DIR_RIGHT == point_p->gesture) {
-                rmk_x = parent_x + (rel_x / (gt_size_t)w_parent) * (gt_size_t)w_parent - tmp_x;
+            gt_size_t snap_base_x = 0;
+            if (GT_SCROLL_SNAP_END == snap) {
+                /* trailing edge of child aligns to trailing edge of each page */
+                gt_size_t rel_x = x + obj_w - parent_x;
+                if ((uint16_t)GT_DIR_LEFT == point_p->gesture) {
+                    snap_base_x = parent_x + ((rel_x / (gt_size_t)w_parent)) * (gt_size_t)w_parent - obj_w;
+                } else {
+                    snap_base_x = parent_x + ((rel_x - (gt_size_t)w_parent) / (gt_size_t)w_parent) * (gt_size_t)w_parent - obj_w;
+                }
+            } else if (GT_SCROLL_SNAP_CENTER == snap) {
+                /* center of child aligns to center of each page */
+                gt_size_t half_w = (gt_size_t)w_parent >> 1;
+                gt_size_t rel_x = x + (obj_w >> 1) - parent_x;
+                if ((uint16_t)GT_DIR_LEFT == point_p->gesture) {
+                    snap_base_x = parent_x + ((rel_x / (gt_size_t)w_parent)) * (gt_size_t)w_parent + half_w - (obj_w >> 1);
+                } else {
+                    snap_base_x = parent_x + ((rel_x - (gt_size_t)w_parent) / (gt_size_t)w_parent) * (gt_size_t)w_parent + half_w - (obj_w >> 1);
+                }
+            } else {
+                /* GT_SCROLL_SNAP_START: leading edge of child aligns to leading edge of each page */
+                gt_size_t rel_x = x - parent_x;
+                if ((uint16_t)GT_DIR_LEFT == point_p->gesture) {
+                    snap_base_x = parent_x + ((rel_x - (gt_size_t)w_parent) / (gt_size_t)w_parent) * (gt_size_t)w_parent;
+                } else {
+                    snap_base_x = parent_x + (rel_x / (gt_size_t)w_parent) * (gt_size_t)w_parent;
+                }
             }
+            rmk_x = snap_base_x - tmp_x;
         }
         *dx = rmk_x;
     } else {
@@ -497,13 +520,36 @@ _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const 
             rmk_y = bottom - obj_h - obj_y;
         }
         else if (obj_scroll->scroll_snap_y && h_parent) {
-            gt_size_t rel_y = y - parent_y;
+            gt_scroll_snap_em snap = (gt_scroll_snap_em)obj_scroll->scroll_snap_y;
             gt_size_t tmp_y = 0 == rmk_y ? y : obj_y;
-            if ((uint16_t)GT_DIR_UP == point_p->gesture) {
-                rmk_y = parent_y + ((rel_y - (gt_size_t)h_parent) / (gt_size_t)h_parent) * (gt_size_t)h_parent - tmp_y;
-            } else if ((uint16_t)GT_DIR_DOWN == point_p->gesture) {
-                rmk_y = parent_y + (rel_y / (gt_size_t)h_parent) * (gt_size_t)h_parent - tmp_y;
+            gt_size_t snap_base_y = 0;
+            if (GT_SCROLL_SNAP_END == snap) {
+                /* trailing edge of child aligns to trailing edge of each page */
+                gt_size_t rel_y = y + obj_h - parent_y;
+                if ((uint16_t)GT_DIR_UP == point_p->gesture) {
+                    snap_base_y = parent_y + ((rel_y / (gt_size_t)h_parent)) * (gt_size_t)h_parent - obj_h;
+                } else {
+                    snap_base_y = parent_y + ((rel_y - (gt_size_t)h_parent) / (gt_size_t)h_parent) * (gt_size_t)h_parent - obj_h;
+                }
+            } else if (GT_SCROLL_SNAP_CENTER == snap) {
+                /* center of child aligns to center of each page */
+                gt_size_t half_h = (gt_size_t)h_parent >> 1;
+                gt_size_t rel_y = y + (obj_h >> 1) - parent_y;
+                if ((uint16_t)GT_DIR_UP == point_p->gesture) {
+                    snap_base_y = parent_y + ((rel_y / (gt_size_t)h_parent)) * (gt_size_t)h_parent + half_h - (obj_h >> 1);
+                } else {
+                    snap_base_y = parent_y + ((rel_y - (gt_size_t)h_parent) / (gt_size_t)h_parent) * (gt_size_t)h_parent + half_h - (obj_h >> 1);
+                }
+            } else {
+                /* GT_SCROLL_SNAP_START: leading edge of child aligns to leading edge of each page */
+                gt_size_t rel_y = y - parent_y;
+                if ((uint16_t)GT_DIR_UP == point_p->gesture) {
+                    snap_base_y = parent_y + ((rel_y - (gt_size_t)h_parent) / (gt_size_t)h_parent) * (gt_size_t)h_parent;
+                } else {
+                    snap_base_y = parent_y + (rel_y / (gt_size_t)h_parent) * (gt_size_t)h_parent;
+                }
             }
+            rmk_y = snap_base_y - tmp_y;
         }
         *dy = rmk_y;
     }

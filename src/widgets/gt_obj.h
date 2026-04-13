@@ -62,9 +62,10 @@ typedef enum {
 }gt_scroll_dir_et;
 
 typedef enum {
-    GT_SCROLL_SNAP_NONE = 0,
-    GT_SCROLL_SNAP_START,
-    GT_SCROLL_SNAP_END,
+    GT_SCROLL_SNAP_NONE   = 0,  /**< No snap alignment */
+    GT_SCROLL_SNAP_START  = 1,  /**< Snap child leading edge to parent leading edge */
+    GT_SCROLL_SNAP_END    = 2,  /**< Snap child trailing edge to parent trailing edge */
+    GT_SCROLL_SNAP_CENTER = 3,  /**< Snap child center to parent center */
 }gt_scroll_snap_em;
 
 typedef enum {
