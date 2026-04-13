@@ -35,17 +35,34 @@
 
 /** tip area height */
 #ifndef _TIP_BAR_HEIGHT
+    /**
+     * @brief The height of the tip bar
+     */
     #define _TIP_BAR_HEIGHT             24
 #endif
 #ifndef _TIP_BAR_POINT_HEIGHT
+    /**
+     * @brief The height of the tip bar point
+     */
     #define _TIP_BAR_POINT_HEIGHT       8
 #endif
 
+/**
+ * effect span: +++ is selected.
+ * (+++)( + )( + )
+ * ( + )(+++)( + )
+ * ( + )( + )(+++)
+ */
+
+/** The unselect point span size*/
 #define _TIP_BAR_POINT_UNSELECT_WIDTH       _TIP_BAR_POINT_HEIGHT
 #define _TIP_BAR_POINT_UNSELECT_OFFSET_X    (_TIP_BAR_POINT_UNSELECT_WIDTH >> 1)
 #define _TIP_BAR_POINT_PER_ITEM_WIDTH       (_TIP_BAR_POINT_UNSELECT_WIDTH << 1)
 
 #ifndef _TIP_BAR_POINT_SELECT_WIDTH
+    /**
+     * @brief The width of the selected point width
+     */
     #define _TIP_BAR_POINT_SELECT_WIDTH     (_TIP_BAR_POINT_HEIGHT << 1)
 #endif
 
