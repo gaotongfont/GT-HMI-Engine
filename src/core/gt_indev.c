@@ -197,6 +197,9 @@ static gt_obj_st * GT_ATTRIBUTE_RAM_TEXT
 _search_not_fixed_by_parent_recursive(gt_obj_st * obj) {
     gt_obj_st * ptr = obj;
     while(ptr) {
+        if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(ptr)) {
+            return NULL;
+        }
         if (false == ptr->fixed) {
             break;
         }
@@ -204,6 +207,30 @@ _search_not_fixed_by_parent_recursive(gt_obj_st * obj) {
     }
     return ptr;
 }
+
+/**
+ * @brief Walk up the parent chain to find the first object that has scrolling enabled.
+ *        Used when obj_target itself has scroll_dir == DISABLE (e.g. a child widget
+ *        inside a scrollable container like view_pager's content layer).
+ *
+ * @param obj  starting object (typically obj_target)
+ * @return first scrollable ancestor, or NULL if none found
+ */
+static GT_ATTRIBUTE_RAM_TEXT gt_obj_st *
+_search_scrollable_by_parent(gt_obj_st * obj) {
+    gt_obj_st * ptr = obj ? obj->parent : NULL;
+    while (ptr) {
+        if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(ptr)) {
+            return NULL;
+        }
+        if (GT_SCROLL_DISABLE != ptr->scroll_dir) {
+            return ptr;
+        }
+        ptr = ptr->parent;
+    }
+    return NULL;
+}
+
 
 static GT_ATTRIBUTE_RAM_TEXT gt_dir_et _get_scroll_dir(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
@@ -421,8 +448,12 @@ _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const 
     }
     uint16_t w_parent = obj_scroll->parent->area.w;
     uint16_t h_parent = obj_scroll->parent->area.h;
-    gt_size_t right = gt_disp_get_res_hor(NULL);
-    gt_size_t bottom = gt_disp_get_res_ver(NULL);
+    /**
+     * Use parent visible area as boundary instead of screen resolution,
+     * so view_pager with custom window size works correctly.
+     */
+    gt_size_t right  = obj_scroll->parent->area.x + w_parent;
+    gt_size_t bottom = obj_scroll->parent->area.y + h_parent;
     gt_size_t rmk_x = *dx, rmk_y = *dy;
     /* 缓存重复解引用的成员 */
     gt_size_t obj_x = obj_scroll->area.x;
@@ -432,42 +463,46 @@ _absorb_handler(gt_obj_st const * const obj_scroll, struct _point const * const 
 
     if (false == obj_scroll->absorb_dir) {
         /** hor */
+        gt_size_t parent_x = obj_scroll->parent->area.x;
         gt_size_t x = obj_x + rmk_x;  /** target x position */
-        // outside the left
-        if (x > 0) {
-            rmk_x = -obj_x;
+        // outside the left (content start must not exceed parent left edge)
+        if (x > parent_x) {
+            rmk_x = parent_x - obj_x;
         }
         // outside the right
         else if (x + obj_w <= right) {
             rmk_x = right - obj_w - obj_x;
         }
-        // inside
+        // inside — snap to page boundary
         else if (obj_scroll->scroll_snap_x && w_parent) {
+            gt_size_t rel_x = x - parent_x;   /* position relative to parent left edge */
             gt_size_t tmp_x = 0 == rmk_x ? x : obj_x;
             if ((uint16_t)GT_DIR_LEFT == point_p->gesture) {
-                rmk_x = ((x - w_parent) / w_parent) * w_parent - tmp_x;
+                rmk_x = parent_x + ((rel_x - (gt_size_t)w_parent) / (gt_size_t)w_parent) * (gt_size_t)w_parent - tmp_x;
             } else if ((uint16_t)GT_DIR_RIGHT == point_p->gesture) {
-                rmk_x = (x / w_parent) * w_parent - tmp_x;
+                rmk_x = parent_x + (rel_x / (gt_size_t)w_parent) * (gt_size_t)w_parent - tmp_x;
             }
         }
         *dx = rmk_x;
     } else {
         /** ver */
+        gt_size_t parent_y = obj_scroll->parent->area.y;
         gt_size_t y = obj_y + rmk_y;
         // top
-        if (y > 0) {
-            rmk_y = -obj_y;
+        if (y > parent_y) {
+            rmk_y = parent_y - obj_y;
         }
         // bottom
         else if (y + obj_h <= bottom) {
             rmk_y = bottom - obj_h - obj_y;
         }
         else if (obj_scroll->scroll_snap_y && h_parent) {
+            gt_size_t rel_y = y - parent_y;
             gt_size_t tmp_y = 0 == rmk_y ? y : obj_y;
-            if ((uint16_t)GT_DIR_LEFT == point_p->gesture) {
-                rmk_y = ((y - h_parent) / h_parent) * h_parent - tmp_y;
-            } else if ((uint16_t)GT_DIR_RIGHT == point_p->gesture) {
-                rmk_y = (y / h_parent) * h_parent - tmp_y;
+            if ((uint16_t)GT_DIR_UP == point_p->gesture) {
+                rmk_y = parent_y + ((rel_y - (gt_size_t)h_parent) / (gt_size_t)h_parent) * (gt_size_t)h_parent - tmp_y;
+            } else if ((uint16_t)GT_DIR_DOWN == point_p->gesture) {
+                rmk_y = parent_y + (rel_y / (gt_size_t)h_parent) * (gt_size_t)h_parent - tmp_y;
             }
         }
         *dy = rmk_y;
@@ -1020,16 +1055,20 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_handler(gt_indev_st * indev) {
             point_p->obj_target = _search_not_fixed_by_parent_recursive(point_p->obj_target);
         }
         gt_event_send(point_p->obj_target, GT_EVENT_TYPE_INPUT_SCROLL_START, NULL);
-    }
-    point_p->obj_scroll = point_p->obj_target;
+        point_p->obj_scroll = point_p->obj_target;
 
-    if (_home_gesture_scroll_effects(indev)) {
-        return;
-    }
+        if (_home_gesture_scroll_effects(indev)) {
+            return;
+        }
 
-    if (GT_SCROLL_DISABLE == point_p->obj_scroll->scroll_dir) {
-        point_p->obj_scroll = NULL;
-        return;
+        if (GT_SCROLL_DISABLE == point_p->obj_scroll->scroll_dir) {
+            gt_obj_st * scrollable = _search_scrollable_by_parent(point_p->obj_scroll);
+            if (NULL == scrollable) {
+                point_p->obj_scroll = NULL;
+                return;
+            }
+            point_p->obj_scroll = scrollable;
+        }
     }
 
     if (point_p->obj_scroll->finger_unfollow) { return ; }

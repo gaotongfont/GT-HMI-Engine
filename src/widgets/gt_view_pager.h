@@ -32,6 +32,21 @@ typedef enum {
     GT_VIEW_PAGER_SCROLL_EFFECT_NO_FINGER_FOLLOW,
 }gt_view_pager_scroll_effect_et;
 
+typedef enum {
+    GT_VIEW_PAGER_DIR_HORIZONTAL = 0,   /** horizontal scroll (default) */
+    GT_VIEW_PAGER_DIR_VERTICAL,         /** vertical scroll */
+}gt_view_pager_dir_et;
+
+/**
+ * @brief Tip bar position.
+ *  Horizontal direction: BOTTOM(default) or TOP.
+ *  Vertical direction:   RIGHT(default) or LEFT.
+ */
+typedef enum {
+    GT_VIEW_PAGER_TIP_BAR_POS_DEFAULT = 0, /** bottom(hor) or right(ver) */
+    GT_VIEW_PAGER_TIP_BAR_POS_OPPOSITE,    /** top(hor) or left(ver) */
+}gt_view_pager_tip_bar_pos_et;
+
 
 
 /* macros ---------------------------------------------------------------*/
@@ -130,6 +145,37 @@ bool gt_view_pager_get_glass(gt_obj_st * obj);
  */
 void gt_view_pager_set_glass_color(gt_obj_st * obj, gt_color_t color);
 gt_color_t gt_view_pager_get_glass_color(gt_obj_st * obj);
+
+/**
+ * @brief Set the visible window size of the view pager.
+ *      By default the window equals the parent area.
+ *      Call this after gt_view_pager_create() and before adding fragments.
+ *
+ * @param obj
+ * @param w  Visible window width  (page width for horizontal scroll)
+ * @param h  Visible window height (page height for vertical scroll)
+ */
+void gt_view_pager_set_window_size(gt_obj_st * obj, uint16_t w, uint16_t h);
+
+/**
+ * @brief Set scroll direction: horizontal (default) or vertical.
+ *      Must be called before adding fragments.
+ *
+ * @param obj
+ * @param dir @ref gt_view_pager_dir_et
+ */
+void gt_view_pager_set_direction(gt_obj_st * obj, gt_view_pager_dir_et dir);
+gt_view_pager_dir_et gt_view_pager_get_direction(gt_obj_st * obj);
+
+/**
+ * @brief Set tip bar position.
+ *      Horizontal: DEFAULT=bottom, OPPOSITE=top.
+ *      Vertical:   DEFAULT=right,  OPPOSITE=left.
+ *
+ * @param obj
+ * @param pos @ref gt_view_pager_tip_bar_pos_et
+ */
+void gt_view_pager_set_tip_bar_pos(gt_obj_st * obj, gt_view_pager_tip_bar_pos_et pos);
 
 
 #endif  /** GT_CFG_ENABLE_VIEW_PAGER */

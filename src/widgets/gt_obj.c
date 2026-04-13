@@ -180,6 +180,10 @@ static void _obj_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
             break;
         }
         case GT_EVENT_TYPE_INPUT_SCROLL: {
+            /** view_pager content handles scroll via its own _scrolling_handler */
+            if (obj->parent && GT_TYPE_VIEW_PAGER == gt_obj_class_get_type(obj->parent)) {
+                break;
+            }
             _gt_obj_scroll_internal(obj, 0, 0);
             break;
         }
