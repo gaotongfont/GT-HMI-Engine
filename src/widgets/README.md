@@ -62,7 +62,7 @@
 | **Listview** | `gt_listview.h` | 列表视图，支持滚动、条目点击、图文混排 |
 | **Roller** | `gt_roller.h` | 滚轮选择器，上下滚动选择选项，触发 `GT_EVENT_TYPE_UPDATE_VALUE` |
 | **Select** | `gt_select.h` | 下拉选择框，由输入框和列表组合而成 |
-| **ViewPager** | `gt_view_pager.h` | 翻页视图，支持左右滑动切换页面 |
+| **ViewPager** | `gt_view_pager.h` | 翻页视图，支持水平/垂直滑动切换页面，边界回弹，snap 对齐 |
 | **BtnMap** | `gt_btnmap.h` | 按钮矩阵，批量创建规则排列的按钮组 |
 
 ---
@@ -127,6 +127,60 @@
 > 支持 ROW / COLUMN 方向、SPACE_BETWEEN / CENTER 等对齐方式。
 > 运行时可用 `gt_layout_set_type(container, GT_LAYOUT_TYPE_FLEX/FIXED)` 动态切换，
 > 切换时自动保存/恢复子元素相对坐标。
+
+---
+
+## ViewPager 详细说明
+
+### 架构
+
+- `view_pager`（外层）：固定尺寸可见窗口，不可滚动，负责绘制 tip 指示点
+- `content`（内层）：可滚动层，宽度 = `page_w × count`，`absorb=true` + `scroll_snap_x=GT_SCROLL_SNAP_START`
+
+### 滑动行为
+
+| 场景 | 行为 |
+|------|------|
+| 正常滑动 | 手指跟随，抬手后 snap 动画对齐到最近整页 |
+| 慢速拖动（无 throw） | `RELEASED` 时按 scroll 位置计算最近页，snap 对齐 |
+| 超出首页/末页边界 | 阻尼拉伸（`_BOUNCE_DAMP=2`），抬手后 snap 回弹到边界页 |
+| 已在边界再次触发 bounce | `was_bouncing` 保护，强制对齐，不再触发新动画 |
+
+### 关键内部标志
+
+| 标志 | 位置 | 说明 |
+|------|------|------|
+| `reg.bouncing` | `_reg_s` | 1 = bounce 回弹动画进行中，`_scrolling_handler` 走硬限制路径 |
+| `content->absorb` | `gt_obj_st` | true，使 `_indev_scroll_snap` 走 absorb 路径触发 snap 动画 |
+| `content->scroll_snap_x` | `gt_obj_st` | `GT_SCROLL_SNAP_START`，snap 对齐到页面起始位置 |
+
+### 滚动效果模式
+
+```c
+gt_view_pager_set_scroll_effect(vp, GT_VIEW_PAGER_SCROLL_EFFECT_DEFAULT);         // 默认：手指跟随 + throw + snap
+gt_view_pager_set_scroll_effect(vp, GT_VIEW_PAGER_SCROLL_EFFECT_STATIC);          // 静态：无动画，直接切页
+gt_view_pager_set_scroll_effect(vp, GT_VIEW_PAGER_SCROLL_EFFECT_NO_FINGER_FOLLOW); // 无手指跟随，抬手后切页
+```
+
+### 典型用法
+
+```c
+gt_obj_st * vp = gt_view_pager_create(parent);
+gt_view_pager_set_fragment_count(vp, 3);
+
+// 向第 0 页添加子控件
+gt_view_pager_fragment_add_widget(vp, 0, child0);
+gt_view_pager_fragment_add_widget(vp, 1, child1);
+
+// 跳转到指定页（带动画）
+gt_view_pager_scroll_to_fragment(vp, 1);
+```
+
+### 已知修复（2026-04-13）
+
+- `RELEASED` 时改为按 scroll 位置计算最近页（原来用 `reg.index` 会导致慢速拖动弹回原页）
+- `scroll_to_fragment` delta=0 时直接返回，避免 `is_scrolling` 永不清除
+- `_scroll_end_handler` 增加 `was_bouncing` 保护，防止 bounce 无限循环
 
 ---
 
