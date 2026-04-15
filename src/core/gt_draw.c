@@ -3372,7 +3372,7 @@ radius_lb:
     draw_ctx->parent_area = remark_area;    /** reset to before value */
 }
 
-/* === Wu Anti-Aliased Line Drawing (方案A) ===
+/* === Wu Anti-Aliased Line Drawing ===
  *
  * Replaces the previous mask-polygon approach (malloc + gt_mask registry) with:
  *   - Q16 fixed-point Xiaolin Wu algorithm (no FPU required)
@@ -3705,7 +3705,8 @@ _gt_wu_line(_gt_draw_ctx_st * ctx,
     }
 }
 
-GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const gt_area_st * coords)
+void GT_ATTRIBUTE_RAM_TEXT
+gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const gt_area_st * coords)
 {
     /* ── Guard clauses ── */
     if (dsc->line.opa < GT_OPA_MIN)                                    return;
@@ -3770,7 +3771,8 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line
     _gt_wu_line(draw_ctx, dsc);
 }
 
-GT_ATTRIBUTE_RAM_TEXT void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_attr_curve_st const * dsc, const gt_area_st * coords)
+void GT_ATTRIBUTE_RAM_TEXT
+gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_attr_curve_st const * dsc, const gt_area_st * coords)
 {
     if (dsc->line.opa < GT_OPA_MIN) {
         return;
@@ -3872,7 +3874,8 @@ GT_ATTRIBUTE_RAM_TEXT void draw_focus(gt_obj_st* obj)
     draw_bg(obj->draw_ctx, &rect_attr, &area);
 }
 
-GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_area_st * coords)
+void GT_ATTRIBUTE_RAM_TEXT
+gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_area_st * coords)
 {
 
     if(dsc->opa <= GT_OPA_MIN) { return ;}
