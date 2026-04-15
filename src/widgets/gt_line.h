@@ -82,6 +82,14 @@ void gt_line_set_ver_line(gt_obj_st * line, uint16_t length);
 
 void gt_line_set_line_width(gt_obj_st * line, uint16_t line_width);
 
+/**
+ * @brief Set line brush type (round cap / square cap)
+ *
+ * @param line line obj
+ * @param type GT_BRUSH_TYPE_ROUND or GT_BRUSH_TYPE_RECT
+ */
+void gt_line_set_brush_type(gt_obj_st * line, uint8_t type);
+
 
 #endif  /** GT_CFG_ENABLE_LINE */
 

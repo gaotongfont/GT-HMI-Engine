@@ -3372,285 +3372,402 @@ radius_lb:
     draw_ctx->parent_area = remark_area;    /** reset to before value */
 }
 
+/* === Wu Anti-Aliased Line Drawing (方案A) ===
+ *
+ * Replaces the previous mask-polygon approach (malloc + gt_mask registry) with:
+ *   - Q16 fixed-point Xiaolin Wu algorithm (no FPU required)
+ *   - Zero memory allocation (no mask_buf malloc)
+ *   - Zero mask registry operations
+ *   - Width > 1: circular disk template (O(width²) per Wu pixel)
+ *   - Round caps: AA midpoint circle
+ *   - Square caps: perpendicular disk bar
+ *
+ * Algorithm overview:
+ *   1. Normalize to major-axis orientation (|dx| >= |dy|)
+ *   2. Iterate along major axis (x)
+ *   3. For each x, compute ideal y = y0 + x * (dy/dx) in Q16
+ *   4. y_fract = fractional part of y (Q16 >> 8 = 0..255 opacity)
+ *   5. Plot two pixels: (x, floor(y)) and (x, ceil(y))
+ *      with opacities (255 - y_fract) and y_fract
+ *   6. For width > 1: draw circular disk at each center point
+ */
+
+/**
+ * @brief Integer square root (Newton-Raphson, 16-bit input → 16-bit output).
+ *
+ * Uses 2 Newton iterations for speed. Max error ±1 for all inputs.
+ * Input range: [0, INT32_MAX]. For line length² (max 800²+480² ≈ 870400),
+ * this is more than sufficient.
+ *
+ * @param val  Non-negative 32-bit integer
+ * @return     floor(sqrt(val))
+ */
+static inline uint32_t _gt_isqrt(uint32_t val) {
+    if (val == 0) return 0;
+    /* Initial guess: 1 << (bits/2), where bits = position of highest set bit.
+     * __builtin_clz(val) gives leading zeros, so highest bit = 31 - clz.
+     * sqrt initial: 1 << ((31 - clz + 1) / 2) */
+    uint32_t r = 1U << ((32 - __builtin_clz(val)) >> 1);
+    /* Newton-Raphson iterations until convergence */
+    r = (r + val / r) >> 1;
+    r = (r + val / r) >> 1;
+    r = (r + val / r) >> 1;
+    r = (r + val / r) >> 1;
+    /* Final correction: ensure r² ≤ val < (r+1)² */
+    if (r > 0 && r * r > val) r--;
+    return r;
+}
+
+#define _GT_WU_QSHIFT   16          /** Q16 fixed-point shift */
+
+/**
+ * @brief Write a single pixel with optional transparency blending (RGB565).
+ *
+ * @param draw_ctx  Drawing context (contains framebuffer base pointer)
+ * @param x         Pixel X coordinate (absolute, relative to buf origin)
+ * @param y         Pixel Y coordinate (absolute, relative to buf origin)
+ * @param color     Source color (RGB565)
+ * @param opa       Combined opacity (0..255); 255 = opaque overwrite
+ */
+static GT_ATTRIBUTE_RAM_TEXT void
+_gt_wu_pixel(_gt_draw_ctx_st * draw_ctx,
+              int32_t x, int32_t y,
+              gt_color_t color, uint8_t opa)
+{
+    int32_t const bx = (int32_t)draw_ctx->buf_area.x;
+    int32_t const by = (int32_t)draw_ctx->buf_area.y;
+    if (x < bx || x >= bx + (int32_t)draw_ctx->buf_area.w) return;
+    if (y < by || y >= by + (int32_t)draw_ctx->buf_area.h) return;
+
+    gt_color_t * fb = (gt_color_t *)draw_ctx->buf;
+    uint32_t const stride = draw_ctx->buf_area.w;
+    uint32_t const idx = (uint32_t)(y - by) * stride
+                        + (uint32_t)(x - bx);
+
+    if (opa >= 255) {
+        fb[idx] = color;
+    } else if (opa > 0) {
+        fb[idx] = gt_color_mix(color, fb[idx], opa);
+    }
+}
+
+/**
+ * @brief Distance-field filled circle for round line caps.
+ *
+ * Center is specified in Q16 sub-pixel coordinates (cx_f, cy_f) to align
+ * with the Wu line body's actual center, which has a 0.5-minor-unit offset.
+ * The integer pixel center is floor(cx_f >> 16), floor(cy_f >> 16).
+ * Distance is computed from the sub-pixel center for accurate AA.
+ *
+ * Uses Q8 distance for sub-pixel accurate radius matching.
+ *
+ * @param draw_ctx  Drawing context
+ * @param cx        Center X (integer pixel coordinate)
+ * @param cy        Center Y (integer pixel coordinate)
+ * @param r_q8      Circle radius in Q8 (= half_w * 256 * dmaj / len for angle compensation)
+ * @param color     Fill color
+ * @param opa       Global opacity (0..255)
+ */
+/**
+ * @brief Draw a full AA circle cap at a line endpoint.
+ * @deprecated Replaced by unified distance-field rendering in _gt_wu_line.
+ */
+static GT_ATTRIBUTE_RAM_TEXT void
+_gt_wu_round_cap(_gt_draw_ctx_st * draw_ctx,
+                  int32_t cx, int32_t cy,
+                  int32_t r_q8,
+                  gt_color_t color, gt_opa_t opa,
+                  bool steep, int32_t maj_dir)
+{
+    /* maj_dir: -1 = only draw pixels where maj <= cap_maj (cap_a end)
+     *          +1 = only draw pixels where maj >= cap_maj (cap_b end)
+     *           0 = draw full circle (unused)
+     * This restricts the cap to the half-circle outside the line body,
+     * preventing double-blend with the body pixels. */
+    if (r_q8 <= 0) return;
+
+    int32_t const inner_q8 = r_q8 - 128;
+    int32_t const outer_q8 = r_q8 + 128;
+    int32_t const scan_r   = (outer_q8 + 255) >> 8;
+
+    for (int32_t dy = -scan_r; dy <= scan_r; ++dy) {
+        for (int32_t dx = -scan_r; dx <= scan_r; ++dx) {
+            /* Restrict to the outward half only */
+            int32_t const dmaj = steep ? dy : dx;
+            if (maj_dir < 0 && dmaj > 0) continue;
+            if (maj_dir > 0 && dmaj < 0) continue;
+
+            int32_t const d2   = dx * dx + dy * dy;
+            int32_t const d_q8 = (int32_t)(_gt_isqrt((uint32_t)d2) * 256u);
+            if (d_q8 > outer_q8) continue;
+
+            uint8_t pa;
+            if (d_q8 <= inner_q8) {
+                pa = (uint8_t)opa;
+            } else {
+                int32_t aa = ((outer_q8 - d_q8) * 255) / 256;
+                if (aa <= 0) continue;
+                if (aa > 255) aa = 255;
+                pa = (uint8_t)GT_UDIV255(opa * (uint8_t)aa);
+            }
+            if (pa > 0) {
+                _gt_wu_pixel(draw_ctx, cx + dx, cy + dy, color, pa);
+            }
+        }
+    }
+}
+
+/**
+ * @brief Circular disk template for thick line body.
+ *
+ * For width > 1, each Wu center point has a disk of radius `half_w`.
+ * Uses simple circle-equation check: only draws if dx² + dy² ≤ r².
+ *
+ * @param draw_ctx  Drawing context
+ * @param px        Center X of disk
+ * @param py        Center Y of disk
+ * @param half_w    Disk radius (half of line width)
+ * @param color     Source color
+ * @param opa       Combined opacity (0..255)
+ */
+static GT_ATTRIBUTE_RAM_TEXT void
+_gt_wu_thick_disk(_gt_draw_ctx_st * draw_ctx,
+                   int32_t px, int32_t py,
+                   int16_t half_w,
+                   gt_color_t color, uint8_t opa)
+{
+    /* width ≤ 2 → half_w ≤ 1 → trivial disk, just write center pixel */
+    if (half_w <= 1) {
+        _gt_wu_pixel(draw_ctx, px, py, color, opa);
+        return;
+    }
+
+    int32_t const r2 = (int32_t)half_w * half_w;
+
+    /* Scanline fill: for each dy, compute max |dx| where dx² + dy² ≤ r² */
+    for (int32_t dy = -half_w; dy <= half_w; ++dy) {
+        int32_t dx2_max = r2 - dy * dy;
+        if (dx2_max < 0) continue;
+        /* Integer sqrt approximation: binary search 0..half_w */
+        int16_t dx_abs_max = 0;
+        int16_t lo = 0, hi = half_w;
+        while (lo <= hi) {
+            int16_t mid = (lo + hi) >> 1;
+            if (mid * mid <= dx2_max) {
+                dx_abs_max = mid;
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
+        }
+        for (int32_t dx = -dx_abs_max; dx <= dx_abs_max; ++dx) {
+            _gt_wu_pixel(draw_ctx, px + dx, py + dy, color, opa);
+        }
+    }
+}
+
+/**
+ * @brief Square cap: scan along the minor axis, same width as the line body.
+ *
+ * The line body scans along the minor axis with range [center - half_w, center + half_w].
+ * The cap does the same at the endpoint scanline, producing a flat rectangular end face.
+ *
+ * @param draw_ctx  Drawing context
+ * @param maj_pos   Major-axis coordinate of the endpoint scanline
+ * @param min_center Minor-axis center of the endpoint (from Wu gradient)
+ * @param half_w    Half line width
+ * @param steep     true = steep line (major=Y, minor=X)
+ * @param color     Source color
+ * @param opa       Combined opacity
+ */
+static GT_ATTRIBUTE_RAM_TEXT void
+_gt_wu_square_cap(_gt_draw_ctx_st * draw_ctx,
+                    int32_t maj_pos, int32_t min_center,
+                    int16_t half_w, bool steep,
+                    gt_color_t color, uint8_t opa)
+{
+    int32_t const scan_lo = (half_w & 1) ? (min_center - half_w) : (min_center - half_w + 1);
+    int32_t const scan_hi = min_center + half_w;
+    for (int32_t s = scan_lo; s <= scan_hi; ++s) {
+        if (steep) { _gt_wu_pixel(draw_ctx, s, maj_pos, color, opa); }
+        else       { _gt_wu_pixel(draw_ctx, maj_pos, s, color, opa); }
+    }
+}
+
+/**
+ * @brief Xiaolin Wu anti-aliased line — unified distance-field rendering.
+ *
+ * All pixels (body + end caps) are rendered in a single pass using the same
+ * coordinate system: t = projection along line, d = perpendicular distance.
+ * This eliminates the body/cap seam that caused visible gaps or arrow shapes.
+ *
+ * For each pixel in the bounding box:
+ *   t_q16 = dot(p - p0, line_dir)   in Q16  [0..len_q16 = line body range]
+ *   d_q16 = dot(p - p0, line_norm)  in Q16  perpendicular distance
+ *
+ * Pixel alpha is determined by the signed distance to the line shape boundary:
+ *   - Body:       0 <= t <= len,  |d| <= half_w
+ *   - Round cap:  (t<0 or t>len), sqrt((t_cap)²+d²) <= half_w
+ *   - Square cap: (t<0 or t>len), |d| <= half_w  (extends the body rectangle)
+ *
+ * AA edge width = 1 pixel (Q16 = 65536).
+ */
+static GT_ATTRIBUTE_RAM_TEXT void
+_gt_wu_line(_gt_draw_ctx_st * ctx,
+             gt_attr_line_st const * dsc)
+{
+    gt_color_t const color     = dsc->line.color;
+    gt_opa_t   const global_opa = dsc->line.opa;
+    uint16_t   const width     = dsc->line.width;
+    bool       const is_round  = _is_brush_round(&dsc->line) && (width > 1);
+
+    int32_t x0 = dsc->start.x, y0 = dsc->start.y;
+    int32_t x1 = dsc->end.x,   y1 = dsc->end.y;
+    int32_t const dx = x1 - x0, dy = y1 - y0;
+
+    /* Line length */
+    uint32_t const len2 = (uint32_t)(dx * dx + dy * dy);
+    uint32_t const len  = _gt_isqrt(len2);
+    if (len == 0) return;
+
+    /* Unit direction vector (Q16): dir = (dx/len, dy/len) */
+    int32_t const dir_x = (int32_t)((int64_t)dx * 65536 / (int32_t)len);
+    int32_t const dir_y = (int32_t)((int64_t)dy * 65536 / (int32_t)len);
+    /* Unit normal vector (Q16): norm = (-dy/len, dx/len) */
+    int32_t const nor_x = -dir_y;
+    int32_t const nor_y =  dir_x;
+
+    /* half_w in integer pixels */
+    int32_t const half_w = (int32_t)(width >> 1);
+
+    /* Bounding box: body box + cap extension */
+    int32_t const cap_ext = is_round ? half_w + 1 : 0;
+    int32_t const bx_lo = GT_MIN(x0, x1) - half_w - cap_ext - 1;
+    int32_t const bx_hi = GT_MAX(x0, x1) + half_w + cap_ext + 1;
+    int32_t const by_lo = GT_MIN(y0, y1) - half_w - cap_ext - 1;
+    int32_t const by_hi = GT_MAX(y0, y1) + half_w + cap_ext + 1;
+
+    for (int32_t py = by_lo; py <= by_hi; ++py) {
+        int32_t const rel_y = py - y0;
+        for (int32_t px = bx_lo; px <= bx_hi; ++px) {
+            int32_t const rel_x = px - x0;
+
+            /* t, d in Q16 pixel units:
+             * rel_x/rel_y are integers; dir/nor are Q16 unit vectors.
+             * dot = (integer * Q16) >> 16 = integer pixels.
+             * Keep as Q16 by NOT shifting: dot = integer * Q16 = Q16 pixels. */
+            int64_t const t64 = (int64_t)rel_x * dir_x + (int64_t)rel_y * dir_y;
+            int64_t const d64 = (int64_t)rel_x * nor_x + (int64_t)rel_y * nor_y;
+            /* t64, d64 are in Q16 pixel units */
+            int64_t const abs_d64 = (d64 < 0) ? -d64 : d64;
+
+            /* half_w in Q16 for sub-pixel AA */
+            int64_t const hw_q16 = (int64_t)half_w << 16;
+
+            /* Signed distance to shape boundary in Q16 pixels (positive = inside) */
+            int32_t sdf;
+
+            if (t64 >= 0 && t64 <= ((int64_t)len << 16)) {
+                /* Body: distance to side edge */
+                sdf = (int32_t)(hw_q16 - abs_d64);
+            } else if (is_round) {
+                /* Round cap: Euclidean distance to nearest endpoint */
+                int64_t const t_cap64 = (t64 < 0) ? -t64 : (t64 - ((int64_t)len << 16));
+                /* Both t_cap64 and d64 are Q16; sqrt(t²+d²) in Q16 */
+                int32_t const t_q8 = (int32_t)(t_cap64 >> 8);
+                int32_t const d_q8 = (int32_t)(abs_d64 >> 8);
+                uint32_t const dist2_q8 = (uint32_t)(t_q8 * t_q8 + d_q8 * d_q8);
+                int32_t const dist_q16  = (int32_t)(_gt_isqrt(dist2_q8) << 8);
+                sdf = (int32_t)(hw_q16 - dist_q16);
+            } else {
+                /* Square cap: AA on the end face only.
+                 * The body already covers t in [0, len].
+                 * Here we handle the 1-pixel AA fringe just outside the endpoints. */
+                if (abs_d64 > hw_q16) continue;
+                int64_t const t_cap64 = (t64 < 0) ? -t64 : (t64 - ((int64_t)len << 16));
+                /* t_cap64 > 0 means outside endpoint; AA within 1 pixel */
+                sdf = 65536 - (int32_t)t_cap64;
+            }
+
+            if (sdf <= 0) continue;
+
+            /* AA: map sdf [0..65536] → alpha [0..255] */
+            uint8_t aa;
+            if (sdf >= 65536) {
+                aa = 255;
+            } else {
+                aa = (uint8_t)((sdf * 255) >> 16);
+            }
+            uint8_t const pa = (global_opa >= 255) ? aa
+                                                    : (uint8_t)GT_UDIV255(global_opa * aa);
+            if (pa > 0) _gt_wu_pixel(ctx, px, py, color, pa);
+        }
+    }
+}
+
 GT_ATTRIBUTE_RAM_TEXT void gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const gt_area_st * coords)
 {
-    if (dsc->line.opa < GT_OPA_MIN) {
-        return;
-    }
-    if (NULL == draw_ctx->buf) {
-        return;
-    }
-    if (!gt_area_is_intersect_screen(&draw_ctx->buf_area, coords)) {
-        return;
-    }
+    /* ── Guard clauses ── */
+    if (dsc->line.opa < GT_OPA_MIN)                                    return;
+    if (NULL == draw_ctx->buf)                                         return;
+    if (!gt_area_is_intersect_screen(&draw_ctx->buf_area, coords))     return;
+    if (dsc->line.width == 0)                                          return;
 
-    if(dsc->line.width <= 0) { return ;}
+    /* ── Fast path: horizontal and vertical lines ── */
+    bool const is_round_cap = _is_brush_round(&dsc->line) && (dsc->line.width > 1);
 
-    gt_area_st * remark_area = draw_ctx->parent_area;
-
-    uint16_t rd_val = dsc->line.width;
-    uint16_t radius = rd_val >> 1;
-    gt_area_st area_line = { coords->x , coords->y , coords->w, 1 };
-    gt_area_st dst_area = { .w = rd_val, .h = rd_val };
-
-    bool is_ver = dsc->start.x == dsc->end.x;
-    bool is_hor = dsc->start.y == dsc->end.y;
-    bool is_round = _is_brush_round(&dsc->line) && (radius > 0) ? true : false;
-    bool is_straight_line = ( is_ver || is_hor ) ? true : false;
-
-    if (is_straight_line) {
-        if (is_ver) {
-            dst_area.x = dsc->start.x - radius;
-        } else {
-            dst_area.x = GT_MIN(dsc->start.x, dsc->end.x);
-            dst_area.w = GT_MAX(dsc->start.x, dsc->end.x) - dst_area.x;
-        }
-
-        if (is_hor) {
-            dst_area.y = dsc->start.y - radius;
-        } else {
-            dst_area.y = GT_MIN(dsc->start.y, dsc->end.y);
-            dst_area.h = GT_MAX(dsc->start.y, dsc->end.y) - dst_area.y;
-        }
-        if (is_round) {
-            if (is_ver) {
-                dst_area.y -= radius;
-                dst_area.h += rd_val;
-            }
-            if (is_hor) {
-                dst_area.x -= radius;
-                dst_area.w += rd_val;
-            }
-        }
-    }
-
-    gt_draw_blend_dsc_st blend_dsc = {
-        .dst_area = &area_line,
-        .mask_area = &area_line,
-        .color_fill = dsc->line.color,
-        .opa = dsc->line.opa,
-        .mask_buf =  NULL,
-    };
-
-    // straight line and not round
-    if(is_straight_line && !is_round) {
-        blend_dsc.dst_area = &dst_area;
-        gt_draw_blend(draw_ctx, &blend_dsc);
-        draw_ctx->parent_area = remark_area;
-        return ;
-    }
-
-    blend_dsc.mask_buf = gt_mem_malloc(area_line.w);
-    if(!blend_dsc.mask_buf) {
-        draw_ctx->parent_area = remark_area;
-        return ;
-    }
-
-    // straight line and round
-    if(is_straight_line) {
-        gt_mask_radius_st r_mask = {0};
-        gt_size_t r_mask_id = -1;
-
-        if(is_round) {
-            gt_mask_radius_init(&r_mask, &dst_area, radius, GT_MASK_RADIUS_CFG_INNER);
-            r_mask_id = gt_mask_add(&r_mask);
-        }
-
-        for(uint16_t i = 0; i < dst_area.h; ++i) {
-            area_line.y = dst_area.y + i;
-            gt_memset(blend_dsc.mask_buf, blend_dsc.opa, area_line.w);
-            gt_mask_get(blend_dsc.mask_buf, area_line.x, area_line.y, area_line.w);
-            gt_draw_blend(draw_ctx, &blend_dsc);
-        }
-
-        if(is_round) {
-            gt_mask_remove_idx(r_mask_id);
-            gt_mask_free(&r_mask);
-        }
-    } else {
-        if (is_round) {
-            gt_area_st round_area = { dsc->start.x - radius, dsc->start.y - radius, rd_val, rd_val };
-            gt_area_st round_orig = round_area;
+    if (dsc->start.x == dsc->end.x) {
+        /* Vertical line */
+        gt_area_st dst = {
+            .x = dsc->start.x - (dsc->line.width >> 1),
+            .y = GT_MIN(dsc->start.y, dsc->end.y),
+            .w = dsc->line.width,
+            .h = gt_abs(dsc->end.y - dsc->start.y) + 1,
+        };
+        gt_draw_blend_dsc_st bd = {
+            .dst_area   = &dst,
+            .color_fill = dsc->line.color,
+            .opa        = dsc->line.opa,
+        };
+        if (is_round_cap) {
             gt_mask_radius_st r_mask = {0};
-            gt_size_t r_mask_id = -1;
-
-            area_line.x = round_area.x;
-            area_line.y = round_area.y;
-            area_line.w = GT_MIN(round_area.w, coords->w);
-            area_line.h = 1;
-
-            gt_mask_radius_init(&r_mask, &round_orig, radius, GT_MASK_RADIUS_CFG_INNER);
-            r_mask_id = gt_mask_add(&r_mask);
-
-            for (uint16_t i = 0; i < round_area.h; ++i) {
-                area_line.y = round_area.y + i;
-                gt_memset(blend_dsc.mask_buf, blend_dsc.opa, area_line.w);
-                gt_mask_get(blend_dsc.mask_buf, area_line.x, area_line.y, area_line.w);
-                gt_draw_blend(draw_ctx, &blend_dsc);
-            }
-
-            gt_mask_remove_idx(r_mask_id);
-            gt_mask_free(&r_mask);
-
-            round_orig.x = dsc->end.x - radius;
-            round_orig.y = dsc->end.y - radius;
-            round_area = round_orig;
-            area_line.x = round_area.x;
-            area_line.y = round_area.y;
-            area_line.w = GT_MIN(round_area.w, coords->w);
-
-            gt_mask_radius_init(&r_mask, &round_orig, radius, GT_MASK_RADIUS_CFG_INNER);
-            r_mask_id = gt_mask_add(&r_mask);
-
-            for (uint16_t i = 0; i < round_area.h; ++i) {
-                area_line.y = round_area.y + i;
-                gt_memset(blend_dsc.mask_buf, blend_dsc.opa, area_line.w);
-                gt_mask_get(blend_dsc.mask_buf, area_line.x, area_line.y, area_line.w);
-                gt_draw_blend(draw_ctx, &blend_dsc);
-            }
-
-            gt_mask_remove_idx(r_mask_id);
-            gt_mask_free(&r_mask);
-        }
-
-        gt_point_st ll_start = {0};
-        gt_point_st ll_end = {0};
-        gt_point_st rl_start = {0};
-        gt_point_st rl_end = {0};
-        //
-        gt_math_line_st x_line = {0};
-        gt_math_circle_st circle = {0};
-        gt_point_f_st p1 = {0}, p2 = {0};
-        circle.center.x = (gt_float_t)(dsc->start.x);
-        circle.center.y = (gt_float_t)(dsc->start.y);
-        circle.radius = (gt_float_t)radius;
-
-        p1.x = (gt_float_t)dsc->start.x;
-        p1.y = (gt_float_t)dsc->start.y;
-        p2.x = (gt_float_t)dsc->end.x;
-        p2.y = (gt_float_t)dsc->end.y;
-
-        gt_math_line_get_perpendicular(&x_line, &circle.center, &p1, &p2);
-        gt_math_line_circle_intersect(&p1, &p2, &x_line, &circle);
-
-        if(p1.x > p2.x) {
-            ll_start.x = (gt_size_t)gt_round(p1.x);
-            ll_start.y = (gt_size_t)gt_round(p1.y);
-            rl_start.x = (gt_size_t)gt_round(p2.x);
-            rl_start.y = (gt_size_t)gt_round(p2.y);
+            gt_mask_radius_init(&r_mask, &dst, dsc->line.width, GT_MASK_RADIUS_CFG_INNER);
+            gt_size_t mask_id = gt_mask_add(&r_mask);
+            gt_draw_blend(draw_ctx, &bd);
+            if (mask_id >= 0) gt_mask_remove_idx(mask_id);
         } else {
-            ll_start.x = (gt_size_t)gt_round(p2.x);
-            ll_start.y = (gt_size_t)gt_round(p2.y);
-            rl_start.x = (gt_size_t)gt_round(p1.x);
-            rl_start.y = (gt_size_t)gt_round(p1.y);
+            gt_draw_blend(draw_ctx, &bd);
         }
-
-        circle.center.x = (gt_float_t)(dsc->end.x);
-        circle.center.y = (gt_float_t)(dsc->end.y);
-        p1.x = (gt_float_t)dsc->start.x;
-        p1.y = (gt_float_t)dsc->start.y;
-        p2.x = (gt_float_t)dsc->end.x;
-        p2.y = (gt_float_t)dsc->end.y;
-        gt_math_line_get_perpendicular(&x_line, &circle.center, &p1, &p2);
-        gt_math_line_circle_intersect(&p1, &p2, &x_line, &circle);
-
-        if(p1.x > p2.x) {
-            ll_end.x = (gt_size_t)gt_round(p1.x);
-            ll_end.y = (gt_size_t)gt_round(p1.y);
-            rl_end.x = (gt_size_t)gt_round(p2.x);
-            rl_end.y = (gt_size_t)gt_round(p2.y);
-        } else {
-            ll_end.x = (gt_size_t)gt_round(p2.x);
-            ll_end.y = (gt_size_t)gt_round(p2.y);
-            rl_end.x = (gt_size_t)gt_round(p1.x);
-            rl_end.y = (gt_size_t)gt_round(p1.y);
-        }
-
-        gt_point_st m1, m2;
-        m1.x = GT_MIN(ll_start.x, ll_end.x);
-        m2.x = GT_MIN(rl_start.x, rl_end.x);
-        dst_area.x = GT_MIN(m1.x, m2.x);
-
-        m1.y = GT_MIN(ll_start.y, ll_end.y);
-        m2.y = GT_MIN(rl_start.y, rl_end.y);
-        dst_area.y = GT_MIN(m1.y, m2.y);
-
-        m1.x = GT_MAX(ll_start.x, ll_end.x);
-        m2.x = GT_MAX(rl_start.x, rl_end.x);
-        dst_area.w = GT_MAX(m1.x, m2.x) - dst_area.x;
-
-        m1.y = GT_MAX(ll_start.y, ll_end.y);
-        m2.y = GT_MAX(rl_start.y, rl_end.y);
-        dst_area.h = GT_MAX(m1.y, m2.y) - dst_area.y;
-
-        area_line.x = dst_area.x;
-        area_line.y = dst_area.y;
-        area_line.w = GT_MIN(dst_area.w, coords->w);   /** cap to malloc size */
-        area_line.h = 1;
-
-        gt_mask_line_st ll_mask = {0};
-        gt_mask_line_st rl_mask = {0};
-        gt_size_t ll_make_id = -1;
-        gt_size_t rl_make_id = -1;
-
-        gt_mask_line_points_init(&ll_mask, ll_start.x, ll_start.y, ll_end.x, ll_end.y, GT_MASK_LINE_SIDE_LEFT);
-        ll_make_id = gt_mask_add(&ll_mask);
-        gt_mask_line_points_init(&rl_mask, rl_start.x, rl_start.y, rl_end.x, rl_end.y, GT_MASK_LINE_SIDE_RIGHT);
-        rl_make_id = gt_mask_add(&rl_mask);
-
-        gt_mask_line_st ss_mask = {0};
-        gt_size_t ss_make_id = -1;
-        gt_mask_line_st ee_mask = {0};
-        gt_size_t ee_make_id = -1;
-        if (!is_round) {
-            gt_mask_line_side_et ss_side = GT_MASK_LINE_SIDE_LEFT;
-            gt_mask_line_side_et ee_side = GT_MASK_LINE_SIDE_RIGHT;
-            if (ll_start.x > rl_start.x && ll_start.y > rl_start.y) {
-                if (dsc->start.y < dsc->end.y) {
-                    ss_side = GT_MASK_LINE_SIDE_LEFT;
-                    ee_side = GT_MASK_LINE_SIDE_RIGHT;
-                } else {
-                    ss_side = GT_MASK_LINE_SIDE_RIGHT;
-                    ee_side = GT_MASK_LINE_SIDE_LEFT;
-                }
-            }
-            else if (ll_start.x > rl_start.x && ll_start.y < rl_start.y) {
-                if (dsc->start.y < dsc->end.y) {
-                    ss_side = GT_MASK_LINE_SIDE_RIGHT;
-                    ee_side = GT_MASK_LINE_SIDE_LEFT;
-                } else {
-                    ss_side = GT_MASK_LINE_SIDE_LEFT;
-                    ee_side = GT_MASK_LINE_SIDE_RIGHT;
-                }
-            }
-
-            gt_mask_line_points_init(&ss_mask, ll_start.x, ll_start.y, rl_start.x, rl_start.y, ss_side);
-            gt_mask_line_points_init(&ee_mask, ll_end.x, ll_end.y, rl_end.x, rl_end.y, ee_side);
-            ss_make_id = gt_mask_add(&ss_mask);
-            ee_make_id = gt_mask_add(&ee_mask);
-        }
-
-        for (uint16_t i = 0; i < dst_area.h; ++i) {
-            area_line.y = dst_area.y + i;
-            gt_memset(blend_dsc.mask_buf, blend_dsc.opa, area_line.w);
-            gt_mask_get(blend_dsc.mask_buf, area_line.x, area_line.y, area_line.w);
-            gt_draw_blend(draw_ctx, &blend_dsc);
-        }
-
-        gt_mask_remove_idx(ll_make_id);
-        gt_mask_remove_idx(rl_make_id);
-        gt_mask_free(&ll_mask);
-        gt_mask_free(&rl_mask);
-
-        if (!is_round) {
-            gt_mask_remove_idx(ss_make_id);
-            gt_mask_remove_idx(ee_make_id);
-            gt_mask_free(&ss_mask);
-            gt_mask_free(&ee_mask);
-        }
+        return;
     }
-    draw_ctx->parent_area = remark_area;
-    gt_mem_free(blend_dsc.mask_buf);
+
+    if (dsc->start.y == dsc->end.y) {
+        /* Horizontal line */
+        gt_area_st dst = {
+            .x = GT_MIN(dsc->start.x, dsc->end.x),
+            .y = dsc->start.y - (dsc->line.width >> 1),
+            .w = gt_abs(dsc->end.x - dsc->start.x) + 1,
+            .h = dsc->line.width,
+        };
+        gt_draw_blend_dsc_st bd = {
+            .dst_area   = &dst,
+            .color_fill = dsc->line.color,
+            .opa        = dsc->line.opa,
+        };
+        if (is_round_cap) {
+            gt_mask_radius_st r_mask = {0};
+            gt_mask_radius_init(&r_mask, &dst, dsc->line.width, GT_MASK_RADIUS_CFG_INNER);
+            gt_size_t mask_id = gt_mask_add(&r_mask);
+            gt_draw_blend(draw_ctx, &bd);
+            if (mask_id >= 0) gt_mask_remove_idx(mask_id);
+        } else {
+            gt_draw_blend(draw_ctx, &bd);
+        }
+        return;
+    }
+
+    /* ── Diagonal line: Wu anti-aliased algorithm ── */
+    _gt_wu_line(draw_ctx, dsc);
 }
 
 GT_ATTRIBUTE_RAM_TEXT void gt_draw_catmullrom(_gt_draw_ctx_st * draw_ctx, gt_attr_curve_st const * dsc, const gt_area_st * coords)

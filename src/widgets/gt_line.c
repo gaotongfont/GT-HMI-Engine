@@ -81,7 +81,7 @@ static void _init_cb(gt_obj_st * obj) {
     gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
     style->line.opa = obj->opa;
     style->line.type = GT_GRAPHS_TYPE_LINE;
-    style->line.brush = GT_BRUSH_TYPE_ROUND;
+    /* brush is set by gt_line_set_brush_type(); do NOT override here */
 
     if (_is_move_pos(&widget->prev_pos, &obj->area)) {
         _move_pos(obj);
@@ -108,10 +108,13 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
 static void _resize_area(gt_obj_st * line, gt_attr_line_st * style) {
     _gt_line_st * widget = (_gt_line_st * )line;
-    line->area.x = GT_MIN(style->start.x, style->end.x) - (style->line.width >> 1);
-    line->area.y = GT_MIN(style->start.y, style->end.y) - (style->line.width >> 1);
-    line->area.w = gt_abs(style->end.x - style->start.x) + style->line.width;
-    line->area.h = gt_abs(style->end.y - style->start.y) + style->line.width;
+    uint16_t const w = style->line.width;
+    /* +1: endpoint pixel is inclusive; +w: half-width margin on both sides.
+     * For round caps the circle radius <= half_w, so half_w margin is sufficient. */
+    line->area.x = GT_MIN(style->start.x, style->end.x) - (w >> 1);
+    line->area.y = GT_MIN(style->start.y, style->end.y) - (w >> 1);
+    line->area.w = gt_abs(style->end.x - style->start.x) + w + 1;
+    line->area.h = gt_abs(style->end.y - style->start.y) + w + 1;
 
     gt_memcpy(&widget->prev_pos, &line->area, sizeof(gt_area_st));
 }
@@ -134,6 +137,7 @@ gt_obj_st * gt_line_create(gt_obj_st * parent)
 
     style->line.width = 1;
     style->line.color = gt_color_black();
+    style->line.brush = GT_BRUSH_TYPE_ROUND;  /* default: round cap */
     return obj;
 }
 
@@ -245,8 +249,19 @@ void gt_line_set_line_width(gt_obj_st * line, uint16_t line_width)
     }
     _gt_line_st * widget = (_gt_line_st * )line;
     gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
-    style->line.width = line_width % 2 ? line_width + 1: line_width ;
+    style->line.width = line_width;
     _resize_area(line, style);
+    gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+void gt_line_set_brush_type(gt_obj_st * line, uint8_t type)
+{
+    if (false == gt_obj_is_type(line, OBJ_TYPE)) {
+        return;
+    }
+    _gt_line_st * widget = (_gt_line_st *)line;
+    gt_attr_line_st * style = (gt_attr_line_st *)&widget->line;
+    style->line.brush = type;
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
