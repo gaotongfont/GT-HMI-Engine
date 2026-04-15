@@ -90,10 +90,26 @@ static void _indev_effects_deinit_cb(gt_obj_st * obj) {
 GT_ATTRIBUTE_RAM_TEXT
 static void _indev_effects_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
-    if (GT_EVENT_TYPE_DRAW_START == code_val) {
-        gt_disp_invalid_area(obj);
-        gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
+    if (GT_EVENT_TYPE_DRAW_START != code_val) {
+        return;
     }
+#if GT_REFR_AREA_ALIGN_HOR || GT_REFR_AREA_ALIGN_VER
+    gt_disp_st * disp = gt_disp_get_default();
+    if (NULL == disp || !disp->enabled) {
+        goto _effects_draw_end_lb;
+    }
+    {
+        gt_area_st invalid = gt_area_reduce(obj->area, -(gt_obj_get_focus_offset_value(obj)));
+        invalid.x += gt_obj_get_x(disp->scr_act);
+        invalid.y += gt_obj_get_y(disp->scr_act);
+        gt_refr_area_align(&invalid);
+        _gt_disp_refr_append_area(&invalid);
+    }
+#else
+    gt_disp_invalid_area(obj);
+#endif
+_effects_draw_end_lb:
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
 }
 
 GT_ATTRIBUTE_RAM_TEXT
@@ -128,7 +144,11 @@ static void _effects_set_pos(gt_obj_st* obj, bool is_left, uint32_t distance) {
     if (gt_obj_get_x(style->rect_p) == x) {
         return;
     }
-    gt_obj_set_pos(style->rect_p, x, y);
+    /* Directly update rect_p position without triggering gt_obj_pos_change,
+     * which would submit a raw physical-coord dirty area that conflicts with
+     * the scr-offset-adjusted area submitted by _indev_effects_event_cb. */
+    style->rect_p->area.x = x;
+    style->rect_p->area.y = y;
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

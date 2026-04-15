@@ -861,6 +861,20 @@ _update_area_flush_by_calc_partly_redraw_area(_flush_scr_param_st * param, gt_ob
     param->area_flush.y = (gt_size_t)y;
     param->area_flush.h = (uint16_t)(h > 0 ? h : 0);
 
+#if GT_REFR_AREA_ALIGN_VER
+    {
+        uint16_t align_val = (uint16_t)gt_abs(param->area_flush.y % GT_REFR_AREA_ALIGN_VER_PIXEL);
+        if (align_val) {
+            param->area_flush.y -= align_val;
+            param->area_flush.h += align_val;
+        }
+        align_val = param->area_flush.h % GT_REFR_AREA_ALIGN_VER_PIXEL;
+        if (align_val) {
+            param->area_flush.h += GT_REFR_AREA_ALIGN_VER_PIXEL - align_val;
+        }
+    }
+#endif
+
     return param->area_flush;
 }
 

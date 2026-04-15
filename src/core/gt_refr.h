@@ -62,6 +62,49 @@ extern "C" {
 
 
 /* global functions / API interface -------------------------------------*/
+
+/**
+ * @brief Align a refresh area to the configured pixel boundaries in-place.
+ *        Expands x/y toward the lower boundary and w/h toward the upper
+ *        boundary so both edges are multiples of the alignment pixel value.
+ *        No-op when both GT_REFR_AREA_ALIGN_HOR and GT_REFR_AREA_ALIGN_VER
+ *        are 0 (the function body is empty and optimized away).
+ *
+ * @param area Area to align (modified in-place)
+ */
+static inline void gt_refr_area_align(gt_area_st * area) {
+#if GT_REFR_AREA_ALIGN_HOR || GT_REFR_AREA_ALIGN_VER
+    uint16_t align_val = 0;
+#if GT_REFR_AREA_ALIGN_HOR
+    align_val = (uint16_t)gt_abs(area->x % GT_REFR_AREA_ALIGN_HOR_PIXEL);
+    if (align_val) {
+        area->x -= align_val;
+        area->w += align_val;
+    }
+    /* w must also be aligned up independently, regardless of x alignment */
+    align_val = area->w % GT_REFR_AREA_ALIGN_HOR_PIXEL;
+    if (align_val) {
+        area->w += GT_REFR_AREA_ALIGN_HOR_PIXEL - align_val;
+    }
+#endif
+#if GT_REFR_AREA_ALIGN_VER
+    align_val = (uint16_t)gt_abs(area->y % GT_REFR_AREA_ALIGN_VER_PIXEL);
+    if (align_val) {
+        area->y -= align_val;
+        area->h += align_val;
+    }
+    /* h must also be aligned up independently, regardless of y alignment */
+    align_val = area->h % GT_REFR_AREA_ALIGN_VER_PIXEL;
+    if (align_val) {
+        area->h += GT_REFR_AREA_ALIGN_VER_PIXEL - align_val;
+    }
+#endif
+    (void)align_val;
+#else
+    (void)area;
+#endif
+}
+
 void gt_refr_timer(void);
 
 /**

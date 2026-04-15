@@ -99,7 +99,7 @@ static inline void _blend_text_gray2(const _blend_text_ctx_st * c) {
     gt_color_t tmp_color;
 
     if (c->is_vert) {
-        for (col = 0; col < c->area_intersect.h; col++) {
+        for (col = c->offset.y; col < c->offset.y + c->area_intersect.h; col++) {
             start_count = c->is_italic ? (c->font_size - c->offset.y - col) >> 1 : 0;
             count = start_count;
             color_src_p = c->offset.x * c->dot_byte + c->res;
@@ -161,7 +161,7 @@ static inline void _blend_text_gray4(const _blend_text_ctx_st * c) {
     gt_color_t tmp_color;
 
     if (c->is_vert) {
-        for (col = 0; col < c->area_intersect.h; col++) {
+        for (col = c->offset.y; col < c->offset.y + c->area_intersect.h; col++) {
             start_count = c->is_italic ? (c->font_size - c->offset.y - col) >> 1 : 0;
             count = start_count;
             color_src_p = c->offset.x * c->dot_byte + c->res;
@@ -223,7 +223,7 @@ static inline void _blend_text_gray3(const _blend_text_ctx_st * c) {
     gt_color_t tmp_color;
 
     if (c->is_vert) {
-        for (col = 0; col < c->area_intersect.h; col++) {
+        for (col = c->offset.y; col < c->offset.y + c->area_intersect.h; col++) {
             start_count = c->is_italic ? (c->font_size - c->offset.y - col) >> 1 : 0;
             count = start_count;
             color_src_p = c->offset.x * c->dot_byte + c->res;
@@ -295,7 +295,7 @@ static inline void _blend_text_gray1(const _blend_text_ctx_st * c) {
     gt_color_t tmp_color;
 
     if (c->is_vert) {
-        for (col = 0; col < c->area_intersect.h; col++) {
+        for (col = c->offset.y; col < c->offset.y + c->area_intersect.h; col++) {
             start_count = c->is_italic ? (c->font_size - c->offset.y - col) >> 1 : 0;
             count = start_count;
             color_src_p = c->offset.x * c->dot_byte + c->res;
@@ -548,6 +548,7 @@ gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
         return;
     }
 
+    gt_size_t col_clip = 0;
     if (is_vert) {
         gt_area_st convert = {
             .x = area_intersect.y,
@@ -555,6 +556,11 @@ gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
             .w = area_intersect.h,
             .h = area_intersect.w,
         };
+        /* col_clip: how many columns of the character are hidden to the left
+         * of the refresh area. Use the original dst_area.x (before view_area
+         * clipping) so that partial-refresh cuts through a character are
+         * handled correctly. */
+        col_clip = area_draw.x > dst_area.x ? (area_draw.x - dst_area.x) : 0;
         area_intersect = convert;
 
         gt_point_st convert_offset = {
@@ -574,7 +580,12 @@ gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
     const uint8_t * color_src_p = res;
 
     offset.x += area_intersect.x;
-    offset.y += area_intersect.y;
+    if (is_vert) {
+        /* col_clip: character-relative column offset for font data in vertical mode */
+        offset.y = col_clip;
+    } else {
+        offset.y += area_intersect.y;
+    }
 
     // from area_intersect cpy to flush_buffer_offset
     uint32_t idx_dst = flush_buffer_offset.y * width_buf + flush_buffer_offset.x;
