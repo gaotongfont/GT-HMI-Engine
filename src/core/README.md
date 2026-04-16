@@ -423,3 +423,37 @@ void gt_port_indev_init(void) {
 drv.limit_time_long_pressed = 500;   // 长按触发时间 ms（默认 500）
 drv.limit_time_pressing     = 300;   // 长按后重复间隔 ms（默认 300）
 ```
+
+---
+
+## 刷新区域像素对齐（GT_REFR_AREA_ALIGN）
+
+部分 LCD 控制器要求刷新区域的起始坐标和尺寸必须是特定像素值的整数倍（如 4 像素对齐）。
+
+### 配置（gt_refr.h）
+
+```c
+#define GT_REFR_AREA_ALIGN_HOR          0   // 水平对齐开关
+#define GT_REFR_AREA_ALIGN_HOR_PIXEL    4   // 水平对齐像素值
+#define GT_REFR_AREA_ALIGN_VER          0   // 垂直对齐开关
+#define GT_REFR_AREA_ALIGN_VER_PIXEL    4   // 垂直对齐像素值
+```
+
+### 公共函数
+
+```c
+// gt_refr.h — static inline，两个宏均为 0 时编译器优化掉
+void gt_refr_area_align(gt_area_st * area);
+```
+
+两步法（HOR/VER 对称）：
+1. 将起点向低地址对齐，同步补偿尺寸
+2. 无条件将尺寸向上对齐到整数倍
+
+### 调用位置
+
+| 位置 | 说明 |
+|------|------|
+| `gt_refr_timer()` | 每帧取出脏区后对齐，再驱动绘制 |
+| `gt_refr_force_flush()` | 强制刷新时对齐 |
+| `gt_disp.c: _update_area_flush_by_calc_partly_redraw_area()` | Y 轴坐标映射后对齐（VER） |
