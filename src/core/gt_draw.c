@@ -3942,6 +3942,229 @@ gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_are
         rect_attr.reg.is_fill = 1;
     }
 
+#if GT_USE_GRADIENT
+    /* ---- Angular gradient path (per-pixel scanline + Floyd-Steinberg) -- */
+    if (!is_img && dsc->grad && dsc->grad->stops &&
+        _gt_vector_get_count(dsc->grad->stops) > 0) {
+
+        while(start_angle >= 360) { start_angle -= 360; }
+        while(end_angle >= 360) { end_angle -= 360; }
+
+        /* Compute total arc span in degrees (1..360) */
+        int32_t arc_span;
+        bool is_full_circle = (dsc->start_angle + 360 == dsc->end_angle ||
+                               dsc->start_angle == dsc->end_angle + 360 ||
+                               start_angle == end_angle);
+        if (is_full_circle) {
+            arc_span = 360;
+        } else if (end_angle > start_angle) {
+            arc_span = end_angle - start_angle;
+        } else {
+            arc_span = 360 - start_angle + end_angle;
+        }
+        if (arc_span <= 0) arc_span = 360;
+
+        int32_t cx = area_out.x + out_radius;
+        int32_t cy = area_out.y + out_radius;
+
+        /* Add angle mask for partial arcs */
+        int16_t ang_mask_id = -1;
+        gt_mask_angle_st ang_mask = {0};
+        if (!is_full_circle) {
+            gt_mask_angle_init(&ang_mask, (gt_size_t)cx, (gt_size_t)cy,
+                               (gt_size_t)start_angle, (gt_size_t)end_angle);
+            ang_mask_id = gt_mask_add(&ang_mask);
+        }
+
+        /* Allocate per-row buffers */
+        uint16_t row_w = (uint16_t)area_out.w;
+        gt_color_t * color_row_buf = (gt_color_t *)gt_mem_malloc(row_w * sizeof(gt_color_t));
+        gt_opa_t   * mask_buf      = (gt_opa_t   *)gt_mem_malloc(row_w);
+        int16_t    * fs_err_cur    = (int16_t    *)gt_mem_malloc(row_w * 3 * sizeof(int16_t));
+        int16_t    * fs_err_nxt    = (int16_t    *)gt_mem_malloc(row_w * 3 * sizeof(int16_t));
+        if (fs_err_cur) gt_memset(fs_err_cur, 0, row_w * 3 * sizeof(int16_t));
+        if (fs_err_nxt) gt_memset(fs_err_nxt, 0, row_w * 3 * sizeof(int16_t));
+
+        bool has_fs = (color_row_buf && fs_err_cur && fs_err_nxt);
+
+        /* FS helper macros (local scope) */
+        #define _ARC_FS_CLAMP8(v)  ((v) < 0 ? 0 : ((v) > 255 ? 255 : (v)))
+        #define _ARC_FS_QUANT5(v8) (((v8) >> 3) * (255 / 31))
+        #define _ARC_FS_QUANT6(v8) (((v8) >> 2) * (255 / 63))
+        #define _ARC_FS_ADD(arr, idx, e) \
+            do { if ((idx) >= 0 && (idx) < (int32_t)(row_w * 3)) (arr)[(idx)] += (e); } while(0)
+        #define _ARC_FS_SWAP() do { \
+            int16_t * _t = fs_err_cur; fs_err_cur = fs_err_nxt; fs_err_nxt = _t; \
+            if (fs_err_nxt) gt_memset(fs_err_nxt, 0, row_w * 3 * sizeof(int16_t)); \
+        } while(0)
+
+        uint8_t fade_ow = (dsc->fade_outer_width > 0) ? GT_MIN(dsc->fade_outer_width, (uint8_t)width) : 0;
+        uint8_t fade_iw = (dsc->fade_inner_width > 0 && in_radius > 0) ? GT_MIN(dsc->fade_inner_width, (uint8_t)width) : 0;
+
+        gt_draw_blend_dsc_st blend_dsc = {0};
+        blend_dsc.opa = dsc->opa;
+
+        gt_area_st line_area = { .x = area_out.x, .w = row_w, .h = 1 };
+        blend_dsc.dst_area  = &line_area;
+        blend_dsc.mask_area = &line_area;
+
+        /* shape_mask: reused each row to apply out/in/angle masks */
+        gt_opa_t * shape_mask = (gt_opa_t *)gt_mem_malloc(row_w);
+
+        for (int32_t row = 0; row < (int32_t)area_out.h; row++) {
+            line_area.y = area_out.y + row;
+            int32_t dy = line_area.y - cy;
+
+            if (has_fs && color_row_buf) {
+                for (uint16_t col = 0; col < row_w; col++) {
+                    int32_t dx = area_out.x + col - cx;
+
+                    /* Compute angle 0..359 in GT arc convention:
+                     * 0=right(+x), 90=down(+y), 180=left(-x), 270=up(-y).
+                     * gt_atan2(y, x) returns angle from +x axis clockwise. */
+                    uint16_t ang = gt_atan2((int)dy, (int)dx);
+
+                    /* Map angle to arc position [0..65535] */
+                    int32_t rel;
+                    if (is_full_circle) {
+                        rel = (int32_t)ang;
+                    } else {
+                        rel = (int32_t)ang - (int32_t)start_angle;
+                        if (rel < 0) rel += 360;
+                        if (rel > arc_span) rel = arc_span;
+                    }
+                    uint16_t pos = (uint16_t)((uint32_t)rel * 65535u / (uint32_t)arc_span);
+
+                    /* Compute radial fade opacity */
+                    int32_t r2 = dx * dx + dy * dy;
+                    int32_t r_px = 0;
+                    /* integer sqrt approximation */
+                    {
+                        uint32_t ur2 = (uint32_t)(r2 < 0 ? 0 : r2);
+                        uint32_t s = ur2;
+                        uint32_t x0 = (out_radius > 0) ? (uint32_t)out_radius : 1;
+                        /* 3 Newton iterations */
+                        if (x0 > 0) {
+                            x0 = (x0 + s / x0) >> 1;
+                            x0 = (x0 + s / x0) >> 1;
+                            x0 = (x0 + s / x0) >> 1;
+                        }
+                        r_px = (int32_t)x0;
+                    }
+
+                    gt_opa_t pixel_opa = GT_OPA_COVER;
+                    if (fade_ow > 0) {
+                        int32_t dist_outer = out_radius - r_px; /* 0 at edge, + inside */
+                        if (dist_outer < (int32_t)fade_ow) {
+                            pixel_opa = (gt_opa_t)((uint32_t)GT_OPA_COVER * (uint32_t)(dist_outer < 0 ? 0 : dist_outer) / fade_ow);
+                        }
+                    }
+                    if (fade_iw > 0 && in_radius > 0) {
+                        int32_t dist_inner = r_px - in_radius; /* 0 at inner edge, + outside */
+                        if (dist_inner < (int32_t)fade_iw) {
+                            gt_opa_t inner_opa = (gt_opa_t)((uint32_t)GT_OPA_COVER * (uint32_t)(dist_inner < 0 ? 0 : dist_inner) / fade_iw);
+                            if (inner_opa < pixel_opa) pixel_opa = inner_opa;
+                        }
+                    }
+
+                    /* Sample gradient color (24-bit for FS accuracy) */
+                    uint32_t c24 = gt_gradient_dsc_get_color24_pos(dsc->grad, pos);
+                    int32_t ir = (int32_t)((c24 >> 16) & 0xFF);
+                    int32_t ig = (int32_t)((c24 >>  8) & 0xFF);
+                    int32_t ib = (int32_t)( c24        & 0xFF);
+
+                    /* Apply FS error */
+                    int32_t r8 = _ARC_FS_CLAMP8(ir + (fs_err_cur[col*3+0] >> 4));
+                    int32_t g8 = _ARC_FS_CLAMP8(ig + (fs_err_cur[col*3+1] >> 4));
+                    int32_t b8 = _ARC_FS_CLAMP8(ib + (fs_err_cur[col*3+2] >> 4));
+
+                    int32_t qr = _ARC_FS_QUANT5(r8);
+                    int32_t qg = _ARC_FS_QUANT6(g8);
+                    int32_t qb = _ARC_FS_QUANT5(b8);
+
+                    GT_COLOR_SET_R16(color_row_buf[col], r8 >> 3);
+                    GT_COLOR_SET_G16(color_row_buf[col], g8 >> 2);
+                    GT_COLOR_SET_B16(color_row_buf[col], b8 >> 3);
+
+                    /* Propagate FS error */
+                    int32_t er = (r8 - qr) << 4;
+                    int32_t eg = (g8 - qg) << 4;
+                    int32_t eb = (b8 - qb) << 4;
+                    _ARC_FS_ADD(fs_err_cur, (int32_t)(col+1)*3+0, (er*7)>>4);
+                    _ARC_FS_ADD(fs_err_cur, (int32_t)(col+1)*3+1, (eg*7)>>4);
+                    _ARC_FS_ADD(fs_err_cur, (int32_t)(col+1)*3+2, (eb*7)>>4);
+                    _ARC_FS_ADD(fs_err_nxt, (int32_t)(col-1)*3+0, (er*3)>>4);
+                    _ARC_FS_ADD(fs_err_nxt, (int32_t)(col-1)*3+1, (eg*3)>>4);
+                    _ARC_FS_ADD(fs_err_nxt, (int32_t)(col-1)*3+2, (eb*3)>>4);
+                    _ARC_FS_ADD(fs_err_nxt, (int32_t)(col  )*3+0, (er*5)>>4);
+                    _ARC_FS_ADD(fs_err_nxt, (int32_t)(col  )*3+1, (eg*5)>>4);
+                    _ARC_FS_ADD(fs_err_nxt, (int32_t)(col  )*3+2, (eb*5)>>4);
+                    _ARC_FS_ADD(fs_err_nxt, (int32_t)(col+1)*3+0, (er*1)>>4);
+                    _ARC_FS_ADD(fs_err_nxt, (int32_t)(col+1)*3+1, (eg*1)>>4);
+                    _ARC_FS_ADD(fs_err_nxt, (int32_t)(col+1)*3+2, (eb*1)>>4);
+
+                    /* Store per-pixel fade into mask_buf (will be AND-ed with shape mask) */
+                    mask_buf[col] = pixel_opa;
+                }
+                _ARC_FS_SWAP();
+                blend_dsc.dst_buf    = color_row_buf;
+                blend_dsc.color_fill = gt_color_black();
+            } else {
+                blend_dsc.dst_buf    = NULL;
+                blend_dsc.color_fill = gt_gradient_dsc_get_color_pos(dsc->grad, 32767);
+                if (mask_buf) gt_memset(mask_buf, GT_OPA_COVER, row_w);
+            }
+
+            /* Apply shape masks (out_mask, in_mask, ang_mask) on top of fade mask */
+            if (mask_buf) {
+                if (shape_mask) {
+                    gt_memset(shape_mask, dsc->opa, row_w);
+                    gt_mask_res_et res = gt_mask_get(shape_mask, line_area.x, line_area.y, row_w);
+                    if (res == GT_MASK_RES_TRANSP) {
+                        blend_dsc.dst_buf = NULL;
+                        continue;
+                    }
+                    if (res != GT_MASK_RES_FULL_COVER) {
+                        /* Multiply fade mask with shape mask */
+                        for (uint16_t col = 0; col < row_w; col++) {
+                            mask_buf[col] = (gt_opa_t)(((uint32_t)mask_buf[col] * shape_mask[col]) >> 8);
+                        }
+                    }
+                    blend_dsc.mask_buf = mask_buf;
+                } else {
+                    gt_memset(mask_buf, dsc->opa, row_w);
+                    gt_mask_res_et res = gt_mask_get(mask_buf, line_area.x, line_area.y, row_w);
+                    if (res == GT_MASK_RES_TRANSP) { blend_dsc.dst_buf = NULL; continue; }
+                    blend_dsc.mask_buf = (res == GT_MASK_RES_FULL_COVER) ? NULL : mask_buf;
+                }
+            } else {
+                blend_dsc.mask_buf = NULL;
+            }
+
+            gt_draw_blend(draw_ctx, &blend_dsc);
+            blend_dsc.dst_buf = NULL;
+        }
+
+        #undef _ARC_FS_CLAMP8
+        #undef _ARC_FS_QUANT5
+        #undef _ARC_FS_QUANT6
+        #undef _ARC_FS_ADD
+        #undef _ARC_FS_SWAP
+
+        if (color_row_buf) gt_mem_free(color_row_buf);
+        if (mask_buf)      gt_mem_free(mask_buf);
+        if (shape_mask)    gt_mem_free(shape_mask);
+        if (fs_err_cur)    gt_mem_free(fs_err_cur);
+        if (fs_err_nxt)    gt_mem_free(fs_err_nxt);
+
+        if (ang_mask_id >= 0) { gt_mask_remove_idx(ang_mask_id); gt_mask_free(&ang_mask); }
+        gt_mask_remove_idx(out_mask_id);
+        gt_mask_free(&out_mask);
+        if (in_radius > 0) { gt_mask_remove_idx(in_mask_id); gt_mask_free(&in_mask); }
+        return;
+    }
+#endif /* GT_USE_GRADIENT */
+
     if(start_angle + 360 == end_angle || start_angle == end_angle + 360){
         if(is_img){
             draw_bg_img(draw_ctx, &rect_attr, &area_out);

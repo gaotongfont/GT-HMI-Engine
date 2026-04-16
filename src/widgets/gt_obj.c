@@ -551,6 +551,7 @@ void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color)
         return;
     }
     obj->bgcolor = color;
+    gt_disp_invalid_area(obj);
 }
 
 gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj)

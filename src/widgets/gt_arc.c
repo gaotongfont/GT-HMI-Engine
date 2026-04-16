@@ -73,10 +73,17 @@ typedef struct _gt_arc_s {
     int16_t value_max;
     int16_t value_step;
 
+#if GT_USE_GRADIENT
+    gt_gradient_dsc_st * act_grad;  ///< Angular gradient for active arc; NULL = solid act_color
+#endif
+    uint8_t act_fade_inner;   ///< Active arc inner edge fade width (pixels)
+    uint8_t act_fade_outer;   ///< Active arc outer edge fade width (pixels)
+
     uint8_t rounded : 1;
     uint8_t anim_state: 1;
     uint8_t touch_disable : 1;
-    uint8_t reverse : 5;
+    uint8_t draw_bg : 1;       ///< 0 = skip background arc, only draw active + knob
+    uint8_t reverse : 4;
 } _gt_arc_st;
 
 
@@ -89,7 +96,7 @@ static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
-static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_arc_class = {
+static GT_ATTRIBUTE_RAM_RODATA const gt_obj_class_st gt_arc_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
@@ -128,12 +135,15 @@ static void _init_cb(gt_obj_st * obj)
     arc_attr.custom_addr = &style->bg.img.custom_addr;
 #endif
 
-    gt_area_st area;
+    gt_area_st area = {0};
     uint16_t max_w = GT_MAX(style->knob_width, GT_MAX(style->bg.width, style->act.width));
+    uint8_t reduce = 0;
 
-    uint8_t reduce = (max_w - style->bg.width) >> 1;
-    area = gt_area_reduce(obj->area, reduce);
-    gt_draw_arc(obj->draw_ctx, &arc_attr, &area);
+    if (style->draw_bg) {
+        reduce = (max_w - style->bg.width) >> 1;
+        area = gt_area_reduce(obj->area, reduce);
+        gt_draw_arc(obj->draw_ctx, &arc_attr, &area);
+    }
 
     // act
     arc_attr.color = style->act_color;
@@ -150,6 +160,11 @@ static void _init_cb(gt_obj_st * obj)
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
     arc_attr.custom_addr = &style->act.img.custom_addr;
 #endif
+#if GT_USE_GRADIENT
+    arc_attr.grad = style->act_grad;
+#endif
+    arc_attr.fade_inner_width = style->act_fade_inner;
+    arc_attr.fade_outer_width = style->act_fade_outer;
 
     reduce = (max_w - style->act.width) >> 1;
     area = gt_area_reduce(obj->area, reduce);
@@ -215,6 +230,13 @@ static void _deinit_cb(gt_obj_st * obj)
         gt_mem_free(style_p->knob_img.src);
         style_p->knob_img.src = NULL;
     }
+
+#if GT_USE_GRADIENT
+    if (NULL != style_p->act_grad) {
+        gt_gradient_dsc_destroy(style_p->act_grad);
+        style_p->act_grad = NULL;
+    }
+#endif
 
 }
 
@@ -334,6 +356,7 @@ gt_obj_st * gt_arc_create(gt_obj_st * parent)
 
     obj->fixed = false;
     _gt_arc_st * style = (_gt_arc_st *)obj;
+    style->draw_bg = true;
 
     gt_anim_init(&style->anim);
     gt_anim_set_target(&style->anim, obj);
@@ -870,6 +893,19 @@ void gt_arc_set_bg_color(gt_obj_st* obj, gt_color_t color)
     gt_obj_set_bgcolor(obj, color);
 }
 
+void gt_arc_set_draw_bg(gt_obj_st * obj, bool draw_bg)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_arc_st * style = (_gt_arc_st *)obj;
+    if (style->draw_bg == draw_bg) {
+        return;
+    }
+    style->draw_bg = draw_bg ? 1 : 0;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 void gt_arc_set_act_color(gt_obj_st* obj, gt_color_t color)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
@@ -1013,6 +1049,36 @@ void gt_arc_set_touch_disable(gt_obj_st* obj, bool disable)
     _gt_arc_st * style = (_gt_arc_st * )obj;
     style->touch_disable = disable;
 }
+
+#if GT_USE_GRADIENT
+void gt_arc_set_act_gradient(gt_obj_st * obj, gt_gradient_dsc_st * grad)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) { return; }
+    _gt_arc_st * style = (_gt_arc_st *)obj;
+    if (style->act_grad) {
+        gt_gradient_dsc_destroy(style->act_grad);
+    }
+    style->act_grad = grad;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_arc_set_act_gradient_rainbow(gt_obj_st * obj, uint16_t steps_per_seg)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) { return; }
+    gt_gradient_dsc_st * grad = gt_gradient_dsc_rainbow(GT_GRAD_DIR_HOR, steps_per_seg);
+    gt_arc_set_act_gradient(obj, grad);
+}
+#endif /* GT_USE_GRADIENT */
+
+void gt_arc_set_act_fade(gt_obj_st * obj, uint8_t inner_width, uint8_t outer_width)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) { return; }
+    _gt_arc_st * style = (_gt_arc_st *)obj;
+    style->act_fade_inner = inner_width;
+    style->act_fade_outer = outer_width;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
 /* end of file ----------------------------------------------------------*/
 #endif /* GT_CFG_ENABLE_BTN */
 

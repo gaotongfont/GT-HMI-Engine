@@ -31,6 +31,8 @@ extern "C" {
 #include "../hal/gt_hal_fs.h"
 #endif
 
+#include "../core/gt_gradient.h"
+
 /* define ---------------------------------------------------------------*/
 
 
@@ -295,6 +297,50 @@ void gt_arc_set_knob_width(gt_obj_st* obj, uint16_t width);
  * @param disable true: disable touch, false: enable touch
  */
 void gt_arc_set_touch_disable(gt_obj_st* obj, bool disable);
+
+#if GT_USE_GRADIENT
+/**
+ * @brief Set angular gradient for the active arc.
+ *        Color varies along the arc angle from start to end.
+ *        Ownership of @p grad is transferred to the widget; it will be
+ *        destroyed automatically when the widget is deleted or replaced.
+ *        Pass NULL to remove the gradient and revert to solid act_color.
+ *
+ * @param obj   Arc widget
+ * @param grad  Gradient descriptor created by gt_gradient_dsc_create() /
+ *              gt_gradient_dsc_rainbow(), or NULL to clear.
+ */
+void gt_arc_set_act_gradient(gt_obj_st * obj, gt_gradient_dsc_st * grad);
+
+/**
+ * @brief Convenience: set a rainbow gradient on the active arc.
+ *
+ * @param obj           Arc widget
+ * @param steps_per_seg Steps per color segment (>= 2, typical 20~60)
+ */
+void gt_arc_set_act_gradient_rainbow(gt_obj_st * obj, uint16_t steps_per_seg);
+#endif /* GT_USE_GRADIENT */
+
+/**
+ * @brief Set inner/outer edge fade width for the active arc.
+ *        Creates a smooth transparency transition at the inner and outer
+ *        boundaries of the arc ring.
+ *
+ * @param obj          Arc widget
+ * @param inner_width  Fade width at inner edge in pixels (0 = no fade)
+ * @param outer_width  Fade width at outer edge in pixels (0 = no fade)
+ */
+void gt_arc_set_act_fade(gt_obj_st * obj, uint8_t inner_width, uint8_t outer_width);
+
+/**
+ * @brief Enable or disable background arc drawing.
+ *        When disabled, only the active arc and knob are drawn,
+ *        making the widget visually transparent (shows whatever is beneath).
+ *
+ * @param obj      Arc widget
+ * @param draw_bg  true = draw background arc (default), false = skip background
+ */
+void gt_arc_set_draw_bg(gt_obj_st * obj, bool draw_bg);
 
 #endif /*GT_CFG_ENABLE_ARC*/
 //
