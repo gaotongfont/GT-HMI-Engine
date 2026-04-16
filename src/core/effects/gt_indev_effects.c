@@ -93,18 +93,17 @@ static void _indev_effects_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     if (GT_EVENT_TYPE_DRAW_START != code_val) {
         return;
     }
-#if GT_REFR_AREA_ALIGN_HOR || GT_REFR_AREA_ALIGN_VER
+#if GT_USE_LAYER_TOP
     gt_disp_st * disp = gt_disp_get_default();
     if (NULL == disp || !disp->enabled) {
         goto _effects_draw_end_lb;
     }
-    {
-        gt_area_st invalid = gt_area_reduce(obj->area, -(gt_obj_get_focus_offset_value(obj)));
-        invalid.x += gt_obj_get_x(disp->scr_act);
-        invalid.y += gt_obj_get_y(disp->scr_act);
-        gt_refr_area_align(&invalid);
-        _gt_disp_refr_append_area(&invalid);
+    gt_area_st invalid = gt_area_reduce(obj->area, -(gt_obj_get_focus_offset_value(obj)));
+    if (disp->layer_top && gt_obj_is_child(obj, disp->layer_top)) {
+        invalid.x += disp->scr_act->area.x;
+        invalid.y += disp->scr_act->area.y;
     }
+    _gt_disp_refr_append_area(&invalid);
 #else
     gt_disp_invalid_area(obj);
 #endif
