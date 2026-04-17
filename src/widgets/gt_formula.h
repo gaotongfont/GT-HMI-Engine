@@ -49,6 +49,13 @@ void gt_formula_set_text(gt_obj_st * obj, const char * fmt, ...);
 void gt_formula_set_font_color(gt_obj_st * obj, gt_color_t color);
 
 /**
+ * @brief 设置公式最大宽度 max_width = 0 时，自动计算/ set formula max width, max_width = 0, auto calculate
+ *
+ * @param obj
+ * @param max_width
+ */
+void gt_formula_set_max_width(gt_obj_st* obj, uint16_t max_width);
+/**
  * @brief 设置公式字体/字号; 不支持 GT_FONT_FAMILY_OLD_ENABLE
  *
  * @param obj

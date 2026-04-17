@@ -201,6 +201,7 @@ typedef struct {
     gt_latex_node_base_t **cells;        /* 单元格数组（rows * cols）/ Cell array */
     uint8_t                bracket_type; /* 括号类型：0=无 1=() 2=[] 3={} 4=| 5=|| 6=仅左{} / Bracket type */
     uint8_t                is_small;     /* 是否为 smallmatrix / Is smallmatrix */
+    uint8_t               *row_spacings; /* 每行后额外间距（像素），NULL=全默认 / Extra spacing after each row (px), NULL=default */
 } gt_latex_node_matrix_t;
 
 /* cases 节点（复用 matrix 结构）/ Cases node (reuses matrix structure) */

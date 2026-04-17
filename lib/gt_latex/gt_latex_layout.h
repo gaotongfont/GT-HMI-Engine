@@ -72,14 +72,16 @@ uint8_t gt_latex_layout_get_letter_spacing(void);
 
 /**
  * @brief 对 AST 执行布局计算，生成布局树 / Compute layout from AST
- * @param ast     AST 根节点 / AST root node
- * @param layout  输出布局结果 / Output layout result
- * @param level   起始字体级别（通常为基础级 1 或 0）/ Starting font level
- * @return        0 成功，负数失败 / 0 on success, negative on failure
+ * @param ast       AST 根节点 / AST root node
+ * @param layout    输出布局结果 / Output layout result
+ * @param level     起始字体级别（通常为基础级 1 或 0）/ Starting font level
+ * @param max_width 最大宽度限制（像素），0 表示不限制 / Max width in pixels, 0 = unlimited
+ * @return          0 成功，负数失败 / 0 on success, negative on failure
  */
 int gt_latex_layout_calc(const gt_latex_node_base_t *ast,
                          gt_latex_layout_t          *layout,
-                         uint8_t                     level);
+                         uint8_t                     level,
+                         uint16_t                    max_width);
 
 /**
  * @brief 释放布局树占用的资源 / Free layout tree resources

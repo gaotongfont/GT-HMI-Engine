@@ -17,6 +17,7 @@
 #include "gt_latex_parser.h"
 #include "gt_latex_layout.h"
 #include "gt_latex_render.h"
+#include "gt_latex_mem.h"
 
 /* ----------------------------------------------------------------
  * 错误码 / Error codes
@@ -40,20 +41,22 @@ void gt_latex_init(void);
 
 /**
  * @brief 获取公式渲染所需的宽高（不执行渲染）/ Get bounding box without rendering
- * @param formula LaTeX 公式字符串 / LaTeX formula string
- * @param w       输出宽度 / Output width
- * @param h       输出高度 / Output height
- * @return        GT_LATEX_OK 成功，负数失败 / GT_LATEX_OK on success
+ * @param formula   LaTeX 公式字符串 / LaTeX formula string
+ * @param w         输出宽度 / Output width
+ * @param h         输出高度 / Output height
+ * @param max_width 最大宽度限制（像素），0 表示不限制 / Max width in pixels, 0 = unlimited
+ * @return          GT_LATEX_OK 成功，负数失败 / GT_LATEX_OK on success
  */
-int gt_latex_get_size(const char *formula, uint16_t *w, uint16_t *h);
+int gt_latex_get_size(const char *formula, uint16_t *w, uint16_t *h, uint16_t max_width);
 
 /**
  * @brief 一体化接口：解析 + 布局 + 渲染 / All-in-one: parse + layout + render
- * @param formula LaTeX 公式字符串 / LaTeX formula string
- * @param canvas  画布描述 / Canvas descriptor
- * @return        GT_LATEX_OK 成功，负数失败 / GT_LATEX_OK on success
+ * @param formula   LaTeX 公式字符串 / LaTeX formula string
+ * @param canvas    画布描述 / Canvas descriptor
+ * @param max_width 最大宽度限制（像素），0 表示不限制 / Max width in pixels, 0 = unlimited
+ * @return          GT_LATEX_OK 成功，负数失败 / GT_LATEX_OK on success
  */
-int gt_latex_draw(const char *formula, const gt_latex_canvas_t *canvas);
+int gt_latex_draw(const char *formula, const gt_latex_canvas_t *canvas, uint16_t max_width);
 
 /**
  * @brief 分步接口：仅解析，生成 AST / Step API: parse only, produce AST
@@ -77,13 +80,15 @@ void gt_latex_parse_free(gt_latex_parser_t *parser, gt_latex_lexer_t *lexer);
 
 /**
  * @brief 分步接口：对已解析的 AST 执行布局 / Step API: layout from existing AST
- * @param parser 已完成解析的上下文 / Completed parser context
- * @param layout 输出布局结果 / Output layout result
- * @return       GT_LATEX_OK 成功，负数失败 / GT_LATEX_OK on success
- * @note         使用完毕后需调用 gt_latex_layout_deinit() 释放资源
+ * @param parser    已完成解析的上下文 / Completed parser context
+ * @param layout    输出布局结果 / Output layout result
+ * @param max_width 最大宽度限制（像素），0 表示不限制 / Max width in pixels, 0 = unlimited
+ * @return          GT_LATEX_OK 成功，负数失败 / GT_LATEX_OK on success
+ * @note            使用完毕后需调用 gt_latex_layout_deinit() 释放资源
  */
 int gt_latex_layout(const gt_latex_parser_t *parser,
-                    gt_latex_layout_t       *layout);
+                    gt_latex_layout_t       *layout,
+                    uint16_t                 max_width);
 
 /**
  * @brief 分步接口：对已完成布局执行渲染 / Step API: render from existing layout

@@ -33,6 +33,7 @@ typedef struct _gt_formula_s {
     gt_formula_font_st* font_cfg;
     gt_color_t font_color;
 
+    uint16_t max_width;
 }_gt_formula_st;
 
 
@@ -297,7 +298,7 @@ static void _formula_init_cb(gt_obj_st * obj)
     }
 
     uint16_t w = 0, h = 0;
-    ret = gt_latex_layout(&parser, &layout);
+    ret = gt_latex_layout(&parser, &layout, style->max_width);
     if(GT_LATEX_OK != ret) {
         GT_LOGE(GT_LOG_TAG_GUI, "Failed to layout latex formula, ret=%d", ret);
         goto _deinit_ret;
@@ -425,6 +426,15 @@ void gt_formula_set_font_color(gt_obj_st * obj, gt_color_t color)
     style->font_color = color;
 }
 
+GT_ATTRIBUTE_RAM_TEXT
+void gt_formula_set_max_width(gt_obj_st* obj, uint16_t max_width)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_formula_st * style = (_gt_formula_st * )obj;
+    style->max_width = max_width;
+}
 
 GT_ATTRIBUTE_RAM_TEXT
 void gt_formula_set_font_config(gt_obj_st * obj, const gt_formula_font_st *cfg)
