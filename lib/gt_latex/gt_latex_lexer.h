@@ -70,11 +70,12 @@ typedef struct {
 
 /**
  * @brief 初始化词法分析器 / Initialize lexer
- * @param lexer 词法分析器上下文 / Lexer context
- * @param src   输入的 LaTeX 公式字符串 / Input LaTeX formula string
- * @return      0 成功，负数失败 / 0 on success, negative on failure
+ * @param lexer    词法分析器上下文 / Lexer context
+ * @param src      输入的 LaTeX 公式字符串 / Input LaTeX formula string
+ * @param src_len  公式字符串长度（字节）/ Formula string length in bytes
+ * @return         0 成功，负数失败 / 0 on success, negative on failure
  */
-int gt_latex_lexer_init(gt_latex_lexer_t *lexer, const char *src);
+int gt_latex_lexer_init(gt_latex_lexer_t *lexer, const char *src, uint16_t src_len);
 
 /**
  * @brief 执行词法分析，生成完整 Token 流 / Run lexer, produce full token stream

@@ -49,9 +49,10 @@ typedef struct gt_latex_layout_node_s {
  * 布局上下文 / Layout context
  * ---------------------------------------------------------------- */
 typedef struct {
-    gt_latex_layout_node_t *root;       /* 布局树根节点 / Layout tree root */
-    uint16_t                total_w;    /* 整体宽度 / Total width */
-    uint16_t                total_h;    /* 整体高度 / Total height */
+    gt_latex_layout_node_t *root;                /* 布局树根节点 / Layout tree root */
+    uint16_t                total_w;             /* 整体宽度 / Total width */
+    uint16_t                total_h;             /* 整体高度 / Total height */
+    uint16_t                first_line_x_offset; /* 首行 x 偏移（像素），0 = 无偏移 / First line x offset in pixels */
 } gt_latex_layout_t;
 
 /* ----------------------------------------------------------------
@@ -81,7 +82,8 @@ uint8_t gt_latex_layout_get_letter_spacing(void);
 int gt_latex_layout_calc(const gt_latex_node_base_t *ast,
                          gt_latex_layout_t          *layout,
                          uint8_t                     level,
-                         uint16_t                    max_width);
+                         uint16_t                    max_width,
+                         uint16_t                    first_line_x_offset);
 
 /**
  * @brief 释放布局树占用的资源 / Free layout tree resources

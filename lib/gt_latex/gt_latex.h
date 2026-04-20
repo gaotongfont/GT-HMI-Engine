@@ -47,7 +47,9 @@ void gt_latex_init(void);
  * @param max_width 最大宽度限制（像素），0 表示不限制 / Max width in pixels, 0 = unlimited
  * @return          GT_LATEX_OK 成功，负数失败 / GT_LATEX_OK on success
  */
-int gt_latex_get_size(const char *formula, uint16_t *w, uint16_t *h, uint16_t max_width);
+int gt_latex_get_size(const char *formula, uint16_t formula_len,
+                      uint16_t *w, uint16_t *h, uint16_t max_width,
+                      uint16_t first_line_x_offset);
 
 /**
  * @brief 一体化接口：解析 + 布局 + 渲染 / All-in-one: parse + layout + render
@@ -56,7 +58,9 @@ int gt_latex_get_size(const char *formula, uint16_t *w, uint16_t *h, uint16_t ma
  * @param max_width 最大宽度限制（像素），0 表示不限制 / Max width in pixels, 0 = unlimited
  * @return          GT_LATEX_OK 成功，负数失败 / GT_LATEX_OK on success
  */
-int gt_latex_draw(const char *formula, const gt_latex_canvas_t *canvas, uint16_t max_width);
+int gt_latex_draw(const char *formula, uint16_t formula_len,
+                  const gt_latex_canvas_t *canvas, uint16_t max_width,
+                  uint16_t first_line_x_offset);
 
 /**
  * @brief 分步接口：仅解析，生成 AST / Step API: parse only, produce AST
@@ -67,7 +71,7 @@ int gt_latex_draw(const char *formula, const gt_latex_canvas_t *canvas, uint16_t
  * @note          使用完毕后需调用 gt_latex_parse_free() 释放资源
  *                Call gt_latex_parse_free() to release resources when done
  */
-int gt_latex_parse(const char *formula,
+int gt_latex_parse(const char *formula, uint16_t formula_len,
                    gt_latex_parser_t *parser,
                    gt_latex_lexer_t  *lexer);
 
@@ -88,7 +92,8 @@ void gt_latex_parse_free(gt_latex_parser_t *parser, gt_latex_lexer_t *lexer);
  */
 int gt_latex_layout(const gt_latex_parser_t *parser,
                     gt_latex_layout_t       *layout,
-                    uint16_t                 max_width);
+                    uint16_t                 max_width,
+                    uint16_t                 first_line_x_offset);
 
 /**
  * @brief 分步接口：对已完成布局执行渲染 / Step API: render from existing layout
