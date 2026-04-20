@@ -4019,21 +4019,24 @@ gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_are
                 for (uint16_t col = 0; col < row_w; col++) {
                     int32_t dx = area_out.x + col - cx;
 
-                    /* Compute angle 0..359 in GT arc convention:
-                     * 0=right(+x), 90=down(+y), 180=left(-x), 270=up(-y).
-                     * gt_atan2(y, x) returns angle from +x axis clockwise. */
-                    uint16_t ang = gt_atan2((int)dy, (int)dx);
+                    /* Compute angle in GT arc convention using float atan2 for
+                     * sub-degree precision (gt_atan2 has only 1° resolution which
+                     * causes visible color banding on fast-changing gradients like rainbow).
+                     * Convention: 0=right(+x), 90=down(+y), 180=left(-x), 270=up(-y). */
+                    float _af = atan2f((float)dy, (float)dx) * (float)(180.0 / 3.14159265358979323846);
+                    if (_af < 0.0f) _af += 360.0f;
+                    /* ang_f in [0, 360) degrees, fractional */
 
                     /* Map angle to arc position [0..65535] */
-                    int32_t rel;
+                    float rel_f;
                     if (is_full_circle) {
-                        rel = (int32_t)ang;
+                        rel_f = _af;
                     } else {
-                        rel = (int32_t)ang - (int32_t)start_angle;
-                        if (rel < 0) rel += 360;
-                        if (rel > arc_span) rel = arc_span;
+                        rel_f = _af - (float)start_angle;
+                        if (rel_f < 0.0f) rel_f += 360.0f;
+                        if (rel_f > (float)arc_span) rel_f = (float)arc_span;
                     }
-                    uint16_t pos = (uint16_t)((uint32_t)rel * 65535u / (uint32_t)arc_span);
+                    uint16_t pos = (uint16_t)(rel_f * 65535.0f / (float)arc_span + 0.5f);
 
                     /* Compute radial fade opacity */
                     int32_t r2 = dx * dx + dy * dy;
@@ -4054,15 +4057,15 @@ gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_are
 
                     gt_opa_t pixel_opa = GT_OPA_COVER;
                     if (fade_ow > 0) {
-                        int32_t dist_outer = out_radius - r_px; /* 0 at edge, + inside */
-                        if (dist_outer < (int32_t)fade_ow) {
-                            pixel_opa = (gt_opa_t)((uint32_t)GT_OPA_COVER * (uint32_t)(dist_outer < 0 ? 0 : dist_outer) / fade_ow);
+                        int32_t dist = out_radius - r_px + 2; /* +2: AA guard */
+                        if (dist < (int32_t)fade_ow) {
+                            pixel_opa = (gt_opa_t)((uint32_t)GT_OPA_COVER * (uint32_t)(dist < 0 ? 0 : dist) / fade_ow);
                         }
                     }
                     if (fade_iw > 0 && in_radius > 0) {
-                        int32_t dist_inner = r_px - in_radius; /* 0 at inner edge, + outside */
-                        if (dist_inner < (int32_t)fade_iw) {
-                            gt_opa_t inner_opa = (gt_opa_t)((uint32_t)GT_OPA_COVER * (uint32_t)(dist_inner < 0 ? 0 : dist_inner) / fade_iw);
+                        int32_t dist = r_px - in_radius + 2; /* +2: AA guard */
+                        if (dist < (int32_t)fade_iw) {
+                            gt_opa_t inner_opa = (gt_opa_t)((uint32_t)GT_OPA_COVER * (uint32_t)(dist < 0 ? 0 : dist) / fade_iw);
                             if (inner_opa < pixel_opa) pixel_opa = inner_opa;
                         }
                     }

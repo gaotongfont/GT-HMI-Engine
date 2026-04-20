@@ -78,6 +78,7 @@ typedef struct _gt_arc_s {
 #endif
     uint8_t act_fade_inner;   ///< Active arc inner edge fade width (pixels)
     uint8_t act_fade_outer;   ///< Active arc outer edge fade width (pixels)
+    uint8_t knob_dot_w;       ///< Indicator dot diameter at act end (0 = disabled)
 
     uint8_t rounded : 1;
     uint8_t anim_state: 1;
@@ -203,6 +204,38 @@ static void _init_cb(gt_obj_st * obj)
 
     arc_attr.rounded = false;
     gt_draw_arc(obj->draw_ctx, &arc_attr, &area);
+
+    // knob dot: small indicator circle at act end_angle, on arc ring midpoint
+    if (style->knob_dot_w > 0) {
+        /* reuse act arc's reduced area — same center as the active arc */
+        uint8_t act_reduce = (max_w - style->act.width) >> 1;
+        gt_area_st act_area = gt_area_reduce(obj->area, act_reduce);
+        uint16_t act_out_r = GT_MIN(act_area.w, act_area.h) >> 1;
+        gt_point_st dot_center;
+        dot_center.x = act_area.x + act_out_r;
+        dot_center.y = act_area.y + act_out_r;
+        uint16_t dot_angle = style->act.end_angle;
+        while (dot_angle > 360) { dot_angle -= 360; }
+        /* pass act_out_r as radius; gt_rounded_area_get subtracts thickness/2 internally */
+        uint16_t dot_ring_r = (act_out_r > style->act.width / 2)
+                              ? (act_out_r - style->act.width / 2 + style->knob_dot_w / 2)
+                              : act_out_r;
+        gt_area_st dot_area;
+        gt_rounded_area_get(dot_angle, dot_ring_r, style->knob_dot_w, &dot_area);
+        dot_area.x += dot_center.x;
+        dot_area.y += dot_center.y;
+        arc_attr.color = style->knob_color;
+        arc_attr.img = NULL;
+#if GT_USE_GRADIENT
+        arc_attr.grad = NULL;
+#endif
+        arc_attr.fade_inner_width = 0;
+        arc_attr.fade_outer_width = 0;
+        arc_attr.start_angle = 0;
+        arc_attr.end_angle = 360;
+        arc_attr.width = 0xFFFF;
+        gt_draw_arc(obj->draw_ctx, &arc_attr, &dot_area);
+    }
 
     //
     draw_focus(obj);
@@ -1076,6 +1109,15 @@ void gt_arc_set_act_fade(gt_obj_st * obj, uint8_t inner_width, uint8_t outer_wid
     _gt_arc_st * style = (_gt_arc_st *)obj;
     style->act_fade_inner = inner_width;
     style->act_fade_outer = outer_width;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_arc_set_knob_dot(gt_obj_st * obj, uint8_t width)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) { return; }
+    _gt_arc_st * style = (_gt_arc_st *)obj;
+    if (style->knob_dot_w == width) { return; }
+    style->knob_dot_w = width;
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

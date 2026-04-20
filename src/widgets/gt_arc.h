@@ -323,14 +323,22 @@ void gt_arc_set_act_gradient_rainbow(gt_obj_st * obj, uint16_t steps_per_seg);
 
 /**
  * @brief Set inner/outer edge fade width for the active arc.
- *        Creates a smooth transparency transition at the inner and outer
- *        boundaries of the arc ring.
  *
  * @param obj          Arc widget
  * @param inner_width  Fade width at inner edge in pixels (0 = no fade)
  * @param outer_width  Fade width at outer edge in pixels (0 = no fade)
  */
 void gt_arc_set_act_fade(gt_obj_st * obj, uint8_t inner_width, uint8_t outer_width);
+
+/**
+ * @brief Set indicator dot at the active arc end point.
+ *        The dot is drawn at the midpoint of the arc ring, colored by knob_color.
+ *        Call gt_arc_set_knob_color() to set the dot color.
+ *
+ * @param obj    Arc widget
+ * @param width  Dot diameter in pixels (0 = disabled)
+ */
+void gt_arc_set_knob_dot(gt_obj_st * obj, uint8_t width);
 
 /**
  * @brief Enable or disable background arc drawing.
