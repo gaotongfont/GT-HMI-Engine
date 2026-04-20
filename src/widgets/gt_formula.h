@@ -44,6 +44,7 @@ typedef struct {
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_formula_create(gt_obj_st * parent);
 void gt_formula_set_text(gt_obj_st * obj, const char * fmt, ...);
+void gt_formula_set_text_by_len(gt_obj_st * obj, const char * text, uint16_t len);
 
 
 void gt_formula_set_font_color(gt_obj_st * obj, gt_color_t color);

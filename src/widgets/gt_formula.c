@@ -35,6 +35,7 @@ typedef struct _gt_formula_s {
 
     uint16_t max_width;
     uint16_t first_line_x_offset;
+    uint16_t text_len;
 }_gt_formula_st;
 
 
@@ -293,7 +294,7 @@ static void _formula_init_cb(gt_obj_st * obj)
     gt_latex_parser_t parser = { 0 };
     gt_latex_layout_t layout = { 0 };
 
-    int ret = gt_latex_parse(style->text, (uint16_t)strlen(style->text), &parser, &lexer);
+    int ret = gt_latex_parse(style->text, style->text_len, &parser, &lexer);
     if(GT_LATEX_OK != ret) {
         goto _deinit_ret;
     }
@@ -408,12 +409,38 @@ void gt_formula_set_text(gt_obj_st * obj, const char * fmt, ...)
     va_start(args2, fmt);
     vsnprintf(style->text, size, fmt, args2);
     va_end(args2);
+    style->text_len = size - 1;
 
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
     return;
 
 free_lb:
     va_end(args2);
+}
+
+GT_ATTRIBUTE_RAM_TEXT
+void gt_formula_set_text_by_len(gt_obj_st * obj, const char * text, uint16_t len)
+{
+    if (NULL == text || 0 == len || false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return;
+    }
+    _gt_formula_st * style = (_gt_formula_st * )obj;
+    uint16_t size = len + 1;
+
+    if (NULL == style->text) {
+        style->text = gt_mem_malloc(size);
+    } else if (size != style->text_len + 1) {
+        style->text = gt_mem_realloc(style->text, size);
+    }
+    if (NULL == style->text) {
+        return;
+    }
+
+    gt_memcpy(style->text, text, len);
+    style->text[len] = '\0';
+    style->text_len = len;
+
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
 GT_ATTRIBUTE_RAM_TEXT
