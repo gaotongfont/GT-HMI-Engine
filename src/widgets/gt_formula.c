@@ -34,6 +34,7 @@ typedef struct _gt_formula_s {
     gt_color_t font_color;
 
     uint16_t max_width;
+    uint16_t first_line_x_offset;
 }_gt_formula_st;
 
 
@@ -292,13 +293,13 @@ static void _formula_init_cb(gt_obj_st * obj)
     gt_latex_parser_t parser = { 0 };
     gt_latex_layout_t layout = { 0 };
 
-    int ret = gt_latex_parse(style->text, &parser, &lexer);
+    int ret = gt_latex_parse(style->text, (uint16_t)strlen(style->text), &parser, &lexer);
     if(GT_LATEX_OK != ret) {
         goto _deinit_ret;
     }
 
     uint16_t w = 0, h = 0;
-    ret = gt_latex_layout(&parser, &layout, style->max_width);
+    ret = gt_latex_layout(&parser, &layout, style->max_width, style->first_line_x_offset);
     if(GT_LATEX_OK != ret) {
         GT_LOGE(GT_LOG_TAG_GUI, "Failed to layout latex formula, ret=%d", ret);
         goto _deinit_ret;
@@ -309,24 +310,24 @@ static void _formula_init_cb(gt_obj_st * obj)
         goto _deinit_ret;
     }
 
-    obj->area.w = w + 4; // 4 is padding
-    obj->area.h = h + 4; // 4 is padding
+    obj->area.w = w > style->max_width ? w : style->max_width; // 4 is padding
+    obj->area.h = h; // 4 is padding
     _formula_bg_show(obj);
 
     gt_latex_canvas_t cv = { 0 };
-    cv.x = obj->area.x + 2;
-    cv.y = obj->area.y + 2;
+    cv.x = obj->area.x;
+    cv.y = obj->area.y;
+    cv.fg_color = gt_color_to32(style->font_color);
     cv.user_data = (void*)obj;
 
-    ret = gt_latex_render(&layout, &cv);
+    ret = gt_latex_render_draw(&layout, &cv);
     if(GT_LATEX_OK != ret) {
         GT_LOGE(GT_LOG_TAG_GUI, "Failed to render latex formula, ret=%d", ret);
     }
 
 _deinit_ret:
     gt_latex_layout_deinit(&layout);
-    gt_latex_parser_deinit(&parser);
-    gt_latex_lexer_deinit(&lexer);
+    gt_latex_parse_free(&parser, &lexer);
     _formula_clear_font_cfg(obj);
 }
 
@@ -453,6 +454,15 @@ void gt_formula_set_font_config(gt_obj_st * obj, const gt_formula_font_st *cfg)
     gt_memset(style->font_cfg, 0, sizeof(gt_formula_font_st));
 
     gt_memcpy(style->font_cfg, cfg, sizeof(gt_formula_font_st));
+}
+GT_ATTRIBUTE_RAM_TEXT
+void gt_formula_set_first_line_x_offset(gt_obj_st* obj, uint16_t offset)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_formula_st * style = (_gt_formula_st * )obj;
+    style->first_line_x_offset = offset;
 }
 /* end of file ----------------------------------------------------------*/
 #endif
