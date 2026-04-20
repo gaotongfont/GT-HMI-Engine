@@ -49,6 +49,7 @@ typedef struct _gt_markdown_s {
     gt_font_info_st font_info_small;
 
     gt_color_t color_border;
+    gt_color_t font_color;
     uint8_t border_width;
 #if GT_CFG_ENABLE_FORMULA
     gt_formula_font_st formula_font_cfg;
@@ -157,6 +158,7 @@ static void _markdown_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
 
 static GT_ATTRIBUTE_RAM_TEXT gt_res_t _common_set_text(_gt_markdown_pack_st * ptr, const char * text, uint32_t len) {
     gt_obj_st * obj = ptr->act_p[ptr->act_idx];
+    _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
     gt_res_t ret = GT_RES_OK;
     if (NULL == obj || NULL == text) {
         return GT_RES_FAIL;
@@ -167,7 +169,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _common_set_text(_gt_markdown_pack_st * pt
             break;
         }
         case GT_TYPE_TEXTAREA: {
-            gt_textarea_add_str_by_len(obj, (char * )text, len, ptr->font_style, gt_color_black());
+            gt_textarea_add_str_by_len(obj, (char * )text, len, ptr->font_style, style->font_color);
             break;
         }
         case GT_TYPE_TABLE: {
@@ -201,6 +203,7 @@ _enter_md_block_default(_gt_markdown_cb_params_st * pm) {
     gt_obj_set_fixed(ptr->act_p[ptr->act_idx], true);
 
     gt_textarea_set_font_info(ptr->act_p[ptr->act_idx], &style->font_info_small);
+    gt_textarea_set_font_color(ptr->act_p[ptr->act_idx], style->font_color);
     gt_textarea_set_space(ptr->act_p[ptr->act_idx], 0, 8);
 
 #if _MARK_DOWN_LOG
@@ -221,9 +224,11 @@ _enter_md_block_h(_gt_markdown_cb_params_st * pm) {
     if (det->level < 3) {
         /** H1, H2 */
         gt_textarea_set_font_info(ptr->act_p[ptr->act_idx], &style->font_info_large);
+        gt_textarea_set_font_color(ptr->act_p[ptr->act_idx], style->font_color);
     } else if (det->level < 4) {
         /** H3 */
         gt_textarea_set_font_info(ptr->act_p[ptr->act_idx], &style->font_info_middle);
+        gt_textarea_set_font_color(ptr->act_p[ptr->act_idx], style->font_color);
     }
 
 #if _MARK_DOWN_LOG
@@ -236,7 +241,7 @@ _enter_md_block_h(_gt_markdown_cb_params_st * pm) {
 static GT_ATTRIBUTE_RAM_TEXT int
 _enter_md_block_li(_gt_markdown_cb_params_st * pm) {
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)pm->userdata;
-    // _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
+    _gt_markdown_st * style = (_gt_markdown_st * )ptr->markdown_p;
     // MD_BLOCK_LI_DETAIL * detail = (MD_BLOCK_LI_DETAIL *)pm->detail;
     char buf[256] = {0};
     gt_size_t len = 0;
@@ -245,7 +250,7 @@ _enter_md_block_li(_gt_markdown_cb_params_st * pm) {
     ptr->act_p[ptr->act_idx] = ptr->markdown_p->child[ptr->markdown_p->cnt_child - 1];
 
     if (gt_obj_is_type(ptr->act_p[ptr->act_idx], GT_TYPE_TEXTAREA) && gt_textarea_get_str_count(ptr->act_p[ptr->act_idx])) {
-        gt_textarea_add_str_by_len(ptr->act_p[ptr->act_idx], "\n", 1, GT_FONT_STYLE_NONE, gt_color_black());
+        gt_textarea_add_str_by_len(ptr->act_p[ptr->act_idx], "\n", 1, GT_FONT_STYLE_NONE, style->font_color);
     }
 
 #if _MARK_DOWN_LOG
@@ -267,7 +272,7 @@ _enter_md_block_li(_gt_markdown_cb_params_st * pm) {
 
     len = strlen(buf);
     if (len <= 0) { return 0; }
-    gt_textarea_add_str_by_len(ptr->act_p[ptr->act_idx], buf, len, ptr->font_style, gt_color_black());
+    gt_textarea_add_str_by_len(ptr->act_p[ptr->act_idx], buf, len, ptr->font_style, style->font_color);
 
     return 0;
 }
@@ -304,6 +309,7 @@ _enter_md_block_table(_gt_markdown_cb_params_st * pm) {
     gt_obj_set_inside(ptr->act_p[ptr->act_idx], true);
 
     gt_table_set_font_info(ptr->act_p[ptr->act_idx], &style->font_info_small);
+    gt_table_set_font_color(ptr->act_p[ptr->act_idx], style->font_color);
 
 #if _MARK_DOWN_LOG
     GT_LOG_A("", "enter block p[default] %p act: %p size: %d %d<<<<", ptr->markdown_p, ptr->act_p[ptr->act_idx], ptr->markdown_p->area.w, ptr->offset.y);
@@ -544,7 +550,7 @@ _leave_span_cb(MD_SPANTYPE type, void * detail, void * userdata) {
             gt_obj_set_pos(formula, 0, ptr->offset.y + ptr->markdown_p->area.y);
             gt_obj_set_touch_parent(formula, true);
             gt_obj_set_fixed(formula, true);
-            gt_formula_set_font_color(formula, style->font_info_small.palette);
+            gt_formula_set_font_color(formula, style->font_color);
             gt_formula_set_max_width(formula, ptr->markdown_p->area.w);
             if (style->formula_font_cfg_valid) {
                 gt_formula_set_font_config(formula, &style->formula_font_cfg);
@@ -738,6 +744,15 @@ gt_font_info_st * gt_markdown_get_font_info_small(gt_obj_st * markdown)
     }
     _gt_markdown_st * style = (_gt_markdown_st *)markdown;
     return &style->font_info_small;
+}
+
+void gt_markdown_set_font_color(gt_obj_st * markdown, gt_color_t color)
+{
+    if (false == gt_obj_is_type(markdown, OBJ_TYPE)) {
+        return;
+    }
+    _gt_markdown_st * style = (_gt_markdown_st *)markdown;
+    style->font_color = color;
 }
 
 #if GT_CFG_ENABLE_FORMULA

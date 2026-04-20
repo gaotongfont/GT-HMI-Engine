@@ -71,6 +71,8 @@ gt_font_info_st * gt_markdown_get_font_info_large(gt_obj_st * markdown);
 gt_font_info_st * gt_markdown_get_font_info_middle(gt_obj_st * markdown);
 gt_font_info_st * gt_markdown_get_font_info_small(gt_obj_st * markdown);
 
+void gt_markdown_set_font_color(gt_obj_st * markdown, gt_color_t color);
+
 #if GT_CFG_ENABLE_FORMULA
 void gt_markdown_set_formula_font_config(gt_obj_st * markdown, const gt_formula_font_st * cfg);
 #endif
