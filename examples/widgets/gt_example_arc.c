@@ -116,7 +116,10 @@ static gt_obj_st * _make_thin_ring(gt_obj_st * scr)
     gt_arc_set_act_width(arc, 8);
     gt_arc_set_rounded(arc, true);
     gt_arc_set_value_min_max(arc, 0, 100);
-    gt_arc_set_value(arc, 75);
+    // gt_arc_set_value(arc, 75);
+    gt_arc_set_value(arc, 100);
+    gt_arc_set_knob_color(arc, gt_color_white());
+    gt_arc_set_knob_dot(arc, 4);
     if (_arc_count < 18) {
         _arc_objects[_arc_count++] = arc;
     }
@@ -136,6 +139,8 @@ static gt_obj_st * _make_medium_ring(gt_obj_st * scr)
     gt_arc_set_rounded(arc, true);
     gt_arc_set_value_min_max(arc, 0, 100);
     gt_arc_set_value(arc, 50);
+    gt_arc_set_knob_color(arc, gt_color_white());
+    gt_arc_set_knob_dot(arc, 10);
     if (_arc_count < 18) {
         _arc_objects[_arc_count++] = arc;
     }
@@ -313,7 +318,7 @@ static gt_obj_st * _make_rainbow_fade(gt_obj_st * scr)
     gt_arc_set_act_start_end_angle(arc, 0, 360);
     gt_arc_set_act_width(arc, 32);
     gt_arc_set_act_gradient_rainbow(arc, 20);
-    gt_arc_set_act_fade(arc, 8, 8);
+    gt_arc_set_act_fade(arc, 10, 10);
     if (_arc_count < 18) {
         _arc_objects[_arc_count++] = arc;
     }
@@ -348,15 +353,15 @@ static gt_obj_st * _make_inner_fade(gt_obj_st * scr)
     gt_arc_set_bg_color(arc, gt_color_hex(0xDDDDDD));
     gt_arc_set_draw_bg(arc, false);
     gt_arc_set_bg_start_end_angle(arc, 135, 45);
-    gt_arc_set_bg_width(arc, 24);
+    gt_arc_set_bg_width(arc, 40);
     gt_arc_set_act_start_end_angle(arc, 135, 45);
-    gt_arc_set_act_width(arc, 24);
+    gt_arc_set_act_width(arc, 40);
     gt_arc_set_value_min_max(arc, 0, 100);
     gt_arc_set_value(arc, 90);
     gt_gradient_dsc_st * g = gt_gradient_dsc_create(GT_GRAD_DIR_HOR);
     gt_gradient_dsc_add_stop(g, gt_color_hex(0x76FF03), gt_color_hex(0xFF6D00), 60);
     gt_arc_set_act_gradient(arc, g);
-    gt_arc_set_act_fade(arc, 10, 0);
+    gt_arc_set_act_fade(arc, 35, 0);
     if (_arc_count < 18) {
         _arc_objects[_arc_count++] = arc;
     }
