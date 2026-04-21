@@ -17,7 +17,7 @@
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
 #include "../core/gt_fs.h"
-#include "string.h"
+#include "../core/gt_img_decoder.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
@@ -190,7 +190,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _resize_by_img(gt_obj_st * obj) {
     gt_area_st area = obj->area;
     bool is_ok = false;
 
-    if (GT_FS_RES_OK == gt_fs_read_img_wh(style->src, &area.w, &area.h)) {
+    if (GT_FS_RES_OK == gt_fs_read_img_wh(style->src, &area.w, &area.h) &&
+        area.w > 0 && area.h > 0) {
         is_ok = true;
 #if GT_USE_FILE_HEADER
     } else if (GT_FS_RES_OK == gt_fs_fh_read_img_wh(&style->fh, &area.w, &area.h)) {
@@ -212,6 +213,12 @@ static GT_ATTRIBUTE_RAM_TEXT void _resize_by_img(gt_obj_st * obj) {
     } else if(style->raw.img) {
         area.w = style->raw.header.w;
         area.h = style->raw.header.h;
+        is_ok = true;
+    } else if (style->src &&
+        GT_RES_OK == gt_img_decoder_get_info(style->src, &info) &&
+        info.w > 0 && info.h > 0) {
+        area.w = info.w;
+        area.h = info.h;
         is_ok = true;
     }
     if (false == is_ok) { return; }

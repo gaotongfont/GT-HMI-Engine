@@ -603,6 +603,15 @@ extern "C" {
     #define GT_USE_SJPG         01
 #endif
 
+#ifndef GT_USE_SVG
+    /**
+     * @brief use nanosvg to decode SVG images (SVG Tiny 1.2)
+     *      Flash: ~60 KB, RAM: W*H*4 bytes during decode (one-shot rasterize)
+     *      [default: 0]
+     */
+    #define GT_USE_SVG          0
+#endif
+
 #ifndef GT_USE_GIF
     /**
      * @brief use gifDec

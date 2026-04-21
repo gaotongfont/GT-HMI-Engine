@@ -20,6 +20,10 @@
 #include "./jpeg/gt_sjpg.h"
 #endif
 
+#if GT_USE_SVG
+#include "./svg/gt_svg.h"
+#endif
+
 
 /* private define -------------------------------------------------------*/
 
@@ -89,6 +93,10 @@ void _gt_extra_init(void)
 
 #if GT_USE_SJPG
     gt_sjpg_init();
+#endif
+
+#if GT_USE_SVG
+    gt_svg_init();
 #endif
 
 }

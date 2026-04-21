@@ -3290,6 +3290,12 @@ handler_lb:
             _filling_by_ram_data(draw_ctx, &blend_dsc, &dsc_img);
             break;
         }
+#if GT_USE_SVG
+        case GT_IMG_DECODER_TYPE_SVG: {
+            _filling_by_ram_data(draw_ctx, &blend_dsc, &dsc_img);
+            break;
+        }
+#endif
         default: {
             _filling_by_default(draw_ctx, &blend_dsc, &dsc_img);
             break;

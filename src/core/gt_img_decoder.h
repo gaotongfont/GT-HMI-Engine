@@ -62,6 +62,7 @@ typedef enum {
     GT_IMG_DECODER_TYPE_PNG,        ///< supports png type image
     GT_IMG_DECODER_TYPE_SJPG,       ///< supports jpg / sjpg / jpeg type image
     GT_IMG_DECODER_TYPE_RAM,        ///< supports ram type image
+    GT_IMG_DECODER_TYPE_SVG,        ///< supports svg type image
 
     GT_IMG_DECODER_TYPE_COUNT,      ///< totally supports type count
 }gt_img_decoder_type_em;
