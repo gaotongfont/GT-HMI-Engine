@@ -457,3 +457,19 @@ void gt_refr_area_align(gt_area_st * area);
 | `gt_refr_timer()` | 每帧取出脏区后对齐，再驱动绘制 |
 | `gt_refr_force_flush()` | 强制刷新时对齐 |
 | `gt_disp.c: _update_area_flush_by_calc_partly_redraw_area()` | Y 轴坐标映射后对齐（VER） |
+
+---
+
+## gt_draw_arc() 结构
+
+`gt_draw_arc()` 拆分为三个函数，主函数约 55 行：
+
+| 函数 | 说明 |
+|------|------|
+| `_arc_geo_st` | 几何上下文结构体（角度、半径、mask 等） |
+| `_arc_draw_caps_grad()` | 渐变路径端点圆绘制，含短弧颜色插值 |
+| `_arc_draw_solid()` | 实色/图片路径绘制 |
+| `gt_draw_arc()` | 主函数：初始化 geo，分发到对应路径 |
+
+渐变弧端点圆颜色取自 `gt_gradient_dsc_get_color_pos()`（起点 pos=0，终点 pos=65535）。
+短弧（两端点距离 < `2×width`）时，终点圆颜色向起点颜色插值，消除硬边界。
