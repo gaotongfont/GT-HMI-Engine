@@ -39,6 +39,7 @@ typedef enum {
     GT_EXAMPLE_SCR_CHECKBOX,
     GT_EXAMPLE_SCR_IMG_BUTTON,
     GT_EXAMPLE_SCR_IMG,
+    GT_EXAMPLE_SCR_SVG,
     GT_EXAMPLE_SCR_INPUT,
     GT_EXAMPLE_SCR_KEYBOARD,
     GT_EXAMPLE_SCR_LABEL,
@@ -118,6 +119,7 @@ gt_obj_st * gt_examples_button(void);
 gt_obj_st * gt_examples_checkbox(void);
 gt_obj_st * gt_examples_img_button(void);
 gt_obj_st * gt_examples_img(void);
+gt_obj_st * gt_examples_svg(void);
 gt_obj_st * gt_example_input(void);
 gt_obj_st * gt_examples_keyboard(void);
 gt_obj_st * gt_examples_label(void);

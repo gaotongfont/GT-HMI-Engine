@@ -25,6 +25,7 @@ static const gt_scr_list_st _example_scr_list[] = {
     { GT_EXAMPLE_SCR_CHECKBOX,      gt_examples_checkbox },
     { GT_EXAMPLE_SCR_IMG_BUTTON,    gt_examples_img_button },
     { GT_EXAMPLE_SCR_IMG,           gt_examples_img },
+    { GT_EXAMPLE_SCR_SVG,           gt_examples_svg },
     { GT_EXAMPLE_SCR_INPUT,         gt_example_input },
     { GT_EXAMPLE_SCR_KEYBOARD,      gt_examples_keyboard },
     { GT_EXAMPLE_SCR_LABEL,         gt_examples_label },

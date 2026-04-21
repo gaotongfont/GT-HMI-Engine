@@ -28,6 +28,7 @@ static const _menu_item_st _menu_items[] = {
     { "Checkbox",       GT_EXAMPLE_SCR_CHECKBOX },
     { "ImgButton",      GT_EXAMPLE_SCR_IMG_BUTTON },
     { "Image",          GT_EXAMPLE_SCR_IMG },
+    { "SVG",            GT_EXAMPLE_SCR_SVG },
     { "Input",          GT_EXAMPLE_SCR_INPUT },
     { "Keyboard",       GT_EXAMPLE_SCR_KEYBOARD },
     { "Label",          GT_EXAMPLE_SCR_LABEL },

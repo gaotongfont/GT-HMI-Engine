@@ -16,6 +16,7 @@
 #include "../../src/widgets/gt_label.h"
 #include "../../src/widgets/gt_btn.h"
 #include "../../src/core/gt_disp.h"
+#include "../../src/extra/svg/gt_svg.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -235,4 +236,76 @@ gt_obj_st * gt_examples_img(void)
 
 
 #endif
+
+/* ======================================================================
+ * SVG example
+ * ====================================================================== */
+#if GT_USE_EXAMPLES
+
+#if GT_USE_SVG
+static gt_obj_st * _svg_img1 = NULL;
+static gt_obj_st * _svg_img2 = NULL;
+
+static void _svg_switch_cb(gt_event_st * e) {
+    static int _cnt = 1;
+    gt_img_set_src(_svg_img1, (_cnt++ % 2) ? "./test2.svg" : "./test.svg");
+}
+#endif  /* GT_USE_SVG */
+
+gt_obj_st * gt_examples_svg(void)
+{
+    gt_obj_st * scr = gt_obj_create(NULL);
+    gt_screen_set_bgcolor(scr, gt_color_hex(0x1E1E2E));
+
+#if GT_USE_SVG
+    /* title */
+    gt_obj_st * lbl = gt_label_create(scr);
+    gt_label_set_text(lbl, "SVG Decoder Test");
+    gt_obj_set_pos(lbl, 10, 8);
+    gt_obj_set_size(lbl, 300, 22);
+    gt_label_set_font_color(lbl, gt_color_white());
+
+    /* SVG image 1 — loaded via user_src[], click to switch */
+    _svg_img1 = gt_img_create(scr);
+    gt_img_set_src(_svg_img1, "./test.svg");
+    gt_obj_set_pos(_svg_img1, 10, 40);
+
+    gt_obj_st * lbl1 = gt_label_create(scr);
+    gt_label_set_text(lbl1, "test.svg (click to switch)");
+    gt_obj_set_pos(lbl1, 10, 215);
+    gt_obj_set_size(lbl1, 260, 20);
+    gt_label_set_font_color(lbl1, gt_color_hex(0xAAAAAA));
+    gt_obj_add_event_cb(_svg_img1, _svg_switch_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
+
+    /* SVG image 2 — loaded via user_src[], static */
+    _svg_img2 = gt_img_create(scr);
+    gt_img_set_src(_svg_img2, "./test2.svg");
+    gt_obj_set_pos(_svg_img2, 200, 40);
+
+    gt_obj_st * lbl2 = gt_label_create(scr);
+    gt_label_set_text(lbl2, "test2.svg");
+    gt_obj_set_pos(lbl2, 250, 215);
+    gt_obj_set_size(lbl2, 200, 20);
+    gt_label_set_font_color(lbl2, gt_color_hex(0xAAAAAA));
+
+    /* info label */
+    gt_obj_st * lbl_info = gt_label_create(scr);
+    gt_label_set_text(lbl_info, "GT_USE_SVG=1  nanosvg SVG Tiny 1.2");
+    gt_obj_set_pos(lbl_info, 10, 235);
+    gt_obj_set_size(lbl_info, 500, 20);
+    gt_label_set_font_color(lbl_info, gt_color_hex(0x888888));
+
+#else
+    gt_obj_st * lbl_off = gt_label_create(scr);
+    gt_label_set_text(lbl_off, "GT_USE_SVG is disabled.\nEnable it in gt_conf.h to run this demo.");
+    gt_obj_set_pos(lbl_off, 20, 60);
+    gt_obj_set_size(lbl_off, 500, 60);
+    gt_label_set_font_color(lbl_off, gt_color_hex(0xFF6666));
+#endif  /* GT_USE_SVG */
+
+    GT_EXAMPLE_ADD_BACK_BTN(scr);
+    return scr;
+}
+
+#endif  /* GT_USE_EXAMPLES */
 /* end ------------------------------------------------------------------*/
