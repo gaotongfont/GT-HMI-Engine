@@ -80,8 +80,19 @@ static inline uint32_t _get_32bit_int(const char * buffer) {
  */
 static void _gt_png_color_convert_depth(uint8_t * image, uint8_t * alpha, uint32_t size) {
 #if GT_COLOR_DEPTH == 32
-    GT_UNUSED(image);
-    GT_UNUSED(size);
+    /* lodepng outputs RGBA8888, but gt_color32_t expects BGRA layout.
+     * Swap R<->B in-place. Since R and B are 1 byte apart, we must read
+     * all channels first before writing. */
+    for (uint32_t i = 0; i < size; i++) {
+        uint8_t r = image[i * 4 + 0];
+        uint8_t g = image[i * 4 + 1];
+        uint8_t b = image[i * 4 + 2];
+        alpha[i]         = image[i * 4 + 3];
+        image[i * 4 + 0] = b;  /* blue */
+        image[i * 4 + 1] = g;  /* green */
+        image[i * 4 + 2] = r;  /* red */
+        image[i * 4 + 3] = 0xFF; /* alpha forced opaque (engine handles alpha separately) */
+    }
 #elif GT_COLOR_DEPTH == 16
     gt_color32_t * img_argb = (gt_color32_t * )image;
     gt_color_t color;

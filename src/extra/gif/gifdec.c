@@ -171,8 +171,9 @@ static gd_GIF * _common_open_gif(gd_GIF * gif) {
             gif->canvas[i] = color.full;
             gif->mask[i]   = GT_OPA_100;
 #elif GT_COLOR_DEPTH == 1
-            color = gt_color_make(bgcolor[0], bgcolor[1], bgcolor[2]);
-            gif->canvas[i] = color.full > 128 ? 1 : 0;
+            /* Use perceptual luminance for grayscale threshold */
+            uint8_t lum = (bgcolor[0] * 77 + bgcolor[1] * 150 + bgcolor[2] * 29) >> 8;
+            gif->canvas[i] = lum > 127 ? 1 : 0;
             gif->mask[i]   = GT_OPA_100;
 #endif
 
@@ -634,10 +635,10 @@ render_frame_rect(gd_GIF *gif, uint8_t *buffer, uint8_t * mask)
             buffer[cnt] = c.full;
             mask[cnt]   = GT_OPA_100;
 #elif GT_COLOR_DEPTH == 1
-            cnt = (i + k) << 1;
-            uint8_t b = ( color[0] | color[1] | color[2] );
-            buffer[cnt] = b > 128 ? 1 : 0;
-            buffer[cnt] = GT_OPA_100;
+            cnt = i + k;
+            uint8_t lum = (color[0] * 77 + color[1] * 150 + color[2] * 29) >> 8;
+            buffer[cnt] = lum > 127 ? 1 : 0;
+            mask[cnt]   = GT_OPA_100;
 
 #endif
             }
@@ -683,8 +684,8 @@ dispose(gd_GIF *gif)
             gif->mask[cnt]   = opa;
 #elif GT_COLOR_DEPTH == 1
             cnt = i + k;
-            uint8_t b = bgcolor[0] | bgcolor[1] | bgcolor[2];
-            gif->canvas[cnt] = b > 128 ? 1 : 0;
+            uint8_t lum = (bgcolor[0] * 77 + bgcolor[1] * 150 + bgcolor[2] * 29) >> 8;
+            gif->canvas[cnt] = lum > 127 ? 1 : 0;
             gif->mask[cnt]   = opa;
 #endif
             }

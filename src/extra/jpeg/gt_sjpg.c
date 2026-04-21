@@ -466,10 +466,13 @@ static gt_res_t _gt_sjpg_read_line(struct _gt_img_dsc_s * dsc,
 
 #if GT_COLOR_DEPTH == 32
     for (uint32_t i = 0, offset = 0, length = len / color_depth; i < length; i++) {
-        buffer[offset + 3] = 0xff;
-        buffer[offset + 2] = *cache++;
-        buffer[offset + 1] = *cache++;
-        buffer[offset]     = *cache++;
+        uint8_t r = *cache++;
+        uint8_t g = *cache++;
+        uint8_t b = *cache++;
+        buffer[offset]     = b;   /* blue  (gt_color32_t layout is BGRA) */
+        buffer[offset + 1] = g;   /* green */
+        buffer[offset + 2] = r;   /* red   */
+        buffer[offset + 3] = 0xff;/* alpha */
         offset += 4;
     }
 #elif GT_COLOR_DEPTH == 16
@@ -484,12 +487,23 @@ static gt_res_t _gt_sjpg_read_line(struct _gt_img_dsc_s * dsc,
     gt_memcpy(buffer, cache, len);
 #endif
 #elif GT_COLOR_DEPTH == 8
-    uint8_t color = 0;
-    for (uint32_t i = 0, offset = 0; i < len; i++) {
-        color = (*cache++ & 0xc0);
-        color |= (*cache++ & 0xe0) >> 2;
-        color |= (*cache++ & 0xe0) >> 5;
-        buffer[offset++] = color;
+    /* tjpgd JD_FORMAT=2 outputs grayscale (1 byte/pixel).
+     * Pack into RGB332: R(3)G(3)B(2) */
+    for (uint32_t i = 0; i < len; i++) {
+        uint8_t gray = *cache++;
+        /* Map 8-bit gray to RGB332: replicate gray into each channel proportionally */
+        buffer[i] = ((gray >> 5) << 5) | /* R: top 3 bits */
+                    ((gray >> 5) << 2) | /* G: top 3 bits */
+                    (gray >> 6);          /* B: top 2 bits */
+    }
+#elif GT_COLOR_DEPTH == 1
+    /* Grayscale → 1-bit threshold */
+    for (uint32_t i = 0; i < len; i++) {
+        uint8_t gray = *cache++;
+        uint8_t bit = gray > 127 ? 1 : 0;
+        uint32_t byte_idx = i >> 3;
+        uint32_t bit_idx  = i & 7;
+        buffer[byte_idx] |= (bit << bit_idx);
     }
 #endif
 

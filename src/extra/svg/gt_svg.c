@@ -47,9 +47,17 @@ static inline bool _is_svg_ext(const char * path) {
  *  Forward iteration: write dst[i*2] before reading src[i*4], safe in-place. */
 static void _rgba_to_gt_color(uint8_t * rgba, gt_opa_t * alpha, uint32_t pixel_count) {
 #if GT_COLOR_DEPTH == 32
+    /* gt_color32_t is BGRA in memory, .full = 0xAARRGGBB on little-endian.
+     * nanosvg outputs RGBA, so swap R<->B to match GT's BGRA layout. */
     for (uint32_t i = 0; i < pixel_count; i++) {
-        alpha[i]        = rgba[i * 4 + 3];
-        rgba[i * 4 + 3] = 0xFF;
+        uint8_t r = rgba[i * 4 + 0];
+        uint8_t g = rgba[i * 4 + 1];
+        uint8_t b = rgba[i * 4 + 2];
+        alpha[i]         = rgba[i * 4 + 3];
+        rgba[i * 4 + 0]  = b;       /* blue */
+        rgba[i * 4 + 1]  = g;       /* green */
+        rgba[i * 4 + 2]  = r;       /* red */
+        rgba[i * 4 + 3]  = 0xFF;    /* alpha forced opaque */
     }
 #else
     uint32_t wi = 0;
