@@ -1256,3 +1256,46 @@ GT_LOGE("my_tag", "error: %s", msg);    /* ERROR 级别 */
 
 <br/>
 
+---
+
+## :art: **颜色系统与图片解码**
+
+<br/>
+
+### 颜色深度
+
+| depth | 类型 | 大小 | 通道布局 |
+|-------|------|------|---------|
+| 1 | `gt_color1_t` | 1B | `{r:1, g:1, b:1}` |
+| 8 | `gt_color8_t` | 1B | `{b:2, g:3, r:3}` (RGB332) |
+| 16 | `gt_color16_t` | 2B | `{b:5, g:6, r:5}` (RGB565) |
+| 32 | `gt_color32_t` | 4B | `{b, g, r, a}` (BGRA) |
+
+`GT_COLOR_16_SWAP` 仅影响 depth=16 的字节序，depth=32 无对应交换宏，固定为 BGRA 布局。
+
+### 图片解码器通道转换
+
+所有输出 RGBA8888 的解码器（PNG/SVG）在 depth=32 时必须做 R↔B 交换，以匹配 `gt_color32_t` 的 BGRA 内存布局。
+
+| 解码器 | depth=32 处理 | depth=16/8/1 处理 |
+|--------|-------------|------------------|
+| PNG | RGBA→BGRA 交换 | `gt_color_make()` 自动处理 |
+| SVG | RGBA→BGRA 交换 | `gt_color_make()` 自动处理 |
+| GIF | 索引调色板直接映射 | 同上 |
+| SJPEG | RGB→BGRA 交换 | tjpgd 已按 JD_FORMAT 输出 |
+
+### SJPEG (tjpgd) JD_FORMAT 映射
+
+```
+depth=32 → JD_FORMAT=0 (RGB888, 3B/pixel)
+depth=16 → JD_FORMAT=1 (RGB565, 2B/pixel)
+depth=8  → JD_FORMAT=2 (Grayscale, 1B/pixel)
+depth=1  → JD_FORMAT=2 (Grayscale, 1B/pixel, 二值化)
+```
+
+### 切换颜色深度注意事项
+
+修改 `GT_COLOR_DEPTH` 后需同步调整 `GT_MEM_SIZE`（帧缓冲 RAM 随深度线性增长），并验证图片渲染颜色是否正确。depth=32 是最容易出问题的场景（RGBA/BGRA 反色）。
+
+<br/>
+
