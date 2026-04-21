@@ -3874,58 +3874,188 @@ GT_ATTRIBUTE_RAM_TEXT void draw_focus(gt_obj_st* obj)
     draw_bg(obj->draw_ctx, &rect_attr, &area);
 }
 
+/* ---- Arc geometry context -------------------------------------------- */
+typedef struct {
+    uint16_t start_angle;
+    uint16_t end_angle;
+    uint16_t out_radius;
+    uint16_t in_radius;
+    uint16_t width;
+    int16_t  out_mask_id;
+    int16_t  in_mask_id;
+    gt_mask_radius_st out_mask;
+    gt_mask_radius_st in_mask;
+    gt_area_st area_out;
+} _arc_geo_st;
+
+/* ---- Gradient arc rounded end-caps ----------------------------------- */
+#if GT_USE_GRADIENT
+static inline void GT_ATTRIBUTE_RAM_TEXT
+_arc_draw_caps_grad(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc,
+                    _arc_geo_st * geo, int32_t cx, int32_t cy,
+                    uint16_t start_angle, uint16_t end_angle)
+{
+    if (!dsc->rounded) { return; }
+
+    gt_area_st s_area, e_area;
+    gt_rounded_area_get(start_angle, geo->out_radius, geo->width, &s_area);
+    s_area.x += cx; s_area.y += cy;
+    gt_rounded_area_get(end_angle, geo->out_radius, geo->width, &e_area);
+    e_area.x += cx; e_area.y += cy;
+
+    gt_color_t c_start = gt_gradient_dsc_get_color_pos(dsc->grad, 0);
+    gt_color_t c_end   = gt_gradient_dsc_get_color_pos(dsc->grad, 65535);
+
+    int32_t ddx = (e_area.x + e_area.w / 2) - (s_area.x + s_area.w / 2);
+    int32_t ddy = (e_area.y + e_area.h / 2) - (s_area.y + s_area.h / 2);
+    int32_t dist2  = ddx * ddx + ddy * ddy;
+    int32_t thresh = geo->width * 2;
+
+    gt_color_t c_end_draw = c_end;
+    if (dist2 < thresh * thresh) {
+        uint32_t ud = (uint32_t)dist2;
+        uint32_t x0 = (uint32_t)(thresh > 0 ? thresh : 1);
+        x0 = (x0 + ud / x0) >> 1;
+        x0 = (x0 + ud / x0) >> 1;
+        x0 = (x0 + ud / x0) >> 1;
+        uint8_t t = (uint8_t)((uint32_t)x0 * 255u / (uint32_t)thresh);
+        c_end_draw = gt_color_mix(c_end, c_start, t);
+    }
+
+    gt_attr_rect_st cap;
+    gt_graph_init_rect_attr(&cap);
+    cap.bg_opa = dsc->opa;
+    cap.reg.is_fill = 1;
+
+    cap.bg_color = c_start;
+    cap.radius   = s_area.w;
+    draw_bg(draw_ctx, &cap, &s_area);
+
+    cap.bg_color = c_end_draw;
+    cap.radius   = e_area.w;
+    draw_bg(draw_ctx, &cap, &e_area);
+}
+#endif /* GT_USE_GRADIENT */
+
+/* ---- Solid/image arc path -------------------------------------------- */
+static inline void GT_ATTRIBUTE_RAM_TEXT
+_arc_draw_solid(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc,
+                _arc_geo_st * geo, gt_attr_rect_st * rect_attr, bool is_img)
+{
+    uint16_t start_angle = geo->start_angle;
+    uint16_t end_angle   = geo->end_angle;
+
+    if (start_angle + 360 == end_angle || start_angle == end_angle + 360) {
+        if (is_img) { draw_bg_img(draw_ctx, rect_attr, &geo->area_out); }
+        else        { draw_bg(draw_ctx, rect_attr, &geo->area_out); }
+        gt_mask_remove_idx(geo->out_mask_id); gt_mask_free(&geo->out_mask);
+        if (geo->in_radius > 0) { gt_mask_remove_idx(geo->in_mask_id); gt_mask_free(&geo->in_mask); }
+        return;
+    }
+
+    while (start_angle >= 360) { start_angle -= 360; }
+    while (end_angle   >= 360) { end_angle   -= 360; }
+
+    gt_point_st center = {
+        .x = geo->area_out.x + geo->out_radius,
+        .y = geo->area_out.y + geo->out_radius,
+    };
+
+    gt_mask_angle_st angle_mask = {0};
+    gt_mask_angle_init(&angle_mask, center.x, center.y, start_angle, end_angle);
+    int16_t angle_mask_id = gt_mask_add(&angle_mask);
+
+    int32_t angle_gap = (end_angle > start_angle)
+                      ? (360 - (end_angle - start_angle))
+                      : (start_angle - end_angle);
+
+    if (angle_gap > 60 && geo->out_radius > 10) {
+        if (is_img) {
+            draw_bg_img(draw_ctx, rect_attr, &geo->area_out);
+        } else {
+            _quarter_circle_st q;
+            q.coords        = &geo->area_out;
+            q.center        = &center;
+            q.radius        = geo->out_radius;
+            q.width         = geo->width;
+            q.start_angle   = start_angle;
+            q.end_angle     = end_angle;
+            q.start_quarter = (start_angle / 90) & 0x03;
+            q.end_quarter   = (end_angle   / 90) & 0x03;
+            q.rect_dsc      = rect_attr;
+            _draw_quarter_circle_0(draw_ctx, &q);
+            _draw_quarter_circle_1(draw_ctx, &q);
+            _draw_quarter_circle_2(draw_ctx, &q);
+            _draw_quarter_circle_3(draw_ctx, &q);
+        }
+    } else {
+        if (is_img) { draw_bg_img(draw_ctx, rect_attr, &geo->area_out); }
+        else        { draw_bg(draw_ctx, rect_attr, &geo->area_out); }
+    }
+
+    gt_mask_remove_idx(angle_mask_id); gt_mask_free(&angle_mask);
+    gt_mask_remove_idx(geo->out_mask_id); gt_mask_free(&geo->out_mask);
+    if (geo->in_radius > 0) { gt_mask_remove_idx(geo->in_mask_id); gt_mask_free(&geo->in_mask); }
+
+    if (is_img || !dsc->rounded) { return; }
+
+    gt_area_st round_area;
+    gt_rounded_area_get(start_angle, geo->out_radius, geo->width, &round_area);
+    round_area.x += center.x; round_area.y += center.y;
+    rect_attr->radius = round_area.w;
+    draw_bg(draw_ctx, rect_attr, &round_area);
+
+    gt_rounded_area_get(end_angle, geo->out_radius, geo->width, &round_area);
+    round_area.x += center.x; round_area.y += center.y;
+    rect_attr->radius = round_area.w;
+    draw_bg(draw_ctx, rect_attr, &round_area);
+}
+
 void GT_ATTRIBUTE_RAM_TEXT
 gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_area_st * coords)
 {
 
-    if(dsc->opa <= GT_OPA_MIN) { return ;}
-    if(dsc->width == 0) { return ;}
-    if(dsc->start_angle == dsc->end_angle) { return ;}
+    if(dsc->opa <= GT_OPA_MIN) { return; }
+    if(dsc->width == 0) { return; }
+    if(dsc->start_angle == dsc->end_angle) { return; }
 
-    uint16_t start_angle = dsc->start_angle;
-    uint16_t end_angle = dsc->end_angle;
+    /* --- Geometry init --- */
+    _arc_geo_st geo = {0};
+    geo.start_angle = dsc->start_angle;
+    geo.end_angle   = dsc->end_angle;
+    gt_area_copy(&geo.area_out, coords);
+    geo.out_radius = GT_MIN(geo.area_out.h, geo.area_out.w) >> 1;
+    geo.width      = GT_MIN(dsc->width, geo.out_radius);
 
-    gt_area_st area_out;
-    gt_area_copy(&area_out, coords);
-    uint16_t out_radius = GT_MIN(area_out.h, area_out.w) >> 1;
-    uint16_t width = GT_MIN(dsc->width, out_radius);
+    gt_mask_radius_init(&geo.out_mask, &geo.area_out, geo.out_radius, GT_MASK_RADIUS_CFG_INNER);
+    geo.out_mask_id = gt_mask_add(&geo.out_mask);
 
-    int16_t out_mask_id = -1;
-    gt_mask_radius_st out_mask = {0};
-    gt_mask_radius_init(&out_mask, &area_out, out_radius, GT_MASK_RADIUS_CFG_INNER);
-    out_mask_id = gt_mask_add(&out_mask);
-
-    gt_area_st area_in;
-    area_in = gt_area_reduce(area_out, width);
-
-    uint16_t in_radius = GT_MIN(area_in.h, area_in.w) >> 1;
-    int16_t in_mask_id = -1;
-    gt_mask_radius_st in_mask = {0};
-    if(in_radius > 0){
-        gt_mask_radius_init(&in_mask, &area_in, in_radius, GT_MASK_RADIUS_CFG_OUTER);
-        in_mask_id = gt_mask_add(&in_mask);
+    gt_area_st area_in = gt_area_reduce(geo.area_out, geo.width);
+    geo.in_radius = GT_MIN(area_in.h, area_in.w) >> 1;
+    geo.in_mask_id = -1;
+    if (geo.in_radius > 0) {
+        gt_mask_radius_init(&geo.in_mask, &area_in, geo.in_radius, GT_MASK_RADIUS_CFG_OUTER);
+        geo.in_mask_id = gt_mask_add(&geo.in_mask);
     }
 
+    /* --- rect_attr: solid color or image --- */
     bool is_img = false;
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    if( dsc->img
+    if (dsc->img
 #if GT_USE_FILE_HEADER
         || dsc->file_header
 #endif
-
 #if GT_USE_DIRECT_ADDR
         || !gt_hal_is_invalid_addr(dsc->addr)
 #endif
-
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
         || !gt_hal_is_invalid_custom_size_addr(dsc->custom_addr)
 #endif
-    ){
+    ) {
         is_img = true;
         rect_attr.bg_img_opa = dsc->opa;
         rect_attr.bg_img_src = dsc->img;
-
 #if GT_USE_FILE_HEADER
         rect_attr.file_header = dsc->file_header;
 #endif
@@ -3935,9 +4065,8 @@ gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_are
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
         rect_attr.custom_addr = dsc->custom_addr;
 #endif
-    }
-    else{
-        rect_attr.bg_opa = dsc->opa;
+    } else {
+        rect_attr.bg_opa   = dsc->opa;
         rect_attr.bg_color = dsc->color;
         rect_attr.reg.is_fill = 1;
     }
@@ -3946,6 +4075,13 @@ gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_are
     /* ---- Angular gradient path (per-pixel scanline + Floyd-Steinberg) -- */
     if (!is_img && dsc->grad && dsc->grad->stops &&
         _gt_vector_get_count(dsc->grad->stops) > 0) {
+
+        uint16_t start_angle = geo.start_angle;
+        uint16_t end_angle   = geo.end_angle;
+        uint16_t out_radius  = geo.out_radius;
+        uint16_t in_radius   = geo.in_radius;
+        uint16_t width       = geo.width;
+        gt_area_st area_out  = geo.area_out;
 
         while(start_angle >= 360) { start_angle -= 360; }
         while(end_angle >= 360) { end_angle -= 360; }
@@ -4161,108 +4297,17 @@ gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_are
         if (fs_err_nxt)    gt_mem_free(fs_err_nxt);
 
         if (ang_mask_id >= 0) { gt_mask_remove_idx(ang_mask_id); gt_mask_free(&ang_mask); }
-        gt_mask_remove_idx(out_mask_id);
-        gt_mask_free(&out_mask);
-        if (in_radius > 0) { gt_mask_remove_idx(in_mask_id); gt_mask_free(&in_mask); }
+        gt_mask_remove_idx(geo.out_mask_id); gt_mask_free(&geo.out_mask);
+        if (geo.in_radius > 0) { gt_mask_remove_idx(geo.in_mask_id); gt_mask_free(&geo.in_mask); }
+
+        if (!is_full_circle) {
+            _arc_draw_caps_grad(draw_ctx, dsc, &geo, cx, cy, start_angle, end_angle);
+        }
         return;
     }
 #endif /* GT_USE_GRADIENT */
 
-    if(start_angle + 360 == end_angle || start_angle == end_angle + 360){
-        if(is_img){
-            draw_bg_img(draw_ctx, &rect_attr, &area_out);
-        }
-        else{
-            draw_bg(draw_ctx, &rect_attr, &area_out);
-        }
-
-        gt_mask_remove_idx(out_mask_id);
-        gt_mask_free(&out_mask);
-
-        if(in_radius > 0){
-            gt_mask_remove_idx(in_mask_id);
-            gt_mask_free(&in_mask);
-        }
-        return ;
-    }
-
-    while(start_angle >= 360) { start_angle -= 360; }
-    while(end_angle >= 360) { end_angle -= 360; }
-
-    gt_point_st center;
-    center.x = area_out.x + out_radius;
-    center.y = area_out.y + out_radius;
-
-    gt_mask_angle_st angle_mask = {0};
-    gt_mask_angle_init(&angle_mask, center.x, center.y, start_angle, end_angle);
-    int16_t angle_mask_id = gt_mask_add(&angle_mask);
-
-    int32_t angle_gap;
-    if(end_angle > start_angle) {
-        angle_gap = 360 - (end_angle - start_angle);
-    }
-    else {
-        angle_gap = start_angle - end_angle;
-    }
-
-    if(angle_gap > 60 && out_radius > 10){
-
-        if(is_img){
-            draw_bg_img(draw_ctx, &rect_attr, &area_out);
-        }
-        else {
-            _quarter_circle_st q;
-            q.coords = &area_out;
-            q.center = &center;
-            q.radius = out_radius;
-            q.width = width;
-            q.start_angle = start_angle;
-            q.end_angle = end_angle;
-            q.start_quarter = (start_angle / 90) & 0x03;
-            q.end_quarter = (end_angle / 90) & 0x03;
-            q.rect_dsc = &rect_attr;
-
-            _draw_quarter_circle_0(draw_ctx, &q);
-            _draw_quarter_circle_1(draw_ctx, &q);
-            _draw_quarter_circle_2(draw_ctx, &q);
-            _draw_quarter_circle_3(draw_ctx, &q);
-        }
-    }
-    else {
-        if(is_img){
-            draw_bg_img(draw_ctx, &rect_attr, &area_out);
-        }
-        else{
-            draw_bg(draw_ctx, &rect_attr, &area_out);
-        }
-    }
-
-    gt_mask_remove_idx(angle_mask_id);
-    gt_mask_free(&angle_mask);
-
-    gt_mask_remove_idx(out_mask_id);
-    gt_mask_free(&out_mask);
-
-    if(in_radius > 0){
-        gt_mask_remove_idx(in_mask_id);
-        gt_mask_free(&in_mask);
-    }
-
-    if(is_img || !dsc->rounded) { return ; }
-
-    gt_area_st round_area;
-    gt_rounded_area_get(start_angle, out_radius, width, &round_area);
-    round_area.x += center.x;
-    round_area.y += center.y;
-    rect_attr.radius = round_area.w; // * Make it draw a circle
-    draw_bg(draw_ctx, &rect_attr, &round_area);
-
-    gt_rounded_area_get(end_angle, out_radius, width, &round_area);
-    round_area.x += center.x;
-    round_area.y += center.y;
-    rect_attr.radius = round_area.w; // * Make it draw a circle
-    draw_bg(draw_ctx, &rect_attr, &round_area);
-
+    _arc_draw_solid(draw_ctx, dsc, &geo, &rect_attr, is_img);
 }
 
 #if GT_USE_IMG_TRANSFORM
