@@ -1044,6 +1044,15 @@ void gt_arc_set_value_decrease(gt_obj_st* obj)
     gt_arc_set_value(obj, style->value - style->value_step);
 }
 
+int16_t gt_arc_get_value(gt_obj_st* obj)
+{
+    if( false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_arc_st * style = (_gt_arc_st * )obj;
+    return style->value;
+}
+
 void gt_arc_set_rounded(gt_obj_st* obj, bool rounded)
 {
     if( false == gt_obj_is_type(obj, OBJ_TYPE)) {

@@ -273,6 +273,14 @@ void gt_arc_set_value_increase(gt_obj_st* obj);
  */
 void gt_arc_set_value_decrease(gt_obj_st* obj);
 
+/**
+ * @brief Get the arc pointer value
+ *
+ * @param obj
+ * @return int16_t
+ */
+int16_t gt_arc_get_value(gt_obj_st* obj);
+
 
 /**
  * @brief Set the arc pointer knob color
