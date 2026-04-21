@@ -116,8 +116,7 @@ static gt_obj_st * _make_thin_ring(gt_obj_st * scr)
     gt_arc_set_act_width(arc, 8);
     gt_arc_set_rounded(arc, true);
     gt_arc_set_value_min_max(arc, 0, 100);
-    // gt_arc_set_value(arc, 75);
-    gt_arc_set_value(arc, 100);
+    gt_arc_set_value(arc, 75);
     gt_arc_set_knob_color(arc, gt_color_white());
     gt_arc_set_knob_dot(arc, 4);
     if (_arc_count < 18) {
