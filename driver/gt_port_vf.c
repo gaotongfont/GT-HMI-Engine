@@ -14,10 +14,10 @@
 
 /* static variables -----------------------------------------------------*/
 static const gt_vfs_st virt_file_sys[] ={
-	/* name, w, h, addr, size, is_alpha */
-    {"f:img_115x138_606.png", 115, 138, 2351088, 47610, 1},
-	{"f:img_115x138_607.png", 115, 138, 2398698, 47610, 1},
-    {NULL,0,0,0,0},
+	/* name, w, h, addr, size, is_alpha, color_format */
+    {"f:img_115x138_606.png", 115, 138, 2351088, 47610, 1, GT_IMG_CF_RGB565},
+	{"f:img_115x138_607.png", 115, 138, 2398698, 47610, 1, GT_IMG_CF_RGB565},
+    {NULL,0,0,0,0, GT_IMG_CF_UNKNOWN},
 };
 
 

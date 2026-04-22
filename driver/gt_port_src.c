@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_port_src.h"
+#include "../src/core/gt_img_decoder.h"
 #include "../src/others/gt_types.h"
 #include "stddef.h"
 
@@ -73,9 +74,9 @@ static const uint8_t _src_png_file_img[] = {
 };
 
 static const gt_src_st _src_icon_sys[] = {
-    {"./1.bmp", 4, 4, _src_bmp_img, 16},
-    {"./2.png", 32, 32, _src_png_file_img, 619},
-    {NULL, 0, 0, 0},
+    {"./1.bmp", 4, 4, _src_bmp_img, 16, 0, GT_IMG_CF_UNKNOWN},
+    {"./2.png", 32, 32, _src_png_file_img, 619, 0, GT_IMG_CF_UNKNOWN},
+    {NULL, 0, 0, NULL, 0, 0, GT_IMG_CF_UNKNOWN},
 };
 #endif  /** GT_USE_MODE_SRC */
 

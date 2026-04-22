@@ -34,7 +34,20 @@ static void _read_cb(gt_indev_drv_st * drv, gt_indev_data_st * data) {
 }
 ```
 
-**3. 字体配置** (`gt_font_config.c`)
+**3. 资源索引** (`gt_port_src.c` / `gt_port_vf.c`)
+
+`gt_src_st` / `gt_vfs_st` 的 `color_format` 字段必须与实际数据格式一致（`@ref gt_img_color_format_et`）：
+
+| 数据类型 | color_format 值 |
+|---------|----------------|
+| 原始 RGB565 数组 | `GT_IMG_CF_RGB565`（2） |
+| 原始 RGB888 数组 | `GT_IMG_CF_RGB888`（3） |
+| 原始 ARGB8888 数组 | `GT_IMG_CF_ARGB8888`（4） |
+| PNG / SVG / JPEG 文件格式 | `GT_IMG_CF_UNKNOWN`（0，解码器自行设置） |
+
+`gt_port_src.c` 需显式 `#include "../src/core/gt_img_decoder.h"` 才能使用枚举（该文件不包含 `gt.h`）。
+
+**4. 字体配置** (`gt_font_config.c`)
 
 配置 family ID 与字体文件的映射，`gt_btn_set_font_family(btn, 2)` 即使用 family 2 的字体。
 

@@ -13,7 +13,7 @@ GUI 内核，负责绘制、渲染、事件、布局、对象系统等核心逻�
 | `gt_style.c/h` | 样式/坐标：`gt_obj_set_pos/size`，触发布局更新 |
 | `gt_layout.c/h` | Flex 布局：`gt_layout_init`、`gt_layout_set_type`、`gt_layout_flush_dirty` |
 | `gt_mem.c/h` | 内存管理：TLSF 堆分配封装 |
-| `gt_img_decoder.c/h` | 图片解码：PNG/JPEG/BMP/C 数组 |
+| `gt_img_decoder.c/h` | 图片解码框架：插件式解码器注册，支持 PNG/JPEG/SVG/RAM 数组 |
 | `gt_fs.c/h` | 文件系统抽象 |
 | `gt_indev.c/h` | 输入设备管理 |
 | `gt_indev_effects.c/h` | 输入特效（涟漪等） |
@@ -457,6 +457,127 @@ void gt_refr_area_align(gt_area_st * area);
 | `gt_refr_timer()` | 每帧取出脏区后对齐，再驱动绘制 |
 | `gt_refr_force_flush()` | 强制刷新时对齐 |
 | `gt_disp.c: _update_area_flush_by_calc_partly_redraw_area()` | Y 轴坐标映射后对齐（VER） |
+
+---
+
+## 图片解码框架（gt_img_decoder）
+
+### 架构
+
+插件式链表，每种格式注册一个 `_gt_img_decoder_st`，`gt_img_decoder_open` 遍历链表直到某个解码器成功。
+
+```
+gt_img_decoder_open(path)
+  └─ 遍历 _gt_img_decoder_ll
+       ├─ info_cb(path, &header)   // 识别格式，填 w/h/color_format
+       └─ open_cb(dsc)             // 打开文件，填 dsc->fp / dsc->img
+```
+
+内置解码器（`_gt_img_decoder_built_in_*`）处理 RAM 数组和虚拟文件系统资源。
+PNG/JPEG/SVG 各自在 `src/extra/` 中注册额外解码器。
+
+### 关键数据结构
+
+```c
+/* 图片头信息 */
+typedef struct _gt_img_info_s {
+    uint32_t color_format : 5;  // @ref gt_img_color_format_et（bytes/pixel）
+    uint32_t w : 13;            // 宽度（0~8191）
+    uint32_t h : 13;            // 高度（0~8191）
+    uint8_t  type;              // @ref gt_img_decoder_type_em
+} _gt_img_info_st;
+
+/* 图片描述符（open 后有效） */
+typedef struct _gt_img_dsc_s {
+    _gt_img_decoder_st * decoder;
+    gt_fs_fp_st * fp;       // 文件对象
+    uint8_t * img;          // RAM 图片数据指针（RAM 类型时有效）
+    gt_opa_t * alpha;       // 独立 alpha 通道（可选）
+    _gt_img_info_st header; // 宽/高/格式/类型
+    /* ... */
+} _gt_img_dsc_st;
+```
+
+### color_format 枚举（gt_img_color_format_et）
+
+| 枚举值 | 数值 | 含义 |
+|--------|------|------|
+| `GT_IMG_CF_UNKNOWN` | 0 | 自动（回退 RGB565），用于 PNG/SVG/JPEG |
+| `GT_IMG_CF_RGB565` | 2 | 2 B/pixel |
+| `GT_IMG_CF_RGB888` | 3 | 3 B/pixel |
+| `GT_IMG_CF_ARGB8888` | 4 | 4 B/pixel |
+
+`_gt_img_decoder_built_in_read_line` 用 `color_format` 值直接作为 stride（bytes/pixel）计算偏移：
+```c
+uint8_t bpp = dsc->header.color_format;
+if (bpp == 0) bpp = GT_IMG_CF_RGB565;   // 默认 RGB565
+uint32_t offset = (w * y + x) * bpp;
+```
+
+### 解码器类型枚举（gt_img_decoder_type_em）
+
+| 枚举 | 说明 |
+|------|------|
+| `GT_IMG_DECODER_TYPE_NONE` | 未识别 |
+| `GT_IMG_DECODER_TYPE_PNG` | PNG 格式 |
+| `GT_IMG_DECODER_TYPE_SJPG` | JPEG/SJPG 格式 |
+| `GT_IMG_DECODER_TYPE_RAM` | RAM/ROM 数组 |
+| `GT_IMG_DECODER_TYPE_SVG` | SVG 格式 |
+
+### 主要 API
+
+```c
+/* 查询图片信息（不打开文件） */
+gt_res_t gt_img_decoder_get_info(const char * name, _gt_img_info_st * header);
+gt_res_t gt_img_decoder_get_info_raw(const char * raw_data, uint32_t raw_len, _gt_img_info_st * header);
+
+/* 打开图片（路径 / RAM 数组 / 文件头 / 直接地址） */
+gt_res_t gt_img_decoder_open(_gt_img_dsc_st * dsc, const char * name);
+gt_res_t gt_img_decoder_open_raw(_gt_img_dsc_st * dsc, const char * raw_data, uint32_t data_len);
+
+/* 逐行读取像素数据 */
+gt_res_t gt_img_decoder_read_line(_gt_img_dsc_st * dsc, gt_size_t x, gt_size_t y, gt_size_t len, uint8_t * buf);
+
+/* 关闭 */
+gt_res_t gt_img_decoder_close(_gt_img_dsc_st * dsc);
+
+/* 注册自定义解码器 */
+_gt_img_decoder_st * gt_img_decoder_create(void);
+void gt_img_decoder_register(_gt_img_decoder_st * decoder);
+void gt_img_decoder_set_info_cb(_gt_img_decoder_st *, gt_img_decoder_get_info_t);
+void gt_img_decoder_set_open_cb(_gt_img_decoder_st *, gt_img_decoder_open_t);
+void gt_img_decoder_set_read_line_cb(_gt_img_decoder_st *, gt_img_decoder_read_line_t);
+void gt_img_decoder_set_close_cb(_gt_img_decoder_st *, gt_img_decoder_close_t);
+```
+
+### 扩展访问模式（条件编译）
+
+| 宏 | 访问方式 | 对应 API |
+|----|---------|---------|
+| `GT_USE_FILE_HEADER` | 文件头模式（资源包偏移） | `gt_img_decoder_fh_open` |
+| `GT_USE_DIRECT_ADDR` | 直接地址模式（Flash 绝对地址） | `gt_img_decoder_direct_addr_open` |
+| `GT_USE_DIRECT_ADDR_CUSTOM_SIZE` | 自定义尺寸直接地址 | `gt_img_decoder_custom_size_addr_open` |
+
+### 注册自定义解码器示例
+
+```c
+static gt_res_t _my_info_cb(struct _gt_img_decoder_s * dec, const void * src, _gt_img_info_st * hdr) {
+    if (!strstr((const char *)src, ".myimg")) return GT_RES_INV;
+    hdr->w = MY_IMG_W; hdr->h = MY_IMG_H;
+    hdr->color_format = GT_IMG_CF_RGB565;
+    hdr->type = GT_IMG_DECODER_TYPE_RAM;
+    return GT_RES_OK;
+}
+
+void my_decoder_register(void) {
+    _gt_img_decoder_st * dec = gt_img_decoder_create();
+    gt_img_decoder_set_info_cb(dec, _my_info_cb);
+    gt_img_decoder_set_open_cb(dec, _my_open_cb);
+    gt_img_decoder_set_read_line_cb(dec, _my_read_line_cb);
+    gt_img_decoder_set_close_cb(dec, _my_close_cb);
+    gt_img_decoder_register(dec);
+}
+```
 
 ---
 
