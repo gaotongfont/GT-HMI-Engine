@@ -53,6 +53,7 @@ typedef struct _gt_img_s {
     int16_t  pivot_y;       // pivot y relative to image top-left (-1 = center)
     /* Decoded pixel cache for transform — avoids re-decoding every frame */
     gt_color_t * transform_cache;   // decoded RGB pixels, w*h*sizeof(gt_color_t)
+    gt_opa_t   * alpha_cache;       // decoded alpha channel, w*h bytes (NULL if no alpha)
     uint16_t cache_w;
     uint16_t cache_h;
     uint8_t  cache_is_rom : 1;      // 1 = transform_cache is a ROM/RAM pointer, do NOT free
@@ -122,6 +123,7 @@ static void _img_init_cb(gt_obj_st * obj) {
             style->cache_h = 0;
             style->cache_is_rom = 0;
         }
+        if (style->alpha_cache) { gt_mem_free(style->alpha_cache); style->alpha_cache = NULL; }
         draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
         draw_focus(obj);
         return;
@@ -131,7 +133,7 @@ static void _img_init_cb(gt_obj_st * obj) {
     if (!style->transform_cache) {
         bool is_rom = false;
         style->transform_cache = gt_img_decode_to_cache(&dsc, &style->cache_w, &style->cache_h,
-                                                        &is_rom);
+                                                        &is_rom, &style->alpha_cache);
         style->cache_is_rom = is_rom ? 1 : 0;
         if (!style->transform_cache) {
             draw_focus(obj);
@@ -150,7 +152,8 @@ static void _img_init_cb(gt_obj_st * obj) {
     style->prev_angle = style->angle;
 
     gt_img_transform_draw_cached(obj->draw_ctx, &obj->area, obj->opa,
-                                 style->transform_cache, style->cache_w, style->cache_h,
+                                 style->transform_cache, style->alpha_cache,
+                                 style->cache_w, style->cache_h,
                                  style->angle, style->zoom, px, py, use_nn,
                                  &style->masking);
 #else
@@ -180,6 +183,10 @@ static void _img_deinit_cb(gt_obj_st * obj) {
     if (NULL != style_p->transform_cache) {
         if (!style_p->cache_is_rom) { gt_mem_free(style_p->transform_cache); }
         style_p->transform_cache = NULL;
+    }
+    if (NULL != style_p->alpha_cache) {
+        gt_mem_free(style_p->alpha_cache);
+        style_p->alpha_cache = NULL;
     }
 #endif /* GT_USE_IMG_TRANSFORM */
 }
@@ -329,6 +336,7 @@ void gt_img_set_src(gt_obj_st * img, char * src)
         style->cache_h = 0;
         style->cache_is_rom = 0;
     }
+    if (style->alpha_cache) { gt_mem_free(style->alpha_cache); style->alpha_cache = NULL; }
 #endif /* GT_USE_IMG_TRANSFORM */
 
     gt_img_dsc_raw_init(&style->raw);
@@ -498,13 +506,10 @@ uint16_t gt_img_get_width(gt_obj_st * img)
     }
     _gt_img_st * obj = (_gt_img_st * )img;
     _gt_img_info_st info = {0};
-    if (obj->src && GT_RES_OK != gt_img_decoder_get_info(obj->src, &info)) {
-        return 0;
+    if (obj->src) {
+        return (GT_RES_OK == gt_img_decoder_get_info(obj->src, &info)) ? info.w : 0;
     }
-    else if (GT_RES_OK != gt_img_decoder_get_info_raw(obj->raw.raw_p, obj->raw.raw_len, &info)) {
-        return 0;
-    }
-    return info.w;
+    return (GT_RES_OK == gt_img_decoder_get_info_raw(obj->raw.raw_p, obj->raw.raw_len, &info)) ? info.w : 0;
 }
 
 uint16_t gt_img_get_height(gt_obj_st * img)
@@ -514,13 +519,10 @@ uint16_t gt_img_get_height(gt_obj_st * img)
     }
     _gt_img_st * obj = (_gt_img_st * )img;
     _gt_img_info_st info = {0};
-    if (obj->src && GT_RES_OK != gt_img_decoder_get_info(obj->src, &info)) {
-        return 0;
+    if (obj->src) {
+        return (GT_RES_OK == gt_img_decoder_get_info(obj->src, &info)) ? info.h : 0;
     }
-    else if (GT_RES_OK != gt_img_decoder_get_info_raw(obj->raw.raw_p, obj->raw.raw_len, &info)) {
-        return 0;
-    }
-    return info.h;
+    return (GT_RES_OK == gt_img_decoder_get_info_raw(obj->raw.raw_p, obj->raw.raw_len, &info)) ? info.h : 0;
 }
 
 gt_res_t gt_img_set_masking(gt_obj_st * img, gt_color_masking_st * masking)

@@ -102,6 +102,7 @@ typedef struct gt_direct_addr_custom_size_s {
     uint16_t w;
     uint16_t h;
     uint8_t is_alpha;
+    uint8_t color_format;   ///< source color depth: 0=auto, 2=RGB565, 3=RGB888, 4=ARGB8888
 }gt_direct_addr_custom_size_st;
 #endif
 
@@ -177,10 +178,13 @@ typedef struct _gt_fs_fp_s {
         struct {
             gt_size_t w;
             gt_size_t h;
-            uint8_t is_alpha;
+            uint8_t is_alpha : 1;       ///< 1: has alpha channel
+            uint8_t color_format : 5;   ///< source color format @ref gt_img_color_format_et
+            uint8_t reserved : 2;
         }pic;
         struct {
-            uint32_t encoding;
+            uint32_t encoding : 1;      ///< 0: GBK, 1: UTF-8
+            uint32_t reserved : 31;
         }txt;
     }msg;
     void * file_fp;     ///< unused  FILE * fp; for  SD Card

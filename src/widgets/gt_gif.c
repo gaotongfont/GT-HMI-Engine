@@ -225,7 +225,7 @@ static void _set_dsc_info_restart_timer(_gt_gif_st * style, bool is_running) {
     style->dsc.header.w = style->gif->width;
     style->dsc.header.h = style->gif->height;
     style->dsc.header.type =  GT_IMG_DECODER_TYPE_RAM;
-    style->dsc.header.color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;
+    style->dsc.header.color_format = GT_IMG_CF_ARGB8888;
     style->last_run = gt_tick_get();
 
     if (is_running) {

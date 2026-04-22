@@ -222,13 +222,16 @@ uint32_t gt_gradient_dsc_get_color24_pos(const gt_gradient_dsc_st * dsc,
             uint32_t local = scaled - seg_start;
             /* mix: 0 = full start, 255 = full end */
             uint32_t mix = local * 255u / ((uint32_t)seg->steps * 256u - 1u);
-            /* Expand RGB565 channels to 8-bit and interpolate */
-            uint32_t sr = (uint32_t)GT_COLOR_GET_R16(seg->start) * 255u / 31u;
-            uint32_t sg = (uint32_t)GT_COLOR_GET_G16(seg->start) * 255u / 63u;
-            uint32_t sb = (uint32_t)GT_COLOR_GET_B16(seg->start) * 255u / 31u;
-            uint32_t er = (uint32_t)GT_COLOR_GET_R16(seg->end)   * 255u / 31u;
-            uint32_t eg = (uint32_t)GT_COLOR_GET_G16(seg->end)   * 255u / 63u;
-            uint32_t eb = (uint32_t)GT_COLOR_GET_B16(seg->end)   * 255u / 31u;
+            /* Expand channels to 8-bit and interpolate */
+            gt_color32_t _s32, _e32;
+            _s32.full = gt_color_to32(seg->start);
+            _e32.full = gt_color_to32(seg->end);
+            uint32_t sr = GT_COLOR_GET_R32(_s32);
+            uint32_t sg = GT_COLOR_GET_G32(_s32);
+            uint32_t sb = GT_COLOR_GET_B32(_s32);
+            uint32_t er = GT_COLOR_GET_R32(_e32);
+            uint32_t eg = GT_COLOR_GET_G32(_e32);
+            uint32_t eb = GT_COLOR_GET_B32(_e32);
             uint32_t r = sr + (er - sr) * mix / 255u;
             uint32_t g = sg + (eg - sg) * mix / 255u;
             uint32_t b = sb + (eb - sb) * mix / 255u;
@@ -238,9 +241,11 @@ uint32_t gt_gradient_dsc_get_color24_pos(const gt_gradient_dsc_st * dsc,
     }
     gt_gradient_color_st * last = (gt_gradient_color_st *)_gt_vector_get_item(dsc->stops, cnt - 1);
     if (!last) return 0;
-    uint32_t r = (uint32_t)GT_COLOR_GET_R16(last->end) * 255u / 31u;
-    uint32_t g = (uint32_t)GT_COLOR_GET_G16(last->end) * 255u / 63u;
-    uint32_t b = (uint32_t)GT_COLOR_GET_B16(last->end) * 255u / 31u;
+    gt_color32_t _last32;
+    _last32.full = gt_color_to32(last->end);
+    uint32_t r = GT_COLOR_GET_R32(_last32);
+    uint32_t g = GT_COLOR_GET_G32(_last32);
+    uint32_t b = GT_COLOR_GET_B32(_last32);
     return (r << 16) | (g << 8) | b;
 }
 

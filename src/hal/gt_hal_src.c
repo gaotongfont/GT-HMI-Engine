@@ -144,6 +144,7 @@ static GT_ATTRIBUTE_RAM_TEXT void * _open_cb(struct _gt_fs_drv_s * drv, char * n
     fp->msg.pic.w = dev->sys[idx].w;
     fp->msg.pic.h = dev->sys[idx].h;
     fp->msg.pic.is_alpha = dev->sys[idx].is_alpha;
+    fp->msg.pic.color_format = dev->sys[idx].color_format;
     fp->drv = &dev->drv;
 
     return (void * )fp;

@@ -101,7 +101,11 @@ static gt_res_t _rasterize(struct _gt_img_dsc_s * dsc, NSVGimage * svg) {
     dsc->header.w = w;
     dsc->header.h = h;
     dsc->header.type = GT_IMG_DECODER_TYPE_SVG;
-    dsc->header.color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;
+#if GT_COLOR_DEPTH == 32
+    dsc->header.color_format = GT_IMG_CF_ARGB8888;
+#else
+    dsc->header.color_format = GT_IMG_CF_RGB565;
+#endif
     nsvgDelete(svg);
     return GT_RES_OK;
 
@@ -140,7 +144,11 @@ static gt_res_t _gt_svg_info(struct _gt_img_decoder_s * decoder,
     header->w = (uint32_t)svg->width;
     header->h = (uint32_t)svg->height;
     header->type = GT_IMG_DECODER_TYPE_SVG;
-    header->color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;
+#if GT_COLOR_DEPTH == 32
+    header->color_format = GT_IMG_CF_ARGB8888;
+#else
+    header->color_format = GT_IMG_CF_RGB565;
+#endif
     nsvgDelete(svg);
     return GT_RES_OK;
 }
@@ -162,7 +170,11 @@ static gt_res_t _gt_svg_info_raw(struct _gt_img_decoder_s * decoder,
     header->w = (uint32_t)svg->width;
     header->h = (uint32_t)svg->height;
     header->type = GT_IMG_DECODER_TYPE_SVG;
-    header->color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;
+#if GT_COLOR_DEPTH == 32
+    header->color_format = GT_IMG_CF_ARGB8888;
+#else
+    header->color_format = GT_IMG_CF_RGB565;
+#endif
     nsvgDelete(svg);
     return GT_RES_OK;
 }

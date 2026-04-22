@@ -59,6 +59,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_vf_set_fp_by_list(gt_fs_fp_st * fp, gt_vfs
     fp->msg.pic.w = item->w;
     fp->msg.pic.h = item->h;
     fp->msg.pic.is_alpha = item->is_alpha;
+    fp->msg.pic.color_format = item->color_format;
 }
 
 #if GT_USE_FILE_HEADER
@@ -162,12 +163,14 @@ static GT_ATTRIBUTE_RAM_TEXT void * _custom_size_addr_open_cb(struct _gt_fs_drv_
         GT_LOGW(GT_LOG_TAG_GUI, "out of GT_VF_FLASH_SIZE");
     }
 
+    uint8_t bpp = dac->color_format ? dac->color_format : sizeof(gt_color_t);
     fp->start = dac->addr;
-    fp->end = fp->start + (sizeof(gt_color_t) + dac->is_alpha ? sizeof(gt_opa_t) : 0) * dac->w * dac->h;
+    fp->end = fp->start + (bpp + (dac->is_alpha ? sizeof(gt_opa_t) : 0)) * dac->w * dac->h;
     fp->pos = fp->start;
     fp->msg.pic.w = dac->w;
     fp->msg.pic.h = dac->h;
     fp->msg.pic.is_alpha = dac->is_alpha;
+    fp->msg.pic.color_format = dac->color_format;
     fp->drv = gt_vf_get_drv();
 
     fp->mode = mode;

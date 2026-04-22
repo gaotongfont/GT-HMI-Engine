@@ -914,7 +914,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
         emoji_raw.header.w = *p_width;
         emoji_raw.header.h = 1;
         emoji_raw.header.type = GT_IMG_DECODER_TYPE_RAM;
-        emoji_raw.header.color_format = GT_IMG_CF_TRUE_COLOR;
+        emoji_raw.header.color_format = GT_IMG_CF_RGB888;
 
         gt_attr_rect_st dsc_emoji = {0};
         dsc_emoji.bg_opa    = dsc->opa;
@@ -1267,6 +1267,181 @@ _filling_by_sjpg_file(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_d
 #endif
 
 /**
+ * @brief Color format conversion: convert source pixel data to gt_color_t format.
+ *
+ * When the image's source color format (from C array / flash resource) differs
+ * from the engine's GT_COLOR_DEPTH, we convert to a temp buffer before blending.
+ * The fast path (src_cf == GT_COLOR_DEPTH) has zero overhead — no conversion.
+ */
+
+/* ---- source RGB565 → target ---- */
+#if GT_COLOR_DEPTH == 32
+static inline void _cf_2_to_32(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    const uint16_t *s = (const uint16_t *)src;
+    for (uint32_t i = 0; i < count; i++) {
+        uint16_t p = s[i];
+        uint8_t r5 = (p >> 11) & 0x1F;
+        uint8_t g6 = (p >> 5)  & 0x3F;
+        uint8_t b5 = p & 0x1F;
+        /* expand 5/6/5 → 8 bit, gt_color32_t layout: {blue, green, red, alpha} */
+        dst[i].ch.red   = (r5 << 3) | (r5 >> 2);
+        dst[i].ch.green = (g6 << 2) | (g6 >> 4);
+        dst[i].ch.blue  = (b5 << 3) | (b5 >> 2);
+        dst[i].ch.alpha = 0xFF;
+    }
+}
+#endif
+static inline void _cf_2_to_8(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    const uint16_t *s = (const uint16_t *)src;
+    for (uint32_t i = 0; i < count; i++) {
+        uint16_t p = s[i];
+        uint8_t r = (p >> 11) & 0x1F;
+        uint8_t g = (p >> 5) & 0x3F;
+        uint8_t b = p & 0x1F;
+        dst[i].ch.red   = r >> 2;
+        dst[i].ch.green = g >> 3;
+        dst[i].ch.blue  = b >> 3;
+    }
+}
+static inline void _cf_2_to_1(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    const uint16_t *s = (const uint16_t *)src;
+    for (uint32_t i = 0; i < count; i++) {
+        uint16_t p = s[i];
+        uint8_t r = (p >> 11) & 0x1F;
+        uint8_t g = (p >> 5) & 0x3F;
+        uint8_t b = p & 0x1F;
+        uint8_t lum = (r * 77 + g * 150 + b * 29) >> 8;
+        dst[i].full = (lum >= 128) ? 0x07 : 0x00;
+    }
+}
+
+/* ---- source RGB888 → target ---- */
+#if GT_COLOR_DEPTH == 32
+static inline void _cf_3_to_32(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    for (uint32_t i = 0; i < count; i++) {
+        dst[i].ch.blue  = src[i * 3 + 0];
+        dst[i].ch.green = src[i * 3 + 1];
+        dst[i].ch.red   = src[i * 3 + 2];
+        dst[i].ch.alpha = 0xFF;
+    }
+}
+#endif
+static inline void _cf_3_to_16(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    for (uint32_t i = 0; i < count; i++) {
+        const uint8_t *p = &src[i * 3];
+        uint8_t b = p[0], g = p[1], r = p[2];
+#if GT_COLOR_16_SWAP == 0
+        dst[i].ch.red   = r >> 3;
+        dst[i].ch.green = g >> 2;
+        dst[i].ch.blue  = b >> 3;
+#else
+        dst[i].ch.green_h = (g >> 5) & 0x7;
+        dst[i].ch.red     = r >> 3;
+        dst[i].ch.blue    = b >> 3;
+        dst[i].ch.green_l = g & 0x7;
+#endif
+    }
+}
+static inline void _cf_3_to_8(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    for (uint32_t i = 0; i < count; i++) {
+        dst[i].ch.red   = src[i * 3 + 2] >> 5;
+        dst[i].ch.green = src[i * 3 + 1] >> 5;
+        dst[i].ch.blue  = src[i * 3 + 0] >> 6;
+    }
+}
+static inline void _cf_3_to_1(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    for (uint32_t i = 0; i < count; i++) {
+        const uint8_t *p = &src[i * 3];
+        uint8_t lum = (p[2] * 77 + p[1] * 150 + p[0] * 29) >> 8;
+        dst[i].full = (lum >= 128) ? 0x07 : 0x00;
+    }
+}
+
+/* ---- source ARGB8888 → target (color only, alpha handled separately) ---- */
+static inline void _cf_4_to_16(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    for (uint32_t i = 0; i < count; i++) {
+        const uint8_t *p = &src[i * 4];
+        uint8_t r = p[2], g = p[1], b = p[0];
+#if GT_COLOR_16_SWAP == 0
+        dst[i].ch.red   = r >> 3;
+        dst[i].ch.green = g >> 2;
+        dst[i].ch.blue  = b >> 3;
+#else
+        dst[i].ch.green_h = (g >> 5) & 0x7;
+        dst[i].ch.red     = r >> 3;
+        dst[i].ch.blue    = b >> 3;
+        dst[i].ch.green_l = g & 0x7;
+#endif
+    }
+}
+static inline void _cf_4_to_8(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    for (uint32_t i = 0; i < count; i++) {
+        const uint8_t *p = &src[i * 4];
+        dst[i].ch.red   = p[2] >> 5;
+        dst[i].ch.green = p[1] >> 5;
+        dst[i].ch.blue  = p[0] >> 6;
+    }
+}
+static inline void _cf_4_to_1(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    for (uint32_t i = 0; i < count; i++) {
+        const uint8_t *p = &src[i * 4];
+        uint8_t lum = (p[2] * 77 + p[1] * 150 + p[0] * 29) >> 8;
+        dst[i].full = (lum >= 128) ? 0x07 : 0x00;
+    }
+}
+
+/* ---- dispatcher: returns a convert function, or NULL if formats match ---- */
+typedef void (*cf_convert_fn)(const uint8_t *src, gt_color_t *dst, uint32_t count);
+
+static inline cf_convert_fn _get_convert_fn(uint8_t src_cf, uint8_t dst_cf) {
+    if (src_cf == dst_cf) return NULL;
+    switch (src_cf) {
+    case GT_IMG_CF_RGB565:  /* 2 */
+#if GT_COLOR_DEPTH == 32
+        return (cf_convert_fn)_cf_2_to_32;
+#elif GT_COLOR_DEPTH == 8
+        return (cf_convert_fn)_cf_2_to_8;
+#elif GT_COLOR_DEPTH == 1
+        return (cf_convert_fn)_cf_2_to_1;
+#endif
+        break;
+    case GT_IMG_CF_RGB888:  /* 3 */
+#if GT_COLOR_DEPTH == 32
+        return (cf_convert_fn)_cf_3_to_32;
+#elif GT_COLOR_DEPTH == 16
+        return (cf_convert_fn)_cf_3_to_16;
+#elif GT_COLOR_DEPTH == 8
+        return (cf_convert_fn)_cf_3_to_8;
+#elif GT_COLOR_DEPTH == 1
+        return (cf_convert_fn)_cf_3_to_1;
+#endif
+        break;
+    case GT_IMG_CF_ARGB8888:  /* 4 */
+#if GT_COLOR_DEPTH == 16
+        return (cf_convert_fn)_cf_4_to_16;
+#elif GT_COLOR_DEPTH == 8
+        return (cf_convert_fn)_cf_4_to_8;
+#elif GT_COLOR_DEPTH == 1
+        return (cf_convert_fn)_cf_4_to_1;
+#endif
+        break;
+    }
+    return NULL; /* unsupported or matching */
+}
+
+/**
+ * @brief Infer source color format from pixel data size.
+ * @return 16 (RGB565), 24 (RGB888), 32 (ARGB8888), or 0 (unknown)
+ */
+static inline uint8_t _guess_img_cf(_gt_img_dsc_st * dsc_img) {
+    uint8_t cf = dsc_img->header.color_format;
+    if (cf != GT_IMG_CF_UNKNOWN) return cf;
+    /* C array images store color (RGB565) and alpha separately.
+     * alpha != NULL means separate alpha channel, NOT interleaved ARGB8888. */
+    return GT_IMG_CF_RGB565;
+}
+
+/**
  * @brief In vertical flush mode the blend engine reads src in column-major
  *        order (stride = dst_area->h).  Raw/array image data is always
  *        row-major, so a full-image blend produces garbage when w != h.
@@ -1301,43 +1476,61 @@ static GT_ATTRIBUTE_RAM_TEXT void _blend_rowwise_in_vert(
 
 static void GT_ATTRIBUTE_RAM_TEXT
 _filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
-    blend_dsc->mask_buf = &dsc_img->alpha[0];
-    blend_dsc->dst_buf = (gt_color_t *)&dsc_img->img[0];
-    if (NULL == blend_dsc->dst_buf && NULL == blend_dsc->mask_buf) {
-        GT_LOGW(GT_LOG_TAG_GUI, "Raw data buffer or mask is NULL");
-        return;
+    uint16_t w = dsc_img->header.w;
+    uint16_t h = dsc_img->header.h;
+    uint32_t pixel_count = (uint32_t)w * h;
+
+    /* Infer source color format */
+    uint8_t src_cf = _guess_img_cf(dsc_img);
+    uint8_t dst_cf = GT_COLOR_DEPTH;
+
+    /* If formats differ, convert to temp buffer first */
+    cf_convert_fn convert = _get_convert_fn(src_cf, dst_cf);
+    gt_color_t *color_buf = NULL;
+    uint8_t *alpha_buf = NULL;
+    if (convert) {
+        uint32_t color_bytes = pixel_count * sizeof(gt_color_t);
+        uint32_t alpha_bytes = dsc_img->alpha ? pixel_count * sizeof(gt_opa_t) : 0;
+        color_buf = gt_mem_malloc(color_bytes + alpha_bytes);
+        if (!color_buf) {
+            GT_LOGE(GT_LOG_TAG_GUI, "Color conversion buffer malloc failed");
+            return;
+        }
+        convert(dsc_img->img, color_buf, pixel_count);
+        if (dsc_img->alpha) {
+            alpha_buf = (uint8_t *)(color_buf + pixel_count);
+            gt_memcpy(alpha_buf, dsc_img->alpha, alpha_bytes);
+        }
+    } else {
+        /* Fast path: formats match, use original data directly */
+        color_buf = (gt_color_t *)dsc_img->img;
+        alpha_buf = dsc_img->alpha;
     }
 
     bool check_mask = gt_mask_check(blend_dsc->mask_area);
     if(check_mask){
-        gt_opa_t* alpha = NULL;
-        if(dsc_img->alpha) {
-            alpha = &dsc_img->alpha[0];
-        }
-        uint16_t w, h, y = 0;
-        uint32_t offset = 0, len = 0;
-        w = dsc_img->header.w;
-        h = dsc_img->header.h;
-        len = w * sizeof(gt_opa_t);
+        gt_opa_t* alpha = (gt_opa_t *)alpha_buf;
+        uint16_t y = 0;
+        uint32_t offset = 0;
+        uint32_t len = w * sizeof(gt_opa_t);
 
         blend_dsc->mask_buf = gt_mem_malloc(w);
         if (!blend_dsc->mask_buf) {
             GT_LOGE(GT_LOG_TAG_GUI, "Mask buffer malloc failed, size: %d, %d", w, h);
+            if (convert) gt_mem_free(color_buf);
             return;
         }
 
+        blend_dsc->dst_buf = color_buf;
         gt_opa_t opa = blend_dsc->opa >= GT_OPA_MAX ? GT_OPA_COVER: blend_dsc->opa;
         blend_dsc->dst_area->h = 1;
         while (y < h) {
             if (gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area)) {
-
                 if (alpha) {
                     gt_memcpy(blend_dsc->mask_buf, &alpha[offset], w);
-                }
-                else{
+                } else {
                     gt_memset(blend_dsc->mask_buf, opa, w);
                 }
-
                 gt_mask_get(blend_dsc->mask_buf, blend_dsc->mask_area->x, blend_dsc->mask_area->y, w);
                 gt_draw_blend(draw_ctx, blend_dsc);
             }
@@ -1351,50 +1544,82 @@ _filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_ds
         gt_mem_free(blend_dsc->mask_buf);
         blend_dsc->mask_buf = NULL;
         blend_dsc->dst_buf = NULL;
+        if (convert) gt_mem_free(color_buf);
         return;
     }
 
-    if (gt_draw_blend_is_vertical() && dsc_img->header.h > 1) {
+    if (gt_draw_blend_is_vertical() && h > 1) {
         _blend_rowwise_in_vert(draw_ctx, blend_dsc,
-            (const gt_color_t *)&dsc_img->img[0],
-            dsc_img->alpha ? (const gt_opa_t *)&dsc_img->alpha[0] : NULL,
-            dsc_img->header.w, dsc_img->header.h);
+            color_buf, (gt_opa_t *)alpha_buf, w, h);
+        if (convert) gt_mem_free(color_buf);
         return;
     }
 
+    blend_dsc->dst_buf = color_buf;
+    blend_dsc->mask_buf = (gt_opa_t *)alpha_buf;
     gt_draw_blend(draw_ctx, blend_dsc);
     blend_dsc->dst_buf = NULL;
     blend_dsc->mask_buf = NULL;
+    if (convert) gt_mem_free(color_buf);
 }
 
 #if GT_USE_EXTRA_FULL_IMG_BUFFER
 static gt_res_t GT_ATTRIBUTE_RAM_TEXT
 _filling_by_default_full_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
-    uint32_t len = 0, addr_start_alpha = 0;
-
-    len = dsc_img->header.w * dsc_img->header.h;
-    addr_start_alpha = len * sizeof(gt_color_t);
+    uint16_t w = dsc_img->header.w;
+    uint16_t h = dsc_img->header.h;
+    uint32_t pixel_count = (uint32_t)w * h;
 
     gt_fs_fp_st * fp = dsc_img->fp;
-    uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
-    bool check_mask = gt_mask_check(blend_dsc->mask_area);
-
     if (!fp) {
         GT_LOGW(GT_LOG_TAG_GUI, "gt_fs_get_fp failed");
         return GT_RES_FAIL;
     }
+
+    /* Determine source color format */
+    uint8_t src_cf = dsc_img->header.color_format;
+    if (src_cf == 0) src_cf = fp->msg.pic.color_format;
+    if (src_cf == 0) src_cf = GT_IMG_CF_RGB565;
+    uint8_t src_bpp = src_cf;
+    if (src_bpp == 0) src_bpp = 2;
+    uint8_t dst_cf = GT_COLOR_DEPTH;
+    cf_convert_fn convert = _get_convert_fn(src_cf, dst_cf);
+
+    uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
+    bool check_mask = gt_mask_check(blend_dsc->mask_area);
 
     _gt_gc_full_img_buffer_st * full_img = _gt_gc_get_full_img_buffer();
     if (NULL == full_img->buffer) {
         GT_LOGV(GT_LOG_TAG_GUI, "Extra buffer color or alpha pointer is NULL");
         return GT_RES_INV;
     }
-    if (full_img->len < ((is_mask || check_mask) ? len : 0) + addr_start_alpha) {
+
+    /* Calculate actual read size and converted size */
+    uint32_t color_read_size = pixel_count * src_bpp;
+    uint32_t alpha_read_size = is_mask ? pixel_count : 0;
+    uint32_t color_converted_size = pixel_count * sizeof(gt_color_t);
+    uint32_t total_need = color_read_size + alpha_read_size;
+
+    /* Check if full image buffer can hold converted data */
+    uint32_t blend_size = color_converted_size + (is_mask || check_mask ? pixel_count : 0);
+    if (full_img->len < blend_size) {
         GT_LOGV(GT_LOG_TAG_GUI, "Extra buffer color or alpha size is not enough to store image data");
         return GT_RES_INV;
     }
 
-    gt_fs_read_img_offset(fp, (uint8_t *)full_img->buffer, 0, (is_mask ? len : 0) + addr_start_alpha);
+    /* Read raw data from file */
+    gt_fs_read_img_offset(fp, (uint8_t *)full_img->buffer, 0, total_need);
+
+    if (convert) {
+        /* Convert color data to gt_color_t format */
+        convert((uint8_t *)full_img->buffer, (gt_color_t *)full_img->buffer, pixel_count);
+        if (is_mask) {
+            /* Alpha data is after color_read_size bytes in raw, copy to after converted color */
+            uint8_t *src_alpha = (uint8_t *)full_img->buffer + color_read_size;
+            uint8_t *dst_alpha = (uint8_t *)full_img->buffer + color_converted_size;
+            gt_memcpy(dst_alpha, src_alpha, pixel_count);
+        }
+    }
 
 #if GT_USE_EXTRA_FULL_IMG_OFFSET
     blend_dsc->dst_buf = (gt_color_t * )&full_img->buffer[full_img->offset];
@@ -1404,29 +1629,29 @@ _filling_by_default_full_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st *
 
     if (is_mask || check_mask) {
 #if GT_USE_EXTRA_FULL_IMG_OFFSET
-        blend_dsc->mask_buf = (gt_opa_t * )&full_img->buffer[addr_start_alpha + full_img->offset];
+        blend_dsc->mask_buf = (gt_opa_t * )&full_img->buffer[color_converted_size + full_img->offset];
 #else
-        blend_dsc->mask_buf = (gt_opa_t * )&full_img->buffer[addr_start_alpha];
+        blend_dsc->mask_buf = (gt_opa_t * )&full_img->buffer[color_converted_size];
 #endif
     }
 
     if(check_mask) {
         gt_opa_t opa = blend_dsc->opa >= GT_OPA_MAX ? GT_OPA_COVER: blend_dsc->opa;
         uint8_t *opa_buf = blend_dsc->mask_buf;
-        for(uint32_t i = 0; i < dsc_img->header.h; ++i) {
+        for(uint32_t i = 0; i < h; ++i) {
             if(!is_mask) {
-                gt_memset(opa_buf, opa, dsc_img->header.w);
+                gt_memset(opa_buf, opa, w);
             }
-            gt_mask_get(opa_buf, blend_dsc->mask_area->x, blend_dsc->mask_area->y + i, dsc_img->header.w);
-            opa_buf += dsc_img->header.w;
+            gt_mask_get(opa_buf, blend_dsc->mask_area->x, blend_dsc->mask_area->y + i, w);
+            opa_buf += w;
         }
     }
 
-    if (gt_draw_blend_is_vertical() && dsc_img->header.h > 1) {
+    if (gt_draw_blend_is_vertical() && h > 1) {
         _blend_rowwise_in_vert(draw_ctx, blend_dsc,
             (const gt_color_t *)blend_dsc->dst_buf,
             (is_mask || check_mask) ? (const gt_opa_t *)blend_dsc->mask_buf : NULL,
-            dsc_img->header.w, dsc_img->header.h);
+            w, h);
         goto line_lb;
     }
 
@@ -1450,13 +1675,9 @@ line_lb:
  */
 static void GT_ATTRIBUTE_RAM_TEXT
 _filling_by_default_line_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc, _gt_img_dsc_st * dsc_img) {
-    uint32_t offset = 0, len = 0;
-    uint32_t addr_start_alpha = 0;
     uint16_t w, h, y = 0;
     w = dsc_img->header.w;
     h = dsc_img->header.h;
-    len = w * sizeof(gt_color_t);
-    addr_start_alpha = len * h;
 
     gt_fs_fp_st * fp = dsc_img->fp;
     if (!fp) {
@@ -1464,14 +1685,41 @@ _filling_by_default_line_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st *
         return;
     }
 
-    blend_dsc->dst_area->h = 1;     /** Read and cover line by line */
+    /* Determine source color format and conversion */
+    uint8_t src_cf = dsc_img->header.color_format;
+    if (src_cf == 0) src_cf = fp->msg.pic.color_format;
+    if (src_cf == 0) src_cf = GT_IMG_CF_RGB565; /* fallback */
+    uint8_t src_bpp = src_cf; /* 2=RGB565, 3=RGB888, 4=ARGB8888 */
+    if (src_bpp == 0) src_bpp = sizeof(gt_color_t);
+    uint8_t dst_cf = GT_COLOR_DEPTH;
+    cf_convert_fn convert = _get_convert_fn(src_cf, dst_cf);
+
+    uint32_t color_offset = 0;
+    uint32_t alpha_offset = (uint32_t)w * h * src_bpp;
+    uint32_t color_len = w * src_bpp;
+    uint32_t blend_len = w * sizeof(gt_color_t);
+
+    blend_dsc->dst_area->h = 1;
+
+    /* Allocate buffers: raw source line + converted color line */
 #if _GT_DRAW_STATIC_LINE_BUFFER
-    blend_dsc->dst_buf = _static_line_color_buffer;
+    uint8_t *raw_buf = (uint8_t *)_static_line_color_buffer;
+    blend_dsc->dst_buf = (gt_color_t *)_static_line_opa_buffer;
 #else
-    blend_dsc->dst_buf = gt_mem_malloc( len );
-    if (!blend_dsc->dst_buf) {
+    uint8_t *raw_buf = gt_mem_malloc(color_len > blend_len ? color_len : blend_len);
+    if (!raw_buf) {
         GT_LOGW(GT_LOG_TAG_GUI, "Per-line buffer malloc failed, size: %d, %d", w, h);
         return;
+    }
+    if (!convert) {
+        blend_dsc->dst_buf = (gt_color_t *)raw_buf;
+    } else {
+        blend_dsc->dst_buf = gt_mem_malloc(blend_len);
+        if (!blend_dsc->dst_buf) {
+            gt_mem_free(raw_buf);
+            GT_LOGW(GT_LOG_TAG_GUI, "Converted line buffer malloc failed");
+            return;
+        }
     }
 #endif
 
@@ -1481,7 +1729,7 @@ _filling_by_default_line_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st *
 
     if (is_mask || check_mask) {
 #if _GT_DRAW_STATIC_LINE_BUFFER
-        blend_dsc->mask_buf = _static_line_opa_buffer;
+        blend_dsc->mask_buf = (uint8_t *)(_static_line_opa_buffer + blend_len);
 #else
         blend_dsc->mask_buf = gt_mem_malloc(w);
         if (!blend_dsc->mask_buf) {
@@ -1492,15 +1740,22 @@ _filling_by_default_line_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st *
 
     while (y < h) {
         if (gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area)) {
-            /*read one line color data*/
-            gt_fs_read_img_offset(fp, (uint8_t *)blend_dsc->dst_buf, offset, len);
+            /* Read one line color data from source */
+            gt_fs_read_img_offset(fp, raw_buf, color_offset, color_len);
+
+            /* Convert if formats differ */
+            if (convert) {
+                convert(raw_buf, (gt_color_t *)blend_dsc->dst_buf, w);
+            } else if (!convert && (void *)blend_dsc->dst_buf != (void *)raw_buf) {
+                gt_memcpy(blend_dsc->dst_buf, raw_buf, color_len);
+            }
 
             if(!is_mask && check_mask){
                 gt_memset(blend_dsc->mask_buf, opa, w);
             }
 
-            if (is_mask) {    //png
-                gt_fs_read_img_offset(fp, (uint8_t *)blend_dsc->mask_buf, addr_start_alpha, w);
+            if (is_mask) {
+                gt_fs_read_img_offset(fp, (uint8_t *)blend_dsc->mask_buf, alpha_offset, w);
             }
 
             if(check_mask) {
@@ -1509,8 +1764,8 @@ _filling_by_default_line_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st *
             /* blend to bg */
             gt_draw_blend(draw_ctx, blend_dsc);
         }
-        offset += len;
-        addr_start_alpha += w;
+        color_offset += color_len;
+        alpha_offset += w;
 
         ++blend_dsc->dst_area->y;
         ++blend_dsc->mask_area->y;
@@ -1526,9 +1781,12 @@ _filling_by_default_line_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st *
         blend_dsc->mask_buf = NULL;
     }
 line_lb:
-    if (blend_dsc->dst_buf) {
+    if (blend_dsc->dst_buf && (void *)blend_dsc->dst_buf != (void *)raw_buf) {
         gt_mem_free(blend_dsc->dst_buf);
         blend_dsc->dst_buf = NULL;
+    }
+    if (raw_buf) {
+        gt_mem_free(raw_buf);
     }
 #endif
 }
@@ -1554,16 +1812,33 @@ _filling_by_default(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc
         return;
     }
 
-    uint32_t addr_start_alpha = dsc_img->header.w * dsc_img->header.h * sizeof(gt_color_t);
-    uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
-    blend_dsc->dst_buf = (gt_color_t*)fp->buffer;
-    if(is_mask){
-        blend_dsc->mask_buf = (gt_opa_t*)fp->buffer + addr_start_alpha;
+    /* src BPP: use color_format field (2/3/4 = bytes/pixel), fallback to 2 (RGB565) */
+    uint8_t src_cf = fp->msg.pic.color_format ? fp->msg.pic.color_format : GT_IMG_CF_RGB565;
+    uint8_t dst_cf = GT_COLOR_DEPTH;
+    uint8_t is_mask = fp->msg.pic.is_alpha ? 1 : 0;
+
+    /* alpha data immediately follows color data; offset uses actual src BPP */
+    uint32_t pixel_count = (uint32_t)dsc_img->header.w * dsc_img->header.h;
+    uint32_t addr_start_alpha = pixel_count * src_cf;
+
+    /* set dsc_img fields so _filling_by_ram_data can use them */
+    dsc_img->img   = (uint8_t *)fp->buffer;
+    dsc_img->alpha = is_mask ? (gt_opa_t *)((uint8_t *)fp->buffer + addr_start_alpha) : NULL;
+    dsc_img->header.color_format = src_cf;
+
+    if (src_cf != dst_cf) {
+        /* formats differ: delegate to conversion path */
+        _filling_by_ram_data(draw_ctx, blend_dsc, dsc_img);
+        return;
     }
 
-    if(NULL == blend_dsc->dst_buf && NULL == blend_dsc->mask_buf){
-        GT_LOGW(GT_LOG_TAG_GUI, "Extra buffer color or alpha pointer is NULL");
-        return ;
+    /* fast path: formats match, use buffer directly */
+    blend_dsc->dst_buf  = (gt_color_t *)fp->buffer;
+    blend_dsc->mask_buf = is_mask ? (gt_opa_t *)((uint8_t *)fp->buffer + addr_start_alpha) : NULL;
+
+    if(NULL == blend_dsc->dst_buf){
+        GT_LOGW(GT_LOG_TAG_GUI, "Extra buffer color pointer is NULL");
+        return;
     }
     if (gt_draw_blend_is_vertical() && dsc_img->header.h > 1) {
         _blend_rowwise_in_vert(draw_ctx, blend_dsc,
@@ -2654,9 +2929,9 @@ draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
                 int32_t _qr = _FS_QUANT5(_r8);                                              \
                 int32_t _qg = _FS_QUANT6(_g8);                                              \
                 int32_t _qb = _FS_QUANT5(_b8);                                              \
-                GT_COLOR_SET_R16(color_row_buf[_c], _r8 >> 3);                              \
-                GT_COLOR_SET_G16(color_row_buf[_c], _g8 >> 2);                              \
-                GT_COLOR_SET_B16(color_row_buf[_c], _b8 >> 3);                              \
+                GT_COLOR_SET_R(color_row_buf[_c], _r8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 5 : 7)))); \
+                GT_COLOR_SET_G(color_row_buf[_c], _g8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 2 : (GT_COLOR_DEPTH == 8 ? 5 : 7)))); \
+                GT_COLOR_SET_B(color_row_buf[_c], _b8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 6 : 7)))); \
                 int32_t _er = (_r8 - _qr) << 4;                                             \
                 int32_t _eg = (_g8 - _qg) << 4;                                             \
                 int32_t _eb = (_b8 - _qb) << 4;                                             \
@@ -2743,9 +3018,9 @@ draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
                         int32_t _qr = _FS_QUANT5(_r8);
                         int32_t _qg = _FS_QUANT6(_g8);
                         int32_t _qb = _FS_QUANT5(_b8);
-                        GT_COLOR_SET_R16(color_row_buf[_c], _r8 >> 3);
-                        GT_COLOR_SET_G16(color_row_buf[_c], _g8 >> 2);
-                        GT_COLOR_SET_B16(color_row_buf[_c], _b8 >> 3);
+                        GT_COLOR_SET_R(color_row_buf[_c], _r8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 5 : 7))));
+                        GT_COLOR_SET_G(color_row_buf[_c], _g8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 2 : (GT_COLOR_DEPTH == 8 ? 5 : 7))));
+                        GT_COLOR_SET_B(color_row_buf[_c], _b8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 6 : 7))));
                         int32_t _er = (_r8 - _qr) << 4;
                         int32_t _eg = (_g8 - _qg) << 4;
                         int32_t _eb = (_b8 - _qb) << 4;
@@ -2799,9 +3074,9 @@ draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_a
                         int32_t _qr = _FS_QUANT5(_r8);
                         int32_t _qg = _FS_QUANT6(_g8);
                         int32_t _qb = _FS_QUANT5(_b8);
-                        GT_COLOR_SET_R16(color_row_buf[_c], _r8 >> 3);
-                        GT_COLOR_SET_G16(color_row_buf[_c], _g8 >> 2);
-                        GT_COLOR_SET_B16(color_row_buf[_c], _b8 >> 3);
+                        GT_COLOR_SET_R(color_row_buf[_c], _r8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 5 : 7))));
+                        GT_COLOR_SET_G(color_row_buf[_c], _g8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 2 : (GT_COLOR_DEPTH == 8 ? 5 : 7))));
+                        GT_COLOR_SET_B(color_row_buf[_c], _b8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 6 : 7))));
                         int32_t _er = (_r8 - _qr) << 4;
                         int32_t _eg = (_g8 - _qg) << 4;
                         int32_t _eb = (_b8 - _qb) << 4;
@@ -4227,9 +4502,9 @@ gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_are
                     int32_t qg = _ARC_FS_QUANT6(g8);
                     int32_t qb = _ARC_FS_QUANT5(b8);
 
-                    GT_COLOR_SET_R16(color_row_buf[col], r8 >> 3);
-                    GT_COLOR_SET_G16(color_row_buf[col], g8 >> 2);
-                    GT_COLOR_SET_B16(color_row_buf[col], b8 >> 3);
+                    GT_COLOR_SET_R(color_row_buf[col], r8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 5 : 7))));
+                    GT_COLOR_SET_G(color_row_buf[col], g8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 2 : (GT_COLOR_DEPTH == 8 ? 5 : 7))));
+                    GT_COLOR_SET_B(color_row_buf[col], b8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 6 : 7))));
 
                     /* Propagate FS error */
                     int32_t er = (r8 - qr) << 4;

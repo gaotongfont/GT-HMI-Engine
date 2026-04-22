@@ -56,16 +56,19 @@ void gt_img_transform_draw(struct _gt_draw_ctx_s * draw_ctx,
  *        If the source is already a RAM/ROM RGB565 buffer, returns a direct pointer
  *        (no malloc) and sets *out_is_rom = true — do NOT gt_mem_free() it.
  *        Otherwise allocates a new buffer — caller must gt_mem_free() when done.
+ *        If the image has a separate alpha channel, *out_alpha is allocated and
+ *        must be gt_mem_free()'d by the caller; otherwise *out_alpha is set to NULL.
  *
  * @param dsc        Image attribute descriptor
  * @param out_w      Output: image width in pixels
  * @param out_h      Output: image height in pixels
  * @param out_is_rom Output: true = returned pointer must NOT be freed
+ * @param out_alpha  Output: alpha buffer (w*h bytes), or NULL if no alpha
  * @return gt_color_t* Pixel buffer, or NULL on failure
  */
 gt_color_t * gt_img_decode_to_cache(const gt_attr_rect_st * dsc,
                                     uint16_t * out_w, uint16_t * out_h,
-                                    bool * out_is_rom);
+                                    bool * out_is_rom, gt_opa_t ** out_alpha);
 
 /**
  * @brief Draw a pre-decoded pixel cache with rotation and/or scaling.
@@ -91,6 +94,7 @@ void gt_img_transform_draw_cached(struct _gt_draw_ctx_s * draw_ctx,
                                   const gt_area_st * coords,
                                   gt_opt_t opa,
                                   const gt_color_t * src_buf,
+                                  const gt_opa_t * alpha_buf,
                                   uint16_t src_w, uint16_t src_h,
                                   gt_angle_t angle, gt_zoom_t zoom,
                                   int16_t pivot_x, int16_t pivot_y,

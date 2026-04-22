@@ -145,7 +145,7 @@ static bool _is_jpg(const uint8_t * raw_data, const uint8_t * eod_data, size_t l
 
 static inline void _sjpg_set_type(_gt_img_info_st * header) {
     header->type = GT_IMG_DECODER_TYPE_SJPG;
-    header->color_format = GT_IMG_CF_TRUE_COLOR;
+    header->color_format = GT_IMG_CF_RGB888;
 }
 
 static void _sjpg_free(_sjpg_st * sjpg) {

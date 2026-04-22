@@ -143,7 +143,7 @@ static void _set_png_width_height(_gt_img_info_st * header, gt_size_t width, gt_
 
 static void _set_png_type(_gt_img_info_st * header) {
     header->type = GT_IMG_DECODER_TYPE_PNG;
-    header->color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;
+    header->color_format = GT_IMG_CF_ARGB8888;
 }
 
 #if 0

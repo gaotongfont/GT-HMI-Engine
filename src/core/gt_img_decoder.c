@@ -100,6 +100,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_open(struct _gt_i
     dsc->fp = fp;
     dsc->header.w = fp->msg.pic.w;
     dsc->header.h = fp->msg.pic.h;
+    dsc->header.color_format = fp->msg.pic.color_format;
 
     return GT_RES_OK;
 }
@@ -111,7 +112,9 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_read_line(struct 
     if (!fp) {
         return GT_RES_INV;
     }
-    uint32_t offset = ((uint32_t)dsc->header.w * y + x) * sizeof(gt_color_t);
+    uint8_t bpp = dsc->header.color_format;
+    if (bpp == 0) bpp = GT_IMG_CF_RGB565;  /* default: RGB565 (2 bytes/pixel) */
+    uint32_t offset = ((uint32_t)dsc->header.w * y + x) * bpp;
 
     if (gt_fs_seek(fp, offset, GT_FS_SEEK_SET)) {
         return GT_RES_FAIL;
@@ -141,6 +144,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_fh_info(struct _g
     }
     header->w = fp->msg.pic.w;
     header->h = fp->msg.pic.h;
+    header->color_format = fp->msg.pic.color_format;
 
     gt_fs_close(fp);
 
@@ -156,6 +160,7 @@ gt_res_t _gt_img_decoder_build_in_fh_open(struct _gt_img_decoder_s * decoder, st
     dsc->fp = fp;
     dsc->header.w = fp->msg.pic.w;
     dsc->header.h = fp->msg.pic.h;
+    dsc->header.color_format = fp->msg.pic.color_format;
 
     return GT_RES_OK;
 }
@@ -170,6 +175,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_direct_addr_info(
     }
     header->w = fp->msg.pic.w;
     header->h = fp->msg.pic.h;
+    header->color_format = fp->msg.pic.color_format;
 
     gt_fs_close(fp);
 
@@ -185,6 +191,7 @@ gt_res_t _gt_img_decoder_build_in_direct_addr_open(struct _gt_img_decoder_s * de
     dsc->fp = fp;
     dsc->header.w = fp->msg.pic.w;
     dsc->header.h = fp->msg.pic.h;
+    dsc->header.color_format = fp->msg.pic.color_format;
 
     return GT_RES_OK;
 }
@@ -576,9 +583,9 @@ void gt_img_dsc_raw_set(_gt_img_dsc_st * dsc_tar, gt_color_img_raw_st const * co
     dsc_tar->fill_color = raw->color;
 
     if (dsc_tar->img && dsc_tar->alpha) {
-        dsc_tar->header.color_format = GT_IMG_CF_TRUE_COLOR_ALPHA;
+        dsc_tar->header.color_format = GT_IMG_CF_ARGB8888;
     } else {
-        dsc_tar->header.color_format = GT_IMG_CF_TRUE_COLOR;
+        dsc_tar->header.color_format = GT_COLOR_DEPTH;
     }
 }
 

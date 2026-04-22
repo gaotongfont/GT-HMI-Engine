@@ -71,10 +71,10 @@ typedef enum {
  * @brief Image color format type
  */
 typedef enum gt_img_color_format_e {
-    GT_IMG_CF_UNKNOWN = 0,      ///< Unknown color format
-
-    GT_IMG_CF_TRUE_COLOR,       ///< RGB888
-    GT_IMG_CF_TRUE_COLOR_ALPHA, ///< ARGB8888 / RGBA 8888
+    GT_IMG_CF_UNKNOWN  = 0,      ///< Unknown color format (infer from size)
+    GT_IMG_CF_RGB565   = 2,      ///< RGB565, 2 bytes per pixel
+    GT_IMG_CF_RGB888   = 3,      ///< RGB888, 3 bytes per pixel
+    GT_IMG_CF_ARGB8888 = 4,      ///< ARGB8888, 4 bytes per pixel
 }gt_img_color_format_et;
 
 /**

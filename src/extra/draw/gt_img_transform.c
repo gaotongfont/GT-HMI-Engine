@@ -35,6 +35,7 @@
 #include "../../core/gt_draw.h"
 #include "../../others/gt_area.h"
 #include "../../core/gt_img_decoder.h"
+#include "../../core/gt_fs.h"
 #include "../../others/gt_math.h"
 #include "../../core/gt_mask.h"
 
@@ -93,38 +94,147 @@ static gt_color_t _bilinear_sample(const gt_color_t * src_buf,
 }
 
 /* -----------------------------------------------------------------------
- * Decode entire source image into a flat RGB buffer via read_line.
- * Returns malloc'd buffer (caller must free), or NULL on failure.
+ * Bilinear interpolation for alpha channel (gt_opa_t flat buffer).
  * ----------------------------------------------------------------------- */
-static gt_color_t * _decode_full_image(_gt_img_dsc_st * dsc_img)
+static inline gt_opa_t _bilinear_opa_fast(const gt_opa_t * abuf, int32_t src_w,
+                                          int32_t sx_q8, int32_t sy_q8)
+{
+    int32_t x0 = sx_q8 >> 8, y0 = sy_q8 >> 8;
+    uint32_t fx = (uint32_t)(sx_q8 & 0xFF);
+    uint32_t fy = (uint32_t)(sy_q8 & 0xFF);
+    const gt_opa_t * r0 = abuf + y0 * src_w + x0;
+    const gt_opa_t * r1 = r0 + src_w;
+    uint32_t top = r0[0] * (256 - fx) + r0[1] * fx;
+    uint32_t bot = r1[0] * (256 - fx) + r1[1] * fx;
+    return (gt_opa_t)(((top * (256 - fy) + bot * fy) + 32768u) >> 16);
+}
+
+static inline gt_opa_t _bilinear_opa_safe(const gt_opa_t * abuf,
+                                          int32_t src_w, int32_t src_h,
+                                          int32_t sx_q8, int32_t sy_q8)
+{
+    int32_t x0 = sx_q8 >> 8, y0 = sy_q8 >> 8;
+    uint32_t fx = (uint32_t)(sx_q8 & 0xFF);
+    uint32_t fy = (uint32_t)(sy_q8 & 0xFF);
+    int32_t x1 = x0 + 1; if (x1 >= src_w) x1 = src_w - 1;
+    int32_t y1 = y0 + 1; if (y1 >= src_h) y1 = src_h - 1;
+    if (x0 < 0) x0 = 0; if (y0 < 0) y0 = 0;
+    uint32_t top = abuf[y0*src_w+x0]*(256-fx) + abuf[y0*src_w+x1]*fx;
+    uint32_t bot = abuf[y1*src_w+x0]*(256-fx) + abuf[y1*src_w+x1]*fx;
+    return (gt_opa_t)(((top * (256 - fy) + bot * fy) + 32768u) >> 16);
+}
+
+/* -----------------------------------------------------------------------
+ * Decode entire source image into a flat color buffer.
+ * If the source has a separate alpha channel, also decode it into *out_alpha
+ * (caller must free both buffers).  *out_alpha is set to NULL when no alpha.
+ * ----------------------------------------------------------------------- */
+static gt_color_t * _decode_full_image(_gt_img_dsc_st * dsc_img, gt_opa_t ** out_alpha)
 {
     int32_t w = dsc_img->header.w;
     int32_t h = dsc_img->header.h;
-    uint32_t row_bytes = (uint32_t)w * sizeof(gt_color_t);
+    uint32_t pixel_count = (uint32_t)w * h;
+    uint32_t row_bytes = pixel_count * sizeof(gt_color_t);
 
-    gt_color_t * buf = (gt_color_t *)gt_mem_malloc(row_bytes * (uint32_t)h);
+    if (out_alpha) *out_alpha = NULL;
+
+    gt_color_t * buf = (gt_color_t *)gt_mem_malloc(row_bytes);
     if (!buf) {
         GT_LOGW(GT_LOG_TAG_GUI, "transform: decode buf malloc failed (%dx%d)", w, h);
         return NULL;
     }
 
-    /* RAM image already in dsc_img->img — just copy */
+    /* RAM image in dsc_img->img — may need color format conversion */
     if (dsc_img->img) {
-        gt_memcpy(buf, dsc_img->img, row_bytes * (uint32_t)h);
+        uint8_t src_cf = dsc_img->header.color_format;
+        if (src_cf == 0) src_cf = GT_IMG_CF_RGB565;  /* default: RGB565 */
+
+        /* Decode separate alpha channel if present (C array: color[w*h*src_cf] + alpha[w*h]) */
+        if (out_alpha && dsc_img->alpha) {
+            gt_opa_t * abuf = (gt_opa_t *)gt_mem_malloc(pixel_count);
+            if (abuf) {
+                gt_memcpy(abuf, dsc_img->alpha, pixel_count);
+                *out_alpha = abuf;
+            }
+        }
+
+#if GT_COLOR_DEPTH == 32
+        if (src_cf == GT_IMG_CF_RGB565) {
+            /* RGB565 → ARGB8888 */
+            const uint16_t * s = (const uint16_t *)dsc_img->img;
+            for (uint32_t i = 0; i < pixel_count; i++) {
+                uint16_t p = s[i];
+                uint8_t r5 = (p >> 11) & 0x1F;
+                uint8_t g6 = (p >> 5)  & 0x3F;
+                uint8_t b5 = p & 0x1F;
+                buf[i].ch.red   = (r5 << 3) | (r5 >> 2);
+                buf[i].ch.green = (g6 << 2) | (g6 >> 4);
+                buf[i].ch.blue  = (b5 << 3) | (b5 >> 2);
+                buf[i].ch.alpha = 0xFF;
+            }
+            return buf;
+        }
+#elif GT_COLOR_DEPTH == 16
+        if (src_cf == GT_IMG_CF_RGB565) {
+            /* formats match */
+            gt_memcpy(buf, dsc_img->img, pixel_count * sizeof(gt_color16_t));
+            return buf;
+        }
+#endif
+        /* fallback: direct copy (formats match or unknown) */
+        gt_memcpy(buf, dsc_img->img, row_bytes);
         return buf;
     }
 
     /* Use decoder read_line for all other types (SJPG, built-in file, etc.) */
+    uint8_t src_cf = dsc_img->header.color_format;
+    if (src_cf == 0) src_cf = GT_IMG_CF_RGB565;
+    uint32_t src_row_bytes = (uint32_t)w * src_cf;  /* src_cf value == bytes/pixel */
+    /* need_conv: src bytes/pixel != dst bytes/pixel */
+    bool need_conv = (src_cf != sizeof(gt_color_t));
+
+    uint8_t * row_tmp = need_conv ? (uint8_t *)gt_mem_malloc(src_row_bytes) : NULL;
+    if (need_conv && !row_tmp) {
+        gt_mem_free(buf);
+        return NULL;
+    }
+
     for (int32_t y = 0; y < h; y++) {
-        gt_res_t ret = gt_img_decoder_read_line(dsc_img, 0, y,
-                                                (gt_size_t)row_bytes,
-                                                (uint8_t *)(buf + y * w));
-        if (GT_RES_OK != ret) {
-            GT_LOGW(GT_LOG_TAG_GUI, "transform: read_line failed at y=%d", y);
-            gt_mem_free(buf);
-            return NULL;
+        gt_color_t * dst_row = buf + y * w;
+        if (need_conv) {
+            gt_res_t ret = gt_img_decoder_read_line(dsc_img, 0, y,
+                                                    (gt_size_t)src_row_bytes, row_tmp);
+            if (GT_RES_OK != ret) {
+                gt_mem_free(row_tmp);
+                gt_mem_free(buf);
+                return NULL;
+            }
+#if GT_COLOR_DEPTH == 32
+            if (src_cf == GT_IMG_CF_RGB565) {
+                const uint16_t * s = (const uint16_t *)row_tmp;
+                for (int32_t i = 0; i < w; i++) {
+                    uint16_t p = s[i];
+                    uint8_t r5 = (p >> 11) & 0x1F;
+                    uint8_t g6 = (p >> 5)  & 0x3F;
+                    uint8_t b5 = p & 0x1F;
+                    dst_row[i].ch.red   = (r5 << 3) | (r5 >> 2);
+                    dst_row[i].ch.green = (g6 << 2) | (g6 >> 4);
+                    dst_row[i].ch.blue  = (b5 << 3) | (b5 >> 2);
+                    dst_row[i].ch.alpha = 0xFF;
+                }
+            }
+#endif
+        } else {
+            gt_res_t ret = gt_img_decoder_read_line(dsc_img, 0, y,
+                                                    (gt_size_t)src_row_bytes,
+                                                    (uint8_t *)dst_row);
+            if (GT_RES_OK != ret) {
+                gt_mem_free(buf);
+                return NULL;
+            }
         }
     }
+    if (row_tmp) gt_mem_free(row_tmp);
     return buf;
 }
 
@@ -146,7 +256,8 @@ void gt_img_transform_draw(_gt_draw_ctx_st * draw_ctx,
     if (zoom == 0) return;
 
     /* Decode entire source image to RAM for random-access sampling */
-    gt_color_t * src_buf = _decode_full_image(dsc_img);
+    gt_opa_t * src_alpha = NULL;
+    gt_color_t * src_buf = _decode_full_image(dsc_img, &src_alpha);
     if (!src_buf) return;
 
     /* Q15 fixed-point cos/sin, pre-divided by zoom for inverse mapping */
@@ -175,18 +286,13 @@ void gt_img_transform_draw(_gt_draw_ctx_st * draw_ctx,
             continue;
         }
 
-        /* Row-start src coords (Q8), incremented per column by (cos_z>>7, -sin_z>>7) */
         int32_t ry = dy - pivot_y;
-        int32_t sx_q8 = (int32_t)(((int64_t)sin_z * ry) >> 7) + (pivot_x << 8);
-        int32_t sy_q8 = (int32_t)(((int64_t)cos_z * ry) >> 7) + (pivot_y << 8);
-        /* Per-column step: d(sx_q8)/d(dx) = cos_z>>7, d(sy_q8)/d(dx) = -sin_z>>7 */
+        int32_t sx_q8 = (int32_t)(((int64_t)sin_z * ry) >> 7) + (pivot_x << 8)
+                        - (int32_t)(((int64_t)cos_z * pivot_x) >> 7);
+        int32_t sy_q8 = (int32_t)(((int64_t)cos_z * ry) >> 7) + (pivot_y << 8)
+                        + (int32_t)(((int64_t)sin_z * pivot_x) >> 7);
         int32_t sx_step = cos_z >> 7;
         int32_t sy_step = -(sin_z >> 7);
-        /* Correction for truncation error in step (keep full precision at row start) */
-        int32_t sx_q8_start = sx_q8 - (int32_t)(((int64_t)cos_z * pivot_x) >> 7);
-        int32_t sy_q8_start = sy_q8 + (int32_t)(((int64_t)sin_z * pivot_x) >> 7);
-        sx_q8 = sx_q8_start;
-        sy_q8 = sy_q8_start;
 
         /* Safe margin: bilinear needs x0 in [0,w-2], y0 in [0,h-2] for fast path */
         int32_t src_w_safe = src_w - 1;
@@ -202,7 +308,14 @@ void gt_img_transform_draw(_gt_draw_ctx_st * draw_ctx,
                 } else {
                     out_line[dx] = _bilinear_sample(src_buf, src_w, src_h, sx_q8, sy_q8);
                 }
-                out_opa[dx] = global_opa;
+                if (src_alpha) {
+                    gt_opa_t a = (sx < src_w_safe && sy < src_h_safe)
+                        ? _bilinear_opa_fast(src_alpha, src_w, sx_q8, sy_q8)
+                        : _bilinear_opa_safe(src_alpha, src_w, src_h, sx_q8, sy_q8);
+                    out_opa[dx] = (gt_opa_t)(((uint32_t)a * global_opa) >> 8);
+                } else {
+                    out_opa[dx] = global_opa;
+                }
             } else {
                 out_line[dx] = blend_dsc->color_fill;
                 out_opa[dx]  = 0;
@@ -219,6 +332,7 @@ void gt_img_transform_draw(_gt_draw_ctx_st * draw_ctx,
     }
 
     gt_mem_free(src_buf);
+    if (src_alpha) gt_mem_free(src_alpha);
 }
 
 /* -----------------------------------------------------------------------
@@ -226,9 +340,10 @@ void gt_img_transform_draw(_gt_draw_ctx_st * draw_ctx,
  * ----------------------------------------------------------------------- */
 gt_color_t * gt_img_decode_to_cache(const gt_attr_rect_st * dsc,
                                     uint16_t * out_w, uint16_t * out_h,
-                                    bool * out_is_rom)
+                                    bool * out_is_rom, gt_opa_t ** out_alpha)
 {
     if (out_is_rom) *out_is_rom = false;
+    if (out_alpha) *out_alpha = NULL;
 
     _gt_img_dsc_st dsc_img = {0};
     gt_res_t ret = GT_RES_FAIL;
@@ -266,10 +381,30 @@ gt_color_t * gt_img_decode_to_cache(const gt_attr_rect_st * dsc,
      * Return it directly — no malloc, caller must NOT free it. */
     if (dsc_img.img && GT_IMG_DECODER_TYPE_RAM == dsc_img.header.type) {
         if (out_is_rom) *out_is_rom = true;
+        /* Alpha channel is stored right after color data — copy it out */
+        if (out_alpha && dsc_img.alpha) {
+            uint32_t pixel_count = (uint32_t)dsc_img.header.w * dsc_img.header.h;
+            gt_opa_t * abuf = (gt_opa_t *)gt_mem_malloc(pixel_count);
+            if (abuf) {
+                gt_memcpy(abuf, dsc_img.alpha, pixel_count);
+                *out_alpha = abuf;
+            }
+        }
         return (gt_color_t *)dsc_img.img;
     }
 
-    gt_color_t * buf = _decode_full_image(&dsc_img);
+    /* For array-type images, fp->buffer holds color+alpha contiguously.
+     * Populate dsc_img.img / dsc_img.alpha so _decode_full_image can use them. */
+    if (dsc_img.fp && GT_FS_TYPE_ARRAY == dsc_img.fp->type) {
+        uint8_t src_cf = dsc_img.header.color_format ? dsc_img.header.color_format : GT_IMG_CF_RGB565;
+        uint32_t pixel_count = (uint32_t)dsc_img.header.w * dsc_img.header.h;
+        dsc_img.img = (uint8_t *)dsc_img.fp->buffer;
+        if (dsc_img.fp->msg.pic.is_alpha) {
+            dsc_img.alpha = (gt_opa_t *)((uint8_t *)dsc_img.fp->buffer + pixel_count * src_cf);
+        }
+    }
+
+    gt_color_t * buf = _decode_full_image(&dsc_img, out_alpha);
     gt_img_decoder_close(&dsc_img);
     return buf;
 }
@@ -281,6 +416,7 @@ void gt_img_transform_draw_cached(struct _gt_draw_ctx_s * draw_ctx,
                                   const gt_area_st * coords,
                                   gt_opt_t opa,
                                   const gt_color_t * src_buf,
+                                  const gt_opa_t * alpha_buf,
                                   uint16_t src_w, uint16_t src_h,
                                   gt_angle_t angle, gt_zoom_t zoom,
                                   int16_t pivot_x, int16_t pivot_y,
@@ -349,7 +485,12 @@ void gt_img_transform_draw_cached(struct _gt_draw_ctx_s * draw_ctx,
                 int32_t sy = (sy_q8 + 128) >> 8;
                 if ((uint32_t)sx < (uint32_t)src_w && (uint32_t)sy < (uint32_t)src_h) {
                     out_line[dx] = src_buf[sy * src_w + sx];
-                    out_opa[dx]  = global_opa;
+                    if (alpha_buf) {
+                        gt_opa_t a = alpha_buf[sy * src_w + sx];
+                        out_opa[dx] = (gt_opa_t)(((uint32_t)a * global_opa) >> 8);
+                    } else {
+                        out_opa[dx] = global_opa;
+                    }
                 } else {
                     out_opa[dx] = 0;
                 }
@@ -365,7 +506,14 @@ void gt_img_transform_draw_cached(struct _gt_draw_ctx_s * draw_ctx,
                     } else {
                         out_line[dx] = _bilinear_sample(src_buf, src_w, src_h, sx_q8, sy_q8);
                     }
-                    out_opa[dx] = global_opa;
+                    if (alpha_buf) {
+                        gt_opa_t a = (sx < src_w_safe && sy < src_h_safe)
+                            ? _bilinear_opa_fast(alpha_buf, src_w, sx_q8, sy_q8)
+                            : _bilinear_opa_safe(alpha_buf, src_w, src_h, sx_q8, sy_q8);
+                        out_opa[dx] = (gt_opa_t)(((uint32_t)a * global_opa) >> 8);
+                    } else {
+                        out_opa[dx] = global_opa;
+                    }
                 } else {
                     out_opa[dx] = 0;
                 }
