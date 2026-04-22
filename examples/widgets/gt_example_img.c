@@ -32,6 +32,7 @@
 static gt_obj_st * _screen = NULL;
 static gt_obj_st * image   = NULL;
 static gt_obj_st * image2  = NULL;
+static int         _bg_idx = 0;
 
 /* ---- transform demo ---- */
 #if GT_USE_IMG_TRANSFORM
@@ -59,6 +60,13 @@ static void _image_one_cb(gt_event_st * e) {
     GT_LOGD(GT_LOG_TAG_EXTRA, "image one call back");
     static int _cnt_1 = 0;
     gt_img_set_src(image, (_cnt_1++ % 2) ? "./img_hmi_02_common.png" : "./img_hmi_01_ai.png");
+}
+
+static void _bg_color_cb(gt_event_st * e) {
+    static const uint32_t _bg_colors[] = { 0xFFFFFF, 0x000000, 0x444444, 0x1E3A5F };
+    _bg_idx = (_bg_idx + 1) % 4;
+    gt_screen_set_bgcolor(_screen, gt_color_hex(_bg_colors[_bg_idx]));
+    gt_disp_invalid_area(_screen);
 }
 
 static void _image_two_cb(gt_event_st * e) {
@@ -130,6 +138,12 @@ gt_obj_st * gt_examples_img(void)
     gt_img_set_src(image2, "./img_hmi_01_ai.png");
     gt_obj_set_pos(image2, 0, 100);
     gt_obj_add_event_cb(image2, _image_two_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
+
+    gt_obj_st * btn_bg = gt_btn_create(_screen);
+    gt_btn_set_text(btn_bg, "BG Color");
+    gt_obj_set_pos(btn_bg, 0, 200);
+    gt_obj_set_size(btn_bg, 80, 28);
+    gt_obj_add_event_cb(btn_bg, _bg_color_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
 
     /* ------------------------------------------------------------------ */
     /* Section 2: GT_USE_IMG_TRANSFORM — rotate / zoom / pivot demo       */
