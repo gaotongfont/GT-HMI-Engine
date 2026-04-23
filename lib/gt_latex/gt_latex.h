@@ -49,7 +49,7 @@ void gt_latex_init(void);
  */
 int gt_latex_get_size(const char *formula, uint16_t formula_len,
                       uint16_t *w, uint16_t *h, uint16_t max_width,
-                      uint16_t first_line_x_offset);
+                      gt_latex_off_t line_off);
 
 /**
  * @brief 一体化接口：解析 + 布局 + 渲染 / All-in-one: parse + layout + render
@@ -60,7 +60,7 @@ int gt_latex_get_size(const char *formula, uint16_t formula_len,
  */
 int gt_latex_draw(const char *formula, uint16_t formula_len,
                   const gt_latex_canvas_t *canvas, uint16_t max_width,
-                  uint16_t first_line_x_offset);
+                  gt_latex_off_t line_off);
 
 /**
  * @brief 分步接口：仅解析，生成 AST / Step API: parse only, produce AST
@@ -93,7 +93,7 @@ void gt_latex_parse_free(gt_latex_parser_t *parser, gt_latex_lexer_t *lexer);
 int gt_latex_layout(const gt_latex_parser_t *parser,
                     gt_latex_layout_t       *layout,
                     uint16_t                 max_width,
-                    uint16_t                 first_line_x_offset);
+                    gt_latex_off_t           line_off);
 
 /**
  * @brief 分步接口：对已完成布局执行渲染 / Step API: render from existing layout

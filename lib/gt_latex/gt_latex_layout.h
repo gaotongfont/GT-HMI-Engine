@@ -30,6 +30,14 @@ typedef struct {
 } gt_latex_box_t;
 
 /* ----------------------------------------------------------------
+ * 首行偏移量 / First line offset
+ * ---------------------------------------------------------------- */
+typedef struct {
+    uint16_t x;         /* x 偏移（像素）/ X offset in pixels */
+    uint16_t y;         /* y 偏移（像素）/ Y offset in pixels */
+} gt_latex_off_t;
+
+/* ----------------------------------------------------------------
  * 布局节点 / Layout node
  * 与 AST 节点一一对应，存储布局结果 / One-to-one with AST node, stores layout result
  * ---------------------------------------------------------------- */
@@ -49,10 +57,10 @@ typedef struct gt_latex_layout_node_s {
  * 布局上下文 / Layout context
  * ---------------------------------------------------------------- */
 typedef struct {
-    gt_latex_layout_node_t *root;                /* 布局树根节点 / Layout tree root */
-    uint16_t                total_w;             /* 整体宽度 / Total width */
-    uint16_t                total_h;             /* 整体高度 / Total height */
-    uint16_t                first_line_x_offset; /* 首行 x 偏移（像素），0 = 无偏移 / First line x offset in pixels */
+    gt_latex_layout_node_t *root;        /* 布局树根节点 / Layout tree root */
+    uint16_t                total_w;     /* 整体宽度 / Total width */
+    uint16_t                total_h;     /* 整体高度 / Total height */
+    gt_latex_off_t          line_off;    /* 首行偏移 / First line offset */
 } gt_latex_layout_t;
 
 /* ----------------------------------------------------------------
@@ -83,7 +91,7 @@ int gt_latex_layout_calc(const gt_latex_node_base_t *ast,
                          gt_latex_layout_t          *layout,
                          uint8_t                     level,
                          uint16_t                    max_width,
-                         uint16_t                    first_line_x_offset);
+                         gt_latex_off_t              line_off);
 
 /**
  * @brief 释放布局树占用的资源 / Free layout tree resources
@@ -99,6 +107,13 @@ void gt_latex_layout_deinit(gt_latex_layout_t *layout);
  */
 void gt_latex_layout_get_size(const gt_latex_layout_t *layout,
                               uint16_t *w, uint16_t *h);
+
+/**
+ * @brief 获取公式数学轴（基线到顶部距离）/ Get math axis (distance from top to baseline)
+ * @param layout 布局结果 / Layout result
+ * @return       axis 值，layout 或 root 为 NULL 时返回 0
+ */
+uint16_t gt_latex_layout_get_axis(const gt_latex_layout_t *layout);
 
 /**
  * @brief 创建布局节点（动态分配）/ Allocate a layout node
