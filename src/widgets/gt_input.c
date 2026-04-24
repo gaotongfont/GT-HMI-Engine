@@ -24,6 +24,7 @@
 #include "../core/gt_indev.h"
 #include "../others/gt_area.h"
 #include "./gt_keypad.h"
+#include "../utils/gt_roll_anim.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_INPUT
@@ -56,6 +57,9 @@ typedef struct _gt_input_s {
     uint8_t space_y;
 
     uint8_t hide_value  : 1;    /** [default: 0] show all the chars; 1: hide by "*" */
+    uint8_t placeholder_auto_scroll : 1; /** [default: 1] placeholder auto scroll when text overflow */
+
+    _auto_scroll_st * placeholder_scroll; /** placeholder auto scroll ctrl */
 }_gt_input_st;
 
 
@@ -191,7 +195,23 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     font_attr.opa = GT_OPA_0;
     /** calc text max width */
     _gt_draw_font_res_st font_res = draw_text(input->draw_ctx, &font_attr, &area_font);
-    if (font_res.size.x >= 0) {
+    bool is_placeholder = (!style->value && false == _is_keypad_visible(style));
+    if (is_placeholder && style->placeholder_auto_scroll && style->placeholder_scroll) {
+        /** placeholder auto scroll: apply offset */
+        _auto_scroll_st * as = style->placeholder_scroll;
+        if (font_res.size.x > area_font.w) {
+            as->area.w = font_res.size.x;
+            gt_anim_set_value(as->anim, 0, area_font.w - as->area.w);
+            if (gt_anim_is_paused(as->anim)) {
+                gt_anim_set_paused(as->anim, false);
+            }
+        }
+        int32_t scroll_x = as->area.x;
+        if (scroll_x < area_font.w - (int32_t)as->area.w) {
+            scroll_x = area_font.w - as->area.w;
+        }
+        font_attr.logical_area.x = area_font.x + scroll_x;
+    } else if (!is_placeholder && font_res.size.x >= 0) {
         font_attr.logical_area.x += area_font.w - font_res.size.x - 8;
     }
     font_attr.opa = input->opa;
@@ -310,6 +330,8 @@ static void _deinit_cb(gt_obj_st * obj) {
         gt_mem_free(style_p->placeholder);
         style_p->placeholder = NULL;
     }
+
+    _roll_anim_free_auto_ctrl(&style_p->placeholder_scroll);
 }
 
 static void _input_check_keypad_switch_focus(gt_obj_st * input) {
@@ -400,6 +422,9 @@ gt_obj_st * gt_input_create(gt_obj_st * parent)
     style->space_y        = 0;
 
     gt_input_set_placeholder(obj, "please input");
+
+    style->placeholder_auto_scroll = 1;
+    style->placeholder_scroll = _roll_anim_create_auto_scroll_anim(obj, NULL);
 
     return obj;
 }
@@ -630,6 +655,7 @@ void gt_input_set_placeholder(gt_obj_st * input, const char * placeholder)
         return ;
     }
     _gt_input_st * style = (_gt_input_st * )input;
+    _roll_anim_reset_auto_scroll_ctrl(style->placeholder_scroll);
     uint16_t len = strlen(placeholder);
     if (style->placeholder) {
         style->placeholder = gt_mem_realloc(style->placeholder, len + 1);
@@ -641,6 +667,68 @@ void gt_input_set_placeholder(gt_obj_st * input, const char * placeholder)
     style->placeholder[len] = '\0';
 
     gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_input_set_placeholder_auto_scroll(gt_obj_st * input, bool is_auto_scroll)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    if (is_auto_scroll == style->placeholder_auto_scroll) {
+        return ;
+    }
+    style->placeholder_auto_scroll = is_auto_scroll ? 1 : 0;
+
+    if (is_auto_scroll) {
+        style->placeholder_scroll = _roll_anim_create_auto_scroll_anim(input, style->placeholder_scroll);
+    } else {
+        _roll_anim_free_auto_ctrl(&style->placeholder_scroll);
+    }
+
+    gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+bool gt_input_is_placeholder_auto_scroll(gt_obj_st * input)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return false;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    if (!style->placeholder_auto_scroll) {
+        return false;
+    }
+    if (NULL == style->placeholder_scroll) {
+        return false;
+    }
+    if (NULL == style->placeholder_scroll->anim) {
+        return false;
+    }
+    return true;
+}
+
+void gt_input_set_placeholder_auto_scroll_time(gt_obj_st * input, uint32_t total_time_ms)
+{
+    if (false == gt_obj_is_type(input, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_input_st * style = (_gt_input_st * )input;
+    if (NULL == style->placeholder_scroll) {
+        return ;
+    }
+
+    style->placeholder_scroll->total_time = total_time_ms;
+    if (NULL == style->placeholder_scroll->anim) {
+        return ;
+    }
+    if (0 == style->placeholder_scroll->total_time) {
+        style->placeholder_scroll->total_time = 2000;
+        gt_anim_set_paused(style->placeholder_scroll->anim, true);
+    }
+    gt_anim_set_time(style->placeholder_scroll->anim, style->placeholder_scroll->total_time);
+    if (gt_anim_is_paused(style->placeholder_scroll->anim)) {
+        gt_event_send(input, GT_EVENT_TYPE_DRAW_START, NULL);
+    }
 }
 
 void gt_input_move_left_pos_cursor(gt_obj_st * input)

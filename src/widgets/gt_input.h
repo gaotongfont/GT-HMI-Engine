@@ -92,6 +92,31 @@ void gt_input_append_value_encoding(gt_obj_st * input, char * value, uint8_t enc
 void gt_input_set_placeholder(gt_obj_st * input, const char * placeholder);
 
 /**
+ * @brief Set placeholder auto scroll single line
+ *
+ * @param input input obj
+ * @param is_auto_scroll true: auto scroll when text overflow [default], false: clip overflow text
+ */
+void gt_input_set_placeholder_auto_scroll(gt_obj_st * input, bool is_auto_scroll);
+
+/**
+ * @brief Query placeholder auto scroll state
+ *
+ * @param input input obj
+ * @return true: auto scroll enabled, false: disabled
+ */
+bool gt_input_is_placeholder_auto_scroll(gt_obj_st * input);
+
+/**
+ * @brief Set placeholder auto scroll speed
+ *
+ * @param input input obj
+ * @param total_time_ms > 0: total time(ms) for auto scroll each time;
+ *                     = 0: set default 2s.
+ */
+void gt_input_set_placeholder_auto_scroll_time(gt_obj_st * input, uint32_t total_time_ms);
+
+/**
  * @brief delete a value in the input obj at pos
  *
  * @param input input obj
