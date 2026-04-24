@@ -17,7 +17,6 @@ include $(HMI_DIR)/src/extra/md4c/gt_md4c.mk
 include $(HMI_DIR)/src/extra/png/gt_png.mk
 include $(HMI_DIR)/src/extra/svg/gt_svg.mk
 include $(HMI_DIR)/src/extra/serial/gt_serial.mk
-include $(HMI_DIR)/src/extra/libtexprintf/gt_libtexprintf.mk
 include $(HMI_DIR)/src/extra/qrcodegen/gt_qrcodegen.mk
 
 include $(HMI_DIR)/examples/gt_examples.mk
