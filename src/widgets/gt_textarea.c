@@ -1181,7 +1181,7 @@ void gt_textarea_add_str_by_len(gt_obj_st * textarea, char * str, uint32_t len, 
     if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
         return ;
     }
-    if (0 == len) { return; }
+    if (NULL == str || 0 == len) { return; }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     uint16_t idx = style->cnt_contents;
 
@@ -1215,6 +1215,45 @@ void gt_textarea_add_str_by_len(gt_obj_st * textarea, char * str, uint32_t len, 
 #endif
 
     ++style->cnt_contents;
+#if GT_TEXTAREA_SUB_STRING_SCROLL_CACHE
+    _resize_scroll_cache(style, style->cnt_contents);
+#endif
+    _set_hold_on_contents_for_scroll(style, false);
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+
+void gt_textarea_append_str(gt_obj_st * textarea, char * str, gt_font_style_et style, gt_color_t color)
+{
+    gt_textarea_append_str_by_len(textarea, str, strlen(str), style, color);
+}
+
+void gt_textarea_append_str_by_len(gt_obj_st * textarea, char * str, uint32_t len, gt_font_style_et style_mask, gt_color_t color)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return ;
+    }
+    if (NULL == str || 0 == len) { return; }
+    _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+
+    if(style->cnt_contents == 0) {
+        gt_textarea_add_str_by_len(textarea, str, len, style_mask, color);
+        return;
+    }
+    int32_t idx = style->cnt_contents - 1;
+    if(idx < 0) {
+        return;
+    }
+
+    char* new_str = gt_mem_realloc(style->contents[idx].text, style->contents[idx].len + len + 1);
+    if (NULL == new_str) {
+        return;
+    }
+    gt_memcpy(new_str + style->contents[idx].len, str, len);
+    new_str[style->contents[idx].len + len] = '\0';
+    style->contents[idx].len += len;
+    style->contents[idx].text = new_str;
+
 #if GT_TEXTAREA_SUB_STRING_SCROLL_CACHE
     _resize_scroll_cache(style, style->cnt_contents);
 #endif

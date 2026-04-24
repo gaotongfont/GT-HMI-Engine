@@ -147,6 +147,19 @@ void gt_textarea_clear_all_str(gt_obj_st * textarea);
 void gt_textarea_add_str(gt_obj_st * textarea, char * str, gt_font_style_et style, gt_color_t color);
 void gt_textarea_add_str_by_len(gt_obj_st * textarea, char * str, uint32_t len, gt_font_style_et style_mask, gt_color_t color);
 
+/**
+ * @brief append string to textarea widget with style
+ *        If the number of contents is 0 (count==0), a new content will be added. use new style and color;
+ *        Otherwise, concatenate str to the last content. use the last content's style and color, and the style and color parameters will be ignored.
+ *
+ * @param textarea obj pointer
+ * @param str text
+ * @param style font style @ref gt_font_style_et
+ * @param color font color
+ */
+void gt_textarea_append_str(gt_obj_st * textarea, char * str, gt_font_style_et style, gt_color_t color);
+void gt_textarea_append_str_by_len(gt_obj_st * textarea, char * str, uint32_t len, gt_font_style_et style_mask, gt_color_t color);
+
 uint16_t gt_textarea_get_str_count(gt_obj_st * textarea);
 
 #if GT_TEXTAREA_CUSTOM_FONT_STYLE
