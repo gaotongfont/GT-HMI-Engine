@@ -22,9 +22,6 @@ extern "C" {
 #include "gt_obj_class.h"
 #include "../font/gt_font.h"
 #include "../others/gt_types.h"
-#if GT_CFG_ENABLE_FORMULA
-#include "./gt_formula.h"
-#endif
 
 
 
@@ -73,11 +70,14 @@ gt_font_info_st * gt_markdown_get_font_info_small(gt_obj_st * markdown);
 
 void gt_markdown_set_font_color(gt_obj_st * markdown, gt_color_t color);
 
-#if GT_CFG_ENABLE_FORMULA
-void gt_markdown_set_formula_font_config(gt_obj_st * markdown, const gt_formula_font_st * cfg);
-#endif
-
-
+/**
+ * @brief Set the align latex baseline, default is false,
+ *        if set true, the latex will be align with the baseline of text.
+ *
+ * @param markdown
+ * @param align
+ */
+void gt_markdown_set_align_latex_baseline(gt_obj_st * markdown, bool align);
 
 #endif  /** GT_CFG_ENABLE_MARKDOWN */
 
