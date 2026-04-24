@@ -2124,6 +2124,7 @@ gt_split_line_ret_st gt_font_split_line_numb(gt_font_info_st* info, gt_font_spli
         if (0x0A == text[idx]) {
             ++idx;
             is_first_line = true;
+            disp_w = 0;
             goto _compute_line;
         }
         temp_font.utf8 = (char*)&text[idx];
