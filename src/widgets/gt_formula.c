@@ -33,8 +33,9 @@ typedef struct _gt_formula_s {
     gt_formula_font_st* font_cfg;
     gt_color_t font_color;
 
+    gt_latex_off_t latex_off;
+
     uint16_t max_width;
-    uint16_t first_line_x_offset;
     uint16_t text_len;
 }_gt_formula_st;
 
@@ -300,7 +301,7 @@ static void _formula_init_cb(gt_obj_st * obj)
     }
 
     uint16_t w = 0, h = 0;
-    ret = gt_latex_layout(&parser, &layout, style->max_width, style->first_line_x_offset);
+    ret = gt_latex_layout(&parser, &layout, style->max_width, style->latex_off);
     if(GT_LATEX_OK != ret) {
         GT_LOGE(GT_LOG_TAG_GUI, "Failed to layout latex formula, ret=%d", ret);
         goto _deinit_ret;
@@ -483,13 +484,14 @@ void gt_formula_set_font_config(gt_obj_st * obj, const gt_formula_font_st *cfg)
     gt_memcpy(style->font_cfg, cfg, sizeof(gt_formula_font_st));
 }
 GT_ATTRIBUTE_RAM_TEXT
-void gt_formula_set_first_line_x_offset(gt_obj_st* obj, uint16_t offset)
+void gt_formula_set_first_line_offset(gt_obj_st* obj, uint16_t off_x, uint16_t off_y)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;
     }
     _gt_formula_st * style = (_gt_formula_st * )obj;
-    style->first_line_x_offset = offset;
+    style->latex_off.x = off_x;
+    style->latex_off.y = off_y;
 }
 /* end of file ----------------------------------------------------------*/
 #endif

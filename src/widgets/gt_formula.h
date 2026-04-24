@@ -65,12 +65,13 @@ void gt_formula_set_max_width(gt_obj_st* obj, uint16_t max_width);
 void gt_formula_set_font_config(gt_obj_st * obj, const gt_formula_font_st *cfg);
 
 /**
- * @brief 设置首行 x 偏移（像素），0 表示不偏移 / Set first line x offset in pixels, 0 = none
+ * @brief 设置公式首行偏移 / set formula first line offset
  *
  * @param obj
- * @param offset
+ * @param off_x
+ * @param off_y
  */
-void gt_formula_set_first_line_x_offset(gt_obj_st* obj, uint16_t offset);
+void gt_formula_set_first_line_offset(gt_obj_st* obj, uint16_t off_x, uint16_t off_y);
 
 
 
