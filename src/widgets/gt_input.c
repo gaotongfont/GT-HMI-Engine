@@ -153,7 +153,8 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     gt_color_t color_font = {0};
     char * star_str = NULL;
 
-    if (!style->value && false == _is_keypad_visible(style)) {
+    bool show_placeholder = (!style->value || style->value[0] == '\0') && false == _is_keypad_visible(style);
+    if (show_placeholder) {
         font.utf8 = style->placeholder;
         font.len = strlen(style->placeholder);
         color_font = gt_color_hex(0xa7a7a7);
@@ -197,7 +198,7 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
     font_attr.opa = GT_OPA_0;
     /** calc text max width */
     _gt_draw_font_res_st font_res = draw_text(input->draw_ctx, &font_attr, &area_font);
-    bool is_placeholder = (!style->value && false == _is_keypad_visible(style));
+    bool is_placeholder = (!style->value || style->value[0] == '\0') && false == _is_keypad_visible(style);
     if (is_placeholder && style->placeholder_auto_scroll && style->placeholder_scroll) {
         /** placeholder auto scroll: apply offset */
         _auto_scroll_st * as = style->placeholder_scroll;
