@@ -191,6 +191,8 @@ static inline void _gt_input_init_widget(gt_obj_st * input) {
 
     /*draw text before cursor*/
     gt_area_st area_font = gt_area_reduce(input->area , style->border_width);
+    area_font.x += 2;
+    area_font.w -= 4;
     font_attr.logical_area = area_font;
     font_attr.opa = GT_OPA_0;
     /** calc text max width */
