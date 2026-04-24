@@ -699,15 +699,6 @@ extern "C" {
     #define GT_DISP_STACK_ABORT_LOADING_WHILE_NOT_ENOUGH_MEM    0
 #endif
 
-#ifndef GT_USE_LIB_TEX_PRINTF
-    /**
-     * @brief Use the libtexprintf library to render LaTeX text.
-     *      [default: 0] use gt_tex_string() to render LaTeX text.
-     */
-    #define GT_USE_LIB_TEX_PRINTF    0
-
-#endif
-
 #ifndef GT_USE_LATEX_LIB
     /**
      * @brief Use the gt_latex library to render LaTeX text.

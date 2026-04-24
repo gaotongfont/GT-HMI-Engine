@@ -33,9 +33,6 @@
 #include "../extra/draw/gt_img_transform.h"
 #include "gt_gradient.h"
 
-#if GT_USE_LIB_TEX_PRINTF
-#include "../extra/libtexprintf/gt_tex.h"
-#endif
 #include "../extra/draw/gt_draw_blend_dir.h"
 
 /* private define -------------------------------------------------------*/
@@ -2051,17 +2048,6 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
 #endif
 
     uint16_t txt_len = dsc->font->len;
-    // lib tex printf
-#if GT_USE_LIB_TEX_PRINTF
-    char* latex_txt = NULL;
-    if(dsc->reg.use_latex) {
-        latex_txt = gt_tex_string_by_len(txt, txt_len);
-        if(latex_txt) {
-            txt = (uint8_t*)latex_txt;
-            txt_len = strlen(latex_txt);
-        }
-    }
-#endif
 
 #if _GT_FONT_ENABLE_CONVERTOR
     uint8_t * ret_txt = NULL;
@@ -2404,13 +2390,6 @@ _txt_handler:
     _draw_font_buf_free(&font_buf);
     mask_line = NULL;
     tmp_font.res = NULL;
-
-#if GT_USE_LIB_TEX_PRINTF
-    if(latex_txt) {
-        gt_tex_string_free(latex_txt);
-        latex_txt = NULL;
-    }
-#endif
 
 _mask_handler:
 _res_handler:

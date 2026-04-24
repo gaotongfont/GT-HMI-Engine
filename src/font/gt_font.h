@@ -173,11 +173,6 @@ typedef struct _gt_text_style_s {
     ///< 0[default]: normal draw font and display; 1: Only calculate font display info except draw font.
     uint8_t only_calc_display_info : 1;
 
-#if GT_USE_LIB_TEX_PRINTF
-    ///< 0[default]: not use LaTeX text, 1: use LaTeX text
-    uint8_t use_latex       : 1;
-#endif
-
 #if GT_USE_LATEX_LIB
     ///< 0[default]: not calculate LaTeX size, 1: calculate LaTeX size
     uint8_t only_calc_latex_size : 1;

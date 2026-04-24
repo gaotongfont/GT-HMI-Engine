@@ -760,28 +760,5 @@ gt_res_t gt_label_scroll_pause(gt_obj_st * label, bool paused)
     _roll_anim_paused(style->auto_scroll, paused);
 }
 
-#if GT_USE_LIB_TEX_PRINTF
-void gt_label_set_use_latex(gt_obj_st * label, bool use_latex)
-{
-    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
-        return ;
-    }
-    _gt_label_st * style = (_gt_label_st * )label;
-    style->text_style.use_latex = use_latex;
-
-    gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
-}
-
-bool gt_label_is_use_latex(gt_obj_st * label)
-{
-    if (false == gt_obj_is_type(label, OBJ_TYPE)) {
-        return false;
-    }
-    _gt_label_st * style = (_gt_label_st * )label;
-
-    return style->text_style.use_latex ? true : false;
-}
-#endif
-
 #endif  /** GT_CFG_ENABLE_LABEL */
 /* end ------------------------------------------------------------------*/
