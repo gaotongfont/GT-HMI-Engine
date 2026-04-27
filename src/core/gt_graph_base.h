@@ -194,6 +194,7 @@ typedef struct _gt_attr_arc_s{
 
 #if GT_USE_GRADIENT
     gt_gradient_dsc_st * grad;  ///< Angular gradient; NULL = solid color. Color varies along angle.
+    uint16_t grad_ref_span;     ///< 0=auto(stretch): gradient mapped to arc_span. >0=fixed: gradient mapped to this span.
 #endif
     uint8_t fade_inner_width;   ///< Inner edge fade width in pixels (0 = no fade)
     uint8_t fade_outer_width;   ///< Outer edge fade width in pixels (0 = no fade)

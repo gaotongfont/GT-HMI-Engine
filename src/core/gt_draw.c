@@ -4440,7 +4440,16 @@ _arc_draw_caps_grad(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc,
     e_area.x += cx; e_area.y += cy;
 
     gt_color_t c_start = gt_gradient_dsc_get_color_pos(dsc->grad, 0);
-    gt_color_t c_end   = gt_gradient_dsc_get_color_pos(dsc->grad, 65535);
+    gt_color_t c_end;
+    if (dsc->grad_ref_span > 0) {
+        uint16_t cap_span = (end_angle > start_angle)
+                          ? (end_angle - start_angle)
+                          : (360 - start_angle + end_angle);
+        uint16_t cap_pos = (uint16_t)(((uint32_t)cap_span * 65535u) / dsc->grad_ref_span);
+        c_end = gt_gradient_dsc_get_color_pos(dsc->grad, cap_pos);
+    } else {
+        c_end = gt_gradient_dsc_get_color_pos(dsc->grad, 65535);
+    }
 
     int32_t ddx = (e_area.x + e_area.w / 2) - (s_area.x + s_area.w / 2);
     int32_t ddy = (e_area.y + e_area.h / 2) - (s_area.y + s_area.h / 2);
@@ -4700,15 +4709,11 @@ gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_are
                     /* ang_f in [0, 360) degrees, fractional */
 
                     /* Map angle to arc position [0..65535] */
-                    float rel_f;
-                    if (is_full_circle) {
-                        rel_f = _af;
-                    } else {
-                        rel_f = _af - (float)start_angle;
-                        if (rel_f < 0.0f) rel_f += 360.0f;
-                        if (rel_f > (float)arc_span) rel_f = (float)arc_span;
-                    }
-                    uint16_t pos = (uint16_t)(rel_f * 65535.0f / (float)arc_span + 0.5f);
+                    float rel_f = _af - (float)start_angle;
+                    if (rel_f < 0.0f) rel_f += 360.0f;
+                    if (!is_full_circle && rel_f > (float)arc_span) rel_f = (float)arc_span;
+                    float ref_span = (dsc->grad_ref_span > 0) ? (float)dsc->grad_ref_span : (float)arc_span;
+                    uint16_t pos = (uint16_t)(rel_f * 65535.0f / ref_span + 0.5f);
 
                     /* Compute radial fade opacity */
                     int32_t r2 = dx * dx + dy * dy;

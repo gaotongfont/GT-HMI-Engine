@@ -84,7 +84,8 @@ typedef struct _gt_arc_s {
     uint8_t anim_state: 1;
     uint8_t touch_disable : 1;
     uint8_t draw_bg : 1;       ///< 0 = skip background arc, only draw active + knob
-    uint8_t reverse : 4;
+    uint8_t grad_fixed : 1;    ///< 1 = gradient anchored to bg span; 0 = stretch to arc span
+    uint8_t reverse : 3;
 } _gt_arc_st;
 
 
@@ -163,6 +164,13 @@ static void _init_cb(gt_obj_st * obj)
 #endif
 #if GT_USE_GRADIENT
     arc_attr.grad = style->act_grad;
+    arc_attr.grad_ref_span = 0;
+    if (style->grad_fixed) {
+        uint16_t bg_eff_end = (style->bg.start_angle < style->bg.end_angle)
+                              ? style->bg.end_angle
+                              : (style->bg.end_angle + 360);
+        arc_attr.grad_ref_span = bg_eff_end - style->bg.start_angle;
+    }
 #endif
     arc_attr.fade_inner_width = style->act_fade_inner;
     arc_attr.fade_outer_width = style->act_fade_outer;
@@ -1109,6 +1117,14 @@ void gt_arc_set_act_gradient_rainbow(gt_obj_st * obj, uint16_t steps_per_seg)
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) { return; }
     gt_gradient_dsc_st * grad = gt_gradient_dsc_rainbow(GT_GRAD_DIR_HOR, steps_per_seg);
     gt_arc_set_act_gradient(obj, grad);
+}
+
+void gt_arc_set_act_gradient_fixed(gt_obj_st * obj, bool fixed)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) { return; }
+    _gt_arc_st * style = (_gt_arc_st *)obj;
+    style->grad_fixed = fixed ? 1 : 0;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 #endif /* GT_USE_GRADIENT */
 

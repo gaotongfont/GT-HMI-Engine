@@ -327,6 +327,18 @@ void gt_arc_set_act_gradient(gt_obj_st * obj, gt_gradient_dsc_st * grad);
  * @param steps_per_seg Steps per color segment (>= 2, typical 20~60)
  */
 void gt_arc_set_act_gradient_rainbow(gt_obj_st * obj, uint16_t steps_per_seg);
+
+/**
+ * @brief Set fixed gradient mode. When enabled, the gradient color palette
+ *        is anchored to the background arc's full angle range and stays
+ *        stationary. Only the active arc length changes — like a progress
+ *        bar revealing a fixed gradient. When disabled (default), the
+ *        gradient stretches to fit the current active arc span.
+ *
+ * @param obj   Arc widget
+ * @param fixed true = gradient stays fixed; false = stretch to arc span
+ */
+void gt_arc_set_act_gradient_fixed(gt_obj_st * obj, bool fixed);
 #endif /* GT_USE_GRADIENT */
 
 /**
