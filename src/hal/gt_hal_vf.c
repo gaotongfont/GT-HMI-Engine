@@ -92,7 +92,7 @@ static GT_ATTRIBUTE_RAM_TEXT void * _fh_open_cb(struct _gt_fs_drv_s * drv, gt_fi
 #endif
 
     if (fp->end > _vf_dev->addr_max) {
-        GT_LOGW(GT_LOG_TAG_GUI, "out of GT_VF_FLASH_SIZE");
+        GT_LOGV(GT_LOG_TAG_GUI, "[%s]: out of GT_VF_FLASH_SIZE %x > %x", fp->end, _vf_dev->addr_max);
     }
 
     fp->drv = gt_vf_get_drv();
@@ -134,7 +134,7 @@ static GT_ATTRIBUTE_RAM_TEXT void * _direct_addr_open_cb(struct _gt_fs_drv_s * d
     GT_CHECK_BACK_VAL(fp, NULL);
 
     if (fp->end > _vf_dev->addr_max) {
-        GT_LOGW(GT_LOG_TAG_GUI, "out of GT_VF_FLASH_SIZE");
+        GT_LOGV(GT_LOG_TAG_GUI, "[%s]: out of GT_VF_FLASH_SIZE %x > %x", fp->end, _vf_dev->addr_max);
     }
     _gt_vf_set_fp_by_list(fp, &_vfs[idx]);
     fp->drv = gt_vf_get_drv();
@@ -160,7 +160,7 @@ static GT_ATTRIBUTE_RAM_TEXT void * _custom_size_addr_open_cb(struct _gt_fs_drv_
     GT_CHECK_BACK_VAL(fp, NULL);
 
     if (fp->end > _vf_dev->addr_max) {
-        GT_LOGW(GT_LOG_TAG_GUI, "out of GT_VF_FLASH_SIZE");
+        GT_LOGV(GT_LOG_TAG_GUI, "[%s]: out of GT_VF_FLASH_SIZE %x > %x", fp->end, _vf_dev->addr_max);
     }
 
     uint8_t bpp = dac->color_format ? dac->color_format : sizeof(gt_color_t);
@@ -197,7 +197,7 @@ static GT_ATTRIBUTE_RAM_TEXT void * _open_cb(struct _gt_fs_drv_s * drv, char * n
         ++idx;
     }
     if (is_find == false) {
-        GT_LOGV(GT_LOG_TAG_GUI, "can not find this file:%s", name);
+        GT_LOGE(GT_LOG_TAG_GUI, "can not find this file:%s", name);
         return NULL;
     }
 
@@ -206,7 +206,7 @@ static GT_ATTRIBUTE_RAM_TEXT void * _open_cb(struct _gt_fs_drv_s * drv, char * n
     GT_CHECK_BACK_VAL(vfp, NULL);
 
     if ( _vfs[idx].addr > _vf_dev->addr_max) {
-        GT_LOGW(GT_LOG_TAG_GUI, "out of GT_VF_FLASH_SIZE");
+        GT_LOGV(GT_LOG_TAG_GUI, "[%s]: out of GT_VF_FLASH_SIZE %x > %x", _vfs[idx].name, _vfs[idx].addr, _vf_dev->addr_max);
     }
 
     _gt_vf_set_fp_by_list(vfp, &_vfs[idx]);
