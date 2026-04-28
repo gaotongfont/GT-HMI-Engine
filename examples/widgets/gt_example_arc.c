@@ -241,10 +241,22 @@ static gt_obj_st * _make_grad_3stop(gt_obj_st * scr)
 {
     gt_obj_st * arc = gt_arc_create(scr);
     gt_arc_set_bg_color(arc, gt_color_hex(0xDDDDDD));
+#if 01
+    gt_arc_set_bg_start_end_angle(arc, 270, 270+360);
+    gt_arc_set_bg_width(arc, 18);
+    gt_arc_set_act_start_end_angle(arc, 270, 270+360);
+    gt_arc_set_act_width(arc, 18);
+#else
     gt_arc_set_bg_start_end_angle(arc, 0, 360);
     gt_arc_set_bg_width(arc, 18);
     gt_arc_set_act_start_end_angle(arc, 0, 360);
     gt_arc_set_act_width(arc, 18);
+#endif
+#if 01
+    gt_arc_set_value_min_max(arc, 0, 100);
+    gt_arc_set_value(arc, 100);
+#endif
+    // gt_arc_set_act_gradient_fixed(arc, true);
     gt_gradient_dsc_st * g = gt_gradient_dsc_create(GT_GRAD_DIR_HOR);
     gt_gradient_dsc_add_stop(g, gt_color_hex(0x1565C0), gt_color_hex(0x00BCD4), 40);
     gt_gradient_dsc_add_stop(g, gt_color_hex(0x00BCD4), gt_color_hex(0x4CAF50), 40);
