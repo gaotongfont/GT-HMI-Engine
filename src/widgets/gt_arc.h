@@ -335,6 +335,21 @@ void gt_arc_set_act_gradient_rainbow(gt_obj_st * obj, uint16_t steps_per_seg);
  *        bar revealing a fixed gradient. When disabled (default), the
  *        gradient stretches to fit the current active arc span.
  *
+ *  Effect Description:
+ *
+ *      Default Mode (stretch):              Fixed Mode (fixed):
+ *      value = 30%                          value = 30%
+ *      ┌────────────────┐                   ┌────────────┐
+ *      │ Blue→Green→Red │ ← stretched       │ Blue→Green │ ← anchored to full circle
+ *      └────────────────┘                   └────────────┘
+ *      90° arc                              90° arc, only first 30% visible
+ *
+ *      value = 100%                         value = 100%
+ *      ┌────────────────┐                   ┌────────────────┐
+ *      │ Blue→Green→Red │                   │ Blue→Green→Red │ ← identical at 360°
+ *      └────────────────┘                   └────────────────┘
+ *      360° full circle                     360° full circle
+ *
  * @param obj   Arc widget
  * @param fixed true = gradient stays fixed; false = stretch to arc span
  */
