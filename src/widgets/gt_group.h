@@ -61,6 +61,15 @@ gt_obj_st * gt_group_get_active_obj(gt_obj_st * group, gt_obj_type_et type);
  */
 bool gt_group_reset_selected_state(gt_obj_st * group, gt_obj_type_et type);
 
+/**
+ * @brief The setting allows for adjusting the size of the obj. default: false
+ *        It needs to be called before gt_obj_set_size()
+ *
+ * @param group
+ * @param is_resized true: allow, It will remove the virtual attribute.
+ *                   false: not allow, It will set up virtual attributes.
+ */
+void gt_group_set_resized(gt_obj_st * group, bool is_resized);
 
 #endif  /** GT_CFG_ENABLE_GROUP */
 

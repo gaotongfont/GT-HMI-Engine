@@ -20,6 +20,7 @@
 #include "../others/gt_assert.h"
 #include "../core/gt_event.h"
 #include "../core/gt_disp.h"
+#include "../core/gt_obj_scroll.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_GROUP
@@ -28,6 +29,8 @@
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_group_s {
     gt_obj_st base;
+
+    uint8_t is_resized; /* false: not resized , true: resized */
 }_gt_group_st;
 
 /* static variables -----------------------------------------------------*/
@@ -63,12 +66,18 @@ static void _set_infinite_area(gt_obj_st * obj) {
  */
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
     gt_event_type_et code_val = gt_event_get_code(e);
+    _gt_group_st * style = (_gt_group_st *)obj;
 
     if (GT_EVENT_TYPE_DRAW_START == code_val) {
         gt_event_send(obj, GT_EVENT_TYPE_DRAW_END, NULL);
     }
     else if (GT_EVENT_TYPE_UPDATE_STYLE == code_val) {
-        _set_infinite_area(obj);
+        if(!style->is_resized) {
+            _set_infinite_area(obj);
+        }
+    }
+    else if(GT_EVENT_TYPE_INPUT_SCROLL == code_val) {
+        _gt_obj_scroll_internal(obj, 0, 0);
     }
 }
 
@@ -133,6 +142,17 @@ bool gt_group_reset_selected_state(gt_obj_st * group, gt_obj_type_et type)
     gt_obj_set_state(first_obj, GT_STATE_PRESSED);
     gt_event_send(first_obj, GT_EVENT_TYPE_DRAW_START, NULL);
     return true;
+}
+
+void gt_group_set_resized(gt_obj_st * obj, bool is_resized)
+{
+    if (OBJ_TYPE != gt_obj_class_get_type(obj)) {
+        return;
+    }
+    _gt_group_st * style = (_gt_group_st *)obj;
+    style->is_resized = is_resized;
+    gt_obj_set_virtual(obj, is_resized ? false : true);
+    gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
 #endif  /** GT_CFG_ENABLE_GROUP */
