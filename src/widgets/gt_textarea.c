@@ -427,6 +427,147 @@ static inline bool _is_hold_on_contents_for_scroll(_gt_textarea_st * style) {
     return style->reg.hold_on;
 }
 
+#if GT_USE_LATEX_LIB
+typedef struct {
+    uint16_t first_idx;
+    uint16_t count;
+    uint16_t line_h;
+    uint16_t max_baseline;
+    uint16_t used_w;
+    gt_size_t top_y;
+    bool     has_multiline;
+}_line_group_st;
+
+static _gt_draw_font_res_st _measure_latex_segment(
+    _gt_textarea_st * style, gt_font_st * font,
+    gt_attr_font_st * font_attr, gt_area_st * area_font,
+    _gt_draw_ctx_st * draw_ctx, uint16_t seg_idx)
+{
+    gt_font_st tmp_font = *font;
+    tmp_font.utf8           = style->contents[seg_idx].text;
+    tmp_font.len            = style->contents[seg_idx].len;
+    tmp_font.info.style.all = style->contents[seg_idx].mask_style;
+#if GT_TEXTAREA_CUSTOM_FONT_STYLE
+    tmp_font.info = style->contents[seg_idx].font_info;
+    tmp_font.info.style.all = style->contents[seg_idx].mask_style;
+#endif
+    gt_attr_font_st tmp_attr = {
+        .font    = &tmp_font,
+        .space_x = font_attr->space_x,
+        .space_y = font_attr->space_y,
+        .align   = font_attr->align,
+        .indent  = font_attr->indent,
+        .opa     = GT_OPA_0,
+    };
+    tmp_attr.reg.only_calc_display_info = 1;
+    tmp_attr.reg.only_calc_latex_size   = 1;
+    tmp_attr.logical_area = *area_font;
+    return draw_text(draw_ctx, &tmp_attr, area_font);
+}
+
+static void _collect_line_group(
+    _gt_textarea_st * style, gt_font_st * font,
+    gt_attr_font_st * font_attr, gt_area_st * area_font,
+    _gt_draw_ctx_st * draw_ctx, uint16_t start_idx,
+    _line_group_st * out)
+{
+    out->first_idx    = start_idx;
+    out->count        = 0;
+    out->line_h       = font->info.size;
+    out->max_baseline = font->info.size >> 1;
+    out->used_w       = 0;
+    out->has_multiline = false;
+
+    uint16_t area_w = (uint16_t)font_attr->logical_area.w;
+
+    for (uint16_t i = start_idx; i < style->cnt_contents; i++) {
+        if (NULL == style->contents[i].text) {
+            out->count++;
+            continue;
+        }
+        uint8_t mask = style->contents[i].mask_style;
+        bool is_inline = (mask & GT_FONT_STYLE_LATEX) ? true : false;
+        bool is_block  = (mask & GT_FONT_STYLE_LATEX_BLOCK) ? true : false;
+
+        if (is_block) {
+            if (i == start_idx) {
+                _gt_draw_font_res_st m = _measure_latex_segment(
+                    style, font, font_attr, area_font, draw_ctx, i);
+                out->line_h = GT_MAX(out->line_h, m.size.y);
+                out->max_baseline = GT_MAX(out->max_baseline, m.baseline);
+                out->count = 1;
+            }
+            break;
+        }
+
+        if (is_inline) {
+            _gt_draw_font_res_st m = _measure_latex_segment(
+                style, font, font_attr, area_font, draw_ctx, i);
+            if (out->used_w + m.size.x > area_w) {
+                if (i == start_idx) {
+                    out->line_h = GT_MAX(out->line_h, m.size.y);
+                    out->max_baseline = GT_MAX(out->max_baseline, m.baseline);
+                    out->count = 1;
+                }
+                break;
+            }
+            out->used_w += m.size.x;
+            out->line_h = GT_MAX(out->line_h, m.size.y);
+            out->max_baseline = GT_MAX(out->max_baseline, m.baseline);
+            out->count++;
+            continue;
+        }
+
+        /* Normal text */
+        {
+            if(out->used_w >= area_w) {
+                break;
+            }
+            uint16_t remaining_w = area_w - out->used_w;
+
+            gt_font_info_st seg_info = font->info;
+#if GT_TEXTAREA_CUSTOM_FONT_STYLE
+            seg_info = style->contents[i].font_info;
+#endif
+            gt_font_split_line_st sp = {
+                .text    = style->contents[i].text,
+                .len     = style->contents[i].len,
+                .indent  = 0,
+                .space   = font_attr->space_x,
+                .max_w   = area_w,
+                .start_w = remaining_w,
+            };
+            gt_split_line_ret_st lr = gt_font_split_line_numb(
+                &seg_info, &sp);
+
+            if (lr.line_numb > 1 && out->line_h > seg_info.size
+                && out->count > 0) {
+                break;
+            }
+
+            out->line_h = GT_MAX(out->line_h, seg_info.size);
+            out->max_baseline = GT_MAX(out->max_baseline,
+                                       seg_info.size >> 1);
+            out->count++;
+
+            if (lr.line_numb > 1) {
+                out->has_multiline = true;
+                break;
+            }
+            out->used_w += (remaining_w - lr.disp_w);
+
+            if(out->used_w >= area_w) {
+                break;
+            }
+        }
+    }
+
+    if (0 == out->count) {
+        out->count = 1;
+    }
+}
+#endif  /** GT_USE_LATEX_LIB */
+
 static GT_ATTRIBUTE_RAM_TEXT void
 _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is_only_calc_height) {
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
@@ -507,13 +648,15 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
     }
 
 #if GT_USE_LATEX_LIB
-    uint16_t next_time_idx = 0;
-    int32_t greed_idx = -1, overlength_idx = -1;;
-    uint16_t line_h = font.info.size;
-    uint16_t max_baseline = font.info.size >> 1;
-    gt_size_t pre_start_y = font_attr.start_y
-                            ? font_attr.start_y - (line_h + style->space_y)
-                            : area_font.y - (line_h + style->space_y);
+    _line_group_st _lg = {0};
+    _lg.line_h = font.info.size;
+    _lg.max_baseline = font.info.size >> 1;
+    _lg.top_y = font_attr.start_y ? font_attr.start_y : font_attr.logical_area.y;
+    uint16_t _lg_end_idx = 0;
+    gt_size_t _lg_next_top_y = _lg.top_y;
+    gt_size_t _lg_max_blk_bot = 0;
+    bool _lg_has_blk_bot = false;
+    bool _lg_wrapped = false;
 
     if(style->reg.align_latex_baseline) {
         font_attr.reg.enabled_start = true;
@@ -550,139 +693,41 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
 
 #if GT_USE_LATEX_LIB
         if(style->reg.align_latex_baseline) {
-            uint16_t max_w = 0;
-            if(greed_idx == idx) {
+            if (idx >= _lg_end_idx) {
+                if (idx > 0) {
+                    _lg.top_y = _lg_next_top_y;
+                }
                 font_attr.start_x = font_attr.logical_area.x;
-                greed_idx = -1;
+                _lg_wrapped = false;
+                _lg_max_blk_bot = 0;
+                _lg_has_blk_bot = false;
+                _collect_line_group(style, &font, &font_attr,
+                    &area_font, obj->draw_ctx, idx, &_lg);
+                _lg_end_idx = _lg.first_idx + _lg.count;
             }
 
-            if(font_attr.start_x > font_attr.logical_area.x) {
-                max_w = font_attr.start_x - font_attr.logical_area.x;
-            }
+            if (!_lg_wrapped) {
+                bool _is_inline = (style->contents[idx].mask_style & GT_FONT_STYLE_LATEX) ? true : false;
+                bool _is_block  = (style->contents[idx].mask_style & GT_FONT_STYLE_LATEX_BLOCK) ? true : false;
 
-            if(idx >= next_time_idx) {
-                pre_start_y += line_h + style->space_y;
-                line_h = font.info.size;
-                max_baseline = font.info.size >> 1;
-                uint16_t idx_i = idx;
-                for( ; idx_i < style->cnt_contents; idx_i++) {
-                    bool is_latex = (style->contents[idx_i].mask_style & GT_FONT_STYLE_LATEX);
-                    bool is_block = (style->contents[idx_i].mask_style & GT_FONT_STYLE_LATEX_BLOCK);
-
-                    if(overlength_idx == idx) {
-                        is_block = true;
-                        is_latex = false;
-                        font.info.style.reg.latex_block = 1;
-                        font.info.style.reg.latex = 0;
-                    }
-                    _gt_draw_font_res_st tmp_font_res = {0};
-
-                    if(is_latex || (is_block && idx_i == idx)) {
-                        gt_font_st tmp_font = font;
-                        tmp_font.utf8 = style->contents[idx_i].text;
-                        tmp_font.len = style->contents[idx_i].len;
-                        tmp_font.info.style.all = style->contents[idx_i].mask_style;
-
-                        gt_attr_font_st tmp_font_attr = {
-                            .font       = &tmp_font,
-                            .space_x    = style->space_x,
-                            .space_y    = style->space_y,
-                            .align      = style->font_align,
-                            .indent     = style->indent,
-                            .opa        = GT_OPA_0,
-                            .reg.only_calc_display_info = 1,
-                            .reg.only_calc_latex_size = 1,
-                        };
-
-                        tmp_font_res = draw_text(obj->draw_ctx, &tmp_font_attr, &area_font);
-                    }
-
-                    if(is_block) {
-                        next_time_idx = (idx_i == idx ? idx_i + 1 : idx_i);
-                        line_h = GT_MAX(line_h, tmp_font_res.size.y);
-                        max_baseline = GT_MAX(max_baseline, tmp_font_res.baseline);
-                        break;
-                    }
-
-                    if(is_latex) {
-                        max_w += tmp_font_res.size.x;
-                        if(max_w > font_attr.logical_area.w ) {
-                            if(idx_i == idx) {
-                                next_time_idx = idx_i + 1;
-                                line_h = GT_MAX(line_h, tmp_font_res.size.y);
-                                max_baseline = GT_MAX(max_baseline, tmp_font_res.baseline);
-                                if(overlength_idx != idx_i) {
-                                    overlength_idx = idx_i;
-                                    --idx_i;
-                                    continue;
-                                }
-                                overlength_idx = -1;
-                                break;
-                            }
-                            next_time_idx = idx_i;
-                            greed_idx = idx_i;
-                            break;
-                        }
-                        line_h = GT_MAX(line_h, tmp_font_res.size.y);
-                        max_baseline = GT_MAX(max_baseline, tmp_font_res.baseline);
-                    }
-                    else{
-                        gt_font_split_line_st split_line = {
-                            .text = style->contents[idx_i].text,
-                            .len = style->contents[idx_i].len,
-                            .indent = 0,
-                            .space = font_attr.space_x,
-                            .max_w = font_attr.logical_area.w,
-                            .start_w = font_attr.logical_area.w,
-                        };
-
-                        gt_split_line_ret_st line_ret = gt_font_split_line_numb(&font_attr.font->info, &split_line);
-                        line_h = GT_MAX(line_h, font.info.size);
-                        max_baseline = GT_MAX(max_baseline, font.info.size >> 1);
-                        if(line_ret.line_numb > 1) {
-                            break;
-                        }
-                        max_w += split_line.max_w - line_ret.disp_w;
-                        if(max_w > font_attr.logical_area.w) {
-                            next_time_idx = idx_i + 1;
-                            break;
-                        }
-                    }
+                if (_is_inline) {
+                    _gt_draw_font_res_st m = _measure_latex_segment(
+                        style, &font, &font_attr, &area_font, obj->draw_ctx, idx);
+                    font_attr.start_y = _lg.top_y + _lg.max_baseline - m.baseline;
+                } else if (_is_block) {
+                    font_attr.start_y = _lg.top_y;
+                } else {
+                    font_attr.start_y = _lg.top_y + _lg.max_baseline
+                                      - (font.info.size >> 1);
                 }
-
-                if(idx_i >= style->cnt_contents) {
-                    next_time_idx = idx_i;
-                }
-            }
-            if(idx < next_time_idx) {
-                if(font_attr.font->info.style.reg.latex) {
-
-                    gt_attr_font_st tmp_font_attr = {
-                        .font       = &font,
-                        .space_x    = style->space_x,
-                        .space_y    = style->space_y,
-                        .align      = style->font_align,
-                        .indent     = style->indent,
-                        .opa        = GT_OPA_0,
-                        .reg.only_calc_display_info = 1,
-                        .reg.only_calc_latex_size = 1,
-                    };
-
-                    _gt_draw_font_res_st tmp_font_res = draw_text(obj->draw_ctx, &tmp_font_attr, &area_font);
-
-                    // font_attr.start_y = pre_start_y + ((line_h - tmp_font_res.size.y)>>1);
-                    font_attr.start_y = pre_start_y + max_baseline - tmp_font_res.baseline;
-                }
-                else if(font_attr.font->info.style.reg.latex_block){
-                    font_attr.start_y = pre_start_y;
-                }
-                else{
-                    // font_attr.start_y = pre_start_y + ((line_h - font.info.size)>>1);
-                    font_attr.start_y = pre_start_y + max_baseline - (font.info.size >> 1);
+            } else {
+                if (_lg_has_blk_bot && font_attr.start_y < _lg_max_blk_bot) {
+                    font_attr.start_y = _lg_max_blk_bot;
                 }
             }
         }
 #endif
+        gt_size_t _pre_draw_y = font_attr.start_y;
         font_res = draw_text(obj->draw_ctx, &font_attr, &area_font);
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
         if (touch_point_p && font_res.touch_word.word_p) {
@@ -713,9 +758,32 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
         ++idx;
 #if GT_USE_LATEX_LIB
         if(style->reg.align_latex_baseline) {
-            if(font_attr.font->info.style.reg.latex_block) {
-                pre_start_y = font_res.block_bottom_y - font.info.size;
-                line_h = font.info.size;
+            uint8_t _cur_mask = style->contents[idx - 1].mask_style;
+            if (_cur_mask & GT_FONT_STYLE_LATEX) {
+                if (!_lg_has_blk_bot || font_res.block_bottom_y > _lg_max_blk_bot) {
+                    _lg_max_blk_bot = font_res.block_bottom_y;
+                }
+                _lg_has_blk_bot = true;
+            }
+
+            if (!_lg_wrapped && !(_cur_mask & (GT_FONT_STYLE_LATEX | GT_FONT_STYLE_LATEX_BLOCK))
+                && font_res.abs_pos.y > _pre_draw_y) {
+                _lg_wrapped = true;
+            }
+            if (idx >= _lg_end_idx) {
+                if (_cur_mask & GT_FONT_STYLE_LATEX_BLOCK) {
+                    _lg_next_top_y = font_res.block_bottom_y;
+                } else if(_lg_wrapped && !_lg.has_multiline) {
+                    _lg_next_top_y = font_attr.start_y;
+                } else if(_lg.has_multiline) {
+                    _lg_next_top_y = font_attr.start_y + font.info.size + style->space_y;
+                } else{
+                    _lg_next_top_y = _lg.top_y + _lg.line_h + style->space_y;
+                }
+
+                if (_lg_has_blk_bot && _lg_max_blk_bot + style->space_y > _lg_next_top_y) {
+                    _lg_next_top_y = _lg_max_blk_bot + style->space_y;
+                }
             }
         }
         else if( !style->reg.align_latex_baseline &&
