@@ -89,6 +89,7 @@ typedef struct _gt_listview_s {
     gt_color_t item_bg_color;
     gt_color_t border_color;
     gt_color_t selected_anti_font_color;
+    gt_color_t holding_color;
 
     _septal_line_info_st septal_line_info;
 
@@ -391,6 +392,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _highlight_set_obj_active_state(gt_obj_st * li
         return;
     }
     if (GT_STATE_NONE == gt_obj_get_state(style->last_active)) {
+        gt_obj_set_holding_color(style->last_active, style->holding_color);
         gt_obj_set_state(style->last_active, GT_STATE_PRESSED);
     }
 }
@@ -791,7 +793,6 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) 
     obj->area.y = offset_line + listview->process_attr.scroll.y;
     obj->area.w = width;
     obj->area.h = style->item_height - (style->item_reduce << 1);
-    //
 
     gt_obj_set_fixed(obj, true);
     gt_obj_set_inside(obj, true);
@@ -805,6 +806,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) 
     gt_obj_set_focus_disabled(obj, GT_ENABLED);
     gt_obj_set_focus_gap(obj, style->item_focus_gap);
     gt_obj_set_focus_w(obj, style->item_focus_w);
+    gt_obj_set_holding_color(obj, style->holding_color);
 
     _calculate_item_pagination(listview);
     return obj;
@@ -1122,6 +1124,7 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     style->space_x = 0;
     style->space_y = 0;
     style->timeout_event = 200;
+    style->holding_color = gt_color_hex(0x007CE6);
 
     _items_space_init(style);
 
@@ -2042,6 +2045,25 @@ void gt_listview_set_label_auto_scroll_single_line_by(gt_obj_st * listview, bool
     style->omit_sl = 0;
     style->auto_scroll_sl = is_auto_scroll ? 1 : 0;
     _set_label_prop_by_type(listview, _LABEL_AUTO_SCROLL_SL, is_auto_scroll);
+}
+
+void gt_listview_set_selected_holding_color(gt_obj_st * listview, gt_color_t holding_color)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->holding_color = holding_color;
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+gt_color_t gt_listview_get_selected_holding_color(gt_obj_st * listview)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return gt_color_black();
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    return style->holding_color;
 }
 
 void gt_listview_set_selected_anti_font(gt_obj_st * listview, bool enabled)

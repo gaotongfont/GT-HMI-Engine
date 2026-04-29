@@ -537,6 +537,15 @@ void gt_listview_set_label_omit_single_line_by(gt_obj_st * listview, bool is_omi
 void gt_listview_set_label_auto_scroll_single_line_by(gt_obj_st * listview, bool is_auto_scroll);
 
 /**
+ * @brief Set selected item holding color
+ *
+ * @param listview
+ * @param holding_color default color value: #007CE6
+ */
+void gt_listview_set_selected_holding_color(gt_obj_st * listview, gt_color_t holding_color);
+gt_color_t gt_listview_get_selected_holding_color(gt_obj_st * listview);
+
+/**
  * @brief  Set the font to be reversed color when the item is selected
  *
  * @param listview
