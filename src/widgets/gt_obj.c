@@ -73,9 +73,9 @@ static void _init_cb(gt_obj_st * obj) {
 
     if (gt_obj_get_mask_effect(obj) && GT_STATE_PRESSED == gt_obj_get_state(obj)) {
         rect_attr.bg_opa         = GT_OPA_100;
-        rect_attr.border_color  = obj->holding_color;
-        rect_attr.fg_color      = obj->holding_color;
-        rect_attr.bg_color      = obj->holding_color;
+        rect_attr.border_color  = gt_color_hex(0x308ac5);
+        rect_attr.fg_color      = gt_color_mix(gt_color_hex(0x308ac5), obj->bgcolor, 0x44);
+        rect_attr.bg_color      = gt_color_mix(gt_color_hex(0x308ac5), obj->bgcolor, 0x44);
     } else if (gt_obj_is_show_bg(obj)) {
         rect_attr.bg_opa         = obj->opa;
         rect_attr.bg_color      = obj->bgcolor;
@@ -340,7 +340,6 @@ gt_obj_st * gt_obj_create(gt_obj_st * parent)
         return NULL;
     }
 
-    obj->holding_color = gt_color_hex(0x007CE6);
     obj->fixed = false;
     obj->focus_dis = GT_DISABLED;
     return obj;
@@ -577,22 +576,6 @@ gt_color_t gt_obj_get_bgcolor(gt_obj_st * obj)
         return gt_color_make(0, 0, 0);
     }
     return obj->bgcolor;
-}
-
-void gt_obj_set_holding_color(gt_obj_st * obj, gt_color_t color)
-{
-    if (false == gt_obj_is_type(obj, GT_TYPE_TOTAL)) {
-        return ;
-    }
-    obj->holding_color = color;
-}
-
-gt_color_t gt_obj_get_holding_color(gt_obj_st * obj)
-{
-    if (false == gt_obj_is_type(obj, GT_TYPE_TOTAL)) {
-        return gt_color_make(0, 0, 0);
-    }
-    return obj->holding_color;
 }
 
 gt_size_t gt_obj_get_limit_right(gt_obj_st * obj)

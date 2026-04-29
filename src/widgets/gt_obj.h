@@ -134,7 +134,6 @@ typedef struct gt_obj_s {
 #endif
 
     gt_color_t bgcolor;
-    gt_color_t holding_color;   /** pressing or holding color */
 
     gt_radius_t radius;
     uint8_t opa;            /* @ref gt_color.h */
@@ -377,16 +376,6 @@ gt_color_t gt_screen_get_bgcolor(gt_obj_st * obj);
 void gt_obj_set_bgcolor(gt_obj_st * obj, gt_color_t color);
 
 gt_color_t gt_obj_get_bgcolor(gt_obj_st * obj);
-
-/**
- * @brief Set holding color
- *
- * @param listview
- * @param holding_color default color value: #007CE6
- */
-void gt_obj_set_holding_color(gt_obj_st * obj, gt_color_t color);
-
-gt_color_t gt_obj_get_holding_color(gt_obj_st * obj);
 
 gt_size_t gt_obj_get_limit_right(gt_obj_st * obj);
 gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj);
