@@ -32,7 +32,9 @@ extern "C" {
      *      such as: x: 3, w: 8, GT_REFR_AREA_ALIGN_HOR_PIXEL: 4
      *      result: x will be 0, w will be 12 = (3 + 4 + 8) / 4 * 4.
      */
-    #define GT_REFR_AREA_ALIGN_HOR_PIXEL    0
+    #ifndef GT_REFR_AREA_ALIGN_HOR_PIXEL
+        #define GT_REFR_AREA_ALIGN_HOR_PIXEL    0
+    #endif
 #endif
 
 #ifndef GT_REFR_AREA_ALIGN_VER
@@ -49,7 +51,9 @@ extern "C" {
      *      such as: y: 3, h: 8, GT_REFR_AREA_ALIGN_VER_PIXEL: 4
      *      result: y will be 0, h will be 12 = (3 + 4 + 8) / 4 * 4.
      */
-    #define GT_REFR_AREA_ALIGN_VER_PIXEL    0
+    #ifndef GT_REFR_AREA_ALIGN_VER_PIXEL
+        #define GT_REFR_AREA_ALIGN_VER_PIXEL    0
+    #endif
 #endif
 
 
@@ -75,11 +79,17 @@ extern "C" {
 static inline void gt_refr_area_align(gt_area_st * area) {
 #if GT_REFR_AREA_ALIGN_HOR || GT_REFR_AREA_ALIGN_VER
     uint16_t align_val = 0;
-#if GT_REFR_AREA_ALIGN_HOR
-    align_val = (uint16_t)gt_abs(area->x % GT_REFR_AREA_ALIGN_HOR_PIXEL);
-    if (align_val) {
-        area->x -= align_val;
-        area->w += align_val;
+#if GT_REFR_AREA_ALIGN_HOR && GT_REFR_AREA_ALIGN_HOR_PIXEL
+    if (area->x >= 0) {
+        align_val = (uint16_t)(area->x % GT_REFR_AREA_ALIGN_HOR_PIXEL);
+        if (align_val) {
+            area->x -= align_val;
+            area->w += align_val;
+        }
+    } else {
+        /* x < 0: clamp to 0, shrink w accordingly to avoid over-expanding */
+        area->w = (area->w > (uint16_t)(-area->x)) ? (area->w + area->x) : 0;
+        area->x = 0;
     }
     /* w must also be aligned up independently, regardless of x alignment */
     align_val = area->w % GT_REFR_AREA_ALIGN_HOR_PIXEL;
@@ -87,11 +97,17 @@ static inline void gt_refr_area_align(gt_area_st * area) {
         area->w += GT_REFR_AREA_ALIGN_HOR_PIXEL - align_val;
     }
 #endif
-#if GT_REFR_AREA_ALIGN_VER
-    align_val = (uint16_t)gt_abs(area->y % GT_REFR_AREA_ALIGN_VER_PIXEL);
-    if (align_val) {
-        area->y -= align_val;
-        area->h += align_val;
+#if GT_REFR_AREA_ALIGN_VER && GT_REFR_AREA_ALIGN_VER_PIXEL
+    if (area->y >= 0) {
+        align_val = (uint16_t)(area->y % GT_REFR_AREA_ALIGN_VER_PIXEL);
+        if (align_val) {
+            area->y -= align_val;
+            area->h += align_val;
+        }
+    } else {
+        /* y < 0: clamp to 0, shrink h accordingly to avoid over-expanding */
+        area->h = (area->h > (uint16_t)(-area->y)) ? (area->h + area->y) : 0;
+        area->y = 0;
     }
     /* h must also be aligned up independently, regardless of y alignment */
     align_val = area->h % GT_REFR_AREA_ALIGN_VER_PIXEL;
