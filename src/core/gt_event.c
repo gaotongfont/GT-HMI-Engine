@@ -333,7 +333,8 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
         return;
     }
     if (_common_event_has_the_same_cb(obj->event_attr, event, filter)) {
-        return ;
+        obj->event_attr->user_data = user_data;
+        return;
     }
     gt_obj_event_attr_st * new_event = _common_add_event_node(&obj->event_attr);
     GT_CHECK_BACK(new_event);
@@ -349,7 +350,8 @@ void gt_obj_add_replace_core_event_cb(struct gt_obj_s * obj, gt_event_cb_t event
         return;
     }
     if (_common_event_has_the_same_cb(obj->replace_core_event_attr, event, filter)) {
-        return ;
+        obj->replace_core_event_attr->user_data = user_data;
+        return;
     }
     gt_obj_event_attr_st * new_event = _common_add_event_node(&obj->replace_core_event_attr);
     GT_CHECK_BACK(new_event);
