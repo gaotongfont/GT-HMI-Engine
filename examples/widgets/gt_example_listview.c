@@ -83,33 +83,6 @@ gt_obj_st * gt_examples_listview(void)
     return screen;
 }
 
-gt_obj_st * gt_examples_listview_horizontal_paging(void)
-{
-    gt_obj_st * screen = gt_obj_create(NULL);
-
-    gt_obj_st * listview = gt_listview_create(screen);
-    gt_obj_set_pos(listview, 10, 60);
-    gt_obj_set_size(listview, 460, 160);
-
-    gt_listview_set_horizontal(listview, true);
-    gt_listview_set_item_width(listview, 140);
-    gt_listview_set_item_height(listview, 140);
-    gt_listview_set_item_reduce(listview, 4);
-    gt_listview_set_item_space(listview, 6, 6);
-    gt_listview_set_item_bg_color(listview, gt_color_hex(0x0080ff));
-    gt_listview_set_page_mode(listview, GT_LISTVIEW_PAGE_MODE_PAGING);
-
-    int i = 0;
-    char buf[32];
-    for (i = 0; i < 8; i++) {
-        snprintf(buf, sizeof(buf), "Page %d", i + 1);
-        gt_listview_add_item(listview, buf);
-    }
-
-    GT_EXAMPLE_ADD_BACK_BTN(screen);
-    return screen;
-}
-
 
 /* global functions / API interface -------------------------------------*/
 
