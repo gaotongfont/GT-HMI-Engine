@@ -19,7 +19,7 @@ include $(HMI_DIR)/src/extra/svg/gt_svg.mk
 include $(HMI_DIR)/src/extra/serial/gt_serial.mk
 include $(HMI_DIR)/src/extra/qrcodegen/gt_qrcodegen.mk
 
-include $(HMI_DIR)/examples/gt_examples.mk
-include $(HMI_DIR)/test/gt_test.mk
+-include $(HMI_DIR)/examples/gt_examples.mk
+-include $(HMI_DIR)/test/gt_test.mk
 
-include $(HMI_DIR)/lib/gt_latex/gt_latex.mk
+-include $(HMI_DIR)/lib/gt_latex/gt_latex.mk
