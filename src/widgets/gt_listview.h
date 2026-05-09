@@ -551,6 +551,41 @@ gt_res_t gt_listview_set_timeout_refresh_or_load_more(gt_obj_st * listview, uint
 
 void gt_listview_set_page_mode(gt_obj_st* listview, gt_listview_page_mode_et mode);
 
+/**
+ * @brief Set the listview to horizontal sliding mode.
+ *        All items will be arranged horizontally and slide left/right.
+ *        Must be called before adding items to take effect.
+ *
+ * @param listview
+ * @param enabled true: horizontal mode; false[default]: vertical mode
+ */
+void gt_listview_set_horizontal(gt_obj_st * listview, bool enabled);
+
+/**
+ * @brief Get whether the listview is in horizontal mode.
+ *
+ * @param listview
+ * @return true: horizontal mode; false: vertical mode
+ */
+bool gt_listview_get_horizontal(gt_obj_st * listview);
+
+/**
+ * @brief Set the item width in horizontal mode.
+ *        [Warn] Only effective in horizontal mode. Must set before adding items.
+ *
+ * @param listview
+ * @param width The width of each item in horizontal mode
+ */
+void gt_listview_set_item_width(gt_obj_st * listview, uint16_t width);
+
+/**
+ * @brief Get the item width in horizontal mode.
+ *
+ * @param listview
+ * @return uint16_t
+ */
+uint16_t gt_listview_get_item_width(gt_obj_st * listview);
+
 #endif  /** GT_CFG_ENABLE_LISTVIEW */
 
 #ifdef __cplusplus

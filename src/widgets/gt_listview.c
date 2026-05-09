@@ -83,8 +83,10 @@ typedef struct {
 typedef struct _gt_listview_s {
     gt_obj_st base;
     gt_obj_st * last_active;
-    uint16_t item_height;       /** The height of item */
+
     gt_font_info_st font_info;
+
+    gt_point_st item_size;          /** x: item width (horizontal mode, 0: auto); y: item height */
 
     gt_color_t item_bg_color;
     gt_color_t border_color;
@@ -127,6 +129,7 @@ typedef struct _gt_listview_s {
     uint8_t pull_to_refresh : 1;
     uint8_t load_more       : 1;
     uint8_t zero_margin     : 1;
+    uint8_t horizontal      : 1;    /** 0[default]: vertical scroll; 1: horizontal scroll */
 }_gt_listview_st;
 
 
@@ -212,12 +215,13 @@ static GT_ATTRIBUTE_RAM_TEXT gt_size_t _calc_septal_line_width(gt_obj_st * obj, 
     return style->septal_line_info.size.x ? style->septal_line_info.size.x : (obj->area.w - (obj->area.w >> 3));
 }
 
+static GT_ATTRIBUTE_RAM_TEXT gt_size_t _calc_septal_line_height(gt_obj_st * obj, _gt_listview_st * style) {
+    return style->septal_line_info.size.y ? style->septal_line_info.size.y : (obj->area.h - (obj->area.h >> 3));
+}
+
 static GT_ATTRIBUTE_RAM_TEXT void _show_septal_line(gt_obj_st * obj, _gt_listview_st * style) {
     gt_attr_rect_st rect_attr;
     gt_area_st area = obj->area;
-    gt_size_t offset = (gt_abs(style->item_space.y - style->septal_line_info.size.y) >> 1);
-    gt_size_t line_width_offset = style->item_space.y - offset;
-    gt_size_t septal_width = (-1 == style->septal_line_info.size.x) ? obj->area.w : _calc_septal_line_width(obj, style);
 
     if (style->septal_line_info.opa < GT_OPA_MIN) {
         return;
@@ -228,26 +232,52 @@ static GT_ATTRIBUTE_RAM_TEXT void _show_septal_line(gt_obj_st * obj, _gt_listvie
 
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill = true;
-    rect_attr.radius = (septal_width > style->septal_line_info.size.y ? style->septal_line_info.size.y : septal_width) >> 1;
     rect_attr.bg_color = style->septal_line_info.color;
     rect_attr.bg_opa = style->septal_line_info.opa;
-
     rect_attr.limit_area = &obj->area;  /** limit widget area range */
 
-    area.x += (obj->area.w - septal_width) >> 1;
-    if (gt_obj_get_childs_max_height(obj) >= gt_obj_get_h(obj)) {
-        area.y += obj->process_attr.scroll.y;
-        area.y += style->zero_margin ? 0 : (style->item_space.y >> 1);
-    }
-    area.w = septal_width;
-    area.h = style->septal_line_info.size.y;
+    if (style->horizontal) {
+        /** Horizontal mode: draw vertical septal lines between items */
+        /** size.x: line length (0=auto, -1=full height); size.y: line thickness (default 2) */
+        gt_size_t septal_h = (-1 == style->septal_line_info.size.x) ? obj->area.h : (
+                              style->septal_line_info.size.x ? style->septal_line_info.size.x
+                              : (obj->area.h - (obj->area.h >> 3)));
+        gt_size_t line_thickness = style->septal_line_info.size.y ? style->septal_line_info.size.y : 2;
+        gt_size_t offset = (gt_abs(style->item_space.x - line_thickness) >> 1);
 
-    for (gt_size_t i = 0, cnt = obj->cnt_child - 1; i < cnt; ++i) {
-        area.y += obj->child[i]->area.h + offset;
-        if (gt_area_is_on(&obj->area, &area)) {
-            draw_bg(obj->draw_ctx, &rect_attr, &area);
+        rect_attr.radius = (septal_h > line_thickness ? line_thickness : septal_h) >> 1;
+        area.h = septal_h;
+        area.w = line_thickness;
+        area.y = obj->area.y + ((obj->area.h - septal_h) >> 1);
+
+        for (gt_size_t i = 0, cnt = obj->cnt_child - 1; i < cnt; ++i) {
+            area.x = obj->child[i]->area.x + obj->child[i]->area.w + offset;
+            if (gt_area_is_on(&obj->area, &area)) {
+                draw_bg(obj->draw_ctx, &rect_attr, &area);
+            }
         }
-        area.y += line_width_offset;
+    } else {
+        /** Vertical mode: draw horizontal septal lines between items */
+        gt_size_t offset = (gt_abs(style->item_space.y - style->septal_line_info.size.y) >> 1);
+        gt_size_t line_width_offset = style->item_space.y - offset;
+        gt_size_t septal_width = (-1 == style->septal_line_info.size.x) ? obj->area.w : _calc_septal_line_width(obj, style);
+
+        rect_attr.radius = (septal_width > style->septal_line_info.size.y ? style->septal_line_info.size.y : septal_width) >> 1;
+        area.x += (obj->area.w - septal_width) >> 1;
+        if (gt_obj_get_childs_max_height(obj) >= gt_obj_get_h(obj)) {
+            area.y += obj->process_attr.scroll.y;
+            area.y += style->zero_margin ? 0 : (style->item_space.y >> 1);
+        }
+        area.w = septal_width;
+        area.h = style->septal_line_info.size.y;
+
+        for (gt_size_t i = 0, cnt = obj->cnt_child - 1; i < cnt; ++i) {
+            area.y += obj->child[i]->area.h + offset;
+            if (gt_area_is_on(&obj->area, &area)) {
+                draw_bg(obj->draw_ctx, &rect_attr, &area);
+            }
+            area.y += line_width_offset;
+        }
     }
 }
 
@@ -512,6 +542,27 @@ _paging_mode_handler(gt_obj_st * obj, bool is_down)
 {
     _gt_listview_st * style = (_gt_listview_st * )obj;
 
+    if (style->horizontal) {
+        /** horizontal paging mode: is_down means scroll right(next), !is_down means scroll left(prev) */
+        if(is_down) {
+            if(style->page_mode.idx >= style->page_mode.count - 1) {
+                return ;
+            }
+            ++style->page_mode.idx;
+            _gt_obj_move_child_by(obj, -style->page_mode.height, 0);
+            gt_disp_invalid_area(obj);
+        }
+        else{
+            if(style->page_mode.idx <= 0) {
+                return ;
+            }
+            --style->page_mode.idx;
+            _gt_obj_move_child_by(obj, style->page_mode.height, 0);
+            gt_disp_invalid_area(obj);
+        }
+        return;
+    }
+
     if(is_down) {
         if(style->page_mode.idx >= style->page_mode.count - 1) {
             return ;
@@ -544,6 +595,7 @@ _childs_text_content_scroll(gt_obj_st * root, bool paused) {
         }
         _childs_text_content_scroll(ptr, paused);
     }
+    return GT_RES_OK;
 }
 
 /**
@@ -564,19 +616,34 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             return ;
         }
 
-        _check_pull_refresh_or_load_more(obj);
-        if (0 == obj->process_attr.scroll.y &&
-            gt_obj_get_childs_max_height(obj) < gt_obj_get_h(obj)) {
-            /** all items can display with current page, reset scroll selected effect */
-            _reset_last_active_state(obj, _get_last_active_obj(obj));
-            _set_last_active_obj(obj, NULL);
-            return;
+        if (style->horizontal) {
+            /** horizontal mode: check scroll by X axis */
+            if (0 == obj->process_attr.scroll.x &&
+                gt_obj_get_childs_max_width(obj) < gt_obj_get_w(obj)) {
+                _reset_last_active_state(obj, _get_last_active_obj(obj));
+                _set_last_active_obj(obj, NULL);
+                return;
+            }
+            if (style->highlight) {
+                gt_obj_set_trigger_mode(style->last_active, false);
+            }
+            gt_size_t offset_x = (style->item_reduce) << 2;
+            _gt_obj_scroll_internal(obj, offset_x, 0);
+        } else {
+            _check_pull_refresh_or_load_more(obj);
+            if (0 == obj->process_attr.scroll.y &&
+                gt_obj_get_childs_max_height(obj) < gt_obj_get_h(obj)) {
+                /** all items can display with current page, reset scroll selected effect */
+                _reset_last_active_state(obj, _get_last_active_obj(obj));
+                _set_last_active_obj(obj, NULL);
+                return;
+            }
+            if (style->highlight) {
+                gt_obj_set_trigger_mode(style->last_active, false);
+            }
+            gt_size_t offset_y = ( style->item_reduce) << 2;
+            _gt_obj_scroll_internal(obj, 0, offset_y);
         }
-        if (style->highlight) {
-            gt_obj_set_trigger_mode(style->last_active, false);
-        }
-        gt_size_t offset_y = ( style->item_reduce) << 2;
-        _gt_obj_scroll_internal(obj, 0, offset_y);
     }
     else if (GT_EVENT_TYPE_INPUT_PRESSED == code_val) {
         _set_last_active_obj(obj, e->origin);
@@ -621,13 +688,21 @@ static void _event_cb(struct gt_obj_s * obj, gt_event_st * e) {
             _paging_mode_handler(obj, false);
             return ;
         }
-        gt_obj_scroll_to_y(obj, gt_obj_get_h(obj) >> 1, GT_ANIM_ON);
+        if (style->horizontal) {
+            gt_obj_scroll_to_x(obj, gt_obj_get_w(obj) >> 1, GT_ANIM_ON);
+        } else {
+            gt_obj_scroll_to_y(obj, gt_obj_get_h(obj) >> 1, GT_ANIM_ON);
+        }
     } else if (GT_EVENT_TYPE_INPUT_SCROLL_DOWN == code_val) {
         if(GT_LISTVIEW_PAGE_MODE_PAGING == style->page_mode.mode) {
             _paging_mode_handler(obj, true);
             return ;
         }
-        gt_obj_scroll_to_y(obj, - gt_obj_get_h(obj) >> 1, GT_ANIM_ON);
+        if (style->horizontal) {
+            gt_obj_scroll_to_x(obj, -(gt_obj_get_w(obj) >> 1), GT_ANIM_ON);
+        } else {
+            gt_obj_scroll_to_y(obj, -(gt_obj_get_h(obj) >> 1), GT_ANIM_ON);
+        }
     } else if (GT_EVENT_TYPE_INPUT_HIDED == code_val) {
         gt_obj_set_visible(obj, false);
     }
@@ -718,8 +793,25 @@ static inline uint16_t _get_triple_real_width(_gt_listview_st * style, gt_obj_st
 static GT_ATTRIBUTE_RAM_TEXT void _calculate_item_pagination(gt_obj_st * listview)
 {
     _gt_listview_st * style = (_gt_listview_st * )listview;
-    int32_t h = 0;
 
+    if (style->horizontal) {
+        /** horizontal paging: use X axis */
+        int32_t w = 0;
+        for(gt_size_t i = 0; i < listview->cnt_child; ++i) {
+            w = listview->child[i]->area.w + listview->child[i]->area.x - listview->area.x;
+            if (w <= listview->area.w) {
+                style->page_mode.height = GT_MAX(
+                    w + (style->zero_margin ? style->item_space.x : (style->item_space.x >> 1)), style->page_mode.height);
+                continue;
+            }
+            if(w - (style->page_mode.height * (style->page_mode.count-1)) > listview->area.w) {
+                ++style->page_mode.count;
+            }
+        }
+        return;
+    }
+
+    int32_t h = 0;
     for(gt_size_t i = 0; i < listview->cnt_child; ++i) {
         h = listview->child[i]->area.h + listview->child[i]->area.y - listview->area.y;
         if (h <= listview->area.h) {
@@ -745,7 +837,7 @@ _calc_next_item_offset_ver_relative_pos(gt_size_t prev_item_y, _gt_listview_st *
     if (style->column.prev_item_height) {
         return prev_item_y + style->column.prev_item_height + style->item_space.y;
     }
-    return prev_item_y + style->item_height + style->item_space.y;
+    return prev_item_y + style->item_size.y + style->item_space.y;
 }
 
 static gt_size_t GT_ATTRIBUTE_RAM_TEXT
@@ -780,8 +872,98 @@ _common_calc_current_line_offset_y(gt_obj_st * listview, gt_size_t idx) {
     return offset_line;
 }
 
+/**
+ * @brief Calculate the absolute x position of item in horizontal mode
+ */
+static gt_size_t GT_ATTRIBUTE_RAM_TEXT
+_calc_item_offset_ver_abs_pos_hor(gt_obj_st * listview, gt_size_t item_height, gt_size_t col_idx) {
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    gt_size_t offset_y = listview->area.y + style->item_reduce;
+    if (false == style->zero_margin) {
+        offset_y += style->item_space.y >> 1;
+    }
+    return offset_y;
+}
+
+/**
+ * @brief Get the actual item width in horizontal mode
+ */
+static GT_ATTRIBUTE_RAM_TEXT uint16_t
+_get_item_width_horizontal(_gt_listview_st * style) {
+    return style->item_size.x ? style->item_size.x : 120;  /* default 120px */
+}
+
+/**
+ * @brief Calculate next item x offset in horizontal mode
+ */
+static gt_size_t GT_ATTRIBUTE_RAM_TEXT
+_calc_next_item_offset_hor_abs_pos(gt_obj_st * listview) {
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    if (listview->cnt_child == 0) {
+        gt_size_t x = listview->area.x + style->item_reduce;
+        if (false == style->zero_margin) {
+            x += style->item_space.x >> 1;
+        }
+        style->column.offset_y = x;  /* reuse offset_y as offset_x */
+        return x;
+    }
+    gt_obj_st * last = listview->child[listview->cnt_child - 1];
+    gt_size_t item_w = _get_item_width_horizontal(style);
+    gt_size_t next_x = last->area.x + item_w + style->item_space.x
+                       + gt_abs(listview->process_attr.scroll.x);
+    style->column.offset_y = next_x - gt_abs(listview->process_attr.scroll.x);
+    return next_x - gt_abs(listview->process_attr.scroll.x)
+           + listview->process_attr.scroll.x;
+}
+
 static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
+
+    if (style->horizontal) {
+        /* 水平模式：item 沿 X 轴排列，高度跟随控件高度 */
+        gt_obj_st * obj = gt_obj_create(listview);
+        gt_size_t item_w = _get_item_width_horizontal(style) - (style->item_reduce << 1);
+        gt_size_t item_h = listview->area.h - (style->item_reduce << 1);
+        gt_size_t offset_x;
+
+        if (listview->cnt_child <= 1) {
+            /* 第一个 item */
+            offset_x = listview->area.x + style->item_reduce;
+            if (false == style->zero_margin) {
+                offset_x += style->item_space.x >> 1;
+            }
+            style->column.offset_y = offset_x;
+        } else {
+            gt_obj_st * prev = listview->child[listview->cnt_child - 2];
+            offset_x = prev->area.x + _get_item_width_horizontal(style) - (style->item_reduce << 1)
+                       + style->item_space.x;
+            style->column.offset_y = offset_x;
+        }
+
+        obj->area.x = offset_x + listview->process_attr.scroll.x;
+        obj->area.y = listview->area.y + style->item_reduce;
+        if (false == style->zero_margin) {
+            obj->area.y += style->item_space.y >> 1;
+        }
+        obj->area.w = item_w;
+        obj->area.h = item_h - (style->zero_margin ? 0 : (style->item_space.y));
+
+        gt_obj_set_fixed(obj, true);
+        gt_obj_set_inside(obj, true);
+        gt_obj_set_mask_effect(obj, style->selected_effect);
+        gt_obj_set_bubble_notify(obj, true);
+        gt_obj_set_trigger_mode(obj, (gt_obj_trigger_mode_et)style->highlight);
+        gt_obj_set_bgcolor(obj, style->item_bg_color);
+        gt_obj_show_bg(obj, style->item_show_bg);
+        gt_obj_set_radius(obj, style->item_radius);
+        gt_obj_set_focus_disabled(obj, GT_ENABLED);
+        gt_obj_set_focus_gap(obj, style->item_focus_gap);
+        gt_obj_set_focus_w(obj, style->item_focus_w);
+        _calculate_item_pagination(listview);
+        return obj;
+    }
+
+    /* 垂直模式：必须在 gt_obj_create 之前计算偏移，否则 cnt_child 已含新 obj */
     uint8_t idx = _column_plus_one(style);
     gt_size_t width = _get_column_item_width(style, listview->area.w, style->column.count);
     gt_size_t offset_line = _common_calc_current_line_offset_y(listview, idx);
@@ -790,7 +972,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) 
     obj->area.x = _calc_item_offset_hor_abs_pos(listview, width, idx);
     obj->area.y = offset_line + listview->process_attr.scroll.y;
     obj->area.w = width;
-    obj->area.h = style->item_height - (style->item_reduce << 1);
+    obj->area.h = style->item_size.y - (style->item_reduce << 1);
 
     gt_obj_set_fixed(obj, true);
     gt_obj_set_inside(obj, true);
@@ -992,7 +1174,12 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _set_item_obj_prop(gt_obj_st * obj, gt_
     gt_size_t count = gt_listview_get_list_items_cnt(listview);
     if (style->latest_always && count) {
         gt_size_t idx = gt_listview_get_idx_selected(listview);
-        gt_obj_scroll_to_y(listview, -(count - idx) * (style->item_height + style->item_space.y), GT_ANIM_ON);
+        if (style->horizontal) {
+            gt_size_t item_w = _get_item_width_horizontal(style);
+            gt_obj_scroll_to_x(listview, -(count - idx) * (item_w + style->item_space.x), GT_ANIM_ON);
+        } else {
+            gt_obj_scroll_to_y(listview, -(count - idx) * (style->item_size.y + style->item_space.y), GT_ANIM_ON);
+        }
     }
     return obj;
 }
@@ -1115,7 +1302,7 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
     _gt_listview_st * style = (_gt_listview_st * )obj;
     gt_font_info_init(&style->font_info);
 
-    style->item_height = style->font_info.size + (style->font_info.size >> 1);
+    style->item_size.y = style->font_info.size + (style->font_info.size >> 1);
     style->align = GT_ALIGN_CENTER_MID;
     /** font */
     style->space_x = 0;
@@ -1152,6 +1339,9 @@ gt_obj_st * gt_listview_create(gt_obj_st * parent)
 
     style->page_mode.count = 1;
 
+    style->horizontal = 0;
+    style->item_size.x = 0;
+
     gt_obj_set_scroll_dir(obj, GT_SCROLL_VERTICAL);
     return obj;
 }
@@ -1174,7 +1364,7 @@ void gt_listview_set_next_row_item_count(gt_obj_st * listview, uint8_t count)
     _gt_listview_st * style = (_gt_listview_st * )listview;
     style->column.prev_item_height = 0;
     if (count != style->column.count) {
-        style->column.prev_item_height = style->item_height;
+        style->column.prev_item_height = style->item_size.y;
     }
     style->column.idx = 0;
     style->column.count = count;
@@ -1400,7 +1590,7 @@ _column_multiple_del_item(gt_obj_st * listview, uint16_t item_idx) {
 static GT_ATTRIBUTE_RAM_TEXT void
 _column_single_del_item(gt_obj_st * listview, uint16_t item_idx) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
-    gt_size_t item_height = style->item_height + style->item_space.y;
+    gt_size_t item_height = style->item_size.y + style->item_space.y;
     gt_area_st tar_area = listview->child[item_idx]->area;
 
     style->column.offset_y -= item_height;
@@ -1563,7 +1753,7 @@ void gt_listview_set_item_height(gt_obj_st * listview, uint16_t height)
         return;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
-    style->item_height = height;
+    style->item_size.y = height;
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -1573,7 +1763,7 @@ uint16_t gt_listview_get_item_height(gt_obj_st * listview)
         return 0;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
-    return style->item_height;
+    return style->item_size.y;
 }
 
 void gt_listview_set_selected_effect(gt_obj_st * listview, bool enabled)
@@ -1869,7 +2059,7 @@ uint16_t gt_listview_get_resize_height(gt_obj_st * listview, uint16_t item_count
         return 0;
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
-    return (item_count * style->item_height) +
+    return (item_count * style->item_size.y) +
         ((item_count - 1) * (style->item_space.y + style->septal_line_info.size.y));
 }
 
@@ -2100,11 +2290,62 @@ void gt_listview_set_page_mode(gt_obj_st* listview, gt_listview_page_mode_et mod
     style->page_mode.mode = mode;
 
     if (GT_LISTVIEW_PAGE_MODE_PAGING == style->page_mode.mode) {
-        listview->process_attr.scroll.y = 0;
-        gt_size_t offset_y = ( style->item_reduce) << 2;
-        _gt_obj_scroll_internal(listview, 0, offset_y);
+        if (style->horizontal) {
+            listview->process_attr.scroll.x = 0;
+            gt_size_t offset_x = (style->item_reduce) << 2;
+            _gt_obj_scroll_internal(listview, offset_x, 0);
+        } else {
+            listview->process_attr.scroll.y = 0;
+            gt_size_t offset_y = (style->item_reduce) << 2;
+            _gt_obj_scroll_internal(listview, 0, offset_y);
+        }
         _calculate_item_pagination(listview);
     }
+}
+
+void gt_listview_set_horizontal(gt_obj_st * listview, bool enabled)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    if ((uint8_t)enabled == style->horizontal) {
+        return;
+    }
+    style->horizontal = enabled ? 1 : 0;
+    if (enabled) {
+        gt_obj_set_scroll_dir(listview, GT_SCROLL_HORIZONTAL);
+    } else {
+        gt_obj_set_scroll_dir(listview, GT_SCROLL_VERTICAL);
+    }
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+bool gt_listview_get_horizontal(gt_obj_st * listview)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return false;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    return (bool)style->horizontal;
+}
+
+void gt_listview_set_item_width(gt_obj_st * listview, uint16_t width)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    style->item_size.x = width;
+}
+
+uint16_t gt_listview_get_item_width(gt_obj_st * listview)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    return _get_item_width_horizontal(style);
 }
 
 
