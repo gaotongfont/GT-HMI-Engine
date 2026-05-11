@@ -1458,7 +1458,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _blend_rowwise_in_vert(
     blend_dsc->dst_area->h = 1;
     while (y < h) {
         if (gt_area_is_intersect_screen(&draw_ctx->buf_area, blend_dsc->dst_area)) {
-            blend_dsc->dst_buf  = (gt_color_t *)(color_base + (uint32_t)y * w);
+            blend_dsc->dst_buf  = color_base ? (gt_color_t *)(color_base + (uint32_t)y * w) : NULL;
             blend_dsc->mask_buf = alpha_base ? (gt_opa_t *)(alpha_base + (uint32_t)y * w) : NULL;
             gt_draw_blend(draw_ctx, blend_dsc);
         }
