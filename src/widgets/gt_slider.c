@@ -28,6 +28,7 @@
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_SLIDER
 #define MY_CLASS    &gt_slider_class
+#define _SLIDER_TAG_INSIDE_MARGIN   4   /* px gap around knob in tag_inside mode */
 
 /* private typedef ------------------------------------------------------*/
 /**
@@ -68,7 +69,8 @@ typedef struct _gt_slider_s {
     uint8_t tag_visible : 1;
     uint8_t repeat_mode : 1;
     uint8_t touch_mode  : 1;    /** 0: default , 1 : pos can only be changed by swiping */
-    uint8_t reserved : 3;
+    uint8_t tag_inside  : 1;    /** 1: tag circle fits inside the track; 0[default]: tag protrudes */
+    uint8_t reserved : 2;
 }_gt_slider_st;
 
 
@@ -126,6 +128,19 @@ _gt_slider_get_size(gt_obj_st * slider)
     }
 
     return style->thickness;
+}
+
+/** Returns the effective tag size used for offset coordinate system */
+static GT_ATTRIBUTE_RAM_TEXT uint16_t
+_gt_slider_get_offset_tag_size(gt_obj_st * slider) {
+    _gt_slider_st * style = (_gt_slider_st * )slider;
+    if (!style->tag_inside) {
+        return _gt_slider_get_tag_size(slider);
+    }
+    uint16_t size = _gt_slider_get_size(slider);
+    uint16_t tag_vis = (size > 4) ? (size - 4) : size;
+    /* include margin on both sides so offset max leaves room for the knob */
+    return tag_vis + _SLIDER_TAG_INSIDE_MARGIN * 2;
 }
 
 /**
@@ -218,7 +233,7 @@ _calc_touch_point_pos(gt_obj_st * obj) {
                 break;
         }
 
-        temp_offset += _gt_slider_get_tag_size(obj) >> 1;
+        temp_offset += _gt_slider_get_offset_tag_size(obj) >> 1;
         return temp_offset;
     }
 
@@ -239,13 +254,14 @@ _calc_touch_point_pos(gt_obj_st * obj) {
 static GT_ATTRIBUTE_RAM_TEXT gt_size_t
 _calc_pixel_offset_by_value(gt_obj_st * slider, gt_size_t value) {
     _gt_slider_st * style = (_gt_slider_st * )slider;
+    uint16_t tag_eff = _gt_slider_get_offset_tag_size(slider);
     uint16_t max = 0;
 
     if( (style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L) ){
-        max = slider->area.w - (_gt_slider_get_tag_size(slider));
+        max = slider->area.w - tag_eff;
     }
     else if( (style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U) ){
-        max = slider->area.h - (_gt_slider_get_tag_size(slider));
+        max = slider->area.h - tag_eff;
     }
 
     return (value - style->start) * max / (style->end - style->start);
@@ -268,7 +284,7 @@ _gt_slider_set_offset(gt_obj_st * slider , gt_size_t offset)
 {
     _gt_slider_st * style = (_gt_slider_st * )slider;
     uint16_t max_offset = 0;
-    uint16_t tag_size = _gt_slider_get_tag_size(slider);
+    uint16_t tag_size = _gt_slider_get_offset_tag_size(slider);
     if(style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L){
         max_offset = slider->area.w - tag_size;
     }
@@ -340,44 +356,94 @@ _scroll_dir_hor(gt_obj_st * obj, bool is_right) {
 static GT_ATTRIBUTE_RAM_TEXT void
 _calc_all_layer_area(gt_obj_st * slider, gt_area_st * base, gt_area_st * val, gt_area_st * tag) {
     _gt_slider_st * style = (_gt_slider_st * )slider;
-    uint16_t size = _gt_slider_get_size(slider);
-    uint16_t tag_size = _gt_slider_get_tag_size(slider);
-    gt_size_t dist = style->offset;
+    uint16_t size     = _gt_slider_get_size(slider);
+    uint16_t tag_orig = _gt_slider_get_tag_size(slider);
+    /* tag_knob: visual knob diameter (no margin); tag_eff: offset system size (knob + 2*margin) */
+    uint16_t tag_knob = style->tag_inside ? ((size > 4) ? (size - 4) : size) : tag_orig;
+    uint16_t tag_eff  = _gt_slider_get_offset_tag_size(slider);
+    gt_size_t dist    = style->offset;
 
-    if( style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L ){
-        base->x = slider->area.x + (tag_size >> 1);
-        base->w = slider->area.w - (tag_size);
-        base->y = slider->area.y + ((slider->area.h-size)>>1);
+    if (style->dir == GT_BAR_DIR_HOR_L2R || style->dir == GT_BAR_DIR_HOR_R2L) {
+        base->y = slider->area.y + ((slider->area.h - size) >> 1);
         base->h = size;
+        tag->y  = slider->area.y + ((slider->area.h - tag_knob) >> 1);
+        tag->w  = tag_knob;
+        tag->h  = tag_knob;
 
-        tag->y = slider->area.y + ((slider->area.h-tag_size)>>1);
-
-        gt_area_copy(val, base);
-        val->w = dist;
-        if(style->dir == GT_BAR_DIR_HOR_R2L){
-            val->x += (base->w - dist);
-            tag->x = slider->area.x + slider->area.w - dist - tag_size;
+        if (style->tag_inside) {
+            /* track spans full widget width; tag stays inside */
+            base->x = slider->area.x;
+            base->w = slider->area.w;
+            gt_area_copy(val, base);
+            /* val covers knob + margin on right; tag offset by margin from dist */
+            if (style->dir == GT_BAR_DIR_HOR_R2L) {
+                uint16_t val_w = dist + tag_eff;
+                if (val_w > base->w) { val_w = base->w; }
+                val->x = base->x + base->w - val_w;
+                val->w = val_w;
+                tag->x = base->x + base->w - dist - tag_knob - _SLIDER_TAG_INSIDE_MARGIN;
+                if (tag->x < base->x) { tag->x = base->x; }
+            } else {
+                uint16_t val_w = dist + tag_eff;
+                if (val_w > base->w) { val_w = base->w; }
+                val->w = val_w;
+                tag->x = base->x + dist + _SLIDER_TAG_INSIDE_MARGIN;
+                if (tag->x + tag_knob > base->x + base->w) {
+                    tag->x = base->x + base->w - tag_knob;
+                }
+            }
+        } else {
+            /* standard: tag protrudes, base inset by tag_orig/2 */
+            base->x = slider->area.x + (tag_orig >> 1);
+            base->w = slider->area.w - tag_orig;
+            gt_area_copy(val, base);
+            val->w = dist;
+            if (style->dir == GT_BAR_DIR_HOR_R2L) {
+                val->x += (base->w - dist);
+                tag->x = base->x + base->w - dist - (tag_knob >> 1);
+            } else {
+                tag->x = base->x + dist - (tag_knob >> 1);
+            }
         }
-        else{
-            tag->x = slider->area.x + dist;
-        }
 
-    }else if( style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U ){
-        base->y = slider->area.y + (tag_size >> 1);
-        base->h = slider->area.h - (tag_size);
-        base->x = slider->area.x + ((slider->area.w-size)>>1);
+    } else if (style->dir == GT_BAR_DIR_VER_U2D || style->dir == GT_BAR_DIR_VER_D2U) {
+        base->x = slider->area.x + ((slider->area.w - size) >> 1);
         base->w = size;
+        tag->x  = slider->area.x + ((slider->area.w - tag_knob) >> 1);
+        tag->w  = tag_knob;
+        tag->h  = tag_knob;
 
-        tag->x = slider->area.x + ((slider->area.w-tag_size)>>1);
-
-        gt_area_copy(val, base);
-        val->h = dist;
-        if (style->dir == GT_BAR_DIR_VER_D2U){
-            val->y += (base->h - dist);
-            tag->y = slider->area.y + slider->area.h - dist - tag_size;
-        }
-        else{
-            tag->y = slider->area.y + dist;
+        if (style->tag_inside) {
+            base->y = slider->area.y;
+            base->h = slider->area.h;
+            gt_area_copy(val, base);
+            if (style->dir == GT_BAR_DIR_VER_D2U) {
+                uint16_t val_h = dist + tag_eff;
+                if (val_h > base->h) { val_h = base->h; }
+                val->y = base->y + base->h - val_h;
+                val->h = val_h;
+                tag->y = base->y + base->h - dist - tag_knob - _SLIDER_TAG_INSIDE_MARGIN;
+                if (tag->y < base->y) { tag->y = base->y; }
+            } else {
+                uint16_t val_h = dist + tag_eff;
+                if (val_h > base->h) { val_h = base->h; }
+                val->h = val_h;
+                tag->y = base->y + dist + _SLIDER_TAG_INSIDE_MARGIN;
+                if (tag->y + tag_knob > base->y + base->h) {
+                    tag->y = base->y + base->h - tag_knob;
+                }
+            }
+        } else {
+            base->y = slider->area.y + (tag_orig >> 1);
+            base->h = slider->area.h - tag_orig;
+            gt_area_copy(val, base);
+            val->h = dist;
+            if (style->dir == GT_BAR_DIR_VER_D2U) {
+                val->y += (base->h - dist);
+                tag->y = base->y + base->h - dist - (tag_knob >> 1);
+            } else {
+                tag->y = base->y + dist - (tag_knob >> 1);
+            }
         }
     }
 }
@@ -493,7 +559,11 @@ _init_cb(gt_obj_st * obj) {
         goto draw_focus;
     }
 
-    uint16_t tag_size = _gt_slider_get_tag_size(obj);
+    uint16_t tag_size = _gt_slider_get_offset_tag_size(obj);
+    if (style->tag_inside) {
+        uint16_t s = _gt_slider_get_size(obj);
+        tag_size = (s > 4) ? (s - 4) : s;
+    }
     tag_area.w = tag_size;
     tag_area.h = tag_size;
     rect_attr.radius = tag_size >> 1;
@@ -997,6 +1067,13 @@ void gt_slider_set_pos_range(gt_obj_st * slider, gt_size_t min, gt_size_t max)
     style->pos_max = max;
 }
 
+
+void gt_slider_set_tag_inside(gt_obj_st * slider, bool inside) {
+    if (false == gt_obj_is_type(slider, OBJ_TYPE)) { return; }
+    _gt_slider_st * style = (_gt_slider_st *)slider;
+    style->tag_inside = inside ? 1 : 0;
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+}
 
 #endif  /** GT_CFG_ENABLE_SLIDER */
 /* end ------------------------------------------------------------------*/

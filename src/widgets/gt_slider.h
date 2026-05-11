@@ -242,6 +242,15 @@ void gt_slider_set_touch_mode(gt_obj_st* slider, bool touch_mode);
  */
 void gt_slider_set_pos_range(gt_obj_st * slider, gt_size_t min, gt_size_t max);
 
+/**
+ * @brief Set the tag (knob) to render inside the track instead of protruding.
+ *        When enabled the knob diameter equals the track thickness and the
+ *        track spans the full widget width, giving a switch-like appearance.
+ * @param slider
+ * @param inside  1: knob inside track; 0[default]: knob protrudes
+ */
+void gt_slider_set_tag_inside(gt_obj_st * slider, bool inside);
+
 #endif  /** GT_CFG_ENABLE_SLIDER */
 
 #ifdef __cplusplus
