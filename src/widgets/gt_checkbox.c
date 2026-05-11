@@ -11,6 +11,7 @@
 #include "gt_checkbox.h"
 
 #if GT_CFG_ENABLE_CHECKBOX
+#include "../core/gt_theme.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -42,11 +43,13 @@ typedef struct _gt_checkbox_s {
 static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
+static void _apply_theme_cb(gt_obj_st * obj);
 
 static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_checkbox_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
+    ._apply_theme_cb = _apply_theme_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_checkbox_st)
 };
@@ -358,6 +361,7 @@ void gt_checkbox_set_font_color(gt_obj_st * checkbox, gt_color_t color)
     }
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
     style->font_color = color;
+    checkbox->use_theme = 0;
     gt_event_send(checkbox, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 void gt_checkbox_set_font_thick_en(gt_obj_st * checkbox, uint8_t thick)
@@ -432,6 +436,15 @@ void gt_checkbox_set_font_point_offset(gt_obj_st * checkbox , gt_size_t x, gt_si
     gt_checkbox_set_font_point_offset_y( checkbox , y);
 }
 
+
+static void _apply_theme_cb(gt_obj_st * obj) {
+    gt_theme_t * t = gt_theme_get();
+    if (!t) { return; }
+    _gt_checkbox_st * style = (_gt_checkbox_st *)obj;
+    obj->bgcolor   = t->bg_card;
+    style->font_color = t->text_primary;
+    obj->use_theme = 1;
+}
 
 #endif  /** GT_CFG_ENABLE_CHECKBOX */
 /* end ------------------------------------------------------------------*/

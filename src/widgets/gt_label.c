@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_label.h"
+#include "../core/gt_theme.h"
 
 #if GT_CFG_ENABLE_LABEL
 #include "../core/gt_mem.h"
@@ -47,13 +48,15 @@ typedef struct _gt_label_s {
 static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
+static void _label_apply_theme_cb(gt_obj_st * obj);
 
 static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_label_class = {
-    ._init_cb      = _init_cb,
-    ._deinit_cb    = _deinit_cb,
-    ._event_cb     = _event_cb,
-    .type          = OBJ_TYPE,
-    .size_style    = sizeof(_gt_label_st)
+    ._init_cb         = _init_cb,
+    ._deinit_cb       = _deinit_cb,
+    ._event_cb        = _event_cb,
+    ._apply_theme_cb  = _label_apply_theme_cb,
+    .type             = OBJ_TYPE,
+    .size_style       = sizeof(_gt_label_st)
 };
 
 
@@ -166,6 +169,14 @@ _update_label_size(gt_obj_st * obj, uint16_t len) {
 }
 
 /* global functions / API interface -------------------------------------*/
+
+static void _label_apply_theme_cb(gt_obj_st * obj) {
+    gt_theme_t * t = gt_theme_get();
+    if (!t) { return; }
+    _gt_label_st * style = (_gt_label_st *)obj;
+    style->font_color = t->text_primary;
+    obj->use_theme = 1;
+}
 
 /**
  * @brief create a label obj
@@ -313,6 +324,7 @@ void gt_label_set_font_color(gt_obj_st * label, gt_color_t color)
     }
     _gt_label_st * style = (_gt_label_st * )label;
     style->font_color = color;
+    label->use_theme  = 0;
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

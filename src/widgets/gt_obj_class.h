@@ -31,13 +31,17 @@ typedef void (* _gt_deinit_cb_t)(struct gt_obj_s *);
 /** Controls all behavior events */
 typedef void (* _gt_event_cb_t)(struct gt_obj_s *, struct _gt_event_s *);
 
+/** Apply current theme colors to the widget */
+typedef void (* _gt_apply_theme_cb_t)(struct gt_obj_s *);
+
 /**
  * @brief interface for other widgets
  */
 typedef struct _gt_obj_class_s {
-    _gt_init_cb_t     _init_cb;
-    _gt_deinit_cb_t   _deinit_cb;
-    _gt_event_cb_t    _event_cb;
+    _gt_init_cb_t          _init_cb;
+    _gt_deinit_cb_t        _deinit_cb;
+    _gt_event_cb_t         _event_cb;
+    _gt_apply_theme_cb_t   _apply_theme_cb;   /* NULL = does not participate in theme */
     /** Control type @ref gt_obj_type_et */
     gt_obj_type_et type;
     /** Control styles contain the memory size of the base object,

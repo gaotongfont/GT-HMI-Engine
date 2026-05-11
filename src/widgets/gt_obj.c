@@ -567,7 +567,8 @@ void gt_obj_set_bgcolor(gt_obj_st * obj, gt_color_t color)
     if (false == gt_obj_is_type(obj, GT_TYPE_TOTAL)) {
         return ;
     }
-    obj->bgcolor = color;
+    obj->bgcolor   = color;
+    obj->use_theme = 0;
 }
 
 gt_color_t gt_obj_get_bgcolor(gt_obj_st * obj)

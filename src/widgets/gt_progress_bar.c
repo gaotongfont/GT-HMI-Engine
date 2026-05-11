@@ -11,6 +11,7 @@
 #include "gt_progress_bar.h"
 
 #if GT_CFG_ENABLE_PROGRESS_BAR
+#include "../core/gt_theme.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -41,11 +42,13 @@ typedef struct _gt_progress_bar_s {
 static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
+static void _apply_theme_cb(gt_obj_st * obj);
 
 static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_progress_bar_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
+    ._apply_theme_cb = _apply_theme_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_progress_bar_st)
 };
@@ -308,6 +311,7 @@ void gt_progress_bar_set_color_act(gt_obj_st * progress_bar, gt_color_t color)
     }
     _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
     style->color_act = color;
+    progress_bar->use_theme = 0;
     gt_event_send(progress_bar, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -318,6 +322,7 @@ void gt_progress_bar_set_color_ina(gt_obj_st * progress_bar, gt_color_t color)
     }
     _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
     style->color_ina = color;
+    progress_bar->use_theme = 0;
     gt_event_send(progress_bar, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -338,6 +343,15 @@ gt_bar_dir_et gt_progress_bar_get_dir(gt_obj_st * progress_bar)
     }
     _gt_progress_bar_st * style = (_gt_progress_bar_st * )progress_bar;
     return style->dir;
+}
+
+static void _apply_theme_cb(gt_obj_st * obj) {
+    gt_theme_t * t = gt_theme_get();
+    if (!t) { return; }
+    _gt_progress_bar_st * style = (_gt_progress_bar_st *)obj;
+    style->color_act = t->accent;
+    style->color_ina = t->divider;
+    obj->use_theme = 1;
 }
 
 #endif  /** GT_CFG_ENABLE_PROGRESS_BAR */

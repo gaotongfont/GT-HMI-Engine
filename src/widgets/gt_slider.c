@@ -11,6 +11,7 @@
 #include "gt_slider.h"
 
 #if GT_CFG_ENABLE_SLIDER
+#include "../core/gt_theme.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -78,11 +79,13 @@ typedef struct _gt_slider_s {
 static void _init_cb(gt_obj_st * obj);
 static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
+static void _apply_theme_cb(gt_obj_st * obj);
 
 static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_slider_class = {
     ._init_cb       = _init_cb,
     ._deinit_cb     = _deinit_cb,
     ._event_cb      = _event_cb,
+    ._apply_theme_cb = _apply_theme_cb,
     .type           = OBJ_TYPE,
     .size_style     = sizeof(_gt_slider_st)
 };
@@ -798,6 +801,7 @@ void gt_slider_set_color_act(gt_obj_st * slider, gt_color_t color)
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
     style->color_act = color;
+    slider->use_theme = 0;
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -808,6 +812,7 @@ void gt_slider_set_color_ina(gt_obj_st * slider, gt_color_t color)
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
     style->color_ina = color;
+    slider->use_theme = 0;
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -818,6 +823,7 @@ void gt_slider_set_color_tag(gt_obj_st * slider, gt_color_t color)
     }
     _gt_slider_st * style = (_gt_slider_st *)slider;
     style->color_tag = color;
+    slider->use_theme = 0;
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -1073,6 +1079,17 @@ void gt_slider_set_tag_inside(gt_obj_st * slider, bool inside) {
     _gt_slider_st * style = (_gt_slider_st *)slider;
     style->tag_inside = inside ? 1 : 0;
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+static void _apply_theme_cb(gt_obj_st * obj) {
+    gt_theme_t * t = gt_theme_get();
+    if (!t) { return; }
+    _gt_slider_st * style = (_gt_slider_st *)obj;
+    style->color_act = t->accent;
+    style->color_ina = t->divider;
+    /* keep the tag knob white/light so it stays visible on both themes */
+    style->color_tag = gt_color_hex(0xFFFFFF);
+    obj->use_theme = 1;
 }
 
 #endif  /** GT_CFG_ENABLE_SLIDER */

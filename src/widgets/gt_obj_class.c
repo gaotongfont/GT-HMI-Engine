@@ -293,6 +293,7 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * c, struct gt_obj_s
     obj->focus_gap  = FOCUS_W_DEFAULT;
     obj->focus_dis  = GT_DISABLED;
     obj->opa_tip_bar = GT_SCROLL_TIP_BAR_MAX_OPA;
+    obj->use_theme   = 1;
 
     /** Inherit from the parent class */
     if (parent) {

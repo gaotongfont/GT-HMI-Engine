@@ -23,6 +23,7 @@
 #include "gt_event.h"
 #include "../extra/gt_extra.h"
 #include "../core/gt_img_decoder.h"
+#include "../core/gt_theme.h"
 #if GT_USE_SERIAL
 #include "../extra/serial/gt_serial_resource.h"
 #include "../utils/gt_serial.h"
@@ -207,6 +208,8 @@ void gt_init(void)
     _gt_img_decoder_init();
 
     _gt_extra_init();
+
+    gt_theme_init();
 
     _gt_init_set_flag(true);
 

@@ -191,6 +191,7 @@ typedef struct gt_obj_s {
     uint32_t layout_dirty  : 1;     /* flex layout needs recalculate: 0=clean, 1=dirty */
     uint32_t fixed_pos_saved : 1;   /* 1=fixed_pos is valid (saved before FLEX switch) */
 #endif
+    uint32_t use_theme     : 1;     /* 0: user-defined color, skip theme; 1[default]: follow theme */
 }gt_obj_st;
 
 /**

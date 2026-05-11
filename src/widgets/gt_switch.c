@@ -11,6 +11,7 @@
 #include "gt_switch.h"
 
 #if GT_CFG_ENABLE_SWITCH
+#include "../core/gt_theme.h"
 #include "../core/gt_mem.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -48,11 +49,13 @@ typedef struct _gt_switcher_s {
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
+static void _apply_theme_cb(gt_obj_st * obj);
 
 static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_switcher_class = {
     ._init_cb      = _init_cb,
     ._deinit_cb    = (_gt_deinit_cb_t)NULL,
     ._event_cb     = _event_cb,
+    ._apply_theme_cb = _apply_theme_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_switcher_st)
 };
@@ -205,6 +208,7 @@ void gt_switch_set_color_act(gt_obj_st * switcher, gt_color_t color)
     }
     _gt_switcher_st * style = (_gt_switcher_st * )switcher;
     style->color_act = color;
+    switcher->use_theme = 0;
     gt_event_send(switcher, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -215,6 +219,7 @@ void gt_switch_set_color_ina(gt_obj_st * switcher, gt_color_t color)
     }
     _gt_switcher_st * style = (_gt_switcher_st * )switcher;
     style->color_ina = color;
+    switcher->use_theme = 0;
     gt_event_send(switcher, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -225,6 +230,7 @@ void gt_switch_set_color_point(gt_obj_st * switcher, gt_color_t color)
     }
     _gt_switcher_st * style = (_gt_switcher_st * )switcher;
     style->color_point = color;
+    switcher->use_theme = 0;
     gt_event_send(switcher, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -267,6 +273,17 @@ void gt_switch_set_div_line_size(gt_obj_st * switcher, uint16_t width, uint16_t 
     style->divider.width = width;
     style->divider.height = height;
     gt_event_send(switcher, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+static void _apply_theme_cb(gt_obj_st * obj) {
+    gt_theme_t * t = gt_theme_get();
+    if (!t) { return; }
+    _gt_switcher_st * style = (_gt_switcher_st *)obj;
+    style->color_act   = t->accent;
+    style->color_ina   = t->divider;
+    /* keep the knob white/light so it stays visible on both themes */
+    style->color_point = gt_color_hex(0xFFFFFF);
+    obj->use_theme = 1;
 }
 
 #endif  /** GT_CFG_ENABLE_SWITCH */

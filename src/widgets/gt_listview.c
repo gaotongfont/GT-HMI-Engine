@@ -25,6 +25,7 @@
 #include "../widgets/gt_obj.h"
 #include "../widgets/gt_rect.h"
 #include "../widgets/gt_btn.h"
+#include "../core/gt_theme.h"
 
 
 #include "./gt_label.h"
@@ -177,13 +178,15 @@ typedef struct _triple_param_s {
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
+static void _listview_apply_theme_cb(gt_obj_st * obj);
 
 static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_listview_class = {
-    ._init_cb      = _init_cb,
-    ._deinit_cb    = (_gt_deinit_cb_t)NULL,
-    ._event_cb     = _event_cb,
-    .type          = OBJ_TYPE,
-    .size_style    = sizeof(_gt_listview_st)
+    ._init_cb         = _init_cb,
+    ._deinit_cb       = (_gt_deinit_cb_t)NULL,
+    ._event_cb        = _event_cb,
+    ._apply_theme_cb  = _listview_apply_theme_cb,
+    .type             = OBJ_TYPE,
+    .size_style       = sizeof(_gt_listview_st)
 };
 
 static GT_ATTRIBUTE_RAM_TEXT void _set_label_pos(gt_obj_st * lab, gt_obj_st * item, gt_size_t offset_x, uint16_t width);
@@ -954,6 +957,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) 
         gt_obj_set_bubble_notify(obj, true);
         gt_obj_set_trigger_mode(obj, (gt_obj_trigger_mode_et)style->highlight);
         gt_obj_set_bgcolor(obj, style->item_bg_color);
+        obj->use_theme = 1;  /* internal init */
         gt_obj_show_bg(obj, style->item_show_bg);
         gt_obj_set_radius(obj, style->item_radius);
         gt_obj_set_focus_disabled(obj, GT_ENABLED);
@@ -981,6 +985,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_obj(gt_obj_st * listview) 
     gt_obj_set_trigger_mode(obj, (gt_obj_trigger_mode_et)style->highlight);
 
     gt_obj_set_bgcolor(obj, style->item_bg_color);
+    obj->use_theme = 1;  /* internal init */
     gt_obj_show_bg(obj, style->item_show_bg);
     gt_obj_set_radius(obj, style->item_radius);
     gt_obj_set_focus_disabled(obj, GT_ENABLED);
@@ -1062,6 +1067,7 @@ static inline void _set_label_prop(gt_obj_st * listview, gt_obj_st * lab, gt_fon
 
     gt_label_set_font_align(lab, style->align);
     gt_label_set_font_color(lab, font_info_p->palette);
+    lab->use_theme = 1;  /* internal init, not user-set; keep following theme */
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
     gt_label_set_font_family_cn(lab, font_info_p->style_cn);
     gt_label_set_font_family_en(lab, font_info_p->style_en);
@@ -1287,6 +1293,22 @@ static inline void _set_line_prop(gt_obj_st * line, gt_listview_line_st const * 
 
 
 /* global functions / API interface -------------------------------------*/
+
+static void _listview_apply_theme_cb(gt_obj_st * obj) {
+    gt_theme_t * t = gt_theme_get();
+    if (!t) { return; }
+    _gt_listview_st * style = (_gt_listview_st *)obj;
+    obj->bgcolor = t->bg_secondary;
+    obj->use_theme = 1;
+    style->item_bg_color = t->bg_card;
+    style->font_info.palette = t->text_primary;
+    style->septal_line_info.color = t->divider;
+    /* update existing item bgcolor directly (items have no _apply_theme_cb) */
+    for (gt_size_t i = 0, cnt = obj->cnt_child; i < cnt; ++i) {
+        obj->child[i]->bgcolor   = t->bg_card;
+        obj->child[i]->use_theme = 1;
+    }
+}
 
 gt_obj_st * gt_listview_create(gt_obj_st * parent)
 {
@@ -1835,7 +1857,8 @@ void gt_listview_set_bg_color(gt_obj_st * listview, gt_color_t color)
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;
     }
-    listview->bgcolor = color;
+    listview->bgcolor  = color;
+    listview->use_theme = 0;
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -1846,6 +1869,7 @@ void gt_listview_set_item_bg_color(gt_obj_st * listview, gt_color_t color)
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
     style->item_bg_color = color;
+    listview->use_theme  = 0;
     for (gt_size_t i = 0, cnt = listview->cnt_child; i < cnt; i++) {
         gt_obj_set_bgcolor(listview->child[i], color);
     }
@@ -2010,6 +2034,7 @@ void gt_listview_set_septal_line_color(gt_obj_st * listview, gt_color_t color)
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
     style->septal_line_info.color = color;
+    listview->use_theme = 0;
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -2097,6 +2122,7 @@ void gt_listview_set_font_color(gt_obj_st * listview, gt_color_t color)
     }
     _gt_listview_st * style = (_gt_listview_st * )listview;
     style->font_info.palette = color;
+    listview->use_theme = 0;
     _set_label_prop_by_type(listview, _LABEL_FONT_COLOR, color.full);
 }
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))

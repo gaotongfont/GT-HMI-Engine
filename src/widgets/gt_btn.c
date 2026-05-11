@@ -9,6 +9,7 @@
 
 /* include --------------------------------------------------------------*/
 #include "gt_btn.h"
+#include "../core/gt_theme.h"
 
 #if GT_CFG_ENABLE_BTN
 #include "../core/gt_mem.h"
@@ -70,13 +71,15 @@ typedef struct _gt_btn_s {
 static void _btn_init_cb(gt_obj_st * obj);
 static void _btn_deinit_cb(gt_obj_st * obj);
 static void _btn_event_cb(struct gt_obj_s * obj, gt_event_st * e);
+static void _btn_apply_theme_cb(gt_obj_st * obj);
 
 static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_btn_class = {
-    ._init_cb      = _btn_init_cb,
-    ._deinit_cb    = _btn_deinit_cb,
-    ._event_cb     = _btn_event_cb,
-    .type          = OBJ_TYPE,
-    .size_style    = sizeof(_gt_btn_st)
+    ._init_cb         = _btn_init_cb,
+    ._deinit_cb       = _btn_deinit_cb,
+    ._event_cb        = _btn_event_cb,
+    ._apply_theme_cb  = _btn_apply_theme_cb,
+    .type             = OBJ_TYPE,
+    .size_style       = sizeof(_gt_btn_st)
 };
 
 
@@ -375,6 +378,24 @@ _update_btn_size(gt_obj_st * obj, uint16_t len) {
 }
 
 /* global functions / API interface -------------------------------------*/
+
+static void _btn_apply_theme_cb(gt_obj_st * obj) {
+    gt_theme_t * t = gt_theme_get();
+    if (!t) { return; }
+    _gt_btn_st * style = (_gt_btn_st *)obj;
+    gt_theme_id_et id = gt_theme_get_id();
+    if (id == GT_THEME_DARK) {
+        gt_obj_set_bgcolor(obj, t->bg_card);
+        style->color_pressed = t->bg_secondary;
+        style->font_color    = t->text_primary;
+    } else {
+        gt_obj_set_bgcolor(obj, t->accent);
+        style->color_pressed = t->accent_pressed;
+        style->font_color    = t->text_primary;
+    }
+    obj->use_theme = 1;
+}
+
 gt_obj_st * gt_btn_create(gt_obj_st * parent)
 {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
@@ -438,6 +459,7 @@ void gt_btn_set_color_pressed(gt_obj_st * btn, gt_color_t color)
     }
     _gt_btn_st * style = (_gt_btn_st * )btn;
     style->color_pressed = color;
+    btn->use_theme = 0;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -578,6 +600,7 @@ void gt_btn_set_font_color(gt_obj_st * btn, gt_color_t color)
     }
     _gt_btn_st * style = (_gt_btn_st * )btn;
     style->font_color = color;
+    btn->use_theme = 0;
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
