@@ -102,7 +102,7 @@ static gt_res_t _rasterize(struct _gt_img_dsc_s * dsc, NSVGimage * svg) {
     dsc->header.h = h;
     dsc->header.type = GT_IMG_DECODER_TYPE_SVG;
 #if GT_COLOR_DEPTH == 32
-    dsc->header.color_format = GT_IMG_CF_ARGB8888;
+    dsc->header.color_format = GT_IMG_CF_BGRA8888;
 #else
     dsc->header.color_format = GT_IMG_CF_RGB565;
 #endif
@@ -145,7 +145,7 @@ static gt_res_t _gt_svg_info(struct _gt_img_decoder_s * decoder,
     header->h = (uint32_t)svg->height;
     header->type = GT_IMG_DECODER_TYPE_SVG;
 #if GT_COLOR_DEPTH == 32
-    header->color_format = GT_IMG_CF_ARGB8888;
+    header->color_format = GT_IMG_CF_BGRA8888;
 #else
     header->color_format = GT_IMG_CF_RGB565;
 #endif
@@ -171,7 +171,7 @@ static gt_res_t _gt_svg_info_raw(struct _gt_img_decoder_s * decoder,
     header->h = (uint32_t)svg->height;
     header->type = GT_IMG_DECODER_TYPE_SVG;
 #if GT_COLOR_DEPTH == 32
-    header->color_format = GT_IMG_CF_ARGB8888;
+    header->color_format = GT_IMG_CF_BGRA8888;
 #else
     header->color_format = GT_IMG_CF_RGB565;
 #endif

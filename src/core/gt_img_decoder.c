@@ -583,7 +583,7 @@ void gt_img_dsc_raw_set(_gt_img_dsc_st * dsc_tar, gt_color_img_raw_st const * co
     dsc_tar->fill_color = raw->color;
 
     if (dsc_tar->img && dsc_tar->alpha) {
-        dsc_tar->header.color_format = GT_IMG_CF_ARGB8888;
+        dsc_tar->header.color_format = GT_IMG_CF_BGRA8888;
     } else {
         dsc_tar->header.color_format = GT_COLOR_DEPTH;
     }

@@ -71,10 +71,14 @@ typedef enum {
  * @brief Image color format type
  */
 typedef enum gt_img_color_format_e {
-    GT_IMG_CF_UNKNOWN  = 0,      ///< Unknown color format (infer from size)
-    GT_IMG_CF_RGB565   = 2,      ///< RGB565, 2 bytes per pixel
-    GT_IMG_CF_RGB888   = 3,      ///< RGB888, 3 bytes per pixel
-    GT_IMG_CF_ARGB8888 = 4,      ///< ARGB8888, 4 bytes per pixel
+    GT_IMG_CF_UNKNOWN      = 0,  ///< Unknown color format (infer from size)
+    GT_IMG_CF_RGB565       = 2,  ///< RGB565,    2 B/px, byte layout: [R4:R0 G5:G3][G2:G0 B4:B0] little-endian (GT_COLOR_16_SWAP=0)
+    GT_IMG_CF_RGB888       = 3,  ///< RGB888,    3 B/px, byte layout: B G R (BGR order, matches gt_color32_t channels)
+    GT_IMG_CF_BGRA8888     = 4,  ///< BGRA8888,  4 B/px, byte layout: B G R A — matches gt_color32_t memory layout
+    GT_IMG_CF_RGBA8888     = 5,  ///< RGBA8888,  4 B/px, byte layout: R G B A (PNG/OpenGL native output)
+    GT_IMG_CF_RGB565_SWAP  = 6,  ///< RGB565 byte-swapped, 2 B/px, layout: [G2:G0 R4:R0][B4:B0 G5:G3] (GT_COLOR_16_SWAP=1, SPI LCD)
+    /* backward-compat alias: old code used ARGB8888 but actual layout was always BGRA */
+    GT_IMG_CF_ARGB8888     = GT_IMG_CF_BGRA8888,
 }gt_img_color_format_et;
 
 /**

@@ -1270,16 +1270,31 @@ _filling_by_sjpg_file(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_d
  * The fast path (src_cf == GT_COLOR_DEPTH) has zero overhead — no conversion.
  */
 
-/* ---- source RGB565 → target ---- */
+/* ---- RGB565 pixel decode helpers ---- */
+/* GT_IMG_CF_RGB565:      standard layout [R4:R0 G5:G3][G2:G0 B4:B0] little-endian uint16
+ *                        i.e. uint16 bits: R[15:11] G[10:5] B[4:0]
+ * GT_IMG_CF_RGB565_SWAP: byte-swapped for SPI LCD, uint16 stored as [G2:G0 R4:R0][B4:B0 G5:G3]
+ *                        need to swap bytes before extracting fields */
+static inline void _rgb565_extract(uint16_t p, uint8_t *r5, uint8_t *g6, uint8_t *b5) {
+    *r5 = (p >> 11) & 0x1F;
+    *g6 = (p >> 5)  & 0x3F;
+    *b5 =  p        & 0x1F;
+}
+static inline void _rgb565_swap_extract(uint16_t p, uint8_t *r5, uint8_t *g6, uint8_t *b5) {
+    /* swap bytes then extract as standard RGB565 */
+    uint16_t s = (uint16_t)((p << 8) | (p >> 8));
+    *r5 = (s >> 11) & 0x1F;
+    *g6 = (s >> 5)  & 0x3F;
+    *b5 =  s        & 0x1F;
+}
+
+/* ---- source RGB565 (standard) → target ---- */
 #if GT_COLOR_DEPTH == 32
 static inline void _cf_2_to_32(const uint8_t *src, gt_color_t *dst, uint32_t count) {
     const uint16_t *s = (const uint16_t *)src;
     for (uint32_t i = 0; i < count; i++) {
-        uint16_t p = s[i];
-        uint8_t r5 = (p >> 11) & 0x1F;
-        uint8_t g6 = (p >> 5)  & 0x3F;
-        uint8_t b5 = p & 0x1F;
-        /* expand 5/6/5 → 8 bit, gt_color32_t layout: {blue, green, red, alpha} */
+        uint8_t r5, g6, b5;
+        _rgb565_extract(s[i], &r5, &g6, &b5);
         dst[i].ch.red   = (r5 << 3) | (r5 >> 2);
         dst[i].ch.green = (g6 << 2) | (g6 >> 4);
         dst[i].ch.blue  = (b5 << 3) | (b5 >> 2);
@@ -1290,28 +1305,78 @@ static inline void _cf_2_to_32(const uint8_t *src, gt_color_t *dst, uint32_t cou
 static inline void _cf_2_to_8(const uint8_t *src, gt_color_t *dst, uint32_t count) {
     const uint16_t *s = (const uint16_t *)src;
     for (uint32_t i = 0; i < count; i++) {
-        uint16_t p = s[i];
-        uint8_t r = (p >> 11) & 0x1F;
-        uint8_t g = (p >> 5) & 0x3F;
-        uint8_t b = p & 0x1F;
-        dst[i].ch.red   = r >> 2;
-        dst[i].ch.green = g >> 3;
-        dst[i].ch.blue  = b >> 3;
+        uint8_t r5, g6, b5;
+        _rgb565_extract(s[i], &r5, &g6, &b5);
+        dst[i].ch.red   = r5 >> 2;
+        dst[i].ch.green = g6 >> 3;
+        dst[i].ch.blue  = b5 >> 3;
     }
 }
 static inline void _cf_2_to_1(const uint8_t *src, gt_color_t *dst, uint32_t count) {
     const uint16_t *s = (const uint16_t *)src;
     for (uint32_t i = 0; i < count; i++) {
-        uint16_t p = s[i];
-        uint8_t r = (p >> 11) & 0x1F;
-        uint8_t g = (p >> 5) & 0x3F;
-        uint8_t b = p & 0x1F;
-        uint8_t lum = (r * 77 + g * 150 + b * 29) >> 8;
+        uint8_t r5, g6, b5;
+        _rgb565_extract(s[i], &r5, &g6, &b5);
+        /* expand to 8-bit before applying luma coefficients */
+        uint8_t r8 = (r5 << 3) | (r5 >> 2);
+        uint8_t g8 = (g6 << 2) | (g6 >> 4);
+        uint8_t b8 = (b5 << 3) | (b5 >> 2);
+        uint8_t lum = (r8 * 77 + g8 * 150 + b8 * 29) >> 8;
         dst[i].full = (lum >= 128) ? 0x07 : 0x00;
     }
 }
 
-/* ---- source RGB888 → target ---- */
+/* ---- source RGB565_SWAP (SPI LCD byte-swapped) → target ---- */
+#if GT_COLOR_DEPTH == 32
+static inline void _cf_2s_to_32(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    const uint16_t *s = (const uint16_t *)src;
+    for (uint32_t i = 0; i < count; i++) {
+        uint8_t r5, g6, b5;
+        _rgb565_swap_extract(s[i], &r5, &g6, &b5);
+        dst[i].ch.red   = (r5 << 3) | (r5 >> 2);
+        dst[i].ch.green = (g6 << 2) | (g6 >> 4);
+        dst[i].ch.blue  = (b5 << 3) | (b5 >> 2);
+        dst[i].ch.alpha = 0xFF;
+    }
+}
+#endif
+static inline void _cf_2s_to_16(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    const uint16_t *s = (const uint16_t *)src;
+#if GT_COLOR_16_SWAP == 1
+    /* gt_color16_t is also stored byte-swapped, so RGB565_SWAP matches natively */
+    gt_memcpy(dst, src, count * sizeof(uint16_t));
+    (void)s;
+#else
+    /* swap each pixel's bytes to restore standard RGB565 bit layout */
+    for (uint32_t i = 0; i < count; i++) {
+        dst[i].full = (uint16_t)((s[i] << 8) | (s[i] >> 8));
+    }
+#endif
+}
+static inline void _cf_2s_to_8(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    const uint16_t *s = (const uint16_t *)src;
+    for (uint32_t i = 0; i < count; i++) {
+        uint8_t r5, g6, b5;
+        _rgb565_swap_extract(s[i], &r5, &g6, &b5);
+        dst[i].ch.red   = r5 >> 2;
+        dst[i].ch.green = g6 >> 3;
+        dst[i].ch.blue  = b5 >> 3;
+    }
+}
+static inline void _cf_2s_to_1(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    const uint16_t *s = (const uint16_t *)src;
+    for (uint32_t i = 0; i < count; i++) {
+        uint8_t r5, g6, b5;
+        _rgb565_swap_extract(s[i], &r5, &g6, &b5);
+        uint8_t r8 = (r5 << 3) | (r5 >> 2);
+        uint8_t g8 = (g6 << 2) | (g6 >> 4);
+        uint8_t b8 = (b5 << 3) | (b5 >> 2);
+        uint8_t lum = (r8 * 77 + g8 * 150 + b8 * 29) >> 8;
+        dst[i].full = (lum >= 128) ? 0x07 : 0x00;
+    }
+}
+
+/* ---- source RGB888 (BGR byte order) → target ---- */
 #if GT_COLOR_DEPTH == 32
 static inline void _cf_3_to_32(const uint8_t *src, gt_color_t *dst, uint32_t count) {
     for (uint32_t i = 0; i < count; i++) {
@@ -1353,7 +1418,7 @@ static inline void _cf_3_to_1(const uint8_t *src, gt_color_t *dst, uint32_t coun
     }
 }
 
-/* ---- source ARGB8888 → target (color only, alpha handled separately) ---- */
+/* ---- source BGRA8888 → target (byte layout: B G R A, matches gt_color32_t) ---- */
 static inline void _cf_4_to_16(const uint8_t *src, gt_color_t *dst, uint32_t count) {
     for (uint32_t i = 0; i < count; i++) {
         const uint8_t *p = &src[i * 4];
@@ -1386,10 +1451,67 @@ static inline void _cf_4_to_1(const uint8_t *src, gt_color_t *dst, uint32_t coun
     }
 }
 
+/* ---- source RGBA8888 → target (byte layout: R G B A) ---- */
+#if GT_COLOR_DEPTH == 32
+static inline void _cf_rgba_to_32(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    for (uint32_t i = 0; i < count; i++) {
+        const uint8_t *p = &src[i * 4];
+        dst[i].ch.red   = p[0];
+        dst[i].ch.green = p[1];
+        dst[i].ch.blue  = p[2];
+        dst[i].ch.alpha = p[3];
+    }
+}
+#endif
+static inline void _cf_rgba_to_16(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    for (uint32_t i = 0; i < count; i++) {
+        const uint8_t *p = &src[i * 4];
+        uint8_t r = p[0], g = p[1], b = p[2];
+#if GT_COLOR_16_SWAP == 0
+        dst[i].ch.red   = r >> 3;
+        dst[i].ch.green = g >> 2;
+        dst[i].ch.blue  = b >> 3;
+#else
+        dst[i].ch.green_h = (g >> 5) & 0x7;
+        dst[i].ch.red     = r >> 3;
+        dst[i].ch.blue    = b >> 3;
+        dst[i].ch.green_l = g & 0x7;
+#endif
+    }
+}
+static inline void _cf_rgba_to_8(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    for (uint32_t i = 0; i < count; i++) {
+        const uint8_t *p = &src[i * 4];
+        dst[i].ch.red   = p[0] >> 5;
+        dst[i].ch.green = p[1] >> 5;
+        dst[i].ch.blue  = p[2] >> 6;
+    }
+}
+static inline void _cf_rgba_to_1(const uint8_t *src, gt_color_t *dst, uint32_t count) {
+    for (uint32_t i = 0; i < count; i++) {
+        const uint8_t *p = &src[i * 4];
+        uint8_t lum = (p[0] * 77 + p[1] * 150 + p[2] * 29) >> 8;
+        dst[i].full = (lum >= 128) ? 0x07 : 0x00;
+    }
+}
+
 /* ---- dispatcher: returns a convert function, or NULL if formats match ---- */
 typedef void (*cf_convert_fn)(const uint8_t *src, gt_color_t *dst, uint32_t count);
 
 static inline cf_convert_fn _get_convert_fn(uint8_t src_cf, uint8_t dst_cf) {
+    /* RGB565_SWAP always needs conversion even when dst is depth=16,
+     * because the byte order still differs from gt_color16_t native layout. */
+    if (src_cf == GT_IMG_CF_RGB565_SWAP) {
+#if GT_COLOR_DEPTH == 32
+        return (cf_convert_fn)_cf_2s_to_32;
+#elif GT_COLOR_DEPTH == 16
+        return (cf_convert_fn)_cf_2s_to_16;
+#elif GT_COLOR_DEPTH == 8
+        return (cf_convert_fn)_cf_2s_to_8;
+#elif GT_COLOR_DEPTH == 1
+        return (cf_convert_fn)_cf_2s_to_1;
+#endif
+    }
     if (src_cf == dst_cf) return NULL;
     switch (src_cf) {
     case GT_IMG_CF_RGB565:  /* 2 */
@@ -1412,13 +1534,27 @@ static inline cf_convert_fn _get_convert_fn(uint8_t src_cf, uint8_t dst_cf) {
         return (cf_convert_fn)_cf_3_to_1;
 #endif
         break;
-    case GT_IMG_CF_ARGB8888:  /* 4 */
-#if GT_COLOR_DEPTH == 16
+    case GT_IMG_CF_BGRA8888:  /* 4, byte layout: B G R A */
+#if GT_COLOR_DEPTH == 32
+        /* gt_color32_t is also BGRA — data matches natively, no conversion needed */
+        return NULL;
+#elif GT_COLOR_DEPTH == 16
         return (cf_convert_fn)_cf_4_to_16;
 #elif GT_COLOR_DEPTH == 8
         return (cf_convert_fn)_cf_4_to_8;
 #elif GT_COLOR_DEPTH == 1
         return (cf_convert_fn)_cf_4_to_1;
+#endif
+        break;
+    case GT_IMG_CF_RGBA8888:  /* 5, byte layout: R G B A */
+#if GT_COLOR_DEPTH == 32
+        return (cf_convert_fn)_cf_rgba_to_32;
+#elif GT_COLOR_DEPTH == 16
+        return (cf_convert_fn)_cf_rgba_to_16;
+#elif GT_COLOR_DEPTH == 8
+        return (cf_convert_fn)_cf_rgba_to_8;
+#elif GT_COLOR_DEPTH == 1
+        return (cf_convert_fn)_cf_rgba_to_1;
 #endif
         break;
     }
@@ -1427,7 +1563,7 @@ static inline cf_convert_fn _get_convert_fn(uint8_t src_cf, uint8_t dst_cf) {
 
 /**
  * @brief Infer source color format from pixel data size.
- * @return 16 (RGB565), 24 (RGB888), 32 (ARGB8888), or 0 (unknown)
+ * @return GT_IMG_CF_RGB565, GT_IMG_CF_RGB888, GT_IMG_CF_BGRA8888, or GT_IMG_CF_UNKNOWN
  */
 static inline uint8_t _guess_img_cf(_gt_img_dsc_st * dsc_img) {
     uint8_t cf = dsc_img->header.color_format;
