@@ -48,6 +48,7 @@ typedef enum {
     GT_EXAMPLE_SCR_PROGRESS_BAR,
     GT_EXAMPLE_SCR_ROLLER,
     GT_EXAMPLE_SCR_SLIDER,
+    GT_EXAMPLE_SCR_SLIDER_AB_REPEAT,
     GT_EXAMPLE_SCR_TEXTAREA,
     GT_EXAMPLE_SCR_RADIO,
     GT_EXAMPLE_SCR_SWITCH,
@@ -129,6 +130,7 @@ gt_obj_st * gt_examples_listview(void);
 gt_obj_st * gt_examples_progress_bar(void);
 gt_obj_st * gt_examples_roller(void);
 gt_obj_st * gt_examples_slider(void);
+gt_obj_st * gt_examples_slider_ab_repeat(void);
 gt_obj_st * gt_examples_textarea(void);
 gt_obj_st * gt_examples_radio(void);
 gt_obj_st * gt_examples_switch(void);
