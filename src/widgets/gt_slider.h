@@ -223,6 +223,28 @@ void gt_slider_set_AB_repeat_remark_point(gt_obj_st * slider);
  */
 void gt_slider_unset_AB_repeat(gt_obj_st * slider);
 
+/**
+ * @brief Set the AB repeat start point (A point) directly by value.
+ *        Only valid in GT_SLIDER_MODE_DEFAULT mode.
+ *        The value is clamped to [start, end] range automatically.
+ *        If the current stop <= start_value, stop is reset to 0.
+ *
+ * @param slider
+ * @param start_value The A point value
+ */
+void gt_slider_set_AB_repeat_start_by(gt_obj_st * slider, gt_size_t start_value);
+
+/**
+ * @brief Set the AB repeat stop point (B point) directly by value.
+ *        Only valid in GT_SLIDER_MODE_DEFAULT mode.
+ *        The value is clamped to [start, end] range automatically.
+ *        stop_value must be strictly greater than the current begin, otherwise ignored.
+ *
+ * @param slider
+ * @param stop_value The B point value
+ */
+void gt_slider_set_AB_repeat_stop_by(gt_obj_st * slider, gt_size_t stop_value);
+
 
 /**
  * @brief  Set the slider to the touch mode

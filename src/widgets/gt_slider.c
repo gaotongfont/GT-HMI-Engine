@@ -1022,14 +1022,23 @@ void gt_slider_set_AB_repeat_remark_point(gt_obj_st * slider)
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-#if 0
 void gt_slider_set_AB_repeat_start_by(gt_obj_st * slider, gt_size_t start_value)
 {
     if (false == gt_obj_is_type(slider, OBJ_TYPE)) {
         return;
     }
-    // _gt_slider_st * style = (_gt_slider_st * )slider;
-    // TODO
+    _gt_slider_st * style = (_gt_slider_st * )slider;
+    if (GT_SLIDER_MODE_DEFAULT != style->mode) {
+        return;
+    }
+    start_value = _limit_total_range_pos(style, start_value);
+    style->repeat_info.begin = start_value;
+    style->repeat_mode = true;
+    /* if stop is not yet set or is now before begin, reset stop */
+    if (style->repeat_info.stop <= style->repeat_info.begin) {
+        style->repeat_info.stop = 0;
+    }
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 void gt_slider_set_AB_repeat_stop_by(gt_obj_st * slider, gt_size_t stop_value)
@@ -1037,11 +1046,19 @@ void gt_slider_set_AB_repeat_stop_by(gt_obj_st * slider, gt_size_t stop_value)
     if (false == gt_obj_is_type(slider, OBJ_TYPE)) {
         return;
     }
-    // _gt_slider_st * style = (_gt_slider_st * )slider;
-    // TODO
-
+    _gt_slider_st * style = (_gt_slider_st * )slider;
+    if (GT_SLIDER_MODE_DEFAULT != style->mode) {
+        return;
+    }
+    stop_value = _limit_total_range_pos(style, stop_value);
+    /* stop must be strictly after begin */
+    if (stop_value <= style->repeat_info.begin) {
+        return;
+    }
+    style->repeat_info.stop = stop_value;
+    style->repeat_mode = true;
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
-#endif
 
 void gt_slider_unset_AB_repeat(gt_obj_st * slider)
 {
