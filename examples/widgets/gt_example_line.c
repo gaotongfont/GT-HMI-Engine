@@ -41,6 +41,7 @@
 #define _Y5    880
 #define _Y6    1150
 #define _Y7    1300
+#define _Y8    1630
 
 /* Label height + gap before content */
 #define _LH    34   /* 30px label + 4px gap */
@@ -326,7 +327,61 @@ static void _sec7(gt_obj_st * scr)
     }
 }
 
-/* global functions / API interface -------------------------------------*/
+static void _sec8(gt_obj_st * scr)
+{
+    _lbl(scr, 4, _Y8, "[8] Dash / Dot lines  (H / V / 45deg / dot)");
+
+    uint16_t const y0 = _Y8 + _LH + 4;
+
+    /* Row A: horizontal dashes — dash=10 gap=5, dash=6 gap=3, dash=2 gap=2 */
+    _lbl(scr, 4, y0, "H dash");
+    gt_obj_st * ln;
+    ln = _line(scr, 80, y0 + 2, 380, y0 + 2, 2, C_R, 255, GT_BRUSH_TYPE_RECT);
+    gt_line_set_dash(ln, 10, 5);
+    ln = _line(scr, 80, y0 + 14, 380, y0 + 14, 2, C_O, 255, GT_BRUSH_TYPE_RECT);
+    gt_line_set_dash(ln, 6, 3);
+    ln = _line(scr, 80, y0 + 26, 380, y0 + 26, 2, C_Y, 255, GT_BRUSH_TYPE_RECT);
+    gt_line_set_dash(ln, 2, 2);
+
+    /* Row B: vertical dashes */
+    _lbl(scr, 400, y0, "V dash");
+    ln = _line(scr, 480, y0 + 2, 480, y0 + 80, 2, C_G, 255, GT_BRUSH_TYPE_RECT);
+    gt_line_set_dash(ln, 8, 4);
+    ln = _line(scr, 510, y0 + 2, 510, y0 + 80, 2, C_B, 255, GT_BRUSH_TYPE_RECT);
+    gt_line_set_dash(ln, 4, 4);
+    ln = _line(scr, 540, y0 + 2, 540, y0 + 80, 3, C_W, 255, GT_BRUSH_TYPE_RECT);
+    gt_line_set_dash(ln, 2, 2);
+
+    /* Row C: diagonal dashes (45°) */
+    _lbl(scr, 4, y0 + 50, "Diag dash");
+    ln = _line(scr, 80, y0 + 80, 230, y0 + 230, 2, C_R, 255, GT_BRUSH_TYPE_RECT);
+    gt_line_set_dash(ln, 12, 6);
+    ln = _line(scr, 250, y0 + 80, 400, y0 + 230, 2, C_G, 255, GT_BRUSH_TYPE_RECT);
+    gt_line_set_dash(ln, 6, 6);
+
+    /* Row D: dot lines (dash=1) */
+    _lbl(scr, 4, y0 + 150, "Dot");
+    ln = _line(scr, 80, y0 + 180, 380, y0 + 180, 3, C_W, 255, GT_BRUSH_TYPE_RECT);
+    gt_line_set_dash(ln, 1, 3);
+    ln = _line(scr, 80, y0 + 196, 380, y0 + 196, 3, C_Y, 255, GT_BRUSH_TYPE_RECT);
+    gt_line_set_dash(ln, 1, 5);
+
+    /* Row E: solid reference (dash=0, should look identical to original) */
+    _lbl(scr, 400, y0 + 150, "Solid ref");
+    ln = _line(scr, 480, y0 + 180, 780, y0 + 180, 2, C_W, 255, GT_BRUSH_TYPE_RECT);
+    /* dash=0 → solid, backward-compat check */
+
+    /* Row F: diagonal dot lines */
+    _lbl(scr, 4, y0 + 220, "Diag dot");
+    ln = _line(scr, 80, y0 + 250, 230, y0 + 400, 3, C_W, 255, GT_BRUSH_TYPE_RECT);
+    gt_line_set_dash(ln, 1, 3);
+    ln = _line(scr, 260, y0 + 250, 410, y0 + 400, 3, C_Y, 255, GT_BRUSH_TYPE_RECT);
+    gt_line_set_dash(ln, 1, 5);
+    ln = _line(scr, 440, y0 + 250, 590, y0 + 400, 3, gt_color_hex(0x00FFFF), 255, GT_BRUSH_TYPE_RECT);
+    gt_line_set_dash(ln, 1, 8);
+}
+
+
 
 /**
  * @brief Line widget comprehensive test screen.
@@ -339,6 +394,7 @@ static void _sec7(gt_obj_st * scr)
  *   [5] Colors + OPA — 6 colors x 3 opacity levels
  *   [6] Near-H / Near-V AA stress — tiny angle increments
  *   [7] Special angles — near-H/V/45 with w=3
+ *   [8] Dash / Dot lines — H/V/diagonal/dot styles
  */
 gt_obj_st * gt_examples_line(void)
 {
@@ -352,6 +408,7 @@ gt_obj_st * gt_examples_line(void)
     _sec5(scr);
     _sec6(scr);
     _sec7(scr);
+    _sec8(scr);
 
     GT_EXAMPLE_ADD_BACK_BTN(scr);
     return scr;
