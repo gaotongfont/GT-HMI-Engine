@@ -265,5 +265,14 @@ void gt_line_set_brush_type(gt_obj_st * line, uint8_t type)
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
+void gt_line_set_dash(gt_obj_st * line, uint8_t dash_width, uint8_t dash_gap)
+{
+    if (false == gt_obj_is_type(line, OBJ_TYPE)) { return; }
+    _gt_line_st * widget = (_gt_line_st *)line;
+    widget->line.line.dash_width = dash_width;
+    widget->line.line.dash_gap   = dash_gap;
+    gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
 #endif  /** GT_CFG_ENABLE_LINE */
 /* end ------------------------------------------------------------------*/

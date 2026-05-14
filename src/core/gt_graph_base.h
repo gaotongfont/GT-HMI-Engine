@@ -39,25 +39,21 @@ extern "C" {
 
 /* typedef --------------------------------------------------------------*/
 
-#if 0
-// TODO
 typedef enum {
-    GT_LINE_STYLE_DEFAULT = 0,
-    GT_LINE_STYLE_STUB,             /** such as: - - - - */
+    GT_LINE_STYLE_DEFAULT = 0,  /** solid line */
+    GT_LINE_STYLE_DASH,         /** such as: - - - - */
+    GT_LINE_STYLE_DOT,          /** such as: . . . . (dash_width=1) */
 }gt_line_style_et;
-#endif
 
 
 typedef struct gt_line_s {
     gt_color_t color;
     gt_opa_t opa;
     uint8_t width;
-#if 0
-    uint8_t type_sty;           /** line style @ref gt_line_style_et */
-#endif
-
-    uint8_t type : 3;   /** Such point/line/curve/bar @ref gt_graphs_type_et */
-    uint8_t brush : 1;  /** brush type @ref gt_brush_type_et */
+    uint8_t dash_width;  /** dash segment length in px; 0 = solid line */
+    uint8_t dash_gap;    /** gap length between dashes in px; 0 = solid line */
+    uint8_t type : 3;    /** @ref gt_graphs_type_et */
+    uint8_t brush : 1;   /** @ref gt_brush_type_et */
 }gt_line_st;
 
 typedef struct gt_axis_s {

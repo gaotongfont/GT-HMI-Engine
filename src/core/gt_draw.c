@@ -4292,6 +4292,10 @@ _gt_wu_line(_gt_draw_ctx_st * ctx,
     gt_opa_t   const global_opa = dsc->line.opa;
     uint16_t   const width     = dsc->line.width;
     bool       const is_round  = _is_brush_round(&dsc->line) && (width > 1);
+    uint8_t  const dash_w     = dsc->line.dash_width;
+    uint8_t  const dash_g     = dsc->line.dash_gap;
+    bool     const is_dash    = (dash_w > 0 && dash_g > 0);
+    uint16_t const dash_cycle = is_dash ? (uint16_t)dash_w + (uint16_t)dash_g : 0;
 
     int32_t x0 = dsc->start.x, y0 = dsc->start.y;
     int32_t x1 = dsc->end.x,   y1 = dsc->end.y;
@@ -4341,6 +4345,12 @@ _gt_wu_line(_gt_draw_ctx_st * ctx,
 
             if (t64 >= 0 && t64 <= ((int64_t)len << 16)) {
                 /* Body: distance to side edge */
+                if (is_dash) {
+                    int32_t t_px = (int32_t)(t64 >> 16);
+                    if (t_px < 0) t_px = 0;
+                    uint16_t phase = (uint16_t)((uint32_t)t_px % (uint32_t)dash_cycle);
+                    if (phase >= dash_w) continue;  /* in gap, skip pixel */
+                }
                 sdf = (int32_t)(hw_q16 - abs_d64);
             } else if (is_round) {
                 /* Round cap: Euclidean distance to nearest endpoint */
@@ -4391,50 +4401,104 @@ gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const gt_a
 
     if (dsc->start.x == dsc->end.x) {
         /* Vertical line */
-        gt_area_st dst = {
-            .x = dsc->start.x - (dsc->line.width >> 1),
-            .y = GT_MIN(dsc->start.y, dsc->end.y),
-            .w = dsc->line.width,
-            .h = gt_abs(dsc->end.y - dsc->start.y) + 1,
-        };
+        int32_t const y_start = GT_MIN(dsc->start.y, dsc->end.y);
+        int32_t const y_end   = GT_MAX(dsc->start.y, dsc->end.y);
+        int32_t const line_w  = dsc->line.width;
+        uint8_t const dw = dsc->line.dash_width;
+        uint8_t const dg = dsc->line.dash_gap;
+
         gt_draw_blend_dsc_st bd = {
-            .dst_area   = &dst,
             .color_fill = dsc->line.color,
             .opa        = dsc->line.opa,
         };
-        if (is_round_cap) {
-            gt_mask_radius_st r_mask = {0};
-            gt_mask_radius_init(&r_mask, &dst, dsc->line.width, GT_MASK_RADIUS_CFG_INNER);
-            gt_size_t mask_id = gt_mask_add(&r_mask);
-            gt_draw_blend(draw_ctx, &bd);
-            if (mask_id >= 0) gt_mask_remove_idx(mask_id);
+
+        if (dw == 0 || dg == 0) {
+            /* Solid line */
+            gt_area_st dst = {
+                .x = dsc->start.x - (line_w >> 1),
+                .y = y_start,
+                .w = line_w,
+                .h = y_end - y_start + 1,
+            };
+            bd.dst_area = &dst;
+            if (is_round_cap) {
+                gt_mask_radius_st r_mask = {0};
+                gt_mask_radius_init(&r_mask, &dst, line_w, GT_MASK_RADIUS_CFG_INNER);
+                gt_size_t mask_id = gt_mask_add(&r_mask);
+                gt_draw_blend(draw_ctx, &bd);
+                if (mask_id >= 0) gt_mask_remove_idx(mask_id);
+            } else {
+                gt_draw_blend(draw_ctx, &bd);
+            }
         } else {
-            gt_draw_blend(draw_ctx, &bd);
+            /* Dashed line: draw segments (round cap not applied per-segment by design) */
+            uint16_t const cycle = (uint16_t)dw + (uint16_t)dg;
+            int32_t y = y_start;
+            while (y <= y_end) {
+                int32_t seg_end = y + dw - 1;
+                if (seg_end > y_end) seg_end = y_end;
+                gt_area_st dst = {
+                    .x = dsc->start.x - (line_w >> 1),
+                    .y = y,
+                    .w = line_w,
+                    .h = seg_end - y + 1,
+                };
+                bd.dst_area = &dst;
+                gt_draw_blend(draw_ctx, &bd);
+                y += cycle;
+            }
         }
         return;
     }
 
     if (dsc->start.y == dsc->end.y) {
         /* Horizontal line */
-        gt_area_st dst = {
-            .x = GT_MIN(dsc->start.x, dsc->end.x),
-            .y = dsc->start.y - (dsc->line.width >> 1),
-            .w = gt_abs(dsc->end.x - dsc->start.x) + 1,
-            .h = dsc->line.width,
-        };
+        int32_t const x_start = GT_MIN(dsc->start.x, dsc->end.x);
+        int32_t const x_end   = GT_MAX(dsc->start.x, dsc->end.x);
+        int32_t const line_w  = dsc->line.width;
+        uint8_t const dw = dsc->line.dash_width;
+        uint8_t const dg = dsc->line.dash_gap;
+
         gt_draw_blend_dsc_st bd = {
-            .dst_area   = &dst,
             .color_fill = dsc->line.color,
             .opa        = dsc->line.opa,
         };
-        if (is_round_cap) {
-            gt_mask_radius_st r_mask = {0};
-            gt_mask_radius_init(&r_mask, &dst, dsc->line.width, GT_MASK_RADIUS_CFG_INNER);
-            gt_size_t mask_id = gt_mask_add(&r_mask);
-            gt_draw_blend(draw_ctx, &bd);
-            if (mask_id >= 0) gt_mask_remove_idx(mask_id);
+
+        if (dw == 0 || dg == 0) {
+            /* Solid line */
+            gt_area_st dst = {
+                .x = x_start,
+                .y = dsc->start.y - (line_w >> 1),
+                .w = x_end - x_start + 1,
+                .h = line_w,
+            };
+            bd.dst_area = &dst;
+            if (is_round_cap) {
+                gt_mask_radius_st r_mask = {0};
+                gt_mask_radius_init(&r_mask, &dst, line_w, GT_MASK_RADIUS_CFG_INNER);
+                gt_size_t mask_id = gt_mask_add(&r_mask);
+                gt_draw_blend(draw_ctx, &bd);
+                if (mask_id >= 0) gt_mask_remove_idx(mask_id);
+            } else {
+                gt_draw_blend(draw_ctx, &bd);
+            }
         } else {
-            gt_draw_blend(draw_ctx, &bd);
+            /* Dashed line: draw segments (round cap not applied per-segment by design) */
+            uint16_t const cycle = (uint16_t)dw + (uint16_t)dg;
+            int32_t x = x_start;
+            while (x <= x_end) {
+                int32_t seg_end = x + dw - 1;
+                if (seg_end > x_end) seg_end = x_end;
+                gt_area_st dst = {
+                    .x = x,
+                    .y = dsc->start.y - (line_w >> 1),
+                    .w = seg_end - x + 1,
+                    .h = line_w,
+                };
+                bd.dst_area = &dst;
+                gt_draw_blend(draw_ctx, &bd);
+                x += cycle;
+            }
         }
         return;
     }

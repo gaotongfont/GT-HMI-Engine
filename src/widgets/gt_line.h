@@ -90,6 +90,14 @@ void gt_line_set_line_width(gt_obj_st * line, uint16_t line_width);
  */
 void gt_line_set_brush_type(gt_obj_st * line, uint8_t type);
 
+/**
+ * @brief Set dash style for the line.
+ * @param line       The line object
+ * @param dash_width Length of each dash segment in pixels; 0 = solid line
+ * @param dash_gap   Length of gap between dashes in pixels; 0 = solid line
+ */
+void gt_line_set_dash(gt_obj_st * line, uint8_t dash_width, uint8_t dash_gap);
+
 
 #endif  /** GT_CFG_ENABLE_LINE */
 
