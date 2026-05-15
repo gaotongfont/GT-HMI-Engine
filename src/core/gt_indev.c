@@ -23,6 +23,15 @@
 #include "../widgets/gt_dialog.h"
 #include "../widgets/gt_btn.h"
 #include "effects/gt_indev_effects.h"
+
+#if GT_USE_TOUCH_QUEUE && !GT_USE_MULTI_TOUCH
+static void _gt_indev_handler_point_queue(gt_indev_st * indev);
+#endif
+#if GT_USE_MULTI_TOUCH
+static void _gt_indev_handler_point_multi(gt_indev_st * indev);
+static void _indev_finalize_multi_touch_gesture(gt_indev_st * indev);
+static void _gt_indev_clear_finger_state(struct _point * point_p);
+#endif
 /* private define -------------------------------------------------------*/
 #ifndef GT_INDEV_SCROLL_THROW_SPEED_UP
     /**
@@ -2015,7 +2024,13 @@ void gt_indev_handler(struct _gt_timer_s * timer)
         indev = gt_indev_get_dev_by_idx(i);
         switch(indev->drv->type){
             case GT_INDEV_TYPE_POINTER:
+#if GT_USE_MULTI_TOUCH
+                _gt_indev_handler_point_multi(indev);
+#elif GT_USE_TOUCH_QUEUE
+                _gt_indev_handler_point_queue(indev);
+#else
                 _gt_indev_handler_point(indev);
+#endif
                 break;
             case GT_INDEV_TYPE_BUTTON:
                 _gt_indev_handler_button(indev);
@@ -2088,6 +2103,17 @@ gt_res_t _gt_indev_reset_status(void)
             indev->data.button.obj_target = NULL;
             indev->data.button.obj_origin = NULL;
         }
+#if GT_USE_TOUCH_QUEUE
+        if (GT_INDEV_TYPE_POINTER == indev->drv->type) {
+            gt_indev_touch_queue_reset();
+        }
+#endif
+#if GT_USE_MULTI_TOUCH
+        if (GT_INDEV_TYPE_POINTER == indev->drv->type) {
+            _indev_finalize_multi_touch_gesture(indev);
+            _gt_indev_clear_finger_state(&indev->data.point);
+        }
+#endif
     }
     return GT_RES_OK;
 }
@@ -2110,12 +2136,18 @@ gt_res_t _gt_indev_check_reset_widgets_illegal_status(gt_obj_st * screen)
         if (NULL == indev) {
             continue;
         }
-        if (GT_INDEV_TYPE_POINTER != indev->drv->type) {
-            continue;
-        }
+        if (GT_INDEV_TYPE_POINTER == indev->drv->type) {
 #if GT_INDEV_CFG_VELOCITY
-        _gt_indev_check_childs_rebound(indev, screen);
+            _gt_indev_check_childs_rebound(indev, screen);
 #endif
+#if GT_USE_TOUCH_QUEUE
+            gt_indev_touch_queue_reset();
+#endif
+#if GT_USE_MULTI_TOUCH
+            _indev_finalize_multi_touch_gesture(indev);
+            _gt_indev_clear_finger_state(&indev->data.point);
+#endif
+        }
     }
     return GT_RES_OK;
 }
@@ -2219,5 +2251,378 @@ void gt_indev_simulate_handler(gt_indev_state_et state, gt_size_t x, gt_size_t y
     _gt_indev_point_set_value(&point_p->last, point_p->newly.x, point_p->newly.y);
 }
 #endif
+
+#if GT_USE_TOUCH_QUEUE
+
+/* ======================== Async Touch Event Queue ======================== */
+
+static gt_touch_queue_st _touch_queue;
+static gt_touch_event_st _pending_events[GT_TOUCH_QUEUE_MAX_PENDING];
+static uint8_t _pending_count;
+
+void gt_indev_touch_queue_init(void) {
+    gt_memset_0(&_touch_queue, sizeof(_touch_queue));
+}
+
+void gt_indev_touch_queue_reset(void) {
+    _touch_queue.read_idx = _touch_queue.write_idx;
+    _pending_count = 0;
+}
+
+void gt_indev_touch_queue_push(int16_t x, int16_t y, gt_indev_state_et state, uint8_t finger_id) {
+    uint8_t next = (_touch_queue.write_idx + 1) & (GT_TOUCH_QUEUE_SIZE - 1);
+    if (next == _touch_queue.read_idx) {
+        return;
+    }
+    uint8_t idx = _touch_queue.write_idx;
+    _touch_queue.buffer[idx].x = x;
+    _touch_queue.buffer[idx].y = y;
+    _touch_queue.buffer[idx].state = state;
+    _touch_queue.buffer[idx].finger_id = finger_id;
+    _touch_queue.write_idx = next;
+}
+
+static inline bool _touch_queue_is_empty(void) {
+    return _touch_queue.read_idx == _touch_queue.write_idx;
+}
+
+static inline gt_touch_event_st * _touch_queue_pop(void) {
+    if (_touch_queue_is_empty()) {
+        return NULL;
+    }
+    uint8_t idx = _touch_queue.read_idx;
+    _touch_queue.read_idx = (idx + 1) & (GT_TOUCH_QUEUE_SIZE - 1);
+    return &_touch_queue.buffer[idx];
+}
+
+static void _touch_queue_drain_to_pending(void) {
+    _pending_count = 0;
+    gt_touch_event_st * ev;
+    while (_pending_count < GT_TOUCH_QUEUE_MAX_PENDING && (ev = _touch_queue_pop()) != NULL) {
+        _pending_events[_pending_count++] = *ev;
+    }
+}
+
+#endif  /* GT_USE_TOUCH_QUEUE */
+
+#if GT_USE_TOUCH_QUEUE && !GT_USE_MULTI_TOUCH
+
+/* ======================== Queue-Only Single-Touch Handler ======================== */
+
+/**
+ * @brief Process queued touch events for single-touch mode.
+ *        Drains the async queue and feeds the latest event state into
+ *        the existing single-touch state machine, preserving all intermediate
+ *        points for accurate velocity/flick calculation.
+ */
+static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_point_queue(gt_indev_st * indev) {
+    struct _point * point_p = &indev->data.point;
+    gt_disp_st * _disp = gt_disp_get_default();
+    uint8_t i;
+    bool has_pressed = false;
+    bool had_event = false;
+    int16_t last_x = 0, last_y = 0;
+
+    _touch_queue_drain_to_pending();
+    if (0 == _pending_count) {
+        return;
+    }
+
+    for (i = 0; i < _pending_count; i++) {
+        gt_touch_event_st * ev = &_pending_events[i];
+
+        if (_disp && GT_ROTATED_0 != (gt_rotated_et)_disp->drv->rotated) {
+            _rotate_point_inv((gt_rotated_et)_disp->drv->rotated,
+                              _disp->drv->res_hor, _disp->drv->res_ver,
+                              &ev->x, &ev->y);
+        }
+
+        if (ev->x > (int16_t)gt_disp_get_res_hor(NULL) ||
+            ev->y > (int16_t)gt_disp_get_res_ver(NULL)) {
+            continue;
+        }
+
+        last_x = ev->x;
+        last_y = ev->y;
+        has_pressed = (GT_INDEV_STATE_PRESSED == ev->state);
+        had_event = true;
+    }
+    _pending_count = 0;
+
+    if (!had_event) {
+        return;
+    }
+
+    if (has_pressed) {
+        _gt_indev_point_set_value(&point_p->newly, last_x, last_y);
+        indev->state = GT_INDEV_STATE_PRESSED;
+        _indev_params.param.point.x = last_x;
+        _indev_params.param.point.y = last_y;
+        _indev_pressed_handle(indev);
+        _gt_indev_point_set_value(&point_p->last, last_x, last_y);
+    } else {
+        _gt_indev_point_set_value(&point_p->newly, last_x, last_y);
+        indev->state = GT_INDEV_STATE_RELEASED;
+        _indev_released_handle(indev);
+    }
+}
+
+#endif  /* GT_USE_TOUCH_QUEUE && !GT_USE_MULTI_TOUCH */
+
+#if GT_USE_MULTI_TOUCH
+
+/* ======================== Integer Math Helpers ======================== */
+
+/**
+ * @brief Integer sqrt via Newton's method (3 iterations).
+ */
+static inline int32_t _indev_isqrt(int32_t n) {
+    if (n <= 0) return 0;
+    uint32_t x = (uint32_t)n;
+    uint32_t y = (x + 1) >> 1;
+    y = (y + x / y) >> 1;
+    y = (y + x / y) >> 1;
+    y = (y + x / y) >> 1;
+    return (int32_t)y;
+}
+
+/**
+ * @brief atan2 in 0.1-degree units [0, 3600).
+ */
+static inline int32_t _indev_atan2_decideg(int32_t dy, int32_t dx) {
+    int32_t deg = (int32_t)gt_atan2((int)dy, (int)dx);
+    if (deg < 0) deg += 360;
+    return deg * 10;
+}
+
+/* ======================== Finger Slot Management ======================== */
+
+static int _find_or_alloc_finger_slot(struct _point * point_p, uint8_t finger_id) {
+    int i;
+    for (i = 0; i < GT_MULTI_TOUCH_MAX_POINTS; i++) {
+        if (point_p->fingers[i].active && point_p->fingers[i].finger_id == finger_id) {
+            return i;
+        }
+    }
+    for (i = 0; i < GT_MULTI_TOUCH_MAX_POINTS; i++) {
+        if (!point_p->fingers[i].active) {
+            point_p->fingers[i].finger_id = finger_id;
+            point_p->fingers[i].active = 1;
+            point_p->fingers[i].start_valid = 0;
+            _gt_indev_point_set_value(&point_p->fingers[i].start, 0, 0);
+            _gt_indev_point_set_value(&point_p->fingers[i].pos, 0, 0);
+            return i;
+        }
+    }
+    return -1;
+}
+
+static void _gt_indev_clear_finger_state(struct _point * point_p) {
+    gt_memset_0(point_p->fingers, sizeof(point_p->fingers));
+    point_p->active_finger_count = 0;
+    point_p->is_multi_touch = 0;
+    point_p->gesture_type = 0;
+    point_p->pinch_distance_start = 0;
+    point_p->pinch_distance_current = 0;
+    point_p->rotation_angle_start = 0;
+    point_p->rotation_angle_current = 0;
+}
+
+static void _indev_finalize_multi_touch_gesture(gt_indev_st * indev) {
+    struct _point * point_p = &indev->data.point;
+    if (!point_p->is_multi_touch) return;
+
+    gt_obj_st * target = point_p->obj_target ? point_p->obj_target : point_p->obj_origin;
+
+    switch (point_p->gesture_type) {
+        case 1:
+            if (target) gt_event_send(target, GT_EVENT_TYPE_INPUT_PINCH_END, NULL);
+            break;
+        case 2:
+            if (target) gt_event_send(target, GT_EVENT_TYPE_INPUT_ROTATE_END, NULL);
+            break;
+        default:
+            break;
+    }
+}
+
+/* ======================== Multi-Touch Gesture Processing ======================== */
+
+static GT_ATTRIBUTE_RAM_TEXT void
+_indev_multi_touch_gesture_process(gt_indev_st * indev, uint8_t slot_a, uint8_t slot_b) {
+    struct _point * point_p = &indev->data.point;
+    gt_point_st * f0 = &point_p->fingers[slot_a].pos;
+    gt_point_st * f1 = &point_p->fingers[slot_b].pos;
+    gt_point_st * f0_s = &point_p->fingers[slot_a].start;
+    gt_point_st * f1_s = &point_p->fingers[slot_b].start;
+
+    int32_t cx = ((int32_t)f0->x + (int32_t)f1->x) / 2;
+    int32_t cy = ((int32_t)f0->y + (int32_t)f1->y) / 2;
+    int32_t dx = (int32_t)f1->x - (int32_t)f0->x;
+    int32_t dy = (int32_t)f1->y - (int32_t)f0->y;
+    int32_t dist = _indev_isqrt(dx * dx + dy * dy);
+
+    int32_t dx_s = (int32_t)f1_s->x - (int32_t)f0_s->x;
+    int32_t dy_s = (int32_t)f1_s->y - (int32_t)f0_s->y;
+    int32_t dist_s = _indev_isqrt(dx_s * dx_s + dy_s * dy_s);
+
+    point_p->pinch_center.x = (gt_size_t)cx;
+    point_p->pinch_center.y = (gt_size_t)cy;
+
+    gt_obj_st * target = point_p->obj_target ? point_p->obj_target : point_p->obj_origin;
+
+    if (!point_p->is_multi_touch) {
+        point_p->is_multi_touch = 1;
+
+        int32_t delta_dist = dist_s > 0 ? (dist > dist_s ? dist - dist_s : dist_s - dist) : 0;
+        int32_t angle_cur = _indev_atan2_decideg(dy, dx);
+        int32_t angle_start = _indev_atan2_decideg(dy_s, dx_s);
+        int32_t delta_angle = angle_cur > angle_start ?
+                              angle_cur - angle_start : angle_start - angle_cur;
+        if (delta_angle > 1800) delta_angle = 3600 - delta_angle;
+
+        if (delta_dist > GT_MULTI_TOUCH_PINCH_THRESHOLD_PX && dist_s > 0) {
+            point_p->gesture_type = 1;
+            point_p->pinch_distance_start = dist_s;
+            if (target) gt_event_send(target, GT_EVENT_TYPE_INPUT_PINCH_START, NULL);
+        } else if (delta_angle > GT_MULTI_TOUCH_ROTATE_THRESHOLD_DEGX10) {
+            point_p->gesture_type = 2;
+            point_p->rotation_angle_start = angle_start;
+            point_p->rotation_angle_current = angle_start;
+            if (target) gt_event_send(target, GT_EVENT_TYPE_INPUT_ROTATE_START, NULL);
+        } else {
+            point_p->gesture_type = 3;
+            if (target) gt_event_send(target, GT_EVENT_TYPE_INPUT_TWO_FINGER_SWIPE, NULL);
+        }
+    }
+
+    switch (point_p->gesture_type) {
+        case 1:
+            if (point_p->pinch_distance_start > 0) {
+                int32_t scale_q16 = (dist * 65536) / point_p->pinch_distance_start;
+                point_p->pinch_distance_current = dist;
+                if (target) gt_event_send(target, GT_EVENT_TYPE_INPUT_PINCH_UPDATE, &scale_q16);
+            }
+            break;
+        case 2: {
+            int32_t angle_cur = _indev_atan2_decideg(dy, dx);
+            int32_t delta = angle_cur - point_p->rotation_angle_current;
+            if (delta > 1800) delta -= 3600;
+            if (delta < -1800) delta += 3600;
+            point_p->rotation_angle_current = angle_cur;
+            if (target) gt_event_send(target, GT_EVENT_TYPE_INPUT_ROTATE_UPDATE, &delta);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+/* ======================== Multi-Touch Point Handler ======================== */
+
+static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_point_multi(gt_indev_st * indev) {
+    struct _point * point_p = &indev->data.point;
+    gt_disp_st * _disp = gt_disp_get_default();
+    uint8_t i;
+    bool had_events = false;
+
+    _touch_queue_drain_to_pending();
+    if (0 == _pending_count) {
+        return;
+    }
+
+    for (i = 0; i < _pending_count; i++) {
+        gt_touch_event_st * ev = &_pending_events[i];
+
+        if (_disp && GT_ROTATED_0 != (gt_rotated_et)_disp->drv->rotated) {
+            _rotate_point_inv((gt_rotated_et)_disp->drv->rotated,
+                              _disp->drv->res_hor, _disp->drv->res_ver,
+                              &ev->x, &ev->y);
+        }
+
+        if (ev->x > (int16_t)gt_disp_get_res_hor(NULL) ||
+            ev->y > (int16_t)gt_disp_get_res_ver(NULL)) {
+            continue;
+        }
+
+        int slot = _find_or_alloc_finger_slot(point_p, ev->finger_id);
+        if (slot < 0) continue;
+
+        if (GT_INDEV_STATE_RELEASED == ev->state) {
+            point_p->fingers[slot].active = 0;
+            point_p->fingers[slot].start_valid = 0;
+        } else {
+            if (!point_p->fingers[slot].start_valid) {
+                _gt_indev_point_set_value(&point_p->fingers[slot].start, ev->x, ev->y);
+                point_p->fingers[slot].start_valid = 1;
+            }
+            _gt_indev_point_set_value(&point_p->fingers[slot].pos, ev->x, ev->y);
+        }
+        had_events = true;
+    }
+
+    if (!had_events) return;
+
+    /* Count active fingers */
+    uint8_t active_cnt = 0;
+    int primary_slot = -1, secondary_slot = -1;
+    for (i = 0; i < GT_MULTI_TOUCH_MAX_POINTS; i++) {
+        if (point_p->fingers[i].active) {
+            if (primary_slot < 0) primary_slot = (int)i;
+            else if (secondary_slot < 0) secondary_slot = (int)i;
+            active_cnt++;
+        }
+    }
+    point_p->active_finger_count = active_cnt;
+
+    /* Primary finger drives single-touch state machine */
+    if (active_cnt >= 1 && primary_slot >= 0) {
+        gt_point_st * pri = &point_p->fingers[primary_slot].pos;
+        _gt_indev_point_set_value(&point_p->newly, pri->x, pri->y);
+        indev->state = GT_INDEV_STATE_PRESSED;
+        _indev_params.param.point.x = pri->x;
+        _indev_params.param.point.y = pri->y;
+        _indev_pressed_handle(indev);
+        _gt_indev_point_set_value(&point_p->last, pri->x, pri->y);
+    } else {
+        indev->state = GT_INDEV_STATE_RELEASED;
+        _indev_released_handle(indev);
+        _indev_finalize_multi_touch_gesture(indev);
+        _gt_indev_clear_finger_state(point_p);
+        _pending_count = 0;
+        return;
+    }
+
+    /* Multi-touch gesture: 2+ fingers */
+    if (active_cnt >= 2 && primary_slot >= 0 && secondary_slot >= 0) {
+        _indev_multi_touch_gesture_process(indev, (uint8_t)primary_slot, (uint8_t)secondary_slot);
+    } else if (point_p->is_multi_touch) {
+        _indev_finalize_multi_touch_gesture(indev);
+        _gt_indev_clear_finger_state(point_p);
+    }
+
+    _pending_count = 0;
+}
+
+/* ======================== Public Query API ======================== */
+
+uint8_t gt_indev_get_active_touch_count(void) {
+    gt_indev_st * idev = gt_indev_get_default();
+    if (!idev || GT_INDEV_TYPE_POINTER != idev->drv->type) {
+        return 0;
+    }
+    return idev->data.point.active_finger_count;
+}
+
+gt_point_st gt_indev_get_pinch_center(void) {
+    gt_indev_st * idev = gt_indev_get_default();
+    if (!idev || GT_INDEV_TYPE_POINTER != idev->drv->type) {
+        gt_point_st zero = {0, 0};
+        return zero;
+    }
+    return idev->data.point.pinch_center;
+}
+
+#endif  /* GT_USE_MULTI_TOUCH */
 
 /* end ------------------------------------------------------------------*/

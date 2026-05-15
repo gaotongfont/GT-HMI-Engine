@@ -192,6 +192,26 @@ typedef struct {
     gt_indev_state_et state;        ///< GT_INDEV_STATE_REL or GT_INDEV_STATE_PR
     uint8_t continue_reading : 1;   ///< If set to true, the read callback is invoked again
     uint8_t reserved:7;             ///< Reserved for future use
+
+#if GT_USE_MULTI_TOUCH
+    /**
+     * @brief Number of active touch points reported this read.
+     *        0 = single-touch mode (use .point and .state as before).
+     *        1+ = multi-touch frame with N points in .touch_points[].
+     */
+    uint8_t touch_count;
+    /**
+     * @brief Touch point data for each active finger, indexed by slot.
+     *        touch_points[0] mirrors .point for backward compatibility.
+     */
+    struct {
+        int16_t x;
+        int16_t y;
+        uint8_t finger_id;
+        uint8_t state;
+        uint8_t reserved[2];
+    } touch_points[GT_MULTI_TOUCH_MAX_POINTS];
+#endif
 } gt_indev_data_st;
 
 /**
@@ -263,6 +283,31 @@ typedef struct _gt_indev_s {
             uint16_t home_gesture_area : 3; ///< @ref gt_indev_home_gesture_area_et
             uint16_t breaking_scrolling : 1;
             uint16_t reserved : 7;
+
+#if GT_USE_MULTI_TOUCH
+            /** Multi-touch state: active finger count (0=single, 1..N=multi) */
+            uint8_t active_finger_count;
+            uint8_t is_multi_touch : 1;    ///< 1 when >= 2 fingers are down
+            uint8_t gesture_type : 2;       ///< 0=none, 1=pinch, 2=rotate, 3=two-finger-swipe
+            uint8_t reserved_mt : 5;
+
+            /** Per-finger slot tracking */
+            struct {
+                gt_point_st pos;            ///< current position
+                gt_point_st start;          ///< initial position (finger down)
+                uint8_t finger_id;          ///< driver-provided touch identifier
+                uint8_t active : 1;         ///< 1 if this slot is occupied
+                uint8_t start_valid : 1;    ///< 1 if start position has been set
+                uint8_t reserved : 6;
+            } fingers[GT_MULTI_TOUCH_MAX_POINTS];
+
+            /** Gesture context (computed from finger positions) */
+            gt_point_st pinch_center;       ///< midpoint between two fingers
+            int32_t pinch_distance_start;   ///< initial distance (pixels)
+            int32_t pinch_distance_current; ///< current distance (pixels)
+            int32_t rotation_angle_start;   ///< initial angle in 0.1-degree units
+            int32_t rotation_angle_current; ///< current angle in 0.1-degree units
+#endif
         }point;
 
         struct _button {

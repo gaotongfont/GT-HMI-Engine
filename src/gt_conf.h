@@ -421,6 +421,75 @@ extern "C" {
     #define GT_USE_CUSTOM_TOUCH_EXPAND_SIZE     0
 #endif
 
+#ifndef GT_USE_TOUCH_QUEUE
+    /**
+     * @brief Enable async lock-free touch event queue, decoupling the touch
+     *        driver thread (producer) from the engine timer thread (consumer).
+     *        Improves fast-swipe tracking accuracy by preserving intermediate
+     *        points that would otherwise be lost between engine read cycles.
+     *        Works in both single-touch and multi-touch modes.
+     *        0: disabled (default, saves ~512 bytes RAM), 1: enabled.
+     *        [default: 0]
+     */
+    #define GT_USE_TOUCH_QUEUE    0
+#endif
+
+#if GT_USE_TOUCH_QUEUE
+    /**
+     * @brief Ring buffer size for the async touch event queue.
+     *        Must be a power of 2. Each entry is 12 bytes.
+     *        [default: 64] -> 64 * 12 = 768 bytes RAM
+     */
+    #ifndef GT_TOUCH_QUEUE_SIZE
+        #define GT_TOUCH_QUEUE_SIZE          64
+    #endif
+#endif  /* GT_USE_TOUCH_QUEUE */
+
+#ifndef GT_USE_MULTI_TOUCH
+    /**
+     * @brief Enable multi-touch support (pinch, rotate, two-finger gestures).
+     *        Implies GT_USE_TOUCH_QUEUE=1 (async queue is required for multi-touch).
+     *        0: disabled (default, saves code/RAM), 1: enabled.
+     *        [default: 0]
+     */
+    #define GT_USE_MULTI_TOUCH    0
+#endif
+
+#if GT_USE_MULTI_TOUCH && !GT_USE_TOUCH_QUEUE
+    /* Multi-touch requires the async touch queue */
+    #undef GT_USE_TOUCH_QUEUE
+    #define GT_USE_TOUCH_QUEUE    1
+#endif
+
+#if GT_USE_MULTI_TOUCH
+    /**
+     * @brief Maximum number of simultaneous touch points to track.
+     *        Minimum 2 for pinch/rotate gestures.
+     *        [default: 2]
+     */
+    #ifndef GT_MULTI_TOUCH_MAX_POINTS
+        #define GT_MULTI_TOUCH_MAX_POINTS    2
+    #endif
+
+    /**
+     * @brief Minimum pixel distance change between two fingers
+     *        to classify a gesture as pinch (vs rotate/swipe).
+     *        [default: 20] pixels
+     */
+    #ifndef GT_MULTI_TOUCH_PINCH_THRESHOLD_PX
+        #define GT_MULTI_TOUCH_PINCH_THRESHOLD_PX     20
+    #endif
+
+    /**
+     * @brief Minimum angle change (in 0.1-degree units) between two
+     *        fingers to classify a gesture as rotate (vs pinch/swipe).
+     *        [default: 50] = 5.0 degrees
+     */
+    #ifndef GT_MULTI_TOUCH_ROTATE_THRESHOLD_DEGX10
+        #define GT_MULTI_TOUCH_ROTATE_THRESHOLD_DEGX10  50
+    #endif
+#endif  /* GT_USE_MULTI_TOUCH */
+
 #ifndef GT_USE_DISPLAY_PREF_MSG
     /** display refresh time */
     #define GT_USE_DISPLAY_PREF_MSG             0

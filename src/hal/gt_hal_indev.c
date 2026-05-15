@@ -80,6 +80,16 @@ gt_indev_st * gt_indev_drv_register(gt_indev_drv_st * drv)
         return NULL;
     }
 
+#if GT_USE_TOUCH_QUEUE
+    {
+        static bool _touch_queue_inited = false;
+        if (!_touch_queue_inited) {
+            gt_indev_touch_queue_init();
+            _touch_queue_inited = true;
+        }
+    }
+#endif
+
     if(indev_act[cnt_indev] == NULL){
         indev_act[cnt_indev] = gt_mem_malloc(sizeof(gt_indev_st));
         if (!indev_act[cnt_indev]) {

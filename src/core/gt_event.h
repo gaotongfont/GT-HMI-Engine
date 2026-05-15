@@ -56,6 +56,18 @@ typedef enum gt_event_type_e {
     GT_EVENT_TYPE_INPUT_HOME_GESTURE_RIGHT,
     GT_EVENT_TYPE_INPUT_PLAY_START,
     GT_EVENT_TYPE_INPUT_PLAY_END,
+
+#if GT_USE_MULTI_TOUCH
+    /** Multi-touch gesture events */
+    GT_EVENT_TYPE_INPUT_PINCH_START,     ///< Two-finger pinch gesture started
+    GT_EVENT_TYPE_INPUT_PINCH_UPDATE,    ///< Pinch scale changed, param: (int32_t*) scale_q16
+    GT_EVENT_TYPE_INPUT_PINCH_END,       ///< Pinch gesture ended
+    GT_EVENT_TYPE_INPUT_ROTATE_START,    ///< Two-finger rotation gesture started
+    GT_EVENT_TYPE_INPUT_ROTATE_UPDATE,   ///< Rotation delta since last frame, param: (int32_t*) delta_x10_deg
+    GT_EVENT_TYPE_INPUT_ROTATE_END,      ///< Rotation gesture ended
+    GT_EVENT_TYPE_INPUT_TWO_FINGER_SWIPE,///< Two-finger directional swipe
+#endif
+
     _GT_EVENT_TYPE_INPUT_END,
 
     /* update value */

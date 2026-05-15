@@ -27,6 +27,39 @@ extern "C" {
     #define GT_INDEV_HOME_GESTURE_HOR_MAX_DISTANCE      (GT_SCREEN_WIDTH >> 3)
 #endif
 
+#if GT_USE_TOUCH_QUEUE
+#ifndef GT_TOUCH_QUEUE_MAX_PENDING
+    /**
+     * @brief Max pending events to drain from queue per frame.
+     *      [default: 32]
+     */
+    #define GT_TOUCH_QUEUE_MAX_PENDING      32
+#endif
+
+/**
+ * @brief A single touch event from the driver's event thread.
+ *        Compact: 12 bytes per entry.
+ */
+typedef struct _gt_touch_event_s {
+    int16_t x;              ///< Physical X coordinate (before rotation transform)
+    int16_t y;              ///< Physical Y coordinate
+    uint8_t finger_id;      ///< Driver-provided touch/finger identifier, 255 = mouse/emu
+    uint8_t state;          ///< @ref gt_indev_state_et (PRESSED/RELEASED, MOTION = PRESSED)
+    uint8_t reserved[2];    ///< Align to 12 bytes
+} gt_touch_event_st;
+
+/**
+ * @brief Lock-free SPSC ring buffer for touch events.
+ *        Producer: driver/SDL thread. Consumer: engine indev timer.
+ */
+typedef struct _gt_touch_queue_s {
+    gt_touch_event_st buffer[GT_TOUCH_QUEUE_SIZE];
+    volatile uint8_t write_idx;   ///< Only producer writes
+    volatile uint8_t read_idx;    ///< Only consumer writes
+} gt_touch_queue_st;
+
+#endif  /* GT_USE_TOUCH_QUEUE */
+
 
 
 /* typedef --------------------------------------------------------------*/\
@@ -134,6 +167,49 @@ void gt_indev_release_focus_lock(void);
 #if GT_INDEV_SIMULATE_POINTER
 void gt_indev_simulate_handler(gt_indev_state_et state, gt_size_t x, gt_size_t y);
 #endif
+
+#if GT_USE_TOUCH_QUEUE
+/**
+ * @brief Initialize the touch event queue. Must be called once during
+ *        system init, before any touch drivers push events.
+ */
+void gt_indev_touch_queue_init(void);
+
+/**
+ * @brief Push a touch event into the async queue.
+ *        Thread-safe for a single producer (driver/SDL thread).
+ *        If the queue is full, the event is silently dropped.
+ *
+ * @param x         physical X coordinate
+ * @param y         physical Y coordinate
+ * @param state     GT_INDEV_STATE_PRESSED / RELEASED
+ * @param finger_id driver-provided touch identifier (0..254, 255=mouse)
+ */
+void gt_indev_touch_queue_push(int16_t x, int16_t y, gt_indev_state_et state, uint8_t finger_id);
+
+/**
+ * @brief Flush and reset the async touch queue.
+ *        Useful when the consumer falls behind or screen transitions.
+ */
+void gt_indev_touch_queue_reset(void);
+#endif  /* GT_USE_TOUCH_QUEUE */
+
+#if GT_USE_MULTI_TOUCH
+/**
+ * @brief Get the current number of active touch points.
+ *
+ * @return uint8_t 0 = no touch, 1 = single, 2+ = multi-touch
+ */
+uint8_t gt_indev_get_active_touch_count(void);
+
+/**
+ * @brief Get the pinch gesture midpoint (logical screen coordinates).
+ *        Only meaningful during PINCH_UPDATE events.
+ *
+ * @return gt_point_st midpoint between the two fingers
+ */
+gt_point_st gt_indev_get_pinch_center(void);
+#endif  /* GT_USE_MULTI_TOUCH */
 
 #ifdef __cplusplus
 } /*extern "C"*/
