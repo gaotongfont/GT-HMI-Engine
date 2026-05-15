@@ -265,7 +265,7 @@ gt_obj_st * gt_examples_img(void)
     gt_obj_set_pos(img_bd2, 100, 262);
     gt_img_set_border_width(img_bd2, 4);
     gt_img_set_border_color(img_bd2, gt_color_hex(0x00AAFF));
-    gt_obj_set_radius(img_bd2, 8);
+    gt_img_set_border_radius(img_bd2, 8);
 
 #if GT_USE_IMG_TRANSFORM
     /* border + rotation together */
@@ -309,9 +309,15 @@ gt_obj_st * gt_examples_img(void)
     gt_obj_st * img_bm3 = gt_img_create(_screen);
     gt_img_set_src(img_bm3, "./50x50.png");
     gt_obj_set_pos(img_bm3, 230, 392);
-    gt_img_set_border_width(img_bm3, 3);
-    gt_img_set_border_color(img_bm3, gt_color_hex(0xAA44FF));
     gt_img_set_masking(img_bm3, &mask_bd3);
+
+    img_bm3 = gt_img_create(_screen);
+    gt_img_set_src(img_bm3, "./50x50.png");
+    gt_obj_set_pos(img_bm3, 290, 392);
+    gt_img_set_masking(img_bm3, &mask_bd3);
+    gt_img_set_border_width(img_bm3, 3);
+    gt_img_set_border_radius(img_bm3, 6);
+    gt_img_set_border_color(img_bm3, gt_color_hex(0xAA44FF));
 
     GT_EXAMPLE_ADD_BACK_BTN(_screen);
     return _screen;
