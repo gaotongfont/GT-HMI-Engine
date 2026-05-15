@@ -80,7 +80,7 @@ static void _lbl(gt_obj_st * parent, uint16_t x, uint16_t y, char const * t)
     gt_obj_st * l = gt_label_create(parent);
     gt_label_set_font_size(l, 16);
     gt_obj_set_pos(l, x, y);
-    gt_obj_set_size(l, 760, 30);
+    gt_obj_set_size(l, (uint16_t)(796 - x), 30);
     gt_label_set_text(l, t);
 }
 
