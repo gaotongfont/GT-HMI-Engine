@@ -4113,8 +4113,24 @@ _gt_wu_pixel(_gt_draw_ctx_st * draw_ctx,
 
     gt_color_t * fb = (gt_color_t *)draw_ctx->buf;
     uint32_t const stride = draw_ctx->buf_area.w;
-    uint32_t const idx = (uint32_t)(y - by) * stride
-                        + (uint32_t)(x - bx);
+    int32_t x_idx = (int32_t)(x - bx);
+    int32_t y_idx = (int32_t)(y - by);
+
+#if GT_USE_SCREEN_ANIM
+    if (draw_ctx->valid && false == draw_ctx->valid->layer_top) {
+        x_idx += (int32_t)draw_ctx->valid->area_clip.x;
+        y_idx += (int32_t)draw_ctx->valid->area_clip.y;
+        if (x_idx < 0 || x_idx >= (int32_t)draw_ctx->buf_area.w) return;
+        if (y_idx < 0 || y_idx >= (int32_t)draw_ctx->buf_area.h) return;
+        if (draw_ctx->valid->is_hor) {
+            if (x_idx >= (int32_t)(draw_ctx->valid->area_clip.x + draw_ctx->valid->area_clip.w)) return;
+        } else {
+            if (y_idx >= (int32_t)(draw_ctx->valid->area_clip.y + draw_ctx->valid->area_clip.h)) return;
+        }
+    }
+#endif
+
+    uint32_t const idx = (uint32_t)y_idx * stride + (uint32_t)x_idx;
 
     if (opa >= 255) {
         fb[idx] = color;
