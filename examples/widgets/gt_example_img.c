@@ -244,6 +244,40 @@ gt_obj_st * gt_examples_img(void)
 
 #endif /* GT_USE_IMG_TRANSFORM */
 
+    /* ------------------------------------------------------------------ */
+    /* Section 4: border effect demo                                       */
+    /* ------------------------------------------------------------------ */
+    gt_obj_st * lbl_bd = gt_label_create(_screen);
+    gt_label_set_text(lbl_bd, "Border Demo");
+    gt_obj_set_pos(lbl_bd, 0, 240);
+    gt_obj_set_size(lbl_bd, 200, 20);
+
+    /* plain border, width=3, red */
+    gt_obj_st * img_bd1 = gt_img_create(_screen);
+    gt_img_set_src(img_bd1, "./img_hmi_01_ai.png");
+    gt_obj_set_pos(img_bd1, 0, 262);
+    gt_img_set_border_width(img_bd1, 3);
+    gt_img_set_border_color(img_bd1, gt_color_hex(0xFF0000));
+
+    /* border with radius (reuse obj->radius) */
+    gt_obj_st * img_bd2 = gt_img_create(_screen);
+    gt_img_set_src(img_bd2, "./img_hmi_02_common.png");
+    gt_obj_set_pos(img_bd2, 100, 262);
+    gt_img_set_border_width(img_bd2, 4);
+    gt_img_set_border_color(img_bd2, gt_color_hex(0x00AAFF));
+    gt_obj_set_radius(img_bd2, 8);
+
+#if GT_USE_IMG_TRANSFORM
+    /* border + rotation together */
+    gt_obj_st * img_bd3 = gt_img_create(_screen);
+    gt_img_set_src(img_bd3, "./50x50.png");
+    gt_obj_set_pos(img_bd3, 220, 262);
+    gt_img_set_border_width(img_bd3, 2);
+    gt_img_set_border_color(img_bd3, gt_color_hex(0x00FF44));
+    gt_img_set_angle(img_bd3, 450);  /* 45 degrees */
+    gt_img_set_zoom(img_bd3, 256);
+#endif /* GT_USE_IMG_TRANSFORM */
+
     GT_EXAMPLE_ADD_BACK_BTN(_screen);
     return _screen;
 }
