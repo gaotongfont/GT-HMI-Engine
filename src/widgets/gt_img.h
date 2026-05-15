@@ -165,6 +165,22 @@ void gt_img_set_zoom(gt_obj_st * img, uint16_t zoom);
 void gt_img_set_pivot(gt_obj_st * img, int16_t pivot_x, int16_t pivot_y);
 #endif
 
+/**
+ * @brief Set the border width of the image
+ *
+ * @param img   Image object
+ * @param width Border width in pixels (0 = no border)
+ */
+void gt_img_set_border_width(gt_obj_st * img, uint8_t width);
+
+/**
+ * @brief Set the border color of the image
+ *
+ * @param img   Image object
+ * @param color Border color
+ */
+void gt_img_set_border_color(gt_obj_st * img, gt_color_t color);
+
 #endif  /** GT_CFG_ENABLE_IMG */
 
 #ifdef __cplusplus

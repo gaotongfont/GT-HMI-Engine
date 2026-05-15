@@ -36,6 +36,8 @@ typedef struct _gt_img_s {
     char * src;             // img src, It can be a virt file name/path or an array of C
     _gt_img_dsc_st raw;     // raw data buffer draw directly
     gt_color_masking_st masking;
+    gt_color_t border_color;
+    uint8_t    border_width;
 #if GT_USE_FILE_HEADER
     gt_file_header_param_st fh;
 #endif
@@ -79,6 +81,19 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_img_class = {
 
 
 /* static functions -----------------------------------------------------*/
+static void _img_draw_border(gt_obj_st * obj) {
+    _gt_img_st * style = (_gt_img_st *)obj;
+    if (style->border_width == 0) { return; }
+    gt_attr_rect_st dsc = {0};
+    gt_graph_init_rect_attr(&dsc);
+    dsc.reg.is_fill  = 0;
+    dsc.bg_opa       = obj->opa;
+    dsc.border_width = style->border_width;
+    dsc.border_color = style->border_color;
+    dsc.radius       = obj->radius;
+    draw_bg(obj->draw_ctx, &dsc, &obj->area);
+}
+
 /**
  * @brief obj init img widget call back
  *
@@ -125,6 +140,7 @@ static void _img_init_cb(gt_obj_st * obj) {
         }
         if (style->alpha_cache) { gt_mem_free(style->alpha_cache); style->alpha_cache = NULL; }
         draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
+        _img_draw_border(obj);
         draw_focus(obj);
         return;
     }
@@ -136,6 +152,7 @@ static void _img_init_cb(gt_obj_st * obj) {
                                                         &is_rom, &style->alpha_cache);
         style->cache_is_rom = is_rom ? 1 : 0;
         if (!style->transform_cache) {
+            _img_draw_border(obj);
             draw_focus(obj);
             return;
         }
@@ -156,8 +173,10 @@ static void _img_init_cb(gt_obj_st * obj) {
                                  style->cache_w, style->cache_h,
                                  style->angle, style->zoom, px, py, use_nn,
                                  &style->masking);
+    _img_draw_border(obj);
 #else
     draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
+    _img_draw_border(obj);
 #endif /* GT_USE_IMG_TRANSFORM */
     draw_focus(obj);
 }
@@ -566,6 +585,22 @@ void gt_img_set_pivot(gt_obj_st * img, int16_t pivot_x, int16_t pivot_y)
     gt_event_send(img, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 #endif
+
+void gt_img_set_border_width(gt_obj_st * img, uint8_t width)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) { return; }
+    _gt_img_st * style = (_gt_img_st *)img;
+    style->border_width = width;
+    gt_event_send(img, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_img_set_border_color(gt_obj_st * img, gt_color_t color)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) { return; }
+    _gt_img_st * style = (_gt_img_st *)img;
+    style->border_color = color;
+    gt_event_send(img, GT_EVENT_TYPE_DRAW_START, NULL);
+}
 
 #endif  /** #if GT_CFG_ENABLE_IMG */
 /* end ------------------------------------------------------------------*/
