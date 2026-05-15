@@ -602,5 +602,11 @@ void gt_img_set_border_color(gt_obj_st * img, gt_color_t color)
     gt_event_send(img, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
+void gt_img_set_border_radius(gt_obj_st * img, uint16_t radius)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) { return; }
+    gt_obj_set_radius(img, radius);
+}
+
 #endif  /** #if GT_CFG_ENABLE_IMG */
 /* end ------------------------------------------------------------------*/

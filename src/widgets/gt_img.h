@@ -181,6 +181,14 @@ void gt_img_set_border_width(gt_obj_st * img, uint8_t width);
  */
 void gt_img_set_border_color(gt_obj_st * img, gt_color_t color);
 
+/**
+ * @brief Set the border corner radius of the image
+ *
+ * @param img    Image object
+ * @param radius Corner radius in pixels (0 = sharp corners)
+ */
+void gt_img_set_border_radius(gt_obj_st * img, uint16_t radius);
+
 #endif  /** GT_CFG_ENABLE_IMG */
 
 #ifdef __cplusplus
