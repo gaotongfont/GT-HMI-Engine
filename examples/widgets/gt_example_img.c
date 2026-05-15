@@ -278,6 +278,41 @@ gt_obj_st * gt_examples_img(void)
     gt_img_set_zoom(img_bd3, 256);
 #endif /* GT_USE_IMG_TRANSFORM */
 
+    /* ------------------------------------------------------------------ */
+    /* Section 5: border + masking combined demo                           */
+    /* ------------------------------------------------------------------ */
+    gt_obj_st * lbl_bm = gt_label_create(_screen);
+    gt_label_set_text(lbl_bm, "Border + Masking");
+    gt_obj_set_pos(lbl_bm, 0, 370);
+    gt_obj_set_size(lbl_bm, 300, 20);
+
+    /* border + masking radius=8: border follows the same rounded clip */
+    gt_color_masking_st mask_bd1 = { .radius = 8, .gap = 0 };
+    gt_obj_st * img_bm1 = gt_img_create(_screen);
+    gt_img_set_src(img_bm1, "./img_hmi_01_ai.png");
+    gt_obj_set_pos(img_bm1, 0, 392);
+    gt_img_set_border_width(img_bm1, 3);
+    gt_img_set_border_color(img_bm1, gt_color_hex(0xFF0000));
+    gt_img_set_masking(img_bm1, &mask_bd1);
+
+    /* border + masking with gap: gap blurs image edge inward before border is drawn */
+    gt_color_masking_st mask_bd2 = { .radius = 12, .gap = 6 };
+    gt_obj_st * img_bm2 = gt_img_create(_screen);
+    gt_img_set_src(img_bm2, "./img_hmi_02_common.png");
+    gt_obj_set_pos(img_bm2, 110, 392);
+    gt_img_set_border_width(img_bm2, 4);
+    gt_img_set_border_color(img_bm2, gt_color_hex(0xFFAA00));
+    gt_img_set_masking(img_bm2, &mask_bd2);
+
+    /* border + masking radius=25, no transform */
+    gt_color_masking_st mask_bd3 = { .radius = 25, .gap = 0 };
+    gt_obj_st * img_bm3 = gt_img_create(_screen);
+    gt_img_set_src(img_bm3, "./50x50.png");
+    gt_obj_set_pos(img_bm3, 230, 392);
+    gt_img_set_border_width(img_bm3, 3);
+    gt_img_set_border_color(img_bm3, gt_color_hex(0xAA44FF));
+    gt_img_set_masking(img_bm3, &mask_bd3);
+
     GT_EXAMPLE_ADD_BACK_BTN(_screen);
     return _screen;
 }
