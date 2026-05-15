@@ -274,12 +274,24 @@ static GT_ATTRIBUTE_RAM_TEXT void _show_septal_line(gt_obj_st * obj, _gt_listvie
         area.w = septal_width;
         area.h = style->septal_line_info.size.y;
 
-        for (gt_size_t i = 0, cnt = obj->cnt_child - 1; i < cnt; ++i) {
-            area.y += obj->child[i]->area.h + offset;
-            if (gt_area_is_on(&obj->area, &area)) {
-                draw_bg(obj->draw_ctx, &rect_attr, &area);
+        if (style->column.count > 1) {
+            /* Multi-column: draw one line per row boundary, not per item */
+            gt_size_t item_step_y = style->item_size.y + style->item_space.y;
+            gt_size_t num_rows = (obj->cnt_child + style->column.count - 1) / style->column.count;
+            for (gt_size_t r = 0; r < num_rows - 1; ++r) {
+                area.y += item_step_y;
+                if (gt_area_is_on(&obj->area, &area)) {
+                    draw_bg(obj->draw_ctx, &rect_attr, &area);
+                }
             }
-            area.y += line_width_offset;
+        } else {
+            for (gt_size_t i = 0, cnt = obj->cnt_child - 1; i < cnt; ++i) {
+                area.y += obj->child[i]->area.h + offset;
+                if (gt_area_is_on(&obj->area, &area)) {
+                    draw_bg(obj->draw_ctx, &rect_attr, &area);
+                }
+                area.y += line_width_offset;
+            }
         }
     }
 }
@@ -1605,8 +1617,87 @@ redraw_lb:
 
 static GT_ATTRIBUTE_RAM_TEXT void
 _column_multiple_del_item(gt_obj_st * listview, uint16_t item_idx) {
-    // TODO: del multiple column item
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    uint8_t N = style->column.count;
+    gt_size_t item_width = _get_column_item_width(style, listview->area.w, N);
+    gt_size_t item_step_y = style->item_size.y + style->item_space.y;
+    uint16_t del_row = item_idx / N;
 
+    gt_obj_destroy_immediately(listview->child[item_idx]);
+
+    gt_size_t cnt = listview->cnt_child;
+    if (0 == cnt) {
+        style->column.offset_y = _calc_box_inside_padding_offset_ver(listview);
+        style->column.idx = 0;
+        return;
+    }
+
+    /* Determine the y-coordinate of del_row from unchanged items before item_idx */
+    gt_size_t row_y;
+    if (0 == del_row) {
+        row_y = _calc_box_inside_padding_offset_ver(listview);
+    } else if ((uint16_t)(del_row * N) < item_idx) {
+        /* Deleted item was not the first in its row; first item of del_row is unchanged */
+        row_y = listview->child[del_row * N]->area.y;
+    } else {
+        /* Deleted item was the first in its row; derive from last item of previous row */
+        row_y = listview->child[del_row * N - 1]->area.y + item_step_y;
+    }
+
+    /* Reposition all items from item_idx onwards to their new grid positions */
+    for (gt_size_t i = item_idx; i < cnt; i++) {
+        uint8_t  new_col = i % N;
+        uint16_t new_row = i / N;
+
+        if (0 == new_col && new_row > del_row) {
+            row_y += item_step_y;
+        }
+
+        gt_size_t new_x = _calc_item_offset_hor_abs_pos(listview, item_width, new_col);
+        gt_size_t new_y = row_y;
+
+        gt_size_t dx = new_x - listview->child[i]->area.x;
+        gt_size_t dy = new_y - listview->child[i]->area.y;
+        listview->child[i]->area.x = new_x;
+        listview->child[i]->area.y = new_y;
+        _gt_obj_move_child_by(listview->child[i], dx, dy);
+    }
+
+    /* Update column tracking state */
+    uint16_t last_idx = cnt - 1;
+    style->column.idx = (last_idx % N + 1) % N;
+    style->column.offset_y = listview->child[(last_idx / N) * N]->area.y;
+
+    /* Scroll correction: pull up if gap appears at bottom */
+    gt_size_t last_bottom = listview->child[last_idx]->area.y + item_step_y;
+    gt_size_t gap = (listview->area.y + listview->area.h) - last_bottom;
+    if (gap > 0) {
+        gt_obj_scroll_to_y(listview, gap, GT_ANIM_ON);
+    }
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void
+_horizontal_del_item(gt_obj_st * listview, uint16_t item_idx) {
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    gt_size_t item_w = _get_item_width_horizontal(style);
+    gt_size_t item_step_x = item_w + style->item_space.x;
+    gt_size_t tar_x = listview->child[item_idx]->area.x;
+
+    style->column.offset_y -= item_step_x;
+    gt_obj_destroy_immediately(listview->child[item_idx]);
+
+    /* shift all items after the deleted one left by one step */
+    for (gt_size_t i = item_idx, cnt = listview->cnt_child; i < cnt; i++) {
+        listview->child[i]->area.x -= item_step_x;
+        _gt_obj_move_child_by(listview->child[i], -item_step_x, 0);
+    }
+
+    /* scroll correction: pull right if gap appears at the right end */
+    gt_size_t last_right = listview->child[listview->cnt_child - 1]->area.x + item_w;
+    gt_size_t gap = (listview->area.x + listview->area.w) - last_right;
+    if (gap > 0) {
+        gt_obj_scroll_to_x(listview, gap, GT_ANIM_ON);
+    }
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void
@@ -1646,10 +1737,12 @@ gt_res_t gt_listview_del_item(gt_obj_st * listview, uint16_t item_idx)
         gt_listview_clear_all_items(listview);
         return GT_RES_OK;
     }
-    if (style->column.count > 1) {
+    if (style->horizontal) {
+        /** horizontal mode */
+        _horizontal_del_item(listview, item_idx);
+    } else if (style->column.count > 1) {
         /** multiple column */
         _column_multiple_del_item(listview, item_idx);
-
     } else if (style->column.count) {
         /** single column */
         _column_single_del_item(listview, item_idx);
