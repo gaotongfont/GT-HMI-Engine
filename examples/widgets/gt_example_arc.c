@@ -256,7 +256,7 @@ static gt_obj_st * _make_grad_3stop(gt_obj_st * scr)
     gt_arc_set_value_min_max(arc, 0, 100);
     gt_arc_set_value(arc, 100);
 #endif
-    // gt_arc_set_act_gradient_fixed(arc, true);
+    gt_arc_set_act_gradient_fixed(arc, true);
     gt_gradient_dsc_st * g = gt_gradient_dsc_create(GT_GRAD_DIR_HOR);
     gt_gradient_dsc_add_stop(g, gt_color_hex(0x1565C0), gt_color_hex(0x00BCD4), 40);
     gt_gradient_dsc_add_stop(g, gt_color_hex(0x00BCD4), gt_color_hex(0x4CAF50), 40);
