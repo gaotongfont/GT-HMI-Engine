@@ -3235,328 +3235,7 @@ static void draw_dot_matrix(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * 
 }
 
 static void _GT_DRAW_ATTRIBUTE_SRAM_TEXT
-draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords, uint16_t border_radius) {
-    if(!dsc->reg.is_fill) return ;
-
-#if GT_USE_GRADIENT
-    /* ---- Gradient fill path ----------------------------------------- */
-    if (dsc->grad && dsc->grad->stops && _gt_vector_get_count(dsc->grad->stops) > 0) {
-        gt_area_st bg_area = gt_area_reduce(*coords, dsc->border_width);
-        uint16_t bg_radius = (border_radius < dsc->border_width) ? 0 : border_radius - dsc->border_width;
-        bg_radius = GT_MIN(bg_radius, (GT_MIN(bg_area.w >> 1, bg_area.h >> 1)));
-
-        uint16_t total = gt_gradient_dsc_total_steps(dsc->grad);
-        if (total < 2) total = 2;
-
-        gt_draw_blend_dsc_st blend_dsc = {0};
-        blend_dsc.view_area = dsc->limit_area;
-        blend_dsc.opa       = dsc->bg_opa;
-
-        int16_t bg_mask_id = -1;
-        gt_mask_radius_st bg_mask_radius = {0};
-        if (bg_radius > 0) {
-            gt_mask_radius_cfg_st bg_cfg = { .outer = 0, .corner_mask = dsc->corner_mask };
-            gt_mask_radius_init(&bg_mask_radius, &bg_area, bg_radius, bg_cfg);
-            bg_mask_id = gt_mask_add(&bg_mask_radius);
-        }
-
-        int16_t cl_mask_id = -1;
-        uint16_t cl_radius = 0;
-        gt_mask_radius_st cl_mask_radius = {0};
-        if (dsc->base_area) {
-            cl_radius = GT_MIN(dsc->radius, (GT_MIN(dsc->base_area->w >> 1, dsc->base_area->h >> 1)));
-            if (cl_radius > 0) {
-                gt_mask_radius_init(&cl_mask_radius, dsc->base_area, cl_radius, GT_MASK_RADIUS_CFG_INNER);
-                cl_mask_id = gt_mask_add(&cl_mask_radius);
-            }
-        }
-
-        gt_opa_t * mask_buf = (gt_opa_t *)gt_mem_malloc(GT_MAX(bg_area.w, bg_area.h));
-        gt_opa_t mask_opa = dsc->bg_opa >= GT_OPA_MAX ? GT_OPA_COVER : dsc->bg_opa;
-
-        /* Row color buffer for Floyd-Steinberg dithering */
-        gt_color_t * color_row_buf = (gt_color_t *)gt_mem_malloc(bg_area.w * sizeof(gt_color_t));
-
-        /* Floyd-Steinberg error buffers: two rows × width × 3 channels (R,G,B), int16_t.
-         * err_cur[col*3+ch] = accumulated error for current row pixel (col, ch).
-         * err_nxt[col*3+ch] = accumulated error for next row pixel.
-         * Errors are in 8-bit space (×16 fixed-point to keep fractions). */
-        int16_t * fs_err_cur = NULL;
-        int16_t * fs_err_nxt = NULL;
-        if (color_row_buf) {
-            fs_err_cur = (int16_t *)gt_mem_malloc(bg_area.w * 3 * sizeof(int16_t));
-            fs_err_nxt = (int16_t *)gt_mem_malloc(bg_area.w * 3 * sizeof(int16_t));
-            if (fs_err_cur) gt_memset(fs_err_cur, 0, bg_area.w * 3 * sizeof(int16_t));
-            if (fs_err_nxt) gt_memset(fs_err_nxt, 0, bg_area.w * 3 * sizeof(int16_t));
-        }
-
-        /* Helper macro: clamp int32 to [0..255] */
-        #define _FS_CLAMP8(v)  ((v) < 0 ? 0 : ((v) > 255 ? 255 : (v)))
-
-        /* Quantize one 8-bit channel to n bits and return quantized 8-bit value.
-         * n=5 → multiply by 255/31; n=6 → multiply by 255/63. */
-        #define _FS_QUANT5(v8) (((v8) >> 3) * (255 / 31))
-        #define _FS_QUANT6(v8) (((v8) >> 2) * (255 / 63))
-
-        /* Spread error e (×16 fixed-point) to neighbour slot */
-        #define _FS_ADD(arr, idx, e) do { if ((idx) >= 0 && (idx) < (int32_t)(bg_area.w * 3)) (arr)[(idx)] += (e); } while(0)
-
-        /* Fill color_row_buf with Floyd-Steinberg dithered colors for one row.
-         * ideal_r/g/b are arrays of bg_area.w uint8_t values (ideal 8-bit colors).
-         * fs_err_cur carries incoming errors; fs_err_nxt accumulates outgoing errors. */
-        #define _FS_DITHER_ROW(ideal_r_fn, ideal_g_fn, ideal_b_fn)                         \
-        do {                                                                                 \
-            for (uint16_t _c = 0; _c < (uint16_t)bg_area.w; ++_c) {                        \
-                int32_t _r8 = _FS_CLAMP8((ideal_r_fn) + (fs_err_cur ? (fs_err_cur[_c*3+0] >> 4) : 0)); \
-                int32_t _g8 = _FS_CLAMP8((ideal_g_fn) + (fs_err_cur ? (fs_err_cur[_c*3+1] >> 4) : 0)); \
-                int32_t _b8 = _FS_CLAMP8((ideal_b_fn) + (fs_err_cur ? (fs_err_cur[_c*3+2] >> 4) : 0)); \
-                int32_t _qr = _FS_QUANT5(_r8);                                              \
-                int32_t _qg = _FS_QUANT6(_g8);                                              \
-                int32_t _qb = _FS_QUANT5(_b8);                                              \
-                GT_COLOR_SET_R(color_row_buf[_c], _r8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 5 : 7)))); \
-                GT_COLOR_SET_G(color_row_buf[_c], _g8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 2 : (GT_COLOR_DEPTH == 8 ? 5 : 7)))); \
-                GT_COLOR_SET_B(color_row_buf[_c], _b8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 6 : 7)))); \
-                int32_t _er = (_r8 - _qr) << 4;                                             \
-                int32_t _eg = (_g8 - _qg) << 4;                                             \
-                int32_t _eb = (_b8 - _qb) << 4;                                             \
-                if (fs_err_cur) {                                                            \
-                    _FS_ADD(fs_err_cur, (int32_t)(_c+1)*3+0, (_er*7)>>4);                   \
-                    _FS_ADD(fs_err_cur, (int32_t)(_c+1)*3+1, (_eg*7)>>4);                   \
-                    _FS_ADD(fs_err_cur, (int32_t)(_c+1)*3+2, (_eb*7)>>4);                   \
-                }                                                                            \
-                if (fs_err_nxt) {                                                            \
-                    _FS_ADD(fs_err_nxt, (int32_t)(_c-1)*3+0, (_er*3)>>4);                   \
-                    _FS_ADD(fs_err_nxt, (int32_t)(_c-1)*3+1, (_eg*3)>>4);                   \
-                    _FS_ADD(fs_err_nxt, (int32_t)(_c-1)*3+2, (_eb*3)>>4);                   \
-                    _FS_ADD(fs_err_nxt, (int32_t)(_c  )*3+0, (_er*5)>>4);                   \
-                    _FS_ADD(fs_err_nxt, (int32_t)(_c  )*3+1, (_eg*5)>>4);                   \
-                    _FS_ADD(fs_err_nxt, (int32_t)(_c  )*3+2, (_eb*5)>>4);                   \
-                    _FS_ADD(fs_err_nxt, (int32_t)(_c+1)*3+0, (_er*1)>>4);                   \
-                    _FS_ADD(fs_err_nxt, (int32_t)(_c+1)*3+1, (_eg*1)>>4);                   \
-                    _FS_ADD(fs_err_nxt, (int32_t)(_c+1)*3+2, (_eb*1)>>4);                   \
-                }                                                                            \
-            }                                                                                \
-        } while(0)
-
-        /* Swap error rows and clear next row */
-        #define _FS_SWAP_ROWS() do {                                                         \
-            int16_t * _tmp = fs_err_cur; fs_err_cur = fs_err_nxt; fs_err_nxt = _tmp;        \
-            if (fs_err_nxt) gt_memset(fs_err_nxt, 0, bg_area.w * 3 * sizeof(int16_t));     \
-        } while(0)
-
-        /* Pre-compute center and half-size for SYM_VER / SYM_HOR */
-        uint16_t cx = bg_area.x + (bg_area.w >> 1);
-        uint16_t cy = bg_area.y + (bg_area.h >> 1);
-        uint32_t max_r = bg_area.h >> 1;   /* SYM_VER: half-height */
-        uint32_t max_rx = bg_area.w >> 1;  /* SYM_HOR: half-width */
-
-        gt_grad_dir_et dir = dsc->grad->dir;
-
-        if (dir == GT_GRAD_DIR_VER) {
-            gt_area_st line_area = { .x = bg_area.x, .w = bg_area.w, .h = 1 };
-            blend_dsc.dst_area  = &line_area;
-            blend_dsc.mask_area = &line_area;
-            uint16_t h1 = bg_area.h > 1 ? bg_area.h - 1 : 1;
-            for (uint16_t row = 0; row < (uint16_t)bg_area.h; ++row) {
-                line_area.y = bg_area.y + row;
-                uint16_t base_pos = (uint16_t)((uint32_t)row * 65535u / h1);
-                if (color_row_buf && fs_err_cur && fs_err_nxt) {
-                    uint32_t _c24 = gt_gradient_dsc_get_color24_pos(dsc->grad, base_pos);
-                    uint8_t _ir = (uint8_t)((_c24 >> 16) & 0xFF);
-                    uint8_t _ig = (uint8_t)((_c24 >>  8) & 0xFF);
-                    uint8_t _ib = (uint8_t)( _c24        & 0xFF);
-                    _FS_DITHER_ROW(_ir, _ig, _ib);
-                    _FS_SWAP_ROWS();
-                    blend_dsc.dst_buf    = color_row_buf;
-                    blend_dsc.color_fill = gt_color_black();
-                } else {
-                    blend_dsc.dst_buf    = NULL;
-                    blend_dsc.color_fill = gt_gradient_dsc_get_color_pos(dsc->grad, base_pos);
-                }
-                if (mask_buf) {
-                    gt_memset(mask_buf, mask_opa, line_area.w);
-                    gt_mask_res_et res = gt_mask_get(mask_buf, line_area.x, line_area.y, line_area.w);
-                    if (res == GT_MASK_RES_TRANSP) { blend_dsc.dst_buf = NULL; continue; }
-                    blend_dsc.mask_buf = (res == GT_MASK_RES_FULL_COVER) ? NULL : mask_buf;
-                } else {
-                    blend_dsc.mask_buf = NULL;
-                }
-                gt_draw_blend(draw_ctx, &blend_dsc);
-                blend_dsc.dst_buf = NULL;
-            }
-        } else if (dir == GT_GRAD_DIR_HOR) {
-            gt_area_st line_area = { .x = bg_area.x, .w = bg_area.w, .h = 1 };
-            blend_dsc.dst_area  = &line_area;
-            blend_dsc.mask_area = &line_area;
-            uint16_t w1 = bg_area.w > 1 ? bg_area.w - 1 : 1;
-            for (uint16_t row = 0; row < (uint16_t)bg_area.h; ++row) {
-                line_area.y = bg_area.y + row;
-                if (color_row_buf && fs_err_cur && fs_err_nxt) {
-                    /* HOR: each column has its own ideal color */
-                    for (uint16_t _c = 0; _c < (uint16_t)bg_area.w; ++_c) {
-                        uint16_t _pos = (uint16_t)((uint32_t)_c * 65535u / w1);
-                        uint32_t _c24 = gt_gradient_dsc_get_color24_pos(dsc->grad, _pos);
-                        int32_t _r8 = _FS_CLAMP8((int32_t)((_c24 >> 16) & 0xFF) + (fs_err_cur[_c*3+0] >> 4));
-                        int32_t _g8 = _FS_CLAMP8((int32_t)((_c24 >>  8) & 0xFF) + (fs_err_cur[_c*3+1] >> 4));
-                        int32_t _b8 = _FS_CLAMP8((int32_t)( _c24        & 0xFF) + (fs_err_cur[_c*3+2] >> 4));
-                        int32_t _qr = _FS_QUANT5(_r8);
-                        int32_t _qg = _FS_QUANT6(_g8);
-                        int32_t _qb = _FS_QUANT5(_b8);
-                        GT_COLOR_SET_R(color_row_buf[_c], _r8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 5 : 7))));
-                        GT_COLOR_SET_G(color_row_buf[_c], _g8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 2 : (GT_COLOR_DEPTH == 8 ? 5 : 7))));
-                        GT_COLOR_SET_B(color_row_buf[_c], _b8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 6 : 7))));
-                        int32_t _er = (_r8 - _qr) << 4;
-                        int32_t _eg = (_g8 - _qg) << 4;
-                        int32_t _eb = (_b8 - _qb) << 4;
-                        _FS_ADD(fs_err_cur, (int32_t)(_c+1)*3+0, (_er*7)>>4);
-                        _FS_ADD(fs_err_cur, (int32_t)(_c+1)*3+1, (_eg*7)>>4);
-                        _FS_ADD(fs_err_cur, (int32_t)(_c+1)*3+2, (_eb*7)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c-1)*3+0, (_er*3)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c-1)*3+1, (_eg*3)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c-1)*3+2, (_eb*3)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c  )*3+0, (_er*5)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c  )*3+1, (_eg*5)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c  )*3+2, (_eb*5)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c+1)*3+0, (_er*1)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c+1)*3+1, (_eg*1)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c+1)*3+2, (_eb*1)>>4);
-                    }
-                    _FS_SWAP_ROWS();
-                    blend_dsc.dst_buf    = color_row_buf;
-                    blend_dsc.color_fill = gt_color_black();
-                } else {
-                    blend_dsc.dst_buf    = NULL;
-                    uint16_t mid_pos = (uint16_t)((uint32_t)(bg_area.w >> 1) * 65535u / w1);
-                    blend_dsc.color_fill = gt_gradient_dsc_get_color_pos(dsc->grad, mid_pos);
-                }
-                if (mask_buf) {
-                    gt_memset(mask_buf, mask_opa, line_area.w);
-                    gt_mask_res_et res = gt_mask_get(mask_buf, line_area.x, line_area.y, line_area.w);
-                    if (res == GT_MASK_RES_TRANSP) { blend_dsc.dst_buf = NULL; continue; }
-                    blend_dsc.mask_buf = (res == GT_MASK_RES_FULL_COVER) ? NULL : mask_buf;
-                } else {
-                    blend_dsc.mask_buf = NULL;
-                }
-                gt_draw_blend(draw_ctx, &blend_dsc);
-                blend_dsc.dst_buf = NULL;
-            }
-        } else if (dir == GT_GRAD_DIR_SYM_HOR) {
-            gt_area_st line_area = { .x = bg_area.x, .w = bg_area.w, .h = 1 };
-            blend_dsc.dst_area  = &line_area;
-            blend_dsc.mask_area = &line_area;
-            for (uint16_t row = 0; row < (uint16_t)bg_area.h; ++row) {
-                line_area.y = bg_area.y + row;
-                if (color_row_buf && fs_err_cur && fs_err_nxt) {
-                    for (uint16_t _c = 0; _c < (uint16_t)bg_area.w; ++_c) {
-                        int32_t dx = (int32_t)(bg_area.x + _c) - (int32_t)cx;
-                        uint32_t r2 = (uint32_t)(dx < 0 ? -dx : dx);
-                        uint16_t _pos = (max_rx > 0) ? (uint16_t)((uint32_t)r2 * 65535u / max_rx) : 0;
-                        uint32_t _c24 = gt_gradient_dsc_get_color24_pos(dsc->grad, _pos);
-                        int32_t _r8 = _FS_CLAMP8((int32_t)((_c24 >> 16) & 0xFF) + (fs_err_cur[_c*3+0] >> 4));
-                        int32_t _g8 = _FS_CLAMP8((int32_t)((_c24 >>  8) & 0xFF) + (fs_err_cur[_c*3+1] >> 4));
-                        int32_t _b8 = _FS_CLAMP8((int32_t)( _c24        & 0xFF) + (fs_err_cur[_c*3+2] >> 4));
-                        int32_t _qr = _FS_QUANT5(_r8);
-                        int32_t _qg = _FS_QUANT6(_g8);
-                        int32_t _qb = _FS_QUANT5(_b8);
-                        GT_COLOR_SET_R(color_row_buf[_c], _r8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 5 : 7))));
-                        GT_COLOR_SET_G(color_row_buf[_c], _g8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 2 : (GT_COLOR_DEPTH == 8 ? 5 : 7))));
-                        GT_COLOR_SET_B(color_row_buf[_c], _b8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 6 : 7))));
-                        int32_t _er = (_r8 - _qr) << 4;
-                        int32_t _eg = (_g8 - _qg) << 4;
-                        int32_t _eb = (_b8 - _qb) << 4;
-                        _FS_ADD(fs_err_cur, (int32_t)(_c+1)*3+0, (_er*7)>>4);
-                        _FS_ADD(fs_err_cur, (int32_t)(_c+1)*3+1, (_eg*7)>>4);
-                        _FS_ADD(fs_err_cur, (int32_t)(_c+1)*3+2, (_eb*7)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c-1)*3+0, (_er*3)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c-1)*3+1, (_eg*3)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c-1)*3+2, (_eb*3)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c  )*3+0, (_er*5)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c  )*3+1, (_eg*5)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c  )*3+2, (_eb*5)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c+1)*3+0, (_er*1)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c+1)*3+1, (_eg*1)>>4);
-                        _FS_ADD(fs_err_nxt, (int32_t)(_c+1)*3+2, (_eb*1)>>4);
-                    }
-                    _FS_SWAP_ROWS();
-                    blend_dsc.dst_buf    = color_row_buf;
-                    blend_dsc.color_fill = gt_color_black();
-                } else {
-                    blend_dsc.dst_buf    = NULL;
-                    blend_dsc.color_fill = gt_gradient_dsc_get_color_pos(dsc->grad, 0);
-                }
-                if (mask_buf) {
-                    gt_memset(mask_buf, mask_opa, line_area.w);
-                    gt_mask_res_et res = gt_mask_get(mask_buf, line_area.x, line_area.y, line_area.w);
-                    if (res == GT_MASK_RES_TRANSP) { blend_dsc.dst_buf = NULL; continue; }
-                    blend_dsc.mask_buf = (res == GT_MASK_RES_FULL_COVER) ? NULL : mask_buf;
-                } else {
-                    blend_dsc.mask_buf = NULL;
-                }
-                gt_draw_blend(draw_ctx, &blend_dsc);
-                blend_dsc.dst_buf = NULL;
-            }
-        } else {
-            /* DIAG_TL / DIAG_TR / SYM_VER */
-            gt_area_st line_area = { .x = bg_area.x, .w = bg_area.w, .h = 1 };
-            blend_dsc.dst_area  = &line_area;
-            blend_dsc.mask_area = &line_area;
-            uint16_t diag_denom = (bg_area.w + bg_area.h - 2) > 0 ? (bg_area.w + bg_area.h - 2) : 1;
-            for (uint16_t row = 0; row < (uint16_t)bg_area.h; ++row) {
-                line_area.y = bg_area.y + row;
-                uint16_t base_pos = 0;
-                if (dir == GT_GRAD_DIR_DIAG_TL) {
-                    uint16_t col = bg_area.w >> 1;
-                    base_pos = (uint16_t)(((uint32_t)row + col) * 65535u / diag_denom);
-                } else if (dir == GT_GRAD_DIR_DIAG_TR) {
-                    uint16_t inv_col = bg_area.w - 1 - (bg_area.w >> 1);
-                    base_pos = (uint16_t)(((uint32_t)row + inv_col) * 65535u / diag_denom);
-                } else { /* SYM_VER */
-                    int32_t dy = (int32_t)(bg_area.y + row) - (int32_t)cy;
-                    uint32_t r2 = (uint32_t)(dy < 0 ? -dy : dy);
-                    base_pos = (max_r > 0) ? (uint16_t)((uint32_t)r2 * 65535u / max_r) : 0;
-                }
-                if (color_row_buf && fs_err_cur && fs_err_nxt && dir == GT_GRAD_DIR_SYM_VER) {
-                    uint32_t _c24 = gt_gradient_dsc_get_color24_pos(dsc->grad, base_pos);
-                    uint8_t _ir = (uint8_t)((_c24 >> 16) & 0xFF);
-                    uint8_t _ig = (uint8_t)((_c24 >>  8) & 0xFF);
-                    uint8_t _ib = (uint8_t)( _c24        & 0xFF);
-                    _FS_DITHER_ROW(_ir, _ig, _ib);
-                    _FS_SWAP_ROWS();
-                    blend_dsc.dst_buf    = color_row_buf;
-                    blend_dsc.color_fill = gt_color_black();
-                } else {
-                    blend_dsc.dst_buf    = NULL;
-                    blend_dsc.color_fill = gt_gradient_dsc_get_color_pos(dsc->grad, base_pos);
-                }
-                if (mask_buf) {
-                    gt_memset(mask_buf, mask_opa, line_area.w);
-                    gt_mask_res_et res = gt_mask_get(mask_buf, line_area.x, line_area.y, line_area.w);
-                    if (res == GT_MASK_RES_TRANSP) { blend_dsc.dst_buf = NULL; continue; }
-                    blend_dsc.mask_buf = (res == GT_MASK_RES_FULL_COVER) ? NULL : mask_buf;
-                } else {
-                    blend_dsc.mask_buf = NULL;
-                }
-                gt_draw_blend(draw_ctx, &blend_dsc);
-                blend_dsc.dst_buf = NULL;
-            }
-        }
-        #undef _FS_CLAMP8
-        #undef _FS_QUANT5
-        #undef _FS_QUANT6
-        #undef _FS_ADD
-        #undef _FS_DITHER_ROW
-        #undef _FS_SWAP_ROWS
-
-        if (mask_buf) gt_mem_free(mask_buf);
-        if (color_row_buf) gt_mem_free(color_row_buf);
-        if (fs_err_cur) gt_mem_free(fs_err_cur);
-        if (fs_err_nxt) gt_mem_free(fs_err_nxt);
-        if (bg_radius > 0) { gt_mask_remove_idx(bg_mask_id); gt_mask_free(&bg_mask_radius); }
-        if (dsc->base_area && cl_radius > 0) { gt_mask_remove_idx(cl_mask_id); gt_mask_free(&cl_mask_radius); }
-        return;
-    }
-#endif /* GT_USE_GRADIENT */
-
+_draw_bg_fill_solid(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords, uint16_t border_radius) {
     gt_draw_blend_dsc_st blend_dsc = {0};
     blend_dsc.color_fill = dsc->bg_color;
     blend_dsc.view_area = dsc->limit_area;
@@ -3681,6 +3360,382 @@ free_lb:
         gt_mask_remove_idx(cl_mask_id);
         gt_mask_free(&cl_mask_radius);
     }
+}
+
+#if GT_USE_GRADIENT
+static void _GT_DRAW_ATTRIBUTE_SRAM_TEXT
+_draw_bg_fill_gradient(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords, uint16_t border_radius) {
+    if (!(dsc->grad && dsc->grad->stops && _gt_vector_get_count(dsc->grad->stops) > 0)) return;
+
+    gt_area_st bg_area = gt_area_reduce(*coords, dsc->border_width);
+        uint16_t bg_radius = (border_radius < dsc->border_width) ? 0 : border_radius - dsc->border_width;
+        bg_radius = GT_MIN(bg_radius, (GT_MIN(bg_area.w >> 1, bg_area.h >> 1)));
+
+        uint16_t total = gt_gradient_dsc_total_steps(dsc->grad);
+        if (total < 2) total = 2;
+
+        gt_draw_blend_dsc_st blend_dsc = {0};
+        blend_dsc.view_area = dsc->limit_area;
+        blend_dsc.opa       = dsc->bg_opa;
+
+        int16_t bg_mask_id = -1;
+        gt_mask_radius_st bg_mask_radius = {0};
+        if (bg_radius > 0) {
+            gt_mask_radius_cfg_st bg_cfg = { .outer = 0, .corner_mask = dsc->corner_mask };
+            gt_mask_radius_init(&bg_mask_radius, &bg_area, bg_radius, bg_cfg);
+            bg_mask_id = gt_mask_add(&bg_mask_radius);
+        }
+
+        int16_t cl_mask_id = -1;
+        uint16_t cl_radius = 0;
+        gt_mask_radius_st cl_mask_radius = {0};
+        if (dsc->base_area) {
+            cl_radius = GT_MIN(dsc->radius, (GT_MIN(dsc->base_area->w >> 1, dsc->base_area->h >> 1)));
+            if (cl_radius > 0) {
+                gt_mask_radius_init(&cl_mask_radius, dsc->base_area, cl_radius, GT_MASK_RADIUS_CFG_INNER);
+                cl_mask_id = gt_mask_add(&cl_mask_radius);
+            }
+        }
+
+        bool need_mask = (bg_radius > 0) || gt_mask_check(&bg_area);
+        gt_opa_t * mask_buf = need_mask
+            ? (gt_opa_t *)gt_mem_malloc(GT_MAX(bg_area.w, bg_area.h))
+            : NULL;
+        gt_opa_t mask_opa = dsc->bg_opa >= GT_OPA_MAX ? GT_OPA_COVER : dsc->bg_opa;
+
+        /* Row color buffer for Floyd-Steinberg dithering */
+        gt_color_t * color_row_buf = (gt_color_t *)gt_mem_malloc(bg_area.w * sizeof(gt_color_t));
+
+        /* Floyd-Steinberg error buffers: two rows × width × 3 channels (R,G,B), int16_t.
+         * err_cur[col*3+ch] = accumulated error for current row pixel (col, ch).
+         * err_nxt[col*3+ch] = accumulated error for next row pixel.
+         * Errors are in 8-bit space (×16 fixed-point to keep fractions). */
+        int16_t * fs_err_cur = NULL;
+        int16_t * fs_err_nxt = NULL;
+        if (color_row_buf) {
+            fs_err_cur = (int16_t *)gt_mem_malloc(bg_area.w * 3 * sizeof(int16_t));
+            fs_err_nxt = (int16_t *)gt_mem_malloc(bg_area.w * 3 * sizeof(int16_t));
+            if (fs_err_cur) gt_memset(fs_err_cur, 0, bg_area.w * 3 * sizeof(int16_t));
+            if (fs_err_nxt) gt_memset(fs_err_nxt, 0, bg_area.w * 3 * sizeof(int16_t));
+        }
+
+        /* Helper macro: clamp int32 to [0..255] */
+        #define _FS_CLAMP8(v)  ((v) < 0 ? 0 : ((v) > 255 ? 255 : (v)))
+
+        /* Quantize one 8-bit channel to n bits and return quantized 8-bit value.
+         * n=5 → multiply by 255/31; n=6 → multiply by 255/63. */
+        #define _FS_QUANT5(v8) (((v8) >> 3) * (255 / 31))
+        #define _FS_QUANT6(v8) (((v8) >> 2) * (255 / 63))
+
+        /* Spread error e (×16 fixed-point) to neighbour slot */
+        #define _FS_ADD(arr, idx, e) do { if ((idx) >= 0 && (idx) < (int32_t)(bg_area.w * 3)) (arr)[(idx)] += (e); } while(0)
+
+        /* Fill color_row_buf with Floyd-Steinberg dithered colors for one row.
+         * ideal_r/g/b are arrays of bg_area.w uint8_t values (ideal 8-bit colors).
+         * fs_err_cur carries incoming errors; fs_err_nxt accumulates outgoing errors. */
+        #define _FS_DITHER_ROW(ideal_r_fn, ideal_g_fn, ideal_b_fn)                         \
+        do {                                                                                 \
+            for (uint16_t _c = 0; _c < (uint16_t)bg_area.w; ++_c) {                        \
+                int32_t _r8 = _FS_CLAMP8((ideal_r_fn) + (fs_err_cur ? (fs_err_cur[_c*3+0] >> 4) : 0)); \
+                int32_t _g8 = _FS_CLAMP8((ideal_g_fn) + (fs_err_cur ? (fs_err_cur[_c*3+1] >> 4) : 0)); \
+                int32_t _b8 = _FS_CLAMP8((ideal_b_fn) + (fs_err_cur ? (fs_err_cur[_c*3+2] >> 4) : 0)); \
+                int32_t _qr = _FS_QUANT5(_r8);                                              \
+                int32_t _qg = _FS_QUANT6(_g8);                                              \
+                int32_t _qb = _FS_QUANT5(_b8);                                              \
+                GT_COLOR_SET_R(color_row_buf[_c], _r8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 5 : 7)))); \
+                GT_COLOR_SET_G(color_row_buf[_c], _g8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 2 : (GT_COLOR_DEPTH == 8 ? 5 : 7)))); \
+                GT_COLOR_SET_B(color_row_buf[_c], _b8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 6 : 7)))); \
+                int32_t _er = (_r8 - _qr) << 4;                                             \
+                int32_t _eg = (_g8 - _qg) << 4;                                             \
+                int32_t _eb = (_b8 - _qb) << 4;                                             \
+                if (fs_err_cur) {                                                            \
+                    _FS_ADD(fs_err_cur, (int32_t)(_c+1)*3+0, (_er*7)>>4);                   \
+                    _FS_ADD(fs_err_cur, (int32_t)(_c+1)*3+1, (_eg*7)>>4);                   \
+                    _FS_ADD(fs_err_cur, (int32_t)(_c+1)*3+2, (_eb*7)>>4);                   \
+                }                                                                            \
+                if (fs_err_nxt) {                                                            \
+                    _FS_ADD(fs_err_nxt, (int32_t)(_c-1)*3+0, (_er*3)>>4);                   \
+                    _FS_ADD(fs_err_nxt, (int32_t)(_c-1)*3+1, (_eg*3)>>4);                   \
+                    _FS_ADD(fs_err_nxt, (int32_t)(_c-1)*3+2, (_eb*3)>>4);                   \
+                    _FS_ADD(fs_err_nxt, (int32_t)(_c  )*3+0, (_er*5)>>4);                   \
+                    _FS_ADD(fs_err_nxt, (int32_t)(_c  )*3+1, (_eg*5)>>4);                   \
+                    _FS_ADD(fs_err_nxt, (int32_t)(_c  )*3+2, (_eb*5)>>4);                   \
+                    _FS_ADD(fs_err_nxt, (int32_t)(_c+1)*3+0, (_er*1)>>4);                   \
+                    _FS_ADD(fs_err_nxt, (int32_t)(_c+1)*3+1, (_eg*1)>>4);                   \
+                    _FS_ADD(fs_err_nxt, (int32_t)(_c+1)*3+2, (_eb*1)>>4);                   \
+                }                                                                            \
+            }                                                                                \
+        } while(0)
+
+        /* Swap error rows and clear next row */
+        #define _FS_SWAP_ROWS() do {                                                         \
+            int16_t * _tmp = fs_err_cur; fs_err_cur = fs_err_nxt; fs_err_nxt = _tmp;        \
+            if (fs_err_nxt) gt_memset(fs_err_nxt, 0, bg_area.w * 3 * sizeof(int16_t));     \
+        } while(0)
+
+        /* Macro: dither one column pixel (per-column ideal color variant).
+         * Reads/writes fs_err_cur[_c*3+ch] and fs_err_nxt[_c*3+ch].
+         * Writes color_row_buf[_c]. Must be used inside a loop with uint16_t _c. */
+        #define _FS_DITHER_COL_PIXEL(ideal_c24) do { \
+            int32_t _r8 = _FS_CLAMP8((int32_t)(((ideal_c24) >> 16) & 0xFF) + (fs_err_cur[_c*3+0] >> 4)); \
+            int32_t _g8 = _FS_CLAMP8((int32_t)(((ideal_c24) >>  8) & 0xFF) + (fs_err_cur[_c*3+1] >> 4)); \
+            int32_t _b8 = _FS_CLAMP8((int32_t)( (ideal_c24)        & 0xFF) + (fs_err_cur[_c*3+2] >> 4)); \
+            int32_t _qr = _FS_QUANT5(_r8); \
+            int32_t _qg = _FS_QUANT6(_g8); \
+            int32_t _qb = _FS_QUANT5(_b8); \
+            GT_COLOR_SET_R(color_row_buf[_c], _r8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 5 : 7)))); \
+            GT_COLOR_SET_G(color_row_buf[_c], _g8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 2 : (GT_COLOR_DEPTH == 8 ? 5 : 7)))); \
+            GT_COLOR_SET_B(color_row_buf[_c], _b8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 6 : 7)))); \
+            int32_t _er = (_r8 - _qr) << 4; \
+            int32_t _eg = (_g8 - _qg) << 4; \
+            int32_t _eb = (_b8 - _qb) << 4; \
+            _FS_ADD(fs_err_cur, (int32_t)(_c+1)*3+0, (_er*7)>>4); \
+            _FS_ADD(fs_err_cur, (int32_t)(_c+1)*3+1, (_eg*7)>>4); \
+            _FS_ADD(fs_err_cur, (int32_t)(_c+1)*3+2, (_eb*7)>>4); \
+            _FS_ADD(fs_err_nxt, (int32_t)(_c-1)*3+0, (_er*3)>>4); \
+            _FS_ADD(fs_err_nxt, (int32_t)(_c-1)*3+1, (_eg*3)>>4); \
+            _FS_ADD(fs_err_nxt, (int32_t)(_c-1)*3+2, (_eb*3)>>4); \
+            _FS_ADD(fs_err_nxt, (int32_t)(_c  )*3+0, (_er*5)>>4); \
+            _FS_ADD(fs_err_nxt, (int32_t)(_c  )*3+1, (_eg*5)>>4); \
+            _FS_ADD(fs_err_nxt, (int32_t)(_c  )*3+2, (_eb*5)>>4); \
+            _FS_ADD(fs_err_nxt, (int32_t)(_c+1)*3+0, (_er*1)>>4); \
+            _FS_ADD(fs_err_nxt, (int32_t)(_c+1)*3+1, (_eg*1)>>4); \
+            _FS_ADD(fs_err_nxt, (int32_t)(_c+1)*3+2, (_eb*1)>>4); \
+        } while(0)
+
+        /* Inner variant: no boundary checks, for columns 1..w-2 only. */
+        #define _FS_DITHER_COL_PIXEL_INNER(ideal_c24) do { \
+            int32_t _r8 = _FS_CLAMP8((int32_t)(((ideal_c24) >> 16) & 0xFF) + (fs_err_cur[_c*3+0] >> 4)); \
+            int32_t _g8 = _FS_CLAMP8((int32_t)(((ideal_c24) >>  8) & 0xFF) + (fs_err_cur[_c*3+1] >> 4)); \
+            int32_t _b8 = _FS_CLAMP8((int32_t)( (ideal_c24)        & 0xFF) + (fs_err_cur[_c*3+2] >> 4)); \
+            int32_t _qr = _FS_QUANT5(_r8); \
+            int32_t _qg = _FS_QUANT6(_g8); \
+            int32_t _qb = _FS_QUANT5(_b8); \
+            GT_COLOR_SET_R(color_row_buf[_c], _r8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 5 : 7)))); \
+            GT_COLOR_SET_G(color_row_buf[_c], _g8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 2 : (GT_COLOR_DEPTH == 8 ? 5 : 7)))); \
+            GT_COLOR_SET_B(color_row_buf[_c], _b8 >> (GT_COLOR_DEPTH == 32 ? 0 : (GT_COLOR_DEPTH == 16 ? 3 : (GT_COLOR_DEPTH == 8 ? 6 : 7)))); \
+            int32_t _er = (_r8 - _qr) << 4; \
+            int32_t _eg = (_g8 - _qg) << 4; \
+            int32_t _eb = (_b8 - _qb) << 4; \
+            fs_err_cur[(_c+1)*3+0] += (_er*7)>>4; \
+            fs_err_cur[(_c+1)*3+1] += (_eg*7)>>4; \
+            fs_err_cur[(_c+1)*3+2] += (_eb*7)>>4; \
+            fs_err_nxt[(_c-1)*3+0] += (_er*3)>>4; \
+            fs_err_nxt[(_c-1)*3+1] += (_eg*3)>>4; \
+            fs_err_nxt[(_c-1)*3+2] += (_eb*3)>>4; \
+            fs_err_nxt[(_c  )*3+0] += (_er*5)>>4; \
+            fs_err_nxt[(_c  )*3+1] += (_eg*5)>>4; \
+            fs_err_nxt[(_c  )*3+2] += (_eb*5)>>4; \
+            fs_err_nxt[(_c+1)*3+0] += (_er*1)>>4; \
+            fs_err_nxt[(_c+1)*3+1] += (_eg*1)>>4; \
+            fs_err_nxt[(_c+1)*3+2] += (_eb*1)>>4; \
+        } while(0)
+
+        /* Pre-compute center and half-size for SYM_VER / SYM_HOR */
+        uint16_t cx = bg_area.x + (bg_area.w >> 1);
+        uint16_t cy = bg_area.y + (bg_area.h >> 1);
+        uint32_t max_r = bg_area.h >> 1;   /* SYM_VER: half-height */
+        uint32_t max_rx = bg_area.w >> 1;  /* SYM_HOR: half-width */
+
+        gt_grad_dir_et dir = dsc->grad->dir;
+
+        if (dir == GT_GRAD_DIR_VER) {
+            gt_area_st line_area = { .x = bg_area.x, .w = bg_area.w, .h = 1 };
+            blend_dsc.dst_area  = &line_area;
+            blend_dsc.mask_area = &line_area;
+            uint16_t h1 = bg_area.h > 1 ? bg_area.h - 1 : 1;
+            for (uint16_t row = 0; row < (uint16_t)bg_area.h; ++row) {
+                line_area.y = bg_area.y + row;
+                uint16_t base_pos = (uint16_t)((uint32_t)row * 65535u / h1);
+                if (color_row_buf && fs_err_cur && fs_err_nxt) {
+                    uint32_t _c24 = gt_gradient_dsc_get_color24_pos(dsc->grad, base_pos);
+                    uint8_t _ir = (uint8_t)((_c24 >> 16) & 0xFF);
+                    uint8_t _ig = (uint8_t)((_c24 >>  8) & 0xFF);
+                    uint8_t _ib = (uint8_t)( _c24        & 0xFF);
+                    _FS_DITHER_ROW(_ir, _ig, _ib);
+                    _FS_SWAP_ROWS();
+                    blend_dsc.dst_buf    = color_row_buf;
+                    blend_dsc.color_fill = gt_color_black();
+                } else {
+                    blend_dsc.dst_buf    = NULL;
+                    blend_dsc.color_fill = gt_gradient_dsc_get_color_pos(dsc->grad, base_pos);
+                }
+                if (need_mask && mask_buf) {
+                    gt_memset(mask_buf, mask_opa, line_area.w);
+                    gt_mask_res_et res = gt_mask_get(mask_buf, line_area.x, line_area.y, line_area.w);
+                    if (res == GT_MASK_RES_TRANSP) { blend_dsc.dst_buf = NULL; continue; }
+                    blend_dsc.mask_buf = (res == GT_MASK_RES_FULL_COVER) ? NULL : mask_buf;
+                } else {
+                    blend_dsc.mask_buf = NULL;
+                }
+                gt_draw_blend(draw_ctx, &blend_dsc);
+                blend_dsc.dst_buf = NULL;
+            }
+        } else if (dir == GT_GRAD_DIR_HOR) {
+            gt_area_st line_area = { .x = bg_area.x, .w = bg_area.w, .h = 1 };
+            blend_dsc.dst_area  = &line_area;
+            blend_dsc.mask_area = &line_area;
+            uint16_t w1 = bg_area.w > 1 ? bg_area.w - 1 : 1;
+            for (uint16_t row = 0; row < (uint16_t)bg_area.h; ++row) {
+                line_area.y = bg_area.y + row;
+                if (color_row_buf && fs_err_cur && fs_err_nxt) {
+                    /* HOR: each column has its own ideal color.
+                     * Split into first/inner/last to avoid per-pixel boundary checks. */
+                    if (bg_area.w > 0) {
+                        { uint16_t _c = 0;
+                          uint32_t _ideal_c24 = gt_gradient_dsc_get_color24_pos(dsc->grad, 0);
+                          _FS_DITHER_COL_PIXEL(_ideal_c24); }
+                        for (uint16_t _c = 1; _c < (uint16_t)bg_area.w - 1; ++_c) {
+                            uint16_t _pos = (uint16_t)((uint32_t)_c * 65535u / w1);
+                            uint32_t _ideal_c24 = gt_gradient_dsc_get_color24_pos(dsc->grad, _pos);
+                            _FS_DITHER_COL_PIXEL_INNER(_ideal_c24);
+                        }
+                        if (bg_area.w > 1) {
+                            uint16_t _c = (uint16_t)bg_area.w - 1;
+                            uint32_t _ideal_c24 = gt_gradient_dsc_get_color24_pos(dsc->grad, 65535u);
+                            _FS_DITHER_COL_PIXEL(_ideal_c24);
+                        }
+                    }
+                    _FS_SWAP_ROWS();
+                    blend_dsc.dst_buf    = color_row_buf;
+                    blend_dsc.color_fill = gt_color_black();
+                } else {
+                    blend_dsc.dst_buf    = NULL;
+                    uint16_t mid_pos = (uint16_t)((uint32_t)(bg_area.w >> 1) * 65535u / w1);
+                    blend_dsc.color_fill = gt_gradient_dsc_get_color_pos(dsc->grad, mid_pos);
+                }
+                if (need_mask && mask_buf) {
+                    gt_memset(mask_buf, mask_opa, line_area.w);
+                    gt_mask_res_et res = gt_mask_get(mask_buf, line_area.x, line_area.y, line_area.w);
+                    if (res == GT_MASK_RES_TRANSP) { blend_dsc.dst_buf = NULL; continue; }
+                    blend_dsc.mask_buf = (res == GT_MASK_RES_FULL_COVER) ? NULL : mask_buf;
+                } else {
+                    blend_dsc.mask_buf = NULL;
+                }
+                gt_draw_blend(draw_ctx, &blend_dsc);
+                blend_dsc.dst_buf = NULL;
+            }
+        } else if (dir == GT_GRAD_DIR_SYM_HOR) {
+            gt_area_st line_area = { .x = bg_area.x, .w = bg_area.w, .h = 1 };
+            blend_dsc.dst_area  = &line_area;
+            blend_dsc.mask_area = &line_area;
+            for (uint16_t row = 0; row < (uint16_t)bg_area.h; ++row) {
+                line_area.y = bg_area.y + row;
+                if (color_row_buf && fs_err_cur && fs_err_nxt) {
+                    /* SYM_HOR: split into first/inner/last to avoid per-pixel boundary checks. */
+                    if (bg_area.w > 0) {
+                        { uint16_t _c = 0;
+                          int32_t dx = (int32_t)(bg_area.x) - (int32_t)cx;
+                          uint32_t r2 = (uint32_t)(dx < 0 ? -dx : dx);
+                          uint16_t _pos = (max_rx > 0) ? (uint16_t)((uint32_t)r2 * 65535u / max_rx) : 0;
+                          uint32_t _ideal_c24 = gt_gradient_dsc_get_color24_pos(dsc->grad, _pos);
+                          _FS_DITHER_COL_PIXEL(_ideal_c24); }
+                        for (uint16_t _c = 1; _c < (uint16_t)bg_area.w - 1; ++_c) {
+                            int32_t dx = (int32_t)(bg_area.x + _c) - (int32_t)cx;
+                            uint32_t r2 = (uint32_t)(dx < 0 ? -dx : dx);
+                            uint16_t _pos = (max_rx > 0) ? (uint16_t)((uint32_t)r2 * 65535u / max_rx) : 0;
+                            uint32_t _ideal_c24 = gt_gradient_dsc_get_color24_pos(dsc->grad, _pos);
+                            _FS_DITHER_COL_PIXEL_INNER(_ideal_c24);
+                        }
+                        if (bg_area.w > 1) {
+                            uint16_t _c = (uint16_t)bg_area.w - 1;
+                            int32_t dx = (int32_t)(bg_area.x + _c) - (int32_t)cx;
+                            uint32_t r2 = (uint32_t)(dx < 0 ? -dx : dx);
+                            uint16_t _pos = (max_rx > 0) ? (uint16_t)((uint32_t)r2 * 65535u / max_rx) : 0;
+                            uint32_t _ideal_c24 = gt_gradient_dsc_get_color24_pos(dsc->grad, _pos);
+                            _FS_DITHER_COL_PIXEL(_ideal_c24);
+                        }
+                    }
+                    _FS_SWAP_ROWS();
+                    blend_dsc.dst_buf    = color_row_buf;
+                    blend_dsc.color_fill = gt_color_black();
+                } else {
+                    blend_dsc.dst_buf    = NULL;
+                    blend_dsc.color_fill = gt_gradient_dsc_get_color_pos(dsc->grad, 0);
+                }
+                if (need_mask && mask_buf) {
+                    gt_memset(mask_buf, mask_opa, line_area.w);
+                    gt_mask_res_et res = gt_mask_get(mask_buf, line_area.x, line_area.y, line_area.w);
+                    if (res == GT_MASK_RES_TRANSP) { blend_dsc.dst_buf = NULL; continue; }
+                    blend_dsc.mask_buf = (res == GT_MASK_RES_FULL_COVER) ? NULL : mask_buf;
+                } else {
+                    blend_dsc.mask_buf = NULL;
+                }
+                gt_draw_blend(draw_ctx, &blend_dsc);
+                blend_dsc.dst_buf = NULL;
+            }
+        } else {
+            /* DIAG_TL / DIAG_TR / SYM_VER */
+            gt_area_st line_area = { .x = bg_area.x, .w = bg_area.w, .h = 1 };
+            blend_dsc.dst_area  = &line_area;
+            blend_dsc.mask_area = &line_area;
+            uint16_t diag_denom = (bg_area.w + bg_area.h - 2) > 0 ? (bg_area.w + bg_area.h - 2) : 1;
+            for (uint16_t row = 0; row < (uint16_t)bg_area.h; ++row) {
+                line_area.y = bg_area.y + row;
+                uint16_t base_pos = 0;
+                if (dir == GT_GRAD_DIR_DIAG_TL) {
+                    uint16_t col = bg_area.w >> 1;
+                    base_pos = (uint16_t)(((uint32_t)row + col) * 65535u / diag_denom);
+                } else if (dir == GT_GRAD_DIR_DIAG_TR) {
+                    uint16_t inv_col = bg_area.w - 1 - (bg_area.w >> 1);
+                    base_pos = (uint16_t)(((uint32_t)row + inv_col) * 65535u / diag_denom);
+                } else { /* SYM_VER */
+                    int32_t dy = (int32_t)(bg_area.y + row) - (int32_t)cy;
+                    uint32_t r2 = (uint32_t)(dy < 0 ? -dy : dy);
+                    base_pos = (max_r > 0) ? (uint16_t)((uint32_t)r2 * 65535u / max_r) : 0;
+                }
+                if (color_row_buf && fs_err_cur && fs_err_nxt && dir == GT_GRAD_DIR_SYM_VER) {
+                    uint32_t _c24 = gt_gradient_dsc_get_color24_pos(dsc->grad, base_pos);
+                    uint8_t _ir = (uint8_t)((_c24 >> 16) & 0xFF);
+                    uint8_t _ig = (uint8_t)((_c24 >>  8) & 0xFF);
+                    uint8_t _ib = (uint8_t)( _c24        & 0xFF);
+                    _FS_DITHER_ROW(_ir, _ig, _ib);
+                    _FS_SWAP_ROWS();
+                    blend_dsc.dst_buf    = color_row_buf;
+                    blend_dsc.color_fill = gt_color_black();
+                } else {
+                    blend_dsc.dst_buf    = NULL;
+                    blend_dsc.color_fill = gt_gradient_dsc_get_color_pos(dsc->grad, base_pos);
+                }
+                if (need_mask && mask_buf) {
+                    gt_memset(mask_buf, mask_opa, line_area.w);
+                    gt_mask_res_et res = gt_mask_get(mask_buf, line_area.x, line_area.y, line_area.w);
+                    if (res == GT_MASK_RES_TRANSP) { blend_dsc.dst_buf = NULL; continue; }
+                    blend_dsc.mask_buf = (res == GT_MASK_RES_FULL_COVER) ? NULL : mask_buf;
+                } else {
+                    blend_dsc.mask_buf = NULL;
+                }
+                gt_draw_blend(draw_ctx, &blend_dsc);
+                blend_dsc.dst_buf = NULL;
+            }
+        }
+        #undef _FS_CLAMP8
+        #undef _FS_QUANT5
+        #undef _FS_QUANT6
+        #undef _FS_ADD
+        #undef _FS_DITHER_ROW
+        #undef _FS_SWAP_ROWS
+        #undef _FS_DITHER_COL_PIXEL
+        #undef _FS_DITHER_COL_PIXEL_INNER
+
+        if (mask_buf) gt_mem_free(mask_buf);
+        if (color_row_buf) gt_mem_free(color_row_buf);
+        if (fs_err_cur) gt_mem_free(fs_err_cur);
+        if (fs_err_nxt) gt_mem_free(fs_err_nxt);
+        if (bg_radius > 0) { gt_mask_remove_idx(bg_mask_id); gt_mask_free(&bg_mask_radius); }
+        if (dsc->base_area && cl_radius > 0) { gt_mask_remove_idx(cl_mask_id); gt_mask_free(&cl_mask_radius); }
+        return;
+    }
+#endif /* GT_USE_GRADIENT */
+
+static void _GT_DRAW_ATTRIBUTE_SRAM_TEXT
+draw_bg_fill(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, const gt_area_st * coords, uint16_t border_radius) {
+    if (!dsc->reg.is_fill) return;
+#if GT_USE_GRADIENT
+    _draw_bg_fill_gradient(draw_ctx, dsc, coords, border_radius);
+    if (dsc->grad && dsc->grad->stops && _gt_vector_get_count(dsc->grad->stops) > 0) return;
+#endif
+    _draw_bg_fill_solid(draw_ctx, dsc, coords, border_radius);
 }
 
 static void _GT_DRAW_ATTRIBUTE_SRAM_TEXT
