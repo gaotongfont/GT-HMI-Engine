@@ -4968,36 +4968,49 @@ gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_are
 
             if (has_fs && color_row_buf) {
                 for (uint16_t col = 0; col < row_w; col++) {
-                    int32_t dx = area_out.x + col - cx;
+                    int32_t dx = area_out.x + (int32_t)col - cx;
 
-                    /* Compute angle in GT arc convention using float atan2 for
-                     * sub-degree precision (gt_atan2 has only 1° resolution which
-                     * causes visible color banding on fast-changing gradients like rainbow).
-                     * Convention: 0=right(+x), 90=down(+y), 180=left(-x), 270=up(-y). */
+                    /* Angle computation.
+                     * GT_ARC_GRAD_USE_FPU=1: atan2f, full float precision, ~40 cy on M4F.
+                     * GT_ARC_GRAD_USE_FPU=0: gt_atan2 integer lookup, ±1° precision,
+                     *   zero soft-float calls — ~20 cy on M3/M0 vs ~10000 cy for soft atan2f. */
+                    float _af_deg;
+#if GT_ARC_GRAD_USE_FPU
                     float _af = atan2f((float)dy, (float)dx) * (float)(180.0 / 3.14159265358979323846);
                     if (_af < 0.0f) _af += 360.0f;
-                    /* ang_f in [0, 360) degrees, fractional */
+                    _af_deg = _af;
+#else
+                    /* gt_atan2(x, y): first arg is x, second is y.
+                     * Pass (dy, dx) so it computes atan2(dy, dx) matching the FPU convention:
+                     *   dx>0, dy=0 → 0°;  dx=0, dy>0 → 90°. */
+                    _af_deg = (float)gt_atan2(dy, dx);
+#endif
 
                     /* Map angle to arc position [0..65535] */
-                    float rel_f = _af - (float)start_angle;
+                    float rel_f = _af_deg - (float)start_angle;
                     if (rel_f < 0.0f) rel_f += 360.0f;
                     if (!is_full_circle && rel_f > (float)arc_span) rel_f = (float)arc_span;
                     float ref_span = (dsc->grad_ref_span > 0) ? (float)dsc->grad_ref_span : (float)arc_span;
                     uint16_t pos = (uint16_t)(rel_f * 65535.0f / ref_span + 0.5f);
 
-                    /* Compute radial fade opacity */
+                    /* Compute radial fade opacity — Newton sqrt with clz-based initial estimate */
                     int32_t r2 = dx * dx + dy * dy;
                     int32_t r_px = 0;
-                    /* integer sqrt approximation */
                     {
                         uint32_t ur2 = (uint32_t)(r2 < 0 ? 0 : r2);
-                        uint32_t s = ur2;
-                        uint32_t x0 = (out_radius > 0) ? (uint32_t)out_radius : 1;
-                        /* 3 Newton iterations */
-                        if (x0 > 0) {
-                            x0 = (x0 + s / x0) >> 1;
-                            x0 = (x0 + s / x0) >> 1;
-                            x0 = (x0 + s / x0) >> 1;
+                        uint32_t x0;
+                        if (ur2 == 0) {
+                            x0 = 0;
+                        } else {
+#if defined(__GNUC__) || defined(__clang__)
+                            /* clz-based initial guess: 2^⌈(32-clz(n))/2⌉, within √2× of true sqrt */
+                            x0 = 1u << ((33u - (uint32_t)__builtin_clz(ur2)) >> 1);
+#else
+                            x0 = (out_radius > 0) ? (uint32_t)out_radius : 1;
+#endif
+                            /* 2 Newton iterations — sufficient after the improved initial guess */
+                            x0 = (x0 + ur2 / x0) >> 1;
+                            x0 = (x0 + ur2 / x0) >> 1;
                         }
                         r_px = (int32_t)x0;
                     }

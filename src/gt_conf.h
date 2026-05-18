@@ -706,6 +706,24 @@ extern "C" {
     #define GT_USE_GRADIENT     1
 #endif
 
+#ifndef GT_ARC_GRAD_USE_FPU
+    /**
+     * @brief Arc gradient angle computation path.
+     *   1: use atan2f() per pixel (float, requires hardware FPU or soft-float lib).
+     *      Suitable for: Cortex-M4F/M7/M33, x86 simulator.
+     *   0: use gt_atan2() integer lookup per pixel (±1° precision, zero soft-float calls).
+     *      ~200x faster than soft-float atan2f on Cortex-M0/M3. Suitable for no-FPU targets.
+     * Auto-detected from compiler macros if not defined explicitly.
+     * Override in Makefile: -DGT_ARC_GRAD_USE_FPU=0 or =1
+     */
+    #if defined(__ARM_FP) || defined(_GT_PORT_SIMULATOR_ENVS) || \
+        defined(__FPU_PRESENT) || defined(__VFP_FP__)
+        #define GT_ARC_GRAD_USE_FPU  1
+    #else
+        #define GT_ARC_GRAD_USE_FPU  0
+    #endif
+#endif
+
 #ifndef GT_USE_SHADOW
     /**
      * @brief Enable lightweight 3-D shadow effect (offset solid rect + opacity).
