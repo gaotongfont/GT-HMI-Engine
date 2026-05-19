@@ -932,7 +932,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
         gt_memset(mask_line, 0xFF, tmp_font->info.size << 1);
     } else {
         uint8_t font_gray = 1;
-        const uint8_t info_size = tmp_font->info.size;
+        const uint8_t info_size = area_font->h; //tmp_font->info.size;
         const gt_font_style_st style_reg = tmp_font->info.style.reg;
         uint8_t font_height = gt_font_get_one_word_height_by_option(uni_or_gbk, tmp_font, dot_ret.option);
         uint8_t byte_width = _gt_gray_and_dot_byte_get(&font_gray, *p_width, tmp_font, dot_ret.type, uni_or_gbk);
