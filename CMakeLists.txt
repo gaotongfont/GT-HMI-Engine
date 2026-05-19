@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.5)
 project(gt_gui)
 
 file(GLOB_RECURSE SRC_LIST "driver" "gt_gui_driver.c")
