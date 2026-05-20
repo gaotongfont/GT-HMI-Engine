@@ -67,6 +67,7 @@ static const _menu_item_st _menu_items[] = {
     { "Button Driver",  GT_EXAMPLE_SCR_BUTTON_DRIVER },
     { "Spectrum",       GT_EXAMPLE_SCR_SPECTRUM },
     { "[Theme]",        GT_EXAMPLE_SCR_THEME },
+    { "Polygon",        GT_EXAMPLE_SCR_POLYGON },
 };
 
 #define _MENU_ITEM_COUNT  (sizeof(_menu_items) / sizeof(_menu_items[0]))
