@@ -190,8 +190,7 @@ _mem_mutex_lock(void) {
     if (NULL == _heap_info.mutex_ctrl.lock_cb) {
         return GT_RES_OK;
     }
-    _heap_info.mutex_ctrl.lock_cb(_heap_info.mutex_ctrl.mtx_hdl, _heap_info.mutex_ctrl.wait_ms);
-    return GT_RES_OK;
+    return _heap_info.mutex_ctrl.lock_cb(_heap_info.mutex_ctrl.mtx_hdl, _heap_info.mutex_ctrl.wait_ms);
 }
 
 static inline gt_res_t GT_ATTRIBUTE_RAM_TEXT
@@ -199,8 +198,7 @@ _mem_mutex_unlock(void) {
     if (NULL == _heap_info.mutex_ctrl.unlock_cb) {
         return GT_RES_OK;
     }
-    _heap_info.mutex_ctrl.unlock_cb(_heap_info.mutex_ctrl.mtx_hdl);
-    return GT_RES_OK;
+    return _heap_info.mutex_ctrl.unlock_cb(_heap_info.mutex_ctrl.mtx_hdl);
 }
 #endif
 
@@ -230,7 +228,9 @@ static GT_ATTRIBUTE_RAM_TEXT size_t _gt_block_size(void * ptr) {
 static GT_ATTRIBUTE_RAM_TEXT inline void *_gt_malloc_hooks(size_t size) {
     void * ptr = NULL;
 #if GT_MEM_USE_MUTEX
-    _mem_mutex_lock();
+    if(GT_RES_FAIL == _mem_mutex_lock()) {
+        return NULL;
+    }
 #endif
 #if GT_MEM_CUSTOM
     ptr = gt_tlsf_malloc(_tlsf, size);
@@ -255,7 +255,9 @@ static GT_ATTRIBUTE_RAM_TEXT inline void *_gt_malloc_hooks(size_t size) {
 static GT_ATTRIBUTE_RAM_TEXT inline void *_gt_realloc_hooks(void * old_ptr, size_t size) {
     void * ptr = NULL;
 #if GT_MEM_USE_MUTEX
-    _mem_mutex_lock();
+    if(GT_RES_FAIL == _mem_mutex_lock()) {
+        return NULL;
+    }
 #endif
 #if GT_MEM_CUSTOM
     ptr = gt_tlsf_realloc(_tlsf, old_ptr, size);
