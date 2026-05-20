@@ -5219,4 +5219,106 @@ close_lb:
 }
 #endif  /** GT_USE_IMG_TRANSFORM */
 
+GT_ATTRIBUTE_RAM_TEXT void gt_draw_polygon(
+    _gt_draw_ctx_st * draw_ctx,
+    gt_attr_polygon_st const * dsc,
+    gt_area_st const * coords)
+{
+    if (NULL == draw_ctx->buf) return;
+    if (NULL == dsc->points || dsc->count < 3) return;
+    if (!gt_area_is_intersect_screen(&draw_ctx->buf_area, coords)) return;
+
+    uint16_t const n = dsc->count;
+    gt_point_st const * pts = dsc->points;
+
+    /* pts[] are stored as bbox-relative coordinates (origin = widget's bbox corner).
+     * coords->x/y is the widget's current obj->area.x/y (updated by scroll).
+     * Adding coords->x/y converts relative vertices to current screen position.
+     * This avoids the (coords->x - bbox_x) subtraction which oscillated ±1px
+     * during easing animation, causing scanline jitter on near-horizontal edges. */
+    int16_t const ox = (int16_t)coords->x;
+    int16_t const oy = (int16_t)coords->y;
+
+    /* ── Fill via scanline ── */
+    if (dsc->fill_opa > GT_OPA_MIN) {
+        int16_t y_min = (int16_t)(pts[0].y + oy), y_max = (int16_t)(pts[0].y + oy);
+        for (uint16_t i = 1; i < n; i++) {
+            int16_t iy = (int16_t)(pts[i].y + oy);
+            if (iy < y_min) y_min = iy;
+            if (iy > y_max) y_max = iy;
+        }
+
+        int16_t scan_y0 = GT_MAX(y_min, (int16_t)draw_ctx->buf_area.y);
+        int16_t scan_y1 = GT_MIN(y_max,
+            (int16_t)(draw_ctx->buf_area.y + (int16_t)draw_ctx->buf_area.h - 1));
+
+        int16_t x_buf[GT_POLYGON_MAX_VERTICES];
+
+        gt_area_st fill_line = { .h = 1 };
+        gt_draw_blend_dsc_st blend_dsc = { 0 };
+        blend_dsc.color_fill = dsc->fill_color;
+        blend_dsc.opa        = dsc->fill_opa;
+        blend_dsc.mask_buf   = NULL;
+        blend_dsc.dst_area   = &fill_line;
+        blend_dsc.mask_area  = &fill_line;
+        blend_dsc.view_area  = NULL;
+
+        for (int16_t y = scan_y0; y <= scan_y1; y++) {
+            uint16_t cnt = 0;
+            for (uint16_t i = 0; i < n; i++) {
+                uint16_t j = (i + 1) % n;
+                int16_t y0e = (int16_t)(pts[i].y + oy);
+                int16_t y1e = (int16_t)(pts[j].y + oy);
+                if (y0e == y1e) continue;
+                int16_t lo = GT_MIN(y0e, y1e);
+                int16_t hi = GT_MAX(y0e, y1e);
+                if (y < lo || y >= hi) continue;
+                if (cnt >= GT_POLYGON_MAX_VERTICES) break;
+                int32_t xi = (int32_t)(pts[i].x + ox) +
+                    (int32_t)(y - y0e) * (int32_t)(pts[j].x - pts[i].x)
+                    / (int32_t)(y1e - y0e);
+                x_buf[cnt++] = (int16_t)xi;
+            }
+            /* insertion sort */
+            for (uint16_t a = 1; a < cnt; a++) {
+                int16_t key = x_buf[a];
+                int16_t b = (int16_t)(a - 1);
+                while (b >= 0 && x_buf[b] > key) {
+                    x_buf[b + 1] = x_buf[b];
+                    b--;
+                }
+                x_buf[b + 1] = key;
+            }
+            /* fill pairs */
+            for (uint16_t p = 0; p + 1 < cnt; p += 2) {
+                int16_t xl = x_buf[p];
+                int16_t xr = x_buf[p + 1];
+                if (xl >= xr) continue;
+                xl = GT_MAX(xl, (int16_t)draw_ctx->buf_area.x);
+                xr = GT_MIN(xr, (int16_t)(draw_ctx->buf_area.x + (int16_t)draw_ctx->buf_area.w - 1));
+                if (xl > xr) continue;
+                fill_line.x = xl;
+                fill_line.y = y;
+                fill_line.w = (uint16_t)(xr - xl + 1);
+                gt_draw_blend(draw_ctx, &blend_dsc);
+            }
+        }
+    }
+
+    /* ── Stroke via gt_draw_line ── */
+    if (dsc->line.width > 0 && dsc->line.opa > GT_OPA_MIN) {
+        gt_attr_line_st edge;
+        gt_memset(&edge, 0, sizeof(edge));
+        edge.line = dsc->line;
+        for (uint16_t i = 0; i < n; i++) {
+            uint16_t j = (i + 1) % n;
+            edge.start.x = (int16_t)(pts[i].x + ox);
+            edge.start.y = (int16_t)(pts[i].y + oy);
+            edge.end.x   = (int16_t)(pts[j].x + ox);
+            edge.end.y   = (int16_t)(pts[j].y + oy);
+            gt_draw_line(draw_ctx, &edge, coords);
+        }
+    }
+}
+
 /* end ------------------------------------------------------------------*/

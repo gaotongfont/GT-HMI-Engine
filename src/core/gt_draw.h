@@ -157,6 +157,8 @@ GT_ATTRIBUTE_RAM_TEXT void draw_focus(gt_obj_st* obj);
 
 GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_area_st * coords);
 
+GT_ATTRIBUTE_RAM_TEXT void gt_draw_polygon(_gt_draw_ctx_st * draw_ctx, gt_attr_polygon_st const * dsc, const gt_area_st * coords);
+
 
 #ifdef __cplusplus
 } /*extern "C"*/

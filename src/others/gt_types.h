@@ -205,6 +205,7 @@ typedef enum gt_obj_type_e {
     GT_TYPE_LRC         = 46,       ///<< lrc
     GT_TYPE_QR_EXT      = 47,       ///<< qr ext
     GT_TYPE_FORMULA     = 48,       ///<< formula
+    GT_TYPE_POLYGON     = 49,       ///<< polygon
 
     GT_TYPE_TOTAL,                  ///< count total of type
 }gt_obj_type_et;

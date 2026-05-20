@@ -198,6 +198,23 @@ typedef struct _gt_attr_arc_s{
     uint8_t rounded : 1;
 }gt_attr_arc_st;
 
+#ifndef GT_POLYGON_MAX_VERTICES
+    #define GT_POLYGON_MAX_VERTICES     32
+#endif
+
+/**
+ * @brief polygon draw attribute
+ */
+typedef struct _gt_attr_polygon_s {
+    gt_point_st const * points;  ///< vertex array (caller manages lifetime)
+    uint16_t count;              ///< number of vertices (>= 3 to draw)
+    gt_line_st line;             ///< stroke style; width=0: no stroke
+    gt_color_t fill_color;       ///< fill color
+    gt_opa_t fill_opa;           ///< fill opacity; GT_OPA_TRANSP: no fill
+    /* vertices in pts[] are bbox-relative (origin = widget area top-left),
+     * so gt_draw_polygon() adds coords->x/y directly — no bbox subtraction needed. */
+} gt_attr_polygon_st;
+
 /* macros ---------------------------------------------------------------*/
 
 
