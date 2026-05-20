@@ -25,10 +25,12 @@ extern "C" {
 
 /* define ---------------------------------------------------------------*/
 
-/**
- * @brief The number of pages of the project template is used to cache infinite churn
- */
-#define GT_ROLLER_INFINITE_PAGES_COUNT  7
+#ifndef GT_ROLLER_INFINITE_PAGES_COUNT
+    /**
+     * @brief The number of pages of the project template is used to cache infinite churn
+     */
+    #define GT_ROLLER_INFINITE_PAGES_COUNT      7
+#endif
 
 #ifndef GT_ROLLER_SNAP_ANIM_STATE
     /**
