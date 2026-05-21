@@ -75,14 +75,6 @@ static void _gt_indev_clear_finger_state(struct _point * point_p);
         #define GT_INDEV_THROW_LOW_PASS_RAPID_CALC      1
     #endif
 
-
-    #ifndef GT_INDEV_THROW_PIXEL_PER_SECOND
-        /**
-         * @brief about n px/s to scroll slow down
-         */
-        #define GT_INDEV_THROW_PIXEL_PER_SECOND         1300
-    #endif
-
     /**
      * @brief Scroll throw deceleration style
      *      Configured by GT_INDEV_THROW_STYLE in gt_conf.h
