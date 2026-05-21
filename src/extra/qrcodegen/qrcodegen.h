@@ -29,7 +29,7 @@
 extern "C" {
 #endif
 
-#include "../widgets/gt_conf_widgets.h"
+#include "../../widgets/gt_conf_widgets.h"
 //
 #if GT_CFG_ENABLE_QR_EXT
 

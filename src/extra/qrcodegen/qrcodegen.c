@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "qrcodegen.h"
-#include "../others/gt_log.h"
+#include "../../others/gt_log.h"
 
 #if GT_CFG_ENABLE_QR_EXT
 

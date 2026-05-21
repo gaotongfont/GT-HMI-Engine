@@ -34,6 +34,12 @@ typedef enum {
     GT_CHAT_TYPE_VOICE,
 }gt_chat_type_te;
 
+typedef enum {
+    GT_CHAT_MSG_TYPE_NONE = 0,
+    GT_CHAT_MSG_TYPE_SEND,
+    GT_CHAT_MSG_TYPE_RECV,
+}gt_chat_msg_type_te;
+
 typedef struct gt_chat_item_cb_s
 {
     gt_obj_st* (*create_cb)( gt_obj_st* );
@@ -166,6 +172,8 @@ gt_obj_st * gt_chat_replace_msg_text_control_scroll(gt_obj_st * chat, const char
 
 gt_obj_st * gt_chat_replace_msg_text_by_len(gt_obj_st * chat, const char * msg, uint16_t len);
 gt_obj_st * gt_chat_replace_msg_text_by_len_control_scroll(gt_obj_st * chat, const char * msg, uint16_t len, bool is_scroll);
+
+gt_chat_msg_type_te gt_chat_get_last_msg_type(gt_obj_st * chat);
 
 void gt_chat_clean_all_msg(gt_obj_st * chat);
 

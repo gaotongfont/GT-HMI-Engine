@@ -689,6 +689,18 @@ gt_obj_st * gt_chat_append_msg_text_control_scroll(gt_obj_st * chat, const char 
     return item;
 }
 
+gt_chat_msg_type_te gt_chat_get_last_msg_type(gt_obj_st * chat)
+{
+    if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
+        return GT_CHAT_MSG_TYPE_NONE;
+    }
+    _gt_chat_st * style = (_gt_chat_st * )chat;
+    if(style->msg_cnt <= 0) {
+        return GT_CHAT_MSG_TYPE_NONE;
+    }
+    return style->msg_list[style->msg_cnt - 1].is_send ? GT_CHAT_MSG_TYPE_SEND : GT_CHAT_MSG_TYPE_RECV;
+}
+
 gt_obj_st * gt_chat_replace_msg_text(gt_obj_st * chat, const char * msg)
 {
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {

@@ -32,7 +32,7 @@ freely, subject to the following restrictions:
 
 #include <string.h> /*for size_t*/
 #include "gt_png.h"
-#include "../others/gt_types.h"
+#include "../../others/gt_types.h"
 #include "../../hal/gt_hal_file_header.h"
 
 extern const char* LODEPNG_VERSION_STRING;
