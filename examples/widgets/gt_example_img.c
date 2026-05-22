@@ -11,6 +11,7 @@
 
 #include "../gt_examples.h"
 #include "../../src/widgets/gt_img.h"
+#include "../../src/widgets/gt_gif.h"
 #include "../../src/core/gt_event.h"
 #include "../../src/others/gt_anim.h"
 #include "../../src/widgets/gt_label.h"
@@ -245,7 +246,24 @@ gt_obj_st * gt_examples_img(void)
 #endif /* GT_USE_IMG_TRANSFORM */
 
     /* ------------------------------------------------------------------ */
-    /* Section 4: border effect demo                                       */
+    /* Section 4: GIF animation + PNG from C-array (gt_src_1/2.c)        */
+    /* ------------------------------------------------------------------ */
+    gt_obj_st * lbl_gif = gt_label_create(_screen);
+    gt_label_set_text(lbl_gif, "GIF / PNG (C-array)");
+    gt_obj_set_pos(lbl_gif, 600, 410);
+    gt_obj_set_size(lbl_gif, 190, 20);
+
+    gt_obj_st * gif = gt_gif_create(_screen);
+    gt_gif_set_src(gif, "./anim_50x50.gif");
+    gt_obj_set_pos(gif, 600, 432);
+    gt_gif_play(gif);
+
+    gt_obj_st * img_png = gt_img_create(_screen);
+    gt_img_set_src(img_png, "./155x34.png");
+    gt_obj_set_pos(img_png, 660, 440);
+
+    /* ------------------------------------------------------------------ */
+    /* Section 5: border effect demo                                       */
     /* ------------------------------------------------------------------ */
     gt_obj_st * lbl_bd = gt_label_create(_screen);
     gt_label_set_text(lbl_bd, "Border Demo");
@@ -279,7 +297,7 @@ gt_obj_st * gt_examples_img(void)
 #endif /* GT_USE_IMG_TRANSFORM */
 
     /* ------------------------------------------------------------------ */
-    /* Section 5: border + masking combined demo                           */
+    /* Section 6: border + masking combined demo                           */
     /* ------------------------------------------------------------------ */
     gt_obj_st * lbl_bm = gt_label_create(_screen);
     gt_label_set_text(lbl_bm, "Border + Masking");
