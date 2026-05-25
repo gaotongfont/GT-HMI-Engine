@@ -175,6 +175,33 @@ void gt_obj_add_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_ty
 void gt_obj_add_replace_core_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data);
 
 /**
+ * @brief Remove user event callbacks matching the given filter.
+ *
+ * @param obj Pointer to the object
+ * @param filter Event type to remove (GT_EVENT_TYPE_ALL removes all user callbacks)
+ */
+void gt_obj_remove_event_cb(struct gt_obj_s * obj, gt_event_type_et filter);
+
+/**
+ * @brief Replace an existing user event callback for the given filter, or add a new one.
+ *
+ * @param obj Pointer to the object
+ * @param event The new callback function
+ * @param filter Event type to replace
+ * @param user_data User data pointer
+ */
+void gt_obj_replace_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data);
+
+/**
+ * @brief Reset replace-core event callbacks for the given filter,
+ *        restoring the default class _event_cb handler.
+ *
+ * @param obj Pointer to the object
+ * @param filter Event type to reset (GT_EVENT_TYPE_ALL removes all replace_core callbacks)
+ */
+void gt_obj_reset_replace_core_event_cb(struct gt_obj_s * obj, gt_event_type_et filter);
+
+/**
  * @brief Check if the user event callback is already added
  *
  * @param obj
@@ -294,6 +321,22 @@ void gt_global_remove_all_event_cb(void);
  *      the widget object
  */
 void gt_global_remove_all_event_cb_immediately(void);
+
+/**
+ * @brief Remove global event callbacks matching the given filter.
+ *
+ * @param filter Event type to remove (GT_EVENT_TYPE_ALL removes all)
+ */
+void gt_global_remove_event_cb(gt_event_type_et filter);
+
+/**
+ * @brief Replace an existing global event callback for the given filter, or add a new one.
+ *
+ * @param event The new callback function
+ * @param filter Event type to replace
+ * @param user_data User data pointer
+ */
+void gt_global_replace_event_cb(gt_event_cb_t event, gt_event_type_et filter, void * user_data);
 
 /**
  * @brief Send an event code to the global register user event.

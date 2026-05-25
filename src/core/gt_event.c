@@ -296,6 +296,51 @@ _common_add_event_node(gt_obj_event_attr_st ** event_root_p) {
     return new_event;
 }
 
+static void _event_attr_exec_cb(void * tar, int32_t val) {}
+
+static void _replace_core_event_attr_exec_cb(void * tar, int32_t val) {}
+
+/**
+ * @brief Remove event nodes matching filter from a callback linked list.
+ *        Safe to call during callback iteration (defers free via animation).
+ * @param obj        The object (for event_cb_depth check)
+ * @param root_pp    Pointer to the list head pointer
+ * @param filter     Event type to remove (GT_EVENT_TYPE_ALL removes all)
+ */
+static GT_ATTRIBUTE_RAM_TEXT void
+_common_remove_event_by_filter(gt_obj_st * obj, gt_obj_event_attr_st ** root_pp, gt_event_type_et filter) {
+    if (NULL == obj || NULL == root_pp || NULL == *root_pp) {
+        return;
+    }
+    gt_obj_event_attr_st ** prev_ptr = root_pp;
+    gt_obj_event_attr_st * event_ptr = *prev_ptr;
+
+    while (event_ptr) {
+        gt_obj_event_attr_st * next = event_ptr->next_ptr;
+        if (filter == GT_EVENT_TYPE_ALL || event_ptr->filter == filter) {
+            *prev_ptr = next;
+            if (obj->event_cb_depth > 0) {
+                event_ptr->next_ptr = NULL;
+                gt_anim_st anim;
+                gt_anim_init(&anim);
+                gt_anim_set_time(&anim, 1);
+                gt_anim_set_target(&anim, event_ptr);
+                gt_anim_set_ready_cb(&anim, _anim_to_remove_all_event);
+                gt_anim_set_exec_cb(&anim, _event_attr_exec_cb);
+                gt_anim_start(&anim);
+            } else {
+                event_ptr->next_ptr = NULL;
+                event_ptr->user_cb = NULL;
+                event_ptr->user_data = NULL;
+                gt_mem_free(event_ptr);
+            }
+        } else {
+            prev_ptr = &event_ptr->next_ptr;
+        }
+        event_ptr = next;
+    }
+}
+
 static void GT_ATTRIBUTE_RAM_TEXT
 _event_delay_exec_cb(void * tar, int32_t val) {
     // NULL
@@ -361,6 +406,40 @@ void gt_obj_add_replace_core_event_cb(struct gt_obj_s * obj, gt_event_cb_t event
     new_event->user_data = user_data;
 }
 
+void gt_obj_remove_event_cb(struct gt_obj_s * obj, gt_event_type_et filter)
+{
+    if (NULL == obj) {
+        return;
+    }
+    _common_remove_event_by_filter(obj, &obj->event_attr, filter);
+}
+
+void gt_obj_replace_event_cb(struct gt_obj_s * obj, gt_event_cb_t event, gt_event_type_et filter, void * user_data)
+{
+    if (NULL == obj || NULL == event) {
+        return;
+    }
+    gt_obj_event_attr_st * event_ptr = obj->event_attr;
+    while (event_ptr) {
+        if (event_ptr->filter == filter) {
+            event_ptr->user_cb = event;
+            event_ptr->user_data = user_data;
+            return;
+        }
+        event_ptr = event_ptr->next_ptr;
+    }
+    /* not found, add new */
+    gt_obj_add_event_cb(obj, event, filter, user_data);
+}
+
+void gt_obj_reset_replace_core_event_cb(struct gt_obj_s * obj, gt_event_type_et filter)
+{
+    if (NULL == obj) {
+        return;
+    }
+    _common_remove_event_by_filter(obj, &obj->replace_core_event_attr, filter);
+}
+
 bool gt_event_has_event_cb(struct gt_obj_s * obj, gt_event_type_et filter)
 {
     if (NULL == obj) {
@@ -401,10 +480,6 @@ uint16_t gt_obj_get_user_event_count(struct gt_obj_s * obj)
     }
     return cnt;
 }
-
-static void _event_attr_exec_cb(void * tar, int32_t val) {}
-
-static void _replace_core_event_attr_exec_cb(void * tar, int32_t val) {}
 
 void gt_obj_remove_all_event_cb(struct gt_obj_s * obj)
 {
@@ -558,6 +633,16 @@ void gt_global_remove_all_event_cb(void)
 void gt_global_remove_all_event_cb_immediately(void)
 {
     gt_obj_remove_all_event_cb_immediately(gt_disp_get_layer_top());
+}
+
+void gt_global_remove_event_cb(gt_event_type_et filter)
+{
+    gt_obj_remove_event_cb(gt_disp_get_layer_top(), filter);
+}
+
+void gt_global_replace_event_cb(gt_event_cb_t event, gt_event_type_et filter, void * user_data)
+{
+    gt_obj_replace_event_cb(gt_disp_get_layer_top(), event, filter, user_data);
 }
 
 gt_res_t gt_global_event_send(gt_event_type_et event, void * parms)
