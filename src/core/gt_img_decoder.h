@@ -81,12 +81,19 @@ typedef enum gt_img_color_format_e {
     GT_IMG_CF_ARGB8888     = GT_IMG_CF_BGRA8888,
 }gt_img_color_format_et;
 
+/** Returns bytes-per-pixel for a given color format.
+ *  RGBA8888 (5→4) and RGB565_SWAP (6→2) are exceptions to enum==bpp. */
+static inline uint8_t gt_img_cf_bpp(uint8_t cf) {
+    if (cf == GT_IMG_CF_RGB565_SWAP) return 2u;
+    if (cf == GT_IMG_CF_RGBA8888)    return 4u;
+    return (uint8_t)cf;
+}
+
 /**
  * @brief image header info
  */
 typedef struct _gt_img_info_s {
-    uint32_t color_format : 5;  // TODO adjust import @ref gt_img_color_format_et
-    uint32_t reserved : 1;
+    uint32_t color_format : 6;  // TODO adjust import @ref gt_img_color_format_et
     uint32_t w : 13;            // 0 - 8192
     uint32_t h : 13;
     uint8_t type;               ///< record this decoder image type @ref gt_img_decoder_type_em

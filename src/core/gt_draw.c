@@ -1561,6 +1561,12 @@ static inline cf_convert_fn _get_convert_fn(uint8_t src_cf, uint8_t dst_cf) {
     return NULL; /* unsupported or matching */
 }
 
+/** Returns true when the format stores an alpha byte per pixel (interleaved). */
+static inline bool _cf_has_embedded_alpha(uint8_t cf) {
+    return cf == GT_IMG_CF_BGRA8888 || cf == GT_IMG_CF_RGBA8888;
+}
+
+
 /**
  * @brief Infer source color format from pixel data size.
  * @return GT_IMG_CF_RGB565, GT_IMG_CF_RGB888, GT_IMG_CF_BGRA8888, or GT_IMG_CF_UNKNOWN
@@ -1620,9 +1626,16 @@ _filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_ds
     cf_convert_fn convert = _get_convert_fn(src_cf, dst_cf);
     gt_color_t *color_buf = NULL;
     uint8_t *alpha_buf = NULL;
+    bool alpha_buf_owned = false;
+
+    /* When src format embeds alpha (BGRA8888/RGBA8888) and no separate alpha segment
+     * is provided, extract the alpha channel into a per-pixel buffer so the engine
+     * can blend transparently instead of treating every pixel as fully opaque. */
+    bool need_extract_alpha = _cf_has_embedded_alpha(src_cf) && (dsc_img->alpha == NULL);
+
     if (convert) {
         uint32_t color_bytes = pixel_count * sizeof(gt_color_t);
-        uint32_t alpha_bytes = dsc_img->alpha ? pixel_count * sizeof(gt_opa_t) : 0;
+        uint32_t alpha_bytes = (dsc_img->alpha || need_extract_alpha) ? pixel_count * sizeof(gt_opa_t) : 0;
         color_buf = gt_mem_malloc(color_bytes + alpha_bytes);
         if (!color_buf) {
             GT_LOGE(GT_LOG_TAG_GUI, "Color conversion buffer malloc failed");
@@ -1632,11 +1645,30 @@ _filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_ds
         if (dsc_img->alpha) {
             alpha_buf = (uint8_t *)(color_buf + pixel_count);
             gt_memcpy(alpha_buf, dsc_img->alpha, alpha_bytes);
+        } else if (need_extract_alpha) {
+            /* Extract alpha from interleaved source; alpha is always the last byte (index 3) */
+            alpha_buf = (uint8_t *)(color_buf + pixel_count);
+            const uint8_t *src = (const uint8_t *)dsc_img->img;
+            for (uint32_t i = 0; i < pixel_count; i++) {
+                alpha_buf[i] = src[i * 4 + 3];
+            }
         }
     } else {
         /* Fast path: formats match, use original data directly */
         color_buf = (gt_color_t *)dsc_img->img;
         alpha_buf = dsc_img->alpha;
+        /* depth=32 BGRA/RGBA: noop convert but alpha still needs extraction */
+        if (need_extract_alpha) {
+            uint8_t *extracted = gt_mem_malloc(pixel_count * sizeof(gt_opa_t));
+            if (extracted) {
+                const uint8_t *src = (const uint8_t *)dsc_img->img;
+                for (uint32_t i = 0; i < pixel_count; i++) {
+                    extracted[i] = src[i * 4 + 3];
+                }
+                alpha_buf = extracted;
+                alpha_buf_owned = true;
+            }
+        }
     }
 
     bool check_mask = gt_mask_check(blend_dsc->mask_area);
@@ -1649,6 +1681,7 @@ _filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_ds
         blend_dsc->mask_buf = gt_mem_malloc(w);
         if (!blend_dsc->mask_buf) {
             GT_LOGE(GT_LOG_TAG_GUI, "Mask buffer malloc failed, size: %d, %d", w, h);
+            if (alpha_buf_owned) gt_mem_free(alpha_buf);
             if (convert) gt_mem_free(color_buf);
             return;
         }
@@ -1676,6 +1709,7 @@ _filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_ds
         gt_mem_free(blend_dsc->mask_buf);
         blend_dsc->mask_buf = NULL;
         blend_dsc->dst_buf = NULL;
+        if (alpha_buf_owned) gt_mem_free(alpha_buf);
         if (convert) gt_mem_free(color_buf);
         return;
     }
@@ -1683,6 +1717,7 @@ _filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_ds
     if (gt_draw_blend_is_vertical() && h > 1) {
         _blend_rowwise_in_vert(draw_ctx, blend_dsc,
             color_buf, (gt_opa_t *)alpha_buf, w, h);
+        if (alpha_buf_owned) gt_mem_free(alpha_buf);
         if (convert) gt_mem_free(color_buf);
         return;
     }
@@ -1692,6 +1727,7 @@ _filling_by_ram_data(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_ds
     gt_draw_blend(draw_ctx, blend_dsc);
     blend_dsc->dst_buf = NULL;
     blend_dsc->mask_buf = NULL;
+    if (alpha_buf_owned) gt_mem_free(alpha_buf);
     if (convert) gt_mem_free(color_buf);
 }
 
@@ -1712,7 +1748,7 @@ _filling_by_default_full_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st *
     uint8_t src_cf = dsc_img->header.color_format;
     if (src_cf == 0) src_cf = fp->msg.pic.color_format;
     if (src_cf == 0) src_cf = GT_IMG_CF_RGB565;
-    uint8_t src_bpp = src_cf;
+    uint8_t src_bpp = gt_img_cf_bpp(src_cf);
     if (src_bpp == 0) src_bpp = 2;
     uint8_t dst_cf = GT_COLOR_DEPTH;
     cf_convert_fn convert = _get_convert_fn(src_cf, dst_cf);
@@ -1821,7 +1857,7 @@ _filling_by_default_line_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st *
     uint8_t src_cf = dsc_img->header.color_format;
     if (src_cf == 0) src_cf = fp->msg.pic.color_format;
     if (src_cf == 0) src_cf = GT_IMG_CF_RGB565; /* fallback */
-    uint8_t src_bpp = src_cf; /* 2=RGB565, 3=RGB888, 4=ARGB8888 */
+    uint8_t src_bpp = gt_img_cf_bpp(src_cf);
     if (src_bpp == 0) src_bpp = sizeof(gt_color_t);
     uint8_t dst_cf = GT_COLOR_DEPTH;
     cf_convert_fn convert = _get_convert_fn(src_cf, dst_cf);
@@ -1858,8 +1894,10 @@ _filling_by_default_line_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st *
     gt_opa_t opa = blend_dsc->opa >= GT_OPA_MAX ? GT_OPA_COVER: blend_dsc->opa;
     bool check_mask = gt_mask_check(blend_dsc->mask_area);
     uint8_t is_mask = 1 == fp->msg.pic.is_alpha ? 1 : 0;
+    /* For interleaved-alpha formats without a separate alpha segment, extract per row */
+    bool extract_alpha = !is_mask && _cf_has_embedded_alpha(src_cf);
 
-    if (is_mask || check_mask) {
+    if (is_mask || check_mask || extract_alpha) {
 #if _GT_DRAW_STATIC_LINE_BUFFER
         blend_dsc->mask_buf = (uint8_t *)(_static_line_opa_buffer + blend_len);
 #else
@@ -1882,12 +1920,19 @@ _filling_by_default_line_mode(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st *
                 gt_memcpy(blend_dsc->dst_buf, raw_buf, color_len);
             }
 
-            if(!is_mask && check_mask){
+            if(!is_mask && !extract_alpha && check_mask){
                 gt_memset(blend_dsc->mask_buf, opa, w);
             }
 
             if (is_mask) {
                 gt_fs_read_img_offset(fp, (uint8_t *)blend_dsc->mask_buf, alpha_offset, w);
+            } else if (extract_alpha) {
+                /* Extract alpha byte (index 3) from each interleaved BGRA/RGBA pixel */
+                const uint8_t *px = raw_buf;
+                gt_opa_t *dst_a = (gt_opa_t *)blend_dsc->mask_buf;
+                for (uint16_t xi = 0; xi < w; xi++, px += 4) {
+                    dst_a[xi] = (gt_opa_t)((uint16_t)px[3] * opa / 255u);
+                }
             }
 
             if(check_mask) {

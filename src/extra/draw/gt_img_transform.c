@@ -189,9 +189,8 @@ static gt_color_t * _decode_full_image(_gt_img_dsc_st * dsc_img, gt_opa_t ** out
     /* Use decoder read_line for all other types (SJPG, built-in file, etc.) */
     uint8_t src_cf = dsc_img->header.color_format;
     if (src_cf == 0) src_cf = GT_IMG_CF_RGB565;
-    uint32_t src_row_bytes = (uint32_t)w * src_cf;  /* src_cf value == bytes/pixel */
-    /* need_conv: src bytes/pixel != dst bytes/pixel */
-    bool need_conv = (src_cf != sizeof(gt_color_t));
+    uint32_t src_row_bytes = (uint32_t)w * gt_img_cf_bpp(src_cf);
+    bool need_conv = (gt_img_cf_bpp(src_cf) != sizeof(gt_color_t));
 
     uint8_t * row_tmp = need_conv ? (uint8_t *)gt_mem_malloc(src_row_bytes) : NULL;
     if (need_conv && !row_tmp) {
@@ -400,7 +399,7 @@ gt_color_t * gt_img_decode_to_cache(const gt_attr_rect_st * dsc,
         uint32_t pixel_count = (uint32_t)dsc_img.header.w * dsc_img.header.h;
         dsc_img.img = (uint8_t *)dsc_img.fp->buffer;
         if (dsc_img.fp->msg.pic.is_alpha) {
-            dsc_img.alpha = (gt_opa_t *)((uint8_t *)dsc_img.fp->buffer + pixel_count * src_cf);
+            dsc_img.alpha = (gt_opa_t *)((uint8_t *)dsc_img.fp->buffer + pixel_count * gt_img_cf_bpp(src_cf));
         }
     }
 
