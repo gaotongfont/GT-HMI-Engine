@@ -246,21 +246,75 @@ gt_obj_st * gt_examples_img(void)
 #endif /* GT_USE_IMG_TRANSFORM */
 
     /* ------------------------------------------------------------------ */
-    /* Section 4: GIF animation + PNG from C-array (gt_src_1/2.c)        */
+    /* Section 4a: BGRA8888 interleaved C-array (is_alpha=0, auto-extract)*/
+    /* ------------------------------------------------------------------ */
+    {
+        gt_obj_st * lbl_bgra = gt_label_create(_screen);
+        gt_label_set_text(lbl_bgra, "BGRA interleaved");
+        gt_obj_set_pos(lbl_bgra, 0, 500);
+        gt_obj_set_size(lbl_bgra, 160, 20);
+
+        gt_obj_st * img_bgra = gt_img_create(_screen);
+        gt_img_set_src(img_bgra, "./src_174x258_bgra8888.png");
+        gt_obj_set_pos(img_bgra, 0, 522);
+    }
+    /* ------------------------------------------------------------------ */
+    /* Section 4b: BGR888+Alpha separated C-array (is_alpha=1)            */
+    /* ------------------------------------------------------------------ */
+    {
+        gt_obj_st * lbl_div = gt_label_create(_screen);
+        gt_label_set_text(lbl_div, "BGR888+A separated");
+        gt_obj_set_pos(lbl_div, 180, 500);
+        gt_obj_set_size(lbl_div, 160, 20);
+
+        gt_obj_st * img_div = gt_img_create(_screen);
+        gt_img_set_src(img_div, "./src_174x258_bgra8888_div.png");
+        gt_obj_set_pos(img_div, 180, 522);
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Section 4c: RGBA8888 interleaved C-array (byte order: R G B A)    */
+    /* ------------------------------------------------------------------ */
+    {
+        gt_obj_st * lbl_rgba = gt_label_create(_screen);
+        gt_label_set_text(lbl_rgba, "RGBA interleaved");
+        gt_obj_set_pos(lbl_rgba, 360, 500);
+        gt_obj_set_size(lbl_rgba, 160, 20);
+
+        gt_obj_st * img_rgba = gt_img_create(_screen);
+        gt_img_set_src(img_rgba, "./src_174x258_rgba8888.png");
+        gt_obj_set_pos(img_rgba, 360, 522);
+    }
+    /* ------------------------------------------------------------------ */
+    /* Section 4d: RGB565_SWAP C-array (SPI LCD byte-swapped)             */
+    /* ------------------------------------------------------------------ */
+    {
+        gt_obj_st * lbl_swap = gt_label_create(_screen);
+        gt_label_set_text(lbl_swap, "RGB565 SWAP");
+        gt_obj_set_pos(lbl_swap, 545, 500);
+        gt_obj_set_size(lbl_swap, 120, 20);
+
+        gt_obj_st * img_swap = gt_img_create(_screen);
+        gt_img_set_src(img_swap, "./src_50x50_rgb565swap.png");
+        gt_obj_set_pos(img_swap, 545, 522);
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Section 5: GIF animation + PNG from C-array (gt_src_1/2.c)        */
     /* ------------------------------------------------------------------ */
     gt_obj_st * lbl_gif = gt_label_create(_screen);
     gt_label_set_text(lbl_gif, "GIF / PNG (C-array)");
-    gt_obj_set_pos(lbl_gif, 600, 410);
+    gt_obj_set_pos(lbl_gif, 580, 410);
     gt_obj_set_size(lbl_gif, 190, 20);
 
     gt_obj_st * gif = gt_gif_create(_screen);
     gt_gif_set_src(gif, "./anim_50x50.gif");
-    gt_obj_set_pos(gif, 600, 432);
+    gt_obj_set_pos(gif, 580, 432);
     gt_gif_play(gif);
 
     gt_obj_st * img_png = gt_img_create(_screen);
     gt_img_set_src(img_png, "./155x34.png");
-    gt_obj_set_pos(img_png, 660, 440);
+    gt_obj_set_pos(img_png, 635, 440);
 
     /* ------------------------------------------------------------------ */
     /* Section 5: border effect demo                                       */
