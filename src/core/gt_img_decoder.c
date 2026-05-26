@@ -112,7 +112,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _gt_img_decoder_built_in_read_line(struct 
     if (!fp) {
         return GT_RES_INV;
     }
-    uint8_t bpp = dsc->header.color_format;
+    uint8_t bpp = gt_img_cf_bpp(dsc->header.color_format);
     if (bpp == 0) bpp = GT_IMG_CF_RGB565;  /* default: RGB565 (2 bytes/pixel) */
     uint32_t offset = ((uint32_t)dsc->header.w * y + x) * bpp;
 

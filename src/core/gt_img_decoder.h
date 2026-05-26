@@ -69,6 +69,81 @@ typedef enum {
 
 /**
  * @brief Image color format type
+ * @details Byte-level data layout for each color format.
+ *
+ * @par C-array lookup table
+ *
+ * | Enum | Value | bpp | Byte layout (per pixel) | Notes |
+ * |------|-------|-----|-------------------------|-------|
+ * | `GT_IMG_CF_UNKNOWN` | 0 | auto | — (decode-time detect) | Fallback → RGB565 |
+ * | `GT_IMG_CF_RGB565` | 2 | 2 | `[R:5, G:6(hi)] [G:3(lo), B:5]` | LE uint16, GT_COLOR_16_SWAP=0 |
+ * | `GT_IMG_CF_RGB888` | 3 | 3 | `[B] [G] [R]` | BGR order, matches `gt_color32_t.{b,g,r}` |
+ * | `GT_IMG_CF_BGRA8888` | 4 | 4 | `[B] [G] [R] [A]` | == `gt_color32_t` mem layout, LE `0xAARRGGBB` |
+ * | `GT_IMG_CF_RGBA8888` | 5 | 4 | `[R] [G] [B] [A]` | PNG/OpenGL native, **enum≠bpp** |
+ * | `GT_IMG_CF_RGB565_SWAP` | 6 | 2 | `[G:3(lo), B:5] [R:5, G:6(hi)]` | SPI LCD native, **enum≠bpp** |
+ *
+ * @par RGB565 / RGB565_SWAP — per-byte bit layout
+ *
+ * @code
+ *  RGB565 (LE):
+ *   Byte[0]              Byte[1]
+ *  ┌──────┬─────┐       ┌─────┬──────┐
+ *  │ R4   │ G5  │       │ G2  │ B4   │
+ *  │ R3   │ G4  │       │ G1  │ B3   │
+ *  │ R2   │ G3  │       │ G0  │ B2   │
+ *  │ R1   │──G5─│       │──G3─│ B1   │
+ *  │ R0   │ G4  │       │ G2  │ B0   │
+ *  └──────┴─────┘       └─────┴──────┘
+ *
+ *  RGB565_SWAP (SPI LCD):
+ *   Byte[0]              Byte[1]
+ *  ┌─────┬──────┐       ┌──────┬─────┐
+ *  │ G2  │ B4   │       │ R4   │ G5  │
+ *  │ G1  │ B3   │       │ R3   │ G4  │
+ *  │ G0  │ B2   │       │ R2   │ G3  │
+ *  │──G3─│ B1   │       │ R1   │──G5─│
+ *  │ G2  │ B0   │       │ R0   │ G4  │
+ *  └─────┴──────┘       └──────┴─────┘
+ * @endcode
+ *
+ * @par RGB888 — 3 bytes/pixel, BGR order
+ *
+ * @code
+ *   Byte[0]   Byte[1]   Byte[2]
+ *  ┌───────┐ ┌───────┐ ┌───────┐
+ *  │ Blue  │ │ Green │ │ Red   │
+ *  │ 8-bit │ │ 8-bit │ │ 8-bit │
+ *  └───────┘ └───────┘ └───────┘
+ * @endcode
+ *
+ * @par BGRA8888 / RGBA8888 — 4 bytes/pixel
+ *
+ * @code
+ *  BGRA8888 (matches gt_color32_t):
+ *   Byte[0]   Byte[1]   Byte[2]   Byte[3]
+ *  ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐
+ *  │ Blue  │ │ Green │ │ Red   │ │ Alpha │
+ *  │ 8-bit │ │ 8-bit │ │ 8-bit │ │ 8-bit │
+ *  └───────┘ └───────┘ └───────┘ └───────┘
+ *  LE uint32: 0xAARRGGBB  (A=MSB at highest address)
+ *
+ *  RGBA8888 (PNG/OpenGL native):
+ *   Byte[0]   Byte[1]   Byte[2]   Byte[3]
+ *  ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐
+ *  │ Red   │ │ Green │ │ Blue  │ │ Alpha │
+ *  │ 8-bit │ │ 8-bit │ │ 8-bit │ │ 8-bit │
+ *  └───────┘ └───────┘ └───────┘ └───────┘
+ *  LE uint32: 0xAABBGGRR  → needs R↔B swap for gt_color32_t
+ * @endcode
+ *
+ * @par Separate alpha (is_alpha=1 in gt_src_st)
+ *
+ * When `is_alpha=1`, the C-array stores color data followed by alpha data:
+ * @code
+ *  |<──  color_data = w × h × bpp  ──>|<──  alpha_data = w × h  ──>|
+ *  |  BGR888 pixel[0..N-1]            |  alpha[0..N-1]              |
+ * @endcode
+ * Alpha offset = `w * h * gt_img_cf_bpp(cf)`, alpha stride = 1 B/px (8-bit grayscale).
  */
 typedef enum gt_img_color_format_e {
     GT_IMG_CF_UNKNOWN      = 0,  ///< Unknown color format (infer from size)

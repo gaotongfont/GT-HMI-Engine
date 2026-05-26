@@ -41,7 +41,7 @@ typedef struct _gt_vfs_s {
     uint32_t addr;  ///< address which resource data save
     uint32_t size;  ///< the resource size
     uint8_t is_alpha : 1;       ///< 1: has alpha channel
-    uint8_t color_format : 5;   ///< pixel format @ref gt_img_color_format_et: 0=auto(RGB565), 2=RGB565, 3=RGB888, 4=ARGB8888
+    uint8_t color_format : 5;   ///< pixel format @ref gt_img_color_format_et; use gt_img_cf_bpp() to get bytes/pixel
     uint8_t reserved : 2;
 }gt_vfs_st;
 
