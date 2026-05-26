@@ -500,19 +500,95 @@ typedef struct _gt_img_dsc_s {
 
 ### color_format 枚举（gt_img_color_format_et）
 
-| 枚举值 | 数值 | 含义 |
-|--------|------|------|
-| `GT_IMG_CF_UNKNOWN` | 0 | 自动（回退 RGB565），用于 PNG/SVG/JPEG |
-| `GT_IMG_CF_RGB565` | 2 | 2 B/pixel |
-| `GT_IMG_CF_RGB888` | 3 | 3 B/pixel |
-| `GT_IMG_CF_ARGB8888` | 4 | 4 B/pixel |
+| 枚举值 | 数值 | bpp | 含义 |
+|--------|------|-----|------|
+| `GT_IMG_CF_UNKNOWN` | 0 | 0（自动） | 回退 RGB565，用于 PNG/SVG/JPEG |
+| `GT_IMG_CF_RGB565` | 2 | 2 | 2 B/pixel |
+| `GT_IMG_CF_RGB888` | 3 | 3 | 3 B/pixel |
+| `GT_IMG_CF_BGRA8888` | 4 | 4 | 4 B/pixel |
+| `GT_IMG_CF_RGBA8888` | 5 | **4** | 4 B/pixel（枚举≠bpp） |
+| `GT_IMG_CF_RGB565_SWAP` | 6 | **2** | 2 B/pixel（枚举≠bpp） |
 
-`_gt_img_decoder_built_in_read_line` 用 `color_format` 值直接作为 stride（bytes/pixel）计算偏移：
+> **注意**：`RGBA8888` 和 `RGB565_SWAP` 的枚举值 ≠ bpp。必须通过 `gt_img_cf_bpp()`（`gt_img_decoder.h`）获取实际 bytes/pixel，**禁止**直接用枚举值做 stride 计算。
+
+`_gt_img_decoder_built_in_read_line` 通过 `gt_img_cf_bpp()` 获取 stride：
 ```c
-uint8_t bpp = dsc->header.color_format;
+uint8_t bpp = gt_img_cf_bpp(dsc->header.color_format);
 if (bpp == 0) bpp = GT_IMG_CF_RGB565;   // 默认 RGB565
 uint32_t offset = (w * y + x) * bpp;
 ```
+
+#### RGB565 / RGB565_SWAP — per-byte bit layout
+
+```
+ RGB565 (LE, GT_COLOR_16_SWAP=0):
+  Byte[0]              Byte[1]
+ ┌──────┬─────┐       ┌─────┬──────┐
+ │ R4   │ G5  │       │ G2  │ B4   │
+ │ R3   │ G4  │       │ G1  │ B3   │
+ │ R2   │ G3  │       │ G0  │ B2   │
+ │ R1   │──G5─│       │──G3─│ B1   │
+ │ R0   │ G4  │       │ G2  │ B0   │
+ └──────┴─────┘       └─────┴──────┘
+ LE uint16: 0b_RRRRR_GGGGGG_BBBBB
+
+ RGB565_SWAP (SPI LCD):
+  Byte[0]              Byte[1]
+ ┌─────┬──────┐       ┌──────┬─────┐
+ │ G2  │ B4   │       │ R4   │ G5  │
+ │ G1  │ B3   │       │ R3   │ G4  │
+ │ G0  │ B2   │       │ R2   │ G3  │
+ │──G3─│ B1   │       │ R1   │──G5─│
+ │ G2  │ B0   │       │ R0   │ G4  │
+ └─────┴──────┘       └──────┴─────┘
+```
+
+**SWAP 与正常 RGB565 不是简单的 `htons()` 关系。** SWAP 是将每个 uint16 拆成两个字节后交换位置，适用于 SPI LCD 控制器的字节序要求。
+
+#### RGB888 — 3 B/px, BGR order
+
+```
+  Byte[0]   Byte[1]   Byte[2]
+ ┌───────┐ ┌───────┐ ┌───────┐
+ │ Blue  │ │ Green │ │ Red   │
+ │ 8-bit │ │ 8-bit │ │ 8-bit │
+ └───────┘ └───────┘ └───────┘
+```
+
+BGR 字节序匹配 `gt_color32_t` 的 `{blue, green, red}` 通道顺序，depth=32 时可直接 memcpy 到 `gt_color32_t`（alpha 补 0xFF）。
+
+#### BGRA8888 / RGBA8888 — 4 B/px
+
+```
+ BGRA8888 (matches gt_color32_t):
+  Byte[0]   Byte[1]   Byte[2]   Byte[3]
+ ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐
+ │ Blue  │ │ Green │ │ Red   │ │ Alpha │
+ │ 8-bit │ │ 8-bit │ │ 8-bit │ │ 8-bit │
+ └───────┘ └───────┘ └───────┘ └───────┘
+ LE uint32: 0xAARRGGBB
+
+ RGBA8888 (PNG/OpenGL native):
+  Byte[0]   Byte[1]   Byte[2]   Byte[3]
+ ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐
+ │ Red   │ │ Green │ │ Blue  │ │ Alpha │
+ │ 8-bit │ │ 8-bit │ │ 8-bit │ │ 8-bit │
+ └───────┘ └───────┘ └───────┘ └───────┘
+ LE uint32: 0xAABBGGRR  → 需 R↔B swap 转为 BGRA
+```
+
+RGBA8888 是 PNG 解码器和 OpenGL 的原生输出格式。depth=32 时引擎在 `gt_draw.c` 中通过 `_cf_rgba_to_32()` 做逐像素 R↔B 交换。
+
+#### is_alpha=1 分离 alpha 布局
+
+```
+ |<── color_data = w × h × bpp ──>|<── alpha_data = w × h ──>|
+ |  BGR888 pixel[0..N-1]          |  alpha[0..N-1]            |
+```
+
+- `color_offset` 从 0 开始，`color_stride = w × bpp`
+- `alpha_offset = w × h × gt_img_cf_bpp(cf)`，`alpha_stride = 1 B/px`
+- 仅 color_data 部分按 color_format 解析，alpha 部分始终 8-bit 灰度
 
 ### 解码器类型枚举（gt_img_decoder_type_em）
 
