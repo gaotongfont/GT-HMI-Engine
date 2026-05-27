@@ -1990,13 +1990,15 @@ _filling_by_default(_gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc
     }
 
     /* src BPP: use color_format field (2/3/4 = bytes/pixel), fallback to 2 (RGB565) */
-    uint8_t src_cf = fp->msg.pic.color_format ? fp->msg.pic.color_format : GT_IMG_CF_RGB565;
+    uint8_t src_cf = dsc_img->header.color_format;
+    if (src_cf == 0) src_cf = fp->msg.pic.color_format;
+    if (src_cf == 0) src_cf = GT_IMG_CF_RGB565;
     uint8_t dst_cf = GT_COLOR_DEPTH;
     uint8_t is_mask = fp->msg.pic.is_alpha ? 1 : 0;
 
     /* alpha data immediately follows color data; offset uses actual src BPP */
     uint32_t pixel_count = (uint32_t)dsc_img->header.w * dsc_img->header.h;
-    uint32_t addr_start_alpha = pixel_count * src_cf;
+    uint32_t addr_start_alpha = pixel_count * gt_img_cf_bpp(src_cf);
 
     /* set dsc_img fields so _filling_by_ram_data can use them */
     dsc_img->img   = (uint8_t *)fp->buffer;
