@@ -21,6 +21,17 @@ extern "C" {
 #include "gt_math.h"
 #include "gt_assert.h"
 #include "../utils/gt_vector.h"
+
+/* GT_COLOR_DEPTH=24 is internally aliased to 32bit BGRA framebuffer (alpha forced to 0xFF).
+ * All engine paths reuse the existing 32bit code. The user-visible flag
+ * GT_COLOR_DEPTH_PACKED_24 is set so the driver flush callback can pack
+ * 4B BGRA -> 3B RGB888 at the LCD boundary if needed. */
+#if defined(GT_COLOR_DEPTH) && (GT_COLOR_DEPTH == 24)
+#define GT_COLOR_DEPTH_PACKED_24    1
+#undef  GT_COLOR_DEPTH
+#define GT_COLOR_DEPTH              32
+#endif
+
 /* define ---------------------------------------------------------------*/
 
 enum {
@@ -62,7 +73,7 @@ enum {
 #elif GT_COLOR_DEPTH == 32
 #define GT_COLOR_SIZE 32
 #else
-#error "Invalid GT_COLOR_DEPTH in GT_conf.h! Set it to 1, 8, 16 or 32!"
+#error "Invalid GT_COLOR_DEPTH in GT_conf.h! Set it to 1, 8, 16, 24 or 32!"
 #endif
 
 // #define GT_COLOR_GET_OBJ(_buf, x, y, w, h)          (_buf[ (int)( (y) * (w) + x) ])

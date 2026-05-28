@@ -6,7 +6,7 @@
 #define	JD_SZBUF		512
 /* Specifies size of stream input buffer */
 
-#if GT_COLOR_DEPTH   == 32
+#if GT_COLOR_DEPTH   == 32 || GT_COLOR_DEPTH == 24
     #define JD_FORMAT		0
 #elif GT_COLOR_DEPTH == 16
     #define JD_FORMAT		1
