@@ -164,8 +164,10 @@ _update_label_size(gt_obj_st * obj, uint16_t len) {
     if (obj->area.w && obj->area.h) {
         return;
     }
-    obj->area.h = style->font_info.size + 6;
-    obj->area.w = style->font_info.size * len;
+    uint8_t h = style->font_info.scale_size;
+    if (h == 0 || h == style->font_info.size) h = style->font_info.size;
+    obj->area.h = h + 6;
+    obj->area.w = h * len;
 }
 
 /* global functions / API interface -------------------------------------*/

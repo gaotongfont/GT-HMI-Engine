@@ -1976,7 +1976,9 @@ int32_t gt_font_split_line_str(gt_font_st * fonts, uint32_t max_w, uint32_t spac
     };
 
     if(tmp_font.info.style.reg.italic){
-        max_w -= tmp_font.info.size >> 1;
+        const uint8_t _sc = tmp_font.info.scale_size;
+        const uint8_t _eff = (_sc > 0 && _sc != tmp_font.info.size) ? _sc : tmp_font.info.size;
+        max_w -= _eff >> 1;
     }
 
     *width = 0;

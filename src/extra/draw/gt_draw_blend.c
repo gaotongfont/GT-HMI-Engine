@@ -107,6 +107,7 @@ static inline void _blend_text_gray2(const _blend_text_ctx_st * c) {
                 if ((row + start_count) >= c->offset.x + c->area_intersect.w) break;
                 ch = ((color_src_p[col >> 2] >> (6 - ((col & 0x3)<<1))) & 0x03) * 85;
                 color_src_p += c->dot_byte;
+                if (ch == 0) { ++count; continue; }  /* skip background pixel */
                 tmp = c->opa_full ? ch : (uint16_t)((c->opa_factor * ch) >> 15);
                 if (c->is_bold) {
                     if (start_count == count) {
@@ -131,6 +132,7 @@ static inline void _blend_text_gray2(const _blend_text_ctx_st * c) {
             for (row = c->offset.x; row < c->font_size; row++) {
                 if ((row + start_count) >= c->offset.x + c->area_intersect.w) break;
                 ch = ((color_src_p[row >> 2] >> (6 - ((row & 0x3)<<1))) & 0x03) * 85;
+                if (ch == 0) { ++count; continue; }  /* skip background pixel */
                 tmp = c->opa_full ? ch : (uint16_t)((c->opa_factor * ch) >> 15);
                 if (c->is_bold) {
                     if (start_count == count) {
@@ -168,6 +170,7 @@ static inline void _blend_text_gray4(const _blend_text_ctx_st * c) {
             for (row = c->offset.x; row < c->font_size; row++) {
                 if ((row + start_count) >= c->offset.x + c->area_intersect.w) break;
                 ch = ((color_src_p[col >> 1] >> (4 - ((col & 0x1)<<2))) & 0x0F) * 17;
+                if (ch == 0) { color_src_p += c->dot_byte; ++count; continue; }  /* skip background */
                 tmp = c->opa_full ? ch : (uint16_t)((c->opa_factor * ch) >> 15);
                 if (c->is_bold) {
                     if (start_count == count) {
@@ -193,6 +196,7 @@ static inline void _blend_text_gray4(const _blend_text_ctx_st * c) {
             for (row = c->offset.x; row < c->font_size; row++) {
                 if ((row + start_count) >= c->offset.x + c->area_intersect.w) break;
                 ch = ((color_src_p[row >> 1] >> (4 - ((row & 0x1)<<2))) & 0x0F) * 17;
+                if (ch == 0) { ++count; continue; }  /* skip background */
                 tmp = c->opa_full ? ch : (uint16_t)((c->opa_factor * ch) >> 15);
                 if (c->is_bold) {
                     if (start_count == count) {
@@ -235,6 +239,7 @@ static inline void _blend_text_gray3(const _blend_text_ctx_st * c) {
                 } else {
                     ch = ((((color_src_p[tmp3 >> 3]<<(tmp3 & 0x7))|(color_src_p[(tmp3>>3)+1]>>(8-(tmp3&0x7)))) >> 5) & 0x07) * 255 / 7;
                 }
+                if (ch == 0) { color_src_p += c->dot_byte; ++count; continue; }
                 tmp = c->opa_full ? ch : (uint16_t)((c->opa_factor * ch) >> 15);
                 if (c->is_bold) {
                     if (start_count == count) {
@@ -265,6 +270,7 @@ static inline void _blend_text_gray3(const _blend_text_ctx_st * c) {
                 } else {
                     ch = ((((color_src_p[tmp3 >> 3]<<(tmp3 & 0x7))|(color_src_p[(tmp3>>3)+1]>>(8-(tmp3&0x7)))) >> 5) & 0x07) * 255 / 7;
                 }
+                if (ch == 0) { ++count; tmp3 += 3; continue; }
                 tmp = c->opa_full ? ch : (uint16_t)((c->opa_factor * ch) >> 15);
                 if (c->is_bold) {
                     if (start_count == count) {
