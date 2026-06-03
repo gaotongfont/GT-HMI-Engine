@@ -858,7 +858,7 @@ void gt_calendar_set_font_align(gt_obj_st * obj, gt_align_et align)
     style->font_align = align;
 }
 
-void gt_calendar_set_font_size(gt_obj_st * obj, uint8_t size)
+void gt_calendar_set_font_size(gt_obj_st * obj, gt_font_size_t size)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;

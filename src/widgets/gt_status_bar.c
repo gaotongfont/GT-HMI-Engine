@@ -887,7 +887,7 @@ void gt_status_bar_set_font_cjk(gt_font_cjk_et cjk)
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 #endif
-void gt_status_bar_set_font_size(uint8_t size)
+void gt_status_bar_set_font_size(gt_font_size_t size)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
     gt_obj_type_et type = gt_obj_class_get_type(obj);

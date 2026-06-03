@@ -136,7 +136,7 @@ void gt_keypad_set_key_height_auto_fill(gt_obj_st* keypad, bool auto_fill);
 void gt_keypad_set_key_xy_space(gt_obj_st* keypad, uint8_t x_space, uint8_t y_space);
 
 void gt_keypad_set_font_color(gt_obj_st * keypad, gt_color_t color);
-void gt_keypad_set_font_size(gt_obj_st * keypad, uint8_t size);
+void gt_keypad_set_font_size(gt_obj_st * keypad, gt_font_size_t size);
 void gt_keypad_set_font_gray(gt_obj_st * keypad, uint8_t gray);
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_keypad_set_font_family_cn(gt_obj_st * keypad, gt_family_t family);

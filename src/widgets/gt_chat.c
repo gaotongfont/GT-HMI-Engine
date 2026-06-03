@@ -850,7 +850,7 @@ void gt_chat_set_received_msg_font_color(gt_obj_st * chat, gt_color_t color)
 }
 
 
-void gt_chat_set_font_size(gt_obj_st * chat, uint8_t size)
+void gt_chat_set_font_size(gt_obj_st * chat, gt_font_size_t size)
 {
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
         return ;
@@ -872,7 +872,7 @@ void gt_chat_set_font_gray(gt_obj_st * chat, uint8_t gray)
     _gt_set_msg_param(chat, _SET_MSG_FONT_GRAY);
 }
 
-void gt_chat_set_font_scale_size(gt_obj_st * chat, uint8_t scale_size)
+void gt_chat_set_font_scale_size(gt_obj_st * chat, gt_font_size_t scale_size)
 {
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) {
         return ;

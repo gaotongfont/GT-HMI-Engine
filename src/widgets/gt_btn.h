@@ -133,7 +133,7 @@ char * gt_btn_get_text(gt_obj_st * btn);
  */
 void gt_btn_set_font_color(gt_obj_st * btn, gt_color_t color);
 void gt_btn_set_font_color_pressed(gt_obj_st * btn, gt_color_t color);
-void gt_btn_set_font_size(gt_obj_st * btn, uint8_t size);
+void gt_btn_set_font_size(gt_obj_st * btn, gt_font_size_t size);
 void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray);
 
 /**
@@ -146,7 +146,7 @@ void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray);
  * @param btn        button obj
  * @param scale_size target display size in pixels, 0 = disabled
  */
-void gt_btn_set_font_scale_size(gt_obj_st * btn, uint8_t scale_size);
+void gt_btn_set_font_scale_size(gt_obj_st * btn, gt_font_size_t scale_size);
 
 void gt_btn_set_font_align(gt_obj_st * btn, gt_align_et align);
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))

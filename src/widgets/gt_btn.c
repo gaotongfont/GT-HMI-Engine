@@ -614,7 +614,7 @@ void gt_btn_set_font_color_pressed(gt_obj_st * btn, gt_color_t color)
     gt_event_send(btn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_btn_set_font_size(gt_obj_st * btn, uint8_t size)
+void gt_btn_set_font_size(gt_obj_st * btn, gt_font_size_t size)
 {
     if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
         return ;
@@ -633,7 +633,7 @@ void gt_btn_set_font_gray(gt_obj_st * btn, uint8_t gray)
     style->font_info.gray = gray;
 }
 
-void gt_btn_set_font_scale_size(gt_obj_st * btn, uint8_t scale_size)
+void gt_btn_set_font_scale_size(gt_obj_st * btn, gt_font_size_t scale_size)
 {
     if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
         return ;

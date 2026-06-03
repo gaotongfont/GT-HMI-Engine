@@ -85,7 +85,7 @@ void gt_table_set_font_color(gt_obj_st * table, gt_color_t color);
 
 gt_color_t gt_table_get_font_color(gt_obj_st * table);
 
-void gt_table_set_font_size(gt_obj_st * table, uint8_t size);
+void gt_table_set_font_size(gt_obj_st * table, gt_font_size_t size);
 void gt_table_set_font_gray(gt_obj_st * table, uint8_t gray);
 
 /**
@@ -98,7 +98,7 @@ void gt_table_set_font_gray(gt_obj_st * table, uint8_t gray);
  * @param table      table obj
  * @param scale_size target display size in pixels, 0 = disabled
  */
-void gt_table_set_font_scale_size(gt_obj_st * table, uint8_t scale_size);
+void gt_table_set_font_scale_size(gt_obj_st * table, gt_font_size_t scale_size);
 
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_table_set_font_family_cn(gt_obj_st * table, gt_family_t family);
@@ -115,7 +115,7 @@ void gt_table_set_font_encoding(gt_obj_st * table, gt_encoding_et encoding);
 
 void gt_table_set_font_style(gt_obj_st * table, gt_font_style_et font_style);
 
-uint8_t gt_table_get_font_size(gt_obj_st * table);
+gt_font_size_t gt_table_get_font_size(gt_obj_st * table);
 
 void gt_table_set_font_info(gt_obj_st * table, gt_font_info_st * font_info);
 gt_font_info_st * gt_table_get_font_info(gt_obj_st * table);

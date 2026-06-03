@@ -164,7 +164,7 @@ _update_label_size(gt_obj_st * obj, uint16_t len) {
     if (obj->area.w && obj->area.h) {
         return;
     }
-    uint8_t h = style->font_info.scale_size;
+    gt_font_size_t h = style->font_info.scale_size;
     if (h == 0 || h == style->font_info.size) h = style->font_info.size;
     obj->area.h = h + 6;
     obj->area.w = h * len;
@@ -339,7 +339,7 @@ gt_color_t gt_label_get_font_color(gt_obj_st * label)
     return style->font_color;
 }
 
-void gt_label_set_font_size(gt_obj_st * label, uint8_t size)
+void gt_label_set_font_size(gt_obj_st * label, gt_font_size_t size)
 {
     if (false == gt_obj_is_type(label, OBJ_TYPE)) {
         return ;
@@ -477,7 +477,7 @@ void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style)
     gt_event_send(label, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-uint8_t gt_label_get_font_size(gt_obj_st * label)
+gt_font_size_t gt_label_get_font_size(gt_obj_st * label)
 {
     if (false == gt_obj_is_type(label, OBJ_TYPE)) {
         return 0;
@@ -486,7 +486,7 @@ uint8_t gt_label_get_font_size(gt_obj_st * label)
     return style->font_info.size;
 }
 
-void gt_label_set_font_scale_size(gt_obj_st * label, uint8_t scale_size)
+void gt_label_set_font_scale_size(gt_obj_st * label, gt_font_size_t scale_size)
 {
     if (false == gt_obj_is_type(label, OBJ_TYPE)) {
         return;
@@ -496,7 +496,7 @@ void gt_label_set_font_scale_size(gt_obj_st * label, uint8_t scale_size)
     gt_event_send(label, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
 }
 
-uint8_t gt_label_get_font_scale_size(gt_obj_st * label)
+gt_font_size_t gt_label_get_font_scale_size(gt_obj_st * label)
 {
     if (false == gt_obj_is_type(label, OBJ_TYPE)) {
         return 0;

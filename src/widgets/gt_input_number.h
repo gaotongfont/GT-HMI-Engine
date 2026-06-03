@@ -145,7 +145,7 @@ void gt_input_number_set_display_decimal_length(gt_obj_st * obj, uint8_t length)
 
 void gt_input_number_set_font_color(gt_obj_st * obj, gt_color_t color);
 
-void gt_input_number_set_font_size(gt_obj_st * obj, uint8_t size);
+void gt_input_number_set_font_size(gt_obj_st * obj, gt_font_size_t size);
 
 void gt_input_number_set_font_gray(gt_obj_st * obj, uint8_t gray);
 
@@ -159,7 +159,7 @@ void gt_input_number_set_font_gray(gt_obj_st * obj, uint8_t gray);
  * @param obj        input_number obj
  * @param scale_size target display size in pixels, 0 = disabled
  */
-void gt_input_number_set_font_scale_size(gt_obj_st * obj, uint8_t scale_size);
+void gt_input_number_set_font_scale_size(gt_obj_st * obj, gt_font_size_t scale_size);
 
 void gt_input_number_set_font_align(gt_obj_st * obj, gt_align_et align);
 

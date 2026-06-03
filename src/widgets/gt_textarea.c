@@ -1401,7 +1401,7 @@ void gt_textarea_set_space(gt_obj_st * textarea, uint8_t space_x, uint8_t space_
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_textarea_set_font_size(gt_obj_st * textarea, uint8_t size)
+void gt_textarea_set_font_size(gt_obj_st * textarea, gt_font_size_t size)
 {
     if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
         return ;

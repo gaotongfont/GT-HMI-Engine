@@ -1107,7 +1107,7 @@ void gt_graphs_set_font_color(gt_obj_st * graphs, gt_color_t color)
     gt_event_send(graphs, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_graphs_set_font_size(gt_obj_st * graphs, uint8_t size)
+void gt_graphs_set_font_size(gt_obj_st * graphs, gt_font_size_t size)
 {
     if (false == gt_obj_is_type(graphs, OBJ_TYPE)) {
         return ;
@@ -1223,7 +1223,7 @@ void gt_graphs_set_font_style(gt_obj_st * graphs, gt_font_style_et font_style)
     style->font_info.style.all = font_style;
 }
 
-uint8_t gt_graphs_get_font_size(gt_obj_st * graphs)
+gt_font_size_t gt_graphs_get_font_size(gt_obj_st * graphs)
 {
     if (false == gt_obj_is_type(graphs, OBJ_TYPE)) {
         return 0;

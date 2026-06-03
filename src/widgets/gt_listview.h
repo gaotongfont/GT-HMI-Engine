@@ -506,7 +506,7 @@ uint16_t gt_listview_get_resize_height(gt_obj_st * listview, uint16_t item_count
  * @param listview
  * @param size
  */
-void gt_listview_set_font_size(gt_obj_st * listview, uint8_t size);
+void gt_listview_set_font_size(gt_obj_st * listview, gt_font_size_t size);
 void gt_listview_set_font_gray(gt_obj_st * listview, uint8_t gray);
 void gt_listview_set_font_align(gt_obj_st * listview, gt_align_et align);
 /**

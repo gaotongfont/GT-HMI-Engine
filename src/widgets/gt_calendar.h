@@ -116,7 +116,7 @@ void gt_calendar_set_font_color_to_other_month(gt_obj_st * obj, gt_color_t color
 
 void gt_calendar_set_font_align(gt_obj_st * obj, gt_align_et align);
 void gt_calendar_set_font_color(gt_obj_st * obj, gt_color_t color);
-void gt_calendar_set_font_size(gt_obj_st * obj, uint8_t size);
+void gt_calendar_set_font_size(gt_obj_st * obj, gt_font_size_t size);
 void gt_calendar_set_font_gray(gt_obj_st * obj, uint8_t gray);
 void gt_calendar_set_font_thick_en(gt_obj_st * obj, uint8_t thick);
 void gt_calendar_set_font_thick_cn(gt_obj_st * obj, uint8_t thick);

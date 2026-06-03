@@ -342,7 +342,7 @@ void gt_checkbox_set_font_cjk(gt_obj_st* checkbox, gt_font_cjk_et cjk)
     style->font_info.cjk = cjk;
 }
 #endif
-void gt_checkbox_set_font_size(gt_obj_st * checkbox, uint8_t size)
+void gt_checkbox_set_font_size(gt_obj_st * checkbox, gt_font_size_t size)
 {
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
     style->font_info.size = size;

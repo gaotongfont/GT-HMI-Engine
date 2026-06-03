@@ -438,7 +438,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_quarter_circle_3(_gt_draw_ctx_st * draw_
 }
 
 static uint16_t GT_ATTRIBUTE_RAM_TEXT
-_gt_gray_and_dot_byte_get(uint8_t* gray, uint8_t width, gt_font_st * font, uint8_t ret_style, uint32_t unicode) {
+_gt_gray_and_dot_byte_get(uint8_t* gray, gt_font_size_t width, gt_font_st * font, uint8_t ret_style, uint32_t unicode) {
     uint16_t dot_byte = 0;
     uint8_t font_type = ret_style % 10;
     uint8_t font_gray = (ret_style/10) > 0 ? (ret_style/10) : 1;
@@ -475,15 +475,15 @@ _gt_gray_and_dot_byte_get(uint8_t* gray, uint8_t width, gt_font_st * font, uint8
 }
 
 /** @brief Get effective display font size, taking scale_size into account */
-static GT_ATTRIBUTE_RAM_TEXT inline uint8_t _get_effective_font_size(const gt_font_info_st* font_info) {
-    const uint8_t scale_size = font_info->scale_size;
+static GT_ATTRIBUTE_RAM_TEXT inline gt_font_size_t _get_effective_font_size(const gt_font_info_st* font_info) {
+    const gt_font_size_t scale_size = font_info->scale_size;
     return (scale_size > 0 && scale_size != font_info->size) ? scale_size : font_info->size;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT inline uint8_t _get_style_space_y(const gt_font_info_st* font_info) {
 
     if(font_info->style.reg.underline || font_info->style.reg.strikethrough) {
-        uint8_t eff = _get_effective_font_size(font_info);
+        gt_font_size_t eff = _get_effective_font_size(font_info);
         return (eff >> 4) ? (eff >> 4) : 1;
     }
     return 0;
@@ -492,7 +492,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline uint8_t _get_style_space_y(const gt_font_inf
 static GT_ATTRIBUTE_RAM_TEXT inline uint8_t _get_style_bold_offset_x(const gt_font_info_st* font_info)
 {
     if (!font_info->style.reg.bold) return 0;
-    uint8_t eff = _get_effective_font_size(font_info);
+    gt_font_size_t eff = _get_effective_font_size(font_info);
     if (eff == font_info->size) return 1;
     return (uint8_t)((uint16_t)eff / font_info->size);
 }
@@ -533,7 +533,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _draw_blend_strikethrough(
 
 /** @brief 推进字符 x 坐标到下一个字符位置 */
 static inline void GT_ATTRIBUTE_RAM_TEXT
-_advance_x(gt_size_t * x, uint8_t width, uint8_t space_x, bool align_reverse) {
+_advance_x(gt_size_t * x, gt_font_size_t width, uint8_t space_x, bool align_reverse) {
     if (align_reverse) {
         *x -= space_x;
     } else {
@@ -577,7 +577,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _draw_char_style(
     uint8_t style_space_y, gt_size_t font_disp_h,
     bool has_ul, bool has_st)
 {
-    uint8_t eff_fs = _get_effective_font_size(font_info);
+    gt_font_size_t eff_fs = _get_effective_font_size(font_info);
     if (has_ul && font_disp_h == eff_fs) {
         _draw_blend_underline(draw_ctx, dsc, blend_dsc_style, area_font, font_info, width, style_space_y);
     }
@@ -606,7 +606,7 @@ typedef struct {
  * @param data_len   res 缓冲字节数
  * @return 分配结果，res/mask_line 为 NULL 表示对应分配失败
  */
-static GT_ATTRIBUTE_RAM_TEXT _draw_font_buf_st _draw_font_buf_alloc(uint8_t font_size, uint16_t data_len)
+static GT_ATTRIBUTE_RAM_TEXT _draw_font_buf_st _draw_font_buf_alloc(gt_font_size_t font_size, uint16_t data_len)
 {
     _draw_font_buf_st r = {0};
 #if GT_USE_EXTRA_FULL_FONT_BUFFER
@@ -614,7 +614,7 @@ static GT_ATTRIBUTE_RAM_TEXT _draw_font_buf_st _draw_font_buf_alloc(uint8_t font
     r.is_extend_font_valid = _gt_gc_full_font_buffer_is_valid() && (data_len < gc_font_p->len);
     r.res = r.is_extend_font_valid ? gc_font_p->ptr : gt_mem_malloc(data_len);
 #else
-    r.res = gt_mem_malloc(data_len);
+    r.res = gt_mem_malloc(data_len + 128);
 #endif
     if (NULL == r.res) {
         GT_LOGE(GT_LOG_TAG_GUI, "data malloc is failed!!! size = %d", data_len);
@@ -863,9 +863,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_omit_chars(
     tmp_font->utf8 = omit_info->utf8;
     tmp_font->len = gt_font_one_char_code_len_get((uint8_t*)omit_info->utf8, &uni_or_gbk, tmp_font->info.encoding);
     _gt_font_dot_ret_st dot_ret = gt_font_get_dot(tmp_font, uni_or_gbk);
-    uint8_t width = gt_font_get_one_word_width_by_option(uni_or_gbk, tmp_font, dot_ret.option);
+    gt_font_size_t width = gt_font_get_one_word_width_by_option(uni_or_gbk, tmp_font, dot_ret.option);
     uint8_t font_gray = 1;
-    uint8_t byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type, uni_or_gbk);
+    uint16_t byte_width = _gt_gray_and_dot_byte_get(&font_gray, width, tmp_font, dot_ret.type, uni_or_gbk);
     area_font->w = (byte_width / font_gray) << 3;
     if (tmp_font->info.style.reg.bold) {
         area_font->w += _get_style_bold_offset_x((const gt_font_info_st*)&tmp_font->info);
@@ -908,7 +908,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
     _gt_draw_ctx_st * draw_ctx, gt_draw_blend_dsc_st * blend_dsc,
     uint8_t * mask_line, gt_font_st * tmp_font,
     _gt_font_dot_ret_st dot_ret, gt_area_st * area_font,
-    int8_t offset_y, uint8_t * p_width,
+    int8_t offset_y, gt_font_size_t * p_width,
     uint32_t uni_or_gbk, const gt_attr_font_st * dsc,
     bool apply_height_center)
 {
@@ -929,10 +929,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
         dsc_emoji.raw_img   = &emoji_raw;
         dsc_emoji.limit_area = (gt_area_st*)blend_dsc->view_area;
 
-        uint8_t emoji_h = gt_font_get_one_word_height(uni_or_gbk, tmp_font);
+        gt_font_size_t emoji_h = gt_font_get_one_word_height(uni_or_gbk, tmp_font);
         emoji_area.y += ((tmp_font->info.size - emoji_h) >> 1);
 
-        for (uint8_t i = 0; i < emoji_h; ++i) {
+        for (gt_font_size_t i = 0; i < emoji_h; ++i) {
             int emj_ret = gt_font_get_emoji_dot(uni_or_gbk, dot_ret.option, emoji_raw.img, emoji_raw.alpha, i);
             if (emj_ret <= 0) {
                 break;
@@ -943,15 +943,15 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
         gt_memset(mask_line, 0xFF, tmp_font->info.size << 1);
     } else {
         uint8_t font_gray = 1;
-        const uint8_t info_size = area_font->h; //tmp_font->info.size;
+        const gt_font_size_t info_size = area_font->h; //tmp_font->info.size;
         const gt_font_style_st style_reg = tmp_font->info.style.reg;
-        uint8_t font_height = gt_font_get_one_word_height_by_option(uni_or_gbk, tmp_font, dot_ret.option);
-        uint8_t byte_width = _gt_gray_and_dot_byte_get(&font_gray, *p_width, tmp_font, dot_ret.type, uni_or_gbk);
+        gt_font_size_t font_height = gt_font_get_one_word_height_by_option(uni_or_gbk, tmp_font, dot_ret.option);
+        uint16_t byte_width = _gt_gray_and_dot_byte_get(&font_gray, *p_width, tmp_font, dot_ret.type, uni_or_gbk);
         area_font->w = (byte_width / font_gray) << 3;
 
         /* --- software scaling --- */
-        const uint8_t scale_size = tmp_font->info.scale_size;
-        uint8_t render_size = info_size;
+        const gt_font_size_t scale_size = tmp_font->info.scale_size;
+        gt_font_size_t render_size = info_size;
         uint8_t * scaled_res = NULL;          /* non-NULL: scaled buffer to free after blend */
         uint8_t * font_buf_res_orig = tmp_font->res;  /* original res to restore after blend */
         if (scale_size > 0 && scale_size != info_size) {
@@ -964,8 +964,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
                 area_font->w = (uint16_t)((uint32_t)byte_width * 8u / font_gray);
                 area_font->h = scale_size;
                 /* scale advance width proportionally so cursor advances correctly */
-                *p_width = (uint8_t)((uint32_t)(*p_width) * scale_size / info_size);
-                font_height = (uint8_t)((uint32_t)font_height * scale_size / info_size);
+                *p_width = (gt_font_size_t)((uint32_t)(*p_width) * scale_size / info_size);
+                font_height = (gt_font_size_t)((uint32_t)font_height * scale_size / info_size);
             } else {
                 tmp_font->res = font_buf_res_orig;  /* restore on failure */
             }
@@ -1043,7 +1043,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
         text[tmp++] = (uint16_t)uni_or_gbk;
     }
     uint16_t text_len = tmp;
-    uint8_t width, byte_width, font_gray;
+    gt_font_size_t width; uint16_t byte_width; uint8_t font_gray;
 
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
     uint16_t font_option = tmp_font.info.style_fl;
@@ -1055,7 +1055,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
     _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&tmp_font.info, lan, text_len);
 #endif
 
-    font_buf = (uint8_t * )gt_mem_malloc(font_size_res.font_buff_len);
+    font_buf = (uint8_t * )gt_mem_malloc(font_size_res.font_buff_len + 128);
     if (NULL == font_buf) {
         GT_LOGE(GT_LOG_TAG_GUI, "buf malloc failed, size: %d", font_size_res.font_buff_len);
         goto _buf_handle;
@@ -1090,7 +1090,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
     const int32_t cvt_coords_y_bottom = (int32_t)coords->y + coords->h;
     const int32_t cvt_view_y_bottom   = (int32_t)blend_dsc->view_area->y + blend_dsc->view_area->h;
     const gt_size_t cvt_view_x_right    = blend_dsc->view_area->x + blend_dsc->view_area->w;
-    const uint8_t cvt_font_size = tmp_font.info.size;
+    const gt_font_size_t cvt_font_size = tmp_font.info.size;
     const gt_font_style_st cvt_style_reg = tmp_font.info.style.reg;
     tmp_font.res = &font_buf[font_size_res.font_buff_len - font_size_res.font_per_size];
     while (idx < text_len) {
@@ -2278,7 +2278,7 @@ static void _draw_text_ctx_free(_draw_text_ctx_st * ctx) {
 static _gt_draw_font_res_st _GT_DRAW_ATTRIBUTE_SRAM_TEXT
 draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, gt_area_st const * view) {
     const gt_area_st * coords = &dsc->logical_area;
-    const uint8_t font_size = dsc->font->info.size;
+    const gt_font_size_t font_size = dsc->font->info.size;
     const gt_size_t coords_w = coords->w;
     _gt_draw_font_res_st ret = { .res = GT_RES_OK };
     gt_area_st area_font = {
@@ -2319,7 +2319,7 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
     blend_dsc_style.mask_buf    = mask_line;
 
     uint8_t style_space_y = _get_style_space_y((const gt_font_info_st*)&tmp_font.info);
-    const uint8_t eff_font_size = _get_effective_font_size((const gt_font_info_st*)&tmp_font.info);
+    const gt_font_size_t eff_font_size = _get_effective_font_size((const gt_font_info_st*)&tmp_font.info);
     uint16_t per_line_h = (style_space_y << 1) + eff_font_size + dsc->space_y;
     const bool ml_has_ul = dsc->font->info.style.reg.underline;
     const bool ml_has_st = dsc->font->info.style.reg.strikethrough;
@@ -2491,7 +2491,7 @@ _disp_font:
             tmp_font.utf8 = (char * )&txt_2[idx_2];
             tmp_font.len = gt_font_one_char_code_len_get(&txt_2[idx_2], &uni_or_gbk, tmp_font.info.encoding);
             const bool is_symbol_ml = gt_symbol_is_valid_range(uni_or_gbk);
-            uint8_t width = is_symbol_ml ? tmp_font.info.size
+            gt_font_size_t width = is_symbol_ml ? tmp_font.info.size
                                          : gt_font_get_one_word_width(uni_or_gbk, &tmp_font);
 
             if (align_reverse) {
@@ -2661,8 +2661,8 @@ _omit_get_font_width(gt_font_st * tmp_font) {
 static _gt_draw_font_res_st _GT_DRAW_ATTRIBUTE_SRAM_TEXT
 draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, const gt_area_st * view) {
     gt_area_st * coords = (gt_area_st * )&dsc->logical_area;
-    const uint8_t font_size = dsc->font->info.size;
-    const uint8_t eff_font_size_sl = _get_effective_font_size((const gt_font_info_st*)&dsc->font->info);
+    const gt_font_size_t font_size = dsc->font->info.size;
+    const gt_font_size_t eff_font_size_sl = _get_effective_font_size((const gt_font_info_st*)&dsc->font->info);
     const gt_size_t coords_w = coords->w;
     _gt_draw_font_res_st ret = {
         .res = GT_RES_OK,
@@ -2722,7 +2722,7 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
     bool start_x_flag = dsc->reg.enabled_start;
     bool is_omit_display = false;
     _gt_font_dot_ret_st dot_ret = {0};
-    uint8_t width, byte_width, font_gray;
+    gt_font_size_t width; uint16_t byte_width; uint8_t font_gray;
     const bool align_reverse = _is_align_reverse(dsc->align);
 
 #if _GT_FONT_ENABLE_CONVERTOR

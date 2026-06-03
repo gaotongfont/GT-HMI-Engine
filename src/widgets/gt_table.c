@@ -578,7 +578,7 @@ gt_color_t gt_table_get_font_color(gt_obj_st * table)
     return style->font_info.palette;
 }
 
-void gt_table_set_font_size(gt_obj_st * table, uint8_t size)
+void gt_table_set_font_size(gt_obj_st * table, gt_font_size_t size)
 {
     if (false == gt_obj_is_type(table, OBJ_TYPE)) {
         return ;
@@ -596,7 +596,7 @@ void gt_table_set_font_gray(gt_obj_st * table, uint8_t gray)
     style->font_info.gray = gray;
 }
 
-void gt_table_set_font_scale_size(gt_obj_st * table, uint8_t scale_size)
+void gt_table_set_font_scale_size(gt_obj_st * table, gt_font_size_t scale_size)
 {
     if (false == gt_obj_is_type(table, OBJ_TYPE)) {
         return ;
@@ -698,7 +698,7 @@ void gt_table_set_font_style(gt_obj_st * table, gt_font_style_et font_style)
     gt_event_send(table, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-uint8_t gt_table_get_font_size(gt_obj_st * table)
+gt_font_size_t gt_table_get_font_size(gt_obj_st * table)
 {
     if (false == gt_obj_is_type(table, OBJ_TYPE)) {
         return 0;

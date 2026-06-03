@@ -397,7 +397,7 @@ void gt_toast_close(void)
     gt_obj_set_opa(obj, GT_OPA_0);
 }
 
-void gt_toast_global_set_font_size(uint8_t size)
+void gt_toast_global_set_font_size(gt_font_size_t size)
 {
     _gt_toast_st * style = _toast_create();
     if (false == gt_obj_is_type((gt_obj_st * )style, OBJ_TYPE)) {
@@ -415,7 +415,7 @@ void gt_toast_global_set_font_gray(uint8_t gray)
     gt_label_set_font_gray(style->lab_p, gray);
 }
 
-void gt_toast_global_set_font_scale_size(uint8_t scale_size)
+void gt_toast_global_set_font_scale_size(gt_font_size_t scale_size)
 {
     _gt_toast_st * style = _toast_create();
     if (false == gt_obj_is_type((gt_obj_st * )style, OBJ_TYPE)) {
@@ -539,7 +539,7 @@ void gt_toast_global_set_font_style(gt_font_style_et font_style)
     gt_label_set_font_style(style->lab_p, font_style);
 }
 
-uint8_t gt_toast_global_get_font_size(void)
+gt_font_size_t gt_toast_global_get_font_size(void)
 {
     _gt_toast_st * style = _toast_create();
     if (false == gt_obj_is_type((gt_obj_st * )style, OBJ_TYPE)) {

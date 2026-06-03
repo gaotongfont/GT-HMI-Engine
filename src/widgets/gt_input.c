@@ -835,7 +835,7 @@ void gt_input_set_font_cjk(gt_obj_st* input, gt_font_cjk_et cjk)
 }
 #endif
 
-void gt_input_set_font_size(gt_obj_st * input, uint8_t size)
+void gt_input_set_font_size(gt_obj_st * input, gt_font_size_t size)
 {
     if (false == gt_obj_is_type(input, OBJ_TYPE)) {
         return ;
@@ -852,7 +852,7 @@ void gt_input_set_font_gray(gt_obj_st * input, uint8_t gray)
     style->font_info.gray = gray;
 }
 
-void gt_input_set_font_scale_size(gt_obj_st * input, uint8_t scale_size)
+void gt_input_set_font_scale_size(gt_obj_st * input, gt_font_size_t scale_size)
 {
     if (false == gt_obj_is_type(input, OBJ_TYPE)) {
         return ;

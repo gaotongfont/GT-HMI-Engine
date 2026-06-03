@@ -326,7 +326,7 @@ void gt_radio_set_font_color(gt_obj_st * radio, gt_color_t color)
     gt_event_send(radio, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_radio_set_font_size(gt_obj_st * radio, uint8_t size)
+void gt_radio_set_font_size(gt_obj_st * radio, gt_font_size_t size)
 {
     if (false == gt_obj_is_type(radio, OBJ_TYPE)) {
         return ;

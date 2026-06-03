@@ -557,7 +557,7 @@ void gt_dialog_set_title_font_color(gt_obj_st * dialog, gt_color_t color)
     gt_label_set_font_color(style->title, color);
 }
 
-void gt_dialog_set_title_font_size(gt_obj_st * dialog, uint8_t size)
+void gt_dialog_set_title_font_size(gt_obj_st * dialog, gt_font_size_t size)
 {
     if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;
@@ -691,7 +691,7 @@ void gt_dialog_set_content_font_color(gt_obj_st * dialog, gt_color_t color)
     gt_label_set_font_color(style->content, color);
 }
 
-void gt_dialog_set_content_font_size(gt_obj_st * dialog, uint8_t size)
+void gt_dialog_set_content_font_size(gt_obj_st * dialog, gt_font_size_t size)
 {
     if (false == gt_obj_is_type(dialog, OBJ_TYPE)) {
         return ;

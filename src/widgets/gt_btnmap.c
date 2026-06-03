@@ -553,7 +553,7 @@ void gt_btnmap_set_font_color(gt_obj_st * btnmap, gt_color_t color)
     gt_event_send(btnmap, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
-void gt_btnmap_set_font_size(gt_obj_st * btnmap, uint8_t size)
+void gt_btnmap_set_font_size(gt_obj_st * btnmap, gt_font_size_t size)
 {
     if (false == gt_obj_is_type(btnmap, OBJ_TYPE)) {
         return;

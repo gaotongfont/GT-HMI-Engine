@@ -178,7 +178,7 @@ void gt_status_bar_set_font_family_numb(gt_family_t family);
 void gt_status_bar_set_font_family(gt_family_t family);
 void gt_status_bar_set_font_cjk(gt_font_cjk_et cjk);
 #endif
-void gt_status_bar_set_font_size(uint8_t size);
+void gt_status_bar_set_font_size(gt_font_size_t size);
 void gt_status_bar_set_font_gray(uint8_t gray);
 void gt_status_bar_set_font_color(gt_color_t color);
 void gt_status_bar_set_font_thick_cn(uint8_t thick);

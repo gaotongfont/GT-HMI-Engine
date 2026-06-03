@@ -43,6 +43,23 @@ typedef enum {
     extern unsigned char GT_Get_Font_Type(unsigned int style);
 #endif
 
+#ifndef GT_MAX_FONT_SIZE
+    #define GT_MAX_FONT_SIZE    192
+#endif
+
+/**
+ * @brief Font size type - automatically widens when GT_MAX_FONT_SIZE >= 256.
+ *        uint8_t for small fonts (default), uint16_t for large fonts.
+ */
+#ifndef GT_FONT_SIZE_T_DEFINED
+#define GT_FONT_SIZE_T_DEFINED
+#if GT_MAX_FONT_SIZE < 256
+    typedef uint8_t  gt_font_size_t;
+#else
+    typedef uint16_t gt_font_size_t;
+#endif
+#endif /* GT_FONT_SIZE_T_DEFINED */
+
 /* define ---------------------------------------------------------------*/
 #ifndef _GT_FONT_ENABLE_CONVERTOR
     /**
@@ -113,9 +130,9 @@ typedef struct _gt_font_info_s {
     uint16_t option;      ///< set: font style
     uint8_t cjk;        ///< set: font cjk
 #endif
-    uint8_t size;        ///< set: font size
-    uint8_t thick_en;    ///< set: font thick
-    uint8_t thick_cn;    ///< set: font thick
+    gt_font_size_t size;     ///< set: font size
+    uint16_t thick_en;   ///< set: font thick (uint16 to hold size+6 when size>=250)
+    uint16_t thick_cn;   ///< set: font thick (uint16 to hold size+6 when size>=250)
     uint8_t gray;        ///< set: font gray
     uint8_t encoding;    ///< set: font encoding
     int8_t offset_y;    ///< 0: [default] don't move; < 0: move up; > 0: move down
@@ -125,7 +142,7 @@ typedef struct _gt_font_info_s {
      *        0 or equal to size: no scaling (zero overhead).
      *        Otherwise: bilinear scale from size to scale_size (gray=1 uses nearest-neighbor).
      */
-    uint8_t scale_size;
+    gt_font_size_t scale_size;
 
     /* font style */
     union {
@@ -392,19 +409,19 @@ int gt_font_get_emoji_dot(uint32_t unicode, uint16_t option, uint8_t *data, uint
  *
  * @param uni_or_gbk The unicode or gbk encoding of the character
  * @param font string msg
- * @return uint8_t The width of the character
+ * @return uint16_t The width of the character
  */
-uint8_t gt_font_get_one_word_width(uint32_t uni_or_gbk, gt_font_st * font);
-uint8_t gt_font_get_one_word_width_by_option(uint32_t uni_or_gbk, gt_font_st * font, uint16_t option);
+gt_font_size_t gt_font_get_one_word_width(uint32_t uni_or_gbk, gt_font_st * font);
+gt_font_size_t gt_font_get_one_word_width_by_option(uint32_t uni_or_gbk, gt_font_st * font, uint16_t option);
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, uint8_t font_style, uint8_t langue, uint32_t text_len);
 #else
 _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, uint8_t langue, uint32_t text_len);
 #endif
 
-uint8_t gt_font_get_one_word_height(uint32_t uni_or_gbk, gt_font_st * font);
-uint8_t gt_font_get_one_word_height_by_option(uint32_t uni_or_gbk, gt_font_st * font, uint16_t option);
-uint8_t gt_font_get_one_word_dot_width(uint32_t uni_or_gbk, gt_font_st * font);
+gt_font_size_t gt_font_get_one_word_height(uint32_t uni_or_gbk, gt_font_st * font);
+gt_font_size_t gt_font_get_one_word_height_by_option(uint32_t uni_or_gbk, gt_font_st * font, uint16_t option);
+gt_font_size_t gt_font_get_one_word_dot_width(uint32_t uni_or_gbk, gt_font_st * font);
 
 gt_font_metrics_st gt_font_get_metrics(uint32_t uni_or_gbk, gt_font_st * font);
 gt_font_metrics_st gt_font_get_metrics_by_info(uint32_t uni_or_gbk, gt_font_info_st* info);

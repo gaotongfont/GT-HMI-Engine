@@ -24,7 +24,7 @@ typedef struct {
     uint16_t y;
     uint16_t color;
     uint8_t lib_id;
-    uint8_t font_size;
+    gt_font_size_t font_size;
     uint8_t string_code[16];
 }gt_rtc_param_st;
 

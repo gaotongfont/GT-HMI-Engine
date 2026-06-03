@@ -205,7 +205,7 @@ void gt_select_set_font_color(gt_obj_st * select, gt_color_t color)
     gt_listview_set_font_color(style->lv_p, color);
 }
 
-void gt_select_set_font_size(gt_obj_st * select, uint8_t size)
+void gt_select_set_font_size(gt_obj_st * select, gt_font_size_t size)
 {
     if (false == gt_obj_is_type(select, OBJ_TYPE)) {
         return ;

@@ -85,7 +85,7 @@ bool gt_toast_is_showing(void);
 void gt_toast_close(void);
 
 
-void gt_toast_global_set_font_size(uint8_t size);
+void gt_toast_global_set_font_size(gt_font_size_t size);
 void gt_toast_global_set_font_gray(uint8_t gray);
 
 /**
@@ -97,7 +97,7 @@ void gt_toast_global_set_font_gray(uint8_t gray);
  *
  * @param scale_size target display size in pixels, 0 = disabled
  */
-void gt_toast_global_set_font_scale_size(uint8_t scale_size);
+void gt_toast_global_set_font_scale_size(gt_font_size_t scale_size);
 
 void gt_toast_set_indent(uint16_t indent);
 void gt_toast_global_set_font_align(gt_align_et align);
@@ -118,7 +118,7 @@ void gt_toast_global_set_space(uint8_t space_x, uint8_t space_y);
 
 void gt_toast_global_set_font_style(gt_font_style_et font_style);
 
-uint8_t gt_toast_global_get_font_size(void);
+gt_font_size_t gt_toast_global_get_font_size(void);
 
 
 

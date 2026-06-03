@@ -857,7 +857,7 @@ void gt_roller_set_font_color(gt_obj_st * obj, gt_color_t color)
     gt_label_set_font_color(style->text, color);
 }
 
-void gt_roller_set_font_size(gt_obj_st * obj, uint8_t size)
+void gt_roller_set_font_size(gt_obj_st * obj, gt_font_size_t size)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;

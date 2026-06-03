@@ -67,7 +67,7 @@ void gt_checkbox_set_font_family_numb(gt_obj_st * checkbox, gt_family_t family);
 void gt_checkbox_set_font_family(gt_obj_st * checkbox, gt_family_t family);
 void gt_checkbox_set_font_cjk(gt_obj_st* checkbox, gt_font_cjk_et cjk);
 #endif
-void gt_checkbox_set_font_size(gt_obj_st * checkbox, uint8_t size);
+void gt_checkbox_set_font_size(gt_obj_st * checkbox, gt_font_size_t size);
 void gt_checkbox_set_font_gray(gt_obj_st * checkbox, uint8_t gray);
 void gt_checkbox_set_font_thick_en(gt_obj_st * checkbox, uint8_t thick);
 void gt_checkbox_set_font_thick_cn(gt_obj_st * checkbox, uint8_t thick);

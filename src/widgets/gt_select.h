@@ -73,7 +73,7 @@ void gt_select_set_placeholder(gt_obj_st * obj, const char * placeholder);
 
 
 void gt_select_set_font_color(gt_obj_st * select, gt_color_t color);
-void gt_select_set_font_size(gt_obj_st * select, uint8_t size);
+void gt_select_set_font_size(gt_obj_st * select, gt_font_size_t size);
 void gt_select_set_font_gray(gt_obj_st * select, uint8_t gray);
 void gt_select_set_font_align(gt_obj_st * select, gt_align_et align);
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))

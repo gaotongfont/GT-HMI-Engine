@@ -495,7 +495,7 @@ static GT_ATTRIBUTE_RAM_TEXT bool _gt_font_latin_check(uint32_t unicode) {
  * @param font_size font size
  * @return uint8_t the latin unicode font width
  */
-static GT_ATTRIBUTE_RAM_TEXT uint8_t _gt_font_latin_get_width(uint32_t unicode, uint8_t font_size) {
+static GT_ATTRIBUTE_RAM_TEXT uint8_t _gt_font_latin_get_width(uint32_t unicode, gt_font_size_t font_size) {
     uint16_t len = (sizeof(_latin_encoding_range) / sizeof(_latin_encoding_range[0])) >> 1;
     uint32_t idx = _get_idx(_latin_encoding_range, len, unicode);
 
@@ -1529,7 +1529,7 @@ uint16_t gt_font_get_single_line_width(gt_font_info_st * info, const char * cons
  * @brief 已知 font_option 时直接计算字符宽度，跳过 _get_font_option 查表
  *        供 gt_draw.c 在 gt_font_get_dot 之后调用，避免重复查表
  */
-GT_ATTRIBUTE_RAM_TEXT uint8_t gt_font_get_one_word_width_by_option(
+GT_ATTRIBUTE_RAM_TEXT gt_font_size_t gt_font_get_one_word_width_by_option(
     uint32_t uni_or_gbk, gt_font_st * font, uint16_t option)
 {
     if (0x20 == uni_or_gbk) {
@@ -1560,7 +1560,7 @@ GT_ATTRIBUTE_RAM_TEXT uint8_t gt_font_get_one_word_width_by_option(
 #endif
 }
 
-uint8_t gt_font_get_one_word_width(uint32_t uni_or_gbk, gt_font_st * font)
+gt_font_size_t gt_font_get_one_word_width(uint32_t uni_or_gbk, gt_font_st * font)
 {
 #if GT_CFG_ENABLE_ZK_FONT == 1
     return gt_font_get_one_word_width_by_option(uni_or_gbk, font, _get_font_option(font, uni_or_gbk));
@@ -1573,7 +1573,7 @@ uint8_t gt_font_get_one_word_width(uint32_t uni_or_gbk, gt_font_st * font)
  * @brief 已知 font_option 时直接获取字符高度，跳过 _get_font_option 查表
  *        供 _draw_one_char_glyph 在 gt_font_get_dot 之后调用，避免重复查表
  */
-GT_ATTRIBUTE_RAM_TEXT uint8_t gt_font_get_one_word_height_by_option(
+GT_ATTRIBUTE_RAM_TEXT gt_font_size_t gt_font_get_one_word_height_by_option(
     uint32_t uni_or_gbk, gt_font_st * font, uint16_t option)
 {
     if (gt_symbol_is_valid_range(uni_or_gbk)) {
@@ -1588,14 +1588,14 @@ GT_ATTRIBUTE_RAM_TEXT uint8_t gt_font_get_one_word_height_by_option(
         }
     }
 #endif
-    uint8_t h = GT_Get_Font_Height(uni_or_gbk, option, font->info.size, font->info.gray);
+    gt_font_size_t h = GT_Get_Font_Height(uni_or_gbk, option, font->info.size, font->info.gray);
     return h ? h : font->info.size;
 #else
     return font->info.size;
 #endif
 }
 
-uint8_t gt_font_get_one_word_height(uint32_t uni_or_gbk, gt_font_st * font)
+gt_font_size_t gt_font_get_one_word_height(uint32_t uni_or_gbk, gt_font_st * font)
 {
 #if GT_CFG_ENABLE_ZK_FONT == 1
     return gt_font_get_one_word_height_by_option(uni_or_gbk, font, _get_font_option(font, uni_or_gbk));
@@ -1604,9 +1604,9 @@ uint8_t gt_font_get_one_word_height(uint32_t uni_or_gbk, gt_font_st * font)
 #endif
 }
 
-uint8_t gt_font_get_one_word_dot_width(uint32_t uni_or_gbk, gt_font_st * font)
+gt_font_size_t gt_font_get_one_word_dot_width(uint32_t uni_or_gbk, gt_font_st * font)
 {
-    uint8_t dot_w = 0;
+    gt_font_size_t dot_w = 0;
 #if defined(_GT_GET_FONT_DOT_WIDTH_ENABLE) && (_GT_GET_FONT_DOT_WIDTH_ENABLE == 1) && (GT_CFG_ENABLE_ZK_FONT == 1)
     uint16_t option = _get_font_option(font, uni_or_gbk);
 
@@ -1976,8 +1976,8 @@ int32_t gt_font_split_line_str(gt_font_st * fonts, uint32_t max_w, uint32_t spac
     };
 
     if(tmp_font.info.style.reg.italic){
-        const uint8_t _sc = tmp_font.info.scale_size;
-        const uint8_t _eff = (_sc > 0 && _sc != tmp_font.info.size) ? _sc : tmp_font.info.size;
+        const gt_font_size_t _sc = tmp_font.info.scale_size;
+        const gt_font_size_t _eff = (_sc > 0 && _sc != tmp_font.info.size) ? _sc : tmp_font.info.size;
         max_w -= _eff >> 1;
     }
 

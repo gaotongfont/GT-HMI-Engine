@@ -2181,7 +2181,7 @@ uint16_t gt_listview_get_resize_height(gt_obj_st * listview, uint16_t item_count
         ((item_count - 1) * (style->item_space.y + style->septal_line_info.size.y));
 }
 
-void gt_listview_set_font_size(gt_obj_st * listview, uint8_t size)
+void gt_listview_set_font_size(gt_obj_st * listview, gt_font_size_t size)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return;

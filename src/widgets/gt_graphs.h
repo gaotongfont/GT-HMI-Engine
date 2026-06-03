@@ -248,7 +248,7 @@ bool gt_graphs_is_show_point_value(gt_obj_st * obj, uint16_t series_index);
  */
 void gt_graphs_set_font_color(gt_obj_st * graphs, gt_color_t color);
 
-void gt_graphs_set_font_size(gt_obj_st * graphs, uint8_t size);
+void gt_graphs_set_font_size(gt_obj_st * graphs, gt_font_size_t size);
 void gt_graphs_set_font_gray(gt_obj_st * graphs, uint8_t gray);
 void gt_graphs_set_font_align(gt_obj_st * graphs, gt_align_et align);
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
@@ -265,7 +265,7 @@ void gt_graphs_set_font_thick_cn(gt_obj_st * graphs, uint8_t thick);
 void gt_graphs_set_font_encoding(gt_obj_st * graphs, gt_encoding_et encoding);
 void gt_graphs_set_font_style(gt_obj_st * graphs, gt_font_style_et font_style);
 
-uint8_t gt_graphs_get_font_size(gt_obj_st * graphs);
+gt_font_size_t gt_graphs_get_font_size(gt_obj_st * graphs);
 
 #endif  /** GT_CFG_ENABLE_GRAPHS */
 

@@ -533,7 +533,7 @@ void gt_lrc_set_font_color(gt_obj_st* obj, gt_color_t color)
 }
 
 GT_ATTRIBUTE_RAM_TEXT
-void gt_lrc_set_font_size(gt_obj_st * obj, uint8_t size)
+void gt_lrc_set_font_size(gt_obj_st * obj, gt_font_size_t size)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;
@@ -559,7 +559,7 @@ void gt_lrc_set_font_gray(gt_obj_st * obj, uint8_t gray)
 }
 
 GT_ATTRIBUTE_RAM_TEXT
-void gt_lrc_set_font_scale_size(gt_obj_st * obj, uint8_t scale_size)
+void gt_lrc_set_font_scale_size(gt_obj_st * obj, gt_font_size_t scale_size)
 {
     if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return ;

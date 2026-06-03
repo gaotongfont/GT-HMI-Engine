@@ -1063,7 +1063,7 @@ void gt_keypad_set_font_color(gt_obj_st * keypad, gt_color_t color)
     _gt_keypad_st * style = (_gt_keypad_st * )keypad;
     gt_btnmap_set_font_color(style->btnmap, color);
 }
-void gt_keypad_set_font_size(gt_obj_st * keypad, uint8_t size)
+void gt_keypad_set_font_size(gt_obj_st * keypad, gt_font_size_t size)
 {
     if (false == gt_obj_is_type(keypad, OBJ_TYPE)) {
         return;

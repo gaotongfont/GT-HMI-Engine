@@ -99,7 +99,7 @@ void gt_label_set_font_color(gt_obj_st * label, gt_color_t color);
 
 gt_color_t gt_label_get_font_color(gt_obj_st * label);
 
-void gt_label_set_font_size(gt_obj_st * label, uint8_t size);
+void gt_label_set_font_size(gt_obj_st * label, gt_font_size_t size);
 void gt_label_set_font_gray(gt_obj_st * label, uint8_t gray);
 void gt_label_set_indent(gt_obj_st * label, uint16_t indent);
 void gt_label_set_font_align(gt_obj_st * label, gt_align_et align);
@@ -120,7 +120,7 @@ void gt_label_set_space(gt_obj_st * label, uint8_t space_x, uint8_t space_y);
 
 void gt_label_set_font_style(gt_obj_st * label, gt_font_style_et font_style);
 
-uint8_t gt_label_get_font_size(gt_obj_st * label);
+gt_font_size_t gt_label_get_font_size(gt_obj_st * label);
 
 /**
  * @brief Set software scale target size for font rendering.
@@ -132,8 +132,8 @@ uint8_t gt_label_get_font_size(gt_obj_st * label);
  * @param label      label obj
  * @param scale_size target display size in pixels, 0 = disabled
  */
-void gt_label_set_font_scale_size(gt_obj_st * label, uint8_t scale_size);
-uint8_t gt_label_get_font_scale_size(gt_obj_st * label);
+void gt_label_set_font_scale_size(gt_obj_st * label, gt_font_size_t scale_size);
+gt_font_size_t gt_label_get_font_scale_size(gt_obj_st * label);
 
 uint8_t gt_label_get_space_x(gt_obj_st * label);
 uint8_t gt_label_get_space_y(gt_obj_st * label);

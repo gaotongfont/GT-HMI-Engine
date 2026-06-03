@@ -285,7 +285,7 @@ void gt_clock_stop(gt_obj_st * obj);
 void gt_clock_toggle(gt_obj_st * obj);
 
 void gt_clock_set_font_color(gt_obj_st * obj, gt_color_t color);
-void gt_clock_set_font_size(gt_obj_st * obj, uint8_t size);
+void gt_clock_set_font_size(gt_obj_st * obj, gt_font_size_t size);
 void gt_clock_set_font_gray(gt_obj_st * obj, uint8_t gray);
 void gt_clock_set_font_align(gt_obj_st * obj, gt_align_et align);
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))

@@ -50,7 +50,7 @@ typedef struct gt_chat_item_cb_s
     void (*set_color_border_cb)(gt_obj_st * , gt_color_t);
     void (*set_border_width_cb)(gt_obj_st * , uint8_t );
     void (*set_font_color_cb)(gt_obj_st * , gt_color_t );
-    void (*set_font_size_cb)(gt_obj_st * , uint8_t );
+    void (*set_font_size_cb)(gt_obj_st * , gt_font_size_t);
     void (*set_font_gray_cb)(gt_obj_st * , uint8_t );
     void (*set_font_align_cb)(gt_obj_st * , gt_align_et );
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
@@ -189,7 +189,7 @@ void gt_chat_set_received_msg_border_width(gt_obj_st * chat, uint8_t width);
 void gt_chat_set_send_msg_font_color(gt_obj_st * chat, gt_color_t color);
 void gt_chat_set_received_msg_font_color(gt_obj_st * chat, gt_color_t color);
 
-void gt_chat_set_font_size(gt_obj_st * chat, uint8_t size);
+void gt_chat_set_font_size(gt_obj_st * chat, gt_font_size_t size);
 void gt_chat_set_font_gray(gt_obj_st * chat, uint8_t gray);
 
 /**
@@ -202,7 +202,7 @@ void gt_chat_set_font_gray(gt_obj_st * chat, uint8_t gray);
  * @param chat       chat obj
  * @param scale_size target display size in pixels, 0 = disabled
  */
-void gt_chat_set_font_scale_size(gt_obj_st * chat, uint8_t scale_size);
+void gt_chat_set_font_scale_size(gt_obj_st * chat, gt_font_size_t scale_size);
 
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_chat_set_font_family_cn(gt_obj_st * chat, gt_family_t font_family_cn);

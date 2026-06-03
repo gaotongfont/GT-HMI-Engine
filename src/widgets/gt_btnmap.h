@@ -75,7 +75,7 @@ void gt_btnmap_set_color_background(gt_obj_st * btnmap, gt_color_t color);
 void gt_btnmap_set_border_width_and_color(gt_obj_st * btnmap, gt_size_t width, gt_color_t color);
 
 void gt_btnmap_set_font_color(gt_obj_st * btnmap, gt_color_t color);
-void gt_btnmap_set_font_size(gt_obj_st * btnmap, uint8_t size);
+void gt_btnmap_set_font_size(gt_obj_st * btnmap, gt_font_size_t size);
 void gt_btnmap_set_font_gray(gt_obj_st * btnmap, uint8_t gray);
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
 void gt_btnmap_set_font_family_cn(gt_obj_st * btnmap, gt_family_t family);
