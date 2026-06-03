@@ -513,52 +513,52 @@ gt_obj_st * gt_examples_label(void)
 
     /* ---- gray=1 + 笔画粗细控制 ---- */
 
-    /* 36. family_vec gray=1 24pt thick_en=0 thick_cn=0 (最细) */
+    /* 36. family_vec gray=1 24pt thick_en=16 thick_cn=16 (最细) */
     gt_obj_st * label_vec_g1_thin = gt_label_create(screen);
     gt_obj_set_pos(label_vec_g1_thin, 0, y_pos);
     gt_obj_set_size(label_vec_g1_thin, 780, 34);
     gt_label_set_font_family(label_vec_g1_thin, family_vec);
     gt_label_set_font_size(label_vec_g1_thin, 24);
     gt_label_set_font_gray(label_vec_g1_thin, 1);
-    gt_label_set_font_thick_en(label_vec_g1_thin, 0);
-    gt_label_set_font_thick_cn(label_vec_g1_thin, 0);
-    gt_label_set_text(label_vec_g1_thin, "vec-gray1 thick=0 最细 ABC123 中文黑体");
+    gt_label_set_font_thick_en(label_vec_g1_thin, 16);
+    gt_label_set_font_thick_cn(label_vec_g1_thin, 16);
+    gt_label_set_text(label_vec_g1_thin, "vec-gray1 thick=16 最细 ABC123 中文黑体");
     y_pos += 44;
 
-    /* 37. family_vec gray=1 24pt thick_en=1 thick_cn=1 (默认粗细) */
+    /* 37. family_vec gray=1 24pt thick_en=24 thick_cn=24 (默认粗细) */
     gt_obj_st * label_vec_g1_normal = gt_label_create(screen);
     gt_obj_set_pos(label_vec_g1_normal, 0, y_pos);
     gt_obj_set_size(label_vec_g1_normal, 780, 30);
     gt_label_set_font_family(label_vec_g1_normal, family_vec);
     gt_label_set_font_size(label_vec_g1_normal, 24);
     gt_label_set_font_gray(label_vec_g1_normal, 1);
-    gt_label_set_font_thick_en(label_vec_g1_normal, 1);
-    gt_label_set_font_thick_cn(label_vec_g1_normal, 1);
-    gt_label_set_text(label_vec_g1_normal, "vec-gray1 thick=1 默认粗细 ABC123 中文黑体");
+    gt_label_set_font_thick_en(label_vec_g1_normal, 24);
+    gt_label_set_font_thick_cn(label_vec_g1_normal, 24);
+    gt_label_set_text(label_vec_g1_normal, "vec-gray1 thick=24 默认粗细 ABC123 中文黑体");
     y_pos += 40;
 
-    /* 38. family_vec gray=1 24pt thick_en=2 thick_cn=2 (加粗) */
+    /* 38. family_vec gray=1 24pt thick_en=32 thick_cn=32 (加粗) */
     gt_obj_st * label_vec_g1_thick = gt_label_create(screen);
     gt_obj_set_pos(label_vec_g1_thick, 0, y_pos);
     gt_obj_set_size(label_vec_g1_thick, 780, 30);
     gt_label_set_font_family(label_vec_g1_thick, family_vec);
     gt_label_set_font_size(label_vec_g1_thick, 24);
     gt_label_set_font_gray(label_vec_g1_thick, 1);
-    gt_label_set_font_thick_en(label_vec_g1_thick, 2);
-    gt_label_set_font_thick_cn(label_vec_g1_thick, 2);
-    gt_label_set_text(label_vec_g1_thick, "vec-gray1 thick=2 加粗 ABC123 中文黑体");
+    gt_label_set_font_thick_en(label_vec_g1_thick, 32);
+    gt_label_set_font_thick_cn(label_vec_g1_thick, 32);
+    gt_label_set_text(label_vec_g1_thick, "vec-gray1 thick=32 加粗 ABC123 中文黑体");
     y_pos += 40;
 
-    /* 39. family_vec gray=1 24pt thick_en=3 thick_cn=3 (更粗) */
+    /* 39. family_vec gray=1 24pt thick_en=48 thick_cn=48 (更粗) */
     gt_obj_st * label_vec_g1_bold = gt_label_create(screen);
     gt_obj_set_pos(label_vec_g1_bold, 0, y_pos);
     gt_obj_set_size(label_vec_g1_bold, 780, 30);
     gt_label_set_font_family(label_vec_g1_bold, family_vec);
     gt_label_set_font_size(label_vec_g1_bold, 24);
     gt_label_set_font_gray(label_vec_g1_bold, 1);
-    gt_label_set_font_thick_en(label_vec_g1_bold, 3);
-    gt_label_set_font_thick_cn(label_vec_g1_bold, 3);
-    gt_label_set_text(label_vec_g1_bold, "vec-gray1 thick=3 更粗 ABC123 中文黑体");
+    gt_label_set_font_thick_en(label_vec_g1_bold, 48);
+    gt_label_set_font_thick_cn(label_vec_g1_bold, 48);
+    gt_label_set_text(label_vec_g1_bold, "vec-gray1 thick=48 更粗 ABC123 中文黑体");
     y_pos += 40;
 
     /* ==================================================================== */
@@ -618,6 +618,71 @@ gt_obj_st * gt_examples_label(void)
     gt_label_set_font_scale_size(label_mix32v_up, 48);
     gt_label_set_text(label_mix32v_up, "mix^32v→48 放大1.5x 中文矢量 ABC123");
     y_pos += 68;
+
+    gt_obj_st * label_vec_64 = gt_label_create(screen);
+    gt_obj_set_pos(label_vec_64, 0, y_pos);
+    gt_obj_set_size(label_vec_64, 800, 64 * 3);
+    gt_label_set_font_family(label_vec_64, family_vec);
+    gt_label_set_font_size(label_vec_64, 64);
+    gt_label_set_font_gray(label_vec_64, 1);
+    gt_label_set_text(label_vec_64, "vec 64px ABC123 中文黑体");
+    y_pos += 70;
+
+    #if GT_MAX_FONT_SIZE >= 80
+    gt_obj_st * label_vec_80 = gt_label_create(screen);
+    gt_obj_set_pos(label_vec_80, 0, y_pos);
+    gt_obj_set_size(label_vec_80, 800, 80 * 2);
+    gt_label_set_font_family(label_vec_80, family_vec);
+    gt_label_set_font_size(label_vec_80, 80);
+    gt_label_set_font_gray(label_vec_80, 1);
+    gt_label_set_text(label_vec_80, "vec 80px ABC123 中文黑体");
+    y_pos += 80 * 2;
+    #endif
+
+    #if GT_MAX_FONT_SIZE >= 192
+    gt_obj_st * label_vec_192 = gt_label_create(screen);
+    gt_obj_set_pos(label_vec_192, 0, y_pos);
+    gt_obj_set_size(label_vec_192, 800, 192 * 3);
+    gt_label_set_font_family(label_vec_192, family_vec);
+    gt_label_set_font_size(label_vec_192, 192);
+    gt_label_set_font_gray(label_vec_192, 1);
+    gt_label_set_text(label_vec_192, "vec 192px ABC123 中文黑体");
+    y_pos += 192 * 3 + 50;
+    #endif
+
+    #if GT_MAX_FONT_SIZE >= 256
+    gt_obj_st * label_vec_256 = gt_label_create(screen);
+    gt_obj_set_pos(label_vec_256, 0, y_pos);
+    gt_obj_set_size(label_vec_256, 800, 256 * 5);
+    gt_label_set_font_family(label_vec_256, family_vec);
+    gt_label_set_font_size(label_vec_256, 256);
+    gt_label_set_font_gray(label_vec_256, 1);
+    gt_label_set_text(label_vec_256, "vec 256px ABC123 中文黑体");
+    y_pos += 256 * 5 + 50;
+    #endif
+
+    #if GT_MAX_FONT_SIZE >= 384
+    gt_obj_st * label_vec_384 = gt_label_create(screen);
+    gt_obj_set_pos(label_vec_384, 0, y_pos);
+    gt_obj_set_size(label_vec_384, 800, 384 * 7);
+    gt_label_set_font_family(label_vec_384, family_vec);
+    gt_label_set_font_size(label_vec_384, 384);
+    gt_label_set_font_gray(label_vec_384, 1);
+    gt_label_set_text(label_vec_384, "vec 384px ABC123 中文黑体");
+    y_pos += 384 * 7 + 50;
+    #endif
+
+    #if GT_MAX_FONT_SIZE >= 512
+    gt_obj_st * label_vec_512 = gt_label_create(screen);
+    gt_obj_set_pos(label_vec_512, 0, y_pos);
+    gt_obj_set_size(label_vec_512, 800, 512 * 8);
+    gt_label_set_font_family(label_vec_512, family_vec);
+    gt_label_set_font_size(label_vec_512, 512);
+    gt_label_set_font_gray(label_vec_512, 1);
+    gt_label_set_text(label_vec_512, "vec 512px ABC123 中文黑体");
+    y_pos += 512 * 8 + 50;
+
+    #endif
 #endif
 
     /* 备注：y_pos 当前累积约 1100+ px，测试内容超出 800×480 屏幕，请上下滚动查看 */
