@@ -1,4 +1,8 @@
-﻿#ifndef _GT_GUI_DRIVER_H_
+﻿#ifdef GT_GUI_DRIVER_EXT_PATH
+    #include GT_GUI_DRIVER_EXT_PATH
+#else
+
+#ifndef _GT_GUI_DRIVER_H_
 #define _GT_GUI_DRIVER_H_
 
 #ifdef __cplusplus
@@ -333,3 +337,5 @@ int GT_Get_Font_Convertor_Data(font_convertor_st *convert , uint32_t pos);
 
 
 /*------------------------------------------------------------------ end of file -----------------------------------------------------------------*/
+
+#endif /* GT_GUI_DRIVER_EXT_PATH */

@@ -6,6 +6,10 @@
  * @date 2024-07-19 10:09:29
  * @copyright Copyright (c) 2014-2024, Company Genitop. Co., Ltd.
  */
+#ifdef GT_FONT_CONFIG_EXT_PATH
+    #include GT_FONT_CONFIG_EXT_PATH
+#else
+
 #ifndef _GT_FONT_CONFIG_H_
 #define _GT_FONT_CONFIG_H_
 
@@ -46,4 +50,4 @@ void gt_font_config_init(void);
 
 /* end of file ----------------------------------------------------------*/
 
-
+#endif /* GT_FONT_CONFIG_EXT_PATH */
