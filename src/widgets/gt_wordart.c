@@ -214,7 +214,7 @@ static void _free_items(gt_obj_st * obj)
 {
     _gt_wor_dart_st * style = (_gt_wor_dart_st * )obj;
     if(NULL != style->items){
-        for(int32_t i = style->item_number; i >= 0; i--) {
+        for(int32_t i = style->item_number - 1; i >= 0; i--) {
             if(NULL == style->items[i].img){
                 continue;
             }
