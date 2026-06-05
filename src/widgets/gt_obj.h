@@ -55,10 +55,11 @@ typedef enum {
 }gt_disabled_et;
 
 typedef enum {
-    GT_SCROLL_DISABLE    = 0,
-    GT_SCROLL_HORIZONTAL = 1,
-    GT_SCROLL_VERTICAL   = 2,
-    GT_SCROLL_ALL        = 3,
+    GT_SCROLL_DISABLE            = 0,
+    GT_SCROLL_HORIZONTAL         = 1,
+    GT_SCROLL_VERTICAL           = 2,
+    GT_SCROLL_ALL                = 3,
+    GT_SCROLL_DISABLE_BUT_NOTIFY = 4,   /**< Disable physical scrolling but still receive GT_EVENT_TYPE_INPUT_SCROLL events */
 }gt_scroll_dir_et;
 
 typedef enum {
@@ -157,7 +158,7 @@ typedef struct gt_obj_s {
     uint32_t focus         : 1;     /* obj focus state 0:no focus, 1:focus */
     uint32_t focus_dis     : 1;     /* @ref gt_disabled_et obj focus enable , 0:enable, 1:disable*/
     uint32_t focus_skip    : 1;     /** skip local widget directly to childs widget object */
-    uint32_t scroll_dir    : 2;     /* @see gt_scroll_dir_et [default: GT_SCROLL_ALL] */
+    uint32_t scroll_dir    : 3;     /* @see gt_scroll_dir_et [default: GT_SCROLL_ALL] */
     uint32_t scroll_l_r    : 1;     /* Enabled when GT_SCROLL_HORIZONTAL or GT_SCROLL_ALL @see gt_scroll_dir_et */
     uint32_t scroll_u_d    : 1;     /* Enabled when GT_SCROLL_VERTICAL or GT_SCROLL_ALL @see gt_scroll_dir_et */
     uint32_t scroll_snap_x : 2;     /* Scroll the alignment position @ref gt_scroll_snap_em */

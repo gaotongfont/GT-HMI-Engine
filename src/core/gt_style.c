@@ -914,7 +914,7 @@ void gt_obj_set_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir)
     if (GT_TYPE_UNKNOWN == type) {
         return;
     }
-    if (dir < GT_SCROLL_DISABLE || dir > GT_SCROLL_ALL) {
+    if (dir < GT_SCROLL_DISABLE || dir > GT_SCROLL_DISABLE_BUT_NOTIFY) {
         obj->scroll_dir = GT_SCROLL_ALL;
         return;
     }
