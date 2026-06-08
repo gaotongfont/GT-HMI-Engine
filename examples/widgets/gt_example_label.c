@@ -45,6 +45,7 @@ gt_obj_st * gt_examples_label(void)
 
     uint16_t y_pos = 0;  /* 统一 Y 坐标累加器 */
 
+#if 01
     /* 1. 普通多行文本 */
     gt_obj_st * label = gt_label_create(screen);
     gt_obj_set_pos(label, 0, y_pos);
@@ -312,8 +313,9 @@ gt_obj_st * gt_examples_label(void)
     gt_label_set_font_scale_size(label_gray32_up, 48);
     gt_label_set_text(label_gray32_up, "gray_32→48 放大1.5x ABC123");
     y_pos += 62;
+#endif
 
-#if 01  //FIX Frozen
+#if 01
     /* === family_mix_16_cn_gray_ascii_dot === */
     /* 14. family_mix_16_cn_gray_ascii_dot 原始 16pt */
     gt_obj_st * label_mix16 = gt_label_create(screen);
@@ -340,9 +342,9 @@ gt_obj_st * gt_examples_label(void)
     gt_label_set_font_scale_size(label_mix16_up, 24);
     gt_label_set_text(label_mix16_up, "mix_16→24 放大1.5x 中文灰度+ASCII点阵 ABC123");
     y_pos += 38;
-
 #endif
-#if 01  //FIX Frozen
+
+#if 01
     /* ==================================================================== */
     /* ---- 矢量字体测试（family_vec, size=0, 需 gt_label_set_font_size）---- */
     /* ==================================================================== */
@@ -409,9 +411,9 @@ gt_obj_st * gt_examples_label(void)
     gt_label_set_font_size(label_vec_48, 48);
     gt_label_set_text(label_vec_48, "vec 矢量48pt ABC123 中文黑体矢量");
     y_pos += 64;
-
 #endif
-#if 01  //FIX Frozen
+
+#if 01
     /* ==================================================================== */
     /* ---- 纯矢量无灰度（gray=1, 无抗锯齿, 纯黑白渲染）---- */
     /* ==================================================================== */
@@ -560,7 +562,9 @@ gt_obj_st * gt_examples_label(void)
     gt_label_set_font_thick_cn(label_vec_g1_bold, 48);
     gt_label_set_text(label_vec_g1_bold, "vec-gray1 thick=48 更粗 ABC123 中文黑体");
     y_pos += 40;
+#endif
 
+#if 01
     /* ==================================================================== */
     /* ---- 混合矢量 family（中文矢量 + 外文点阵/灰度）---- */
     /* ==================================================================== */
@@ -618,7 +622,9 @@ gt_obj_st * gt_examples_label(void)
     gt_label_set_font_scale_size(label_mix32v_up, 48);
     gt_label_set_text(label_mix32v_up, "mix^32v→48 放大1.5x 中文矢量 ABC123");
     y_pos += 68;
+#endif
 
+#if 01
     gt_obj_st * label_vec_64 = gt_label_create(screen);
     gt_obj_set_pos(label_vec_64, 0, y_pos);
     gt_obj_set_size(label_vec_64, 800, 64 * 3);
@@ -681,8 +687,8 @@ gt_obj_st * gt_examples_label(void)
     gt_label_set_font_gray(label_vec_512, 1);
     gt_label_set_text(label_vec_512, "vec 512px ABC123 中文黑体");
     y_pos += 512 * 8 + 50;
-
     #endif
+
 #endif
 
     /* 备注：y_pos 当前累积约 1100+ px，测试内容超出 800×480 屏幕，请上下滚动查看 */
