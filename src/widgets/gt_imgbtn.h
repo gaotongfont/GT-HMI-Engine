@@ -203,6 +203,22 @@ bool gt_imgbtn_clear_all_state_item(gt_obj_st * obj);
  */
 int16_t bt_imgbtn_get_state_item_index(gt_obj_st * obj);
 
+/**
+ * @brief Enable opa-only tint mode: ignore image RGB data, blend the specified
+ *        color using the image alpha channel only.
+ *
+ * @param imgbtn  Imgbtn object
+ * @param color   Tint color to apply
+ */
+void gt_imgbtn_set_opa_color(gt_obj_st * imgbtn, gt_color_t color);
+
+/**
+ * @brief Disable opa-only tint mode and restore normal image RGB rendering.
+ *
+ * @param imgbtn  Imgbtn object
+ */
+void gt_imgbtn_clear_opa_color(gt_obj_st * imgbtn);
+
 
 #endif  /** GT_CFG_ENABLE_IMGBTN */
 

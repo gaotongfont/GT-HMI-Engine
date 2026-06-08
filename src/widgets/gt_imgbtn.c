@@ -51,6 +51,8 @@ typedef struct _gt_imgbtn_s {
     gt_point_st prev_size;
 
     _gt_vector_st * imgs;
+    gt_color_t opa_color;           ///< tint color used when use_opa_color is set
+    uint8_t    use_opa_color : 1;   ///< 1 = ignore image RGB, blend opa_color with alpha only
 }_gt_imgbtn_st;
 
 
@@ -114,6 +116,10 @@ static void _imgbtn_init_cb(gt_obj_st * obj) {
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
     dsc.custom_addr = &img->custom_addr;
 #endif
+    if (style->use_opa_color) {
+        dsc.reg.use_opa_color = 1;
+        dsc.fg_color = style->opa_color;
+    }
 
     // TODO pref time
     if (obj->area.w > style->prev_size.x) {
@@ -926,6 +932,36 @@ int16_t bt_imgbtn_get_state_item_index(gt_obj_st * obj)
     }
     _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
     return _gt_vector_get_index(style->imgs);
+}
+
+/**
+ * @brief Enable opa-only tint mode: ignore image RGB data, blend the specified
+ *        color using the image alpha channel only. Calling this triggers a redraw.
+ *
+ * @param imgbtn  Imgbtn object
+ * @param color   Tint color to blend with the image alpha
+ */
+void gt_imgbtn_set_opa_color(gt_obj_st * imgbtn, gt_color_t color)
+{
+    if (false == gt_obj_is_type(imgbtn, OBJ_TYPE)) { return; }
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
+    style->opa_color     = color;
+    style->use_opa_color = 1;
+    gt_event_send(imgbtn, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+/**
+ * @brief Disable opa-only tint mode and restore normal image RGB rendering.
+ *        Calling this triggers a redraw.
+ *
+ * @param imgbtn  Imgbtn object
+ */
+void gt_imgbtn_clear_opa_color(gt_obj_st * imgbtn)
+{
+    if (false == gt_obj_is_type(imgbtn, OBJ_TYPE)) { return; }
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
+    style->use_opa_color = 0;
+    gt_event_send(imgbtn, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 #endif  /** GT_CFG_ENABLE_IMGBTN */
