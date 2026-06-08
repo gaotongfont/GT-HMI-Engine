@@ -451,7 +451,7 @@ gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st * dsc
     }
 
     if (draw_ctx->buf) { fill_cache.color_dst_p = (gt_color_t * )draw_ctx->buf + idx_dst; }
-    if (dsc->dst_buf)  { fill_cache.color_src_p = (gt_color_t * )dsc->dst_buf + idx_src; }
+    if (dsc->dst_buf && !dsc->use_opa_color) { fill_cache.color_src_p = (gt_color_t * )dsc->dst_buf + idx_src; }
     if (dsc->mask_buf) { fill_cache.mask_buf_p = (gt_opa_t * )dsc->mask_buf + idx_src; }
 
     /**

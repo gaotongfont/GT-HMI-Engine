@@ -4040,6 +4040,12 @@ handler_lb:
         .opa = dsc->bg_opa
     };
 
+    /* opa-only color tint: ignore image RGB, use fg_color with alpha channel */
+    if (dsc->reg.use_opa_color) {
+        blend_dsc.use_opa_color = 1;
+        blend_dsc.color_fill = dsc->fg_color;
+    }
+
     gt_size_t mask_id = -1;
     gt_size_t edge_mask_id = -1;
     gt_mask_radius_st r_mask = {0};

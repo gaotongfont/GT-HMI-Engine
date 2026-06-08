@@ -40,6 +40,7 @@ typedef struct _gt_draw_blend_dsc_s {
     gt_area_st * view_area;   /** The area(window) within the control where characters or element can be displayed only */
     gt_color_masking_st * masking;
     gt_opt_t    opa;         /** value of the overall opacity */
+    uint8_t     use_opa_color : 1; /**< Ignore dst_buf RGB, use color_fill as tint color with mask_buf alpha */
 }gt_draw_blend_dsc_st;
 
 typedef struct _gt_draw_blend_fill_cache_s {

@@ -114,7 +114,8 @@ typedef struct _gt_attr_graphs_s {
 typedef struct _gt_attr_rect_reg_s {
     uint8_t is_fill : 1;    ///< fill inside area by bg_color
     uint8_t ignore_img_decoder : 1; ///< Raw file mode ignore image decoder
-    uint8_t reserved : 7;   ///< reserved
+    uint8_t use_opa_color : 1; ///< Use fg_color as tint: ignore image RGB, blend with alpha only
+    uint8_t reserved : 6;   ///< reserved
 }_gt_attr_rect_reg_st;
 
 /**

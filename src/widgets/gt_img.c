@@ -37,7 +37,9 @@ typedef struct _gt_img_s {
     _gt_img_dsc_st raw;     // raw data buffer draw directly
     gt_color_masking_st masking;
     gt_color_t border_color;
+    gt_color_t opa_color;       ///< tint color used when use_opa_color is set
     uint8_t    border_width;
+    uint8_t    use_opa_color : 1; ///< 1 = ignore image RGB, blend opa_color with alpha only
 #if GT_USE_FILE_HEADER
     gt_file_header_param_st fh;
 #endif
@@ -107,6 +109,10 @@ static void _img_init_cb(gt_obj_st * obj) {
         .bg_opa = obj->opa,
         .masking = &style->masking,
     };
+    if (style->use_opa_color) {
+        dsc.reg.use_opa_color = 1;
+        dsc.fg_color = style->opa_color;
+    }
 
 #if GT_USE_FILE_HEADER
     dsc.file_header = gt_file_header_param_check_valid(&style->fh);
@@ -606,6 +612,36 @@ void gt_img_set_border_radius(gt_obj_st * img, uint16_t radius)
 {
     if (false == gt_obj_is_type(img, OBJ_TYPE)) { return; }
     gt_obj_set_radius(img, radius);
+}
+
+/**
+ * @brief Enable opa-only tint mode: ignore image RGB, blend opa_color with
+ *        the image alpha channel only. Calling this triggers a redraw.
+ *
+ * @param img   Image object
+ * @param color Tint color to blend with the image alpha
+ */
+void gt_img_set_opa_color(gt_obj_st * img, gt_color_t color)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) { return; }
+    _gt_img_st * style = (_gt_img_st *)img;
+    style->opa_color     = color;
+    style->use_opa_color = 1;
+    gt_event_send(img, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+/**
+ * @brief Disable opa-only tint mode and restore normal image RGB rendering.
+ *        Calling this triggers a redraw.
+ *
+ * @param img Image object
+ */
+void gt_img_clear_opa_color(gt_obj_st * img)
+{
+    if (false == gt_obj_is_type(img, OBJ_TYPE)) { return; }
+    _gt_img_st * style = (_gt_img_st *)img;
+    style->use_opa_color = 0;
+    gt_event_send(img, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 #endif  /** #if GT_CFG_ENABLE_IMG */

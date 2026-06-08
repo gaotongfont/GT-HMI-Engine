@@ -189,6 +189,22 @@ void gt_img_set_border_color(gt_obj_st * img, gt_color_t color);
  */
 void gt_img_set_border_radius(gt_obj_st * img, uint16_t radius);
 
+/**
+ * @brief Enable opa-only tint mode: ignore image RGB data, blend the specified
+ *        color using the image alpha channel only.
+ *
+ * @param img   Image object
+ * @param color Tint color to apply
+ */
+void gt_img_set_opa_color(gt_obj_st * img, gt_color_t color);
+
+/**
+ * @brief Disable opa-only tint mode and restore normal image RGB rendering.
+ *
+ * @param img Image object
+ */
+void gt_img_clear_opa_color(gt_obj_st * img);
+
 #endif  /** GT_CFG_ENABLE_IMG */
 
 #ifdef __cplusplus
