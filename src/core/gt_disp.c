@@ -1504,6 +1504,7 @@ void gt_disp_stack_load_scr_anim(gt_scr_id_t scr_id, gt_scr_anim_type_et type, u
         .ignore_repeat_screen_id = false,
 #endif
         .force_create_reload = false,
+        .clear_stack_except_home = true,
     };
     gt_disp_stack_load_scr_anim_st(&param);
 }

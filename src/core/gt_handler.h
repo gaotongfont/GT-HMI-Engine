@@ -40,7 +40,7 @@ extern "C" {
     /**
      * @brief 修订号
      */
-    #define GT_HMI_ENGINE_PATCH_VERSION     7
+    #define GT_HMI_ENGINE_PATCH_VERSION     8
 #endif
 
 /* typedef --------------------------------------------------------------*/
