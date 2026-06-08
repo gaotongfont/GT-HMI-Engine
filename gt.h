@@ -21,6 +21,8 @@ extern "C" {
 #include "stdlib.h"
 #include "float.h"
 
+#include "./gt_macros.h"
+
 #include "src/gt_api_mapper.h"
 
 #include "src/gt_conf.h"
