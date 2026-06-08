@@ -110,6 +110,22 @@ void gt_gif_reset(gt_obj_st * obj);
  */
 void gt_gif_set_mode(gt_obj_st * obj, gt_gif_mode_et mode);
 
+/**
+ * @brief Enable opa-only tint mode: ignore image RGB data, blend the specified
+ *        color using the image alpha channel only.
+ *
+ * @param obj   GIF object
+ * @param color Tint color to apply
+ */
+void gt_gif_set_opa_color(gt_obj_st * obj, gt_color_t color);
+
+/**
+ * @brief Disable opa-only tint mode and restore normal image RGB rendering.
+ *
+ * @param obj GIF object
+ */
+void gt_gif_clear_opa_color(gt_obj_st * obj);
+
 #endif  /** GT_CFG_ENABLE_GIF */
 
 #ifdef __cplusplus

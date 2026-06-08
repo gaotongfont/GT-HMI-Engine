@@ -45,8 +45,10 @@ typedef struct _gt_gif_s {
     _gt_timer_st * timer;
     uint32_t last_run;
     _gt_img_dsc_st dsc;
+    gt_color_t opa_color;           ///< tint color used when use_opa_color is set
     uint8_t once : 1;
     uint8_t play_done : 1;
+    uint8_t use_opa_color : 1;      ///< 1 = ignore image RGB, blend opa_color with alpha only
 }_gt_gif_st;
 
 
@@ -86,6 +88,10 @@ static void _init_cb(gt_obj_st * obj) {
             .ignore_img_decoder = true,
         }
     };
+    if (style->use_opa_color) {
+        dsc.reg.use_opa_color = 1;
+        dsc.fg_color = style->opa_color;
+    }
     /* start draw obj */
     draw_bg_img(obj->draw_ctx, &dsc, &obj->area);
 
@@ -469,6 +475,23 @@ void gt_gif_set_mode(gt_obj_st * obj, gt_gif_mode_et mode)
     _gt_gif_st * style = (_gt_gif_st * )obj;
     style->play_done = false;
     style->once = GT_GIF_MODE_REPEAT == mode ? 0 : 1;
+}
+
+void gt_gif_set_opa_color(gt_obj_st * obj, gt_color_t color)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) { return; }
+    _gt_gif_st * style = (_gt_gif_st *)obj;
+    style->opa_color     = color;
+    style->use_opa_color = 1;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_gif_clear_opa_color(gt_obj_st * obj)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) { return; }
+    _gt_gif_st * style = (_gt_gif_st *)obj;
+    style->use_opa_color = 0;
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
 #endif  /** GT_CFG_ENABLE_GIF */
