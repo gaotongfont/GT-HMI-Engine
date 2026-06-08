@@ -359,6 +359,27 @@ gt_obj_st * gt_obj_get_parent(gt_obj_st * obj)
     return obj->parent;
 }
 
+uint16_t gt_obj_get_child_cnt(gt_obj_st * obj)
+{
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return 0;
+    }
+    return obj->cnt_child;
+}
+
+gt_obj_st * gt_obj_get_child_at(gt_obj_st * obj, uint16_t index)
+{
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return NULL;
+    }
+    if (index >= obj->cnt_child) {
+        return NULL;
+    }
+    return obj->child[index];
+}
+
 gt_obj_st * gt_obj_change_parent(gt_obj_st * obj, gt_obj_st * to)
 {
     return _gt_obj_class_change_parent(obj, to);

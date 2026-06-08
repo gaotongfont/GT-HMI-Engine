@@ -249,6 +249,23 @@ gt_obj_st *gt_obj_create(gt_obj_st *parent);
 gt_obj_st * gt_obj_get_parent(gt_obj_st * obj);
 
 /**
+ * @brief Get obj child count
+ *
+ * @param obj
+ * @return uint16_t the count of child
+ */
+uint16_t gt_obj_get_child_cnt(gt_obj_st * obj);
+
+/**
+ * @brief Get the child's object by create array index
+ *
+ * @param obj
+ * @param index >= 0
+ * @return gt_obj_st* NULL is failed
+ */
+gt_obj_st * gt_obj_get_child_at(gt_obj_st * obj, uint16_t index);
+
+/**
  * @brief
  *
  * @param obj
