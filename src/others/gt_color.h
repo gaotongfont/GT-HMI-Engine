@@ -273,6 +273,7 @@ typedef struct gt_color_img_raw_s {
     gt_color_t color;
     uint16_t   width;               /** width of the image */
     uint16_t   height;              /** height of the image */
+    uint16_t fmt : 4;               /** @ref gt_img_color_format_et */
 }gt_color_img_raw_st;
 
 typedef struct gt_color_masking_s {
