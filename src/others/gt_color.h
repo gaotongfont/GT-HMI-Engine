@@ -291,7 +291,7 @@ typedef struct gt_gradient_color_s
 /* macros ---------------------------------------------------------------*/
 
 /* static functions / API inteface-------------------------------------- */
-static inline gt_color_t gt_color_make(uint8_t r, uint8_t g, uint8_t b) {
+static inline GT_EXPORT gt_color_t gt_color_make(uint8_t r, uint8_t g, uint8_t b) {
     return (gt_color_t)GT_COLOR_MAKE(r, g, b);
 }
 
@@ -301,7 +301,7 @@ static inline gt_color_t gt_color_make(uint8_t r, uint8_t g, uint8_t b) {
  * @param c Must be 24bit RGB888
  * @return gt_color_t
  */
-static inline gt_color_t gt_color_hex(uint32_t c) {
+static inline GT_EXPORT gt_color_t gt_color_hex(uint32_t c) {
     return gt_color_make((uint8_t)((c >> 16) & 0xFF), (uint8_t)((c >> 8) & 0xFF), (uint8_t)(c & 0xFF));
 }
 
@@ -311,7 +311,7 @@ static inline gt_color_t gt_color_hex(uint32_t c) {
  * @param hex_val According to the GT_COLOR_DEPTH width
  * @return gt_color_val_t current color depth
  */
-static inline gt_color_t gt_color_set(gt_color_val_t hex_val) {
+static inline GT_EXPORT gt_color_t gt_color_set(gt_color_val_t hex_val) {
     gt_color_t ret = {
 #if GT_COLOR_16_SWAP == 0
         .full = hex_val,
@@ -322,7 +322,7 @@ static inline gt_color_t gt_color_set(gt_color_val_t hex_val) {
     return ret;
 }
 
-static inline uint32_t gt_color_to32(gt_color_t color) {
+static inline GT_EXPORT uint32_t gt_color_to32(gt_color_t color) {
 #if GT_COLOR_DEPTH == 1
     if(color.full == 0)
         return 0xFF000000;
@@ -381,7 +381,7 @@ static inline uint32_t gt_color_to32(gt_color_t color) {
  * @param color a color
  * @return the brightness [0..255]
  */
-static inline uint8_t gt_color_brightness(gt_color_t color)
+static inline GT_EXPORT uint8_t gt_color_brightness(gt_color_t color)
 {
     gt_color32_t c32;
     c32.full        = gt_color_to32(color);
@@ -389,16 +389,16 @@ static inline uint8_t gt_color_brightness(gt_color_t color)
     return (uint8_t)(bright >> 3);
 }
 
-static inline gt_color_t gt_color_white(void) { return gt_color_make(0xff, 0xff, 0xff); }
-static inline gt_color_t gt_color_black(void) { return gt_color_make(0x00, 0x00, 0x00); }
-static inline gt_color_t gt_color_red(void) { return gt_color_make(0xFF, 0x00, 0x00); }
-static inline gt_color_t gt_color_yellow(void) { return gt_color_make(0xFF, 0xFF, 0x00); }
-static inline gt_color_t gt_color_blue(void) { return gt_color_make(0x00, 0x00, 0xFF); }
-static inline gt_color_t gt_color_gray(void) { return gt_color_make(0x80, 0x80, 0x80); }
-static inline gt_color_t gt_color_dark_gray(void) { return gt_color_make(0x40, 0x40, 0x40); }
-static inline gt_color_t gt_color_bright_gray(void) { return gt_color_make(0xc0, 0xc0, 0xc0); }
-static inline gt_color_t gt_color_orange(void) { return gt_color_make(0xFF, 0xA5, 0x00); }
-static inline gt_color_t gt_color_green(void) { return gt_color_make(0x00, 0xFF, 0x00); }
+static inline GT_EXPORT gt_color_t gt_color_white(void) { return gt_color_make(0xff, 0xff, 0xff); }
+static inline GT_EXPORT gt_color_t gt_color_black(void) { return gt_color_make(0x00, 0x00, 0x00); }
+static inline GT_EXPORT gt_color_t gt_color_red(void) { return gt_color_make(0xFF, 0x00, 0x00); }
+static inline GT_EXPORT gt_color_t gt_color_yellow(void) { return gt_color_make(0xFF, 0xFF, 0x00); }
+static inline GT_EXPORT gt_color_t gt_color_blue(void) { return gt_color_make(0x00, 0x00, 0xFF); }
+static inline GT_EXPORT gt_color_t gt_color_gray(void) { return gt_color_make(0x80, 0x80, 0x80); }
+static inline GT_EXPORT gt_color_t gt_color_dark_gray(void) { return gt_color_make(0x40, 0x40, 0x40); }
+static inline GT_EXPORT gt_color_t gt_color_bright_gray(void) { return gt_color_make(0xc0, 0xc0, 0xc0); }
+static inline GT_EXPORT gt_color_t gt_color_orange(void) { return gt_color_make(0xFF, 0xA5, 0x00); }
+static inline GT_EXPORT gt_color_t gt_color_green(void) { return gt_color_make(0x00, 0xFF, 0x00); }
 
 
 /**
@@ -408,7 +408,7 @@ static inline gt_color_t gt_color_green(void) { return gt_color_make(0x00, 0xFF,
  * @param mix The ratio of the colors. 0: full `c2`, 255: full `c1`, 127: half `c1` and half`c2`
  * @return the mixed color
  */
-static inline gt_color_t
+static inline GT_EXPORT gt_color_t
 gt_color_mix(gt_color_t c1, gt_color_t c2, uint8_t mix) {
     gt_color_t ret;
 

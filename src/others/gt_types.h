@@ -39,6 +39,13 @@ extern "C" {
     #define GT_DPH(h)   GT_DPY(h)
 #endif
 
+#ifdef __EMSCRIPTEN__
+    #include <emscripten.h>
+    #define GT_EXPORT EMSCRIPTEN_KEEPALIVE
+#else
+    #define GT_EXPORT
+#endif
+
 // If __UINTPTR_MAX__ or UINTPTR_MAX are available, use them to determine arch size
 #if defined(__UINTPTR_MAX__) && __UINTPTR_MAX__ > 0xFFFFFFFF
 #define GT_ARCH_64
