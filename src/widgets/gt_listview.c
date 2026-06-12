@@ -1240,6 +1240,22 @@ static inline void _set_rect_prop(gt_obj_st * rect, gt_listview_rect_st const * 
 #endif
 
 #if GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH
+static void _switch_pressed_cb(gt_event_st * e) {
+    gt_obj_st * sw = (gt_obj_st * )e->target;
+    gt_obj_st * obj = sw->parent;
+    gt_obj_st * lv = obj->parent;
+    _set_last_active_obj(lv, obj);
+}
+
+static void _switch_released_cb(gt_event_st * e) {
+    gt_obj_st * sw = (gt_obj_st * )e->target;
+    gt_obj_st * obj = sw->parent;
+    gt_obj_st * lv = obj->parent;
+    _set_last_active_obj(lv, obj);
+    _reset_other_active_state(lv);
+    _highlight_set_obj_active_state(lv);
+}
+
 /**
  * @brief Create a switch object
  *
@@ -1252,6 +1268,9 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_item_switch(gt_obj_st * listvie
     gt_obj_st * r = gt_switch_create(obj);
 
     gt_obj_set_inside(r, true);
+    gt_obj_set_bubble_notify(r, true);
+    gt_obj_add_event_cb(r, _switch_pressed_cb, GT_EVENT_TYPE_INPUT_PRESSED, NULL);
+    gt_obj_add_event_cb(r, _switch_released_cb, GT_EVENT_TYPE_INPUT_RELEASED, NULL);
     return r;
 }
 
