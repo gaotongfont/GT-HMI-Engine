@@ -380,8 +380,11 @@ static GT_ATTRIBUTE_RAM_TEXT void _set_last_active_obj(gt_obj_st * listview, gt_
         return;
     }
     if (target->parent != listview) {
-        gt_obj_st * p = target->parent;
-        while (!gt_obj_is_type(p, GT_TYPE_LISTVIEW)) {
+        gt_obj_st * p = target;
+        if (false == gt_obj_is_child(p, listview)) {
+            return;
+        }
+        while (p->parent && !gt_obj_is_type(p->parent, GT_TYPE_LISTVIEW)) {
             p = p->parent;
         }
         style->last_active = p;
