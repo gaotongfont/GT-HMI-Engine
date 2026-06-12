@@ -64,6 +64,7 @@ typedef struct _gt_slider_s {
     uint16_t offset;    /** Offset pixels from the start pixel */
     uint16_t thickness;
     uint16_t tag_size;
+    gt_size_t bar_radius;
     gt_bar_dir_et dir;
 
     uint8_t mode        : 2;    /** @ref gt_slider_mode_et */
@@ -243,13 +244,43 @@ _calc_touch_point_pos(gt_obj_st * obj) {
     point_click.x += scr->area.x;
     point_click.y += scr->area.y;
     if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_L2R ){
-        temp_offset = point_click.x - obj->area.x;
+        if (style->tag_inside) {
+            /* tag_inside: scale full-width click range [0, area.w] to dist range
+             * [0, area.w - tag_eff], then add back tag_eff/2 to compensate the
+             * fixed `offset -= tag_size>>1` correction in _gt_slider_set_offset.
+             * This removes the tag_eff/2 dead-zone on both ends. */
+            uint16_t tag_eff = _gt_slider_get_offset_tag_size(obj);
+            uint16_t max_off = obj->area.w > tag_eff ? (obj->area.w - tag_eff) : 1;
+            temp_offset = (gt_size_t)(point_click.x - obj->area.x) * max_off / obj->area.w + (tag_eff >> 1);
+        } else {
+            temp_offset = point_click.x - obj->area.x;
+        }
     }else if( gt_slider_get_dir(obj) == GT_BAR_DIR_HOR_R2L ){
-        temp_offset = obj->area.w - (point_click.x - obj->area.x);
+        if (style->tag_inside) {
+            uint16_t tag_eff = _gt_slider_get_offset_tag_size(obj);
+            uint16_t max_off = obj->area.w > tag_eff ? (obj->area.w - tag_eff) : 1;
+            gt_size_t raw = obj->area.w - (point_click.x - obj->area.x);
+            temp_offset = raw * max_off / obj->area.w + (tag_eff >> 1);
+        } else {
+            temp_offset = obj->area.w - (point_click.x - obj->area.x);
+        }
     }else if( gt_slider_get_dir(obj) == GT_BAR_DIR_VER_U2D ){
-        temp_offset = point_click.y - obj->area.y;
+        if (style->tag_inside) {
+            uint16_t tag_eff = _gt_slider_get_offset_tag_size(obj);
+            uint16_t max_off = obj->area.h > tag_eff ? (obj->area.h - tag_eff) : 1;
+            temp_offset = (gt_size_t)(point_click.y - obj->area.y) * max_off / obj->area.h + (tag_eff >> 1);
+        } else {
+            temp_offset = point_click.y - obj->area.y;
+        }
     }else if( gt_slider_get_dir(obj) == GT_BAR_DIR_VER_D2U ){
-        temp_offset = obj->area.h - (point_click.y - obj->area.y);
+        if (style->tag_inside) {
+            uint16_t tag_eff = _gt_slider_get_offset_tag_size(obj);
+            uint16_t max_off = obj->area.h > tag_eff ? (obj->area.h - tag_eff) : 1;
+            gt_size_t raw = obj->area.h - (point_click.y - obj->area.y);
+            temp_offset = raw * max_off / obj->area.h + (tag_eff >> 1);
+        } else {
+            temp_offset = obj->area.h - (point_click.y - obj->area.y);
+        }
     }
     return temp_offset;
 }
@@ -327,6 +358,16 @@ _gt_slider_set_offset(gt_obj_st * slider , gt_size_t offset)
         }
     }
 
+    /* clamp: when pos reaches boundary, force offset to exact boundary value
+     * to avoid integer-truncation leaving a residual 1~2px offset */
+    if (tmp_pos <= style->start) {
+        style->offset = 0;
+        tmp_pos = style->start;
+    } else if (tmp_pos >= style->end) {
+        style->offset = max_offset;
+        tmp_pos = style->end;
+    }
+
     style->pos = tmp_pos;
 }
 
@@ -378,18 +419,22 @@ _calc_all_layer_area(gt_obj_st * slider, gt_area_st * base, gt_area_st * val, gt
             base->x = slider->area.x;
             base->w = slider->area.w;
             gt_area_copy(val, base);
-            /* val covers knob + margin on right; tag offset by margin from dist */
+            /* val right-edge tracks the knob: val_w = dist + tag_eff
+             * => dist=0 -> 0 (hidden); dist=max_offset -> base->w (full).
+             * This keeps the progress bar left-anchored and right-edge aligned with knob. */
+            uint16_t max_offset_hor = base->w > tag_eff ? (base->w - tag_eff) : 1;
             if (style->dir == GT_BAR_DIR_HOR_R2L) {
-                uint16_t val_w = dist + tag_eff;
+                uint16_t val_w = (uint32_t)dist * base->w / max_offset_hor;
                 if (val_w > base->w) { val_w = base->w; }
-                val->x = base->x + base->w - val_w;
                 val->w = val_w;
+                val->x = base->x + base->w - val_w;
                 tag->x = base->x + base->w - dist - tag_knob - _SLIDER_TAG_INSIDE_MARGIN;
                 if (tag->x < base->x) { tag->x = base->x; }
             } else {
-                uint16_t val_w = dist + tag_eff;
+                uint16_t val_w = (uint32_t)dist * base->w / max_offset_hor;
                 if (val_w > base->w) { val_w = base->w; }
                 val->w = val_w;
+
                 tag->x = base->x + dist + _SLIDER_TAG_INSIDE_MARGIN;
                 if (tag->x + tag_knob > base->x + base->w) {
                     tag->x = base->x + base->w - tag_knob;
@@ -420,17 +465,23 @@ _calc_all_layer_area(gt_obj_st * slider, gt_area_st * base, gt_area_st * val, gt
             base->y = slider->area.y;
             base->h = slider->area.h;
             gt_area_copy(val, base);
+            /* val bottom-edge tracks the knob: val_h = dist + tag_eff
+             * => dist=0 -> 0 (hidden); dist=max_offset -> base->h (full). */
             if (style->dir == GT_BAR_DIR_VER_D2U) {
-                uint16_t val_h = dist + tag_eff;
+                uint16_t max_offset_ver = base->h > tag_eff ? (base->h - tag_eff) : 1;
+                uint16_t val_h = (uint32_t)dist * base->h / max_offset_ver;
                 if (val_h > base->h) { val_h = base->h; }
-                val->y = base->y + base->h - val_h;
                 val->h = val_h;
+                if (val_h == 0) { val->w = 0; val->y = base->y; }
+                else { val->y = base->y + base->h - val_h; }
                 tag->y = base->y + base->h - dist - tag_knob - _SLIDER_TAG_INSIDE_MARGIN;
                 if (tag->y < base->y) { tag->y = base->y; }
             } else {
-                uint16_t val_h = dist + tag_eff;
+                uint16_t max_offset_ver = base->h > tag_eff ? (base->h - tag_eff) : 1;
+                uint16_t val_h = (uint32_t)dist * base->h / max_offset_ver;
                 if (val_h > base->h) { val_h = base->h; }
                 val->h = val_h;
+                if (val_h == 0) { val->w = 0; }
                 tag->y = base->y + dist + _SLIDER_TAG_INSIDE_MARGIN;
                 if (tag->y + tag_knob > base->y + base->h) {
                     tag->y = base->y + base->h - tag_knob;
@@ -516,17 +567,20 @@ _init_cb(gt_obj_st * obj) {
         _gt_slider_set_offset_by_pos(obj , style->pos);
     }
 
+    gt_area_st area_base = {0}, area_val = {0}, tag_area = {0};
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
     rect_attr.reg.is_fill    = 1;
     rect_attr.bg_opa         = obj->opa;
     rect_attr.bg_color       = style->color_ina;
-    //
-    gt_area_st area_base = {0}, area_val = {0}, tag_area = {0};
+    if (style->bar_radius > 0) {
+        rect_attr.radius = style->bar_radius;
+    } else {
+        rect_attr.radius = _gt_slider_get_size(obj) >> 1;
+    }
 
-    rect_attr.radius = _gt_slider_get_size(obj) >> 1;
     _calc_all_layer_area(obj, &area_base, &area_val, &tag_area);
-    if(style->pos < style->end){
+    {
         /** background area */
 #if !GT_USE_SERIAL
         draw_bg(obj->draw_ctx, &rect_attr, &area_base);
@@ -536,13 +590,29 @@ _init_cb(gt_obj_st * obj) {
     rect_attr.bg_color = style->color_act;
     dist_min = rect_attr.radius << 1;
     /* When style->offset = 1, area_val is plotted as a line */
-    if (style->offset > 1) {
+    // if (style->offset > 1) {
         if (style->offset < dist_min) {
             rect_attr.base_area = &area_base;
         }
         /** active area */
 #if !GT_USE_SERIAL
-        draw_bg(obj->draw_ctx, &rect_attr, &area_val);
+        if (style->tag_inside) {
+            /* tag_inside mode: draw the full track as the val rectangle but
+             * use limit_area to clip visible portion to the actual fill range.
+             * This preserves the full track radius at the start edge of the fill,
+             * giving a proper rounded-corner appearance even at very small values.
+             * The knob-side edge is clipped straight by limit_area. */
+            gt_area_st val_limit = area_val;  /* actual fill extent as viewport clip */
+            rect_attr.limit_area = &val_limit;
+            if (area_val.w > 0 && area_val.h > 0) {
+                draw_bg(obj->draw_ctx, &rect_attr, &area_base);
+            }
+            rect_attr.limit_area = NULL;
+        } else {
+            if (area_val.w > 0 && area_val.h > 0) {
+                draw_bg(obj->draw_ctx, &rect_attr, &area_val);
+            }
+        }
 #endif
 
         if (style->repeat_mode) {
@@ -555,7 +625,7 @@ _init_cb(gt_obj_st * obj) {
 #endif
         }
         rect_attr.base_area = NULL;
-    }
+    // }
 
     /* visible or not */
     if( !style->tag_visible ){
@@ -604,7 +674,6 @@ _init_cb(gt_obj_st * obj) {
 #endif
 
 draw_focus:
-    // focus
     draw_focus(obj);
 }
 
@@ -1095,6 +1164,7 @@ void gt_slider_set_tag_inside(gt_obj_st * slider, bool inside) {
     if (false == gt_obj_is_type(slider, OBJ_TYPE)) { return; }
     _gt_slider_st * style = (_gt_slider_st *)slider;
     style->tag_inside = inside ? 1 : 0;
+    style->tag_visible = inside ? 0 : 1;
     gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 
@@ -1107,6 +1177,22 @@ static void _apply_theme_cb(gt_obj_st * obj) {
     /* keep the tag knob white/light so it stays visible on both themes */
     style->color_tag = gt_color_hex(0xFFFFFF);
     obj->use_theme = 1;
+}
+
+gt_res_t gt_slider_set_bar_custom_radius(gt_obj_st * slider, gt_size_t radius)
+{
+    if (false == gt_obj_is_type(slider, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+    _gt_slider_st * style = (_gt_slider_st * )slider;
+    if (radius < 0) {
+        style->bar_radius = 0;
+        return GT_RES_FAIL;
+    }
+    gt_size_t half_size = _gt_slider_get_size(slider) >> 1;
+    style->bar_radius = radius > half_size ? half_size : radius;
+    gt_event_send(slider, GT_EVENT_TYPE_DRAW_START, NULL);
+    return GT_RES_OK;
 }
 
 #endif  /** GT_CFG_ENABLE_SLIDER */

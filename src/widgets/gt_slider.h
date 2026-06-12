@@ -273,6 +273,16 @@ void gt_slider_set_pos_range(gt_obj_st * slider, gt_size_t min, gt_size_t max);
  */
 void gt_slider_set_tag_inside(gt_obj_st * slider, bool inside);
 
+/**
+ * @brief Set progress bar radius
+ *
+ * @param slider
+ * @param radius <= 0: use default calc half of the width/height value;
+ *                > 0: custom size, recommend less half of the width/height.
+ * @returns GT_RES_FAIL: failed
+ */
+gt_res_t gt_slider_set_bar_custom_radius(gt_obj_st * slider, gt_size_t radius);
+
 #endif  /** GT_CFG_ENABLE_SLIDER */
 
 #ifdef __cplusplus

@@ -155,6 +155,7 @@ typedef struct _gt_attr_rect_s {
 
     gt_size_t radius;           ///< radius value
     uint8_t corner_mask;        ///< @ref GT_MASK_CORNER_* bits; default GT_MASK_CORNER_ALL (set by gt_graph_init_rect_attr)
+    uint16_t clip_radius;       ///< override clip mask radius when base_area is set; 0 = use radius
 
     gt_opt_t bg_img_opa;        ///< image opacity
     gt_opt_t bg_opa;            ///< background opacity @ref gt_color.h

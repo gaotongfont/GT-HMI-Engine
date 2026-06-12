@@ -3336,7 +3336,17 @@ _draw_bg_fill_solid(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, con
     uint16_t cl_radius = 0;
     gt_mask_radius_st cl_mask_radius = {0};
     if (dsc->base_area){
-        cl_radius = GT_MIN(dsc->radius, (GT_MIN(dsc->base_area->w >> 1, dsc->base_area->h >> 1)));
+        uint16_t r = dsc->clip_radius > 0 ? dsc->clip_radius : dsc->radius;
+        cl_radius = GT_MIN(r, (GT_MIN(dsc->base_area->w >> 1, dsc->base_area->h >> 1)));
+        /* Also clamp to the actual drawing area's half short-side so the clip mask
+         * never exceeds the bar rectangle being drawn. This fixes over-clipping when
+         * the bar is shorter than the track radius in either direction
+         * (horizontal: small val_w; vertical: small val_h).
+         * Do NOT clamp cl_radius to bg_area dimensions here: the clip mask
+         * is applied to base_area (the full track), not bg_area (the val bar).
+         * Clamping to bg_area would shrink the clip radius when val is narrow,
+         * making the blue bar appear with a straight edge instead of following
+         * the track's rounded corner shape. */
         if(cl_radius > 0){
             gt_mask_radius_init(&cl_mask_radius, dsc->base_area, cl_radius, GT_MASK_RADIUS_CFG_INNER);
             cl_mask_id = gt_mask_add(&cl_mask_radius);
@@ -3453,7 +3463,8 @@ _draw_bg_fill_gradient(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc, 
         uint16_t cl_radius = 0;
         gt_mask_radius_st cl_mask_radius = {0};
         if (dsc->base_area) {
-            cl_radius = GT_MIN(dsc->radius, (GT_MIN(dsc->base_area->w >> 1, dsc->base_area->h >> 1)));
+            uint16_t r = dsc->clip_radius > 0 ? dsc->clip_radius : dsc->radius;
+            cl_radius = GT_MIN(r, (GT_MIN(dsc->base_area->w >> 1, dsc->base_area->h >> 1)));
             if (cl_radius > 0) {
                 gt_mask_radius_init(&cl_mask_radius, dsc->base_area, cl_radius, GT_MASK_RADIUS_CFG_INNER);
                 cl_mask_id = gt_mask_add(&cl_mask_radius);
