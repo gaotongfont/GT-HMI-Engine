@@ -391,6 +391,41 @@ gt_obj_st * gt_examples_img(void)
     gt_img_set_border_radius(img_bm3, 6);
     gt_img_set_border_color(img_bm3, gt_color_hex(0xAA44FF));
 
+    /* ------------------------------------------------------------------ */
+    /* Section 7: opa-only color tint demo                                 */
+    /* gt_img_set_opa_color(): ignore image RGB, blend tint+alpha only     */
+    /* gt_img_clear_opa_color(): restore original image RGB                */
+    /* ------------------------------------------------------------------ */
+    gt_obj_st * lbl_tint = gt_label_create(_screen);
+    gt_label_set_text(lbl_tint, "Opa-Color Tint (click to cycle / clear)");
+    gt_obj_set_pos(lbl_tint, 350, 370);
+    gt_obj_set_size(lbl_tint, 420, 20);
+
+    /* tint 1 — red, PNG with alpha */
+    gt_obj_st * img_tint1 = gt_img_create(_screen);
+    gt_img_set_src(img_tint1, "./img_hmi_01_ai.png");
+    gt_obj_set_pos(img_tint1, 350, 392);
+    gt_img_set_opa_color(img_tint1, gt_color_hex(0xFF2020));   /* red tint */
+
+    /* tint 2 — green */
+    gt_obj_st * img_tint2 = gt_img_create(_screen);
+    gt_img_set_src(img_tint2, "./img_hmi_01_ai.png");
+    gt_obj_set_pos(img_tint2, 460, 392);
+    gt_img_set_opa_color(img_tint2, gt_color_hex(0x20CC20));   /* green tint */
+
+    /* tint 3 — blue */
+    gt_obj_st * img_tint3 = gt_img_create(_screen);
+    gt_img_set_src(img_tint3, "./img_hmi_01_ai.png");
+    gt_obj_set_pos(img_tint3, 570, 392);
+    gt_img_set_opa_color(img_tint3, gt_color_hex(0x2080FF));   /* blue tint */
+
+    /* tint 4 — cleared (original RGB) — call clear to verify restore */
+    gt_obj_st * img_tint4 = gt_img_create(_screen);
+    gt_img_set_src(img_tint4, "./img_hmi_01_ai.png");
+    gt_obj_set_pos(img_tint4, 680, 392);
+    gt_img_set_opa_color(img_tint4, gt_color_hex(0xFFAA00));   /* orange, then clear */
+    gt_img_clear_opa_color(img_tint4);                          /* back to original */
+
     GT_EXAMPLE_ADD_BACK_BTN(_screen);
     return _screen;
 }

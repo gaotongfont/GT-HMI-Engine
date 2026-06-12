@@ -169,9 +169,10 @@ gt_obj_st * gt_examples_slider(void)
 
     /* vertical inside tag */
     gt_obj_st * sv2 = gt_slider_create(screen);
-    gt_obj_set_pos(sv2, 600, 72);
-    gt_obj_set_size(sv2, 36, 340);
+    gt_obj_set_pos(sv2, 600 - 10, 72);
+    gt_obj_set_size(sv2, 36 + 20, 340);
     gt_slider_set_start_end(sv2, 0, 100);
+    gt_slider_set_bar_custom_radius(sv2, 20);
     gt_slider_set_pos(sv2, 45);
     gt_slider_set_step(sv2, 5);
     gt_slider_set_dir(sv2, GT_BAR_DIR_VER_D2U);
