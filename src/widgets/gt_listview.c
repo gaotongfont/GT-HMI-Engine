@@ -379,7 +379,15 @@ static GT_ATTRIBUTE_RAM_TEXT void _set_last_active_obj(gt_obj_st * listview, gt_
         style->last_active = NULL;
         return;
     }
-    style->last_active = target;
+    if (target->parent != listview) {
+        gt_obj_st * p = target->parent;
+        while (!gt_obj_is_type(p, GT_TYPE_LISTVIEW)) {
+            p = p->parent;
+        }
+        style->last_active = p;
+    } else {
+        style->last_active = target;
+    }
     if (style->anti_font_color) {
         if (false == style->highlight) {
             _set_label_color_by_item(style->last_active, style->selected_anti_font_color);
@@ -1242,15 +1250,27 @@ static inline void _set_rect_prop(gt_obj_st * rect, gt_listview_rect_st const * 
 #if GT_LISTVIEW_USE_ELEMENT_TYPE_SWITCH
 static void _switch_pressed_cb(gt_event_st * e) {
     gt_obj_st * sw = (gt_obj_st * )e->target;
+    if (!gt_obj_is_type(sw, GT_TYPE_SWITCH)) { return; }
+
     gt_obj_st * obj = sw->parent;
+    if (!gt_obj_is_type(obj, GT_TYPE_OBJ)) { return; }
+
     gt_obj_st * lv = obj->parent;
+    if (!gt_obj_is_type(lv, OBJ_TYPE)) { return; }
+
     _set_last_active_obj(lv, obj);
 }
 
 static void _switch_released_cb(gt_event_st * e) {
     gt_obj_st * sw = (gt_obj_st * )e->target;
+    if (!gt_obj_is_type(sw, GT_TYPE_SWITCH)) { return; }
+
     gt_obj_st * obj = sw->parent;
+    if (!gt_obj_is_type(obj, GT_TYPE_OBJ)) { return; }
+
     gt_obj_st * lv = obj->parent;
+    if (!gt_obj_is_type(lv, OBJ_TYPE)) { return; }
+
     _set_last_active_obj(lv, obj);
     _reset_other_active_state(lv);
     _highlight_set_obj_active_state(lv);
