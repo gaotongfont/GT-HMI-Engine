@@ -343,5 +343,111 @@ gt_obj_st * gt_examples_slider_ab_repeat(void)
     return screen;
 }
 
+/* ======================================================================
+ * Tag raw image example screen
+ * ====================================================================== */
+
+/** @brief 4×4 纯红色像素块（RGB565 内联数组），用作 tag 原始图像测试数据 */
+static const gt_color_t _tag_raw_buf[4 * 4] = {
+    /* 4 行 × 4 列，RGB565 红色 0xF800 */
+    {.full = 0xF800}, {.full = 0xF800}, {.full = 0xF800}, {.full = 0xF800},
+    {.full = 0xF800}, {.full = 0xF800}, {.full = 0xF800}, {.full = 0xF800},
+    {.full = 0xF800}, {.full = 0xF800}, {.full = 0xF800}, {.full = 0xF800},
+    {.full = 0xF800}, {.full = 0xF800}, {.full = 0xF800}, {.full = 0xF800},
+};
+
+/** @brief 4×4 全不透明 alpha 通道 */
+static const gt_opa_t _tag_raw_opa[4 * 4] = {
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
+};
+
+static gt_color_img_raw_st _tag_raw_dsc = {
+    .buffer = _tag_raw_buf,
+    .opa    = _tag_raw_opa,
+    .width  = 4,
+    .height = 4,
+};
+
+static gt_obj_st * _raw_lbl_val = NULL;
+
+static void _raw_slider_cb(gt_event_st * e) {
+    char buf[32];
+    sprintf(buf, "Val: %d", (int)gt_slider_get_pos(e->target));
+    gt_label_set_text(_raw_lbl_val, buf);
+}
+
+gt_obj_st * gt_examples_slider_tag_raw(void)
+{
+    gt_obj_st * screen = gt_obj_create(NULL);
+
+    /* ---- title ---- */
+    gt_obj_st * title = gt_label_create(screen);
+    gt_obj_set_pos(title, 10, 8);
+    gt_obj_set_size(title, 500, 26);
+    gt_label_set_text(title, "Slider — Tag Raw Image");
+
+    /* ================================================================
+     * Row 1 — tag 使用 raw 数据（红色 4×4 像素块），外凸模式
+     * ================================================================ */
+    gt_obj_st * lbl1 = gt_label_create(screen);
+    gt_obj_set_pos(lbl1, 10, 46);
+    gt_obj_set_size(lbl1, 460, 22);
+    gt_label_set_text(lbl1, "Tag raw (4x4 red block, protrude)");
+
+    _raw_lbl_val = gt_label_create(screen);
+    gt_obj_set_pos(_raw_lbl_val, 10, 72);
+    gt_obj_set_size(_raw_lbl_val, 120, 22);
+    gt_label_set_text(_raw_lbl_val, "Val: 50");
+
+    gt_obj_st * sl1 = gt_slider_create(screen);
+    gt_obj_set_pos(sl1, 10, 98);
+    gt_obj_set_size(sl1, 460, 36);
+    gt_slider_set_start_end(sl1, 0, 100);
+    gt_slider_set_pos(sl1, 50);
+    gt_slider_set_step(sl1, 1);
+    gt_slider_set_tag_raw_data(sl1, &_tag_raw_dsc);
+    gt_obj_add_event_cb(sl1, _raw_slider_cb, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+
+    /* ================================================================
+     * Row 2 — tag 使用 raw 数据，inside 模式
+     * ================================================================ */
+    gt_obj_st * lbl2 = gt_label_create(screen);
+    gt_obj_set_pos(lbl2, 10, 152);
+    gt_obj_set_size(lbl2, 460, 22);
+    gt_label_set_text(lbl2, "Tag raw (4x4 red block, inside)");
+
+    gt_obj_st * sl2 = gt_slider_create(screen);
+    gt_obj_set_pos(sl2, 10, 178);
+    gt_obj_set_size(sl2, 460, 36);
+    gt_slider_set_start_end(sl2, 0, 100);
+    gt_slider_set_pos(sl2, 30);
+    gt_slider_set_step(sl2, 1);
+    gt_slider_set_tag_inside(sl2, true);
+    gt_slider_set_tag_raw_data(sl2, &_tag_raw_dsc);
+
+    /* ================================================================
+     * Row 3 — 垂直滑块 + tag raw
+     * ================================================================ */
+    gt_obj_st * lbl3 = gt_label_create(screen);
+    gt_obj_set_pos(lbl3, 530, 46);
+    gt_obj_set_size(lbl3, 240, 22);
+    gt_label_set_text(lbl3, "Vertical + raw tag");
+
+    gt_obj_st * sv = gt_slider_create(screen);
+    gt_obj_set_pos(sv, 560, 72);
+    gt_obj_set_size(sv, 36, 340);
+    gt_slider_set_start_end(sv, 0, 100);
+    gt_slider_set_pos(sv, 60);
+    gt_slider_set_step(sv, 1);
+    gt_slider_set_dir(sv, GT_BAR_DIR_VER_D2U);
+    gt_slider_set_tag_raw_data(sv, &_tag_raw_dsc);
+
+    GT_EXAMPLE_ADD_BACK_BTN(screen);
+    return screen;
+}
+
 #endif
 /* end ------------------------------------------------------------------*/

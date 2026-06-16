@@ -38,6 +38,7 @@ static const _menu_item_st _menu_items[] = {
     { "Roller",         GT_EXAMPLE_SCR_ROLLER },
     { "Slider",         GT_EXAMPLE_SCR_SLIDER },
     { "Slider AB Repeat", GT_EXAMPLE_SCR_SLIDER_AB_REPEAT },
+    { "Slider Tag Raw",  GT_EXAMPLE_SCR_SLIDER_TAG_RAW },
     { "Textarea",       GT_EXAMPLE_SCR_TEXTAREA },
     { "Radio",          GT_EXAMPLE_SCR_RADIO },
     { "Switch",         GT_EXAMPLE_SCR_SWITCH },

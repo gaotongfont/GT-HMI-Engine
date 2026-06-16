@@ -35,6 +35,7 @@ static const gt_scr_list_st _example_scr_list[] = {
     { GT_EXAMPLE_SCR_ROLLER,        gt_examples_roller },
     { GT_EXAMPLE_SCR_SLIDER,        gt_examples_slider },
     { GT_EXAMPLE_SCR_SLIDER_AB_REPEAT, gt_examples_slider_ab_repeat },
+    { GT_EXAMPLE_SCR_SLIDER_TAG_RAW,  gt_examples_slider_tag_raw },
     { GT_EXAMPLE_SCR_TEXTAREA,      gt_examples_textarea },
     { GT_EXAMPLE_SCR_RADIO,         gt_examples_radio },
     { GT_EXAMPLE_SCR_SWITCH,        gt_examples_switch },
