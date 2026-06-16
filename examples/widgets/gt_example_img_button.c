@@ -80,9 +80,9 @@ gt_obj_st * gt_examples_img_button(void)
     gt_label_set_text(label1, "File-path mode:");
 
     gt_obj_st * file_btn = gt_imgbtn_create(screen);
-    gt_imgbtn_set_src(file_btn, "./2.png");
-    gt_imgbtn_set_src_press(file_btn, "./1.bmp");
-    gt_imgbtn_set_src_release(file_btn, "./2.png");
+    gt_imgbtn_set_src(file_btn, "./img_hmi_01_ai.png");
+    gt_imgbtn_set_src_press(file_btn, "./img_hmi_02_common.png");
+    gt_imgbtn_set_src_release(file_btn, "./img_hmi_01_ai.png");
     gt_obj_set_pos(file_btn, 20, 40);
 
     /* ===== 2. raw mode (MODE 1: pre-decoded pixel buffer) ===== */
