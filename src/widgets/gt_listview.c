@@ -1512,6 +1512,40 @@ gt_obj_st * gt_listview_add_item_icons(gt_obj_st * listview, char * left_icon, c
     return _set_item_obj_prop(obj, listview);
 }
 
+gt_obj_st * gt_listview_add_item_icon_raw(gt_obj_st * listview, gt_color_img_raw_st * img_raw, char const * text)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return NULL;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    gt_obj_st * obj = _create_item_obj(listview);
+
+    gt_obj_st * icon = _create_item_icon_raw(listview, obj, img_raw);
+    gt_obj_st * lab = _create_item_label(listview, obj, text);
+
+    _double_calc_pos(style, obj, icon, lab);
+
+    return _set_item_obj_prop(obj, listview);
+}
+
+gt_obj_st * gt_listview_add_item_icons_raw(gt_obj_st * listview, gt_color_img_raw_st * left_raw, char const * text, gt_color_img_raw_st * right_raw)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return NULL;
+    }
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    gt_obj_st * obj = _create_item_obj(listview);
+    _triple_param_st param = { obj, NULL, NULL, NULL };
+
+    param.left = _create_item_icon_raw(listview, obj, left_raw);
+    param.center = _create_item_label(listview, obj, text);
+    param.right = _create_item_icon_raw(listview, obj, right_raw);
+
+    _triple_calc_pos(style, &param);
+
+    return _set_item_obj_prop(obj, listview);
+}
+
 gt_obj_st * gt_listview_add_item_by_param(gt_obj_st * listview, gt_listview_param_st * param)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {

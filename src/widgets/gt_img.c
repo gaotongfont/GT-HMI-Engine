@@ -534,7 +534,11 @@ uint16_t gt_img_get_width(gt_obj_st * img)
     if (obj->src) {
         return (GT_RES_OK == gt_img_decoder_get_info(obj->src, &info)) ? info.w : 0;
     }
-    return (GT_RES_OK == gt_img_decoder_get_info_raw(obj->raw.raw_p, obj->raw.raw_len, &info)) ? info.w : 0;
+    if (GT_RES_OK == gt_img_decoder_get_info_raw(obj->raw.raw_p, obj->raw.raw_len, &info) && info.w) {
+        return info.w;
+    }
+    /** raw buffer mode (no file header): width is set directly from gt_color_img_raw_st */
+    return obj->raw.header.w;
 }
 
 uint16_t gt_img_get_height(gt_obj_st * img)
@@ -547,7 +551,11 @@ uint16_t gt_img_get_height(gt_obj_st * img)
     if (obj->src) {
         return (GT_RES_OK == gt_img_decoder_get_info(obj->src, &info)) ? info.h : 0;
     }
-    return (GT_RES_OK == gt_img_decoder_get_info_raw(obj->raw.raw_p, obj->raw.raw_len, &info)) ? info.h : 0;
+    if (GT_RES_OK == gt_img_decoder_get_info_raw(obj->raw.raw_p, obj->raw.raw_len, &info) && info.h) {
+        return info.h;
+    }
+    /** raw buffer mode (no file header): height is set directly from gt_color_img_raw_st */
+    return obj->raw.header.h;
 }
 
 gt_res_t gt_img_set_masking(gt_obj_st * img, gt_color_masking_st * masking)

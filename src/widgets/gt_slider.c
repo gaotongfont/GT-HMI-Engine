@@ -627,16 +627,25 @@ _init_cb(gt_obj_st * obj) {
         rect_attr.base_area = NULL;
     // }
 
+    /* tag_inside mode: the knob is embedded in the track, no external tag (including img) */
+    if (style->tag_inside) {
+        if (style->img) {
+            gt_obj_set_visible(style->img, GT_INVISIBLE);
+        }
+        goto draw_focus;
+    }
+
     /* visible or not */
     if( !style->tag_visible ){
         goto draw_focus;
     }
 
-    uint16_t tag_size = _gt_slider_get_offset_tag_size(obj);
-    if (style->tag_inside) {
-        uint16_t s = _gt_slider_get_size(obj);
-        tag_size = (s > 4) ? (s - 4) : s;
+    /* ensure img is visible when tag is shown (re-enables after tag_inside mode) */
+    if (style->img) {
+        gt_obj_set_visible(style->img, GT_VISIBLE);
     }
+
+    uint16_t tag_size = _gt_slider_get_offset_tag_size(obj);
     tag_area.w = tag_size;
     tag_area.h = tag_size;
     rect_attr.radius = tag_size >> 1;
@@ -644,6 +653,7 @@ _init_cb(gt_obj_st * obj) {
     // draw img tag
     if (style->img) {
         uint16_t _w = 0,_h = 0;
+        bool _got_size = false;
         if (GT_FS_RES_OK == gt_fs_read_img_wh(gt_img_get_src(style->img), &_w, &_h)
 #if GT_USE_FILE_HEADER
             || GT_FS_RES_OK == gt_fs_fh_read_img_wh((gt_img_get_file_header_param(style->img)), &_w, &_h)
@@ -655,6 +665,16 @@ _init_cb(gt_obj_st * obj) {
             || GT_FS_RES_OK == gt_fs_direct_addr_custom_size_read_img_wh(gt_img_get_custom_size_addr(style->img), &_w, &_h)
 #endif
         ) {
+            _got_size = true;
+        } else {
+            /** raw data mode: gt_img_get_width/height() handle raw internally */
+            _w = gt_img_get_width(style->img);
+            _h = gt_img_get_height(style->img);
+            if (_w > 0 && _h > 0) {
+                _got_size = true;
+            }
+        }
+        if (_got_size) {
             if (0 == _w || 0 == _h) {
                 goto draw_focus;
             }

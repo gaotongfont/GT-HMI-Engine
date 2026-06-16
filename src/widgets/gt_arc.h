@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 #include "../core/gt_gradient.h"
+#include "../core/gt_img_decoder.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -71,6 +72,16 @@ void gt_arc_set_rounded(gt_obj_st* obj, bool rounded);
 void gt_arc_set_act_img(gt_obj_st * obj, char * src);
 
 /**
+ * @brief Set the arc active arc image from a RAM raw image descriptor.
+ *        The descriptor must remain valid for the lifetime of the widget.
+ *        Passing NULL clears the raw image and reverts to file-path mode.
+ *
+ * @param obj   Arc widget
+ * @param raw   Pointer to a RAM image descriptor (_gt_img_dsc_st), or NULL
+ */
+void gt_arc_set_act_img_raw(gt_obj_st * obj, _gt_img_dsc_st * raw);
+
+/**
  * @brief Set the arc pointer background img
  *
  * @param obj
@@ -79,12 +90,32 @@ void gt_arc_set_act_img(gt_obj_st * obj, char * src);
 void gt_arc_set_bg_img(gt_obj_st * obj, char * src);
 
 /**
+ * @brief Set the arc background image from a RAM raw image descriptor.
+ *        The descriptor must remain valid for the lifetime of the widget.
+ *        Passing NULL clears the raw image and reverts to file-path mode.
+ *
+ * @param obj   Arc widget
+ * @param raw   Pointer to a RAM image descriptor (_gt_img_dsc_st), or NULL
+ */
+void gt_arc_set_bg_img_raw(gt_obj_st * obj, _gt_img_dsc_st * raw);
+
+/**
  * @brief Set the arc pointer knob img
  *
  * @param obj
  * @param src
  */
 void gt_arc_set_knob_img(gt_obj_st * obj, char * src);
+
+/**
+ * @brief Set the arc knob image from a RAM raw image descriptor.
+ *        The descriptor must remain valid for the lifetime of the widget.
+ *        Passing NULL clears the raw image and reverts to file-path mode.
+ *
+ * @param obj   Arc widget
+ * @param raw   Pointer to a RAM image descriptor (_gt_img_dsc_st), or NULL
+ */
+void gt_arc_set_knob_img_raw(gt_obj_st * obj, _gt_img_dsc_st * raw);
 
 #if GT_USE_FILE_HEADER
 /**

@@ -241,6 +241,27 @@ gt_obj_st * gt_listview_add_item_icon(gt_obj_st * listview, char * img, char con
 gt_obj_st * gt_listview_add_item_icons(gt_obj_st * listview, char * left_icon, char const * text, char * right_icon);
 
 /**
+ * @brief add item to listview obj with raw image icon
+ *
+ * @param listview
+ * @param img_raw pointer to gt_color_img_raw_st raw image descriptor; NULL: no icon displayed
+ * @param text text
+ * @return item object, which child[0]: img, child[1]: label
+ */
+gt_obj_st * gt_listview_add_item_icon_raw(gt_obj_st * listview, gt_color_img_raw_st * img_raw, char const * text);
+
+/**
+ * @brief add item to listview obj with [ raw icon + text + raw icon ] mode
+ *
+ * @param listview
+ * @param left_raw pointer to gt_color_img_raw_st for left icon; NULL: no icon displayed
+ * @param text text
+ * @param right_raw pointer to gt_color_img_raw_st for right icon; NULL: no icon displayed
+ * @return item object, which child[0]: left img, child[1]: label, child[2]: right img
+ */
+gt_obj_st * gt_listview_add_item_icons_raw(gt_obj_st * listview, gt_color_img_raw_st * left_raw, char const * text, gt_color_img_raw_st * right_raw);
+
+/**
  * @brief add item to listview obj
  *
  * @param listview listview obj

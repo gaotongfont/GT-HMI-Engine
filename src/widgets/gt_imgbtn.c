@@ -17,7 +17,7 @@
 #include "../core/gt_graph_base.h"
 #include "../core/gt_obj_pos.h"
 #include "../core/gt_fs.h"
-#include "string.h"
+#include "../core/gt_img_decoder.h"
 #include "../others/gt_assert.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
@@ -39,6 +39,7 @@ typedef struct _item_s {
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
     gt_direct_addr_custom_size_st custom_addr;
 #endif
+    _gt_img_dsc_st raw;   ///< RAM raw image data; header.w != 0 when valid
 }_item_st;
 
 typedef struct _gt_imgbtn_s {
@@ -99,13 +100,20 @@ static void _imgbtn_init_cb(gt_obj_st * obj) {
     _gt_imgbtn_st * style = (_gt_imgbtn_st * )obj;
     bool is_mask_effect = gt_obj_get_mask_effect(obj);
     bool is_selected = GT_STATE_PRESSED == gt_obj_get_state(obj);
-    _item_st * img = style->press.name && is_selected ? &style->press : &style->src;
+    bool press_raw_valid = style->press.raw.header.w != 0;
+    bool press_name_valid = style->press.name != NULL;
+    _item_st * img = (press_name_valid || press_raw_valid) && is_selected ? &style->press : &style->src;
     gt_attr_rect_st dsc = {
         .bg_img_src = img->name,
         .bg_opa = obj->opa,
     };
     if (is_mask_effect && is_selected) {
         dsc.bg_opa = GT_OPA_70;
+    }
+    /* raw data path: override bg_img_src with raw_img when raw header is valid */
+    if (img->raw.header.w != 0) {
+        dsc.bg_img_src = NULL;
+        dsc.raw_img = &img->raw;
     }
 #if GT_USE_FILE_HEADER
     dsc.file_header = gt_file_header_param_check_valid(&img->fh);
@@ -242,6 +250,8 @@ static GT_ATTRIBUTE_RAM_TEXT bool _imgs_free_cb(void * item) {
         gt_mem_free(item_p->name);
         item_p->name = NULL;
     }
+    /* NOTE: raw.data is a non-owning (borrowed) pointer to caller-managed
+     * RAM image data; do NOT free it here. */
     gt_mem_free(item);
     return true;
 }
@@ -270,6 +280,14 @@ static GT_ATTRIBUTE_RAM_TEXT bool _imgs_equal_cb(void * item, void * target) {
         }
     }
 #endif
+    /** raw image match: compare raw_p pointer when raw is valid */
+    if (target_p->raw.header.w != 0) {
+        return item_p->raw.raw_p == target_p->raw.raw_p;
+    }
+    /** guard against NULL name (e.g. raw-only items set by gt_imgbtn_remove_state_item_raw) */
+    if (NULL == item_p->name || NULL == target_p->name) {
+        return false;
+    }
     return strcmp(item_p->name, target_p->name) ? false : true;
 }
 
@@ -535,6 +553,152 @@ bool gt_imgbtn_remove_state_item(gt_obj_st * obj, char * src)
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
     gt_hal_custom_size_addr_init(&item.custom_addr);
 #endif
+
+    return _gt_vector_remove_item(style->imgs, &item);
+}
+
+void gt_imgbtn_set_src_raw(gt_obj_st * imgbtn, gt_color_img_raw_st const * raw)
+{
+    if (false == gt_obj_is_type(imgbtn, OBJ_TYPE)) {
+        return ;
+    }
+    if (NULL == raw) {
+        return ;
+    }
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
+    _item_st * item = (_item_st * )gt_mem_malloc(sizeof(_item_st));
+    GT_CHECK_BACK(item);
+
+    item->name = NULL;
+    gt_img_dsc_raw_set(&item->raw, raw);
+
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&item->fh);
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&item->addr);
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&item->custom_addr);
+#endif
+
+    if (false == _gt_vector_replace_item(style->imgs, 0, (void * )item)) {
+        if (false == _gt_vector_add_item(style->imgs, (void * )item)) {
+            gt_mem_free(item);
+            item = NULL;
+            return;
+        }
+    }
+    _item_st * item_p = (_item_st *)_gt_vector_get_item(style->imgs, 0);
+    GT_CHECK_BACK(item_p);
+    style->src = *item_p;
+
+    gt_event_send(imgbtn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+void gt_imgbtn_set_src_press_raw(gt_obj_st * imgbtn, gt_color_img_raw_st const * raw)
+{
+    if (false == gt_obj_is_type(imgbtn, OBJ_TYPE)) {
+        return ;
+    }
+    if (NULL == raw) {
+        return ;
+    }
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
+
+    if (style->press.name) {
+        gt_mem_free(style->press.name);
+        style->press.name = NULL;
+    }
+    gt_img_dsc_raw_set(&style->press.raw, raw);
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->press.fh);
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->press.addr);
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&style->press.custom_addr);
+#endif
+
+    gt_event_send(imgbtn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+void gt_imgbtn_set_src_release_raw(gt_obj_st * imgbtn, gt_color_img_raw_st const * raw)
+{
+    if (false == gt_obj_is_type(imgbtn, OBJ_TYPE)) {
+        return ;
+    }
+    if (NULL == raw) {
+        return ;
+    }
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)imgbtn;
+
+    if (style->release.name) {
+        gt_mem_free(style->release.name);
+        style->release.name = NULL;
+    }
+    gt_img_dsc_raw_set(&style->release.raw, raw);
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->release.fh);
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->release.addr);
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&style->release.custom_addr);
+#endif
+
+    gt_event_send(imgbtn, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+bool gt_imgbtn_add_state_item_raw(gt_obj_st * obj, gt_color_img_raw_st const * raw)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return false;
+    }
+    if (NULL == raw) {
+        return false;
+    }
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
+
+    _item_st * item = (_item_st * )gt_mem_malloc(sizeof(_item_st));
+    GT_CHECK_BACK_VAL(item, false);
+
+    item->name = NULL;
+    gt_img_dsc_raw_set(&item->raw, raw);
+
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&item->fh);
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&item->addr);
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&item->custom_addr);
+#endif
+
+    if (false == _gt_vector_add_item(style->imgs, (void * )item)) {
+        gt_mem_free(item);
+        item = NULL;
+        return false;
+    }
+    return true;
+}
+
+bool gt_imgbtn_remove_state_item_raw(gt_obj_st * obj, gt_color_img_raw_st const * raw)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return false;
+    }
+    if (NULL == raw) {
+        return false;
+    }
+    _gt_imgbtn_st * style = (_gt_imgbtn_st *)obj;
+
+    _item_st item;
+    gt_memset(&item, 0, sizeof(_item_st));
+    gt_img_dsc_raw_set(&item.raw, raw);
 
     return _gt_vector_remove_item(style->imgs, &item);
 }

@@ -33,6 +33,7 @@
 /* private typedef ------------------------------------------------------*/
 typedef struct {
     char * src;             // img src, It can be a virt file name/path or an array of C
+    _gt_img_dsc_st raw;     ///< RAM raw image data; used when src is NULL
 #if GT_USE_FILE_HEADER
     gt_file_header_param_st fh;
 #endif
@@ -127,6 +128,7 @@ static void _init_cb(gt_obj_st * obj)
     arc_attr.end_angle = style->bg.end_angle;
     arc_attr.width = style->bg.width;
     arc_attr.img = style->bg.img.src;
+    arc_attr.raw_img = style->bg.img.src ? NULL : &style->bg.img.raw;
 #if GT_USE_FILE_HEADER
     arc_attr.file_header = gt_file_header_param_check_valid(&style->bg.img.fh);
 #endif
@@ -153,6 +155,7 @@ static void _init_cb(gt_obj_st * obj)
     arc_attr.end_angle = style->act.end_angle;
     arc_attr.width = style->act.width;
     arc_attr.img = style->act.img.src;
+    arc_attr.raw_img = (style->act.img.raw.header.w != 0) ? &style->act.img.raw : NULL;
 #if GT_USE_FILE_HEADER
     arc_attr.file_header = gt_file_header_param_check_valid(&style->act.img.fh);
 #endif
@@ -185,6 +188,7 @@ static void _init_cb(gt_obj_st * obj)
     arc_attr.end_angle = 360;
     arc_attr.width = 0xFFFF;
     arc_attr.img = style->knob_img.src;
+    arc_attr.raw_img = (style->knob_img.raw.header.w != 0) ? &style->knob_img.raw : NULL;
 #if GT_USE_FILE_HEADER
     arc_attr.file_header = gt_file_header_param_check_valid(&style->knob_img.fh);
 #endif
@@ -545,6 +549,110 @@ void gt_arc_set_act_img(gt_obj_st * obj, char * src)
     gt_hal_custom_size_addr_init(&style->act.img.custom_addr);
 #endif
 
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_arc_set_act_img_raw(gt_obj_st * obj, _gt_img_dsc_st * raw)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_arc_st * style = (_gt_arc_st *)obj;
+
+    if (NULL == raw) {
+        gt_memset(&style->act.img.raw, 0, sizeof(style->act.img.raw));
+    } else {
+        if (NULL != style->act.img.src) {
+            gt_mem_free(style->act.img.src);
+            style->act.img.src = NULL;
+        }
+        style->act.img.raw = *raw;
+    }
+
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->act.img.fh);
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->act.img.addr);
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&style->act.img.custom_addr);
+#endif
+
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_arc_set_bg_img_raw(gt_obj_st * obj, _gt_img_dsc_st * raw)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_arc_st * style = (_gt_arc_st *)obj;
+
+    if (NULL == raw) {
+        gt_memset(&style->bg.img.raw, 0, sizeof(style->bg.img.raw));
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+        return ;
+    }
+    if (NULL != style->bg.img.src) {
+        gt_mem_free(style->bg.img.src);
+        style->bg.img.src = NULL;
+    }
+    style->bg.img.raw = *raw;
+
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->bg.img.fh);
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->bg.img.addr);
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&style->bg.img.custom_addr);
+#endif
+
+    gt_area_st area;
+    gt_area_copy(&area, &obj->area);
+    area.w = raw->header.w;
+    area.h = raw->header.h;
+    if (area.w != 0 && area.h != 0) {
+        gt_obj_size_change(obj, &area);
+    }
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+void gt_arc_set_knob_img_raw(gt_obj_st * obj, _gt_img_dsc_st * raw)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_arc_st * style = (_gt_arc_st *)obj;
+
+    if (NULL == raw) {
+        gt_memset(&style->knob_img.raw, 0, sizeof(style->knob_img.raw));
+        gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+        return ;
+    }
+    if (NULL != style->knob_img.src) {
+        gt_mem_free(style->knob_img.src);
+        style->knob_img.src = NULL;
+    }
+    style->knob_img.raw = *raw;
+
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&style->knob_img.fh);
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&style->knob_img.addr);
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&style->knob_img.custom_addr);
+#endif
+
+    uint16_t w = raw->header.w;
+    uint16_t h = raw->header.h;
+    if (w != 0 && h != 0) {
+        gt_arc_set_knob_width(obj, GT_MAX(w, h));
+    }
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

@@ -28,6 +28,7 @@ extern "C" {
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
 #include "../hal/gt_hal_fs.h"
 #endif
+#include "../others/gt_color.h"
 
 /* define ---------------------------------------------------------------*/
 
@@ -218,6 +219,48 @@ void gt_imgbtn_set_opa_color(gt_obj_st * imgbtn, gt_color_t color);
  * @param imgbtn  Imgbtn object
  */
 void gt_imgbtn_clear_opa_color(gt_obj_st * imgbtn);
+
+/**
+ * @brief Set the default image source using raw RAM buffer data.
+ *
+ * @param imgbtn imgbtn object
+ * @param raw    Pointer to raw image descriptor; must remain valid for object lifetime
+ */
+void gt_imgbtn_set_src_raw(gt_obj_st * imgbtn, gt_color_img_raw_st const * raw);
+
+/**
+ * @brief Set the pressed-state image source using raw RAM buffer data.
+ *
+ * @param imgbtn imgbtn object
+ * @param raw    Pointer to raw image descriptor
+ */
+void gt_imgbtn_set_src_press_raw(gt_obj_st * imgbtn, gt_color_img_raw_st const * raw);
+
+/**
+ * @brief Set the released-state image source using raw RAM buffer data.
+ *
+ * @param imgbtn imgbtn object
+ * @param raw    Pointer to raw image descriptor
+ */
+void gt_imgbtn_set_src_release_raw(gt_obj_st * imgbtn, gt_color_img_raw_st const * raw);
+
+/**
+ * @brief Add a state item to the imgbtn using raw RAM buffer data.
+ *
+ * @param obj imgbtn object
+ * @param raw Pointer to raw image descriptor
+ * @return true success; false failed
+ */
+bool gt_imgbtn_add_state_item_raw(gt_obj_st * obj, gt_color_img_raw_st const * raw);
+
+/**
+ * @brief Remove a state item from the imgbtn by raw buffer identity.
+ *
+ * @param obj imgbtn object
+ * @param raw Pointer to raw image descriptor to match
+ * @return true success; false failed
+ */
+bool gt_imgbtn_remove_state_item_raw(gt_obj_st * obj, gt_color_img_raw_st const * raw);
 
 
 #endif  /** GT_CFG_ENABLE_IMGBTN */

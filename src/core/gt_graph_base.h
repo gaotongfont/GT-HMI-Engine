@@ -173,6 +173,7 @@ typedef struct _gt_attr_rect_s {
 
 typedef struct _gt_attr_arc_s{
     char* img;
+    _gt_img_dsc_st * raw_img;   ///< RAM image data, when img is NULL
 #if GT_USE_FILE_HEADER
     gt_file_header_param_st * file_header;  ///< Using file header mode to read image data
 #endif
