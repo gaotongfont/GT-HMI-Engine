@@ -81,9 +81,11 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_imgbtn_set_src(gt_obj_st * imgbtn, _item_s
 
     if (src == NULL) {
         style->src.name = NULL;
+        gt_memset(&style->src.raw, 0, sizeof(style->src.raw));
         return;
     }
     style->src.name = src->name;
+    style->src.raw  = src->raw;
 }
 
 static GT_ATTRIBUTE_RAM_TEXT char * _gt_imgbtn_get_src(gt_obj_st * obj) {
@@ -173,10 +175,17 @@ static void _imgbtn_deinit_cb(gt_obj_st * obj) {
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _invalid_area(gt_obj_st * obj) {
-    char * src = _gt_imgbtn_get_src(obj);
+    _gt_imgbtn_st * style = (_gt_imgbtn_st * )obj;
+    char * src = style->src.name;
     uint16_t w = 0, h = 0;
-    if (GT_FS_RES_FAIL == gt_fs_read_img_wh(src, &w, &h)) {
-        return ;
+    if (NULL != src) {
+        if (GT_FS_RES_FAIL == gt_fs_read_img_wh(src, &w, &h)) {
+            return ;
+        }
+    }
+    if (0 == w || 0 == h) {
+        w = style->src.raw.header.w;
+        h = style->src.raw.header.h;
     }
     if (0 == w || 0 == h) {
         return ;
@@ -340,6 +349,7 @@ void gt_imgbtn_set_src(gt_obj_st * imgbtn, char * src)
     uint16_t len = src == NULL ? 0 : strlen(src);
     _item_st * item = (_item_st * )gt_mem_malloc(sizeof(_item_st));
     GT_CHECK_BACK(item);
+    gt_memset(&item->raw, 0, sizeof(item->raw));
 
     item->name = (char * )gt_mem_malloc(len + 1);
     if (NULL == item->name) {
@@ -395,6 +405,7 @@ void gt_imgbtn_set_src_press(gt_obj_st * imgbtn, char * src)
     }
     strcpy(style->press.name, src);
     style->press.name[len] = 0;
+    gt_memset(&style->press.raw, 0, sizeof(style->press.raw));
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->press.fh);
 #endif
@@ -424,6 +435,7 @@ void gt_imgbtn_set_src_release(gt_obj_st * imgbtn, char * src)
     }
     strcpy(style->release.name, src);
     style->release.name[len] = 0;
+    gt_memset(&style->release.raw, 0, sizeof(style->release.raw));
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->release.fh);
 #endif
@@ -452,6 +464,7 @@ bool gt_imgbtn_add_state_item(gt_obj_st * obj, char * src)
 
     _item_st * item = (_item_st * )gt_mem_malloc(sizeof(_item_st));
     GT_CHECK_BACK_VAL(item, false);
+    gt_memset(&item->raw, 0, sizeof(item->raw));
 
     item->name = (char * )gt_mem_malloc(len + 1);
     if (NULL == item->name) {
@@ -502,6 +515,7 @@ bool gt_imgbtn_replace_state_item(gt_obj_st * obj, uint16_t index, char * src)
     }
     _item_st * item = (_item_st * )gt_mem_malloc(sizeof(_item_st));
     GT_CHECK_BACK_VAL(item, false);
+    gt_memset(&item->raw, 0, sizeof(item->raw));
 
     item->name = (char * )gt_mem_malloc(len + 1);
     if (NULL == item->name) {
