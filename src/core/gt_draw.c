@@ -4938,7 +4938,7 @@ gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_are
     bool is_img = false;
     gt_attr_rect_st rect_attr;
     gt_graph_init_rect_attr(&rect_attr);
-    if (dsc->img
+    if (dsc->img || dsc->raw_img
 #if GT_USE_FILE_HEADER
         || dsc->file_header
 #endif
@@ -4952,6 +4952,7 @@ gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_st const * dsc, const gt_are
         is_img = true;
         rect_attr.bg_img_opa = dsc->opa;
         rect_attr.bg_img_src = dsc->img;
+        rect_attr.raw_img    = dsc->raw_img;
 #if GT_USE_FILE_HEADER
         rect_attr.file_header = dsc->file_header;
 #endif
