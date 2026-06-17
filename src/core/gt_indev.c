@@ -390,10 +390,11 @@ _home_gesture_scroll_effects(gt_indev_st * indev) {
             gt_event_send(point_p->obj_scroll, GT_EVENT_TYPE_INPUT_PRESS_LOST, NULL);
         }
 #if GT_CFG_ENABLE_INDEV_EFFECTS
+        gt_size_t res_hor = gt_disp_get_res_hor(NULL);
         _indev_gesture_over_scroll_st param = {
             .active = gt_abs(point_p->scroll_sum.x),
-            .working_distance = GT_SCREEN_WIDTH >> 1,
-            .display_distance = GT_INDEV_HOME_GESTURE_HOR_MAX_DISTANCE,
+            .working_distance = res_hor >> 1,
+            .display_distance = res_hor >> 3,
             .linear = false,
         };
         uint32_t distance = _gesture_calc_overflow_distance(indev, &param);

@@ -19,14 +19,6 @@ extern "C" {
 
 
 /* define ---------------------------------------------------------------*/
-#ifndef GT_INDEV_HOME_GESTURE_HOR_MAX_DISTANCE
-    /**
-     * @brief hor max distance of home gesture
-     *      [default: 1/8 screen width]
-     */
-    #define GT_INDEV_HOME_GESTURE_HOR_MAX_DISTANCE      (GT_SCREEN_WIDTH >> 3)
-#endif
-
 #if GT_USE_TOUCH_QUEUE
 #ifndef GT_TOUCH_QUEUE_MAX_PENDING
     /**
