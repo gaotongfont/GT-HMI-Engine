@@ -21,20 +21,14 @@
 #define OBJ_TYPE    GT_TYPE_INDEV_EFFECTS
 #define MY_CLASS    &gt_indev_effects_class
 
-//
-#define _GT_EFFECTS_W           (GT_INDEV_HOME_GESTURE_HOR_MAX_DISTANCE)
-#define _GT_EFFECTS_H           (GT_SCREEN_HEIGHT >> 1)
-#define _GT_EFFECTS_Y           (GT_SCREEN_HEIGHT >> 2)
-#define _GT_EFFECTS_X_L         (0)
-#define _GT_EFFECTS_X_R         (GT_SCREEN_WIDTH - _GT_EFFECTS_W)
-// rect
-#define _GT_EFFECTS_RECT_W          (_GT_EFFECTS_W << 1)
-#define _GT_EFFECTS_RECT_H          (_GT_EFFECTS_H)
-#define _GT_EFFECTS_RECT_RADIUS     (_GT_EFFECTS_W)
+/* _GT_EFFECTS_W / _GT_EFFECTS_RECT_W / _GT_EFFECTS_RECT_RADIUS / _GT_EFFECTS_DISTANCE_MAX
+ * and _GT_EFFECTS_H / _GT_EFFECTS_Y / _GT_EFFECTS_X_L / _GT_EFFECTS_X_R / _GT_EFFECTS_RECT_H
+ * all depend on the actual screen resolution and are now computed at runtime
+ * via disp->drv->res_hor/res_ver, see _effects_set_pos/_effects_create.
+ */
 #define _GT_EFFECTS_RECT_COLOR      gt_color_black()
 #define _GT_EFFECTS_RECT_OPA        (GT_OPA_50)
 //
-#define _GT_EFFECTS_DISTANCE_MAX    (_GT_EFFECTS_RECT_W >> 2)
 
 /* private typedef ------------------------------------------------------*/
 typedef struct {
@@ -125,20 +119,30 @@ static void _del_effect_cb(gt_event_st * e) {
 GT_ATTRIBUTE_RAM_TEXT
 static void _effects_set_pos(gt_obj_st* obj, bool is_left, uint32_t distance) {
     _gt_indev_effects_st* style = (_gt_indev_effects_st*) obj;
-    gt_size_t obj_x = is_left ? _GT_EFFECTS_X_L : _GT_EFFECTS_X_R;
+    gt_disp_st * disp = gt_disp_get_default();
+    uint16_t res_hor = disp ? disp->drv->res_hor : GT_SCREEN_WIDTH;
+    uint16_t res_ver = disp ? disp->drv->res_ver : GT_SCREEN_HEIGHT;
+    /* All geometry derived from actual display resolution */
+    gt_size_t effects_w        = (gt_size_t)res_hor >> 3;   /* 1/8 of screen width */
+    gt_size_t effects_rect_w   = effects_w << 1;
+    gt_size_t effects_dist_max = effects_rect_w >> 2;
+    gt_size_t effects_x_r = (gt_size_t)res_hor - effects_w;
+    gt_size_t effects_y = (gt_size_t)res_ver >> 2;
+    gt_size_t effects_x_l = 0;
+    gt_size_t obj_x = is_left ? effects_x_l : effects_x_r;
     if (obj_x != gt_obj_get_x(obj)) {
-        gt_obj_set_pos(obj, obj_x, _GT_EFFECTS_Y);
+        gt_obj_set_pos(obj, obj_x, effects_y);
     }
     gt_size_t x = gt_obj_get_x(obj);
     gt_size_t y = gt_obj_get_y(obj);
 
-    distance = distance > _GT_EFFECTS_DISTANCE_MAX ? _GT_EFFECTS_DISTANCE_MAX : distance;
+    distance = distance > (uint32_t)effects_dist_max ? (uint32_t)effects_dist_max : distance;
 
     if(is_left) {
-        x = x - _GT_EFFECTS_RECT_W + distance;
+        x = x - effects_rect_w + distance;
     }
     else {
-        x = x + _GT_EFFECTS_W - distance;
+        x = x + effects_w - distance;
     }
     if (gt_obj_get_x(style->rect_p) == x) {
         return;
@@ -158,20 +162,34 @@ static _gt_indev_effects_st*  _effects_create(void) {
         return ctrl->_effects_p;
     }
 
+    gt_disp_st * disp = gt_disp_get_default();
+    uint16_t res_hor = disp ? disp->drv->res_hor : GT_SCREEN_WIDTH;
+    uint16_t res_ver = disp ? disp->drv->res_ver : GT_SCREEN_HEIGHT;
+    /* All geometry derived from actual display resolution, see _effects_set_pos. */
+    gt_size_t effects_w           = (gt_size_t)res_hor >> 3;   /* 1/8 of screen width */
+    gt_size_t effects_rect_w      = effects_w << 1;
+    gt_size_t effects_rect_radius = effects_w;
+    gt_size_t effects_h = (gt_size_t)res_ver >> 1;
+    gt_size_t effects_y = (gt_size_t)res_ver >> 2;
+
 #if GT_USE_LAYER_TOP
     ctrl->_effects_p = (_gt_indev_effects_st*) gt_obj_class_create(MY_CLASS, gt_disp_get_layer_top());
     gt_obj_add_event_cb((gt_obj_st * )ctrl->_effects_p, _del_effect_cb, GT_EVENT_TYPE_CHANGE_DELETED, NULL);
     //
-    gt_obj_set_pos((gt_obj_st*)ctrl->_effects_p, _GT_EFFECTS_X_L, _GT_EFFECTS_Y);
-    gt_obj_set_size((gt_obj_st*)ctrl->_effects_p, _GT_EFFECTS_W, _GT_EFFECTS_H);
+    gt_obj_set_pos((gt_obj_st*)ctrl->_effects_p, 0, effects_y);
+    gt_obj_set_size((gt_obj_st*)ctrl->_effects_p, effects_w, effects_h);
     gt_obj_set_visible((gt_obj_st*)ctrl->_effects_p, GT_INVISIBLE);
 #endif
     if(ctrl->_effects_p) {
         ctrl->_effects_p->rect_p = gt_rect_create((gt_obj_st*)ctrl->_effects_p);
         _effects_set_pos((gt_obj_st*)ctrl->_effects_p, true, 0);
 
-        gt_obj_set_size(ctrl->_effects_p->rect_p, _GT_EFFECTS_RECT_W, _GT_EFFECTS_RECT_H);
-        gt_obj_set_radius(ctrl->_effects_p->rect_p, _GT_EFFECTS_RECT_RADIUS);
+#if GT_USE_LAYER_TOP
+        gt_obj_set_size(ctrl->_effects_p->rect_p, effects_rect_w, effects_h);
+#else
+        gt_obj_set_size(ctrl->_effects_p->rect_p, effects_rect_w, effects_rect_w);
+#endif
+        gt_obj_set_radius(ctrl->_effects_p->rect_p, effects_rect_radius);
         gt_rect_set_bg_color(ctrl->_effects_p->rect_p, _GT_EFFECTS_RECT_COLOR);
         gt_obj_set_opa(ctrl->_effects_p->rect_p, _GT_EFFECTS_RECT_OPA);
     }
