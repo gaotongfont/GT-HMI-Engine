@@ -1023,7 +1023,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _center_icon_pos(gt_obj_st * icon, gt_obj_st *
     gt_area_copy(&icon->area, &item->area);
     icon->area.w = width;
 
-    if (NULL == gt_img_get_src(icon)) {
+    if (0 == gt_img_get_width(icon)) {
         return ;
     }
     icon->area.x += ((width - gt_img_get_width(icon)) >> 1) + offset_x;
