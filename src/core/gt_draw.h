@@ -58,11 +58,9 @@ typedef struct gt_font_touch_word_s {
 #endif
 
 typedef struct _gt_draw_font_res_s {
-    gt_point_st abs_pos;            /** next char absolute position; for LaTeX: last-line y */
+    gt_point_st abs_pos;            /** next char absolute position */
     gt_point_st size_show_limit;    /** String display valid area */
     gt_point_st size;               /** String total width (0xffff invalid) and height(invalid) */
-    uint16_t    baseline;           /** latex math axis: distance from top to baseline (0 for normal text) */
-    gt_size_t   block_bottom_y;     /** LaTeX block bottom (logical_area.y + h); 0 for normal text */
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
     gt_font_touch_word_st touch_word;
 #endif

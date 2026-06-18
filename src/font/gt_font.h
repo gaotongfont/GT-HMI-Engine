@@ -104,8 +104,6 @@ typedef enum gt_font_style_e {
     GT_FONT_STYLE_STRIKETHROUGH = 0x02,     ///< strikethrough
     GT_FONT_STYLE_BOLD          = 0x04,     // < bold
     GT_FONT_STYLE_ITALIC        = 0x08,     // < italic
-    GT_FONT_STYLE_LATEX         = 0x10,     // < latex inline formula
-    GT_FONT_STYLE_LATEX_BLOCK   = 0x20,     // < latex block/display formula (centered, own line)
 }gt_font_style_et;
 
 typedef struct {
@@ -113,9 +111,7 @@ typedef struct {
     uint8_t strikethrough : 1;
     uint8_t bold : 1;
     uint8_t italic : 1;
-    uint8_t latex : 1;
-    uint8_t latex_block : 1;
-    uint8_t reserved : 2;
+    uint8_t reserved : 4;
 }gt_font_style_st;
 
 typedef struct _gt_font_info_s {
@@ -189,12 +185,6 @@ typedef struct _gt_text_style_s {
 
     ///< 0[default]: normal draw font and display; 1: Only calculate font display info except draw font.
     uint8_t only_calc_display_info : 1;
-
-#if GT_USE_LATEX_LIB
-    ///< 0[default]: not calculate LaTeX size, 1: calculate LaTeX size
-    uint8_t only_calc_latex_size : 1;
-#endif
-
 }_gt_text_style_st;
 
 /**

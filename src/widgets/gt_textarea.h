@@ -344,15 +344,6 @@ void gt_textarea_append_text(gt_obj_st * obj, const char * str);
  */
 void gt_textarea_set_start_point_offset(gt_obj_st * textarea, uint8_t x_off, uint8_t y_off);
 
-/**
- * @brief Enable baseline alignment between normal text and LaTeX formulas on the same line.
- *        When enabled, normal text segments are shifted down so their bottom aligns with
- *        the LaTeX math axis (baseline), matching standard mathematical typesetting.
- * @param textarea
- * @param enable true to enable, false to disable
- */
-void gt_textarea_set_align_latex_baseline(gt_obj_st * textarea, bool enable);
-
 
 #endif  /** GT_CFG_ENABLE_TEXTAREA */
 

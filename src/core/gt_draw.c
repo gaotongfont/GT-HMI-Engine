@@ -935,6 +935,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
         for (gt_font_size_t i = 0; i < emoji_h; ++i) {
             int emj_ret = gt_font_get_emoji_dot(uni_or_gbk, dot_ret.option, emoji_raw.img, emoji_raw.alpha, i);
             if (emj_ret <= 0) {
+                GT_LOGD(GT_LOG_TAG_GUI, "get emoji dot failed!!! ret: %d", emj_ret);
                 break;
             }
             draw_bg_img(draw_ctx, &dsc_emoji, &emoji_area);
@@ -2460,7 +2461,7 @@ _disp_font:
         if (ret.size_show_limit.y > view->h) {
             ret.size_show_limit.y = view->h;
         }
-        if (dsc->reg.only_calc_display_info) { area_font.x += ret_w; goto next_line_lb; }
+        if (dsc->reg.only_calc_display_info) { goto next_line_lb; }
         if (dsc->opa < GT_OPA_MIN) { goto next_line_lb; }
 
         /** ------------- Display current line chars ------------- */
@@ -2829,10 +2830,7 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
     } else {
         ret.size.x = string_total_width;
     }
-    if (dsc->reg.only_calc_display_info) {
-        area_font.x = (start_x_flag ? dsc->start_x : area_font.x) + string_total_width;
-        goto ret_handler_lb;
-    }
+    if (dsc->reg.only_calc_display_info) { goto ret_handler_lb; }
     /** prepare display area */
     if (string_total_width > view->w) {
         area_font.x = coords->x;
@@ -2980,270 +2978,6 @@ direct_handler_lb:
     ret.abs_pos.y = area_font.y;
     return ret;
 }
-
-#if GT_USE_LATEX_LIB
-typedef struct {
-    _gt_draw_ctx_st* draw_ctx;
-    const gt_attr_font_st* dsc;
-    const gt_area_st* view;
-    _gt_draw_font_res_st ret_res;
-}_draw_latex_st;
-
-
-_GT_DRAW_ATTRIBUTE_SRAM_TEXT
-static int _draw_latex_get_metrics_cb(uint32_t code,
-                                const gt_latex_font_level_t *level_cfg,
-                                gt_latex_glyph_metrics_t    *metrics,
-                                void* user_data)
-{
-    if (NULL == level_cfg || NULL == metrics) { return -1; }
-
-    _draw_latex_st* dl = (_draw_latex_st*)user_data;
-    gt_font_metrics_st m = gt_font_get_metrics_by_info(code, &dl->dsc->font->info);
-    metrics->font_w = m.font_w;
-    metrics->height = m.font_h;
-    metrics->axis = (m.font_h >> 1);
-    return 0;
-}
-
-
-GT_ATTRIBUTE_RAM_TEXT
-static void _draw_latex_line(_draw_latex_st* dl, gt_point_st start, gt_point_st end, uint8_t thickness)
-{
-    gt_attr_line_st line_attr;
-    line_attr.line.opa = dl->dsc->opa;
-    line_attr.line.color = dl->dsc->font_color;
-    line_attr.line.brush = GT_BRUSH_TYPE_ROUND;
-    line_attr.line.type =  GT_GRAPHS_TYPE_LINE;
-    line_attr.line.width = thickness;
-
-    line_attr.start.x = start.x;
-    line_attr.start.y = start.y;
-
-    line_attr.end.x = end.x;
-    line_attr.end.y = end.y;
-    gt_draw_line(dl->draw_ctx, &line_attr, dl->view);
-
-    if(start.x > end.x) {
-        dl->ret_res.abs_pos.x = start.x + thickness;
-    }
-    else {
-        dl->ret_res.abs_pos.x = end.x + thickness;
-    }
-}
-
-GT_ATTRIBUTE_RAM_TEXT
-static void _draw_latex_hline_cb(int16_t x, int16_t y,
-                                uint16_t w, uint8_t thickness,
-                                uint32_t color, void *user_data)
-{
-    if (NULL == user_data || 0 == w || 0 == thickness) { return; }
-
-    _draw_latex_st* dl = (_draw_latex_st*)user_data;
-
-    gt_point_st start = {0};
-    gt_point_st end = {0};
-
-    start.x = x;
-    start.y = y;
-
-    end.x = x + w;
-    end.y = y;
-
-    _draw_latex_line(dl, start, end, thickness);
-}
-
-GT_ATTRIBUTE_RAM_TEXT
-static void _draw_latex_line_cb(int16_t x0, int16_t y0,
-                            int16_t x1, int16_t y1,
-                            uint8_t thickness,
-                            uint32_t color, void *user_data)
-{
-    if (NULL == user_data) { return; }
-    _draw_latex_st* dl = (_draw_latex_st*)user_data;
-
-    thickness = thickness > 1 ? thickness : 2;
-    gt_point_st start = {0};
-    gt_point_st end = {0};
-
-    start.x = x0;
-    start.y = y0;
-
-    end.x = x1;
-    end.y = y1;
-
-    _draw_latex_line(dl, start, end, thickness);
-}
-
-GT_ATTRIBUTE_RAM_TEXT
-static void _draw_latex_arc_cb(int16_t cx, int16_t cy,
-                            uint16_t r,
-                            uint16_t start_deg, uint16_t end_deg,
-                            uint8_t thickness,
-                            uint32_t color, void *user_data)
-{
-    if (NULL == user_data) { return; }
-    _draw_latex_st* dl = (_draw_latex_st*)user_data;
-
-    gt_attr_arc_st arc_attr = {
-        .color = dl->dsc->font_color,
-        .opa = dl->dsc->opa,
-        .width = thickness,
-        .start_angle = start_deg,
-        .end_angle = end_deg,
-        .rounded = false,
-    };
-
-    gt_area_st coords = {
-        .x = cx - r,
-        .y = cy - r,
-        .w = r * 2,
-        .h = r * 2,
-    };
-
-    gt_draw_arc(dl->draw_ctx, &arc_attr, &coords);
-}
-
-GT_ATTRIBUTE_RAM_TEXT
-static void _draw_latex_glyph_cb(int16_t x, int16_t y,
-                                uint32_t code,
-                                const gt_latex_font_level_t *level_cfg,
-                                uint32_t color, void *user_data)
-{
-    if (NULL == level_cfg || NULL == user_data) { return; }
-
-    _draw_latex_st* dl = (_draw_latex_st*)user_data;
-    char utf8[8] = {0};
-    gt_font_st font = {
-        .res = NULL,
-        .utf8 = utf8,
-        .len = 0,
-    };
-    font.info = dl->dsc->font->info;
-    font.info.style.reg.latex = false;
-    font.len = gt_unicode_to_utf8((uint8_t*)font.utf8, code);
-    font.utf8[font.len] = '\0';
-
-    gt_attr_font_st font_attr = *dl->dsc;
-    font_attr.font = &font;
-    font_attr.reg.single_line = true;
-    font_attr.start_x = x;
-    font_attr.start_y = y;
-    font_attr.align = GT_ALIGN_LEFT;
-    font_attr.reg.enabled_start = true;
-    font_attr.reg.single_line = true;
-    font_attr.indent = 0;
-
-    dl->ret_res = draw_text_single_line(dl->draw_ctx, &font_attr, dl->view);
-}
-
-static _gt_draw_font_res_st _GT_DRAW_ATTRIBUTE_SRAM_TEXT
-draw_text_latex(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, const gt_area_st * view) {
-    _draw_latex_st dl = {
-        .draw_ctx = draw_ctx,
-        .dsc = dsc,
-        .view = view,
-        .ret_res = {
-            .res = GT_RES_OK,
-            .size_show_limit = {
-                .x = 0, .y = dsc->font->info.size,
-            },
-        },
-    };
-
-    gt_latex_render_register(_draw_latex_glyph_cb,
-                            _draw_latex_hline_cb,
-                            _draw_latex_line_cb,
-                             _draw_latex_arc_cb);
-
-    gt_latex_font_set_callback(_draw_latex_get_metrics_cb);
-    gt_latex_font_set_temp_user_data(&dl);
-    gt_latex_font_set_temp_mode(GT_LATEX_FONT_MODE_3);
-    gt_latex_font_set_temp_level(0, dsc->font->info.size, dsc->font->info.family);
-    gt_latex_font_set_temp_level(1, dsc->font->info.size, dsc->font->info.family);
-    gt_latex_font_set_temp_level(2, dsc->font->info.size, dsc->font->info.family);
-    gt_latex_font_set_temp_level(3, dsc->font->info.size, dsc->font->info.family);
-    gt_latex_font_set_temp_level(4, dsc->font->info.size, dsc->font->info.family);
-
-    gt_latex_lexer_t  lexer  = { 0 };
-    gt_latex_parser_t parser = { 0 };
-    gt_latex_layout_t layout = { 0 };
-
-    int ret = gt_latex_parse(dl.dsc->font->utf8, dl.dsc->font->len, &parser, &lexer);
-    if(GT_LATEX_OK != ret) {
-        GT_LOGE(GT_LOG_TAG_GUI, "Failed to parse latex, ret=%d", ret);
-        goto _deinit_ret;
-    }
-
-    gt_latex_off_t off = { 0 };
-    bool _is_block = dsc->font->info.style.reg.latex_block;
-    if (!_is_block) {
-        if(dl.dsc->start_x > dl.dsc->logical_area.x) {
-            off.x = dl.dsc->start_x - dl.dsc->logical_area.x;
-        }
-        if(dl.dsc->start_y > dl.dsc->logical_area.y) {
-            off.y = dl.dsc->start_y - dl.dsc->logical_area.y;
-        }
-    } else {
-        /* block formula: always starts on a new line, y inherits start_y */
-        if(dl.dsc->start_y > dl.dsc->logical_area.y) {
-            off.y = dl.dsc->start_y - dl.dsc->logical_area.y;
-        }
-    }
-    uint16_t max_w = dl.dsc->logical_area.w;
-
-    if(dl.dsc->reg.only_calc_latex_size) {
-        max_w = 0;
-        off.x = 0;
-        off.y = 0;
-    }
-
-    ret = gt_latex_layout(&parser, &layout, max_w, off);
-    if(GT_LATEX_OK != ret) {
-        GT_LOGE(GT_LOG_TAG_GUI, "Failed to layout latex, ret=%d", ret);
-        goto _deinit_ret;
-    }
-
-    uint16_t w = 0, h = 0;
-    gt_latex_layout_get_size(&layout, &w, &h);
-
-    if(dl.dsc->reg.only_calc_latex_size) {
-        dl.ret_res.size.x = w;
-        dl.ret_res.size.y = h;
-        dl.ret_res.baseline = gt_latex_layout_get_axis(&layout);
-        goto _deinit_ret;
-    }
-
-    gt_latex_canvas_t cv = { 0 };
-    cv.x = dl.dsc->logical_area.x;
-    cv.y = dl.dsc->logical_area.y;
-    if (_is_block && dl.dsc->logical_area.w > w) {
-        cv.x += (dl.dsc->logical_area.w - w) >> 1;
-    }
-    cv.user_data = &dl;
-    ret = gt_latex_render_draw(&layout, &cv);
-    if(GT_LATEX_OK != ret) {
-        GT_LOGE(GT_LOG_TAG_GUI, "Failed to render latex formula, ret=%d", ret);
-    }
-
-    dl.ret_res.size.x = w;
-    dl.ret_res.size.y = h;
-    dl.ret_res.baseline = gt_latex_layout_get_axis(&layout);
-    dl.ret_res.block_bottom_y = (gt_size_t)(dl.dsc->logical_area.y) + (gt_size_t)h;
-    if (_is_block) {
-        /* Return abs_pos at the start of the next line so the caller wraps */
-        dl.ret_res.abs_pos.x = dl.dsc->logical_area.x;
-        dl.ret_res.abs_pos.y = dl.ret_res.block_bottom_y + dl.dsc->space_y;
-    }
-
-_deinit_ret:
-    gt_latex_layout_deinit(&layout);
-    gt_latex_parse_free(&parser, &lexer);
-    gt_latex_font_clear_temp_user_data();
-    gt_latex_font_clear_temp();
-    return dl.ret_res;
-}
-#endif
 
 static GT_ATTRIBUTE_RAM_TEXT void _draw_dot_matrix_data(_gt_draw_ctx_st * draw_ctx, const gt_attr_rect_st * dsc,
     const gt_area_st * coords, gt_draw_blend_dsc_st * blend_dsc_p) {
@@ -3949,13 +3683,6 @@ _gt_draw_font_res_st draw_text(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st
     if (0 == dsc->font->len) {
         return _empty_string_handler(dsc);
     }
-
-#if GT_USE_LATEX_LIB
-    if(dsc->font->info.style.reg.latex || dsc->font->info.style.reg.latex_block) {
-        return draw_text_latex(draw_ctx, dsc, coords);
-    }
-#endif
-
     if (dsc->reg.single_line) {
         return draw_text_single_line(draw_ctx, dsc, coords);
     }
