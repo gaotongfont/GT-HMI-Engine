@@ -23,6 +23,9 @@
 #include "./gt_textarea.h"
 #include "./gt_line.h"
 #include "./gt_table.h"
+#if GT_CFG_ENABLE_FORMULA
+#include "./gt_formula.h"
+#endif
 
 
 /* private define -------------------------------------------------------*/
@@ -48,7 +51,10 @@ typedef struct _gt_markdown_s {
     gt_color_t color_border;
     gt_color_t font_color;
     uint8_t border_width;
-    bool align_latex_baseline;
+#if GT_CFG_ENABLE_FORMULA
+    gt_formula_font_st formula_font_cfg;
+    uint8_t formula_font_cfg_valid;
+#endif
 }_gt_markdown_st;
 
 /**
@@ -72,6 +78,12 @@ typedef struct {
     gt_font_style_et font_style;    /** default: GT_FONT_STYLE_NONE */
     gt_align_et font_align;
     uint8_t is_table_header;
+
+#if GT_CFG_ENABLE_FORMULA
+    uint8_t in_latex;
+    const char * latex_start;
+    MD_SIZE latex_len;
+#endif
 
     _gt_markdown_type_st prop;
 }_gt_markdown_pack_st;
@@ -193,7 +205,6 @@ _enter_md_block_default(_gt_markdown_cb_params_st * pm) {
     gt_textarea_set_font_info(ptr->act_p[ptr->act_idx], &style->font_info_small);
     gt_textarea_set_font_color(ptr->act_p[ptr->act_idx], style->font_color);
     gt_textarea_set_space(ptr->act_p[ptr->act_idx], 0, 8);
-    gt_textarea_set_align_latex_baseline(ptr->act_p[ptr->act_idx], style->align_latex_baseline);
 
 #if _MARK_DOWN_LOG
     GT_LOG_A("", "enter block p[default] %p act: %p size: %d %d<<<<", ptr->markdown_p, ptr->act_p[ptr->act_idx], ptr->markdown_p->area.w, ptr->offset.y);
@@ -492,9 +503,6 @@ static GT_ATTRIBUTE_RAM_TEXT int
 _enter_span_cb(MD_SPANTYPE type, void * detail, void * userdata) {
     int ret = 0;
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)userdata;
-#if _MARK_DOWN_LOG
-    GT_LOG_A("", " enter span %d [%d]", ptr->act_idx, type);
-#endif
     switch (type) {
         case MD_SPAN_STRONG: {
             ptr->font_style |= GT_FONT_STYLE_BOLD;
@@ -511,13 +519,13 @@ _enter_span_cb(MD_SPANTYPE type, void * detail, void * userdata) {
             ptr->font_style |= GT_FONT_STYLE_ITALIC;
             break;
         }
-#if GT_USE_LATEX_LIB
+#if GT_CFG_ENABLE_FORMULA
         case MD_SPAN_LATEXMATH: {
-            ptr->font_style |= GT_FONT_STYLE_LATEX;
+            ptr->in_latex = 1;  ptr->latex_start = NULL;  ptr->latex_len = 0;
             break;
         }
         case MD_SPAN_LATEXMATH_DISPLAY: {
-            ptr->font_style |= GT_FONT_STYLE_LATEX_BLOCK;
+            ptr->in_latex = 2;  ptr->latex_start = NULL;  ptr->latex_len = 0;
             break;
         }
 #endif
@@ -534,6 +542,32 @@ _leave_span_cb(MD_SPANTYPE type, void * detail, void * userdata) {
 #if _MARK_DOWN_LOG
     GT_LOG_A("", " leave span %d, [%d]", ptr->act_idx, type);
 #endif
+#if GT_CFG_ENABLE_FORMULA
+    if (MD_SPAN_LATEXMATH == type || MD_SPAN_LATEXMATH_DISPLAY == type) {
+        if (ptr->latex_start && ptr->latex_len > 0) {
+            _gt_markdown_st * style = (_gt_markdown_st *)ptr->markdown_p;
+            gt_obj_st * formula = gt_formula_create(ptr->markdown_p);
+            gt_obj_set_pos(formula, 0, ptr->offset.y + ptr->markdown_p->area.y);
+            gt_obj_set_touch_parent(formula, true);
+            gt_obj_set_fixed(formula, true);
+            gt_formula_set_font_color(formula, style->font_color);
+            gt_formula_set_max_width(formula, ptr->markdown_p->area.w);
+            if (style->formula_font_cfg_valid) {
+                gt_formula_set_font_config(formula, &style->formula_font_cfg);
+            } else {
+                gt_formula_font_st cfg = {0};
+                cfg.font_mode = GT_LATEX_FONT_MODE_3;
+                for (int i = 0; i < GT_FORMULA_FONT_MAX_LEVEL; i++) {
+                    cfg.info[i] = style->font_info_small;
+                }
+                gt_formula_set_font_config(formula, &cfg);
+            }
+            gt_formula_set_text_by_len(formula, ptr->latex_start, (uint16_t)ptr->latex_len);
+        }
+        ptr->in_latex = 0;  ptr->latex_start = NULL;  ptr->latex_len = 0;
+        return ret;
+    }
+#endif
     ptr->font_style = GT_FONT_STYLE_NONE;
     return ret;
 }
@@ -542,6 +576,14 @@ static GT_ATTRIBUTE_RAM_TEXT int
 _text_cb(MD_TEXTTYPE type, const MD_CHAR * text, MD_SIZE size, void * userdata) {
     int ret = 0;
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)userdata;
+
+#if GT_CFG_ENABLE_FORMULA
+    if (ptr->in_latex) {
+        ptr->latex_start = (const char *)text;
+        ptr->latex_len   = size;
+        return 0;
+    }
+#endif
 
     if (NULL == ptr->act_p[ptr->act_idx]) {
         return ret;
@@ -565,7 +607,7 @@ _markdown_init_flags(_gt_markdown_st * style) {
     style->md_parser.flags |= MD_FLAG_NOHTML;
     // style->md_parser.flags |= MD_FLAG_UNDERLINE;
     style->md_parser.flags |= MD_FLAG_STRIKETHROUGH;
-#if GT_USE_LATEX_LIB
+#if GT_CFG_ENABLE_FORMULA
     style->md_parser.flags |= MD_FLAG_LATEXMATHSPANS;
 #endif
     // style->md_parser.flags |= MD_FLAG_PERMISSIVEAUTOLINKS;
@@ -713,14 +755,17 @@ void gt_markdown_set_font_color(gt_obj_st * markdown, gt_color_t color)
     style->font_color = color;
 }
 
-void gt_markdown_set_align_latex_baseline(gt_obj_st * markdown, bool align)
+#if GT_CFG_ENABLE_FORMULA
+void gt_markdown_set_formula_font_config(gt_obj_st * markdown, const gt_formula_font_st * cfg)
 {
-    if (false == gt_obj_is_type(markdown, OBJ_TYPE)) {
+    if (false == gt_obj_is_type(markdown, OBJ_TYPE) || NULL == cfg) {
         return;
     }
     _gt_markdown_st * style = (_gt_markdown_st *)markdown;
-    style->align_latex_baseline = align;
+    style->formula_font_cfg = *cfg;
+    style->formula_font_cfg_valid = 1;
 }
+#endif
 
 #endif  /** GT_CFG_ENABLE_MARKDOWN */
 /* end ------------------------------------------------------------------*/
