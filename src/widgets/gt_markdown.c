@@ -48,7 +48,7 @@ typedef struct _gt_markdown_s {
     gt_color_t color_border;
     gt_color_t font_color;
     uint8_t border_width;
-    uint8_t align_latex_baseline : 1;
+    bool align_latex_baseline;
 }_gt_markdown_st;
 
 /**
@@ -74,9 +74,6 @@ typedef struct {
     uint8_t is_table_header;
 
     _gt_markdown_type_st prop;
-
-    uint8_t is_append : 1;      /** <= false : new contents ; > true: The content within the same span is appended to the contents of the same textarea. */
-    uint8_t start_append : 1;   /** if is_append==true and start_append == true;  */
 }_gt_markdown_pack_st;
 
 typedef struct {
@@ -160,15 +157,7 @@ static GT_ATTRIBUTE_RAM_TEXT gt_res_t _common_set_text(_gt_markdown_pack_st * pt
             break;
         }
         case GT_TYPE_TEXTAREA: {
-            if(ptr->is_append && ptr->start_append) {
-                gt_textarea_append_str_by_len(obj, (char * )text, len, ptr->font_style, style->font_color);
-            }
-            else {
-                gt_textarea_add_str_by_len(obj, (char * )text, len, ptr->font_style, style->font_color);
-                if(ptr->is_append) {
-                    ptr->start_append = true;
-                }
-            }
+            gt_textarea_add_str_by_len(obj, (char * )text, len, ptr->font_style, style->font_color);
             break;
         }
         case GT_TYPE_TABLE: {
@@ -504,7 +493,7 @@ _enter_span_cb(MD_SPANTYPE type, void * detail, void * userdata) {
     int ret = 0;
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)userdata;
 #if _MARK_DOWN_LOG
-    GT_LOG_A("", " enter span %d [%d] [%d]", ptr->act_idx, type, ptr->is_append);
+    GT_LOG_A("", " enter span %d [%d]", ptr->act_idx, type);
 #endif
     switch (type) {
         case MD_SPAN_STRONG: {
@@ -525,12 +514,10 @@ _enter_span_cb(MD_SPANTYPE type, void * detail, void * userdata) {
 #if GT_USE_LATEX_LIB
         case MD_SPAN_LATEXMATH: {
             ptr->font_style |= GT_FONT_STYLE_LATEX;
-            ptr->is_append = true;
             break;
         }
         case MD_SPAN_LATEXMATH_DISPLAY: {
             ptr->font_style |= GT_FONT_STYLE_LATEX_BLOCK;
-            ptr->is_append = true;
             break;
         }
 #endif
@@ -545,11 +532,9 @@ _leave_span_cb(MD_SPANTYPE type, void * detail, void * userdata) {
     int ret = 0;
     _gt_markdown_pack_st * ptr = (_gt_markdown_pack_st *)userdata;
 #if _MARK_DOWN_LOG
-    GT_LOG_A("", " leave span %d, [%d] [%d]", ptr->act_idx, type, ptr->is_append);
+    GT_LOG_A("", " leave span %d, [%d]", ptr->act_idx, type);
 #endif
     ptr->font_style = GT_FONT_STYLE_NONE;
-    ptr->is_append = false;
-    ptr->start_append = false;
     return ret;
 }
 
