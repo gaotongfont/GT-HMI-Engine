@@ -52,6 +52,7 @@ typedef struct _gt_markdown_s {
     gt_color_t font_color;
     uint8_t border_width;
 #if GT_CFG_ENABLE_FORMULA
+    gt_color_t formula_color;
     gt_formula_font_st formula_font_cfg;
     uint8_t formula_font_cfg_valid;
 #endif
