@@ -37,6 +37,8 @@ typedef struct _gt_formula_s {
 
     uint16_t max_width;
     uint16_t text_len;
+
+    gt_formula_mode_t mode;  /* 渲染模式：LaTeX 或 Markdown / Render mode: LaTeX or Markdown */
 }_gt_formula_st;
 
 
@@ -141,6 +143,15 @@ static int _formula_get_metrics_cb(uint32_t code,
     metrics->font_w = m.font_w;
     metrics->height = m.font_h;
     metrics->axis = (m.font_h >> 1);
+
+    if (level_cfg->font_flags & GT_LATEX_FONT_BOLD) {
+        metrics->font_w += 1;
+    }
+
+    if (level_cfg->font_flags & GT_LATEX_FONT_ITALIC) {
+         metrics->font_w += m.font_h >> 2;
+    }
+
     return 0;
 }
 GT_ATTRIBUTE_RAM_TEXT
@@ -163,6 +174,14 @@ static void _formula_draw_glyph_cb(int16_t x, int16_t y,
     font.len = gt_unicode_to_utf8((uint8_t*)font.utf8, code);
     font.utf8[font.len] = '\0';
     gt_font_info_update_font_thick(&font.info);
+
+    if (level_cfg->font_flags & GT_LATEX_FONT_BOLD) {
+        font.info.style.reg.bold = true;
+    }
+
+    if (level_cfg->font_flags & GT_LATEX_FONT_ITALIC) {
+        font.info.style.reg.italic = true;
+    }
 
     gt_attr_font_st font_attr = {
         .font       = &font,
@@ -274,6 +293,98 @@ static void _formula_draw_arc_cb(int16_t cx, int16_t cy,
     gt_draw_arc(obj->draw_ctx, &arc_attr, &coords);
 }
 
+static void _formula_md_mode_handler(gt_obj_st * obj)
+{
+    _gt_formula_st * style = (_gt_formula_st * )obj;
+
+    if(GT_FORMULA_MODE_MD != style->mode) {
+        return ;
+    }
+
+#if GT_MD_ENABLE
+    gt_md_parser_t parser = {0};
+    gt_md_node_container_t *root = NULL;
+    gt_md_layout_t layout = {0};
+
+    int ret = gt_md_parse_and_layout(style->text, style->text_len, style->max_width,
+                            &parser, &root, &layout);
+    if (ret != GT_MD_OK) { return ; }
+
+    uint16_t w = layout.total_w;
+    uint16_t h = layout.total_h;
+
+    obj->area.w = w > style->max_width ? w : style->max_width;
+    obj->area.h = h;
+    _formula_bg_show(obj);
+
+    gt_latex_canvas_t cv = { 0 };
+    cv.x = obj->area.x;
+    cv.y = obj->area.y;
+    cv.fg_color = gt_color_to32(style->font_color);
+    cv.user_data = (void*)obj;
+
+    ret = gt_md_render(&layout, &cv);
+    if (GT_MD_OK != ret) {
+        GT_LOGE(GT_LOG_TAG_GUI, "Failed to render MD, ret=%d", ret);
+    }
+
+    gt_md_free_all(&parser, root, &layout);
+#else
+    GT_LOGE(GT_LOG_TAG_GUI, "Markdown mode not enabled (GT_MD_ENABLE=0)");
+#endif
+}
+
+static void _formula_latex_mode_handler(gt_obj_st * obj)
+{
+    _gt_formula_st * style = (_gt_formula_st * )obj;
+
+    if(GT_FORMULA_MODE_LATEX != style->mode) {
+        return ;
+    }
+
+    /* LaTeX 模式（默认）/ LaTeX mode (default) */
+    gt_latex_lexer_t  lexer  = { 0 };
+    gt_latex_parser_t parser = { 0 };
+    gt_latex_layout_t layout = { 0 };
+    uint16_t w = 0, h = 0;
+
+    int ret = gt_latex_parse(style->text, style->text_len, &parser, &lexer);
+    if(GT_LATEX_OK != ret) {
+        return ;
+    }
+
+    ret = gt_latex_layout(&parser, &layout, style->max_width, style->latex_off);
+    if(GT_LATEX_OK != ret) {
+        GT_LOGE(GT_LOG_TAG_GUI, "Failed to layout latex formula, ret=%d", ret);
+        goto _latex_deinit;
+    }
+    gt_latex_layout_get_size(&layout, &w, &h);
+    if(0 == w && 0 == h) {
+        GT_LOGE(GT_LOG_TAG_GUI, "Failed to layout latex formula, w=%d, h=%d", w, h);
+        goto _latex_deinit;
+    }
+
+    obj->area.w = w > style->max_width ? w : style->max_width;
+    obj->area.h = h;
+    _formula_bg_show(obj);
+
+    gt_latex_canvas_t cv = { 0 };
+    cv.x = obj->area.x;
+    cv.y = obj->area.y;
+    cv.fg_color = gt_color_to32(style->font_color);
+    cv.user_data = (void*)obj;
+
+    ret = gt_latex_render_draw(&layout, &cv);
+    if(GT_LATEX_OK != ret) {
+        GT_LOGE(GT_LOG_TAG_GUI, "Failed to render latex formula, ret=%d", ret);
+    }
+
+_latex_deinit:
+    gt_latex_layout_deinit(&layout);
+    gt_latex_parse_free(&parser, &lexer);
+}
+
+
 GT_ATTRIBUTE_RAM_TEXT
 static void _formula_init_cb(gt_obj_st * obj)
 {
@@ -290,46 +401,16 @@ static void _formula_init_cb(gt_obj_st * obj)
     gt_latex_font_set_callback(_formula_get_metrics_cb);
     _formula_set_font_cfg(obj);
 
-
-    gt_latex_lexer_t  lexer  = { 0 };
-    gt_latex_parser_t parser = { 0 };
-    gt_latex_layout_t layout = { 0 };
-
-    int ret = gt_latex_parse(style->text, style->text_len, &parser, &lexer);
-    if(GT_LATEX_OK != ret) {
-        goto _deinit_ret;
-    }
-
+    int ret = GT_LATEX_OK;
     uint16_t w = 0, h = 0;
-    ret = gt_latex_layout(&parser, &layout, style->max_width, style->latex_off);
-    if(GT_LATEX_OK != ret) {
-        GT_LOGE(GT_LOG_TAG_GUI, "Failed to layout latex formula, ret=%d", ret);
-        goto _deinit_ret;
-    }
-    gt_latex_layout_get_size(&layout, &w, &h);
-    if(0 == w && 0 == h) {
-        GT_LOGE(GT_LOG_TAG_GUI, "Failed to layout latex formula, w=%d, h=%d", w, h);
-        goto _deinit_ret;
+
+    /* 根据模式选择渲染路径 / Choose render path based on mode */
+    if (style->mode == GT_FORMULA_MODE_MD) {
+        _formula_md_mode_handler(obj);
+    } else {
+        _formula_latex_mode_handler(obj);
     }
 
-    obj->area.w = w > style->max_width ? w : style->max_width; // 4 is padding
-    obj->area.h = h; // 4 is padding
-    _formula_bg_show(obj);
-
-    gt_latex_canvas_t cv = { 0 };
-    cv.x = obj->area.x;
-    cv.y = obj->area.y;
-    cv.fg_color = gt_color_to32(style->font_color);
-    cv.user_data = (void*)obj;
-
-    ret = gt_latex_render_draw(&layout, &cv);
-    if(GT_LATEX_OK != ret) {
-        GT_LOGE(GT_LOG_TAG_GUI, "Failed to render latex formula, ret=%d", ret);
-    }
-
-_deinit_ret:
-    gt_latex_layout_deinit(&layout);
-    gt_latex_parse_free(&parser, &lexer);
     _formula_clear_font_cfg(obj);
 }
 
@@ -493,6 +574,27 @@ void gt_formula_set_first_line_offset(gt_obj_st* obj, uint16_t off_x, uint16_t o
     style->latex_off.x = off_x;
     style->latex_off.y = off_y;
 }
+
+GT_ATTRIBUTE_RAM_TEXT
+void gt_formula_set_mode(gt_obj_st* obj, gt_formula_mode_t mode)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_formula_st * style = (_gt_formula_st * )obj;
+    style->mode = mode;
+}
+
+GT_ATTRIBUTE_RAM_TEXT
+gt_formula_mode_t gt_formula_get_mode(gt_obj_st* obj)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return GT_FORMULA_MODE_LATEX;
+    }
+    _gt_formula_st * style = (_gt_formula_st * )obj;
+    return style->mode;
+}
+
 /* end of file ----------------------------------------------------------*/
 #endif
 

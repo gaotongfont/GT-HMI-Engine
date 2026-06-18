@@ -30,6 +30,15 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+
+/**
+ * @brief 公式渲染模式 / Formula render mode
+ */
+typedef enum {
+    GT_FORMULA_MODE_LATEX = 0,  /* LaTeX 数学公式模式（默认）/ LaTeX math formula mode (default) */
+    GT_FORMULA_MODE_MD    = 1,  /* Markdown 文档模式 / Markdown document mode */
+} gt_formula_mode_t;
+
 typedef struct {
     gt_latex_font_mode_t font_mode;
     gt_font_info_st info [GT_FORMULA_FONT_MAX_LEVEL];
@@ -72,6 +81,23 @@ void gt_formula_set_font_config(gt_obj_st * obj, const gt_formula_font_st *cfg);
  * @param off_y
  */
 void gt_formula_set_first_line_offset(gt_obj_st* obj, uint16_t off_x, uint16_t off_y);
+
+/**
+ * @brief 设置公式渲染模式 / Set formula render mode
+ *
+ * @param obj formula 对象 / formula object
+ * @param mode GT_FORMULA_MODE_LATEX（LaTeX 数学公式）或 GT_FORMULA_MODE_MD（Markdown 文档）
+ *             GT_FORMULA_MODE_LATEX (LaTeX math) or GT_FORMULA_MODE_MD (Markdown document)
+ */
+void gt_formula_set_mode(gt_obj_st* obj, gt_formula_mode_t mode);
+
+/**
+ * @brief 获取当前公式渲染模式 / Get current formula render mode
+ *
+ * @param obj formula 对象 / formula object
+ * @return gt_formula_mode_t 当前模式 / current mode
+ */
+gt_formula_mode_t gt_formula_get_mode(gt_obj_st* obj);
 
 
 

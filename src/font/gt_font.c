@@ -1127,6 +1127,7 @@ gt_font_lan_et gt_font_lan_get(uint32_t unicode, uint8_t encoding)
 #if GT_USE_LATEX_LIB
         { 0x2000, 0x206F, FONT_LAN_MATH },
         { 0x2100, 0x214F, FONT_LAN_MATH },
+        { 0x2150, 0x218F, FONT_LAN_MATH },
         { 0x2190, 0x21FF, FONT_LAN_MATH },
         { 0x2200, 0x22FF, FONT_LAN_MATH },
         { 0x2300, 0x23FF, FONT_LAN_MATH },
