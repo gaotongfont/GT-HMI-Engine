@@ -23,11 +23,26 @@ typedef enum {
 } gt_latex_font_mode_t;
 
 /* ----------------------------------------------------------------
+ * 字体样式标志位枚举（用于 MD 渲染扩展）
+ * Font style flags enum (for MD rendering extension)
+ * 注意：LaTeX 渲染器不使用此字段，仅供 MD 模块在 level_cfg 副本中设置
+ * Note: LaTeX renderer does not use this, only for MD module to set in level_cfg copies
+ * ---------------------------------------------------------------- */
+typedef enum {
+    GT_LATEX_FONT_NORMAL        = 0x00,   /* 普通 / Normal */
+    GT_LATEX_FONT_BOLD          = 0x01,   /* 粗体 / Bold */
+    GT_LATEX_FONT_ITALIC        = 0x02,   /* 斜体 / Italic */
+    GT_LATEX_FONT_MONO          = 0x04,   /* 等宽（代码）/ Monospace (code) */
+    GT_LATEX_FONT_STRIKETHROUGH = 0x08,   /* 删除线 / Strikethrough */
+} gt_latex_font_flags_t;
+
+/* ----------------------------------------------------------------
  * 字体级别配置 / Font level config
  * ---------------------------------------------------------------- */
 typedef struct {
     uint16_t size;          /* 该级字号（像素高度）/ Font size in pixels */
     uint16_t font_type;     /* 字体类型，由用户定义含义，透传给回调 / Font type, user-defined */
+    uint8_t  font_flags;    /* 字体样式标志（MD扩展字段，LaTeX默认0）/ Font style flags (MD extension, LaTeX defaults to 0) */
 } gt_latex_font_level_t;
 
 /* ----------------------------------------------------------------
@@ -164,6 +179,25 @@ void gt_latex_font_clear_temp_user_data(void);
  * @return void* 用户数据指针 / User data pointer
  */
 const void* gt_latex_font_get_user_data(void);
+
+/**
+ * @brief 获取当前模式下的字级数量 / Get number of font levels in current mode
+ * @return 3 或 5 / 3 or 5
+ */
+static inline uint8_t gt_latex_font_get_level_count(void) {
+    return (uint8_t)gt_latex_font_get_mode();
+}
+
+/**
+ * @brief 获取指定级别的字号（像素）/ Get font size at given level (pixels)
+ * @param level 级别索引 / Level index
+ * @return 字号像素高度，级别无效时返回 0 / Font size in pixels, 0 if invalid
+ */
+static inline uint8_t gt_latex_font_get_size(uint8_t level) {
+    const gt_latex_font_level_t *lv = gt_latex_font_get_level(level);
+    return lv ? (uint8_t)lv->size : 0u;
+}
+
 #endif /* GT_LATEX_ENABLE */
 
 #endif /* _GT_LATEX_FONT_H_ */

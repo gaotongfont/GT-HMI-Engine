@@ -120,6 +120,42 @@ void gt_latex_render_register(gt_latex_draw_glyph_cb glyph_cb,
 int gt_latex_render_draw(const gt_latex_layout_t *layout,
                          const gt_latex_canvas_t *canvas);
 
+/**
+ * @brief 通过已注册的全局回调绘制字形（签名与 gt_latex_draw_glyph_cb 一致）
+ *        Draw glyph via registered global callback (same signature as gt_latex_draw_glyph_cb)
+ */
+void gt_latex_render_draw_glyph(int16_t x, int16_t y,
+                                uint32_t code,
+                                const gt_latex_font_level_t *level_cfg,
+                                uint32_t color, void *user_data);
+
+/**
+ * @brief 通过已注册的全局回调绘制水平线（签名与 gt_latex_draw_hline_cb 一致）
+ *        Draw horizontal line via registered global callback (same signature as gt_latex_draw_hline_cb)
+ */
+void gt_latex_render_draw_hline(int16_t x, int16_t y,
+                                uint16_t w, uint8_t thickness,
+                                uint32_t color, void *user_data);
+
+/**
+ * @brief 通过已注册的全局回调绘制斜线段（签名与 gt_latex_draw_line_cb 一致）
+ *        Draw line via registered global callback (same signature as gt_latex_draw_line_cb)
+ */
+void gt_latex_render_draw_line(int16_t x0, int16_t y0,
+                               int16_t x1, int16_t y1,
+                               uint8_t thickness,
+                               uint32_t color, void *user_data);
+
+/**
+ * @brief 通过已注册的全局回调绘制圆弧（签名与 gt_latex_draw_arc_cb 一致）
+ *        Draw arc via registered global callback (same signature as gt_latex_draw_arc_cb)
+ */
+void gt_latex_render_draw_arc(int16_t cx, int16_t cy,
+                              uint16_t r,
+                              uint16_t start_deg, uint16_t end_deg,
+                              uint8_t thickness,
+                              uint32_t color, void *user_data);
+
 #endif /* GT_LATEX_ENABLE */
 
 #endif /* _GT_LATEX_RENDER_H_ */

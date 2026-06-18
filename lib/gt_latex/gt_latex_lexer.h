@@ -52,6 +52,10 @@ typedef struct {
     uint32_t              code;     /* 预解码的 Unicode code point（CHAR token 使用）/ Pre-decoded Unicode (CHAR token) */
 } gt_latex_token_t;
 
+/* 流式模式环形缓冲深度（2槽：1当前 + 1预取，满足1-token前瞻）
+ * Stream mode ring buffer depth (2 slots: current + prefetch, enough for 1-token lookahead) */
+#define GT_LATEX_STREAM_BUF_SIZE  2
+
 /* ----------------------------------------------------------------
  * 词法分析器上下文 / Lexer context
  * ---------------------------------------------------------------- */
@@ -59,9 +63,15 @@ typedef struct {
     const char        *src;         /* 输入字符串 / Input string */
     uint16_t           pos;         /* 当前解析位置 / Current parse position */
     uint16_t           src_len;     /* 输入字符串长度 / Input string length */
-    gt_latex_token_t  *tokens;      /* Token 数组（动态分配）/ Token array (dynamically allocated) */
+    gt_latex_token_t  *tokens;      /* Token 数组（动态分配，流式模式为 NULL）/ Token array (NULL in stream mode) */
     uint16_t           token_count; /* 已解析的 Token 数量 / Number of tokens parsed */
     uint16_t           token_cap;   /* Token 数组容量 / Token array capacity */
+    /* ---- 流式模式专用字段 / Streaming mode fields ---- */
+    uint8_t            stream_mode; /* 0=批量模式，1=流式模式 / 0=batch, 1=stream */
+    gt_latex_token_t   sbuf[GT_LATEX_STREAM_BUF_SIZE]; /* 固定环形缓冲 / Fixed ring buffer */
+    uint8_t            sbuf_head;   /* 下一个待消费的槽位 / Next slot to consume */
+    uint8_t            sbuf_fill;   /* 缓冲中有效 token 数 / Valid tokens in buffer */
+    uint8_t            sbuf_eof;    /* 1=源已扫描完毕 / 1=source exhausted */
 } gt_latex_lexer_t;
 
 /* ----------------------------------------------------------------
@@ -97,6 +107,16 @@ void gt_latex_lexer_deinit(gt_latex_lexer_t *lexer);
  * @return      指向 Token 的指针，越界返回 NULL / Pointer to token, NULL if out of range
  */
 const gt_latex_token_t *gt_latex_lexer_get(const gt_latex_lexer_t *lexer, uint16_t index);
+
+/**
+ * @brief 流式模式初始化（零堆内存，固定 40B 环形缓冲）
+ *        Initialize lexer in streaming mode (zero heap, fixed 40B ring buffer)
+ * @param lexer    词法分析器上下文 / Lexer context
+ * @param src      输入的 LaTeX 公式字符串 / Input LaTeX formula string
+ * @param src_len  公式字符串长度（字节）/ Formula string length in bytes
+ * @return         0 成功，负数失败 / 0 on success, negative on failure
+ */
+int gt_latex_lexer_init_stream(gt_latex_lexer_t *lexer, const char *src, uint16_t src_len);
 
 #endif /* GT_LATEX_ENABLE */
 
