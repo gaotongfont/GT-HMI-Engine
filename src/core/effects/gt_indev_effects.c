@@ -23,8 +23,17 @@
 
 /* Geometry must follow the current display resolution instead of the
  * compile-time screen size because some pages switch orientation at runtime. */
-#define _GT_EFFECTS_RECT_COLOR      gt_color_black()
-#define _GT_EFFECTS_RECT_OPA        (GT_OPA_50)
+#ifndef _GT_EFFECTS_RECT_COLOR
+    #define _GT_EFFECTS_RECT_COLOR      gt_color_black()
+#endif
+
+#ifndef _GT_EFFECTS_RECT_OPA
+    #define _GT_EFFECTS_RECT_OPA        (GT_OPA_50)
+#endif
+
+#ifndef _GT_EFFECTS_MAX_CALC
+    #define _GT_EFFECTS_MAX_CALC(_dis)  ((_dis) >> 2)
+#endif
 
 /* private typedef ------------------------------------------------------*/
 typedef struct {
@@ -192,7 +201,7 @@ static void _effects_get_geometry(gt_size_t * effects_w,
     if (effects_rect_w) { *effects_rect_w = local_effects_rect_w; }
     if (effects_rect_h) { *effects_rect_h = local_effects_h; }
     if (effects_rect_radius) { *effects_rect_radius = local_effects_w; }
-    if (effects_distance_max) { *effects_distance_max = local_effects_rect_w >> 2; }
+    if (effects_distance_max) { *effects_distance_max = _GT_EFFECTS_MAX_CALC(local_effects_rect_w); }
 }
 
 GT_ATTRIBUTE_RAM_TEXT
