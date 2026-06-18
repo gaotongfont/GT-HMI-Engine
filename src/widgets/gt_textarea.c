@@ -564,10 +564,9 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
                 pre_start_y += line_h + style->space_y;
                 line_h = font.info.size;
                 max_baseline = font.info.size >> 1;
-                uint16_t idx_i = idx;
-                for( ; idx_i < style->cnt_contents; idx_i++) {
-                    bool is_latex = (style->contents[idx_i].mask_style & GT_FONT_STYLE_LATEX);
-                    bool is_block = (style->contents[idx_i].mask_style & GT_FONT_STYLE_LATEX_BLOCK);
+                for(uint16_t i = idx; i < style->cnt_contents; i++) {
+                    bool is_latex = (style->contents[i].mask_style & GT_FONT_STYLE_LATEX);
+                    bool is_block = (style->contents[i].mask_style & GT_FONT_STYLE_LATEX_BLOCK);
 
                     if(overlength_idx == idx) {
                         is_block = true;
@@ -577,11 +576,11 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
                     }
                     _gt_draw_font_res_st tmp_font_res = {0};
 
-                    if(is_latex || (is_block && idx_i == idx)) {
+                    if(is_latex || (is_block && i == idx)) {
                         gt_font_st tmp_font = font;
-                        tmp_font.utf8 = style->contents[idx_i].text;
-                        tmp_font.len = style->contents[idx_i].len;
-                        tmp_font.info.style.all = style->contents[idx_i].mask_style;
+                        tmp_font.utf8 = style->contents[i].text;
+                        tmp_font.len = style->contents[i].len;
+                        tmp_font.info.style.all = style->contents[i].mask_style;
 
                         gt_attr_font_st tmp_font_attr = {
                             .font       = &tmp_font,
@@ -598,7 +597,7 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
                     }
 
                     if(is_block) {
-                        next_time_idx = (idx_i == idx ? idx_i + 1 : idx_i);
+                        next_time_idx = (i == idx ? i + 1 : i);
                         line_h = GT_MAX(line_h, tmp_font_res.size.y);
                         max_baseline = GT_MAX(max_baseline, tmp_font_res.baseline);
                         break;
@@ -607,20 +606,20 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
                     if(is_latex) {
                         max_w += tmp_font_res.size.x;
                         if(max_w > font_attr.logical_area.w ) {
-                            if(idx_i == idx) {
-                                next_time_idx = idx_i + 1;
+                            if(i == idx) {
+                                next_time_idx = i + 1;
                                 line_h = GT_MAX(line_h, tmp_font_res.size.y);
                                 max_baseline = GT_MAX(max_baseline, tmp_font_res.baseline);
-                                if(overlength_idx != idx_i) {
-                                    overlength_idx = idx_i;
-                                    --idx_i;
+                                if(overlength_idx != i) {
+                                    overlength_idx = i;
+                                    --i;
                                     continue;
                                 }
                                 overlength_idx = -1;
                                 break;
                             }
-                            next_time_idx = idx_i;
-                            greed_idx = idx_i;
+                            next_time_idx = i;
+                            greed_idx = i;
                             break;
                         }
                         line_h = GT_MAX(line_h, tmp_font_res.size.y);
@@ -628,8 +627,8 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
                     }
                     else{
                         gt_font_split_line_st split_line = {
-                            .text = style->contents[idx_i].text,
-                            .len = style->contents[idx_i].len,
+                            .text = style->contents[i].text,
+                            .len = style->contents[i].len,
                             .indent = 0,
                             .space = font_attr.space_x,
                             .max_w = font_attr.logical_area.w,
@@ -644,16 +643,14 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
                         }
                         max_w += split_line.max_w - line_ret.disp_w;
                         if(max_w > font_attr.logical_area.w) {
-                            next_time_idx = idx_i + 1;
+                            next_time_idx = i + 1;
                             break;
                         }
                     }
-                }
 
-                if(idx_i >= style->cnt_contents) {
-                    next_time_idx = idx_i;
                 }
             }
+
             if(idx < next_time_idx) {
                 if(font_attr.font->info.style.reg.latex) {
 

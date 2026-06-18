@@ -3235,9 +3235,6 @@ draw_text_latex(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, const g
         dl.ret_res.abs_pos.x = dl.dsc->logical_area.x;
         dl.ret_res.abs_pos.y = dl.ret_res.block_bottom_y + dl.dsc->space_y;
     }
-    else {
-        dl.ret_res.abs_pos.x = dl.dsc->logical_area.x + (w) + dl.dsc->space_x;
-    }
 
 _deinit_ret:
     gt_latex_layout_deinit(&layout);
