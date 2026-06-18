@@ -511,17 +511,7 @@ _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is
     int32_t greed_idx = -1, overlength_idx = -1;;
     uint16_t line_h = font.info.size;
     uint16_t max_baseline = font.info.size >> 1;
-    gt_size_t pre_start_y = font_attr.start_y
-                            ? font_attr.start_y - (line_h + style->space_y)
-                            : area_font.y - (line_h + style->space_y);
-
-    if(style->reg.align_latex_baseline) {
-        font_attr.reg.enabled_start = true;
-        font_attr.start_x = font_attr.start_x
-                            ? font_attr.start_x
-                            : area_font.x + gt_font_get_indent_width(&font.info, style->indent);
-    }
-
+    gt_size_t pre_start_y = font_attr.start_y ? font_attr.start_y - line_h : area_font.y - line_h;
 #endif
 
     while (idx < style->cnt_contents) {
