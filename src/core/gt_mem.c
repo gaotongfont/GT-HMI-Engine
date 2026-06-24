@@ -741,8 +741,7 @@ void gt_mem_heap_get_space(gt_mem_info_st * mem_info)
     mem_info->used = _heap_info.used;
     mem_info->blocks = _heap_info.blocks;
 #endif  /** USE_MEM_REAL_USED_REMARK */
-
-#endif
     addr_now = NULL;
+#endif
 }
 /* end ------------------------------------------------------------------*/

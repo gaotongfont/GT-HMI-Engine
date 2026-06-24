@@ -178,7 +178,7 @@ gt_fs_fp_st * gt_fs_open_raw(const char * raw_data, uint32_t raw_len, gt_fs_mode
     if (false == gt_fs_is_enabled()) {
         return NULL;
     }
-    return (gt_fs_fp_st * )drv->open_cb_raw(drv, (char *)raw_data, raw_len, mode);
+    return (gt_fs_fp_st * )drv->open_cb_raw(drv, (unsigned char *)raw_data, raw_len, mode);
 }
 
 #if GT_USE_FILE_HEADER
