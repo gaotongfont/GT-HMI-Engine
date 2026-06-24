@@ -129,17 +129,17 @@ static bool _effects_set_obj_pos(_gt_indev_effects_st * style, gt_size_t x, gt_s
         return false;
     }
 
-    diff_x = x - style->obj.area.x;
-    diff_y = y - style->obj.area.y;
+    diff_x = x - style->base.area.x;
+    diff_y = y - style->base.area.y;
     if (0 == diff_x && 0 == diff_y) {
         return false;
     }
 
-    style->obj.area.x = x;
-    style->obj.area.y = y;
+    style->base.area.x = x;
+    style->base.area.y = y;
 
-    for (uint16_t i = 0; i < style->obj.cnt_child; ++i) {
-        gt_obj_st * child = style->obj.child[i];
+    for (uint16_t i = 0; i < style->base.cnt_child; ++i) {
+        gt_obj_st * child = style->base.child[i];
         if (NULL == child) {
             continue;
         }
