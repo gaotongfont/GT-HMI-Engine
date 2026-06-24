@@ -59,7 +59,7 @@
      * @brief Remark the real used memory and block count
      *      default: 0
      */
-    #define USE_MEM_REAL_USED_REMARK    01
+    #define USE_MEM_REAL_USED_REMARK    0
 #endif
 
 #if USE_MEM_TRACE_DEBUG_BY_FILE
