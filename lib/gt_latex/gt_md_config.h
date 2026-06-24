@@ -107,9 +107,19 @@
     #define GT_MD_CFG_LIST_ITEM_SPACING 2
 #endif
 
-/* 引用块左缩进像素 / Blockquote left indent (pixels) */
-#ifndef GT_MD_CFG_BLOCKQUOTE_INDENT
-    #define GT_MD_CFG_BLOCKQUOTE_INDENT 4
+/* 引用块竖线线宽倍率（基于内部基准线宽）/ Blockquote border thickness scale */
+#ifndef GT_MD_CFG_BLOCKQUOTE_LINE_THICKNESS_SCALE
+    #define GT_MD_CFG_BLOCKQUOTE_LINE_THICKNESS_SCALE 2
+#endif
+
+/* 引用块竖线右移量：按“半个线宽”为单位 / Blockquote border right offset in half-line-width units */
+#ifndef GT_MD_CFG_BLOCKQUOTE_LINE_OFFSET_HALF_WIDTHS
+    #define GT_MD_CFG_BLOCKQUOTE_LINE_OFFSET_HALF_WIDTHS 2
+#endif
+
+/* 引用块竖线上下内缩像素 / Blockquote border vertical inset in pixels */
+#ifndef GT_MD_CFG_BLOCKQUOTE_LINE_VERTICAL_INSET
+    #define GT_MD_CFG_BLOCKQUOTE_LINE_VERTICAL_INSET 4
 #endif
 
 /* 列表缩进像素（每层）/ List indent per nesting level (pixels) */

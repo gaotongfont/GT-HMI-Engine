@@ -24,7 +24,6 @@
         uint16_t paragraph_sp;      /* 段落间额外间距 / Paragraph spacing */
         uint16_t heading_sp;        /* 标题前后额外间距 / Heading spacing */
         uint16_t list_item_sp;      /* 列表项间距 / List item spacing */
-        uint16_t blockquote_indent; /* 引用块左缩进（像素）/ Block quote left indent */
         uint16_t list_indent;       /* 列表缩进每层（像素）/ List indent per level */
         uint16_t line_spacing;      /* 行间距（文本换行时）/ Line spacing (for wrapped lines) */
         gt_md_axis_mode_t axis_mode; /* 行内 LaTeX 基线对齐模式 / Inline LaTeX axis alignment mode */

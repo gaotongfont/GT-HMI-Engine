@@ -90,6 +90,9 @@
         uint16_t            cap;        /* 数组容量 / Array capacity    2B */
         uint16_t            list_num;   /* 有序列表起始编号 / Ordered list start number 2B */
         uint16_t            pad;        /* 对齐填充 / Padding           2B */
+        char               *owned_src;  /* 自持文本缓冲，仅部分容器使用 / Owned source buffer for rebuilt sub-docs */
+        uint16_t            owned_len;  /* 自持文本长度 / Owned source length */
+        uint16_t            owned_pad;  /* 对齐填充 / Padding */
     } gt_md_node_container_t;           /* 24B total */
 
     /* ----------------------------------------------------------------
