@@ -128,6 +128,36 @@ gt_font_info_st * gt_table_get_font_info(gt_obj_st * table);
  */
 void gt_table_set_header_bold(gt_obj_st * table, bool is_bold);
 
+/**
+ * @brief Clear all content items from the table (headers are preserved).
+ *        Call gt_table_refresh() afterwards to re-render.
+ *
+ * @param table
+ * @return gt_res_t GT_RES_OK on success
+ */
+gt_res_t gt_table_clear_contents(gt_obj_st * table);
+
+/**
+ * @brief Remove a specific content row from the table.
+ *        Row index is 0-based and refers to content rows only (header excluded).
+ *        Call gt_table_refresh() afterwards to re-render.
+ *
+ * @param table
+ * @param row_index  0-based content row index
+ * @return gt_res_t GT_RES_OK on success, GT_RES_FAIL if index out of range
+ */
+gt_res_t gt_table_remove_row(gt_obj_st * table, uint16_t row_index);
+
+/**
+ * @brief Remove a specific column from the table (header + all content cells).
+ *        Call gt_table_refresh() afterwards to re-render.
+ *
+ * @param table
+ * @param col_index  0-based column index
+ * @return gt_res_t GT_RES_OK on success, GT_RES_FAIL if index out of range
+ */
+gt_res_t gt_table_remove_col(gt_obj_st * table, uint16_t col_index);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

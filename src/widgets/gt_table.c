@@ -447,6 +447,35 @@ _calc_total_height(gt_obj_st * table) {
 }
 
 
+/**
+ * @brief Pointer-address equality callback: matches only the exact same pointer.
+ *        Used by _vector_remove_by_index to avoid false matches when multiple
+ *        items share identical string content.
+ */
+static GT_ATTRIBUTE_RAM_TEXT bool _ptr_equal_cb(void * item, void * target) {
+    return item == target ? true : false;
+}
+
+/**
+ * @brief Remove a single item from vector by its linear index.
+ *        Temporarily replaces the equal_cb with pointer-address comparison so
+ *        that only the node at position idx is freed, even when other nodes
+ *        carry an identical string value.
+ */
+static GT_ATTRIBUTE_RAM_TEXT bool _vector_remove_by_index(_gt_vector_st * vec, gt_size_t idx)
+{
+    void * item = _gt_vector_get_item(vec, idx);
+    if (NULL == item) {
+        return false;
+    }
+    /** Swap equal_cb to pointer comparison, delete, then restore */
+    _gt_vector_equal_item_cb_t saved_cb = vec->equal_item_cb;
+    vec->equal_item_cb = _ptr_equal_cb;
+    bool ret = _gt_vector_remove_item(vec, item);
+    vec->equal_item_cb = saved_cb;
+    return ret;
+}
+
 /* global functions / API interface -------------------------------------*/
 gt_obj_st * gt_table_create(gt_obj_st * parent)
 {
@@ -735,6 +764,101 @@ void gt_table_set_header_bold(gt_obj_st * table, bool is_bold)
     }
     _gt_table_st * style = (_gt_table_st * )table;
     style->font_info.style.reg.bold = is_bold;
+}
+
+gt_res_t gt_table_clear_contents(gt_obj_st * table)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    _gt_vector_clear_all_items(style->contents);
+    _gt_vector_clear_all_items(style->row_el);
+    style->height_header = 0;
+    style->height_contents = 0;
+    style->update_col = true;
+    return GT_RES_OK;
+}
+
+gt_res_t gt_table_remove_row(gt_obj_st * table, uint16_t row_index)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    uint16_t col_count = _gt_vector_get_count(style->header);
+    if (0 == col_count) {
+        return GT_RES_FAIL;
+    }
+    uint16_t row_count = _gt_vector_get_count(style->contents) / col_count;
+    if (row_index >= row_count) {
+        return GT_RES_FAIL;
+    }
+    /** Remove col_count items starting at row_index * col_count.
+     *  After each removal the following items shift forward by one,
+     *  so we always remove at the same base offset. */
+    gt_size_t base = (gt_size_t)row_index * col_count;
+    for (uint16_t i = 0; i < col_count; ++i) {
+        if (false == _vector_remove_by_index(style->contents, base)) {
+            return GT_RES_FAIL;
+        }
+    }
+    /** Remove the corresponding row_el entry */
+    _vector_remove_by_index(style->row_el, row_index);
+
+    style->height_header = 0;
+    style->height_contents = 0;
+    style->update_col = true;
+    return GT_RES_OK;
+}
+
+gt_res_t gt_table_remove_col(gt_obj_st * table, uint16_t col_index)
+{
+    if (false == gt_obj_is_type(table, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+    _gt_table_st * style = (_gt_table_st * )table;
+    uint16_t col_count = _gt_vector_get_count(style->header);
+    if (col_index >= col_count) {
+        return GT_RES_FAIL;
+    }
+    uint16_t content_count = _gt_vector_get_count(style->contents);
+    uint16_t row_count = content_count / col_count;
+
+    /** Remove column items from contents (iterate rows in reverse to keep
+     *  index arithmetic simple: after removing from row R the rows above
+     *  are unaffected). */
+    for (gt_size_t r = row_count; r > 0; --r) {
+        gt_size_t item_index = (r - 1) * col_count + col_index;
+        if (false == _vector_remove_by_index(style->contents, item_index)) {
+            return GT_RES_FAIL;
+        }
+    }
+
+    /** Remove header item for this column */
+    if (false == _vector_remove_by_index(style->header, col_index)) {
+        return GT_RES_FAIL;
+    }
+
+    /** Rebuild col_list: shift entries left, shrink allocation */
+    uint16_t new_col_count = col_count - 1;
+    if (0 == new_col_count) {
+        gt_mem_free(style->col_list);
+        style->col_list = NULL;
+        /** All columns gone: row metadata is now meaningless */
+        _gt_vector_clear_all_items(style->row_el);
+    } else {
+        for (uint16_t i = col_index; i < new_col_count; ++i) {
+            style->col_list[i] = style->col_list[i + 1];
+        }
+        style->col_list = gt_mem_realloc(style->col_list,
+            sizeof(_gt_table_col_st) * new_col_count);
+    }
+
+    style->height_header = 0;
+    style->height_contents = 0;
+    style->update_col = true;
+    return GT_RES_OK;
 }
 
 #endif  /** GT_CFG_ENABLE_TABLE */
