@@ -69,6 +69,27 @@ gt_size_t gt_spectrum_line_add(gt_obj_st* obj, uint8_t width, gt_color_t color);
 gt_size_t gt_spectrum_line_add_point(gt_obj_st* obj, uint16_t line_index ,gt_sp_point_st sp_ping);
 
 /**
+ * @brief remove a line by index
+ *
+ * @param obj spectrum line
+ * @param line_index line index
+ * @return true remove success
+ * @return false remove failed
+ */
+bool gt_spectrum_line_remove(gt_obj_st * obj, uint16_t line_index);
+
+/**
+ * @brief remove a point from line by index
+ *
+ * @param obj spectrum line
+ * @param line_index line index
+ * @param point_index point index
+ * @return true remove success
+ * @return false remove failed
+ */
+bool gt_spectrum_line_remove_point(gt_obj_st * obj, uint16_t line_index, uint16_t point_index);
+
+/**
  * @brief Based on the first line, replicate the other lines according to the movement pattern.
  *
  * @param obj spectrum line

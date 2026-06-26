@@ -163,7 +163,7 @@ _free_line_point(_sp_line_st * sp_line)
 GT_ATTRIBUTE_RAM_TEXT static void
 _free_line_vector(_gt_spectrum_line_st * style)
 {
-    if(style->sp_line) {
+    if(!style->sp_line) {
         return ;
     }
 
@@ -233,10 +233,16 @@ gt_spectrum_line_create(gt_obj_st * parent)
     style->get_gen_next = gt_triangle_generator_next;
 
     style->sp_line = _gt_vector_create(_vector_free_cb, _vector_equal_cb);
-    GT_CHECK_BACK_VAL(style->sp_line, NULL);
+    if(NULL == style->sp_line) {
+        gt_obj_destroy(obj);
+        return NULL;
+    }
 
     style->timer = _gt_timer_create(_auto_play_callback, 200, (void * )obj);
-    GT_CHECK_BACK_VAL(style->timer, NULL);
+    if(NULL == style->timer) {
+        gt_obj_destroy(obj);
+        return NULL;
+    }
 
     _gt_timer_set_paused(style->timer, true);
 
@@ -246,6 +252,9 @@ gt_spectrum_line_create(gt_obj_st * parent)
 GT_ATTRIBUTE_RAM_TEXT gt_size_t
 gt_spectrum_line_add(gt_obj_st* obj, uint8_t width, gt_color_t color)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return -1;
+    }
     _gt_spectrum_line_st * style = (_gt_spectrum_line_st*)obj;
 
     if(NULL == style->sp_line) {
@@ -257,6 +266,7 @@ gt_spectrum_line_add(gt_obj_st* obj, uint8_t width, gt_color_t color)
         GT_LOGE(GT_LOG_TAG_GUI, "malloc line failed!!! size: %d", sizeof(_sp_line_st));
         return -1;
     }
+    gt_memset_0(item, sizeof(_sp_line_st));
 
     item->sp_point = _gt_vector_create(_vector_free_cb, _vector_equal_cb);
     if(NULL == item->sp_point) {
@@ -270,7 +280,12 @@ gt_spectrum_line_add(gt_obj_st* obj, uint8_t width, gt_color_t color)
     item->line.color = color;
     item->line.type = GT_GRAPHS_TYPE_CURVE;
 
-    _gt_vector_add_item(style->sp_line, (void*)item);
+    if(false == _gt_vector_add_item(style->sp_line, (void*)item)) {
+        _free_line_point(item);
+        gt_mem_free(item);
+        GT_LOGE(GT_LOG_TAG_GUI, "add spectrum line failed!!!");
+        return -1;
+    }
 
     return _gt_vector_get_count(style->sp_line) - 1;
 }
@@ -278,6 +293,9 @@ gt_spectrum_line_add(gt_obj_st* obj, uint8_t width, gt_color_t color)
 GT_ATTRIBUTE_RAM_TEXT gt_size_t
 gt_spectrum_line_add_point(gt_obj_st* obj, uint16_t line_index ,gt_sp_point_st sp_ping)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return -1;
+    }
 
     _gt_spectrum_line_st * style = (_gt_spectrum_line_st*)obj;
 
@@ -302,14 +320,76 @@ gt_spectrum_line_add_point(gt_obj_st* obj, uint16_t line_index ,gt_sp_point_st s
     }
 
     *point = sp_ping;
-    _gt_vector_add_item(item->sp_point, (void*)point);
+    if(false == _gt_vector_add_item(item->sp_point, (void*)point)) {
+        gt_mem_free(point);
+        GT_LOGE(GT_LOG_TAG_GUI, "add spectrum point failed!!!");
+        return -1;
+    }
 
     return _gt_vector_get_count(item->sp_point) - 1;
+}
+
+GT_ATTRIBUTE_RAM_TEXT bool
+gt_spectrum_line_remove(gt_obj_st * obj, uint16_t line_index)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return false;
+    }
+
+    _gt_spectrum_line_st * style = (_gt_spectrum_line_st*)obj;
+    GT_CHECK_BACK_VAL(style->sp_line, false);
+
+    _sp_line_st * item = (_sp_line_st*)_gt_vector_get_item(style->sp_line, line_index);
+    if(NULL == item) {
+        GT_LOGW(GT_LOG_TAG_GUI, "line index %d not exist!!!", line_index);
+        return false;
+    }
+
+    _free_line_point(item);
+    if(false == _gt_vector_remove_item(style->sp_line, item)) {
+        return false;
+    }
+
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+    return true;
+}
+
+GT_ATTRIBUTE_RAM_TEXT bool
+gt_spectrum_line_remove_point(gt_obj_st * obj, uint16_t line_index, uint16_t point_index)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return false;
+    }
+
+    _gt_spectrum_line_st * style = (_gt_spectrum_line_st*)obj;
+    GT_CHECK_BACK_VAL(style->sp_line, false);
+
+    _sp_line_st * item = (_sp_line_st*)_gt_vector_get_item(style->sp_line, line_index);
+    if((NULL == item) || (NULL == item->sp_point)) {
+        GT_LOGW(GT_LOG_TAG_GUI, "line index %d not exist!!!", line_index);
+        return false;
+    }
+
+    gt_sp_point_st * point = (gt_sp_point_st*)_gt_vector_get_item(item->sp_point, point_index);
+    if(NULL == point) {
+        GT_LOGW(GT_LOG_TAG_GUI, "point index %d not exist!!!", point_index);
+        return false;
+    }
+
+    if(false == _gt_vector_remove_item(item->sp_point, point)) {
+        return false;
+    }
+
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+    return true;
 }
 
 GT_ATTRIBUTE_RAM_TEXT void
 gt_spectrum_line_move_copy(gt_obj_st* obj, uint16_t count, gt_color_t start, gt_color_t end)
 {
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
     if(count < 2) {
         return ;
     }
@@ -328,6 +408,11 @@ gt_spectrum_line_move_copy(gt_obj_st* obj, uint16_t count, gt_color_t start, gt_
     gt_gradient_dsc_add_stop(grad, start, end, count);
 
     _sp_line_st * sp_line_1 = (_sp_line_st*)_gt_vector_get_item(style->sp_line, 0);
+    if((NULL == sp_line_1) || (NULL == sp_line_1->sp_point)) {
+        gt_gradient_dsc_destroy(grad);
+        GT_LOGW(GT_LOG_TAG_GUI, "master spectrum line is invalid");
+        return ;
+    }
     gt_size_t point_count = _gt_vector_get_count(sp_line_1->sp_point);
 
     if(point_count < 2) {
@@ -338,7 +423,10 @@ gt_spectrum_line_move_copy(gt_obj_st* obj, uint16_t count, gt_color_t start, gt_
     sp_line_1->line.color = gt_gradient_dsc_get_color_pos(grad, 0);
     gt_size_t i = 0;
     for( i = line_count; i < count; i++) {
-        gt_spectrum_line_add(obj, sp_line_1->line.width, gt_color_black());
+        if(0 > gt_spectrum_line_add(obj, sp_line_1->line.width, gt_color_black())) {
+            gt_gradient_dsc_destroy(grad);
+            return ;
+        }
     }
 
     line_count = _gt_vector_get_count(style->sp_line);
@@ -359,7 +447,10 @@ gt_spectrum_line_move_copy(gt_obj_st* obj, uint16_t count, gt_color_t start, gt_
                 .point.x = point->point.x,
                 .point.y = style->get_gen_next(&point->gen),
             };
-            gt_spectrum_line_add_point(obj, i, new_point);
+            if(0 > gt_spectrum_line_add_point(obj, i, new_point)) {
+                gt_gradient_dsc_destroy(grad);
+                return ;
+            }
         }
     }
 
