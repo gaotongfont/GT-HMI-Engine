@@ -22,6 +22,8 @@ extern "C" {
 
 #if GT_CFG_ENABLE_WORDART
 
+#include "../core/gt_img_decoder.h"
+
 #if GT_USE_FILE_HEADER
 #include "../hal/gt_hal_file_header.h"
 #endif
@@ -62,6 +64,15 @@ uint32_t gt_wordart_items_init(gt_obj_st* wordart, uint32_t total);
  * @param src image path
  */
 void gt_wordart_add_item(gt_obj_st* wordart, uint32_t coding, char * src);
+
+/**
+ * @brief add item by raw pixel buffer (MODE 1: pre-decoded) or raw file data (MODE 2: encoded in RAM)
+ *
+ * @param wordart obj
+ * @param encode custom unicode
+ * @param raw raw image descriptor; caller must keep the buffer alive for the widget's lifetime
+ */
+void gt_wordart_add_item_by_raw(gt_obj_st * wordart, uint32_t encode, gt_color_img_raw_st * raw);
 
 #if GT_USE_FILE_HEADER
 /**

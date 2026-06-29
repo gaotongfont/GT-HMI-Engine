@@ -22,6 +22,7 @@
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
 #include "../core/gt_event.h"
+#include "../core/gt_img_decoder.h"
 
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_WORDART
@@ -31,6 +32,7 @@
 typedef struct _gt_word_art_item_s {
     uint32_t encode;
     char * img;
+    _gt_img_dsc_st raw;
 #if GT_USE_FILE_HEADER
     gt_file_header_param_st fh;
 #endif
@@ -89,7 +91,12 @@ static bool _get_img_size(_gt_word_art_item_st* item ,uint16_t * w, uint16_t * h
     _gt_img_info_st info = {0};
     bool is_ok = false;
 
-    if (GT_FS_RES_OK == gt_fs_read_img_wh(item->img, w, h)) {
+    /* raw MODE 1: pre-decoded pixel buffer — dimensions stored in raw.header */
+    if (item->raw.header.w != 0 && item->raw.header.h != 0) {
+        *w = item->raw.header.w;
+        *h = item->raw.header.h;
+        is_ok = true;
+    } else if (GT_FS_RES_OK == gt_fs_read_img_wh(item->img, w, h)) {
         is_ok = true;
 #if GT_USE_FILE_HEADER
     } else if (GT_FS_RES_OK == gt_fs_fh_read_img_wh(&item->fh, w, h)) {
@@ -193,6 +200,13 @@ static void _init_cb(gt_obj_st * obj) {
             continue;
         }
         dsc.bg_img_src = style->items[tmp].img;
+        if (style->items[tmp].raw.header.w != 0) {
+            dsc.raw_img = &style->items[tmp].raw;
+            dsc.reg.ignore_img_decoder = 1;
+        } else {
+            dsc.raw_img = NULL;
+            dsc.reg.ignore_img_decoder = 0;
+        }
 #if GT_USE_FILE_HEADER
         dsc.file_header = gt_file_header_param_check_valid(&style->items[tmp].fh);
 #endif
@@ -340,6 +354,7 @@ void gt_wordart_add_item(gt_obj_st * wordart, uint32_t encode, char * src)
     gt_memcpy(style->items[style->item_number].img, src, len);
     style->items[style->item_number].img[len] = '\0';
     style->items[style->item_number].encode = encode;
+    gt_memset(&style->items[style->item_number].raw, 0, sizeof(_gt_img_dsc_st));
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->items[style->item_number].fh);
 #endif
@@ -348,6 +363,37 @@ void gt_wordart_add_item(gt_obj_st * wordart, uint32_t encode, char * src)
 #endif
 #if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
     gt_hal_custom_size_addr_init(&style->items[style->item_number].custom_addr);
+#endif
+    ++style->item_number;
+}
+
+void gt_wordart_add_item_by_raw(gt_obj_st * wordart, uint32_t encode, gt_color_img_raw_st * raw)
+{
+    if (false == gt_obj_is_type(wordart, OBJ_TYPE)) {
+        return ;
+    }
+    if (NULL == raw) {
+        return ;
+    }
+    _gt_wor_dart_st * style = (_gt_wor_dart_st * )wordart;
+    if (NULL == style->items || style->item_number >= style->total) {
+        return ;
+    }
+
+    _gt_word_art_item_st * item = &style->items[style->item_number];
+    item->img = NULL;
+    item->encode = encode;
+    gt_img_dsc_raw_set(&item->raw, raw);
+    item->raw.src = NULL;
+
+#if GT_USE_FILE_HEADER
+    gt_file_header_param_init(&item->fh);
+#endif
+#if GT_USE_DIRECT_ADDR
+    gt_hal_direct_addr_init(&item->addr);
+#endif
+#if GT_USE_DIRECT_ADDR_CUSTOM_SIZE
+    gt_hal_custom_size_addr_init(&item->custom_addr);
 #endif
     ++style->item_number;
 }
@@ -368,6 +414,7 @@ void gt_wordart_add_item_by_file_header(gt_obj_st * wordart, uint32_t encode, gt
     style->items[style->item_number].img = NULL;
     style->items[style->item_number].fh = *fh;
     style->items[style->item_number].encode = encode;
+    gt_memset(&style->items[style->item_number].raw, 0, sizeof(_gt_img_dsc_st));
 #if GT_USE_DIRECT_ADDR
     gt_hal_direct_addr_init(&style->items[style->item_number].addr);
 #endif
@@ -394,6 +441,7 @@ void gt_wordart_add_item_by_direct_addr(gt_obj_st * wordart, uint32_t encode, gt
     style->items[style->item_number].img = NULL;
     style->items[style->item_number].addr = addr;
     style->items[style->item_number].encode = encode;
+    gt_memset(&style->items[style->item_number].raw, 0, sizeof(_gt_img_dsc_st));
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->items[style->item_number].fh);
 #endif
@@ -417,6 +465,7 @@ void gt_wordart_add_item_by_custom_size_addr(gt_obj_st * wordart, uint32_t encod
     style->items[style->item_number].img = NULL;
     style->items[style->item_number].encode = encode;
     style->items[style->item_number].custom_addr = *dac;
+    gt_memset(&style->items[style->item_number].raw, 0, sizeof(_gt_img_dsc_st));
 #if GT_USE_FILE_HEADER
     gt_file_header_param_init(&style->items[style->item_number].fh);
 #endif
