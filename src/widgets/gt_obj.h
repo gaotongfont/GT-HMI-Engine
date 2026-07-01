@@ -185,6 +185,9 @@ typedef struct gt_obj_s {
     /** display scrolling tip @ref gt_scroll_tip_et, default: GT_SCROLL_TIP_NONE */
     uint32_t scroll_tip    : 4;
     uint32_t scroll_tip_always : 1;  /** Auto hide scroll tip bar */
+    /** Scroll throw speed limit level: 0=unlimited(default), 1~15 the higher the shorter distance.
+     *  max_v = (level + 2) * 150, refer to gt_obj_set_scroll_throw_limit() */
+    uint32_t scroll_throw_limit : 4;
 #if GT_USE_WIDGET_DYNAMIC_FRAME_RATE
     uint32_t frame_rate    : 3;     /* Set widget dynamic anim frame rate */
 #endif

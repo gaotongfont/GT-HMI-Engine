@@ -1069,6 +1069,18 @@ _indev_scroll_throw_handler_anim_start(gt_indev_st * indev) {
         _velocity_less_scroll_points_need_to_speed_up(indev);
         _calc_throw_velocity(indev);
     }
+    /* Clamp throw velocity by per-object scroll_throw_limit level.
+     * level 0 = unlimited (default), level 1~15 = increasingly limited.
+     * max_v = (level + 2) * 150 */
+    {
+        gt_obj_st * scroll_obj = indev->data.point.obj_scroll;
+        if (scroll_obj && scroll_obj->scroll_throw_limit) {
+            int32_t max_v = (int32_t)(scroll_obj->scroll_throw_limit + 2) * 150;
+            if (indev->data.point.throw_velocity > max_v) {
+                indev->data.point.throw_velocity = max_v;
+            }
+        }
+    }
 
     gt_anim_set_time(&anim, 50000);
 #else

@@ -389,6 +389,33 @@ void gt_obj_set_rebound(gt_obj_st * obj, bool enabled);
 bool gt_obj_is_rebound(gt_obj_st * obj);
 
 /**
+ * @brief Set scroll throw speed limit level for an object.
+ *        Limits the maximum distance a fast swipe can travel,
+ *        while keeping slow/medium swipes feeling natural.
+ *
+ *        Formula: max_velocity = (level + 2) * 150 (internal units)
+ *        max_distance_px = max_velocity^2 / (2 * GT_INDEV_THROW_PIXEL_PER_SECOND)
+ *
+ *        Reference (screen height 170px, P=1000):
+ *          level 0 = unlimited (default)
+ *          level 3 -> max ~281px (~1.7 screens)
+ *          level 4 -> max ~405px (~2.4 screens)
+ *          level 5 -> max ~551px (~3.2 screens)
+ *
+ * @param obj
+ * @param level 0=unlimited(default), 1~15 higher=shorter max distance
+ */
+void gt_obj_set_scroll_throw_limit(gt_obj_st * obj, uint8_t level);
+
+/**
+ * @brief Get current scroll throw limit level
+ *
+ * @param obj
+ * @return uint8_t current level (0~15)
+ */
+uint8_t gt_obj_get_scroll_throw_limit(gt_obj_st * obj);
+
+/**
  * @brief
  *
  * @param obj

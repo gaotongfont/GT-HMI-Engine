@@ -1197,6 +1197,27 @@ bool gt_obj_is_rebound(gt_obj_st * obj)
     return obj->rebound;
 }
 
+void gt_obj_set_scroll_throw_limit(gt_obj_st * obj, uint8_t level)
+{
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return;
+    }
+    if (level > 15) {
+        level = 15;
+    }
+    obj->scroll_throw_limit = level;
+}
+
+uint8_t gt_obj_get_scroll_throw_limit(gt_obj_st * obj)
+{
+    gt_obj_type_et type = gt_obj_class_get_type(obj);
+    if (GT_TYPE_UNKNOWN == type) {
+        return 0;
+    }
+    return (uint8_t)obj->scroll_throw_limit;
+}
+
 void gt_obj_set_scroll_tip(gt_obj_st * obj, gt_scroll_tip_et mode)
 {
     gt_obj_type_et type = gt_obj_class_get_type(obj);
