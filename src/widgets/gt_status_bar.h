@@ -27,6 +27,7 @@ extern "C" {
 #include "./gt_obj.h"
 #include "../core/gt_style.h"
 #include "../font/gt_font.h"
+#include "../core/gt_img_decoder.h"
 
 
 /* define ---------------------------------------------------------------*/
@@ -107,6 +108,7 @@ bool gt_status_bar_left_remove(gt_obj_st * target);
 bool gt_status_bar_left_remove_all(void);
 
 gt_obj_st * gt_status_bar_left_add_icon(char * src);
+gt_obj_st * gt_status_bar_left_add_icon_raw(gt_color_img_raw_st * raw);
 bool gt_status_bar_left_change_icon(gt_obj_st * icon, char * src);
 gt_obj_st * gt_status_bar_left_add_text(char * text, uint16_t width);
 bool gt_status_bar_left_change_text(gt_obj_st * lab, char * text);
@@ -116,6 +118,7 @@ bool gt_status_bar_right_remove(gt_obj_st * target);
 bool gt_status_bar_right_remove_all(void);
 
 gt_obj_st * gt_status_bar_right_add_icon(char * src);
+gt_obj_st * gt_status_bar_right_add_icon_raw(gt_color_img_raw_st * raw);
 bool gt_status_bar_right_change_icon(gt_obj_st * icon, char * src);
 gt_obj_st * gt_status_bar_right_add_text(char * text, uint16_t width);
 bool gt_status_bar_right_change_text(gt_obj_st * lab, char * text);
@@ -140,6 +143,7 @@ bool gt_status_bar_custom_remove(gt_obj_st * target);
 bool gt_status_bar_custom_remove_all(void);
 
 gt_obj_st * gt_status_bar_custom_add_icon(char * src);
+gt_obj_st * gt_status_bar_custom_add_icon_raw(gt_color_img_raw_st * raw);
 bool gt_status_bar_custom_change_icon(gt_obj_st * icon, char * src);
 gt_obj_st * gt_status_bar_custom_add_text(char * text, uint16_t width);
 bool gt_status_bar_custom_change_text(gt_obj_st * lab, char * text);

@@ -23,6 +23,7 @@
 #include "../widgets/gt_img.h"
 #include "../widgets/gt_label.h"
 #include "../core/gt_layout.h"
+#include "../core/gt_img_decoder.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -141,7 +142,8 @@ static gt_obj_st * _find_by_str(gt_obj_st * parent, char * text_or_src) {
     for (gt_size_t i = 0, cnt = parent->cnt_child; i < cnt; ++i) {
         child = parent->child[i];
         if (gt_obj_is_type(child, GT_TYPE_IMG)) {
-            if (0 == strcmp(text_or_src, gt_img_get_src(child))) {
+            char * src = gt_img_get_src(child);
+            if (src && 0 == strcmp(text_or_src, src)) {
                 ret = child;
                 break;
             }
@@ -212,6 +214,17 @@ static gt_obj_st * _create_img_obj(gt_obj_st * parent, char * src) {
     gt_obj_set_inside(icon, true);
     _adjust_img_center_line(icon, parent);
 
+    return icon;
+}
+
+static gt_obj_st * _create_img_obj_raw(gt_obj_st * parent, gt_color_img_raw_st * raw) {
+    if (NULL == parent || NULL == raw) {
+        return NULL;
+    }
+    gt_obj_st * icon = gt_img_create(parent);
+    gt_img_set_raw_data(icon, raw);
+    gt_obj_set_inside(icon, true);
+    _adjust_img_center_line(icon, parent);
     return icon;
 }
 
@@ -514,6 +527,20 @@ gt_obj_st * gt_status_bar_left_add_icon(char * src)
     return _create_img_obj(style->left.obj, src);
 }
 
+gt_obj_st * gt_status_bar_left_add_icon_raw(gt_color_img_raw_st * raw)
+{
+    gt_obj_st * obj = gt_status_bar_get_obj();
+    if (NULL == obj || NULL == raw) {
+        return NULL;
+    }
+    _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
+    if (NULL == style->left.obj) {
+        return NULL;
+    }
+
+    return _create_img_obj_raw(style->left.obj, raw);
+}
+
 bool gt_status_bar_left_change_icon(gt_obj_st * icon, char * src)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
@@ -594,6 +621,20 @@ gt_obj_st * gt_status_bar_right_add_icon(char * src)
     }
 
     return _create_img_obj(style->right.obj, src);
+}
+
+gt_obj_st * gt_status_bar_right_add_icon_raw(gt_color_img_raw_st * raw)
+{
+    gt_obj_st * obj = gt_status_bar_get_obj();
+    if (NULL == obj || NULL == raw) {
+        return NULL;
+    }
+    _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
+    if (NULL == style->right.obj) {
+        return NULL;
+    }
+
+    return _create_img_obj_raw(style->right.obj, raw);
 }
 
 bool gt_status_bar_right_change_icon(gt_obj_st * icon, char * src)
@@ -727,6 +768,24 @@ gt_obj_st * gt_status_bar_custom_add_icon(char * src)
     return icon;
 }
 
+gt_obj_st * gt_status_bar_custom_add_icon_raw(gt_color_img_raw_st * raw)
+{
+    gt_obj_st * obj = gt_status_bar_get_obj();
+    if (NULL == obj || NULL == raw) {
+        return NULL;
+    }
+    _gt_status_bar_st * style = (_gt_status_bar_st * )obj;
+    gt_obj_type_et type = gt_obj_class_get_type(style->custom);
+    if (GT_TYPE_UNKNOWN == type) {
+        return NULL;
+    }
+
+    gt_obj_st * icon = gt_img_create(style->custom);
+    gt_img_set_raw_data(icon, raw);
+    gt_obj_set_inside(icon, true);
+
+    return icon;
+}
 bool gt_status_bar_custom_change_icon(gt_obj_st * icon, char * src)
 {
     gt_obj_st * obj = gt_status_bar_get_obj();
