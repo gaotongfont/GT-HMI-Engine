@@ -109,6 +109,16 @@ static void _gt_indev_clear_finger_state(struct _point * point_p);
          */
         #define GT_INDEV_OVER_SCROLL_MAX_VELOCITY       1800
     #endif
+
+    #ifndef GT_INDEV_OVER_SCROLL_FRICTION
+        /**
+         * @brief Extra friction applied when scrolling past boundary.
+         *        Provides smooth resistance in over-scroll zone.
+         *        Higher = stronger resistance, 0 = no extra friction.
+         *        Range: 1~128, recommended: 20(ios-like) ~ 60(android-like)
+         */
+        #define GT_INDEV_OVER_SCROLL_FRICTION           60
+    #endif
 #endif
 
 #if GT_USE_UD_LR_TO_CONTROL_FOCUS_EN
@@ -670,16 +680,23 @@ _throw_scroll_rebound_slow_down_handler(gt_indev_st * indev) {
     struct _point * point_p = &indev->data.point;
     gt_obj_st * scroll_obj = point_p->obj_scroll;
     int32_t max_v = GT_INDEV_OVER_SCROLL_MAX_VELOCITY;
+
     if (false == scroll_obj->rebound && false == scroll_obj->overflow) {
         return GT_RES_OK;
     }
-    point_p->over_scroll =  _gt_obj_get_over_scroll(point_p->obj_scroll, point_p->gesture);
+    point_p->over_scroll = _gt_obj_get_over_scroll(scroll_obj, point_p->gesture);
     if (false == point_p->over_scroll.is_over_scroll) {
         return GT_RES_OK;
     }
-    do {
-        point_p->throw_velocity = _calc_final_speed(point_p->throw_velocity, -point_p->throw_velocity);
-    } while (point_p->throw_velocity > max_v);
+    /* Clamp extreme velocity to over-scroll max */
+    if (point_p->throw_velocity > max_v) {
+        point_p->throw_velocity = max_v;
+    }
+#if GT_INDEV_OVER_SCROLL_FRICTION > 0
+    /* Apply extra friction in over-scroll zone for smooth resistance */
+    point_p->throw_velocity = (point_p->throw_velocity
+        * (256 - GT_INDEV_OVER_SCROLL_FRICTION)) >> 8;
+#endif
     return GT_RES_OK;
 }
 
