@@ -74,6 +74,15 @@ void gt_wordart_add_item(gt_obj_st* wordart, uint32_t coding, char * src);
  */
 void gt_wordart_add_item_by_raw(gt_obj_st * wordart, uint32_t encode, gt_color_img_raw_st * raw);
 
+/**
+ * @brief Check if the wordart item at given index has raw pixel data.
+ *
+ * @param wordart wordart object
+ * @param index item index (0-based)
+ * @return bool ture if tiem has raw data, 0 if file-path or index out of range.
+ */
+bool gt_wordart_item_has_raw(gt_obj_st * wordart, uint32_t index);
+
 #if GT_USE_FILE_HEADER
 /**
  * @brief add item by file header
