@@ -1104,6 +1104,7 @@ static GT_ATTRIBUTE_RAM_TEXT _gt_draw_font_res_st _draw_text_convertor_split(
             gt_memset_0(&convertor.data_p[0], font_size_res.font_per_size);
             if (0x20 == convertor.fontcode[idx]) {
                 width = convertor.fontsize >> 1;
+                tmp = 1;
             }
             else{
                 tmp = gt_font_convertor_data_get(&convertor, idx);
@@ -2541,6 +2542,9 @@ _disp_font:
                 goto next_word_multi_lb;
             }
 #endif
+            if (0x20 == uni_or_gbk) {
+                goto next_word_multi_lb;
+            }
             if (!is_symbol_ml) {
                 dot_ret = gt_font_get_dot(&tmp_font, uni_or_gbk);
                 if (dot_ret.len < prev_rendered_size) {
@@ -2925,6 +2929,9 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
             goto next_word_lb;
         }
 #endif
+        if (0x20 == uni_or_gbk) {
+            goto next_word_lb;
+        }
         if( !is_symbol_sl ){
             dot_ret = gt_font_get_dot(&tmp_font, uni_or_gbk);
             if (dot_ret.len < prev_rendered_size) {
