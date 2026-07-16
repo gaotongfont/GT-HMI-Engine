@@ -39,6 +39,19 @@ typedef struct _gt_formula_s {
     uint16_t text_len;
 
     gt_formula_mode_t mode;  /* 渲染模式：LaTeX 或 Markdown / Render mode: LaTeX or Markdown */
+
+    gt_md_parser_t md_parser;
+    gt_md_node_container_t * md_root;
+    gt_md_layout_t md_layout;
+    uint8_t md_cache_ready; // 1: have built cache, 0: need to rebuild cache
+
+    gt_latex_lexer_t latex_lexer;
+    gt_latex_parser_t latex_parser;
+    gt_latex_layout_t latex_layout;
+    uint8_t latex_cache_ready;  // 1: have built cache, 0: need to rebuild cache
+
+    gt_formula_cache_mode_t cache_mode;
+    uint8_t cache_dirty;    // 1: need to rebuild cache, 0: need @ md_cache_ready and latex_cache_ready to be checked
 }_gt_formula_st;
 
 
@@ -49,6 +62,19 @@ GT_ATTRIBUTE_RAM_TEXT
 static void _formula_deinit_cb(gt_obj_st * obj);
 GT_ATTRIBUTE_RAM_TEXT
 static void _formula_event_cb(struct gt_obj_s * obj, gt_event_st * e);
+GT_ATTRIBUTE_RAM_TEXT
+static void _formula_set_font_cfg(gt_obj_st * obj);
+GT_ATTRIBUTE_RAM_TEXT
+static void _formula_clear_font_cfg(gt_obj_st * obj);
+GT_ATTRIBUTE_RAM_TEXT
+static int _formula_get_metrics_cb(uint32_t code,
+                                const gt_latex_font_level_t *level_cfg,
+                                gt_latex_glyph_metrics_t    *metrics,
+                                void* user_data);
+static void _formula_invalidate_cache(gt_obj_st * obj);
+static int _formula_rebuild_cache(gt_obj_st * obj);
+static uint8_t _formula_is_cache_ready(const _gt_formula_st * style);
+static int _formula_render_current(gt_obj_st * obj);
 
 
 /* static variables -----------------------------------------------------*/
@@ -66,6 +92,59 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_formula_class = {
 
 
 /* static functions -----------------------------------------------------*/
+static void _formula_clear_md_cache(_gt_formula_st * style)
+{
+    if (NULL == style) {
+        return ;
+    }
+
+    gt_md_layout_free(&style->md_layout);
+    if (style->md_root) {
+        gt_md_node_free((gt_md_node_base_t *)style->md_root);
+        style->md_root = NULL;
+    }
+    gt_md_parser_deinit(&style->md_parser);
+    gt_memset(&style->md_parser, 0, sizeof(style->md_parser));
+    gt_memset(&style->md_layout, 0, sizeof(style->md_layout));
+    style->md_cache_ready = 0;
+}
+
+static void _formula_clear_latex_cache(_gt_formula_st * style)
+{
+    if (NULL == style) {
+        return ;
+    }
+
+    gt_latex_layout_deinit(&style->latex_layout);
+    gt_latex_parse_free(&style->latex_parser, &style->latex_lexer);
+    gt_memset(&style->latex_parser, 0, sizeof(style->latex_parser));
+    gt_memset(&style->latex_lexer, 0, sizeof(style->latex_lexer));
+    gt_memset(&style->latex_layout, 0, sizeof(style->latex_layout));
+    style->latex_cache_ready = 0;
+}
+
+static void _formula_update_area_by_size(gt_obj_st * obj, uint16_t w, uint16_t h)
+{
+    _gt_formula_st * style = (_gt_formula_st * )obj;
+
+    if(w < style->max_width) {
+        w = style->max_width;
+    }
+
+    gt_obj_set_size(obj, w, h);
+}
+
+static void _formula_begin_layout_ctx(gt_obj_st * obj)
+{
+    gt_latex_font_set_callback(_formula_get_metrics_cb);
+    _formula_set_font_cfg(obj);
+}
+
+static void _formula_end_layout_ctx(gt_obj_st * obj)
+{
+    _formula_clear_font_cfg(obj);
+}
+
 GT_ATTRIBUTE_RAM_TEXT
 static void _formula_set_font_cfg(gt_obj_st * obj)
 {
@@ -293,79 +372,40 @@ static void _formula_draw_arc_cb(int16_t cx, int16_t cy,
     gt_draw_arc(obj->draw_ctx, &arc_attr, &coords);
 }
 
-static void _formula_md_mode_handler(gt_obj_st * obj)
+static int _formula_build_md_cache(gt_obj_st * obj)
 {
     _gt_formula_st * style = (_gt_formula_st * )obj;
 
-    if(GT_FORMULA_MODE_MD != style->mode) {
-        return ;
+    if(style->max_width <= 0) {
+        style->max_width = obj->area.w;
     }
 
 #if GT_MD_ENABLE
-    gt_md_parser_t parser = {0};
-    gt_md_node_container_t *root = NULL;
-    gt_md_layout_t layout = {0};
-
     int ret = gt_md_parse_and_layout(style->text, style->text_len, style->max_width,
-                            &parser, &root, &layout);
-    if (ret != GT_MD_OK) { return ; }
-
-    uint16_t w = layout.total_w;
-    uint16_t h = layout.total_h;
-
-    obj->area.w = w > style->max_width ? w : style->max_width;
-    obj->area.h = h;
-    _formula_bg_show(obj);
-
-    gt_latex_canvas_t cv = { 0 };
-    cv.x = obj->area.x;
-    cv.y = obj->area.y;
-    cv.fg_color = gt_color_to32(style->font_color);
-    cv.user_data = (void*)obj;
-
-    ret = gt_md_render(&layout, &cv);
-    if (GT_MD_OK != ret) {
-        GT_LOGE(GT_LOG_TAG_GUI, "Failed to render MD, ret=%d", ret);
+                            &style->md_parser, &style->md_root, &style->md_layout);
+    if (ret != GT_MD_OK) {
+        GT_LOGE(GT_LOG_TAG_GUI, "Failed to parse/layout MD, ret=%d", ret);
+        _formula_clear_md_cache(style);
+        return ret;
     }
 
-    gt_md_free_all(&parser, root, &layout);
+    _formula_update_area_by_size(obj, style->md_layout.total_w, style->md_layout.total_h);
+    style->md_cache_ready = 1;
+    return GT_MD_OK;
 #else
     GT_LOGE(GT_LOG_TAG_GUI, "Markdown mode not enabled (GT_MD_ENABLE=0)");
+    return -1;
 #endif
 }
 
-static void _formula_latex_mode_handler(gt_obj_st * obj)
+static int _formula_render_md_cache(gt_obj_st * obj)
 {
     _gt_formula_st * style = (_gt_formula_st * )obj;
 
-    if(GT_FORMULA_MODE_LATEX != style->mode) {
-        return ;
+    if (0 == style->md_cache_ready) {
+        return -1;
     }
 
-    /* LaTeX 模式（默认）/ LaTeX mode (default) */
-    gt_latex_lexer_t  lexer  = { 0 };
-    gt_latex_parser_t parser = { 0 };
-    gt_latex_layout_t layout = { 0 };
-    uint16_t w = 0, h = 0;
-
-    int ret = gt_latex_parse(style->text, style->text_len, &parser, &lexer);
-    if(GT_LATEX_OK != ret) {
-        return ;
-    }
-
-    ret = gt_latex_layout(&parser, &layout, style->max_width, style->latex_off);
-    if(GT_LATEX_OK != ret) {
-        GT_LOGE(GT_LOG_TAG_GUI, "Failed to layout latex formula, ret=%d", ret);
-        goto _latex_deinit;
-    }
-    gt_latex_layout_get_size(&layout, &w, &h);
-    if(0 == w && 0 == h) {
-        GT_LOGE(GT_LOG_TAG_GUI, "Failed to layout latex formula, w=%d, h=%d", w, h);
-        goto _latex_deinit;
-    }
-
-    obj->area.w = w > style->max_width ? w : style->max_width;
-    obj->area.h = h;
     _formula_bg_show(obj);
 
     gt_latex_canvas_t cv = { 0 };
@@ -374,14 +414,129 @@ static void _formula_latex_mode_handler(gt_obj_st * obj)
     cv.fg_color = gt_color_to32(style->font_color);
     cv.user_data = (void*)obj;
 
-    ret = gt_latex_render_draw(&layout, &cv);
-    if(GT_LATEX_OK != ret) {
-        GT_LOGE(GT_LOG_TAG_GUI, "Failed to render latex formula, ret=%d", ret);
+    if (GT_MD_OK != gt_md_render(&style->md_layout, &cv)) {
+        GT_LOGE(GT_LOG_TAG_GUI, "Failed to render MD cache");
+        return -1;
+    }
+    return GT_MD_OK;
+}
+
+static int _formula_build_latex_cache(gt_obj_st * obj)
+{
+    _gt_formula_st * style = (_gt_formula_st * )obj;
+    uint16_t w = 0, h = 0;
+
+    if(style->max_width <= 0) {
+        style->max_width = obj->area.w;
     }
 
-_latex_deinit:
-    gt_latex_layout_deinit(&layout);
-    gt_latex_parse_free(&parser, &lexer);
+    int ret = gt_latex_parse(style->text, style->text_len, &style->latex_parser, &style->latex_lexer);
+    if(GT_LATEX_OK != ret) {
+        _formula_clear_latex_cache(style);
+        return ret;
+    }
+
+    ret = gt_latex_layout(&style->latex_parser, &style->latex_layout, style->max_width, style->latex_off);
+    if(GT_LATEX_OK != ret) {
+        _formula_clear_latex_cache(style);
+        return ret;
+    }
+    gt_latex_layout_get_size(&style->latex_layout, &w, &h);
+    if(0 == w && 0 == h) {
+        GT_LOGE(GT_LOG_TAG_GUI, "Failed to layout latex formula, w=%d, h=%d", w, h);
+        _formula_clear_latex_cache(style);
+        return -1;
+    }
+
+    _formula_update_area_by_size(obj, w, h);
+    style->latex_cache_ready = 1;
+    return GT_LATEX_OK;
+}
+
+static int _formula_render_latex_cache(gt_obj_st * obj)
+{
+    _gt_formula_st * style = (_gt_formula_st * )obj;
+
+    if (0 == style->latex_cache_ready) {
+        return -1;
+    }
+
+    _formula_bg_show(obj);
+
+    gt_latex_canvas_t cv = { 0 };
+    cv.x = obj->area.x;
+    cv.y = obj->area.y;
+    cv.fg_color = gt_color_to32(style->font_color);
+    cv.user_data = (void*)obj;
+
+    if (GT_LATEX_OK != gt_latex_render_draw(&style->latex_layout, &cv)) {
+        GT_LOGE(GT_LOG_TAG_GUI, "Failed to render LaTeX cache");
+        return -1;
+    }
+    return GT_LATEX_OK;
+}
+
+static void _formula_clear_cache(_gt_formula_st * style)
+{
+    _formula_clear_md_cache(style);
+    _formula_clear_latex_cache(style);
+}
+
+static void _formula_invalidate_cache(gt_obj_st * obj)
+{
+    _gt_formula_st * style = (_gt_formula_st * )obj;
+
+    _formula_clear_cache(style);
+    style->cache_dirty = 1;
+}
+
+static uint8_t _formula_is_cache_ready(const _gt_formula_st * style)
+{
+    if (NULL == style) {
+        return 0;
+    }
+    if (GT_FORMULA_MODE_MD == style->mode) {
+        return style->md_cache_ready;
+    }
+    return style->latex_cache_ready;
+}
+
+static int _formula_rebuild_cache(gt_obj_st * obj)
+{
+    _gt_formula_st * style = (_gt_formula_st * )obj;
+    int ret = -1;
+
+    if(NULL == style->text || 0 == style->text_len) {
+        style->cache_dirty = 0;
+        return -1;
+    }
+
+    _formula_invalidate_cache(obj);
+    _formula_begin_layout_ctx(obj);
+
+    if (GT_FORMULA_MODE_MD == style->mode) {
+        ret = _formula_build_md_cache(obj);
+    } else {
+        ret = _formula_build_latex_cache(obj);
+    }
+
+    _formula_end_layout_ctx(obj);
+    style->cache_dirty = (0 == ret) ? 0 : 1;
+    return ret;
+}
+
+static int _formula_render_current(gt_obj_st * obj)
+{
+    _gt_formula_st * style = (_gt_formula_st * )obj;
+
+    _formula_begin_layout_ctx(obj);
+    if (style->mode == GT_FORMULA_MODE_MD) {
+        _formula_render_md_cache(obj);
+    } else {
+        _formula_render_latex_cache(obj);
+    }
+    _formula_end_layout_ctx(obj);
+    return 0;
 }
 
 
@@ -398,20 +553,23 @@ static void _formula_init_cb(gt_obj_st * obj)
                             _formula_draw_line_cb,
                              _formula_draw_arc_cb);
 
-    gt_latex_font_set_callback(_formula_get_metrics_cb);
-    _formula_set_font_cfg(obj);
-
-    int ret = GT_LATEX_OK;
-    uint16_t w = 0, h = 0;
-
-    /* 根据模式选择渲染路径 / Choose render path based on mode */
-    if (style->mode == GT_FORMULA_MODE_MD) {
-        _formula_md_mode_handler(obj);
-    } else {
-        _formula_latex_mode_handler(obj);
+    if (GT_FORMULA_CACHE_MODE_PERSIST == style->cache_mode) {
+        if (style->cache_dirty || 0 == _formula_is_cache_ready(style)) {
+            _formula_rebuild_cache(obj);
+        }
+        _formula_render_current(obj);
+        return ;
     }
 
-    _formula_clear_font_cfg(obj);
+    if (style->cache_dirty || 0 == _formula_is_cache_ready(style)) {
+        _formula_rebuild_cache(obj);
+    }
+    if (0 == _formula_is_cache_ready(style)) {
+        return ;
+    }
+    _formula_render_current(obj);
+   _formula_clear_cache(style);
+    style->cache_dirty = 0;
 }
 
 GT_ATTRIBUTE_RAM_TEXT
@@ -423,6 +581,8 @@ static void _formula_deinit_cb(gt_obj_st * obj)
     }
 
     _gt_formula_st * style = (_gt_formula_st * )obj;
+    _formula_invalidate_cache(obj);
+
     if (style->text) {
         gt_mem_free(style->text);
         style->text = NULL;
@@ -455,6 +615,8 @@ gt_obj_st * gt_formula_create(gt_obj_st * parent) {
     if (NULL == obj) {
         return obj;
     }
+
+    ((_gt_formula_st *)obj)->cache_mode = GT_FORMULA_CACHE_MODE_PERSIST;
 
     return obj;
 }
@@ -493,6 +655,12 @@ void gt_formula_set_text(gt_obj_st * obj, const char * fmt, ...)
     va_end(args2);
     style->text_len = size - 1;
 
+    if (GT_FORMULA_CACHE_MODE_PERSIST == style->cache_mode) {
+        _formula_rebuild_cache(obj);
+    } else {
+        _formula_rebuild_cache(obj);
+        _formula_invalidate_cache(obj);
+    }
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
     return;
 
@@ -522,6 +690,12 @@ void gt_formula_set_text_by_len(gt_obj_st * obj, const char * text, uint16_t len
     style->text[len] = '\0';
     style->text_len = len;
 
+    if (GT_FORMULA_CACHE_MODE_PERSIST == style->cache_mode) {
+        _formula_rebuild_cache(obj);
+    } else {
+        _formula_rebuild_cache(obj);
+        _formula_invalidate_cache(obj);
+    }
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
@@ -544,6 +718,7 @@ void gt_formula_set_max_width(gt_obj_st* obj, uint16_t max_width)
     }
     _gt_formula_st * style = (_gt_formula_st * )obj;
     style->max_width = max_width;
+    style->cache_dirty = 1;
 }
 
 GT_ATTRIBUTE_RAM_TEXT
@@ -563,6 +738,7 @@ void gt_formula_set_font_config(gt_obj_st * obj, const gt_formula_font_st *cfg)
     gt_memset(style->font_cfg, 0, sizeof(gt_formula_font_st));
 
     gt_memcpy(style->font_cfg, cfg, sizeof(gt_formula_font_st));
+    style->cache_dirty = 1;
 }
 GT_ATTRIBUTE_RAM_TEXT
 void gt_formula_set_first_line_offset(gt_obj_st* obj, uint16_t off_x, uint16_t off_y)
@@ -573,6 +749,7 @@ void gt_formula_set_first_line_offset(gt_obj_st* obj, uint16_t off_x, uint16_t o
     _gt_formula_st * style = (_gt_formula_st * )obj;
     style->latex_off.x = off_x;
     style->latex_off.y = off_y;
+    style->cache_dirty = 1;
 }
 
 GT_ATTRIBUTE_RAM_TEXT
@@ -583,6 +760,7 @@ void gt_formula_set_mode(gt_obj_st* obj, gt_formula_mode_t mode)
     }
     _gt_formula_st * style = (_gt_formula_st * )obj;
     style->mode = mode;
+    style->cache_dirty = 1;
 }
 
 GT_ATTRIBUTE_RAM_TEXT
@@ -593,6 +771,34 @@ gt_formula_mode_t gt_formula_get_mode(gt_obj_st* obj)
     }
     _gt_formula_st * style = (_gt_formula_st * )obj;
     return style->mode;
+}
+
+GT_ATTRIBUTE_RAM_TEXT
+void gt_formula_set_cache_mode(gt_obj_st* obj, gt_formula_cache_mode_t cache_mode)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_formula_st * style = (_gt_formula_st * )obj;
+    if (style->cache_mode == cache_mode) {
+        return ;
+    }
+
+    style->cache_mode = cache_mode;
+    if (GT_FORMULA_CACHE_MODE_NONE == cache_mode) {
+        _formula_invalidate_cache(obj);
+    } else {
+        style->cache_dirty = 1;
+    }
+}
+
+GT_ATTRIBUTE_RAM_TEXT
+gt_formula_cache_mode_t gt_formula_get_cache_mode(gt_obj_st* obj)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return GT_FORMULA_CACHE_MODE_PERSIST;
+    }
+    return ((_gt_formula_st *)obj)->cache_mode;
 }
 
 /* end of file ----------------------------------------------------------*/

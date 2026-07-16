@@ -39,6 +39,14 @@ typedef enum {
     GT_FORMULA_MODE_MD    = 1,  /* Markdown 文档模式 / Markdown document mode */
 } gt_formula_mode_t;
 
+/**
+ * @brief 公式缓存模式 / Formula cache mode
+ */
+typedef enum {
+    GT_FORMULA_CACHE_MODE_PERSIST = 0,  /* 保留缓存 / Keep cache */
+    GT_FORMULA_CACHE_MODE_NONE    = 1,  /* 不保留缓存 / No cache retention */
+} gt_formula_cache_mode_t;
+
 typedef struct {
     gt_latex_font_mode_t font_mode;
     gt_font_info_st info [GT_FORMULA_FONT_MAX_LEVEL];
@@ -98,6 +106,22 @@ void gt_formula_set_mode(gt_obj_st* obj, gt_formula_mode_t mode);
  * @return gt_formula_mode_t 当前模式 / current mode
  */
 gt_formula_mode_t gt_formula_get_mode(gt_obj_st* obj);
+
+/**
+ * @brief 设置缓存模式 / Set formula cache mode
+ *
+ * @param obj formula 对象 / formula object
+ * @param cache_mode GT_FORMULA_CACHE_MODE_PERSIST 或 GT_FORMULA_CACHE_MODE_NONE
+ */
+void gt_formula_set_cache_mode(gt_obj_st* obj, gt_formula_cache_mode_t cache_mode);
+
+/**
+ * @brief 获取缓存模式 / Get formula cache mode
+ *
+ * @param obj formula 对象 / formula object
+ * @return gt_formula_cache_mode_t 当前缓存模式 / current cache mode
+ */
+gt_formula_cache_mode_t gt_formula_get_cache_mode(gt_obj_st* obj);
 
 
 
