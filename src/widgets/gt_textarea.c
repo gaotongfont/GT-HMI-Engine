@@ -20,6 +20,10 @@
 #include "../others/gt_assert.h"
 #include "../core/gt_disp.h"
 
+#if GT_TEXTAREA_FILE_MODE
+#include "../core/gt_fs.h"
+#endif
+
 /* private define -------------------------------------------------------*/
 #define OBJ_TYPE    GT_TYPE_TEXTAREA
 #define MY_CLASS    &gt_textarea_class
@@ -37,6 +41,50 @@ typedef struct _textarea_reg_s {
     uint8_t always_scroll_to_newest : 1;    /** always scroll to newest string */
     uint8_t reserved : 2;
 }_textarea_reg_st;
+
+#if GT_TEXTAREA_FILE_MODE
+/** @brief File-mode runtime context */
+typedef struct {
+    uint8_t      io_backend;             /**< 0=VFS, 1=custom I/O */
+    union {
+        gt_fs_fp_st *fp;
+        struct {
+            gt_textarea_file_io_t io;
+            void *handle;
+        } custom;
+    } io;
+    char          file_path[128];
+
+    uint8_t      *read_buf;
+    uint16_t      buf_size;
+    uint32_t      buf_file_offset;
+
+    uint32_t      scroll_byte_offset;
+    uint32_t      file_total_bytes;
+
+    gt_textarea_enc_t encoding;
+
+    gt_textarea_line_idx_t line_idx[GT_TEXTAREA_FILE_IDX_COUNT];
+    uint8_t      line_idx_count;
+    uint8_t      line_idx_write;
+    uint32_t     last_indexed_line;
+
+    uint32_t     estimated_total_lines;
+    uint32_t     scanned_bytes;
+    uint32_t     scanned_lines;
+    uint32_t     current_line_number;
+    int32_t      current_y_offset;
+    int32_t      last_scroll_y;           /**< scroll.y from previous handle_scroll, for delta computation */
+    int32_t      pixel_offset;            /**< sub-line pixel remainder for smooth scrolling */
+
+    uint8_t      dirty : 1;
+    uint8_t      editable : 1;
+    uint8_t      word_wrap : 1;
+    uint8_t      _reserved : 5;
+
+    uint8_t      pending_overlap;
+} _gt_textarea_file_ctx_t;
+#endif  /* GT_TEXTAREA_FILE_MODE */
 
 #if GT_TEXTAREA_SUB_STRING_SCROLL_CACHE
 typedef struct {
@@ -68,7 +116,7 @@ typedef struct _gt_textarea_s {
     gt_obj_st base;
     gt_textarea_param_st * contents;
     uint16_t cnt_contents;
-    uint16_t max_height;            /** update when current display max height */
+    uint32_t max_height;            /** update when current display max height */
     gt_anim_st * scroll_to_newest_anim;     /** when add newest string */
 
     gt_color_t color_border;
@@ -101,6 +149,14 @@ typedef struct _gt_textarea_s {
 #endif
 
     _textarea_reg_st reg;
+
+#if GT_TEXTAREA_FILE_MODE
+    gt_textarea_mode_t       mode;
+    _gt_textarea_file_ctx_t *file_ctx;
+    uint16_t                 file_buf_size_cfg;
+    bool                     file_word_wrap;
+    bool                     file_editable;
+#endif
 }_gt_textarea_st;
 
 
@@ -109,6 +165,11 @@ static void _textarea_init_cb(gt_obj_st * obj);
 static void _textarea_deinit_cb(gt_obj_st * obj);
 static void _textarea_event_cb(struct gt_obj_s * obj, gt_event_st * e);
 GT_ATTRIBUTE_RAM_TEXT static void _create_auto_scoll_to(gt_obj_st * textarea);
+
+#if GT_TEXTAREA_FILE_MODE
+static void _draw_content_file(gt_obj_st *obj, gt_point_st *touch_point_p, bool is_only_calc_height);
+static void _textarea_file_handle_scroll(gt_obj_st *obj);
+#endif
 
 static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_textarea_class = {
     ._init_cb      = _textarea_init_cb,
@@ -130,6 +191,529 @@ static inline void _set_touch_word(_gt_textarea_st * style, char * word, uint16_
     style->select_word.len = len;
 }
 #endif
+
+static inline bool _is_hold_on_contents_for_scroll(_gt_textarea_st * style);
+
+#if GT_TEXTAREA_FILE_MODE
+
+#define _BUF_RELOAD_THRESHOLD(ctx)  ((ctx)->buf_size >> 3)
+#define _ENC_DETECT_SAMPLE_SIZE 256
+#define _AVG_BYTES_PER_LINE    80
+
+/* file-mode I/O dispatchers ---------------------------------------------*/
+static inline int _file_read(_gt_textarea_file_ctx_t *ctx, void *buf, uint32_t size) {
+    if (ctx->io_backend == 0) {
+        uint32_t ret_len = 0;
+        return (gt_fs_read(ctx->io.fp, (uint8_t *)buf, size, &ret_len) == GT_FS_RES_OK)
+               ? (int)ret_len : -1;
+    } else {
+        if (NULL == ctx->io.custom.io.read) return -1;
+        return ctx->io.custom.io.read(ctx->io.custom.handle, buf, (unsigned int)size);
+    }
+}
+
+static inline int _file_seek(_gt_textarea_file_ctx_t *ctx, uint32_t offset, int whence) {
+    if (ctx->io_backend == 0) {
+        return (gt_fs_seek(ctx->io.fp, offset, (gt_fs_whence_et)whence) == GT_FS_RES_OK)
+               ? 0 : -1;
+    } else {
+        if (NULL == ctx->io.custom.io.seek) return -1;
+        return (ctx->io.custom.io.seek(ctx->io.custom.handle, (long)offset, whence) >= 0)
+               ? 0 : -1;
+    }
+}
+
+static inline int _file_write(_gt_textarea_file_ctx_t *ctx, const void *buf, uint32_t size) {
+    if (ctx->io_backend == 0) {
+        uint32_t ret_len = 0;
+        return (gt_fs_write(ctx->io.fp, (uint8_t *)buf, size, &ret_len) == GT_FS_RES_OK)
+               ? (int)ret_len : -1;
+    } else {
+        if (NULL == ctx->io.custom.io.write) return -1;
+        return ctx->io.custom.io.write(ctx->io.custom.handle, buf, (unsigned int)size);
+    }
+}
+
+static inline uint32_t _file_tell(_gt_textarea_file_ctx_t *ctx) {
+    if (ctx->io_backend == 0) {
+        uint32_t pos = 0;
+        gt_fs_tell(ctx->io.fp, &pos);
+        return pos;
+    } else {
+        if (ctx->io.custom.io.tell) {
+            long pos = ctx->io.custom.io.tell(ctx->io.custom.handle);
+            return (pos >= 0) ? (uint32_t)pos : 0;
+        }
+        if (ctx->io.custom.io.seek) {
+            long pos = ctx->io.custom.io.seek(ctx->io.custom.handle, 0, 1);
+            return (pos >= 0) ? (uint32_t)pos : 0;
+        }
+        return 0;
+    }
+}
+
+static inline void _file_close(_gt_textarea_file_ctx_t *ctx) {
+    if (ctx->io_backend == 0) {
+        if (ctx->io.fp) { gt_fs_close(ctx->io.fp); ctx->io.fp = NULL; }
+    } else {
+        if (ctx->io.custom.io.close && ctx->io.custom.handle) {
+            ctx->io.custom.io.close(ctx->io.custom.handle);
+            ctx->io.custom.handle = NULL;
+        }
+    }
+}
+
+/* encoding detection ----------------------------------------------------*/
+static inline bool _is_utf8_cont(uint8_t b) {
+    return (b & 0xC0) == 0x80;
+}
+
+static inline uint8_t _utf8_seq_len(uint8_t lead) {
+    if ((lead & 0x80) == 0x00) return 1;
+    if ((lead & 0xE0) == 0xC0) return 2;
+    if ((lead & 0xF0) == 0xE0) return 3;
+    if ((lead & 0xF8) == 0xF0) return 4;
+    return 0;
+}
+
+static gt_textarea_enc_t _detect_encoding(const uint8_t *data, uint32_t len) {
+    if (NULL == data || len < 2) return GT_TEXTAREA_ENC_UTF8;
+
+    /* BOM */
+    if (len >= 3 && data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF)
+        return GT_TEXTAREA_ENC_UTF8;
+    if (len >= 2 && data[0] == 0xFF && data[1] == 0xFE)
+        return GT_TEXTAREA_ENC_UTF8;
+
+    uint32_t sample   = len > 256 ? 256 : len;
+    uint32_t ascii_n  = 0, gbk_n = 0, utf8_n = 0;
+
+    for (uint32_t i = 0; i < sample; i++) {
+        uint8_t b = data[i];
+        if (b < 0x80) { ascii_n++; continue; }
+        if (b == 0x00) return GT_TEXTAREA_ENC_UTF8;
+
+        if (b >= 0x81 && b <= 0xFE) {
+            gbk_n++;
+            if (i + 1 < sample) {
+                uint8_t b2 = data[i + 1];
+                if ((b2 >= 0x40 && b2 <= 0x7E) || (b2 >= 0x80 && b2 <= 0xFE)) i++;
+            }
+        }
+        if (_utf8_seq_len(b) >= 2) utf8_n++;
+    }
+
+    if (gbk_n > (sample >> 3) && gbk_n > utf8_n * 2) return GT_TEXTAREA_ENC_GBK;
+    if (utf8_n > 0) return GT_TEXTAREA_ENC_UTF8;
+    if (ascii_n == sample) return GT_TEXTAREA_ENC_ASCII;
+    return GT_TEXTAREA_ENC_UTF8;
+}
+
+/* multi-byte boundary ---------------------------------------------------*/
+static uint8_t _calc_overlap(_gt_textarea_file_ctx_t *ctx) {
+    if (NULL == ctx->read_buf || ctx->buf_size == 0) return 0;
+
+    uint16_t check_start = (ctx->buf_size > 4) ? (ctx->buf_size - 4) : 0;
+
+    switch (ctx->encoding) {
+    case GT_TEXTAREA_ENC_UTF8:
+        for (uint16_t i = ctx->buf_size; i > check_start; i--) {
+            if (i == 0) break;
+            uint8_t b  = ctx->read_buf[i - 1];
+            uint8_t sl = _utf8_seq_len(b);
+            if (sl >= 2) {
+                uint8_t rem = (uint8_t)(sl - (ctx->buf_size - (i - 1)));
+                return (rem > 0 && rem <= 3) ? rem : 0;
+            }
+            if (!_is_utf8_cont(b) && b < 0x80) return 0;
+        }
+        return 0;
+    case GT_TEXTAREA_ENC_GBK: {
+        uint8_t last = ctx->read_buf[ctx->buf_size - 1];
+        return (last >= 0x81 && last <= 0xFE) ? 1 : 0;
+    }
+    default:
+        return 0;
+    }
+}
+
+/* buffer management -----------------------------------------------------*/
+static bool _ensure_buffer(_gt_textarea_file_ctx_t *ctx, uint32_t target) {
+    if (NULL == ctx->read_buf) return false;
+    uint32_t buf_end = ctx->buf_file_offset + ctx->buf_size;
+    if (target >= ctx->buf_file_offset && target < buf_end - _BUF_RELOAD_THRESHOLD(ctx))
+        return true;
+
+    uint32_t aligned = target & ~((uint32_t)ctx->buf_size - 1);
+    if (aligned >= ctx->file_total_bytes && ctx->file_total_bytes > ctx->buf_size)
+        aligned = ctx->file_total_bytes - ctx->buf_size;
+
+    if (_file_seek(ctx, aligned, 0) != 0) return false;
+    int rd = _file_read(ctx, ctx->read_buf, ctx->buf_size);
+    if (rd <= 0) return false;
+    ctx->buf_file_offset = aligned;
+    return true;
+}
+
+static bool _load_next_chunk(_gt_textarea_file_ctx_t *ctx) {
+    uint32_t next = ctx->buf_file_offset + ctx->buf_size - ctx->pending_overlap;
+    if (next >= ctx->file_total_bytes) return false;
+    if (_file_seek(ctx, next, 0) != 0) return false;
+
+    gt_memset(ctx->read_buf, 0, ctx->buf_size);
+    int rd = _file_read(ctx, ctx->read_buf, ctx->buf_size);
+    if (rd <= 0) return false;
+    ctx->buf_file_offset = next;
+    ctx->pending_overlap = _calc_overlap(ctx);
+    return true;
+}
+
+/* file context lifecycle ------------------------------------------------*/
+static _gt_textarea_file_ctx_t *
+_file_ctx_init(const char *path, uint16_t buf_size, const gt_textarea_file_io_t *io) {
+    _gt_textarea_file_ctx_t *ctx = (_gt_textarea_file_ctx_t *)
+        gt_mem_malloc(sizeof(_gt_textarea_file_ctx_t));
+    if (NULL == ctx) return NULL;
+    gt_memset(ctx, 0, sizeof(_gt_textarea_file_ctx_t));
+
+    ctx->buf_size = buf_size;
+    ctx->read_buf = (uint8_t *)gt_mem_malloc(buf_size);
+    if (NULL == ctx->read_buf) { gt_mem_free(ctx); return NULL; }
+    gt_memset(ctx->read_buf, 0, buf_size);
+
+    uint16_t plen = (uint16_t)strlen(path);
+    if (plen >= sizeof(ctx->file_path)) plen = sizeof(ctx->file_path) - 1;
+    gt_memcpy(ctx->file_path, path, plen);
+    ctx->file_path[plen] = '\0';
+
+    if (io) {
+        ctx->io_backend = 1;
+        ctx->io.custom.io = *io;
+        ctx->io.custom.handle = io->open(path, "r");
+        if (NULL == ctx->io.custom.handle) goto fail;
+    } else {
+        ctx->io_backend = 0;
+        ctx->io.fp = gt_fs_open(path, GT_FS_MODE_RD);
+        if (NULL == ctx->io.fp) goto fail;
+    }
+
+    _file_seek(ctx, 0, 2);  /* SEEK_END */
+    ctx->file_total_bytes = _file_tell(ctx);
+    _file_seek(ctx, 0, 0);  /* SEEK_SET */
+
+    /* initial read */
+    {
+        int rd = _file_read(ctx, ctx->read_buf, ctx->buf_size);
+        if (rd <= 0 && ctx->file_total_bytes > 0) goto fail_close;
+    }
+    ctx->buf_file_offset = 0;
+    ctx->scroll_byte_offset = 0;
+
+    /* encoding */
+    {
+        uint32_t sl = (ctx->buf_size < 256) ? ctx->buf_size : 256;
+        ctx->encoding = _detect_encoding(ctx->read_buf, sl);
+        ctx->pending_overlap = _calc_overlap(ctx);
+    }
+
+    /* initial line estimate */
+    ctx->estimated_total_lines = ctx->file_total_bytes / _AVG_BYTES_PER_LINE;
+    if (ctx->estimated_total_lines < 1) ctx->estimated_total_lines = 1;
+
+    return ctx;
+
+fail_close:
+    _file_close(ctx);
+fail:
+    gt_mem_free(ctx->read_buf);
+    gt_mem_free(ctx);
+    return NULL;
+}
+
+static void _file_ctx_deinit(_gt_textarea_file_ctx_t *ctx) {
+    if (NULL == ctx) return;
+    _file_close(ctx);
+    if (ctx->read_buf) { gt_mem_free(ctx->read_buf); ctx->read_buf = NULL; }
+    gt_mem_free(ctx);
+}
+
+/* lazy line index -------------------------------------------------------*/
+static void _line_idx_record(_gt_textarea_file_ctx_t *ctx,
+                              uint32_t byte_offset, uint32_t line_n, int32_t y_off) {
+    if (line_n - ctx->last_indexed_line < (uint32_t)GT_TEXTAREA_FILE_IDX_INTERVAL) return;
+    if (ctx->line_idx_count == GT_TEXTAREA_FILE_IDX_COUNT) {
+        gt_memmove(&ctx->line_idx[0], &ctx->line_idx[1],
+                   (GT_TEXTAREA_FILE_IDX_COUNT - 1) * sizeof(gt_textarea_line_idx_t));
+        ctx->line_idx_write = GT_TEXTAREA_FILE_IDX_COUNT - 1;
+    }
+    uint8_t idx = ctx->line_idx_write % GT_TEXTAREA_FILE_IDX_COUNT;
+    ctx->line_idx[idx].byte_offset = byte_offset;
+    ctx->line_idx[idx].line_number = line_n;
+    ctx->line_idx[idx].y_offset    = y_off;
+    ctx->line_idx_write++;
+    ctx->last_indexed_line = line_n;
+    if (ctx->line_idx_count < GT_TEXTAREA_FILE_IDX_COUNT) ctx->line_idx_count++;
+}
+
+static int8_t _line_idx_find(_gt_textarea_file_ctx_t *ctx, uint32_t target) {
+    if (0 == ctx->line_idx_count) return -1;
+    uint8_t lo = 0, hi = ctx->line_idx_count - 1;
+    if (ctx->line_idx[lo].byte_offset > target) return -1;
+    while (lo < hi) {
+        uint8_t mid = lo + ((hi - lo + 1) >> 1);
+        if (ctx->line_idx[mid].byte_offset <= target) lo = mid;
+        else hi = mid - 1;
+    }
+    return (int8_t)lo;
+}
+
+static void _update_line_estimate(_gt_textarea_file_ctx_t *ctx,
+                                   uint32_t new_bytes, uint32_t new_lines) {
+    ctx->scanned_bytes += new_bytes;
+    ctx->scanned_lines += new_lines;
+    if (ctx->scanned_bytes > 0 && ctx->scanned_lines > 0) {
+        uint32_t est = (uint32_t)((uint64_t)ctx->file_total_bytes
+                        * ctx->scanned_lines / ctx->scanned_bytes);
+        if (est > ctx->estimated_total_lines) ctx->estimated_total_lines = est;
+    }
+}
+
+/* file-mode rendering ---------------------------------------------------*/
+/**
+ * @brief Render file-mode textarea content.
+ *
+ * draw_text() processes ALL bytes in font.utf8/font.len in one call
+ * (it renders every line that fits in area_font and skips the rest).
+ * font.utf8 and font.len are NOT modified by draw_text, so we feed it
+ * one 4KB chunk per iteration, updating font_attr.start_x/start_y to
+ * continue where the previous call left off.
+ *
+ * The loop stops when: (a) end-of-file reached, (b) scroll abort
+ * (GT_RES_INV), or (c) rendered past the visible viewport + margin.
+ */
+static void _draw_content_file(gt_obj_st *obj, gt_point_st *touch_point_p,
+                                bool is_only_calc_height) {
+    _gt_textarea_st *ta = (_gt_textarea_st *)obj;
+    _gt_textarea_file_ctx_t *ctx = ta->file_ctx;
+    if (NULL == ctx || NULL == ctx->read_buf) return;
+    if (0 == obj->area.w || 0 == obj->area.h) return;
+
+
+    gt_font_st font = { .info = ta->font_info, .res = NULL };
+
+    gt_attr_font_st font_attr = {
+        .font       = &font,
+        .space_x    = ta->space_x,
+        .space_y    = ta->space_y,
+        .align      = ta->font_align,
+        .indent     = ta->indent,
+        .opa        = is_only_calc_height ? GT_OPA_0 : obj->opa,
+        .font_color = ta->color_font,
+        .reg.immediately_return = _is_hold_on_contents_for_scroll(ta),
+    };
+
+    gt_size_t scroll_y = obj->process_attr.scroll.y;
+    _gt_draw_font_res_st font_res = {0};
+    gt_area_st padding_font = gt_area_reduce(obj->area, ta->padding);
+    gt_area_st area_font = gt_area_reduce(padding_font, ta->border_width + _FONT_AREA_REDUCE_SIZE);
+    font_attr.logical_area       = area_font;
+#if GT_TEXTAREA_FILE_MODE
+    /* File mode: byte_offset determines coarse position;
+       pixel_offset provides sub-line smooth scrolling. */
+    font_attr.logical_area.y    -= ctx->pixel_offset;
+    (void)scroll_y;
+#else
+    font_attr.logical_area.y    += scroll_y;
+#endif
+    font_attr.logical_area.h     = 0xffff;
+
+    uint16_t line_height = ta->font_info.size + (font_attr.space_y << 1);
+
+    if (!_ensure_buffer(ctx, ctx->scroll_byte_offset)) return;
+
+    uint32_t buf_off = ctx->scroll_byte_offset - ctx->buf_file_offset;
+    uint32_t chunk_size = ctx->buf_size - buf_off;
+    {
+        uint32_t file_rem = ctx->file_total_bytes - ctx->scroll_byte_offset;
+        if (chunk_size > file_rem) chunk_size = file_rem;
+    }
+
+    font.utf8 = (char *)(ctx->read_buf + buf_off);
+    font.len  = chunk_size;
+
+
+    bool done = false;
+
+    while (!done) {
+        uint32_t abs_off = ctx->buf_file_offset
+            + (uint32_t)((const uint8_t *)font.utf8 - ctx->read_buf);
+        _line_idx_record(ctx, abs_off, ctx->current_line_number,
+                         font_attr.logical_area.y - area_font.y);
+
+        font_res = draw_text(obj->draw_ctx, &font_attr, &area_font);
+
+        if (_is_hold_on_contents_for_scroll(ta) && GT_RES_INV == font_res.res) {
+            done = true; break;
+        }
+
+        /* draw_text processed all bytes in this chunk.
+         * Carry over the end position for the next chunk. */
+        font_attr.start_x = font_res.abs_pos.x;
+        font_attr.start_y = font_res.abs_pos.y;
+        font_attr.reg.enabled_start = true;
+
+        /* Check end-of-file: buf_file_offset + buf_off + font.len is the
+         * absolute byte past the last byte we fed to draw_text. */
+        {
+            uint32_t consumed_end = ctx->buf_file_offset + buf_off
+                                    + (uint32_t)font.len;
+            if (consumed_end >= ctx->file_total_bytes) {
+                done = true; break;
+            }
+        }
+
+        /* Stop if rendered well below the visible viewport (non-scroll path) */
+        if (!is_only_calc_height && !_is_hold_on_contents_for_scroll(ta)
+            && font_res.abs_pos.y > area_font.y + obj->area.h + (line_height << 2)) {
+            done = true; break;
+        }
+
+        /* Load next chunk */
+        if (!_load_next_chunk(ctx)) { done = true; break; }
+        font.utf8 = (char *)(ctx->read_buf + ctx->pending_overlap);
+        {
+            uint32_t nr = ctx->buf_size - ctx->pending_overlap;
+            uint32_t fr = ctx->file_total_bytes - ctx->buf_file_offset
+                          - ctx->pending_overlap;
+            if (nr > fr) nr = fr;
+            font.len = nr;
+        }
+        buf_off = ctx->pending_overlap;
+    }
+
+    if (!touch_point_p) {
+        uint32_t h = line_height + font_res.abs_pos.y + ta->font_info.size
+                     - font_attr.logical_area.y;
+#if GT_TEXTAREA_FILE_MODE
+        /* scroll_y is not applied to logical_area.y in file mode
+           (content is positioned by byte offset).  Add it back so
+           max_height reflects the total pixel extent for the scrollbar. */
+        h += (uint32_t)gt_abs(scroll_y);
+#endif
+        if (h > ta->max_height) {
+            ta->max_height = h;
+        }
+    }
+}
+
+/* file-mode scroll handling ---------------------------------------------*/
+static void _textarea_file_handle_scroll(gt_obj_st *obj) {
+    _gt_textarea_st *ta = (_gt_textarea_st *)obj;
+    _gt_textarea_file_ctx_t *ctx = ta->file_ctx;
+    if (NULL == ctx) return;
+
+    gt_size_t scroll_y = obj->process_attr.scroll.y;
+
+    if (ta->max_height <= obj->area.h || ctx->file_total_bytes == 0) {
+        obj->process_attr.scroll.y = 0;
+        ctx->last_scroll_y = 0;
+        ctx->pixel_offset = 0;
+        ctx->scroll_byte_offset = 0;
+        gt_disp_invalid_area(obj);
+        return;
+    }
+
+    /* Relative pixel delta since last call */
+    int32_t delta_px = (int32_t)scroll_y - ctx->last_scroll_y;
+    ctx->last_scroll_y = scroll_y;
+
+    if (0 == delta_px) {
+        obj->process_attr.scroll.y = 0;
+        ctx->last_scroll_y = 0;
+        return;
+    }
+
+    /* Negate: framework scroll.y goes negative on swipe-up (toward end),
+       pixel_offset positive = content shifted up = toward end. */
+    int32_t accum = -delta_px;
+
+    uint16_t lh = ta->font_info.size + (ta->space_y << 1);
+    if (lh < 1) lh = 1;
+
+    /* pixel_offset is the PRIMARY scroll position.  It accumulates
+       continuously for pixel-smooth scrolling.  scroll_byte_offset
+       only changes when pixel_offset leaves the safe zone, at which
+       point we shift the byte window and compensate pixel_offset
+       so the visual position does not jump. */
+    ctx->pixel_offset += accum;
+
+    /* Estimated pixel height of the 4KB buffer.
+       4096 / 80 * 18 ≈ 922 px.
+       Renderer stops ~437 px below viewport bottom, so max safe
+       pixel_offset ≈ 922 - 437 ≈ 485.  Use 400 for margin. */
+    int32_t safe_upper = 400;
+    int32_t safe_lower = 0;
+
+    bool need_reload = false;
+    if (ctx->pixel_offset > safe_upper) {
+        /* Shift byte window forward, keep visual position stable. */
+        int32_t overshoot = ctx->pixel_offset - safe_upper / 2;
+        int32_t byte_shift = overshoot * (int32_t)_AVG_BYTES_PER_LINE / (int32_t)lh;
+        if (byte_shift > 0) {
+            uint64_t nb = (uint64_t)ctx->scroll_byte_offset + (uint64_t)byte_shift;
+            if (nb >= ctx->file_total_bytes)
+                nb = (ctx->file_total_bytes > 0) ? ctx->file_total_bytes - 1 : 0;
+            ctx->scroll_byte_offset = (uint32_t)nb;
+            int32_t px_comp = (byte_shift * (int32_t)lh + (int32_t)(_AVG_BYTES_PER_LINE / 2)) / (int32_t)_AVG_BYTES_PER_LINE;
+            if (px_comp < 0) px_comp = 0;
+            ctx->pixel_offset -= px_comp;
+            if (ctx->pixel_offset < safe_lower) ctx->pixel_offset = safe_lower;
+            need_reload = true;
+        }
+    } else if (ctx->pixel_offset < safe_lower) {
+        /* Shift byte window backward. */
+        int32_t undershoot = safe_lower - ctx->pixel_offset;
+        int32_t byte_shift = undershoot * (int32_t)_AVG_BYTES_PER_LINE / (int32_t)lh;
+        if (byte_shift > 0 && (uint32_t)byte_shift <= ctx->scroll_byte_offset) {
+            ctx->scroll_byte_offset -= (uint32_t)byte_shift;
+            int32_t px_comp = (byte_shift * (int32_t)lh + (int32_t)(_AVG_BYTES_PER_LINE / 2)) / (int32_t)_AVG_BYTES_PER_LINE;
+            if (px_comp < 0) px_comp = 0;
+            ctx->pixel_offset += px_comp;
+            if (ctx->pixel_offset < safe_lower) ctx->pixel_offset = safe_lower;
+            if (ctx->pixel_offset > safe_upper) ctx->pixel_offset = safe_upper;
+            need_reload = true;
+        } else if ((uint32_t)byte_shift > ctx->scroll_byte_offset) {
+            /* Can't go before file start: clamp */
+            byte_shift = (int32_t)ctx->scroll_byte_offset;
+            ctx->scroll_byte_offset = 0;
+            int32_t px_comp = (byte_shift * (int32_t)lh + (int32_t)(_AVG_BYTES_PER_LINE / 2)) / (int32_t)_AVG_BYTES_PER_LINE;
+            if (px_comp < 0) px_comp = 0;
+            ctx->pixel_offset += px_comp;
+            if (ctx->pixel_offset < safe_lower) ctx->pixel_offset = safe_lower;
+            if (ctx->pixel_offset > safe_upper) ctx->pixel_offset = safe_upper;
+            need_reload = true;
+        }
+    }
+
+
+    if (need_reload) {
+        _ensure_buffer(ctx, ctx->scroll_byte_offset);
+    }
+
+    /* Update scrollbar estimate */
+    if (ctx->estimated_total_lines > 0) {
+        uint32_t eh = ctx->estimated_total_lines * lh;
+        if (eh > ta->max_height) ta->max_height = eh;
+    }
+
+    /* Reset scroll.y to prevent int16_t overflow */
+    obj->process_attr.scroll.y = 0;
+    ctx->last_scroll_y = 0;
+
+    gt_disp_invalid_area(obj);
+}
+
+#endif  /* GT_TEXTAREA_FILE_MODE */
 
 #if GT_TEXTAREA_SUB_STRING_SCROLL_CACHE
 static void _free_reset_scroll_cache(_gt_textarea_st * style) {
@@ -307,7 +891,7 @@ static void _line_cache_build(gt_obj_st * obj) {
 
             gt_font_st scan_font = tmp_font;
             scan_font.utf8 = &style->contents[si].text[byte_idx];
-            scan_font.len  = (uint16_t)(seg_len - byte_idx);
+            scan_font.len  = seg_len - byte_idx;
 
             uint32_t line_w = max_w - disp_w;
             int32_t step = gt_font_split_line_str(&scan_font, max_w, space_x,
@@ -429,6 +1013,12 @@ static inline bool _is_hold_on_contents_for_scroll(_gt_textarea_st * style) {
 static GT_ATTRIBUTE_RAM_TEXT void
 _draw_content_or_get_words(gt_obj_st * obj, gt_point_st * touch_point_p, bool is_only_calc_height) {
     _gt_textarea_st * style = (_gt_textarea_st * )obj;
+#if GT_TEXTAREA_FILE_MODE
+    if (style->mode != GT_TEXTAREA_MODE_MEMORY) {
+        _draw_content_file(obj, touch_point_p, is_only_calc_height);
+        return;
+    }
+#endif
     uint16_t idx = 0;
     gt_font_st font = {
         .info       = style->font_info,
@@ -610,6 +1200,16 @@ static GT_ATTRIBUTE_RAM_TEXT inline void
 _reset_scroll_value(gt_obj_st * obj) {
     obj->process_attr.scroll.y = 0;
     gt_obj_set_scroll_prev(obj, gt_obj_get_scroll_prev_x(obj), 0);
+#if GT_TEXTAREA_FILE_MODE
+    {
+        _gt_textarea_st *style = (_gt_textarea_st *)obj;
+        if (style->file_ctx) {
+            style->file_ctx->scroll_byte_offset = 0;
+            style->file_ctx->last_scroll_y = 0;
+            style->file_ctx->pixel_offset = 0;
+        }
+    }
+#endif
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void
@@ -656,6 +1256,15 @@ _textarea_deinit_cb(gt_obj_st * obj) {
         return ;
     }
     _free_contents(obj);
+#if GT_TEXTAREA_FILE_MODE
+    {
+        _gt_textarea_st *style = (_gt_textarea_st *)obj;
+        if (style->file_ctx) {
+            _file_ctx_deinit(style->file_ctx);
+            style->file_ctx = NULL;
+        }
+    }
+#endif
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void
@@ -699,9 +1308,14 @@ _load_more(struct gt_obj_s * obj) {
 }
 
 GT_ATTRIBUTE_RAM_TEXT static inline bool
-_is_scroll_to_bottom(gt_obj_st * obj) {
-    _gt_textarea_st * style = (_gt_textarea_st * )obj;
-    return gt_abs(obj->process_attr.scroll.y) + obj->area.h - style->padding > style->max_height ? true : false;
+_is_scroll_to_bottom(gt_obj_st *obj) {
+    _gt_textarea_st *style = (_gt_textarea_st *)obj;
+#if GT_TEXTAREA_FILE_MODE
+    if (style->mode != GT_TEXTAREA_MODE_MEMORY && style->file_ctx) {
+        return (style->file_ctx->scroll_byte_offset >= style->file_ctx->file_total_bytes);
+    }
+#endif
+    return gt_abs(obj->process_attr.scroll.y) + obj->area.h - style->padding > style->max_height;
 }
 
 GT_ATTRIBUTE_RAM_TEXT static void
@@ -774,34 +1388,41 @@ _textarea_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         }
         case GT_EVENT_TYPE_INPUT_SCROLL: {
             style->reg.click_valid = false;
-            if (style->max_height < obj->area.h) {
-                _reset_scroll_value(obj);
+#if GT_TEXTAREA_FILE_MODE
+            if (style->mode != GT_TEXTAREA_MODE_MEMORY) {
+                _textarea_file_handle_scroll(obj);
                 break;
+            }
+#endif
+            if (style->max_height < obj->area.h) {
+                _reset_scroll_value(obj); break;
             }
             style->reg.load_more = false;
             style->reg.pull_to_refresh = false;
             if (obj->process_attr.scroll.y > 0) {
-                if (false == style->reg.pull_to_refresh && obj->process_attr.scroll.y > obj->area.h >> 4) {
+                if (false == style->reg.pull_to_refresh && obj->process_attr.scroll.y > obj->area.h >> 4)
                     style->reg.pull_to_refresh = true;
-                }
                 _reset_scroll_value(obj);
             } else if (_is_scroll_to_bottom(obj)) {
                 if (false == style->reg.load_more &&
-                    gt_abs(obj->process_attr.scroll.y) + obj->area.h - (obj->area.h >> 4) > style->max_height) {
+                    gt_abs(obj->process_attr.scroll.y) + obj->area.h - (obj->area.h >> 4) > style->max_height)
                     style->reg.load_more = true;
-                }
                 obj->process_attr.scroll.y = obj->area.h - style->max_height;
             }
 #if GT_TEXTAREA_LINE_CACHE
-            /** Enable cache-assisted rendering during scroll if cache is ready */
-            if (style->line_cache.count > 0) {
-                _set_hold_on_contents_for_scroll(style, true);
-            }
+            if (style->line_cache.count > 0) _set_hold_on_contents_for_scroll(style, true);
 #endif
             gt_disp_invalid_area(obj);
             break;
         }
         case GT_EVENT_TYPE_INPUT_SCROLL_END: {
+#if GT_TEXTAREA_FILE_MODE
+            if (style->mode != GT_TEXTAREA_MODE_MEMORY) {
+                /* File mode: no hold_on optimization needed;
+                   full render on scroll end for correct display. */
+                break;
+            }
+#endif
             if (style->reg.pull_to_refresh) {
                 _pull_wait_to_refresh(obj);
             } else if (style->reg.load_more) {
@@ -866,6 +1487,13 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
     style->border_width      = 2;
 
     _set_hold_on_contents_for_scroll(style, false);
+#if GT_TEXTAREA_FILE_MODE
+    style->mode = GT_TEXTAREA_MODE_MEMORY;
+    style->file_ctx = NULL;
+    style->file_buf_size_cfg = GT_TEXTAREA_FILE_BUF_SIZE;
+    style->file_word_wrap = true;
+    style->file_editable = false;
+#endif
     return obj;
 }
 
@@ -912,12 +1540,15 @@ free_lb:
     va_end(args2);
 }
 
-void gt_textarea_set_text_by_len(gt_obj_st * textarea, const char * text, uint16_t len)
+void gt_textarea_set_text_by_len(gt_obj_st * textarea, const char * text, uint32_t len)
 {
     if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
         return ;
     }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+#if GT_TEXTAREA_FILE_MODE
+    if (style->mode != GT_TEXTAREA_MODE_MEMORY) return;
+#endif
     uint8_t style_mask = GT_FONT_STYLE_NONE;
     gt_color_t color = style->color_font;
 
@@ -983,14 +1614,21 @@ char * gt_textarea_get_text(gt_obj_st * textarea,uint16_t idx)
         return NULL;
     }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+#if GT_TEXTAREA_FILE_MODE
+    if (style->mode != GT_TEXTAREA_MODE_MEMORY) return NULL;
+#endif
     return style->contents[idx].text;
 }
 
-void gt_textarea_clear_all_str(gt_obj_st * textarea)
-{
-    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+void gt_textarea_clear_all_str(gt_obj_st * textarea) {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) return;
+#if GT_TEXTAREA_FILE_MODE
+    _gt_textarea_st *style = (_gt_textarea_st *)textarea;
+    if (style->mode != GT_TEXTAREA_MODE_MEMORY) {
+        gt_textarea_close_file(textarea);
         return;
     }
+#endif
     _free_contents(textarea);
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -1007,6 +1645,9 @@ void gt_textarea_add_str_by_len(gt_obj_st * textarea, char * str, uint32_t len, 
     }
     if (NULL == str || 0 == len) { return; }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+#if GT_TEXTAREA_FILE_MODE
+    if (style->mode != GT_TEXTAREA_MODE_MEMORY) return;
+#endif
     uint16_t idx = style->cnt_contents;
 
     if (idx) {
@@ -1059,7 +1700,9 @@ void gt_textarea_append_str_by_len(gt_obj_st * textarea, char * str, uint32_t le
     }
     if (NULL == str || 0 == len) { return; }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
-
+#if GT_TEXTAREA_FILE_MODE
+    if (style->mode != GT_TEXTAREA_MODE_MEMORY) return;
+#endif
     if(style->cnt_contents == 0) {
         gt_textarea_add_str_by_len(textarea, str, len, style_mask, color);
         return;
@@ -1091,6 +1734,9 @@ uint16_t gt_textarea_get_str_count(gt_obj_st * textarea)
         return 0;
     }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
+#if GT_TEXTAREA_FILE_MODE
+    if (style->mode != GT_TEXTAREA_MODE_MEMORY) return 0;
+#endif
     return style->cnt_contents;
 }
 
@@ -1392,7 +2038,16 @@ float gt_textarea_get_scroll_percent(gt_obj_st * textarea)
         return 0.0;
     }
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
-    int16_t scroll_height = style->max_height - gt_obj_get_h(textarea);
+#if GT_TEXTAREA_FILE_MODE
+    /* File mode: byte offset determines position, not pixel scroll.
+       Avoids int16_t scroll.y overflow when max_height > 32767. */
+    if (style->mode != GT_TEXTAREA_MODE_MEMORY && style->file_ctx
+        && style->file_ctx->file_total_bytes > 0) {
+        return 100.0f * (float)style->file_ctx->scroll_byte_offset
+             / (float)style->file_ctx->file_total_bytes;
+    }
+#endif
+    int32_t scroll_height = (int32_t)style->max_height - (int32_t)gt_obj_get_h(textarea);
     if (0 == style->max_height) {
         return 0.0;
     }
@@ -1410,14 +2065,58 @@ gt_res_t gt_textarea_display_by_precent(gt_obj_st * textarea, float percent)
     _gt_textarea_st * style = (_gt_textarea_st * )textarea;
     if (percent < 0.0)          { return GT_RES_FAIL; }
     if (percent > 100.0)        { percent = 100.0; }
+
+#if GT_TEXTAREA_FILE_MODE
+    /* File mode: compute byte offset directly from percentage.
+     * Avoids int16_t scroll.y overflow when max_height > 32767
+     * (e.g. max_h=74580 → scroll_y=-74215 wraps to -8679). */
+    if (style->mode != GT_TEXTAREA_MODE_MEMORY && style->file_ctx
+        && style->file_ctx->file_total_bytes > 0) {
+        _gt_textarea_file_ctx_t *ctx = style->file_ctx;
+        uint32_t target_byte = (uint32_t)((double)ctx->file_total_bytes
+                                          * (double)percent / 100.0);
+
+        /* Near bottom (≥99%): back up ~1 screenful so the viewport
+         * is filled with text, not just the last few lines. */
+        if (percent >= 99.0f && target_byte > 0) {
+            uint16_t lh = style->font_info.size + (style->space_y << 1);
+            if (lh < 1) lh = 1;
+            uint32_t screen_bytes = ((uint32_t)gt_obj_get_h(textarea) / lh + 2)
+                                   * _AVG_BYTES_PER_LINE;
+            target_byte = (target_byte > screen_bytes)
+                        ? (target_byte - screen_bytes) : 0;
+        }
+
+        ctx->scroll_byte_offset = target_byte;
+        textarea->process_attr.scroll.y = 0;
+        ctx->last_scroll_y = 0;
+        ctx->pixel_offset = 0;
+
+        /* Update max_height from line estimate (scrollbar thumb size) */
+        if (ctx->estimated_total_lines > 0) {
+            uint16_t lh = style->font_info.size + (style->space_y << 1);
+            if (lh > 0) {
+                uint32_t eh = ctx->estimated_total_lines * lh;
+                if (eh > style->max_height) style->max_height = eh;
+            }
+        }
+
+
+        _ensure_buffer(ctx, target_byte);
+        gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
+        return GT_RES_OK;
+    }
+#endif
+
     if (0 == style->max_height) { return GT_RES_FAIL; }
 
-    int16_t scroll_height = style->max_height - gt_obj_get_h(textarea);
+    int32_t scroll_height = (int32_t)style->max_height - (int32_t)gt_obj_get_h(textarea);
     if (scroll_height <= 0) {
         textarea->process_attr.scroll.y = 0;
     } else {
         textarea->process_attr.scroll.y = -(int32_t)(scroll_height * percent / 100.0);
     }
+
     gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
     return GT_RES_OK;
 }
@@ -1545,6 +2244,114 @@ void gt_textarea_set_start_point_offset(gt_obj_st * textarea, uint8_t x_off, uin
     style->start_x_off = x_off;
     style->start_y_off = y_off;
 }
+
+#if GT_TEXTAREA_FILE_MODE
+
+gt_obj_st *gt_textarea_create_with_file(gt_obj_st *parent, const char *file_path) {
+    gt_obj_st *obj = gt_textarea_create(parent);
+    if (NULL == obj) return NULL;
+    if (0 != gt_textarea_set_file(obj, file_path)) return obj;
+    return obj;
+}
+
+int gt_textarea_set_file(gt_obj_st *textarea, const char *file_path) {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) return -1;
+    if (NULL == file_path) return -1;
+    _gt_textarea_st *style = (_gt_textarea_st *)textarea;
+
+    if (style->file_ctx) { _file_ctx_deinit(style->file_ctx); style->file_ctx = NULL; }
+    _free_contents(textarea);
+
+    style->file_ctx = _file_ctx_init(file_path, style->file_buf_size_cfg, NULL);
+    if (NULL == style->file_ctx) { style->mode = GT_TEXTAREA_MODE_MEMORY; return -1; }
+    style->file_ctx->word_wrap = style->file_word_wrap;
+    style->file_ctx->editable  = style->file_editable;
+    style->mode      = GT_TEXTAREA_MODE_FILE_VFS;
+    style->max_height = 0;
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
+    return 0;
+}
+
+int gt_textarea_set_file_with_io(gt_obj_st *textarea, const char *file_path,
+                                  const gt_textarea_file_io_t *io) {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) return -1;
+    if (NULL == file_path || NULL == io) return -1;
+    if (NULL == io->open || NULL == io->read || NULL == io->seek || NULL == io->close)
+        return -1;
+    _gt_textarea_st *style = (_gt_textarea_st *)textarea;
+
+    if (style->file_ctx) { _file_ctx_deinit(style->file_ctx); style->file_ctx = NULL; }
+    _free_contents(textarea);
+
+    style->file_ctx = _file_ctx_init(file_path, style->file_buf_size_cfg, io);
+    if (NULL == style->file_ctx) { style->mode = GT_TEXTAREA_MODE_MEMORY; return -1; }
+    style->file_ctx->word_wrap = style->file_word_wrap;
+    style->file_ctx->editable  = style->file_editable;
+    style->mode      = GT_TEXTAREA_MODE_FILE_IO;
+    style->max_height = 0;
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
+    return 0;
+}
+
+int gt_textarea_close_file(gt_obj_st *textarea) {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) return -1;
+    _gt_textarea_st *style = (_gt_textarea_st *)textarea;
+    if (NULL == style->file_ctx) return 0;
+    _file_ctx_deinit(style->file_ctx);
+    style->file_ctx = NULL;
+    style->mode = GT_TEXTAREA_MODE_MEMORY;
+    style->max_height = 0;
+    _reset_scroll_value(textarea);
+    gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
+    return 0;
+}
+
+int gt_textarea_save_to_file(gt_obj_st *textarea) {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) return -1;
+    _gt_textarea_st *style = (_gt_textarea_st *)textarea;
+    if (NULL == style->file_ctx || !style->file_ctx->dirty) return 0;
+    if (style->file_ctx->io_backend == 1
+        && NULL == style->file_ctx->io.custom.io.write) return -1;
+
+    _file_seek(style->file_ctx, 0, 0);
+    uint32_t write_sz = (style->file_ctx->buf_size < style->file_ctx->file_total_bytes)
+                        ? style->file_ctx->buf_size : style->file_ctx->file_total_bytes;
+    int wr = _file_write(style->file_ctx, style->file_ctx->read_buf, write_sz);
+    if (wr < 0) return -1;
+    style->file_ctx->dirty = false;
+    return 0;
+}
+
+gt_textarea_mode_t gt_textarea_get_mode(gt_obj_st *textarea) {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) return GT_TEXTAREA_MODE_MEMORY;
+    return ((_gt_textarea_st *)textarea)->mode;
+}
+
+void gt_textarea_set_word_wrap(gt_obj_st *textarea, bool enable) {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) return;
+    _gt_textarea_st *style = (_gt_textarea_st *)textarea;
+    style->file_word_wrap = enable;
+    if (style->file_ctx) style->file_ctx->word_wrap = enable;
+}
+
+void gt_textarea_set_file_editable(gt_obj_st *textarea, bool editable) {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) return;
+    _gt_textarea_st *style = (_gt_textarea_st *)textarea;
+    style->file_editable = editable;
+    if (style->file_ctx) style->file_ctx->editable = editable;
+}
+
+int gt_textarea_set_file_buf_size(gt_obj_st *textarea, uint16_t size) {
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) return -1;
+    _gt_textarea_st *style = (_gt_textarea_st *)textarea;
+    if (style->file_ctx != NULL) return -1;          /* already in file mode */
+    if (size < 512 || size > 8192) return -1;         /* out of range */
+    if ((size & (size - 1)) != 0) return -1;           /* not power of 2 */
+    style->file_buf_size_cfg = size;
+    return 0;
+}
+
+#endif  /* GT_TEXTAREA_FILE_MODE */
 
 #endif  /** GT_CFG_ENABLE_TEXTAREA */
 /* end ------------------------------------------------------------------*/

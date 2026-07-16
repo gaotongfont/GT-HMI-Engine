@@ -62,11 +62,47 @@ extern "C" {
     #define GT_TEXTAREA_LINE_CACHE_STEP  8
 #endif
 
+#ifndef GT_TEXTAREA_FILE_MODE
+    /**
+     * @brief Enable large file mode for textarea (chunk-based reading from file).
+     *      0[default]: disable (zero overhead)
+     *      1: enable
+     */
+    #define GT_TEXTAREA_FILE_MODE       0
+#endif
+
+#if GT_TEXTAREA_FILE_MODE
+#ifndef GT_TEXTAREA_FILE_BUF_SIZE
+    /**
+     * @brief Default read buffer size in file mode (must be power of 2).
+     *      Can be overridden at runtime via gt_textarea_set_file_buf_size().
+     *      4096[default]
+     */
+    #define GT_TEXTAREA_FILE_BUF_SIZE  4096
+#endif
+
+#ifndef GT_TEXTAREA_FILE_IDX_COUNT
+    /**
+     * @brief Number of lazy line-index cache entries.
+     *      32[default]
+     */
+    #define GT_TEXTAREA_FILE_IDX_COUNT  32
+#endif
+
+#ifndef GT_TEXTAREA_FILE_IDX_INTERVAL
+    /**
+     * @brief Sample interval for lazy line indexing (record every N lines).
+     *      32[default]
+     */
+    #define GT_TEXTAREA_FILE_IDX_INTERVAL  32
+#endif
+#endif  /* GT_TEXTAREA_FILE_MODE */
+
 
 /* typedef --------------------------------------------------------------*/
 typedef struct gt_textarea_param_s {
     char *      text;
-    uint16_t    len;
+    uint32_t    len;
 #if GT_TEXTAREA_CUSTOM_FONT_STYLE
     gt_font_info_st font_info;
 #else
@@ -75,6 +111,45 @@ typedef struct gt_textarea_param_s {
     uint8_t mask_style : 7;     /** @ref gt_font_style_et */
     uint8_t new_line   : 1;     /** 0[default] */
 }gt_textarea_param_st;
+
+#if GT_TEXTAREA_FILE_MODE
+/** @brief Encoding type auto-detected from file */
+typedef enum {
+    GT_TEXTAREA_ENC_UTF8  = 0,
+    GT_TEXTAREA_ENC_GBK,
+    GT_TEXTAREA_ENC_ASCII,
+} gt_textarea_enc_t;
+
+/** @brief Operating mode of textarea */
+typedef enum {
+    GT_TEXTAREA_MODE_MEMORY   = 0,  /**< Memory mode (existing behavior) */
+    GT_TEXTAREA_MODE_FILE_VFS,      /**< File mode - VFS backend (gt_fs_*) */
+    GT_TEXTAREA_MODE_FILE_IO,       /**< File mode - custom I/O backend (user callbacks) */
+} gt_textarea_mode_t;
+
+/** @brief Lazy line index entry */
+typedef struct {
+    uint32_t byte_offset;   /**< Absolute byte offset in file */
+    uint32_t line_number;   /**< Line number from file beginning (0-based) */
+    int32_t  y_offset;      /**< Cumulative Y pixel offset (for scrollbar) */
+} gt_textarea_line_idx_t;
+
+/**
+ * @brief Custom I/O callbacks for non-VFS filesystems (e.g. FatFS).
+ *
+ * All callbacks follow FatFS / standard C file API conventions.
+ * Unused callbacks may be NULL (tell falls back to seek(0, SEEK_CUR),
+ * write is required only for editable mode).
+ */
+typedef struct {
+    void *(*open)(const char *path, const char *mode);
+    int   (*read)(void *handle, void *buf, unsigned int size);
+    int   (*write)(void *handle, const void *buf, unsigned int size);
+    long  (*seek)(void *handle, long offset, int whence);
+    long  (*tell)(void *handle);
+    int   (*close)(void *handle);
+} gt_textarea_file_io_t;
+#endif  /* GT_TEXTAREA_FILE_MODE */
 
 
 /* macros ---------------------------------------------------------------*/
@@ -110,7 +185,7 @@ gt_res_t gt_textarea_set_always_scroll_to_newest(gt_obj_st * textarea, bool alwa
 // void gt_textarea_set_text(gt_obj_st * textarea, char * text);
 void gt_textarea_set_text(gt_obj_st * textarea, const char * fmt, ...);
 
-void gt_textarea_set_text_by_len(gt_obj_st * textarea, const char * text, uint16_t len);
+void gt_textarea_set_text_by_len(gt_obj_st * textarea, const char * text, uint32_t len);
 
 /**
  * @brief hide textarea background
@@ -343,6 +418,84 @@ void gt_textarea_append_text(gt_obj_st * obj, const char * str);
  * @param y_off
  */
 void gt_textarea_set_start_point_offset(gt_obj_st * textarea, uint8_t x_off, uint8_t y_off);
+
+#if GT_TEXTAREA_FILE_MODE
+/* ================================================================
+ * File mode API
+ * ================================================================ */
+
+/**
+ * @brief Create textarea and open a text file (VFS backend).
+ * @param parent    Parent widget
+ * @param file_path File path, e.g. "s:/docs/readme.txt"
+ * @return Widget handle (reverts to empty memory mode if file open fails), NULL only if widget creation fails
+ */
+gt_obj_st *gt_textarea_create_with_file(gt_obj_st *parent, const char *file_path);
+
+/**
+ * @brief Switch textarea to file mode (VFS backend).
+ * Frees any existing memory-mode contents first.
+ * @param textarea  Textarea widget
+ * @param file_path File path (VFS format)
+ * @return 0 on success, -1 on failure
+ */
+int gt_textarea_set_file(gt_obj_st *textarea, const char *file_path);
+
+/**
+ * @brief Switch textarea to file mode (custom I/O backend).
+ * @param textarea  Textarea widget
+ * @param file_path File path (forwarded to io->open)
+ * @param io        I/O callback table (copied internally)
+ * @return 0 on success, -1 on failure
+ */
+int gt_textarea_set_file_with_io(gt_obj_st *textarea, const char *file_path,
+                                  const gt_textarea_file_io_t *io);
+
+/**
+ * @brief Close file and switch back to memory mode (empty).
+ * @param textarea  Textarea widget
+ * @return 0
+ */
+int gt_textarea_close_file(gt_obj_st *textarea);
+
+/**
+ * @brief Save edited content back to file.
+ * @param textarea  Textarea widget
+ * @return 0 on success, -1 on failure
+ */
+int gt_textarea_save_to_file(gt_obj_st *textarea);
+
+/**
+ * @brief Get current operating mode.
+ * @param textarea  Textarea widget
+ * @return gt_textarea_mode_t
+ */
+gt_textarea_mode_t gt_textarea_get_mode(gt_obj_st *textarea);
+
+/**
+ * @brief Enable/disable word-wrap in file mode.
+ * @param textarea  Textarea widget
+ * @param enable    true=wrap, false=no wrap
+ */
+void gt_textarea_set_word_wrap(gt_obj_st *textarea, bool enable);
+
+/**
+ * @brief Enable/disable editing in file mode.
+ * @param textarea  Textarea widget
+ * @param editable  true=editable, false=read-only
+ */
+void gt_textarea_set_file_editable(gt_obj_st *textarea, bool editable);
+
+/**
+ * @brief Set read buffer size (must call BEFORE opening a file).
+ * Default is GT_TEXTAREA_FILE_BUF_SIZE (4096). Must be power of 2.
+ * @param textarea  Textarea widget
+ * @param size      Buffer size in bytes (power of 2, 512-8192)
+ * @return 0 on success, -1 if already in file mode or invalid size
+ */
+int gt_textarea_set_file_buf_size(gt_obj_st *textarea, uint16_t size);
+
+#endif  /* GT_TEXTAREA_FILE_MODE */
 
 
 #endif  /** GT_CFG_ENABLE_TEXTAREA */
