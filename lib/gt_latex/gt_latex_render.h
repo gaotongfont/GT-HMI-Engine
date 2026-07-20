@@ -93,6 +93,8 @@ typedef struct {
     uint32_t fg_color;      /* 前景色（字形、线条）/ Foreground color */
     uint32_t bg_color;      /* 背景色（可选）/ Background color */
     void    *user_data;     /* 透传给绘制回调的用户数据 / User data passed to callbacks */
+    int16_t  ys;            /* 垂直裁剪起始 y（绝对坐标，0/0 = disabled） / Clip start y */
+    int16_t  ye;            /* 垂直裁剪结束 y（绝对坐标，0/0 = disabled） / Clip end y */
 } gt_latex_canvas_t;
 
 /* ----------------------------------------------------------------
