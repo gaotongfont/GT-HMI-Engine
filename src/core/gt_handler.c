@@ -169,13 +169,25 @@ static void _gt_serial_core_init(void) {
 
 #if GT_USE_LATEX_LIB && GT_LATEX_ENABLE
 inline static void* _latex_malloc(size_t size) {
+#if GT_LATEX_MALLOC_USE_MEMPOOL
+    return gt_mem_malloc(size);
+#else
     return gt_mem_extern_malloc(size);
+#endif
 }
 inline static void _latex_free(void *ptr) {
+#if GT_LATEX_MALLOC_USE_MEMPOOL
+    gt_mem_free(ptr);
+#else
     gt_mem_extern_free(ptr);
+#endif
 }
 inline static void* _latex_realloc(void *ptr, size_t size) {
+#if GT_LATEX_MALLOC_USE_MEMPOOL
+    return gt_mem_realloc(ptr, size);
+#else
     return gt_mem_extern_realloc(ptr, size);
+#endif
 }
 static void _latex_init(void)
 {

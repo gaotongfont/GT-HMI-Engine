@@ -795,6 +795,8 @@ extern "C" {
     #define GT_USE_LATEX_LIB        0
     #if GT_USE_LATEX_LIB
         #include "../lib/gt_latex/gt_latex.h"
+        // 0[default]: use gt_mem_extern_malloc() ; 1: use gt_mem_malloc()
+        #define GT_LATEX_MALLOC_USE_MEMPOOL     0
     #endif
 #endif
 
