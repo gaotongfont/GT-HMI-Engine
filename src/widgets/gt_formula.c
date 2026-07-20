@@ -414,6 +414,12 @@ static int _formula_render_md_cache(gt_obj_st * obj)
     cv.fg_color = gt_color_to32(style->font_color);
     cv.user_data = (void*)obj;
 
+    gt_obj_st* parent = gt_obj_get_parent(obj);
+    if(parent) {
+        cv.ys = parent->area.y;
+        cv.ye = parent->area.y + parent->area.h;
+    }
+
     if (GT_MD_OK != gt_md_render(&style->md_layout, &cv)) {
         GT_LOGE(GT_LOG_TAG_GUI, "Failed to render MD cache");
         return -1;
