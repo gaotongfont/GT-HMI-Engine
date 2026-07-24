@@ -69,6 +69,7 @@ static const _menu_item_st _menu_items[] = {
     { "Spectrum",       GT_EXAMPLE_SCR_SPECTRUM },
     { "[Theme]",        GT_EXAMPLE_SCR_THEME },
     { "Polygon",        GT_EXAMPLE_SCR_POLYGON },
+    { "Textarea file",  GT_EXAMPLE_SCR_TEXTAREA_FILE },
 };
 
 #define _MENU_ITEM_COUNT  (sizeof(_menu_items) / sizeof(_menu_items[0]))
