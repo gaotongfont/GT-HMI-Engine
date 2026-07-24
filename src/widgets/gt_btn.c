@@ -551,7 +551,7 @@ free_lb:
     va_end(args2);
 }
 
-void gt_btn_set_text_by_len(gt_obj_st * btn, const char * text, uint16_t len)
+void gt_btn_set_text_by_len(gt_obj_st * btn, const char * text, uint32_t len)
 {
     if (false == gt_obj_is_type(btn, OBJ_TYPE)) {
         return ;

@@ -29,6 +29,7 @@
 #define MY_CLASS    &gt_textarea_class
 
 #define _FONT_AREA_REDUCE_SIZE      2
+#define _FILE_PAGE_CACHE_COUNT      8
 
 /* private typedef ------------------------------------------------------*/
 
@@ -43,6 +44,15 @@ typedef struct _textarea_reg_s {
 }_textarea_reg_st;
 
 #if GT_TEXTAREA_FILE_MODE
+typedef struct {
+    uint32_t start;
+    uint32_t end;
+    uint32_t page_no;
+    uint16_t line_count;
+    uint8_t  start_first_line;
+    uint8_t  end_first_line;
+} _gt_textarea_page_item_t;
+
 /** @brief File-mode runtime context */
 typedef struct {
     uint8_t      io_backend;             /**< 0=VFS, 1=custom I/O */
@@ -57,30 +67,38 @@ typedef struct {
 
     uint8_t      *read_buf;
     uint16_t      buf_size;
+    uint16_t      read_len;
     uint32_t      buf_file_offset;
 
     uint32_t      scroll_byte_offset;
     uint32_t      file_total_bytes;
+    uint32_t      page_end_offset;
+    uint32_t      current_page;
+    uint32_t      layout_key;
+
+    _gt_textarea_page_item_t page_cache[_FILE_PAGE_CACHE_COUNT];
+    _gt_textarea_page_item_t page_index[GT_TEXTAREA_FILE_IDX_COUNT];
+    uint8_t      page_cache_count;
+    uint8_t      page_cache_write;
+    uint8_t      page_index_count;
+    uint8_t      page_index_write;
+    uint8_t      current_first_line;
+    uint8_t      page_end_first_line;
+    uint16_t     current_line_count;
 
     gt_textarea_enc_t encoding;
 
-    gt_textarea_line_idx_t line_idx[GT_TEXTAREA_FILE_IDX_COUNT];
-    uint8_t      line_idx_count;
-    uint8_t      line_idx_write;
-    uint32_t     last_indexed_line;
-
     uint32_t     estimated_total_lines;
-    uint32_t     scanned_bytes;
-    uint32_t     scanned_lines;
-    uint32_t     current_line_number;
-    int32_t      current_y_offset;
     int32_t      last_scroll_y;           /**< scroll.y from previous handle_scroll, for delta computation */
+    int16_t      last_touch_y;
     int32_t      pixel_offset;            /**< sub-line pixel remainder for smooth scrolling */
+    int32_t      gesture_px;
 
     uint8_t      dirty : 1;
     uint8_t      editable : 1;
     uint8_t      word_wrap : 1;
-    uint8_t      _reserved : 5;
+    uint8_t      touch_active : 1;
+    uint8_t      _reserved : 4;
 
     uint8_t      pending_overlap;
 } _gt_textarea_file_ctx_t;
@@ -200,6 +218,8 @@ static inline bool _is_hold_on_contents_for_scroll(_gt_textarea_st * style);
 #define _ENC_DETECT_SAMPLE_SIZE 256
 #define _AVG_BYTES_PER_LINE    80
 
+#define _FILE_PAGE_INDEX_STEP  8
+
 /* file-mode I/O dispatchers ---------------------------------------------*/
 static inline int _file_read(_gt_textarea_file_ctx_t *ctx, void *buf, uint32_t size) {
     if (ctx->io_backend == 0) {
@@ -207,8 +227,8 @@ static inline int _file_read(_gt_textarea_file_ctx_t *ctx, void *buf, uint32_t s
         return (gt_fs_read(ctx->io.fp, (uint8_t *)buf, size, &ret_len) == GT_FS_RES_OK)
                ? (int)ret_len : -1;
     } else {
-        if (NULL == ctx->io.custom.io.read) return -1;
-        return ctx->io.custom.io.read(ctx->io.custom.handle, buf, (unsigned int)size);
+        if (NULL == ctx->io.custom.io.io_read) return -1;
+        return ctx->io.custom.io.io_read(ctx->io.custom.handle, buf, (unsigned int)size);
     }
 }
 
@@ -217,8 +237,8 @@ static inline int _file_seek(_gt_textarea_file_ctx_t *ctx, uint32_t offset, int 
         return (gt_fs_seek(ctx->io.fp, offset, (gt_fs_whence_et)whence) == GT_FS_RES_OK)
                ? 0 : -1;
     } else {
-        if (NULL == ctx->io.custom.io.seek) return -1;
-        return (ctx->io.custom.io.seek(ctx->io.custom.handle, (long)offset, whence) >= 0)
+        if (NULL == ctx->io.custom.io.io_seek) return -1;
+        return (ctx->io.custom.io.io_seek(ctx->io.custom.handle, (long)offset, whence) >= 0)
                ? 0 : -1;
     }
 }
@@ -229,8 +249,8 @@ static inline int _file_write(_gt_textarea_file_ctx_t *ctx, const void *buf, uin
         return (gt_fs_write(ctx->io.fp, (uint8_t *)buf, size, &ret_len) == GT_FS_RES_OK)
                ? (int)ret_len : -1;
     } else {
-        if (NULL == ctx->io.custom.io.write) return -1;
-        return ctx->io.custom.io.write(ctx->io.custom.handle, buf, (unsigned int)size);
+        if (NULL == ctx->io.custom.io.io_write) return -1;
+        return ctx->io.custom.io.io_write(ctx->io.custom.handle, buf, (unsigned int)size);
     }
 }
 
@@ -240,12 +260,12 @@ static inline uint32_t _file_tell(_gt_textarea_file_ctx_t *ctx) {
         gt_fs_tell(ctx->io.fp, &pos);
         return pos;
     } else {
-        if (ctx->io.custom.io.tell) {
-            long pos = ctx->io.custom.io.tell(ctx->io.custom.handle);
+        if (ctx->io.custom.io.io_tell) {
+            long pos = ctx->io.custom.io.io_tell(ctx->io.custom.handle);
             return (pos >= 0) ? (uint32_t)pos : 0;
         }
-        if (ctx->io.custom.io.seek) {
-            long pos = ctx->io.custom.io.seek(ctx->io.custom.handle, 0, 1);
+        if (ctx->io.custom.io.io_seek) {
+            long pos = ctx->io.custom.io.io_seek(ctx->io.custom.handle, 0, 1);
             return (pos >= 0) ? (uint32_t)pos : 0;
         }
         return 0;
@@ -256,8 +276,8 @@ static inline void _file_close(_gt_textarea_file_ctx_t *ctx) {
     if (ctx->io_backend == 0) {
         if (ctx->io.fp) { gt_fs_close(ctx->io.fp); ctx->io.fp = NULL; }
     } else {
-        if (ctx->io.custom.io.close && ctx->io.custom.handle) {
-            ctx->io.custom.io.close(ctx->io.custom.handle);
+        if (ctx->io.custom.io.io_close && ctx->io.custom.handle) {
+            ctx->io.custom.io.io_close(ctx->io.custom.handle);
             ctx->io.custom.handle = NULL;
         }
     }
@@ -285,51 +305,79 @@ static gt_textarea_enc_t _detect_encoding(const uint8_t *data, uint32_t len) {
     if (len >= 2 && data[0] == 0xFF && data[1] == 0xFE)
         return GT_TEXTAREA_ENC_UTF8;
 
-    uint32_t sample   = len > 256 ? 256 : len;
-    uint32_t ascii_n  = 0, gbk_n = 0, utf8_n = 0;
+    uint32_t sample = len > _ENC_DETECT_SAMPLE_SIZE ? _ENC_DETECT_SAMPLE_SIZE : len;
+    uint32_t ascii_n = 0, utf8_n = 0;
+    bool valid_utf8 = true;
 
-    for (uint32_t i = 0; i < sample; i++) {
-        uint8_t b = data[i];
-        if (b < 0x80) { ascii_n++; continue; }
-        if (b == 0x00) return GT_TEXTAREA_ENC_UTF8;
+    for (uint32_t i = 0; i < sample;) {
+        uint8_t lead = data[i];
+        if (lead < 0x80) {
+            if (lead == 0) valid_utf8 = false;
+            ascii_n++;
+            i++;
+            continue;
+        }
 
-        if (b >= 0x81 && b <= 0xFE) {
-            gbk_n++;
-            if (i + 1 < sample) {
-                uint8_t b2 = data[i + 1];
-                if ((b2 >= 0x40 && b2 <= 0x7E) || (b2 >= 0x80 && b2 <= 0xFE)) i++;
+        uint8_t seq_len = _utf8_seq_len(lead);
+        if (seq_len < 2) {
+            valid_utf8 = false;
+            break;
+        }
+        if (i + seq_len > sample) break;
+        for (uint8_t j = 1; j < seq_len; ++j) {
+            if (!_is_utf8_cont(data[i + j])) {
+                valid_utf8 = false;
+                break;
             }
         }
-        if (_utf8_seq_len(b) >= 2) utf8_n++;
+        if (!valid_utf8) break;
+        utf8_n++;
+        i += seq_len;
     }
 
-    if (gbk_n > (sample >> 3) && gbk_n > utf8_n * 2) return GT_TEXTAREA_ENC_GBK;
-    if (utf8_n > 0) return GT_TEXTAREA_ENC_UTF8;
+    if (valid_utf8 && utf8_n > 0) return GT_TEXTAREA_ENC_UTF8;
     if (ascii_n == sample) return GT_TEXTAREA_ENC_ASCII;
+
+    uint32_t gbk_n = 0;
+    for (uint32_t i = 0; i + 1 < sample;) {
+        uint8_t lead = data[i];
+        uint8_t trail = data[i + 1];
+        if (lead < 0x80) {
+            i++;
+        } else if (lead >= 0x81 && lead <= 0xFE
+                   && ((trail >= 0x40 && trail <= 0x7E)
+                       || (trail >= 0x80 && trail <= 0xFE))) {
+            gbk_n++;
+            i += 2;
+        } else {
+            i++;
+        }
+    }
+    if (gbk_n > 0) return GT_TEXTAREA_ENC_GBK;
     return GT_TEXTAREA_ENC_UTF8;
 }
 
 /* multi-byte boundary ---------------------------------------------------*/
 static uint8_t _calc_overlap(_gt_textarea_file_ctx_t *ctx) {
-    if (NULL == ctx->read_buf || ctx->buf_size == 0) return 0;
+    if (NULL == ctx->read_buf || ctx->read_len == 0) return 0;
 
-    uint16_t check_start = (ctx->buf_size > 4) ? (ctx->buf_size - 4) : 0;
+    uint16_t check_start = (ctx->read_len > 4) ? (ctx->read_len - 4) : 0;
 
     switch (ctx->encoding) {
     case GT_TEXTAREA_ENC_UTF8:
-        for (uint16_t i = ctx->buf_size; i > check_start; i--) {
+        for (uint16_t i = ctx->read_len; i > check_start; i--) {
             if (i == 0) break;
             uint8_t b  = ctx->read_buf[i - 1];
             uint8_t sl = _utf8_seq_len(b);
             if (sl >= 2) {
-                uint8_t rem = (uint8_t)(sl - (ctx->buf_size - (i - 1)));
-                return (rem > 0 && rem <= 3) ? rem : 0;
+                uint8_t present = (uint8_t)(ctx->read_len - (i - 1));
+                return (present < sl) ? present : 0;
             }
             if (!_is_utf8_cont(b) && b < 0x80) return 0;
         }
         return 0;
     case GT_TEXTAREA_ENC_GBK: {
-        uint8_t last = ctx->read_buf[ctx->buf_size - 1];
+        uint8_t last = ctx->read_buf[ctx->read_len - 1];
         return (last >= 0x81 && last <= 0xFE) ? 1 : 0;
     }
     default:
@@ -340,8 +388,10 @@ static uint8_t _calc_overlap(_gt_textarea_file_ctx_t *ctx) {
 /* buffer management -----------------------------------------------------*/
 static bool _ensure_buffer(_gt_textarea_file_ctx_t *ctx, uint32_t target) {
     if (NULL == ctx->read_buf) return false;
-    uint32_t buf_end = ctx->buf_file_offset + ctx->buf_size;
-    if (target >= ctx->buf_file_offset && target < buf_end - _BUF_RELOAD_THRESHOLD(ctx))
+    uint32_t buf_end = ctx->buf_file_offset + ctx->read_len;
+    uint32_t reload_at = (ctx->read_len > _BUF_RELOAD_THRESHOLD(ctx))
+                       ? (buf_end - _BUF_RELOAD_THRESHOLD(ctx)) : buf_end;
+    if (target >= ctx->buf_file_offset && target < reload_at)
         return true;
 
     uint32_t aligned = target & ~((uint32_t)ctx->buf_size - 1);
@@ -352,18 +402,7 @@ static bool _ensure_buffer(_gt_textarea_file_ctx_t *ctx, uint32_t target) {
     int rd = _file_read(ctx, ctx->read_buf, ctx->buf_size);
     if (rd <= 0) return false;
     ctx->buf_file_offset = aligned;
-    return true;
-}
-
-static bool _load_next_chunk(_gt_textarea_file_ctx_t *ctx) {
-    uint32_t next = ctx->buf_file_offset + ctx->buf_size - ctx->pending_overlap;
-    if (next >= ctx->file_total_bytes) return false;
-    if (_file_seek(ctx, next, 0) != 0) return false;
-
-    gt_memset(ctx->read_buf, 0, ctx->buf_size);
-    int rd = _file_read(ctx, ctx->read_buf, ctx->buf_size);
-    if (rd <= 0) return false;
-    ctx->buf_file_offset = next;
+    ctx->read_len = (uint16_t)rd;
     ctx->pending_overlap = _calc_overlap(ctx);
     return true;
 }
@@ -389,7 +428,7 @@ _file_ctx_init(const char *path, uint16_t buf_size, const gt_textarea_file_io_t 
     if (io) {
         ctx->io_backend = 1;
         ctx->io.custom.io = *io;
-        ctx->io.custom.handle = io->open(path, "r");
+        ctx->io.custom.handle = io->io_open(path, "r");
         if (NULL == ctx->io.custom.handle) goto fail;
     } else {
         ctx->io_backend = 0;
@@ -405,13 +444,15 @@ _file_ctx_init(const char *path, uint16_t buf_size, const gt_textarea_file_io_t 
     {
         int rd = _file_read(ctx, ctx->read_buf, ctx->buf_size);
         if (rd <= 0 && ctx->file_total_bytes > 0) goto fail_close;
+        ctx->read_len = (rd > 0) ? (uint16_t)rd : 0;
     }
     ctx->buf_file_offset = 0;
     ctx->scroll_byte_offset = 0;
 
     /* encoding */
     {
-        uint32_t sl = (ctx->buf_size < 256) ? ctx->buf_size : 256;
+        uint32_t sl = ctx->read_len < _ENC_DETECT_SAMPLE_SIZE
+                    ? ctx->read_len : _ENC_DETECT_SAMPLE_SIZE;
         ctx->encoding = _detect_encoding(ctx->read_buf, sl);
         ctx->pending_overlap = _calc_overlap(ctx);
     }
@@ -437,70 +478,353 @@ static void _file_ctx_deinit(_gt_textarea_file_ctx_t *ctx) {
     gt_mem_free(ctx);
 }
 
-/* lazy line index -------------------------------------------------------*/
-static void _line_idx_record(_gt_textarea_file_ctx_t *ctx,
-                              uint32_t byte_offset, uint32_t line_n, int32_t y_off) {
-    if (line_n - ctx->last_indexed_line < (uint32_t)GT_TEXTAREA_FILE_IDX_INTERVAL) return;
-    if (ctx->line_idx_count == GT_TEXTAREA_FILE_IDX_COUNT) {
-        gt_memmove(&ctx->line_idx[0], &ctx->line_idx[1],
-                   (GT_TEXTAREA_FILE_IDX_COUNT - 1) * sizeof(gt_textarea_line_idx_t));
-        ctx->line_idx_write = GT_TEXTAREA_FILE_IDX_COUNT - 1;
+static uint32_t _file_layout_key(gt_obj_st *obj, _gt_textarea_st *ta) {
+    uint32_t key = ((uint32_t)obj->area.w << 16) ^ (uint32_t)obj->area.h;
+    const uint8_t *font_bytes = (const uint8_t *)&ta->font_info;
+    for (uint32_t i = 0; i < sizeof(ta->font_info); ++i) {
+        key = key * 33U + font_bytes[i];
     }
-    uint8_t idx = ctx->line_idx_write % GT_TEXTAREA_FILE_IDX_COUNT;
-    ctx->line_idx[idx].byte_offset = byte_offset;
-    ctx->line_idx[idx].line_number = line_n;
-    ctx->line_idx[idx].y_offset    = y_off;
-    ctx->line_idx_write++;
-    ctx->last_indexed_line = line_n;
-    if (ctx->line_idx_count < GT_TEXTAREA_FILE_IDX_COUNT) ctx->line_idx_count++;
+    key = key * 33U + ta->space_x;
+    key = key * 33U + ta->space_y;
+    key = key * 33U + ta->padding;
+    key = key * 33U + ta->border_width;
+    key = key * 33U + ta->indent;
+    key = key * 33U + ta->font_align;
+    key = key * 33U + ta->file_word_wrap;
+    return key ? key : 1;
 }
 
-static int8_t _line_idx_find(_gt_textarea_file_ctx_t *ctx, uint32_t target) {
-    if (0 == ctx->line_idx_count) return -1;
-    uint8_t lo = 0, hi = ctx->line_idx_count - 1;
-    if (ctx->line_idx[lo].byte_offset > target) return -1;
-    while (lo < hi) {
-        uint8_t mid = lo + ((hi - lo + 1) >> 1);
-        if (ctx->line_idx[mid].byte_offset <= target) lo = mid;
-        else hi = mid - 1;
-    }
-    return (int8_t)lo;
+static void _file_reset_pages(_gt_textarea_file_ctx_t *ctx) {
+    ctx->scroll_byte_offset = 0;
+    ctx->page_end_offset = 0;
+    ctx->current_page = 0;
+    ctx->current_line_count = 0;
+    ctx->current_first_line = 1;
+    ctx->page_end_first_line = 1;
+    ctx->page_cache_count = 0;
+    ctx->page_cache_write = 0;
+    ctx->page_index_count = 0;
+    ctx->page_index_write = 0;
+    ctx->gesture_px = 0;
+    ctx->pixel_offset = 0;
 }
 
-static void _update_line_estimate(_gt_textarea_file_ctx_t *ctx,
-                                   uint32_t new_bytes, uint32_t new_lines) {
-    ctx->scanned_bytes += new_bytes;
-    ctx->scanned_lines += new_lines;
-    if (ctx->scanned_bytes > 0 && ctx->scanned_lines > 0) {
-        uint32_t est = (uint32_t)((uint64_t)ctx->file_total_bytes
-                        * ctx->scanned_lines / ctx->scanned_bytes);
-        if (est > ctx->estimated_total_lines) ctx->estimated_total_lines = est;
+static void _file_check_layout(gt_obj_st *obj, _gt_textarea_st *ta,
+                               _gt_textarea_file_ctx_t *ctx) {
+    uint32_t key = _file_layout_key(obj, ta);
+    if (ctx->layout_key == key) return;
+    ctx->layout_key = key;
+    _file_reset_pages(ctx);
+}
+
+static void _file_set_font_encoding(gt_font_st *font,
+                                    const _gt_textarea_file_ctx_t *ctx) {
+    font->info.encoding = (GT_TEXTAREA_ENC_GBK == ctx->encoding)
+                        ? GT_ENCODING_GB : GT_ENCODING_UTF8;
+}
+
+static uint16_t _file_line_height(const _gt_textarea_st *ta) {
+    uint8_t style_space_y = 0;
+    if (ta->font_info.style.reg.underline
+        || ta->font_info.style.reg.strikethrough) {
+        style_space_y = (ta->font_info.size >> 4)
+                      ? (ta->font_info.size >> 4) : 1;
     }
+    return ta->font_info.size + ta->space_y + (style_space_y << 1);
+}
+
+static bool _file_scan_window(_gt_textarea_file_ctx_t *ctx, uint32_t offset,
+                              const uint8_t **data, uint32_t *len) {
+    uint32_t safe_end;
+    if (offset >= ctx->file_total_bytes) return false;
+    if (!_ensure_buffer(ctx, offset)) return false;
+
+    safe_end = ctx->buf_file_offset + ctx->read_len;
+    if (safe_end < ctx->file_total_bytes && safe_end > ctx->pending_overlap) {
+        safe_end -= ctx->pending_overlap;
+    }
+    if (offset >= safe_end
+        || (safe_end - offset < _BUF_RELOAD_THRESHOLD(ctx)
+            && safe_end < ctx->file_total_bytes)) {
+        if (_file_seek(ctx, offset, 0) != 0) return false;
+        {
+            int rd = _file_read(ctx, ctx->read_buf, ctx->buf_size);
+            if (rd <= 0) return false;
+            ctx->buf_file_offset = offset;
+            ctx->read_len = (uint16_t)rd;
+            ctx->pending_overlap = _calc_overlap(ctx);
+        }
+        safe_end = ctx->buf_file_offset + ctx->read_len;
+        if (safe_end < ctx->file_total_bytes && safe_end > ctx->pending_overlap) {
+            safe_end -= ctx->pending_overlap;
+        }
+    }
+    if (offset >= safe_end) return false;
+    *data = ctx->read_buf + (offset - ctx->buf_file_offset);
+    *len = safe_end - offset;
+    return true;
+}
+
+static bool _file_scan_page(gt_obj_st *obj, _gt_textarea_st *ta,
+                            uint32_t start, bool start_first_line,
+                            uint32_t page_no, _gt_textarea_page_item_t *page) {
+    _gt_textarea_file_ctx_t *ctx = ta->file_ctx;
+    gt_area_st padding_font = gt_area_reduce(obj->area, ta->padding);
+    gt_area_st area_font = gt_area_reduce(padding_font,
+                                          ta->border_width + _FONT_AREA_REDUCE_SIZE);
+    uint16_t line_height = _file_line_height(ta);
+    uint32_t lines_per_page;
+    uint32_t offset = start;
+    bool first_line = start_first_line;
+    gt_font_st font = { .info = ta->font_info, .res = NULL };
+
+    if (NULL == page || line_height == 0 || area_font.w <= 0 || area_font.h <= 0) {
+        return false;
+    }
+    _file_set_font_encoding(&font, ctx);
+    lines_per_page = (uint32_t)area_font.h / line_height;
+    if (lines_per_page == 0) lines_per_page = 1;
+
+    uint16_t line_count = 0;
+    for (uint32_t line = 0; line < lines_per_page && offset < ctx->file_total_bytes; ++line) {
+        const uint8_t *data;
+        uint32_t len;
+        uint32_t width = first_line
+                       ? gt_font_get_indent_width(&font.info, ta->indent) : 0;
+        int32_t step;
+        bool newline = false;
+
+        if (!_file_scan_window(ctx, offset, &data, &len)) return false;
+        font.utf8 = (char *)data;
+        font.len = len;
+        step = gt_font_split_line_str(&font, (uint32_t)area_font.w, ta->space_x,
+                                      &width, NULL, NULL, NULL, NULL, first_line);
+        if (step < 0) return false;
+        if ((uint32_t)step < len && data[step] == '\n') newline = true;
+        if (step == 0 && !newline) {
+            uint32_t unicode = 0;
+            uint32_t char_len = gt_font_one_char_code_len_get((uint8_t *)data,
+                                                               &unicode,
+                                                               font.info.encoding);
+            step = (int32_t)(char_len ? char_len : 1);
+        }
+        offset += (uint32_t)step + (newline ? 1U : 0U);
+        first_line = newline;
+        line_count++;
+    }
+
+    page->start = start;
+    page->end = offset;
+    page->page_no = page_no;
+    page->line_count = line_count;
+    page->start_first_line = start_first_line ? 1 : 0;
+    page->end_first_line = first_line ? 1 : 0;
+    return offset > start || start >= ctx->file_total_bytes;
+}
+
+static void _file_page_remember(_gt_textarea_file_ctx_t *ctx,
+                                const _gt_textarea_page_item_t *page,
+                                bool force_index) {
+    uint8_t slot;
+    for (uint8_t i = 0; i < ctx->page_cache_count; ++i) {
+        if (ctx->page_cache[i].start == page->start) {
+            ctx->page_cache[i] = *page;
+            goto index_page;
+        }
+    }
+    slot = ctx->page_cache_write++ % _FILE_PAGE_CACHE_COUNT;
+    ctx->page_cache[slot] = *page;
+    if (ctx->page_cache_count < _FILE_PAGE_CACHE_COUNT) ctx->page_cache_count++;
+
+index_page:
+    if (!force_index && (page->page_no % _FILE_PAGE_INDEX_STEP) != 0) return;
+    for (uint8_t i = 0; i < ctx->page_index_count; ++i) {
+        if (ctx->page_index[i].start == page->start) {
+            ctx->page_index[i] = *page;
+            return;
+        }
+    }
+    slot = ctx->page_index_write++ % GT_TEXTAREA_FILE_IDX_COUNT;
+    if (ctx->page_index_count < GT_TEXTAREA_FILE_IDX_COUNT) ctx->page_index_count++;
+    ctx->page_index[slot] = *page;
+}
+
+static bool _file_page_find_end(_gt_textarea_file_ctx_t *ctx, uint32_t end,
+                                _gt_textarea_page_item_t *page) {
+    for (uint8_t i = 0; i < ctx->page_cache_count; ++i) {
+        if (ctx->page_cache[i].end == end) { *page = ctx->page_cache[i]; return true; }
+    }
+    for (uint8_t i = 0; i < ctx->page_index_count; ++i) {
+        if (ctx->page_index[i].end == end) { *page = ctx->page_index[i]; return true; }
+    }
+    return false;
+}
+
+static bool _file_page_find_start(_gt_textarea_file_ctx_t *ctx, uint32_t start,
+                                  _gt_textarea_page_item_t *page) {
+    for (uint8_t i = 0; i < ctx->page_cache_count; ++i) {
+        if (ctx->page_cache[i].start == start) { *page = ctx->page_cache[i]; return true; }
+    }
+    for (uint8_t i = 0; i < ctx->page_index_count; ++i) {
+        if (ctx->page_index[i].start == start) { *page = ctx->page_index[i]; return true; }
+    }
+    return false;
+}
+
+static bool _file_page_checkpoint(_gt_textarea_file_ctx_t *ctx, uint32_t target,
+                                  _gt_textarea_page_item_t *page) {
+    bool found = false;
+    for (uint8_t i = 0; i < ctx->page_index_count; ++i) {
+        if (ctx->page_index[i].start <= target
+            && (!found || ctx->page_index[i].start > page->start)) {
+            *page = ctx->page_index[i];
+            found = true;
+        }
+    }
+    return found;
+}
+
+static void _file_page_apply(_gt_textarea_file_ctx_t *ctx,
+                             const _gt_textarea_page_item_t *page) {
+    ctx->scroll_byte_offset = page->start;
+    ctx->page_end_offset = page->end;
+    ctx->current_page = page->page_no;
+    ctx->current_line_count = page->line_count;
+    ctx->current_first_line = page->start_first_line;
+    ctx->page_end_first_line = page->end_first_line;
+    ctx->pixel_offset = 0;
+}
+
+static bool _file_page_ensure_current(gt_obj_st *obj, _gt_textarea_st *ta) {
+    _gt_textarea_file_ctx_t *ctx = ta->file_ctx;
+    _gt_textarea_page_item_t page;
+    _file_check_layout(obj, ta, ctx);
+    if (ctx->page_end_offset > ctx->scroll_byte_offset
+        || ctx->scroll_byte_offset >= ctx->file_total_bytes) return true;
+    if (!_file_scan_page(obj, ta, ctx->scroll_byte_offset,
+                         ctx->current_first_line, ctx->current_page, &page)) return false;
+    _file_page_remember(ctx, &page, ctx->current_page == 0);
+    _file_page_apply(ctx, &page);
+    return true;
+}
+
+static uint16_t _file_page_pixel_span(gt_obj_st *obj, _gt_textarea_st *ta) {
+    gt_area_st padding_font = gt_area_reduce(obj->area, ta->padding);
+    gt_area_st area_font = gt_area_reduce(padding_font,
+                                          ta->border_width + _FONT_AREA_REDUCE_SIZE);
+    uint16_t line_height = _file_line_height(ta);
+    uint16_t line_count;
+    if (line_height == 0 || area_font.h <= 0) return 1;
+    line_count = (uint16_t)area_font.h / line_height;
+    return line_count ? (uint16_t)(line_count * line_height) : line_height;
+}
+
+static int32_t _file_page_max_pixel_offset(gt_obj_st *obj, _gt_textarea_st *ta) {
+    _gt_textarea_file_ctx_t *ctx = ta->file_ctx;
+    if (ctx->page_end_offset < ctx->file_total_bytes) {
+        return _file_page_pixel_span(obj, ta) - 1;
+    }
+    {
+        gt_area_st padding_font = gt_area_reduce(obj->area, ta->padding);
+        gt_area_st area_font = gt_area_reduce(padding_font,
+                                              ta->border_width + _FONT_AREA_REDUCE_SIZE);
+        int32_t content_h = (int32_t)ctx->current_line_count * _file_line_height(ta);
+        int32_t max_offset = content_h - area_font.h;
+        return max_offset > 0 ? max_offset : 0;
+    }
+}
+
+static bool _file_page_get_next(gt_obj_st *obj, _gt_textarea_st *ta,
+                                _gt_textarea_page_item_t *page) {
+    _gt_textarea_file_ctx_t *ctx = ta->file_ctx;
+    if (!_file_page_ensure_current(obj, ta)
+        || ctx->page_end_offset >= ctx->file_total_bytes) return false;
+    if (_file_page_find_start(ctx, ctx->page_end_offset, page)) return true;
+    if (!_file_scan_page(obj, ta, ctx->page_end_offset,
+                         ctx->page_end_first_line, ctx->current_page + 1, page)) return false;
+    _file_page_remember(ctx, page, false);
+    return true;
+}
+
+static bool _file_page_next(gt_obj_st *obj, _gt_textarea_st *ta) {
+    _gt_textarea_file_ctx_t *ctx = ta->file_ctx;
+    _gt_textarea_page_item_t page;
+    if (!_file_page_get_next(obj, ta, &page)) return false;
+    _file_page_apply(ctx, &page);
+    return true;
+}
+
+static bool _file_page_prev(gt_obj_st *obj, _gt_textarea_st *ta) {
+    _gt_textarea_file_ctx_t *ctx = ta->file_ctx;
+    _gt_textarea_page_item_t scan = {0}, previous = {0};
+    uint32_t target = ctx->scroll_byte_offset;
+    bool have_previous = false;
+    if (target == 0) return false;
+    if (_file_page_find_end(ctx, target, &previous)) {
+        _file_page_apply(ctx, &previous);
+        return true;
+    }
+    if (!_file_page_checkpoint(ctx, target - 1, &scan)) {
+        scan.start = 0;
+        scan.page_no = 0;
+        scan.start_first_line = 1;
+    }
+    while (scan.start < target) {
+        _gt_textarea_page_item_t next;
+        if (!_file_scan_page(obj, ta, scan.start, scan.start_first_line,
+                             scan.page_no, &next)) break;
+        _file_page_remember(ctx, &next, false);
+        if (next.end >= target) {
+            if (next.end == target) previous = next, have_previous = true;
+            break;
+        }
+        scan.start = next.end;
+        scan.page_no = next.page_no + 1;
+        scan.start_first_line = next.end_first_line;
+    }
+    if (!have_previous) return false;
+    _file_page_apply(ctx, &previous);
+    return true;
+}
+
+static bool _file_page_seek_byte(gt_obj_st *obj, _gt_textarea_st *ta,
+                                 uint32_t target) {
+    _gt_textarea_file_ctx_t *ctx = ta->file_ctx;
+    _gt_textarea_page_item_t scan = {0}, page;
+    bool have_checkpoint = _file_page_checkpoint(ctx, target, &scan);
+    if (!have_checkpoint) {
+        scan.start = 0;
+        scan.page_no = 0;
+        scan.start_first_line = 1;
+    }
+    while (scan.start < target) {
+        if (!_file_scan_page(obj, ta, scan.start, scan.start_first_line,
+                             scan.page_no, &page)) return false;
+        _file_page_remember(ctx, &page, false);
+        if (target < page.end || page.end >= ctx->file_total_bytes) {
+            _file_page_apply(ctx, &page);
+            return true;
+        }
+        scan.start = page.end;
+        scan.page_no = page.page_no + 1;
+        scan.start_first_line = page.end_first_line;
+    }
+    if (scan.start <= target) {
+        if (!_file_scan_page(obj, ta, scan.start, scan.start_first_line,
+                             scan.page_no, &page)) return false;
+        _file_page_remember(ctx, &page, true);
+        _file_page_apply(ctx, &page);
+        return true;
+    }
+    return false;
 }
 
 /* file-mode rendering ---------------------------------------------------*/
-/**
- * @brief Render file-mode textarea content.
- *
- * draw_text() processes ALL bytes in font.utf8/font.len in one call
- * (it renders every line that fits in area_font and skips the rest).
- * font.utf8 and font.len are NOT modified by draw_text, so we feed it
- * one 4KB chunk per iteration, updating font_attr.start_x/start_y to
- * continue where the previous call left off.
- *
- * The loop stops when: (a) end-of-file reached, (b) scroll abort
- * (GT_RES_INV), or (c) rendered past the visible viewport + margin.
- */
-static void _draw_content_file(gt_obj_st *obj, gt_point_st *touch_point_p,
-                                bool is_only_calc_height) {
-    _gt_textarea_st *ta = (_gt_textarea_st *)obj;
+static void _file_draw_page(gt_obj_st *obj, _gt_textarea_st *ta,
+                            const _gt_textarea_page_item_t *page,
+                            int32_t y_offset, bool is_only_calc_height) {
     _gt_textarea_file_ctx_t *ctx = ta->file_ctx;
-    if (NULL == ctx || NULL == ctx->read_buf) return;
-    if (0 == obj->area.w || 0 == obj->area.h) return;
-
-
     gt_font_st font = { .info = ta->font_info, .res = NULL };
-
     gt_attr_font_st font_attr = {
         .font       = &font,
         .space_x    = ta->space_x,
@@ -509,100 +833,71 @@ static void _draw_content_file(gt_obj_st *obj, gt_point_st *touch_point_p,
         .indent     = ta->indent,
         .opa        = is_only_calc_height ? GT_OPA_0 : obj->opa,
         .font_color = ta->color_font,
-        .reg.immediately_return = _is_hold_on_contents_for_scroll(ta),
+        .reg.immediately_return = false,
     };
-
-    gt_size_t scroll_y = obj->process_attr.scroll.y;
     _gt_draw_font_res_st font_res = {0};
     gt_area_st padding_font = gt_area_reduce(obj->area, ta->padding);
-    gt_area_st area_font = gt_area_reduce(padding_font, ta->border_width + _FONT_AREA_REDUCE_SIZE);
-    font_attr.logical_area       = area_font;
-#if GT_TEXTAREA_FILE_MODE
-    /* File mode: byte_offset determines coarse position;
-       pixel_offset provides sub-line smooth scrolling. */
-    font_attr.logical_area.y    -= ctx->pixel_offset;
-    (void)scroll_y;
-#else
-    font_attr.logical_area.y    += scroll_y;
-#endif
-    font_attr.logical_area.h     = 0xffff;
+    gt_area_st area_font = gt_area_reduce(padding_font,
+                                          ta->border_width + _FONT_AREA_REDUCE_SIZE);
+    uint32_t offset = page->start;
 
-    uint16_t line_height = ta->font_info.size + (font_attr.space_y << 1);
-
-    if (!_ensure_buffer(ctx, ctx->scroll_byte_offset)) return;
-
-    uint32_t buf_off = ctx->scroll_byte_offset - ctx->buf_file_offset;
-    uint32_t chunk_size = ctx->buf_size - buf_off;
-    {
-        uint32_t file_rem = ctx->file_total_bytes - ctx->scroll_byte_offset;
-        if (chunk_size > file_rem) chunk_size = file_rem;
+    _file_set_font_encoding(&font, ctx);
+    font_attr.logical_area = area_font;
+    font_attr.logical_area.y += y_offset;
+    font_attr.logical_area.h = 0xffff;
+    if (!page->start_first_line) {
+        font_attr.start_x = area_font.x;
+        font_attr.start_y = font_attr.logical_area.y;
+        font_attr.reg.enabled_start = true;
     }
 
-    font.utf8 = (char *)(ctx->read_buf + buf_off);
-    font.len  = chunk_size;
-
-
-    bool done = false;
-
-    while (!done) {
-        uint32_t abs_off = ctx->buf_file_offset
-            + (uint32_t)((const uint8_t *)font.utf8 - ctx->read_buf);
-        _line_idx_record(ctx, abs_off, ctx->current_line_number,
-                         font_attr.logical_area.y - area_font.y);
-
+    while (offset < page->end) {
+        const uint8_t *data;
+        uint32_t len;
+        if (!_file_scan_window(ctx, offset, &data, &len)) break;
+        if (len > page->end - offset) len = page->end - offset;
+        font.utf8 = (char *)data;
+        font.len = len;
         font_res = draw_text(obj->draw_ctx, &font_attr, &area_font);
-
-        if (_is_hold_on_contents_for_scroll(ta) && GT_RES_INV == font_res.res) {
-            done = true; break;
-        }
-
-        /* draw_text processed all bytes in this chunk.
-         * Carry over the end position for the next chunk. */
+        if (GT_RES_INV == font_res.res) break;
         font_attr.start_x = font_res.abs_pos.x;
         font_attr.start_y = font_res.abs_pos.y;
         font_attr.reg.enabled_start = true;
-
-        /* Check end-of-file: buf_file_offset + buf_off + font.len is the
-         * absolute byte past the last byte we fed to draw_text. */
-        {
-            uint32_t consumed_end = ctx->buf_file_offset + buf_off
-                                    + (uint32_t)font.len;
-            if (consumed_end >= ctx->file_total_bytes) {
-                done = true; break;
-            }
-        }
-
-        /* Stop if rendered well below the visible viewport (non-scroll path) */
-        if (!is_only_calc_height && !_is_hold_on_contents_for_scroll(ta)
-            && font_res.abs_pos.y > area_font.y + obj->area.h + (line_height << 2)) {
-            done = true; break;
-        }
-
-        /* Load next chunk */
-        if (!_load_next_chunk(ctx)) { done = true; break; }
-        font.utf8 = (char *)(ctx->read_buf + ctx->pending_overlap);
-        {
-            uint32_t nr = ctx->buf_size - ctx->pending_overlap;
-            uint32_t fr = ctx->file_total_bytes - ctx->buf_file_offset
-                          - ctx->pending_overlap;
-            if (nr > fr) nr = fr;
-            font.len = nr;
-        }
-        buf_off = ctx->pending_overlap;
+        offset += len;
     }
+}
 
-    if (!touch_point_p) {
-        uint32_t h = line_height + font_res.abs_pos.y + ta->font_info.size
-                     - font_attr.logical_area.y;
-#if GT_TEXTAREA_FILE_MODE
-        /* scroll_y is not applied to logical_area.y in file mode
-           (content is positioned by byte offset).  Add it back so
-           max_height reflects the total pixel extent for the scrollbar. */
-        h += (uint32_t)gt_abs(scroll_y);
-#endif
-        if (h > ta->max_height) {
-            ta->max_height = h;
+static void _draw_content_file(gt_obj_st *obj, gt_point_st *touch_point_p,
+                               bool is_only_calc_height) {
+    _gt_textarea_st *ta = (_gt_textarea_st *)obj;
+    _gt_textarea_file_ctx_t *ctx = ta->file_ctx;
+    _gt_textarea_page_item_t current;
+    uint16_t page_span;
+    if (NULL == ctx || NULL == ctx->read_buf) return;
+    if (0 == obj->area.w || 0 == obj->area.h) return;
+    (void)touch_point_p;
+    if (!_file_page_ensure_current(obj, ta)) return;
+
+    current.start = ctx->scroll_byte_offset;
+    current.end = ctx->page_end_offset;
+    current.page_no = ctx->current_page;
+    current.line_count = ctx->current_line_count;
+    current.start_first_line = ctx->current_first_line;
+    current.end_first_line = ctx->page_end_first_line;
+    page_span = _file_page_pixel_span(obj, ta);
+    _file_draw_page(obj, ta, &current, -ctx->pixel_offset, is_only_calc_height);
+
+    if (ctx->pixel_offset > 0) {
+        _gt_textarea_page_item_t next;
+        if (_file_page_get_next(obj, ta, &next)) {
+            _file_draw_page(obj, ta, &next,
+                            (int32_t)page_span - ctx->pixel_offset,
+                            is_only_calc_height);
         }
+    }
+    if (!is_only_calc_height) {
+        uint16_t line_height = _file_line_height(ta);
+        ta->max_height = ctx->estimated_total_lines * (line_height ? line_height : 1);
     }
 }
 
@@ -612,20 +907,22 @@ static void _textarea_file_handle_scroll(gt_obj_st *obj) {
     _gt_textarea_file_ctx_t *ctx = ta->file_ctx;
     if (NULL == ctx) return;
 
-    gt_size_t scroll_y = obj->process_attr.scroll.y;
-
-    if (ta->max_height <= obj->area.h || ctx->file_total_bytes == 0) {
+    if (ctx->file_total_bytes == 0) {
         obj->process_attr.scroll.y = 0;
-        ctx->last_scroll_y = 0;
-        ctx->pixel_offset = 0;
-        ctx->scroll_byte_offset = 0;
+        _file_reset_pages(ctx);
         gt_disp_invalid_area(obj);
         return;
     }
 
-    /* Relative pixel delta since last call */
-    int32_t delta_px = (int32_t)scroll_y - ctx->last_scroll_y;
-    ctx->last_scroll_y = scroll_y;
+    gt_point_st point = gt_indev_get_point();
+    if (!ctx->touch_active) {
+        ctx->last_touch_y = point.y;
+        ctx->touch_active = 1;
+        obj->process_attr.scroll.y = 0;
+        return;
+    }
+    int32_t delta_px = (int32_t)point.y - (int32_t)ctx->last_touch_y;
+    ctx->last_touch_y = point.y;
 
     if (0 == delta_px) {
         obj->process_attr.scroll.y = 0;
@@ -633,83 +930,33 @@ static void _textarea_file_handle_scroll(gt_obj_st *obj) {
         return;
     }
 
-    /* Negate: framework scroll.y goes negative on swipe-up (toward end),
-       pixel_offset positive = content shifted up = toward end. */
-    int32_t accum = -delta_px;
-
-    uint16_t lh = ta->font_info.size + (ta->space_y << 1);
-    if (lh < 1) lh = 1;
-
-    /* pixel_offset is the PRIMARY scroll position.  It accumulates
-       continuously for pixel-smooth scrolling.  scroll_byte_offset
-       only changes when pixel_offset leaves the safe zone, at which
-       point we shift the byte window and compensate pixel_offset
-       so the visual position does not jump. */
-    ctx->pixel_offset += accum;
-
-    /* Estimated pixel height of the 4KB buffer.
-       4096 / 80 * 18 ≈ 922 px.
-       Renderer stops ~437 px below viewport bottom, so max safe
-       pixel_offset ≈ 922 - 437 ≈ 485.  Use 400 for margin. */
-    int32_t safe_upper = 400;
-    int32_t safe_lower = 0;
-
-    bool need_reload = false;
-    if (ctx->pixel_offset > safe_upper) {
-        /* Shift byte window forward, keep visual position stable. */
-        int32_t overshoot = ctx->pixel_offset - safe_upper / 2;
-        int32_t byte_shift = overshoot * (int32_t)_AVG_BYTES_PER_LINE / (int32_t)lh;
-        if (byte_shift > 0) {
-            uint64_t nb = (uint64_t)ctx->scroll_byte_offset + (uint64_t)byte_shift;
-            if (nb >= ctx->file_total_bytes)
-                nb = (ctx->file_total_bytes > 0) ? ctx->file_total_bytes - 1 : 0;
-            ctx->scroll_byte_offset = (uint32_t)nb;
-            int32_t px_comp = (byte_shift * (int32_t)lh + (int32_t)(_AVG_BYTES_PER_LINE / 2)) / (int32_t)_AVG_BYTES_PER_LINE;
-            if (px_comp < 0) px_comp = 0;
-            ctx->pixel_offset -= px_comp;
-            if (ctx->pixel_offset < safe_lower) ctx->pixel_offset = safe_lower;
-            need_reload = true;
+    ctx->gesture_px -= delta_px;
+    ctx->pixel_offset -= delta_px;
+    {
+        int32_t page_span = _file_page_pixel_span(obj, ta);
+        while (ctx->pixel_offset >= page_span) {
+            int32_t remainder = ctx->pixel_offset - page_span;
+            if (!_file_page_next(obj, ta)) {
+                ctx->pixel_offset = 0;
+                break;
+            }
+            ctx->pixel_offset = remainder;
         }
-    } else if (ctx->pixel_offset < safe_lower) {
-        /* Shift byte window backward. */
-        int32_t undershoot = safe_lower - ctx->pixel_offset;
-        int32_t byte_shift = undershoot * (int32_t)_AVG_BYTES_PER_LINE / (int32_t)lh;
-        if (byte_shift > 0 && (uint32_t)byte_shift <= ctx->scroll_byte_offset) {
-            ctx->scroll_byte_offset -= (uint32_t)byte_shift;
-            int32_t px_comp = (byte_shift * (int32_t)lh + (int32_t)(_AVG_BYTES_PER_LINE / 2)) / (int32_t)_AVG_BYTES_PER_LINE;
-            if (px_comp < 0) px_comp = 0;
-            ctx->pixel_offset += px_comp;
-            if (ctx->pixel_offset < safe_lower) ctx->pixel_offset = safe_lower;
-            if (ctx->pixel_offset > safe_upper) ctx->pixel_offset = safe_upper;
-            need_reload = true;
-        } else if ((uint32_t)byte_shift > ctx->scroll_byte_offset) {
-            /* Can't go before file start: clamp */
-            byte_shift = (int32_t)ctx->scroll_byte_offset;
-            ctx->scroll_byte_offset = 0;
-            int32_t px_comp = (byte_shift * (int32_t)lh + (int32_t)(_AVG_BYTES_PER_LINE / 2)) / (int32_t)_AVG_BYTES_PER_LINE;
-            if (px_comp < 0) px_comp = 0;
-            ctx->pixel_offset += px_comp;
-            if (ctx->pixel_offset < safe_lower) ctx->pixel_offset = safe_lower;
-            if (ctx->pixel_offset > safe_upper) ctx->pixel_offset = safe_upper;
-            need_reload = true;
+        while (ctx->pixel_offset < 0) {
+            int32_t remainder = ctx->pixel_offset + page_span;
+            if (!_file_page_prev(obj, ta)) {
+                ctx->pixel_offset = 0;
+                break;
+            }
+            ctx->pixel_offset = remainder;
+        }
+        if (ctx->page_end_offset >= ctx->file_total_bytes) {
+            int32_t max_offset = _file_page_max_pixel_offset(obj, ta);
+            if (ctx->pixel_offset > max_offset) ctx->pixel_offset = max_offset;
         }
     }
-
-
-    if (need_reload) {
-        _ensure_buffer(ctx, ctx->scroll_byte_offset);
-    }
-
-    /* Update scrollbar estimate */
-    if (ctx->estimated_total_lines > 0) {
-        uint32_t eh = ctx->estimated_total_lines * lh;
-        if (eh > ta->max_height) ta->max_height = eh;
-    }
-
-    /* Reset scroll.y to prevent int16_t overflow */
     obj->process_attr.scroll.y = 0;
     ctx->last_scroll_y = 0;
-
     gt_disp_invalid_area(obj);
 }
 
@@ -1204,9 +1451,8 @@ _reset_scroll_value(gt_obj_st * obj) {
     {
         _gt_textarea_st *style = (_gt_textarea_st *)obj;
         if (style->file_ctx) {
-            style->file_ctx->scroll_byte_offset = 0;
+            _file_reset_pages(style->file_ctx);
             style->file_ctx->last_scroll_y = 0;
-            style->file_ctx->pixel_offset = 0;
         }
     }
 #endif
@@ -1312,7 +1558,8 @@ _is_scroll_to_bottom(gt_obj_st *obj) {
     _gt_textarea_st *style = (_gt_textarea_st *)obj;
 #if GT_TEXTAREA_FILE_MODE
     if (style->mode != GT_TEXTAREA_MODE_MEMORY && style->file_ctx) {
-        return (style->file_ctx->scroll_byte_offset >= style->file_ctx->file_total_bytes);
+        return style->file_ctx->page_end_offset
+               >= style->file_ctx->file_total_bytes;
     }
 #endif
     return gt_abs(obj->process_attr.scroll.y) + obj->area.h - style->padding > style->max_height;
@@ -1381,6 +1628,14 @@ _textarea_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         }
         case GT_EVENT_TYPE_INPUT_PRESSED: {
             style->reg.click_valid = true;
+#if GT_TEXTAREA_FILE_MODE
+            if (style->mode != GT_TEXTAREA_MODE_MEMORY && style->file_ctx) {
+                gt_point_st point = gt_indev_get_point();
+                style->file_ctx->last_touch_y = point.y;
+                style->file_ctx->touch_active = 1;
+                style->file_ctx->gesture_px = 0;
+            }
+#endif
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
             _set_touch_word(style, NULL, 0);
 #endif
@@ -1418,8 +1673,10 @@ _textarea_event_cb(struct gt_obj_s * obj, gt_event_st * e) {
         case GT_EVENT_TYPE_INPUT_SCROLL_END: {
 #if GT_TEXTAREA_FILE_MODE
             if (style->mode != GT_TEXTAREA_MODE_MEMORY) {
-                /* File mode: no hold_on optimization needed;
-                   full render on scroll end for correct display. */
+                int32_t gesture_px = style->file_ctx->gesture_px;
+                style->file_ctx->gesture_px = 0;
+                style->file_ctx->touch_active = 0;
+                gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
                 break;
             }
 #endif
@@ -1469,6 +1726,7 @@ gt_obj_st * gt_textarea_create(gt_obj_st * parent) {
         return obj;
     }
     obj->fixed = false;
+    gt_obj_set_scroll_dir(obj, GT_SCROLL_VERTICAL);
     obj->radius = 4;
     obj->area.w = 100;
     obj->area.h = 100;
@@ -1589,6 +1847,7 @@ void gt_textarea_set_text_by_len(gt_obj_st * textarea, const char * text, uint32
 
 #if GT_TEXTAREA_CUSTOM_FONT_STYLE
     style->contents[0].font_info = style->font_info;
+    style->contents[0].font_info.palette = color;
     gt_font_info_update_font_thick(&style->contents[0].font_info);
 #endif
 
@@ -2043,7 +2302,27 @@ float gt_textarea_get_scroll_percent(gt_obj_st * textarea)
        Avoids int16_t scroll.y overflow when max_height > 32767. */
     if (style->mode != GT_TEXTAREA_MODE_MEMORY && style->file_ctx
         && style->file_ctx->file_total_bytes > 0) {
-        return 100.0f * (float)style->file_ctx->scroll_byte_offset
+        uint32_t byte_offset = style->file_ctx->scroll_byte_offset;
+        if (style->file_ctx->page_end_offset >= style->file_ctx->file_total_bytes) {
+            int32_t max_offset = _file_page_max_pixel_offset(textarea, style);
+            if (max_offset <= 0) return 100.0f;
+            if (style->file_ctx->pixel_offset > 0) {
+                uint32_t page_bytes = style->file_ctx->page_end_offset
+                                    - style->file_ctx->scroll_byte_offset;
+                byte_offset += (uint32_t)((uint64_t)page_bytes
+                             * (uint32_t)style->file_ctx->pixel_offset
+                             / (uint32_t)max_offset);
+            }
+        } else if (style->file_ctx->pixel_offset > 0) {
+            uint16_t page_span = _file_page_pixel_span(textarea, style);
+            uint32_t page_bytes = style->file_ctx->page_end_offset
+                                - style->file_ctx->scroll_byte_offset;
+            if (page_span > 0) {
+                byte_offset += (uint32_t)((uint64_t)page_bytes
+                             * (uint32_t)style->file_ctx->pixel_offset / page_span);
+            }
+        }
+        return 100.0f * (float)byte_offset
              / (float)style->file_ctx->file_total_bytes;
     }
 #endif
@@ -2057,6 +2336,20 @@ float gt_textarea_get_scroll_percent(gt_obj_st * textarea)
     return (float)(100.0 * gt_abs(textarea->process_attr.scroll.y) / scroll_height);
 }
 
+#if GT_TEXTAREA_FILE_MODE
+uint32_t gt_textarea_get_file_total_bytes(gt_obj_st * textarea)
+{
+    if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
+        return 0;
+    }
+    _gt_textarea_st * style = (_gt_textarea_st *)textarea;
+    if (style->mode == GT_TEXTAREA_MODE_MEMORY || NULL == style->file_ctx) {
+        return 0;
+    }
+    return style->file_ctx->file_total_bytes;
+}
+#endif
+
 gt_res_t gt_textarea_display_by_precent(gt_obj_st * textarea, float percent)
 {
     if (false == gt_obj_is_type(textarea, OBJ_TYPE)) {
@@ -2067,42 +2360,26 @@ gt_res_t gt_textarea_display_by_precent(gt_obj_st * textarea, float percent)
     if (percent > 100.0)        { percent = 100.0; }
 
 #if GT_TEXTAREA_FILE_MODE
-    /* File mode: compute byte offset directly from percentage.
-     * Avoids int16_t scroll.y overflow when max_height > 32767
-     * (e.g. max_h=74580 → scroll_y=-74215 wraps to -8679). */
     if (style->mode != GT_TEXTAREA_MODE_MEMORY && style->file_ctx
         && style->file_ctx->file_total_bytes > 0) {
         _gt_textarea_file_ctx_t *ctx = style->file_ctx;
         uint32_t target_byte = (uint32_t)((double)ctx->file_total_bytes
                                           * (double)percent / 100.0);
-
-        /* Near bottom (≥99%): back up ~1 screenful so the viewport
-         * is filled with text, not just the last few lines. */
-        if (percent >= 99.0f && target_byte > 0) {
-            uint16_t lh = style->font_info.size + (style->space_y << 1);
-            if (lh < 1) lh = 1;
-            uint32_t screen_bytes = ((uint32_t)gt_obj_get_h(textarea) / lh + 2)
-                                   * _AVG_BYTES_PER_LINE;
-            target_byte = (target_byte > screen_bytes)
-                        ? (target_byte - screen_bytes) : 0;
+        if (target_byte >= ctx->file_total_bytes && ctx->file_total_bytes > 0) {
+            target_byte = ctx->file_total_bytes - 1;
         }
-
-        ctx->scroll_byte_offset = target_byte;
+        _file_check_layout(textarea, style, ctx);
+        if (!_file_page_seek_byte(textarea, style, target_byte)) {
+            GT_LOGD(GT_LOG_TAG_GUI,
+                    "textarea file seek failed: percent[%d], target[%u]\n",
+                    (int32_t)percent, target_byte);
+            return GT_RES_FAIL;
+        }
         textarea->process_attr.scroll.y = 0;
         ctx->last_scroll_y = 0;
-        ctx->pixel_offset = 0;
-
-        /* Update max_height from line estimate (scrollbar thumb size) */
-        if (ctx->estimated_total_lines > 0) {
-            uint16_t lh = style->font_info.size + (style->space_y << 1);
-            if (lh > 0) {
-                uint32_t eh = ctx->estimated_total_lines * lh;
-                if (eh > style->max_height) style->max_height = eh;
-            }
-        }
-
-
-        _ensure_buffer(ctx, target_byte);
+        ctx->pixel_offset = percent >= 100.0
+                          ? _file_page_max_pixel_offset(textarea, style) : 0;
+        _ensure_buffer(ctx, ctx->scroll_byte_offset);
         gt_event_send(textarea, GT_EVENT_TYPE_DRAW_START, NULL);
         return GT_RES_OK;
     }
@@ -2276,7 +2553,7 @@ int gt_textarea_set_file_with_io(gt_obj_st *textarea, const char *file_path,
                                   const gt_textarea_file_io_t *io) {
     if (false == gt_obj_is_type(textarea, OBJ_TYPE)) return -1;
     if (NULL == file_path || NULL == io) return -1;
-    if (NULL == io->open || NULL == io->read || NULL == io->seek || NULL == io->close)
+    if (NULL == io->io_open || NULL == io->io_read || NULL == io->io_seek || NULL == io->io_close)
         return -1;
     _gt_textarea_st *style = (_gt_textarea_st *)textarea;
 
@@ -2311,7 +2588,7 @@ int gt_textarea_save_to_file(gt_obj_st *textarea) {
     _gt_textarea_st *style = (_gt_textarea_st *)textarea;
     if (NULL == style->file_ctx || !style->file_ctx->dirty) return 0;
     if (style->file_ctx->io_backend == 1
-        && NULL == style->file_ctx->io.custom.io.write) return -1;
+        && NULL == style->file_ctx->io.custom.io.io_write) return -1;
 
     _file_seek(style->file_ctx, 0, 0);
     uint32_t write_sz = (style->file_ctx->buf_size < style->file_ctx->file_total_bytes)

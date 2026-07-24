@@ -114,7 +114,7 @@ void gt_btn_set_text(gt_obj_st * btn, const char * fmt, ...);
  * @param text
  * @param len the byte length of the text
  */
-void gt_btn_set_text_by_len(gt_obj_st * btn, const char * text, uint16_t len);
+void gt_btn_set_text_by_len(gt_obj_st * btn, const char * text, uint32_t len);
 
 void gt_btn_append_text(gt_obj_st * obj, const char * str);
 /**

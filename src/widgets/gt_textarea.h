@@ -142,12 +142,12 @@ typedef struct {
  * write is required only for editable mode).
  */
 typedef struct {
-    void *(*open)(const char *path, const char *mode);
-    int   (*read)(void *handle, void *buf, unsigned int size);
-    int   (*write)(void *handle, const void *buf, unsigned int size);
-    long  (*seek)(void *handle, long offset, int whence);
-    long  (*tell)(void *handle);
-    int   (*close)(void *handle);
+    void *(*io_open)(const char *path, const char *mode);
+    int   (*io_read)(void *handle, void *buf, unsigned int size);
+    int   (*io_write)(void *handle, const void *buf, unsigned int size);
+    long  (*io_seek)(void *handle, long offset, int whence);
+    long  (*io_tell)(void *handle);
+    int   (*io_close)(void *handle);
 } gt_textarea_file_io_t;
 #endif  /* GT_TEXTAREA_FILE_MODE */
 
@@ -376,6 +376,16 @@ float gt_textarea_get_scroll_percent(gt_obj_st * textarea);
  * @return gt_res_t
  */
 gt_res_t gt_textarea_display_by_precent(gt_obj_st * textarea, float percent);
+
+#if GT_TEXTAREA_FILE_MODE
+/**
+ * @brief Get the total file size in bytes (file mode only)
+ *
+ * @param textarea
+ * @return uint32_t total bytes, 0 if not in file mode or textarea is invalid
+ */
+uint32_t gt_textarea_get_file_total_bytes(gt_obj_st * textarea);
+#endif
 
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
 void gt_textarea_set_touch_single_chinese_word(gt_obj_st * textarea, bool is_single_cn);
