@@ -598,7 +598,10 @@ gt_spectrum_set_item_numb(gt_obj_st * obj, uint16_t numb, uint16_t gap)
             gt_circular_array_destroy(style->item.range.aim);
         }
     }
-    else if(numb != style->item.numb) {
+    else if(numb != style->item.numb
+            || NULL == style->item.range.value
+            || NULL == style->item.range.aim
+    ) {
         if(style->item.range.value) {
             gt_circular_array_destroy(style->item.range.value);
         }
