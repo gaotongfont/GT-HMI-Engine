@@ -53,7 +53,7 @@ typedef struct _gt_draw_ctx_s {
 #if _GT_FONT_GET_WORD_BY_TOUCH_POINT
 typedef struct gt_font_touch_word_s {
     char * word_p;
-    uint16_t len;
+    uint32_t len;
 }gt_font_touch_word_st;
 #endif
 

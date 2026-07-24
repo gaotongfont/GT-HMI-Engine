@@ -357,6 +357,14 @@ extern "C" {
     #define GT_FONT_USE_ASCII_WIDTH_CACHE     01
 #endif
 
+#ifndef GT_VEC_GRAY1_SMOOTH
+    /**
+     * @brief 1: enable 3x3 box-filter smoothing for VEC font gray=1, 0: disabled
+     *      default: 1
+     */
+    #define GT_VEC_GRAY1_SMOOTH         1
+#endif
+
 #ifndef GT_USE_MODE_SRC
     #define GT_USE_MODE_SRC             01
 #endif

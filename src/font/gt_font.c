@@ -1005,7 +1005,7 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_shiftjis_to_jis0208(const uint8_t *src
 }
 #endif
 
-uint16_t gt_encoding_convert(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len, gt_encoding_convert_et enc_cov)
+uint32_t gt_encoding_convert(const uint8_t *src, uint32_t src_len, uint8_t* dst, uint32_t dst_len, gt_encoding_convert_et enc_cov)
 {
     switch (enc_cov)
     {
@@ -1461,10 +1461,10 @@ uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const 
     return max_width;
 }
 
-gt_font_words_ret_st gt_font_get_words_number(char const * const str, uint16_t len, gt_encoding_et encoding)
+gt_font_words_ret_st gt_font_get_words_number(char const * const str, uint32_t len, gt_encoding_et encoding)
 {
     uint32_t unicode = 0;
-    uint16_t total_words = 0, idx = 0;
+    uint32_t total_words = 0, idx = 0;
     uint16_t count_byte = 0;
     gt_font_words_ret_st ret = {0};
     uint8_t * ptr = (uint8_t * )str;
@@ -1796,7 +1796,7 @@ static GT_ATTRIBUTE_RAM_TEXT uint32_t _gt_font_cn_in_this_range(gt_font_st *font
     return idx;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT uint32_t _gt_font_en_in_this_range(gt_font_st *fonts, uint32_t width, uint32_t space, uint32_t* ret_w, uint16_t *ol_idx, uint16_t *ol_width)
+static GT_ATTRIBUTE_RAM_TEXT uint32_t _gt_font_en_in_this_range(gt_font_st *fonts, uint32_t width, uint32_t space, uint32_t* ret_w, uint32_t *ol_idx, uint16_t *ol_width)
 {
     uint32_t idx = 0, uni_or_gbk = 0, w = 0;
     uint8_t *str = (uint8_t * )fonts->utf8, tmp, tmp_w = 0;
@@ -1820,7 +1820,7 @@ static GT_ATTRIBUTE_RAM_TEXT uint32_t _gt_font_en_in_this_range(gt_font_st *font
 }
 
 #if _GT_FONT_ENABLE_CONVERTOR
-static GT_ATTRIBUTE_RAM_TEXT uint32_t _get_convertor_string_width(gt_font_st *fonts, uint8_t lan, uint32_t space, uint16_t range_w, uint16_t *ol_idx, uint16_t *ol_width)
+static GT_ATTRIBUTE_RAM_TEXT uint32_t _get_convertor_string_width(gt_font_st *fonts, uint8_t lan, uint32_t space, uint16_t range_w, uint32_t *ol_idx, uint16_t *ol_width)
 {
     uint32_t idx = 0, uni_or_gbk = 0, tmp = 0, len = fonts->info.size * fonts->len;
     uint16_t *text = NULL;
@@ -1959,7 +1959,7 @@ static GT_ATTRIBUTE_RAM_TEXT uint32_t _gt_font_split(const uint8_t *str, uint32_
 }
 
 int32_t gt_font_split_line_str(gt_font_st * fonts, uint32_t max_w, uint32_t space, uint32_t * width,
-                                gt_bidi_st** bidi, uint16_t* bidi_len, uint16_t* bidi_max, uint8_t * overlength,
+                                gt_bidi_st** bidi, uint32_t* bidi_len, uint32_t* bidi_max, uint8_t * overlength,
                                 bool is_first_line)
 {
     uint32_t idx = 0, tmp_idx = 0, tmp_w = 0;
@@ -1967,7 +1967,9 @@ int32_t gt_font_split_line_str(gt_font_st * fonts, uint32_t max_w, uint32_t spac
     int32_t len = 0;
     gt_font_lan_et lan = FONT_LAN_UNKNOWN;
     /** over line */
-    uint16_t ol_w = 0, ol_idx = 0, w_offset = *width;
+    uint16_t ol_w = 0;
+    uint32_t w_offset = *width;
+    uint32_t ol_idx = 0;
 
     gt_font_st tmp_font = {
         .info = fonts->info,
@@ -2249,7 +2251,7 @@ uint8_t right_to_left_lan_get(gt_font_st* font)
 {
     gt_font_lan_et font_lan = FONT_LAN_UNKNOWN;
     uint8_t* str = (uint8_t*)font->utf8;
-    uint16_t idx = 0;
+    uint32_t idx = 0;
     uint32_t uni_or_gbk = 0;
 
     while(idx < font->len){
@@ -2369,7 +2371,7 @@ bool gt_font_is_illegal_char(uint32_t uni_or_gbk)
     return false;
 }
 
-uint16_t gt_font_get_word_byte_length(char const * const text, uint16_t length, uint8_t encoding)
+uint32_t gt_font_get_word_byte_length(char const * const text, uint32_t length, uint8_t encoding)
 {
     if (NULL == text) {
         return 0;

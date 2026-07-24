@@ -154,7 +154,7 @@ typedef struct _gt_font_info_s {
 typedef struct _gt_font_s {
     char * utf8;        ///< set: text: utf8 code arr
     uint8_t * res;      ///< get: font data
-    uint16_t len;       ///< set: utf8 arr len
+    uint32_t len;       ///< set: utf8 arr len
     gt_font_info_st info;
 }gt_font_st;
 
@@ -267,7 +267,7 @@ typedef enum _gt_font_lan_e {
 
 typedef struct _gt_bidi_s {
     uint16_t idx;
-    uint16_t len;
+    uint32_t len;
     uint8_t flag;   /** @ref gt_font_lan_et */
 }gt_bidi_st;
 
@@ -291,7 +291,7 @@ typedef struct _gt_font_dot_ret_s {
     gt_font_type_em type;
     uint16_t size;
     uint16_t option;
-    uint16_t len;
+    uint32_t len;
     uint8_t  width;     /** character pixel width, filled by gt_font_get_dot */
 }_gt_font_dot_ret_st;
 
@@ -334,7 +334,7 @@ typedef struct gt_font_offset_s {
 
 typedef struct gt_font_words_ret_s {
     uint16_t words_cnt;
-    uint16_t byte_len;
+    uint32_t byte_len;
 }gt_font_words_ret_st;
 
 /* macros ---------------------------------------------------------------*/
@@ -437,7 +437,7 @@ uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const 
  * @param encoding
  * @return gt_font_words_ret_st words number and byte len, including CN, ASCII.
  */
-gt_font_words_ret_st gt_font_get_words_number(char const * const str, uint16_t len, gt_encoding_et encoding);
+gt_font_words_ret_st gt_font_get_words_number(char const * const str, uint32_t len, gt_encoding_et encoding);
 
 /**
  * @brief Get single line max width
@@ -485,7 +485,7 @@ int gt_font_convertor_data_get(font_convertor_st *convert, uint32_t pos);
 #endif
 
 int32_t gt_font_split_line_str(gt_font_st * fonts, uint32_t max_w, uint32_t space, uint32_t * width,
-                                gt_bidi_st** bidi, uint16_t* bidi_len, uint16_t* bidi_max, uint8_t * overlength,
+                                gt_bidi_st** bidi, uint32_t* bidi_len, uint32_t* bidi_max, uint8_t * overlength,
                                 bool is_first_line);
 
 #if _GT_FONT_ENABLE_CONVERTOR
@@ -518,7 +518,7 @@ gt_split_line_ret_st gt_font_split_line_numb(gt_font_info_st* info, gt_font_spli
  * @return false legal char
  */
 bool gt_font_is_illegal_char(uint32_t uni_or_gbk);
-uint16_t gt_font_get_word_byte_length(char const * const text, uint16_t length, uint8_t encoding);
+uint32_t gt_font_get_word_byte_length(char const * const text, uint32_t length, uint8_t encoding);
 #endif
 
 
@@ -554,7 +554,7 @@ gt_point_st gt_font_offset_get(uint16_t option, uint32_t font_code);
  */
 gt_size_t gt_font_family_get_id_by(uint16_t font_size);
 
-uint16_t gt_encoding_convert(const uint8_t *src, uint16_t src_len, uint8_t* dst, uint16_t dst_len, gt_encoding_convert_et enc_cov);
+uint32_t gt_encoding_convert(const uint8_t *src, uint32_t src_len, uint8_t* dst, uint32_t dst_len, gt_encoding_convert_et enc_cov);
 
 #ifdef __cplusplus
 } /*extern "C"*/
