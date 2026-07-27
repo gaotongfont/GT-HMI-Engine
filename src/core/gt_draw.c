@@ -4312,10 +4312,23 @@ _gt_wu_line(_gt_draw_ctx_st * ctx,
 
     /* Bounding box: body box + cap extension */
     int32_t const cap_ext = is_round ? half_w + 1 : 0;
-    int32_t const bx_lo = GT_MIN(x0, x1) - half_w - cap_ext - 1;
-    int32_t const bx_hi = GT_MAX(x0, x1) + half_w + cap_ext + 1;
-    int32_t const by_lo = GT_MIN(y0, y1) - half_w - cap_ext - 1;
-    int32_t const by_hi = GT_MAX(y0, y1) + half_w + cap_ext + 1;
+    int32_t bx_lo = GT_MIN(x0, x1) - half_w - cap_ext - 1;
+    int32_t bx_hi = GT_MAX(x0, x1) + half_w + cap_ext + 1;
+    int32_t by_lo = GT_MIN(y0, y1) - half_w - cap_ext - 1;
+    int32_t by_hi = GT_MAX(y0, y1) + half_w + cap_ext + 1;
+
+    /* Clip bounding box to parent_area if set */
+    if (ctx->parent_area) {
+        int32_t const px  = ctx->parent_area->x;
+        int32_t const py  = ctx->parent_area->y;
+        int32_t const px2 = px + (int32_t)ctx->parent_area->w;
+        int32_t const py2 = py + (int32_t)ctx->parent_area->h;
+        if (bx_lo < px)   bx_lo = px;
+        if (by_lo < py)   by_lo = py;
+        if (bx_hi >= px2)  bx_hi = px2 - 1;
+        if (by_hi >= py2)  by_hi = py2 - 1;
+        if (bx_lo > bx_hi || by_lo > by_hi) return;
+    }
 
     for (int32_t py = by_lo; py <= by_hi; ++py) {
         int32_t const rel_y = py - y0;
@@ -4389,6 +4402,9 @@ gt_draw_line(_gt_draw_ctx_st * draw_ctx, gt_attr_line_st const * dsc, const gt_a
     if (NULL == draw_ctx->buf)                                         return;
     if (!gt_area_is_intersect_screen(&draw_ctx->buf_area, coords))     return;
     if (dsc->line.width == 0)                                          return;
+    if (draw_ctx->parent_area) {
+        if (!gt_area_is_intersect_screen(draw_ctx->parent_area, coords)) return;
+    }
 
     /* ── Fast path: horizontal and vertical lines ── */
     bool const is_round_cap = _is_brush_round(&dsc->line) && (dsc->line.width > 1);
