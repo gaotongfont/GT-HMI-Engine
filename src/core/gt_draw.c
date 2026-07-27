@@ -2347,12 +2347,14 @@ static int8_t _draw_text_ctx_init(_draw_text_ctx_st * ctx, const gt_attr_font_st
     _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&ctx->tmp_font.info, FONT_LAN_UNKNOWN, 0);
 #endif
     ctx->data_len = font_size_res.font_per_size;
-    ctx->font_buf = _draw_font_buf_alloc(ctx->tmp_font.info.size, ctx->data_len);
+    /* 使用真实最大像素尺寸分配 mask_line，防止 option 实际字号 > 配置字号时溢出 */
+    gt_font_size_t alloc_size = font_size_res.actual_max_size > 0 ? font_size_res.actual_max_size : ctx->tmp_font.info.size;
+    ctx->font_buf = _draw_font_buf_alloc(alloc_size, ctx->data_len);
     ctx->tmp_font.res = ctx->font_buf.res;
     ctx->mask_line    = ctx->font_buf.mask_line;
     if (NULL == ctx->tmp_font.res) { return -1; }
     if (NULL == ctx->mask_line)    { return -2; }
-    gt_memset(ctx->mask_line, 0xFF, ctx->tmp_font.info.size << 1);
+    gt_memset(ctx->mask_line, 0xFF, alloc_size << 1);
 
     ctx->txt     = (uint8_t *)dsc->font->utf8;
     ctx->txt_len = dsc->font->len;
@@ -2456,7 +2458,7 @@ draw_text_multiple_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc,
     uint16_t line_height = per_line_h;
     ret.size.y = line_height;
 #if _GT_FONT_ENABLE_CONVERTOR
-    uint16_t bidi_len = 0, bidi_max = 1, bidi_pos = 0;
+    uint32_t bidi_len = 0, bidi_max = 1, bidi_pos = 0;
     gt_bidi_st * bidi = (gt_bidi_st * )gt_mem_malloc(bidi_max * sizeof(gt_bidi_st));
     if (NULL == bidi) {
         GT_LOGE(GT_LOG_TAG_GUI, "bidi malloc is failed!!! size = %lu", bidi_max * sizeof(gt_bidi_st));

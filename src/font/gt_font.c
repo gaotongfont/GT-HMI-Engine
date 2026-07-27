@@ -1383,8 +1383,10 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
     }
 
     uint8_t font_type = 0, font_gray = 0, tmp = 0;
+    uint16_t actual_max_size = info->size;
     for(int i = 0; i < FONT_LAN_MAX_COUNT; i++){
-        tmp = gt_font_type_get(gt_font_family_get_option(info->family, i, info->cjk));
+        uint16_t opt = gt_font_family_get_option(info->family, i, info->cjk);
+        tmp = gt_font_type_get(opt);
         if(GT_FONT_TYPE_FLAG_VEC == tmp){
             font_type = GT_FONT_TYPE_FLAG_VEC;
             tmp = info->gray;
@@ -1396,15 +1398,24 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
             tmp = (tmp / 10) > 0 ? (tmp / 10) : 1;
         }
         font_gray = GT_MAX(font_gray, tmp);
+        /* 查询该 option 对应的真实像素高度，取所有语言中的最大值 */
+        if (opt != GT_CFG_DEFAULT_FONT_FAMILY) {
+            int h = GT_Get_Font_Height('A', opt, info->size, info->gray);
+            if (h > actual_max_size) {
+                actual_max_size = (uint16_t)h;
+            }
+        }
     }
 
-    res.dot_width = (font_type == GT_FONT_TYPE_FLAG_VEC) ? ((((info->size + 15) >> 4) << 4) * info->gray) : ((((info->size + 7) >> 3) << 3));
+    /* 用真实最大像素尺寸计算 dot_width，防止 option 实际字号 > 配置字号时缓冲溢出 */
+    res.dot_width = (font_type == GT_FONT_TYPE_FLAG_VEC) ? ((((info->size + 15) >> 4) << 4) * info->gray) : ((((actual_max_size + 7) >> 3) << 3));
 
     res.font_per_size = (res.dot_width * res.dot_width * font_gray >> 3);
     if(GT_FONT_TYPE_FLAG_DOT_MATRIX_NON_WIDTH == font_type){
         res.font_per_size += 2;
     }
     res.font_buff_len = res.font_per_size * 3;
+    res.actual_max_size = actual_max_size;
 
     if(GT_FONT_TYPE_FLAG_VEC == font_type){
         res.dot_width = (((((info->size * info->gray + 15) >> 4) << 4) / info->gray) >> 3) << 3;
@@ -2021,7 +2032,6 @@ int32_t gt_font_split_line_str(gt_font_st * fonts, uint32_t max_w, uint32_t spac
         }
 
         if((*width) + tmp_w + space > max_w){
-
             if(0 == idx){
 
                 if(w_offset != 0 && !is_first_line){

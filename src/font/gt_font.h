@@ -275,6 +275,7 @@ typedef struct _gt_font_size_res_s {
     uint32_t font_buff_len;
     uint16_t dot_width;
     uint16_t font_per_size;
+    uint16_t actual_max_size;   /**< 所有语言 option 对应的真实最大像素高度 */
 }_gt_font_size_res_st;
 
 typedef struct gt_py_input_method_s {
