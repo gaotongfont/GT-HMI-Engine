@@ -1049,9 +1049,12 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
         uint8_t * scaled_res = NULL;          /* non-NULL: scaled buffer to free after blend */
         uint8_t * font_buf_res_orig = tmp_font->res;  /* original res to restore after blend */
 
-        /* VEC gray=1 -> auto-smooth to 4-bit (before scale_size, same size) */
+        /* VEC gray=1 -> auto-smooth to 4-bit (before scale_size, same size)
+         * Skip for large fonts exceeding GT_VEC_SMOOTH_MAX_SIZE to save RAM/CPU.
+         * GT_VEC_SMOOTH_MAX_SIZE == 0 means no limit. */
 #if GT_VEC_GRAY1_SMOOTH
-        if (font_gray == 1 && GT_FONT_TYPE_FLAG_VEC == dot_ret.type) {
+        if (font_gray == 1 && GT_FONT_TYPE_FLAG_VEC == dot_ret.type
+            && (GT_VEC_SMOOTH_MAX_SIZE == 0 || info_size <= GT_VEC_SMOOTH_MAX_SIZE)) {
             uint16_t sm_byte = _font_vec_smooth(tmp_font, &font_gray, byte_width, info_size);
             if (sm_byte > 0) {
                 scaled_res   = tmp_font->res;
