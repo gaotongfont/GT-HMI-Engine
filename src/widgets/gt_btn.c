@@ -240,15 +240,6 @@ static GT_ATTRIBUTE_RAM_TEXT bool _turn_next_content(gt_obj_st * obj) {
     return true;
 }
 
-static GT_ATTRIBUTE_RAM_TEXT void _press_btn_handler(gt_obj_st * obj) {
-    _gt_btn_st * style = (_gt_btn_st * )obj;
-    if (false == style->reg.state_enabled) {
-        return;
-    }
-    gt_obj_set_state(obj, GT_STATE_PRESSED);
-    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
-}
-
 static GT_ATTRIBUTE_RAM_TEXT void
 _reset_other_btn_state_except_current_btn(gt_obj_st * obj) {
     gt_obj_st * parent = obj->parent;
@@ -266,6 +257,19 @@ _reset_other_btn_state_except_current_btn(gt_obj_st * obj) {
     gt_obj_set_state(obj, GT_STATE_PRESSED);
 }
 
+static GT_ATTRIBUTE_RAM_TEXT void _press_btn_handler(gt_obj_st * obj) {
+    _gt_btn_st * style = (_gt_btn_st * )obj;
+    if (false == style->reg.state_enabled) {
+        return;
+    }
+    if (GT_TYPE_GROUP == gt_obj_class_get_type(obj->parent)) {
+        _reset_other_btn_state_except_current_btn(obj);
+    } else if (GT_STATE_PRESSED == gt_obj_get_state(obj)) {
+        return;
+    }
+    gt_obj_set_state(obj, GT_STATE_PRESSED);
+    gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
 
 static GT_ATTRIBUTE_RAM_TEXT inline void
 _released_btn_handler(gt_obj_st * obj) {
