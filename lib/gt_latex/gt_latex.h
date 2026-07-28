@@ -42,6 +42,8 @@ typedef struct {
     uint16_t w;     /* 宽度（像素）/ Width in pixels */
     uint16_t h;     /* 高度（像素）/ Height in pixels */
     uint16_t axis;  /* 数学轴距顶部距离（像素）/ Math axis offset from top */
+    uint8_t  wrapped;   /* 1=内部发生自动换行 / 1=auto-wrapped internally */
+    uint8_t  row_count; /* 实际排版行数，单行=1 / Actual row count, 1 for single-line */
 } gt_latex_metrics_t;
 
 /* ----------------------------------------------------------------

@@ -109,6 +109,8 @@
         uint16_t            metrics_w;  /* Cached width */
         uint16_t            metrics_h;  /* Cached height */
         uint16_t            metrics_axis; /* Cached axis */
+        uint8_t             metrics_wrapped; /* 1 if LaTeX auto-wrapped */
+        uint8_t             metrics_row_count; /* Cached row count */
         uint8_t             prepared;   /* 1 if parse+layout is ready */
     } gt_md_latex_cache_t;
 
@@ -119,7 +121,8 @@
         gt_md_node_base_t  base;        /* 8B */
         const char        *formula;    /* LaTeX 字符串指针（零拷贝）/ Formula pointer (zero-copy) 8B */
         uint16_t           formula_len;/* 公式字节长度 / Formula length  2B */
-        uint16_t           pad;        /* 对齐填充 / Padding             2B */
+        uint8_t            wrapped;    /* 1 if internal LaTeX wrap happened */
+        uint8_t            row_count;  /* Actual LaTeX row count */
         gt_md_latex_cache_t *cache;    /* Prepared LaTeX parse/layout cache */
     } gt_md_node_latex_t;               /* 20B total */
 

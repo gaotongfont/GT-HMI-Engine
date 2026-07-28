@@ -192,7 +192,7 @@ typedef enum {
 /* AUTO 模式下的偏差阈值（axis 与 h/2 的最大差值比例）
  * Deviation threshold in AUTO mode (max ratio of |axis - h/2| to h) */
 #ifndef GT_MD_CFG_AXIS_AUTO_THRESHOLD
-    #define GT_MD_CFG_AXIS_AUTO_THRESHOLD  0.15f  /* 15% */
+    #define GT_MD_CFG_AXIS_AUTO_THRESHOLD  0.3f  /* 30% */
 #endif
 
 /* ----------------------------------------------------------------
