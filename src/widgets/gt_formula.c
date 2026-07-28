@@ -52,6 +52,8 @@ typedef struct _gt_formula_s {
 
     gt_formula_cache_mode_t cache_mode;
     uint8_t cache_dirty;    // 1: need to rebuild cache, 0: need @ md_cache_ready and latex_cache_ready to be checked
+
+    uint8_t md_latex_mode;
 }_gt_formula_st;
 
 
@@ -381,6 +383,7 @@ static int _formula_build_md_cache(gt_obj_st * obj)
     }
 
 #if GT_MD_ENABLE
+    gt_md_set_latex_mode(style->md_latex_mode);
     int ret = gt_md_parse_and_layout(style->text, style->text_len, style->max_width,
                             &style->md_parser, &style->md_root, &style->md_layout);
     if (ret != GT_MD_OK) {
@@ -806,6 +809,18 @@ gt_formula_cache_mode_t gt_formula_get_cache_mode(gt_obj_st* obj)
     }
     return ((_gt_formula_st *)obj)->cache_mode;
 }
+
+
+GT_ATTRIBUTE_RAM_TEXT
+void gt_formula_set_md_latex_mode(gt_obj_st* obj, uint8_t mode)
+{
+    if (false == gt_obj_is_type(obj, OBJ_TYPE)) {
+        return ;
+    }
+    _gt_formula_st * style = (_gt_formula_st * )obj;
+    style->md_latex_mode = mode;
+}
+
 
 /* end of file ----------------------------------------------------------*/
 #endif

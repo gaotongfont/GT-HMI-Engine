@@ -43,8 +43,8 @@ typedef enum {
  * @brief 公式缓存模式 / Formula cache mode
  */
 typedef enum {
-    GT_FORMULA_CACHE_MODE_PERSIST = 0,  /* 保留缓存 / Keep cache */
-    GT_FORMULA_CACHE_MODE_NONE    = 1,  /* 不保留缓存 / No cache retention */
+    GT_FORMULA_CACHE_MODE_PERSIST = 0,  /* 保留缓存,  / Keep cache */
+    GT_FORMULA_CACHE_MODE_NONE,         /* 不保留缓存 / No cache retention */
 } gt_formula_cache_mode_t;
 
 typedef struct {
@@ -123,7 +123,16 @@ void gt_formula_set_cache_mode(gt_obj_st* obj, gt_formula_cache_mode_t cache_mod
  */
 gt_formula_cache_mode_t gt_formula_get_cache_mode(gt_obj_st* obj);
 
-
+/**
+ * @brief 设置 GT-MD 内部 LaTeX 渲染模式 / Set internal LaTeX render mode for GT-MD
+ * @param obj formula 对象 / formula object
+ * @param mode 目标模式 / Target mode @ gt_md_latex_mode_t
+ *        GT_MD_LATEX_MODE_DIRECT: render 阶段直接调用 gt_latex_draw()
+ *        GT_MD_LATEX_MODE_PREPARED: layout 阶段准备 cache，render 阶段只调用 gt_latex_render()
+ *
+ * @note 若 GT_MD_CFG_LATEX_MODE_FIXED == 1，则该接口不改变实际模式
+ */
+void gt_formula_set_md_latex_mode(gt_obj_st* obj, uint8_t mode);
 
 #endif /* GT_CFG_ENABLE_FORMULA */
 //
