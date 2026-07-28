@@ -59,6 +59,25 @@
     void gt_md_get_spacing(gt_md_spacing_t *spacing);
 
     /* ----------------------------------------------------------------
+     * 全局 LaTeX 模式配置（运行时可覆盖，除非被编译期固定）
+     * Global LaTeX mode config (runtime override unless compile-time fixed)
+     * ---------------------------------------------------------------- */
+
+    /**
+     * @brief 设置 GT-MD 内部 LaTeX 渲染模式 / Set internal LaTeX render mode for GT-MD
+     * @param mode 目标模式 / Target mode
+     *
+     * @note 若 GT_MD_CFG_LATEX_MODE_FIXED == 1，则该接口不改变实际模式
+     */
+    void gt_md_set_latex_mode(gt_md_latex_mode_t mode);
+
+    /**
+     * @brief 获取当前 GT-MD 内部 LaTeX 渲染模式 / Get current internal LaTeX render mode
+     * @return 当前模式 / Current mode
+     */
+    gt_md_latex_mode_t gt_md_get_latex_mode(void);
+
+    /* ----------------------------------------------------------------
      * 一体化接口（推荐）/ All-in-one API (recommended)
      * ---------------------------------------------------------------- */
 

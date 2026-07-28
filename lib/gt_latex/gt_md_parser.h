@@ -14,6 +14,9 @@
 
     #include <stdint.h>
     #include "gt_md_lexer.h"
+    #include "gt_latex_lexer.h"
+    #include "gt_latex_parser.h"
+    #include "gt_latex_layout.h"
 
     /* ----------------------------------------------------------------
      * AST 节点类型枚举 / AST node type enum
@@ -96,6 +99,20 @@
     } gt_md_node_container_t;           /* 24B total */
 
     /* ----------------------------------------------------------------
+     * LaTeX cache（供 Markdown layout/render 分离使用）
+     * Cached GT-LaTeX parse/layout result for Markdown nodes
+     * ---------------------------------------------------------------- */
+    typedef struct {
+        gt_latex_lexer_t    lexer;      /* LaTeX lexer lifetime owner */
+        gt_latex_parser_t   parser;     /* Holds LaTeX AST */
+        gt_latex_layout_t   layout;     /* Prepared layout for direct render */
+        uint16_t            metrics_w;  /* Cached width */
+        uint16_t            metrics_h;  /* Cached height */
+        uint16_t            metrics_axis; /* Cached axis */
+        uint8_t             prepared;   /* 1 if parse+layout is ready */
+    } gt_md_latex_cache_t;
+
+    /* ----------------------------------------------------------------
      * LaTeX 节点（行内/块级公式）/ LaTeX node (inline or block formula)
      * ---------------------------------------------------------------- */
     typedef struct {
@@ -103,6 +120,7 @@
         const char        *formula;    /* LaTeX 字符串指针（零拷贝）/ Formula pointer (zero-copy) 8B */
         uint16_t           formula_len;/* 公式字节长度 / Formula length  2B */
         uint16_t           pad;        /* 对齐填充 / Padding             2B */
+        gt_md_latex_cache_t *cache;    /* Prepared LaTeX parse/layout cache */
     } gt_md_node_latex_t;               /* 20B total */
 
     /* ----------------------------------------------------------------

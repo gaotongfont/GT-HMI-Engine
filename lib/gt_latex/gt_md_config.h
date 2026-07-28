@@ -63,6 +63,25 @@
 #endif
 
 /* ----------------------------------------------------------------
+ * Markdown 内部 LaTeX 渲染模式 / Internal LaTeX render mode for Markdown
+ * ---------------------------------------------------------------- */
+typedef enum {
+    GT_MD_LATEX_MODE_DIRECT   = 0, /* render 阶段直接调用 gt_latex_draw() */
+    GT_MD_LATEX_MODE_PREPARED = 1  /* layout 阶段准备 cache，render 阶段只调用 gt_latex_render() */
+} gt_md_latex_mode_t;
+
+/* 是否固定 LaTeX mode（1=固定为编译期默认值，0=允许运行时切换）
+ * Whether to fix LaTeX mode at compile time (1=fixed, 0=runtime switchable) */
+#ifndef GT_MD_CFG_LATEX_MODE_FIXED
+    #define GT_MD_CFG_LATEX_MODE_FIXED 0
+#endif
+
+/* 默认 LaTeX mode / Default LaTeX mode */
+#ifndef GT_MD_CFG_LATEX_MODE_DEFAULT
+    #define GT_MD_CFG_LATEX_MODE_DEFAULT GT_MD_LATEX_MODE_DIRECT
+#endif
+
+/* ----------------------------------------------------------------
  * 内存参数 / Memory parameters
  * ---------------------------------------------------------------- */
 

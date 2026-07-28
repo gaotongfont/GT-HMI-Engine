@@ -38,6 +38,7 @@
         uint16_t                total_h;    /* 渲染总高度 / Total render height */
         uint16_t                max_width;  /* 最大宽度约束 / Max width constraint */
         gt_md_spacing_t         spacing;    /* 间距配置 / Spacing config */
+        gt_md_latex_mode_t      latex_mode; /* LaTeX mode snapshot used by this layout */
     } gt_md_layout_t;
 
     /* ----------------------------------------------------------------
