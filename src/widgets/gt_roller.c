@@ -425,7 +425,16 @@ static GT_ATTRIBUTE_RAM_TEXT void _reset_scroll_size(gt_obj_st * obj) {
     _resize_display_area_height(obj);
     /** set position and scroll default position, top margin half of space y size */
 
-    obj->process_attr.scroll.y = (style->count_of_show >> 1) * (obj->area.h / style->count_of_show);
+    if (GT_ROLLER_MODE_INFINITE == style->reg.mode) {
+        uint16_t _page_count = style->count_total / GT_ROLLER_INFINITE_PAGES_COUNT;
+        style->selected = (GT_ROLLER_INFINITE_PAGES_COUNT >> 1) * _page_count;
+        /* 直接计算有效区间内的 scroll.y，避免 _normal_limit_y wrap 的截断误差 */
+        obj->process_attr.scroll.y = (style->count_of_show >> 1) * (obj->area.h / style->count_of_show)
+            - (gt_size_t)style->selected * (obj->area.h / style->count_of_show);
+    } else {
+        style->selected = 0;
+        obj->process_attr.scroll.y = (style->count_of_show >> 1) * (obj->area.h / style->count_of_show);
+    }
     _scroll_text_handler(obj);
 }
 
@@ -522,6 +531,8 @@ void gt_roller_set_options(gt_obj_st * obj, char * options, gt_roller_mode_em mo
     if (false == _set_mode(style, mode)) {
         return;
     }
+    /* 重置 snap 状态，防止后续 gt_roller_set_selected 被 _SCROLL_SNAP_READY 阻塞 */
+    style->reg.state = _SCROLL_SNAP_NONE;
 
     if (GT_ROLLER_MODE_NORMAL == mode) {
         _create_text(obj);
@@ -571,6 +582,8 @@ void gt_roller_set_options_numb(gt_obj_st* obj, gt_roller_mode_em mode, \
     if (false == _set_mode(style, mode)) {
         return;
     }
+    /* 重置 snap 状态，防止后续 gt_roller_set_selected 被阻塞 */
+    style->reg.state = _SCROLL_SNAP_NONE;
 
     uint16_t len = fmt ? strlen(fmt) : 0;
     char* buffer = gt_mem_malloc(len + 4);
