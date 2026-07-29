@@ -359,24 +359,12 @@ extern "C" {
 
 #ifndef GT_VEC_GRAY1_SMOOTH
     /**
-     * @brief 1: enable 3x3 box-filter smoothing for VEC font gray=1, 0: disabled
-     *      default: 1
+     * @brief 1: enable blend-time 3x3 weighted smoothing for VEC font gray=1.
+     *        0: disabled — use raw 1-bit rendering.
+     *        This approach computes smooth opacity during blending (zero extra memory).
+     *        default: 1
      */
     #define GT_VEC_GRAY1_SMOOTH         1
-#endif
-
-#ifndef GT_VEC_SMOOTH_MAX_SIZE
-    /**
-     * @brief 矢量字体 gray=1 平滑的最大字号阈值 (像素).
-     *        超过此值的字符不做软件平滑, 直接以 1-bit 渲染.
-     *        大字号本身已足够清晰, 且平滑会带来大量临时内存和 CPU 开销.
-     *        设为 0 表示不限制. 默认 96.
-     * @brief Maximum font size threshold (in pixels) for vector fonts with gray=1 to apply anti-aliasing.
-     *      Characters larger than this value will not be software anti-aliased and will be rendered directly as 1-bit.
-     *      Large font sizes are already sufficiently clear, and anti-aliasing would incur significant temporary memory and CPU overhead.
-     *      Setting to 0 means no limit. Default is 96.
-     */
-    #define GT_VEC_SMOOTH_MAX_SIZE      96
 #endif
 
 #ifndef GT_USE_MODE_SRC

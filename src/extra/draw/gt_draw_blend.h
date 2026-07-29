@@ -63,6 +63,8 @@ void gt_draw_blend(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
 
 void gt_draw_blend_text(struct _gt_draw_ctx_s *draw_ctx, const gt_draw_blend_dsc_st * dsc,
                         uint16_t font_size, uint16_t dot_byte, uint8_t gray, const uint8_t* res, gt_font_style_st font_style);
+void gt_draw_blend_text_vec_gray1_smooth(struct _gt_draw_ctx_s *draw_ctx, const gt_draw_blend_dsc_st * dsc,
+                                         uint16_t font_size, uint16_t dot_byte, const uint8_t* res, gt_font_style_st font_style);
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

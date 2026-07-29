@@ -851,99 +851,6 @@ _font_scale_apply(gt_font_st * font, uint8_t gray, uint8_t * out_gray,
 }
 
 /**
- * @brief 3x3 box-filter anti-aliasing: 1-bit VEC glyph -> smooth 4-bit output.
- *        Uses a sliding 3-row scanline buffer. Zero division, integer only.
- *
- * @param font      font structure; font->res updated to new 4-bit buffer on success
- * @param out_gray  [out] set to 4 on success
- * @param src_byte  bytes per row in original 1-bit buffer
- * @param src_h     glyph height in pixels (font->info.size often)
- * @return dst_byte on success, 0 on allocation failure
- */
-static uint16_t GT_ATTRIBUTE_RAM_TEXT
-_font_vec_smooth(gt_font_st * font, uint8_t * out_gray, uint16_t src_byte, uint16_t src_h)
-{
-    /* 3x3 box-filter LUT: count 0~9 -> 4bit value 0~15
-     * Mild non-linear curve:
-     *   count 1    → 0   (eliminate isolated ghost pixels)
-     *   count 2    → 2   (keep light anti-alias at fine edges)
-     *   count 3-4  → 5/7 (gradual ramp for smooth edges)
-     *   count 5-6  → 9/11 (solid edge)
-     *   count 7-9  → 14-15 (interior at full brightness)
-     * Compared to old linear {0,2,3,5,7,8,10,12,13,15}:
-     * eliminates ghost halo (count=1→0) and keeps interior bright. */
-    static const uint8_t _box3x3_lut[10] = {0, 0, 2, 5, 7, 9, 11, 14, 15, 15};
-
-    uint16_t src_w = (uint16_t)(src_byte << 3);  /* 1bit: 8 pixels per byte */
-    if (src_w < 1 || src_h < 1) { return 0; }
-
-    /* 4-bit destination: 2 pixels per byte */
-    uint16_t dst_byte = (uint16_t)(((src_w << 2) + 7u) >> 3);
-    uint16_t dst_size = dst_byte * src_h;
-    uint8_t * dst_buf = (uint8_t *)gt_mem_malloc(dst_size);
-    if (NULL == dst_buf) { return 0; }
-    gt_memset_0(dst_buf, dst_size);
-
-    /* 3-row buffers: rows[0]=above(y-1|y), rows[1]=y, rows[2]=below(y+1|y) */
-    uint8_t * rows[3];
-    uint16_t i;
-    for (i = 0; i < 3; i++) {
-        rows[i] = (uint8_t *)gt_mem_malloc(src_w);
-        if (NULL == rows[i]) {
-            while (i--) { gt_mem_free(rows[i]); }
-            gt_mem_free(dst_buf);
-            return 0;
-        }
-    }
-
-    /* Pre-fill rows[0] with y=0 (edge: duplicate as "above") */
-    for (uint16_t x = 0; x < src_w; x++) {
-        rows[0][x] = _font_dot_read(font->res, src_byte, x, 0, 1);
-    }
-
-    for (uint16_t y = 0; y < src_h; y++) {
-        /* Fill rows[1] = current row */
-        for (uint16_t x = 0; x < src_w; x++) {
-            rows[1][x] = _font_dot_read(font->res, src_byte, x, y, 1);
-        }
-
-        /* Fill rows[2] = next row (or duplicate current at bottom edge) */
-        uint16_t ny = (uint16_t)(y + 1);
-        if (ny < src_h) {
-            for (uint16_t x = 0; x < src_w; x++) {
-                rows[2][x] = _font_dot_read(font->res, src_byte, x, ny, 1);
-            }
-        } else {
-            for (uint16_t x = 0; x < src_w; x++) {
-                rows[2][x] = rows[1][x];
-            }
-        }
-
-        /* 3x3 box filter */
-        for (uint16_t x = 0; x < src_w; x++) {
-            uint8_t cnt = 0;
-            uint16_t xl = (x > 0) ? (uint16_t)(x - 1) : 0;
-            uint16_t xr = (x + 1 < src_w) ? (uint16_t)(x + 1) : x;
-            for (uint16_t xc = xl; xc <= xr; xc++) { cnt += rows[0][xc]; }
-            for (uint16_t xc = xl; xc <= xr; xc++) { cnt += rows[1][xc]; }
-            for (uint16_t xc = xl; xc <= xr; xc++) { cnt += rows[2][xc]; }
-            _font_dot_write(dst_buf, dst_byte, x, y, 4, _box3x3_lut[cnt]);
-        }
-
-        /* Shift: rows[0] = rows[1] for next iteration */
-        for (uint16_t x = 0; x < src_w; x++) {
-            rows[0][x] = rows[1][x];
-        }
-    }
-
-    for (i = 0; i < 3; i++) { gt_mem_free(rows[i]); }
-
-    font->res = dst_buf;
-    *out_gray = 4;
-    return dst_byte;
-}
-
-/**
  * @brief 渲染省略号字符序列（draw_text_single_line 末尾使用）
  */
 static GT_ATTRIBUTE_RAM_TEXT void _draw_omit_chars(
@@ -1049,21 +956,6 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
         uint8_t * scaled_res = NULL;          /* non-NULL: scaled buffer to free after blend */
         uint8_t * font_buf_res_orig = tmp_font->res;  /* original res to restore after blend */
 
-        /* VEC gray=1 -> auto-smooth to 4-bit (before scale_size, same size)
-         * Skip for large fonts exceeding GT_VEC_SMOOTH_MAX_SIZE to save RAM/CPU.
-         * GT_VEC_SMOOTH_MAX_SIZE == 0 means no limit. */
-#if GT_VEC_GRAY1_SMOOTH
-        if (font_gray == 1 && GT_FONT_TYPE_FLAG_VEC == dot_ret.type
-            && (GT_VEC_SMOOTH_MAX_SIZE == 0 || info_size <= GT_VEC_SMOOTH_MAX_SIZE)) {
-            uint16_t sm_byte = _font_vec_smooth(tmp_font, &font_gray, byte_width, info_size);
-            if (sm_byte > 0) {
-                scaled_res   = tmp_font->res;
-                byte_width   = sm_byte;
-                area_font->w = (byte_width / font_gray) << 3;  /* font_gray now 4 */
-            }
-        }
-#endif
-
         if (scale_size > 0 && scale_size != info_size) {
             uint16_t scaled_byte = _font_scale_apply(tmp_font, font_gray, &font_gray, byte_width, info_size, scale_size);
             if (scaled_byte > 0) {
@@ -1105,13 +997,20 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
         if (off_point.x | off_point.y) {
             area_font->x += off_point.x;
             area_font->y += off_point.y;
+        }
+#if GT_VEC_GRAY1_SMOOTH
+        if (font_gray == 1 && dot_ret.type == GT_FONT_TYPE_FLAG_VEC) {
+            gt_draw_blend_text_vec_gray1_smooth(draw_ctx, blend_dsc, render_size,
+                                                byte_width, tmp_font->res, style_reg);
+        } else
+#endif
+        {
             gt_draw_blend_text(draw_ctx, blend_dsc, render_size,
                                 byte_width, font_gray, (const uint8_t*)tmp_font->res, style_reg);
+        }
+        if (off_point.x | off_point.y) {
             area_font->x -= off_point.x;
             area_font->y -= off_point.y;
-        } else {
-            gt_draw_blend_text(draw_ctx, blend_dsc, render_size,
-                                byte_width, font_gray, (const uint8_t*)tmp_font->res, style_reg);
         }
 
         area_font->y -= height_off;
