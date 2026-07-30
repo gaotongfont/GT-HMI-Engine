@@ -128,7 +128,7 @@ static void _init_cb(gt_obj_st * obj)
     arc_attr.end_angle = style->bg.end_angle;
     arc_attr.width = style->bg.width;
     arc_attr.img = style->bg.img.src;
-    arc_attr.raw_img = style->bg.img.src ? NULL : &style->bg.img.raw;
+    arc_attr.raw_img = (style->bg.img.raw.header.w != 0) ? &style->bg.img.raw : NULL;
 #if GT_USE_FILE_HEADER
     arc_attr.file_header = gt_file_header_param_check_valid(&style->bg.img.fh);
 #endif
