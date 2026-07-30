@@ -2477,8 +2477,8 @@ _disp_font:
         if (dsc->opa < GT_OPA_MIN) { goto next_line_lb; }
 
         /** ------------- Display current line chars ------------- */
-        tmp_font.info.size = font_size;
         while (idx_2 < idx_len) {
+            tmp_font.info.size = font_size;
 #if _GT_FONT_ENABLE_CONVERTOR
             if (bidi_pos < bidi_len && idx_2 == bidi[bidi_pos].idx) {
                 tmp_font.utf8 = (char * )&txt_2[idx_2];
@@ -2772,8 +2772,8 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
             view_width = coords_w;
         }
     }
-    tmp_font.info.size = font_size;
     while (idx < txt_len) {
+        tmp_font.info.size = font_size;
         if (0x0A == txt[idx]) {
             ++idx;
             ++idx_len;
@@ -2863,9 +2863,9 @@ draw_text_single_line(_gt_draw_ctx_st * draw_ctx, const gt_attr_font_st * dsc, c
 
     idx = 0;
     area_font.h = font_disp_h;
-    tmp_font.info.size = font_size;
     if (dsc->opa >= GT_OPA_MIN)
     while (idx < idx_len) {
+        tmp_font.info.size = font_size;
 #if _GT_FONT_ENABLE_CONVERTOR
         if (bidi_pos < bidi_len && idx == bidi[bidi_pos].idx) {
             tmp_font.utf8 = (char * )&txt[idx];
