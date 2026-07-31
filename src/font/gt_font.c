@@ -2329,9 +2329,13 @@ bool gt_right_to_left_handler(const gt_font_st* fonts, uint8_t* ret_text, uint8_
     gt_bidi_st tmp_bidi;
 
     while(bidi_s < bidi_e) {
+
+#if 0
         if (r2l_lan == FONT_LAN_ARABIC && bidi_len != alb_count) {
             break;
         }
+#endif
+
         tmp_bidi = bidi[bidi_s];
         bidi[bidi_s] = bidi[bidi_e];
         bidi[bidi_e] = tmp_bidi;
