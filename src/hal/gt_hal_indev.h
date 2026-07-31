@@ -241,6 +241,11 @@ typedef struct {
     uint8_t right          : 1;
 }gt_indev_over_scroll_res_st;
 
+typedef struct {
+    int32_t x;
+    int32_t y;
+} gt_indev_throw_remain_st;
+
 /**
  * @brief input device information
  */
@@ -275,6 +280,7 @@ typedef struct _gt_indev_s {
             gt_indev_over_scroll_res_st over_scroll;
             gt_point_st over_scroll_prev;
             int32_t throw_velocity;         ///< px/s The begin velocity of throw
+            gt_indev_throw_remain_st throw_remain;   ///< Q10 fractional remain for throw distance accumulation
             uint16_t diff_points;           /** record scrolling valid distance points number */
 #endif
             uint16_t gesture : 3;           ///< @ref gt_dir_et gesture of touch input device point
