@@ -42,6 +42,7 @@
 #define _Y6    1150
 #define _Y7    1300
 #define _Y8    1630
+#define _Y9    2120
 
 /* Label height + gap before content */
 #define _LH    34   /* 30px label + 4px gap */
@@ -72,6 +73,22 @@ static gt_obj_st * _line(gt_obj_st * parent,
     gt_line_set_end_point(ln, (uint16_t)x2, (uint16_t)y2);
     gt_line_set_brush_type(ln, brush);
     gt_obj_set_opa(ln, opa);
+    return ln;
+}
+
+static gt_obj_st * _polyline(gt_obj_st * parent, gt_point_st const * points,
+                             uint16_t count, uint16_t width, gt_color_t color,
+                             uint8_t opa)
+{
+    gt_obj_st * ln = gt_line_create(parent);
+    if (NULL == ln) { return NULL; }
+    gt_line_set_color(ln, color);
+    gt_line_set_line_width(ln, width);
+    gt_obj_set_opa(ln, opa);
+    if (GT_RES_OK != gt_line_set_points(ln, points, count)) {
+        gt_obj_destroy(ln);
+        return NULL;
+    }
     return ln;
 }
 
@@ -381,6 +398,27 @@ static void _sec8(gt_obj_st * scr)
     gt_line_set_dash(ln, 1, 8);
 }
 
+/* ── Section 9: translucent polyline joints ────────────────────────── */
+static void _sec9(gt_obj_st * scr)
+{
+    static gt_point_st const zigzag[] = {
+        {  40, _Y9 + 100 }, { 190, _Y9 +  45 }, { 340, _Y9 + 100 },
+        { 490, _Y9 +  45 }, { 640, _Y9 + 100 }, { 780, _Y9 +  45 },
+    };
+    static gt_point_st const sharp_turn[] = {
+        {  40, _Y9 + 230 }, { 220, _Y9 + 230 }, { 220, _Y9 + 150 },
+        { 400, _Y9 + 150 }, { 400, _Y9 + 230 }, { 580, _Y9 + 230 },
+        { 580, _Y9 + 150 }, { 760, _Y9 + 150 },
+    };
+
+    _lbl(scr, 4, _Y9, "[9] Polyline joints: 50% OPA, no darker overlap at vertices");
+    _lbl(scr, 4, _Y9 + 28, "round vertices are drawn once; compare joint color with segment body");
+    _polyline(scr, zigzag, sizeof(zigzag) / sizeof(zigzag[0]),
+              16, gt_color_hex(0x00BFFF), GT_OPA_50);
+    _polyline(scr, sharp_turn, sizeof(sharp_turn) / sizeof(sharp_turn[0]),
+              16, gt_color_hex(0xFF8800), GT_OPA_50);
+}
+
 
 
 /**
@@ -395,6 +433,7 @@ static void _sec8(gt_obj_st * scr)
  *   [6] Near-H / Near-V AA stress — tiny angle increments
  *   [7] Special angles — near-H/V/45 with w=3
  *   [8] Dash / Dot lines — H/V/diagonal/dot styles
+ *   [9] Polyline joints — translucent shared-vertex overlap check
  */
 gt_obj_st * gt_examples_line(void)
 {
@@ -409,6 +448,7 @@ gt_obj_st * gt_examples_line(void)
     _sec6(scr);
     _sec7(scr);
     _sec8(scr);
+    _sec9(scr);
 
     GT_EXAMPLE_ADD_BACK_BTN(scr);
     return scr;
