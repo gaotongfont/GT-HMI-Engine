@@ -30,16 +30,19 @@ typedef struct _gt_line_s {
     gt_obj_st base;
     gt_area_st prev_pos;
     gt_attr_line_st line;
+    gt_point_st * points;
+    uint16_t point_count;
 }_gt_line_st;
 
 
 /* static variables -----------------------------------------------------*/
 static void _init_cb(gt_obj_st * obj);
+static void _deinit_cb(gt_obj_st * obj);
 static void _event_cb(struct gt_obj_s * obj, gt_event_st * e);
 
 static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_line_class = {
     ._init_cb      = _init_cb,
-    ._deinit_cb    = (_gt_deinit_cb_t)NULL,
+    ._deinit_cb    = _deinit_cb,
     ._event_cb     = _event_cb,
     .type          = OBJ_TYPE,
     .size_style    = sizeof(_gt_line_st)
@@ -68,7 +71,19 @@ _move_pos(gt_obj_st * obj) {
     style->start.y += diff.y;
     style->end.x += diff.x;
     style->end.y += diff.y;
+    for (uint16_t i = 0; i < widget->point_count; i++) {
+        widget->points[i].x += diff.x;
+        widget->points[i].y += diff.y;
+    }
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+static void _reset_points(_gt_line_st * widget) {
+    if (widget->points) {
+        gt_mem_free(widget->points);
+        widget->points = NULL;
+    }
+    widget->point_count = 0;
 }
 
 /**
@@ -86,8 +101,33 @@ static void _init_cb(gt_obj_st * obj) {
     if (_is_move_pos(&widget->prev_pos, &obj->area)) {
         _move_pos(obj);
     }
-    gt_draw_line(obj->draw_ctx, style, &obj->area);
+    if (widget->point_count >= 2) {
+        gt_attr_line_st segment = *style;
+        gt_attr_point_st point = {
+            .line = style->line,
+        };
+
+        /* Segment bodies have square caps. Each vertex is then painted once,
+         * preventing two translucent round caps from accumulating at joints. */
+        segment.line.brush = GT_BRUSH_TYPE_RECT;
+        for (uint16_t i = 1; i < widget->point_count; i++) {
+            segment.start = widget->points[i - 1];
+            segment.end = widget->points[i];
+            gt_draw_line(obj->draw_ctx, &segment, &obj->area);
+        }
+        point.line.brush = GT_BRUSH_TYPE_ROUND;
+        for (uint16_t i = 0; i < widget->point_count; i++) {
+            point.pos = widget->points[i];
+            gt_draw_point(obj->draw_ctx, &point, &obj->area);
+        }
+    } else {
+        gt_draw_line(obj->draw_ctx, style, &obj->area);
+    }
     gt_memcpy(&widget->prev_pos, &obj->area, sizeof(gt_area_st));
+}
+
+static void _deinit_cb(gt_obj_st * obj) {
+    _reset_points((_gt_line_st *)obj);
 }
 
 /**
@@ -111,10 +151,24 @@ static void _resize_area(gt_obj_st * line, gt_attr_line_st * style) {
     uint16_t const w = style->line.width;
     /* +1: endpoint pixel is inclusive; +w: half-width margin on both sides.
      * For round caps the circle radius <= half_w, so half_w margin is sufficient. */
-    line->area.x = GT_MIN(style->start.x, style->end.x) - (w >> 1);
-    line->area.y = GT_MIN(style->start.y, style->end.y) - (w >> 1);
-    line->area.w = gt_abs(style->end.x - style->start.x) + w + 1;
-    line->area.h = gt_abs(style->end.y - style->start.y) + w + 1;
+    gt_size_t min_x = style->start.x;
+    gt_size_t min_y = style->start.y;
+    gt_size_t max_x = style->end.x;
+    gt_size_t max_y = style->end.y;
+    if (widget->point_count) {
+        min_x = max_x = widget->points[0].x;
+        min_y = max_y = widget->points[0].y;
+        for (uint16_t i = 1; i < widget->point_count; i++) {
+            min_x = GT_MIN(min_x, widget->points[i].x);
+            min_y = GT_MIN(min_y, widget->points[i].y);
+            max_x = GT_MAX(max_x, widget->points[i].x);
+            max_y = GT_MAX(max_y, widget->points[i].y);
+        }
+    }
+    line->area.x = min_x - (w >> 1);
+    line->area.y = min_y - (w >> 1);
+    line->area.w = max_x - min_x + w + 1;
+    line->area.h = max_y - min_y + w + 1;
 
     gt_memcpy(&widget->prev_pos, &line->area, sizeof(gt_area_st));
 }
@@ -159,6 +213,7 @@ void gt_line_set_start_point(gt_obj_st * line, uint16_t xs, uint16_t ys)
     }
     _gt_line_st * widget = (_gt_line_st * )line;
     gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
+    _reset_points(widget);
     style->start.x = xs;
     style->start.y = ys;
 
@@ -173,11 +228,37 @@ void gt_line_set_end_point(gt_obj_st * line, uint16_t xe, uint16_t ye)
     }
     _gt_line_st * widget = (_gt_line_st * )line;
     gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
+    _reset_points(widget);
     style->end.x = xe;
     style->end.y = ye;
 
     _resize_area(line, style);
     gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+}
+
+gt_res_t gt_line_set_points(gt_obj_st * line, gt_point_st const * points, uint16_t count)
+{
+    if (false == gt_obj_is_type(line, OBJ_TYPE) || NULL == points || count < 2) {
+        return GT_RES_INV;
+    }
+
+    gt_point_st * new_points = gt_mem_malloc((uint32_t)count * sizeof(gt_point_st));
+    if (NULL == new_points) {
+        return GT_RES_INV;
+    }
+    gt_memcpy(new_points, points, (uint32_t)count * sizeof(gt_point_st));
+
+    _gt_line_st * widget = (_gt_line_st *)line;
+    gt_attr_line_st * style = (gt_attr_line_st *)&widget->line;
+    _reset_points(widget);
+    widget->points = new_points;
+    widget->point_count = count;
+    style->start = points[0];
+    style->end = points[count - 1];
+
+    _resize_area(line, style);
+    gt_event_send(line, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
+    return GT_RES_OK;
 }
 
 gt_res_t gt_line_get_start_point(gt_obj_st * line, gt_point_st * ret_p)
@@ -217,6 +298,7 @@ void gt_line_set_hor_line(gt_obj_st * line, uint16_t length)
     }
     _gt_line_st * widget = (_gt_line_st * )line;
     gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
+    _reset_points(widget);
     style->start.x = line->area.x;
     style->start.y = line->area.y + (widget->line.line.width >> 1);
     style->end.x = line->area.x + length;
@@ -233,6 +315,7 @@ void gt_line_set_ver_line(gt_obj_st * line, uint16_t length)
     }
     _gt_line_st * widget = (_gt_line_st * )line;
     gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
+    _reset_points(widget);
     style->start.x = line->area.x + (widget->line.line.width >> 1);
     style->start.y = line->area.y;
     style->end.x = line->area.x;

@@ -47,6 +47,17 @@ void gt_line_set_start_point(gt_obj_st * line, uint16_t xs, uint16_t ys);
 void gt_line_set_end_point(gt_obj_st * line, uint16_t xe, uint16_t ye);
 
 /**
+ * @brief Set a polyline. Each adjacent pair of points is drawn as a segment.
+ *
+ * Points are copied by the widget; the caller may reuse the input array after
+ * this function returns. Shared vertices are rendered once, avoiding opacity
+ * accumulation where two translucent segments meet.
+ *
+ * @return GT_RES_OK on success, otherwise GT_RES_INV.
+ */
+gt_res_t gt_line_set_points(gt_obj_st * line, gt_point_st const * points, uint16_t count);
+
+/**
  * @brief Get line start point
  *
  * @param line
