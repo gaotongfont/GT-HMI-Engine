@@ -5162,3 +5162,83 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_polygon(
 }
 
 /* end ------------------------------------------------------------------*/
+
+/* Single-pass polyline rasterizer. Coverage is the union (minimum distance
+ * to any segment), so a translucent join is blended exactly once. */
+GT_ATTRIBUTE_RAM_TEXT void gt_draw_polyline(_gt_draw_ctx_st * draw_ctx,
+                                            gt_attr_line_st const * dsc,
+                                            gt_point_st const * points,
+                                            uint16_t count,
+                                            const gt_area_st * coords) {
+    if (NULL == draw_ctx || NULL == draw_ctx->buf || NULL == dsc ||
+        NULL == points || count < 2 || dsc->line.opa <= GT_OPA_MIN) return;
+    int16_t min_x = points[0].x, max_x = points[0].x;
+    int16_t min_y = points[0].y, max_y = points[0].y;
+    for (uint16_t i = 1; i < count; i++) {
+        min_x = GT_MIN(min_x, points[i].x); max_x = GT_MAX(max_x, points[i].x);
+        min_y = GT_MIN(min_y, points[i].y); max_y = GT_MAX(max_y, points[i].y);
+    }
+    /* Radius in Q8 pixels. Keep a one-pixel antialias fringe at the edge. */
+    int32_t radius = dsc->line.width ? ((int32_t)dsc->line.width << 7) : 128;
+    gt_area_st area = { min_x - (int16_t)(radius >> 8), min_y - (int16_t)(radius >> 8),
+        (uint16_t)(max_x - min_x + (radius >> 7) + 2),
+        (uint16_t)(max_y - min_y + (radius >> 7) + 2) };
+    int16_t x0 = GT_MAX(area.x, draw_ctx->buf_area.x);
+    int16_t y0 = GT_MAX(area.y, draw_ctx->buf_area.y);
+    int16_t x1 = GT_MIN((int16_t)(area.x + area.w - 1),
+                        (int16_t)(draw_ctx->buf_area.x + draw_ctx->buf_area.w - 1));
+    int16_t y1 = GT_MIN((int16_t)(area.y + area.h - 1),
+                        (int16_t)(draw_ctx->buf_area.y + draw_ctx->buf_area.h - 1));
+    if (x0 > x1 || y0 > y1) return;
+
+    gt_opa_t mask = 0;
+    gt_area_st pixel = {0, 0, 1, 1};
+    gt_draw_blend_dsc_st blend = {0};
+    blend.dst_area = &pixel; blend.mask_area = &pixel;
+    blend.mask_buf = &mask; blend.color_fill = dsc->line.color;
+    blend.opa = GT_OPA_COVER;
+    for (int16_t y = y0; y <= y1; y++) {
+        for (int16_t x = x0; x <= x1; x++) {
+            int32_t px = ((int32_t)x << 8) + 128;
+            int32_t py = ((int32_t)y << 8) + 128;
+            int32_t best = INT32_MAX;
+            for (uint16_t i = 1; i < count; i++) {
+                int32_t ax = (int32_t)points[i - 1].x << 8;
+                int32_t ay = (int32_t)points[i - 1].y << 8;
+                int32_t vx = ((int32_t)points[i].x << 8) - ax;
+                int32_t vy = ((int32_t)points[i].y << 8) - ay;
+                int64_t len2 = (int64_t)vx * vx + (int64_t)vy * vy;
+                int64_t t = len2 ? ((((int64_t)(px - ax) * vx + (int64_t)(py - ay) * vy) << 16) / len2) : 0;
+                if (t < 0) t = 0; else if (t > 65536) t = 65536;
+                if (dsc->line.dash_width && dsc->line.dash_gap && len2) {
+                    uint32_t len = 0;
+                    uint32_t root = (uint32_t)(len2 >> 16);
+                    for (uint32_t bit = 1u << 15; bit; bit >>= 1) {
+                        uint32_t trial = len | bit;
+                        if ((uint64_t)trial * trial <= root) len = trial;
+                    }
+                    uint32_t along = (uint32_t)(((uint64_t)len * (uint64_t)t) >> 16);
+                    uint32_t period = (uint32_t)dsc->line.dash_width + dsc->line.dash_gap;
+                    if ((along % period) >= dsc->line.dash_width) continue;
+                }
+                int32_t qx = ax + (int32_t)((vx * t) >> 16);
+                int32_t qy = ay + (int32_t)((vy * t) >> 16);
+                int32_t dx = px - qx, dy = py - qy;
+                int32_t dist2 = (int32_t)(((int64_t)dx * dx + (int64_t)dy * dy) >> 8);
+                if (dist2 < best) best = dist2;
+            }
+            int32_t radius2 = (radius * radius) >> 8;
+            int32_t inner_radius = GT_MAX(radius - 256, 0);
+            int32_t inner2 = (inner_radius * inner_radius) >> 8;
+            if (best < radius2) {
+                int32_t coverage = (best <= inner2) ? 255 :
+                    ((radius2 - best) * 255) / GT_MAX(radius2 - inner2, 1);
+                mask = (gt_opa_t)(((int32_t)dsc->line.opa * coverage) / 255);
+                if (mask > GT_OPA_MIN) {
+                    pixel.x = x; pixel.y = y;
+                    gt_draw_blend(draw_ctx, &blend);
+                }
+            }
+        }
+    }
+}

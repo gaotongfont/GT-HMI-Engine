@@ -103,18 +103,21 @@ static void _init_cb(gt_obj_st * obj) {
     }
     if (widget->point_count >= 2) {
         gt_attr_line_st segment = *style;
-        gt_attr_point_st point = {
-            .line = style->line,
-        };
-
-        /* Segment bodies have square caps. Each vertex is then painted once,
-         * preventing two translucent round caps from accumulating at joints. */
+        if (style->line.opa < GT_OPA_COVER) {
+            gt_draw_polyline(obj->draw_ctx, style, widget->points,
+                             widget->point_count, &obj->area);
+            gt_memcpy(&widget->prev_pos, &obj->area, sizeof(gt_area_st));
+            return;
+        }
+        /* Segment bodies use square caps. Do not paint an additional vertex:
+         * anti-aliased caps/vertices would blend twice at joins. */
         segment.line.brush = GT_BRUSH_TYPE_RECT;
         for (uint16_t i = 1; i < widget->point_count; i++) {
             segment.start = widget->points[i - 1];
             segment.end = widget->points[i];
             gt_draw_line(obj->draw_ctx, &segment, &obj->area);
         }
+        gt_attr_point_st point = { .line = style->line };
         point.line.brush = GT_BRUSH_TYPE_ROUND;
         for (uint16_t i = 0; i < widget->point_count; i++) {
             point.pos = widget->points[i];
