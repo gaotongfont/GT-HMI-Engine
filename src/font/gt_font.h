@@ -29,6 +29,7 @@ typedef enum {
     GT_FONT_TYPE_FLAG_VEC                  = 3,
 
     GT_FONT_TYPE_FLAG_EMOJI                = 6,
+    GT_FONT_TYPE_FLAG_DOT_MATRIX_A8        = 80,
 
 }gt_font_type_em;
 

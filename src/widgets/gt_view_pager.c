@@ -67,6 +67,8 @@
 #endif
 
 #define _TIP_BAR_OFFSET_Y               (_TIP_BAR_HEIGHT - _TIP_BAR_POINT_HEIGHT)
+#define _MULTI_PAGE_REBOUND_DISTANCE(width)  ((width) >> 2)
+#define _MULTI_PAGE_FORWARD_THRESHOLD(width) ((width) / 6)
 
 /* private typedef ------------------------------------------------------*/
 struct _reg_s {
@@ -76,6 +78,7 @@ struct _reg_s {
     uint16_t dir        : 1;     /** 0: horizontal, 1: vertical */
     uint16_t tip_pos    : 1;     /** 0: default(bottom/right), 1: opposite(top/left) */
     uint16_t bouncing   : 1;     /** 1: bounce-back animation in progress */
+    uint16_t multi_page_scroll : 1;
 };
 
 typedef struct _gt_view_pager_s {
@@ -297,7 +300,11 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _scrolling_handler(gt_obj_st * obj) {
     if (page_size && style->reg.count > 1) {
         gt_size_t scroll = is_ver ? c->process_attr.scroll.y : c->process_attr.scroll.x;
         gt_size_t total_min = -(gt_size_t)(style->reg.count - 1) * page_size;
-        if (gt_obj_is_scrolling(c) && !style->reg.bouncing) {
+        if (style->reg.multi_page_scroll && !style->reg.bouncing) {
+            gt_size_t rebound = _MULTI_PAGE_REBOUND_DISTANCE(page_size);
+            if (scroll > 0) scroll = GT_MIN(scroll, rebound);
+            else if (scroll < total_min) scroll = GT_MAX(scroll, total_min - rebound);
+        } else if (gt_obj_is_scrolling(c) && !style->reg.bouncing) {
             /** User dragging: apply damped over-scroll at boundaries, write back */
             if (scroll < total_min) {
                 gt_size_t over = scroll - total_min;
@@ -369,6 +376,25 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _scroll_end_handler(gt_obj_st * obj) {
 
     if (c->ignore_throw) {
         _statical_scroll_calc_new_page(obj);
+        return;
+    }
+    if (style->reg.multi_page_scroll && page_size && style->reg.count) {
+        uint16_t prev_idx = style->reg.index;
+        gt_size_t scroll_now = is_ver ? c->process_attr.scroll.y : c->process_attr.scroll.x;
+        gt_size_t total = -(gt_size_t)(style->reg.count - 1) * page_size;
+        if (scroll_now > 0) style->reg.index = 0;
+        else if (scroll_now < total) style->reg.index = style->reg.count - 1;
+        else {
+            uint16_t nearest = (uint16_t)((gt_abs(scroll_now) + (page_size >> 1)) / page_size);
+            style->reg.index = GT_MIN(nearest, (uint16_t)(style->reg.count - 1));
+            gt_size_t target = -(gt_size_t)style->reg.index * page_size;
+            gt_size_t offset = scroll_now - target;
+            if (style->reg.index == prev_idx && gt_abs(offset) >= _MULTI_PAGE_FORWARD_THRESHOLD(page_size)) {
+                if (offset < 0 && style->reg.index + 1 < style->reg.count) ++style->reg.index;
+                else if (offset > 0 && style->reg.index > 0) --style->reg.index;
+            }
+        }
+        gt_view_pager_scroll_to_fragment(obj, style->reg.index);
         return;
     }
     uint16_t prev_idx = style->reg.index;
@@ -475,11 +501,13 @@ static void _content_event_cb(gt_event_st * e) {
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_UP:
     case GT_EVENT_TYPE_INPUT_SCROLL_LEFT: {
+        if (style->reg.multi_page_scroll) { break; }
         gt_view_pager_scroll_to_fragment(vp, style->reg.index - 1);
         break;
     }
     case GT_EVENT_TYPE_INPUT_SCROLL_DOWN:
     case GT_EVENT_TYPE_INPUT_SCROLL_RIGHT: {
+        if (style->reg.multi_page_scroll) { break; }
         gt_view_pager_scroll_to_fragment(vp, style->reg.index + 1);
         break;
     }
@@ -587,11 +615,15 @@ void gt_view_pager_set_scroll_effect(gt_obj_st * obj, gt_view_pager_scroll_effec
     if (NULL == c) { return; }
     c->ignore_throw    = false;
     c->finger_unfollow = false;
+    style->reg.multi_page_scroll = false;
     if (GT_VIEW_PAGER_SCROLL_EFFECT_STATIC == effect) {
         c->ignore_throw    = true;
         c->finger_unfollow = true;
     } else if (GT_VIEW_PAGER_SCROLL_EFFECT_NO_FINGER_FOLLOW == effect) {
         c->finger_unfollow = true;
+    } else if (GT_VIEW_PAGER_SCROLL_EFFECT_MULTI_PAGE == effect) {
+        style->reg.multi_page_scroll = true;
+        c->scroll_throw_limit = 0;
     }
 }
 
@@ -634,8 +666,8 @@ void gt_view_pager_fragment_add_widget(gt_obj_st * view_pager, uint8_t fragment_
     if (false == gt_obj_is_child(child, content)) {
         gt_obj_st * old_parent = gt_obj_change_parent(child, content);
         _gt_obj_class_inherent_attr_from_parent(child, old_parent);
-        _init_child_prop(content);
     }
+    _init_child_prop(child);
     if (_child_is_group(child)) {
         _child_set_group_area(view_pager, child);
     }

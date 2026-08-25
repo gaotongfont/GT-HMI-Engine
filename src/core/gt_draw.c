@@ -27,6 +27,7 @@
 #include "gt_fs.h"
 
 #include "../font/gt_font.h"
+#include "../font/gt_font_ascii.h"
 #include "../font/gt_symbol.h"
 #include "gt_img_decoder.h"
 #include "gt_mask.h"
@@ -474,6 +475,26 @@ _gt_gray_and_dot_byte_get(uint8_t* gray, gt_font_size_t width, gt_font_st * font
     return dot_byte;
 }
 
+#if GT_VEC_GRAY2_EDGE_AA
+static GT_ATTRIBUTE_RAM_TEXT bool _use_vec_gray2_edge_aa(const gt_font_info_st *font_info)
+{
+    uint16_t ascii_option;
+    if (font_info->gray != 2 || font_info->size < GT_VEC_GRAY2_EDGE_AA_MIN_SIZE) return false;
+    ascii_option = gt_font_family_get_option(font_info->family, FONT_LAN_ASCII, font_info->cjk);
+    return gt_font_type_get(ascii_option) == GT_FONT_TYPE_FLAG_VEC;
+}
+#endif
+
+static GT_ATTRIBUTE_RAM_TEXT uint16_t _get_font_resource_len(const gt_font_info_st *font_info,
+                                                              uint16_t calculated_len)
+{
+    uint16_t option = gt_font_family_get_option(font_info->family, FONT_LAN_NUMBER, font_info->cjk);
+    if (GT_FONT_TYPE_FLAG_DOT_MATRIX_A8 == gt_font_type_get(option)) {
+        return GT_MAX(calculated_len, 64U * 64U);
+    }
+    return calculated_len;
+}
+
 /** @brief Get effective display font size, taking scale_size into account */
 static GT_ATTRIBUTE_RAM_TEXT inline gt_font_size_t _get_effective_font_size(const gt_font_info_st* font_info) {
     const gt_font_size_t scale_size = font_info->scale_size;
@@ -912,6 +933,22 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
     uint32_t uni_or_gbk, const gt_attr_font_st * dsc,
     bool apply_height_center)
 {
+    if (GT_FONT_TYPE_FLAG_DOT_MATRIX_A8 == dot_ret.type) {
+        uint16_t glyph_left = 0, glyph_width = *p_width;
+        if (gt_font_a8_metrics(tmp_font->res, 64, 64, 64, 8,
+                               &glyph_left, &glyph_width)) {
+            if (_is_align_reverse(dsc->align)) area_font->x += *p_width - glyph_width;
+            *p_width = glyph_width;
+        }
+        area_font->x -= glyph_left;
+        area_font->w = 64;
+        area_font->h = 64;
+        gt_draw_blend_text(draw_ctx, blend_dsc, 64, 64, 8,
+                           (const uint8_t *)tmp_font->res, tmp_font->info.style.reg);
+        area_font->x += glyph_left;
+        area_font->h = tmp_font->info.size;
+        return;
+    }
     if (GT_FONT_TYPE_FLAG_EMOJI == dot_ret.type) {
         gt_area_st emoji_area = *area_font;
         emoji_area.h = 1;
@@ -1005,6 +1042,12 @@ static GT_ATTRIBUTE_RAM_TEXT void _draw_one_char_glyph(
         } else
 #endif
         {
+#if GT_VEC_GRAY2_EDGE_AA
+            if (font_gray == 2 && dot_ret.type == GT_FONT_TYPE_FLAG_VEC &&
+                _use_vec_gray2_edge_aa(&tmp_font->info)) {
+                font_gray = 6;
+            }
+#endif
             gt_draw_blend_text(draw_ctx, blend_dsc, render_size,
                                 byte_width, font_gray, (const uint8_t*)tmp_font->res, style_reg);
         }
@@ -2245,7 +2288,7 @@ static int8_t _draw_text_ctx_init(_draw_text_ctx_st * ctx, const gt_attr_font_st
 #else
     _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&ctx->tmp_font.info, FONT_LAN_UNKNOWN, 0);
 #endif
-    ctx->data_len = font_size_res.font_per_size;
+    ctx->data_len = _get_font_resource_len(&ctx->tmp_font.info, font_size_res.font_per_size);
     /* 使用真实最大像素尺寸分配 mask_line，防止 option 实际字号 > 配置字号时溢出 */
     gt_font_size_t alloc_size = font_size_res.actual_max_size > 0 ? font_size_res.actual_max_size : ctx->tmp_font.info.size;
     ctx->font_buf = _draw_font_buf_alloc(alloc_size, ctx->data_len);
@@ -4016,6 +4059,13 @@ _gt_wu_pixel(_gt_draw_ctx_st * draw_ctx,
     }
 }
 
+static GT_ATTRIBUTE_RAM_TEXT void
+_gt_polyline_pixel(_gt_draw_ctx_st * draw_ctx, int32_t x, int32_t y,
+                   gt_color_t color, uint8_t opa)
+{
+    _gt_wu_pixel(draw_ctx, x, y, color, opa);
+}
+
 /**
  * @brief Distance-field filled circle for round line caps.
  *
@@ -5192,11 +5242,6 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_polyline(_gt_draw_ctx_st * draw_ctx,
     if (x0 > x1 || y0 > y1) return;
 
     gt_opa_t mask = 0;
-    gt_area_st pixel = {0, 0, 1, 1};
-    gt_draw_blend_dsc_st blend = {0};
-    blend.dst_area = &pixel; blend.mask_area = &pixel;
-    blend.mask_buf = &mask; blend.color_fill = dsc->line.color;
-    blend.opa = GT_OPA_COVER;
     for (int16_t y = y0; y <= y1; y++) {
         for (int16_t x = x0; x <= x1; x++) {
             int32_t px = ((int32_t)x << 8) + 128;
@@ -5235,8 +5280,7 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_polyline(_gt_draw_ctx_st * draw_ctx,
                     ((radius2 - best) * 255) / GT_MAX(radius2 - inner2, 1);
                 mask = (gt_opa_t)(((int32_t)dsc->line.opa * coverage) / 255);
                 if (mask > GT_OPA_MIN) {
-                    pixel.x = x; pixel.y = y;
-                    gt_draw_blend(draw_ctx, &blend);
+                    _gt_polyline_pixel(draw_ctx, x, y, dsc->line.color, mask);
                 }
             }
         }

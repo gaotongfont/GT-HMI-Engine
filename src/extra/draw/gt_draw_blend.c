@@ -155,6 +155,73 @@ static inline void _blend_text_gray2(const _blend_text_ctx_st * c) {
     }
 }
 
+#if GT_VEC_GRAY2_EDGE_AA
+static inline uint8_t _get_gray2_pixel(const _blend_text_ctx_st *c, uint16_t x, uint16_t y)
+{
+    return (c->res[y * c->dot_byte + (x >> 2)] >> (6 - ((x & 3) << 1))) & 3;
+}
+
+static inline uint8_t _get_gray2_edge_aa_opa(const _blend_text_ctx_st *c, uint16_t x, uint16_t y)
+{
+    uint8_t center = _get_gray2_pixel(c, x, y);
+    uint8_t left = x ? _get_gray2_pixel(c, x - 1, y) : 0;
+    uint8_t right = x + 1 < c->font_size ? _get_gray2_pixel(c, x + 1, y) : 0;
+    uint8_t top = y ? _get_gray2_pixel(c, x, y - 1) : 0;
+    uint8_t bottom = y + 1 < c->font_size ? _get_gray2_pixel(c, x, y + 1) : 0;
+    uint8_t diagonal = 0;
+    uint8_t cardinal;
+    if (center) return center * 85;
+    if ((left && right) || (top && bottom)) return 0;
+    if (x && y) diagonal = _get_gray2_pixel(c, x - 1, y - 1);
+    if (x + 1 < c->font_size && y) diagonal = GT_MAX(diagonal, _get_gray2_pixel(c, x + 1, y - 1));
+    if (x && y + 1 < c->font_size) diagonal = GT_MAX(diagonal, _get_gray2_pixel(c, x - 1, y + 1));
+    if (x + 1 < c->font_size && y + 1 < c->font_size) diagonal = GT_MAX(diagonal, _get_gray2_pixel(c, x + 1, y + 1));
+    cardinal = GT_MAX(GT_MAX(left, right), GT_MAX(top, bottom));
+    /* The neighborhood estimate is accumulated on a 0..64 scale; the
+     * color mixer expects the standard 0..255 opacity range. */
+    return (uint8_t)(GT_MIN((uint8_t)(cardinal * 16 + diagonal * 4), 64) * 4);
+}
+
+static inline void _blend_text_gray2_edge_aa(const _blend_text_ctx_st *c)
+{
+    gt_color_t *dst = c->color_dst_p;
+    uint16_t col, row, count, start_count;
+    if (c->is_vert) {
+        for (col = c->offset.y; col < c->offset.y + c->area_intersect.h; ++col) {
+            start_count = c->is_italic ? (c->font_size - c->offset.y - col) >> 1 : 0;
+            count = start_count;
+            for (row = c->offset.x; row < c->font_size; ++row) {
+                if (row + start_count >= c->offset.x + c->area_intersect.w) break;
+                uint8_t ch = _get_gray2_edge_aa_opa(c, col, row);
+                if (ch) {
+                    uint16_t opa = c->opa_full ? ch : (uint16_t)((c->opa_factor * ch) >> 15);
+                    dst[count] = gt_color_mix(c->fill_color, dst[count], opa);
+                    if (c->is_bold) dst[count + 1] = gt_color_mix(c->fill_color, dst[count + 1], opa);
+                }
+                ++count;
+            }
+            dst += c->width_buf;
+        }
+        return;
+    }
+    for (col = 0; col < c->area_intersect.h; ++col) {
+        start_count = c->is_italic ? (c->font_size - c->offset.y - col) >> 1 : 0;
+        count = start_count;
+        for (row = c->offset.x; row < c->font_size; ++row) {
+            if (row + start_count >= c->offset.x + c->area_intersect.w) break;
+            uint8_t ch = _get_gray2_edge_aa_opa(c, row, c->offset.y + col);
+            if (ch) {
+                uint16_t opa = c->opa_full ? ch : (uint16_t)((c->opa_factor * ch) >> 15);
+                dst[count] = gt_color_mix(c->fill_color, dst[count], opa);
+                if (c->is_bold) dst[count + 1] = gt_color_mix(c->fill_color, dst[count + 1], opa);
+            }
+            ++count;
+        }
+        dst += c->width_buf;
+    }
+}
+#endif
+
 static inline void _blend_text_gray4(const _blend_text_ctx_st * c) {
     gt_color_t * color_dst_p = c->color_dst_p;
     const uint8_t * color_src_p = c->color_src_p;
@@ -290,6 +357,47 @@ static inline void _blend_text_gray3(const _blend_text_ctx_st * c) {
             color_src_p += c->dot_byte;
             color_dst_p += c->width_buf;
         }
+    }
+}
+
+/* Blend one-byte-per-pixel A8 glyph resources. */
+static inline void _blend_text_gray8(const _blend_text_ctx_st * c) {
+    uint16_t col, row, count, start_count;
+    const uint8_t *src = c->res;
+    gt_color_t *dst = c->color_dst_p;
+    if (c->is_vert) {
+        for (col = c->offset.y; col < c->offset.y + c->area_intersect.h; col++) {
+            start_count = c->is_italic ? (c->font_size - c->offset.y - col) >> 1 : 0;
+            count = start_count;
+            src = c->res + c->offset.x;
+            for (row = c->offset.x; row < c->font_size; row++) {
+                if (row + start_count >= c->offset.x + c->area_intersect.w) break;
+                uint8_t alpha = src[col];
+                if (alpha) {
+                    uint16_t opa = c->opa_full ? alpha : (uint16_t)((c->opa_factor * alpha) >> 15);
+                    dst[count] = gt_color_mix(c->fill_color, dst[count], opa);
+                }
+                src += c->dot_byte;
+                ++count;
+            }
+            dst += c->width_buf;
+        }
+        return;
+    }
+    for (col = 0; col < c->area_intersect.h; col++) {
+        start_count = c->is_italic ? (c->font_size - c->offset.y - col) >> 1 : 0;
+        count = start_count;
+        for (row = c->offset.x; row < c->font_size; row++) {
+            if (row + start_count >= c->offset.x + c->area_intersect.w) break;
+            uint8_t alpha = src[row];
+            if (alpha) {
+                uint16_t opa = c->opa_full ? alpha : (uint16_t)((c->opa_factor * alpha) >> 15);
+                dst[count] = gt_color_mix(c->fill_color, dst[count], opa);
+            }
+            ++count;
+        }
+        src += c->dot_byte;
+        dst += c->width_buf;
     }
 }
 
@@ -733,6 +841,10 @@ gt_draw_blend_text(struct _gt_draw_ctx_s * draw_ctx, const gt_draw_blend_dsc_st 
     if      (2 == gray) { _blend_text_gray2(&ctx); }
     else if (4 == gray) { _blend_text_gray4(&ctx); }
     else if (3 == gray) { _blend_text_gray3(&ctx); }
+    else if (8 == gray) { _blend_text_gray8(&ctx); }
+#if GT_VEC_GRAY2_EDGE_AA
+    else if (6 == gray) { _blend_text_gray2_edge_aa(&ctx); }
+#endif
     else                { _blend_text_gray1(&ctx); }
 }
 

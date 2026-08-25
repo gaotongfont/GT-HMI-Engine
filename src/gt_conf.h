@@ -357,6 +357,14 @@ extern "C" {
     #define GT_FONT_USE_ASCII_WIDTH_CACHE     01
 #endif
 
+#ifndef GT_VEC_GRAY2_EDGE_AA
+    #define GT_VEC_GRAY2_EDGE_AA               0
+#endif
+
+#ifndef GT_VEC_GRAY2_EDGE_AA_MIN_SIZE
+    #define GT_VEC_GRAY2_EDGE_AA_MIN_SIZE      48
+#endif
+
 #ifndef GT_VEC_GRAY1_SMOOTH
     /**
      * @brief 1: enable blend-time 3x3 weighted smoothing for VEC font gray=1.
