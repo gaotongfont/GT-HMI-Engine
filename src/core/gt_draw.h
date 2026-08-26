@@ -157,6 +157,18 @@ GT_ATTRIBUTE_RAM_TEXT void gt_draw_arc(_gt_draw_ctx_st * draw_ctx, gt_attr_arc_s
 
 GT_ATTRIBUTE_RAM_TEXT void gt_draw_polygon(_gt_draw_ctx_st * draw_ctx, gt_attr_polygon_st const * dsc, const gt_area_st * coords);
 
+/**
+ * Draw a connected polyline with shared coverage at each vertex.
+ *
+ * For translucent lines, overlapping segment coverage is merged before the
+ * pixel is blended, preventing darker colors at shared vertices.
+ *
+ * @param draw_ctx Drawing context and target framebuffer.
+ * @param dsc      Line style, color, width, brush and opacity.
+ * @param points   Ordered polyline vertices.
+ * @param count    Number of vertices; must be at least 2.
+ * @param coords   Clipping and redraw area.
+ */
 GT_ATTRIBUTE_RAM_TEXT void gt_draw_polyline(_gt_draw_ctx_st * draw_ctx,
     gt_attr_line_st const * dsc, gt_point_st const * points, uint16_t count,
     const gt_area_st * coords);

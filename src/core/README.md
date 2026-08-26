@@ -286,6 +286,7 @@ static void _touch_read_cb(gt_indev_drv_st * drv, gt_indev_data_st * data) {
     data->point.x = touch_get_x();
     data->point.y = touch_get_y();
     data->state = touch_is_pressed() ? GT_INDEV_STATE_PRESSED : GT_INDEV_STATE_RELEASED;
+    data->point_valid = 1; // Set when coordinates are valid, including RELEASED samples.
     // 驱动无数据时返回 INVALID，引擎跳过
 }
 ```
@@ -293,6 +294,7 @@ static void _touch_read_cb(gt_indev_drv_st * drv, gt_indev_data_st * data) {
 **注意事项**：
 - `RELEASED` 只需上报一次，之后返回 `INVALID`
 - 坐标在 `RELEASED` 时可保持最后一次有效值
+- 若 `RELEASED` 帧提供了新坐标，必须设置 `data->point_valid = 1`，引擎才会消费该坐标
 - 支持软件旋转：`gt_disp_drv_st.rotated` 设置后引擎自动转换坐标
 
 **事件序列**：
