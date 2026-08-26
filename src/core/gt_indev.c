@@ -2705,6 +2705,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_point_queue(gt_indev_st * in
     if (has_pressed) {
         _gt_indev_point_set_value(&point_p->newly, last_x, last_y);
         indev->state = GT_INDEV_STATE_PRESSED;
+        point_p->release_point_valid = false;
         _indev_params.param.point.x = last_x;
         _indev_params.param.point.y = last_y;
         _indev_pressed_handle(indev);
@@ -2712,6 +2713,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_point_queue(gt_indev_st * in
     } else {
         _gt_indev_point_set_value(&point_p->newly, last_x, last_y);
         indev->state = GT_INDEV_STATE_RELEASED;
+        point_p->release_point_valid = true;
         _indev_released_handle(indev);
     }
 }
@@ -2874,6 +2876,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_point_multi(gt_indev_st * in
     gt_disp_st * _disp = gt_disp_get_default();
     uint8_t i;
     bool had_events = false;
+    bool release_point_valid = false;
+    gt_point_st release_point = {0};
 
     _touch_queue_drain_to_pending();
     if (0 == _pending_count) {
@@ -2898,6 +2902,9 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_point_multi(gt_indev_st * in
         if (slot < 0) continue;
 
         if (GT_INDEV_STATE_RELEASED == ev->state) {
+            _gt_indev_point_set_value(&point_p->fingers[slot].pos, ev->x, ev->y);
+            _gt_indev_point_set_value(&release_point, ev->x, ev->y);
+            release_point_valid = true;
             point_p->fingers[slot].active = 0;
             point_p->fingers[slot].start_valid = 0;
         } else {
@@ -2929,12 +2936,17 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_point_multi(gt_indev_st * in
         gt_point_st * pri = &point_p->fingers[primary_slot].pos;
         _gt_indev_point_set_value(&point_p->newly, pri->x, pri->y);
         indev->state = GT_INDEV_STATE_PRESSED;
+        point_p->release_point_valid = false;
         _indev_params.param.point.x = pri->x;
         _indev_params.param.point.y = pri->y;
         _indev_pressed_handle(indev);
         _gt_indev_point_set_value(&point_p->last, pri->x, pri->y);
     } else {
+        if (release_point_valid) {
+            _gt_indev_point_set_value(&point_p->newly, release_point.x, release_point.y);
+        }
         indev->state = GT_INDEV_STATE_RELEASED;
+        point_p->release_point_valid = release_point_valid;
         _indev_released_handle(indev);
         _indev_finalize_multi_touch_gesture(indev);
         _gt_indev_clear_finger_state(point_p);
