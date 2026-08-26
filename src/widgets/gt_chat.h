@@ -29,6 +29,9 @@ extern "C" {
 
 
 /* typedef --------------------------------------------------------------*/
+/**
+ * @brief Audio playback segment of a chat message.
+ */
 typedef enum {
     GT_CHAT_TYPE_TEXT = 0,
     GT_CHAT_TYPE_VOICE,
@@ -39,6 +42,20 @@ typedef enum {
     GT_CHAT_MSG_TYPE_SEND,
     GT_CHAT_MSG_TYPE_RECV,
 }gt_chat_msg_type_te;
+
+typedef enum {
+    GT_CHAT_PLAY_SOURCE = 0,
+    GT_CHAT_PLAY_TRANSLATION,
+} gt_chat_play_segment_te;
+
+/**
+ * @brief Event payload identifying the message segment being played.
+ */
+typedef struct {
+    int32_t index;                         /**< legacy array index */
+    uint32_t message_id;                   /**< stable message ID */
+    gt_chat_play_segment_te segment;       /**< source or translation */
+} gt_chat_play_event_st;
 
 typedef struct gt_chat_item_cb_s
 {
@@ -165,6 +182,105 @@ gt_obj_st * gt_chat_add_received_text_msg(gt_obj_st * chat, const char * msg);
 gt_obj_st * gt_chat_add_received_text_msg_by_len(gt_obj_st * chat, const char * msg, uint16_t len);
 gt_obj_st * gt_chat_add_received_voice_msg(gt_obj_st * chat, uint8_t tim_s);
 
+/**
+ * @brief Add a sent message containing source text and an optional translation.
+ * @param chat Chat object.
+ * @param source Source text.
+ * @param translation Optional translated text; may be NULL.
+ * @return Created message object, or NULL on failure.
+ */
+gt_obj_st * gt_chat_add_send_translated_msg(gt_obj_st * chat, const char * source, const char * translation);
+/**
+ * @brief Add a received message containing source text and an optional translation.
+ * @param chat Chat object.
+ * @param source Source text.
+ * @param translation Optional translated text; may be NULL.
+ * @return Created message object, or NULL on failure.
+ */
+gt_obj_st * gt_chat_add_received_translated_msg(gt_obj_st * chat, const char * source, const char * translation);
+/**
+ * @brief Add a sent translated message and set its voice duration.
+ * @param chat Chat object.
+ * @param source Source text.
+ * @param translation Optional translated text; may be NULL.
+ * @param tim_s Voice duration in seconds.
+ * @return Created message object, or NULL on failure.
+ */
+gt_obj_st * gt_chat_add_send_translated_msg_with_time(gt_obj_st * chat, const char * source, const char * translation, uint8_t tim_s);
+/**
+ * @brief Add a received translated message and set its voice duration.
+ * @param chat Chat object.
+ * @param source Source text.
+ * @param translation Optional translated text; may be NULL.
+ * @param tim_s Voice duration in seconds.
+ * @return Created message object, or NULL on failure.
+ */
+gt_obj_st * gt_chat_add_received_translated_msg_with_time(gt_obj_st * chat, const char * source, const char * translation, uint8_t tim_s);
+/**
+ * @brief Replace the last text message translation.
+ * @param chat Chat object.
+ * @param translation New translated text; pass NULL to clear it.
+ * @return Updated message object, or NULL on failure.
+ */
+gt_obj_st * gt_chat_set_last_msg_translation(gt_obj_st * chat, const char * translation);
+/**
+ * @brief Replace a message translation by stable message ID.
+ * @param chat Chat object.
+ * @param message_id Stable message ID.
+ * @param translation New translated text; pass NULL to clear it.
+ * @return true on success, otherwise false.
+ */
+bool gt_chat_set_message_translation(gt_obj_st * chat, uint32_t message_id, const char * translation);
+/**
+ * @brief Set the voice duration of the last message.
+ * @param chat Chat object.
+ * @param tim_s Voice duration in seconds.
+ */
+void gt_chat_set_last_msg_audio_time(gt_obj_st * chat, uint8_t tim_s);
+/**
+ * @brief Set a message voice duration by stable message ID.
+ * @param chat Chat object.
+ * @param message_id Stable message ID.
+ * @param tim_s Voice duration in seconds.
+ * @return true on success, otherwise false.
+ */
+bool gt_chat_set_message_audio_time(gt_obj_st * chat, uint32_t message_id, uint8_t tim_s);
+/**
+ * @brief Set the voice duration of a specific message segment.
+ * @param chat Chat object.
+ * @param message_id Stable message ID.
+ * @param segment Source or translation segment.
+ * @param tim_s Voice duration in seconds.
+ * @return true on success, otherwise false.
+ */
+bool gt_chat_set_message_segment_audio_time(gt_obj_st * chat, uint32_t message_id,
+                                            gt_chat_play_segment_te segment, uint8_t tim_s);
+/**
+ * @brief Get the stable ID assigned to the last message.
+ * @param chat Chat object.
+ * @return Stable message ID, or zero when unavailable.
+ */
+uint32_t gt_chat_get_last_msg_id(gt_obj_st * chat);
+/**
+ * @brief Start playback for a specific message segment.
+ *
+ * A GT_EVENT_TYPE_INPUT_PLAY_START event is emitted when the animation starts;
+ * register an event callback on the chat object to request audio data.
+ * @param chat Chat object.
+ * @param message_id Stable message ID.
+ * @param segment Source or translation segment.
+ * @return true when playback starts, otherwise false.
+ */
+bool gt_chat_play_message_segment(gt_obj_st * chat, uint32_t message_id, gt_chat_play_segment_te segment);
+/**
+ * @brief Stop the currently playing chat message segment.
+ *
+ * Emits GT_EVENT_TYPE_INPUT_PLAY_END for the active segment, allowing the
+ * audio owner to stop decoding and release its playback resources.
+ * @param chat Chat object.
+ */
+void gt_chat_stop_message_playback(gt_obj_st * chat);
+
 gt_obj_st * gt_chat_append_msg_text(gt_obj_st * chat, const char * msg);
 gt_obj_st * gt_chat_append_msg_text_control_scroll(gt_obj_st * chat, const char * msg, bool is_scroll);
 gt_obj_st * gt_chat_replace_msg_text(gt_obj_st * chat, const char * msg);
@@ -233,4 +349,3 @@ int32_t gt_chat_get_item_index(gt_obj_st* chat, gt_obj_st* item);
 #endif //!_GT_CHAT_H_
 
 /* end of file ----------------------------------------------------------*/
-
