@@ -190,8 +190,9 @@ typedef struct {
     int16_t enc_diff;  ///< For GT_INDEV_TYPE_ENCODER number of steps since the previous read
 
     gt_indev_state_et state;        ///< GT_INDEV_STATE_REL or GT_INDEV_STATE_PR
+    uint8_t point_valid : 1;        ///< Point coordinates are valid, including RELEASED samples
     uint8_t continue_reading : 1;   ///< If set to true, the read callback is invoked again
-    uint8_t reserved:7;             ///< Reserved for future use
+    uint8_t reserved:6;             ///< Reserved for future use
 
 #if GT_USE_MULTI_TOUCH
     /**
@@ -255,8 +256,12 @@ typedef struct _gt_indev_s {
     uint32_t timestamp_start;
     uint32_t timestamp_pressing;
     uint32_t timestamp_long_pressed;
+    uint32_t timestamp_last_click;
+    gt_point_st last_click_point;
+    struct gt_obj_s * last_click_obj;
 #if GT_INDEV_CFG_VELOCITY
     uint32_t timestamp_prev_press;          /** press/scroll touching timestamp */
+    uint32_t timestamp_last_motion;
     uint32_t timestamp_throw_prev_scroll;   /** remark prevous scroll by throw timestamp */
 #endif
 
@@ -288,7 +293,8 @@ typedef struct _gt_indev_s {
             uint16_t is_home_gesture : 1;   ///< gestrue is home handler
             uint16_t home_gesture_area : 3; ///< @ref gt_indev_home_gesture_area_et
             uint16_t breaking_scrolling : 1;
-            uint16_t reserved : 7;
+            uint16_t release_point_valid : 1;
+            uint16_t reserved : 6;
 
 #if GT_USE_MULTI_TOUCH
             /** Multi-touch state: active finger count (0=single, 1..N=multi) */

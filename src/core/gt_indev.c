@@ -86,6 +86,14 @@ static void _gt_indev_clear_finger_state(struct _point * point_p);
     #define GT_INDEV_THROW_LOG      0
 #endif
 
+#ifndef GT_INDEV_DOUBLE_CLICK_TIME_MS
+    #define GT_INDEV_DOUBLE_CLICK_TIME_MS       350
+#endif
+
+#ifndef GT_INDEV_DOUBLE_CLICK_DISTANCE
+    #define GT_INDEV_DOUBLE_CLICK_DISTANCE      10
+#endif
+
 #if GT_INDEV_CFG_VELOCITY
     #ifndef GT_INDEV_THROW_LOW_PASS_RAPID_CALC
     /**
@@ -105,6 +113,9 @@ static void _gt_indev_clear_finger_state(struct _point * point_p);
 
     #ifndef GT_INDEV_THROW_FIRST_TICK_MAX_DT
         #define GT_INDEV_THROW_FIRST_TICK_MAX_DT       32
+    #endif
+    #ifndef GT_INDEV_THROW_IDLE_STOP_TIME
+        #define GT_INDEV_THROW_IDLE_STOP_TIME          100
     #endif
     #ifndef GT_INDEV_THROW_MIN_STEP_PIXEL
         #define GT_INDEV_THROW_MIN_STEP_PIXEL          1
@@ -745,6 +756,9 @@ _calc_throw_velocity(gt_indev_st * indev) {
     }
     int32_t velocity = _calc_average_speed((gt_dir_et)point_p->gesture, &point_p->scroll_diff, delta_time);
     point_p->throw_velocity = _calc_final_speed(point_p->throw_velocity, velocity);
+    if (point_p->scroll_diff.x || point_p->scroll_diff.y) {
+        indev->timestamp_last_motion = cur_time;
+    }
     indev->timestamp_prev_press = cur_time;
     indev->timestamp_throw_prev_scroll = cur_time;
 }
@@ -993,7 +1007,7 @@ _indev_scroll_throw_handler(gt_indev_st * indev) {
     }
     indev->timestamp_throw_prev_scroll = cur_time;
 
-    if (obj_scroll->absorb) {
+    if (obj_scroll->absorb && false == obj_scroll->throw_unlimited) {
         stop_throw_anim = _calc_absorb_next_scroll_distance(point_p, obj_scroll, &dx, &dy);
     }
 #if GT_INDEV_THROW_LOG
@@ -1213,6 +1227,9 @@ _indev_scroll_snap(struct _point * point_p) {
         }
     }
 
+    if (scroll_obj->throw_unlimited) {
+        goto non_snap;
+    }
     if (false == scroll_obj->absorb) {
         return;
     }
@@ -1264,6 +1281,9 @@ _indev_scroll_throw_handler_anim_start(gt_indev_st * indev) {
     if (delta_time) {
         _velocity_less_scroll_points_need_to_speed_up(indev);
         _calc_throw_velocity(indev);
+    }
+    if (gt_tick_get() - indev->timestamp_last_motion >= GT_INDEV_THROW_IDLE_STOP_TIME) {
+        indev->data.point.throw_velocity = 0;
     }
     /* Clamp throw velocity by per-object scroll_throw_limit level.
      * level 0 = unlimited (default), level 1~15 = increasingly limited.
@@ -1381,6 +1401,39 @@ _send_released_event(struct _point * point_p) {
     }
 }
 
+static GT_ATTRIBUTE_RAM_TEXT void
+_indev_send_double_click_event(gt_indev_st * indev, bool is_home_gesture) {
+    struct _point * point_p = &indev->data.point;
+    uint32_t now;
+
+    if (is_home_gesture || NULL == point_p->obj_target ||
+        point_p->obj_act != point_p->obj_target || NULL != point_p->obj_scroll ||
+        point_p->breaking_scrolling || gt_obj_is_untouchability(point_p->obj_target) ||
+        indev->timestamp_long_pressed != indev->timestamp_start) {
+        indev->last_click_obj = NULL;
+        indev->timestamp_last_click = 0;
+        return;
+    }
+
+    now = gt_tick_get();
+    if (indev->last_click_obj == point_p->obj_target &&
+        now - indev->timestamp_last_click <= GT_INDEV_DOUBLE_CLICK_TIME_MS &&
+        gt_abs(point_p->newly.x - indev->last_click_point.x) <= GT_INDEV_DOUBLE_CLICK_DISTANCE &&
+        gt_abs(point_p->newly.y - indev->last_click_point.y) <= GT_INDEV_DOUBLE_CLICK_DISTANCE) {
+        gt_event_send(point_p->obj_target, GT_EVENT_TYPE_INPUT_DOUBLE_CLICK, NULL);
+#if GT_USE_LAYER_TOP
+        gt_global_event_send(GT_EVENT_TYPE_INPUT_DOUBLE_CLICK, NULL);
+#endif
+        indev->last_click_obj = NULL;
+        indev->timestamp_last_click = 0;
+        return;
+    }
+
+    indev->last_click_obj = point_p->obj_target;
+    indev->last_click_point = point_p->newly;
+    indev->timestamp_last_click = now;
+}
+
 static GT_ATTRIBUTE_RAM_TEXT inline void _scroll_calc_throw_distance(struct _point * point_p) {
     gt_point_st diff = {0};
     diff.x = point_p->newly.x - point_p->last.x;
@@ -1465,9 +1518,36 @@ _indev_released_handle(gt_indev_st * indev) {
     GT_LOG_A(GT_LOG_TAG_TP, "release %p (%d, %d)", point_p->obj_target, point_p->newly.x, point_p->newly.y);
 #endif
 
+    if (false == is_home_gesture && point_p->release_point_valid) {
+        gt_point_st release_diff = {
+            .x = point_p->newly.x - point_p->last.x,
+            .y = point_p->newly.y - point_p->last.y,
+        };
+
+        if ((release_diff.x || release_diff.y) && point_p->obj_scroll) {
+            point_p->scroll_sum.x += release_diff.x;
+            point_p->scroll_sum.y += release_diff.y;
+            point_p->scroll_diff = release_diff;
+#if GT_INDEV_CFG_VELOCITY
+            indev->timestamp_last_motion = gt_tick_get();
+#endif
+            _scroll_raw_handler(point_p, release_diff.x, release_diff.y);
+        } else if (release_diff.x || release_diff.y) {
+            gt_obj_st * scroll_obj = point_p->obj_target;
+            if (scroll_obj && scroll_obj->fixed) {
+                scroll_obj = _search_not_fixed_by_parent_recursive(scroll_obj);
+            }
+            if (scroll_obj && scroll_obj->throw_unlimited) {
+                point_p->scroll_diff = release_diff;
+                _indev_scroll_handler(indev);
+            }
+        }
+    }
+
     if (false == is_home_gesture) {
         _send_released_event(point_p);
     }
+    _indev_send_double_click_event(indev, is_home_gesture);
     point_p->obj_act = NULL;
 
     if (NULL == point_p->obj_scroll) {
@@ -1560,6 +1640,7 @@ static GT_ATTRIBUTE_RAM_TEXT uint32_t _indev_reset_start_timestamp(gt_indev_st *
     indev->timestamp_pressing = indev->timestamp_start;
     indev->timestamp_long_pressed = indev->timestamp_start;
 #if GT_INDEV_CFG_VELOCITY
+    indev->timestamp_last_motion = indev->timestamp_start;
     indev->timestamp_throw_prev_scroll = indev->timestamp_start;
 #endif
     return indev->timestamp_start;
@@ -1709,18 +1790,22 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_indev_handler_point(gt_indev_st * indev) {
                           &data_indev.point.x, &data_indev.point.y);
     }
 
-    if (data_indev.point.x > gt_disp_get_res_hor(NULL) ||
-        data_indev.point.y > gt_disp_get_res_ver(NULL)) {
+    bool point_valid = data_indev.point_valid || (GT_INDEV_STATE_RELEASED != data_indev.state);
+    if (point_valid && (data_indev.point.x > gt_disp_get_res_hor(NULL) ||
+        data_indev.point.y > gt_disp_get_res_ver(NULL))) {
         // GT_LOGW(GT_LOG_TAG_TP, "point out of range: x:%d, y:%d", data_indev.point.x, data_indev.point.y);
         return;
     }
 
     /* process point data */
     indev->state = data_indev.state;
+    point_p->release_point_valid = (GT_INDEV_STATE_RELEASED == indev->state) ? point_valid : false;
 
-    _indev_params.param.point.x = data_indev.point.x;
-    _indev_params.param.point.y = data_indev.point.y;
-    _gt_indev_point_set_value(&point_p->newly, data_indev.point.x, data_indev.point.y);
+    if (point_valid) {
+        _indev_params.param.point.x = data_indev.point.x;
+        _indev_params.param.point.y = data_indev.point.y;
+        _gt_indev_point_set_value(&point_p->newly, data_indev.point.x, data_indev.point.y);
+    }
 
     /* have one touch event */
     if (GT_INDEV_STATE_RELEASED == indev->state) {
@@ -2350,6 +2435,8 @@ gt_res_t _gt_indev_reset_status(void)
         if (indev->scroll_throw_anim) {
             gt_anim_del_by(indev->scroll_throw_anim);
         }
+        indev->timestamp_last_click = 0;
+        indev->last_click_obj = NULL;
         if (GT_INDEV_TYPE_KEYPAD == indev->drv->type) {
             indev->data.keypad.obj_target = NULL;
             indev->data.keypad.obj_origin = NULL;
@@ -2437,6 +2524,11 @@ bool _gt_indev_remove_want_delate_target(gt_obj_st * target)
                     point_p->obj_act = NULL;
                     ret = true;
                 }
+                if (target == indev->last_click_obj) {
+                    indev->last_click_obj = NULL;
+                    indev->timestamp_last_click = 0;
+                    ret = true;
+                }
                 break;
             }
             case GT_INDEV_TYPE_BUTTON: {
@@ -2492,6 +2584,7 @@ void gt_indev_simulate_handler(gt_indev_state_et state, gt_size_t x, gt_size_t y
 
     /* process point data */
     indev->state = state;
+    point_p->release_point_valid = (GT_INDEV_STATE_RELEASED == indev->state) ? true : false;
 
     _indev_params.param.point.x = x;
     _indev_params.param.point.y = y;

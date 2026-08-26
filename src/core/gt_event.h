@@ -56,6 +56,7 @@ typedef enum gt_event_type_e {
     GT_EVENT_TYPE_INPUT_HOME_GESTURE_RIGHT,
     GT_EVENT_TYPE_INPUT_PLAY_START,
     GT_EVENT_TYPE_INPUT_PLAY_END,
+    GT_EVENT_TYPE_INPUT_DOUBLE_CLICK,
 
 #if GT_USE_MULTI_TOUCH
     /** Multi-touch gesture events */
