@@ -67,6 +67,12 @@ _move_pos(gt_obj_st * obj) {
         .x = obj->area.x - widget->prev_pos.x,
         .y = obj->area.y - widget->prev_pos.y,
     };
+
+    gt_area_st saved_area = obj->area;
+    obj->area = widget->prev_pos;
+    gt_disp_invalid_area(obj);
+    obj->area = saved_area;
+
     style->start.x += diff.x;
     style->start.y += diff.y;
     style->end.x += diff.x;
@@ -101,30 +107,35 @@ static void _init_cb(gt_obj_st * obj) {
     if (_is_move_pos(&widget->prev_pos, &obj->area)) {
         _move_pos(obj);
     }
-    if (widget->point_count >= 2) {
-        gt_attr_line_st segment = *style;
-        if (style->line.opa < GT_OPA_COVER) {
-            gt_draw_polyline(obj->draw_ctx, style, widget->points,
-                             widget->point_count, &obj->area);
-            gt_memcpy(&widget->prev_pos, &obj->area, sizeof(gt_area_st));
-            return;
+    /** Only draw when there is an actual render buffer. */
+    if (obj->draw_ctx && obj->draw_ctx->buf) {
+        if (widget->point_count > 2) {
+            if (style->line.opa < GT_OPA_COVER) {
+                gt_draw_polyline(obj->draw_ctx, style, widget->points,
+                                 widget->point_count, &obj->area);
+                gt_memcpy(&widget->prev_pos, &obj->area, sizeof(gt_area_st));
+                return;
+            }
+            gt_attr_line_st segment = *style;
+            segment.line.brush = GT_BRUSH_TYPE_RECT;
+            for (uint16_t i = 1; i < widget->point_count; i++) {
+                segment.start = widget->points[i - 1];
+                segment.end = widget->points[i];
+                gt_draw_line(obj->draw_ctx, &segment, &obj->area);
+            }
+            gt_attr_point_st point = { .line = style->line };
+            point.line.brush = GT_BRUSH_TYPE_ROUND;
+            for (uint16_t i = 0; i < widget->point_count; i++) {
+                point.pos = widget->points[i];
+                gt_draw_point(obj->draw_ctx, &point, &obj->area);
+            }
+        } else if (widget->point_count == 2) {
+            style->start = widget->points[0];
+            style->end = widget->points[1];
+            gt_draw_line(obj->draw_ctx, style, &obj->area);
+        } else {
+            gt_draw_line(obj->draw_ctx, style, &obj->area);
         }
-        /* Segment bodies use square caps. Do not paint an additional vertex:
-         * anti-aliased caps/vertices would blend twice at joins. */
-        segment.line.brush = GT_BRUSH_TYPE_RECT;
-        for (uint16_t i = 1; i < widget->point_count; i++) {
-            segment.start = widget->points[i - 1];
-            segment.end = widget->points[i];
-            gt_draw_line(obj->draw_ctx, &segment, &obj->area);
-        }
-        gt_attr_point_st point = { .line = style->line };
-        point.line.brush = GT_BRUSH_TYPE_ROUND;
-        for (uint16_t i = 0; i < widget->point_count; i++) {
-            point.pos = widget->points[i];
-            gt_draw_point(obj->draw_ctx, &point, &obj->area);
-        }
-    } else {
-        gt_draw_line(obj->draw_ctx, style, &obj->area);
     }
     gt_memcpy(&widget->prev_pos, &obj->area, sizeof(gt_area_st));
 }
@@ -154,10 +165,7 @@ static void _resize_area(gt_obj_st * line, gt_attr_line_st * style) {
     uint16_t const w = style->line.width;
     /* +1: endpoint pixel is inclusive; +w: half-width margin on both sides.
      * For round caps the circle radius <= half_w, so half_w margin is sufficient. */
-    gt_size_t min_x = style->start.x;
-    gt_size_t min_y = style->start.y;
-    gt_size_t max_x = style->end.x;
-    gt_size_t max_y = style->end.y;
+    gt_size_t min_x, min_y, max_x, max_y;
     if (widget->point_count) {
         min_x = max_x = widget->points[0].x;
         min_y = max_y = widget->points[0].y;
@@ -167,6 +175,11 @@ static void _resize_area(gt_obj_st * line, gt_attr_line_st * style) {
             max_x = GT_MAX(max_x, widget->points[i].x);
             max_y = GT_MAX(max_y, widget->points[i].y);
         }
+    } else {
+        min_x = GT_MIN(style->start.x, style->end.x);
+        min_y = GT_MIN(style->start.y, style->end.y);
+        max_x = GT_MAX(style->start.x, style->end.x);
+        max_y = GT_MAX(style->start.y, style->end.y);
     }
     line->area.x = min_x - (w >> 1);
     line->area.y = min_y - (w >> 1);
@@ -189,6 +202,10 @@ gt_obj_st * gt_line_create(gt_obj_st * parent)
     if (NULL == obj) {
         return obj;
     }
+    /* The line bounds are not a filled rectangle.  Explicitly disable the
+     * default object background so overlapping line widgets cannot erase
+     * earlier strokes during partial refresh. */
+    gt_obj_show_bg(obj, false);
     _gt_line_st * widget = (_gt_line_st * )obj;
     gt_attr_line_st * style = (gt_attr_line_st * )&widget->line;
 
