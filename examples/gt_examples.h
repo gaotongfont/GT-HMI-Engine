@@ -82,6 +82,7 @@ typedef enum {
     GT_EXAMPLE_SCR_POLYGON,
     GT_EXAMPLE_SCR_TEXTAREA_FILE,
     GT_EXAMPLE_SCR_VECTOR,
+    GT_EXAMPLE_SCR_VIEWPORT_FIXED,
     GT_EXAMPLE_SCR_TOTAL,
 }gt_example_scr_id_et;
 
@@ -170,6 +171,7 @@ gt_obj_st * gt_examples_theme(void);
 gt_obj_st * gt_examples_polygon(void);
 gt_obj_st * gt_examples_textarea_file(void);
 gt_obj_st * gt_examples_vector(void);
+gt_obj_st * gt_examples_viewport_fixed(void);
 
 #endif  /* !GT_USE_EXAMPLES */
 

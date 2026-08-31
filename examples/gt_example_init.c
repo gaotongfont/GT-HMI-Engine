@@ -68,6 +68,7 @@ static const gt_scr_list_st _example_scr_list[] = {
     { GT_EXAMPLE_SCR_POLYGON,       gt_examples_polygon },
     { GT_EXAMPLE_SCR_TEXTAREA_FILE, gt_examples_textarea_file },
     { GT_EXAMPLE_SCR_VECTOR,        gt_examples_vector },
+    { GT_EXAMPLE_SCR_VIEWPORT_FIXED, gt_examples_viewport_fixed },
 };
 
 /* macros ---------------------------------------------------------------*/

@@ -71,6 +71,7 @@ static const _menu_item_st _menu_items[] = {
     { "Polygon",        GT_EXAMPLE_SCR_POLYGON },
     { "Textarea file",  GT_EXAMPLE_SCR_TEXTAREA_FILE },
     { "Vector",         GT_EXAMPLE_SCR_VECTOR },
+    { "Viewport Fixed", GT_EXAMPLE_SCR_VIEWPORT_FIXED },
 };
 
 #define _MENU_ITEM_COUNT  (sizeof(_menu_items) / sizeof(_menu_items[0]))
@@ -121,3 +122,4 @@ gt_obj_st * gt_examples_menu(void)
 
 #endif
 /* end ------------------------------------------------------------------*/
+
