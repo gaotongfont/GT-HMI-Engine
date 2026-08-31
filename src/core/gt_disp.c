@@ -315,6 +315,10 @@ _draw_children(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_cli
     gt_obj_st * child_p = NULL;
     while (idx < obj->cnt_child) {
         child_p = obj->child[idx++];
+        /* Floating direct children of a screen are drawn as its local top layer. */
+        if (GT_TYPE_SCREEN == obj->classes->type && child_p->viewport_fixed) {
+            continue;
+        }
         if (false == gt_check_obj_visible_and_copy(child_p, param, area_clip)) {
             continue;
         }
@@ -323,6 +327,22 @@ _draw_children(gt_obj_st * obj, _flush_scr_param_st * param, gt_area_st area_cli
         }
     }
     gt_check_obj_visible_and_copy_after_scroll_tip(obj, param, area_clip);
+
+    if (GT_TYPE_SCREEN != obj->classes->type) {
+        return;
+    }
+    for (idx = 0; idx < obj->cnt_child; ++idx) {
+        child_p = obj->child[idx];
+        if (!child_p->viewport_fixed) {
+            continue;
+        }
+        if (false == gt_check_obj_visible_and_copy(child_p, param, area_clip)) {
+            continue;
+        }
+        if (child_p->cnt_child) {
+            _check_and_copy_foreach(child_p, param, area_clip);
+        }
+    }
 }
 
 static void GT_ATTRIBUTE_RAM_TEXT
@@ -860,6 +880,26 @@ _update_area_flush_by_calc_partly_redraw_area(_flush_scr_param_st * param, gt_ob
     if (y + h > height) { h = (int32_t)height - y; }
     param->area_flush.y = (gt_size_t)y;
     param->area_flush.h = (uint16_t)(h > 0 ? h : 0);
+
+    /* The invalid area is expressed in screen-content coordinates. After
+     * applying a negative screen offset it may lie completely outside the
+     * physical viewport. Do not pass such coordinates to the display driver:
+     * some LCD drivers wrap an out-of-range Y coordinate back to the top of
+     * the panel, which makes a scrolled animation appear at Y=0. */
+    if (param->area_flush.y >= height) {
+        param->area_flush.h = 0;
+    } else if (param->area_flush.y < 0) {
+        gt_size_t clipped = -param->area_flush.y;
+        if (clipped >= param->area_flush.h) {
+            param->area_flush.h = 0;
+            param->area_flush.y = 0;
+        } else {
+            param->area_flush.h -= clipped;
+            param->area_flush.y = 0;
+        }
+    } else if (param->area_flush.y + param->area_flush.h > height) {
+        param->area_flush.h = height - param->area_flush.y;
+    }
 
 #if GT_REFR_AREA_ALIGN_VER
     {

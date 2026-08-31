@@ -154,6 +154,7 @@ typedef struct gt_obj_s {
     uint32_t visible       : 1;     /* obj visible state, @gt_visible_et */
     uint32_t disabled      : 1;     /* obj disabled state, 0:enable, 1:disable */
     uint32_t fixed         : 1;     /* obj fixed state, 0:unfixed, 1:fixed then search it parent's widget to scroll(Dependent on superclass properties) */
+    uint32_t viewport_fixed: 1;     /* direct child of screen remains fixed to viewport while screen scrolls */
 
     uint32_t focus         : 1;     /* obj focus state 0:no focus, 1:focus */
     uint32_t focus_dis     : 1;     /* @ref gt_disabled_et obj focus enable , 0:enable, 1:disable*/

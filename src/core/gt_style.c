@@ -34,6 +34,23 @@
 
 
 /* static functions -----------------------------------------------------*/
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_viewport_fixed_screen_child(const gt_obj_st * obj) {
+    return obj && obj->viewport_fixed && obj->parent && gt_obj_is_type(obj->parent, GT_TYPE_SCREEN);
+}
+/* area_act belongs only to the active screen.  Keep inactive screens in their
+ * own content coordinate space until they become active. */
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_active_viewport_fixed_screen_child(const gt_obj_st * obj) {
+    return _is_viewport_fixed_screen_child(obj) && obj->parent == gt_disp_get_scr();
+}
+static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t _viewport_offset_x(void) {
+    gt_area_st * area = gt_disp_get_area_act();
+    return area ? area->x : 0;
+}
+static GT_ATTRIBUTE_RAM_TEXT inline gt_size_t _viewport_offset_y(void) {
+    gt_area_st * area = gt_disp_get_area_act();
+    return area ? area->y : 0;
+}
+
 static GT_ATTRIBUTE_RAM_TEXT void _calc_full_display_pos(gt_obj_st * obj, gt_area_st * new_area_p) {
     gt_obj_st * scr = gt_disp_get_scr();
     if (new_area_p->x < scr->area.x) {
@@ -138,12 +155,20 @@ static GT_ATTRIBUTE_RAM_TEXT void _height_anim_exec_cb(void * obj, int32_t val) 
 
 static GT_ATTRIBUTE_RAM_TEXT void _x_anim_exec_cb(void * obj, int32_t val) {
     gt_obj_st * tar = (gt_obj_st * )obj;
-    gt_obj_set_pos(tar, val, tar->area.y);
+    gt_size_t y = tar->area.y;
+    if (_is_active_viewport_fixed_screen_child(tar)) {
+        y -= _viewport_offset_y();
+    }
+    gt_obj_set_pos(tar, val, y);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _y_anim_exec_cb(void * obj, int32_t val) {
     gt_obj_st * tar = (gt_obj_st * )obj;
-    gt_obj_set_pos(tar, tar->area.x, val);
+    gt_size_t x = tar->area.x;
+    if (_is_active_viewport_fixed_screen_child(tar)) {
+        x -= _viewport_offset_x();
+    }
+    gt_obj_set_pos(tar, x, val);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _radius_anim_exec_cb(void * obj, int32_t val) {
@@ -154,6 +179,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _radius_anim_exec_cb(void * obj, int32_t val) 
 
 static void GT_ATTRIBUTE_RAM_TEXT
 _common_pos_relative_handle(gt_obj_st * obj, gt_area_st * area_p) {
+    if (_is_active_viewport_fixed_screen_child(obj)) {
+        area_p->x += _viewport_offset_x();
+        area_p->y += _viewport_offset_y();
+    }
 #if GT_USE_LAYER_TOP
     if (_update_layer_top_widget_area(obj, *area_p, false)) {
         return ;
@@ -166,7 +195,7 @@ _common_pos_relative_handle(gt_obj_st * obj, gt_area_st * area_p) {
     }
     gt_obj_set_area(obj, *area_p);
 #if GT_USE_WIDGET_LAYOUT
-    if (obj->parent) { gt_layout_mark_dirty(obj->parent); }
+    if (obj->parent && !_is_viewport_fixed_screen_child(obj)) { gt_layout_mark_dirty(obj->parent); }
     if (_gt_disp_refr_is_suspended()) { return; }
 #endif
 }
@@ -195,16 +224,19 @@ void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)
         return;
     }
     gt_area_st area = obj->area;
-#if GT_USE_LAYER_TOP
     area.x = x;
     area.y = y;
+    /* Floating screen children use viewport coordinates in the public API. */
+    if (_is_active_viewport_fixed_screen_child(obj)) {
+        area.x += _viewport_offset_x();
+        area.y += _viewport_offset_y();
+    }
+#if GT_USE_LAYER_TOP
     if (_update_layer_top_widget_area(obj, area, false)) {
         return ;
     }
 #endif
-    /** normal screen */
-    area.x = x;
-    area.y = y;
+    /** normal screen; floating children already carry the viewport offset. */
     area.w = obj->area.w;
     area.h = obj->area.h;
     _gt_obj_move_child_by(obj, area.x - obj->area.x, area.y - obj->area.y);
@@ -213,7 +245,7 @@ void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y)
     }
     gt_obj_set_area(obj, area);
 #if GT_USE_WIDGET_LAYOUT
-    if (obj->parent) { gt_layout_mark_dirty(obj->parent); }
+    if (obj->parent && !_is_viewport_fixed_screen_child(obj)) { gt_layout_mark_dirty(obj->parent); }
     if (_gt_disp_refr_is_suspended()) { return; }
 #endif
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
@@ -230,13 +262,19 @@ void gt_obj_set_pos_anim(gt_obj_st * obj, gt_size_t x, gt_size_t y)
     gt_anim_set_target(&anim, obj);
     gt_anim_set_path_type(&anim, GT_ANIM_PATH_TYPE_EASE_IN_OUT);
     gt_anim_set_time(&anim, GT_ANIM_PERIOD_TRANSITION_EFFECT_MS);
-    if (obj->area.x != x) {
-        gt_anim_set_value(&anim, obj->area.x, x);
+    gt_size_t cur_x = obj->area.x;
+    gt_size_t cur_y = obj->area.y;
+    if (_is_active_viewport_fixed_screen_child(obj)) {
+        cur_x -= _viewport_offset_x();
+        cur_y -= _viewport_offset_y();
+    }
+    if (cur_x != x) {
+        gt_anim_set_value(&anim, cur_x, x);
         gt_anim_set_exec_cb(&anim, _x_anim_exec_cb);
         gt_anim_start(&anim);
     }
-    if (obj->area.y != y) {
-        gt_anim_set_value(&anim, obj->area.y, y);
+    if (cur_y != y) {
+        gt_anim_set_value(&anim, cur_y, y);
         gt_anim_set_exec_cb(&anim, _y_anim_exec_cb);
         gt_anim_start(&anim);
     }
@@ -244,7 +282,13 @@ void gt_obj_set_pos_anim(gt_obj_st * obj, gt_size_t x, gt_size_t y)
 
 void gt_obj_set_pos_step(gt_obj_st * obj, gt_size_t step_x, gt_size_t step_y)
 {
-    gt_obj_set_pos(obj, obj->area.x + step_x, obj->area.y + step_y);
+    gt_size_t x = obj->area.x;
+    gt_size_t y = obj->area.y;
+    if (_is_active_viewport_fixed_screen_child(obj)) {
+        x -= _viewport_offset_x();
+        y -= _viewport_offset_y();
+    }
+    gt_obj_set_pos(obj, x + step_x, y + step_y);
 }
 
 #if GT_USE_CUSTOM_TOUCH_EXPAND_SIZE
@@ -272,6 +316,11 @@ void gt_obj_set_pos_relative(gt_obj_st * obj, gt_obj_st * target, gt_size_t diff
             return;
         }
     }
+    if (_is_active_viewport_fixed_screen_child(obj)) {
+        gt_obj_set_pos(obj, target->area.x - _viewport_offset_x() + diff_x,
+                       target->area.y - _viewport_offset_y() + diff_y);
+        return;
+    }
     gt_area_st area = {
         .x = target->area.x + diff_x,
         .y = target->area.y + diff_y,
@@ -294,6 +343,11 @@ void gt_obj_set_pos_relative_x(gt_obj_st * obj, gt_obj_st * target, gt_size_t di
             return;
         }
     }
+    if (_is_active_viewport_fixed_screen_child(obj)) {
+        gt_obj_set_pos(obj, target->area.x - _viewport_offset_x() + diff_x,
+                       obj->area.y - _viewport_offset_y());
+        return;
+    }
     gt_area_st area = {
         .x = target->area.x + diff_x,
         .y = obj->area.y,
@@ -315,6 +369,11 @@ void gt_obj_set_pos_relative_y(gt_obj_st * obj, gt_obj_st * target, gt_size_t di
         if (GT_TYPE_UNKNOWN == type) {
             return;
         }
+    }
+    if (_is_active_viewport_fixed_screen_child(obj)) {
+        gt_obj_set_pos(obj, obj->area.x - _viewport_offset_x(),
+                       target->area.y - _viewport_offset_y() + diff_y);
+        return;
     }
     gt_area_st area = {
         .x = obj->area.x,
@@ -344,6 +403,10 @@ void gt_obj_set_pos_always_full_display(gt_obj_st * obj, gt_size_t x, gt_size_t 
     area.y = y;
     area.w = obj->area.w;
     area.h = obj->area.h;
+    if (_is_active_viewport_fixed_screen_child(obj)) {
+        area.x += _viewport_offset_x();
+        area.y += _viewport_offset_y();
+    }
     _calc_full_display_pos(obj, &area);
     _gt_obj_move_child_by(obj, area.x - obj->area.x, area.y - obj->area.y);
     if (gt_obj_get_virtual(obj)) {
@@ -386,7 +449,7 @@ void gt_obj_set_size(gt_obj_st * obj, uint16_t w, uint16_t h)
     gt_obj_size_change(obj, &area);
     _gt_disp_update_max_area(&area, _gt_obj_is_ignore_calc_max_area(obj));
 #if GT_USE_WIDGET_LAYOUT
-    if (obj->parent) { gt_layout_mark_dirty(obj->parent); }
+    if (obj->parent && !_is_viewport_fixed_screen_child(obj)) { gt_layout_mark_dirty(obj->parent); }
     if (_gt_disp_refr_is_suspended()) { return; }
 #endif
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_STYLE, NULL);
@@ -431,7 +494,9 @@ void gt_obj_set_x(gt_obj_st * obj, gt_size_t x)
     if (GT_TYPE_UNKNOWN == type) {
         return;
     }
-    gt_obj_set_pos(obj, x, obj->area.y);
+    gt_size_t y = obj->area.y;
+    if (_is_active_viewport_fixed_screen_child(obj)) { y -= _viewport_offset_y(); }
+    gt_obj_set_pos(obj, x, y);
 }
 
 void gt_obj_set_x_anim(gt_obj_st * obj, gt_size_t x)
@@ -440,12 +505,14 @@ void gt_obj_set_x_anim(gt_obj_st * obj, gt_size_t x)
     if (GT_TYPE_UNKNOWN == type) {
         return;
     }
-    gt_obj_set_pos_anim(obj, x, obj->area.y);
+    gt_size_t y = obj->area.y;
+    if (_is_active_viewport_fixed_screen_child(obj)) { y -= _viewport_offset_y(); }
+    gt_obj_set_pos_anim(obj, x, y);
 }
 
 void gt_obj_set_x_step(gt_obj_st * obj, gt_size_t step_x)
 {
-    gt_obj_set_pos(obj, obj->area.x + step_x, obj->area.y);
+    gt_obj_set_pos_step(obj, step_x, 0);
 }
 
 void gt_obj_set_y(gt_obj_st * obj, gt_size_t y)
@@ -454,7 +521,9 @@ void gt_obj_set_y(gt_obj_st * obj, gt_size_t y)
     if (GT_TYPE_UNKNOWN == type) {
         return;
     }
-    gt_obj_set_pos(obj, obj->area.x, y);
+    gt_size_t x = obj->area.x;
+    if (_is_active_viewport_fixed_screen_child(obj)) { x -= _viewport_offset_x(); }
+    gt_obj_set_pos(obj, x, y);
 }
 
 void gt_obj_set_y_anim(gt_obj_st * obj, gt_size_t y)
@@ -463,12 +532,14 @@ void gt_obj_set_y_anim(gt_obj_st * obj, gt_size_t y)
     if (GT_TYPE_UNKNOWN == type) {
         return;
     }
-    gt_obj_set_pos_anim(obj, obj->area.x, y);
+    gt_size_t x = obj->area.x;
+    if (_is_active_viewport_fixed_screen_child(obj)) { x -= _viewport_offset_x(); }
+    gt_obj_set_pos_anim(obj, x, y);
 }
 
 void gt_obj_set_y_step(gt_obj_st * obj, gt_size_t step_y)
 {
-    gt_obj_set_pos(obj, obj->area.x, obj->area.y + step_y);
+    gt_obj_set_pos_step(obj, 0, step_y);
 }
 
 void gt_obj_set_w(gt_obj_st * obj, uint16_t w)
@@ -546,7 +617,11 @@ gt_size_t gt_obj_get_x(gt_obj_st * obj)
     if (GT_TYPE_UNKNOWN == type) {
         return 0;
     }
-    return _get_area_prop(obj, x);
+    gt_size_t x = _get_area_prop(obj, x);
+    if (_is_active_viewport_fixed_screen_child(obj)) {
+        x -= _viewport_offset_x();
+    }
+    return x;
 }
 
 gt_size_t gt_obj_get_y(gt_obj_st * obj)
@@ -555,7 +630,11 @@ gt_size_t gt_obj_get_y(gt_obj_st * obj)
     if (GT_TYPE_UNKNOWN == type) {
         return 0;
     }
-    return _get_area_prop(obj, y);
+    gt_size_t y = _get_area_prop(obj, y);
+    if (_is_active_viewport_fixed_screen_child(obj)) {
+        y -= _viewport_offset_y();
+    }
+    return y;
 }
 uint16_t gt_obj_get_w(gt_obj_st * obj)
 {
@@ -586,7 +665,12 @@ void gt_obj_set_visible(gt_obj_st * obj, gt_visible_et is_visible)
     obj->visible = is_visible;
     gt_disp_invalid_area(obj);
     if (obj->visible) {
-        _gt_disp_reload_max_area(gt_obj_within_which_scr(obj));
+        gt_obj_st * scr = gt_obj_within_which_scr(obj);
+        /* area_max is global display state; an inactive screen must not
+         * replace the active screen's scroll limits while being prepared. */
+        if (scr == gt_disp_get_scr()) {
+            _gt_disp_reload_max_area(scr);
+        }
     }
     gt_event_send(obj, GT_EVENT_TYPE_DRAW_START, NULL);
 }
@@ -801,6 +885,36 @@ bool gt_obj_get_fixed(gt_obj_st * obj)
     return obj->fixed;
 }
 
+void gt_obj_set_viewport_fixed(gt_obj_st * obj, bool enable)
+{
+    if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(obj)) { return; }
+    if (enable && (!obj->parent || !gt_obj_is_type(obj->parent, GT_TYPE_SCREEN))) {
+        GT_LOGW(GT_LOG_TAG_UI, "viewport_fixed requires a direct screen child: %p(%d)",
+                obj, gt_obj_class_get_type(obj));
+        return;
+    }
+    if (obj->viewport_fixed == (enable ? 1 : 0)) { return; }
+    obj->viewport_fixed = enable ? 1 : 0;
+    if (obj->parent && gt_obj_is_type(obj->parent, GT_TYPE_SCREEN)) {
+        gt_disp_invalid_area(obj);
+        if (obj->parent == gt_disp_get_scr()) {
+            _gt_disp_reload_max_area(obj->parent);
+        }
+        if (obj->parent->row_layout) {
+            gt_layout_row_grow(obj->parent);
+        }
+#if GT_USE_WIDGET_LAYOUT
+        gt_layout_mark_dirty(obj->parent);
+#endif
+    }
+}
+
+bool gt_obj_get_viewport_fixed(gt_obj_st * obj)
+{
+    if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(obj)) { return false; }
+    return obj->viewport_fixed != 0;
+}
+
 void gt_obj_set_overflow(gt_obj_st * obj, bool is_overflow)
 {
     gt_obj_type_et type = gt_obj_class_get_type(obj);
@@ -920,6 +1034,34 @@ void gt_obj_set_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir)
     }
 
     obj->scroll_dir = dir;
+    if (GT_SCROLL_DISABLE != dir || !gt_obj_is_type(obj, GT_TYPE_SCREEN) || obj != gt_disp_get_scr()) {
+        return;
+    }
+
+    gt_area_st * act = gt_disp_get_area_act();
+    if (!act) {
+        obj->process_attr.scroll.x = 0;
+        obj->process_attr.scroll.y = 0;
+        gt_obj_set_scroll_prev(obj, 0, 0);
+        return;
+    }
+    gt_size_t dx = -act->x;
+    gt_size_t dy = -act->y;
+    if (dx || dy) {
+        gt_disp_scroll_area_act(0, 0);
+        for (uint16_t i = 0; i < obj->cnt_child; ++i) {
+            gt_obj_st * child = obj->child[i];
+            if (!child->viewport_fixed) { continue; }
+            gt_disp_invalid_area(child);
+            child->area.x += dx;
+            child->area.y += dy;
+            _gt_obj_move_child_by(child, dx, dy);
+            gt_disp_invalid_area(child);
+        }
+    }
+    obj->process_attr.scroll.x = 0;
+    obj->process_attr.scroll.y = 0;
+    gt_obj_set_scroll_prev(obj, 0, 0);
 }
 
 gt_scroll_dir_et gt_obj_get_scroll_dir(gt_obj_st * obj)
@@ -985,8 +1127,15 @@ gt_scroll_snap_em gt_obj_get_scroll_snap_y(gt_obj_st * obj)
 bool _gt_obj_is_ignore_calc_max_area(gt_obj_st * obj)
 {
     gt_obj_st * ptr = obj;
+    gt_obj_st * ancestor = obj;
     if (NULL == obj) { return true; }
 
+    while (ancestor && ancestor->parent) {
+        if (ancestor->viewport_fixed && gt_obj_is_type(ancestor->parent, GT_TYPE_SCREEN)) {
+            return true;
+        }
+        ancestor = ancestor->parent;
+    }
     while (ptr->parent) { ptr = ptr->parent; }
 
     if (obj->overflow) { return true; }

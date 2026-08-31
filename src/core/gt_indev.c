@@ -65,6 +65,12 @@ static void _gt_indev_clear_finger_state(struct _point * point_p);
     #endif
 #endif
 
+#ifndef GT_INDEV_THROW_RELEASE_COMPENSATION_RATIO_VER
+    /** @brief Release throw compensation ratio for vertical scrolling. */
+    #define GT_INDEV_THROW_RELEASE_COMPENSATION_RATIO_VER \
+        GT_INDEV_THROW_RELEASE_COMPENSATION_RATIO
+#endif
+
 #ifndef GT_INDEV_POINT_LOG
     /**
      * @brief 0[default]: disable log, 1: enable log
@@ -131,6 +137,12 @@ static void _gt_indev_clear_finger_state(struct _point * point_p);
     #endif
     #ifndef GT_INDEV_THROW_DISTANCE_MAX_SCREEN_PCT
         #define GT_INDEV_THROW_DISTANCE_MAX_SCREEN_PCT  300
+    #endif
+
+    #ifndef GT_INDEV_THROW_DISTANCE_MAX_SCREEN_PCT_VER
+        /** @brief Maximum vertical throw distance in screen percentage. */
+        #define GT_INDEV_THROW_DISTANCE_MAX_SCREEN_PCT_VER \
+            GT_INDEV_THROW_DISTANCE_MAX_SCREEN_PCT
     #endif
     #ifndef GT_INDEV_THROW_DISTANCE_MAP_MIN_VELOCITY
         #define GT_INDEV_THROW_DISTANCE_MAP_MIN_VELOCITY  240
@@ -680,6 +692,9 @@ _normalize_throw_velocity_by_viewport(gt_indev_st * indev, int32_t velocity) {
     int32_t max_v = GT_INDEV_THROW_DISTANCE_MAP_MAX_VELOCITY;
     int32_t min_pct = GT_INDEV_THROW_DISTANCE_MIN_SCREEN_PCT;
     int32_t max_pct = GT_INDEV_THROW_DISTANCE_MAX_SCREEN_PCT;
+    if (_is_scroll_vertical((gt_dir_et)point_p->gesture)) {
+        max_pct = GT_INDEV_THROW_DISTANCE_MAX_SCREEN_PCT_VER;
+    }
 
     if (velocity <= 0 || NULL == scroll_obj || NULL == scroll_obj->parent) {
         return velocity;
@@ -1479,9 +1494,10 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _scroll_calc_throw_distance_ver(struct 
 #if GT_INDEV_THROW_RELEASE_COMPENSATION_RATIO > 0
 static GT_ATTRIBUTE_RAM_TEXT inline void _scroll_calc_throw_distance_release_ver(struct _point * point_p) {
     point_p->scroll_diff.y = point_p->newly.y - point_p->last.y;
-#if GT_INDEV_THROW_RELEASE_COMPENSATION_RATIO < 100
-    point_p->scroll_diff.y = (point_p->scroll_diff.y * GT_INDEV_THROW_RELEASE_COMPENSATION_RATIO) / 100;
-#endif
+    int32_t compensation_ratio = GT_INDEV_THROW_RELEASE_COMPENSATION_RATIO_VER;
+    if (compensation_ratio < 100) {
+        point_p->scroll_diff.y = (point_p->scroll_diff.y * compensation_ratio) / 100;
+    }
     point_p->scroll_throw.y = (point_p->scroll_throw.y + point_p->scroll_diff.y) >> 1;
 }
 #endif

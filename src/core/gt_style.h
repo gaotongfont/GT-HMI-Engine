@@ -73,6 +73,12 @@ typedef enum {
 
 
 /* global functions / API interface -------------------------------------*/
+/**
+ * Set the object's internal absolute area. For viewport-floating screen
+ * children, use gt_obj_set_pos()/gt_obj_set_x()/gt_obj_set_y() for viewport
+ * coordinates; this API intentionally preserves the internal coordinate
+ * semantics used by layout and widget implementations.
+ */
 gt_res_t gt_obj_set_area(gt_obj_st * obj, gt_area_st area);
 void gt_obj_set_pos(gt_obj_st * obj, gt_size_t x, gt_size_t y);
 void gt_obj_set_pos_anim(gt_obj_st * obj, gt_size_t x, gt_size_t y);
@@ -177,6 +183,8 @@ bool gt_obj_is_focus_skip(gt_obj_st * obj);
  */
 void gt_obj_set_fixed(gt_obj_st * obj, bool is_fixed);
 bool gt_obj_get_fixed(gt_obj_st * obj);
+void gt_obj_set_viewport_fixed(gt_obj_st * obj, bool enable);
+bool gt_obj_get_viewport_fixed(gt_obj_st * obj);
 
 /**
  * @brief Control size beyond the scope of the screen, independent way to slide display

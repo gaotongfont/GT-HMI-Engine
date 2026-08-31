@@ -380,6 +380,15 @@ struct gt_obj_s * _gt_obj_class_change_parent(struct gt_obj_s * obj, struct gt_o
     _gt_obj_class_destroy_from_parent(obj);
     obj->parent = to;
 
+    if (obj->viewport_fixed) {
+        obj->viewport_fixed = 0;
+        if (gt_obj_is_type(parent, GT_TYPE_SCREEN) && parent == gt_disp_get_scr()) {
+            _gt_disp_reload_max_area(parent);
+        }
+        GT_LOGW(GT_LOG_TAG_UI, "viewport_fixed cleared after reparent; configure it again on the new screen: %p(%d)",
+                obj, gt_obj_class_get_type(obj));
+    }
+
     gt_event_send(parent, GT_EVENT_TYPE_CHANGE_CHILD_REMOVED, obj);
 
     return obj->parent;

@@ -53,6 +53,9 @@ static GT_ATTRIBUTE_RAM_TEXT gt_size_t _row_grow_inside(gt_obj_st * target, gt_p
     gt_size_t y = 0;
     for (gt_size_t i = 0, cnt = target->cnt_child; i < cnt; ++i) {
         child = target->child[i];
+        if (GT_TYPE_SCREEN == target->classes->type && child->viewport_fixed) {
+            continue;
+        }
         if (GT_INVISIBLE == gt_obj_get_visible(child)) {
             continue;
         }
@@ -78,6 +81,9 @@ static GT_ATTRIBUTE_RAM_TEXT gt_size_t _row_grow_inside_invert(gt_obj_st * targe
     gt_size_t y = 0;
     for (gt_size_t i = 0, cnt = target->cnt_child; i < cnt; ++i) {
         child = target->child[i];
+        if (GT_TYPE_SCREEN == target->classes->type && child->viewport_fixed) {
+            continue;
+        }
         if (GT_INVISIBLE == gt_obj_get_visible(child)) {
             continue;
         }
@@ -99,6 +105,28 @@ static GT_ATTRIBUTE_RAM_TEXT gt_size_t _row_grow_inside_invert(gt_obj_st * targe
 }
 
 #if GT_USE_WIDGET_LAYOUT
+static GT_ATTRIBUTE_RAM_TEXT inline bool _is_viewport_fixed_child(const gt_obj_st * parent, const gt_obj_st * child) {
+    return GT_TYPE_SCREEN == parent->classes->type && child->viewport_fixed;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT uint16_t _get_layout_child_count(const gt_obj_st * parent) {
+    uint16_t count = 0;
+    for (uint16_t i = 0; i < parent->cnt_child; ++i) {
+        if (!_is_viewport_fixed_child(parent, parent->child[i])) { ++count; }
+    }
+    return count;
+}
+
+static GT_ATTRIBUTE_RAM_TEXT void _move_layout_children_by(gt_obj_st * parent, gt_size_t dx, gt_size_t dy) {
+    for (uint16_t i = 0; i < parent->cnt_child; ++i) {
+        gt_obj_st * child = parent->child[i];
+        if (_is_viewport_fixed_child(parent, child)) { continue; }
+        child->area.x += dx;
+        child->area.y += dy;
+        _gt_obj_move_child_by(child, dx, dy);
+    }
+}
+
 static GT_ATTRIBUTE_RAM_TEXT inline bool _is_flex_row_dir(gt_layout_flex_direction_t dir) {
     return (GT_LAYOUT_FLEX_DIR_ROW == dir || GT_LAYOUT_FLEX_DIR_ROW_REVERSE == dir);
 }
@@ -192,18 +220,23 @@ static GT_ATTRIBUTE_RAM_TEXT _content_space_around_st _common_calc_space_gap_and
 static GT_ATTRIBUTE_RAM_TEXT _content_space_around_st _calc_space_mode_gap_and_offset(
     gt_obj_st * parent, bool is_row_dir, gt_layout_justify_content_t jc) {
     uint16_t total_size = 0;
+    uint16_t child_count = _get_layout_child_count(parent);
+
+    if (0 == child_count) { return (_content_space_around_st){0}; }
 
     if (is_row_dir) {
         for (gt_size_t i = 0; i < parent->cnt_child; ++i) {
+            if (_is_viewport_fixed_child(parent, parent->child[i])) { continue; }
             total_size += parent->child[i]->area.w;
         }
-        return _common_calc_space_gap_and_offset(parent->area.w, parent->cnt_child, parent->radius, total_size, jc);
+        return _common_calc_space_gap_and_offset(parent->area.w, child_count, parent->radius, total_size, jc);
     }
     /** column dir */
     for (gt_size_t i = 0; i < parent->cnt_child; ++i) {
+        if (_is_viewport_fixed_child(parent, parent->child[i])) { continue; }
         total_size += parent->child[i]->area.h;
     }
-    return _common_calc_space_gap_and_offset(parent->area.h, parent->cnt_child, parent->radius, total_size, jc);
+    return _common_calc_space_gap_and_offset(parent->area.h, child_count, parent->radius, total_size, jc);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT bool _sort_order_by_grow_dir(gt_obj_st * parent, gt_area_st * pos, bool is_row) {
@@ -220,12 +253,14 @@ static GT_ATTRIBUTE_RAM_TEXT bool _sort_order_by_grow_dir(gt_obj_st * parent, gt
     if (GT_LAYOUT_FLEX_DIR_ROW == dir || GT_LAYOUT_FLEX_DIR_COLUMN == dir) {
         for (i = 0; i < cnt; ++i) {
             child = parent->child[i];
+            if (_is_viewport_fixed_child(parent, child)) { continue; }
             if (cb_st.update_align_pos_p(child, pos, second_dir_height, align)) { changed = true; }
             cb_st.update_max_size_p(child, pos, gap);
         }
     } else {
         for (i = cnt - 1; i >= 0; --i) {
             child = parent->child[i];
+            if (_is_viewport_fixed_child(parent, child)) { continue; }
             if (cb_st.update_align_pos_p(child, pos, second_dir_height, align)) { changed = true; }
             cb_st.update_max_size_p(child, pos, gap);
         }
@@ -322,7 +357,7 @@ _childs_adjust_justify_content(gt_obj_st * parent, gt_area_st * content_pos) {
         if (parent->area.h > content_pos->h) { diff.y >>= 1; }
     }
     if (0 == diff.x && 0 == diff.y) { return false; }
-    _gt_obj_move_child_by(parent, diff.x, diff.y);
+    _move_layout_children_by(parent, diff.x, diff.y);
     return true;
 }
 
@@ -330,7 +365,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _adjust_flex_content(gt_obj_st * target) {
     if (!gt_layout_is_type(target, GT_LAYOUT_TYPE_FLEX)) {
         return;
     }
-    if (0 == target->cnt_child) {
+    if (0 == _get_layout_child_count(target)) {
         return;
     }
     _gt_disp_refr_suspend();

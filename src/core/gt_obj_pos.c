@@ -101,7 +101,7 @@ static GT_ATTRIBUTE_RAM_TEXT _check_clicked_state_em gt_obj_check_is_clicked( gt
  * @return gt_obj_st* The clicked object
  */
 static GT_ATTRIBUTE_RAM_TEXT _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st * parent, gt_point_st * point) {
-    gt_size_t idx = parent->cnt_child - 1;
+    gt_size_t idx;
     _click_obj_ret_st obj_clicked = {
         .obj = NULL,
         .state = _CHECK_CLICKED_STATE_CONTINUE,
@@ -124,15 +124,24 @@ static GT_ATTRIBUTE_RAM_TEXT _click_obj_ret_st _gt_obj_foreach_clicked(gt_obj_st
         }
     }
 
-    /** Continue to find out children which is clicked */
-    while (idx > -1) {
-        ret = _gt_obj_foreach_clicked(parent->child[idx], point);
-        if (_CHECK_CLICKED_STATE_OK == ret.state) {
-            if (ret.obj && GT_VISIBLE == gt_obj_get_visible(ret.obj)) {
-                return ret;
+    /** Screen viewport-floating direct children form a local top layer. */
+    for (uint8_t pass = 0; pass < ((GT_TYPE_SCREEN == parent->classes->type) ? 2 : 1); ++pass) {
+        idx = parent->cnt_child - 1;
+        while (idx > -1) {
+            gt_obj_st * child = parent->child[idx];
+            if (GT_TYPE_SCREEN == parent->classes->type &&
+                ((0 == pass && !child->viewport_fixed) || (1 == pass && child->viewport_fixed))) {
+                --idx;
+                continue;
             }
+            ret = _gt_obj_foreach_clicked(child, point);
+            if (_CHECK_CLICKED_STATE_OK == ret.state) {
+                if (ret.obj && GT_VISIBLE == gt_obj_get_visible(ret.obj)) {
+                    return ret;
+                }
+            }
+            --idx;
         }
-        --idx;
     }
 
     if (_CHECK_CLICKED_STATE_OK == obj_clicked.state) {

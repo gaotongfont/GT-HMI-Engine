@@ -92,8 +92,27 @@ static GT_ATTRIBUTE_RAM_TEXT void _screen_scroll(gt_obj_st * obj) {
         return;
     }
     if (GT_SCROLL_DISABLE == obj->scroll_dir) {
+        gt_area_st * act = gt_disp_get_area_act();
+        if (act && (act->x || act->y)) {
+            gt_size_t dx = -act->x;
+            gt_size_t dy = -act->y;
+            for (uint16_t i = 0; i < obj->cnt_child; ++i) {
+                gt_obj_st * child = obj->child[i];
+                if (!child->viewport_fixed) {
+                    continue;
+                }
+                gt_disp_invalid_area(child);
+                child->area.x += dx;
+                child->area.y += dy;
+                _gt_obj_move_child_by(child, dx, dy);
+                gt_disp_invalid_area(child);
+            }
+            act->x = 0;
+            act->y = 0;
+        }
         obj->process_attr.scroll.x = 0;
         obj->process_attr.scroll.y = 0;
+        gt_obj_set_scroll_prev(obj, 0, 0);
         return;
     }
     gt_area_abs_st * max_area_p = gt_disp_get_area_max();
@@ -102,10 +121,26 @@ static GT_ATTRIBUTE_RAM_TEXT void _screen_scroll(gt_obj_st * obj) {
         0 == max_area_p->left && 0 == max_area_p->top) {
         /** Full screen can display all widget, do not refresh full screen again */
         gt_area_st * area = gt_disp_get_area_act();
+        if (!area) { return; }
+        gt_size_t dx = -area->x;
+        gt_size_t dy = -area->y;
         area->x = 0;
         area->y = 0;
+        if (dx || dy) {
+            for (uint16_t i = 0; i < obj->cnt_child; ++i) {
+                gt_obj_st * child = obj->child[i];
+                if (child->viewport_fixed) {
+                    gt_disp_invalid_area(child);
+                    child->area.x += dx;
+                    child->area.y += dy;
+                    _gt_obj_move_child_by(child, dx, dy);
+                    gt_disp_invalid_area(child);
+                }
+            }
+        }
         obj->process_attr.scroll.x = 0;
         obj->process_attr.scroll.y = 0;
+        gt_obj_set_scroll_prev(obj, 0, 0);
         return;
     }
     if (-obj->process_attr.scroll.x < max_area_p->left) {
@@ -125,7 +160,26 @@ static GT_ATTRIBUTE_RAM_TEXT void _screen_scroll(gt_obj_st * obj) {
         /** Reduce the unnecessary drawing overhead of invalid scrolling animations */
         return;
     }
+    gt_area_st * act = gt_disp_get_area_act();
+    if (!act) { return; }
+    gt_size_t old_x = act->x;
+    gt_size_t old_y = act->y;
     gt_disp_scroll_area_act(-obj->process_attr.scroll.x, -obj->process_attr.scroll.y);
+    /* Compensate viewport-floating direct children for the screen offset. */
+    gt_size_t dx = act->x - old_x;
+    gt_size_t dy = act->y - old_y;
+    if (dx || dy) {
+        for (uint16_t i = 0; i < obj->cnt_child; ++i) {
+            gt_obj_st * child = obj->child[i];
+            if (child->viewport_fixed) {
+                gt_disp_invalid_area(child);
+                child->area.x += dx;
+                child->area.y += dy;
+                _gt_obj_move_child_by(child, dx, dy);
+                gt_disp_invalid_area(child);
+            }
+        }
+    }
     gt_obj_set_scroll_prev(obj, obj->process_attr.scroll.x, obj->process_attr.scroll.y);
 }
 
@@ -610,6 +664,7 @@ gt_size_t gt_obj_get_limit_right(gt_obj_st * obj)
     gt_obj_st * child = NULL;
     gt_size_t max_x = -0x7fff;
     gt_size_t temp = 0, min_x = 0x7fff;
+    bool has_child = false;
     gt_obj_type_et type = gt_obj_class_get_type(obj);
     if (GT_TYPE_UNKNOWN == type) {
         return 0;
@@ -617,6 +672,8 @@ gt_size_t gt_obj_get_limit_right(gt_obj_st * obj)
 
     for (gt_size_t i = 0, cnt = obj->cnt_child; i < cnt; i++) {
         child = obj->child[i];
+        if (obj->classes->type == GT_TYPE_SCREEN && child->viewport_fixed) { continue; }
+        has_child = true;
         if (child->area.x < min_x) {
             min_x = child->area.x;
         }
@@ -625,7 +682,7 @@ gt_size_t gt_obj_get_limit_right(gt_obj_st * obj)
             max_x = temp;
         }
     }
-    return max_x;
+    return has_child ? max_x : 0;
 }
 
 gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj)
@@ -633,6 +690,7 @@ gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj)
     gt_obj_st * child = NULL;
     gt_size_t max_y = -0x7fff;
     gt_size_t temp = 0, min_y = 0x7fff;
+    bool has_child = false;
     gt_obj_type_et type = gt_obj_class_get_type(obj);
     if (GT_TYPE_UNKNOWN == type) {
         return 0;
@@ -640,6 +698,8 @@ gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj)
 
     for (gt_size_t i = 0, cnt = obj->cnt_child; i < cnt; i++) {
         child = obj->child[i];
+        if (obj->classes->type == GT_TYPE_SCREEN && child->viewport_fixed) { continue; }
+        has_child = true;
         if (child->area.y < min_y) {
             min_y = child->area.y;
         }
@@ -648,7 +708,7 @@ gt_size_t gt_obj_get_limit_bottom(gt_obj_st * obj)
             max_y = temp;
         }
     }
-    return max_y;
+    return has_child ? max_y : 0;
 }
 
 gt_padding_st gt_obj_get_limit_padding(gt_obj_st * parent)
@@ -663,18 +723,22 @@ gt_padding_st gt_obj_get_limit_padding(gt_obj_st * parent)
     };
     gt_point_st min = { .x = 0x7fff, .y = 0x7fff };
     gt_point_st max = { .x = -0x7fff, .y = -0x7fff };
+    bool has_child = false;
     if (gt_obj_is_type(parent, GT_TYPE_UNKNOWN)) {
         return ret;
     }
 
     for (gt_size_t i = parent->cnt_child - 1; i >= 0; --i) {
         child = parent->child[i];
+        if (parent->classes->type == GT_TYPE_SCREEN && child->viewport_fixed) { continue; }
+        has_child = true;
         if (child->area.x < min.x) { min.x = child->area.x; }
         if (child->area.y < min.y) { min.y = child->area.y; }
         if (child->area.x + child->area.w > max.x) { max.x = child->area.x + child->area.w; }
         if (child->area.y + child->area.h > max.y) { max.y = child->area.y + child->area.h; }
     }
 
+    if (!has_child) { return ret; }
     ret.left   = min.x;
     ret.top    = min.y;
     ret.right  = max.x;
@@ -757,17 +821,21 @@ gt_point_st gt_obj_get_childs_max_size(gt_obj_st * parent)
     gt_point_st ret_size = { .x = 0, .y = 0 };
     gt_point_st min = { .x = 0x7fff, .y = 0x7fff };
     gt_point_st max = { .x = -0x7fff, .y = -0x7fff };
+    bool has_child = false;
     if (gt_obj_is_type(parent, GT_TYPE_UNKNOWN)) {
         return ret_size;
     }
 
     for (gt_size_t i = parent->cnt_child - 1; i >= 0; --i) {
         child = parent->child[i];
+        if (parent->classes->type == GT_TYPE_SCREEN && child->viewport_fixed) { continue; }
+        has_child = true;
         if (child->area.x < min.x) { min.x = child->area.x; }
         if (child->area.y < min.y) { min.y = child->area.y; }
         if (child->area.x + child->area.w > max.x) { max.x = child->area.x + child->area.w; }
         if (child->area.y + child->area.h > max.y) { max.y = child->area.y + child->area.h; }
     }
+    if (!has_child) { return ret_size; }
     ret_size.x = max.x - min.x;
     ret_size.y = max.y - min.y;
     return ret_size;
