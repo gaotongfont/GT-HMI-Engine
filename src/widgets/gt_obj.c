@@ -738,7 +738,18 @@ gt_padding_st gt_obj_get_limit_padding(gt_obj_st * parent)
         if (child->area.y + child->area.h > max.y) { max.y = child->area.y + child->area.h; }
     }
 
-    if (!has_child) { return ret; }
+    /* An empty scroll container has no overflow. Its content bounds must
+     * therefore be its own area, not (0, 0, 0, 0). In particular,
+     * gt_listview_set_page_mode() configures paging before items are added;
+     * zero bounds make _gt_obj_scroll_internal() turn its initial scroll.y
+     * into the container bottom. */
+    if (!has_child) {
+        ret.left   = parent->area.x;
+        ret.top    = parent->area.y;
+        ret.right  = parent->area.x + parent->area.w;
+        ret.bottom = parent->area.y + parent->area.h;
+        return ret;
+    }
     ret.left   = min.x;
     ret.top    = min.y;
     ret.right  = max.x;
