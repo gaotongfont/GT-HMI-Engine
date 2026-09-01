@@ -1117,6 +1117,8 @@ gt_font_lan_et gt_font_lan_get(uint32_t unicode, uint8_t encoding)
         { 0xFE70, 0xFEFF, FONT_LAN_ARABIC },
         { 0x0E00, 0x0E7F, FONT_LAN_THAI },
         { 0x0900, 0x097F, FONT_LAN_HINDI },
+        { 0x1780, 0x17FF, FONT_LAN_KHMER },
+        { 0x19E0, 0x19FF, FONT_LAN_KHMER },
         { 0x3040, 0x30FF, FONT_LAN_JAPANESE },
         { 0x31F0, 0x31FF, FONT_LAN_JAPANESE },
         { 0x1100, 0x11FF, FONT_LAN_KOREAN },
@@ -1177,6 +1179,9 @@ bool _gt_font_is_convertor_language(gt_font_lan_et style_lang)
         return true;
     }
     if (FONT_LAN_HINDI == style_lang) {
+        return true;
+    }
+    if (FONT_LAN_KHMER == style_lang) {
         return true;
     }
 #endif

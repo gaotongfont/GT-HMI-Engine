@@ -260,6 +260,7 @@ typedef enum _gt_font_lan_e {
     FONT_LAN_EMOTICON,
     FONT_LAN_EMOJI,
     FONT_LAN_MATH,
+    FONT_LAN_KHMER,
     //
     FONT_LAN_MAX_COUNT,
     //
