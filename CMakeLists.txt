@@ -2,10 +2,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(gt_gui)
 
-file(GLOB_RECURSE SRC_LIST "driver" "gt_gui_driver.c")
-add_library(gt_gui_driver ${SRC_LIST})
+add_library(gt_gui_driver ${CMAKE_CURRENT_SOURCE_DIR}/driver/gt_gui_driver.c)
 
-file(GLOB_RECURSE SRC_LIST "src" "*.c") #递归搜索
+file(GLOB_RECURSE SRC_LIST "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 add_library(gt_gui ${SRC_LIST})
 
 # cmake_minimum_required(VERSION 3.10)
@@ -26,3 +25,6 @@ add_library(gt_gui ${SRC_LIST})
 # # add sub directories
 # add_subdirectory(src)
 # add_subdirectory(driver)
+
+# !building lib by shell cmd
+# cmake --build e:/0_project/23_gui/GT-HMI-Engine/build --config Debug --target gt_gui_driver -- -j1 2>&1
