@@ -2014,11 +2014,37 @@ void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, gt_size_t idx)
     if (0 == listview->cnt_child) {
         return;
     }
-    if (idx > listview->cnt_child) {
+    if (idx < 0 || idx >= listview->cnt_child) {
         idx = listview->cnt_child - 1;
     }
     gt_event_send(listview->child[idx], GT_EVENT_TYPE_INPUT_PRESSED, NULL);
     gt_event_send(listview->child[idx], GT_EVENT_TYPE_INPUT_RELEASED, NULL);
+}
+
+void gt_listview_scroll_to_item_by_idx(gt_obj_st * listview, gt_size_t idx)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE) || 0 == listview->cnt_child) {
+        return;
+    }
+    if (idx < 0 || idx >= listview->cnt_child) {
+        idx = listview->cnt_child - 1;
+    }
+
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    gt_obj_st * item = listview->child[idx];
+    if (style->horizontal) {
+        gt_size_t target_x = listview->area.x + style->item_reduce;
+        if (false == style->zero_margin) {
+            target_x += style->item_space.x >> 1;
+        }
+        gt_obj_scroll_to_x(listview, target_x - item->area.x, GT_ANIM_ON);
+    } else {
+        gt_size_t target_y = listview->area.y + style->item_reduce;
+        if (false == style->zero_margin) {
+            target_y += style->item_space.y >> 1;
+        }
+        gt_obj_scroll_to_y(listview, target_y - item->area.y, GT_ANIM_ON);
+    }
 }
 
 void gt_listview_set_bg_color(gt_obj_st * listview, gt_color_t color)

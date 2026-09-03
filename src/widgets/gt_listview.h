@@ -383,6 +383,15 @@ void gt_listview_set_multiple(gt_obj_st * listview, bool enabled);
 void gt_listview_set_selected_item_by_idx(gt_obj_st * listview, gt_size_t idx);
 
 /**
+ * @brief Scroll the listview to the item at the specified index without
+ *        changing the selected/highlighted item.
+ *
+ * @param listview listview obj
+ * @param idx index
+ */
+void gt_listview_scroll_to_item_by_idx(gt_obj_st * listview, gt_size_t idx);
+
+/**
  * @brief Set the listview background color
  *
  * @param listview
