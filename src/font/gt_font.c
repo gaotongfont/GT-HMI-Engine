@@ -1875,6 +1875,12 @@ static GT_ATTRIBUTE_RAM_TEXT uint32_t _get_convertor_string_width(gt_font_st *fo
     uint8_t ret_style = gt_font_type_get(font_option);
     _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(&tmp_font.info, lan, text_len);
 #endif
+    uint16_t convertor_glyph_height = GT_Get_Font_Height(
+        text_len > 0 ? text[0] : 0, font_option,
+        tmp_font.info.size, tmp_font.info.gray);
+    if (convertor_glyph_height == 0) {
+        convertor_glyph_height = tmp_font.info.size;
+    }
 
     font_convertor_st convertor = {
         .fontcode = text,
@@ -1919,7 +1925,9 @@ static GT_ATTRIBUTE_RAM_TEXT uint32_t _get_convertor_string_width(gt_font_st *fo
             } else {
                 tmp = gt_font_convertor_data_get(&convertor, idx);
 
-                width = gt_font_get_word_width_figure_up(&convertor.data_p[0], font_size_res.dot_width, convertor.fontsize, convertor.fontgray);
+                width = gt_font_get_word_width_figure_up(&convertor.data_p[0], font_size_res.dot_width,
+                                                         convertor_glyph_height,
+                                                         convertor.fontgray);
             }
         }
 
