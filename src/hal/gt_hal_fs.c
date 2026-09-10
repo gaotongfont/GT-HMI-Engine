@@ -58,6 +58,9 @@ void gt_hal_direct_addr_init(gt_addr_t * info)
 
 bool gt_hal_is_invalid_addr(gt_addr_t addr)
 {
+    if (0 == addr) {
+        return true;
+    }
     return addr == GT_ADDR_INVALID;
 }
 #endif  /** GT_USE_DIRECT_ADDR */
@@ -76,6 +79,9 @@ void gt_hal_custom_size_addr_init(gt_direct_addr_custom_size_st * custom_addr)
 
 bool gt_hal_is_invalid_custom_size_addr(gt_direct_addr_custom_size_st * custom_addr)
 {
+    if (0 == custom_addr->addr) {
+        return true;
+    }
     return custom_addr->addr == GT_ADDR_INVALID;
 }
 #endif  /** GT_USE_DIRECT_ADDR_CUSTOM_SIZE */
