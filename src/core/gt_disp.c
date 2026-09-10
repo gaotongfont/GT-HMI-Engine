@@ -1240,6 +1240,41 @@ _reset_stack_or_push_item_after_home(
 }
 
 /**
+ * @brief Check if the screen is referenced by the in-flight event dispatch chain
+ *        (as an event target, or as an ancestor of one). If so, its children must
+ *        not be destroyed immediately from within an event callback, otherwise the
+ *        dispatch loop's re-validate dereferences already-freed memory (use-after-free).
+ *        Skip the destroy here and let _scr_anim_del_ready_cb free the whole screen
+ *        tree after the screen-switch animation, avoiding leaks, double-free and
+ *        dangling pointers.
+ *
+ * @param scr The screen object
+ * @return true  The screen subtree contains an event target, defer destruction
+ * @return false Safe to destroy immediately
+ */
+static bool GT_ATTRIBUTE_RAM_TEXT _gt_disp_scr_in_event_dispatch(gt_obj_st * scr) {
+    gt_event_st * e = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
+    while (e) {
+        gt_obj_st * t = e->target;
+        while (t) {
+            if (t == scr) {
+                return true;
+            }
+            t = t->parent;
+        }
+        t = e->origin;
+        while (t) {
+            if (t == scr) {
+                return true;
+            }
+            t = t->parent;
+        }
+        e = e->prev;
+    }
+    return false;
+}
+
+/**
  * @brief Handle duplicate screen found in stack: decide whether to reuse or rebuild screen object
  *
  * @param ret result (del_prev_scr may be modified)
@@ -1269,7 +1304,9 @@ _handle_duplicate_scr(
         if (false == is_at_stack_bottom && ret->scr_old != same_scr->current_scr) {
             gt_obj_destroy_immediately(same_scr->current_scr);
         } else {
-            _gt_obj_class_destroy_children(same_scr->current_scr);
+            if (false == _gt_disp_scr_in_event_dispatch(same_scr->current_scr)) {
+                _gt_obj_class_destroy_children(same_scr->current_scr);
+            }
         }
         new_item_p->current_scr = NULL;
     } else {
@@ -1301,7 +1338,9 @@ _handle_new_scr(
         if (home_id == prev->current_scr_id && is_home_alive) {
             ret->del_prev_scr = false;
         } else if (is_at_stack_bottom && param->force_create_reload) {
-            _gt_obj_class_destroy_children(prev->current_scr);
+            if (false == _gt_disp_scr_in_event_dispatch(prev->current_scr)) {
+                _gt_obj_class_destroy_children(prev->current_scr);
+            }
             ret->del_prev_scr = true;
         }
         if (ret->del_prev_scr) { prev->current_scr = NULL; }
