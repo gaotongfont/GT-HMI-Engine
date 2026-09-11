@@ -22,6 +22,7 @@
 #include "../others/gt_anim.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_disp.h"
+#include "../core/gt_timer.h"
 #include "../widgets/gt_obj.h"
 #include "../widgets/gt_rect.h"
 #include "../widgets/gt_btn.h"
@@ -1800,37 +1801,19 @@ _column_single_del_item(gt_obj_st * listview, uint16_t item_idx) {
     gt_obj_scroll_to_y(listview, offset, GT_ANIM_ON);
 }
 
-gt_res_t gt_listview_del_item(gt_obj_st * listview, uint16_t item_idx)
+typedef struct {
+    gt_obj_st * listview;
+    uint16_t item_idx;
+    uint8_t op;
+} _gt_listview_deferred_del_st;
+
+#define _GT_LISTVIEW_DEFER_OP_DEL_ITEM     0
+#define _GT_LISTVIEW_DEFER_OP_CLEAR_ALL    1
+
+static void _gt_listview_clear_all_items_impl(gt_obj_st * listview)
 {
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
-        return GT_RES_FAIL;
-    }
-
-    _gt_listview_st * style = (_gt_listview_st * )listview;
-    if (item_idx >= listview->cnt_child) { item_idx = listview->cnt_child - 1; }
-
-    if (listview->cnt_child < 2) {
-        gt_listview_clear_all_items(listview);
-        return GT_RES_OK;
-    }
-    if (style->horizontal) {
-        /** horizontal mode */
-        _horizontal_del_item(listview, item_idx);
-    } else if (style->column.count > 1) {
-        /** multiple column */
-        _column_multiple_del_item(listview, item_idx);
-    } else if (style->column.count) {
-        /** single column */
-        _column_single_del_item(listview, item_idx);
-    }
-    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
-    return GT_RES_OK;
-}
-
-void gt_listview_clear_all_items(gt_obj_st * listview)
-{
-    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
-        return ;
+        return;
     }
     listview->process_attr.scroll.x = 0;
     listview->process_attr.scroll.y = 0;
@@ -1846,6 +1829,105 @@ void gt_listview_clear_all_items(gt_obj_st * listview)
 
     _gt_obj_class_destroy_children(listview);
     gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+static void _gt_listview_del_item_impl(gt_obj_st * listview, uint16_t item_idx)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+
+    _gt_listview_st * style = (_gt_listview_st * )listview;
+    if (item_idx >= listview->cnt_child) { item_idx = listview->cnt_child - 1; }
+
+    if (listview->cnt_child < 2) {
+        _gt_listview_clear_all_items_impl(listview);
+        return;
+    }
+    if (style->horizontal) {
+        /** horizontal mode */
+        _horizontal_del_item(listview, item_idx);
+    } else if (style->column.count > 1) {
+        /** multiple column */
+        _column_multiple_del_item(listview, item_idx);
+    } else if (style->column.count) {
+        /** single column */
+        _column_single_del_item(listview, item_idx);
+    }
+    gt_event_send(listview, GT_EVENT_TYPE_DRAW_START, NULL);
+}
+
+static void _gt_listview_deferred_del_cb(struct _gt_timer_s * timer)
+{
+    _gt_listview_deferred_del_st * param =
+        (_gt_listview_deferred_del_st * )_gt_timer_get_user_data(timer);
+    if (NULL == param) {
+        return;
+    }
+    if (_GT_LISTVIEW_DEFER_OP_CLEAR_ALL == param->op) {
+        _gt_listview_clear_all_items_impl(param->listview);
+    } else {
+        _gt_listview_del_item_impl(param->listview, param->item_idx);
+    }
+    gt_mem_free(param);
+    _gt_timer_set_user_data(timer, NULL);
+}
+
+gt_res_t gt_listview_del_item(gt_obj_st * listview, uint16_t item_idx)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return GT_RES_FAIL;
+    }
+    if (_gt_obj_in_event_dispatch(listview)) {
+        /** Defer the whole delete so the in-flight event target is not freed
+         *  from within its own callback (use-after-free). */
+        _gt_listview_deferred_del_st * param =
+            (_gt_listview_deferred_del_st * )gt_mem_malloc(sizeof(_gt_listview_deferred_del_st));
+        if (NULL == param) {
+            return GT_RES_FAIL;
+        }
+        param->listview = listview;
+        param->item_idx = item_idx;
+        param->op = _GT_LISTVIEW_DEFER_OP_DEL_ITEM;
+        _gt_timer_st * timer = _gt_timer_create(_gt_listview_deferred_del_cb,
+            GT_TASK_PERIOD_TIME_DESTROY, param);
+        if (NULL == timer) {
+            gt_mem_free(param);
+            return GT_RES_FAIL;
+        }
+        _gt_timer_set_repeat_count(timer, 1);
+        return GT_RES_OK;
+    }
+    _gt_listview_del_item_impl(listview, item_idx);
+    return GT_RES_OK;
+}
+
+void gt_listview_clear_all_items(gt_obj_st * listview)
+{
+    if (!gt_obj_is_type(listview, OBJ_TYPE)) {
+        return ;
+    }
+    if (_gt_obj_in_event_dispatch(listview)) {
+        /** Defer the whole clear so the in-flight event target is not freed
+         *  from within its own callback (use-after-free). */
+        _gt_listview_deferred_del_st * param =
+            (_gt_listview_deferred_del_st * )gt_mem_malloc(sizeof(_gt_listview_deferred_del_st));
+        if (NULL == param) {
+            return;
+        }
+        param->listview = listview;
+        param->item_idx = 0;
+        param->op = _GT_LISTVIEW_DEFER_OP_CLEAR_ALL;
+        _gt_timer_st * timer = _gt_timer_create(_gt_listview_deferred_del_cb,
+            GT_TASK_PERIOD_TIME_DESTROY, param);
+        if (NULL == timer) {
+            gt_mem_free(param);
+            return;
+        }
+        _gt_timer_set_repeat_count(timer, 1);
+        return;
+    }
+    _gt_listview_clear_all_items_impl(listview);
 }
 
 void gt_listview_set_scale(gt_obj_st * listview, uint8_t icon, uint8_t label)

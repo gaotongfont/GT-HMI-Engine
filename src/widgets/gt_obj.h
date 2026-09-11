@@ -149,7 +149,7 @@ typedef struct gt_obj_s {
 
     uint32_t state         : 2;     /* obj selected state @ref gt_state_et */
     uint32_t touch_parent  : 1;     /* touch event will be called to parent object */
-    uint32_t using_sta     : 1;     /* screen was using or not, not the widgets object. 0:using [Can not be free memory], 1:free */
+    uint32_t using_sta     : 1;     /* screen was using or not, not the widgets object. 1:using [Can not be free memory], 0:free */
     uint32_t delate        : 1;     /* The status which be prepare to free the current object 0:no delate, 1:prepare to delate */
     uint32_t visible       : 1;     /* obj visible state, @gt_visible_et */
     uint32_t disabled      : 1;     /* obj disabled state, 0:enable, 1:disable */
@@ -375,11 +375,16 @@ void gt_obj_destroy(gt_obj_st * obj);
 
 /**
  * @brief [UNSAFE] Destroy the object immediately,
- *      Cannot be a running widget object
+ *      Cannot be a running widget object.
+ *      If the object is referenced by the in-flight event dispatch chain
+ *      (target/origin or an ancestor of one), destruction is deferred to a
+ *      timer to avoid use-after-free.
  *
  * @param obj widgets object
+ * @return gt_res_t GT_RES_OK: destroyed immediately (or obj is NULL);
+ *                  GT_RES_DEFER: destruction deferred to a later tick
  */
-void gt_obj_destroy_immediately(gt_obj_st * obj);
+gt_res_t gt_obj_destroy_immediately(gt_obj_st * obj);
 
 /**
  * @brief Set screen background color

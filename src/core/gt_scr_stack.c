@@ -12,6 +12,7 @@
 #include "../others/gt_log.h"
 #include "../others/gt_gc.h"
 #include "../core/gt_mem.h"
+#include "../core/gt_timer.h"
 
 
 /* private define -------------------------------------------------------*/
@@ -24,12 +25,22 @@
     #define _GT_SCR_STACK_TRACE_LOG             0
 #endif
 
+/**
+ * @brief Max buffered screens whose pop_remark record was postponed because
+ *      the pop list was full and a destroy got deferred. Bounded; only hit in
+ *      the rare full-list + deferred-destroy window.
+ */
+#define _GT_SCR_STACK_PENDING_MAX            4
+
 
 /* private typedef ------------------------------------------------------*/
 
 
 
 /* static variables -----------------------------------------------------*/
+static gt_obj_st * _pending_pop_scr[_GT_SCR_STACK_PENDING_MAX];  /**< buffered pending record */
+static uint8_t _pending_pop_scr_cnt;
+static _gt_timer_st * _pending_retry_timer;
 
 
 
@@ -146,8 +157,16 @@ _release_all_pop_remark_except_active_scr(_gt_gc_scr_st * scr_info, gt_obj_st co
              * _gt_scr_stack_remove_pop_scr: removes this entry and decrements cnt.
              * Do NOT touch pop_scr_list or cnt here to avoid double-removal.
              * Re-read cnt after destroy since it may have changed.
+             *
+             * If destruction is deferred (object is in the event dispatch chain),
+             * the entry is NOT removed yet; its destroy timer finishes the job
+             * later. Move to the previous entry to avoid re-processing the same
+             * entry and spinning forever.
              */
-            gt_obj_destroy_immediately(pop_scr);
+            if (GT_RES_DEFER == gt_obj_destroy_immediately(pop_scr)) {
+                --i;
+                continue;
+            }
             i = scr_info->pop_remark.cnt - 1;
             continue;
         }
@@ -157,13 +176,127 @@ _release_all_pop_remark_except_active_scr(_gt_gc_scr_st * scr_info, gt_obj_st co
 }
 
 /**
- * @brief
+ * @brief Record a popped screen into pop_remark for later cleanup.
+ *      No-op when scr is NULL, the layer-top screen, or already recorded.
  *
- * @param scr_info
- * @param pop_item Just pop_item->current_scr vaild.
- * @return gt_res_t GT_ERS_OK: Have empty space to record screen ptr;
- *                  GT_RES_FAIL: Have no enough space to record.
+ * @param scr_info screen GC info
+ * @param scr popped screen object
  */
+static GT_ATTRIBUTE_RAM_TEXT void
+_gt_scr_stack_record_pop_scr(_gt_gc_scr_st * scr_info, gt_obj_st * scr) {
+    if (NULL == scr) {
+        return;
+    }
+#if GT_USE_LAYER_TOP
+    gt_obj_st const * const top_scr = gt_disp_get_layer_top();
+    if (top_scr && top_scr == scr) {
+        /** Do not free layer top memory. */
+        return;
+    }
+#endif
+    for (int16_t i = 0, cnt = scr_info->pop_remark.cnt; i < cnt; i++) {
+        if (scr == scr_info->pop_remark.pop_scr_list[i]) {
+            /** has before */
+            return;
+        }
+    }
+    scr_info->pop_remark.pop_scr_list[scr_info->pop_remark.cnt] = scr;
+    ++scr_info->pop_remark.cnt;
+}
+
+/**
+ * @brief Try to record a pending screen. If the pop list is full, release
+ *      unused screens first.
+ *
+ * @param scr_info screen GC info
+ * @param scr pending screen object
+ * @return true  recorded (or no-op)
+ * @return false still no free slot (a destroy was deferred), retry later
+ */
+static bool
+_gt_scr_stack_try_record_pending(_gt_gc_scr_st * scr_info, gt_obj_st * scr) {
+    gt_obj_st * active_scr = gt_disp_get_scr();
+    if (scr_info->pop_remark.cnt >= scr_info->stack->depth) {
+        if (GT_RES_FAIL == _release_all_pop_remark_except_active_scr(scr_info, active_scr)) {
+            return false;
+        }
+    }
+    _gt_scr_stack_record_pop_scr(scr_info, scr);
+    return true;
+}
+
+/**
+ * @brief Retry buffered pop_remark records once the deferred destroy has freed
+ *      a slot. Re-arms itself while entries remain.
+ *
+ * @param timer timer node
+ */
+static void _gt_scr_stack_retry_pending_cb(struct _gt_timer_s * timer) {
+    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+    if (NULL == scr_info) {
+        _pending_pop_scr_cnt = 0;
+        _pending_retry_timer = NULL;
+        return;
+    }
+    uint8_t i = 0;
+    while (i < _pending_pop_scr_cnt) {
+        if (false == _gt_scr_stack_try_record_pending(scr_info, _pending_pop_scr[i])) {
+            ++i;   /** keep it, retry next tick */
+        } else {
+            _pending_pop_scr[i] = _pending_pop_scr[_pending_pop_scr_cnt - 1];
+            --_pending_pop_scr_cnt;
+        }
+    }
+    if (0 == _pending_pop_scr_cnt) {
+        _pending_retry_timer = NULL;   /** timer expires after this run */
+    } else {
+        _gt_timer_set_repeat_count(timer, 1);   /** retry next tick */
+    }
+}
+
+/**
+ * @brief Buffer a screen whose pop_remark record was postponed because the pop
+ *      list was full and a destroy got deferred. A one-shot timer retries the
+ *      record once the deferred destroy has freed a slot.
+ *
+ * @param scr popped screen object
+ */
+static void _gt_scr_stack_pending_push(gt_obj_st * scr) {
+    if (NULL == scr) {
+        return;
+    }
+    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+    if (NULL != scr_info) {
+        for (int16_t i = 0; i < scr_info->pop_remark.cnt; i++) {
+            if (scr == scr_info->pop_remark.pop_scr_list[i]) {
+                /** already recorded in pop_remark, no need to buffer again */
+                return;
+            }
+        }
+    }
+    for (uint8_t i = 0; i < _pending_pop_scr_cnt; i++) {
+        if (scr == _pending_pop_scr[i]) {
+            /** already buffered, avoid duplicate pending entry */
+            return;
+        }
+    }
+    if (_pending_pop_scr_cnt >= _GT_SCR_STACK_PENDING_MAX) {
+        GT_LOGW(GT_LOG_TAG_STACK, "pop scr pending list full, drop: %p", scr);
+        return;
+    }
+    _pending_pop_scr[_pending_pop_scr_cnt++] = scr;
+    if (NULL == _pending_retry_timer) {
+        _pending_retry_timer = _gt_timer_create(_gt_scr_stack_retry_pending_cb,
+            GT_TASK_PERIOD_TIME_DESTROY, NULL);
+        if (NULL == _pending_retry_timer) {
+            /** Timer create failed (OOM); entry stays buffered and a later
+             *  push re-attempts timer creation. */
+            return;
+        }
+        _gt_timer_set_repeat_count(_pending_retry_timer, 1);
+    }
+}
+
 static gt_res_t GT_ATTRIBUTE_RAM_TEXT
 _gt_scr_stack_add_pop_remark(_gt_gc_scr_st * scr_info, gt_scr_stack_item_st * pop_item) {
     gt_obj_st * active_scr = gt_disp_get_scr();
@@ -173,28 +306,13 @@ _gt_scr_stack_add_pop_remark(_gt_gc_scr_st * scr_info, gt_scr_stack_item_st * po
     if (scr_info->pop_remark.cnt >= scr_info->stack->depth) {
         /** Free unused screen */
         if (GT_RES_FAIL == _release_all_pop_remark_except_active_scr(scr_info, active_scr)) {
-            GT_LOGE(GT_LOG_TAG_GUI, "Release all pop screen failed!");
-            return GT_RES_FAIL;
-        }
-    }
-    if (NULL == pop_item->current_scr) {
-        return GT_RES_OK;
-    }
-#if GT_USE_LAYER_TOP
-    gt_obj_st const * const top_scr = gt_disp_get_layer_top();
-    if (top_scr && top_scr == pop_item->current_scr) {
-        /** Do not free layer top memory. */
-        return GT_RES_OK;
-    }
-#endif
-    for (int16_t i = 0, cnt = scr_info->pop_remark.cnt; i < cnt; i++) {
-        if (pop_item->current_scr == scr_info->pop_remark.pop_scr_list[i]) {
-            /** has before */
+            /** A destroy was deferred, the pop list is still full. Buffer this
+             *  screen and retry the record after the deferred destroy fires. */
+            _gt_scr_stack_pending_push(pop_item->current_scr);
             return GT_RES_OK;
         }
     }
-    scr_info->pop_remark.pop_scr_list[scr_info->pop_remark.cnt] = pop_item->current_scr;
-    ++scr_info->pop_remark.cnt;
+    _gt_scr_stack_record_pop_scr(scr_info, pop_item->current_scr);
     return GT_RES_OK;
 }
 
@@ -308,6 +426,15 @@ gt_res_t _gt_scr_stack_remove_pop_scr(gt_obj_st const * const scr)
         --scr_info->pop_remark.cnt;
         break;
     }
+    for (uint8_t i = 0; i < _pending_pop_scr_cnt; i++) {
+        if (scr != _pending_pop_scr[i]) {
+            continue;
+        }
+        /** Drop the dangling pointer: the screen is being freed now. */
+        _pending_pop_scr[i] = _pending_pop_scr[_pending_pop_scr_cnt - 1];
+        --_pending_pop_scr_cnt;
+        break;
+    }
 
     gt_stack_iterator(scr_info->stack, _remove_scr_pointer_it_cb, (void *)scr);
     if (scr == scr_info->home_scr.screen) {
@@ -383,6 +510,12 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
         item = (gt_scr_stack_item_st * )gt_stack_pop(scr_info->stack);
         if (item) {
             if (home_id != item->current_scr_id || false == is_home_alive) {
+                if (item->current_scr) {
+                    /** Popped out of stack: mark releasable so a deferred
+                     *  destroy (gt_obj_destroy timer) does not retry forever
+                     *  on the stale using_sta flag. */
+                    item->current_scr->using_sta = false;
+                }
                 _gt_scr_stack_add_pop_remark(scr_info, item);
             }
         }
@@ -475,6 +608,36 @@ gt_stack_item_st gt_scr_stack_has_before(gt_scr_stack_item_st * scr)
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
 
     return gt_stack_search_item_from_bottom(scr_info->stack, _equal_current_id_cb, scr);
+}
+
+gt_scr_stack_item_st * _gt_scr_stack_pop_keep_target(gt_scr_id_t scr_id)
+{
+    _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+    if (NULL == scr_info || NULL == scr_info->stack) {
+        return NULL;
+    }
+    gt_scr_stack_item_st item = {
+        .current_scr_id = scr_id,
+    };
+    gt_stack_item_st result = gt_stack_search_item_from_bottom(scr_info->stack, _equal_current_id_cb, &item);
+    if (NULL == result.data || result.index_from_top < 0) {
+        return NULL;
+    }
+
+    /** Pop and release the screens above the target; the target becomes the new top. */
+    if (result.index_from_top > 1) {
+        gt_scr_stack_pop(result.index_from_top - 1);
+    }
+
+    /** Pop the target itself, keeping its screen object for reuse (no destroy, no pop_remark). */
+    gt_scr_stack_item_st * target = (gt_scr_stack_item_st * )gt_stack_pop(scr_info->stack);
+    if (target && target->current_scr) {
+        /** Popped out of stack: mark releasable so a deferred destroy does not
+         *  retry forever on the stale using_sta flag. The caller either reuses
+         *  it (load() re-sets using_sta) or destroys it. */
+        target->current_scr->using_sta = false;
+    }
+    return target;
 }
 
 bool gt_scr_stack_has_id_before(gt_scr_id_t const * const id_list, uint16_t count)

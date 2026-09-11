@@ -680,4 +680,30 @@ gt_event_type_et gt_event_get_code(gt_event_st * e)
     return e->code_type;
 }
 
+bool _gt_obj_in_event_dispatch(struct gt_obj_s * obj)
+{
+    if (NULL == obj) {
+        return false;
+    }
+    gt_event_st * e = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
+    while (e) {
+        struct gt_obj_s * t = e->target;
+        while (t) {
+            if (t == obj) {
+                return true;
+            }
+            t = t->parent;
+        }
+        t = e->origin;
+        while (t) {
+            if (t == obj) {
+                return true;
+            }
+            t = t->parent;
+        }
+        e = e->prev;
+    }
+    return false;
+}
+
 /* end ------------------------------------------------------------------*/

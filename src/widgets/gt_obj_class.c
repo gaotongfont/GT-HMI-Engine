@@ -82,6 +82,14 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st 
     }
     disp->screens[disp->cnt_scr] = NULL;
     disp->screens = (gt_obj_st ** )gt_mem_realloc(disp->screens, disp->cnt_scr * sizeof(gt_obj_st * ));
+
+    /** The screen is being freed. Drop the switch-animation reference so an
+     *  in-flight anim ready callback (or a pending load) never reads a dangling
+     *  disp->scr_prev after this screen was popped and destroyed mid-anim. */
+    if (disp->scr_prev == self) {
+        disp->scr_prev = NULL;
+    }
+
     return ret_p;
 }
 

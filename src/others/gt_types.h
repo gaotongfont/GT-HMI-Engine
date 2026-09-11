@@ -316,6 +316,7 @@ typedef enum {
     GT_RES_FAIL = -1,   ///< failed
     GT_RES_OK   = 0,    ///< success
     GT_RES_INV  = 1,    ///< invalid
+    GT_RES_DEFER = 2,   ///< deferred to a later tick (object not destroyed now)
 }gt_res_t;
 
 /**

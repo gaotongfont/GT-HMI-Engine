@@ -373,6 +373,18 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_msg_move_y(gt_obj_st * chat, gt_size_
     }
 }
 
+static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_destroy_obj(gt_obj_st * obj)
+{
+    if (NULL == obj) {
+        return;
+    }
+    if (_gt_obj_in_event_dispatch(obj)) {
+        gt_obj_destroy(obj);
+    } else {
+        _gt_obj_class_destroy(obj);
+    }
+}
+
 static GT_ATTRIBUTE_RAM_TEXT gt_obj_st*
 _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint16_t msg_len, uint8_t tim_s, gt_chat_type_te type, bool is_send) {
     _gt_chat_st * style = (_gt_chat_st * )chat;
@@ -380,9 +392,9 @@ _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint16_t msg_len, uint8_t t
     if (style->msg_cnt >= GT_CHAT_MAX_MSG_CNT) {
         style->max_h -= (style->msg_list[0].msg_obj->area.h + _MSG_SPACE_Y);
         _gt_chat_free_msg_text(&style->msg_list[0]);
-        if (style->msg_list[0].source_audio_obj) _gt_obj_class_destroy(style->msg_list[0].source_audio_obj);
-        if (style->msg_list[0].translation_audio_obj) _gt_obj_class_destroy(style->msg_list[0].translation_audio_obj);
-        _gt_obj_class_destroy(style->msg_list[0].msg_obj);
+        _gt_chat_destroy_obj(style->msg_list[0].source_audio_obj);
+        _gt_chat_destroy_obj(style->msg_list[0].translation_audio_obj);
+        _gt_chat_destroy_obj(style->msg_list[0].msg_obj);
         gt_memmove (style->msg_list, style->msg_list + 1, sizeof(_gt_chat_param_st) * (GT_CHAT_MAX_MSG_CNT-1));
         style->msg_cnt = GT_CHAT_MAX_MSG_CNT - 1;
     }

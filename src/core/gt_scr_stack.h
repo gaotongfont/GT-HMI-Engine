@@ -162,6 +162,18 @@ gt_res_t _gt_scr_stack_remove_pop_scr(gt_obj_st const * const scr);
  */
 gt_res_t _gt_scr_stack_clean_unused_pop_scrs(gt_obj_st const * const active_scr);
 
+/**
+ * @brief Pop the screen stack down to (and including) the item whose screen id
+ *      matches scr_id, without destroying that item's screen object. Screens
+ *      above the target are released as usual; the matched item is returned
+ *      with its current_scr intact so the caller can reuse the screen object.
+ *
+ * @param scr_id target screen id
+ * @return gt_scr_stack_item_st* the matched stack item (current_scr preserved),
+ *                               or NULL if not found
+ */
+gt_scr_stack_item_st * _gt_scr_stack_pop_keep_target(gt_scr_id_t scr_id);
+
 bool gt_scr_stack_set_depth(gt_stack_size_t stack_depth);
 
 bool gt_scr_stack_push(gt_scr_stack_item_st * scr);

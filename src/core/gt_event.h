@@ -369,6 +369,20 @@ gt_res_t _gt_global_core_indev_event_send(struct gt_obj_s * org, gt_event_type_e
  */
 gt_event_type_et gt_event_get_code(gt_event_st * e);
 
+
+/**
+ * @brief Check whether the object is referenced by the in-flight event dispatch
+ *        chain (as an event target/origin, or as an ancestor of one).
+ *        Such objects must not be freed immediately from within an event
+ *        callback, otherwise the dispatch loop's re-validate dereferences
+ *        already-freed memory (use-after-free).
+ *
+ * @param obj The object to check
+ * @return true  The object is (an ancestor of) an in-flight event target/origin
+ * @return false Not referenced by the event dispatch chain
+ */
+bool _gt_obj_in_event_dispatch(struct gt_obj_s * obj);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

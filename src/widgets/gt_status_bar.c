@@ -17,6 +17,8 @@
 #include "../others/gt_log.h"
 #include "../hal/gt_hal_disp.h"
 #include "../core/gt_disp.h"
+#include "../core/gt_timer.h"
+#include "../core/gt_mem.h"
 #include "../core/gt_draw.h"
 #include "../core/gt_graph_base.h"
 #include "../widgets/gt_obj.h"
@@ -245,6 +247,13 @@ static bool _change_img_src(gt_obj_st * parent, gt_obj_st * icon, char * src) {
     return true;
 }
 
+typedef struct {
+    gt_obj_st * parent;
+    gt_obj_st * target;
+} _gt_status_bar_deferred_remove_st;
+
+static void _gt_status_bar_deferred_remove_cb(struct _gt_timer_s * timer);
+
 static bool _remove_by(gt_obj_st * parent, gt_obj_st * target) {
     if (NULL == parent) {
         return false;
@@ -252,10 +261,43 @@ static bool _remove_by(gt_obj_st * parent, gt_obj_st * target) {
     if (false == gt_obj_is_child(target, parent)) {
         return false;
     }
+    if (_gt_obj_in_event_dispatch(target)) {
+        /** Defer the whole remove so the in-flight event target is not freed
+         *  from within its own callback (use-after-free). */
+        _gt_status_bar_deferred_remove_st * param =
+            (_gt_status_bar_deferred_remove_st * )gt_mem_malloc(sizeof(_gt_status_bar_deferred_remove_st));
+        if (NULL == param) {
+            return false;
+        }
+        param->parent = parent;
+        param->target = target;
+        _gt_timer_st * timer = _gt_timer_create(_gt_status_bar_deferred_remove_cb,
+            GT_TASK_PERIOD_TIME_DESTROY, param);
+        if (NULL == timer) {
+            gt_mem_free(param);
+            return false;
+        }
+        _gt_timer_set_repeat_count(timer, 1);
+        return true;
+    }
     _gt_obj_class_destroy(target);
     gt_layout_row_grow(parent);
 
     return true;
+}
+
+static void _gt_status_bar_deferred_remove_cb(struct _gt_timer_s * timer)
+{
+    _gt_status_bar_deferred_remove_st * param =
+        (_gt_status_bar_deferred_remove_st * )_gt_timer_get_user_data(timer);
+    if (NULL == param) {
+        return;
+    }
+    if (false == gt_obj_is_type(param->parent, GT_TYPE_UNKNOWN)) {
+        _remove_by(param->parent, param->target);
+    }
+    gt_mem_free(param);
+    _gt_timer_set_user_data(timer, NULL);
 }
 
 #endif  /** GT_STATUS_BAR_THREE_PART_SCALE_MODE */
@@ -729,7 +771,11 @@ bool gt_status_bar_custom_remove(gt_obj_st * target)
     if (false == gt_obj_is_child(target, style->custom)) {
         return false;
     }
-    _gt_obj_class_destroy(target);
+    if (_gt_obj_in_event_dispatch(target)) {
+        gt_obj_destroy(target);
+    } else {
+        _gt_obj_class_destroy(target);
+    }
     return true;
 }
 

@@ -1240,41 +1240,6 @@ _reset_stack_or_push_item_after_home(
 }
 
 /**
- * @brief Check if the screen is referenced by the in-flight event dispatch chain
- *        (as an event target, or as an ancestor of one). If so, its children must
- *        not be destroyed immediately from within an event callback, otherwise the
- *        dispatch loop's re-validate dereferences already-freed memory (use-after-free).
- *        Skip the destroy here and let _scr_anim_del_ready_cb free the whole screen
- *        tree after the screen-switch animation, avoiding leaks, double-free and
- *        dangling pointers.
- *
- * @param scr The screen object
- * @return true  The screen subtree contains an event target, defer destruction
- * @return false Safe to destroy immediately
- */
-static bool GT_ATTRIBUTE_RAM_TEXT _gt_disp_scr_in_event_dispatch(gt_obj_st * scr) {
-    gt_event_st * e = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
-    while (e) {
-        gt_obj_st * t = e->target;
-        while (t) {
-            if (t == scr) {
-                return true;
-            }
-            t = t->parent;
-        }
-        t = e->origin;
-        while (t) {
-            if (t == scr) {
-                return true;
-            }
-            t = t->parent;
-        }
-        e = e->prev;
-    }
-    return false;
-}
-
-/**
  * @brief Handle duplicate screen found in stack: decide whether to reuse or rebuild screen object
  *
  * @param ret result (del_prev_scr may be modified)
@@ -1295,22 +1260,43 @@ _handle_duplicate_scr(
     bool is_home_alive,
     bool is_at_stack_bottom)
 {
+    if (NULL == same_scr) {
+        /** Defensive fallback: no duplicate item available, rebuild. */
+        new_item_p->current_scr = NULL;
+        ret->del_prev_scr = true;
+        return;
+    }
     if (home_id == same_scr->current_scr_id && is_home_alive) {
         new_item_p->current_scr = same_scr->current_scr;
         ret->del_prev_scr = is_at_stack_bottom ? false : true;
         return;
     }
     if (param->force_create_reload) {
-        if (false == is_at_stack_bottom && ret->scr_old != same_scr->current_scr) {
-            gt_obj_destroy_immediately(same_scr->current_scr);
-        } else {
-            if (false == _gt_disp_scr_in_event_dispatch(same_scr->current_scr)) {
+        if (same_scr->current_scr == ret->scr_old) {
+            /** target is the current screen: the switch anim still references it
+             *  (anim_old target), so only free its children now; the shell is
+             *  destroyed by the anim ready callback via del_prev_scr. */
+            if (false == _gt_obj_in_event_dispatch(same_scr->current_scr)) {
                 _gt_obj_class_destroy_children(same_scr->current_scr);
             }
+        } else {
+            /** target is not the current screen: safe to destroy immediately. */
+            gt_obj_destroy_immediately(same_scr->current_scr);
         }
         new_item_p->current_scr = NULL;
     } else {
         new_item_p->current_scr = same_scr->current_scr;
+        if (new_item_p->current_scr) {
+            /** Reused (refresh, not re-created). Restore the in-use flag that
+             *  _gt_scr_stack_pop_keep_target cleared, and drop any stale delate
+             *  mark left by an interrupted switch animation so the screen and
+             *  its widgets can be destroyed normally again. */
+            new_item_p->current_scr->using_sta = true;
+            if (new_item_p->current_scr->delate) {
+                new_item_p->current_scr->delate = false;
+                gt_obj_child_set_prop(new_item_p->current_scr, GT_OBJ_PROP_TYPE_DELATE, false);
+            }
+        }
     }
     ret->del_prev_scr = true;    /** Must free old screen memory */
 }
@@ -1338,7 +1324,7 @@ _handle_new_scr(
         if (home_id == prev->current_scr_id && is_home_alive) {
             ret->del_prev_scr = false;
         } else if (is_at_stack_bottom && param->force_create_reload) {
-            if (false == _gt_disp_scr_in_event_dispatch(prev->current_scr)) {
+            if (false == _gt_obj_in_event_dispatch(prev->current_scr)) {
                 _gt_obj_class_destroy_children(prev->current_scr);
             }
             ret->del_prev_scr = true;
@@ -1381,7 +1367,9 @@ gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const * const param) {
 
     /** Has the same page before and pop unused stack item */
     gt_stack_item_st result = gt_scr_stack_has_before(new_item_p);
-    bool is_at_stack_bottom = result.index_from_top + 1 == gt_scr_stack_get_count();
+    /** index_from_top is 1-based from the top, so the bottom-most item has
+     *  index_from_top == count. */
+    bool is_at_stack_bottom = result.index_from_top == gt_scr_stack_get_count();
     gt_scr_stack_item_st * prev = NULL;
 
 #if GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
@@ -1393,7 +1381,10 @@ gt_disp_stack_push_scr_only_st(gt_disp_stack_param_st const * const param) {
 #endif
 
     if (result.data) {
-        gt_scr_stack_item_st * same_scr = gt_scr_stack_pop(result.index_from_top);
+        /** Pop down to the duplicate screen but keep its object for reuse,
+         *  instead of destroying it (the destroy would make the reuse branch
+         *  below always see current_scr == NULL and silently rebuild). */
+        gt_scr_stack_item_st * same_scr = _gt_scr_stack_pop_keep_target(new_item_p->current_scr_id);
         _handle_duplicate_scr(&ret, new_item_p, same_scr, param,
                               home_id, is_home_alive, is_at_stack_bottom);
     } else {
@@ -1656,6 +1647,18 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
     _gt_indev_reset_status();
     _gt_disp_refr_reset_areas();
     _gt_scr_stack_clean_unused_pop_scrs(scr_old);
+    /** A previous switch animation may still be running (rapid consecutive
+     *  switches). disp->scr_prev holds its old screen, already marked delate;
+     *  the upcoming anim start_cb overwrites scr_prev before the old anim's
+     *  ready_cb can free it, which would leak that screen. Free it now, unless
+     *  it is the very screen we are about to load (e.g. go_back to a screen
+     *  that is still the old animation's scr_prev), in which case it is reused
+     *  and must stay alive. */
+    if (disp->scr_prev && disp->scr_prev->delate && disp->scr_prev != scr_old && disp->scr_prev != scr) {
+        disp->scr_prev->using_sta = 0;
+        _gt_obj_class_destroy(disp->scr_prev);
+        disp->scr_prev = NULL;
+    }
     if (NULL == scr_old) {
         if (GT_SCR_ANIM_TYPE_NONE != type) {
             type = GT_SCR_ANIM_TYPE_NONE;
@@ -1764,6 +1767,9 @@ void gt_disp_load_scr_anim(gt_obj_st * scr, gt_scr_anim_type_et type, uint32_t t
         if (del_prev_scr) {
             /** When the animation is finished, the memory is freed */
             scr_old->delate = true;
+            /** Mark the whole subtree so a nested destroy during the anim
+             *  (e.g. deferred listview/status-bar delete) is not scheduled twice. */
+            gt_obj_child_set_prop(scr_old, GT_OBJ_PROP_TYPE_DELATE, true);
         }
     }
 #endif

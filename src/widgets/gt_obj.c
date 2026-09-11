@@ -344,14 +344,13 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_obj_destroy_handler_cb(struct _gt_timer_s 
     if (GT_TYPE_UNKNOWN == type) {
         return;
     }
-    gt_event_st * ptr = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
-    while(ptr) {
-        if (ptr->target == obj) {
-            GT_LOGW(GT_LOG_TAG_GUI, "Disables the removal of the control itself within event list.");
-            _gt_timer_set_repeat_count(timer, 1);   // retry to destroy object
-            return ;
-        }
-        ptr = ptr->prev;
+    if (_gt_obj_in_event_dispatch(obj)) {
+        /** The object (or an ancestor of it) is still referenced by an in-flight
+         *  event as target/origin. Freeing it now would leave the dispatch loop
+         *  dangling; retry until the event chain drains. */
+        GT_LOGW(GT_LOG_TAG_GUI, "Disables the removal of the control itself within event list.");
+        _gt_timer_set_repeat_count(timer, 1);   // retry to destroy object
+        return ;
     }
 
     if (obj->using_sta) {
@@ -612,17 +611,37 @@ void gt_obj_destroy(gt_obj_st * obj)
 {
     // GT_LOGV(GT_LOG_TAG_GUI, "Want to destroy obj: 0x%p", obj);
     if (!obj) { return ; }
-    obj->delate = true;
-    gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_DELATE, true);
+    if (obj->delate) { return ; }   /**< already scheduled, avoid duplicate timer */
 
     // create a temp timer once task to destroy the object
     _gt_timer_st * tmp_timer = _gt_timer_create(_gt_obj_destroy_handler_cb, GT_TASK_PERIOD_TIME_DESTROY, obj);
+    if (NULL == tmp_timer) {
+        /** Timer create failed (OOM): leave delate cleared so a later call
+         *  can retry instead of leaking the object forever. */
+        return;
+    }
+    obj->delate = true;
+    gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_DELATE, true);
     _gt_timer_set_repeat_count(tmp_timer, 1);
 }
 
-void gt_obj_destroy_immediately(gt_obj_st * obj)
+gt_res_t gt_obj_destroy_immediately(gt_obj_st * obj)
 {
+    if (NULL == obj) {
+        return GT_RES_OK;
+    }
+    if (_gt_obj_in_event_dispatch(obj)) {
+        /** Defer destruction: freeing the object here would leave the in-flight
+         *  event dispatch chain (target/origin) dangling (use-after-free). */
+        gt_obj_destroy(obj);
+        return GT_RES_DEFER;
+    }
+    /** Not in the event chain, destroy now. This includes objects already
+     *  flagged delate by a switch animation (which have no destroy timer of
+     *  their own); skipping them would leak them forever because
+     *  gt_obj_destroy() short-circuits on the delate flag. */
     _gt_obj_class_destroy(obj);
+    return GT_RES_OK;
 }
 
 void gt_screen_set_bgcolor(gt_obj_st * obj, gt_color_t color)
