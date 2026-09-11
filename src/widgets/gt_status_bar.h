@@ -34,16 +34,18 @@ extern "C" {
 #ifndef GT_STATUS_BAR_THREE_PART_SCALE_MODE
     /**
      * @brief Use three part scale mode, left center right part
+     *  [default: 1]
      */
-    #define GT_STATUS_BAR_THREE_PART_SCALE_MODE     01
+    #define GT_STATUS_BAR_THREE_PART_SCALE_MODE     1
 #endif
 
 #ifndef GT_STATUS_BAR_CUSTOM_MODE
     /**
      * @brief Use custom mode, use gt_obj_set_pos(), etc. to set
      *      custom position.
+     *  [default: 1]
      */
-    #define GT_STATUS_BAR_CUSTOM_MODE               01
+    #define GT_STATUS_BAR_CUSTOM_MODE               1
 #endif
 
 

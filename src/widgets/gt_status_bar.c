@@ -67,6 +67,13 @@ typedef struct _gt_status_bar_s {
     uint8_t reserved : 7;
 }_gt_status_bar_st;
 
+#if GT_STATUS_BAR_THREE_PART_SCALE_MODE
+typedef struct {
+    gt_obj_st * parent;
+    gt_obj_st * target;
+} _gt_status_bar_deferred_remove_st;
+#endif
+
 typedef void (* _font_param_cb_t)(gt_obj_st *, uint8_t);
 
 typedef void (* _font_color_cb_t)(gt_obj_st *, gt_color_t);
@@ -247,11 +254,6 @@ static bool _change_img_src(gt_obj_st * parent, gt_obj_st * icon, char * src) {
     return true;
 }
 
-typedef struct {
-    gt_obj_st * parent;
-    gt_obj_st * target;
-} _gt_status_bar_deferred_remove_st;
-
 static void _gt_status_bar_deferred_remove_cb(struct _gt_timer_s * timer);
 
 static bool _remove_by(gt_obj_st * parent, gt_obj_st * target) {
@@ -286,8 +288,7 @@ static bool _remove_by(gt_obj_st * parent, gt_obj_st * target) {
     return true;
 }
 
-static void _gt_status_bar_deferred_remove_cb(struct _gt_timer_s * timer)
-{
+static void _gt_status_bar_deferred_remove_cb(struct _gt_timer_s * timer) {
     _gt_status_bar_deferred_remove_st * param =
         (_gt_status_bar_deferred_remove_st * )_gt_timer_get_user_data(timer);
     if (NULL == param) {
