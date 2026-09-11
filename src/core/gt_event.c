@@ -706,4 +706,36 @@ bool _gt_obj_in_event_dispatch(struct gt_obj_s * obj)
     return false;
 }
 
+bool _gt_obj_child_in_event_dispatch(struct gt_obj_s * obj)
+{
+    if (NULL == obj) {
+        return false;
+    }
+    gt_event_st * e = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
+    while (e) {
+        struct gt_obj_s * t = e->target;
+        if (t && t != obj) {
+            t = t->parent;
+            while (t) {
+                if (t == obj) {
+                    return true;
+                }
+                t = t->parent;
+            }
+        }
+        t = e->origin;
+        if (t && t != obj) {
+            t = t->parent;
+            while (t) {
+                if (t == obj) {
+                    return true;
+                }
+                t = t->parent;
+            }
+        }
+        e = e->prev;
+    }
+    return false;
+}
+
 /* end ------------------------------------------------------------------*/

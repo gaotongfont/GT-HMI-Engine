@@ -1878,7 +1878,7 @@ gt_res_t gt_listview_del_item(gt_obj_st * listview, uint16_t item_idx)
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return GT_RES_FAIL;
     }
-    if (_gt_obj_in_event_dispatch(listview)) {
+    if (_gt_obj_child_in_event_dispatch(listview)) {
         /** Defer the whole delete so the in-flight event target is not freed
          *  from within its own callback (use-after-free). */
         _gt_listview_deferred_del_st * param =
@@ -1907,7 +1907,7 @@ void gt_listview_clear_all_items(gt_obj_st * listview)
     if (!gt_obj_is_type(listview, OBJ_TYPE)) {
         return ;
     }
-    if (_gt_obj_in_event_dispatch(listview)) {
+    if (_gt_obj_child_in_event_dispatch(listview)) {
         /** Defer the whole clear so the in-flight event target is not freed
          *  from within its own callback (use-after-free). */
         _gt_listview_deferred_del_st * param =

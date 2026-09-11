@@ -383,6 +383,18 @@ gt_event_type_et gt_event_get_code(gt_event_st * e);
  */
 bool _gt_obj_in_event_dispatch(struct gt_obj_s * obj);
 
+/**
+ * @brief Check whether a child (strict descendant) of the object is referenced
+ *        by the in-flight event dispatch chain as an event target/origin.
+ *        Unlike _gt_obj_in_event_dispatch, the object itself being the target
+ *        does NOT count (freeing the object's children does not free the object).
+ *
+ * @param obj The object whose children are about to be freed
+ * @return true  A descendant of obj is an in-flight event target/origin
+ * @return false No descendant of obj is referenced (safe to free children now)
+ */
+bool _gt_obj_child_in_event_dispatch(struct gt_obj_s * obj);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif
