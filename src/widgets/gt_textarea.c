@@ -12,6 +12,7 @@
 
 #if GT_CFG_ENABLE_TEXTAREA
 #include "../core/gt_mem.h"
+#include "../core/gt_obj_scroll.h"
 #include "../core/gt_indev.h"
 #include "../others/gt_log.h"
 #include "string.h"
@@ -1446,7 +1447,7 @@ _textarea_init_cb(gt_obj_st * obj) {
 static GT_ATTRIBUTE_RAM_TEXT inline void
 _reset_scroll_value(gt_obj_st * obj) {
     obj->process_attr.scroll.y = 0;
-    gt_obj_set_scroll_prev(obj, gt_obj_get_scroll_prev_x(obj), 0);
+    _gt_obj_set_scroll_prev(obj, _gt_obj_get_scroll_prev_x(obj), 0);
 #if GT_TEXTAREA_FILE_MODE
     {
         _gt_textarea_st *style = (_gt_textarea_st *)obj;

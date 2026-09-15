@@ -11,6 +11,7 @@
 #include "./gt_cross_layout.h"
 #if GT_CFG_ENABLE_CROSS_LAYOUT
 #include "../core/gt_mem.h"
+#include "../core/gt_obj_scroll.h"
 #include "../others/gt_log.h"
 #include "string.h"
 #include "../core/gt_graph_base.h"
@@ -131,8 +132,8 @@ GT_ATTRIBUTE_RAM_TEXT
 static void _set_hor_process_attr_scroll_prev_x(gt_obj_st* obj, gt_size_t prev_x)
 {
     _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
-    gt_obj_set_scroll_prev(obj, prev_x, gt_obj_get_scroll_prev_y(obj));
-    gt_obj_set_scroll_prev(style->hor_obj, prev_x, gt_obj_get_scroll_prev_y(style->hor_obj));
+    _gt_obj_set_scroll_prev(obj, prev_x, _gt_obj_get_scroll_prev_y(obj));
+    _gt_obj_set_scroll_prev(style->hor_obj, prev_x, _gt_obj_get_scroll_prev_y(style->hor_obj));
 }
 
 
@@ -148,8 +149,8 @@ GT_ATTRIBUTE_RAM_TEXT
 static void _set_ver_process_attr_scroll_prev_y(gt_obj_st* obj, gt_size_t prev_y)
 {
     _gt_cross_layout_st * style = (_gt_cross_layout_st *)obj;
-    gt_obj_set_scroll_prev(obj, gt_obj_get_scroll_prev_x(obj), prev_y);
-    gt_obj_set_scroll_prev(style->ver_obj, gt_obj_get_scroll_prev_x(style->ver_obj), prev_y);
+    _gt_obj_set_scroll_prev(obj, _gt_obj_get_scroll_prev_x(obj), prev_y);
+    _gt_obj_set_scroll_prev(style->ver_obj, _gt_obj_get_scroll_prev_x(style->ver_obj), prev_y);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_set_hidden(gt_obj_st* obj, uint16_t ver_index)
@@ -558,14 +559,14 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_hor_scroll_handler(gt_event_st* e)
     }
 
     gt_point_st offset;
-    offset.x = scroll->x - gt_obj_get_scroll_prev_x(e->target);
+    offset.x = scroll->x - _gt_obj_get_scroll_prev_x(e->target);
     _cross_hor_scroll_to(obj, offset);
 
     if(GT_CROSS_ROLL_LOOP == style->hor_roll_mode){
         scroll->x = 0;
     }
 
-    if(scroll->x != gt_obj_get_scroll_prev_x(e->target)){
+    if(scroll->x != _gt_obj_get_scroll_prev_x(e->target)){
         _set_hor_process_attr_scroll_prev_x(obj, scroll->x);
     }
 
@@ -815,7 +816,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_scroll_handler(gt_event_st* e)
     }
 
     gt_point_st offset;
-    offset.y = scroll->y - gt_obj_get_scroll_prev_y(e->target);
+    offset.y = scroll->y - _gt_obj_get_scroll_prev_y(e->target);
 
     if(0 != offset.y) {
         _cross_ver_scroll_to(obj, offset);
@@ -824,7 +825,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _cross_ver_scroll_handler(gt_event_st* e)
         scroll->y = 0;
     }
 
-    if(scroll->y != gt_obj_get_scroll_prev_y(e->target)){
+    if(scroll->y != _gt_obj_get_scroll_prev_y(e->target)){
         _set_ver_process_attr_scroll_prev_y(obj, scroll->y);
     }
     _set_ver_process_attr_scroll_y(obj, scroll->y);

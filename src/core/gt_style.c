@@ -9,6 +9,7 @@
 
  /* include --------------------------------------------------------------*/
 #include "gt_style.h"
+#include "gt_obj_scroll.h"
 #include "./gt_disp.h"
 #include "../core/gt_mem.h"
 #include "../core/gt_layout.h"
@@ -1042,7 +1043,7 @@ void gt_obj_set_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir)
     if (!act) {
         obj->process_attr.scroll.x = 0;
         obj->process_attr.scroll.y = 0;
-        gt_obj_set_scroll_prev(obj, 0, 0);
+        _gt_obj_set_scroll_prev(obj, 0, 0);
         return;
     }
     gt_size_t dx = -act->x;
@@ -1061,7 +1062,7 @@ void gt_obj_set_scroll_dir(gt_obj_st * obj, gt_scroll_dir_et dir)
     }
     obj->process_attr.scroll.x = 0;
     obj->process_attr.scroll.y = 0;
-    gt_obj_set_scroll_prev(obj, 0, 0);
+    _gt_obj_set_scroll_prev(obj, 0, 0);
 }
 
 gt_scroll_dir_et gt_obj_get_scroll_dir(gt_obj_st * obj)

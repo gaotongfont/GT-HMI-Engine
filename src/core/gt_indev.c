@@ -2521,6 +2521,9 @@ bool _gt_indev_remove_want_delate_target(gt_obj_st * target)
 
     for (i = 0; i < cnt_indev; i++) {
         indev = gt_indev_get_dev_by_idx(i);
+        if (NULL == indev || NULL == indev->drv) {
+            continue;
+        }
         switch (indev->drv->type) {
             case GT_INDEV_TYPE_POINTER: {
                 point_p = &indev->data.point;

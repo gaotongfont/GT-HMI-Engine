@@ -267,19 +267,22 @@ gt_fs_res_et gt_fs_write(gt_fs_fp_st * fp, uint8_t * buffer, uint32_t len, uint3
 
 gt_fs_res_et gt_fs_read_img_offset(gt_fs_fp_st * fp, uint8_t * res, uint32_t offset, uint32_t len)
 {
+    if (!fp || !res) {
+        return GT_FS_RES_FAIL;
+    }
     gt_fs_drv_st * drv = fp->drv;
-    if (!fp) {
+    if (!drv || !drv->seek_cb || !drv->read_cb) {
         return GT_FS_RES_FAIL;
     }
     uint32_t ret_len = 0;
 
-    if (!fp || !drv->seek_cb || !drv->read_cb) {
-        return GT_FS_RES_FAIL;
-    }
     drv->seek_cb(drv, fp, offset, GT_FS_SEEK_SET);
-    drv->read_cb(drv, fp, res, len, &ret_len);
+    gt_fs_res_et ret = drv->read_cb(drv, fp, res, len, &ret_len);
+    if (GT_FS_RES_OK != ret) {
+        return ret;
+    }
 
-    return GT_FS_RES_OK;
+    return (ret_len == len) ? GT_FS_RES_OK : GT_FS_RES_FAIL;
 }
 
 gt_fs_res_et gt_fs_read_img_wh(const char * path, uint16_t * w, uint16_t * h)

@@ -345,8 +345,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_msg_move_y(gt_obj_st * chat, gt_size_
 
     if(offset_y > 0) return;
 
-    gt_size_t prev_offset = gt_obj_get_scroll_prev_y(chat);
-    gt_obj_set_scroll_prev(chat, gt_obj_get_scroll_prev_x(chat), offset_y);
+    gt_size_t prev_offset = _gt_obj_get_scroll_prev_y(chat);
+    _gt_obj_set_scroll_prev(chat, _gt_obj_get_scroll_prev_x(chat), offset_y);
 
     gt_size_t diff_y = offset_y - prev_offset;
     if (0 == diff_y) return;
@@ -604,7 +604,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_update_msg_size(gt_obj_st * chat) {
 static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_relayout(gt_obj_st * chat, bool scroll_to_end)
 {
     _gt_chat_st * style = (_gt_chat_st *)chat;
-    gt_obj_set_scroll_prev(chat, 0, 0);
+    _gt_obj_set_scroll_prev(chat, 0, 0);
     for (uint8_t i = 0; i < style->msg_cnt; i++) {
         style->msg_list[i].msg_obj->area.y = chat->area.y;
     }
@@ -1445,7 +1445,7 @@ void gt_chat_clean_all_msg(gt_obj_st * chat)
 
     chat->process_attr.scroll.x = 0;
     chat->process_attr.scroll.y = 0;
-    gt_obj_set_scroll_prev(chat, 0, 0);
+    _gt_obj_set_scroll_prev(chat, 0, 0);
     _gt_chat_st * style = (_gt_chat_st * )chat;
 
     gt_anim_del(style, _msg_anim_exec_cb);

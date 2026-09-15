@@ -112,7 +112,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _screen_scroll(gt_obj_st * obj) {
         }
         obj->process_attr.scroll.x = 0;
         obj->process_attr.scroll.y = 0;
-        gt_obj_set_scroll_prev(obj, 0, 0);
+        _gt_obj_set_scroll_prev(obj, 0, 0);
         return;
     }
     gt_area_abs_st * max_area_p = gt_disp_get_area_max();
@@ -140,7 +140,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _screen_scroll(gt_obj_st * obj) {
         }
         obj->process_attr.scroll.x = 0;
         obj->process_attr.scroll.y = 0;
-        gt_obj_set_scroll_prev(obj, 0, 0);
+        _gt_obj_set_scroll_prev(obj, 0, 0);
         return;
     }
     if (-obj->process_attr.scroll.x < max_area_p->left) {
@@ -155,8 +155,8 @@ static GT_ATTRIBUTE_RAM_TEXT void _screen_scroll(gt_obj_st * obj) {
         obj->process_attr.scroll.y = -max_area_p->bottom + obj->area.h;
     }
 
-    if (gt_obj_get_scroll_prev_x(obj) == obj->process_attr.scroll.x &&
-        gt_obj_get_scroll_prev_y(obj) == obj->process_attr.scroll.y) {
+    if (_gt_obj_get_scroll_prev_x(obj) == obj->process_attr.scroll.x &&
+        _gt_obj_get_scroll_prev_y(obj) == obj->process_attr.scroll.y) {
         /** Reduce the unnecessary drawing overhead of invalid scrolling animations */
         return;
     }
@@ -180,7 +180,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _screen_scroll(gt_obj_st * obj) {
             }
         }
     }
-    gt_obj_set_scroll_prev(obj, obj->process_attr.scroll.x, obj->process_attr.scroll.y);
+    _gt_obj_set_scroll_prev(obj, obj->process_attr.scroll.x, obj->process_attr.scroll.y);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _masked_effect_handler(gt_obj_st * obj) {
@@ -775,8 +775,8 @@ gt_padding_st gt_obj_get_limit_padding(gt_obj_st * parent)
     ret.bottom = max.y;
     if (parent->rebound) {
         gt_point_st prev = {
-            .x = gt_obj_get_scroll_prev_x(parent),
-            .y = gt_obj_get_scroll_prev_y(parent),
+            .x = _gt_obj_get_scroll_prev_x(parent),
+            .y = _gt_obj_get_scroll_prev_y(parent),
         };
         /** calc end border offset */
         gt_point_st border = {

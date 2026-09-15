@@ -304,7 +304,7 @@ static GT_ATTRIBUTE_RAM_TEXT inline void _scrolling_handler(gt_obj_st * obj) {
             gt_size_t rebound = _MULTI_PAGE_REBOUND_DISTANCE(page_size);
             if (scroll > 0) scroll = GT_MIN(scroll, rebound);
             else if (scroll < total_min) scroll = GT_MAX(scroll, total_min - rebound);
-        } else if (gt_obj_is_scrolling(c) && !style->reg.bouncing) {
+        } else if (_gt_obj_is_scrolling(c) && !style->reg.bouncing) {
             /** User dragging: apply damped over-scroll at boundaries, write back */
             if (scroll < total_min) {
                 gt_size_t over = scroll - total_min;
@@ -338,7 +338,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _statical_scroll_calc_new_page(gt_obj_st * obj
     uint16_t prev_idx = style->reg.index;
     bool is_ver = (bool)style->reg.dir;
     gt_size_t scroll      = is_ver ? c->process_attr.scroll.y : c->process_attr.scroll.x;
-    gt_size_t scroll_prev = is_ver ? gt_obj_get_scroll_prev_y(c) : gt_obj_get_scroll_prev_x(c);
+    gt_size_t scroll_prev = is_ver ? _gt_obj_get_scroll_prev_y(c) : _gt_obj_get_scroll_prev_x(c);
     uint16_t page_size    = is_ver ? style->page_h : style->page_w;
 
     if (scroll == scroll_prev) { return; }
@@ -352,10 +352,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _statical_scroll_calc_new_page(gt_obj_st * obj
     gt_size_t new_scroll = -(gt_size_t)style->reg.index * page_size;
     if (is_ver) {
         c->process_attr.scroll.y = new_scroll;
-        gt_obj_set_scroll_prev(c, gt_obj_get_scroll_prev_x(c), new_scroll);
+        _gt_obj_set_scroll_prev(c, _gt_obj_get_scroll_prev_x(c), new_scroll);
     } else {
         c->process_attr.scroll.x = new_scroll;
-        gt_obj_set_scroll_prev(c, new_scroll, gt_obj_get_scroll_prev_y(c));
+        _gt_obj_set_scroll_prev(c, new_scroll, _gt_obj_get_scroll_prev_y(c));
     }
     if (prev_idx == style->reg.index) { return; }
     if (is_ver) { gt_obj_set_pos(c, obj->area.x, obj->area.y + c->process_attr.scroll.y); }
@@ -488,7 +488,7 @@ static void _content_event_cb(gt_event_st * e) {
     }
     case GT_EVENT_TYPE_INPUT_PRESS_LOST:
     case GT_EVENT_TYPE_INPUT_RELEASED: {
-        if (gt_obj_is_scrolling(content)) { break; }
+        if (_gt_obj_is_scrolling(content)) { break; }
         uint16_t page_size = is_ver ? style->page_h : style->page_w;
         gt_size_t scroll = is_ver ? content->process_attr.scroll.y : content->process_attr.scroll.x;
         if (scroll % page_size) {

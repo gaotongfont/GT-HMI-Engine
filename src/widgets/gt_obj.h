@@ -200,36 +200,6 @@ typedef struct gt_obj_s {
     uint32_t use_theme     : 1;     /* 0: user-defined color, skip theme; 1[default]: follow theme */
 }gt_obj_st;
 
-/**
- * @name Backward compatibility macros for scroll_cold
- * @brief These macros provide transparent access to scroll_prev and is_scrolling
- *        which are now stored in scroll_cold (allocated from slab when needed)
- * @{
- */
-/** @brief Get scroll_prev - returns from scroll_cold if available, else 0 (initial value) */
-#define gt_obj_get_scroll_prev_x(obj)  ((obj)->scroll_cold ? (obj)->scroll_cold->scroll_prev.x : 0)
-#define gt_obj_get_scroll_prev_y(obj)  ((obj)->scroll_cold ? (obj)->scroll_cold->scroll_prev.y : 0)
-/** @brief Set scroll_prev - lazily allocates scroll_cold if needed */
-#define gt_obj_set_scroll_prev(obj, _px, _py)  do { \
-    if ((obj)->scroll_cold == NULL) { \
-        (obj)->scroll_cold = gt_cold_scroll_alloc(obj); \
-    } \
-    if ((obj)->scroll_cold) { (obj)->scroll_cold->scroll_prev.x = (_px); (obj)->scroll_cold->scroll_prev.y = (_py); } \
-} while(0)
-/** @brief Get is_scrolling state */
-#define gt_obj_is_scrolling(obj)       ((obj)->scroll_cold ? (obj)->scroll_cold->is_scrolling : 0)
-/** @brief Set is_scrolling state - lazily allocates scroll_cold if needed */
-#define gt_obj_set_scrolling(obj, val) do { \
-    if ((obj)->scroll_cold == NULL) { \
-        (obj)->scroll_cold = gt_cold_scroll_alloc(obj); \
-    } \
-    if ((obj)->scroll_cold) { (obj)->scroll_cold->is_scrolling = (val); } \
-} while(0)
-/** @} */
-
-
-/* private typedef  */
-
 
 
 /* macros ---------------------------------------------------------------*/

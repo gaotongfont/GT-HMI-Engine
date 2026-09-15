@@ -61,7 +61,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _scroll_ready_cb(struct gt_anim_s * anim) {
     if (GT_TYPE_UNKNOWN == gt_obj_class_get_type(obj)) {
         return;
     }
-    if (false == gt_obj_is_scrolling(obj)) {
+    if (false == _gt_obj_is_scrolling(obj)) {
         return;
     }
     gt_event_send(obj, GT_EVENT_TYPE_INPUT_SCROLL_END, NULL);
@@ -212,12 +212,12 @@ bool gt_obj_scroll_is_move(gt_obj_st * obj)
         return false;
     }
 #if 01
-    return gt_obj_is_scrolling(obj);
+    return _gt_obj_is_scrolling(obj);
 #else
-    if (gt_obj_get_scroll_prev_y(obj) != obj->process_attr.scroll.y) {
+    if (_gt_obj_get_scroll_prev_y(obj) != obj->process_attr.scroll.y) {
         return true;
     }
-    if (gt_obj_get_scroll_prev_x(obj) != obj->process_attr.scroll.x) {
+    if (_gt_obj_get_scroll_prev_x(obj) != obj->process_attr.scroll.x) {
         return true;
     }
     return false;

@@ -12,6 +12,7 @@
 #include "gt_event.h"
 #include "./gt_style.h"
 #include "../widgets/gt_obj.h"
+#include "gt_obj_scroll.h"
 #include "../others/gt_log.h"
 #include "gt_mem.h"
 #include "stdlib.h"
@@ -139,7 +140,7 @@ _event_check_scroll_begin(gt_obj_st * obj, gt_event_type_et t) {
     if (GT_EVENT_TYPE_INPUT_SCROLL_START != t) {
         return GT_RES_INV;
     }
-    gt_obj_set_scrolling(obj, true);
+    _gt_obj_set_scrolling(obj, true);
     return GT_RES_OK;
 }
 
@@ -148,7 +149,7 @@ _event_check_scroll_end(gt_obj_st * obj, gt_event_type_et t) {
     if (GT_EVENT_TYPE_INPUT_SCROLL_END != t) {
         return GT_RES_INV;
     }
-    gt_obj_set_scrolling(obj, false);
+    _gt_obj_set_scrolling(obj, false);
     return GT_RES_OK;
 }
 
