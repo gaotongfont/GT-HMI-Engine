@@ -376,7 +376,10 @@ static GT_ATTRIBUTE_RAM_TEXT void _set_label_color_by_item(gt_obj_st * item, gt_
 
 static GT_ATTRIBUTE_RAM_TEXT void _set_last_active_obj(gt_obj_st * listview, gt_obj_st * target) {
     _gt_listview_st * style = (_gt_listview_st * )listview;
-    if (listview == target) {
+    if (false == gt_obj_is_type(listview, OBJ_TYPE)) {
+        return;
+    }
+    if (NULL == target || listview == target) {
         style->last_active = NULL;
         return;
     }
