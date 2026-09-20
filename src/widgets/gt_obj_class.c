@@ -330,7 +330,7 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * c, struct gt_obj_s
             goto obj_lb;
         }
 #if _GT_OBJ_CLASS_SCREEN_LOG
-        GT_LOGD(GT_LOG_TAG_CHECK, "Create obj: %p(%d)", obj, gt_obj_class_get_type(obj));
+        GT_LOGD(GT_LOG_TAG_CHECK, "Create scr: %p(%d), size: 0x%x(%d)", obj, gt_obj_class_get_type(obj), is, is);
 #endif
         return obj;
     }
@@ -342,7 +342,7 @@ struct gt_obj_s * gt_obj_class_create(const gt_obj_class_st * c, struct gt_obj_s
         goto obj_lb;
     }
 #if _GT_OBJ_CLASS_WIDGETS_LOG
-        GT_LOGD(GT_LOG_TAG_CHECK, "Create obj: %p(%d)", obj, gt_obj_class_get_type(obj));
+        GT_LOGD(GT_LOG_TAG_CHECK, "Create obj: %p(%d), size: 0x%x(%d)", obj, gt_obj_class_get_type(obj), is, is);
 #endif
     return obj;
 
@@ -433,7 +433,7 @@ gt_res_t _gt_obj_class_destroy(struct gt_obj_s * self)
         }
         _gt_scr_stack_remove_pop_scr(self);
 #if _GT_OBJ_CLASS_SCREEN_LOG
-        GT_LOGD(GT_LOG_TAG_CHECK, "Destroy obj: %p(%d)", self, gt_obj_class_get_type(self));
+        GT_LOGD(GT_LOG_TAG_CHECK, "Destroy scr: %p(%d)", self, gt_obj_class_get_type(self));
 #endif
     } else {
         ret_p = _gt_obj_class_destroy_from_parent(self);
