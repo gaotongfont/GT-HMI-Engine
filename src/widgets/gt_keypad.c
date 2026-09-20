@@ -538,7 +538,7 @@ static void _cmd_left_handler(gt_obj_st * obj, gt_obj_st * input, const char* co
     uint16_t type = gt_btnmap_get_map_type(obj);
     gt_py_input_method_st* py_input_mt = gt_btnmap_get_py_input_method(obj);
 
-    if(GT_KEYPAD_TYPE_CH == type && py_input_mt->ascii_numb > 0) {
+    if(GT_KEYPAD_TYPE_CH == type && py_input_mt && py_input_mt->ascii_numb > 0) {
         return ;
     }
 
@@ -550,7 +550,7 @@ static void _cmd_right_handler(gt_obj_st * obj, gt_obj_st * input, const char* c
     uint16_t type = gt_btnmap_get_map_type(obj);
     gt_py_input_method_st* py_input_mt = gt_btnmap_get_py_input_method(obj);
 
-    if(GT_KEYPAD_TYPE_CH == type && py_input_mt->ascii_numb > 0) {
+    if(GT_KEYPAD_TYPE_CH == type && py_input_mt && py_input_mt->ascii_numb > 0) {
         return ;
     }
 

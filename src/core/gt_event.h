@@ -395,6 +395,8 @@ bool _gt_obj_in_event_dispatch(struct gt_obj_s * obj);
  */
 bool _gt_obj_child_in_event_dispatch(struct gt_obj_s * obj);
 
+void _gt_event_remove_want_delate_target(struct gt_obj_s * target);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

@@ -1271,7 +1271,11 @@ _handle_duplicate_scr(
         ret->del_prev_scr = is_at_stack_bottom ? false : true;
         return;
     }
-    if (param->force_create_reload) {
+    if (param->force_create_reload
+#if GT_DISP_STACK_IGNORE_REPEAT_SCREEN_ID
+        || (false == param->ignore_repeat_screen_id)
+#endif
+        ) {
         if (same_scr->current_scr == ret->scr_old) {
             /** target is the current screen: the switch anim still references it
              *  (anim_old target), so only free its children now; the shell is

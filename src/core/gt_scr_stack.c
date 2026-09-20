@@ -464,8 +464,15 @@ bool gt_scr_stack_set_depth(gt_stack_size_t stack_depth)
     if (NULL == scr_info->pop_remark.pop_scr_list) {
         scr_info->pop_remark.pop_scr_list = gt_mem_malloc(sizeof(gt_obj_st *) * stack_depth);
     } else {
-        scr_info->pop_remark.pop_scr_list = gt_mem_realloc(scr_info->pop_remark.pop_scr_list,
+        gt_obj_st ** tmp = gt_mem_realloc(scr_info->pop_remark.pop_scr_list,
             sizeof(gt_obj_st *) * stack_depth);
+        if (NULL == tmp) {
+            GT_LOGE(GT_LOG_TAG_GUI, "Pop screen list realloc memory failed!");
+            gt_stack_destroy(scr_info->stack);
+            scr_info->stack = NULL;
+            return false;
+        }
+        scr_info->pop_remark.pop_scr_list = tmp;
     }
     if (NULL == scr_info->pop_remark.pop_scr_list) {
         GT_LOGE(GT_LOG_TAG_GUI, "Pop screen list malloc memory failed!");

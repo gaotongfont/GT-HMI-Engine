@@ -739,4 +739,17 @@ bool _gt_obj_child_in_event_dispatch(struct gt_obj_s * obj)
     return false;
 }
 
+void _gt_event_remove_want_delate_target(struct gt_obj_s * target)
+{
+    if (NULL == target) {
+        return;
+    }
+    gt_event_st * e = _GT_GC_GET_ROOT(_gt_event_node_header_ll);
+    while (e) {
+        if (e->target == target) { e->target = NULL; }
+        if (e->origin == target) { e->origin = NULL; }
+        e = e->prev;
+    }
+}
+
 /* end ------------------------------------------------------------------*/

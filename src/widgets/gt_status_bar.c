@@ -389,6 +389,9 @@ static bool _change_lab_text(gt_obj_st * parent, gt_obj_st * lab, char * text) {
 }
 
 static bool _remove_all_by(gt_obj_st * parent) {
+    if (NULL == parent) {
+        return true;
+    }
     if (0 == parent->cnt_child) {
         return true;
     }

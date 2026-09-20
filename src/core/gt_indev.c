@@ -1166,6 +1166,16 @@ static GT_ATTRIBUTE_RAM_TEXT void _indev_scroll_throw_exec_cb(void * indev, int3
     gt_indev_st * ptr = (gt_indev_st *)indev;
     struct _point * point_p = &ptr->data.point;
     gt_obj_st * obj_scroll = point_p->obj_scroll;
+
+    if (NULL == obj_scroll) {
+        gt_anim_st * anim = ptr->scroll_throw_anim;
+        if (anim) {
+            gt_anim_del_by(anim);
+        }
+        _indev_scroll_throw_reset(ptr);
+        return;
+    }
+
     gt_point_st prev_scroll_pos = obj_scroll->process_attr.scroll;
 
     if (_indev_scroll_throw_handler(ptr)) {
@@ -2532,7 +2542,19 @@ bool _gt_indev_remove_want_delate_target(gt_obj_st * target)
                     ret = true;
                 }
                 if (target == point_p->obj_scroll) {
+                    gt_anim_st * anim = indev->scroll_throw_anim;
+
+                    /*
+                     * Detach the object before deleting the animation.  The
+                     * animation deleted callback runs synchronously and may
+                     * otherwise try to schedule rebound animation on an
+                     * object which is already being destroyed.
+                     */
                     point_p->obj_scroll = NULL;
+                    if (anim) {
+                        gt_anim_del_by(anim);
+                        _indev_scroll_throw_reset(indev);
+                    }
                     ret = true;
                 }
                 if (target == point_p->obj_origin) {

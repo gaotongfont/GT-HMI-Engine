@@ -81,7 +81,13 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_class_destroy_screen(gt_obj_st 
         gt_memmove(&disp->screens[idx], &disp->screens[idx + 1], (disp->cnt_scr - idx) * sizeof(gt_obj_st * ));
     }
     disp->screens[disp->cnt_scr] = NULL;
-    disp->screens = (gt_obj_st ** )gt_mem_realloc(disp->screens, disp->cnt_scr * sizeof(gt_obj_st * ));
+    if (0 == disp->cnt_scr) {
+        gt_mem_free(disp->screens);
+        disp->screens = NULL;
+    } else {
+        gt_obj_st ** tmp = (gt_obj_st ** )gt_mem_realloc(disp->screens, disp->cnt_scr * sizeof(gt_obj_st * ));
+        if (tmp) { disp->screens = tmp; }
+    }
 
     /** The screen is being freed. Drop the switch-animation reference so an
      *  in-flight anim ready callback (or a pending load) never reads a dangling
@@ -127,11 +133,12 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _gt_obj_class_destroy_from_parent(gt_ob
         gt_memmove(&parent->child[idx], &parent->child[idx + 1], (parent->cnt_child - idx) * sizeof(gt_obj_st * ));
     }
     parent->child[parent->cnt_child] = NULL;
-    if (0 == parent->cnt_child && parent->child) {
+    if (0 == parent->cnt_child) {
         gt_mem_free(parent->child);
         parent->child = NULL;
     } else {
-        parent->child = (gt_obj_st ** )gt_mem_realloc(parent->child, parent->cnt_child * sizeof(gt_obj_st * ));
+        gt_obj_st ** tmp = (gt_obj_st ** )gt_mem_realloc(parent->child, parent->cnt_child * sizeof(gt_obj_st * ));
+        if (tmp) { parent->child = tmp; }
     }
     return ret_p;
 }
@@ -148,6 +155,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_obj_class_destroy_property(gt_obj_st * sel
     gt_event_send(self, GT_EVENT_TYPE_CHANGE_DELETED, NULL);
     gt_anim_del_safe_by(self);
     _gt_indev_remove_want_delate_target(self);
+    _gt_event_remove_want_delate_target(self);
 
     // free event attribute
     gt_obj_remove_all_event_cb(self);
@@ -225,18 +233,21 @@ static GT_ATTRIBUTE_RAM_TEXT bool _destroy_and_free_children(struct gt_obj_s * s
 }
 
 static inline bool _add_obj_to_parent(gt_obj_st * obj, gt_obj_st * parent) {
-    if (parent->child == NULL || parent->cnt_child == 0 ) {
-        parent->child = gt_mem_malloc(sizeof(gt_obj_st *));
-        if (!parent->child) {
+    if (parent->child == NULL) {
+        parent->cnt_child = 0;
+        gt_obj_st ** child = gt_mem_malloc(sizeof(gt_obj_st *));
+        if (!child) {
             return false;
         }
-        parent->child[0] = obj;
+        child[0] = obj;
+        parent->child = child;
         parent->cnt_child = 1;
     } else {
-        parent->child = gt_mem_realloc(parent->child, sizeof(gt_obj_st *) * (parent->cnt_child + 1));
-        if (!parent->child) {
+        gt_obj_st ** tmp = gt_mem_realloc(parent->child, sizeof(gt_obj_st *) * (parent->cnt_child + 1));
+        if (!tmp) {
             return false;
         }
+        parent->child = tmp;
         parent->child[parent->cnt_child++] = obj;
     }
     // GT_LOGV(GT_LOG_TAG_GUI, "create a normal obj: %p, parent: %p, parent child: %p, count: %d", parent->child[parent->cnt_child - 1], parent, parent->child, parent->cnt_child);
@@ -257,17 +268,21 @@ static GT_ATTRIBUTE_RAM_TEXT bool _create_new_screen_obj(gt_obj_st * obj) {
         return false;
     }
 
-    if (disp->screens == NULL || disp->cnt_scr == 0 ) {
-        disp->screens = gt_mem_malloc(sizeof(gt_obj_st *));
-        if (!disp->screens) {
+    if (disp->screens == NULL) {
+        disp->cnt_scr = 0;
+        gt_obj_st ** screens = gt_mem_malloc(sizeof(gt_obj_st *));
+        if (!screens) {
             return false;
         }
-        disp->screens[disp->cnt_scr++] = obj;
+        screens[0] = obj;
+        disp->screens = screens;
+        disp->cnt_scr = 1;
     } else {
-        disp->screens = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr + 1));
-        if (!disp->screens) {
+        gt_obj_st ** tmp = gt_mem_realloc(disp->screens, sizeof(gt_obj_st *) * (disp->cnt_scr + 1));
+        if (!tmp) {
             return false;
         }
+        disp->screens = tmp;
         disp->screens[disp->cnt_scr++] = obj;
     }
     obj->area.x = 0;
@@ -411,7 +426,7 @@ gt_res_t _gt_obj_class_destroy(struct gt_obj_s * self)
     }
     _destroy_and_free_children(self, true);
 
-    if (NULL == self->parent) {
+    if (gt_obj_is_type(self, GT_TYPE_SCREEN)) {
         ret_p = _gt_obj_class_destroy_screen(self);
         if (NULL == ret_p) {
             GT_LOGW(GT_LOG_TAG_CHECK, "Destroy screen(%p) failed", self);
@@ -422,7 +437,7 @@ gt_res_t _gt_obj_class_destroy(struct gt_obj_s * self)
 #endif
     } else {
         ret_p = _gt_obj_class_destroy_from_parent(self);
-        if (NULL == ret_p) {
+        if (NULL == ret_p && self->parent && self->parent->child && self->parent->cnt_child) {
             GT_LOGW(GT_LOG_TAG_CHECK, "Destroy obj: %p(%d) from parent: %p(%d) failed", self,
                 gt_obj_class_get_type(self), self->parent, gt_obj_class_get_type(self->parent));
         }
@@ -449,7 +464,14 @@ gt_res_t _gt_obj_class_destroy_children(struct gt_obj_s * self)
         return GT_RES_FAIL;
     }
     for (gt_size_t i = self->cnt_child - 1; i >= 0; i--) {
-        _gt_obj_class_destroy(self->child[i]);
+        gt_obj_st * child = self->child[i];
+        if (_gt_obj_in_event_dispatch(child)) {
+            child->using_sta = false;
+            child->parent = NULL;
+            gt_obj_destroy(child);
+        } else {
+            _gt_obj_class_destroy(child);
+        }
     }
     self->cnt_child = 0;
     self->child = NULL;
