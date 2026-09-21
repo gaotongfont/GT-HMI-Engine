@@ -1125,6 +1125,9 @@ static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _create_scr_by_id(gt_scr_id_t scr_id) {
 
 static GT_ATTRIBUTE_RAM_TEXT void _layer_top_destroy_handler_cb(struct _gt_timer_s * timer) {
     gt_obj_st * layer_top = (gt_obj_st * )_gt_timer_get_user_data(timer);
+    if (gt_obj_is_type(layer_top, GT_TYPE_UNKNOWN)) {
+        return;
+    }
     for (gt_size_t i = layer_top->cnt_child - 1; i >= 0; i--) {
         if (gt_obj_is_type(layer_top->child[i], GT_TYPE_STATUS_BAR)) {
             continue;
@@ -1833,6 +1836,9 @@ gt_res_t gt_disp_destroy_layer_top_widgets(void)
         layer_top->child[i]->visible = GT_INVISIBLE;
     }
     _gt_timer_st * tmp_timer = _gt_timer_create(_layer_top_destroy_handler_cb, GT_TASK_PERIOD_TIME_DESTROY, layer_top);
+    if (NULL == tmp_timer) {
+        return GT_RES_FAIL;
+    }
     _gt_timer_set_repeat_count(tmp_timer, 1);
     return GT_RES_OK;
 }

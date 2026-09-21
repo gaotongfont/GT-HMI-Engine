@@ -131,6 +131,9 @@ _remove_scr_pointer_it_cb(gt_stack_item_st const * item, void * data) {
  */
 static gt_res_t GT_ATTRIBUTE_RAM_TEXT
 _release_all_pop_remark_except_active_scr(_gt_gc_scr_st * scr_info, gt_obj_st const * const active_scr) {
+    if (NULL == scr_info || NULL == scr_info->stack || NULL == scr_info->pop_remark.pop_scr_list) {
+        return GT_RES_FAIL;
+    }
     gt_obj_st * pop_scr = NULL;
     gt_obj_st * temp_scr = NULL;
     gt_stack_size_t i = scr_info->pop_remark.cnt - 1;
@@ -184,7 +187,8 @@ _release_all_pop_remark_except_active_scr(_gt_gc_scr_st * scr_info, gt_obj_st co
  */
 static GT_ATTRIBUTE_RAM_TEXT void
 _gt_scr_stack_record_pop_scr(_gt_gc_scr_st * scr_info, gt_obj_st * scr) {
-    if (NULL == scr) {
+    if (NULL == scr_info || NULL == scr_info->stack || NULL == scr_info->pop_remark.pop_scr_list ||
+        NULL == scr || scr_info->pop_remark.cnt >= scr_info->stack->depth) {
         return;
     }
 #if GT_USE_LAYER_TOP
@@ -215,6 +219,9 @@ _gt_scr_stack_record_pop_scr(_gt_gc_scr_st * scr_info, gt_obj_st * scr) {
  */
 static bool
 _gt_scr_stack_try_record_pending(_gt_gc_scr_st * scr_info, gt_obj_st * scr) {
+    if (NULL == scr_info || NULL == scr_info->stack) {
+        return false;
+    }
     gt_obj_st * active_scr = gt_disp_get_scr();
     if (scr_info->pop_remark.cnt >= scr_info->stack->depth) {
         if (GT_RES_FAIL == _release_all_pop_remark_except_active_scr(scr_info, active_scr)) {
@@ -436,7 +443,9 @@ gt_res_t _gt_scr_stack_remove_pop_scr(gt_obj_st const * const scr)
         break;
     }
 
-    gt_stack_iterator(scr_info->stack, _remove_scr_pointer_it_cb, (void *)scr);
+    if (scr_info->stack) {
+        gt_stack_iterator(scr_info->stack, _remove_scr_pointer_it_cb, (void *)scr);
+    }
     if (scr == scr_info->home_scr.screen) {
         scr_info->home_scr.screen = NULL;
     }
@@ -455,6 +464,14 @@ bool gt_scr_stack_set_depth(gt_stack_size_t stack_depth)
         return false;
     }
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+    if (NULL == scr_info) {
+        return false;
+    }
+    if (scr_info->pop_remark.cnt > stack_depth) {
+        GT_LOGE(GT_LOG_TAG_GUI, "Stack depth %d is smaller than retained screen count %d",
+            stack_depth, scr_info->pop_remark.cnt);
+        return false;
+    }
     if (scr_info->stack) {
         gt_stack_destroy(scr_info->stack);
         scr_info->stack = NULL;
@@ -486,6 +503,9 @@ bool gt_scr_stack_set_depth(gt_stack_size_t stack_depth)
 bool gt_scr_stack_push(gt_scr_stack_item_st * scr)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+    if (NULL == scr_info || NULL == scr_info->stack || NULL == scr) {
+        return false;
+    }
 
 #if _GT_SCR_STACK_TRACE_LOG
     bool is_ok = gt_stack_push(scr_info->stack, (void * )scr);
@@ -505,7 +525,7 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
     gt_scr_id_t home_id = gt_scr_stack_get_home_scr_id();
     bool is_home_alive = gt_scr_stack_is_home_scr_alive();
 
-    if (count < 0) {
+    if (NULL == scr_info || NULL == scr_info->stack || count < 0) {
         return item;
     }
     if (count > gt_stack_get_count(scr_info->stack)) {
@@ -556,7 +576,7 @@ gt_scr_stack_item_st * gt_scr_stack_pop(gt_stack_size_t count)
 gt_scr_stack_item_st * gt_scr_stack_peek(void)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
-    if (NULL == scr_info) {
+    if (NULL == scr_info || NULL == scr_info->stack) {
         return NULL;
     }
     return (gt_scr_stack_item_st * )gt_stack_peek(scr_info->stack);
@@ -565,7 +585,7 @@ gt_scr_stack_item_st * gt_scr_stack_peek(void)
 gt_scr_stack_item_st * gt_scr_stack_peek_by(gt_stack_size_t step)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
-    if (NULL == scr_info) {
+    if (NULL == scr_info || NULL == scr_info->stack) {
         return NULL;
     }
     return (gt_scr_stack_item_st * )gt_stack_peek_by(scr_info->stack, step);
@@ -594,6 +614,9 @@ gt_scr_id_t gt_scr_stack_get_prev_id(void)
 gt_scr_id_t gt_scr_stack_get_prev_id_by(gt_stack_size_t step)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+    if (NULL == scr_info || NULL == scr_info->stack) {
+        return -1;
+    }
     gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek_by(scr_info->stack, step);
 
     return item ? item->current_scr_id : -1;
@@ -602,6 +625,9 @@ gt_scr_id_t gt_scr_stack_get_prev_id_by(gt_stack_size_t step)
 gt_obj_st * gt_scr_stack_get_prev_scr_by(gt_stack_size_t step)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+    if (NULL == scr_info || NULL == scr_info->stack) {
+        return NULL;
+    }
     gt_scr_stack_item_st * item = (gt_scr_stack_item_st * )gt_stack_peek_by(scr_info->stack, step);
     GT_CHECK_BACK_VAL(item, NULL);
     if (item->current_scr_id == gt_scr_stack_get_home_scr_id() && gt_scr_stack_is_home_scr_alive()) {
@@ -613,7 +639,11 @@ gt_obj_st * gt_scr_stack_get_prev_scr_by(gt_stack_size_t step)
 gt_stack_item_st gt_scr_stack_has_before(gt_scr_stack_item_st * scr)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
-
+    gt_stack_item_st empty = {0};
+    empty.index_from_top = -1;
+    if (NULL == scr_info || NULL == scr_info->stack || NULL == scr) {
+        return empty;
+    }
     return gt_stack_search_item_from_bottom(scr_info->stack, _equal_current_id_cb, scr);
 }
 
@@ -669,7 +699,7 @@ bool gt_scr_stack_has_id_before(gt_scr_id_t const * const id_list, uint16_t coun
 bool gt_scr_stack_is_empty(void)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
-
+    if (NULL == scr_info || NULL == scr_info->stack) { return true; }
     return gt_stack_is_empty(scr_info->stack);
 }
 
@@ -677,19 +707,20 @@ bool gt_scr_stack_is_full(void)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
 
-    return gt_stack_is_full(scr_info->stack);
+    return scr_info && scr_info->stack ? gt_stack_is_full(scr_info->stack) : false;
 }
 
 gt_stack_size_t gt_scr_stack_get_count(void)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
 
-    return gt_stack_get_count(scr_info->stack);
+    return scr_info && scr_info->stack ? gt_stack_get_count(scr_info->stack) : 0;
 }
 
 void gt_scr_stack_clear(void)
 {
     _gt_gc_scr_st * scr_info = _gt_gc_get_scr_info();
+    if (NULL == scr_info || NULL == scr_info->stack) { return; }
 
     // Clear screen object
     gt_stack_iterator(scr_info->stack, _free_alive_scr_object_cb, (void * )scr_info);

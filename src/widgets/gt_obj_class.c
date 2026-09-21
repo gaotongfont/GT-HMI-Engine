@@ -196,6 +196,7 @@ static GT_ATTRIBUTE_RAM_TEXT bool _destroy_and_free_children(struct gt_obj_s * s
     gt_size_t i = 0;
 
     if (NULL == self->child || 0 == self->cnt_child) {
+        self->cnt_child = 0;
         if (false == is_root) {
             /**
              * @brief free obj memory, root need to release disp memory,
@@ -212,7 +213,13 @@ static GT_ATTRIBUTE_RAM_TEXT bool _destroy_and_free_children(struct gt_obj_s * s
 
     // release child object from bottom to top
     for (i = self->cnt_child - 1; i >= 0; i--) {
-        if (_destroy_and_free_children(self->child[i], false)) {
+        gt_obj_st * child = self->child[i];
+        if (_gt_obj_in_event_dispatch(child)) {
+            child->using_sta = false;
+            child->parent = NULL;
+            gt_obj_destroy(child);
+            self->child[i] = NULL;
+        } else if (_destroy_and_free_children(child, false)) {
             self->child[i] = NULL;  /** can not repeat free memory here */
         }
     }
@@ -463,18 +470,49 @@ gt_res_t _gt_obj_class_destroy_children(struct gt_obj_s * self)
         GT_LOGW(GT_LOG_TAG_CHECK, "Want to destroy unknown obj's childs: %p(%d)", self, gt_obj_class_get_type(self));
         return GT_RES_FAIL;
     }
-    for (gt_size_t i = self->cnt_child - 1; i >= 0; i--) {
-        gt_obj_st * child = self->child[i];
+    /** Unlink every child from the parent up front so the container is empty the
+     *  moment this call returns: a handler that rebuilds the list right after
+     *  clearing it (list item click -> clear -> add) must start from index 0 and
+     *  must not be wiped by a deferred clear that fires ~10ms later.
+     *
+     *  Only the memory release is deferred. A child still referenced by the
+     *  in-flight event dispatch chain cannot be freed here or the dispatcher
+     *  would keep walking freed memory, so it is handed to gt_obj_destroy()'s
+     *  timer instead. Its ->parent is cleared so a later deferred destroy never
+     *  dereferences a parent that may already have been freed. */
+    gt_obj_st ** child_arr = self->child;
+    gt_size_t cnt = self->cnt_child;
+    self->child = NULL;
+    self->cnt_child = 0;
+    if (NULL == child_arr) {
+        cnt = 0;
+    }
+    for (gt_size_t i = cnt - 1; i >= 0; i--) {
+        gt_obj_st * child = child_arr[i];
+        if (NULL == child) {
+            continue;
+        }
         if (_gt_obj_in_event_dispatch(child)) {
             child->using_sta = false;
+            /** Detach from the parent: the child is destroyed later by its own
+             *  deferred timer, but the parent (self) may already be freed by then.
+             *  A dangling parent would be dereferenced by the event bubble
+             *  (CHANGE_CHILD_DELETE) and by _gt_obj_class_destroy_from_parent(),
+             *  both of which read parent->classes/child -> use-after-free. */
             child->parent = NULL;
             gt_obj_destroy(child);
         } else {
+            /** Parent is already unlinked (self->child == NULL), so
+             *  _gt_obj_class_destroy_from_parent() safely returns NULL inside
+             *  _gt_obj_class_destroy(). Use the full recursive destroy so nested
+             *  children (list item icons/labels) are released too. */
             _gt_obj_class_destroy(child);
         }
     }
-    self->cnt_child = 0;
-    self->child = NULL;
+    if (child_arr) {
+        gt_mem_free(child_arr);
+    }
+    gt_event_send(self, GT_EVENT_TYPE_CHANGE_CHILD_DELETED, NULL);
     return GT_RES_OK;
 }
 
