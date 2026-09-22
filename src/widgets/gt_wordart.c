@@ -561,7 +561,7 @@ void gt_wordart_set_text_by_len(gt_obj_st * wordart, const char * text, uint16_t
         return;
     }
     gt_memcpy(style->text, text, len);
-    style->text[len + 1] = '\0';
+    style->text[len] = '\0';
     gt_event_send(wordart, GT_EVENT_TYPE_DRAW_START, NULL);
 }
 

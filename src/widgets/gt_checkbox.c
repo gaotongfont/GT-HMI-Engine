@@ -268,9 +268,9 @@ void gt_checkbox_set_text_by_len(gt_obj_st * checkbox, const char * text, uint16
     }
     _gt_checkbox_st * style = (_gt_checkbox_st * )checkbox;
     if (NULL == style->text) {
-        style->text = gt_mem_malloc(len);
+        style->text = gt_mem_malloc(len + 1);
     } else if (len != strlen(style->text) + 1) {
-        style->text = gt_mem_realloc(style->text, len);
+        style->text = gt_mem_realloc(style->text, len + 1);
     }
     if (NULL == style->text) {
         return;
