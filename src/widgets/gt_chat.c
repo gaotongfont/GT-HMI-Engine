@@ -208,14 +208,11 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_set_voice_text(_gt_chat_st * style, gt_obj
         }
     }
     // @GT_SYMBOL_VOICE_PLAY
-    const char left_voice_icon[3][4] = {GT_SYMBOL_VOICE_PLAY_LEFT_1,GT_SYMBOL_VOICE_PLAY_LEFT_2,GT_SYMBOL_VOICE_PLAY_LEFT_3};
-    const char right_voice_icon[3][4] = {GT_SYMBOL_VOICE_PLAY_RIGHT_1,GT_SYMBOL_VOICE_PLAY_RIGHT_2,GT_SYMBOL_VOICE_PLAY_RIGHT_3};
-    if(is_send){
-        style->item_cb.set_text_cb(obj, "%d\" %s", tim_s, right_voice_icon[start % GT_SYMBOL_VOICE_PLAY]);
-    }
-    else{
-        style->item_cb.set_text_cb(obj, "%s %d\"", left_voice_icon[start % GT_SYMBOL_VOICE_PLAY], tim_s);
-    }
+    const char voice_icon[3][4] = {GT_SYMBOL_VOICE_PLAY_LEFT_1,GT_SYMBOL_VOICE_PLAY_LEFT_2,GT_SYMBOL_VOICE_PLAY_LEFT_3};
+    /* Keep the speaker glyph and text order identical for sent and received
+     * voice messages. The hit-test region is anchored to this leading icon. */
+    (void)is_send;
+    style->item_cb.set_text_cb(obj, "%s %d\"", voice_icon[start % GT_SYMBOL_VOICE_PLAY], tim_s);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _gt_set_msg_font_info_all(_gt_chat_st * style, gt_obj_st * msg_obj, gt_font_info_st * font_info) {
@@ -305,7 +302,7 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
         uint16_t hit_w = 52;
         uint16_t source_h = h >> 1;
         if (msg_p->source_audio_obj) {
-            msg_p->source_audio_obj->area.x = is_send ? (x + w - hit_w - 4) : (x + 4);
+            msg_p->source_audio_obj->area.x = x + 4;
             msg_p->source_audio_obj->area.y = y;
             msg_p->source_audio_obj->area.w = hit_w;
             msg_p->source_audio_obj->area.h = source_h;
@@ -313,7 +310,7 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
             gt_obj_set_size(msg_p->source_audio_obj, hit_w, source_h);
         }
         if (msg_p->translation_audio_obj) {
-            msg_p->translation_audio_obj->area.x = is_send ? (x + w - hit_w - 4) : (x + 4);
+            msg_p->translation_audio_obj->area.x = x + 4;
             msg_p->translation_audio_obj->area.y = y + source_h;
             msg_p->translation_audio_obj->area.w = hit_w;
             msg_p->translation_audio_obj->area.h = h - source_h;
@@ -324,7 +321,7 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
         if (msg_p->source_audio_obj) {
             uint16_t hit_w = 52;
             uint16_t hit_h = h;
-            msg_p->source_audio_obj->area.x = is_send ? (x + w - hit_w - 4) : (x + 4);
+            msg_p->source_audio_obj->area.x = x + 4;
             msg_p->source_audio_obj->area.y = y;
             msg_p->source_audio_obj->area.w = hit_w;
             msg_p->source_audio_obj->area.h = hit_h;
@@ -483,9 +480,9 @@ static void _gt_chat_render_translation(_gt_chat_st * style, uint8_t index, uint
     _gt_chat_param_st * msg_p = &style->msg_list[index];
     {
         const char * sep = "\n----------------\n";
-        const char * icons[3] = { msg_p->is_send ? GT_SYMBOL_VOICE_PLAY_RIGHT_1 : GT_SYMBOL_VOICE_PLAY_LEFT_1,
-                                  msg_p->is_send ? GT_SYMBOL_VOICE_PLAY_RIGHT_2 : GT_SYMBOL_VOICE_PLAY_LEFT_2,
-                                  msg_p->is_send ? GT_SYMBOL_VOICE_PLAY_RIGHT_3 : GT_SYMBOL_VOICE_PLAY_LEFT_3 };
+        const char * icons[3] = { GT_SYMBOL_VOICE_PLAY_LEFT_1,
+                                  GT_SYMBOL_VOICE_PLAY_LEFT_2,
+                                  GT_SYMBOL_VOICE_PLAY_LEFT_3 };
         uint8_t active_frame = (style->anim_play && style->play_segment == GT_CHAT_PLAY_TRANSLATION) ? frame : (GT_SYMBOL_VOICE_PLAY - 1);
         const char * icon = icons[active_frame % GT_SYMBOL_VOICE_PLAY];
         const char * source_icon = icons[(style->anim_play && style->play_segment == GT_CHAT_PLAY_SOURCE) ? (frame % GT_SYMBOL_VOICE_PLAY) : (GT_SYMBOL_VOICE_PLAY - 1)];
@@ -636,9 +633,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _msg_click_cb(gt_event_st * e) {
         _gt_chat_param_st * msg = &style->msg_list[style->msg_select_idx];
         if (msg->has_translation && msg->translation_expanded &&
             p.y >= msg->msg_obj->area.y && p.y < msg->msg_obj->area.y + msg->msg_obj->area.h) {
-            bool near_speaker = msg->is_send
-                ? (p.x >= msg->msg_obj->area.x + msg->msg_obj->area.w - 52)
-                : (p.x <= msg->msg_obj->area.x + 52);
+            bool near_speaker = p.x <= msg->msg_obj->area.x + 52;
             if (near_speaker) {
                 gt_chat_play_segment_te segment =
                     (p.y < msg->msg_obj->area.y + (msg->msg_obj->area.h >> 1))
