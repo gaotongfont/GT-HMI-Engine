@@ -225,6 +225,14 @@ gt_obj_st * gt_chat_add_received_translated_msg_with_time(gt_obj_st * chat, cons
 gt_obj_st * gt_chat_set_last_msg_translation(gt_obj_st * chat, const char * translation);
 
 /**
+ * @brief Expand or collapse the translation segment of every translated message.
+ * @param chat Chat object.
+ * @param expanded true to show translations, false to hide them.
+ * @return true when the chat object is valid, otherwise false.
+ */
+bool gt_chat_set_all_translation_expanded(gt_obj_st * chat, bool expanded);
+
+/**
  * @brief Set the generic Tips text for a message.
  * @param chat Chat object.
  * @param message_id Stable message ID.

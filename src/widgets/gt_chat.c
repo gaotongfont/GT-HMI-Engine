@@ -342,8 +342,18 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
             gt_obj_set_size(msg_p->source_audio_obj, hit_w, hit_h);
         }
         if (msg_p->translation_audio_obj) {
+            /* Keep the hidden hit-test object inside the collapsed bubble.
+             * A zero-sized child still participates in the scroll-container
+             * bounds calculation, so leaving its old expanded y coordinate
+             * would leave phantom content height after collapsing. */
+            msg_p->translation_audio_obj->area.x = x + 4;
+            msg_p->translation_audio_obj->area.y = y;
             msg_p->translation_audio_obj->area.w = 0;
             msg_p->translation_audio_obj->area.h = 0;
+            gt_obj_set_pos(msg_p->translation_audio_obj,
+                           msg_p->translation_audio_obj->area.x,
+                           msg_p->translation_audio_obj->area.y);
+            gt_obj_set_size(msg_p->translation_audio_obj, 0, 0);
         }
     }
 
@@ -455,6 +465,7 @@ _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint16_t msg_len, uint8_t t
     msg_p->source_audio_obj = NULL;
     msg_p->translation_audio_obj = NULL;
     msg_p->has_translation = 0;
+    msg_p->translation_expanded = 0;
     msg_p->has_tips = 0;
     msg_p->message_id = style->next_message_id++;
     if (style->next_message_id == 0) style->next_message_id = 1;
@@ -510,6 +521,7 @@ static void _gt_chat_free_msg_text(_gt_chat_param_st * msg_p)
     msg_p->translation_text = NULL;
     msg_p->tips_text = NULL;
     msg_p->has_translation = 0;
+    msg_p->translation_expanded = 0;
     msg_p->has_tips = 0;
 }
 
@@ -520,6 +532,7 @@ static bool _gt_chat_set_translation(_gt_chat_st * style, uint8_t index, const c
     if (msg_p->type != GT_CHAT_TYPE_TEXT || !msg_p->source_text) return false;
     if (msg_p->translation_text) { gt_mem_free(msg_p->translation_text); msg_p->translation_text = NULL; }
     msg_p->has_translation = 0;
+    msg_p->translation_expanded = 0;
     if (translation && translation[0]) {
         uint32_t len = (uint32_t)strlen(translation);
         msg_p->translation_text = (char *)gt_mem_malloc(len + 1);
@@ -702,6 +715,7 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_relayout(gt_obj_st * chat, bool scrol
     }
     _gt_chat_update_msg_size(chat);
     chat->process_attr.scroll.y = scroll_to_end ? (chat->area.h - style->max_h) : 0;
+    if (chat->process_attr.scroll.y > 0) chat->process_attr.scroll.y = 0;
     _gt_chat_msg_move_y(chat, chat->process_attr.scroll.y);
 }
 
@@ -1135,6 +1149,40 @@ gt_obj_st * gt_chat_set_last_msg_translation(gt_obj_st * chat, const char * tran
     _gt_chat_update_msg_size(chat);
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
     return style->msg_list[index].msg_obj;
+}
+
+bool gt_chat_set_all_translation_expanded(gt_obj_st * chat, bool expanded)
+{
+    if (false == gt_obj_is_type(chat, OBJ_TYPE)) return false;
+
+    _gt_chat_st * style = (_gt_chat_st *)chat;
+    bool has_changed = false;
+    for (uint8_t i = 0; i < style->msg_cnt; i++) {
+        _gt_chat_param_st * msg_p = &style->msg_list[i];
+        if (msg_p->has_translation &&
+            msg_p->translation_expanded != (uint8_t)expanded) {
+            has_changed = true;
+            break;
+        }
+    }
+
+    if (!has_changed) return true;
+
+    /* A collapsed translation is no longer a valid playback target. Stop the
+     * animation before rebuilding all message text and hit-test areas. The
+     * public stop helper also notifies the audio owner when needed. */
+    gt_chat_stop_message_playback(chat);
+
+    for (uint8_t i = 0; i < style->msg_cnt; i++) {
+        _gt_chat_param_st * msg_p = &style->msg_list[i];
+        if (!msg_p->has_translation) continue;
+        msg_p->translation_expanded = (uint8_t)expanded;
+        _gt_chat_render_translation(style, i, GT_SYMBOL_VOICE_PLAY - 1);
+    }
+
+    _gt_chat_relayout(chat, true);
+    gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
+    return true;
 }
 
 gt_obj_st * gt_chat_set_message_tips_by_len(gt_obj_st * chat, uint32_t message_id,
