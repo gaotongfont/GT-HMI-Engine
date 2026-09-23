@@ -223,6 +223,68 @@ gt_obj_st * gt_chat_add_received_translated_msg_with_time(gt_obj_st * chat, cons
  * @return Updated message object, or NULL on failure.
  */
 gt_obj_st * gt_chat_set_last_msg_translation(gt_obj_st * chat, const char * translation);
+
+/**
+ * @brief Set the generic Tips text for a message.
+ * @param chat Chat object.
+ * @param message_id Stable message ID.
+ * @param text Tips text; NULL or an empty string clears the Tips.
+ * @return Tips button object, or NULL when the message does not exist,
+ *         allocation fails, or the Tips is cleared.
+ * @note The returned object is owned by the chat and is valid only while the
+ *       message exists. The caller may use it to customize its style.
+ */
+gt_obj_st * gt_chat_set_message_tips(gt_obj_st * chat, uint32_t message_id, const char * text);
+
+/**
+ * @brief Set the generic Tips text using an explicit byte length.
+ * @param chat Chat object.
+ * @param message_id Stable message ID.
+ * @param text Tips text buffer.
+ * @param len Byte length of text, excluding any terminator.
+ * @return Tips button object, or NULL on failure.
+ */
+gt_obj_st * gt_chat_set_message_tips_by_len(gt_obj_st * chat, uint32_t message_id, const char * text, uint16_t len);
+
+/**
+ * @brief Set the Tips text for the last message.
+ * @param chat Chat object.
+ * @param text Tips text; NULL or an empty string clears the Tips.
+ * @return Tips button object, or NULL when there is no message or the Tips is cleared.
+ */
+gt_obj_st * gt_chat_set_last_msg_tips(gt_obj_st * chat, const char * text);
+
+/**
+ * @brief Clear the Tips attached to a message.
+ * @param chat Chat object.
+ * @param message_id Stable message ID.
+ * @return true on success, otherwise false.
+ */
+bool gt_chat_clear_message_tips(gt_obj_st * chat, uint32_t message_id);
+
+/**
+ * @brief Clear the Tips attached to the last message.
+ * @param chat Chat object.
+ * @return true on success, otherwise false.
+ */
+bool gt_chat_clear_last_msg_tips(gt_obj_st * chat);
+
+/**
+ * @brief Get the Tips button object for a message.
+ * @param chat Chat object.
+ * @param message_id Stable message ID.
+ * @return Tips object, or NULL when the message has no Tips.
+ * @note The returned object is owned by the chat and becomes invalid when
+ *       the message is removed, the chat is cleared, or the chat is destroyed.
+ */
+gt_obj_st * gt_chat_get_message_tips_obj(gt_obj_st * chat, uint32_t message_id);
+
+/**
+ * @brief Get the Tips button object for the last message.
+ * @param chat Chat object.
+ * @return Tips object, or NULL when there is no message or no Tips.
+ */
+gt_obj_st * gt_chat_get_last_msg_tips_obj(gt_obj_st * chat);
 /**
  * @brief Replace a message translation by stable message ID.
  * @param chat Chat object.

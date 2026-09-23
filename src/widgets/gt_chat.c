@@ -37,10 +37,12 @@
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_chat_param_s{
     gt_obj_st* msg_obj;
+    gt_obj_st* tips_obj;
     gt_obj_st* source_audio_obj;
     gt_obj_st* translation_audio_obj;
     char *source_text;
     char *translation_text;
+    char *tips_text;
     uint32_t message_id;
     uint8_t source_tim_s;
     uint8_t translation_tim_s;
@@ -49,6 +51,7 @@ typedef struct _gt_chat_param_s{
     uint8_t is_send : 1;
     uint8_t has_translation : 1;
     uint8_t translation_expanded : 1;
+    uint8_t has_tips : 1;
 }_gt_chat_param_st;
 
 typedef struct _gt_chat_s {
@@ -125,6 +128,9 @@ static bool _gt_chat_start_message_play(_gt_chat_st * style, uint8_t index, gt_c
 static void _gt_chat_free_msg_text(_gt_chat_param_st * msg_p);
 static bool _gt_chat_set_translation(_gt_chat_st * style, uint8_t index, const char * translation);
 static void _gt_chat_render_translation(_gt_chat_st * style, uint8_t index, uint8_t frame);
+static void _gt_chat_update_tips_area(_gt_chat_st * style, uint8_t index);
+static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_destroy_obj(gt_obj_st * obj);
+static int32_t _gt_chat_find_message_id(_gt_chat_st * style, uint32_t message_id);
 
 
 /* static variables -----------------------------------------------------*/
@@ -283,7 +289,13 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
     }
 
     x = (msg_p->is_send ?  (chat->area.w - w - _MSG_SPACE_X) : _MSG_SPACE_X) + chat->area.x;
-    y =  idx <= 0 ? _MSG_SPACE_Y + chat->area.y : style->msg_list[idx - 1].msg_obj->area.y + style->msg_list[idx - 1].msg_obj->area.h + _MSG_SPACE_Y;
+    if (idx <= 0) {
+        y = _MSG_SPACE_Y + chat->area.y;
+    } else {
+        _gt_chat_param_st * prev = &style->msg_list[idx - 1];
+        y = prev->msg_obj->area.y + prev->msg_obj->area.h + _MSG_SPACE_Y;
+        if (prev->tips_obj && prev->has_tips) y += prev->tips_obj->area.h + 2;
+    }
 
     if(radius > GT_MIN(w >> 1, h >> 1)) {
         radius = GT_MIN(w >> 1, h >> 1);
@@ -295,6 +307,7 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
     msg_p->msg_obj->area.y = y;
     msg_p->msg_obj->area.w = w;
     msg_p->msg_obj->area.h = h;
+    _gt_chat_update_tips_area(style, idx);
 
     if (msg_p->has_translation && msg_p->translation_expanded) {
         /* A source row may wrap to several lines. Cover each logical half of
@@ -334,7 +347,38 @@ static GT_ATTRIBUTE_RAM_TEXT uint16_t _gt_update_msg_area_idx(gt_obj_st* chat, u
         }
     }
 
-    return (h + _MSG_SPACE_Y);
+    return (h + _MSG_SPACE_Y + ((msg_p->tips_obj && msg_p->has_tips) ? msg_p->tips_obj->area.h + 2 : 0));
+}
+
+static void _gt_chat_update_tips_area(_gt_chat_st * style, uint8_t index)
+{
+    _gt_chat_param_st * msg_p = &style->msg_list[index];
+    if (!msg_p->tips_obj || !msg_p->has_tips) return;
+    uint16_t max_w = style->base.area.w > (_MSG_SPACE_X << 1)
+                   ? style->base.area.w - (_MSG_SPACE_X << 1) : style->base.area.w;
+    gt_font_split_line_st split = {
+        .text = NULL,
+        .len = 0,
+        .max_w = max_w,
+        .start_w = max_w,
+        .space = 0,
+        .indent = 0,
+    };
+    /* Measure the button text at the chat width first, then shrink the
+     * button to the actual text width (or keep the capped width when it
+     * wraps). The small horizontal allowance prevents glyph clipping. */
+    gt_obj_set_size(msg_p->tips_obj, max_w, style->font_info.size + 4);
+    gt_split_line_ret_st line = gt_btn_get_font_split_line_numb(msg_p->tips_obj, &split);
+    uint16_t tips_w = (uint16_t)((line.line_numb > 1 ? max_w : line.max_w) + 8);
+    if (tips_w > style->base.area.w) tips_w = style->base.area.w;
+    uint16_t tips_h = (uint16_t)((line.line_numb ? line.line_numb : 1) * style->font_info.size + 4);
+    gt_size_t tips_x = msg_p->is_send
+                     ? msg_p->msg_obj->area.x + msg_p->msg_obj->area.w - tips_w
+                     : msg_p->msg_obj->area.x;
+    gt_obj_set_pos(msg_p->tips_obj,
+                   tips_x,
+                   msg_p->msg_obj->area.y + msg_p->msg_obj->area.h + 2);
+    gt_obj_set_size(msg_p->tips_obj, tips_w, tips_h);
 }
 
 static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_msg_move_y(gt_obj_st * chat, gt_size_t offset_y) {
@@ -363,6 +407,11 @@ static GT_ATTRIBUTE_RAM_TEXT void _gt_chat_msg_move_y(gt_obj_st * chat, gt_size_
                            style->msg_list[i].translation_audio_obj->area.x,
                            style->msg_list[i].translation_audio_obj->area.y + diff_y);
         }
+        if (style->msg_list[i].tips_obj) {
+            gt_obj_set_pos(style->msg_list[i].tips_obj,
+                           style->msg_list[i].tips_obj->area.x,
+                           style->msg_list[i].tips_obj->area.y + diff_y);
+        }
 
         if(GT_STATE_PRESSED == gt_obj_get_state(style->msg_list[i].msg_obj)){
             gt_obj_set_state(style->msg_list[i].msg_obj, GT_STATE_NONE);
@@ -387,8 +436,11 @@ _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint16_t msg_len, uint8_t t
     _gt_chat_st * style = (_gt_chat_st * )chat;
 
     if (style->msg_cnt >= GT_CHAT_MAX_MSG_CNT) {
-        style->max_h -= (style->msg_list[0].msg_obj->area.h + _MSG_SPACE_Y);
+        style->max_h -= (style->msg_list[0].msg_obj->area.h + _MSG_SPACE_Y +
+                         ((style->msg_list[0].tips_obj && style->msg_list[0].has_tips) ?
+                          style->msg_list[0].tips_obj->area.h + 2 : 0));
         _gt_chat_free_msg_text(&style->msg_list[0]);
+        _gt_chat_destroy_obj(style->msg_list[0].tips_obj);
         _gt_chat_destroy_obj(style->msg_list[0].source_audio_obj);
         _gt_chat_destroy_obj(style->msg_list[0].translation_audio_obj);
         _gt_chat_destroy_obj(style->msg_list[0].msg_obj);
@@ -398,9 +450,12 @@ _gt_chat_add_msg(gt_obj_st * chat, const char * msg, uint16_t msg_len, uint8_t t
     _gt_chat_param_st * msg_p = &style->msg_list[style->msg_cnt];
     msg_p->source_text = NULL;
     msg_p->translation_text = NULL;
+    msg_p->tips_text = NULL;
+    msg_p->tips_obj = NULL;
     msg_p->source_audio_obj = NULL;
     msg_p->translation_audio_obj = NULL;
     msg_p->has_translation = 0;
+    msg_p->has_tips = 0;
     msg_p->message_id = style->next_message_id++;
     if (style->next_message_id == 0) style->next_message_id = 1;
     msg_p->tim_s = tim_s;
@@ -450,9 +505,12 @@ static void _gt_chat_free_msg_text(_gt_chat_param_st * msg_p)
     if (!msg_p) return;
     if (msg_p->source_text) gt_mem_free(msg_p->source_text);
     if (msg_p->translation_text) gt_mem_free(msg_p->translation_text);
+    if (msg_p->tips_text) gt_mem_free(msg_p->tips_text);
     msg_p->source_text = NULL;
     msg_p->translation_text = NULL;
+    msg_p->tips_text = NULL;
     msg_p->has_translation = 0;
+    msg_p->has_tips = 0;
 }
 
 static bool _gt_chat_set_translation(_gt_chat_st * style, uint8_t index, const char * translation)
@@ -472,6 +530,43 @@ static bool _gt_chat_set_translation(_gt_chat_st * style, uint8_t index, const c
         msg_p->translation_expanded = 1;
     }
     _gt_chat_render_translation(style, index, GT_SYMBOL_VOICE_PLAY - 1);
+    return true;
+}
+
+static bool _gt_chat_set_tips_text(_gt_chat_st * style, uint8_t index,
+                                   const char * text, uint16_t len)
+{
+    if (!style || index >= style->msg_cnt || !style->msg_list[index].msg_obj) return false;
+    _gt_chat_param_st * msg_p = &style->msg_list[index];
+    if (!text || !len) {
+        if (msg_p->tips_text) gt_mem_free(msg_p->tips_text);
+        msg_p->tips_text = NULL;
+        msg_p->has_tips = 0;
+        if (msg_p->tips_obj) gt_obj_set_visible(msg_p->tips_obj, GT_INVISIBLE);
+        return true;
+    }
+    char * copy = (char *)gt_mem_malloc((uint32_t)len + 1);
+    if (!copy) return false;
+    gt_memcpy(copy, text, len);
+    copy[len] = '\0';
+    if (!msg_p->tips_obj) {
+        msg_p->tips_obj = gt_btn_create((gt_obj_st *)style);
+        if (!msg_p->tips_obj) { gt_mem_free(copy); return false; }
+        gt_obj_set_inside(msg_p->tips_obj, true);
+        gt_obj_set_fixed(msg_p->tips_obj, true);
+        gt_obj_set_untouchability(msg_p->tips_obj, true);
+        gt_obj_set_touch_parent(msg_p->tips_obj, false);
+        gt_btn_set_border_width(msg_p->tips_obj, 0);
+        msg_p->tips_obj->show_bg = false;
+        gt_btn_set_font_color(msg_p->tips_obj, gt_color_hex(0x777777));
+        gt_btn_set_font_size(msg_p->tips_obj, style->font_info.size);
+        gt_btn_set_font_align(msg_p->tips_obj, msg_p->is_send ? GT_ALIGN_RIGHT_MID : GT_ALIGN_LEFT_MID);
+    }
+    if (msg_p->tips_text) gt_mem_free(msg_p->tips_text);
+    msg_p->tips_text = copy;
+    msg_p->has_tips = 1;
+    gt_btn_set_text_by_len(msg_p->tips_obj, copy, len);
+    gt_obj_set_visible(msg_p->tips_obj, GT_VISIBLE);
     return true;
 }
 
@@ -1040,6 +1135,68 @@ gt_obj_st * gt_chat_set_last_msg_translation(gt_obj_st * chat, const char * tran
     _gt_chat_update_msg_size(chat);
     gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
     return style->msg_list[index].msg_obj;
+}
+
+gt_obj_st * gt_chat_set_message_tips_by_len(gt_obj_st * chat, uint32_t message_id,
+                                            const char * text, uint16_t len)
+{
+    if (!gt_obj_is_type(chat, OBJ_TYPE)) return NULL;
+    _gt_chat_st * style = (_gt_chat_st *)chat;
+    int32_t index = _gt_chat_find_message_id(style, message_id);
+    if (index < 0 || !_gt_chat_set_tips_text(style, (uint8_t)index, text, len)) return NULL;
+    _gt_chat_relayout(chat, true);
+    gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
+    return style->msg_list[index].has_tips ? style->msg_list[index].tips_obj : NULL;
+}
+
+gt_obj_st * gt_chat_set_message_tips(gt_obj_st * chat, uint32_t message_id, const char * text)
+{
+    return gt_chat_set_message_tips_by_len(chat, message_id, text,
+                                           text ? (uint16_t)strlen(text) : 0);
+}
+
+gt_obj_st * gt_chat_set_last_msg_tips(gt_obj_st * chat, const char * text)
+{
+    if (!gt_obj_is_type(chat, OBJ_TYPE)) return NULL;
+    _gt_chat_st * style = (_gt_chat_st *)chat;
+    if (!style->msg_cnt) return NULL;
+    return gt_chat_set_message_tips(chat, style->msg_list[style->msg_cnt - 1].message_id, text);
+}
+
+bool gt_chat_clear_message_tips(gt_obj_st * chat, uint32_t message_id)
+{
+    if (!gt_obj_is_type(chat, OBJ_TYPE)) return false;
+    _gt_chat_st * style = (_gt_chat_st *)chat;
+    int32_t index = _gt_chat_find_message_id(style, message_id);
+    if (index < 0 || !_gt_chat_set_tips_text(style, (uint8_t)index, NULL, 0)) return false;
+    _gt_chat_relayout(chat, true);
+    gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
+    return true;
+}
+
+bool gt_chat_clear_last_msg_tips(gt_obj_st * chat)
+{
+    if (!gt_obj_is_type(chat, OBJ_TYPE)) return false;
+    _gt_chat_st * style = (_gt_chat_st *)chat;
+    return style->msg_cnt ? gt_chat_clear_message_tips(chat,
+        style->msg_list[style->msg_cnt - 1].message_id) : false;
+}
+
+gt_obj_st * gt_chat_get_message_tips_obj(gt_obj_st * chat, uint32_t message_id)
+{
+    if (!gt_obj_is_type(chat, OBJ_TYPE)) return NULL;
+    _gt_chat_st * style = (_gt_chat_st *)chat;
+    int32_t index = _gt_chat_find_message_id(style, message_id);
+    if (index < 0 || !style->msg_list[index].has_tips) return NULL;
+    return style->msg_list[index].tips_obj;
+}
+
+gt_obj_st * gt_chat_get_last_msg_tips_obj(gt_obj_st * chat)
+{
+    if (!gt_obj_is_type(chat, OBJ_TYPE)) return NULL;
+    _gt_chat_st * style = (_gt_chat_st *)chat;
+    return style->msg_cnt ? gt_chat_get_message_tips_obj(chat,
+        style->msg_list[style->msg_cnt - 1].message_id) : NULL;
 }
 
 bool gt_chat_set_message_translation(gt_obj_st * chat, uint32_t message_id, const char * translation)
