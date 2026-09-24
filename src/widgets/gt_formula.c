@@ -25,6 +25,11 @@
 #define OBJ_TYPE    GT_TYPE_FORMULA
 #define MY_CLASS    &gt_formula_class
 
+/* 文本缓冲区默认容量（含结尾 NUL），不足时按 2 倍增长 */
+#ifndef GT_FORMULA_TEXT_DEFAULT_CAP
+    #define GT_FORMULA_TEXT_DEFAULT_CAP     (64)
+#endif
+
 
 /* private typedef ------------------------------------------------------*/
 typedef struct _gt_formula_s {
@@ -37,6 +42,7 @@ typedef struct _gt_formula_s {
 
     uint16_t max_width;
     uint16_t text_len;
+    uint32_t text_cap;      /* 文本缓冲区已分配容量（含结尾 NUL）；0 表示未分配 */
 
     gt_formula_mode_t mode;  /* 渲染模式：LaTeX 或 Markdown / Render mode: LaTeX or Markdown */
 
@@ -52,6 +58,7 @@ typedef struct _gt_formula_s {
 
     gt_formula_cache_mode_t cache_mode;
     uint8_t cache_dirty;    // 1: need to rebuild cache, 0: need @ md_cache_ready and latex_cache_ready to be checked
+    uint8_t cache_failed;   // 1: last rebuild failed; retry after content/config changes
 
     uint8_t md_latex_mode;
 }_gt_formula_st;
@@ -497,6 +504,7 @@ static void _formula_invalidate_cache(gt_obj_st * obj)
 
     _formula_clear_cache(style);
     style->cache_dirty = 1;
+    style->cache_failed = 0;
 }
 
 static uint8_t _formula_is_cache_ready(const _gt_formula_st * style)
@@ -517,6 +525,7 @@ static int _formula_rebuild_cache(gt_obj_st * obj)
 
     if(NULL == style->text || 0 == style->text_len) {
         style->cache_dirty = 0;
+        style->cache_failed = 1;
         return -1;
     }
 
@@ -530,7 +539,8 @@ static int _formula_rebuild_cache(gt_obj_st * obj)
     }
 
     _formula_end_layout_ctx(obj);
-    style->cache_dirty = (0 == ret) ? 0 : 1;
+    style->cache_dirty = 0;
+    style->cache_failed = (0 == ret) ? 0 : 1;
     return ret;
 }
 
@@ -563,14 +573,18 @@ static void _formula_init_cb(gt_obj_st * obj)
                              _formula_draw_arc_cb);
 
     if (GT_FORMULA_CACHE_MODE_PERSIST == style->cache_mode) {
-        if (style->cache_dirty || 0 == _formula_is_cache_ready(style)) {
+        if (style->cache_dirty ||
+            (0 == _formula_is_cache_ready(style) && 0 == style->cache_failed)) {
             _formula_rebuild_cache(obj);
         }
-        _formula_render_current(obj);
+        if (_formula_is_cache_ready(style)) {
+            _formula_render_current(obj);
+        }
         return ;
     }
 
-    if (style->cache_dirty || 0 == _formula_is_cache_ready(style)) {
+    if (style->cache_dirty ||
+        (0 == _formula_is_cache_ready(style) && 0 == style->cache_failed)) {
         _formula_rebuild_cache(obj);
     }
     if (0 == _formula_is_cache_ready(style)) {
@@ -579,6 +593,7 @@ static void _formula_init_cb(gt_obj_st * obj)
     _formula_render_current(obj);
    _formula_clear_cache(style);
     style->cache_dirty = 0;
+    style->cache_failed = 0;
 }
 
 GT_ATTRIBUTE_RAM_TEXT
@@ -595,6 +610,7 @@ static void _formula_deinit_cb(gt_obj_st * obj)
     if (style->text) {
         gt_mem_free(style->text);
         style->text = NULL;
+        style->text_cap = 0;
     }
 
     if(style->font_cfg) {
@@ -621,11 +637,21 @@ static void _formula_event_cb(struct gt_obj_s * obj, gt_event_st * e)
 GT_ATTRIBUTE_RAM_TEXT
 gt_obj_st * gt_formula_create(gt_obj_st * parent) {
     gt_obj_st * obj = gt_obj_class_create(MY_CLASS, parent);
+    _gt_formula_st * style = (_gt_formula_st * )obj;
     if (NULL == obj) {
         return obj;
     }
 
-    ((_gt_formula_st *)obj)->cache_mode = GT_FORMULA_CACHE_MODE_PERSIST;
+    style->cache_mode = GT_FORMULA_CACHE_MODE_PERSIST;
+
+    /* 预分配默认容量，避免首次写入文本时再分配 */
+    style->text = (char * )gt_mem_malloc(GT_FORMULA_TEXT_DEFAULT_CAP);
+    if (NULL == style->text) {
+        GT_LOGE(GT_LOG_TAG_GUI, "formula text malloc failed, cap=%d", GT_FORMULA_TEXT_DEFAULT_CAP);
+        return obj;
+    }
+    style->text[0] = '\0';
+    style->text_cap = GT_FORMULA_TEXT_DEFAULT_CAP;
 
     return obj;
 }
@@ -642,39 +668,61 @@ void gt_formula_set_text(gt_obj_st * obj, const char * fmt, ...)
     _gt_formula_st * style = (_gt_formula_st * )obj;
 
     va_start(args, fmt);
-    va_copy(args2, args);
-    uint16_t size = (NULL == fmt) ? 0 : (vsnprintf(buffer, sizeof(buffer), fmt, args) + 1);
+    int format_len = vsnprintf(buffer, sizeof(buffer), fmt, args);
     va_end(args);
-    if (!size) {
-        goto free_lb;
+    if (format_len < 0) {
+        return;
     }
 
-    if (NULL == style->text) {
-        style->text = gt_mem_malloc(size);
-    } else if (size != strlen(style->text) + 1) {
-        style->text = gt_mem_realloc(style->text, size);
-    }
-    if (NULL == style->text) {
-        goto free_lb;
+    uint32_t size = (uint32_t)format_len + 1;
+    if (size > 0x10000u) {   /* style->text_len 是 uint16_t，更长的文本无法表示 */
+        GT_LOGW(GT_LOG_TAG_GUI, "formula text too long: %d", format_len);
+        return;
     }
 
-    gt_memset(style->text, 0, size);
-    va_start(args2, fmt);
-    vsnprintf(style->text, size, fmt, args2);
-    va_end(args2);
-    style->text_len = size - 1;
+    if (NULL == style->text || size > style->text_cap) {
+        uint32_t cap = style->text_cap ? style->text_cap : GT_FORMULA_TEXT_DEFAULT_CAP;
+        while (cap < size) {
+            cap <<= 1;
+        }
+
+        char *old_text = style->text;
+        /* 容量不足：分配新缓冲区，写入完成后再释放旧内存，避免泄漏和别名问题 */
+        char *new_text = (char *)gt_mem_malloc(cap);
+        if (NULL == new_text) {
+            GT_LOGE(GT_LOG_TAG_GUI, "style->text malloc failed, size=%u", (unsigned)cap);
+            return;
+        }
+        va_start(args2, fmt);
+        vsnprintf(new_text, size, fmt, args2);
+        va_end(args2);
+
+        /* Parser nodes and lexer tokens point into old_text. Clear them first. */
+        _formula_invalidate_cache(obj);
+        style->text = new_text;
+        style->text_cap = cap;
+
+        if (old_text != NULL) {
+            gt_mem_free(old_text);
+        }
+    } else {
+        /* 容量足够，复用原缓冲区；覆盖 text 前先清理引用它的缓存 */
+        _formula_invalidate_cache(obj);
+        va_start(args2, fmt);
+        vsnprintf(style->text, size, fmt, args2);
+        va_end(args2);
+    }
+
+    style->text_len = (uint16_t)(size - 1);
 
     if (GT_FORMULA_CACHE_MODE_PERSIST == style->cache_mode) {
         _formula_rebuild_cache(obj);
     } else {
-        _formula_rebuild_cache(obj);
-        _formula_invalidate_cache(obj);
+        if (0 == _formula_rebuild_cache(obj)) {
+            _formula_invalidate_cache(obj);
+        }
     }
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
-    return;
-
-free_lb:
-    va_end(args2);
 }
 
 GT_ATTRIBUTE_RAM_TEXT
@@ -683,28 +731,53 @@ void gt_formula_set_text_by_len(gt_obj_st * obj, const char * text, uint16_t len
     if (NULL == text || 0 == len || false == gt_obj_is_type(obj, OBJ_TYPE)) {
         return;
     }
-    _gt_formula_st * style = (_gt_formula_st * )obj;
-    uint16_t size = len + 1;
 
-    if (NULL == style->text) {
-        style->text = gt_mem_malloc(size);
-    } else if (size != style->text_len + 1) {
-        style->text = gt_mem_realloc(style->text, size);
-    }
-    if (NULL == style->text) {
-        return;
+    _gt_formula_st *style = (_gt_formula_st *)obj;
+    uint32_t size = (uint32_t)len + 1;   /* len 最大 65535，+1 后超出 uint16_t 范围 */
+
+    if (NULL == style->text || size > style->text_cap) {
+        uint32_t cap = style->text_cap ? style->text_cap : GT_FORMULA_TEXT_DEFAULT_CAP;
+        while (cap < size) {
+            cap <<= 1;
+        }
+
+        char *old_text = style->text;
+        /* 容量不足：分配新缓冲区，复制完成后再释放旧内存，避免泄漏和别名问题 */
+        char *new_text = (char *)gt_mem_malloc(cap);
+        if (NULL == new_text) {
+            GT_LOGE(GT_LOG_TAG_GUI, "style->text malloc failed, size=%u", (unsigned)cap);
+            return;
+        }
+        gt_memcpy(new_text, text, len);
+        new_text[len] = '\0';
+
+        /* Parser nodes and lexer tokens point into old_text. Clear them first. */
+        _formula_invalidate_cache(obj);
+        style->text = new_text;
+        style->text_cap = cap;
+
+        if (old_text != NULL) {
+            gt_mem_free(old_text);
+        }
+    } else {
+        /* 容量足够，直接复用原缓冲区；用 memmove 兼容 text 与 style->text 重叠的情况 */
+        _formula_invalidate_cache(obj);
+        if (text != style->text) {
+            gt_memmove(style->text, text, len);
+        }
+        style->text[len] = '\0';
     }
 
-    gt_memcpy(style->text, text, len);
-    style->text[len] = '\0';
     style->text_len = len;
 
     if (GT_FORMULA_CACHE_MODE_PERSIST == style->cache_mode) {
         _formula_rebuild_cache(obj);
     } else {
-        _formula_rebuild_cache(obj);
-        _formula_invalidate_cache(obj);
+        if (0 == _formula_rebuild_cache(obj)) {
+            _formula_invalidate_cache(obj);
+        }
     }
+
     gt_event_send(obj, GT_EVENT_TYPE_UPDATE_VALUE, NULL);
 }
 
