@@ -1430,6 +1430,9 @@ _gt_font_size_res_st gt_font_get_size_length_by_style(gt_font_info_st * info, ui
 
 uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const char * const text, uint16_t space)
 {
+    if (NULL == text) {
+        return 0;
+    }
     uint32_t idx = 0, len = strlen(text), unicode = 0;
     uint16_t max_width = 0, cur_line_width = 0;
     gt_font_st temp_font = {
@@ -1439,10 +1442,6 @@ uint16_t gt_font_get_longest_line_substring_width(gt_font_info_st * info, const 
         .res = NULL,
     };
     uint8_t count_byte = 0, word_width = 0;
-
-    if (NULL == text) {
-        return max_width;
-    }
 
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
     _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(info, 2, 0, 0);
@@ -1503,6 +1502,9 @@ gt_font_words_ret_st gt_font_get_words_number(char const * const str, uint32_t l
 
 uint16_t gt_font_get_single_line_width(gt_font_info_st * info, const char * const text, uint16_t space)
 {
+    if (NULL == text) {
+        return 0;
+    }
     uint32_t idx = 0, len = strlen(text), unicode = 0;
     uint16_t max_width = 0;
     gt_font_st temp_font = {
@@ -1512,10 +1514,6 @@ uint16_t gt_font_get_single_line_width(gt_font_info_st * info, const char * cons
         .res = NULL,
     };
     uint8_t count_byte = 0, word_width = 0;
-
-    if (NULL == text) {
-        return max_width;
-    }
 
 #if (defined(GT_FONT_FAMILY_OLD_ENABLE) && (GT_FONT_FAMILY_OLD_ENABLE == 1))
     _gt_font_size_res_st font_size_res = gt_font_get_size_length_by_style(info, 2, 0, 0);

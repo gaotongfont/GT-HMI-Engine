@@ -69,11 +69,12 @@ static GT_ATTRIBUTE_RAM_DATA const gt_obj_class_st gt_label_class = {
 static _gt_draw_font_res_st GT_ATTRIBUTE_RAM_TEXT
 _draw_or_calc_dislpay_content(gt_obj_st * obj, bool is_only_calc) {
     _gt_label_st * style = (_gt_label_st * )obj;
-    uint32_t len = strlen((char * )style->text);
+    const char * text = style->text ? style->text : "";
+    uint32_t len = strlen(text);
     gt_font_st font = {
         .info       = style->font_info,
         .res        = NULL,
-        .utf8       = (char * )style->text,
+        .utf8       = (char * )text,
         .len        = len,
     };
     gt_font_info_update_font_thick(&font.info);
