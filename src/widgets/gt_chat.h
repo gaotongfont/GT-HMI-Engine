@@ -224,6 +224,9 @@ gt_obj_st * gt_chat_add_received_translated_msg_with_time(gt_obj_st * chat, cons
  */
 gt_obj_st * gt_chat_set_last_msg_translation(gt_obj_st * chat, const char * translation);
 
+gt_obj_st * gt_chat_replace_last_translated_msg_by_len(gt_obj_st * chat,
+    const char * source, uint16_t source_len, const char * translation, uint16_t translation_len);
+
 /**
  * @brief Expand or collapse the translation segment of every translated message.
  * @param chat Chat object.
