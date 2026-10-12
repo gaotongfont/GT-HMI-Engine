@@ -93,6 +93,7 @@ typedef struct _gt_disp_s {
 
     gt_obj_st ** screens;       // Array of screen
     uint16_t cnt_scr;           // Count screens nub
+    uint16_t cap_scr;           // Allocated capacity of screens[] (cnt_scr <= cap_scr); reserved on delete to avoid realloc moving the array
 
     /* flush */
     gt_area_st     area_act;            //Location of physical screen on virtual screen

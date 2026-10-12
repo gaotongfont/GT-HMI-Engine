@@ -332,46 +332,6 @@ static void _screen_event_cb(gt_obj_st * obj, struct _gt_event_s * e) {
     }
 }
 
-/**
- * @brief destroy the object by core timer handler,
- * Free the memory of the object and its children.
- *
- * @param timer
- */
-static GT_ATTRIBUTE_RAM_TEXT void _gt_obj_destroy_handler_cb(struct _gt_timer_s * timer) {
-    gt_obj_st * obj = (gt_obj_st * )_gt_timer_get_user_data(timer);
-    gt_obj_type_et type = gt_obj_class_get_type(obj);
-    if (GT_TYPE_UNKNOWN == type) {
-        return;
-    }
-    if (_gt_obj_in_event_dispatch(obj)) {
-        /** The object (or an ancestor of it) is still referenced by an in-flight
-         *  event as target/origin. Freeing it now would leave the dispatch loop
-         *  dangling; retry until the event chain drains. */
-        GT_LOGW(GT_LOG_TAG_GUI, "Disables the removal of the control itself within event list.");
-        _gt_timer_set_repeat_count(timer, 1);   // retry to destroy object
-        return ;
-    }
-
-    if (obj->using_sta) {
-        GT_LOGW("obj", "Try to delete an object %p(%d) that is in use.", obj, gt_obj_class_get_type(obj));
-        _gt_timer_set_repeat_count(timer, 1);   // retry to destroy object
-        return;
-    }
-
-    // release children memory and remove itself from parent children array
-#if GT_USE_DISPLAY_PREF_DESTROY
-    uint32_t start = gt_tick_get();
-#endif
-
-    _gt_obj_class_destroy(obj);
-    _gt_timer_set_user_data(timer, NULL);
-
-#if GT_USE_DISPLAY_PREF_DESTROY
-    GT_LOGI(GT_LOG_TAG_MEM, "destroy obj: %p, used: %d ms", obj, gt_tick_get() - start);
-#endif
-}
-
 static GT_ATTRIBUTE_RAM_TEXT gt_obj_st * _find_obj_recursive_by_id(gt_obj_st * self, gt_id_t widget_id) {
     gt_obj_st * target = NULL;
 
@@ -617,19 +577,31 @@ gt_obj_st * gt_obj_within_which_scr(gt_obj_st * obj)
 void gt_obj_destroy(gt_obj_st * obj)
 {
     // GT_LOGV(GT_LOG_TAG_GUI, "Want to destroy obj: 0x%p", obj);
-    if (!obj) { return ; }
-    if (obj->delate) { return ; }   /**< already scheduled, avoid duplicate timer */
-
-    // create a temp timer once task to destroy the object
-    _gt_timer_st * tmp_timer = _gt_timer_create(_gt_obj_destroy_handler_cb, GT_TASK_PERIOD_TIME_DESTROY, obj);
-    if (NULL == tmp_timer) {
-        /** Timer create failed (OOM): leave delate cleared so a later call
-         *  can retry instead of leaking the object forever. */
+    if (NULL == obj) {
         return;
     }
-    obj->delate = true;
-    gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_DELATE, true);
-    _gt_timer_set_repeat_count(tmp_timer, 1);
+    /** Idempotent gate: ZOMBIE/DESTROYING means the object is already being
+     *  destroyed or pending reclamation. */
+    if (GT_OBJ_LIFE_ALIVE != obj->life_state) {
+        return;
+    }
+    if (obj->using_sta) {
+        /** using_sta is only consumed by the screen switch-anim callbacks
+         *  (_scr_anim_ready_cb/_scr_anim_del_ready_cb). A non-screen object
+         *  flagged with it would never be reclaimed, so destroy it directly.
+         *  Pure defense: normal paths only set using_sta on screens. */
+        if (GT_TYPE_SCREEN != gt_obj_class_get_type(obj)) {
+            _gt_obj_class_destroy(obj);
+            return;
+        }
+        /** Screen is being used by a switch animation: mark it for deletion and
+         *  let the animation ready callback destroy it once it is no longer in
+         *  use (mirrors the old destroy-timer retry semantics without a timer). */
+        obj->delate = true;
+        gt_obj_child_set_prop(obj, GT_OBJ_PROP_TYPE_DELATE, true);
+        return;
+    }
+    _gt_obj_class_destroy(obj);
 }
 
 gt_res_t gt_obj_destroy_immediately(gt_obj_st * obj)
@@ -637,16 +609,13 @@ gt_res_t gt_obj_destroy_immediately(gt_obj_st * obj)
     if (NULL == obj) {
         return GT_RES_OK;
     }
-    if (_gt_obj_in_event_dispatch(obj)) {
-        /** Defer destruction: freeing the object here would leave the in-flight
-         *  event dispatch chain (target/origin) dangling (use-after-free). */
-        gt_obj_destroy(obj);
-        return GT_RES_DEFER;
+    if (GT_OBJ_LIFE_ALIVE != obj->life_state) {
+        /** Already being destroyed or pending reclamation. */
+        return GT_RES_OK;
     }
-    /** Not in the event chain, destroy now. This includes objects already
-     *  flagged delate by a switch animation (which have no destroy timer of
-     *  their own); skipping them would leak them forever because
-     *  gt_obj_destroy() short-circuits on the delate flag. */
+    /** Two-phase destroy: unlink synchronously, reclaim at the next safe point.
+     *  The in-flight event dispatch chain is safe because nothing is freed here;
+     *  a target/origin reference is dropped inside _gt_obj_class_destroy_property(). */
     _gt_obj_class_destroy(obj);
     return GT_RES_OK;
 }

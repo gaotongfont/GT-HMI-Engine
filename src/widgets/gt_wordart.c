@@ -638,4 +638,3 @@ void gt_wordart_set_number(gt_obj_st * wordart, double number,
 #endif /* GT_CFG_ENABLE_WORDART */
 /* end of file ----------------------------------------------------------*/
 
-

@@ -470,7 +470,13 @@ void _gt_disp_hided_layer_top_widgets(gt_obj_st * top)
         return;
     }
 
-    for (gt_size_t i = 0; i < top->cnt_child; i++) {
+    /** Snapshot + bounds check: the INPUT_HIDED handler may destroy a sibling,
+     *  memmove-ing top->child[] and shrinking cnt_child mid-iteration. */
+    gt_size_t cnt = top->cnt_child;
+    for (gt_size_t i = cnt - 1; i >= 0; i--) {
+        if (i >= (gt_size_t)top->cnt_child) {
+            continue;   /* element was removed during iteration */
+        }
         obj = top->child[i];
         if (GT_INVISIBLE == gt_obj_get_visible(obj)) {
             continue;
