@@ -1136,6 +1136,46 @@ gt_obj_st * gt_chat_add_received_translated_msg_with_time(gt_obj_st * chat, cons
     return _gt_chat_add_translated(chat, source, translation, tim_s, false);
 }
 
+gt_obj_st * gt_chat_replace_last_translated_msg_by_len(gt_obj_st * chat,
+    const char * source, uint16_t source_len, const char * translation, uint16_t translation_len)
+{
+    if (!gt_obj_is_type(chat, OBJ_TYPE) || !source || !source_len ||
+        (translation_len && !translation)) return NULL;
+    _gt_chat_st * style = (_gt_chat_st *)chat;
+    if (!style->msg_cnt) return NULL;
+    uint8_t index = style->msg_cnt - 1;
+    _gt_chat_param_st * msg = &style->msg_list[index];
+    if (msg->type != GT_CHAT_TYPE_TEXT || !msg->source_text) return NULL;
+
+    char * source_copy = gt_mem_malloc((uint32_t)source_len + 1);
+    if (!source_copy) return NULL;
+    char * translation_copy = NULL;
+    if (translation_len) {
+        translation_copy = gt_mem_malloc((uint32_t)translation_len + 1);
+        if (!translation_copy) {
+            gt_mem_free(source_copy);
+            return NULL;
+        }
+        gt_memcpy(translation_copy, translation, translation_len);
+        translation_copy[translation_len] = '\0';
+    }
+    gt_memcpy(source_copy, source, source_len);
+    source_copy[source_len] = '\0';
+
+    gt_chat_stop_message_playback(chat);
+    gt_mem_free(msg->source_text);
+    if (msg->translation_text) gt_mem_free(msg->translation_text);
+    msg->source_text = source_copy;
+    msg->translation_text = translation_copy;
+    if (!msg->has_translation) msg->translation_expanded = translation_len != 0;
+    msg->has_translation = translation_len != 0;
+    if (!msg->has_translation) msg->translation_expanded = 0;
+    _gt_chat_render_translation(style, index, GT_SYMBOL_VOICE_PLAY - 1);
+    _gt_chat_relayout(chat, true);
+    gt_event_send(chat, GT_EVENT_TYPE_DRAW_START, NULL);
+    return msg->msg_obj;
+}
+
 gt_obj_st * gt_chat_set_last_msg_translation(gt_obj_st * chat, const char * translation)
 {
     if (false == gt_obj_is_type(chat, OBJ_TYPE)) return NULL;
